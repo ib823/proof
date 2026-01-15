@@ -1,18 +1,22 @@
 # TERAS THREAT DEFEAT MATRIX
 
-**Version:** 1.0.0
+**Version:** 1.1.0 (CORRECTED PER BREAKER FINDINGS)
 **Generated:** 2026-01-15
 **Mode:** ULTRA KIASU | FUCKING PARANOID | ZERO TRUST
 
 ---
 
-## Overview
+## CRITICAL WARNING
 
-This document maps common vulnerability classes (CWEs) to the TERAS-LANG formal proofs that defeat them. Each mapping identifies:
-1. The vulnerability class
-2. The TERAS mechanism that prevents it
-3. The specific theorem/lemma with file:line reference
-4. Current proof status
+**This matrix has been CORRECTED based on BREAKER attack findings.**
+
+BREAKER identified **27 vulnerabilities (15 CRITICAL)** in the proof system.
+Many proofs previously marked "fully proven" are actually:
+- ADMITTED (not proven)
+- Built on FALSE lemmas
+- Proving `True` (meaningless)
+
+See: `06_COORDINATION/BREAKER_ATTACK_LOG.md` for full details.
 
 ---
 
@@ -20,10 +24,29 @@ This document maps common vulnerability classes (CWEs) to the TERAS-LANG formal 
 
 | Symbol | Meaning |
 |--------|---------|
-| ✅ | Fully proven (no `Admitted`) |
-| 🟡 | Partially proven (some admits) |
+| ✅ | Fully proven (no `Admitted`, verified sound) |
+| 🟡 | Partially proven (some admits or incomplete) |
+| 🔴 | INVALID - Built on broken/admitted foundations |
 | 📋 | Theorem stated, proof pending |
-| ❌ | Not yet addressed |
+| ⚫ | Proves `True` (meaningless) |
+| ❌ | Not addressed |
+
+---
+
+## BREAKER INVALIDATION MAP
+
+| Proof | BREAKER Finding | Impact |
+|-------|-----------------|--------|
+| `type_safety` | TS-001: Built on admitted Progress | 🔴 All CWEs citing this are INVALID |
+| `progress` | P-002: 10 ADMITTED cases | 🔴 Theorem not proven |
+| `canonical_bool/fn` | P-001, P-003: FALSE as stated | 🔴 Progress foundations broken |
+| `preservation` | R-001: Missing 5 value cases | 🟡 Incomplete |
+| `effect_safety` | E-001: Proves `True` | ⚫ Meaningless |
+| `gate_enforcement` | G-002: Proves `True` | ⚫ Meaningless |
+| `non_interference` | NI-002: Only pure fragment | 🟡 Limited scope |
+| `is_gate` | G-001: Definition = `True` | ⚫ Vacuous |
+| Reference semantics | S-001, S-002: Don't use store | 🔴 Broken |
+| Declassification | S-004: Accepts any proof | 🔴 Unsound |
 
 ---
 
@@ -31,34 +54,34 @@ This document maps common vulnerability classes (CWEs) to the TERAS-LANG formal 
 
 ### CWE-119: Improper Restriction of Operations within Bounds of a Memory Buffer
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-119 | Buffer overflow (parent) | Type safety + Bounded arrays | `type_system/TypeSafety.v:25` `theorem type_safety` | ✅ |
-| CWE-120 | Buffer Copy without Size Check | Type-safe substitution | `type_system/Preservation.v:319` `lemma substitution_preserves_typing` | ✅ |
-| CWE-121 | Stack-based Buffer Overflow | No raw pointers; type-safe refs | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-122 | Heap-based Buffer Overflow | Type-safe heap references | `type_system/Preservation.v:683` `theorem preservation` | ✅ |
-| CWE-123 | Write-what-where Condition | No arbitrary memory writes | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-124 | Buffer Underwrite | Bounded array indices | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-125 | Out-of-bounds Read | Type safety prevents arbitrary reads | `type_system/Progress.v:74` | 🟡 |
-| CWE-126 | Buffer Over-read | Type-safe memory access | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-127 | Buffer Under-read | Type-safe memory access | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-129 | Improper Validation of Array Index | Type system enforces bounds | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-131 | Incorrect Buffer Size Calculation | Type-level size tracking | `foundations/Typing.v` | 🟡 |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-119 | Buffer overflow (parent) | Type safety | `TypeSafety.v:25` | ✅ | 🔴 | TS-001: Built on admitted Progress |
+| CWE-120 | Buffer Copy without Size Check | Substitution | `Preservation.v:319` | ✅ | 🟡 | R-001: value_has_pure_effect incomplete |
+| CWE-121 | Stack-based Buffer Overflow | No raw pointers | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-122 | Heap-based Buffer Overflow | Type-safe refs | `Preservation.v:683` | ✅ | 🔴 | S-001, S-002: Refs don't work |
+| CWE-123 | Write-what-where | No arbitrary writes | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-124 | Buffer Underwrite | Bounded arrays | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-125 | Out-of-bounds Read | Type safety | `Progress.v:74` | 🟡 | 🔴 | P-002: Progress admitted |
+| CWE-126 | Buffer Over-read | Type-safe access | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-127 | Buffer Under-read | Type-safe access | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-129 | Array Index Validation | Type system | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-131 | Buffer Size Calculation | Type-level size | `Typing.v` | 🟡 | 🔴 | T-004: Store typing unused |
 
 ### CWE-416: Use After Free
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-416 | Use After Free | Affine/Linear types for resources | `type_system/Progress.v:74` `theorem progress` | 🟡 |
-| CWE-415 | Double Free | Linear types ensure single use | `type_system/Progress.v:74` | 🟡 |
-| CWE-414 | Missing Lock | Capability system for synchronization | `effects/EffectSystem.v:52` `T_Require` | 📋 |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-416 | Use After Free | Linear types | `Progress.v:74` | 🟡 | 🔴 | P-002, S-001: No heap model |
+| CWE-415 | Double Free | Linear types | `Progress.v:74` | 🟡 | 🔴 | P-002, S-002 |
+| CWE-414 | Missing Lock | Capabilities | `EffectSystem.v:52` | 📋 | ⚫ | E-001: effect_safety = True |
 
 ### CWE-476: NULL Pointer Dereference
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-476 | NULL Pointer Dereference | Option types; no null refs | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-690 | Unchecked Return Value to NULL Pointer | Sum types for error handling | `type_system/Preservation.v:629-644` | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-476 | NULL Pointer Deref | Option types | `TypeSafety.v:25` | ✅ | 🔴 | TS-001, P-004: No canonical_ref |
+| CWE-690 | Unchecked Return to NULL | Sum types | `Preservation.v:629` | ✅ | 🟡 | R-002: preservation_helper incomplete |
 
 ---
 
@@ -66,71 +89,71 @@ This document maps common vulnerability classes (CWEs) to the TERAS-LANG formal 
 
 ### CWE-200: Exposure of Sensitive Information
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-200 | Information Exposure (parent) | Non-interference theorem | `properties/NonInterference.v:1326` `theorem non_interference_stmt` | ✅ |
-| CWE-201 | Insertion of Sensitive Information Into Sent Data | Security labels prevent leakage | `properties/NonInterference.v:941` `theorem logical_relation` | ✅ |
-| CWE-209 | Generation of Error Message Containing Sensitive Information | Secret type prevents leak | `properties/NonInterference.v:85` `TSecret` handling | ✅ |
-| CWE-212 | Improper Removal of Sensitive Information | Declassify requires proof | `effects/EffectSystem.v:70` `T_Declassify` | 📋 |
-| CWE-214 | Invocation of Process Using Visible Sensitive Information | Effect system tracks visibility | `effects/EffectSystem.v:84` | 📋 |
-| CWE-215 | Insertion of Sensitive Information Into Debugging Code | Effect isolation | `foundations/Syntax.v:43` effect types | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-200 | Information Exposure | Non-interference | `NonInterference.v:1326` | ✅ | 🟡 | NI-002: Only pure fragment |
+| CWE-201 | Sensitive Info in Output | Security labels | `NonInterference.v:941` | ✅ | 🟡 | NI-002, NI-003 |
+| CWE-209 | Error Message Leak | Secret type | `NonInterference.v:85` | ✅ | 🟡 | NI-001: Timing not covered |
+| CWE-212 | Improper Removal | Declassify w/proof | `EffectSystem.v:70` | 📋 | 🔴 | S-004: Declassify accepts any proof |
+| CWE-214 | Visible Sensitive Info | Effect system | `EffectSystem.v:84` | 📋 | ⚫ | E-001: proves True |
+| CWE-215 | Debug Info Leak | Effect isolation | `Syntax.v:43` | ✅ | 🔴 | S-003: Effects never checked |
 
 ### CWE-285: Improper Authorization
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-285 | Improper Authorization | Capability system | `effects/EffectSystem.v:52-63` | 📋 |
-| CWE-287 | Improper Authentication | Proof-carrying code | `effects/EffectSystem.v:75` `T_Prove` | 📋 |
-| CWE-863 | Incorrect Authorization | Capability + security level check | `foundations/Syntax.v:31` `sec_leq` | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-285 | Improper Authorization | Capabilities | `EffectSystem.v:52-63` | 📋 | ⚫ | G-001, G-002: Gates are vacuous |
+| CWE-287 | Improper Authentication | Proof-carrying | `EffectSystem.v:75` | 📋 | 🔴 | T-003: Proofs trivially forgeable |
+| CWE-863 | Incorrect Authorization | Capability + level | `Syntax.v:31` | ✅ | 🔴 | S-003: Effect ctx never checked |
 
 ---
 
 ## 3. Type Safety Vulnerabilities
 
-### CWE-843: Access of Resource Using Incompatible Type (Type Confusion)
+### CWE-843: Type Confusion
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-843 | Type Confusion | Strong static typing | `type_system/TypeSafety.v:25` `theorem type_safety` | ✅ |
-| CWE-704 | Incorrect Type Conversion | No implicit coercions | `type_system/Preservation.v:683` | ✅ |
-| CWE-681 | Incorrect Conversion between Numeric Types | Explicit typed operations | `foundations/Syntax.v:83-95` type defs | ✅ |
-| CWE-588 | Attempt to Access Child of Non-structure Pointer | No pointer arithmetic | `type_system/TypeSafety.v:25` | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-843 | Type Confusion | Strong typing | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-704 | Incorrect Conversion | No implicit coercions | `Preservation.v:683` | ✅ | 🟡 | R-001, R-002 |
+| CWE-681 | Numeric Conversion | Explicit types | `Syntax.v:83-95` | ✅ | 🟡 | Syntax OK, semantics broken |
+| CWE-588 | Non-structure Pointer | No ptr arithmetic | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
 
 ### CWE-134: Uncontrolled Format String
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-134 | Format String Vulnerability | No format strings; typed I/O | `foundations/Syntax.v:87` `TString` | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-134 | Format String | Typed I/O | `Syntax.v:87` | ✅ | 🟡 | Syntax only, no semantics |
 
 ---
 
 ## 4. Injection Vulnerabilities
 
-### CWE-74: Improper Neutralization of Special Elements in Output
+### CWE-74: Injection
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-74 | Injection (parent) | Effect system isolates I/O | `effects/EffectSystem.v` | 📋 |
-| CWE-77 | Command Injection | Effect gates for system calls | `effects/EffectGate.v` | 📋 |
-| CWE-78 | OS Command Injection | Capability-guarded system effects | `foundations/Syntax.v:48` `EffectSystem` | ✅ |
-| CWE-79 | XSS | Type-safe output encoding | `foundations/Typing.v` | 📋 |
-| CWE-89 | SQL Injection | Parameterized queries (type-level) | Future work | ❌ |
-| CWE-91 | XML Injection | Structured output types | Future work | ❌ |
-| CWE-94 | Code Injection | No eval; static compilation | `type_system/TypeSafety.v:25` | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-74 | Injection (parent) | Effect system | `EffectSystem.v` | 📋 | ⚫ | E-001: proves True |
+| CWE-77 | Command Injection | Effect gates | `EffectGate.v` | 📋 | ⚫ | G-001, G-002: vacuous |
+| CWE-78 | OS Command Injection | Capabilities | `Syntax.v:48` | ✅ | 🔴 | S-003: never checked |
+| CWE-79 | XSS | Type-safe output | `Typing.v` | 📋 | 🔴 | No output encoding proofs |
+| CWE-89 | SQL Injection | Parameterized | Future work | ❌ | ❌ | - |
+| CWE-91 | XML Injection | Structured output | Future work | ❌ | ❌ | - |
+| CWE-94 | Code Injection | Static compilation | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
 
 ---
 
 ## 5. Concurrency Vulnerabilities
 
-### CWE-362: Concurrent Execution Using Shared Resource with Improper Synchronization
+### CWE-362: Race Condition
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-362 | Race Condition (parent) | Linear types + effect isolation | `properties/NonInterference.v` | 🟡 |
-| CWE-364 | Signal Handler Race | No signal handlers in pure TERAS | N/A | ✅ |
-| CWE-366 | Race Condition within Thread | Effect system tracks mutations | `foundations/Syntax.v:46` `EffectWrite` | ✅ |
-| CWE-367 | TOCTOU Race Condition | Capability-based resource access | `effects/EffectSystem.v:52` | 📋 |
-| CWE-369 | Divide By Zero | Dependent types (future) | Future work | ❌ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-362 | Race Condition | Linear types | `NonInterference.v` | 🟡 | 🔴 | NI-002, S-001: No shared state |
+| CWE-364 | Signal Handler Race | No signals | N/A | ✅ | ✅ | Not applicable |
+| CWE-366 | Thread Race | Effect tracking | `Syntax.v:46` | ✅ | 🔴 | S-003: Effects not enforced |
+| CWE-367 | TOCTOU | Capabilities | `EffectSystem.v:52` | 📋 | ⚫ | G-001, G-002 |
+| CWE-369 | Divide By Zero | Dependent types | Future work | ❌ | ❌ | - |
 
 ---
 
@@ -138,59 +161,59 @@ This document maps common vulnerability classes (CWEs) to the TERAS-LANG formal 
 
 ### CWE-310: Cryptographic Issues
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-310 | Cryptographic Issues (parent) | EffectCrypto capability | `foundations/Syntax.v:48` | ✅ |
-| CWE-311 | Missing Encryption | Secret type requires encryption | `foundations/Syntax.v:93` `TSecret` | ✅ |
-| CWE-312 | Cleartext Storage | Security level enforcement | `properties/NonInterference.v:24` `is_low` | ✅ |
-| CWE-319 | Cleartext Transmission | Effect + security level check | `properties/NonInterference.v:1326` | ✅ |
-| CWE-320 | Key Management Errors | Proof-carrying declassification | `effects/EffectSystem.v:70` | 📋 |
-| CWE-327 | Use of Broken Crypto | External to type system | N/A (tooling) | ❌ |
-| CWE-328 | Reversible One-Way Hash | External to type system | N/A (tooling) | ❌ |
-| CWE-330 | Insufficient Randomness | External to type system | N/A (tooling) | ❌ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-310 | Crypto Issues | EffectCrypto | `Syntax.v:48` | ✅ | 🔴 | S-003: Effect never checked |
+| CWE-311 | Missing Encryption | Secret type | `Syntax.v:93` | ✅ | 🟡 | NI-002: Only pure fragment |
+| CWE-312 | Cleartext Storage | Security levels | `NonInterference.v:24` | ✅ | 🟡 | NI-002, NI-003 |
+| CWE-319 | Cleartext Transmission | Effect + level | `NonInterference.v:1326` | ✅ | 🟡 | NI-002 |
+| CWE-320 | Key Management | Proof-carrying | `EffectSystem.v:70` | 📋 | 🔴 | S-004, T-003 |
+| CWE-327 | Broken Crypto | External | N/A | ❌ | ❌ | - |
+| CWE-328 | Reversible Hash | External | N/A | ❌ | ❌ | - |
+| CWE-330 | Weak Randomness | External | N/A | ❌ | ❌ | - |
 
 ---
 
 ## 7. Resource Management Vulnerabilities
 
-### CWE-400: Uncontrolled Resource Consumption
+### CWE-400: Resource Exhaustion
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-400 | Resource Exhaustion | Effect budgets | `effects/EffectAlgebra.v` | 📋 |
-| CWE-401 | Memory Leak | Linear types ensure deallocation | `type_system/Progress.v:74` | 🟡 |
-| CWE-404 | Improper Resource Shutdown | Linear types track resources | `type_system/Progress.v:74` | 🟡 |
-| CWE-770 | Allocation without Limits | Effect system tracks allocation | `foundations/Syntax.v:46` `EffectWrite` | ✅ |
-| CWE-771 | Missing Reference to Active Allocated Resource | Type system tracks references | `type_system/Preservation.v:683` | ✅ |
-| CWE-772 | Missing Release of Resource | Linear types force release | `type_system/Progress.v:74` | 🟡 |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-400 | Resource Exhaustion | Effect budgets | `EffectAlgebra.v` | 📋 | 🟡 | EffectAlgebra CLEAN |
+| CWE-401 | Memory Leak | Linear types | `Progress.v:74` | 🟡 | 🔴 | P-002, S-002 |
+| CWE-404 | Improper Shutdown | Linear types | `Progress.v:74` | 🟡 | 🔴 | P-002 |
+| CWE-770 | Allocation w/o Limits | Effect system | `Syntax.v:46` | ✅ | 🔴 | S-003 |
+| CWE-771 | Missing Ref to Resource | Type tracking | `Preservation.v:683` | ✅ | 🟡 | R-001, R-002 |
+| CWE-772 | Missing Release | Linear types | `Progress.v:74` | 🟡 | 🔴 | P-002, S-001 |
 
 ---
 
 ## 8. Control Flow Vulnerabilities
 
-### CWE-691: Insufficient Control Flow Management
+### CWE-691: Control Flow
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-691 | Control Flow (parent) | Structured control flow only | `foundations/Syntax.v:124-126` | ✅ |
-| CWE-697 | Incorrect Comparison | Type-safe equality | `foundations/Syntax.v` | ✅ |
-| CWE-480 | Use of Incorrect Operator | Strong typing prevents | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-484 | Omitted Break in Switch | Pattern matching (ECase) is exhaustive | `type_system/Preservation.v:629` | ✅ |
-| CWE-835 | Infinite Loop | Progress theorem (partial) | `type_system/Progress.v:74` | 🟡 |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-691 | Control Flow | Structured only | `Syntax.v:124-126` | ✅ | ✅ | Syntax definition sound |
+| CWE-697 | Incorrect Comparison | Type-safe equality | `Syntax.v` | ✅ | ✅ | Syntax definition sound |
+| CWE-480 | Incorrect Operator | Strong typing | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-484 | Omitted Break | ECase exhaustive | `Preservation.v:629` | ✅ | 🟡 | Preservation incomplete |
+| CWE-835 | Infinite Loop | Progress | `Progress.v:74` | 🟡 | 🔴 | P-002 |
 
 ---
 
 ## 9. Error Handling Vulnerabilities
 
-### CWE-755: Improper Handling of Exceptional Conditions
+### CWE-755: Exceptional Conditions
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-755 | Exceptional Conditions (parent) | Effect handlers | `effects/EffectSystem.v:38` `T_Handle` | 📋 |
-| CWE-248 | Uncaught Exception | Effect system tracks all effects | `effects/EffectSystem.v` | 📋 |
-| CWE-252 | Unchecked Return Value | Sum types for errors | `type_system/Preservation.v:56-66` `canonical_sum` | ✅ |
-| CWE-273 | Improper Check for Dropped Privileges | Capability revocation | Future work | ❌ |
-| CWE-390 | Detection of Error without Action | Effect typing forces handling | `effects/EffectSystem.v:38` | 📋 |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-755 | Exceptions | Effect handlers | `EffectSystem.v:38` | 📋 | 🔴 | P-002: Handle cases admitted |
+| CWE-248 | Uncaught Exception | Effect tracking | `EffectSystem.v` | 📋 | ⚫ | E-001 |
+| CWE-252 | Unchecked Return | Sum types | `Preservation.v:56` | ✅ | ✅ | canonical_sum proven |
+| CWE-273 | Dropped Privileges | Capability revoke | Future work | ❌ | ❌ | - |
+| CWE-390 | Error w/o Action | Effect typing | `EffectSystem.v:38` | 📋 | ⚫ | E-001 |
 
 ---
 
@@ -198,111 +221,106 @@ This document maps common vulnerability classes (CWEs) to the TERAS-LANG formal 
 
 ### CWE-665: Improper Initialization
 
-| CWE | Description | TERAS Defense | Proof Reference | Status |
-|-----|-------------|---------------|-----------------|--------|
-| CWE-665 | Improper Initialization (parent) | All values explicitly constructed | `foundations/Syntax.v:102-144` | ✅ |
-| CWE-457 | Use of Uninitialized Variable | Type system requires init | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-824 | Access of Uninitialized Pointer | No null pointers | `type_system/TypeSafety.v:25` | ✅ |
-| CWE-908 | Use of Uninitialized Resource | Type-level resource tracking | `type_system/Progress.v:74` | 🟡 |
-| CWE-909 | Missing Initialization of Resource | All refs require init value | `foundations/Syntax.v:133` `ERef` | ✅ |
+| CWE | Description | TERAS Defense | Proof Reference | Original | Corrected | BREAKER Issue |
+|-----|-------------|---------------|-----------------|----------|-----------|---------------|
+| CWE-665 | Initialization | Explicit construction | `Syntax.v:102-144` | ✅ | ✅ | Syntax definition sound |
+| CWE-457 | Uninitialized Variable | Type system | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-824 | Uninitialized Pointer | No null pointers | `TypeSafety.v:25` | ✅ | 🔴 | TS-001 |
+| CWE-908 | Uninitialized Resource | Type-level tracking | `Progress.v:74` | 🟡 | 🔴 | P-002 |
+| CWE-909 | Missing Init | Refs require value | `Syntax.v:133` | ✅ | 🔴 | S-001, S-002 |
 
 ---
 
-## Key Theorems Summary
+## CORRECTED Coverage Statistics
 
-### Core Type Safety
-
-```coq
-(* TypeSafety.v:25-36 *)
-Theorem type_safety : forall e T ε st ctx,
-  has_type nil nil Public e T ε ->
-  ~ stuck (e, st, ctx).
-```
-
-**Defeats:** CWE-119 family, CWE-843, CWE-476, CWE-457, CWE-665
-
-### Preservation
-
-```coq
-(* Preservation.v:683-689 *)
-Theorem preservation : preservation_stmt.
-(* Where preservation_stmt says: typing preserved under reduction *)
-```
-
-**Defeats:** CWE-704, CWE-588, CWE-771, CWE-484
-
-### Non-Interference
-
-```coq
-(* NonInterference.v:1326-1351 *)
-Theorem non_interference_stmt : forall x T_in T_out v1 v2 e,
-  val_rel T_in v1 v2 ->
-  has_type ((x, T_in) :: nil) nil Public e T_out EffectPure ->
-  exp_rel T_out ([x := v1] e) ([x := v2] e).
-```
-
-**Defeats:** CWE-200 family, CWE-209, CWE-312, CWE-319
-
-### Logical Relation (Fundamental Theorem)
-
-```coq
-(* NonInterference.v:941-1323 *)
-Theorem logical_relation : forall G e T eps rho1 rho2,
-  has_type G nil Public e T eps ->
-  env_rel G rho1 rho2 ->
-  rho_no_free_all rho1 ->
-  rho_no_free_all rho2 ->
-  exp_rel T (subst_rho rho1 e) (subst_rho rho2 e).
-```
-
-**Defeats:** CWE-201, CWE-214, information flow violations
+| Category | Total | Original ✅ | Corrected ✅ | 🔴 Invalid | 🟡 Partial | ⚫ Vacuous |
+|----------|-------|-------------|--------------|------------|------------|------------|
+| Memory Safety | 14 | 10 | 0 | 13 | 1 | 0 |
+| Information Flow | 9 | 5 | 0 | 4 | 4 | 1 |
+| Type Safety | 5 | 5 | 0 | 3 | 2 | 0 |
+| Injection | 8 | 3 | 0 | 4 | 0 | 3 |
+| Concurrency | 5 | 2 | 1 | 3 | 0 | 1 |
+| Cryptographic | 9 | 4 | 0 | 3 | 3 | 0 |
+| Resource Mgmt | 6 | 2 | 0 | 5 | 1 | 0 |
+| Control Flow | 5 | 4 | 2 | 2 | 1 | 0 |
+| Error Handling | 5 | 1 | 1 | 1 | 0 | 2 |
+| Initialization | 5 | 4 | 1 | 4 | 0 | 0 |
+| **TOTAL** | **71** | **40** | **5** | **42** | **12** | **7** |
 
 ---
 
-## MITRE ATT&CK Mapping (Summary)
+## Summary of Corrections
 
-| Tactic | Technique | TERAS Defense | Status |
-|--------|-----------|---------------|--------|
-| Execution | T1059 Command Scripting | EffectSystem capability | ✅ |
-| Persistence | T1053 Scheduled Task | No I/O without capability | ✅ |
-| Privilege Escalation | T1068 Exploitation | Type safety | ✅ |
-| Defense Evasion | T1027 Obfuscated Files | N/A (source analysis) | ❌ |
-| Credential Access | T1003 OS Credential Dumping | Memory safety | ✅ |
-| Discovery | T1083 File Discovery | Effect gates | 📋 |
-| Lateral Movement | T1021 Remote Services | Network effect isolation | 📋 |
-| Collection | T1005 Data from Local System | Security levels | ✅ |
-| Exfiltration | T1041 Exfiltration Over C2 | Non-interference | ✅ |
-| Impact | T1485 Data Destruction | Effect + capability | 📋 |
+### Original vs Corrected
 
----
+| Metric | Original | Corrected | Change |
+|--------|----------|-----------|--------|
+| ✅ Fully Proven | 40 | **5** | -35 |
+| 🟡 Partial | 22 | **12** | -10 |
+| 🔴 Invalid | 0 | **42** | +42 |
+| ⚫ Vacuous | 0 | **7** | +7 |
+| 📋 Pending | 6 | **0** | -6 |
+| ❌ Not Addressed | 3 | **5** | +2 |
 
-## Coverage Statistics
+### What Remains Valid (✅)
 
-| Category | Total CWEs | Addressed | Fully Proven | Status |
-|----------|------------|-----------|--------------|--------|
-| Memory Safety | 14 | 14 | 10 | 🟢 |
-| Information Flow | 9 | 9 | 5 | 🟡 |
-| Type Safety | 5 | 5 | 5 | 🟢 |
-| Injection | 8 | 6 | 3 | 🟡 |
-| Concurrency | 5 | 4 | 2 | 🟡 |
-| Cryptographic | 9 | 6 | 4 | 🟡 |
-| Resource Management | 6 | 6 | 2 | 🟡 |
-| Control Flow | 5 | 5 | 4 | 🟢 |
-| Error Handling | 5 | 4 | 1 | 🟡 |
-| Initialization | 5 | 5 | 4 | 🟢 |
-| **TOTAL** | **71** | **68** | **40** | **🟡** |
+Only **5 CWEs** have proofs that BREAKER did not invalidate:
 
----
+1. **CWE-364** - Signal Handler Race: Not applicable (no signals in TERAS)
+2. **CWE-691** - Control Flow: Syntax definition is sound
+3. **CWE-697** - Incorrect Comparison: Syntax definition is sound
+4. **CWE-252** - Unchecked Return: `canonical_sum` is proven
+5. **CWE-665** - Improper Initialization: Syntax requires explicit construction
 
-## Next Steps
+### What Is Completely Broken (🔴)
 
-1. Complete `Progress.v` proofs for effect operations (CWE-416, CWE-401)
-2. Add effect trace semantics for full effect safety (CWE-74 family)
-3. Formalize capability revocation (CWE-273)
-4. Add dependent types for numeric bounds (CWE-369)
-5. Extend to Track R (certified compilation) for binary-level guarantees
+**42 CWEs** had their proofs invalidated because they relied on:
+- `type_safety` (built on admitted `progress`) - TS-001
+- `progress` (10 ADMITTED cases) - P-002
+- Reference semantics (don't use store) - S-001, S-002
+- Effect enforcement (never checked) - S-003
+
+### What Proves Nothing (⚫)
+
+**7 CWEs** were mapped to theorems that prove `True`:
+- `effect_safety` - E-001
+- `gate_enforcement` - G-002
+- `is_gate` definition - G-001
 
 ---
 
-*This matrix follows ULTRA KIASU | FUCKING PARANOID | ZERO TRUST principles.*
-*All mappings reference actual Coq proofs in `/workspaces/proof/02_FORMAL/coq/`*
+## BREAKER Issue Cross-Reference
+
+| BREAKER ID | Severity | Files Affected | CWEs Invalidated |
+|------------|----------|----------------|------------------|
+| TS-001 | CRITICAL | TypeSafety.v | 15+ |
+| P-002 | CRITICAL | Progress.v | 20+ |
+| P-001, P-003 | CRITICAL | Progress.v | Foundations |
+| R-001, R-002 | CRITICAL/HIGH | Preservation.v | 8+ |
+| S-001, S-002 | CRITICAL | Semantics.v | All ref-based |
+| S-003 | HIGH | Semantics.v | All effect-based |
+| S-004 | CRITICAL | Semantics.v | All declassify |
+| E-001 | CRITICAL | EffectSystem.v | All effect safety |
+| G-001, G-002 | CRITICAL | EffectGate.v | All gates |
+| NI-002 | CRITICAL | NonInterference.v | Partial info flow |
+| T-003 | HIGH | Typing.v | Proof forgery |
+
+---
+
+## Remediation Required
+
+Before ANY CWE can be marked ✅, BUILDER must:
+
+1. **Complete Progress.v** - Prove all 10 admitted cases
+2. **Fix Canonical Forms** - Handle VRequire, VGrant, VClassify, etc.
+3. **Implement Real Heap** - Store must actually store values
+4. **Enforce Effects at Runtime** - Check effect_ctx in step rules
+5. **Fix Declassification** - Validate proof structure
+6. **Extend Non-Interference** - Cover effects, refs, security ops
+7. **Implement Effect Safety** - Real proof, not `True`
+
+---
+
+*This matrix has been CORRECTED per BREAKER attack findings.*
+*Previous "40 fully proven" claim was FALSE. Actual: 5 valid, 42 invalid, 7 vacuous.*
+*CARTOGRAPHER trusts BREAKER. ZERO LAZINESS in verification.*
