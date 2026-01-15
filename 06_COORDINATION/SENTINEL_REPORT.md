@@ -1,7 +1,8 @@
 # SENTINEL VERIFICATION REPORT
 
-**Timestamp:** 2026-01-15T08:45:00Z
+**Timestamp:** 2026-01-15T09:15:00Z
 **Branch Under Verification:** adversarial
+**Coq Version:** 8.18.0
 **SENTINEL Mode:** ULTRA KIASU | FUCKING PARANOID | ZERO TRUST
 
 ---
@@ -10,144 +11,168 @@
 
 | Category | Status |
 |----------|--------|
-| Coq Installation | **FAILED** - Not installed |
-| Proof Admits | **FAILED** - 13 admits found |
-| Branch Consistency | **PASSED** - Clean working tree |
-| Overall | **FAIL** |
+| Coq Installation | **PASS** - v8.18.0 installed |
+| Committed Code Compiles | **FAIL** |
+| Working Tree Compiles | **FAIL** |
+| Proof Admits | **FAIL** - 13 admits in Progress.v |
+| Overall | **CRITICAL FAIL** |
 
 ---
 
-## BUILDER Verification (Coq Proofs)
+## CRITICAL FINDING: NO VERSION COMPILES
 
-### Environment Status
+### Committed Version (HEAD: 417aa2e)
 
-| Tool | Status | Details |
-|------|--------|---------|
-| Coq | **NOT INSTALLED** | `coqc` command not found |
-| Compilation | **CANNOT VERIFY** | Blocked by missing Coq |
+| File | Compilation | Issue |
+|------|-------------|-------|
+| `foundations/Syntax.v` | **PASS** | - |
+| `foundations/Semantics.v` | **PASS** | - |
+| `foundations/Typing.v` | **FAIL** | Missing 4 proof cases |
+| `type_system/Progress.v` | **BLOCKED** | Depends on Typing.v |
+| `type_system/Preservation.v` | **BLOCKED** | Depends on Typing.v |
 
-### File-by-File Audit
-
-| File | Lines Changed | Admits Found | Status |
-|------|---------------|--------------|--------|
-| `foundations/Syntax.v` | +17/-0 | 0 | **PASS** |
-| `foundations/Semantics.v` | +169 | 0 | **PASS** |
-| `foundations/Typing.v` | +220/-220 | 0 | **PASS** |
-| `type_system/Preservation.v` | +190/-0 | 0 | **PASS** |
-| `type_system/Progress.v` | +36/-0 | **13** | **FAIL** |
-
-### Progress.v Admit Details
-
-**Location: `02_FORMAL/coq/type_system/Progress.v`**
-
-| Line | Type | Context |
-|------|------|---------|
-| 34 | `Admitted.` | `canonical_bool` lemma |
-| 44 | `Admitted.` | `canonical_fn` lemma |
-| 167 | `admit.` | T_Perform (effects) |
-| 170 | `admit.` | T_Handle (handlers) |
-| 173 | `admit.` | T_Ref (references) |
-| 176 | `admit.` | T_Deref (references) |
-| 179 | `admit.` | T_Assign (references) |
-| 182 | `admit.` | T_Classify (security) |
-| 185 | `admit.` | T_Declassify (security) |
-| 188 | `admit.` | T_Prove (security proofs) |
-| 191 | `admit.` | T_Require (capabilities) |
-| 194 | `admit.` | T_Grant (capabilities) |
-| 195 | `Admitted.` | Main `progress` theorem |
-
-**Root Cause:** Operational semantics for effects, references, security, and capabilities are incomplete in `Semantics.v`. The stepping rules exist but the Progress proof cannot proceed because the corresponding typing rule cases require semantic reduction rules that haven't been fully integrated.
-
----
-
-## BREAKER Verification
-
-| Metric | Expected | Actual | Status |
-|--------|----------|--------|--------|
-| Attack Plan Exists | YES | YES | PASS |
-| Coverage Target | All Proofs | In Progress | N/A |
-
----
-
-## Cross-Branch Verification
-
-### Branch Inventory
-
-| Branch | Exists | Last Commit |
-|--------|--------|-------------|
-| main | YES | Synced with origin |
-| adversarial | YES | `428e8e7` (current) |
-| verification | NO | Not created yet |
-
-### Working Tree Status
-
+**Typing.v Error:**
 ```
-Modified (unstaged):
-  02_FORMAL/coq/foundations/Semantics.v
-  02_FORMAL/coq/foundations/Syntax.v
-  02_FORMAL/coq/foundations/Typing.v
-  02_FORMAL/coq/type_system/Preservation.v
-  02_FORMAL/coq/type_system/Progress.v
-
-Untracked:
-  output.md
+File "./foundations/Typing.v", line 233, characters 4-121:
+Error: No matching clauses for match.
 ```
 
-**Assessment:** Working tree has uncommitted changes. These need to be committed or stashed before merge operations.
+**Root Cause:** The `type_uniqueness` proof has 21 cases but needs 24. Missing cases for:
+- T_Unit
+- T_Bool
+- T_Int
+- T_String
+
+The proof starts at T_Var but the induction creates T_Unit as the first goal.
 
 ---
 
-## CRITICAL FINDINGS
+### Working Tree (Uncommitted Changes)
 
-### ALERT-001: Progress Theorem Incomplete
+| File | Compilation | Issue |
+|------|-------------|-------|
+| `foundations/Syntax.v` | **PASS** | - |
+| `foundations/Semantics.v` | **FAIL** | Determinism proof broken |
+| `foundations/Typing.v` | **BLOCKED** | Depends on Semantics.v |
 
-**Severity:** HIGH
-**Impact:** Type safety cannot be fully proven
-**Location:** `Progress.v:74-195`
-
-The Progress theorem has 13 admits covering:
-- Effect system (perform/handle)
-- Reference operations (ref/deref/assign)
-- Security operations (classify/declassify/prove)
-- Capability operations (require/grant)
-
-**Required Action:** Complete operational semantics rules in `Semantics.v` or add stepping rules to handle these cases in Progress proof.
-
-### ALERT-002: Coq Not Installed
-
-**Severity:** CRITICAL
-**Impact:** Cannot compile or verify ANY proofs
-**Location:** System environment
-
-**Required Action:** Install Coq 8.18.0 using setup scripts or system package manager with elevated privileges.
-
----
-
-## RECOMMENDATIONS
-
-1. **IMMEDIATE:** Install Coq to enable proof compilation
-2. **HIGH PRIORITY:** Complete Progress.v admits for effect/reference/security cases
-3. **MEDIUM:** Commit working tree changes to avoid loss
-4. **ONGOING:** Set up automated verification pipeline
-
----
-
-## VERIFICATION HASH
-
+**Semantics.v Error:**
 ```
-Report SHA256: [Computed at commit time]
-Files Audited: 5
-Total Lines Analyzed: 1,799
-Admits Found: 13
-Critical Alerts: 2
+File "./foundations/Semantics.v", line 419, characters 4-143:
+Error: No matching clauses for match.
 ```
 
+**Root Cause:** The `step_deterministic` proof has misaligned cases after adding new step rules for effects, references, security, and capabilities. The match tactics fail because the goal structure doesn't match the expected patterns.
+
 ---
 
-**SENTINEL VERDICT: FAIL**
+## PROOF ADMITS AUDIT
 
-*Proofs contain admits. Cannot approve for merge to main.*
+### Progress.v (13 admits found)
+
+Even if compilation worked, Progress.v contains incomplete proofs:
+
+| Line | Type | Case |
+|------|------|------|
+| 34 | `Admitted.` | canonical_bool |
+| 44 | `Admitted.` | canonical_fn |
+| 167 | `admit.` | T_Perform |
+| 170 | `admit.` | T_Handle |
+| 173 | `admit.` | T_Ref |
+| 176 | `admit.` | T_Deref |
+| 179 | `admit.` | T_Assign |
+| 182 | `admit.` | T_Classify |
+| 185 | `admit.` | T_Declassify |
+| 188 | `admit.` | T_Prove |
+| 191 | `admit.` | T_Require |
+| 194 | `admit.` | T_Grant |
+| 195 | `Admitted.` | progress theorem |
+
+---
+
+## DIFF ANALYSIS
+
+### Changes in Working Tree
+
+| File | Lines Added | Lines Removed |
+|------|-------------|---------------|
+| Syntax.v | +17 | -0 |
+| Semantics.v | +169 | -0 |
+| Typing.v | +220 | -220 |
+| Preservation.v | +190 | -0 |
+| Progress.v | +36 | -0 |
+
+The working tree adds:
+- New step rules for effects, refs, security, capabilities (Semantics.v)
+- Missing T_Unit/Bool/Int/String cases (Typing.v)
+- Extended proofs (Preservation.v, Progress.v)
+
+But the Semantics.v `step_deterministic` proof is broken.
+
+---
+
+## COMPILATION MATRIX
+
+```
+                    COMMITTED    WORKING TREE
+Syntax.v            PASS         PASS
+Semantics.v         PASS         FAIL
+Typing.v            FAIL         BLOCKED
+Progress.v          BLOCKED      BLOCKED
+Preservation.v      BLOCKED      BLOCKED
+```
+
+**CONCLUSION:** Neither version can produce a verified proof.
+
+---
+
+## REQUIRED ACTIONS
+
+### Immediate (BLOCKING)
+
+1. **Fix Typing.v (committed):** Add missing 4 cases for T_Unit, T_Bool, T_Int, T_String
+2. **Fix Semantics.v (working tree):** Repair step_deterministic proof for new step rules
+3. **Complete Progress.v:** Remove all 13 admits
+
+### Before Any Merge
+
+1. All .v files must compile with `coqc`
+2. `grep -r "Admitted\|admit\." *.v` must return empty
+3. Full coqchk verification pass
+
+---
+
+## BRANCH STATUS
+
+| Branch | Merge Status |
+|--------|--------------|
+| adversarial → main | **BLOCKED** |
+| verification → main | **BLOCKED** |
+
+---
+
+## VERIFICATION COMMANDS
+
+```bash
+# Clean build (run from 02_FORMAL/coq/)
+rm -f foundations/*.vo* type_system/*.vo* effects/*.vo* properties/*.vo*
+coqc -Q . TERAS foundations/Syntax.v
+coqc -Q . TERAS foundations/Semantics.v
+coqc -Q . TERAS foundations/Typing.v
+coqc -Q . TERAS type_system/Progress.v
+coqc -Q . TERAS type_system/Preservation.v
+
+# Check for admits
+grep -rn "Admitted\|admit\." *.v
+```
+
+---
+
+**SENTINEL VERDICT: CRITICAL FAIL**
+
+*No version of the codebase produces verified proofs.*
+*Merge to main is BLOCKED until all issues resolved.*
 
 ---
 
 *Generated by SENTINEL | ULTRA KIASU | FUCKING PARANOID | ZERO TRUST*
+*Coq 8.18.0 | 2026-01-15*
