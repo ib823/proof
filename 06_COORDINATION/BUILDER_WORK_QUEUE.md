@@ -162,6 +162,114 @@ Consider adding:
 
 ---
 
+### WORK-012: Implement Actual Effect Safety
+**Source:** BREAKER E-001
+**File:** `EffectSystem.v`
+**Description:**
+`effect_safety` theorem proves `True`. Must prove actual effect containment.
+
+**Required:**
+```coq
+(* Define effect trace *)
+Inductive produces_effect : expr -> store -> effect_ctx -> effect -> Prop := ...
+
+(* Actual theorem *)
+Theorem effect_safety_real : forall e T eff,
+  has_type_full nil nil Public e T eff ->
+  forall st ctx eff',
+    produces_effect e st ctx eff' ->
+    effect_leq eff' eff.
+```
+
+---
+
+### WORK-013: Implement Actual Gate Enforcement
+**Source:** BREAKER G-001, G-002
+**File:** `EffectGate.v`
+**Description:**
+`is_gate` is defined as `True`. `gate_enforcement` proves `True`. Need real definitions.
+
+**Required:**
+```coq
+(* Real gate definition *)
+Definition is_gate (eff : effect) (e_gate : expr) : Prop :=
+  forall e st ctx e' st' ctx',
+    (EHandle e_gate e) with effect eff ->
+    ~ produces_effect_unhandled eff e' st' ctx'.
+
+(* Real enforcement *)
+Theorem gate_enforcement_real : forall e T eff_allowed,
+  has_type_full nil nil Public e T eff_allowed ->
+  forall st ctx eff_used,
+    produces_effect e st ctx eff_used ->
+    effect_level eff_used <= effect_level eff_allowed.
+```
+
+---
+
+### WORK-014: Fix Type Specification Inconsistency
+**Source:** BREAKER E-002, E-003
+**Files:** `Typing.v`, `EffectSystem.v`
+**Description:**
+T_Perform and T_Declassify have DIFFERENT definitions in the two files:
+- T_Perform: Typing.v gives type T, EffectSystem.v gives TUnit
+- T_Declassify: Typing.v needs TProof(TSecret T), EffectSystem.v needs TProof T
+
+**Fix:** Reconcile specifications. Choose ONE authoritative definition.
+
+---
+
+### WORK-015: Implement SecurityProperties
+**Source:** BREAKER SP-001
+**File:** `SecurityProperties.v`
+**Description:**
+File is empty. Must define security properties:
+- Confidentiality
+- Integrity
+- Availability guarantees
+- Effect isolation
+
+---
+
+### WORK-016: Extend NonInterference to Full Language
+**Source:** BREAKER NI-002
+**File:** `NonInterference.v`
+**Description:**
+`logical_relation` only covers `has_type` (pure functional fragment). Must extend to:
+- Effects (T_Perform, T_Handle)
+- References (T_Ref, T_Deref, T_Assign)
+- Security (T_Classify, T_Declassify, T_Prove)
+- Capabilities (T_Require, T_Grant)
+
+---
+
+### WORK-017: Add Store Relation for NonInterference
+**Source:** BREAKER NI-003
+**File:** `NonInterference.v`
+**Description:**
+`val_rel` for functions allows arbitrary different stores. Need store relation:
+```coq
+Definition store_rel (l : security_level) (st1 st2 : store) : Prop :=
+  forall loc v1 v2 T l',
+    store_lookup loc st1 = Some v1 ->
+    store_lookup loc st2 = Some v2 ->
+    sec_leq l' l ->  (* Only relate low-security locations *)
+    val_rel T v1 v2.
+```
+
+---
+
+### WORK-018: Implement Composition Properties
+**Source:** BREAKER C-001
+**File:** `Composition.v`
+**Description:**
+File is empty. Must prove compositionality:
+- If e1 safe and e2 safe, then (e1; e2) safe
+- Security composes across module boundaries
+- Effect composition is monotonic
+
+---
+
 ## PRIORITY: MEDIUM
 
 ### WORK-011: Document Grant Semantics
@@ -202,12 +310,22 @@ WORK-008 (Store Typing) ──> WORK-003, WORK-005
 | WORK-004 | CRITICAL | OPEN | BUILDER | Security critical |
 | WORK-005 | CRITICAL | BLOCKED | - | Needs WORK-003 |
 | WORK-006 | CRITICAL | OPEN | BUILDER | Runtime effects |
-| WORK-007 | HIGH | OPEN | BUILDER | |
-| WORK-008 | HIGH | OPEN | BUILDER | |
-| WORK-009 | HIGH | OPEN | BUILDER | |
-| WORK-010 | HIGH | OPEN | BUILDER | |
+| WORK-007 | HIGH | OPEN | BUILDER | Canonical forms |
+| WORK-008 | HIGH | OPEN | BUILDER | Store typing |
+| WORK-009 | HIGH | OPEN | BUILDER | Determinism |
+| WORK-010 | HIGH | OPEN | BUILDER | Effect subsumption |
 | WORK-011 | MEDIUM | OPEN | BUILDER | Documentation |
+| WORK-012 | CRITICAL | OPEN | BUILDER | Effect safety stub |
+| WORK-013 | CRITICAL | OPEN | BUILDER | Gate enforcement stub |
+| WORK-014 | CRITICAL | OPEN | BUILDER | Spec inconsistency |
+| WORK-015 | CRITICAL | OPEN | BUILDER | Empty file |
+| WORK-016 | CRITICAL | OPEN | BUILDER | NI incomplete |
+| WORK-017 | HIGH | OPEN | BUILDER | Store relation |
+| WORK-018 | CRITICAL | OPEN | BUILDER | Empty file |
+
+**Total: 18 work items (11 CRITICAL, 5 HIGH, 2 MEDIUM)**
 
 ---
 
 *BREAKER identifies. BUILDER fixes. Trust nothing.*
+*Last updated: 2026-01-15 - Cycle 2*
