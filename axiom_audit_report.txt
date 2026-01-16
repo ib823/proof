@@ -1,0 +1,1037 @@
+---
+AXIOM: val_rel_at_type_value_left
+02_FORMAL/coq/properties/NonInterference.v-    tedious edge cases (TBytes, TSecret, TCapability, TProof).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    SEMANTIC JUSTIFICATION: For first-order types, val_rel_at_type equates
+02_FORMAL/coq/properties/NonInterference.v-    values syntactically (TUnit: v1=v2=EUnit, TBool: v1=v2=EBool b, etc.)
+02_FORMAL/coq/properties/NonInterference.v-    which immediately gives value and closed_expr properties. *)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_value_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_left : forall T Σ sp vl sl v1 v2,
+
+---
+AXIOM: val_rel_at_type_value_right
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_value_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_right : forall T Σ sp vl sl v1 v2,
+
+---
+AXIOM: val_rel_at_type_closed_left
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_closed_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Higher-order versions of the value/closed extraction axioms.
+
+---
+AXIOM: val_rel_at_type_closed_right
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_closed_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  first_order_type T = true ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Higher-order versions of the value/closed extraction axioms.
+02_FORMAL/coq/properties/NonInterference.v-    These work for any type, not just first-order types.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically justified: val_rel_at_type always requires values.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+
+---
+AXIOM: val_rel_at_type_value_any_left
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Higher-order versions of the value/closed extraction axioms.
+02_FORMAL/coq/properties/NonInterference.v-    These work for any type, not just first-order types.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically justified: val_rel_at_type always requires values.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_value_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_any_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+
+---
+AXIOM: val_rel_at_type_value_any_right
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_value_any_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_any_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v2.
+
+---
+AXIOM: val_rel_at_type_closed_any_left
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_value_any_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_closed_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_any_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** *** Monotonicity Lemmas
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    With the cumulative definition, monotonicity is trivial:
+
+---
+AXIOM: val_rel_at_type_closed_any_right
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_closed_any_left : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_closed_any_right : forall T Σ sp vl sl v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ sp vl sl T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** *** Monotonicity Lemmas
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    With the cumulative definition, monotonicity is trivial:
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n (S n) includes val_rel_n n as a conjunct, so
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n n → val_rel_n m for m <= n follows by simple induction.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-
+
+---
+AXIOM: val_rel_n_weaken
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Standard in step-indexed logical relations. See:
+02_FORMAL/coq/properties/NonInterference.v-    - Appel & McAllester (2001) "An indexed model of recursive types"
+02_FORMAL/coq/properties/NonInterference.v-    - Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_n_weaken : forall n Σ Σ' T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ' T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ T v1 v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** DOCUMENTED AXIOM: Store relation weakening
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Semantic justification: Mutual with val_rel_n_weaken. If two stores
+02_FORMAL/coq/properties/NonInterference.v-    are related under a larger store typing Σ', they remain related under
+02_FORMAL/coq/properties/NonInterference.v-    a smaller store typing Σ ⊆ Σ'. The smaller typing requires fewer
+02_FORMAL/coq/properties/NonInterference.v-    locations to be checked for relatedness.
+
+---
+AXIOM: store_rel_n_weaken
+02_FORMAL/coq/properties/NonInterference.v-    Semantic justification: Mutual with val_rel_n_weaken. If two stores
+02_FORMAL/coq/properties/NonInterference.v-    are related under a larger store typing Σ', they remain related under
+02_FORMAL/coq/properties/NonInterference.v-    a smaller store typing Σ ⊆ Σ'. The smaller typing requires fewer
+02_FORMAL/coq/properties/NonInterference.v-    locations to be checked for relatedness.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom store_rel_n_weaken : forall n Σ Σ' st1 st2,
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n n Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n n Σ st1 st2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** DOCUMENTED AXIOM: Value relation monotonicity in store typing
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Semantic justification: If two values are related under store typing Σ,
+02_FORMAL/coq/properties/NonInterference.v-    they remain related under any extension Σ' ⊇ Σ. This is the Kripke
+02_FORMAL/coq/properties/NonInterference.v-    monotonicity property: extending the "world" (store typing) preserves
+02_FORMAL/coq/properties/NonInterference.v-    established relations.
+
+---
+AXIOM: val_rel_n_mono_store
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Standard Kripke monotonicity. See:
+02_FORMAL/coq/properties/NonInterference.v-    - Dreyer et al. (2011) "Logical Step-Indexed Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-    - Birkedal & Harper (1999) "Relational interpretations of recursive types"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_n_mono_store : forall n Σ Σ' T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ' T v1 v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** DOCUMENTED AXIOM: Store relation monotonicity in store typing
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Semantic justification: Mutual with val_rel_n_mono_store. If two stores
+02_FORMAL/coq/properties/NonInterference.v-    are related under store typing Σ, they remain related under any extension
+02_FORMAL/coq/properties/NonInterference.v-    Σ' ⊇ Σ. The larger store typing may require checking more locations, but
+02_FORMAL/coq/properties/NonInterference.v-    since stores grow monotonically with the store typing, the additional
+
+---
+AXIOM: store_rel_n_mono_store
+02_FORMAL/coq/properties/NonInterference.v-    are related under store typing Σ, they remain related under any extension
+02_FORMAL/coq/properties/NonInterference.v-    Σ' ⊇ Σ. The larger store typing may require checking more locations, but
+02_FORMAL/coq/properties/NonInterference.v-    since stores grow monotonically with the store typing, the additional
+02_FORMAL/coq/properties/NonInterference.v-    locations will be present and related.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom store_rel_n_mono_store : forall n Σ Σ' st1 st2,
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n n Σ st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n n Σ' st1 st2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** DOCUMENTED AXIOM: Value relation at positive step index implies value relation
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Semantic justification: For actual values (not expressions that step), if
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n holds at any positive step index, it holds at all step indices.
+02_FORMAL/coq/properties/NonInterference.v-    This is because:
+02_FORMAL/coq/properties/NonInterference.v-    1. Values don't reduce, so step index doesn't decrease
+
+---
+AXIOM: val_rel_n_to_val_rel
+02_FORMAL/coq/properties/NonInterference.v-    3. For function types, the property holds by induction on types
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    This allows us to convert val_rel_n (S n) to val_rel when we have actual values,
+02_FORMAL/coq/properties/NonInterference.v-    which is essential for environment extension in binding forms (case, let, lam).
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_n_to_val_rel : forall Σ T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  value v1 -> value v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  (exists n, val_rel_n (S n) Σ T v1 v2) ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel Σ T v1 v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** DOCUMENTED AXIOMS: Degenerate step-index cases
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    At step index 1 (exp_rel_n (S 0)), evaluation produces values v, v'
+02_FORMAL/coq/properties/NonInterference.v-    related at val_rel_n 0 = True. For elimination forms (EFst, ESnd, ECase,
+02_FORMAL/coq/properties/NonInterference.v-    EIf, EApp), we need the structure of v to continue evaluation.
+02_FORMAL/coq/properties/NonInterference.v-
+
+---
+AXIOM: exp_rel_step
+02_FORMAL/coq/properties/NonInterference.v-    - Tracking typing through the logical relation
+02_FORMAL/coq/properties/NonInterference.v-    - Using a larger step index in the base case
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_fst : forall Σ T1 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists a1 a2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value a1 /\ value a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T1 a1 a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_snd : forall Σ T2 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists b1 b2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value b1 /\ value b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 b1 b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_case : forall Σ T v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_if : forall Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_let : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_app : forall Σ T2 f f' a a' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value f -> value f' -> value a -> value a' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f a, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f' a', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+
+---
+AXIOM: exp_rel_step
+02_FORMAL/coq/properties/NonInterference.v-    - Tracking typing through the logical relation
+02_FORMAL/coq/properties/NonInterference.v-    - Using a larger step index in the base case
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_fst : forall Σ T1 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists a1 a2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value a1 /\ value a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T1 a1 a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_snd : forall Σ T2 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists b1 b2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value b1 /\ value b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 b1 b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_case : forall Σ T v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_if : forall Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_let : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_app : forall Σ T2 f f' a a' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value f -> value f' -> value a -> value a' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f a, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f' a', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+
+---
+AXIOM: exp_rel_step
+02_FORMAL/coq/properties/NonInterference.v-    - Tracking typing through the logical relation
+02_FORMAL/coq/properties/NonInterference.v-    - Using a larger step index in the base case
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_fst : forall Σ T1 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists a1 a2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value a1 /\ value a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T1 a1 a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_snd : forall Σ T2 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists b1 b2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value b1 /\ value b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 b1 b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_case : forall Σ T v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_if : forall Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_let : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_app : forall Σ T2 f f' a a' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value f -> value f' -> value a -> value a' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f a, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f' a', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+
+---
+AXIOM: exp_rel_step
+02_FORMAL/coq/properties/NonInterference.v-    - Tracking typing through the logical relation
+02_FORMAL/coq/properties/NonInterference.v-    - Using a larger step index in the base case
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_fst : forall Σ T1 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists a1 a2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value a1 /\ value a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T1 a1 a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_snd : forall Σ T2 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists b1 b2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value b1 /\ value b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 b1 b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_case : forall Σ T v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_if : forall Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_let : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_app : forall Σ T2 f f' a a' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value f -> value f' -> value a -> value a' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f a, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f' a', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+
+---
+AXIOM: exp_rel_step
+02_FORMAL/coq/properties/NonInterference.v-    - Tracking typing through the logical relation
+02_FORMAL/coq/properties/NonInterference.v-    - Using a larger step index in the base case
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_fst : forall Σ T1 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists a1 a2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value a1 /\ value a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T1 a1 a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_snd : forall Σ T2 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists b1 b2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value b1 /\ value b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 b1 b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_case : forall Σ T v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_if : forall Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_let : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_app : forall Σ T2 f f' a a' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value f -> value f' -> value a -> value a' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f a, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f' a', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+
+---
+AXIOM: exp_rel_step
+02_FORMAL/coq/properties/NonInterference.v-    - Tracking typing through the logical relation
+02_FORMAL/coq/properties/NonInterference.v-    - Using a larger step index in the base case
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    Reference: Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_fst : forall Σ T1 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists a1 a2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value a1 /\ value a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T1 a1 a2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_snd : forall Σ T2 v v' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists b1 b2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value b1 /\ value b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 b1 b2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_case : forall Σ T v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_if : forall Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_let : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value v -> value v' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom exp_rel_step1_app : forall Σ T2 f f' a a' st1 st2 ctx Σ',
+02_FORMAL/coq/properties/NonInterference.v-  value f -> value f' -> value a -> value a' ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ' st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ Σ' ->
+02_FORMAL/coq/properties/NonInterference.v-  exists r1 r2 st1' st2' ctx' Σ'',
+02_FORMAL/coq/properties/NonInterference.v-    store_ty_extends Σ' Σ'' /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f a, st1, ctx) -->* (r1, st1', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    (EApp f' a', st2, ctx) -->* (r2, st2', ctx') /\
+02_FORMAL/coq/properties/NonInterference.v-    value r1 /\ value r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    val_rel_n 0 Σ'' T2 r1 r2 /\
+02_FORMAL/coq/properties/NonInterference.v-    store_rel_n 0 Σ'' st1' st2'.
+
+---
+AXIOM: tapp_step
+02_FORMAL/coq/properties/NonInterference.v-    This axiom provides value witnesses and inflated relations for the degenerate case.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically justified: (1) well-typed evaluation produces values, (2) val_rel_n 0 = True
+02_FORMAL/coq/properties/NonInterference.v-    can be inflated because values of well-formed types satisfy the relation.
+02_FORMAL/coq/properties/NonInterference.v-    Output at step 1 because exp_rel_n 2 (n' = 1) outputs at val_rel_n 1.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom tapp_step0_complete : forall Σ' Σ''' T2
+02_FORMAL/coq/properties/NonInterference.v-  f1 f2 a1 a2 v1 v2 st1'' st2'' st1''' st2''' ctx'' ctx''',
+02_FORMAL/coq/properties/NonInterference.v-  value f1 -> value f2 -> value a1 -> value a2 ->
+02_FORMAL/coq/properties/NonInterference.v-  (EApp f1 a1, st1'', ctx'') -->* (v1, st1''', ctx''') ->
+02_FORMAL/coq/properties/NonInterference.v-  (EApp f2 a2, st2'', ctx'') -->* (v2, st2''', ctx''') ->
+02_FORMAL/coq/properties/NonInterference.v-  store_ty_extends Σ' Σ''' ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n 0 Σ''' T2 v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 0 Σ''' st1''' st2''' ->
+02_FORMAL/coq/properties/NonInterference.v-  value v1 /\ value v2 /\
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n 1 Σ''' T2 v1 v2 /\
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n 1 Σ''' st1''' st2'''.
+
+---
+AXIOM: val_rel_n_step_up
+02_FORMAL/coq/properties/NonInterference.v-    This 1-step gap represents the β-reduction step itself.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically justified: values of the same type related at step n are also related
+02_FORMAL/coq/properties/NonInterference.v-    at step S n because the additional recursive depth adds no new constraints.
+02_FORMAL/coq/properties/NonInterference.v-    (The recursive constraints only apply to function/product/sum deconstruction.)
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_n_step_up : forall n Σ T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  value v1 -> value v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1 -> closed_expr v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n (S n) Σ T v1 v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Axiom store_rel_n_step_up : forall n Σ st1 st2,
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n n Σ st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n (S n) Σ st1 st2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Lam cumulative part axiom:
+
+---
+AXIOM: store_rel_n_step_up
+02_FORMAL/coq/properties/NonInterference.v-  value v1 -> value v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1 -> closed_expr v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n (S n) Σ T v1 v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom store_rel_n_step_up : forall n Σ st1 st2,
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n n Σ st1 st2 ->
+02_FORMAL/coq/properties/NonInterference.v-  store_rel_n (S n) Σ st1 st2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Lam cumulative part axiom:
+02_FORMAL/coq/properties/NonInterference.v-    The cumulative structure of val_rel_n for lambda values is well-founded.
+02_FORMAL/coq/properties/NonInterference.v-    At each level n, we need to show val_rel_n n for the lambda pair.
+02_FORMAL/coq/properties/NonInterference.v-    This follows from the fact that lambdas are syntactic values and
+02_FORMAL/coq/properties/NonInterference.v-    the recursive property (function application) is only checked lazily.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_n_lam_cumulative : forall n Σ T1 T2 ε x body1 body2,
+
+---
+AXIOM: val_rel_n_lam_cumulative
+02_FORMAL/coq/properties/NonInterference.v-    The cumulative structure of val_rel_n for lambda values is well-founded.
+02_FORMAL/coq/properties/NonInterference.v-    At each level n, we need to show val_rel_n n for the lambda pair.
+02_FORMAL/coq/properties/NonInterference.v-    This follows from the fact that lambdas are syntactic values and
+02_FORMAL/coq/properties/NonInterference.v-    the recursive property (function application) is only checked lazily.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_n_lam_cumulative : forall n Σ T1 T2 ε x body1 body2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n n Σ (TFn T1 T2 ε) (ELam x T1 body1) (ELam x T1 body2) ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_n (S n) Σ (TFn T1 T2 ε) (ELam x T1 body1) (ELam x T1 body2).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Higher-order function argument axiom:
+02_FORMAL/coq/properties/NonInterference.v-    For higher-order T1 (containing function types), the val_rel_at_type
+02_FORMAL/coq/properties/NonInterference.v-    can still be converted to val_rel with additional structure.
+02_FORMAL/coq/properties/NonInterference.v-    This is semantically justified by the well-foundedness of the relation.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_at_type_to_val_rel_ho : forall Σ store_rel_lower val_rel_lower store_rel_any T arg1 arg2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ store_rel_lower val_rel_lower store_rel_any T arg1 arg2 ->
+
+---
+AXIOM: val_rel_at_type_to_val_rel_ho
+02_FORMAL/coq/properties/NonInterference.v-(** Higher-order function argument axiom:
+02_FORMAL/coq/properties/NonInterference.v-    For higher-order T1 (containing function types), the val_rel_at_type
+02_FORMAL/coq/properties/NonInterference.v-    can still be converted to val_rel with additional structure.
+02_FORMAL/coq/properties/NonInterference.v-    This is semantically justified by the well-foundedness of the relation.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_at_type_to_val_rel_ho : forall Σ store_rel_lower val_rel_lower store_rel_any T arg1 arg2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel_at_type Σ store_rel_lower val_rel_lower store_rel_any T arg1 arg2 ->
+02_FORMAL/coq/properties/NonInterference.v-  value arg1 -> value arg2 ->
+02_FORMAL/coq/properties/NonInterference.v-  val_rel Σ T arg1 arg2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** ** Environment Substitution *)
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Definition rho_shadow (rho : ident -> expr) (x : ident) : ident -> expr :=
+02_FORMAL/coq/properties/NonInterference.v-  fun y => if String.eqb y x then EVar y else rho y.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Definition rho_extend (rho : ident -> expr) (x : ident) (v : expr) : ident -> expr :=
+
+---
+AXIOM: logical_relation_perform
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Perform: Performing an effect preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: effect operations don't leak secret information
+02_FORMAL/coq/properties/NonInterference.v-    because the effect handlers process related inputs identically.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom logical_relation_perform : forall Γ Σ Δ e l T ε rho1 rho2 n,
+02_FORMAL/coq/properties/NonInterference.v-  has_type Γ Σ Δ e T ε ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ T (subst_rho rho1 (EPerform l e)) (subst_rho rho2 (EPerform l e)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Handle: Effect handlers preserve relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: handlers process related effects identically.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom logical_relation_handle : forall Γ Σ e x h T2 rho1 rho2 n,
+
+---
+AXIOM: logical_relation_handle
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ T (subst_rho rho1 (EPerform l e)) (subst_rho rho2 (EPerform l e)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Handle: Effect handlers preserve relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: handlers process related effects identically.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom logical_relation_handle : forall Γ Σ e x h T2 rho1 rho2 n,
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ T2 (subst_rho rho1 (EHandle e x h))
+02_FORMAL/coq/properties/NonInterference.v-                   (subst_rho rho2 (EHandle e x h)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** ** Reference Operation Axioms
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-    References (T_Ref, T_Deref, T_Assign) involve store manipulation.
+02_FORMAL/coq/properties/NonInterference.v-    The fundamental theorem for these cases follows from:
+
+---
+AXIOM: logical_relation_ref
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Ref: Creating a reference preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: new locations are added to store typing consistently.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom logical_relation_ref : forall Γ Σ Δ e T l ε rho1 rho2 n,
+02_FORMAL/coq/properties/NonInterference.v-  has_type Γ Σ Δ e T ε ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ (TRef T l) (subst_rho rho1 (ERef e l)) (subst_rho rho2 (ERef e l)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Deref: Dereferencing preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: related locations contain related values.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom logical_relation_deref : forall Γ Σ Δ e T l ε rho1 rho2 n,
+
+---
+AXIOM: logical_relation_deref
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ (TRef T l) (subst_rho rho1 (ERef e l)) (subst_rho rho2 (ERef e l)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Deref: Dereferencing preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: related locations contain related values.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom logical_relation_deref : forall Γ Σ Δ e T l ε rho1 rho2 n,
+02_FORMAL/coq/properties/NonInterference.v-  has_type Γ Σ Δ e (TRef T l) ε ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ T (subst_rho rho1 (EDeref e)) (subst_rho rho2 (EDeref e)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Assign: Assignment preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: store updates maintain location relatedness.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v-Axiom logical_relation_assign : forall Γ Σ Δ e1 e2 T l ε1 ε2 rho1 rho2 n,
+
+---
+AXIOM: logical_relation_assign
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ T (subst_rho rho1 (EDeref e)) (subst_rho rho2 (EDeref e)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Assign: Assignment preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: store updates maintain location relatedness.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom logical_relation_assign : forall Γ Σ Δ e1 e2 T l ε1 ε2 rho1 rho2 n,
+02_FORMAL/coq/properties/NonInterference.v-  has_type Γ Σ Δ e1 (TRef T l) ε1 ->
+02_FORMAL/coq/properties/NonInterference.v-  has_type Γ Σ Δ e2 T ε2 ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ TUnit (subst_rho rho1 (EAssign e1 e2)) (subst_rho rho2 (EAssign e1 e2)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** T_Declassify: Declassification preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: declassification unwraps secret values to their underlying type.
+02_FORMAL/coq/properties/NonInterference.v-    This is safe because val_rel_at_type for TSecret is True,
+
+---
+AXIOM: logical_relation_declassify
+02_FORMAL/coq/properties/NonInterference.v-(** T_Declassify: Declassification preserves relatedness.
+02_FORMAL/coq/properties/NonInterference.v-    Semantically: declassification unwraps secret values to their underlying type.
+02_FORMAL/coq/properties/NonInterference.v-    This is safe because val_rel_at_type for TSecret is True,
+02_FORMAL/coq/properties/NonInterference.v-    so any secret values are trivially related.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom logical_relation_declassify : forall Γ Σ Δ e T ε p rho1 rho2 n,
+02_FORMAL/coq/properties/NonInterference.v-  has_type Γ Σ Δ e (TSecret T) ε ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel_n n Σ T (subst_rho rho1 (EDeclassify e p)) (subst_rho rho2 (EDeclassify e p)).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Environment closedness axiom:
+02_FORMAL/coq/properties/NonInterference.v-    Environment substitutions map free variables to closed values.
+02_FORMAL/coq/properties/NonInterference.v-    This follows from env_rel requiring val_rel for each mapping,
+02_FORMAL/coq/properties/NonInterference.v-    and val_rel at step > 0 implying closed_expr.
+
+---
+AXIOM: env_rel_rho_closed
+02_FORMAL/coq/properties/NonInterference.v-(** Environment closedness axiom:
+02_FORMAL/coq/properties/NonInterference.v-    Environment substitutions map free variables to closed values.
+02_FORMAL/coq/properties/NonInterference.v-    This follows from env_rel requiring val_rel for each mapping,
+02_FORMAL/coq/properties/NonInterference.v-    and val_rel at step > 0 implying closed_expr.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom env_rel_rho_closed : forall Σ Γ rho1 rho2 x T,
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  lookup x Γ = Some T ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr (rho1 x) /\ closed_expr (rho2 x).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Direct closedness axiom for lambda case:
+02_FORMAL/coq/properties/NonInterference.v-    When z is free in the lambda body e, and we're proving closed_expr for the
+02_FORMAL/coq/properties/NonInterference.v-    substituted lambda, the case z = y (where y is the allegedly free variable
+02_FORMAL/coq/properties/NonInterference.v-    in rho z) leads to False because env_rel ensures rho y is closed.
+02_FORMAL/coq/properties/NonInterference.v-    This axiom directly captures: if y is free in rho1 y, that's a contradiction
+02_FORMAL/coq/properties/NonInterference.v-    when rho1 comes from a valid env_rel context.
+
+---
+AXIOM: lam_closedness_contradiction
+02_FORMAL/coq/properties/NonInterference.v-    substituted lambda, the case z = y (where y is the allegedly free variable
+02_FORMAL/coq/properties/NonInterference.v-    in rho z) leads to False because env_rel ensures rho y is closed.
+02_FORMAL/coq/properties/NonInterference.v-    This axiom directly captures: if y is free in rho1 y, that's a contradiction
+02_FORMAL/coq/properties/NonInterference.v-    when rho1 comes from a valid env_rel context.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom lam_closedness_contradiction : forall Σ Γ rho1 rho2 y,
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  free_in y (rho1 y) -> False.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom lam_closedness_contradiction2 : forall Σ Γ rho1 rho2 y,
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  free_in y (rho2 y) -> False.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Definition rho_single (x : ident) (v : expr) : ident -> expr :=
+02_FORMAL/coq/properties/NonInterference.v-  fun y => if String.eqb y x then v else EVar y.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Definition rho_id : ident -> expr :=
+02_FORMAL/coq/properties/NonInterference.v-  fun y => EVar y.
+
+---
+AXIOM: lam_closedness_contradiction
+02_FORMAL/coq/properties/NonInterference.v-    substituted lambda, the case z = y (where y is the allegedly free variable
+02_FORMAL/coq/properties/NonInterference.v-    in rho z) leads to False because env_rel ensures rho y is closed.
+02_FORMAL/coq/properties/NonInterference.v-    This axiom directly captures: if y is free in rho1 y, that's a contradiction
+02_FORMAL/coq/properties/NonInterference.v-    when rho1 comes from a valid env_rel context.
+02_FORMAL/coq/properties/NonInterference.v-*)
+02_FORMAL/coq/properties/NonInterference.v:Axiom lam_closedness_contradiction : forall Σ Γ rho1 rho2 y,
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  free_in y (rho1 y) -> False.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v:Axiom lam_closedness_contradiction2 : forall Σ Γ rho1 rho2 y,
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ Γ rho1 rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho1 ->
+02_FORMAL/coq/properties/NonInterference.v-  rho_no_free_all rho2 ->
+02_FORMAL/coq/properties/NonInterference.v-  free_in y (rho2 y) -> False.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Definition rho_single (x : ident) (v : expr) : ident -> expr :=
+02_FORMAL/coq/properties/NonInterference.v-  fun y => if String.eqb y x then v else EVar y.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Definition rho_id : ident -> expr :=
+02_FORMAL/coq/properties/NonInterference.v-  fun y => EVar y.
+
+---
+AXIOM: env_rel_single
+02_FORMAL/coq/properties/NonInterference.v-Qed.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** non_interference_stmt follows from logical_relation *)
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Axiom: env_rel for single binding *)
+02_FORMAL/coq/properties/NonInterference.v:Axiom env_rel_single : forall Σ x T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ ((x, T) :: nil) (rho_single x v1) (rho_single x v2).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Axiom: val_rel implies closed expressions *)
+02_FORMAL/coq/properties/NonInterference.v-Axiom val_rel_closed : forall Σ T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1 /\ closed_expr v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Theorem non_interference_stmt : forall x T_in T_out v1 v2 e,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel nil T_in v1 v2 ->
+
+---
+AXIOM: val_rel_closed
+02_FORMAL/coq/properties/NonInterference.v-Axiom env_rel_single : forall Σ x T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  env_rel Σ ((x, T) :: nil) (rho_single x v1) (rho_single x v2).
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-(** Axiom: val_rel implies closed expressions *)
+02_FORMAL/coq/properties/NonInterference.v:Axiom val_rel_closed : forall Σ T v1 v2,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel Σ T v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  closed_expr v1 /\ closed_expr v2.
+02_FORMAL/coq/properties/NonInterference.v-
+02_FORMAL/coq/properties/NonInterference.v-Theorem non_interference_stmt : forall x T_in T_out v1 v2 e,
+02_FORMAL/coq/properties/NonInterference.v-  val_rel nil T_in v1 v2 ->
+02_FORMAL/coq/properties/NonInterference.v-  has_type ((x, T_in) :: nil) nil Public e T_out EffectPure ->
+02_FORMAL/coq/properties/NonInterference.v-  exp_rel nil T_out ([x := v1] e) ([x := v2] e).
+02_FORMAL/coq/properties/NonInterference.v-Proof.
+02_FORMAL/coq/properties/NonInterference.v-  intros x T_in T_out v1 v2 e Hval Hty.
+02_FORMAL/coq/properties/NonInterference.v-  (* Rewrite using subst_rho_single lemma *)
+
