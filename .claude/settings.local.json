@@ -9,7 +9,10 @@
       "Bash(make)",
       "Bash(find:*)",
       "Bash(git commit:*)",
-      "Bash(coqc:*)"
+      "Bash(coqc:*)",
+      "Bash(coq_makefile:*)",
+      "Bash(make:*)",
+      "Bash(grep:*)"
     ]
   }
 }
