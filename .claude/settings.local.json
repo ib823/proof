@@ -12,7 +12,10 @@
       "Bash(coqc:*)",
       "Bash(coq_makefile:*)",
       "Bash(make:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Bash(for f in ./properties/NonInterference.v ./properties/ApplicationComplete.v ./properties/ReferenceOps.v ./properties/TypedConversion.v)",
+      "Bash(xargs -0 -I {} bash -c 'f=\"\"{}\"\"; admitted=$\\(grep -c \"\"Admitted\\\\.\"\" \"\"$f\"\" 2>/dev/null || echo 0\\); admit=$\\(grep \"\"^[ \\\\t]*admit\\\\.\"\" \"\"$f\"\" 2>/dev/null | wc -l\\); axiom=$\\(grep \"\"^[ \\\\t]*Axiom \"\" \"\"$f\"\" 2>/dev/null | wc -l\\); if [ \"\"$admitted\"\" -eq 0 ] && [ \"\"$admit\"\" -eq 0 ] && [ \"\"$axiom\"\" -eq 0 ]; then echo \"\"$f: CLEAN\"\"; fi')"
     ]
   }
 }
