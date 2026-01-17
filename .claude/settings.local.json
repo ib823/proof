@@ -7,7 +7,8 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\n[TRACK A+RESEARCH] Add Application & Operational Tracks \\(Σ, Π, Δ, Ω, Ψ\\)\n\nNEW RESEARCH TRACKS:\n- Track Σ \\(Sigma\\): Verified Persistent Storage\n  - TigerBeetle-style database with ACID proofs\n  - Deterministic Simulation Testing \\(DST\\)\n  - Type-safe queries \\(no SQL injection by construction\\)\n\n- Track Π \\(Pi\\): Verified Performance\n  - SIMD vectorization with equivalence proofs\n  - Cache-oblivious algorithms with complexity proofs\n  - Lock-free structures with linearizability proofs\n  - io_uring zero-copy I/O integration\n\n- Track Δ \\(Delta\\): Verified Distribution\n  - IronFleet-style verified Raft/Paxos consensus\n  - Byzantine Fault Tolerance \\(BFT\\) proofs\n  - CRDTs with strong eventual consistency proofs\n  - Verified sharding with consistent hashing\n\n- Track Ω \\(Omega\\): Verified Network Defense\n  - Cryptographic client puzzles \\(DDoS mitigation\\)\n  - Capability-based networking \\(seL4-style\\)\n  - Verified rate limiting \\(token bucket proofs\\)\n  - SYN cookie and QUIC flood defense\n\n- Track Ψ \\(Psi\\): Operational Security\n  - Threshold cryptography \\(Shamir n-of-m\\)\n  - Multi-party authorization\n  - Duress detection and dead man''s switches\n  - Hardware diversity \\(N-version execution\\)\n\nADDRESSES PREVIOUSLY \"IMPOSSIBLE\" THREATS:\n- Physical coercion → MITIGATED \\(threshold crypto\\)\n- Social engineering → MITIGATED \\(multi-party auth\\)\n- Insider threats → SUBSTANTIALLY MITIGATED \\(budgets + audit\\)\n- Hardware zero-days → MITIGATED \\(diversity + N-version\\)\n\nUpdated PROGRESS.md with all new tracks and extended threat matrix.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
       "Bash(make)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
