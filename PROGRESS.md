@@ -30,8 +30,8 @@
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **249** | - | ✅ All compile |
-| Qed Proofs (Total) | **4,514** | - | ✅ (4,007 active build + 507 deprecated archive) |
+| Files in Build | **248** | - | ✅ All compile |
+| Qed Proofs (Total) | **5,371** | - | ✅ (4,830 active build + 541 deprecated archive) |
 | .v Files (Total) | **282** | - | ✅ |
 | Rust Prototype | ✅ PASSING (651 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
@@ -41,7 +41,7 @@
 **SESSION 68 KEY ACTIONS (Phase 7 Complete: M7.5 WASM Playground + M7.6 Backend Verification):**
 1. **M7.5 WASM Playground** — `riina-wasm` crate (cdylib, 15th crate), Playground.jsx (split-pane editor, 5 examples, debounced compile), Web Worker for WASM execution
 2. **M7.6 Backend Verification** — 4 Coq files (63 Qed, 0 admits, 0 axioms): WasmBackendVerification.v, MobileBridgeVerification.v, PlatformStdlibVerification.v, BackendTraitVerification.v
-3. **Phase 7 COMPLETE** — All milestones M7.1–M7.6 done; 15 crates, 282 Coq files, 4,514 Qed proofs
+3. **Phase 7 COMPLETE** — All milestones M7.1–M7.6 done; 15 crates, 282 Coq files, 4,830 Qed proofs (active build)
 4. **Documentation sync** — 11 files updated
 
 **SESSION 67 KEY ACTIONS (Phase 7: Platform Universality — backend trait, WASM, mobile, platform stdlib):**

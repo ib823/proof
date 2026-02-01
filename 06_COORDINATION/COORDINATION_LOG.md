@@ -40,8 +40,8 @@
 | **Total Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Delegation Prompts** | **90** | **100% coverage** |
 | **Prover** | **Rocq 9.1 (Coq 8.21)** | Migrated from 8.18.0 (Session 53) |
-| **Coq .v Files (Total)** | 282 | 249 in active build |
-| **Coq Qed Proofs (Total)** | **4,514** | 4,007 active build + 507 deprecated archive |
+| **Coq .v Files (Total)** | 282 | 248 in active build |
+| **Coq Qed Proofs (Total)** | **5,371** | 4,830 active build + 541 deprecated archive |
 | **`admit.` (Active Build)** | **0** | **ALL ELIMINATED** |
 | **`Admitted.` (Active Build)** | **0** | **ALL ELIMINATED** (LinearTypes.v fixed Session 58) |
 | **Axioms (Active Build)** | 4 | All justified (deref eliminated Session 66) |
