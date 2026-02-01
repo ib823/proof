@@ -95,7 +95,8 @@ RIINA is the world's **first formally verified programming language** with:
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
-| Phase 7: Long-term Vision | ⬜ | Self-hosting, HW verification |
+| Phase 7: Platform Universality | 🟡 In Progress | WASM backend, mobile backends, platform stdlib |
+| Phase 8: Long-term Vision | ⬜ | Self-hosting, HW verification |
 
 **See `PROGRESS.md` for detailed status.**
 
@@ -439,7 +440,7 @@ cargo fmt --check
 
 #### Materialization Plan (Post Track A)
 
-Track B materialization is governed by `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md`. Execution is deferred until Track A (formal proofs) reaches a stable state. The plan covers 7 phases:
+Track B materialization is governed by `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md`. Execution is deferred until Track A (formal proofs) reaches a stable state. The plan covers 8 phases:
 
 1. **Phase 1**: Compiler completion (wire codegen, extend parser, complete C emitter, REPL, diagnostics)
 2. **Phase 2**: Standard library (prelude, core modules, effect-gated I/O)
@@ -447,7 +448,8 @@ Track B materialization is governed by `04_SPECS/language/RIINA_MATERIALIZATION_
 4. **Phase 4**: Developer experience (LSP, VS Code extension, formatter, doc generator)
 5. **Phase 5**: Ecosystem & distribution (package manager, CI/CD, website)
 6. **Phase 6**: Adoption & community (demo apps, FFI, enterprise path)
-7. **Phase 7**: Long-term vision (self-hosting, hardware verification, verified OS)
+7. **Phase 7**: Platform universality (WASM backend, mobile backends, platform-conditional stdlib)
+8. **Phase 8**: Long-term vision (self-hosting, hardware verification, verified OS)
 
 **Critical path**: Wire codegen → Extend parser → Complete C emitter → Stdlib → Demo apps
 
@@ -618,7 +620,7 @@ git add -A && git commit -m "[RECOVERY] Uncommitted work from disconnect"
 
 ### SINGLE SOURCE OF TRUTH
 
-**All planning follows `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md`** (7 phases).
+**All planning follows `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md`** (8 phases).
 The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is archived research — do NOT use it for execution planning.
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
@@ -634,13 +636,14 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 
 **4 justified axioms** — elimination requires `store_rel_n` restructuring (see `WORKER_B_SPEC_STORE_REL_REWRITE.md`). `logical_relation_declassify` is a permanent policy axiom. `logical_relation_deref` was eliminated in Session 66.
 
-### Track B: Rust Prototype (03_PROTO/) — 🟢 PHASE 6 IN PROGRESS
+### Track B: Rust Prototype (03_PROTO/) — 🟢 PHASE 7 IN PROGRESS
 
 **Phase 1** (Compiler Completion): ✅ All items done.
 **Phase 2** (Standard Library): ✅ Done. 88 builtins, 9 modules.
 **Phase 4** (Developer Experience): ✅ Done. 3 new crates, VS Code extension, 108 examples.
 **Phase 5** (Ecosystem): ✅ Done. CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0.
-**Phase 6** (Adoption): 🟡 In progress. C FFI done, 5 demos done; community/enterprise pending.
+**Phase 6** (Adoption): ✅ Done. C FFI, 8 demos, community, enterprise, public branch.
+**Phase 7** (Platform Universality): 🟡 In progress. Backend trait, WASM, mobile, platform stdlib.
 
 | Phase 6 Item | Description | Status |
 |--------------|-------------|--------|
@@ -658,6 +661,17 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 | Website audit | All links → ib823/riina; Enterprise: 15 industry verticals; Research: 26 domains; Home: 8 industries; 14 pages total | ✅ Done (Session 65) |
 
 **Total: 612 Rust tests, 14 crates, 112 example files. Phase 6 COMPLETE.**
+
+### Phase 7: Platform Universality (03_PROTO/crates/riina-codegen/) — 🟡 IN PROGRESS
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M7.1 Backend Trait | `Backend` trait + `Target` enum, refactor CEmitter, `--target` flag | 🟡 In Progress |
+| M7.2 WASM Backend | Direct IR → WASM binary emission, `--target=wasm32` | 🟡 In Progress |
+| M7.3 Platform Stdlib | Platform-conditional code emission (POSIX/Web/Mobile) | 🟡 In Progress |
+| M7.4 Mobile Backend | Android JNI + iOS Swift bridge generation | 🟡 In Progress |
+| M7.5 WASM Playground | In-browser RIINA compiler at ib823.github.io/riina/play | ⬜ Planned |
+| M7.6 Backend Verification | Coq proofs for backend correctness | ⬜ Planned |
 
 ---
 
@@ -686,7 +700,7 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 - `RIINA-LANG-AST_v1_0_0.md` — AST specification
 
 **Materialization & Implementation Plans (in 04_SPECS/language/):**
-- `RIINA_MATERIALIZATION_PLAN_v1_0_0.md` — **Master 7-phase plan: prototype → production language**
+- `RIINA_MATERIALIZATION_PLAN_v1_0_0.md` — **Master 8-phase plan: prototype → production language**
 - `SYNTAX_IMPROVEMENT_SPEC_v2_0_0.md` — Syntax improvement tiers (Tier 0-2)
 
 **Track Foundation Documents:**
