@@ -16,8 +16,8 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Report Date:** 2026-02-01 (Session 68)
-**Session:** 68 (Phase 7 Complete: M7.5 WASM playground + M7.6 backend verification)
+**Report Date:** 2026-02-01 (Session 69)
+**Session:** 69 (Honest Qed audit — fixed counting methodology across all docs)
 **Overall Grade:** A (BUILD PASSING, 0 admits, 0 Admitted, 4 justified axioms)
 
 ---
@@ -212,29 +212,15 @@
 
 All admits and Admitted proofs eliminated from the active build.
 
-### Current Admits & Axioms (Session 50 — VERIFIED)
+### Admits & Axioms (Session 50 — Historical snapshot)
 
-| File | `admit.` | `Admitted.` | Axioms |
+*Note: Session 50 had 6 axioms. Since then: `val_rel_store_weaken_back` eliminated (Session 52), `logical_relation_deref` eliminated (Session 66). Current count is 4.*
+
+| File | `admit.` | `Admitted.` | Axioms (at Session 50) |
 |------|----------|-------------|--------|
 | NonInterference_v2_LogicalRelation.v | 0 | 0 | 5 |
 | NonInterference_v2.v | 0 | 0 | 1 |
-| Declassification.v | 0 | 0 | 0 |
-| ReferenceOps.v | 0 | 0 | 0 |
-| SN_Closure.v | 0 | 0 | 0 |
-| MaximumAxiomElimination.v | 0 | 0 | 0 |
 | **TOTAL** | **0** | **0** | **6** |
-
-### 6 Remaining Axioms
-
-| # | Axiom | File | Justification |
-|---|-------|------|---------------|
-| 1 | `logical_relation_ref` | NI_v2_LR:749 | Reference allocation — needs equal fresh_loc |
-| 2 | `logical_relation_deref` | NI_v2_LR:759 | Dereference — needs store lookup relation |
-| 3 | `logical_relation_assign` | NI_v2_LR:769 | Assignment — needs store_rel preservation |
-| 4 | `logical_relation_declassify` | NI_v2_LR:782 | Declassification — needs purity analysis |
-| 5 | `val_rel_store_weaken_back` | NI_v2_LR:795 | Store anti-monotonicity — justified |
-| 6 | `fundamental_theorem_step_0` | NI_v2:1669 | Step-0 val_rel_at_type — needs preservation |
-| ~~7~~ | ~~`exp_rel_le_declassify`~~ | ~~Declassification:246~~ | **ELIMINATED** — dead code, removed |
 
 ### Key Technical Insights
 
@@ -873,39 +859,40 @@ ReducibilityFull.v (2 admits)
 
 | Component | Status | Command | Last Verified |
 |-----------|--------|---------|---------------|
-| **Coq Proofs** | ✅ GREEN | `make` in `02_FORMAL/coq/` | 2026-01-24 |
-| **Rust Proto** | ✅ PASSING | `cargo test --all` in `03_PROTO/` | 2026-01-24 |
-| **Tooling** | ⚪ NOT RUN | `cargo test --all` in `05_TOOLING/` | - |
+| **Coq Proofs** | ✅ GREEN | `make` in `02_FORMAL/coq/` | 2026-02-01 |
+| **Rust Proto** | ✅ PASSING (651) | `cargo test --all` in `03_PROTO/` | 2026-02-01 |
+| **Tooling** | ✅ BUILDS (0 tests) | `cargo test --all` in `05_TOOLING/` | 2026-02-01 |
 
 ---
 
 ## 2. CODEBASE METRICS (ACCURATE - Active Build Only)
 
-### 2.1 Active Build Summary (Session 58 — VERIFIED)
+### 2.1 Active Build Summary (Session 69 — VERIFIED via comment-free Python audit)
 
 | Metric | Count |
 |--------|-------|
-| Files in _CoqProject | 244 |
-| Qed Proofs | 4,763+ |
-| **Axioms (Active)** | **5** |
+| Files in _CoqProject | 248 |
+| Qed Proofs (comment-free) | 4,825 |
+| **Axioms (Active)** | **4** |
 | **`admit.` (Active)** | **0** |
 | **`Admitted.` (Active)** | **0** |
 | **Total Incomplete Proofs** | **0** |
-| Total .v Files | 271 |
+| Total .v Files | 282 |
+| Deprecated Archive Qed | 534 |
 
-### 2.2 Axioms by File (Active Build — Session 58)
+### 2.2 Axioms by File (Active Build — Session 69)
 
 | File | Axioms | Names |
 |------|--------|-------|
-| NonInterference_v2_LogicalRelation.v | 4 | logical_relation_ref/deref/assign/declassify |
+| NonInterference_v2_LogicalRelation.v | 3 | logical_relation_ref/assign/declassify |
 | NonInterference_v2.v | 1 | fundamental_theorem_step_0 |
-| **TOTAL** | **5** | All justified. Worker B on `store_rel_n` rewrite to eliminate 3 (ref/deref/assign). |
+| **TOTAL** | **4** | All justified. `logical_relation_deref` eliminated Session 66. `logical_relation_declassify` is a permanent policy axiom. |
 
-### 2.3 Admits by File (Active Build — Session 50b)
+### 2.3 Admits by File (Active Build — Session 69)
 
 | File | `admit.` | `Admitted.` | Total | Notes |
 |------|----------|-------------|-------|-------|
-| **ALL FILES** | **0** | **0** | **0** | **ALL ELIMINATED** |
+| **ALL FILES** | **0** | **0** | **0** | **ALL ELIMINATED** (verified via Python comment-strip audit) |
 
 ### 2.4 Removed from Active Build (Session 46)
 
@@ -968,22 +955,24 @@ The following remain and are NOT covered by delegation output:
 | Crate | Purpose | Tests | Status |
 |-------|---------|-------|--------|
 | riina-arena | Memory arena | 6 | ✅ |
-| riina-codegen | Code generation (SSA phi destruction, C emit) | 230 | ✅ |
-| riina-lexer | Tokenization (72 bilingual keyword pairs) | 88 | ✅ |
-| riina-parser | AST construction | 105 | ✅ |
+| riina-codegen | Code generation (backends, WASM, mobile, C emit) | 308 | ✅ |
+| riina-compliance | Compliance profiles (15 industries) | 24 | ✅ |
+| riina-doc | Documentation generator | 6 | ✅ |
+| riina-fmt | Code formatter | 6 | ✅ |
+| riina-lexer | Tokenization (72 bilingual keyword pairs) | 91 | ✅ |
+| riina-lsp | Language server | 12 | ✅ |
+| riina-parser | AST construction | 130 | ✅ |
+| riina-pkg | Package manager | 39 | ✅ |
 | riina-span | Source locations | 11 | ✅ |
 | riina-symbols | Symbol table | 6 | ✅ |
 | riina-typechecker | Type checking | 5 | ✅ |
-| riina-types | Type definitions (incl. `Expr::Loc`) | - | ✅ |
-| riina-doc | Documentation generator | 6 | ✅ |
-| riina-fmt | Code formatter | 6 | ✅ |
-| riina-lsp | Language server | 12 | ✅ |
-| riina-pkg | Package manager | 39 | ✅ |
-| riinac | Compiler driver | 11 | ✅ |
+| riina-types | Type definitions (incl. `Expr::Loc`) | 3 | ✅ |
+| riina-wasm | WASM playground library (cdylib) | 0 | ✅ |
+| riinac | Compiler driver | 6 | ✅ |
 
-**Total Tests:** 588 | **All Passing** ✅
+**Total Tests:** 651 | **All Passing** ✅ | **15 crates**
 
-**Materialization Plan:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` — 8-phase plan from prototype to production language. Phases 1-6 complete; Phase 7 (Platform Universality) in progress; Phase 8 (long-term vision) pending.
+**Materialization Plan:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` — 8-phase plan from prototype to production language. Phases 1–7 complete; Phase 8 (long-term vision) pending.
 
 ### Track B Enhancement Status (Session 51)
 
@@ -1000,49 +989,25 @@ The following remain and are NOT covered by delegation output:
 ## 6. SESSION CHECKPOINT
 
 ```
-Session      : 65 (Release System)
-Last Action  : Website "Why Proof" exec page, 15 industry verticals, link audit, deploy
-Build Status : ✅ PASSING (244 Coq files + 588 Rust tests)
-Version      : 0.1.0 (VERSION file is source of truth)
-Axioms       : 5 (active build: 4 in NI_v2_LR + 1 in NI_v2)
+Session      : 69 (Honest Qed Audit)
+Last Action  : Fixed Qed count methodology (comment-free Python audit)
+Build Status : ✅ PASSING (248 Coq files + 651 Rust tests)
+Version      : 0.2.0 (VERSION file is source of truth)
+Axioms       : 4 (active build: 3 in NI_v2_LR + 1 in NI_v2)
 Admits       : 0 admit. + 0 Admitted. = 0 total
-Rust Tests   : 588 (all passing)
-Rust Crates  : 13
+Qed Proofs   : 4,825 active (5,359 total incl. 534 deprecated)
+Rust Tests   : 651 (all passing)
+Rust Crates  : 15
 
-Session 65 Accomplishments:
-1. VERSION file (source of truth for semver)
-2. CHANGELOG.md (Keep a Changelog format, flows to public)
-3. scripts/bump-version.sh (updates 6 locations)
-4. scripts/release.sh (one-command release workflow)
-5. Website Releases page + releases data array + footer version
-6. GitHub Pages: website at ib823.github.io/riina/, /proof redirects to /riina
-7. scripts/deploy-website.sh (build + push to gh-pages on ib823/riina)
-8. Website audit: all GitHub links fixed from ib823/proof → ib823/riina
-9. "Why Proof" executive page (14th page) — breach cost data (IBM $4.88M), assurance
-   hierarchy (EAL1-EAL7), quantum/AI immunity, real-world proof points (DARPA seL4,
-   Paris Metro, AWS, Microsoft HACL*, CompCert, ProvenRun EAL7), C-suite role-by-role
-   value propositions (CEO/CIO/CRO/CISO/CFO/Board), sources & references
-10. Enterprise page expanded: 15 industry verticals with domain-specific descriptions,
-    research depth section (218 tracks, 1,231+ threats), 6 use cases (up from 4)
-11. Research page expanded: 26 research domains with descriptions, 15 industry links
-12. Home page: 8 industry-specific capability cards (up from 4)
-13. Documentation sync across all tracking files
-
-Release workflow:
-  bash scripts/release.sh 0.2.0
-  → validate → bump → changelog → commit → tag → push → tarball → sync public → GitHub Release → website update
-
-Track A — Remaining Axioms (5):
-- NI_v2_LR: logical_relation_ref, logical_relation_deref, logical_relation_assign,
-             logical_relation_declassify
+Track A — Remaining Axioms (4):
+- NI_v2_LR: logical_relation_ref, logical_relation_assign,
+             logical_relation_declassify (permanent policy axiom)
 - NI_v2: fundamental_theorem_step_0
-- Worker B on store_rel_n rewrite to eliminate 3 (ref/deref/assign)
+- logical_relation_deref was eliminated (Session 66)
+- Worker B on store_rel_n rewrite to eliminate ref/assign
 
-Track B — Phases 1-6: ✅ ALL DONE
-- Phase 7 (Platform Universality) in progress — backend trait, WASM, mobile, platform stdlib
+Track B — Phases 1-7: ✅ ALL DONE
 - Phase 8 (self-hosting, HW verification) is long-term vision
-
-Both tracks proceeding in parallel. Track B work does NOT affect Track A.
 ```
 
 ---
@@ -1055,12 +1020,12 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 
 | Mat. Plan Phase | Name | Status | Key Metric |
 |-----------------|------|--------|------------|
-| 1 | Compiler Completion | ✅ Done | All 5.1-5.7 complete; 477 tests |
-| 2 | Standard Library | ✅ Done | 88 builtins, 9 modules, 509 tests |
-| 3 | Formal Verification | 🟢 Stable | 0 admits, 5 justified axioms, 4,763+ Qed, 244 files |
-| 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 100 examples |
-| 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Dockerfile, Nix flake, release scripts, installer, MPL-2.0, VERSION, CHANGELOG, release.sh |
-| 6 | Adoption & Community | ✅ Done | C FFI, 8 demos, community, enterprise, public branch, website Releases page |
+| 1 | Compiler Completion | ✅ Done | All 5.1-5.7 complete |
+| 2 | Standard Library | ✅ Done | 88 builtins, 9 modules |
+| 3 | Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,825 Qed, 248 active files |
+| 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 112 examples |
+| 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0 |
+| 6 | Adoption & Community | ✅ Done | C FFI, 8 demos, community, enterprise, public branch |
 | 7 | Platform Universality | ✅ Done | Backend trait, WASM, mobile, platform stdlib, playground, backend verification |
 | 8 | Long-term Vision | ⬜ | Self-hosting, HW verification |
 
@@ -1084,11 +1049,11 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 |--------|-------|
 | `admit.` | 0 |
 | `Admitted.` | 0 |
-| Axioms | 5 (all justified) |
-| Qed proofs | 4,763+ |
-| Build | ✅ PASSING (244 files) |
+| Axioms | 4 (all justified) |
+| Qed proofs | 4,825 (comment-free count) |
+| Build | ✅ PASSING (248 active files) |
 
-**Axiom elimination:** Worker B on branch `track-a/store-rel-v3` is rewriting `store_rel_n` to eliminate 4 axioms → 1 justified (`logical_relation_declassify`). See `WORKER_B_SPEC_STORE_REL_REWRITE.md`.
+**Axiom elimination:** `logical_relation_deref` eliminated (Session 66). Worker B on `store_rel_n` rewrite to eliminate `ref`/`assign`. `logical_relation_declassify` is a permanent policy axiom. See `WORKER_B_SPEC_STORE_REL_REWRITE.md`.
 
 ---
 
@@ -1096,9 +1061,9 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 
 | Priority | Track | Task |
 |----------|-------|------|
-| P1 | A | **Axiom elimination** — Worker B store_rel_n rewrite (parallel) |
-| P2 | B | **Phase 7: Self-hosting** — RIINA compiler in RIINA |
-| P3 | - | **Releases** — Tag v0.1.0, create first GitHub Release |
+| P1 | A | **Axiom elimination** — Worker B store_rel_n rewrite (ref/assign, 2 remaining eliminable) |
+| P2 | B | **Phase 8: Self-hosting** — RIINA compiler in RIINA |
+| P3 | - | **Releases** — Tag v0.2.0, create GitHub Release |
 
 ---
 
@@ -1126,5 +1091,5 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 *RIINA: Rigorous Immutable Invariant, No Assumptions*
 *"Every line of code backed by mathematical proof."*
 
-*Report Generated: 2026-02-01 (Session 65)*
-*"v0.1.0. 0 admits. 5 justified axioms. 244 Coq files. 588 Rust tests. 13 crates. Q.E.D. Aeternum."*
+*Report Generated: 2026-02-01 (Session 69)*
+*"v0.2.0. 0 admits. 4 justified axioms. 248 active Coq files. 4,825 Qed. 651 Rust tests. 15 crates. Q.E.D. Aeternum."*
