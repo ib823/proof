@@ -41,7 +41,7 @@
 | **Delegation Prompts** | **90** | **100% coverage** |
 | **Prover** | **Rocq 9.1 (Coq 8.21)** | Migrated from 8.18.0 (Session 53) |
 | **Coq .v Files (Total)** | 282 | 249 in active build |
-| **Coq Qed Proofs (Total)** | **5,371** | Verified |
+| **Coq Qed Proofs (Total)** | **4,514** | 4,007 active build + 507 deprecated archive |
 | **`admit.` (Active Build)** | **0** | **ALL ELIMINATED** |
 | **`Admitted.` (Active Build)** | **0** | **ALL ELIMINATED** (LinearTypes.v fixed Session 58) |
 | **Axioms (Active Build)** | 4 | All justified (deref eliminated Session 66) |
@@ -199,20 +199,20 @@
 
 | Track | Status | Last Update | Owner |
 |-------|--------|-------------|-------|
-| Track R (Certified Compilation) | ✅ PROVEN | 2026-02-01 | TranslationValidation.v |
-| Track S (Hardware Contracts) | ✅ PROVEN | 2026-02-01 | S001_HardwareContracts.v |
-| Track T (Hermetic Build) | ✅ PROVEN | 2026-02-01 | T001_HermeticBuild.v |
-| Track U (Runtime Guardian) | ✅ PROVEN | 2026-02-01 | U001_RuntimeGuardian.v |
+| Track R (Certified Compilation) | 📐 MODELED | 2026-02-01 | TranslationValidation.v — domain definitions, toy consistency proofs |
+| Track S (Hardware Contracts) | 📐 MODELED | 2026-02-01 | S001_HardwareContracts.v — domain definitions, toy consistency proofs |
+| Track T (Hermetic Build) | 📐 MODELED | 2026-02-01 | T001_HermeticBuild.v — domain definitions, toy consistency proofs |
+| Track U (Runtime Guardian) | 📐 MODELED | 2026-02-01 | U001_RuntimeGuardian.v — domain definitions, toy consistency proofs |
 
 ### Completeness Tracks (V-Z)
 
 | Track | Status | Last Update | Owner |
 |-------|--------|-------------|-------|
-| Track V (Termination Guarantees) | ✅ PROVEN | 2026-02-01 | V001 + termination/ (6 files) |
-| Track W (Verified Memory) | ✅ PROVEN | 2026-02-01 | W001_VerifiedMemory.v |
-| Track X (Concurrency Model) | ✅ PROVEN | 2026-02-01 | X001_ConcurrencyModel.v |
-| Track Y (Verified Stdlib) | ✅ PROVEN | 2026-02-01 | Y001_VerifiedStdlib.v |
-| Track Z (Declassification Policy) | ✅ PROVEN | 2026-02-01 | Z001_DeclassificationPolicy.v |
+| Track V (Termination Guarantees) | 📐 MODELED | 2026-02-01 | V001 + termination/ (6 files) — domain definitions, toy consistency proofs |
+| Track W (Verified Memory) | 📐 MODELED | 2026-02-01 | W001_VerifiedMemory.v — domain definitions, toy consistency proofs |
+| Track X (Concurrency Model) | 📐 MODELED | 2026-02-01 | X001_ConcurrencyModel.v — domain definitions, toy consistency proofs |
+| Track Y (Verified Stdlib) | 📐 MODELED | 2026-02-01 | Y001_VerifiedStdlib.v — domain definitions, toy consistency proofs |
+| Track Z (Declassification Policy) | 📐 MODELED | 2026-02-01 | Z001_DeclassificationPolicy.v — domain definitions, toy consistency proofs |
 
 ### Military/Hardening Tracks (Greek Letters)
 

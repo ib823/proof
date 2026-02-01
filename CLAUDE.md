@@ -77,7 +77,7 @@ RIINA is the world's **first formally verified programming language** with:
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 4 (all justified) | 3 in NI_v2_LR + 1 in NI_v2 |
 | **Admits (Active Build)** | 0 | All fixed (Session 53) |
-| **Qed Proofs (Total)** | 5,371 | Verified |
+| **Qed Proofs (Total)** | 4,514 | 4,007 active build + 507 deprecated archive |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Rocq 9.1 (Coq 8.21) | Migrated from 8.18.0 |
 | **Coq Compilation** | ✅ PASSING | 282 files (249 in active build) |
@@ -91,7 +91,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | 88 builtins, 9 modules, 509 tests |
-| Phase 3: Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 5,371 Qed, 249 files |
+| Phase 3: Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,514 Qed, 249 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -625,7 +625,7 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 admits, 0 Admitted, 4 justified axioms, 5,371 Qed proofs, 282 files (Rocq 9.1 / Coq 8.21)**
+**Build: 0 admits, 0 Admitted, 4 justified axioms, 4,514 Qed proofs, 282 files (Rocq 9.1 / Coq 8.21)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
@@ -667,10 +667,10 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 | Milestone | Description | Status |
 |-----------|-------------|--------|
 | M7.1 Backend Trait | `Backend` trait + `Target` enum, refactor CEmitter, `--target` flag | ✅ Done |
-| M7.2 WASM Backend | Direct IR → WASM binary emission, `--target=wasm32` | ✅ Done |
+| M7.2 WASM Backend | Direct IR → WASM binary emission, `--target=wasm32` | ✅ Done (scaffolding — emits WASM sections, no distributed .wasm binary) |
 | M7.3 Platform Stdlib | Platform-conditional code emission (POSIX/Web/Mobile) | ✅ Done |
-| M7.4 Mobile Backend | Android JNI + iOS Swift bridge generation | ✅ Done |
-| M7.5 WASM Playground | `riina-wasm` crate + Playground.jsx + Web Worker | ✅ Done (Session 68) |
+| M7.4 Mobile Backend | Android JNI + iOS Swift bridge generation | ✅ Done (scaffolding — generates code strings, no compiled artifacts) |
+| M7.5 WASM Playground | `riina-wasm` crate + Playground.jsx + Web Worker | ✅ Done (UI only — React components exist, .wasm not built/bundled) |
 | M7.6 Backend Verification | 4 Coq files, 63 Qed proofs (WASM, bridge, platform, backend) | ✅ Done (Session 68) |
 
 ---
@@ -771,7 +771,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-01 (Session 68: Phase 7 Complete — 0 admits, 4 justified axioms, 651 Rust tests, 15 crates, 112 examples, 282 Coq files, 5,371 Qed proofs)*
+*Last updated: 2026-02-01 (Session 68: Phase 7 Complete — 0 admits, 4 justified axioms, 651 Rust tests, 15 crates, 112 examples, 282 Coq files, 4,514 Qed proofs)*
 
 ---
 

@@ -17,7 +17,7 @@ Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
 |--------|-------|
 | Total Threat Categories | 16 |
 | Total Individual Threats | 350+ |
-| Core Theorems (Qed) | 5,308 |
+| Core Theorems (Qed) | 4,514 |
 | Domain Property Lemmas (Qed) | 4,700+ |
 | Active Axioms | 4 |
 | Admits | 0 |
@@ -531,5 +531,5 @@ These threats target the distribution pipeline (Docker images, Nix packages, rel
 *Cross-reference with `MASTER_THREAT_MODEL.md` for threat definitions.*
 *Cross-reference with `TRACEABILITY_MATRIX.md` for track-level mapping.*
 
-*Last updated: 2026-02-01 (Session 66 — 5,308 Qed, 4 axioms, 612 tests, 14 crates, compliance system)*
+*Last updated: 2026-02-01 (Session 66 — 4,514 Qed, 4 axioms, 612 tests, 14 crates, compliance system)*
 *Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE*
