@@ -81,7 +81,7 @@ RIINA is the world's **first formally verified programming language** with:
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Rocq 9.1 (Coq 8.21) | Migrated from 8.18.0 |
 | **Coq Compilation** | ✅ PASSING | 278 files (245 in active build) |
-| **Rust Tests** | ✅ PASSING (612 tests) | All green |
+| **Rust Tests** | ✅ PASSING (651 tests) | All green |
 | **Rust Crates** | 14 | +riina-compliance (Session 66) |
 | **Example .rii Files** | 112 | 9 categories (+FFI, +demos, +showcase, +compliance) |
 
@@ -309,7 +309,7 @@ The repository has two branches:
 
 ```
 1. Work on main
-2. Commit on main → pre-commit hook runs riinac verify --fast
+2. Commit on main
 3. Push main      → pre-push hook runs riinac verify --full
 4. Sync to public → bash scripts/sync-public.sh
 ```
@@ -660,7 +660,7 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 | Website "Why Proof" | Executive page: breach costs, assurance hierarchy, quantum/AI immunity, DARPA/AWS/Microsoft proof points, C-suite value props | ✅ Done (Session 65) |
 | Website audit | All links → ib823/riina; Enterprise: 15 industry verticals; Research: 26 domains; Home: 8 industries; 14 pages total | ✅ Done (Session 65) |
 
-**Total: 612 Rust tests, 14 crates, 112 example files. Phase 6 COMPLETE.**
+**Total: 651 Rust tests, 14 crates, 112 example files. Phase 6 COMPLETE.**
 
 ### Phase 7: Platform Universality (03_PROTO/crates/riina-codegen/) — 🟡 IN PROGRESS
 
@@ -771,7 +771,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-01 (Session 66: Compliance system, report generator, business model, audit sync — 0 admits, 4 justified axioms, 612 Rust tests, 14 crates, 112 examples, 278 Coq files, 5,308 Qed proofs)*
+*Last updated: 2026-02-01 (Session 67: Phase 7 Platform Universality — 0 admits, 4 justified axioms, 651 Rust tests, 14 crates, 112 examples, 278 Coq files, 5,308 Qed proofs)*
 
 ---
 

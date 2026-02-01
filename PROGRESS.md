@@ -33,7 +33,7 @@
 | Files in Build | **244** | - | ✅ All compile |
 | Qed Proofs (Total) | **5,308** | - | ✅ |
 | .v Files (Total) | **278** | - | ✅ |
-| Rust Prototype | ✅ PASSING (612 tests) | PASSING | ✅ GREEN |
+| Rust Prototype | ✅ PASSING (651 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **14** | - | ✅ (+riina-compliance) |
 | Example .rii Files | **112** | 100+ | ✅ (+5 demos, +3 showcase, +compliance) |
 | Prover | **Rocq 9.1 (Coq 8.21)** | - | ✅ Migrated from 8.18 |
