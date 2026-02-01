@@ -41,7 +41,7 @@
 | **Delegation Prompts** | **90** | **100% coverage** |
 | **Prover** | **Rocq 9.1 (Coq 8.21)** | Migrated from 8.18.0 (Session 53) |
 | **Coq .v Files (Total)** | 282 | 248 in active build |
-| **Coq Qed Proofs (Total)** | **5,371** | 4,830 active build + 541 deprecated archive |
+| **Coq Qed Proofs (Total)** | **5,359** | 4,825 active build + 534 deprecated archive |
 | **`admit.` (Active Build)** | **0** | **ALL ELIMINATED** |
 | **`Admitted.` (Active Build)** | **0** | **ALL ELIMINATED** (LinearTypes.v fixed Session 58) |
 | **Axioms (Active Build)** | 4 | All justified (deref eliminated Session 66) |
