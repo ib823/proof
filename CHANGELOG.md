@@ -13,7 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Platform-conditional standard library (`platform.rs`) for cross-platform compilation
 - Mobile backend scaffolding: Android JNI bridge generation, iOS Swift bridge generation
 - `--target` flag for `riinac build` and `riinac emit` commands
-- Roadmap updated across all documentation (11 files)
+- `riina-wasm` crate: in-browser compiler via WASM (cdylib with `extern "C"` exports)
+- WASM Playground page on website (split-pane editor, 5 examples, Web Worker compilation)
+- 4 backend verification Coq proofs: WASM correctness, JNI/Swift bridge, platform stdlib, backend trait (63 Qed)
+- Phase 7 complete (all M7.1–M7.6 milestones done)
 
 ## [0.2.0] - 2026-02-01
 

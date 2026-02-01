@@ -2429,26 +2429,27 @@ Cross-compilation to mobile platforms via C backend + NDK/Xcode toolchains:
 
 **Files:** `03_PROTO/crates/riina-codegen/src/mobile.rs` (new), `jni.rs` (new), `swift_bridge.rs` (new)
 
-### 11.5 M7.5 — WASM Playground
+### 11.5 M7.5 — WASM Playground ✅ Done (Session 68)
 
-Compile `riinac` itself to WASM for browser-based editing:
+`riina-wasm` crate (cdylib) wraps parser/typechecker/codegen for in-browser use:
 
-1. `riinac` compiled via `cargo build --target=wasm32-unknown-unknown`
-2. Web worker runs compiler, returns diagnostics + type info
-3. Live editor with syntax highlighting, error reporting, effect visualization
-4. Deployed at `ib823.github.io/riina/play`
+1. `riina-wasm` crate with `extern "C"` exports: `riina_check`, `riina_emit_c`, `riina_emit_ir`
+2. Web Worker loads WASM, passes strings via TextEncoder/TextDecoder
+3. Playground.jsx: split-pane editor + output tabs (Diagnostics/C Output/IR), 5 examples, debounced 300ms compile
+4. Added as "Playground" page in website navigation
 
-**Files:** `website/src/playground/` (new directory), `03_PROTO/Cargo.toml` (WASM target config)
+**Files:** `03_PROTO/crates/riina-wasm/` (new crate), `website/src/playground/` (new directory)
 
-### 11.6 M7.6 — Platform Backend Verification
+### 11.6 M7.6 — Platform Backend Verification ✅ Done (Session 68)
 
-Coq proofs that platform backends preserve security invariants:
+4 Coq domain proofs (63 Qed, 0 admits, 0 axioms):
 
-1. Prove WASM backend preserves non-interference (extends Track R)
-2. Prove mobile bridges preserve capability safety
-3. Prove platform-conditional stdlib maintains effect gate invariants
+1. `WasmBackendVerification.v` — WASM-001 through WASM-005 (13 Qed): semantic preservation, NI, effects, type safety, memory isolation
+2. `MobileBridgeVerification.v` — BRIDGE-001 through BRIDGE-005 (15 Qed): marshaling roundtrips, JNI/Swift capability tokens, error safety
+3. `PlatformStdlibVerification.v` — PLAT-001 through PLAT-005 (17 Qed): universal caps, blocked caps, conditional compilation, NI, cross-platform purity
+4. `BackendTraitVerification.v` — BACKEND-001 through BACKEND-004 (18 Qed): dispatch totality, CBackend regression, security composition, format well-formedness
 
-**Files:** `02_FORMAL/coq/domains/` (new platform verification files)
+**Files:** `02_FORMAL/coq/domains/{WasmBackendVerification,MobileBridgeVerification,PlatformStdlibVerification,BackendTraitVerification}.v`
 
 ---
 
