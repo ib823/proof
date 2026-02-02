@@ -73,25 +73,25 @@ RIINA is the world's **first formally verified programming language** with:
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **Overall Grade** | A (build passing) | 0 admits, 4 justified axioms |
+| **Overall Grade** | A- (build passing) | 7 Admitted in active build, 4 justified axioms |
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 4 (all justified) | 3 in NI_v2_LR + 1 in NI_v2 |
-| **Admits (Active Build)** | 0 | All fixed (Session 53) |
-| **Qed Proofs (Total)** | 5,419 | 4,885 active build + 534 deprecated archive |
+| **Admitted (Active Build)** | 7 | 3 DELTA001 + 3 Phase 7 compat stubs + 1 ValRelStepLimit |
+| **Qed Proofs (Total)** | 4,551 | 4,044 active build + 507 deprecated archive |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Rocq 9.1 (Coq 8.21) | Migrated from 8.18.0 |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
 | **Rust Tests** | ✅ PASSING (679 tests) | All green |
 | **Rust Crates** | 15 | +riina-wasm (Session 68) |
-| **Example .rii Files** | 112 | 9 categories (+FFI, +demos, +showcase, +compliance) |
+| **Example .rii Files** | 113 | 9 categories (+FFI, +demos, +showcase, +compliance) |
 
 **Roadmap:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` (SINGLE SOURCE OF TRUTH)
 
 | Materialization Phase | Status | Notes |
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
-| Phase 2: Standard Library | ✅ Done | 88 builtins, 9 modules, 509 tests |
-| Phase 3: Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,885 Qed (active), 249 files |
+| Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
+| Phase 3: Formal Verification | ⚠️ 7 Admitted | 7 Admitted in active build, 4 justified axioms, 4,044 Qed (active), 249 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -625,21 +625,28 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 admits, 0 Admitted, 4 justified axioms, 4,885 Qed proofs (active), 283 files (Rocq 9.1 / Coq 8.21)**
+**Build: 7 Admitted, 4 justified axioms, 4,044 Qed proofs (active), 283 files (Rocq 9.1 / Coq 8.21)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
-| File | `admit.` | `Admitted.` | Axioms | Notes |
-|------|----------|-------------|--------|-------|
-| NonInterference_v2_LogicalRelation.v | 0 | 0 | 3 | ref/assign/declassify (all justified; deref eliminated) |
-| NonInterference_v2.v | 0 | 0 | 1 | fundamental_theorem_step_0 (justified) |
+| File | `Admitted.` | Axioms | Notes |
+|------|-------------|--------|-------|
+| NonInterference_v2_LogicalRelation.v | 0 | 3 | ref/assign/declassify (all justified; deref eliminated) |
+| NonInterference_v2.v | 0 | 1 | fundamental_theorem_step_0 (justified) |
+| DELTA001_VerifiedDistribution.v | **4** | 0 | Distribution verification incomplete (lines 271, 307, 388, 446) |
+| PlatformStdlibVerification.v | **1** | 0 | Phase 7 verification stub (line 205) |
+| WasmBackendVerification.v | **1** | 0 | Phase 7 verification stub (line 640) |
+| MobileBridgeVerification.v | **1** | 0 | Phase 7 verification stub (line 256) |
+| ValRelStepLimit_PROOF.v | **1** | 0 | Core property incomplete (line 151) |
 
 **4 justified axioms** — elimination requires `store_rel_n` restructuring (see `WORKER_B_SPEC_STORE_REL_REWRITE.md`). `logical_relation_declassify` is a permanent policy axiom. `logical_relation_deref` was eliminated in Session 66.
+
+**7 Admitted proofs** — 3 in DELTA001_VerifiedDistribution.v (distribution verification), 3 Rocq 9.1 compat stubs (PlatformStdlib, WasmBackend, MobileBridge), 1 in ValRelStepLimit_PROOF.v. All tracked for completion. See `06_COORDINATION/DOMAIN_COVERAGE_MATRIX.md` §6.
 
 ### Track B: Rust Prototype (03_PROTO/) — 🟢 PHASE 7 COMPLETE
 
 **Phase 1** (Compiler Completion): ✅ All items done.
-**Phase 2** (Standard Library): ✅ Done. 88 builtins, 9 modules.
+**Phase 2** (Standard Library): ✅ Done. ~38 unique builtins (with BM/EN aliases), 10 modules.
 **Phase 4** (Developer Experience): ✅ Done. 3 new crates, VS Code extension, 108 examples.
 **Phase 5** (Ecosystem): ✅ Done. CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0.
 **Phase 6** (Adoption): ✅ Done. C FFI, 8 demos, community, enterprise, public branch.
@@ -660,7 +667,7 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 | Website "Why Proof" | Executive page: breach costs, assurance hierarchy, quantum/AI immunity, DARPA/AWS/Microsoft proof points, C-suite value props | ✅ Done (Session 65) |
 | Website audit | All links → ib823/riina; Enterprise: 15 industry verticals; Research: 26 domains; Home: 8 industries; 14 pages total | ✅ Done (Session 65) |
 
-**Total: 679 Rust tests, 15 crates, 112 example files. Phase 7 COMPLETE.**
+**Total: 679 Rust tests, 15 crates, 113 example files. Phase 7 COMPLETE.**
 
 ### Phase 7: Platform Universality (03_PROTO/crates/riina-codegen/) — ✅ COMPLETE
 
@@ -771,7 +778,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-02 (Session 70: Backend production — 0 admits, 4 justified axioms, 679 Rust tests, 15 crates, 112 examples, 283 Coq files, 4,885 active Qed proofs, 534 deprecated)*
+*Last updated: 2026-02-02 (Session 71 Audit: 7 Admitted in active build, 4 justified axioms, 679 Rust tests, 15 crates, 113 examples, 283 Coq files, 4,867 active Qed proofs, 507 deprecated)*
 
 ---
 

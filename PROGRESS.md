@@ -18,7 +18,7 @@
 
 **Report Date:** 2026-02-02 (Session 70)
 **Session:** 70 (Backend production completion — WASM memory/closures/builtins, Android JNI, iOS Swift, Coq composition)
-**Overall Grade:** A (BUILD PASSING, 0 admits, 0 Admitted, 4 justified axioms)
+**Overall Grade:** A- (BUILD PASSING, 7 Admitted in active build, 4 justified axioms)
 
 ---
 
@@ -27,15 +27,15 @@
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
 | `admit.` (Active Build) | **0** | 0 | ✅ ZERO |
-| `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
+| `Admitted.` (Active Build) | **8** | 0 | ⚠️ 4 DELTA001 + 3 Phase 7 stubs + 1 ValRelStepLimit |
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **249** | - | ✅ All compile |
-| Qed Proofs (Total) | **5,419** | - | ✅ (4,885 active build + 534 deprecated archive) |
+| Qed Proofs (Total) | **4,551** | - | ✅ (4,044 active build + 507 deprecated archive) |
 | .v Files (Total) | **283** | - | ✅ |
 | Rust Prototype | ✅ PASSING (679 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
-| Example .rii Files | **112** | 100+ | ✅ (+5 demos, +3 showcase, +compliance) |
+| Example .rii Files | **113** | 100+ | ✅ (+5 demos, +3 showcase, +compliance) |
 | Prover | **Rocq 9.1 (Coq 8.21)** | - | ✅ Migrated from 8.18 |
 
 **SESSION 70 KEY ACTIONS (Backend Production — WASM full, Android JNI, iOS Swift, Coq composition):**
@@ -217,7 +217,7 @@
 | (prior) | Prove logical_relation theorem (Admitted → Qed, all 13 cases) |
 | a1d3856 | Worker C: Monotone Qed, ReferenceOps fixes |
 
-### Admits Eliminated (27 total: 19 admit. + 8 Admitted.)
+### Admits Eliminated (19 admit. tactical eliminated; 7 Admitted. remain in active build)
 
 All admits and Admitted proofs eliminated from the active build.
 
@@ -881,11 +881,11 @@ ReducibilityFull.v (2 admits)
 | Metric | Count |
 |--------|-------|
 | Files in _CoqProject | 249 |
-| Qed Proofs (comment-free) | 4,885 |
+| Qed Proofs (comment-free) | 4,044 |
 | **Axioms (Active)** | **4** |
 | **`admit.` (Active)** | **0** |
-| **`Admitted.` (Active)** | **0** |
-| **Total Incomplete Proofs** | **0** |
+| **`Admitted.` (Active)** | **8** |
+| **Total Incomplete Proofs** | **8** |
 | Total .v Files | 283 |
 | Deprecated Archive Qed | 534 |
 
@@ -998,13 +998,13 @@ The following remain and are NOT covered by delegation output:
 ## 6. SESSION CHECKPOINT
 
 ```
-Session      : 69 (Honest Qed Audit)
-Last Action  : Fixed Qed count methodology (comment-free Python audit)
+Session      : 70 (Backend production + Comprehensive audit)
+Last Action  : Full codebase audit — gap register created (§8.1)
 Build Status : ✅ PASSING (249 Coq files + 679 Rust tests)
 Version      : 0.2.0 (VERSION file is source of truth)
 Axioms       : 4 (active build: 3 in NI_v2_LR + 1 in NI_v2)
-Admits       : 0 admit. + 0 Admitted. = 0 total
-Qed Proofs   : 4,885 active (5,419 total incl. 534 deprecated)
+Admits       : 0 admit. + 7 Admitted. = 7 total (3 DELTA001 + 3 Phase 7 compat stubs + 1 ValRelStepLimit). See DOMAIN_COVERAGE_MATRIX.md §6
+Qed Proofs   : 4,044 active (4,551 total incl. 507 deprecated)
 Rust Tests   : 679 (all passing)
 Rust Crates  : 15
 
@@ -1015,8 +1015,17 @@ Track A — Remaining Axioms (4):
 - logical_relation_deref was eliminated (Session 66)
 - Worker B on store_rel_n rewrite to eliminate ref/assign
 
+Track A+B — Unverified Typechecker Rules (5):
+- T_Perform/T_Handle: effect algebra not formalized (lib.rs:393-409)
+- T_Ref/T_Deref/T_Assign: store context Σ not threaded (lib.rs:413-435)
+- T_Classify/T_Declassify/T_Prove: security context Δ not threaded (lib.rs:439-454)
+- T_Require/T_Grant: capability semantics not axiomatized (lib.rs:457-465)
+- See Gap Register §8.1 Category A for full details
+
 Track B — Phases 1-7: ✅ ALL DONE
-- Phase 8 (self-hosting, HW verification) is long-term vision
+- 12 compliance stubs need rules (§8.1 Category C)
+- Android/iOS backends need full NDK/Xcode integration (§8.1 Category G)
+- Phase 8 (self-hosting, HW verification) is long-term vision (§8.1 Category F)
 ```
 
 ---
@@ -1031,8 +1040,8 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 |-----------------|------|--------|------------|
 | 1 | Compiler Completion | ✅ Done | All 5.1-5.7 complete |
 | 2 | Standard Library | ✅ Done | 88 builtins, 9 modules |
-| 3 | Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,885 Qed, 249 active files |
-| 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 112 examples |
+| 3 | Formal Verification | ⚠️ 7 Admitted | 7 Admitted, 4 justified axioms, 4,044 Qed, 249 active files |
+| 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 113 examples |
 | 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0 |
 | 6 | Adoption & Community | ✅ Done | C FFI, 8 demos, community, enterprise, public branch |
 | 7 | Platform Universality | ✅ Done | Backend trait, WASM, mobile, platform stdlib, playground, backend verification |
@@ -1057,9 +1066,9 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 | Metric | Value |
 |--------|-------|
 | `admit.` | 0 |
-| `Admitted.` | 0 |
+| `Admitted.` | 8 (4 DELTA001, 1 PlatformStdlib, 1 WASM, 1 MobileBridge, 1 ValRelStepLimit) |
 | Axioms | 4 (all justified) |
-| Qed proofs | 4,885 (comment-free count) |
+| Qed proofs | 4,044 (comment-free count) |
 | Build | ✅ PASSING (249 active files) |
 
 **Axiom elimination:** `logical_relation_deref` eliminated (Session 66). Worker B on `store_rel_n` rewrite to eliminate `ref`/`assign`. `logical_relation_declassify` is a permanent policy axiom. See `WORKER_B_SPEC_STORE_REL_REWRITE.md`.
@@ -1071,8 +1080,138 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 | Priority | Track | Task |
 |----------|-------|------|
 | P1 | A | **Axiom elimination** — Worker B store_rel_n rewrite (ref/assign, 2 remaining eliminable) |
-| P2 | B | **Phase 8: Self-hosting** — RIINA compiler in RIINA |
-| P3 | - | **Releases** — Tag v0.2.0, create GitHub Release |
+| P2 | A+B | **Unverified typechecker rules** — Formalize 5 UNVERIFIED rule groups in Coq + thread Σ/Δ into Rust |
+| P3 | B | ~~**Compliance stubs** — Implement rules for 12 stub profiles (C1-C12)~~ ✅ DONE (Session 70) |
+| P4 | B | **Mobile backend completion** — Full NDK/Xcode integration for Android/iOS |
+| P5 | B | **Phase 8: Self-hosting** — RIINA compiler in RIINA |
+| P6 | - | **Releases** — Tag v0.2.0, create GitHub Release |
+
+---
+
+## 8.1 GAP REGISTER — Items Required for 100% Completion
+
+*Added 2026-02-02 (Session 70 audit). This section tracks ALL identified gaps not yet at 100%. Each item has a unique ID for traceability. Items are organized by category and priority.*
+
+### Category A: Unverified Typechecker Rules (5 items)
+
+The Rust typechecker (`03_PROTO/crates/riina-typechecker/src/lib.rs`) marks 5 rule groups as `UNVERIFIED`. These are implemented in Rust but lack corresponding Coq formalization. The Coq typing judgment uses `has_type Γ Σ Δ e T ε` (3 contexts) but Rust only threads `Γ` (1 context).
+
+| ID | Rule Group | Rust Location | Coq Gap | Action Required | Status |
+|----|-----------|---------------|---------|----------------|--------|
+| **A1** | T_Perform / T_Handle (algebraic effects) | lib.rs:393-409 | Effect signatures not in Typing.v; handler resumption semantics undefined | Formalize effect signatures in `foundations/Typing.v`, add `has_type` rules for Perform/Handle, prove progress+preservation for effect operations | ⬜ Not started |
+| **A2** | T_Ref / T_Deref / T_Assign (mutable references) | lib.rs:413-435 | Store typing context `Σ` exists in Coq but Rust typechecker does NOT thread `Σ` | Add store typing parameter to Rust `type_check()`, implement allocation tracking, validate Ref/Deref/Assign against store context | ⬜ Not started |
+| **A3** | T_Classify / T_Declassify / T_Prove (IFC) | lib.rs:439-454 | Security context `Δ` exists in Coq but Rust does NOT thread `Δ` | Add security level parameter to Rust `type_check()`, enforce lattice checks on classify/declassify, validate Prove guards | ⬜ Not started |
+| **A4** | T_Require / T_Grant (capabilities) | lib.rs:457-465 | Capability type system not axiomatized in Coq at all | Define capability semantics in Coq (new file or extend Typing.v), add typing rules, prove soundness, implement in Rust | ⬜ Not started |
+| **A5** | Mark all rules VERIFIED | All above locations | Source code comments say `UNVERIFIED` | After A1-A4 complete, update comments to `VERIFIED` with Coq file references | ⬜ Blocked by A1-A4 |
+
+**Dependency:** A2 is partially addressed by axiom elimination (B1-B3 below). A3 connects to declassification axiom (B4).
+
+### Category B: Axiom Elimination (4 items)
+
+Located in `02_FORMAL/coq/properties/NonInterference_v2*.v`. Detailed strategy in `WORKER_B_SPEC_STORE_REL_REWRITE.md`.
+
+| ID | Axiom | File | Action Required | Status |
+|----|-------|------|----------------|--------|
+| **B1** | `fundamental_theorem_step_0` | NonInterference_v2.v | Restructure `store_rel_n` to prove base case without axiom (see WORKER_B_SPEC) | ⬜ Not started |
+| **B2** | `logical_relation_ref` | NonInterference_v2_LogicalRelation.v | Prove reference allocation preserves store relation under anti-monotonicity | ⬜ Not started |
+| **B3** | `logical_relation_assign` | NonInterference_v2_LogicalRelation.v | Prove store update consistency under information flow invariant | ⬜ Not started |
+| **B4** | `logical_relation_declassify` | NonInterference_v2_LogicalRelation.v | **Permanent policy axiom** — document formally as design decision, not a gap. Promote to `Parameter` with explicit rationale in Coq comments | 🟡 Justified (permanent) |
+
+**Target:** B1-B3 eliminable → reduces axioms from 4 to 1. B4 stays as justified policy axiom.
+
+### Category C: Compliance Profile Stubs (12 items)
+
+Located in `03_PROTO/crates/riina-compliance/src/rules.rs`. All 15 profiles now have active rules. PCI-DSS (3 rules), PDPA (2 rules), BNM (1 rule) were pre-existing; 12 profiles implemented in Session 70.
+
+| ID | Profile | Slug | Rules Implemented | Status |
+|----|---------|------|-------------------|--------|
+| **C1** | HIPAA | `hipaa` | PHI classification (3 rules) | ✅ Done |
+| **C2** | CMMC | `cmmc` | CUI marking, access boundaries (3 rules) | ✅ Done |
+| **C3** | SOX | `sox` | Financial data integrity, audit trail (3 rules) | ✅ Done |
+| **C4** | GDPR | `gdpr` | Personal data classification, consent, erasure, minimization (4 rules) | ✅ Done |
+| **C5** | DO-178C | `do-178c` | Dead code, safety-critical classification, traceability (3 rules) | ✅ Done |
+| **C6** | IEC 62443 | `iec-62443` | Zone boundaries, security levels, network isolation (3 rules) | ✅ Done |
+| **C7** | NERC CIP | `nerc-cip` | Critical assets, electronic security, change management (3 rules) | ✅ Done |
+| **C8** | FDA 21 CFR Part 11 | `fda-21cfr` | Electronic signatures, audit trails, validation (3 rules) | ✅ Done |
+| **C9** | ISO 27001 | `iso-27001` | Asset classification, access control, crypto controls (3 rules) | ✅ Done |
+| **C10** | NIST 800-53 | `nist-800-53` | AC, AU, SC control families (3 rules) | ✅ Done |
+| **C11** | MAS TRM | `mas-trm` | IT risk management, DLP, outsourcing (3 rules) | ✅ Done |
+| **C12** | ITAR | `itar` | Technical data classification, export controls (3 rules) | ✅ Done |
+
+**Total:** 43 rules across 15 profiles (6 pre-existing + 37 new). Build verified, 677 tests pass.
+
+### Category D: Empty Coq Directories (11 items) — ✅ RESOLVED
+
+All 11 empty directories deleted in Session 70. Decision recorded as D015 in `06_COORDINATION/DECISIONS.md`. `domains/` is the canonical location for all domain-specific proofs.
+
+### Category E: Research Tracks Without Coq Proofs
+
+Detailed in `04_SPECS/scope/RIINA_RESEARCH_EXECUTION_MAP.md` (execution levels). This section tracks the specific gaps by domain.
+
+#### E1. Core Domains A-L (85 sessions without proofs)
+
+| ID | Domain | Missing Tracks | Count | Execution Level |
+|----|--------|---------------|-------|-----------------|
+| **E1.A** | A: Type Theory | A-03 (HoTT), A-05 (Affine), A-06 (Uniqueness), A-10 (Gradual), A-12 (Region), A-15 (Intersection/Union), A-17 (Higher-Kinded), A-18 (Type-Level Computation), A-19 (Type Inference) | 9 | L1-L3 |
+| **E1.B** | B: Effects | B-02 (Monadic), B-03 (Coeffects), B-05 (Koka), B-06 (Frank/Effekt), B-08 (Effect Inference), B-09 (Effect Subtyping) | 6 | L1-L3 |
+| **E1.C** | C: Info Flow | C-04 (Dynamic IFC), C-05 (Hybrid IFC), C-06 (IFC Concurrency), C-07 (IFC Distribution) | 4 | L0-L1 |
+| **E1.D** | D: Hardware | D-01 (SGX), D-02 (SEV), D-03 (TrustZone), D-04 (TDX), D-05 (RISC-V), D-07 (Keystone), D-08 (Apple SE), D-09 (Titan), D-10 (TPM), D-11 (PUF) | 10 | L0-L1 |
+| **E1.E** | E: Formal Verif | E-02 (Isabelle), E-03 (Lean), E-04 (Agda), E-05 (F*), E-06 (Dafny), E-08 (Rust Verif), E-09 (TLA+), E-10 (SMT), E-11 (Model Check), E-12 (Symbolic Exec), E-13 (CompCert), E-14 (Translation Val), E-15 (PCC) | 13 | L0-L2 |
+| **E1.F** | F: Crypto | F-03 to F-06 (Code/Hash/SIDH/Multivariate), F-07 to F-10 (ZK/SNARKs/STARKs/Bulletproofs), F-11 to F-16 (FHE/ABE/Threshold/MPC/OT/PIR), F-18 to F-20 (Side-channel/Agility/PQC) | 17 | L0-L3 |
+| **E1.G** | G: Side-Channel | G-02 (Cache), G-05 (Microarch), G-06 to G-10 (Power/EM/Acoustic/Thermal/Fault), G-11 (RowHammer), G-13 (Net Timing), G-14 (Compression), G-15 (Browser) | 11 | L0-L3 |
+| **E1.H** | H: Policy | H-01 through H-10 (all policy language tracks) | 10 | L0-L2 |
+| **E1.I** | I: OS | I-01 through I-08 (excl. 2 covered) | 8 | L0-L1 |
+| **E1.K** | K: Existing Systems | K-01 through K-15 (Rust, SPARK, Java, Haskell, OCaml, Go, etc.) | 15 | L1 |
+| **E1.L** | L: Attack Research | L-01 through L-20 (excl. 6 covered: SQL, XSS, CSRF, ROP, SmartContract, Web) | 14 | L1 |
+
+**Subtotal:** 117 sessions at Level 0-3 (research/spec only, no Coq proofs)
+
+#### E2. Extended Tracks (151 sessions without proofs)
+
+| ID | Track Series | Missing Sessions | Count | Notes |
+|----|-------------|-----------------|-------|-------|
+| **E2.1** | Greek letters (uncovered) | Γ, Λ, Ρ, Τ, Υ, φ, χ, ξ, ζ, η | 9 | L0 — research aspirations |
+| **E2.2** | AA-AJ (uncovered) | AB, AC, AD, AE, AF, AG | 6 | L0 — not started |
+| **E2.3** | GA-HV (Networking) | 26 of 28 uncovered | 26 | L0 — 439 protocols enumerated, only 2 proof files |
+| **E2.4** | HA-LJ (UI/UX) | 16 of 50 uncovered | 16 | L0 — 34/50 covered via mobile_os/ + uiux/ |
+| **E2.5** | MA-MJ (Post-Axiom) | All 10 | 10 | L0 — blocked on axiom elimination (B1-B3) |
+| **E2.6** | ΣA-FJ (Domain Extensions) | All 85 | 85 | L0 — lowest priority |
+
+**Subtotal:** 152 sessions at Level 0 (research aspirations, blocked, or not started)
+
+**Combined total: 269 research sessions without Coq proof coverage** (out of 218 unique tracks + extended series). Many extended tracks have multiple sessions each.
+
+### Category F: Phase 8 Rust Implementation (3 items)
+
+Coq theory files exist (12+) but zero Rust implementation for Phase 8 components.
+
+| ID | Component | Coq Theory | Rust Implementation | Status |
+|----|-----------|-----------|-------------------|--------|
+| **F1** | Self-hosting compiler | N/A | Write minimal RIINA compiler in RIINA; bootstrap from Rust compiler | ⬜ Not started |
+| **F2** | Hardware verification | HardwareRootOfTrust.v, VerifiedHardware.v, S001_HardwareContracts.v | FPGA/microcode verification backend in Rust; wire to riinac | ⬜ Not started |
+| **F3** | Verified OS (TERAS-OS) | VerifiedMicrokernel.v, VerifiedInfra.v | Verified microkernel in RIINA on ARM/RISC-V | ⬜ Not started |
+
+### Category G: Mobile Backend Completion (2 items)
+
+Phase 7 backends generate bridge code but lack full platform integration.
+
+| ID | Platform | Current State | Action Required | Status |
+|----|----------|--------------|----------------|--------|
+| **G1** | Android | JNI bridge generation (jni.rs, 377 LOC) | Full NDK integration: compile to .so, Gradle project generation, emulator testing pipeline | 🟡 Scaffolding |
+| **G2** | iOS | Swift bridge generation (swift_bridge.rs) | Full Xcode integration: compile to .framework, xcodeproj generation, simulator testing pipeline | 🟡 Scaffolding |
+
+### Gap Register Summary
+
+| Category | Items | Priority | Blocking? |
+|----------|-------|----------|-----------|
+| **A: Unverified typechecker rules** | 5 | HIGH | Core soundness gap between Coq proofs and compiler |
+| **B: Axiom elimination** | 4 (3 eliminable + 1 permanent) | HIGH | Blocks E2.5 (post-axiom tracks) |
+| ~~**C: Compliance stubs**~~ | ~~12~~ | ~~MEDIUM~~ | ✅ DONE (Session 70) |
+| ~~**D: Empty Coq directories**~~ | ~~11~~ | ~~LOW~~ | ✅ DONE (Session 70) |
+| **E: Research tracks without proofs** | 269 sessions | MIXED | Core (E1) HIGH, Extended (E2) LOW |
+| **F: Phase 8 Rust implementation** | 3 | FUTURE | Not blocking current phases |
+| **G: Mobile backend completion** | 2 | MEDIUM | Phase 7 polish |
+| **TOTAL** | **306** | | |
 
 ---
 
@@ -1094,6 +1233,9 @@ Items documented in `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` §1
 | Training course | Revenue | Specified | "RIINA for Security Engineers" |
 | Hosted verification | Revenue | Specified | CI/CD integration |
 | Audience-segmented website | UX | Specified | Dev/CTO/Academic/Security landings |
+| Website mobile-first overhaul | UX | Specified | Strip 588 inline styles → CSS classes; see §12.9 |
+| Verified Layout (Track AL) | Engineering | Research | Compile-time UI/UX correctness; 105 properties, ~225 proofs; see §12.10 |
+| AI-First Language (Track AM) | Engineering | Research | Vibe coding standard; 12 AI-writability properties; see §12.11 |
 | Community launch | Marketing | Specified | HN, Reddit, lobste.rs |
 
 ---
@@ -1122,5 +1264,5 @@ Items documented in `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` §1
 *RIINA: Rigorous Immutable Invariant, No Assumptions*
 *"Every line of code backed by mathematical proof."*
 
-*Report Generated: 2026-02-01 (Session 69)*
-*"v0.2.0. 0 admits. 4 justified axioms. 249 active Coq files. 4,885 Qed. 679 Rust tests. 15 crates. Q.E.D. Aeternum."*
+*Report Generated: 2026-02-02 (Session 70 — Comprehensive audit + Gap Register §8.1)*
+*"v0.2.0. 7 Admitted (tracked). 4 justified axioms. 249 active Coq files. 4,044 Qed. 679 Rust tests. 15 crates. 113 examples. Q.E.D. Aeternum."*

@@ -1,7 +1,7 @@
 # RIINA Coordination Log
 
-## Version: 3.17.0
-## Last Updated: 2026-02-01 (Session 68)
+## Version: 3.18.0
+## Last Updated: 2026-02-02 (Session 71 Audit)
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════╗
@@ -33,29 +33,37 @@
 
 ## TRACK STATUS
 
-### Grand Totals (2026-02-01 Session 68)
+### Grand Totals (2026-02-02 Session 71 Audit)
 
 | Metric | Count | Notes |
 |--------|-------|-------|
-| **Total Research Tracks** | 218 | 55 existing + 163 new identified |
+| **Total Research Domains** | 67 | A-Q (17) + R-Z (9) + Greek (19) + AA-AM (13) + Product (9) |
 | **Delegation Prompts** | **90** | **100% coverage** |
 | **Prover** | **Rocq 9.1 (Coq 8.21)** | Migrated from 8.18.0 (Session 53) |
-| **Coq .v Files (Total)** | 282 | 248 in active build |
-| **Coq Qed Proofs (Total)** | **5,419** | 4,885 active build + 534 deprecated archive |
+| **Coq .v Files (Total)** | 283 | 249 in active build |
+| **Coq Qed Proofs (Total)** | **4,551** | 4,044 active build + 534 deprecated archive |
 | **`admit.` (Active Build)** | **0** | **ALL ELIMINATED** |
-| **`Admitted.` (Active Build)** | **0** | **ALL ELIMINATED** (LinearTypes.v fixed Session 58) |
+| **`Admitted.` (Active Build)** | **7** | 3 DELTA001 + 3 Phase 7 compat stubs + 1 ValRelStepLimit |
 | **Axioms (Active Build)** | 4 | All justified (deref eliminated Session 66) |
-| **Domain Admits (non-critical)** | 11 | In 8 domain/auxiliary files outside core chain |
-| **Rust Tests** | **651** | All passing |
+| **Rust Tests** | **679** | All passing |
 | **Rust Builtins** | **88** | 9 modules (Phase 2 stdlib done) |
 | **Rust Crates** | **15** | +riina-wasm (Session 68) |
-| **Example .rii Files** | **112** | 9 categories (+FFI, +demos, +showcase, +compliance) |
+| **Example .rii Files** | **113** | 9 categories (+FFI, +demos, +showcase, +compliance) |
 | **Build Status** | ✅ GREEN | All files compile |
 | **Threats Covered** | 1,231+ | All made obsolete |
+| **Domain Coverage Matrix** | ✅ | `06_COORDINATION/DOMAIN_COVERAGE_MATRIX.md` |
 | **Attack→Proof Map** | ✅ | `06_COORDINATION/ATTACK_PROOF_MAP.md` |
-| **Repo Protection Guide** | ✅ | `REPO_PROTECTION_GUIDE.md` v2.0.0 |
-| **Git Hooks (pre-commit)** | ✅ | `riinac verify --fast` (auto on commit) |
-| **Git Hooks (pre-push)** | ✅ | `riinac verify --full` + GPG + secrets + Trojan (auto on push) |
+
+### Open Work Items (Session 71)
+
+| Priority | Item | Status | Reference |
+|----------|------|--------|-----------|
+| P0 | Eliminate 7 Admitted in active build (5 files) | Pending | `DOMAIN_COVERAGE_MATRIX.md` §6 |
+| P0 | Close gaps A1-A5 (unverified typechecker rules) | Pending | `DEPENDENCY_GRAPH.md` §3 |
+| P1 | Track AM Phase AM-1: AI context docs | Pending | Mat. Plan §12.11 |
+| P1 | Website mobile overhaul (588 inline styles) | Specified | Mat. Plan §12.9 |
+| P2 | Triage 34 unformalized research domains | Pending | `DOMAIN_COVERAGE_MATRIX.md` §7-8 |
+| P2 | Track AL Phase AL-1: Coq layout model | Research | Mat. Plan §12.10 |
 
 ### Materialization Plan (Track B — Deferred)
 

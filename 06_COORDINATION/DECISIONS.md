@@ -99,3 +99,31 @@
 **Decision**: PENDING — requires decision between (a) bounded iteration with fuel parameter, (b) effect-based divergence marker, or (c) termination proof obligation.
 **Rationale**: While loops can diverge; RIINA's strong normalization guarantee (well_typed_SN) must be reconciled.
 **Status**: OPEN (see materialization plan §15 for details)
+
+### D015: Coq Directory Consolidation — domains/ as Canonical Location
+
+**Date**: 2026-02-02
+**Decision**: Removed 11 empty placeholder directories from `02_FORMAL/coq/` (compiler/, concurrency/, infra/, memory/, network/, os/, performance/, physical/, runtime/, security/, ui/). All domain-specific proofs live in `domains/` and its subdirectories (mobile_os/, security_foundation/, uiux/).
+**Rationale**: Empty directories with only `.gitkeep` files created false negatives in audits — appearing as "missing proofs" when the proofs exist in `domains/`. A single canonical location eliminates organizational ambiguity. The Coq build (249 files, 4,885 Qed) references `domains/` exclusively; no files ever existed in the removed directories. Core structural directories (`foundations/`, `type_system/`, `effects/`, `properties/`, `compliance/`, `Industries/`) are retained as they contain active proof files.
+**Status**: IMPLEMENTED (Session 70 audit)
+
+### D016: Website Must Use CSS Classes, Not Inline Styles
+
+**Date**: 2026-02-02
+**Decision**: All website styling in `RiinaWebsite.jsx` must use CSS classes (in `riina.css`), not React inline `style={{}}` objects. Existing ~588 inline styles must be migrated to CSS classes.
+**Rationale**: React inline styles compile to element-level `style=""` attributes which have highest CSS specificity. No media query or class-based rule can override them, making responsive design impossible. The website is currently unusable on mobile due to this pattern.
+**Status**: SPECIFIED (see Materialization Plan §12.9)
+
+### D017: Verified Layout — Compile-Time UI/UX Correctness (Track AL)
+
+**Date**: 2026-02-02
+**Decision**: Establish research track AL (Domain 57: Verified Layout) to formalize RIINA's layout primitives in Coq and integrate layout verification into the compiler's type system. Layout types (`Susun<T>`, `Lentur`, `Grid`) carry proof obligations verified at compile time: no overflow at any viewport width, WCAG AAA accessibility, cross-platform visual equivalence. 105 properties across 47 layout + 38 accessibility + 12 performance + 8 cross-platform.
+**Rationale**: No programming language offers compile-time UI/UX correctness. The closest academic work (Cassius/VizAssert, UW PLDI 2018) is an external verifier, not language-integrated. RIINA can be the first language where "if it compiles, the UI is perfect." This extends RIINA's security guarantee to the visual layer.
+**Status**: RESEARCH (see `01_RESEARCH/57_DOMAIN_AL_VERIFIED_LAYOUT/RESEARCH_AL01_FOUNDATION.md`, Materialization Plan §12.10)
+
+### D018: AI-First Language Design — Vibe Coding Standard (Track AM)
+
+**Date**: 2026-02-02
+**Decision**: Establish research track AM (Domain 58: AI-First Language) to make RIINA the ideal language for AI code generation. Key deliverables: (1) machine-readable language reference (≤40K tokens), (2) `riinac check --json` compiler-in-the-loop API, (3) `llms.txt` + AI IDE config files, (4) training data corpus (error/fix pairs, intent→code pairs, Python→RIINA comparisons), (5) MCP server for AI tools.
+**Rationale**: 41% of new code is AI-generated (2026). The #1 vibe coding problem is AI generating plausible-but-wrong code. RIINA's compiler proves what humans don't read — the perfect safety net. But AI models need to know RIINA exists (zero training data today). This track addresses discoverability, AI context, compiler feedback API, and training data.
+**Status**: RESEARCH (see `01_RESEARCH/58_DOMAIN_AM_AI_FIRST_LANGUAGE/RESEARCH_AM01_FOUNDATION.md`, Materialization Plan §12.11)
