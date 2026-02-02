@@ -91,7 +91,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | 88 builtins, 9 modules, 509 tests |
-| Phase 3: Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,825 Qed (active), 248 files |
+| Phase 3: Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,885 Qed (active), 249 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |

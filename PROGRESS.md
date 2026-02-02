@@ -869,7 +869,7 @@ ReducibilityFull.v (2 admits)
 | Component | Status | Command | Last Verified |
 |-----------|--------|---------|---------------|
 | **Coq Proofs** | ✅ GREEN | `make` in `02_FORMAL/coq/` | 2026-02-01 |
-| **Rust Proto** | ✅ PASSING (651) | `cargo test --all` in `03_PROTO/` | 2026-02-01 |
+| **Rust Proto** | ✅ PASSING (679) | `cargo test --all` in `03_PROTO/` | 2026-02-02 |
 | **Tooling** | ✅ BUILDS (0 tests) | `cargo test --all` in `05_TOOLING/` | 2026-02-01 |
 
 ---
@@ -880,13 +880,13 @@ ReducibilityFull.v (2 admits)
 
 | Metric | Count |
 |--------|-------|
-| Files in _CoqProject | 248 |
-| Qed Proofs (comment-free) | 4,825 |
+| Files in _CoqProject | 249 |
+| Qed Proofs (comment-free) | 4,885 |
 | **Axioms (Active)** | **4** |
 | **`admit.` (Active)** | **0** |
 | **`Admitted.` (Active)** | **0** |
 | **Total Incomplete Proofs** | **0** |
-| Total .v Files | 282 |
+| Total .v Files | 283 |
 | Deprecated Archive Qed | 534 |
 
 ### 2.2 Axioms by File (Active Build — Session 69)
@@ -979,7 +979,7 @@ The following remain and are NOT covered by delegation output:
 | riina-wasm | WASM playground library (cdylib) | 0 | ✅ |
 | riinac | Compiler driver | 6 | ✅ |
 
-**Total Tests:** 651 | **All Passing** ✅ | **15 crates**
+**Total Tests:** 679 | **All Passing** ✅ | **15 crates**
 
 **Materialization Plan:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` — 8-phase plan from prototype to production language. Phases 1–7 complete; Phase 8 (long-term vision) pending.
 
@@ -1000,12 +1000,12 @@ The following remain and are NOT covered by delegation output:
 ```
 Session      : 69 (Honest Qed Audit)
 Last Action  : Fixed Qed count methodology (comment-free Python audit)
-Build Status : ✅ PASSING (248 Coq files + 651 Rust tests)
+Build Status : ✅ PASSING (249 Coq files + 679 Rust tests)
 Version      : 0.2.0 (VERSION file is source of truth)
 Axioms       : 4 (active build: 3 in NI_v2_LR + 1 in NI_v2)
 Admits       : 0 admit. + 0 Admitted. = 0 total
-Qed Proofs   : 4,825 active (5,359 total incl. 534 deprecated)
-Rust Tests   : 651 (all passing)
+Qed Proofs   : 4,885 active (5,419 total incl. 534 deprecated)
+Rust Tests   : 679 (all passing)
 Rust Crates  : 15
 
 Track A — Remaining Axioms (4):
@@ -1031,7 +1031,7 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 |-----------------|------|--------|------------|
 | 1 | Compiler Completion | ✅ Done | All 5.1-5.7 complete |
 | 2 | Standard Library | ✅ Done | 88 builtins, 9 modules |
-| 3 | Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,825 Qed, 248 active files |
+| 3 | Formal Verification | 🟢 Stable | 0 admits, 4 justified axioms, 4,885 Qed, 249 active files |
 | 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 112 examples |
 | 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0 |
 | 6 | Adoption & Community | ✅ Done | C FFI, 8 demos, community, enterprise, public branch |
@@ -1059,8 +1059,8 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 | `admit.` | 0 |
 | `Admitted.` | 0 |
 | Axioms | 4 (all justified) |
-| Qed proofs | 4,825 (comment-free count) |
-| Build | ✅ PASSING (248 active files) |
+| Qed proofs | 4,885 (comment-free count) |
+| Build | ✅ PASSING (249 active files) |
 
 **Axiom elimination:** `logical_relation_deref` eliminated (Session 66). Worker B on `store_rel_n` rewrite to eliminate `ref`/`assign`. `logical_relation_declassify` is a permanent policy axiom. See `WORKER_B_SPEC_STORE_REL_REWRITE.md`.
 
@@ -1101,4 +1101,4 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 *"Every line of code backed by mathematical proof."*
 
 *Report Generated: 2026-02-01 (Session 69)*
-*"v0.2.0. 0 admits. 4 justified axioms. 248 active Coq files. 4,825 Qed. 651 Rust tests. 15 crates. Q.E.D. Aeternum."*
+*"v0.2.0. 0 admits. 4 justified axioms. 249 active Coq files. 4,885 Qed. 679 Rust tests. 15 crates. Q.E.D. Aeternum."*

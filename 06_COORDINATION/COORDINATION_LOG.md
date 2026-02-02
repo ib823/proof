@@ -41,7 +41,7 @@
 | **Delegation Prompts** | **90** | **100% coverage** |
 | **Prover** | **Rocq 9.1 (Coq 8.21)** | Migrated from 8.18.0 (Session 53) |
 | **Coq .v Files (Total)** | 282 | 248 in active build |
-| **Coq Qed Proofs (Total)** | **5,359** | 4,825 active build + 534 deprecated archive |
+| **Coq Qed Proofs (Total)** | **5,419** | 4,885 active build + 534 deprecated archive |
 | **`admit.` (Active Build)** | **0** | **ALL ELIMINATED** |
 | **`Admitted.` (Active Build)** | **0** | **ALL ELIMINATED** (LinearTypes.v fixed Session 58) |
 | **Axioms (Active Build)** | 4 | All justified (deref eliminated Session 66) |
@@ -64,7 +64,7 @@
 | Materialization plan document | ✅ COMPLETE | `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` |
 | Syntax improvement spec | ✅ ESTABLISHED | `04_SPECS/language/SYNTAX_IMPROVEMENT_SPEC_v2_0_0.md` |
 | Authoritative doc updates | ✅ COMPLETE | CLAUDE.md, PROGRESS.md, SESSION_LOG.md, DECISIONS.md |
-| Execution start | ✅ **PHASE 7 DONE** | Phase 1-7 done; 651 tests; 15 crates; public branch live; release system; 15-page website at ib823.github.io/riina/ (Playground, Why Proof, 15 industries) |
+| Execution start | ✅ **PHASE 7 DONE** | Phase 1-7 done; 679 tests; 15 crates; public branch live; release system; 15-page website at ib823.github.io/riina/ (Playground, Why Proof, 15 industries) |
 | Gap remediation | ✅ ACTIVE | 13-item plan in materialization doc Section 7 |
 | ATTACK_PROOF_MAP.md | ✅ COMPLETE | `06_COORDINATION/ATTACK_PROOF_MAP.md` (490 lines) |
 
