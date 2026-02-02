@@ -330,3 +330,4 @@ domains/WasmBackendVerification.v
 domains/MobileBridgeVerification.v
 domains/PlatformStdlibVerification.v
 domains/BackendTraitVerification.v
+domains/BackendComposition.v

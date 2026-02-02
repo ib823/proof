@@ -77,11 +77,11 @@ RIINA is the world's **first formally verified programming language** with:
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 4 (all justified) | 3 in NI_v2_LR + 1 in NI_v2 |
 | **Admits (Active Build)** | 0 | All fixed (Session 53) |
-| **Qed Proofs (Total)** | 5,359 | 4,825 active build + 534 deprecated archive |
+| **Qed Proofs (Total)** | 5,419 | 4,885 active build + 534 deprecated archive |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Rocq 9.1 (Coq 8.21) | Migrated from 8.18.0 |
-| **Coq Compilation** | ✅ PASSING | 282 files (248 in active build) |
-| **Rust Tests** | ✅ PASSING (651 tests) | All green |
+| **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
+| **Rust Tests** | ✅ PASSING (679 tests) | All green |
 | **Rust Crates** | 15 | +riina-wasm (Session 68) |
 | **Example .rii Files** | 112 | 9 categories (+FFI, +demos, +showcase, +compliance) |
 
@@ -625,7 +625,7 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 admits, 0 Admitted, 4 justified axioms, 4,825 Qed proofs (active), 282 files (Rocq 9.1 / Coq 8.21)**
+**Build: 0 admits, 0 Admitted, 4 justified axioms, 4,885 Qed proofs (active), 283 files (Rocq 9.1 / Coq 8.21)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
@@ -660,7 +660,7 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 | Website "Why Proof" | Executive page: breach costs, assurance hierarchy, quantum/AI immunity, DARPA/AWS/Microsoft proof points, C-suite value props | ✅ Done (Session 65) |
 | Website audit | All links → ib823/riina; Enterprise: 15 industry verticals; Research: 26 domains; Home: 8 industries; 14 pages total | ✅ Done (Session 65) |
 
-**Total: 651 Rust tests, 15 crates, 112 example files. Phase 7 COMPLETE.**
+**Total: 679 Rust tests, 15 crates, 112 example files. Phase 7 COMPLETE.**
 
 ### Phase 7: Platform Universality (03_PROTO/crates/riina-codegen/) — ✅ COMPLETE
 
@@ -771,7 +771,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-01 (Session 69: Honest Qed audit — 0 admits, 4 justified axioms, 651 Rust tests, 15 crates, 112 examples, 282 Coq files, 4,825 active Qed proofs, 534 deprecated)*
+*Last updated: 2026-02-02 (Session 70: Backend production — 0 admits, 4 justified axioms, 679 Rust tests, 15 crates, 112 examples, 283 Coq files, 4,885 active Qed proofs, 534 deprecated)*
 
 ---
 

@@ -41,7 +41,15 @@ if ! git remote | grep -q "^riina$"; then
 fi
 echo -e "${GREEN}[✓] riina remote configured${NC}"
 
-# Step 2: Build website
+# Step 2: Build WASM binary for playground
+echo ""
+echo "Building WASM binary..."
+bash "$REPO_ROOT/scripts/build-wasm.sh" || {
+    echo -e "${YELLOW}WARNING: WASM build skipped (stub .wasm will be used)${NC}"
+}
+echo -e "${GREEN}[✓] WASM build step complete${NC}"
+
+# Step 3: Build website
 echo ""
 echo "Building website..."
 (cd "$WEBSITE_DIR" && npm install --silent && npm run build) || {

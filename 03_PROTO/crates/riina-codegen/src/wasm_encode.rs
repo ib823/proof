@@ -22,10 +22,15 @@ const WASM_VERSION: [u8; 4] = [0x01, 0x00, 0x00, 0x00];
 #[repr(u8)]
 pub enum SectionId {
     Type = 1,
+    Import = 2,
     Function = 3,
+    Table = 4,
     Memory = 5,
+    Global = 6,
     Export = 7,
+    Element = 9,
     Code = 10,
+    Data = 11,
 }
 
 /// WASM value types
@@ -74,10 +79,16 @@ pub enum Op {
     I32Sub = 0x6B,
     I32Mul = 0x6C,
     I32DivS = 0x6D,
+    I32RemS = 0x6F,
+    I32And = 0x71,
+    I32Or = 0x72,
     I64Add = 0x7C,
     I64Sub = 0x7D,
     I64Mul = 0x7E,
     I64DivS = 0x7F,
+    GlobalGet = 0x23,
+    GlobalSet = 0x24,
+    CallIndirect = 0x11,
 }
 
 /// Encode an unsigned LEB128 integer.
@@ -119,17 +130,71 @@ pub fn encode_vec(data: &[u8], out: &mut Vec<u8>) {
 /// WASM module builder.
 ///
 /// Constructs a valid .wasm binary by accumulating sections.
+/// Import entry.
+#[derive(Debug, Clone)]
+pub struct Import {
+    pub module: String,
+    pub name: String,
+    pub kind: ImportKind,
+}
+
+/// Import kind.
+#[derive(Debug, Clone)]
+pub enum ImportKind {
+    Func(u32), // type index
+}
+
+/// Global type.
+#[derive(Debug, Clone)]
+pub struct GlobalType {
+    pub val_type: ValType,
+    pub mutable: bool,
+    /// Init expression bytes (e.g., i32.const 0, end)
+    pub init: Vec<u8>,
+}
+
+/// Table type.
+#[derive(Debug, Clone)]
+pub struct TableType {
+    pub min: u32,
+    pub max: Option<u32>,
+}
+
+/// Element segment (active, table 0, offset expr).
+#[derive(Debug, Clone)]
+pub struct ElemSegment {
+    pub offset_expr: Vec<u8>,
+    pub func_indices: Vec<u32>,
+}
+
+/// Data segment (active, memory 0, offset expr).
+#[derive(Debug, Clone)]
+pub struct DataSegment {
+    pub offset: u32,
+    pub data: Vec<u8>,
+}
+
 pub struct WasmModule {
     /// Type section entries (function signatures)
     pub types: Vec<FuncType>,
+    /// Import section
+    pub imports: Vec<Import>,
     /// Function section (type indices)
     pub functions: Vec<u32>,
+    /// Table section
+    pub tables: Vec<TableType>,
     /// Memory section
     pub memories: Vec<MemoryType>,
+    /// Global section
+    pub globals: Vec<GlobalType>,
     /// Export section
     pub exports: Vec<Export>,
+    /// Element section
+    pub elements: Vec<ElemSegment>,
     /// Code section (function bodies)
     pub codes: Vec<FuncBody>,
+    /// Data section
+    pub data: Vec<DataSegment>,
 }
 
 /// Function type (signature).
@@ -178,10 +243,15 @@ impl WasmModule {
     pub fn new() -> Self {
         Self {
             types: Vec::new(),
+            imports: Vec::new(),
             functions: Vec::new(),
+            tables: Vec::new(),
             memories: Vec::new(),
+            globals: Vec::new(),
             exports: Vec::new(),
+            elements: Vec::new(),
             codes: Vec::new(),
+            data: Vec::new(),
         }
     }
 
@@ -193,34 +263,66 @@ impl WasmModule {
         out.extend_from_slice(&WASM_MAGIC);
         out.extend_from_slice(&WASM_VERSION);
 
-        // Type section
+        // Sections MUST be emitted in order of SectionId
+
+        // 1. Type section
         if !self.types.is_empty() {
             let section = self.encode_type_section();
             self.write_section(SectionId::Type, &section, &mut out);
         }
 
-        // Function section
+        // 2. Import section
+        if !self.imports.is_empty() {
+            let section = self.encode_import_section();
+            self.write_section(SectionId::Import, &section, &mut out);
+        }
+
+        // 3. Function section
         if !self.functions.is_empty() {
             let section = self.encode_function_section();
             self.write_section(SectionId::Function, &section, &mut out);
         }
 
-        // Memory section
+        // 4. Table section
+        if !self.tables.is_empty() {
+            let section = self.encode_table_section();
+            self.write_section(SectionId::Table, &section, &mut out);
+        }
+
+        // 5. Memory section
         if !self.memories.is_empty() {
             let section = self.encode_memory_section();
             self.write_section(SectionId::Memory, &section, &mut out);
         }
 
-        // Export section
+        // 6. Global section
+        if !self.globals.is_empty() {
+            let section = self.encode_global_section();
+            self.write_section(SectionId::Global, &section, &mut out);
+        }
+
+        // 7. Export section
         if !self.exports.is_empty() {
             let section = self.encode_export_section();
             self.write_section(SectionId::Export, &section, &mut out);
         }
 
-        // Code section
+        // 9. Element section
+        if !self.elements.is_empty() {
+            let section = self.encode_element_section();
+            self.write_section(SectionId::Element, &section, &mut out);
+        }
+
+        // 10. Code section
         if !self.codes.is_empty() {
             let section = self.encode_code_section();
             self.write_section(SectionId::Code, &section, &mut out);
+        }
+
+        // 11. Data section
+        if !self.data.is_empty() {
+            let section = self.encode_data_section();
+            self.write_section(SectionId::Data, &section, &mut out);
         }
 
         out
@@ -292,6 +394,78 @@ impl WasmModule {
             let func_body = self.encode_func_body(body);
             encode_uleb128(func_body.len() as u64, &mut buf);
             buf.extend_from_slice(&func_body);
+        }
+        buf
+    }
+
+    fn encode_import_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.imports.len() as u64, &mut buf);
+        for import in &self.imports {
+            encode_vec(import.module.as_bytes(), &mut buf);
+            encode_vec(import.name.as_bytes(), &mut buf);
+            match &import.kind {
+                ImportKind::Func(type_idx) => {
+                    buf.push(0x00); // func
+                    encode_uleb128(*type_idx as u64, &mut buf);
+                }
+            }
+        }
+        buf
+    }
+
+    fn encode_table_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.tables.len() as u64, &mut buf);
+        for table in &self.tables {
+            buf.push(0x70); // funcref
+            if let Some(max) = table.max {
+                buf.push(0x01);
+                encode_uleb128(table.min as u64, &mut buf);
+                encode_uleb128(max as u64, &mut buf);
+            } else {
+                buf.push(0x00);
+                encode_uleb128(table.min as u64, &mut buf);
+            }
+        }
+        buf
+    }
+
+    fn encode_global_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.globals.len() as u64, &mut buf);
+        for global in &self.globals {
+            buf.push(global.val_type as u8);
+            buf.push(if global.mutable { 0x01 } else { 0x00 });
+            buf.extend_from_slice(&global.init);
+        }
+        buf
+    }
+
+    fn encode_element_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.elements.len() as u64, &mut buf);
+        for elem in &self.elements {
+            buf.push(0x00); // active, table 0
+            buf.extend_from_slice(&elem.offset_expr);
+            encode_uleb128(elem.func_indices.len() as u64, &mut buf);
+            for &idx in &elem.func_indices {
+                encode_uleb128(idx as u64, &mut buf);
+            }
+        }
+        buf
+    }
+
+    fn encode_data_section(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        encode_uleb128(self.data.len() as u64, &mut buf);
+        for seg in &self.data {
+            buf.push(0x00); // active, memory 0
+            // offset expr: i32.const <offset>, end
+            buf.push(Op::I32Const as u8);
+            encode_sleb128(seg.offset as i64, &mut buf);
+            buf.push(Op::End as u8);
+            encode_vec(&seg.data, &mut buf);
         }
         buf
     }

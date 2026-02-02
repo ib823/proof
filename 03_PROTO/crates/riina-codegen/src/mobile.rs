@@ -48,14 +48,35 @@ impl Backend for MobileBackend {
 
         match self.target {
             Target::AndroidArm64 => {
-                // Generate JNI bridge
+                // Generate JNI bridge (Java)
                 let jni_bridge = crate::jni::generate_jni_bridge("com.riina.app", "RiinaLib");
                 auxiliary.push(AuxFile {
                     name: "RiinaLib.java".to_string(),
                     content: jni_bridge.into_bytes(),
                 });
 
-                // Generate Android.mk / CMakeLists.txt
+                // Generate JNI header
+                let jni_header = crate::jni::generate_jni_header("com.riina.app", "RiinaLib");
+                auxiliary.push(AuxFile {
+                    name: "riina_jni.h".to_string(),
+                    content: jni_header.into_bytes(),
+                });
+
+                // Generate JNI C implementation (type marshaling + callbacks)
+                let jni_impl = crate::jni::generate_jni_impl("com.riina.app", "RiinaLib");
+                auxiliary.push(AuxFile {
+                    name: "riina_jni.c".to_string(),
+                    content: jni_impl.into_bytes(),
+                });
+
+                // Generate AndroidManifest.xml
+                let manifest = crate::jni::generate_android_manifest("com.riina.app", &[]);
+                auxiliary.push(AuxFile {
+                    name: "AndroidManifest.xml".to_string(),
+                    content: manifest.into_bytes(),
+                });
+
+                // Generate CMakeLists.txt
                 let cmake = generate_android_cmake("riina_native");
                 auxiliary.push(AuxFile {
                     name: "CMakeLists.txt".to_string(),
@@ -70,11 +91,32 @@ impl Backend for MobileBackend {
                     content: swift_bridge.into_bytes(),
                 });
 
+                // Generate C bridge implementation (callbacks routing)
+                let c_bridge = crate::swift_bridge::generate_swift_c_bridge();
+                auxiliary.push(AuxFile {
+                    name: "riina_swift_bridge.c".to_string(),
+                    content: c_bridge.into_bytes(),
+                });
+
                 // Generate bridging header
                 let header = generate_ios_bridging_header();
                 auxiliary.push(AuxFile {
                     name: "RiinaLib-Bridging-Header.h".to_string(),
                     content: header.into_bytes(),
+                });
+
+                // Generate Info.plist
+                let plist = crate::swift_bridge::generate_info_plist_keys(&[]);
+                auxiliary.push(AuxFile {
+                    name: "Info.plist".to_string(),
+                    content: plist.into_bytes(),
+                });
+
+                // Generate Package.swift for SPM
+                let package = crate::swift_bridge::generate_spm_package("RiinaLib");
+                auxiliary.push(AuxFile {
+                    name: "Package.swift".to_string(),
+                    content: package.into_bytes(),
                 });
             }
             _ => {} // Native/WASM handled by other backends
@@ -103,6 +145,7 @@ project({lib_name})
 
 add_library({lib_name} SHARED
     riina_output.c
+    riina_jni.c
 )
 
 target_compile_options({lib_name} PRIVATE
@@ -175,10 +218,13 @@ mod tests {
         let program = ir::Program::new();
         let output = backend.emit(&program).unwrap();
         assert_eq!(output.extension, ".c");
-        // Should have JNI bridge + CMakeLists.txt
-        assert!(output.auxiliary.len() >= 2);
+        // Should have JNI bridge + header + impl + manifest + CMakeLists.txt
+        assert!(output.auxiliary.len() >= 5);
         let names: Vec<&str> = output.auxiliary.iter().map(|a| a.name.as_str()).collect();
         assert!(names.contains(&"RiinaLib.java"));
+        assert!(names.contains(&"riina_jni.h"));
+        assert!(names.contains(&"riina_jni.c"));
+        assert!(names.contains(&"AndroidManifest.xml"));
         assert!(names.contains(&"CMakeLists.txt"));
     }
 
@@ -188,11 +234,14 @@ mod tests {
         let program = ir::Program::new();
         let output = backend.emit(&program).unwrap();
         assert_eq!(output.extension, ".c");
-        // Should have Swift bridge + bridging header
-        assert!(output.auxiliary.len() >= 2);
+        // Should have Swift bridge + C bridge + bridging header + Info.plist + Package.swift
+        assert!(output.auxiliary.len() >= 5);
         let names: Vec<&str> = output.auxiliary.iter().map(|a| a.name.as_str()).collect();
         assert!(names.contains(&"RiinaLib.swift"));
+        assert!(names.contains(&"riina_swift_bridge.c"));
         assert!(names.contains(&"RiinaLib-Bridging-Header.h"));
+        assert!(names.contains(&"Info.plist"));
+        assert!(names.contains(&"Package.swift"));
     }
 
     #[test]
@@ -201,6 +250,7 @@ mod tests {
         assert!(cmake.contains("add_library"));
         assert!(cmake.contains("riina_native"));
         assert!(cmake.contains("-std=c99"));
+        assert!(cmake.contains("riina_jni.c"));
     }
 
     #[test]

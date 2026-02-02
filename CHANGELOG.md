@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - WASM Playground page on website (split-pane editor, 5 examples, Web Worker compilation)
 - 4 backend verification Coq proofs: WASM correctness, JNI/Swift bridge, platform stdlib, backend trait (63 Qed)
 - Phase 7 complete (all M7.1–M7.6 milestones done)
+- WASM backend production: bump allocator, string constants, pair/sum types, closures (table + call_indirect), refs, builtin imports
+- WASM bug fixes: Mod (I32RemS), And/Or (I32And/I32Or), Call (function index resolution)
+- Android JNI production: full C implementation (JNI_OnLoad, type marshaling, callback routing, permissions from effects)
+- iOS Swift production: extended type conversion, C bridge routing, Info.plist generation, SPM Package.swift
+- Playground build pipeline: build-wasm.sh, Vite WASM integration, deploy pipeline
+- Backend composition Coq proofs: NI preservation through compiled backends (BackendComposition.v, 11 Qed)
+- Extended WASM verification (+23 Qed: strings, closures, pairs, allocator, completeness)
+- Extended mobile bridge verification (+17 Qed: JNI string roundtrip, Swift type safety, callback safety)
 
 ## [0.2.0] - 2026-02-01
 

@@ -16,8 +16,8 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Report Date:** 2026-02-01 (Session 69)
-**Session:** 69 (Honest Qed audit — fixed counting methodology across all docs)
+**Report Date:** 2026-02-02 (Session 70)
+**Session:** 70 (Backend production completion — WASM memory/closures/builtins, Android JNI, iOS Swift, Coq composition)
 **Overall Grade:** A (BUILD PASSING, 0 admits, 0 Admitted, 4 justified axioms)
 
 ---
@@ -30,13 +30,22 @@
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **248** | - | ✅ All compile |
-| Qed Proofs (Total) | **5,359** | - | ✅ (4,825 active build + 534 deprecated archive) |
-| .v Files (Total) | **282** | - | ✅ |
-| Rust Prototype | ✅ PASSING (651 tests) | PASSING | ✅ GREEN |
+| Files in Build | **249** | - | ✅ All compile |
+| Qed Proofs (Total) | **5,419** | - | ✅ (4,885 active build + 534 deprecated archive) |
+| .v Files (Total) | **283** | - | ✅ |
+| Rust Prototype | ✅ PASSING (679 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
 | Example .rii Files | **112** | 100+ | ✅ (+5 demos, +3 showcase, +compliance) |
 | Prover | **Rocq 9.1 (Coq 8.21)** | - | ✅ Migrated from 8.18 |
+
+**SESSION 70 KEY ACTIONS (Backend Production — WASM full, Android JNI, iOS Swift, Coq composition):**
+1. **WASM bug fixes** — Fixed Mod (I32RemS), And/Or (I32And/I32Or), Call (function index map); added 6 new opcodes
+2. **WASM memory infrastructure** — Bump allocator, string constants via data section, pair/sum in linear memory, closure support (table + call_indirect), ref ops, builtin imports, enhanced JS glue; +13 tests
+3. **Android JNI production** — `generate_jni_impl()` with JNI_OnLoad, type marshaling (jstring↔C), callback routing (riina_cetak→riinaLog), thread-local JNIEnv; `generate_android_manifest()` with effect→permission mapping; +8 tests
+4. **iOS Swift production** — Extended Swift bridge (toCValue, String.fromRiina), C bridge routing, Info.plist from effects, SPM Package.swift; +6 tests
+5. **Playground pipeline** — `scripts/build-wasm.sh`, Vite WASM config, prebuild script, deploy integration
+6. **Coq backend composition** — BackendComposition.v (11 Qed): NI composition through backends; extended WASM (+23 Qed) and Mobile (+17 Qed) verification files
+7. **Tests: 651 → 679** (+28), **Qed: 4,825 → 4,885** (+60), **Coq files: 282 → 283** (+BackendComposition.v)
 
 **SESSION 68 KEY ACTIONS (Phase 7 Complete: M7.5 WASM Playground + M7.6 Backend Verification):**
 1. **M7.5 WASM Playground** — `riina-wasm` crate (cdylib, 15th crate), Playground.jsx (split-pane editor, 5 examples, debounced compile), Web Worker for WASM execution

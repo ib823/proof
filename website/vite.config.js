@@ -7,4 +7,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  // WASM asset handling for playground
+  assetsInclude: ['**/*.wasm'],
+  optimizeDeps: {
+    exclude: ['riina_wasm'],
+  },
 });
