@@ -1076,6 +1076,28 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 
 ---
 
+## 8.5 STRATEGIC ROADMAP (Phase 8 Detail)
+
+Items documented in `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` §12.4–12.8:
+
+| Item | Category | Status | Notes |
+|------|----------|--------|-------|
+| Self-hosting compiler | Engineering | Planned | RIINA compiler in RIINA |
+| Hardware verification | Engineering | Planned | RISC-V partnership, side-channel models |
+| Verified OS | Engineering | Planned | Microkernel on ARM/RISC-V |
+| Multi-language keywords | Engineering | Specified | Mandarin, Hindi, Arabic, Tamil — needs lexer arch |
+| 90-sec demo video | Content | Specified | Terminal recording: RIINA vs Rust |
+| Axiom elimination blog | Content | Specified | 92→4 journey, formal methods audience |
+| Conference submissions | Content | Specified | POPL, ICFP, Black Hat |
+| Enterprise support | Revenue | Specified | SLA-backed contracts |
+| Compliance certification | Revenue | Specified | Auditor-ready proof packages |
+| Training course | Revenue | Specified | "RIINA for Security Engineers" |
+| Hosted verification | Revenue | Specified | CI/CD integration |
+| Audience-segmented website | UX | Specified | Dev/CTO/Academic/Security landings |
+| Community launch | Marketing | Specified | HN, Reddit, lobste.rs |
+
+---
+
 ## 9. KEY DOCUMENTS
 
 | Document | Purpose | Location |

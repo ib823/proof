@@ -96,7 +96,7 @@ RIINA is the world's **first formally verified programming language** with:
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
 | Phase 7: Platform Universality | ✅ Done | WASM backend, mobile backends, platform stdlib, playground, backend verification |
-| Phase 8: Long-term Vision | ⬜ | Self-hosting, HW verification |
+| Phase 8: Long-term Vision | ⬜ | Self-hosting, HW verification, verified OS, multi-lang keywords, content/revenue/community strategy (§12.1–12.8) |
 
 **See `PROGRESS.md` for detailed status.**
 
