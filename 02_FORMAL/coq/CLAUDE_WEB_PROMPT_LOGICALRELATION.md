@@ -1,5 +1,7 @@
 # PROMPT: Fix Admits and Axioms in NonInterference_v2_LogicalRelation.v
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 You are working on a Coq 8.18+ (also compiles with Rocq 9.1) formal verification codebase called RIINA. This file has **5 Axioms** and **12 Admits**. Fix as many as possible.
 
 **CRITICAL RULES:**

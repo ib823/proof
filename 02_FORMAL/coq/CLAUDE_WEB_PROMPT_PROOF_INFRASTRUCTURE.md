@@ -1,5 +1,7 @@
 # CLAUDE AI WEB DELEGATION PROMPT — Missing Proof Infrastructure
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 **IMPORTANT: This prompt is 100% self-contained. Claude AI Web has NO access to any codebase files and NO prior knowledge of RIINA. ALL necessary definitions and context are provided below.**
 
 ---

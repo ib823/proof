@@ -1,5 +1,7 @@
 # PROMPT: Fix 6 Admits in ReferenceOps.v
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 You are working on a Coq 8.18+ (also compiles with Rocq 9.1) formal verification codebase called RIINA. You must fix ALL 6 `Admitted` statements in the file `properties/ReferenceOps.v`.
 
 **CRITICAL RULES:**

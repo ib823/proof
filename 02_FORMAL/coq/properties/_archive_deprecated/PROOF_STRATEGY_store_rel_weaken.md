@@ -1,5 +1,7 @@
 # PACKAGE B: store_rel_n_weaken_aux - Proof Strategy Document
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 ## Executive Summary
 
 The `store_rel_n_weaken_aux` lemma proves that store relations are **anti-monotonic** in the store typing: if two stores are related under a larger store typing Σ', they remain related under any smaller Σ ⊆ Σ'.

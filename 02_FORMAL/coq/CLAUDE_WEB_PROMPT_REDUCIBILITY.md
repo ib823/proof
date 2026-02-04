@@ -1,5 +1,7 @@
 # PROMPT: Fix 3 Axioms in ReducibilityFull.v
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 You are working on a Coq 8.18+ (also compiles with Rocq 9.1) formal verification codebase called RIINA. You must fix the 3 `Axiom` statements in `termination/ReducibilityFull.v` by converting them to `Lemma` with complete proofs, OR document why they must remain as justified axioms.
 
 **CRITICAL RULES:**

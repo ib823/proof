@@ -1,4 +1,6 @@
 # TERAS RESEARCH DOCUMENT A-03: COMPARATIVE ANALYSIS
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 ## Homotopy Type Theory and Cubical Type Theory
 
 ### Document Metadata

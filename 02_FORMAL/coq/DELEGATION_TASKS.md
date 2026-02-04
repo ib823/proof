@@ -1,5 +1,7 @@
 # DELEGATION TASKS FOR CLAUDE AI (WEB)
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 ## TASK 1: exp_rel_step1_fst
 
 **Insert this in Section 5 of CLAUDE_AI_DELEGATION_PROMPT.md:**

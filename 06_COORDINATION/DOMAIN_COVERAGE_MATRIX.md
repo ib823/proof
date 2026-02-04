@@ -1,5 +1,7 @@
 # Research Track → Coq Proof Coverage Matrix
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 > Auto-generated: 2026-02-02
 > Method: `grep -c "^Qed\."` on each .v file; `find -name "*.md"` on each research dir
 

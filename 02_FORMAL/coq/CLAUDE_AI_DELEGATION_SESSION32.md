@@ -1,5 +1,7 @@
 # Claude.ai Delegation Package - Session 32
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 ## Overview
 
 This document contains self-contained proof tasks that can be completed by Claude.ai web interface.

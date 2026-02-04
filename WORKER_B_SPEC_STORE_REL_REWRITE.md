@@ -1,5 +1,7 @@
 # Worker B Spec: store_rel_n Rewrite (5 Axioms → 1)
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 ## Mission
 
 Rewrite `store_rel_n` and `val_rel_n` step-0 definitions to eliminate 4 of 5 remaining axioms.

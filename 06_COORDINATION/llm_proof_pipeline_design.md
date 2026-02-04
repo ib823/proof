@@ -1,5 +1,7 @@
 # RIINA LLM-Assisted Proof Pipeline v1.0.0
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 **Document ID:** RIINA_LLM_PROOF_PIPELINE_v1_0_0  
 **Version:** 1.0.0  
 **Date:** January 2026  

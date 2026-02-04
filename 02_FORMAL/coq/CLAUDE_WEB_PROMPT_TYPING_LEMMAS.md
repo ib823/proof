@@ -1,5 +1,7 @@
 # CLAUDE AI WEB PROMPT: RIINA Typing Lemmas
 
+**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+
 **Target:** Claude AI Web / ChatGPT 5.2 Extended Thinking
 **Purpose:** Prove typing infrastructure lemmas for step-indexed logical relations
 **Output:** Complete Coq 8.18.0 file with ALL proofs ending in `Qed.`

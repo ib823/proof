@@ -17,8 +17,9 @@
 ```
 
 **Report Date:** 2026-02-02 (Session 70)
+**Audit Update:** 2026-02-04 (Codex audit sync)
 **Session:** 70 (Backend production completion — WASM memory/closures/builtins, Android JNI, iOS Swift, Coq composition)
-**Overall Grade:** A- (BUILD PASSING, 7 Admitted in active build, 4 justified axioms)
+**Overall Grade:** A- (BUILD PASSING, 0 Admitted in active build, 4 justified axioms)
 
 ---
 
@@ -27,7 +28,7 @@
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
 | `admit.` (Active Build) | **0** | 0 | ✅ ZERO |
-| `Admitted.` (Active Build) | **8** | 0 | ⚠️ 4 DELTA001 + 3 Phase 7 stubs + 1 ValRelStepLimit |
+| `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **249** | - | ✅ All compile |
@@ -217,7 +218,7 @@
 | (prior) | Prove logical_relation theorem (Admitted → Qed, all 13 cases) |
 | a1d3856 | Worker C: Monotone Qed, ReferenceOps fixes |
 
-### Admits Eliminated (19 admit. tactical eliminated; 7 Admitted. remain in active build)
+### Admits Eliminated (19 admit. tactical eliminated; 0 Admitted. remain in active build)
 
 All admits and Admitted proofs eliminated from the active build.
 
@@ -876,7 +877,7 @@ ReducibilityFull.v (2 admits)
 
 ## 2. CODEBASE METRICS (ACCURATE - Active Build Only)
 
-### 2.1 Active Build Summary (Session 69 — VERIFIED via comment-free Python audit)
+### 2.1 Active Build Summary (Session 69 — UPDATED 2026-02-04 via Codex audit)
 
 | Metric | Count |
 |--------|-------|
@@ -884,8 +885,8 @@ ReducibilityFull.v (2 admits)
 | Qed Proofs (comment-free) | 4,044 |
 | **Axioms (Active)** | **4** |
 | **`admit.` (Active)** | **0** |
-| **`Admitted.` (Active)** | **8** |
-| **Total Incomplete Proofs** | **8** |
+| **`Admitted.` (Active)** | **0** |
+| **Total Incomplete Proofs** | **0** |
 | Total .v Files | 283 |
 | Deprecated Archive Qed | 534 |
 
@@ -1003,7 +1004,7 @@ Last Action  : Full codebase audit — gap register created (§8.1)
 Build Status : ✅ PASSING (249 Coq files + 679 Rust tests)
 Version      : 0.2.0 (VERSION file is source of truth)
 Axioms       : 4 (active build: 3 in NI_v2_LR + 1 in NI_v2)
-Admits       : 0 admit. + 7 Admitted. = 7 total (3 DELTA001 + 3 Phase 7 compat stubs + 1 ValRelStepLimit). See DOMAIN_COVERAGE_MATRIX.md §6
+Admits       : 0 admit. + 0 Admitted. = 0 total. See DOMAIN_COVERAGE_MATRIX.md §6
 Qed Proofs   : 4,044 active (4,551 total incl. 507 deprecated)
 Rust Tests   : 679 (all passing)
 Rust Crates  : 15
@@ -1040,7 +1041,7 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 |-----------------|------|--------|------------|
 | 1 | Compiler Completion | ✅ Done | All 5.1-5.7 complete |
 | 2 | Standard Library | ✅ Done | 88 builtins, 9 modules |
-| 3 | Formal Verification | ⚠️ 7 Admitted | 7 Admitted, 4 justified axioms, 4,044 Qed, 249 active files |
+| 3 | Formal Verification | ✅ Done | 0 Admitted, 4 justified axioms, 4,044 Qed, 249 active files |
 | 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 113 examples |
 | 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0 |
 | 6 | Adoption & Community | ✅ Done | C FFI, 8 demos, community, enterprise, public branch |
@@ -1066,7 +1067,7 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 | Metric | Value |
 |--------|-------|
 | `admit.` | 0 |
-| `Admitted.` | 8 (4 DELTA001, 1 PlatformStdlib, 1 WASM, 1 MobileBridge, 1 ValRelStepLimit) |
+| `Admitted.` | 0 |
 | Axioms | 4 (all justified) |
 | Qed proofs | 4,044 (comment-free count) |
 | Build | ✅ PASSING (249 active files) |
@@ -1078,6 +1079,22 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 ## 8. NEXT PRIORITIES
 
 | Priority | Track | Task |
+
+---
+
+## 9. AUDIT METHOD (CODEX)
+
+**Audit Date:** 2026-02-04  
+**Auditor:** Codex  
+**Scope:** Active build only (`02_FORMAL/coq/_CoqProject`)
+
+**Method (replicable):**
+1. Parse `_CoqProject` to enumerate active `.v` files (249).
+2. Scan active files for `Admitted.` and `admit.` tokens.
+3. Scan active files for `Axiom` declarations (lines starting with `Axiom`).
+4. Compare against repo-wide scan to ensure no `Admitted.`/`admit.` exist outside active build.
+
+**Result:** 0 `admit.`, 0 `Admitted.`, 4 `Axiom` in active build.
 |----------|-------|------|
 | P1 | A | **Axiom elimination** — Worker B store_rel_n rewrite (ref/assign, 2 remaining eliminable) |
 | P2 | A+B | **Unverified typechecker rules** — Formalize 5 UNVERIFIED rule groups in Coq + thread Σ/Δ into Rust |
@@ -1265,4 +1282,4 @@ Items documented in `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` §1
 *"Every line of code backed by mathematical proof."*
 
 *Report Generated: 2026-02-02 (Session 70 — Comprehensive audit + Gap Register §8.1)*
-*"v0.2.0. 7 Admitted (tracked). 4 justified axioms. 249 active Coq files. 4,044 Qed. 679 Rust tests. 15 crates. 113 examples. Q.E.D. Aeternum."*
+*"v0.2.0. 0 Admitted (tracked). 4 justified axioms. 249 active Coq files. 4,044 Qed. 679 Rust tests. 15 crates. 113 examples. Q.E.D. Aeternum."*
