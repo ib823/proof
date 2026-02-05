@@ -21,38 +21,42 @@ Require Import RIINA.properties.NonInterference_v2_LogicalRelation.
 Lemma val_rel_pair : forall Σ T1 T2 v1 v1' v2 v2',
   val_rel Σ T1 v1 v1' ->
   val_rel Σ T2 v2 v2' ->
+  has_type nil Σ Public v1 T1 EffectPure ->
+  has_type nil Σ Public v1' T1 EffectPure ->
+  has_type nil Σ Public v2 T2 EffectPure ->
+  has_type nil Σ Public v2' T2 EffectPure ->
   val_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2').
 Proof.
-  intros Σ T1 T2 v1 v1' v2 v2' Hrel1 Hrel2.
+  intros Σ T1 T2 v1 v1' v2 v2' Hrel1 Hrel2 Ht1 Ht1' Ht2 Ht2'.
   unfold val_rel in *.
   intro n.
-  apply val_rel_n_prod_compose.
-  - apply Hrel1.
-  - apply Hrel2.
+  apply val_rel_n_prod_compose; auto.
 Qed.
 
 (* PROVEN using val_rel_n_sum_inl from NonInterference_v2_LogicalRelation.v *)
 Lemma val_rel_inl : forall Σ T1 T2 v1 v2,
   val_rel Σ T1 v1 v2 ->
+  has_type nil Σ Public v1 T1 EffectPure ->
+  has_type nil Σ Public v2 T1 EffectPure ->
   val_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2).
 Proof.
-  intros Σ T1 T2 v1 v2 Hrel.
+  intros Σ T1 T2 v1 v2 Hrel Ht1 Ht2.
   unfold val_rel in *.
   intro n.
-  apply val_rel_n_sum_inl.
-  apply Hrel.
+  apply val_rel_n_sum_inl; auto.
 Qed.
 
 (* PROVEN using val_rel_n_sum_inr from NonInterference_v2_LogicalRelation.v *)
 Lemma val_rel_inr : forall Σ T1 T2 v1 v2,
   val_rel Σ T2 v1 v2 ->
+  has_type nil Σ Public v1 T2 EffectPure ->
+  has_type nil Σ Public v2 T2 EffectPure ->
   val_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1).
 Proof.
-  intros Σ T1 T2 v1 v2 Hrel.
+  intros Σ T1 T2 v1 v2 Hrel Ht1 Ht2.
   unfold val_rel in *.
   intro n.
-  apply val_rel_n_sum_inr.
-  apply Hrel.
+  apply val_rel_n_sum_inr; auto.
 Qed.
 
 (** ** Compositionality for Expressions *)
@@ -62,6 +66,10 @@ Qed.
 Lemma exp_rel_pair_values : forall Σ T1 T2 v1 v1' v2 v2',
   val_rel Σ T1 v1 v1' ->
   val_rel Σ T2 v2 v2' ->
+  has_type nil Σ Public v1 T1 EffectPure ->
+  has_type nil Σ Public v1' T1 EffectPure ->
+  has_type nil Σ Public v2 T2 EffectPure ->
+  has_type nil Σ Public v2' T2 EffectPure ->
   exp_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2').
 Proof.
   intros. apply exp_rel_of_val_rel. apply val_rel_pair; assumption.
@@ -69,6 +77,8 @@ Qed.
 
 Lemma exp_rel_inl_values : forall Σ T1 T2 v1 v2,
   val_rel Σ T1 v1 v2 ->
+  has_type nil Σ Public v1 T1 EffectPure ->
+  has_type nil Σ Public v2 T1 EffectPure ->
   exp_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2).
 Proof.
   intros. apply exp_rel_of_val_rel. apply val_rel_inl; assumption.
@@ -76,6 +86,8 @@ Qed.
 
 Lemma exp_rel_inr_values : forall Σ T1 T2 v1 v2,
   val_rel Σ T2 v1 v2 ->
+  has_type nil Σ Public v1 T2 EffectPure ->
+  has_type nil Σ Public v2 T2 EffectPure ->
   exp_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1).
 Proof.
   intros. apply exp_rel_of_val_rel. apply val_rel_inr; assumption.

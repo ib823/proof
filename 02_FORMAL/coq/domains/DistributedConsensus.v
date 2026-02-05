@@ -5,11 +5,11 @@
    Models a simplified Byzantine fault-tolerant consensus protocol.
    All theorems fully proven, no Admitted/admit/Axiom. *)
 
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.Arith.PeanoNat.
-Require Import Stdlib.micromega.Lia.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Lists.List.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.micromega.Lia.
 Import ListNotations.
 
 (* --- Node and protocol definitions --- *)

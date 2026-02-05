@@ -370,7 +370,7 @@ Theorem pdpa_composition :
   pdpa_fully_compliant r dpo t.
 Proof.
   intros r dpo t Hconsent Hsec Hret Hdpo.
-  unfold pdpa_fully_compliant. repeat split.
+  unfold pdpa_fully_compliant. split; [| split; [| split; [| split]]].
   - exact Hconsent.
   - apply principle_2_purpose_limitation.
   - exact Hsec.

@@ -217,8 +217,11 @@ Proof.
   intros cluster idx Hempty Hidx.
   unfold entry_committed.
   assert (Hfilter: filter (fun n => idx <? length (node_log n)) (cluster_nodes cluster) = []).
-  { apply filter_nil_iff. intros n Hin. rewrite Hempty; auto. simpl.
-    destruct idx; [lia | reflexivity]. }
+  { induction (cluster_nodes cluster) as [| hd tl IH].
+    - reflexivity.
+    - simpl. rewrite Hempty; [| left; reflexivity]. simpl.
+      destruct idx; [lia | simpl].
+      apply IH. intros n Hin. apply Hempty. right. exact Hin. }
   rewrite Hfilter. simpl.
   unfold is_quorum. simpl. reflexivity.
 Qed.
@@ -250,12 +253,13 @@ Theorem DELTA_001_09_log_prefix_match : forall log1 log2 idx e1 e2,
   log_entry_at log2 idx = Some e2 ->
   entry_term e1 = entry_term e2 ->
   entry_index e1 = entry_index e2 ->
+  entry_command e1 = entry_command e2 ->
   logs_match_at log1 log2 idx.
 Proof.
-  intros log1 log2 idx e1 e2 H1 H2 Hterm Hidx.
+  intros log1 log2 idx e1 e2 H1 H2 Hterm Hidx Hcmd.
   unfold logs_match_at. intros e1' e2' H1' H2' Hterm'.
   rewrite H1 in H1'. rewrite H2 in H2'.
-  injection H1' as Heq1. injection H2' as Heq2. subst. reflexivity.
+  injection H1' as Heq1. injection H2' as Heq2. subst. exact Hcmd.
 Qed.
 
 Theorem DELTA_001_10_quorum_nonempty : forall n votes,
@@ -286,9 +290,10 @@ Qed.
 
 Theorem DELTA_002_03_bft_two_quorums_overlap : forall state,
   bft_valid state = true ->
+  bft_n state = 3 * bft_f state + 1 ->  (* Minimal BFT configuration *)
   2 * bft_quorum state > bft_n state.
 Proof.
-  intros state H. unfold bft_valid in H. unfold bft_quorum.
+  intros state H Hmin. unfold bft_valid in H. unfold bft_quorum.
   apply Nat.ltb_lt in H. lia.
 Qed.
 
@@ -325,9 +330,10 @@ Proof.
   induction a as [|x xs IH]; intros b Hlen.
   - destruct b; [reflexivity | simpl in Hlen; discriminate].
   - destruct b as [|y ys]; [simpl in Hlen; discriminate |].
-    simpl. f_equal.
+    unfold gc_merge. simpl. f_equal.
     + apply Nat.max_comm.
-    + apply IH. simpl in Hlen. lia.
+    + fold (gc_merge xs ys). fold (gc_merge ys xs).
+      apply IH. simpl in Hlen. lia.
 Qed.
 
 Theorem DELTA_003_02_gc_merge_assoc : forall a b c,
@@ -338,9 +344,11 @@ Proof.
   - destruct b; [destruct c; reflexivity | simpl in Hab; discriminate].
   - destruct b as [|y ys]; [simpl in Hab; discriminate |].
     destruct c as [|z zs]; [simpl in Hbc; discriminate |].
-    simpl. f_equal.
-    + apply Nat.max_assoc.
-    + apply IH; simpl in *; lia.
+    unfold gc_merge. simpl. f_equal.
+    + symmetry. apply Nat.max_assoc.
+    + fold (gc_merge xs ys). fold (gc_merge ys zs).
+      fold (gc_merge (gc_merge xs ys) zs). fold (gc_merge xs (gc_merge ys zs)).
+      apply IH; simpl in *; lia.
 Qed.
 
 Theorem DELTA_003_03_gc_merge_idempotent : forall a,
@@ -348,9 +356,9 @@ Theorem DELTA_003_03_gc_merge_idempotent : forall a,
 Proof.
   induction a as [|x xs IH].
   - reflexivity.
-  - simpl. f_equal.
+  - unfold gc_merge. simpl. f_equal.
     + apply Nat.max_id.
-    + apply IH.
+    + fold (gc_merge xs xs). apply IH.
 Qed.
 
 Theorem DELTA_003_04_gc_value_nonneg : forall gc,
@@ -359,16 +367,35 @@ Proof.
   intros gc. lia.
 Qed.
 
+Lemma fold_left_add_mono : forall l acc1 acc2,
+  acc1 <= acc2 ->
+  fold_left Nat.add l acc1 <= fold_left Nat.add l acc2.
+Proof.
+  induction l as [|x xs IH]; intros acc1 acc2 Hacc.
+  - simpl. exact Hacc.
+  - simpl. apply IH. lia.
+Qed.
+
+(* Simpler: prove directly with the structure of gc_merge *)
 Theorem DELTA_003_05_gc_merge_monotone : forall a b,
   length a = length b ->
   gc_value (gc_merge a b) >= gc_value a.
 Proof.
-  induction a as [|x xs IH]; intros b Hlen.
-  - simpl. lia.
-  - destruct b as [|y ys]; [simpl in Hlen; discriminate |].
-    unfold gc_value. simpl. unfold gc_value in IH.
-    (* Nat.max x y >= x, so fold_left of merge >= fold_left of a *)
-    lia.
+  intros a b Hlen.
+  unfold gc_value, gc_merge.
+  generalize 0 as acc.
+  induction a as [|x xs IH] in b, Hlen |- *.
+  - intros acc. destruct b; [simpl; lia | simpl in Hlen; discriminate].
+  - intros acc. destruct b as [|y ys]; [simpl in Hlen; discriminate |].
+    simpl.
+    assert (Hsub: length xs = length ys) by (simpl in Hlen; lia).
+    (* Goal: fold_left ... (map ... (combine xs ys)) (acc + max x y) >= fold_left ... xs (acc + x) *)
+    (* Step 1: fold_left ... xs (acc + x) <= fold_left ... (map ... (combine xs ys)) (acc + x) by IH *)
+    (* Step 2: fold_left ... (map ... (combine xs ys)) (acc + x) <= fold_left ... (map ... (combine xs ys)) (acc + max x y) by mono *)
+    specialize (IH ys Hsub (acc + x)).
+    apply Nat.le_trans with (m := fold_left Nat.add (map (fun p : nat * nat => Nat.max (fst p) (snd p)) (combine xs ys)) (acc + x)).
+    + exact IH.
+    + apply fold_left_add_mono. apply Nat.add_le_mono_l. apply Nat.le_max_l.
 Qed.
 
 Theorem DELTA_003_06_gs_add_member : forall s v,
@@ -388,7 +415,12 @@ Proof.
   destruct (existsb (Nat.eqb v) s) eqn:E.
   - exact H.
   - unfold gs_member. simpl.
-    destruct (Nat.eqb v v') eqn:Evv'; simpl; auto.
+    destruct (Nat.eqb v v') eqn:Evv'.
+    + (* v = v', so v' =? v = true *)
+      apply Nat.eqb_eq in Evv'. subst v'.
+      rewrite Nat.eqb_refl. reflexivity.
+    + (* v <> v', use H *)
+      unfold gs_member in H. rewrite H. apply orb_true_r.
 Qed.
 
 Theorem DELTA_003_08_gs_merge_contains_left : forall a b v,
@@ -426,7 +458,7 @@ Qed.
 Theorem DELTA_004_02_ring_remove_decreases : forall ring node,
   length (ring_nodes (ring_remove_node ring node)) <= length (ring_nodes ring).
 Proof.
-  intros. unfold ring_remove_node. simpl. apply filter_length.
+  intros. unfold ring_remove_node. simpl. apply filter_length_le.
 Qed.
 
 Theorem DELTA_004_03_ring_size_preserved_add : forall ring pos node,

@@ -106,7 +106,7 @@ Record LabeledIR := mkLIR {
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
 (* Type mapping: RIINA types → WASM types *)
-Definition type_compile (t : RiinaType) : WasmValType :=
+Fixpoint type_compile (t : RiinaType) : WasmValType :=
   match t with
   | RTNombor => I32
   | RTTeks => I32       (* pointer *)
@@ -418,11 +418,11 @@ Definition compile_closure_alloc (cl : Closure) (addr : nat) : WasmBlock :=
    WConst (addr + 4); WConst (cl_env_ptr cl); WStore 0].
 
 (* Two closures at different addresses don't overlap *)
-Theorem wasm_007_closure_no_overlap : forall cl1 cl2 a1 a2,
+Theorem wasm_007_closure_no_overlap : forall (cl1 cl2 : Closure) a1 a2,
   a1 + 8 <= a2 \/ a2 + 8 <= a1 ->
   regions_disjoint (mkRegion a1 8 Public) (mkRegion a2 8 Public).
 Proof.
-  intros. unfold regions_disjoint. simpl. lia.
+  intros _ _ a1 a2. unfold regions_disjoint. simpl. lia.
 Qed.
 
 (* Closure func_idx is recoverable *)
@@ -634,11 +634,45 @@ Proof.
   reflexivity.
 Qed.
 
+(* Helper: append with a non-empty list on right is non-empty *)
+Lemma app_ne_nil_r : forall {A : Type} (xs ys : list A),
+  ys <> [] -> xs ++ ys <> [].
+Proof.
+  intros A xs ys Hys.
+  destruct xs as [|x xs']; simpl.
+  - exact Hys.
+  - intro H. inversion H.
+Qed.
+
+(* Helper: a singleton list is non-empty *)
+Lemma singleton_ne_nil : forall {A : Type} (x : A),
+  [x] <> [].
+Proof.
+  intros. intro H. inversion H.
+Qed.
+
+(* Helper: cons list is non-empty *)
+Lemma cons_ne_nil : forall {A : Type} (x : A) (xs : list A),
+  x :: xs <> [].
+Proof.
+  intros. intro H. inversion H.
+Qed.
+
 (* Completeness: compile_ir handles ALL constructors of RiinaIR *)
 Theorem wasm_010_completeness : forall e,
   compile_ir e <> [].
 Proof.
-  intros. destruct e; simpl; discriminate.
+  intros e.
+  induction e; simpl.
+  - apply singleton_ne_nil.  (* IRConst *)
+  - apply singleton_ne_nil.  (* IRVar *)
+  - apply app_ne_nil_r. apply app_ne_nil_r. apply singleton_ne_nil.  (* IRAdd *)
+  - apply app_ne_nil_r. apply app_ne_nil_r. apply singleton_ne_nil.  (* IRMul *)
+  - apply singleton_ne_nil.  (* IRCall *)
+  - apply app_ne_nil_r. apply cons_ne_nil.  (* IRLet: ... ++ [WDrop] ++ ... *)
+  - exact IHe2.  (* IRIf: compile_ir t, which is e2 *)
+  - apply singleton_ne_nil.  (* IRLoad *)
+  - apply singleton_ne_nil.  (* IRStore *)
 Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)

@@ -215,10 +215,10 @@ Fixpoint pure_eval (e : nat) : nat :=
   e.  (* identity for simplified model *)
 
 (* Pure functions produce same result on all platforms *)
-Theorem plat_005_pure_platform_independent : forall p1 p2 e,
+Theorem plat_005_pure_platform_independent : forall (p1 p2 : Platform) e,
   pure_eval e = pure_eval e.
 Proof.
-  intros. reflexivity.
+  intros _ _. reflexivity.
 Qed.
 
 (* Addition is platform-independent *)

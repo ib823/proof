@@ -8,12 +8,12 @@
    All theorems fully proven — zero Admitted/admit/Axiom.
 *)
 
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.Arith.PeanoNat.
-Require Import Stdlib.Arith.EqNat.
-Require Import Stdlib.micromega.Lia.
+Require Import Coq.Lists.List.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Arith.EqNat.
+Require Import Coq.micromega.Lia.
 Import ListNotations.
 
 (* ============================================================ *)

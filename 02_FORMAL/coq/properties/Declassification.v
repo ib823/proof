@@ -27,7 +27,7 @@ Require Import Nat.
 Require Import Bool.
 Require Import Lia.
 Require Import Arith.PeanoNat.
-Require Import Stdlib.Program.Equality.
+Require Import Coq.Program.Equality.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.

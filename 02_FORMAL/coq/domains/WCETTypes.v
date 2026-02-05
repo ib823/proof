@@ -11,10 +11,10 @@
     Spec: 01_RESEARCH/specs/RIINA_WCET_TYPES.md
 *)
 
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Arith.PeanoNat.
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.micromega.Lia.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Lists.List.
+Require Import Coq.micromega.Lia.
 Import ListNotations.
 
 (** * Cost model: natural number of "ticks" *)

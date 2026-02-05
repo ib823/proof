@@ -5,10 +5,10 @@
    Strategic Item #3: Model a proof-checking pipeline for propositional logic.
    Spec: 06_COORDINATION/llm_proof_pipeline_design.md *)
 
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.micromega.Lia.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Lists.List.
+Require Import Coq.Arith.Arith.
+Require Import Coq.micromega.Lia.
 Import ListNotations.
 
 (* ========================================================================= *)

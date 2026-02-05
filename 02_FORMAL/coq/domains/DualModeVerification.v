@@ -12,11 +12,11 @@
     Proves soundness, completeness for decidable fragments, and
     structural properties of refinement subtyping. *)
 
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Arith.PeanoNat.
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Program.Basics.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Lists.List.
+Require Import Coq.Program.Basics.
 Import ListNotations.
 
 (** ** 1. Refinement predicates and types *)

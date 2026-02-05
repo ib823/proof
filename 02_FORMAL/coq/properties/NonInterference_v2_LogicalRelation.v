@@ -3329,17 +3329,24 @@ Proof.
           - intros y Hfree. apply (Hcl2 y). simpl. left. exact Hfree.
           - exact (proj1 (pair_typing_pure_inv _ _ _ a1 b1 T1 T2 HtyPP1)).
           - exact (proj1 (pair_typing_pure_inv _ _ _ a2 b2 T1 T2 HtyPP2)).
-          - destruct (first_order_type (TProd T1 T2)) eqn:HfoProd.
+          - change (NonInterference_v2.first_order_type (TProd T1 T2))
+              with (first_order_type (TProd T1 T2)) in Hrat.
+            change (NonInterference_v2.val_rel_at_type_fo (TProd T1 T2) (EPair a1 b1) (EPair a2 b2))
+              with (val_rel_at_type_fo (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)) in Hrat.
+            destruct (first_order_type (TProd T1 T2)) eqn:HfoProd.
             + (* FO product: extract first component *)
               simpl in Hrat.
               destruct Hrat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [Hr1 _]]]]]]].
               inversion Heq1'; subst. inversion Heq2'; subst.
               simpl first_order_type in HfoProd.
               destruct (first_order_type T1) eqn:Hfo1; [| discriminate].
+              change (NonInterference_v2.first_order_type T1) with (first_order_type T1).
+              change (NonInterference_v2.val_rel_at_type_fo T1 x1 x2) with (val_rel_at_type_fo T1 x1 x2).
               rewrite Hfo1. exact Hr1.
             + (* HO product: use fundamental_theorem_step_0 *)
               assert (Hval_recon : val_rel_n 0 Σ' (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
               { rewrite val_rel_n_0_unfold. repeat split; try assumption.
+                change (NonInterference_v2.first_order_type (TProd T1 T2)) with (first_order_type (TProd T1 T2)).
                 rewrite HfoProd. exact I. }
               assert (Hvat : val_rel_at_type Σ' (store_rel_n 0) (val_rel_n 0)
                               (store_rel_n 0) (store_vals_rel 0) (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
@@ -3348,9 +3355,13 @@ Proof.
               destruct Hvat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [Hr1 _]]]]]]].
               inversion Heq1'; subst. inversion Heq2'; subst.
               destruct (first_order_type T1) eqn:Hfo1.
-              * apply (val_rel_at_type_fo_equiv T1 Σ' (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) _ _ Hfo1).
+              * change (NonInterference_v2.first_order_type T1) with (first_order_type T1).
+                change (NonInterference_v2.val_rel_at_type_fo T1 x1 x2) with (val_rel_at_type_fo T1 x1 x2).
+                rewrite Hfo1.
+                apply (val_rel_at_type_fo_equiv T1 Σ' (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) _ _ Hfo1).
                 exact Hr1.
-              * exact I. }
+              * change (NonInterference_v2.first_order_type T1) with (first_order_type T1).
+                rewrite Hfo1. exact I. }
         split. { exact Hstore'. }
         split. { exact Hwf1'. }
         split. { exact Hwf2'. }
@@ -3440,7 +3451,11 @@ Proof.
           - intros y Hfree. apply (Hcl2 y). simpl. right. exact Hfree.
           - exact (proj2 (pair_typing_pure_inv _ _ _ a1 b1 T1 T2 HtyPP1)).
           - exact (proj2 (pair_typing_pure_inv _ _ _ a2 b2 T1 T2 HtyPP2)).
-          - destruct (first_order_type (TProd T1 T2)) eqn:HfoProd.
+          - change (NonInterference_v2.first_order_type (TProd T1 T2))
+              with (first_order_type (TProd T1 T2)) in Hrat.
+            change (NonInterference_v2.val_rel_at_type_fo (TProd T1 T2) (EPair a1 b1) (EPair a2 b2))
+              with (val_rel_at_type_fo (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)) in Hrat.
+            destruct (first_order_type (TProd T1 T2)) eqn:HfoProd.
             + (* FO product: extract second component *)
               simpl in Hrat.
               destruct Hrat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [_ Hr2]]]]]]].
@@ -3448,10 +3463,13 @@ Proof.
               simpl first_order_type in HfoProd.
               destruct (first_order_type T1) eqn:Hfo1; [| discriminate].
               destruct (first_order_type T2) eqn:Hfo2; [| discriminate].
+              change (NonInterference_v2.first_order_type T2) with (first_order_type T2).
+              change (NonInterference_v2.val_rel_at_type_fo T2 y1 y2) with (val_rel_at_type_fo T2 y1 y2).
               rewrite Hfo2. exact Hr2.
             + (* HO product: use fundamental_theorem_step_0 *)
               assert (Hval_recon : val_rel_n 0 Σ' (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
               { rewrite val_rel_n_0_unfold. repeat split; try assumption.
+                change (NonInterference_v2.first_order_type (TProd T1 T2)) with (first_order_type (TProd T1 T2)).
                 rewrite HfoProd. exact I. }
               assert (Hvat : val_rel_at_type Σ' (store_rel_n 0) (val_rel_n 0)
                               (store_rel_n 0) (store_vals_rel 0) (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
@@ -3460,9 +3478,13 @@ Proof.
               destruct Hvat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [_ Hr2]]]]]]].
               inversion Heq1'; subst. inversion Heq2'; subst.
               destruct (first_order_type T2) eqn:Hfo2.
-              * apply (val_rel_at_type_fo_equiv T2 Σ' (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) _ _ Hfo2).
+              * change (NonInterference_v2.first_order_type T2) with (first_order_type T2).
+                change (NonInterference_v2.val_rel_at_type_fo T2 y1 y2) with (val_rel_at_type_fo T2 y1 y2).
+                rewrite Hfo2.
+                apply (val_rel_at_type_fo_equiv T2 Σ' (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) _ _ Hfo2).
                 exact Hr2.
-              * exact I. }
+              * change (NonInterference_v2.first_order_type T2) with (first_order_type T2).
+                rewrite Hfo2. exact I. }
         split. { exact Hstore'. }
         split. { exact Hwf1'. }
         split. { exact Hwf2'. }
@@ -3842,7 +3864,7 @@ Proof.
         * (* b = true *)
           specialize (He2_rel (S 0) Σ' st1' st2' ctx'
                        HextΣ' Hstore' Hwf1' Hwf2' Hagree' Hsvr') as
-            [r1 [r2 [st1'' [st2'' [ctx'' [Σ'' [Hext'' [Hstep2 [Hstep2' [Hvalr1 [Hvalr2 [Hval2 [Hstore2 [Hwf1'' [Hwf2'' [Hagree'' Hsvr'']]]]]]]]]]]]]]]]]].
+            [r1 [r2 [st1'' [st2'' [ctx'' [Σ'' [Hext'' [Hstep2 [Hstep2' [Hvalr1 [Hvalr2 [Hval2 [Hstore2 [Hwf1'' [Hwf2'' [Hagree'' Hsvr'']]]]]]]]]]]]]]]].
           exists r1, r2, st1'', st2'', ctx'', Σ''.
           split. { solve_extends. }
           split.
@@ -3867,7 +3889,7 @@ Proof.
         * (* b = false *)
           specialize (He3_rel (S 0) Σ' st1' st2' ctx'
                        HextΣ' Hstore' Hwf1' Hwf2' Hagree' Hsvr') as
-            [r1 [r2 [st1'' [st2'' [ctx'' [Σ'' [Hext'' [Hstep3 [Hstep3' [Hvalr1 [Hvalr2 [Hval3 [Hstore3 [Hwf1'' [Hwf2'' [Hagree'' Hsvr'']]]]]]]]]]]]]]]]]].
+            [r1 [r2 [st1'' [st2'' [ctx'' [Σ'' [Hext'' [Hstep3 [Hstep3' [Hvalr1 [Hvalr2 [Hval3 [Hstore3 [Hwf1'' [Hwf2'' [Hagree'' Hsvr'']]]]]]]]]]]]]]]].
           exists r1, r2, st1'', st2'', ctx'', Σ''.
           split. { solve_extends. }
           split.

@@ -62,15 +62,19 @@ Lemma val_rel_n_step_up_k : forall k n Σ T v1 v2,
   (first_order_type T = false -> has_type nil Σ Public v2 T EffectPure) ->
   val_rel_n (n + k) Σ T v1 v2.
 Proof.
-  induction k as [| k' IH]; intros n Σ T v1 v2 Hrel Hty1 Hty2.
-  - (* k = 0 *)
-    replace (n + 0) with n by lia. exact Hrel.
-  - (* k = S k' *)
-    replace (n + S k') with (S (n + k')) by lia.
-    apply val_rel_n_step_up.
-    + apply IH; assumption.
-    + exact Hty1.
-    + exact Hty2.
+  intros k n Σ T v1 v2 Hrel Hty1 Hty2.
+  destruct (first_order_type T) eqn:Hfo.
+  - (* First-order type: use val_rel_n_to_0 then val_rel_n_step_up_fo *)
+    apply (val_rel_n_step_up_fo T (n + k) Σ v1 v2); [exact Hfo |].
+    apply (val_rel_n_to_0 n Σ T v1 v2). exact Hrel.
+  - (* Higher-order type: induction with typing *)
+    induction k as [| k' IH].
+    + replace (n + 0) with n by lia. exact Hrel.
+    + replace (n + S k') with (S (n + k')) by lia.
+      apply val_rel_n_step_up.
+      * exact IH.
+      * apply Hty1. reflexivity.
+      * apply Hty2. reflexivity.
 Qed.
 
 (** For higher-order types, we need typing preconditions. *)
@@ -119,10 +123,9 @@ Proof.
   intros n Σ T1 T2 eff v1 v2 Hrel Hval1 Hval2 Hc1 Hc2.
   (* From val_rel_n (S n) at TFn, we know v1 and v2 are lambdas *)
   rewrite val_rel_n_S_unfold in Hrel.
-  simpl in Hrel. (* first_order_type (TFn T1 T2 eff) = false *)
-  destruct Hrel as (_ & _ & _ & _ & _ & Htyped & _).
-  (* Htyped gives us the typing directly when first_order_type = false *)
-  exact Htyped.
+  destruct Hrel as (_ & _ & _ & _ & _ & Htyped1 & Htyped2 & _).
+  (* Htyped1 and Htyped2 give us the typing directly *)
+  split; [exact Htyped1 | exact Htyped2].
 Qed.
 
 (** Helper: For composite types, extract typing from structure *)
@@ -137,9 +140,8 @@ Proof.
   intros n Σ T v1 v2 Hrel Hval1 Hval2 Hc1 Hc2 Hho.
   (* When first_order_type T = false, val_rel_n (S n) includes typing *)
   rewrite val_rel_n_S_unfold in Hrel.
-  rewrite Hho in Hrel.
-  destruct Hrel as (_ & _ & _ & _ & _ & Htyped & _).
-  exact Htyped.
+  destruct Hrel as (_ & _ & _ & _ & _ & Htyped1 & Htyped2 & _).
+  split; [exact Htyped1 | exact Htyped2].
 Qed.
 
 (** ============================================================ *)

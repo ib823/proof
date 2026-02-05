@@ -329,7 +329,7 @@ Inductive SwiftTypeTag : Type :=
   | STOptional : SwiftTypeTag.
 
 (* Compute expected Swift type tag for a RIINA value *)
-Definition swift_type_of (rv : RValue) : SwiftTypeTag :=
+Fixpoint swift_type_of (rv : RValue) : SwiftTypeTag :=
   match rv with
   | RVInt _ => STInt
   | RVBool _ => STBool

@@ -13,6 +13,17 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Lia.
 Import ListNotations.
 
+(* Local helper lemma for nth on map of seq *)
+Lemma nth_map_seq : forall (A : Type) (f : nat -> A) (start len i : nat) (d : A),
+  i < len ->
+  nth i (map f (seq start len)) d = f (start + i).
+Proof.
+  intros A f start len i d Hi.
+  rewrite nth_indep with (d' := f 0).
+  - rewrite map_nth. f_equal. apply seq_nth. exact Hi.
+  - rewrite length_map, length_seq. exact Hi.
+Qed.
+
 (** ===============================================================================
     SECTION 1: SHAMIR SECRET SHARING
     =============================================================================== *)

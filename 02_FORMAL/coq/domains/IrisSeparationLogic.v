@@ -11,10 +11,10 @@
     Spec: 06_COORDINATION/iris_migration_spec.md
 *)
 
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.micromega.Lia.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Lists.List.
+Require Import Coq.Bool.Bool.
+Require Import Coq.micromega.Lia.
 Import ListNotations.
 
 (** * Heap model: partial maps from locations to values *)

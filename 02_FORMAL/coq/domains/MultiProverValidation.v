@@ -10,10 +10,10 @@
 
    Spec: 04_SPECS/scope/RIINA_DEFINITIVE_SCOPE.md §5 (Multi-Prover) *)
 
-Require Import Stdlib.Bool.Bool.
-Require Import Stdlib.Lists.List.
-Require Import Stdlib.Arith.Arith.
-Require Import Stdlib.Logic.Decidable.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Lists.List.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Logic.Decidable.
 Import ListNotations.
 
 (* ===== Formula Language ===== *)
