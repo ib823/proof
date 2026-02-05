@@ -1,9 +1,9 @@
 # RIINA Coordination Log
 
-**Audit Update:** 2026-02-05 (Session 72) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,890 Qed (active), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-05 (Session 73) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,720 Qed (active), 283 total .v. Historical counts in this document remain historical.
 
-## Version: 3.19.0
-## Last Updated: 2026-02-05 (Session 72: Coq 8.20.1 compatibility)
+## Version: 3.20.0
+## Last Updated: 2026-02-05 (Session 73: Proof Depth Expansion)
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════════╗
@@ -35,17 +35,17 @@
 
 ## TRACK STATUS
 
-### Grand Totals (2026-02-02 Session 71 Audit)
+### Grand Totals (2026-02-05 Session 73 Audit)
 
 | Metric | Count | Notes |
 |--------|-------|-------|
 | **Total Research Domains** | 67 | A-Q (17) + R-Z (9) + Greek (19) + AA-AM (13) + Product (9) |
 | **Delegation Prompts** | **90** | **100% coverage** |
-| **Prover** | **Rocq 9.1 (Coq 8.21)** | Migrated from 8.18.0 (Session 53) |
+| **Prover** | **Coq 8.20.1** | Migrated from Rocq 9.1 (Session 72) |
 | **Coq .v Files (Total)** | 283 | 249 in active build |
-| **Coq Qed Proofs (Total)** | **4,551** | 4,044 active build + 534 deprecated archive |
+| **Coq Qed Proofs (Total)** | **7,227** | 6,720 active build + 507 deprecated archive |
 | **`admit.` (Active Build)** | **0** | **ALL ELIMINATED** |
-| **`Admitted.` (Active Build)** | **7** | 3 DELTA001 + 3 Phase 7 compat stubs + 1 ValRelStepLimit |
+| **`Admitted.` (Active Build)** | **0** | **ALL ELIMINATED** (Session 72) |
 | **Axioms (Active Build)** | 4 | All justified (deref eliminated Session 66) |
 | **Rust Tests** | **679** | All passing |
 | **Rust Builtins** | **88** | 9 modules (Phase 2 stdlib done) |
@@ -56,12 +56,13 @@
 | **Domain Coverage Matrix** | ✅ | `06_COORDINATION/DOMAIN_COVERAGE_MATRIX.md` |
 | **Attack→Proof Map** | ✅ | `06_COORDINATION/ATTACK_PROOF_MAP.md` |
 
-### Open Work Items (Session 71)
+### Open Work Items (Session 73)
 
 | Priority | Item | Status | Reference |
 |----------|------|--------|-----------|
-| P0 | Eliminate 7 Admitted in active build (5 files) | Pending | `DOMAIN_COVERAGE_MATRIX.md` §6 |
+| P0 | ~~Eliminate 7 Admitted in active build~~ | ✅ DONE | Session 72 |
 | P0 | Close gaps A1-A5 (unverified typechecker rules) | Pending | `DEPENDENCY_GRAPH.md` §3 |
+| P0 | ~~Proof depth gaps (15 stub files)~~ | ✅ DONE | Session 73 |
 | P1 | Track AM Phase AM-1: AI context docs | Pending | Mat. Plan §12.11 |
 | P1 | Website mobile overhaul (588 inline styles) | Specified | Mat. Plan §12.9 |
 | P2 | Triage 34 unformalized research domains | Pending | `DOMAIN_COVERAGE_MATRIX.md` §7-8 |
