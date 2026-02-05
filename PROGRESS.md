@@ -18,7 +18,7 @@
 
 **Report Date:** 2026-02-05 (Session 72)
 **Audit Update:** 2026-02-05 (Coq 8.20.1 compatibility)
-**Session:** 72 (Coq 8.20.1 compatibility — all Admitted eliminated, 4,890 Qed proofs)
+**Session:** 72 (Coq 8.20.1 compatibility — all Admitted eliminated, 5,544 Qed proofs)
 **Overall Grade:** A (BUILD PASSING, 0 Admitted in active build, 4 justified axioms)
 
 ---
@@ -32,7 +32,7 @@
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **249** | - | ✅ All compile |
-| Qed Proofs (Total) | **5,397** | - | ✅ (4,890 active build + 507 deprecated archive) |
+| Qed Proofs (Total) | **5,397** | - | ✅ (5,544 active build + 507 deprecated archive) |
 | .v Files (Total) | **283** | - | ✅ |
 | Rust Prototype | ✅ PASSING (679 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |

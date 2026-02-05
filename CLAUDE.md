@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-05 (Coq 8.20.1 compatibility) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,890 Qed (active), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-05 (Coq 8.20.1 compatibility) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 5,544 Qed (active), 283 total .v. Historical counts in this document remain historical.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -79,7 +79,7 @@ RIINA is the world's **first formally verified programming language** with:
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 4 (all justified) | 3 in NI_v2_LR + 1 in NI_v2 |
 | **Admitted (Active Build)** | 7 | 3 DELTA001 + 3 Phase 7 compat stubs + 1 ValRelStepLimit |
-| **Qed Proofs (Total)** | 5,397 | 4,890 active build + 507 deprecated archive |
+| **Qed Proofs (Total)** | 5,397 | 5,544 active build + 507 deprecated archive |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Migrated from Rocq 9.1 |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
@@ -93,7 +93,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
-| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 4 justified axioms, 4,890 Qed (active), 249 files |
+| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 4 justified axioms, 5,544 Qed (active), 249 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -627,7 +627,7 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 Admitted, 4 justified axioms, 4,890 Qed proofs (active), 283 files (Coq 8.20.1)**
+**Build: 0 Admitted, 4 justified axioms, 5,544 Qed proofs (active), 283 files (Coq 8.20.1)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
@@ -780,7 +780,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-05 (Session 72: Coq 8.20.1 compatibility — 0 Admitted in active build, 4 justified axioms, 679 Rust tests, 15 crates, 113 examples, 283 Coq files, 4,890 active Qed proofs, 507 deprecated)*
+*Last updated: 2026-02-05 (Session 72: Coq 8.20.1 compatibility — 0 Admitted in active build, 4 justified axioms, 679 Rust tests, 15 crates, 113 examples, 283 Coq files, 5,544 active Qed proofs, 507 deprecated)*
 
 ---
 
