@@ -16,10 +16,10 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Report Date:** 2026-02-02 (Session 70)
-**Audit Update:** 2026-02-04 (Codex audit sync)
-**Session:** 70 (Backend production completion — WASM memory/closures/builtins, Android JNI, iOS Swift, Coq composition)
-**Overall Grade:** A- (BUILD PASSING, 0 Admitted in active build, 4 justified axioms)
+**Report Date:** 2026-02-05 (Session 72)
+**Audit Update:** 2026-02-05 (Coq 8.20.1 compatibility)
+**Session:** 72 (Coq 8.20.1 compatibility — all Admitted eliminated, 4,890 Qed proofs)
+**Overall Grade:** A (BUILD PASSING, 0 Admitted in active build, 4 justified axioms)
 
 ---
 
@@ -32,12 +32,12 @@
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **249** | - | ✅ All compile |
-| Qed Proofs (Total) | **4,551** | - | ✅ (4,044 active build + 507 deprecated archive) |
+| Qed Proofs (Total) | **5,397** | - | ✅ (4,890 active build + 507 deprecated archive) |
 | .v Files (Total) | **283** | - | ✅ |
 | Rust Prototype | ✅ PASSING (679 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
 | Example .rii Files | **113** | 100+ | ✅ (+5 demos, +3 showcase, +compliance) |
-| Prover | **Rocq 9.1 (Coq 8.21)** | - | ✅ Migrated from 8.18 |
+| Prover | **Coq 8.20.1** | - | ✅ Migrated from Rocq 9.1 |
 
 **SESSION 70 KEY ACTIONS (Backend Production — WASM full, Android JNI, iOS Swift, Coq composition):**
 1. **WASM bug fixes** — Fixed Mod (I32RemS), And/Or (I32And/I32Or), Call (function index map); added 6 new opcodes
