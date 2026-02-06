@@ -465,7 +465,7 @@ const RiinaWebsite = () => {
             marginTop: '4px',
             fontFamily: 'monospace',
           }}>
-            Last updated: February 6, 2026
+            Last updated: 06 Feb 2026
           </p>
         </div>
       </section>
