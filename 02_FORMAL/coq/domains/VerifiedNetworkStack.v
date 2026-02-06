@@ -200,7 +200,7 @@ Definition SEQ_SPACE : nat := 4294967296. (* 2^32 *)
 (* Sequence number comparison with wraparound *)
 Definition seq_lt (a b : nat) : bool :=
   let diff := (b - a) mod SEQ_SPACE in
-  (diff >? 0) && (diff <? SEQ_SPACE / 2).
+  (0 <? diff) && (diff <? SEQ_SPACE / 2).
 
 Definition seq_le (a b : nat) : bool :=
   (a mod SEQ_SPACE =? b mod SEQ_SPACE) || seq_lt a b.

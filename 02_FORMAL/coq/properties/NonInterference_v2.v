@@ -312,14 +312,21 @@ Qed.
     This gives us structure for FO types while avoiding termination issues for HO types.
 *)
 
-(** stores_agree_low_fo: Low-security first-order locations have equal values.
+(** stores_agree_low_fo: Low-security first-order locations have values
+    related by val_rel_at_type_fo. This tracks the FO value relation directly
+    rather than syntactic equality, avoiding issues with compound FO types
+    (TProd, TSum) where val_rel_at_type_fo gives component-wise relation
+    but not syntactic equality.
     Defined here (before Section) so it can be used in val_rel_at_type for TFn. *)
 Definition stores_agree_low_fo (Σ : store_ty) (st1 st2 : store) : Prop :=
   forall l T sl,
     store_ty_lookup l Σ = Some (T, sl) ->
     first_order_type T = true ->
     is_low sl ->
-    store_lookup l st1 = store_lookup l st2.
+    forall v1 v2,
+      store_lookup l st1 = Some v1 ->
+      store_lookup l st2 = Some v2 ->
+      val_rel_at_type_fo T v1 v2.
 
 Section ValRelAtN.
   Variable Σ : store_ty.
@@ -2329,13 +2336,10 @@ Proof.
            { apply typing_nil_implies_closed with Σ Public T EffectPure. exact Hty2. }
            repeat split; try assumption.
            destruct (first_order_type T) eqn:Hfo.
-           ++ (* FO type: use stores_agree_low_fo for LOW *)
+           ++ (* FO type: use stores_agree_low_fo directly *)
               assert (Hlow: is_low sl).
               { apply is_low_dec_correct. exact Hsl. }
-              specialize (Hagree l T sl Hlook Hfo Hlow).
-              rewrite Hlook1, Hlook2 in Hagree.
-              injection Hagree as Heq. subst v2.
-              apply val_rel_at_type_fo_refl with Σ; assumption.
+              apply (Hagree l T sl Hlook Hfo Hlow v1 v2 Hlook1 Hlook2).
            ++ (* HO type at step 0: need typing *)
               split; assumption.
         -- (* n = S n': Use val_rel from store_rel_n (S n') and step up *)
