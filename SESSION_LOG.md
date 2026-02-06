@@ -1,6 +1,6 @@
 # Session Log
 
-**Audit Update:** 2026-02-06 (Session 74) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 283 total .v, 17 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 74) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 283 total .v, 28 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
 
 ## 2026-02-06 (Session 74): Multi-Prover Verification
 
@@ -12,6 +12,7 @@
 |------|-------------|--------|
 | Phase 1: Syntax.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
 | Phase 2: Semantics.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
+| Phase 3: Typing.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
 | Pre-push hook fix | Exclude formal proof files from secret scan | ✅ Done |
 | Documentation | MULTIPROVER_VALIDATION.md, CLAUDE.md updates | ✅ Done |
 
@@ -23,13 +24,15 @@
 | `02_FORMAL/lean/RIINA.lean` | 35 | Main library |
 | `02_FORMAL/lean/RIINA/Foundations/Syntax.lean` | 606 | Syntax.v port (5 theorems) |
 | `02_FORMAL/lean/RIINA/Foundations/Semantics.lean` | 750 | Semantics.v port (12 theorems) |
+| `02_FORMAL/lean/RIINA/TypeSystem/Typing.lean` | 512 | Typing.v port (11 theorems) |
 | `02_FORMAL/isabelle/RIINA/ROOT` | 19 | Session configuration |
 | `02_FORMAL/isabelle/RIINA/Syntax.thy` | 533 | Syntax.v port (5 lemmas) |
 | `02_FORMAL/isabelle/RIINA/Semantics.thy` | 650 | Semantics.v port (12 lemmas) |
+| `02_FORMAL/isabelle/RIINA/Typing.thy` | 530 | Typing.v port (11 lemmas) |
 | `02_FORMAL/isabelle/RIINA/root.tex` | 43 | LaTeX documentation |
-| `02_FORMAL/MULTIPROVER_VALIDATION.md` | 226 | Cross-validation report |
+| `02_FORMAL/MULTIPROVER_VALIDATION.md` | 260 | Cross-validation report |
 
-### Triple-Prover Theorems (17 total)
+### Triple-Prover Theorems (28 total)
 
 **Phase 1 (Syntax): 5 theorems**
 1. `effect_join_pure_l` — Pure is left identity for effect join
@@ -52,10 +55,25 @@
 11. `step_preserves_store_values` — Step preserves hasValues
 12. `multi_step_preserves_store_values` — Multi-step preserves hasValues
 
+**Phase 3 (Type System): 11 theorems**
+1. `type_uniqueness` — Type system is syntax-directed (unique types)
+2. `canonical_forms_unit` — Values of unit type are EUnit
+3. `canonical_forms_bool` — Values of bool type are EBool
+4. `canonical_forms_int` — Values of int type are EInt
+5. `canonical_forms_string` — Values of string type are EString
+6. `canonical_forms_fn` — Values of function type are ELam
+7. `canonical_forms_prod` — Values of product type are EPair
+8. `canonical_forms_sum` — Values of sum type are EInl or EInr
+9. `canonical_forms_ref` — Values of ref type are ELoc
+10. `canonical_forms_secret` — Values of secret type are EClassify
+11. `canonical_forms_proof` — Values of proof type are EProve
+
 ### Metrics
 
 - **Qed proofs (Coq):** 6,194 active (567 deprecated)
-- **Triple-prover theorems:** 17 (Coq + Lean 4 + Isabelle/HOL agree)
+- **Triple-prover theorems:** 28 (Coq + Lean 4 + Isabelle/HOL agree)
+- **Lean 4 files:** 3 (Syntax.lean, Semantics.lean, Typing.lean)
+- **Isabelle/HOL theories:** 3 (Syntax.thy, Semantics.thy, Typing.thy)
 - **Rust tests:** 744
 - **Admitted:** 0 (unchanged)
 - **Axioms:** 4 (unchanged)

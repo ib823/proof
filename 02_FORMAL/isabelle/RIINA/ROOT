@@ -20,6 +20,6 @@ session RIINA = HOL +
   theories
     Syntax
     Semantics
-    (* Typing *)       (* TODO: Port Typing.v *)
+    Typing
   document_files
     "root.tex"

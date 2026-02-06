@@ -31,4 +31,4 @@ Mode: ULTRA KIASU | ZERO TRUST | ABSOLUTE FIDELITY
 
 import RIINA.Foundations.Syntax
 import RIINA.Foundations.Semantics
--- import RIINA.TypeSystem.Typing      -- TODO: Port Typing.v
+import RIINA.TypeSystem.Typing

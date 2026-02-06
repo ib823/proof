@@ -1,8 +1,8 @@
 # Multi-Prover Validation Report
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Date:** 2026-02-06
-**Status:** Active Implementation (Phase 2 Complete)
+**Status:** Active Implementation (Phase 3 Complete)
 
 ---
 
@@ -30,14 +30,14 @@ RIINA employs multi-prover verification to provide absolute confidence in formal
 ║   Lean 4 (Secondary)                                            ║
 ║   ├── 02_FORMAL/lean/RIINA/Foundations/Syntax.lean (✅ Ported)  ║
 ║   ├── 02_FORMAL/lean/RIINA/Foundations/Semantics.lean (✅ Ported)║
-║   ├── 02_FORMAL/lean/RIINA/TypeSystem/Typing.lean (TODO)        ║
-║   └── Ported: 17 theorems                                       ║
+║   ├── 02_FORMAL/lean/RIINA/TypeSystem/Typing.lean (✅ Ported)   ║
+║   └── Ported: 28 theorems                                       ║
 ║                                                                  ║
 ║   Isabelle/HOL (Tertiary)                                       ║
 ║   ├── 02_FORMAL/isabelle/RIINA/Syntax.thy (✅ Ported)           ║
 ║   ├── 02_FORMAL/isabelle/RIINA/Semantics.thy (✅ Ported)        ║
-║   ├── 02_FORMAL/isabelle/RIINA/Typing.thy (TODO)                ║
-║   └── Ported: 17 lemmas                                         ║
+║   ├── 02_FORMAL/isabelle/RIINA/Typing.thy (✅ Ported)           ║
+║   └── Ported: 28 lemmas                                         ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
@@ -120,16 +120,37 @@ RIINA employs multi-prover verification to provide absolute confidence in formal
 
 **Total Phase 2: 12 theorems with triple-prover agreement**
 
-## Phase 3: Type System Porting (PLANNED)
+## Phase 3: Type System Porting (COMPLETE)
 
-| Coq Definition | Lean Target | Isabelle Target | Priority |
-|----------------|-------------|-----------------|----------|
-| `env` | `Env` | `env` | Tier 2 |
-| `store_typing` | `StoreTyping` | `store_typing` | Tier 2 |
-| `has_type` (28 rules) | `HasType` | `has_type` | Tier 2 |
-| `store_wf` | `Store.wf` | `store_wf` | Tier 2 |
-| `type_uniqueness` | `Type.uniqueness` | `type_uniqueness` | Tier 2 |
-| `canonical_forms` | `CanonicalForms` | `canonical_forms` | Tier 2 |
+| Coq Definition | Lean Definition | Isabelle Definition | Status |
+|----------------|-----------------|---------------------|--------|
+| `type_env` | `TypeEnv` | `type_env` | ✅ All 3 |
+| `lookup` | `TypeEnv.lookup` | `env_lookup` | ✅ All 3 |
+| `store_ty` | `StoreTy` | `store_ty` | ✅ All 3 |
+| `store_ty_lookup` | `StoreTy.lookup` | `store_ty_lookup` | ✅ All 3 |
+| `store_ty_update` | `StoreTy.update` | `store_ty_update` | ✅ All 3 |
+| `store_ty_extends` | `StoreTy.extends` | `store_ty_extends` | ✅ All 3 |
+| `free_in` | `freeIn` | `free_in` | ✅ All 3 |
+| `has_type` (28 rules) | `HasType` (28 rules) | `has_type` (28 rules) | ✅ All 3 |
+| `store_wf` | `StoreWf` | `store_wf` | ✅ All 3 |
+
+### Type System Theorems Ported
+
+| Coq Theorem | Lean Proof | Isabelle Proof | Agreement |
+|-------------|------------|----------------|-----------|
+| `type_uniqueness` | `HasType.uniqueness` | `type_uniqueness` | ✅ |
+| `canonical_forms_unit` | `CanonicalForms.unit` | `canonical_forms_unit` | ✅ |
+| `canonical_forms_bool` | `CanonicalForms.bool` | `canonical_forms_bool` | ✅ |
+| `canonical_forms_int` | `CanonicalForms.int` | `canonical_forms_int` | ✅ |
+| `canonical_forms_string` | `CanonicalForms.string` | `canonical_forms_string` | ✅ |
+| `canonical_forms_fn` | `CanonicalForms.fn` | `canonical_forms_fn` | ✅ |
+| `canonical_forms_prod` | `CanonicalForms.prod` | `canonical_forms_prod` | ✅ |
+| `canonical_forms_sum` | `CanonicalForms.sum` | `canonical_forms_sum` | ✅ |
+| `canonical_forms_ref` | `CanonicalForms.ref` | `canonical_forms_ref` | ✅ |
+| `canonical_forms_secret` | `CanonicalForms.secret` | `canonical_forms_secret` | ✅ |
+| `canonical_forms_proof` | `CanonicalForms.proof` | `canonical_forms_proof` | ✅ |
+
+**Total Phase 3: 11 theorems with triple-prover agreement**
 
 ## Phase 4: Type Safety (PLANNED)
 
@@ -165,9 +186,11 @@ Inductive confidence_level : Type :=
 |----------|------------|----------|
 | Syntax definitions | TripleProver | 5 |
 | Semantics | TripleProver | 12 |
-| Type system | SingleProver | ~30 |
+| Type system | TripleProver | 11 |
 | Effects | SingleProver | ~16 |
 | Non-interference | SingleProver | ~199 |
+
+**Total Triple-Prover Theorems: 28**
 
 ## File Structure
 
@@ -189,12 +212,17 @@ Inductive confidence_level : Type :=
 │   ├── lakefile.lean             # Lake build config
 │   ├── RIINA.lean                # Main library
 │   └── RIINA/
-│       └── Foundations/
-│           └── Syntax.lean       # ✅ Ported
+│       ├── Foundations/
+│       │   ├── Syntax.lean       # ✅ Ported
+│       │   └── Semantics.lean    # ✅ Ported
+│       └── TypeSystem/
+│           └── Typing.lean       # ✅ Ported
 ├── isabelle/                      # Tertiary (Isabelle/HOL)
 │   └── RIINA/
 │       ├── ROOT                  # Session config
 │       ├── Syntax.thy            # ✅ Ported
+│       ├── Semantics.thy         # ✅ Ported
+│       ├── Typing.thy            # ✅ Ported
 │       └── root.tex              # Documentation
 └── MULTIPROVER_VALIDATION.md     # This file
 ```
@@ -215,7 +243,7 @@ Inductive confidence_level : Type :=
 |-------|--------|--------|
 | Phase 1: Syntax | Week 1-2 | ✅ COMPLETE |
 | Phase 2: Semantics | Week 3-4 | ✅ COMPLETE |
-| Phase 3: Type System | Week 5-6 | 🔄 Planned |
+| Phase 3: Type System | Week 5-6 | ✅ COMPLETE |
 | Phase 4: Type Safety | Week 7 | 🔄 Planned |
 | Phase 5: Effects | Week 8 | 🔄 Planned |
 | Phase 6: Non-Interference | Week 9-10 | 🔄 Planned |
