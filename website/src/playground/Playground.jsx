@@ -147,14 +147,14 @@ const PlaygroundPage = ({ onNavigate }) => {
 
   return (
     <div style={{ paddingTop: '0' }}>
-      {/* Page Header - consistent with other pages */}
-      <section style={{ padding: '80px 32px 40px', maxWidth: '800px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '48px', fontWeight: 300, marginBottom: '24px' }}>Playground</h1>
-        <p style={{ fontSize: '20px', color: '#666', lineHeight: 1.8, marginBottom: '16px' }}>
+      {/* Page Header - exactly matches PageHeader component template */}
+      <section className="section" style={{ padding: '80px 32px', maxWidth: '800px', margin: '0 auto' }}>
+        <h1 className="page-title" style={{ fontSize: '48px', fontWeight: 300, marginBottom: '32px' }}>Playground</h1>
+        <p style={{ fontSize: '20px', color: '#666', lineHeight: 1.8 }}>
           Write RIINA code in your browser. Every program that type-checks inherits
           mathematically proven security guarantees.
         </p>
-        <p style={{ fontSize: '14px', color: '#999' }}>
+        <p style={{ fontSize: '14px', color: '#999', marginTop: '16px' }}>
           {wasmReady ? '✓ WASM compiler loaded' : wasmError ? `✗ ${wasmError}` : 'Loading WASM compiler...'}
         </p>
       </section>
