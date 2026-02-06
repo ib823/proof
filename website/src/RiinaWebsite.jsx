@@ -423,7 +423,7 @@ const RiinaWebsite = () => {
           maxWidth: '700px',
         }}>
           {/* Stats row - horizontal */}
-          <div style={{
+          <div className="hero-stats-row" style={{
             display: 'flex',
             justifyContent: 'center',
             gap: '64px',

@@ -1694,10 +1694,16 @@ main, section, div {
     font-size: 40px !important;
   }
 
-  /* Hero stats row at 640px */
+  /* Hero stats container stays column, inner row goes horizontal at 640px */
   .hero-stats {
+    flex-direction: column !important;
+    gap: 24px !important;
+    align-items: center !important;
+  }
+
+  .hero-stats-row {
     flex-direction: row !important;
-    gap: 48px !important;
+    gap: 64px !important;
   }
 
   /* 2-column grids at 640px */
@@ -1785,7 +1791,11 @@ main, section, div {
 /* ----- 1024px: Desktop ----- */
 @media (min-width: 1024px) {
   .hero-stats {
-    gap: 64px !important;
+    gap: 32px !important;
+  }
+
+  .hero-stats-row {
+    gap: 80px !important;
   }
 
   /* 4-column grids at 1024px */
