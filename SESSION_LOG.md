@@ -1,6 +1,6 @@
 # Session Log
 
-**Audit Update:** 2026-02-06 (Session 74) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 283 total .v, 28 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 74) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 283 total .v, 39 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
 
 ## 2026-02-06 (Session 74): Multi-Prover Verification
 
@@ -13,6 +13,8 @@
 | Phase 1: Syntax.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
 | Phase 2: Semantics.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
 | Phase 3: Typing.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
+| Phase 4: Progress.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
+| Phase 4: TypeSafety.v port | Port to Lean 4 + Isabelle/HOL | ✅ Done |
 | Pre-push hook fix | Exclude formal proof files from secret scan | ✅ Done |
 | Documentation | MULTIPROVER_VALIDATION.md, CLAUDE.md updates | ✅ Done |
 
@@ -21,18 +23,22 @@
 | File | Lines | Content |
 |------|-------|---------|
 | `02_FORMAL/lean/lakefile.lean` | 22 | Lake build configuration |
-| `02_FORMAL/lean/RIINA.lean` | 35 | Main library |
+| `02_FORMAL/lean/RIINA.lean` | 37 | Main library |
 | `02_FORMAL/lean/RIINA/Foundations/Syntax.lean` | 606 | Syntax.v port (5 theorems) |
 | `02_FORMAL/lean/RIINA/Foundations/Semantics.lean` | 750 | Semantics.v port (12 theorems) |
 | `02_FORMAL/lean/RIINA/TypeSystem/Typing.lean` | 512 | Typing.v port (11 theorems) |
-| `02_FORMAL/isabelle/RIINA/ROOT` | 19 | Session configuration |
+| `02_FORMAL/lean/RIINA/TypeSystem/Progress.lean` | 230 | Progress.v port (9 theorems) |
+| `02_FORMAL/lean/RIINA/TypeSystem/TypeSafety.lean` | 85 | TypeSafety.v port (2 theorems) |
+| `02_FORMAL/isabelle/RIINA/ROOT` | 21 | Session configuration |
 | `02_FORMAL/isabelle/RIINA/Syntax.thy` | 533 | Syntax.v port (5 lemmas) |
 | `02_FORMAL/isabelle/RIINA/Semantics.thy` | 650 | Semantics.v port (12 lemmas) |
 | `02_FORMAL/isabelle/RIINA/Typing.thy` | 530 | Typing.v port (11 lemmas) |
+| `02_FORMAL/isabelle/RIINA/Progress.thy` | 340 | Progress.v port (9 lemmas) |
+| `02_FORMAL/isabelle/RIINA/TypeSafety.thy` | 110 | TypeSafety.v port (2 lemmas) |
 | `02_FORMAL/isabelle/RIINA/root.tex` | 43 | LaTeX documentation |
-| `02_FORMAL/MULTIPROVER_VALIDATION.md` | 260 | Cross-validation report |
+| `02_FORMAL/MULTIPROVER_VALIDATION.md` | 300 | Cross-validation report |
 
-### Triple-Prover Theorems (28 total)
+### Triple-Prover Theorems (39 total)
 
 **Phase 1 (Syntax): 5 theorems**
 1. `effect_join_pure_l` — Pure is left identity for effect join
@@ -68,12 +74,25 @@
 10. `canonical_forms_secret` — Values of secret type are EClassify
 11. `canonical_forms_proof` — Values of proof type are EProve
 
+**Phase 4 (Type Safety): 11 theorems**
+1. `canonical_bool` — Closed context canonical form for bool
+2. `canonical_fn` — Closed context canonical form for function
+3. `canonical_pair` — Closed context canonical form for pair
+4. `canonical_sum` — Closed context canonical form for sum
+5. `canonical_ref` — Closed context canonical form for reference
+6. `canonical_secret` — Closed context canonical form for secret
+7. `canonical_proof` — Closed context canonical form for proof
+8. `lookup_nil_contra` — Lookup in empty context is impossible
+9. `progress` — Well-typed closed expression is value or can step
+10. `type_safety` — Well-typed programs don't get stuck
+11. `multi_step_safety` — Multi-step preserves well-typedness (partial)
+
 ### Metrics
 
 - **Qed proofs (Coq):** 6,194 active (567 deprecated)
-- **Triple-prover theorems:** 28 (Coq + Lean 4 + Isabelle/HOL agree)
-- **Lean 4 files:** 3 (Syntax.lean, Semantics.lean, Typing.lean)
-- **Isabelle/HOL theories:** 3 (Syntax.thy, Semantics.thy, Typing.thy)
+- **Triple-prover theorems:** 39 (Coq + Lean 4 + Isabelle/HOL agree)
+- **Lean 4 files:** 5 (Syntax, Semantics, Typing, Progress, TypeSafety)
+- **Isabelle/HOL theories:** 5 (Syntax, Semantics, Typing, Progress, TypeSafety)
 - **Rust tests:** 744
 - **Admitted:** 0 (unchanged)
 - **Axioms:** 4 (unchanged)
