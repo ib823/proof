@@ -40,7 +40,7 @@ WARNINGS=0
 count_qed_active() {
     local total=0
     while IFS= read -r f; do
-        local count=$(grep -c "Qed" "$f" 2>/dev/null || true)
+        local count=$(grep -c "Qed\." "$f" 2>/dev/null || true)
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
