@@ -1,6 +1,6 @@
 # Changelog
 
-**Audit Update:** 2026-02-05 (Coq 8.20.1 compatibility) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,890 Qed (active), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Comprehensive repository audit) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 283 total .v. Historical counts in this document remain historical.
 
 All notable changes to RIINA will be documented in this file.
 
