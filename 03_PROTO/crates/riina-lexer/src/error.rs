@@ -33,3 +33,63 @@ impl fmt::Display for LexError {
 }
 
 impl std::error::Error for LexError {}
+
+impl LexError {
+    /// Structured error code for AI agent consumption (L0xxx series).
+    pub fn error_code(&self) -> &'static str {
+        match self {
+            LexError::UnexpectedChar(..) => "L0001",
+            LexError::UnterminatedString(_) => "L0002",
+            LexError::UnterminatedChar(_) => "L0003",
+            LexError::UnterminatedComment(_) => "L0004",
+            LexError::InvalidEscapeSequence(_) => "L0005",
+            LexError::InvalidNumericLiteral(..) => "L0006",
+            LexError::EmptyCharLiteral(_) => "L0007",
+            LexError::Unknown(..) => "L0099",
+        }
+    }
+
+    /// Human-readable fix hint for AI agents.
+    pub fn fix_hint(&self) -> Option<String> {
+        Some(match self {
+            LexError::UnexpectedChar(c, _) => {
+                format!("Remove or replace the unexpected character '{c}'. RIINA uses ASCII operators and Bahasa Melayu/English identifiers")
+            }
+            LexError::UnterminatedString(_) => {
+                "Add a closing '\"' to terminate the string literal".to_string()
+            }
+            LexError::UnterminatedChar(_) => {
+                "Add a closing \"'\" to terminate the character literal".to_string()
+            }
+            LexError::UnterminatedComment(_) => {
+                "Add '*/' to close the block comment".to_string()
+            }
+            LexError::InvalidEscapeSequence(_) => {
+                "Valid escape sequences: \\n, \\t, \\r, \\\\, \\\", \\', \\0".to_string()
+            }
+            LexError::InvalidNumericLiteral(s, _) => {
+                format!("'{}' is not a valid number. Use integer (42) or float (3.14) syntax", s)
+            }
+            LexError::EmptyCharLiteral(_) => {
+                "Place a character between the single quotes, e.g. 'a'".to_string()
+            }
+            LexError::Unknown(_, _) => {
+                return None;
+            }
+        })
+    }
+
+    /// Position (byte offset) of the error.
+    pub fn position(&self) -> usize {
+        match self {
+            LexError::UnexpectedChar(_, pos)
+            | LexError::UnterminatedString(pos)
+            | LexError::UnterminatedChar(pos)
+            | LexError::UnterminatedComment(pos)
+            | LexError::InvalidEscapeSequence(pos)
+            | LexError::EmptyCharLiteral(pos)
+            | LexError::Unknown(_, pos) => *pos,
+            LexError::InvalidNumericLiteral(_, pos) => *pos,
+        }
+    }
+}
