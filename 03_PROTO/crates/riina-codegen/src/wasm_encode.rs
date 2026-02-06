@@ -576,4 +576,168 @@ mod tests {
         // Should be a valid binary (>8 bytes)
         assert!(bytes.len() > 8);
     }
+
+    // ─── Structural validation tests ─────────────────────────────────
+
+    #[test]
+    fn test_section_ordering() {
+        // WASM spec requires sections in ascending ID order.
+        // Build a module with multiple sections and verify.
+        let mut module = WasmModule::new();
+        module.types.push(FuncType { params: vec![], results: vec![ValType::I32] });
+        module.functions.push(0);
+        module.memories.push(MemoryType { min: 1, max: None });
+        module.exports.push(Export {
+            name: "_start".to_string(),
+            kind: ExportKind::Func,
+            index: 0,
+        });
+        let mut code = Vec::new();
+        code.push(Op::I32Const as u8);
+        encode_sleb128(0, &mut code);
+        module.codes.push(FuncBody { locals: vec![], code });
+
+        let bytes = module.encode();
+        // Walk sections and verify IDs are non-decreasing
+        let mut pos = 8; // skip header
+        let mut last_id = 0u8;
+        while pos < bytes.len() {
+            let section_id = bytes[pos];
+            assert!(section_id >= last_id,
+                "Section ID {} came after {}, violating WASM ordering",
+                section_id, last_id);
+            last_id = section_id;
+            pos += 1;
+            // Read section size (LEB128)
+            let (size, consumed) = decode_uleb128_for_test(&bytes[pos..]);
+            pos += consumed;
+            pos += size as usize; // skip section body
+        }
+        assert_eq!(pos, bytes.len(), "binary should be fully consumed");
+    }
+
+    #[test]
+    fn test_type_section_structure() {
+        let mut module = WasmModule::new();
+        // (i32, i32) -> i32
+        module.types.push(FuncType {
+            params: vec![ValType::I32, ValType::I32],
+            results: vec![ValType::I32],
+        });
+        module.functions.push(0);
+        let mut code = Vec::new();
+        code.push(Op::LocalGet as u8);
+        encode_uleb128(0, &mut code);
+        module.codes.push(FuncBody { locals: vec![], code });
+
+        let bytes = module.encode();
+        // Find type section (ID=1)
+        let (section_body, _) = find_section(&bytes, SectionId::Type as u8);
+        // First byte is count (1 type)
+        assert_eq!(section_body[0], 1, "should have exactly 1 type");
+        // Next byte is 0x60 (func type marker)
+        assert_eq!(section_body[1], 0x60, "should start with func type marker");
+    }
+
+    #[test]
+    fn test_export_section_contains_start() {
+        let mut module = WasmModule::new();
+        module.types.push(FuncType { params: vec![], results: vec![ValType::I32] });
+        module.functions.push(0);
+        module.exports.push(Export {
+            name: "_start".to_string(),
+            kind: ExportKind::Func,
+            index: 0,
+        });
+        let mut code = Vec::new();
+        code.push(Op::I32Const as u8);
+        encode_sleb128(42, &mut code);
+        module.codes.push(FuncBody { locals: vec![], code });
+
+        let bytes = module.encode();
+        // Verify export section exists and contains "_start"
+        let (section_body, _) = find_section(&bytes, SectionId::Export as u8);
+        // Export count
+        assert_eq!(section_body[0], 1);
+        // Export name length
+        assert_eq!(section_body[1], 6); // "_start" = 6 bytes
+        // Export name
+        assert_eq!(&section_body[2..8], b"_start");
+    }
+
+    #[test]
+    fn test_code_section_contains_i32_const_42() {
+        let mut module = WasmModule::new();
+        module.types.push(FuncType { params: vec![], results: vec![ValType::I32] });
+        module.functions.push(0);
+        let mut code = Vec::new();
+        code.push(Op::I32Const as u8);
+        encode_sleb128(42, &mut code);
+        module.codes.push(FuncBody { locals: vec![], code });
+
+        let bytes = module.encode();
+        // Find code section
+        let (section_body, _) = find_section(&bytes, SectionId::Code as u8);
+        // The section should contain the i32.const 42 opcode sequence
+        let has_const_42 = section_body.windows(2).any(|w| {
+            w[0] == Op::I32Const as u8 && w[1] == 42
+        });
+        assert!(has_const_42, "code section should contain i32.const 42");
+    }
+
+    #[test]
+    fn test_empty_module_is_valid() {
+        let module = WasmModule::new();
+        let bytes = module.encode();
+        // Empty module = just header (8 bytes)
+        assert_eq!(bytes.len(), 8);
+        assert_eq!(&bytes[0..4], &WASM_MAGIC);
+        assert_eq!(&bytes[4..8], &WASM_VERSION);
+    }
+
+    #[test]
+    fn test_memory_section_one_page() {
+        let mut module = WasmModule::new();
+        module.memories.push(MemoryType { min: 1, max: Some(256) });
+        let bytes = module.encode();
+        let (section_body, _) = find_section(&bytes, SectionId::Memory as u8);
+        // Count = 1
+        assert_eq!(section_body[0], 1);
+        // Has max flag = 0x01
+        assert_eq!(section_body[1], 0x01);
+        // Min = 1
+        assert_eq!(section_body[2], 1);
+    }
+
+    // ─── Test helpers ────────────────────────────────────────────────
+
+    /// Decode a ULEB128 value for test assertions. Returns (value, bytes_consumed).
+    fn decode_uleb128_for_test(bytes: &[u8]) -> (u64, usize) {
+        let mut result: u64 = 0;
+        let mut shift = 0;
+        for (i, &byte) in bytes.iter().enumerate() {
+            result |= ((byte & 0x7F) as u64) << shift;
+            shift += 7;
+            if byte & 0x80 == 0 {
+                return (result, i + 1);
+            }
+        }
+        (result, bytes.len())
+    }
+
+    /// Find a section by ID in a WASM binary. Returns (section_body, start_offset).
+    fn find_section(bytes: &[u8], section_id: u8) -> (&[u8], usize) {
+        let mut pos = 8; // skip header
+        while pos < bytes.len() {
+            let id = bytes[pos];
+            pos += 1;
+            let (size, consumed) = decode_uleb128_for_test(&bytes[pos..]);
+            pos += consumed;
+            if id == section_id {
+                return (&bytes[pos..pos + size as usize], pos);
+            }
+            pos += size as usize;
+        }
+        panic!("Section {} not found in WASM binary", section_id);
+    }
 }

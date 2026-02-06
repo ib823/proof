@@ -129,11 +129,11 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     let sb = value_to_string(&b)?;
                     Ok(Value::String(format!("{sa}{sb}")))
                 }
-                _ => Err(Error::TypeMismatch {
-                    expected: "pair of strings".to_string(),
-                    found: format!("{:?}", arg),
-                    context: "gabung_teks/concat".to_string(),
-                }),
+                // Partial application: gabung_teks(a) waits for b
+                other => Ok(Value::BuiltinPartial(
+                    "gabung_teks".to_string(),
+                    Box::new(other),
+                )),
             };
         }
         "panjang" => {

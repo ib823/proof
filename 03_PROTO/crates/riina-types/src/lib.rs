@@ -615,6 +615,37 @@ pub struct Program {
     pub spans: Vec<SpannedDecl>,
 }
 
+/// Desugar a single function decl into a LetRec binding.
+#[allow(clippy::boxed_local)]
+fn desugar_function(name: Ident, params: Vec<(Ident, Ty)>, return_ty: Ty, effect: Effect, body: Box<Expr>, continuation: Box<Expr>) -> Expr {
+    let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
+        Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
+    });
+    let fn_ty = params.iter().rev().fold(return_ty.clone(), |ret, (_, param_ty)| {
+        Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
+    });
+    Expr::LetRec(name, fn_ty, Box::new(lam), continuation)
+}
+
+/// Desugar an extern block into Let bindings for each extern decl.
+fn desugar_extern_block(decls: Vec<ExternDecl>, continuation: Expr) -> Expr {
+    let mut result = continuation;
+    for decl in decls.into_iter().rev() {
+        let param_names: Vec<Ident> = decl.params.iter().map(|(n, _)| n.clone()).collect();
+        let args: Vec<Expr> = param_names.iter().map(|n| Expr::Var(n.clone())).collect();
+        let ffi_call = Expr::FFICall {
+            name: decl.name.clone(),
+            args,
+            ret_ty: decl.ret_ty.clone(),
+        };
+        let lam = decl.params.iter().rev().fold(ffi_call, |acc, (p, ty)| {
+            Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
+        });
+        result = Expr::Let(decl.name, Box::new(lam), Box::new(result));
+    }
+    result
+}
+
 impl Program {
     /// Create a Program without span info (backwards compat).
     #[must_use]
@@ -639,42 +670,9 @@ impl Program {
             return Expr::Unit;
         }
 
-        // Helper: desugar a single function decl into the appropriate binding
-        #[allow(clippy::boxed_local)]
-        fn desugar_function(name: Ident, params: Vec<(Ident, Ty)>, return_ty: Ty, effect: Effect, body: Box<Expr>, continuation: Box<Expr>) -> Expr {
-            let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
-                Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
-            });
-            // Build the curried function type for the LetRec annotation
-            let fn_ty = params.iter().rev().fold(return_ty.clone(), |ret, (_, param_ty)| {
-                Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-            });
-            Expr::LetRec(name, fn_ty, Box::new(lam), continuation)
-        }
-
-        // Helper: desugar an extern block into Let bindings for each extern decl
-        fn desugar_extern_block(decls: Vec<ExternDecl>, continuation: Expr) -> Expr {
-            let mut result = continuation;
-            for decl in decls.into_iter().rev() {
-                // Build a lambda wrapper that creates an FFICall
-                let param_names: Vec<Ident> = decl.params.iter().map(|(n, _)| n.clone()).collect();
-                let args: Vec<Expr> = param_names.iter().map(|n| Expr::Var(n.clone())).collect();
-                let ffi_call = Expr::FFICall {
-                    name: decl.name.clone(),
-                    args,
-                    ret_ty: decl.ret_ty.clone(),
-                };
-                let lam = decl.params.iter().rev().fold(ffi_call, |acc, (p, ty)| {
-                    Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
-                });
-                result = Expr::Let(decl.name, Box::new(lam), Box::new(result));
-            }
-            result
-        }
-
         // Build from the end: last decl is the program body
         let last = decls.pop().unwrap();
-        let mut result = match last {
+        let body = match last {
             TopLevelDecl::Expr(e) => *e,
             TopLevelDecl::Binding { name, value } => {
                 Expr::Let(name, value, Box::new(Expr::Unit))
@@ -688,6 +686,21 @@ impl Program {
             // Test blocks are skipped during desugaring (run by riinac test)
             TopLevelDecl::Test { .. } => Expr::Unit,
         };
+
+        Self::wrap_decls(decls, body)
+    }
+
+    /// Desugar declarations with a specific body expression.
+    ///
+    /// This is useful for the test runner: desugar the non-test declarations
+    /// once for each test body, without needing to push a fake TopLevelDecl::Expr.
+    pub fn desugar_with_body(self, body: Expr) -> Expr {
+        Self::wrap_decls(self.decls, body)
+    }
+
+    /// Wrap a body expression with a chain of Let/LetRec bindings from declarations.
+    fn wrap_decls(decls: Vec<TopLevelDecl>, body: Expr) -> Expr {
+        let mut result = body;
         // Wrap remaining decls from back to front
         for decl in decls.into_iter().rev() {
             result = match decl {

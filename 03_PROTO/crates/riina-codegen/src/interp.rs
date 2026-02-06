@@ -268,6 +268,11 @@ impl Interpreter {
                     Value::Builtin(name) => {
                         crate::builtins::apply_builtin(&name, arg_val)
                     }
+                    // Partially-applied builtin: form pair and complete the call
+                    Value::BuiltinPartial(name, first_arg) => {
+                        let pair = Value::Pair(first_arg, Box::new(arg_val));
+                        crate::builtins::apply_builtin(&name, pair)
+                    }
                     _ => Err(Error::TypeMismatch {
                         expected: "function".to_string(),
                         found: format!("{:?}", func_val),
@@ -1460,5 +1465,68 @@ mod tests {
             Box::new(Expr::App(Box::new(Expr::Var("count".into())), Box::new(Expr::Int(10)))),
         );
         assert_eq!(interp.eval(&letrec), Ok(Value::Int(0)));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // BUILTIN PARTIAL APPLICATION TESTS (curried pair-builtins)
+    // ═══════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_tegaskan_sama_curried() {
+        // tegaskan_sama(42, 42) as curried: App(App(tegaskan_sama, 42), 42)
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("tegaskan_sama".into())),
+                Box::new(Expr::Int(42)),
+            )),
+            Box::new(Expr::Int(42)),
+        );
+        assert_eq!(interp.eval_with_builtins(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_tegaskan_sama_curried_fail() {
+        // tegaskan_sama(1, 2) should fail
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("tegaskan_sama".into())),
+                Box::new(Expr::Int(1)),
+            )),
+            Box::new(Expr::Int(2)),
+        );
+        assert!(interp.eval_with_builtins(&expr).is_err());
+    }
+
+    #[test]
+    fn test_tegaskan_beza_curried() {
+        // tegaskan_beza(1, 2) as curried: should pass (1 != 2)
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("tegaskan_beza".into())),
+                Box::new(Expr::Int(1)),
+            )),
+            Box::new(Expr::Int(2)),
+        );
+        assert_eq!(interp.eval_with_builtins(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_gabung_teks_curried() {
+        // gabung_teks("hello", " world") as curried
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("gabung_teks".into())),
+                Box::new(Expr::String("hello".into())),
+            )),
+            Box::new(Expr::String(" world".into())),
+        );
+        assert_eq!(
+            interp.eval_with_builtins(&expr),
+            Ok(Value::String("hello world".into()))
+        );
     }
 }

@@ -260,8 +260,28 @@ theorem StoreWf.update_existing (Σ : StoreTy) (st : Store) (l : Loc)
     (hwf : StoreWf Σ st) (hlook : Σ.lookup l = some (T, sl))
     (hval : Value v) (hty : HasType [] Σ .public v T .pure) :
     StoreWf Σ (st.update l v) := by
-  -- Full proof requires detailed case analysis
-  sorry
+  obtain ⟨hΣtoSt, hSttoΣ⟩ := hwf
+  constructor
+  · -- Forward: Σ → store
+    intro l₀ T₀ sl₀ hlookup₀
+    by_cases h : l₀ = l
+    · subst h
+      rw [hlook] at hlookup₀
+      have ⟨rfl, rfl⟩ := Option.some.inj hlookup₀ |>.mp rfl |> Prod.mk.inj
+      exact ⟨v, Store.lookup_update_eq st l v, hval, hty⟩
+    · obtain ⟨v₀, hst, hval₀, hty₀⟩ := hΣtoSt l₀ T₀ sl₀ hlookup₀
+      exact ⟨v₀, by rw [Store.lookup_update_neq st l₀ l v h]; exact hst, hval₀, hty₀⟩
+  · -- Backward: store → Σ
+    intro l₀ v₀ hst
+    by_cases h : l₀ = l
+    · subst h
+      have heq := Store.lookup_update_eq st l v
+      rw [heq] at hst
+      have := Option.some.inj hst
+      subst this
+      exact ⟨T, sl, hlook, hval, hty⟩
+    · rw [Store.lookup_update_neq st l₀ l v h] at hst
+      exact hSttoΣ l₀ v₀ hst
 
 /-- Updating at a fresh location preserves store well-formedness
     (matches Coq: Lemma store_wf_update_fresh) -/
@@ -271,15 +291,53 @@ theorem StoreWf.update_fresh (Σ : StoreTy) (st : Store) (l : Loc)
     (hstnone : st.lookup l = none) (htynone : Σ.lookup l = none)
     (hval : Value v) (hty : HasType [] Σ .public v T .pure) :
     StoreWf (Σ.update l T sl) (st.update l v) := by
-  -- Full proof requires detailed case analysis
-  sorry
+  obtain ⟨hΣtoSt, hSttoΣ⟩ := hwf
+  have hext : Σ.extends (Σ.update l T sl) :=
+    StoreTy.extends_update_fresh Σ l T sl htynone
+  constructor
+  · -- Forward: Σ' → store'
+    intro l₀ T₀ sl₀ hlookup₀
+    by_cases h : l₀ = l
+    · subst h
+      rw [StoreTy.lookup_update_eq] at hlookup₀
+      have ⟨rfl, rfl⟩ := Option.some.inj hlookup₀ |>.mp rfl |> Prod.mk.inj
+      exact ⟨v, Store.lookup_update_eq st l v, hval,
+        StoreTy.extends_preserves_typing [] Σ (Σ.update l T sl) .public v T .pure hext hty⟩
+    · rw [StoreTy.lookup_update_neq Σ l₀ l T sl h] at hlookup₀
+      obtain ⟨v₀, hst, hval₀, hty₀⟩ := hΣtoSt l₀ T₀ sl₀ hlookup₀
+      exact ⟨v₀,
+        by rw [Store.lookup_update_neq st l₀ l v h]; exact hst,
+        hval₀,
+        StoreTy.extends_preserves_typing [] Σ (Σ.update l T sl) .public v₀ T₀ .pure hext hty₀⟩
+  · -- Backward: store' → Σ'
+    intro l₀ v₀ hst
+    by_cases h : l₀ = l
+    · subst h
+      have heq := Store.lookup_update_eq st l v
+      rw [heq] at hst
+      have := Option.some.inj hst
+      subst this
+      exact ⟨T, sl, StoreTy.lookup_update_eq Σ l T sl, hval,
+        StoreTy.extends_preserves_typing [] Σ (Σ.update l T sl) .public v T .pure hext hty⟩
+    · rw [Store.lookup_update_neq st l₀ l v h] at hst
+      obtain ⟨T₀, sl₀, hlookup₀, hval₀, hty₀⟩ := hSttoΣ l₀ v₀ hst
+      exact ⟨T₀, sl₀,
+        by rw [StoreTy.lookup_update_neq Σ l₀ l T sl h]; exact hlookup₀,
+        hval₀,
+        StoreTy.extends_preserves_typing [] Σ (Σ.update l T sl) .public v₀ T₀ .pure hext hty₀⟩
 
 /-- Fresh location is not in store type
     (matches Coq: Lemma store_ty_lookup_fresh_none) -/
 theorem StoreTy.lookup_fresh_none (Σ : StoreTy) (st : Store)
     (hwf : StoreWf Σ st) : Σ.lookup (st.freshLoc) = none := by
-  -- Proof by contradiction using store_lookup_fresh
-  sorry
+  obtain ⟨hΣtoSt, _⟩ := hwf
+  match h : Σ.lookup st.freshLoc with
+  | none => rfl
+  | some (T, sl) =>
+      have ⟨v, hst, _, _⟩ := hΣtoSt _ _ _ h
+      have := Store.lookup_fresh st
+      rw [this] at hst
+      exact absurd hst (by simp)
 
 
 /-! ## Context Invariance
@@ -416,15 +474,206 @@ theorem closedTypingWeakening (Σ : StoreTy) (Δ : SecurityLevel) (v : Expr)
 /-- Substitution preserves typing
     (matches Coq: Lemma substitution_preserves_typing)
 
-    If Γ, x:S ⊢ e : T and ⊢ v : S, then Γ ⊢ [x:=v]e : T -/
+    If Γ, x:S ⊢ e : T and ⊢ v : S and v is a value, then Γ ⊢ [x:=v]e : T -/
 theorem substitutionPreservesTyping (Γ : TypeEnv) (Σ : StoreTy) (Δ : SecurityLevel)
-    (x : Ident) (e v : Expr) (S T : Ty) (ε εv : Effect)
-    (hty : HasType ((x, S) :: Γ) Σ Δ e T ε)
-    (hv : HasType [] Σ Δ v S εv) :
+    (x : Ident) (e v : Expr) (S T : Ty) (ε : Effect)
+    (hval : Value v)
+    (hv : HasType [] Σ Δ v S .pure)
+    (hty : HasType ((x, S) :: Γ) Σ Δ e T ε) :
     HasType Γ Σ Δ ([x := v] e) T ε := by
-  -- Full proof requires induction on typing derivation
-  -- with careful handling of variable capture
-  sorry
+  -- Induction on expression, generalizing the typing derivation
+  induction e generalizing Γ T ε x S with
+  | unit =>
+      cases hty; simp [Expr.subst]; exact HasType.unit
+  | bool b =>
+      cases hty; simp [Expr.subst]; exact HasType.bool
+  | int n =>
+      cases hty; simp [Expr.subst]; exact HasType.int
+  | string s =>
+      cases hty; simp [Expr.subst]; exact HasType.string
+  | loc l =>
+      cases hty with | loc hlook => simp [Expr.subst]; exact HasType.loc hlook
+  | var y =>
+      simp [Expr.subst]
+      split
+      · -- x = y: substitute with v
+        rename_i heq
+        cases hty with
+        | var hlook =>
+            simp [TypeEnv.lookup, heq] at hlook
+            subst hlook
+            exact closedTypingWeakening Σ Δ v S .pure Γ hv
+      · -- x ≠ y: keep variable
+        rename_i hneq
+        cases hty with
+        | var hlook =>
+            apply HasType.var
+            simp [TypeEnv.lookup] at hlook
+            simp [hneq] at hlook
+            exact hlook
+  | lam y Ty body ih =>
+      simp [Expr.subst]
+      split
+      · -- x = y: binder shadows, no substitution in body
+        rename_i heq; subst heq
+        cases hty with
+        | lam hbody =>
+            apply HasType.lam
+            apply contextInvariance ((x, Ty) :: (x, S) :: Γ) ((x, Ty) :: Γ) Σ Δ body _ _ hbody
+            intro z hfree
+            simp [TypeEnv.lookup]
+            split <;> rfl
+      · -- x ≠ y: substitute in body
+        rename_i hneq
+        cases hty with
+        | lam hbody =>
+            apply HasType.lam
+            apply ih _ hval
+            · apply contextInvariance ((y, Ty) :: (x, S) :: Γ) ((x, S) :: (y, Ty) :: Γ) Σ Δ body _ _ hbody
+              intro z hfree
+              simp [TypeEnv.lookup]
+              split
+              · rfl
+              · split
+                · rename_i h1 h2; subst h2
+                  simp [bne_iff_ne, Ne.symm hneq]
+                · rfl
+            · exact hv
+  | app e1 e2 ih1 ih2 =>
+      cases hty with
+      | app h1 h2 =>
+          simp [Expr.subst]
+          exact HasType.app (ih1 h1 hval hv) (ih2 h2 hval hv)
+  | pair e1 e2 ih1 ih2 =>
+      cases hty with
+      | pair h1 h2 =>
+          simp [Expr.subst]
+          exact HasType.pair (ih1 h1 hval hv) (ih2 h2 hval hv)
+  | fst e ih =>
+      cases hty with
+      | fst h => simp [Expr.subst]; exact HasType.fst (ih h hval hv)
+  | snd e ih =>
+      cases hty with
+      | snd h => simp [Expr.subst]; exact HasType.snd (ih h hval hv)
+  | inl e _ ih =>
+      cases hty with
+      | inl h => simp [Expr.subst]; exact HasType.inl (ih h hval hv)
+  | inr e _ ih =>
+      cases hty with
+      | inr h => simp [Expr.subst]; exact HasType.inr (ih h hval hv)
+  | case e0 y1 e1 y2 e2 ih0 ih1 ih2 =>
+      simp [Expr.subst]
+      cases hty with
+      | case h0 h1 h2 =>
+          apply HasType.case
+          · exact ih0 h0 hval hv
+          · -- Branch 1: y1 may shadow x
+            split
+            · rename_i heq; subst heq
+              apply contextInvariance ((x, _) :: (x, S) :: Γ) ((x, _) :: Γ) Σ Δ e1 _ _ h1
+              intro z hfree; simp [TypeEnv.lookup]; split <;> rfl
+            · rename_i hneq
+              apply ih1 _ hval
+              · apply contextInvariance ((y1, _) :: (x, S) :: Γ) ((x, S) :: (y1, _) :: Γ) Σ Δ e1 _ _ h1
+                intro z hfree; simp [TypeEnv.lookup]
+                split
+                · rfl
+                · split
+                  · rename_i h1' h2'; subst h2'; simp [bne_iff_ne, Ne.symm hneq]
+                  · rfl
+              · exact hv
+          · -- Branch 2: y2 may shadow x
+            split
+            · rename_i heq; subst heq
+              apply contextInvariance ((x, _) :: (x, S) :: Γ) ((x, _) :: Γ) Σ Δ e2 _ _ h2
+              intro z hfree; simp [TypeEnv.lookup]; split <;> rfl
+            · rename_i hneq
+              apply ih2 _ hval
+              · apply contextInvariance ((y2, _) :: (x, S) :: Γ) ((x, S) :: (y2, _) :: Γ) Σ Δ e2 _ _ h2
+                intro z hfree; simp [TypeEnv.lookup]
+                split
+                · rfl
+                · split
+                  · rename_i h1' h2'; subst h2'; simp [bne_iff_ne, Ne.symm hneq]
+                  · rfl
+              · exact hv
+  | ite e1 e2 e3 ih1 ih2 ih3 =>
+      cases hty with
+      | ite h1 h2 h3 =>
+          simp [Expr.subst]
+          exact HasType.ite (ih1 h1 hval hv) (ih2 h2 hval hv) (ih3 h3 hval hv)
+  | let_ y e1 e2 ih1 ih2 =>
+      simp [Expr.subst]
+      cases hty with
+      | let_ h1 h2 =>
+          apply HasType.let_
+          · exact ih1 h1 hval hv
+          · split
+            · rename_i heq; subst heq
+              apply contextInvariance ((x, _) :: (x, S) :: Γ) ((x, _) :: Γ) Σ Δ e2 _ _ h2
+              intro z hfree; simp [TypeEnv.lookup]; split <;> rfl
+            · rename_i hneq
+              apply ih2 _ hval
+              · apply contextInvariance ((y, _) :: (x, S) :: Γ) ((x, S) :: (y, _) :: Γ) Σ Δ e2 _ _ h2
+                intro z hfree; simp [TypeEnv.lookup]
+                split
+                · rfl
+                · split
+                  · rename_i h1' h2'; subst h2'; simp [bne_iff_ne, Ne.symm hneq]
+                  · rfl
+              · exact hv
+  | perform eff e ih =>
+      cases hty with
+      | perform h => simp [Expr.subst]; exact HasType.perform (ih h hval hv)
+  | handle e y h ih1 ih2 =>
+      simp [Expr.subst]
+      cases hty with
+      | handle h1 h2 =>
+          apply HasType.handle
+          · exact ih1 h1 hval hv
+          · split
+            · rename_i heq; subst heq
+              apply contextInvariance ((x, _) :: (x, S) :: Γ) ((x, _) :: Γ) Σ Δ h _ _ h2
+              intro z hfree; simp [TypeEnv.lookup]; split <;> rfl
+            · rename_i hneq
+              apply ih2 _ hval
+              · apply contextInvariance ((y, _) :: (x, S) :: Γ) ((x, S) :: (y, _) :: Γ) Σ Δ h _ _ h2
+                intro z hfree; simp [TypeEnv.lookup]
+                split
+                · rfl
+                · split
+                  · rename_i h1' h2'; subst h2'; simp [bne_iff_ne, Ne.symm hneq]
+                  · rfl
+              · exact hv
+  | ref e _ ih =>
+      cases hty with
+      | ref h => simp [Expr.subst]; exact HasType.ref (ih h hval hv)
+  | deref e ih =>
+      cases hty with
+      | deref h => simp [Expr.subst]; exact HasType.deref (ih h hval hv)
+  | assign e1 e2 ih1 ih2 =>
+      cases hty with
+      | assign h1 h2 =>
+          simp [Expr.subst]
+          exact HasType.assign (ih1 h1 hval hv) (ih2 h2 hval hv)
+  | classify e ih =>
+      cases hty with
+      | classify h => simp [Expr.subst]; exact HasType.classify (ih h hval hv)
+  | declassify e1 e2 ih1 ih2 =>
+      cases hty with
+      | declassify h1 h2 hok =>
+          simp [Expr.subst]
+          exact HasType.declassify (ih1 h1 hval hv) (ih2 h2 hval hv)
+            (DeclassOk.subst x v e1 e2 hval hok)
+  | prove e ih =>
+      cases hty with
+      | prove h => simp [Expr.subst]; exact HasType.prove (ih h hval hv)
+  | require eff e ih =>
+      cases hty with
+      | require h => simp [Expr.subst]; exact HasType.require (ih h hval hv)
+  | grant eff e ih =>
+      cases hty with
+      | grant h => simp [Expr.subst]; exact HasType.grant (ih h hval hv)
 
 
 /-! ## Value Has Pure Effect -/
@@ -435,8 +684,33 @@ theorem valueHasPureEffect (Σ : StoreTy) (Δ : SecurityLevel) (v : Expr)
     (T : Ty) (ε : Effect)
     (hval : Value v) (hty : HasType [] Σ Δ v T ε) :
     HasType [] Σ Δ v T .pure := by
-  -- Proof by case analysis on value form
-  sorry
+  induction hval generalizing T ε with
+  | unit => cases hty; exact HasType.unit
+  | bool => cases hty; exact HasType.bool
+  | int => cases hty; exact HasType.int
+  | string => cases hty; exact HasType.string
+  | loc => cases hty with | loc hlook => exact HasType.loc hlook
+  | lam => cases hty with | lam hbody => exact HasType.lam hbody
+  | pair _ _ ih1 ih2 =>
+      cases hty with
+      | pair h1 h2 =>
+          have hty1 := ih1 h1
+          have hty2 := ih2 h2
+          have : Effect.join .pure .pure = .pure := by simp [Effect.join, Effect.level]
+          rw [← this]
+          exact HasType.pair hty1 hty2
+  | inl _ ih =>
+      cases hty with
+      | inl h => exact HasType.inl (ih h)
+  | inr _ ih =>
+      cases hty with
+      | inr h => exact HasType.inr (ih h)
+  | classify _ ih =>
+      cases hty with
+      | classify h => exact HasType.classify (ih h)
+  | prove _ ih =>
+      cases hty with
+      | prove h => exact HasType.prove (ih h)
 
 
 /-! ## THE PRESERVATION THEOREM -/

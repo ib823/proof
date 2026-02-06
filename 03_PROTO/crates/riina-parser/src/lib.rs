@@ -730,6 +730,12 @@ impl<'a> Parser<'a> {
                 self.next();
                 Ok(Expr::Var(s))
             },
+            // KwExpect (jangkakan/expect) is both a keyword and a builtin function.
+            // When used as an expression, treat it as Var("jangkakan").
+            Some(TokenKind::KwExpect) => {
+                self.next();
+                Ok(Expr::Var("jangkakan".to_string()))
+            },
             Some(TokenKind::LParen) => {
                 self.next(); 
                 let is_unit = if let Some(token) = self.peek() {

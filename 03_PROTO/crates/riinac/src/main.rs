@@ -60,6 +60,8 @@ struct Options {
     json: bool,
     /// Read source from stdin instead of file
     stdin: bool,
+    /// Auto-update expected values in jangkakan (expect-test) assertions
+    update: bool,
 }
 
 fn usage() -> ! {
@@ -83,6 +85,7 @@ fn usage() -> ! {
     eprintln!("Options:");
     eprintln!("  --json                   Output structured JSON (for AI agents)");
     eprintln!("  --stdin                  Read source from stdin instead of file");
+    eprintln!("  --update                 Auto-update jangkakan (expect-test) expected values");
     eprintln!("  --compliance <profiles>  Run compliance checks (comma-separated)");
     eprintln!("  --report                 Generate compliance report (text)");
     eprintln!("  --report-json            Generate compliance report (JSON)");
@@ -156,6 +159,9 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
             }
             "--stdin" => {
                 opts.stdin = true;
+            }
+            "--update" => {
+                opts.update = true;
             }
             "--compliance" => {
                 i += 1;
@@ -232,6 +238,24 @@ fn json_escape(s: &str) -> String {
         }
     }
     out
+}
+
+/// Parse an expect-test mismatch error message.
+/// Returns (actual_value, expected_value) if the message matches the expect mismatch format.
+fn parse_expect_mismatch(msg: &str) -> Option<(String, String)> {
+    // Format from jangkakan builtin:
+    //   expect mismatch:
+    //     actual:   <value>
+    //     expected: <value>
+    if !msg.contains("expect mismatch") {
+        return None;
+    }
+    let actual = msg.split("actual:").nth(1)?.split('\n').next()?.trim().to_string();
+    let expected = msg.split("expected:").nth(1)?.trim().to_string();
+    if actual.is_empty() || expected.is_empty() {
+        return None;
+    }
+    Some((actual, expected))
 }
 
 /// Format a JSON diagnostic from a parse error.
@@ -456,6 +480,8 @@ fn main() {
             let mut passed = 0usize;
             let mut failed = 0usize;
             let mut results: Vec<(String, bool, std::time::Duration, String)> = Vec::new();
+            // Collect expect-test updates: (old_expected, new_actual)
+            let mut expect_updates: Vec<(String, String)> = Vec::new();
 
             if !opts.json {
                 eprintln!("RIINA Test Runner v0.1.0");
@@ -465,11 +491,8 @@ fn main() {
             }
 
             for (name, body) in &test_blocks {
-                // Build a mini-program: [non-test decls...] + [test body]
-                let mut decls = non_test_decls.clone();
-                decls.push(riina_types::TopLevelDecl::Expr(Box::new(body.clone())));
-                let test_program = riina_types::Program::new(decls);
-                let test_expr = test_program.desugar();
+                let test_expr = riina_types::Program::new(non_test_decls.clone())
+                    .desugar_with_body(body.clone());
 
                 let start = std::time::Instant::now();
                 match riina_codegen::eval_with_builtins(&test_expr) {
@@ -483,12 +506,46 @@ fn main() {
                     }
                     Err(e) => {
                         let elapsed = start.elapsed();
+                        let msg = e.to_string();
+
+                        // Check if this is an expect-test mismatch (for --update)
+                        if opts.update {
+                            if let Some((actual, expected)) = parse_expect_mismatch(&msg) {
+                                expect_updates.push((expected, actual));
+                            }
+                        }
+
                         failed += 1;
                         if !opts.json {
                             eprintln!("ujian \"{}\" ... GAGAL ({:.1}ms)", name, elapsed.as_secs_f64() * 1000.0);
-                            eprintln!("  {}", e);
+                            eprintln!("  {}", msg);
                         }
-                        results.push((name.clone(), false, elapsed, e.to_string()));
+                        results.push((name.clone(), false, elapsed, msg));
+                    }
+                }
+            }
+
+            // Apply expect-test updates if --update was specified
+            if opts.update && !expect_updates.is_empty() {
+                let mut updated_source = source.clone();
+                let mut update_count = 0;
+                for (old_expected, new_actual) in &expect_updates {
+                    // Find jangkakan/expect calls with the old expected string and replace
+                    let old_pattern = format!("\"{}\"", old_expected);
+                    let new_pattern = format!("\"{}\"", new_actual);
+                    if updated_source.contains(&old_pattern) {
+                        updated_source = updated_source.replacen(&old_pattern, &new_pattern, 1);
+                        update_count += 1;
+                    }
+                }
+                if update_count > 0 {
+                    if let Some(ref path) = input_path {
+                        if let Err(e) = fs::write(path, &updated_source) {
+                            eprintln!("Error updating file: {e}");
+                        } else {
+                            eprintln!();
+                            eprintln!("Updated {} jangkakan expected value(s) in {}", update_count, filename);
+                        }
                     }
                 }
             }
@@ -512,7 +569,7 @@ fn main() {
                 eprintln!("{} ujian, {} lulus, {} gagal", total, passed, failed);
             }
 
-            if failed > 0 {
+            if failed > 0 && !opts.update {
                 process::exit(1);
             }
         }

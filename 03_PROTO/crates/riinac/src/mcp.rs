@@ -29,6 +29,15 @@ use std::io;
 use riina_lsp::json::{self, JsonValue};
 use riina_lsp::jsonrpc;
 
+/// Maximum JSON-RPC message size: 1 MiB.
+/// This prevents OOM from malicious or broken clients sending huge Content-Length.
+const MAX_MESSAGE_BYTES: usize = 1_048_576;
+
+/// Maximum source code size accepted by tools: 256 KiB.
+/// Source code larger than this is rejected before parsing to prevent
+/// excessive memory use during AST construction and typechecking.
+const MAX_SOURCE_BYTES: usize = 262_144;
+
 /// Run the MCP server loop over stdin/stdout.
 pub fn run() -> Result<(), Box<dyn std::error::Error>> {
     let stdin = io::stdin();
@@ -39,12 +48,18 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
     eprintln!("RIINA MCP Server v0.1.0 — ready");
 
     loop {
-        let msg = match jsonrpc::read_message(&mut reader) {
+        let msg = match jsonrpc::read_message_bounded(&mut reader, MAX_MESSAGE_BYTES) {
             Ok(m) => m,
             Err(e) => {
-                // EOF or read error — clean shutdown
+                // EOF — clean shutdown
                 if e.kind() == io::ErrorKind::UnexpectedEof {
                     break;
+                }
+                // Oversized or malformed — send error if possible, then continue
+                // (don't crash the server on one bad message)
+                if e.kind() == io::ErrorKind::InvalidData {
+                    eprintln!("MCP rejected message: {e}");
+                    continue;
                 }
                 eprintln!("MCP read error: {e}");
                 break;
@@ -151,6 +166,16 @@ fn handle_tools_call(params: &JsonValue) -> JsonValue {
         return tool_error("Missing required argument: source");
     }
 
+    // Reject oversized source code before parsing
+    if source.len() > MAX_SOURCE_BYTES {
+        return tool_error(&format!(
+            "Source code too large: {} bytes (max {} bytes / {} KiB)",
+            source.len(),
+            MAX_SOURCE_BYTES,
+            MAX_SOURCE_BYTES / 1024
+        ));
+    }
+
     match tool_name {
         "riina_check" => tool_check(source),
         "riina_test" => tool_test(source),
@@ -247,10 +272,8 @@ fn tool_test(source: &str) -> JsonValue {
     let mut test_results = Vec::new();
 
     for (name, body) in &test_blocks {
-        let mut decls = non_test_decls.clone();
-        decls.push(riina_types::TopLevelDecl::Expr(Box::new(body.clone())));
-        let test_program = riina_types::Program::new(decls);
-        let test_expr = test_program.desugar();
+        let test_expr = riina_types::Program::new(non_test_decls.clone())
+            .desugar_with_body(body.clone());
 
         match riina_codegen::eval_with_builtins(&test_expr) {
             Ok(_) => {
@@ -502,5 +525,166 @@ mod tests {
     fn test_tool_error_format() {
         let result = tool_error("something went wrong");
         assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+    }
+
+    // ─── Adversarial / hardening tests ───────────────────────────────
+
+    #[test]
+    fn test_unknown_tool_returns_error() {
+        let params = json::obj(vec![
+            ("name", JsonValue::String("nonexistent_tool".into())),
+            ("arguments", json::obj(vec![
+                ("source", JsonValue::String("42".into())),
+            ])),
+        ]);
+        let result = handle_tools_call(&params);
+        assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+    }
+
+    #[test]
+    fn test_missing_source_returns_error() {
+        let params = json::obj(vec![
+            ("name", JsonValue::String("riina_check".into())),
+            ("arguments", json::obj(vec![])),
+        ]);
+        let result = handle_tools_call(&params);
+        assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+    }
+
+    #[test]
+    fn test_empty_source_returns_error() {
+        let params = json::obj(vec![
+            ("name", JsonValue::String("riina_check".into())),
+            ("arguments", json::obj(vec![
+                ("source", JsonValue::String("".into())),
+            ])),
+        ]);
+        let result = handle_tools_call(&params);
+        assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+    }
+
+    #[test]
+    fn test_null_params_returns_error() {
+        let result = handle_tools_call(&JsonValue::Null);
+        assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+    }
+
+    #[test]
+    fn test_missing_tool_name_returns_error() {
+        let params = json::obj(vec![
+            ("arguments", json::obj(vec![
+                ("source", JsonValue::String("42".into())),
+            ])),
+        ]);
+        let result = handle_tools_call(&params);
+        // Empty tool name → "Unknown tool: "
+        assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+    }
+
+    #[test]
+    fn test_oversized_source_rejected() {
+        // Create source larger than MAX_SOURCE_BYTES (256 KiB)
+        let big_source = "a".repeat(MAX_SOURCE_BYTES + 1);
+        let params = json::obj(vec![
+            ("name", JsonValue::String("riina_check".into())),
+            ("arguments", json::obj(vec![
+                ("source", JsonValue::String(big_source)),
+            ])),
+        ]);
+        let result = handle_tools_call(&params);
+        assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
+        // Verify error message mentions size
+        let content = result.get("content").unwrap();
+        if let JsonValue::Array(arr) = content {
+            let text = arr[0].get("text").unwrap().as_str().unwrap();
+            assert!(text.contains("too large"), "got: {text}");
+        }
+    }
+
+    #[test]
+    fn test_source_at_exact_limit_accepted() {
+        // Source of exactly MAX_SOURCE_BYTES should be accepted (though it will parse-error)
+        let source = "a".repeat(MAX_SOURCE_BYTES);
+        let params = json::obj(vec![
+            ("name", JsonValue::String("riina_check".into())),
+            ("arguments", json::obj(vec![
+                ("source", JsonValue::String(source)),
+            ])),
+        ]);
+        let result = handle_tools_call(&params);
+        // Should NOT be a tool error (isError) — it's a parse error instead
+        assert!(result.get("isError").is_none());
+    }
+
+    #[test]
+    fn test_unicode_source_accepted() {
+        // Multi-byte UTF-8 source should work
+        let result = tool_check("biar nama = \"日本語\";");
+        let content = result.get("content").unwrap();
+        if let JsonValue::Array(arr) = content {
+            let text = arr[0].get("text").unwrap().as_str().unwrap();
+            // Should parse and return some result (success or type error)
+            assert!(!text.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_json_escape_control_chars() {
+        // All control characters should be escaped
+        assert_eq!(json_escape_str("\x00"), "\\u0000");
+        assert_eq!(json_escape_str("\x01"), "\\u0001");
+        assert_eq!(json_escape_str("\x1f"), "\\u001f");
+        // Tab, newline, carriage return get special escapes
+        assert_eq!(json_escape_str("\t"), "\\t");
+        assert_eq!(json_escape_str("\n"), "\\n");
+        assert_eq!(json_escape_str("\r"), "\\r");
+    }
+
+    #[test]
+    fn test_json_escape_backslash_and_quote() {
+        assert_eq!(json_escape_str("path\\to\\file"), "path\\\\to\\\\file");
+        assert_eq!(json_escape_str("say \"hello\""), "say \\\"hello\\\"");
+    }
+
+    #[test]
+    fn test_tool_check_with_type_error_returns_code() {
+        // Type error should include error code and fix hint
+        let result = tool_check("fungsi f() -> Nombor kesan Bersih { betul }");
+        let content = result.get("content").unwrap();
+        if let JsonValue::Array(arr) = content {
+            let text = arr[0].get("text").unwrap().as_str().unwrap();
+            assert!(text.contains("\"success\":false"), "got: {text}");
+        }
+    }
+
+    #[test]
+    fn test_tool_run_runtime_error() {
+        // Division by zero or similar runtime error
+        let result = tool_run("tegaskan(salah)");
+        let content = result.get("content").unwrap();
+        if let JsonValue::Array(arr) = content {
+            let text = arr[0].get("text").unwrap().as_str().unwrap();
+            assert!(text.contains("error") || text.contains("Error") || text.contains("failed"),
+                "Expected error message, got: {text}");
+        }
+    }
+
+    #[test]
+    fn test_tool_test_no_tests() {
+        // Source with no ujian blocks
+        let result = tool_test("biar x = 42;");
+        let content = result.get("content").unwrap();
+        if let JsonValue::Array(arr) = content {
+            let text = arr[0].get("text").unwrap().as_str().unwrap();
+            assert!(text.contains("\"total\":0"), "got: {text}");
+        }
+    }
+
+    #[test]
+    fn test_max_message_bytes_constant() {
+        // Verify constants are reasonable
+        assert_eq!(MAX_MESSAGE_BYTES, 1_048_576); // 1 MiB
+        assert_eq!(MAX_SOURCE_BYTES, 262_144);    // 256 KiB
+        assert!(MAX_SOURCE_BYTES < MAX_MESSAGE_BYTES);
     }
 }

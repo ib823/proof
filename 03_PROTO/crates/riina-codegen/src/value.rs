@@ -168,6 +168,16 @@ pub enum Value {
     /// Not in Coq — Rust-only extension for I/O builtins.
     Builtin(String),
 
+    /// Partially-applied builtin awaiting a second argument to form a pair.
+    ///
+    /// Created when a pair-expecting builtin (e.g. tegaskan_sama) is called
+    /// with a single argument via curried application: `tegaskan_sama(a)(b)`
+    /// becomes `BuiltinPartial("tegaskan_sama", a)` then applied to `b`
+    /// produces `tegaskan_sama(Pair(a, b))`.
+    ///
+    /// Not in Coq — Rust-only extension for ergonomic curried calls.
+    BuiltinPartial(String, Box<Value>),
+
     /// Unit value `()`
     ///
     /// Corresponds to Coq `VUnit`.
@@ -655,6 +665,7 @@ impl std::fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Builtin(name) => write!(f, "<builtin:{name}>"),
+            Self::BuiltinPartial(name, arg) => write!(f, "<builtin:{name}({arg})>"),
             Self::Unit => write!(f, "()"),
             Self::Bool(b) => write!(f, "{b}"),
             Self::Int(n) => write!(f, "{n}"),
