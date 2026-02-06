@@ -153,6 +153,12 @@ pub enum TokenKind {
     // Guard clause
     KwGuard,      // pastikan / guard
 
+    // Test keyword
+    KwTest,       // ujian / test
+
+    // Expect keyword (for inline snapshot tests)
+    KwExpect,     // jangka / expect
+
     // Operators & Punctuation
     Pipe,         // |>
     Plus,       // +

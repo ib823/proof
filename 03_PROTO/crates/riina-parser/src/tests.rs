@@ -1830,7 +1830,7 @@ fn test_parse_raw_ptr_type() {
 
 #[test]
 fn test_parse_c_types() {
-    let src = r#"luaran "C" { fungsi test(a: CInt, b: CChar, c: CVoid) -> CInt; }"#;
+    let src = r#"luaran "C" { fungsi semak(a: CInt, b: CChar, c: CVoid) -> CInt; }"#;
     let mut p = Parser::new(src);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {

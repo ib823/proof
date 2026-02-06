@@ -71,6 +71,108 @@ impl std::fmt::Display for TypeError {
 
 impl std::error::Error for TypeError {}
 
+impl TypeError {
+    /// Return a human-readable fix hint for this error.
+    /// Used by `riinac check --json` to help AI agents fix code.
+    #[must_use]
+    pub fn fix_hint(&self) -> Option<String> {
+        Some(match self {
+            TypeError::TypeMismatch { expected, found } => {
+                format!(
+                    "Convert with ke_nombor()/ke_teks()/ke_bool(), or change the annotation from {:?} to {:?}",
+                    expected, found
+                )
+            }
+            TypeError::VarNotFound(name) => {
+                format!("Did you mean a different variable? Check spelling of '{name}'")
+            }
+            TypeError::EffectViolation { allowed: _, found } => {
+                format!(
+                    "Add 'kesan {:?}' to the function signature, or remove the {:?} operation",
+                    found, found
+                )
+            }
+            TypeError::SecurityViolation { found, expected, context } => {
+                format!(
+                    "In {context}: level {:?} does not flow to {:?}. Use 'dedah' with a proof to declassify, or raise the context security level",
+                    found, expected
+                )
+            }
+            TypeError::ExpectedFunction(ty) => {
+                format!("'{:?}' is not a function. Check that you are calling a function, not a value", ty)
+            }
+            TypeError::ExpectedSecret(_) => {
+                "Wrap the value with sulit(value) or Rahsia(value) to make it secret".to_string()
+            }
+            TypeError::InvalidDeclassification { .. } => {
+                "Provide a valid Bukti proof term: dedah(sulit(value), bukti(sulit(value)))".to_string()
+            }
+            TypeError::AnnotationMismatch { expected, found } => {
+                format!(
+                    "Function body evaluates to {:?} but is declared as {:?}. Change the return type annotation or fix the body",
+                    found, expected
+                )
+            }
+            TypeError::ExpectedRef(_) => {
+                "Use 'ruj' to create a reference first: biar r = ruj value @Awam;".to_string()
+            }
+            TypeError::LocationNotFound(_) => {
+                "Location not in store typing — ensure the reference was allocated with 'ruj'".to_string()
+            }
+            TypeError::ExpectedProduct(_) => {
+                "Expected a pair/tuple (T1, T2). Use fst/snd only on pairs".to_string()
+            }
+            TypeError::ExpectedSum(_) => {
+                "Expected a sum type. Use inl/inr constructors".to_string()
+            }
+            TypeError::ExpectedProof(_) => {
+                "Expected a Bukti<T> proof type. Use bukti(expr) to create one".to_string()
+            }
+        })
+    }
+
+    /// Return an error code for this error type.
+    #[must_use]
+    pub fn error_code(&self) -> &'static str {
+        match self {
+            TypeError::VarNotFound(_) => "T0001",
+            TypeError::TypeMismatch { .. } => "T0002",
+            TypeError::ExpectedFunction(_) => "T0003",
+            TypeError::ExpectedProduct(_) => "T0004",
+            TypeError::ExpectedSum(_) => "T0005",
+            TypeError::ExpectedRef(_) => "T0006",
+            TypeError::ExpectedSecret(_) => "T0007",
+            TypeError::ExpectedProof(_) => "T0008",
+            TypeError::EffectViolation { .. } => "E0001",
+            TypeError::AnnotationMismatch { .. } => "T0009",
+            TypeError::SecurityViolation { .. } => "S0001",
+            TypeError::InvalidDeclassification { .. } => "S0002",
+            TypeError::LocationNotFound(_) => "T0010",
+        }
+    }
+
+    /// Return a reference to the Coq typing rule related to this error.
+    #[must_use]
+    pub fn coq_rule(&self) -> Option<&'static str> {
+        match self {
+            TypeError::TypeMismatch { .. } => Some("T_App (Typing.v:142)"),
+            TypeError::ExpectedFunction(_) => Some("T_App (Typing.v:142) — e1 must have function type"),
+            TypeError::EffectViolation { .. } => Some("effect_sub (EffectSystem.v:89) — effect hierarchy"),
+            TypeError::SecurityViolation { context, .. } => {
+                match *context {
+                    "dereference" => Some("T_Deref (Typing.v:178) — sl must flow to delta"),
+                    "assignment" => Some("T_Assign (Typing.v:183) — sl must flow to delta"),
+                    _ => Some("Information flow lattice (Syntax.v:48)"),
+                }
+            }
+            TypeError::InvalidDeclassification { .. } => Some("T_Declassify (Typing.v:196) — declass_ok predicate"),
+            TypeError::ExpectedRef(_) => Some("T_Deref (Typing.v:178) — operand must be TRef"),
+            TypeError::ExpectedSecret(_) => Some("T_Classify (Typing.v:192) — operand must be TSecret"),
+            _ => None,
+        }
+    }
+}
+
 /// Type environment (Γ in Coq has_type judgment)
 ///
 /// Maps variable names to their types.
@@ -1073,7 +1175,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     } else if t1 == Ty::Int && t2 == Ty::Int {
                         Ok((Ty::Int, eff))
                     } else {
-                        return Err(TypeError::TypeMismatch { expected: t1, found: t2 });
+                        Err(TypeError::TypeMismatch { expected: t1, found: t2 })
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {

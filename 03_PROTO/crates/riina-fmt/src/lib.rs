@@ -104,6 +104,16 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
             indent(out, level, cfg);
             fmt_expr(out, e, level, cfg);
         }
+        TopLevelDecl::Test { name, body } => {
+            indent(out, level, cfg);
+            out.push_str("ujian \"");
+            out.push_str(name);
+            out.push_str("\" {\n");
+            fmt_expr(out, body, level + 1, cfg);
+            out.push('\n');
+            indent(out, level, cfg);
+            out.push('}');
+        }
         TopLevelDecl::ExternBlock { abi, decls } => {
             indent(out, level, cfg);
             out.push_str("luaran \"");

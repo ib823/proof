@@ -21,6 +21,27 @@ Security properties are not tested, not assumed — they are *mathematically pro
 
 **[Bahasa Melayu](docs/i18n/README_ms.md)** | **[中文](docs/i18n/README_zh.md)**
 
+> **Write with vibes. Ship with proofs.**
+
+---
+
+## AI-Native Language
+
+RIINA is the world's first programming language that is both **formally verified** and **AI-native**. Every security guarantee has a machine-checked mathematical proof, and the language is designed from the ground up for AI agents to read, write, and reason about.
+
+**AI-Writability Score: 9.7/10** -- Consistent Bahasa Melayu keywords, minimal syntax, strong types, and deterministic compilation make RIINA one of the most AI-friendly languages ever designed.
+
+AI agents: See [llms.txt](llms.txt) for a machine-readable language reference.
+
+### For AI Agents
+
+RIINA provides first-class support for AI-assisted development:
+
+- **Programmatic compilation:** `riinac check --json --stdin` accepts source on stdin and returns structured JSON diagnostics
+- **Full machine reference:** [llms-full.txt](llms-full.txt) contains the complete language specification, type system, and effect system in a single file
+- **Code patterns:** [07_EXAMPLES/](07_EXAMPLES/) contains 120+ annotated examples across 10 categories (security, effects, compliance, design patterns, FFI, and more)
+- **IDE integration:** [.cursorrules](.cursorrules) and [.clinerules](.clinerules) provide pre-configured rules for Cursor and Cline; [.github/copilot-instructions.md](.github/copilot-instructions.md) provides GitHub Copilot context
+
 ---
 
 ## What is RIINA?

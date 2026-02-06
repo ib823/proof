@@ -1,0 +1,276 @@
+/// test_driven.rii
+/// Test-Driven Development (TDD) example with ujian blocks
+/// Demonstrates: writing tests first, then implementing functions,
+/// tegaskan/tegaskan_sama assertions, red-green-refactor cycle
+///
+/// Pattern: Each feature starts with a failing ujian block that
+/// specifies the expected behavior. Implementation follows to
+/// satisfy the tests. Tests serve as executable documentation.
+
+modul pembangunan_ujian;
+
+/// ═══════════════════════════════════════════════════════════════════
+/// Feature 1: Stack (Tindanan) — LIFO data structure
+/// ═══════════════════════════════════════════════════════════════════
+
+jenis Tindanan<T> = {
+    elemen: Senarai<T>,
+};
+
+/// Constructor
+fungsi tindanan_baru() -> Tindanan<Nombor> kesan Bersih {
+    pulang { elemen: [] };
+}
+
+/// Push element onto stack
+fungsi tolak_masuk(tindanan: Tindanan<Nombor>, nilai: Nombor) -> Tindanan<Nombor> kesan Bersih {
+    pulang { elemen: tindanan.elemen + [nilai] };
+}
+
+/// Pop element from stack
+fungsi keluarkan(tindanan: Tindanan<Nombor>) -> (Mungkin<Nombor>, Tindanan<Nombor>) kesan Bersih {
+    biar pjg = panjang(tindanan.elemen);
+    kalau pjg == 0 {
+        pulang (Tiada, tindanan);
+    }
+    biar teratas = tindanan.elemen[pjg - 1];
+    biar sisa = potong(tindanan.elemen, 0, pjg - 1);
+    pulang (Ada(teratas), { elemen: sisa });
+}
+
+/// Peek at top without removing
+fungsi intip(tindanan: Tindanan<Nombor>) -> Mungkin<Nombor> kesan Bersih {
+    biar pjg = panjang(tindanan.elemen);
+    kalau pjg == 0 {
+        pulang Tiada;
+    }
+    pulang Ada(tindanan.elemen[pjg - 1]);
+}
+
+/// Check if stack is empty
+fungsi kosong?(tindanan: Tindanan<Nombor>) -> Benar kesan Bersih {
+    pulang panjang(tindanan.elemen) == 0;
+}
+
+/// Get stack size
+fungsi saiz(tindanan: Tindanan<Nombor>) -> Nombor kesan Bersih {
+    pulang panjang(tindanan.elemen);
+}
+
+/// TESTS FIRST — written before implementation
+ujian "tindanan_baru_kosong" {
+    biar t = tindanan_baru();
+    tegaskan(kosong?(t));
+    tegaskan_sama(saiz(t), 0);
+}
+
+ujian "tolak_masuk_satu_elemen" {
+    biar t = tindanan_baru()
+        |> fungsi(s: Tindanan<Nombor>) -> Tindanan<Nombor> { tolak_masuk(s, 42) };
+    tegaskan(!kosong?(t));
+    tegaskan_sama(saiz(t), 1);
+}
+
+ujian "intip_pulang_teratas" {
+    biar t = tindanan_baru();
+    biar t = tolak_masuk(t, 10);
+    biar t = tolak_masuk(t, 20);
+    biar t = tolak_masuk(t, 30);
+
+    biar atas = intip(t);
+    tegaskan_sama(atas, Ada(30));
+    /// intip does not remove — size unchanged
+    tegaskan_sama(saiz(t), 3);
+}
+
+ujian "keluarkan_lifo" {
+    biar t = tindanan_baru();
+    biar t = tolak_masuk(t, 1);
+    biar t = tolak_masuk(t, 2);
+    biar t = tolak_masuk(t, 3);
+
+    biar (v1, t) = keluarkan(t);
+    tegaskan_sama(v1, Ada(3));
+
+    biar (v2, t) = keluarkan(t);
+    tegaskan_sama(v2, Ada(2));
+
+    biar (v3, t) = keluarkan(t);
+    tegaskan_sama(v3, Ada(1));
+
+    biar (v4, _) = keluarkan(t);
+    tegaskan_sama(v4, Tiada);
+}
+
+ujian "keluarkan_dari_kosong_pulang_tiada" {
+    biar t = tindanan_baru();
+    biar (v, _) = keluarkan(t);
+    tegaskan_sama(v, Tiada);
+}
+
+/// ═══════════════════════════════════════════════════════════════════
+/// Feature 2: Validator (Pengesah) — composable validation rules
+/// ═══════════════════════════════════════════════════════════════════
+
+jenis PeraturanPengesahan = Fn(Teks) -> Mungkin<Teks>;
+
+/// Build validation rules
+fungsi peraturan_min_panjang(min: Nombor) -> PeraturanPengesahan kesan Bersih {
+    pulang fungsi(nilai: Teks) -> Mungkin<Teks> {
+        kalau panjang_teks(nilai) < min {
+            Ada("Minimum " + ke_teks(min) + " aksara")
+        } lain {
+            Tiada
+        }
+    };
+}
+
+fungsi peraturan_maks_panjang(maks: Nombor) -> PeraturanPengesahan kesan Bersih {
+    pulang fungsi(nilai: Teks) -> Mungkin<Teks> {
+        kalau panjang_teks(nilai) > maks {
+            Ada("Maksimum " + ke_teks(maks) + " aksara")
+        } lain {
+            Tiada
+        }
+    };
+}
+
+fungsi peraturan_bukan_kosong() -> PeraturanPengesahan kesan Bersih {
+    pulang fungsi(nilai: Teks) -> Mungkin<Teks> {
+        kalau nilai == "" {
+            Ada("Tidak boleh kosong")
+        } lain {
+            Tiada
+        }
+    };
+}
+
+/// Run all rules and collect errors
+fungsi sahkan(
+    nilai: Teks,
+    peraturan: Senarai<PeraturanPengesahan>
+) -> Hasil<Teks, Senarai<Teks>> kesan Bersih {
+    biar ubah ralat: Senarai<Teks> = [];
+
+    untuk p dalam peraturan {
+        padan p(nilai) {
+            Ada(mesej) => {
+                ralat = ralat + [mesej];
+            },
+            Tiada => {},
+        };
+    }
+
+    kalau panjang(ralat) > 0 {
+        pulang Ralat(ralat);
+    }
+    pulang Ok(nilai);
+}
+
+/// TESTS FIRST — written before implementation
+ujian "sahkan_nilai_sah" {
+    biar peraturan = [
+        peraturan_bukan_kosong(),
+        peraturan_min_panjang(3),
+        peraturan_maks_panjang(50),
+    ];
+    biar hasil = sahkan("Ahmad", peraturan);
+    tegaskan(hasil.ok?());
+}
+
+ujian "sahkan_kosong_gagal" {
+    biar peraturan = [peraturan_bukan_kosong()];
+    biar hasil = sahkan("", peraturan);
+    tegaskan(hasil.ralat?());
+}
+
+ujian "sahkan_terlalu_pendek_gagal" {
+    biar peraturan = [peraturan_min_panjang(5)];
+    biar hasil = sahkan("ab", peraturan);
+    tegaskan(hasil.ralat?());
+}
+
+ujian "sahkan_kumpul_semua_ralat" {
+    biar peraturan = [
+        peraturan_bukan_kosong(),
+        peraturan_min_panjang(3),
+    ];
+    biar hasil = sahkan("", peraturan);
+    padan hasil {
+        Ralat(senarai) => {
+            /// Empty string fails both bukan_kosong and min_panjang
+            tegaskan(panjang(senarai) >= 2);
+        },
+        Ok(_) => tegaskan(salah),
+    };
+}
+
+/// ═══════════════════════════════════════════════════════════════════
+/// Feature 3: Calculator with memory (Kalkulator)
+/// ═══════════════════════════════════════════════════════════════════
+
+jenis Kalkulator = {
+    nilai: Nombor,
+    ingatan: Nombor,
+};
+
+fungsi kalkulator_baru() -> Kalkulator kesan Bersih {
+    pulang { nilai: 0, ingatan: 0 };
+}
+
+fungsi tambah(k: Kalkulator, n: Nombor) -> Kalkulator kesan Bersih {
+    pulang { nilai: k.nilai + n, ingatan: k.ingatan };
+}
+
+fungsi tolak(k: Kalkulator, n: Nombor) -> Kalkulator kesan Bersih {
+    pulang { nilai: k.nilai - n, ingatan: k.ingatan };
+}
+
+fungsi darab(k: Kalkulator, n: Nombor) -> Kalkulator kesan Bersih {
+    pulang { nilai: k.nilai * n, ingatan: k.ingatan };
+}
+
+fungsi simpan_ingatan(k: Kalkulator) -> Kalkulator kesan Bersih {
+    pulang { nilai: k.nilai, ingatan: k.nilai };
+}
+
+fungsi panggil_ingatan(k: Kalkulator) -> Kalkulator kesan Bersih {
+    pulang { nilai: k.ingatan, ingatan: k.ingatan };
+}
+
+ujian "kalkulator_operasi_asas" {
+    biar k = kalkulator_baru();
+    biar k = tambah(k, 10);
+    tegaskan_sama(k.nilai, 10);
+
+    biar k = darab(k, 3);
+    tegaskan_sama(k.nilai, 30);
+
+    biar k = tolak(k, 5);
+    tegaskan_sama(k.nilai, 25);
+}
+
+ujian "kalkulator_ingatan" {
+    biar k = kalkulator_baru();
+    biar k = tambah(k, 42);
+    biar k = simpan_ingatan(k);
+    tegaskan_sama(k.ingatan, 42);
+
+    biar k = tambah(k, 8);
+    tegaskan_sama(k.nilai, 50);
+
+    biar k = panggil_ingatan(k);
+    tegaskan_sama(k.nilai, 42);
+}
+
+ujian "kalkulator_mula_sifar" {
+    biar k = kalkulator_baru();
+    tegaskan_sama(k.nilai, 0);
+    tegaskan_sama(k.ingatan, 0);
+}
+
+/// Helpers
+fungsi panjang(s: Senarai<T>) -> Nombor kesan Bersih { pulang 0; }
+fungsi panjang_teks(t: Teks) -> Nombor kesan Bersih { pulang 0; }
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+fungsi potong(s: Senarai<T>, mula: Nombor, tamat: Nombor) -> Senarai<T> kesan Bersih { pulang []; }

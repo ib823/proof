@@ -449,6 +449,12 @@ impl<'a> Lexer<'a> {
             // Guard clause (English | Bahasa Melayu)
             "guard" | "pastikan" => TokenKind::KwGuard,
 
+            // Test keyword (English | Bahasa Melayu)
+            "test" | "ujian" => TokenKind::KwTest,
+
+            // Expect keyword (English | Bahasa Melayu)
+            "expect" | "jangkakan" => TokenKind::KwExpect,
+
             // Sum type constructors
             "inl" => TokenKind::KwInl,
             "inr" => TokenKind::KwInr,

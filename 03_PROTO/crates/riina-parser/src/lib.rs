@@ -51,6 +51,50 @@ impl fmt::Display for ParseErrorKind {
     }
 }
 
+impl ParseErrorKind {
+    /// Return an error code for this parse error.
+    #[must_use]
+    pub fn error_code(&self) -> &'static str {
+        match self {
+            ParseErrorKind::UnexpectedToken(_) => "P0001",
+            ParseErrorKind::UnexpectedEof => "P0002",
+            ParseErrorKind::ExpectedIdentifier => "P0003",
+            ParseErrorKind::ExpectedType => "P0004",
+            ParseErrorKind::ExpectedExpression => "P0005",
+            ParseErrorKind::InvalidSecurityLevel => "P0006",
+            ParseErrorKind::InvalidEffect => "P0007",
+        }
+    }
+
+    /// Return a fix hint for this parse error.
+    #[must_use]
+    pub fn fix_hint(&self) -> Option<String> {
+        Some(match self {
+            ParseErrorKind::UnexpectedToken(tok) => {
+                format!("Unexpected {:?}. Check for missing semicolons, braces, or parentheses", tok)
+            }
+            ParseErrorKind::UnexpectedEof => {
+                "Unexpected end of file. Check for unclosed braces {{ }}, parentheses (), or missing semicolons".to_string()
+            }
+            ParseErrorKind::ExpectedIdentifier => {
+                "Expected a name (identifier). Variable and function names must start with a letter or underscore".to_string()
+            }
+            ParseErrorKind::ExpectedType => {
+                "Expected a type. Valid types: Nombor, Teks, Benar, Kosong, Rahsia<T>, Senarai<T>, (T1, T2)".to_string()
+            }
+            ParseErrorKind::ExpectedExpression => {
+                "Expected an expression. This can be a value (42, \"hello\", betul), variable, function call, or operator expression".to_string()
+            }
+            ParseErrorKind::InvalidSecurityLevel => {
+                "Invalid security level. Valid levels: Awam, Dalaman, Sesi, Pengguna, Sistem, Rahsia".to_string()
+            }
+            ParseErrorKind::InvalidEffect => {
+                "Invalid effect. Valid effects: Bersih, Ubah, Baca, Tulis, SistemFail, Rangkaian, Kripto, Rawak, Sistem, Masa, Proses".to_string()
+            }
+        })
+    }
+}
+
 struct LexerIter<'a> {
     lexer: Lexer<'a>,
 }
@@ -93,7 +137,7 @@ impl<'a> Parser<'a> {
                     // Name span recorded during parsing via current_span after ident
                     None // Will be filled in by enhanced parse methods below
                 }
-                TopLevelDecl::Expr(_) | TopLevelDecl::ExternBlock { .. } => None,
+                TopLevelDecl::Expr(_) | TopLevelDecl::ExternBlock { .. } | TopLevelDecl::Test { .. } => None,
             };
             spans.push(SpannedDecl {
                 decl: decl.clone(),
@@ -140,6 +184,7 @@ impl<'a> Parser<'a> {
                 }
                 self.parse_top_level_decl()
             }
+            Some(TokenKind::KwTest) => self.parse_test_block(),
             Some(TokenKind::KwExtern) => self.parse_extern_block(),
             Some(TokenKind::KwPub) => {
                 // awam fungsi ... — consume visibility, delegate
@@ -196,6 +241,28 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse: luaran "C" { fungsi name(params) -> ret_ty; ... }
+    /// Parse: ujian "name" { body }
+    fn parse_test_block(&mut self) -> Result<TopLevelDecl, ParseError> {
+        self.consume(TokenKind::KwTest)?;
+        // Expect test name as string literal
+        let name = match self.peek().map(|t| t.kind.clone()) {
+            Some(TokenKind::LiteralString(s)) => {
+                self.next();
+                s
+            }
+            _ => {
+                return Err(ParseError {
+                    kind: ParseErrorKind::ExpectedExpression,
+                    span: self.current_span,
+                });
+            }
+        };
+        self.consume(TokenKind::LBrace)?;
+        let body = self.parse_expr()?;
+        self.consume(TokenKind::RBrace)?;
+        Ok(TopLevelDecl::Test { name, body: Box::new(body) })
+    }
+
     fn parse_extern_block(&mut self) -> Result<TopLevelDecl, ParseError> {
         self.consume(TokenKind::KwExtern)?;
         // Expect ABI string literal "C"

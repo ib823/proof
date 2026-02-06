@@ -1,53 +1,32 @@
-# GitHub Copilot Instructions for RIINA
+# RIINA Language — Copilot Instructions
 
-## Language: RIINA
+## Language Basics
+- RIINA uses Bahasa Melayu (Malaysian) keywords with English aliases
+- File extension: `.rii`
+- All functions MUST declare their effect: `kesan Bersih` (pure), `kesan Tulis` (write), etc.
+- Security types prevent information leaks at compile time
 
-RIINA is a formally verified programming language with Bahasa Melayu keywords. File extension: `.rii`.
+## Key Syntax Rules
+1. Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
+2. Bindings: `biar name = value;` (semicolons required between statements)
+3. Conditionals: `kalau condition { ... } lain { ... }` (else branch required)
+4. Match: `padan value { pattern => result, _ => default }` (use `=>` not `->`)
+5. Effects: Always declare with `kesan`. Pure = `Bersih`, I/O = `Tulis`/`Baca`
+6. Secrets: `Rahsia<T>` cannot be printed or leaked. Use `dedah` with proof.
+7. Pipe: `value |> function1 |> function2`
+8. Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
 
-## Rules for Code Generation
+## Style
+- Function/variable names: snake_case (Bahasa Melayu preferred)
+- Type names: PascalCase
+- Constants: SCREAMING_SNAKE_CASE
+- Indent: 4 spaces
+- Always use Bahasa Melayu keywords over English alternatives
 
-1. Use ONLY Bahasa Melayu keywords: `fungsi` (fn), `biar` (let), `kalau` (if), `lain` (else), `pulang` (return), `padan` (match), `untuk` (for), `selagi` (while), `ulang` (loop), `betul` (true), `salah` (false).
-2. Every function needs an effect annotation: `kesan Bersih` (pure), `kesan Tulis` (write), `kesan Baca` (read), `kesan Rangkaian` (network), `kesan Kripto` (crypto), `kesan Sistem` (system).
-3. Use Bahasa Melayu type names: `Nombor` (Int), `Teks` (String), `Benar` (Bool), `Kosong` (Unit), `Rahsia<T>` (Secret), `Mungkin<T>` (Option), `Hasil<T,E>` (Result), `Senarai<T>` (List).
-4. Statements separated by semicolons. Last expression is return value.
-5. If-else must have both branches.
-6. Entry point: `fungsi utama() -> Nombor kesan Tulis { ... }`
+## Common Types
+- `Nombor` (Int), `Teks` (String), `Benar` (Bool), `Kosong` (Unit)
+- `Rahsia<T>` (Secret), `Bukti<T>` (Proof), `Ruj<T>@Level` (Reference)
+- `Senarai<T>` (List), `Mungkin<T>` (Option), `Hasil<T,E>` (Result)
 
-## Pipe Operator
-
-Use `|>` for functional composition: `5 |> darab_dua |> tambah_satu`
-
-## Secret Types
-
-- `Rahsia<T>` cannot be printed or leaked
-- Use `dedah(secret, bukti: "reason")` to declassify
-
-## FFI
-
-```riina
-luaran "C" {
-    fungsi puts(s: *CChar) -> CInt;
-}
-```
-
-## Builtin Functions (prefer Bahasa Melayu names)
-
-- I/O: `cetak`, `cetakln`
-- String: `gabung_teks`, `panjang`, `teks_belah`, `teks_cantum`
-- Math: `mutlak`, `minimum`, `maksimum`, `kuasa`, `punca`
-- List: `senarai_peta`, `senarai_tapis`, `senarai_lipat`
-- Assert: `tegaskan`, `tegaskan_sama`
-
-## Example
-
-```riina
-fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
-    x + y
-}
-
-fungsi utama() -> Nombor kesan Tulis {
-    biar hasil = tambah(3, 4);
-    cetak(hasil);
-    pulang 0;
-}
-```
+## Effects (declare with `kesan`)
+Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSystem) | Rangkaian (Network) | Kripto (Crypto) | Rawak (Random) | Sistem (System) | Masa (Time)

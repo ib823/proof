@@ -140,6 +140,14 @@ pub fn extract_docs(source: &str, program: &Program) -> Vec<DocItem> {
                 });
             }
             TopLevelDecl::Expr(_) => {}
+            TopLevelDecl::Test { name, .. } => {
+                items.push(DocItem {
+                    name: name.clone(),
+                    kind: DocKind::Binding,
+                    doc,
+                    signature: format!("ujian \"{name}\""),
+                });
+            }
             TopLevelDecl::ExternBlock { abi, decls } => {
                 for decl in decls {
                     let params_str: Vec<String> = decl.params

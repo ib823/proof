@@ -404,8 +404,8 @@ impl StoreTy {
     /// This is used for strong updates where the type of a location changes.
     /// Returns `true` if the location existed and was updated.
     pub fn update(&mut self, loc: Location, ty: Ty, sl: SecurityLevel) -> bool {
-        if self.bindings.contains_key(&loc) {
-            self.bindings.insert(loc, (ty, sl));
+        if let std::collections::hash_map::Entry::Occupied(mut e) = self.bindings.entry(loc) {
+            e.insert((ty, sl));
             true
         } else {
             false
@@ -582,6 +582,11 @@ pub enum TopLevelDecl {
         abi: String,
         decls: Vec<ExternDecl>,
     },
+    /// ujian "name" { body } — inline test block
+    Test {
+        name: String,
+        body: Box<Expr>,
+    },
 }
 
 /// A single declaration inside an extern block.
@@ -680,6 +685,8 @@ impl Program {
             TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                 desugar_extern_block(edecls, Expr::Unit)
             }
+            // Test blocks are skipped during desugaring (run by riinac test)
+            TopLevelDecl::Test { .. } => Expr::Unit,
         };
         // Wrap remaining decls from back to front
         for decl in decls.into_iter().rev() {
@@ -696,6 +703,8 @@ impl Program {
                 TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                     desugar_extern_block(edecls, result)
                 }
+                // Test blocks are skipped during desugaring
+                TopLevelDecl::Test { .. } => result,
             };
         }
         result

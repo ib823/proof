@@ -255,7 +255,7 @@ impl AndroidToolchain {
     }
 
     /// Read NDK version from source.properties.
-    fn read_ndk_version(ndk_path: &PathBuf) -> Result<String, ToolchainError> {
+    fn read_ndk_version(ndk_path: &std::path::Path) -> Result<String, ToolchainError> {
         let props_file = ndk_path.join("source.properties");
         if props_file.exists() {
             if let Ok(content) = std::fs::read_to_string(&props_file) {
@@ -273,7 +273,7 @@ impl AndroidToolchain {
     }
 
     /// Find ndk-build executable.
-    fn find_ndk_build(ndk_path: &PathBuf) -> Result<PathBuf, ToolchainError> {
+    fn find_ndk_build(ndk_path: &std::path::Path) -> Result<PathBuf, ToolchainError> {
         #[cfg(windows)]
         let ndk_build = ndk_path.join("ndk-build.cmd");
         #[cfg(not(windows))]

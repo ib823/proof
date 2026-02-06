@@ -1,0 +1,193 @@
+/// config_management.rii
+/// Environment configuration with security levels
+/// Demonstrates: Rahsia<Teks> for secrets, Awam for public config,
+/// reading from environment with kesan Baca
+///
+/// Pattern: Configuration values are typed by security level.
+/// Public values (ports, hostnames) are Awam. Database passwords
+/// and API keys are Rahsia. The type system prevents accidental
+/// exposure of secrets in logs or error messages.
+
+modul pengurusan_konfigurasi;
+
+/// Security-stratified configuration types
+jenis KonfigurasiPangkalanData = {
+    hos: Teks,                      /// Awam — safe to log
+    pelabuhan: Nombor,              /// Awam — safe to log
+    nama_db: Teks,                  /// Awam — safe to log
+    nama_pengguna: Teks,            /// Dalaman — internal only
+    kata_laluan: Rahsia<Teks>,      /// Rahsia — never log
+};
+
+jenis KonfigurasiApi = {
+    url_asas: Teks,                 /// Awam
+    versi: Teks,                    /// Awam
+    kunci_api: Rahsia<Teks>,        /// Rahsia
+    rahsia_klien: Rahsia<Teks>,     /// Rahsia
+};
+
+jenis KonfigurasiAplikasi = {
+    nama_aplikasi: Teks,
+    mod: Teks,                      /// "pembangunan" | "pengeluaran"
+    pelabuhan: Nombor,
+    pangkalan_data: KonfigurasiPangkalanData,
+    api: KonfigurasiApi,
+    debug: Benar,
+};
+
+/// Error for config loading
+jenis RalatKonfigurasi =
+    | PembolehubahTiada(Teks)
+    | NilaiTidakSah(Teks, Teks);
+
+/// Read a required environment variable
+/// Kesan: Baca (reading from environment)
+fungsi baca_env(nama: Teks) -> Hasil<Teks, RalatKonfigurasi> kesan Baca {
+    biar nilai = env_dapatkan(nama);
+    padan nilai {
+        Ada(v) => Ok(v),
+        Tiada => Ralat(PembolehubahTiada(nama)),
+    };
+}
+
+/// Read environment variable with default
+fungsi baca_env_lalai(nama: Teks, lalai: Teks) -> Teks kesan Baca {
+    biar nilai = env_dapatkan(nama);
+    padan nilai {
+        Ada(v) => v,
+        Tiada => lalai,
+    };
+}
+
+/// Read a secret environment variable
+/// Returns Rahsia — the raw value is never exposed
+fungsi baca_rahsia_env(nama: Teks) -> Hasil<Rahsia<Teks>, RalatKonfigurasi> kesan Baca {
+    biar nilai = env_dapatkan(nama);
+    padan nilai {
+        Ada(v) => Ok(Rahsia(v)),
+        Tiada => Ralat(PembolehubahTiada(nama)),
+    };
+}
+
+/// Parse port number from string
+fungsi hurai_pelabuhan(teks: Teks) -> Hasil<Nombor, RalatKonfigurasi> kesan Bersih {
+    biar mungkin = ke_nombor(teks);
+    padan mungkin {
+        Ada(n) => {
+            kalau n < 1 || n > 65535 {
+                Ralat(NilaiTidakSah("pelabuhan", "Mesti antara 1-65535"));
+            } lain {
+                Ok(n);
+            }
+        },
+        Tiada => Ralat(NilaiTidakSah("pelabuhan", "Bukan nombor sah")),
+    };
+}
+
+/// Load full application config from environment
+/// Kesan: Baca (reads environment variables)
+fungsi muat_konfigurasi() -> Hasil<KonfigurasiAplikasi, RalatKonfigurasi> kesan Baca {
+    /// Public config — safe to log
+    biar nama = baca_env_lalai("APP_NAMA", "riina-app");
+    biar mod = baca_env_lalai("APP_MOD", "pembangunan");
+    biar pelabuhan_teks = baca_env_lalai("APP_PELABUHAN", "8080");
+    biar debug_teks = baca_env_lalai("APP_DEBUG", "salah");
+
+    biar pelabuhan = hurai_pelabuhan(pelabuhan_teks);
+    padan pelabuhan {
+        Ralat(e) => pulang Ralat(e),
+        Ok(_) => {},
+    };
+
+    /// Database config — mixed security levels
+    biar db_hos = baca_env_lalai("DB_HOS", "localhost");
+    biar db_pelabuhan_teks = baca_env_lalai("DB_PELABUHAN", "5432");
+    biar db_nama = baca_env_lalai("DB_NAMA", "riina_db");
+    biar db_pengguna = baca_env_lalai("DB_PENGGUNA", "app_user");
+
+    /// Secret config — Rahsia wrapper, never exposed
+    biar db_kata_laluan = baca_rahsia_env("DB_KATA_LALUAN");
+    padan db_kata_laluan {
+        Ralat(e) => pulang Ralat(e),
+        Ok(_) => {},
+    };
+
+    biar api_kunci = baca_rahsia_env("API_KUNCI");
+    padan api_kunci {
+        Ralat(e) => pulang Ralat(e),
+        Ok(_) => {},
+    };
+
+    biar api_rahsia = baca_rahsia_env("API_RAHSIA");
+    padan api_rahsia {
+        Ralat(e) => pulang Ralat(e),
+        Ok(_) => {},
+    };
+
+    biar db_pelabuhan = hurai_pelabuhan(db_pelabuhan_teks);
+
+    pulang Ok({
+        nama_aplikasi: nama,
+        mod: mod,
+        pelabuhan: pelabuhan.buka(),
+        pangkalan_data: {
+            hos: db_hos,
+            pelabuhan: db_pelabuhan.buka(),
+            nama_db: db_nama,
+            nama_pengguna: db_pengguna,
+            kata_laluan: db_kata_laluan.buka(),
+        },
+        api: {
+            url_asas: baca_env_lalai("API_URL", "https://api.contoh.my"),
+            versi: "v1",
+            kunci_api: api_kunci.buka(),
+            rahsia_klien: api_rahsia.buka(),
+        },
+        debug: debug_teks == "betul",
+    });
+}
+
+/// Print config safely — secrets are redacted
+/// Kesan: Tulis (prints to output)
+fungsi cetak_konfigurasi(konfig: KonfigurasiAplikasi) -> kesan Tulis {
+    cetak_baris("=== KONFIGURASI APLIKASI ===");
+    cetak_baris("Nama: " + konfig.nama_aplikasi);
+    cetak_baris("Mod: " + konfig.mod);
+    cetak_baris("Pelabuhan: " + ke_teks(konfig.pelabuhan));
+    cetak_baris("Debug: " + kalau konfig.debug { "Ya" } lain { "Tidak" });
+    cetak_baris("");
+    cetak_baris("--- Pangkalan Data ---");
+    cetak_baris("Hos: " + konfig.pangkalan_data.hos);
+    cetak_baris("Pelabuhan: " + ke_teks(konfig.pangkalan_data.pelabuhan));
+    cetak_baris("DB: " + konfig.pangkalan_data.nama_db);
+    cetak_baris("Pengguna: " + konfig.pangkalan_data.nama_pengguna);
+    cetak_baris("Kata Laluan: ****");     /// Rahsia — NEVER print
+    cetak_baris("");
+    cetak_baris("--- API ---");
+    cetak_baris("URL: " + konfig.api.url_asas);
+    cetak_baris("Kunci API: ****");       /// Rahsia — NEVER print
+    cetak_baris("Rahsia Klien: ****");    /// Rahsia — NEVER print
+}
+
+/// Helpers
+fungsi env_dapatkan(nama: Teks) -> Mungkin<Teks> kesan Baca { pulang Tiada; }
+fungsi ke_nombor(t: Teks) -> Mungkin<Nombor> kesan Bersih { pulang Tiada; }
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+
+ujian "hurai_pelabuhan_sah" {
+    biar hasil = hurai_pelabuhan("8080");
+    padan hasil {
+        Ok(n) => tegaskan_sama(n, 8080),
+        Ralat(_) => tegaskan(salah),
+    };
+}
+
+ujian "hurai_pelabuhan_luar_julat" {
+    biar hasil = hurai_pelabuhan("99999");
+    tegaskan(hasil.ralat?());
+}
+
+ujian "baca_env_lalai_guna_lalai" {
+    biar nilai = baca_env_lalai("TIDAK_WUJUD", "lalai_saya");
+    tegaskan_sama(nilai, "lalai_saya");
+}

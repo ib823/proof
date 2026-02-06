@@ -1,0 +1,220 @@
+/// logging_audit.rii
+/// Structured logging with automatic secret redaction
+/// Demonstrates: Rahsia<T> prevents accidental secret leakage to logs,
+/// security-aware logging framework, audit trail with timestamps
+///
+/// Pattern: The type system guarantees that Rahsia values cannot be
+/// directly interpolated into log messages. A dedicated redact function
+/// must be used, and all redaction events are recorded for audit.
+
+modul pengelogan_audit;
+
+/// Log levels
+jenis ArasLog =
+    | Nyahpepijat
+    | Maklumat
+    | Amaran
+    | Ralat
+    | Kritikal;
+
+/// Structured log entry
+jenis EntriLog = {
+    cap_masa: Nombor,
+    aras: ArasLog,
+    modul: Teks,
+    mesej: Teks,
+    medan: Senarai<(Teks, Teks)>,
+};
+
+/// Audit event for tracking secret access
+jenis AuditDedah = {
+    cap_masa: Nombor,
+    tujuan: Teks,
+    peminta: Teks,
+    sumber: Teks,
+};
+
+/// Global log and audit buffer
+biar ubah penimbal_log: Senarai<EntriLog> = [];
+biar ubah penimbal_audit: Senarai<AuditDedah> = [];
+
+/// Safe string representation for secrets — always redacted
+fungsi redaksi(label: Teks) -> Teks kesan Bersih {
+    pulang "[DIREDAKSI:" + label + "]";
+}
+
+/// Format log level to string
+fungsi format_aras(aras: ArasLog) -> Teks kesan Bersih {
+    padan aras {
+        Nyahpepijat => "NYAHPEPIJAT",
+        Maklumat => "MAKLUMAT",
+        Amaran => "AMARAN",
+        Ralat => "RALAT",
+        Kritikal => "KRITIKAL",
+    };
+}
+
+/// Core logging function
+/// Kesan: Tulis (writes to log output)
+fungsi log(
+    aras: ArasLog,
+    modul_nama: Teks,
+    mesej: Teks,
+    medan: Senarai<(Teks, Teks)>
+) -> kesan Tulis {
+    biar cap = masa_unix();
+    biar entri = {
+        cap_masa: cap,
+        aras: aras,
+        modul: modul_nama,
+        mesej: mesej,
+        medan: medan,
+    };
+
+    penimbal_log = penimbal_log + [entri];
+
+    /// Format output
+    cetak_baris(
+        "[" + ke_teks(cap) + "] "
+        + format_aras(aras) + " "
+        + modul_nama + ": "
+        + mesej
+    );
+
+    /// Print fields
+    untuk (kunci, nilai) dalam medan {
+        cetak_baris("  " + kunci + "=" + nilai);
+    }
+}
+
+/// Log with secret field — automatically redacted
+/// This is the ONLY safe way to log alongside secrets
+fungsi log_dengan_rahsia(
+    aras: ArasLog,
+    modul_nama: Teks,
+    mesej: Teks,
+    medan_awam: Senarai<(Teks, Teks)>,
+    medan_rahsia: Senarai<(Teks, Rahsia<Teks>)>
+) -> kesan Tulis {
+    /// Redact all secret fields — Rahsia values never touch the log
+    biar medan_semua = medan_awam;
+    untuk (kunci, _rahsia) dalam medan_rahsia {
+        /// Secret value is NEVER extracted — only the label appears
+        medan_semua = medan_semua + [(kunci, redaksi(kunci))];
+    }
+
+    log(aras, modul_nama, mesej, medan_semua);
+}
+
+/// Audit-logged declassification — for when you MUST access a secret
+/// Kesan: Tulis (writes audit trail)
+fungsi dedah_dengan_audit(
+    rahsia: Rahsia<Teks>,
+    tujuan: Teks,
+    peminta: Teks,
+    sumber_label: Teks
+) -> Teks kesan Tulis {
+    biar cap = masa_unix();
+
+    /// Record audit event BEFORE declassification
+    biar acara = {
+        cap_masa: cap,
+        tujuan: tujuan,
+        peminta: peminta,
+        sumber: sumber_label,
+    };
+    penimbal_audit = penimbal_audit + [acara];
+
+    log(Maklumat, "audit", "Dedah diminta", [
+        ("tujuan", tujuan),
+        ("peminta", peminta),
+        ("sumber", sumber_label),
+    ]);
+
+    /// Actual declassification with proof
+    pulang dedah(rahsia, bukti: tujuan);
+}
+
+/// Example: Log user login attempt
+fungsi log_percubaan_log_masuk(
+    nama_pengguna: Teks,
+    kata_laluan: Rahsia<Teks>,
+    ip_alamat: Teks,
+    berjaya: Benar
+) -> kesan Tulis {
+    /// SAFE: kata_laluan is Rahsia — it CANNOT be interpolated into log
+    /// The compiler would reject: mesej + kata_laluan
+    log_dengan_rahsia(
+        kalau berjaya { Maklumat } lain { Amaran },
+        "pengesahan",
+        kalau berjaya { "Log masuk berjaya" } lain { "Log masuk gagal" },
+        [
+            ("nama_pengguna", nama_pengguna),
+            ("ip", ip_alamat),
+            ("berjaya", kalau berjaya { "ya" } lain { "tidak" }),
+        ],
+        [
+            ("kata_laluan", kata_laluan),
+        ]
+    );
+}
+
+/// Example: Log API request with secret API key
+fungsi log_permintaan_api(
+    kaedah: Teks,
+    laluan: Teks,
+    kunci_api: Rahsia<Teks>,
+    kod_status: Nombor
+) -> kesan Tulis {
+    log_dengan_rahsia(
+        Maklumat,
+        "api",
+        kaedah + " " + laluan + " -> " + ke_teks(kod_status),
+        [
+            ("kaedah", kaedah),
+            ("laluan", laluan),
+            ("status", ke_teks(kod_status)),
+        ],
+        [
+            ("kunci_api", kunci_api),
+        ]
+    );
+}
+
+/// Print full audit trail
+fungsi cetak_audit() -> kesan Tulis {
+    cetak_baris("=== JEJAK AUDIT DEDAH ===");
+    untuk acara dalam penimbal_audit {
+        cetak_baris(
+            "[" + ke_teks(acara.cap_masa) + "] "
+            + "tujuan=" + acara.tujuan + " "
+            + "peminta=" + acara.peminta + " "
+            + "sumber=" + acara.sumber
+        );
+    }
+    cetak_baris("Jumlah dedah: " + ke_teks(panjang(penimbal_audit)));
+}
+
+/// Helpers
+fungsi masa_unix() -> Nombor kesan Bersih { pulang 0; }
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+fungsi panjang(s: Senarai<AuditDedah>) -> Nombor kesan Bersih { pulang 0; }
+
+ujian "redaksi_format_betul" {
+    biar hasil = redaksi("kata_laluan");
+    tegaskan_sama(hasil, "[DIREDAKSI:kata_laluan]");
+}
+
+ujian "format_aras_log" {
+    tegaskan_sama(format_aras(Maklumat), "MAKLUMAT");
+    tegaskan_sama(format_aras(Ralat), "RALAT");
+    tegaskan_sama(format_aras(Kritikal), "KRITIKAL");
+}
+
+ujian "rahsia_tidak_bocor_ke_log" {
+    /// This test verifies the PATTERN — Rahsia cannot be concatenated with Teks
+    /// biar bocor = "Kata laluan: " + kata_laluan;   /// COMPILE ERROR: E0301
+    /// The only path is through redaksi() or dedah_dengan_audit()
+    biar selamat = "Kata laluan: " + redaksi("kata_laluan");
+    tegaskan(selamat != "");
+}

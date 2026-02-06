@@ -1,0 +1,191 @@
+/// error_handling.rii
+/// Comprehensive error handling with Hasil<T,E> and Mungkin<T>
+/// Demonstrates: padan (match) for errors, chaining with |>,
+/// early return, error propagation, custom error types
+///
+/// Pattern: Every fallible operation returns Hasil or Mungkin.
+/// Pattern matching enforces exhaustive handling. Pipes chain
+/// transformations with clean error propagation.
+
+modul pengendalian_ralat;
+
+/// Custom error hierarchy
+jenis RalatAplikasi =
+    | RalatRangkaian(Teks)
+    | RalatPenghuraian(Teks, Nombor)
+    | RalatPengesahan(Senarai<Teks>)
+    | TidakDijumpai(Teks)
+    | TidakDibenarkan;
+
+/// Helper: format error for display
+fungsi format_ralat(ralat: RalatAplikasi) -> Teks kesan Bersih {
+    padan ralat {
+        RalatRangkaian(mesej) => "Ralat rangkaian: " + mesej,
+        RalatPenghuraian(mesej, baris) => "Ralat huraian pada baris " + ke_teks(baris) + ": " + mesej,
+        RalatPengesahan(senarai_ralat) => "Ralat pengesahan: " + gabung(senarai_ralat, ", "),
+        TidakDijumpai(sumber) => "Tidak dijumpai: " + sumber,
+        TidakDibenarkan => "Akses ditolak",
+    };
+}
+
+/// Pattern 1: Basic Hasil matching
+fungsi bahagi(a: Nombor, b: Nombor) -> Hasil<Nombor, Teks> kesan Bersih {
+    kalau b == 0 {
+        pulang Ralat("Pembahagian dengan sifar");
+    }
+    pulang Ok(a / b);
+}
+
+/// Pattern 2: Mungkin with default value
+fungsi cari_pengguna(id: Nombor) -> Mungkin<Teks> kesan Bersih {
+    padan id {
+        1 => Ada("Ahmad"),
+        2 => Ada("Siti"),
+        3 => Ada("Ali"),
+        _ => Tiada,
+    };
+}
+
+fungsi nama_pengguna_atau_lalai(id: Nombor) -> Teks kesan Bersih {
+    biar nama = cari_pengguna(id);
+    padan nama {
+        Ada(n) => n,
+        Tiada => "Tetamu",
+    };
+}
+
+/// Pattern 3: Chaining with |> and padan
+fungsi hurai_nombor(teks: Teks) -> Hasil<Nombor, RalatAplikasi> kesan Bersih {
+    biar mungkin_nombor = ke_nombor(teks);
+    padan mungkin_nombor {
+        Ada(n) => Ok(n),
+        Tiada => Ralat(RalatPenghuraian("Bukan nombor sah", 0)),
+    };
+}
+
+fungsi kira_cukai(pendapatan_teks: Teks) -> Hasil<Nombor, RalatAplikasi> kesan Bersih {
+    /// Chain: parse -> validate -> calculate
+    biar pendapatan = hurai_nombor(pendapatan_teks);
+
+    padan pendapatan {
+        Ralat(e) => Ralat(e),
+        Ok(p) => {
+            kalau p < 0 {
+                Ralat(RalatPengesahan(["Pendapatan tidak boleh negatif"]));
+            } lain kalau p <= 5000 {
+                Ok(0);
+            } lain kalau p <= 20000 {
+                Ok((p - 5000) * 1 / 100);
+            } lain {
+                Ok((p - 20000) * 10 / 100 + 150);
+            }
+        },
+    };
+}
+
+/// Pattern 4: Collecting multiple errors
+fungsi sahkan_borang(
+    nama: Teks,
+    umur_teks: Teks,
+    emel: Teks
+) -> Hasil<Teks, RalatAplikasi> kesan Bersih {
+    biar ubah ralat_senarai: Senarai<Teks> = [];
+
+    kalau nama == "" {
+        ralat_senarai = ralat_senarai + ["Nama diperlukan"];
+    }
+
+    padan ke_nombor(umur_teks) {
+        Tiada => {
+            ralat_senarai = ralat_senarai + ["Umur mesti nombor"];
+        },
+        Ada(umur) => {
+            kalau umur < 0 || umur > 150 {
+                ralat_senarai = ralat_senarai + ["Umur tidak sah"];
+            }
+        },
+    };
+
+    kalau !mengandungi(emel, "@") {
+        ralat_senarai = ralat_senarai + ["Emel tidak sah"];
+    }
+
+    kalau panjang_senarai(ralat_senarai) > 0 {
+        pulang Ralat(RalatPengesahan(ralat_senarai));
+    }
+
+    pulang Ok("Borang sah");
+}
+
+/// Pattern 5: Error recovery with fallback
+fungsi muat_konfigurasi_selamat() -> Teks kesan Bersih {
+    biar dari_fail = muat_fail("config.toml");
+
+    padan dari_fail {
+        Ok(kandungan) => kandungan,
+        Ralat(_) => {
+            /// Fallback to defaults
+            biar dari_env = muat_env("APP_CONFIG");
+            padan dari_env {
+                Ok(kandungan) => kandungan,
+                Ralat(_) => "tetapan_lalai=betul",
+            }
+        },
+    };
+}
+
+/// Pattern 6: Pipeline with error short-circuit
+fungsi proses_data(mentah: Teks) -> Hasil<Nombor, RalatAplikasi> kesan Bersih {
+    /// Each step can fail; errors propagate automatically
+    biar langkah1 = hurai_nombor(mentah);
+    padan langkah1 {
+        Ralat(e) => Ralat(e),
+        Ok(n) => {
+            biar langkah2 = bahagi(n, 3);
+            padan langkah2 {
+                Ralat(mesej) => Ralat(RalatPenghuraian(mesej, 0)),
+                Ok(hasil) => Ok(hasil * 100),
+            }
+        },
+    };
+}
+
+/// Helpers
+fungsi ke_teks(n: Nombor) -> Teks kesan Bersih { pulang ""; }
+fungsi ke_nombor(t: Teks) -> Mungkin<Nombor> kesan Bersih { pulang Tiada; }
+fungsi gabung(s: Senarai<Teks>, pemisah: Teks) -> Teks kesan Bersih { pulang ""; }
+fungsi mengandungi(teks: Teks, cari: Teks) -> Benar kesan Bersih { pulang betul; }
+fungsi panjang_senarai(s: Senarai<Teks>) -> Nombor kesan Bersih { pulang 0; }
+fungsi muat_fail(laluan: Teks) -> Hasil<Teks, Teks> kesan Bersih { pulang Ralat("tiada"); }
+fungsi muat_env(nama: Teks) -> Hasil<Teks, Teks> kesan Bersih { pulang Ralat("tiada"); }
+
+ujian "bahagi_sifar_pulang_ralat" {
+    biar hasil = bahagi(10, 0);
+    tegaskan(hasil.ralat?());
+}
+
+ujian "bahagi_sah_pulang_ok" {
+    biar hasil = bahagi(10, 2);
+    padan hasil {
+        Ok(n) => tegaskan_sama(n, 5),
+        Ralat(_) => tegaskan(salah),
+    };
+}
+
+ujian "cari_pengguna_tiada_pulang_tiada" {
+    biar hasil = cari_pengguna(999);
+    padan hasil {
+        Tiada => tegaskan(betul),
+        Ada(_) => tegaskan(salah),
+    };
+}
+
+ujian "borang_kumpul_semua_ralat" {
+    biar hasil = sahkan_borang("", "bukan_nombor", "tanpa_at");
+    padan hasil {
+        Ralat(RalatPengesahan(senarai)) => {
+            tegaskan(panjang_senarai(senarai) >= 2);
+        },
+        _ => tegaskan(salah),
+    };
+}
