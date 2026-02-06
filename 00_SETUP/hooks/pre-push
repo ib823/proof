@@ -79,11 +79,16 @@ echo "[3/4] Scanning for secrets..."
 SECRETS_PATTERN='(password|secret|api[_-]?key|token|private[_-]?key)\s*[=:]\s*["\x27][^"\x27]+'
 STAGED=$(git diff --name-only --diff-filter=ACM HEAD~1..HEAD 2>/dev/null || true)
 if [ -n "$STAGED" ]; then
-    FOUND=$(echo "$STAGED" | xargs grep -lEi "$SECRETS_PATTERN" 2>/dev/null || true)
-    if [ -n "$FOUND" ]; then
-        echo "BLOCKED: Potential secrets detected:"
-        echo "$FOUND"
-        exit 1
+    # Exclude formal proof files (Coq .v, Lean .lean, Isabelle .thy) — they use
+    # type names like TSecret/LSecret that trigger false positives
+    FILTERED=$(echo "$STAGED" | grep -vE '\.(v|lean|thy)$' || true)
+    if [ -n "$FILTERED" ]; then
+        FOUND=$(echo "$FILTERED" | xargs grep -lEi "$SECRETS_PATTERN" 2>/dev/null || true)
+        if [ -n "$FOUND" ]; then
+            echo "BLOCKED: Potential secrets detected:"
+            echo "$FOUND"
+            exit 1
+        fi
     fi
 fi
 echo "      No secrets detected"
