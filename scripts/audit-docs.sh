@@ -164,7 +164,9 @@ ACTUAL_ISABELLE=$(count_isabelle_lemmas)
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
 ACTUAL_EXAMPLES=$(count_examples)
 ACTUAL_SESSION=$(get_session_from_log)
-ACTUAL_QED_COMMA=$(printf "%'d" "$ACTUAL_QED")
+# Locale-independent thousands separator
+add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
+ACTUAL_QED_COMMA=$(add_commas "$ACTUAL_QED")
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo "Actual metrics from codebase:"
@@ -188,8 +190,12 @@ fi
 if [ -f "$REPO_ROOT/CLAUDE.md" ]; then
     DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/CLAUDE.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
     DOC_SESSION=$(grep -oP 'Session \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
+    DOC_LEAN=$(grep -oP 'Lean 4 Theorems[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
+    DOC_ISABELLE=$(grep -oP 'Isabelle/HOL Lemmas[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
 
     check_value "Qed proofs (CLAUDE.md)" "$ACTUAL_QED" "$DOC_QED" "CLAUDE.md" || true
+    check_value "Lean theorems (CLAUDE.md)" "$ACTUAL_LEAN" "$DOC_LEAN" "CLAUDE.md" || true
+    check_value "Isabelle lemmas (CLAUDE.md)" "$ACTUAL_ISABELLE" "$DOC_ISABELLE" "CLAUDE.md" || true
     check_value "Session number (CLAUDE.md)" "$ACTUAL_SESSION" "$DOC_SESSION" "CLAUDE.md" || true
 else
     if [ "$QUICK_MODE" != "--quick" ]; then

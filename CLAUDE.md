@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 119 Lean theorems + 138 Isabelle lemmas = 8,185 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 12 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -102,16 +102,16 @@ RIINA is the world's **first formally verified programming language** with:
 | **Axioms (Active Build)** | 1 (policy axiom) | `logical_relation_declassify` in NI_v2_LR (3 eliminated Session 76) |
 | **Admitted (Active Build)** | 0 | All eliminated (Session 72-73) |
 | **Qed Proofs (Coq)** | 7,928 | Active build (0 Admitted) |
-| **Lean 4 Theorems** | 119 | 12 files, 0 sorry |
-| **Isabelle/HOL Lemmas** | 138 | 10 files, 0 sorry |
-| **Total Proofs (All Provers)** | 8,185 | Coq + Lean + Isabelle |
+| **Lean 4 Theorems** | 91 | 11 files, 0 sorry |
+| **Isabelle/HOL Lemmas** | 102 | 10 files, 0 sorry |
+| **Total Proofs (All Provers)** | 8,121 | Coq + Lean + Isabelle |
 | **Multi-Prover Theorems** | 86 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
 | **Rust Tests** | ✅ PASSING (839 tests) | All green |
 | **Rust Crates** | 15 | +riina-wasm (Session 68) |
-| **Example .rii Files** | 120 | 9 categories (+FFI, +demos, +showcase, +compliance, +compiler) |
+| **Example .rii Files** | 130 | 9 categories (+FFI, +demos, +showcase, +compliance, +compiler) |
 
 **Roadmap:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` (SINGLE SOURCE OF TRUTH)
 
@@ -133,8 +133,8 @@ RIINA employs triple-prover verification for maximum confidence:
 | Prover | Role | Status |
 |--------|------|--------|
 | **Coq 8.20.1** | Primary (authoritative) | 7,928 Qed, 0 Admitted, 1 axiom |
-| **Lean 4** | Secondary (independent port) | 119 theorems, 0 sorry |
-| **Isabelle/HOL** | Tertiary (third verification) | 138 lemmas, 0 sorry |
+| **Lean 4** | Secondary (independent port) | 91 theorems, 0 sorry |
+| **Isabelle/HOL** | Tertiary (third verification) | 102 lemmas, 0 sorry |
 
 **Ported Files (10 per prover):**
 - Foundations: Syntax, Semantics
@@ -840,7 +840,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-06 (Session 78: Proof Depth 20+ All Files — 8,185 total proofs: 7,928 Coq + 119 Lean + 138 Isabelle. 0 Admitted/sorry. 1 axiom. 839 Rust tests, 15 crates, 130 examples, 250 active .v + 12 .lean + 10 .thy = 272 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-06 (Session 78: Proof Depth 20+ All Files — 8,121 total proofs: 7,928 Coq + 91 Lean + 102 Isabelle. 0 Admitted/sorry. 1 axiom. 839 Rust tests, 15 crates, 130 examples, 250 active .v + 11 .lean + 10 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

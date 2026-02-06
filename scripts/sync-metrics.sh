@@ -41,9 +41,12 @@ if [ ! -f "$METRICS_FILE" ]; then
     exit 1
 fi
 
+# Locale-independent thousands separator (printf %'d requires LC_NUMERIC)
+add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
+
 # Parse values from metrics.json (use head -1 where fields repeat across sections)
 QED=$(grep -oP '"qedActive":\s*\K\d+' "$METRICS_FILE" | head -1)
-QED_COMMA=$(printf "%'d" "$QED")
+QED_COMMA=$(add_commas "$QED")
 ADMITTED=$(grep -oP '"admitted":\s*\K\d+' "$METRICS_FILE" | head -1)
 AXIOMS=$(grep -oP '"axioms":\s*\K\d+' "$METRICS_FILE" | head -1)
 COQ_FILES_TOTAL=$(grep -oP '"filesTotal":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -51,7 +54,7 @@ COQ_FILES_ACTIVE=$(grep -oP '"filesActive":\s*\K\d+' "$METRICS_FILE" | head -1)
 LEAN_THEOREMS=$(grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1)
 ISABELLE_LEMMAS=$(grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1)
 TOTAL_PROOFS=$(grep -oP '"totalProofsAllProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
-TOTAL_PROOFS_COMMA=$(printf "%'d" "$TOTAL_PROOFS")
+TOTAL_PROOFS_COMMA=$(add_commas "$TOTAL_PROOFS")
 TRIPLE_PROVER=$(grep -oP '"tripleProverTheorems":\s*\K\d+' "$METRICS_FILE" | head -1)
 RUST_TESTS=$(grep -oP '"tests":\s*\K\d+' "$METRICS_FILE" | head -1)
 RUST_CRATES=$(grep -oP '"crates":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -171,6 +174,59 @@ if [ -f "$README" ]; then
         echo "    [UPDATED] README.md"
     else
         echo "    [DRY] Would update README.md"
+    fi
+    CHANGED=$((CHANGED + 1))
+fi
+
+# --- CLAUDE.md ---
+CLAUDE="$REPO_ROOT/CLAUDE.md"
+if [ -f "$CLAUDE" ]; then
+    echo "  Processing CLAUDE.md..."
+    if [ "$DRY_RUN" -eq 0 ]; then
+        # Update audit banner
+        update_banner "$CLAUDE"
+
+        # Use awk for safe multi-pattern replacement
+        tmpfile=$(mktemp)
+        awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" \
+            -v total="$TOTAL_PROOFS_COMMA" -v lean_files="$LEAN_FILES" \
+            -v isa_files="$ISABELLE_FILES" -v examples="$EXAMPLES" \
+            -v rust_tests="$RUST_TESTS" -v coq_active="$COQ_FILES_ACTIVE" '
+        # §0.5 table: | **Lean 4 Theorems** | 119 | 12 files, 0 sorry |
+        /[|] [*][*]Lean 4 Theorems[*][*]/ {
+            gsub(/[|] [0-9]+ [|] [0-9]+ files/, "| " lean " | " lean_files " files")
+        }
+        # §0.5 table: | **Isabelle/HOL Lemmas** | 138 | 10 files, 0 sorry |
+        /[|] [*][*]Isabelle[/]HOL Lemmas[*][*]/ {
+            gsub(/[|] [0-9]+ [|] [0-9]+ files/, "| " isa " | " isa_files " files")
+        }
+        # §0.5 table: | **Total Proofs (All Provers)** | 8,185 |
+        /[|] [*][*]Total Proofs [(]All Provers[)][*][*]/ {
+            gsub(/[|] [0-9,]+ [|]/, "| " total " |")
+        }
+        # §0.5 table: | **Example .rii Files** | 120 |
+        /[|] [*][*]Example .rii Files[*][*]/ {
+            gsub(/[|] [0-9]+ [|]/, "| " examples " |")
+        }
+        # §0.6 table: | **Lean 4** | Secondary ... | 119 theorems, 0 sorry |
+        /[|] [*][*]Lean 4[*][*] [|] Secondary/ {
+            gsub(/[0-9]+ theorems/, lean " theorems")
+        }
+        # §0.6 table: | **Isabelle/HOL** | Tertiary ... | 138 lemmas, 0 sorry |
+        /[|] [*][*]Isabelle[/]HOL[*][*] [|] Tertiary/ {
+            gsub(/[0-9]+ lemmas/, isa " lemmas")
+        }
+        # Footer: 8,185 total proofs: 7,928 Coq + 119 Lean + 138 Isabelle
+        /Last updated:.*total proofs:/ {
+            gsub(/[0-9,]+ total proofs: [0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle/, total " total proofs: " qed " Coq + " lean " Lean + " isa " Isabelle")
+            gsub(/[0-9]+ active .v \+ [0-9]+ .lean \+ [0-9]+ .thy/, coq_active " active .v + " lean_files " .lean + " isa_files " .thy")
+        }
+        { print }
+        ' "$CLAUDE" > "$tmpfile"
+        mv "$tmpfile" "$CLAUDE"
+        echo "    [UPDATED] CLAUDE.md"
+    else
+        echo "    [DRY] Would update CLAUDE.md"
     fi
     CHANGED=$((CHANGED + 1))
 fi
