@@ -122,23 +122,23 @@ text \<open>
 inductive has_type :: "type_env \<Rightarrow> store_ty \<Rightarrow> security_level \<Rightarrow>
                        expr \<Rightarrow> ty \<Rightarrow> effect \<Rightarrow> bool" where
   (* Values *)
-  T_Unit: "has_type \<Gamma> \<Sigma> \<Delta> EUnit TUnit EffectPure"
+  T_Unit: "has_type \<Gamma> \<Sigma> \<Delta> EUnit TUnit EffPure"
 
-| T_Bool: "has_type \<Gamma> \<Sigma> \<Delta> (EBool b) TBool EffectPure"
+| T_Bool: "has_type \<Gamma> \<Sigma> \<Delta> (EBool b) TBool EffPure"
 
-| T_Int: "has_type \<Gamma> \<Sigma> \<Delta> (EInt n) TInt EffectPure"
+| T_Int: "has_type \<Gamma> \<Sigma> \<Delta> (EInt n) TInt EffPure"
 
-| T_String: "has_type \<Gamma> \<Sigma> \<Delta> (EString s) TString EffectPure"
+| T_String: "has_type \<Gamma> \<Sigma> \<Delta> (EString s) TString EffPure"
 
 | T_Loc: "store_ty_lookup l \<Sigma> = Some (T, sl) \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (ELoc l) (TRef T sl) EffectPure"
+          has_type \<Gamma> \<Sigma> \<Delta> (ELoc l) (TRef T sl) EffPure"
 
 | T_Var: "env_lookup x \<Gamma> = Some T \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (EVar x) T EffectPure"
+          has_type \<Gamma> \<Sigma> \<Delta> (EVar x) T EffPure"
 
   (* Functions *)
 | T_Lam: "has_type ((x, T1) # \<Gamma>) \<Sigma> \<Delta> e T2 \<epsilon> \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (ELam x T1 e) (TFn T1 T2 \<epsilon>) EffectPure"
+          has_type \<Gamma> \<Sigma> \<Delta> (ELam x T1 e) (TFn T1 T2 \<epsilon>) EffPure"
 
 | T_App: "has_type \<Gamma> \<Sigma> \<Delta> e1 (TFn T1 T2 \<epsilon>) \<epsilon>1 \<Longrightarrow>
           has_type \<Gamma> \<Sigma> \<Delta> e2 T1 \<epsilon>2 \<Longrightarrow>
@@ -224,9 +224,9 @@ text \<open>Well-typed store: every typed location has a well-typed VALUE in the
 definition store_wf :: "store_ty \<Rightarrow> store \<Rightarrow> bool" where
   "store_wf \<Sigma> st \<equiv>
      (\<forall>l T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<longrightarrow>
-        (\<exists>v. store_lookup l st = Some v \<and> value v \<and> has_type [] \<Sigma> Public v T EffectPure)) \<and>
+        (\<exists>v. store_lookup l st = Some v \<and> value v \<and> has_type [] \<Sigma> LPublic v T EffPure)) \<and>
      (\<forall>l v. store_lookup l st = Some v \<longrightarrow>
-        (\<exists>T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<and> value v \<and> has_type [] \<Sigma> Public v T EffectPure))"
+        (\<exists>T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<and> value v \<and> has_type [] \<Sigma> LPublic v T EffPure))"
 
 
 section \<open>Type Uniqueness\<close>
