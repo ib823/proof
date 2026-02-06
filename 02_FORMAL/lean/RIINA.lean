@@ -22,13 +22,13 @@ Provides independent verification of RIINA's type safety and security properties
 
 | Module | Coq Qed | Lean Theorems | Status |
 |--------|---------|---------------|--------|
-| Syntax | 3 | 3 | Ported |
-| Semantics | TBD | TBD | In Progress |
+| Syntax | 3 | 5 | ✅ Ported |
+| Semantics | 13 | 12 | ✅ Ported |
 | Typing | TBD | TBD | Planned |
 
 Mode: ULTRA KIASU | ZERO TRUST | ABSOLUTE FIDELITY
 -/
 
 import RIINA.Foundations.Syntax
--- import RIINA.Foundations.Semantics  -- TODO: Port Semantics.v
+import RIINA.Foundations.Semantics
 -- import RIINA.TypeSystem.Typing      -- TODO: Port Typing.v

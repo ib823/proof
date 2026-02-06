@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Date:** 2026-02-06
-**Status:** Active Implementation (Phase 1 Complete)
+**Status:** Active Implementation (Phase 2 Complete)
 
 ---
 
@@ -29,15 +29,15 @@ RIINA employs multi-prover verification to provide absolute confidence in formal
 ║                                                                  ║
 ║   Lean 4 (Secondary)                                            ║
 ║   ├── 02_FORMAL/lean/RIINA/Foundations/Syntax.lean (✅ Ported)  ║
-║   ├── 02_FORMAL/lean/RIINA/Foundations/Semantics.lean (TODO)    ║
+║   ├── 02_FORMAL/lean/RIINA/Foundations/Semantics.lean (✅ Ported)║
 ║   ├── 02_FORMAL/lean/RIINA/TypeSystem/Typing.lean (TODO)        ║
-║   └── Ported: 5 theorems                                        ║
+║   └── Ported: 17 theorems                                       ║
 ║                                                                  ║
 ║   Isabelle/HOL (Tertiary)                                       ║
 ║   ├── 02_FORMAL/isabelle/RIINA/Syntax.thy (✅ Ported)           ║
-║   ├── 02_FORMAL/isabelle/RIINA/Semantics.thy (TODO)             ║
+║   ├── 02_FORMAL/isabelle/RIINA/Semantics.thy (✅ Ported)        ║
 ║   ├── 02_FORMAL/isabelle/RIINA/Typing.thy (TODO)                ║
-║   └── Ported: 5 lemmas                                          ║
+║   └── Ported: 17 lemmas                                         ║
 ║                                                                  ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
@@ -86,17 +86,39 @@ RIINA employs multi-prover verification to provide absolute confidence in formal
 
 **Total Phase 1: 5 theorems with triple-prover agreement**
 
-## Phase 2: Semantics Porting (PLANNED)
+## Phase 2: Semantics Porting (COMPLETE)
 
-| Coq Definition | Lean Target | Isabelle Target | Priority |
-|----------------|-------------|-----------------|----------|
-| `store` | `Store` | `store` | Tier 1 |
-| `store_lookup` | `Store.lookup` | `store_lookup` | Tier 1 |
-| `store_update` | `Store.update` | `store_update` | Tier 1 |
-| `effect_ctx` | `EffectCtx` | `effect_ctx` | Tier 1 |
-| `step` (35+ rules) | `Step` | `step` | Tier 1 |
-| `multi_step` | `MultiStep` | `multi_step` | Tier 2 |
-| `step_deterministic` | `Step.deterministic` | `step_deterministic` | Tier 2 |
+| Coq Definition | Lean Definition | Isabelle Definition | Status |
+|----------------|-----------------|---------------------|--------|
+| `store` | `Store` | `store` | ✅ All 3 |
+| `store_lookup` | `Store.lookup` | `store_lookup` | ✅ All 3 |
+| `store_update` | `Store.update` | `store_update` | ✅ All 3 |
+| `store_max` | `Store.max` | `store_max` | ✅ All 3 |
+| `fresh_loc` | `Store.freshLoc` | `fresh_loc` | ✅ All 3 |
+| `effect_ctx` | `EffectCtx` | `effect_ctx` | ✅ All 3 |
+| `has_effect` | `EffectCtx.hasEffect` | `has_effect` | ✅ All 3 |
+| `step` (43 rules) | `Step` (43 rules) | `step` (43 rules) | ✅ All 3 |
+| `multi_step` | `MultiStep` | `multi_step` | ✅ All 3 |
+| `store_has_values` | `Store.hasValues` | `store_has_values` | ✅ All 3 |
+
+### Semantics Theorems Ported
+
+| Coq Theorem | Lean Proof | Isabelle Proof | Agreement |
+|-------------|------------|----------------|-----------|
+| `store_lookup_above_max` | `Store.lookup_above_max` | `store_lookup_above_max` | ✅ |
+| `store_lookup_fresh` | `Store.lookup_fresh` | `store_lookup_fresh` | ✅ |
+| `store_update_lookup_eq` | `Store.update_lookup_eq` | `store_update_lookup_eq` | ✅ |
+| `store_update_lookup_neq` | `Store.update_lookup_neq` | `store_update_lookup_neq` | ✅ |
+| `store_has_values_empty` | `Store.hasValues_empty` | `store_has_values_empty` | ✅ |
+| `store_update_preserves_values` | `Store.update_preserves_values` | `store_update_preserves_values` | ✅ |
+| `value_not_step` | `Value.not_step` | `value_not_step` | ✅ |
+| `value_does_not_step` | `Value.does_not_step` | `value_does_not_step` | ✅ |
+| `step_deterministic_cfg` | `Step.deterministic_cfg` | `step_deterministic_cfg` | ✅ |
+| `step_deterministic` | `Step.deterministic` | `step_deterministic` | ✅ |
+| `step_preserves_store_values` | `Step.preserves_store_values` | `step_preserves_store_values` | ✅ |
+| `multi_step_preserves_store_values` | `MultiStep.preserves_store_values` | `multi_step_preserves_store_values` | ✅ |
+
+**Total Phase 2: 12 theorems with triple-prover agreement**
 
 ## Phase 3: Type System Porting (PLANNED)
 
@@ -142,7 +164,7 @@ Inductive confidence_level : Type :=
 | Category | Confidence | Theorems |
 |----------|------------|----------|
 | Syntax definitions | TripleProver | 5 |
-| Semantics | SingleProver | ~30 |
+| Semantics | TripleProver | 12 |
 | Type system | SingleProver | ~30 |
 | Effects | SingleProver | ~16 |
 | Non-interference | SingleProver | ~199 |
@@ -192,7 +214,7 @@ Inductive confidence_level : Type :=
 | Phase | Target | Status |
 |-------|--------|--------|
 | Phase 1: Syntax | Week 1-2 | ✅ COMPLETE |
-| Phase 2: Semantics | Week 3-4 | 🔄 Planned |
+| Phase 2: Semantics | Week 3-4 | ✅ COMPLETE |
 | Phase 3: Type System | Week 5-6 | 🔄 Planned |
 | Phase 4: Type Safety | Week 7 | 🔄 Planned |
 | Phase 5: Effects | Week 8 | 🔄 Planned |

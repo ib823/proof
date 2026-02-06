@@ -19,7 +19,7 @@ session RIINA = HOL +
     "HOL-Library"
   theories
     Syntax
-    (* Semantics *)    (* TODO: Port Semantics.v *)
+    Semantics
     (* Typing *)       (* TODO: Port Typing.v *)
   document_files
     "root.tex"
