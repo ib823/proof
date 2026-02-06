@@ -412,30 +412,27 @@ const RiinaWebsite = () => {
           </a>
         </div>
 
-        {/* Key Stats with LIVE indicator */}
+        {/* Key Stats - horizontal row */}
         <div className="hero-stats" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
           paddingTop: '48px',
           borderTop: '1px solid #eee',
           width: '100%',
-          maxWidth: '700px'
+          maxWidth: '700px',
+          textAlign: 'center',
         }}>
-          {/* Stats row */}
+          {/* Stats row - always horizontal */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: '48px',
-            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            gap: '64px',
           }}>
             {[
               { value: '6,194', label: 'Theorems Proven', highlight: true },
               { value: '0', label: 'Admits' },
               { value: '283', label: 'Coq Files Verified' },
             ].map((stat, i) => (
-              <div key={i} style={{ textAlign: 'center' }}>
+              <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
                 <div style={{
                   fontSize: '48px',
                   fontWeight: 300,
@@ -443,25 +440,32 @@ const RiinaWebsite = () => {
                   color: stat.highlight ? '#1e293b' : '#374151',
                 }}>{stat.value}</div>
                 <div style={{
-                  fontSize: '12px',
-                  color: '#999',
+                  fontSize: '11px',
+                  color: '#888',
                   letterSpacing: '0.1em',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  marginTop: '8px',
                 }}>{stat.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Subtle build reference */}
+          {/* Build reference with date */}
           <p style={{
             fontSize: '12px',
             color: '#9ca3af',
-            marginTop: '24px',
+            marginTop: '32px',
             fontFamily: 'monospace',
-            textAlign: 'center',
-            width: '100%',
           }}>
             Verified with Coq 8.20.1 · Session 73
+          </p>
+          <p style={{
+            fontSize: '11px',
+            color: '#b0b0b0',
+            marginTop: '4px',
+            fontFamily: 'monospace',
+          }}>
+            Last updated: February 6, 2026
           </p>
         </div>
       </section>
