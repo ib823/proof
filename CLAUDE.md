@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-06 (Session 73: Commit Protocol) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 567 Qed (deprecated), 6,761 Qed (total), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 74: Multi-Prover Verification) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 567 Qed (deprecated), 6,761 Qed (total), 283 total .v, 17 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -93,7 +93,7 @@ RIINA is the world's **first formally verified programming language** with:
 
 **Full syntax specification:** `01_RESEARCH/specs/bahasa/RIINA-BAHASA-MELAYU-SYNTAX_v1_0_0.md`
 
-### 0.5 Current Project Status (2026-02-05)
+### 0.5 Current Project Status (2026-02-06)
 
 | Metric | Value | Notes |
 |--------|-------|-------|
@@ -101,13 +101,14 @@ RIINA is the world's **first formally verified programming language** with:
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 4 (all justified) | 3 in NI_v2_LR + 1 in NI_v2 |
 | **Admitted (Active Build)** | 0 | All eliminated (Session 72-73) |
-| **Qed Proofs (Total)** | 7,227 | 6,720 active build + 507 deprecated archive |
+| **Qed Proofs (Total)** | 6,761 | 6,194 active build + 567 deprecated archive |
+| **Multi-Prover Theorems** | 17 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
-| **Prover** | Coq 8.20.1 | Migrated from Rocq 9.1 |
+| **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
-| **Rust Tests** | ✅ PASSING (679 tests) | All green |
+| **Rust Tests** | ✅ PASSING (744 tests) | All green |
 | **Rust Crates** | 15 | +riina-wasm (Session 68) |
-| **Example .rii Files** | 113 | 9 categories (+FFI, +demos, +showcase, +compliance) |
+| **Example .rii Files** | 114 | 9 categories (+FFI, +demos, +showcase, +compliance) |
 
 **Roadmap:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` (SINGLE SOURCE OF TRUTH)
 
@@ -120,7 +121,25 @@ RIINA is the world's **first formally verified programming language** with:
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
 | Phase 7: Platform Universality | ✅ Done | WASM backend, mobile backends, platform stdlib, playground, backend verification |
-| Phase 8: Long-term Vision | ⬜ | Self-hosting, HW verification, verified OS, multi-lang keywords, content/revenue/community strategy (§12.1–12.8) |
+| Phase 8: Long-term Vision | 🔄 | Self-hosting, HW verification, verified OS, multi-lang keywords, content/revenue/community strategy (§12.1–12.8) |
+
+### 0.6 Multi-Prover Verification (Session 74)
+
+RIINA employs triple-prover verification for maximum confidence:
+
+| Prover | Role | Status |
+|--------|------|--------|
+| **Coq 8.20.1** | Primary (authoritative) | 6,194 Qed (active) |
+| **Lean 4** | Secondary (independent port) | 17 theorems |
+| **Isabelle/HOL** | Tertiary (third verification) | 17 lemmas |
+
+**Ported Files:**
+- `02_FORMAL/lean/RIINA/Foundations/Syntax.lean` — 5 theorems
+- `02_FORMAL/lean/RIINA/Foundations/Semantics.lean` — 12 theorems
+- `02_FORMAL/isabelle/RIINA/Syntax.thy` — 5 lemmas
+- `02_FORMAL/isabelle/RIINA/Semantics.thy` — 12 lemmas
+
+**Validation Report:** `02_FORMAL/MULTIPROVER_VALIDATION.md`
 
 **See `PROGRESS.md` for detailed status.**
 
@@ -165,15 +184,20 @@ are mathematically guaranteed at compile time.
 │   └── specs/bahasa/                       ← Bahasa Melayu syntax specs
 │
 ├── 02_FORMAL/                   ← Track A: Formal proofs
-│   ├── coq/                     ← Coq proofs (PRIMARY)
+│   ├── coq/                     ← Coq proofs (PRIMARY — 6,194 Qed)
 │   │   ├── _CoqProject          ← Coq project configuration
 │   │   ├── Makefile             ← Build configuration
 │   │   ├── foundations/         ← Core definitions
 │   │   ├── type_system/         ← Type safety proofs
 │   │   ├── effects/             ← Effect system proofs
 │   │   └── properties/          ← Security properties
-│   ├── lean/                    ← Lean 4 proofs (SECONDARY)
-│   └── isabelle/                ← Isabelle proofs (TERTIARY)
+│   ├── lean/                    ← Lean 4 proofs (SECONDARY — 17 theorems)
+│   │   ├── lakefile.lean        ← Lake build configuration
+│   │   ├── RIINA.lean           ← Main library
+│   │   └── RIINA/Foundations/   ← Syntax.lean, Semantics.lean
+│   ├── isabelle/                ← Isabelle proofs (TERTIARY — 17 lemmas)
+│   │   └── RIINA/               ← ROOT, Syntax.thy, Semantics.thy
+│   └── MULTIPROVER_VALIDATION.md ← Cross-validation report
 │
 ├── 03_PROTO/                    ← Track B: Rust prototype
 │   ├── Cargo.toml               ← Workspace configuration
@@ -802,7 +826,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-05 (Session 73: Proof Depth Expansion — 0 Admitted in active build, 4 justified axioms, 679 Rust tests, 15 crates, 113 examples, 283 Coq files, 6,720 active Qed proofs, 507 deprecated)*
+*Last updated: 2026-02-06 (Session 74: Multi-Prover Verification — 0 Admitted in active build, 4 justified axioms, 744 Rust tests, 15 crates, 114 examples, 283 Coq files, 6,194 active Qed proofs, 567 deprecated, 17 triple-prover theorems)*
 
 ---
 
