@@ -119,7 +119,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
-| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 1 justified axiom, 6,193 Qed (active), 249 files |
+| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 1 justified axiom, 7,928 Qed (active), 250 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -187,7 +187,7 @@ are mathematically guaranteed at compile time.
 │   └── specs/bahasa/                       ← Bahasa Melayu syntax specs
 │
 ├── 02_FORMAL/                   ← Track A: Formal proofs
-│   ├── coq/                     ← Coq proofs (PRIMARY — 6,193 Qed)
+│   ├── coq/                     ← Coq proofs (PRIMARY — 7,928 Qed)
 │   │   ├── _CoqProject          ← Coq project configuration
 │   │   ├── Makefile             ← Build configuration
 │   │   ├── foundations/         ← Core definitions
