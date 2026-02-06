@@ -2,7 +2,7 @@
 
 Version: 0.1.0 | File extension: `.rii` | Prover: Coq 8.20.1
 
-RIINA (Rigorous Immutable Invariant, No Assumptions) is the world's first formally verified programming language with Bahasa Melayu (Malaysian Malay) keywords, information flow control, and an effect type system. All security properties are proven in Coq with 6,194 mathematical proofs, 0 admits, and 4 justified axioms. If AI-generated code compiles, it is provably secure by construction.
+RIINA (Rigorous Immutable Invariant, No Assumptions) is the world's first formally verified programming language with Bahasa Melayu (Malaysian Malay) keywords, information flow control, and an effect type system. All security properties are proven in Coq with 6,193 mathematical proofs, 0 admits, and 1 justified axiom. If AI-generated code compiles, it is provably secure by construction.
 
 ---
 
@@ -832,7 +832,7 @@ All security properties proven in Coq 8.20.1:
 - **Effect safety**: Effects tracked and enforced
 - **Information flow control**: Multi-level security lattice
 
-Proofs: 6,194 Qed (active build), 0 admits, 4 justified axioms.
+Proofs: 6,193 Qed (active build), 0 admits, 1 justified axiom.
 Triple-prover verification: Coq (primary) + Lean 4 (17 theorems) + Isabelle/HOL (17 lemmas).
 
 ---

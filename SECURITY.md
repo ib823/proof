@@ -93,7 +93,7 @@ RIINA's formal verification eliminates entire classes of vulnerabilities by cons
 
 **Prevention:** The non-interference theorem proves that no program can leak secret data to public outputs. This covers all channels tracked by the type system: return values, printed output, network responses, file writes, and database writes. Data at security level `Rahsia` (Secret) cannot flow to any context at level `Awam` (Public) or below without a verified declassification.
 
-**Proof reference:** `02_FORMAL/coq/properties/NonInterference_v2.v` (non-interference theorem, 6,194 total Qed proofs in active build)
+**Proof reference:** `02_FORMAL/coq/properties/NonInterference_v2.v` (non-interference theorem, 6,193 total Qed proofs in active build)
 
 ### Buffer Overflow
 
@@ -117,41 +117,38 @@ RIINA's formal verification eliminates entire classes of vulnerabilities by cons
 
 ## Formal Proof References
 
-The following Coq files contain the key security proofs. All compile with Coq 8.20.1, with 0 `Admitted` proofs and 4 justified axioms in the active build.
+The following Coq files contain the key security proofs. All compile with Coq 8.20.1, with 0 `Admitted` proofs and 1 justified axiom in the active build.
 
 | File | Purpose | Qed Count |
 |------|---------|-----------|
-| `02_FORMAL/coq/properties/NonInterference_v2.v` | Non-interference theorem (information flow security) | Part of 6,194 total |
-| `02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v` | Logical relation for non-interference proof | Part of 6,194 total |
-| `02_FORMAL/coq/type_system/Typing.v` | Typing rules for the full language | Part of 6,194 total |
-| `02_FORMAL/coq/type_system/Progress.v` | Progress theorem (well-typed programs don't get stuck) | Part of 6,194 total |
-| `02_FORMAL/coq/type_system/Preservation.v` | Preservation theorem (types are preserved by evaluation) | Part of 6,194 total |
-| `02_FORMAL/coq/effects/EffectSystem.v` | Effect algebra soundness | Part of 6,194 total |
-| `02_FORMAL/coq/properties/TypeSafety.v` | Type safety composition (Progress + Preservation) | Part of 6,194 total |
-| `02_FORMAL/coq/domains/DOMAIN_W_VerifiedMemory.v` | Memory safety (separation logic) | Part of 6,194 total |
+| `02_FORMAL/coq/properties/NonInterference_v2.v` | Non-interference theorem (information flow security) | Part of 6,193 total |
+| `02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v` | Logical relation for non-interference proof | Part of 6,193 total |
+| `02_FORMAL/coq/type_system/Typing.v` | Typing rules for the full language | Part of 6,193 total |
+| `02_FORMAL/coq/type_system/Progress.v` | Progress theorem (well-typed programs don't get stuck) | Part of 6,193 total |
+| `02_FORMAL/coq/type_system/Preservation.v` | Preservation theorem (types are preserved by evaluation) | Part of 6,193 total |
+| `02_FORMAL/coq/effects/EffectSystem.v` | Effect algebra soundness | Part of 6,193 total |
+| `02_FORMAL/coq/properties/TypeSafety.v` | Type safety composition (Progress + Preservation) | Part of 6,193 total |
+| `02_FORMAL/coq/domains/DOMAIN_W_VerifiedMemory.v` | Memory safety (separation logic) | Part of 6,193 total |
 
 **Multi-prover verification:** 17 critical theorems are independently verified in Lean 4 and Isabelle/HOL in addition to Coq. See `02_FORMAL/MULTIPROVER_VALIDATION.md`.
 
 **Total proof metrics:**
-- 6,194 Qed proofs in active build (249 files)
+- 6,193 Qed proofs in active build (249 files)
 - 506 Qed proofs in deprecated archive (34 files)
 - 6,700 Qed proofs total (283 files)
 - 0 Admitted proofs
-- 4 justified axioms (documented in proof files)
+- 1 justified axiom (documented in proof files)
 - 122,431 lines of proof (active build)
 
 ---
 
 ## Axioms
 
-The active build contains exactly 4 axioms, all justified:
+The active build contains exactly 1 axiom:
 
-1. **`logical_relation_ref`** -- Models reference creation in the logical relation. Justified: standard technique in step-indexed logical relations (Appel & McAllester, Ahmed).
-2. **`logical_relation_assign`** -- Models reference assignment in the logical relation. Justified: same academic foundation as above.
-3. **`logical_relation_declassify`** -- Encodes the declassification policy as an axiom. Justified: this is a *policy* axiom -- it defines what declassification means, not a proof obligation.
-4. **`fundamental_theorem_step_0`** -- Base case for step-indexed induction. Justified: standard step-indexing base case.
+1. **`logical_relation_declassify`** -- Encodes the declassification policy as an axiom. Justified: this is a *policy* axiom -- it defines what declassification means, not a proof obligation. It is permanently unprovable by design, as it encodes the programmer's responsibility to justify declassification.
 
-These axioms are documented in the Coq source files with full justification. Elimination of axioms 1 and 2 is possible via `store_rel_n` restructuring (tracked in internal planning documents). Axiom 3 is a permanent policy axiom by design. Axiom 4 is a standard technique from the academic literature.
+Three axioms were eliminated in Session 76 (2026-02-06): `logical_relation_ref` (reference creation), `logical_relation_assign` (reference assignment), and `fundamental_theorem_step_0` (step-indexed base case). A fourth, `logical_relation_deref` (reference dereference), was eliminated in Session 66.
 
 ---
 

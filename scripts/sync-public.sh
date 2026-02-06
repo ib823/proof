@@ -35,11 +35,14 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 # Internal files/dirs that must NEVER appear on public
 INTERNAL_PATHS=(
+    # --- Internal directories ---
     "01_RESEARCH/"
     "06_COORDINATION/"
     "99_ARCHIVE/"
     "claude_ai_output/"
     "dist/"
+
+    # --- Internal docs ---
     "CLAUDE.md"
     "PROGRESS.md"
     "SESSION_LOG.md"
@@ -48,6 +51,9 @@ INTERNAL_PATHS=(
     "VERIFICATION_MANIFEST.md"
     "axiom_audit_report.txt"
     "riina-website.jsx"
+    "AUDIT_REPORT_2026_02_06.md"
+
+    # --- Coq internal strategy/delegation files ---
     "02_FORMAL/coq/CLAUDE_*.md"
     "02_FORMAL/coq/DELEGATION_TASKS.md"
     "02_FORMAL/coq/TASK_PROMPTS.md"
@@ -55,7 +61,30 @@ INTERNAL_PATHS=(
     "02_FORMAL/coq/AXIOM_ELIMINATION_STRATEGY.md"
     "02_FORMAL/coq/_CoqProject.backup"
     "02_FORMAL/coq/properties/_archive_deprecated/"
+    "02_FORMAL/coq/properties/BRIDGE_ANALYSIS_CONCLUSION.md"
+    "02_FORMAL/coq/properties/check_ax.v"
+
+    # --- Confidential specs ---
     "04_SPECS/business/"
+    "04_SPECS/RIINA_PRIME_DIRECTIVE_GAP_CLOSURE.md"
+    "04_SPECS/scope/RIINA_RESEARCH_EXECUTION_MAP.md"
+
+    # --- Stray artifacts (screenshots, backups, caches, test files) ---
+    "Screenshot_*.jpg"
+    "image.png"
+    "05_TOOLING/test_inversion"
+    "05_TOOLING/test_inversion.rs"
+)
+
+# Glob patterns to sweep (git ls-files + rm)
+INTERNAL_GLOBS=(
+    "*.bak"
+    "*.backup"
+    "*.old"
+    "*.tmp"
+    "*_test_print.v"
+    "02_FORMAL/coq/.lia.cache"
+    "02_FORMAL/coq/.nia.cache"
 )
 
 echo ""
@@ -158,6 +187,18 @@ for pattern in "${INTERNAL_PATHS[@]}"; do
     fi
 done
 
+# Step 8b: Remove files matching glob patterns (backups, caches, temp files)
+for glob in "${INTERNAL_GLOBS[@]}"; do
+    MATCHED=$(git ls-files "$glob" 2>/dev/null || true)
+    if [ -n "$MATCHED" ]; then
+        echo "$MATCHED" | while read -r f; do
+            echo -e "${YELLOW}    Removing artifact: $f${NC}"
+            git rm -f --quiet "$f" 2>/dev/null || true
+        done
+        REMOVED_COUNT=$((REMOVED_COUNT + 1))
+    fi
+done
+
 if [ $REMOVED_COUNT -gt 0 ]; then
     echo -e "${YELLOW}    Removed $REMOVED_COUNT internal path(s) from public${NC}"
 fi
@@ -178,6 +219,14 @@ git add -A
 # Final cleanup: force-remove any internal files that git add -A may have re-added
 for pattern in "${INTERNAL_PATHS[@]}"; do
     git rm -rf --quiet "$pattern" 2>/dev/null || true
+done
+for glob in "${INTERNAL_GLOBS[@]}"; do
+    MATCHED=$(git ls-files "$glob" 2>/dev/null || true)
+    if [ -n "$MATCHED" ]; then
+        echo "$MATCHED" | while read -r f; do
+            git rm -f --quiet "$f" 2>/dev/null || true
+        done
+    fi
 done
 # Use --no-verify because main was already fully verified by pre-push hook.
 # Without this, the pre-commit hook regenerates VERIFICATION_MANIFEST.md

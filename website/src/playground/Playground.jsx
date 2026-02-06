@@ -258,7 +258,7 @@ const PlaygroundPage = ({ onNavigate }) => {
 
       {/* Footer info */}
       <div style={{ marginTop: 24, fontSize: 12, color: '#999', textAlign: 'center' }}>
-        RIINA Compiler v0.2.0 · 6,194 theorems proven · Zero external dependencies · MPL-2.0
+        RIINA Compiler v0.2.0 · 6,193 theorems proven · Zero external dependencies · MPL-2.0
       </div>
       </div>
     </div>

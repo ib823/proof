@@ -17,9 +17,9 @@
 ```
 
 **Report Date:** 2026-02-06 (Session 75)
-**Audit Update:** 2026-02-06 (P2/P4/P5 Implementation)
-**Session:** 75 (P2/P4/P5 — Typechecker formalization, mobile backends, self-hosting scaffolds)
-**Overall Grade:** A (BUILD PASSING, 0 Admitted in active build, 4 justified axioms)
+**Audit Update:** 2026-02-06 (Session 76: Axiom Elimination 4→1)
+**Session:** 76 (Axiom Elimination — 3 axioms eliminated, 1 policy axiom remains)
+**Overall Grade:** A (BUILD PASSING, 0 Admitted in active build, 1 justified axiom)
 
 ---
 
@@ -29,10 +29,10 @@
 |--------|---------|--------|--------|
 | `admit.` (Active Build) | **0** | 0 | ✅ ZERO |
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
-| Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
+| Axioms (Active Build) | **1** | 1 | ✅ TARGET REACHED — `logical_relation_declassify` (policy axiom) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **250** | - | ✅ All compile |
-| Qed Proofs (Total) | **6,700** | - | ✅ (6,194 active build + 506 deprecated archive) |
+| Files in Build | **249** | - | ✅ All compile |
+| Qed Proofs (Total) | **6,734** | - | ✅ (6,193 active build + 541 deprecated archive) |
 | .v Files (Total) | **283** | - | ✅ |
 | Rust Prototype | ✅ PASSING (782 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |

@@ -1303,7 +1303,7 @@ allowed — no network, no logging. Enforced at compile time.`
 No external CI/CD — verification lives inside the compiler.
 
 The formal proofs (283 Coq files) ship with the compiler. You can audit them.
-4 justified axioms — all documented, none hidden.
+1 justified axiom — all documented, none hidden.
 Every security claim has a machine-checked proof behind it.`
             }
           ].map((item, i) => (

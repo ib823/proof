@@ -56,7 +56,7 @@ const RiinaWebsite = () => {
   // Release data (auto-updated by scripts/release.sh)
   const releases = [
     // RELEASES_MARKER
-    { version: '0.1.0', date: '2026-02-01', highlights: ['RIINA compiler with Bahasa Melayu syntax', 'Formal verification: 6,194 Qed proofs in Coq', 'Standard library: 88 builtins across 9 modules'] },
+    { version: '0.1.0', date: '2026-02-01', highlights: ['RIINA compiler with Bahasa Melayu syntax', 'Formal verification: 6,193 Qed proofs in Coq', 'Standard library: 88 builtins across 9 modules'] },
   ];
 
   // Footer link mapping
@@ -248,7 +248,7 @@ const RiinaWebsite = () => {
         <div className="hero-stats">
           <div className="hero-stats-row">
             {[
-              { value: '6,194', label: 'Theorems Proven', highlight: true },
+              { value: '6,193', label: 'Theorems Proven', highlight: true },
               { value: '84', label: 'Triple-Prover Verified' },
               { value: '0', label: 'Admits' },
               { value: '283', label: 'Coq Files' },
@@ -341,7 +341,7 @@ riinac run hello.rii`}
             <h2 className="heading-lg mb-lg">Formal verification you can trust</h2>
             <div className="grid-3">
               <div className="card card--hover" onClick={() => setCurrentPage('research')}>
-                <h3 className="text-lg fw-600 mb-sm">6,194 Proven Theorems</h3>
+                <h3 className="text-lg fw-600 mb-sm">6,193 Proven Theorems</h3>
                 <p className="text-secondary text-md">Every security property proven in Coq — type safety, non-interference, memory safety</p>
                 <span className="text-sm text-muted mt-md">→ View Proofs</span>
               </div>
@@ -368,7 +368,7 @@ riinac run hello.rii`}
               <div className="card bg-light">
                 <h4 className="section-label-sm mb-md">PROOF STACK</h4>
                 <ul className="list-none p-0">
-                  {['Coq 8.20.1 — 283 verified files', '4 justified axioms (all documented)', '0 admits in active build', 'Multi-prover cross-verification', 'Full audit trail in repository'].map((p, i) => (
+                  {['Coq 8.20.1 — 283 verified files', '1 justified axiom (all documented)', '0 admits in active build', 'Multi-prover cross-verification', 'Full audit trail in repository'].map((p, i) => (
                     <li key={i} className="py-xs text-md text-secondary">• {p}</li>
                   ))}
                 </ul>
@@ -434,7 +434,7 @@ riinac run hello.rii`}
               <div className="card card--hover">
                 <a href="https://github.com/ib823/riina/tree/main/02_FORMAL/coq" className="no-underline text-inherit">
                   <h3 className="text-lg fw-600 mb-sm">Coq Proof Repository</h3>
-                  <p className="text-secondary text-md">283 verified files, 6,194 theorems — browse the complete formalization</p>
+                  <p className="text-secondary text-md">283 verified files, 6,193 theorems — browse the complete formalization</p>
                   <span className="text-sm text-muted mt-md">→ GitHub</span>
                 </a>
               </div>
@@ -719,7 +719,7 @@ fungsi hash_kata_laluan(
                 "hacked" it. It never will. <strong>RIINA applies this same principle to your software.</strong>
               </p>
               <div className="callout callout--success mt-lg">
-                6,194 machine-checked proofs guarantee security properties <em>before</em> the code runs.
+                6,193 machine-checked proofs guarantee security properties <em>before</em> the code runs.
               </div>
             </div>
           </div>
@@ -1819,7 +1819,7 @@ allowed — no network, no logging. Enforced at compile time.`
 • Timing-sensitive code in masa_tetap executes in constant time
 • Secrets are zeroed before memory is freed
 
-6,194 theorems verified in Coq. 0 admits. If the proof fails, compilation fails.`
+6,193 theorems verified in Coq. 0 admits. If the proof fails, compilation fails.`
             },
             {
               step: '04',
@@ -1828,7 +1828,7 @@ allowed — no network, no logging. Enforced at compile time.`
 No external CI/CD — verification lives inside the compiler.
 
 The formal proofs (283 Coq files) ship with the compiler. You can audit them.
-4 justified axioms — all documented, none hidden.
+1 justified axiom — all documented, none hidden.
 Every security claim has a machine-checked proof behind it.`
             }
           ].map((item, i) => (
@@ -1885,7 +1885,7 @@ Every security claim has a machine-checked proof behind it.`
     <div className="page-top">
       <PageHeader
         title="Research"
-        subtitle="RIINA is built on formal verification with 6,194 machine-checked theorems across 250 files. Triple-prover verification: 84 theorems independently verified in Coq, Lean 4, and Isabelle/HOL."
+        subtitle="RIINA is built on formal verification with 6,193 machine-checked theorems across 250 files. Triple-prover verification: 84 theorems independently verified in Coq, Lean 4, and Isabelle/HOL."
       />
 
       {/* Stats */}
@@ -1893,7 +1893,7 @@ Every security claim has a machine-checked proof behind it.`
         <div className="container-md">
           <div className="grid-4 gap-lg mb-4xl">
             {[
-              { value: '6,194', label: 'Qed Proofs' },
+              { value: '6,193', label: 'Qed Proofs' },
               { value: '84', label: 'Triple-Prover' },
               { value: '0', label: 'Admits' },
               { value: '250', label: 'Active Files' },
@@ -1913,7 +1913,7 @@ Every security claim has a machine-checked proof behind it.`
             </p>
             <div className="grid-3 gap-md mb-2xl">
               {[
-                { prover: 'Coq 8.20.1', theorems: '6,194', role: 'Primary', desc: 'Authoritative proofs, full coverage' },
+                { prover: 'Coq 8.20.1', theorems: '6,193', role: 'Primary', desc: 'Authoritative proofs, full coverage' },
                 { prover: 'Lean 4', theorems: '84', role: 'Secondary', desc: 'Independent port of core theorems' },
                 { prover: 'Isabelle/HOL', theorems: '84', role: 'Tertiary', desc: 'Third verification layer' },
               ].map((p, i) => (
@@ -2109,7 +2109,7 @@ Every security claim has a machine-checked proof behind it.`
         links: [{ text: 'Keyword Table (60+)', page: 'syntax' }, { text: 'Security Keywords', page: 'securityTypes' }, { text: 'Effect Keywords', page: 'effectSystem' }] },
       { title: 'Standard Library', desc: '88 builtins across 9 modules', page: 'stdlib',
         links: [{ text: 'Module Reference', page: 'stdlib' }, { text: 'std::kripto', page: 'stdlib' }, { text: 'std::io', page: 'stdlib' }] },
-      { title: 'Formal Proofs', desc: '283 Coq files, 6,194 theorems', page: 'research',
+      { title: 'Formal Proofs', desc: '283 Coq files, 6,193 theorems', page: 'research',
         links: [{ text: 'Proof Architecture', page: 'research' }, { text: 'Axiom Justifications', page: 'research' }, { text: 'Building Proofs', page: 'research' }] },
       { title: 'Examples', desc: '112 example .rii files in 9 categories', page: 'examples',
         links: [{ text: 'pengesahan.rii', page: 'examples' }, { text: 'kripto.rii', page: 'examples' }, { text: 'hello_dunia.rii', page: 'examples' }] },

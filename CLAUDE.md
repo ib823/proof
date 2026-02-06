@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-06 (Session 75: P2/P4/P5 Implementation) — Active build: 0 admit., 0 Admitted., 4 axioms, 250 active files, 6,194 Qed (active), 506 Qed (deprecated), 6,700 Qed (total), 283 total .v, 17 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 76: Axiom Elimination 4→1) — Active build: 0 admit., 0 Admitted., 1 axiom (policy), 249 active files, 6,193 Qed (active), 541 Qed (deprecated), 6,734 Qed (total), 283 total .v, 84 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -97,12 +97,12 @@ RIINA is the world's **first formally verified programming language** with:
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **Overall Grade** | A (build passing) | 0 Admitted in active build, 4 justified axioms |
+| **Overall Grade** | A (build passing) | 0 Admitted in active build, 1 justified axiom |
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
-| **Axioms (Active Build)** | 4 (all justified) | 3 in NI_v2_LR + 1 in NI_v2 |
+| **Axioms (Active Build)** | 1 (policy axiom) | `logical_relation_declassify` in NI_v2_LR (3 eliminated Session 76) |
 | **Admitted (Active Build)** | 0 | All eliminated (Session 72-73) |
-| **Qed Proofs (Total)** | 6,761 | 6,194 active build + 567 deprecated archive |
-| **Multi-Prover Theorems** | 17 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
+| **Qed Proofs (Total)** | 6,734 | 6,193 active build + 541 deprecated archive |
+| **Multi-Prover Theorems** | 84 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
@@ -116,7 +116,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
-| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 4 justified axioms, 6,720 Qed (active), 249 files |
+| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 1 justified axiom, 6,193 Qed (active), 249 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -129,7 +129,7 @@ RIINA employs triple-prover verification for maximum confidence:
 
 | Prover | Role | Status |
 |--------|------|--------|
-| **Coq 8.20.1** | Primary (authoritative) | 6,194 Qed (active) |
+| **Coq 8.20.1** | Primary (authoritative) | 6,193 Qed (active) |
 | **Lean 4** | Secondary (independent port) | 17 theorems |
 | **Isabelle/HOL** | Tertiary (third verification) | 17 lemmas |
 
@@ -184,7 +184,7 @@ are mathematically guaranteed at compile time.
 │   └── specs/bahasa/                       ← Bahasa Melayu syntax specs
 │
 ├── 02_FORMAL/                   ← Track A: Formal proofs
-│   ├── coq/                     ← Coq proofs (PRIMARY — 6,194 Qed)
+│   ├── coq/                     ← Coq proofs (PRIMARY — 6,193 Qed)
 │   │   ├── _CoqProject          ← Coq project configuration
 │   │   ├── Makefile             ← Build configuration
 │   │   ├── foundations/         ← Core definitions
@@ -673,21 +673,21 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 Admitted, 4 justified axioms, 6,720 Qed proofs (active), 283 files (Coq 8.20.1)**
+**Build: 0 Admitted, 1 justified axiom, 6,193 Qed proofs (active), 283 files (Coq 8.20.1)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
 | File | `Admitted.` | Axioms | Notes |
 |------|-------------|--------|-------|
-| NonInterference_v2_LogicalRelation.v | 0 | 3 | ref/assign/declassify (all justified; deref eliminated) |
-| NonInterference_v2.v | 0 | 1 | fundamental_theorem_step_0 (justified) |
+| NonInterference_v2_LogicalRelation.v | 0 | 1 | `logical_relation_declassify` (permanent policy axiom); ref/assign/deref eliminated |
+| NonInterference_v2.v | 0 | 0 | `fundamental_theorem_step_0` eliminated (Session 76) |
 | DELTA001_VerifiedDistribution.v | **4** | 0 | Distribution verification incomplete (lines 271, 307, 388, 446) |
 | PlatformStdlibVerification.v | **1** | 0 | Phase 7 verification stub (line 205) |
 | WasmBackendVerification.v | **1** | 0 | Phase 7 verification stub (line 640) |
 | MobileBridgeVerification.v | **1** | 0 | Phase 7 verification stub (line 256) |
 | ValRelStepLimit_PROOF.v | **1** | 0 | Core property incomplete (line 151) |
 
-**4 justified axioms** — elimination requires `store_rel_n` restructuring (see `WORKER_B_SPEC_STORE_REL_REWRITE.md`). `logical_relation_declassify` is a permanent policy axiom. `logical_relation_deref` was eliminated in Session 66.
+**1 justified axiom** — `logical_relation_declassify` is a permanent policy axiom (encodes programmer's declassification responsibility). 3 axioms eliminated in Session 76: `logical_relation_ref`, `logical_relation_assign` (store allocation/update), `fundamental_theorem_step_0` (step-indexed closure). `logical_relation_deref` was eliminated in Session 66.
 
 **0 Admitted proofs** — All previously tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit) have been eliminated as of Session 72 (Coq 8.20.1 compatibility).
 
@@ -826,7 +826,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-06 (Session 75: P2/P4/P5 Implementation — 0 Admitted in active build, 4 justified axioms, 782 Rust tests, 15 crates, 120 examples, 283 Coq files, 6,194 active Qed proofs, 506 deprecated, 17 triple-prover theorems)*
+*Last updated: 2026-02-06 (Session 76: Axiom Elimination 4→1 — 0 Admitted in active build, 1 justified axiom, 782 Rust tests, 15 crates, 120 examples, 283 Coq files, 6,193 active Qed proofs, 541 deprecated, 84 triple-prover theorems)*
 
 ---
 

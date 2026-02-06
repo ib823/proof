@@ -134,9 +134,9 @@ export const LiveMetrics = ({
         setMetrics({
           generated: new Date().toISOString(),
           version: '0.2.0',
-          session: 75,
-          proofs: { qedActive: 6194, admitted: 0, axioms: 4, tripleProver: 84 },
-          coq: { filesActive: 250, domains: 195 },
+          session: 76,
+          proofs: { qedActive: 6193, admitted: 0, axioms: 1, tripleProver: 84 },
+          coq: { filesActive: 249, domains: 195 },
           rust: { tests: 782, crates: 15 },
           examples: 120,
         });
