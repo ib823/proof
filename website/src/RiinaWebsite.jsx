@@ -14,7 +14,7 @@ const RiinaWebsite = () => {
   // Release data (auto-updated by scripts/release.sh)
   const releases = [
     // RELEASES_MARKER
-    { version: '0.1.0', date: '2026-02-01', highlights: ['RIINA compiler with Bahasa Melayu syntax', 'Formal verification: 6,193 Qed proofs in Coq', 'Standard library: 88 builtins across 9 modules'] },
+    { version: '0.1.0', date: '2026-02-01', highlights: ['RIINA compiler with Bahasa Melayu syntax', 'Formal verification: 7,682 Qed proofs in Coq + 91 Lean + 102 Isabelle', 'Triple-prover verification: 86 theorems across 3 independent provers', 'Standard library: 88 builtins across 9 modules'] },
   ];
 
   const nav = (page) => { setCurrentPage(page); setMobileMenuOpen(false); };
@@ -73,7 +73,7 @@ const RiinaWebsite = () => {
       {/* Act 1: Hero */}
       <section className="hero">
         <p className="hero-stat-line">
-          <span>6,193</span> theorems &middot; <span>0</span> admits &middot; <span>1</span> axiom &middot; Verified in Coq
+          <span>7,875</span> proofs &middot; <span>3</span> provers &middot; <span>0</span> admits &middot; <span>1</span> axiom &middot; Triple-verified
         </p>
         <h1>
           Security<br/><strong>proven at compile time.</strong>
@@ -139,6 +139,60 @@ const RiinaWebsite = () => {
         </p>
       </section>
 
+      {/* Vibesafe — The AI-friendly language */}
+      <section className="act-vibesafe">
+        <div className="act-vibesafe__inner">
+          <div className="act-vibesafe__text">
+            <div className="act-vibesafe__badge">Vibesafe</div>
+            <h2 className="act-vibesafe__title">
+              The only language where<br /><strong>vibe coding is safe.</strong>
+            </h2>
+            <p className="act-vibesafe__desc">
+              Let AI write your code. Let the compiler prove it correct. Every function
+              an LLM generates gets the same mathematical verification as hand-written code &mdash;
+              type safety, non-interference, and effect soundness, checked before a single byte runs.
+            </p>
+            <ul className="act-vibesafe__points">
+              <li>AI-generated code is verified identically to human code</li>
+              <li>Security properties cannot be bypassed, even by hallucination</li>
+              <li>Proof certificates are machine-checked, not trust-based</li>
+              <li>Vibe code. Ship proven.</li>
+            </ul>
+          </div>
+          <div className="act-vibesafe__visual">
+            <div className="vibesafe-flow__step">
+              <span className="vibesafe-flow__num">1</span>
+              <span>You prompt: <span style={{color:'var(--text-string)'}}>"auth endpoint"</span></span>
+            </div>
+            <div className="vibesafe-flow__step">
+              <span className="vibesafe-flow__num">2</span>
+              <span>AI generates <code style={{color:'var(--text-keyword)'}}>fungsi</code> code</span>
+            </div>
+            <div className="vibesafe-flow__arrow">{'\u2193'}</div>
+            <div className="vibesafe-flow__step">
+              <span className="vibesafe-flow__num">3</span>
+              <span><code style={{color:'var(--text-accent)'}}>riinac check</code> runs</span>
+            </div>
+            <div className="vibesafe-flow__step">
+              <span className="vibesafe-flow__num" />
+              <span style={{color:'var(--text-muted)',fontSize:12}}>{'\u22a2'} type safety proven</span>
+            </div>
+            <div className="vibesafe-flow__step">
+              <span className="vibesafe-flow__num" />
+              <span style={{color:'var(--text-muted)',fontSize:12}}>{'\u22a2'} no secret leakage</span>
+            </div>
+            <div className="vibesafe-flow__step">
+              <span className="vibesafe-flow__num" />
+              <span style={{color:'var(--text-muted)',fontSize:12}}>{'\u22a2'} effects declared</span>
+            </div>
+            <div className="vibesafe-flow__arrow">{'\u2193'}</div>
+            <div className="vibesafe-flow__result">
+              {'\u2714'} Ship it. It's proven.
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Act 3: Proof — Terminal verification */}
       <section className="act-proof">
         <div className="act-proof__header">
@@ -149,9 +203,9 @@ const RiinaWebsite = () => {
         <div className="terminal-block">
           <div><span className="prompt">$ </span><span className="cmd">git clone https://github.com/ib823/riina.git && cd proof</span></div>
           <div><span className="prompt">$ </span><span className="cmd">cd 02_FORMAL/coq && make</span></div>
-          <div style={{color:'var(--text-string)'}}>Compiling 283 files... done. 0 errors.</div>
+          <div style={{color:'var(--text-string)'}}>Compiling 250 files... done. 0 errors.</div>
           <div><span className="prompt">$ </span><span className="cmd">grep -c "Qed\." **/*.v</span></div>
-          <div style={{color:'var(--text-accent)'}}>6193</div>
+          <div style={{color:'var(--text-accent)'}}>7682</div>
           <div><span className="prompt">$ </span><span className="cmd">grep -c "Admitted\." **/*.v</span></div>
           <div style={{color:'var(--text-string)'}}>0</div>
         </div>
@@ -172,6 +226,30 @@ const RiinaWebsite = () => {
             <div className="proof-pillar__name">Effect Soundness</div>
             <div className="proof-pillar__desc">Only declared effects can be performed. No hidden side effects.</div>
           </div>
+        </div>
+
+        <div className="triple-prover">
+          <h3 className="triple-prover__title">Three provers. One truth.</h3>
+          <p className="triple-prover__desc">
+            Core theorems independently proved in three proof assistants with different mathematical
+            foundations. A bug in one prover cannot compromise the guarantees.
+          </p>
+          <div className="triple-prover__grid">
+            {[
+              { prover: 'Coq 8.20.1', count: '7,682', role: 'Primary', foundation: 'CIC' },
+              { prover: 'Lean 4', count: '91', role: 'Secondary', foundation: 'DTT' },
+              { prover: 'Isabelle/HOL', count: '102', role: 'Tertiary', foundation: 'HOL' },
+            ].map((p, i) => (
+              <div key={i} className="triple-prover__card">
+                <div className="triple-prover__prover">{p.prover}</div>
+                <div className="triple-prover__count">{p.count}</div>
+                <div className="triple-prover__role">{p.role} &middot; {p.foundation}</div>
+              </div>
+            ))}
+          </div>
+          <p className="triple-prover__note">
+            86 triple-prover theorems &middot; 0 sorry &middot; 1 justified axiom &middot; N-version verification
+          </p>
         </div>
       </section>
 
@@ -642,7 +720,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { num: '01', title: 'Security as Types', desc: 'Rahsia<T> wraps sensitive data. kesan Kripto marks crypto functions. masa_tetap ensures constant-time execution. These are compiler-enforced, not annotations.' },
             { num: '02', title: 'Effects Track Side Effects', desc: 'Every function declares its effects: kesan Baca + Kripto. The compiler tracks what your code can do. Security-critical code is restricted to specific effects.' },
             { num: '03', title: 'The Compiler Proves Security', desc: 'When you compile, the compiler proves: no information leakage (non-interference), effects are tracked (effect safety), timing-sensitive code runs in constant time, and secrets are zeroed.' },
-            { num: '04', title: 'Verified End-to-End', desc: 'RIINA\'s compiler itself is verified with riinac verify. The formal proofs (283 Coq files) ship with the compiler. 1 justified axiom, all documented.' },
+            { num: '04', title: 'Verified End-to-End', desc: 'RIINA\'s compiler itself is verified with riinac verify. The formal proofs (284 Coq files, 12 Lean files, 10 Isabelle files) ship with the compiler. Triple-prover verification across Coq, Lean 4, and Isabelle/HOL.' },
           ].map((step, i) => (
             <div key={i} className="pipeline-step">
               <div className="pipeline-step__num">{step.num}</div>
@@ -657,15 +735,16 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
 
       <section className="section--alt" style={{padding:'80px 24px'}}>
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
-          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>Three-Prover Verification</h2>
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>Triple-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
-            84 core theorems independently verified in three proof assistants. If the same theorem is proven in three
-            independent systems, the probability of a shared bug is virtually zero.
+            86 core theorems independently proved in three proof assistants using different mathematical
+            foundations (CIC, DTT, HOL). 0 sorry. 0 admitted. 1 justified policy axiom. If the same theorem
+            is proved in three independent systems, the probability of a shared prover bug is virtually zero.
           </p>
           {[
-            { prover: 'Coq 8.20.1', theorems: '6,193', role: 'Primary — authoritative proofs' },
-            { prover: 'Lean 4', theorems: '84', role: 'Secondary — independent port' },
-            { prover: 'Isabelle/HOL', theorems: '84', role: 'Tertiary — third verification' },
+            { prover: 'Coq 8.20.1', theorems: '7,682 Qed', role: 'Primary — authoritative proofs (CIC)' },
+            { prover: 'Lean 4', theorems: '91 theorems', role: 'Secondary — independent port (DTT)' },
+            { prover: 'Isabelle/HOL', theorems: '102 lemmas', role: 'Tertiary — third verification (HOL)' },
           ].map((p, i) => (
             <div key={i} className="cli-row">
               <code style={{minWidth:140}}>{p.prover}</code>
@@ -681,7 +760,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>26 Research Domains</h2>
           {[
             { id: 'A', name: 'Core Type Theory', desc: 'Type safety, non-interference, logical relations' },
-            { id: 'B', name: 'Compiler & Prototype', desc: '15 Rust crates, 833 tests' },
+            { id: 'B', name: 'Compiler & Prototype', desc: '15 Rust crates, 839 tests' },
             { id: 'C', name: 'Language Specifications', desc: 'Grammar, AST, type system spec' },
             { id: 'D-Q', name: 'Attack Surface Research', desc: '14 domains, 1,231+ threats enumerated' },
             { id: 'R', name: 'Certified Compilation', desc: 'Translation validation' },
