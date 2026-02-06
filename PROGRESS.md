@@ -16,9 +16,9 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Report Date:** 2026-02-05 (Session 73)
-**Audit Update:** 2026-02-05 (Proof Depth Expansion)
-**Session:** 73 (Proof Depth Expansion — 15 domain files deepened, 6,720 Qed proofs)
+**Report Date:** 2026-02-06 (Session 75)
+**Audit Update:** 2026-02-06 (P2/P4/P5 Implementation)
+**Session:** 75 (P2/P4/P5 — Typechecker formalization, mobile backends, self-hosting scaffolds)
 **Overall Grade:** A (BUILD PASSING, 0 Admitted in active build, 4 justified axioms)
 
 ---
@@ -31,13 +31,28 @@
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **4** | 1 | 🟢 All 4 justified (3 in NI_v2_LR + 1 in NI_v2) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **249** | - | ✅ All compile |
-| Qed Proofs (Total) | **7,227** | - | ✅ (6,720 active build + 507 deprecated archive) |
+| Files in Build | **250** | - | ✅ All compile |
+| Qed Proofs (Total) | **6,700** | - | ✅ (6,194 active build + 506 deprecated archive) |
 | .v Files (Total) | **283** | - | ✅ |
-| Rust Prototype | ✅ PASSING (679 tests) | PASSING | ✅ GREEN |
+| Rust Prototype | ✅ PASSING (782 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
-| Example .rii Files | **113** | 100+ | ✅ (+5 demos, +3 showcase, +compliance) |
+| Example .rii Files | **120** | 100+ | ✅ (+5 demos, +3 showcase, +compiler scaffolds) |
 | Prover | **Coq 8.20.1** | - | ✅ Migrated from Rocq 9.1 |
+
+**SESSION 75 KEY ACTIONS (P2/P4/P5 — Typechecker, Mobile, Self-Hosting):**
+1. **P2 Typechecker Formalization** — StoreTy (Σ) + TypingContext (Γ, Σ, Δ) + type_check_full() with Coq-matching security checks
+2. **declass_ok predicate** — Validates declassification proofs matching Coq T_Declassify rule
+3. **Security level checks** — `sl.leq(delta)` for T_Deref and T_Assign (matches Coq specification)
+4. **P4 Mobile Backend** — toolchain.rs (NDK/Xcode detection), android_build.rs (JNI + Android.mk), ios_build.rs (Swift + Package.swift)
+5. **P5 Self-Hosting** — Effect::Mut (kesan Ubah), Effect::Alloc (kesan Peruntuk), parser support for Mut/Alloc
+6. **Compiler scaffolds** — 6 files: main.rii, lexer.rii, parser.rii, types.rii, typechecker.rii, codegen.rii
+7. **Tests: 744 → 782** (+38), typechecker 87 tests (18 formalized), parser 136 tests (6 new Mut/Alloc)
+
+**SESSION 74 KEY ACTIONS (Multi-Prover Phase 7 Complete: Preservation theorem ported):**
+1. **Lean 4 Preservation.lean** — Full preservation theorem ported (17 lemmas)
+2. **Isabelle Preservation.thy** — Full preservation proof (17 lemmas)
+3. **Triple-prover agreement** — 84 theorems verified across Coq + Lean 4 + Isabelle/HOL
+4. **MULTIPROVER_VALIDATION.md** — Cross-validation methodology and results
 
 **SESSION 73 KEY ACTIONS (Proof Depth Expansion — 15 domain files, +1,830 Qed proofs):**
 1. **15 domain files deepened** — Eliminated stub proofs (2 Qed each) with comprehensive verification

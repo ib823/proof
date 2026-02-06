@@ -1,6 +1,54 @@
 # Session Log
 
-**Audit Update:** 2026-02-06 (Session 74) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 283 total .v, 39 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 75) — Active build: 0 admit., 0 Admitted., 4 axioms, 250 active files, 6,194 Qed (active), 283 total .v, 84 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+
+## 2026-02-06 (Session 75): P2/P4/P5 Implementation
+
+**Goal:** Implement Typechecker Formalization (P2), Mobile Backend Completion (P4), and Self-Hosting Scaffolds (P5).
+
+### Accomplishments
+
+| Task | Description | Status |
+|------|-------------|--------|
+| P2: StoreTy | Add StoreTy (Σ) and Location types | ✅ Done |
+| P2: TypingContext | Add TypingContext with Γ, Σ, Δ | ✅ Done |
+| P2: type_check_full | Full typechecker with security checks | ✅ Done |
+| P2: declass_ok | Declassification predicate matching Coq | ✅ Done |
+| P4: toolchain.rs | Android NDK + iOS Xcode detection | ✅ Done |
+| P4: android_build.rs | JNI bridge + Android.mk generation | ✅ Done |
+| P4: ios_build.rs | Swift bridge + Package.swift generation | ✅ Done |
+| P5: Effect::Mut | Local mutable state effect (kesan Ubah) | ✅ Done |
+| P5: Effect::Alloc | Heap allocation effect (kesan Peruntuk) | ✅ Done |
+| P5: Compiler scaffolds | 6 files: main, lexer, parser, types, typechecker, codegen | ✅ Done |
+| Documentation | CLAUDE.md, README.md, PROGRESS.md, metrics.json | ✅ Done |
+
+### Files Created/Modified
+
+| File | Type | Content |
+|------|------|---------|
+| `riina-types/src/lib.rs` | Modified | StoreTy, Location, Effect::Mut, Effect::Alloc |
+| `riina-typechecker/src/lib.rs` | Modified | TypingContext, type_check_full, declass_ok |
+| `riina-typechecker/src/tests.rs` | Modified | +18 formalized tests |
+| `riina-codegen/src/toolchain.rs` | **NEW** | Android/iOS toolchain detection |
+| `riina-codegen/src/android_build.rs` | **NEW** | JNI + Android.mk generation |
+| `riina-codegen/src/ios_build.rs` | **NEW** | Swift + Package.swift generation |
+| `riina-parser/src/lib.rs` | Modified | Mut/Alloc effect parsing |
+| `riina-parser/src/tests.rs` | Modified | +6 Mut/Alloc tests |
+| `07_EXAMPLES/compiler/main.rii` | **NEW** | Compiler driver scaffold |
+| `07_EXAMPLES/compiler/lexer.rii` | **NEW** | Tokenizer scaffold |
+| `07_EXAMPLES/compiler/parser.rii` | **NEW** | Parser scaffold |
+| `07_EXAMPLES/compiler/types.rii` | **NEW** | Type definitions scaffold |
+| `07_EXAMPLES/compiler/typechecker.rii` | **NEW** | Typechecker scaffold |
+| `07_EXAMPLES/compiler/codegen.rii` | **NEW** | Code generator scaffold |
+
+### Metrics
+
+- **Tests:** 744 → 782 (+38)
+- **Examples:** 114 → 120 (+6 compiler scaffolds)
+- **Typechecker tests:** 87 (69 legacy + 18 formalized)
+- **Parser tests:** 136 (includes 6 new Mut/Alloc)
+
+---
 
 ## 2026-02-06 (Session 74): Multi-Prover Verification
 

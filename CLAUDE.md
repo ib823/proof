@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-06 (Session 74: Multi-Prover Verification) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 567 Qed (deprecated), 6,761 Qed (total), 283 total .v, 17 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 75: P2/P4/P5 Implementation) — Active build: 0 admit., 0 Admitted., 4 axioms, 250 active files, 6,194 Qed (active), 506 Qed (deprecated), 6,700 Qed (total), 283 total .v, 17 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -106,9 +106,9 @@ RIINA is the world's **first formally verified programming language** with:
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
-| **Rust Tests** | ✅ PASSING (744 tests) | All green |
+| **Rust Tests** | ✅ PASSING (782 tests) | All green |
 | **Rust Crates** | 15 | +riina-wasm (Session 68) |
-| **Example .rii Files** | 114 | 9 categories (+FFI, +demos, +showcase, +compliance) |
+| **Example .rii Files** | 120 | 9 categories (+FFI, +demos, +showcase, +compliance, +compiler) |
 
 **Roadmap:** `04_SPECS/language/RIINA_MATERIALIZATION_PLAN_v1_0_0.md` (SINGLE SOURCE OF TRUTH)
 
@@ -826,7 +826,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-06 (Session 74: Multi-Prover Verification — 0 Admitted in active build, 4 justified axioms, 744 Rust tests, 15 crates, 114 examples, 283 Coq files, 6,194 active Qed proofs, 567 deprecated, 17 triple-prover theorems)*
+*Last updated: 2026-02-06 (Session 75: P2/P4/P5 Implementation — 0 Admitted in active build, 4 justified axioms, 782 Rust tests, 15 crates, 120 examples, 283 Coq files, 6,194 active Qed proofs, 506 deprecated, 17 triple-prover theorems)*
 
 ---
 
