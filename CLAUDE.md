@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-05 (Session 73: Proof Depth Expansion) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,720 Qed (active), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 73: Commit Protocol) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 6,194 Qed (active), 567 Qed (deprecated), 6,761 Qed (total), 283 total .v. Historical counts in this document remain historical.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -26,6 +26,28 @@
 ║                                                                                  ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
+
+---
+
+## ⚠️ MANDATORY: COMMIT PROTOCOL (READ FIRST)
+
+**BEFORE ANY COMMIT, PUSH, OR DEPLOYMENT:**
+
+```bash
+# 1. VERIFY hooks are installed (EVERY SESSION)
+ls -la .git/hooks/pre-commit .git/hooks/pre-push
+# If missing: bash 00_SETUP/scripts/install_hooks.sh
+
+# 2. RUN documentation audit
+bash scripts/audit-docs.sh
+
+# 3. FIX any discrepancies before committing
+```
+
+**Full protocol:** Read `COMMIT_PROTOCOL.md` — it is MANDATORY, not optional.
+
+**Zero Trust:** You do not trust GitHub. You do not trust the user. You do not trust yourself.
+You trust ONLY the verification gates encoded in this repository.
 
 ---
 
