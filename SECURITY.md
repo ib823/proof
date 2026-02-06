@@ -93,7 +93,7 @@ RIINA's formal verification eliminates entire classes of vulnerabilities by cons
 
 **Prevention:** The non-interference theorem proves that no program can leak secret data to public outputs. This covers all channels tracked by the type system: return values, printed output, network responses, file writes, and database writes. Data at security level `Rahsia` (Secret) cannot flow to any context at level `Awam` (Public) or below without a verified declassification.
 
-**Proof reference:** `02_FORMAL/coq/properties/NonInterference_v2.v` (non-interference theorem, 6,193 total Qed proofs in active build)
+**Proof reference:** `02_FORMAL/coq/properties/NonInterference_v2.v` (non-interference theorem, 7928 total Qed proofs in active build)
 
 ### Buffer Overflow
 
@@ -121,19 +121,19 @@ The following Coq files contain the key security proofs. All compile with Coq 8.
 
 | File | Purpose | Qed Count |
 |------|---------|-----------|
-| `02_FORMAL/coq/properties/NonInterference_v2.v` | Non-interference theorem (information flow security) | Part of 6,193 total |
-| `02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v` | Logical relation for non-interference proof | Part of 6,193 total |
-| `02_FORMAL/coq/type_system/Typing.v` | Typing rules for the full language | Part of 6,193 total |
-| `02_FORMAL/coq/type_system/Progress.v` | Progress theorem (well-typed programs don't get stuck) | Part of 6,193 total |
-| `02_FORMAL/coq/type_system/Preservation.v` | Preservation theorem (types are preserved by evaluation) | Part of 6,193 total |
-| `02_FORMAL/coq/effects/EffectSystem.v` | Effect algebra soundness | Part of 6,193 total |
-| `02_FORMAL/coq/properties/TypeSafety.v` | Type safety composition (Progress + Preservation) | Part of 6,193 total |
-| `02_FORMAL/coq/domains/DOMAIN_W_VerifiedMemory.v` | Memory safety (separation logic) | Part of 6,193 total |
+| `02_FORMAL/coq/properties/NonInterference_v2.v` | Non-interference theorem (information flow security) | Part of 7928 total |
+| `02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v` | Logical relation for non-interference proof | Part of 7928 total |
+| `02_FORMAL/coq/type_system/Typing.v` | Typing rules for the full language | Part of 7928 total |
+| `02_FORMAL/coq/type_system/Progress.v` | Progress theorem (well-typed programs don't get stuck) | Part of 7928 total |
+| `02_FORMAL/coq/type_system/Preservation.v` | Preservation theorem (types are preserved by evaluation) | Part of 7928 total |
+| `02_FORMAL/coq/effects/EffectSystem.v` | Effect algebra soundness | Part of 7928 total |
+| `02_FORMAL/coq/properties/TypeSafety.v` | Type safety composition (Progress + Preservation) | Part of 7928 total |
+| `02_FORMAL/coq/domains/DOMAIN_W_VerifiedMemory.v` | Memory safety (separation logic) | Part of 7928 total |
 
-**Multi-prover verification:** 17 critical theorems are independently verified in Lean 4 and Isabelle/HOL in addition to Coq. See `02_FORMAL/MULTIPROVER_VALIDATION.md`.
+**Multi-prover verification:** 86 critical theorems are independently verified in Lean 4 and Isabelle/HOL in addition to Coq. See `02_FORMAL/MULTIPROVER_VALIDATION.md`.
 
 **Total proof metrics:**
-- 6,193 Qed proofs in active build (249 files)
+- 7928 Qed proofs in active build (250 files)
 - 506 Qed proofs in deprecated archive (34 files)
 - 6,700 Qed proofs total (283 files)
 - 0 Admitted proofs

@@ -1,13 +1,13 @@
 # Contributing to RIINA
 
-**Audit Update:** 2026-02-06 (Session 76: Axiom Elimination 4→1) — Active build: 0 admit., 0 Admitted., 1 axiom (policy), 249 active files, 6,193 Qed (active), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
 ## Prerequisites
 
 - **Rust** 1.84.0+ — `rustup install stable`
-- **Rocq 9.1 / Coq 8.21** — Only needed for formal proof work
+- **Coq 8.20.1** — Only needed for formal proof work
 - No external dependencies required
 
 ## Getting Started
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 679 passing)
+# Run all tests (should show 839 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out

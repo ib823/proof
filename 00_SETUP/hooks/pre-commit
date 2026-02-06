@@ -49,11 +49,7 @@ if [ "$SKIP_AUDIT" -eq 0 ] && [ -f "${REPO_ROOT}/scripts/audit-docs.sh" ]; then
         echo "  Run: bash scripts/audit-docs.sh"
         echo "  Fix discrepancies, then commit again."
         echo "================================================================"
-        # For now, warn but don't block (allow explicit override)
-        echo ""
-        echo "  WARNING: Proceeding despite audit warnings."
-        echo "  Ensure documentation is intentionally unchanged."
-        echo ""
+        exit 1
     fi
 else
     echo "[1/2] Documentation audit skipped (recovery commit or script missing)"

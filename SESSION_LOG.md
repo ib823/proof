@@ -1,6 +1,6 @@
 # Session Log
 
-**Audit Update:** 2026-02-06 (Session 75) — Active build: 0 admit., 0 Admitted., 4 axioms, 250 active files, 6,194 Qed (active), 283 total .v, 84 triple-prover theorems (Lean 4 + Isabelle/HOL). Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
 
 ## 2026-02-06 (Session 75): P2/P4/P5 Implementation
 

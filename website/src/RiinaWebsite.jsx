@@ -14,7 +14,7 @@ const RiinaWebsite = () => {
   // Release data (auto-updated by scripts/release.sh)
   const releases = [
     // RELEASES_MARKER
-    { version: '0.1.0', date: '2026-02-01', highlights: ['RIINA compiler with Bahasa Melayu syntax', 'Formal verification: 7,682 Qed proofs in Coq + 91 Lean + 102 Isabelle', 'Triple-prover verification: 86 theorems across 3 independent provers', 'Standard library: 88 builtins across 9 modules'] },
+    { version: '0.1.0', date: '2026-02-01', highlights: ['RIINA compiler with Bahasa Melayu syntax', 'Formal verification: 7928 Qed proofs in Coq + 91 Lean + 102 Isabelle', 'Triple-prover verification: 86 theorems across 3 independent provers', 'Standard library: 88 builtins across 9 modules'] },
   ];
 
   const nav = (page) => { setCurrentPage(page); setMobileMenuOpen(false); };
@@ -73,7 +73,7 @@ const RiinaWebsite = () => {
       {/* Act 1: Hero */}
       <section className="hero">
         <p className="hero-stat-line">
-          <span>7,875</span> proofs &middot; <span>3</span> provers &middot; <span>0</span> admits &middot; <span>1</span> axiom &middot; Triple-verified
+          <span>8121</span> proofs &middot; <span>3</span> provers &middot; <span>0</span> admits &middot; <span>1</span> axiom &middot; Triple-verified
         </p>
         <h1>
           Security<br/><strong>proven at compile time.</strong>
@@ -205,7 +205,7 @@ const RiinaWebsite = () => {
           <div><span className="prompt">$ </span><span className="cmd">cd 02_FORMAL/coq && make</span></div>
           <div style={{color:'var(--text-string)'}}>Compiling 250 files... done. 0 errors.</div>
           <div><span className="prompt">$ </span><span className="cmd">grep -c "Qed\." **/*.v</span></div>
-          <div style={{color:'var(--text-accent)'}}>7682</div>
+          <div style={{color:'var(--text-accent)'}}>7928</div>
           <div><span className="prompt">$ </span><span className="cmd">grep -c "Admitted\." **/*.v</span></div>
           <div style={{color:'var(--text-string)'}}>0</div>
         </div>
@@ -236,7 +236,7 @@ const RiinaWebsite = () => {
           </p>
           <div className="triple-prover__grid">
             {[
-              { prover: 'Coq 8.20.1', count: '7,682', role: 'Primary', foundation: 'CIC' },
+              { prover: 'Coq 8.20.1', count: '7928', role: 'Primary', foundation: 'CIC' },
               { prover: 'Lean 4', count: '91', role: 'Secondary', foundation: 'DTT' },
               { prover: 'Isabelle/HOL', count: '102', role: 'Tertiary', foundation: 'HOL' },
             ].map((p, i) => (
@@ -742,7 +742,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             is proved in three independent systems, the probability of a shared prover bug is virtually zero.
           </p>
           {[
-            { prover: 'Coq 8.20.1', theorems: '7,682 Qed', role: 'Primary — authoritative proofs (CIC)' },
+            { prover: 'Coq 8.20.1', theorems: '7928 Qed', role: 'Primary — authoritative proofs (CIC)' },
             { prover: 'Lean 4', theorems: '91 theorems', role: 'Secondary — independent port (DTT)' },
             { prover: 'Isabelle/HOL', theorems: '102 lemmas', role: 'Tertiary — third verification (HOL)' },
           ].map((p, i) => (
