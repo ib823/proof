@@ -412,19 +412,20 @@ const RiinaWebsite = () => {
           </a>
         </div>
 
-        {/* Key Stats - horizontal row */}
+        {/* Key Stats */}
         <div className="hero-stats" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           paddingTop: '48px',
           borderTop: '1px solid #eee',
           width: '100%',
           maxWidth: '700px',
-          textAlign: 'center',
         }}>
-          {/* Stats row - always horizontal */}
+          {/* Stats row - horizontal */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'flex-start',
             gap: '64px',
           }}>
             {[
@@ -432,7 +433,7 @@ const RiinaWebsite = () => {
               { value: '0', label: 'Admits' },
               { value: '283', label: 'Coq Files Verified' },
             ].map((stat, i) => (
-              <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
+              <div key={i} style={{ textAlign: 'center', minWidth: '100px' }}>
                 <div style={{
                   fontSize: '48px',
                   fontWeight: 300,
@@ -450,20 +451,22 @@ const RiinaWebsite = () => {
             ))}
           </div>
 
-          {/* Build reference with date */}
+          {/* Build reference with date - centered below stats */}
           <p style={{
             fontSize: '12px',
             color: '#9ca3af',
             marginTop: '32px',
             fontFamily: 'monospace',
+            textAlign: 'center',
           }}>
             Verified with Coq 8.20.1 · Session 73
           </p>
           <p style={{
             fontSize: '11px',
             color: '#b0b0b0',
-            marginTop: '4px',
+            marginTop: '6px',
             fontFamily: 'monospace',
+            textAlign: 'center',
           }}>
             Last updated: 06 Feb 2026
           </p>
