@@ -13,6 +13,18 @@
 
 ---
 
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Research Specification | COMPLETE | This document |
+| Coq Formal Proofs | 2 files, 47 Qed | W001_VerifiedMemory.v (40 Qed), IrisSeparationLogic.v (7 Qed) |
+| Compiler Implementation | NOT STARTED | No verified memory allocator exists |
+
+**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize separation logic and allocator correctness properties, but no verified memory allocator has been built; the runtime relies on the system allocator.
+
+---
+
 # W-01: The "Memory Corruption" Problem & The TERAS Solution
 
 ## 1. The Existential Threat

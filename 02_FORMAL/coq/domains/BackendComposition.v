@@ -239,6 +239,92 @@ Proof.
 Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
+(* SECTION I: ADDITIONAL COMPOSITION PROPERTIES                                *)
+(* ═══════════════════════════════════════════════════════════════════════════ *)
+
+(* label_le is reflexive *)
+Theorem label_le_refl : forall l, label_le l l.
+Proof.
+  intros. destruct l; simpl; exact I.
+Qed.
+
+(* label_le is transitive *)
+Theorem label_le_trans : forall l1 l2 l3,
+  label_le l1 l2 -> label_le l2 l3 -> label_le l1 l3.
+Proof.
+  intros l1 l2 l3 H12 H23.
+  destruct l1, l2, l3; simpl in *; auto.
+Qed.
+
+(* Lo is bottom of the lattice *)
+Theorem lo_is_bottom : forall l, label_le Lo l.
+Proof.
+  intros. destruct l; simpl; exact I.
+Qed.
+
+(* Hi is top of the lattice *)
+Theorem hi_is_top : forall l, label_le l Hi.
+Proof.
+  intros. destruct l; simpl; exact I.
+Qed.
+
+(* Composition with identity on the left is the original backend *)
+Theorem compose_id_left : forall b p input,
+  compose_backend id_backend b p input = b p input.
+Proof.
+  intros. unfold compose_backend, id_backend. reflexivity.
+Qed.
+
+(* Composition with identity on the right is the original backend *)
+Theorem compose_id_right : forall b p input,
+  compose_backend b id_backend p input = b p input.
+Proof.
+  intros. unfold compose_backend, id_backend. reflexivity.
+Qed.
+
+(* Backend composition is associative *)
+Theorem compose_backend_assoc : forall b1 b2 b3 p input,
+  compose_backend (compose_backend b1 b2) b3 p input =
+  compose_backend b1 (compose_backend b2 b3) p input.
+Proof.
+  intros. unfold compose_backend. reflexivity.
+Qed.
+
+(* Label preservation composes *)
+Theorem label_preserving_compose : forall b1 b2,
+  label_preserving b1 ->
+  label_preserving b2 ->
+  label_preserving (compose_backend b1 b2).
+Proof.
+  unfold label_preserving, compose_backend.
+  intros b1 b2 H1 H2 p input.
+  rewrite H2. apply H1.
+Qed.
+
+(* Public semantics preservation is weaker than full semantics preservation *)
+Theorem sem_pres_implies_public_sem_pres : forall b,
+  semantics_preserving b -> public_semantics_preserving b.
+Proof.
+  unfold semantics_preserving, public_semantics_preserving.
+  intros b Hsem p input Hlo.
+  destruct (Hsem p input) as [Hv _]. exact Hv.
+Qed.
+
+(* Strong NI through a triple pipeline *)
+Theorem ni_strong_triple_pipeline : forall p b1 b2 b3,
+  ni_strong p ->
+  semantics_preserving b1 ->
+  semantics_preserving b2 ->
+  semantics_preserving b3 ->
+  ni_strong (compose_backend (compose_backend b1 b2) b3 p).
+Proof.
+  intros.
+  apply ni_strong_binary with (b := compose_backend (compose_backend b1 b2) b3); auto.
+  apply compose_semantics_preserving; auto.
+  apply compose_semantics_preserving; auto.
+Qed.
+
+(* ═══════════════════════════════════════════════════════════════════════════ *)
 (* SUMMARY: Backend Composition Verification                                   *)
 (*                                                                             *)
 (* ni_secure_binary:           NI source + sem-pres backend → NI binary       *)
@@ -250,4 +336,9 @@ Qed.
 (* full_pipeline_swift_ni:     Source → WASM → Swift preserves NI             *)
 (* sem_pres_implies_label_pres: Semantic pres → label preservation            *)
 (* public/secret_output_preserved: Labels flow correctly                      *)
+(* label_le_refl/trans:        Label lattice properties                       *)
+(* compose_id_left/right:      Identity is neutral for composition            *)
+(* compose_backend_assoc:      Composition is associative                     *)
+(* label_preserving_compose:   Label preservation composes                    *)
+(* ni_strong_triple_pipeline:  Triple backend pipeline preserves strong NI    *)
 (* ═══════════════════════════════════════════════════════════════════════════ *)

@@ -13,6 +13,18 @@
 
 ---
 
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Research Specification | COMPLETE | This document |
+| Coq Formal Proofs | 1 file, 28 Qed | T001_HermeticBuild.v |
+| Compiler Implementation | NOT STARTED | No hermetic build system exists |
+
+**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize the hermetic bootstrap concept, but no hex0-based bootstrap chain or reproducible build pipeline has been built.
+
+---
+
 # T-01: The "Chicken and Egg" Problem & The TERAS Bootstrap
 
 ## 1. The Existential Threat

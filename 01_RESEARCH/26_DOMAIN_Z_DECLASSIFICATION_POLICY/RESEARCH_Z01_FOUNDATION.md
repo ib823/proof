@@ -13,6 +13,18 @@
 
 ---
 
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Research Specification | COMPLETE | This document |
+| Coq Formal Proofs | 2 files, 44 Qed | Z001_DeclassificationPolicy.v (36 Qed), QuantitativeDeclassification.v (8 Qed) |
+| Compiler Implementation | PARTIAL | declass_ok predicate in riina-typechecker; quantitative budgets NOT implemented |
+
+**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize principled declassification with four dimensions (WHO/WHAT/WHEN/HOW MUCH), but the compiler only implements a basic syntactic declass_ok check; quantitative information budgets, principal-based authorization, and guard predicates are not enforced.
+
+---
+
 # Z-01: The "Intentional Leak" Problem & The TERAS Solution
 
 ## 1. The Existential Threat

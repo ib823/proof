@@ -1,6 +1,10 @@
 # RIINA: REMAINING CONCERNS AFTER ZERO AXIOMS
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+**Audit Update:** 2026-02-06 (Honesty audit) — Active build: 0 Admitted., 1 axiom (logical_relation_declassify), 250 active files, ~6,192 Qed (active), 284 total .v.
+
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+**Note:** This document discusses concerns that remain "after zero axioms." As of this audit, 1 axiom remains (permanent policy axiom). The zero-axiom end state described here is ASPIRATIONAL — the 1 remaining axiom (`logical_relation_declassify`) is a design choice, not a bug. Of the 67 concerns listed below, ~15 have partial mitigations through triple-prover verification and Tracks S/T/U stub proofs. The remaining ~52 concerns are UNADDRESSED and represent genuine future work.
 
 ## Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
 

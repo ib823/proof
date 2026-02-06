@@ -13,6 +13,18 @@
 
 ---
 
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Research Specification | COMPLETE | This document |
+| Coq Formal Proofs | 2 files, 86 Qed | Y001_VerifiedStdlib.v (41 Qed), StandardLibrary.v (45 Qed) |
+| Compiler Implementation | PARTIAL | riina-stdlib exists with ~38 builtins (BM/EN aliases), 10 modules |
+
+**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize stdlib function specifications, and riina-stdlib provides runtime builtins, but verified correspondence between the Coq specs and the Rust implementations is NOT established.
+
+---
+
 # Y-01: The "Trusted Library" Problem & The TERAS Solution
 
 ## 1. The Existential Threat

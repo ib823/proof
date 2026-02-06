@@ -13,6 +13,18 @@
 
 ---
 
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Research Specification | COMPLETE | This document |
+| Coq Formal Proofs | 3+ files, 112 Qed | V001_TerminationGuarantees.v (32 Qed), termination/*.v (80 Qed) |
+| Compiler Implementation | NOT STARTED | Sized types not implemented; strong normalization proofs exist in Coq but are not enforced by the compiler |
+
+**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize structural termination and strong normalization, but the compiler does not enforce termination checking or sized types.
+
+---
+
 # V-01: The "Halting Problem" & The TERAS Solution
 
 ## 1. The Existential Threat

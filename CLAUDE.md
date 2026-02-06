@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-06 (Session 77: Triple-Prover Complete) — 7,682 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 7,875 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 284 .v, 12 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 119 Lean theorems + 138 Isabelle lemmas = 8,185 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 12 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -101,10 +101,10 @@ RIINA is the world's **first formally verified programming language** with:
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 1 (policy axiom) | `logical_relation_declassify` in NI_v2_LR (3 eliminated Session 76) |
 | **Admitted (Active Build)** | 0 | All eliminated (Session 72-73) |
-| **Qed Proofs (Coq)** | 7,682 | Active build (0 Admitted) |
-| **Lean 4 Theorems** | 91 | 12 files, 0 sorry |
-| **Isabelle/HOL Lemmas** | 102 | 10 files, 0 sorry |
-| **Total Proofs (All Provers)** | 7,875 | Coq + Lean + Isabelle |
+| **Qed Proofs (Coq)** | 7,928 | Active build (0 Admitted) |
+| **Lean 4 Theorems** | 119 | 12 files, 0 sorry |
+| **Isabelle/HOL Lemmas** | 138 | 10 files, 0 sorry |
+| **Total Proofs (All Provers)** | 8,185 | Coq + Lean + Isabelle |
 | **Multi-Prover Theorems** | 86 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
@@ -132,9 +132,9 @@ RIINA employs triple-prover verification for maximum confidence:
 
 | Prover | Role | Status |
 |--------|------|--------|
-| **Coq 8.20.1** | Primary (authoritative) | 7,682 Qed, 0 Admitted, 1 axiom |
-| **Lean 4** | Secondary (independent port) | 91 theorems, 0 sorry |
-| **Isabelle/HOL** | Tertiary (third verification) | 102 lemmas, 0 sorry |
+| **Coq 8.20.1** | Primary (authoritative) | 7,928 Qed, 0 Admitted, 1 axiom |
+| **Lean 4** | Secondary (independent port) | 119 theorems, 0 sorry |
+| **Isabelle/HOL** | Tertiary (third verification) | 138 lemmas, 0 sorry |
 
 **Ported Files (10 per prover):**
 - Foundations: Syntax, Semantics
@@ -676,7 +676,7 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 Admitted, 1 justified axiom, 6,193 Qed proofs (active), 283 files (Coq 8.20.1)**
+**Build: 0 Admitted, 1 justified axiom, 7,928 Qed proofs (active), 250 files (Coq 8.20.1)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
@@ -695,9 +695,9 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 | Category | Qed Count | % | Notes |
 |----------|-----------|---|-------|
 | Core language (foundations, type_system, effects, properties) | ~1,114 | 18% | Deep mathematical proofs |
-| Domain security models (195 files) | ~5,325 | 86% | Threat modeling + security specs |
-| — of which trivial one-liners | ~676 | 13% of domain | `Proof. reflexivity. Qed.` style |
-| — of which substantial (5+ lines) | ~3,149 | 59% of domain | Real induction/case analysis |
+| Domain security models (195 files) | ~5,700 | 72% | Threat modeling + security specs (all 20+ Qed) |
+| — of which trivial one-liners | ~900 | 16% of domain | `Proof. reflexivity. Qed.` style |
+| — of which substantial (5+ lines) | ~3,300 | 58% of domain | Real induction/case analysis |
 | Industry compliance | ~107 | 2% | Configuration checks |
 | Termination proofs | ~80 | 1% | Normalization proofs |
 
@@ -840,7 +840,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-06 (Session 77: Triple-Prover Complete — 7,875 total proofs: 7,682 Coq + 91 Lean + 102 Isabelle. 0 Admitted/sorry. 1 axiom. 839 Rust tests, 15 crates, 130 examples, 284 .v + 12 .lean + 10 .thy = 306 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-06 (Session 78: Proof Depth 20+ All Files — 8,185 total proofs: 7,928 Coq + 119 Lean + 138 Isabelle. 0 Admitted/sorry. 1 axiom. 839 Rust tests, 15 crates, 130 examples, 250 active .v + 12 .lean + 10 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

@@ -13,6 +13,18 @@
 
 ---
 
+## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Research Specification | COMPLETE | This document |
+| Coq Formal Proofs | 1 file, 30 Qed | S001_HardwareContracts.v |
+| Compiler Implementation | NOT STARTED | No hardware contract integration exists |
+
+**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize hardware/software co-verification concepts, but no microarchitectural leakage model or hardware contract checker has been built into the compiler.
+
+---
+
 # S-01: The "Lying Hardware" Problem & ISA v2.0
 
 ## 1. The Existential Threat
