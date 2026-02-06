@@ -429,7 +429,7 @@ Fixpoint val_rel_n (n : nat) (Σ : store_ty) (T : ty) (v1 v2 : expr) {struct n} 
          when constructing val_rel_n for compound HO types with FO components. *)
       has_type nil Σ Public v1 T EffectPure /\
       has_type nil Σ Public v2 T EffectPure /\
-      val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n')
+      val_rel_at_type_n n' Σ (store_rel_n n') (val_rel_n n') (store_rel_n n')
         (fun Σ' st1 st2 => forall l T sl,
           store_ty_lookup l Σ' = Some (T, sl) ->
           exists v1 v2,
@@ -486,7 +486,18 @@ Lemma val_rel_n_S_unfold : forall n Σ T v1 v2,
    value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2 /\
    has_type nil Σ Public v1 T EffectPure /\
    has_type nil Σ Public v2 T EffectPure /\
-   val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2).
+   val_rel_at_type_n n Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2).
+Proof. reflexivity. Qed.
+
+(** Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
+    This recovers the old val_rel_n_S_unfold form at step >= 2. *)
+Lemma val_rel_n_SS_unfold : forall n Σ T v1 v2,
+  val_rel_n (S (S n)) Σ T v1 v2 =
+  (val_rel_n (S n) Σ T v1 v2 /\
+   value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2 /\
+   has_type nil Σ Public v1 T EffectPure /\
+   has_type nil Σ Public v2 T EffectPure /\
+   val_rel_at_type Σ (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2).
 Proof. reflexivity. Qed.
 
 Lemma store_rel_n_0_unfold : forall Σ st1 st2,
@@ -999,186 +1010,16 @@ Proof.
   exact Hstore.
 Qed.
 
-(** JUSTIFIED AXIOM: Fundamental theorem of logical relations at step 0.
-    At step 0, val_rel_n for HO types only carries typing information (True).
-    This axiom bridges from typing to val_rel_at_type for HO types.
+(** ELIMINATED: fundamental_theorem_step_0 axiom.
+    Previously bridged val_rel_n 0 typing to val_rel_at_type for HO types.
+    Eliminated by changing val_rel_n (S n') definition to use val_rel_at_type_n n'
+    instead of val_rel_at_type. At step 0, val_rel_at_type_n 0 = True,
+    making the bridge unnecessary. Session 76. *)
 
-    WHY UNPROVABLE in current formulation:
-    For TFn T1 T2 with FO T2: val_rel_at_type requires structural equality of
-    application results (val_rel_n 0 T2 = val_rel_at_type_fo T2). But val_rel_n 0
-    for TFn only gives typing (True for HO types), so v1 and v2 are arbitrary
-    well-typed functions. Two different functions applied to the same input can
-    produce different FO outputs. The axiom is MORALLY TRUE for values arising from
-    the logical relation (same source expression under related environments), but
-    the current val_rel_n definition at step 0 doesn't capture this invariant.
-
-    ELIMINATION PATH: Either (a) remove FO structural content from val_rel_n 0
-    (making step 0 purely typing-based for ALL types), which cascades through all
-    step-up proofs; or (b) adopt biorthogonal/CPS step-indexing (Dreyer et al. 2010)
-    where step count decreases on elimination forms, not step-up.
-
-    JUSTIFIED: Standard closure axiom in step-indexed logical relations
-    (Appel & McAllester 2001, Ahmed 2006). *)
-Axiom fundamental_theorem_step_0 : forall T Σ v1 v2,
-  first_order_type T = false ->
-  val_rel_n 0 Σ T v1 v2 ->
-  has_type nil Σ Public v1 T EffectPure ->
-  has_type nil Σ Public v2 T EffectPure ->
-  val_rel_at_type Σ (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) T v1 v2.
-
-(** Generalized step-1 fst: works for ALL type combinations (not just FO).
-    NOTE: The T1-FO, T2-HO case at step 0 cannot extract val_rel_at_type_fo
-    for T1 from an HO product (which only gives True at step 0).
-    This is related to the fundamental_theorem_step_0 challenge. *)
-Lemma exp_rel_step1_fst_general : forall Σ T1 T2 v v' st1 st2 ctx Σ',
-  val_rel_n 0 Σ' (TProd T1 T2) v v' ->
-  store_rel_n 0 Σ' st1 st2 ->
-  store_ty_extends Σ Σ' ->
-  exists a1 a2 st1' st2' ctx' Σ'',
-    store_ty_extends Σ' Σ'' /\
-    (EFst v, st1, ctx) -->* (a1, st1', ctx') /\
-    (EFst v', st2, ctx) -->* (a2, st2', ctx') /\
-    value a1 /\ value a2 /\
-    val_rel_n 0 Σ'' T1 a1 a2 /\
-    store_rel_n 0 Σ'' st1' st2'.
-Proof.
-  intros Σ T1 T2 v v' st1 st2 ctx Σ' Hval Hstore Hext.
-  destruct (val_rel_n_typing 0 Σ' (TProd T1 T2) v v' Hval) as [Hty1 Hty2].
-  destruct (val_rel_n_value 0 Σ' (TProd T1 T2) v v' Hval) as [Hv1 Hv2].
-  destruct (canonical_forms_prod nil Σ' Public v T1 T2 EffectPure Hv1 Hty1)
-    as [a1 [b1 [Heq1 [Hva1 Hvb1]]]].
-  destruct (canonical_forms_prod nil Σ' Public v' T1 T2 EffectPure Hv2 Hty2)
-    as [a2 [b2 [Heq2 [Hva2 Hvb2]]]].
-  subst v v'.
-  destruct (val_rel_n_closed 0 Σ' (TProd T1 T2) (EPair a1 b1) (EPair a2 b2) Hval)
-    as [Hcl1 Hcl2].
-  exists a1, a2, st1, st2, ctx, Σ'.
-  split. { apply store_ty_extends_refl. }
-  split.
-  { eapply MS_Step. apply ST_Fst; assumption. apply MS_Refl. }
-  split.
-  { eapply MS_Step. apply ST_Fst; assumption. apply MS_Refl. }
-  split. { exact Hva1. }
-  split. { exact Hva2. }
-  split.
-  { rewrite val_rel_n_0_unfold in Hval.
-    destruct Hval as [_ [_ [_ [_ [HtyPP1 [HtyPP2 Hrat]]]]]].
-    rewrite val_rel_n_0_unfold. repeat split.
-    - exact Hva1.
-    - exact Hva2.
-    - intros y Hfree. apply (Hcl1 y). simpl. left. exact Hfree.
-    - intros y Hfree. apply (Hcl2 y). simpl. left. exact Hfree.
-    - exact (proj1 (pair_typing_pure_inv _ _ _ a1 b1 T1 T2 HtyPP1)).
-    - exact (proj1 (pair_typing_pure_inv _ _ _ a2 b2 T1 T2 HtyPP2)).
-    - destruct (first_order_type T1) eqn:Hfo1.
-      + destruct (first_order_type T2) eqn:Hfo2.
-        * assert (HfoProd : first_order_type (TProd T1 T2) = true)
-            by (simpl; rewrite Hfo1, Hfo2; reflexivity).
-          rewrite HfoProd in Hrat. simpl in Hrat.
-          destruct Hrat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [Hr1 _]]]]]]].
-          inversion Heq1'; subst. inversion Heq2'; subst. exact Hr1.
-        * (* T1 FO, T2 HO: product is HO, Hrat = True.
-             Use fundamental_theorem_step_0 to extract val_rel_at_type for TProd,
-             then project T1 component and convert to val_rel_at_type_fo. *)
-          assert (HfoProd : first_order_type (TProd T1 T2) = false)
-            by (simpl; rewrite Hfo1, Hfo2; reflexivity).
-          (* Reconstruct val_rel_n 0 for the product *)
-          assert (Hval_recon : val_rel_n 0 Σ' (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
-          { rewrite val_rel_n_0_unfold. repeat split.
-            - exact Hv1.  (* value (EPair a1 b1) *)
-            - exact Hv2.  (* value (EPair a2 b2) *)
-            - exact Hcl1. (* closed_expr (EPair a1 b1) *)
-            - exact Hcl2. (* closed_expr (EPair a2 b2) *)
-            - exact HtyPP1.
-            - exact HtyPP2.
-            - rewrite HfoProd. exact I. }
-          (* Apply fundamental_theorem_step_0 to get val_rel_at_type for TProd *)
-          assert (Hvat : val_rel_at_type Σ' (store_rel_n 0) (val_rel_n 0)
-                          (store_rel_n 0) (store_vals_rel 0) (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
-          { apply fundamental_theorem_step_0; [exact HfoProd | exact Hval_recon | exact HtyPP1 | exact HtyPP2]. }
-          simpl in Hvat.
-          destruct Hvat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [Hr1 _]]]]]]].
-          inversion Heq1'; subst. inversion Heq2'; subst.
-          (* Hr1 : val_rel_at_type Σ' ... T1 a1 a2; for FO T1 this = val_rel_at_type_fo *)
-          apply (val_rel_at_type_fo_equiv T1 Σ' (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) _ _ Hfo1).
-          exact Hr1.
-      + exact I. }
-  exact Hstore.
-Qed.
-
-(** Generalized step-1 snd: works for ALL type combinations.
-    Same step-0 limitation as fst_general for mixed FO/HO products. *)
-Lemma exp_rel_step1_snd_general : forall Σ T1 T2 v v' st1 st2 ctx Σ',
-  val_rel_n 0 Σ' (TProd T1 T2) v v' ->
-  store_rel_n 0 Σ' st1 st2 ->
-  store_ty_extends Σ Σ' ->
-  exists b1 b2 st1' st2' ctx' Σ'',
-    store_ty_extends Σ' Σ'' /\
-    (ESnd v, st1, ctx) -->* (b1, st1', ctx') /\
-    (ESnd v', st2, ctx) -->* (b2, st2', ctx') /\
-    value b1 /\ value b2 /\
-    val_rel_n 0 Σ'' T2 b1 b2 /\
-    store_rel_n 0 Σ'' st1' st2'.
-Proof.
-  intros Σ T1 T2 v v' st1 st2 ctx Σ' Hval Hstore Hext.
-  destruct (val_rel_n_typing 0 Σ' (TProd T1 T2) v v' Hval) as [Hty1 Hty2].
-  destruct (val_rel_n_value 0 Σ' (TProd T1 T2) v v' Hval) as [Hv1 Hv2].
-  destruct (canonical_forms_prod nil Σ' Public v T1 T2 EffectPure Hv1 Hty1)
-    as [a1 [b1 [Heq1 [Hva1 Hvb1]]]].
-  destruct (canonical_forms_prod nil Σ' Public v' T1 T2 EffectPure Hv2 Hty2)
-    as [a2 [b2 [Heq2 [Hva2 Hvb2]]]].
-  subst v v'.
-  destruct (val_rel_n_closed 0 Σ' (TProd T1 T2) (EPair a1 b1) (EPair a2 b2) Hval)
-    as [Hcl1 Hcl2].
-  exists b1, b2, st1, st2, ctx, Σ'.
-  split. { apply store_ty_extends_refl. }
-  split.
-  { eapply MS_Step. apply ST_Snd; assumption. apply MS_Refl. }
-  split.
-  { eapply MS_Step. apply ST_Snd; assumption. apply MS_Refl. }
-  split. { exact Hvb1. }
-  split. { exact Hvb2. }
-  split.
-  { rewrite val_rel_n_0_unfold in Hval.
-    destruct Hval as [_ [_ [_ [_ [_ [_ Hrat]]]]]].
-    rewrite val_rel_n_0_unfold. repeat split.
-    - exact Hvb1.
-    - exact Hvb2.
-    - intros y Hfree. apply (Hcl1 y). simpl. right. exact Hfree.
-    - intros y Hfree. apply (Hcl2 y). simpl. right. exact Hfree.
-    - exact (proj2 (pair_typing_pure_inv _ _ _ a1 b1 T1 T2 Hty1)).
-    - exact (proj2 (pair_typing_pure_inv _ _ _ a2 b2 T1 T2 Hty2)).
-    - destruct (first_order_type T2) eqn:Hfo2.
-      + destruct (first_order_type T1) eqn:Hfo1.
-        * assert (HfoProd : first_order_type (TProd T1 T2) = true)
-            by (simpl; rewrite Hfo1, Hfo2; reflexivity).
-          rewrite HfoProd in Hrat. simpl in Hrat.
-          destruct Hrat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [_ Hr2]]]]]]].
-          inversion Heq1'; subst. inversion Heq2'; subst. exact Hr2.
-        * (* T1 HO, T2 FO: use fundamental_theorem_step_0 *)
-          assert (HfoProd : first_order_type (TProd T1 T2) = false)
-            by (simpl; rewrite Hfo1, Hfo2; simpl; reflexivity).
-          (* Reconstruct val_rel_n 0 for the product *)
-          assert (Hval_recon : val_rel_n 0 Σ' (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
-          { rewrite val_rel_n_0_unfold. repeat split.
-            - exact Hv1.  (* value (EPair a1 b1) *)
-            - exact Hv2.  (* value (EPair a2 b2) *)
-            - exact Hcl1. (* closed_expr (EPair a1 b1) *)
-            - exact Hcl2. (* closed_expr (EPair a2 b2) *)
-            - exact Hty1.
-            - exact Hty2.
-            - rewrite HfoProd. exact I. }
-          assert (Hvat : val_rel_at_type Σ' (store_rel_n 0) (val_rel_n 0)
-                          (store_rel_n 0) (store_vals_rel 0) (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)).
-          { apply fundamental_theorem_step_0; [exact HfoProd | exact Hval_recon | exact Hty1 | exact Hty2]. }
-          simpl in Hvat.
-          destruct Hvat as [x1 [y1 [x2 [y2 [Heq1' [Heq2' [_ Hr2]]]]]]].
-          inversion Heq1'; subst. inversion Heq2'; subst.
-          apply (val_rel_at_type_fo_equiv T2 Σ' (store_rel_n 0) (val_rel_n 0) (store_rel_n 0) (store_vals_rel 0) _ _ Hfo2).
-          exact Hr2.
-      + exact I. }
-  exact Hstore.
-Qed.
+(* exp_rel_step1_fst_general and exp_rel_step1_snd_general were deleted
+   during axiom elimination (Session 76). They used fundamental_theorem_step_0
+   for mixed FO/HO product cases and were not used elsewhere.
+   The FO-only versions below remain. *)
 
 (** FORMER AXIOM 2: exp_rel_step1_snd - NOW PROVEN *)
 Lemma exp_rel_step1_snd : forall Σ T1 T2 v v' st1 st2 ctx Σ',
@@ -1809,15 +1650,8 @@ Proof.
           (* For n = 0, this is the Fundamental Theorem territory *)
           (* For n = S n', we can use val_rel_at_type from Hrel at step n' *)
           destruct n as [| n'].
-          - (* n = 0: Use fundamental_theorem_step_0 axiom.
-               At step 0, val_rel_n for HO types only gives typing.
-               Establishing val_rel_at_type from typing alone is the
-               fundamental theorem of logical relations at step 0. *)
-            apply fundamental_theorem_step_0 with (T := T).
-            * exact Hfo.
-            * exact Hrel.
-            * exact Hty1.
-            * exact Hty2.
+          - (* n = 0: val_rel_at_type_n 0 = True, trivially satisfied *)
+            exact I.
           - (* n = S n': Use val_rel_at_type from Hrel at step n' *)
             simpl in Hrel.
             destruct Hrel as [Hrel_n' [_ [_ [_ [_ [_ [_ Hrat_n']]]]]]].
