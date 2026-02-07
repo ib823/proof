@@ -1,6 +1,6 @@
 # RIINA RESEARCH-EXECUTION MAP
 
-**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,979 total items across 10 provers. 7,929 Coq Qed (compiled) + 15997 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
+**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,980 total items across 10 provers. 7,929 Coq Qed (compiled) + 15998 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
 
 ## Version 1.0.0 — Complete Mapping of 218 Research Tracks to Language Features
 
