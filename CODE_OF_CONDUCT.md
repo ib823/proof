@@ -45,7 +45,7 @@ an individual is officially representing the community in public spaces.
 Instances of unacceptable behavior may be reported to the community leaders
 responsible for enforcement at:
 
-**Email:** conduct@riina.my
+**Telegram:** [@ib823](https://t.me/ib823)
 
 All complaints will be reviewed and investigated promptly and fairly. Community
 leaders are obligated to respect the privacy and confidentiality of the reporter.

@@ -13,7 +13,7 @@
     
     With SN proven, we can now prove val_rel_n_step_up without axioms.
     
-    Mode: ULTRA KIASU | ZERO AXIOMS ACHIEVED
+    Mode: Comprehensive Verification | Zero Axioms Achieved
     Date: 2026-01-18
 *)
 

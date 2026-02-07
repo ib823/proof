@@ -5,7 +5,7 @@
     This file proves that for first-order types, val_rel_at_type
     is independent of the predicate parameters.
     
-    Mode: ULTRA KIASU | ZERO COMPILATION ERRORS
+    Mode: Comprehensive Verification | Zero Compilation Errors
     Date: 2026-01-18
 *)
 

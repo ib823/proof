@@ -1,6 +1,6 @@
 # TASK PROMPTS FOR CLAUDE AI (WEB)
 
-**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,978 total items across 10 provers. 7,929 Coq Qed (compiled) + 15996 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
+**Verification:** 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
 
 Use these by copying the CLAUDE_AI_DELEGATION_PROMPT.md first, then appending one of these tasks in Section 4.
 

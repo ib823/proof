@@ -17,7 +17,7 @@
     2. Deref case (line ~712): Add store_wf_global premise
     3. subst_subst_env_commute: Add closed_rho premise
     
-    Mode: ULTRA KIASU | ZERO TRUST | ZERO ADMITS
+    Mode: Comprehensive Verification | Zero Trust
     Date: 2026-01-25
 *)
 

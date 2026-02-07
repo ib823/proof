@@ -14,7 +14,7 @@
 
     GOAL: Eliminate ALL 19 axioms. Achieve ZERO semantic assumptions.
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
+    Mode: Comprehensive Verification | Zero Trust
 
     References:
     - Ahmed (2006) "Step-Indexed Syntactic Logical Relations"

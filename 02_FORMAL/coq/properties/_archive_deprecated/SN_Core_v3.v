@@ -5,7 +5,7 @@
     This file contains the core definitions and lemmas for strong normalization.
     ALL lemmas are proven with Qed. ZERO Admitted.
 
-    Mode: ULTRA KIASU | ZERO COMPILATION ERRORS | EXTREME RIGOUR
+    Mode: Comprehensive Verification | Rigorous
     Date: 2026-01-18
 *)
 
@@ -411,6 +411,6 @@ Qed.
     evaluation of another subterm begins.
 
     ZERO Admitted. ZERO compilation errors.
-    Mode: ULTRA KIASU | EXTREME RIGOUR | ALL PROOFS VERIFIED
+    Mode: Comprehensive Verification | Rigorous
 *)
 

@@ -4,7 +4,7 @@
 
 If you discover a security issue in RIINA, please report it responsibly.
 
-**Email:** security@riina.my
+**Telegram:** [@ib823](https://t.me/ib823)
 
 Please do **not** open a public GitHub issue for security reports.
 
@@ -33,7 +33,7 @@ The following components are in scope:
 
 We follow a coordinated disclosure process:
 
-1. Reporter sends details to the security email above
+1. Reporter sends details via the contact above
 2. We acknowledge receipt within 72 hours
 3. We work with the reporter to understand and reproduce the issue
 4. We develop and test a fix

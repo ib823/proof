@@ -439,5 +439,5 @@ For each theorem ported:
 ---
 
 *Document generated: 2026-02-06 (v2.0.0 — ALL SORRY ELIMINATED)*
-*Mode: ULTRA KIASU | ABSOLUTE FIDELITY | ZERO TRUST*
+*Mode: Comprehensive Verification | Zero Trust*
 *Status: 86 triple-prover theorems | 0 sorry | 1 justified axiom*

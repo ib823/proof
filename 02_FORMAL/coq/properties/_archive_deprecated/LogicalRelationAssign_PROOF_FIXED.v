@@ -18,7 +18,7 @@
     
     Author: RIINA Axiom Elimination Protocol
     Date: 2026-01-25
-    Mode: ULTRA KIASU | ZERO TRUST | ZERO SHORTCUTS
+    Mode: Comprehensive Verification | Zero Trust
 *)
 
 Require Import Coq.Lists.List.

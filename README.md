@@ -392,7 +392,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build: Passing. Grade: A.**
-**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,978 total items across 10 provers. 7,929 Coq Qed (compiled) + 15996 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
+**Verification:** 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
 
 | Phase | Description | Status |
 |-------|-------------|--------|
@@ -408,7 +408,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ### What's next
 
 - **Triple-prover verification:** Complete — 86 theorems proved in Coq + Lean 4 + Isabelle/HOL. 0 sorry across all provers.
-- **Axiom status:** 1 justified axiom remains (`logical_relation_declassify` — permanent policy axiom for declassification). 3 axioms eliminated in Session 76.
+- **Axiom status:** 1 justified axiom remains (`logical_relation_declassify` — permanent policy axiom for declassification). 3 axioms eliminated.
 - **Phase 8 (Long-term):** Self-hosting compiler, hardware verification, verified OS
 - **Compliance system:** `--compliance` flag with 15 industry profiles, audit report generation (text + JSON), certification pipeline — see [Compliance Guide](docs/enterprise/COMPLIANCE_GUIDE.md)
 

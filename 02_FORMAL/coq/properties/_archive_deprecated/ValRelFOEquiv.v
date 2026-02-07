@@ -10,7 +10,7 @@
 
     This is the KEY lemma that enables the foundational rewrite.
 
-    Classification: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST
+    Classification: Comprehensive Verification | Zero Trust
     Date: 2026-01-18
 *)
 

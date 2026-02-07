@@ -8,7 +8,7 @@
     Location: NonInterference_v2_LogicalRelation.v
     Status: PARTIAL - Proof structure complete, pending fundamental lemma
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
+    Mode: Comprehensive Verification | Zero Trust
 
     Proof Strategy:
     ===============

@@ -13,7 +13,7 @@
     5. Fundamental theorem: well-typed terms are reducible
     6. Strong normalization as corollary
     
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO AXIOMS
+    Mode: Comprehensive Verification | Zero Trust
     Date: 2026-01-18
 *)
 

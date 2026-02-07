@@ -5,7 +5,7 @@
     KEY CHANGE: val_rel_n 0 carries structure for first-order types.
     This eliminates the need for axioms in the fundamental theorem.
     
-    Mode: ULTRA KIASU | ZERO COMPILATION ERRORS
+    Mode: Comprehensive Verification | Zero Compilation Errors
     Date: 2026-01-18
 *)
 

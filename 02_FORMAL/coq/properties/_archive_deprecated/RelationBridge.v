@@ -14,7 +14,7 @@
     PHASE 5: Store Semantics & Semantic Typing Axioms
     TARGET: 3 admits → 0 admits (via structural analysis)
 
-    Mode: ULTRA KIASU | ZERO TRUST | QED ETERNUM
+    Mode: Comprehensive Verification | Zero Trust
 
     Worker: WORKER_ζ (Zeta)
     Phase: Zero-Admits Elimination

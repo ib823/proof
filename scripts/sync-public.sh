@@ -79,6 +79,21 @@ INTERNAL_PATHS=(
     "AUDIT_REPORT_*.md"
     "RESEARCH_STATUS_AUDIT.md"
 
+    # --- Internal workflow docs ---
+    "COMMIT_PROTOCOL.md"
+
+    # --- Internal audit/gap analysis docs ---
+    "04_SPECS/cross-cutting/EXHAUSTIVENESS_AUDIT.md"
+    "04_SPECS/cross-cutting/RESEARCH_COMPONENTS_AUDIT_*.md"
+
+    # --- Internal sync/verification scripts (not needed by external users) ---
+    "scripts/sync-public.sh"
+    "scripts/verify-public.sh"
+    "scripts/sync-metrics.sh"
+
+    # --- IDE/editor config ---
+    ".cursor/"
+
     # --- Stray artifacts (screenshots, backups, caches, test files) ---
     "Screenshot_*.jpg"
     "image.png"
@@ -93,6 +108,8 @@ INTERNAL_GLOBS=(
     "*.old"
     "*.tmp"
     "*_test_print.v"
+    ".lia.cache"
+    ".nia.cache"
     "02_FORMAL/coq/.lia.cache"
     "02_FORMAL/coq/.nia.cache"
 )

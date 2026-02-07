@@ -283,7 +283,7 @@ Qed.
    ║  val_rel_n_secret_unwrap. The proof lifts the fundamental                 ║
    ║  lemma through the declassify evaluation context.                         ║
    ║                                                                           ║
-   ║  Classification: ULTRA KIASU | ZERO TRUST | ZERO LAZINESS                 ║
+   ║  Classification: Comprehensive Verification | Zero Trust                 ║
    ║  Date: 2026-01-22                                                         ║
    ║  Document: RIINA-AX04-INTEGRATION_v1_0_0                                  ║
    ║                                                                           ║

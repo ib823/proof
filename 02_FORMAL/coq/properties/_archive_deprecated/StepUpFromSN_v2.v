@@ -5,7 +5,7 @@
     This file connects val_rel_n_base to higher step indices.
     All definitions are local to avoid missing reference errors.
     
-    Mode: ULTRA KIASU | ZERO COMPILATION ERRORS
+    Mode: Comprehensive Verification | Zero Compilation Errors
     Date: 2026-01-18
 *)
 

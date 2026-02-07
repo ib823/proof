@@ -26,7 +26,7 @@
     - Girard's proof of strong normalization for System F
     - Step-indexed models (Appel & McAllester 2001)
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
+    Mode: Comprehensive Verification | Zero Trust
 
     Worker: WORKER_γ (Gamma)
     Phase: 4 (Higher-Order Conversion)

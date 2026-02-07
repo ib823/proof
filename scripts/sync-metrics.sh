@@ -110,8 +110,8 @@ ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); prin
 STUB_TOTAL=$((FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
 LEAN_ISA_TOTAL=$((LEAN_THEOREMS + ISABELLE_LEMMAS))
 
-# The canonical audit banner line — with quality context
-BANNER="**Audit Update:** 2026-02-07 (Session ${SESSION}: 10-Prover Full Stack) — ${TOTAL_PROOFS_COMMA} total items across ${TOTAL_PROVERS} provers. ${QED_COMMA} Coq Qed (compiled) + ${LEAN_ISA_TOTAL} Lean/Isabelle (transpiled, uncompiled) + ~${STUB_TOTAL} generated stubs (7 provers). 0 Admitted. ${AXIOMS} axiom (policy). ${RUST_TESTS} Rust tests."
+# The canonical verification banner line — clean, professional
+BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} policy axiom) | ${TOTAL_PROVERS} independent provers | ${RUST_TESTS} Rust tests"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 
@@ -144,10 +144,10 @@ update_banner() {
         return
     fi
 
-    # Check if file has an Audit Update banner
-    if grep -q "^\*\*Audit Update:\*\*" "$file" 2>/dev/null; then
+    # Check if file has an Audit Update or Verification banner
+    if grep -qE "^\*\*(Audit Update|Verification):\*\*" "$file" 2>/dev/null; then
         local old_line
-        old_line=$(grep "^\*\*Audit Update:\*\*" "$file" | head -1)
+        old_line=$(grep -E "^\*\*(Audit Update|Verification):\*\*" "$file" | head -1)
 
         if [ "$old_line" != "$BANNER" ]; then
             if [ "$DRY_RUN" -eq 1 ]; then
@@ -157,7 +157,7 @@ update_banner() {
                 local tmpfile
                 tmpfile=$(mktemp)
                 awk -v banner="$BANNER" '
-                    /^\*\*Audit Update:\*\*/ && !replaced {
+                    /^\*\*(Audit Update|Verification):\*\*/ && !replaced {
                         print banner
                         replaced = 1
                         next

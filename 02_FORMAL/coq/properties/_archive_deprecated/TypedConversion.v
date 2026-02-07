@@ -21,7 +21,7 @@
     - Ahmed (2006) "Step-Indexed Syntactic Logical Relations"
     - Dreyer et al. (2011) "Logical Step-Indexed Logical Relations"
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
+    Mode: Comprehensive Verification | Zero Trust
 
     Worker: WORKER_γ (Gamma)
     Phase: 4 (Higher-Order Conversion)

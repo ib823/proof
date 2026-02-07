@@ -958,8 +958,9 @@ Theorem SEQ_004_seq_in_window_start : forall start size,
 Proof.
   intros start size Hsize.
   unfold seq_in_window.
-  rewrite SEQ_002_seq_le_refl.
-  unfold seq_lt. simpl.
+  rewrite SEQ_002_seq_le_refl. simpl.
+  unfold seq_lt.
+  replace (start + size - start) with size by lia.
   destruct (size mod SEQ_SPACE >? 0) eqn:E1.
   - destruct (size mod SEQ_SPACE <? SEQ_SPACE / 2) eqn:E2; reflexivity.
   - reflexivity.

@@ -5,7 +5,7 @@
     This file contains VERIFIED proofs that demonstrate how to eliminate
     step-1 termination axioms using typing premises and canonical forms.
 
-    Classification: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
+    Classification: Comprehensive Verification | Zero Trust
     Date: 2026-01-18
 
     ========================================================================

@@ -9,7 +9,7 @@
     
     Document ID: RIINA-AX04-DECLASSIFY-PROOF-REFINED_v1_0_0
     Generated: 2026-01-22
-    Classification: ULTRA KIASU | ZERO TRUST | ZERO LAZINESS
+    Classification: Comprehensive Verification | Zero Trust
     
     ═══════════════════════════════════════════════════════════════════════════
     AXIOM TO ELIMINATE:
@@ -413,7 +413,7 @@ End LogicalRelationDeclassify.
    Proof Status: STRUCTURALLY COMPLETE
    Admitted Cases: 4 (infrastructure lemmas)
    
-   Classification: ULTRA KIASU | ZERO TRUST | ZERO LAZINESS
+   Classification: Comprehensive Verification | Zero Trust
    RIINA Status: DEFINITIVE (pending infrastructure)
 *)
 

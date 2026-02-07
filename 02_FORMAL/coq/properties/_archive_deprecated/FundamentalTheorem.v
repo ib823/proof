@@ -16,7 +16,7 @@
 
     Spec: 04_SPECS/scope/RIINA_DEFINITIVE_SCOPE.md §4.2
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
+    Mode: Comprehensive Verification | Zero Trust
 *)
 
 Require Import RIINA.foundations.Syntax.

@@ -16,7 +16,7 @@
 
     We define a logical relation to capture observational equivalence.
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
+    Mode: Comprehensive Verification | Zero Trust
 
     ========================================================================
     AXIOM STATUS SUMMARY (2026-01-18) - DEPRECATED

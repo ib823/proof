@@ -7,7 +7,7 @@
     
     STRATEGY: Maximize Qed proofs by using existing infrastructure lemmas.
     
-    Mode: ULTRA KIASU | ZERO TRUST | QED ETERNUM
+    Mode: Comprehensive Verification | Zero Trust
     Date: 2026-01-25
     ═══════════════════════════════════════════════════════════════════════════ *)
 

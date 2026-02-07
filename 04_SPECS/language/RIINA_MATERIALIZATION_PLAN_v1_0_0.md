@@ -1,6 +1,6 @@
 # RIINA Materialization Plan v1.0.0
 
-**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,978 total items across 10 provers. 7,929 Coq Qed (compiled) + 15996 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
+**Verification:** 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
 
 **Document ID:** `RIINA_MATERIALIZATION_PLAN_v1_0_0`
 **Date:** 2026-01-30
@@ -18,44 +18,44 @@
 - [3. CURRENT STATE AUDIT](#3-current-state-audit)
 - [4. DESIGN PRINCIPLES](#4-design-principles)
 - [5. PHASE 1: COMPILER COMPLETION](#5-phase-1-compiler-completion)
-  - [5.1 Wire Codegen into riinac](#51-wire-codegen-into-riinac)
-  - [5.2 Lexer Changes](#52-lexer-changes)
-  - [5.3 Parser Extension](#53-parser-extension)
-  - [5.4 C Emitter Completion](#54-c-emitter-completion)
-  - [5.5 REPL](#55-repl)
-  - [5.6 Error Diagnostics](#56-error-diagnostics)
-  - [5.7 Built-in Functions](#57-built-in-functions)
+ - [5.1 Wire Codegen into riinac](#51-wire-codegen-into-riinac)
+ - [5.2 Lexer Changes](#52-lexer-changes)
+ - [5.3 Parser Extension](#53-parser-extension)
+ - [5.4 C Emitter Completion](#54-c-emitter-completion)
+ - [5.5 REPL](#55-repl)
+ - [5.6 Error Diagnostics](#56-error-diagnostics)
+ - [5.7 Built-in Functions](#57-built-in-functions)
 - [6. PHASE 2: STANDARD LIBRARY](#6-phase-2-standard-library)
 - [7. PHASE 3: FORMAL VERIFICATION & SEMANTIC COMPLETENESS](#7-phase-3-formal-verification--semantic-completeness)
-  - [7.1 Current Status](#71-current-status)
-  - [7.2 P0: Axiom & Admit Elimination](#72-p0-axiom--admit-elimination)
-  - [7.3 P0: Domain File Integration](#73-p0-domain-file-integration)
-  - [7.4 P0: Fix Uncompilable Domain Files](#74-p0-fix-uncompilable-domain-files)
-  - [7.5 P1: Semantic Completeness — Type Annotation Enforcement](#75-p1-semantic-completeness--type-annotation-enforcement)
-  - [7.6 P1: Rust Evaluator Implementation](#76-p1-rust-evaluator-implementation)
-  - [7.7 P1: Coq↔Rust Alignment Fixes](#77-p1-coqrust-alignment-fixes)
-  - [7.8 P2: Threat Model Coverage](#78-p2-threat-model-coverage)
-  - [7.9 P2: Traceability Index](#79-p2-traceability-index)
-  - [7.10 Multi-Prover Verification](#710-multi-prover-verification)
-  - [7.11 Compiler Correctness](#711-compiler-correctness)
-  - [7.12 P0: Proof-Depth Gaps](#712-p0-proof-depth-gaps-session-71-audit)
-  - [7.13 P1: Typechecker Gaps A1-A5](#713-p1-typechecker-gaps-a1-a5-session-71-audit)
+ - [7.1 Current Status](#71-current-status)
+ - [7.2 P0: Axiom & Admit Elimination](#72-p0-axiom--admit-elimination)
+ - [7.3 P0: Domain File Integration](#73-p0-domain-file-integration)
+ - [7.4 P0: Fix Uncompilable Domain Files](#74-p0-fix-uncompilable-domain-files)
+ - [7.5 P1: Semantic Completeness — Type Annotation Enforcement](#75-p1-semantic-completeness--type-annotation-enforcement)
+ - [7.6 P1: Rust Evaluator Implementation](#76-p1-rust-evaluator-implementation)
+ - [7.7 P1: Coq↔Rust Alignment Fixes](#77-p1-coqrust-alignment-fixes)
+ - [7.8 P2: Threat Model Coverage](#78-p2-threat-model-coverage)
+ - [7.9 P2: Traceability Index](#79-p2-traceability-index)
+ - [7.10 Multi-Prover Verification](#710-multi-prover-verification)
+ - [7.11 Compiler Correctness](#711-compiler-correctness)
+ - [7.12 P0: Proof-Depth Gaps](#712-p0-proof-depth-gaps-session-71-audit)
+ - [7.13 P1: Typechecker Gaps A1-A5](#713-p1-typechecker-gaps-a1-a5-session-71-audit)
 - [8. PHASE 4: DEVELOPER EXPERIENCE](#8-phase-4-developer-experience)
-  - [8.5 AI-Native Developer Experience](#85-ai-native-developer-experience)
+ - [8.5 AI-Native Developer Experience](#85-ai-native-developer-experience)
 - [9. PHASE 5: ECOSYSTEM & DISTRIBUTION](#9-phase-5-ecosystem--distribution)
 - [10. PHASE 6: ADOPTION & COMMUNITY](#10-phase-6-adoption--community)
 - [11. PHASE 7: PLATFORM UNIVERSALITY](#11-phase-7-platform-universality)
-  - [11.1 M7.1 — Backend Trait Architecture](#111-m71--backend-trait-architecture)
-  - [11.2 M7.2 — WebAssembly Backend](#112-m72--webassembly-backend)
-  - [11.3 M7.3 — Platform-Conditional Standard Library](#113-m73--platform-conditional-standard-library)
-  - [11.4 M7.4 — Mobile Backend](#114-m74--mobile-backend)
-  - [11.5 M7.5 — WASM Playground](#115-m75--wasm-playground)
-  - [11.6 M7.6 — Platform Backend Verification](#116-m76--platform-backend-verification)
+ - [11.1 M7.1 — Backend Trait Architecture](#111-m71--backend-trait-architecture)
+ - [11.2 M7.2 — WebAssembly Backend](#112-m72--webassembly-backend)
+ - [11.3 M7.3 — Platform-Conditional Standard Library](#113-m73--platform-conditional-standard-library)
+ - [11.4 M7.4 — Mobile Backend](#114-m74--mobile-backend)
+ - [11.5 M7.5 — WASM Playground](#115-m75--wasm-playground)
+ - [11.6 M7.6 — Platform Backend Verification](#116-m76--platform-backend-verification)
 - [12. PHASE 8: LONG-TERM VISION](#12-phase-8-long-term-vision)
-  - [12.9 Website Mobile-First Responsive Overhaul](#129-website-mobile-first-responsive-overhaul)
-  - [12.10 Verified Layout — Compile-Time UI/UX Correctness](#1210-verified-layout--compile-time-uiux-correctness)
-  - [12.11 AI-First Language Design — The Vibe Coding Standard](#1211-ai-first-language-design--the-vibe-coding-standard)
-  - [12.12 Research Domain Cross-Reference](#1212-research-domain-cross-reference)
+ - [12.9 Website Mobile-First Responsive Overhaul](#129-website-mobile-first-responsive-overhaul)
+ - [12.10 Verified Layout — Compile-Time UI/UX Correctness](#1210-verified-layout--compile-time-uiux-correctness)
+ - [12.11 AI-First Language Design — The Vibe Coding Standard](#1211-ai-first-language-design--the-vibe-coding-standard)
+ - [12.12 Research Domain Cross-Reference](#1212-research-domain-cross-reference)
 - [13. EXECUTION ORDER & DEPENDENCY GRAPH](#13-execution-order--dependency-graph)
 - [14. FILES TO CREATE OR MODIFY](#14-files-to-create-or-modify)
 - [15. VERIFICATION GATES](#15-verification-gates)
@@ -129,12 +129,12 @@ RIINA uses **Bahasa Melayu** (Malay language) keywords as first-class citizens. 
 ```riina
 // Bahasa Melayu
 fungsi tambah(x: Nombor, y: Nombor) -> Nombor {
-    pulang x
+ pulang x
 }
 
 // English equivalent
 fn add(x: Int, y: Int) -> Int {
-    return x
+ return x
 }
 
 // Both can be mixed (default mode)
@@ -150,58 +150,58 @@ fn add(x: Int, y: Int) -> Int {
 ### 1.5 Architecture Overview
 
 ```
-                    RIINA COMPILATION PIPELINE
+ RIINA COMPILATION PIPELINE
 
 Source (.rii)
-    |
-    v
-[riina-lexer]        Tokenizes source into tokens.
-    |                 Handles bilingual keywords.
-    |                 70+ keyword variants.
-    v
-[riina-parser]       Parses tokens into AST (Abstract Syntax Tree).
-    |                 25 expression forms matching Coq formalization.
-    |                 Desugars syntactic sugar to core forms.
-    v
-[riina-typechecker]  Type-checks the AST.
-    |                 Infers types and effects.
-    |                 Enforces information flow (secrecy).
-    |                 Enforces capability requirements.
-    v
-[riina-codegen]      Three backends:
-    |--- [lower]     AST -> SSA-form IR (30+ instruction types)
-    |--- [interp]    Reference interpreter (direct evaluation)
-    |--- [emit]      C99 code emission (for compilation to binary)
-    v
+ |
+ v
+[riina-lexer] Tokenizes source into tokens.
+ | Handles bilingual keywords.
+ | 70+ keyword variants.
+ v
+[riina-parser] Parses tokens into AST (Abstract Syntax Tree).
+ | 25 expression forms matching Coq formalization.
+ | Desugars syntactic sugar to core forms.
+ v
+[riina-typechecker] Type-checks the AST.
+ | Infers types and effects.
+ | Enforces information flow (secrecy).
+ | Enforces capability requirements.
+ v
+[riina-codegen] Three backends:
+ |--- [lower] AST -> SSA-form IR (30+ instruction types)
+ |--- [interp] Reference interpreter (direct evaluation)
+ |--- [emit] C99 code emission (for compilation to binary)
+ v
 Output: interpreted result, C source, or compiled binary
 
 
 SUPPORTING CRATES:
-- riina-types     Core AST type definitions (Expr, Ty, Effect, SecurityLevel)
-- riina-span      Source location tracking (8-byte packed spans)
-- riina-symbols   String interning (O(1) comparisons)
-- riina-arena     Arena allocator (cache-friendly AST storage)
+- riina-types Core AST type definitions (Expr, Ty, Effect, SecurityLevel)
+- riina-span Source location tracking (8-byte packed spans)
+- riina-symbols String interning (O(1) comparisons)
+- riina-arena Arena allocator (cache-friendly AST storage)
 ```
 
 ### 1.6 Formal Verification Stack
 
 ```
 Coq Proofs (02_FORMAL/coq/)
-    |
-    | Proves: Type Safety, Progress, Preservation,
-    |         Non-Interference, Effect Safety
-    |
-    v
+ |
+ | Proves: Type Safety, Progress, Preservation,
+ | Non-Interference, Effect Safety
+ |
+ v
 Rust Prototype (03_PROTO/)
-    |
-    | Implements: The same type system and semantics
-    | Correspondence: Each Rust enum matches a Coq inductive type
-    |
-    v
+ |
+ | Implements: The same type system and semantics
+ | Correspondence: Each Rust enum matches a Coq inductive type
+ |
+ v
 Compiled Binary
-    |
-    | Guarantees: Security properties proven in Coq
-    | hold for all programs compiled by riinac.
+ |
+ | Guarantees: Security properties proven in Coq
+ | hold for all programs compiled by riinac.
 ```
 
 ---
@@ -211,73 +211,73 @@ Compiled Binary
 ```
 riina/
 |
-+-- README.md                          Project overview
-+-- CONTRIBUTING.md                    Contribution guide
-+-- CHANGELOG.md                       Release history
++-- README.md Project overview
++-- CONTRIBUTING.md Contribution guide
++-- CHANGELOG.md Release history
 |
-+-- 00_SETUP/                          Setup scripts
-|   +-- scripts/
-|       +-- install_coq.sh
-|       +-- install_rust.sh
-|       +-- verify_setup.sh
++-- 00_SETUP/ Setup scripts
+| +-- scripts/
+| +-- install_coq.sh
+| +-- install_rust.sh
+| +-- verify_setup.sh
 |
-+-- 01_RESEARCH/                       Research archive (READ-ONLY reference)
-|   +-- specs/bahasa/                  Bahasa Melayu syntax specs
-|   +-- MASTER_ATTACK_PLAN_COMPLETE.md Definitive 6-phase plan
-|   +-- MASTER_THREAT_MODEL.md         All threat categories
-|   +-- (Domains A-Z)                  Research track archives
++-- 01_RESEARCH/ Research archive (READ-ONLY reference)
+| +-- specs/bahasa/ Bahasa Melayu syntax specs
+| +-- MASTER_ATTACK_PLAN_COMPLETE.md Definitive 6-phase plan
+| +-- MASTER_THREAT_MODEL.md All threat categories
+| +-- (Domains A-Z) Research track archives
 |
-+-- 02_FORMAL/                         Formal proofs (Track A — DO NOT MODIFY)
-|   +-- coq/
-|       +-- _CoqProject               Coq project configuration
-|       +-- Makefile                   Build configuration
-|       +-- foundations/               Core definitions (Syntax.v, Semantics.v)
-|       +-- type_system/              Type safety (Typing.v, Progress.v, Preservation.v)
-|       +-- effects/                  Effect system proofs
-|       +-- properties/               Security properties (NonInterference, etc.)
++-- 02_FORMAL/ Formal proofs (Track A — DO NOT MODIFY)
+| +-- coq/
+| +-- _CoqProject Coq project configuration
+| +-- Makefile Build configuration
+| +-- foundations/ Core definitions (Syntax.v, Semantics.v)
+| +-- type_system/ Type safety (Typing.v, Progress.v, Preservation.v)
+| +-- effects/ Effect system proofs
+| +-- properties/ Security properties (NonInterference, etc.)
 |
-+-- 03_PROTO/                          Rust prototype (Track B — PRIMARY WORK TARGET)
-|   +-- Cargo.toml                     Workspace root (9 crates, ZERO external deps)
-|   +-- crates/
-|       +-- riina-arena/               Arena allocator (437 lines)
-|       +-- riina-codegen/             Code generation (4,594 lines total)
-|       |   +-- src/lib.rs             Main API (469 lines)
-|       |   +-- src/ir.rs              SSA IR definitions (1,234 lines)
-|       |   +-- src/lower.rs           AST->IR lowering (1,268 lines)
-|       |   +-- src/value.rs           Runtime values (950 lines)
-|       |   +-- src/emit.rs            C code emitter (1,468 lines)
-|       |   +-- src/interp.rs          Reference interpreter (1,173 lines)
-|       +-- riina-lexer/               Tokenizer (2,001 lines total)
-|       |   +-- src/lib.rs             Tests (1,506 lines)
-|       |   +-- src/token.rs           Token definitions (196 lines)
-|       |   +-- src/lexer.rs           Lexer implementation (483 lines)
-|       |   +-- src/error.rs           Lex errors (32 lines)
-|       +-- riina-parser/              Parser (414 lines + tests file)
-|       |   +-- src/lib.rs             Parser implementation (414 lines)
-|       |   +-- src/tests.rs           Parser tests
-|       +-- riina-span/                Source locations (512 lines)
-|       +-- riina-symbols/             String interning (369 lines)
-|       +-- riina-typechecker/         Type checker (282 lines)
-|       +-- riina-types/               AST type definitions (424 lines)
-|       +-- riinac/                    Compiler driver (63 lines)
-|           +-- src/main.rs            CLI entry point
++-- 03_PROTO/ Rust prototype (Track B — PRIMARY WORK TARGET)
+| +-- Cargo.toml Workspace root (9 crates, ZERO external deps)
+| +-- crates/
+| +-- riina-arena/ Arena allocator (437 lines)
+| +-- riina-codegen/ Code generation (4,594 lines total)
+| | +-- src/lib.rs Main API (469 lines)
+| | +-- src/ir.rs SSA IR definitions (1,234 lines)
+| | +-- src/lower.rs AST->IR lowering (1,268 lines)
+| | +-- src/value.rs Runtime values (950 lines)
+| | +-- src/emit.rs C code emitter (1,468 lines)
+| | +-- src/interp.rs Reference interpreter (1,173 lines)
+| +-- riina-lexer/ Tokenizer (2,001 lines total)
+| | +-- src/lib.rs Tests (1,506 lines)
+| | +-- src/token.rs Token definitions (196 lines)
+| | +-- src/lexer.rs Lexer implementation (483 lines)
+| | +-- src/error.rs Lex errors (32 lines)
+| +-- riina-parser/ Parser (414 lines + tests file)
+| | +-- src/lib.rs Parser implementation (414 lines)
+| | +-- src/tests.rs Parser tests
+| +-- riina-span/ Source locations (512 lines)
+| +-- riina-symbols/ String interning (369 lines)
+| +-- riina-typechecker/ Type checker (282 lines)
+| +-- riina-types/ AST type definitions (424 lines)
+| +-- riinac/ Compiler driver (63 lines)
+| +-- src/main.rs CLI entry point
 |
-+-- 04_SPECS/                          Specifications
-|   +-- language/                      Language specs (including THIS FILE)
-|   +-- scope/                         Scope definition
-|   +-- industries/                    Industry compliance specs (15 industries)
-|   +-- cross-cutting/                 Cross-cutting concerns
++-- 04_SPECS/ Specifications
+| +-- language/ Language specs (including THIS FILE)
+| +-- scope/ Scope definition
+| +-- industries/ Industry compliance specs (15 industries)
+| +-- cross-cutting/ Cross-cutting concerns
 |
-+-- 05_TOOLING/                        Build tools & crypto
-|   +-- crates/riina-core/             Cryptographic primitives (15 modules, 100% complete)
++-- 05_TOOLING/ Build tools & crypto
+| +-- crates/riina-core/ Cryptographic primitives (15 modules, 100% complete)
 |
-+-- 06_COORDINATION/                   Cross-track coordination
++-- 06_COORDINATION/ Cross-track coordination
 |
-+-- 07_EXAMPLES/                       Example .rii files
-    +-- hello_dunia.rii                Hello World
-    +-- pengesahan.rii                 Authentication example
-    +-- kripto.rii                     Cryptography example
-    +-- pemprosesan_data.rii           Data processing example
++-- 07_EXAMPLES/ Example .rii files
+ +-- hello_dunia.rii Hello World
+ +-- pengesahan.rii Authentication example
+ +-- kripto.rii Cryptography example
+ +-- pemprosesan_data.rii Data processing example
 ```
 
 ### 2.1 Key Constraint: Zero External Dependencies
@@ -471,33 +471,33 @@ riina-codegen = { workspace = true }
 Replace the entire file. The new version should:
 
 1. Parse CLI arguments to determine subcommand:
-   - `riinac check <file.rii>` — typecheck only (current behavior)
-   - `riinac run <file.rii>` — interpret (parse → typecheck → eval via `riina_codegen::eval()`)
-   - `riinac emit-c <file.rii>` — emit C source (parse → typecheck → lower → emit via `riina_codegen::compile_to_c()`)
-   - `riinac emit-ir <file.rii>` — emit IR text (parse → typecheck → lower → print IR)
-   - `riinac build <file.rii> [-o output]` — compile to binary (emit C → invoke `cc`)
-   - `riinac repl` — interactive mode (Phase 5.5)
-   - `riinac fmt <file.rii>` — format (Phase 8.3, stub for now)
-   - Default (no subcommand): treat as `check`
+ - `riinac check <file.rii>` — typecheck only (current behavior)
+ - `riinac run <file.rii>` — interpret (parse → typecheck → eval via `riina_codegen::eval()`)
+ - `riinac emit-c <file.rii>` — emit C source (parse → typecheck → lower → emit via `riina_codegen::compile_to_c()`)
+ - `riinac emit-ir <file.rii>` — emit IR text (parse → typecheck → lower → print IR)
+ - `riinac build <file.rii> [-o output]` — compile to binary (emit C → invoke `cc`)
+ - `riinac repl` — interactive mode (Phase 5.5)
+ - `riinac fmt <file.rii>` — format (Phase 8.3, stub for now)
+ - Default (no subcommand): treat as `check`
 
 2. Accept flags:
-   - `--bahasa=ms|en|both` — language mode (default: `both`)
-   - `--output <path>` or `-o <path>` — output path for `build`
-   - `--verbose` or `-v` — verbose output
+ - `--bahasa=ms|en|both` — language mode (default: `both`)
+ - `--output <path>` or `-o <path>` — output path for `build`
+ - `--verbose` or `-v` — verbose output
 
 3. Pipeline for `build`:
-   ```
-   read file → lex → parse → typecheck → lower to IR → emit C
-   → write C to temp file → invoke cc → produce binary
-   ```
+ ```
+ read file → lex → parse → typecheck → lower to IR → emit C
+ → write C to temp file → invoke cc → produce binary
+ ```
 
 4. Exit codes:
-   - 0: success
-   - 1: file I/O error
-   - 2: parse error
-   - 3: type error
-   - 4: codegen error
-   - 5: C compiler error
+ - 0: success
+ - 1: file I/O error
+ - 2: parse error
+ - 3: type error
+ - 4: codegen error
+ - 5: C compiler error
 
 **Estimated size:** ~200 lines.
 
@@ -508,20 +508,20 @@ Replace the entire file. The new version should:
 
 /// Interpret an expression directly (reference semantics)
 pub fn eval(expr: &Expr) -> Result<Value> {
-    let mut interp = interp::Interpreter::new();
-    interp.eval(expr)
+ let mut interp = interp::Interpreter::new();
+ interp.eval(expr)
 }
 
 /// Compile an expression to SSA IR
 pub fn compile(expr: &Expr) -> Result<ir::Program> {
-    let mut lower = lower::Lower::new();
-    lower.compile(expr)
+ let mut lower = lower::Lower::new();
+ lower.compile(expr)
 }
 
 /// Compile an expression to C99 source code
 pub fn compile_to_c(expr: &Expr) -> Result<String> {
-    let program = compile(expr)?;
-    emit::emit_c(&program)
+ let program = compile(expr)?;
+ emit::emit_c(&program)
 }
 ```
 
@@ -530,8 +530,8 @@ So the `build` subcommand implementation is roughly:
 let c_source = riina_codegen::compile_to_c(&expr)?;
 std::fs::write(&temp_path, &c_source)?;
 let status = std::process::Command::new("cc")
-    .args(["-std=c99", "-O2", "-o", &output_path, &temp_path])
-    .status()?;
+ .args(["-std=c99", "-O2", "-o", &output_path, &temp_path])
+ .status()?;
 ```
 
 #### 5.1.3 Dependencies
@@ -552,30 +552,30 @@ The `TokenKind` enum currently has ~65 variants. Add these 14 new variants anywh
 // Add to TokenKind enum:
 
 // Logic keywords
-KwAnd,        // dan / and
-KwOr,         // atau / or
-KwNot,        // bukan / not
+KwAnd, // dan / and
+KwOr, // atau / or
+KwNot, // bukan / not
 
 // Additional keywords
-KwIn,         // dalam / in
-KwIs,         // ialah / is
-KwPure,       // bersih / pure
-KwSafe,       // selamat / safe
+KwIn, // dalam / in
+KwIs, // ialah / is
+KwPure, // bersih / pure
+KwSafe, // selamat / safe
 
 // Ownership keywords
-KwBorrow,     // pinjam / borrow
-KwCopy,       // salin / copy
-KwClone,      // klon / clone
-KwLifetime,   // jangka / lifetime
+KwBorrow, // pinjam / borrow
+KwCopy, // salin / copy
+KwClone, // klon / clone
+KwLifetime, // jangka / lifetime
 
 // Guard clause
-KwGuard,      // pastikan / guard
+KwGuard, // pastikan / guard
 
 // Declassification policy
-KwPolicy,     // dasar / policy
+KwPolicy, // dasar / policy
 
 // Pipe operator
-Pipe,         // |>
+Pipe, // |>
 ```
 
 Also update the `Display` or `Debug` implementation for `TokenKind` to include these new variants.
@@ -654,15 +654,15 @@ Find the `'|'` match arm in the main lexer loop. It currently looks like:
 
 ```rust
 '|' => {
-    if self.peek() == Some(&'|') {
-        self.advance();
-        TokenKind::OrOr
-    } else if self.peek() == Some(&'=') {
-        self.advance();
-        TokenKind::OrEq
-    } else {
-        TokenKind::Or
-    }
+ if self.peek() == Some(&'|') {
+ self.advance();
+ TokenKind::OrOr
+ } else if self.peek() == Some(&'=') {
+ self.advance();
+ TokenKind::OrEq
+ } else {
+ TokenKind::Or
+ }
 }
 ```
 
@@ -670,18 +670,18 @@ Change it to:
 
 ```rust
 '|' => {
-    if self.peek() == Some(&'|') {
-        self.advance();
-        TokenKind::OrOr
-    } else if self.peek() == Some(&'>') {
-        self.advance();
-        TokenKind::Pipe      // |>
-    } else if self.peek() == Some(&'=') {
-        self.advance();
-        TokenKind::OrEq
-    } else {
-        TokenKind::Or
-    }
+ if self.peek() == Some(&'|') {
+ self.advance();
+ TokenKind::OrOr
+ } else if self.peek() == Some(&'>') {
+ self.advance();
+ TokenKind::Pipe // |>
+ } else if self.peek() == Some(&'=') {
+ self.advance();
+ TokenKind::OrEq
+ } else {
+ TokenKind::Or
+ }
 }
 ```
 
@@ -696,9 +696,9 @@ Current error types are English-only. Add a new variant:
 ```rust
 // Add to LexError enum:
 KeywordLanguageMismatch {
-    keyword: String,
-    expected: String, // "ms" or "en"
-    position: usize,
+ keyword: String,
+ expected: String, // "ms" or "en"
+ position: usize,
 },
 ```
 
@@ -706,12 +706,12 @@ Update the `Display` implementation to show bilingual errors:
 
 ```rust
 LexError::UnexpectedChar(c, pos) => write!(f,
-    "Ralat: Aksara tidak dijangka '{}' pada kedudukan {}\n\
-     Error: Unexpected character '{}' at position {}", c, pos, c, pos),
+ "Ralat: Aksara tidak dijangka '{}' pada kedudukan {}\n\
+ Error: Unexpected character '{}' at position {}", c, pos, c, pos),
 
 LexError::UnterminatedString(pos) => write!(f,
-    "Ralat: Teks tidak ditamatkan pada kedudukan {}\n\
-     Error: Unterminated string at position {}", pos, pos),
+ "Ralat: Teks tidak ditamatkan pada kedudukan {}\n\
+ Error: Unterminated string at position {}", pos, pos),
 ```
 
 #### 5.2.6 Tests
@@ -750,23 +750,23 @@ Add a new method `parse_stmt_sequence`:
 /// stmt_seq ::= (stmt ';')* expr
 /// Each non-final statement desugars to Let("_", stmt, rest)
 fn parse_stmt_sequence(&mut self) -> Result<Expr, ParseError> {
-    let first = self.parse_control_flow()?;
+ let first = self.parse_control_flow()?;
 
-    // If next token is ';', this is a statement sequence
-    if self.peek_is(TokenKind::Semi) {
-        self.consume(TokenKind::Semi)?;
-        let rest = self.parse_stmt_sequence()?; // recursive
-        Ok(Expr::Let("_".to_string(), Box::new(first), Box::new(rest)))
-    } else {
-        Ok(first)
-    }
+ // If next token is ';', this is a statement sequence
+ if self.peek_is(TokenKind::Semi) {
+ self.consume(TokenKind::Semi)?;
+ let rest = self.parse_stmt_sequence()?; // recursive
+ Ok(Expr::Let("_".to_string(), Box::new(first), Box::new(rest)))
+ } else {
+ Ok(first)
+ }
 }
 ```
 
 Update `parse_expr` to call `parse_stmt_sequence`:
 ```rust
 pub fn parse_expr(&mut self) -> Result<Expr, ParseError> {
-    self.parse_stmt_sequence()  // was: self.parse_control_flow()
+ self.parse_stmt_sequence() // was: self.parse_control_flow()
 }
 ```
 
@@ -785,27 +785,27 @@ pub fn parse_expr(&mut self) -> Result<Expr, ParseError> {
 /// These are parsed but desugared to expressions for typechecking/codegen.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TopLevelDecl {
-    /// fungsi name(params) -> return_ty kesan eff { body }
-    Function {
-        name: Ident,
-        params: Vec<(Ident, Ty)>,
-        return_ty: Ty,
-        effect: Effect,
-        body: Box<Expr>,
-    },
-    /// biar name = expr;
-    Binding {
-        name: Ident,
-        value: Box<Expr>,
-    },
-    /// Expression at top level (the program's main expression)
-    Expr(Box<Expr>),
+ /// fungsi name(params) -> return_ty kesan eff { body }
+ Function {
+ name: Ident,
+ params: Vec<(Ident, Ty)>,
+ return_ty: Ty,
+ effect: Effect,
+ body: Box<Expr>,
+ },
+ /// biar name = expr;
+ Binding {
+ name: Ident,
+ value: Box<Expr>,
+ },
+ /// Expression at top level (the program's main expression)
+ Expr(Box<Expr>),
 }
 
 /// A complete .rii file
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Program {
-    pub decls: Vec<TopLevelDecl>,
+ pub decls: Vec<TopLevelDecl>,
 }
 ```
 
@@ -816,24 +816,24 @@ Add `parse_program`:
 /// Parse a complete .rii file.
 /// program ::= top_decl*
 pub fn parse_program(&mut self) -> Result<Program, ParseError> {
-    let mut decls = Vec::new();
-    while self.peek().is_some() {
-        decls.push(self.parse_top_level_decl()?);
-    }
-    Ok(Program { decls })
+ let mut decls = Vec::new();
+ while self.peek().is_some() {
+ decls.push(self.parse_top_level_decl()?);
+ }
+ Ok(Program { decls })
 }
 
 /// Parse a top-level declaration.
 /// top_decl ::= function_decl | let_binding | expr
 fn parse_top_level_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
-    match self.peek().map(|t| &t.kind) {
-        Some(TokenKind::KwFn) => self.parse_function_decl(),
-        Some(TokenKind::KwLet) => self.parse_top_level_let(),
-        _ => {
-            let expr = self.parse_expr()?;
-            Ok(TopLevelDecl::Expr(Box::new(expr)))
-        }
-    }
+ match self.peek().map(|t| &t.kind) {
+ Some(TokenKind::KwFn) => self.parse_function_decl(),
+ Some(TokenKind::KwLet) => self.parse_top_level_let(),
+ _ => {
+ let expr = self.parse_expr()?;
+ Ok(TopLevelDecl::Expr(Box::new(expr)))
+ }
+ }
 }
 ```
 
@@ -842,56 +842,56 @@ Add `parse_function_decl`:
 /// Parse function declaration.
 /// fn_decl ::= 'fungsi'|'fn' IDENT '(' param_list ')' ('->' type)? ('kesan'|'effect' effect)? '{' expr '}'
 fn parse_function_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
-    self.consume(TokenKind::KwFn)?;  // 'fungsi' or 'fn'
-    let name = self.parse_ident()?;
-    self.consume(TokenKind::LParen)?;
-    let params = self.parse_param_list()?;
-    self.consume(TokenKind::RParen)?;
+ self.consume(TokenKind::KwFn)?; // 'fungsi' or 'fn'
+ let name = self.parse_ident()?;
+ self.consume(TokenKind::LParen)?;
+ let params = self.parse_param_list()?;
+ self.consume(TokenKind::RParen)?;
 
-    // Optional return type
-    let return_ty = if self.peek_is(TokenKind::Arrow) {
-        self.consume(TokenKind::Arrow)?;
-        self.parse_ty()?
-    } else {
-        Ty::Unit
-    };
+ // Optional return type
+ let return_ty = if self.peek_is(TokenKind::Arrow) {
+ self.consume(TokenKind::Arrow)?;
+ self.parse_ty()?
+ } else {
+ Ty::Unit
+ };
 
-    // Optional effect annotation
-    let effect = if self.peek_is(TokenKind::KwEffect) {
-        self.consume(TokenKind::KwEffect)?;
-        self.parse_effect()?
-    } else {
-        Effect::Pure
-    };
+ // Optional effect annotation
+ let effect = if self.peek_is(TokenKind::KwEffect) {
+ self.consume(TokenKind::KwEffect)?;
+ self.parse_effect()?
+ } else {
+ Effect::Pure
+ };
 
-    // Body
-    self.consume(TokenKind::LBrace)?;
-    let body = self.parse_expr()?;
-    self.consume(TokenKind::RBrace)?;
+ // Body
+ self.consume(TokenKind::LBrace)?;
+ let body = self.parse_expr()?;
+ self.consume(TokenKind::RBrace)?;
 
-    Ok(TopLevelDecl::Function {
-        name, params, return_ty, effect, body: Box::new(body),
-    })
+ Ok(TopLevelDecl::Function {
+ name, params, return_ty, effect, body: Box::new(body),
+ })
 }
 
 /// Parse parameter list: (name: Type, name: Type, ...)
 fn parse_param_list(&mut self) -> Result<Vec<(Ident, Ty)>, ParseError> {
-    let mut params = Vec::new();
-    if !self.peek_is(TokenKind::RParen) {
-        let name = self.parse_ident()?;
-        self.consume(TokenKind::Colon)?;
-        let ty = self.parse_ty()?;
-        params.push((name, ty));
+ let mut params = Vec::new();
+ if !self.peek_is(TokenKind::RParen) {
+ let name = self.parse_ident()?;
+ self.consume(TokenKind::Colon)?;
+ let ty = self.parse_ty()?;
+ params.push((name, ty));
 
-        while self.peek_is(TokenKind::Comma) {
-            self.consume(TokenKind::Comma)?;
-            let name = self.parse_ident()?;
-            self.consume(TokenKind::Colon)?;
-            let ty = self.parse_ty()?;
-            params.push((name, ty));
-        }
-    }
-    Ok(params)
+ while self.peek_is(TokenKind::Comma) {
+ self.consume(TokenKind::Comma)?;
+ let name = self.parse_ident()?;
+ self.consume(TokenKind::Colon)?;
+ let ty = self.parse_ty()?;
+ params.push((name, ty));
+ }
+ }
+ Ok(params)
 }
 ```
 
@@ -927,15 +927,15 @@ Add `parse_pipe` between `parse_expr`/`parse_stmt_sequence` and `parse_assignmen
 
 ```rust
 /// Parse pipe expressions: expr (|> expr)*
-/// a |> f |> g  desugars to  App(g, App(f, a))
+/// a |> f |> g desugars to App(g, App(f, a))
 fn parse_pipe(&mut self) -> Result<Expr, ParseError> {
-    let mut expr = self.parse_assignment()?;
-    while self.peek_is(TokenKind::Pipe) {
-        self.consume(TokenKind::Pipe)?;
-        let func = self.parse_assignment()?;
-        expr = Expr::App(Box::new(func), Box::new(expr));
-    }
-    Ok(expr)
+ let mut expr = self.parse_assignment()?;
+ while self.peek_is(TokenKind::Pipe) {
+ self.consume(TokenKind::Pipe)?;
+ let func = self.parse_assignment()?;
+ expr = Expr::App(Box::new(func), Box::new(expr));
+ }
+ Ok(expr)
 }
 ```
 
@@ -957,17 +957,17 @@ continuation
 
 ```rust
 /// Parse guard clause:
-///   'pastikan'|'guard' expr 'lain'|'else' '{' expr '}' ';' expr
+/// 'pastikan'|'guard' expr 'lain'|'else' '{' expr '}' ';' expr
 fn parse_guard(&mut self) -> Result<Expr, ParseError> {
-    self.consume(TokenKind::KwGuard)?;
-    let cond = self.parse_pipe()?;      // condition
-    self.consume(TokenKind::KwElse)?;    // 'lain' or 'else'
-    self.consume(TokenKind::LBrace)?;
-    let else_body = self.parse_expr()?;  // early return body
-    self.consume(TokenKind::RBrace)?;
-    self.consume(TokenKind::Semi)?;
-    let continuation = self.parse_expr()?;
-    Ok(Expr::If(Box::new(cond), Box::new(continuation), Box::new(else_body)))
+ self.consume(TokenKind::KwGuard)?;
+ let cond = self.parse_pipe()?; // condition
+ self.consume(TokenKind::KwElse)?; // 'lain' or 'else'
+ self.consume(TokenKind::LBrace)?;
+ let else_body = self.parse_expr()?; // early return body
+ self.consume(TokenKind::RBrace)?;
+ self.consume(TokenKind::Semi)?;
+ let continuation = self.parse_expr()?;
+ Ok(Expr::If(Box::new(cond), Box::new(continuation), Box::new(else_body)))
 }
 ```
 
@@ -982,17 +982,17 @@ Add `Some(TokenKind::KwGuard) => self.parse_guard()` to the `parse_control_flow`
 **Target:**
 ```
 padan expr {
-    inl x => body1,
-    inr y => body2,
+ inl x => body1,
+ inr y => body2,
 }
 ```
 
 And eventually:
 ```
 padan expr {
-    0 => "sifar",
-    1 => "satu",
-    _ => "lain",
+ 0 => "sifar",
+ 1 => "satu",
+ _ => "lain",
 }
 ```
 
@@ -1040,61 +1040,61 @@ This uses `Expr::Let`, `Expr::Lam`, `Expr::App`. Requires `map` as a built-in fu
 
 ```rust
 fn parse_ty(&mut self) -> Result<Ty, ParseError> {
-    let ident = self.parse_ident()?;
-    match ident.as_str() {
-        // Primitives
-        "Int" | "Nombor" => Ok(Ty::Int),
-        "Bool" | "Benar" => Ok(Ty::Bool),
-        "Unit" | "()" => Ok(Ty::Unit),
-        "String" | "Teks" => Ok(Ty::String),
-        "Bytes" | "Bait" => Ok(Ty::Bytes),
+ let ident = self.parse_ident()?;
+ match ident.as_str() {
+ // Primitives
+ "Int" | "Nombor" => Ok(Ty::Int),
+ "Bool" | "Benar" => Ok(Ty::Bool),
+ "Unit" | "()" => Ok(Ty::Unit),
+ "String" | "Teks" => Ok(Ty::String),
+ "Bytes" | "Bait" => Ok(Ty::Bytes),
 
-        // Parameterized types: List<T>, Option<T>, Secret<T>, etc.
-        "List" | "Senarai" => {
-            self.consume(TokenKind::Lt)?;
-            let inner = self.parse_ty()?;
-            self.consume(TokenKind::Gt)?;
-            Ok(Ty::List(Box::new(inner)))
-        },
-        "Option" | "Mungkin" => {
-            self.consume(TokenKind::Lt)?;
-            let inner = self.parse_ty()?;
-            self.consume(TokenKind::Gt)?;
-            Ok(Ty::Option(Box::new(inner)))
-        },
-        "Secret" | "Rahsia" => {
-            self.consume(TokenKind::Lt)?;
-            let inner = self.parse_ty()?;
-            self.consume(TokenKind::Gt)?;
-            Ok(Ty::Secret(Box::new(inner)))
-        },
-        "Proof" | "Bukti" => {
-            self.consume(TokenKind::Lt)?;
-            let inner = self.parse_ty()?;
-            self.consume(TokenKind::Gt)?;
-            Ok(Ty::Proof(Box::new(inner)))
-        },
-        "ConstantTime" | "MasaTetap" => {
-            self.consume(TokenKind::Lt)?;
-            let inner = self.parse_ty()?;
-            self.consume(TokenKind::Gt)?;
-            Ok(Ty::ConstantTime(Box::new(inner)))
-        },
-        "Zeroizing" | "Sifar" => {
-            self.consume(TokenKind::Lt)?;
-            let inner = self.parse_ty()?;
-            self.consume(TokenKind::Gt)?;
-            Ok(Ty::Zeroizing(Box::new(inner)))
-        },
+ // Parameterized types: List<T>, Option<T>, Secret<T>, etc.
+ "List" | "Senarai" => {
+ self.consume(TokenKind::Lt)?;
+ let inner = self.parse_ty()?;
+ self.consume(TokenKind::Gt)?;
+ Ok(Ty::List(Box::new(inner)))
+ },
+ "Option" | "Mungkin" => {
+ self.consume(TokenKind::Lt)?;
+ let inner = self.parse_ty()?;
+ self.consume(TokenKind::Gt)?;
+ Ok(Ty::Option(Box::new(inner)))
+ },
+ "Secret" | "Rahsia" => {
+ self.consume(TokenKind::Lt)?;
+ let inner = self.parse_ty()?;
+ self.consume(TokenKind::Gt)?;
+ Ok(Ty::Secret(Box::new(inner)))
+ },
+ "Proof" | "Bukti" => {
+ self.consume(TokenKind::Lt)?;
+ let inner = self.parse_ty()?;
+ self.consume(TokenKind::Gt)?;
+ Ok(Ty::Proof(Box::new(inner)))
+ },
+ "ConstantTime" | "MasaTetap" => {
+ self.consume(TokenKind::Lt)?;
+ let inner = self.parse_ty()?;
+ self.consume(TokenKind::Gt)?;
+ Ok(Ty::ConstantTime(Box::new(inner)))
+ },
+ "Zeroizing" | "Sifar" => {
+ self.consume(TokenKind::Lt)?;
+ let inner = self.parse_ty()?;
+ self.consume(TokenKind::Gt)?;
+ Ok(Ty::Zeroizing(Box::new(inner)))
+ },
 
-        // Function type: Fn(A, B, effect)
-        // Prod: (A, B) — handled via tuple syntax
-        // Sum: A | B — handled via '|' token
-        // Ref: Ref<T>@level
-        // Labeled, Tainted, Sanitized, Capability, etc. — add as needed
+ // Function type: Fn(A, B, effect)
+ // Prod: (A, B) — handled via tuple syntax
+ // Sum: A | B — handled via '|' token
+ // Ref: Ref<T>@level
+ // Labeled, Tainted, Sanitized, Capability, etc. — add as needed
 
-        _ => Ok(Ty::Unit), // Fallback for unrecognized types
-    }
+ _ => Ok(Ty::Unit), // Fallback for unrecognized types
+ }
 }
 ```
 
@@ -1140,34 +1140,34 @@ Current behavior: Returns `Error::InvalidOperation("Closures with captures not y
 Fix in `emit_instruction` for `Instruction::Closure`:
 ```rust
 Instruction::Closure { func, captures } => {
-    // Allocate closure
-    self.writeln(&format!("{result} = riina_alloc();"));
-    self.writeln(&format!("{result}->tag = RIINA_TAG_CLOSURE;"));
-    self.writeln(&format!("{result}->security = RIINA_LEVEL_PUBLIC;"));
-    self.writeln(&format!("{result}->data.closure_val.func_ptr = (void*){};",
-        self.func_name(func)));
+ // Allocate closure
+ self.writeln(&format!("{result} = riina_alloc();"));
+ self.writeln(&format!("{result}->tag = RIINA_TAG_CLOSURE;"));
+ self.writeln(&format!("{result}->security = RIINA_LEVEL_PUBLIC;"));
+ self.writeln(&format!("{result}->data.closure_val.func_ptr = (void*){};",
+ self.func_name(func)));
 
-    if captures.is_empty() {
-        self.writeln(&format!("{result}->data.closure_val.captures = NULL;"));
-        self.writeln(&format!("{result}->data.closure_val.num_captures = 0;"));
-    } else {
-        // Allocate capture array
-        self.writeln(&format!(
-            "{result}->data.closure_val.captures = (riina_value_t**)malloc({} * sizeof(riina_value_t*));",
-            captures.len()
-        ));
-        self.writeln(&format!(
-            "{result}->data.closure_val.num_captures = {};",
-            captures.len()
-        ));
-        // Copy each capture
-        for (i, cap) in captures.iter().enumerate() {
-            self.writeln(&format!(
-                "{result}->data.closure_val.captures[{}] = {};",
-                i, self.var_name(cap)
-            ));
-        }
-    }
+ if captures.is_empty() {
+ self.writeln(&format!("{result}->data.closure_val.captures = NULL;"));
+ self.writeln(&format!("{result}->data.closure_val.num_captures = 0;"));
+ } else {
+ // Allocate capture array
+ self.writeln(&format!(
+ "{result}->data.closure_val.captures = (riina_value_t**)malloc({} * sizeof(riina_value_t*));",
+ captures.len()
+ ));
+ self.writeln(&format!(
+ "{result}->data.closure_val.num_captures = {};",
+ captures.len()
+ ));
+ // Copy each capture
+ for (i, cap) in captures.iter().enumerate() {
+ self.writeln(&format!(
+ "{result}->data.closure_val.captures[{}] = {};",
+ i, self.var_name(cap)
+ ));
+ }
+ }
 }
 ```
 
@@ -1222,8 +1222,8 @@ Taip ':bantuan' untuk bantuan. / Type ':help' for help.
 Int -> Int [Pure]
 
 >>> :ir 42
-  v0 = const_int 42
-  return v0
+ v0 = const_int 42
+ return v0
 
 >>> :keluar
 Selamat tinggal! / Goodbye!
@@ -1237,14 +1237,14 @@ Features:
 - Line-by-line stdin reading
 - Persistent environment across inputs (bindings accumulate)
 - Special commands prefixed with `:`:
-  - `:bantuan` / `:help` — show help
-  - `:jenis` / `:type` `<expr>` — show type without evaluating
-  - `:kesan` / `:effect` `<expr>` — show effect
-  - `:ir` `<expr>` — show lowered IR
-  - `:c` `<expr>` — show emitted C code
-  - `:muat` / `:load` `<file>` — load definitions
-  - `:set semula` / `:reset` — clear environment
-  - `:keluar` / `:quit` — exit
+ - `:bantuan` / `:help` — show help
+ - `:jenis` / `:type` `<expr>` — show type without evaluating
+ - `:kesan` / `:effect` `<expr>` — show effect
+ - `:ir` `<expr>` — show lowered IR
+ - `:c` `<expr>` — show emitted C code
+ - `:muat` / `:load` `<file>` — load definitions
+ - `:set semula` / `:reset` — clear environment
+ - `:keluar` / `:quit` — exit
 
 **Estimated:** ~300 lines.
 
@@ -1263,11 +1263,11 @@ Should look like:
 ```
 ralat[P0001]: Token tidak dijangka
 error[P0001]: Unexpected token
-  --> contoh.rii:2:5
-   |
- 2 |     kalau x > 0
-   |     ^^^^^ dijangka ungkapan, ditemui 'kalau'
-   |           expected expression, found 'kalau'
+ --> contoh.rii:2:5
+ |
+ 2 | kalau x > 0
+ | ^^^^^ dijangka ungkapan, ditemui 'kalau'
+ | expected expression, found 'kalau'
 ```
 
 #### 5.6.2 Implementation
@@ -1278,39 +1278,39 @@ error[P0001]: Unexpected token
 /// Severity of a diagnostic message
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
-    Error,
-    Warning,
-    Note,
+ Error,
+ Warning,
+ Note,
 }
 
 /// A labeled source location
 pub struct SpannedLabel {
-    pub span: Span,
-    pub file_id: FileId,
-    pub label_en: String,
-    pub label_bm: String,
+ pub span: Span,
+ pub file_id: FileId,
+ pub label_en: String,
+ pub label_bm: String,
 }
 
 /// A diagnostic message
 pub struct Diagnostic {
-    pub severity: Severity,
-    pub code: String,           // e.g., "P0001", "T0003", "S0001"
-    pub message_en: String,
-    pub message_bm: String,
-    pub primary: SpannedLabel,
-    pub secondary: Vec<SpannedLabel>,
-    pub notes_en: Vec<String>,
-    pub notes_bm: Vec<String>,
+ pub severity: Severity,
+ pub code: String, // e.g., "P0001", "T0003", "S0001"
+ pub message_en: String,
+ pub message_bm: String,
+ pub primary: SpannedLabel,
+ pub secondary: Vec<SpannedLabel>,
+ pub notes_en: Vec<String>,
+ pub notes_bm: Vec<String>,
 }
 
 /// Pretty-print a diagnostic with source context
 pub fn render_diagnostic(diag: &Diagnostic, source_map: &SourceMap) -> String {
-    // 1. Print severity + code + message (bilingual)
-    // 2. Print file:line:col
-    // 3. Print source line with underline
-    // 4. Print label
-    // 5. Print notes
-    // ... implementation ...
+ // 1. Print severity + code + message (bilingual)
+ // 2. Print file:line:col
+ // 3. Print source line with underline
+ // 4. Print label
+ // 5. Print notes
+ // ... implementation ...
 }
 ```
 
@@ -1347,44 +1347,44 @@ Add built-in functions to the interpreter environment and C runtime. These are N
 ```rust
 /// Register all built-in functions in an interpreter environment
 pub fn register_builtins(env: &mut Env) {
-    // Arithmetic
-    env.bind("tambah", builtin_add);   // add
-    env.bind("tolak", builtin_sub);    // sub
-    env.bind("darab", builtin_mul);    // mul
-    env.bind("bahagi", builtin_div);   // div
-    env.bind("baki", builtin_mod);     // mod
+ // Arithmetic
+ env.bind("tambah", builtin_add); // add
+ env.bind("tolak", builtin_sub); // sub
+ env.bind("darab", builtin_mul); // mul
+ env.bind("bahagi", builtin_div); // div
+ env.bind("baki", builtin_mod); // mod
 
-    // Comparison
-    env.bind("sama", builtin_eq);      // eq
-    env.bind("kurang", builtin_lt);    // lt
-    env.bind("lebih", builtin_gt);     // gt
+ // Comparison
+ env.bind("sama", builtin_eq); // eq
+ env.bind("kurang", builtin_lt); // lt
+ env.bind("lebih", builtin_gt); // gt
 
-    // String
-    env.bind("gabung_teks", builtin_concat); // concat
-    env.bind("panjang", builtin_length);     // length
+ // String
+ env.bind("gabung_teks", builtin_concat); // concat
+ env.bind("panjang", builtin_length); // length
 
-    // I/O (require Effect::System capability)
-    env.bind("cetak", builtin_print);      // print
-    env.bind("cetakln", builtin_println);  // println
-    env.bind("baca_baris", builtin_readline); // read_line
+ // I/O (require Effect::System capability)
+ env.bind("cetak", builtin_print); // print
+ env.bind("cetakln", builtin_println); // println
+ env.bind("baca_baris", builtin_readline); // read_line
 
-    // Conversion
-    env.bind("ke_teks", builtin_to_string);   // to_string
-    env.bind("ke_nombor", builtin_parse_int); // parse_int
+ // Conversion
+ env.bind("ke_teks", builtin_to_string); // to_string
+ env.bind("ke_nombor", builtin_parse_int); // parse_int
 }
 ```
 
 For the C emitter, add corresponding C functions to the runtime prelude:
 ```c
 static riina_value_t* riina_builtin_println(riina_value_t* arg) {
-    if (arg->tag == RIINA_TAG_STRING) {
-        printf("%s\n", arg->data.string_val.data);
-    } else if (arg->tag == RIINA_TAG_INT) {
-        printf("%llu\n", (unsigned long long)arg->data.int_val);
-    } else if (arg->tag == RIINA_TAG_BOOL) {
-        printf("%s\n", arg->data.bool_val ? "betul" : "salah");
-    }
-    return riina_unit();
+ if (arg->tag == RIINA_TAG_STRING) {
+ printf("%s\n", arg->data.string_val.data);
+ } else if (arg->tag == RIINA_TAG_INT) {
+ printf("%llu\n", (unsigned long long)arg->data.int_val);
+ } else if (arg->tag == RIINA_TAG_BOOL) {
+ printf("%s\n", arg->data.bool_val ? "betul" : "salah");
+ }
+ return riina_unit();
 }
 ```
 
@@ -1427,12 +1427,12 @@ All I/O functions require effect capabilities:
 ```riina
 // This is a TYPE ERROR without the IO effect:
 fungsi utama() -> () {
-    cetakln("Hello");  // ERROR: requires IO effect
+ cetakln("Hello"); // ERROR: requires IO effect
 }
 
 // Correct:
 fungsi utama() -> () kesan IO {
-    cetakln("Hello");  // OK
+ cetakln("Hello"); // OK
 }
 ```
 
@@ -1444,14 +1444,14 @@ fungsi utama() -> () kesan IO {
 
 This phase addresses ALL gaps identified by the exhaustive 4-agent audit (2026-01-30). Items are ordered P0→P3 by priority.
 
-### 7.1 Current Status (Updated Session 71)
+### 7.1 Current Status (Updated 2026-02-04)
 
 | Metric | Value | Notes |
 |--------|-------|-------|
 | Completed proofs (Qed) | 4,551 | 4,044 active build + 507 deprecated archive |
 | Incomplete proofs (admit.) | 0 | ALL ELIMINATED |
 | Incomplete proofs (Admitted.) | 7 | 3 DELTA001 + 3 Rocq 9.1 compat stubs + 1 ValRelStepLimit |
-| Axioms (active build) | 4 | 3 in NI_v2_LR + 1 in NI_v2 (deref eliminated Session 66) |
+| Axioms (active build) | 4 | 3 in NI_v2_LR + 1 in NI_v2 (deref eliminated (2026-02-02)) |
 | Compilation status | ✅ PASSING | 249 files compile clean |
 | Research domains | 67 | 17 core + 9 zero-trust + 19 Greek + 13 extended + 9 product |
 | Domains with Coq proofs | 63 | 4 without: AK, AL, AM, RIINA_Mobile_OS |
@@ -1465,16 +1465,16 @@ This phase addresses ALL gaps identified by the exhaustive 4-agent audit (2026-0
 
 **Goal: 0 axioms, 0 admits in active build.**
 
-**4 remaining axioms** (down from 6 — deref eliminated Session 66, weaken_back eliminated Session 52):
+**4 remaining axioms** (down from 6 — deref eliminated (2026-02-02), weaken_back eliminated (2026-01-29)):
 
 | # | Axiom | File | Difficulty | Strategy |
 |---|-------|------|-----------|----------|
 | 1 | `logical_relation_ref` | NI_v2_LR.v | HIGH | Prove allocation preserves store relation via store_ty_extends |
-| ~~2~~ | ~~`logical_relation_deref`~~ | ~~NI_v2_LR.v~~ | — | **ELIMINATED** (Session 66) |
+| ~~2~~ | ~~`logical_relation_deref`~~ | ~~NI_v2_LR.v~~ | — | **ELIMINATED** |
 | 3 | `logical_relation_assign` | NI_v2_LR.v | HIGH | Prove assignment preserves store relation |
 | 4 | `logical_relation_declassify` | NI_v2_LR.v | FUNDAMENTAL | Permanent justified axiom (declassification intentionally breaks NI) |
 | 5 | `fundamental_theorem_step_0` | NI_v2.v | HIGH | Step-0 base case of fundamental theorem |
-| ~~6~~ | ~~`val_rel_store_weaken_back`~~ | — | — | **ELIMINATED** (Session 52) |
+| ~~6~~ | ~~`val_rel_store_weaken_back`~~ | — | — | **ELIMINATED** |
 
 **Admitted: 7** (3 DELTA001 + 3 Rocq 9.1 compat stubs + 1 ValRelStepLimit)
 
@@ -1482,7 +1482,7 @@ This phase addresses ALL gaps identified by the exhaustive 4-agent audit (2026-0
 
 ---
 
-### 7.3 P0: Domain File Integration — ✅ COMPLETE (Session 58)
+### 7.3 P0: Domain File Integration — ✅ COMPLETE
 
 **All 183 domain files integrated into `_CoqProject`.** Total active build: 244 files.
 
@@ -1490,7 +1490,7 @@ This phase addresses ALL gaps identified by the exhaustive 4-agent audit (2026-0
 
 ---
 
-### 7.4 P0: Fix Uncompilable Domain Files — ✅ COMPLETE (Session 58)
+### 7.4 P0: Fix Uncompilable Domain Files — ✅ COMPLETE
 
 All previously-broken domain files fixed and integrated:
 
@@ -1566,29 +1566,29 @@ PHASE 3C (deferred — requires separate analysis framework):
 /// Small-step evaluator matching Semantics.v exactly.
 /// Each match arm corresponds to a Coq step rule.
 pub fn step(expr: &Expr, store: &mut Store, ctx: &EffectCtx)
-    -> Result<(Expr, StepResult), Stuck>
+ -> Result<(Expr, StepResult), Stuck>
 {
-    match expr {
-        // ST_AppAbs: beta reduction
-        Expr::App(box Expr::Lam(x, _ty, body), v) if is_value(v) => { ... }
-        // ST_App1: congruence
-        Expr::App(e1, e2) if !is_value(e1) => { ... }
-        // ST_App2: congruence
-        Expr::App(v1, e2) if is_value(v1) && !is_value(e2) => { ... }
-        // ... 28 more rules matching Semantics.v exactly
-    }
+ match expr {
+ // ST_AppAbs: beta reduction
+ Expr::App(box Expr::Lam(x, _ty, body), v) if is_value(v) => { ... }
+ // ST_App1: congruence
+ Expr::App(e1, e2) if !is_value(e1) => { ... }
+ // ST_App2: congruence
+ Expr::App(v1, e2) if is_value(v1) && !is_value(e2) => { ... }
+ // ... 28 more rules matching Semantics.v exactly
+ }
 }
 
 /// Multi-step evaluation to a value
 pub fn eval(expr: &Expr) -> Result<Value, EvalError> {
-    let mut store = Store::new();
-    let mut ctx = EffectCtx::new();
-    let mut current = expr.clone();
-    loop {
-        if is_value(&current) { return Ok(to_value(&current)); }
-        let (next, _) = step(&current, &mut store, &ctx)?;
-        current = next;
-    }
+ let mut store = Store::new();
+ let mut ctx = EffectCtx::new();
+ let mut current = expr.clone();
+ loop {
+ if is_value(&current) { return Ok(to_value(&current)); }
+ let (next, _) = step(&current, &mut store, &ctx)?;
+ current = next;
+ }
 }
 ```
 
@@ -1765,7 +1765,7 @@ Prove the Rust prototype faithfully implements Coq semantics:
 3. Differential testing: Run same programs in interpreter and compiled binary
 4. **NEW:** Verify Rust evaluator (7.6) matches Coq `step` relation rule-for-rule
 
-### 7.12 P0: Proof-Depth Gaps (Session 71 Audit)
+### 7.12 P0: Proof-Depth Gaps (2026-02-04 Audit)
 
 Several domains have Coq files but near-zero proven theorems. These undermine coverage claims.
 
@@ -1780,7 +1780,7 @@ Several domains have Coq files but near-zero proven theorems. These undermine co
 
 **See:** `06_COORDINATION/DOMAIN_COVERAGE_MATRIX.md` for full per-file Qed counts.
 
-### 7.13 P1: Typechecker Gaps A1-A5 (Session 71 Audit)
+### 7.13 P1: Typechecker Gaps A1-A5 (2026-02-04 Audit)
 
 ~40% of the Rust type system implements rules with no Coq proof. Each gap requires adding expression constructors, typing rules, operational semantics, and progress/preservation lemmas.
 
@@ -1805,7 +1805,7 @@ Several domains have Coq files but near-zero proven theorems. These undermine co
 
 ## 8. PHASE 4: DEVELOPER EXPERIENCE
 
-> **Status (Session 56, 2026-01-31): ✅ DONE.** riina-fmt, riina-lsp (P0+P1), riina-doc crates implemented. VS Code extension created. 100 example .rii files across 6 directories. AI context docs (cheatsheet, guide, all_examples.rii) created. 530 Rust tests passing. PEG grammar and `--output=json` deferred to Phase 5.
+> **Status (2026-01-31): ✅ DONE.** riina-fmt, riina-lsp (P0+P1), riina-doc crates implemented. VS Code extension created. 100 example .rii files across 6 directories. AI context docs (cheatsheet, guide, all_examples.rii) created. 530 Rust tests passing. PEG grammar and `--output=json` deferred to Phase 5.
 
 ### 8.1 Language Server Protocol (LSP)
 
@@ -1841,14 +1841,14 @@ Message handlers: ~500 lines per capability.
 
 ```
 riina-vscode/
-+-- package.json                Extension manifest
++-- package.json Extension manifest
 +-- syntaxes/
-|   +-- riina.tmLanguage.json   TextMate grammar
+| +-- riina.tmLanguage.json TextMate grammar
 +-- language-configuration.json Bracket matching, comments
 +-- snippets/
-|   +-- riina.json              Code snippets
+| +-- riina.json Code snippets
 +-- src/
-    +-- extension.ts            LSP client
+ +-- extension.ts LSP client
 ```
 
 **TextMate grammar** highlights:
@@ -1907,119 +1907,119 @@ LLMs learn programming languages primarily from code examples in their training 
 
 ```
 07_EXAMPLES/
-├── 00_basics/              (20 files)
-│   ├── hello_dunia.rii       — Hello World
-│   ├── pembolehubah.rii      — Variables and types
-│   ├── fungsi_mudah.rii      — Simple functions
-│   ├── kalau_lain.rii        — Conditionals
-│   ├── padan_corak.rii       — Pattern matching
-│   ├── gelung.rii            — Loops (untuk, selagi, ulang)
-│   ├── senarai.rii           — Lists
-│   ├── tuple.rii             — Tuples (fst/snd)
-│   ├── rekod.rii             — Records/structs
-│   ├── enum.rii              — Sum types
-│   ├── pilihan.rii           — Option type
-│   ├── keputusan.rii         — Result type
-│   ├── ralat.rii             — Error handling
-│   ├── modul.rii             — Module system
-│   ├── generik.rii           — Generics
-│   ├── rentetan.rii          — String operations
-│   ├── matematik.rii         — Math operations
-│   ├── penukaran.rii         — Type conversions
-│   ├── komen.rii             — Comments and documentation
-│   └── import_eksport.rii    — Import/export
+├── 00_basics/ (20 files)
+│ ├── hello_dunia.rii — Hello World
+│ ├── pembolehubah.rii — Variables and types
+│ ├── fungsi_mudah.rii — Simple functions
+│ ├── kalau_lain.rii — Conditionals
+│ ├── padan_corak.rii — Pattern matching
+│ ├── gelung.rii — Loops (untuk, selagi, ulang)
+│ ├── senarai.rii — Lists
+│ ├── tuple.rii — Tuples (fst/snd)
+│ ├── rekod.rii — Records/structs
+│ ├── enum.rii — Sum types
+│ ├── pilihan.rii — Option type
+│ ├── keputusan.rii — Result type
+│ ├── ralat.rii — Error handling
+│ ├── modul.rii — Module system
+│ ├── generik.rii — Generics
+│ ├── rentetan.rii — String operations
+│ ├── matematik.rii — Math operations
+│ ├── penukaran.rii — Type conversions
+│ ├── komen.rii — Comments and documentation
+│ └── import_eksport.rii — Import/export
 │
-├── 01_security/            (20 files)
-│   ├── rahsia_asas.rii       — Basic secret types
-│   ├── dedah_dasar.rii       — Declassification with policy
-│   ├── label_keselamatan.rii — Security labels
-│   ├── aliran_maklumat.rii   — Information flow basics
-│   ├── tiada_bocor.rii       — No-leak guarantees
-│   ├── tercemar.rii          — Taint tracking
-│   ├── bersih.rii            — Sanitization
-│   ├── masa_tetap.rii        — Constant-time operations
-│   ├── sifar_hapus.rii       — Zeroization
-│   ├── kebenaran.rii         — Capability-based access
-│   ├── require_grant.rii     — Effect permission model
-│   ├── tahap_pelbagai.rii    — Multi-level security
-│   ├── audit_trail.rii       — Audit logging
-│   ├── pengesahan_kata.rii   — Password validation
-│   ├── token_sesi.rii        — Session token handling
-│   ├── kunci_api.rii         — API key management
-│   ├── penyulitan.rii        — Encryption patterns
-│   ├── tandatangan.rii       — Digital signatures
-│   ├── sijil.rii             — Certificate handling
-│   └── rbac.rii              — Role-based access control
+├── 01_security/ (20 files)
+│ ├── rahsia_asas.rii — Basic secret types
+│ ├── dedah_dasar.rii — Declassification with policy
+│ ├── label_keselamatan.rii — Security labels
+│ ├── aliran_maklumat.rii — Information flow basics
+│ ├── tiada_bocor.rii — No-leak guarantees
+│ ├── tercemar.rii — Taint tracking
+│ ├── bersih.rii — Sanitization
+│ ├── masa_tetap.rii — Constant-time operations
+│ ├── sifar_hapus.rii — Zeroization
+│ ├── kebenaran.rii — Capability-based access
+│ ├── require_grant.rii — Effect permission model
+│ ├── tahap_pelbagai.rii — Multi-level security
+│ ├── audit_trail.rii — Audit logging
+│ ├── pengesahan_kata.rii — Password validation
+│ ├── token_sesi.rii — Session token handling
+│ ├── kunci_api.rii — API key management
+│ ├── penyulitan.rii — Encryption patterns
+│ ├── tandatangan.rii — Digital signatures
+│ ├── sijil.rii — Certificate handling
+│ └── rbac.rii — Role-based access control
 │
-├── 02_effects/             (15 files)
-│   ├── kesan_io.rii          — IO effect basics
-│   ├── kesan_fail.rii        — File I/O effect
-│   ├── kesan_rangkaian.rii   — Network effect
-│   ├── kesan_kripto.rii      — Crypto effect
-│   ├── kesan_masa.rii        — Time effect
-│   ├── kesan_rawak.rii       — Random effect
-│   ├── kesan_berganda.rii    — Multiple effects
-│   ├── kesan_komposisi.rii   — Effect composition
-│   ├── pengendali.rii        — Effect handlers
-│   ├── bersih_fungsi.rii     — Pure functions
-│   ├── kesan_tersuai.rii     — Custom effects
-│   ├── kesan_bersarang.rii   — Nested handlers
-│   ├── kesan_resume.rii      — Resumptions
-│   ├── kesan_had.rii         — Effect boundaries
-│   └── kesan_modul.rii       — Module-level effect declarations
+├── 02_effects/ (15 files)
+│ ├── kesan_io.rii — IO effect basics
+│ ├── kesan_fail.rii — File I/O effect
+│ ├── kesan_rangkaian.rii — Network effect
+│ ├── kesan_kripto.rii — Crypto effect
+│ ├── kesan_masa.rii — Time effect
+│ ├── kesan_rawak.rii — Random effect
+│ ├── kesan_berganda.rii — Multiple effects
+│ ├── kesan_komposisi.rii — Effect composition
+│ ├── pengendali.rii — Effect handlers
+│ ├── bersih_fungsi.rii — Pure functions
+│ ├── kesan_tersuai.rii — Custom effects
+│ ├── kesan_bersarang.rii — Nested handlers
+│ ├── kesan_resume.rii — Resumptions
+│ ├── kesan_had.rii — Effect boundaries
+│ └── kesan_modul.rii — Module-level effect declarations
 │
-├── 03_applications/        (15 files)
-│   ├── pelayan_web.rii       — Secure web server
-│   ├── api_rest.rii          — REST API with security
-│   ├── pangkalan_data.rii    — Database access
-│   ├── mesej_kripto.rii      — Encrypted messaging
-│   ├── dompet_digital.rii    — Digital wallet
-│   ├── rekod_perubatan.rii   — Medical records (HIPAA)
-│   ├── pembayaran.rii        — Payment processing (PCI-DSS)
-│   ├── iot_sensor.rii        — IoT sensor data
-│   ├── log_audit.rii         — Audit logging system
-│   ├── pengesahan_2fa.rii    — Two-factor authentication
-│   ├── oauth_pelayan.rii     — OAuth server
-│   ├── cms_selamat.rii       — Secure CMS
-│   ├── ci_cd.rii             — CI/CD pipeline tool
-│   ├── cli_alat.rii          — CLI tool pattern
-│   └── mikroperkhidmatan.rii — Microservice pattern
+├── 03_applications/ (15 files)
+│ ├── pelayan_web.rii — Secure web server
+│ ├── api_rest.rii — REST API with security
+│ ├── pangkalan_data.rii — Database access
+│ ├── mesej_kripto.rii — Encrypted messaging
+│ ├── dompet_digital.rii — Digital wallet
+│ ├── rekod_perubatan.rii — Medical records (HIPAA)
+│ ├── pembayaran.rii — Payment processing (PCI-DSS)
+│ ├── iot_sensor.rii — IoT sensor data
+│ ├── log_audit.rii — Audit logging system
+│ ├── pengesahan_2fa.rii — Two-factor authentication
+│ ├── oauth_pelayan.rii — OAuth server
+│ ├── cms_selamat.rii — Secure CMS
+│ ├── ci_cd.rii — CI/CD pipeline tool
+│ ├── cli_alat.rii — CLI tool pattern
+│ └── mikroperkhidmatan.rii — Microservice pattern
 │
-├── 04_compliance/          (10 files)
-│   ├── pdpa_malaysia.rii     — Malaysia PDPA compliance
-│   ├── pdpa_singapura.rii    — Singapore PDPA compliance
-│   ├── hipaa.rii             — HIPAA compliance
-│   ├── pci_dss.rii           — PCI-DSS compliance
-│   ├── gdpr.rii              — GDPR compliance
-│   ├── sox.rii               — SOX compliance
-│   ├── do_178c.rii           — DO-178C aerospace
-│   ├── iso_27001.rii         — ISO 27001 patterns
-│   ├── cmmc.rii              — CMMC military compliance
-│   └── iec_62443.rii         — IEC 62443 industrial
+├── 04_compliance/ (10 files)
+│ ├── pdpa_malaysia.rii — Malaysia PDPA compliance
+│ ├── pdpa_singapura.rii — Singapore PDPA compliance
+│ ├── hipaa.rii — HIPAA compliance
+│ ├── pci_dss.rii — PCI-DSS compliance
+│ ├── gdpr.rii — GDPR compliance
+│ ├── sox.rii — SOX compliance
+│ ├── do_178c.rii — DO-178C aerospace
+│ ├── iso_27001.rii — ISO 27001 patterns
+│ ├── cmmc.rii — CMMC military compliance
+│ └── iec_62443.rii — IEC 62443 industrial
 │
-├── 05_patterns/            (15 files)
-│   ├── pembina.rii           — Builder pattern
-│   ├── kilang.rii            — Factory pattern
-│   ├── pemerhati.rii         — Observer pattern
-│   ├── strategi.rii          — Strategy pattern
-│   ├── keadaan.rii           — State machine
-│   ├── arahan.rii            — Command pattern
-│   ├── pengulang.rii         — Iterator pattern
-│   ├── saluran_paip.rii      — Pipeline pattern
-│   ├── pengantara.rii        — Middleware pattern
-│   ├── cqrs.rii              — CQRS pattern
-│   ├── saga.rii              — Saga pattern (distributed tx)
-│   ├── bulkhead.rii          — Bulkhead isolation
-│   ├── pemutus_litar.rii     — Circuit breaker
-│   ├── cuba_semula.rii       — Retry with backoff
-│   └── kolam_sambungan.rii   — Connection pool
+├── 05_patterns/ (15 files)
+│ ├── pembina.rii — Builder pattern
+│ ├── kilang.rii — Factory pattern
+│ ├── pemerhati.rii — Observer pattern
+│ ├── strategi.rii — Strategy pattern
+│ ├── keadaan.rii — State machine
+│ ├── arahan.rii — Command pattern
+│ ├── pengulang.rii — Iterator pattern
+│ ├── saluran_paip.rii — Pipeline pattern
+│ ├── pengantara.rii — Middleware pattern
+│ ├── cqrs.rii — CQRS pattern
+│ ├── saga.rii — Saga pattern (distributed tx)
+│ ├── bulkhead.rii — Bulkhead isolation
+│ ├── pemutus_litar.rii — Circuit breaker
+│ ├── cuba_semula.rii — Retry with backoff
+│ └── kolam_sambungan.rii — Connection pool
 │
-└── 06_ai_context/          (5 files)
-    ├── RIINA_CHEATSHEET.md   — Compact reference (see 8.5.4)
-    ├── RIINA_FOR_AI.md       — AI agent guide (see 8.5.4)
-    ├── all_examples.rii      — Concatenated examples for context window
-    ├── type_catalogue.rii    — Every type demonstrated
-    └── effect_catalogue.rii  — Every effect demonstrated
+└── 06_ai_context/ (5 files)
+ ├── RIINA_CHEATSHEET.md — Compact reference (see 8.5.4)
+ ├── RIINA_FOR_AI.md — AI agent guide (see 8.5.4)
+ ├── all_examples.rii — Concatenated examples for context window
+ ├── type_catalogue.rii — Every type demonstrated
+ └── effect_catalogue.rii — Every effect demonstrated
 ```
 
 **Requirements for every example file:**
@@ -2062,22 +2062,22 @@ Current compiler output is human-readable text. AI agents work better with struc
 
 ```json
 {
-  "file": "contoh.rii",
-  "status": "error",
-  "diagnostics": [
-    {
-      "severity": "error",
-      "code": "E0312",
-      "message": "type mismatch: expected Nombor, found Teks",
-      "span": { "file": "contoh.rii", "line": 7, "col": 12, "len": 5 },
-      "suggestions": [
-        { "message": "try converting with tukar_nombor()", "replacement": "tukar_nombor(x)" }
-      ]
-    }
-  ],
-  "types": [
-    { "name": "tambah", "type": "fungsi(Nombor, Nombor) -> Nombor", "effects": ["bersih"], "security": "Public" }
-  ]
+ "file": "contoh.rii",
+ "status": "error",
+ "diagnostics": [
+ {
+ "severity": "error",
+ "code": "E0312",
+ "message": "type mismatch: expected Nombor, found Teks",
+ "span": { "file": "contoh.rii", "line": 7, "col": 12, "len": 5 },
+ "suggestions": [
+ { "message": "try converting with tukar_nombor()", "replacement": "tukar_nombor(x)" }
+ ]
+ }
+ ],
+ "types": [
+ { "name": "tambah", "type": "fungsi(Nombor, Nombor) -> Nombor", "effects": ["bersih"], "security": "Public" }
+ ]
 }
 ```
 
@@ -2178,12 +2178,12 @@ This section documents the strategic rationale — why RIINA's properties make i
 
 Phase 4 AI-Native work is complete when:
 
-- [x] 100+ example `.rii` files exist and compile cleanly — **100 files across 6 dirs (Session 56)**
+- [x] 100+ example `.rii` files exist and compile cleanly — **100 files across 6 dirs**
 - [ ] PEG grammar exists and parses all examples — *deferred to Phase 5*
 - [ ] `riinac check --output=json` works — *deferred to Phase 5*
-- [x] `RIINA_CHEATSHEET.md` fits in 2,000 tokens — **done (Session 56)**
-- [x] `RIINA_FOR_AI.md` fits in 5,000 tokens — **done (Session 56)**
-- [x] LSP server handles `publishDiagnostics` and `hover` — **done (Session 56, riina-lsp crate)**
+- [x] `RIINA_CHEATSHEET.md` fits in 2,000 tokens — **done**
+- [x] `RIINA_FOR_AI.md` fits in 5,000 tokens — **done**
+- [x] LSP server handles `publishDiagnostics` and `hover` — **done (riina-lsp crate)**
 - [ ] An LLM given only the cheatsheet + 10 examples can generate a valid `.rii` program — *manual test pending*
 
 The final verification gate is empirical: **take an LLM that has never seen RIINA, provide it the AI context files, and ask it to write a program. If it compiles, the AI-native DX works.**
@@ -2194,7 +2194,7 @@ The final verification gate is empirical: **take an LLM that has never seen RIIN
 
 ### 9.1 CI/CD Pipeline
 
-> **Status (Session 57, 2026-01-31): ✅ DONE (zero-trust).** Instead of GitHub Actions, RIINA uses `riinac verify [--fast|--full]` — an internal verification gate that runs cargo test, clippy, Coq admit/axiom scanning, and generates `VERIFICATION_MANIFEST.md`. This is the zero-trust approach: own the verification instead of trusting third-party CI infrastructure. See `03_PROTO/crates/riinac/src/verify.rs`.
+> **Status (2026-01-31): ✅ DONE (zero-trust).** Instead of GitHub Actions, RIINA uses `riinac verify [--fast|--full]` — an internal verification gate that runs cargo test, clippy, Coq admit/axiom scanning, and generates `VERIFICATION_MANIFEST.md`. This is the zero-trust approach: own the verification instead of trusting third-party CI infrastructure. See `03_PROTO/crates/riinac/src/verify.rs`.
 
 **Reference design (GitHub Actions, NOT used — kept for documentation):**
 
@@ -2204,56 +2204,56 @@ The final verification gate is empirical: **take an LLM that has never seen RIIN
 name: CI
 on: [push, pull_request]
 jobs:
-  rust-proto:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Build prototype
-        run: cd 03_PROTO && cargo build --all
-      - name: Test prototype
-        run: cd 03_PROTO && cargo test --all
-      - name: Lint prototype
-        run: cd 03_PROTO && cargo clippy -- -D warnings
-      - name: Format check
-        run: cd 03_PROTO && cargo fmt --check
+ rust-proto:
+ runs-on: ubuntu-latest
+ steps:
+ - uses: actions/checkout@v4
+ - uses: dtolnay/rust-toolchain@stable
+ - name: Build prototype
+ run: cd 03_PROTO && cargo build --all
+ - name: Test prototype
+ run: cd 03_PROTO && cargo test --all
+ - name: Lint prototype
+ run: cd 03_PROTO && cargo clippy -- -D warnings
+ - name: Format check
+ run: cd 03_PROTO && cargo fmt --check
 
-  rust-tooling:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Build tooling
-        run: cd 05_TOOLING && cargo build --all
-      - name: Test tooling
-        run: cd 05_TOOLING && cargo test --all
+ rust-tooling:
+ runs-on: ubuntu-latest
+ steps:
+ - uses: actions/checkout@v4
+ - uses: dtolnay/rust-toolchain@stable
+ - name: Build tooling
+ run: cd 05_TOOLING && cargo build --all
+ - name: Test tooling
+ run: cd 05_TOOLING && cargo test --all
 
-  coq:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Coq
-        run: sudo apt-get install -y coq
-      - name: Build proofs
-        run: cd 02_FORMAL/coq && make
-      - name: Check admits
-        run: |
-          count=$(grep -rc "Admitted" 02_FORMAL/coq/**/*.v 2>/dev/null | grep -v ':0$' | wc -l)
-          echo "Files with admits: $count"
+ coq:
+ runs-on: ubuntu-latest
+ steps:
+ - uses: actions/checkout@v4
+ - name: Install Coq
+ run: sudo apt-get install -y coq
+ - name: Build proofs
+ run: cd 02_FORMAL/coq && make
+ - name: Check admits
+ run: |
+ count=$(grep -rc "Admitted" 02_FORMAL/coq/**/*.v 2>/dev/null | grep -v ':0$' | wc -l)
+ echo "Files with admits: $count"
 
-  examples:
-    needs: rust-proto
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Check examples
-        run: |
-          cd 03_PROTO
-          for f in ../07_EXAMPLES/*.rii; do
-            echo "Checking $f..."
-            cargo run --bin riinac -- check "$f" || true
-          done
+ examples:
+ needs: rust-proto
+ runs-on: ubuntu-latest
+ steps:
+ - uses: actions/checkout@v4
+ - uses: dtolnay/rust-toolchain@stable
+ - name: Check examples
+ run: |
+ cd 03_PROTO
+ for f in ../07_EXAMPLES/*.rii; do
+ echo "Checking $f..."
+ cargo run --bin riinac -- check "$f" || true
+ done
 ```
 
 **File: `.github/workflows/release.yml`** — triggered on version tags. Builds binaries for Linux/macOS/Windows, creates GitHub Release.
@@ -2262,7 +2262,7 @@ jobs:
 
 ### 9.2 Package Manager
 
-> **Status (Session 57, 2026-01-31): ✅ DONE.** `riina-pkg` crate implemented with 14 modules, 39 tests. Integrated into riinac as `riinac pkg <command>` (10 subcommands: init/add/remove/update/lock/build/publish/list/tree/clean). Features: hand-written TOML parser, SemVer resolution, SHA-256 integrity, effect escalation checking, workspace support. Zero external dependencies.
+> **Status (2026-01-31): ✅ DONE.** `riina-pkg` crate implemented with 14 modules, 39 tests. Integrated into riinac as `riinac pkg <command>` (10 subcommands: init/add/remove/update/lock/build/publish/list/tree/clean). Features: hand-written TOML parser, SemVer resolution, SHA-256 integrity, effect escalation checking, workspace support. Zero external dependencies.
 
 Design (implemented):
 
@@ -2279,12 +2279,12 @@ kripto = "1.0"
 [kesan-dibenarkan]
 IO = true
 Crypto = true
-Network = false  # This package cannot use network
+Network = false # This package cannot use network
 ```
 
 **Security feature:** Packages declare required effects. Dependencies cannot escalate effects without explicit grant. This is enforced by the type system.
 
-### 9.3 Website — ✅ DONE (Session 65)
+### 9.3 Website — ✅ DONE
 
 **URL:** https://ib823.github.io/riina/
 **Deployment:** `scripts/deploy-website.sh` → builds Vite/React app, pushes to `gh-pages` branch on `ib823/riina`
@@ -2321,7 +2321,7 @@ Network = false  # This package cannot use network
 4. **WASM:** Compile riinac to WebAssembly for browser playground
 5. **Nix flake:** Reproducible dev environments
 
-### 9.5 Release System — ✅ DONE (Session 65)
+### 9.5 Release System — ✅ DONE
 
 **Files:**
 - `VERSION` — Single-line semver source of truth
@@ -2342,28 +2342,28 @@ This validates (clean main, tests pass), bumps version, finalizes CHANGELOG, com
 
 **Recommended dual license:**
 - **Compiler + Proofs + Stdlib:** Proprietary (RIINA Proprietary License)
-  - Programs written in RIINA can be proprietary
-  - Modifications to the compiler must be shared
-  - Proofs are publicly auditable
+ - Programs written in RIINA can be proprietary
+ - Modifications to the compiler must be shared
+ - Proofs are publicly auditable
 - **Enterprise tooling:** Proprietary (advanced IDE, compliance reports)
 
 ---
 
 ## 10. PHASE 6: ADOPTION & COMMUNITY
 
-### 10.1 FFI (Foreign Function Interface) — ✅ DONE (Session 61)
+### 10.1 FFI (Foreign Function Interface) — ✅ DONE
 
 **File:** `03_PROTO/crates/riina-codegen/src/ffi.rs`
 
 **C FFI syntax:**
 ```riina
 luaran "C" {
-    fungsi puts(s: *CChar) -> CInt;
-    fungsi abs(x: CInt) -> CInt;
+ fungsi puts(s: *CChar) -> CInt;
+ fungsi abs(x: CInt) -> CInt;
 }
 ```
 
-**Implemented (Session 61):**
+**Implemented:**
 - `riina-types`: `RawPtr`, `CChar`, `CInt`, `CVoid`, `FFICall`, `ExternBlock`, `ExternDecl`
 - `riina-parser`: `parse_extern_block()`, C type keywords, `*T` raw pointer syntax
 - `riina-typechecker`: FFI calls typed with `Effect::System`
@@ -2373,12 +2373,12 @@ luaran "C" {
 - 14 new tests, 2 example files (`07_EXAMPLES/ffi/`)
 - **Total: ~350 lines across 11 files**
 
-### 10.2 Demo Applications — ✅ DONE (Session 62 + 64)
+### 10.2 Demo Applications — ✅ DONE
 
 **5 runnable demos** in `07_EXAMPLES/demos/`:
 - selamat_datang.rii (Hello Malaysia), rahsia_dijaga.rii (secret types), kalkulator_c.rii (C FFI), pasangan.rii (safe pairs), faktorial.rii (recursive functions)
 
-**3 showcase demos** in `07_EXAMPLES/showcase/` (Session 64):
+**3 showcase demos** in `07_EXAMPLES/showcase/`:
 
 **Demo 1: Provably Secure Web Server** (`pelayan_web_selamat.rii`)
 - HTTP handler where type system prevents injection
@@ -2392,7 +2392,7 @@ luaran "C" {
 - PHI (Protected Health Information) handling
 - Compiler PROVES: PHI never escapes authorized scope, audit trail for all access
 
-### 10.3 Community Building — ✅ DONE (Session 64)
+### 10.3 Community Building — ✅ DONE
 
 1. ✅ GitHub repo with `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/{bug_report,feature_request}.md`, `.github/PULL_REQUEST_TEMPLATE.md`
 2. ⬜ Discord server (pending)
@@ -2401,14 +2401,14 @@ luaran "C" {
 5. ⬜ University partnerships (UM, UTM, USM, NUS, NTU, CMU, ETH, INRIA) (pending)
 6. ⬜ Bug bounty for soundness bugs in formal proofs (pending)
 
-### 10.4 Enterprise Adoption — ✅ DONE (Session 64)
+### 10.4 Enterprise Adoption — ✅ DONE
 
 1. ✅ **Compliance automation** — `docs/enterprise/COMPLIANCE_PACKAGING.md` (15 regulations, 150 compliance theorems)
 2. ✅ **Security audit replacement** — formal proofs replace manual pentesting (documented in compliance packaging)
 3. ✅ **Gradual adoption** — use RIINA for security-critical modules via FFI (C FFI done, 10.1)
 4. ✅ **Certification** — `docs/enterprise/CERTIFICATION.md` (machine-checkable proof certificates)
 
-### 10.5 Public Branch & Sync Infrastructure — ✅ DONE (Session 64)
+### 10.5 Public Branch & Sync Infrastructure — ✅ DONE
 
 - `public` branch set as GitHub default (internal files stripped)
 - `scripts/sync-public.sh` — automated cherry-pick from validated main
@@ -2469,7 +2469,7 @@ Cross-compilation to mobile platforms via C backend + NDK/Xcode toolchains:
 
 **Files:** `03_PROTO/crates/riina-codegen/src/mobile.rs` (new), `jni.rs` (new), `swift_bridge.rs` (new)
 
-### 11.5 M7.5 — WASM Playground ✅ Done (Session 68)
+### 11.5 M7.5 — WASM Playground ✅ Done
 
 `riina-wasm` crate (cdylib) wraps parser/typechecker/codegen for in-browser use:
 
@@ -2480,7 +2480,7 @@ Cross-compilation to mobile platforms via C backend + NDK/Xcode toolchains:
 
 **Files:** `03_PROTO/crates/riina-wasm/` (new crate), `website/src/playground/` (new directory)
 
-### 11.6 M7.6 — Platform Backend Verification ✅ Done (Session 68)
+### 11.6 M7.6 — Platform Backend Verification ✅ Done
 
 4 Coq domain proofs (63 Qed, 0 admits, 0 axioms):
 
@@ -2671,24 +2671,24 @@ AFTER 5.3.9 (modules work):
 
 ```
 IMMEDIATE (P0 — no dependencies, start in parallel):
-+-- 7.2  Axiom & admit elimination (Track A, ongoing)
-+-- 7.3  Domain file integration (add 118 files to _CoqProject)
-+-- 7.4  Fix 3 uncompilable domain files
-+-- 7.6  Rust evaluator implementation (new evaluator.rs)
-+-- 7.9  Traceability index (ATTACK_PROOF_MAP.md)
++-- 7.2 Axiom & admit elimination (Track A, ongoing)
++-- 7.3 Domain file integration (add 118 files to _CoqProject)
++-- 7.4 Fix 3 uncompilable domain files
++-- 7.6 Rust evaluator implementation (new evaluator.rs)
++-- 7.9 Traceability index (ATTACK_PROOF_MAP.md)
 
 AFTER 7.2 (0 axioms achieved):
-+-- 7.5  Semantic completeness Phase 3A (TLabeled, TTainted, TCapability rules)
++-- 7.5 Semantic completeness Phase 3A (TLabeled, TTainted, TCapability rules)
 +-- 7.7.2 Option A: Add EBinOp to Coq (if chosen over Option B)
 +-- 7.7.3 Formalize builtin signatures in Coq
 
 AFTER 7.5 Phase 3A:
-+-- 7.5  Phase 3B (ESanitize expression, effect context in step relation)
-+-- 7.8  Create 10 missing tracks (AA-AJ)
++-- 7.5 Phase 3B (ESanitize expression, effect context in step relation)
++-- 7.8 Create 10 missing tracks (AA-AJ)
 
 AFTER 7.5 Phase 3B:
-+-- 7.5  Phase 3C (TConstantTime timing model, TZeroizing memory model)
-+-- 7.8  Prove web security, auth, hardware attack properties
++-- 7.5 Phase 3C (TConstantTime timing model, TZeroizing memory model)
++-- 7.8 Prove web security, auth, hardware attack properties
 
 CAN START IMMEDIATELY (Rust-only, no Coq dependency):
 +-- 7.7.1 Add Expr::Loc(u64) to Rust
@@ -2699,29 +2699,29 @@ CAN START IMMEDIATELY (Rust-only, no Coq dependency):
 
 ```
 Phase 1 (Compiler)
-    |
-    +--> Phase 2 (Stdlib) -------> Phase 6 (Demos)
-    |                               |
-    +--> Phase 4 (DX) -----------> Phase 6 (Adoption)
-    |                               |
-    +--> Phase 5 (Ecosystem) ----> Phase 6 (Adoption)
+ |
+ +--> Phase 2 (Stdlib) -------> Phase 6 (Demos)
+ | |
+ +--> Phase 4 (DX) -----------> Phase 6 (Adoption)
+ | |
+ +--> Phase 5 (Ecosystem) ----> Phase 6 (Adoption)
 
 Phase 3 (Formal Verification + Semantic Completeness)
-    |
-    +-- 7.2 Axiom elimination ──┐
-    +-- 7.3 Domain integration  ├──> 7.5 Semantic completeness ──> 7.8 Threat coverage
-    +-- 7.4 Fix uncompilable   ─┘        |
-    +-- 7.6 Rust evaluator ──────────────> 7.11 Compiler correctness
-    +-- 7.7 Alignment fixes ─────────────> Phase 1 (C emitter, builtins)
-    +-- 7.9 Traceability ────────────────> Phase 6 (Enterprise, compliance)
-    |
-    +--> Phase 6 (Enterprise) --> Phase 7 (Platform) --> Phase 8 (Long-term)
+ |
+ +-- 7.2 Axiom elimination ──┐
+ +-- 7.3 Domain integration ├──> 7.5 Semantic completeness ──> 7.8 Threat coverage
+ +-- 7.4 Fix uncompilable ─┘ |
+ +-- 7.6 Rust evaluator ──────────────> 7.11 Compiler correctness
+ +-- 7.7 Alignment fixes ─────────────> Phase 1 (C emitter, builtins)
+ +-- 7.9 Traceability ────────────────> Phase 6 (Enterprise, compliance)
+ |
+ +--> Phase 6 (Enterprise) --> Phase 7 (Platform) --> Phase 8 (Long-term)
 
 Phase 7 (Platform Universality):
-    M7.1 Backend Trait ──> M7.2 WASM Backend ──> M7.5 WASM Playground
-    M7.1 Backend Trait ──> M7.3 Platform Stdlib
-    M7.1 Backend Trait ──> M7.4 Mobile Backend
-    M7.2 + M7.3 + M7.4 ──> M7.6 Formal Verification of Backends
+ M7.1 Backend Trait ──> M7.2 WASM Backend ──> M7.5 WASM Playground
+ M7.1 Backend Trait ──> M7.3 Platform Stdlib
+ M7.1 Backend Trait ──> M7.4 Mobile Backend
+ M7.2 + M7.3 + M7.4 ──> M7.6 Formal Verification of Backends
 
 Phase 6.1 (FFI) --> Phase 6.3 (Community) --> Phase 6.4 (Enterprise)
 ```
@@ -2818,8 +2818,8 @@ Phase 6.1 (FFI) --> Phase 6.3 (Community) --> Phase 6.4 (Enterprise)
 
 | # | File | Action | Est. Lines | Status |
 |---|------|--------|-----------|--------|
-| 46 | `03_PROTO/crates/riinac/src/verify.rs` | CREATE: verification gate | ~400 | ✅ Done (Session 56) |
-| 47 | `03_PROTO/crates/riina-pkg/` | CREATE: package manager (14 modules) | ~2,675 | ✅ Done (Session 57) |
+| 46 | `03_PROTO/crates/riinac/src/verify.rs` | CREATE: verification gate | ~400 | ✅ Done |
+| 47 | `03_PROTO/crates/riina-pkg/` | CREATE: package manager (14 modules) | ~2,675 | ✅ Done |
 | 48 | `.github/workflows/ci.yml` | DEFERRED | ~80 | ⬜ Superseded by `riinac verify` |
 | 49 | `.github/workflows/release.yml` | DEFERRED | ~80 | ⬜ Pending (distribution) |
 | 50 | `.github/workflows/nightly.yml` | DEFERRED | ~40 | ⬜ Superseded by `riinac verify` |
@@ -2841,17 +2841,17 @@ Phase 6.1 (FFI) --> Phase 6.3 (Community) --> Phase 6.4 (Enterprise)
 
 ```bash
 cd riina/03_PROTO
-cargo build --all            # Must pass
-cargo test --all             # Must pass (existing + new lexer tests)
-cargo clippy -- -D warnings  # Must pass
-cargo run --bin riinac -- check ../07_EXAMPLES/hello_dunia.rii  # Must work
+cargo build --all # Must pass
+cargo test --all # Must pass (existing + new lexer tests)
+cargo clippy -- -D warnings # Must pass
+cargo run --bin riinac -- check ../07_EXAMPLES/hello_dunia.rii # Must work
 ```
 
 ### Gate 2: Parser (after 5.3)
 
 ```bash
 cd riina/03_PROTO
-cargo test --all             # All parser tests pass
+cargo test --all # All parser tests pass
 
 # Parse function declarations:
 echo 'fungsi f(x: Int) -> Int { x }' | cargo run --bin riinac -- check /dev/stdin
@@ -2894,35 +2894,35 @@ git push origin main
 
 ```bash
 cd riina/02_FORMAL/coq
-make                                    # Must pass with 216+ files
-wc -l _CoqProject                      # Must show 216+ entries
-grep -rc "Admitted" domains/*.v         # Must be 0 (after 7.4 fixes)
+make # Must pass with 216+ files
+wc -l _CoqProject # Must show 216+ entries
+grep -rc "Admitted" domains/*.v # Must be 0 (after 7.4 fixes)
 ```
 
 ### Gate 6: Rust Evaluator (after 7.6)
 
 ```bash
 cd riina/03_PROTO
-cargo test --all                        # Must pass
+cargo test --all # Must pass
 # Evaluator must handle all 31 step rules
-cargo test -p riina-codegen evaluator   # All evaluator tests pass
+cargo test -p riina-codegen evaluator # All evaluator tests pass
 ```
 
 ### Gate 7: Coq Proofs — Zero Axioms (Track A, after 7.2)
 
 ```bash
 cd riina/02_FORMAL/coq
-make                                    # Must pass
-grep -rc "Admitted" **/*.v              # Must be 0
-grep -rc "admit\." **/*.v              # Must be 0
-grep -c "Axiom" properties/*.v          # Must be 0 (core axioms eliminated)
+make # Must pass
+grep -rc "Admitted" **/*.v # Must be 0
+grep -rc "admit\." **/*.v # Must be 0
+grep -c "Axiom" properties/*.v # Must be 0 (core axioms eliminated)
 ```
 
 ### Gate 8: Semantic Completeness (after 7.5)
 
 ```bash
 cd riina/02_FORMAL/coq
-make                                    # Must pass
+make # Must pass
 # TLabeled, TTainted, TCapability must have typing + semantic rules
 grep -c "T_Labeled\|T_Tainted\|ST_RequireChecked" foundations/Typing.v foundations/Semantics.v
 # Must show non-zero counts for each
@@ -3207,7 +3207,7 @@ These were proposed in `SYNTAX_IMPROVEMENT_SPEC_v1_0_0` and rejected. They are l
 biar input = "hello";
 
 pastikan betul lain {
-    "input kosong"
+ "input kosong"
 };
 
 input
@@ -3217,7 +3217,7 @@ input
 
 ```riina
 // saluran_paip.rii — Pipe operator examples
-// x |> f  desugars to  f(x)
+// x |> f desugars to f(x)
 
 biar double = fn(x: Int) x;
 biar identity = fn(x: Int) x;
@@ -3277,5 +3277,5 @@ Only after 0 axioms and 0 admits:
 *Status: AUTHORITATIVE*
 *Date: 2026-01-30 (updated with exhaustive gap analysis from 4-agent audit)*
 *Incorporates: 13-item remediation plan (P0-P3) from build integrity, type system enforcement, threat model coverage, and Coq↔Rust alignment audits*
-*Mode: ULTRA KIASU | ZERO TRUST | ZERO ADMITS | ZERO AXIOMS TARGET*
+*Mode: Comprehensive | Zero Trust | Zero Admits*
 *"QED Eternum."*

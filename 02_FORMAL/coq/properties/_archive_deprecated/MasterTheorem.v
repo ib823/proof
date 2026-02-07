@@ -20,7 +20,7 @@
     C. Store Strengthening: extends Σ Σ' -> val_rel_le n Σ -> val_rel_le n Σ'
     D. Store Weakening: extends Σ Σ' -> val_rel_le n Σ' -> val_rel_le n Σ
 
-    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
+    Mode: Comprehensive Verification | Zero Trust
 
     Phase: 1 (Foundation) - Axiom Elimination
 

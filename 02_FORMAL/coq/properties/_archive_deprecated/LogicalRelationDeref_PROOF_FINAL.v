@@ -6,7 +6,7 @@
     Target Axiom: AX-02 logical_relation_deref
     Status: PROVEN (Qed) ✓
     
-    Mode: ULTRA KIASU | ZERO TRUST
+    Mode: Comprehensive Verification | Zero Trust
     
     ═══════════════════════════════════════════════════════════════════════
     THEOREM STATEMENT:

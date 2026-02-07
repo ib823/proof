@@ -8,7 +8,7 @@
     
     Document ID: RIINA-AX04-DECLASSIFY-PROOF_v1_0_0
     Generated: 2026-01-22
-    Classification: ULTRA KIASU | ZERO TRUST | ZERO LAZINESS
+    Classification: Comprehensive Verification | Zero Trust
     
     SEMANTIC MEANING:
     -----------------
@@ -490,7 +490,7 @@ Axiom declassify_ctx_preserves_rel :
    - ST_Declassify_Ctx (context step rule)
    - declassify_ctx_preserves_rel (key lemma for context)
    
-   Classification: ULTRA KIASU | ZERO TRUST | ZERO LAZINESS
+   Classification: Comprehensive Verification | Zero Trust
    Status: DEFINITIVE
 *)
 

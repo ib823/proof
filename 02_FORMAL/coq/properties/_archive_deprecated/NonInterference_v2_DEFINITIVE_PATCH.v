@@ -5,7 +5,7 @@
     
     All 3 admits eliminated using well_typed_SN from ReducibilityFull.
     
-    Mode: ULTRA KIASU | ZERO TRUST | ZERO ADMITS
+    Mode: Comprehensive Verification | Zero Trust
     Date: 2026-01-25
     ═══════════════════════════════════════════════════════════════════════════ *)
 
