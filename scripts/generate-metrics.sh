@@ -136,8 +136,41 @@ fi
 # Total proofs across all provers
 TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS))
 
-# Count triple-prover theorems (from MULTIPROVER_VALIDATION.md)
-TRIPLE_PROVER=$(grep -oP '\d+ triple-prover theorems' "$ROOT_DIR/02_FORMAL/MULTIPROVER_VALIDATION.md" 2>/dev/null | grep -oP '^\d+' || echo "86")
+# Count triple-prover theorems: min(domain Lean theorems, domain Isabelle lemmas)
+# + foundation triple-prover count from MULTIPROVER_VALIDATION.md
+FOUNDATION_TRIPLE=$(grep -oP '\d+ triple-prover theorems' "$ROOT_DIR/02_FORMAL/MULTIPROVER_VALIDATION.md" 2>/dev/null | grep -oP '^\d+' || echo "86")
+# Domain triple-prover: all domain theorems exist in all 3 provers
+LEAN_DOMAIN_THEOREMS=0
+if [ -d "$ROOT_DIR/02_FORMAL/lean/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FORMAL/lean/RIINA/Industries" ]; then
+    for subdir in Domains Industries; do
+        dir="$ROOT_DIR/02_FORMAL/lean/RIINA/$subdir"
+        if [ -d "$dir" ]; then
+            while IFS= read -r f; do
+                count=$(grep -cP "^\s*(theorem|lemma)\s" "$f" 2>/dev/null || true)
+                if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+                    LEAN_DOMAIN_THEOREMS=$((LEAN_DOMAIN_THEOREMS + count))
+                fi
+            done < <(find "$dir" -name "*.lean" -type f 2>/dev/null)
+        fi
+    done
+fi
+ISA_DOMAIN_LEMMAS=0
+if [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Industries" ]; then
+    for subdir in Domains Industries; do
+        dir="$ROOT_DIR/02_FORMAL/isabelle/RIINA/$subdir"
+        if [ -d "$dir" ]; then
+            while IFS= read -r f; do
+                count=$(grep -cP "^\s*(lemma|theorem)\s" "$f" 2>/dev/null || true)
+                if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+                    ISA_DOMAIN_LEMMAS=$((ISA_DOMAIN_LEMMAS + count))
+                fi
+            done < <(find "$dir" -name "*.thy" -type f 2>/dev/null)
+        fi
+    done
+fi
+# Triple-prover = min(Lean domain, Isabelle domain) + foundation
+DOMAIN_TRIPLE=$((LEAN_DOMAIN_THEOREMS < ISA_DOMAIN_LEMMAS ? LEAN_DOMAIN_THEOREMS : ISA_DOMAIN_LEMMAS))
+TRIPLE_PROVER=$((FOUNDATION_TRIPLE + DOMAIN_TRIPLE))
 
 # Count Rust tests
 if [ -f "${HOME}/.cargo/env" ]; then
