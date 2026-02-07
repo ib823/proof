@@ -402,6 +402,13 @@ Definition val_rel_at_type_n (n : nat) (Σ : store_ty)
   | S _ => val_rel_at_type Σ store_rel_pred val_rel_lower store_rel_lower store_vals_pred T v1 v2
   end.
 
+(** Unfold lemma for val_rel_at_type_n at successor step.
+    At S n, val_rel_at_type_n reduces to val_rel_at_type. *)
+Lemma val_rel_at_type_n_S : forall n Σ sp vl sl svp T v1 v2,
+  val_rel_at_type_n (S n) Σ sp vl sl svp T v1 v2 =
+  val_rel_at_type Σ sp vl sl svp T v1 v2.
+Proof. reflexivity. Qed.
+
 (** THE REVOLUTIONARY STEP-INDEXED RELATIONS
 
     CANONICAL DESIGN: val_rel_n includes typing for higher-order types.
@@ -635,8 +642,10 @@ Proof.
       rewrite val_rel_n_0_unfold in H0.
       destruct H0 as [Hv1 [Hv2 [Hc1 [Hc2 [Hty1 [Hty2 Hrat]]]]]].
       repeat split; auto.
-      * (* val_rel_at_type Σ ... T v1 v2 from val_rel_at_type_fo T v1 v2 *)
-        apply (val_rel_at_type_fo_equiv T Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') v1 v2 Hfo).
+      * (* val_rel_at_type_n n' from val_rel_at_type_fo *)
+        destruct n' as [| k]; [simpl; exact I |].
+        rewrite val_rel_at_type_n_S.
+        apply (val_rel_at_type_fo_equiv T Σ (store_rel_n (S k)) (val_rel_n (S k)) (store_rel_n (S k)) (store_vals_rel (S k)) v1 v2 Hfo).
         rewrite Hfo in Hrat. exact Hrat.
 Qed.
 
@@ -668,9 +677,14 @@ Proof.
       repeat split; try assumption.
       (* Need: if first_order_type T then val_rel_at_type_fo T v1 v2 else ... *)
       rewrite Hfo.
-      (* Extract val_rel_at_type_fo from val_rel_at_type *)
-      apply (val_rel_at_type_fo_equiv T Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') v1 v2 Hfo).
-      exact Hrat.
+      destruct n' as [| k'].
+      -- (* n' = 0: Hrat is True (useless); extract val_rel_at_type_fo from Hrec *)
+         rewrite val_rel_n_0_unfold in Hrec.
+         destruct Hrec as [_ [_ [_ [_ [_ [_ Hrat0]]]]]].
+         rewrite Hfo in Hrat0. exact Hrat0.
+      -- (* n' = S k': convert val_rel_at_type_n to val_rel_at_type, then to fo *)
+         apply (val_rel_at_type_fo_equiv T Σ (store_rel_n (S k')) (val_rel_n (S k')) (store_rel_n (S k')) (store_vals_rel (S k')) v1 v2 Hfo).
+         rewrite val_rel_at_type_n_S in Hrat. exact Hrat.
     + (* m = S m': need val_rel_n (S m') from val_rel_n (S n') *)
       rewrite val_rel_n_S_unfold.
       rewrite val_rel_n_S_unfold in Hn.
@@ -685,11 +699,20 @@ Proof.
         split. { exact Hc2. }
         split. { exact Hty1. }
         split. { exact Hty2. }
-        { (* val_rel_at_type at m' from val_rel_at_type at n' *)
-          (* For FO types, both equal val_rel_at_type_fo *)
-          apply (val_rel_at_type_fo_equiv T Σ (store_rel_n m') (val_rel_n m') (store_rel_n m') (store_vals_rel m') v1 v2 Hfo).
-          apply (val_rel_at_type_fo_equiv T Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') v1 v2 Hfo).
-          exact Hrat. }
+        { (* val_rel_at_type_n m' from val_rel_at_type_n n' *)
+          destruct m' as [| j].
+          - (* m' = 0: val_rel_at_type_n 0 = True *)
+            simpl. exact I.
+          - (* m' = S j *)
+            rewrite val_rel_at_type_n_S.
+            destruct n' as [| k'].
+            + (* n' = 0: S j <= 0 contradicts Hle *)
+              exfalso. lia.
+            + (* n' = S k' *)
+              rewrite val_rel_at_type_n_S in Hrat.
+              apply (val_rel_at_type_fo_equiv T Σ (store_rel_n (S j)) (val_rel_n (S j)) (store_rel_n (S j)) (store_vals_rel (S j)) v1 v2 Hfo).
+              apply (val_rel_at_type_fo_equiv T Σ (store_rel_n (S k')) (val_rel_n (S k')) (store_rel_n (S k')) (store_vals_rel (S k')) v1 v2 Hfo).
+              exact Hrat. }
 Qed.
 
 (** Corollary: For FO types, val_rel_n at any step index implies val_rel_n at any other.

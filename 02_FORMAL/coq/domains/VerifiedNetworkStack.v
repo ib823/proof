@@ -290,7 +290,7 @@ Definition in_slow_start (cs : CongestionState) : bool :=
 
 (* Congestion avoidance: cwnd >= ssthresh *)
 Definition in_cong_avoid (cs : CongestionState) : bool :=
-  cwnd cs >=? ssthresh cs.
+  ssthresh cs <=? cwnd cs.
 
 (* AIMD: Additive Increase *)
 Definition aimd_increase (cs : CongestionState) (mss : nat) : CongestionState :=

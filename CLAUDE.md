@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 845 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,929 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,122 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 845 Rust tests.
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -101,15 +101,15 @@ RIINA is the world's **first formally verified programming language** with:
 | **Research Tracks** | 218 | 55 existing + 163 new identified |
 | **Axioms (Active Build)** | 1 (policy axiom) | `logical_relation_declassify` in NI_v2_LR (3 eliminated Session 76) |
 | **Admitted (Active Build)** | 0 | All eliminated (Session 72-73) |
-| **Qed Proofs (Coq)** | 7,928 | Active build (0 Admitted) |
+| **Qed Proofs (Coq)** | 7,929 | Active build (0 Admitted) |
 | **Lean 4 Theorems** | 91 | 11 files, 0 sorry |
 | **Isabelle/HOL Lemmas** | 102 | 10 files, 0 sorry |
-| **Total Proofs (All Provers)** | 8,121 | Coq + Lean + Isabelle |
+| **Total Proofs (All Provers)** | 8,122 | Coq + Lean + Isabelle |
 | **Multi-Prover Theorems** | 86 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
 | **Coq Compilation** | ✅ PASSING | 283 files (249 in active build) |
-| **Rust Tests** | ✅ PASSING (839 tests) | All green |
+| **Rust Tests** | ✅ PASSING (849 tests) | All green |
 | **Rust Crates** | 15 | +riina-wasm (Session 68) |
 | **Example .rii Files** | 130 | 9 categories (+FFI, +demos, +showcase, +compliance, +compiler) |
 
@@ -119,7 +119,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
-| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 1 justified axiom, 7,928 Qed (active), 250 files |
+| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 1 justified axiom, 7,929 Qed (active), 250 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -132,7 +132,7 @@ RIINA employs triple-prover verification for maximum confidence:
 
 | Prover | Role | Status |
 |--------|------|--------|
-| **Coq 8.20.1** | Primary (authoritative) | 7,928 Qed, 0 Admitted, 1 axiom |
+| **Coq 8.20.1** | Primary (authoritative) | 7,929 Qed, 0 Admitted, 1 axiom |
 | **Lean 4** | Secondary (independent port) | 91 theorems, 0 sorry |
 | **Isabelle/HOL** | Tertiary (third verification) | 102 lemmas, 0 sorry |
 
@@ -187,7 +187,7 @@ are mathematically guaranteed at compile time.
 │   └── specs/bahasa/                       ← Bahasa Melayu syntax specs
 │
 ├── 02_FORMAL/                   ← Track A: Formal proofs
-│   ├── coq/                     ← Coq proofs (PRIMARY — 7,928 Qed)
+│   ├── coq/                     ← Coq proofs (PRIMARY — 7,929 Qed)
 │   │   ├── _CoqProject          ← Coq project configuration
 │   │   ├── Makefile             ← Build configuration
 │   │   ├── foundations/         ← Core definitions
@@ -676,7 +676,7 @@ The older 6-phase system in `01_RESEARCH/MASTER_ATTACK_PLAN_COMPLETE.md` is arch
 
 ### Track A: Formal Proofs (02_FORMAL/coq/) — 🟢 STABLE
 
-**Build: 0 Admitted, 1 justified axiom, 7,928 Qed proofs (active), 250 files (Coq 8.20.1)**
+**Build: 0 Admitted, 1 justified axiom, 7,929 Qed proofs (active), 250 files (Coq 8.20.1)**
 
 Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic Completeness).
 
@@ -840,7 +840,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-06 (Session 78: Proof Depth 20+ All Files — 8,121 total proofs: 7,928 Coq + 91 Lean + 102 Isabelle. 0 Admitted/sorry. 1 axiom. 839 Rust tests, 15 crates, 130 examples, 250 active .v + 11 .lean + 10 .thy = 272 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-06 (Session 78: Proof Depth 20+ All Files — 8,122 total proofs: 7,929 Coq + 91 Lean + 102 Isabelle. 0 Admitted/sorry. 1 axiom. 849 Rust tests, 15 crates, 130 examples, 250 active .v + 11 .lean + 10 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

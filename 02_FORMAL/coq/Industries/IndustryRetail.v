@@ -182,7 +182,7 @@ Proof. destruct r; simpl; lia. Qed.
 
 Theorem right_to_nat_bounded : forall r,
   right_to_nat r <= all_rights_count.
-Proof. destruct r; simpl; lia. Qed.
+Proof. destruct r; unfold all_rights_count; simpl; lia. Qed.
 
 (** All ecommerce controls enabled *)
 Definition all_ecommerce_controls (c : EcommerceControls) : bool :=
@@ -211,6 +211,7 @@ Proof.
   intros c H. unfold all_ecommerce_controls in H.
   apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [H _].
+  apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [_ H]. exact H.
 Qed.
 
@@ -220,7 +221,7 @@ Proof.
   intros c H. unfold all_ecommerce_controls in H.
   apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [H _].
-  apply andb_true_iff in H. destruct H as [H _]. exact H.
+  apply andb_true_iff in H. destruct H as [_ H]. exact H.
 Qed.
 
 (** Count ecommerce controls *)

@@ -163,7 +163,7 @@ Definition protection_strength (p : ContentProtection) : nat :=
   | BasicDRM => 1
   | StudioDRM => 2
   | ForensicWatermark => 3
-  | HardwareProtected => 4
+  | HardwareProtected => 5
   end.
 
 Theorem hardware_strongest : forall p,

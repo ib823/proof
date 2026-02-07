@@ -229,7 +229,7 @@ Definition mcdc_required (d : DAL) : bool :=
   end.
 
 Theorem mcdc_only_high_dal : forall d,
-  mcdc_required d = true -> dal_le d DAL_B = true.
+  mcdc_required d = true -> dal_le DAL_B d = true.
 Proof.
   intros d H. destruct d; simpl in *; try discriminate; try reflexivity.
 Qed.
@@ -243,7 +243,7 @@ Definition decision_coverage_required (d : DAL) : bool :=
 
 Theorem decision_coverage_implies_dal_c_or_above : forall d,
   decision_coverage_required d = true ->
-  dal_le d DAL_C = true.
+  dal_le DAL_C d = true.
 Proof.
   intros d H. destruct d; simpl in *; try discriminate; try reflexivity.
 Qed.
@@ -269,6 +269,7 @@ Proof.
   intros c H. unfold do178c_all_sections in H.
   apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [H _].
+  apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [_ H].
   exact H.
 Qed.
@@ -278,8 +279,8 @@ Theorem do178c_all_requires_qa : forall c,
   quality_assurance c = true.
 Proof.
   intros c H. unfold do178c_all_sections in H.
-  apply andb_true_iff in H. destruct H as [_ H].
   apply andb_true_iff in H. destruct H as [H _].
+  apply andb_true_iff in H. destruct H as [_ H].
   exact H.
 Qed.
 

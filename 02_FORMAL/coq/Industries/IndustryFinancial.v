@@ -274,7 +274,6 @@ Theorem kyc_requires_sanctions : forall k,
 Proof.
   intros k H. unfold kyc_complete in H.
   apply andb_true_iff in H. destruct H as [H _].
-  apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [_ H].
   exact H.
 Qed.

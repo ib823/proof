@@ -21,6 +21,11 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
+Require Import Lia.
+
+(** Local definition since abs_diff is not available in Coq 8.20 *)
+Definition abs_diff (a b : nat) : nat :=
+  if Nat.leb a b then b - a else a - b.
 
 (** ** 1. IEC 62443 Security Levels *)
 
@@ -221,7 +226,7 @@ Qed.
 
 (** Zone crossing: communication between non-adjacent Purdue levels is prohibited *)
 Definition purdue_adjacent (p1 p2 : PurdueLevel) : bool :=
-  match Nat.abs_diff (purdue_to_nat p1) (purdue_to_nat p2) with
+  match abs_diff (purdue_to_nat p1) (purdue_to_nat p2) with
   | 0 | 1 => true
   | _ => false
   end.
@@ -230,9 +235,9 @@ Theorem same_level_adjacent : forall p,
   purdue_adjacent p p = true.
 Proof.
   intros p. unfold purdue_adjacent.
-  replace (Nat.abs_diff (purdue_to_nat p) (purdue_to_nat p)) with 0.
+  replace (abs_diff (purdue_to_nat p) (purdue_to_nat p)) with 0.
   - simpl. reflexivity.
-  - unfold Nat.abs_diff. lia.
+  - unfold abs_diff. destruct (Nat.leb _ _) eqn:E; lia.
 Qed.
 
 (** SIL determines required safe failure fraction *)
@@ -269,7 +274,9 @@ Theorem full_compliance_requires_zones : forall c,
   part_3_2_zones_conduits c = true.
 Proof.
   intros c H. unfold iec62443_full_compliance in H.
-  repeat (apply andb_true_iff in H; destruct H as [H ?]).
+  apply andb_true_iff in H. destruct H as [H _].
+  apply andb_true_iff in H. destruct H as [H _].
+  apply andb_true_iff in H. destruct H as [H _].
   apply andb_true_iff in H. destruct H as [_ H]. exact H.
 Qed.
 

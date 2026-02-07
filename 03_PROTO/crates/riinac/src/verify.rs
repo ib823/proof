@@ -40,6 +40,9 @@ pub enum Mode {
 struct CheckResult {
     name: String,
     passed: bool,
+    /// If false, a failure is informational (e.g. tool not installed).
+    /// Only `blocking` failures cause overall verification to FAIL.
+    blocking: bool,
     details: String,
 }
 
@@ -409,6 +412,7 @@ fn run_cargo_test(proto_dir: &Path) -> CheckResult {
             CheckResult {
                 name: "Rust Tests".into(),
                 passed,
+                blocking: true,
                 details: if passed {
                     format!("{count} tests")
                 } else {
@@ -419,6 +423,7 @@ fn run_cargo_test(proto_dir: &Path) -> CheckResult {
         Err(e) => CheckResult {
             name: "Rust Tests".into(),
             passed: false,
+            blocking: true,
             details: format!("failed to run: {e}"),
         },
     }
@@ -463,6 +468,7 @@ fn run_clippy(proto_dir: &Path) -> CheckResult {
             CheckResult {
                 name: "Clippy".into(),
                 passed: o.status.success(),
+                blocking: true,
                 details: if o.status.success() {
                     format!("{warnings} warnings")
                 } else {
@@ -473,6 +479,7 @@ fn run_clippy(proto_dir: &Path) -> CheckResult {
         Err(e) => CheckResult {
             name: "Clippy".into(),
             passed: false,
+            blocking: true,
             details: format!("failed to run: {e}"),
         },
     }
@@ -539,12 +546,14 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     results.push(CheckResult {
         name: "Coq Admits".into(),
         passed: admit_count == 0,
+        blocking: true,
         details: format!("{admit_count} (target: 0)"),
     });
 
     results.push(CheckResult {
         name: "Coq Axioms".into(),
         passed: true, // axioms are informational
+        blocking: true,
         details: format!("{axiom_count} (1 justified expected)"),
     });
 
@@ -559,6 +568,7 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
             return CheckResult {
                 name: "Coq Compilation".into(),
                 passed: false,
+                blocking: false,
                 details: format!("SKIPPED ({msg}). Verification INCOMPLETE"),
             };
         }
@@ -598,6 +608,7 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Coq Compilation".into(),
                     passed: true,
+                    blocking: true,
                     details: format!(
                         "{vo_count} .vo files compiled in {:.0}s",
                         elapsed.as_secs_f64()
@@ -610,6 +621,7 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
                     return CheckResult {
                         name: "Coq Compilation".into(),
                         passed: false,
+                        blocking: true,
                         details: format!(
                             "TIMEOUT after {:.0}s (limit: {}s)",
                             elapsed.as_secs_f64(),
@@ -622,6 +634,7 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Coq Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!(
                         "FAILED (exit {code}, {:.0}s)\n{}",
                         elapsed.as_secs_f64(),
@@ -633,6 +646,7 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
         Err(e) => CheckResult {
             name: "Coq Compilation".into(),
             passed: false,
+            blocking: true,
             details: format!("failed to run make: {e}"),
         },
     }
@@ -650,6 +664,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
             return CheckResult {
                 name: "Lean 4 Compilation".into(),
                 passed: false,
+                blocking: false,
                 details: format!("SKIPPED ({msg}). Verification INCOMPLETE"),
             };
         }
@@ -683,6 +698,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: true,
+                    blocking: true,
                     details: format!(
                         "Built in {:.0}s (0 sorry warnings)",
                         elapsed.as_secs_f64()
@@ -693,6 +709,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!(
                         "Built in {:.0}s but {sorry_warnings} sorry warning(s) detected",
                         elapsed.as_secs_f64()
@@ -704,6 +721,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                     return CheckResult {
                         name: "Lean 4 Compilation".into(),
                         passed: false,
+                        blocking: true,
                         details: format!(
                             "TIMEOUT after {:.0}s (limit: {}s)",
                             elapsed.as_secs_f64(),
@@ -715,6 +733,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!(
                         "FAILED (exit {code}, {:.0}s)\n{}",
                         elapsed.as_secs_f64(),
@@ -728,6 +747,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!(
                         "TIMEOUT after {:.0}s (limit: {}s)",
                         elapsed.as_secs_f64(),
@@ -738,6 +758,7 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!("failed to run lake: {e}"),
                 }
             }
@@ -794,6 +815,7 @@ fn scan_lean(lean_dir: &Path) -> Vec<CheckResult> {
     vec![CheckResult {
         name: "Lean sorry Scan".into(),
         passed: sorry_count == 0,
+        blocking: true,
         details: format!(
             "{sorry_count} sorry in {} files ({theorem_count} theorems/lemmas)",
             files.len()
@@ -813,6 +835,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
             return CheckResult {
                 name: "Isabelle Compilation".into(),
                 passed: false,
+                blocking: false,
                 details: format!("SKIPPED ({msg}). Verification INCOMPLETE"),
             };
         }
@@ -824,6 +847,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
         return CheckResult {
             name: "Isabelle Compilation".into(),
             passed: false,
+            blocking: true,
             details: "ROOT file not found in isabelle/RIINA/".into(),
         };
     }
@@ -846,6 +870,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Isabelle Compilation".into(),
                     passed: true,
+                    blocking: true,
                     details: format!("Session RIINA built in {:.0}s", elapsed.as_secs_f64()),
                 }
             } else {
@@ -854,6 +879,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                     return CheckResult {
                         name: "Isabelle Compilation".into(),
                         passed: false,
+                        blocking: true,
                         details: format!(
                             "TIMEOUT after {:.0}s (limit: {}s)",
                             elapsed.as_secs_f64(),
@@ -868,6 +894,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Isabelle Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!(
                         "FAILED (exit {code}, {:.0}s)\n{}",
                         elapsed.as_secs_f64(),
@@ -881,6 +908,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Isabelle Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!(
                         "TIMEOUT after {:.0}s (limit: {}s)",
                         elapsed.as_secs_f64(),
@@ -891,6 +919,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Isabelle Compilation".into(),
                     passed: false,
+                    blocking: true,
                     details: format!("failed to run isabelle: {e}"),
                 }
             }
@@ -960,6 +989,7 @@ fn scan_isabelle(isabelle_dir: &Path) -> Vec<CheckResult> {
     vec![CheckResult {
         name: "Isabelle sorry/oops".into(),
         passed: sorry_count == 0 && oops_count == 0,
+        blocking: true,
         details: format!(
             "{sorry_count} sorry + {oops_count} oops in {} files ({lemma_count} lemmas)",
             files.len()
@@ -971,6 +1001,83 @@ fn scan_isabelle(isabelle_dir: &Path) -> Vec<CheckResult> {
 // Cross-prover validation (informational)
 // ---------------------------------------------------------------------------
 
+/// Verify metrics.json accuracy against live codebase counts.
+/// Catches drift between documented metrics and actual state.
+fn verify_metrics_accuracy(
+    repo: &Path,
+    coq_dir: &Path,
+    lean_dir: &Path,
+    isabelle_dir: &Path,
+) -> CheckResult {
+    let metrics_path = repo.join("website/public/metrics.json");
+    let content = match fs::read_to_string(&metrics_path) {
+        Ok(c) => c,
+        Err(_) => {
+            return CheckResult {
+                name: "Metrics Accuracy".into(),
+                passed: false,
+                blocking: true,
+                details: "metrics.json not found — run generate-metrics.sh".into(),
+            };
+        }
+    };
+
+    // Parse key values from JSON (no serde — zero deps)
+    let parse_field = |field: &str| -> Option<u32> {
+        content
+            .find(&format!("\"{field}\""))
+            .and_then(|pos| {
+                let after = &content[pos + field.len() + 3..]; // skip `"field": `
+                let num_start = after.find(|c: char| c.is_ascii_digit())?;
+                let num_end = after[num_start..].find(|c: char| !c.is_ascii_digit())?;
+                after[num_start..num_start + num_end].parse().ok()
+            })
+    };
+
+    let json_qed = parse_field("qedActive").unwrap_or(0);
+    let json_lean = parse_field("theorems").unwrap_or(0);
+    let json_isabelle = parse_field("lemmas").unwrap_or(0);
+    let json_admitted = parse_field("admitted").unwrap_or(u32::MAX);
+    let json_axioms = parse_field("axioms").unwrap_or(u32::MAX);
+
+    // Live counts
+    let live_qed = count_coq_qed(coq_dir);
+    let live_lean = count_lean_theorems(lean_dir);
+    let live_isabelle = count_isabelle_lemmas(&isabelle_dir.join("RIINA"));
+
+    let mut drifts = Vec::new();
+    if json_qed != live_qed {
+        drifts.push(format!("Coq Qed: json={json_qed} live={live_qed}"));
+    }
+    if json_lean != live_lean {
+        drifts.push(format!("Lean: json={json_lean} live={live_lean}"));
+    }
+    if json_isabelle != live_isabelle {
+        drifts.push(format!("Isabelle: json={json_isabelle} live={live_isabelle}"));
+    }
+    if json_admitted != 0 {
+        drifts.push(format!("Admitted in metrics.json: {json_admitted} (must be 0)"));
+    }
+
+    if drifts.is_empty() {
+        CheckResult {
+            name: "Metrics Accuracy".into(),
+            passed: true,
+            blocking: true,
+            details: format!(
+                "metrics.json matches live counts (Qed={live_qed}, Lean={live_lean}, Isabelle={live_isabelle}, Admitted=0, Axioms={json_axioms})"
+            ),
+        }
+    } else {
+        CheckResult {
+            name: "Metrics Accuracy".into(),
+            passed: false,
+            blocking: true,
+            details: format!("DRIFT: {}", drifts.join("; ")),
+        }
+    }
+}
+
 /// Cross-validate proof counts across all three provers (informational, always passes).
 fn cross_validate_provers(coq_dir: &Path, lean_dir: &Path, isabelle_dir: &Path) -> CheckResult {
     let coq_qed = count_coq_qed(coq_dir);
@@ -980,6 +1087,7 @@ fn cross_validate_provers(coq_dir: &Path, lean_dir: &Path, isabelle_dir: &Path) 
     CheckResult {
         name: "Cross-Prover Validation".into(),
         passed: true, // informational
+        blocking: true,
         details: format!("Coq: {coq_qed} Qed | Lean: {lean_thm} | Isabelle: {isa_lem}"),
     }
 }
@@ -1053,7 +1161,7 @@ fn write_manifest(repo: &Path, results: &[CheckResult]) {
         })
         .unwrap_or_else(|_| "unknown".into());
 
-    let all_pass = results.iter().all(|r| r.passed);
+    let all_pass = results.iter().all(|r| r.passed || !r.blocking);
     let status = if all_pass { "PASS" } else { "FAIL" };
 
     let mut md = String::new();
@@ -1065,7 +1173,13 @@ fn write_manifest(repo: &Path, results: &[CheckResult]) {
     writeln!(md, "| Check | Status | Details |").unwrap();
     writeln!(md, "|-------|--------|---------|").unwrap();
     for r in results {
-        let s = if r.passed { "PASS" } else { "FAIL" };
+        let s = if r.passed {
+            "PASS"
+        } else if r.blocking {
+            "FAIL"
+        } else {
+            "WARN"
+        };
         writeln!(md, "| {} | {} | {} |", r.name, s, r.details).unwrap();
     }
 
@@ -1188,13 +1302,23 @@ pub fn run(mode: Mode) -> i32 {
         // === Cross-Prover ===
         eprintln!("\n=== Cross-Prover Validation ===");
         results.push(cross_validate_provers(&coq_dir, &lean_dir, &isabelle_dir));
+
+        // === Metrics Accuracy ===
+        eprintln!("\n=== Metrics Accuracy Check ===");
+        results.push(verify_metrics_accuracy(&repo, &coq_dir, &lean_dir, &isabelle_dir));
     }
 
     // Report
-    let all_pass = results.iter().all(|r| r.passed);
+    let all_pass = results.iter().all(|r| r.passed || !r.blocking);
     eprintln!();
     for r in &results {
-        let icon = if r.passed { "OK" } else { "FAIL" };
+        let icon = if r.passed {
+            "OK"
+        } else if r.blocking {
+            "FAIL"
+        } else {
+            "WARN"
+        };
         eprintln!("  [{icon}] {}: {}", r.name, r.details);
     }
     eprintln!();

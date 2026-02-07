@@ -21,6 +21,7 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
+Require Import Lia.
 
 (** ** 1. PHI Classification *)
 
@@ -242,8 +243,8 @@ Theorem high_role_accesses_demographics : forall r,
   r >= 1 ->
   access_permitted r Demographics = true.
 Proof.
-  intros r Hr. unfold access_permitted. simpl.
-  apply Nat.leb_le. exact Hr.
+  intros r Hr. unfold access_permitted.
+  apply Nat.leb_le. simpl. lia.
 Qed.
 
 Theorem low_role_denied_psychotherapy :
