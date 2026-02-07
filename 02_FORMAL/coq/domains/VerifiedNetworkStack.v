@@ -955,16 +955,15 @@ Qed.
 Theorem SEQ_004_seq_in_window_start : forall start size,
   size > 0 ->
   size < SEQ_SPACE / 2 ->
+  size < SEQ_SPACE ->
   seq_in_window start start size = true.
 Proof.
-  intros start size Hpos Hsmall.
+  intros start size Hpos Hsmall Hlt.
   unfold seq_in_window.
   rewrite SEQ_002_seq_le_refl. simpl.
   unfold seq_lt.
   replace (start + size - start) with size by lia.
-  assert (size < SEQ_SPACE) as Hlt.
-  { unfold SEQ_SPACE in *. lia. }
-  rewrite Nat.mod_small by exact Hlt.
+  rewrite (Nat.mod_small _ _ Hlt).
   assert ((0 <? size) = true) as H1 by (apply Nat.ltb_lt; lia).
   assert ((size <? SEQ_SPACE / 2) = true) as H2 by (apply Nat.ltb_lt; exact Hsmall).
   rewrite H1, H2. reflexivity.
