@@ -256,9 +256,6 @@ const RiinaWebsite = () => {
               </div>
             ))}
           </div>
-          <p className="triple-prover__note">
-            {fmt(metrics.multiProver.tripleProverTheorems)} triple-prover theorems &middot; {metrics.multiProver.sorry} sorry &middot; {metrics.proofs.axioms} justified axiom &middot; {metrics.multiProver.totalProvers} provers
-          </p>
         </div>
       </section>
 
