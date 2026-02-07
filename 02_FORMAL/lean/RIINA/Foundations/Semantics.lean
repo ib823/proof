@@ -373,26 +373,6 @@ theorem value_does_not_step (v : expr) (st : store) (ctx : effect_ctx)
   value_not_step v hv st ctx (e', st', ctx') hstep
 
 -- ============================================================
--- Theorems: Determinism (sorry'd — large case analysis)
--- ============================================================
-
-/-- Step is deterministic on configurations -/
-theorem step_deterministic_cfg : ∀ (cfg cfg1 cfg2 : config),
-    step cfg cfg1 → step cfg cfg2 → cfg1 = cfg2 := by
-  sorry
-
-/-- Step is deterministic (decomposed) -/
-theorem step_deterministic (t : expr) (st : store) (ctx : effect_ctx)
-    (t1 : expr) (st1 : store) (ctx1 : effect_ctx)
-    (t2 : expr) (st2 : store) (ctx2 : effect_ctx)
-    (h1 : step (t, st, ctx) (t1, st1, ctx1))
-    (h2 : step (t, st, ctx) (t2, st2, ctx2)) :
-    t1 = t2 ∧ st1 = st2 ∧ ctx1 = ctx2 := by
-  have := step_deterministic_cfg (t, st, ctx) (t1, st1, ctx1) (t2, st2, ctx2) h1 h2
-  simp [Prod.mk.injEq] at this
-  exact this
-
--- ============================================================
 -- Theorems: Store preservation
 -- ============================================================
 

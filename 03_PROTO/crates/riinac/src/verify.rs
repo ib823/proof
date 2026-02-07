@@ -980,13 +980,11 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                     ),
                 }
             } else if o.status.success() && sorry_warnings > 0 {
-                // Build succeeded but sorry found — non-blocking warning.
-                // Hand-written Lean files may have deliberate sorry for Tier 3
-                // theorems (e.g. step_deterministic_cfg — massive case analysis).
+                // Build succeeded but sorry found — this is a FAIL
                 CheckResult {
                     name: "Lean 4 Compilation".into(),
                     passed: false,
-                    blocking: false,
+                    blocking: true,
                     details: format!(
                         "Built in {:.0}s but {sorry_warnings} sorry warning(s) detected",
                         elapsed.as_secs_f64()

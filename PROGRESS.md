@@ -17,8 +17,8 @@
 ```
 
 **Report Date:** 2026-02-06 (Session 81)
-**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,980 total items across 10 provers. 7,929 Coq Qed (compiled) + 15998 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
-**Session:** 81 (Proof Depth 20+ All Files — 82,980 proofs across 3 provers, 0 sorry, 1 axiom)
+**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,978 total items across 10 provers. 7,929 Coq Qed (compiled) + 15996 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
+**Session:** 81 (Proof Depth 20+ All Files — 82,978 proofs across 3 provers, 0 sorry, 1 axiom)
 **Overall Grade:** A (BUILD PASSING, 0 Admitted/sorry across all provers, 1 justified axiom)
 
 ---
@@ -33,10 +33,10 @@
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **250** | - | ✅ All compile |
 | Qed Proofs (Coq) | **7,929** | - | ✅ (active build, 0 Admitted) |
-| Lean 4 Theorems | **7926** | - | ✅ (0 sorry) |
+| Lean 4 Theorems | **7924** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8072** | - | ✅ (0 sorry) |
 | Triple-Prover Theorems | **86** | - | ✅ (independent agreement across 3 provers) |
-| Total Proofs (All Provers) | **82,980** | - | ✅ |
+| Total Proofs (All Provers) | **82,978** | - | ✅ |
 | .v Files (Total) | **284** | - | ✅ |
 | .lean Files | **12** | - | ✅ |
 | .thy Files | **10** | - | ✅ |
