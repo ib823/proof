@@ -121,7 +121,7 @@ RIINA is the world's **first formally verified programming language** with:
 | Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
 | Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 1 justified axiom, 7,929 Qed (active), 250 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
-| Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, MPL-2.0 |
+| Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, Proprietary |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
 | Phase 7: Platform Universality | ✅ Done | WASM backend, mobile backends, platform stdlib, playground, backend verification |
 | Phase 8: Long-term Vision | 🔄 | Self-hosting, HW verification, verified OS, multi-lang keywords, content/revenue/community strategy (§12.1–12.8) |
@@ -710,7 +710,7 @@ Corresponds to **Materialization Plan Phase 3** (Formal Verification & Semantic 
 **Phase 1** (Compiler Completion): ✅ All items done.
 **Phase 2** (Standard Library): ✅ Done. ~38 unique builtins (with BM/EN aliases), 10 modules.
 **Phase 4** (Developer Experience): ✅ Done. 3 new crates, VS Code extension, 108 examples.
-**Phase 5** (Ecosystem): ✅ Done. CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0.
+**Phase 5** (Ecosystem): ✅ Done. CI/CD, pkg mgr, Docker, Nix, release scripts, installer, Proprietary.
 **Phase 6** (Adoption): ✅ Done. C FFI, 8 demos, community, enterprise, public branch.
 **Phase 7** (Platform Universality): ✅ Done. Backend trait, WASM, mobile, platform stdlib, playground, backend verification.
 

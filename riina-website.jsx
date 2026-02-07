@@ -33,7 +33,7 @@ const RiinaWebsite = () => {
       'Quick Start': 'quickStart',
       'Standard Library': 'stdlib',
       'Contributing': 'contributing',
-      'MPL-2.0 License': 'license',
+      'Proprietary License': 'license',
       'Privacy': 'privacy',
       'Terms': 'terms',
     };
@@ -532,7 +532,7 @@ fungsi hash_kata_laluan(
           color: '#888',
           marginBottom: '48px'
         }}>
-          Open source. MPL-2.0 licensed. Made in Malaysia.
+          Open source. Proprietary licensed. Made in Malaysia.
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
           <button
@@ -1519,7 +1519,7 @@ Every security claim has a machine-checked proof behind it.`
           Open Source
         </h2>
         <p style={{ color: '#888', marginBottom: '32px' }}>
-          MPL-2.0 licensed. Explore the proofs yourself.
+          Proprietary licensed. Explore the proofs yourself.
         </p>
         <a
           href="https://github.com/ib823/riina"
@@ -1784,7 +1784,7 @@ riinac build hello.rii    # Compile to native binary via C`}
     <div style={pageTopStyle}>
       <PageHeader
         title="Contributing"
-        subtitle="RIINA is open source under MPL-2.0. Contributions to the compiler, proofs, standard library, and documentation are welcome."
+        subtitle="RIINA is open source under Proprietary. Contributions to the compiler, proofs, standard library, and documentation are welcome."
       />
 
       <section style={{ padding: '0 32px 80px' }}>
@@ -1866,13 +1866,13 @@ grep -r "Admitted" *.v  # Must be empty`}
   );
 
   // ============================================================================
-  // LICENSE PAGE (Legal → MPL-2.0)
+  // LICENSE PAGE (Legal → Proprietary)
   // ============================================================================
   const LicensePage = () => (
     <div style={pageTopStyle}>
       <PageHeader
-        title="MPL-2.0 License"
-        subtitle="RIINA is licensed under the Mozilla Public License 2.0 with the 'Incompatible With Secondary Licenses' notice."
+        title="Proprietary License"
+        subtitle="RIINA is licensed under the RIINA Proprietary License with the 'Incompatible With Secondary Licenses' notice."
       />
 
       <section style={{ padding: '0 32px 80px' }}>
@@ -1909,7 +1909,7 @@ grep -r "Admitted" *.v  # Must be empty`}
           <h2 style={sectionLabel}>INCOMPATIBLE WITH SECONDARY LICENSES</h2>
           <p style={{ color: '#666', fontSize: '14px', lineHeight: 1.8, marginBottom: '48px' }}>
             This Source Code Form is "Incompatible With Secondary Licenses" as defined by
-            the Mozilla Public License, v. 2.0. This means the code <strong>cannot be relicensed
+            the RIINA Proprietary License, v. 2.0. This means the code <strong>cannot be relicensed
             under GPL, AGPL, or LGPL</strong>. This is a deliberate choice to prevent license
             capture and maintain RIINA's permissive distribution model.
           </p>
@@ -1993,7 +1993,7 @@ grep -r "Admitted" *.v  # Must be empty`}
           <div style={{ ...cardStyle, padding: '48px' }}>
             <h2 style={{ fontSize: '20px', fontWeight: 500, marginBottom: '16px' }}>Software License</h2>
             <p style={{ color: '#666', fontSize: '14px', lineHeight: 1.8, marginBottom: '32px' }}>
-              RIINA is distributed under the Mozilla Public License 2.0 (MPL-2.0).
+              RIINA is distributed under the RIINA Proprietary License (Proprietary).
               See the <button onClick={() => setCurrentPage('license')} style={{ background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', color: '#000', fontSize: '14px', padding: 0 }}>License page</button> for details.
             </p>
 
@@ -2025,7 +2025,7 @@ grep -r "Admitted" *.v  # Must be empty`}
       { title: 'Language', links: ['Syntax', 'Security Types', 'Effect System', 'Examples'] },
       { title: 'Developers', links: ['Documentation', 'Quick Start', 'Standard Library', 'GitHub'] },
       { title: 'Community', links: ['Contributing', 'Issues', 'Discussions'] },
-      { title: 'Legal', links: ['MPL-2.0 License', 'Privacy', 'Terms'] }
+      { title: 'Legal', links: ['Proprietary License', 'Privacy', 'Terms'] }
     ];
 
     return (

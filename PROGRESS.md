@@ -119,7 +119,7 @@
 3. **`scripts/bump-version.sh`** — Updates version in 6 locations: VERSION, 03_PROTO/Cargo.toml, 05_TOOLING/Cargo.toml, flake.nix, website/package.json, website footer
 4. **`scripts/release.sh`** — One-command release: validate → bump → finalize changelog → commit + tag → push → tarball + SHA256SUMS → sync public → GitHub Release → update website releases array
 5. **Website Releases page** — New page with release cards, download links, install instructions; `releases` array auto-updated by release.sh via `// RELEASES_MARKER`
-6. **Website footer** — Now shows `RIINA v0.1.0 · MPL-2.0`
+6. **Website footer** — Now shows `RIINA v0.1.0 · Proprietary`
 7. **Branch strategy documented** — main (dev), public (staging for riina/main), feat/<name>, fix/<name>; tags mark releases
 8. **GitHub Pages** — Website deployed to `ib823.github.io/riina/` via `scripts/deploy-website.sh`; `/proof` pages redirect to `/riina`
 9. **deploy-website.sh** — Builds website, copies install.sh, pushes to `gh-pages` on ib823/riina; integrated into release.sh
@@ -181,7 +181,7 @@
 1. **riina-pkg crate** — 14 modules, 39 tests, zero external deps
 2. **riinac pkg integration** — `riinac pkg init/add/remove/update/lock/build/publish/list/tree/clean`
 3. **Tests: 530 → 568** (+39 from riina-pkg, -1 dedup)
-4. **Phase 5 status**: ✅ Done. CI/CD, pkg mgr, Dockerfile, Nix flake, release scripts, installer, MPL-2.0 license.
+4. **Phase 5 status**: ✅ Done. CI/CD, pkg mgr, Dockerfile, Nix flake, release scripts, installer, Proprietary license.
 
 **SESSION 56 KEY ACTIONS (Phase 4 Developer Experience):**
 1. **M1: Span-annotated AST** — Added `Span`, `SpannedDecl` to riina-types; parser records spans for all top-level decls
@@ -1083,7 +1083,7 @@ All execution planning follows the 8-phase materialization plan. The older 6-pha
 | 2 | Standard Library | ✅ Done | 88 builtins, 9 modules |
 | 3 | Formal Verification | ✅ Done | 0 Admitted, 4 justified axioms, 4,044 Qed, 249 active files |
 | 4 | Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code, 113 examples |
-| 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Docker, Nix, release scripts, installer, MPL-2.0 |
+| 5 | Ecosystem & Distribution | ✅ Done | CI/CD, pkg mgr, Docker, Nix, release scripts, installer, Proprietary |
 | 6 | Adoption & Community | ✅ Done | C FFI, 8 demos, community, enterprise, public branch |
 | 7 | Platform Universality | ✅ Done | Backend trait, WASM, mobile, platform stdlib, playground, backend verification |
 | 8 | Long-term Vision | ⬜ | Self-hosting, HW verification |

@@ -2341,7 +2341,7 @@ This validates (clean main, tests pass), bumps version, finalizes CHANGELOG, com
 ### 9.6 Licensing
 
 **Recommended dual license:**
-- **Compiler + Proofs + Stdlib:** MPL-2.0 (Mozilla Public License)
+- **Compiler + Proofs + Stdlib:** Proprietary (RIINA Proprietary License)
   - Programs written in RIINA can be proprietary
   - Modifications to the compiler must be shared
   - Proofs are publicly auditable

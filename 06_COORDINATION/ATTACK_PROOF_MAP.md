@@ -514,7 +514,7 @@ These threats target the distribution pipeline (Docker images, Nix packages, rel
 | DIST-D03 | Docker image bloat/leak | `.dockerignore` excludes research, proofs, .git | Only compiler binary + ca-certificates in runtime image | **Active** |
 | DIST-D04 | Nix hash mismatch | `flake.lock` pins exact nixpkgs + rust-overlay revisions | `nix flake check` validates derivations | **Active** |
 | DIST-D05 | Installer script injection | Installer builds from source (no pre-built binaries downloaded) | `scripts/install.sh` requires local Rust toolchain | **Active** |
-| DIST-D06 | License misrepresentation | All Cargo.toml files declare MPL-2.0, matching LICENSE file | Verified in Session 60 | **Enforced** |
+| DIST-D06 | License misrepresentation | All Cargo.toml files declare Proprietary, matching LICENSE file | Verified in Session 60 | **Enforced** |
 | DIST-D07 | Binary without verification | Release script runs `riinac verify --fast` before packaging | Tarball only created after 576 tests pass | **Active** |
 
 ---

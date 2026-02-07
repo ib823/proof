@@ -290,7 +290,7 @@
 | bump-version.sh | Updates 6 locations (VERSION, 2 Cargo.toml, flake.nix, package.json, JSX footer) | Done |
 | release.sh | One-command release: validate → bump → changelog → commit + tag → push → tarball + SHA256SUMS → sync public → GitHub Release → website update | Done |
 | Website Releases page | New page with release cards, download links, install instructions | Done |
-| Website footer | Shows `RIINA v0.1.0 · MPL-2.0` | Done |
+| Website footer | Shows `RIINA v0.1.0 · Proprietary` | Done |
 | releases array marker | `// RELEASES_MARKER` in JSX for auto-injection by release.sh | Done |
 | Doc sync | PROGRESS.md, CLAUDE.md, README.md, COORDINATION_LOG.md, SESSION_LOG.md updated | Done |
 | GitHub Pages | Website deployed to `ib823.github.io/riina/` via `deploy-website.sh` | Done |
@@ -471,7 +471,7 @@ All future sessions MUST follow: main → commit (verify --fast) → push (verif
 
 | Task | Description | Status |
 |------|-------------|--------|
-| License fix | MPL-2.0 in both Cargo.toml workspaces (was MIT/Apache-2.0 and PROPRIETARY) | Done |
+| License fix | Proprietary in both Cargo.toml workspaces (was MIT/Apache-2.0 and PROPRIETARY) | Done |
 | Dockerfile | Multi-stage build: rust:1.84-bookworm → debian:bookworm-slim (~85MB) | Done |
 | .dockerignore | Excludes .git, target, research, formal, archives | Done |
 | Nix flake | `packages.default` (riinac) + `devShells.default` (Rust 1.84 + Coq) | Done |
@@ -486,7 +486,7 @@ All future sessions MUST follow: main → commit (verify --fast) → push (verif
 |------|--------|
 | CI/CD (`riinac verify`) | ✅ Done (Session 56) |
 | Package manager (`riina-pkg`) | ✅ Done (Session 57) |
-| Licensing (MPL-2.0) | ✅ Done (Session 60) |
+| Licensing (Proprietary) | ✅ Done (Session 60) |
 | Dockerfile | ✅ Done (Session 60) |
 | Nix flake | ✅ Done (Session 60) |
 | Release scripts | ✅ Done (Session 60) |

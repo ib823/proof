@@ -70,21 +70,21 @@ fi
 echo "[5/8] Checking license consistency..."
 LICENSE_FAIL=0
 for f in riina-vscode/package.json website/package.json; do
-    if [ -f "$REPO_ROOT/$f" ] && ! grep -q '"MPL-2.0"' "$REPO_ROOT/$f"; then
-        echo -e "${RED}FAIL: $f license is not MPL-2.0${NC}"
+    if [ -f "$REPO_ROOT/$f" ] && ! grep -q '"Proprietary"' "$REPO_ROOT/$f"; then
+        echo -e "${RED}FAIL: $f license is not Proprietary${NC}"
         FAIL=1
         LICENSE_FAIL=1
     fi
 done
 for f in 03_PROTO/Cargo.toml 05_TOOLING/Cargo.toml; do
-    if [ -f "$REPO_ROOT/$f" ] && ! grep -q 'license = "MPL-2.0"' "$REPO_ROOT/$f"; then
-        echo -e "${RED}FAIL: $f license is not MPL-2.0${NC}"
+    if [ -f "$REPO_ROOT/$f" ] && ! grep -q 'license = "Proprietary"' "$REPO_ROOT/$f"; then
+        echo -e "${RED}FAIL: $f license is not Proprietary${NC}"
         FAIL=1
         LICENSE_FAIL=1
     fi
 done
 if [ $LICENSE_FAIL -eq 0 ]; then
-    echo -e "${GREEN}[OK] All licenses MPL-2.0${NC}"
+    echo -e "${GREEN}[OK] All licenses Proprietary${NC}"
 fi
 
 # ── 6. Governance files exist ─────────────────────────────────────────

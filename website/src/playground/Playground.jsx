@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) 2026 The RIINA Authors. All rights reserved.
 // RIINA Playground — In-Browser Compiler
 // Zero external dependencies (no Monaco, no CodeMirror).
 
@@ -260,7 +260,7 @@ const PlaygroundPage = ({ onNavigate }) => {
 
         {/* Footer info */}
         <div style={{ marginTop: 24, fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
-          RIINA Compiler v0.2.0 &middot; MPL-2.0
+          RIINA Compiler v0.2.0 &middot; Proprietary
         </div>
       </div>
     </div>
