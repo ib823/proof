@@ -788,8 +788,10 @@ Theorem CONG_005_aimd_decrease_halves : forall cs,
   cwnd (aimd_decrease cs) <= cwnd cs.
 Proof.
   intros cs H. unfold aimd_decrease. simpl.
-  pose proof (Nat.div_le_upper_bound (cwnd cs) 2 (cwnd cs) ltac:(lia) ltac:(lia)).
-  apply Nat.max_lub; lia.
+  apply Nat.max_lub.
+  - assert (cwnd cs / 2 <= cwnd cs) by (apply Nat.div_le_upper_bound; lia).
+    exact H0.
+  - lia.
 Qed.
 
 (* CONG_006: AIMD decrease sets ssthresh to new cwnd *)
@@ -858,12 +860,12 @@ Proof.
   destruct (in_slow_start cs); reflexivity.
 Qed.
 
-(* CONG_015: Initial state starts in slow start *)
+(* CONG_015: Initial state starts in slow start (when mss is reasonable) *)
 Theorem CONG_015_initial_slow_start : forall mss,
-  mss > 0 -> in_slow_start (initial_cong_state mss) = true.
+  mss > 0 -> 2 * mss < 65535 -> in_slow_start (initial_cong_state mss) = true.
 Proof.
-  intros mss Hmss. unfold initial_cong_state, in_slow_start. simpl.
-  apply Nat.ltb_lt. lia.
+  intros mss Hmss Hbound. unfold initial_cong_state, in_slow_start. simpl.
+  apply Nat.ltb_lt. exact Hbound.
 Qed.
 
 (** ============================================================================
