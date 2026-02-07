@@ -951,19 +951,23 @@ Proof.
   unfold next_seq. rewrite Nat.mod_small. reflexivity. exact Hsum.
 Qed.
 
-(* SEQ_004: Sequence in window at start *)
+(* SEQ_004: Sequence in window at start (window size < half seq space) *)
 Theorem SEQ_004_seq_in_window_start : forall start size,
   size > 0 ->
+  size < SEQ_SPACE / 2 ->
   seq_in_window start start size = true.
 Proof.
-  intros start size Hsize.
+  intros start size Hpos Hsmall.
   unfold seq_in_window.
   rewrite SEQ_002_seq_le_refl. simpl.
   unfold seq_lt.
   replace (start + size - start) with size by lia.
-  destruct (0 <? size mod SEQ_SPACE) eqn:E1.
-  - destruct (size mod SEQ_SPACE <? SEQ_SPACE / 2) eqn:E2; reflexivity.
-  - reflexivity.
+  assert (size < SEQ_SPACE) as Hlt.
+  { unfold SEQ_SPACE in *. lia. }
+  rewrite Nat.mod_small by exact Hlt.
+  assert ((0 <? size) = true) as H1 by (apply Nat.ltb_lt; lia).
+  assert ((size <? SEQ_SPACE / 2) = true) as H2 by (apply Nat.ltb_lt; exact Hsmall).
+  rewrite H1, H2. reflexivity.
 Qed.
 
 (* SEQ_005: Valid ACK with same UNA and NXT *)
