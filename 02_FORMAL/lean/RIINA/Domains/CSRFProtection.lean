@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CSRFProtection - Lean 4 Port
@@ -92,7 +93,7 @@ def csrf_protected (c : CSRFConfig) : Bool :=
 def riina_csrf : CSRFConfig := mkCSRF true true true true true
 
 /-- csrf_request_safe (matches Coq: Definition csrf_request_safe) -/
-def csrf_request_safe := True -- complex match, simplified to Prop
+def csrf_request_safe := sorry -- complex match, needs manual translation
 
 /-- csrf_request_fully_validated (matches Coq: Definition csrf_request_fully_validated) -/
 def csrf_request_fully_validated (r : CSRFRequest) : Bool :=

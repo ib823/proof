@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TimingSecurity - Isabelle/HOL Port
@@ -159,24 +160,26 @@ datatype time_complexity =
 
 (* TimeoutState (matches Coq: Inductive TimeoutState) *)
 datatype timeout_state =
-    TimeoutPending  (* deadline *)
+    TimeoutPending
   |     TimeoutExpired
   |     TimeoutCancelled
   |     TimeoutCompleted
 
 (* ProgressState (matches Coq: Inductive ProgressState) *)
 datatype progress_state =
-    MakingProgress  (* progress counter *)
+    MakingProgress
   |     Blocked
   |     Completed
 
-(* valid_session_transition - complex match, manual review needed *)
+(* valid_session_transition - complex match, needs manual translation *)
+definition valid_session_transition :: "bool" where "valid_session_transition = undefined"
 
 (* timing_leakage (matches Coq: Definition timing_leakage) *)
 definition timing_leakage :: "bool" where
   "timing_leakage \<equiv> negb (Nat"
 
-(* ntp_authenticated - complex match, manual review needed *)
+(* ntp_authenticated - complex match, needs manual translation *)
+definition ntp_authenticated :: "bool" where "ntp_authenticated = undefined"
 
 (* in_replay_window (matches Coq: Definition in_replay_window) *)
 definition in_replay_window :: "Timestamp \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
@@ -202,13 +205,17 @@ definition respects_lock_order :: "LockOrderPolicy \<Rightarrow> ResourceId \<Ri
   "respects_lock_order policy new_lock \<equiv> forallb (fun held => lock_order_fn policy held <? lock_order_fn policy new_lock) 
           (held_locks policy)"
 
-(* liveness_guaranteed - complex match, manual review needed *)
+(* liveness_guaranteed - complex match, needs manual translation *)
+definition liveness_guaranteed :: "bool" where "liveness_guaranteed = undefined"
 
-(* thread_starved - complex match, manual review needed *)
+(* thread_starved - complex match, needs manual translation *)
+definition thread_starved :: "bool" where "thread_starved = undefined"
 
-(* time_001_session_type_valid - complex match, manual review needed *)
+(* time_001_session_type_valid - complex match, needs manual translation *)
+definition time_001_session_type_valid :: "bool" where "time_001_session_type_valid = undefined"
 
-(* time_001_lock_exclusive - complex match, manual review needed *)
+(* time_001_lock_exclusive - complex match, needs manual translation *)
+definition time_001_lock_exclusive :: "bool" where "time_001_lock_exclusive = undefined"
 
 (* time_003_is_constant_time (matches Coq: Definition time_003_is_constant_time) *)
 definition time_003_is_constant_time :: "TimedOperation \<Rightarrow> bool" where
@@ -228,10 +235,11 @@ definition time_004_no_cross_domain_leakage :: "TimingObservation \<Rightarrow> 
   "time_004_no_cross_domain_leakage obs \<equiv> domain_isolated d1 = true ->
   domain_isolated d2 = true ->
   domain_id d1 <> domain_id d2 ->
-  (* Observation from d1 is independent of d2's operations *)
+  
   True"
 
-(* time_005_nts_verify - complex match, manual review needed *)
+(* time_005_nts_verify - complex match, needs manual translation *)
+definition time_005_nts_verify :: "bool" where "time_005_nts_verify = undefined"
 
 (* time_006_validate_message (matches Coq: Definition time_006_validate_message) *)
 definition time_006_validate_message :: "ReplayProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
@@ -253,7 +261,8 @@ definition time_008_deadline_feasible :: "Task \<Rightarrow> Time \<Rightarrow> 
 definition time_009_verify_signed_timestamp :: "SignedTimestamp \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool" where
   "time_009_verify_signed_timestamp sts expected_signer expected_sig \<equiv> Nat"
 
-(* time_010_check_timeout - complex match, manual review needed *)
+(* time_010_check_timeout - complex match, needs manual translation *)
+definition time_010_check_timeout :: "bool" where "time_010_check_timeout = undefined"
 
 (* time_010_update_handler (matches Coq: Definition time_010_update_handler) *)
 definition time_010_update_handler :: "TimeoutHandler \<Rightarrow> Time \<Rightarrow> TimeoutHandler" where
@@ -270,12 +279,12 @@ definition time_011_compute_skew :: "ClockState \<Rightarrow> nat" where
 (* time_011_adjust_clock (matches Coq: Definition time_011_adjust_clock) *)
 definition time_011_adjust_clock :: "ClockState \<Rightarrow> ClockState" where
   "time_011_adjust_clock cs \<equiv> if clock_synchronized cs
-  then cs  (* Already synchronized *)
+  then cs  
   else mkClockState (reference_time cs) (reference_time cs) (max_skew cs)"
 
 (* time_012_inherit_priority (matches Coq: Definition time_012_inherit_priority) *)
 definition time_012_inherit_priority :: "PriorityState \<Rightarrow> Priority \<Rightarrow> ThreadId \<Rightarrow> PriorityState" where
-  "time_012_inherit_priority holder requester_priority requester_id \<equiv> if requester_priority <? effective_priority holder  (* Lower number = higher priority *)
+  "time_012_inherit_priority holder requester_priority requester_id \<equiv> if requester_priority <? effective_priority holder  
   then mkPriorityState (base_priority holder) requester_priority (Some requester_id)
   else holder"
 
@@ -292,7 +301,8 @@ definition time_013_release_lock :: "LockOrderPolicy \<Rightarrow> ResourceId \<
   "time_013_release_lock policy lock_id \<equiv> mkLockOrderPolicy (lock_order_fn policy) 
     (filter (fun x => negb (Nat"
 
-(* time_014_make_progress - complex match, manual review needed *)
+(* time_014_make_progress - complex match, needs manual translation *)
+definition time_014_make_progress :: "bool" where "time_014_make_progress = undefined"
 
 (* time_014_check_liveness (matches Coq: Definition time_014_check_liveness) *)
 definition time_014_check_liveness :: "LivenessProof \<Rightarrow> bool" where

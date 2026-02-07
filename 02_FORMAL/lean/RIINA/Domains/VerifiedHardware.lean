@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedHardware - Lean 4 Port
@@ -112,21 +113,21 @@ inductive SecurityLevel where
 
 /-- Instruction (matches Coq: Inductive Instruction) -/
 inductive Instruction where
-  | iAdd : Instruction  -- rd = rs1 + rs2
-  | iSub : Instruction  -- rd = rs1 - rs2
-  | iAnd : Instruction  -- rd = rs1 & rs2
-  | iOr : Instruction
-  | iXor : Instruction  -- rd = rs1 ^ rs2
-  | iMul : Instruction  -- rd = rs1 * rs2
-  | iDiv : Instruction  -- rd = rs1 / rs2
-  | iLoad : Instruction  -- rd = mem[rs1 + imm]
-  | iStore : Instruction  -- mem[rs1 + imm] = rs2
-  | iBranch : Instruction  -- if rs1 = rs2 goto imm
-  | iJump : Instruction  -- goto imm
-  | iSCUB : Instruction  -- Speculative barrier
-  | iFENCESC : Instruction  -- Side-channel fence
-  | iISOL : Instruction  -- Enter isolation mode
-  | iZEROIZE : Instruction  -- Zeroize registers
+  | iAdd : RegId → RegId → RegId → Instruction
+  | iSub : RegId → RegId → RegId → Instruction
+  | iAnd : RegId → RegId → RegId → Instruction
+  | iOr : RegId → RegId → RegId → Instruction
+  | iXor : RegId → RegId → RegId → Instruction
+  | iMul : RegId → RegId → RegId → Instruction
+  | iDiv : RegId → RegId → RegId → Instruction
+  | iLoad : RegId → RegId → Nat → Instruction
+  | iStore : RegId → RegId → Nat → Instruction
+  | iBranch : RegId → RegId → Nat → Instruction
+  | iJump : Nat → Instruction
+  | iSCUB : Instruction
+  | iFENCESC : Instruction
+  | iISOL : Instruction
+  | iZEROIZE : Instruction
   | iNop : Instruction
   deriving DecidableEq, Repr
 
@@ -141,10 +142,10 @@ inductive PipelineStage where
 
 /-- Leakage (matches Coq: Inductive Leakage) -/
 inductive Leakage where
-  | lTiming : Leakage
-  | lPower : Leakage
-  | lCacheAccess : Leakage
-  | lBranchOutcome : Leakage
+  | lTiming : Nat → Leakage
+  | lPower : Nat → Leakage
+  | lCacheAccess : Nat → Leakage
+  | lBranchOutcome : Bool → Leakage
   deriving DecidableEq, Repr
 
 /-- ArchState (matches Coq: Record ArchState) -/
@@ -172,9 +173,9 @@ structure RTLState where
   rtl_cycle : Nat
   rtl_security_labels : RegId
   rtl_isolation_mode : Bool
-  rtl_speculating : Bool  -- Always false for in-order
-  rtl_scub_active : Bool  -- SCUB barrier active
-  rtl_fencesc_active : Bool  -- Side-channel fence active
+  rtl_speculating : Bool
+  rtl_scub_active : Bool
+  rtl_fencesc_active : Bool
   deriving DecidableEq, Repr
 
 /-- ECCWord (matches Coq: Record ECCWord) -/
@@ -229,7 +230,7 @@ def rtl_to_arch (s : RTLState) : ArchState :=
      isolation_mode := rtl_isolation_mode s |}
 
 /-- rtl_execute_instr (matches Coq: Definition rtl_execute_instr) -/
-def rtl_execute_instr := True -- complex match, simplified to Prop
+def rtl_execute_instr := sorry -- complex match, needs manual translation
 
 /-- cycles (matches Coq: Definition cycles) -/
 def cycles (instr : Instruction) : Nat :=
@@ -286,7 +287,7 @@ def verified (s : RTLState) : Prop :=
 
 /-- behavior_in_spec (matches Coq: Definition behavior_in_spec) -/
 def behavior_in_spec (s s' : RTLState) : Prop :=
-  s = s' \/  (* Reflexive: no step needed *)
+  s = s' \/  
   exists instr, 
     rtl_to_arch s' = rtl_to_arch (rtl_execute_instr instr s) /\
     (exists a', isa_step instr (rtl_to_arch s) a' /\ a' = rtl_to_arch s')
@@ -422,7 +423,7 @@ theorem PHI_001_06_branch_correct : ∀ rs1 rs2 target s, (rtl_regs s rs1 = rtl_
   cases ‹_› <;> simp
 
 /-- PHI_001_07_interrupt_correct (matches Coq) -/
-theorem PHI_001_07_interrupt_correct : ∀ s, rtl_speculating s = false → rtl_pipeline s = [] → True. (* In-order design: interrupts handled between instructions *) := by
+theorem PHI_001_07_interrupt_correct : ∀ s, rtl_speculating s = false → rtl_pipeline s = [] → True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- PHI_001_08_instruction_fetch_correct (matches Coq) -/
@@ -506,7 +507,7 @@ theorem PHI_001_25_complete_coverage : ∀ s, reachable initial_rtl_state s → 
   rfl
 
 /-- PHI_001_26_no_hidden_functionality (matches Coq) -/
-theorem PHI_001_26_no_hidden_functionality : ∀ s instr, (* For division, we only consider valid (non-zero divisor) cases *) (∀ rd rs1 rs2, instr = IDiv rd rs1 rs2 → regs (rtl_to_arch s) rs2 ≠ 0) → ∃ a', isa_step instr (rtl_to_arch s) a' := by
+theorem PHI_001_26_no_hidden_functionality : ∀ s instr,  For division, we only consider valid (non-zero divisor) cases  (∀ rd rs1 rs2, instr = IDiv rd rs1 rs2 → regs (rtl_to_arch s) rs2 ≠ 0) → ∃ a', isa_step instr (rtl_to_arch s) a' := by
   simp_all [Bool.and_eq_true]
 
 /-- no_hidden_functionality_non_div (matches Coq) -/

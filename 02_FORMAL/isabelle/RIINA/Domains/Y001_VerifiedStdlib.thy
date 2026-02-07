@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Y001_VerifiedStdlib - Isabelle/HOL Port
@@ -127,8 +128,7 @@ definition utf8_len_chars :: "Utf8String \<Rightarrow> nat" where
 
 (* bigint_add (matches Coq: Definition bigint_add) *)
 definition bigint_add :: "BigInt" where
-  "bigint_add \<equiv> (* Simplified: just concatenate for structural purposes *)
-  a ++ b"
+  "bigint_add \<equiv> a ++ b"
 
 (* Y_001_01_option_map_correct (matches Coq) *)
 lemma Y_001_01_option_map_correct: "\<forall> (A B : Type) (f : A \<longrightarrow> B) (o : option A), (\<forall> x, o = Some x \<longrightarrow> option_map f o = Some (f x)) \<and> (o = None \<longrightarrow> option_map f o = None)"

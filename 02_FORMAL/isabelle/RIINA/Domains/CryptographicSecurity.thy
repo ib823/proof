@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CryptographicSecurity - Isabelle/HOL Port
@@ -149,8 +150,9 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* TagVerifyResult (matches Coq: Inductive TagVerifyResult) *)
 datatype tag_verify_result =
-    TagValid  (* Tag matches *)
-  |     TagInvalid  (* Tag doesn't match *)
+    TagValid
+  |     TagInvalid
+  |     TagError
 
 (* ConstantTimeOp (matches Coq: Record ConstantTimeOp) *)
 record constant_time_op =
@@ -163,7 +165,7 @@ record constant_time_op =
 (* CryptoKey (matches Coq: Record CryptoKey) *)
 record crypto_key =
   key_bits :: nat
-  key_algorithm :: nat  (* 0=AES, 1=ChaCha, 2=ML-KEM *)
+  key_algorithm :: nat
   key_usage :: 'a list
   key_extractable :: bool
   key_hardware_bound :: bool
@@ -176,7 +178,7 @@ record nonce_tracker =
 
 (* AEADConfig (matches Coq: Record AEADConfig) *)
 record aead_config =
-  aead_algorithm :: nat  (* 0=AES-GCM, 1=ChaCha20-Poly1305 *)
+  aead_algorithm :: nat
   aead_key_bits :: nat
   aead_nonce_bits :: nat
   aead_tag_bits :: nat
@@ -184,7 +186,7 @@ record aead_config =
 
 (* HashConfig (matches Coq: Record HashConfig) *)
 record hash_config =
-  hash_algorithm :: nat  (* 0=SHA-256, 1=SHA-3, 2=BLAKE3 *)
+  hash_algorithm :: nat
   hash_output_bits :: nat
   hash_length_ext_safe :: bool
 
@@ -197,27 +199,27 @@ record rng_config =
 
 (* ProtocolConfig (matches Coq: Record ProtocolConfig) *)
 record protocol_config =
-  proto_min_version :: nat  (* 3=TLS1.2, 4=TLS1.3 *)
+  proto_min_version :: nat
   proto_allowed_ciphers :: 'a list
   proto_fallback_disabled :: bool
   proto_forward_secrecy :: bool
 
 (* PQConfig (matches Coq: Record PQConfig) *)
 record pq_config =
-  pq_kem_algorithm :: nat  (* 0=ML-KEM *)
-  pq_sig_algorithm :: nat  (* 0=ML-DSA *)
-  pq_security_level :: nat  (* 1=128, 3=192, 5=256 *)
-  pq_hybrid_mode :: bool  (* Combined with classical *)
+  pq_kem_algorithm :: nat
+  pq_sig_algorithm :: nat
+  pq_security_level :: nat
+  pq_hybrid_mode :: bool
 
 (* MRAEADConfig (matches Coq: Record MRAEADConfig) *)
 record mraead_config =
-  mraead_siv_mode :: bool  (* Synthetic IV mode *)
+  mraead_siv_mode :: bool
   mraead_deterministic :: bool
   mraead_base :: AEADConfig
 
 (* CertConfig (matches Coq: Record CertConfig) *)
 record cert_config =
-  cert_ct_required :: bool  (* Certificate Transparency *)
+  cert_ct_required :: bool
   cert_pinning :: bool
   cert_revocation_check :: bool
   cert_ocsp_stapling :: bool
@@ -232,23 +234,23 @@ record encryption_scheme =
 
 (* KDFConfig (matches Coq: Record KDFConfig) *)
 record kdf_config =
-  kdf_algorithm :: nat  (* 0=HKDF, 1=PBKDF2, 2=Argon2 *)
+  kdf_algorithm :: nat
   kdf_output_bits :: nat
   kdf_salt_bits :: nat
-  kdf_iterations :: nat  (* For PBKDF2/Argon2 *)
-  kdf_memory_cost :: nat  (* For Argon2 *)
+  kdf_iterations :: nat
+  kdf_memory_cost :: nat
 
 (* DerivedKey (matches Coq: Record DerivedKey) *)
 record derived_key =
   dk_parent_key :: Key
   dk_derived_key :: Key
   dk_context :: 'a list
-  dk_purpose :: nat  (* 0=encryption, 1=authentication, 2=signing *)
+  dk_purpose :: nat
   dk_kdf_config :: KDFConfig
 
 (* MACConfig (matches Coq: Record MACConfig) *)
 record mac_config =
-  mac_algorithm :: nat  (* 0=HMAC-SHA256, 1=HMAC-SHA3, 2=Poly1305 *)
+  mac_algorithm :: nat
   mac_key_bits :: nat
   mac_tag_bits :: nat
   mac_constant_time :: bool
@@ -256,8 +258,8 @@ record mac_config =
 (* CounterNonce (matches Coq: Record CounterNonce) *)
 record counter_nonce =
   cn_prefix :: 'a list
-  cn_counter :: nat  (* Monotonic counter *)
-  cn_max_value :: nat  (* Maximum counter value *)
+  cn_counter :: nat
+  cn_max_value :: nat
 
 (* FullCryptoConfig (matches Coq: Record FullCryptoConfig) *)
 record full_crypto_config =
@@ -282,7 +284,7 @@ definition ct_valid :: "ConstantTimeOp \<Rightarrow> bool" where
 (* riina_ct_op (matches Coq: Definition riina_ct_op) *)
 definition riina_ct_op :: "ConstantTimeOp" where
   "riina_ct_op \<equiv> mkCTOp
-  (fun x y => x + y)  (* placeholder operation *)
+  (fun x y => x + y)  
   true true true true"
 
 (* key_secure (matches Coq: Definition key_secure) *)
@@ -309,10 +311,10 @@ definition nonce_counter_safe :: "NonceTracker \<Rightarrow> bool" where
 
 (* aead_secure (matches Coq: Definition aead_secure) *)
 definition aead_secure :: "AEADConfig \<Rightarrow> bool" where
-  "aead_secure cfg \<equiv> (aead_algorithm cfg <=? 1) \<and>       (* approved algorithm *)
-  (128 <=? aead_key_bits cfg) \<and>      (* min 128-bit key *)
-  (96 <=? aead_nonce_bits cfg) \<and>     (* min 96-bit nonce *)
-  (128 <=? aead_tag_bits cfg) \<and>      (* min 128-bit tag *)
+  "aead_secure cfg \<equiv> (aead_algorithm cfg <=? 1) \<and>       
+  (128 <=? aead_key_bits cfg) \<and>      
+  (96 <=? aead_nonce_bits cfg) \<and>     
+  (128 <=? aead_tag_bits cfg) \<and>      
   aead_constant_time cfg"
 
 (* riina_aead (matches Coq: Definition riina_aead) *)
@@ -397,10 +399,10 @@ definition riina_enc_scheme :: "EncryptionScheme" where
 
 (* kdf_secure (matches Coq: Definition kdf_secure) *)
 definition kdf_secure :: "KDFConfig \<Rightarrow> bool" where
-  "kdf_secure cfg \<equiv> (kdf_algorithm cfg <=? 2) \<and>           (* approved algorithm *)
-  (256 <=? kdf_output_bits cfg) \<and>       (* min 256-bit output *)
-  (128 <=? kdf_salt_bits cfg) \<and>         (* min 128-bit salt *)
-  ((kdf_algorithm cfg =? 0) \<or>           (* HKDF doesn't need iterations *)
+  "kdf_secure cfg \<equiv> (kdf_algorithm cfg <=? 2) \<and>           
+  (256 <=? kdf_output_bits cfg) \<and>       
+  (128 <=? kdf_salt_bits cfg) \<and>         
+  ((kdf_algorithm cfg =? 0) \<or>           
    (100000 <=? kdf_iterations cfg))"
 
 (* riina_kdf (matches Coq: Definition riina_kdf) *)
@@ -416,9 +418,9 @@ definition derived_key_valid :: "DerivedKey \<Rightarrow> bool" where
 
 (* mac_secure (matches Coq: Definition mac_secure) *)
 definition mac_secure :: "MACConfig \<Rightarrow> bool" where
-  "mac_secure cfg \<equiv> (mac_algorithm cfg <=? 2) \<and>       (* approved algorithm *)
-  (128 <=? mac_key_bits cfg) \<and>      (* min 128-bit key *)
-  (128 <=? mac_tag_bits cfg) \<and>      (* min 128-bit tag *)
+  "mac_secure cfg \<equiv> (mac_algorithm cfg <=? 2) \<and>       
+  (128 <=? mac_key_bits cfg) \<and>      
+  (128 <=? mac_tag_bits cfg) \<and>      
   mac_constant_time cfg"
 
 (* riina_mac (matches Coq: Definition riina_mac) *)

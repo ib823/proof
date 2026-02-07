@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ISO26262Compliance - Isabelle/HOL Port
@@ -79,10 +80,11 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* ASIL (matches Coq: Inductive ASIL) *)
 datatype asil =
-    ASIL_D  (* Highest - requires most rigorous measures *)
+    ASIL_D
   |     ASIL_C
   |     ASIL_B
   |     ASIL_A
+  |     QM
 
 (* HARA (matches Coq: Record HARA) *)
 record hara =
@@ -114,7 +116,7 @@ record software_development =
 record verification_methods =
   vm_requirements_inspection :: bool
   vm_walkthrough :: bool
-  vm_formal_verification :: bool  (* Highly recommended for ASIL D *)
+  vm_formal_verification :: bool
   vm_control_flow_analysis :: bool
   vm_data_flow_analysis :: bool
   vm_static_analysis :: bool
@@ -126,7 +128,7 @@ record testing_requirements =
   test_fault_injection :: bool
   test_back_to_back :: bool
   test_structural_coverage :: bool
-  test_mc_dc_coverage :: bool  (* Required for ASIL D *)
+  test_mc_dc_coverage :: bool
 
 (* ISO26262Compliance (matches Coq: Record ISO26262Compliance) *)
 record iso26262_compliance =
@@ -137,7 +139,8 @@ record iso26262_compliance =
   iso_verif_methods :: VerificationMethods
   iso_testing :: TestingRequirements
 
-(* asil_leq - complex match, manual review needed *)
+(* asil_leq - complex match, needs manual translation *)
+definition asil_leq :: "bool" where "asil_leq = undefined"
 
 (* hara_compliant (matches Coq: Definition hara_compliant) *)
 definition hara_compliant :: "HARA \<Rightarrow> bool" where
@@ -183,7 +186,8 @@ definition testing_compliant :: "TestingRequirements \<Rightarrow> bool" where
   test_structural_coverage t \<and>
   test_mc_dc_coverage t"
 
-(* asil_d_compliant - complex match, manual review needed *)
+(* asil_d_compliant - complex match, needs manual translation *)
+definition asil_d_compliant :: "bool" where "asil_d_compliant = undefined"
 
 (* mk_compliant_hara (matches Coq: Definition mk_compliant_hara) *)
 definition mk_compliant_hara :: "HARA" where

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedIsolation - Lean 4 Port
@@ -127,8 +128,8 @@ inductive DomainType where
 
 /-- MemOp (matches Coq: Inductive MemOp) -/
 inductive MemOp where
-  | memRead : MemOp
-  | memWrite : MemOp
+  | memRead : DomainId → Addr → MemOp
+  | memWrite : DomainId → Addr → Nat → MemOp
   deriving DecidableEq, Repr
 
 /-- NamespaceType (matches Coq: Inductive NamespaceType) -/
@@ -194,7 +195,7 @@ structure CgroupLimit where
 /-- SeccompFilter (matches Coq: Record SeccompFilter) -/
 structure SeccompFilter where
   seccomp_allowed_syscalls : List
-  seccomp_default_action : Bool  -- true = allow, false = deny
+  seccomp_default_action : Bool
   deriving DecidableEq, Repr
 
 /-- ContainerConfig (matches Coq: Record ContainerConfig) -/
@@ -202,7 +203,7 @@ structure ContainerConfig where
   cfg_namespaces : List
   cfg_cgroups : CgroupLimit
   cfg_seccomp : SeccompFilter
-  cfg_rootfs : Nat  -- root filesystem ID
+  cfg_rootfs : Nat
   cfg_network_isolated : Bool
   deriving DecidableEq, Repr
 
@@ -259,7 +260,7 @@ structure AttestationReport where
 /-- SealingKey (matches Coq: Record SealingKey) -/
 structure SealingKey where
   seal_enclave_id : Nat
-  seal_key_policy : Nat  -- 0 = MRENCLAVE, 1 = MRSIGNER
+  seal_key_policy : Nat
   seal_key_value : Nat
   deriving DecidableEq, Repr
 
@@ -312,14 +313,14 @@ def can_access_memory (s : SystemState) (d : DomainId) (a : Addr) : Prop :=
   exists pte, s
 
 /-- mem_op_allowed (matches Coq: Definition mem_op_allowed) -/
-def mem_op_allowed := True -- complex match, simplified to Prop
+def mem_op_allowed := sorry -- complex match, needs manual translation
 
 /-- is_kernel_memory (matches Coq: Definition is_kernel_memory) -/
 def is_kernel_memory (s : SystemState) (a : Addr) : Prop :=
   addr_in_region a s
 
 /-- is_user_domain (matches Coq: Definition is_user_domain) -/
-def is_user_domain := True -- complex match, simplified to Prop
+def is_user_domain := sorry -- complex match, needs manual translation
 
 /-- kernel_protected (matches Coq: Definition kernel_protected) -/
 def kernel_protected (s : SystemState) : Prop :=
@@ -332,7 +333,7 @@ def user_cannot_map_kernel (s : SystemState) : Prop :=
     In d s
 
 /-- get_domain (matches Coq: Definition get_domain) -/
-def get_domain := True -- complex match, simplified to Prop
+def get_domain := sorry -- complex match, needs manual translation
 
 /-- iommu_isolated (matches Coq: Definition iommu_isolated) -/
 def iommu_isolated (s : SystemState) : Prop :=
@@ -382,7 +383,6 @@ def delegation_preserves_bounds (s : SystemState) : Prop :=
 
 /-- revocation_complete (matches Coq: Definition revocation_complete) -/
 def revocation_complete (s s' : SystemState) (c : Capability) : Prop :=
-  (* After revocation, no domain holds the capability or any derived capability *)
   forall d c',
     In d s'
 
@@ -398,7 +398,6 @@ def capability_composition_safe (s : SystemState) : Prop :=
 
 /-- well_configured_container (matches Coq: Definition well_configured_container) -/
 def well_configured_container (c : ContainerState) : Prop :=
-  (* Has all required namespaces *)
   In NSPid c
 
 /-- namespace_provides_isolation (matches Coq: Definition namespace_provides_isolation) -/
@@ -436,12 +435,13 @@ def vm_memory_isolated (hv : HypervisorState) (vm1 vm2 : VMState) : Prop :=
   vm1
 
 /-- vmcs_has_integrity (matches Coq: Definition vmcs_has_integrity) -/
-def vmcs_has_integrity := True -- complex match, simplified to Prop
+def vmcs_has_integrity (vm : VMState) : Prop :=
+  vm
 
 /-- vm_exit_safe (matches Coq: Definition vm_exit_safe) -/
 def vm_exit_safe (hv : HypervisorState) (vm : VMState) : Prop :=
   valid_vm hv vm ->
-  (* After any VM exit, hypervisor regains control safely *)
+  
   vm
 
 /-- device_passthrough_safe (matches Coq: Definition device_passthrough_safe) -/

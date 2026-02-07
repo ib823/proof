@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MalaysiaBNMRMiT - Lean 4 Port
@@ -97,7 +98,7 @@ def audit_compliant (fi : FinancialInstitution) : Prop :=
   fi_audit_completed fi = true
 
 /-- cloud_compliant (matches Coq: Definition cloud_compliant) -/
-def cloud_compliant := True -- complex match, simplified to Prop
+def cloud_compliant := sorry -- complex match, needs manual translation
 
 /-- third_party_compliant (matches Coq: Definition third_party_compliant) -/
 def third_party_compliant (fi : FinancialInstitution) : Prop :=

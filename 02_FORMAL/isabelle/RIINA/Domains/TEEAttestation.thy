@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TEEAttestation - Isabelle/HOL Port
@@ -185,14 +186,16 @@ datatype enclave_event =
 
 (* SealingPolicy (matches Coq: Inductive SealingPolicy) *)
 datatype sealing_policy =
-    SP_MRENCLAVE  (* Key bound to enclave measurement *)
-  |     SP_MRSIGNER  (* Key bound to signer identity *)
+    SP_MRENCLAVE
+  |     SP_MRSIGNER
+  |     SP_KEYPOLICY
 
 (* MemoryRegionType (matches Coq: Inductive MemoryRegionType) *)
 datatype memory_region_type =
-    MRT_Normal  (* Regular memory *)
-  |     MRT_Enclave  (* Enclave private memory - EPC *)
-  |     MRT_Shared  (* Shared memory for enclave-host communication *)
+    MRT_Normal
+  |     MRT_Enclave
+  |     MRT_Shared
+  |     MRT_Reserved
 
 (* EnclaveProperties (matches Coq: Record EnclaveProperties) *)
 record enclave_properties =
@@ -203,26 +206,26 @@ record enclave_properties =
 
 (* EnclaveIdentity (matches Coq: Record EnclaveIdentity) *)
 record enclave_identity =
-  ei_measurement :: nat  (* Hash of enclave code/data *)
-  ei_signer :: nat  (* MRSIGNER - who signed the enclave *)
-  ei_product_id :: nat  (* Product identifier *)
-  ei_security_version :: nat  (* SVN for patching *)
+  ei_measurement :: nat
+  ei_signer :: nat
+  ei_product_id :: nat
+  ei_security_version :: nat
 
 (* AttestationProperties (matches Coq: Record AttestationProperties) *)
 record attestation_properties =
-  att_measurement :: bool  (* Enclave measurement correct *)
-  att_signature :: bool  (* Signed by platform key *)
-  att_freshness :: bool  (* Nonce prevents replay *)
-  att_binding :: bool  (* Bound to platform identity *)
+  att_measurement :: bool
+  att_signature :: bool
+  att_freshness :: bool
+  att_binding :: bool
 
 (* AttestationQuote (matches Coq: Record AttestationQuote) *)
 record attestation_quote =
   aq_enclave_identity :: EnclaveIdentity
-  aq_report_data :: nat  (* User-provided data bound to quote *)
-  aq_nonce :: nat  (* Freshness nonce *)
-  aq_timestamp :: nat  (* Quote generation time *)
-  aq_platform_info :: nat  (* Platform configuration *)
-  aq_signature_valid :: bool  (* Quote signature verification result *)
+  aq_report_data :: nat
+  aq_nonce :: nat
+  aq_timestamp :: nat
+  aq_platform_info :: nat
+  aq_signature_valid :: bool
 
 (* VerificationContext (matches Coq: Record VerificationContext) *)
 record verification_context =
@@ -244,9 +247,9 @@ record tee_config =
 (* SealedData (matches Coq: Record SealedData) *)
 record sealed_data =
   sd_policy :: SealingPolicy
-  sd_ciphertext :: nat  (* Encrypted data *)
-  sd_auth_tag :: nat  (* Authentication tag *)
-  sd_key_id :: nat  (* Key identifier used for sealing *)
+  sd_ciphertext :: nat
+  sd_auth_tag :: nat
+  sd_key_id :: nat
 
 (* KeyDerivationParams (matches Coq: Record KeyDerivationParams) *)
 record key_derivation_params =
@@ -271,18 +274,18 @@ record memory_region =
 
 (* PlatformIdentity (matches Coq: Record PlatformIdentity) *)
 record platform_identity =
-  pi_cpu_svn :: nat  (* CPU security version number *)
-  pi_pce_svn :: nat  (* PCE security version number *)
-  pi_qe_id :: nat  (* Quoting enclave identity *)
-  pi_platform_id :: nat  (* Unique platform identifier *)
-  pi_tcb_info_valid :: bool  (* TCB info verification status *)
+  pi_cpu_svn :: nat
+  pi_pce_svn :: nat
+  pi_qe_id :: nat
+  pi_platform_id :: nat
+  pi_tcb_info_valid :: bool
 
 (* TrustChain (matches Coq: Record TrustChain) *)
 record trust_chain =
-  tc_root_key_valid :: bool  (* Intel root key validation *)
-  tc_pck_cert_valid :: bool  (* Platform certification key certificate *)
-  tc_tcb_signing_valid :: bool  (* TCB signing key validation *)
-  tc_qe_report_valid :: bool  (* Quoting enclave report *)
+  tc_root_key_valid :: bool
+  tc_pck_cert_valid :: bool
+  tc_tcb_signing_valid :: bool
+  tc_qe_report_valid :: bool
 
 (* enclave_secure (matches Coq: Definition enclave_secure) *)
 definition enclave_secure :: "EnclaveProperties \<Rightarrow> bool" where
@@ -326,9 +329,11 @@ definition tee_secure :: "TEEConfig \<Rightarrow> bool" where
   "tee_secure t \<equiv> enclave_secure (tee_enclave t) \<and> attestation_secure (tee_attestation t) \<and>
   tee_remote_attestation t \<and> tee_local_attestation t \<and> tee_key_derivation t"
 
-(* derive_seal_key_id - complex match, manual review needed *)
+(* derive_seal_key_id - complex match, needs manual translation *)
+definition derive_seal_key_id :: "bool" where "derive_seal_key_id = undefined"
 
-(* can_unseal - complex match, manual review needed *)
+(* can_unseal - complex match, needs manual translation *)
+definition can_unseal :: "bool" where "can_unseal = undefined"
 
 (* region_contains (matches Coq: Definition region_contains) *)
 definition region_contains :: "MemoryRegion \<Rightarrow> nat \<Rightarrow> bool" where
@@ -338,7 +343,8 @@ definition region_contains :: "MemoryRegion \<Rightarrow> nat \<Rightarrow> bool
 definition regions_overlap :: "bool" where
   "regions_overlap \<equiv> negb (Nat"
 
-(* enclave_memory_protected - complex match, manual review needed *)
+(* enclave_memory_protected - complex match, needs manual translation *)
+definition enclave_memory_protected :: "bool" where "enclave_memory_protected = undefined"
 
 (* trust_chain_complete (matches Coq: Definition trust_chain_complete) *)
 definition trust_chain_complete :: "TrustChain \<Rightarrow> bool" where

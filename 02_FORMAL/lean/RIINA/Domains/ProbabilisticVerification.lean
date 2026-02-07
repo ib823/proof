@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ProbabilisticVerification - Lean 4 Port
@@ -55,11 +56,11 @@ def xor_nat (a b : Nat) : Nat :=
   Nat
 
 /-- 1 (matches Coq) -/
-theorem 1 : Uniform distribution has non-negative probabilities *) Theorem uniform_nonneg : ∀ n (Hn : (0 < n)%nat), all_nonneg (uniform_dist n Hn) := by
+theorem 1 : Uniform distribution has non-negative probabilities  Theorem uniform_nonneg : ∀ n (Hn : (0 < n)%nat), all_nonneg (uniform_dist n Hn) := by
   cases ‹_› <;> simp <;> omega
 
 /-- 2 (matches Coq) -/
-theorem 2 : Zero function is negligible *) Theorem zero_negligible : negligible (fun _ => 0) := by
+theorem 2 : Zero function is negligible  Theorem zero_negligible : negligible (fun _ => 0) := by
   omega
 
 /-- Auxiliary: sum of Q-strict-less -/
@@ -73,7 +74,7 @@ theorem two_over_nSc_le_one_over_nc : ∀ n c : nat, (n > 2)%nat → (0 < c)%nat
   omega
 
 /-- 3 (matches Coq) -/
-theorem 3 : Sum of negligibles is negligible *) Theorem negligible_sum : ∀ f g, negligible f → negligible g → negligible (fun n => f n + g n) := by
+theorem 3 : Sum of negligibles is negligible  Theorem negligible_sum : ∀ f g, negligible f → negligible g → negligible (fun n => f n + g n) := by
   cases ‹_› <;> simp <;> omega
 
 /-- Helper: Qabs of self-difference is zero -/
@@ -92,51 +93,51 @@ theorem fold_combine_self : ∀ (l : list Q), fold_left (fun acc p => acc + Qabs
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Identical distributions are indistinguishable *) Theorem identical_indist : ∀ f, comp_indist f f := by
+theorem 4 : Identical distributions are indistinguishable  Theorem identical_indist : ∀ f, comp_indist f f := by
   omega
 
 /-- 5 (matches Coq) -/
-theorem 5 : Indistinguishability is reflexive *) Theorem comp_indist_refl : ∀ f, comp_indist f f := by
+theorem 5 : Indistinguishability is reflexive  Theorem comp_indist_refl : ∀ f, comp_indist f f := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : XOR is self-inverse *) Theorem xor_self_inverse : ∀ a b, xor_nat (xor_nat a b) b = a := by
+theorem 6 : XOR is self-inverse  Theorem xor_self_inverse : ∀ a b, xor_nat (xor_nat a b) b = a := by
   rfl
 
 /-- 7 (matches Coq) -/
-theorem 7 : XOR is commutative *) Theorem xor_comm : ∀ a b, xor_nat a b = xor_nat b a := by
+theorem 7 : XOR is commutative  Theorem xor_comm : ∀ a b, xor_nat a b = xor_nat b a := by
   simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
-theorem 8 : XOR with zero is identity *) Theorem xor_zero_id : ∀ a, xor_nat a 0 = a := by
+theorem 8 : XOR with zero is identity  Theorem xor_zero_id : ∀ a, xor_nat a 0 = a := by
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : XOR is associative *) Theorem xor_assoc : ∀ a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c) := by
+theorem 9 : XOR is associative  Theorem xor_assoc : ∀ a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c) := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/
-theorem 10 : XOR self is zero *) Theorem xor_self_zero : ∀ a, xor_nat a a = 0%nat := by
+theorem 10 : XOR self is zero  Theorem xor_self_zero : ∀ a, xor_nat a a = 0%nat := by
   simp_all [Bool.and_eq_true]
 
 /-- 11 (matches Coq) -/
-theorem 11 : Double OTP encryption-decryption roundtrip *) Theorem otp_roundtrip : ∀ msg key, xor_nat (xor_nat msg key) key = msg := by
+theorem 11 : Double OTP encryption-decryption roundtrip  Theorem otp_roundtrip : ∀ msg key, xor_nat (xor_nat msg key) key = msg := by
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : XOR with same key is deterministic *) Theorem xor_deterministic : ∀ a b k, xor_nat a k = xor_nat b k → a = b := by
+theorem 12 : XOR with same key is deterministic  Theorem xor_deterministic : ∀ a b k, xor_nat a k = xor_nat b k → a = b := by
   intro h; exact h
 
 /-- 13 (matches Coq) -/
-theorem 13 : Uniform distribution has correct length *) Theorem uniform_length : ∀ n (Hn : (0 < n)%nat), length (uniform_dist n Hn) = n := by
+theorem 13 : Uniform distribution has correct length  Theorem uniform_length : ∀ n (Hn : (0 < n)%nat), length (uniform_dist n Hn) = n := by
   rfl
 
 /-- 14 (matches Coq) -/
-theorem 14 : Qabs is non-negative *) Theorem qabs_nonneg : ∀ q : Q, (0 ≤ Qabs q)%Q := by
+theorem 14 : Qabs is non-negative  Theorem qabs_nonneg : ∀ q : Q, (0 ≤ Qabs q)%Q := by
   simp_all [Bool.and_eq_true]
 
 /-- 15 (matches Coq) -/
-theorem 15 : Qabs of zero is zero *) Theorem qabs_zero : Qabs 0 == 0 := by
+theorem 15 : Qabs of zero is zero  Theorem qabs_zero : Qabs 0 == 0 := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SecureBootVerification - Isabelle/HOL Port
@@ -174,69 +175,69 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* KeyUsage (matches Coq: Inductive KeyUsage) *)
 datatype key_usage =
-    RootKey  (* Platform root key (OEM) *)
-  |     PlatformKey  (* Platform key (PK) *)
-  |     KeyExchangeKey  (* Key exchange key (KEK) *)
-  |     DatabaseKey  (* Signature database key (db) *)
+    RootKey
+  |     PlatformKey
+  |     KeyExchangeKey
+  |     DatabaseKey
   |     ForbiddenKey
 
 (* HashValue (matches Coq: Record HashValue) *)
 record hash_value =
-  hash_algorithm :: nat  (* 0=SHA256, 1=SHA384, 2=SHA512 *)
-  hash_length :: nat  (* Length in bits *)
-  hash_computed :: bool  (* Hash was computed correctly *)
+  hash_algorithm :: nat
+  hash_length :: nat
+  hash_computed :: bool
 
 (* Signature (matches Coq: Record Signature) *)
 record signature =
-  sig_algorithm :: nat  (* 0=RSA-2048, 1=RSA-4096, 2=ECDSA-P256, 3=ECDSA-P384 *)
-  sig_key_id :: nat  (* Reference to signing key *)
-  sig_valid :: bool  (* Signature verified successfully *)
-  sig_timestamp :: nat  (* When signature was created *)
+  sig_algorithm :: nat
+  sig_key_id :: nat
+  sig_valid :: bool
+  sig_timestamp :: nat
 
 (* PublicKey (matches Coq: Record PublicKey) *)
 record public_key =
-  pk_id :: nat  (* Key identifier *)
-  pk_algorithm :: nat  (* Algorithm (same as signature) *)
-  pk_revoked :: bool  (* Key has been revoked *)
-  pk_expired :: bool  (* Key has expired *)
-  pk_trusted :: bool  (* Key is in trusted keystore *)
+  pk_id :: nat
+  pk_algorithm :: nat
+  pk_revoked :: bool
+  pk_expired :: bool
+  pk_trusted :: bool
 
 (* BootROM (matches Coq: Record BootROM) *)
 record boot_rom =
-  rom_hash_verified :: bool  (* ROM integrity verified via fuses *)
-  rom_fused :: bool  (* ROM is fuse-protected (immutable) *)
-  rom_contains_root_key :: bool  (* Contains hash of root public key *)
-  rom_anti_debug :: bool  (* Debug interfaces disabled/secured *)
+  rom_hash_verified :: bool
+  rom_fused :: bool
+  rom_contains_root_key :: bool
+  rom_anti_debug :: bool
 
 (* Bootloader (matches Coq: Record Bootloader) *)
 record bootloader =
-  bl_signature :: Signature  (* Digital signature *)
-  bl_version :: nat  (* Version number *)
-  bl_min_version :: nat  (* Anti-rollback minimum version *)
-  bl_hash :: HashValue  (* Measured hash *)
-  bl_verified :: bool  (* Signature verification passed *)
+  bl_signature :: Signature
+  bl_version :: nat
+  bl_min_version :: nat
+  bl_hash :: HashValue
+  bl_verified :: bool
 
 (* Kernel (matches Coq: Record Kernel) *)
 record kernel =
-  kern_signature :: Signature  (* Digital signature *)
-  kern_version :: nat  (* Version number *)
-  kern_min_version :: nat  (* Anti-rollback minimum version *)
-  kern_hash :: HashValue  (* Measured hash *)
-  kern_verified :: bool  (* Signature verification passed *)
-  kern_secure_boot_enforced :: bool  (* Secure boot policy enforced *)
+  kern_signature :: Signature
+  kern_version :: nat
+  kern_min_version :: nat
+  kern_hash :: HashValue
+  kern_verified :: bool
+  kern_secure_boot_enforced :: bool
 
 (* Initramfs (matches Coq: Record Initramfs) *)
 record initramfs =
-  initrd_signature :: Signature  (* Digital signature *)
-  initrd_hash :: HashValue  (* Measured hash *)
-  initrd_verified :: bool  (* Signature verification passed *)
+  initrd_signature :: Signature
+  initrd_hash :: HashValue
+  initrd_verified :: bool
 
 (* AppModule (matches Coq: Record AppModule) *)
 record app_module =
-  app_signature :: Signature  (* Digital signature *)
-  app_hash :: HashValue  (* Measured hash *)
-  app_verified :: bool  (* Signature verification passed *)
-  app_allowed_by_policy :: bool  (* Allowed by security policy *)
+  app_signature :: Signature
+  app_hash :: HashValue
+  app_verified :: bool
+  app_allowed_by_policy :: bool
 
 (* BootChain (matches Coq: Record BootChain) *)
 record boot_chain =
@@ -247,32 +248,32 @@ record boot_chain =
 
 (* PCRValue (matches Coq: Record PCRValue) *)
 record pcr_value =
-  pcr_index :: nat  (* PCR index (0-23 typical) *)
-  pcr_value :: nat  (* Current PCR value (abstract) *)
-  pcr_extended :: bool  (* PCR has been extended *)
-  pcr_locked :: bool  (* PCR is locked for this boot *)
+  pcr_index :: nat
+  pcr_value :: nat
+  pcr_extended :: bool
+  pcr_locked :: bool
 
 (* TPMState (matches Coq: Record TPMState) *)
 record tpm_state =
-  tpm_enabled :: bool  (* TPM is enabled *)
-  tpm_activated :: bool  (* TPM is activated *)
-  tpm_owned :: bool  (* TPM has an owner *)
+  tpm_enabled :: bool
+  tpm_activated :: bool
+  tpm_owned :: bool
   tpm_pcrs :: 'a list
-  tpm_locality :: nat  (* Current locality (0-4) *)
+  tpm_locality :: nat
 
 (* MeasurementEvent (matches Coq: Record MeasurementEvent) *)
 record measurement_event =
-  meas_pcr_index :: nat  (* Which PCR was extended *)
-  meas_event_type :: nat  (* Type of measurement *)
-  meas_hash :: HashValue  (* Hash that was extended *)
-  meas_description :: nat  (* Event description code *)
+  meas_pcr_index :: nat
+  meas_event_type :: nat
+  meas_hash :: HashValue
+  meas_description :: nat
 
 (* AttestationQuote (matches Coq: Record AttestationQuote) *)
 record attestation_quote =
-  quote_pcr_mask :: nat  (* Bitmask of PCRs included *)
-  quote_nonce :: nat  (* Challenge nonce *)
-  quote_signature :: Signature  (* TPM signature over quote *)
-  quote_valid :: bool  (* Quote verified successfully *)
+  quote_pcr_mask :: nat
+  quote_nonce :: nat
+  quote_signature :: Signature
+  quote_valid :: bool
 
 (* HierarchyKey (matches Coq: Record HierarchyKey) *)
 record hierarchy_key =
@@ -290,11 +291,11 @@ record key_database =
 
 (* SecureBootPolicy (matches Coq: Record SecureBootPolicy) *)
 record secure_boot_policy =
-  sbp_enabled :: bool  (* Secure boot is enabled *)
-  sbp_enforcing :: bool  (* Enforcing mode (vs audit) *)
-  sbp_allow_unsigned :: bool  (* Allow unsigned code (should be false) *)
-  sbp_require_tpm :: bool  (* Require TPM measurements *)
-  sbp_remote_attestation :: bool  (* Enable remote attestation *)
+  sbp_enabled :: bool
+  sbp_enforcing :: bool
+  sbp_allow_unsigned :: bool
+  sbp_require_tpm :: bool
+  sbp_remote_attestation :: bool
 
 (* SecureBootConfig (matches Coq: Record SecureBootConfig) *)
 record secure_boot_config =
@@ -373,7 +374,8 @@ definition antirollback_protected :: "BootChain \<Rightarrow> bool" where
   "antirollback_protected chain \<equiv> bootloader_antirollback_ok (bc_bootloader chain) \<and>
   kernel_antirollback_ok (bc_kernel chain)"
 
-(* is_root_key - complex match, manual review needed *)
+(* is_root_key - complex match, needs manual translation *)
+definition is_root_key :: "bool" where "is_root_key = undefined"
 
 (* key_revoked_in_list (matches Coq: Definition key_revoked_in_list) *)
 definition key_revoked_in_list :: "nat \<Rightarrow> bool" where

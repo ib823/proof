@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CumulativeRelation - Lean 4 Port
@@ -60,7 +61,7 @@ def val_rel_struct (val_rel_prev : store_ty -> ty -> expr -> expr -> Prop)
   | .tBytes => v1
 
 /-- store_rel_le (matches Coq: Definition store_rel_le) -/
-def store_rel_le := True -- complex match, simplified to Prop
+def store_rel_le := sorry -- complex match, needs manual translation
 
 /-- exp_rel_le (matches Coq: Definition exp_rel_le) -/
 def exp_rel_le (n : Nat) (Σ : store_ty) (T : ty)

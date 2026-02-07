@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CommonCriteriaEAL7 - Lean 4 Port
@@ -118,56 +119,57 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- SecurityClass (matches Coq: Inductive SecurityClass) -/
 inductive SecurityClass where
-  | fAU_ARP : SecurityClass  -- Security Audit - Automatic Response
-  | fAU_GEN : SecurityClass  -- Security Audit - Data Generation
-  | fAU_SAA : SecurityClass  -- Security Audit - Analysis
-  | fAU_SAR : SecurityClass  -- Security Audit - Review
-  | fAU_SEL : SecurityClass  -- Security Audit - Event Selection
-  | fAU_STG : SecurityClass  -- Security Audit - Event Storage
-  | fCO_NRO : SecurityClass  -- Communication - Non-repudiation of Origin
-  | fCO_NRR : SecurityClass  -- Communication - Non-repudiation of Receipt
-  | fCS_CKM : SecurityClass  -- Cryptographic Support - Key Management
-  | fCS_COP : SecurityClass  -- Cryptographic Support - Operation
-  | fDP_ACC : SecurityClass  -- User Data Protection - Access Control
-  | fDP_ACF : SecurityClass  -- User Data Protection - Access Control Functions
-  | fDP_IFC : SecurityClass  -- User Data Protection - Information Flow Control
-  | fDP_IFF : SecurityClass  -- User Data Protection - Information Flow Functions
-  | fDP_ITT : SecurityClass  -- User Data Protection - Internal Transfer
-  | fDP_RIP : SecurityClass  -- User Data Protection - Residual Info Protection
-  | fIA_AFL : SecurityClass  -- Identification & Authentication - Failures
-  | fIA_ATD : SecurityClass  -- Identification & Authentication - Attribute Definition
-  | fIA_SOS : SecurityClass  -- Identification & Authentication - Secrets
-  | fIA_UAU : SecurityClass  -- Identification & Authentication - User Auth
-  | fIA_UID : SecurityClass  -- Identification & Authentication - User Identification
-  | fMT_MOF : SecurityClass  -- Security Management - Management of Functions
-  | fMT_MSA : SecurityClass  -- Security Management - Security Attributes
-  | fMT_MTD : SecurityClass  -- Security Management - TSF Data
-  | fMT_SMF : SecurityClass  -- Security Management - Specification of Functions
-  | fMT_SMR : SecurityClass  -- Security Management - Security Roles
-  | fPR_ANO : SecurityClass  -- Privacy - Anonymity
-  | fPR_PSE : SecurityClass  -- Privacy - Pseudonymity
-  | fPR_UNL : SecurityClass  -- Privacy - Unlinkability
-  | fPR_UNO : SecurityClass  -- Privacy - Unobservability
-  | fPT_FLS : SecurityClass  -- Protection of TSF - Fail Secure
-  | fPT_ITC : SecurityClass  -- Protection of TSF - Confidentiality
-  | fPT_ITI : SecurityClass  -- Protection of TSF - Integrity
-  | fPT_ITT : SecurityClass  -- Protection of TSF - Internal Transfer
-  | fPT_RCV : SecurityClass  -- Protection of TSF - Recovery
-  | fPT_RPL : SecurityClass  -- Protection of TSF - Replay Detection
-  | fPT_SEP : SecurityClass  -- Protection of TSF - Domain Separation
-  | fPT_STM : SecurityClass  -- Protection of TSF - Time Stamps
-  | fPT_TDC : SecurityClass  -- Protection of TSF - TSF Data Consistency
-  | fPT_TEE : SecurityClass  -- Protection of TSF - Testing
-  | fRU_FLT : SecurityClass  -- Resource Utilization - Fault Tolerance
-  | fRU_PRS : SecurityClass  -- Resource Utilization - Priority of Service
-  | fRU_RSA : SecurityClass  -- Resource Utilization - Resource Allocation
-  | fTA_LSA : SecurityClass  -- TOE Access - Limitation on Scope
-  | fTA_MCS : SecurityClass  -- TOE Access - Multiple Concurrent Sessions
-  | fTA_SSL : SecurityClass  -- TOE Access - Session Locking
-  | fTA_TAB : SecurityClass  -- TOE Access - TOE Access Banners
-  | fTA_TAH : SecurityClass  -- TOE Access - TOE Access History
-  | fTA_TSE : SecurityClass  -- TOE Access - TOE Session Establishment
-  | fTP_ITC : SecurityClass  -- Trusted Path/Channels - Inter-TSF
+  | fAU_ARP : SecurityClass
+  | fAU_GEN : SecurityClass
+  | fAU_SAA : SecurityClass
+  | fAU_SAR : SecurityClass
+  | fAU_SEL : SecurityClass
+  | fAU_STG : SecurityClass
+  | fCO_NRO : SecurityClass
+  | fCO_NRR : SecurityClass
+  | fCS_CKM : SecurityClass
+  | fCS_COP : SecurityClass
+  | fDP_ACC : SecurityClass
+  | fDP_ACF : SecurityClass
+  | fDP_IFC : SecurityClass
+  | fDP_IFF : SecurityClass
+  | fDP_ITT : SecurityClass
+  | fDP_RIP : SecurityClass
+  | fIA_AFL : SecurityClass
+  | fIA_ATD : SecurityClass
+  | fIA_SOS : SecurityClass
+  | fIA_UAU : SecurityClass
+  | fIA_UID : SecurityClass
+  | fMT_MOF : SecurityClass
+  | fMT_MSA : SecurityClass
+  | fMT_MTD : SecurityClass
+  | fMT_SMF : SecurityClass
+  | fMT_SMR : SecurityClass
+  | fPR_ANO : SecurityClass
+  | fPR_PSE : SecurityClass
+  | fPR_UNL : SecurityClass
+  | fPR_UNO : SecurityClass
+  | fPT_FLS : SecurityClass
+  | fPT_ITC : SecurityClass
+  | fPT_ITI : SecurityClass
+  | fPT_ITT : SecurityClass
+  | fPT_RCV : SecurityClass
+  | fPT_RPL : SecurityClass
+  | fPT_SEP : SecurityClass
+  | fPT_STM : SecurityClass
+  | fPT_TDC : SecurityClass
+  | fPT_TEE : SecurityClass
+  | fRU_FLT : SecurityClass
+  | fRU_PRS : SecurityClass
+  | fRU_RSA : SecurityClass
+  | fTA_LSA : SecurityClass
+  | fTA_MCS : SecurityClass
+  | fTA_SSL : SecurityClass
+  | fTA_TAB : SecurityClass
+  | fTA_TAH : SecurityClass
+  | fTA_TSE : SecurityClass
+  | fTP_ITC : SecurityClass
+  | fTP_TRP : SecurityClass
   deriving DecidableEq, Repr
 
 /-- SecurityLabel (matches Coq: Inductive SecurityLabel) -/
@@ -184,24 +186,24 @@ inductive RiinaType where
   | rT_Unit : RiinaType
   | rT_Bool : RiinaType
   | rT_Int : RiinaType
-  | rT_Labeled : RiinaType
-  | rT_Ref : RiinaType
-  | rT_Arrow : RiinaType
-  | rT_Product : RiinaType
-  | rT_Sum : RiinaType
+  | rT_Labeled : SecurityLabel → RiinaType → RiinaType
+  | rT_Ref : RiinaType → RiinaType
+  | rT_Arrow : RiinaType → RiinaType → RiinaType
+  | rT_Product : RiinaType → RiinaType → RiinaType
+  | rT_Sum : RiinaType → RiinaType → RiinaType
   deriving DecidableEq, Repr
 
 /-- RiinaValue (matches Coq: Inductive RiinaValue) -/
 inductive RiinaValue where
   | rV_Unit : RiinaValue
-  | rV_Bool : RiinaValue
-  | rV_Int : RiinaValue
-  | rV_Labeled : RiinaValue
-  | rV_Loc : RiinaValue
-  | rV_Closure : RiinaValue  -- simplified
-  | rV_Pair : RiinaValue
-  | rV_Inl : RiinaValue
-  | rV_Inr : RiinaValue
+  | rV_Bool : Bool → RiinaValue
+  | rV_Int : Nat → RiinaValue
+  | rV_Labeled : SecurityLabel → RiinaValue → RiinaValue
+  | rV_Loc : Nat → RiinaValue
+  | rV_Closure : Nat → RiinaValue
+  | rV_Pair : RiinaValue → RiinaValue → RiinaValue
+  | rV_Inl : RiinaValue → RiinaValue
+  | rV_Inr : RiinaValue → RiinaValue
   deriving DecidableEq, Repr
 
 /-- SecurityPolicyModel (matches Coq: Record SecurityPolicyModel) -/
@@ -225,66 +227,66 @@ structure TOEConfiguration where
 
 /-- DevelopmentAssurance (matches Coq: Record DevelopmentAssurance) -/
 structure DevelopmentAssurance where
-  adv_arc_complete : Bool  -- Security architecture complete
-  adv_arc_modular : Bool  -- Architecture is modular
-  adv_arc_non_bypassable : Bool  -- TSF non-bypassable
-  adv_arc_tamper_proof : Bool  -- TSF tamper-proof
-  adv_arc_domain_sep : Bool  -- Domain separation enforced
-  adv_fsp_complete : Bool  -- Functional spec complete
-  adv_fsp_accurate : Bool  -- Functional spec accurate
-  adv_imp_complete : Bool  -- Implementation complete
-  adv_imp_verified : Bool  -- Implementation formally verified
-  adv_int_modular : Bool  -- TSF internals modular
-  adv_int_layered : Bool  -- TSF properly layered
-  adv_int_minimal : Bool  -- TSF minimal complexity
-  adv_tds_semiformal : Bool  -- Design semiformal
-  adv_tds_formal : Bool  -- Design formal
+  adv_arc_complete : Bool
+  adv_arc_modular : Bool
+  adv_arc_non_bypassable : Bool
+  adv_arc_tamper_proof : Bool
+  adv_arc_domain_sep : Bool
+  adv_fsp_complete : Bool
+  adv_fsp_accurate : Bool
+  adv_imp_complete : Bool
+  adv_imp_verified : Bool
+  adv_int_modular : Bool
+  adv_int_layered : Bool
+  adv_int_minimal : Bool
+  adv_tds_semiformal : Bool
+  adv_tds_formal : Bool
   deriving DecidableEq, Repr
 
 /-- GuidanceAssurance (matches Coq: Record GuidanceAssurance) -/
 structure GuidanceAssurance where
-  agd_ope_complete : Bool  -- Operational guidance complete
-  agd_pre_complete : Bool  -- Preparative guidance complete
+  agd_ope_complete : Bool
+  agd_pre_complete : Bool
   deriving DecidableEq, Repr
 
 /-- LifecycleAssurance (matches Coq: Record LifecycleAssurance) -/
 structure LifecycleAssurance where
-  alc_cmc_automated : Bool  -- CM automated
-  alc_cmc_coverage : Bool  -- CM covers all items
-  alc_cms_tracking : Bool  -- CMS provides tracking
-  alc_del_secure : Bool  -- Delivery procedures secure
-  alc_dvs_sufficient : Bool  -- Development security sufficient
-  alc_flaw_systematic : Bool  -- Flaw remediation systematic
-  alc_lcd_defined : Bool  -- Life-cycle model defined
-  alc_tat_compliance : Bool  -- Tools & techniques adequate
+  alc_cmc_automated : Bool
+  alc_cmc_coverage : Bool
+  alc_cms_tracking : Bool
+  alc_del_secure : Bool
+  alc_dvs_sufficient : Bool
+  alc_flaw_systematic : Bool
+  alc_lcd_defined : Bool
+  alc_tat_compliance : Bool
   deriving DecidableEq, Repr
 
 /-- SecurityTargetAssurance (matches Coq: Record SecurityTargetAssurance) -/
 structure SecurityTargetAssurance where
-  ase_ccl_conformant : Bool  -- Conformance claims valid
-  ase_ecd_complete : Bool  -- Extended component definitions complete
-  ase_int_complete : Bool  -- ST introduction complete
-  ase_obj_complete : Bool  -- Security objectives complete
-  ase_req_complete : Bool  -- Security requirements complete
-  ase_spd_complete : Bool  -- Security problem definition complete
-  ase_tss_complete : Bool  -- TOE summary specification complete
+  ase_ccl_conformant : Bool
+  ase_ecd_complete : Bool
+  ase_int_complete : Bool
+  ase_obj_complete : Bool
+  ase_req_complete : Bool
+  ase_spd_complete : Bool
+  ase_tss_complete : Bool
   deriving DecidableEq, Repr
 
 /-- TestAssurance (matches Coq: Record TestAssurance) -/
 structure TestAssurance where
-  ate_cov_complete : Bool  -- Test coverage complete
-  ate_dpt_sufficient : Bool  -- Depth of testing sufficient
-  ate_fun_complete : Bool  -- Functional tests complete
-  ate_ind_performed : Bool  -- Independent testing performed
+  ate_cov_complete : Bool
+  ate_dpt_sufficient : Bool
+  ate_fun_complete : Bool
+  ate_ind_performed : Bool
   deriving DecidableEq, Repr
 
 /-- VulnerabilityAssurance (matches Coq: Record VulnerabilityAssurance) -/
 structure VulnerabilityAssurance where
-  ava_van_basic : Bool  -- Basic vulnerability analysis
-  ava_van_focused : Bool  -- Focused vulnerability analysis
-  ava_van_methodical : Bool  -- Methodical vulnerability analysis
-  ava_van_advanced : Bool  -- Advanced vulnerability analysis - EAL7
-  ava_van_high_attack : Bool  -- Resistant to high attack potential
+  ava_van_basic : Bool
+  ava_van_focused : Bool
+  ava_van_methodical : Bool
+  ava_van_advanced : Bool
+  ava_van_high_attack : Bool
   deriving DecidableEq, Repr
 
 /-- EAL7Package (matches Coq: Record EAL7Package) -/
@@ -305,7 +307,7 @@ structure SecurityContext where
   deriving DecidableEq, Repr
 
 /-- label_leq (matches Coq: Definition label_leq) -/
-def label_leq := True -- complex match, simplified to Prop
+def label_leq := sorry -- complex match, needs manual translation
 
 /-- valid_security_context (matches Coq: Definition valid_security_context) -/
 def valid_security_context (ctx : SecurityContext) : Bool :=
@@ -321,7 +323,7 @@ def adv_compliant (adv : DevelopmentAssurance) : Bool :=
   adv_fsp_complete adv &&
   adv_fsp_accurate adv &&
   adv_imp_complete adv &&
-  adv_imp_verified adv &&  (* EAL7 specific: formal verification *)
+  adv_imp_verified adv &&  
   adv_int_modular adv &&
   adv_int_layered adv &&
   adv_int_minimal adv &&
@@ -445,7 +447,7 @@ def has_authentication (classes : List SecurityClass) : Bool :=
 /-- riina_spm (matches Coq: Definition riina_spm) -/
 def riina_spm : SecurityPolicyModel := mkSPM
   nat nat nat SecurityLabel
-  (fun _ _ _ => true)  (* Simplified - actual impl uses type system *)
+  (fun _ _ _ => true)  
   (fun _ _ => true)
 
 /-- riina_toe (matches Coq: Definition riina_toe) -/
@@ -711,7 +713,7 @@ theorem CC_049_objectives_complete : ∀ ase : SecurityTargetAssurance, ase_comp
 
 /-- CC_050: EAL7 Complete Certification Theorem -/
 /-- CC_050_eal7_complete_certification (matches Coq) -/
-theorem CC_050_eal7_complete_certification : ∀ pkg : EAL7Package, ∀ toe : TOEConfiguration, eal7_compliant pkg = true → toe_boundary_defined toe = true → toe_interfaces_specified toe = true → toe_evaluated_configuration toe = true → has_complete_coverage (toe_security_functions toe) = true → (* All EAL7 assurance components are satisfied *) adv_compliant (eal7_adv pkg) = true ∧ agd_compliant (eal7_agd pkg) = true ∧ alc_compliant (eal7_alc pkg) = true ∧ ase_compliant (eal7_ase pkg) = true ∧ ate_compliant (eal7_ate pkg) = true ∧ ava_compliant (eal7_ava pkg) = true := by
+theorem CC_050_eal7_complete_certification : ∀ pkg : EAL7Package, ∀ toe : TOEConfiguration, eal7_compliant pkg = true → toe_boundary_defined toe = true → toe_interfaces_specified toe = true → toe_evaluated_configuration toe = true → has_complete_coverage (toe_security_functions toe) = true →  adv_compliant (eal7_adv pkg) = true ∧ agd_compliant (eal7_agd pkg) = true ∧ alc_compliant (eal7_alc pkg) = true ∧ ase_compliant (eal7_ase pkg) = true ∧ ate_compliant (eal7_ate pkg) = true ∧ ava_compliant (eal7_ava pkg) = true := by
   cases ‹_› <;> simp <;> omega
 
 end RIINA

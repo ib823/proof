@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA S001_HardwareContracts - Lean 4 Port
@@ -70,33 +71,33 @@ namespace RIINA
 /-- CacheState (matches Coq: Inductive CacheState) -/
 inductive CacheState where
   | invalid : CacheState
-  | clean : CacheState
-  | dirty : CacheState
+  | clean : Nat → CacheState
+  | dirty : Nat → CacheState
   deriving DecidableEq, Repr
 
 /-- SpecState (matches Coq: Inductive SpecState) -/
 inductive SpecState where
   | notSpeculating : SpecState
-  | speculating : SpecState
+  | speculating : Nat → ArchState → SpecState
   deriving DecidableEq, Repr
 
 /-- LeakageEvent (matches Coq: Inductive LeakageEvent) -/
 inductive LeakageEvent where
-  | cacheAccess : LeakageEvent
-  | cacheMiss : LeakageEvent
-  | cacheHit : LeakageEvent
-  | branchTaken : LeakageEvent
-  | branchNotTaken : LeakageEvent
-  | cyclesTaken : LeakageEvent
-  | powerConsumed : LeakageEvent
+  | cacheAccess : Addr → LeakageEvent
+  | cacheMiss : Addr → LeakageEvent
+  | cacheHit : Addr → LeakageEvent
+  | branchTaken : Nat → LeakageEvent
+  | branchNotTaken : Nat → LeakageEvent
+  | cyclesTaken : Nat → LeakageEvent
+  | powerConsumed : Nat → LeakageEvent
   deriving DecidableEq, Repr
 
 /-- Instruction (matches Coq: Inductive Instruction) -/
 inductive Instruction where
-  | iLoad : Instruction
-  | iStore : Instruction
-  | iAdd : Instruction
-  | iBranch : Instruction
+  | iLoad : Reg → Addr → Instruction
+  | iStore : Addr → Nat → Instruction
+  | iAdd : Reg → Reg → Reg → Instruction
+  | iBranch : Nat → Instruction
   | iFence : Instruction
   | iNop : Instruction
   deriving DecidableEq, Repr
@@ -128,7 +129,7 @@ def leakage (ms : MicroarchState) (ms' : MicroarchState) : LeakageTrace :=
   []
 
 /-- isa_step (matches Coq: Definition isa_step) -/
-def isa_step := True -- complex match, simplified to Prop
+def isa_step := sorry -- complex match, needs manual translation
 
 /-- low_equiv (matches Coq: Definition low_equiv) -/
 def low_equiv (l : Addr -> Bool) (ms1 ms2 : MicroarchState) : Prop :=
@@ -144,7 +145,7 @@ def constant_time (prog : MicroarchState -> MicroarchState)
     leakage ms1 ms1' = leakage ms2 ms2'
 
 /-- spec_accesses (matches Coq: Definition spec_accesses) -/
-def spec_accesses := True -- complex match, simplified to Prop
+def spec_accesses := sorry -- complex match, needs manual translation
 
 /-- scub_barrier (matches Coq: Definition scub_barrier) -/
 def scub_barrier (ms : MicroarchState) : MicroarchState := mkMicroarchState (arch ms) (cache ms) (branch_predictor ms)
@@ -188,10 +189,10 @@ def well_typed (prog : MicroarchState -> MicroarchState)
     pc (arch (prog ms1)) = pc (arch (prog ms2))
 
 /-- misprediction (matches Coq: Definition misprediction) -/
-def misprediction := True -- complex match, simplified to Prop
+def misprediction := sorry -- complex match, needs manual translation
 
 /-- rollback (matches Coq: Definition rollback) -/
-def rollback := True -- complex match, simplified to Prop
+def rollback := sorry -- complex match, needs manual translation
 
 /-- S_001_01_isa_state_deterministic (matches Coq) -/
 theorem S_001_01_isa_state_deterministic : ∀ instr s, isa_step instr s = isa_step instr s := by

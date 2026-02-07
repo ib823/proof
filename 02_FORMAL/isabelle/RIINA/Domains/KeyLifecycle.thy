@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA KeyLifecycle - Isabelle/HOL Port
@@ -93,7 +94,8 @@ fun is_usable_state :: "KeyState \<Rightarrow> bool" where
   "is_usable_state Active = true"
 |   "is_usable_state _ = false"
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* key_not_expired (matches Coq: Definition key_not_expired) *)
 definition key_not_expired :: "KeyMetadata \<Rightarrow> nat \<Rightarrow> bool" where

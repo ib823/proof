@@ -1,6 +1,6 @@
 # RIINA PRIME DIRECTIVE GAP CLOSURE SPECIFICATION
 
-**Audit Update:** 2026-02-07 (Session 78: 10-Prover Full Stack) — 82,982 total items across 10 provers. 7,929 Coq Qed + 7928 Lean + 8072 Isabelle + 7899 F* + 7899 TLA+ + 7899 Alloy + 7899 SMT + 7899 Verus + 7899 Kani + 11659 TV. 0 Admitted/sorry. 1 axiom (policy). 852 Rust tests.
+**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,979 total items across 10 provers. 7,929 Coq Qed (compiled) + 15997 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
 
 ## Document Status: AUTHORITATIVE | Version 1.0.0 | 2026-01-22
 

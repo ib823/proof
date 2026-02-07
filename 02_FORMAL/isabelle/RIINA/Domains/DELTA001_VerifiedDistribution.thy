@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DELTA001_VerifiedDistribution - Isabelle/HOL Port
@@ -89,7 +90,7 @@ datatype bft_phase =
 record log_entry =
   entry_term :: Term
   entry_index :: nat
-  entry_command :: nat  (* abstract command *)
+  entry_command :: nat
 
 (* RaftNode (matches Coq: Record RaftNode) *)
 record raft_node =
@@ -115,15 +116,15 @@ record bft_message =
 
 (* BFTState (matches Coq: Record BFTState) *)
 record bft_state =
-  bft_n :: nat  (* total nodes *)
-  bft_f :: nat  (* max faulty *)
+  bft_n :: nat
+  bft_f :: nat
   bft_correct :: 'a list
   bft_faulty :: 'a list
 
 (* HashRing (matches Coq: Record HashRing) *)
 record hash_ring =
   ring_nodes :: 'a list
-  ring_size :: nat  (* ring modulus *)
+  ring_size :: nat
 
 (* is_quorum (matches Coq: Definition is_quorum) *)
 definition is_quorum :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
@@ -145,7 +146,8 @@ definition logs_match_at :: "nat \<Rightarrow> bool" where
     entry_term e1 = entry_term e2 ->
     entry_command e1 = entry_command e2"
 
-(* entry_committed - complex match, manual review needed *)
+(* entry_committed - complex match, needs manual translation *)
+definition entry_committed :: "bool" where "entry_committed = undefined"
 
 (* bft_quorum (matches Coq: Definition bft_quorum) *)
 definition bft_quorum :: "BFTState \<Rightarrow> nat" where

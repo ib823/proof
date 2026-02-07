@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaMCMC - Isabelle/HOL Port
@@ -46,9 +47,9 @@ begin
 
 (* MCMCLicense (matches Coq: Inductive MCMCLicense) *)
 datatype mcmc_license =
-    NFP  (* Network Facilities Provider *)
-  |     NSP  (* Network Service Provider *)
-  |     ASP  (* Application Service Provider *)
+    NFP
+  |     NSP
+  |     ASP
   |     CSP
 
 (* no_unauthorized_interception (matches Coq: Definition no_unauthorized_interception) *)

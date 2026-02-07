@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA BackendTraitVerification - Lean 4 Port
@@ -54,15 +55,15 @@ inductive Target where
 
 /-- BackendKind (matches Coq: Inductive BackendKind) -/
 inductive BackendKind where
-  | bKC : BackendKind  -- CBackend
-  | bKWasm : BackendKind  -- WasmBackend
+  | bKC : BackendKind
+  | bKWasm : BackendKind
   | bKMobile : BackendKind
   deriving DecidableEq, Repr
 
 /-- OutputFormat (matches Coq: Inductive OutputFormat) -/
 inductive OutputFormat where
-  | fmtC : OutputFormat  -- .c file
-  | fmtWasm : OutputFormat  -- .wasm binary
+  | fmtC : OutputFormat
+  | fmtWasm : OutputFormat
   | fmtCWithBridge : OutputFormat
   deriving DecidableEq, Repr
 

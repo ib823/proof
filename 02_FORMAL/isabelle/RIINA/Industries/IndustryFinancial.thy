@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryFinancial - Isabelle/HOL Port
@@ -71,15 +72,13 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* FinancialData (matches Coq: Inductive FinancialData) *)
 datatype financial_data =
-    PAN  (* Primary Account Number *)
-  |     CVV  (* Card Verification Value *)
-  |     PIN  (* Personal Identification Number *)
+    PAN
+  |     CVV
+  |     PIN
   |     AccountNumber
   |     RoutingNumber
-  |     SSN  (* Social Security Number *)
+  |     SSN
   |     NPI
-  |     PAN
-  |     CVV
 
 (* FinancialEffect (matches Coq: Inductive FinancialEffect) *)
 datatype financial_effect =
@@ -97,18 +96,18 @@ datatype tx_status =
 
 (* PCI_DSS_Controls (matches Coq: Record PCI_DSS_Controls) *)
 record pci_dss__controls =
-  firewall_config :: bool  (* Req 1 *)
-  no_default_passwords :: bool  (* Req 2 *)
-  protect_stored_data :: bool  (* Req 3 *)
-  encrypt_transmission :: bool  (* Req 4 *)
-  antivirus :: bool  (* Req 5 *)
-  secure_systems :: bool  (* Req 6 *)
-  restrict_access :: bool  (* Req 7 *)
-  unique_ids :: bool  (* Req 8 *)
-  physical_access :: bool  (* Req 9 *)
-  track_access :: bool  (* Req 10 *)
-  test_security :: bool  (* Req 11 *)
-  security_policy :: bool  (* Req 12 *)
+  firewall_config :: bool
+  no_default_passwords :: bool
+  protect_stored_data :: bool
+  encrypt_transmission :: bool
+  antivirus :: bool
+  secure_systems :: bool
+  restrict_access :: bool
+  unique_ids :: bool
+  physical_access :: bool
+  track_access :: bool
+  test_security :: bool
+  security_policy :: bool
 
 (* KYC_Record (matches Coq: Record KYC_Record) *)
 record kyc__record =

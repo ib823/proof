@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TimeSecurity - Lean 4 Port
@@ -67,9 +68,9 @@ namespace RIINA
 
 /-- AtomicOp (matches Coq: Inductive AtomicOp) -/
 inductive AtomicOp where
-  | atomicRead : AtomicOp
-  | atomicWrite : AtomicOp
-  | compareAndSwap : AtomicOp
+  | atomicRead : Nat → AtomicOp
+  | atomicWrite : Nat → Nat → AtomicOp
+  | compareAndSwap : Nat → Nat → Nat → AtomicOp
   deriving DecidableEq, Repr
 
 /-- nonce_unique (matches Coq: Definition nonce_unique) -/

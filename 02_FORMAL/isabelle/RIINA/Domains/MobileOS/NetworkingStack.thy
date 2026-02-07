@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkingStack - Isabelle/HOL Port
@@ -109,7 +110,7 @@ record connection =
 (* DNSQuery (matches Coq: Record DNSQuery) *)
 record dns_query =
   dns_query_id :: nat
-  dns_domain :: nat  (* hashed domain name *)
+  dns_domain :: nat
   dns_resolved_ip :: nat
   dns_validated :: bool
   dns_dnssec_verified :: bool
@@ -195,7 +196,8 @@ definition acceptable_cert :: "Certificate \<Rightarrow> bool" where
 definition accepted :: "Certificate \<Rightarrow> bool" where
   "accepted c \<equiv> acceptable_cert c"
 
-(* encrypted - complex match, manual review needed *)
+(* encrypted - complex match, needs manual translation *)
+definition encrypted :: "bool" where "encrypted = undefined"
 
 (* transmitted (matches Coq: Definition transmitted) *)
 definition transmitted :: "Packet \<Rightarrow> bool" where

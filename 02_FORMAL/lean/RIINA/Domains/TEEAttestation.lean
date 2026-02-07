@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TEEAttestation - Lean 4 Port
@@ -188,15 +189,17 @@ inductive EnclaveEvent where
 
 /-- SealingPolicy (matches Coq: Inductive SealingPolicy) -/
 inductive SealingPolicy where
-  | sP_MRENCLAVE : SealingPolicy  -- Key bound to enclave measurement
-  | sP_MRSIGNER : SealingPolicy  -- Key bound to signer identity
+  | sP_MRENCLAVE : SealingPolicy
+  | sP_MRSIGNER : SealingPolicy
+  | sP_KEYPOLICY : SealingPolicy
   deriving DecidableEq, Repr
 
 /-- MemoryRegionType (matches Coq: Inductive MemoryRegionType) -/
 inductive MemoryRegionType where
-  | mRT_Normal : MemoryRegionType  -- Regular memory
-  | mRT_Enclave : MemoryRegionType  -- Enclave private memory - EPC
-  | mRT_Shared : MemoryRegionType  -- Shared memory for enclave-host communication
+  | mRT_Normal : MemoryRegionType
+  | mRT_Enclave : MemoryRegionType
+  | mRT_Shared : MemoryRegionType
+  | mRT_Reserved : MemoryRegionType
   deriving DecidableEq, Repr
 
 /-- EnclaveProperties (matches Coq: Record EnclaveProperties) -/
@@ -209,28 +212,28 @@ structure EnclaveProperties where
 
 /-- EnclaveIdentity (matches Coq: Record EnclaveIdentity) -/
 structure EnclaveIdentity where
-  ei_measurement : Nat  -- Hash of enclave code/data
-  ei_signer : Nat  -- MRSIGNER - who signed the enclave
-  ei_product_id : Nat  -- Product identifier
-  ei_security_version : Nat  -- SVN for patching
+  ei_measurement : Nat
+  ei_signer : Nat
+  ei_product_id : Nat
+  ei_security_version : Nat
   deriving DecidableEq, Repr
 
 /-- AttestationProperties (matches Coq: Record AttestationProperties) -/
 structure AttestationProperties where
-  att_measurement : Bool  -- Enclave measurement correct
-  att_signature : Bool  -- Signed by platform key
-  att_freshness : Bool  -- Nonce prevents replay
-  att_binding : Bool  -- Bound to platform identity
+  att_measurement : Bool
+  att_signature : Bool
+  att_freshness : Bool
+  att_binding : Bool
   deriving DecidableEq, Repr
 
 /-- AttestationQuote (matches Coq: Record AttestationQuote) -/
 structure AttestationQuote where
   aq_enclave_identity : EnclaveIdentity
-  aq_report_data : Nat  -- User-provided data bound to quote
-  aq_nonce : Nat  -- Freshness nonce
-  aq_timestamp : Nat  -- Quote generation time
-  aq_platform_info : Nat  -- Platform configuration
-  aq_signature_valid : Bool  -- Quote signature verification result
+  aq_report_data : Nat
+  aq_nonce : Nat
+  aq_timestamp : Nat
+  aq_platform_info : Nat
+  aq_signature_valid : Bool
   deriving DecidableEq, Repr
 
 /-- VerificationContext (matches Coq: Record VerificationContext) -/
@@ -255,9 +258,9 @@ structure TEEConfig where
 /-- SealedData (matches Coq: Record SealedData) -/
 structure SealedData where
   sd_policy : SealingPolicy
-  sd_ciphertext : Nat  -- Encrypted data
-  sd_auth_tag : Nat  -- Authentication tag
-  sd_key_id : Nat  -- Key identifier used for sealing
+  sd_ciphertext : Nat
+  sd_auth_tag : Nat
+  sd_key_id : Nat
   deriving DecidableEq, Repr
 
 /-- KeyDerivationParams (matches Coq: Record KeyDerivationParams) -/
@@ -286,19 +289,19 @@ structure MemoryRegion where
 
 /-- PlatformIdentity (matches Coq: Record PlatformIdentity) -/
 structure PlatformIdentity where
-  pi_cpu_svn : Nat  -- CPU security version number
-  pi_pce_svn : Nat  -- PCE security version number
-  pi_qe_id : Nat  -- Quoting enclave identity
-  pi_platform_id : Nat  -- Unique platform identifier
-  pi_tcb_info_valid : Bool  -- TCB info verification status
+  pi_cpu_svn : Nat
+  pi_pce_svn : Nat
+  pi_qe_id : Nat
+  pi_platform_id : Nat
+  pi_tcb_info_valid : Bool
   deriving DecidableEq, Repr
 
 /-- TrustChain (matches Coq: Record TrustChain) -/
 structure TrustChain where
-  tc_root_key_valid : Bool  -- Intel root key validation
-  tc_pck_cert_valid : Bool  -- Platform certification key certificate
-  tc_tcb_signing_valid : Bool  -- TCB signing key validation
-  tc_qe_report_valid : Bool  -- Quoting enclave report
+  tc_root_key_valid : Bool
+  tc_pck_cert_valid : Bool
+  tc_tcb_signing_valid : Bool
+  tc_qe_report_valid : Bool
   deriving DecidableEq, Repr
 
 /-- enclave_secure (matches Coq: Definition enclave_secure) -/
@@ -344,10 +347,10 @@ def tee_secure (t : TEEConfig) : Bool :=
   tee_remote_attestation t && tee_local_attestation t && tee_key_derivation t
 
 /-- derive_seal_key_id (matches Coq: Definition derive_seal_key_id) -/
-def derive_seal_key_id := True -- complex match, simplified to Prop
+def derive_seal_key_id := sorry -- complex match, needs manual translation
 
 /-- can_unseal (matches Coq: Definition can_unseal) -/
-def can_unseal := True -- complex match, simplified to Prop
+def can_unseal := sorry -- complex match, needs manual translation
 
 /-- region_contains (matches Coq: Definition region_contains) -/
 def region_contains (r : MemoryRegion) (addr : Nat) : Bool :=
@@ -358,7 +361,7 @@ def regions_overlap (r1 r2 : MemoryRegion) : Bool :=
   negb (Nat
 
 /-- enclave_memory_protected (matches Coq: Definition enclave_memory_protected) -/
-def enclave_memory_protected := True -- complex match, simplified to Prop
+def enclave_memory_protected := sorry -- complex match, needs manual translation
 
 /-- trust_chain_complete (matches Coq: Definition trust_chain_complete) -/
 def trust_chain_complete (tc : TrustChain) : Bool :=
@@ -821,7 +824,7 @@ theorem TEE_094_riina_complete_security : tee_secure riina_tee = true ∧ verify
   rfl
 
 /-- TEE_095_full_tee_security_decomposition (matches Coq) -/
-theorem TEE_095_full_tee_security_decomposition : ∀ t q ctx pi tc mem, tee_secure t = true → verify_quote q ctx = true → platform_trusted pi tc = true → mr_type mem = MRT_Enclave → mr_encrypted mem = true → (* All security properties hold *) enc_memory_encrypted (tee_enclave t) = true ∧ att_measurement (tee_attestation t) = true ∧ aq_signature_valid q = true ∧ pi_tcb_info_valid pi = true ∧ enclave_memory_protected mem = true := by
+theorem TEE_095_full_tee_security_decomposition : ∀ t q ctx pi tc mem, tee_secure t = true → verify_quote q ctx = true → platform_trusted pi tc = true → mr_type mem = MRT_Enclave → mr_encrypted mem = true →  enc_memory_encrypted (tee_enclave t) = true ∧ att_measurement (tee_attestation t) = true ∧ aq_signature_valid q = true ∧ pi_tcb_info_valid pi = true ∧ enclave_memory_protected mem = true := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

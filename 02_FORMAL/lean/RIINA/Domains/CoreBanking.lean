@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CoreBanking - Lean 4 Port
@@ -189,9 +190,9 @@ structure JournalEntry where
 /-- InterestCalculation (matches Coq: Record InterestCalculation) -/
 structure InterestCalculation where
   ic_principal : Z
-  ic_rate_bps : Z  -- Rate in basis points
+  ic_rate_bps : Z
   ic_days : Z
-  ic_year_days : Z  -- 360 or 365
+  ic_year_days : Z
   ic_calculated_interest : Z
   deriving DecidableEq, Repr
 
@@ -211,7 +212,7 @@ structure Loan where
   approved_amount : Z
   eligibility_limit : Z
   collateral_value : Z
-  required_coverage : Z  -- In basis points, e.g., 12000 = 120%
+  required_coverage : Z
   ltv_ratio : Z
   is_secured : Bool
   deriving DecidableEq, Repr
@@ -279,7 +280,7 @@ structure FxSpotTrade where
 /-- RepoTransaction (matches Coq: Record RepoTransaction) -/
 structure RepoTransaction where
   collateral_market_value : Z
-  haircut_bps : Z  -- Basis points
+  haircut_bps : Z
   repo_cash_amount : Z
   deriving DecidableEq, Repr
 

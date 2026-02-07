@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA FileSystem - Lean 4 Port
@@ -244,7 +245,7 @@ def path_canonical (path : List Nat) : Prop :=
   ~ In 0 path /\ length path > 0
 
 /-- file_type_valid (matches Coq: Definition file_type_valid) -/
-def file_type_valid := True -- complex match, simplified to Prop
+def file_type_valid := sorry -- complex match, needs manual translation
 
 /-- filesystem_integrity (matches Coq) -/
 theorem filesystem_integrity : ∀ (f : File) (d : Data), reads (writes f d) = d := by

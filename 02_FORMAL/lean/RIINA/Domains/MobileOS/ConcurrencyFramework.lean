@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ConcurrencyFramework - Lean 4 Port
@@ -66,8 +67,8 @@ namespace RIINA
 
 /-- ConcurrencyType (matches Coq: Inductive ConcurrencyType) -/
 inductive ConcurrencyType where
-  | sendable : ConcurrencyType  -- Can be sent across actors
-  | nonSendable : ConcurrencyType  -- Must stay in one actor
+  | sendable : ConcurrencyType
+  | nonSendable : ConcurrencyType
   | isolated : ConcurrencyType
   deriving DecidableEq, Repr
 
@@ -89,7 +90,7 @@ structure TypedExpr where
 /-- Resource (matches Coq: Record Resource) -/
 structure Resource where
   resource_id : ResourceId
-  resource_order : Nat  -- Acquisition order
+  resource_order : Nat
   deriving DecidableEq, Repr
 
 /-- Actor (matches Coq: Record Actor) -/
@@ -134,7 +135,7 @@ structure Future where
   future_id : Nat
   future_resolved : Bool
   future_value : option
-  future_resolve_count : Nat  -- should be 0 or 1
+  future_resolve_count : Nat
   deriving DecidableEq, Repr
 
 /-- Channel (matches Coq: Record Channel) -/
@@ -149,7 +150,7 @@ structure Channel where
 structure ExtActor where
   ea_id : ActorId
   ea_mailbox : List
-  ea_processed : Nat  -- last processed sequence number
+  ea_processed : Nat
   deriving DecidableEq, Repr
 
 /-- ResourceId (matches Coq: Definition ResourceId) -/
@@ -165,7 +166,7 @@ def Program : Type :=
   list TypedExpr
 
 /-- all_typed (matches Coq: Definition all_typed) -/
-def all_typed := True -- complex match, simplified to Prop
+def all_typed := sorry -- complex match, needs manual translation
 
 /-- well_typed (matches Coq: Definition well_typed) -/
 def well_typed (p : Program) : Prop :=
@@ -304,7 +305,7 @@ theorem thread_safe_collection : ∀ (p : Program), well_typed p → all_typed p
   intro h; exact h
 
 /-- concurrent_modification_detected (matches Coq) -/
-theorem concurrent_modification_detected : ∀ (a1 a2 : Actor) (d : Data), owns a1 d → owns a2 d → actor_id a1 ≠ actor_id a2 → (* Two actors own same data => invariant violation *) owns a1 d ∧ owns a2 d ∧ actor_id a1 ≠ actor_id a2 := by
+theorem concurrent_modification_detected : ∀ (a1 a2 : Actor) (d : Data), owns a1 d → owns a2 d → actor_id a1 ≠ actor_id a2 →  owns a1 d ∧ owns a2 d ∧ actor_id a1 ≠ actor_id a2 := by
   intro h; exact h
 
 /-- future_has_value_when_resolved (matches Coq) -/

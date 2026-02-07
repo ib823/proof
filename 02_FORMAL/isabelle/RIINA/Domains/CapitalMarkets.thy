@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CapitalMarkets - Isabelle/HOL Port
@@ -73,9 +74,9 @@ datatype side =
 record order =
   order_id :: nat
   order_side :: Side
-  order_price :: nat  (* price in basis points *)
-  order_qty :: nat  (* quantity *)
-  order_time :: nat  (* arrival timestamp for priority *)
+  order_price :: nat
+  order_qty :: nat
+  order_time :: nat
 
 (* Trade (matches Coq: Record Trade) *)
 record trade =
@@ -104,9 +105,10 @@ record market_data_tick =
   tick_symbol :: nat
   tick_price :: nat
   tick_volume :: nat
-  tick_seq :: nat  (* sequence number for ordering *)
+  tick_seq :: nat
 
-(* side_eqb - complex match, manual review needed *)
+(* side_eqb - complex match, needs manual translation *)
+definition side_eqb :: "bool" where "side_eqb = undefined"
 
 (* buy_has_priority (matches Coq: Definition buy_has_priority) *)
 definition buy_has_priority :: "bool" where
@@ -144,8 +146,7 @@ definition orders_can_match :: "bool" where
 
 (* match_price (matches Coq: Definition match_price) *)
 definition match_price :: "nat" where
-  "match_price \<equiv> (* price is the earlier order's price; simplified: use sell price *)
-  order_price sell"
+  "match_price \<equiv> order_price sell"
 
 (* match_qty (matches Coq: Definition match_qty) *)
 definition match_qty :: "nat" where

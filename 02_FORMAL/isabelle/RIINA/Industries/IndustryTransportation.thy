@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryTransportation - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | ASIL               | asil                   | OK     |
+ * | SIL                | sil                    | OK     |
  * | TransportationEffect | transportation_effect  | OK     |
  * | ISO26262_Compliance | iso26262__compliance   | OK     |
  * | asil_to_nat        | asil_to_nat            | OK     |
@@ -62,9 +64,12 @@ datatype asil =
     ASIL_A
   |     ASIL_B
   |     ASIL_C
-  |     ASIL_D  (* Most stringent *)
+  |     ASIL_D
   |     QM
-  |     SIL_0
+
+(* SIL (matches Coq: Inductive SIL) *)
+datatype sil =
+    SIL_0
   |     SIL_1
   |     SIL_2
   |     SIL_3
@@ -80,14 +85,14 @@ datatype transportation_effect =
 
 (* ISO26262_Compliance (matches Coq: Record ISO26262_Compliance) *)
 record iso26262__compliance =
-  hazard_analysis :: bool  (* Part 3 *)
-  system_design :: bool  (* Part 4 *)
-  hardware_design :: bool  (* Part 5 *)
-  software_design :: bool  (* Part 6 *)
-  production :: bool  (* Part 7 *)
-  supporting_processes :: bool  (* Part 8 *)
-  asil_decomposition :: bool  (* Part 9 *)
-  cybersecurity_interface :: bool  (* Part 2 - updated 2018 *)
+  hazard_analysis :: bool
+  system_design :: bool
+  hardware_design :: bool
+  software_design :: bool
+  production :: bool
+  supporting_processes :: bool
+  asil_decomposition :: bool
+  cybersecurity_interface :: bool
 
 (* asil_to_nat (matches Coq: Definition asil_to_nat) *)
 fun asil_to_nat :: "ASIL \<Rightarrow> nat" where

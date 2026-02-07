@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkSecurity - Isabelle/HOL Port
@@ -99,7 +100,7 @@ begin
 record tls_config =
   tls_enabled :: bool
   certificate_pinning_enabled :: bool
-  min_tls_version :: nat  (* 12 = TLS 1.2, 13 = TLS 1.3 *)
+  min_tls_version :: nat
   strong_cipher_suites :: bool
 
 (* ARPConfig (matches Coq: Record ARPConfig) *)
@@ -127,7 +128,7 @@ record https_config =
   hsts_enabled :: bool
   hsts_preload :: bool
   hsts_include_subdomains :: bool
-  hsts_max_age :: nat  (* seconds *)
+  hsts_max_age :: nat
 
 (* EncryptionConfig (matches Coq: Record EncryptionConfig) *)
 record encryption_config =
@@ -255,14 +256,14 @@ record dhcp_security_config =
 record ntp_client_config =
   multiple_time_sources :: bool
   min_time_sources :: nat
-  nts_enabled :: bool  (* Network Time Security *)
+  nts_enabled :: bool
   authenticated_ntp :: bool
 
 (* TCPSecurityConfig (matches Coq: Record TCPSecurityConfig) *)
 record tcp_security_config =
   tcp_encryption_enabled :: bool
   tcp_md5_auth :: bool
-  tcp_ao_enabled :: bool  (* TCP-AO authentication *)
+  tcp_ao_enabled :: bool
   randomized_isn :: bool
 
 (* TrafficAnalysisConfig (matches Coq: Record TrafficAnalysisConfig) *)

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ROPDefense - Lean 4 Port
@@ -140,18 +141,18 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- GadgetType (matches Coq: Inductive GadgetType) -/
 inductive GadgetType where
-  | gadgetROP : GadgetType  -- Return-based gadget
-  | gadgetJOP : GadgetType  -- Jump-based gadget
-  | gadgetCOP : GadgetType  -- Call-based gadget
+  | gadgetROP : GadgetType
+  | gadgetJOP : GadgetType
+  | gadgetCOP : GadgetType
   | gadgetSROP : GadgetType
   deriving DecidableEq, Repr
 
 /-- CodePtrType (matches Coq: Inductive CodePtrType) -/
 inductive CodePtrType where
-  | cPFunction : CodePtrType  -- Function pointer
-  | cPVTable : CodePtrType  -- Virtual table pointer
-  | cPReturnAddr : CodePtrType  -- Return address
-  | cPExceptionHandler : CodePtrType  -- Exception handler
+  | cPFunction : CodePtrType
+  | cPVTable : CodePtrType
+  | cPReturnAddr : CodePtrType
+  | cPExceptionHandler : CodePtrType
   | cPSignalHandler : CodePtrType
   deriving DecidableEq, Repr
 
@@ -223,7 +224,7 @@ structure CPIConfig where
 def shadow_push (ss : ShadowStack) (ret : InstrAddr) (caller : FuncId) (fp : Nat) : ShadowStack := mkShadowEntry ret caller fp true :: ss
 
 /-- return_matches_shadow (matches Coq: Definition return_matches_shadow) -/
-def return_matches_shadow := True -- complex match, simplified to Prop
+def return_matches_shadow := sorry -- complex match, needs manual translation
 
 /-- valid_return (matches Coq: Definition valid_return) -/
 def valid_return (ss : ShadowStack) (ret_addr : InstrAddr) : Prop :=
@@ -243,7 +244,7 @@ def btb_entry_valid (targets : ValidTargets) (e : BTBEntry) : Prop :=
   btb_validated e = true /\ In (btb_target e) targets
 
 /-- gadget_blocked (matches Coq: Definition gadget_blocked) -/
-def gadget_blocked := True -- complex match, simplified to Prop
+def gadget_blocked := sorry -- complex match, needs manual translation
 
 /-- chain_blocked (matches Coq: Definition chain_blocked) -/
 def chain_blocked (cfi : CFIConfig) (chain : GadgetChain) : Bool :=

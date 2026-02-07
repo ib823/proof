@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedInfra - Isabelle/HOL Port
@@ -112,7 +113,7 @@ datatype txn_outcome =
 
 (* SafeQuery (matches Coq: Inductive SafeQuery) *)
 datatype safe_query =
-    SQParam  (* Parameterized query *)
+    SQParam
   |     SQConst
 
 (* TypedPayload (matches Coq: Inductive TypedPayload) *)
@@ -173,7 +174,7 @@ record encrypted_storage =
 record capability =
   cap_subject :: nat
   cap_object :: Key
-  cap_permission :: nat  (* 0=none, 1=read, 2=write, 3=both *)
+  cap_permission :: nat
 
 (* AuditEntry (matches Coq: Record AuditEntry) *)
 record audit_entry =

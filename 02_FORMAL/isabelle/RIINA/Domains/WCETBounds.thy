@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WCETBounds - Isabelle/HOL Port
@@ -82,14 +83,14 @@ begin
 
 (* Stmt (matches Coq: Inductive Stmt) *)
 datatype stmt =
-    SUnit  (* No-op *)
-  |     SAssign  (* x := v *)
-  |     SLoad  (* x := *ptr *)
-  |     SStore  (* *ptr := v *)
-  |     SSeq  (* s1; s2 *)
-  |     SIf  (* if c then s1 else s2 *)
-  |     SFor  (* for i < n do s *)
-  |     SCall  (* call f *)
+    SUnit
+  |     SAssign
+  |     SLoad
+  |     SStore
+  |     SSeq
+  |     SIf
+  |     SFor
+  |     SCall
 
 (* CacheState (matches Coq: Inductive CacheState) *)
 datatype cache_state =
@@ -103,17 +104,17 @@ datatype branch_state =
 
 (* AbstractCacheState (matches Coq: Inductive AbstractCacheState) *)
 datatype abstract_cache_state =
-    ACSMustHit  (* Definitely in cache *)
-  |     ACSMayMiss  (* Might not be in cache *)
+    ACSMustHit
+  |     ACSMayMiss
   |     ACSMustMiss
 
 (* HWParams (matches Coq: Record HWParams) *)
 record hw_params =
-  hw_cache_hit :: Time  (* L1 cache hit latency *)
-  hw_cache_miss :: Time  (* Cache miss latency *)
-  hw_call_overhead :: Time  (* Function call overhead *)
-  hw_branch_penalty :: Time  (* Branch misprediction cost *)
-  hw_pipeline_depth :: nat  (* Pipeline stages *)
+  hw_cache_hit :: Time
+  hw_cache_miss :: Time
+  hw_call_overhead :: Time
+  hw_branch_penalty :: Time
+  hw_pipeline_depth :: nat
 
 (* Task (matches Coq: Record Task) *)
 record task =
@@ -129,8 +130,8 @@ record exec_context =
 
 (* DMAConfig (matches Coq: Record DMAConfig) *)
 record dma_config =
-  dma_bandwidth :: nat  (* bytes per cycle, must be > 0 *)
-  dma_setup :: Time  (* DMA setup overhead *)
+  dma_bandwidth :: nat
+  dma_setup :: Time
 
 (* hw_wellformed (matches Coq: Definition hw_wellformed) *)
 definition hw_wellformed :: "HWParams \<Rightarrow> bool" where

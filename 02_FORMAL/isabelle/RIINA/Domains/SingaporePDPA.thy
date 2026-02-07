@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporePDPA - Isabelle/HOL Port
@@ -125,8 +126,8 @@ begin
 datatype sg_consent_status =
     SGNoConsent
   |     SGExplicitConsent
-  |     SGDeemedConsent  (* Deemed consent provision *)
-  |     SGDeemedConsentNotification  (* Deemed consent by notification *)
+  |     SGDeemedConsent
+  |     SGDeemedConsentNotification
   |     SGWithdrawnConsent
 
 (* SGDataCategory (matches Coq: Inductive SGDataCategory) *)
@@ -163,9 +164,11 @@ datatype pdpc_direction =
   |     PDPCDirectionToStopCollection
   |     PDPCDirectionToDestroy
 
-(* sg_has_consent - complex match, manual review needed *)
+(* sg_has_consent - complex match, needs manual translation *)
+definition sg_has_consent :: "bool" where "sg_has_consent = undefined"
 
-(* sg_consent_for_category - complex match, manual review needed *)
+(* sg_consent_for_category - complex match, needs manual translation *)
+definition sg_consent_for_category :: "bool" where "sg_consent_for_category = undefined"
 
 (* sg_purpose_limited (matches Coq: Definition sg_purpose_limited) *)
 definition sg_purpose_limited :: "SGDataRecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -278,7 +281,8 @@ definition portability_fulfilled :: "SGPortabilityRequest \<Rightarrow> bool" wh
 definition pdpc_penalty_within_cap :: "PDPCEnforcementAction \<Rightarrow> bool" where
   "pdpc_penalty_within_cap action \<equiv> pdpc_penalty_amount action <= pdpc_max_penalty action"
 
-(* pdpc_penalty_proportionate - complex match, manual review needed *)
+(* pdpc_penalty_proportionate - complex match, needs manual translation *)
+definition pdpc_penalty_proportionate :: "bool" where "pdpc_penalty_proportionate = undefined"
 
 (* sg_cross_border_lawful (matches Coq: Definition sg_cross_border_lawful) *)
 definition sg_cross_border_lawful :: "SGDataRecord \<Rightarrow> TransferAdequacy \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA PCIDSSCompliance - Lean 4 Port
@@ -91,26 +92,26 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- CHDType (matches Coq: Inductive CHDType) -/
 inductive CHDType where
-  | pAN : CHDType  -- Primary Account Number - 16 digits
-  | cVV : CHDType  -- Card Verification Value - 3-4 digits
-  | pIN : CHDType  -- Personal Identification Number
-  | expiry : CHDType  -- Expiration date
-  | cardholderName : CHDType  -- Cardholder name
+  | pAN : CHDType
+  | cVV : CHDType
+  | pIN : CHDType
+  | expiry : CHDType
+  | cardholderName : CHDType
   deriving DecidableEq, Repr
 
 /-- EncState (matches Coq: Inductive EncState) -/
 inductive EncState where
   | plain : EncState
   | aES128 : EncState
-  | aES256 : EncState  -- Minimum for PAN
-  | tokenized : EncState  -- Tokenization
+  | aES256 : EncState
+  | tokenized : EncState
   deriving DecidableEq, Repr
 
 /-- PANDisplay (matches Coq: Inductive PANDisplay) -/
 inductive PANDisplay where
-  | fullPAN : PANDisplay  -- PROHIBITED for display
-  | maskedPAN : PANDisplay  -- ****-****-****-1234
-  | tokenizedPAN : PANDisplay  -- Token reference
+  | fullPAN : PANDisplay
+  | maskedPAN : PANDisplay
+  | tokenizedPAN : PANDisplay
   deriving DecidableEq, Repr
 
 /-- AccessLevel (matches Coq: Inductive AccessLevel) -/
@@ -133,14 +134,14 @@ inductive TLSVersion where
 inductive DeletionState where
   | notDeleted : DeletionState
   | markedForDeletion : DeletionState
-  | overwritten : DeletionState  -- Data overwritten with random
-  | securelyDeleted : DeletionState  -- Multiple overwrites, verified
+  | overwritten : DeletionState
+  | securelyDeleted : DeletionState
   deriving DecidableEq, Repr
 
 /-- CHDRecord (matches Coq: Record CHDRecord) -/
 structure CHDRecord where
   chd_type : CHDType
-  chd_value : Nat  -- Abstract value
+  chd_value : Nat
   chd_encryption : EncState
   chd_display_format : PANDisplay
   deriving DecidableEq, Repr
@@ -149,8 +150,8 @@ structure CHDRecord where
 structure KeyState where
   key_id : Nat
   key_creation_time : Nat
-  key_rotation_period : Nat  -- Typically 1 year
-  key_protected : Bool  -- Stored in HSM or equivalent
+  key_rotation_period : Nat
+  key_protected : Bool
   deriving DecidableEq, Repr
 
 /-- PCIAudit (matches Coq: Record PCIAudit) -/
@@ -160,14 +161,14 @@ structure PCIAudit where
   pci_action : Nat
   pci_chd_accessed : CHDType
   pci_success : Bool
-  pci_hash : Nat  -- For integrity
+  pci_hash : Nat
   deriving DecidableEq, Repr
 
 /-- TokenVault (matches Coq: Record TokenVault) -/
 structure TokenVault where
   vault_tokens : List
-  vault_key : KeyState  -- Key protecting the vault
-  vault_isolated : Bool  -- Network segmented
+  vault_key : KeyState
+  vault_isolated : Bool
   deriving DecidableEq, Repr
 
 /-- PCISystem (matches Coq: Record PCISystem) -/
@@ -183,7 +184,7 @@ structure User where
   user_id : Nat
   user_access_level : AccessLevel
   user_mfa_enabled : Bool
-  user_need_to_know : Bool  -- Business need for CHD access
+  user_need_to_know : Bool
   deriving DecidableEq, Repr
 
 /-- Transmission (matches Coq: Record Transmission) -/
@@ -202,7 +203,7 @@ structure RetentionPolicy where
 /-- NetworkZone (matches Coq: Record NetworkZone) -/
 structure NetworkZone where
   zone_id : Nat
-  zone_is_cde : Bool  -- Cardholder Data Environment
+  zone_is_cde : Bool
   zone_isolated : Bool
   zone_firewall_protected : Bool
   deriving DecidableEq, Repr
@@ -235,7 +236,7 @@ def key_needs_rotation (k : KeyState) (current_time : Nat) : Bool :=
   Nat
 
 /-- grant_chd_access (matches Coq: Definition grant_chd_access) -/
-def grant_chd_access := True -- complex match, simplified to Prop
+def grant_chd_access := sorry -- complex match, needs manual translation
 
 /-- chd_record_compliant (matches Coq: Definition chd_record_compliant) -/
 def chd_record_compliant (rec : CHDRecord) : Bool :=

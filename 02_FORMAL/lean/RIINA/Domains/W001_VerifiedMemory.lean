@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA W001_VerifiedMemory - Lean 4 Port
@@ -87,27 +88,27 @@ namespace RIINA
 /-- assertion (matches Coq: Inductive assertion) -/
 inductive assertion where
   | aEmp : assertion
-  | aPointsTo : assertion
-  | aSep : assertion
-  | aWand : assertion
-  | aPure : assertion
+  | aPointsTo : Loc → Val → assertion
+  | aSep : assertion → assertion → assertion
+  | aWand : assertion → assertion → assertion
+  | aPure : Prop → assertion
   deriving DecidableEq, Repr
 
 /-- cmd (matches Coq: Inductive cmd) -/
 inductive cmd where
   | cSkip : cmd
-  | cAlloc : cmd
-  | cFree : cmd
-  | cRead : cmd
-  | cWrite : cmd
-  | cSeq : cmd
+  | cAlloc : Loc → Nat → cmd
+  | cFree : Loc → cmd
+  | cRead : Loc → Loc → cmd
+  | cWrite : Loc → Val → cmd
+  | cSeq : cmd → cmd → cmd
   deriving DecidableEq, Repr
 
 /-- Ownership (matches Coq: Inductive Ownership) -/
 inductive Ownership where
   | owned : Ownership
-  | borrowed : Ownership
-  | sharedBorrow : Ownership
+  | borrowed : Nat → Ownership
+  | sharedBorrow : Nat → Ownership
   | moved : Ownership
   deriving DecidableEq, Repr
 
@@ -115,7 +116,7 @@ inductive Ownership where
 inductive MemType where
   | tInt : MemType
   | tPtr : MemType
-  | tArray : MemType
+  | tArray : Nat → MemType → MemType
   deriving DecidableEq, Repr
 
 /-- AllocState (matches Coq: Record AllocState) -/
@@ -156,7 +157,7 @@ def heap_disjoint (h1 h2 : Heap) : Prop :=
   forall l, ~(in_dom h1 l /\ in_dom h2 l)
 
 /-- heap_union (matches Coq: Definition heap_union) -/
-def heap_union := True -- complex match, simplified to Prop
+def heap_union := sorry -- complex match, needs manual translation
 
 /-- heap_subset (matches Coq: Definition heap_subset) -/
 def heap_subset (h1 h2 : Heap) : Prop :=

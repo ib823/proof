@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CellularStack - Isabelle/HOL Port
@@ -94,7 +95,7 @@ datatype cellular_generation =
 record memory =
   mem_start :: MemoryAddress
   mem_size :: nat
-  mem_is_ap :: bool  (* Application processor memory *)
+  mem_is_ap :: bool
 
 (* BasebandProcessor (matches Coq: Record BasebandProcessor) *)
 record baseband_processor =
@@ -197,8 +198,8 @@ record cellular_failover =
 
 (* SignalMeasurement (matches Coq: Record SignalMeasurement) *)
 record signal_measurement =
-  sm_rssi :: nat  (* received signal strength indicator *)
-  sm_rsrp :: nat  (* reference signal received power *)
+  sm_rssi :: nat
+  sm_rsrp :: nat
   sm_accurate :: bool
   sm_timestamp :: nat
 

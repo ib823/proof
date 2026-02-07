@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ASEANCompliance - Isabelle/HOL Port
@@ -66,8 +67,8 @@ begin
 
 (* DataLocalization (matches Coq: Inductive DataLocalization) *)
 datatype data_localization =
-    LocalOnly  (* Must stay in jurisdiction *)
-  |     RegionalASEAN  (* Can move within ASEAN *)
+    LocalOnly
+  |     RegionalASEAN
   |     GlobalAllowed
 
 (* auth_covers (matches Coq: Definition auth_covers) *)

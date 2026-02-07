@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedFileSystem - Isabelle/HOL Port
@@ -15,6 +16,7 @@
  * | TxnState           | txn_state              | OK     |
  * | FSState            | fs_state               | OK     |
  * | FileOp             | file_op                | OK     |
+ * | OpResult           | op_result              | OK     |
  * | FSIntegrity        | fs_integrity           | OK     |
  * | FSSecurity         | fs_security            | OK     |
  * | VerifiedFS         | verified_fs            | OK     |
@@ -177,10 +179,10 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* JournalOp (matches Coq: Inductive JournalOp) *)
 datatype journal_op =
-    JOpWrite  (* block, data *)
-  |     JOpCreate  (* inode *)
-  |     JOpDelete  (* inode *)
-  |     JOpRename  (* src_inode, dst_parent *)
+    JOpWrite
+  |     JOpCreate
+  |     JOpDelete
+  |     JOpRename
   |     JOpCommit
   |     JOpCheckpoint
 
@@ -201,12 +203,15 @@ datatype fs_state =
 
 (* FileOp (matches Coq: Inductive FileOp) *)
 datatype file_op =
-    OpCreate  (* parent inode, new inode *)
-  |     OpDelete  (* parent inode, del inode *)
-  |     OpRename  (* src_parent, src, dst_parent, dst *)
-  |     OpWrite  (* inode, offset, size *)
+    OpCreate
+  |     OpDelete
+  |     OpRename
+  |     OpWrite
   |     OpRead
-  |     OpSuccess
+
+(* OpResult (matches Coq: Inductive OpResult) *)
+datatype op_result =
+    OpSuccess
   |     OpFailure
   |     OpPartial
 
@@ -273,7 +278,7 @@ record journal =
 
 (* DirEntry (matches Coq: Record DirEntry) *)
 record dir_entry =
-  de_name :: nat  (* hash of name for simplicity *)
+  de_name :: nat
   de_inode :: nat
   de_is_dir :: bool
 
@@ -330,7 +335,8 @@ definition can_write :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" w
 definition can_execute :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" where
   "can_execute ctx ino \<equiv> ctx_is_root ctx \<or> perm_execute (get_permission ctx ino)"
 
-(* txn_complete - complex match, manual review needed *)
+(* txn_complete - complex match, needs manual translation *)
+definition txn_complete :: "bool" where "txn_complete = undefined"
 
 (* journal_consistent (matches Coq: Definition journal_consistent) *)
 definition journal_consistent :: "Journal \<Rightarrow> bool" where
@@ -373,15 +379,18 @@ definition can_allocate_bytes :: "Quota \<Rightarrow> nat \<Rightarrow> bool" wh
 definition can_allocate_inode :: "Quota \<Rightarrow> bool" where
   "can_allocate_inode q \<equiv> Nat"
 
-(* recovery_complete - complex match, manual review needed *)
+(* recovery_complete - complex match, needs manual translation *)
+definition recovery_complete :: "bool" where "recovery_complete = undefined"
 
 (* crash_safe (matches Coq: Definition crash_safe) *)
 definition crash_safe :: "CrashState \<Rightarrow> bool" where
   "crash_safe cs \<equiv> journal_consistent (cs_journal cs)"
 
-(* op_is_atomic - complex match, manual review needed *)
+(* op_is_atomic - complex match, needs manual translation *)
+definition op_is_atomic :: "bool" where "op_is_atomic = undefined"
 
-(* op_is_journaled - complex match, manual review needed *)
+(* op_is_journaled - complex match, needs manual translation *)
+definition op_is_journaled :: "bool" where "op_is_journaled = undefined"
 
 (* fs_integrity_sound (matches Coq: Definition fs_integrity_sound) *)
 definition fs_integrity_sound :: "FSIntegrity \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ConcurrencyFramework - Isabelle/HOL Port
@@ -68,8 +69,8 @@ begin
 
 (* ConcurrencyType (matches Coq: Inductive ConcurrencyType) *)
 datatype concurrency_type =
-    Sendable  (* Can be sent across actors *)
-  |     NonSendable  (* Must stay in one actor *)
+    Sendable
+  |     NonSendable
   |     Isolated
 
 (* TaskState (matches Coq: Inductive TaskState) *)
@@ -88,7 +89,7 @@ record typed_expr =
 (* Resource (matches Coq: Record Resource) *)
 record resource =
   resource_id :: ResourceId
-  resource_order :: nat  (* Acquisition order *)
+  resource_order :: nat
 
 (* Actor (matches Coq: Record Actor) *)
 record actor =
@@ -127,7 +128,7 @@ record future =
   future_id :: nat
   future_resolved :: bool
   future_value :: option
-  future_resolve_count :: nat  (* should be 0 or 1 *)
+  future_resolve_count :: nat
 
 (* Channel (matches Coq: Record Channel) *)
 record channel =
@@ -140,7 +141,7 @@ record channel =
 record ext_actor =
   ea_id :: ActorId
   ea_mailbox :: 'a list
-  ea_processed :: nat  (* last processed sequence number *)
+  ea_processed :: nat
 
 (* ResourceId (matches Coq: Definition ResourceId) *)
 definition ResourceId :: "'a" where
@@ -154,7 +155,8 @@ definition ActorId :: "'a" where
 definition Program :: "'a" where
   "Program \<equiv> list TypedExpr"
 
-(* all_typed - complex match, manual review needed *)
+(* all_typed - complex match, needs manual translation *)
+definition all_typed :: "bool" where "all_typed = undefined"
 
 (* well_typed (matches Coq: Definition well_typed) *)
 definition well_typed :: "Program \<Rightarrow> bool" where

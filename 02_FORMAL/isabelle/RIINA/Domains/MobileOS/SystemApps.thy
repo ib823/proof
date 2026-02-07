@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SystemApps - Isabelle/HOL Port
@@ -70,10 +71,10 @@ begin
 
 (* AppCategory (matches Coq: Inductive AppCategory) *)
 datatype app_category =
-    Communication  (* Messages, Phone, Mail *)
-  |     Productivity  (* Calendar, Notes, Files *)
-  |     Media  (* Photos, Music, Camera *)
-  |     Utility  (* Settings, Calculator, Clock *)
+    Communication
+  |     Productivity
+  |     Media
+  |     Utility
   |     Security
 
 (* SystemApp (matches Coq: Record SystemApp) *)
@@ -97,7 +98,7 @@ record state_transition =
   trans_app_id :: nat
   from_state :: AppState
   to_state :: AppState
-  transition_type :: nat  (* 0=user_action, 1=system_event, 2=sync *)
+  transition_type :: nat
 
 (* SyncOperation (matches Coq: Record SyncOperation) *)
 record sync_operation =
@@ -110,7 +111,7 @@ record sync_operation =
 (* AppResponse (matches Coq: Record AppResponse) *)
 record app_response =
   response_app_id :: nat
-  response_time_us :: nat  (* microseconds *)
+  response_time_us :: nat
   response_correct :: bool
 
 (* AppPermission (matches Coq: Record AppPermission) *)

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CapabilitySecurity - Lean 4 Port
@@ -181,8 +182,9 @@ inductive Permission where
 
 /-- DelegationType (matches Coq: Inductive DelegationType) -/
 inductive DelegationType where
-  | delegFull : DelegationType  -- Full delegation - delegate can re-delegate
-  | delegRestricted : DelegationType  -- Delegate cannot re-delegate
+  | delegFull : DelegationType
+  | delegRestricted : DelegationType
+  | delegOnce : DelegationType
   deriving DecidableEq, Repr
 
 /-- Capability (matches Coq: Record Capability) -/
@@ -217,11 +219,11 @@ structure CapabilityConfig where
 
 /-- MemCapability (matches Coq: Record MemCapability) -/
 structure MemCapability where
-  mem_base : Nat  -- Base address
-  mem_length : Nat  -- Length of region
-  mem_perms : PermSet  -- Permissions
-  mem_sealed : Bool  -- Whether capability is sealed
-  mem_valid : Bool  -- Whether capability is valid (not revoked)
+  mem_base : Nat
+  mem_length : Nat
+  mem_perms : PermSet
+  mem_sealed : Bool
+  mem_valid : Bool
   deriving DecidableEq, Repr
 
 /-- RevocationTable (matches Coq: Record RevocationTable) -/
@@ -244,11 +246,11 @@ structure ConfinementPolicy where
 
 /-- Delegation (matches Coq: Record Delegation) -/
 structure Delegation where
-  del_from : Nat  -- Delegator principal ID
-  del_to : Nat  -- Delegatee principal ID
-  del_cap_id : Nat  -- Capability being delegated
+  del_from : Nat
+  del_to : Nat
+  del_cap_id : Nat
   del_type : DelegationType
-  del_active : Bool  -- Whether delegation is still active
+  del_active : Bool
   deriving DecidableEq, Repr
 
 /-- perm_level (matches Coq: Definition perm_level) -/
@@ -318,7 +320,7 @@ def confinement_enforced (cp : ConfinementPolicy) : Bool :=
   andb (conf_no_ambient cp) (andb (conf_explicit_only cp) (conf_no_escalation cp))
 
 /-- can_redelegate (matches Coq: Definition can_redelegate) -/
-def can_redelegate := True -- complex match, simplified to Prop
+def can_redelegate := sorry -- complex match, needs manual translation
 
 /-- capability_sound (matches Coq: Definition capability_sound) -/
 def capability_sound (c : Capability) : Bool :=

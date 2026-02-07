@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Z001_DeclassificationPolicy - Isabelle/HOL Port
@@ -152,11 +153,14 @@ definition acts_for :: "bool" where
 definition principal_leq :: "bool" where
   "principal_leq \<equiv> acts_for p1 p2"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
-(* level_join - complex match, manual review needed *)
+(* level_join - complex match, needs manual translation *)
+definition level_join :: "bool" where "level_join = undefined"
 
-(* level_meet - complex match, manual review needed *)
+(* level_meet - complex match, needs manual translation *)
+definition level_meet :: "bool" where "level_meet = undefined"
 
 (* valid_policy (matches Coq: Definition valid_policy) *)
 definition valid_policy :: "DeclassPolicy \<Rightarrow> bool" where

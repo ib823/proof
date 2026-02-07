@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CSRFProtection - Isabelle/HOL Port
@@ -89,7 +90,8 @@ definition csrf_protected :: "CSRFConfig \<Rightarrow> bool" where
 definition riina_csrf :: "CSRFConfig" where
   "riina_csrf \<equiv> mkCSRF true true true true true"
 
-(* csrf_request_safe - complex match, manual review needed *)
+(* csrf_request_safe - complex match, needs manual translation *)
+definition csrf_request_safe :: "bool" where "csrf_request_safe = undefined"
 
 (* csrf_request_fully_validated (matches Coq: Definition csrf_request_fully_validated) *)
 definition csrf_request_fully_validated :: "CSRFRequest \<Rightarrow> bool" where

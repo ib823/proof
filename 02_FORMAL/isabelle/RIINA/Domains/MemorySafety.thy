@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MemorySafety - Isabelle/HOL Port
@@ -12,7 +13,9 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AllocState         | alloc_state            | OK     |
+ * | PointerValidity    | pointer_validity       | OK     |
  * | SecurityDomain     | security_domain        | OK     |
+ * | AccessPermission   | access_permission      | OK     |
  * | MemoryRegion       | memory_region          | OK     |
  * | Pointer            | pointer                | OK     |
  * | SecureMemoryRegion | secure_memory_region   | OK     |
@@ -217,21 +220,31 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* AllocState (matches Coq: Inductive AllocState) *)
 datatype alloc_state =
-    Unallocated  (* Never allocated *)
-  |     Allocated  (* Currently allocated and valid *)
-  |     Valid  (* Points to valid allocated memory *)
-  |     Null  (* Null pointer *)
-  |     Dangling  (* Points to freed memory *)
+    Unallocated
+  |     Allocated
+  |     Freed
+
+(* PointerValidity (matches Coq: Inductive PointerValidity) *)
+datatype pointer_validity =
+    Valid
+  |     Null
+  |     Dangling
+  |     OutOfBounds
 
 (* SecurityDomain (matches Coq: Inductive SecurityDomain) *)
 datatype security_domain =
-    DomainKernel  (* Kernel/privileged memory *)
-  |     DomainUser  (* User-space memory *)
-  |     DomainGuest  (* Guest/sandboxed memory *)
-  |     PermNone  (* No access *)
-  |     PermRead  (* Read only *)
-  |     PermWrite  (* Write only *)
-  |     PermReadWrite  (* Read and write *)
+    DomainKernel
+  |     DomainUser
+  |     DomainGuest
+  |     DomainUntrusted
+
+(* AccessPermission (matches Coq: Inductive AccessPermission) *)
+datatype access_permission =
+    PermNone
+  |     PermRead
+  |     PermWrite
+  |     PermReadWrite
+  |     PermExecute
 
 (* MemoryRegion (matches Coq: Record MemoryRegion) *)
 record memory_region =
@@ -346,11 +359,14 @@ definition memory_safe :: "MemorySafetyConfig \<Rightarrow> bool" where
   stack_protected (ms_stack m) \<and> heap_protected (ms_heap m) \<and>
   isolation_protected (ms_isolation m)"
 
-(* ptr_is_valid - complex match, manual review needed *)
+(* ptr_is_valid - complex match, needs manual translation *)
+definition ptr_is_valid :: "bool" where "ptr_is_valid = undefined"
 
-(* ptr_is_null - complex match, manual review needed *)
+(* ptr_is_null - complex match, needs manual translation *)
+definition ptr_is_null :: "bool" where "ptr_is_null = undefined"
 
-(* ptr_is_dangling - complex match, manual review needed *)
+(* ptr_is_dangling - complex match, needs manual translation *)
+definition ptr_is_dangling :: "bool" where "ptr_is_dangling = undefined"
 
 (* ptr_in_bounds (matches Coq: Definition ptr_in_bounds) *)
 definition ptr_in_bounds :: "Pointer \<Rightarrow> bool" where
@@ -364,9 +380,11 @@ definition ptr_safe_for_access :: "Pointer \<Rightarrow> bool" where
 definition ptr_safe_for_access_range :: "Pointer \<Rightarrow> nat \<Rightarrow> bool" where
   "ptr_safe_for_access_range p len \<equiv> ptr_is_valid p \<and> Nat"
 
-(* region_is_allocated - complex match, manual review needed *)
+(* region_is_allocated - complex match, needs manual translation *)
+definition region_is_allocated :: "bool" where "region_is_allocated = undefined"
 
-(* region_is_freed - complex match, manual review needed *)
+(* region_is_freed - complex match, needs manual translation *)
+definition region_is_freed :: "bool" where "region_is_freed = undefined"
 
 (* region_can_access (matches Coq: Definition region_can_access) *)
 definition region_can_access :: "MemoryRegion \<Rightarrow> bool" where

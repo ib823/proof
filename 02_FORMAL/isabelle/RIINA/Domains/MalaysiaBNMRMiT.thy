@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaBNMRMiT - Isabelle/HOL Port
@@ -96,7 +97,8 @@ definition ops_resilience_verified :: "FinancialInstitution \<Rightarrow> bool" 
 definition audit_compliant :: "FinancialInstitution \<Rightarrow> bool" where
   "audit_compliant fi \<equiv> fi_audit_completed fi = true"
 
-(* cloud_compliant - complex match, manual review needed *)
+(* cloud_compliant - complex match, needs manual translation *)
+definition cloud_compliant :: "bool" where "cloud_compliant = undefined"
 
 (* third_party_compliant (matches Coq: Definition third_party_compliant) *)
 definition third_party_compliant :: "FinancialInstitution \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NotificationSystem - Isabelle/HOL Port
@@ -90,7 +91,7 @@ record notification =
   notif_priority :: Priority
   notif_state :: NotificationState
   notif_created_at :: Time
-  notif_ttl :: Time  (* Time to live *)
+  notif_ttl :: Time
   notif_delivered_at :: option
 
 (* NotificationChannel (matches Coq: Record NotificationChannel) *)
@@ -98,7 +99,7 @@ record notification_channel =
   channel_id :: nat
   channel_enabled :: bool
   channel_priority :: Priority
-  channel_sound_volume :: nat  (* 0-100 *)
+  channel_sound_volume :: nat
   channel_vibration :: bool
   channel_badge :: bool
 
@@ -125,7 +126,7 @@ record notif_history =
 record ext_notification =
   ext_notif :: Notification
   ext_content_sanitized :: bool
-  ext_sound_volume :: nat  (* 0-100 *)
+  ext_sound_volume :: nat
   ext_badge_count :: nat
   ext_expiry_time :: nat
   ext_delivery_confirmed :: bool

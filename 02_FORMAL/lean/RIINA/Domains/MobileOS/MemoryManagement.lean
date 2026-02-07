@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MemoryManagement - Lean 4 Port
@@ -89,7 +90,7 @@ structure MemoryPage where
   page_id : Nat
   page_contents : PageData
   page_compressed : Bool
-  page_owner : Nat  -- Application ID
+  page_owner : Nat
   deriving DecidableEq, Repr
 
 /-- Application (matches Coq: Record Application) -/
@@ -123,7 +124,7 @@ structure Heap where
   heap_blocks : List
   heap_total_size : Nat
   heap_used_size : Nat
-  heap_fragmentation_ratio : Nat  -- 0-100 percentage
+  heap_fragmentation_ratio : Nat
   deriving DecidableEq, Repr
 
 /-- StackFrame (matches Coq: Record StackFrame) -/
@@ -144,7 +145,7 @@ structure Stack where
 structure VirtualMapping where
   vmap_virtual_page : VirtualPage
   vmap_physical_page : Nat
-  vmap_page_size : Nat  -- must be power of 2, e.g. 4096
+  vmap_page_size : Nat
   vmap_readable : Bool
   vmap_writable : Bool
   deriving DecidableEq, Repr

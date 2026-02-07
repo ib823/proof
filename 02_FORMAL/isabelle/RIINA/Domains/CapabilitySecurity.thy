@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CapabilitySecurity - Isabelle/HOL Port
@@ -179,8 +180,9 @@ datatype permission =
 
 (* DelegationType (matches Coq: Inductive DelegationType) *)
 datatype delegation_type =
-    DelegFull  (* Full delegation - delegate can re-delegate *)
-  |     DelegRestricted  (* Delegate cannot re-delegate *)
+    DelegFull
+  |     DelegRestricted
+  |     DelegOnce
 
 (* Capability (matches Coq: Record Capability) *)
 record capability =
@@ -210,11 +212,11 @@ record capability_config =
 
 (* MemCapability (matches Coq: Record MemCapability) *)
 record mem_capability =
-  mem_base :: nat  (* Base address *)
-  mem_length :: nat  (* Length of region *)
-  mem_perms :: PermSet  (* Permissions *)
-  mem_sealed :: bool  (* Whether capability is sealed *)
-  mem_valid :: bool  (* Whether capability is valid (not revoked) *)
+  mem_base :: nat
+  mem_length :: nat
+  mem_perms :: PermSet
+  mem_sealed :: bool
+  mem_valid :: bool
 
 (* RevocationTable (matches Coq: Record RevocationTable) *)
 record revocation_table =
@@ -233,11 +235,11 @@ record confinement_policy =
 
 (* Delegation (matches Coq: Record Delegation) *)
 record delegation =
-  del_from :: nat  (* Delegator principal ID *)
-  del_to :: nat  (* Delegatee principal ID *)
-  del_cap_id :: nat  (* Capability being delegated *)
+  del_from :: nat
+  del_to :: nat
+  del_cap_id :: nat
   del_type :: DelegationType
-  del_active :: bool  (* Whether delegation is still active *)
+  del_active :: bool
 
 (* perm_level (matches Coq: Definition perm_level) *)
 fun perm_level :: "Permission \<Rightarrow> nat" where
@@ -305,7 +307,8 @@ definition has_capability :: "Principal \<Rightarrow> nat \<Rightarrow> bool" wh
 definition confinement_enforced :: "ConfinementPolicy \<Rightarrow> bool" where
   "confinement_enforced cp \<equiv> andb (conf_no_ambient cp) (andb (conf_explicit_only cp) (conf_no_escalation cp))"
 
-(* can_redelegate - complex match, manual review needed *)
+(* can_redelegate - complex match, needs manual translation *)
+definition can_redelegate :: "bool" where "can_redelegate = undefined"
 
 (* capability_sound (matches Coq: Definition capability_sound) *)
 definition capability_sound :: "Capability \<Rightarrow> bool" where

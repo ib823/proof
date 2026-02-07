@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DependentTypes - Lean 4 Port
@@ -51,18 +52,18 @@ namespace RIINA
 
 /-- DTerm (matches Coq: Inductive DTerm) -/
 inductive DTerm where
-  | dVar : DTerm
-  | dLam : DTerm  -- λx:A.b
-  | dApp : DTerm  -- f a
-  | dPair : DTerm  -- (a, b)
-  | dFst : DTerm  -- π₁
-  | dSnd : DTerm  -- π₂
-  | dRefl : DTerm  -- refl
-  | dJ : DTerm  -- J eliminator
-  | dNil : DTerm  -- nil : Vec A 0
-  | dCons : DTerm  -- cons : A → Vec A n → Vec A (S n)
-  | dHead : DTerm  -- head : Vec A (S n) → A
-  | dTail : DTerm  -- tail : Vec A (S n) → Vec A n
+  | dVar : Nat → DTerm
+  | dLam : DTy 0 → DTerm → DTerm
+  | dApp : DTerm → DTerm → DTerm
+  | dPair : DTerm → DTerm → DTerm
+  | dFst : DTerm → DTerm
+  | dSnd : DTerm → DTerm
+  | dRefl : DTerm
+  | dJ : DTerm → DTerm → DTerm → DTerm → DTerm
+  | dNil : DTy 0 → DTerm
+  | dCons : DTerm → DTerm → DTerm
+  | dHead : DTerm → DTerm
+  | dTail : DTerm → DTerm
   deriving DecidableEq, Repr
 
 /-- TYPE_005_01 (matches Coq) -/

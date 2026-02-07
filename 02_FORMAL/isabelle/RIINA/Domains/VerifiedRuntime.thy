@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedRuntime - Isabelle/HOL Port
@@ -86,7 +87,7 @@ record heap =
 record managed_heap =
   mh_live :: Ptr
   mh_roots :: Roots
-  mh_refs :: Refs  (* References from each object *)
+  mh_refs :: Refs
   mh_size :: Ptr
   mh_finalizer :: Ptr
   mh_finalized :: Ptr
@@ -112,7 +113,8 @@ record channel =
 definition valid_ptr :: "Heap \<Rightarrow> Ptr \<Rightarrow> bool" where
   "valid_ptr h p \<equiv> exists size, heap_mem h p = Some size"
 
-(* accessible_size - complex match, manual review needed *)
+(* accessible_size - complex match, needs manual translation *)
+definition accessible_size :: "bool" where "accessible_size = undefined"
 
 (* sufficient_space (matches Coq: Definition sufficient_space) *)
 definition sufficient_space :: "Heap \<Rightarrow> nat \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkDefense - Isabelle/HOL Port
@@ -258,7 +259,8 @@ definition compose_limits :: "TokenBucket" where
 definition endpoint_eq :: "bool" where
   "endpoint_eq \<equiv> Nat"
 
-(* netperm_eq - complex match, manual review needed *)
+(* netperm_eq - complex match, needs manual translation *)
+definition netperm_eq :: "bool" where "netperm_eq = undefined"
 
 (* verify_signature (matches Coq: Definition verify_signature) *)
 definition verify_signature :: "NetCapability \<Rightarrow> bool" where

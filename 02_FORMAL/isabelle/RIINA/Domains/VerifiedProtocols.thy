@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedProtocols - Isabelle/HOL Port
@@ -258,7 +259,8 @@ definition initial_tls13_state :: "TLS13State" where
      tls_server_traffic_secret := [];
      tls_transcript := [];
      tls_stage := 0;
-     tls_version := 0x0304;  (* TLS 1"
+     tls_version := 0x0304;  
+     tls_cipher_suite := 0 |}"
 
 (* tls13_handshake_complete (matches Coq: Definition tls13_handshake_complete) *)
 definition tls13_handshake_complete :: "TLS13Session \<Rightarrow> bool" where
@@ -316,7 +318,8 @@ definition noise_handshake_complete :: "NoiseHandshakeState \<Rightarrow> bool" 
   "noise_handshake_complete st \<equiv> hs_complete st = true /\
   (exists k, noise_k (hs_symmetric st) = Some k)"
 
-(* x3dh_initiator - complex match, manual review needed *)
+(* x3dh_initiator - complex match, needs manual translation *)
+definition x3dh_initiator :: "bool" where "x3dh_initiator = undefined"
 
 (* signal_dh_ratchet (matches Coq: Definition signal_dh_ratchet) *)
 definition signal_dh_ratchet :: "SignalState \<Rightarrow> KeyPair \<Rightarrow> PublicKey \<Rightarrow> SignalState" where
@@ -389,7 +392,8 @@ definition prevents_reflection :: "nat \<Rightarrow> nat \<Rightarrow> bool" whe
 definition constant_time_op :: "bool" where
   "constant_time_op \<equiv> forall (a b c d : nat), True"
 
-(* all_theorems_proven - complex match, manual review needed *)
+(* all_theorems_proven - complex match, needs manual translation *)
+definition all_theorems_proven :: "bool" where "all_theorems_proven = undefined"
 
 (* hkdf_deterministic (matches Coq) *)
 lemma hkdf_deterministic: "\<forall> salt ikm info len, hkdf salt ikm info len = hkdf salt ikm info len"

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TestingQA - Lean 4 Port
@@ -96,16 +97,16 @@ private theorem andb_true_iff (a b : Bool) :
 /-- TestResult (matches Coq: Inductive TestResult) -/
 inductive TestResult where
   | tRPass : TestResult
-  | tRFail : TestResult
-  | tRError : TestResult
+  | tRFail : String → TestResult
+  | tRError : String → TestResult
   deriving DecidableEq, Repr
 
 /-- TraceEvent (matches Coq: Inductive TraceEvent) -/
 inductive TraceEvent where
-  | tEEnter : TraceEvent
-  | tEExit : TraceEvent
-  | tEAssert : TraceEvent
-  | tECoverage : TraceEvent
+  | tEEnter : String → TraceEvent
+  | tEExit : String → TraceEvent
+  | tEAssert : Bool → TraceEvent
+  | tECoverage : Nat → TraceEvent
   deriving DecidableEq, Repr
 
 /-- MutationOp (matches Coq: Inductive MutationOp) -/
@@ -130,21 +131,21 @@ inductive SecurityProperty where
 inductive SimpleType where
   | tyNat : SimpleType
   | tyBool : SimpleType
-  | tyFun : SimpleType
+  | tyFun : SimpleType → SimpleType → SimpleType
   deriving DecidableEq, Repr
 
 /-- Expr (matches Coq: Inductive Expr) -/
 inductive Expr where
-  | eNat : Expr
-  | eBool : Expr
-  | eAdd : Expr
-  | eIf : Expr
+  | eNat : Nat → Expr
+  | eBool : Bool → Expr
+  | eAdd : Expr → Expr → Expr
+  | eIf : Expr → Expr → Expr → Expr
   deriving DecidableEq, Repr
 
 /-- SanitizerResult (matches Coq: Inductive SanitizerResult) -/
 inductive SanitizerResult where
   | sRClean : SanitizerResult
-  | sRViolation : SanitizerResult
+  | sRViolation : String → SanitizerResult
   deriving DecidableEq, Repr
 
 /-- TestCase (matches Coq: Record TestCase) -/
@@ -237,7 +238,7 @@ def run_test (tc : TestCase) (f : Nat -> Nat) : TestResult :=
   if Nat
 
 /-- test_result_eqb (matches Coq: Definition test_result_eqb) -/
-def test_result_eqb := True -- complex match, simplified to Prop
+def test_result_eqb := sorry -- complex match, needs manual translation
 
 /-- test_passed (matches Coq: Definition test_passed) -/
 def test_passed (r : TestResult) : Bool :=
@@ -252,7 +253,7 @@ def initial_state : TestState := mkTestState 0 false
 def id_fixture : Fixture := mkFixture (fun s => s) (fun s => s)
 
 /-- expected_panic (matches Coq: Definition expected_panic) -/
-def expected_panic := True -- complex match, simplified to Prop
+def expected_panic := sorry -- complex match, needs manual translation
 
 /-- check_property (matches Coq: Definition check_property) -/
 def check_property (prop : Property) (inputs : List Nat) : Bool :=
@@ -304,10 +305,10 @@ def check_brute_force (bfp : BruteForceProtection) : Bool :=
   orb bfp
 
 /-- line_covered (matches Coq: Definition line_covered) -/
-def line_covered := True -- complex match, simplified to Prop
+def line_covered := sorry -- complex match, needs manual translation
 
 /-- sec_prop_eqb (matches Coq: Definition sec_prop_eqb) -/
-def sec_prop_eqb := True -- complex match, simplified to Prop
+def sec_prop_eqb := sorry -- complex match, needs manual translation
 
 /-- security_prop_covered (matches Coq: Definition security_prop_covered) -/
 def security_prop_covered (sp : SecurityProperty) (sc : SecurityCoverage) : Bool :=

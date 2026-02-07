@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ToolingIDE - Isabelle/HOL Port
@@ -91,7 +92,7 @@ datatype tool_ast =
   |     TASTLit
   |     TASTApp
   |     TASTLam
-  |     TASTAnnot  (* Security annotation *)
+  |     TASTAnnot
 
 (* TypeInfo (matches Coq: Inductive TypeInfo) *)
 datatype type_info =
@@ -101,7 +102,7 @@ datatype type_info =
 
 (* LSPRequest (matches Coq: Inductive LSPRequest) *)
 datatype lsp_request =
-    LSPCompletion  (* line, column *)
+    LSPCompletion
   |     LSPHover
   |     LSPDefinition
   |     LSPDiagnostics
@@ -122,7 +123,7 @@ datatype lsp_response =
 (* DebugValue (matches Coq: Inductive DebugValue) *)
 datatype debug_value =
     DVPublic
-  |     DVRedacted  (* Secret value redacted *)
+  |     DVRedacted
   |     DVStruct
 
 (* ToolInput (matches Coq: Inductive ToolInput) *)
@@ -154,8 +155,8 @@ datatype lint_violation =
 (* LintRule (matches Coq: Record LintRule) *)
 record lint_rule =
   lr_name :: string
-  lr_category :: string  (* "security", "style", "correctness" *)
-  lr_severity :: nat  (* 1=info, 2=warning, 3=error *)
+  lr_category :: string
+  lr_severity :: nat
 
 (* BuildConfig (matches Coq: Record BuildConfig) *)
 record build_config =
@@ -216,7 +217,8 @@ definition compose_tools :: "Tool" where
   "compose_tools \<equiv> mkTool 
     (t1"
 
-(* tool_deterministic - complex match, manual review needed *)
+(* tool_deterministic - complex match, needs manual translation *)
+definition tool_deterministic :: "bool" where "tool_deterministic = undefined"
 
 (* semantically_equivalent (matches Coq: Definition semantically_equivalent) *)
 definition semantically_equivalent :: "bool" where
@@ -271,7 +273,8 @@ definition annotation_visible_after_format :: "ToolAST \<Rightarrow> bool" where
 fun lint_violation_actual :: "ToolAST \<Rightarrow> LintViolation \<Rightarrow> bool" where
 
 
-(* rule_matches_violation - complex match, manual review needed *)
+(* rule_matches_violation - complex match, needs manual translation *)
+definition rule_matches_violation :: "bool" where "rule_matches_violation = undefined"
 
 (* critical_security_rule (matches Coq: Definition critical_security_rule) *)
 definition critical_security_rule :: "LintRule \<Rightarrow> bool" where
@@ -305,7 +308,8 @@ definition version_le :: "bool" where
 definition resolution_terminates :: "DepGraph \<Rightarrow> bool" where
   "resolution_terminates deps \<equiv> exists resolved, resolve_step (List"
 
-(* verify_signature - complex match, manual review needed *)
+(* verify_signature - complex match, needs manual translation *)
+definition verify_signature :: "bool" where "verify_signature = undefined"
 
 (* signature_valid (matches Coq: Definition signature_valid) *)
 definition signature_valid :: "Package \<Rightarrow> bool" where

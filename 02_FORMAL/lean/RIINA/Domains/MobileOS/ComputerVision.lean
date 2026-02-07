@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ComputerVision - Lean 4 Port
@@ -122,7 +123,7 @@ structure FaceDetection where
 /-- OCRResult (matches Coq: Record OCRResult) -/
 structure OCRResult where
   ocr_text : List
-  ocr_confidence : Nat  -- 0-100
+  ocr_confidence : Nat
   ocr_language : Nat
   ocr_accuracy_bound : Nat
   deriving DecidableEq, Repr
@@ -159,7 +160,7 @@ structure PhotoAnalysis where
 
 /-- DepthEstimate (matches Coq: Record DepthEstimate) -/
 structure DepthEstimate where
-  depth_value : Nat  -- in mm
+  depth_value : Nat
   depth_min : Nat
   depth_max : Nat
   depth_confidence : Nat
@@ -198,7 +199,7 @@ structure VisionRequest where
 structure ImagePair where
   img_a : Image
   img_b : Image
-  similarity_score : Nat  -- 0-100
+  similarity_score : Nat
   deriving DecidableEq, Repr
 
 /-- PipelineStage (matches Coq: Record PipelineStage) -/
@@ -238,11 +239,15 @@ def valid_detection (d : Detection) : Prop :=
 /-- accurate_detection (matches Coq: Definition accurate_detection) -/
 def accurate_detection (d : Detection) (ground_truth : BoundingBox) : Prop :=
   let box := det_box d in
-  (* IoU > 0
+  
+  (max (bbox_x box) (bbox_x ground_truth) - min (bbox_x box) (bbox_x ground_truth)) <= 
+    (bbox_w box + bbox_w ground_truth) / 2 /\
+  (max (bbox_y box) (bbox_y ground_truth) - min (bbox_y box) (bbox_y ground_truth)) <= 
+    (bbox_h box + bbox_h ground_truth) / 2
 
 /-- detection_bounded (matches Coq: Definition detection_bounded) -/
 def detection_bounded (r : ObjectDetectionResult) : Prop :=
-  length (od_detections r) <= 100 /\  (* Max detections *)
+  length (od_detections r) <= 100 /\  
   od_latency_ms r <= 100
 
 /-- cv_private (matches Coq: Definition cv_private) -/

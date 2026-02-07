@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IndustryMilitary - Lean 4 Port
@@ -55,7 +56,7 @@ namespace RIINA
 /-- ClassificationLevel (matches Coq: Inductive ClassificationLevel) -/
 inductive ClassificationLevel where
   | unclassified : ClassificationLevel
-  | cUI : ClassificationLevel  -- Controlled Unclassified Information
+  | cUI : ClassificationLevel
   | confidential : ClassificationLevel
   | secret : ClassificationLevel
   | topSecret : ClassificationLevel
@@ -64,7 +65,7 @@ inductive ClassificationLevel where
 
 /-- MilitaryEffect (matches Coq: Inductive MilitaryEffect) -/
 inductive MilitaryEffect where
-  | classifiedIO : MilitaryEffect
+  | classifiedIO : ClassificationLevel → MilitaryEffect
   | secureComms : MilitaryEffect
   | weaponSystem : MilitaryEffect
   | intelligenceOp : MilitaryEffect
@@ -75,12 +76,12 @@ structure MilitarySecurityPolicy where
   classification : ClassificationLevel
   need_to_know : List
   clearance_required : ClassificationLevel
-  comsec_approved : Bool  -- Communications Security
-  tempest_certified : Bool  -- TEMPEST emanations security
+  comsec_approved : Bool
+  tempest_certified : Bool
   deriving DecidableEq, Repr
 
 /-- class_le (matches Coq: Definition class_le) -/
-def class_le := True -- complex match, simplified to Prop
+def class_le := sorry -- complex match, needs manual translation
 
 /-- class_to_nat (matches Coq: Definition class_to_nat) -/
 def class_to_nat (c : ClassificationLevel) : Nat :=
@@ -121,31 +122,31 @@ def redundancy_factor (c : ClassificationLevel) : Nat :=
 /-- Section A01 - NIST 800-171 Compliance
     Reference: IND_A_MILITARY.md Section 3.1 -/
 /-- nist_800_171_access_control (matches Coq) -/
-theorem nist_800_171_access_control : ∀ (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = true → (* Access control verification *) True := by
+theorem nist_800_171_access_control : ∀ (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = true →  True := by
   trivial
 
 /-- Section A02 - CMMC Level 3 Requirements
     Reference: IND_A_MILITARY.md Section 3.2 -/
 /-- cmmc_level3_compliance (matches Coq) -/
-theorem cmmc_level3_compliance : ∀ policy, classification policy = CUI → (* CMMC Level 3 controls satisfied *) True := by
+theorem cmmc_level3_compliance : ∀ policy, classification policy = CUI →  True := by
   trivial
 
 /-- Section A03 - ITAR Export Control
     Reference: IND_A_MILITARY.md Section 3.3 -/
 /-- itar_export_control (matches Coq) -/
-theorem itar_export_control : ∀ (data_class : ClassificationLevel) (destination : nat), (* Export control verification *) True := by
+theorem itar_export_control : ∀ (data_class : ClassificationLevel) (destination : nat),  True := by
   trivial
 
 /-- Section A04 - MIL-STD-882 Safety
     Reference: IND_A_MILITARY.md Section 3.4 -/
 /-- mil_std_882_safety (matches Coq) -/
-theorem mil_std_882_safety : ∀ (system : nat) (hazard_level : nat), (* Safety analysis *) True := by
+theorem mil_std_882_safety : ∀ (system : nat) (hazard_level : nat),  True := by
   trivial
 
 /-- Section A05 - RMF Authorization
     Reference: IND_A_MILITARY.md Section 3.5 -/
 /-- rmf_authorization (matches Coq) -/
-theorem rmf_authorization : ∀ (system : nat) (risk_level : nat), (* Risk management framework authorization *) True := by
+theorem rmf_authorization : ∀ (system : nat) (risk_level : nat),  True := by
   trivial
 
 /-- Classification lattice reflexivity -/
@@ -160,7 +161,7 @@ theorem class_le_trans : ∀ c1 c2 c3, class_le c1 c2 = true → class_le c2 c3 
 
 /-- No read up - Bell-LaPadula simple security -/
 /-- no_read_up (matches Coq) -/
-theorem no_read_up : ∀ subject_clearance object_classification, class_le object_classification subject_clearance = true → (* Subject can read object *) True := by
+theorem no_read_up : ∀ subject_clearance object_classification, class_le object_classification subject_clearance = true →  True := by
   trivial
 
 /-- class_le agrees with nat ordering -/

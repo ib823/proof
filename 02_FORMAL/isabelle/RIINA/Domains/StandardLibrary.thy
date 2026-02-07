@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA StandardLibrary - Isabelle/HOL Port
@@ -179,7 +180,7 @@ record file_handle =
 
 (* AuditEntry (matches Coq: Record AuditEntry) *)
 record audit_entry =
-  ae_operation :: nat  (* 0 = read, 1 = write *)
+  ae_operation :: nat
   ae_file_id :: nat
   ae_size :: nat
 
@@ -240,7 +241,7 @@ record rw_lock_state =
 (* AtomicNat (matches Coq: Record AtomicNat) *)
 record atomic_nat =
   atomic_value :: nat
-  atomic_seq :: nat  (* sequence number for linearizability *)
+  atomic_seq :: nat
 
 (* CondvarState (matches Coq: Record CondvarState) *)
 record condvar_state =
@@ -292,7 +293,8 @@ definition string_from_bytes :: "RiinaString" where
 definition secure_string_drop :: "SecureString \<Rightarrow> SecureString" where
   "secure_string_drop ss \<equiv> mkSecureString (map (fun _ => 0) (sstr_data ss)) true (sstr_redacted ss)"
 
-(* cap_eq - complex match, manual review needed *)
+(* cap_eq - complex match, needs manual translation *)
+definition cap_eq :: "bool" where "cap_eq = undefined"
 
 (* has_capability (matches Coq: Definition has_capability) *)
 definition has_capability :: "Capability \<Rightarrow> bool" where
@@ -305,7 +307,8 @@ fun tls_version_secure :: "TlsVersion \<Rightarrow> bool" where
 |   "tls_version_secure TLS12 = true"
 |   "tls_version_secure TLS13 = true"
 
-(* tls_version_geq - complex match, manual review needed *)
+(* tls_version_geq - complex match, needs manual translation *)
+definition tls_version_geq :: "bool" where "tls_version_geq = undefined"
 
 (* duration_add (matches Coq: Definition duration_add) *)
 definition duration_add :: "Duration" where
@@ -370,7 +373,8 @@ definition cap_set_inter :: "CapabilitySet" where
 definition cap_set_contains :: "CapabilitySet \<Rightarrow> Capability \<Rightarrow> bool" where
   "cap_set_contains s c \<equiv> existsb (cap_eq c) s"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* compartments_subset (matches Coq: Definition compartments_subset) *)
 definition compartments_subset :: "bool" where

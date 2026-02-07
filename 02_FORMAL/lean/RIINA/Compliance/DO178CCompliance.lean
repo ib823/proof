@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DO178CCompliance - Lean 4 Port
@@ -98,31 +99,31 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- DAL (matches Coq: Inductive DAL) -/
 inductive DAL where
-  | dAL_A : DAL  -- Catastrophic - most stringent
-  | dAL_B : DAL  -- Hazardous
-  | dAL_C : DAL  -- Major
-  | dAL_D : DAL  -- Minor
-  | dAL_E : DAL  -- No effect
+  | dAL_A : DAL
+  | dAL_B : DAL
+  | dAL_C : DAL
+  | dAL_D : DAL
+  | dAL_E : DAL
   deriving DecidableEq, Repr
 
 /-- CoverageType (matches Coq: Inductive CoverageType) -/
 inductive CoverageType where
   | statement : CoverageType
   | decision : CoverageType
-  | mCDC : CoverageType  -- Modified Condition/Decision Coverage
+  | mCDC : CoverageType
   deriving DecidableEq, Repr
 
 /-- CodeElement (matches Coq: Inductive CodeElement) -/
 inductive CodeElement where
-  | cEStatement : CodeElement  -- Statement with ID
-  | cEDecision : CodeElement  -- Decision point
-  | cECondition : CodeElement  -- Individual condition
+  | cEStatement : Nat → CodeElement
+  | cEDecision : Nat → CodeElement
+  | cECondition : Nat → CodeElement
   deriving DecidableEq, Repr
 
 /-- Requirement (matches Coq: Record Requirement) -/
 structure Requirement where
   req_id : Nat
-  req_derived : Bool  -- Derived requirement?
+  req_derived : Bool
   req_safety_related : Bool
   deriving DecidableEq, Repr
 
@@ -276,7 +277,7 @@ structure DO178CCompliance where
   deriving DecidableEq, Repr
 
 /-- coverage_required (matches Coq: Definition coverage_required) -/
-def coverage_required := True -- complex match, simplified to Prop
+def coverage_required := sorry -- complex match, needs manual translation
 
 /-- trace_complete (matches Coq: Definition trace_complete) -/
 def trace_complete (t : TraceLink) : Bool :=
@@ -403,7 +404,7 @@ def configuration_compliant (cm : ConfigurationManagement) : Bool :=
              (andb (cm_changes_tracked cm) (cm_audit_trail cm)))
 
 /-- full_dal_a_compliance (matches Coq: Definition full_dal_a_compliance) -/
-def full_dal_a_compliance := True -- complex match, simplified to Prop
+def full_dal_a_compliance := sorry -- complex match, needs manual translation
 
 /-- COMPLY_003_01 (matches Coq) -/
 theorem COMPLY_003_01 : ∀ (c : DO178CCompliance), all_traces_complete (comp_traces c) = true → ∀ t, In t (comp_traces c) → trace_code t ≠ [] ∧ trace_tests t ≠ [] := by

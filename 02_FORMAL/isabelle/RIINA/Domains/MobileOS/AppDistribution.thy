@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AppDistribution - Isabelle/HOL Port
@@ -238,7 +239,8 @@ record notarization_status =
   ns_notarized :: bool
   ns_ticket_stapled :: bool
 
-(* passes_security_checks - complex match, manual review needed *)
+(* passes_security_checks - complex match, needs manual translation *)
+definition passes_security_checks :: "bool" where "passes_security_checks = undefined"
 
 (* no_malware (matches Coq: Definition no_malware) *)
 definition no_malware :: "StoreApplication \<Rightarrow> bool" where
@@ -271,7 +273,8 @@ definition rollback_possible :: "Installation \<Rightarrow> bool" where
 definition version_increases :: "AppUpdate \<Rightarrow> bool" where
   "version_increases upd \<equiv> new_version upd > old_version upd"
 
-(* scan_passed - complex match, manual review needed *)
+(* scan_passed - complex match, needs manual translation *)
+definition scan_passed :: "bool" where "scan_passed = undefined"
 
 (* app_is_safe (matches Coq: Definition app_is_safe) *)
 definition app_is_safe :: "StoreApplication \<Rightarrow> bool" where

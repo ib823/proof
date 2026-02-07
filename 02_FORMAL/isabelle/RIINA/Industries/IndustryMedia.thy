@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryMedia - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | ContentType        | content_type           | OK     |
+ * | ContentProtection  | content_protection     | OK     |
  * | MediaEffect        | media_effect           | OK     |
  * | ECP_Compliance     | ecp__compliance        | OK     |
  * | ViewingSession     | viewing_session        | OK     |
@@ -59,12 +61,15 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* ContentType (matches Coq: Inductive ContentType) *)
 datatype content_type =
-    PreRelease  (* Unreleased content - highest security *)
-  |     PostRelease  (* Released content *)
-  |     Screening  (* Screener copies *)
-  |     MasterFile  (* Original masters *)
+    PreRelease
+  |     PostRelease
+  |     Screening
+  |     MasterFile
   |     DailyRushes
-  |     Unencrypted
+
+(* ContentProtection (matches Coq: Inductive ContentProtection) *)
+datatype content_protection =
+    Unencrypted
   |     BasicDRM
   |     StudioDRM
   |     ForensicWatermark

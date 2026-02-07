@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CognitiveAccessibility - Isabelle/HOL Port
@@ -152,7 +153,8 @@ definition form_error_count :: "FormState \<Rightarrow> nat" where
 fun suggest_fix :: "ValidationError \<Rightarrow> FixSuggestion" where
 
 
-(* fix_targets_same_field - complex match, manual review needed *)
+(* fix_targets_same_field - complex match, needs manual translation *)
+definition fix_targets_same_field :: "bool" where "fix_targets_same_field = undefined"
 
 (* easing_consistent (matches Coq: Definition easing_consistent) *)
 definition easing_consistent :: "bool" where
@@ -166,7 +168,8 @@ definition layout_eq :: "bool" where
   "layout_eq \<equiv> le_x l1 = le_x l2 /\ le_y l1 = le_y l2 /\
   le_w l1 = le_w l2 /\ le_h l1 = le_h l2"
 
-(* reverse_transition - complex match, manual review needed *)
+(* reverse_transition - complex match, needs manual translation *)
+definition reverse_transition :: "bool" where "reverse_transition = undefined"
 
 (* is_user_initiated (matches Coq: Definition is_user_initiated) *)
 fun is_user_initiated :: "UIEvent \<Rightarrow> bool" where

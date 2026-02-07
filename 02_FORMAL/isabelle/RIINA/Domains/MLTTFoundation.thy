@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MLTTFoundation - Isabelle/HOL Port
@@ -49,22 +50,22 @@ begin
 (* Ty (matches Coq: Inductive Ty) *)
 datatype ty =
     TUnit
-  |     TPi  (* Π-type: Π(x:A).B *)
-  |     TSigma  (* Σ-type: Σ(x:A).B *)
-  |     TId  (* Identity type *)
-  |     TUniverse  (* Universe at level l *)
+  |     TPi
+  |     TSigma
+  |     TId
+  |     TUniverse
 
 (* Term (matches Coq: Inductive Term) *)
 datatype term =
     TmVar
-  |     TmUnit  (* Unit value *)
-  |     TmLam  (* λ-abstraction with type annotation *)
-  |     TmApp  (* Application *)
-  |     TmPair  (* Pair introduction *)
-  |     TmFst  (* First projection *)
-  |     TmSnd  (* Second projection *)
-  |     TmRefl  (* Reflexivity proof: refl(a) *)
-  |     TmJ  (* J-eliminator with type annotations *)
+  |     TmUnit
+  |     TmLam
+  |     TmApp
+  |     TmPair
+  |     TmFst
+  |     TmSnd
+  |     TmRefl
+  |     TmJ
 
 (* empty_ctx (matches Coq: Definition empty_ctx) *)
 definition empty_ctx :: "Ctx" where

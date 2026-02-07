@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ConstantTimeCrypto - Isabelle/HOL Port
@@ -62,18 +63,19 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* TimingOperation (matches Coq: Inductive TimingOperation) *)
 datatype timing_operation =
-    Op_Branch  (* Conditional branches *)
-  |     Op_MemAccess  (* Memory access patterns *)
-  |     Op_Division  (* Variable-time division *)
-  |     Op_Multiply  (* Variable-time multiplication *)
-  |     Op_TableLookup  (* Cache-dependent lookups *)
+    Op_Branch
+  |     Op_MemAccess
+  |     Op_Division
+  |     Op_Multiply
+  |     Op_TableLookup
 
 (* CTOperation (matches Coq: Inductive CTOperation) *)
 datatype ct_operation =
-    CT_Select  (* Branchless selection *)
-  |     CT_MaskedLoad  (* Constant-address loads *)
-  |     CT_CTDiv  (* Constant-time division *)
-  |     CT_CTMul  (* Constant-time multiply *)
+    CT_Select
+  |     CT_MaskedLoad
+  |     CT_CTDiv
+  |     CT_CTMul
+  |     CT_ScatterGather
 
 (* CryptoOperation (matches Coq: Inductive CryptoOperation) *)
 datatype crypto_operation =

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA LinearTypes - Lean 4 Port
@@ -68,19 +69,19 @@ namespace RIINA
 
 /-- Linearity (matches Coq: Inductive Linearity) -/
 inductive Linearity where
-  | lin : Linearity  -- Linear: exactly once
-  | aff : Linearity  -- Affine: at most once
-  | rel : Linearity  -- Relevant: at least once
-  | unr : Linearity  -- Unrestricted: any number
+  | lin : Linearity
+  | aff : Linearity
+  | rel : Linearity
+  | unr : Linearity
   deriving DecidableEq, Repr
 
 /-- LTy (matches Coq: Inductive LTy) -/
 inductive LTy where
   | lUnit : LTy
   | lBool : LTy
-  | lFun : LTy  -- q A ⊸ B
-  | lPair : LTy  -- A ⊗ B
-  | lBang : LTy  -- !A
+  | lFun : Linearity → LTy → LTy → LTy
+  | lPair : Linearity → LTy → LTy → LTy
+  | lBang : LTy → LTy
   deriving DecidableEq, Repr
 
 /-- Usage (matches Coq: Inductive Usage) -/
@@ -92,17 +93,17 @@ inductive Usage where
 
 /-- LTerm (matches Coq: Inductive LTerm) -/
 inductive LTerm where
-  | lVar : LTerm
+  | lVar : Var → LTerm
   | lUnitVal : LTerm
   | lTrue : LTerm
   | lFalse : LTerm
-  | lLam : LTerm
-  | lApp : LTerm
-  | lPairVal : LTerm
-  | lLetPair : LTerm
-  | lBangVal : LTerm
-  | lLetBang : LTerm
-  | lLet : LTerm
+  | lLam : Linearity → LTy → LTerm → LTerm
+  | lApp : LTerm → LTerm → LTerm
+  | lPairVal : LTerm → LTerm → LTerm
+  | lLetPair : LTerm → LTerm → LTerm
+  | lBangVal : LTerm → LTerm
+  | lLetBang : LTerm → LTerm → LTerm
+  | lLet : LTerm → LTerm → LTerm
   deriving DecidableEq, Repr
 
 /-- ResourceState (matches Coq: Inductive ResourceState) -/
@@ -112,16 +113,16 @@ inductive ResourceState where
   deriving DecidableEq, Repr
 
 /-- linearity_eqb (matches Coq: Definition linearity_eqb) -/
-def linearity_eqb := True -- complex match, simplified to Prop
+def linearity_eqb := sorry -- complex match, needs manual translation
 
 /-- subqual (matches Coq: Definition subqual) -/
-def subqual := True -- complex match, simplified to Prop
+def subqual := sorry -- complex match, needs manual translation
 
 /-- usage_add (matches Coq: Definition usage_add) -/
-def usage_add := True -- complex match, simplified to Prop
+def usage_add := sorry -- complex match, needs manual translation
 
 /-- usage_compatible (matches Coq: Definition usage_compatible) -/
-def usage_compatible := True -- complex match, simplified to Prop
+def usage_compatible := sorry -- complex match, needs manual translation
 
 /-- empty_ctx (matches Coq: Definition empty_ctx) -/
 def empty_ctx : LCtx :=
@@ -174,7 +175,7 @@ def ctx_split_valid (ctx1 ctx2 : LCtx) : LCtx :=
   match e1 with
 
 /-- substitution_preserves_structure (matches Coq: Definition substitution_preserves_structure) -/
-def substitution_preserves_structure := True -- complex match, simplified to Prop
+def substitution_preserves_structure := sorry -- complex match, needs manual translation
 
 /-- weakening_invalid_for_linear (matches Coq: Definition weakening_invalid_for_linear) -/
 def weakening_invalid_for_linear : Prop :=
@@ -219,7 +220,7 @@ def use_after_consume_impossible (rm : ResourceMap) (x : Var) : Prop :=
 def no_double_consume : Prop :=
   forall rm x,
     resource_state x rm = Consumed ->
-    (* Attempting to use again would be detected as already consumed *)
+    
     resource_state x rm = Consumed
 
 /-- linearity_eqb_eq (matches Coq) -/

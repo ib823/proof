@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IOMMUProtection - Lean 4 Port
@@ -51,17 +52,17 @@ namespace RIINA
 
 /-- DeviceId (matches Coq: Inductive DeviceId) -/
 inductive DeviceId where
-  | devId : DeviceId
+  | devId : Nat → DeviceId
   deriving DecidableEq, Repr
 
 /-- VMId (matches Coq: Inductive VMId) -/
 inductive VMId where
-  | vM : VMId
+  | vM : Nat → VMId
   deriving DecidableEq, Repr
 
 /-- Address (matches Coq: Inductive Address) -/
 inductive Address where
-  | addr : Address
+  | addr : Nat → Address
   deriving DecidableEq, Repr
 
 /-- Device (matches Coq: Record Device) -/

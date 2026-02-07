@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA WirelessProtocols - Lean 4 Port
@@ -103,7 +104,7 @@ structure WirelessConnection where
 /-- BluetoothPairing (matches Coq: Record BluetoothPairing) -/
 structure BluetoothPairing where
   bt_device_id : Nat
-  bt_pairing_method : Nat  -- 0=none, 1=pin, 2=oob, 3=numeric_comparison
+  bt_pairing_method : Nat
   bt_authenticated : Bool
   bt_bonded : Bool
   deriving DecidableEq, Repr
@@ -204,7 +205,7 @@ def secure_connection (c : WirelessConnection) : Prop :=
   conn_encrypted c = true /\ conn_authenticated c = true
 
 /-- protocol_secure (matches Coq: Definition protocol_secure) -/
-def protocol_secure := True -- complex match, simplified to Prop
+def protocol_secure := sorry -- complex match, needs manual translation
 
 /-- well_formed_wireless (matches Coq: Definition well_formed_wireless) -/
 def well_formed_wireless (c : WirelessConnection) : Prop :=

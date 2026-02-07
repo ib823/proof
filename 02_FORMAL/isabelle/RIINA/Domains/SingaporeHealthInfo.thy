@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeHealthInfo - Isabelle/HOL Port
@@ -83,7 +84,7 @@ datatype use_type =
     Treatment
   |     Research
   |     PublicHealth
-  |     InsuranceUnderwriting  (* PROHIBITED *)
+  |     InsuranceUnderwriting
   |     Employment
 
 (* hib_cybersecurity (matches Coq: Definition hib_cybersecurity) *)

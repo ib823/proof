@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA OnDeviceML - Lean 4 Port
@@ -128,8 +129,8 @@ structure ModelUpdate where
 
 /-- PrivacyBudget (matches Coq: Record PrivacyBudget) -/
 structure PrivacyBudget where
-  epsilon : Nat  -- scaled by 1000
-  delta : Nat  -- scaled by 1000000
+  epsilon : Nat
+  delta : Nat
   max_epsilon : Nat
   max_delta : Nat
   deriving DecidableEq, Repr
@@ -137,7 +138,7 @@ structure PrivacyBudget where
 /-- Prediction (matches Coq: Record Prediction) -/
 structure Prediction where
   pred_class : Nat
-  pred_confidence : Nat  -- 0-100
+  pred_confidence : Nat
   pred_calibrated : Bool
   deriving DecidableEq, Repr
 
@@ -158,7 +159,7 @@ structure TrainingData where
 /-- InputAnalysis (matches Coq: Record InputAnalysis) -/
 structure InputAnalysis where
   ia_input : Tensor
-  ia_perturbation_score : Nat  -- 0-100
+  ia_perturbation_score : Nat
   ia_threshold : Nat
   ia_flagged : Bool
   deriving DecidableEq, Repr
@@ -189,9 +190,7 @@ def TensorData : Type :=
   list nat
 
 /-- compute_inference (matches Coq: Definition compute_inference) -/
-def compute_inference (m : MLModel) (input : Tensor) : Tensor :=
-  (* Simplified: output is function of model and input only *)
-  mkTensor (tensor_shape input) 
+def compute_inference (m : MLModel) (input : Tensor) : Tensor := mkTensor (tensor_shape input) 
            (map (fun x => x + model_version m) (tensor_data input))
 
 /-- infer (matches Coq: Definition infer) -/

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA InjectionPrevention - Lean 4 Port
@@ -59,51 +60,51 @@ namespace RIINA
 
 /-- TaintLevel (matches Coq: Inductive TaintLevel) -/
 inductive TaintLevel where
-  | trusted : TaintLevel  -- Known safe - from code/constants
-  | untrusted : TaintLevel  -- User input - potentially dangerous
+  | trusted : TaintLevel
+  | untrusted : TaintLevel
   | sanitized : TaintLevel
   deriving DecidableEq, Repr
 
 /-- SQLPart (matches Coq: Inductive SQLPart) -/
 inductive SQLPart where
-  | sQLLiteral : SQLPart  -- String literal in query
-  | sQLParam : SQLPart  -- Parameterized placeholder $1, $2
-  | sQLKeyword : SQLPart
+  | sQLLiteral : TaintedValue → SQLPart
+  | sQLParam : Nat → SQLPart
+  | sQLKeyword : List Nat → SQLPart
   deriving DecidableEq, Repr
 
 /-- ShellPart (matches Coq: Inductive ShellPart) -/
 inductive ShellPart where
-  | shellLiteral : ShellPart
-  | shellArg : ShellPart  -- Safe argument slot
-  | shellCmd : ShellPart
+  | shellLiteral : TaintedValue → ShellPart
+  | shellArg : Nat → ShellPart
+  | shellCmd : List Nat → ShellPart
   deriving DecidableEq, Repr
 
 /-- LDAPPart (matches Coq: Inductive LDAPPart) -/
 inductive LDAPPart where
-  | lDAPLiteral : LDAPPart
-  | lDAPParam : LDAPPart
-  | lDAPFilter : LDAPPart
+  | lDAPLiteral : TaintedValue → LDAPPart
+  | lDAPParam : Nat → LDAPPart
+  | lDAPFilter : List Nat → LDAPPart
   deriving DecidableEq, Repr
 
 /-- TemplateExpr (matches Coq: Inductive TemplateExpr) -/
 inductive TemplateExpr where
-  | tmplLiteral : TemplateExpr
-  | tmplVar : TemplateExpr  -- Variable lookup only
-  | tmplConcat : TemplateExpr
+  | tmplLiteral : List Nat → TemplateExpr
+  | tmplVar : Nat → TemplateExpr
+  | tmplConcat : TemplateExpr → TemplateExpr → TemplateExpr
   deriving DecidableEq, Repr
 
 /-- RIINAExpr (matches Coq: Inductive RIINAExpr) -/
 inductive RIINAExpr where
-  | rExprLit : RIINAExpr
-  | rExprVar : RIINAExpr
-  | rExprAdd : RIINAExpr
-  | rExprCall : RIINAExpr
+  | rExprLit : Nat → RIINAExpr
+  | rExprVar : Nat → RIINAExpr
+  | rExprAdd : RIINAExpr → RIINAExpr → RIINAExpr
+  | rExprCall : Nat → List RIINAExpr → RIINAExpr
   deriving DecidableEq, Repr
 
 /-- TaintedValue (matches Coq: Record TaintedValue) -/
 structure TaintedValue where
   tv_data : List
-  tv_taint : TaintLevel  -- Taint status
+  tv_taint : TaintLevel
   deriving DecidableEq, Repr
 
 /-- XMLParserConfig (matches Coq: Record XMLParserConfig) -/
@@ -133,7 +134,7 @@ structure LengthPrefixedString where
   deriving DecidableEq, Repr
 
 /-- propagate_taint (matches Coq: Definition propagate_taint) -/
-def propagate_taint := True -- complex match, simplified to Prop
+def propagate_taint := sorry -- complex match, needs manual translation
 
 /-- tainted_concat (matches Coq: Definition tainted_concat) -/
 def tainted_concat (v1 v2 : TaintedValue) : TaintedValue := mkTainted (tv_data v1 ++ tv_data v2) (propagate_taint (tv_taint v1) (tv_taint v2))
@@ -166,7 +167,7 @@ theorem inj_004_xpath_injection_impossible : ∀ (q : XPathQuery), safe_xpath q 
   simp_all [Bool.and_eq_true]
 
 /-- inj_005_xxe_impossible (matches Coq) -/
-theorem inj_005_xxe_impossible : ∀ (config : XMLParserConfig), xc_expand_entities config = false → xc_allow_external config = false → (* XXE requires entity expansion *) ~ (xc_expand_entities config = true ∧ xc_allow_external config = true) := by
+theorem inj_005_xxe_impossible : ∀ (config : XMLParserConfig), xc_expand_entities config = false → xc_allow_external config = false →  ~ (xc_expand_entities config = true ∧ xc_allow_external config = true) := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_006_header_injection_impossible (matches Coq) -/
@@ -174,11 +175,11 @@ theorem inj_006_header_injection_impossible : ∀ (h : HTTPHeader), contains_new
   simp_all [Bool.and_eq_true]
 
 /-- inj_007_template_injection_impossible (matches Coq) -/
-theorem inj_007_template_injection_impossible : ∀ (e : TemplateExpr), (* Template expressions are structurally limited - no eval *) True := by
+theorem inj_007_template_injection_impossible : ∀ (e : TemplateExpr),  True := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_008_code_injection_impossible (matches Coq) -/
-theorem inj_008_code_injection_impossible : ∀ (e : RIINAExpr), (* No eval constructor ∃ in the language *) match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end := by
+theorem inj_008_code_injection_impossible : ∀ (e : RIINAExpr),  match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_009_expression_language_safe (matches Coq) -/
@@ -198,7 +199,7 @@ theorem csv_escape_safe_helper : ∀ c rest, (Nat.eqb c 61 || Nat.eqb c 43 || Na
   cases ‹_› <;> simp <;> omega
 
 /-- inj_012_csv_injection_impossible (matches Coq) -/
-theorem inj_012_csv_injection_impossible : ∀ (data : list nat), match escape_csv_cell data with | 61 :: _ => False (* Cannot start with = *) | 43 :: _ => False (* Cannot start with + *) | 45 :: _ => False (* Cannot start with - *) | 64 :: _ => False (* Cannot start with @ *) | _ => True end := by
+theorem inj_012_csv_injection_impossible : ∀ (data : list nat), match escape_csv_cell data with | 61 :: _ => False  | 43 :: _ => False  | 45 :: _ => False  | 64 :: _ => False  | _ => True end := by
   simp_all
 
 /-- inj_013_pdf_injection_impossible (matches Coq) -/
@@ -210,7 +211,7 @@ theorem inj_014_crlf_injection_impossible : ∀ (h : HTTPHeader), contains_newli
   simp_all [Bool.and_eq_true]
 
 /-- inj_015_null_byte_injection_impossible (matches Coq) -/
-theorem inj_015_null_byte_injection_impossible : ∀ (s : LengthPrefixedString), (* Null bytes don't truncate - length is explicit *) List.length (lpstr_bytes s) = lpstr_len s := by
+theorem inj_015_null_byte_injection_impossible : ∀ (s : LengthPrefixedString),  List.length (lpstr_bytes s) = lpstr_len s := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_016_untrusted_propagation (matches Coq) -/

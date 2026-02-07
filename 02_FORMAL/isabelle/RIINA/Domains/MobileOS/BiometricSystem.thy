@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BiometricSystem - Isabelle/HOL Port
@@ -79,8 +80,8 @@ record biometric_attempt =
   attempt_type :: BiometricType
   attempt_authentic :: bool
   attempt_is_spoof :: bool
-  attempt_match_score :: nat  (* 0-1000000 for precision *)
-  attempt_liveness_score :: nat  (* 0-100 *)
+  attempt_match_score :: nat
+  attempt_liveness_score :: nat
   attempt_accepted :: bool
   attempt_rejected :: bool
 
@@ -116,8 +117,8 @@ record biometric_config =
   bio_cfg_lockout_ms :: nat
   bio_cfg_anti_spoofing :: bool
   bio_cfg_liveness_required :: bool
-  bio_cfg_far_threshold :: nat  (* false acceptance rate threshold *)
-  bio_cfg_frr_threshold :: nat  (* false rejection rate threshold *)
+  bio_cfg_far_threshold :: nat
+  bio_cfg_frr_threshold :: nat
 
 (* authentic (matches Coq: Definition authentic) *)
 definition authentic :: "BiometricAttempt \<Rightarrow> bool" where
@@ -143,12 +144,13 @@ definition match_threshold :: "nat" where
 definition liveness_threshold :: "nat" where
   "liveness_threshold \<equiv> 90"
 
-(* secure_biometric_system - complex match, manual review needed *)
+(* secure_biometric_system - complex match, needs manual translation *)
+definition secure_biometric_system :: "bool" where "secure_biometric_system = undefined"
 
 (* false_acceptance_probability (matches Coq: Definition false_acceptance_probability) *)
 definition false_acceptance_probability :: "BiometricAttempt \<Rightarrow> nat" where
   "false_acceptance_probability a \<equiv> if attempt_accepted a \<and> negb (attempt_authentic a) then
-    1  (* Represents 1/1,000,000 when it happens *)
+    1  
   else
     0"
 

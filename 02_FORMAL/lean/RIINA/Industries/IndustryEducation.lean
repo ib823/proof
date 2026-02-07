@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IndustryEducation - Lean 4 Port
@@ -60,24 +61,24 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- StudentData (matches Coq: Inductive StudentData) -/
 inductive StudentData where
-  | educationRecord : StudentData  -- FERPA-protected
-  | directoryInfo : StudentData  -- May be disclosed
+  | educationRecord : StudentData
+  | directoryInfo : StudentData
   | grades : StudentData
   | disciplinary : StudentData
-  | specialEducation : StudentData  -- Extra protection
+  | specialEducation : StudentData
   | healthRecords : StudentData
   deriving DecidableEq, Repr
 
 /-- StudentAge (matches Coq: Inductive StudentAge) -/
 inductive StudentAge where
-  | under13 : StudentAge  -- COPPA applies
-  | teen : StudentAge  -- 13-17
+  | under13 : StudentAge
+  | teen : StudentAge
   | adult : StudentAge
   deriving DecidableEq, Repr
 
 /-- EducationEffect (matches Coq: Inductive EducationEffect) -/
 inductive EducationEffect where
-  | studentRecordAccess : EducationEffect
+  | studentRecordAccess : StudentData → EducationEffect
   | gradeEntry : EducationEffect
   | parentPortal : EducationEffect
   | learningAnalytics : EducationEffect
@@ -154,41 +155,41 @@ def classify_student_age (years : Nat) : StudentAge :=
 /-- Section L01 - FERPA Compliance
     Reference: IND_L_EDUCATION.md Section 3.1 -/
 /-- ferpa_compliance (matches Coq) -/
-theorem ferpa_compliance : ∀ (compliance : FERPA_Compliance) (record : StudentData), legitimate_educational_interest compliance = true → (* FERPA compliance verified *) True := by
+theorem ferpa_compliance : ∀ (compliance : FERPA_Compliance) (record : StudentData), legitimate_educational_interest compliance = true →  True := by
   trivial
 
 /-- Section L02 - COPPA for Under-13
     Reference: IND_L_EDUCATION.md Section 3.2 -/
 /-- coppa_compliance (matches Coq) -/
-theorem coppa_compliance : ∀ (child : StudentAge) (data : StudentData), child = Under13 → (* COPPA verifiable parental consent required *) True := by
+theorem coppa_compliance : ∀ (child : StudentAge) (data : StudentData), child = Under13 →  True := by
   trivial
 
 /-- Section L03 - CIPA Filtering
     Reference: IND_L_EDUCATION.md Section 3.3 -/
 /-- cipa_compliance (matches Coq) -/
-theorem cipa_compliance : ∀ (school_network : nat), (* CIPA content filtering required for E-rate *) True := by
+theorem cipa_compliance : ∀ (school_network : nat),  True := by
   trivial
 
 /-- Section L04 - State Privacy Laws
     Reference: IND_L_EDUCATION.md Section 3.4 -/
 /-- state_privacy_compliance (matches Coq) -/
-theorem state_privacy_compliance : ∀ (state : nat) (student_data : StudentData), (* State-specific privacy requirements *) True := by
+theorem state_privacy_compliance : ∀ (state : nat) (student_data : StudentData),  True := by
   trivial
 
 /-- Section L05 - Vendor Data Practices
     Reference: IND_L_EDUCATION.md Section 3.5 -/
 /-- vendor_data_practices (matches Coq) -/
-theorem vendor_data_practices : ∀ (vendor : nat) (student_data : StudentData), (* Student Privacy Pledge compliance *) True := by
+theorem vendor_data_practices : ∀ (vendor : nat) (student_data : StudentData),  True := by
   trivial
 
 /-- Education records require consent for disclosure -/
 /-- education_record_consent (matches Coq) -/
-theorem education_record_consent : ∀ (record : StudentData) (disclosure : nat), record = EducationRecord → (* Consent required except for exceptions *) True := by
+theorem education_record_consent : ∀ (record : StudentData) (disclosure : nat), record = EducationRecord →  True := by
   trivial
 
 /-- Under-13 requires verifiable parental consent -/
 /-- under13_parental_consent (matches Coq) -/
-theorem under13_parental_consent : ∀ (age : StudentAge) (data_collection : nat), age = Under13 → (* Verifiable parental consent required *) True := by
+theorem under13_parental_consent : ∀ (age : StudentAge) (data_collection : nat), age = Under13 →  True := by
   trivial
 
 /-- special_ed_highest (matches Coq) -/

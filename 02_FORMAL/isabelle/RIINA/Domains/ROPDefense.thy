@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ROPDefense - Isabelle/HOL Port
@@ -139,17 +140,17 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* GadgetType (matches Coq: Inductive GadgetType) *)
 datatype gadget_type =
-    GadgetROP  (* Return-based gadget *)
-  |     GadgetJOP  (* Jump-based gadget *)
-  |     GadgetCOP  (* Call-based gadget *)
+    GadgetROP
+  |     GadgetJOP
+  |     GadgetCOP
   |     GadgetSROP
 
 (* CodePtrType (matches Coq: Inductive CodePtrType) *)
 datatype code_ptr_type =
-    CPFunction  (* Function pointer *)
-  |     CPVTable  (* Virtual table pointer *)
-  |     CPReturnAddr  (* Return address *)
-  |     CPExceptionHandler  (* Exception handler *)
+    CPFunction
+  |     CPVTable
+  |     CPReturnAddr
+  |     CPExceptionHandler
   |     CPSignalHandler
 
 (* CFIConfig (matches Coq: Record CFIConfig) *)
@@ -212,7 +213,8 @@ record cpi_config =
 definition shadow_push :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> FuncId \<Rightarrow> nat \<Rightarrow> ShadowStack" where
   "shadow_push ss ret caller fp \<equiv> mkShadowEntry ret caller fp true :: ss"
 
-(* return_matches_shadow - complex match, manual review needed *)
+(* return_matches_shadow - complex match, needs manual translation *)
+definition return_matches_shadow :: "bool" where "return_matches_shadow = undefined"
 
 (* valid_return (matches Coq: Definition valid_return) *)
 fun valid_return :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" where
@@ -230,7 +232,8 @@ definition indirect_branch_valid :: "ValidTargets \<Rightarrow> InstrAddr \<Righ
 definition btb_entry_valid :: "ValidTargets \<Rightarrow> BTBEntry \<Rightarrow> bool" where
   "btb_entry_valid targets e \<equiv> btb_validated e = true /\ In (btb_target e) targets"
 
-(* gadget_blocked - complex match, manual review needed *)
+(* gadget_blocked - complex match, needs manual translation *)
+definition gadget_blocked :: "bool" where "gadget_blocked = undefined"
 
 (* chain_blocked (matches Coq: Definition chain_blocked) *)
 definition chain_blocked :: "CFIConfig \<Rightarrow> GadgetChain \<Rightarrow> bool" where

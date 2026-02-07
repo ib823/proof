@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryEnergy - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | CIP_Impact         | cip__impact            | OK     |
+ * | BES_Asset          | bes__asset             | OK     |
  * | EnergyEffect       | energy_effect          | OK     |
  * | NERC_CIP_Controls  | nerc_cip__controls     | OK     |
  * | cip_impact_to_nat  | cip_impact_to_nat      | OK     |
@@ -58,10 +60,13 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* CIP_Impact (matches Coq: Inductive CIP_Impact) *)
 datatype cip__impact =
-    High_Impact  (* BES Cyber Systems with high impact *)
-  |     Medium_Impact  (* Medium impact on BES *)
+    High_Impact
+  |     Medium_Impact
   |     Low_Impact
-  |     ControlCenter
+
+(* BES_Asset (matches Coq: Inductive BES_Asset) *)
+datatype bes__asset =
+    ControlCenter
   |     Substation
   |     GenerationFacility
   |     TransmissionLine
@@ -77,17 +82,17 @@ datatype energy_effect =
 
 (* NERC_CIP_Controls (matches Coq: Record NERC_CIP_Controls) *)
 record nerc_cip__controls =
-  cip_002_identification :: bool  (* BES Cyber System Categorization *)
-  cip_003_management :: bool  (* Security Management Controls *)
-  cip_004_personnel :: bool  (* Personnel & Training *)
-  cip_005_electronic_perimeter :: bool  (* Electronic Security Perimeter *)
-  cip_006_physical :: bool  (* Physical Security *)
-  cip_007_systems :: bool  (* System Security Management *)
-  cip_008_incident :: bool  (* Incident Reporting *)
-  cip_009_recovery :: bool  (* Recovery Plans *)
-  cip_010_config :: bool  (* Configuration Management *)
-  cip_011_info :: bool  (* Information Protection *)
-  cip_013_supply_chain :: bool  (* Supply Chain Risk Management *)
+  cip_002_identification :: bool
+  cip_003_management :: bool
+  cip_004_personnel :: bool
+  cip_005_electronic_perimeter :: bool
+  cip_006_physical :: bool
+  cip_007_systems :: bool
+  cip_008_incident :: bool
+  cip_009_recovery :: bool
+  cip_010_config :: bool
+  cip_011_info :: bool
+  cip_013_supply_chain :: bool
 
 (* cip_impact_to_nat (matches Coq: Definition cip_impact_to_nat) *)
 fun cip_impact_to_nat :: "CIP_Impact \<Rightarrow> nat" where

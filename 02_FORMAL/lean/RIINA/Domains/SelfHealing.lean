@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SelfHealing - Lean 4 Port
@@ -69,7 +70,7 @@ namespace RIINA
 /-- HealthState (matches Coq: Inductive HealthState) -/
 inductive HealthState where
   | healthy : HealthState
-  | degraded : HealthState  -- degradation level
+  | degraded : Nat → HealthState
   | faulty : HealthState
   | recovering : HealthState
   deriving DecidableEq, Repr

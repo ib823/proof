@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ZKSTARKSecurity - Lean 4 Port
@@ -170,48 +171,48 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- STARKProperties (matches Coq: Record STARKProperties) -/
 structure STARKProperties where
-  stark_transparent : Bool  -- No trusted setup
-  stark_scalable : Bool  -- Polylogarithmic verification
-  stark_post_quantum : Bool  -- Based on hash functions
+  stark_transparent : Bool
+  stark_scalable : Bool
+  stark_post_quantum : Bool
   deriving DecidableEq, Repr
 
 /-- AIRProperties (matches Coq: Record AIRProperties) -/
 structure AIRProperties where
-  air_algebraic : Bool  -- Algebraic Intermediate Representation
-  air_low_degree : Bool  -- Low-degree extension
-  air_fri_verified : Bool  -- FRI protocol verified
+  air_algebraic : Bool
+  air_low_degree : Bool
+  air_fri_verified : Bool
   deriving DecidableEq, Repr
 
 /-- FRIProperties (matches Coq: Record FRIProperties) -/
 structure FRIProperties where
-  fri_soundness : Bool  -- FRI soundness guarantee
-  fri_query_bound : Bool  -- Bounded query complexity
-  fri_commitment_binding : Bool  -- Merkle commitment binding
-  fri_interactive_to_non : Bool  -- Fiat-Shamir transform valid
-  fri_round_complexity : Nat  -- Number of FRI rounds
-  fri_proximity_param : Nat  -- Proximity parameter
+  fri_soundness : Bool
+  fri_query_bound : Bool
+  fri_commitment_binding : Bool
+  fri_interactive_to_non : Bool
+  fri_round_complexity : Nat
+  fri_proximity_param : Nat
   deriving DecidableEq, Repr
 
 /-- ProverState (matches Coq: Record ProverState) -/
 structure ProverState where
-  prover_witness : Nat  -- Private witness
-  prover_randomness : Nat  -- Randomness for ZK
-  prover_committed : Bool  -- Has committed to trace
-  prover_fri_complete : Bool  -- FRI rounds complete
+  prover_witness : Nat
+  prover_randomness : Nat
+  prover_committed : Bool
+  prover_fri_complete : Bool
   deriving DecidableEq, Repr
 
 /-- VerifierState (matches Coq: Record VerifierState) -/
 structure VerifierState where
   verifier_challenges : List
   verifier_queries : List
-  verifier_accepting : Bool  -- Current acceptance status
+  verifier_accepting : Bool
   deriving DecidableEq, Repr
 
 /-- SimulatorState (matches Coq: Record SimulatorState) -/
 structure SimulatorState where
   sim_transcript : List
-  sim_rewinding : Bool  -- Can rewind verifier
-  sim_indistinguishable : Bool  -- Output indistinguishable
+  sim_rewinding : Bool
+  sim_indistinguishable : Bool
   deriving DecidableEq, Repr
 
 /-- STARKSecurity (matches Coq: Record STARKSecurity) -/
@@ -227,9 +228,9 @@ structure STARKSecurity where
 structure ExtendedSTARKSecurity where
   ext_base : STARKSecurity
   ext_fri : FRIProperties
-  ext_simulation_secure : Bool  -- Simulation-based ZK
-  ext_extraction_secure : Bool  -- Knowledge extraction
-  ext_quantum_resistant : Bool  -- Post-quantum security
+  ext_simulation_secure : Bool
+  ext_extraction_secure : Bool
+  ext_quantum_resistant : Bool
   deriving DecidableEq, Repr
 
 /-- stark_props_secure (matches Coq: Definition stark_props_secure) -/
@@ -763,7 +764,7 @@ theorem riina_full_security : full_stark_security riina_stark riina_fri valid_si
 
 /-- The master theorem proving all essential STARK properties -/
 /-- STARK_MASTER_SECURITY (matches Coq) -/
-theorem STARK_MASTER_SECURITY : ∀ s f sim e, full_stark_security s f sim e = true → (* Core STARK properties *) starks_completeness (ext_base e) = true ∧ starks_soundness (ext_base e) = true ∧ starks_zero_knowledge (ext_base e) = true ∧ (* Transparency *) stark_transparent (starks_stark (ext_base e)) = true ∧ (* Post-quantum security *) stark_post_quantum (starks_stark (ext_base e)) = true ∧ ext_quantum_resistant e = true ∧ (* FRI properties *) fri_soundness (ext_fri e) = true ∧ fri_commitment_binding (ext_fri e) = true ∧ (* Simulation security *) ext_simulation_secure e = true ∧ (* Extraction security *) ext_extraction_secure e = true := by
+theorem STARK_MASTER_SECURITY : ∀ s f sim e, full_stark_security s f sim e = true →  starks_completeness (ext_base e) = true ∧ starks_soundness (ext_base e) = true ∧ starks_zero_knowledge (ext_base e) = true ∧  stark_transparent (starks_stark (ext_base e)) = true ∧  stark_post_quantum (starks_stark (ext_base e)) = true ∧ ext_quantum_resistant e = true ∧  fri_soundness (ext_fri e) = true ∧ fri_commitment_binding (ext_fri e) = true ∧  ext_simulation_secure e = true ∧  ext_extraction_secure e = true := by
   simp_all [Bool.and_eq_true]
 
 /-- riina_master_security (matches Coq) -/

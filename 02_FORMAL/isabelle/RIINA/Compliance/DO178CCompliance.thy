@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DO178CCompliance - Isabelle/HOL Port
@@ -97,28 +98,28 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* DAL (matches Coq: Inductive DAL) *)
 datatype dal =
-    DAL_A  (* Catastrophic - most stringent *)
-  |     DAL_B  (* Hazardous *)
-  |     DAL_C  (* Major *)
-  |     DAL_D  (* Minor *)
-  |     DAL_E  (* No effect *)
+    DAL_A
+  |     DAL_B
+  |     DAL_C
+  |     DAL_D
+  |     DAL_E
 
 (* CoverageType (matches Coq: Inductive CoverageType) *)
 datatype coverage_type =
     Statement
   |     Decision
-  |     MCDC  (* Modified Condition/Decision Coverage *)
+  |     MCDC
 
 (* CodeElement (matches Coq: Inductive CodeElement) *)
 datatype code_element =
-    CEStatement  (* Statement with ID *)
-  |     CEDecision  (* Decision point *)
-  |     CECondition  (* Individual condition *)
+    CEStatement
+  |     CEDecision
+  |     CECondition
 
 (* Requirement (matches Coq: Record Requirement) *)
 record requirement =
   req_id :: nat
-  req_derived :: bool  (* Derived requirement? *)
+  req_derived :: bool
   req_safety_related :: bool
 
 (* TraceLink (matches Coq: Record TraceLink) *)
@@ -252,7 +253,8 @@ record do178_c_compliance =
   comp_resources :: ResourceUsage
   comp_config :: ConfigurationManagement
 
-(* coverage_required - complex match, manual review needed *)
+(* coverage_required - complex match, needs manual translation *)
+definition coverage_required :: "bool" where "coverage_required = undefined"
 
 (* trace_complete (matches Coq: Definition trace_complete) *)
 definition trace_complete :: "TraceLink \<Rightarrow> bool" where
@@ -378,7 +380,8 @@ definition configuration_compliant :: "ConfigurationManagement \<Rightarrow> boo
        (andb (cm_baseline_identified cm)
              (andb (cm_changes_tracked cm) (cm_audit_trail cm)))"
 
-(* full_dal_a_compliance - complex match, manual review needed *)
+(* full_dal_a_compliance - complex match, needs manual translation *)
+definition full_dal_a_compliance :: "bool" where "full_dal_a_compliance = undefined"
 
 (* COMPLY_003_01 (matches Coq) *)
 lemma COMPLY_003_01: "\<forall> (c : DO178CCompliance), all_traces_complete (comp_traces c) = True \<longrightarrow> \<forall> t, In t (comp_traces c) \<longrightarrow> trace_code t \<noteq> [] \<and> trace_tests t \<noteq> []"

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HealthcareIS - Isabelle/HOL Port
@@ -149,7 +150,7 @@ record patient =
 
 (* PatientMatch (matches Coq: Record PatientMatch) *)
 record patient_match =
-  match_score :: nat  (* 0-1000, 999 = 99.9% *)
+  match_score :: nat
   matched_patient :: MRN
 
 (* PatientRegistry (matches Coq: Record PatientRegistry) *)
@@ -391,7 +392,7 @@ record data_export =
   export_id :: nat
   export_patient :: MRN
   machine_readable :: bool
-  export_format :: nat  (* 1 = JSON, 2 = XML, 3 = FHIR *)
+  export_format :: nat
   export_complete :: bool
 
 (* encounter_complete (matches Coq: Definition encounter_complete) *)
@@ -463,7 +464,8 @@ definition order_complete_check :: "Order \<Rightarrow> bool" where
 definition order_signed :: "Order \<Rightarrow> bool" where
   "order_signed o \<equiv> has_signature o = true /\ signature_valid o = true"
 
-(* verbal_order_valid - complex match, manual review needed *)
+(* verbal_order_valid - complex match, needs manual translation *)
+definition verbal_order_valid :: "bool" where "verbal_order_valid = undefined"
 
 (* duplicate_handled (matches Coq: Definition duplicate_handled) *)
 definition duplicate_handled :: "DuplicateOrderCheck \<Rightarrow> bool" where
@@ -474,9 +476,11 @@ definition duplicate_handled :: "DuplicateOrderCheck \<Rightarrow> bool" where
 definition contraindication_blocked :: "Contraindication \<Rightarrow> bool" where
   "contraindication_blocked c \<equiv> contra_detected c = true -> hard_stop_triggered c = true"
 
-(* specimen_tracked - complex match, manual review needed *)
+(* specimen_tracked - complex match, needs manual translation *)
+definition specimen_tracked :: "bool" where "specimen_tracked = undefined"
 
-(* critical_notified - complex match, manual review needed *)
+(* critical_notified - complex match, needs manual translation *)
+definition critical_notified :: "bool" where "critical_notified = undefined"
 
 (* result_validated (matches Coq: Definition result_validated) *)
 definition result_validated :: "LabResult \<Rightarrow> bool" where
@@ -502,7 +506,8 @@ definition phi_accessed :: "PHIAccess \<Rightarrow> bool" where
 definition audit_complete :: "AuditEntry \<Rightarrow> bool" where
   "audit_complete ae \<equiv> reviewable ae = true /\ audit_timestamp ae > 0"
 
-(* breach_notified - complex match, manual review needed *)
+(* breach_notified - complex match, needs manual translation *)
+definition breach_notified :: "bool" where "breach_notified = undefined"
 
 (* consent_valid (matches Coq: Definition consent_valid) *)
 definition consent_valid :: "Consent \<Rightarrow> bool" where
@@ -516,7 +521,8 @@ definition data_portable :: "DataExport \<Rightarrow> bool" where
   export_format de > 0 /\
   export_complete de = true"
 
-(* high_confidence_match - complex match, manual review needed *)
+(* high_confidence_match - complex match, needs manual translation *)
+definition high_confidence_match :: "bool" where "high_confidence_match = undefined"
 
 (* similar_patients (matches Coq: Definition similar_patients) *)
 definition similar_patients :: "DuplicateCandidate \<Rightarrow> bool" where

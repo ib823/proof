@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA FullstackSecurity - Lean 4 Port
@@ -62,10 +63,10 @@ namespace RIINA
 
 /-- ContentType (matches Coq: Inductive ContentType) -/
 inductive ContentType where
-  | rawHtml : ContentType  -- Dangerous - must be sanitized
-  | escapedHtml : ContentType  -- Safe - HTML entities escaped
-  | plainText : ContentType  -- Safe - no HTML interpretation
-  | safeUrl : ContentType  -- Validated URL
+  | rawHtml : ContentType
+  | escapedHtml : ContentType
+  | plainText : ContentType
+  | safeUrl : ContentType
   | trustedHtml : ContentType
   deriving DecidableEq, Repr
 
@@ -86,7 +87,7 @@ inductive AuthState where
   deriving DecidableEq, Repr
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
-def valid_transition := True -- complex match, simplified to Prop
+def valid_transition := sorry -- complex match, needs manual translation
 
 /-- is_safe_content (matches Coq: Definition is_safe_content) -/
 def is_safe_content (ct : ContentType) : Bool :=
@@ -110,7 +111,7 @@ def csrf_valid (token : CsrfToken) (session : Nat) (current_time : Nat) : Bool :
   andb (Nat
 
 /-- post_has_token (matches Coq: Definition post_has_token) -/
-def post_has_token := True -- complex match, simplified to Prop
+def post_has_token := sorry -- complex match, needs manual translation
 
 /-- url_safe (matches Coq: Definition url_safe) -/
 def url_safe (url_type : ContentType) : Bool :=

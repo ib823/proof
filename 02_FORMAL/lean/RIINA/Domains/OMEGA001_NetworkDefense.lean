@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA OMEGA001_NetworkDefense - Lean 4 Port
@@ -76,8 +77,8 @@ inductive ConnState where
 structure TokenBucket where
   tb_tokens : Nat
   tb_capacity : Nat
-  tb_refill_rate : Nat  -- tokens per tick
-  tb_last_refill : Nat  -- tick count
+  tb_refill_rate : Nat
+  tb_last_refill : Nat
   deriving DecidableEq, Repr
 
 /-- NetCapability (matches Coq: Record NetCapability) -/
@@ -86,7 +87,7 @@ structure NetCapability where
   cap_permissions : List
   cap_expiry : Nat
   cap_delegatable : Bool
-  cap_signature : Nat  -- HMAC signature
+  cap_signature : Nat
   deriving DecidableEq, Repr
 
 /-- SynCookie (matches Coq: Record SynCookie) -/
@@ -240,7 +241,7 @@ theorem OMEGA_003_01_syn_cookie_verify_sound : ∀ secret cookie, syn_cookie_ver
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_003_02_syn_cookie_wrong_secret (matches Coq) -/
-theorem OMEGA_003_02_syn_cookie_wrong_secret : ∀ s1 s2 cookie, s1 ≠ s2 → (* Wrong secret produces different MAC *) syn_cookie_generate s1 cookie ≠ syn_cookie_generate s2 cookie := by
+theorem OMEGA_003_02_syn_cookie_wrong_secret : ∀ s1 s2 cookie, s1 ≠ s2 →  syn_cookie_generate s1 cookie ≠ syn_cookie_generate s2 cookie := by
   omega
 
 /-- OMEGA_003_03_syn_cookie_deterministic (matches Coq) -/

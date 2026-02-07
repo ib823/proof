@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MobileBridgeVerification - Isabelle/HOL Port
@@ -13,6 +14,7 @@
  * |--------------------|------------------------|--------|
  * | RValue             | r_value                | OK     |
  * | JNIValue           | jni_value              | OK     |
+ * | SwiftValue         | swift_value            | OK     |
  * | BridgeEffect       | bridge_effect          | OK     |
  * | BridgeResult       | bridge_result          | OK     |
  * | SwiftTypeTag       | swift_type_tag         | OK     |
@@ -70,7 +72,7 @@ begin
 datatype r_value =
     RVInt
   |     RVBool
-  |     RVString  (* length-tagged *)
+  |     RVString
   |     RVUnit
   |     RVSecret
 
@@ -81,7 +83,10 @@ datatype jni_value =
   |     JString
   |     JVoid
   |     JObject
-  |     SwInt
+
+(* SwiftValue (matches Coq: Inductive SwiftValue) *)
+datatype swift_value =
+    SwInt
   |     SwBool
   |     SwString
   |     SwVoid
@@ -112,7 +117,8 @@ datatype bridge_sec_label =
     BPublic
   |     BSecret
 
-(* cap_allows - complex match, manual review needed *)
+(* cap_allows - complex match, needs manual translation *)
+definition cap_allows :: "bool" where "cap_allows = undefined"
 
 (* bridge_call_safe (matches Coq: Definition bridge_call_safe) *)
 definition bridge_call_safe :: "BridgeCall \<Rightarrow> bool" where

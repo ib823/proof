@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA AlgebraicEffects - Lean 4 Port
@@ -67,41 +68,42 @@ inductive BaseTy where
 
 /-- EffectOp (matches Coq: Inductive EffectOp) -/
 inductive EffectOp where
-  | opRead : EffectOp  -- State read
-  | opWrite : EffectOp  -- State write
-  | opRaise : EffectOp  -- Exception raise
-  | opPrint : EffectOp  -- I/O print
-  | opRandom : EffectOp  -- Non-determinism
-  | opAsync : EffectOp  -- Async operation
+  | opRead : EffectOp
+  | opWrite : EffectOp
+  | opRaise : EffectOp
+  | opPrint : EffectOp
+  | opRandom : EffectOp
+  | opAsync : EffectOp
   deriving DecidableEq, Repr
 
 /-- CompTy (matches Coq: Inductive CompTy) -/
 inductive CompTy where
-  | cTyPure : CompTy  -- A ! ∅
-  | cTyEff : CompTy  -- A ! Σ
+  | cTyPure : BaseTy → CompTy
+  | cTyEff : BaseTy → EffectRow → CompTy
   deriving DecidableEq, Repr
 
 /-- Val (matches Coq: Inductive Val) -/
 inductive Val where
   | vUnit : Val
-  | vBool : Val
-  | vNat : Val
+  | vBool : Bool → Val
+  | vNat : Nat → Val
   deriving DecidableEq, Repr
 
 /-- Comp (matches Coq: Inductive Comp) -/
 inductive Comp where
-  | cReturn : Comp  -- return v
-  | cPerform : Comp  -- perform op v
-  | cHandle : Comp  -- handle c with h
-  | cBind : Comp
-  | hReturn : Comp  -- return case
-  | hOp : Comp
+  | cReturn : Val → Comp
+  | cPerform : EffectOp → Val → Comp
+  | cHandle : Comp → Handler → Comp
+  | cBind : Comp → (Val → Comp) → Comp           
+with Handler : Type :=
+  | hReturn : (Val → Comp) → Handler
+  | hOp : EffectOp → (Val → (Val → Comp) → Comp) → Handler → Handler
   deriving DecidableEq, Repr
 
 /-- EvalCtx (matches Coq: Inductive EvalCtx) -/
 inductive EvalCtx where
   | eHole : EvalCtx
-  | eBind : EvalCtx
+  | eBind : EvalCtx → (Val → Comp) → EvalCtx
   deriving DecidableEq, Repr
 
 /-- OpSig (matches Coq: Record OpSig) -/
@@ -111,7 +113,7 @@ structure OpSig where
   deriving DecidableEq, Repr
 
 /-- effectOp_eqb (matches Coq: Definition effectOp_eqb) -/
-def effectOp_eqb := True -- complex match, simplified to Prop
+def effectOp_eqb := sorry -- complex match, needs manual translation
 
 /-- in_row (matches Coq: Definition in_row) -/
 def in_row (op : EffectOp) (row : EffectRow) : Bool :=

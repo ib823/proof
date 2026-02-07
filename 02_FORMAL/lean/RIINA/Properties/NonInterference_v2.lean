@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NonInterference_v2 - Lean 4 Port
@@ -137,7 +138,7 @@ def combined_step_up (n : Nat) : Prop :=
      store_wf Σ st2 ->
      store_has_values st1 ->
      store_has_values st2 ->
-     stores_agree_low_fo Σ st1 st2 ->  (* FO bootstrap precondition *)
+     stores_agree_low_fo Σ st1 st2 ->  
      store_rel_n (S n) Σ st1 st2)
 
 /-- val_rel (matches Coq: Definition val_rel) -/
@@ -332,7 +333,7 @@ theorem exp_rel_step1_handle : ∀ Σ T v v' x h h' st1 st2 ctx Σ', val_rel_n 0
 
 /-- exp_rel_step1_app - Needs typing to get lambda structure -/
 /-- exp_rel_step1_app (matches Coq) -/
-theorem exp_rel_step1_app : ∀ Σ T1 T2 ε f f' a a' st1 st2 ctx Σ', val_rel_n 0 Σ' (TFn T1 T2 ε) f f' → val_rel_n 0 Σ' T1 a a' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → (* ADDITIONAL PREMISE: typing for f and f' *) has_type nil Σ' Public f (TFn T1 T2 ε) EffectPure → has_type nil Σ' Public f' (TFn T1 T2 ε) EffectPure → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_app : ∀ Σ T1 T2 ε f f' a a' st1 st2 ctx Σ', val_rel_n 0 Σ' (TFn T1 T2 ε) f f' → val_rel_n 0 Σ' T1 a a' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' →  has_type nil Σ' Public f (TFn T1 T2 ε) EffectPure → has_type nil Σ' Public f' (TFn T1 T2 ε) EffectPure → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx') := by
   simp_all [Bool.and_eq_true]
 
 /-- Extract just the store_wf part from preservation -/
@@ -371,7 +372,7 @@ theorem val_rel_at_type_fo_step_invariant : ∀ T n' m' Σ v1 v2, first_order_ty
 
     Takes the val_rel step-up IH as a parameter. -/
 /-- val_rel_at_type_step_up_with_IH (matches Coq) -/
-theorem val_rel_at_type_step_up_with_IH : ∀ T n' Σ v1 v2, (* IH: val_rel_n step-up for all types at level n' *) (∀ T' Σ' v1' v2', val_rel_n n' Σ' T' v1' v2' → (first_order_type T' = false → has_type nil Σ' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil Σ' Public v2' T' EffectPure) → val_rel_n (S n') Σ' T' v1' v2') → (* IH: store_rel_n step-up at level n' *) (∀ Σ' st1 st2, store_rel_n n' Σ' st1 st2 → store_wf Σ' st1 → store_wf Σ' st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo Σ' st1 st2 → store_rel_n (S n') Σ' st1 st2) → @val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 → @val_rel_at_type Σ (store_rel_n (S n')) (val_rel_n (S n')) (store_rel_n (S n')) (store_vals_rel (S n')) T v1 v2 := by
+theorem val_rel_at_type_step_up_with_IH : ∀ T n' Σ v1 v2,  (∀ T' Σ' v1' v2', val_rel_n n' Σ' T' v1' v2' → (first_order_type T' = false → has_type nil Σ' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil Σ' Public v2' T' EffectPure) → val_rel_n (S n') Σ' T' v1' v2') →  (∀ Σ' st1 st2, store_rel_n n' Σ' st1 st2 → store_wf Σ' st1 → store_wf Σ' st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo Σ' st1 st2 → store_rel_n (S n') Σ' st1 st2) → @val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 → @val_rel_at_type Σ (store_rel_n (S n')) (val_rel_n (S n')) (store_rel_n (S n')) (store_vals_rel (S n')) T v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- Wrap combined_step_up val component to match conditional typing IH -/
@@ -381,12 +382,12 @@ theorem combined_step_up_val_wrap : ∀ n, combined_step_up n → (∀ T' Σ' v1
 
 /-- Helper: store_rel step-up for n > 0 using val_rel step-up from IH -/
 /-- store_rel_n_step_up_from_IH (matches Coq) -/
-theorem store_rel_n_step_up_from_IH : ∀ n' Σ st1 st2, (* IH: val_rel step-up at n' for all types *) (∀ T Σ' v1 v2, val_rel_n n' Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S n') Σ' T v1 v2) → store_rel_n (S n') Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S n')) Σ st1 st2 := by
+theorem store_rel_n_step_up_from_IH : ∀ n' Σ st1 st2,  (∀ T Σ' v1 v2, val_rel_n n' Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S n') Σ' T v1 v2) → store_rel_n (S n') Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S n')) Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
 
 /-- Helper: store_rel step-up from n to S n when n > 0, using val_rel step-up -/
 /-- store_rel_n_step_up_with_val_IH (matches Coq) -/
-theorem store_rel_n_step_up_with_val_IH : ∀ m Σ st1 st2, (* Val_rel step-up at step m for all types *) (∀ T Σ' v1 v2, val_rel_n m Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S m) Σ' T v1 v2) → store_rel_n (S m) Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S m)) Σ st1 st2 := by
+theorem store_rel_n_step_up_with_val_IH : ∀ m Σ st1 st2,  (∀ T Σ' v1 v2, val_rel_n m Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S m) Σ' T v1 v2) → store_rel_n (S m) Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S m)) Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
 
 /-- Main theorem: combined_step_up holds for all n via strong induction -/
@@ -414,7 +415,7 @@ theorem val_rel_n_step_up : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → has_typ
 
     For n >= 1, this lemma is fully provable using val_rel_n_step_up. -/
 /-- store_rel_n_step_up (matches Coq) -/
-theorem store_rel_n_step_up : ∀ n Σ st1 st2, store_rel_n n Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo Σ st1 st2 → (* Required for n=0 LOW FO bootstrap *) store_rel_n (S n) Σ st1 st2 := by
+theorem store_rel_n_step_up : ∀ n Σ st1 st2, store_rel_n n Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo Σ st1 st2 →  store_rel_n (S n) Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
 
 /-- store_vals_rel monotonicity: step down -/

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SizedTypes - Isabelle/HOL Port
@@ -40,8 +41,8 @@ begin
 
 (* sized_ty (matches Coq: Inductive sized_ty) *)
 datatype sized_ty =
-    STBase  (* Base type with implicit size *)
-  |     STSized  (* Type with explicit size bound *)
+    STBase
+  |     STSized
 
 (* sized_ty_base (matches Coq: Definition sized_ty_base) *)
 fun sized_ty_base :: "sized_ty \<Rightarrow> ty" where

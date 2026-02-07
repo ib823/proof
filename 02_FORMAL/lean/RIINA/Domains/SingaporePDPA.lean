@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SingaporePDPA - Lean 4 Port
@@ -123,8 +124,8 @@ namespace RIINA
 inductive SGConsentStatus where
   | sGNoConsent : SGConsentStatus
   | sGExplicitConsent : SGConsentStatus
-  | sGDeemedConsent : SGConsentStatus  -- Deemed consent provision
-  | sGDeemedConsentNotification : SGConsentStatus  -- Deemed consent by notification
+  | sGDeemedConsent : SGConsentStatus
+  | sGDeemedConsentNotification : SGConsentStatus
   | sGWithdrawnConsent : SGConsentStatus
   deriving DecidableEq, Repr
 
@@ -168,10 +169,10 @@ inductive PDPCDirection where
   deriving DecidableEq, Repr
 
 /-- sg_has_consent (matches Coq: Definition sg_has_consent) -/
-def sg_has_consent := True -- complex match, simplified to Prop
+def sg_has_consent := sorry -- complex match, needs manual translation
 
 /-- sg_consent_for_category (matches Coq: Definition sg_consent_for_category) -/
-def sg_consent_for_category := True -- complex match, simplified to Prop
+def sg_consent_for_category := sorry -- complex match, needs manual translation
 
 /-- sg_purpose_limited (matches Coq: Definition sg_purpose_limited) -/
 def sg_purpose_limited (r : SGDataRecord) (processing_purpose : Nat) : Prop :=
@@ -288,7 +289,7 @@ def pdpc_penalty_within_cap (action : PDPCEnforcementAction) : Prop :=
   pdpc_penalty_amount action <= pdpc_max_penalty action
 
 /-- pdpc_penalty_proportionate (matches Coq: Definition pdpc_penalty_proportionate) -/
-def pdpc_penalty_proportionate := True -- complex match, simplified to Prop
+def pdpc_penalty_proportionate := sorry -- complex match, needs manual translation
 
 /-- sg_cross_border_lawful (matches Coq: Definition sg_cross_border_lawful) -/
 def sg_cross_border_lawful (r : SGDataRecord) (adequacy : TransferAdequacy) : Prop :=

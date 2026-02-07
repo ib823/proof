@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedMicrokernel - Lean 4 Port
@@ -88,25 +89,25 @@ inductive Right where
 
 /-- KernelObject (matches Coq: Inductive KernelObject) -/
 inductive KernelObject where
-  | kO_Endpoint : KernelObject
-  | kO_Frame : KernelObject
-  | kO_PageTable : KernelObject
-  | kO_TCB : KernelObject
+  | kO_Endpoint : Nat → KernelObject
+  | kO_Frame : Nat → KernelObject
+  | kO_PageTable : Nat → KernelObject
+  | kO_TCB : ProcId → KernelObject
   deriving DecidableEq, Repr
 
 /-- Action (matches Coq: Inductive Action) -/
 inductive Action where
-  | actRead : Action
-  | actWrite : Action
-  | actGrant : Action
-  | actRevoke : Action
+  | actRead : Nat → Action
+  | actWrite : Nat → Action
+  | actGrant : Capability → Action
+  | actRevoke : Nat → Action
   deriving DecidableEq, Repr
 
 /-- Capability (matches Coq: Record Capability) -/
 structure Capability where
-  cap_object : Nat  -- Object reference
+  cap_object : Nat
   cap_rights : List
-  cap_badge : Nat  -- Unforgeable badge
+  cap_badge : Nat
   deriving DecidableEq, Repr
 
 /-- KernelState (matches Coq: Record KernelState) -/
@@ -115,7 +116,7 @@ structure KernelState where
   cap_tables : ProcId
   kernel_objects : List
   revoked_badges : RevocationDomain
-  next_badge : Nat  -- monotonically increasing badge allocator
+  next_badge : Nat
   deriving DecidableEq, Repr
 
 /-- PagePerms (matches Coq: Record PagePerms) -/
@@ -130,7 +131,7 @@ structure PTE where
   pte_paddr : PAddr
   pte_perms : PagePerms
   pte_valid : Bool
-  pte_userspace : Bool  -- true if accessible by userspace
+  pte_userspace : Bool
   deriving DecidableEq, Repr
 
 /-- MemoryState (matches Coq: Record MemoryState) -/
@@ -164,7 +165,7 @@ structure IPCState where
 
 /-- Notification (matches Coq: Record Notification) -/
 structure Notification where
-  notif_word : Nat  -- single machine word
+  notif_word : Nat
   deriving DecidableEq, Repr
 
 /-- holds (matches Coq: Definition holds) -/
@@ -258,7 +259,7 @@ def msg_caps_valid (is : IPCState) (sender : ProcId) (msg : IPCMessage) : Prop :
 /-- transfer_preserves_validity (matches Coq: Definition transfer_preserves_validity) -/
 def transfer_preserves_validity (s s' : KernelState) (c : Capability) : Prop :=
   next_badge s <= next_badge s' /\
-  (* Transferred capability is not newly revoked *)
+  
   (~ is_revoked s c -> ~ is_revoked s' c)
 
 /-- isolation_invariant (matches Coq: Definition isolation_invariant) -/
@@ -269,7 +270,7 @@ def isolation_invariant (ms : MemoryState) : Prop :=
     address_spaces ms p2 vaddr = Some pte2 ->
     pte_valid pte1 = true ->
     pte_valid pte2 = true ->
-    (* Either different physical addresses, or both readonly *)
+    
     pte_paddr pte1 <> pte_paddr pte2 \/
     (perm_write (pte_perms pte1) = false /\ perm_write (pte_perms pte2) = false)
 
@@ -295,7 +296,7 @@ def allocation_safe (ms ms' : MemoryState) (paddr : PAddr) : Prop :=
 
 /-- msg_type_safe (matches Coq: Definition msg_type_safe) -/
 def msg_type_safe (msg : IPCMessage) : Prop :=
-  length (msg_data msg) <= 128 /\  (* bounded message size *)
+  length (msg_data msg) <= 128 /\  
   length (msg_caps msg) <= 4
 
 /-- no_amplification (matches Coq: Definition no_amplification) -/
@@ -313,7 +314,6 @@ def ipc_maintains_isolation (is : IPCState) : Prop :=
 
 /-- notif_no_sensitive_data (matches Coq: Definition notif_no_sensitive_data) -/
 def notif_no_sensitive_data (n : Notification) : Prop :=
-  (* Notification word is bounded - cannot encode arbitrary data *)
   notif_word n < 2^32
 
 /-- OS_001_01_cap_unforgeable (matches Coq) -/
@@ -345,7 +345,7 @@ theorem OS_001_07_cap_lookup_correct : ∀ s p slot c, cap_lookup s p slot = Som
   intro h; exact h
 
 /-- OS_001_08_cap_space_isolation (matches Coq) -/
-theorem OS_001_08_cap_space_isolation : ∀ s p1 p2 slot1 slot2 c, p1 ≠ p2 → cap_lookup s p1 slot1 = Some c → cap_lookup s p2 slot2 = Some c → (* If same capability appears in two different processes, it must have been explicitly granted (both hold it independently) *) holds s p1 c ∧ holds s p2 c := by
+theorem OS_001_08_cap_space_isolation : ∀ s p1 p2 slot1 slot2 c, p1 ≠ p2 → cap_lookup s p1 slot1 = Some c → cap_lookup s p2 slot2 = Some c →  If same capability appears in two different processes, it must have been explicitly granted (both hold it independently)  holds s p1 c ∧ holds s p2 c := by
   intro h; exact h
 
 /-- OS_001_09_cap_invoke_authorized (matches Coq) -/
@@ -353,7 +353,7 @@ theorem OS_001_09_cap_invoke_authorized : ∀ s p action c, can_invoke s p actio
   intro h; exact h
 
 /-- OS_001_10_cap_badge_integrity (matches Coq) -/
-theorem OS_001_10_cap_badge_integrity : ∀ c1 c2, derives c1 c2 → (* Badge may change during derivation, but the new badge is system-assigned and unforgeable - we prove badges are determined by the derivation relation, not arbitrary *) cap_object c2 = cap_object c1 := by
+theorem OS_001_10_cap_badge_integrity : ∀ c1 c2, derives c1 c2 →  cap_object c2 = cap_object c1 := by
   rfl
 
 /-- OS_001_11_address_space_isolation (matches Coq) -/
@@ -413,7 +413,7 @@ theorem OS_001_24_endpoint_protection : ∀ is ep, endpoint_protected is ep → 
   simp_all [Bool.and_eq_true]
 
 /-- OS_001_25_notification_no_leak (matches Coq) -/
-theorem OS_001_25_notification_no_leak : ∀ n, notif_no_sensitive_data n → (* Notification contains only signaling information, no capability data *) notif_word n < 2^32 := by
+theorem OS_001_25_notification_no_leak : ∀ n, notif_no_sensitive_data n →  notif_word n < 2^32 := by
   intro h; exact h
 
 end RIINA

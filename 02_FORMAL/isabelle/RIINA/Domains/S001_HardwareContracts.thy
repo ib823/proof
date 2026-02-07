@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA S001_HardwareContracts - Isabelle/HOL Port
@@ -122,7 +123,8 @@ record microarch_state =
 definition leakage :: "MicroarchState \<Rightarrow> LeakageTrace" where
   "leakage ms \<equiv> []"
 
-(* isa_step - complex match, manual review needed *)
+(* isa_step - complex match, needs manual translation *)
+definition isa_step :: "bool" where "isa_step = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
@@ -136,7 +138,8 @@ definition constant_time :: "bool" where
     prog ms2 = ms2' ->
     leakage ms1 ms1' = leakage ms2 ms2'"
 
-(* spec_accesses - complex match, manual review needed *)
+(* spec_accesses - complex match, needs manual translation *)
+definition spec_accesses :: "bool" where "spec_accesses = undefined"
 
 (* scub_barrier (matches Coq: Definition scub_barrier) *)
 definition scub_barrier :: "MicroarchState \<Rightarrow> MicroarchState" where
@@ -177,9 +180,11 @@ definition well_typed :: "TypingContext \<Rightarrow> bool" where
     (forall a, ctx a = Public -> mem (arch ms1) a = mem (arch ms2) a) ->
     pc (arch (prog ms1)) = pc (arch (prog ms2))"
 
-(* misprediction - complex match, manual review needed *)
+(* misprediction - complex match, needs manual translation *)
+definition misprediction :: "bool" where "misprediction = undefined"
 
-(* rollback - complex match, manual review needed *)
+(* rollback - complex match, needs manual translation *)
+definition rollback :: "bool" where "rollback = undefined"
 
 (* S_001_01_isa_state_deterministic (matches Coq) *)
 lemma S_001_01_isa_state_deterministic: "\<forall> instr s, isa_step instr s = isa_step instr s"

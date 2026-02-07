@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CrossBorderRemittance - Isabelle/HOL Port
@@ -98,7 +99,7 @@ record corridor =
   send_currency :: CurrencyCode
   receive_currency :: CurrencyCode
   is_enabled :: bool
-  availability_pct :: nat  (* In basis points: 9999 = 99.99% *)
+  availability_pct :: nat
   fees_disclosed :: bool
   is_sanctioned :: bool
 
@@ -123,7 +124,7 @@ record fx_quote =
   customer_rate :: Z
   quote_timestamp :: nat
   guarantee_window :: nat
-  hedge_ratio_bps :: nat  (* In basis points: 10000 = 100% *)
+  hedge_ratio_bps :: nat
 
 (* Transfer (matches Coq: Record Transfer) *)
 record transfer =
@@ -154,7 +155,7 @@ record originator =
   orig_name :: nat
   orig_address :: nat
   kyc_verified :: bool
-  verification_level :: nat  (* 1, 2, or 3 *)
+  verification_level :: nat
 
 (* TravelRuleData (matches Coq: Record TravelRuleData) *)
 record travel_rule_data =

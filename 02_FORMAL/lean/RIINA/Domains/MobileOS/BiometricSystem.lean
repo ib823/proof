@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA BiometricSystem - Lean 4 Port
@@ -78,8 +79,8 @@ structure BiometricAttempt where
   attempt_type : BiometricType
   attempt_authentic : Bool
   attempt_is_spoof : Bool
-  attempt_match_score : Nat  -- 0-1000000 for precision
-  attempt_liveness_score : Nat  -- 0-100
+  attempt_match_score : Nat
+  attempt_liveness_score : Nat
   attempt_accepted : Bool
   attempt_rejected : Bool
   deriving DecidableEq, Repr
@@ -119,8 +120,8 @@ structure BiometricConfig where
   bio_cfg_lockout_ms : Nat
   bio_cfg_anti_spoofing : Bool
   bio_cfg_liveness_required : Bool
-  bio_cfg_far_threshold : Nat  -- false acceptance rate threshold
-  bio_cfg_frr_threshold : Nat  -- false rejection rate threshold
+  bio_cfg_far_threshold : Nat
+  bio_cfg_frr_threshold : Nat
   deriving DecidableEq, Repr
 
 /-- authentic (matches Coq: Definition authentic) -/
@@ -148,12 +149,12 @@ def liveness_threshold : Nat :=
   90
 
 /-- secure_biometric_system (matches Coq: Definition secure_biometric_system) -/
-def secure_biometric_system := True -- complex match, simplified to Prop
+def secure_biometric_system := sorry -- complex match, needs manual translation
 
 /-- false_acceptance_probability (matches Coq: Definition false_acceptance_probability) -/
 def false_acceptance_probability (a : BiometricAttempt) : Nat :=
   if attempt_accepted a && negb (attempt_authentic a) then
-    1  (* Represents 1/1,000,000 when it happens *)
+    1  
   else
     0
 

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HIPAACompliance - Isabelle/HOL Port
@@ -82,13 +83,13 @@ datatype phi_category =
 datatype encryption_state =
     Plaintext
   |     EncryptedAES128
-  |     EncryptedAES256  (* Required for HIPAA *)
+  |     EncryptedAES256
 
 (* TransportSecurity (matches Coq: Inductive TransportSecurity) *)
 datatype transport_security =
     NoTLS
   |     TLS12
-  |     TLS13  (* Required *)
+  |     TLS13
 
 (* AuthFactor (matches Coq: Inductive AuthFactor) *)
 datatype auth_factor =
@@ -106,7 +107,7 @@ record auth_state =
 record phi_record =
   phi_category :: PHICategory
   phi_patient_id :: nat
-  phi_data :: nat  (* Abstract data *)
+  phi_data :: nat
   phi_encryption :: EncryptionState
   phi_consent_documented :: bool
 
@@ -114,15 +115,15 @@ record phi_record =
 record audit_entry =
   audit_timestamp :: nat
   audit_user_id :: nat
-  audit_action :: nat  (* 0=read, 1=write, 2=delete, 3=emergency *)
+  audit_action :: nat
   audit_phi_id :: nat
   audit_success :: bool
 
 (* DisposalRecord (matches Coq: Record DisposalRecord) *)
 record disposal_record =
   disposal_phi_id :: nat
-  disposal_method :: nat  (* 0=overwrite, 1=crypto_erase, 2=physical *)
-  disposal_passes :: nat  (* Number of overwrite passes *)
+  disposal_method :: nat
+  disposal_passes :: nat
   disposal_verified :: bool
 
 (* BreachEvent (matches Coq: Record BreachEvent) *)
@@ -155,7 +156,8 @@ record transmission =
   trans_integrity_hash :: nat
   trans_verified :: bool
 
-(* can_access - complex match, manual review needed *)
+(* can_access - complex match, needs manual translation *)
+definition can_access :: "bool" where "can_access = undefined"
 
 (* is_hipaa_encrypted (matches Coq: Definition is_hipaa_encrypted) *)
 fun is_hipaa_encrypted :: "EncryptionState \<Rightarrow> bool" where
@@ -179,7 +181,8 @@ definition session_expired :: "bool" where
 definition is_mfa :: "AuthState \<Rightarrow> bool" where
   "is_mfa auth \<equiv> Nat"
 
-(* is_secure_disposal - complex match, manual review needed *)
+(* is_secure_disposal - complex match, needs manual translation *)
+definition is_secure_disposal :: "bool" where "is_secure_disposal = undefined"
 
 (* breach_detection_limit (matches Coq: Definition breach_detection_limit) *)
 definition breach_detection_limit :: "nat" where

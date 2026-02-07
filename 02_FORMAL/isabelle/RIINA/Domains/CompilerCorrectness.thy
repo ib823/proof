@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CompilerCorrectness - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | ir_ty              | ir_ty                  | OK     |
+ * | ir_expr            | ir_expr                | OK     |
  * | src_ty             | src_ty                 | OK     |
  * | src_expr           | src_expr               | OK     |
  * | ParsingPhase       | parsing_phase          | OK     |
@@ -124,10 +126,13 @@ datatype ir_ty =
     IR_TUnit
   |     IR_TBool
   |     IR_TInt
-  |     IR_TFn  (* T1 -> T2 *)
-  |     IR_TProd  (* T1 * T2 *)
+  |     IR_TFn
+  |     IR_TProd
   |     IR_TSum
-  |     IR_Unit
+
+(* ir_expr (matches Coq: Inductive ir_expr) *)
+datatype ir_expr =
+    IR_Unit
   |     IR_Bool
   |     IR_Int
   |     IR_Pair

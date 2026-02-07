@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MotorAccessibility - Isabelle/HOL Port
@@ -86,13 +87,15 @@ theory MotorAccessibility
   imports Main
 begin
 
-(* switch_command_for_action - complex match, manual review needed *)
+(* switch_command_for_action - complex match, needs manual translation *)
+definition switch_command_for_action :: "bool" where "switch_command_for_action = undefined"
 
 (* possible_with_switch_control (matches Coq: Definition possible_with_switch_control) *)
 definition possible_with_switch_control :: "UserAction \<Rightarrow> bool" where
   "possible_with_switch_control action \<equiv> exists (cmd : SwitchCommand), switch_command_for_action action = cmd"
 
-(* speakable_for_action - complex match, manual review needed *)
+(* speakable_for_action - complex match, needs manual translation *)
+definition speakable_for_action :: "bool" where "speakable_for_action = undefined"
 
 (* speakable_command (matches Coq: Definition speakable_command) *)
 definition speakable_command :: "UserAction \<Rightarrow> bool" where

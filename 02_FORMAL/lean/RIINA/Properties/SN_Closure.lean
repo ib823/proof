@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SN_Closure - Lean 4 Port
@@ -129,7 +130,7 @@ theorem SN_app_aux : ∀ cfg e2, SN cfg → (∀ st ctx, SN (e2, st, ctx)) → (
   simp_all [Bool.and_eq_true]
 
 /-- SN_app (matches Coq) -/
-theorem SN_app : ∀ e1 e2 st ctx, (∀ st' ctx', SN (e1, st', ctx')) → (∀ st' ctx', SN (e2, st', ctx')) → (* Beta reduction premise: for any substitution of a value into a body, result is SN *) (∀ x body v st' ctx', value v → SN ([x := v] body, st', ctx')) → SN (EApp e1 e2, st, ctx) := by
+theorem SN_app : ∀ e1 e2 st ctx, (∀ st' ctx', SN (e1, st', ctx')) → (∀ st' ctx', SN (e2, st', ctx')) →  (∀ x body v st' ctx', value v → SN ([x := v] body, st', ctx')) → SN (EApp e1 e2, st, ctx) := by
   intro h; exact h
 
 /-- Helper: SN_app for values -/

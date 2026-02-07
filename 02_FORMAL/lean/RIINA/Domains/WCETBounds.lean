@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA WCETBounds - Lean 4 Port
@@ -80,14 +81,14 @@ namespace RIINA
 
 /-- Stmt (matches Coq: Inductive Stmt) -/
 inductive Stmt where
-  | sUnit : Stmt  -- No-op
-  | sAssign : Stmt  -- x := v
-  | sLoad : Stmt  -- x := *ptr
-  | sStore : Stmt  -- *ptr := v
-  | sSeq : Stmt  -- s1; s2
-  | sIf : Stmt  -- if c then s1 else s2
-  | sFor : Stmt  -- for i < n do s
-  | sCall : Stmt  -- call f
+  | sUnit : Stmt
+  | sAssign : Nat → Nat → Stmt
+  | sLoad : Nat → Nat → Stmt
+  | sStore : Nat → Nat → Stmt
+  | sSeq : Stmt → Stmt → Stmt
+  | sIf : Nat → Stmt → Stmt → Stmt
+  | sFor : Nat → Stmt → Stmt
+  | sCall : Nat → Stmt
   deriving DecidableEq, Repr
 
 /-- CacheState (matches Coq: Inductive CacheState) -/
@@ -104,18 +105,18 @@ inductive BranchState where
 
 /-- AbstractCacheState (matches Coq: Inductive AbstractCacheState) -/
 inductive AbstractCacheState where
-  | aCSMustHit : AbstractCacheState  -- Definitely in cache
-  | aCSMayMiss : AbstractCacheState  -- Might not be in cache
+  | aCSMustHit : AbstractCacheState
+  | aCSMayMiss : AbstractCacheState
   | aCSMustMiss : AbstractCacheState
   deriving DecidableEq, Repr
 
 /-- HWParams (matches Coq: Record HWParams) -/
 structure HWParams where
-  hw_cache_hit : Time  -- L1 cache hit latency
-  hw_cache_miss : Time  -- Cache miss latency
-  hw_call_overhead : Time  -- Function call overhead
-  hw_branch_penalty : Time  -- Branch misprediction cost
-  hw_pipeline_depth : Nat  -- Pipeline stages
+  hw_cache_hit : Time
+  hw_cache_miss : Time
+  hw_call_overhead : Time
+  hw_branch_penalty : Time
+  hw_pipeline_depth : Nat
   deriving DecidableEq, Repr
 
 /-- Task (matches Coq: Record Task) -/
@@ -134,8 +135,8 @@ structure ExecContext where
 
 /-- DMAConfig (matches Coq: Record DMAConfig) -/
 structure DMAConfig where
-  dma_bandwidth : Nat  -- bytes per cycle, must be > 0
-  dma_setup : Time  -- DMA setup overhead
+  dma_bandwidth : Nat
+  dma_setup : Time
   deriving DecidableEq, Repr
 
 /-- hw_wellformed (matches Coq: Definition hw_wellformed) -/
@@ -352,7 +353,7 @@ theorem PERF_001_15_single_task_schedulable : ∀ t, utilization t ≤ utilizati
   omega
 
 /-- PERF_001_15_deadline_feasibility (matches Coq) -/
-theorem PERF_001_15_deadline_feasibility : ∀ t, task_wcet t ≤ task_deadline t → task_wcet t ≤ task_period t → True. (* Task is feasible *) := by
+theorem PERF_001_15_deadline_feasibility : ∀ t, task_wcet t ≤ task_deadline t → task_wcet t ≤ task_period t → True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- PERF_001_15_response_time_valid (matches Coq) -/

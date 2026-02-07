@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryRealEstate - Isabelle/HOL Port
@@ -61,10 +62,10 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* PropertyData (matches Coq: Inductive PropertyData) *)
 datatype property_data =
-    OwnerPII  (* Owner personal information *)
-  |     FinancialRecords  (* Mortgages, transactions *)
+    OwnerPII
+  |     FinancialRecords
   |     TenantData
-  |     AccessCredentials  (* Building access *)
+  |     AccessCredentials
   |     SmartHomeData
   |     BuildingTelemetry
 

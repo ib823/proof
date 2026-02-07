@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MalaysiaMAMPU - Lean 4 Port
@@ -54,10 +55,10 @@ namespace RIINA
 
 /-- GovClassification (matches Coq: Inductive GovClassification) -/
 inductive GovClassification where
-  | terbuka : GovClassification  -- Open / Public
-  | terhad : GovClassification  -- Restricted
-  | sulit : GovClassification  -- Confidential
-  | rahsia : GovClassification  -- Secret
+  | terbuka : GovClassification
+  | terhad : GovClassification
+  | sulit : GovClassification
+  | rahsia : GovClassification
   | rahsiaBesar : GovClassification
   deriving DecidableEq, Repr
 
@@ -75,7 +76,7 @@ def data_sovereign (s : GovSystem) : Prop :=
   gov_data_in_malaysia s = true
 
 /-- controls_match_classification (matches Coq: Definition controls_match_classification) -/
-def controls_match_classification := True -- complex match, simplified to Prop
+def controls_match_classification := sorry -- complex match, needs manual translation
 
 /-- security_assessed (matches Coq: Definition security_assessed) -/
 def security_assessed (s : GovSystem) : Prop :=
@@ -86,7 +87,7 @@ def isms_compliant (s : GovSystem) : Prop :=
   gov_isms_certified s = true
 
 /-- mampu_fully_compliant (matches Coq: Definition mampu_fully_compliant) -/
-def mampu_fully_compliant := True -- complex match, simplified to Prop
+def mampu_fully_compliant := sorry -- complex match, needs manual translation
 
 /-- rakkssa_passed (matches Coq: Definition rakkssa_passed) -/
 def rakkssa_passed (ra : RAKKSSAAssessment) : Prop :=

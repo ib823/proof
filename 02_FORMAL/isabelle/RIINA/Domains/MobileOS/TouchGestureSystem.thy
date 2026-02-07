@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TouchGestureSystem - Isabelle/HOL Port
@@ -130,7 +131,8 @@ definition touch_system_correct :: "TouchEvent \<Rightarrow> bool" where
   (registered t -> physical_touch t) /\
   (physical_touch t -> display_latency t <= latency_bound)"
 
-(* intended_gesture - complex match, manual review needed *)
+(* intended_gesture - complex match, needs manual translation *)
+definition intended_gesture :: "bool" where "intended_gesture = undefined"
 
 (* recognized_gesture (matches Coq: Definition recognized_gesture) *)
 fun recognized_gesture :: "TouchSequence \<Rightarrow> GestureType" where

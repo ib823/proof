@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA PSI001_OperationalSecurity - Lean 4 Port
@@ -92,9 +93,9 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- AuthMode (matches Coq: Inductive AuthMode) -/
 inductive AuthMode where
-  | normalAuth : AuthMode  -- normal password/key
-  | duressAuth : AuthMode  -- duress code
-  | emergencyAuth : AuthMode
+  | normalAuth : Nat → AuthMode
+  | duressAuth : Nat → AuthMode
+  | emergencyAuth : Nat → AuthMode
   deriving DecidableEq, Repr
 
 /-- Share (matches Coq: Record Share) -/
@@ -105,8 +106,8 @@ structure Share where
 
 /-- ThresholdPolicy (matches Coq: Record ThresholdPolicy) -/
 structure ThresholdPolicy where
-  tp_n : Nat  -- required approvals
-  tp_m : Nat  -- total authorized parties
+  tp_n : Nat
+  tp_m : Nat
   tp_approvals : List
   deriving DecidableEq, Repr
 
@@ -123,13 +124,13 @@ structure DeadManSwitch where
   dms_last_checkin : Nat
   dms_timeout : Nat
   dms_triggered : Bool
-  dms_recovery_action : Nat  -- abstract action ID
+  dms_recovery_action : Nat
   deriving DecidableEq, Repr
 
 /-- InsiderBudget (matches Coq: Record InsiderBudget) -/
 structure InsiderBudget where
-  ib_max_bytes : Nat  -- max data export per window
-  ib_max_queries : Nat  -- max queries per window
+  ib_max_bytes : Nat
+  ib_max_queries : Nat
   ib_bytes_used : Nat
   ib_queries_used : Nat
   ib_window_start : Nat
@@ -155,7 +156,7 @@ structure Platform where
 structure TimeLock where
   tl_operation : Nat
   tl_submit_time : Nat
-  tl_execute_time : Nat  -- earliest execution
+  tl_execute_time : Nat
   tl_cancelled : Bool
   deriving DecidableEq, Repr
 
@@ -224,14 +225,14 @@ def audit_log_append (log : AuditLog) (entry : AuditEntry) : AuditLog :=
   entry :: log
 
 /-- audit_chain_valid (matches Coq: Definition audit_chain_valid) -/
-def audit_chain_valid := True -- complex match, simplified to Prop
+def audit_chain_valid := sorry -- complex match, needs manual translation
 
 /-- platforms_independent (matches Coq: Definition platforms_independent) -/
 def platforms_independent (p1 p2 : Platform) : Bool :=
   negb (Nat
 
 /-- nversion_agree (matches Coq: Definition nversion_agree) -/
-def nversion_agree := True -- complex match, simplified to Prop
+def nversion_agree := sorry -- complex match, needs manual translation
 
 /-- tl_can_execute (matches Coq: Definition tl_can_execute) -/
 def tl_can_execute (tl : TimeLock) (now : Nat) : Bool :=

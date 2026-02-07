@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA RadiationHardening - Isabelle/HOL Port
@@ -71,8 +72,8 @@ datatype system_mode =
 
 (* ECCWord (matches Coq: Record ECCWord) *)
 record ecc_word =
-  ecc_data :: Word  (* Data bits *)
-  ecc_parity :: Word  (* Parity bits *)
+  ecc_data :: Word
+  ecc_parity :: Word
 
 (* Watchdog (matches Coq: Record Watchdog) *)
 record watchdog =
@@ -82,7 +83,7 @@ record watchdog =
 
 (* Checkpoint (matches Coq: Record Checkpoint) *)
 record checkpoint =
-  cp_state :: nat  (* Abstract system state *)
+  cp_state :: nat
   cp_timestamp :: nat
   cp_valid :: bool
 
@@ -115,8 +116,8 @@ record probability =
 
 (* RecoveryMetrics (matches Coq: Record RecoveryMetrics) *)
 record recovery_metrics =
-  rm_mttr :: nat  (* Mean Time To Recovery *)
-  rm_requirement :: nat  (* Mission requirement *)
+  rm_mttr :: nat
+  rm_requirement :: nat
 
 (* CriticalData (matches Coq: Record CriticalData) *)
 record critical_data =
@@ -156,7 +157,8 @@ definition cf_valid :: "CFSignature \<Rightarrow> nat \<Rightarrow> bool" where
 definition canary_valid :: "StackFrame \<Rightarrow> bool" where
   "canary_valid sf \<equiv> Nat"
 
-(* mode_eqb - complex match, manual review needed *)
+(* mode_eqb - complex match, needs manual translation *)
+definition mode_eqb :: "bool" where "mode_eqb = undefined"
 
 (* count_agreements (matches Coq: Definition count_agreements) *)
 definition count_agreements :: "nat \<Rightarrow> nat" where
@@ -174,7 +176,8 @@ definition recovery_within_bound :: "RecoveryMetrics \<Rightarrow> bool" where
 definition cd_consistent :: "CriticalData \<Rightarrow> bool" where
   "cd_consistent cd \<equiv> andb (Nat"
 
-(* cd_recover - complex match, manual review needed *)
+(* cd_recover - complex match, needs manual translation *)
+definition cd_recover :: "bool" where "cd_recover = undefined"
 
 (* scrub_effective (matches Coq: Definition scrub_effective) *)
 definition scrub_effective :: "ScrubState \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DistributedConsensus - Lean 4 Port
@@ -105,15 +106,15 @@ def mem_nat (x : Nat) (l : List Nat) : Bool :=
   existsb (Nat
 
 /-- 1 (matches Coq) -/
-theorem 1 : Agreement --- If the configuration satisfies decided_nodes_agree, then any two honest decided nodes have the same decision. This is modeled as: the agreement property is preserved by construction. *) Theorem agreement : ∀ c n1 n2, decided_nodes_agree c → In n1 (nodes c) → In n2 (nodes c) → honest_decided c n1 → honest_decided c n2 → node_decision n1 = node_decision n2 := by
+theorem 1 : Agreement --- If the configuration satisfies decided_nodes_agree, then any two honest decided nodes have the same decision. This is modeled as: the agreement property is preserved by construction.  Theorem agreement : ∀ c n1 n2, decided_nodes_agree c → In n1 (nodes c) → In n2 (nodes c) → honest_decided c n1 → honest_decided c n2 → node_decision n1 = node_decision n2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 2 (matches Coq) -/
-theorem 2 : Validity --- If all honest nodes propose v, and the protocol decides based on honest proposals, then the decision equals v. *) Theorem validity : ∀ c nd v, all_honest_propose c v → In nd (nodes c) → honest c (node_id nd) = true → (* decision follows own proposal for honest nodes *) node_decision nd = node_value nd → node_decision nd = v := by
+theorem 2 : Validity --- If all honest nodes propose v, and the protocol decides based on honest proposals, then the decision equals v.  Theorem validity : ∀ c nd v, all_honest_propose c v → In nd (nodes c) → honest c (node_id nd) = true →  node_decision nd = node_value nd → node_decision nd = v := by
   simp_all [Bool.and_eq_true]
 
 /-- 3 (matches Coq) -/
-theorem 3 : Quorum Intersection --- Two quorums each of size > 2n/3 must overlap. We prove this for abstract sizes: if |Q1| + |Q2| > total, they intersect. *) Lemma pigeonhole_overlap : ∀ (n a b : nat), a ≤ n → b ≤ n → a + b > n → a + b - n ≥ 1 := by
+theorem 3 : Quorum Intersection --- Two quorums each of size > 2n/3 must overlap. We prove this for abstract sizes: if |Q1| + |Q2| > total, they intersect.  Lemma pigeonhole_overlap : ∀ (n a b : nat), a ≤ n → b ≤ n → a + b > n → a + b - n ≥ 1 := by
   omega
 
 /-- quorum_intersection_size (matches Coq) -/
@@ -125,7 +126,7 @@ theorem quorum_intersection : ∀ (n q1s q2s : nat), 3 * q1s > 2 * n → 3 * q2s
   omega
 
 /-- 4 (matches Coq) -/
-theorem 4 : Round Monotonicity --- *) Theorem round_monotonicity : ∀ old new_, round_update old new_ → node_round new_ ≥ node_round old := by
+theorem 4 : Round Monotonicity ---  Theorem round_monotonicity : ∀ old new_, round_update old new_ → node_round new_ ≥ node_round old := by
   intro h; exact h
 
 /-- round_monotonicity_transitive (matches Coq) -/
@@ -133,11 +134,11 @@ theorem round_monotonicity_transitive : ∀ a b c_, node_id a = node_id b → no
   omega
 
 /-- 5 (matches Coq) -/
-theorem 5 : Vote Uniqueness --- *) Theorem vote_uniqueness : ∀ c v1 v2, honest_votes_once_per_round c → In v1 (votes c) → In v2 (votes c) → honest c (vote_sender v1) = true → vote_sender v1 = vote_sender v2 → vote_round v1 = vote_round v2 → vote_value v1 = vote_value v2 := by
+theorem 5 : Vote Uniqueness ---  Theorem vote_uniqueness : ∀ c v1 v2, honest_votes_once_per_round c → In v1 (votes c) → In v2 (votes c) → honest c (vote_sender v1) = true → vote_sender v1 = vote_sender v2 → vote_round v1 = vote_round v2 → vote_value v1 = vote_value v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : Quorum Sufficiency --- When f < n/3, honest nodes (n - f) form a quorum (> 2n/3). *) Theorem quorum_sufficiency : ∀ n f : nat, n > 0 → 3 * f < n → 3 * (n - f) > 2 * n := by
+theorem 6 : Quorum Sufficiency --- When f < n/3, honest nodes (n - f) form a quorum (> 2n/3).  Theorem quorum_sufficiency : ∀ n f : nat, n > 0 → 3 * f < n → 3 * (n - f) > 2 * n := by
   omega
 
 /-- honest_majority_in_quorum (matches Coq) -/
@@ -145,59 +146,59 @@ theorem honest_majority_in_quorum : ∀ n f q : nat, 3 * f < n → 3 * q > 2 * n
   omega
 
 /-- 7 (matches Coq) -/
-theorem 7 : Message Integrity --- *) Theorem message_integrity : ∀ c m, messages_from_honest_authentic c → In m (messages c) → honest c (msg_sender m) = true → msg_authentic m = true := by
+theorem 7 : Message Integrity ---  Theorem message_integrity : ∀ c m, messages_from_honest_authentic c → In m (messages c) → honest c (msg_sender m) = true → msg_authentic m = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
-theorem 8 : Decision Stability --- *) Theorem decision_stability : ∀ nd_before nd_after, decision_stable nd_before nd_after → node_id nd_before = node_id nd_after → node_decided nd_before = true → node_decided nd_after = true ∧ node_decision nd_after = node_decision nd_before := by
+theorem 8 : Decision Stability ---  Theorem decision_stability : ∀ nd_before nd_after, decision_stable nd_before nd_after → node_id nd_before = node_id nd_after → node_decided nd_before = true → node_decided nd_after = true ∧ node_decision nd_after = node_decision nd_before := by
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : BFT threshold arithmetic --- The classical n ≥ 3f+1 bound *) Theorem bft_threshold : ∀ n f : nat, 3 * f < n → n ≥ 3 * f + 1 := by
+theorem 9 : BFT threshold arithmetic --- The classical n ≥ 3f+1 bound  Theorem bft_threshold : ∀ n f : nat, 3 * f < n → n ≥ 3 * f + 1 := by
   omega
 
 /-- 10 (matches Coq) -/
-theorem 10 : Two quorums share an honest node --- Combining quorum intersection with honest majority *) Theorem two_quorums_share_honest : ∀ n f q1 q2 : nat, 3 * f < n → 3 * q1 > 2 * n → 3 * q2 > 2 * n → q1 ≤ n → q2 ≤ n → (* overlap size *) q1 + q2 - n ≥ 1 ∧ (* overlap exceeds faults, so contains honest node *) q1 + q2 - n > f := by
+theorem 10 : Two quorums share an honest node --- Combining quorum intersection with honest majority  Theorem two_quorums_share_honest : ∀ n f q1 q2 : nat, 3 * f < n → 3 * q1 > 2 * n → 3 * q2 > 2 * n → q1 ≤ n → q2 ≤ n →  q1 + q2 - n ≥ 1 ∧  q1 + q2 - n > f := by
   omega
 
 /-- 11 (matches Coq) -/
-theorem 11 : BFT requires at least 4 nodes for f=1 --- *) Theorem bft_min_nodes_f1 : ∀ n : nat, 3 * 1 < n → n ≥ 4 := by
+theorem 11 : BFT requires at least 4 nodes for f=1 ---  Theorem bft_min_nodes_f1 : ∀ n : nat, 3 * 1 < n → n ≥ 4 := by
   omega
 
 /-- 12 (matches Coq) -/
-theorem 12 : Count honest empty list is zero --- *) Theorem count_honest_nil : ∀ h, count_honest h [] = 0 := by
+theorem 12 : Count honest empty list is zero ---  Theorem count_honest_nil : ∀ h, count_honest h [] = 0 := by
   rfl
 
 /-- 13 (matches Coq) -/
-theorem 13 : Count honest singleton --- *) Theorem count_honest_singleton : ∀ h x, count_honest h [x] = if h x then 1 else 0 := by
+theorem 13 : Count honest singleton ---  Theorem count_honest_singleton : ∀ h x, count_honest h [x] = if h x then 1 else 0 := by
   omega
 
 /-- 14 (matches Coq) -/
-theorem 14 : Intersect with nil is nil --- *) Theorem intersect_nil_l : ∀ l, intersect [] l = [] := by
+theorem 14 : Intersect with nil is nil ---  Theorem intersect_nil_l : ∀ l, intersect [] l = [] := by
   rfl
 
 /-- 15 (matches Coq) -/
-theorem 15 : mem_nat reflexive --- *) Theorem mem_nat_refl : ∀ x, mem_nat x [x] = true := by
+theorem 15 : mem_nat reflexive ---  Theorem mem_nat_refl : ∀ x, mem_nat x [x] = true := by
   simp
 
 /-- 16 (matches Coq) -/
-theorem 16 : Quorum size is positive when num_nodes > 0 --- *) Theorem quorum_size_pos : ∀ c, num_nodes c > 0 → quorum_size c ≥ 1 := by
+theorem 16 : Quorum size is positive when num_nodes > 0 ---  Theorem quorum_size_pos : ∀ c, num_nodes c > 0 → quorum_size c ≥ 1 := by
   omega
 
 /-- 17 (matches Coq) -/
-theorem 17 : Agreement is preserved when adding non-decided node --- *) Theorem agreement_non_decided : ∀ c n1 n2, decided_nodes_agree c → In n1 (nodes c) → In n2 (nodes c) → honest_decided c n1 → node_decided n2 = false → True := by
+theorem 17 : Agreement is preserved when adding non-decided node ---  Theorem agreement_non_decided : ∀ c n1 n2, decided_nodes_agree c → In n1 (nodes c) → In n2 (nodes c) → honest_decided c n1 → node_decided n2 = false → True := by
   trivial
 
 /-- 18 (matches Coq) -/
-theorem 18 : Round update is reflexive --- *) Theorem round_update_refl : ∀ nd, round_update nd nd := by
+theorem 18 : Round update is reflexive ---  Theorem round_update_refl : ∀ nd, round_update nd nd := by
   omega
 
 /-- 19 (matches Coq) -/
-theorem 19 : BFT for f=0 any positive n works --- *) Theorem bft_f0 : ∀ n : nat, n > 0 → 3 * 0 < n := by
+theorem 19 : BFT for f=0 any positive n works ---  Theorem bft_f0 : ∀ n : nat, n > 0 → 3 * 0 < n := by
   omega
 
 /-- 20 (matches Coq) -/
-theorem 20 : Honest majority in total --- *) Theorem honest_majority_total : ∀ n f : nat, 3 * f < n → n - f > f := by
+theorem 20 : Honest majority in total ---  Theorem honest_majority_total : ∀ n f : nat, 3 * f < n → n - f > f := by
   omega
 
 end RIINA

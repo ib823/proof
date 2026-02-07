@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NetworkingStack - Lean 4 Port
@@ -111,7 +112,7 @@ structure Connection where
 /-- DNSQuery (matches Coq: Record DNSQuery) -/
 structure DNSQuery where
   dns_query_id : Nat
-  dns_domain : Nat  -- hashed domain name
+  dns_domain : Nat
   dns_resolved_ip : Nat
   dns_validated : Bool
   dns_dnssec_verified : Bool
@@ -205,7 +206,7 @@ def accepted (c : Certificate) : Prop :=
   acceptable_cert c
 
 /-- encrypted (matches Coq: Definition encrypted) -/
-def encrypted := True -- complex match, simplified to Prop
+def encrypted := sorry -- complex match, needs manual translation
 
 /-- transmitted (matches Coq: Definition transmitted) -/
 def transmitted (p : Packet) : Prop :=

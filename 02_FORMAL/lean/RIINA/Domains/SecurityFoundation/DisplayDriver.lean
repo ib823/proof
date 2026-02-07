@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DisplayDriver - Lean 4 Port
@@ -51,12 +52,12 @@ namespace RIINA
 
 /-- AppId (matches Coq: Inductive AppId) -/
 inductive AppId where
-  | app : AppId
+  | app : Nat → AppId
   deriving DecidableEq, Repr
 
 /-- FrameBufferId (matches Coq: Inductive FrameBufferId) -/
 inductive FrameBufferId where
-  | fBId : FrameBufferId
+  | fBId : Nat → FrameBufferId
   deriving DecidableEq, Repr
 
 /-- Application (matches Coq: Record Application) -/

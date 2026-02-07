@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedCrypto - Lean 4 Port
@@ -63,7 +64,7 @@ inductive CryptoOp where
 structure CryptoKey where
   key_id : Nat
   key_bits : Nat
-  key_wrapped : Bool  -- true if key is encrypted/wrapped
+  key_wrapped : Bool
   deriving DecidableEq, Repr
 
 /-- Memory (matches Coq: Record Memory) -/
@@ -151,7 +152,7 @@ theorem constant_time_prevents_timing_attack : ∀ (ctx : CryptoContext) (op : C
 
 /-- Non-constant time is vulnerable -/
 /-- non_constant_time_vulnerable (matches Coq) -/
-theorem non_constant_time_vulnerable : ∀ (ctx : CryptoContext), ctx_constant_time ctx = false → (* System is potentially vulnerable - but our system enforces constant time *) True := by
+theorem non_constant_time_vulnerable : ∀ (ctx : CryptoContext), ctx_constant_time ctx = false →  True := by
   intro h; exact h
 
 /-- Key never exposed: secure storage implies not in plaintext -/

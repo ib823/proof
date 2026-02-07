@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DataPersistence - Lean 4 Port
@@ -147,7 +148,7 @@ structure StorageQuota where
 
 /-- SerializedData (matches Coq: Record SerializedData) -/
 structure SerializedData where
-  ser_format : Nat  -- 0=JSON, 1=Protobuf, 2=CBOR
+  ser_format : Nat
   ser_data : List
   ser_checksum : Nat
   ser_validated : Bool

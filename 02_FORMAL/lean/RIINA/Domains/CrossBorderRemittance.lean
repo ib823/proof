@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CrossBorderRemittance - Lean 4 Port
@@ -97,7 +98,7 @@ structure Corridor where
   send_currency : CurrencyCode
   receive_currency : CurrencyCode
   is_enabled : Bool
-  availability_pct : Nat  -- In basis points: 9999 = 99.99%
+  availability_pct : Nat
   fees_disclosed : Bool
   is_sanctioned : Bool
   deriving DecidableEq, Repr
@@ -125,7 +126,7 @@ structure FXQuote where
   customer_rate : Z
   quote_timestamp : Nat
   guarantee_window : Nat
-  hedge_ratio_bps : Nat  -- In basis points: 10000 = 100%
+  hedge_ratio_bps : Nat
   deriving DecidableEq, Repr
 
 /-- Transfer (matches Coq: Record Transfer) -/
@@ -159,7 +160,7 @@ structure Originator where
   orig_name : Nat
   orig_address : Nat
   kyc_verified : Bool
-  verification_level : Nat  -- 1, 2, or 3
+  verification_level : Nat
   deriving DecidableEq, Repr
 
 /-- TravelRuleData (matches Coq: Record TravelRuleData) -/

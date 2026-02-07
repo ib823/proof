@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PlatformStdlibVerification - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | Platform           | platform               | OK     |
+ * | Capability         | capability             | OK     |
  * | PlatEffect         | plat_effect            | OK     |
  * | PlatLabel          | plat_label             | OK     |
  * | platform_has_cap   | platform_has_cap       | OK     |
@@ -45,23 +47,21 @@ begin
 
 (* Platform (matches Coq: Inductive Platform) *)
 datatype platform =
-    PNative  (* POSIX/Windows *)
-  |     PWasm32  (* Browser/Node *)
-  |     PAndroid  (* Android NDK *)
+    PNative
+  |     PWasm32
+  |     PAndroid
   |     PIos
-  |     CapFileSystem
+
+(* Capability (matches Coq: Inductive Capability) *)
+datatype capability =
+    CapFileSystem
   |     CapNetwork
   |     CapConsole
   |     CapTimer
-  |     CapDOM  (* Web only *)
-  |     CapSensor  (* Mobile only *)
-  |     CapCamera  (* Mobile only *)
-  |     CapPushNotif  (* Mobile only *)
-
-(* Platform capability mapping — mirrors platform.rs *)
-Definition platform_has_cap (p : Platform) (c : Capability) : bool :=
-  match p, c with
-  (* Native: filesystem, network, console, timer *)
+  |     CapDOM
+  |     CapSensor
+  |     CapCamera
+  |     CapPushNotif
 
 (* PlatEffect (matches Coq: Inductive PlatEffect) *)
 datatype plat_effect =
@@ -75,7 +75,8 @@ datatype plat_label =
     PLPublic
   |     PLSecret
 
-(* platform_has_cap - complex match, manual review needed *)
+(* platform_has_cap - complex match, needs manual translation *)
+definition platform_has_cap :: "bool" where "platform_has_cap = undefined"
 
 (* can_compile (matches Coq: Definition can_compile) *)
 definition can_compile :: "Platform \<Rightarrow> PlatFunc \<Rightarrow> bool" where

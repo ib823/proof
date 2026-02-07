@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA UIComponents - Isabelle/HOL Port
@@ -234,13 +235,15 @@ record search_bar =
 definition visible :: "UIElement \<Rightarrow> bool" where
   "visible e \<equiv> element_visible e = true"
 
-(* has_accessibility_label - complex match, manual review needed *)
+(* has_accessibility_label - complex match, needs manual translation *)
+definition has_accessibility_label :: "bool" where "has_accessibility_label = undefined"
 
 (* navigable_by_voiceover (matches Coq: Definition navigable_by_voiceover) *)
 definition navigable_by_voiceover :: "UIElement \<Rightarrow> bool" where
   "navigable_by_voiceover e \<equiv> element_voiceover_navigable e = true"
 
-(* valid_state_transition - complex match, manual review needed *)
+(* valid_state_transition - complex match, needs manual translation *)
+definition valid_state_transition :: "bool" where "valid_state_transition = undefined"
 
 (* valid_source_state (matches Coq: Definition valid_source_state) *)
 definition valid_source_state :: "Transition \<Rightarrow> bool" where
@@ -254,7 +257,8 @@ definition apply_transition :: "Transition \<Rightarrow> Screen \<Rightarrow> Sc
   else
     s"
 
-(* valid_target_state - complex match, manual review needed *)
+(* valid_target_state - complex match, needs manual translation *)
+definition valid_target_state :: "bool" where "valid_target_state = undefined"
 
 (* accessible_element (matches Coq: Definition accessible_element) *)
 definition accessible_element :: "UIElement \<Rightarrow> bool" where

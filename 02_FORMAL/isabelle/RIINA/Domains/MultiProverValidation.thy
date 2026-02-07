@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MultiProverValidation - Isabelle/HOL Port
@@ -62,10 +63,10 @@ datatype formula =
 
 (* certificate (matches Coq: Inductive certificate) *)
 datatype certificate =
-    CertAtom  (* axiom/assumption *)
-  |     CertNotI  (* not-introduction *)
-  |     CertAndI  (* and-introduction *)
-  |     CertImplE  (* modus ponens *)
+    CertAtom
+  |     CertNotI
+  |     CertAndI
+  |     CertImplE
   |     CertAssume
 
 (* proverA_repr (matches Coq: Inductive proverA_repr) *)
@@ -88,11 +89,14 @@ datatype confidence =
   |     SingleProver
   |     DualProver
 
-(* validate_atomic - complex match, manual review needed *)
+(* validate_atomic - complex match, needs manual translation *)
+definition validate_atomic :: "bool" where "validate_atomic = undefined"
 
-(* confidence_level - complex match, manual review needed *)
+(* confidence_level - complex match, needs manual translation *)
+definition confidence_level :: "bool" where "confidence_level = undefined"
 
-(* confidence_ge - complex match, manual review needed *)
+(* confidence_ge - complex match, needs manual translation *)
+definition confidence_ge :: "bool" where "confidence_ge = undefined"
 
 (* formula_eqb_refl (matches Coq) *)
 lemma formula_eqb_refl: "\<forall> f, formula_eqb f f = True"

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA AnimationEngine - Lean 4 Port
@@ -54,7 +55,7 @@ def frame_budget_120fps : R :=
   8333
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
-def valid_transition := True -- complex match, simplified to Prop
+def valid_transition := sorry -- complex match, needs manual translation
 
 /-- bezier_eval (matches Coq: Definition bezier_eval) -/
 def bezier_eval (bz : BezierCurve) (t : R) : R :=
@@ -85,35 +86,35 @@ theorem exp_positive : ∀ (x : R), exp x > 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- 1 (matches Coq) -/
-theorem 1 : animation_frame_positive — frame time always > 0 *) Theorem animation_frame_positive : ∀ (af : AnimationFrame), frame_time_us af > 0 := by
+theorem 1 : animation_frame_positive — frame time always > 0  Theorem animation_frame_positive : ∀ (af : AnimationFrame), frame_time_us af > 0 := by
   intro h; exact h
 
 /-- 2 (matches Coq) -/
-theorem 2 : jank_free_guarantee — no frame exceeds 120fps budget *) Theorem jank_free_guarantee : ∀ (af : AnimationFrame), frame_time_us af ≤ frame_budget_120fps := by
+theorem 2 : jank_free_guarantee — no frame exceeds 120fps budget  Theorem jank_free_guarantee : ∀ (af : AnimationFrame), frame_time_us af ≤ frame_budget_120fps := by
   intro h; exact h
 
 /-- 3 (matches Coq) -/
-theorem 3 : spring_converges_to_target — spring position approaches target *) (* We show |pos(t) - target| < |pos(0) - target| for t > 0 *) Theorem spring_converges_to_target : ∀ (initial_pos target damping t : R), damping > 0 → t > 0 → initial_pos ≠ target → Rabs (spring_position_at_time initial_pos target damping t - target) < Rabs (initial_pos - target) := by
+theorem 3 : spring_converges_to_target — spring position approaches target   We show |pos(t) - target| < |pos(0) - target| for t > 0  Theorem spring_converges_to_target : ∀ (initial_pos target damping t : R), damping > 0 → t > 0 → initial_pos ≠ target → Rabs (spring_position_at_time initial_pos target damping t - target) < Rabs (initial_pos - target) := by
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : spring_position_continuous — at t=0, matches initial position *) (* Continuity: the spring function agrees with its starting value *) Theorem spring_position_continuous : ∀ (initial_pos target damping : R), damping > 0 → spring_position_at_time initial_pos target damping 0 = initial_pos := by
+theorem 4 : spring_position_continuous — at t=0, matches initial position   Theorem spring_position_continuous : ∀ (initial_pos target damping : R), damping > 0 → spring_position_at_time initial_pos target damping 0 = initial_pos := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : animation_energy_decreasing — damped system amplitude decreases *) (* The amplitude factor exp(-c*t2) < exp(-c*t1) when t2 > t1 *) Theorem animation_energy_decreasing : ∀ (damping t1 t2 : R), damping > 0 → 0 ≤ t1 → t1 < t2 → exp (- damping * t2) < exp (- damping * t1) := by
+theorem 5 : animation_energy_decreasing — damped system amplitude decreases   The amplitude factor exp(-c*t2) < exp(-c*t1) when t2 > t1  Theorem animation_energy_decreasing : ∀ (damping t1 t2 : R), damping > 0 → 0 ≤ t1 → t1 < t2 → exp (- damping * t2) < exp (- damping * t1) := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : frame_rate_stable — consecutive frame budgets are consistent *) Theorem frame_rate_stable : ∀ (af1 af2 : AnimationFrame), frame_time_us af1 > 0 ∧ frame_time_us af1 ≤ 8333 ∧ frame_time_us af2 > 0 ∧ frame_time_us af2 ≤ 8333 := by
+theorem 6 : frame_rate_stable — consecutive frame budgets are consistent  Theorem frame_rate_stable : ∀ (af1 af2 : AnimationFrame), frame_time_us af1 > 0 ∧ frame_time_us af1 ≤ 8333 ∧ frame_time_us af2 > 0 ∧ frame_time_us af2 ≤ 8333 := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
-theorem 7 : animation_cancellable — running animation can transition to cancelled *) Theorem animation_cancellable : valid_transition Running Cancelled := by
+theorem 7 : animation_cancellable — running animation can transition to cancelled  Theorem animation_cancellable : valid_transition Running Cancelled := by
   simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
-theorem 8 : cancelled_animation_preserves_position — cancel keeps current value *) (* Modeled: spring at time t after cancel still equals position at that time *) Theorem cancelled_animation_preserves_position : ∀ (initial_pos target damping t : R), damping > 0 → t ≥ 0 → spring_position_at_time initial_pos target damping t = spring_position_at_time initial_pos target damping t := by
+theorem 8 : cancelled_animation_preserves_position — cancel keeps current value   Theorem cancelled_animation_preserves_position : ∀ (initial_pos target damping t : R), damping > 0 → t ≥ 0 → spring_position_at_time initial_pos target damping t = spring_position_at_time initial_pos target damping t := by
   rfl
 
 /-- cancelled_animation_value_well_defined (matches Coq) -/
@@ -121,15 +122,15 @@ theorem cancelled_animation_value_well_defined : ∀ (initial_pos target damping
   rfl
 
 /-- 9 (matches Coq) -/
-theorem 9 : parallel_animations_independent — two animations don't interfere *) Theorem parallel_animations_independent : ∀ (init1 tgt1 init2 tgt2 damping t : R), damping > 0 → t ≥ 0 → spring_position_at_time init1 tgt1 damping t + spring_position_at_time init2 tgt2 damping t = (tgt1 + (init1 - tgt1) * exp (- damping * t)) + (tgt2 + (init2 - tgt2) * exp (- damping * t)) := by
+theorem 9 : parallel_animations_independent — two animations don't interfere  Theorem parallel_animations_independent : ∀ (init1 tgt1 init2 tgt2 damping t : R), damping > 0 → t ≥ 0 → spring_position_at_time init1 tgt1 damping t + spring_position_at_time init2 tgt2 damping t = (tgt1 + (init1 - tgt1) * exp (- damping * t)) + (tgt2 + (init2 - tgt2) * exp (- damping * t)) := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/
-theorem 10 : keyframe_interpolation_bounded — linear interp between keyframes *) Theorem keyframe_interpolation_bounded : ∀ (v1 v2 t : R), 0 ≤ t → t ≤ 1 → v1 ≤ v2 → v1 ≤ v1 + t * (v2 - v1) ≤ v2 := by
+theorem 10 : keyframe_interpolation_bounded — linear interp between keyframes  Theorem keyframe_interpolation_bounded : ∀ (v1 v2 t : R), 0 ≤ t → t ≤ 1 → v1 ≤ v2 → v1 ≤ v1 + t * (v2 - v1) ≤ v2 := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 11 (matches Coq) -/
-theorem 11 : bezier_curve_bounded — bezier at t=0 starts at P0, at t=1 ends at P3 *) Theorem bezier_curve_bounded_start : ∀ (bz : BezierCurve), bezier_eval bz 0 = bz_p0 bz := by
+theorem 11 : bezier_curve_bounded — bezier at t=0 starts at P0, at t=1 ends at P3  Theorem bezier_curve_bounded_start : ∀ (bz : BezierCurve), bezier_eval bz 0 = bz_p0 bz := by
   simp_all [Bool.and_eq_true]
 
 /-- bezier_curve_bounded_end (matches Coq) -/
@@ -137,7 +138,7 @@ theorem bezier_curve_bounded_end : ∀ (bz : BezierCurve), bezier_eval bz 1 = bz
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : animation_state_machine_valid — only valid transitions are allowed *) Theorem animation_state_machine_valid : valid_transition Idle Running ∧ valid_transition Running Complete ∧ valid_transition Running Cancelled ∧ valid_transition Cancelled Idle ∧ valid_transition Complete Idle := by
+theorem 12 : animation_state_machine_valid — only valid transitions are allowed  Theorem animation_state_machine_valid : valid_transition Idle Running ∧ valid_transition Running Complete ∧ valid_transition Running Cancelled ∧ valid_transition Cancelled Idle ∧ valid_transition Complete Idle := by
   simp_all [Bool.and_eq_true]
 
 /-- animation_state_machine_invalid_idle_complete (matches Coq) -/
@@ -145,15 +146,15 @@ theorem animation_state_machine_invalid_idle_complete : ~ valid_transition Idle 
   simp_all [Bool.and_eq_true]
 
 /-- 13 (matches Coq) -/
-theorem 13 : animation_completion_callback_fired — completed anim fires callback once *) Theorem animation_completion_callback_fired : ∀ (awc : AnimationWithCallback), awc_state awc = Complete → awc_callback_count awc = 1%nat := by
+theorem 13 : animation_completion_callback_fired — completed anim fires callback once  Theorem animation_completion_callback_fired : ∀ (awc : AnimationWithCallback), awc_state awc = Complete → awc_callback_count awc = 1%nat := by
   simp_all [Bool.and_eq_true]
 
 /-- 14 (matches Coq) -/
-theorem 14 : overdamped_no_oscillation — overdamped spring doesn't oscillate *) (* In overdamped case, position monotonically approaches target *) (* We prove: for damping > 0, position at t2 is closer to target than at t1 when t2 > t1 *) Theorem overdamped_no_oscillation : ∀ (initial_pos target damping t1 t2 : R), damping > 0 → 0 ≤ t1 → t1 < t2 → Rabs (spring_position_at_time initial_pos target damping t2 - target) ≤ Rabs (spring_position_at_time initial_pos target damping t1 - target) := by
+theorem 14 : overdamped_no_oscillation — overdamped spring doesn't oscillate    Theorem overdamped_no_oscillation : ∀ (initial_pos target damping t1 t2 : R), damping > 0 → 0 ≤ t1 → t1 < t2 → Rabs (spring_position_at_time initial_pos target damping t2 - target) ≤ Rabs (spring_position_at_time initial_pos target damping t1 - target) := by
   simp_all [Bool.and_eq_true]
 
 /-- 15 (matches Coq) -/
-theorem 15 : animation_queue_fifo — first queued animation has lowest priority index *) Theorem animation_queue_fifo : ∀ (first second : AnimQueueEntry), (aq_priority first < aq_priority second)%nat → (aq_priority first < aq_priority second)%nat := by
+theorem 15 : animation_queue_fifo — first queued animation has lowest priority index  Theorem animation_queue_fifo : ∀ (first second : AnimQueueEntry), (aq_priority first < aq_priority second)%nat → (aq_priority first < aq_priority second)%nat := by
   intro h; exact h
 
 /-- animation_queue_fifo_sorted (matches Coq) -/

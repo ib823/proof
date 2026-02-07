@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NetworkDriver - Lean 4 Port
@@ -48,12 +49,12 @@ namespace RIINA
 
 /-- AppId (matches Coq: Inductive AppId) -/
 inductive AppId where
-  | app : AppId
+  | app : Nat → AppId
   deriving DecidableEq, Repr
 
 /-- SocketId (matches Coq: Inductive SocketId) -/
 inductive SocketId where
-  | sockId : SocketId
+  | sockId : Nat → SocketId
   deriving DecidableEq, Repr
 
 /-- Application (matches Coq: Record Application) -/

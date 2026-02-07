@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA W001_VerifiedMemory - Isabelle/HOL Port
@@ -150,7 +151,8 @@ definition in_dom :: "Heap \<Rightarrow> Loc \<Rightarrow> bool" where
 definition heap_disjoint :: "bool" where
   "heap_disjoint \<equiv> forall l, ~(in_dom h1 l /\ in_dom h2 l)"
 
-(* heap_union - complex match, manual review needed *)
+(* heap_union - complex match, needs manual translation *)
+definition heap_union :: "bool" where "heap_union = undefined"
 
 (* heap_subset (matches Coq: Definition heap_subset) *)
 definition heap_subset :: "bool" where

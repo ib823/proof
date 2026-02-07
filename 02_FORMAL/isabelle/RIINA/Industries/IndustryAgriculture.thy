@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryAgriculture - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AgriData           | agri_data              | OK     |
+ * | FoodSafetyHazard   | food_safety_hazard     | OK     |
  * | AgricultureEffect  | agriculture_effect     | OK     |
  * | FoodSafetyControls | food_safety_controls   | OK     |
  * | CertifiedFarm      | certified_farm         | OK     |
@@ -57,15 +59,18 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* AgriData (matches Coq: Inductive AgriData) *)
 datatype agri_data =
-    CropData  (* Yield, genetics, conditions *)
-  |     SupplyChain  (* Traceability data *)
-  |     ProcessingRecords  (* Food processing *)
+    CropData
+  |     SupplyChain
+  |     ProcessingRecords
   |     QualityControl
-  |     EquipmentTelemetry  (* Farm machinery *)
+  |     EquipmentTelemetry
   |     ChemicalUsage
-  |     Biological  (* Pathogens *)
-  |     Chemical  (* Contaminants *)
-  |     Physical  (* Foreign objects *)
+
+(* FoodSafetyHazard (matches Coq: Inductive FoodSafetyHazard) *)
+datatype food_safety_hazard =
+    Biological
+  |     Chemical
+  |     Physical
   |     Allergen
   |     Radiological
 
@@ -79,7 +84,7 @@ datatype agriculture_effect =
 
 (* FoodSafetyControls (matches Coq: Record FoodSafetyControls) *)
 record food_safety_controls =
-  haccp_plan :: bool  (* Hazard Analysis Critical Control Points *)
+  haccp_plan :: bool
   traceability_system :: bool
   supplier_verification :: bool
   preventive_controls :: bool

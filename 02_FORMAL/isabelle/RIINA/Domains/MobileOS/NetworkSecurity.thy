@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NetworkSecurity - Isabelle/HOL Port
@@ -115,7 +116,7 @@ record session =
 (* SSLConfig (matches Coq: Record SSLConfig) *)
 record ssl_config =
   ssl_min_version :: ProtocolVersion
-  ssl_cipher_strength :: nat  (* bits *)
+  ssl_cipher_strength :: nat
   ssl_revocation_checked :: bool
   ssl_compression_disabled :: bool
 

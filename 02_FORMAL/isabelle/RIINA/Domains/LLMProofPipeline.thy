@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA LLMProofPipeline - Isabelle/HOL Port
@@ -59,9 +60,9 @@ datatype formula =
 
 (* proof_term (matches Coq: Inductive proof_term) *)
 datatype proof_term =
-    PAxiom  (* use hypothesis by index *)
-  |     PImplIntro  (* lambda: assume A, prove B *)
-  |     PImplElim  (* modus ponens *)
+    PAxiom
+  |     PImplIntro
+  |     PImplElim
   |     PConjIntro
   |     PConjElimL
   |     PConjElimR
@@ -80,9 +81,7 @@ definition identity_proof :: "formula \<Rightarrow> proof_term" where
 
 (* compose_proof (matches Coq: Definition compose_proof) *)
 definition compose_proof :: "proof_term" where
-  "compose_proof \<equiv> (* In context [A->B, B->C], prove A->C *)
-  (* We build a closed proof: assume A->B and B->C in context, then intro A *)
-  PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0)))"
+  "compose_proof \<equiv> PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0)))"
 
 (* conj_intro_proof (matches Coq: Definition conj_intro_proof) *)
 definition conj_intro_proof :: "proof_term" where

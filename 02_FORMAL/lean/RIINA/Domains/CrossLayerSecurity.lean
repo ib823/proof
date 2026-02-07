@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CrossLayerSecurity - Lean 4 Port
@@ -53,30 +54,30 @@ inductive label where
 
 /-- src_expr (matches Coq: Inductive src_expr) -/
 inductive src_expr where
-  | sConst : src_expr
-  | sVar : src_expr
-  | sAdd : src_expr
-  | sIf : src_expr
+  | sConst : Nat → label → src_expr
+  | sVar : Nat → label → src_expr
+  | sAdd : src_expr → src_expr → src_expr
+  | sIf : src_expr → src_expr → src_expr → src_expr
   deriving DecidableEq, Repr
 
 /-- tgt_instr (matches Coq: Inductive tgt_instr) -/
 inductive tgt_instr where
-  | tLoad : tgt_instr
-  | tRead : tgt_instr
+  | tLoad : Nat → label → tgt_instr
+  | tRead : Nat → label → tgt_instr
   | tAddI : tgt_instr
-  | tBrz : tgt_instr
-  | tJmp : tgt_instr
+  | tBrz : Nat → tgt_instr
+  | tJmp : Nat → tgt_instr
   | tHalt : tgt_instr
   deriving DecidableEq, Repr
 
 /-- label_eqb (matches Coq: Definition label_eqb) -/
-def label_eqb := True -- complex match, simplified to Prop
+def label_eqb := sorry -- complex match, needs manual translation
 
 /-- label_leb (matches Coq: Definition label_leb) -/
-def label_leb := True -- complex match, simplified to Prop
+def label_leb := sorry -- complex match, needs manual translation
 
 /-- label_join (matches Coq: Definition label_join) -/
-def label_join := True -- complex match, simplified to Prop
+def label_join := sorry -- complex match, needs manual translation
 
 /-- src_low_equiv (matches Coq: Definition src_low_equiv) -/
 def src_low_equiv (env1 env2 : src_env) : Prop :=
@@ -116,7 +117,7 @@ theorem label_join_comm : ∀ l1 l2, label_join l1 l2 = label_join l2 l1 := by
   rfl
 
 /-- 1 (matches Coq) -/
-theorem 1 : Source Non-Interference ==================================================================== *) Lemma lookup_some_both : ∀ env1 env2 x v1 l1, length env1 = length env2 → lookup env1 x = Some (v1, l1) → ∃ v2 l2, lookup env2 x = Some (v2, l2) := by
+theorem 1 : Source Non-Interference ====================================================================  Lemma lookup_some_both : ∀ env1 env2 x v1 l1, length env1 = length env2 → lookup env1 x = Some (v1, l1) → ∃ v2 l2, lookup env2 x = Some (v2, l2) := by
   cases ‹_› <;> simp <;> omega
 
 /-- source_noninterference (matches Coq) -/
@@ -124,11 +125,11 @@ theorem source_noninterference : ∀ e env1 env2 v1 l1 v2 l2, src_low_equiv env1
   cases ‹_› <;> simp <;> omega
 
 /-- 2 (matches Coq) -/
-theorem 2 : Compilation Preserves Security Labels ==================================================================== *) Theorem compilation_preserves_labels : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → tgt_label_of_prog prog = l := by
+theorem 2 : Compilation Preserves Security Labels ====================================================================  Theorem compilation_preserves_labels : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → tgt_label_of_prog prog = l := by
   simp
 
 /-- 3 (matches Coq) -/
-theorem 3 : Target Non-Interference (for read-free programs) ==================================================================== *) Lemma tgt_eval_env_independent : ∀ fuel env1 env2 prog pc stk, (∀ i instr, nth_error prog i = Some instr → match instr with TRead _ _ => False | _ => True end) → tgt_eval_fuel fuel env1 prog pc stk = tgt_eval_fuel fuel env2 prog pc stk := by
+theorem 3 : Target Non-Interference (for read-free programs) ====================================================================  Lemma tgt_eval_env_independent : ∀ fuel env1 env2 prog pc stk, (∀ i instr, nth_error prog i = Some instr → match instr with TRead _ _ => False | _ => True end) → tgt_eval_fuel fuel env1 prog pc stk = tgt_eval_fuel fuel env2 prog pc stk := by
   cases ‹_› <;> simp
 
 /-- target_noninterference (matches Coq) -/
@@ -136,31 +137,31 @@ theorem target_noninterference : ∀ prog env1 env2 v1 l1 v2 l2 fuel, tgt_eval_f
   rfl
 
 /-- 4 (matches Coq) -/
-theorem 4 : Semantic Preservation ==================================================================== *) Theorem semantic_preservation : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → tgt_eval_fuel 3 env prog 0 [] = Some (v, l) := by
+theorem 4 : Semantic Preservation ====================================================================  Theorem semantic_preservation : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → tgt_eval_fuel 3 env prog 0 [] = Some (v, l) := by
   rfl
 
 /-- 5 (matches Coq) -/
-theorem 5 : Security Composition ==================================================================== *) Theorem security_composition : ∀ env1 env2 e1 e2 v1 l1 v2 l2 v3 l3 v4 l4, src_low_equiv env1 env2 → src_eval env1 e1 = Some (v1, l1) → src_eval env2 e1 = Some (v2, l2) → src_eval env1 e2 = Some (v3, l3) → src_eval env2 e2 = Some (v4, l4) → l1 = Low → l2 = Low → l3 = Low → l4 = Low → v1 = v2 ∧ v3 = v4 := by
+theorem 5 : Security Composition ====================================================================  Theorem security_composition : ∀ env1 env2 e1 e2 v1 l1 v2 l2 v3 l3 v4 l4, src_low_equiv env1 env2 → src_eval env1 e1 = Some (v1, l1) → src_eval env2 e1 = Some (v2, l2) → src_eval env1 e2 = Some (v3, l3) → src_eval env2 e2 = Some (v4, l4) → l1 = Low → l2 = Low → l3 = Low → l4 = Low → v1 = v2 ∧ v3 = v4 := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : Label Monotonicity Through Compilation ==================================================================== *) Theorem label_monotonicity_compilation : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → label_leb l (tgt_label_of_prog prog) = true := by
+theorem 6 : Label Monotonicity Through Compilation ====================================================================  Theorem label_monotonicity_compilation : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → label_leb l (tgt_label_of_prog prog) = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
-theorem 7 : Constant-Time Property Preserved ==================================================================== *) Definition is_constant_time (prog : tgt_prog) : Prop := ∀ i instr, nth_error prog i = Some instr → match instr with | TBrz _ => False | _ => True end. Theorem constant_time_preserved : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → is_constant_time prog := by
+theorem 7 : Constant-Time Property Preserved ====================================================================  Definition is_constant_time (prog : tgt_prog) : Prop := ∀ i instr, nth_error prog i = Some instr → match instr with | TBrz _ => False | _ => True end. Theorem constant_time_preserved : ∀ env e v l prog, src_eval env e = Some (v, l) → compile_with_env env e = Some prog → is_constant_time prog := by
   intro h; exact h
 
 /-- 8 (matches Coq) -/
-theorem 8 : End-to-End Security ==================================================================== *) Theorem end_to_end_security : ∀ e env1 env2 v1 l1 v2 l2 prog1 prog2, src_low_equiv env1 env2 → src_eval env1 e = Some (v1, l1) → src_eval env2 e = Some (v2, l2) → compile_with_env env1 e = Some prog1 → compile_with_env env2 e = Some prog2 → l1 = Low → l2 = Low → ∃ tv1 tl1 tv2 tl2, tgt_eval_fuel 3 env1 prog1 0 [] = Some (tv1, tl1) ∧ tgt_eval_fuel 3 env2 prog2 0 [] = Some (tv2, tl2) ∧ tv1 = tv2 ∧ tl1 = Low ∧ tl2 = Low := by
+theorem 8 : End-to-End Security ====================================================================  Theorem end_to_end_security : ∀ e env1 env2 v1 l1 v2 l2 prog1 prog2, src_low_equiv env1 env2 → src_eval env1 e = Some (v1, l1) → src_eval env2 e = Some (v2, l2) → compile_with_env env1 e = Some prog1 → compile_with_env env2 e = Some prog2 → l1 = Low → l2 = Low → ∃ tv1 tl1 tv2 tl2, tgt_eval_fuel 3 env1 prog1 0 [] = Some (tv1, tl1) ∧ tgt_eval_fuel 3 env2 prog2 0 [] = Some (tv2, tl2) ∧ tv1 = tv2 ∧ tl1 = Low ∧ tl2 = Low := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : Compiler Determinism ==================================================================== *) Theorem compiler_determinism : ∀ env e prog1 prog2, compile_with_env env e = Some prog1 → compile_with_env env e = Some prog2 → prog1 = prog2 := by
+theorem 9 : Compiler Determinism ====================================================================  Theorem compiler_determinism : ∀ env e prog1 prog2, compile_with_env env e = Some prog1 → compile_with_env env e = Some prog2 → prog1 = prog2 := by
   rfl
 
 /-- 10 (matches Coq) -/
-theorem 10 : Security Label Lattice Correctness ==================================================================== *) Theorem label_lattice_join_upper_bound : ∀ l1 l2, label_leb l1 (label_join l1 l2) = true ∧ label_leb l2 (label_join l1 l2) = true := by
+theorem 10 : Security Label Lattice Correctness ====================================================================  Theorem label_lattice_join_upper_bound : ∀ l1 l2, label_leb l1 (label_join l1 l2) = true ∧ label_leb l2 (label_join l1 l2) = true := by
   simp_all [Bool.and_eq_true]
 
 /-- label_lattice_join_least (matches Coq) -/

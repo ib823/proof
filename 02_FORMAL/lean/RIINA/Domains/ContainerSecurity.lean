@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ContainerSecurity - Lean 4 Port
@@ -182,23 +183,23 @@ inductive SyscallCategory where
 
 /-- NamespaceIsolation (matches Coq: Record NamespaceIsolation) -/
 structure NamespaceIsolation where
-  ns_pid_isolated : Bool  -- Process ID namespace
-  ns_net_isolated : Bool  -- Network namespace
-  ns_mount_isolated : Bool  -- Mount namespace
-  ns_user_isolated : Bool  -- User namespace
-  ns_uts_isolated : Bool  -- UTS namespace (hostname)
-  ns_ipc_isolated : Bool  -- IPC namespace
-  ns_cgroup_isolated : Bool  -- Cgroup namespace
-  ns_time_isolated : Bool  -- Time namespace
+  ns_pid_isolated : Bool
+  ns_net_isolated : Bool
+  ns_mount_isolated : Bool
+  ns_user_isolated : Bool
+  ns_uts_isolated : Bool
+  ns_ipc_isolated : Bool
+  ns_cgroup_isolated : Bool
+  ns_time_isolated : Bool
   deriving DecidableEq, Repr
 
 /-- CgroupLimits (matches Coq: Record CgroupLimits) -/
 structure CgroupLimits where
-  cg_cpu_limited : Bool  -- CPU quota enforced
-  cg_memory_limited : Bool  -- Memory limit enforced
-  cg_swap_disabled : Bool  -- Swap disabled
-  cg_pids_limited : Bool  -- PID limit enforced
-  cg_io_limited : Bool  -- I/O limits enforced
+  cg_cpu_limited : Bool
+  cg_memory_limited : Bool
+  cg_swap_disabled : Bool
+  cg_pids_limited : Bool
+  cg_io_limited : Bool
   deriving DecidableEq, Repr
 
 /-- SeccompConfig (matches Coq: Record SeccompConfig) -/

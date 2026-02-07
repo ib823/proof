@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VisualAccessibility - Lean 4 Port
@@ -81,7 +82,7 @@ def visible (elem : UIElement) : Prop :=
   is_visible elem = true
 
 /-- voiceover_accessible (matches Coq: Definition voiceover_accessible) -/
-def voiceover_accessible := True -- complex match, simplified to Prop
+def voiceover_accessible := sorry -- complex match, needs manual translation
 
 /-- readable (matches Coq: Definition readable) -/
 def readable (text : Text) (size : DynamicTypeSize) : Prop :=
@@ -96,7 +97,7 @@ def plays (anim : Animation) : Prop :=
   animation_active anim = true /\ is_essential anim = false
 
 /-- is_root (matches Coq: Definition is_root) -/
-def is_root := True -- complex match, simplified to Prop
+def is_root := sorry -- complex match, needs manual translation
 
 /-- connected_to_root (matches Coq: Definition connected_to_root) -/
 def connected_to_root (tree : AccessibilityTree) : Prop :=

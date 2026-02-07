@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TimingSecurity - Lean 4 Port
@@ -132,13 +133,13 @@ private theorem andb_true_iff (a b : Bool) :
 /-- LockState (matches Coq: Inductive LockState) -/
 inductive LockState where
   | unlocked : LockState
-  | locked : LockState
+  | locked : ThreadId → LockState
   deriving DecidableEq, Repr
 
 /-- LockOp (matches Coq: Inductive LockOp) -/
 inductive LockOp where
-  | acquire : LockOp
-  | release : LockOp
+  | acquire : ResourceId → LockOp
+  | release : ResourceId → LockOp
   deriving DecidableEq, Repr
 
 /-- SessionState (matches Coq: Inductive SessionState) -/
@@ -165,7 +166,7 @@ inductive TimeComplexity where
 
 /-- TimeoutState (matches Coq: Inductive TimeoutState) -/
 inductive TimeoutState where
-  | timeoutPending : TimeoutState  -- deadline
+  | timeoutPending : Time → TimeoutState
   | timeoutExpired : TimeoutState
   | timeoutCancelled : TimeoutState
   | timeoutCompleted : TimeoutState
@@ -173,20 +174,20 @@ inductive TimeoutState where
 
 /-- ProgressState (matches Coq: Inductive ProgressState) -/
 inductive ProgressState where
-  | makingProgress : ProgressState  -- progress counter
+  | makingProgress : Nat → ProgressState
   | blocked : ProgressState
   | completed : ProgressState
   deriving DecidableEq, Repr
 
 /-- valid_session_transition (matches Coq: Definition valid_session_transition) -/
-def valid_session_transition := True -- complex match, simplified to Prop
+def valid_session_transition := sorry -- complex match, needs manual translation
 
 /-- timing_leakage (matches Coq: Definition timing_leakage) -/
 def timing_leakage (obs1 obs2 : TimingObservation) : Bool :=
   negb (Nat
 
 /-- ntp_authenticated (matches Coq: Definition ntp_authenticated) -/
-def ntp_authenticated := True -- complex match, simplified to Prop
+def ntp_authenticated := sorry -- complex match, needs manual translation
 
 /-- in_replay_window (matches Coq: Definition in_replay_window) -/
 def in_replay_window (ts : Timestamp) (w : ReplayWindow) : Bool :=
@@ -213,16 +214,16 @@ def respects_lock_order (policy : LockOrderPolicy) (new_lock : ResourceId) : Boo
           (held_locks policy)
 
 /-- liveness_guaranteed (matches Coq: Definition liveness_guaranteed) -/
-def liveness_guaranteed := True -- complex match, simplified to Prop
+def liveness_guaranteed := sorry -- complex match, needs manual translation
 
 /-- thread_starved (matches Coq: Definition thread_starved) -/
-def thread_starved := True -- complex match, simplified to Prop
+def thread_starved := sorry -- complex match, needs manual translation
 
 /-- time_001_session_type_valid (matches Coq: Definition time_001_session_type_valid) -/
-def time_001_session_type_valid := True -- complex match, simplified to Prop
+def time_001_session_type_valid := sorry -- complex match, needs manual translation
 
 /-- time_001_lock_exclusive (matches Coq: Definition time_001_lock_exclusive) -/
-def time_001_lock_exclusive := True -- complex match, simplified to Prop
+def time_001_lock_exclusive := sorry -- complex match, needs manual translation
 
 /-- time_003_is_constant_time (matches Coq: Definition time_003_is_constant_time) -/
 def time_003_is_constant_time (op : TimedOperation) : Prop :=
@@ -243,11 +244,11 @@ def time_004_no_cross_domain_leakage (d1 d2 : TimingDomain)
   domain_isolated d1 = true ->
   domain_isolated d2 = true ->
   domain_id d1 <> domain_id d2 ->
-  (* Observation from d1 is independent of d2's operations *)
+  
   True
 
 /-- time_005_nts_verify (matches Coq: Definition time_005_nts_verify) -/
-def time_005_nts_verify := True -- complex match, simplified to Prop
+def time_005_nts_verify := sorry -- complex match, needs manual translation
 
 /-- time_006_validate_message (matches Coq: Definition time_006_validate_message) -/
 def time_006_validate_message (msg : ReplayProtectedMessage) (w : ReplayWindow) : Bool :=
@@ -270,7 +271,7 @@ def time_009_verify_signed_timestamp (sts : SignedTimestamp)
   Nat
 
 /-- time_010_check_timeout (matches Coq: Definition time_010_check_timeout) -/
-def time_010_check_timeout := True -- complex match, simplified to Prop
+def time_010_check_timeout := sorry -- complex match, needs manual translation
 
 /-- time_010_update_handler (matches Coq: Definition time_010_update_handler) -/
 def time_010_update_handler (handler : TimeoutHandler) (now : Time) : TimeoutHandler := mkTimeoutHandler (timeout_deadline handler) 
@@ -286,13 +287,13 @@ def time_011_compute_skew (cs : ClockState) : Nat :=
 /-- time_011_adjust_clock (matches Coq: Definition time_011_adjust_clock) -/
 def time_011_adjust_clock (cs : ClockState) : ClockState :=
   if clock_synchronized cs
-  then cs  (* Already synchronized *)
+  then cs  
   else mkClockState (reference_time cs) (reference_time cs) (max_skew cs)
 
 /-- time_012_inherit_priority (matches Coq: Definition time_012_inherit_priority) -/
 def time_012_inherit_priority (holder : PriorityState) (requester_priority : Priority) 
     (requester_id : ThreadId) : PriorityState :=
-  if requester_priority <? effective_priority holder  (* Lower number = higher priority *)
+  if requester_priority <? effective_priority holder  
   then mkPriorityState (base_priority holder) requester_priority (Some requester_id)
   else holder
 
@@ -308,7 +309,7 @@ def time_013_release_lock (policy : LockOrderPolicy) (lock_id : ResourceId) : Lo
     (filter (fun x => negb (Nat
 
 /-- time_014_make_progress (matches Coq: Definition time_014_make_progress) -/
-def time_014_make_progress := True -- complex match, simplified to Prop
+def time_014_make_progress := sorry -- complex match, needs manual translation
 
 /-- time_014_check_liveness (matches Coq: Definition time_014_check_liveness) -/
 def time_014_check_liveness (lp : LivenessProof) : Bool :=
@@ -379,7 +380,7 @@ theorem time_003_constant_time_property : ∀ (op : TimedOperation) (d : Duratio
   intro h; exact h
 
 /-- time_003_no_timing_leakage (matches Coq) -/
-theorem time_003_no_timing_leakage : ∀ (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op → (* Same operation takes same time regardless of input *) op_duration op = op_duration op := by
+theorem time_003_no_timing_leakage : ∀ (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op →  op_duration op = op_duration op := by
   rfl
 
 /-- time_003_ct_compare_deterministic (matches Coq) -/
@@ -495,7 +496,7 @@ theorem time_013_out_of_order_rejected : ∀ (policy : LockOrderPolicy) (lock_id
   cases ‹_› <;> simp <;> omega
 
 /-- time_013_deadlock_free (matches Coq) -/
-theorem time_013_deadlock_free : ∀ (policy : LockOrderPolicy) (l1 l2 : ResourceId), (* If thread holds l1 and wants l2, must have order(l1) < order(l2) *) In l1 (held_locks policy) → time_013_can_acquire policy l2 = true → lock_order_fn policy l1 < lock_order_fn policy l2 := by
+theorem time_013_deadlock_free : ∀ (policy : LockOrderPolicy) (l1 l2 : ResourceId),  If thread holds l1 and wants l2, must have order(l1) < order(l2)  In l1 (held_locks policy) → time_013_can_acquire policy l2 = true → lock_order_fn policy l1 < lock_order_fn policy l2 := by
   simp_all [Bool.and_eq_true]
 
 /-- time_014_progress_increases (matches Coq) -/
@@ -519,7 +520,7 @@ theorem time_015_starved_thread_prioritized : ∀ (fs : FairScheduler) (tid : Th
   rfl
 
 /-- time_015_fairness_guaranteed (matches Coq) -/
-theorem time_015_fairness_guaranteed : ∀ (fs : FairScheduler) (tid : ThreadId) (now scheduled_time : Time), time_015_fair_schedule fs now = Some tid → (* After scheduling, update the scheduler *) let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs') := by
+theorem time_015_fairness_guaranteed : ∀ (fs : FairScheduler) (tid : ThreadId) (now scheduled_time : Time), time_015_fair_schedule fs now = Some tid →  let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs') := by
   simp
 
 /-- time_015_update_preserves_threads (matches Coq) -/

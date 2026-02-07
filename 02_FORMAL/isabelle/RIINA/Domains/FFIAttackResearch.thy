@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FFIAttackResearch - Isabelle/HOL Port
@@ -65,7 +66,7 @@ datatype ffi_type =
 
 (* FFICallDescriptor (matches Coq: Record FFICallDescriptor) *)
 record ffi_call_descriptor =
-  ffi_name :: nat  (* function id *)
+  ffi_name :: nat
   ffi_params :: 'a list
   ffi_return :: FFIType
   ffi_sandboxed :: bool
@@ -75,7 +76,7 @@ record ffi_call_descriptor =
 record mem_region =
   region_base :: nat
   region_size :: nat
-  region_owner :: nat  (* sandbox id *)
+  region_owner :: nat
 
 (* Sandbox (matches Coq: Record Sandbox) *)
 record sandbox =

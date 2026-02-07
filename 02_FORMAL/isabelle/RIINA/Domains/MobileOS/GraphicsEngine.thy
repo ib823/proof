@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA GraphicsEngine - Isabelle/HOL Port
@@ -105,7 +106,7 @@ record shader =
   shader_id :: nat
   shader_compiled :: bool
   shader_validated :: bool
-  shader_type :: nat  (* 0=vertex, 1=fragment, 2=compute *)
+  shader_type :: nat
 
 (* Texture (matches Coq: Record Texture) *)
 record texture =
@@ -113,7 +114,7 @@ record texture =
   tex_width :: nat
   tex_height :: nat
   tex_memory_bytes :: nat
-  tex_format :: nat  (* 0=RGBA8, 1=RGB8, 2=RGBA16F *)
+  tex_format :: nat
 
 (* GPUMemory (matches Coq: Record GPUMemory) *)
 record gpu_memory =
@@ -127,14 +128,14 @@ record draw_batch =
   batch_id :: nat
   batch_draw_calls :: nat
   batch_merged_calls :: nat
-  batch_overdraw_ratio :: nat  (* percentage, 100 = 1x *)
+  batch_overdraw_ratio :: nat
 
 (* FrameBuffer (matches Coq: Record FrameBuffer) *)
 record frame_buffer =
   fb_width :: nat
   fb_height :: nat
-  fb_front :: nat  (* front buffer id *)
-  fb_back :: nat  (* back buffer id *)
+  fb_front :: nat
+  fb_back :: nat
   fb_double_buffered :: bool
 
 (* RenderThread (matches Coq: Record RenderThread) *)
@@ -146,7 +147,7 @@ record render_thread =
 
 (* ZBuffer (matches Coq: Record ZBuffer) *)
 record z_buffer =
-  zbuf_bits :: nat  (* 16, 24, or 32 *)
+  zbuf_bits :: nat
   zbuf_near :: nat
   zbuf_far :: nat
 

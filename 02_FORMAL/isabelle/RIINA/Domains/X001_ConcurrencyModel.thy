@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA X001_ConcurrencyModel - Isabelle/HOL Port
@@ -98,8 +99,8 @@ begin
 
 (* AccessMode (matches Coq: Inductive AccessMode) *)
 datatype access_mode =
-    Exclusive  (* &mut T — unique mutable access *)
-  |     Shared  (* &T — shared immutable access *)
+    Exclusive
+  |     Shared
   |     Moved
 
 (* MsgType (matches Coq: Inductive MsgType) *)
@@ -110,10 +111,10 @@ datatype msg_type =
 
 (* SessionType (matches Coq: Inductive SessionType) *)
 datatype session_type =
-    SSend  (* !T.S *)
-  |     SRecv  (* ?T.S *)
-  |     SSelect  (* +{L:S} *)
-  |     SOffer  (* &{L:S} *)
+    SSend
+  |     SRecv
+  |     SSelect
+  |     SOffer
   |     SEnd
 
 (* CExpr (matches Coq: Inductive CExpr) *)
@@ -145,7 +146,7 @@ datatype atomic_op =
 record channel =
   chan_id :: nat
   chan_type :: SessionType
-  chan_linear :: bool  (* Linear flag - used exactly once *)
+  chan_linear :: bool
 
 (* ThreadConfig (matches Coq: Record ThreadConfig) *)
 record thread_config =

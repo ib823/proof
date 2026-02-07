@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeCybersecurityAct - Isabelle/HOL Port
@@ -74,9 +75,9 @@ datatype cii_sector =
 
 (* EntityClassification (matches Coq: Inductive EntityClassification) *)
 datatype entity_classification =
-    CIIOwner  (* Critical Information Infrastructure *)
-  |     ESCI  (* Entity of Special Cybersecurity Interest *)
-  |     STCC  (* System of Temporary Cybersecurity Concern *)
+    CIIOwner
+  |     ESCI
+  |     STCC
   |     RegularEntity
 
 (* cii_risk_current (matches Coq: Definition cii_risk_current) *)

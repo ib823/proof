@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA RollbackProtection - Lean 4 Port
@@ -54,7 +55,7 @@ namespace RIINA
 
 /-- ComponentId (matches Coq: Inductive ComponentId) -/
 inductive ComponentId where
-  | compId : ComponentId
+  | compId : Nat → ComponentId
   deriving DecidableEq, Repr
 
 /-- Version (matches Coq: Record Version) -/
@@ -99,7 +100,7 @@ def version_le (v1 v2 : Version) : Bool :=
 def initial_rollback_state : RollbackState := mkRollbackState [] [] true
 
 /-- version_allowed (matches Coq: Definition version_allowed) -/
-def version_allowed := True -- complex match, simplified to Prop
+def version_allowed := sorry -- complex match, needs manual translation
 
 /-- can_boot_version (matches Coq: Definition can_boot_version) -/
 def can_boot_version (st : RollbackState) (comp : VersionedComponent) : Bool :=
@@ -121,10 +122,10 @@ def record_current_version (st : RollbackState) (comp : VersionedComponent) : Ro
     (anti_rollback_enabled st)
 
 /-- advance_min_to_current (matches Coq: Definition advance_min_to_current) -/
-def advance_min_to_current := True -- complex match, simplified to Prop
+def advance_min_to_current := sorry -- complex match, needs manual translation
 
 /-- is_rollback (matches Coq: Definition is_rollback) -/
-def is_rollback := True -- complex match, simplified to Prop
+def is_rollback := sorry -- complex match, needs manual translation
 
 /-- can_boot_prop (matches Coq: Definition can_boot_prop) -/
 def can_boot_prop (st : RollbackState) (comp : VersionedComponent) : Prop :=
@@ -147,7 +148,7 @@ theorem current_or_newer_allowed : ∀ (st : RollbackState) (comp : ComponentId)
   cases ‹_› <;> simp
 
 /-- min_version_monotonic (matches Coq) -/
-theorem min_version_monotonic : ∀ (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver → version_lt new_ver old_ver = true → let st' := update_min_version st comp new_ver true in (* New minimum is stored, but doesn't go backwards in protection *) get_min_version st' comp = Some new_ver := by
+theorem min_version_monotonic : ∀ (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver → version_lt new_ver old_ver = true → let st' := update_min_version st comp new_ver true in  get_min_version st' comp = Some new_ver := by
   cases ‹_› <;> simp
 
 /-- no_minimum_any_allowed (matches Coq) -/

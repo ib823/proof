@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryTelecom - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | TelecomDomain      | telecom_domain         | OK     |
+ * | NetworkFunction    | network_function       | OK     |
  * | TelecomEffect      | telecom_effect         | OK     |
  * | Security_5G        | security_5_g           | OK     |
  * | NetworkSlice       | network_slice          | OK     |
@@ -62,15 +64,18 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* TelecomDomain (matches Coq: Inductive TelecomDomain) *)
 datatype telecom_domain =
-    RAN  (* Radio Access Network *)
-  |     Core  (* Core Network *)
-  |     Transport  (* Transport/Backhaul *)
-  |     Service  (* Service Layer *)
+    RAN
+  |     Core
+  |     Transport
+  |     Service
   |     Management
-  |     AMF  (* Access and Mobility Management *)
-  |     SMF  (* Session Management *)
-  |     UPF  (* User Plane Function *)
-  |     AUSF  (* Authentication Server *)
+
+(* NetworkFunction (matches Coq: Inductive NetworkFunction) *)
+datatype network_function =
+    AMF
+  |     SMF
+  |     UPF
+  |     AUSF
   |     UDM
 
 (* TelecomEffect (matches Coq: Inductive TelecomEffect) *)
@@ -83,12 +88,12 @@ datatype telecom_effect =
 
 (* Security_5G (matches Coq: Record Security_5G) *)
 record security_5_g =
-  primary_authentication :: bool  (* 5G-AKA or EAP-AKA' *)
-  nas_security :: bool  (* NAS signaling protection *)
-  as_security :: bool  (* AS layer protection *)
-  user_plane_integrity :: bool  (* UP integrity - optional in 4G *)
-  service_based_security :: bool  (* Service-based architecture security *)
-  network_slicing_isolation :: bool  (* Slice isolation *)
+  primary_authentication :: bool
+  nas_security :: bool
+  as_security :: bool
+  user_plane_integrity :: bool
+  service_based_security :: bool
+  network_slicing_isolation :: bool
 
 (* NetworkSlice (matches Coq: Record NetworkSlice) *)
 record network_slice =

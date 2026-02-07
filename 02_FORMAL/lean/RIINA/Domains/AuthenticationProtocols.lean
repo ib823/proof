@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA AuthenticationProtocols - Lean 4 Port
@@ -185,27 +186,27 @@ structure PasswordSecurity where
 
 /-- PBKDF2Config (matches Coq: Record PBKDF2Config) -/
 structure PBKDF2Config where
-  pbkdf2_iterations : Nat  -- Number of iterations
-  pbkdf2_salt_bits : Nat  -- Salt size in bits
-  pbkdf2_output_bits : Nat  -- Derived key size in bits
-  pbkdf2_hash_alg : Nat  -- 0=SHA-256, 1=SHA-512
+  pbkdf2_iterations : Nat
+  pbkdf2_salt_bits : Nat
+  pbkdf2_output_bits : Nat
+  pbkdf2_hash_alg : Nat
   deriving DecidableEq, Repr
 
 /-- Argon2Config (matches Coq: Record Argon2Config) -/
 structure Argon2Config where
-  argon2_time_cost : Nat  -- Time cost parameter
-  argon2_memory_cost : Nat  -- Memory cost in KiB
-  argon2_parallelism : Nat  -- Degree of parallelism
-  argon2_salt_bits : Nat  -- Salt size in bits
-  argon2_output_bits : Nat  -- Derived key size in bits
-  argon2_variant : Nat  -- 0=Argon2d, 1=Argon2i, 2=Argon2id
+  argon2_time_cost : Nat
+  argon2_memory_cost : Nat
+  argon2_parallelism : Nat
+  argon2_salt_bits : Nat
+  argon2_output_bits : Nat
+  argon2_variant : Nat
   deriving DecidableEq, Repr
 
 /-- BcryptConfig (matches Coq: Record BcryptConfig) -/
 structure BcryptConfig where
-  bcrypt_cost_factor : Nat  -- Cost factor (2^n iterations)
-  bcrypt_salt_bits : Nat  -- Salt size - always 128 for bcrypt
-  bcrypt_output_bits : Nat  -- Output size - always 184 for bcrypt
+  bcrypt_cost_factor : Nat
+  bcrypt_salt_bits : Nat
+  bcrypt_output_bits : Nat
   deriving DecidableEq, Repr
 
 /-- MFASecurity (matches Coq: Record MFASecurity) -/
@@ -218,20 +219,20 @@ structure MFASecurity where
 
 /-- TOTPConfig (matches Coq: Record TOTPConfig) -/
 structure TOTPConfig where
-  totp_secret_bits : Nat  -- Shared secret size
-  totp_digits : Nat  -- Number of digits in code
-  totp_period : Nat  -- Time step in seconds
-  totp_hash_alg : Nat  -- 0=SHA-1, 1=SHA-256, 2=SHA-512
-  totp_drift_window : Nat  -- Allowed clock drift windows
+  totp_secret_bits : Nat
+  totp_digits : Nat
+  totp_period : Nat
+  totp_hash_alg : Nat
+  totp_drift_window : Nat
   deriving DecidableEq, Repr
 
 /-- WebAuthnConfig (matches Coq: Record WebAuthnConfig) -/
 structure WebAuthnConfig where
-  webauthn_attestation : Nat  -- 0=none, 1=indirect, 2=direct
-  webauthn_user_verification : Nat  -- 0=discouraged, 1=preferred, 2=required
-  webauthn_resident_key : Bool  -- Resident key (discoverable) required
-  webauthn_challenge_bits : Nat  -- Challenge size in bits
-  webauthn_timeout_ms : Nat  -- Timeout in milliseconds
+  webauthn_attestation : Nat
+  webauthn_user_verification : Nat
+  webauthn_resident_key : Bool
+  webauthn_challenge_bits : Nat
+  webauthn_timeout_ms : Nat
   deriving DecidableEq, Repr
 
 /-- SessionSecurity (matches Coq: Record SessionSecurity) -/
@@ -244,50 +245,50 @@ structure SessionSecurity where
 
 /-- SessionTokenConfig (matches Coq: Record SessionTokenConfig) -/
 structure SessionTokenConfig where
-  token_entropy_bits : Nat  -- Token entropy in bits
-  token_expiry_seconds : Nat  -- Token expiry time
-  token_rotation : Bool  -- Token rotation on use
-  token_binding : Bool  -- Bound to client fingerprint
-  token_secure_flag : Bool  -- Secure cookie flag
-  token_httponly_flag : Bool  -- HttpOnly flag
-  token_samesite : Nat  -- 0=None, 1=Lax, 2=Strict
+  token_entropy_bits : Nat
+  token_expiry_seconds : Nat
+  token_rotation : Bool
+  token_binding : Bool
+  token_secure_flag : Bool
+  token_httponly_flag : Bool
+  token_samesite : Nat
   deriving DecidableEq, Repr
 
 /-- OAuth2Config (matches Coq: Record OAuth2Config) -/
 structure OAuth2Config where
-  oauth2_pkce : Bool  -- PKCE required
-  oauth2_state_param : Bool  -- State parameter required
-  oauth2_nonce_param : Bool  -- Nonce parameter (for OIDC)
-  oauth2_token_binding : Bool  -- Token binding
-  oauth2_code_bits : Nat  -- Authorization code entropy
-  oauth2_code_expiry : Nat  -- Code expiry in seconds
-  oauth2_refresh_rotation : Bool  -- Refresh token rotation
+  oauth2_pkce : Bool
+  oauth2_state_param : Bool
+  oauth2_nonce_param : Bool
+  oauth2_token_binding : Bool
+  oauth2_code_bits : Nat
+  oauth2_code_expiry : Nat
+  oauth2_refresh_rotation : Bool
   deriving DecidableEq, Repr
 
 /-- OIDCConfig (matches Coq: Record OIDCConfig) -/
 structure OIDCConfig where
-  oidc_base : OAuth2Config  -- OAuth 2.0 base config
-  oidc_id_token_alg : Nat  -- 0=RS256, 1=ES256, 2=EdDSA
-  oidc_id_token_expiry : Nat  -- ID token expiry in seconds
-  oidc_userinfo_signed : Bool  -- UserInfo endpoint signed
-  oidc_claims_verified : Bool  -- Claims verified at server
+  oidc_base : OAuth2Config
+  oidc_id_token_alg : Nat
+  oidc_id_token_expiry : Nat
+  oidc_userinfo_signed : Bool
+  oidc_claims_verified : Bool
   deriving DecidableEq, Repr
 
 /-- ChallengeConfig (matches Coq: Record ChallengeConfig) -/
 structure ChallengeConfig where
-  challenge_bits : Nat  -- Challenge entropy in bits
-  challenge_expiry_ms : Nat  -- Challenge expiry in milliseconds
-  challenge_single_use : Bool  -- Single-use challenge
-  challenge_bound : Bool  -- Bound to session
-  challenge_signed : Bool  -- Server signature on challenge
+  challenge_bits : Nat
+  challenge_expiry_ms : Nat
+  challenge_single_use : Bool
+  challenge_bound : Bool
+  challenge_signed : Bool
   deriving DecidableEq, Repr
 
 /-- NonceTracker (matches Coq: Record NonceTracker) -/
 structure NonceTracker where
-  nonce_size_bits : Nat  -- Nonce size in bits
-  nonce_window_size : Nat  -- Size of tracking window
-  nonce_timestamp_bound : Nat  -- Max age in seconds
-  nonce_counter_mode : Bool  -- Counter-based nonces
+  nonce_size_bits : Nat
+  nonce_window_size : Nat
+  nonce_timestamp_bound : Nat
+  nonce_counter_mode : Bool
   deriving DecidableEq, Repr
 
 /-- AuthConfig (matches Coq: Record AuthConfig) -/
@@ -299,9 +300,9 @@ structure AuthConfig where
 
 /-- pbkdf2_secure (matches Coq: Definition pbkdf2_secure) -/
 def pbkdf2_secure (cfg : PBKDF2Config) : Bool :=
-  (600000 <=? pbkdf2_iterations cfg) &&      (* OWASP 2023: 600k for SHA-256 *)
-  (128 <=? pbkdf2_salt_bits cfg) &&          (* Min 128-bit salt *)
-  (256 <=? pbkdf2_output_bits cfg) &&        (* Min 256-bit output *)
+  (600000 <=? pbkdf2_iterations cfg) &&      
+  (128 <=? pbkdf2_salt_bits cfg) &&          
+  (256 <=? pbkdf2_output_bits cfg) &&        
   (pbkdf2_hash_alg cfg <=? 1)
 
 /-- riina_pbkdf2 (matches Coq: Definition riina_pbkdf2) -/
@@ -309,11 +310,11 @@ def riina_pbkdf2 : PBKDF2Config := mkPBKDF2 600000 256 256 0
 
 /-- argon2_secure (matches Coq: Definition argon2_secure) -/
 def argon2_secure (cfg : Argon2Config) : Bool :=
-  (3 <=? argon2_time_cost cfg) &&            (* Min 3 iterations *)
-  (65536 <=? argon2_memory_cost cfg) &&      (* Min 64 MiB *)
-  (1 <=? argon2_parallelism cfg) &&          (* At least 1 thread *)
-  (128 <=? argon2_salt_bits cfg) &&          (* Min 128-bit salt *)
-  (256 <=? argon2_output_bits cfg) &&        (* Min 256-bit output *)
+  (3 <=? argon2_time_cost cfg) &&            
+  (65536 <=? argon2_memory_cost cfg) &&      
+  (1 <=? argon2_parallelism cfg) &&          
+  (128 <=? argon2_salt_bits cfg) &&          
+  (256 <=? argon2_output_bits cfg) &&        
   (argon2_variant cfg =? 2)
 
 /-- riina_argon2 (matches Coq: Definition riina_argon2) -/
@@ -321,8 +322,8 @@ def riina_argon2 : Argon2Config := mkArgon2 4 65536 4 256 256 2
 
 /-- bcrypt_secure (matches Coq: Definition bcrypt_secure) -/
 def bcrypt_secure (cfg : BcryptConfig) : Bool :=
-  (12 <=? bcrypt_cost_factor cfg) &&         (* Min cost factor 12 *)
-  (bcrypt_salt_bits cfg =? 128) &&           (* bcrypt uses 128-bit salt *)
+  (12 <=? bcrypt_cost_factor cfg) &&         
+  (bcrypt_salt_bits cfg =? 128) &&           
   (bcrypt_output_bits cfg =? 184)
 
 /-- riina_bcrypt (matches Coq: Definition riina_bcrypt) -/
@@ -330,9 +331,9 @@ def riina_bcrypt : BcryptConfig := mkBcrypt 14 128 184
 
 /-- totp_secure (matches Coq: Definition totp_secure) -/
 def totp_secure (cfg : TOTPConfig) : Bool :=
-  (160 <=? totp_secret_bits cfg) &&          (* Min 160-bit secret *)
-  (6 <=? totp_digits cfg) &&                 (* Min 6 digits *)
-  (totp_period cfg =? 30) &&                 (* Standard 30s period *)
+  (160 <=? totp_secret_bits cfg) &&          
+  (6 <=? totp_digits cfg) &&                 
+  (totp_period cfg =? 30) &&                 
   (totp_drift_window cfg <=? 1)
 
 /-- riina_totp (matches Coq: Definition riina_totp) -/
@@ -340,9 +341,9 @@ def riina_totp : TOTPConfig := mkTOTP 256 6 30 1 1
 
 /-- webauthn_secure (matches Coq: Definition webauthn_secure) -/
 def webauthn_secure (cfg : WebAuthnConfig) : Bool :=
-  (webauthn_user_verification cfg =? 2) &&   (* User verification required *)
-  (128 <=? webauthn_challenge_bits cfg) &&   (* Min 128-bit challenge *)
-  (60000 <=? webauthn_timeout_ms cfg) &&     (* At least 60s timeout *)
+  (webauthn_user_verification cfg =? 2) &&   
+  (128 <=? webauthn_challenge_bits cfg) &&   
+  (60000 <=? webauthn_timeout_ms cfg) &&     
   (webauthn_timeout_ms cfg <=? 300000)
 
 /-- riina_webauthn (matches Coq: Definition riina_webauthn) -/
@@ -350,13 +351,13 @@ def riina_webauthn : WebAuthnConfig := mkWebAuthn 2 2 true 256 120000
 
 /-- session_token_secure (matches Coq: Definition session_token_secure) -/
 def session_token_secure (cfg : SessionTokenConfig) : Bool :=
-  (256 <=? token_entropy_bits cfg) &&        (* Min 256-bit entropy *)
-  (86400 <=? token_expiry_seconds cfg) &&    (* Min 24h expiry *)
-  (token_expiry_seconds cfg <=? 604800) &&   (* Max 7 day expiry *)
-  token_rotation cfg &&                       (* Rotation required *)
-  token_binding cfg &&                        (* Binding required *)
-  token_secure_flag cfg &&                    (* Secure flag required *)
-  token_httponly_flag cfg &&                  (* HttpOnly required *)
+  (256 <=? token_entropy_bits cfg) &&        
+  (86400 <=? token_expiry_seconds cfg) &&    
+  (token_expiry_seconds cfg <=? 604800) &&   
+  token_rotation cfg &&                       
+  token_binding cfg &&                        
+  token_secure_flag cfg &&                    
+  token_httponly_flag cfg &&                  
   (1 <=? token_samesite cfg)
 
 /-- riina_session_token (matches Coq: Definition riina_session_token) -/
@@ -364,10 +365,10 @@ def riina_session_token : SessionTokenConfig := mkSessionToken 256 86400 true tr
 
 /-- oauth2_secure (matches Coq: Definition oauth2_secure) -/
 def oauth2_secure (cfg : OAuth2Config) : Bool :=
-  oauth2_pkce cfg &&                         (* PKCE required *)
-  oauth2_state_param cfg &&                  (* State required *)
-  (128 <=? oauth2_code_bits cfg) &&          (* Min 128-bit code *)
-  (oauth2_code_expiry cfg <=? 60) &&         (* Max 60s code expiry *)
+  oauth2_pkce cfg &&                         
+  oauth2_state_param cfg &&                  
+  (128 <=? oauth2_code_bits cfg) &&          
+  (oauth2_code_expiry cfg <=? 60) &&         
   oauth2_refresh_rotation cfg
 
 /-- riina_oauth2 (matches Coq: Definition riina_oauth2) -/
@@ -376,8 +377,8 @@ def riina_oauth2 : OAuth2Config := mkOAuth2 true true true true 256 30 true
 /-- oidc_secure (matches Coq: Definition oidc_secure) -/
 def oidc_secure (cfg : OIDCConfig) : Bool :=
   oauth2_secure (oidc_base cfg) &&
-  (1 <=? oidc_id_token_alg cfg) &&           (* Prefer ES256 or EdDSA *)
-  (oidc_id_token_expiry cfg <=? 3600) &&     (* Max 1h ID token expiry *)
+  (1 <=? oidc_id_token_alg cfg) &&           
+  (oidc_id_token_expiry cfg <=? 3600) &&     
   oidc_claims_verified cfg
 
 /-- riina_oidc (matches Coq: Definition riina_oidc) -/
@@ -385,9 +386,9 @@ def riina_oidc : OIDCConfig := mkOIDC riina_oauth2 2 300 true true
 
 /-- challenge_secure (matches Coq: Definition challenge_secure) -/
 def challenge_secure (cfg : ChallengeConfig) : Bool :=
-  (128 <=? challenge_bits cfg) &&            (* Min 128-bit challenge *)
-  (challenge_expiry_ms cfg <=? 300000) &&    (* Max 5min expiry *)
-  challenge_single_use cfg &&                 (* Must be single-use *)
+  (128 <=? challenge_bits cfg) &&            
+  (challenge_expiry_ms cfg <=? 300000) &&    
+  challenge_single_use cfg &&                 
   challenge_bound cfg
 
 /-- riina_challenge (matches Coq: Definition riina_challenge) -/
@@ -395,8 +396,8 @@ def riina_challenge : ChallengeConfig := mkChallenge 256 60000 true true true
 
 /-- replay_prevention_secure (matches Coq: Definition replay_prevention_secure) -/
 def replay_prevention_secure (cfg : NonceTracker) : Bool :=
-  (128 <=? nonce_size_bits cfg) &&           (* Min 128-bit nonce *)
-  (1000 <=? nonce_window_size cfg) &&        (* Track at least 1000 nonces *)
+  (128 <=? nonce_size_bits cfg) &&           
+  (1000 <=? nonce_window_size cfg) &&        
   (nonce_timestamp_bound cfg <=? 300)
 
 /-- riina_nonce_tracker (matches Coq: Definition riina_nonce_tracker) -/

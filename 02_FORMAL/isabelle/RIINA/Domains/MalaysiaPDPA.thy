@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaPDPA - Isabelle/HOL Port
@@ -105,12 +106,12 @@ datatype consent_status =
 (* PDPAClassification (matches Coq: Inductive PDPAClassification) *)
 datatype pdpa_classification =
     PublicData
-  |     PersonalData  (* "peribadi" *)
-  |     SensitivePersonalData  (* "data peribadi sensitif" *)
+  |     PersonalData
+  |     SensitivePersonalData
 
 (* Purpose (matches Coq: Inductive Purpose) *)
 datatype purpose =
-    CollectionPurpose  (* Purpose ID declared at collection *)
+    CollectionPurpose
   |     DirectMarketing
   |     LegalObligation
   |     VitalInterest
@@ -143,13 +144,15 @@ datatype transfer_basis =
 definition has_valid_consent :: "PDPARecord \<Rightarrow> bool" where
   "has_valid_consent r \<equiv> pdpa_consent r = ExplicitConsent \/ pdpa_consent r = ImpliedConsent"
 
-(* consent_required_for_processing - complex match, manual review needed *)
+(* consent_required_for_processing - complex match, needs manual translation *)
+definition consent_required_for_processing :: "bool" where "consent_required_for_processing = undefined"
 
 (* purpose_matches (matches Coq: Definition purpose_matches) *)
 definition purpose_matches :: "Purpose \<Rightarrow> Purpose \<Rightarrow> bool" where
   "purpose_matches declared actual \<equiv> declared = actual"
 
-(* processing_within_purpose - complex match, manual review needed *)
+(* processing_within_purpose - complex match, needs manual translation *)
+definition processing_within_purpose :: "bool" where "processing_within_purpose = undefined"
 
 (* disclosure_authorized (matches Coq: Definition disclosure_authorized) *)
 definition disclosure_authorized :: "PDPARecord \<Rightarrow> nat \<Rightarrow> bool" where
@@ -157,7 +160,8 @@ definition disclosure_authorized :: "PDPARecord \<Rightarrow> nat \<Rightarrow> 
   pdpa_classification r <> SensitivePersonalData \/
   (pdpa_consent r = ExplicitConsent /\ pdpa_classification r = SensitivePersonalData)"
 
-(* security_adequate - complex match, manual review needed *)
+(* security_adequate - complex match, needs manual translation *)
+definition security_adequate :: "bool" where "security_adequate = undefined"
 
 (* within_retention_period (matches Coq: Definition within_retention_period) *)
 definition within_retention_period :: "PDPARecord \<Rightarrow> nat \<Rightarrow> bool" where

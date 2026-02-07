@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ZKSTARKSecurity - Isabelle/HOL Port
@@ -169,43 +170,43 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* STARKProperties (matches Coq: Record STARKProperties) *)
 record stark_properties =
-  stark_transparent :: bool  (* No trusted setup *)
-  stark_scalable :: bool  (* Polylogarithmic verification *)
-  stark_post_quantum :: bool  (* Based on hash functions *)
+  stark_transparent :: bool
+  stark_scalable :: bool
+  stark_post_quantum :: bool
 
 (* AIRProperties (matches Coq: Record AIRProperties) *)
 record air_properties =
-  air_algebraic :: bool  (* Algebraic Intermediate Representation *)
-  air_low_degree :: bool  (* Low-degree extension *)
-  air_fri_verified :: bool  (* FRI protocol verified *)
+  air_algebraic :: bool
+  air_low_degree :: bool
+  air_fri_verified :: bool
 
 (* FRIProperties (matches Coq: Record FRIProperties) *)
 record fri_properties =
-  fri_soundness :: bool  (* FRI soundness guarantee *)
-  fri_query_bound :: bool  (* Bounded query complexity *)
-  fri_commitment_binding :: bool  (* Merkle commitment binding *)
-  fri_interactive_to_non :: bool  (* Fiat-Shamir transform valid *)
-  fri_round_complexity :: nat  (* Number of FRI rounds *)
-  fri_proximity_param :: nat  (* Proximity parameter *)
+  fri_soundness :: bool
+  fri_query_bound :: bool
+  fri_commitment_binding :: bool
+  fri_interactive_to_non :: bool
+  fri_round_complexity :: nat
+  fri_proximity_param :: nat
 
 (* ProverState (matches Coq: Record ProverState) *)
 record prover_state =
-  prover_witness :: nat  (* Private witness *)
-  prover_randomness :: nat  (* Randomness for ZK *)
-  prover_committed :: bool  (* Has committed to trace *)
-  prover_fri_complete :: bool  (* FRI rounds complete *)
+  prover_witness :: nat
+  prover_randomness :: nat
+  prover_committed :: bool
+  prover_fri_complete :: bool
 
 (* VerifierState (matches Coq: Record VerifierState) *)
 record verifier_state =
   verifier_challenges :: 'a list
   verifier_queries :: 'a list
-  verifier_accepting :: bool  (* Current acceptance status *)
+  verifier_accepting :: bool
 
 (* SimulatorState (matches Coq: Record SimulatorState) *)
 record simulator_state =
   sim_transcript :: 'a list
-  sim_rewinding :: bool  (* Can rewind verifier *)
-  sim_indistinguishable :: bool  (* Output indistinguishable *)
+  sim_rewinding :: bool
+  sim_indistinguishable :: bool
 
 (* STARKSecurity (matches Coq: Record STARKSecurity) *)
 record stark_security =
@@ -219,9 +220,9 @@ record stark_security =
 record extended_stark_security =
   ext_base :: STARKSecurity
   ext_fri :: FRIProperties
-  ext_simulation_secure :: bool  (* Simulation-based ZK *)
-  ext_extraction_secure :: bool  (* Knowledge extraction *)
-  ext_quantum_resistant :: bool  (* Post-quantum security *)
+  ext_simulation_secure :: bool
+  ext_extraction_secure :: bool
+  ext_quantum_resistant :: bool
 
 (* stark_props_secure (matches Coq: Definition stark_props_secure) *)
 definition stark_props_secure :: "STARKProperties \<Rightarrow> bool" where

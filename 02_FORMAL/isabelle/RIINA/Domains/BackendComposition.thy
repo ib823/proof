@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BackendComposition - Isabelle/HOL Port
@@ -54,7 +55,7 @@ begin
 
 (* Label (matches Coq: Inductive Label) *)
 datatype label =
-    Lo  (* public *)
+    Lo
   |     Hi
 
 (* Value (matches Coq: Inductive Value) *)
@@ -63,7 +64,8 @@ datatype value =
   |     VBool
   |     VUnit
 
-(* label_le - complex match, manual review needed *)
+(* label_le - complex match, needs manual translation *)
+definition label_le :: "bool" where "label_le = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where

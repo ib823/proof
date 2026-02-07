@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedProtocols - Lean 4 Port
@@ -101,26 +102,26 @@ namespace RIINA
 
 /-- TLS13Message (matches Coq: Inductive TLS13Message) -/
 inductive TLS13Message where
-  | clientHello : TLS13Message
-  | serverHello : TLS13Message
-  | encryptedExtensions : TLS13Message
-  | certificate : TLS13Message
-  | certificateVerify : TLS13Message
-  | finished : TLS13Message
-  | applicationData : TLS13Message
+  | clientHello : List Nat → PublicKey → TLS13Message
+  | serverHello : List Nat → PublicKey → TLS13Message
+  | encryptedExtensions : List Nat → TLS13Message
+  | certificate : List Nat → TLS13Message
+  | certificateVerify : List Nat → TLS13Message
+  | finished : List Nat → TLS13Message
+  | applicationData : List Nat → TLS13Message
   deriving DecidableEq, Repr
 
 /-- NoiseMessage (matches Coq: Inductive NoiseMessage) -/
 inductive NoiseMessage where
-  | nMEphemeral : NoiseMessage
-  | nMStatic : NoiseMessage
-  | nMPayload : NoiseMessage
+  | nMEphemeral : PublicKey → NoiseMessage
+  | nMStatic : List Nat → NoiseMessage
+  | nMPayload : List Nat → NoiseMessage
   deriving DecidableEq, Repr
 
 /-- SignalMessage (matches Coq: Inductive SignalMessage) -/
 inductive SignalMessage where
-  | sMHeader : SignalMessage
-  | sMCiphertext : SignalMessage
+  | sMHeader : PublicKey → Nat → Nat → SignalMessage
+  | sMCiphertext : List Nat → SignalMessage
   deriving DecidableEq, Repr
 
 /-- NoisePattern (matches Coq: Inductive NoisePattern) -/
@@ -142,7 +143,7 @@ inductive NoisePattern where
 inductive Adversary where
   | passiveAdversary : Adversary
   | activeAdversary : Adversary
-  | compromisedKeyAdversary : Adversary
+  | compromisedKeyAdversary : PrivateKey → Adversary
   deriving DecidableEq, Repr
 
 /-- KeyPair (matches Coq: Record KeyPair) -/
@@ -274,7 +275,8 @@ def initial_tls13_state : TLS13State :=
      tls_server_traffic_secret := [];
      tls_transcript := [];
      tls_stage := 0;
-     tls_version := 0x0304;  (* TLS 1
+     tls_version := 0x0304;  
+     tls_cipher_suite := 0 |}
 
 /-- tls13_handshake_complete (matches Coq: Definition tls13_handshake_complete) -/
 def tls13_handshake_complete (session : TLS13Session) : Prop :=
@@ -337,7 +339,7 @@ def noise_handshake_complete (st : NoiseHandshakeState) : Prop :=
   (exists k, noise_k (hs_symmetric st) = Some k)
 
 /-- x3dh_initiator (matches Coq: Definition x3dh_initiator) -/
-def x3dh_initiator := True -- complex match, simplified to Prop
+def x3dh_initiator := sorry -- complex match, needs manual translation
 
 /-- signal_dh_ratchet (matches Coq: Definition signal_dh_ratchet) -/
 def signal_dh_ratchet (st : SignalState) (new_pair : KeyPair) 
@@ -414,7 +416,7 @@ def constant_time_op (op : Nat -> Nat -> Bool) : Prop :=
   forall (a b c d : nat), True
 
 /-- all_theorems_proven (matches Coq: Definition all_theorems_proven) -/
-def all_theorems_proven := True -- complex match, simplified to Prop
+def all_theorems_proven := sorry -- complex match, needs manual translation
 
 /-- hkdf_deterministic (matches Coq) -/
 theorem hkdf_deterministic : ∀ salt ikm info len, hkdf salt ikm info len = hkdf salt ikm info len := by

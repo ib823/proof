@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IrisSeparationLogic - Isabelle/HOL Port
@@ -81,7 +82,8 @@ definition fsingleton :: "loc \<Rightarrow> val \<Rightarrow> fheap" where
 definition fdisjoint :: "bool" where
   "fdisjoint \<equiv> forall l, h1 l = None \/ h2 l = None"
 
-(* funion - complex match, manual review needed *)
+(* funion - complex match, needs manual translation *)
+definition funion :: "bool" where "funion = undefined"
 
 (* 1 (matches Coq) *)
 lemma 1: "Empty heap satisfies emp *) Theorem emp_empty : satisfies [] HEmpty"

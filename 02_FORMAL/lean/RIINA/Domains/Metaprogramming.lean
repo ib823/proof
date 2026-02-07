@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA Metaprogramming - Lean 4 Port
@@ -84,65 +85,65 @@ namespace RIINA
 
 /-- FragmentType (matches Coq: Inductive FragmentType) -/
 inductive FragmentType where
-  | fTExpr : FragmentType  -- Expression
-  | fTStmt : FragmentType  -- Statement
-  | fTIdent : FragmentType  -- Identifier
-  | fTType : FragmentType  -- Type
-  | fTPattern : FragmentType  -- Pattern
-  | fTBlock : FragmentType  -- Block
+  | fTExpr : FragmentType
+  | fTStmt : FragmentType
+  | fTIdent : FragmentType
+  | fTType : FragmentType
+  | fTPattern : FragmentType
+  | fTBlock : FragmentType
   deriving DecidableEq, Repr
 
 /-- Token (matches Coq: Inductive Token) -/
 inductive Token where
-  | tkIdent : Token
-  | tkLiteral : Token
-  | tkPunct : Token
-  | tkGroup : Token
+  | tkIdent : String → Token
+  | tkLiteral : Nat → Token
+  | tkPunct : String → Token
+  | tkGroup : List Token → Token
   deriving DecidableEq, Repr
 
 /-- AST (matches Coq: Inductive AST) -/
 inductive AST where
-  | aSTVar : AST  -- Variable with de Bruijn index
-  | aSTLam : AST  -- Lambda
-  | aSTApp : AST  -- Application
-  | aSTLet : AST  -- Let binding
-  | aSTBlock : AST  -- Block of statements
+  | aSTVar : Nat → AST
+  | aSTLam : AST → AST
+  | aSTApp : AST → AST → AST
+  | aSTLet : AST → AST → AST
+  | aSTBlock : List AST → AST
   deriving DecidableEq, Repr
 
 /-- ExpansionStep (matches Coq: Inductive ExpansionStep) -/
 inductive ExpansionStep where
-  | eSInput : ExpansionStep
-  | eSMatched : ExpansionStep  -- Which pattern matched
-  | eSOutput : ExpansionStep
+  | eSInput : TokenStream → ExpansionStep
+  | eSMatched : Nat → ExpansionStep
+  | eSOutput : TokenStream → ExpansionStep
   deriving DecidableEq, Repr
 
 /-- ConstResult (matches Coq: Inductive ConstResult) -/
 inductive ConstResult where
-  | cRValue : ConstResult
-  | cRBool : ConstResult
+  | cRValue : Nat → ConstResult
+  | cRBool : Bool → ConstResult
   | cRUnit : ConstResult
-  | cRError : ConstResult
+  | cRError : String → ConstResult
   deriving DecidableEq, Repr
 
 /-- PatternMatch (matches Coq: Inductive PatternMatch) -/
 inductive PatternMatch where
-  | pMExact : PatternMatch
-  | pMCapture : PatternMatch  -- Capture with binding index
-  | pMRepeat : PatternMatch
+  | pMExact : Token → PatternMatch
+  | pMCapture : FragmentType → Nat → PatternMatch
+  | pMRepeat : List PatternMatch → PatternMatch
   deriving DecidableEq, Repr
 
 /-- DeriveResult (matches Coq: Inductive DeriveResult) -/
 inductive DeriveResult where
-  | dRSuccess : DeriveResult
-  | dRError : DeriveResult
+  | dRSuccess : TokenStream → DeriveResult
+  | dRError : String → DeriveResult
   deriving DecidableEq, Repr
 
 /-- ConstExpr (matches Coq: Inductive ConstExpr) -/
 inductive ConstExpr where
-  | cELit : ConstExpr
-  | cEAdd : ConstExpr
-  | cEMul : ConstExpr
-  | cEIf : ConstExpr
+  | cELit : Nat → ConstExpr
+  | cEAdd : ConstExpr → ConstExpr → ConstExpr
+  | cEMul : ConstExpr → ConstExpr → ConstExpr
+  | cEIf : ConstExpr → ConstExpr → ConstExpr → ConstExpr
   deriving DecidableEq, Repr
 
 /-- ZeroStatus (matches Coq: Inductive ZeroStatus) -/
@@ -163,7 +164,7 @@ inductive ItemKind where
 
 /-- RepetitionResult (matches Coq: Inductive RepetitionResult) -/
 inductive RepetitionResult where
-  | rRSuccess : RepetitionResult
+  | rRSuccess : List TokenStream → RepetitionResult
   | rRMismatch : RepetitionResult
   deriving DecidableEq, Repr
 
@@ -178,7 +179,7 @@ structure MacroDef where
   macro_name : String
   macro_patterns : List
   macro_templates : List
-  macro_templates_wf : Bool  -- Templates are well-formed
+  macro_templates_wf : Bool
   deriving DecidableEq, Repr
 
 /-- ExpansionContext (matches Coq: Record ExpansionContext) -/
@@ -271,18 +272,18 @@ structure StaticAssert where
 structure SecurityCheck where
   sc_name : String
   sc_condition : ConstExpr
-  sc_severity : Nat  -- 0 = info, 1 = warn, 2 = error
+  sc_severity : Nat
   deriving DecidableEq, Repr
 
 /-- fragment_type_eqb (matches Coq: Definition fragment_type_eqb) -/
-def fragment_type_eqb := True -- complex match, simplified to Prop
+def fragment_type_eqb := sorry -- complex match, needs manual translation
 
 /-- tokens_well_formed (matches Coq: Definition tokens_well_formed) -/
 def tokens_well_formed (ts : TokenStream) : Bool :=
   true
 
 /-- pattern_covers_input (matches Coq: Definition pattern_covers_input) -/
-def pattern_covers_input := True -- complex match, simplified to Prop
+def pattern_covers_input := sorry -- complex match, needs manual translation
 
 /-- macro_well_formed (matches Coq: Definition macro_well_formed) -/
 def macro_well_formed (m : MacroDef) : Bool :=
@@ -298,7 +299,7 @@ def impl_satisfies_bound (impl : ImplBlock) (bound : TraitBound) : Bool :=
   String
 
 /-- dsl_syntax_valid (matches Coq: Definition dsl_syntax_valid) -/
-def dsl_syntax_valid := True -- complex match, simplified to Prop
+def dsl_syntax_valid := sorry -- complex match, needs manual translation
 
 /-- audit_complete (matches Coq: Definition audit_complete) -/
 def audit_complete (trace : ExpansionTrace) (trail : AuditTrail) : Bool :=
@@ -321,10 +322,10 @@ def resolve_crate_path (ctx : ExpansionContext) : CratePath :=
   [ctx_crate ctx]
 
 /-- attr_preserves_structure (matches Coq: Definition attr_preserves_structure) -/
-def attr_preserves_structure := True -- complex match, simplified to Prop
+def attr_preserves_structure := sorry -- complex match, needs manual translation
 
 /-- eval_static_assert (matches Coq: Definition eval_static_assert) -/
-def eval_static_assert := True -- complex match, simplified to Prop
+def eval_static_assert := sorry -- complex match, needs manual translation
 
 /-- tokens_well_formed_app (matches Coq) -/
 theorem tokens_well_formed_app : ∀ ts1 ts2, tokens_well_formed ts1 = true → tokens_well_formed ts2 = true → tokens_well_formed (ts1 ++ ts2) = true := by
@@ -375,7 +376,7 @@ theorem K_001_11 : ∀ (ctx : HygienicContext) (name : string) (use_scope : Scop
   simp_all [Bool.and_eq_true]
 
 /-- K_001_12 (matches Coq) -/
-theorem K_001_12 : ∀ (ctx : HygienicContext) (macro_name user_name : string), hyg_macro_scope ctx ≠ hyg_current_scope ctx → (* If macro_name was added in macro scope and user_name in current scope *) lookup_scoped (hyg_bindings ctx) macro_name = Some (hyg_macro_scope ctx) → lookup_scoped (hyg_bindings ctx) user_name = Some (hyg_current_scope ctx) → (* Then the lookups return different scopes *) lookup_scoped (hyg_bindings ctx) macro_name ≠ lookup_scoped (hyg_bindings ctx) user_name := by
+theorem K_001_12 : ∀ (ctx : HygienicContext) (macro_name user_name : string), hyg_macro_scope ctx ≠ hyg_current_scope ctx →  lookup_scoped (hyg_bindings ctx) macro_name = Some (hyg_macro_scope ctx) → lookup_scoped (hyg_bindings ctx) user_name = Some (hyg_current_scope ctx) →  lookup_scoped (hyg_bindings ctx) macro_name ≠ lookup_scoped (hyg_bindings ctx) user_name := by
   intro h; exact h
 
 /-- K_001_13 (matches Coq) -/

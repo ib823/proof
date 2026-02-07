@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CognitiveAccessibility - Lean 4 Port
@@ -152,7 +153,7 @@ def suggest_fix (e : ValidationError) : FixSuggestion :=
   match e with
 
 /-- fix_targets_same_field (matches Coq: Definition fix_targets_same_field) -/
-def fix_targets_same_field := True -- complex match, simplified to Prop
+def fix_targets_same_field := sorry -- complex match, needs manual translation
 
 /-- easing_consistent (matches Coq: Definition easing_consistent) -/
 def easing_consistent (anims : List ClassifiedAnimation) : Prop :=
@@ -167,7 +168,7 @@ def layout_eq (l1 l2 : LayoutElement) : Prop :=
   le_w l1 = le_w l2 /\ le_h l1 = le_h l2
 
 /-- reverse_transition (matches Coq: Definition reverse_transition) -/
-def reverse_transition := True -- complex match, simplified to Prop
+def reverse_transition := sorry -- complex match, needs manual translation
 
 /-- is_user_initiated (matches Coq: Definition is_user_initiated) -/
 def is_user_initiated (e : UIEvent) : Bool :=

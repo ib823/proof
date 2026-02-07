@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA EncryptionSystem - Isabelle/HOL Port
@@ -76,10 +77,10 @@ begin
 (* EncryptionKey (matches Coq: Record EncryptionKey) *)
 record encryption_key =
   key_id :: nat
-  key_bits :: nat  (* Key size: 128, 256, etc. *)
-  key_algorithm :: nat  (* 0=AES, 1=ChaCha20, 2=RSA *)
+  key_bits :: nat
+  key_algorithm :: nat
   key_is_private :: bool
-  key_stored_in_se :: bool  (* Stored in Secure Enclave *)
+  key_stored_in_se :: bool
 
 (* EncryptedMessage (matches Coq: Record EncryptedMessage) *)
 record encrypted_message =
@@ -127,7 +128,7 @@ record password_hash =
   pwd_hash_value :: nat
   pwd_salt :: nat
   pwd_iterations :: nat
-  pwd_algorithm :: nat  (* 0=Argon2, 1=bcrypt, 2=PBKDF2 *)
+  pwd_algorithm :: nat
 
 (* KeyRotation (matches Coq: Record KeyRotation) *)
 record key_rotation =

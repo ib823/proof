@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA Typing - Lean 4 Port
@@ -100,7 +101,7 @@ theorem canonical_forms_proof : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ 
   rfl
 
 /-- canonical_forms (matches Coq) -/
-theorem canonical_forms : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v T ε → match T with | TUnit => v = EUnit | TBool => ∃ b, v = EBool b | TInt => ∃ n, v = EInt n | TString => ∃ s, v = EString s | TFn T1 T2 _ => ∃ x body, v = ELam x T1 body | TProd T1 T2 => ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 | TSum T1 T2 => (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') | TRef T' sl => ∃ l, v = ELoc l | TSecret T' => ∃ v', v = EClassify v' ∧ value v' | TProof T' => ∃ v', v = EProve v' ∧ value v' (* Other types - treat as True for extensibility *) | _ => True end := by
+theorem canonical_forms : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v T ε → match T with | TUnit => v = EUnit | TBool => ∃ b, v = EBool b | TInt => ∃ n, v = EInt n | TString => ∃ s, v = EString s | TFn T1 T2 _ => ∃ x body, v = ELam x T1 body | TProd T1 T2 => ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 | TSum T1 T2 => (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') | TRef T' sl => ∃ l, v = ELoc l | TSecret T' => ∃ v', v = EClassify v' ∧ value v' | TProof T' => ∃ v', v = EProve v' ∧ value v'  | _ => True end := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

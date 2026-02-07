@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AIMLSecurity - Isabelle/HOL Port
@@ -136,114 +137,114 @@ datatype security_level =
 
 (* DifferentialPrivacy (matches Coq: Record DifferentialPrivacy) *)
 record differential_privacy =
-  dp_epsilon :: nat  (* Privacy budget - lower is more private *)
-  dp_delta :: nat  (* Failure probability bound *)
-  dp_noise_added :: bool  (* Whether noise has been added to outputs *)
-  dp_clipping_applied :: bool  (* Whether gradient clipping was applied *)
+  dp_epsilon :: nat
+  dp_delta :: nat
+  dp_noise_added :: bool
+  dp_clipping_applied :: bool
 
 (* InputValidation (matches Coq: Record InputValidation) *)
 record input_validation =
-  iv_max_length :: nat  (* Maximum allowed input length *)
-  iv_sanitized :: bool  (* Whether special characters are escaped *)
-  iv_sandboxed :: bool  (* Whether execution is sandboxed *)
-  iv_filtered :: bool  (* Whether malicious patterns are filtered *)
+  iv_max_length :: nat
+  iv_sanitized :: bool
+  iv_sandboxed :: bool
+  iv_filtered :: bool
 
 (* AccessControl (matches Coq: Record AccessControl) *)
 record access_control =
-  ac_authenticated :: bool  (* User is authenticated *)
-  ac_authorized :: bool  (* User has proper permissions *)
-  ac_rate_limited :: bool  (* Query rate limiting enabled *)
-  ac_logged :: bool  (* All accesses are logged *)
+  ac_authenticated :: bool
+  ac_authorized :: bool
+  ac_rate_limited :: bool
+  ac_logged :: bool
 
 (* ModelWatermark (matches Coq: Record ModelWatermark) *)
 record model_watermark =
-  mw_embedded :: bool  (* Watermark embedded in model *)
-  mw_verifiable :: bool  (* Watermark can be verified *)
-  mw_robust :: bool  (* Watermark survives fine-tuning *)
+  mw_embedded :: bool
+  mw_verifiable :: bool
+  mw_robust :: bool
 
 (* TrainingPipeline (matches Coq: Record TrainingPipeline) *)
 record training_pipeline =
-  tp_data_verified :: bool  (* Training data has been verified *)
-  tp_source_trusted :: bool  (* Data sources are trusted *)
-  tp_integrity_checked :: bool  (* Data integrity verified via hashes *)
-  tp_reproducible :: bool  (* Training is reproducible *)
+  tp_data_verified :: bool
+  tp_source_trusted :: bool
+  tp_integrity_checked :: bool
+  tp_reproducible :: bool
 
 (* RobustTraining (matches Coq: Record RobustTraining) *)
 record robust_training =
-  rt_adversarial_training :: bool  (* Model trained on adversarial examples *)
-  rt_certified_defense :: bool  (* Certified robustness guarantees *)
-  rt_ensemble_used :: bool  (* Ensemble of models used *)
-  rt_input_preprocessing :: bool  (* Input preprocessing applied *)
+  rt_adversarial_training :: bool
+  rt_certified_defense :: bool
+  rt_ensemble_used :: bool
+  rt_input_preprocessing :: bool
 
 (* PrivacyGuarantees (matches Coq: Record PrivacyGuarantees) *)
 record privacy_guarantees =
-  pg_output_perturbed :: bool  (* Outputs are perturbed *)
-  pg_intermediate_hidden :: bool  (* Intermediate values hidden *)
-  pg_access_controlled :: bool  (* Access is controlled *)
-  pg_aggregation_only :: bool  (* Only aggregated outputs released *)
+  pg_output_perturbed :: bool
+  pg_intermediate_hidden :: bool
+  pg_access_controlled :: bool
+  pg_aggregation_only :: bool
 
 (* DetectionSystem (matches Coq: Record DetectionSystem) *)
 record detection_system =
-  ds_enabled :: bool  (* Detection is enabled *)
-  ds_multi_modal :: bool  (* Uses multiple detection methods *)
-  ds_threshold_set :: bool  (* Detection threshold configured *)
-  ds_alerts_enabled :: bool  (* Alerts are enabled on detection *)
+  ds_enabled :: bool
+  ds_multi_modal :: bool
+  ds_threshold_set :: bool
+  ds_alerts_enabled :: bool
 
 (* ProvenanceTracking (matches Coq: Record ProvenanceTracking) *)
 record provenance_tracking =
-  pt_origin_tracked :: bool  (* Content origin is tracked *)
-  pt_chain_verified :: bool  (* Chain of custody verified *)
-  pt_metadata_preserved :: bool  (* Metadata is preserved *)
-  pt_tamper_evident :: bool  (* Tampering is detectable *)
+  pt_origin_tracked :: bool
+  pt_chain_verified :: bool
+  pt_metadata_preserved :: bool
+  pt_tamper_evident :: bool
 
 (* SecureAggregation (matches Coq: Record SecureAggregation) *)
 record secure_aggregation =
-  sa_encrypted :: bool  (* Updates are encrypted *)
-  sa_masked :: bool  (* Individual updates masked *)
-  sa_threshold_scheme :: bool  (* Threshold cryptography used *)
-  sa_byzantine_resilient :: bool  (* Tolerates malicious participants *)
+  sa_encrypted :: bool
+  sa_masked :: bool
+  sa_threshold_scheme :: bool
+  sa_byzantine_resilient :: bool
 
 (* ResourceLimits (matches Coq: Record ResourceLimits) *)
 record resource_limits =
-  rl_compute_bounded :: bool  (* Computation is bounded *)
-  rl_memory_bounded :: bool  (* Memory usage bounded *)
-  rl_time_bounded :: bool  (* Query time bounded *)
-  rl_batch_limited :: bool  (* Batch size limited *)
+  rl_compute_bounded :: bool
+  rl_memory_bounded :: bool
+  rl_time_bounded :: bool
+  rl_batch_limited :: bool
 
 (* SafetyTraining (matches Coq: Record SafetyTraining) *)
 record safety_training =
-  st_rlhf_applied :: bool  (* RLHF training applied *)
-  st_red_teamed :: bool  (* Model has been red-teamed *)
-  st_safety_filters :: bool  (* Safety filters enabled *)
-  st_refusal_trained :: bool  (* Model trained to refuse harmful requests *)
+  st_rlhf_applied :: bool
+  st_red_teamed :: bool
+  st_safety_filters :: bool
+  st_refusal_trained :: bool
 
 (* DefenseInDepth (matches Coq: Record DefenseInDepth) *)
 record defense_in_depth =
-  did_multiple_layers :: bool  (* Multiple defense layers *)
-  did_diverse_methods :: bool  (* Diverse detection methods *)
-  did_fail_safe :: bool  (* Fails safely on uncertainty *)
-  did_monitoring :: bool  (* Continuous monitoring *)
+  did_multiple_layers :: bool
+  did_diverse_methods :: bool
+  did_fail_safe :: bool
+  did_monitoring :: bool
 
 (* InputIsolation (matches Coq: Record InputIsolation) *)
 record input_isolation =
-  ii_context_separated :: bool  (* User/system context separated *)
-  ii_privilege_separated :: bool  (* Privilege levels separated *)
-  ii_output_filtered :: bool  (* Outputs are filtered *)
-  ii_injection_markers :: bool  (* Injection attempts marked *)
+  ii_context_separated :: bool
+  ii_privilege_separated :: bool
+  ii_output_filtered :: bool
+  ii_injection_markers :: bool
 
 (* AgentVerification (matches Coq: Record AgentVerification) *)
 record agent_verification =
-  av_identity_verified :: bool  (* Agent identity verified *)
-  av_capability_bounded :: bool  (* Agent capabilities bounded *)
-  av_communication_secure :: bool  (* Inter-agent comm secure *)
-  av_consensus_required :: bool  (* Consensus for critical actions *)
+  av_identity_verified :: bool
+  av_capability_bounded :: bool
+  av_communication_secure :: bool
+  av_consensus_required :: bool
 
 (* ProtocolVerification (matches Coq: Record ProtocolVerification) *)
 record protocol_verification =
-  pv_schema_validated :: bool  (* Message schema validated *)
-  pv_auth_required :: bool  (* Authentication required *)
-  pv_integrity_checked :: bool  (* Message integrity checked *)
-  pv_replay_protected :: bool  (* Replay attacks prevented *)
+  pv_schema_validated :: bool
+  pv_auth_required :: bool
+  pv_integrity_checked :: bool
+  pv_replay_protected :: bool
 
 (* AnomalyDetection (matches Coq: Record AnomalyDetection) *)
 record anomaly_detection =

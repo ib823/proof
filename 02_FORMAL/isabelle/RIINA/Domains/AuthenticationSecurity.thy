@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AuthenticationSecurity - Isabelle/HOL Port
@@ -77,7 +78,7 @@ record password_hash =
   ph_hash :: 'a list
   ph_salt :: 'a list
   ph_iterations :: nat
-  ph_algorithm :: nat  (* 0=argon2, 1=bcrypt, etc *)
+  ph_algorithm :: nat
 
 (* SessionToken (matches Coq: Record SessionToken) *)
 record session_token =
@@ -111,7 +112,7 @@ record auth_ticket =
 
 (* ServiceKey (matches Coq: Record ServiceKey) *)
 record service_key =
-  sk_algorithm :: nat  (* Must be >= 2 for AES *)
+  sk_algorithm :: nat
   sk_key :: 'a list
 
 (* HSMProtectedKey (matches Coq: Record HSMProtectedKey) *)
@@ -139,7 +140,7 @@ record o_auth_state =
 (* JWTConfig (matches Coq: Record JWTConfig) *)
 record jwt_config =
   jwt_alg_none_disabled :: bool
-  jwt_alg_symmetric_disabled :: bool  (* When using asymmetric *)
+  jwt_alg_symmetric_disabled :: bool
   jwt_exp_required :: bool
 
 (* SAMLConfig (matches Coq: Record SAMLConfig) *)
@@ -176,7 +177,8 @@ definition mfa_complete :: "MFAState \<Rightarrow> bool" where
 definition token_valid :: "SessionToken \<Rightarrow> nat \<Rightarrow> bool" where
   "token_valid t now \<equiv> Nat"
 
-(* token_bound - complex match, manual review needed *)
+(* token_bound - complex match, needs manual translation *)
+definition token_bound :: "bool" where "token_bound = undefined"
 
 (* nonce_fresh (matches Coq: Definition nonce_fresh) *)
 definition nonce_fresh :: "NonceStore \<Rightarrow> nat \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DataRaceFreedom - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AccessMode         | access_mode            | OK     |
+ * | OwnershipState     | ownership_state        | OK     |
  * | MutexState         | mutex_state            | OK     |
  * | RWLockState        | rw_lock_state          | OK     |
  * | well_formed_access | well_formed_access     | OK     |
@@ -72,11 +74,15 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* AccessMode (matches Coq: Inductive AccessMode) *)
 datatype access_mode =
-    Exclusive  (* &mut T - unique mutable access *)
-  |     Shared  (* &T - shared immutable access *)
-  |     Owned  (* Uniquely owned by thread *)
-  |     MutBorrowed  (* Mutably borrowed *)
-  |     SharedBorrowed  (* Shared borrowed by list *)
+    Exclusive
+  |     Shared
+  |     NoAccess
+
+(* OwnershipState (matches Coq: Inductive OwnershipState) *)
+datatype ownership_state =
+    Owned
+  |     MutBorrowed
+  |     SharedBorrowed
   |     Moved
 
 (* MutexState (matches Coq: Record MutexState) *)

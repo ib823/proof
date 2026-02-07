@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MultiProverValidation - Lean 4 Port
@@ -56,35 +57,35 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- formula (matches Coq: Inductive formula) -/
 inductive formula where
-  | fAtom : formula
-  | fNot : formula
-  | fAnd : formula
-  | fImpl : formula
+  | fAtom : Nat → formula
+  | fNot : formula → formula
+  | fAnd : formula → formula → formula
+  | fImpl : formula → formula → formula
   deriving DecidableEq, Repr
 
 /-- certificate (matches Coq: Inductive certificate) -/
 inductive certificate where
-  | certAtom : certificate  -- axiom/assumption
-  | certNotI : certificate  -- not-introduction
-  | certAndI : certificate  -- and-introduction
-  | certImplE : certificate  -- modus ponens
-  | certAssume : certificate
+  | certAtom : Nat → certificate
+  | certNotI : formula → certificate → certificate
+  | certAndI : certificate → certificate → certificate
+  | certImplE : certificate → certificate → certificate
+  | certAssume : formula → certificate
   deriving DecidableEq, Repr
 
 /-- proverA_repr (matches Coq: Inductive proverA_repr) -/
 inductive proverA_repr where
-  | pA_Atom : proverA_repr
-  | pA_Neg : proverA_repr
-  | pA_Conj : proverA_repr
-  | pA_Arrow : proverA_repr
+  | pA_Atom : Nat → proverA_repr
+  | pA_Neg : proverA_repr → proverA_repr
+  | pA_Conj : proverA_repr → proverA_repr → proverA_repr
+  | pA_Arrow : proverA_repr → proverA_repr → proverA_repr
   deriving DecidableEq, Repr
 
 /-- proverB_repr (matches Coq: Inductive proverB_repr) -/
 inductive proverB_repr where
-  | pB_Var : proverB_repr
-  | pB_Not : proverB_repr
-  | pB_And : proverB_repr
-  | pB_If : proverB_repr
+  | pB_Var : Nat → proverB_repr
+  | pB_Not : proverB_repr → proverB_repr
+  | pB_And : proverB_repr → proverB_repr → proverB_repr
+  | pB_If : proverB_repr → proverB_repr → proverB_repr
   deriving DecidableEq, Repr
 
 /-- confidence (matches Coq: Inductive confidence) -/
@@ -95,13 +96,13 @@ inductive confidence where
   deriving DecidableEq, Repr
 
 /-- validate_atomic (matches Coq: Definition validate_atomic) -/
-def validate_atomic := True -- complex match, simplified to Prop
+def validate_atomic := sorry -- complex match, needs manual translation
 
 /-- confidence_level (matches Coq: Definition confidence_level) -/
-def confidence_level := True -- complex match, simplified to Prop
+def confidence_level := sorry -- complex match, needs manual translation
 
 /-- confidence_ge (matches Coq: Definition confidence_ge) -/
-def confidence_ge := True -- complex match, simplified to Prop
+def confidence_ge := sorry -- complex match, needs manual translation
 
 /-- formula_eqb_refl (matches Coq) -/
 theorem formula_eqb_refl : ∀ f, formula_eqb f f = true := by
@@ -112,91 +113,91 @@ theorem formula_eqb_eq : ∀ f1 f2, formula_eqb f1 f2 = true <-> f1 = f2 := by
   cases ‹_› <;> simp
 
 /-- 1 (matches Coq) -/
-theorem 1 : Validator soundness — if validate_atomic accepts, the certificate proves the right atomic formula *) Theorem validator_soundness_atomic : ∀ c n, validate_atomic c n = true → cert_formula c = FAtom n := by
+theorem 1 : Validator soundness — if validate_atomic accepts, the certificate proves the right atomic formula  Theorem validator_soundness_atomic : ∀ c n, validate_atomic c n = true → cert_formula c = FAtom n := by
   cases ‹_› <;> simp
 
 /-- 2 (matches Coq) -/
-theorem 2 : Translation preserves formula structure (roundtrip A) *) Theorem translation_preserves_structure_A : ∀ f, translate_from_A (translate_to_A f) = f := by
+theorem 2 : Translation preserves formula structure (roundtrip A)  Theorem translation_preserves_structure_A : ∀ f, translate_from_A (translate_to_A f) = f := by
   rfl
 
 /-- 3 (matches Coq) -/
-theorem 3 : Translation preserves formula structure (roundtrip B) *) Theorem translation_preserves_structure_B : ∀ f, translate_from_B (translate_to_B f) = f := by
+theorem 3 : Translation preserves formula structure (roundtrip B)  Theorem translation_preserves_structure_B : ∀ f, translate_from_B (translate_to_B f) = f := by
   rfl
 
 /-- 4 (matches Coq) -/
-theorem 4 : Independent proofs that both validate give DualProver confidence *) Theorem dual_prover_confidence : ∀ vA vB, vA = true → vB = true → confidence_level vA vB = DualProver := by
+theorem 4 : Independent proofs that both validate give DualProver confidence  Theorem dual_prover_confidence : ∀ vA vB, vA = true → vB = true → confidence_level vA vB = DualProver := by
   rfl
 
 /-- 5 (matches Coq) -/
-theorem 5 : DualProver confidence is at least as high as SingleProver *) Theorem dual_ge_single : confidence_ge DualProver SingleProver := by
+theorem 5 : DualProver confidence is at least as high as SingleProver  Theorem dual_ge_single : confidence_ge DualProver SingleProver := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : Certificate composition — modus ponens. If we have a certificate for A and a certificate for A->B, then CertImplE produces a certificate whose formula is B. *) Theorem certificate_composition : ∀ cA cAB a b, cert_formula cA = a → cert_formula cAB = FImpl a b → cert_formula (CertImplE cAB cA) = b := by
+theorem 6 : Certificate composition — modus ponens. If we have a certificate for A and a certificate for A->B, then CertImplE produces a certificate whose formula is B.  Theorem certificate_composition : ∀ cA cAB a b, cert_formula cA = a → cert_formula cAB = FImpl a b → cert_formula (CertImplE cAB cA) = b := by
   rfl
 
 /-- 7 (matches Coq) -/
-theorem 7 : Validator is deterministic *) Theorem validator_deterministic : ∀ asms c f r1 r2, validate asms c f = r1 → validate asms c f = r2 → r1 = r2 := by
+theorem 7 : Validator is deterministic  Theorem validator_deterministic : ∀ asms c f r1 r2, validate asms c f = r1 → validate asms c f = r2 → r1 = r2 := by
   rfl
 
 /-- 8 (matches Coq) -/
-theorem 8 : Formula equivalence is decidable *) Theorem formula_eq_dec : ∀ f1 f2 : formula, {f1 = f2} + {f1 ≠ f2} := by
+theorem 8 : Formula equivalence is decidable  Theorem formula_eq_dec : ∀ f1 f2 : formula, {f1 = f2} + {f1 ≠ f2} := by
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : Translation to A is injective *) Theorem translate_to_A_injective : ∀ f1 f2, translate_to_A f1 = translate_to_A f2 → f1 = f2 := by
+theorem 9 : Translation to A is injective  Theorem translate_to_A_injective : ∀ f1 f2, translate_to_A f1 = translate_to_A f2 → f1 = f2 := by
   rfl
 
 /-- 10 (matches Coq) -/
-theorem 10 : Translation to B is injective *) Theorem translate_to_B_injective : ∀ f1 f2, translate_to_B f1 = translate_to_B f2 → f1 = f2 := by
+theorem 10 : Translation to B is injective  Theorem translate_to_B_injective : ∀ f1 f2, translate_to_B f1 = translate_to_B f2 → f1 = f2 := by
   rfl
 
 /-- 11 (matches Coq) -/
-theorem 11 : Validator completeness for atomic formulas *) Theorem validator_completeness_atomic : ∀ n, validate_atomic (CertAtom n) n = true := by
+theorem 11 : Validator completeness for atomic formulas  Theorem validator_completeness_atomic : ∀ n, validate_atomic (CertAtom n) n = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : Both provers agree on translated structure — translating to A and back, vs to B and back, yield the same formula *) Theorem prover_agreement : ∀ f, translate_from_A (translate_to_A f) = translate_from_B (translate_to_B f) := by
+theorem 12 : Both provers agree on translated structure — translating to A and back, vs to B and back, yield the same formula  Theorem prover_agreement : ∀ f, translate_from_A (translate_to_A f) = translate_from_B (translate_to_B f) := by
   rfl
 
 /-- 13 (matches Coq) -/
-theorem 13 : Confidence level is symmetric in its arguments' truth values *) Theorem confidence_symmetric : ∀ vA vB, confidence_level vA vB = confidence_level vB vA → (vA = vB) ∨ (confidence_level vA vB = SingleProver) := by
+theorem 13 : Confidence level is symmetric in its arguments' truth values  Theorem confidence_symmetric : ∀ vA vB, confidence_level vA vB = confidence_level vB vA → (vA = vB) ∨ (confidence_level vA vB = SingleProver) := by
   simp_all [Bool.and_eq_true]
 
 /-- 14 (matches Coq) -/
-theorem 14 : NoConfidence only when both provers fail *) Theorem no_confidence_means_both_fail : ∀ vA vB, confidence_level vA vB = NoConfidence → vA = false ∧ vB = false := by
+theorem 14 : NoConfidence only when both provers fail  Theorem no_confidence_means_both_fail : ∀ vA vB, confidence_level vA vB = NoConfidence → vA = false ∧ vB = false := by
   simp_all [Bool.and_eq_true]
 
 /-- 15 (matches Coq) -/
-theorem 15 : SingleProver means exactly one prover succeeded *) Theorem single_prover_means_one_true : ∀ vA vB, confidence_level vA vB = SingleProver → (vA = true ∧ vB = false) ∨ (vA = false ∧ vB = true) := by
+theorem 15 : SingleProver means exactly one prover succeeded  Theorem single_prover_means_one_true : ∀ vA vB, confidence_level vA vB = SingleProver → (vA = true ∧ vB = false) ∨ (vA = false ∧ vB = true) := by
   simp_all [Bool.and_eq_true]
 
 /-- 16 (matches Coq) -/
-theorem 16 : DualProver means both succeeded *) Theorem dual_prover_means_both_true : ∀ vA vB, confidence_level vA vB = DualProver → vA = true ∧ vB = true := by
+theorem 16 : DualProver means both succeeded  Theorem dual_prover_means_both_true : ∀ vA vB, confidence_level vA vB = DualProver → vA = true ∧ vB = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 17 (matches Coq) -/
-theorem 17 : confidence_ge is reflexive *) Theorem confidence_ge_refl : ∀ c, confidence_ge c c := by
+theorem 17 : confidence_ge is reflexive  Theorem confidence_ge_refl : ∀ c, confidence_ge c c := by
   simp_all [Bool.and_eq_true]
 
 /-- 18 (matches Coq) -/
-theorem 18 : confidence_ge is transitive *) Theorem confidence_ge_trans : ∀ c1 c2 c3, confidence_ge c1 c2 → confidence_ge c2 c3 → confidence_ge c1 c3 := by
+theorem 18 : confidence_ge is transitive  Theorem confidence_ge_trans : ∀ c1 c2 c3, confidence_ge c1 c2 → confidence_ge c2 c3 → confidence_ge c1 c3 := by
   simp_all [Bool.and_eq_true]
 
 /-- 19 (matches Coq) -/
-theorem 19 : Confidence level monotonicity — adding a valid prover can only help *) Theorem confidence_monotone_add_valid : ∀ vA, confidence_ge (confidence_level vA true) (confidence_level vA false) := by
+theorem 19 : Confidence level monotonicity — adding a valid prover can only help  Theorem confidence_monotone_add_valid : ∀ vA, confidence_ge (confidence_level vA true) (confidence_level vA false) := by
   simp_all [Bool.and_eq_true]
 
 /-- 20 (matches Coq) -/
-theorem 20 : Certificate for And has correct sub-formulas *) Theorem cert_and_sub_formulas : ∀ c1 c2, cert_formula (CertAndI c1 c2) = FAnd (cert_formula c1) (cert_formula c2) := by
+theorem 20 : Certificate for And has correct sub-formulas  Theorem cert_and_sub_formulas : ∀ c1 c2, cert_formula (CertAndI c1 c2) = FAnd (cert_formula c1) (cert_formula c2) := by
   rfl
 
 /-- 21 (matches Coq) -/
-theorem 21 : Formula equality is symmetric *) Theorem formula_eqb_sym : ∀ f1 f2, formula_eqb f1 f2 = formula_eqb f2 f1 := by
+theorem 21 : Formula equality is symmetric  Theorem formula_eqb_sym : ∀ f1 f2, formula_eqb f1 f2 = formula_eqb f2 f1 := by
   cases ‹_› <;> simp
 
 /-- 22 (matches Coq) -/
-theorem 22 : Validate atomic false for non-atom certificates *) Theorem validate_atomic_non_atom : ∀ f c n, validate_atomic (CertNotI f c) n = false := by
+theorem 22 : Validate atomic false for non-atom certificates  Theorem validate_atomic_non_atom : ∀ f c n, validate_atomic (CertNotI f c) n = false := by
   rfl
 
 end RIINA

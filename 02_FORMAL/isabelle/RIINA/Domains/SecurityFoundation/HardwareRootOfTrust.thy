@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA HardwareRootOfTrust - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | HSMType            | hsm_type               | OK     |
+ * | KeyId              | key_id                 | OK     |
  * | BootComponentId    | boot_component_id      | OK     |
  * | Measurement        | measurement            | OK     |
  * | TrustChainEntry    | trust_chain_entry      | OK     |
@@ -54,13 +56,16 @@ begin
 
 (* HSMType (matches Coq: Inductive HSMType) *)
 datatype hsm_type =
-    TPM  (* Trusted Platform Module *)
-  |     SecureEnclave  (* ARM TrustZone Secure Enclave *)
-  |     TitanM  (* Google Titan M *)
+    TPM
+  |     SecureEnclave
+  |     TitanM
   |     AppleSEP
-  |     RootKey  (* Root of trust key - never leaves hardware *)
-  |     AttestationKey  (* For remote attestation *)
-  |     SealingKey  (* For data sealing *)
+
+(* KeyId (matches Coq: Inductive KeyId) *)
+datatype key_id =
+    RootKey
+  |     AttestationKey
+  |     SealingKey
   |     SigningKey
 
 (* BootComponentId (matches Coq: Inductive BootComponentId) *)
@@ -71,7 +76,7 @@ datatype boot_component_id =
 record measurement =
   measured_component :: BootComponentId
   measurement_value :: nat
-  measurement_algorithm :: nat  (* SHA-256 = 0, SHA-384 = 1, etc. *)
+  measurement_algorithm :: nat
 
 (* TrustChainEntry (matches Coq: Record TrustChainEntry) *)
 record trust_chain_entry =

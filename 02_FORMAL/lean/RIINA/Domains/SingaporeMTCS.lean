@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SingaporeMTCS - Lean 4 Port
@@ -63,14 +64,14 @@ namespace RIINA
 
 /-- MTCSLevel (matches Coq: Inductive MTCSLevel) -/
 inductive MTCSLevel where
-  | mTCS_Level1 : MTCSLevel  -- Non-sensitive
-  | mTCS_Level2 : MTCSLevel  -- Sensitive business
+  | mTCS_Level1 : MTCSLevel
+  | mTCS_Level2 : MTCSLevel
   | mTCS_Level3 : MTCSLevel
   deriving DecidableEq, Repr
 
 /-- IM8Classification (matches Coq: Inductive IM8Classification) -/
 inductive IM8Classification where
-  | iM8_Official : IM8Classification  -- Default
+  | iM8_Official : IM8Classification
   | iM8_Restricted : IM8Classification
   | iM8_Confidential : IM8Classification
   | iM8_Secret : IM8Classification
@@ -109,7 +110,7 @@ def im8_level (c : IM8Classification) : Nat :=
   | .iM8_Secret => 3
 
 /-- im8_controls_adequate (matches Coq: Definition im8_controls_adequate) -/
-def im8_controls_adequate := True -- complex match, simplified to Prop
+def im8_controls_adequate := sorry -- complex match, needs manual translation
 
 /-- im8_assessed (matches Coq: Definition im8_assessed) -/
 def im8_assessed (s : GovTechSystem) : Prop :=

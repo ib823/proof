@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA UIComponents - Lean 4 Port
@@ -254,14 +255,14 @@ def visible (e : UIElement) : Prop :=
   element_visible e = true
 
 /-- has_accessibility_label (matches Coq: Definition has_accessibility_label) -/
-def has_accessibility_label := True -- complex match, simplified to Prop
+def has_accessibility_label := sorry -- complex match, needs manual translation
 
 /-- navigable_by_voiceover (matches Coq: Definition navigable_by_voiceover) -/
 def navigable_by_voiceover (e : UIElement) : Prop :=
   element_voiceover_navigable e = true
 
 /-- valid_state_transition (matches Coq: Definition valid_state_transition) -/
-def valid_state_transition := True -- complex match, simplified to Prop
+def valid_state_transition := sorry -- complex match, needs manual translation
 
 /-- valid_source_state (matches Coq: Definition valid_source_state) -/
 def valid_source_state (t : Transition) : Prop :=
@@ -276,7 +277,7 @@ def apply_transition (t : Transition) (s : Screen) : Screen :=
     s
 
 /-- valid_target_state (matches Coq: Definition valid_target_state) -/
-def valid_target_state := True -- complex match, simplified to Prop
+def valid_target_state := sorry -- complex match, needs manual translation
 
 /-- accessible_element (matches Coq: Definition accessible_element) -/
 def accessible_element (e : UIElement) : Prop :=

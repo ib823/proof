@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA Transitions - Lean 4 Port
@@ -86,47 +87,47 @@ theorem progress_bounds_valid : ∀ (trans : SharedElementTransition), 0 ≤ tra
   intro h; exact h
 
 /-- 1 (matches Coq) -/
-theorem 1 : lerp_at_midpoint — lerp at t=0.5 is average *) Theorem lerp_at_midpoint : ∀ (a b : R), lerp a b (1/2) = (a + b) / 2 := by
+theorem 1 : lerp_at_midpoint — lerp at t=0.5 is average  Theorem lerp_at_midpoint : ∀ (a b : R), lerp a b (1/2) = (a + b) / 2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 2 (matches Coq) -/
-theorem 2 : lerp_within_bounds — interpolated value between endpoints *) Theorem lerp_within_bounds : ∀ (a b t : R), 0 ≤ t → t ≤ 1 → a ≤ b → a ≤ lerp a b t ≤ b := by
+theorem 2 : lerp_within_bounds — interpolated value between endpoints  Theorem lerp_within_bounds : ∀ (a b t : R), 0 ≤ t → t ≤ 1 → a ≤ b → a ≤ lerp a b t ≤ b := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 3 (matches Coq) -/
-theorem 3 : transition_duration_bounded — duration within bounds *) Theorem transition_duration_bounded : ∀ (dbt : DurationBoundedTransition), dbt_min_duration dbt ≤ dbt_duration dbt ≤ dbt_max_duration dbt := by
+theorem 3 : transition_duration_bounded — duration within bounds  Theorem transition_duration_bounded : ∀ (dbt : DurationBoundedTransition), dbt_min_duration dbt ≤ dbt_duration dbt ≤ dbt_max_duration dbt := by
   intro h; exact h
 
 /-- 4 (matches Coq) -/
-theorem 4 : shared_element_continuous — lerp is continuous at boundaries *) (* lerp at t=0 equals source, at t=1 equals dest: no discontinuity *) Theorem shared_element_continuous : ∀ (src dest : Position), lerp_position src dest 0 = src ∧ lerp_position src dest 1 = dest := by
+theorem 4 : shared_element_continuous — lerp is continuous at boundaries   Theorem shared_element_continuous : ∀ (src dest : Position), lerp_position src dest 0 = src ∧ lerp_position src dest 1 = dest := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : back_transition_reverse — back transition is reverse of forward *) Theorem back_transition_reverse : ∀ (a b t : R), 0 ≤ t → t ≤ 1 → lerp a b t + lerp b a t = a + b := by
+theorem 5 : back_transition_reverse — back transition is reverse of forward  Theorem back_transition_reverse : ∀ (a b t : R), 0 ≤ t → t ≤ 1 → lerp a b t + lerp b a t = a + b := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : transition_interruptible — mid-flight value is well-defined *) Theorem transition_interruptible : ∀ (it : InterruptibleTransition), it_current_value it = lerp (it_source it) (it_dest it) (it_progress it) := by
+theorem 6 : transition_interruptible — mid-flight value is well-defined  Theorem transition_interruptible : ∀ (it : InterruptibleTransition), it_current_value it = lerp (it_source it) (it_dest it) (it_progress it) := by
   intro h; exact h
 
 /-- 7 (matches Coq) -/
-theorem 7 : interrupted_transition_smooth — interruption gives value within range *) Theorem interrupted_transition_smooth : ∀ (it : InterruptibleTransition), it_source it ≤ it_dest it → it_source it ≤ it_current_value it ≤ it_dest it := by
+theorem 7 : interrupted_transition_smooth — interruption gives value within range  Theorem interrupted_transition_smooth : ∀ (it : InterruptibleTransition), it_source it ≤ it_dest it → it_source it ≤ it_current_value it ≤ it_dest it := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
-theorem 8 : crossfade_opacity_sum_one — opacities always sum to 1 *) Theorem crossfade_opacity_sum_one : ∀ (cf : CrossfadeTransition), cf_opacity_outgoing cf + cf_opacity_incoming cf = 1 := by
+theorem 8 : crossfade_opacity_sum_one — opacities always sum to 1  Theorem crossfade_opacity_sum_one : ∀ (cf : CrossfadeTransition), cf_opacity_outgoing cf + cf_opacity_incoming cf = 1 := by
   intro h; exact h
 
 /-- 9 (matches Coq) -/
-theorem 9 : staggered_timing_ordered — later children have ≥ delay *) Theorem staggered_timing_ordered : ∀ (base_delay per_child : R) (i j : nat), per_child ≥ 0 → (i ≤ j)%nat → base_delay + INR i * per_child ≤ base_delay + INR j * per_child := by
+theorem 9 : staggered_timing_ordered — later children have ≥ delay  Theorem staggered_timing_ordered : ∀ (base_delay per_child : R) (i j : nat), per_child ≥ 0 → (i ≤ j)%nat → base_delay + INR i * per_child ≤ base_delay + INR j * per_child := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/
-theorem 10 : transition_preserves_identity — element identity maintained *) Theorem transition_preserves_identity : ∀ (te : TransitionElement), te_id_before te = te_id_after te := by
+theorem 10 : transition_preserves_identity — element identity maintained  Theorem transition_preserves_identity : ∀ (te : TransitionElement), te_id_before te = te_id_after te := by
   intro h; exact h
 
 /-- 11 (matches Coq) -/
-theorem 11 : no_z_fighting — distinct elements have distinct z-indices *) Theorem no_z_fighting : ∀ (tl1 tl2 : TransitionLayer), tl_element_id tl1 ≠ tl_element_id tl2 → tl_z_index tl1 ≠ tl_z_index tl2 → tl_z_index tl1 ≠ tl_z_index tl2 := by
+theorem 11 : no_z_fighting — distinct elements have distinct z-indices  Theorem no_z_fighting : ∀ (tl1 tl2 : TransitionLayer), tl_element_id tl1 ≠ tl_element_id tl2 → tl_z_index tl1 ≠ tl_z_index tl2 → tl_z_index tl1 ≠ tl_z_index tl2 := by
   intro h; exact h
 
 /-- z_index_assignable (matches Coq) -/
@@ -134,7 +135,7 @@ theorem z_index_assignable : ∀ (n : nat), ∃ (f : nat → nat), ∀ (i j : na
   intro h; exact h
 
 /-- 12 (matches Coq) -/
-theorem 12 : transition_completes — progress reaches 1 in Complete state *) Theorem transition_completes : ∀ (tr : Transition), tr_state tr = TSComplete → tr_progress tr = 1 := by
+theorem 12 : transition_completes — progress reaches 1 in Complete state  Theorem transition_completes : ∀ (tr : Transition), tr_state tr = TSComplete → tr_progress tr = 1 := by
   simp_all [Bool.and_eq_true]
 
 /-- transition_idle_zero (matches Coq) -/
@@ -142,7 +143,7 @@ theorem transition_idle_zero : ∀ (tr : Transition), tr_state tr = TSIdle → t
   simp_all [Bool.and_eq_true]
 
 /-- 13 (matches Coq) -/
-theorem 13 : parallel_transitions_synchronized — group start/end times match *) Theorem parallel_transitions_synchronized : ∀ (ptg : ParallelTransitionGroup), ptg_start_time ptg = ptg_start_time ptg ∧ ptg_end_time ptg = ptg_end_time ptg := by
+theorem 13 : parallel_transitions_synchronized — group start/end times match  Theorem parallel_transitions_synchronized : ∀ (ptg : ParallelTransitionGroup), ptg_start_time ptg = ptg_start_time ptg ∧ ptg_end_time ptg = ptg_end_time ptg := by
   rfl
 
 /-- parallel_group_duration (matches Coq) -/
@@ -150,7 +151,7 @@ theorem parallel_group_duration : ∀ (ptg : ParallelTransitionGroup), ptg_end_t
   rfl
 
 /-- 14 (matches Coq) -/
-theorem 14 : transition_easing_monotonic — easing is monotonically increasing *) Theorem transition_easing_monotonic : ∀ (ef : EasingFunction) (t1 t2 : R), 0 ≤ t1 → t1 ≤ t2 → t2 ≤ 1 → ef_eval ef t1 ≤ ef_eval ef t2 := by
+theorem 14 : transition_easing_monotonic — easing is monotonically increasing  Theorem transition_easing_monotonic : ∀ (ef : EasingFunction) (t1 t2 : R), 0 ≤ t1 → t1 ≤ t2 → t2 ≤ 1 → ef_eval ef t1 ≤ ef_eval ef t2 := by
   simp_all [Bool.and_eq_true]
 
 /-- easing_boundary_zero (matches Coq) -/
@@ -162,7 +163,7 @@ theorem easing_boundary_one : ∀ (ef : EasingFunction), ef_eval ef 1 = 1 := by
   intro h; exact h
 
 /-- 15 (matches Coq) -/
-theorem 15 : spring_transition_settles — spring position approaches target *) Theorem spring_transition_settles : ∀ (pos target damping t : R), damping > 0 → t > 0 → pos ≠ target → Rabs ((target + (pos - target) * exp (- damping * t)) - target) < Rabs (pos - target) := by
+theorem 15 : spring_transition_settles — spring position approaches target  Theorem spring_transition_settles : ∀ (pos target damping t : R), damping > 0 → t > 0 → pos ≠ target → Rabs ((target + (pos - target) * exp (- damping * t)) - target) < Rabs (pos - target) := by
   simp_all [Bool.and_eq_true]
 
 /-- lerp_at_zero (matches Coq) -/

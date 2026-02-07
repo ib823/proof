@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SmartContractSecurity - Lean 4 Port
@@ -94,8 +95,9 @@ inductive ContractVulnerability where
 
 /-- CEIPhase (matches Coq: Inductive CEIPhase) -/
 inductive CEIPhase where
-  | checks : CEIPhase  -- Validate conditions
-  | effects : CEIPhase  -- Update state
+  | checks : CEIPhase
+  | effects : CEIPhase
+  | interactions : CEIPhase
   deriving DecidableEq, Repr
 
 /-- ReentrancyGuard (matches Coq: Record ReentrancyGuard) -/

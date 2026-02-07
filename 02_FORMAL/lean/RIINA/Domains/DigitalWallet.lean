@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DigitalWallet - Lean 4 Port
@@ -342,10 +343,10 @@ def tier_daily_withdrawal_limit (t : WalletTier) : Z :=
   | .unlimited => 500000000
 
 /-- sum_credits (matches Coq: Definition sum_credits) -/
-def sum_credits := True -- complex match, simplified to Prop
+def sum_credits := sorry -- complex match, needs manual translation
 
 /-- sum_debits (matches Coq: Definition sum_debits) -/
-def sum_debits := True -- complex match, simplified to Prop
+def sum_debits := sorry -- complex match, needs manual translation
 
 /-- invalidated (matches Coq: Definition invalidated) -/
 def invalidated (qr : QRCode) : Prop :=

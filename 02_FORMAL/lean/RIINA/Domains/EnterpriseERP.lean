@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA EnterpriseERP - Lean 4 Port
@@ -125,7 +126,7 @@ def period_closed (period_end current : Nat) : Bool :=
   Nat
 
 /-- valid_doc_transition (matches Coq: Definition valid_doc_transition) -/
-def valid_doc_transition := True -- complex match, simplified to Prop
+def valid_doc_transition := sorry -- complex match, needs manual translation
 
 /-- maker_checker (matches Coq: Definition maker_checker) -/
 def maker_checker (maker checker : User) : Bool :=
@@ -228,7 +229,7 @@ theorem erp_015_maker_checker : ∀ (maker checker : User), maker_checker maker 
   simp_all [Bool.and_eq_true]
 
 /-- erp_016_delegation_logged (matches Coq) -/
-theorem erp_016_delegation_logged : ∀ (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = true → (* 99 = delegation action *) ∃ a, In a audits := by
+theorem erp_016_delegation_logged : ∀ (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = true →  ∃ a, In a audits := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_017_time_limited (matches Coq) -/

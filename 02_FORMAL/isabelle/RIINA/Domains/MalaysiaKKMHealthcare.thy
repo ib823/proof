@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaKKMHealthcare - Isabelle/HOL Port
@@ -70,7 +71,7 @@ datatype emr_classification =
   |     ClinicalNotes
   |     DiagnosticResults
   |     Prescriptions
-  |     MentalHealth  (* Higher protection *)
+  |     MentalHealth
   |     HIV_STI
 
 (* patient_confidentiality (matches Coq: Definition patient_confidentiality) *)

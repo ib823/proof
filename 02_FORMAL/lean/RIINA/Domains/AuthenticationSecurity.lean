@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA AuthenticationSecurity - Lean 4 Port
@@ -77,7 +78,7 @@ structure PasswordHash where
   ph_hash : List
   ph_salt : List
   ph_iterations : Nat
-  ph_algorithm : Nat  -- 0=argon2, 1=bcrypt, etc
+  ph_algorithm : Nat
   deriving DecidableEq, Repr
 
 /-- SessionToken (matches Coq: Record SessionToken) -/
@@ -116,7 +117,7 @@ structure AuthTicket where
 
 /-- ServiceKey (matches Coq: Record ServiceKey) -/
 structure ServiceKey where
-  sk_algorithm : Nat  -- Must be >= 2 for AES
+  sk_algorithm : Nat
   sk_key : List
   deriving DecidableEq, Repr
 
@@ -149,7 +150,7 @@ structure OAuthState where
 /-- JWTConfig (matches Coq: Record JWTConfig) -/
 structure JWTConfig where
   jwt_alg_none_disabled : Bool
-  jwt_alg_symmetric_disabled : Bool  -- When using asymmetric
+  jwt_alg_symmetric_disabled : Bool
   jwt_exp_required : Bool
   deriving DecidableEq, Repr
 
@@ -192,7 +193,7 @@ def token_valid (t : SessionToken) (now : Nat) : Bool :=
   Nat
 
 /-- token_bound (matches Coq: Definition token_bound) -/
-def token_bound := True -- complex match, simplified to Prop
+def token_bound := sorry -- complex match, needs manual translation
 
 /-- nonce_fresh (matches Coq: Definition nonce_fresh) -/
 def nonce_fresh (ns : NonceStore) (n : Nat) : Bool :=
@@ -203,7 +204,7 @@ theorem auth_001_credential_stuffing_mitigated : ∀ (rl : RateLimiter), rl_atte
   simp_all [Bool.and_eq_true]
 
 /-- auth_002_password_spraying_mitigated (matches Coq) -/
-theorem auth_002_password_spraying_mitigated : ∀ (rl : RateLimiter), is_rate_limited rl = true → (* Further attempts blocked *) rl_attempts rl ≥ rl_max_attempts rl := by
+theorem auth_002_password_spraying_mitigated : ∀ (rl : RateLimiter), is_rate_limited rl = true →  rl_attempts rl ≥ rl_max_attempts rl := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_003_brute_force_mitigated (matches Coq) -/
@@ -211,7 +212,7 @@ theorem auth_003_brute_force_mitigated : ∀ (rl : RateLimiter) (n : nat), n ≥
   simp_all [Bool.and_eq_true]
 
 /-- auth_004_pass_the_hash_mitigated (matches Coq) -/
-theorem auth_004_pass_the_hash_mitigated : ∀ (t : AuthTicket), (* Ticket doesn't contain password hash *) length (at_signature t) > 0 → True := by
+theorem auth_004_pass_the_hash_mitigated : ∀ (t : AuthTicket),  length (at_signature t) > 0 → True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_005_pass_the_ticket_mitigated (matches Coq) -/
@@ -219,15 +220,15 @@ theorem auth_005_pass_the_ticket_mitigated : ∀ (t : SessionToken) (now : nat),
   simp_all [Bool.and_eq_true]
 
 /-- auth_006_kerberoasting_mitigated (matches Coq) -/
-theorem auth_006_kerberoasting_mitigated : ∀ (sk : ServiceKey), sk_algorithm sk ≥ 2 → (* AES or stronger required *) True := by
+theorem auth_006_kerberoasting_mitigated : ∀ (sk : ServiceKey), sk_algorithm sk ≥ 2 →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_007_golden_ticket_mitigated (matches Coq) -/
-theorem auth_007_golden_ticket_mitigated : ∀ (k : HSMProtectedKey), hsm_extractable k = false → (* Key cannot be extracted from HSM *) True := by
+theorem auth_007_golden_ticket_mitigated : ∀ (k : HSMProtectedKey), hsm_extractable k = false →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_008_silver_ticket_mitigated (matches Coq) -/
-theorem auth_008_silver_ticket_mitigated : ∀ (ma : MutualAuth), ma_client_verified ma = true → ma_server_verified ma = true → (* Both parties authenticated *) True := by
+theorem auth_008_silver_ticket_mitigated : ∀ (ma : MutualAuth), ma_client_verified ma = true → ma_server_verified ma = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_009_credential_theft_mitigated (matches Coq) -/
@@ -239,23 +240,23 @@ theorem auth_010_session_fixation_mitigated : ∀ (old_id new_id : nat), old_id 
   intro h; exact h
 
 /-- auth_011_auth_bypass_mitigated (matches Coq) -/
-theorem auth_011_auth_bypass_mitigated : ∀ (ra : RouteAuth), ra_auth_required ra = true → ra_auth_checked ra = true → (* Auth was checked when required *) True := by
+theorem auth_011_auth_bypass_mitigated : ∀ (ra : RouteAuth), ra_auth_required ra = true → ra_auth_checked ra = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_012_oauth_attacks_mitigated (matches Coq) -/
-theorem auth_012_oauth_attacks_mitigated : ∀ (os : OAuthState), length (oauth_state_param os) ≥ 32 → length (oauth_pkce_verifier os) ≥ 43 → oauth_redirect_validated os = true → (* State, PKCE, and redirect validation *) True := by
+theorem auth_012_oauth_attacks_mitigated : ∀ (os : OAuthState), length (oauth_state_param os) ≥ 32 → length (oauth_pkce_verifier os) ≥ 43 → oauth_redirect_validated os = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_013_jwt_attacks_mitigated (matches Coq) -/
-theorem auth_013_jwt_attacks_mitigated : ∀ (jc : JWTConfig), jwt_alg_none_disabled jc = true → jwt_exp_required jc = true → (* None algorithm rejected, expiry required *) True := by
+theorem auth_013_jwt_attacks_mitigated : ∀ (jc : JWTConfig), jwt_alg_none_disabled jc = true → jwt_exp_required jc = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_014_saml_attacks_mitigated (matches Coq) -/
-theorem auth_014_saml_attacks_mitigated : ∀ (sc : SAMLConfig), saml_signature_required sc = true → saml_replay_detection sc = true → (* Signatures and replay detection *) True := by
+theorem auth_014_saml_attacks_mitigated : ∀ (sc : SAMLConfig), saml_signature_required sc = true → saml_replay_detection sc = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_015_sso_attacks_mitigated (matches Coq) -/
-theorem auth_015_sso_attacks_mitigated : ∀ (os : OAuthState) (jc : JWTConfig), oauth_redirect_validated os = true → jwt_alg_none_disabled jc = true → (* Combined OAuth + JWT security *) True := by
+theorem auth_015_sso_attacks_mitigated : ∀ (os : OAuthState) (jc : JWTConfig), oauth_redirect_validated os = true → jwt_alg_none_disabled jc = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_016_mfa_bypass_mitigated (matches Coq) -/
@@ -263,11 +264,11 @@ theorem auth_016_mfa_bypass_mitigated : ∀ (s : MFAState), mfa_required s = tru
   intro h; exact h
 
 /-- auth_017_biometric_spoof_mitigated (matches Coq) -/
-theorem auth_017_biometric_spoof_mitigated : ∀ (ba : BiometricAuth), bio_liveness_check ba = true → bio_confidence ba ≥ bio_min_confidence ba → (* Liveness detection and confidence threshold *) True := by
+theorem auth_017_biometric_spoof_mitigated : ∀ (ba : BiometricAuth), bio_liveness_check ba = true → bio_confidence ba ≥ bio_min_confidence ba →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_018_token_theft_mitigated (matches Coq) -/
-theorem auth_018_token_theft_mitigated : ∀ (t : SessionToken) (ip ua : nat), token_bound t ip ua = true → (* Token bound to client attributes *) True := by
+theorem auth_018_token_theft_mitigated : ∀ (t : SessionToken) (ip ua : nat), token_bound t ip ua = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_019_replay_mitigated (matches Coq) -/
@@ -275,7 +276,7 @@ theorem auth_019_replay_mitigated : ∀ (ns : NonceStore) (n : nat), nonce_fresh
   simp_all [Bool.and_eq_true]
 
 /-- auth_020_phishing_mitigated (matches Coq) -/
-theorem auth_020_phishing_mitigated : ∀ (wa : WebAuthnAuth), wa_origin_bound wa = true → wa_challenge_verified wa = true → (* Origin-bound credentials prevent phishing *) True := by
+theorem auth_020_phishing_mitigated : ∀ (wa : WebAuthnAuth), wa_origin_bound wa = true → wa_challenge_verified wa = true →  True := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ESGCompliance - Isabelle/HOL Port
@@ -125,19 +126,19 @@ datatype water_source =
 record emission_source =
   source_id :: nat
   source_type :: EmissionScope
-  quantity :: Z  (* In tonnes CO2e, scaled by 10^6 *)
+  quantity :: Z
   emission_factor :: Z
   is_tracked :: bool
   is_measured :: bool
   is_reported :: bool
   owned_or_controlled_flag :: bool
-  emission_hash :: nat  (* Unique identifier for double-counting check *)
+  emission_hash :: nat
 
 (* WaterWithdrawal (matches Coq: Record WaterWithdrawal) *)
 record water_withdrawal =
   withdrawal_id :: nat
   water_source :: WaterSource
-  volume :: Z  (* In cubic meters *)
+  volume :: Z
   quality :: nat
   source_documented :: bool
 
@@ -187,7 +188,7 @@ record employee =
   no_debt_bondage :: bool
   documents_retained :: bool
   employed_flag :: bool
-  gender :: nat  (* For pay gap analysis *)
+  gender :: nat
 
 (* SafetyIncident (matches Coq: Record SafetyIncident) *)
 record safety_incident =
@@ -224,7 +225,7 @@ record hrdd_process =
 record supplier =
   supplier_id :: nat
   risk_assessed :: bool
-  assessment_date :: nat  (* Year *)
+  assessment_date :: nat
   current_year :: nat
   high_risk :: bool
 
@@ -339,7 +340,7 @@ record esg_compliant_system =
   sys_coi :: ConflictOfInterest
   sys_rpt :: 'a list
   sys_disclosure :: Disclosure
-  sys_sbt :: ScienceBasedTarget  (* Compliance predicates - the system enforces these *)
+  sys_sbt :: ScienceBasedTarget
   emissions_complete :: forall
   scope2_tracked :: forall
   emissions_unique :: forall

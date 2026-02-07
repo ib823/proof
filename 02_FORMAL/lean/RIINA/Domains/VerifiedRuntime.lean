@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedRuntime - Lean 4 Port
@@ -89,7 +90,7 @@ structure Heap where
 structure ManagedHeap where
   mh_live : Ptr
   mh_roots : Roots
-  mh_refs : Refs  -- References from each object
+  mh_refs : Refs
   mh_size : Ptr
   mh_finalizer : Ptr
   mh_finalized : Ptr
@@ -119,7 +120,7 @@ def valid_ptr (h : Heap) (p : Ptr) : Prop :=
   exists size, heap_mem h p = Some size
 
 /-- accessible_size (matches Coq: Definition accessible_size) -/
-def accessible_size := True -- complex match, simplified to Prop
+def accessible_size := sorry -- complex match, needs manual translation
 
 /-- sufficient_space (matches Coq: Definition sufficient_space) -/
 def sufficient_space (h : Heap) (size : Nat) : Prop :=
@@ -219,7 +220,7 @@ theorem RT_001_01_alloc_safe : ∀ h size p h', size > 0 → sufficient_space h 
   cases ‹_› <;> simp <;> omega
 
 /-- RT_001_02_alloc_no_overlap (matches Coq) -/
-theorem RT_001_02_alloc_no_overlap : ∀ h size p h', heap_wf h → size > 0 → alloc h size = Some (p, h') → heap_mem h p = None. (* New allocation is at a fresh location *) := by
+theorem RT_001_02_alloc_no_overlap : ∀ h size p h', heap_wf h → size > 0 → alloc h size = Some (p, h') → heap_mem h p = None.  := by
   intro h; exact h
 
 /-- RT_001_03_free_correct (matches Coq) -/

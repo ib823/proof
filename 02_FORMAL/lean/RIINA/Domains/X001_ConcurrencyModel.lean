@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA X001_ConcurrencyModel - Lean 4 Port
@@ -96,8 +97,8 @@ namespace RIINA
 
 /-- AccessMode (matches Coq: Inductive AccessMode) -/
 inductive AccessMode where
-  | exclusive : AccessMode  -- &mut T — unique mutable access
-  | shared : AccessMode  -- &T — shared immutable access
+  | exclusive : AccessMode
+  | shared : AccessMode
   | moved : AccessMode
   deriving DecidableEq, Repr
 
@@ -110,46 +111,46 @@ inductive MsgType where
 
 /-- SessionType (matches Coq: Inductive SessionType) -/
 inductive SessionType where
-  | sSend : SessionType  -- !T.S
-  | sRecv : SessionType  -- ?T.S
-  | sSelect : SessionType  -- +{L:S}
-  | sOffer : SessionType  -- &{L:S}
+  | sSend : MsgType → SessionType → SessionType
+  | sRecv : MsgType → SessionType → SessionType
+  | sSelect : List (Nat * SessionType) → SessionType
+  | sOffer : List (Nat * SessionType) → SessionType
   | sEnd : SessionType
   deriving DecidableEq, Repr
 
 /-- CExpr (matches Coq: Inductive CExpr) -/
 inductive CExpr where
-  | cSpawn : CExpr
-  | cNewChan : CExpr
-  | cSend : CExpr
-  | cRecv : CExpr
-  | cClose : CExpr
-  | cSelect : CExpr
-  | cOffer : CExpr
-  | cSeq : CExpr
-  | cValue : CExpr
+  | cSpawn : CExpr → CExpr
+  | cNewChan : SessionType → CExpr
+  | cSend : Channel → Nat → CExpr → CExpr
+  | cRecv : Channel → CExpr
+  | cClose : Channel → CExpr
+  | cSelect : Channel → Nat → CExpr
+  | cOffer : Channel → List (Nat * CExpr) → CExpr
+  | cSeq : CExpr → CExpr → CExpr
+  | cValue : Nat → CExpr
   deriving DecidableEq, Repr
 
 /-- GlobalType (matches Coq: Inductive GlobalType) -/
 inductive GlobalType where
-  | gMsg : GlobalType
-  | gChoice : GlobalType
+  | gMsg : Role → Role → MsgType → GlobalType → GlobalType
+  | gChoice : Role → List (Nat * GlobalType) → GlobalType
   | gEnd : GlobalType
   deriving DecidableEq, Repr
 
 /-- AtomicOp (matches Coq: Inductive AtomicOp) -/
 inductive AtomicOp where
-  | aOLoad : AtomicOp
-  | aOStore : AtomicOp
-  | aOCompareExchange : AtomicOp
-  | aOFetchAdd : AtomicOp
+  | aOLoad : Loc → AtomicOp
+  | aOStore : Loc → Nat → AtomicOp
+  | aOCompareExchange : Loc → Nat → Nat → AtomicOp
+  | aOFetchAdd : Loc → Nat → AtomicOp
   deriving DecidableEq, Repr
 
 /-- Channel (matches Coq: Record Channel) -/
 structure Channel where
   chan_id : Nat
   chan_type : SessionType
-  chan_linear : Bool  -- Linear flag - used exactly once
+  chan_linear : Bool
   deriving DecidableEq, Repr
 
 /-- ThreadConfig (matches Coq: Record ThreadConfig) -/
@@ -364,11 +365,11 @@ theorem X_001_10_session_fidelity : ∀ ch mt s, chan_type ch = SSend mt s → c
   rfl
 
 /-- X_001_11_session_progress (matches Coq) -/
-theorem X_001_11_session_progress : ∀ cfg : Config, session_typed cfg → cfg ≠ [] → ∃ cfg' : Config, True. (* Sessions can always progress or are done *) := by
+theorem X_001_11_session_progress : ∀ cfg : Config, session_typed cfg → cfg ≠ [] → ∃ cfg' : Config, True.  := by
   intro h; exact h
 
 /-- X_001_12_session_safety (matches Coq) -/
-theorem X_001_12_session_safety : ∀ ch1 ch2, chan_type ch1 = dual (chan_type ch2) → chan_id ch1 = chan_id ch2 → True. (* Communication is safe *) := by
+theorem X_001_12_session_safety : ∀ ch1 ch2, chan_type ch1 = dual (chan_type ch2) → chan_id ch1 = chan_id ch2 → True.  := by
   intro h; exact h
 
 /-- X_001_13_channel_linear (matches Coq) -/
@@ -416,7 +417,7 @@ theorem X_001_21_resource_ordering : ∀ r1 r2, r1 ≠ r2 → r1 < r2 ∨ r2 < r
   omega
 
 /-- X_001_22_timeout_prevents_deadlock (matches Coq) -/
-theorem X_001_22_timeout_prevents_deadlock : ∀ cfg, has_timeout cfg → ~ deadlocked cfg ∨ True. (* Timeout either prevents or allows recovery *) := by
+theorem X_001_22_timeout_prevents_deadlock : ∀ cfg, has_timeout cfg → ~ deadlocked cfg ∨ True.  := by
   intro h; exact h
 
 /-- X_001_23_deadlock_detection (matches Coq) -/

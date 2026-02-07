@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SingaporeCybersecurityAct - Lean 4 Port
@@ -73,9 +74,9 @@ inductive CIISector where
 
 /-- EntityClassification (matches Coq: Inductive EntityClassification) -/
 inductive EntityClassification where
-  | cIIOwner : EntityClassification  -- Critical Information Infrastructure
-  | eSCI : EntityClassification  -- Entity of Special Cybersecurity Interest
-  | sTCC : EntityClassification  -- System of Temporary Cybersecurity Concern
+  | cIIOwner : EntityClassification
+  | eSCI : EntityClassification
+  | sTCC : EntityClassification
   | regularEntity : EntityClassification
   deriving DecidableEq, Repr
 

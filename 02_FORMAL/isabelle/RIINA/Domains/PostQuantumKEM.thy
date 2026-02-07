@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PostQuantumKEM - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | SecurityLevel      | security_level         | OK     |
+ * | KEMParameterSet    | kem_parameter_set      | OK     |
  * | KeyPair            | key_pair               | OK     |
  * | EncapsResult       | encaps_result          | OK     |
  * | KEMInstance        | kem_instance           | OK     |
@@ -68,10 +70,15 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
 datatype security_level =
-    Level1  (* ~AES-128 equivalent *)
-  |     Level3  (* ~AES-192 equivalent *)
-  |     ML_KEM_512  (* Level 1 *)
-  |     ML_KEM_768  (* Level 3 *)
+    Level1
+  |     Level3
+  |     Level5
+
+(* KEMParameterSet (matches Coq: Inductive KEMParameterSet) *)
+datatype kem_parameter_set =
+    ML_KEM_512
+  |     ML_KEM_768
+  |     ML_KEM_1024
 
 (* KeyPair (matches Coq: Record KeyPair) *)
 record key_pair =
@@ -118,7 +125,8 @@ fun param_security_level :: "KEMParameterSet \<Rightarrow> SecurityLevel" where
 |   "param_security_level ML_KEM_768 = Level3"
 |   "param_security_level ML_KEM_1024 = Level5"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* kem_correct (matches Coq: Definition kem_correct) *)
 definition kem_correct :: "KEMInstance \<Rightarrow> bool" where
@@ -167,7 +175,7 @@ definition riina_kem_1024 :: "KEMInstance" where
   ML_KEM_1024
   mk_valid_keypair
   mk_valid_encaps
-  42  (* Same shared secret for correctness *)
+  42  
   true"
 
 (* riina_kem_security (matches Coq: Definition riina_kem_security) *)

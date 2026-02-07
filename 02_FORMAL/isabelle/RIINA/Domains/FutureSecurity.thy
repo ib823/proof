@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FutureSecurity - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | PQ_KEM             | pq_kem                 | OK     |
+ * | PQ_Signature       | pq__signature          | OK     |
  * | SecurityLayerType  | security_layer_type    | OK     |
  * | SpeculationBarrier | speculation_barrier    | OK     |
  * | LeakageSource      | leakage_source         | OK     |
@@ -88,13 +90,18 @@ begin
 
 (* PQ_KEM (matches Coq: Inductive PQ_KEM) *)
 datatype pq_kem =
-    ML_KEM_768  (* NIST Level 3 - AES-192 equivalent *)
-  |     ML_KEM_1024  (* NIST Level 5 - AES-256 equivalent *)
-  |     ML_DSA_44  (* NIST Level 2 *)
-  |     ML_DSA_65  (* NIST Level 3 *)
-  |     ML_DSA_87  (* NIST Level 5 *)
-  |     SLH_DSA_128f  (* Stateless hash-based - Level 1 *)
-  |     SLH_DSA_192f  (* Stateless hash-based - Level 3 *)
+    ML_KEM_768
+  |     ML_KEM_1024
+  |     ML_KEM_512
+
+(* PQ_Signature (matches Coq: Inductive PQ_Signature) *)
+datatype pq__signature =
+    ML_DSA_44
+  |     ML_DSA_65
+  |     ML_DSA_87
+  |     SLH_DSA_128f
+  |     SLH_DSA_192f
+  |     SLH_DSA_256f
 
 (* SecurityLayerType (matches Coq: Inductive SecurityLayerType) *)
 datatype security_layer_type =
@@ -146,7 +153,7 @@ record pq_crypto_config =
   pqc_kem :: PQ_KEM
   pqc_signature :: PQ_Signature
   pqc_symmetric_bits :: nat
-  pqc_hybrid_mode :: bool  (* Classical + PQ for defense in depth *)
+  pqc_hybrid_mode :: bool
   pqc_classical_kem :: option
   pqc_classical_sig :: option
 
@@ -161,8 +168,8 @@ record classical_crypto =
 record security_layer =
   sl_type :: SecurityLayerType
   sl_verified :: bool
-  sl_independent :: bool  (* Independent of other layers *)
-  sl_coverage :: nat  (* 0-100 coverage percentage *)
+  sl_independent :: bool
+  sl_coverage :: nat
 
 (* DefenseInDepth (matches Coq: Record DefenseInDepth) *)
 record defense_in_depth =
@@ -174,10 +181,10 @@ record defense_in_depth =
 record speculation_mitigation =
   sm_barriers :: 'a list
   sm_retpoline :: bool
-  sm_ibrs :: bool  (* Indirect Branch Restricted Speculation *)
-  sm_stibp :: bool  (* Single Thread Indirect Branch Predictors *)
-  sm_ssbd :: bool  (* Speculative Store Bypass Disable *)
-  sm_conservative :: bool  (* Apply barriers even where not proven necessary *)
+  sm_ibrs :: bool
+  sm_stibp :: bool
+  sm_ssbd :: bool
+  sm_conservative :: bool
 
 (* SideChannelMitigation (matches Coq: Record SideChannelMitigation) *)
 record side_channel_mitigation =
@@ -204,10 +211,10 @@ record security_component =
 (* ComposedSecurity (matches Coq: Record ComposedSecurity) *)
 record composed_security =
   cs_components :: 'a list
-  cs_composition_proof :: bool  (* Composition formally verified *)
-  cs_no_assumption_cycles :: bool  (* No circular dependencies *)
-  cs_all_assumptions_met :: bool  (* All component assumptions satisfied *)
-  cs_emergent_analysis :: bool  (* Analyzed for emergent behaviors *)
+  cs_composition_proof :: bool
+  cs_no_assumption_cycles :: bool
+  cs_all_assumptions_met :: bool
+  cs_emergent_analysis :: bool
 
 (* KeyRotationPolicy (matches Coq: Record KeyRotationPolicy) *)
 record key_rotation_policy =
@@ -237,7 +244,7 @@ record apt_resistance =
 
 (* TLSConfig (matches Coq: Record TLSConfig) *)
 record tls_config =
-  tls_version :: nat  (* 12 = TLS 1.2, 13 = TLS 1.3 *)
+  tls_version :: nat
   tls_pq_kem :: option
   tls_pq_sig :: option
   tls_classical_kex :: option
@@ -246,10 +253,10 @@ record tls_config =
 (* QKDConfig (matches Coq: Record QKDConfig) *)
 record qkd_config =
   qkd_enabled :: bool
-  qkd_protocol :: nat  (* 0=BB84, 1=E91, 2=BBM92 *)
-  qkd_detector_efficiency :: nat  (* Percentage *)
-  qkd_error_threshold :: nat  (* Percentage - abort if exceeded *)
-  qkd_authentication :: bool  (* Classical authentication of QKD *)
+  qkd_protocol :: nat
+  qkd_detector_efficiency :: nat
+  qkd_error_threshold :: nat
+  qkd_authentication :: bool
 
 (* QuantumSafeNetwork (matches Coq: Record QuantumSafeNetwork) *)
 record quantum_safe_network =
@@ -261,7 +268,7 @@ record quantum_safe_network =
 (* FormalVerificationConfig (matches Coq: Record FormalVerificationConfig) *)
 record formal_verification_config =
   fvc_level :: VerificationLevel
-  fvc_proof_assistant :: nat  (* 0=Coq, 1=Isabelle, 2=Lean, 3=F* *)
+  fvc_proof_assistant :: nat
   fvc_spec_complete :: bool
   fvc_assumptions_explicit :: bool
   fvc_trusted_base_minimal :: bool
@@ -270,8 +277,8 @@ record formal_verification_config =
 (* MathematicalProof (matches Coq: Record MathematicalProof) *)
 record mathematical_proof =
   mp_statement :: bool
-  mp_proof_exists :: bool  (* Proof has been constructed *)
-  mp_machine_checked :: bool  (* Verified by proof assistant *)
+  mp_proof_exists :: bool
+  mp_machine_checked :: bool
   mp_assumptions :: 'a list
 
 (* kem_security_level (matches Coq: Definition kem_security_level) *)
@@ -297,7 +304,8 @@ definition symmetric_quantum_safe :: "nat \<Rightarrow> bool" where
 definition pq_config_secure :: "PQCryptoConfig \<Rightarrow> bool" where
   "pq_config_secure cfg \<equiv> Nat"
 
-(* vulnerable_to_shor - complex match, manual review needed *)
+(* vulnerable_to_shor - complex match, needs manual translation *)
+definition vulnerable_to_shor :: "bool" where "vulnerable_to_shor = undefined"
 
 (* grover_effective_bits (matches Coq: Definition grover_effective_bits) *)
 definition grover_effective_bits :: "nat \<Rightarrow> nat" where
@@ -359,7 +367,8 @@ definition qkd_secure :: "QKDConfig \<Rightarrow> bool" where
   "qkd_secure qkd \<equiv> qkd_enabled qkd \<and>
   Nat"
 
-(* qsn_secure - complex match, manual review needed *)
+(* qsn_secure - complex match, needs manual translation *)
+definition qsn_secure :: "bool" where "qsn_secure = undefined"
 
 (* verification_strength (matches Coq: Definition verification_strength) *)
 fun verification_strength :: "VerificationLevel \<Rightarrow> nat" where
@@ -386,12 +395,12 @@ fun adversary_capability_level :: "AdversaryCapability \<Rightarrow> nat" where
 definition proof_adversary_independent :: "MathematicalProof \<Rightarrow> bool" where
   "proof_adversary_independent mp \<equiv> mp_machine_checked mp = true ->
   forall (adv : AdversaryCapability), 
-    (* The proven property holds - adversary cannot change math *)
+    
     mp_proof_exists mp = true"
 
 (* future_security_complete (matches Coq: Definition future_security_complete) *)
 definition future_security_complete :: "bool" where
-  "future_security_complete \<equiv> (* FUT-001 *) (forall c p, vulnerable_to_shor c = true -> pq_config_secure p = true -> 
+  "future_security_complete \<equiv> (forall c p, vulnerable_to_shor c = true -> pq_config_secure p = true -> 
                   Nat"
 
 (* fut_001_quantum_shor_mitigated (matches Coq) *)

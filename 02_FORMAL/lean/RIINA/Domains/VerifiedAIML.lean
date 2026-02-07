@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedAIML - Lean 4 Port
@@ -66,7 +67,7 @@ namespace RIINA
 
 /-- Layer (matches Coq: Inductive Layer) -/
 inductive Layer where
-  | dense : Layer  -- input_dim, output_dim
+  | dense : Nat → Nat → Layer
   | reLU : Layer
   | softmax : Layer
   | sigmoid : Layer
@@ -75,8 +76,8 @@ inductive Layer where
 /-- FixedPoint (matches Coq: Record FixedPoint) -/
 structure FixedPoint where
   fp_int : Z
-  fp_frac : Nat  -- Fractional part, scaled by 10000
-  fp_scale : Nat  -- Scale factor
+  fp_frac : Nat
+  fp_scale : Nat
   deriving DecidableEq, Repr
 
 /-- InputBounds (matches Coq: Record InputBounds) -/
@@ -88,14 +89,14 @@ structure InputBounds where
 /-- Model (matches Coq: Record Model) -/
 structure Model where
   model_weights : List
-  model_hash : Nat  -- For integrity check
+  model_hash : Nat
   deriving DecidableEq, Repr
 
 /-- ActionSpace (matches Coq: Record ActionSpace) -/
 structure ActionSpace where
   action_min : Z
   action_max : Z
-  action_rate_limit : Z  -- Max change per step
+  action_rate_limit : Z
   deriving DecidableEq, Repr
 
 /-- rval_add (matches Coq: Definition rval_add) -/
@@ -110,7 +111,6 @@ def relu (x : Z) : Z :=
 
 /-- sigmoid_approx (matches Coq: Definition sigmoid_approx) -/
 def sigmoid_approx (x : Z) : Z :=
-  (* Approximation: 0 if x < -4, 1 if x > 4, linear in between *)
   if Z
 
 /-- softmax_valid (matches Coq: Definition softmax_valid) -/
@@ -170,7 +170,7 @@ def gradient_step (loss : Z) (learning_rate : Z) (gradient : Z) : Z :=
   loss - learning_rate * gradient
 
 /-- mat_mul_elem (matches Coq: Definition mat_mul_elem) -/
-def mat_mul_elem := True -- complex match, simplified to Prop
+def mat_mul_elem := sorry -- complex match, needs manual translation
 
 /-- lipschitz_output (matches Coq: Definition lipschitz_output) -/
 def lipschitz_output (input : Z) (weight : Z) : Z :=

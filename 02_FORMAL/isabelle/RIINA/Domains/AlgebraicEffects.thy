@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AlgebraicEffects - Isabelle/HOL Port
@@ -68,17 +69,17 @@ datatype base_ty =
 
 (* EffectOp (matches Coq: Inductive EffectOp) *)
 datatype effect_op =
-    OpRead  (* State read *)
-  |     OpWrite  (* State write *)
-  |     OpRaise  (* Exception raise *)
-  |     OpPrint  (* I/O print *)
-  |     OpRandom  (* Non-determinism *)
-  |     OpAsync  (* Async operation *)
+    OpRead
+  |     OpWrite
+  |     OpRaise
+  |     OpPrint
+  |     OpRandom
+  |     OpAsync
 
 (* CompTy (matches Coq: Inductive CompTy) *)
 datatype comp_ty =
-    CTyPure  (* A ! ∅ *)
-  |     CTyEff  (* A ! Σ *)
+    CTyPure
+  |     CTyEff
 
 (* Val (matches Coq: Inductive Val) *)
 datatype val =
@@ -88,11 +89,11 @@ datatype val =
 
 (* Comp (matches Coq: Inductive Comp) *)
 datatype comp =
-    CReturn  (* return v *)
-  |     CPerform  (* perform op v *)
-  |     CHandle  (* handle c with h *)
+    CReturn
+  |     CPerform
+  |     CHandle
   |     CBind
-  |     HReturn  (* return case *)
+  |     HReturn
   |     HOp
 
 (* EvalCtx (matches Coq: Inductive EvalCtx) *)
@@ -105,7 +106,8 @@ record op_sig =
   opInputTy :: BaseTy
   opOutputTy :: BaseTy
 
-(* effectOp_eqb - complex match, manual review needed *)
+(* effectOp_eqb - complex match, needs manual translation *)
+definition effectOp_eqb :: "bool" where "effectOp_eqb = undefined"
 
 (* in_row (matches Coq: Definition in_row) *)
 definition in_row :: "EffectOp \<Rightarrow> EffectRow \<Rightarrow> bool" where

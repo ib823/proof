@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SmartContractSecurity - Isabelle/HOL Port
@@ -92,8 +93,9 @@ datatype contract_vulnerability =
 
 (* CEIPhase (matches Coq: Inductive CEIPhase) *)
 datatype cei_phase =
-    Checks  (* Validate conditions *)
-  |     Effects  (* Update state *)
+    Checks
+  |     Effects
+  |     Interactions
 
 (* ReentrancyGuard (matches Coq: Record ReentrancyGuard) *)
 record reentrancy_guard =

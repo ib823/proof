@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AntiJamming - Isabelle/HOL Port
@@ -70,9 +71,9 @@ begin
 
 (* JammerType (matches Coq: Inductive JammerType) *)
 datatype jammer_type =
-    ConstantJammer  (* Always transmitting *)
-  |     ReactiveJammer  (* Jams on activity detection *)
-  |     SweepJammer  (* Sweeps frequencies *)
+    ConstantJammer
+  |     ReactiveJammer
+  |     SweepJammer
   |     SmartJammer
 
 (* JamDetection (matches Coq: Inductive JamDetection) *)

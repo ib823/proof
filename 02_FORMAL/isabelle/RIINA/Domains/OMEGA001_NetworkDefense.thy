@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OMEGA001_NetworkDefense - Isabelle/HOL Port
@@ -77,8 +78,8 @@ datatype conn_state =
 record token_bucket =
   tb_tokens :: nat
   tb_capacity :: nat
-  tb_refill_rate :: nat  (* tokens per tick *)
-  tb_last_refill :: nat  (* tick count *)
+  tb_refill_rate :: nat
+  tb_last_refill :: nat
 
 (* NetCapability (matches Coq: Record NetCapability) *)
 record net_capability =
@@ -86,7 +87,7 @@ record net_capability =
   cap_permissions :: 'a list
   cap_expiry :: nat
   cap_delegatable :: bool
-  cap_signature :: nat  (* HMAC signature *)
+  cap_signature :: nat
 
 (* SynCookie (matches Coq: Record SynCookie) *)
 record syn_cookie =

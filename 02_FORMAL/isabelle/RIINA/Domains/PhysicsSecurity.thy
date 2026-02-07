@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PhysicsSecurity - Isabelle/HOL Port
@@ -79,24 +80,24 @@ datatype phys_state =
 (* SensorReading (matches Coq: Record SensorReading) *)
 record sensor_reading =
   sensor_kind :: SensorKind
-  reading_value :: nat  (* scaled integer value *)
-  reading_min :: nat  (* valid minimum *)
-  reading_max :: nat  (* valid maximum *)
-  timestamp :: nat  (* monotonic timestamp *)
+  reading_value :: nat
+  reading_min :: nat
+  reading_max :: nat
+  timestamp :: nat
   sensor_id :: nat
 
 (* MeasurementSpec (matches Coq: Record MeasurementSpec) *)
 record measurement_spec =
-  meas_tolerance :: nat  (* maximum allowed deviation *)
-  meas_samples :: nat  (* number of samples for averaging *)
-  meas_min_samples :: nat  (* minimum required samples *)
+  meas_tolerance :: nat
+  meas_samples :: nat
+  meas_min_samples :: nat
 
 (* TimingConstraint (matches Coq: Record TimingConstraint) *)
 record timing_constraint =
-  deadline :: nat  (* max allowed time *)
-  wcet :: nat  (* worst-case execution time *)
-  period :: nat  (* task period *)
-  jitter_bound :: nat  (* max jitter *)
+  deadline :: nat
+  wcet :: nat
+  period :: nat
+  jitter_bound :: nat
 
 (* reading_in_bounds (matches Coq: Definition reading_in_bounds) *)
 definition reading_in_bounds :: "SensorReading \<Rightarrow> bool" where
@@ -110,7 +111,8 @@ definition reading_valid :: "SensorReading \<Rightarrow> bool" where
 definition spec_feasible :: "MeasurementSpec \<Rightarrow> bool" where
   "spec_feasible spec \<equiv> (1 <=? meas_min_samples spec) \<and> (meas_min_samples spec <=? meas_samples spec)"
 
-(* readings_avg - complex match, manual review needed *)
+(* readings_avg - complex match, needs manual translation *)
+definition readings_avg :: "bool" where "readings_avg = undefined"
 
 (* all_within_tolerance (matches Coq: Definition all_within_tolerance) *)
 definition all_within_tolerance :: "bool" where

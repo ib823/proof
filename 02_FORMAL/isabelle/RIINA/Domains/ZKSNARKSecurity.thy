@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ZKSNARKSecurity - Isabelle/HOL Port
@@ -184,19 +185,19 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* ZKProperties (matches Coq: Record ZKProperties) *)
 record zk_properties =
-  zk_completeness :: bool  (* Honest prover convinces verifier *)
-  zk_soundness :: bool  (* Cheating prover cannot convince *)
-  zk_zero_knowledge :: bool  (* Verifier learns nothing beyond validity *)
+  zk_completeness :: bool
+  zk_soundness :: bool
+  zk_zero_knowledge :: bool
 
 (* SNARKProperties (matches Coq: Record SNARKProperties) *)
 record snark_properties =
-  snark_succinctness :: bool  (* Short proofs *)
-  snark_non_interactive :: bool  (* Single message *)
-  snark_knowledge_sound :: bool  (* Extractor exists *)
+  snark_succinctness :: bool
+  snark_non_interactive :: bool
+  snark_knowledge_sound :: bool
 
 (* TrustedSetup (matches Coq: Record TrustedSetup) *)
 record trusted_setup =
-  ts_mpc_ceremony :: bool  (* Multi-party computation *)
+  ts_mpc_ceremony :: bool
   ts_toxic_waste_destroyed :: bool
   ts_verifiable :: bool
 
@@ -205,113 +206,113 @@ record zksnark_config =
   zks_zk :: ZKProperties
   zks_snark :: SNARKProperties
   zks_setup :: TrustedSetup
-  zks_post_quantum :: bool  (* Resistant to quantum attacks *)
+  zks_post_quantum :: bool
 
 (* KnowledgeExtractor (matches Coq: Record KnowledgeExtractor) *)
 record knowledge_extractor =
-  ke_exists :: bool  (* Extractor algorithm exists *)
-  ke_polynomial_time :: bool  (* Extractor runs in polynomial time *)
-  ke_extraction_prob :: nat  (* Probability of successful extraction in % *)
-  ke_rewinding_allowed :: bool  (* Extractor may use rewinding *)
-  ke_auxiliary_input :: bool  (* Handles auxiliary input *)
+  ke_exists :: bool
+  ke_polynomial_time :: bool
+  ke_extraction_prob :: nat
+  ke_rewinding_allowed :: bool
+  ke_auxiliary_input :: bool
 
 (* WitnessRelation (matches Coq: Record WitnessRelation) *)
 record witness_relation =
-  wr_statement_size :: nat  (* Size of public statement *)
-  wr_witness_size :: nat  (* Size of private witness *)
-  wr_verification_time :: nat  (* Time to verify relation *)
-  wr_satisfiable :: bool  (* Relation is satisfiable *)
+  wr_statement_size :: nat
+  wr_witness_size :: nat
+  wr_verification_time :: nat
+  wr_satisfiable :: bool
 
 (* ZKSimulator (matches Coq: Record ZKSimulator) *)
 record zk_simulator =
-  sim_exists :: bool  (* Simulator exists *)
-  sim_polynomial_time :: bool  (* Runs in polynomial time *)
-  sim_indistinguishable :: bool  (* Output indistinguishable from real proofs *)
-  sim_no_witness_needed :: bool  (* Works without knowing witness *)
-  sim_programmable_ro :: bool  (* Can program random oracle *)
+  sim_exists :: bool
+  sim_polynomial_time :: bool
+  sim_indistinguishable :: bool
+  sim_no_witness_needed :: bool
+  sim_programmable_ro :: bool
 
 (* DistIndistinguishability (matches Coq: Record DistIndistinguishability) *)
 record dist_indistinguishability =
-  di_computational :: bool  (* Computationally indistinguishable *)
-  di_statistical :: bool  (* Statistically indistinguishable *)
-  di_perfect :: bool  (* Perfectly indistinguishable *)
-  di_advantage_bound :: nat  (* Upper bound on distinguishing advantage *)
+  di_computational :: bool
+  di_statistical :: bool
+  di_perfect :: bool
+  di_advantage_bound :: nat
 
 (* ProverConfig (matches Coq: Record ProverConfig) *)
 record prover_config =
-  pv_honest :: bool  (* Prover is honest *)
-  pv_knows_witness :: bool  (* Prover knows valid witness *)
-  pv_follows_protocol :: bool  (* Prover follows protocol *)
-  pv_polynomial_time :: bool  (* Prover is efficient *)
-  pv_randomness_fresh :: bool  (* Uses fresh randomness *)
+  pv_honest :: bool
+  pv_knows_witness :: bool
+  pv_follows_protocol :: bool
+  pv_polynomial_time :: bool
+  pv_randomness_fresh :: bool
 
 (* VerifierConfig (matches Coq: Record VerifierConfig) *)
 record verifier_config =
-  vf_honest :: bool  (* Verifier is honest *)
-  vf_follows_protocol :: bool  (* Verifier follows protocol *)
-  vf_polynomial_time :: bool  (* Verifier is efficient *)
-  vf_accepts_valid :: bool  (* Accepts valid proofs *)
+  vf_honest :: bool
+  vf_follows_protocol :: bool
+  vf_polynomial_time :: bool
+  vf_accepts_valid :: bool
 
 (* ProofSize (matches Coq: Record ProofSize) *)
 record proof_size =
-  ps_proof_bytes :: nat  (* Proof size in bytes *)
-  ps_verification_ops :: nat  (* Verification operations *)
-  ps_statement_dependent :: bool  (* Size depends on statement? *)
-  ps_witness_independent :: bool  (* Size independent of witness? *)
+  ps_proof_bytes :: nat
+  ps_verification_ops :: nat
+  ps_statement_dependent :: bool
+  ps_witness_independent :: bool
 
 (* AsymptoticComplexity (matches Coq: Record AsymptoticComplexity) *)
 record asymptotic_complexity =
-  ac_proof_size :: nat  (* O(1) = 0, O(log n) = 1, O(n) = 2 *)
-  ac_verification_time :: nat  (* Complexity class *)
-  ac_prover_time :: nat  (* Prover complexity *)
-  ac_setup_time :: nat  (* Setup complexity *)
+  ac_proof_size :: nat
+  ac_verification_time :: nat
+  ac_prover_time :: nat
+  ac_setup_time :: nat
 
 (* MPCCeremony (matches Coq: Record MPCCeremony) *)
 record mpc_ceremony =
-  mpc_participants :: nat  (* Number of participants *)
-  mpc_threshold :: nat  (* Threshold for security *)
-  mpc_verifiable :: bool  (* Ceremony is verifiable *)
-  mpc_contributions_published :: bool  (* All contributions public *)
-  mpc_random_beacon :: bool  (* Uses random beacon *)
+  mpc_participants :: nat
+  mpc_threshold :: nat
+  mpc_verifiable :: bool
+  mpc_contributions_published :: bool
+  mpc_random_beacon :: bool
 
 (* ToxicWaste (matches Coq: Record ToxicWaste) *)
 record toxic_waste =
-  tw_generated_securely :: bool  (* Generated with proper randomness *)
-  tw_never_stored :: bool  (* Never stored persistently *)
-  tw_destroyed_immediately :: bool  (* Destroyed after use *)
-  tw_verified_destruction :: bool  (* Destruction was verified *)
-  tw_multi_party :: bool  (* Split across parties *)
+  tw_generated_securely :: bool
+  tw_never_stored :: bool
+  tw_destroyed_immediately :: bool
+  tw_verified_destruction :: bool
+  tw_multi_party :: bool
 
 (* Groth16Config (matches Coq: Record Groth16Config) *)
 record groth16_config =
-  g16_pairing_friendly :: bool  (* Uses pairing-friendly curve *)
-  g16_proof_elements :: nat  (* Number of group elements in proof *)
-  g16_verification_pairings :: nat  (* Number of pairing operations *)
-  g16_trusted_setup :: bool  (* Requires trusted setup *)
-  g16_circuit_specific :: bool  (* Setup is circuit-specific *)
+  g16_pairing_friendly :: bool
+  g16_proof_elements :: nat
+  g16_verification_pairings :: nat
+  g16_trusted_setup :: bool
+  g16_circuit_specific :: bool
 
 (* Groth16Proof (matches Coq: Record Groth16Proof) *)
 record groth16_proof =
-  g16p_element_a :: nat  (* Group element A *)
-  g16p_element_b :: nat  (* Group element B *)
-  g16p_element_c :: nat  (* Group element C *)
-  g16p_valid_curve_points :: bool  (* Points are on curve *)
-  g16p_valid_subgroup :: bool  (* Points in correct subgroup *)
+  g16p_element_a :: nat
+  g16p_element_b :: nat
+  g16p_element_c :: nat
+  g16p_valid_curve_points :: bool
+  g16p_valid_subgroup :: bool
 
 (* PLONKConfig (matches Coq: Record PLONKConfig) *)
 record plonk_config =
-  plonk_universal_setup :: bool  (* Universal/updatable setup *)
-  plonk_polynomial_commitment :: bool  (* Uses polynomial commitments *)
-  plonk_arithmetic_gates :: bool  (* Supports arithmetic gates *)
-  plonk_custom_gates :: bool  (* Supports custom gates *)
-  plonk_lookup_tables :: bool  (* Supports lookup arguments *)
+  plonk_universal_setup :: bool
+  plonk_polynomial_commitment :: bool
+  plonk_arithmetic_gates :: bool
+  plonk_custom_gates :: bool
+  plonk_lookup_tables :: bool
 
 (* PLONKGate (matches Coq: Record PLONKGate) *)
 record plonk_gate =
-  pg_degree :: nat  (* Gate degree *)
-  pg_fan_in :: nat  (* Number of inputs *)
-  pg_fan_out :: nat  (* Number of outputs *)
-  pg_is_arithmetic :: bool  (* Is arithmetic gate *)
+  pg_degree :: nat
+  pg_fan_in :: nat
+  pg_fan_out :: nat
+  pg_is_arithmetic :: bool
 
 (* FullZKSNARKConfig (matches Coq: Record FullZKSNARKConfig) *)
 record full_zksnark_config =
@@ -324,17 +325,17 @@ record full_zksnark_config =
 
 (* SoundnessError (matches Coq: Record SoundnessError) *)
 record soundness_error =
-  se_statistical :: nat  (* Statistical soundness error (neg exponent) *)
-  se_computational :: nat  (* Computational soundness error (neg exponent) *)
-  se_knowledge :: nat  (* Knowledge error (neg exponent) *)
-  se_security_parameter :: nat  (* Security parameter lambda *)
+  se_statistical :: nat
+  se_computational :: nat
+  se_knowledge :: nat
+  se_security_parameter :: nat
 
 (* ProofSystemType (matches Coq: Record ProofSystemType) *)
 record proof_system_type =
-  pst_is_argument :: bool  (* Argument (computational soundness) *)
-  pst_is_proof :: bool  (* Proof (statistical soundness) *)
-  pst_knowledge_property :: bool  (* Has knowledge property *)
-  pst_succinctness :: bool  (* Is succinct *)
+  pst_is_argument :: bool
+  pst_is_proof :: bool
+  pst_knowledge_property :: bool
+  pst_succinctness :: bool
 
 (* zk_secure (matches Coq: Definition zk_secure) *)
 definition zk_secure :: "ZKProperties \<Rightarrow> bool" where
@@ -422,8 +423,8 @@ definition riina_verifier :: "VerifierConfig" where
 
 (* ps_succinct (matches Coq: Definition ps_succinct) *)
 definition ps_succinct :: "ProofSize \<Rightarrow> bool" where
-  "ps_succinct ps \<equiv> (ps_proof_bytes ps <=? 512) \<and>           (* Max 512 bytes *)
-  (ps_verification_ops ps <=? 1000) \<and>     (* Max 1000 ops *)
+  "ps_succinct ps \<equiv> (ps_proof_bytes ps <=? 512) \<and>           
+  (ps_verification_ops ps <=? 1000) \<and>     
   ps_witness_independent ps"
 
 (* ac_polylog (matches Coq: Definition ac_polylog) *)
@@ -466,7 +467,7 @@ definition riina_tw :: "ToxicWaste" where
 (* g16_secure (matches Coq: Definition g16_secure) *)
 definition g16_secure :: "Groth16Config \<Rightarrow> bool" where
   "g16_secure g \<equiv> g16_pairing_friendly g \<and>
-  (g16_proof_elements g =? 3) \<and>       (* 3 elements: A, B, C *)
+  (g16_proof_elements g =? 3) \<and>       
   (g16_verification_pairings g <=? 4)"
 
 (* g16p_valid (matches Coq: Definition g16p_valid) *)

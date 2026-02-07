@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ControlFlowIntegrity - Isabelle/HOL Port
@@ -65,10 +66,10 @@ begin
 
 (* EdgeType (matches Coq: Inductive EdgeType) *)
 datatype edge_type =
-    DirectJump  (* Direct jump to known target *)
-  |     ConditionalJump  (* Conditional branch *)
-  |     DirectCall  (* Direct function call *)
-  |     Return  (* Return to caller *)
+    DirectJump
+  |     ConditionalJump
+  |     DirectCall
+  |     Return
   |     FallThrough
 
 (* MemPerm (matches Coq: Inductive MemPerm) *)
@@ -79,7 +80,7 @@ datatype mem_perm =
 
 (* RelocState (matches Coq: Inductive RelocState) *)
 datatype reloc_state =
-    PreReloc  (* Can be written during loading *)
+    PreReloc
   |     PostReloc
 
 (* BasicBlock (matches Coq: Record BasicBlock) *)
@@ -103,7 +104,6 @@ record shadow_entry =
 (* FuncType (matches Coq: Record FuncType) *)
 record func_type =
   ft_arg_types :: 'a list
-  Simplified :: just
   ft_ret_type :: nat
 
 (* TypedFuncPtr (matches Coq: Record TypedFuncPtr) *)
@@ -123,8 +123,8 @@ record typed_object =
 
 (* ExceptionHandler (matches Coq: Record ExceptionHandler) *)
 record exception_handler =
-  eh_type :: nat  (* Exception type handled *)
-  eh_addr :: InstrAddr  (* Handler address *)
+  eh_type :: nat
+  eh_addr :: InstrAddr
 
 (* JmpBuf (matches Coq: Record JmpBuf) *)
 record jmp_buf =
@@ -135,7 +135,7 @@ record jmp_buf =
 (* ThreadContext (matches Coq: Record ThreadContext) *)
 record thread_context =
   tc_id :: nat
-  tc_owner :: nat  (* Owning process/capability *)
+  tc_owner :: nat
   tc_valid :: bool
 
 (* edge_in_cfg (matches Coq: Definition edge_in_cfg) *)

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ISO26262Compliance - Lean 4 Port
@@ -80,10 +81,11 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- ASIL (matches Coq: Inductive ASIL) -/
 inductive ASIL where
-  | aSIL_D : ASIL  -- Highest - requires most rigorous measures
+  | aSIL_D : ASIL
   | aSIL_C : ASIL
   | aSIL_B : ASIL
   | aSIL_A : ASIL
+  | qM : ASIL
   deriving DecidableEq, Repr
 
 /-- HARA (matches Coq: Record HARA) -/
@@ -119,7 +121,7 @@ structure SoftwareDevelopment where
 structure VerificationMethods where
   vm_requirements_inspection : Bool
   vm_walkthrough : Bool
-  vm_formal_verification : Bool  -- Highly recommended for ASIL D
+  vm_formal_verification : Bool
   vm_control_flow_analysis : Bool
   vm_data_flow_analysis : Bool
   vm_static_analysis : Bool
@@ -132,7 +134,7 @@ structure TestingRequirements where
   test_fault_injection : Bool
   test_back_to_back : Bool
   test_structural_coverage : Bool
-  test_mc_dc_coverage : Bool  -- Required for ASIL D
+  test_mc_dc_coverage : Bool
   deriving DecidableEq, Repr
 
 /-- ISO26262Compliance (matches Coq: Record ISO26262Compliance) -/
@@ -146,7 +148,7 @@ structure ISO26262Compliance where
   deriving DecidableEq, Repr
 
 /-- asil_leq (matches Coq: Definition asil_leq) -/
-def asil_leq := True -- complex match, simplified to Prop
+def asil_leq := sorry -- complex match, needs manual translation
 
 /-- hara_compliant (matches Coq: Definition hara_compliant) -/
 def hara_compliant (h : HARA) : Bool :=
@@ -193,7 +195,7 @@ def testing_compliant (t : TestingRequirements) : Bool :=
   test_mc_dc_coverage t
 
 /-- asil_d_compliant (matches Coq: Definition asil_d_compliant) -/
-def asil_d_compliant := True -- complex match, simplified to Prop
+def asil_d_compliant := sorry -- complex match, needs manual translation
 
 /-- mk_compliant_hara (matches Coq: Definition mk_compliant_hara) -/
 def mk_compliant_hara : HARA := mkHARA true true true true true true
@@ -398,7 +400,7 @@ theorem ISO_034_asil_d_implies_mcdc : ∀ c : ISO26262Compliance, asil_d_complia
 
 /-- ISO_035: Complete ISO 26262 ASIL-D Certification -/
 /-- ISO_035_complete_certification (matches Coq) -/
-theorem ISO_035_complete_certification : ∀ c : ISO26262Compliance, asil_d_compliant c = true → (* All ASIL-D requirements satisfied *) hara_compliant (iso_hara c) = true ∧ safety_concept_compliant (iso_safety_concept c) = true ∧ sw_dev_compliant (iso_sw_dev c) = true ∧ verif_methods_compliant (iso_verif_methods c) = true ∧ testing_compliant (iso_testing c) = true := by
+theorem ISO_035_complete_certification : ∀ c : ISO26262Compliance, asil_d_compliant c = true →  hara_compliant (iso_hara c) = true ∧ safety_concept_compliant (iso_safety_concept c) = true ∧ sw_dev_compliant (iso_sw_dev c) = true ∧ verif_methods_compliant (iso_verif_methods c) = true ∧ testing_compliant (iso_testing c) = true := by
   cases ‹_› <;> simp <;> omega
 
 end RIINA

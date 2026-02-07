@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedAudit - Lean 4 Port
@@ -66,8 +67,8 @@ namespace RIINA
 
 /-- MerkleNode (matches Coq: Inductive MerkleNode) -/
 inductive MerkleNode where
-  | leaf : MerkleNode
-  | branch : MerkleNode
+  | leaf : Nat → MerkleNode
+  | branch : Nat → MerkleNode → MerkleNode → MerkleNode
   deriving DecidableEq, Repr
 
 /-- log_append_only (matches Coq: Definition log_append_only) -/

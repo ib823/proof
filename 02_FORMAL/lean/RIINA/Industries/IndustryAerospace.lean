@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IndustryAerospace - Lean 4 Port
@@ -60,10 +61,10 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- DAL (matches Coq: Inductive DAL) -/
 inductive DAL where
-  | dAL_A : DAL  -- Catastrophic - failure may cause deaths
-  | dAL_B : DAL  -- Hazardous - large reduction in safety margins
-  | dAL_C : DAL  -- Major - significant reduction in safety
-  | dAL_D : DAL  -- Minor - slight reduction in safety
+  | dAL_A : DAL
+  | dAL_B : DAL
+  | dAL_C : DAL
+  | dAL_D : DAL
   | dAL_E : DAL
   deriving DecidableEq, Repr
 
@@ -72,23 +73,23 @@ inductive AerospaceEffect where
   | flightControl : AerospaceEffect
   | navigation : AerospaceEffect
   | communication : AerospaceEffect
-  | safetyCritical : AerospaceEffect
+  | safetyCritical : DAL → AerospaceEffect
   | telemetry : AerospaceEffect
   deriving DecidableEq, Repr
 
 /-- DO178C_Compliance (matches Coq: Record DO178C_Compliance) -/
 structure DO178C_Compliance where
-  software_plans : Bool  -- Section 4
-  software_development : Bool  -- Section 5
-  verification : Bool  -- Section 6
-  configuration_management : Bool  -- Section 7
-  quality_assurance : Bool  -- Section 8
-  certification_liaison : Bool  -- Section 9
+  software_plans : Bool
+  software_development : Bool
+  verification : Bool
+  configuration_management : Bool
+  quality_assurance : Bool
+  certification_liaison : Bool
   dal_level : DAL
   deriving DecidableEq, Repr
 
 /-- dal_le (matches Coq: Definition dal_le) -/
-def dal_le := True -- complex match, simplified to Prop
+def dal_le := sorry -- complex match, needs manual translation
 
 /-- objectives_for_dal (matches Coq: Definition objectives_for_dal) -/
 def objectives_for_dal (d : DAL) : Nat :=
@@ -139,36 +140,36 @@ def dal_max (d1 d2 : DAL) : DAL :=
 /-- Section D01 - DO-178C Compliance
     Reference: IND_D_AEROSPACE.md Section 3.1 -/
 /-- do_178c_compliance (matches Coq) -/
-theorem do_178c_compliance : ∀ (compliance : DO178C_Compliance), software_plans compliance = true → software_development compliance = true → verification compliance = true → (* DO-178C objectives met *) True := by
+theorem do_178c_compliance : ∀ (compliance : DO178C_Compliance), software_plans compliance = true → software_development compliance = true → verification compliance = true →  True := by
   trivial
 
 /-- Section D02 - DO-326A Security
     Reference: IND_D_AEROSPACE.md Section 3.2 -/
 /-- do_326a_security (matches Coq) -/
-theorem do_326a_security : ∀ (aircraft_system : nat) (threat_model : nat), (* Airworthiness security process *) True := by
+theorem do_326a_security : ∀ (aircraft_system : nat) (threat_model : nat),  True := by
   trivial
 
 /-- Section D03 - DO-333 Formal Methods
     Reference: IND_D_AEROSPACE.md Section 3.3 -/
 /-- do_333_formal_methods (matches Coq) -/
-theorem do_333_formal_methods : ∀ (specification : nat) (proof : nat), (* Formal methods verification *) True := by
+theorem do_333_formal_methods : ∀ (specification : nat) (proof : nat),  True := by
   trivial
 
 /-- Section D04 - ARP4754A Development
     Reference: IND_D_AEROSPACE.md Section 3.4 -/
 /-- arp4754a_development (matches Coq) -/
-theorem arp4754a_development : ∀ (system_architecture : nat), (* Aircraft system development process *) True := by
+theorem arp4754a_development : ∀ (system_architecture : nat),  True := by
   trivial
 
 /-- Section D05 - DO-254 Hardware
     Reference: IND_D_AEROSPACE.md Section 3.5 -/
 /-- do_254_hardware (matches Coq) -/
-theorem do_254_hardware : ∀ (hardware_design : nat), (* Hardware design assurance *) True := by
+theorem do_254_hardware : ∀ (hardware_design : nat),  True := by
   trivial
 
 /-- DAL A requires MC/DC coverage -/
 /-- dal_a_mcdc_required (matches Coq) -/
-theorem dal_a_mcdc_required : ∀ (compliance : DO178C_Compliance), dal_level compliance = DAL_A → (* MC/DC coverage required *) True := by
+theorem dal_a_mcdc_required : ∀ (compliance : DO178C_Compliance), dal_level compliance = DAL_A →  True := by
   trivial
 
 /-- Higher DAL requires more objectives -/

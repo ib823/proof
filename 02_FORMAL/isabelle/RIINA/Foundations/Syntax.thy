@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Syntax - Isabelle/HOL Port
@@ -13,9 +14,12 @@
  * |--------------------|------------------------|--------|
  * | security_level     | security_level         | OK     |
  * | effect             | effect                 | OK     |
+ * | effect_category    | effect_category        | OK     |
  * | taint_source       | taint_source           | OK     |
  * | sanitizer          | sanitizer              | OK     |
+ * | sanitizer_comp     | sanitizer_comp         | OK     |
  * | capability_kind    | capability_kind        | OK     |
+ * | capability         | capability             | OK     |
  * | ty                 | ty                     | OK     |
  * | expr               | expr                   | OK     |
  * | sec_level_num      | sec_level_num          | OK     |
@@ -42,37 +46,36 @@ begin
 
 (* security_level (matches Coq: Inductive security_level) *)
 datatype security_level =
-    LPublic  (* Publicly observable *)
-  |     LInternal  (* Internal use only *)
-  |     LSession  (* Session-scoped *)
-  |     LUser  (* User-level sensitive *)
-  |     LSystem  (* System-level sensitive *)
+    LPublic
+  |     LInternal
+  |     LSession
+  |     LUser
+  |     LSystem
   |     LSecret
 
 (* effect (matches Coq: Inductive effect) *)
 datatype effect =
-    EffPure  (* No observable effect *)
-  |     EffRead  (* Memory/state read *)
-  |     EffWrite  (* Memory/state write *)
-  |     EffFileSystem  (* File system access *)
-  (* Network effects *)
-  |     EffNetwork  (* Network I/O *)
-  |     EffNetSecure  (* Secure network (TLS) *)
-  (* Crypto effects *)
-  |     EffCrypto  (* Cryptographic operations *)
-  |     EffRandom  (* Random number generation *)
-  (* System effects *)
-  |     EffSystem  (* System calls *)
-  |     EffTime  (* Time/clock access *)
-  |     EffProcess  (* Process management *)
-  (* RIINA product effects - D40 integration *)
-  |     EffPanel  (* Panel UI operations *)
-  |     EffZirah  (* Zirah API operations *)
-  |     EffBenteng  (* Benteng auth operations *)
-  |     EffSandi  (* Sandi crypto operations *)
-  |     EffMenara  (* Menara device operations *)
+    EffPure
+  |     EffRead
+  |     EffWrite
+  |     EffFileSystem
+  |     EffNetwork
+  |     EffNetSecure
+  |     EffCrypto
+  |     EffRandom
+  |     EffSystem
+  |     EffTime
+  |     EffProcess
+  |     EffPanel
+  |     EffZirah
+  |     EffBenteng
+  |     EffSandi
+  |     EffMenara
   |     EffGapura
-  |     CatPure
+
+(* effect_category (matches Coq: Inductive effect_category) *)
+datatype effect_category =
+    CatPure
   |     CatIO
   |     CatNetwork
   |     CatCrypto
@@ -81,83 +84,77 @@ datatype effect =
 
 (* taint_source (matches Coq: Inductive taint_source) *)
 datatype taint_source =
-    TaintNetworkExternal  (* External network input *)
-  |     TaintNetworkInternal  (* Internal network input *)
-  (* User input sources *)
-  |     TaintUserInput  (* Direct user input *)
-  |     TaintFileSystem  (* File system data *)
-  |     TaintDatabase  (* Database query results *)
-  |     TaintEnvironment  (* Environment variables *)
-  (* RIINA product sources *)
-  |     TaintGapuraRequest  (* Gapura API request *)
-  |     TaintZirahEvent  (* Zirah event data *)
-  |     TaintZirahEndpoint  (* Zirah endpoint data *)
-  |     TaintBentengBiometric  (* Benteng biometric data *)
-  |     TaintSandiSignature  (* Sandi signature input *)
+    TaintNetworkExternal
+  |     TaintNetworkInternal
+  |     TaintUserInput
+  |     TaintFileSystem
+  |     TaintDatabase
+  |     TaintEnvironment
+  |     TaintGapuraRequest
+  |     TaintZirahEvent
+  |     TaintZirahEndpoint
+  |     TaintBentengBiometric
+  |     TaintSandiSignature
   |     TaintMenaraDevice
 
 (* sanitizer (matches Coq: Inductive sanitizer) *)
 datatype sanitizer =
-    SanHtmlEscape  (* HTML entity escaping *)
-  |     SanUrlEncode  (* URL encoding *)
-  |     SanJsEscape  (* JavaScript string escaping *)
-  |     SanCssEscape  (* CSS escaping *)
-  (* SQL sanitizers *)
-  |     SanSqlEscape  (* SQL string escaping *)
-  |     SanSqlParam  (* Parameterized query *)
-  (* Injection prevention *)
-  |     SanXssFilter  (* XSS filtering *)
-  |     SanPathTraversal  (* Path traversal check *)
-  |     SanCommandEscape  (* Command injection prevention *)
-  |     SanLdapEscape  (* LDAP injection prevention *)
-  |     SanXmlEscape  (* XML escaping *)
-  (* Validation sanitizers *)
-  |     SanJsonValidation  (* JSON structure validation *)
-  |     SanXmlValidation  (* XML schema validation *)
-  |     SanEmailValidation  (* Email format validation *)
-  |     SanPhoneValidation  (* Phone format validation *)
-  (* Bound sanitizers *)
-  |     SanLengthBound  (* Maximum length check *)
-  |     SanRangeBound  (* Numeric range check *)
-  |     SanRegexMatch  (* Regex pattern match *)
-  |     SanWhitelist  (* Whitelist check *)
-  (* Crypto sanitizers *)
-  |     SanHashVerify  (* Hash verification *)
-  |     SanSignatureVerify  (* Signature verification *)
-  |     SanMacVerify  (* MAC verification *)
-  (* RIINA product sanitizers *)
-  |     SanGapuraAuth  (* Gapura authentication check *)
-  |     SanZirahSession  (* Zirah session validation *)
-  |     SanBentengBiometric  (* Benteng biometric verification *)
-  |     SanSandiDecrypt  (* Sandi decryption check *)
+    SanHtmlEscape
+  |     SanUrlEncode
+  |     SanJsEscape
+  |     SanCssEscape
+  |     SanSqlEscape
+  |     SanSqlParam
+  |     SanXssFilter
+  |     SanPathTraversal
+  |     SanCommandEscape
+  |     SanLdapEscape
+  |     SanXmlEscape
+  |     SanJsonValidation
+  |     SanXmlValidation
+  |     SanEmailValidation
+  |     SanPhoneValidation
+  |     SanLengthBound
+  |     SanRangeBound
+  |     SanRegexMatch
+  |     SanWhitelist
+  |     SanHashVerify
+  |     SanSignatureVerify
+  |     SanMacVerify
+  |     SanGapuraAuth
+  |     SanZirahSession
+  |     SanBentengBiometric
+  |     SanSandiDecrypt
   |     SanMenaraAttestation
-  |     SanSingle
-  |     SanAnd  (* Both required *)
+
+(* sanitizer_comp (matches Coq: Inductive sanitizer_comp) *)
+datatype sanitizer_comp =
+    SanSingle
+  |     SanAnd
   |     SanSeq
 
 (* capability_kind (matches Coq: Inductive capability_kind) *)
 datatype capability_kind =
-    CapFileRead  (* Read file *)
-  |     CapFileWrite  (* Write file *)
-  |     CapFileExecute  (* Execute file *)
-  |     CapFileDelete  (* Delete file *)
-  (* Network capabilities *)
-  |     CapNetConnect  (* Outbound connection *)
-  |     CapNetListen  (* Listen for connections *)
-  |     CapNetBind  (* Bind to port *)
-  (* Process capabilities *)
-  |     CapProcSpawn  (* Spawn process *)
-  |     CapProcSignal  (* Send signal *)
-  (* System capabilities *)
-  |     CapSysTime  (* Access system time *)
-  |     CapSysRandom  (* Access random *)
-  |     CapSysEnv  (* Access environment *)
-  (* RIINA product capabilities *)
-  |     CapRootProduct  (* Root product capability *)
+    CapFileRead
+  |     CapFileWrite
+  |     CapFileExecute
+  |     CapFileDelete
+  |     CapNetConnect
+  |     CapNetListen
+  |     CapNetBind
+  |     CapProcSpawn
+  |     CapProcSignal
+  |     CapSysTime
+  |     CapSysRandom
+  |     CapSysEnv
+  |     CapRootProduct
   |     CapProductAccess
-  |     CapBasic
+
+(* capability (matches Coq: Inductive capability) *)
+datatype capability =
+    CapBasic
   |     CapRevocable
-  |     CapTimeBound  (* Expires after N seconds *)
+  |     CapTimeBound
   |     CapDelegated
 
 (* ty (matches Coq: Inductive ty) *)
@@ -166,37 +163,30 @@ datatype ty =
   |     TBool
   |     TInt
   |     TString
-  |     TBytes  (* Function types *)
-  |     TFn  (* T1 -[ε]-> T2 *)
-  (* Compound types *)
-  |     TProd  (* T1 × T2 *)
-  |     TSum  (* T1 + T2 *)
-  |     TList  (* List[T] *)
-  |     TOption  (* Option[T] *)
-  (* Reference types *)
-  |     TRef  (* Ref[T]@l *)
-  (* Security types - D42 integration *)
-  |     TSecret  (* Secret[T] - classified data *)
-  |     TLabeled  (* Labeled[T, l] - security label *)
-  |     TTainted  (* Tainted[T, src] - tainted data *)
-  |     TSanitized  (* Sanitized[T, san] - sanitized data *)
-  |     TProof  (* Proof[T] - declassification proof *)
-  (* Capability types - D42-J integration *)
-  |     TCapability  (* Cap[kind] *)
-  |     TCapabilityFull  (* Full capability with constraints *)
-  (* Session types - D42-F integration *)
-  |     TChan  (* Chan[S] - channel with session *)
-  |     TSecureChan  (* SecureChan[S, l] *)
-  (* Constant-time types - for crypto *)
-  |     TConstantTime  (* ConstantTime[T] *)
-  (* Zeroizing types - secure memory *)
+  |     TBytes
+  |     TFn
+  |     TProd
+  |     TSum
+  |     TList
+  |     TOption
+  |     TRef
+  |     TSecret
+  |     TLabeled
+  |     TTainted
+  |     TSanitized
+  |     TProof
+  |     TCapability
+  |     TCapabilityFull
+  |     TChan
+  |     TSecureChan
+  |     TConstantTime
   |     TZeroizing
-  |     SessEnd  (* Session end *)
-  |     SessSend  (* !T.S - send T then continue *)
-  |     SessRecv  (* ?T.S - receive T then continue *)
-  |     SessSelect  (* S1 ⊕ S2 - internal choice *)
-  |     SessBranch  (* S1 & S2 - external choice *)
-  |     SessRec  (* μX.S - recursive session *)
+  |     SessEnd
+  |     SessSend
+  |     SessRecv
+  |     SessSelect
+  |     SessBranch
+  |     SessRec
   |     SessVar
 
 (* expr (matches Coq: Inductive expr) *)
@@ -206,38 +196,26 @@ datatype expr =
   |     EInt
   |     EString
   |     ELoc
-  |     EVar  (* Functions *)
-  |     ELam  (* λx:T. e *)
-  |     EApp  (* e1 e2 *)
-  
-  (* Products *)
-  |     EPair  (* (e1, e2) *)
-  |     EFst  (* fst e *)
-  |     ESnd  (* snd e *)
-  
-  (* Sums *)
-  |     EInl  (* inl e : T *)
-  |     EInr  (* inr e : T *)
+  |     EVar
+  |     ELam
+  |     EApp
+  |     EPair
+  |     EFst
+  |     ESnd
+  |     EInl
+  |     EInr
   |     ECase
-  |     EIf  (* if e1 then e2 else e3 *)
-  |     ELet  (* let x = e1 in e2 *)
-  
-  (* Effects *)
-  |     EPerform  (* perform ε e *)
-  |     EHandle  (* handle e with x => h *)
-  
-  (* References *)
-  |     ERef  (* ref e @ l *)
-  |     EDeref  (* !e *)
-  |     EAssign  (* e1 := e2 *)
-  
-  (* Security *)
-  |     EClassify  (* classify e *)
-  |     EDeclassify  (* declassify e with proof *)
-  |     EProve  (* prove e *)
-  
-  (* Capabilities *)
-  |     ERequire  (* require ε in e *)
+  |     EIf
+  |     ELet
+  |     EPerform
+  |     EHandle
+  |     ERef
+  |     EDeref
+  |     EAssign
+  |     EClassify
+  |     EDeclassify
+  |     EProve
+  |     ERequire
   |     EGrant
 
 (* sec_level_num (matches Coq: Definition sec_level_num) *)

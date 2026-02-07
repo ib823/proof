@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedNetwork - Isabelle/HOL Port
@@ -199,7 +200,7 @@ record tcp_connection =
   tcp_seq :: nat
   tcp_ack :: nat
   tcp_window :: nat
-  tcp_seq_random_source :: nat  (* entropy source marker *)
+  tcp_seq_random_source :: nat
   tcp_integrity_mac :: option
 
 (* TCPPacket (matches Coq: Record TCPPacket) *)
@@ -308,13 +309,15 @@ definition channel_binding_holds :: "TLSConnection \<Rightarrow> bool" where
   "channel_binding_holds conn \<equiv> tls_channel_bound conn = true /\
   transcript_bound (tls_transcript conn) = true"
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* seq_unpredictable (matches Coq: Definition seq_unpredictable) *)
 definition seq_unpredictable :: "TCPConnection \<Rightarrow> bool" where
   "seq_unpredictable conn \<equiv> tcp_seq_random_source conn > 0"
 
-(* injection_detectable - complex match, manual review needed *)
+(* injection_detectable - complex match, needs manual translation *)
+definition injection_detectable :: "bool" where "injection_detectable = undefined"
 
 (* flow_control_correct (matches Coq: Definition flow_control_correct) *)
 definition flow_control_correct :: "TCPConnection \<Rightarrow> bool" where
@@ -337,7 +340,8 @@ definition icmp_rate_bounded :: "ICMPState \<Rightarrow> bool" where
 definition routing_correct :: "RouteEntry \<Rightarrow> nat \<Rightarrow> bool" where
   "routing_correct entry dest \<equiv> route_valid entry = true"
 
-(* dnssec_validated - complex match, manual review needed *)
+(* dnssec_validated - complex match, needs manual translation *)
+definition dnssec_validated :: "bool" where "dnssec_validated = undefined"
 
 (* authentic (matches Coq: Definition authentic) *)
 definition authentic :: "DNSRecord \<Rightarrow> DNSQuery \<Rightarrow> bool" where
@@ -353,7 +357,8 @@ definition cache_safe :: "DNSCacheEntry \<Rightarrow> bool" where
 definition rebinding_prevented :: "DNSRebindingCheck \<Rightarrow> bool" where
   "rebinding_prevented check \<equiv> rebind_is_private check = true -> rebind_blocked check = true"
 
-(* query_has_integrity - complex match, manual review needed *)
+(* query_has_integrity - complex match, needs manual translation *)
+definition query_has_integrity :: "bool" where "query_has_integrity = undefined"
 
 (* amplification_bounded (matches Coq: Definition amplification_bounded) *)
 definition amplification_bounded :: "DNSAmplificationState \<Rightarrow> bool" where

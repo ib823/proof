@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BootVerification - Isabelle/HOL Port
@@ -57,10 +58,10 @@ begin
 
 (* BootStageId (matches Coq: Inductive BootStageId) *)
 datatype boot_stage_id =
-    HardwareRoot  (* Hardware root of trust *)
-  |     Bootloader  (* Primary bootloader *)
-  |     SecondStage  (* Secondary bootloader *)
-  |     Kernel  (* OS kernel *)
+    HardwareRoot
+  |     Bootloader
+  |     SecondStage
+  |     Kernel
   |     InitRamFS
 
 (* VerificationResult (matches Coq: Inductive VerificationResult) *)
@@ -107,11 +108,14 @@ fun previous_stage :: "BootStageId \<Rightarrow> BootStageId" where
 definition stage_verified :: "BootChainState \<Rightarrow> BootStageId \<Rightarrow> bool" where
   "stage_verified st stage \<equiv> existsb (fun s => if stage_eq_dec s stage then true else false) (verified_stages st)"
 
-(* verify_image - complex match, manual review needed *)
+(* verify_image - complex match, needs manual translation *)
+definition verify_image :: "bool" where "verify_image = undefined"
 
-(* image_tampered - complex match, manual review needed *)
+(* image_tampered - complex match, needs manual translation *)
+definition image_tampered :: "bool" where "image_tampered = undefined"
 
-(* boot_stage - complex match, manual review needed *)
+(* boot_stage - complex match, needs manual translation *)
+definition boot_stage :: "bool" where "boot_stage = undefined"
 
 (* complete_boot (matches Coq: Definition complete_boot) *)
 definition complete_boot :: "BootChainState \<Rightarrow> BootChainState" where

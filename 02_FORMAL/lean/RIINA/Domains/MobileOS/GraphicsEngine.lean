@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA GraphicsEngine - Lean 4 Port
@@ -108,7 +109,7 @@ structure Shader where
   shader_id : Nat
   shader_compiled : Bool
   shader_validated : Bool
-  shader_type : Nat  -- 0=vertex, 1=fragment, 2=compute
+  shader_type : Nat
   deriving DecidableEq, Repr
 
 /-- Texture (matches Coq: Record Texture) -/
@@ -117,7 +118,7 @@ structure Texture where
   tex_width : Nat
   tex_height : Nat
   tex_memory_bytes : Nat
-  tex_format : Nat  -- 0=RGBA8, 1=RGB8, 2=RGBA16F
+  tex_format : Nat
   deriving DecidableEq, Repr
 
 /-- GPUMemory (matches Coq: Record GPUMemory) -/
@@ -133,15 +134,15 @@ structure DrawBatch where
   batch_id : Nat
   batch_draw_calls : Nat
   batch_merged_calls : Nat
-  batch_overdraw_ratio : Nat  -- percentage, 100 = 1x
+  batch_overdraw_ratio : Nat
   deriving DecidableEq, Repr
 
 /-- FrameBuffer (matches Coq: Record FrameBuffer) -/
 structure FrameBuffer where
   fb_width : Nat
   fb_height : Nat
-  fb_front : Nat  -- front buffer id
-  fb_back : Nat  -- back buffer id
+  fb_front : Nat
+  fb_back : Nat
   fb_double_buffered : Bool
   deriving DecidableEq, Repr
 
@@ -155,7 +156,7 @@ structure RenderThread where
 
 /-- ZBuffer (matches Coq: Record ZBuffer) -/
 structure ZBuffer where
-  zbuf_bits : Nat  -- 16, 24, or 32
+  zbuf_bits : Nat
   zbuf_near : Nat
   zbuf_far : Nat
   deriving DecidableEq, Repr

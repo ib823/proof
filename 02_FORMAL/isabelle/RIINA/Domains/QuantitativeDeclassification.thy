@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA QuantitativeDeclassification - Isabelle/HOL Port
@@ -56,9 +57,11 @@ datatype expr =
   |     EPlus
   |     EDeclass
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
-(* level_join - complex match, manual review needed *)
+(* level_join - complex match, needs manual translation *)
+definition level_join :: "bool" where "level_join = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where

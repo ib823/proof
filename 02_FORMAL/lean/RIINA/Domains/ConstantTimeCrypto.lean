@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ConstantTimeCrypto - Lean 4 Port
@@ -63,19 +64,20 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- TimingOperation (matches Coq: Inductive TimingOperation) -/
 inductive TimingOperation where
-  | op_Branch : TimingOperation  -- Conditional branches
-  | op_MemAccess : TimingOperation  -- Memory access patterns
-  | op_Division : TimingOperation  -- Variable-time division
-  | op_Multiply : TimingOperation  -- Variable-time multiplication
-  | op_TableLookup : TimingOperation  -- Cache-dependent lookups
+  | op_Branch : TimingOperation
+  | op_MemAccess : TimingOperation
+  | op_Division : TimingOperation
+  | op_Multiply : TimingOperation
+  | op_TableLookup : TimingOperation
   deriving DecidableEq, Repr
 
 /-- CTOperation (matches Coq: Inductive CTOperation) -/
 inductive CTOperation where
-  | cT_Select : CTOperation  -- Branchless selection
-  | cT_MaskedLoad : CTOperation  -- Constant-address loads
-  | cT_CTDiv : CTOperation  -- Constant-time division
-  | cT_CTMul : CTOperation  -- Constant-time multiply
+  | cT_Select : CTOperation
+  | cT_MaskedLoad : CTOperation
+  | cT_CTDiv : CTOperation
+  | cT_CTMul : CTOperation
+  | cT_ScatterGather : CTOperation
   deriving DecidableEq, Repr
 
 /-- CryptoOperation (matches Coq: Inductive CryptoOperation) -/

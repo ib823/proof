@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA EncryptionSystem - Lean 4 Port
@@ -74,10 +75,10 @@ namespace RIINA
 /-- EncryptionKey (matches Coq: Record EncryptionKey) -/
 structure EncryptionKey where
   key_id : Nat
-  key_bits : Nat  -- Key size: 128, 256, etc.
-  key_algorithm : Nat  -- 0=AES, 1=ChaCha20, 2=RSA
+  key_bits : Nat
+  key_algorithm : Nat
   key_is_private : Bool
-  key_stored_in_se : Bool  -- Stored in Secure Enclave
+  key_stored_in_se : Bool
   deriving DecidableEq, Repr
 
 /-- EncryptedMessage (matches Coq: Record EncryptedMessage) -/
@@ -131,7 +132,7 @@ structure PasswordHash where
   pwd_hash_value : Nat
   pwd_salt : Nat
   pwd_iterations : Nat
-  pwd_algorithm : Nat  -- 0=Argon2, 1=bcrypt, 2=PBKDF2
+  pwd_algorithm : Nat
   deriving DecidableEq, Repr
 
 /-- KeyRotation (matches Coq: Record KeyRotation) -/

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA Z001_DeclassificationPolicy - Lean 4 Port
@@ -81,11 +82,11 @@ namespace RIINA
 
 /-- Principal (matches Coq: Inductive Principal) -/
 inductive Principal where
-  | pUser : Principal
-  | pRole : Principal
+  | pUser : PrincipalId → Principal
+  | pRole : Nat → Principal
   | pSystem : Principal
-  | pJoin : Principal
-  | pMeet : Principal
+  | pJoin : Principal → Principal → Principal
+  | pMeet : Principal → Principal → Principal
   deriving DecidableEq, Repr
 
 /-- SecurityLevel (matches Coq: Inductive SecurityLevel) -/
@@ -98,9 +99,9 @@ inductive SecurityLevel where
 /-- Program (matches Coq: Inductive Program) -/
 inductive Program where
   | pSkip : Program
-  | pAssign : Program
-  | pDeclass : Program
-  | pSeq : Program
+  | pAssign : Nat → Expr → Program
+  | pDeclass : DeclassExpr → Program
+  | pSeq : Program → Program → Program
   deriving DecidableEq, Repr
 
 /-- DeclassPolicy (matches Coq: Record DeclassPolicy) -/
@@ -159,13 +160,13 @@ def principal_leq (p1 p2 : Principal) : Prop :=
   acts_for p1 p2
 
 /-- level_leq (matches Coq: Definition level_leq) -/
-def level_leq := True -- complex match, simplified to Prop
+def level_leq := sorry -- complex match, needs manual translation
 
 /-- level_join (matches Coq: Definition level_join) -/
-def level_join := True -- complex match, simplified to Prop
+def level_join := sorry -- complex match, needs manual translation
 
 /-- level_meet (matches Coq: Definition level_meet) -/
-def level_meet := True -- complex match, simplified to Prop
+def level_meet := sorry -- complex match, needs manual translation
 
 /-- valid_policy (matches Coq: Definition valid_policy) -/
 def valid_policy (p : DeclassPolicy) : Prop :=

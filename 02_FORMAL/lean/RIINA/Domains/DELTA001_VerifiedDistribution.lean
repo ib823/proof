@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DELTA001_VerifiedDistribution - Lean 4 Port
@@ -89,7 +90,7 @@ inductive BFTPhase where
 structure LogEntry where
   entry_term : Term
   entry_index : Nat
-  entry_command : Nat  -- abstract command
+  entry_command : Nat
   deriving DecidableEq, Repr
 
 /-- RaftNode (matches Coq: Record RaftNode) -/
@@ -119,8 +120,8 @@ structure BFTMessage where
 
 /-- BFTState (matches Coq: Record BFTState) -/
 structure BFTState where
-  bft_n : Nat  -- total nodes
-  bft_f : Nat  -- max faulty
+  bft_n : Nat
+  bft_f : Nat
   bft_correct : List
   bft_faulty : List
   deriving DecidableEq, Repr
@@ -128,7 +129,7 @@ structure BFTState where
 /-- HashRing (matches Coq: Record HashRing) -/
 structure HashRing where
   ring_nodes : List
-  ring_size : Nat  -- ring modulus
+  ring_size : Nat
   deriving DecidableEq, Repr
 
 /-- is_quorum (matches Coq: Definition is_quorum) -/
@@ -152,7 +153,7 @@ def logs_match_at (log1 log2 : List LogEntry) (idx : Nat) : Prop :=
     entry_command e1 = entry_command e2
 
 /-- entry_committed (matches Coq: Definition entry_committed) -/
-def entry_committed := True -- complex match, simplified to Prop
+def entry_committed := sorry -- complex match, needs manual translation
 
 /-- bft_quorum (matches Coq: Definition bft_quorum) -/
 def bft_quorum (state : BFTState) : Nat :=
@@ -247,7 +248,7 @@ theorem DELTA_002_02_bft_quorum_sufficient : ∀ state, bft_valid state = true �
   omega
 
 /-- DELTA_002_03_bft_two_quorums_overlap (matches Coq) -/
-theorem DELTA_002_03_bft_two_quorums_overlap : ∀ state, bft_valid state = true → bft_n state = 3 * bft_f state + 1 → (* Minimal BFT configuration *) 2 * bft_quorum state > bft_n state := by
+theorem DELTA_002_03_bft_two_quorums_overlap : ∀ state, bft_valid state = true → bft_n state = 3 * bft_f state + 1 →  2 * bft_quorum state > bft_n state := by
   omega
 
 /-- DELTA_002_04_correct_majority (matches Coq) -/

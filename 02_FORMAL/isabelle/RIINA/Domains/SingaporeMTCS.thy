@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeMTCS - Isabelle/HOL Port
@@ -65,13 +66,13 @@ begin
 
 (* MTCSLevel (matches Coq: Inductive MTCSLevel) *)
 datatype mtcs_level =
-    MTCS_Level1  (* Non-sensitive *)
-  |     MTCS_Level2  (* Sensitive business *)
+    MTCS_Level1
+  |     MTCS_Level2
   |     MTCS_Level3
 
 (* IM8Classification (matches Coq: Inductive IM8Classification) *)
 datatype im8_classification =
-    IM8_Official  (* Default *)
+    IM8_Official
   |     IM8_Restricted
   |     IM8_Confidential
   |     IM8_Secret
@@ -106,7 +107,8 @@ fun im8_level :: "IM8Classification \<Rightarrow> nat" where
 |   "im8_level IM8_Confidential = 2"
 |   "im8_level IM8_Secret = 3"
 
-(* im8_controls_adequate - complex match, manual review needed *)
+(* im8_controls_adequate - complex match, needs manual translation *)
+definition im8_controls_adequate :: "bool" where "im8_controls_adequate = undefined"
 
 (* im8_assessed (matches Coq: Definition im8_assessed) *)
 definition im8_assessed :: "GovTechSystem \<Rightarrow> bool" where

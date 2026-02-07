@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TotalStackFoundation - Lean 4 Port
@@ -154,7 +155,7 @@ structure StackState where
   deriving DecidableEq, Repr
 
 /-- layer_eqb (matches Coq: Definition layer_eqb) -/
-def layer_eqb := True -- complex match, simplified to Prop
+def layer_eqb := sorry -- complex match, needs manual translation
 
 /-- layer_index (matches Coq: Definition layer_index) -/
 def layer_index (l : Layer) : Nat :=
@@ -173,17 +174,17 @@ def layer_adjacent (l1 l2 : Layer) : Bool :=
   Nat
 
 /-- sp_eqb (matches Coq: Definition sp_eqb) -/
-def sp_eqb := True -- complex match, simplified to Prop
+def sp_eqb := sorry -- complex match, needs manual translation
 
 /-- layer_defends (matches Coq: Definition layer_defends) -/
-def layer_defends := True -- complex match, simplified to Prop
+def layer_defends := sorry -- complex match, needs manual translation
 
 /-- all_layers_verified (matches Coq: Definition all_layers_verified) -/
 def all_layers_verified (ss : StackState) : Bool :=
   forallb (fun lv => lv
 
 /-- interface_verified (matches Coq: Definition interface_verified) -/
-def interface_verified := True -- complex match, simplified to Prop
+def interface_verified := sorry -- complex match, needs manual translation
 
 /-- property_preserved (matches Coq: Definition property_preserved) -/
 def property_preserved (lv : LayerVerification) (p : SecurityProperty) : Bool :=

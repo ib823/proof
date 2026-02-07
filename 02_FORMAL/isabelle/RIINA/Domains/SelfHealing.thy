@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SelfHealing - Isabelle/HOL Port
@@ -71,7 +72,7 @@ begin
 (* HealthState (matches Coq: Inductive HealthState) *)
 datatype health_state =
     Healthy
-  |     Degraded  (* degradation level *)
+  |     Degraded
   |     Faulty
   |     Recovering
 

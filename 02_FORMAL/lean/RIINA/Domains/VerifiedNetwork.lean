@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedNetwork - Lean 4 Port
@@ -101,12 +102,12 @@ inductive CipherSuite where
 
 /-- HandshakeMsg (matches Coq: Inductive HandshakeMsg) -/
 inductive HandshakeMsg where
-  | clientHello : HandshakeMsg
-  | serverHello : HandshakeMsg
-  | encryptedExtensions : HandshakeMsg
-  | certificateMsg : HandshakeMsg
-  | certificateVerify : HandshakeMsg
-  | finished : HandshakeMsg
+  | clientHello : List CipherSuite → Key → HandshakeMsg
+  | serverHello : CipherSuite → Key → HandshakeMsg
+  | encryptedExtensions : List Nat → HandshakeMsg
+  | certificateMsg : CertChain → HandshakeMsg
+  | certificateVerify : SigNature → HandshakeMsg
+  | finished : MAC → HandshakeMsg
   deriving DecidableEq, Repr
 
 /-- TCPState (matches Coq: Inductive TCPState) -/
@@ -209,7 +210,7 @@ structure TCPConnection where
   tcp_seq : Nat
   tcp_ack : Nat
   tcp_window : Nat
-  tcp_seq_random_source : Nat  -- entropy source marker
+  tcp_seq_random_source : Nat
   tcp_integrity_mac : option
   deriving DecidableEq, Repr
 
@@ -332,14 +333,14 @@ def channel_binding_holds (conn : TLSConnection) : Prop :=
   transcript_bound (tls_transcript conn) = true
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
-def valid_transition := True -- complex match, simplified to Prop
+def valid_transition := sorry -- complex match, needs manual translation
 
 /-- seq_unpredictable (matches Coq: Definition seq_unpredictable) -/
 def seq_unpredictable (conn : TCPConnection) : Prop :=
   tcp_seq_random_source conn > 0
 
 /-- injection_detectable (matches Coq: Definition injection_detectable) -/
-def injection_detectable := True -- complex match, simplified to Prop
+def injection_detectable := sorry -- complex match, needs manual translation
 
 /-- flow_control_correct (matches Coq: Definition flow_control_correct) -/
 def flow_control_correct (conn : TCPConnection) : Prop :=
@@ -363,7 +364,7 @@ def routing_correct (entry : RouteEntry) (dest : Nat) : Prop :=
   route_valid entry = true
 
 /-- dnssec_validated (matches Coq: Definition dnssec_validated) -/
-def dnssec_validated := True -- complex match, simplified to Prop
+def dnssec_validated := sorry -- complex match, needs manual translation
 
 /-- authentic (matches Coq: Definition authentic) -/
 def authentic (response : DNSRecord) (query : DNSQuery) : Prop :=
@@ -380,7 +381,7 @@ def rebinding_prevented (check : DNSRebindingCheck) : Prop :=
   rebind_is_private check = true -> rebind_blocked check = true
 
 /-- query_has_integrity (matches Coq: Definition query_has_integrity) -/
-def query_has_integrity := True -- complex match, simplified to Prop
+def query_has_integrity := sorry -- complex match, needs manual translation
 
 /-- amplification_bounded (matches Coq: Definition amplification_bounded) -/
 def amplification_bounded (state : DNSAmplificationState) : Prop :=
@@ -412,7 +413,7 @@ theorem NET_001_05_tls_transcript_binding : ∀ conn, tls_connected conn → tra
   intro h; exact h
 
 /-- NET_001_06_tls_0rtt_replay_safe (matches Coq) -/
-theorem NET_001_06_tls_0rtt_replay_safe : ∀ data, zrtt_anti_replay_checked data = true → zrtt_nonce data ≠ [] → True. (* 0-RTT with anti-replay check and unique nonce is safe *) := by
+theorem NET_001_06_tls_0rtt_replay_safe : ∀ data, zrtt_anti_replay_checked data = true → zrtt_nonce data ≠ [] → True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- NET_001_07_tls_certificate_chain_valid (matches Coq) -/

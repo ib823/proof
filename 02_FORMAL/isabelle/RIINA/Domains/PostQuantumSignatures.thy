@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PostQuantumSignatures - Isabelle/HOL Port
@@ -13,6 +14,7 @@
  * |--------------------|------------------------|--------|
  * | SecurityLevel      | security_level         | OK     |
  * | SignatureScheme    | signature_scheme       | OK     |
+ * | SchemeCategory     | scheme_category        | OK     |
  * | SigningKeyPair     | signing_key_pair       | OK     |
  * | SignatureResult    | signature_result       | OK     |
  * | SignatureInstance  | signature_instance     | OK     |
@@ -78,16 +80,17 @@ datatype security_level =
 
 (* SignatureScheme (matches Coq: Inductive SignatureScheme) *)
 datatype signature_scheme =
-    ML_DSA_44  (* Dilithium2 - Level 1 *)
-  |     ML_DSA_65  (* Dilithium3 - Level 3 *)
-  |     ML_DSA_87  (* Dilithium5 - Level 5 *)
-  |     SLH_DSA_128s  (* SPHINCS+-128s - Level 1 *)
-  |     SLH_DSA_192s  (* SPHINCS+-192s - Level 3 *)
-  |     Lattice_Based  (* ML-DSA / Dilithium *)
-  |     ML_DSA_44
+    ML_DSA_44
   |     ML_DSA_65
+  |     ML_DSA_87
   |     SLH_DSA_128s
   |     SLH_DSA_192s
+  |     SLH_DSA_256s
+
+(* SchemeCategory (matches Coq: Inductive SchemeCategory) *)
+datatype scheme_category =
+    Lattice_Based
+  |     Hash_Based
 
 (* SigningKeyPair (matches Coq: Record SigningKeyPair) *)
 record signing_key_pair =
@@ -106,7 +109,7 @@ record signature_instance =
   sig_keypair :: SigningKeyPair
   sig_message :: Message
   sig_signature :: SignatureResult
-  sig_verification :: bool  (* Result of Verify(pk, msg, sig) *)
+  sig_verification :: bool
 
 (* EUFCMASecure (matches Coq: Record EUFCMASecure) *)
 record eufcma_secure =
@@ -143,7 +146,8 @@ fun scheme_security_level :: "SignatureScheme \<Rightarrow> SecurityLevel" where
 |   "scheme_security_level SLH_DSA_192s = Level3"
 |   "scheme_security_level SLH_DSA_256s = Level5"
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* eufcma_compliant (matches Coq: Definition eufcma_compliant) *)
 definition eufcma_compliant :: "EUFCMASecure \<Rightarrow> bool" where
@@ -189,7 +193,7 @@ definition riina_sig_ml_dsa_87 :: "SignatureInstance" where
   "riina_sig_ml_dsa_87 \<equiv> mkSigInstance
   ML_DSA_87
   mk_valid_sig_keypair
-  42  (* message *)
+  42  
   mk_valid_signature
   true"
 

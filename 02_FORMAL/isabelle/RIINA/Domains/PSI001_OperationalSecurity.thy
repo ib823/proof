@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PSI001_OperationalSecurity - Isabelle/HOL Port
@@ -91,8 +92,8 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* AuthMode (matches Coq: Inductive AuthMode) *)
 datatype auth_mode =
-    NormalAuth  (* normal password/key *)
-  |     DuressAuth  (* duress code *)
+    NormalAuth
+  |     DuressAuth
   |     EmergencyAuth
 
 (* Share (matches Coq: Record Share) *)
@@ -102,8 +103,8 @@ record share =
 
 (* ThresholdPolicy (matches Coq: Record ThresholdPolicy) *)
 record threshold_policy =
-  tp_n :: nat  (* required approvals *)
-  tp_m :: nat  (* total authorized parties *)
+  tp_n :: nat
+  tp_m :: nat
   tp_approvals :: 'a list
 
 (* DuressResponse (matches Coq: Record DuressResponse) *)
@@ -118,12 +119,12 @@ record dead_man_switch =
   dms_last_checkin :: nat
   dms_timeout :: nat
   dms_triggered :: bool
-  dms_recovery_action :: nat  (* abstract action ID *)
+  dms_recovery_action :: nat
 
 (* InsiderBudget (matches Coq: Record InsiderBudget) *)
 record insider_budget =
-  ib_max_bytes :: nat  (* max data export per window *)
-  ib_max_queries :: nat  (* max queries per window *)
+  ib_max_bytes :: nat
+  ib_max_queries :: nat
   ib_bytes_used :: nat
   ib_queries_used :: nat
   ib_window_start :: nat
@@ -146,7 +147,7 @@ record platform =
 record time_lock =
   tl_operation :: nat
   tl_submit_time :: nat
-  tl_execute_time :: nat  (* earliest execution *)
+  tl_execute_time :: nat
   tl_cancelled :: bool
 
 (* field_add (matches Coq: Definition field_add) *)
@@ -213,13 +214,15 @@ definition ib_record_query :: "InsiderBudget \<Rightarrow> nat \<Rightarrow> Ins
 definition audit_log_append :: "AuditLog \<Rightarrow> AuditEntry \<Rightarrow> AuditLog" where
   "audit_log_append log entry \<equiv> entry :: log"
 
-(* audit_chain_valid - complex match, manual review needed *)
+(* audit_chain_valid - complex match, needs manual translation *)
+definition audit_chain_valid :: "bool" where "audit_chain_valid = undefined"
 
 (* platforms_independent (matches Coq: Definition platforms_independent) *)
 definition platforms_independent :: "bool" where
   "platforms_independent \<equiv> negb (Nat"
 
-(* nversion_agree - complex match, manual review needed *)
+(* nversion_agree - complex match, needs manual translation *)
+definition nversion_agree :: "bool" where "nversion_agree = undefined"
 
 (* tl_can_execute (matches Coq: Definition tl_can_execute) *)
 definition tl_can_execute :: "TimeLock \<Rightarrow> nat \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MaximumAxiomElimination - Isabelle/HOL Port
@@ -84,7 +85,7 @@ begin
 
 (* sec_label (matches Coq: Inductive sec_label) *)
 datatype sec_label =
-    L  (* Low - public *)
+    L
   |     H
 
 (* ty (matches Coq: Inductive ty) *)
@@ -117,7 +118,8 @@ datatype expr =
   |     EIf
   |     ELet
 
-(* label_leq - complex match, manual review needed *)
+(* label_leq - complex match, needs manual translation *)
+definition label_leq :: "bool" where "label_leq = undefined"
 
 (* store_empty (matches Coq: Definition store_empty) *)
 definition store_empty :: "store" where
@@ -152,10 +154,10 @@ definition store_rel_n :: "nat \<Rightarrow> store_typing \<Rightarrow> bool" wh
 
 (* exp_rel_n (matches Coq: Definition exp_rel_n) *)
 definition exp_rel_n :: "nat \<Rightarrow> store_typing \<Rightarrow> ty \<Rightarrow> bool" where
-  "exp_rel_n n Σ T \<equiv> (* Simplified: if both are values, they're related *)
-  is_value e1 -> is_value e2 -> val_rel_n n Σ T e1 e2"
+  "exp_rel_n n Σ T \<equiv> is_value e1 -> is_value e2 -> val_rel_n n Σ T e1 e2"
 
-(* label_join - complex match, manual review needed *)
+(* label_join - complex match, needs manual translation *)
+definition label_join :: "bool" where "label_join = undefined"
 
 (* label_leq_refl (matches Coq) *)
 lemma label_leq_refl: "\<forall> l, label_leq l l = True"

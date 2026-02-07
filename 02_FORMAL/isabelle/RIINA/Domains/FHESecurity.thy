@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FHESecurity - Isabelle/HOL Port
@@ -183,21 +184,21 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* HomomorphicOps (matches Coq: Record HomomorphicOps) *)
 record homomorphic_ops =
-  ho_addition :: bool  (* Supports homomorphic addition *)
-  ho_multiplication :: bool  (* Supports homomorphic multiplication *)
-  ho_arbitrary_depth :: bool  (* Unlimited circuit depth *)
+  ho_addition :: bool
+  ho_multiplication :: bool
+  ho_arbitrary_depth :: bool
 
 (* FHESecurityProps (matches Coq: Record FHESecurityProps) *)
 record fhe_security_props =
-  fhe_ind_cpa :: bool  (* IND-CPA secure *)
-  fhe_circular_secure :: bool  (* Circular security *)
-  fhe_semantic_secure :: bool  (* Semantic security *)
+  fhe_ind_cpa :: bool
+  fhe_circular_secure :: bool
+  fhe_semantic_secure :: bool
 
 (* NoiseManagement (matches Coq: Record NoiseManagement) *)
 record noise_management =
-  nm_bootstrapping :: bool  (* Noise reduction via bootstrapping *)
-  nm_modulus_switching :: bool  (* Modulus switching *)
-  nm_noise_bounded :: bool  (* Noise growth bounded *)
+  nm_bootstrapping :: bool
+  nm_modulus_switching :: bool
+  nm_noise_bounded :: bool
 
 (* FHEConfig (matches Coq: Record FHEConfig) *)
 record fhe_config =
@@ -209,91 +210,91 @@ record fhe_config =
 
 (* INDCPAGame (matches Coq: Record INDCPAGame) *)
 record indcpa_game =
-  icpa_key_size :: nat  (* Security parameter *)
-  icpa_challenge_bit :: bool  (* Hidden challenge bit *)
-  icpa_encryption_oracle :: bool  (* Has encryption oracle *)
-  icpa_distinguisher_adv :: nat  (* Distinguisher advantage (as 1/n) *)
+  icpa_key_size :: nat
+  icpa_challenge_bit :: bool
+  icpa_encryption_oracle :: bool
+  icpa_distinguisher_adv :: nat
 
 (* SemanticSecurity (matches Coq: Record SemanticSecurity) *)
 record semantic_security =
-  ss_message_space :: nat  (* Size of message space *)
-  ss_ciphertext_space :: nat  (* Size of ciphertext space *)
-  ss_indistinguishable :: bool  (* Ciphertexts indistinguishable *)
-  ss_randomized :: bool  (* Encryption is randomized *)
+  ss_message_space :: nat
+  ss_ciphertext_space :: nat
+  ss_indistinguishable :: bool
+  ss_randomized :: bool
 
 (* HomAddition (matches Coq: Record HomAddition) *)
 record hom_addition =
-  ha_plaintext_modulus :: nat  (* Plaintext modulus t *)
-  ha_ciphertext_modulus :: nat  (* Ciphertext modulus q *)
-  ha_preserves_structure :: bool  (* Addition structure preserved *)
+  ha_plaintext_modulus :: nat
+  ha_ciphertext_modulus :: nat
+  ha_preserves_structure :: bool
 
 (* HomMultiplication (matches Coq: Record HomMultiplication) *)
 record hom_multiplication =
-  hm_plaintext_modulus :: nat  (* Plaintext modulus *)
-  hm_ciphertext_modulus :: nat  (* Ciphertext modulus *)
-  hm_relinearization :: bool  (* Supports relinearization *)
-  hm_key_switching :: bool  (* Supports key switching *)
+  hm_plaintext_modulus :: nat
+  hm_ciphertext_modulus :: nat
+  hm_relinearization :: bool
+  hm_key_switching :: bool
 
 (* HomOperations (matches Coq: Record HomOperations) *)
 record hom_operations =
   hops_addition :: HomAddition
   hops_multiplication :: HomMultiplication
-  hops_composition :: bool  (* Can compose operations *)
+  hops_composition :: bool
 
 (* NoiseModel (matches Coq: Record NoiseModel) *)
 record noise_model =
-  noise_initial :: nat  (* Initial noise after encryption *)
-  noise_add_growth :: nat  (* Noise growth per addition *)
-  noise_mult_growth :: nat  (* Noise growth factor per multiplication *)
-  noise_threshold :: nat  (* Maximum noise before decryption fails *)
+  noise_initial :: nat
+  noise_add_growth :: nat
+  noise_mult_growth :: nat
+  noise_threshold :: nat
 
 (* NoiseBound (matches Coq: Record NoiseBound) *)
 record noise_bound =
-  nb_max_additions :: nat  (* Max additions before noise overflow *)
-  nb_max_multiplications :: nat  (* Max multiplications before noise overflow *)
-  nb_modulus :: nat  (* Ciphertext modulus *)
+  nb_max_additions :: nat
+  nb_max_multiplications :: nat
+  nb_modulus :: nat
 
 (* BootstrappingConfig (matches Coq: Record BootstrappingConfig) *)
 record bootstrapping_config =
-  bs_reduces_noise :: bool  (* Reduces ciphertext noise *)
-  bs_preserves_message :: bool  (* Preserves encrypted message *)
-  bs_polynomial_time :: bool  (* Runs in polynomial time *)
-  bs_noise_output :: nat  (* Output noise level *)
-  bs_noise_input_max :: nat  (* Maximum input noise *)
+  bs_reduces_noise :: bool
+  bs_preserves_message :: bool
+  bs_polynomial_time :: bool
+  bs_noise_output :: nat
+  bs_noise_input_max :: nat
 
 (* UnlimitedFHE (matches Coq: Record UnlimitedFHE) *)
 record unlimited_fhe =
   ufhe_bootstrap_config :: BootstrappingConfig
   ufhe_noise_model :: NoiseModel
-  ufhe_leveled_depth :: nat  (* Depth before bootstrap needed *)
+  ufhe_leveled_depth :: nat
 
 (* KeyGenParams (matches Coq: Record KeyGenParams) *)
 record key_gen_params =
-  kg_security_parameter :: nat  (* Lambda - security parameter *)
-  kg_polynomial_degree :: nat  (* n - ring polynomial degree *)
-  kg_error_distribution :: nat  (* Discrete Gaussian width *)
-  kg_modulus_bits :: nat  (* log q - modulus bit length *)
+  kg_security_parameter :: nat
+  kg_polynomial_degree :: nat
+  kg_error_distribution :: nat
+  kg_modulus_bits :: nat
 
 (* FHEKeyPair (matches Coq: Record FHEKeyPair) *)
 record fhe_key_pair =
-  kp_public :: nat  (* Public key representation *)
-  kp_secret :: nat  (* Secret key representation *)
-  kp_evaluation :: nat  (* Evaluation key for homomorphic ops *)
+  kp_public :: nat
+  kp_secret :: nat
+  kp_evaluation :: nat
   kp_params :: KeyGenParams
 
 (* FHECiphertext (matches Coq: Record FHECiphertext) *)
 record fhe_ciphertext =
-  ct_polynomial_0 :: nat  (* First polynomial component *)
-  ct_polynomial_1 :: nat  (* Second polynomial component *)
-  ct_noise_estimate :: nat  (* Estimated noise level *)
-  ct_level :: nat  (* Current level for leveled FHE *)
-  ct_valid_encryption :: bool  (* Is valid encryption *)
+  ct_polynomial_0 :: nat
+  ct_polynomial_1 :: nat
+  ct_noise_estimate :: nat
+  ct_level :: nat
+  ct_valid_encryption :: bool
 
 (* CiphertextAfterOp (matches Coq: Record CiphertextAfterOp) *)
 record ciphertext_after_op =
   cao_original :: FHECiphertext
   cao_result :: FHECiphertext
-  cao_operation :: nat  (* 0=add, 1=mult *)
+  cao_operation :: nat
 
 (* CompleteFHESystem (matches Coq: Record CompleteFHESystem) *)
 record complete_fhe_system =
@@ -306,23 +307,23 @@ record complete_fhe_system =
 
 (* CircularSecurity (matches Coq: Record CircularSecurity) *)
 record circular_security =
-  cs_key_encryption_safe :: bool  (* Safe to encrypt own key *)
-  cs_kDM_secure :: bool  (* Key-dependent message secure *)
-  cs_multi_key :: bool  (* Multi-key secure *)
+  cs_key_encryption_safe :: bool
+  cs_kDM_secure :: bool
+  cs_multi_key :: bool
 
 (* LWEHardness (matches Coq: Record LWEHardness) *)
 record lwe_hardness =
-  lwe_dimension :: nat  (* n - dimension *)
-  lwe_modulus :: nat  (* q - modulus *)
-  lwe_error_rate :: nat  (* Error parameter *)
-  lwe_assumed_hard :: bool  (* Hardness assumption *)
+  lwe_dimension :: nat
+  lwe_modulus :: nat
+  lwe_error_rate :: nat
+  lwe_assumed_hard :: bool
 
 (* RLWEConfig (matches Coq: Record RLWEConfig) *)
 record rlwe_config =
-  rlwe_ring_degree :: nat  (* Polynomial ring degree *)
-  rlwe_modulus :: nat  (* Coefficient modulus *)
-  rlwe_error_width :: nat  (* Error distribution width *)
-  rlwe_ntt_compatible :: bool  (* NTT-friendly parameters *)
+  rlwe_ring_degree :: nat
+  rlwe_modulus :: nat
+  rlwe_error_width :: nat
+  rlwe_ntt_compatible :: bool
 
 (* ops_fully_homomorphic (matches Coq: Definition ops_fully_homomorphic) *)
 definition ops_fully_homomorphic :: "HomomorphicOps \<Rightarrow> bool" where

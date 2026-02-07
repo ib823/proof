@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA InterruptVirtualization - Isabelle/HOL Port
@@ -84,7 +85,7 @@ record interrupt_priority =
 (* InterruptController (matches Coq: Record InterruptController) *)
 record interrupt_controller =
   ctrl_irqs :: 'a list
-  ctrl_mask_threshold :: nat  (* IRQs below this priority are masked *)
+  ctrl_mask_threshold :: nat
 
 (* vm_owns_irq (matches Coq: Definition vm_owns_irq) *)
 definition vm_owns_irq :: "InterruptState \<Rightarrow> VirtualMachine \<Rightarrow> nat \<Rightarrow> bool" where
@@ -100,7 +101,7 @@ fun authorized_injection :: "InterruptState \<Rightarrow> InterruptSource \<Righ
 
 (* can_inject (matches Coq: Definition can_inject) *)
 definition can_inject :: "InterruptState \<Rightarrow> VirtualMachine \<Rightarrow> Interrupt \<Rightarrow> VirtualMachine \<Rightarrow> bool" where
-  "can_inject st vm1 irq vm2 \<equiv> vm_id vm1 = vm_id vm2 \/  (* VM can inject to itself *)
+  "can_inject st vm1 irq vm2 \<equiv> vm_id vm1 = vm_id vm2 \/  
   ipi_authorized st (vm_id vm1) (vm_id vm2)"
 
 (* irq_deliverable (matches Coq: Definition irq_deliverable) *)

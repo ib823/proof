@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NetworkDefense - Lean 4 Port
@@ -115,18 +116,18 @@ inductive NetPerm where
 
 /-- NetworkAction (matches Coq: Inductive NetworkAction) -/
 inductive NetworkAction where
-  | nASend : NetworkAction
-  | nAReceive : NetworkAction
-  | nAConnect : NetworkAction
-  | nAListen : NetworkAction
+  | nASend : Endpoint → NetworkAction
+  | nAReceive : Endpoint → NetworkAction
+  | nAConnect : Endpoint → NetworkAction
+  | nAListen : Endpoint → NetworkAction
   deriving DecidableEq, Repr
 
 /-- SimpleRegex (matches Coq: Inductive SimpleRegex) -/
 inductive SimpleRegex where
-  | rChar : SimpleRegex
-  | rSeq : SimpleRegex
-  | rAlt : SimpleRegex
-  | rStar : SimpleRegex
+  | rChar : Nat → SimpleRegex
+  | rSeq : SimpleRegex → SimpleRegex → SimpleRegex
+  | rAlt : SimpleRegex → SimpleRegex → SimpleRegex
+  | rStar : SimpleRegex → SimpleRegex
   deriving DecidableEq, Repr
 
 /-- Puzzle (matches Coq: Record Puzzle) -/
@@ -270,7 +271,7 @@ def endpoint_eq (e1 e2 : Endpoint) : Bool :=
   Nat
 
 /-- netperm_eq (matches Coq: Definition netperm_eq) -/
-def netperm_eq := True -- complex match, simplified to Prop
+def netperm_eq := sorry -- complex match, needs manual translation
 
 /-- verify_signature (matches Coq: Definition verify_signature) -/
 def verify_signature (pubkey : List Nat) (cap : NetCapability) : Bool :=
@@ -483,7 +484,7 @@ theorem OMEGA_001_26_syn_cookie_verify : ∀ secret conn time, verify_syn_cookie
   rfl
 
 /-- OMEGA_001_27_syn_cookie_replay_prevent (matches Coq) -/
-theorem OMEGA_001_27_syn_cookie_replay_prevent : ∀ secret conn time_old time_now, time_now > time_old + 2 → verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = true → (* Cookie from time_old verified at time_now means time window overlap *) syn_cookie secret conn time_old = syn_cookie secret conn time_now ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2) := by
+theorem OMEGA_001_27_syn_cookie_replay_prevent : ∀ secret conn time_old time_now, time_now > time_old + 2 → verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = true →  syn_cookie secret conn time_old = syn_cookie secret conn time_now ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2) := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_28_syn_flood_mitigated (matches Coq) -/
@@ -495,7 +496,7 @@ theorem OMEGA_001_29_legitimate_connections : ∀ secret conn time, verify_syn_c
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_30_hash_collision_resistant (matches Coq) -/
-theorem OMEGA_001_30_hash_collision_resistant : ∀ ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 → siphash_lookup ht key2 = Some v2 → key1 ≠ key2 → (* With random key, maximum bucket size is bounded *) ∃ bound, max_bucket_size ht ≤ bound := by
+theorem OMEGA_001_30_hash_collision_resistant : ∀ ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 → siphash_lookup ht key2 = Some v2 → key1 ≠ key2 →  ∃ bound, max_bucket_size ht ≤ bound := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_31_regex_terminates (matches Coq) -/

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA QuantumSafeTLS - Lean 4 Port
@@ -152,40 +153,37 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- SecurityLevel (matches Coq: Inductive SecurityLevel) -/
 inductive SecurityLevel where
-  | level1 : SecurityLevel  -- ~AES-128 equivalent
-  | level3 : SecurityLevel  -- ~AES-192 equivalent
+  | level1 : SecurityLevel
+  | level3 : SecurityLevel
+  | level5 : SecurityLevel
   deriving DecidableEq, Repr
 
 /-- KEMScheme (matches Coq: Inductive KEMScheme) -/
 inductive KEMScheme where
-  | mL_KEM_512 : KEMScheme  -- Level 1, formerly Kyber512
-  | mL_KEM_768 : KEMScheme  -- Level 3, formerly Kyber768
+  | mL_KEM_512 : KEMScheme
+  | mL_KEM_768 : KEMScheme
+  | mL_KEM_1024 : KEMScheme
   deriving DecidableEq, Repr
 
 /-- ECDHCurve (matches Coq: Inductive ECDHCurve) -/
 inductive ECDHCurve where
-  | x25519 : ECDHCurve  -- Curve25519 - ~128-bit security
-  | x448 : ECDHCurve  -- Curve448 - ~224-bit security
-  | p256 : ECDHCurve  -- NIST P-256
-  | p384 : ECDHCurve  -- NIST P-384
   | x25519 : ECDHCurve
   | x448 : ECDHCurve
+  | p256 : ECDHCurve
+  | p384 : ECDHCurve
+  | p521 : ECDHCurve
   deriving DecidableEq, Repr
 
 /-- SignatureScheme (matches Coq: Inductive SignatureScheme) -/
 inductive SignatureScheme where
-  | mL_DSA_44 : SignatureScheme  -- Level 1, formerly Dilithium2
-  | mL_DSA_65 : SignatureScheme  -- Level 3, formerly Dilithium3
-  | mL_DSA_87 : SignatureScheme  -- Level 5, formerly Dilithium5
-  | sLH_DSA_128 : SignatureScheme  -- Hash-based, Level 1
-  | sLH_DSA_192 : SignatureScheme  -- Hash-based, Level 3
-  | sLH_DSA_256 : SignatureScheme  -- Hash-based, Level 5
-  | eCDSA_P256 : SignatureScheme  -- Classical fallback
   | mL_DSA_44 : SignatureScheme
-  | sLH_DSA_128 : SignatureScheme
-  | eCDSA_P256 : SignatureScheme
   | mL_DSA_65 : SignatureScheme
   | mL_DSA_87 : SignatureScheme
+  | sLH_DSA_128 : SignatureScheme
+  | sLH_DSA_192 : SignatureScheme
+  | sLH_DSA_256 : SignatureScheme
+  | eCDSA_P256 : SignatureScheme
+  | ed25519 : SignatureScheme
   deriving DecidableEq, Repr
 
 /-- TLSVersion (matches Coq: Inductive TLSVersion) -/
@@ -204,18 +202,18 @@ inductive CipherSuite where
 /-- KEMParameters (matches Coq: Record KEMParameters) -/
 structure KEMParameters where
   kem_scheme : KEMScheme
-  kem_pk_size : Nat  -- Public key size in bytes
-  kem_sk_size : Nat  -- Secret key size in bytes
-  kem_ct_size : Nat  -- Ciphertext size in bytes
-  kem_ss_size : Nat  -- Shared secret size in bytes
+  kem_pk_size : Nat
+  kem_sk_size : Nat
+  kem_ct_size : Nat
+  kem_ss_size : Nat
   deriving DecidableEq, Repr
 
 /-- KEMSecurityProperties (matches Coq: Record KEMSecurityProperties) -/
 structure KEMSecurityProperties where
-  kem_sec_indcca2 : Bool  -- IND-CCA2 secure
-  kem_sec_module_lwe : Bool  -- Based on Module-LWE
-  kem_sec_nist_approved : Bool  -- NIST standardized
-  kem_sec_constant_time : Bool  -- Constant-time implementation
+  kem_sec_indcca2 : Bool
+  kem_sec_module_lwe : Bool
+  kem_sec_nist_approved : Bool
+  kem_sec_constant_time : Bool
   deriving DecidableEq, Repr
 
 /-- ECDHParameters (matches Coq: Record ECDHParameters) -/
@@ -228,32 +226,32 @@ structure ECDHParameters where
 
 /-- HybridKEX (matches Coq: Record HybridKEX) -/
 structure HybridKEX where
-  hkex_classical : Bool  -- Classical ECDH component
-  hkex_post_quantum : Bool  -- ML-KEM component
-  hkex_combined : Bool  -- Both combined securely (e.g., via HKDF)
+  hkex_classical : Bool
+  hkex_post_quantum : Bool
+  hkex_combined : Bool
   deriving DecidableEq, Repr
 
 /-- HybridKEXConfig (matches Coq: Record HybridKEXConfig) -/
 structure HybridKEXConfig where
   hybrid_kem : KEMScheme
   hybrid_ecdh : ECDHCurve
-  hybrid_combiner : Bool  -- HKDF or similar
-  hybrid_label : Bool  -- Domain separation label
+  hybrid_combiner : Bool
+  hybrid_label : Bool
   deriving DecidableEq, Repr
 
 /-- PQAuthentication (matches Coq: Record PQAuthentication) -/
 structure PQAuthentication where
-  pqa_classical_sig : Bool  -- ECDSA/Ed25519 backup
-  pqa_pq_sig : Bool  -- ML-DSA/SLH-DSA primary
+  pqa_classical_sig : Bool
+  pqa_pq_sig : Bool
   pqa_certificate_chain : Bool
   deriving DecidableEq, Repr
 
 /-- SignatureSecurityProps (matches Coq: Record SignatureSecurityProps) -/
 structure SignatureSecurityProps where
-  sig_euf_cma : Bool  -- Existential unforgeability
-  sig_strong_euf : Bool  -- Strong unforgeability
+  sig_euf_cma : Bool
+  sig_strong_euf : Bool
   sig_nist_approved : Bool
-  sig_deterministic : Bool  -- Deterministic signing
+  sig_deterministic : Bool
   deriving DecidableEq, Repr
 
 /-- TLSHandshake (matches Coq: Record TLSHandshake) -/
@@ -268,9 +266,9 @@ structure TLSHandshake where
 structure TLSHandshakeConfig where
   ths_version : TLSVersion
   ths_ciphersuite : CipherSuite
-  ths_early_data : Bool  -- 0-RTT support
-  ths_psk_mode : Bool  -- Pre-shared key mode
-  ths_client_auth : Bool  -- Mutual authentication
+  ths_early_data : Bool
+  ths_psk_mode : Bool
+  ths_client_auth : Bool
   deriving DecidableEq, Repr
 
 /-- TLS13Extensions (matches Coq: Record TLS13Extensions) -/
@@ -283,7 +281,7 @@ structure TLS13Extensions where
 
 /-- TLSRecord (matches Coq: Record TLSRecord) -/
 structure TLSRecord where
-  rec_aead : Bool  -- Authenticated encryption
+  rec_aead : Bool
   rec_sequence_numbers : Bool
   rec_padding : Bool
   deriving DecidableEq, Repr
@@ -298,18 +296,18 @@ structure AEADProperties where
 
 /-- ForwardSecrecyConfig (matches Coq: Record ForwardSecrecyConfig) -/
 structure ForwardSecrecyConfig where
-  fs_ephemeral_keys : Bool  -- Ephemeral key exchange
-  fs_key_deletion : Bool  -- Session keys deleted after use
-  fs_no_static_dh : Bool  -- No static DH for key exchange
-  fs_pfs_per_session : Bool  -- PFS for each session
+  fs_ephemeral_keys : Bool
+  fs_key_deletion : Bool
+  fs_no_static_dh : Bool
+  fs_pfs_per_session : Bool
   deriving DecidableEq, Repr
 
 /-- AlgorithmAgility (matches Coq: Record AlgorithmAgility) -/
 structure AlgorithmAgility where
-  agility_negotiation : Bool  -- Algorithm negotiation support
-  agility_fallback : Bool  -- Graceful fallback
-  agility_versioning : Bool  -- Version negotiation
-  agility_extension : Bool  -- Extensible via extensions
+  agility_negotiation : Bool
+  agility_fallback : Bool
+  agility_versioning : Bool
+  agility_extension : Bool
   deriving DecidableEq, Repr
 
 /-- QuantumSafeTLSConfig (matches Coq: Record QuantumSafeTLSConfig) -/
@@ -318,7 +316,7 @@ structure QuantumSafeTLSConfig where
   qstls_auth : PQAuthentication
   qstls_handshake : TLSHandshake
   qstls_record : TLSRecord
-  qstls_version_13 : Bool  -- TLS 1.3 required
+  qstls_version_13 : Bool
   deriving DecidableEq, Repr
 
 /-- QuantumSafeTLSFull (matches Coq: Record QuantumSafeTLSFull) -/
@@ -332,7 +330,7 @@ structure QuantumSafeTLSFull where
   deriving DecidableEq, Repr
 
 /-- level_leq (matches Coq: Definition level_leq) -/
-def level_leq := True -- complex match, simplified to Prop
+def level_leq := sorry -- complex match, needs manual translation
 
 /-- level_min (matches Coq: Definition level_min) -/
 def level_min (l1 l2 : SecurityLevel) : SecurityLevel :=
@@ -352,9 +350,9 @@ def kem_security_level (k : KEMScheme) : SecurityLevel :=
 /-- ml_kem_1024_params (matches Coq: Definition ml_kem_1024_params) -/
 def ml_kem_1024_params : KEMParameters := mkKEMParams
   ML_KEM_1024
-  1568  (* pk size *)
-  3168  (* sk size *)
-  1568  (* ct size *)
+  1568  
+  3168  
+  1568  
   32
 
 /-- kem_fully_secure (matches Coq: Definition kem_fully_secure) -/

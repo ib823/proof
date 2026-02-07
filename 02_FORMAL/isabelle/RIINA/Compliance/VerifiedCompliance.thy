@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedCompliance - Isabelle/HOL Port
@@ -124,9 +125,9 @@ datatype regulation =
 
 (* ControlStatus (matches Coq: Inductive ControlStatus) *)
 datatype control_status =
-    Proven  (* Formally proven *)
-  |     Implemented  (* Implemented, tested *)
-  |     Partial  (* Partially implemented *)
+    Proven
+  |     Implemented
+  |     Partial
   |     Gap
 
 (* PersonalData (matches Coq: Record PersonalData) *)
@@ -138,17 +139,17 @@ record personal_data =
   pd_consent :: bool
   pd_collected :: nat
   pd_retention :: nat
-  pd_necessary :: bool  (* Is this data necessary for purpose *)
-  pd_accurate :: bool  (* Is this data accurate *)
-  pd_integrity_protected :: bool  (* Is integrity protected *)
-  pd_exportable :: bool  (* Can be exported to subject *)
+  pd_necessary :: bool
+  pd_accurate :: bool
+  pd_integrity_protected :: bool
+  pd_exportable :: bool
 
 (* DataStore (matches Coq: Record DataStore) *)
 record data_store =
   store_data :: 'a list
   store_purpose :: string
-  store_compliant :: bool  (* Is store GDPR compliant *)
-  store_encrypted :: bool  (* Is store encrypted *)
+  store_compliant :: bool
+  store_encrypted :: bool
 
 (* PHI (matches Coq: Record PHI) *)
 record phi =
@@ -168,9 +169,9 @@ record cardholder_data =
   chd_pan :: 'a list
   chd_pan_encrypted :: bool
   chd_expiry :: nat
-  chd_cvv_stored :: bool  (* Must be false post-auth *)
+  chd_cvv_stored :: bool
   chd_cardholder_name :: string
-  chd_in_cde :: bool  (* In cardholder data environment *)
+  chd_in_cde :: bool
 
 (* Control (matches Coq: Record Control) *)
 record control =

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MetadataPrivacy - Lean 4 Port
@@ -86,7 +87,7 @@ def jittered_time (base jitter max_jitter : Nat) : Prop :=
   jitter <= max_jitter
 
 /-- sensitivity_leq (matches Coq: Definition sensitivity_leq) -/
-def sensitivity_leq := True -- complex match, simplified to Prop
+def sensitivity_leq := sorry -- complex match, needs manual translation
 
 /-- traffic_constant_rate (matches Coq: Definition traffic_constant_rate) -/
 def traffic_constant_rate (intervals : List Nat) (target : Nat) : Prop :=
@@ -137,7 +138,7 @@ theorem meta_002_constant_size : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm
   intro h; exact h
 
 /-- meta_003_size_no_leak (matches Coq) -/
-theorem meta_003_size_no_leak : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 → (* Different payloads can have same total size *) pm_payload_size pm1 = pm_payload_size pm2 ∨ pm_payload_size pm1 ≠ pm_payload_size pm2 := by
+theorem meta_003_size_no_leak : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 →  pm_payload_size pm1 = pm_payload_size pm2 ∨ pm_payload_size pm1 ≠ pm_payload_size pm2 := by
   intro h; exact h
 
 /-- meta_004_timing_bucketed (matches Coq) -/

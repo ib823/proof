@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TouchGestureSystem - Lean 4 Port
@@ -135,7 +136,7 @@ def touch_system_correct (t : TouchEvent) : Prop :=
   (physical_touch t -> display_latency t <= latency_bound)
 
 /-- intended_gesture (matches Coq: Definition intended_gesture) -/
-def intended_gesture := True -- complex match, simplified to Prop
+def intended_gesture := sorry -- complex match, needs manual translation
 
 /-- recognized_gesture (matches Coq: Definition recognized_gesture) -/
 def recognized_gesture (seq : TouchSequence) : GestureType :=

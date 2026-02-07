@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedCrypto - Isabelle/HOL Port
@@ -64,7 +65,7 @@ datatype crypto_op =
 record crypto_key =
   key_id :: nat
   key_bits :: nat
-  key_wrapped :: bool  (* true if key is encrypted/wrapped *)
+  key_wrapped :: bool
 
 (* Memory (matches Coq: Record Memory) *)
 record memory =

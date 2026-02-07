@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BackendTraitVerification - Isabelle/HOL Port
@@ -55,14 +56,14 @@ datatype target =
 
 (* BackendKind (matches Coq: Inductive BackendKind) *)
 datatype backend_kind =
-    BKC  (* CBackend *)
-  |     BKWasm  (* WasmBackend *)
+    BKC
+  |     BKWasm
   |     BKMobile
 
 (* OutputFormat (matches Coq: Inductive OutputFormat) *)
 datatype output_format =
-    FmtC  (* .c file *)
-  |     FmtWasm  (* .wasm binary *)
+    FmtC
+  |     FmtWasm
   |     FmtCWithBridge
 
 (* SecurityProp (matches Coq: Inductive SecurityProp) *)

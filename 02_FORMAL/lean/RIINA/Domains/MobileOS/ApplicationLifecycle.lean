@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ApplicationLifecycle - Lean 4 Port
@@ -81,9 +82,9 @@ structure Application where
 
 /-- URLScheme (matches Coq: Record URLScheme) -/
 structure URLScheme where
-  url_scheme : Nat  -- hash of scheme
-  url_host : Nat  -- hash of host
-  url_path : Nat  -- hash of path
+  url_scheme : Nat
+  url_host : Nat
+  url_path : Nat
   url_validated : Bool
   url_sanitized : Bool
   deriving DecidableEq, Repr
@@ -101,7 +102,7 @@ structure Widget where
   widget_id : Nat
   widget_app_id : Nat
   widget_last_update : Nat
-  widget_update_interval : Nat  -- minimum milliseconds between updates
+  widget_update_interval : Nat
   deriving DecidableEq, Repr
 
 /-- AppGroup (matches Coq: Record AppGroup) -/
@@ -121,7 +122,7 @@ structure AppScene where
 /-- ExtApp (matches Coq: Record ExtApp) -/
 structure ExtApp where
   ext_app : Application
-  ext_bg_time_used : Nat  -- milliseconds
+  ext_bg_time_used : Nat
   ext_memory_level : LowMemoryLevel
   ext_scenes : List
   ext_activation_count : Nat
@@ -149,7 +150,7 @@ def state (app : Application) : AppData :=
   app_data app
 
 /-- previous_state (matches Coq: Definition previous_state) -/
-def previous_state := True -- complex match, simplified to Prop
+def previous_state := sorry -- complex match, needs manual translation
 
 /-- state_invariants_hold (matches Coq: Definition state_invariants_hold) -/
 def state_invariants_hold (app : Application) (s : AppState) : Prop :=
@@ -160,14 +161,14 @@ def state_invariants_hold (app : Application) (s : AppState) : Prop :=
   | .background => app_saved_state
 
 /-- valid_lifecycle_transition (matches Coq: Definition valid_lifecycle_transition) -/
-def valid_lifecycle_transition := True -- complex match, simplified to Prop
+def valid_lifecycle_transition := sorry -- complex match, needs manual translation
 
 /-- save_state (matches Coq: Definition save_state) -/
 def save_state (app : Application) : Application := mkApp (app_id app) (app_state app) (app_data app) 
         (Some (app_data app)) (app_supports_restoration app)
 
 /-- restore_state (matches Coq: Definition restore_state) -/
-def restore_state := True -- complex match, simplified to Prop
+def restore_state := sorry -- complex match, needs manual translation
 
 /-- well_formed_restorable (matches Coq: Definition well_formed_restorable) -/
 def well_formed_restorable (app : Application) : Prop :=

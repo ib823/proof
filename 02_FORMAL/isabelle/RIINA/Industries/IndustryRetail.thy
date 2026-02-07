@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryRetail - Isabelle/HOL Port
@@ -59,8 +60,8 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* ConsumerData (matches Coq: Inductive ConsumerData) *)
 datatype consumer_data =
-    PII  (* Personally Identifiable Information *)
-  |     PaymentData  (* Credit cards, bank info *)
+    PII
+  |     PaymentData
   |     PurchaseHistory
   |     BrowsingBehavior
   |     LocationData

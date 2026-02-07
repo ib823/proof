@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA Metaprogramming - Isabelle/HOL Port
@@ -86,12 +87,12 @@ begin
 
 (* FragmentType (matches Coq: Inductive FragmentType) *)
 datatype fragment_type =
-    FTExpr  (* Expression *)
-  |     FTStmt  (* Statement *)
-  |     FTIdent  (* Identifier *)
-  |     FTType  (* Type *)
-  |     FTPattern  (* Pattern *)
-  |     FTBlock  (* Block *)
+    FTExpr
+  |     FTStmt
+  |     FTIdent
+  |     FTType
+  |     FTPattern
+  |     FTBlock
 
 (* Token (matches Coq: Inductive Token) *)
 datatype token =
@@ -102,16 +103,16 @@ datatype token =
 
 (* AST (matches Coq: Inductive AST) *)
 datatype ast =
-    ASTVar  (* Variable with de Bruijn index *)
-  |     ASTLam  (* Lambda *)
-  |     ASTApp  (* Application *)
-  |     ASTLet  (* Let binding *)
-  |     ASTBlock  (* Block of statements *)
+    ASTVar
+  |     ASTLam
+  |     ASTApp
+  |     ASTLet
+  |     ASTBlock
 
 (* ExpansionStep (matches Coq: Inductive ExpansionStep) *)
 datatype expansion_step =
     ESInput
-  |     ESMatched  (* Which pattern matched *)
+  |     ESMatched
   |     ESOutput
 
 (* ConstResult (matches Coq: Inductive ConstResult) *)
@@ -124,7 +125,7 @@ datatype const_result =
 (* PatternMatch (matches Coq: Inductive PatternMatch) *)
 datatype pattern_match =
     PMExact
-  |     PMCapture  (* Capture with binding index *)
+  |     PMCapture
   |     PMRepeat
 
 (* DeriveResult (matches Coq: Inductive DeriveResult) *)
@@ -168,7 +169,7 @@ record macro_def =
   macro_name :: string
   macro_patterns :: 'a list
   macro_templates :: 'a list
-  macro_templates_wf :: bool  (* Templates are well-formed *)
+  macro_templates_wf :: bool
 
 (* ExpansionContext (matches Coq: Record ExpansionContext) *)
 record expansion_context =
@@ -248,15 +249,17 @@ record static_assert =
 record security_check =
   sc_name :: string
   sc_condition :: ConstExpr
-  sc_severity :: nat  (* 0 = info, 1 = warn, 2 = error *)
+  sc_severity :: nat
 
-(* fragment_type_eqb - complex match, manual review needed *)
+(* fragment_type_eqb - complex match, needs manual translation *)
+definition fragment_type_eqb :: "bool" where "fragment_type_eqb = undefined"
 
 (* tokens_well_formed (matches Coq: Definition tokens_well_formed) *)
 definition tokens_well_formed :: "TokenStream \<Rightarrow> bool" where
   "tokens_well_formed ts \<equiv> true"
 
-(* pattern_covers_input - complex match, manual review needed *)
+(* pattern_covers_input - complex match, needs manual translation *)
+definition pattern_covers_input :: "bool" where "pattern_covers_input = undefined"
 
 (* macro_well_formed (matches Coq: Definition macro_well_formed) *)
 definition macro_well_formed :: "MacroDef \<Rightarrow> bool" where
@@ -271,7 +274,8 @@ definition is_name_captured :: "HygienicContext \<Rightarrow> string \<Rightarro
 definition impl_satisfies_bound :: "ImplBlock \<Rightarrow> TraitBound \<Rightarrow> bool" where
   "impl_satisfies_bound impl bound \<equiv> String"
 
-(* dsl_syntax_valid - complex match, manual review needed *)
+(* dsl_syntax_valid - complex match, needs manual translation *)
+definition dsl_syntax_valid :: "bool" where "dsl_syntax_valid = undefined"
 
 (* audit_complete (matches Coq: Definition audit_complete) *)
 definition audit_complete :: "ExpansionTrace \<Rightarrow> AuditTrail \<Rightarrow> bool" where
@@ -294,9 +298,11 @@ definition sandbox_isolated :: "SandboxState \<Rightarrow> bool" where
 definition resolve_crate_path :: "ExpansionContext \<Rightarrow> CratePath" where
   "resolve_crate_path ctx \<equiv> [ctx_crate ctx]"
 
-(* attr_preserves_structure - complex match, manual review needed *)
+(* attr_preserves_structure - complex match, needs manual translation *)
+definition attr_preserves_structure :: "bool" where "attr_preserves_structure = undefined"
 
-(* eval_static_assert - complex match, manual review needed *)
+(* eval_static_assert - complex match, needs manual translation *)
+definition eval_static_assert :: "bool" where "eval_static_assert = undefined"
 
 (* tokens_well_formed_app (matches Coq) *)
 lemma tokens_well_formed_app: "\<forall> ts1 ts2, tokens_well_formed ts1 = True \<longrightarrow> tokens_well_formed ts2 = True \<longrightarrow> tokens_well_formed (ts1 ++ ts2) = True"

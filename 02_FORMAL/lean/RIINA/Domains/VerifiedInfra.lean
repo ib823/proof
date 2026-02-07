@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedInfra - Lean 4 Port
@@ -100,8 +101,8 @@ namespace RIINA
 
 /-- TxnOp (matches Coq: Inductive TxnOp) -/
 inductive TxnOp where
-  | txnRead : TxnOp
-  | txnWrite : TxnOp
+  | txnRead : Key → TxnOp
+  | txnWrite : Key → Value → TxnOp
   deriving DecidableEq, Repr
 
 /-- TxnOutcome (matches Coq: Inductive TxnOutcome) -/
@@ -112,21 +113,21 @@ inductive TxnOutcome where
 
 /-- SafeQuery (matches Coq: Inductive SafeQuery) -/
 inductive SafeQuery where
-  | sQParam : SafeQuery  -- Parameterized query
-  | sQConst : SafeQuery
+  | sQParam : Nat → SafeQuery
+  | sQConst : String → SafeQuery
   deriving DecidableEq, Repr
 
 /-- TypedPayload (matches Coq: Inductive TypedPayload) -/
 inductive TypedPayload where
-  | tPInt : TypedPayload
-  | tPStr : TypedPayload
-  | tPList : TypedPayload
+  | tPInt : Nat → TypedPayload
+  | tPStr : String → TypedPayload
+  | tPList : List TypedPayload → TypedPayload
   deriving DecidableEq, Repr
 
 /-- ProcessOutcome (matches Coq: Inductive ProcessOutcome) -/
 inductive ProcessOutcome where
   | pOSuccess : ProcessOutcome
-  | pOFailure : ProcessOutcome
+  | pOFailure : String → ProcessOutcome
   deriving DecidableEq, Repr
 
 /-- Backend (matches Coq: Record Backend) -/
@@ -183,7 +184,7 @@ structure EncryptedStorage where
 structure Capability where
   cap_subject : Nat
   cap_object : Key
-  cap_permission : Nat  -- 0=none, 1=read, 2=write, 3=both
+  cap_permission : Nat
   deriving DecidableEq, Repr
 
 /-- AuditEntry (matches Coq: Record AuditEntry) -/

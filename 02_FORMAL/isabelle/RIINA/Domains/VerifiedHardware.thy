@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedHardware - Isabelle/HOL Port
@@ -113,21 +114,21 @@ datatype security_level =
 
 (* Instruction (matches Coq: Inductive Instruction) *)
 datatype instruction =
-    IAdd  (* rd = rs1 + rs2 *)
-  |     ISub  (* rd = rs1 - rs2 *)
-  |     IAnd  (* rd = rs1 & rs2 *)
+    IAdd
+  |     ISub
+  |     IAnd
   |     IOr
-  |     IXor  (* rd = rs1 ^ rs2 *)
-  |     IMul  (* rd = rs1 * rs2 *)
-  |     IDiv  (* rd = rs1 / rs2 *)
-  |     ILoad  (* rd = mem[rs1 + imm] *)
-  |     IStore  (* mem[rs1 + imm] = rs2 *)
-  |     IBranch  (* if rs1 = rs2 goto imm *)
-  |     IJump  (* goto imm *)
-  |     ISCUB  (* Speculative barrier *)
-  |     IFENCESC  (* Side-channel fence *)
-  |     IISOL  (* Enter isolation mode *)
-  |     IZEROIZE  (* Zeroize registers *)
+  |     IXor
+  |     IMul
+  |     IDiv
+  |     ILoad
+  |     IStore
+  |     IBranch
+  |     IJump
+  |     ISCUB
+  |     IFENCESC
+  |     IISOL
+  |     IZEROIZE
   |     INop
 
 (* PipelineStage (matches Coq: Inductive PipelineStage) *)
@@ -168,9 +169,9 @@ record rtl_state =
   rtl_cycle :: nat
   rtl_security_labels :: RegId
   rtl_isolation_mode :: bool
-  rtl_speculating :: bool  (* Always false for in-order *)
-  rtl_scub_active :: bool  (* SCUB barrier active *)
-  rtl_fencesc_active :: bool  (* Side-channel fence active *)
+  rtl_speculating :: bool
+  rtl_scub_active :: bool
+  rtl_fencesc_active :: bool
 
 (* ECCWord (matches Coq: Record ECCWord) *)
 record ecc_word =
@@ -220,7 +221,8 @@ definition rtl_to_arch :: "RTLState \<Rightarrow> ArchState" where
      security_labels := rtl_security_labels s;
      isolation_mode := rtl_isolation_mode s |}"
 
-(* rtl_execute_instr - complex match, manual review needed *)
+(* rtl_execute_instr - complex match, needs manual translation *)
+definition rtl_execute_instr :: "bool" where "rtl_execute_instr = undefined"
 
 (* cycles (matches Coq: Definition cycles) *)
 fun cycles :: "Instruction \<Rightarrow> nat" where
@@ -276,7 +278,7 @@ definition verified :: "RTLState \<Rightarrow> bool" where
 
 (* behavior_in_spec (matches Coq: Definition behavior_in_spec) *)
 definition behavior_in_spec :: "bool" where
-  "behavior_in_spec \<equiv> s = s' \/  (* Reflexive: no step needed *)
+  "behavior_in_spec \<equiv> s = s' \/  
   exists instr, 
     rtl_to_arch s' = rtl_to_arch (rtl_execute_instr instr s) /\
     (exists a', isa_step instr (rtl_to_arch s) a' /\ a' = rtl_to_arch s')"

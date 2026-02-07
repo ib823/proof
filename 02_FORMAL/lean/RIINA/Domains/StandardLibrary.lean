@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA StandardLibrary - Lean 4 Port
@@ -186,7 +187,7 @@ structure FileHandle where
 
 /-- AuditEntry (matches Coq: Record AuditEntry) -/
 structure AuditEntry where
-  ae_operation : Nat  -- 0 = read, 1 = write
+  ae_operation : Nat
   ae_file_id : Nat
   ae_size : Nat
   deriving DecidableEq, Repr
@@ -259,7 +260,7 @@ structure RwLockState where
 /-- AtomicNat (matches Coq: Record AtomicNat) -/
 structure AtomicNat where
   atomic_value : Nat
-  atomic_seq : Nat  -- sequence number for linearizability
+  atomic_seq : Nat
   deriving DecidableEq, Repr
 
 /-- CondvarState (matches Coq: Record CondvarState) -/
@@ -317,7 +318,7 @@ def string_from_bytes (bytes : List Nat) : RiinaString := mkRiinaString bytes (a
 def secure_string_drop (ss : SecureString) : SecureString := mkSecureString (map (fun _ => 0) (sstr_data ss)) true (sstr_redacted ss)
 
 /-- cap_eq (matches Coq: Definition cap_eq) -/
-def cap_eq := True -- complex match, simplified to Prop
+def cap_eq := sorry -- complex match, needs manual translation
 
 /-- has_capability (matches Coq: Definition has_capability) -/
 def has_capability (caps : List Capability) (c : Capability) : Bool :=
@@ -332,7 +333,7 @@ def tls_version_secure (v : TlsVersion) : Bool :=
   | .tLS13 => true
 
 /-- tls_version_geq (matches Coq: Definition tls_version_geq) -/
-def tls_version_geq := True -- complex match, simplified to Prop
+def tls_version_geq := sorry -- complex match, needs manual translation
 
 /-- duration_add (matches Coq: Definition duration_add) -/
 def duration_add (d1 d2 : Duration) : Duration :=
@@ -392,7 +393,7 @@ def cap_set_contains (s : CapabilitySet) (c : Capability) : Bool :=
   existsb (cap_eq c) s
 
 /-- level_leq (matches Coq: Definition level_leq) -/
-def level_leq := True -- complex match, simplified to Prop
+def level_leq := sorry -- complex match, needs manual translation
 
 /-- compartments_subset (matches Coq: Definition compartments_subset) -/
 def compartments_subset (c1 c2 : List Nat) : Bool :=

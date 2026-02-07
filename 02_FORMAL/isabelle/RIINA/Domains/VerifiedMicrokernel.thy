@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedMicrokernel - Isabelle/HOL Port
@@ -103,9 +104,9 @@ datatype action =
 
 (* Capability (matches Coq: Record Capability) *)
 record capability =
-  cap_object :: nat  (* Object reference *)
+  cap_object :: nat
   cap_rights :: 'a list
-  cap_badge :: nat  (* Unforgeable badge *)
+  cap_badge :: nat
 
 (* KernelState (matches Coq: Record KernelState) *)
 record kernel_state =
@@ -113,7 +114,7 @@ record kernel_state =
   cap_tables :: ProcId
   kernel_objects :: 'a list
   revoked_badges :: RevocationDomain
-  next_badge :: nat  (* monotonically increasing badge allocator *)
+  next_badge :: nat
 
 (* PagePerms (matches Coq: Record PagePerms) *)
 record page_perms =
@@ -126,7 +127,7 @@ record pte =
   pte_paddr :: PAddr
   pte_perms :: PagePerms
   pte_valid :: bool
-  pte_userspace :: bool  (* true if accessible by userspace *)
+  pte_userspace :: bool
 
 (* MemoryState (matches Coq: Record MemoryState) *)
 record memory_state =
@@ -155,7 +156,7 @@ record ipc_state =
 
 (* Notification (matches Coq: Record Notification) *)
 record notification =
-  notif_word :: nat  (* single machine word *)
+  notif_word :: nat
 
 (* holds (matches Coq: Definition holds) *)
 definition holds :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Capability \<Rightarrow> bool" where
@@ -248,7 +249,7 @@ definition msg_caps_valid :: "IPCState \<Rightarrow> ProcId \<Rightarrow> IPCMes
 (* transfer_preserves_validity (matches Coq: Definition transfer_preserves_validity) *)
 definition transfer_preserves_validity :: "Capability \<Rightarrow> bool" where
   "transfer_preserves_validity c \<equiv> next_badge s <= next_badge s' /\
-  (* Transferred capability is not newly revoked *)
+  
   (~ is_revoked s c -> ~ is_revoked s' c)"
 
 (* isolation_invariant (matches Coq: Definition isolation_invariant) *)
@@ -259,7 +260,7 @@ definition isolation_invariant :: "MemoryState \<Rightarrow> bool" where
     address_spaces ms p2 vaddr = Some pte2 ->
     pte_valid pte1 = true ->
     pte_valid pte2 = true ->
-    (* Either different physical addresses, or both readonly *)
+    
     pte_paddr pte1 <> pte_paddr pte2 \/
     (perm_write (pte_perms pte1) = false /\ perm_write (pte_perms pte2) = false)"
 
@@ -285,7 +286,7 @@ definition allocation_safe :: "PAddr \<Rightarrow> bool" where
 
 (* msg_type_safe (matches Coq: Definition msg_type_safe) *)
 definition msg_type_safe :: "IPCMessage \<Rightarrow> bool" where
-  "msg_type_safe msg \<equiv> length (msg_data msg) <= 128 /\  (* bounded message size *)
+  "msg_type_safe msg \<equiv> length (msg_data msg) <= 128 /\  
   length (msg_caps msg) <= 4"
 
 (* no_amplification (matches Coq: Definition no_amplification) *)
@@ -303,8 +304,7 @@ definition ipc_maintains_isolation :: "IPCState \<Rightarrow> bool" where
 
 (* notif_no_sensitive_data (matches Coq: Definition notif_no_sensitive_data) *)
 definition notif_no_sensitive_data :: "Notification \<Rightarrow> bool" where
-  "notif_no_sensitive_data n \<equiv> (* Notification word is bounded - cannot encode arbitrary data *)
-  notif_word n < 2^32"
+  "notif_no_sensitive_data n \<equiv> notif_word n < 2^32"
 
 (* OS_001_01_cap_unforgeable (matches Coq) *)
 lemma OS_001_01_cap_unforgeable: "\<forall> s p c, holds s p c \<longrightarrow> \<exists> slot, cap_lookup s p slot = Some c"

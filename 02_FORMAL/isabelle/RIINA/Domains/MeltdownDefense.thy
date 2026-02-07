@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MeltdownDefense - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | MeltdownVariant    | meltdown_variant       | OK     |
+ * | MeltdownDefense    | meltdown_defense       | OK     |
  * | MeltdownDefenseConfig | meltdown_defense_config | OK     |
  * | all_meltdown_protected | all_meltdown_protected | OK     |
  * | meltdown_mitigations_enabled | meltdown_mitigations_enabled | OK     |
@@ -59,13 +61,18 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* MeltdownVariant (matches Coq: Inductive MeltdownVariant) *)
 datatype meltdown_variant =
-    Meltdown_US  (* User-Supervisor - original Meltdown *)
-  |     Meltdown_P  (* Present bit - Foreshadow *)
-  |     Meltdown_RW  (* Read-Write - variant *)
-  |     Meltdown_PK  (* Protection Keys *)
-  |     KPTI  (* Kernel Page Table Isolation *)
-  |     L1TF_Flush  (* L1 Terminal Fault mitigation *)
-  |     TSX_Disable  (* Disable Transactional Memory *)
+    Meltdown_US
+  |     Meltdown_P
+  |     Meltdown_RW
+  |     Meltdown_PK
+  |     Meltdown_BR
+
+(* MeltdownDefense (matches Coq: Inductive MeltdownDefense) *)
+datatype meltdown_defense =
+    KPTI
+  |     L1TF_Flush
+  |     TSX_Disable
+  |     MDS_Clear
 
 (* MeltdownDefenseConfig (matches Coq: Record MeltdownDefenseConfig) *)
 record meltdown_defense_config =

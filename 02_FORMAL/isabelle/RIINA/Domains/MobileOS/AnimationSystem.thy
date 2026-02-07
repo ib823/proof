@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AnimationSystem - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | AnimationType      | animation_type         | OK     |
+ * | TimingFunction     | timing_function        | OK     |
  * | SpringParams       | spring_params          | OK     |
  * | SpringAnimation    | spring_animation       | OK     |
  * | AnimationControl   | animation_control      | OK     |
@@ -64,12 +66,15 @@ begin
 
 (* AnimationType (matches Coq: Inductive AnimationType) *)
 datatype animation_type =
-    ImplicitAnim  (* system-driven *)
-  |     ExplicitAnim  (* developer-driven *)
-  |     SpringAnim  (* physics-based *)
-  |     KeyframeAnim  (* multi-keyframe *)
+    ImplicitAnim
+  |     ExplicitAnim
+  |     SpringAnim
+  |     KeyframeAnim
   |     TransitionAnim
-  |     Linear
+
+(* TimingFunction (matches Coq: Inductive TimingFunction) *)
+datatype timing_function =
+    Linear
   |     EaseIn
   |     EaseOut
   |     EaseInOut
@@ -93,12 +98,12 @@ record spring_animation =
 (* AnimationControl (matches Coq: Record AnimationControl) *)
 record animation_control =
   anim_type :: AnimationType
-  anim_speed :: nat  (* 100 = normal, 200 = 2x, 50 = 0.5x *)
+  anim_speed :: nat
   anim_reversed :: bool
   anim_autoreverses :: bool
-  anim_repeat_count :: nat  (* 0 = infinite *)
+  anim_repeat_count :: nat
   anim_current_repeat :: nat
-  anim_fill_mode :: nat  (* 0=removed, 1=forwards, 2=backwards, 3=both *)
+  anim_fill_mode :: nat
   anim_delegate_notified :: bool
   anim_removed_cleanly :: bool
 
@@ -106,11 +111,11 @@ record animation_control =
 record animation_group =
   ag_animations :: 'a list
   ag_synchronized :: bool
-  ag_duration :: nat  (* milliseconds *)
+  ag_duration :: nat
 
 (* LayerAnimation (matches Coq: Record LayerAnimation) *)
 record layer_animation =
-  la_property :: nat  (* which property is animated *)
+  la_property :: nat
   la_gpu_accelerated :: bool
   la_from_value :: nat
   la_to_value :: nat
@@ -118,7 +123,7 @@ record layer_animation =
 
 (* Keyframe (matches Coq: Record Keyframe) *)
 record keyframe =
-  kf_time :: nat  (* 0-100 percentage of duration *)
+  kf_time :: nat
   kf_value :: nat
   kf_timing :: TimingFunction
 
@@ -158,7 +163,8 @@ definition well_formed_spring :: "SpringAnimation \<Rightarrow> bool" where
   length (spring_velocities sa) = spring_duration sa + 1 /\
   positions_smooth (spring_positions sa)"
 
-(* reaches_target - complex match, manual review needed *)
+(* reaches_target - complex match, needs manual translation *)
+definition reaches_target :: "bool" where "reaches_target = undefined"
 
 (* frame_budget_60hz (matches Coq: Definition frame_budget_60hz) *)
 definition frame_budget_60hz :: "nat" where
@@ -195,7 +201,8 @@ definition keyframe_in_range :: "Keyframe \<Rightarrow> bool" where
   "keyframe_in_range kf \<equiv> (from <= to -> from <= kf_value kf /\ kf_value kf <= to) /\
   (to <= from -> to <= kf_value kf /\ kf_value kf <= from)"
 
-(* spring_converges - complex match, manual review needed *)
+(* spring_converges - complex match, needs manual translation *)
+definition spring_converges :: "bool" where "spring_converges = undefined"
 
 (* nth_error_In_bounds (matches Coq) *)
 lemma nth_error_In_bounds: "\<forall> A (l : list A) n, n < length l \<longrightarrow> \<exists> x, nth_error l n = Some x"

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA BackendComposition - Lean 4 Port
@@ -52,19 +53,19 @@ namespace RIINA
 
 /-- Label (matches Coq: Inductive Label) -/
 inductive Label where
-  | lo : Label  -- public
+  | lo : Label
   | hi : Label
   deriving DecidableEq, Repr
 
 /-- Value (matches Coq: Inductive Value) -/
 inductive Value where
-  | vNat : Value
-  | vBool : Value
+  | vNat : Nat → Value
+  | vBool : Bool → Value
   | vUnit : Value
   deriving DecidableEq, Repr
 
 /-- label_le (matches Coq: Definition label_le) -/
-def label_le := True -- complex match, simplified to Prop
+def label_le := sorry -- complex match, needs manual translation
 
 /-- low_equiv (matches Coq: Definition low_equiv) -/
 def low_equiv (v1 v2 : LValue) : Prop :=

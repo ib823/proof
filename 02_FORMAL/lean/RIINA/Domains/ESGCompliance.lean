@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ESGCompliance - Lean 4 Port
@@ -109,7 +110,7 @@ inductive EmissionScope where
   | scope1 : EmissionScope
   | scope2_Location : EmissionScope
   | scope2_Market : EmissionScope
-  | scope3 : EmissionScope
+  | scope3 : Nat → EmissionScope
   deriving DecidableEq, Repr
 
 /-- WaterSource (matches Coq: Inductive WaterSource) -/
@@ -125,20 +126,20 @@ inductive WaterSource where
 structure EmissionSource where
   source_id : Nat
   source_type : EmissionScope
-  quantity : Z  -- In tonnes CO2e, scaled by 10^6
+  quantity : Z
   emission_factor : Z
   is_tracked : Bool
   is_measured : Bool
   is_reported : Bool
   owned_or_controlled_flag : Bool
-  emission_hash : Nat  -- Unique identifier for double-counting check
+  emission_hash : Nat
   deriving DecidableEq, Repr
 
 /-- WaterWithdrawal (matches Coq: Record WaterWithdrawal) -/
 structure WaterWithdrawal where
   withdrawal_id : Nat
   water_source : WaterSource
-  volume : Z  -- In cubic meters
+  volume : Z
   quality : Nat
   source_documented : Bool
   deriving DecidableEq, Repr
@@ -194,7 +195,7 @@ structure Employee where
   no_debt_bondage : Bool
   documents_retained : Bool
   employed_flag : Bool
-  gender : Nat  -- For pay gap analysis
+  gender : Nat
   deriving DecidableEq, Repr
 
 /-- SafetyIncident (matches Coq: Record SafetyIncident) -/
@@ -236,7 +237,7 @@ structure HRDDProcess where
 structure Supplier where
   supplier_id : Nat
   risk_assessed : Bool
-  assessment_date : Nat  -- Year
+  assessment_date : Nat
   current_year : Nat
   high_risk : Bool
   deriving DecidableEq, Repr
@@ -364,7 +365,7 @@ structure ESGCompliantSystem where
   sys_coi : ConflictOfInterest
   sys_rpt : List
   sys_disclosure : Disclosure
-  sys_sbt : ScienceBasedTarget  -- Compliance predicates - the system enforces these
+  sys_sbt : ScienceBasedTarget
   emissions_complete : forall
   scope2_tracked : forall
   emissions_unique : forall

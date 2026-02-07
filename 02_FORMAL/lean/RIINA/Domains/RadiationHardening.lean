@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA RadiationHardening - Lean 4 Port
@@ -70,8 +71,8 @@ inductive SystemMode where
 
 /-- ECCWord (matches Coq: Record ECCWord) -/
 structure ECCWord where
-  ecc_data : Word  -- Data bits
-  ecc_parity : Word  -- Parity bits
+  ecc_data : Word
+  ecc_parity : Word
   deriving DecidableEq, Repr
 
 /-- Watchdog (matches Coq: Record Watchdog) -/
@@ -83,7 +84,7 @@ structure Watchdog where
 
 /-- Checkpoint (matches Coq: Record Checkpoint) -/
 structure Checkpoint where
-  cp_state : Nat  -- Abstract system state
+  cp_state : Nat
   cp_timestamp : Nat
   cp_valid : Bool
   deriving DecidableEq, Repr
@@ -122,8 +123,8 @@ structure Probability where
 
 /-- RecoveryMetrics (matches Coq: Record RecoveryMetrics) -/
 structure RecoveryMetrics where
-  rm_mttr : Nat  -- Mean Time To Recovery
-  rm_requirement : Nat  -- Mission requirement
+  rm_mttr : Nat
+  rm_requirement : Nat
   deriving DecidableEq, Repr
 
 /-- CriticalData (matches Coq: Record CriticalData) -/
@@ -166,7 +167,7 @@ def canary_valid (sf : StackFrame) : Bool :=
   Nat
 
 /-- mode_eqb (matches Coq: Definition mode_eqb) -/
-def mode_eqb := True -- complex match, simplified to Prop
+def mode_eqb := sorry -- complex match, needs manual translation
 
 /-- count_agreements (matches Coq: Definition count_agreements) -/
 def count_agreements (results : List Nat) (value : Nat) : Nat :=
@@ -185,7 +186,7 @@ def cd_consistent (cd : CriticalData) : Bool :=
   andb (Nat
 
 /-- cd_recover (matches Coq: Definition cd_recover) -/
-def cd_recover := True -- complex match, simplified to Prop
+def cd_recover := sorry -- complex match, needs manual translation
 
 /-- scrub_effective (matches Coq: Definition scrub_effective) -/
 def scrub_effective (ss : ScrubState) : Bool :=

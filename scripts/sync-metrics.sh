@@ -100,8 +100,18 @@ echo "  Rust tests:     $RUST_TESTS"
 echo "  Session:        $SESSION"
 echo ""
 
-# The canonical audit banner line
-BANNER="**Audit Update:** 2026-02-07 (Session ${SESSION}: 10-Prover Full Stack) — ${TOTAL_PROOFS_COMMA} total items across ${TOTAL_PROVERS} provers. ${QED_COMMA} Coq Qed + ${LEAN_THEOREMS} Lean + ${ISABELLE_LEMMAS} Isabelle + ${FSTAR_LEMMAS} F* + ${TLAPLUS_THEOREMS} TLA+ + ${ALLOY_ASSERTIONS} Alloy + ${SMT_ASSERTIONS} SMT + ${VERUS_PROOFS} Verus + ${KANI_HARNESSES} Kani + ${TV_VALIDATIONS} TV. 0 Admitted/sorry. ${AXIOMS} axiom (policy). ${RUST_TESTS} Rust tests."
+# Parse quality tiers from metrics.json
+COQ_TIER1=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('quality',{}).get('coqTiers',{}).get('core',0))" 2>/dev/null || echo "0")
+COQ_TIER2=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('quality',{}).get('coqTiers',{}).get('domain',0))" 2>/dev/null || echo "0")
+LEAN_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('leanCompiled',False)).lower())" 2>/dev/null || echo "false")
+ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',False)).lower())" 2>/dev/null || echo "false")
+
+# Compute stub prover total
+STUB_TOTAL=$((FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
+LEAN_ISA_TOTAL=$((LEAN_THEOREMS + ISABELLE_LEMMAS))
+
+# The canonical audit banner line — with quality context
+BANNER="**Audit Update:** 2026-02-07 (Session ${SESSION}: 10-Prover Full Stack) — ${TOTAL_PROOFS_COMMA} total items across ${TOTAL_PROVERS} provers. ${QED_COMMA} Coq Qed (compiled) + ${LEAN_ISA_TOTAL} Lean/Isabelle (transpiled, uncompiled) + ~${STUB_TOTAL} generated stubs (7 provers). 0 Admitted. ${AXIOMS} axiom (policy). ${RUST_TESTS} Rust tests."
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NonInterference_v2_LogicalRelation - Lean 4 Port
@@ -322,7 +323,7 @@ theorem declass_ok_subst_rho : ∀ rho e1 e2, declass_ok e1 e2 → declass_ok (s
 
 /-- The correct formulation: substitution reduces the typing context. -/
 /-- subst_rho_typing_general (matches Coq) -/
-theorem subst_rho_typing_general : ∀ Γ Γ' Σ Δ e T ε rho, has_type Γ Σ Δ e T ε → (* For variables in Γ but not Γ', rho provides typed values *) (∀ x Tx, lookup x Γ = Some Tx → lookup x Γ' = None → value (rho x) ∧ has_type nil Σ Δ (rho x) Tx EffectPure) → (* For variables in both Γ and Γ', rho is identity *) (∀ x, lookup x Γ' ≠ None → rho x = EVar x) → (* Γ' is a suffix/subset of Γ with same types *) (∀ x Tx, lookup x Γ' = Some Tx → lookup x Γ = Some Tx) → has_type Γ' Σ Δ (subst_rho rho e) T ε := by
+theorem subst_rho_typing_general : ∀ Γ Γ' Σ Δ e T ε rho, has_type Γ Σ Δ e T ε →  (∀ x Tx, lookup x Γ = Some Tx → lookup x Γ' = None → value (rho x) ∧ has_type nil Σ Δ (rho x) Tx EffectPure) →  (∀ x, lookup x Γ' ≠ None → rho x = EVar x) →  (∀ x Tx, lookup x Γ' = Some Tx → lookup x Γ = Some Tx) → has_type Γ' Σ Δ (subst_rho rho e) T ε := by
   cases ‹_› <;> simp
 
 /-- Corollary: Full substitution to empty context.

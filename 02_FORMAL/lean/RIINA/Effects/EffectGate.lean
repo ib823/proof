@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA EffectGate - Lean 4 Port
@@ -19,9 +20,10 @@ namespace RIINA
 
 /-- is_gate (matches Coq: Definition is_gate) -/
 def is_gate (eff : effect) (e_gate : expr) : Prop :=
-  (* Conceptual definition:
-     For any expression e that performs 'eff',
-     embedding it in e_gate traps or handles the effect
+  forall e T eff_used,
+    has_type_full nil nil Public e T eff_used ->
+    effect_leq eff_used eff ->
+    performs_within (EApp e_gate e) eff
 
 /-- gate_enforcement (matches Coq) -/
 theorem gate_enforcement : ∀ G S D e T eff_allowed eff_used, has_type_full G S D e T eff_used → effect_level eff_used ≤ effect_level eff_allowed → performs_within e eff_allowed := by

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DO178CCompliance - Lean 4 Port
@@ -90,16 +91,18 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- DAL (matches Coq: Inductive DAL) -/
 inductive DAL where
-  | dAL_A : DAL  -- Catastrophic - failure may cause crash
-  | dAL_B : DAL  -- Hazardous - large reduction in safety margins
-  | dAL_C : DAL  -- Major - significant reduction in safety margins
-  | dAL_D : DAL  -- Minor - slight reduction in safety margins
+  | dAL_A : DAL
+  | dAL_B : DAL
+  | dAL_C : DAL
+  | dAL_D : DAL
+  | dAL_E : DAL
   deriving DecidableEq, Repr
 
 /-- FormalMethodCategory (matches Coq: Inductive FormalMethodCategory) -/
 inductive FormalMethodCategory where
-  | fM_TheoremProving : FormalMethodCategory  -- Interactive theorem provers like Coq
-  | fM_ModelChecking : FormalMethodCategory  -- Exhaustive state space exploration
+  | fM_TheoremProving : FormalMethodCategory
+  | fM_ModelChecking : FormalMethodCategory
+  | fM_AbstractInterp : FormalMethodCategory
   deriving DecidableEq, Repr
 
 /-- PlanningObjectives (matches Coq: Record PlanningObjectives) -/
@@ -139,7 +142,7 @@ structure VerificationProcess where
   verif_hw_sw_integration_tested : Bool
   verif_coverage_analysis_done : Bool
   verif_structural_coverage : Bool
-  verif_mc_dc_coverage : Bool  -- Level A specific
+  verif_mc_dc_coverage : Bool
   deriving DecidableEq, Repr
 
 /-- ConfigurationManagement (matches Coq: Record ConfigurationManagement) -/
@@ -160,7 +163,7 @@ structure QualityAssurance where
   qa_compliance_assured : Bool
   qa_audits_performed : Bool
   qa_records_maintained : Bool
-  qa_independence : Bool  -- Level A requires independent QA
+  qa_independence : Bool
   deriving DecidableEq, Repr
 
 /-- FormalMethods (matches Coq: Record FormalMethods) -/
@@ -186,7 +189,7 @@ structure DO178CCompliance where
   deriving DecidableEq, Repr
 
 /-- dal_leq (matches Coq: Definition dal_leq) -/
-def dal_leq := True -- complex match, simplified to Prop
+def dal_leq := sorry -- complex match, needs manual translation
 
 /-- riina_fm_category (matches Coq: Definition riina_fm_category) -/
 def riina_fm_category : FormalMethodCategory :=
@@ -280,7 +283,7 @@ def fm_compliant (f : FormalMethods) : Bool :=
   fm_completeness_assessed f
 
 /-- do178c_level_a_compliant (matches Coq: Definition do178c_level_a_compliant) -/
-def do178c_level_a_compliant := True -- complex match, simplified to Prop
+def do178c_level_a_compliant := sorry -- complex match, needs manual translation
 
 /-- riina_do178c (matches Coq: Definition riina_do178c) -/
 def riina_do178c : DO178CCompliance := mkDO178C
@@ -496,7 +499,7 @@ theorem DO178_039_riina_development : development_compliant (do178c_development 
 
 /-- DO178_040: Complete DO-178C Level A Certification -/
 /-- DO178_040_complete_certification (matches Coq) -/
-theorem DO178_040_complete_certification : ∀ c : DO178CCompliance, do178c_level_a_compliant c = true → (* All Level A requirements satisfied *) planning_compliant (do178c_planning c) = true ∧ development_compliant (do178c_development c) = true ∧ verification_compliant (do178c_verification c) = true ∧ cm_compliant (do178c_cm c) = true ∧ qa_compliant (do178c_qa c) = true := by
+theorem DO178_040_complete_certification : ∀ c : DO178CCompliance, do178c_level_a_compliant c = true →  planning_compliant (do178c_planning c) = true ∧ development_compliant (do178c_development c) = true ∧ verification_compliant (do178c_verification c) = true ∧ cm_compliant (do178c_cm c) = true ∧ qa_compliant (do178c_qa c) = true := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

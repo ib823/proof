@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TestingQA - Isabelle/HOL Port
@@ -216,7 +217,8 @@ definition is_constant_time :: "TimingMeasurement \<Rightarrow> nat \<Rightarrow
 definition run_test :: "TestCase \<Rightarrow> TestResult" where
   "run_test tc \<equiv> if Nat"
 
-(* test_result_eqb - complex match, manual review needed *)
+(* test_result_eqb - complex match, needs manual translation *)
+definition test_result_eqb :: "bool" where "test_result_eqb = undefined"
 
 (* test_passed (matches Coq: Definition test_passed) *)
 fun test_passed :: "TestResult \<Rightarrow> bool" where
@@ -231,7 +233,8 @@ definition initial_state :: "TestState" where
 definition id_fixture :: "Fixture" where
   "id_fixture \<equiv> mkFixture (fun s => s) (fun s => s)"
 
-(* expected_panic - complex match, manual review needed *)
+(* expected_panic - complex match, needs manual translation *)
+definition expected_panic :: "bool" where "expected_panic = undefined"
 
 (* check_property (matches Coq: Definition check_property) *)
 definition check_property :: "Property \<Rightarrow> bool" where
@@ -281,9 +284,11 @@ definition run_kat :: "KATTest \<Rightarrow> bool" where
 definition check_brute_force :: "BruteForceProtection \<Rightarrow> bool" where
   "check_brute_force bfp \<equiv> orb bfp"
 
-(* line_covered - complex match, manual review needed *)
+(* line_covered - complex match, needs manual translation *)
+definition line_covered :: "bool" where "line_covered = undefined"
 
-(* sec_prop_eqb - complex match, manual review needed *)
+(* sec_prop_eqb - complex match, needs manual translation *)
+definition sec_prop_eqb :: "bool" where "sec_prop_eqb = undefined"
 
 (* security_prop_covered (matches Coq: Definition security_prop_covered) *)
 definition security_prop_covered :: "SecurityProperty \<Rightarrow> SecurityCoverage \<Rightarrow> bool" where

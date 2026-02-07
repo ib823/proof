@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA HealthcareIS - Lean 4 Port
@@ -152,7 +153,7 @@ structure Patient where
 
 /-- PatientMatch (matches Coq: Record PatientMatch) -/
 structure PatientMatch where
-  match_score : Nat  -- 0-1000, 999 = 99.9%
+  match_score : Nat
   matched_patient : MRN
   deriving DecidableEq, Repr
 
@@ -421,7 +422,7 @@ structure DataExport where
   export_id : Nat
   export_patient : MRN
   machine_readable : Bool
-  export_format : Nat  -- 1 = JSON, 2 = XML, 3 = FHIR
+  export_format : Nat
   export_complete : Bool
   deriving DecidableEq, Repr
 
@@ -495,7 +496,7 @@ def order_signed (o : Order) : Prop :=
   has_signature o = true /\ signature_valid o = true
 
 /-- verbal_order_valid (matches Coq: Definition verbal_order_valid) -/
-def verbal_order_valid := True -- complex match, simplified to Prop
+def verbal_order_valid := sorry -- complex match, needs manual translation
 
 /-- duplicate_handled (matches Coq: Definition duplicate_handled) -/
 def duplicate_handled (doc : DuplicateOrderCheck) : Prop :=
@@ -507,10 +508,10 @@ def contraindication_blocked (c : Contraindication) : Prop :=
   contra_detected c = true -> hard_stop_triggered c = true
 
 /-- specimen_tracked (matches Coq: Definition specimen_tracked) -/
-def specimen_tracked := True -- complex match, simplified to Prop
+def specimen_tracked := sorry -- complex match, needs manual translation
 
 /-- critical_notified (matches Coq: Definition critical_notified) -/
-def critical_notified := True -- complex match, simplified to Prop
+def critical_notified := sorry -- complex match, needs manual translation
 
 /-- result_validated (matches Coq: Definition result_validated) -/
 def result_validated (r : LabResult) : Prop :=
@@ -537,7 +538,7 @@ def audit_complete (ae : AuditEntry) : Prop :=
   reviewable ae = true /\ audit_timestamp ae > 0
 
 /-- breach_notified (matches Coq: Definition breach_notified) -/
-def breach_notified := True -- complex match, simplified to Prop
+def breach_notified := sorry -- complex match, needs manual translation
 
 /-- consent_valid (matches Coq: Definition consent_valid) -/
 def consent_valid (c : Consent) : Prop :=
@@ -552,7 +553,7 @@ def data_portable (de : DataExport) : Prop :=
   export_complete de = true
 
 /-- high_confidence_match (matches Coq: Definition high_confidence_match) -/
-def high_confidence_match := True -- complex match, simplified to Prop
+def high_confidence_match := sorry -- complex match, needs manual translation
 
 /-- similar_patients (matches Coq: Definition similar_patients) -/
 def similar_patients (dc : DuplicateCandidate) : Prop :=

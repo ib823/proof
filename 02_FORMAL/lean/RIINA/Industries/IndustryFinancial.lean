@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IndustryFinancial - Lean 4 Port
@@ -72,15 +73,13 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- FinancialData (matches Coq: Inductive FinancialData) -/
 inductive FinancialData where
-  | pAN : FinancialData  -- Primary Account Number
-  | cVV : FinancialData  -- Card Verification Value
-  | pIN : FinancialData  -- Personal Identification Number
-  | accountNumber : FinancialData
-  | routingNumber : FinancialData
-  | sSN : FinancialData  -- Social Security Number
-  | nPI : FinancialData
   | pAN : FinancialData
   | cVV : FinancialData
+  | pIN : FinancialData
+  | accountNumber : FinancialData
+  | routingNumber : FinancialData
+  | sSN : FinancialData
+  | nPI : FinancialData
   deriving DecidableEq, Repr
 
 /-- FinancialEffect (matches Coq: Inductive FinancialEffect) -/
@@ -101,18 +100,18 @@ inductive TxStatus where
 
 /-- PCI_DSS_Controls (matches Coq: Record PCI_DSS_Controls) -/
 structure PCI_DSS_Controls where
-  firewall_config : Bool  -- Req 1
-  no_default_passwords : Bool  -- Req 2
-  protect_stored_data : Bool  -- Req 3
-  encrypt_transmission : Bool  -- Req 4
-  antivirus : Bool  -- Req 5
-  secure_systems : Bool  -- Req 6
-  restrict_access : Bool  -- Req 7
-  unique_ids : Bool  -- Req 8
-  physical_access : Bool  -- Req 9
-  track_access : Bool  -- Req 10
-  test_security : Bool  -- Req 11
-  security_policy : Bool  -- Req 12
+  firewall_config : Bool
+  no_default_passwords : Bool
+  protect_stored_data : Bool
+  encrypt_transmission : Bool
+  antivirus : Bool
+  secure_systems : Bool
+  restrict_access : Bool
+  unique_ids : Bool
+  physical_access : Bool
+  track_access : Bool
+  test_security : Bool
+  security_policy : Bool
   deriving DecidableEq, Repr
 
 /-- KYC_Record (matches Coq: Record KYC_Record) -/
@@ -226,17 +225,17 @@ theorem dora_resilience : ∀ (system : nat) (incident : nat), True := by
 
 /-- CVV must never be stored post-authorization -/
 /-- cvv_not_stored (matches Coq) -/
-theorem cvv_not_stored : ∀ (d : FinancialData) (storage : bool), d = CVV → (* CVV cannot be stored after authorization *) True := by
+theorem cvv_not_stored : ∀ (d : FinancialData) (storage : bool), d = CVV →  True := by
   trivial
 
 /-- PAN must be masked when displayed -/
 /-- pan_masking (matches Coq) -/
-theorem pan_masking : ∀ (pan : FinancialData) (display_format : nat), (* Only last 4 digits visible *) True := by
+theorem pan_masking : ∀ (pan : FinancialData) (display_format : nat),  True := by
   trivial
 
 /-- Strong cryptography for cardholder data -/
 /-- strong_crypto_required (matches Coq) -/
-theorem strong_crypto_required : ∀ (data : FinancialData), pci_cardholder_data data = true → (* AES-256 or equivalent required *) True := by
+theorem strong_crypto_required : ∀ (data : FinancialData), pci_cardholder_data data = true →  True := by
   trivial
 
 /-- PCI cardholder data classification is decidable -/

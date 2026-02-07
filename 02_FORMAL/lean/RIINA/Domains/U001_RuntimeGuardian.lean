@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA U001_RuntimeGuardian - Lean 4 Port
@@ -87,12 +88,12 @@ namespace RIINA
 
 /-- CFGEdge (matches Coq: Inductive CFGEdge) -/
 inductive CFGEdge where
-  | directCall : CFGEdge
-  | indirectCall : CFGEdge
-  | return : CFGEdge
-  | directJump : CFGEdge
-  | indirectJump : CFGEdge
-  | fallThrough : CFGEdge
+  | directCall : Addr → Addr → CFGEdge
+  | indirectCall : Addr → Addr → CFGEdge
+  | return : Addr → Addr → CFGEdge
+  | directJump : Addr → Addr → CFGEdge
+  | indirectJump : Addr → Addr → CFGEdge
+  | fallThrough : Addr → Addr → CFGEdge
   deriving DecidableEq, Repr
 
 /-- Protection (matches Coq: Inductive Protection) -/
@@ -337,7 +338,7 @@ theorem U_001_24_nmr_recovery_sound : ∀ (v1 v2 v3 : Variant) (t : nat) (correc
   intro h; exact h
 
 /-- U_001_25_nmr_coverage (matches Coq) -/
-theorem U_001_25_nmr_coverage : ∀ p_error, p_error ≥ 1 → (* For majority failure, need at least 2 of 3 to fail *) (* This models that triple redundancy tolerates single faults *) p_error * p_error ≤ p_error * p_error * 3 := by
+theorem U_001_25_nmr_coverage : ∀ p_error, p_error ≥ 1 →   p_error * p_error ≤ p_error * p_error * 3 := by
   omega
 
 /-- U_001_26_panic_keys_zeroized (matches Coq) -/

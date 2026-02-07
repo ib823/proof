@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NetworkSecurity - Lean 4 Port
@@ -118,7 +119,7 @@ structure Session where
 /-- SSLConfig (matches Coq: Record SSLConfig) -/
 structure SSLConfig where
   ssl_min_version : ProtocolVersion
-  ssl_cipher_strength : Nat  -- bits
+  ssl_cipher_strength : Nat
   ssl_revocation_checked : Bool
   ssl_compression_disabled : Bool
   deriving DecidableEq, Repr
@@ -266,7 +267,7 @@ theorem secure_negotiation_highest_common : ∀ (n : ConnectionNegotiation), val
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- minimum_version_enforced (matches Coq) -/
-theorem minimum_version_enforced : ∀ (n : ConnectionNegotiation), valid_negotiation n → neg_selected_version n ≥ 12. (* TLS 1.2 *) := by
+theorem minimum_version_enforced : ∀ (n : ConnectionNegotiation), valid_negotiation n → neg_selected_version n ≥ 12.  := by
   intro h; exact h
 
 /-- packet_inspection_complete (matches Coq) -/

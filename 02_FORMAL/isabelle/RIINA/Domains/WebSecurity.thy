@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WebSecurity - Isabelle/HOL Port
@@ -65,7 +66,7 @@ begin
 (* HTMLContent (matches Coq: Inductive HTMLContent) *)
 datatype html_content =
     HTMLText
-  |     HTMLEscaped  (* Auto-escaped *)
+  |     HTMLEscaped
   |     HTMLElement
 
 (* CSP (matches Coq: Record CSP) *)
@@ -86,7 +87,7 @@ record secure_cookie =
   cookie_value :: 'a list
   cookie_httponly :: bool
   cookie_secure :: bool
-  cookie_samesite :: nat  (* 0=None, 1=Lax, 2=Strict *)
+  cookie_samesite :: nat
 
 (* CSRFToken (matches Coq: Record CSRFToken) *)
 record csrf_token =
@@ -98,14 +99,14 @@ record http_request =
   req_origin :: Origin
   req_target_origin :: Origin
   req_csrf_token :: option
-  req_method :: nat  (* 0=GET, 1=POST, etc *)
+  req_method :: nat
 
 (* ValidatedURL (matches Coq: Record ValidatedURL) *)
 record validated_url =
   url_scheme :: nat
   url_host :: 'a list
   url_path :: 'a list
-  url_is_allowed :: bool  (* Pre-validated against allowlist *)
+  url_is_allowed :: bool
 
 (* BoundSession (matches Coq: Record BoundSession) *)
 record bound_session =
@@ -154,7 +155,8 @@ record graph_ql_config =
 definition same_origin :: "bool" where
   "same_origin \<equiv> Nat"
 
-(* csrf_protected - complex match, manual review needed *)
+(* csrf_protected - complex match, needs manual translation *)
+definition csrf_protected :: "bool" where "csrf_protected = undefined"
 
 (* regenerate_session (matches Coq: Definition regenerate_session) *)
 definition regenerate_session :: "bool" where

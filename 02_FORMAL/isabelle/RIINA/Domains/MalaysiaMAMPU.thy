@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MalaysiaMAMPU - Isabelle/HOL Port
@@ -56,10 +57,10 @@ begin
 
 (* GovClassification (matches Coq: Inductive GovClassification) *)
 datatype gov_classification =
-    Terbuka  (* Open / Public *)
-  |     Terhad  (* Restricted *)
-  |     Sulit  (* Confidential *)
-  |     Rahsia  (* Secret *)
+    Terbuka
+  |     Terhad
+  |     Sulit
+  |     Rahsia
   |     RahsiaBesar
 
 (* classification_level (matches Coq: Definition classification_level) *)
@@ -74,7 +75,8 @@ fun classification_level :: "GovClassification \<Rightarrow> nat" where
 definition data_sovereign :: "GovSystem \<Rightarrow> bool" where
   "data_sovereign s \<equiv> gov_data_in_malaysia s = true"
 
-(* controls_match_classification - complex match, manual review needed *)
+(* controls_match_classification - complex match, needs manual translation *)
+definition controls_match_classification :: "bool" where "controls_match_classification = undefined"
 
 (* security_assessed (matches Coq: Definition security_assessed) *)
 definition security_assessed :: "GovSystem \<Rightarrow> bool" where
@@ -84,7 +86,8 @@ definition security_assessed :: "GovSystem \<Rightarrow> bool" where
 definition isms_compliant :: "GovSystem \<Rightarrow> bool" where
   "isms_compliant s \<equiv> gov_isms_certified s = true"
 
-(* mampu_fully_compliant - complex match, manual review needed *)
+(* mampu_fully_compliant - complex match, needs manual translation *)
+definition mampu_fully_compliant :: "bool" where "mampu_fully_compliant = undefined"
 
 (* rakkssa_passed (matches Coq: Definition rakkssa_passed) *)
 definition rakkssa_passed :: "RAKKSSAAssessment \<Rightarrow> bool" where

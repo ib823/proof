@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedAIML - Isabelle/HOL Port
@@ -68,7 +69,7 @@ begin
 
 (* Layer (matches Coq: Inductive Layer) *)
 datatype layer =
-    Dense  (* input_dim, output_dim *)
+    Dense
   |     ReLU
   |     Softmax
   |     Sigmoid
@@ -76,8 +77,8 @@ datatype layer =
 (* FixedPoint (matches Coq: Record FixedPoint) *)
 record fixed_point =
   fp_int :: Z
-  fp_frac :: nat  (* Fractional part, scaled by 10000 *)
-  fp_scale :: nat  (* Scale factor *)
+  fp_frac :: nat
+  fp_scale :: nat
 
 (* InputBounds (matches Coq: Record InputBounds) *)
 record input_bounds =
@@ -87,13 +88,13 @@ record input_bounds =
 (* Model (matches Coq: Record Model) *)
 record model =
   model_weights :: 'a list
-  model_hash :: nat  (* For integrity check *)
+  model_hash :: nat
 
 (* ActionSpace (matches Coq: Record ActionSpace) *)
 record action_space =
   action_min :: Z
   action_max :: Z
-  action_rate_limit :: Z  (* Max change per step *)
+  action_rate_limit :: Z
 
 (* rval_add (matches Coq: Definition rval_add) *)
 definition rval_add :: "RVal" where
@@ -107,8 +108,7 @@ definition relu :: "Z \<Rightarrow> Z" where
 
 (* sigmoid_approx (matches Coq: Definition sigmoid_approx) *)
 definition sigmoid_approx :: "Z \<Rightarrow> Z" where
-  "sigmoid_approx x \<equiv> (* Approximation: 0 if x < -4, 1 if x > 4, linear in between *)
-  if Z"
+  "sigmoid_approx x \<equiv> if Z"
 
 (* softmax_valid (matches Coq: Definition softmax_valid) *)
 definition softmax_valid :: "Z \<Rightarrow> bool" where
@@ -166,7 +166,8 @@ definition explanation_faithful :: "Z \<Rightarrow> bool" where
 definition gradient_step :: "Z \<Rightarrow> Z \<Rightarrow> Z \<Rightarrow> Z" where
   "gradient_step loss learning_rate gradient \<equiv> loss - learning_rate * gradient"
 
-(* mat_mul_elem - complex match, manual review needed *)
+(* mat_mul_elem - complex match, needs manual translation *)
+definition mat_mul_elem :: "bool" where "mat_mul_elem = undefined"
 
 (* lipschitz_output (matches Coq: Definition lipschitz_output) *)
 definition lipschitz_output :: "Z \<Rightarrow> Z \<Rightarrow> Z" where

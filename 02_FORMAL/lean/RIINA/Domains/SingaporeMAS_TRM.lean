@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SingaporeMAS_TRM - Lean 4 Port
@@ -64,9 +65,9 @@ inductive MASLicenseType where
 
 /-- PatchCriticality (matches Coq: Inductive PatchCriticality) -/
 inductive PatchCriticality where
-  | patchCritical : PatchCriticality  -- ≤14 days
-  | patchHigh : PatchCriticality  -- ≤30 days
-  | patchMedium : PatchCriticality  -- ≤60 days
+  | patchCritical : PatchCriticality
+  | patchHigh : PatchCriticality
+  | patchMedium : PatchCriticality
   | patchLow : PatchCriticality
   deriving DecidableEq, Repr
 

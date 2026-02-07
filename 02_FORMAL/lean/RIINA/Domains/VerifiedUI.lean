@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedUI - Lean 4 Port
@@ -159,7 +160,7 @@ inductive CertStatus where
 inductive FramePolicy where
   | frameDeny : FramePolicy
   | frameSameOrigin : FramePolicy
-  | frameAllowFrom : FramePolicy
+  | frameAllowFrom : Origin → FramePolicy
   | frameAllowAll : FramePolicy
   deriving DecidableEq, Repr
 
@@ -174,8 +175,8 @@ inductive Sensitivity where
 
 /-- Breakpoint (matches Coq: Inductive Breakpoint) -/
 inductive Breakpoint where
-  | bPMobile : Breakpoint  -- width < mobile_max
-  | bPTablet : Breakpoint  -- mobile_max <= width < desktop_min
+  | bPMobile : Breakpoint
+  | bPTablet : Breakpoint
   | bPDesktop : Breakpoint
   deriving DecidableEq, Repr
 
@@ -199,7 +200,7 @@ inductive DisplayStyle where
 inductive RecoveryAction where
   | actionRetry : RecoveryAction
   | actionDismiss : RecoveryAction
-  | actionNavigate : RecoveryAction
+  | actionNavigate : String → RecoveryAction
   | actionContact : RecoveryAction
   deriving DecidableEq, Repr
 
@@ -244,7 +245,7 @@ structure Origin where
 structure TabState where
   tab_id : Nat
   tab_loaded_origin : Origin
-  tab_content_origin : Origin  -- INVARIANT: content origin matches loaded origin
+  tab_content_origin : Origin
   tab_origin_match : tab_loaded_origin
   deriving DecidableEq, Repr
 
@@ -264,9 +265,7 @@ structure VerifiedBrowserState where
   browser_tls_verified : Bool
   browser_tabs : List
   browser_frames : List
-  INVARIANT : displayed
   browser_url_derived : browser_displayed_url
-  INVARIANT : TLS
   browser_tls_implies_https : browser_tls_verified
   deriving DecidableEq, Repr
 
@@ -282,8 +281,8 @@ structure ConsentRecord where
 structure DialogOption where
   opt_label : String
   opt_is_cancel : Bool
-  opt_visual_weight : Nat  -- 1-10 scale
-  opt_uses_neutral_language : Bool  -- Verified at construction
+  opt_visual_weight : Nat
+  opt_uses_neutral_language : Bool
   deriving DecidableEq, Repr
 
 /-- VerifiedDialog (matches Coq: Record VerifiedDialog) -/
@@ -317,22 +316,22 @@ structure LayoutInput where
   layout_viewport_width : Nat
   layout_viewport_height : Nat
   layout_elements : List
-  layout_seed : Nat  -- For any randomized layouts - must be deterministic
+  layout_seed : Nat
   deriving DecidableEq, Repr
 
 /-- InputField (matches Coq: Record InputField) -/
 structure InputField where
   field_data : List
-  input_max_length : Nat  -- Maximum allowed length
+  input_max_length : Nat
   input_allowed : Nat
-  input_sanitized : Bool  -- Whether sanitization has been applied
+  input_sanitized : Bool
   deriving DecidableEq, Repr
 
 /-- FocusState (matches Coq: Record FocusState) -/
 structure FocusState where
-  focused_element : Nat  -- Index into tab_order
+  focused_element : Nat
   tab_order : List
-  focus_modal_active : Bool  -- Whether a modal is open
+  focus_modal_active : Bool
   focus_modal_elements : List
   deriving DecidableEq, Repr
 
@@ -355,7 +354,7 @@ structure ViewportBounds where
 
 /-- Color (matches Coq: Record Color) -/
 structure Color where
-  color_lum : Nat  -- Relative luminance 0-100
+  color_lum : Nat
   deriving DecidableEq, Repr
 
 /-- Viewport (matches Coq: Record Viewport) -/
@@ -377,34 +376,28 @@ structure LayoutElement where
 structure ResponsiveLayout where
   rl_viewport : Viewport
   rl_elements : List
-  INVARIANT : all
   rl_all_fit : Forall
-  INVARIANT : touch
   rl_touch_targets : Forall
-  INVARIANT : font
   rl_font_appropriate : Forall
   deriving DecidableEq, Repr
 
 /-- ErrorDisplay (matches Coq: Record ErrorDisplay) -/
 structure ErrorDisplay where
-  err_message : String  -- The displayed message
-  err_actual_error : String  -- The actual underlying error
+  err_message : String
+  err_actual_error : String
   err_severity : ErrorSeverity
   err_visible : Bool
-  err_auto_dismiss : Bool  -- Whether it auto-dismisses
+  err_auto_dismiss : Bool
   err_display_style : DisplayStyle
   err_recovery : RecoveryAction
   deriving DecidableEq, Repr
 
 /-- VerifiedErrorDisplay (matches Coq: Record VerifiedErrorDisplay) -/
 structure VerifiedErrorDisplay where
-  ve_display : ErrorDisplay  -- INVARIANT: errors are always visible
+  ve_display : ErrorDisplay
   ve_always_visible : err_visible
-  INVARIANT : critical
   ve_critical_persistent : err_severity
-  INVARIANT : display
   ve_style_matches : err_display_style
-  INVARIANT : displayed
   ve_honest_message : err_message
   deriving DecidableEq, Repr
 
@@ -450,16 +443,16 @@ def frame_well_formed (frame : FrameState) : Prop :=
 
 /-- char_is_dangerous (matches Coq: Definition char_is_dangerous) -/
 def char_is_dangerous (c : Nat) : Bool :=
-  (* Model: characters 60='<', 62='>', 39=quote, 59=';' are dangerous *)
   Nat
 
 /-- char_is_sql_meta (matches Coq: Definition char_is_sql_meta) -/
 def char_is_sql_meta (c : Nat) : Bool :=
-  (* Model: characters 39=quote, 59=';', 45='-' (for --), 42='*' *)
   Nat
 
 /-- contains_script_tag (matches Coq: Definition contains_script_tag) -/
-def contains_script_tag := True -- complex match, simplified to Prop
+def contains_script_tag (input : List Nat) : Bool :=
+  match input with
+  | ._ => false
 
 /-- sanitize_input (matches Coq: Definition sanitize_input) -/
 def sanitize_input (field : InputField) : InputField :=
@@ -473,7 +466,7 @@ def input_is_safe (field : InputField) : Prop :=
   len (field_data field) <= input_max_length field
 
 /-- focus_next (matches Coq: Definition focus_next) -/
-def focus_next := True -- complex match, simplified to Prop
+def focus_next := sorry -- complex match, needs manual translation
 
 /-- focus_valid (matches Coq: Definition focus_valid) -/
 def focus_valid (fs : FocusState) : Prop :=
@@ -528,7 +521,7 @@ def desktop_min : Nat :=
   12
 
 /-- breakpoint_eq (matches Coq: Definition breakpoint_eq) -/
-def breakpoint_eq := True -- complex match, simplified to Prop
+def breakpoint_eq := sorry -- complex match, needs manual translation
 
 /-- classify_breakpoint (matches Coq: Definition classify_breakpoint) -/
 def classify_breakpoint (width : Nat) : Breakpoint :=

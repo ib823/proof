@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA PowerManagement - Lean 4 Port
@@ -88,33 +89,33 @@ structure PowerManager where
 
 /-- BatteryInfo (matches Coq: Record BatteryInfo) -/
 structure BatteryInfo where
-  bat_level : Nat  -- 0-100 percentage
-  bat_health : Nat  -- 0-100 percentage
-  bat_temperature : Nat  -- centidegrees
+  bat_level : Nat
+  bat_health : Nat
+  bat_temperature : Nat
   bat_is_charging : Bool
-  bat_charge_rate : Nat  -- milliwatts
-  bat_discharge_rate : Nat  -- milliwatts
+  bat_charge_rate : Nat
+  bat_discharge_rate : Nat
   deriving DecidableEq, Repr
 
 /-- AppPowerBudget (matches Coq: Record AppPowerBudget) -/
 structure AppPowerBudget where
   app_power_id : Nat
-  app_power_budget_mw : Nat  -- milliwatts
-  app_power_actual_mw : Nat  -- actual usage
+  app_power_budget_mw : Nat
+  app_power_actual_mw : Nat
   app_is_background : Bool
   deriving DecidableEq, Repr
 
 /-- WakeLock (matches Coq: Record WakeLock) -/
 structure WakeLock where
   wake_lock_id : Nat
-  wake_lock_timeout : Nat  -- milliseconds
-  wake_lock_elapsed : Nat  -- milliseconds
+  wake_lock_timeout : Nat
+  wake_lock_elapsed : Nat
   wake_lock_active : Bool
   deriving DecidableEq, Repr
 
 /-- DisplayState (matches Coq: Record DisplayState) -/
 structure DisplayState where
-  display_brightness : Nat  -- 0-100
+  display_brightness : Nat
   display_adaptive : Bool
   display_on : Bool
   deriving DecidableEq, Repr
@@ -166,10 +167,10 @@ def apply_throttling (ts : ThermalState) : ThermalState :=
     ts
 
 /-- valid_power_transition (matches Coq: Definition valid_power_transition) -/
-def valid_power_transition := True -- complex match, simplified to Prop
+def valid_power_transition := sorry -- complex match, needs manual translation
 
 /-- battery_optimized (matches Coq: Definition battery_optimized) -/
-def battery_optimized := True -- complex match, simplified to Prop
+def battery_optimized := sorry -- complex match, needs manual translation
 
 /-- battery_safe_temp (matches Coq: Definition battery_safe_temp) -/
 def battery_safe_temp : Nat :=

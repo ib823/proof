@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SecureBootVerification - Lean 4 Port
@@ -175,77 +176,77 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- KeyUsage (matches Coq: Inductive KeyUsage) -/
 inductive KeyUsage where
-  | rootKey : KeyUsage  -- Platform root key (OEM)
-  | platformKey : KeyUsage  -- Platform key (PK)
-  | keyExchangeKey : KeyUsage  -- Key exchange key (KEK)
-  | databaseKey : KeyUsage  -- Signature database key (db)
+  | rootKey : KeyUsage
+  | platformKey : KeyUsage
+  | keyExchangeKey : KeyUsage
+  | databaseKey : KeyUsage
   | forbiddenKey : KeyUsage
   deriving DecidableEq, Repr
 
 /-- HashValue (matches Coq: Record HashValue) -/
 structure HashValue where
-  hash_algorithm : Nat  -- 0=SHA256, 1=SHA384, 2=SHA512
-  hash_length : Nat  -- Length in bits
-  hash_computed : Bool  -- Hash was computed correctly
+  hash_algorithm : Nat
+  hash_length : Nat
+  hash_computed : Bool
   deriving DecidableEq, Repr
 
 /-- Signature (matches Coq: Record Signature) -/
 structure Signature where
-  sig_algorithm : Nat  -- 0=RSA-2048, 1=RSA-4096, 2=ECDSA-P256, 3=ECDSA-P384
-  sig_key_id : Nat  -- Reference to signing key
-  sig_valid : Bool  -- Signature verified successfully
-  sig_timestamp : Nat  -- When signature was created
+  sig_algorithm : Nat
+  sig_key_id : Nat
+  sig_valid : Bool
+  sig_timestamp : Nat
   deriving DecidableEq, Repr
 
 /-- PublicKey (matches Coq: Record PublicKey) -/
 structure PublicKey where
-  pk_id : Nat  -- Key identifier
-  pk_algorithm : Nat  -- Algorithm (same as signature)
-  pk_revoked : Bool  -- Key has been revoked
-  pk_expired : Bool  -- Key has expired
-  pk_trusted : Bool  -- Key is in trusted keystore
+  pk_id : Nat
+  pk_algorithm : Nat
+  pk_revoked : Bool
+  pk_expired : Bool
+  pk_trusted : Bool
   deriving DecidableEq, Repr
 
 /-- BootROM (matches Coq: Record BootROM) -/
 structure BootROM where
-  rom_hash_verified : Bool  -- ROM integrity verified via fuses
-  rom_fused : Bool  -- ROM is fuse-protected (immutable)
-  rom_contains_root_key : Bool  -- Contains hash of root public key
-  rom_anti_debug : Bool  -- Debug interfaces disabled/secured
+  rom_hash_verified : Bool
+  rom_fused : Bool
+  rom_contains_root_key : Bool
+  rom_anti_debug : Bool
   deriving DecidableEq, Repr
 
 /-- Bootloader (matches Coq: Record Bootloader) -/
 structure Bootloader where
-  bl_signature : Signature  -- Digital signature
-  bl_version : Nat  -- Version number
-  bl_min_version : Nat  -- Anti-rollback minimum version
-  bl_hash : HashValue  -- Measured hash
-  bl_verified : Bool  -- Signature verification passed
+  bl_signature : Signature
+  bl_version : Nat
+  bl_min_version : Nat
+  bl_hash : HashValue
+  bl_verified : Bool
   deriving DecidableEq, Repr
 
 /-- Kernel (matches Coq: Record Kernel) -/
 structure Kernel where
-  kern_signature : Signature  -- Digital signature
-  kern_version : Nat  -- Version number
-  kern_min_version : Nat  -- Anti-rollback minimum version
-  kern_hash : HashValue  -- Measured hash
-  kern_verified : Bool  -- Signature verification passed
-  kern_secure_boot_enforced : Bool  -- Secure boot policy enforced
+  kern_signature : Signature
+  kern_version : Nat
+  kern_min_version : Nat
+  kern_hash : HashValue
+  kern_verified : Bool
+  kern_secure_boot_enforced : Bool
   deriving DecidableEq, Repr
 
 /-- Initramfs (matches Coq: Record Initramfs) -/
 structure Initramfs where
-  initrd_signature : Signature  -- Digital signature
-  initrd_hash : HashValue  -- Measured hash
-  initrd_verified : Bool  -- Signature verification passed
+  initrd_signature : Signature
+  initrd_hash : HashValue
+  initrd_verified : Bool
   deriving DecidableEq, Repr
 
 /-- AppModule (matches Coq: Record AppModule) -/
 structure AppModule where
-  app_signature : Signature  -- Digital signature
-  app_hash : HashValue  -- Measured hash
-  app_verified : Bool  -- Signature verification passed
-  app_allowed_by_policy : Bool  -- Allowed by security policy
+  app_signature : Signature
+  app_hash : HashValue
+  app_verified : Bool
+  app_allowed_by_policy : Bool
   deriving DecidableEq, Repr
 
 /-- BootChain (matches Coq: Record BootChain) -/
@@ -258,35 +259,35 @@ structure BootChain where
 
 /-- PCRValue (matches Coq: Record PCRValue) -/
 structure PCRValue where
-  pcr_index : Nat  -- PCR index (0-23 typical)
-  pcr_value : Nat  -- Current PCR value (abstract)
-  pcr_extended : Bool  -- PCR has been extended
-  pcr_locked : Bool  -- PCR is locked for this boot
+  pcr_index : Nat
+  pcr_value : Nat
+  pcr_extended : Bool
+  pcr_locked : Bool
   deriving DecidableEq, Repr
 
 /-- TPMState (matches Coq: Record TPMState) -/
 structure TPMState where
-  tpm_enabled : Bool  -- TPM is enabled
-  tpm_activated : Bool  -- TPM is activated
-  tpm_owned : Bool  -- TPM has an owner
+  tpm_enabled : Bool
+  tpm_activated : Bool
+  tpm_owned : Bool
   tpm_pcrs : List
-  tpm_locality : Nat  -- Current locality (0-4)
+  tpm_locality : Nat
   deriving DecidableEq, Repr
 
 /-- MeasurementEvent (matches Coq: Record MeasurementEvent) -/
 structure MeasurementEvent where
-  meas_pcr_index : Nat  -- Which PCR was extended
-  meas_event_type : Nat  -- Type of measurement
-  meas_hash : HashValue  -- Hash that was extended
-  meas_description : Nat  -- Event description code
+  meas_pcr_index : Nat
+  meas_event_type : Nat
+  meas_hash : HashValue
+  meas_description : Nat
   deriving DecidableEq, Repr
 
 /-- AttestationQuote (matches Coq: Record AttestationQuote) -/
 structure AttestationQuote where
-  quote_pcr_mask : Nat  -- Bitmask of PCRs included
-  quote_nonce : Nat  -- Challenge nonce
-  quote_signature : Signature  -- TPM signature over quote
-  quote_valid : Bool  -- Quote verified successfully
+  quote_pcr_mask : Nat
+  quote_nonce : Nat
+  quote_signature : Signature
+  quote_valid : Bool
   deriving DecidableEq, Repr
 
 /-- HierarchyKey (matches Coq: Record HierarchyKey) -/
@@ -307,11 +308,11 @@ structure KeyDatabase where
 
 /-- SecureBootPolicy (matches Coq: Record SecureBootPolicy) -/
 structure SecureBootPolicy where
-  sbp_enabled : Bool  -- Secure boot is enabled
-  sbp_enforcing : Bool  -- Enforcing mode (vs audit)
-  sbp_allow_unsigned : Bool  -- Allow unsigned code (should be false)
-  sbp_require_tpm : Bool  -- Require TPM measurements
-  sbp_remote_attestation : Bool  -- Enable remote attestation
+  sbp_enabled : Bool
+  sbp_enforcing : Bool
+  sbp_allow_unsigned : Bool
+  sbp_require_tpm : Bool
+  sbp_remote_attestation : Bool
   deriving DecidableEq, Repr
 
 /-- SecureBootConfig (matches Coq: Record SecureBootConfig) -/
@@ -393,7 +394,7 @@ def antirollback_protected (chain : BootChain) : Bool :=
   kernel_antirollback_ok (bc_kernel chain)
 
 /-- is_root_key (matches Coq: Definition is_root_key) -/
-def is_root_key := True -- complex match, simplified to Prop
+def is_root_key := sorry -- complex match, needs manual translation
 
 /-- key_revoked_in_list (matches Coq: Definition key_revoked_in_list) -/
 def key_revoked_in_list (key_id : Nat) (revoked : List Nat) : Bool :=
@@ -495,7 +496,7 @@ theorem SB_001_rom_integrity : ∀ (rom : BootROM), rom_hash_verified rom = true
   simp
 
 /-- SB_002_rom_immutability (matches Coq) -/
-theorem SB_002_rom_immutability : ∀ (rom : BootROM), rom_fused rom = true → (* Fused ROM cannot be modified - this is a hardware property *) True := by
+theorem SB_002_rom_immutability : ∀ (rom : BootROM), rom_fused rom = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_003_rot_complete (matches Coq) -/
@@ -503,11 +504,11 @@ theorem SB_003_rot_complete : ∀ (rom : BootROM), rom_is_root_of_trust rom = tr
   simp_all [Bool.and_eq_true]
 
 /-- SB_004_rot_anti_debug (matches Coq) -/
-theorem SB_004_rot_anti_debug : ∀ (rom : BootROM), rom_is_root_of_trust rom = true → rom_anti_debug rom = true → (* Anti-debug prevents JTAG/SWD attacks on boot process *) True := by
+theorem SB_004_rot_anti_debug : ∀ (rom : BootROM), rom_is_root_of_trust rom = true → rom_anti_debug rom = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_005_root_key_enables_cot (matches Coq) -/
-theorem SB_005_root_key_enables_cot : ∀ (rom : BootROM), rom_contains_root_key rom = true → rom_fused rom = true → (* The immutable root key hash can verify the next stage *) True := by
+theorem SB_005_root_key_enables_cot : ∀ (rom : BootROM), rom_contains_root_key rom = true → rom_fused rom = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_006_full_rom_implies_rot (matches Coq) -/
@@ -671,15 +672,15 @@ theorem SB_045_measurement_pcr_in_bounds : ∀ (meas : MeasurementEvent) (pcrs :
   simp_all [Bool.and_eq_true]
 
 /-- SB_046_quote_requires_sig (matches Coq) -/
-theorem SB_046_quote_requires_sig : ∀ (quote : AttestationQuote), quote_valid quote = true → sig_valid (quote_signature quote) = true → (* Quote with valid signature can be trusted for remote attestation *) True := by
+theorem SB_046_quote_requires_sig : ∀ (quote : AttestationQuote), quote_valid quote = true → sig_valid (quote_signature quote) = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_047_pcr_sealed (matches Coq) -/
-theorem SB_047_pcr_sealed : ∀ (pcr : PCRValue), pcr_extended pcr = true → pcr_locked pcr = true → (* PCR cannot be modified until reboot *) True := by
+theorem SB_047_pcr_sealed : ∀ (pcr : PCRValue), pcr_extended pcr = true → pcr_locked pcr = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_048_locality_access (matches Coq) -/
-theorem SB_048_locality_access : ∀ (tpm : TPMState) (required_locality : nat), tpm_operational tpm = true → Nat.leb required_locality (tpm_locality tpm) = true → (* TPM operation allowed at this locality *) True := by
+theorem SB_048_locality_access : ∀ (tpm : TPMState) (required_locality : nat), tpm_operational tpm = true → Nat.leb required_locality (tpm_locality tpm) = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_049_measured_boot_tpm (matches Coq) -/

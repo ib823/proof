@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MemoryManagement - Isabelle/HOL Port
@@ -89,7 +90,7 @@ record memory_page =
   page_id :: nat
   page_contents :: PageData
   page_compressed :: bool
-  page_owner :: nat  (* Application ID *)
+  page_owner :: nat
 
 (* Application (matches Coq: Record Application) *)
 record application =
@@ -119,7 +120,7 @@ record heap =
   heap_blocks :: 'a list
   heap_total_size :: nat
   heap_used_size :: nat
-  heap_fragmentation_ratio :: nat  (* 0-100 percentage *)
+  heap_fragmentation_ratio :: nat
 
 (* StackFrame (matches Coq: Record StackFrame) *)
 record stack_frame =
@@ -137,7 +138,7 @@ record stack =
 record virtual_mapping =
   vmap_virtual_page :: VirtualPage
   vmap_physical_page :: nat
-  vmap_page_size :: nat  (* must be power of 2, e.g. 4096 *)
+  vmap_page_size :: nat
   vmap_readable :: bool
   vmap_writable :: bool
 

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TranslationValidation - Isabelle/HOL Port
@@ -90,15 +91,15 @@ datatype src_stmt =
 
 (* TgtInstr (matches Coq: Inductive TgtInstr) *)
 datatype tgt_instr =
-    TLoad  (* dst, src_addr *)
-  |     TStore  (* dst_addr, src *)
-  |     TAdd  (* dst, src1, src2 *)
-  |     TMul  (* dst, src1, src2 *)
-  |     TConst  (* dst, value *)
-  |     TBranch  (* target *)
-  |     TBranchIf  (* cond, true_target, false_target *)
-  |     TCall  (* func_id, args *)
-  |     TReturn  (* result *)
+    TLoad
+  |     TStore
+  |     TAdd
+  |     TMul
+  |     TConst
+  |     TBranch
+  |     TBranchIf
+  |     TCall
+  |     TReturn
   |     TNop
 
 (* SrcVal (matches Coq: Inductive SrcVal) *)
@@ -170,10 +171,10 @@ record comp_result =
 (* ABI (matches Coq: Record ABI) *)
 record abi =
   abi_arg_regs :: 'a list
-  abi_ret_reg :: nat  (* Register for return value *)
+  abi_ret_reg :: nat
   abi_callee_save :: 'a list
   abi_caller_save :: 'a list
-  abi_stack_align :: nat  (* Stack alignment requirement *)
+  abi_stack_align :: nat
 
 (* StackFrame (matches Coq: Record StackFrame) *)
 record stack_frame =
@@ -182,11 +183,14 @@ record stack_frame =
   sf_locals :: 'a list
   sf_size :: nat
 
-(* val_match - complex match, manual review needed *)
+(* val_match - complex match, needs manual translation *)
+definition val_match :: "bool" where "val_match = undefined"
 
-(* env_match - complex match, manual review needed *)
+(* env_match - complex match, needs manual translation *)
+definition env_match :: "bool" where "env_match = undefined"
 
-(* trace_equiv - complex match, manual review needed *)
+(* trace_equiv - complex match, needs manual translation *)
+definition trace_equiv :: "bool" where "trace_equiv = undefined"
 
 (* type_corresp (matches Coq: Definition type_corresp) *)
 fun type_corresp :: "SrcType \<Rightarrow> TgtType \<Rightarrow> bool" where
@@ -194,7 +198,8 @@ fun type_corresp :: "SrcType \<Rightarrow> TgtType \<Rightarrow> bool" where
 |   "type_corresp STBool = tt"
 |   "type_corresp STUnit = tt"
 
-(* simulates - complex match, manual review needed *)
+(* simulates - complex match, needs manual translation *)
+definition simulates :: "bool" where "simulates = undefined"
 
 (* src_terminates (matches Coq: Definition src_terminates) *)
 definition src_terminates :: "SrcEnv \<Rightarrow> SrcExpr \<Rightarrow> bool" where

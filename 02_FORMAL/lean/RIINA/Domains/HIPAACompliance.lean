@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA HIPAACompliance - Lean 4 Port
@@ -88,14 +89,14 @@ inductive PHICategory where
 inductive EncryptionState where
   | plaintext : EncryptionState
   | encryptedAES128 : EncryptionState
-  | encryptedAES256 : EncryptionState  -- Required for HIPAA
+  | encryptedAES256 : EncryptionState
   deriving DecidableEq, Repr
 
 /-- TransportSecurity (matches Coq: Inductive TransportSecurity) -/
 inductive TransportSecurity where
   | noTLS : TransportSecurity
   | tLS12 : TransportSecurity
-  | tLS13 : TransportSecurity  -- Required
+  | tLS13 : TransportSecurity
   deriving DecidableEq, Repr
 
 /-- AuthFactor (matches Coq: Inductive AuthFactor) -/
@@ -116,7 +117,7 @@ structure AuthState where
 structure PHIRecord where
   phi_category : PHICategory
   phi_patient_id : Nat
-  phi_data : Nat  -- Abstract data
+  phi_data : Nat
   phi_encryption : EncryptionState
   phi_consent_documented : Bool
   deriving DecidableEq, Repr
@@ -125,7 +126,7 @@ structure PHIRecord where
 structure AuditEntry where
   audit_timestamp : Nat
   audit_user_id : Nat
-  audit_action : Nat  -- 0=read, 1=write, 2=delete, 3=emergency
+  audit_action : Nat
   audit_phi_id : Nat
   audit_success : Bool
   deriving DecidableEq, Repr
@@ -133,8 +134,8 @@ structure AuditEntry where
 /-- DisposalRecord (matches Coq: Record DisposalRecord) -/
 structure DisposalRecord where
   disposal_phi_id : Nat
-  disposal_method : Nat  -- 0=overwrite, 1=crypto_erase, 2=physical
-  disposal_passes : Nat  -- Number of overwrite passes
+  disposal_method : Nat
+  disposal_passes : Nat
   disposal_verified : Bool
   deriving DecidableEq, Repr
 
@@ -173,7 +174,7 @@ structure Transmission where
   deriving DecidableEq, Repr
 
 /-- can_access (matches Coq: Definition can_access) -/
-def can_access := True -- complex match, simplified to Prop
+def can_access := sorry -- complex match, needs manual translation
 
 /-- is_hipaa_encrypted (matches Coq: Definition is_hipaa_encrypted) -/
 def is_hipaa_encrypted (enc : EncryptionState) : Bool :=
@@ -200,7 +201,7 @@ def is_mfa (auth : AuthState) : Bool :=
   Nat
 
 /-- is_secure_disposal (matches Coq: Definition is_secure_disposal) -/
-def is_secure_disposal := True -- complex match, simplified to Prop
+def is_secure_disposal := sorry -- complex match, needs manual translation
 
 /-- breach_detection_limit (matches Coq: Definition breach_detection_limit) -/
 def breach_detection_limit : Nat :=

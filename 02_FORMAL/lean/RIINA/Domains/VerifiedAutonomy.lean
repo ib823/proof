@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedAutonomy - Lean 4 Port
@@ -122,7 +123,7 @@ def valid_failsafe_action (action : FailsafeAction) : Bool :=
   true
 
 /-- valid_mode_transition (matches Coq: Definition valid_mode_transition) -/
-def valid_mode_transition := True -- complex match, simplified to Prop
+def valid_mode_transition := sorry -- complex match, needs manual translation
 
 /-- decision_fresh (matches Coq: Definition decision_fresh) -/
 def decision_fresh (dec : Decision) (current max_age : Nat) : Bool :=
@@ -133,7 +134,7 @@ def action_bounded (dec : Decision) (max_mag : Nat) : Bool :=
   Nat
 
 /-- sensors_agree (matches Coq: Definition sensors_agree) -/
-def sensors_agree := True -- complex match, simplified to Prop
+def sensors_agree := sorry -- complex match, needs manual translation
 
 /-- watchdog_ok (matches Coq: Definition watchdog_ok) -/
 def watchdog_ok (last_kick current timeout : Nat) : Bool :=

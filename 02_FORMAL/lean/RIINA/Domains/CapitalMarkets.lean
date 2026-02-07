@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CapitalMarkets - Lean 4 Port
@@ -75,9 +76,9 @@ inductive Side where
 structure Order where
   order_id : Nat
   order_side : Side
-  order_price : Nat  -- price in basis points
-  order_qty : Nat  -- quantity
-  order_time : Nat  -- arrival timestamp for priority
+  order_price : Nat
+  order_qty : Nat
+  order_time : Nat
   deriving DecidableEq, Repr
 
 /-- Trade (matches Coq: Record Trade) -/
@@ -110,11 +111,11 @@ structure MarketDataTick where
   tick_symbol : Nat
   tick_price : Nat
   tick_volume : Nat
-  tick_seq : Nat  -- sequence number for ordering
+  tick_seq : Nat
   deriving DecidableEq, Repr
 
 /-- side_eqb (matches Coq: Definition side_eqb) -/
-def side_eqb := True -- complex match, simplified to Prop
+def side_eqb := sorry -- complex match, needs manual translation
 
 /-- buy_has_priority (matches Coq: Definition buy_has_priority) -/
 def buy_has_priority (o1 o2 : Order) : Bool :=
@@ -152,7 +153,6 @@ def orders_can_match (buy sell : Order) : Bool :=
 
 /-- match_price (matches Coq: Definition match_price) -/
 def match_price (buy sell : Order) : Nat :=
-  (* price is the earlier order's price; simplified: use sell price *)
   order_price sell
 
 /-- match_qty (matches Coq: Definition match_qty) -/

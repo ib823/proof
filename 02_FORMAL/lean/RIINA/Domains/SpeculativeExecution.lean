@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SpeculativeExecution - Lean 4 Port
@@ -51,8 +52,9 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- effect (matches Coq: Inductive effect) -/
 inductive effect where
-  | eff_pure : effect  -- no observable side-effects, safe under speculation
-  | eff_timed : effect  -- timing-observable but no speculation leaks
+  | eff_pure : effect
+  | eff_timed : effect
+  | eff_speculative : effect
   deriving DecidableEq, Repr
 
 /-- visibility (matches Coq: Inductive visibility) -/
@@ -63,27 +65,27 @@ inductive visibility where
 
 /-- value (matches Coq: Inductive value) -/
 inductive value where
-  | vNat : value
-  | vBool : value
+  | vNat : Nat → value
+  | vBool : Bool → value
   deriving DecidableEq, Repr
 
 /-- instr (matches Coq: Inductive instr) -/
 inductive instr where
-  | iConst : instr  -- constant load
-  | iBinop : instr  -- binary operation
-  | iBranch : instr  -- branch on condition with visibility tag; Secret branches may leak
-  | iSeq : instr  -- sequential composition
-  | iAnnot : instr
+  | iConst : value → instr
+  | iBinop : instr → instr → instr
+  | iBranch : visibility → instr → instr → instr → instr
+  | iSeq : instr → instr → instr
+  | iAnnot : effect → instr → instr
   deriving DecidableEq, Repr
 
 /-- eff_le (matches Coq: Definition eff_le) -/
-def eff_le := True -- complex match, simplified to Prop
+def eff_le := sorry -- complex match, needs manual translation
 
 /-- eff_join (matches Coq: Definition eff_join) -/
-def eff_join := True -- complex match, simplified to Prop
+def eff_join := sorry -- complex match, needs manual translation
 
 /-- is_spec_safe (matches Coq: Definition is_spec_safe) -/
-def is_spec_safe := True -- complex match, simplified to Prop
+def is_spec_safe := sorry -- complex match, needs manual translation
 
 /-- eff_join_pure_l (matches Coq) -/
 theorem eff_join_pure_l : ∀ e, eff_join Eff_pure e = e := by
@@ -102,15 +104,15 @@ theorem eff_le_trans : ∀ e1 e2 e3, eff_le e1 e2 = true → eff_le e2 e3 = true
   cases ‹_› <;> simp
 
 /-- 1 (matches Coq) -/
-theorem 1 : Pure programs are constant-time *) Theorem pure_is_constant_time : ∀ i, infer_effect i = Eff_pure → is_constant_time i = true := by
+theorem 1 : Pure programs are constant-time  Theorem pure_is_constant_time : ∀ i, infer_effect i = Eff_pure → is_constant_time i = true := by
   cases ‹_› <;> simp
 
 /-- 2 (matches Coq) -/
-theorem 2 : Constant-time composition *) Theorem ct_composition : ∀ a b, is_constant_time a = true → is_constant_time b = true → is_constant_time (ISeq a b) = true := by
+theorem 2 : Constant-time composition  Theorem ct_composition : ∀ a b, is_constant_time a = true → is_constant_time b = true → is_constant_time (ISeq a b) = true := by
   rfl
 
 /-- 3 (matches Coq) -/
-theorem 3 : Speculative safety implies no secret leakage *) (** We model "no secret leakage" as: evaluation does not depend on speculative side-channels, i.e., no secret branches exist. *) Lemma no_secret_branch : ∀ i, is_constant_time i = true → ∀ c t f, i ≠ IBranch Secret c t f := by
+theorem 3 : Speculative safety implies no secret leakage   Lemma no_secret_branch : ∀ i, is_constant_time i = true → ∀ c t f, i ≠ IBranch Secret c t f := by
   simp_all [Bool.and_eq_true]
 
 /-- spec_safe_no_secret_branch_aux (matches Coq) -/
@@ -122,7 +124,7 @@ theorem spec_safe_implies_no_secret_leakage : ∀ i, no_speculative_annotation i
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Effect ordering is a preorder *) Theorem effect_preorder_refl : ∀ e, eff_le e e = true := by
+theorem 4 : Effect ordering is a preorder  Theorem effect_preorder_refl : ∀ e, eff_le e e = true := by
   simp_all [Bool.and_eq_true]
 
 /-- effect_preorder_trans (matches Coq) -/
@@ -130,19 +132,19 @@ theorem effect_preorder_trans : ∀ e1 e2 e3, eff_le e1 e2 = true → eff_le e2 
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : Pure is bottom of the effect ordering *) Theorem pure_is_bottom : ∀ e, eff_le Eff_pure e = true := by
+theorem 5 : Pure is bottom of the effect ordering  Theorem pure_is_bottom : ∀ e, eff_le Eff_pure e = true := by
   rfl
 
 /-- 6 (matches Coq) -/
-theorem 6 : Sequential composition preserves speculative safety *) Theorem seq_preserves_spec_safe : ∀ a b, is_spec_safe a = true → is_spec_safe b = true → is_spec_safe (ISeq a b) = true := by
+theorem 6 : Sequential composition preserves speculative safety  Theorem seq_preserves_spec_safe : ∀ a b, is_spec_safe a = true → is_spec_safe b = true → is_spec_safe (ISeq a b) = true := by
   cases ‹_› <;> simp
 
 /-- 7 (matches Coq) -/
-theorem 7 : Secret-independent branching is constant-time *) Theorem public_branch_ct : ∀ c t f, is_constant_time c = true → is_constant_time t = true → is_constant_time f = true → is_constant_time (IBranch Public c t f) = true := by
+theorem 7 : Secret-independent branching is constant-time  Theorem public_branch_ct : ∀ c t f, is_constant_time c = true → is_constant_time t = true → is_constant_time f = true → is_constant_time (IBranch Public c t f) = true := by
   rfl
 
 /-- 8 (matches Coq) -/
-theorem 8 : Effect annotation soundness *) (** If a program is annotated with effect [e] and its inferred effect is at most [e], then the annotation is sound. We prove that the inferred effect of an annotated program joins to at least [e]. *) Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 ≠ e2} := by
+theorem 8 : Effect annotation soundness   Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 ≠ e2} := by
   cases ‹_› <;> simp
 
 /-- binop_preserves_ct (matches Coq) -/
@@ -154,15 +156,15 @@ theorem pure_implies_spec_safe : ∀ i, infer_effect i = Eff_pure → is_spec_sa
   rfl
 
 /-- 11 (matches Coq) -/
-theorem 11 : Timed programs are speculatively safe *) Theorem timed_implies_spec_safe : ∀ i, infer_effect i = Eff_timed → is_spec_safe i = true := by
+theorem 11 : Timed programs are speculatively safe  Theorem timed_implies_spec_safe : ∀ i, infer_effect i = Eff_timed → is_spec_safe i = true := by
   rfl
 
 /-- 12 (matches Coq) -/
-theorem 12 : Constant is always pure *) Theorem const_is_pure : ∀ v, infer_effect (IConst v) = Eff_pure := by
+theorem 12 : Constant is always pure  Theorem const_is_pure : ∀ v, infer_effect (IConst v) = Eff_pure := by
   rfl
 
 /-- 13 (matches Coq) -/
-theorem 13 : Effect join is commutative *) Theorem eff_join_comm : ∀ e1 e2, eff_join e1 e2 = eff_join e2 e1 := by
+theorem 13 : Effect join is commutative  Theorem eff_join_comm : ∀ e1 e2, eff_join e1 e2 = eff_join e2 e1 := by
   rfl
 
 end RIINA

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA PhysicsSecurity - Lean 4 Port
@@ -82,26 +83,26 @@ inductive PhysState where
 /-- SensorReading (matches Coq: Record SensorReading) -/
 structure SensorReading where
   sensor_kind : SensorKind
-  reading_value : Nat  -- scaled integer value
-  reading_min : Nat  -- valid minimum
-  reading_max : Nat  -- valid maximum
-  timestamp : Nat  -- monotonic timestamp
+  reading_value : Nat
+  reading_min : Nat
+  reading_max : Nat
+  timestamp : Nat
   sensor_id : Nat
   deriving DecidableEq, Repr
 
 /-- MeasurementSpec (matches Coq: Record MeasurementSpec) -/
 structure MeasurementSpec where
-  meas_tolerance : Nat  -- maximum allowed deviation
-  meas_samples : Nat  -- number of samples for averaging
-  meas_min_samples : Nat  -- minimum required samples
+  meas_tolerance : Nat
+  meas_samples : Nat
+  meas_min_samples : Nat
   deriving DecidableEq, Repr
 
 /-- TimingConstraint (matches Coq: Record TimingConstraint) -/
 structure TimingConstraint where
-  deadline : Nat  -- max allowed time
-  wcet : Nat  -- worst-case execution time
-  period : Nat  -- task period
-  jitter_bound : Nat  -- max jitter
+  deadline : Nat
+  wcet : Nat
+  period : Nat
+  jitter_bound : Nat
   deriving DecidableEq, Repr
 
 /-- reading_in_bounds (matches Coq: Definition reading_in_bounds) -/
@@ -117,7 +118,7 @@ def spec_feasible (spec : MeasurementSpec) : Bool :=
   (1 <=? meas_min_samples spec) && (meas_min_samples spec <=? meas_samples spec)
 
 /-- readings_avg (matches Coq: Definition readings_avg) -/
-def readings_avg := True -- complex match, simplified to Prop
+def readings_avg := sorry -- complex match, needs manual translation
 
 /-- all_within_tolerance (matches Coq: Definition all_within_tolerance) -/
 def all_within_tolerance (vals : List Nat) (ref tol : Nat) : Bool :=

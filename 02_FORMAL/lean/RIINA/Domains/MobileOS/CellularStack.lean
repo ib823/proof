@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CellularStack - Lean 4 Port
@@ -93,7 +94,7 @@ inductive CellularGeneration where
 structure Memory where
   mem_start : MemoryAddress
   mem_size : Nat
-  mem_is_ap : Bool  -- Application processor memory
+  mem_is_ap : Bool
   deriving DecidableEq, Repr
 
 /-- BasebandProcessor (matches Coq: Record BasebandProcessor) -/
@@ -212,8 +213,8 @@ structure CellularFailover where
 
 /-- SignalMeasurement (matches Coq: Record SignalMeasurement) -/
 structure SignalMeasurement where
-  sm_rssi : Nat  -- received signal strength indicator
-  sm_rsrp : Nat  -- reference signal received power
+  sm_rssi : Nat
+  sm_rsrp : Nat
   sm_accurate : Bool
   sm_timestamp : Nat
   deriving DecidableEq, Repr

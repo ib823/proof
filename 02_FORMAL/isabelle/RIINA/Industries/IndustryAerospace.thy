@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryAerospace - Isabelle/HOL Port
@@ -59,10 +60,10 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* DAL (matches Coq: Inductive DAL) *)
 datatype dal =
-    DAL_A  (* Catastrophic - failure may cause deaths *)
-  |     DAL_B  (* Hazardous - large reduction in safety margins *)
-  |     DAL_C  (* Major - significant reduction in safety *)
-  |     DAL_D  (* Minor - slight reduction in safety *)
+    DAL_A
+  |     DAL_B
+  |     DAL_C
+  |     DAL_D
   |     DAL_E
 
 (* AerospaceEffect (matches Coq: Inductive AerospaceEffect) *)
@@ -75,15 +76,16 @@ datatype aerospace_effect =
 
 (* DO178C_Compliance (matches Coq: Record DO178C_Compliance) *)
 record do178_c__compliance =
-  software_plans :: bool  (* Section 4 *)
-  software_development :: bool  (* Section 5 *)
-  verification :: bool  (* Section 6 *)
-  configuration_management :: bool  (* Section 7 *)
-  quality_assurance :: bool  (* Section 8 *)
-  certification_liaison :: bool  (* Section 9 *)
+  software_plans :: bool
+  software_development :: bool
+  verification :: bool
+  configuration_management :: bool
+  quality_assurance :: bool
+  certification_liaison :: bool
   dal_level :: DAL
 
-(* dal_le - complex match, manual review needed *)
+(* dal_le - complex match, needs manual translation *)
+definition dal_le :: "bool" where "dal_le = undefined"
 
 (* objectives_for_dal (matches Coq: Definition objectives_for_dal) *)
 fun objectives_for_dal :: "DAL \<Rightarrow> nat" where

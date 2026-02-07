@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ModuleSystems - Isabelle/HOL Port
@@ -106,10 +107,10 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* Visibility (matches Coq: Inductive Visibility) *)
 datatype visibility =
-    VPrivate  (* Only this module *)
-  |     VCrate  (* Within crate *)
-  |     VPublic  (* Anywhere *)
-  |     VSecurityLevel  (* Security-gated *)
+    VPrivate
+  |     VCrate
+  |     VPublic
+  |     VSecurityLevel
 
 (* ModuleItem (matches Coq: Inductive ModuleItem) *)
 datatype module_item =
@@ -160,7 +161,7 @@ record import_context =
 record abstract_type =
   abs_name :: string
   abs_repr :: option
-  abs_exposed :: bool  (* Whether representation is exposed *)
+  abs_exposed :: bool
 
 (* SealedTrait (matches Coq: Record SealedTrait) *)
 record sealed_trait =
@@ -217,7 +218,7 @@ record effect_sig =
 (* StaticInit (matches Coq: Record StaticInit) *)
 record static_init =
   si_module :: ModulePath
-  si_value :: nat  (* Simplified: just a value *)
+  si_value :: nat
 
 (* SecureInit (matches Coq: Record SecureInit) *)
 record secure_init =
@@ -225,9 +226,11 @@ record secure_init =
   sec_init_cap_required :: 'a list
   sec_init_cap_provided :: 'a list
 
-(* visibility_eqb - complex match, manual review needed *)
+(* visibility_eqb - complex match, needs manual translation *)
+definition visibility_eqb :: "bool" where "visibility_eqb = undefined"
 
-(* vis_accessible - complex match, manual review needed *)
+(* vis_accessible - complex match, needs manual translation *)
+definition vis_accessible :: "bool" where "vis_accessible = undefined"
 
 (* item_name (matches Coq: Definition item_name) *)
 fun item_name :: "ModuleItem \<Rightarrow> string" where
@@ -353,7 +356,8 @@ definition version_satisfies :: "bool" where
 definition all_deps_satisfied :: "Package \<Rightarrow> bool" where
   "all_deps_satisfied pkg \<equiv> forall d, In d pkg"
 
-(* security_version_ok - complex match, manual review needed *)
+(* security_version_ok - complex match, needs manual translation *)
+definition security_version_ok :: "bool" where "security_version_ok = undefined"
 
 (* security_versions_enforced (matches Coq: Definition security_versions_enforced) *)
 definition security_versions_enforced :: "Package \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PCIDSSCompliance - Isabelle/HOL Port
@@ -90,24 +91,24 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* CHDType (matches Coq: Inductive CHDType) *)
 datatype chd_type =
-    PAN  (* Primary Account Number - 16 digits *)
-  |     CVV  (* Card Verification Value - 3-4 digits *)
-  |     PIN  (* Personal Identification Number *)
-  |     Expiry  (* Expiration date *)
-  |     CardholderName  (* Cardholder name *)
+    PAN
+  |     CVV
+  |     PIN
+  |     Expiry
+  |     CardholderName
 
 (* EncState (matches Coq: Inductive EncState) *)
 datatype enc_state =
     Plain
   |     AES128
-  |     AES256  (* Minimum for PAN *)
-  |     Tokenized  (* Tokenization *)
+  |     AES256
+  |     Tokenized
 
 (* PANDisplay (matches Coq: Inductive PANDisplay) *)
 datatype pan_display =
-    FullPAN  (* PROHIBITED for display *)
-  |     MaskedPAN  (* ****-****-****-1234 *)
-  |     TokenizedPAN  (* Token reference *)
+    FullPAN
+  |     MaskedPAN
+  |     TokenizedPAN
 
 (* AccessLevel (matches Coq: Inductive AccessLevel) *)
 datatype access_level =
@@ -127,13 +128,13 @@ datatype tls_version =
 datatype deletion_state =
     NotDeleted
   |     MarkedForDeletion
-  |     Overwritten  (* Data overwritten with random *)
-  |     SecurelyDeleted  (* Multiple overwrites, verified *)
+  |     Overwritten
+  |     SecurelyDeleted
 
 (* CHDRecord (matches Coq: Record CHDRecord) *)
 record chd_record =
   chd_type :: CHDType
-  chd_value :: nat  (* Abstract value *)
+  chd_value :: nat
   chd_encryption :: EncState
   chd_display_format :: PANDisplay
 
@@ -141,8 +142,8 @@ record chd_record =
 record key_state =
   key_id :: nat
   key_creation_time :: nat
-  key_rotation_period :: nat  (* Typically 1 year *)
-  key_protected :: bool  (* Stored in HSM or equivalent *)
+  key_rotation_period :: nat
+  key_protected :: bool
 
 (* PCIAudit (matches Coq: Record PCIAudit) *)
 record pci_audit =
@@ -151,13 +152,13 @@ record pci_audit =
   pci_action :: nat
   pci_chd_accessed :: CHDType
   pci_success :: bool
-  pci_hash :: nat  (* For integrity *)
+  pci_hash :: nat
 
 (* TokenVault (matches Coq: Record TokenVault) *)
 record token_vault =
   vault_tokens :: 'a list
-  vault_key :: KeyState  (* Key protecting the vault *)
-  vault_isolated :: bool  (* Network segmented *)
+  vault_key :: KeyState
+  vault_isolated :: bool
 
 (* PCISystem (matches Coq: Record PCISystem) *)
 record pci_system =
@@ -171,7 +172,7 @@ record user =
   user_id :: nat
   user_access_level :: AccessLevel
   user_mfa_enabled :: bool
-  user_need_to_know :: bool  (* Business need for CHD access *)
+  user_need_to_know :: bool
 
 (* Transmission (matches Coq: Record Transmission) *)
 record transmission =
@@ -187,7 +188,7 @@ record retention_policy =
 (* NetworkZone (matches Coq: Record NetworkZone) *)
 record network_zone =
   zone_id :: nat
-  zone_is_cde :: bool  (* Cardholder Data Environment *)
+  zone_is_cde :: bool
   zone_isolated :: bool
   zone_firewall_protected :: bool
 
@@ -215,7 +216,8 @@ fun display_compliant :: "PANDisplay \<Rightarrow> bool" where
 definition key_needs_rotation :: "KeyState \<Rightarrow> nat \<Rightarrow> bool" where
   "key_needs_rotation k current_time \<equiv> Nat"
 
-(* grant_chd_access - complex match, manual review needed *)
+(* grant_chd_access - complex match, needs manual translation *)
+definition grant_chd_access :: "bool" where "grant_chd_access = undefined"
 
 (* chd_record_compliant (matches Coq: Definition chd_record_compliant) *)
 definition chd_record_compliant :: "CHDRecord \<Rightarrow> bool" where

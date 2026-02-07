@@ -210,6 +210,33 @@ if [ -d "$ROOT_DIR/02_FORMAL/tv" ]; then
     TV_FILES=$(find "$ROOT_DIR/02_FORMAL/tv" -name "*.smt2" -type f 2>/dev/null | wc -l)
 fi
 
+# Quality tier counting: core vs domain vs trivial
+# Tier 1 (core): foundations/ + type_system/ + effects/ + properties/ + termination/
+COQ_TIER1_CORE=0
+for subdir in foundations type_system effects properties termination; do
+    dir="$ROOT_DIR/02_FORMAL/coq/$subdir"
+    if [ -d "$dir" ]; then
+        while IFS= read -r f; do
+            count=$(grep -c "Qed\." "$f" 2>/dev/null || true)
+            if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+                COQ_TIER1_CORE=$((COQ_TIER1_CORE + count))
+            fi
+        done < <(find "$dir" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+    fi
+done
+
+# Tier 2 (domain): domains/ + Industries/ + compliance/
+COQ_TIER2_DOMAIN=$((QED_ACTIVE - COQ_TIER1_CORE))
+
+# Count trivial proofs: "Proof. reflexivity. Qed." and "Proof. intros. exact I. Qed." patterns
+COQ_TRIVIAL=0
+while IFS= read -r f; do
+    count=$(grep -cP 'Proof\.\s*(reflexivity|intros\.\s*exact I|exact I|trivial)\.\s*Qed\.' "$f" 2>/dev/null || true)
+    if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+        COQ_TRIVIAL=$((COQ_TRIVIAL + count))
+    fi
+done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+
 # Total proofs across ALL 10 provers
 TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS + FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
 
@@ -366,6 +393,23 @@ cat > "$OUTPUT_FILE" << EOF
     "sorry": $((LEAN_SORRY + ISABELLE_SORRY)),
     "status": "ALL COMPLETE"
   },
+  "quality": {
+    "coqCompiled": true,
+    "leanCompiled": false,
+    "isabelleCompiled": false,
+    "fstarStatus": "stub",
+    "tlaplusStatus": "stub",
+    "alloyStatus": "stub",
+    "smtStatus": "stub",
+    "verusStatus": "stub",
+    "kaniStatus": "stub",
+    "tvStatus": "stub",
+    "coqTiers": {
+      "core": $COQ_TIER1_CORE,
+      "domain": $COQ_TIER2_DOMAIN,
+      "domainTrivial": $COQ_TRIVIAL
+    }
+  },
   "rust": {
     "tests": ${RUST_TESTS:-0},
     "crates": $RUST_CRATES
@@ -403,6 +447,10 @@ echo "  Verus:        $VERUS_PROOFS proofs, $VERUS_FILES files"
 echo "  Kani:         $KANI_HARNESSES harnesses, $KANI_FILES files"
 echo "  TV:           $TV_VALIDATIONS validations, $TV_FILES files"
 echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
+echo "  Quality tiers:"
+echo "    Core Coq:   $COQ_TIER1_CORE (foundations/type_system/effects/properties/termination)"
+echo "    Domain Coq: $COQ_TIER2_DOMAIN (domains/Industries/compliance)"
+echo "    Trivial:    $COQ_TRIVIAL (reflexivity/exact I patterns)"
 echo "  Rust tests:   $RUST_TESTS"
 echo "  Session:      $SESSION"
 echo "  Timestamp:    $TIMESTAMP"

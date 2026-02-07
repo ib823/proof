@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OwnershipTypes - Isabelle/HOL Port
@@ -63,31 +64,31 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* OwnState (matches Coq: Inductive OwnState) *)
 datatype own_state =
-    Owned  (* Exclusively owned *)
-  |     Moved  (* Ownership transferred *)
-  |     Borrowed  (* Immutably borrowed *)
-  |     MutBorrowed  (* Mutably borrowed *)
-  |     Dropped  (* Deallocated *)
+    Owned
+  |     Moved
+  |     Borrowed
+  |     MutBorrowed
+  |     Dropped
 
 (* RefCellState (matches Coq: Inductive RefCellState) *)
 datatype ref_cell_state =
     RCUnborrowed
-  |     RCSharedBorrow  (* count of shared borrows *)
+  |     RCSharedBorrow
   |     RCMutBorrow
 
 (* OwnedVar (matches Coq: Record OwnedVar) *)
 record owned_var =
   ov_id :: nat
   ov_state :: OwnState
-  ov_lifetime :: Lifetime  (* Scope lifetime *)
-  ov_is_copy :: bool  (* Copy type? *)
+  ov_lifetime :: Lifetime
+  ov_is_copy :: bool
 
 (* Borrow (matches Coq: Record Borrow) *)
 record borrow =
-  br_source :: nat  (* Source variable ID *)
-  br_target :: nat  (* Borrow variable ID *)
-  br_mutable :: bool  (* Mutable borrow? *)
-  br_lifetime :: Lifetime  (* Borrow lifetime *)
+  br_source :: nat
+  br_target :: nat
+  br_mutable :: bool
+  br_lifetime :: Lifetime
 
 (* OwnCtx (matches Coq: Record OwnCtx) *)
 record own_ctx =
@@ -111,11 +112,14 @@ record box_alloc =
 definition lifetime_outlives :: "bool" where
   "lifetime_outlives \<equiv> Nat"
 
-(* is_usable - complex match, manual review needed *)
+(* is_usable - complex match, needs manual translation *)
+definition is_usable :: "bool" where "is_usable = undefined"
 
-(* can_mut_borrow - complex match, manual review needed *)
+(* can_mut_borrow - complex match, needs manual translation *)
+definition can_mut_borrow :: "bool" where "can_mut_borrow = undefined"
 
-(* can_shared_borrow - complex match, manual review needed *)
+(* can_shared_borrow - complex match, needs manual translation *)
+definition can_shared_borrow :: "bool" where "can_shared_borrow = undefined"
 
 (* count_borrows (matches Coq: Definition count_borrows) *)
 definition count_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
@@ -125,11 +129,14 @@ definition count_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
 definition count_mut_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
   "count_mut_borrows ctx id \<equiv> length (filter (fun b => andb (Nat"
 
-(* borrow_lifetime_valid - complex match, manual review needed *)
+(* borrow_lifetime_valid - complex match, needs manual translation *)
+definition borrow_lifetime_valid :: "bool" where "borrow_lifetime_valid = undefined"
 
-(* is_moved - complex match, manual review needed *)
+(* is_moved - complex match, needs manual translation *)
+definition is_moved :: "bool" where "is_moved = undefined"
 
-(* is_dropped - complex match, manual review needed *)
+(* is_dropped - complex match, needs manual translation *)
+definition is_dropped :: "bool" where "is_dropped = undefined"
 
 (* box_new (matches Coq: Definition box_new) *)
 definition box_new :: "nat \<Rightarrow> BoxAlloc" where
@@ -145,17 +152,16 @@ definition no_active_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> bool" wh
 
 (* memory_safe (matches Coq: Definition memory_safe) *)
 definition memory_safe :: "OwnCtx \<Rightarrow> bool" where
-  "memory_safe ctx \<equiv> (* All borrows are valid *)
-  (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true) /\
-  (* No use after move: moved vars are not borrowed *)
+  "memory_safe ctx \<equiv> (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true) /\
+  
   (forall v, In v (oc_vars ctx) -> ov_state v = Moved -> 
              count_borrows ctx (ov_id v) = 0) /\
-  (* No use after drop: dropped vars are not borrowed *)
+  
   (forall v, In v (oc_vars ctx) -> ov_state v = Dropped -> 
              count_borrows ctx (ov_id v) = 0) /\
-  (* Mutable borrows are exclusive *)
+  
   (forall id, count_mut_borrows ctx id <= 1) /\
-  (* No simultaneous mut and shared borrows *)
+  
   (forall id, count_mut_borrows ctx id = 1 -> 
               count_borrows ctx id = count_mut_borrows ctx id)"
 

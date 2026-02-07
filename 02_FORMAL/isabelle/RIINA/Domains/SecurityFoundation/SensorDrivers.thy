@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SensorDrivers - Isabelle/HOL Port
@@ -97,7 +98,8 @@ record bounded_sensor =
   bs_current_rate :: nat
   bs_rate_ok :: bs_current_rate
 
-(* has_sensor_permission - complex match, manual review needed *)
+(* has_sensor_permission - complex match, needs manual translation *)
+definition has_sensor_permission :: "bool" where "has_sensor_permission = undefined"
 
 (* uses_camera (matches Coq: Definition uses_camera) *)
 definition uses_camera :: "Application \<Rightarrow> bool" where

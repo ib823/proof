@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SpeculativeExecution - Isabelle/HOL Port
@@ -50,8 +51,9 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* effect (matches Coq: Inductive effect) *)
 datatype effect =
-    Eff_pure  (* no observable side-effects, safe under speculation *)
-  |     Eff_timed  (* timing-observable but no speculation leaks *)
+    Eff_pure
+  |     Eff_timed
+  |     Eff_speculative
 
 (* visibility (matches Coq: Inductive visibility) *)
 datatype visibility =
@@ -65,17 +67,20 @@ datatype value =
 
 (* instr (matches Coq: Inductive instr) *)
 datatype instr =
-    IConst  (* constant load *)
-  |     IBinop  (* binary operation *)
-  |     IBranch  (* branch on condition with visibility tag; Secret branches may leak *)
-  |     ISeq  (* sequential composition *)
+    IConst
+  |     IBinop
+  |     IBranch
+  |     ISeq
   |     IAnnot
 
-(* eff_le - complex match, manual review needed *)
+(* eff_le - complex match, needs manual translation *)
+definition eff_le :: "bool" where "eff_le = undefined"
 
-(* eff_join - complex match, manual review needed *)
+(* eff_join - complex match, needs manual translation *)
+definition eff_join :: "bool" where "eff_join = undefined"
 
-(* is_spec_safe - complex match, manual review needed *)
+(* is_spec_safe - complex match, needs manual translation *)
+definition is_spec_safe :: "bool" where "is_spec_safe = undefined"
 
 (* eff_join_pure_l (matches Coq) *)
 lemma eff_join_pure_l: "\<forall> e, eff_join Eff_pure e = e"

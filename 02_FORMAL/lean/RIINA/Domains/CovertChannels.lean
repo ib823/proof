@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CovertChannels - Lean 4 Port
@@ -94,12 +95,12 @@ inductive SecLevel where
 
 /-- Observation (matches Coq: Inductive Observation) -/
 inductive Observation where
-  | obsTime : Observation
-  | obsMemory : Observation
-  | obsCache : Observation
-  | obsOutput : Observation
-  | obsTermination : Observation
-  | obsException : Observation
+  | obsTime : Nat → Observation
+  | obsMemory : List Nat → Observation
+  | obsCache : List Bool → Observation
+  | obsOutput : Nat → Observation
+  | obsTermination : Bool → Observation
+  | obsException : option Nat → Observation
   deriving DecidableEq, Repr
 
 /-- State (matches Coq: Record State) -/
@@ -176,10 +177,10 @@ structure StorageState where
   deriving DecidableEq, Repr
 
 /-- level_leq (matches Coq: Definition level_leq) -/
-def level_leq := True -- complex match, simplified to Prop
+def level_leq := sorry -- complex match, needs manual translation
 
 /-- level_eq (matches Coq: Definition level_eq) -/
-def level_eq := True -- complex match, simplified to Prop
+def level_eq := sorry -- complex match, needs manual translation
 
 /-- low_equiv (matches Coq: Definition low_equiv) -/
 def low_equiv (s1 s2 : State) : Bool :=
@@ -222,7 +223,7 @@ def constant_resources (s1 s2 : State) (r1 r2 : ResourceUsage) : Prop :=
   low_equiv s1 s2 = true -> r1 = r2
 
 /-- memory_zeroed (matches Coq: Definition memory_zeroed) -/
-def memory_zeroed := True -- complex match, simplified to Prop
+def memory_zeroed := sorry -- complex match, needs manual translation
 
 /-- partitions_disjoint (matches Coq: Definition partitions_disjoint) -/
 def partitions_disjoint (p1 p2 : Partition) : Bool :=
@@ -230,18 +231,18 @@ def partitions_disjoint (p1 p2 : Partition) : Bool :=
 
 /-- secure_execute (matches Coq: Definition secure_execute) -/
 def secure_execute (s : State) : Trace := mkTrace
-    (state_public s)           (* time depends only on public *)
-    [state_public s]           (* mem access depends only on public *)
-    [true]                     (* constant cache pattern *)
-    (state_public s)           (* output depends only on public *)
-    true                       (* always terminates *)
+    (state_public s)           
+    [state_public s]           
+    [true]                     
+    (state_public s)           
+    true                       
     None
 
 /-- secure_resources (matches Coq: Definition secure_resources) -/
 def secure_resources (s : State) : ResourceUsage := mkRes
-    100                        (* constant CPU cycles *)
-    256                        (* constant memory allocation *)
-    0                          (* constant cache misses *)
+    100                        
+    256                        
+    0                          
     0
 
 /-- riina_program (matches Coq: Definition riina_program) -/

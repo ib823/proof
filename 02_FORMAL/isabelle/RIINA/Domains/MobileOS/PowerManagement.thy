@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PowerManagement - Isabelle/HOL Port
@@ -87,30 +88,30 @@ record power_manager =
 
 (* BatteryInfo (matches Coq: Record BatteryInfo) *)
 record battery_info =
-  bat_level :: nat  (* 0-100 percentage *)
-  bat_health :: nat  (* 0-100 percentage *)
-  bat_temperature :: nat  (* centidegrees *)
+  bat_level :: nat
+  bat_health :: nat
+  bat_temperature :: nat
   bat_is_charging :: bool
-  bat_charge_rate :: nat  (* milliwatts *)
-  bat_discharge_rate :: nat  (* milliwatts *)
+  bat_charge_rate :: nat
+  bat_discharge_rate :: nat
 
 (* AppPowerBudget (matches Coq: Record AppPowerBudget) *)
 record app_power_budget =
   app_power_id :: nat
-  app_power_budget_mw :: nat  (* milliwatts *)
-  app_power_actual_mw :: nat  (* actual usage *)
+  app_power_budget_mw :: nat
+  app_power_actual_mw :: nat
   app_is_background :: bool
 
 (* WakeLock (matches Coq: Record WakeLock) *)
 record wake_lock =
   wake_lock_id :: nat
-  wake_lock_timeout :: nat  (* milliseconds *)
-  wake_lock_elapsed :: nat  (* milliseconds *)
+  wake_lock_timeout :: nat
+  wake_lock_elapsed :: nat
   wake_lock_active :: bool
 
 (* DisplayState (matches Coq: Record DisplayState) *)
 record display_state =
-  display_brightness :: nat  (* 0-100 *)
+  display_brightness :: nat
   display_adaptive :: bool
   display_on :: bool
 
@@ -159,9 +160,11 @@ definition apply_throttling :: "ThermalState \<Rightarrow> ThermalState" where
   else
     ts"
 
-(* valid_power_transition - complex match, manual review needed *)
+(* valid_power_transition - complex match, needs manual translation *)
+definition valid_power_transition :: "bool" where "valid_power_transition = undefined"
 
-(* battery_optimized - complex match, manual review needed *)
+(* battery_optimized - complex match, needs manual translation *)
+definition battery_optimized :: "bool" where "battery_optimized = undefined"
 
 (* battery_safe_temp (matches Coq: Definition battery_safe_temp) *)
 definition battery_safe_temp :: "nat" where

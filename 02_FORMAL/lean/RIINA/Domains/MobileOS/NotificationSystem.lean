@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NotificationSystem - Lean 4 Port
@@ -91,7 +92,7 @@ structure Notification where
   notif_priority : Priority
   notif_state : NotificationState
   notif_created_at : Time
-  notif_ttl : Time  -- Time to live
+  notif_ttl : Time
   notif_delivered_at : option
   deriving DecidableEq, Repr
 
@@ -100,7 +101,7 @@ structure NotificationChannel where
   channel_id : Nat
   channel_enabled : Bool
   channel_priority : Priority
-  channel_sound_volume : Nat  -- 0-100
+  channel_sound_volume : Nat
   channel_vibration : Bool
   channel_badge : Bool
   deriving DecidableEq, Repr
@@ -131,7 +132,7 @@ structure NotifHistory where
 structure ExtNotification where
   ext_notif : Notification
   ext_content_sanitized : Bool
-  ext_sound_volume : Nat  -- 0-100
+  ext_sound_volume : Nat
   ext_badge_count : Nat
   ext_expiry_time : Nat
   ext_delivery_confirmed : Bool

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DigitalWallet - Isabelle/HOL Port
@@ -314,9 +315,11 @@ fun tier_daily_withdrawal_limit :: "WalletTier \<Rightarrow> Z" where
 |   "tier_daily_withdrawal_limit Premium = 10000"
 |   "tier_daily_withdrawal_limit Unlimited = 500000000"
 
-(* sum_credits - complex match, manual review needed *)
+(* sum_credits - complex match, needs manual translation *)
+definition sum_credits :: "bool" where "sum_credits = undefined"
 
-(* sum_debits - complex match, manual review needed *)
+(* sum_debits - complex match, needs manual translation *)
+definition sum_debits :: "bool" where "sum_debits = undefined"
 
 (* invalidated (matches Coq: Definition invalidated) *)
 definition invalidated :: "QRCode \<Rightarrow> bool" where

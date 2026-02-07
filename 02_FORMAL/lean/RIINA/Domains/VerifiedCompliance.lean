@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedCompliance - Lean 4 Port
@@ -123,9 +124,9 @@ inductive Regulation where
 
 /-- ControlStatus (matches Coq: Inductive ControlStatus) -/
 inductive ControlStatus where
-  | proven : ControlStatus  -- Formally proven
-  | implemented : ControlStatus  -- Implemented, tested
-  | partial : ControlStatus  -- Partially implemented
+  | proven : ControlStatus
+  | implemented : ControlStatus
+  | partial : ControlStatus
   | gap : ControlStatus
   deriving DecidableEq, Repr
 
@@ -138,18 +139,18 @@ structure PersonalData where
   pd_consent : Bool
   pd_collected : Nat
   pd_retention : Nat
-  pd_necessary : Bool  -- Is this data necessary for purpose
-  pd_accurate : Bool  -- Is this data accurate
-  pd_integrity_protected : Bool  -- Is integrity protected
-  pd_exportable : Bool  -- Can be exported to subject
+  pd_necessary : Bool
+  pd_accurate : Bool
+  pd_integrity_protected : Bool
+  pd_exportable : Bool
   deriving DecidableEq, Repr
 
 /-- DataStore (matches Coq: Record DataStore) -/
 structure DataStore where
   store_data : List
   store_purpose : String
-  store_compliant : Bool  -- Is store GDPR compliant
-  store_encrypted : Bool  -- Is store encrypted
+  store_compliant : Bool
+  store_encrypted : Bool
   deriving DecidableEq, Repr
 
 /-- PHI (matches Coq: Record PHI) -/
@@ -171,9 +172,9 @@ structure CardholderData where
   chd_pan : List
   chd_pan_encrypted : Bool
   chd_expiry : Nat
-  chd_cvv_stored : Bool  -- Must be false post-auth
+  chd_cvv_stored : Bool
   chd_cardholder_name : String
-  chd_in_cde : Bool  -- In cardholder data environment
+  chd_in_cde : Bool
   deriving DecidableEq, Repr
 
 /-- Control (matches Coq: Record Control) -/

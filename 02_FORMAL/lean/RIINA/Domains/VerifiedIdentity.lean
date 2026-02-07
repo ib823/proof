@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VerifiedIdentity - Lean 4 Port
@@ -112,24 +113,24 @@ namespace RIINA
 
 /-- Credential (matches Coq: Inductive Credential) -/
 inductive Credential where
-  | credPassword : Credential
-  | credToken : Credential
-  | credFIDO2 : Credential
-  | credCertificate : Credential
+  | credPassword : List Nat → Credential
+  | credToken : List Nat → Timestamp → Credential
+  | credFIDO2 : List Nat → Nat → Credential
+  | credCertificate : List Nat → Credential
   deriving DecidableEq, Repr
 
 /-- AuthResult (matches Coq: Inductive AuthResult) -/
 inductive AuthResult where
-  | authSuccess : AuthResult
-  | authFailure : AuthResult
+  | authSuccess : PrincipalId → AuthResult
+  | authFailure : String → AuthResult
   deriving DecidableEq, Repr
 
 /-- Factor (matches Coq: Inductive Factor) -/
 inductive Factor where
-  | factorPassword : Factor
-  | factorTOTP : Factor
-  | factorFIDO2 : Factor
-  | factorBiometric : Factor
+  | factorPassword : Nat → Factor
+  | factorTOTP : Nat → Factor
+  | factorFIDO2 : Nat → Factor
+  | factorBiometric : Nat → Factor
   deriving DecidableEq, Repr
 
 /-- Principal (matches Coq: Record Principal) -/
@@ -150,7 +151,7 @@ structure Argon2Params where
 structure Pepper where
   pepper_value : List
   pepper_hsm_id : Nat
-  pepper_bound : Bool  -- true if bound to HSM
+  pepper_bound : Bool
   deriving DecidableEq, Repr
 
 /-- TokenClaims (matches Coq: Record TokenClaims) -/
@@ -338,17 +339,17 @@ def fido2_user_verified (cred : FIDO2Credential) (assertion : FIDO2Assertion) : 
   (negb (fido2_user_verification cred)) || (assertion_user_verified assertion)
 
 /-- verify_fido2 (matches Coq: Definition verify_fido2) -/
-def verify_fido2 := True -- complex match, simplified to Prop
+def verify_fido2 := sorry -- complex match, needs manual translation
 
 /-- valid_credential (matches Coq: Definition valid_credential) -/
 def valid_credential (store : CredentialStore) (p : Principal) (c : Credential) : Prop :=
   In c (store (principal_id p))
 
 /-- credential_matches (matches Coq: Definition credential_matches) -/
-def credential_matches := True -- complex match, simplified to Prop
+def credential_matches := sorry -- complex match, needs manual translation
 
 /-- authenticate (matches Coq: Definition authenticate) -/
-def authenticate := True -- complex match, simplified to Prop
+def authenticate := sorry -- complex match, needs manual translation
 
 /-- log_auth_attempt (matches Coq: Definition log_auth_attempt) -/
 def log_auth_attempt (logs : AuthLogStore) (pid : PrincipalId) 
@@ -463,15 +464,15 @@ theorem AA_001_09_password_hash_secure : params_secure secure_params = true := b
   simp
 
 /-- AA_001_10_password_preimage_resistant (matches Coq) -/
-theorem AA_001_10_password_preimage_resistant : ∀ hash salt params, (* Given only the hash, finding the preimage requires inverting argon2id *) (* We model this as: any candidate preimage can be verified but not derived *) ∀ candidate, argon2id_hash candidate salt params = hash → (* Verification is possible but finding candidate without brute force is not *) True := by
+theorem AA_001_10_password_preimage_resistant : ∀ hash salt params,   ∀ candidate, argon2id_hash candidate salt params = hash →  True := by
   intro h; exact h
 
 /-- AA_001_11_password_not_stored (matches Coq) -/
-theorem AA_001_11_password_not_stored : ∀ store p pwd_hash, valid_credential store p (CredPassword pwd_hash) → (* The stored value is a hash, not plaintext *) (* By construction, CredPassword only holds hashed values *) ∃ (salt : list nat) (params : Argon2Params), List.length pwd_hash ≥ 0. (* Hash ∃ and has structure *) := by
+theorem AA_001_11_password_not_stored : ∀ store p pwd_hash, valid_credential store p (CredPassword pwd_hash) →   ∃ (salt : list nat) (params : Argon2Params), List.length pwd_hash ≥ 0.  := by
   omega
 
 /-- AA_001_12_password_pepper_bound (matches Coq) -/
-theorem AA_001_12_password_pepper_bound : ∀ pepper, pepper_bound pepper = true → pepper_hsm_id pepper > 0 → (* Pepper value is only accessible through HSM operations *) True := by
+theorem AA_001_12_password_pepper_bound : ∀ pepper, pepper_bound pepper = true → pepper_hsm_id pepper > 0 →  True := by
   intro h; exact h
 
 /-- AA_001_13_password_constant_time_compare (matches Coq) -/
@@ -483,7 +484,7 @@ theorem AA_001_14_password_breach_checked : ∀ db hash, password_in_breach db h
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- AA_001_15_token_unforgeability (matches Coq) -/
-theorem AA_001_15_token_unforgeability : ∀ adv key, ~ has_key adv key → ∀ (claims : TokenClaims) (binding : ChannelBinding) (fake_sig : list nat), (* Adversary cannot produce valid token without key *) ~ (fake_sig = key ∧ List.length fake_sig > 0 ∧ In fake_sig (adv_known_keys adv)) := by
+theorem AA_001_15_token_unforgeability : ∀ adv key, ~ has_key adv key → ∀ (claims : TokenClaims) (binding : ChannelBinding) (fake_sig : list nat),  ~ (fake_sig = key ∧ List.length fake_sig > 0 ∧ In fake_sig (adv_known_keys adv)) := by
   simp_all [Bool.and_eq_true]
 
 /-- AA_001_16_token_channel_bound (matches Coq) -/
@@ -503,7 +504,7 @@ theorem AA_001_19_token_revocation : ∀ revoked jti, is_revoked (revoke_token r
   rfl
 
 /-- AA_001_20_token_refresh_secure (matches Coq) -/
-theorem AA_001_20_token_refresh_secure : ∀ old_token new_claims binding now used, verify_token old_token binding now used = true → claim_sub new_claims = claim_sub (token_claims old_token) → claim_exp new_claims > claim_exp (token_claims old_token) → (* New token maintains identity binding *) claim_sub new_claims = claim_sub (token_claims old_token) := by
+theorem AA_001_20_token_refresh_secure : ∀ old_token new_claims binding now used, verify_token old_token binding now used = true → claim_sub new_claims = claim_sub (token_claims old_token) → claim_exp new_claims > claim_exp (token_claims old_token) →  claim_sub new_claims = claim_sub (token_claims old_token) := by
   intro h; exact h
 
 /-- AA_001_21_token_claims_integrity (matches Coq) -/

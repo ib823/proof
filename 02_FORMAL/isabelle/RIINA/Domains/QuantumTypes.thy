@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA QuantumTypes - Isabelle/HOL Port
@@ -61,10 +62,10 @@ datatype gate =
 
 (* instr (matches Coq: Inductive instr) *)
 datatype instr =
-    ICreate  (* allocate a fresh qubit *)
-  |     IGate  (* apply single-qubit gate *)
-  |     IGate2  (* two-qubit gate *)
-  |     IMeasure  (* measure and consume qubit *)
+    ICreate
+  |     IGate
+  |     IGate2
+  |     IMeasure
   |     ISeq
 
 (* well_typed (matches Coq: Definition well_typed) *)
@@ -75,9 +76,11 @@ definition well_typed :: "program \<Rightarrow> bool" where
 definition fully_consumed :: "program \<Rightarrow> bool" where
   "fully_consumed p \<equiv> check [] p = Some []"
 
-(* well_typed_b - complex match, manual review needed *)
+(* well_typed_b - complex match, needs manual translation *)
+definition well_typed_b :: "bool" where "well_typed_b = undefined"
 
-(* fully_consumed_b - complex match, manual review needed *)
+(* fully_consumed_b - complex match, needs manual translation *)
+definition fully_consumed_b :: "bool" where "fully_consumed_b = undefined"
 
 (* mem_true_In (matches Coq) *)
 lemma mem_true_In: "\<forall> n l, mem n l = True \<longrightarrow> In n l"

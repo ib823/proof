@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SingaporeMAS_TRM - Isabelle/HOL Port
@@ -65,9 +66,9 @@ datatype mas_license_type =
 
 (* PatchCriticality (matches Coq: Inductive PatchCriticality) *)
 datatype patch_criticality =
-    PatchCritical  (* ≤14 days *)
-  |     PatchHigh  (* ≤30 days *)
-  |     PatchMedium  (* ≤60 days *)
+    PatchCritical
+  |     PatchHigh
+  |     PatchMedium
   |     PatchLow
 
 (* patch_deadline (matches Coq: Definition patch_deadline) *)

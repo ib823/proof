@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA NonInterference_v2 - Isabelle/HOL Port
@@ -130,7 +131,7 @@ definition combined_step_up :: "nat \<Rightarrow> bool" where
      store_wf Σ st2 ->
      store_has_values st1 ->
      store_has_values st2 ->
-     stores_agree_low_fo Σ st1 st2 ->  (* FO bootstrap precondition *)
+     stores_agree_low_fo Σ st1 st2 ->  
      store_rel_n (S n) Σ st1 st2)"
 
 (* val_rel (matches Coq: Definition val_rel) *)

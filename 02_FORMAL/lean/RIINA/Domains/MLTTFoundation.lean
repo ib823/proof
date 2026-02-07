@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MLTTFoundation - Lean 4 Port
@@ -47,23 +48,23 @@ namespace RIINA
 /-- Ty (matches Coq: Inductive Ty) -/
 inductive Ty where
   | tUnit : Ty
-  | tPi : Ty  -- Π-type: Π(x:A).B
-  | tSigma : Ty  -- Σ-type: Σ(x:A).B
-  | tId : Ty  -- Identity type
-  | tUniverse : Ty  -- Universe at level l
+  | tPi : Ty → Ty → Ty
+  | tSigma : Ty → Ty → Ty
+  | tId : Ty → Ty
+  | tUniverse : Level → Ty
   deriving DecidableEq, Repr
 
 /-- Term (matches Coq: Inductive Term) -/
 inductive Term where
-  | tmVar : Term
-  | tmUnit : Term  -- Unit value
-  | tmLam : Term  -- λ-abstraction with type annotation
-  | tmApp : Term  -- Application
-  | tmPair : Term  -- Pair introduction
-  | tmFst : Term  -- First projection
-  | tmSnd : Term  -- Second projection
-  | tmRefl : Term  -- Reflexivity proof: refl(a)
-  | tmJ : Term  -- J-eliminator with type annotations
+  | tmVar : Nat → Term
+  | tmUnit : Term
+  | tmLam : Ty → Term → Term
+  | tmApp : Term → Term → Term
+  | tmPair : Term → Term → Term
+  | tmFst : Term → Term
+  | tmSnd : Term → Term
+  | tmRefl : Term → Term
+  | tmJ : Ty → Ty → Term → Term → Term
   deriving DecidableEq, Repr
 
 /-- empty_ctx (matches Coq: Definition empty_ctx) -/

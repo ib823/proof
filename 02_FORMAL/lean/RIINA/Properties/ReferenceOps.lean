@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ReferenceOps - Lean 4 Port
@@ -93,7 +94,7 @@ theorem logical_relation_deref_proven : ∀ n Σ T sl l st1 st2 ctx, store_rel_l
     intermediate stores AND ensures the resulting location is typed.
     The fundamental theorem provides both via exp_rel_n + preservation. -/
 /-- exp_rel_le_deref (matches Coq) -/
-theorem exp_rel_le_deref : ∀ n Σ T sl e1 e2 st1 st2 ctx, (* Strengthened: returns store_rel_le AND location is typed in output Σ' *) (∀ k v1 v2 st1' st2', k ≤ n → multi_step (e1, st1, ctx) (v1, st1', ctx) → multi_step (e2, st2, ctx) (v2, st2', ctx) → value v1 → value v2 → ∃ Σ' l, store_ty_extends Σ Σ' ∧ v1 = ELoc l ∧ v2 = ELoc l ∧ store_ty_lookup l Σ' = Some (T, sl) ∧ store_rel_le k Σ' st1' st2') → store_has_values st1 → store_has_values st2 → exp_rel_le n Σ T (EDeref e1) (EDeref e2) st1 st2 ctx := by
+theorem exp_rel_le_deref : ∀ n Σ T sl e1 e2 st1 st2 ctx,  (∀ k v1 v2 st1' st2', k ≤ n → multi_step (e1, st1, ctx) (v1, st1', ctx) → multi_step (e2, st2, ctx) (v2, st2', ctx) → value v1 → value v2 → ∃ Σ' l, store_ty_extends Σ Σ' ∧ v1 = ELoc l ∧ v2 = ELoc l ∧ store_ty_lookup l Σ' = Some (T, sl) ∧ store_rel_le k Σ' st1' st2') → store_has_values st1 → store_has_values st2 → exp_rel_le n Σ T (EDeref e1) (EDeref e2) st1 st2 ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- Assignment preserves store relation and produces related units -/
@@ -106,7 +107,7 @@ theorem logical_relation_assign_proven : ∀ n Σ T sl l v1 v2 st1 st2 ctx, valu
     (2) the RHS evaluates to related values with store_rel_le.
     Additionally, we need sequential evaluation: RHS starts from the stores after LHS. -/
 /-- exp_rel_le_assign (matches Coq) -/
-theorem exp_rel_le_assign : ∀ n Σ T sl e1 e2 e1' e2' st1 st2 ctx, (* LHS evaluates to a typed location *) (∀ k v1 v2 st1' st2', k ≤ n → multi_step (e1, st1, ctx) (v1, st1', ctx) → multi_step (e2, st2, ctx) (v2, st2', ctx) → value v1 → value v2 → ∃ Σ' l, store_ty_extends Σ Σ' ∧ v1 = ELoc l ∧ v2 = ELoc l ∧ store_ty_lookup l Σ' = Some (T, sl) ∧ store_rel_le k Σ' st1' st2') → (* RHS evaluates to related values (for any starting stores with store_rel_le) *) (∀ k Σ_start st1_start st2_start v1 v2 st1' st2', k ≤ n → store_ty_extends Σ Σ_start → store_rel_le k Σ_start st1_start st2_start → multi_step (e1', st1_start, ctx) (v1, st1', ctx) → multi_step (e2', st2_start, ctx) (v2, st2', ctx) → value v1 → value v2 → ∃ Σ', store_ty_extends Σ_start Σ' ∧ val_rel_le k Σ' T v1 v2 ∧ store_rel_le k Σ' st1' st2') → store_has_values st1 → store_has_values st2 → exp_rel_le n Σ TUnit (EAssign e1 e1') (EAssign e2 e2') st1 st2 ctx := by
+theorem exp_rel_le_assign : ∀ n Σ T sl e1 e2 e1' e2' st1 st2 ctx,  (∀ k v1 v2 st1' st2', k ≤ n → multi_step (e1, st1, ctx) (v1, st1', ctx) → multi_step (e2, st2, ctx) (v2, st2', ctx) → value v1 → value v2 → ∃ Σ' l, store_ty_extends Σ Σ' ∧ v1 = ELoc l ∧ v2 = ELoc l ∧ store_ty_lookup l Σ' = Some (T, sl) ∧ store_rel_le k Σ' st1' st2') →  RHS evaluates to related values (for any starting stores with store_rel_le)  (∀ k Σ_start st1_start st2_start v1 v2 st1' st2', k ≤ n → store_ty_extends Σ Σ_start → store_rel_le k Σ_start st1_start st2_start → multi_step (e1', st1_start, ctx) (v1, st1', ctx) → multi_step (e2', st2_start, ctx) (v2, st2', ctx) → value v1 → value v2 → ∃ Σ', store_ty_extends Σ_start Σ' ∧ val_rel_le k Σ' T v1 v2 ∧ store_rel_le k Σ' st1' st2') → store_has_values st1 → store_has_values st2 → exp_rel_le n Σ TUnit (EAssign e1 e1') (EAssign e2 e2') st1 st2 ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- Summary: All admits eliminated -/

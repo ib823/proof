@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TranslationValidation - Lean 4 Port
@@ -67,60 +68,60 @@ namespace RIINA
 
 /-- SrcExpr (matches Coq: Inductive SrcExpr) -/
 inductive SrcExpr where
-  | sVar : SrcExpr
-  | sConst : SrcExpr
-  | sAdd : SrcExpr
-  | sMul : SrcExpr
-  | sIf : SrcExpr
-  | sCall : SrcExpr
-  | sLet : SrcExpr
+  | sVar : Nat → SrcExpr
+  | sConst : Nat → SrcExpr
+  | sAdd : SrcExpr → SrcExpr → SrcExpr
+  | sMul : SrcExpr → SrcExpr → SrcExpr
+  | sIf : SrcExpr → SrcExpr → SrcExpr → SrcExpr
+  | sCall : Nat → List SrcExpr → SrcExpr
+  | sLet : Nat → SrcExpr → SrcExpr → SrcExpr
   deriving DecidableEq, Repr
 
 /-- SrcStmt (matches Coq: Inductive SrcStmt) -/
 inductive SrcStmt where
   | sSkip : SrcStmt
-  | sAssign : SrcStmt
-  | sSeq : SrcStmt
-  | sIfStmt : SrcStmt
-  | sWhile : SrcStmt
-  | sRead : SrcStmt
-  | sWrite : SrcStmt
-  | sCallStmt : SrcStmt
+  | sAssign : Nat → SrcExpr → SrcStmt
+  | sSeq : SrcStmt → SrcStmt → SrcStmt
+  | sIfStmt : SrcExpr → SrcStmt → SrcStmt → SrcStmt
+  | sWhile : SrcExpr → SrcStmt → SrcStmt
+  | sRead : Nat → Nat → SrcStmt
+  | sWrite : Nat → SrcExpr → SrcStmt
+  | sCallStmt : Nat → List SrcExpr → SrcStmt
   deriving DecidableEq, Repr
 
 /-- TgtInstr (matches Coq: Inductive TgtInstr) -/
 inductive TgtInstr where
-  | tLoad : TgtInstr  -- dst, src_addr
-  | tStore : TgtInstr  -- dst_addr, src
-  | tAdd : TgtInstr  -- dst, src1, src2
-  | tMul : TgtInstr  -- dst, src1, src2
-  | tConst : TgtInstr  -- dst, value
-  | tBranch : TgtInstr  -- target
-  | tBranchIf : TgtInstr  -- cond, true_target, false_target
-  | tCall : TgtInstr  -- func_id, args
-  | tReturn : TgtInstr  -- result
+  | tLoad : Nat → Nat → TgtInstr
+  | tStore : Nat → Nat → TgtInstr
+  | tAdd : Nat → Nat → Nat → TgtInstr
+  | tMul : Nat → Nat → Nat → TgtInstr
+  | tConst : Nat → Nat → TgtInstr
+  | tBranch : Nat → TgtInstr
+  | tBranchIf : Nat → Nat → Nat → TgtInstr
+  | tCall : Nat → List Nat → TgtInstr
+  | tReturn : Nat → TgtInstr
   | tNop : TgtInstr
   deriving DecidableEq, Repr
 
 /-- SrcVal (matches Coq: Inductive SrcVal) -/
 inductive SrcVal where
-  | sVInt : SrcVal
-  | sVBool : SrcVal
+  | sVInt : Nat → SrcVal
+  | sVBool : Bool → SrcVal
   | sVUnit : SrcVal
   deriving DecidableEq, Repr
 
 /-- TgtVal (matches Coq: Inductive TgtVal) -/
 inductive TgtVal where
-  | tVInt : TgtVal
+  | tVInt : Nat → TgtVal
   | tVUndef : TgtVal
   deriving DecidableEq, Repr
 
 /-- Effect (matches Coq: Inductive Effect) -/
 inductive Effect where
   | effPure : Effect
-  | effRead : Effect
-  | effWrite : Effect
-  | effCall : Effect
+  | effRead : Nat → Effect
+  | effWrite : Nat → Nat → Effect
+  | effCall : Nat → Effect
   deriving DecidableEq, Repr
 
 /-- SrcType (matches Coq: Inductive SrcType) -/
@@ -128,7 +129,7 @@ inductive SrcType where
   | sTInt : SrcType
   | sTBool : SrcType
   | sTUnit : SrcType
-  | sTFun : SrcType
+  | sTFun : List SrcType → SrcType → SrcType
   deriving DecidableEq, Repr
 
 /-- TgtType (matches Coq: Inductive TgtType) -/
@@ -139,16 +140,16 @@ inductive TgtType where
 
 /-- IRInstr (matches Coq: Inductive IRInstr) -/
 inductive IRInstr where
-  | iRAdd : IRInstr
-  | iRMul : IRInstr
-  | iRConst : IRInstr
+  | iRAdd : Nat → Nat → Nat → IRInstr
+  | iRMul : Nat → Nat → Nat → IRInstr
+  | iRConst : Nat → Nat → IRInstr
   deriving DecidableEq, Repr
 
 /-- MachInstr (matches Coq: Inductive MachInstr) -/
 inductive MachInstr where
-  | mAdd : MachInstr
-  | mMul : MachInstr
-  | mLoadImm : MachInstr
+  | mAdd : Nat → Nat → Nat → MachInstr
+  | mMul : Nat → Nat → Nat → MachInstr
+  | mLoadImm : Nat → Nat → MachInstr
   deriving DecidableEq, Repr
 
 /-- SrcProgram (matches Coq: Record SrcProgram) -/
@@ -182,10 +183,10 @@ structure CompResult where
 /-- ABI (matches Coq: Record ABI) -/
 structure ABI where
   abi_arg_regs : List
-  abi_ret_reg : Nat  -- Register for return value
+  abi_ret_reg : Nat
   abi_callee_save : List
   abi_caller_save : List
-  abi_stack_align : Nat  -- Stack alignment requirement
+  abi_stack_align : Nat
   deriving DecidableEq, Repr
 
 /-- StackFrame (matches Coq: Record StackFrame) -/
@@ -197,13 +198,13 @@ structure StackFrame where
   deriving DecidableEq, Repr
 
 /-- val_match (matches Coq: Definition val_match) -/
-def val_match := True -- complex match, simplified to Prop
+def val_match := sorry -- complex match, needs manual translation
 
 /-- env_match (matches Coq: Definition env_match) -/
-def env_match := True -- complex match, simplified to Prop
+def env_match := sorry -- complex match, needs manual translation
 
 /-- trace_equiv (matches Coq: Definition trace_equiv) -/
-def trace_equiv := True -- complex match, simplified to Prop
+def trace_equiv := sorry -- complex match, needs manual translation
 
 /-- type_corresp (matches Coq: Definition type_corresp) -/
 def type_corresp (st : SrcType) (tt : TgtType) : Prop :=
@@ -213,7 +214,7 @@ def type_corresp (st : SrcType) (tt : TgtType) : Prop :=
   | .sTUnit => tt
 
 /-- simulates (matches Coq: Definition simulates) -/
-def simulates := True -- complex match, simplified to Prop
+def simulates := sorry -- complex match, needs manual translation
 
 /-- src_terminates (matches Coq: Definition src_terminates) -/
 def src_terminates (env : SrcEnv) (e : SrcExpr) : Prop :=

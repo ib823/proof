@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryMilitary - Isabelle/HOL Port
@@ -57,7 +58,7 @@ begin
 (* ClassificationLevel (matches Coq: Inductive ClassificationLevel) *)
 datatype classification_level =
     Unclassified
-  |     CUI  (* Controlled Unclassified Information *)
+  |     CUI
   |     Confidential
   |     Secret
   |     TopSecret
@@ -75,10 +76,11 @@ record military_security_policy =
   classification :: ClassificationLevel
   need_to_know :: 'a list
   clearance_required :: ClassificationLevel
-  comsec_approved :: bool  (* Communications Security *)
-  tempest_certified :: bool  (* TEMPEST emanations security *)
+  comsec_approved :: bool
+  tempest_certified :: bool
 
-(* class_le - complex match, manual review needed *)
+(* class_le - complex match, needs manual translation *)
+definition class_le :: "bool" where "class_le = undefined"
 
 (* class_to_nat (matches Coq: Definition class_to_nat) *)
 fun class_to_nat :: "ClassificationLevel \<Rightarrow> nat" where

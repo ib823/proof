@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA RollbackProtection - Isabelle/HOL Port
@@ -96,7 +97,8 @@ definition version_le :: "bool" where
 definition initial_rollback_state :: "RollbackState" where
   "initial_rollback_state \<equiv> mkRollbackState [] [] true"
 
-(* version_allowed - complex match, manual review needed *)
+(* version_allowed - complex match, needs manual translation *)
+definition version_allowed :: "bool" where "version_allowed = undefined"
 
 (* can_boot_version (matches Coq: Definition can_boot_version) *)
 definition can_boot_version :: "RollbackState \<Rightarrow> VersionedComponent \<Rightarrow> bool" where
@@ -119,9 +121,11 @@ definition record_current_version :: "RollbackState \<Rightarrow> VersionedCompo
                     (current_versions st))
     (anti_rollback_enabled st)"
 
-(* advance_min_to_current - complex match, manual review needed *)
+(* advance_min_to_current - complex match, needs manual translation *)
+definition advance_min_to_current :: "bool" where "advance_min_to_current = undefined"
 
-(* is_rollback - complex match, manual review needed *)
+(* is_rollback - complex match, needs manual translation *)
+definition is_rollback :: "bool" where "is_rollback = undefined"
 
 (* can_boot_prop (matches Coq: Definition can_boot_prop) *)
 definition can_boot_prop :: "RollbackState \<Rightarrow> VersionedComponent \<Rightarrow> bool" where

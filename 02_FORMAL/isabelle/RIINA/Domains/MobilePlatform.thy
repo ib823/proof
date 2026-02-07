@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MobilePlatform - Isabelle/HOL Port
@@ -103,7 +104,8 @@ definition sandbox_valid :: "Sandbox \<Rightarrow> AppId \<Rightarrow> bool" whe
 definition file_isolated :: "bool" where
   "file_isolated \<equiv> Nat"
 
-(* requires_user_consent - complex match, manual review needed *)
+(* requires_user_consent - complex match, needs manual translation *)
+definition requires_user_consent :: "bool" where "requires_user_consent = undefined"
 
 (* signature_matches (matches Coq: Definition signature_matches) *)
 definition signature_matches :: "AppId \<Rightarrow> nat \<Rightarrow> bool" where
@@ -125,7 +127,8 @@ definition key_extractable :: "KeyProps \<Rightarrow> bool" where
 definition auth_recent :: "bool" where
   "auth_recent \<equiv> Nat"
 
-(* grant_valid - complex match, manual review needed *)
+(* grant_valid - complex match, needs manual translation *)
+definition grant_valid :: "bool" where "grant_valid = undefined"
 
 (* has_network_permission (matches Coq: Definition has_network_permission) *)
 definition has_network_permission :: "AppId \<Rightarrow> bool" where
@@ -146,7 +149,8 @@ definition has_camera_permission :: "AppId \<Rightarrow> bool" where
 definition intent_matches :: "Intent \<Rightarrow> nat \<Rightarrow> bool" where
   "intent_matches intent filter_action \<equiv> Nat"
 
-(* explicit_intent - complex match, manual review needed *)
+(* explicit_intent - complex match, needs manual translation *)
+definition explicit_intent :: "bool" where "explicit_intent = undefined"
 
 (* processes_isolated (matches Coq: Definition processes_isolated) *)
 definition processes_isolated :: "bool" where

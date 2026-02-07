@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA VoiceAssistant - Lean 4 Port
@@ -99,7 +100,7 @@ structure VoiceInput where
 /-- RecognitionResult (matches Coq: Record RecognitionResult) -/
 structure RecognitionResult where
   recog_transcript : Transcript
-  recog_confidence : Nat  -- 0-100
+  recog_confidence : Nat
   recog_processed_on_device : Bool
   deriving DecidableEq, Repr
 
@@ -143,7 +144,7 @@ structure SpeechRecognition where
 
 /-- VoiceFeedback (matches Coq: Record VoiceFeedback) -/
 structure VoiceFeedback where
-  vf_response_type : Nat  -- 0=audio, 1=visual, 2=haptic
+  vf_response_type : Nat
   vf_appropriate : Bool
   vf_volume_level : Nat
   vf_max_volume : Nat
@@ -174,14 +175,14 @@ structure VoiceAuth where
 
 /-- NoiseCancellation (matches Coq: Record NoiseCancellation) -/
 structure NoiseCancellation where
-  nc_input_snr : Nat  -- signal-to-noise ratio, scaled
+  nc_input_snr : Nat
   nc_output_snr : Nat
   nc_improvement_bounded : Bool
   deriving DecidableEq, Repr
 
 /-- VoiceSynthesis (matches Coq: Record VoiceSynthesis) -/
 structure VoiceSynthesis where
-  vs_quality_score : Nat  -- 0-100
+  vs_quality_score : Nat
   vs_min_quality : Nat
   vs_synthesis_complete : Bool
   deriving DecidableEq, Repr
@@ -280,7 +281,7 @@ def conversation_context_bounded (cc : ConversationContext) : Prop :=
   length (cc_turns cc) <= cc_max_turns cc
 
 /-- voice_authentication_secure (matches Coq: Definition voice_authentication_secure) -/
-def voice_authentication_secure := True -- complex match, simplified to Prop
+def voice_authentication_secure := sorry -- complex match, needs manual translation
 
 /-- noise_cancellation_bounded (matches Coq: Definition noise_cancellation_bounded) -/
 def noise_cancellation_bounded (nc : NoiseCancellation) : Prop :=

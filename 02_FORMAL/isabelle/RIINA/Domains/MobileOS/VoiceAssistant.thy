@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VoiceAssistant - Isabelle/HOL Port
@@ -99,7 +100,7 @@ record voice_input =
 (* RecognitionResult (matches Coq: Record RecognitionResult) *)
 record recognition_result =
   recog_transcript :: Transcript
-  recog_confidence :: nat  (* 0-100 *)
+  recog_confidence :: nat
   recog_processed_on_device :: bool
 
 (* VoiceProcessing (matches Coq: Record VoiceProcessing) *)
@@ -137,7 +138,7 @@ record speech_recognition =
 
 (* VoiceFeedback (matches Coq: Record VoiceFeedback) *)
 record voice_feedback =
-  vf_response_type :: nat  (* 0=audio, 1=visual, 2=haptic *)
+  vf_response_type :: nat
   vf_appropriate :: bool
   vf_volume_level :: nat
   vf_max_volume :: nat
@@ -164,13 +165,13 @@ record voice_auth =
 
 (* NoiseCancellation (matches Coq: Record NoiseCancellation) *)
 record noise_cancellation =
-  nc_input_snr :: nat  (* signal-to-noise ratio, scaled *)
+  nc_input_snr :: nat
   nc_output_snr :: nat
   nc_improvement_bounded :: bool
 
 (* VoiceSynthesis (matches Coq: Record VoiceSynthesis) *)
 record voice_synthesis =
-  vs_quality_score :: nat  (* 0-100 *)
+  vs_quality_score :: nat
   vs_min_quality :: nat
   vs_synthesis_complete :: bool
 
@@ -265,7 +266,8 @@ definition conversation_context_bounded :: "ConversationContext \<Rightarrow> bo
   "conversation_context_bounded cc \<equiv> cc_context_bounded cc = true /\
   length (cc_turns cc) <= cc_max_turns cc"
 
-(* voice_authentication_secure - complex match, manual review needed *)
+(* voice_authentication_secure - complex match, needs manual translation *)
+definition voice_authentication_secure :: "bool" where "voice_authentication_secure = undefined"
 
 (* noise_cancellation_bounded (matches Coq: Definition noise_cancellation_bounded) *)
 definition noise_cancellation_bounded :: "NoiseCancellation \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WasmBackendVerification - Isabelle/HOL Port
@@ -13,6 +14,7 @@
  * |--------------------|------------------------|--------|
  * | WasmValType        | wasm_val_type          | OK     |
  * | RiinaType          | riina_type             | OK     |
+ * | SecLabel           | sec_label              | OK     |
  * | WasmInstr          | wasm_instr             | OK     |
  * | RiinaIR            | riina_ir               | OK     |
  * | RiinaEffect        | riina_effect           | OK     |
@@ -91,24 +93,27 @@ datatype wasm_val_type =
 
 (* RiinaType (matches Coq: Inductive RiinaType) *)
 datatype riina_type =
-    RTNombor  (* integer *)
-  |     RTTeks  (* string — pointer in WASM *)
-  |     RTBool  (* boolean *)
-  |     RTUnit  (* void *)
+    RTNombor
+  |     RTTeks
+  |     RTBool
+  |     RTUnit
   |     RTSecret
-  |     Public
+
+(* SecLabel (matches Coq: Inductive SecLabel) *)
+datatype sec_label =
+    Public
   |     Secret
 
 (* WasmInstr (matches Coq: Inductive WasmInstr) *)
 datatype wasm_instr =
-    WConst  (* i32.const *)
-  |     WLoad  (* i32.load offset *)
-  |     WStore  (* i32.store offset *)
-  |     WAdd  (* i32.add *)
-  |     WMul  (* i32.mul *)
-  |     WCall  (* call func_idx *)
-  |     WLocalGet  (* local.get idx *)
-  |     WLocalSet  (* local.set idx *)
+    WConst
+  |     WLoad
+  |     WStore
+  |     WAdd
+  |     WMul
+  |     WCall
+  |     WLocalGet
+  |     WLocalSet
   |     WIf
   |     WReturn
   |     WDrop
@@ -133,7 +138,8 @@ datatype riina_effect =
   |     EffNet
   |     EffFS
 
-(* sec_le - complex match, manual review needed *)
+(* sec_le - complex match, needs manual translation *)
+definition sec_le :: "bool" where "sec_le = undefined"
 
 (* export_is_public (matches Coq: Definition export_is_public) *)
 definition export_is_public :: "nat \<Rightarrow> bool" where
@@ -152,7 +158,8 @@ definition memory_partitioned :: "bool" where
   let (p_start, p_end) := public_region in
   s_end <= p_start \/ p_end <= s_start"
 
-(* effect_le - complex match, manual review needed *)
+(* effect_le - complex match, needs manual translation *)
+definition effect_le :: "bool" where "effect_le = undefined"
 
 (* import_effect_safe (matches Coq: Definition import_effect_safe) *)
 definition import_effect_safe :: "RiinaEffect \<Rightarrow> RiinaEffect \<Rightarrow> bool" where

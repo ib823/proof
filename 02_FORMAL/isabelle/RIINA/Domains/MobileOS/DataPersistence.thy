@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DataPersistence - Isabelle/HOL Port
@@ -140,7 +141,7 @@ record storage_quota =
 
 (* SerializedData (matches Coq: Record SerializedData) *)
 record serialized_data =
-  ser_format :: nat  (* 0=JSON, 1=Protobuf, 2=CBOR *)
+  ser_format :: nat
   ser_data :: 'a list
   ser_checksum :: nat
   ser_validated :: bool

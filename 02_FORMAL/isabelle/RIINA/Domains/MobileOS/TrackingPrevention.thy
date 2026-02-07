@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TrackingPrevention - Isabelle/HOL Port
@@ -114,7 +115,7 @@ record application =
 record tracking_event =
   tracking_app :: Application
   tracked_user :: User
-  tracking_type :: nat  (* 0=none, 1=analytics, 2=advertising, 3=cross-app *)
+  tracking_type :: nat
   tracking_data :: 'a list
 
 (* PrivacyState (matches Coq: Record PrivacyState) *)

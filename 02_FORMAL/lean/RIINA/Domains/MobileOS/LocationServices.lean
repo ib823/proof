@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA LocationServices - Lean 4 Port
@@ -68,7 +69,7 @@ structure Location where
   loc_coordinate : Coordinate
   loc_accuracy : Meters
   loc_timestamp : Nat
-  loc_source : Nat  -- 0=GPS, 1=WiFi, 2=Cell
+  loc_source : Nat
   deriving DecidableEq, Repr
 
 /-- Position (matches Coq: Record Position) -/
@@ -88,10 +89,10 @@ structure Geofence where
 /-- LocationConfig (matches Coq: Record LocationConfig) -/
 structure LocationConfig where
   loc_permission : LocationPermission
-  loc_precision_full : Bool  -- true = full, false = approximate
+  loc_precision_full : Bool
   loc_background_enabled : Bool
-  loc_cache_ttl : Nat  -- seconds
-  loc_update_interval : Nat  -- milliseconds
+  loc_cache_ttl : Nat
+  loc_update_interval : Nat
   loc_significant_change_meters : Nat
   loc_mock_detection : Bool
   deriving DecidableEq, Repr
@@ -106,11 +107,11 @@ structure LocationHistory where
 /-- ExtendedLocation (matches Coq: Record ExtendedLocation) -/
 structure ExtendedLocation where
   ext_location : Location
-  ext_altitude : Nat  -- meters above sea level
-  ext_altitude_accuracy : Nat  -- meters
-  ext_heading : Nat  -- degrees 0-359
-  ext_heading_accuracy : Nat  -- degrees
-  ext_speed : Nat  -- meters per second
+  ext_altitude : Nat
+  ext_altitude_accuracy : Nat
+  ext_heading : Nat
+  ext_heading_accuracy : Nat
+  ext_speed : Nat
   deriving DecidableEq, Repr
 
 /-- Meters (matches Coq: Definition Meters) -/
@@ -145,7 +146,7 @@ def triggered (fence : Geofence) : Prop :=
 
 /-- accurate_location_service (matches Coq: Definition accurate_location_service) -/
 def accurate_location_service (l : Location) : Prop :=
-  loc_source l = 0 ->  (* GPS source *)
+  loc_source l = 0 ->  
   error l <= 5
 
 /-- accurate_geofence_system (matches Coq: Definition accurate_geofence_system) -/
@@ -169,7 +170,7 @@ def well_formed_location_config (config : LocationConfig) : Prop :=
   loc_significant_change_meters config > 0
 
 /-- location_accuracy_bounded (matches Coq) -/
-theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 → (* GPS available *) error location ≤ 5 := by
+theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 →  error location ≤ 5 := by
   simp_all [Bool.and_eq_true]
 
 /-- geofence_accurate (matches Coq) -/

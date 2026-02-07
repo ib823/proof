@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA Declassification - Lean 4 Port
@@ -40,7 +41,7 @@ theorem declassify_eval : ∀ v p st ctx, value v → declass_ok (EClassify v) p
     - val_rel_le at step > 0 guarantees values are values
     - has_type (T_Declassify) guarantees declass_ok -/
 /-- logical_relation_declassify_proven (matches Coq) -/
-theorem logical_relation_declassify_proven : ∀ n Σ T v1 v2 p st1 st2 ctx, val_rel_le n Σ (TSecret T) (EClassify v1) (EClassify v2) → store_rel_simple Σ st1 st2 → value v1 → value v2 → declass_ok (EClassify v1) p → declass_ok (EClassify v2) p → (* Declassify evaluates to the unwrapped values *) multi_step (EDeclassify (EClassify v1) p, st1, ctx) (v1, st1, ctx) ∧ multi_step (EDeclassify (EClassify v2) p, st2, ctx) (v2, st2, ctx) ∧ (* Store is unchanged (declassify is pure) *) store_rel_simple Σ st1 st2 := by
+theorem logical_relation_declassify_proven : ∀ n Σ T v1 v2 p st1 st2 ctx, val_rel_le n Σ (TSecret T) (EClassify v1) (EClassify v2) → store_rel_simple Σ st1 st2 → value v1 → value v2 → declass_ok (EClassify v1) p → declass_ok (EClassify v2) p →  multi_step (EDeclassify (EClassify v1) p, st1, ctx) (v1, st1, ctx) ∧ multi_step (EDeclassify (EClassify v2) p, st2, ctx) (v2, st2, ctx) ∧  Store is unchanged (declassify is pure)  store_rel_simple Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
 
 /-- Helper: Values don't multi-step further -/

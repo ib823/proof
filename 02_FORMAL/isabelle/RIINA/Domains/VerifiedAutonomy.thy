@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedAutonomy - Isabelle/HOL Port
@@ -119,7 +120,8 @@ definition reaction_ok :: "ReactionTime \<Rightarrow> bool" where
 definition valid_failsafe_action :: "FailsafeAction \<Rightarrow> bool" where
   "valid_failsafe_action action \<equiv> true"
 
-(* valid_mode_transition - complex match, manual review needed *)
+(* valid_mode_transition - complex match, needs manual translation *)
+definition valid_mode_transition :: "bool" where "valid_mode_transition = undefined"
 
 (* decision_fresh (matches Coq: Definition decision_fresh) *)
 definition decision_fresh :: "Decision \<Rightarrow> bool" where
@@ -129,7 +131,8 @@ definition decision_fresh :: "Decision \<Rightarrow> bool" where
 definition action_bounded :: "Decision \<Rightarrow> nat \<Rightarrow> bool" where
   "action_bounded dec max_mag \<equiv> Nat"
 
-(* sensors_agree - complex match, manual review needed *)
+(* sensors_agree - complex match, needs manual translation *)
+definition sensors_agree :: "bool" where "sensors_agree = undefined"
 
 (* watchdog_ok (matches Coq: Definition watchdog_ok) *)
 definition watchdog_ok :: "bool" where

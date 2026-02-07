@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA FHESecurity - Lean 4 Port
@@ -184,23 +185,23 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- HomomorphicOps (matches Coq: Record HomomorphicOps) -/
 structure HomomorphicOps where
-  ho_addition : Bool  -- Supports homomorphic addition
-  ho_multiplication : Bool  -- Supports homomorphic multiplication
-  ho_arbitrary_depth : Bool  -- Unlimited circuit depth
+  ho_addition : Bool
+  ho_multiplication : Bool
+  ho_arbitrary_depth : Bool
   deriving DecidableEq, Repr
 
 /-- FHESecurityProps (matches Coq: Record FHESecurityProps) -/
 structure FHESecurityProps where
-  fhe_ind_cpa : Bool  -- IND-CPA secure
-  fhe_circular_secure : Bool  -- Circular security
-  fhe_semantic_secure : Bool  -- Semantic security
+  fhe_ind_cpa : Bool
+  fhe_circular_secure : Bool
+  fhe_semantic_secure : Bool
   deriving DecidableEq, Repr
 
 /-- NoiseManagement (matches Coq: Record NoiseManagement) -/
 structure NoiseManagement where
-  nm_bootstrapping : Bool  -- Noise reduction via bootstrapping
-  nm_modulus_switching : Bool  -- Modulus switching
-  nm_noise_bounded : Bool  -- Noise growth bounded
+  nm_bootstrapping : Bool
+  nm_modulus_switching : Bool
+  nm_noise_bounded : Bool
   deriving DecidableEq, Repr
 
 /-- FHEConfig (matches Coq: Record FHEConfig) -/
@@ -214,103 +215,103 @@ structure FHEConfig where
 
 /-- INDCPAGame (matches Coq: Record INDCPAGame) -/
 structure INDCPAGame where
-  icpa_key_size : Nat  -- Security parameter
-  icpa_challenge_bit : Bool  -- Hidden challenge bit
-  icpa_encryption_oracle : Bool  -- Has encryption oracle
-  icpa_distinguisher_adv : Nat  -- Distinguisher advantage (as 1/n)
+  icpa_key_size : Nat
+  icpa_challenge_bit : Bool
+  icpa_encryption_oracle : Bool
+  icpa_distinguisher_adv : Nat
   deriving DecidableEq, Repr
 
 /-- SemanticSecurity (matches Coq: Record SemanticSecurity) -/
 structure SemanticSecurity where
-  ss_message_space : Nat  -- Size of message space
-  ss_ciphertext_space : Nat  -- Size of ciphertext space
-  ss_indistinguishable : Bool  -- Ciphertexts indistinguishable
-  ss_randomized : Bool  -- Encryption is randomized
+  ss_message_space : Nat
+  ss_ciphertext_space : Nat
+  ss_indistinguishable : Bool
+  ss_randomized : Bool
   deriving DecidableEq, Repr
 
 /-- HomAddition (matches Coq: Record HomAddition) -/
 structure HomAddition where
-  ha_plaintext_modulus : Nat  -- Plaintext modulus t
-  ha_ciphertext_modulus : Nat  -- Ciphertext modulus q
-  ha_preserves_structure : Bool  -- Addition structure preserved
+  ha_plaintext_modulus : Nat
+  ha_ciphertext_modulus : Nat
+  ha_preserves_structure : Bool
   deriving DecidableEq, Repr
 
 /-- HomMultiplication (matches Coq: Record HomMultiplication) -/
 structure HomMultiplication where
-  hm_plaintext_modulus : Nat  -- Plaintext modulus
-  hm_ciphertext_modulus : Nat  -- Ciphertext modulus
-  hm_relinearization : Bool  -- Supports relinearization
-  hm_key_switching : Bool  -- Supports key switching
+  hm_plaintext_modulus : Nat
+  hm_ciphertext_modulus : Nat
+  hm_relinearization : Bool
+  hm_key_switching : Bool
   deriving DecidableEq, Repr
 
 /-- HomOperations (matches Coq: Record HomOperations) -/
 structure HomOperations where
   hops_addition : HomAddition
   hops_multiplication : HomMultiplication
-  hops_composition : Bool  -- Can compose operations
+  hops_composition : Bool
   deriving DecidableEq, Repr
 
 /-- NoiseModel (matches Coq: Record NoiseModel) -/
 structure NoiseModel where
-  noise_initial : Nat  -- Initial noise after encryption
-  noise_add_growth : Nat  -- Noise growth per addition
-  noise_mult_growth : Nat  -- Noise growth factor per multiplication
-  noise_threshold : Nat  -- Maximum noise before decryption fails
+  noise_initial : Nat
+  noise_add_growth : Nat
+  noise_mult_growth : Nat
+  noise_threshold : Nat
   deriving DecidableEq, Repr
 
 /-- NoiseBound (matches Coq: Record NoiseBound) -/
 structure NoiseBound where
-  nb_max_additions : Nat  -- Max additions before noise overflow
-  nb_max_multiplications : Nat  -- Max multiplications before noise overflow
-  nb_modulus : Nat  -- Ciphertext modulus
+  nb_max_additions : Nat
+  nb_max_multiplications : Nat
+  nb_modulus : Nat
   deriving DecidableEq, Repr
 
 /-- BootstrappingConfig (matches Coq: Record BootstrappingConfig) -/
 structure BootstrappingConfig where
-  bs_reduces_noise : Bool  -- Reduces ciphertext noise
-  bs_preserves_message : Bool  -- Preserves encrypted message
-  bs_polynomial_time : Bool  -- Runs in polynomial time
-  bs_noise_output : Nat  -- Output noise level
-  bs_noise_input_max : Nat  -- Maximum input noise
+  bs_reduces_noise : Bool
+  bs_preserves_message : Bool
+  bs_polynomial_time : Bool
+  bs_noise_output : Nat
+  bs_noise_input_max : Nat
   deriving DecidableEq, Repr
 
 /-- UnlimitedFHE (matches Coq: Record UnlimitedFHE) -/
 structure UnlimitedFHE where
   ufhe_bootstrap_config : BootstrappingConfig
   ufhe_noise_model : NoiseModel
-  ufhe_leveled_depth : Nat  -- Depth before bootstrap needed
+  ufhe_leveled_depth : Nat
   deriving DecidableEq, Repr
 
 /-- KeyGenParams (matches Coq: Record KeyGenParams) -/
 structure KeyGenParams where
-  kg_security_parameter : Nat  -- Lambda - security parameter
-  kg_polynomial_degree : Nat  -- n - ring polynomial degree
-  kg_error_distribution : Nat  -- Discrete Gaussian width
-  kg_modulus_bits : Nat  -- log q - modulus bit length
+  kg_security_parameter : Nat
+  kg_polynomial_degree : Nat
+  kg_error_distribution : Nat
+  kg_modulus_bits : Nat
   deriving DecidableEq, Repr
 
 /-- FHEKeyPair (matches Coq: Record FHEKeyPair) -/
 structure FHEKeyPair where
-  kp_public : Nat  -- Public key representation
-  kp_secret : Nat  -- Secret key representation
-  kp_evaluation : Nat  -- Evaluation key for homomorphic ops
+  kp_public : Nat
+  kp_secret : Nat
+  kp_evaluation : Nat
   kp_params : KeyGenParams
   deriving DecidableEq, Repr
 
 /-- FHECiphertext (matches Coq: Record FHECiphertext) -/
 structure FHECiphertext where
-  ct_polynomial_0 : Nat  -- First polynomial component
-  ct_polynomial_1 : Nat  -- Second polynomial component
-  ct_noise_estimate : Nat  -- Estimated noise level
-  ct_level : Nat  -- Current level for leveled FHE
-  ct_valid_encryption : Bool  -- Is valid encryption
+  ct_polynomial_0 : Nat
+  ct_polynomial_1 : Nat
+  ct_noise_estimate : Nat
+  ct_level : Nat
+  ct_valid_encryption : Bool
   deriving DecidableEq, Repr
 
 /-- CiphertextAfterOp (matches Coq: Record CiphertextAfterOp) -/
 structure CiphertextAfterOp where
   cao_original : FHECiphertext
   cao_result : FHECiphertext
-  cao_operation : Nat  -- 0=add, 1=mult
+  cao_operation : Nat
   deriving DecidableEq, Repr
 
 /-- CompleteFHESystem (matches Coq: Record CompleteFHESystem) -/
@@ -325,25 +326,25 @@ structure CompleteFHESystem where
 
 /-- CircularSecurity (matches Coq: Record CircularSecurity) -/
 structure CircularSecurity where
-  cs_key_encryption_safe : Bool  -- Safe to encrypt own key
-  cs_kDM_secure : Bool  -- Key-dependent message secure
-  cs_multi_key : Bool  -- Multi-key secure
+  cs_key_encryption_safe : Bool
+  cs_kDM_secure : Bool
+  cs_multi_key : Bool
   deriving DecidableEq, Repr
 
 /-- LWEHardness (matches Coq: Record LWEHardness) -/
 structure LWEHardness where
-  lwe_dimension : Nat  -- n - dimension
-  lwe_modulus : Nat  -- q - modulus
-  lwe_error_rate : Nat  -- Error parameter
-  lwe_assumed_hard : Bool  -- Hardness assumption
+  lwe_dimension : Nat
+  lwe_modulus : Nat
+  lwe_error_rate : Nat
+  lwe_assumed_hard : Bool
   deriving DecidableEq, Repr
 
 /-- RLWEConfig (matches Coq: Record RLWEConfig) -/
 structure RLWEConfig where
-  rlwe_ring_degree : Nat  -- Polynomial ring degree
-  rlwe_modulus : Nat  -- Coefficient modulus
-  rlwe_error_width : Nat  -- Error distribution width
-  rlwe_ntt_compatible : Bool  -- NTT-friendly parameters
+  rlwe_ring_degree : Nat
+  rlwe_modulus : Nat
+  rlwe_error_width : Nat
+  rlwe_ntt_compatible : Bool
   deriving DecidableEq, Repr
 
 /-- ops_fully_homomorphic (matches Coq: Definition ops_fully_homomorphic) -/

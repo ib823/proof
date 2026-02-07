@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA BinarySizeBounds - Isabelle/HOL Port
@@ -75,28 +76,28 @@ datatype instr =
 
 (* ArchParams (matches Coq: Record ArchParams) *)
 record arch_params =
-  arch_word_size :: Size  (* 4 for 32-bit, 8 for 64-bit *)
-  arch_max_instr_size :: Size  (* Max instruction bytes *)
-  arch_call_overhead :: Size  (* Call instruction size *)
-  arch_ret_overhead :: Size  (* Return instruction size *)
-  arch_flash_size :: Size  (* Total flash available *)
-  arch_ram_size :: Size  (* Total RAM available *)
+  arch_word_size :: Size
+  arch_max_instr_size :: Size
+  arch_call_overhead :: Size
+  arch_ret_overhead :: Size
+  arch_flash_size :: Size
+  arch_ram_size :: Size
 
 (* Function (matches Coq: Record Function) *)
 record function =
   func_blocks :: 'a list
-  func_locals :: nat  (* Local variable count *)
+  func_locals :: nat
 
 (* Module (matches Coq: Record Module) *)
 record module =
   mod_functions :: 'a list
-  mod_data :: Size  (* Initialized data *)
-  mod_bss :: Size  (* Zero-initialized data *)
+  mod_data :: Size
+  mod_bss :: Size
 
 (* Program (matches Coq: Record Program) *)
 record program =
   prog_modules :: 'a list
-  prog_startup :: Size  (* Startup code size *)
+  prog_startup :: Size
 
 (* StackFrame (matches Coq: Record StackFrame) *)
 record stack_frame =
@@ -120,9 +121,9 @@ record generic_info =
 
 (* ROMLayout (matches Coq: Record ROMLayout) *)
 record rom_layout =
-  rom_text :: Size  (* Code section *)
-  rom_rodata :: Size  (* Read-only data *)
-  rom_init_data :: Size  (* Initialized data *)
+  rom_text :: Size
+  rom_rodata :: Size
+  rom_init_data :: Size
 
 (* arm_cortex_m0 (matches Coq: Definition arm_cortex_m0) *)
 definition arm_cortex_m0 :: "ArchParams" where

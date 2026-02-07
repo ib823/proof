@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SystemApps - Lean 4 Port
@@ -68,10 +69,10 @@ namespace RIINA
 
 /-- AppCategory (matches Coq: Inductive AppCategory) -/
 inductive AppCategory where
-  | communication : AppCategory  -- Messages, Phone, Mail
-  | productivity : AppCategory  -- Calendar, Notes, Files
-  | media : AppCategory  -- Photos, Music, Camera
-  | utility : AppCategory  -- Settings, Calculator, Clock
+  | communication : AppCategory
+  | productivity : AppCategory
+  | media : AppCategory
+  | utility : AppCategory
   | security : AppCategory
   deriving DecidableEq, Repr
 
@@ -98,7 +99,7 @@ structure StateTransition where
   trans_app_id : Nat
   from_state : AppState
   to_state : AppState
-  transition_type : Nat  -- 0=user_action, 1=system_event, 2=sync
+  transition_type : Nat
   deriving DecidableEq, Repr
 
 /-- SyncOperation (matches Coq: Record SyncOperation) -/
@@ -113,7 +114,7 @@ structure SyncOperation where
 /-- AppResponse (matches Coq: Record AppResponse) -/
 structure AppResponse where
   response_app_id : Nat
-  response_time_us : Nat  -- microseconds
+  response_time_us : Nat
   response_correct : Bool
   deriving DecidableEq, Repr
 

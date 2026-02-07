@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CovertChannels - Isabelle/HOL Port
@@ -164,9 +165,11 @@ record storage_state =
   storage_contents :: 'a list
   storage_level :: SecLevel
 
-(* level_leq - complex match, manual review needed *)
+(* level_leq - complex match, needs manual translation *)
+definition level_leq :: "bool" where "level_leq = undefined"
 
-(* level_eq - complex match, manual review needed *)
+(* level_eq - complex match, needs manual translation *)
+definition level_eq :: "bool" where "level_eq = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
@@ -208,7 +211,8 @@ definition bandwidth_threshold :: "nat" where
 definition constant_resources :: "bool" where
   "constant_resources \<equiv> low_equiv s1 s2 = true -> r1 = r2"
 
-(* memory_zeroed - complex match, manual review needed *)
+(* memory_zeroed - complex match, needs manual translation *)
+definition memory_zeroed :: "bool" where "memory_zeroed = undefined"
 
 (* partitions_disjoint (matches Coq: Definition partitions_disjoint) *)
 definition partitions_disjoint :: "bool" where
@@ -217,19 +221,19 @@ definition partitions_disjoint :: "bool" where
 (* secure_execute (matches Coq: Definition secure_execute) *)
 definition secure_execute :: "State \<Rightarrow> Trace" where
   "secure_execute s \<equiv> mkTrace
-    (state_public s)           (* time depends only on public *)
-    [state_public s]           (* mem access depends only on public *)
-    [true]                     (* constant cache pattern *)
-    (state_public s)           (* output depends only on public *)
-    true                       (* always terminates *)
+    (state_public s)           
+    [state_public s]           
+    [true]                     
+    (state_public s)           
+    true                       
     None"
 
 (* secure_resources (matches Coq: Definition secure_resources) *)
 definition secure_resources :: "State \<Rightarrow> ResourceUsage" where
   "secure_resources s \<equiv> mkRes
-    100                        (* constant CPU cycles *)
-    256                        (* constant memory allocation *)
-    0                          (* constant cache misses *)
+    100                        
+    256                        
+    0                          
     0"
 
 (* riina_program (matches Coq: Definition riina_program) *)

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryManufacturing - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | SecurityLevel      | security_level         | OK     |
+ * | IEC61508_SIL       | iec61508_sil           | OK     |
  * | PurdueLevel        | purdue_level           | OK     |
  * | ManufacturingEffect | manufacturing_effect   | OK     |
  * | IEC62443_Compliance | iec62443__compliance   | OK     |
@@ -64,23 +66,26 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
 datatype security_level =
-    SL_0  (* No specific requirement *)
-  |     SL_1  (* Protection against casual violation *)
-  |     SL_2  (* Protection against intentional using simple means *)
-  |     SL_3  (* Protection against sophisticated means *)
+    SL_0
+  |     SL_1
+  |     SL_2
+  |     SL_3
   |     SL_4
-  |     IEC_SIL_1
+
+(* IEC61508_SIL (matches Coq: Inductive IEC61508_SIL) *)
+datatype iec61508_sil =
+    IEC_SIL_1
   |     IEC_SIL_2
   |     IEC_SIL_3
   |     IEC_SIL_4
 
 (* PurdueLevel (matches Coq: Inductive PurdueLevel) *)
 datatype purdue_level =
-    Level_0_Process  (* Field devices *)
-  |     Level_1_Control  (* PLCs, RTUs *)
-  |     Level_2_Supervisory  (* HMI, SCADA *)
-  |     Level_3_Operations  (* MES, Historian *)
-  |     Level_4_Business  (* ERP, Business systems *)
+    Level_0_Process
+  |     Level_1_Control
+  |     Level_2_Supervisory
+  |     Level_3_Operations
+  |     Level_4_Business
   |     Level_5_Enterprise
 
 (* ManufacturingEffect (matches Coq: Inductive ManufacturingEffect) *)
@@ -93,12 +98,12 @@ datatype manufacturing_effect =
 
 (* IEC62443_Compliance (matches Coq: Record IEC62443_Compliance) *)
 record iec62443__compliance =
-  part_2_1_policies :: bool  (* IACS Security Management System *)
-  part_2_4_service_providers :: bool  (* Security requirements for service providers *)
-  part_3_2_zones_conduits :: bool  (* Security risk assessment *)
-  part_3_3_system_requirements :: bool  (* System security requirements *)
-  part_4_1_secure_development :: bool  (* Secure product development *)
-  part_4_2_component_requirements :: bool  (* Technical security requirements *)
+  part_2_1_policies :: bool
+  part_2_4_service_providers :: bool
+  part_3_2_zones_conduits :: bool
+  part_3_3_system_requirements :: bool
+  part_4_1_secure_development :: bool
+  part_4_2_component_requirements :: bool
   target_security_level :: SecurityLevel
 
 (* abs_diff (matches Coq: Definition abs_diff) *)
@@ -141,7 +146,8 @@ fun purdue_to_nat :: "PurdueLevel \<Rightarrow> nat" where
 definition purdue_le :: "bool" where
   "purdue_le \<equiv> Nat"
 
-(* purdue_adjacent - complex match, manual review needed *)
+(* purdue_adjacent - complex match, needs manual translation *)
+definition purdue_adjacent :: "bool" where "purdue_adjacent = undefined"
 
 (* safe_failure_fraction_pct (matches Coq: Definition safe_failure_fraction_pct) *)
 fun safe_failure_fraction_pct :: "IEC61508_SIL \<Rightarrow> nat" where

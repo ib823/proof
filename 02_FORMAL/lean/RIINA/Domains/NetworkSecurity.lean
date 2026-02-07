@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA NetworkSecurity - Lean 4 Port
@@ -97,7 +98,7 @@ namespace RIINA
 structure TLSConfig where
   tls_enabled : Bool
   certificate_pinning_enabled : Bool
-  min_tls_version : Nat  -- 12 = TLS 1.2, 13 = TLS 1.3
+  min_tls_version : Nat
   strong_cipher_suites : Bool
   deriving DecidableEq, Repr
 
@@ -129,7 +130,7 @@ structure HTTPSConfig where
   hsts_enabled : Bool
   hsts_preload : Bool
   hsts_include_subdomains : Bool
-  hsts_max_age : Nat  -- seconds
+  hsts_max_age : Nat
   deriving DecidableEq, Repr
 
 /-- EncryptionConfig (matches Coq: Record EncryptionConfig) -/
@@ -275,7 +276,7 @@ structure DHCPSecurityConfig where
 structure NTPClientConfig where
   multiple_time_sources : Bool
   min_time_sources : Nat
-  nts_enabled : Bool  -- Network Time Security
+  nts_enabled : Bool
   authenticated_ntp : Bool
   deriving DecidableEq, Repr
 
@@ -283,7 +284,7 @@ structure NTPClientConfig where
 structure TCPSecurityConfig where
   tcp_encryption_enabled : Bool
   tcp_md5_auth : Bool
-  tcp_ao_enabled : Bool  -- TCP-AO authentication
+  tcp_ao_enabled : Bool
   randomized_isn : Bool
   deriving DecidableEq, Repr
 
@@ -453,107 +454,107 @@ def all_defenses_enabled (config : NetworkSecurityConfig) : Bool :=
         (traffic_analysis_defense_enabled (ns_traffic_analysis config)))))))))))))))))))))))))
 
 /-- net_001_man_in_the_middle_mitigated (matches Coq) -/
-theorem net_001_man_in_the_middle_mitigated : ∀ (config : TLSConfig), tls_mitm_defense_enabled config = true → (* With TLS and certificate pinning enabled, MITM attacks are mitigated because attackers cannot present valid pinned certificates *) True := by
+theorem net_001_man_in_the_middle_mitigated : ∀ (config : TLSConfig), tls_mitm_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_002_arp_spoofing_mitigated (matches Coq) -/
-theorem net_002_arp_spoofing_mitigated : ∀ (config : ARPConfig), arp_spoofing_defense_enabled config = true → (* With static ARP or ARP inspection, spoofing is mitigated *) True := by
+theorem net_002_arp_spoofing_mitigated : ∀ (config : ARPConfig), arp_spoofing_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_003_dns_poisoning_mitigated (matches Coq) -/
-theorem net_003_dns_poisoning_mitigated : ∀ (config : DNSSECConfig), dns_poisoning_defense_enabled config = true → (* With DNSSEC validation, DNS responses are cryptographically verified *) True := by
+theorem net_003_dns_poisoning_mitigated : ∀ (config : DNSSECConfig), dns_poisoning_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_004_bgp_hijacking_mitigated (matches Coq) -/
-theorem net_004_bgp_hijacking_mitigated : ∀ (config : BGPConfig), bgp_hijacking_defense_enabled config = true → (* With RPKI, route origin validation prevents accepting hijacked routes *) True := by
+theorem net_004_bgp_hijacking_mitigated : ∀ (config : BGPConfig), bgp_hijacking_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_005_ssl_stripping_mitigated (matches Coq) -/
-theorem net_005_ssl_stripping_mitigated : ∀ (config : HTTPSConfig), ssl_stripping_defense_enabled config = true → (* With HSTS preload, browsers refuse non-HTTPS connections *) True := by
+theorem net_005_ssl_stripping_mitigated : ∀ (config : HTTPSConfig), ssl_stripping_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_006_packet_sniffing_mitigated (matches Coq) -/
-theorem net_006_packet_sniffing_mitigated : ∀ (config : EncryptionConfig), packet_sniffing_defense_enabled config = true → (* With encryption in transit, sniffed packets reveal no plaintext *) True := by
+theorem net_006_packet_sniffing_mitigated : ∀ (config : EncryptionConfig), packet_sniffing_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_007_packet_injection_mitigated (matches Coq) -/
-theorem net_007_packet_injection_mitigated : ∀ (config : AuthProtocolConfig), packet_injection_defense_enabled config = true → (* With protocol auth and MACs, injected packets are detected and dropped *) True := by
+theorem net_007_packet_injection_mitigated : ∀ (config : AuthProtocolConfig), packet_injection_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_008_replay_attack_mitigated (matches Coq) -/
-theorem net_008_replay_attack_mitigated : ∀ (config : ReplayProtectionConfig), replay_attack_defense_enabled config = true → (* With nonces and timestamps, replayed messages are detected *) True := by
+theorem net_008_replay_attack_mitigated : ∀ (config : ReplayProtectionConfig), replay_attack_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_009_volumetric_dos_mitigated (matches Coq) -/
-theorem net_009_volumetric_dos_mitigated : ∀ (config : RateLimiterConfig), volumetric_dos_defense_enabled config = true → (* Rate limiting with CDN absorbs and filters volumetric attacks *) True := by
+theorem net_009_volumetric_dos_mitigated : ∀ (config : RateLimiterConfig), volumetric_dos_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_010_protocol_dos_mitigated (matches Coq) -/
-theorem net_010_protocol_dos_mitigated : ∀ (config : ProtocolImplConfig), protocol_dos_defense_enabled config = true → (* Formally verified implementations have proven bounds on resource usage *) True := by
+theorem net_010_protocol_dos_mitigated : ∀ (config : ProtocolImplConfig), protocol_dos_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_011_application_dos_mitigated (matches Coq) -/
-theorem net_011_application_dos_mitigated : ∀ (config : ResourceLimitsConfig), application_dos_defense_enabled config = true → (* Resource limits prevent any single request from exhausting resources *) True := by
+theorem net_011_application_dos_mitigated : ∀ (config : ResourceLimitsConfig), application_dos_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_012_amplification_dos_mitigated (matches Coq) -/
-theorem net_012_amplification_dos_mitigated : ∀ (config : AmplificationConfig), amplification_dos_defense_enabled config = true → (* Disabled amplifiers and source validation prevent amplification attacks *) True := by
+theorem net_012_amplification_dos_mitigated : ∀ (config : AmplificationConfig), amplification_dos_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_013_syn_flood_mitigated (matches Coq) -/
-theorem net_013_syn_flood_mitigated : ∀ (config : SYNProtectionConfig), syn_flood_defense_enabled config = true → (* SYN cookies allow connection handling without state until ACK received *) True := by
+theorem net_013_syn_flood_mitigated : ∀ (config : SYNProtectionConfig), syn_flood_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_014_udp_flood_mitigated (matches Coq) -/
-theorem net_014_udp_flood_mitigated : ∀ (config : UDPProtectionConfig), udp_flood_defense_enabled config = true → (* Rate limiting caps UDP packet processing rate *) True := by
+theorem net_014_udp_flood_mitigated : ∀ (config : UDPProtectionConfig), udp_flood_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_015_icmp_flood_mitigated (matches Coq) -/
-theorem net_015_icmp_flood_mitigated : ∀ (config : ICMPProtectionConfig), icmp_flood_defense_enabled config = true → (* Rate limiting prevents ICMP from consuming resources *) True := by
+theorem net_015_icmp_flood_mitigated : ∀ (config : ICMPProtectionConfig), icmp_flood_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_016_slowloris_mitigated (matches Coq) -/
-theorem net_016_slowloris_mitigated : ∀ (config : SlowlorisProtectionConfig), slowloris_defense_enabled config = true → (* Timeouts close slow connections, freeing resources *) True := by
+theorem net_016_slowloris_mitigated : ∀ (config : SlowlorisProtectionConfig), slowloris_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_017_dns_amplification_mitigated (matches Coq) -/
-theorem net_017_dns_amplification_mitigated : ∀ (config : DNSServerConfig), dns_amplification_defense_enabled config = true → (* Response rate limiting prevents abuse as amplification vector *) True := by
+theorem net_017_dns_amplification_mitigated : ∀ (config : DNSServerConfig), dns_amplification_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_018_ntp_amplification_mitigated (matches Coq) -/
-theorem net_018_ntp_amplification_mitigated : ∀ (config : NTPServerConfig), ntp_amplification_defense_enabled config = true → (* Disabling monlist removes the primary amplification vector *) True := by
+theorem net_018_ntp_amplification_mitigated : ∀ (config : NTPServerConfig), ntp_amplification_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_019_ip_spoofing_mitigated (matches Coq) -/
-theorem net_019_ip_spoofing_mitigated : ∀ (config : IPSpoofingConfig), ip_spoofing_defense_enabled config = true → (* BCP38 filtering and source validation drop spoofed packets at edge *) True := by
+theorem net_019_ip_spoofing_mitigated : ∀ (config : IPSpoofingConfig), ip_spoofing_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_020_mac_spoofing_mitigated (matches Coq) -/
-theorem net_020_mac_spoofing_mitigated : ∀ (config : MACSecurityConfig), mac_spoofing_defense_enabled config = true → (* 802.1X requires authentication before network access *) True := by
+theorem net_020_mac_spoofing_mitigated : ∀ (config : MACSecurityConfig), mac_spoofing_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_021_vlan_hopping_mitigated (matches Coq) -/
-theorem net_021_vlan_hopping_mitigated : ∀ (config : VLANSecurityConfig), vlan_hopping_defense_enabled config = true → (* DTP disabled and restricted trunks prevent VLAN hopping *) True := by
+theorem net_021_vlan_hopping_mitigated : ∀ (config : VLANSecurityConfig), vlan_hopping_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_022_rogue_dhcp_mitigated (matches Coq) -/
-theorem net_022_rogue_dhcp_mitigated : ∀ (config : DHCPSecurityConfig), rogue_dhcp_defense_enabled config = true → (* DHCP snooping blocks responses from untrusted ports *) True := by
+theorem net_022_rogue_dhcp_mitigated : ∀ (config : DHCPSecurityConfig), rogue_dhcp_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_023_ntp_attack_mitigated (matches Coq) -/
-theorem net_023_ntp_attack_mitigated : ∀ (config : NTPClientConfig), ntp_attack_defense_enabled config = true → (* Multiple sources allow Byzantine fault tolerance in time sync *) True := by
+theorem net_023_ntp_attack_mitigated : ∀ (config : NTPClientConfig), ntp_attack_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_024_tcp_reset_mitigated (matches Coq) -/
-theorem net_024_tcp_reset_mitigated : ∀ (config : TCPSecurityConfig), tcp_reset_defense_enabled config = true → (* Encrypted connections (TLS/IPsec) prevent RST injection *) True := by
+theorem net_024_tcp_reset_mitigated : ∀ (config : TCPSecurityConfig), tcp_reset_defense_enabled config = true →  Encrypted connections (TLS/IPsec) prevent RST injection  True := by
   simp_all [Bool.and_eq_true]
 
 /-- net_025_traffic_analysis_mitigated (matches Coq) -/
-theorem net_025_traffic_analysis_mitigated : ∀ (config : TrafficAnalysisConfig), traffic_analysis_defense_enabled config = true → (* Padding and mixing obscure traffic patterns *) True := by
+theorem net_025_traffic_analysis_mitigated : ∀ (config : TrafficAnalysisConfig), traffic_analysis_defense_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- network_security_comprehensive (matches Coq) -/
-theorem network_security_comprehensive : ∀ (config : NetworkSecurityConfig), all_defenses_enabled config = true → (* All 25 network attack categories are mitigated *) True := by
+theorem network_security_comprehensive : ∀ (config : NetworkSecurityConfig), all_defenses_enabled config = true →  True := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

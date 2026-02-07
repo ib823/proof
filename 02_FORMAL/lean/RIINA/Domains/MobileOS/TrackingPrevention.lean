@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA TrackingPrevention - Lean 4 Port
@@ -118,7 +119,7 @@ structure Application where
 structure TrackingEvent where
   tracking_app : Application
   tracked_user : User
-  tracking_type : Nat  -- 0=none, 1=analytics, 2=advertising, 3=cross-app
+  tracking_type : Nat
   tracking_data : List
   deriving DecidableEq, Repr
 

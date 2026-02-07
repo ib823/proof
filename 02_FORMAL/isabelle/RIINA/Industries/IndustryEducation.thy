@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryEducation - Isabelle/HOL Port
@@ -59,17 +60,17 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* StudentData (matches Coq: Inductive StudentData) *)
 datatype student_data =
-    EducationRecord  (* FERPA-protected *)
-  |     DirectoryInfo  (* May be disclosed *)
+    EducationRecord
+  |     DirectoryInfo
   |     Grades
   |     Disciplinary
-  |     SpecialEducation  (* Extra protection *)
+  |     SpecialEducation
   |     HealthRecords
 
 (* StudentAge (matches Coq: Inductive StudentAge) *)
 datatype student_age =
-    Under13  (* COPPA applies *)
-  |     Teen  (* 13-17 *)
+    Under13
+  |     Teen
   |     Adult
 
 (* EducationEffect (matches Coq: Inductive EducationEffect) *)

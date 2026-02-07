@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA FFIAttackResearch - Lean 4 Port
@@ -59,15 +60,15 @@ inductive FFIType where
   | fFI_Int16 : FFIType
   | fFI_Int32 : FFIType
   | fFI_Int64 : FFIType
-  | fFI_Ptr : FFIType
-  | fFI_Array : FFIType
-  | fFI_Struct : FFIType
+  | fFI_Ptr : FFIType → FFIType
+  | fFI_Array : FFIType → Nat → FFIType
+  | fFI_Struct : List FFIType → FFIType
   | fFI_Void : FFIType
   deriving DecidableEq, Repr
 
 /-- FFICallDescriptor (matches Coq: Record FFICallDescriptor) -/
 structure FFICallDescriptor where
-  ffi_name : Nat  -- function id
+  ffi_name : Nat
   ffi_params : List
   ffi_return : FFIType
   ffi_sandboxed : Bool
@@ -78,7 +79,7 @@ structure FFICallDescriptor where
 structure MemRegion where
   region_base : Nat
   region_size : Nat
-  region_owner : Nat  -- sandbox id
+  region_owner : Nat
   deriving DecidableEq, Repr
 
 /-- Sandbox (matches Coq: Record Sandbox) -/

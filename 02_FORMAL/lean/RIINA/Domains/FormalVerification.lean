@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA FormalVerification - Lean 4 Port
@@ -112,112 +113,112 @@ inductive BaseTy where
 inductive Pred where
   | pTrue : Pred
   | pFalse : Pred
-  | pEq : Pred
-  | pLt : Pred
-  | pAnd : Pred
-  | pOr : Pred
-  | pNot : Pred
-  | pImpl : Pred
+  | pEq : Nat → Nat → Pred
+  | pLt : Nat → Nat → Pred
+  | pAnd : Pred → Pred → Pred
+  | pOr : Pred → Pred → Pred
+  | pNot : Pred → Pred
+  | pImpl : Pred → Pred → Pred
   deriving DecidableEq, Repr
 
 /-- RefinementTy (matches Coq: Inductive RefinementTy) -/
 inductive RefinementTy where
-  | rBase : RefinementTy
-  | rRefine : RefinementTy
+  | rBase : BaseTy → RefinementTy
+  | rRefine : BaseTy → Pred → RefinementTy
   deriving DecidableEq, Repr
 
 /-- HeapPred (matches Coq: Inductive HeapPred) -/
 inductive HeapPred where
-  | hPEmp : HeapPred  -- Empty heap
-  | hPPointsTo : HeapPred
-  | hPSep : HeapPred  -- P * Q
-  | hPWand : HeapPred  -- P -* Q
+  | hPEmp : HeapPred
+  | hPPointsTo : Nat → Nat → HeapPred
+  | hPSep : HeapPred → HeapPred → HeapPred
+  | hPWand : HeapPred → HeapPred → HeapPred
   deriving DecidableEq, Repr
 
 /-- VC (matches Coq: Inductive VC) -/
 inductive VC where
-  | vCValid : VC
-  | vCAnd : VC
-  | vCImpl : VC
+  | vCValid : Pred → VC
+  | vCAnd : VC → VC → VC
+  | vCImpl : Pred → VC → VC
   deriving DecidableEq, Repr
 
 /-- TyExpr (matches Coq: Inductive TyExpr) -/
 inductive TyExpr where
-  | tEBase : TyExpr
-  | tEPi : TyExpr  -- Pi type: (x : A) -> B
-  | tESigma : TyExpr  -- Sigma type: (x : A) * B
-  | tEVar : TyExpr  -- Type variable
+  | tEBase : BaseTy → TyExpr
+  | tEPi : TyExpr → TyExpr → TyExpr
+  | tESigma : TyExpr → TyExpr → TyExpr
+  | tEVar : Nat → TyExpr
   deriving DecidableEq, Repr
 
 /-- SMTFormula (matches Coq: Inductive SMTFormula) -/
 inductive SMTFormula where
   | sMTTrue : SMTFormula
   | sMTFalse : SMTFormula
-  | sMTEq : SMTFormula
-  | sMTLt : SMTFormula
-  | sMTAnd : SMTFormula
-  | sMTOr : SMTFormula
-  | sMTNot : SMTFormula
-  | sMTImpl : SMTFormula
+  | sMTEq : Nat → Nat → SMTFormula
+  | sMTLt : Nat → Nat → SMTFormula
+  | sMTAnd : SMTFormula → SMTFormula → SMTFormula
+  | sMTOr : SMTFormula → SMTFormula → SMTFormula
+  | sMTNot : SMTFormula → SMTFormula
+  | sMTImpl : SMTFormula → SMTFormula → SMTFormula
   deriving DecidableEq, Repr
 
 /-- Property (matches Coq: Inductive Property) -/
 inductive Property where
-  | propAtom : Property
-  | propNot : Property
-  | propAnd : Property
-  | propOr : Property
-  | propNext : Property
-  | propUntil : Property
+  | propAtom : Pred → Property
+  | propNot : Property → Property
+  | propAnd : Property → Property → Property
+  | propOr : Property → Property → Property
+  | propNext : Property → Property
+  | propUntil : Property → Property → Property
   deriving DecidableEq, Repr
 
 /-- BMCResult (matches Coq: Inductive BMCResult) -/
 inductive BMCResult where
   | bMCSat : BMCResult
-  | bMCUnsat : BMCResult  -- Counterexample trace
+  | bMCUnsat : List State → BMCResult
   deriving DecidableEq, Repr
 
 /-- SimpleProp (matches Coq: Inductive SimpleProp) -/
 inductive SimpleProp where
   | sPTrue : SimpleProp
   | sPFalse : SimpleProp
-  | sPAtom : SimpleProp
-  | sPAnd : SimpleProp
-  | sPOr : SimpleProp
-  | sPImpl : SimpleProp
+  | sPAtom : Nat → SimpleProp
+  | sPAnd : SimpleProp → SimpleProp → SimpleProp
+  | sPOr : SimpleProp → SimpleProp → SimpleProp
+  | sPImpl : SimpleProp → SimpleProp → SimpleProp
   deriving DecidableEq, Repr
 
 /-- ProofTerm (matches Coq: Inductive ProofTerm) -/
 inductive ProofTerm where
-  | pTTrueI : ProofTerm  -- True introduction
-  | pTAndI : ProofTerm  -- And introduction
-  | pTAndE1 : ProofTerm  -- And elimination 1
-  | pTAndE2 : ProofTerm  -- And elimination 2
-  | pTOrI1 : ProofTerm  -- Or introduction 1
-  | pTOrI2 : ProofTerm  -- Or introduction 2
-  | pTImplI : ProofTerm  -- Impl introduction
-  | pTImplE : ProofTerm  -- Impl elimination
-  | pTAssume : ProofTerm  -- Assumption
+  | pTTrueI : ProofTerm
+  | pTAndI : ProofTerm → ProofTerm → ProofTerm
+  | pTAndE1 : ProofTerm → ProofTerm
+  | pTAndE2 : ProofTerm → ProofTerm
+  | pTOrI1 : ProofTerm → ProofTerm
+  | pTOrI2 : ProofTerm → ProofTerm
+  | pTImplI : Nat → ProofTerm → ProofTerm
+  | pTImplE : ProofTerm → ProofTerm → ProofTerm
+  | pTAssume : Nat → ProofTerm
   deriving DecidableEq, Repr
 
 /-- SrcExpr (matches Coq: Inductive SrcExpr) -/
 inductive SrcExpr where
   | srcUnit : SrcExpr
-  | srcBool : SrcExpr
-  | srcNat : SrcExpr
-  | srcVar : SrcExpr
-  | srcApp : SrcExpr
-  | srcLam : SrcExpr
+  | srcBool : Bool → SrcExpr
+  | srcNat : Nat → SrcExpr
+  | srcVar : Nat → SrcExpr
+  | srcApp : SrcExpr → SrcExpr → SrcExpr
+  | srcLam : SrcExpr → SrcExpr
   deriving DecidableEq, Repr
 
 /-- TgtExpr (matches Coq: Inductive TgtExpr) -/
 inductive TgtExpr where
   | tgtUnit : TgtExpr
-  | tgtBool : TgtExpr
-  | tgtNat : TgtExpr
-  | tgtVar : TgtExpr
-  | tgtApp : TgtExpr
-  | tgtLam : TgtExpr
+  | tgtBool : Bool → TgtExpr
+  | tgtNat : Nat → TgtExpr
+  | tgtVar : Nat → TgtExpr
+  | tgtApp : TgtExpr → TgtExpr → TgtExpr
+  | tgtLam : TgtExpr → TgtExpr
   deriving DecidableEq, Repr
 
 /-- Effect (matches Coq: Inductive Effect) -/
@@ -238,26 +239,26 @@ inductive SecLabel where
 /-- SrcVal (matches Coq: Inductive SrcVal) -/
 inductive SrcVal where
   | sVUnit : SrcVal
-  | sVBool : SrcVal
-  | sVNat : SrcVal
-  | sVClosure : SrcVal
+  | sVBool : Bool → SrcVal
+  | sVNat : Nat → SrcVal
+  | sVClosure : SrcExpr → List SrcVal → SrcVal
   deriving DecidableEq, Repr
 
 /-- TgtVal (matches Coq: Inductive TgtVal) -/
 inductive TgtVal where
   | tVUnit : TgtVal
-  | tVBool : TgtVal
-  | tVNat : TgtVal
-  | tVClosure : TgtVal
+  | tVBool : Bool → TgtVal
+  | tVNat : Nat → TgtVal
+  | tVClosure : TgtExpr → List TgtVal → TgtVal
   deriving DecidableEq, Repr
 
 /-- Cmd (matches Coq: Inductive Cmd) -/
 inductive Cmd where
   | cmdSkip : Cmd
-  | cmdAssign : Cmd  -- x := n
-  | cmdSeq : Cmd
-  | cmdIf : Cmd
-  | cmdWhile : Cmd
+  | cmdAssign : Nat → Nat → Cmd
+  | cmdSeq : Cmd → Cmd → Cmd
+  | cmdIf : Pred → Cmd → Cmd → Cmd
+  | cmdWhile : Pred → Cmd → Cmd
   deriving DecidableEq, Repr
 
 /-- Contract (matches Coq: Record Contract) -/
@@ -290,7 +291,7 @@ def disjoint (h1 h2 : Heap) : Prop :=
   forall l, h1 l = None \/ h2 l = None
 
 /-- heap_union (matches Coq: Definition heap_union) -/
-def heap_union := True -- complex match, simplified to Prop
+def heap_union := sorry -- complex match, needs manual translation
 
 /-- contract_sat (matches Coq: Definition contract_sat) -/
 def contract_sat (c : Contract) (pre_env post_env : Nat -> Nat) : Prop :=
@@ -333,7 +334,7 @@ def tgt_effect (e : TgtExpr) : Effect :=
   EffPure
 
 /-- sec_leq (matches Coq: Definition sec_leq) -/
-def sec_leq := True -- complex match, simplified to Prop
+def sec_leq := sorry -- complex match, needs manual translation
 
 /-- src_sec_label (matches Coq: Definition src_sec_label) -/
 def src_sec_label (e : SrcExpr) : SecLabel :=
@@ -352,7 +353,7 @@ def refinement_wf (rt : RefinementTy) : Prop :=
   match rt with
 
 /-- refinement_subtype (matches Coq: Definition refinement_subtype) -/
-def refinement_subtype := True -- complex match, simplified to Prop
+def refinement_subtype := sorry -- complex match, needs manual translation
 
 /-- liquid_terminates (matches Coq: Definition liquid_terminates) -/
 def liquid_terminates (s : LiquidState) (bound : Nat) : Prop :=
@@ -379,7 +380,7 @@ def hoare_triple (pre : HeapPred) (c : Cmd) (post : HeapPred) : Prop :=
     heap_sat h post
 
 /-- valid_counterexample (matches Coq: Definition valid_counterexample) -/
-def valid_counterexample := True -- complex match, simplified to Prop
+def valid_counterexample := sorry -- complex match, needs manual translation
 
 /-- abstraction_sound (matches Coq: Definition abstraction_sound) -/
 def abstraction_sound (abs : Abstraction) (trans : Transition) 

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA EnterpriseERP - Isabelle/HOL Port
@@ -124,7 +125,8 @@ definition within_budget :: "bool" where
 definition period_closed :: "bool" where
   "period_closed \<equiv> Nat"
 
-(* valid_doc_transition - complex match, manual review needed *)
+(* valid_doc_transition - complex match, needs manual translation *)
+definition valid_doc_transition :: "bool" where "valid_doc_transition = undefined"
 
 (* maker_checker (matches Coq: Definition maker_checker) *)
 definition maker_checker :: "bool" where

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA InterruptVirtualization - Lean 4 Port
@@ -50,19 +51,19 @@ namespace RIINA
 
 /-- VMId (matches Coq: Inductive VMId) -/
 inductive VMId where
-  | vM : VMId
+  | vM : Nat → VMId
   deriving DecidableEq, Repr
 
 /-- Interrupt (matches Coq: Inductive Interrupt) -/
 inductive Interrupt where
-  | iRQ : Interrupt
+  | iRQ : Nat → Interrupt
   deriving DecidableEq, Repr
 
 /-- InterruptSource (matches Coq: Inductive InterruptSource) -/
 inductive InterruptSource where
-  | deviceSource : InterruptSource
+  | deviceSource : Nat → InterruptSource
   | timerSource : InterruptSource
-  | iPISource : InterruptSource
+  | iPISource : VMId → InterruptSource
   deriving DecidableEq, Repr
 
 /-- VirtualMachine (matches Coq: Record VirtualMachine) -/
@@ -88,7 +89,7 @@ structure InterruptPriority where
 /-- InterruptController (matches Coq: Record InterruptController) -/
 structure InterruptController where
   ctrl_irqs : List
-  ctrl_mask_threshold : Nat  -- IRQs below this priority are masked
+  ctrl_mask_threshold : Nat
   deriving DecidableEq, Repr
 
 /-- vm_owns_irq (matches Coq: Definition vm_owns_irq) -/
@@ -106,7 +107,7 @@ def authorized_injection (st : InterruptState) (source : InterruptSource) (targe
 
 /-- can_inject (matches Coq: Definition can_inject) -/
 def can_inject (st : InterruptState) (vm1 : VirtualMachine) (irq : Interrupt) (vm2 : VirtualMachine) : Prop :=
-  vm_id vm1 = vm_id vm2 \/  (* VM can inject to itself *)
+  vm_id vm1 = vm_id vm2 \/  
   ipi_authorized st (vm_id vm1) (vm_id vm2)
 
 /-- irq_deliverable (matches Coq: Definition irq_deliverable) -/

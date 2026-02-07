@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SizedTypes - Lean 4 Port
@@ -38,8 +39,8 @@ namespace RIINA
 
 /-- sized_ty (matches Coq: Inductive sized_ty) -/
 inductive sized_ty where
-  | sTBase : sized_ty  -- Base type with implicit size
-  | sTSized : sized_ty  -- Type with explicit size bound
+  | sTBase : ty → sized_ty
+  | sTSized : Nat → ty → sized_ty
   deriving DecidableEq, Repr
 
 /-- sized_ty_base (matches Coq: Definition sized_ty_base) -/

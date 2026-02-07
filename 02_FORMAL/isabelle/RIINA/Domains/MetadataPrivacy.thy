@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MetadataPrivacy - Isabelle/HOL Port
@@ -86,7 +87,8 @@ definition in_bucket :: "nat \<Rightarrow> TimingBucket \<Rightarrow> bool" wher
 definition jittered_time :: "bool" where
   "jittered_time \<equiv> jitter <= max_jitter"
 
-(* sensitivity_leq - complex match, manual review needed *)
+(* sensitivity_leq - complex match, needs manual translation *)
+definition sensitivity_leq :: "bool" where "sensitivity_leq = undefined"
 
 (* traffic_constant_rate (matches Coq: Definition traffic_constant_rate) *)
 definition traffic_constant_rate :: "nat \<Rightarrow> bool" where

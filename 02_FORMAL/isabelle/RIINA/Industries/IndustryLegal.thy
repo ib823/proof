@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryLegal - Isabelle/HOL Port
@@ -12,6 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | LegalData          | legal_data             | OK     |
+ * | PrivilegeType      | privilege_type         | OK     |
  * | LegalEffect        | legal_effect           | OK     |
  * | LegalSecurityControls | legal_security_controls | OK     |
  * | legal_sensitivity  | legal_sensitivity      | OK     |
@@ -63,14 +65,17 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* LegalData (matches Coq: Inductive LegalData) *)
 datatype legal_data =
-    AttorneyClientPrivilege  (* Highest protection *)
-  |     WorkProduct  (* Attorney work product *)
+    AttorneyClientPrivilege
+  |     WorkProduct
   |     ClientPII
   |     CaseFile
   |     DiscoveryMaterial
   |     TrustAccount
-  |     Absolute  (* Cannot be compelled *)
-  |     Qualified  (* May be overcome *)
+
+(* PrivilegeType (matches Coq: Inductive PrivilegeType) *)
+datatype privilege_type =
+    Absolute
+  |     Qualified
   |     Waived
 
 (* LegalEffect (matches Coq: Inductive LegalEffect) *)

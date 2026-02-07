@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA EffectGate - Isabelle/HOL Port
@@ -21,9 +22,10 @@ begin
 
 (* is_gate (matches Coq: Definition is_gate) *)
 definition is_gate :: "effect \<Rightarrow> expr \<Rightarrow> bool" where
-  "is_gate eff e_gate \<equiv> (* Conceptual definition:
-     For any expression e that performs 'eff',
-     embedding it in e_gate traps or handles the effect"
+  "is_gate eff e_gate \<equiv> forall e T eff_used,
+    has_type_full nil nil Public e T eff_used ->
+    effect_leq eff_used eff ->
+    performs_within (EApp e_gate e) eff"
 
 (* gate_enforcement (matches Coq) *)
 lemma gate_enforcement: "\<forall> G S D e T eff_allowed eff_used, has_type_full G S D e T eff_used \<longrightarrow> effect_level eff_used \<le> effect_level eff_allowed \<longrightarrow> performs_within e eff_allowed"

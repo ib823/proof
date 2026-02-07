@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CumulativeRelation - Isabelle/HOL Port
@@ -56,7 +57,8 @@ fun val_rel_struct :: "store_ty \<Rightarrow> ty \<Rightarrow> bool" where
 |   "val_rel_struct TString = exists"
 |   "val_rel_struct TBytes = v1"
 
-(* store_rel_le - complex match, manual review needed *)
+(* store_rel_le - complex match, needs manual translation *)
+definition store_rel_le :: "bool" where "store_rel_le = undefined"
 
 (* exp_rel_le (matches Coq: Definition exp_rel_le) *)
 definition exp_rel_le :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> effect_ctx \<Rightarrow> bool" where

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FullstackSecurity - Isabelle/HOL Port
@@ -64,10 +65,10 @@ begin
 
 (* ContentType (matches Coq: Inductive ContentType) *)
 datatype content_type =
-    RawHtml  (* Dangerous - must be sanitized *)
-  |     EscapedHtml  (* Safe - HTML entities escaped *)
-  |     PlainText  (* Safe - no HTML interpretation *)
-  |     SafeUrl  (* Validated URL *)
+    RawHtml
+  |     EscapedHtml
+  |     PlainText
+  |     SafeUrl
   |     TrustedHtml
 
 (* ParamType (matches Coq: Inductive ParamType) *)
@@ -84,7 +85,8 @@ datatype auth_state =
   |     Authenticated
   |     Locked
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* is_safe_content (matches Coq: Definition is_safe_content) *)
 fun is_safe_content :: "ContentType \<Rightarrow> bool" where
@@ -106,7 +108,8 @@ definition query_parameterized :: "ParamQuery \<Rightarrow> bool" where
 definition csrf_valid :: "CsrfToken \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool" where
   "csrf_valid token session current_time \<equiv> andb (Nat"
 
-(* post_has_token - complex match, manual review needed *)
+(* post_has_token - complex match, needs manual translation *)
+definition post_has_token :: "bool" where "post_has_token = undefined"
 
 (* url_safe (matches Coq: Definition url_safe) *)
 fun url_safe :: "ContentType \<Rightarrow> bool" where

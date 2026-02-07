@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MemoryVirtualization - Lean 4 Port
@@ -52,18 +53,18 @@ namespace RIINA
 
 /-- VMId (matches Coq: Inductive VMId) -/
 inductive VMId where
-  | vM : VMId
+  | vM : Nat → VMId
   deriving DecidableEq, Repr
 
 /-- ProcessId (matches Coq: Inductive ProcessId) -/
 inductive ProcessId where
-  | procId : ProcessId
+  | procId : Nat → ProcessId
   deriving DecidableEq, Repr
 
 /-- Process (matches Coq: Record Process) -/
 structure Process where
   proc_id : ProcessId
-  proc_vm_create_cap : Bool  -- capability to create VMs
+  proc_vm_create_cap : Bool
   deriving DecidableEq, Repr
 
 /-- VirtualMachine (matches Coq: Record VirtualMachine) -/
@@ -76,9 +77,9 @@ structure VirtualMachine where
 
 /-- EPTEntry (matches Coq: Record EPTEntry) -/
 structure EPTEntry where
-  ept_gpa : Nat  -- Guest Physical Address
-  ept_hpa : Nat  -- Host Physical Address
-  ept_permissions : Nat  -- read=1, write=2, exec=4
+  ept_gpa : Nat
+  ept_hpa : Nat
+  ept_permissions : Nat
   ept_valid : Bool
   deriving DecidableEq, Repr
 

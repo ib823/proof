@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FileSystem - Isabelle/HOL Port
@@ -238,7 +239,8 @@ definition ext_file_integrity :: "ExtFile \<Rightarrow> bool" where
 definition path_canonical :: "bool" where
   "path_canonical \<equiv> ~ In 0 path /\ length path > 0"
 
-(* file_type_valid - complex match, manual review needed *)
+(* file_type_valid - complex match, needs manual translation *)
+definition file_type_valid :: "bool" where "file_type_valid = undefined"
 
 (* filesystem_integrity (matches Coq) *)
 lemma filesystem_integrity: "\<forall> (f : File) (d : Data), reads (writes f d) = d"

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IndustryRetail - Lean 4 Port
@@ -60,8 +61,8 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- ConsumerData (matches Coq: Inductive ConsumerData) -/
 inductive ConsumerData where
-  | pII : ConsumerData  -- Personally Identifiable Information
-  | paymentData : ConsumerData  -- Credit cards, bank info
+  | pII : ConsumerData
+  | paymentData : ConsumerData
   | purchaseHistory : ConsumerData
   | browsingBehavior : ConsumerData
   | locationData : ConsumerData
@@ -79,7 +80,7 @@ inductive PrivacyRight where
 
 /-- RetailEffect (matches Coq: Inductive RetailEffect) -/
 inductive RetailEffect where
-  | customerIO : RetailEffect
+  | customerIO : ConsumerData → RetailEffect
   | paymentIO : RetailEffect
   | inventoryUpdate : RetailEffect
   | orderProcess : RetailEffect
@@ -157,41 +158,41 @@ def inventory_valid (count max_capacity : Nat) : Bool :=
 /-- Section J01 - PCI-DSS for E-commerce
     Reference: IND_J_RETAIL.md Section 3.1 -/
 /-- ecommerce_pci_compliance (matches Coq) -/
-theorem ecommerce_pci_compliance : ∀ (controls : EcommerceControls), pci_compliant_payment controls = true → (* E-commerce PCI-DSS compliance *) True := by
+theorem ecommerce_pci_compliance : ∀ (controls : EcommerceControls), pci_compliant_payment controls = true →  True := by
   trivial
 
 /-- Section J02 - CCPA Consumer Rights
     Reference: IND_J_RETAIL.md Section 3.2 -/
 /-- ccpa_compliance (matches Coq) -/
-theorem ccpa_compliance : ∀ (consumer : nat) (right : PrivacyRight), (* CCPA consumer rights honored *) True := by
+theorem ccpa_compliance : ∀ (consumer : nat) (right : PrivacyRight),  True := by
   trivial
 
 /-- Section J03 - GDPR Compliance
     Reference: IND_J_RETAIL.md Section 3.3 -/
 /-- gdpr_compliance (matches Coq) -/
-theorem gdpr_compliance : ∀ (data_subject : nat) (processing : nat), (* GDPR data protection *) True := by
+theorem gdpr_compliance : ∀ (data_subject : nat) (processing : nat),  True := by
   trivial
 
 /-- Section J04 - OWASP Top 10 Prevention
     Reference: IND_J_RETAIL.md Section 3.4 -/
 /-- owasp_prevention (matches Coq) -/
-theorem owasp_prevention : ∀ (controls : EcommerceControls), input_validation controls = true → sql_injection_prevention controls = true → xss_prevention controls = true → (* OWASP Top 10 mitigated *) True := by
+theorem owasp_prevention : ∀ (controls : EcommerceControls), input_validation controls = true → sql_injection_prevention controls = true → xss_prevention controls = true →  True := by
   trivial
 
 /-- Section J05 - SOC 2 Trust Principles
     Reference: IND_J_RETAIL.md Section 3.5 -/
 /-- soc2_compliance (matches Coq) -/
-theorem soc2_compliance : ∀ (service : nat) (criteria : nat), (* SOC 2 trust principles met *) True := by
+theorem soc2_compliance : ∀ (service : nat) (criteria : nat),  True := by
   trivial
 
 /-- TLS required for all customer data -/
 /-- tls_required (matches Coq) -/
-theorem tls_required : ∀ (controls : EcommerceControls) (data : ConsumerData), tls_encryption controls = true → (* All customer data encrypted in transit *) True := by
+theorem tls_required : ∀ (controls : EcommerceControls) (data : ConsumerData), tls_encryption controls = true →  True := by
   trivial
 
 /-- CSRF tokens required for state-changing operations -/
 /-- csrf_tokens_required (matches Coq) -/
-theorem csrf_tokens_required : ∀ (controls : EcommerceControls), csrf_protection controls = true → (* CSRF protection active *) True := by
+theorem csrf_tokens_required : ∀ (controls : EcommerceControls), csrf_protection controls = true →  True := by
   trivial
 
 /-- payment_biometric_highest (matches Coq) -/

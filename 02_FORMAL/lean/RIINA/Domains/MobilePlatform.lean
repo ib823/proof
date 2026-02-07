@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MobilePlatform - Lean 4 Port
@@ -66,9 +67,9 @@ namespace RIINA
 
 /-- Resource (matches Coq: Inductive Resource) -/
 inductive Resource where
-  | fileResource : Resource
-  | networkResource : Resource
-  | sensorResource : Resource
+  | fileResource : Nat → Resource
+  | networkResource : Nat → Resource
+  | sensorResource : Nat → Resource
   | contactResource : Resource
   | locationResource : Resource
   | cameraResource : Resource
@@ -105,7 +106,7 @@ def file_isolated (file_owner accessor : AppId) : Bool :=
   Nat
 
 /-- requires_user_consent (matches Coq: Definition requires_user_consent) -/
-def requires_user_consent := True -- complex match, simplified to Prop
+def requires_user_consent := sorry -- complex match, needs manual translation
 
 /-- signature_matches (matches Coq: Definition signature_matches) -/
 def signature_matches (app : AppId) (required_sig : Nat) : Bool :=
@@ -128,7 +129,7 @@ def auth_recent (last_auth current max_age : Nat) : Bool :=
   Nat
 
 /-- grant_valid (matches Coq: Definition grant_valid) -/
-def grant_valid := True -- complex match, simplified to Prop
+def grant_valid := sorry -- complex match, needs manual translation
 
 /-- has_network_permission (matches Coq: Definition has_network_permission) -/
 def has_network_permission (grants : List PermGrant) (app : AppId) : Bool :=
@@ -150,7 +151,7 @@ def intent_matches (intent : Intent) (filter_action : Nat) : Bool :=
   Nat
 
 /-- explicit_intent (matches Coq: Definition explicit_intent) -/
-def explicit_intent := True -- complex match, simplified to Prop
+def explicit_intent := sorry -- complex match, needs manual translation
 
 /-- processes_isolated (matches Coq: Definition processes_isolated) -/
 def processes_isolated (pid1 pid2 : Nat) : Bool :=

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OnDeviceML - Isabelle/HOL Port
@@ -123,15 +124,15 @@ record model_update =
 
 (* PrivacyBudget (matches Coq: Record PrivacyBudget) *)
 record privacy_budget =
-  epsilon :: nat  (* scaled by 1000 *)
-  delta :: nat  (* scaled by 1000000 *)
+  epsilon :: nat
+  delta :: nat
   max_epsilon :: nat
   max_delta :: nat
 
 (* Prediction (matches Coq: Record Prediction) *)
 record prediction =
   pred_class :: nat
-  pred_confidence :: nat  (* 0-100 *)
+  pred_confidence :: nat
   pred_calibrated :: bool
 
 (* ModelPolicy (matches Coq: Record ModelPolicy) *)
@@ -149,7 +150,7 @@ record training_data =
 (* InputAnalysis (matches Coq: Record InputAnalysis) *)
 record input_analysis =
   ia_input :: Tensor
-  ia_perturbation_score :: nat  (* 0-100 *)
+  ia_perturbation_score :: nat
   ia_threshold :: nat
   ia_flagged :: bool
 
@@ -177,8 +178,7 @@ definition TensorData :: "'a" where
 
 (* compute_inference (matches Coq: Definition compute_inference) *)
 definition compute_inference :: "MLModel \<Rightarrow> Tensor \<Rightarrow> Tensor" where
-  "compute_inference m input \<equiv> (* Simplified: output is function of model and input only *)
-  mkTensor (tensor_shape input) 
+  "compute_inference m input \<equiv> mkTensor (tensor_shape input) 
            (map (fun x => x + model_version m) (tensor_data input))"
 
 (* infer (matches Coq: Definition infer) *)

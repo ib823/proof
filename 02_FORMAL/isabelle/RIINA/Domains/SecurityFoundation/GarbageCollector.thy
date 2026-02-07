@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA GarbageCollector - Isabelle/HOL Port
@@ -88,10 +89,9 @@ definition after_gc_not_exists :: "GCResult \<Rightarrow> Object \<Rightarrow> b
 
 (* valid_gc (matches Coq: Definition valid_gc) *)
 definition valid_gc :: "GCResult \<Rightarrow> bool" where
-  "valid_gc result \<equiv> (* All reachable objects in pre-state exist in post-state *)
-  (forall oid, reachable (gc_pre_state result) oid ->
+  "valid_gc result \<equiv> (forall oid, reachable (gc_pre_state result) oid ->
     exists_in_heap (gc_post_state result) oid) /\
-  (* All objects in post-state were reachable in pre-state *)
+  
   (forall obj, exists_obj (gc_post_state result) obj ->
     reachable (gc_pre_state result) (obj_id obj))"
 

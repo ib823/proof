@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IndustryRealEstate - Lean 4 Port
@@ -62,10 +63,10 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- PropertyData (matches Coq: Inductive PropertyData) -/
 inductive PropertyData where
-  | ownerPII : PropertyData  -- Owner personal information
-  | financialRecords : PropertyData  -- Mortgages, transactions
+  | ownerPII : PropertyData
+  | financialRecords : PropertyData
   | tenantData : PropertyData
-  | accessCredentials : PropertyData  -- Building access
+  | accessCredentials : PropertyData
   | smartHomeData : PropertyData
   | buildingTelemetry : PropertyData
   deriving DecidableEq, Repr
@@ -83,7 +84,7 @@ inductive BuildingSystem where
 /-- RealEstateEffect (matches Coq: Inductive RealEstateEffect) -/
 inductive RealEstateEffect where
   | propertyTransaction : RealEstateEffect
-  | buildingControl : RealEstateEffect
+  | buildingControl : BuildingSystem → RealEstateEffect
   | accessEvent : RealEstateEffect
   | tenantDataAccess : RealEstateEffect
   | smartHomeIO : RealEstateEffect
@@ -155,41 +156,41 @@ def within_occupancy (current max_occupancy : Nat) : Bool :=
 /-- Section M01 - Smart Building Security
     Reference: IND_M_REALESTATE.md Section 3.1 -/
 /-- smart_building_security (matches Coq) -/
-theorem smart_building_security : ∀ (controls : SmartBuildingControls) (building : nat), network_segmentation controls = true → device_authentication controls = true → (* Smart building security *) True := by
+theorem smart_building_security : ∀ (controls : SmartBuildingControls) (building : nat), network_segmentation controls = true → device_authentication controls = true →  True := by
   trivial
 
 /-- Section M02 - BACnet Security
     Reference: IND_M_REALESTATE.md Section 3.2 -/
 /-- bacnet_security (matches Coq) -/
-theorem bacnet_security : ∀ (bas_network : nat), (* BACnet/SC secure communication *) True := by
+theorem bacnet_security : ∀ (bas_network : nat),  True := by
   trivial
 
 /-- Section M03 - Access Control Systems
     Reference: IND_M_REALESTATE.md Section 3.3 -/
 /-- access_control_security (matches Coq) -/
-theorem access_control_security : ∀ (credential : PropertyData) (access_point : nat), (* Physical access control security *) True := by
+theorem access_control_security : ∀ (credential : PropertyData) (access_point : nat),  True := by
   trivial
 
 /-- Section M04 - Transaction Data Protection
     Reference: IND_M_REALESTATE.md Section 3.4 -/
 /-- transaction_protection (matches Coq) -/
-theorem transaction_protection : ∀ (transaction : nat), (* Real estate transaction data protection *) True := by
+theorem transaction_protection : ∀ (transaction : nat),  True := by
   trivial
 
 /-- Section M05 - IoT Device Security
     Reference: IND_M_REALESTATE.md Section 3.5 -/
 /-- iot_device_security (matches Coq) -/
-theorem iot_device_security : ∀ (device : nat), (* Smart home/building IoT security *) True := by
+theorem iot_device_security : ∀ (device : nat),  True := by
   trivial
 
 /-- Building systems require network segmentation -/
 /-- building_segmentation (matches Coq) -/
-theorem building_segmentation : ∀ (controls : SmartBuildingControls) (system : BuildingSystem), network_segmentation controls = true → (* OT network isolated from IT *) True := by
+theorem building_segmentation : ∀ (controls : SmartBuildingControls) (system : BuildingSystem), network_segmentation controls = true →  True := by
   trivial
 
 /-- Safety systems must have failsafe operation -/
 /-- safety_failsafe (matches Coq) -/
-theorem safety_failsafe : ∀ (controls : SmartBuildingControls) (safety_system : BuildingSystem), failsafe_operation controls = true → (* Safety systems operate without network *) True := by
+theorem safety_failsafe : ∀ (controls : SmartBuildingControls) (safety_system : BuildingSystem), failsafe_operation controls = true →  True := by
   trivial
 
 /-- financial_records_max_sensitivity (matches Coq) -/

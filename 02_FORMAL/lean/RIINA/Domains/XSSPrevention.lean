@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA XSSPrevention - Lean 4 Port
@@ -377,7 +378,7 @@ def riina_input : InputValidator := mkInputVal 65536 true true true
 def riina_xss : XSSConfig := mkXSS riina_output riina_csp riina_dom riina_input true
 
 /-- propagate_taint (matches Coq: Definition propagate_taint) -/
-def propagate_taint := True -- complex match, simplified to Prop
+def propagate_taint := sorry -- complex match, needs manual translation
 
 /-- reflected_xss_safe (matches Coq: Definition reflected_xss_safe) -/
 def reflected_xss_safe (r : ReflectedXSSScenario) : Bool :=

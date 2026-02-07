@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ModuleSystems - Lean 4 Port
@@ -107,17 +108,17 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- Visibility (matches Coq: Inductive Visibility) -/
 inductive Visibility where
-  | vPrivate : Visibility  -- Only this module
-  | vCrate : Visibility  -- Within crate
-  | vPublic : Visibility  -- Anywhere
-  | vSecurityLevel : Visibility  -- Security-gated
+  | vPrivate : Visibility
+  | vCrate : Visibility
+  | vPublic : Visibility
+  | vSecurityLevel : Nat → Visibility
   deriving DecidableEq, Repr
 
 /-- ModuleItem (matches Coq: Inductive ModuleItem) -/
 inductive ModuleItem where
-  | mIType : ModuleItem
-  | mIFunction : ModuleItem
-  | mIModule : ModuleItem
+  | mIType : String → Visibility → ModuleItem
+  | mIFunction : String → Visibility → ModuleItem
+  | mIModule : String → Visibility → ModuleItem
   deriving DecidableEq, Repr
 
 /-- InitState (matches Coq: Inductive InitState) -/
@@ -170,7 +171,7 @@ structure ImportContext where
 structure AbstractType where
   abs_name : String
   abs_repr : option
-  abs_exposed : Bool  -- Whether representation is exposed
+  abs_exposed : Bool
   deriving DecidableEq, Repr
 
 /-- SealedTrait (matches Coq: Record SealedTrait) -/
@@ -237,7 +238,7 @@ structure EffectSig where
 /-- StaticInit (matches Coq: Record StaticInit) -/
 structure StaticInit where
   si_module : ModulePath
-  si_value : Nat  -- Simplified: just a value
+  si_value : Nat
   deriving DecidableEq, Repr
 
 /-- SecureInit (matches Coq: Record SecureInit) -/
@@ -248,10 +249,10 @@ structure SecureInit where
   deriving DecidableEq, Repr
 
 /-- visibility_eqb (matches Coq: Definition visibility_eqb) -/
-def visibility_eqb := True -- complex match, simplified to Prop
+def visibility_eqb := sorry -- complex match, needs manual translation
 
 /-- vis_accessible (matches Coq: Definition vis_accessible) -/
-def vis_accessible := True -- complex match, simplified to Prop
+def vis_accessible := sorry -- complex match, needs manual translation
 
 /-- item_name (matches Coq: Definition item_name) -/
 def item_name (item : ModuleItem) : String :=
@@ -377,7 +378,7 @@ def all_deps_satisfied (pkg : Package) (available : List Package) : Prop :=
   forall d, In d pkg
 
 /-- security_version_ok (matches Coq: Definition security_version_ok) -/
-def security_version_ok := True -- complex match, simplified to Prop
+def security_version_ok := sorry -- complex match, needs manual translation
 
 /-- security_versions_enforced (matches Coq: Definition security_versions_enforced) -/
 def security_versions_enforced (pkg : Package) (available : List Package) : Prop :=
@@ -458,7 +459,7 @@ theorem J_001_11 : ∀ (scope : CapabilityScope) (name : string) (req_level : na
   simp_all [Bool.and_eq_true]
 
 /-- J_001_12 (matches Coq) -/
-theorem J_001_12 : ∀ (abs_ty : AbstractType), abs_ty.(abs_exposed) = false → ∀ (observer_repr : option nat), (* Observer cannot determine representation *) (abs_ty.(abs_repr) = observer_repr ∨ abs_ty.(abs_repr) ≠ observer_repr) := by
+theorem J_001_12 : ∀ (abs_ty : AbstractType), abs_ty.(abs_exposed) = false → ∀ (observer_repr : option nat),  (abs_ty.(abs_repr) = observer_repr ∨ abs_ty.(abs_repr) ≠ observer_repr) := by
   intro h; exact h
 
 /-- J_001_13 (matches Coq) -/

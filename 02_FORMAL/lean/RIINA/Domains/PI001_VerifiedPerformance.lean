@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA PI001_VerifiedPerformance - Lean 4 Port
@@ -68,23 +69,23 @@ namespace RIINA
 
 /-- VEBTree (matches Coq: Inductive VEBTree) -/
 inductive VEBTree where
-  | vEBLeaf : VEBTree
-  | vEBNode : VEBTree
+  | vEBLeaf : Nat → VEBTree
+  | vEBNode : Nat → VEBTree → VEBTree → VEBTree
   deriving DecidableEq, Repr
 
 /-- CASResult (matches Coq: Inductive CASResult) -/
 inductive CASResult where
   | cASSuccess : CASResult
-  | cASFailure : CASResult
+  | cASFailure : Nat → CASResult
   deriving DecidableEq, Repr
 
 /-- OptExpr (matches Coq: Inductive OptExpr) -/
 inductive OptExpr where
-  | oConst : OptExpr
-  | oVar : OptExpr
-  | oAdd : OptExpr
-  | oMul : OptExpr
-  | oIf : OptExpr
+  | oConst : Nat → OptExpr
+  | oVar : Nat → OptExpr
+  | oAdd : OptExpr → OptExpr → OptExpr
+  | oMul : OptExpr → OptExpr → OptExpr
+  | oIf : OptExpr → OptExpr → OptExpr → OptExpr
   deriving DecidableEq, Repr
 
 /-- MSQueue (matches Coq: Record MSQueue) -/
@@ -96,9 +97,9 @@ structure MSQueue where
 
 /-- LinPoint (matches Coq: Record LinPoint) -/
 structure LinPoint where
-  lp_op : Nat  -- operation ID
-  lp_time : Nat  -- linearization time
-  lp_result : Nat  -- result
+  lp_op : Nat
+  lp_time : Nat
+  lp_result : Nat
   deriving DecidableEq, Repr
 
 /-- simd_add (matches Coq: Definition simd_add) -/

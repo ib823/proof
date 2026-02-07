@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WirelessProtocols - Isabelle/HOL Port
@@ -102,7 +103,7 @@ record wireless_connection =
 (* BluetoothPairing (matches Coq: Record BluetoothPairing) *)
 record bluetooth_pairing =
   bt_device_id :: nat
-  bt_pairing_method :: nat  (* 0=none, 1=pin, 2=oob, 3=numeric_comparison *)
+  bt_pairing_method :: nat
   bt_authenticated :: bool
   bt_bonded :: bool
 
@@ -189,7 +190,8 @@ record wireless_coexistence =
 definition secure_connection :: "WirelessConnection \<Rightarrow> bool" where
   "secure_connection c \<equiv> conn_encrypted c = true /\ conn_authenticated c = true"
 
-(* protocol_secure - complex match, manual review needed *)
+(* protocol_secure - complex match, needs manual translation *)
+definition protocol_secure :: "bool" where "protocol_secure = undefined"
 
 (* well_formed_wireless (matches Coq: Definition well_formed_wireless) *)
 definition well_formed_wireless :: "WirelessConnection \<Rightarrow> bool" where

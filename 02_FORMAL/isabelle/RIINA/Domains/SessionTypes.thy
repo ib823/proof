@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SessionTypes - Isabelle/HOL Port
@@ -87,34 +88,35 @@ datatype msg_type =
 
 (* SessionType (matches Coq: Inductive SessionType) *)
 datatype session_type =
-    SSend  (* !T.S - send type T then continue as S *)
-  |     SRecv  (* ?T.S - receive type T then continue as S *)
-  |     SSelect  (* +{L:S} - internal choice *)
-  |     SOffer  (* &{L:S} - external choice *)
+    SSend
+  |     SRecv
+  |     SSelect
+  |     SOffer
   |     SEnd
 
 (* Process (matches Coq: Inductive Process) *)
 datatype process =
-    PSend  (* send value on channel, continue *)
-  |     PRecv  (* receive on channel, continue *)
-  |     PSelect  (* select branch on channel *)
-  |     POffer  (* offer branches *)
-  |     PClose  (* close channel *)
-  |     PEnd  (* terminated process *)
+    PSend
+  |     PRecv
+  |     PSelect
+  |     POffer
+  |     PClose
+  |     PEnd
   |     PPar
 
 (* Channel (matches Coq: Record Channel) *)
 record channel =
   chan_id :: nat
   chan_type :: SessionType
-  chan_linear :: bool  (* Linear flag - must be used exactly once *)
+  chan_linear :: bool
 
 (* ChannelPair (matches Coq: Record ChannelPair) *)
 record channel_pair =
   endpoint_a :: Channel
   endpoint_b :: Channel
 
-(* msg_type_eqb - complex match, manual review needed *)
+(* msg_type_eqb - complex match, needs manual translation *)
+definition msg_type_eqb :: "bool" where "msg_type_eqb = undefined"
 
 (* channel_used (matches Coq: Definition channel_used) *)
 definition channel_used :: "Channel \<Rightarrow> Channel" where

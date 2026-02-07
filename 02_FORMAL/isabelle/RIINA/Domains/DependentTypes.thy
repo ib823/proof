@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA DependentTypes - Isabelle/HOL Port
@@ -54,17 +55,17 @@ begin
 (* DTerm (matches Coq: Inductive DTerm) *)
 datatype d_term =
     DVar
-  |     DLam  (* λx:A.b *)
-  |     DApp  (* f a *)
-  |     DPair  (* (a, b) *)
-  |     DFst  (* π₁ *)
-  |     DSnd  (* π₂ *)
-  |     DRefl  (* refl *)
-  |     DJ  (* J eliminator *)
-  |     DNil  (* nil : Vec A 0 *)
-  |     DCons  (* cons : A → Vec A n → Vec A (S n) *)
-  |     DHead  (* head : Vec A (S n) → A *)
-  |     DTail  (* tail : Vec A (S n) → Vec A n *)
+  |     DLam
+  |     DApp
+  |     DPair
+  |     DFst
+  |     DSnd
+  |     DRefl
+  |     DJ
+  |     DNil
+  |     DCons
+  |     DHead
+  |     DTail
 
 (* TYPE_005_01 (matches Coq) *)
 lemma TYPE_005_01: "\<forall> (ctx : DCtx) (A : DTy 0) (B : nat \<longrightarrow> DTy 0), WfTy ctx A \<longrightarrow> (\<forall> n, WfTy (A :: ctx) (B n)) \<longrightarrow> WfTy ctx (DPi 0 A B)"

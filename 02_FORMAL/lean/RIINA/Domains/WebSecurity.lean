@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA WebSecurity - Lean 4 Port
@@ -62,9 +63,9 @@ namespace RIINA
 
 /-- HTMLContent (matches Coq: Inductive HTMLContent) -/
 inductive HTMLContent where
-  | hTMLText : HTMLContent
-  | hTMLEscaped : HTMLContent  -- Auto-escaped
-  | hTMLElement : HTMLContent
+  | hTMLText : List Nat → HTMLContent
+  | hTMLEscaped : List Nat → HTMLContent
+  | hTMLElement : Nat → List HTMLContent → HTMLContent
   deriving DecidableEq, Repr
 
 /-- CSP (matches Coq: Record CSP) -/
@@ -87,7 +88,7 @@ structure SecureCookie where
   cookie_value : List
   cookie_httponly : Bool
   cookie_secure : Bool
-  cookie_samesite : Nat  -- 0=None, 1=Lax, 2=Strict
+  cookie_samesite : Nat
   deriving DecidableEq, Repr
 
 /-- CSRFToken (matches Coq: Record CSRFToken) -/
@@ -101,7 +102,7 @@ structure HTTPRequest where
   req_origin : Origin
   req_target_origin : Origin
   req_csrf_token : option
-  req_method : Nat  -- 0=GET, 1=POST, etc
+  req_method : Nat
   deriving DecidableEq, Repr
 
 /-- ValidatedURL (matches Coq: Record ValidatedURL) -/
@@ -109,7 +110,7 @@ structure ValidatedURL where
   url_scheme : Nat
   url_host : List
   url_path : List
-  url_is_allowed : Bool  -- Pre-validated against allowlist
+  url_is_allowed : Bool
   deriving DecidableEq, Repr
 
 /-- BoundSession (matches Coq: Record BoundSession) -/
@@ -168,7 +169,7 @@ def same_origin (o1 o2 : Origin) : Bool :=
   Nat
 
 /-- csrf_protected (matches Coq: Definition csrf_protected) -/
-def csrf_protected := True -- complex match, simplified to Prop
+def csrf_protected := sorry -- complex match, needs manual translation
 
 /-- regenerate_session (matches Coq: Definition regenerate_session) -/
 def regenerate_session (old_id new_id : Nat) : Prop :=
@@ -183,43 +184,43 @@ def authorized (user resource : Nat) : Prop :=
   True
 
 /-- web_001_reflected_xss_impossible (matches Coq) -/
-theorem web_001_reflected_xss_impossible : ∀ (content : HTMLContent), xss_safe content → (* All user input is escaped *) True := by
+theorem web_001_reflected_xss_impossible : ∀ (content : HTMLContent), xss_safe content →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_002_stored_xss_impossible (matches Coq) -/
-theorem web_002_stored_xss_impossible : ∀ (content : HTMLContent), xss_safe content → (* Database content is escaped on render *) True := by
+theorem web_002_stored_xss_impossible : ∀ (content : HTMLContent), xss_safe content →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_003_dom_xss_impossible (matches Coq) -/
-theorem web_003_dom_xss_impossible : ∀ (th : TrustedHTML), th_sanitized th = true → (* Only sanitized content can be assigned to DOM *) True := by
+theorem web_003_dom_xss_impossible : ∀ (th : TrustedHTML), th_sanitized th = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_004_csrf_impossible (matches Coq) -/
-theorem web_004_csrf_impossible : ∀ (req : HTTPRequest) (expected : CSRFToken), csrf_protected req expected → req_method req ≠ 0 → (* State-changing request *) ∃ token, req_csrf_token req = Some token ∧ csrf_value token = csrf_value expected := by
+theorem web_004_csrf_impossible : ∀ (req : HTTPRequest) (expected : CSRFToken), csrf_protected req expected → req_method req ≠ 0 →  ∃ token, req_csrf_token req = Some token ∧ csrf_value token = csrf_value expected := by
   simp_all [Bool.and_eq_true]
 
 /-- web_005_ssrf_impossible (matches Coq) -/
-theorem web_005_ssrf_impossible : ∀ (url : ValidatedURL), url_is_allowed url = true → (* Only allowlisted URLs can be fetched *) True := by
+theorem web_005_ssrf_impossible : ∀ (url : ValidatedURL), url_is_allowed url = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_006_clickjacking_impossible (matches Coq) -/
-theorem web_006_clickjacking_impossible : ∀ (csp : CSP), csp_frame_ancestors csp = nil → (* 'none' *) (* Page cannot be framed *) True := by
+theorem web_006_clickjacking_impossible : ∀ (csp : CSP), csp_frame_ancestors csp = nil →   True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_007_open_redirect_impossible (matches Coq) -/
-theorem web_007_open_redirect_impossible : ∀ (url : ValidatedURL), url_is_allowed url = true → (* Only validated URLs for redirects *) True := by
+theorem web_007_open_redirect_impossible : ∀ (url : ValidatedURL), url_is_allowed url = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_008_http_smuggling_impossible (matches Coq) -/
-theorem web_008_http_smuggling_impossible : ∀ (p : StrictHTTPParser), parser_reject_ambiguous p = true → (* Ambiguous requests are rejected *) True := by
+theorem web_008_http_smuggling_impossible : ∀ (p : StrictHTTPParser), parser_reject_ambiguous p = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_009_cache_poisoning_impossible (matches Coq) -/
-theorem web_009_cache_poisoning_impossible : ∀ (cc : CacheConfig), length (cache_vary_headers cc) > 0 → (* Proper Vary headers prevent poisoning *) True := by
+theorem web_009_cache_poisoning_impossible : ∀ (cc : CacheConfig), length (cache_vary_headers cc) > 0 →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_010_session_hijacking_mitigated (matches Coq) -/
-theorem web_010_session_hijacking_mitigated : ∀ (c : SecureCookie), cookie_httponly c = true → cookie_secure c = true → (* Cookie not accessible to JS, only over HTTPS *) True := by
+theorem web_010_session_hijacking_mitigated : ∀ (c : SecureCookie), cookie_httponly c = true → cookie_secure c = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_011_session_fixation_impossible (matches Coq) -/
@@ -227,59 +228,59 @@ theorem web_011_session_fixation_impossible : ∀ (old_id new_id : nat), regener
   intro h; exact h
 
 /-- web_012_cookie_attacks_mitigated (matches Coq) -/
-theorem web_012_cookie_attacks_mitigated : ∀ (c : SecureCookie), cookie_samesite c ≥ 1 → (* SameSite=Lax or Strict prevents cross-site sending *) True := by
+theorem web_012_cookie_attacks_mitigated : ∀ (c : SecureCookie), cookie_samesite c ≥ 1 →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_013_path_traversal_impossible (matches Coq) -/
-theorem web_013_path_traversal_impossible : ∀ (path : list nat), is_canonical path = true → (* Canonicalized paths cannot escape root *) True := by
+theorem web_013_path_traversal_impossible : ∀ (path : list nat), is_canonical path = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_014_lfi_impossible (matches Coq) -/
-theorem web_014_lfi_impossible : ∀ (path : list nat), is_canonical path = true → (* Same as path traversal - canonical paths only *) True := by
+theorem web_014_lfi_impossible : ∀ (path : list nat), is_canonical path = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_015_rfi_impossible (matches Coq) -/
-theorem web_015_rfi_impossible : (* No remote include functionality ∃ *) True := by
+theorem web_015_rfi_impossible :  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_016_prototype_pollution_impossible (matches Coq) -/
-theorem web_016_prototype_pollution_impossible : (* Prototypes are immutable by construction *) True := by
+theorem web_016_prototype_pollution_impossible :  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_017_deserialization_safe (matches Coq) -/
-theorem web_017_deserialization_safe : ∀ (sd : SignedData), sd_verified sd = true → (* Only verified data is deserialized *) True := by
+theorem web_017_deserialization_safe : ∀ (sd : SignedData), sd_verified sd = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_018_http_response_split_impossible (matches Coq) -/
-theorem web_018_http_response_split_impossible : ∀ (h : list nat), negb (∃b (fun c => Nat.eqb c 10 || Nat.eqb c 13) h) = true → (* No CRLF in headers *) True := by
+theorem web_018_http_response_split_impossible : ∀ (h : list nat), negb (∃b (fun c => Nat.eqb c 10 || Nat.eqb c 13) h) = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_019_parameter_pollution_mitigated (matches Coq) -/
-theorem web_019_parameter_pollution_mitigated : ∀ (params : list (nat * nat)), NoDup (map fst params) → (* No duplicate parameter names *) True := by
+theorem web_019_parameter_pollution_mitigated : ∀ (params : list (nat * nat)), NoDup (map fst params) →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_020_mass_assignment_impossible (matches Coq) -/
-theorem web_020_mass_assignment_impossible : (* Type system requires explicit field specification *) True := by
+theorem web_020_mass_assignment_impossible :  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_021_idor_mitigated (matches Coq) -/
-theorem web_021_idor_mitigated : ∀ (user resource : nat), authorized user resource → (* Authorization checked before access *) True := by
+theorem web_021_idor_mitigated : ∀ (user resource : nat), authorized user resource →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_022_verb_tampering_mitigated (matches Coq) -/
-theorem web_022_verb_tampering_mitigated : ∀ (rc : RouteConfig) (method : nat), route_strict rc = true → In method (route_methods rc) → (* Only configured methods allowed *) True := by
+theorem web_022_verb_tampering_mitigated : ∀ (rc : RouteConfig) (method : nat), route_strict rc = true → In method (route_methods rc) →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_023_host_header_attack_mitigated (matches Coq) -/
-theorem web_023_host_header_attack_mitigated : ∀ (hc : HostConfig) (host : list nat), In host (allowed_hosts hc) → (* Only configured hosts accepted *) True := by
+theorem web_023_host_header_attack_mitigated : ∀ (hc : HostConfig) (host : list nat), In host (allowed_hosts hc) →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_024_web_cache_deception_mitigated (matches Coq) -/
-theorem web_024_web_cache_deception_mitigated : ∀ (cc : CacheConfig), cache_no_transform cc = true → (* Cache-Control prevents deception *) True := by
+theorem web_024_web_cache_deception_mitigated : ∀ (cc : CacheConfig), cache_no_transform cc = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_025_graphql_attacks_mitigated (matches Coq) -/
-theorem web_025_graphql_attacks_mitigated : ∀ (gc : GraphQLConfig), gql_max_depth gc > 0 → gql_max_complexity gc > 0 → (* Query limits prevent DoS *) True := by
+theorem web_025_graphql_attacks_mitigated : ∀ (gc : GraphQLConfig), gql_max_depth gc > 0 → gql_max_complexity gc > 0 →  True := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MaximumAxiomElimination - Lean 4 Port
@@ -82,7 +83,7 @@ namespace RIINA
 
 /-- sec_label (matches Coq: Inductive sec_label) -/
 inductive sec_label where
-  | l : sec_label  -- Low - public
+  | l : sec_label
   | h : sec_label
   deriving DecidableEq, Repr
 
@@ -91,35 +92,35 @@ inductive ty where
   | tUnit : ty
   | tBool : ty
   | tNat : ty
-  | tRef : ty
-  | tProd : ty
-  | tSum : ty
-  | tArrow : ty
+  | tRef : ty → sec_label → ty
+  | tProd : ty → ty → ty
+  | tSum : ty → ty → ty
+  | tArrow : ty → ty → ty
   deriving DecidableEq, Repr
 
 /-- expr (matches Coq: Inductive expr) -/
 inductive expr where
-  | eVar : expr
+  | eVar : Nat → expr
   | eUnit : expr
-  | eBool : expr
-  | eNat : expr
-  | eLoc : expr
-  | ePair : expr
-  | eFst : expr
-  | eSnd : expr
-  | eInl : expr
-  | eInr : expr
-  | eLam : expr
-  | eApp : expr
-  | eRef : expr
-  | eDeref : expr
-  | eAssign : expr
-  | eIf : expr
-  | eLet : expr
+  | eBool : Bool → expr
+  | eNat : Nat → expr
+  | eLoc : Nat → expr
+  | ePair : expr → expr → expr
+  | eFst : expr → expr
+  | eSnd : expr → expr
+  | eInl : expr → expr
+  | eInr : expr → expr
+  | eLam : ty → expr → expr
+  | eApp : expr → expr → expr
+  | eRef : sec_label → expr → expr
+  | eDeref : expr → expr
+  | eAssign : expr → expr → expr
+  | eIf : expr → expr → expr → expr
+  | eLet : expr → expr → expr
   deriving DecidableEq, Repr
 
 /-- label_leq (matches Coq: Definition label_leq) -/
-def label_leq := True -- complex match, simplified to Prop
+def label_leq := sorry -- complex match, needs manual translation
 
 /-- store_empty (matches Coq: Definition store_empty) -/
 def store_empty : store :=
@@ -154,11 +155,10 @@ def store_rel_n (n : Nat) (Σ : store_typing) (s1 s2 : store) : Prop :=
 
 /-- exp_rel_n (matches Coq: Definition exp_rel_n) -/
 def exp_rel_n (n : Nat) (Σ : store_typing) (T : ty) (e1 e2 : expr) : Prop :=
-  (* Simplified: if both are values, they're related *)
   is_value e1 -> is_value e2 -> val_rel_n n Σ T e1 e2
 
 /-- label_join (matches Coq: Definition label_join) -/
-def label_join := True -- complex match, simplified to Prop
+def label_join := sorry -- complex match, needs manual translation
 
 /-- label_leq_refl (matches Coq) -/
 theorem label_leq_refl : ∀ l, label_leq l l = true := by

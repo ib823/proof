@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA BinarySizeBounds - Lean 4 Port
@@ -74,31 +75,31 @@ inductive Instr where
 
 /-- ArchParams (matches Coq: Record ArchParams) -/
 structure ArchParams where
-  arch_word_size : Size  -- 4 for 32-bit, 8 for 64-bit
-  arch_max_instr_size : Size  -- Max instruction bytes
-  arch_call_overhead : Size  -- Call instruction size
-  arch_ret_overhead : Size  -- Return instruction size
-  arch_flash_size : Size  -- Total flash available
-  arch_ram_size : Size  -- Total RAM available
+  arch_word_size : Size
+  arch_max_instr_size : Size
+  arch_call_overhead : Size
+  arch_ret_overhead : Size
+  arch_flash_size : Size
+  arch_ram_size : Size
   deriving DecidableEq, Repr
 
 /-- Function (matches Coq: Record Function) -/
 structure Function where
   func_blocks : List
-  func_locals : Nat  -- Local variable count
+  func_locals : Nat
   deriving DecidableEq, Repr
 
 /-- Module (matches Coq: Record Module) -/
 structure Module where
   mod_functions : List
-  mod_data : Size  -- Initialized data
-  mod_bss : Size  -- Zero-initialized data
+  mod_data : Size
+  mod_bss : Size
   deriving DecidableEq, Repr
 
 /-- Program (matches Coq: Record Program) -/
 structure Program where
   prog_modules : List
-  prog_startup : Size  -- Startup code size
+  prog_startup : Size
   deriving DecidableEq, Repr
 
 /-- StackFrame (matches Coq: Record StackFrame) -/
@@ -127,9 +128,9 @@ structure GenericInfo where
 
 /-- ROMLayout (matches Coq: Record ROMLayout) -/
 structure ROMLayout where
-  rom_text : Size  -- Code section
-  rom_rodata : Size  -- Read-only data
-  rom_init_data : Size  -- Initialized data
+  rom_text : Size
+  rom_rodata : Size
+  rom_init_data : Size
   deriving DecidableEq, Repr
 
 /-- arm_cortex_m0 (matches Coq: Definition arm_cortex_m0) -/

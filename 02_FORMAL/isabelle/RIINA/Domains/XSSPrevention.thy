@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA XSSPrevention - Isabelle/HOL Port
@@ -368,7 +369,8 @@ definition riina_input :: "InputValidator" where
 definition riina_xss :: "XSSConfig" where
   "riina_xss \<equiv> mkXSS riina_output riina_csp riina_dom riina_input true"
 
-(* propagate_taint - complex match, manual review needed *)
+(* propagate_taint - complex match, needs manual translation *)
+definition propagate_taint :: "bool" where "propagate_taint = undefined"
 
 (* reflected_xss_safe (matches Coq: Definition reflected_xss_safe) *)
 definition reflected_xss_safe :: "ReflectedXSSScenario \<Rightarrow> bool" where

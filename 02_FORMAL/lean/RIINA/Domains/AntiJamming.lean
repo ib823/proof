@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA AntiJamming - Lean 4 Port
@@ -68,9 +69,9 @@ namespace RIINA
 
 /-- JammerType (matches Coq: Inductive JammerType) -/
 inductive JammerType where
-  | constantJammer : JammerType  -- Always transmitting
-  | reactiveJammer : JammerType  -- Jams on activity detection
-  | sweepJammer : JammerType  -- Sweeps frequencies
+  | constantJammer : JammerType
+  | reactiveJammer : JammerType
+  | sweepJammer : JammerType
   | smartJammer : JammerType
   deriving DecidableEq, Repr
 

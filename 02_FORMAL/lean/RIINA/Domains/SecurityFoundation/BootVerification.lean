@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA BootVerification - Lean 4 Port
@@ -55,10 +56,10 @@ namespace RIINA
 
 /-- BootStageId (matches Coq: Inductive BootStageId) -/
 inductive BootStageId where
-  | hardwareRoot : BootStageId  -- Hardware root of trust
-  | bootloader : BootStageId  -- Primary bootloader
-  | secondStage : BootStageId  -- Secondary bootloader
-  | kernel : BootStageId  -- OS kernel
+  | hardwareRoot : BootStageId
+  | bootloader : BootStageId
+  | secondStage : BootStageId
+  | kernel : BootStageId
   | initRamFS : BootStageId
   deriving DecidableEq, Repr
 
@@ -111,13 +112,13 @@ def stage_verified (st : BootChainState) (stage : BootStageId) : Bool :=
   existsb (fun s => if stage_eq_dec s stage then true else false) (verified_stages st)
 
 /-- verify_image (matches Coq: Definition verify_image) -/
-def verify_image := True -- complex match, simplified to Prop
+def verify_image := sorry -- complex match, needs manual translation
 
 /-- image_tampered (matches Coq: Definition image_tampered) -/
-def image_tampered := True -- complex match, simplified to Prop
+def image_tampered := sorry -- complex match, needs manual translation
 
 /-- boot_stage (matches Coq: Definition boot_stage) -/
-def boot_stage := True -- complex match, simplified to Prop
+def boot_stage := sorry -- complex match, needs manual translation
 
 /-- complete_boot (matches Coq: Definition complete_boot) -/
 def complete_boot (st : BootChainState) : BootChainState := mkBootChainState

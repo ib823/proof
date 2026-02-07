@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA LinearTypes - Isabelle/HOL Port
@@ -70,18 +71,18 @@ begin
 
 (* Linearity (matches Coq: Inductive Linearity) *)
 datatype linearity =
-    Lin  (* Linear: exactly once *)
-  |     Aff  (* Affine: at most once *)
-  |     Rel  (* Relevant: at least once *)
-  |     Unr  (* Unrestricted: any number *)
+    Lin
+  |     Aff
+  |     Rel
+  |     Unr
 
 (* LTy (matches Coq: Inductive LTy) *)
 datatype l_ty =
     LUnit
   |     LBool
-  |     LFun  (* q A ⊸ B *)
-  |     LPair  (* A ⊗ B *)
-  |     LBang  (* !A *)
+  |     LFun
+  |     LPair
+  |     LBang
 
 (* Usage (matches Coq: Inductive Usage) *)
 datatype usage =
@@ -108,13 +109,17 @@ datatype resource_state =
     Available
   |     Consumed
 
-(* linearity_eqb - complex match, manual review needed *)
+(* linearity_eqb - complex match, needs manual translation *)
+definition linearity_eqb :: "bool" where "linearity_eqb = undefined"
 
-(* subqual - complex match, manual review needed *)
+(* subqual - complex match, needs manual translation *)
+definition subqual :: "bool" where "subqual = undefined"
 
-(* usage_add - complex match, manual review needed *)
+(* usage_add - complex match, needs manual translation *)
+definition usage_add :: "bool" where "usage_add = undefined"
 
-(* usage_compatible - complex match, manual review needed *)
+(* usage_compatible - complex match, needs manual translation *)
+definition usage_compatible :: "bool" where "usage_compatible = undefined"
 
 (* empty_ctx (matches Coq: Definition empty_ctx) *)
 definition empty_ctx :: "LCtx" where
@@ -165,7 +170,8 @@ definition relevant_subsumes_linear :: "bool" where
 fun ctx_split_valid :: "LCtx" where
 
 
-(* substitution_preserves_structure - complex match, manual review needed *)
+(* substitution_preserves_structure - complex match, needs manual translation *)
+definition substitution_preserves_structure :: "bool" where "substitution_preserves_structure = undefined"
 
 (* weakening_invalid_for_linear (matches Coq: Definition weakening_invalid_for_linear) *)
 definition weakening_invalid_for_linear :: "bool" where
@@ -206,7 +212,7 @@ definition use_after_consume_impossible :: "ResourceMap \<Rightarrow> Var \<Righ
 definition no_double_consume :: "bool" where
   "no_double_consume \<equiv> forall rm x,
     resource_state x rm = Consumed ->
-    (* Attempting to use again would be detected as already consumed *)
+    
     resource_state x rm = Consumed"
 
 (* linearity_eqb_eq (matches Coq) *)

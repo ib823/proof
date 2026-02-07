@@ -161,6 +161,8 @@ ACTUAL_ADMITTED=$(count_admitted_active)
 ACTUAL_COQ_FILES=$(count_coq_files)
 ACTUAL_LEAN=$(count_lean_theorems)
 ACTUAL_ISABELLE=$(count_isabelle_lemmas)
+# Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
+# The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
 ACTUAL_EXAMPLES=$(count_examples)
 ACTUAL_SESSION=$(get_session_from_log)
@@ -340,6 +342,44 @@ for ent_file in "$REPO_ROOT/docs/enterprise/CERTIFICATION.md" "$REPO_ROOT/docs/e
         check_no_stale "$ent_file" "Rocq 9\\.1" "Stale prover ref (Rocq 9.1)" || true
     fi
 done
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Check quality metadata consistency ────────────────────────────────
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking quality metadata...${NC}"
+fi
+
+if [ -f "$METRICS_FILE" ]; then
+    # Check: if lean.compiled == false but lean.sorry == 0, warn about misleading claim
+    LEAN_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('leanCompiled',True)).lower())" 2>/dev/null || echo "true")
+    LEAN_SORRY_WEB=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['sorry'])" 2>/dev/null || echo "0")
+    if [ "$LEAN_COMPILED" = "false" ] && [ "$LEAN_SORRY_WEB" = "0" ]; then
+        if [ "$QUICK_MODE" != "--quick" ]; then
+            echo -e "${YELLOW}[WARN]${NC} Lean reports 0 sorry but leanCompiled=false (sorry count is syntactic, not verified)"
+        fi
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',True)).lower())" 2>/dev/null || echo "true")
+    ISA_SORRY_WEB=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['sorry'])" 2>/dev/null || echo "0")
+    if [ "$ISA_COMPILED" = "false" ] && [ "$ISA_SORRY_WEB" = "0" ]; then
+        if [ "$QUICK_MODE" != "--quick" ]; then
+            echo -e "${YELLOW}[WARN]${NC} Isabelle reports 0 sorry but isabelleCompiled=false (sorry count is syntactic, not verified)"
+        fi
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    # Check stub prover counts match metrics.json
+    for prover_key in fstar tlaplus alloy smt verus kani tv; do
+        STATUS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('quality',{}).get('${prover_key}Status','unknown'))" 2>/dev/null || echo "unknown")
+        if [ "$STATUS" = "stub" ]; then
+            if [ "$QUICK_MODE" != "--quick" ]; then
+                echo -e "${YELLOW}[INFO]${NC} ${prover_key}: status=stub (generated, not independently verified)"
+            fi
+        fi
+    done
+fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
 # ── Check hooks are installed ─────────────────────────────────────────

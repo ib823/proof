@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA TotalStackFoundation - Isabelle/HOL Port
@@ -147,7 +148,8 @@ record stack_state =
   ss_layers :: 'a list
   ss_interfaces_verified :: 'a list
 
-(* layer_eqb - complex match, manual review needed *)
+(* layer_eqb - complex match, needs manual translation *)
+definition layer_eqb :: "bool" where "layer_eqb = undefined"
 
 (* layer_index (matches Coq: Definition layer_index) *)
 fun layer_index :: "Layer \<Rightarrow> nat" where
@@ -164,15 +166,18 @@ fun layer_index :: "Layer \<Rightarrow> nat" where
 definition layer_adjacent :: "bool" where
   "layer_adjacent \<equiv> Nat"
 
-(* sp_eqb - complex match, manual review needed *)
+(* sp_eqb - complex match, needs manual translation *)
+definition sp_eqb :: "bool" where "sp_eqb = undefined"
 
-(* layer_defends - complex match, manual review needed *)
+(* layer_defends - complex match, needs manual translation *)
+definition layer_defends :: "bool" where "layer_defends = undefined"
 
 (* all_layers_verified (matches Coq: Definition all_layers_verified) *)
 definition all_layers_verified :: "StackState \<Rightarrow> bool" where
   "all_layers_verified ss \<equiv> forallb (fun lv => lv"
 
-(* interface_verified - complex match, manual review needed *)
+(* interface_verified - complex match, needs manual translation *)
+definition interface_verified :: "bool" where "interface_verified = undefined"
 
 (* property_preserved (matches Coq: Definition property_preserved) *)
 definition property_preserved :: "LayerVerification \<Rightarrow> SecurityProperty \<Rightarrow> bool" where

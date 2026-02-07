@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA DualModeVerification - Lean 4 Port
@@ -53,9 +54,9 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- expr (matches Coq: Inductive expr) -/
 inductive expr where
-  | eConst : expr
-  | ePlus : expr
-  | eIf : expr
+  | eConst : Nat → expr
+  | ePlus : expr → expr → expr
+  | eIf : expr → expr → expr → expr
   deriving DecidableEq, Repr
 
 /-- RefinementPred (matches Coq: Record RefinementPred) -/

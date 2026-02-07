@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MalaysiaMCMC - Lean 4 Port
@@ -44,9 +45,9 @@ namespace RIINA
 
 /-- MCMCLicense (matches Coq: Inductive MCMCLicense) -/
 inductive MCMCLicense where
-  | nFP : MCMCLicense  -- Network Facilities Provider
-  | nSP : MCMCLicense  -- Network Service Provider
-  | aSP : MCMCLicense  -- Application Service Provider
+  | nFP : MCMCLicense
+  | nSP : MCMCLicense
+  | aSP : MCMCLicense
   | cSP : MCMCLicense
   deriving DecidableEq, Repr
 

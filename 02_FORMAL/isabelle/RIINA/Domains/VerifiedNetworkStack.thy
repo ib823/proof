@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedNetworkStack - Isabelle/HOL Port
@@ -294,10 +295,10 @@ record buffer =
 
 (* CongestionState (matches Coq: Record CongestionState) *)
 record congestion_state =
-  cwnd :: nat  (* Congestion window *)
-  ssthresh :: nat  (* Slow start threshold *)
-  rtt_est :: nat  (* RTT estimate in ms *)
-  rto :: nat  (* Retransmission timeout *)
+  cwnd :: nat
+  ssthresh :: nat
+  rtt_est :: nat
+  rto :: nat
 
 (* SocketOptions (matches Coq: Record SocketOptions) *)
 record socket_options =
@@ -346,7 +347,8 @@ definition riina_net_rel :: "NetworkReliability" where
 definition riina_net_stack :: "VerifiedNetStack" where
   "riina_net_stack \<equiv> mkVNetStack riina_net_sec riina_net_rel true true"
 
-(* tcp_state_eqb - complex match, manual review needed *)
+(* tcp_state_eqb - complex match, needs manual translation *)
+definition tcp_state_eqb :: "bool" where "tcp_state_eqb = undefined"
 
 (* tcp_transition (matches Coq: Definition tcp_transition) *)
 fun tcp_transition :: "TCPState \<Rightarrow> TCPSegment \<Rightarrow> bool \<Rightarrow> TCPState" where
@@ -478,7 +480,8 @@ definition default_sock_opts :: "SocketOptions" where
 definition new_socket :: "Socket" where
   "new_socket \<equiv> mkSocket SockUnbound None None CLOSED default_sock_opts"
 
-(* sock_state_eqb - complex match, manual review needed *)
+(* sock_state_eqb - complex match, needs manual translation *)
+definition sock_state_eqb :: "bool" where "sock_state_eqb = undefined"
 
 (* socket_can_send (matches Coq: Definition socket_can_send) *)
 definition socket_can_send :: "Socket \<Rightarrow> bool" where
@@ -502,7 +505,8 @@ definition make_syn_ack :: "TCPSegment" where
 definition make_ack :: "TCPSegment" where
   "make_ack \<equiv> mkSegment seq ack (mkFlags false true false false false false) 65535 0"
 
-(* handshake_complete - complex match, manual review needed *)
+(* handshake_complete - complex match, needs manual translation *)
+definition handshake_complete :: "bool" where "handshake_complete = undefined"
 
 (* valid_syn_segment (matches Coq: Definition valid_syn_segment) *)
 fun valid_syn_segment :: "TCPSegment \<Rightarrow> TCPState \<Rightarrow> bool" where

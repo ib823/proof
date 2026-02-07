@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MalaysiaKKMHealthcare - Lean 4 Port
@@ -69,7 +70,7 @@ inductive EMRClassification where
   | clinicalNotes : EMRClassification
   | diagnosticResults : EMRClassification
   | prescriptions : EMRClassification
-  | mentalHealth : EMRClassification  -- Higher protection
+  | mentalHealth : EMRClassification
   | hIV_STI : EMRClassification
   deriving DecidableEq, Repr
 

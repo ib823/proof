@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CameraAudioSystem - Lean 4 Port
@@ -110,24 +111,24 @@ structure CameraPermission where
 /-- AccessIndicator (matches Coq: Record AccessIndicator) -/
 structure AccessIndicator where
   indicator_visible : Bool
-  indicator_persistent : Bool  -- stays on while access continues
-  indicator_type : Nat  -- 0 = camera, 1 = microphone, 2 = both
+  indicator_persistent : Bool
+  indicator_type : Nat
   deriving DecidableEq, Repr
 
 /-- AudioConfig (matches Coq: Record AudioConfig) -/
 structure AudioConfig where
-  sample_rate : Nat  -- Hz - 8000, 22050, 44100, 48000
-  bit_depth : Nat  -- 8, 16, 24, 32
-  channels : Nat  -- 1 = mono, 2 = stereo
-  audio_level : Nat  -- 0-100 normalized
+  sample_rate : Nat
+  bit_depth : Nat
+  channels : Nat
+  audio_level : Nat
   deriving DecidableEq, Repr
 
 /-- VideoConfig (matches Coq: Record VideoConfig) -/
 structure VideoConfig where
   video_width : Nat
   video_height : Nat
-  video_frame_rate : Nat  -- fps
-  stabilization_offset : Nat  -- pixels max offset
+  video_frame_rate : Nat
+  stabilization_offset : Nat
   deriving DecidableEq, Repr
 
 /-- RecordingSession (matches Coq: Record RecordingSession) -/

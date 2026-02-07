@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ControlFlowIntegrity - Lean 4 Port
@@ -63,10 +64,10 @@ namespace RIINA
 
 /-- EdgeType (matches Coq: Inductive EdgeType) -/
 inductive EdgeType where
-  | directJump : EdgeType  -- Direct jump to known target
-  | conditionalJump : EdgeType  -- Conditional branch
-  | directCall : EdgeType  -- Direct function call
-  | return : EdgeType  -- Return to caller
+  | directJump : EdgeType
+  | conditionalJump : EdgeType
+  | directCall : EdgeType
+  | return : EdgeType
   | fallThrough : EdgeType
   deriving DecidableEq, Repr
 
@@ -79,7 +80,7 @@ inductive MemPerm where
 
 /-- RelocState (matches Coq: Inductive RelocState) -/
 inductive RelocState where
-  | preReloc : RelocState  -- Can be written during loading
+  | preReloc : RelocState
   | postReloc : RelocState
   deriving DecidableEq, Repr
 
@@ -107,7 +108,6 @@ structure ShadowEntry where
 /-- FuncType (matches Coq: Record FuncType) -/
 structure FuncType where
   ft_arg_types : List
-  Simplified : just
   ft_ret_type : Nat
   deriving DecidableEq, Repr
 
@@ -131,8 +131,8 @@ structure TypedObject where
 
 /-- ExceptionHandler (matches Coq: Record ExceptionHandler) -/
 structure ExceptionHandler where
-  eh_type : Nat  -- Exception type handled
-  eh_addr : InstrAddr  -- Handler address
+  eh_type : Nat
+  eh_addr : InstrAddr
   deriving DecidableEq, Repr
 
 /-- JmpBuf (matches Coq: Record JmpBuf) -/
@@ -145,7 +145,7 @@ structure JmpBuf where
 /-- ThreadContext (matches Coq: Record ThreadContext) -/
 structure ThreadContext where
   tc_id : Nat
-  tc_owner : Nat  -- Owning process/capability
+  tc_owner : Nat
   tc_valid : Bool
   deriving DecidableEq, Repr
 
@@ -198,11 +198,11 @@ def thread_accessible (tc : ThreadContext) (accessor : Nat) : Prop :=
   tc_owner tc = accessor /\ tc_valid tc = true
 
 /-- ctl_001_rop_impossible (matches Coq) -/
-theorem ctl_001_rop_impossible : ∀ (ss : ShadowStack) (attacker_addr : InstrAddr), (* Attacker cannot return to address not on shadow stack *) valid_return ss attacker_addr → ∃ e, In e ss ∧ se_return_addr e = attacker_addr := by
+theorem ctl_001_rop_impossible : ∀ (ss : ShadowStack) (attacker_addr : InstrAddr),  valid_return ss attacker_addr → ∃ e, In e ss ∧ se_return_addr e = attacker_addr := by
   cases ‹_› <;> simp
 
 /-- ctl_002_jop_impossible (matches Coq) -/
-theorem ctl_002_jop_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → ∀ b1 b2, In b1 trace → In b2 trace → (* If b1 transitions to b2, must be in CFG *) (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
+theorem ctl_002_jop_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → ∀ b1 b2, In b1 trace → In b2 trace →  (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
   intro h; exact h
 
 /-- ctl_003_cop_impossible (matches Coq) -/
@@ -210,11 +210,11 @@ theorem ctl_003_cop_impossible : ∀ (vt : ValidTargets) (fp : TypedFuncPtr), va
   intro h; exact h
 
 /-- ctl_004_ret2libc_impossible (matches Coq) -/
-theorem ctl_004_ret2libc_impossible : ∀ (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr → (* Return must go to legitimate return site *) match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end := by
+theorem ctl_004_ret2libc_impossible : ∀ (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr →  match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end := by
   intro h; exact h
 
 /-- ctl_005_srop_impossible (matches Coq) -/
-theorem ctl_005_srop_impossible : ∀ (ss : ShadowStack) (sig_frame_addr : InstrAddr), (* Signal returns also validated against shadow stack *) valid_return ss sig_frame_addr → ∃ e, In e ss ∧ se_return_addr e = sig_frame_addr := by
+theorem ctl_005_srop_impossible : ∀ (ss : ShadowStack) (sig_frame_addr : InstrAddr),  valid_return ss sig_frame_addr → ∃ e, In e ss ∧ se_return_addr e = sig_frame_addr := by
   cases ‹_› <;> simp
 
 /-- ctl_006_code_injection_impossible (matches Coq) -/
@@ -226,15 +226,15 @@ theorem ctl_007_code_reuse_controlled : ∀ (cfg : ValidCFG) (trace : Trace), va
   intro h; exact h
 
 /-- ctl_008_data_only_mitigated (matches Coq) -/
-theorem ctl_008_data_only_mitigated : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → (* Even with corrupted data, control flow follows CFG *) ∀ b1 b2, In b1 trace → (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
+theorem ctl_008_data_only_mitigated : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace →  ∀ b1 b2, In b1 trace → (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
   intro h; exact h
 
 /-- ctl_009_cf_bending_impossible (matches Coq) -/
-theorem ctl_009_cf_bending_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → (* Every transition in trace is in CFG *) ∀ b1 b2 rest, trace = b1 :: b2 :: rest → ∃ e, edge_in_cfg e cfg := by
+theorem ctl_009_cf_bending_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace →  ∀ b1 b2 rest, trace = b1 :: b2 :: rest → ∃ e, edge_in_cfg e cfg := by
   intro h; exact h
 
 /-- ctl_010_indirect_call_safe (matches Coq) -/
-theorem ctl_010_indirect_call_safe : ∀ (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp → (* Target must be in valid set for that type *) In (tfp_addr fp) (vt (tfp_type fp)) := by
+theorem ctl_010_indirect_call_safe : ∀ (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp →  In (tfp_addr fp) (vt (tfp_type fp)) := by
   intro h; exact h
 
 /-- ctl_011_vtable_hijack_impossible (matches Coq) -/

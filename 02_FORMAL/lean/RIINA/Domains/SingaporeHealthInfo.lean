@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SingaporeHealthInfo - Lean 4 Port
@@ -83,7 +84,7 @@ inductive UseType where
   | treatment : UseType
   | research : UseType
   | publicHealth : UseType
-  | insuranceUnderwriting : UseType  -- PROHIBITED
+  | insuranceUnderwriting : UseType
   | employment : UseType
   deriving DecidableEq, Repr
 

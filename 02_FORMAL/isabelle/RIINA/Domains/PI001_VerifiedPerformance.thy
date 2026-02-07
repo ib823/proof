@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA PI001_VerifiedPerformance - Isabelle/HOL Port
@@ -94,9 +95,9 @@ record ms_queue =
 
 (* LinPoint (matches Coq: Record LinPoint) *)
 record lin_point =
-  lp_op :: nat  (* operation ID *)
-  lp_time :: nat  (* linearization time *)
-  lp_result :: nat  (* result *)
+  lp_op :: nat
+  lp_time :: nat
+  lp_result :: nat
 
 (* simd_add (matches Coq: Definition simd_add) *)
 definition simd_add :: "SIMDReg" where

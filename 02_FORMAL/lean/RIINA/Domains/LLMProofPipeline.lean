@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA LLMProofPipeline - Lean 4 Port
@@ -53,20 +54,20 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- formula (matches Coq: Inductive formula) -/
 inductive formula where
-  | fVar : formula
-  | fImpl : formula
-  | fConj : formula
-  | fDisj : formula
+  | fVar : Nat → formula
+  | fImpl : formula → formula → formula
+  | fConj : formula → formula → formula
+  | fDisj : formula → formula → formula
   deriving DecidableEq, Repr
 
 /-- proof_term (matches Coq: Inductive proof_term) -/
 inductive proof_term where
-  | pAxiom : proof_term  -- use hypothesis by index
-  | pImplIntro : proof_term  -- lambda: assume A, prove B
-  | pImplElim : proof_term  -- modus ponens
-  | pConjIntro : proof_term
-  | pConjElimL : proof_term
-  | pConjElimR : proof_term
+  | pAxiom : Nat → proof_term
+  | pImplIntro : formula → proof_term → proof_term
+  | pImplElim : proof_term → proof_term → proof_term
+  | pConjIntro : proof_term → proof_term → proof_term
+  | pConjElimL : proof_term → proof_term
+  | pConjElimR : proof_term → proof_term
   deriving DecidableEq, Repr
 
 /-- valid (matches Coq: Definition valid) -/
@@ -83,8 +84,6 @@ def identity_proof (a : formula) : proof_term :=
 
 /-- compose_proof (matches Coq: Definition compose_proof) -/
 def compose_proof (a b c : formula) : proof_term :=
-  (* In context [A->B, B->C], prove A->C *)
-  (* We build a closed proof: assume A->B and B->C in context, then intro A *)
   PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0)))
 
 /-- conj_intro_proof (matches Coq: Definition conj_intro_proof) -/
@@ -112,7 +111,7 @@ theorem formula_eqb_neq : ∀ f1 f2, formula_eqb f1 f2 = false → f1 ≠ f2 := 
   simp_all [Bool.and_eq_true]
 
 /-- 1 (matches Coq) -/
-theorem 1 : Proof checker soundness *) Theorem checker_soundness : ∀ ctx p f, check ctx p = Some f → derives ctx f := by
+theorem 1 : Proof checker soundness  Theorem checker_soundness : ∀ ctx p f, check ctx p = Some f → derives ctx f := by
   simp_all [Bool.and_eq_true]
 
 /-- derives_sound (matches Coq) -/
@@ -120,31 +119,31 @@ theorem derives_sound : ∀ ctx f, derives ctx f → ∀ v, satisfies_ctx v ctx 
   simp_all [Bool.and_eq_true]
 
 /-- 2 (matches Coq) -/
-theorem 2 : Identity proof A → A is valid *) (* ========================================================================= *) Definition identity_proof (a : formula) : proof_term := PImplIntro a (PAxiom 0). Theorem identity_proof_valid : ∀ a, check [] (identity_proof a) = Some (FImpl a a) := by
+theorem 2 : Identity proof A → A is valid   Definition identity_proof (a : formula) : proof_term := PImplIntro a (PAxiom 0). Theorem identity_proof_valid : ∀ a, check [] (identity_proof a) = Some (FImpl a a) := by
   rfl
 
 /-- 3 (matches Coq) -/
-theorem 3 : Composition of proofs (A->B, B->C gives A->C) *) (* ========================================================================= *) Definition compose_proof (a b c : formula) : proof_term := (* In context [A->B, B->C], prove A->C *) (* We build a closed proof: assume A->B and B->C in context, then intro A *) PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0))). Theorem compose_proof_valid : ∀ a b c, check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c) := by
+theorem 3 : Composition of proofs (A->B, B->C gives A->C)   Definition compose_proof (a b c : formula) : proof_term :=   PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0))). Theorem compose_proof_valid : ∀ a b c, check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c) := by
   rfl
 
 /-- 4 (matches Coq) -/
-theorem 4 : Conjunction introduction is valid *) (* ========================================================================= *) Definition conj_intro_proof (a b : formula) : proof_term := PConjIntro (PAxiom 0) (PAxiom 1). Theorem conj_intro_valid : ∀ a b, check [a; b] (conj_intro_proof a b) = Some (FConj a b) := by
+theorem 4 : Conjunction introduction is valid   Definition conj_intro_proof (a b : formula) : proof_term := PConjIntro (PAxiom 0) (PAxiom 1). Theorem conj_intro_valid : ∀ a b, check [a; b] (conj_intro_proof a b) = Some (FConj a b) := by
   rfl
 
 /-- 5a (matches Coq) -/
-theorem 5a : Conjunction elimination left *) (* ========================================================================= *) Definition conj_elim_left (a b : formula) : proof_term := PConjElimL (PAxiom 0). Theorem conj_elim_left_valid : ∀ a b, check [FConj a b] (conj_elim_left a b) = Some a := by
+theorem 5a : Conjunction elimination left   Definition conj_elim_left (a b : formula) : proof_term := PConjElimL (PAxiom 0). Theorem conj_elim_left_valid : ∀ a b, check [FConj a b] (conj_elim_left a b) = Some a := by
   rfl
 
 /-- 5b (matches Coq) -/
-theorem 5b : Conjunction elimination right *) (* ========================================================================= *) Definition conj_elim_right (a b : formula) : proof_term := PConjElimR (PAxiom 0). Theorem conj_elim_right_valid : ∀ a b, check [FConj a b] (conj_elim_right a b) = Some b := by
+theorem 5b : Conjunction elimination right   Definition conj_elim_right (a b : formula) : proof_term := PConjElimR (PAxiom 0). Theorem conj_elim_right_valid : ∀ a b, check [FConj a b] (conj_elim_right a b) = Some b := by
   rfl
 
 /-- 6 (matches Coq) -/
-theorem 6 : Proof checker is deterministic *) (* ========================================================================= *) Theorem checker_deterministic : ∀ ctx p f1 f2, check ctx p = Some f1 → check ctx p = Some f2 → f1 = f2 := by
+theorem 6 : Proof checker is deterministic   Theorem checker_deterministic : ∀ ctx p f1 f2, check ctx p = Some f1 → check ctx p = Some f2 → f1 = f2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
-theorem 7 : Invalid proofs are rejected *) (* ========================================================================= *) (* Applying a non-implication fails *) Theorem invalid_modus_ponens_rejected : ∀ ctx p1 p2 a, check ctx p1 = Some (FVar a) → check ctx (PImplElim p1 p2) = None := by
+theorem 7 : Invalid proofs are rejected    Theorem invalid_modus_ponens_rejected : ∀ ctx p1 p2 a, check ctx p1 = Some (FVar a) → check ctx (PImplElim p1 p2) = None := by
   rfl
 
 /-- invalid_axiom_rejected (matches Coq) -/
@@ -156,7 +155,7 @@ theorem invalid_mismatch_rejected : ∀ ctx p1 p2 a a' b, check ctx p1 = Some (F
   rfl
 
 /-- 8 (matches Coq) -/
-theorem 8 : Weakening — valid proof in Γ is valid in Γ,A *) (* ========================================================================= *) (* We prove weakening for the derives relation (semantic level). *) Lemma nth_error_insert : ∀ (ctx : context) (n pos : nat) (a : formula), pos ≤ n → nth_error ctx n = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n) := by
+theorem 8 : Weakening — valid proof in Γ is valid in Γ,A    We prove weakening for the derives relation (semantic level).  Lemma nth_error_insert : ∀ (ctx : context) (n pos : nat) (a : formula), pos ≤ n → nth_error ctx n = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n) := by
   cases ‹_› <;> simp <;> omega
 
 /-- weakening_derives (matches Coq) -/
@@ -176,7 +175,7 @@ theorem identity_is_valid : ∀ a v, sem v (FImpl a a) := by
   simp_all [Bool.and_eq_true]
 
 /-- 11 (matches Coq) -/
-theorem 11 : Conjunction is commutative under semantics *) Theorem conj_comm_sem : ∀ a b v, sem v (FConj a b) → sem v (FConj b a) := by
+theorem 11 : Conjunction is commutative under semantics  Theorem conj_comm_sem : ∀ a b v, sem v (FConj a b) → sem v (FConj b a) := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

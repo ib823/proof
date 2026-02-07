@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA ComputerVision - Isabelle/HOL Port
@@ -119,7 +120,7 @@ record face_detection =
 (* OCRResult (matches Coq: Record OCRResult) *)
 record ocr_result =
   ocr_text :: 'a list
-  ocr_confidence :: nat  (* 0-100 *)
+  ocr_confidence :: nat
   ocr_language :: nat
   ocr_accuracy_bound :: nat
 
@@ -151,7 +152,7 @@ record photo_analysis =
 
 (* DepthEstimate (matches Coq: Record DepthEstimate) *)
 record depth_estimate =
-  depth_value :: nat  (* in mm *)
+  depth_value :: nat
   depth_min :: nat
   depth_max :: nat
   depth_confidence :: nat
@@ -185,7 +186,7 @@ record vision_request =
 record image_pair =
   img_a :: Image
   img_b :: Image
-  similarity_score :: nat  (* 0-100 *)
+  similarity_score :: nat
 
 (* PipelineStage (matches Coq: Record PipelineStage) *)
 record pipeline_stage =
@@ -222,11 +223,15 @@ definition valid_detection :: "Detection \<Rightarrow> bool" where
 (* accurate_detection (matches Coq: Definition accurate_detection) *)
 definition accurate_detection :: "Detection \<Rightarrow> BoundingBox \<Rightarrow> bool" where
   "accurate_detection d ground_truth \<equiv> let box := det_box d in
-  (* IoU > 0"
+  
+  (max (bbox_x box) (bbox_x ground_truth) - min (bbox_x box) (bbox_x ground_truth)) <= 
+    (bbox_w box + bbox_w ground_truth) / 2 /\
+  (max (bbox_y box) (bbox_y ground_truth) - min (bbox_y box) (bbox_y ground_truth)) <= 
+    (bbox_h box + bbox_h ground_truth) / 2"
 
 (* detection_bounded (matches Coq: Definition detection_bounded) *)
 definition detection_bounded :: "ObjectDetectionResult \<Rightarrow> bool" where
-  "detection_bounded r \<equiv> length (od_detections r) <= 100 /\  (* Max detections *)
+  "detection_bounded r \<equiv> length (od_detections r) <= 100 /\  
   od_latency_ms r <= 100"
 
 (* cv_private (matches Coq: Definition cv_private) *)

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA RefinementTypes - Lean 4 Port
@@ -63,34 +64,34 @@ inductive BaseTy where
 inductive Pred where
   | pTrue : Pred
   | pFalse : Pred
-  | pEqC : Pred
-  | pLtC : Pred
-  | pLeC : Pred
-  | pGtC : Pred
-  | pGeC : Pred
-  | pNeqC : Pred
-  | pAnd : Pred
-  | pOr : Pred
-  | pNot : Pred
-  | pImpl : Pred
+  | pEqC : Nat → Pred
+  | pLtC : Nat → Pred
+  | pLeC : Nat → Pred
+  | pGtC : Nat → Pred
+  | pGeC : Nat → Pred
+  | pNeqC : Nat → Pred
+  | pAnd : Pred → Pred → Pred
+  | pOr : Pred → Pred → Pred
+  | pNot : Pred → Pred
+  | pImpl : Pred → Pred → Pred
   deriving DecidableEq, Repr
 
 /-- RefTy (matches Coq: Inductive RefTy) -/
 inductive RefTy where
-  | rBase : RefTy
-  | rRefine : RefTy
-  | rFun : RefTy
-  | rDepFun : RefTy
+  | rBase : BaseTy → RefTy
+  | rRefine : BaseTy → Pred → RefTy
+  | rFun : RefTy → RefTy → RefTy
+  | rDepFun : RefTy → (Nat → RefTy) → RefTy
   deriving DecidableEq, Repr
 
 /-- Expr (matches Coq: Inductive Expr) -/
 inductive Expr where
-  | eVal : Expr
-  | eVar : Expr
-  | eApp : Expr
-  | eLam : Expr
-  | ePlus : Expr
-  | eMult : Expr
+  | eVal : Nat → Expr
+  | eVar : Nat → Expr
+  | eApp : Expr → Expr → Expr
+  | eLam : Nat → Expr → Expr
+  | ePlus : Expr → Expr → Expr
+  | eMult : Expr → Expr → Expr
   deriving DecidableEq, Repr
 
 /-- pred_implies (matches Coq: Definition pred_implies) -/

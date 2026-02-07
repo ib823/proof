@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA IrisSeparationLogic - Lean 4 Port
@@ -47,18 +48,18 @@ namespace RIINA
 /-- hprop (matches Coq: Inductive hprop) -/
 inductive hprop where
   | hEmpty : hprop
-  | hPointsTo : hprop
-  | hStar : hprop
-  | hPure : hprop
-  | hWand : hprop
+  | hPointsTo : loc → val → hprop
+  | hStar : hprop → hprop → hprop
+  | hPure : Prop → hprop
+  | hWand : hprop → hprop → hprop
   deriving DecidableEq, Repr
 
 /-- fprop (matches Coq: Inductive fprop) -/
 inductive fprop where
   | fEmpty : fprop
-  | fPointsTo : fprop
-  | fStar : fprop
-  | fPure : fprop
+  | fPointsTo : loc → val → fprop
+  | fStar : fprop → fprop → fprop
+  | fPure : Prop → fprop
   deriving DecidableEq, Repr
 
 /-- disjoint (matches Coq: Definition disjoint) -/
@@ -82,14 +83,14 @@ def fdisjoint (h1 h2 : fheap) : Prop :=
   forall l, h1 l = None \/ h2 l = None
 
 /-- funion (matches Coq: Definition funion) -/
-def funion := True -- complex match, simplified to Prop
+def funion := sorry -- complex match, needs manual translation
 
 /-- 1 (matches Coq) -/
-theorem 1 : Empty heap satisfies emp *) Theorem emp_empty : satisfies [] HEmpty := by
+theorem 1 : Empty heap satisfies emp  Theorem emp_empty : satisfies [] HEmpty := by
   rfl
 
 /-- 2 (matches Coq) -/
-theorem 2 : Singleton heap satisfies points-to *) Theorem points_to_singleton : ∀ l v, satisfies [(l, v)] (HPointsTo l v) := by
+theorem 2 : Singleton heap satisfies points-to  Theorem points_to_singleton : ∀ l v, satisfies [(l, v)] (HPointsTo l v) := by
   rfl
 
 /-- disjoint_sym (matches Coq) -/
@@ -97,15 +98,15 @@ theorem disjoint_sym : ∀ h1 h2, disjoint h1 h2 → disjoint h2 h1 := by
   simp_all [Bool.and_eq_true]
 
 /-- 3 (matches Coq) -/
-theorem 3 : Star is commutative *) Theorem star_comm : ∀ p1 p2 h, fsat h (FStar p1 p2) → fsat h (FStar p2 p1) := by
+theorem 3 : Star is commutative  Theorem star_comm : ∀ p1 p2 h, fsat h (FStar p1 p2) → fsat h (FStar p2 p1) := by
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Star with emp is identity *) Theorem star_emp_l : ∀ p h, fsat h p → fsat h (FStar FEmpty p) := by
+theorem 4 : Star with emp is identity  Theorem star_emp_l : ∀ p h, fsat h p → fsat h (FStar FEmpty p) := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : Points-to is exclusive *) Theorem points_to_exclusive : ∀ l v1 v2 h, fsat h (FStar (FPointsTo l v1) (FPointsTo l v2)) → False := by
+theorem 5 : Points-to is exclusive  Theorem points_to_exclusive : ∀ l v1 v2 h, fsat h (FStar (FPointsTo l v1) (FPointsTo l v2)) → False := by
   simp_all [Bool.and_eq_true]
 
 /-- frame_rule (matches Coq) -/
@@ -113,7 +114,7 @@ theorem frame_rule : ∀ p f h1 h2, fsat h1 p → fsat h2 f → fdisjoint h1 h2 
   rfl
 
 /-- 7 (matches Coq) -/
-theorem 7 : Empty heap is disjoint with any heap *) Theorem fdisjoint_empty_l : ∀ h, fdisjoint fempty h := by
+theorem 7 : Empty heap is disjoint with any heap  Theorem fdisjoint_empty_l : ∀ h, fdisjoint fempty h := by
   rfl
 
 /-- fdisjoint_empty_r (matches Coq) -/
@@ -121,7 +122,7 @@ theorem fdisjoint_empty_r : ∀ h, fdisjoint h fempty := by
   rfl
 
 /-- 9 (matches Coq) -/
-theorem 9 : Union with empty is identity *) Theorem funion_empty_l : ∀ h l, funion fempty h l = h l := by
+theorem 9 : Union with empty is identity  Theorem funion_empty_l : ∀ h l, funion fempty h l = h l := by
   rfl
 
 /-- funion_empty_r (matches Coq) -/
@@ -129,43 +130,43 @@ theorem funion_empty_r : ∀ h l, funion h fempty l = h l := by
   rfl
 
 /-- 11 (matches Coq) -/
-theorem 11 : Disjointness is symmetric *) Theorem fdisjoint_sym : ∀ h1 h2, fdisjoint h1 h2 → fdisjoint h2 h1 := by
+theorem 11 : Disjointness is symmetric  Theorem fdisjoint_sym : ∀ h1 h2, fdisjoint h1 h2 → fdisjoint h2 h1 := by
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : Pure proposition extraction *) Theorem pure_extract : ∀ (P : Prop) h, fsat h (FPure P) → P := by
+theorem 12 : Pure proposition extraction  Theorem pure_extract : ∀ (P : Prop) h, fsat h (FPure P) → P := by
   intro h; exact h
 
 /-- 13 (matches Coq) -/
-theorem 13 : Pure proposition implies empty heap *) Theorem pure_empty_heap : ∀ (P : Prop) h, fsat h (FPure P) → ∀ l, h l = None := by
+theorem 13 : Pure proposition implies empty heap  Theorem pure_empty_heap : ∀ (P : Prop) h, fsat h (FPure P) → ∀ l, h l = None := by
   intro h; exact h
 
 /-- 14 (matches Coq) -/
-theorem 14 : Points-to determines heap value *) Theorem points_to_read : ∀ l v h, fsat h (FPointsTo l v) → h l = Some v := by
+theorem 14 : Points-to determines heap value  Theorem points_to_read : ∀ l v h, fsat h (FPointsTo l v) → h l = Some v := by
   intro h; exact h
 
 /-- 15 (matches Coq) -/
-theorem 15 : Points-to is exclusive for other locations *) Theorem points_to_other_none : ∀ l v h l', fsat h (FPointsTo l v) → l' ≠ l → h l' = None := by
+theorem 15 : Points-to is exclusive for other locations  Theorem points_to_other_none : ∀ l v h l', fsat h (FPointsTo l v) → l' ≠ l → h l' = None := by
   simp_all [Bool.and_eq_true]
 
 /-- 16 (matches Coq) -/
-theorem 16 : Empty heap satisfies emp *) Theorem fempty_sat_empty : fsat fempty FEmpty := by
+theorem 16 : Empty heap satisfies emp  Theorem fempty_sat_empty : fsat fempty FEmpty := by
   simp
 
 /-- 17 (matches Coq) -/
-theorem 17 : Singleton heap satisfies points-to *) Theorem fsingleton_sat : ∀ l v, fsat (fsingleton l v) (FPointsTo l v) := by
+theorem 17 : Singleton heap satisfies points-to  Theorem fsingleton_sat : ∀ l v, fsat (fsingleton l v) (FPointsTo l v) := by
   cases ‹_› <;> simp
 
 /-- 18 (matches Coq) -/
-theorem 18 : Singleton lookup *) Theorem fsingleton_lookup_neq : ∀ l l' v, l' ≠ l → fsingleton l v l' = None := by
+theorem 18 : Singleton lookup  Theorem fsingleton_lookup_neq : ∀ l l' v, l' ≠ l → fsingleton l v l' = None := by
   rfl
 
 /-- 19 (matches Coq) -/
-theorem 19 : Disjoint singletons for different locations *) Theorem fdisjoint_singletons : ∀ l1 l2 v1 v2, l1 ≠ l2 → fdisjoint (fsingleton l1 v1) (fsingleton l2 v2) := by
+theorem 19 : Disjoint singletons for different locations  Theorem fdisjoint_singletons : ∀ l1 l2 v1 v2, l1 ≠ l2 → fdisjoint (fsingleton l1 v1) (fsingleton l2 v2) := by
   rfl
 
 /-- 20 (matches Coq) -/
-theorem 20 : Empty satisfies pure True *) Theorem fempty_pure_true : fsat fempty (FPure True) := by
+theorem 20 : Empty satisfies pure True  Theorem fempty_pure_true : fsat fempty (FPure True) := by
   intro h; exact h
 
 end RIINA

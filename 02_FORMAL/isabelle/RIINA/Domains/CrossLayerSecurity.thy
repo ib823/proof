@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CrossLayerSecurity - Isabelle/HOL Port
@@ -68,11 +69,14 @@ datatype tgt_instr =
   |     TJmp
   |     THalt
 
-(* label_eqb - complex match, manual review needed *)
+(* label_eqb - complex match, needs manual translation *)
+definition label_eqb :: "bool" where "label_eqb = undefined"
 
-(* label_leb - complex match, manual review needed *)
+(* label_leb - complex match, needs manual translation *)
+definition label_leb :: "bool" where "label_leb = undefined"
 
-(* label_join - complex match, manual review needed *)
+(* label_join - complex match, needs manual translation *)
+definition label_join :: "bool" where "label_join = undefined"
 
 (* src_low_equiv (matches Coq: Definition src_low_equiv) *)
 definition src_low_equiv :: "bool" where

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SIGMA001_VerifiedStorage - Lean 4 Port
@@ -100,9 +101,9 @@ inductive ColType where
 
 /-- Value (matches Coq: Inductive Value) -/
 inductive Value where
-  | vInt : Value
-  | vString : Value  -- String as nat hash
-  | vBool : Value
+  | vInt : Nat → Value
+  | vString : Nat → Value
+  | vBool : Bool → Value
   | vNull : Value
   deriving DecidableEq, Repr
 
@@ -120,19 +121,19 @@ inductive PredOp where
 inductive Pred where
   | pTrue : Pred
   | pFalse : Pred
-  | pCol : Pred  -- column op value
-  | pAnd : Pred
-  | pOr : Pred
-  | pNot : Pred
+  | pCol : Nat → PredOp → Value → Pred
+  | pAnd : Pred → Pred → Pred
+  | pOr : Pred → Pred → Pred
+  | pNot : Pred → Pred
   deriving DecidableEq, Repr
 
 /-- Query (matches Coq: Inductive Query) -/
 inductive Query where
-  | qSelect : Query  -- SELECT cols FROM table WHERE pred
-  | qJoin : Query  -- JOIN t1 ON c1 = t2.c2 WHERE pred
-  | qInsert : Query  -- INSERT INTO table VALUES row
-  | qUpdate : Query  -- UPDATE table SET col=val WHERE pred
-  | qDelete : Query
+  | qSelect : Projection → Nat → Pred → Query
+  | qJoin : Nat → Nat → Nat → Nat → Pred → Query
+  | qInsert : Nat → Row → Query
+  | qUpdate : Nat → Nat → Value → Pred → Query
+  | qDelete : Nat → Pred → Query
   deriving DecidableEq, Repr
 
 /-- TxnStatus (matches Coq: Inductive TxnStatus) -/
@@ -144,9 +145,9 @@ inductive TxnStatus where
 
 /-- TxnOp (matches Coq: Inductive TxnOp) -/
 inductive TxnOp where
-  | opInsert : TxnOp
-  | opDelete : TxnOp  -- table, row_index
-  | opUpdate : TxnOp
+  | opInsert : Nat → Row → TxnOp
+  | opDelete : Nat → Nat → TxnOp
+  | opUpdate : Nat → Nat → Nat → Value → TxnOp
   deriving DecidableEq, Repr
 
 /-- IsolationLevel (matches Coq: Inductive IsolationLevel) -/
@@ -189,7 +190,7 @@ structure Transaction where
 structure WALEntry where
   wal_txn_id : Nat
   wal_op : TxnOp
-  wal_lsn : Nat  -- Log sequence number
+  wal_lsn : Nat
   deriving DecidableEq, Repr
 
 /-- Checkpoint (matches Coq: Record Checkpoint) -/
@@ -273,10 +274,10 @@ def audit_chain_valid (log : AuditLog) : Bool :=
   match log with
 
 /-- type_matches (matches Coq: Definition type_matches) -/
-def type_matches := True -- complex match, simplified to Prop
+def type_matches := sorry -- complex match, needs manual translation
 
 /-- row_matches_schema (matches Coq: Definition row_matches_schema) -/
-def row_matches_schema := True -- complex match, simplified to Prop
+def row_matches_schema := sorry -- complex match, needs manual translation
 
 /-- query_well_typed (matches Coq: Definition query_well_typed) -/
 def query_well_typed (q : Query) (db : Database) : Bool :=
@@ -310,7 +311,7 @@ theorem SIGMA_001_02_no_sql_injection : ∀ q, ~ ∃ s, query_contains_raw_strin
   intro h; exact h
 
 /-- SIGMA_001_03_query_preserves_schema (matches Coq) -/
-theorem SIGMA_001_03_query_preserves_schema : ∀ q db db', query_well_typed q db = true → db' = db → (* Queries don't modify schema *) length (db_tables db') = length (db_tables db) := by
+theorem SIGMA_001_03_query_preserves_schema : ∀ q db db', query_well_typed q db = true → db' = db →  length (db_tables db') = length (db_tables db) := by
   rfl
 
 /-- SIGMA_001_04_predicate_typed (matches Coq) -/
@@ -337,7 +338,7 @@ theorem SIGMA_001_08_parameterized_safe : ∀ col_idx op v table pred, let q := 
     PROOFS: ACID PROPERTIES (10 theorems)
     =============================================================================== -/
 /-- SIGMA_001_09_atomicity (matches Coq) -/
-theorem SIGMA_001_09_atomicity : ∀ txn db, let (db', status) := exec_txn txn db in (* Either: pending → committed with ops applied, or status unchanged with db unchanged *) (txn_status txn = TxnPending ∧ status = TxnCommitted ∧ all_ops_applied (txn_ops txn) db db') ∨ (txn_status txn ≠ TxnPending ∧ db = db') := by
+theorem SIGMA_001_09_atomicity : ∀ txn db, let (db', status) := exec_txn txn db in  (txn_status txn = TxnPending ∧ status = TxnCommitted ∧ all_ops_applied (txn_ops txn) db db') ∨ (txn_status txn ≠ TxnPending ∧ db = db') := by
   rfl
 
 /-- SIGMA_001_10_atomicity_commit (matches Coq) -/
@@ -349,15 +350,15 @@ theorem SIGMA_001_11_atomicity_abort : ∀ txn db db' status, exec_txn txn db = 
   rfl
 
 /-- SIGMA_001_12_consistency (matches Coq) -/
-theorem SIGMA_001_12_consistency : ∀ txn db db' status invariant, invariant db = true → (* Key assumption: operations preserve invariant *) (∀ ops d, invariant d = true → invariant (apply_ops ops d) = true) → exec_txn txn db = (db', status) → status = TxnCommitted → invariant db' = true ∨ status = TxnAborted := by
+theorem SIGMA_001_12_consistency : ∀ txn db db' status invariant, invariant db = true →  (∀ ops d, invariant d = true → invariant (apply_ops ops d) = true) → exec_txn txn db = (db', status) → status = TxnCommitted → invariant db' = true ∨ status = TxnAborted := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_13_consistency_fk (matches Coq) -/
-theorem SIGMA_001_13_consistency_fk : ∀ db fk_table fk_col ref_table ref_col, In (fk_table, fk_col, ref_table, ref_col) (db_fk_constraints db) → True. (* FK integrity maintained by construction *) := by
+theorem SIGMA_001_13_consistency_fk : ∀ db fk_table fk_col ref_table ref_col, In (fk_table, fk_col, ref_table, ref_col) (db_fk_constraints db) → True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_14_consistency_unique (matches Coq) -/
-theorem SIGMA_001_14_consistency_unique : ∀ table, ∀ c, In c (table_schema table) → col_unique c = true → True. (* Unique constraints maintained by construction *) := by
+theorem SIGMA_001_14_consistency_unique : ∀ table, ∀ c, In c (table_schema table) → col_unique c = true → True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_15_isolation_serializable (matches Coq) -/
@@ -396,7 +397,7 @@ theorem SIGMA_001_22_checkpoint_correct : ∀ cp wal db, cp_lsn cp ≤ length wa
   rfl
 
 /-- SIGMA_001_23_no_partial_write (matches Coq) -/
-theorem SIGMA_001_23_no_partial_write : ∀ op db, let db' := apply_op op db in db' = db' (* Write is atomic *) := by
+theorem SIGMA_001_23_no_partial_write : ∀ op db, let db' := apply_op op db in db' = db'  := by
   rfl
 
 /-- SIGMA_001_24_crash_atomic (matches Coq) -/
@@ -415,7 +416,7 @@ theorem SIGMA_001_26_recovery_abort : ∀ wal db uncommitted_txn, ~ wal_contains
     PROOFS: STORAGE ENGINE (7 theorems)
     =============================================================================== -/
 /-- SIGMA_001_27_btree_ordered (matches Coq) -/
-theorem SIGMA_001_27_btree_ordered : ∀ V (tree : BPlusTree nat V) k v tree', bp_ordered (bp_root tree) = true → bp_insert tree k v = tree' → True. (* Ordering preservation requires sorted insert *) := by
+theorem SIGMA_001_27_btree_ordered : ∀ V (tree : BPlusTree nat V) k v tree', bp_ordered (bp_root tree) = true → bp_insert tree k v = tree' → True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_28_btree_balanced (matches Coq) -/
@@ -431,7 +432,7 @@ theorem SIGMA_001_30_btree_insert_preserves : ∀ V (tree : BPlusTree nat V) k v
   rfl
 
 /-- SIGMA_001_31_btree_delete_preserves (matches Coq) -/
-theorem SIGMA_001_31_btree_delete_preserves : ∀ V (tree : BPlusTree nat V), True. (* Delete preserves invariants by construction *) := by
+theorem SIGMA_001_31_btree_delete_preserves : ∀ V (tree : BPlusTree nat V), True.  := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_32_btree_complexity (matches Coq) -/

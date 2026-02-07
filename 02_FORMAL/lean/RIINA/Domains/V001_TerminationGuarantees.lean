@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA V001_TerminationGuarantees - Lean 4 Port
@@ -66,33 +67,34 @@ namespace RIINA
 
 /-- expr (matches Coq: Inductive expr) -/
 inductive expr where
-  | eVar : expr
-  | eConst : expr
-  | eApp : expr
-  | eLam : expr
-  | eRec : expr
-  | eCase : expr
+  | eVar : Nat → expr
+  | eConst : Nat → expr
+  | eApp : expr → expr → expr
+  | eLam : expr → expr
+  | eRec : Nat → expr → expr
+  | eCase : expr → List (Nat * expr) → expr
   deriving DecidableEq, Repr
 
 /-- sized_ty (matches Coq: Inductive sized_ty) -/
 inductive sized_ty where
-  | sTNat : sized_ty
-  | sTList : sized_ty
-  | sTTree : sized_ty
-  | sTFun : sized_ty
+  | sTNat : Size → sized_ty
+  | sTList : sized_ty → Size → sized_ty
+  | sTTree : sized_ty → Size → sized_ty
+  | sTFun : sized_ty → sized_ty → sized_ty
   deriving DecidableEq, Repr
 
 /-- even_tree (matches Coq: Inductive even_tree) -/
 inductive even_tree where
   | eLeaf : even_tree
-  | eNode : even_tree
-  | oLeaf : even_tree
-  | oNode : even_tree
+  | eNode : Nat → odd_tree → odd_tree → even_tree
+with odd_tree : Type :=
+  | oLeaf : odd_tree
+  | oNode : Nat → even_tree → even_tree → odd_tree
   deriving DecidableEq, Repr
 
 /-- NonTerminating (matches Coq: Inductive NonTerminating) -/
 inductive NonTerminating where
-  | loop : NonTerminating
+  | loop : NonTermiNating → NonTermiNating
   deriving DecidableEq, Repr
 
 /-- structurally_smaller (matches Coq: Definition structurally_smaller) -/
@@ -110,10 +112,10 @@ def size_subtype (s1 s2 : Size) : Prop :=
   s1 <= s2
 
 /-- sized_wellformed (matches Coq: Definition sized_wellformed) -/
-def sized_wellformed := True -- complex match, simplified to Prop
+def sized_wellformed := sorry -- complex match, needs manual translation
 
 /-- size_less (matches Coq: Definition size_less) -/
-def size_less := True -- complex match, simplified to Prop
+def size_less := sorry -- complex match, needs manual translation
 
 /-- ackermann (matches Coq: Definition ackermann) -/
 def ackermann (m n : Nat) : Nat :=

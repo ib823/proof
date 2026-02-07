@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA IndustryHealthcare - Isabelle/HOL Port
@@ -68,11 +69,11 @@ lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> 
 
 (* PHI_Category (matches Coq: Inductive PHI_Category) *)
 datatype phi__category =
-    Demographics  (* Name, address, etc. *)
-  |     MedicalRecord  (* Diagnoses, treatments *)
-  |     Psychotherapy  (* Special protection *)
-  |     Genetic  (* Genetic information *)
-  |     Substance  (* Substance abuse records - 42 CFR Part 2 *)
+    Demographics
+  |     MedicalRecord
+  |     Psychotherapy
+  |     Genetic
+  |     Substance
   |     HIV_Status
 
 (* HealthcareEffect (matches Coq: Inductive HealthcareEffect) *)
@@ -85,11 +86,11 @@ datatype healthcare_effect =
 
 (* HIPAA_Policy (matches Coq: Record HIPAA_Policy) *)
 record hipaa__policy =
-  access_control :: bool  (* 164.312(a)(1) *)
-  audit_controls :: bool  (* 164.312(b) *)
-  integrity_controls :: bool  (* 164.312(c)(1) *)
-  transmission_security :: bool  (* 164.312(e)(1) *)
-  encryption_at_rest :: bool  (* Addressable *)
+  access_control :: bool
+  audit_controls :: bool
+  integrity_controls :: bool
+  transmission_security :: bool
+  encryption_at_rest :: bool
 
 (* BreakGlassEvent (matches Coq: Record BreakGlassEvent) *)
 record break_glass_event =
@@ -116,7 +117,8 @@ fun phi_sensitivity :: "PHI_Category \<Rightarrow> nat" where
 |   "phi_sensitivity Substance = 4"
 |   "phi_sensitivity HIV_Status = 4"
 
-(* minimum_necessary - complex match, manual review needed *)
+(* minimum_necessary - complex match, needs manual translation *)
+definition minimum_necessary :: "bool" where "minimum_necessary = undefined"
 
 (* hipaa_all_controls (matches Coq: Definition hipaa_all_controls) *)
 definition hipaa_all_controls :: "HIPAA_Policy" where

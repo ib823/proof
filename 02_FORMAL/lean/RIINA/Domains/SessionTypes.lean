@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SessionTypes - Lean 4 Port
@@ -86,29 +87,29 @@ inductive MsgType where
 
 /-- SessionType (matches Coq: Inductive SessionType) -/
 inductive SessionType where
-  | sSend : SessionType  -- !T.S - send type T then continue as S
-  | sRecv : SessionType  -- ?T.S - receive type T then continue as S
-  | sSelect : SessionType  -- +{L:S} - internal choice
-  | sOffer : SessionType  -- &{L:S} - external choice
+  | sSend : MsgType → SessionType → SessionType
+  | sRecv : MsgType → SessionType → SessionType
+  | sSelect : List (Nat * SessionType) → SessionType
+  | sOffer : List (Nat * SessionType) → SessionType
   | sEnd : SessionType
   deriving DecidableEq, Repr
 
 /-- Process (matches Coq: Inductive Process) -/
 inductive Process where
-  | pSend : Process  -- send value on channel, continue
-  | pRecv : Process  -- receive on channel, continue
-  | pSelect : Process  -- select branch on channel
-  | pOffer : Process  -- offer branches
-  | pClose : Process  -- close channel
-  | pEnd : Process  -- terminated process
-  | pPar : Process
+  | pSend : Channel → Nat → Process → Process
+  | pRecv : Channel → Process → Process
+  | pSelect : Channel → Nat → Process → Process
+  | pOffer : Channel → List (Nat * Process) → Process
+  | pClose : Channel → Process
+  | pEnd : Process
+  | pPar : Process → Process → Process
   deriving DecidableEq, Repr
 
 /-- Channel (matches Coq: Record Channel) -/
 structure Channel where
   chan_id : Nat
   chan_type : SessionType
-  chan_linear : Bool  -- Linear flag - must be used exactly once
+  chan_linear : Bool
   deriving DecidableEq, Repr
 
 /-- ChannelPair (matches Coq: Record ChannelPair) -/
@@ -118,7 +119,7 @@ structure ChannelPair where
   deriving DecidableEq, Repr
 
 /-- msg_type_eqb (matches Coq: Definition msg_type_eqb) -/
-def msg_type_eqb := True -- complex match, simplified to Prop
+def msg_type_eqb := sorry -- complex match, needs manual translation
 
 /-- channel_used (matches Coq: Definition channel_used) -/
 def channel_used (ch : Channel) : Channel := mkChan (chan_id ch) (chan_type ch) false
@@ -240,7 +241,7 @@ theorem ST_019_session_no_deadlock : ∀ cfg, session_typed cfg → ~ deadlocked
   cases ‹_› <;> simp <;> omega
 
 /-- ST_020_dual_communicate (matches Coq) -/
-theorem ST_020_dual_communicate : ∀ mt s, dual (SSend mt s) = SRecv mt (dual s) → True. (* Send and receive are compatible *) := by
+theorem ST_020_dual_communicate : ∀ mt s, dual (SSend mt s) = SRecv mt (dual s) → True.  := by
   intro h; exact h
 
 /-- ST_021_value_done (matches Coq) -/

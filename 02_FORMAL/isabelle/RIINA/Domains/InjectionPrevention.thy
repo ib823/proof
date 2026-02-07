@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA InjectionPrevention - Isabelle/HOL Port
@@ -61,20 +62,20 @@ begin
 
 (* TaintLevel (matches Coq: Inductive TaintLevel) *)
 datatype taint_level =
-    Trusted  (* Known safe - from code/constants *)
-  |     Untrusted  (* User input - potentially dangerous *)
+    Trusted
+  |     Untrusted
   |     Sanitized
 
 (* SQLPart (matches Coq: Inductive SQLPart) *)
 datatype sql_part =
-    SQLLiteral  (* String literal in query *)
-  |     SQLParam  (* Parameterized placeholder $1, $2 *)
+    SQLLiteral
+  |     SQLParam
   |     SQLKeyword
 
 (* ShellPart (matches Coq: Inductive ShellPart) *)
 datatype shell_part =
     ShellLiteral
-  |     ShellArg  (* Safe argument slot *)
+  |     ShellArg
   |     ShellCmd
 
 (* LDAPPart (matches Coq: Inductive LDAPPart) *)
@@ -86,7 +87,7 @@ datatype ldap_part =
 (* TemplateExpr (matches Coq: Inductive TemplateExpr) *)
 datatype template_expr =
     TmplLiteral
-  |     TmplVar  (* Variable lookup only *)
+  |     TmplVar
   |     TmplConcat
 
 (* RIINAExpr (matches Coq: Inductive RIINAExpr) *)
@@ -99,7 +100,7 @@ datatype riina_expr =
 (* TaintedValue (matches Coq: Record TaintedValue) *)
 record tainted_value =
   tv_data :: 'a list
-  tv_taint :: TaintLevel  (* Taint status *)
+  tv_taint :: TaintLevel
 
 (* XMLParserConfig (matches Coq: Record XMLParserConfig) *)
 record xml_parser_config =
@@ -123,7 +124,8 @@ record length_prefixed_string =
   lpstr_bytes :: 'a list
   lpstr_valid :: List
 
-(* propagate_taint - complex match, manual review needed *)
+(* propagate_taint - complex match, needs manual translation *)
+definition propagate_taint :: "bool" where "propagate_taint = undefined"
 
 (* tainted_concat (matches Coq: Definition tainted_concat) *)
 definition tainted_concat :: "TaintedValue" where

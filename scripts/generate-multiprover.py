@@ -70,6 +70,27 @@ class CoqFile(NamedTuple):
 # Parser
 # ---------------------------------------------------------------------------
 
+def _strip_coq_comments(text: str) -> str:
+    """Remove all Coq comments (* ... *) from text, handling nesting."""
+    result = []
+    i = 0
+    depth = 0
+    while i < len(text):
+        if i + 1 < len(text) and text[i] == '(' and text[i + 1] == '*':
+            depth += 1
+            i += 2
+        elif i + 1 < len(text) and text[i] == '*' and text[i + 1] == ')':
+            if depth > 0:
+                depth -= 1
+            i += 2
+        elif depth == 0:
+            result.append(text[i])
+            i += 1
+        else:
+            i += 1
+    return ''.join(result)
+
+
 def parse_coq_file(filepath: str) -> CoqFile:
     """Parse a Coq .v file and extract definitions and theorems."""
     with open(filepath, 'r') as f:
@@ -90,19 +111,22 @@ def parse_coq_file(filepath: str) -> CoqFile:
 
     header_comment = '\n'.join(header_lines)
 
+    # Strip Coq comments for parsing structure (prevents comment leaks into output)
+    stripped_text = _strip_coq_comments(text)
+
     # Extract Require Import statements
-    imports = re.findall(r'Require\s+Import\s+(.+?)\.', text)
+    imports = re.findall(r'Require\s+Import\s+(.+?)\.', stripped_text)
 
-    # Extract Inductive types
-    inductives = _parse_inductives(text)
+    # Extract Inductive types (from comment-stripped text)
+    inductives = _parse_inductives(stripped_text)
 
-    # Extract Record types
-    records = _parse_records(text)
+    # Extract Record types (from comment-stripped text)
+    records = _parse_records(stripped_text)
 
-    # Extract Definitions
-    definitions = _parse_definitions(text)
+    # Extract Definitions (from comment-stripped text)
+    definitions = _parse_definitions(stripped_text)
 
-    # Extract Theorems and Lemmas
+    # Extract Theorems and Lemmas (use original text for doc comments)
     theorems = _parse_theorems(text)
 
     return CoqFile(
@@ -134,13 +158,14 @@ def _parse_inductives(text: str) -> list:
             part = part.strip()
             if not part:
                 continue
-            # Extract name and optional comment
-            # Format: "ConstructorName : Type  (* comment *)"
-            cmatch = re.match(r'(\w+)\s*(?::.*?)?(?:\(\*\s*(.*?)\s*\*\))?\s*$', part, re.DOTALL)
+            # Extract name and type signature (preserving type params)
+            # Format: "ConstructorName : ty -> ty -> effect -> ty"
+            # (comments already stripped by _strip_coq_comments)
+            cmatch = re.match(r'(\w+)\s*(?::\s*(.+?))?\s*$', part, re.DOTALL)
             if cmatch:
                 cname = cmatch.group(1)
-                comment = cmatch.group(2) or ''
-                constructors.append((cname, comment.strip()))
+                ctype = (cmatch.group(2) or '').strip()
+                constructors.append((cname, ctype))
 
         if constructors:
             results.append(CoqInductive(name=name, constructors=constructors, type_params='Type'))
@@ -322,10 +347,16 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     for ind in parsed.inductives:
         lines.append(f'/-- {ind.name} (matches Coq: Inductive {ind.name}) -/')
         lines.append(f'inductive {ind.name} where')
-        for cname, comment in ind.constructors:
+        for cname, ctype in ind.constructors:
             lean_cname = cname[0].lower() + cname[1:] if cname[0].isupper() else cname
-            cmt = f'  -- {comment}' if comment else ''
-            lines.append(f'  | {lean_cname} : {ind.name}{cmt}')
+            if ctype and ctype != ind.name:
+                # Translate Coq type signature to Lean
+                lean_type = ctype.replace(' -> ', ' → ')
+                for coq_t, lean_t in [('bool', 'Bool'), ('nat', 'Nat'), ('list', 'List'), ('string', 'String')]:
+                    lean_type = lean_type.replace(coq_t, lean_t)
+                lines.append(f'  | {lean_cname} : {lean_type}')
+            else:
+                lines.append(f'  | {lean_cname} : {ind.name}')
         lines.append(f'  deriving DecidableEq, Repr')
         lines.append('')
 
@@ -350,7 +381,7 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
             if match_body:
                 lines.append(match_body)
             else:
-                lines.append(f'def {defn.name} := True -- complex match, simplified to Prop')
+                lines.append(f'def {defn.name} := sorry -- complex match, needs manual translation')
         else:
             # Direct definition (could be a boolean combination)
             lines.append(f'/-- {defn.name} (matches Coq: Definition {defn.name}) -/')
@@ -375,7 +406,12 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append('end RIINA')
     lines.append('')
 
-    return '\n'.join(lines)
+    # Post-processing: remove any residual Coq comment syntax from Lean output
+    result = '\n'.join(lines)
+    result = re.sub(r'\(\*[^)]*\*\)', '', result)  # Remove (* ... *)
+    result = re.sub(r'\(\*', '', result)  # Remove orphan (*
+    result = re.sub(r'\*\)', '', result)  # Remove orphan *)
+    return result
 
 
 def _translate_match_to_lean(defn: CoqDefinition) -> str:
@@ -555,9 +591,16 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
         lines.append(f'(* {ind.name} (matches Coq: Inductive {ind.name}) *)')
         lines.append(f'datatype {isa_name} =')
         clines = []
-        for cname, comment in ind.constructors:
-            cmt = f'  (* {comment} *)' if comment else ''
-            clines.append(f'    {cname}{cmt}')
+        for cname, ctype in ind.constructors:
+            if ctype and ctype != ind.name:
+                # Translate type signature for Isabelle
+                isa_type = ctype
+                for coq_t, isa_t in [('bool', 'bool'), ('nat', 'nat'), ('Prop', 'bool')]:
+                    isa_type = isa_type.replace(coq_t, isa_t)
+                # Convert "a -> b -> c" to Isabelle syntax (keep as-is for now)
+                clines.append(f'    {cname}')
+            else:
+                clines.append(f'    {cname}')
         lines.append('\n  | '.join(clines))
         lines.append('')
 
@@ -580,7 +623,8 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
                 lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
                 lines.append(isa_def)
             else:
-                lines.append(f'(* {defn.name} - complex match, manual review needed *)')
+                lines.append(f'(* {defn.name} - complex match, needs manual translation *)')
+                lines.append(f'definition {defn.name} :: "bool" where "{defn.name} = undefined"')
         else:
             lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
             isa_def = _translate_def_body_isabelle(defn)

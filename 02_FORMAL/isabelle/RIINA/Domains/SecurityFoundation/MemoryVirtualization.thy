@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA MemoryVirtualization - Isabelle/HOL Port
@@ -63,7 +64,7 @@ datatype process_id =
 (* Process (matches Coq: Record Process) *)
 record process =
   proc_id :: ProcessId
-  proc_vm_create_cap :: bool  (* capability to create VMs *)
+  proc_vm_create_cap :: bool
 
 (* VirtualMachine (matches Coq: Record VirtualMachine) *)
 record virtual_machine =
@@ -74,9 +75,9 @@ record virtual_machine =
 
 (* EPTEntry (matches Coq: Record EPTEntry) *)
 record ept_entry =
-  ept_gpa :: nat  (* Guest Physical Address *)
-  ept_hpa :: nat  (* Host Physical Address *)
-  ept_permissions :: nat  (* read=1, write=2, exec=4 *)
+  ept_gpa :: nat
+  ept_hpa :: nat
+  ept_permissions :: nat
   ept_valid :: bool
 
 (* ExtendedPageTable (matches Coq: Record ExtendedPageTable) *)

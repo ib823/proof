@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA CameraAudioSystem - Isabelle/HOL Port
@@ -106,22 +107,22 @@ record camera_permission =
 (* AccessIndicator (matches Coq: Record AccessIndicator) *)
 record access_indicator =
   indicator_visible :: bool
-  indicator_persistent :: bool  (* stays on while access continues *)
-  indicator_type :: nat  (* 0 = camera, 1 = microphone, 2 = both *)
+  indicator_persistent :: bool
+  indicator_type :: nat
 
 (* AudioConfig (matches Coq: Record AudioConfig) *)
 record audio_config =
-  sample_rate :: nat  (* Hz - 8000, 22050, 44100, 48000 *)
-  bit_depth :: nat  (* 8, 16, 24, 32 *)
-  channels :: nat  (* 1 = mono, 2 = stereo *)
-  audio_level :: nat  (* 0-100 normalized *)
+  sample_rate :: nat
+  bit_depth :: nat
+  channels :: nat
+  audio_level :: nat
 
 (* VideoConfig (matches Coq: Record VideoConfig) *)
 record video_config =
   video_width :: nat
   video_height :: nat
-  video_frame_rate :: nat  (* fps *)
-  stabilization_offset :: nat  (* pixels max offset *)
+  video_frame_rate :: nat
+  stabilization_offset :: nat
 
 (* RecordingSession (matches Coq: Record RecordingSession) *)
 record recording_session =

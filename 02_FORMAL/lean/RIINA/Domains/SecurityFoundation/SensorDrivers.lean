@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SensorDrivers - Lean 4 Port
@@ -52,7 +53,7 @@ namespace RIINA
 
 /-- AppId (matches Coq: Inductive AppId) -/
 inductive AppId where
-  | app : AppId
+  | app : Nat → AppId
   deriving DecidableEq, Repr
 
 /-- SensorType (matches Coq: Inductive SensorType) -/
@@ -103,7 +104,7 @@ structure BoundedSensor where
   deriving DecidableEq, Repr
 
 /-- has_sensor_permission (matches Coq: Definition has_sensor_permission) -/
-def has_sensor_permission := True -- complex match, simplified to Prop
+def has_sensor_permission := sorry -- complex match, needs manual translation
 
 /-- uses_camera (matches Coq: Definition uses_camera) -/
 def uses_camera (app : Application) : Prop :=

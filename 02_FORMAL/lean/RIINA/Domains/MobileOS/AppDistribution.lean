@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA AppDistribution - Lean 4 Port
@@ -258,7 +259,7 @@ structure NotarizationStatus where
   deriving DecidableEq, Repr
 
 /-- passes_security_checks (matches Coq: Definition passes_security_checks) -/
-def passes_security_checks := True -- complex match, simplified to Prop
+def passes_security_checks := sorry -- complex match, needs manual translation
 
 /-- no_malware (matches Coq: Definition no_malware) -/
 def no_malware (app : StoreApplication) : Prop :=
@@ -292,7 +293,7 @@ def version_increases (upd : AppUpdate) : Prop :=
   new_version upd > old_version upd
 
 /-- scan_passed (matches Coq: Definition scan_passed) -/
-def scan_passed := True -- complex match, simplified to Prop
+def scan_passed := sorry -- complex match, needs manual translation
 
 /-- app_is_safe (matches Coq: Definition app_is_safe) -/
 def app_is_safe (app : StoreApplication) : Bool :=

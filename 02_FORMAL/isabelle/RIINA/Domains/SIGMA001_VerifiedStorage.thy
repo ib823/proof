@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA SIGMA001_VerifiedStorage - Isabelle/HOL Port
@@ -102,7 +103,7 @@ datatype col_type =
 (* Value (matches Coq: Inductive Value) *)
 datatype value =
     VInt
-  |     VString  (* String as nat hash *)
+  |     VString
   |     VBool
   |     VNull
 
@@ -119,17 +120,17 @@ datatype pred_op =
 datatype pred =
     PTrue
   |     PFalse
-  |     PCol  (* column op value *)
+  |     PCol
   |     PAnd
   |     POr
   |     PNot
 
 (* Query (matches Coq: Inductive Query) *)
 datatype query =
-    QSelect  (* SELECT cols FROM table WHERE pred *)
-  |     QJoin  (* JOIN t1 ON c1 = t2.c2 WHERE pred *)
-  |     QInsert  (* INSERT INTO table VALUES row *)
-  |     QUpdate  (* UPDATE table SET col=val WHERE pred *)
+    QSelect
+  |     QJoin
+  |     QInsert
+  |     QUpdate
   |     QDelete
 
 (* TxnStatus (matches Coq: Inductive TxnStatus) *)
@@ -141,7 +142,7 @@ datatype txn_status =
 (* TxnOp (matches Coq: Inductive TxnOp) *)
 datatype txn_op =
     OpInsert
-  |     OpDelete  (* table, row_index *)
+  |     OpDelete
   |     OpUpdate
 
 (* IsolationLevel (matches Coq: Inductive IsolationLevel) *)
@@ -179,7 +180,7 @@ record transaction =
 record wal_entry =
   wal_txn_id :: nat
   wal_op :: TxnOp
-  wal_lsn :: nat  (* Log sequence number *)
+  wal_lsn :: nat
 
 (* Checkpoint (matches Coq: Record Checkpoint) *)
 record checkpoint =
@@ -256,9 +257,11 @@ definition verify_merkle :: "MerkleTree \<Rightarrow> nat \<Rightarrow> bool" wh
 fun audit_chain_valid :: "AuditLog \<Rightarrow> bool" where
 
 
-(* type_matches - complex match, manual review needed *)
+(* type_matches - complex match, needs manual translation *)
+definition type_matches :: "bool" where "type_matches = undefined"
 
-(* row_matches_schema - complex match, manual review needed *)
+(* row_matches_schema - complex match, needs manual translation *)
+definition row_matches_schema :: "bool" where "row_matches_schema = undefined"
 
 (* query_well_typed (matches Coq: Definition query_well_typed) *)
 definition query_well_typed :: "Query \<Rightarrow> Database \<Rightarrow> bool" where

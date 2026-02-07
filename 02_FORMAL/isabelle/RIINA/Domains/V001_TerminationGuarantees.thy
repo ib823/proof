@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA V001_TerminationGuarantees - Isabelle/HOL Port
@@ -107,9 +108,11 @@ definition structural_recursion :: "expr \<Rightarrow> bool" where
 definition size_subtype :: "bool" where
   "size_subtype \<equiv> s1 <= s2"
 
-(* sized_wellformed - complex match, manual review needed *)
+(* sized_wellformed - complex match, needs manual translation *)
+definition sized_wellformed :: "bool" where "sized_wellformed = undefined"
 
-(* size_less - complex match, manual review needed *)
+(* size_less - complex match, needs manual translation *)
+definition size_less :: "bool" where "size_less = undefined"
 
 (* ackermann (matches Coq: Definition ackermann) *)
 definition ackermann :: "nat" where

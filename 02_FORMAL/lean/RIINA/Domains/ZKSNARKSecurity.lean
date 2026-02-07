@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ZKSNARKSecurity - Lean 4 Port
@@ -185,21 +186,21 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- ZKProperties (matches Coq: Record ZKProperties) -/
 structure ZKProperties where
-  zk_completeness : Bool  -- Honest prover convinces verifier
-  zk_soundness : Bool  -- Cheating prover cannot convince
-  zk_zero_knowledge : Bool  -- Verifier learns nothing beyond validity
+  zk_completeness : Bool
+  zk_soundness : Bool
+  zk_zero_knowledge : Bool
   deriving DecidableEq, Repr
 
 /-- SNARKProperties (matches Coq: Record SNARKProperties) -/
 structure SNARKProperties where
-  snark_succinctness : Bool  -- Short proofs
-  snark_non_interactive : Bool  -- Single message
-  snark_knowledge_sound : Bool  -- Extractor exists
+  snark_succinctness : Bool
+  snark_non_interactive : Bool
+  snark_knowledge_sound : Bool
   deriving DecidableEq, Repr
 
 /-- TrustedSetup (matches Coq: Record TrustedSetup) -/
 structure TrustedSetup where
-  ts_mpc_ceremony : Bool  -- Multi-party computation
+  ts_mpc_ceremony : Bool
   ts_toxic_waste_destroyed : Bool
   ts_verifiable : Bool
   deriving DecidableEq, Repr
@@ -209,127 +210,127 @@ structure ZKSNARKConfig where
   zks_zk : ZKProperties
   zks_snark : SNARKProperties
   zks_setup : TrustedSetup
-  zks_post_quantum : Bool  -- Resistant to quantum attacks
+  zks_post_quantum : Bool
   deriving DecidableEq, Repr
 
 /-- KnowledgeExtractor (matches Coq: Record KnowledgeExtractor) -/
 structure KnowledgeExtractor where
-  ke_exists : Bool  -- Extractor algorithm exists
-  ke_polynomial_time : Bool  -- Extractor runs in polynomial time
-  ke_extraction_prob : Nat  -- Probability of successful extraction in %
-  ke_rewinding_allowed : Bool  -- Extractor may use rewinding
-  ke_auxiliary_input : Bool  -- Handles auxiliary input
+  ke_exists : Bool
+  ke_polynomial_time : Bool
+  ke_extraction_prob : Nat
+  ke_rewinding_allowed : Bool
+  ke_auxiliary_input : Bool
   deriving DecidableEq, Repr
 
 /-- WitnessRelation (matches Coq: Record WitnessRelation) -/
 structure WitnessRelation where
-  wr_statement_size : Nat  -- Size of public statement
-  wr_witness_size : Nat  -- Size of private witness
-  wr_verification_time : Nat  -- Time to verify relation
-  wr_satisfiable : Bool  -- Relation is satisfiable
+  wr_statement_size : Nat
+  wr_witness_size : Nat
+  wr_verification_time : Nat
+  wr_satisfiable : Bool
   deriving DecidableEq, Repr
 
 /-- ZKSimulator (matches Coq: Record ZKSimulator) -/
 structure ZKSimulator where
-  sim_exists : Bool  -- Simulator exists
-  sim_polynomial_time : Bool  -- Runs in polynomial time
-  sim_indistinguishable : Bool  -- Output indistinguishable from real proofs
-  sim_no_witness_needed : Bool  -- Works without knowing witness
-  sim_programmable_ro : Bool  -- Can program random oracle
+  sim_exists : Bool
+  sim_polynomial_time : Bool
+  sim_indistinguishable : Bool
+  sim_no_witness_needed : Bool
+  sim_programmable_ro : Bool
   deriving DecidableEq, Repr
 
 /-- DistIndistinguishability (matches Coq: Record DistIndistinguishability) -/
 structure DistIndistinguishability where
-  di_computational : Bool  -- Computationally indistinguishable
-  di_statistical : Bool  -- Statistically indistinguishable
-  di_perfect : Bool  -- Perfectly indistinguishable
-  di_advantage_bound : Nat  -- Upper bound on distinguishing advantage
+  di_computational : Bool
+  di_statistical : Bool
+  di_perfect : Bool
+  di_advantage_bound : Nat
   deriving DecidableEq, Repr
 
 /-- ProverConfig (matches Coq: Record ProverConfig) -/
 structure ProverConfig where
-  pv_honest : Bool  -- Prover is honest
-  pv_knows_witness : Bool  -- Prover knows valid witness
-  pv_follows_protocol : Bool  -- Prover follows protocol
-  pv_polynomial_time : Bool  -- Prover is efficient
-  pv_randomness_fresh : Bool  -- Uses fresh randomness
+  pv_honest : Bool
+  pv_knows_witness : Bool
+  pv_follows_protocol : Bool
+  pv_polynomial_time : Bool
+  pv_randomness_fresh : Bool
   deriving DecidableEq, Repr
 
 /-- VerifierConfig (matches Coq: Record VerifierConfig) -/
 structure VerifierConfig where
-  vf_honest : Bool  -- Verifier is honest
-  vf_follows_protocol : Bool  -- Verifier follows protocol
-  vf_polynomial_time : Bool  -- Verifier is efficient
-  vf_accepts_valid : Bool  -- Accepts valid proofs
+  vf_honest : Bool
+  vf_follows_protocol : Bool
+  vf_polynomial_time : Bool
+  vf_accepts_valid : Bool
   deriving DecidableEq, Repr
 
 /-- ProofSize (matches Coq: Record ProofSize) -/
 structure ProofSize where
-  ps_proof_bytes : Nat  -- Proof size in bytes
-  ps_verification_ops : Nat  -- Verification operations
-  ps_statement_dependent : Bool  -- Size depends on statement?
-  ps_witness_independent : Bool  -- Size independent of witness?
+  ps_proof_bytes : Nat
+  ps_verification_ops : Nat
+  ps_statement_dependent : Bool
+  ps_witness_independent : Bool
   deriving DecidableEq, Repr
 
 /-- AsymptoticComplexity (matches Coq: Record AsymptoticComplexity) -/
 structure AsymptoticComplexity where
-  ac_proof_size : Nat  -- O(1) = 0, O(log n) = 1, O(n) = 2
-  ac_verification_time : Nat  -- Complexity class
-  ac_prover_time : Nat  -- Prover complexity
-  ac_setup_time : Nat  -- Setup complexity
+  ac_proof_size : Nat
+  ac_verification_time : Nat
+  ac_prover_time : Nat
+  ac_setup_time : Nat
   deriving DecidableEq, Repr
 
 /-- MPCCeremony (matches Coq: Record MPCCeremony) -/
 structure MPCCeremony where
-  mpc_participants : Nat  -- Number of participants
-  mpc_threshold : Nat  -- Threshold for security
-  mpc_verifiable : Bool  -- Ceremony is verifiable
-  mpc_contributions_published : Bool  -- All contributions public
-  mpc_random_beacon : Bool  -- Uses random beacon
+  mpc_participants : Nat
+  mpc_threshold : Nat
+  mpc_verifiable : Bool
+  mpc_contributions_published : Bool
+  mpc_random_beacon : Bool
   deriving DecidableEq, Repr
 
 /-- ToxicWaste (matches Coq: Record ToxicWaste) -/
 structure ToxicWaste where
-  tw_generated_securely : Bool  -- Generated with proper randomness
-  tw_never_stored : Bool  -- Never stored persistently
-  tw_destroyed_immediately : Bool  -- Destroyed after use
-  tw_verified_destruction : Bool  -- Destruction was verified
-  tw_multi_party : Bool  -- Split across parties
+  tw_generated_securely : Bool
+  tw_never_stored : Bool
+  tw_destroyed_immediately : Bool
+  tw_verified_destruction : Bool
+  tw_multi_party : Bool
   deriving DecidableEq, Repr
 
 /-- Groth16Config (matches Coq: Record Groth16Config) -/
 structure Groth16Config where
-  g16_pairing_friendly : Bool  -- Uses pairing-friendly curve
-  g16_proof_elements : Nat  -- Number of group elements in proof
-  g16_verification_pairings : Nat  -- Number of pairing operations
-  g16_trusted_setup : Bool  -- Requires trusted setup
-  g16_circuit_specific : Bool  -- Setup is circuit-specific
+  g16_pairing_friendly : Bool
+  g16_proof_elements : Nat
+  g16_verification_pairings : Nat
+  g16_trusted_setup : Bool
+  g16_circuit_specific : Bool
   deriving DecidableEq, Repr
 
 /-- Groth16Proof (matches Coq: Record Groth16Proof) -/
 structure Groth16Proof where
-  g16p_element_a : Nat  -- Group element A
-  g16p_element_b : Nat  -- Group element B
-  g16p_element_c : Nat  -- Group element C
-  g16p_valid_curve_points : Bool  -- Points are on curve
-  g16p_valid_subgroup : Bool  -- Points in correct subgroup
+  g16p_element_a : Nat
+  g16p_element_b : Nat
+  g16p_element_c : Nat
+  g16p_valid_curve_points : Bool
+  g16p_valid_subgroup : Bool
   deriving DecidableEq, Repr
 
 /-- PLONKConfig (matches Coq: Record PLONKConfig) -/
 structure PLONKConfig where
-  plonk_universal_setup : Bool  -- Universal/updatable setup
-  plonk_polynomial_commitment : Bool  -- Uses polynomial commitments
-  plonk_arithmetic_gates : Bool  -- Supports arithmetic gates
-  plonk_custom_gates : Bool  -- Supports custom gates
-  plonk_lookup_tables : Bool  -- Supports lookup arguments
+  plonk_universal_setup : Bool
+  plonk_polynomial_commitment : Bool
+  plonk_arithmetic_gates : Bool
+  plonk_custom_gates : Bool
+  plonk_lookup_tables : Bool
   deriving DecidableEq, Repr
 
 /-- PLONKGate (matches Coq: Record PLONKGate) -/
 structure PLONKGate where
-  pg_degree : Nat  -- Gate degree
-  pg_fan_in : Nat  -- Number of inputs
-  pg_fan_out : Nat  -- Number of outputs
-  pg_is_arithmetic : Bool  -- Is arithmetic gate
+  pg_degree : Nat
+  pg_fan_in : Nat
+  pg_fan_out : Nat
+  pg_is_arithmetic : Bool
   deriving DecidableEq, Repr
 
 /-- FullZKSNARKConfig (matches Coq: Record FullZKSNARKConfig) -/
@@ -344,18 +345,18 @@ structure FullZKSNARKConfig where
 
 /-- SoundnessError (matches Coq: Record SoundnessError) -/
 structure SoundnessError where
-  se_statistical : Nat  -- Statistical soundness error (neg exponent)
-  se_computational : Nat  -- Computational soundness error (neg exponent)
-  se_knowledge : Nat  -- Knowledge error (neg exponent)
-  se_security_parameter : Nat  -- Security parameter lambda
+  se_statistical : Nat
+  se_computational : Nat
+  se_knowledge : Nat
+  se_security_parameter : Nat
   deriving DecidableEq, Repr
 
 /-- ProofSystemType (matches Coq: Record ProofSystemType) -/
 structure ProofSystemType where
-  pst_is_argument : Bool  -- Argument (computational soundness)
-  pst_is_proof : Bool  -- Proof (statistical soundness)
-  pst_knowledge_property : Bool  -- Has knowledge property
-  pst_succinctness : Bool  -- Is succinct
+  pst_is_argument : Bool
+  pst_is_proof : Bool
+  pst_knowledge_property : Bool
+  pst_succinctness : Bool
   deriving DecidableEq, Repr
 
 /-- zk_secure (matches Coq: Definition zk_secure) -/
@@ -434,8 +435,8 @@ def riina_verifier : VerifierConfig := mkVerifierConfig
 
 /-- ps_succinct (matches Coq: Definition ps_succinct) -/
 def ps_succinct (ps : ProofSize) : Bool :=
-  (ps_proof_bytes ps <=? 512) &&           (* Max 512 bytes *)
-  (ps_verification_ops ps <=? 1000) &&     (* Max 1000 ops *)
+  (ps_proof_bytes ps <=? 512) &&           
+  (ps_verification_ops ps <=? 1000) &&     
   ps_witness_independent ps
 
 /-- ac_polylog (matches Coq: Definition ac_polylog) -/
@@ -474,7 +475,7 @@ def riina_tw : ToxicWaste := mkToxicWaste
 /-- g16_secure (matches Coq: Definition g16_secure) -/
 def g16_secure (g : Groth16Config) : Bool :=
   g16_pairing_friendly g &&
-  (g16_proof_elements g =? 3) &&       (* 3 elements: A, B, C *)
+  (g16_proof_elements g =? 3) &&       
   (g16_verification_pairings g <=? 4)
 
 /-- g16p_valid (matches Coq: Definition g16p_valid) -/

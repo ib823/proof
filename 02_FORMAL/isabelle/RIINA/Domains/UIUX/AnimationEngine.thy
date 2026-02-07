@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA AnimationEngine - Isabelle/HOL Port
@@ -55,7 +56,8 @@ definition spring_position_at_time :: "R" where
 definition frame_budget_120fps :: "R" where
   "frame_budget_120fps \<equiv> 8333"
 
-(* valid_transition - complex match, manual review needed *)
+(* valid_transition - complex match, needs manual translation *)
+definition valid_transition :: "bool" where "valid_transition = undefined"
 
 (* bezier_eval (matches Coq: Definition bezier_eval) *)
 definition bezier_eval :: "BezierCurve \<Rightarrow> R \<Rightarrow> R" where

@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA ToolingIDE - Lean 4 Port
@@ -85,85 +86,85 @@ namespace RIINA
 
 /-- ToolAST (matches Coq: Inductive ToolAST) -/
 inductive ToolAST where
-  | tASTVar : ToolAST
-  | tASTLit : ToolAST
-  | tASTApp : ToolAST
-  | tASTLam : ToolAST
-  | tASTAnnot : ToolAST  -- Security annotation
+  | tASTVar : String → ToolAST
+  | tASTLit : Nat → ToolAST
+  | tASTApp : ToolAST → ToolAST → ToolAST
+  | tASTLam : String → ToolAST → ToolAST
+  | tASTAnnot : String → ToolAST → ToolAST
   deriving DecidableEq, Repr
 
 /-- TypeInfo (matches Coq: Inductive TypeInfo) -/
 inductive TypeInfo where
-  | tIBase : TypeInfo
-  | tIArrow : TypeInfo
-  | tIEffectful : TypeInfo
+  | tIBase : String → TypeInfo
+  | tIArrow : TypeInfo → TypeInfo → TypeInfo
+  | tIEffectful : TypeInfo → List String → TypeInfo
   deriving DecidableEq, Repr
 
 /-- LSPRequest (matches Coq: Inductive LSPRequest) -/
 inductive LSPRequest where
-  | lSPCompletion : LSPRequest  -- line, column
-  | lSPHover : LSPRequest
-  | lSPDefinition : LSPRequest
+  | lSPCompletion : Nat → Nat → LSPRequest
+  | lSPHover : Nat → Nat → LSPRequest
+  | lSPDefinition : Nat → Nat → LSPRequest
   | lSPDiagnostics : LSPRequest
   deriving DecidableEq, Repr
 
 /-- Diagnostic (matches Coq: Inductive Diagnostic) -/
 inductive Diagnostic where
-  | diagError : Diagnostic
-  | diagWarning : Diagnostic
-  | diagSecurityWarning : Diagnostic
+  | diagError : Nat → Nat → String → Diagnostic
+  | diagWarning : Nat → Nat → String → Diagnostic
+  | diagSecurityWarning : Nat → Nat → String → Diagnostic
   deriving DecidableEq, Repr
 
 /-- LSPResponse (matches Coq: Inductive LSPResponse) -/
 inductive LSPResponse where
-  | lSPCompletionItems : LSPResponse
-  | lSPHoverInfo : LSPResponse
-  | lSPLocation : LSPResponse
-  | lSPDiagnosticList : LSPResponse
+  | lSPCompletionItems : List String → LSPResponse
+  | lSPHoverInfo : String → TypeInfo → LSPResponse
+  | lSPLocation : Nat → Nat → LSPResponse
+  | lSPDiagnosticList : List Diagnostic → LSPResponse
   deriving DecidableEq, Repr
 
 /-- DebugValue (matches Coq: Inductive DebugValue) -/
 inductive DebugValue where
-  | dVPublic : DebugValue
-  | dVRedacted : DebugValue  -- Secret value redacted
-  | dVStruct : DebugValue
+  | dVPublic : String → DebugValue
+  | dVRedacted : DebugValue
+  | dVStruct : List (String * DebugValue) → DebugValue
   deriving DecidableEq, Repr
 
 /-- ToolInput (matches Coq: Inductive ToolInput) -/
 inductive ToolInput where
-  | tISource : ToolInput
-  | tIAST : ToolInput
-  | tIBinary : ToolInput
+  | tISource : SourceCode → ToolInput
+  | tIAST : ToolAST → ToolInput
+  | tIBinary : List Nat → ToolInput
   deriving DecidableEq, Repr
 
 /-- ToolOutput (matches Coq: Inductive ToolOutput) -/
 inductive ToolOutput where
-  | tOSource : ToolOutput
-  | tOAST : ToolOutput
-  | tOBinary : ToolOutput
-  | tODiagnostics : ToolOutput
+  | tOSource : SourceCode → ToolOutput
+  | tOAST : ToolAST → ToolOutput
+  | tOBinary : List Nat → ToolOutput
+  | tODiagnostics : List Diagnostic → ToolOutput
   deriving DecidableEq, Repr
 
 /-- SecurityIssue (matches Coq: Inductive SecurityIssue) -/
 inductive SecurityIssue where
-  | sIBufferOverflow : SecurityIssue
-  | sISQLInjection : SecurityIssue
-  | sIHardcodedSecret : SecurityIssue
-  | sIUnsafeDeserialization : SecurityIssue
+  | sIBufferOverflow : Nat → Nat → SecurityIssue
+  | sISQLInjection : Nat → Nat → SecurityIssue
+  | sIHardcodedSecret : Nat → Nat → SecurityIssue
+  | sIUnsafeDeserialization : Nat → Nat → SecurityIssue
   deriving DecidableEq, Repr
 
 /-- LintViolation (matches Coq: Inductive LintViolation) -/
 inductive LintViolation where
-  | lVStyle : LintViolation
-  | lVCorrectness : LintViolation
-  | lVSecurity : LintViolation
+  | lVStyle : Nat → Nat → String → LintViolation
+  | lVCorrectness : Nat → Nat → String → LintViolation
+  | lVSecurity : Nat → Nat → String → LintViolation
   deriving DecidableEq, Repr
 
 /-- LintRule (matches Coq: Record LintRule) -/
 structure LintRule where
   lr_name : String
-  lr_category : String  -- "security", "style", "correctness"
-  lr_severity : Nat  -- 1=info, 2=warning, 3=error
+  lr_category : String
+  lr_severity : Nat
   deriving DecidableEq, Repr
 
 /-- BuildConfig (matches Coq: Record BuildConfig) -/
@@ -233,7 +234,7 @@ def compose_tools (t1 t2 : Tool) : Tool := mkTool
     (t1
 
 /-- tool_deterministic (matches Coq: Definition tool_deterministic) -/
-def tool_deterministic := True -- complex match, simplified to Prop
+def tool_deterministic := sorry -- complex match, needs manual translation
 
 /-- semantically_equivalent (matches Coq: Definition semantically_equivalent) -/
 def semantically_equivalent (a b : ToolAST) : Prop :=
@@ -292,7 +293,7 @@ def lint_violation_actual (code : ToolAST) (violation : LintViolation) : Prop :=
   match violation with
 
 /-- rule_matches_violation (matches Coq: Definition rule_matches_violation) -/
-def rule_matches_violation := True -- complex match, simplified to Prop
+def rule_matches_violation := sorry -- complex match, needs manual translation
 
 /-- critical_security_rule (matches Coq: Definition critical_security_rule) -/
 def critical_security_rule (rule : LintRule) : Prop :=
@@ -326,7 +327,7 @@ def resolution_terminates (deps : DepGraph) : Prop :=
   exists resolved, resolve_step (List
 
 /-- verify_signature (matches Coq: Definition verify_signature) -/
-def verify_signature := True -- complex match, simplified to Prop
+def verify_signature := sorry -- complex match, needs manual translation
 
 /-- signature_valid (matches Coq: Definition signature_valid) -/
 def signature_valid (pkg : Package) (trusted_keys : List string) : Prop :=

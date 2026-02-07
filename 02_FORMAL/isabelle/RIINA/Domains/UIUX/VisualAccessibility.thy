@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VisualAccessibility - Isabelle/HOL Port
@@ -82,7 +83,8 @@ begin
 definition visible :: "UIElement \<Rightarrow> bool" where
   "visible elem \<equiv> is_visible elem = true"
 
-(* voiceover_accessible - complex match, manual review needed *)
+(* voiceover_accessible - complex match, needs manual translation *)
+definition voiceover_accessible :: "bool" where "voiceover_accessible = undefined"
 
 (* readable (matches Coq: Definition readable) *)
 definition readable :: "Text \<Rightarrow> DynamicTypeSize \<Rightarrow> bool" where
@@ -96,7 +98,8 @@ definition reduce_motion_enabled :: "bool" where
 definition plays :: "Animation \<Rightarrow> bool" where
   "plays anim \<equiv> animation_active anim = true /\ is_essential anim = false"
 
-(* is_root - complex match, manual review needed *)
+(* is_root - complex match, needs manual translation *)
+definition is_root :: "bool" where "is_root = undefined"
 
 (* connected_to_root (matches Coq: Definition connected_to_root) *)
 definition connected_to_root :: "AccessibilityTree \<Rightarrow> bool" where

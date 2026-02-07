@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA SIMDVerification - Lean 4 Port
@@ -59,7 +60,7 @@ namespace RIINA
 
 /-- MemResult (matches Coq: Inductive MemResult) -/
 inductive MemResult where
-  | memOK : MemResult
+  | memOK : SIMDVec → MemResult
   | memUB : MemResult
   deriving DecidableEq, Repr
 

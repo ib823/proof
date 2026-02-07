@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA CryptographicSecurity - Lean 4 Port
@@ -150,8 +151,9 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- TagVerifyResult (matches Coq: Inductive TagVerifyResult) -/
 inductive TagVerifyResult where
-  | tagValid : TagVerifyResult  -- Tag matches
-  | tagInvalid : TagVerifyResult  -- Tag doesn't match
+  | tagValid : TagVerifyResult
+  | tagInvalid : TagVerifyResult
+  | tagError : TagVerifyResult
   deriving DecidableEq, Repr
 
 /-- ConstantTimeOp (matches Coq: Record ConstantTimeOp) -/
@@ -166,7 +168,7 @@ structure ConstantTimeOp where
 /-- CryptoKey (matches Coq: Record CryptoKey) -/
 structure CryptoKey where
   key_bits : Nat
-  key_algorithm : Nat  -- 0=AES, 1=ChaCha, 2=ML-KEM
+  key_algorithm : Nat
   key_usage : List
   key_extractable : Bool
   key_hardware_bound : Bool
@@ -181,7 +183,7 @@ structure NonceTracker where
 
 /-- AEADConfig (matches Coq: Record AEADConfig) -/
 structure AEADConfig where
-  aead_algorithm : Nat  -- 0=AES-GCM, 1=ChaCha20-Poly1305
+  aead_algorithm : Nat
   aead_key_bits : Nat
   aead_nonce_bits : Nat
   aead_tag_bits : Nat
@@ -190,7 +192,7 @@ structure AEADConfig where
 
 /-- HashConfig (matches Coq: Record HashConfig) -/
 structure HashConfig where
-  hash_algorithm : Nat  -- 0=SHA-256, 1=SHA-3, 2=BLAKE3
+  hash_algorithm : Nat
   hash_output_bits : Nat
   hash_length_ext_safe : Bool
   deriving DecidableEq, Repr
@@ -205,7 +207,7 @@ structure RNGConfig where
 
 /-- ProtocolConfig (matches Coq: Record ProtocolConfig) -/
 structure ProtocolConfig where
-  proto_min_version : Nat  -- 3=TLS1.2, 4=TLS1.3
+  proto_min_version : Nat
   proto_allowed_ciphers : List
   proto_fallback_disabled : Bool
   proto_forward_secrecy : Bool
@@ -213,22 +215,22 @@ structure ProtocolConfig where
 
 /-- PQConfig (matches Coq: Record PQConfig) -/
 structure PQConfig where
-  pq_kem_algorithm : Nat  -- 0=ML-KEM
-  pq_sig_algorithm : Nat  -- 0=ML-DSA
-  pq_security_level : Nat  -- 1=128, 3=192, 5=256
-  pq_hybrid_mode : Bool  -- Combined with classical
+  pq_kem_algorithm : Nat
+  pq_sig_algorithm : Nat
+  pq_security_level : Nat
+  pq_hybrid_mode : Bool
   deriving DecidableEq, Repr
 
 /-- MRAEADConfig (matches Coq: Record MRAEADConfig) -/
 structure MRAEADConfig where
-  mraead_siv_mode : Bool  -- Synthetic IV mode
+  mraead_siv_mode : Bool
   mraead_deterministic : Bool
   mraead_base : AEADConfig
   deriving DecidableEq, Repr
 
 /-- CertConfig (matches Coq: Record CertConfig) -/
 structure CertConfig where
-  cert_ct_required : Bool  -- Certificate Transparency
+  cert_ct_required : Bool
   cert_pinning : Bool
   cert_revocation_check : Bool
   cert_ocsp_stapling : Bool
@@ -245,11 +247,11 @@ structure EncryptionScheme where
 
 /-- KDFConfig (matches Coq: Record KDFConfig) -/
 structure KDFConfig where
-  kdf_algorithm : Nat  -- 0=HKDF, 1=PBKDF2, 2=Argon2
+  kdf_algorithm : Nat
   kdf_output_bits : Nat
   kdf_salt_bits : Nat
-  kdf_iterations : Nat  -- For PBKDF2/Argon2
-  kdf_memory_cost : Nat  -- For Argon2
+  kdf_iterations : Nat
+  kdf_memory_cost : Nat
   deriving DecidableEq, Repr
 
 /-- DerivedKey (matches Coq: Record DerivedKey) -/
@@ -257,13 +259,13 @@ structure DerivedKey where
   dk_parent_key : Key
   dk_derived_key : Key
   dk_context : List
-  dk_purpose : Nat  -- 0=encryption, 1=authentication, 2=signing
+  dk_purpose : Nat
   dk_kdf_config : KDFConfig
   deriving DecidableEq, Repr
 
 /-- MACConfig (matches Coq: Record MACConfig) -/
 structure MACConfig where
-  mac_algorithm : Nat  -- 0=HMAC-SHA256, 1=HMAC-SHA3, 2=Poly1305
+  mac_algorithm : Nat
   mac_key_bits : Nat
   mac_tag_bits : Nat
   mac_constant_time : Bool
@@ -272,8 +274,8 @@ structure MACConfig where
 /-- CounterNonce (matches Coq: Record CounterNonce) -/
 structure CounterNonce where
   cn_prefix : List
-  cn_counter : Nat  -- Monotonic counter
-  cn_max_value : Nat  -- Maximum counter value
+  cn_counter : Nat
+  cn_max_value : Nat
   deriving DecidableEq, Repr
 
 /-- FullCryptoConfig (matches Coq: Record FullCryptoConfig) -/
@@ -299,7 +301,7 @@ def ct_valid (op : ConstantTimeOp) : Bool :=
 
 /-- riina_ct_op (matches Coq: Definition riina_ct_op) -/
 def riina_ct_op : ConstantTimeOp := mkCTOp
-  (fun x y => x + y)  (* placeholder operation *)
+  (fun x y => x + y)  
   true true true true
 
 /-- key_secure (matches Coq: Definition key_secure) -/
@@ -325,10 +327,10 @@ def nonce_counter_safe (nt : NonceTracker) : Bool :=
 
 /-- aead_secure (matches Coq: Definition aead_secure) -/
 def aead_secure (cfg : AEADConfig) : Bool :=
-  (aead_algorithm cfg <=? 1) &&       (* approved algorithm *)
-  (128 <=? aead_key_bits cfg) &&      (* min 128-bit key *)
-  (96 <=? aead_nonce_bits cfg) &&     (* min 96-bit nonce *)
-  (128 <=? aead_tag_bits cfg) &&      (* min 128-bit tag *)
+  (aead_algorithm cfg <=? 1) &&       
+  (128 <=? aead_key_bits cfg) &&      
+  (96 <=? aead_nonce_bits cfg) &&     
+  (128 <=? aead_tag_bits cfg) &&      
   aead_constant_time cfg
 
 /-- riina_aead (matches Coq: Definition riina_aead) -/
@@ -407,10 +409,10 @@ def riina_enc_scheme : EncryptionScheme := mkEncScheme
 
 /-- kdf_secure (matches Coq: Definition kdf_secure) -/
 def kdf_secure (cfg : KDFConfig) : Bool :=
-  (kdf_algorithm cfg <=? 2) &&           (* approved algorithm *)
-  (256 <=? kdf_output_bits cfg) &&       (* min 256-bit output *)
-  (128 <=? kdf_salt_bits cfg) &&         (* min 128-bit salt *)
-  ((kdf_algorithm cfg =? 0) ||           (* HKDF doesn't need iterations *)
+  (kdf_algorithm cfg <=? 2) &&           
+  (256 <=? kdf_output_bits cfg) &&       
+  (128 <=? kdf_salt_bits cfg) &&         
+  ((kdf_algorithm cfg =? 0) ||           
    (100000 <=? kdf_iterations cfg))
 
 /-- riina_kdf (matches Coq: Definition riina_kdf) -/
@@ -425,9 +427,9 @@ def derived_key_valid (dk : DerivedKey) : Bool :=
 
 /-- mac_secure (matches Coq: Definition mac_secure) -/
 def mac_secure (cfg : MACConfig) : Bool :=
-  (mac_algorithm cfg <=? 2) &&       (* approved algorithm *)
-  (128 <=? mac_key_bits cfg) &&      (* min 128-bit key *)
-  (128 <=? mac_tag_bits cfg) &&      (* min 128-bit tag *)
+  (mac_algorithm cfg <=? 2) &&       
+  (128 <=? mac_key_bits cfg) &&      
+  (128 <=? mac_tag_bits cfg) &&      
   mac_constant_time cfg
 
 /-- riina_mac (matches Coq: Definition riina_mac) -/
@@ -685,7 +687,7 @@ theorem cry_029_random_fault_mitigated : ∀ (op : ConstantTimeOp) (rng : RNGCon
 
 /-- ---------- CRY-030: Bleichenbacher Attack Mitigated ---------- -/
 /-- cry_030_bleichenbacher_mitigated (matches Coq) -/
-theorem cry_030_bleichenbacher_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (* AEAD modes don't use PKCS#1 v1.5 padding *) (aead_algorithm cfg <=? 1) = true := by
+theorem cry_030_bleichenbacher_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true →  (aead_algorithm cfg <=? 1) = true := by
   simp_all [Bool.and_eq_true]
 
 /-- ---------- CRY-031: Whisper Leak (LLM Timing) Mitigated ---------- -/
@@ -710,7 +712,7 @@ theorem riina_complete_crypto_security : ct_valid riina_ct_op = true ∧ aead_se
 
 /-- ENC-001: Authenticated encryption preserves plaintext length -/
 /-- enc_001_length_preservation (matches Coq) -/
-theorem enc_001_length_preservation : ∀ (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = true → pt_len = ct_len → (* AEAD doesn't expand plaintext (except tag) *) pt_len = ct_len := by
+theorem enc_001_length_preservation : ∀ (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = true → pt_len = ct_len →  AEAD doesn't expand plaintext (except tag)  pt_len = ct_len := by
   intro h; exact h
 
 /-- ENC-002: Encryption requires valid key size -/

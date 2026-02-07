@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA MalaysiaPDPA - Lean 4 Port
@@ -104,13 +105,13 @@ inductive ConsentStatus where
 /-- PDPAClassification (matches Coq: Inductive PDPAClassification) -/
 inductive PDPAClassification where
   | publicData : PDPAClassification
-  | personalData : PDPAClassification  -- "peribadi"
-  | sensitivePersonalData : PDPAClassification  -- "data peribadi sensitif"
+  | personalData : PDPAClassification
+  | sensitivePersonalData : PDPAClassification
   deriving DecidableEq, Repr
 
 /-- Purpose (matches Coq: Inductive Purpose) -/
 inductive Purpose where
-  | collectionPurpose : Purpose  -- Purpose ID declared at collection
+  | collectionPurpose : Nat → Purpose
   | directMarketing : Purpose
   | legalObligation : Purpose
   | vitalInterest : Purpose
@@ -148,14 +149,14 @@ def has_valid_consent (r : PDPARecord) : Prop :=
   pdpa_consent r = ExplicitConsent \/ pdpa_consent r = ImpliedConsent
 
 /-- consent_required_for_processing (matches Coq: Definition consent_required_for_processing) -/
-def consent_required_for_processing := True -- complex match, simplified to Prop
+def consent_required_for_processing := sorry -- complex match, needs manual translation
 
 /-- purpose_matches (matches Coq: Definition purpose_matches) -/
 def purpose_matches (declared : Purpose) (actual : Purpose) : Prop :=
   declared = actual
 
 /-- processing_within_purpose (matches Coq: Definition processing_within_purpose) -/
-def processing_within_purpose := True -- complex match, simplified to Prop
+def processing_within_purpose := sorry -- complex match, needs manual translation
 
 /-- disclosure_authorized (matches Coq: Definition disclosure_authorized) -/
 def disclosure_authorized (r : PDPARecord) (recipient : Nat) : Prop :=
@@ -164,7 +165,7 @@ def disclosure_authorized (r : PDPARecord) (recipient : Nat) : Prop :=
   (pdpa_consent r = ExplicitConsent /\ pdpa_classification r = SensitivePersonalData)
 
 /-- security_adequate (matches Coq: Definition security_adequate) -/
-def security_adequate := True -- complex match, simplified to Prop
+def security_adequate := sorry -- complex match, needs manual translation
 
 /-- within_retention_period (matches Coq: Definition within_retention_period) -/
 def within_retention_period (r : PDPARecord) (current_time : Nat) : Prop :=

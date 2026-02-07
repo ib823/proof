@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA FormalVerification - Isabelle/HOL Port
@@ -127,10 +128,10 @@ datatype refinement_ty =
 
 (* HeapPred (matches Coq: Inductive HeapPred) *)
 datatype heap_pred =
-    HPEmp  (* Empty heap *)
+    HPEmp
   |     HPPointsTo
-  |     HPSep  (* P * Q *)
-  |     HPWand  (* P -* Q *)
+  |     HPSep
+  |     HPWand
 
 (* VC (matches Coq: Inductive VC) *)
 datatype vc =
@@ -141,9 +142,9 @@ datatype vc =
 (* TyExpr (matches Coq: Inductive TyExpr) *)
 datatype ty_expr =
     TEBase
-  |     TEPi  (* Pi type: (x : A) -> B *)
-  |     TESigma  (* Sigma type: (x : A) * B *)
-  |     TEVar  (* Type variable *)
+  |     TEPi
+  |     TESigma
+  |     TEVar
 
 (* SMTFormula (matches Coq: Inductive SMTFormula) *)
 datatype smt_formula =
@@ -168,7 +169,7 @@ datatype property =
 (* BMCResult (matches Coq: Inductive BMCResult) *)
 datatype bmc_result =
     BMCSat
-  |     BMCUnsat  (* Counterexample trace *)
+  |     BMCUnsat
 
 (* SimpleProp (matches Coq: Inductive SimpleProp) *)
 datatype simple_prop =
@@ -181,15 +182,15 @@ datatype simple_prop =
 
 (* ProofTerm (matches Coq: Inductive ProofTerm) *)
 datatype proof_term =
-    PTTrueI  (* True introduction *)
-  |     PTAndI  (* And introduction *)
-  |     PTAndE1  (* And elimination 1 *)
-  |     PTAndE2  (* And elimination 2 *)
-  |     PTOrI1  (* Or introduction 1 *)
-  |     PTOrI2  (* Or introduction 2 *)
-  |     PTImplI  (* Impl introduction *)
-  |     PTImplE  (* Impl elimination *)
-  |     PTAssume  (* Assumption *)
+    PTTrueI
+  |     PTAndI
+  |     PTAndE1
+  |     PTAndE2
+  |     PTOrI1
+  |     PTOrI2
+  |     PTImplI
+  |     PTImplE
+  |     PTAssume
 
 (* SrcExpr (matches Coq: Inductive SrcExpr) *)
 datatype src_expr =
@@ -239,7 +240,7 @@ datatype tgt_val =
 (* Cmd (matches Coq: Inductive Cmd) *)
 datatype cmd =
     CmdSkip
-  |     CmdAssign  (* x := n *)
+  |     CmdAssign
   |     CmdSeq
   |     CmdIf
   |     CmdWhile
@@ -271,7 +272,8 @@ definition empty_heap :: "Heap" where
 definition disjoint :: "bool" where
   "disjoint \<equiv> forall l, h1 l = None \/ h2 l = None"
 
-(* heap_union - complex match, manual review needed *)
+(* heap_union - complex match, needs manual translation *)
+definition heap_union :: "bool" where "heap_union = undefined"
 
 (* contract_sat (matches Coq: Definition contract_sat) *)
 definition contract_sat :: "Contract \<Rightarrow> bool" where
@@ -314,7 +316,8 @@ definition src_effect :: "SrcExpr \<Rightarrow> Effect" where
 definition tgt_effect :: "TgtExpr \<Rightarrow> Effect" where
   "tgt_effect e \<equiv> EffPure"
 
-(* sec_leq - complex match, manual review needed *)
+(* sec_leq - complex match, needs manual translation *)
+definition sec_leq :: "bool" where "sec_leq = undefined"
 
 (* src_sec_label (matches Coq: Definition src_sec_label) *)
 definition src_sec_label :: "SrcExpr \<Rightarrow> SecLabel" where
@@ -332,7 +335,8 @@ definition obs_equiv :: "SrcVal \<Rightarrow> TgtVal \<Rightarrow> bool" where
 fun refinement_wf :: "RefinementTy \<Rightarrow> bool" where
 
 
-(* refinement_subtype - complex match, manual review needed *)
+(* refinement_subtype - complex match, needs manual translation *)
+definition refinement_subtype :: "bool" where "refinement_subtype = undefined"
 
 (* liquid_terminates (matches Coq: Definition liquid_terminates) *)
 definition liquid_terminates :: "LiquidState \<Rightarrow> nat \<Rightarrow> bool" where
@@ -358,7 +362,8 @@ definition hoare_triple :: "HeapPred \<Rightarrow> Cmd \<Rightarrow> HeapPred \<
     cmd_eval c env1 env2 ->
     heap_sat h post"
 
-(* valid_counterexample - complex match, manual review needed *)
+(* valid_counterexample - complex match, needs manual translation *)
+definition valid_counterexample :: "bool" where "valid_counterexample = undefined"
 
 (* abstraction_sound (matches Coq: Definition abstraction_sound) *)
 definition abstraction_sound :: "Abstraction \<Rightarrow> Transition \<Rightarrow> Transition \<Rightarrow> bool" where

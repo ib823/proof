@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA GarbageCollector - Lean 4 Port
@@ -48,7 +49,7 @@ namespace RIINA
 
 /-- ObjectId (matches Coq: Inductive ObjectId) -/
 inductive ObjectId where
-  | objId : ObjectId
+  | objId : Nat → ObjectId
   deriving DecidableEq, Repr
 
 /-- Object (matches Coq: Record Object) -/
@@ -90,10 +91,9 @@ def after_gc_not_exists (result : GCResult) (obj : Object) : Prop :=
 
 /-- valid_gc (matches Coq: Definition valid_gc) -/
 def valid_gc (result : GCResult) : Prop :=
-  (* All reachable objects in pre-state exist in post-state *)
   (forall oid, reachable (gc_pre_state result) oid ->
     exists_in_heap (gc_post_state result) oid) /\
-  (* All objects in post-state were reachable in pre-state *)
+  
   (forall obj, exists_obj (gc_post_state result) obj ->
     reachable (gc_pre_state result) (obj_id obj))
 

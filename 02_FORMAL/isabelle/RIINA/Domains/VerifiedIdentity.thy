@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA VerifiedIdentity - Isabelle/HOL Port
@@ -147,7 +148,7 @@ record argon2_params =
 record pepper =
   pepper_value :: 'a list
   pepper_hsm_id :: nat
-  pepper_bound :: bool  (* true if bound to HSM *)
+  pepper_bound :: bool
 
 (* TokenClaims (matches Coq: Record TokenClaims) *)
 record token_claims =
@@ -322,15 +323,18 @@ definition fido2_counter_valid :: "FIDO2Credential \<Rightarrow> FIDO2Assertion 
 definition fido2_user_verified :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
   "fido2_user_verified cred assertion \<equiv> (negb (fido2_user_verification cred)) \<or> (assertion_user_verified assertion)"
 
-(* verify_fido2 - complex match, manual review needed *)
+(* verify_fido2 - complex match, needs manual translation *)
+definition verify_fido2 :: "bool" where "verify_fido2 = undefined"
 
 (* valid_credential (matches Coq: Definition valid_credential) *)
 definition valid_credential :: "CredentialStore \<Rightarrow> Principal \<Rightarrow> Credential \<Rightarrow> bool" where
   "valid_credential store p c \<equiv> In c (store (principal_id p))"
 
-(* credential_matches - complex match, manual review needed *)
+(* credential_matches - complex match, needs manual translation *)
+definition credential_matches :: "bool" where "credential_matches = undefined"
 
-(* authenticate - complex match, manual review needed *)
+(* authenticate - complex match, needs manual translation *)
+definition authenticate :: "bool" where "authenticate = undefined"
 
 (* log_auth_attempt (matches Coq: Definition log_auth_attempt) *)
 definition log_auth_attempt :: "AuthLogStore \<Rightarrow> PrincipalId \<Rightarrow> Timestamp \<Rightarrow> bool \<Rightarrow> AuthLogStore" where

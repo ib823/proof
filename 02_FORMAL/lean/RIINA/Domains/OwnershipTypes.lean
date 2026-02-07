@@ -1,4 +1,5 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
+-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
 /-!
 # RIINA OwnershipTypes - Lean 4 Port
@@ -64,17 +65,17 @@ private theorem andb_true_iff (a b : Bool) :
 
 /-- OwnState (matches Coq: Inductive OwnState) -/
 inductive OwnState where
-  | owned : OwnState  -- Exclusively owned
-  | moved : OwnState  -- Ownership transferred
-  | borrowed : OwnState  -- Immutably borrowed
-  | mutBorrowed : OwnState  -- Mutably borrowed
-  | dropped : OwnState  -- Deallocated
+  | owned : OwnState
+  | moved : OwnState
+  | borrowed : Lifetime → OwnState
+  | mutBorrowed : Lifetime → OwnState
+  | dropped : OwnState
   deriving DecidableEq, Repr
 
 /-- RefCellState (matches Coq: Inductive RefCellState) -/
 inductive RefCellState where
   | rCUnborrowed : RefCellState
-  | rCSharedBorrow : RefCellState  -- count of shared borrows
+  | rCSharedBorrow : Nat → RefCellState
   | rCMutBorrow : RefCellState
   deriving DecidableEq, Repr
 
@@ -82,16 +83,16 @@ inductive RefCellState where
 structure OwnedVar where
   ov_id : Nat
   ov_state : OwnState
-  ov_lifetime : Lifetime  -- Scope lifetime
-  ov_is_copy : Bool  -- Copy type?
+  ov_lifetime : Lifetime
+  ov_is_copy : Bool
   deriving DecidableEq, Repr
 
 /-- Borrow (matches Coq: Record Borrow) -/
 structure Borrow where
-  br_source : Nat  -- Source variable ID
-  br_target : Nat  -- Borrow variable ID
-  br_mutable : Bool  -- Mutable borrow?
-  br_lifetime : Lifetime  -- Borrow lifetime
+  br_source : Nat
+  br_target : Nat
+  br_mutable : Bool
+  br_lifetime : Lifetime
   deriving DecidableEq, Repr
 
 /-- OwnCtx (matches Coq: Record OwnCtx) -/
@@ -120,13 +121,13 @@ def lifetime_outlives (l1 l2 : Lifetime) : Bool :=
   Nat
 
 /-- is_usable (matches Coq: Definition is_usable) -/
-def is_usable := True -- complex match, simplified to Prop
+def is_usable := sorry -- complex match, needs manual translation
 
 /-- can_mut_borrow (matches Coq: Definition can_mut_borrow) -/
-def can_mut_borrow := True -- complex match, simplified to Prop
+def can_mut_borrow := sorry -- complex match, needs manual translation
 
 /-- can_shared_borrow (matches Coq: Definition can_shared_borrow) -/
-def can_shared_borrow := True -- complex match, simplified to Prop
+def can_shared_borrow := sorry -- complex match, needs manual translation
 
 /-- count_borrows (matches Coq: Definition count_borrows) -/
 def count_borrows (ctx : OwnCtx) (id : Nat) : Nat :=
@@ -137,13 +138,13 @@ def count_mut_borrows (ctx : OwnCtx) (id : Nat) : Nat :=
   length (filter (fun b => andb (Nat
 
 /-- borrow_lifetime_valid (matches Coq: Definition borrow_lifetime_valid) -/
-def borrow_lifetime_valid := True -- complex match, simplified to Prop
+def borrow_lifetime_valid := sorry -- complex match, needs manual translation
 
 /-- is_moved (matches Coq: Definition is_moved) -/
-def is_moved := True -- complex match, simplified to Prop
+def is_moved := sorry -- complex match, needs manual translation
 
 /-- is_dropped (matches Coq: Definition is_dropped) -/
-def is_dropped := True -- complex match, simplified to Prop
+def is_dropped := sorry -- complex match, needs manual translation
 
 /-- box_new (matches Coq: Definition box_new) -/
 def box_new (id : Nat) : BoxAlloc := mkBox id true false
@@ -158,17 +159,16 @@ def no_active_borrows (ctx : OwnCtx) (id : Nat) : Prop :=
 
 /-- memory_safe (matches Coq: Definition memory_safe) -/
 def memory_safe (ctx : OwnCtx) : Prop :=
-  (* All borrows are valid *)
   (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true) /\
-  (* No use after move: moved vars are not borrowed *)
+  
   (forall v, In v (oc_vars ctx) -> ov_state v = Moved -> 
              count_borrows ctx (ov_id v) = 0) /\
-  (* No use after drop: dropped vars are not borrowed *)
+  
   (forall v, In v (oc_vars ctx) -> ov_state v = Dropped -> 
              count_borrows ctx (ov_id v) = 0) /\
-  (* Mutable borrows are exclusive *)
+  
   (forall id, count_mut_borrows ctx id <= 1) /\
-  (* No simultaneous mut and shared borrows *)
+  
   (forall id, count_mut_borrows ctx id = 1 -> 
               count_borrows ctx id = count_mut_borrows ctx id)
 
