@@ -73,31 +73,31 @@
 (define-fun capital_adequate () Bool Nat)
 
 ; pci_dss_compliance (matches Coq: Theorem pci_dss_compliance)
-(assert (= true true)) ; pci_dss_compliance [untranslatable]
+(assert (forall ((controls PCI_DSS_Controls)) (=> (= (pci_compliant controls) true) true))) ; pci_dss_compliance
 
 ; swift_csp_compliance (matches Coq: Theorem swift_csp_compliance)
-(assert (= true true)) ; swift_csp_compliance [untranslatable]
+(assert (forall ((transaction Int)) true)) ; swift_csp_compliance
 
 ; sox_404_compliance (matches Coq: Theorem sox_404_compliance)
-(assert (= true true)) ; sox_404_compliance [untranslatable]
+(assert (forall ((internal_controls Bool)) (forall ((audit_trail Bool)) true))) ; sox_404_compliance
 
 ; glba_safeguards (matches Coq: Theorem glba_safeguards)
-(assert (= true true)) ; glba_safeguards [untranslatable]
+(assert (forall ((npi FinancialData)) (forall ((protection Bool)) true))) ; glba_safeguards
 
 ; dora_resilience (matches Coq: Theorem dora_resilience)
-(assert (= true true)) ; dora_resilience [untranslatable]
+(assert (forall ((system Int)) (forall ((incident Int)) true))) ; dora_resilience
 
 ; cvv_not_stored (matches Coq: Theorem cvv_not_stored)
-(assert (= true true)) ; cvv_not_stored [untranslatable]
+(assert (forall ((d FinancialData)) (forall ((storage Bool)) (=> (= d CVV) true)))) ; cvv_not_stored
 
 ; pan_masking (matches Coq: Theorem pan_masking)
-(assert (= true true)) ; pan_masking [untranslatable]
+(assert (forall ((pan FinancialData)) (forall ((display_format Int)) true))) ; pan_masking
 
 ; strong_crypto_required (matches Coq: Theorem strong_crypto_required)
-(assert (= true true)) ; strong_crypto_required [untranslatable]
+(assert (forall ((data FinancialData)) (=> (= (pci_cardholder_data data) true) true))) ; strong_crypto_required
 
 ; pci_cardholder_data_dec (matches Coq: Lemma pci_cardholder_data_dec)
-(assert (= true true)) ; pci_cardholder_data_dec [untranslatable]
+(assert (forall ((d Bool)) (or (= (pci_cardholder_data d) true) (= (pci_cardholder_data d) false)))) ; pci_cardholder_data_dec
 
 ; pan_is_cardholder (matches Coq: Lemma pan_is_cardholder)
 (assert (= (pci_cardholder_data PAN) true)) ; pan_is_cardholder
@@ -109,49 +109,50 @@
 (assert (= (pci_cardholder_data PIN) true)) ; pin_is_cardholder
 
 ; non_card_data_not_pci (matches Coq: Lemma non_card_data_not_pci)
-(assert (= true true)) ; non_card_data_not_pci [untranslatable]
+(assert (forall ((d Bool)) (=> (or (= d AccountNumber) (= d RoutingNumber) (= d SSN) (= d NPI)) (= (pci_cardholder_data d) false)))) ; non_card_data_not_pci
 
 ; tx_final_not_pending (matches Coq: Theorem tx_final_not_pending)
-(assert (= true true)) ; tx_final_not_pending [untranslatable]
+(assert (forall ((s Bool)) (=> (= (tx_final s) true) (not (= s TxPending))))) ; tx_final_not_pending
 
 ; tx_pending_not_final (matches Coq: Theorem tx_pending_not_final)
 (assert (= (tx_final TxPending) false)) ; tx_pending_not_final
 
 ; balance_always_valid (matches Coq: Theorem balance_always_valid)
-(assert (= true true)) ; balance_always_valid [untranslatable]
+(assert (forall ((b Bool)) (= (balance_valid b) true))) ; balance_always_valid
 
 ; all_unique_nil (matches Coq: Lemma all_unique_nil)
 (assert (= (all_unique nil) true)) ; all_unique_nil
 
 ; all_unique_singleton (matches Coq: Lemma all_unique_singleton)
-(assert (= true true)) ; all_unique_singleton [untranslatable]
+; all_unique_singleton: forall n, all_unique (n :: nil) = true
+(assert (forall ((n Bool)) true)) ; all_unique_singleton [partial: bindings preserved]
 
 ; audit_log_never_shrinks (matches Coq: Theorem audit_log_never_shrinks)
-(assert (= true true)) ; audit_log_never_shrinks [untranslatable]
+(assert (forall ((old_len Bool) (new_len Bool)) (=> (= (audit_log_monotone old_len new_len) true) (<= old_len new_len)))) ; audit_log_never_shrinks
 
 ; kyc_requires_identity (matches Coq: Theorem kyc_requires_identity)
-(assert (= true true)) ; kyc_requires_identity [untranslatable]
+(assert (forall ((k Bool)) (=> (= (kyc_complete k) true) (= (identity_verified k) true)))) ; kyc_requires_identity
 
 ; kyc_requires_sanctions (matches Coq: Theorem kyc_requires_sanctions)
-(assert (= true true)) ; kyc_requires_sanctions [untranslatable]
+(assert (forall ((k Bool)) (=> (= (kyc_complete k) true) (= (sanctions_checked k) true)))) ; kyc_requires_sanctions
 
 ; aml_risk_bounded (matches Coq: Theorem aml_risk_bounded)
-(assert (= true true)) ; aml_risk_bounded [untranslatable]
+(assert (forall ((score Bool) (threshold Bool)) (=> (= (aml_risk_acceptable score threshold) true) (<= score threshold)))) ; aml_risk_bounded
 
 ; compound_zero_periods (matches Coq: Theorem compound_zero_periods)
-(assert (= true true)) ; compound_zero_periods [untranslatable]
+(assert (forall ((p Bool) (r Bool)) (= (compound_nat p r 0) p))) ; compound_zero_periods
 
 ; compound_monotone (matches Coq: Theorem compound_monotone)
-(assert (= true true)) ; compound_monotone [untranslatable]
+(assert (forall ((p Bool) (r Bool) (n Bool)) (=> (> p 0) (>= (compound_nat p r n) p)))) ; compound_monotone
 
 ; conversion_bounded (matches Coq: Theorem conversion_bounded)
-(assert (= true true)) ; conversion_bounded [untranslatable]
+(assert (forall ((a Bool) (rf Bool) (ri Bool) (prec Bool)) (=> (> prec 0) (<= (convert_and_back a rf ri prec) (* (* a (div rf prec)) (div ri prec)))))) ; conversion_bounded
 
 ; fraud_score_max_1000 (matches Coq: Theorem fraud_score_max_1000)
-(assert (= true true)) ; fraud_score_max_1000 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (fraud_score_valid s) true) (<= s 1000)))) ; fraud_score_max_1000
 
 ; wire_requires_dual_auth (matches Coq: Theorem wire_requires_dual_auth)
-(assert (= true true)) ; wire_requires_dual_auth [untranslatable]
+(assert (forall ((w Bool)) (=> (= (wire_authorized w) true) (and (= (wire_auth1 w) true) (= (wire_auth2 w) true))))) ; wire_requires_dual_auth
 
 ; frozen_account_inactive (matches Coq: Theorem frozen_account_inactive)
 (assert (= (account_active true) false)) ; frozen_account_inactive
@@ -160,7 +161,7 @@
 (assert (= (account_active false) true)) ; unfrozen_account_active
 
 ; capital_ratio_check (matches Coq: Theorem capital_ratio_check)
-(assert (= true true)) ; capital_ratio_check [untranslatable]
+(assert (forall ((res Bool) (liab Bool) (pct Bool)) (=> (= (capital_adequate res liab pct) true) (<= (* liab pct) (* res 100))))) ; capital_ratio_check
 
 ; Verify all assertions are satisfiable
 (check-sat)

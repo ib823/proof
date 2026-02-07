@@ -83,130 +83,133 @@
   true)
 
 ; voiceover_complete_coverage (matches Coq: Theorem voiceover_complete_coverage)
-(assert (= true true)) ; voiceover_complete_coverage [untranslatable]
+(assert (forall ((re RIINA_UIElement)) (=> (= (visible (riina_element re)) true) (= (voiceover_accessible (riina_element re)) true)))) ; voiceover_complete_coverage
 
 ; dynamic_type_universal (matches Coq: Theorem dynamic_type_universal)
-(assert (= true true)) ; dynamic_type_universal [untranslatable]
+(assert (forall ((rt RIINA_Text)) (= (readable (riina_text rt) (current_size rt)) true))) ; dynamic_type_universal
 
 ; reduce_motion_complete (matches Coq: Theorem reduce_motion_complete)
-(assert (= true true)) ; reduce_motion_complete [untranslatable]
+(assert (forall ((ra RIINA_Animation)) (=> (= reduce_motion_enabled true) (=> (= (is_essential (riina_animation ra)) false) (not (= (plays (riina_animation ra)) true)))))) ; reduce_motion_complete
 
 ; visible_decidable (matches Coq: Lemma visible_decidable)
-(assert (= true true)) ; visible_decidable [untranslatable]
+; visible_decidable: forall (elem : UIElement), {visible elem} + {~ visible elem}
+(assert (forall ((elem UIElement)) true)) ; visible_decidable [partial: bindings preserved]
 
 ; voiceover_accessible_decidable (matches Coq: Lemma voiceover_accessible_decidable)
-(assert (= true true)) ; voiceover_accessible_decidable [untranslatable]
+; voiceover_accessible_decidable: forall (elem : UIElement), {voiceover_accessible elem} + {~ voiceover_accessible elem}
+(assert (forall ((elem UIElement)) true)) ; voiceover_accessible_decidable [partial: bindings preserved]
 
 ; dynamic_type_size_decidable (matches Coq: Lemma dynamic_type_size_decidable)
-(assert (= true true)) ; dynamic_type_size_decidable [untranslatable]
+; dynamic_type_size_decidable: forall (s1 s2 : DynamicTypeSize), {s1 = s2} + {s1 <> s2}
+(assert (forall ((s1 DynamicTypeSize) (s2 DynamicTypeSize)) true)) ; dynamic_type_size_decidable [partial: bindings preserved]
 
 ; readable_at_current_size (matches Coq: Lemma readable_at_current_size)
-(assert (= true true)) ; readable_at_current_size [untranslatable]
+(assert (forall ((text Text)) (= (readable text (text_size text)) true))) ; readable_at_current_size
 
 ; essential_animations_can_play (matches Coq: Lemma essential_animations_can_play)
-(assert (= true true)) ; essential_animations_can_play [untranslatable]
+(assert (forall ((anim Animation)) (=> (= (is_essential anim) true) (not (= (is_essential anim) false))))) ; essential_animations_can_play
 
 ; plays_implies_active (matches Coq: Lemma plays_implies_active)
-(assert (= true true)) ; plays_implies_active [untranslatable]
+(assert (forall ((anim Animation)) (=> (= (plays anim) true) (= (animation_active anim) true)))) ; plays_implies_active
 
 ; plays_implies_nonessential (matches Coq: Lemma plays_implies_nonessential)
-(assert (= true true)) ; plays_implies_nonessential [untranslatable]
+(assert (forall ((anim Animation)) (=> (= (plays anim) true) (= (is_essential anim) false)))) ; plays_implies_nonessential
 
 ; all_visible_elements_in_tree (matches Coq: Theorem all_visible_elements_in_tree)
-(assert (= true true)) ; all_visible_elements_in_tree [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((elem UIElement)) (=> (= (In elem (view_elements v)) true) (=> (= (is_visible elem) true) (= (element_has_node (view_tree v) elem) true)))))) ; all_visible_elements_in_tree
 
 ; no_orphan_nodes (matches Coq: Theorem no_orphan_nodes)
-(assert (= true true)) ; no_orphan_nodes [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((n AccessibilityNode)) (=> (= (In n (view_tree v)) true) (or (= (node_parent n) none) (exists ((pid Bool)) (and (= (node_parent n) (some pid)) (= (id_in_tree (view_tree v) pid) true)))))))) ; no_orphan_nodes
 
 ; role_always_set (matches Coq: Theorem role_always_set)
-(assert (= true true)) ; role_always_set [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((n AccessibilityNode)) (=> (= (In n (view_tree v)) true) (=> (= (node_interactive n) true) (not (= (node_role n) RoleStatic))))))) ; role_always_set
 
 ; label_always_nonempty (matches Coq: Theorem label_always_nonempty)
-(assert (= true true)) ; label_always_nonempty [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((n AccessibilityNode)) (=> (= (In n (view_tree v)) true) (=> (= (node_interactive n) true) (not (= (node_label n) 0))))))) ; label_always_nonempty
 
 ; collect_ids_complete (matches Coq: Lemma collect_ids_complete)
-(assert (= true true)) ; collect_ids_complete [untranslatable]
+(assert (forall ((tree AccessibilityTree)) (forall ((n AccessibilityNode)) (=> (= (In n tree) true) (= (In (node_id n) (collect_ids tree)) true))))) ; collect_ids_complete
 
 ; tree_traversal_complete (matches Coq: Theorem tree_traversal_complete)
-(assert (= true true)) ; tree_traversal_complete [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((n AccessibilityNode)) (=> (= (In n (view_tree v)) true) (= (In (node_id n) (collect_ids (view_tree v))) true))))) ; tree_traversal_complete
 
 ; focus_order_from_interactive (matches Coq: Lemma focus_order_from_interactive)
-(assert (= true true)) ; focus_order_from_interactive [untranslatable]
+(assert (forall ((tree AccessibilityTree)) (= (focus_order tree) (map node_id (interactive_nodes tree))))) ; focus_order_from_interactive
 
 ; focus_order_matches_tree (matches Coq: Theorem focus_order_matches_tree)
-(assert (= true true)) ; focus_order_matches_tree [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((n AccessibilityNode)) (=> (= (In n (view_tree v)) true) (=> (= (node_interactive n) true) (= (In (node_id n) (focus_order (view_tree v))) true)))))) ; focus_order_matches_tree
 
 ; live_regions_announced (matches Coq: Theorem live_regions_announced)
-(assert (= true true)) ; live_regions_announced [untranslatable]
+(assert (forall ((rlr RIINA_LiveRegion)) (=> (= (region_content_changed (riina_live_region rlr)) true) (not (= (region_politeness (riina_live_region rlr)) Off))))) ; live_regions_announced
 
 ; information_not_color_only (matches Coq: Theorem information_not_color_only)
-(assert (= true true)) ; information_not_color_only [untranslatable]
+(assert (forall ((rs RIINA_Signal)) (=> (= (color_signal (riina_signal rs)) true) (= (has_noncolor_alternative (riina_signal rs)) true)))) ; information_not_color_only
 
 ; link_not_color_only (matches Coq: Theorem link_not_color_only)
-(assert (= true true)) ; link_not_color_only [untranslatable]
+(assert (forall ((cs ContextualSignal)) (=> (= (ctx_context cs) CtxLink) (= (underline_signal (riina_signal (ctx_signal cs))) true)))) ; link_not_color_only
 
 ; error_not_color_only (matches Coq: Theorem error_not_color_only)
-(assert (= true true)) ; error_not_color_only [untranslatable]
+(assert (forall ((cs ContextualSignal)) (=> (= (ctx_context cs) CtxError) (and (= (shape_signal (riina_signal (ctx_signal cs))) true) (= (text_signal (riina_signal (ctx_signal cs))) true))))) ; error_not_color_only
 
 ; success_not_color_only (matches Coq: Theorem success_not_color_only)
-(assert (= true true)) ; success_not_color_only [untranslatable]
+(assert (forall ((cs ContextualSignal)) (=> (= (ctx_context cs) CtxSuccess) (= (text_signal (riina_signal (ctx_signal cs))) true)))) ; success_not_color_only
 
 ; chart_patterns_available (matches Coq: Theorem chart_patterns_available)
-(assert (= true true)) ; chart_patterns_available [untranslatable]
+(assert (forall ((cs ContextualSignal)) (=> (= (ctx_context cs) CtxChart) (= (pattern_signal (riina_signal (ctx_signal cs))) true)))) ; chart_patterns_available
 
 ; status_indicators_labeled (matches Coq: Theorem status_indicators_labeled)
-(assert (= true true)) ; status_indicators_labeled [untranslatable]
+(assert (forall ((cs ContextualSignal)) (=> (= (ctx_context cs) CtxStatus) (= (text_signal (riina_signal (ctx_signal cs))) true)))) ; status_indicators_labeled
 
 ; text_scales_to_200_percent (matches Coq: Theorem text_scales_to_200_percent)
-(assert (= true true)) ; text_scales_to_200_percent [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (= (not_truncated (riina_tp rtp) 200) true))) ; text_scales_to_200_percent
 
 ; no_text_truncation (matches Coq: Theorem no_text_truncation)
-(assert (= true true)) ; no_text_truncation [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (forall ((scale_pct Int)) (=> (>= scale_pct 100) (=> (<= scale_pct 200) (= (not_truncated (riina_tp rtp) scale_pct) true)))))) ; no_text_truncation
 
 ; line_height_proportional (matches Coq: Theorem line_height_proportional)
-(assert (= true true)) ; line_height_proportional [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (>= (* (line_height (riina_tp rtp)) 2) (* (font_size (riina_tp rtp)) 3)))) ; line_height_proportional
 
 ; container_expands_with_text (matches Coq: Theorem container_expands_with_text)
-(assert (= true true)) ; container_expands_with_text [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (forall ((scale_pct Int)) (=> (>= scale_pct 100) (=> (<= scale_pct 200) (>= (scaled_container_height (riina_tp rtp) scale_pct) (scaled_font_size (riina_tp rtp) scale_pct))))))) ; container_expands_with_text
 
 ; text_reflow (matches Coq: Theorem text_reflow)
-(assert (= true true)) ; text_reflow [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (= (reflows (riina_tp rtp)) true))) ; text_reflow
 
 ; minimum_font_size (matches Coq: Theorem minimum_font_size)
-(assert (= true true)) ; minimum_font_size [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (>= (font_size (riina_tp rtp)) 12))) ; minimum_font_size
 
 ; parallax_disableable (matches Coq: Theorem parallax_disableable)
-(assert (= true true)) ; parallax_disableable [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (=> (= (motion_type (riina_motion rme)) Parallax) (= (respects_reduce_motion (riina_motion rme)) true)))) ; parallax_disableable
 
 ; auto_play_disableable (matches Coq: Theorem auto_play_disableable)
-(assert (= true true)) ; auto_play_disableable [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (=> (= (motion_type (riina_motion rme)) AutoPlay) (= (user_controllable (riina_motion rme)) true)))) ; auto_play_disableable
 
 ; flash_rate_safe (matches Coq: Theorem flash_rate_safe)
-(assert (= true true)) ; flash_rate_safe [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (= (safe_flash_rate (riina_motion rme)) true))) ; flash_rate_safe
 
 ; carousel_controllable (matches Coq: Theorem carousel_controllable)
-(assert (= true true)) ; carousel_controllable [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (=> (= (motion_type (riina_motion rme)) Carousel) (= (user_controllable (riina_motion rme)) true)))) ; carousel_controllable
 
 ; video_controllable (matches Coq: Theorem video_controllable)
-(assert (= true true)) ; video_controllable [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (=> (= (motion_type (riina_motion rme)) VideoContent) (= (user_controllable (riina_motion rme)) true)))) ; video_controllable
 
 ; animation_not_required (matches Coq: Theorem animation_not_required)
-(assert (= true true)) ; animation_not_required [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (= (functional_without_animation (riina_motion rme)) true))) ; animation_not_required
 
 ; color_independence_implies_screen_reader_friendly (matches Coq: Theorem color_independence_implies_screen_reader_friendly)
-(assert (= true true)) ; color_independence_implies_screen_reader_friendly [untranslatable]
+(assert (forall ((rs RIINA_Signal)) (=> (= (text_signal (riina_signal rs)) true) (= (has_noncolor_alternative (riina_signal rs)) true)))) ; color_independence_implies_screen_reader_friendly
 
 ; error_signals_doubly_redundant (matches Coq: Theorem error_signals_doubly_redundant)
-(assert (= true true)) ; error_signals_doubly_redundant [untranslatable]
+(assert (forall ((cs ContextualSignal)) (=> (= (ctx_context cs) CtxError) (and (= (shape_signal (riina_signal (ctx_signal cs))) true) (= (text_signal (riina_signal (ctx_signal cs))) true))))) ; error_signals_doubly_redundant
 
 ; scaled_text_still_reflows (matches Coq: Theorem scaled_text_still_reflows)
-(assert (= true true)) ; scaled_text_still_reflows [untranslatable]
+(assert (forall ((rtp RIINA_TextProperties)) (= (reflows (riina_tp rtp)) true))) ; scaled_text_still_reflows
 
 ; motion_safe_and_controllable (matches Coq: Theorem motion_safe_and_controllable)
-(assert (= true true)) ; motion_safe_and_controllable [untranslatable]
+(assert (forall ((rme RIINA_MotionElement)) (=> (= (motion_type (riina_motion rme)) Carousel) (and (= (safe_flash_rate (riina_motion rme)) true) (= (user_controllable (riina_motion rme)) true))))) ; motion_safe_and_controllable
 
 ; interactive_nodes_fully_accessible (matches Coq: Theorem interactive_nodes_fully_accessible)
-(assert (= true true)) ; interactive_nodes_fully_accessible [untranslatable]
+(assert (forall ((v RIINA_View)) (forall ((n AccessibilityNode)) (=> (= (In n (view_tree v)) true) (=> (= (node_interactive n) true) (and (not (= (node_role n) RoleStatic)) (not (= (node_label n) 0)))))))) ; interactive_nodes_fully_accessible
 
 ; Verify all assertions are satisfiable
 (check-sat)

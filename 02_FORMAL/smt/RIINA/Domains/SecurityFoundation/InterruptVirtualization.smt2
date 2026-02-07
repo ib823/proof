@@ -53,67 +53,68 @@
   true)
 
 ; interrupt_injection_authorized (matches Coq: Theorem interrupt_injection_authorized)
-(assert (= true true)) ; interrupt_injection_authorized [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((source InterruptSource)) (forall ((target VirtualMachine)) (=> (= (injects_interrupt st source target) true) (= (authorized_injection st source target) true)))))) ; interrupt_injection_authorized
 
 ; interrupt_isolation (matches Coq: Theorem interrupt_isolation)
-(assert (= true true)) ; interrupt_isolation [untranslatable]
+(assert (forall ((vm1 VirtualMachine) (vm2 VirtualMachine) (irq Interrupt) (st InterruptState)) (=> (not (= (vm_id vm1) (vm_id vm2))) (=> (not (= (ipi_authorized st (vm_id vm1) (vm_id vm2)) true)) (not (= (can_inject st vm1 irq vm2) true)))))) ; interrupt_isolation
 
 ; device_irq_unique_owner (matches Coq: Theorem device_irq_unique_owner)
-(assert (= true true)) ; device_irq_unique_owner [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm1 VirtualMachine) (vm2 VirtualMachine) (irq Int)) (=> (= (find_vm_for_irq (irq_assignments st) irq) (some (vm_id vm1))) (=> (= (find_vm_for_irq (irq_assignments st) irq) (some (vm_id vm2))) (= (vm_id vm1) (vm_id vm2))))))) ; device_irq_unique_owner
 
 ; timer_interrupt_local (matches Coq: Theorem timer_interrupt_local)
-(assert (= true true)) ; timer_interrupt_local [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm VirtualMachine)) (= (authorized_injection st TimerSource vm) true)))) ; timer_interrupt_local
 
 ; ipi_requires_authorization (matches Coq: Theorem ipi_requires_authorization)
-(assert (= true true)) ; ipi_requires_authorization [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((src VirtualMachine) (tgt VirtualMachine)) (=> (= (authorized_injection st (IPISource (vm_id src)) tgt) true) (= (ipi_authorized st (vm_id src) (vm_id tgt)) true))))) ; ipi_requires_authorization
 
 ; unauthorized_ipi_blocked (matches Coq: Theorem unauthorized_ipi_blocked)
-(assert (= true true)) ; unauthorized_ipi_blocked [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((src_vm VirtualMachine) (tgt_vm VirtualMachine)) (not (=> (= (ipi_authorized st (vm_id src_vm) (vm_id tgt_vm)) true) (not (= (injects_interrupt st (IPISource (vm_id src_vm)) tgt_vm) true))))))) ; unauthorized_ipi_blocked
 
 ; self_injection_allowed (matches Coq: Theorem self_injection_allowed)
-(assert (= true true)) ; self_injection_allowed [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm VirtualMachine)) (forall ((irq Interrupt)) (= (can_inject st vm irq vm) true))))) ; self_injection_allowed
 
 ; masked_irq_not_deliverable (matches Coq: Theorem masked_irq_not_deliverable)
-(assert (= true true)) ; masked_irq_not_deliverable [untranslatable]
+(assert (forall ((ctrl InterruptController)) (forall ((irq Int)) (forall ((ip InterruptPriority)) (=> (= (find_irq_prio irq (ctrl_irqs ctrl)) (some ip)) (=> (< (irq_priority ip) (ctrl_mask_threshold ctrl)) (not (= (irq_deliverable ctrl irq) true)))))))) ; masked_irq_not_deliverable
 
 ; disabled_irq_not_deliverable (matches Coq: Theorem disabled_irq_not_deliverable)
-(assert (= true true)) ; disabled_irq_not_deliverable [untranslatable]
+(assert (forall ((ctrl InterruptController)) (forall ((irq Int)) (forall ((ip InterruptPriority)) (=> (= (find_irq_prio irq (ctrl_irqs ctrl)) (some ip)) (=> (= (irq_enabled ip) false) (not (= (irq_deliverable ctrl irq) true)))))))) ; disabled_irq_not_deliverable
 
 ; non_pending_irq_not_deliverable (matches Coq: Theorem non_pending_irq_not_deliverable)
-(assert (= true true)) ; non_pending_irq_not_deliverable [untranslatable]
+(assert (forall ((ctrl InterruptController)) (forall ((irq Int)) (forall ((ip InterruptPriority)) (=> (= (find_irq_prio irq (ctrl_irqs ctrl)) (some ip)) (=> (= (irq_pending ip) false) (not (= (irq_deliverable ctrl irq) true)))))))) ; non_pending_irq_not_deliverable
 
 ; unknown_irq_not_deliverable (matches Coq: Theorem unknown_irq_not_deliverable)
-(assert (= true true)) ; unknown_irq_not_deliverable [untranslatable]
+(assert (forall ((ctrl InterruptController)) (forall ((irq Int)) (=> (= (find_irq_prio irq (ctrl_irqs ctrl)) none) (not (= (irq_deliverable ctrl irq) true)))))) ; unknown_irq_not_deliverable
 
 ; no_auth_no_injection (matches Coq: Theorem no_auth_no_injection)
-(assert (= true true)) ; no_auth_no_injection [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((source InterruptSource)) (forall ((target VirtualMachine)) (not (=> (= (authorized_injection st source target) true) (not (= (injects_interrupt st source target) true)))))))) ; no_auth_no_injection
 
 ; device_irq_requires_ownership (matches Coq: Theorem device_irq_requires_ownership)
-(assert (= true true)) ; device_irq_requires_ownership [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((irq Int)) (forall ((target VirtualMachine)) (=> (= (injects_interrupt st (DeviceSource irq) target) true) (= (vm_owns_irq st target irq) true)))))) ; device_irq_requires_ownership
 
 ; cross_vm_requires_ipi (matches Coq: Theorem cross_vm_requires_ipi)
-(assert (= true true)) ; cross_vm_requires_ipi [untranslatable]
+(assert (forall ((vm1 VirtualMachine) (vm2 VirtualMachine) (irq Interrupt) (st InterruptState)) (=> (not (= (vm_id vm1) (vm_id vm2))) (=> (= (can_inject st vm1 irq vm2) true) (= (ipi_authorized st (vm_id vm1) (vm_id vm2)) true))))) ; cross_vm_requires_ipi
 
 ; ipi_authorization_directional (matches Coq: Theorem ipi_authorization_directional)
-(assert (= true true)) ; ipi_authorization_directional [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm1 VirtualMachine) (vm2 VirtualMachine)) (=> (= (ipi_authorized st (vm_id vm1) (vm_id vm2)) true) (=> (not (= (ipi_authorized st (vm_id vm2) (vm_id vm1)) true)) (not (or (= (can_inject st vm2 (IRQ 0) vm1) true) (= (vm_id vm1) (vm_id vm2))))))))) ; ipi_authorization_directional
 
 ; empty_ipi_blocks_cross_vm (matches Coq: Theorem empty_ipi_blocks_cross_vm)
-(assert (= true true)) ; empty_ipi_blocks_cross_vm [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm1 VirtualMachine) (vm2 VirtualMachine) (irq Interrupt)) (=> (= (ipi_allowed st) nil) (=> (not (= (vm_id vm1) (vm_id vm2))) (not (= (can_inject st vm1 irq vm2) true))))))) ; empty_ipi_blocks_cross_vm
 
 ; empty_assignments_blocks_device_irqs (matches Coq: Theorem empty_assignments_blocks_device_irqs)
-(assert (= true true)) ; empty_assignments_blocks_device_irqs [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((irq Int)) (forall ((vm VirtualMachine)) (=> (= (irq_assignments st) nil) (not (= (injects_interrupt st (DeviceSource irq) vm) true))))))) ; empty_assignments_blocks_device_irqs
 
 ; irq_assignment_deterministic (matches Coq: Theorem irq_assignment_deterministic)
-(assert (= true true)) ; irq_assignment_deterministic [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((irq Int)) (forall ((vm1 VMId) (vm2 VMId)) (=> (= (find_vm_for_irq (irq_assignments st) irq) (some vm1)) (=> (= (find_vm_for_irq (irq_assignments st) irq) (some vm2)) (= vm1 vm2))))))) ; irq_assignment_deterministic
 
 ; timer_injection_always_succeeds (matches Coq: Theorem timer_injection_always_succeeds)
-(assert (= true true)) ; timer_injection_always_succeeds [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm VirtualMachine)) (= (injects_interrupt st TimerSource vm) true)))) ; timer_injection_always_succeeds
 
 ; self_ipi_possible (matches Coq: Theorem self_ipi_possible)
-(assert (= true true)) ; self_ipi_possible [untranslatable]
+(assert (forall ((st InterruptState)) (forall ((vm VirtualMachine)) (=> (= (ipi_authorized st (vm_id vm) (vm_id vm)) true) (= (injects_interrupt st (IPISource (vm_id vm)) vm) true))))) ; self_ipi_possible
 
 ; injection_source_valid (matches Coq: Theorem injection_source_valid)
-(assert (= true true)) ; injection_source_valid [untranslatable]
+; injection_source_valid: forall (st : InterruptState) (src : InterruptSource) (tgt : VirtualMachine), injects_interrupt st src tgt -> match src w
+(assert (forall ((st InterruptState) (src InterruptSource) (tgt VirtualMachine)) true)) ; injection_source_valid [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -67,31 +67,31 @@
   true)
 
 ; ctm_governance_check (matches Coq: Theorem ctm_governance_check)
-(assert (= true true)) ; ctm_governance_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (<= (tier_threshold t) (ctm_governance a)) (= (governance_meets_tier a t) true))))) ; ctm_governance_check
 
 ; ctm_protection_check (matches Coq: Theorem ctm_protection_check)
-(assert (= true true)) ; ctm_protection_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (<= (tier_threshold t) (ctm_protection a)) (= (protection_meets_tier a t) true))))) ; ctm_protection_check
 
 ; ctm_resilience_check (matches Coq: Theorem ctm_resilience_check)
-(assert (= true true)) ; ctm_resilience_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (<= (tier_threshold t) (ctm_resilience a)) (= (resilience_meets_tier a t) true))))) ; ctm_resilience_check
 
 ; ctm_assurance_check (matches Coq: Theorem ctm_assurance_check)
-(assert (= true true)) ; ctm_assurance_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (<= (tier_threshold t) (ctm_assurance a)) (= (assurance_meets_tier a t) true))))) ; ctm_assurance_check
 
 ; ctm_education_check (matches Coq: Theorem ctm_education_check)
-(assert (= true true)) ; ctm_education_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (<= (tier_threshold t) (ctm_education a)) (= (education_meets_tier a t) true))))) ; ctm_education_check
 
 ; ctm_ai_check (matches Coq: Theorem ctm_ai_check)
-(assert (= true true)) ; ctm_ai_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_ai_security a) true) (= (ai_security_assessed a) true)))) ; ctm_ai_check
 
 ; ctm_certification (matches Coq: Theorem ctm_certification)
-(assert (= true true)) ; ctm_certification [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (= (governance_meets_tier a t) true) (=> (= (protection_meets_tier a t) true) (=> (= (resilience_meets_tier a t) true) (=> (= (assurance_meets_tier a t) true) (=> (= (education_meets_tier a t) true) (= (ctm_certified_at_tier a t) true))))))))) ; ctm_certification
 
 ; tier_monotonicity (matches Coq: Theorem tier_monotonicity)
-(assert (= true true)) ; tier_monotonicity [untranslatable]
+(assert (forall ((t1 CTMTier) (t2 CTMTier)) (=> (<= (tier_level t1) (tier_level t2)) (<= (tier_threshold t1) (tier_threshold t2))))) ; tier_monotonicity
 
 ; ctm_tier_coverage (matches Coq: Theorem ctm_tier_coverage)
-(assert (= true true)) ; ctm_tier_coverage [untranslatable]
+(assert (forall ((t CTMTier)) (= (In t all_ctm_tiers) true))) ; ctm_tier_coverage
 
 ; essential_is_tier_1 (matches Coq: Theorem essential_is_tier_1)
 (assert (= (tier_level Essential) 1)) ; essential_is_tier_1
@@ -100,10 +100,10 @@
 (assert (= (tier_level Expert) 4)) ; expert_is_tier_4
 
 ; tier_level_positive (matches Coq: Theorem tier_level_positive)
-(assert (= true true)) ; tier_level_positive [untranslatable]
+(assert (forall ((t CTMTier)) (>= (tier_level t) 1))) ; tier_level_positive
 
 ; tier_level_bounded (matches Coq: Theorem tier_level_bounded)
-(assert (= true true)) ; tier_level_bounded [untranslatable]
+(assert (forall ((t CTMTier)) (<= (tier_level t) 4))) ; tier_level_bounded
 
 ; essential_threshold_30 (matches Coq: Theorem essential_threshold_30)
 (assert (= (tier_threshold Essential) 30)) ; essential_threshold_30
@@ -112,40 +112,40 @@
 (assert (= (tier_threshold Expert) 90)) ; expert_threshold_90
 
 ; threshold_positive (matches Coq: Theorem threshold_positive)
-(assert (= true true)) ; threshold_positive [untranslatable]
+(assert (forall ((t CTMTier)) (>= (tier_threshold t) 30))) ; threshold_positive
 
 ; threshold_bounded (matches Coq: Theorem threshold_bounded)
-(assert (= true true)) ; threshold_bounded [untranslatable]
+(assert (forall ((t CTMTier)) (<= (tier_threshold t) 90))) ; threshold_bounded
 
 ; certified_expert_implies_advanced (matches Coq: Theorem certified_expert_implies_advanced)
-(assert (= true true)) ; certified_expert_implies_advanced [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_certified_at_tier a Expert) true) (= (ctm_certified_at_tier a Advanced) true)))) ; certified_expert_implies_advanced
 
 ; certified_advanced_implies_intermediate (matches Coq: Theorem certified_advanced_implies_intermediate)
-(assert (= true true)) ; certified_advanced_implies_intermediate [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_certified_at_tier a Advanced) true) (= (ctm_certified_at_tier a Intermediate) true)))) ; certified_advanced_implies_intermediate
 
 ; certified_intermediate_implies_essential (matches Coq: Theorem certified_intermediate_implies_essential)
-(assert (= true true)) ; certified_intermediate_implies_essential [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_certified_at_tier a Intermediate) true) (= (ctm_certified_at_tier a Essential) true)))) ; certified_intermediate_implies_essential
 
 ; ctm_cloud_check (matches Coq: Theorem ctm_cloud_check)
-(assert (= true true)) ; ctm_cloud_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_cloud_security a) true) (= (cloud_security_assessed a) true)))) ; ctm_cloud_check
 
 ; ctm_ot_check (matches Coq: Theorem ctm_ot_check)
-(assert (= true true)) ; ctm_ot_check [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_ot_security a) true) (= (ot_security_assessed a) true)))) ; ctm_ot_check
 
 ; ctm_2025_full (matches Coq: Theorem ctm_2025_full)
-(assert (= true true)) ; ctm_2025_full [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_ai_security a) true) (=> (= (ctm_cloud_security a) true) (=> (= (ctm_ot_security a) true) (= (ctm_2025_extensions_compliant a) true)))))) ; ctm_2025_full
 
 ; all_domains_above_implies_tier (matches Coq: Theorem all_domains_above_implies_tier)
-(assert (= true true)) ; all_domains_above_implies_tier [untranslatable]
+(assert (forall ((a CTMAssessment)) (forall ((t CTMTier)) (=> (= (all_domains_above a (tier_threshold t)) true) (= (ctm_certified_at_tier a t) true))))) ; all_domains_above_implies_tier
 
 ; cssp_must_have_ctm (matches Coq: Theorem cssp_must_have_ctm)
-(assert (= true true)) ; cssp_must_have_ctm [untranslatable]
+(assert (forall ((e CSSPEntity)) (=> (= (cssp_ctm_certified e) true) (=> (= (cssp_license_valid e) true) (= (cssp_ctm_requirement e) true))))) ; cssp_must_have_ctm
 
 ; cssp_without_ctm_non_compliant (matches Coq: Theorem cssp_without_ctm_non_compliant)
-(assert (= true true)) ; cssp_without_ctm_non_compliant [untranslatable]
+(assert (forall ((e CSSPEntity)) (=> (= (cssp_ctm_certified e) false) (not (= (cssp_ctm_requirement e) true))))) ; cssp_without_ctm_non_compliant
 
 ; expert_requires_90_all_domains (matches Coq: Theorem expert_requires_90_all_domains)
-(assert (= true true)) ; expert_requires_90_all_domains [untranslatable]
+(assert (forall ((a CTMAssessment)) (=> (= (ctm_certified_at_tier a Expert) true) (and (>= (ctm_governance a) 90) (>= (ctm_protection a) 90) (>= (ctm_resilience a) 90) (>= (ctm_assurance a) 90) (>= (ctm_education a) 90))))) ; expert_requires_90_all_domains
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -61,67 +61,67 @@
   true)
 
 ; root_of_trust_hardware (matches Coq: Theorem root_of_trust_hardware)
-(assert (= true true)) ; root_of_trust_hardware [untranslatable]
+(assert (forall ((hsm HSMType)) (let ((st (initial_hw_state hsm))) (= (hw_root_verified st hw_root_component) true)))) ; root_of_trust_hardware
 
 ; trust_extension_preserves_root (matches Coq: Theorem trust_extension_preserves_root)
-(assert (= true true)) ; trust_extension_preserves_root [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (hw_root_verified st hw_root_component) true) (let ((st' (extend_trust_chain st verifier comp measurement))) (= (hw_root_verified st' hw_root_component) true)))))) ; trust_extension_preserves_root
 
 ; extended_component_trusted (matches Coq: Theorem extended_component_trusted)
-(assert (= true true)) ; extended_component_trusted [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (in_trust_chain st verifier) true) (let ((st' (extend_trust_chain st verifier comp measurement))) (= (component_trusted st' comp) true)))))) ; extended_component_trusted
 
 ; untrusted_cannot_extend (matches Coq: Theorem untrusted_cannot_extend)
-(assert (= true true)) ; untrusted_cannot_extend [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (in_trust_chain st verifier) false) (= (extend_trust_chain st verifier comp measurement) st))))) ; untrusted_cannot_extend
 
 ; root_key_is_protected (matches Coq: Theorem root_key_is_protected)
-(assert (= true true)) ; root_key_is_protected [untranslatable]
+(assert (forall ((hsm HSMType)) (let ((st (initial_hw_state hsm))) (= (root_key_protected st) true)))) ; root_key_is_protected
 
 ; pcr_record_preserved (matches Coq: Theorem pcr_record_preserved)
-(assert (= true true)) ; pcr_record_preserved [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((comp BootComponentId)) (forall ((value Int) (algo Int)) (let ((st' (record_pcr st comp value algo))) (= (In (mkMeasurement comp value algo) (pcr_values st')) true)))))) ; pcr_record_preserved
 
 ; hw_root_always_trusted (matches Coq: Theorem hw_root_always_trusted)
-(assert (= true true)) ; hw_root_always_trusted [untranslatable]
+(assert (forall ((hsm HSMType)) (= (component_trusted (initial_hw_state hsm) hw_root_component) true))) ; hw_root_always_trusted
 
 ; attestation_key_present_initial (matches Coq: Theorem attestation_key_present_initial)
-(assert (= true true)) ; attestation_key_present_initial [untranslatable]
+(assert (forall ((hsm HSMType)) (= (attestation_key_present (initial_hw_state hsm)) true))) ; attestation_key_present_initial
 
 ; hardware_initialized_initial (matches Coq: Theorem hardware_initialized_initial)
-(assert (= true true)) ; hardware_initialized_initial [untranslatable]
+(assert (forall ((hsm HSMType)) (= (hardware_initialized (initial_hw_state hsm)) true))) ; hardware_initialized_initial
 
 ; trust_extension_preserves_attestation (matches Coq: Theorem trust_extension_preserves_attestation)
-(assert (= true true)) ; trust_extension_preserves_attestation [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (attestation_key_present st) true) (= (attestation_key_present (extend_trust_chain st verifier comp measurement)) true))))) ; trust_extension_preserves_attestation
 
 ; trust_extension_preserves_root_key (matches Coq: Theorem trust_extension_preserves_root_key)
-(assert (= true true)) ; trust_extension_preserves_root_key [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (root_key_present st) true) (= (root_key_present (extend_trust_chain st verifier comp measurement)) true))))) ; trust_extension_preserves_root_key
 
 ; trust_extension_preserves_init (matches Coq: Theorem trust_extension_preserves_init)
-(assert (= true true)) ; trust_extension_preserves_init [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (hardware_initialized st) true) (= (hardware_initialized (extend_trust_chain st verifier comp measurement)) true))))) ; trust_extension_preserves_init
 
 ; pcr_preserves_trust_chain (matches Coq: Theorem pcr_preserves_trust_chain)
-(assert (= true true)) ; pcr_preserves_trust_chain [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((comp BootComponentId)) (forall ((value Int) (algo Int)) (= (trust_chain (record_pcr st comp value algo)) (trust_chain st)))))) ; pcr_preserves_trust_chain
 
 ; pcr_preserves_root_key (matches Coq: Theorem pcr_preserves_root_key)
-(assert (= true true)) ; pcr_preserves_root_key [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((comp BootComponentId)) (forall ((value Int) (algo Int)) (= (root_key_present (record_pcr st comp value algo)) (root_key_present st)))))) ; pcr_preserves_root_key
 
 ; pcr_values_grow (matches Coq: Theorem pcr_values_grow)
-(assert (= true true)) ; pcr_values_grow [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((comp BootComponentId)) (forall ((value Int) (algo Int) (m Measurement)) (=> (= (In m (pcr_values st)) true) (= (In m (pcr_values (record_pcr st comp value algo))) true)))))) ; pcr_values_grow
 
 ; trust_chain_grows (matches Coq: Theorem trust_chain_grows)
-(assert (= true true)) ; trust_chain_grows [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int) (entry TrustChainEntry)) (=> (= (in_trust_chain st verifier) true) (=> (= (In entry (trust_chain st)) true) (= (In entry (trust_chain (extend_trust_chain st verifier comp measurement))) true)))))) ; trust_chain_grows
 
 ; extended_chain_has_component (matches Coq: Theorem extended_chain_has_component)
-(assert (= true true)) ; extended_chain_has_component [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (in_trust_chain st verifier) true) (= (In (mkTrustEntry comp verifier measurement true) (trust_chain (extend_trust_chain st verifier comp measurement))) true))))) ; extended_chain_has_component
 
 ; hsm_type_invariant_extend (matches Coq: Theorem hsm_type_invariant_extend)
-(assert (= true true)) ; hsm_type_invariant_extend [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (= (hsm_type (extend_trust_chain st verifier comp measurement)) (hsm_type st))))) ; hsm_type_invariant_extend
 
 ; hsm_type_invariant_pcr (matches Coq: Theorem hsm_type_invariant_pcr)
-(assert (= true true)) ; hsm_type_invariant_pcr [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((comp BootComponentId)) (forall ((value Int) (algo Int)) (= (hsm_type (record_pcr st comp value algo)) (hsm_type st)))))) ; hsm_type_invariant_pcr
 
 ; root_key_protection_preserved (matches Coq: Theorem root_key_protection_preserved)
-(assert (= true true)) ; root_key_protection_preserved [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((verifier BootComponentId) (comp BootComponentId) (measurement Int)) (=> (= (root_key_protected st) true) (= (root_key_protected (extend_trust_chain st verifier comp measurement)) true))))) ; root_key_protection_preserved
 
 ; root_key_protection_preserved_pcr (matches Coq: Theorem root_key_protection_preserved_pcr)
-(assert (= true true)) ; root_key_protection_preserved_pcr [untranslatable]
+(assert (forall ((st HWRootState)) (forall ((comp BootComponentId)) (forall ((value Int) (algo Int)) (=> (= (root_key_protected st) true) (= (root_key_protected (record_pcr st comp value algo)) true)))))) ; root_key_protection_preserved_pcr
 
 ; Verify all assertions are satisfiable
 (check-sat)

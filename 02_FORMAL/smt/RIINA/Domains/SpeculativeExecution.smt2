@@ -30,64 +30,65 @@
   true)
 
 ; eff_join_pure_l (matches Coq: Lemma eff_join_pure_l)
-(assert (= true true)) ; eff_join_pure_l [untranslatable]
+(assert (forall ((e Bool)) (= (eff_join Eff_pure e) e))) ; eff_join_pure_l
 
 ; eff_join_pure_r (matches Coq: Lemma eff_join_pure_r)
-(assert (= true true)) ; eff_join_pure_r [untranslatable]
+(assert (forall ((e Bool)) (= (eff_join e Eff_pure) e))) ; eff_join_pure_r
 
 ; eff_le_refl (matches Coq: Lemma eff_le_refl)
-(assert (= true true)) ; eff_le_refl [untranslatable]
+(assert (forall ((e Bool)) (= (eff_le e e) true))) ; eff_le_refl
 
 ; eff_le_trans (matches Coq: Lemma eff_le_trans)
-(assert (= true true)) ; eff_le_trans [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (=> (= (eff_le e1 e2) true) (=> (= (eff_le e2 e3) true) (= (eff_le e1 e3) true))))) ; eff_le_trans
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (infer_effect i) Eff_pure) (= (is_constant_time i) true)))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (is_constant_time a) true) (=> (= (is_constant_time b) true) (= (is_constant_time (ISeq a b)) true))))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (is_constant_time i) true) (forall ((c Bool) (t Bool) (f Bool)) (not (= i (IBranch Secret c t f))))))) ; 3
 
 ; spec_safe_no_secret_branch_aux (matches Coq: Lemma spec_safe_no_secret_branch_aux)
-(assert (= true true)) ; spec_safe_no_secret_branch_aux [untranslatable]
+(assert (forall ((i Bool)) (=> (= (no_speculative_annotation i) true) (=> (not (= (infer_effect i) Eff_speculative)) (= (is_constant_time i) true))))) ; spec_safe_no_secret_branch_aux
 
 ; spec_safe_implies_no_secret_leakage (matches Coq: Theorem spec_safe_implies_no_secret_leakage)
-(assert (= true true)) ; spec_safe_implies_no_secret_leakage [untranslatable]
+(assert (forall ((i Bool)) (=> (= (no_speculative_annotation i) true) (=> (= (is_spec_safe i) true) (= (is_constant_time i) true))))) ; spec_safe_implies_no_secret_leakage
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((e Bool)) (= (eff_le e e) true))) ; 4
 
 ; effect_preorder_trans (matches Coq: Theorem effect_preorder_trans)
-(assert (= true true)) ; effect_preorder_trans [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (=> (= (eff_le e1 e2) true) (=> (= (eff_le e2 e3) true) (= (eff_le e1 e3) true))))) ; effect_preorder_trans
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((e Bool)) (= (eff_le Eff_pure e) true))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (is_spec_safe a) true) (=> (= (is_spec_safe b) true) (= (is_spec_safe (ISeq a b)) true))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((c Bool) (t Bool) (f Bool)) (=> (= (is_constant_time c) true) (=> (= (is_constant_time t) true) (=> (= (is_constant_time f) true) (= (is_constant_time (IBranch Public c t f)) true)))))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+; 8: Effect annotation soundness *)  Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 <> e2}
+(assert true) ; 8 [Coq-only]
 
 ; binop_preserves_ct (matches Coq: Theorem binop_preserves_ct)
-(assert (= true true)) ; binop_preserves_ct [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (is_constant_time a) true) (=> (= (is_constant_time b) true) (= (is_constant_time (IBinop a b)) true))))) ; binop_preserves_ct
 
 ; pure_implies_spec_safe (matches Coq: Theorem pure_implies_spec_safe)
-(assert (= true true)) ; pure_implies_spec_safe [untranslatable]
+(assert (forall ((i Bool)) (=> (= (infer_effect i) Eff_pure) (= (is_spec_safe i) true)))) ; pure_implies_spec_safe
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (infer_effect i) Eff_timed) (= (is_spec_safe i) true)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((v Bool)) (= (infer_effect (IConst v)) Eff_pure))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (eff_join e1 e2) (eff_join e2 e1)))) ; 13
 
 ; Verify all assertions are satisfiable
 (check-sat)

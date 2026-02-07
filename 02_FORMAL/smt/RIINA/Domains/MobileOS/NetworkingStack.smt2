@@ -148,67 +148,67 @@
 (define-fun network_change_notified_prop () Prop true)
 
 ; network_all_encrypted (matches Coq: Theorem network_all_encrypted)
-(assert (= true true)) ; network_all_encrypted [untranslatable]
+(assert (forall ((packet Packet)) (=> (= secure_stack true) (=> (= (transmitted packet) true) (= (encrypted packet) true))))) ; network_all_encrypted
 
 ; cert_validation_correct (matches Coq: Theorem cert_validation_correct)
-(assert (= true true)) ; cert_validation_correct [untranslatable]
+(assert (forall ((cert Certificate)) (=> (= (accepted cert) true) (and (= (valid_chain cert) true) (= (not_expired cert) true) (= (not_revoked cert) true))))) ; cert_validation_correct
 
 ; expired_cert_rejected (matches Coq: Theorem expired_cert_rejected)
-(assert (= true true)) ; expired_cert_rejected [untranslatable]
+(assert (forall ((cert Certificate)) (=> (> current_time (cert_not_after cert)) (not (= (not_expired cert) true))))) ; expired_cert_rejected
 
 ; revoked_cert_rejected (matches Coq: Theorem revoked_cert_rejected)
-(assert (= true true)) ; revoked_cert_rejected [untranslatable]
+(assert (forall ((cert Certificate)) (=> (= (cert_revoked cert) true) (not (= (not_revoked cert) true))))) ; revoked_cert_rejected
 
 ; invalid_chain_rejected (matches Coq: Theorem invalid_chain_rejected)
-(assert (= true true)) ; invalid_chain_rejected [untranslatable]
+(assert (forall ((cert Certificate)) (=> (= (cert_chain_valid cert) false) (not (= (valid_chain cert) true))))) ; invalid_chain_rejected
 
 ; secure_conn_valid_cert (matches Coq: Theorem secure_conn_valid_cert)
-(assert (= true true)) ; secure_conn_valid_cert [untranslatable]
+(assert (forall ((conn Connection)) (=> (= (secure_connection conn) true) (= (acceptable_cert (conn_cert conn)) true)))) ; secure_conn_valid_cert
 
 ; tls_required_for_external (matches Coq: Theorem tls_required_for_external)
-(assert (= true true)) ; tls_required_for_external [untranslatable]
+(assert (forall ((conn HTTPConnection)) (=> (= (tls_required conn) true) (>= (http_tls_version conn) 13)))) ; tls_required_for_external
 
 ; certificate_validation_complete (matches Coq: Theorem certificate_validation_complete)
-(assert (= true true)) ; certificate_validation_complete [untranslatable]
+(assert (forall ((cert Certificate)) (=> (= (cert_validation_complete_prop cert) true) (and (= (valid_chain cert) true) (= (not_expired cert) true) (= (not_revoked cert) true))))) ; certificate_validation_complete
 
 ; dns_resolution_validated (matches Coq: Theorem dns_resolution_validated)
-(assert (= true true)) ; dns_resolution_validated [untranslatable]
+(assert (forall ((q DNSQuery)) (=> (= (dns_validated_prop q) true) (and (= (dns_validated q) true) (= (dns_dnssec_verified q) true))))) ; dns_resolution_validated
 
 ; no_plaintext_passwords (matches Coq: Theorem no_plaintext_passwords)
-(assert (= true true)) ; no_plaintext_passwords [untranslatable]
+(assert (forall ((conn HTTPConnection)) (=> (= (no_plaintext_password conn) true) (>= (http_tls_version conn) 12)))) ; no_plaintext_passwords
 
 ; connection_timeout_enforced (matches Coq: Theorem connection_timeout_enforced)
-(assert (= true true)) ; connection_timeout_enforced [untranslatable]
+(assert (forall ((sock Socket)) (=> (= (connection_timeout_enforced_prop sock) true) (and (> (socket_timeout_ms sock) 0) (<= (socket_timeout_ms sock) 30000))))) ; connection_timeout_enforced
 
 ; socket_cleanup_complete (matches Coq: Theorem socket_cleanup_complete)
-(assert (= true true)) ; socket_cleanup_complete [untranslatable]
+(assert (forall ((sock Socket)) (=> (= (socket_cleanup_prop sock) true) (=> (= (socket_closed sock) true) (= (socket_connected sock) false))))) ; socket_cleanup_complete
 
 ; bandwidth_throttled (matches Coq: Theorem bandwidth_throttled)
-(assert (= true true)) ; bandwidth_throttled [untranslatable]
+(assert (forall ((sock Socket)) (=> (= (connection_timeout_enforced_prop sock) true) (<= (socket_timeout_ms sock) 30000)))) ; bandwidth_throttled
 
 ; no_ip_spoofing (matches Coq: Theorem no_ip_spoofing)
-(assert (= true true)) ; no_ip_spoofing [untranslatable]
+(assert (forall ((q DNSQuery)) (=> (= (dns_validated_prop q) true) (= (dns_dnssec_verified q) true)))) ; no_ip_spoofing
 
 ; firewall_rules_applied (matches Coq: Theorem firewall_rules_applied)
-(assert (= true true)) ; firewall_rules_applied [untranslatable]
+(assert (forall ((rules list FirewallRule)) (forall ((src Int) (dst Int) (port Int)) (=> (= (firewall_applied rules src dst port) true) (exists ((r Bool)) (and (= (In r rules) true) (= (fw_src_ip r) src) (= (fw_dst_ip r) dst))))))) ; firewall_rules_applied
 
 ; vpn_traffic_encrypted (matches Coq: Theorem vpn_traffic_encrypted)
-(assert (= true true)) ; vpn_traffic_encrypted [untranslatable]
+(assert (forall ((t VPNTunnel)) (=> (= (vpn_traffic_encrypted_prop t) true) (=> (= (tunnel_active t) true) (= (tunnel_encrypted t) true))))) ; vpn_traffic_encrypted
 
 ; http_strict_transport_thm (matches Coq: Theorem http_strict_transport_thm)
-(assert (= true true)) ; http_strict_transport_thm [untranslatable]
+(assert (forall ((conn HTTPConnection)) (=> (= (hsts_enforced conn) true) (=> (= (http_strict_transport conn) true) (>= (http_tls_version conn) 13))))) ; http_strict_transport_thm
 
 ; cors_policy_enforced (matches Coq: Theorem cors_policy_enforced)
-(assert (= true true)) ; cors_policy_enforced [untranslatable]
+(assert (forall ((conn HTTPConnection)) (=> (= (cors_enforced conn) true) (= (http_cors_allowed conn) true)))) ; cors_policy_enforced
 
 ; websocket_origin_validated (matches Coq: Theorem websocket_origin_validated)
-(assert (= true true)) ; websocket_origin_validated [untranslatable]
+(assert (forall ((ws WebSocketConn)) (=> (= (ws_origin_valid ws) true) (and (= (ws_origin_validated ws) true) (= (ws_encrypted ws) true))))) ; websocket_origin_validated
 
 ; certificate_pinning_enforced (matches Coq: Theorem certificate_pinning_enforced)
-(assert (= true true)) ; certificate_pinning_enforced [untranslatable]
+(assert (forall ((pin CertPin)) (=> (= (cert_pinning_holds pin) true) (=> (= (pin_enforced pin) true) (> (pin_public_key_hash pin) 0))))) ; certificate_pinning_enforced
 
 ; network_change_notified (matches Coq: Theorem network_change_notified)
-(assert (= true true)) ; network_change_notified [untranslatable]
+(assert (forall ((old_conn Connection) (new_conn Connection)) (=> (= (network_change_notified_prop old_conn new_conn) true) (=> (not (= (conn_id old_conn) (conn_id new_conn))) (= (acceptable_cert (conn_cert new_conn)) true))))) ; network_change_notified
 
 ; Verify all assertions are satisfiable
 (check-sat)

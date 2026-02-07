@@ -11,31 +11,31 @@
 (define-fun effect_leq () Prop true)
 
 ; effect_leq_refl (matches Coq: Lemma effect_leq_refl)
-(assert (= true true)) ; effect_leq_refl [untranslatable]
+(assert (forall ((e Bool)) (= (effect_leq e e) true))) ; effect_leq_refl
 
 ; effect_leq_trans (matches Coq: Lemma effect_leq_trans)
-(assert (= true true)) ; effect_leq_trans [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (=> (= (effect_leq e1 e2) true) (=> (= (effect_leq e2 e3) true) (= (effect_leq e1 e3) true))))) ; effect_leq_trans
 
 ; effect_leq_antisym (matches Coq: Lemma effect_leq_antisym)
-(assert (= true true)) ; effect_leq_antisym [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (=> (= (effect_leq e1 e2) true) (=> (= (effect_leq e2 e1) true) (= e1 e2))))) ; effect_leq_antisym
 
 ; effect_join_comm (matches Coq: Lemma effect_join_comm)
-(assert (= true true)) ; effect_join_comm [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (effect_join e1 e2) (effect_join e2 e1)))) ; effect_join_comm
 
 ; effect_level_join (matches Coq: Lemma effect_level_join)
-(assert (= true true)) ; effect_level_join [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (effect_level (effect_join e1 e2)) (Nat.max (effect_level e1) (effect_level e2))))) ; effect_level_join
 
 ; effect_join_assoc (matches Coq: Lemma effect_join_assoc)
-(assert (= true true)) ; effect_join_assoc [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (= (effect_join e1 (effect_join e2 e3)) (effect_join (effect_join e1 e2) e3)))) ; effect_join_assoc
 
 ; effect_join_ub_l (matches Coq: Lemma effect_join_ub_l)
-(assert (= true true)) ; effect_join_ub_l [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (effect_leq e1 (effect_join e1 e2)) true))) ; effect_join_ub_l
 
 ; effect_join_ub_r (matches Coq: Lemma effect_join_ub_r)
-(assert (= true true)) ; effect_join_ub_r [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (effect_leq e2 (effect_join e1 e2)) true))) ; effect_join_ub_r
 
 ; effect_join_lub (matches Coq: Lemma effect_join_lub)
-(assert (= true true)) ; effect_join_lub [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (=> (= (effect_leq e1 e3) true) (=> (= (effect_leq e2 e3) true) (= (effect_leq (effect_join e1 e2) e3) true))))) ; effect_join_lub
 
 ; Verify all assertions are satisfiable
 (check-sat)

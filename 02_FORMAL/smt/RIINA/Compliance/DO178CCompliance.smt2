@@ -210,64 +210,64 @@
   true)
 
 ; COMPLY_003_01 (matches Coq: Theorem COMPLY_003_01)
-(assert (= true true)) ; COMPLY_003_01 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_traces_complete (comp_traces c)) true) (=> (forall ((t Bool)) (= (In t (comp_traces c)) true)) (and (not (= (trace_code t) nil)) (not (= (trace_tests t) nil))))))) ; COMPLY_003_01
 
 ; COMPLY_003_02 (matches Coq: Theorem COMPLY_003_02)
-(assert (= true true)) ; COMPLY_003_02 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (comp_dal c) DAL_A) (=> (= (statement_coverage_100 (comp_coverage c)) true) (= (cov_covered_statements (comp_coverage c)) (cov_total_statements (comp_coverage c))))))) ; COMPLY_003_02
 
 ; COMPLY_003_03 (matches Coq: Theorem COMPLY_003_03)
-(assert (= true true)) ; COMPLY_003_03 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (comp_dal c) DAL_A) (=> (= (decision_coverage_100 (comp_coverage c)) true) (= (cov_covered_decisions (comp_coverage c)) (cov_total_decisions (comp_coverage c))))))) ; COMPLY_003_03
 
 ; COMPLY_003_04 (matches Coq: Theorem COMPLY_003_04)
-(assert (= true true)) ; COMPLY_003_04 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (comp_dal c) DAL_A) (=> (= (mcdc_coverage_100 (comp_coverage c)) true) (= (cov_mcdc_conditions (comp_coverage c)) (cov_total_conditions (comp_coverage c))))))) ; COMPLY_003_04
 
 ; COMPLY_003_05 (matches Coq: Theorem COMPLY_003_05)
-(assert (= true true)) ; COMPLY_003_05 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (no_dead_code (comp_code_analysis c)) true) (=> (forall ((code_id Bool)) (= (In code_id (ca_all_code (comp_code_analysis c))) true)) (or (= (In code_id (ca_reachable_code (comp_code_analysis c))) true) (= (In code_id (ca_deactivated_code (comp_code_analysis c))) true)))))) ; COMPLY_003_05
 
 ; COMPLY_003_06 (matches Coq: Theorem COMPLY_003_06)
-(assert (= true true)) ; COMPLY_003_06 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_deactivated_documented (comp_code_analysis c)) true) (=> (forall ((code_id Bool)) (= (In code_id (ca_deactivated_code (comp_code_analysis c))) true)) (= (In code_id (ca_deactivated_documented (comp_code_analysis c))) true))))) ; COMPLY_003_06
 
 ; COMPLY_003_07 (matches Coq: Theorem COMPLY_003_07)
-(assert (= true true)) ; COMPLY_003_07 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (stack_safe (comp_stack c)) true) (<= (stack_max_usage (comp_stack c)) (stack_allocated (comp_stack c)))))) ; COMPLY_003_07
 
 ; COMPLY_003_08 (matches Coq: Theorem COMPLY_003_08)
-(assert (= true true)) ; COMPLY_003_08 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (timing_deterministic (comp_timing c)) true) (and (= (timing_bounded_loops (comp_timing c)) true) (<= (+ (timing_wcet (comp_timing c)) (timing_jitter (comp_timing c))) (timing_deadline (comp_timing c))))))) ; COMPLY_003_08
 
 ; COMPLY_003_09 (matches Coq: Theorem COMPLY_003_09)
-(assert (= true true)) ; COMPLY_003_09 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_partitions_isolated (comp_partitions c)) true) (=> (forall ((p1 Bool) (p2 Bool)) (= (In p1 (comp_partitions c)) true)) (=> (= (In p2 (comp_partitions c)) true) (=> (not (= (part_id p1) (part_id p2))) (= (partitions_isolated p1 p2) true))))))) ; COMPLY_003_09
 
 ; COMPLY_003_10 (matches Coq: Theorem COMPLY_003_10)
-(assert (= true true)) ; COMPLY_003_10 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_inputs_validated (comp_inputs c)) true) (=> (forall ((iv Bool)) (= (In iv (comp_inputs c)) true)) (and (= (iv_range_checked iv) true) (= (iv_type_checked iv) true) (= (iv_null_checked iv) true)))))) ; COMPLY_003_10
 
 ; COMPLY_003_11 (matches Coq: Theorem COMPLY_003_11)
-(assert (= true true)) ; COMPLY_003_11 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_exceptions_handled (comp_exceptions c)) true) (=> (forall ((exc_type Bool)) (= (In exc_type (eh_exception_types (comp_exceptions c))) true)) (= (In exc_type (eh_handled_types (comp_exceptions c))) true))))) ; COMPLY_003_11
 
 ; COMPLY_003_12 (matches Coq: Theorem COMPLY_003_12)
-(assert (= true true)) ; COMPLY_003_12 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_data_coupling_documented (comp_data_coupling c)) true) (=> (forall ((dep Bool)) (= (In dep (dc_data_dependencies (comp_data_coupling c))) true)) (= (pair_in_list dep (dc_documented_dependencies (comp_data_coupling c))) true))))) ; COMPLY_003_12
 
 ; COMPLY_003_13 (matches Coq: Theorem COMPLY_003_13)
-(assert (= true true)) ; COMPLY_003_13 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_control_coupling_documented (comp_control_coupling c)) true) (=> (forall ((dep Bool)) (= (In dep (cc_control_dependencies (comp_control_coupling c))) true)) (= (pair_in_list dep (cc_documented_dependencies (comp_control_coupling c))) true))))) ; COMPLY_003_13
 
 ; COMPLY_003_14 (matches Coq: Theorem COMPLY_003_14)
-(assert (= true true)) ; COMPLY_003_14 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_safety_properties_proven (comp_safety_props c)) true) (=> (forall ((sp Bool)) (= (In sp (comp_safety_props c)) true)) (and (= (sp_formally_specified sp) true) (= (sp_formally_verified sp) true)))))) ; COMPLY_003_14
 
 ; COMPLY_003_15 (matches Coq: Theorem COMPLY_003_15)
-(assert (= true true)) ; COMPLY_003_15 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (no_unintended_functions (comp_func_analysis c)) true) (=> (forall ((func_id Bool)) (= (In func_id (fa_implemented_functions (comp_func_analysis c))) true)) (= (In func_id (fa_specified_functions (comp_func_analysis c))) true))))) ; COMPLY_003_15
 
 ; COMPLY_003_16 (matches Coq: Theorem COMPLY_003_16)
-(assert (= true true)) ; COMPLY_003_16 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (robustness_verified (comp_robustness c)) true) (=> (and (= (rt_all_gracefully_handled (comp_robustness c)) true) (forall ((inv_type Bool)) (= (In inv_type (rt_invalid_input_types (comp_robustness c))) true))) (= (In inv_type (rt_tested_invalid_inputs (comp_robustness c))) true))))) ; COMPLY_003_16
 
 ; COMPLY_003_17 (matches Coq: Theorem COMPLY_003_17)
-(assert (= true true)) ; COMPLY_003_17 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (execution_deterministic (comp_determinism c)) true) (and (= (da_no_uninitialized_vars (comp_determinism c)) true) (= (da_no_race_conditions (comp_determinism c)) true) (= (da_no_undefined_behavior (comp_determinism c)) true))))) ; COMPLY_003_17
 
 ; COMPLY_003_18 (matches Coq: Theorem COMPLY_003_18)
-(assert (= true true)) ; COMPLY_003_18 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (all_tasks_meet_deadlines (comp_rt_tasks c)) true) (=> (forall ((task Bool)) (= (In task (comp_rt_tasks c)) true)) (<= (rtt_wcet task) (rtt_deadline task)))))) ; COMPLY_003_18
 
 ; COMPLY_003_19 (matches Coq: Theorem COMPLY_003_19)
-(assert (= true true)) ; COMPLY_003_19 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (resource_usage_bounded (comp_resources c)) true) (and (<= (ru_cpu_usage (comp_resources c)) (ru_cpu_limit (comp_resources c))) (<= (ru_memory_usage (comp_resources c)) (ru_memory_limit (comp_resources c))) (<= (ru_io_usage (comp_resources c)) (ru_io_limit (comp_resources c))))))) ; COMPLY_003_19
 
 ; COMPLY_003_20 (matches Coq: Theorem COMPLY_003_20)
-(assert (= true true)) ; COMPLY_003_20 [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (configuration_compliant (comp_config c)) true) (and (= (cm_version_controlled (comp_config c)) true) (= (cm_baseline_identified (comp_config c)) true) (= (cm_changes_tracked (comp_config c)) true) (= (cm_audit_trail (comp_config c)) true))))) ; COMPLY_003_20
 
 ; DAL_A_Full_Compliance (matches Coq: Theorem DAL_A_Full_Compliance)
 (assert (forall ((c DO178CCompliance)) (=> (= (full_dal_a_compliance c) true) (= (comp_dal c) DAL_A)))) ; DAL_A_Full_Compliance

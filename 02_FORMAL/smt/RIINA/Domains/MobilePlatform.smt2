@@ -94,79 +94,80 @@
 (define-fun mobile_layers () Bool true)
 
 ; mobile_001_unique_uids (matches Coq: Theorem mobile_001_unique_uids)
-(assert (= true true)) ; mobile_001_unique_uids [untranslatable]
+(assert (forall ((apps list)) (=> (= (uids_unique apps) true) (= (NoDup (map app_uid apps)) true)))) ; mobile_001_unique_uids
 
 ; mobile_002_sandbox_valid (matches Coq: Theorem mobile_002_sandbox_valid)
-(assert (= true true)) ; mobile_002_sandbox_valid [untranslatable]
+(assert (forall ((sandbox Sandbox)) (forall ((grants list PermGrant)) (forall ((app AppId)) (=> (= (sandbox_valid sandbox grants app) true) (= (Forall (mk-tuple fun In) sandbox) true)))))) ; mobile_002_sandbox_valid
 
 ; mobile_003_file_isolation (matches Coq: Theorem mobile_003_file_isolation)
-(assert (= true true)) ; mobile_003_file_isolation [untranslatable]
+(assert (forall ((owner AppId) (accessor AppId)) (=> (= (file_isolated owner accessor) true) (= (app_uid owner) (app_uid accessor))))) ; mobile_003_file_isolation
 
 ; mobile_004_dangerous_consent (matches Coq: Theorem mobile_004_dangerous_consent)
 (assert (forall ((p Permission)) (=> (= (perm_level p) Dangerous) (= (requires_user_consent p) true)))) ; mobile_004_dangerous_consent
 
 ; mobile_005_signature_permission (matches Coq: Theorem mobile_005_signature_permission)
-(assert (= true true)) ; mobile_005_signature_permission [untranslatable]
+(assert (forall ((app AppId)) (forall ((required_sig Int)) (=> (= (signature_matches app required_sig) true) (= (app_signature app) required_sig))))) ; mobile_005_signature_permission
 
 ; mobile_006_system_permission (matches Coq: Theorem mobile_006_system_permission)
-(assert (= true true)) ; mobile_006_system_permission [untranslatable]
+(assert (forall ((app AppId)) (forall ((system_uids list)) (=> (= (is_system_app app system_uids) true) (exists ((uid Bool)) (and (= (In uid system_uids) true) (= (app_uid app) uid))))))) ; mobile_006_system_permission
 
 ; mobile_007_unexported_denied (matches Coq: Theorem mobile_007_unexported_denied)
 (assert (forall ((intent Intent)) (=> (= (intent_exported intent) false) (= (ipc_allowed intent false false) false)))) ; mobile_007_unexported_denied
 
 ; mobile_008_same_app_ipc (matches Coq: Theorem mobile_008_same_app_ipc)
-(assert (= true true)) ; mobile_008_same_app_ipc [untranslatable]
+(assert (forall ((intent Intent)) (forall ((exported Bool)) (= (ipc_allowed intent exported true) true)))) ; mobile_008_same_app_ipc
 
 ; mobile_009_hw_key_protected (matches Coq: Theorem mobile_009_hw_key_protected)
 (assert (forall ((props KeyProps)) (=> (= (key_hardware_backed props) true) (= (key_extractable props) false)))) ; mobile_009_hw_key_protected
 
 ; mobile_010_auth_required (matches Coq: Theorem mobile_010_auth_required)
-(assert (= true true)) ; mobile_010_auth_required [untranslatable]
+(assert (forall ((props KeyProps)) (forall ((last_auth Int) (current Int)) (=> (= (key_requires_auth props) true) (=> (= (auth_recent last_auth current (key_valid_seconds props)) true) (<= (- current last_auth) (key_valid_seconds props))))))) ; mobile_010_auth_required
 
 ; mobile_011_grant_owner (matches Coq: Theorem mobile_011_grant_owner)
-(assert (= true true)) ; mobile_011_grant_owner [untranslatable]
+(assert (forall ((g PermGrant)) (= (app_uid (grant_app g)) (app_uid (grant_app g))))) ; mobile_011_grant_owner
 
 ; mobile_012_expired_invalid (matches Coq: Theorem mobile_012_expired_invalid)
-(assert (= true true)) ; mobile_012_expired_invalid [untranslatable]
+(assert (forall ((g PermGrant)) (forall ((current_time Int) (expiry Int)) (=> (= (grant_expiry g) (some expiry)) (=> (>= current_time expiry) (= (grant_valid g current_time) false)))))) ; mobile_012_expired_invalid
 
 ; mobile_013_network_permission (matches Coq: Theorem mobile_013_network_permission)
-(assert (= true true)) ; mobile_013_network_permission [untranslatable]
+(assert (forall ((grants list PermGrant)) (forall ((app AppId)) (=> (= (has_network_permission grants app) true) (exists ((g Bool)) (and (= (In g grants) true) (= (app_uid (grant_app g)) (app_uid app)))))))) ; mobile_013_network_permission
 
 ; mobile_014_location_permission (matches Coq: Theorem mobile_014_location_permission)
-(assert (= true true)) ; mobile_014_location_permission [untranslatable]
+(assert (forall ((grants list PermGrant)) (forall ((app AppId)) (=> (= (has_location_permission grants app) true) (exists ((g Bool)) (and (= (In g grants) true) (= (app_uid (grant_app g)) (app_uid app)))))))) ; mobile_014_location_permission
 
 ; mobile_015_camera_permission (matches Coq: Theorem mobile_015_camera_permission)
-(assert (= true true)) ; mobile_015_camera_permission [untranslatable]
+(assert (forall ((grants list PermGrant)) (forall ((app AppId)) (=> (= (has_camera_permission grants app) true) (exists ((g Bool)) (= (In g grants) true)))))) ; mobile_015_camera_permission
 
 ; mobile_016_microphone_permission (matches Coq: Theorem mobile_016_microphone_permission)
-(assert (= true true)) ; mobile_016_microphone_permission [untranslatable]
+(assert (forall ((grants list PermGrant)) (forall ((app AppId)) (forall ((g PermGrant)) (=> (= (In g grants) true) (=> (= (app_uid (grant_app g)) (app_uid app)) (=> (= (perm_resource (grant_perm g)) MicrophoneResource) (= (In g grants) true)))))))) ; mobile_016_microphone_permission
 
 ; mobile_017_intent_filter (matches Coq: Theorem mobile_017_intent_filter)
-(assert (= true true)) ; mobile_017_intent_filter [untranslatable]
+(assert (forall ((intent Intent)) (forall ((filter_action Int)) (=> (= (intent_matches intent filter_action) true) (= (intent_action intent) filter_action))))) ; mobile_017_intent_filter
 
 ; mobile_018_explicit_target (matches Coq: Theorem mobile_018_explicit_target)
-(assert (= true true)) ; mobile_018_explicit_target [untranslatable]
+(assert (forall ((intent Intent)) (=> (= (explicit_intent intent) true) (exists ((target Bool)) (= (intent_target intent) (some target)))))) ; mobile_018_explicit_target
 
 ; mobile_019_process_isolation (matches Coq: Theorem mobile_019_process_isolation)
-(assert (= true true)) ; mobile_019_process_isolation [untranslatable]
+(assert (forall ((pid1 Int) (pid2 Int)) (=> (= (processes_isolated pid1 pid2) true) (not (= pid1 pid2))))) ; mobile_019_process_isolation
 
 ; mobile_020_selinux_enforced (matches Coq: Theorem mobile_020_selinux_enforced)
-(assert (= true true)) ; mobile_020_selinux_enforced [untranslatable]
+(assert (forall ((source Int) (target Int) (perm Int) (policy list)) (=> (= (selinux_allows source target perm policy) true) (exists ((rule Bool)) (= (In rule policy) true))))) ; mobile_020_selinux_enforced
 
 ; mobile_021_verified_boot (matches Coq: Theorem mobile_021_verified_boot)
-(assert (= true true)) ; mobile_021_verified_boot [untranslatable]
+; mobile_021_verified_boot: forall (stages : list bool), boot_verified stages = true -> Forall (fun v => v = true) stages
+(assert (forall ((stages list)) true)) ; mobile_021_verified_boot [partial: bindings preserved]
 
 ; mobile_022_enclave_isolation (matches Coq: Theorem mobile_022_enclave_isolation)
-(assert (= true true)) ; mobile_022_enclave_isolation [untranslatable]
+(assert (forall ((enclave_mem Int) (normal_mem Int)) (=> (= (enclave_isolated enclave_mem normal_mem) true) (not (= enclave_mem normal_mem))))) ; mobile_022_enclave_isolation
 
 ; mobile_023_biometric_tee (matches Coq: Theorem mobile_023_biometric_tee)
-(assert (= true true)) ; mobile_023_biometric_tee [untranslatable]
+(assert (forall ((storage Int) (tee Int)) (=> (= (biometric_in_tee storage tee) true) (= storage tee)))) ; mobile_023_biometric_tee
 
 ; mobile_024_signature_verified (matches Coq: Theorem mobile_024_signature_verified)
-(assert (= true true)) ; mobile_024_signature_verified [untranslatable]
+(assert (forall ((app AppId)) (forall ((trusted_sigs list)) (=> (= (signature_valid app trusted_sigs) true) (exists ((sig Bool)) (and (= (In sig trusted_sigs) true) (= (app_signature app) sig))))))) ; mobile_024_signature_verified
 
 ; mobile_025_defense_in_depth (matches Coq: Theorem mobile_025_defense_in_depth)
-(assert (= true true)) ; mobile_025_defense_in_depth [untranslatable]
+(assert (forall ((sb Bool) (pm Bool) (ip Bool) (ks Bool) (bt Bool)) (=> (= (mobile_layers sb pm ip ks bt) true) (and (= sb true) (= pm true) (= ip true) (= ks true) (= bt true))))) ; mobile_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

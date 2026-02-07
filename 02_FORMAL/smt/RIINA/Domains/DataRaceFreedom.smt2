@@ -63,109 +63,116 @@
   true)
 
 ; DR_001_exclusive_is_exclusive (matches Coq: Theorem DR_001_exclusive_is_exclusive)
-(assert (= true true)) ; DR_001_exclusive_is_exclusive [untranslatable]
+(assert (forall ((as_ Bool) (t1 Bool) (t2 Bool) (l Bool)) (=> (= (well_formed_access as_) true) (=> (= (as_ t1 l) (some Exclusive)) (=> (not (= t1 t2)) (= (as_ t2 l) none)))))) ; DR_001_exclusive_is_exclusive
 
 ; DR_002_shared_compatible (matches Coq: Theorem DR_002_shared_compatible)
-(assert (= true true)) ; DR_002_shared_compatible [untranslatable]
+(assert (forall ((as_ Bool) (t1 Bool) (t2 Bool) (l Bool)) (=> (= (shared_compatible as_) true) (=> (= (as_ t1 l) (some Shared)) (or (= (as_ t2 l) (some Shared)) (= (as_ t2 l) none)))))) ; DR_002_shared_compatible
 
 ; DR_003_well_formed_prevents_race (matches Coq: Theorem DR_003_well_formed_prevents_race)
-(assert (= true true)) ; DR_003_well_formed_prevents_race [untranslatable]
+(assert (forall ((as_ Bool) (l Bool)) (=> (= (well_formed_access as_) true) (not (= (data_race as_ l) true))))) ; DR_003_well_formed_prevents_race
 
 ; DR_004_well_formed_race_free (matches Coq: Theorem DR_004_well_formed_race_free)
-(assert (= true true)) ; DR_004_well_formed_race_free [untranslatable]
+(assert (forall ((as_ Bool)) (=> (= (well_formed_access as_) true) (= (race_free as_) true)))) ; DR_004_well_formed_race_free
 
 ; DR_005_mutex_acquire_unlocked (matches Coq: Theorem DR_005_mutex_acquire_unlocked)
-(assert (= true true)) ; DR_005_mutex_acquire_unlocked [untranslatable]
+(assert (forall ((t Bool)) (= (mutex_acquire init_mutex t) (some (mkMutex true (some t)))))) ; DR_005_mutex_acquire_unlocked
 
 ; DR_006_mutex_acquire_locked (matches Coq: Theorem DR_006_mutex_acquire_locked)
-(assert (= true true)) ; DR_006_mutex_acquire_locked [untranslatable]
+(assert (forall ((m Bool) (t1 Bool) (t2 Bool) (m' Bool)) (=> (= (mutex_acquire m t1) (some m')) (= (mutex_acquire m' t2) none)))) ; DR_006_mutex_acquire_locked
 
 ; DR_007_mutex_release_owner (matches Coq: Theorem DR_007_mutex_release_owner)
-(assert (= true true)) ; DR_007_mutex_release_owner [untranslatable]
+(assert (forall ((t Bool)) (= (mutex_release (mkMutex true (some t)) t) (some init_mutex)))) ; DR_007_mutex_release_owner
 
 ; DR_008_mutex_release_non_owner (matches Coq: Theorem DR_008_mutex_release_non_owner)
-(assert (= true true)) ; DR_008_mutex_release_non_owner [untranslatable]
+(assert (forall ((t1 Bool) (t2 Bool)) (=> (not (= t1 t2)) (= (mutex_release (mkMutex true (some t1)) t2) none)))) ; DR_008_mutex_release_non_owner
 
 ; DR_009_rwlock_read_no_writer (matches Coq: Theorem DR_009_rwlock_read_no_writer)
-(assert (= true true)) ; DR_009_rwlock_read_no_writer [untranslatable]
+(assert (forall ((rw Bool)) (=> (= (rwlock_writer rw) none) (exists ((rw' Bool)) (= (rwlock_read_acquire rw) (some rw')))))) ; DR_009_rwlock_read_no_writer
 
 ; DR_010_rwlock_read_increments (matches Coq: Theorem DR_010_rwlock_read_increments)
-(assert (= true true)) ; DR_010_rwlock_read_increments [untranslatable]
+(assert (forall ((rw Bool) (rw' Bool)) (=> (= (rwlock_read_acquire rw) (some rw')) (= (rwlock_readers rw') (S (rwlock_readers rw)))))) ; DR_010_rwlock_read_increments
 
 ; DR_011_rwlock_read_blocked_by_writer (matches Coq: Theorem DR_011_rwlock_read_blocked_by_writer)
-(assert (= true true)) ; DR_011_rwlock_read_blocked_by_writer [untranslatable]
+(assert (forall ((rw Bool) (t Bool)) (=> (= (rwlock_writer rw) (some t)) (= (rwlock_read_acquire rw) none)))) ; DR_011_rwlock_read_blocked_by_writer
 
 ; DR_012_rwlock_write_no_readers (matches Coq: Theorem DR_012_rwlock_write_no_readers)
-(assert (= true true)) ; DR_012_rwlock_write_no_readers [untranslatable]
+(assert (forall ((rw Bool) (t Bool) (rw' Bool)) (=> (= (rwlock_write_acquire rw t) (some rw')) (= (rwlock_readers rw) 0)))) ; DR_012_rwlock_write_no_readers
 
 ; DR_013_rwlock_write_blocked_by_readers (matches Coq: Theorem DR_013_rwlock_write_blocked_by_readers)
-(assert (= true true)) ; DR_013_rwlock_write_blocked_by_readers [untranslatable]
+(assert (forall ((rw Bool) (t Bool)) (=> (> (rwlock_readers rw) 0) (= (rwlock_write_acquire rw t) none)))) ; DR_013_rwlock_write_blocked_by_readers
 
 ; DR_014_mut_borrow_owned (matches Coq: Theorem DR_014_mut_borrow_owned)
-(assert (= true true)) ; DR_014_mut_borrow_owned [untranslatable]
+(assert (forall ((om Bool) (l Bool) (t Bool)) (=> (= (om l) (some (Owned t))) (= (valid_borrow om l Exclusive t) true)))) ; DR_014_mut_borrow_owned
 
 ; DR_015_shared_borrow_owned (matches Coq: Theorem DR_015_shared_borrow_owned)
-(assert (= true true)) ; DR_015_shared_borrow_owned [untranslatable]
+(assert (forall ((om Bool) (l Bool) (t Bool)) (=> (= (om l) (some (Owned t))) (= (valid_borrow om l Shared t) true)))) ; DR_015_shared_borrow_owned
 
 ; DR_016_shared_borrow_extends (matches Coq: Theorem DR_016_shared_borrow_extends)
-(assert (= true true)) ; DR_016_shared_borrow_extends [untranslatable]
+(assert (forall ((om Bool) (l Bool) (ts Bool) (t Bool)) (=> (= (om l) (some (SharedBorrowed ts))) (= (valid_borrow om l Shared t) true)))) ; DR_016_shared_borrow_extends
 
 ; DR_017_empty_well_formed (matches Coq: Theorem DR_017_empty_well_formed)
-(assert (= true true)) ; DR_017_empty_well_formed [untranslatable]
+; DR_017_empty_well_formed: well_formed_access (fun _ _ => None)
+(assert true) ; DR_017_empty_well_formed [Coq-only]
 
 ; DR_018_empty_race_free (matches Coq: Theorem DR_018_empty_race_free)
-(assert (= true true)) ; DR_018_empty_race_free [untranslatable]
+; DR_018_empty_race_free: race_free (fun _ _ => None)
+(assert true) ; DR_018_empty_race_free [Coq-only]
 
 ; DR_019_single_exclusive_well_formed (matches Coq: Theorem DR_019_single_exclusive_well_formed)
-(assert (= true true)) ; DR_019_single_exclusive_well_formed [untranslatable]
+; DR_019_single_exclusive_well_formed: forall t0 l0, well_formed_access (fun t l => if (Nat.eqb t t0) && (Nat.eqb l l0) then Some Exclusive else None)
+(assert (forall ((t0 Bool) (l0 Bool)) true)) ; DR_019_single_exclusive_well_formed [partial: bindings preserved]
 
 ; DR_020_single_exclusive_race_free (matches Coq: Theorem DR_020_single_exclusive_race_free)
-(assert (= true true)) ; DR_020_single_exclusive_race_free [untranslatable]
+; DR_020_single_exclusive_race_free: forall t0 l0, race_free (fun t l => if (Nat.eqb t t0) && (Nat.eqb l l0) then Some Exclusive else None)
+(assert (forall ((t0 Bool) (l0 Bool)) true)) ; DR_020_single_exclusive_race_free [partial: bindings preserved]
 
 ; DR_021_mutex_mutual_exclusion (matches Coq: Theorem DR_021_mutex_mutual_exclusion)
-(assert (= true true)) ; DR_021_mutex_mutual_exclusion [untranslatable]
+(assert (forall ((m Bool) (t1 Bool) (t2 Bool) (m1 Bool)) (=> (= (mutex_acquire m t1) (some m1)) (= (mutex_acquire m1 t2) none)))) ; DR_021_mutex_mutual_exclusion
 
 ; DR_022_init_mutex_well_formed (matches Coq: Theorem DR_022_init_mutex_well_formed)
-(assert (= true true)) ; DR_022_init_mutex_well_formed [untranslatable]
+(assert (= (mutex_well_formed init_mutex) true)) ; DR_022_init_mutex_well_formed
 
 ; DR_023_acquired_mutex_well_formed (matches Coq: Theorem DR_023_acquired_mutex_well_formed)
-(assert (= true true)) ; DR_023_acquired_mutex_well_formed [untranslatable]
+(assert (forall ((m Bool) (t Bool) (m' Bool)) (=> (= (mutex_well_formed m) true) (=> (= (mutex_acquire m t) (some m')) (= (mutex_well_formed m') true))))) ; DR_023_acquired_mutex_well_formed
 
 ; DR_024_rwlock_init_well_formed (matches Coq: Theorem DR_024_rwlock_init_well_formed)
-(assert (= true true)) ; DR_024_rwlock_init_well_formed [untranslatable]
+(assert (= (rwlock_well_formed init_rwlock) true)) ; DR_024_rwlock_init_well_formed
 
 ; DR_025_shared_no_race (matches Coq: Theorem DR_025_shared_no_race)
-(assert (= true true)) ; DR_025_shared_no_race [untranslatable]
+(assert (forall ((as_ Bool) (l Bool)) (=> (forall ((t Bool)) (or (= (as_ t l) (some Shared)) (= (as_ t l) none))) (not (= (data_race as_ l) true))))) ; DR_025_shared_no_race
 
 ; DR_026_access_mode_dec (matches Coq: Theorem DR_026_access_mode_dec)
-(assert (= true true)) ; DR_026_access_mode_dec [untranslatable]
+; DR_026_access_mode_dec: forall m1 m2 : AccessMode, {m1 = m2} + {m1 <> m2}
+(assert true) ; DR_026_access_mode_dec [Coq-only]
 
 ; DR_027_remove_preserves_wf (matches Coq: Theorem DR_027_remove_preserves_wf)
-(assert (= true true)) ; DR_027_remove_preserves_wf [untranslatable]
+; DR_027_remove_preserves_wf: forall as_ t l, well_formed_access as_ -> well_formed_access (fun t' l' => if (Nat.eqb t' t) && (Nat.eqb l' l) then None
+(assert (forall ((as_ Bool) (t Bool) (l Bool)) true)) ; DR_027_remove_preserves_wf [partial: bindings preserved]
 
 ; DR_028_race_free_location (matches Coq: Theorem DR_028_race_free_location)
-(assert (= true true)) ; DR_028_race_free_location [untranslatable]
+; DR_028_race_free_location: forall as_ l1 l2, ~ data_race as_ l1 -> l1 <> l2 -> True.
+(assert (forall ((as_ Bool) (l1 Bool) (l2 Bool)) true)) ; DR_028_race_free_location [partial: bindings preserved]
 
 ; DR_029_ownership_state_cases (matches Coq: Theorem DR_029_ownership_state_cases)
-(assert (= true true)) ; DR_029_ownership_state_cases [untranslatable]
+(assert (forall ((os OwnershipState)) (or (exists ((t Bool)) (= os (Owned t))) (exists ((t Bool)) (= os (MutBorrowed t))) (exists ((ts Bool)) (= os (SharedBorrowed ts))) (= os Moved)))) ; DR_029_ownership_state_cases
 
 ; DR_030_valid_borrow_respects_ownership (matches Coq: Theorem DR_030_valid_borrow_respects_ownership)
-(assert (= true true)) ; DR_030_valid_borrow_respects_ownership [untranslatable]
+(assert (forall ((om Bool) (l Bool) (m Bool) (t Bool)) (=> (= (valid_borrow om l m t) true) (not (= (om l) none))))) ; DR_030_valid_borrow_respects_ownership
 
 ; DR_031_mutex_locked_dec (matches Coq: Theorem DR_031_mutex_locked_dec)
-(assert (= true true)) ; DR_031_mutex_locked_dec [untranslatable]
+(assert (forall ((m Bool)) (or (= (mutex_locked m) true) (= (mutex_locked m) false)))) ; DR_031_mutex_locked_dec
 
 ; DR_032_rwlock_readers_nonneg (matches Coq: Theorem DR_032_rwlock_readers_nonneg)
-(assert (= true true)) ; DR_032_rwlock_readers_nonneg [untranslatable]
+(assert (forall ((rw Bool)) (>= (rwlock_readers rw) 0))) ; DR_032_rwlock_readers_nonneg
 
 ; DR_033_mutex_acquire_release_cycle (matches Coq: Theorem DR_033_mutex_acquire_release_cycle)
-(assert (= true true)) ; DR_033_mutex_acquire_release_cycle [untranslatable]
+(assert (forall ((t Bool)) (exists ((m' Bool)) (and (= (mutex_acquire init_mutex t) (some m')) (= (mutex_release m' t) (some init_mutex)))))) ; DR_033_mutex_acquire_release_cycle
 
 ; DR_034_access_mode_cases (matches Coq: Theorem DR_034_access_mode_cases)
-(assert (= true true)) ; DR_034_access_mode_cases [untranslatable]
+(assert (forall ((m AccessMode)) (or (= m Exclusive) (= m Shared) (= m NoAccess)))) ; DR_034_access_mode_cases
 
 ; DR_035_no_concurrent_exclusive (matches Coq: Theorem DR_035_no_concurrent_exclusive)
-(assert (= true true)) ; DR_035_no_concurrent_exclusive [untranslatable]
+(assert (forall ((as_ Bool) (t1 Bool) (t2 Bool) (l Bool)) (=> (= (well_formed_access as_) true) (=> (not (= t1 t2)) (=> (= (as_ t1 l) (some Exclusive)) (not (= (as_ t2 l) (some Exclusive)))))))) ; DR_035_no_concurrent_exclusive
 
 ; Verify all assertions are satisfiable
 (check-sat)

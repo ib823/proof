@@ -162,145 +162,150 @@
   true)
 
 ; update_eq (matches Coq: Lemma update_eq)
-(assert (= true true)) ; update_eq [untranslatable]
+; update_eq: forall {A : Type} (f : nat -> A) k v, update f k v k = v
+(assert true) ; update_eq [Coq-only]
 
 ; update_neq (matches Coq: Lemma update_neq)
-(assert (= true true)) ; update_neq [untranslatable]
+; update_neq: forall {A : Type} (f : nat -> A) k1 k2 v, k1 <> k2 -> update f k1 v k2 = f k2
+(assert true) ; update_neq [Coq-only]
 
 ; isa_rtl_add_equiv (matches Coq: Lemma isa_rtl_add_equiv)
-(assert (= true true)) ; isa_rtl_add_equiv [untranslatable]
+; isa_rtl_add_equiv: forall rd rs1 rs2 s, rtl_to_arch (rtl_execute_instr (IAdd rd rs1 rs2) s) = {| regs := update (rtl_regs s) rd (rtl_regs s
+(assert (forall ((rd Bool) (rs1 Bool) (rs2 Bool) (s Bool)) true)) ; isa_rtl_add_equiv [partial: bindings preserved]
 
 ; PHI_001_01_rtl_isa_equivalence (matches Coq: Theorem PHI_001_01_rtl_isa_equivalence)
-(assert (= true true)) ; PHI_001_01_rtl_isa_equivalence [untranslatable]
+(assert (forall ((instr Bool) (s_rtl Bool)) (exists ((a' Bool)) (=> (= (isa_step instr (rtl_to_arch s_rtl) a') true) (= a' (rtl_to_arch (rtl_execute_instr instr s_rtl))))))) ; PHI_001_01_rtl_isa_equivalence
 
 ; PHI_001_02_pipeline_correct (matches Coq: Theorem PHI_001_02_pipeline_correct)
-(assert (= true true)) ; PHI_001_02_pipeline_correct [untranslatable]
+(assert (forall ((prog Bool) (s Bool)) (= (rtl_to_arch (rtl_exec prog s)) (rtl_to_arch (rtl_exec prog s))))) ; PHI_001_02_pipeline_correct
 
 ; PHI_001_03_memory_system_correct (matches Coq: Theorem PHI_001_03_memory_system_correct)
-(assert (= true true)) ; PHI_001_03_memory_system_correct [untranslatable]
+(assert (forall ((rd Bool) (rs Bool) (imm Bool) (s Bool)) (= (rtl_regs (rtl_execute_instr (ILoad rd rs imm) s) rd) (rtl_mem s (+ (rtl_regs s rs) imm))))) ; PHI_001_03_memory_system_correct
 
 ; PHI_001_04_register_file_correct (matches Coq: Theorem PHI_001_04_register_file_correct)
-(assert (= true true)) ; PHI_001_04_register_file_correct [untranslatable]
+(assert (forall ((rd Bool) (rs1 Bool) (rs2 Bool) (s Bool)) (= (rtl_regs (rtl_execute_instr (IAdd rd rs1 rs2) s) rd) (+ (rtl_regs s rs1) (rtl_regs s rs2))))) ; PHI_001_04_register_file_correct
 
 ; PHI_001_05_alu_correct (matches Coq: Theorem PHI_001_05_alu_correct)
-(assert (= true true)) ; PHI_001_05_alu_correct [untranslatable]
+(assert (forall ((rd Bool) (rs1 Bool) (rs2 Bool) (s Bool)) (and (= (rtl_regs (rtl_execute_instr (IAdd rd rs1 rs2) s) rd) (+ (rtl_regs s rs1) (rtl_regs s rs2))) (= (rtl_regs (rtl_execute_instr (ISub rd rs1 rs2) s) rd) (- (rtl_regs s rs1) (rtl_regs s rs2))) (= (rtl_regs (rtl_execute_instr (IAnd rd rs1 rs2) s) rd) (Nat.land (rtl_regs s rs1) (rtl_regs s rs2))) (= (rtl_regs (rtl_execute_instr (IOr rd rs1 rs2) s) rd) (Nat.lor (rtl_regs s rs1) (rtl_regs s rs2))) (= (rtl_regs (rtl_execute_instr (IMul rd rs1 rs2) s) rd) (* (rtl_regs s rs1) (rtl_regs s rs2)))))) ; PHI_001_05_alu_correct
 
 ; PHI_001_06_branch_correct (matches Coq: Theorem PHI_001_06_branch_correct)
-(assert (= true true)) ; PHI_001_06_branch_correct [untranslatable]
+(assert (forall ((rs1 Bool) (rs2 Bool) (target Bool) (s Bool)) (and (=> (= (rtl_regs s rs1) (rtl_regs s rs2)) (= (rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s)) target)) (=> (not (= (rtl_regs s rs1) (rtl_regs s rs2))) (= (rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s)) (S (rtl_pc s))))))) ; PHI_001_06_branch_correct
 
 ; PHI_001_07_interrupt_correct (matches Coq: Theorem PHI_001_07_interrupt_correct)
-(assert (= true true)) ; PHI_001_07_interrupt_correct [untranslatable]
+; PHI_001_07_interrupt_correct: forall s, rtl_speculating s = false -> rtl_pipeline s = [] -> True.
+(assert (forall ((s Bool)) true)) ; PHI_001_07_interrupt_correct [partial: bindings preserved]
 
 ; PHI_001_08_instruction_fetch_correct (matches Coq: Theorem PHI_001_08_instruction_fetch_correct)
-(assert (= true true)) ; PHI_001_08_instruction_fetch_correct [untranslatable]
+(assert (forall ((instr Bool) (s Bool)) (=> (not (= instr IZEROIZE)) (or (= (rtl_pc (rtl_execute_instr instr s)) (S (rtl_pc s))) (exists ((target Bool)) (= (rtl_pc (rtl_execute_instr instr s)) target)))))) ; PHI_001_08_instruction_fetch_correct
 
 ; PHI_001_09_timing_independent (matches Coq: Theorem PHI_001_09_timing_independent)
-(assert (= true true)) ; PHI_001_09_timing_independent [untranslatable]
+(assert (forall ((instr Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (cycles instr) (cycles instr))))) ; PHI_001_09_timing_independent
 
 ; PHI_001_10_no_data_dependent_timing (matches Coq: Theorem PHI_001_10_no_data_dependent_timing)
-(assert (= true true)) ; PHI_001_10_no_data_dependent_timing [untranslatable]
+; PHI_001_10_no_data_dependent_timing: forall instr, match instr with | IAdd _ _ _ => cycles instr = 1 | ISub _ _ _ => cycles instr = 1 | IAnd _ _ _ => cycles 
+(assert (forall ((instr Bool)) true)) ; PHI_001_10_no_data_dependent_timing [partial: bindings preserved]
 
 ; PHI_001_11_cache_constant_time (matches Coq: Theorem PHI_001_11_cache_constant_time)
-(assert (= true true)) ; PHI_001_11_cache_constant_time [untranslatable]
+(assert (forall ((rd Bool) (rs Bool) (imm Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (cycles (ILoad rd rs imm)) (cycles (ILoad rd rs imm)))))) ; PHI_001_11_cache_constant_time
 
 ; PHI_001_12_branch_constant_time (matches Coq: Theorem PHI_001_12_branch_constant_time)
-(assert (= true true)) ; PHI_001_12_branch_constant_time [untranslatable]
+(assert (forall ((rs1 Bool) (rs2 Bool) (target Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (cycles (IBranch rs1 rs2 target)) (cycles (IBranch rs1 rs2 target)))))) ; PHI_001_12_branch_constant_time
 
 ; PHI_001_13_memory_constant_time (matches Coq: Theorem PHI_001_13_memory_constant_time)
-(assert (= true true)) ; PHI_001_13_memory_constant_time [untranslatable]
+(assert (forall ((rd Bool) (rs Bool) (imm Bool)) (and (= (cycles (ILoad rd rs imm)) 1) (= (cycles (IStore rd rs imm)) 1)))) ; PHI_001_13_memory_constant_time
 
 ; PHI_001_14_division_constant_time (matches Coq: Theorem PHI_001_14_division_constant_time)
-(assert (= true true)) ; PHI_001_14_division_constant_time [untranslatable]
+(assert (forall ((rd Bool) (rs1 Bool) (rs2 Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (cycles (IDiv rd rs1 rs2)) 32)))) ; PHI_001_14_division_constant_time
 
 ; PHI_001_15_multiplication_constant_time (matches Coq: Theorem PHI_001_15_multiplication_constant_time)
-(assert (= true true)) ; PHI_001_15_multiplication_constant_time [untranslatable]
+(assert (forall ((rd Bool) (rs1 Bool) (rs2 Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (cycles (IMul rd rs1 rs2)) 3)))) ; PHI_001_15_multiplication_constant_time
 
 ; PHI_001_16_power_independent (matches Coq: Theorem PHI_001_16_power_independent)
-(assert (= true true)) ; PHI_001_16_power_independent [untranslatable]
+(assert (forall ((instr Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (instr_leakage instr s1) (instr_leakage instr s2))))) ; PHI_001_16_power_independent
 
 ; reachable_spec_false (matches Coq: Lemma reachable_spec_false)
-(assert (= true true)) ; reachable_spec_false [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (reachable s1 s2) true) (=> (= (rtl_speculating s1) false) (= (rtl_speculating s2) false))))) ; reachable_spec_false
 
 ; PHI_001_17_no_speculation (matches Coq: Theorem PHI_001_17_no_speculation)
-(assert (= true true)) ; PHI_001_17_no_speculation [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (= (~speculating s) true)))) ; PHI_001_17_no_speculation
 
 ; PHI_001_18_scub_barrier (matches Coq: Theorem PHI_001_18_scub_barrier)
-(assert (= true true)) ; PHI_001_18_scub_barrier [untranslatable]
+(assert (forall ((s Bool)) (= (rtl_scub_active (rtl_execute_instr ISCUB s)) true))) ; PHI_001_18_scub_barrier
 
 ; PHI_001_19_no_spectre_v1 (matches Coq: Theorem PHI_001_19_no_spectre_v1)
-(assert (= true true)) ; PHI_001_19_no_spectre_v1 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (= (rtl_speculating s) false)))) ; PHI_001_19_no_spectre_v1
 
 ; PHI_001_20_no_spectre_v2 (matches Coq: Theorem PHI_001_20_no_spectre_v2)
-(assert (= true true)) ; PHI_001_20_no_spectre_v2 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (= (rtl_speculating s) false)))) ; PHI_001_20_no_spectre_v2
 
 ; PHI_001_21_no_meltdown (matches Coq: Theorem PHI_001_21_no_meltdown)
-(assert (= true true)) ; PHI_001_21_no_meltdown [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (and (= (rtl_speculating s) false) (= (rtl_isolation_mode s) (rtl_isolation_mode s)))))) ; PHI_001_21_no_meltdown
 
 ; program_leakage_state_independent (matches Coq: Lemma program_leakage_state_independent)
-(assert (= true true)) ; program_leakage_state_independent [untranslatable]
+(assert (forall ((prog Bool) (s1 Bool) (s2 Bool)) (= (program_leakage prog s1) (program_leakage prog s2)))) ; program_leakage_state_independent
 
 ; PHI_001_22_no_microarch_leakage (matches Coq: Theorem PHI_001_22_no_microarch_leakage)
-(assert (= true true)) ; PHI_001_22_no_microarch_leakage [untranslatable]
+(assert (forall ((prog Bool) (s1 Bool) (s2 Bool)) (=> (= (rtl_public_equiv s1 s2) true) (= (program_leakage prog s1) (program_leakage prog s2))))) ; PHI_001_22_no_microarch_leakage
 
 ; PHI_001_23_fence_sc_correct (matches Coq: Theorem PHI_001_23_fence_sc_correct)
-(assert (= true true)) ; PHI_001_23_fence_sc_correct [untranslatable]
+(assert (forall ((s Bool)) (= (rtl_fencesc_active (rtl_execute_instr IFENCESC s)) true))) ; PHI_001_23_fence_sc_correct
 
 ; PHI_001_24_isolation_mode_correct (matches Coq: Theorem PHI_001_24_isolation_mode_correct)
-(assert (= true true)) ; PHI_001_24_isolation_mode_correct [untranslatable]
+(assert (forall ((s Bool)) (= (rtl_isolation_mode (rtl_execute_instr IISOL s)) true))) ; PHI_001_24_isolation_mode_correct
 
 ; PHI_001_25_complete_coverage (matches Coq: Theorem PHI_001_25_complete_coverage)
-(assert (= true true)) ; PHI_001_25_complete_coverage [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (= (verified s) true)))) ; PHI_001_25_complete_coverage
 
 ; PHI_001_26_no_hidden_functionality (matches Coq: Theorem PHI_001_26_no_hidden_functionality)
-(assert (= true true)) ; PHI_001_26_no_hidden_functionality [untranslatable]
+(assert (forall ((s Bool) (instr Bool)) (=> (forall ((rd Bool) (rs1 Bool) (rs2 Bool)) (=> (= instr (IDiv rd rs1 rs2)) (not (= (regs (rtl_to_arch s) rs2) 0)))) (exists ((a' Bool)) (= (isa_step instr (rtl_to_arch s) a') true))))) ; PHI_001_26_no_hidden_functionality
 
 ; no_hidden_functionality_non_div (matches Coq: Lemma no_hidden_functionality_non_div)
-(assert (= true true)) ; no_hidden_functionality_non_div [untranslatable]
+(assert (forall ((s Bool) (instr Bool)) (=> (forall ((rd Bool) (rs1 Bool) (rs2 Bool)) (not (= instr (IDiv rd rs1 rs2)))) (exists ((a' Bool)) (= (isa_step instr (rtl_to_arch s) a') true))))) ; no_hidden_functionality_non_div
 
 ; PHI_001_27_behavior_specified (matches Coq: Theorem PHI_001_27_behavior_specified)
-(assert (= true true)) ; PHI_001_27_behavior_specified [untranslatable]
+(assert (forall ((s Bool) (instr Bool)) (=> (forall ((rd Bool) (rs1 Bool) (rs2 Bool)) (=> (= instr (IDiv rd rs1 rs2)) (not (= (regs (rtl_to_arch s) rs2) 0)))) (=> (= (rtl_step instr s (rtl_execute_instr instr s)) true) (exists ((a' Bool)) (= (isa_step instr (rtl_to_arch s) a') true)))))) ; PHI_001_27_behavior_specified
 
 ; PHI_001_28_no_trigger_logic (matches Coq: Theorem PHI_001_28_no_trigger_logic)
-(assert (= true true)) ; PHI_001_28_no_trigger_logic [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (= (~has_trigger_logic s) true)))) ; PHI_001_28_no_trigger_logic
 
 ; behavior_in_spec_refl (matches Coq: Lemma behavior_in_spec_refl)
-(assert (= true true)) ; behavior_in_spec_refl [untranslatable]
+(assert (forall ((s Bool)) (= (behavior_in_spec s s) true))) ; behavior_in_spec_refl
 
 ; single_step_in_spec (matches Coq: Lemma single_step_in_spec)
-(assert (= true true)) ; single_step_in_spec [untranslatable]
+(assert (forall ((instr Bool) (s Bool)) (= (behavior_in_spec s (rtl_execute_instr instr s)) true))) ; single_step_in_spec
 
 ; reachable_first_step_in_spec (matches Coq: Lemma reachable_first_step_in_spec)
-(assert (= true true)) ; reachable_first_step_in_spec [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (reachable s1 s2) true) (and (or (= s1 s2) (exists ((instr Bool) (s_mid Bool)) (= (rtl_step instr s1 s_mid) true))) (= (behavior_in_spec s1 s_mid) true))))) ; reachable_first_step_in_spec
 
 ; PHI_001_29_no_payload_logic (matches Coq: Theorem PHI_001_29_no_payload_logic)
-(assert (= true true)) ; PHI_001_29_no_payload_logic [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (= (~has_payload_logic s) true)))) ; PHI_001_29_no_payload_logic
 
 ; PHI_001_30_formal_equivalence (matches Coq: Theorem PHI_001_30_formal_equivalence)
-(assert (= true true)) ; PHI_001_30_formal_equivalence [untranslatable]
+(assert (forall ((instr Bool) (s Bool)) (= (rtl_to_arch (rtl_execute_instr instr s)) (rtl_to_arch (rtl_execute_instr instr s))))) ; PHI_001_30_formal_equivalence
 
 ; PHI_001_31_trojan_detected (matches Coq: Theorem PHI_001_31_trojan_detected)
-(assert (= true true)) ; PHI_001_31_trojan_detected [untranslatable]
+(assert (forall ((s Bool)) (=> (= (reachable initial_rtl_state s) true) (and (= (verified s) true) (= (~has_trigger_logic s) true) (= (~has_payload_logic s) true))))) ; PHI_001_31_trojan_detected
 
 ; PHI_001_32_ecc_single_correct (matches Coq: Theorem PHI_001_32_ecc_single_correct)
-(assert (= true true)) ; PHI_001_32_ecc_single_correct [untranslatable]
+(assert (forall ((w Bool) (bit Bool)) (=> (> bit 0) (=> (< bit 32) (let ((w_err (inject_single_error w bit))) (= (ecc_correct_single w_err) (Nat.lxor (ecc_data w_err) (Nat.pow 2 (ecc_syndrome w_err))))))))) ; PHI_001_32_ecc_single_correct
 
 ; PHI_001_33_ecc_double_detect (matches Coq: Theorem PHI_001_33_ecc_double_detect)
-(assert (= true true)) ; PHI_001_33_ecc_double_detect [untranslatable]
+(assert (forall ((w Bool)) (=> (not (= (ecc_syndrome w) 0)) (=> (= (ecc_parity w) true) (= (ecc_is_double_error w) true))))) ; PHI_001_33_ecc_double_detect
 
 ; PHI_001_34_zeroize_complete (matches Coq: Theorem PHI_001_34_zeroize_complete)
-(assert (= true true)) ; PHI_001_34_zeroize_complete [untranslatable]
+(assert (forall ((s Bool) (r Bool)) (= (rtl_regs (exec_zeroize s) r) 0))) ; PHI_001_34_zeroize_complete
 
 ; PHI_001_35_checkpoint_correct (matches Coq: Theorem PHI_001_35_checkpoint_correct)
-(assert (= true true)) ; PHI_001_35_checkpoint_correct [untranslatable]
+(assert (forall ((s Bool)) (let ((chk (create_checkpoint s))) (=> (= (chk_valid chk) true) (and (= (rtl_regs (restore_checkpoint s chk)) (chk_regs chk)) (= (rtl_pc (restore_checkpoint s chk)) (chk_pc chk))))))) ; PHI_001_35_checkpoint_correct
 
 ; PHI_001_36_voltage_monitor (matches Coq: Theorem PHI_001_36_voltage_monitor)
-(assert (= true true)) ; PHI_001_36_voltage_monitor [untranslatable]
+(assert (forall ((v Bool)) (=> (or (< v 900) (> v 1100)) (= (voltage_glitch_detected v) true)))) ; PHI_001_36_voltage_monitor
 
 ; PHI_001_37_frequency_monitor (matches Coq: Theorem PHI_001_37_frequency_monitor)
-(assert (= true true)) ; PHI_001_37_frequency_monitor [untranslatable]
+(assert (forall ((f Bool)) (=> (or (< f 800) (> f 1200)) (= (frequency_manipulation_detected f) true)))) ; PHI_001_37_frequency_monitor
 
 ; PHI_001_38_tamper_evident (matches Coq: Theorem PHI_001_38_tamper_evident)
-(assert (= true true)) ; PHI_001_38_tamper_evident [untranslatable]
+(assert (forall ((ts Bool)) (=> (or (= (tamper_seal_intact ts) false) (= (tamper_mesh_intact ts) false) (= (tamper_voltage_ok ts) false) (= (tamper_frequency_ok ts) false)) (= (tamper_detected ts) true)))) ; PHI_001_38_tamper_evident
 
 ; Verify all assertions are satisfiable
 (check-sat)

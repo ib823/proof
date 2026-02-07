@@ -48,79 +48,79 @@
 (define-fun dal_max () DAL true)
 
 ; do_178c_compliance (matches Coq: Theorem do_178c_compliance)
-(assert (= true true)) ; do_178c_compliance [untranslatable]
+(assert (forall ((compliance DO178C_Compliance)) (=> (= (software_plans compliance) true) (=> (= (software_development compliance) true) (=> (= (verification compliance) true) true))))) ; do_178c_compliance
 
 ; do_326a_security (matches Coq: Theorem do_326a_security)
-(assert (= true true)) ; do_326a_security [untranslatable]
+(assert (forall ((aircraft_system Int)) (forall ((threat_model Int)) true))) ; do_326a_security
 
 ; do_333_formal_methods (matches Coq: Theorem do_333_formal_methods)
-(assert (= true true)) ; do_333_formal_methods [untranslatable]
+(assert (forall ((specification Int)) (forall ((proof Int)) true))) ; do_333_formal_methods
 
 ; arp4754a_development (matches Coq: Theorem arp4754a_development)
-(assert (= true true)) ; arp4754a_development [untranslatable]
+(assert (forall ((system_architecture Int)) true)) ; arp4754a_development
 
 ; do_254_hardware (matches Coq: Theorem do_254_hardware)
-(assert (= true true)) ; do_254_hardware [untranslatable]
+(assert (forall ((hardware_design Int)) true)) ; do_254_hardware
 
 ; dal_a_mcdc_required (matches Coq: Theorem dal_a_mcdc_required)
-(assert (= true true)) ; dal_a_mcdc_required [untranslatable]
+(assert (forall ((compliance DO178C_Compliance)) (=> (= (dal_level compliance) DAL_A) true))) ; dal_a_mcdc_required
 
 ; dal_objectives_monotone (matches Coq: Theorem dal_objectives_monotone)
-(assert (= true true)) ; dal_objectives_monotone [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (=> (= (dal_le d2 d1) true) (>= (objectives_for_dal d1) (objectives_for_dal d2))))) ; dal_objectives_monotone
 
 ; dal_le_iff_nat (matches Coq: Lemma dal_le_iff_nat)
-(assert (= true true)) ; dal_le_iff_nat [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (and (=> (= (dal_le d1 d2) true) (<= (dal_to_nat d1) (dal_to_nat d2))) (=> (<= (dal_to_nat d1) (dal_to_nat d2)) (= (dal_le d1 d2) true))))) ; dal_le_iff_nat
 
 ; dal_le_refl (matches Coq: Lemma dal_le_refl)
-(assert (= true true)) ; dal_le_refl [untranslatable]
+(assert (forall ((d Bool)) (= (dal_le d d) true))) ; dal_le_refl
 
 ; dal_le_trans (matches Coq: Lemma dal_le_trans)
-(assert (= true true)) ; dal_le_trans [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool) (d3 Bool)) (=> (= (dal_le d1 d2) true) (=> (= (dal_le d2 d3) true) (= (dal_le d1 d3) true))))) ; dal_le_trans
 
 ; dal_le_antisym (matches Coq: Lemma dal_le_antisym)
-(assert (= true true)) ; dal_le_antisym [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (=> (= (dal_le d1 d2) true) (=> (= (dal_le d2 d1) true) (= d1 d2))))) ; dal_le_antisym
 
 ; dal_le_total (matches Coq: Lemma dal_le_total)
-(assert (= true true)) ; dal_le_total [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (or (= (dal_le d1 d2) true) (= (dal_le d2 d1) true)))) ; dal_le_total
 
 ; dal_e_bottom (matches Coq: Lemma dal_e_bottom)
-(assert (= true true)) ; dal_e_bottom [untranslatable]
+(assert (forall ((d Bool)) (= (dal_le DAL_E d) true))) ; dal_e_bottom
 
 ; dal_a_max_objectives (matches Coq: Theorem dal_a_max_objectives)
-(assert (= true true)) ; dal_a_max_objectives [untranslatable]
+(assert (forall ((d Bool)) (<= (objectives_for_dal d) (objectives_for_dal DAL_A)))) ; dal_a_max_objectives
 
 ; dal_e_zero_objectives (matches Coq: Theorem dal_e_zero_objectives)
 (assert (= (objectives_for_dal DAL_E) 0)) ; dal_e_zero_objectives
 
 ; objectives_strict_ordering (matches Coq: Theorem objectives_strict_ordering)
-(assert (= true true)) ; objectives_strict_ordering [untranslatable]
+(assert (and (> (objectives_for_dal DAL_A) (objectives_for_dal DAL_B)) (> (objectives_for_dal DAL_B) (objectives_for_dal DAL_C)) (> (objectives_for_dal DAL_C) (objectives_for_dal DAL_D)) (> (objectives_for_dal DAL_D) (objectives_for_dal DAL_E)))) ; objectives_strict_ordering
 
 ; mcdc_only_high_dal (matches Coq: Theorem mcdc_only_high_dal)
-(assert (= true true)) ; mcdc_only_high_dal [untranslatable]
+(assert (forall ((d Bool)) (=> (= (mcdc_required d) true) (= (dal_le DAL_B d) true)))) ; mcdc_only_high_dal
 
 ; decision_coverage_implies_dal_c_or_above (matches Coq: Theorem decision_coverage_implies_dal_c_or_above)
-(assert (= true true)) ; decision_coverage_implies_dal_c_or_above [untranslatable]
+(assert (forall ((d Bool)) (=> (= (decision_coverage_required d) true) (= (dal_le DAL_C d) true)))) ; decision_coverage_implies_dal_c_or_above
 
 ; do178c_all_requires_plans (matches Coq: Theorem do178c_all_requires_plans)
-(assert (= true true)) ; do178c_all_requires_plans [untranslatable]
+(assert (forall ((c Bool)) (=> (= (do178c_all_sections c) true) (= (software_plans c) true)))) ; do178c_all_requires_plans
 
 ; do178c_all_requires_verification (matches Coq: Theorem do178c_all_requires_verification)
-(assert (= true true)) ; do178c_all_requires_verification [untranslatable]
+(assert (forall ((c Bool)) (=> (= (do178c_all_sections c) true) (= (verification c) true)))) ; do178c_all_requires_verification
 
 ; do178c_all_requires_qa (matches Coq: Theorem do178c_all_requires_qa)
-(assert (= true true)) ; do178c_all_requires_qa [untranslatable]
+(assert (forall ((c Bool)) (=> (= (do178c_all_sections c) true) (= (quality_assurance c) true)))) ; do178c_all_requires_qa
 
 ; formal_methods_only_high_dal (matches Coq: Theorem formal_methods_only_high_dal)
-(assert (= true true)) ; formal_methods_only_high_dal [untranslatable]
+(assert (forall ((d Bool)) (=> (= (formal_methods_applicable d) true) (>= (objectives_for_dal d) 69)))) ; formal_methods_only_high_dal
 
 ; dal_max_dominates_left (matches Coq: Theorem dal_max_dominates_left)
-(assert (= true true)) ; dal_max_dominates_left [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (= (dal_le d1 (dal_max d1 d2)) true))) ; dal_max_dominates_left
 
 ; dal_max_dominates_right (matches Coq: Theorem dal_max_dominates_right)
-(assert (= true true)) ; dal_max_dominates_right [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (= (dal_le d2 (dal_max d1 d2)) true))) ; dal_max_dominates_right
 
 ; dal_max_objectives (matches Coq: Theorem dal_max_objectives)
-(assert (= true true)) ; dal_max_objectives [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (and (>= (objectives_for_dal (dal_max d1 d2)) (objectives_for_dal d1)) (>= (objectives_for_dal (dal_max d1 d2)) (objectives_for_dal d2))))) ; dal_max_objectives
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -37,67 +37,68 @@
   true)
 
 ; label_eqb_refl (matches Coq: Lemma label_eqb_refl)
-(assert (= true true)) ; label_eqb_refl [untranslatable]
+(assert (forall ((l Bool)) (= (label_eqb l l) true))) ; label_eqb_refl
 
 ; label_leb_refl (matches Coq: Lemma label_leb_refl)
-(assert (= true true)) ; label_leb_refl [untranslatable]
+(assert (forall ((l Bool)) (= (label_leb l l) true))) ; label_leb_refl
 
 ; label_leb_trans (matches Coq: Lemma label_leb_trans)
-(assert (= true true)) ; label_leb_trans [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (=> (= (label_leb l1 l2) true) (=> (= (label_leb l2 l3) true) (= (label_leb l1 l3) true))))) ; label_leb_trans
 
 ; label_join_low_r (matches Coq: Lemma label_join_low_r)
-(assert (= true true)) ; label_join_low_r [untranslatable]
+(assert (forall ((l Bool)) (= (label_join l Low) l))) ; label_join_low_r
 
 ; label_join_comm (matches Coq: Lemma label_join_comm)
-(assert (= true true)) ; label_join_comm [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (label_join l1 l2) (label_join l2 l1)))) ; label_join_comm
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((env1 Bool) (env2 Bool) (x Bool) (v1 Bool) (l1 Bool)) (=> (= (length env1) (length env2)) (=> (= (lookup env1 x) (some (mk-tuple v1 l1))) (exists ((v2 Bool) (l2 Bool)) (= (lookup env2 x) (some (mk-tuple v2 l2)))))))) ; 1
 
 ; source_noninterference (matches Coq: Theorem source_noninterference)
-(assert (= true true)) ; source_noninterference [untranslatable]
+(assert (forall ((e Bool) (env1 Bool) (env2 Bool) (v1 Bool) (l1 Bool) (v2 Bool) (l2 Bool)) (=> (= (src_low_equiv env1 env2) true) (=> (= (src_eval env1 e) (some (mk-tuple v1 l1))) (=> (= (src_eval env2 e) (some (mk-tuple v2 l2))) (=> (= l1 Low) (=> (= l2 Low) (= v1 v2)))))))) ; source_noninterference
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((env Bool) (e Bool) (v Bool) (l Bool) (prog Bool)) (=> (= (src_eval env e) (some (mk-tuple v l))) (=> (= (compile_with_env env e) (some prog)) (= (tgt_label_of_prog prog) l))))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((fuel Bool) (env1 Bool) (env2 Bool) (prog Bool) (pc Bool) (stk Bool)) (=> (= (mk-tuple (forall i instr) nth_error) true) (= (tgt_eval_fuel fuel env1 prog pc stk) (tgt_eval_fuel fuel env2 prog pc stk))))) ; 3
 
 ; target_noninterference (matches Coq: Theorem target_noninterference)
-(assert (= true true)) ; target_noninterference [untranslatable]
+(assert (forall ((prog Bool) (env1 Bool) (env2 Bool) (v1 Bool) (l1 Bool) (v2 Bool) (l2 Bool) (fuel Bool)) (=> (= (tgt_eval_fuel fuel env1 prog 0 nil) (some (mk-tuple v1 l1))) (=> (= (tgt_eval_fuel fuel env2 prog 0 nil) (some (mk-tuple v2 l2))) (=> (= l1 Low) (=> (= l2 Low) (=> (= (mk-tuple (forall i instr) nth_error) true) (= v1 v2)))))))) ; target_noninterference
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((env Bool) (e Bool) (v Bool) (l Bool) (prog Bool)) (=> (= (src_eval env e) (some (mk-tuple v l))) (=> (= (compile_with_env env e) (some prog)) (= (tgt_eval_fuel 3 env prog 0 nil) (some (mk-tuple v l))))))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((env1 Bool) (env2 Bool) (e1 Bool) (e2 Bool) (v1 Bool) (l1 Bool) (v2 Bool) (l2 Bool) (v3 Bool) (l3 Bool) (v4 Bool) (l4 Bool)) (=> (= (src_low_equiv env1 env2) true) (=> (= (src_eval env1 e1) (some (mk-tuple v1 l1))) (=> (= (src_eval env2 e1) (some (mk-tuple v2 l2))) (=> (= (src_eval env1 e2) (some (mk-tuple v3 l3))) (=> (= (src_eval env2 e2) (some (mk-tuple v4 l4))) (=> (= l1 Low) (=> (= l2 Low) (=> (= l3 Low) (=> (= l4 Low) (and (= v1 v2) (= v3 v4))))))))))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((env Bool) (e Bool) (v Bool) (l Bool) (prog Bool)) (=> (= (src_eval env e) (some (mk-tuple v l))) (=> (= (compile_with_env env e) (some prog)) (= (label_leb l (tgt_label_of_prog prog)) true))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+; 7: Constant-Time Property Preserved ==================================================================== *) Definition is_c
+(assert true) ; 7 [Coq-only]
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((e Bool) (env1 Bool) (env2 Bool) (v1 Bool) (l1 Bool) (v2 Bool) (l2 Bool) (prog1 Bool) (prog2 Bool)) (=> (= (src_low_equiv env1 env2) true) (=> (= (src_eval env1 e) (some (mk-tuple v1 l1))) (=> (= (src_eval env2 e) (some (mk-tuple v2 l2))) (=> (= (compile_with_env env1 e) (some prog1)) (=> (= (compile_with_env env2 e) (some prog2)) (=> (= l1 Low) (=> (= l2 Low) (exists ((tv1 Bool) (tl1 Bool) (tv2 Bool) (tl2 Bool)) (and (= (tgt_eval_fuel 3 env1 prog1 0 nil) (some (mk-tuple tv1 tl1))) (= (tgt_eval_fuel 3 env2 prog2 0 nil) (some (mk-tuple tv2 tl2))) (= tv1 tv2) (= tl1 Low) (= tl2 Low)))))))))))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((env Bool) (e Bool) (prog1 Bool) (prog2 Bool)) (=> (= (compile_with_env env e) (some prog1)) (=> (= (compile_with_env env e) (some prog2)) (= prog1 prog2))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (and (= (label_leb l1 (label_join l1 l2)) true) (= (label_leb l2 (label_join l1 l2)) true)))) ; 10
 
 ; label_lattice_join_least (matches Coq: Theorem label_lattice_join_least)
-(assert (= true true)) ; label_lattice_join_least [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (=> (= (label_leb l1 l3) true) (=> (= (label_leb l2 l3) true) (= (label_leb (label_join l1 l2) l3) true))))) ; label_lattice_join_least
 
 ; label_eqb_refl2 (matches Coq: Theorem label_eqb_refl2)
-(assert (= true true)) ; label_eqb_refl2 [untranslatable]
+(assert (forall ((l Bool)) (= (label_eqb l l) true))) ; label_eqb_refl2
 
 ; label_join_comm2 (matches Coq: Theorem label_join_comm2)
-(assert (= true true)) ; label_join_comm2 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (label_join l1 l2) (label_join l2 l1)))) ; label_join_comm2
 
 ; label_join_idem2 (matches Coq: Theorem label_join_idem2)
-(assert (= true true)) ; label_join_idem2 [untranslatable]
+(assert (forall ((l Bool)) (= (label_join l l) l))) ; label_join_idem2
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -164,19 +164,19 @@
   true)
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; bool_dec (matches Coq: Lemma bool_dec)
-(assert (= true true)) ; bool_dec [untranslatable]
+(assert (forall ((b Bool)) (or (= b true) (= b false)))) ; bool_dec
 
 ; andb_false_iff (matches Coq: Lemma andb_false_iff)
-(assert (= true true)) ; andb_false_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) false) (or (= a false) (= b false))) (=> (or (= a false) (= b false)) (= (and a b) false))))) ; andb_false_iff
 
 ; STARK_001 (matches Coq: Theorem STARK_001)
 (assert (= (stark_props_secure riina_stark_props) true)) ; STARK_001
@@ -215,34 +215,34 @@
 (assert (= (starks_zero_knowledge riina_stark) true)) ; STARK_012
 
 ; STARK_013 (matches Coq: Theorem STARK_013)
-(assert (= true true)) ; STARK_013 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_props_secure s) true) (= (stark_transparent s) true)))) ; STARK_013
 
 ; STARK_014 (matches Coq: Theorem STARK_014)
-(assert (= true true)) ; STARK_014 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_props_secure s) true) (= (stark_post_quantum s) true)))) ; STARK_014
 
 ; STARK_015 (matches Coq: Theorem STARK_015)
-(assert (= true true)) ; STARK_015 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (air_secure a) true) (= (air_fri_verified a) true)))) ; STARK_015
 
 ; STARK_016 (matches Coq: Theorem STARK_016)
-(assert (= true true)) ; STARK_016 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (starks_soundness s) true)))) ; STARK_016
 
 ; STARK_017 (matches Coq: Theorem STARK_017)
-(assert (= true true)) ; STARK_017 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (starks_zero_knowledge s) true)))) ; STARK_017
 
 ; STARK_018 (matches Coq: Theorem STARK_018)
-(assert (= true true)) ; STARK_018 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (stark_props_secure (starks_stark s)) true)))) ; STARK_018
 
 ; STARK_019 (matches Coq: Theorem STARK_019)
-(assert (= true true)) ; STARK_019 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (air_secure (starks_air s)) true)))) ; STARK_019
 
 ; STARK_020 (matches Coq: Theorem STARK_020)
-(assert (= true true)) ; STARK_020 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (stark_transparent (starks_stark s)) true)))) ; STARK_020
 
 ; STARK_021 (matches Coq: Theorem STARK_021)
-(assert (= true true)) ; STARK_021 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (stark_post_quantum (starks_stark s)) true)))) ; STARK_021
 
 ; STARK_022 (matches Coq: Theorem STARK_022)
-(assert (= true true)) ; STARK_022 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (= (air_fri_verified (starks_air s)) true)))) ; STARK_022
 
 ; STARK_023 (matches Coq: Theorem STARK_023)
 (assert (and (= (stark_fully_secure riina_stark) true) (= (stark_post_quantum riina_stark_props) true))) ; STARK_023
@@ -251,19 +251,19 @@
 (assert (and (= (stark_transparent riina_stark_props) true) (= (air_fri_verified riina_air) true))) ; STARK_024
 
 ; STARK_025_complete (matches Coq: Theorem STARK_025_complete)
-(assert (= true true)) ; STARK_025_complete [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_fully_secure s) true) (and (= (starks_soundness s) true) (= (starks_zero_knowledge s) true) (= (stark_transparent (starks_stark s)) true) (= (stark_post_quantum (starks_stark s)) true))))) ; STARK_025_complete
 
 ; FRI_soundness_property (matches Coq: Theorem FRI_soundness_property)
-(assert (= true true)) ; FRI_soundness_property [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fri_secure f) true) (= (fri_soundness f) true)))) ; FRI_soundness_property
 
 ; FRI_query_bound_property (matches Coq: Theorem FRI_query_bound_property)
-(assert (= true true)) ; FRI_query_bound_property [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fri_secure f) true) (= (fri_query_bound f) true)))) ; FRI_query_bound_property
 
 ; FRI_commitment_binding_property (matches Coq: Theorem FRI_commitment_binding_property)
-(assert (= true true)) ; FRI_commitment_binding_property [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fri_secure f) true) (= (fri_commitment_binding f) true)))) ; FRI_commitment_binding_property
 
 ; FRI_fiat_shamir_property (matches Coq: Theorem FRI_fiat_shamir_property)
-(assert (= true true)) ; FRI_fiat_shamir_property [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fri_secure f) true) (= (fri_interactive_to_non f) true)))) ; FRI_fiat_shamir_property
 
 ; FRI_riina_soundness (matches Coq: Theorem FRI_riina_soundness)
 (assert (= (fri_soundness riina_fri) true)) ; FRI_riina_soundness
@@ -281,40 +281,40 @@
 (assert (= (fri_secure riina_fri) true)) ; FRI_riina_secure
 
 ; FRI_rounds_positive (matches Coq: Theorem FRI_rounds_positive)
-(assert (= true true)) ; FRI_rounds_positive [untranslatable]
+(assert (> (fri_round_complexity riina_fri) 0)) ; FRI_rounds_positive
 
 ; FRI_proximity_positive (matches Coq: Theorem FRI_proximity_positive)
-(assert (= true true)) ; FRI_proximity_positive [untranslatable]
+(assert (> (fri_proximity_param riina_fri) 0)) ; FRI_proximity_positive
 
 ; soundness_implies_starks (matches Coq: Theorem soundness_implies_starks)
-(assert (= true true)) ; soundness_implies_starks [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (computational_soundness s f) true) (= (starks_soundness s) true)))) ; soundness_implies_starks
 
 ; soundness_implies_fri (matches Coq: Theorem soundness_implies_fri)
-(assert (= true true)) ; soundness_implies_fri [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (computational_soundness s f) true) (= (fri_soundness f) true)))) ; soundness_implies_fri
 
 ; soundness_implies_binding (matches Coq: Theorem soundness_implies_binding)
-(assert (= true true)) ; soundness_implies_binding [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (computational_soundness s f) true) (= (fri_commitment_binding f) true)))) ; soundness_implies_binding
 
 ; riina_computational_soundness (matches Coq: Theorem riina_computational_soundness)
 (assert (= (computational_soundness riina_stark riina_fri) true)) ; riina_computational_soundness
 
 ; soundness_amplification (matches Coq: Theorem soundness_amplification)
-(assert (= true true)) ; soundness_amplification [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (computational_soundness s f) true) (=> (> (fri_round_complexity f) 0) (= (amplified_soundness (computational_soundness s f) (fri_round_complexity f)) true))))) ; soundness_amplification
 
 ; soundness_composition (matches Coq: Theorem soundness_composition)
-(assert (= true true)) ; soundness_composition [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (starks_soundness s) true) (=> (= (fri_soundness f) true) (=> (= (fri_commitment_binding f) true) (= (computational_soundness s f) true)))))) ; soundness_composition
 
 ; zk_implies_starks_zk (matches Coq: Theorem zk_implies_starks_zk)
-(assert (= true true)) ; zk_implies_starks_zk [untranslatable]
+(assert (forall ((s Bool) (sim Bool)) (=> (= (simulation_based_zk s sim) true) (= (starks_zero_knowledge s) true)))) ; zk_implies_starks_zk
 
 ; zk_implies_indistinguishable (matches Coq: Theorem zk_implies_indistinguishable)
-(assert (= true true)) ; zk_implies_indistinguishable [untranslatable]
+(assert (forall ((s Bool) (sim Bool)) (=> (= (simulation_based_zk s sim) true) (= (sim_indistinguishable sim) true)))) ; zk_implies_indistinguishable
 
 ; perfect_zk_implies_simulation (matches Coq: Theorem perfect_zk_implies_simulation)
-(assert (= true true)) ; perfect_zk_implies_simulation [untranslatable]
+(assert (forall ((s Bool) (sim Bool)) (=> (= (perfect_zk s sim) true) (= (simulation_based_zk s sim) true)))) ; perfect_zk_implies_simulation
 
 ; perfect_zk_rewinding (matches Coq: Theorem perfect_zk_rewinding)
-(assert (= true true)) ; perfect_zk_rewinding [untranslatable]
+(assert (forall ((s Bool) (sim Bool)) (=> (= (perfect_zk s sim) true) (= (sim_rewinding sim) true)))) ; perfect_zk_rewinding
 
 ; riina_simulation_zk (matches Coq: Theorem riina_simulation_zk)
 (assert (= (simulation_based_zk riina_stark valid_simulator) true)) ; riina_simulation_zk
@@ -326,19 +326,19 @@
 (assert (= (simulation_valid valid_simulator) true)) ; simulator_validity
 
 ; zk_soundness_composition (matches Coq: Theorem zk_soundness_composition)
-(assert (= true true)) ; zk_soundness_composition [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool)) (=> (= (computational_soundness s f) true) (=> (= (simulation_based_zk s sim) true) (= (zk_with_soundness s f sim) true))))) ; zk_soundness_composition
 
 ; riina_zk_soundness (matches Coq: Theorem riina_zk_soundness)
 (assert (= (zk_with_soundness riina_stark riina_fri valid_simulator) true)) ; riina_zk_soundness
 
 ; completeness_requires_honest_prover (matches Coq: Theorem completeness_requires_honest_prover)
-(assert (= true true)) ; completeness_requires_honest_prover [untranslatable]
+(assert (forall ((p Bool) (v Bool) (s Bool)) (=> (= (interaction_complete p v s) true) (= (prover_honest p) true)))) ; completeness_requires_honest_prover
 
 ; completeness_requires_starks (matches Coq: Theorem completeness_requires_starks)
-(assert (= true true)) ; completeness_requires_starks [untranslatable]
+(assert (forall ((p Bool) (v Bool) (s Bool)) (=> (= (interaction_complete p v s) true) (= (starks_completeness s) true)))) ; completeness_requires_starks
 
 ; completeness_implies_acceptance (matches Coq: Theorem completeness_implies_acceptance)
-(assert (= true true)) ; completeness_implies_acceptance [untranslatable]
+(assert (forall ((p Bool) (v Bool) (s Bool)) (=> (= (interaction_complete p v s) true) (= (verifier_accepting v) true)))) ; completeness_implies_acceptance
 
 ; riina_complete_interaction (matches Coq: Theorem riina_complete_interaction)
 (assert (= (interaction_complete honest_prover honest_verifier riina_stark) true)) ; riina_complete_interaction
@@ -350,139 +350,139 @@
 (assert (= (verifier_honest honest_verifier) true)) ; honest_verifier_property
 
 ; fri_completeness_requires_prover (matches Coq: Theorem fri_completeness_requires_prover)
-(assert (= true true)) ; fri_completeness_requires_prover [untranslatable]
+(assert (forall ((p Bool) (f Bool)) (=> (= (fri_complete p f) true) (= (prover_fri_complete p) true)))) ; fri_completeness_requires_prover
 
 ; riina_fri_complete (matches Coq: Theorem riina_fri_complete)
 (assert (= (fri_complete honest_prover riina_fri) true)) ; riina_fri_complete
 
 ; pq_implies_stark_pq (matches Coq: Theorem pq_implies_stark_pq)
-(assert (= true true)) ; pq_implies_stark_pq [untranslatable]
+(assert (forall ((s Bool) (e Bool)) (=> (= (post_quantum_secure s e) true) (= (stark_post_quantum s) true)))) ; pq_implies_stark_pq
 
 ; pq_implies_ext_resistant (matches Coq: Theorem pq_implies_ext_resistant)
-(assert (= true true)) ; pq_implies_ext_resistant [untranslatable]
+(assert (forall ((s Bool) (e Bool)) (=> (= (post_quantum_secure s e) true) (= (ext_quantum_resistant e) true)))) ; pq_implies_ext_resistant
 
 ; riina_post_quantum (matches Coq: Theorem riina_post_quantum)
 (assert (= (post_quantum_secure riina_stark_props riina_extended) true)) ; riina_post_quantum
 
 ; hash_security_pq (matches Coq: Theorem hash_security_pq)
-(assert (= true true)) ; hash_security_pq [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (hash_based_security s f) true) (= (stark_post_quantum s) true)))) ; hash_security_pq
 
 ; hash_security_binding (matches Coq: Theorem hash_security_binding)
-(assert (= true true)) ; hash_security_binding [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (hash_based_security s f) true) (= (fri_commitment_binding f) true)))) ; hash_security_binding
 
 ; riina_hash_security (matches Coq: Theorem riina_hash_security)
 (assert (= (hash_based_security riina_stark_props riina_fri) true)) ; riina_hash_security
 
 ; transparency_enables_pq (matches Coq: Theorem transparency_enables_pq)
-(assert (= true true)) ; transparency_enables_pq [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stark_transparent s) true) (=> (= (stark_post_quantum s) true) (or (= (stark_props_secure s) true) (= (stark_scalable s) false)))))) ; transparency_enables_pq
 
 ; transparency_no_setup (matches Coq: Theorem transparency_no_setup)
-(assert (= true true)) ; transparency_no_setup [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (fully_transparent s f) true) (= (stark_transparent s) true)))) ; transparency_no_setup
 
 ; transparency_fiat_shamir (matches Coq: Theorem transparency_fiat_shamir)
-(assert (= true true)) ; transparency_fiat_shamir [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (fully_transparent s f) true) (= (fri_interactive_to_non f) true)))) ; transparency_fiat_shamir
 
 ; riina_fully_transparent (matches Coq: Theorem riina_fully_transparent)
 (assert (= (fully_transparent riina_stark_props riina_fri) true)) ; riina_fully_transparent
 
 ; public_verify_transparent (matches Coq: Theorem public_verify_transparent)
-(assert (= true true)) ; public_verify_transparent [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (publicly_verifiable s f) true) (= (stark_transparent (starks_stark s)) true)))) ; public_verify_transparent
 
 ; public_verify_sound (matches Coq: Theorem public_verify_sound)
-(assert (= true true)) ; public_verify_sound [untranslatable]
+(assert (forall ((s Bool) (f Bool)) (=> (= (publicly_verifiable s f) true) (= (starks_soundness s) true)))) ; public_verify_sound
 
 ; riina_publicly_verifiable (matches Coq: Theorem riina_publicly_verifiable)
 (assert (= (publicly_verifiable riina_stark riina_fri) true)) ; riina_publicly_verifiable
 
 ; extended_implies_base (matches Coq: Theorem extended_implies_base)
-(assert (= true true)) ; extended_implies_base [untranslatable]
+(assert (forall ((e Bool)) (=> (= (extended_secure e) true) (= (stark_fully_secure (ext_base e)) true)))) ; extended_implies_base
 
 ; extended_implies_fri (matches Coq: Theorem extended_implies_fri)
-(assert (= true true)) ; extended_implies_fri [untranslatable]
+(assert (forall ((e Bool)) (=> (= (extended_secure e) true) (= (fri_secure (ext_fri e)) true)))) ; extended_implies_fri
 
 ; extended_implies_simulation (matches Coq: Theorem extended_implies_simulation)
-(assert (= true true)) ; extended_implies_simulation [untranslatable]
+(assert (forall ((e Bool)) (=> (= (extended_secure e) true) (= (ext_simulation_secure e) true)))) ; extended_implies_simulation
 
 ; extended_implies_extraction (matches Coq: Theorem extended_implies_extraction)
-(assert (= true true)) ; extended_implies_extraction [untranslatable]
+(assert (forall ((e Bool)) (=> (= (extended_secure e) true) (= (ext_extraction_secure e) true)))) ; extended_implies_extraction
 
 ; extended_implies_quantum (matches Coq: Theorem extended_implies_quantum)
-(assert (= true true)) ; extended_implies_quantum [untranslatable]
+(assert (forall ((e Bool)) (=> (= (extended_secure e) true) (= (ext_quantum_resistant e) true)))) ; extended_implies_quantum
 
 ; riina_extended_secure (matches Coq: Theorem riina_extended_secure)
 (assert (= (extended_secure riina_extended) true)) ; riina_extended_secure
 
 ; extraction_implies_ext (matches Coq: Theorem extraction_implies_ext)
-(assert (= true true)) ; extraction_implies_ext [untranslatable]
+(assert (forall ((e Bool) (f Bool)) (=> (= (extraction_secure e f) true) (= (ext_extraction_secure e) true)))) ; extraction_implies_ext
 
 ; extraction_implies_fri_sound (matches Coq: Theorem extraction_implies_fri_sound)
-(assert (= true true)) ; extraction_implies_fri_sound [untranslatable]
+(assert (forall ((e Bool) (f Bool)) (=> (= (extraction_secure e f) true) (= (fri_soundness f) true)))) ; extraction_implies_fri_sound
 
 ; extraction_implies_query_bound (matches Coq: Theorem extraction_implies_query_bound)
-(assert (= true true)) ; extraction_implies_query_bound [untranslatable]
+(assert (forall ((e Bool) (f Bool)) (=> (= (extraction_secure e f) true) (= (fri_query_bound f) true)))) ; extraction_implies_query_bound
 
 ; riina_extraction_secure (matches Coq: Theorem riina_extraction_secure)
 (assert (= (extraction_secure riina_extended riina_fri) true)) ; riina_extraction_secure
 
 ; air_algebraic_required (matches Coq: Theorem air_algebraic_required)
-(assert (= true true)) ; air_algebraic_required [untranslatable]
+(assert (forall ((a Bool)) (=> (= (air_secure a) true) (= (air_algebraic a) true)))) ; air_algebraic_required
 
 ; air_low_degree_required (matches Coq: Theorem air_low_degree_required)
-(assert (= true true)) ; air_low_degree_required [untranslatable]
+(assert (forall ((a Bool)) (=> (= (air_secure a) true) (= (air_low_degree a) true)))) ; air_low_degree_required
 
 ; air_fri_required (matches Coq: Theorem air_fri_required)
-(assert (= true true)) ; air_fri_required [untranslatable]
+(assert (forall ((a Bool)) (=> (= (air_secure a) true) (= (air_fri_verified a) true)))) ; air_fri_required
 
 ; riina_air_fri_connection (matches Coq: Theorem riina_air_fri_connection)
 (assert (and (= (air_fri_verified riina_air) true) (= (fri_soundness riina_fri) true))) ; riina_air_fri_connection
 
 ; modular_implies_stark (matches Coq: Theorem modular_implies_stark)
-(assert (= true true)) ; modular_implies_stark [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool)) (=> (= (modular_stark s f sim) true) (= (stark_fully_secure s) true)))) ; modular_implies_stark
 
 ; modular_implies_fri (matches Coq: Theorem modular_implies_fri)
-(assert (= true true)) ; modular_implies_fri [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool)) (=> (= (modular_stark s f sim) true) (= (fri_secure f) true)))) ; modular_implies_fri
 
 ; modular_implies_sim (matches Coq: Theorem modular_implies_sim)
-(assert (= true true)) ; modular_implies_sim [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool)) (=> (= (modular_stark s f sim) true) (= (simulation_valid sim) true)))) ; modular_implies_sim
 
 ; riina_modular_stark (matches Coq: Theorem riina_modular_stark)
 (assert (= (modular_stark riina_stark riina_fri valid_simulator) true)) ; riina_modular_stark
 
 ; full_security_modular (matches Coq: Theorem full_security_modular)
-(assert (= true true)) ; full_security_modular [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool) (e Bool)) (=> (= (full_stark_security s f sim e) true) (= (modular_stark s f sim) true)))) ; full_security_modular
 
 ; full_security_extended (matches Coq: Theorem full_security_extended)
-(assert (= true true)) ; full_security_extended [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool) (e Bool)) (=> (= (full_stark_security s f sim e) true) (= (extended_secure e) true)))) ; full_security_extended
 
 ; riina_full_security (matches Coq: Theorem riina_full_security)
 (assert (= (full_stark_security riina_stark riina_fri valid_simulator riina_extended) true)) ; riina_full_security
 
 ; STARK_MASTER_SECURITY (matches Coq: Theorem STARK_MASTER_SECURITY)
-(assert (= true true)) ; STARK_MASTER_SECURITY [untranslatable]
+(assert (forall ((s Bool) (f Bool) (sim Bool) (e Bool)) (=> (= (full_stark_security s f sim e) true) (and (= (starks_completeness (ext_base e)) true) (= (starks_soundness (ext_base e)) true) (= (starks_zero_knowledge (ext_base e)) true) (= (stark_transparent (starks_stark (ext_base e))) true) (= (stark_post_quantum (starks_stark (ext_base e))) true) (= (ext_quantum_resistant e) true) (= (fri_soundness (ext_fri e)) true) (= (fri_commitment_binding (ext_fri e)) true) (= (ext_simulation_secure e) true) (= (ext_extraction_secure e) true))))) ; STARK_MASTER_SECURITY
 
 ; riina_master_security (matches Coq: Theorem riina_master_security)
-(assert (= true true)) ; riina_master_security [untranslatable]
+(assert (and (= (starks_completeness (ext_base riina_extended)) true) (= (starks_soundness (ext_base riina_extended)) true) (= (starks_zero_knowledge (ext_base riina_extended)) true) (= (stark_transparent (starks_stark (ext_base riina_extended))) true) (= (stark_post_quantum (starks_stark (ext_base riina_extended))) true) (= (ext_quantum_resistant riina_extended) true) (= (fri_soundness (ext_fri riina_extended)) true) (= (fri_commitment_binding (ext_fri riina_extended)) true) (= (ext_simulation_secure riina_extended) true) (= (ext_extraction_secure riina_extended) true))) ; riina_master_security
 
 ; stark_security_equivalence (matches Coq: Theorem stark_security_equivalence)
-(assert (= true true)) ; stark_security_equivalence [untranslatable]
+(assert (forall ((s Bool)) (and (=> (= (stark_fully_secure s) true) (and (= (starks_completeness s) true) (= (starks_soundness s) true) (= (starks_zero_knowledge s) true) (= (stark_props_secure (starks_stark s)) true) (= (air_secure (starks_air s)) true))) (=> (and (= (starks_completeness s) true) (= (starks_soundness s) true) (= (starks_zero_knowledge s) true) (= (stark_props_secure (starks_stark s)) true) (= (air_secure (starks_air s)) true)) (= (stark_fully_secure s) true))))) ; stark_security_equivalence
 
 ; fri_security_equivalence (matches Coq: Theorem fri_security_equivalence)
-(assert (= true true)) ; fri_security_equivalence [untranslatable]
+(assert (forall ((f Bool)) (and (=> (= (fri_secure f) true) (and (= (fri_soundness f) true) (= (fri_query_bound f) true) (= (fri_commitment_binding f) true) (= (fri_interactive_to_non f) true))) (=> (and (= (fri_soundness f) true) (= (fri_query_bound f) true) (= (fri_commitment_binding f) true) (= (fri_interactive_to_non f) true)) (= (fri_secure f) true))))) ; fri_security_equivalence
 
 ; stark_props_secure_dec (matches Coq: Theorem stark_props_secure_dec)
-(assert (= true true)) ; stark_props_secure_dec [untranslatable]
+(assert (forall ((s Bool)) (or (= (stark_props_secure s) true) (= (stark_props_secure s) false)))) ; stark_props_secure_dec
 
 ; air_secure_dec (matches Coq: Theorem air_secure_dec)
-(assert (= true true)) ; air_secure_dec [untranslatable]
+(assert (forall ((a Bool)) (or (= (air_secure a) true) (= (air_secure a) false)))) ; air_secure_dec
 
 ; fri_secure_dec (matches Coq: Theorem fri_secure_dec)
-(assert (= true true)) ; fri_secure_dec [untranslatable]
+(assert (forall ((f Bool)) (or (= (fri_secure f) true) (= (fri_secure f) false)))) ; fri_secure_dec
 
 ; stark_fully_secure_dec (matches Coq: Theorem stark_fully_secure_dec)
-(assert (= true true)) ; stark_fully_secure_dec [untranslatable]
+(assert (forall ((s Bool)) (or (= (stark_fully_secure s) true) (= (stark_fully_secure s) false)))) ; stark_fully_secure_dec
 
 ; extended_secure_dec (matches Coq: Theorem extended_secure_dec)
-(assert (= true true)) ; extended_secure_dec [untranslatable]
+(assert (forall ((e Bool)) (or (= (extended_secure e) true) (= (extended_secure e) false)))) ; extended_secure_dec
 
 ; Verify all assertions are satisfiable
 (check-sat)

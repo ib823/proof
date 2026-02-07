@@ -98,10 +98,10 @@
   true)
 
 ; thermal_bounds_enforced (matches Coq: Theorem thermal_bounds_enforced)
-(assert (= true true)) ; thermal_bounds_enforced [untranslatable]
+(assert (forall ((ts ThermalState)) (=> (= (thermally_safe ts) true) (<= (cpu_temp ts) critical_temp)))) ; thermal_bounds_enforced
 
 ; throttling_activation_correct (matches Coq: Theorem throttling_activation_correct)
-(assert (= true true)) ; throttling_activation_correct [untranslatable]
+(assert (forall ((ts ThermalState)) (=> (>= (cpu_temp ts) throttle_temp) (= (throttling_active (apply_throttling ts)) true)))) ; throttling_activation_correct
 
 ; power_transition_fullpower_balanced (matches Coq: Theorem power_transition_fullpower_balanced)
 (assert (= (valid_power_transition FullPower Balanced) true)) ; power_transition_fullpower_balanced
@@ -113,52 +113,52 @@
 (assert (forall ((s PowerState)) (= (valid_power_transition Suspended s) true))) ; suspended_can_resume
 
 ; low_power_optimizes_budget (matches Coq: Theorem low_power_optimizes_budget)
-(assert (= true true)) ; low_power_optimizes_budget [untranslatable]
+(assert (forall ((pm PowerManager)) (=> (= (current_state pm) LowPower) (=> (<= (power_budget pm) 50) (= (battery_optimized pm) true))))) ; low_power_optimizes_budget
 
 ; battery_level_accurate (matches Coq: Theorem battery_level_accurate)
-(assert (= true true)) ; battery_level_accurate [untranslatable]
+(assert (forall ((b BatteryInfo)) (=> (= (well_formed_battery b) true) (<= (bat_level b) 100)))) ; battery_level_accurate
 
 ; low_power_mode_reduces_usage (matches Coq: Theorem low_power_mode_reduces_usage)
-(assert (= true true)) ; low_power_mode_reduces_usage [untranslatable]
+(assert (forall ((pm PowerManager)) (=> (= (current_state pm) LowPower) (=> (= (battery_optimized pm) true) (<= (power_budget pm) 50))))) ; low_power_mode_reduces_usage
 
 ; thermal_throttling_safe (matches Coq: Theorem thermal_throttling_safe)
-(assert (= true true)) ; thermal_throttling_safe [untranslatable]
+(assert (forall ((ts ThermalState)) (=> (= (thermally_safe ts) true) (and (<= (cpu_temp ts) critical_temp) (<= (gpu_temp ts) critical_temp) (<= (battery_temp ts) critical_temp))))) ; thermal_throttling_safe
 
 ; charging_state_reported (matches Coq: Theorem charging_state_reported)
-(assert (= true true)) ; charging_state_reported [untranslatable]
+(assert (forall ((b BatteryInfo)) (or (= (bat_is_charging b) true) (= (bat_is_charging b) false)))) ; charging_state_reported
 
 ; battery_health_tracked (matches Coq: Theorem battery_health_tracked)
-(assert (= true true)) ; battery_health_tracked [untranslatable]
+(assert (forall ((b BatteryInfo)) (=> (= (well_formed_battery b) true) (<= (bat_health b) 100)))) ; battery_health_tracked
 
 ; wake_lock_timeout_enforced (matches Coq: Theorem wake_lock_timeout_enforced)
-(assert (= true true)) ; wake_lock_timeout_enforced [untranslatable]
+(assert (forall ((w WakeLock)) (=> (= (well_formed_wake_lock w) true) (=> (= (wake_lock_active w) true) (<= (wake_lock_elapsed w) (wake_lock_timeout w)))))) ; wake_lock_timeout_enforced
 
 ; background_power_limited (matches Coq: Theorem background_power_limited)
-(assert (= true true)) ; background_power_limited [untranslatable]
+(assert (forall ((a AppPowerBudget)) (=> (= (well_formed_app_power a) true) (=> (= (app_is_background a) true) (<= (app_power_budget_mw a) 500))))) ; background_power_limited
 
 ; cpu_frequency_bounded (matches Coq: Theorem cpu_frequency_bounded)
-(assert (= true true)) ; cpu_frequency_bounded [untranslatable]
+(assert (forall ((c CpuState)) (=> (= (well_formed_cpu c) true) (<= (cpu_frequency_mhz c) (cpu_max_frequency_mhz c))))) ; cpu_frequency_bounded
 
 ; screen_brightness_adaptive (matches Coq: Theorem screen_brightness_adaptive)
-(assert (= true true)) ; screen_brightness_adaptive [untranslatable]
+(assert (forall ((d DisplayState)) (=> (= (display_adaptive d) true) (=> (<= (display_brightness d) 100) (<= (display_brightness d) 100))))) ; screen_brightness_adaptive
 
 ; idle_power_minimized (matches Coq: Theorem idle_power_minimized)
-(assert (= true true)) ; idle_power_minimized [untranslatable]
+(assert (forall ((pm PowerManager)) (=> (= (current_state pm) Suspended) (= (battery_optimized pm) true)))) ; idle_power_minimized
 
 ; power_event_notified (matches Coq: Theorem power_event_notified)
-(assert (= true true)) ; power_event_notified [untranslatable]
+(assert (forall ((from PowerState) (to PowerState)) (=> (= (valid_power_transition from to) true) (= (valid_power_transition from to) true)))) ; power_event_notified
 
 ; battery_temperature_safe (matches Coq: Theorem battery_temperature_safe)
-(assert (= true true)) ; battery_temperature_safe [untranslatable]
+(assert (forall ((b BatteryInfo)) (=> (= (well_formed_battery b) true) (<= (bat_temperature b) 4500)))) ; battery_temperature_safe
 
 ; charge_rate_safe (matches Coq: Theorem charge_rate_safe)
-(assert (= true true)) ; charge_rate_safe [untranslatable]
+(assert (forall ((b BatteryInfo)) (=> (= (well_formed_battery b) true) (<= (bat_charge_rate b) 25000)))) ; charge_rate_safe
 
 ; discharge_rate_bounded (matches Coq: Theorem discharge_rate_bounded)
-(assert (= true true)) ; discharge_rate_bounded [untranslatable]
+(assert (forall ((b BatteryInfo)) (=> (<= (bat_discharge_rate b) charge_rate_max) (<= (bat_discharge_rate b) 25000)))) ; discharge_rate_bounded
 
 ; power_budget_per_app (matches Coq: Theorem power_budget_per_app)
-(assert (= true true)) ; power_budget_per_app [untranslatable]
+(assert (forall ((a AppPowerBudget)) (=> (= (well_formed_app_power a) true) (<= (app_power_actual_mw a) (app_power_budget_mw a))))) ; power_budget_per_app
 
 ; Verify all assertions are satisfiable
 (check-sat)

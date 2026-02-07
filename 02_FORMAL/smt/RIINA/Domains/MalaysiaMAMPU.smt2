@@ -47,34 +47,34 @@
   true)
 
 ; mampu_sovereignty (matches Coq: Theorem mampu_sovereignty)
-(assert (= true true)) ; mampu_sovereignty [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_data_in_malaysia s) true) (= (data_sovereign s) true)))) ; mampu_sovereignty
 
 ; mampu_terbuka (matches Coq: Theorem mampu_terbuka)
-(assert (= true true)) ; mampu_terbuka [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) Terbuka) (= (controls_match_classification s) true)))) ; mampu_terbuka
 
 ; mampu_rahsia (matches Coq: Theorem mampu_rahsia)
-(assert (= true true)) ; mampu_rahsia [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) Rahsia) (=> (= (gov_encrypted s) true) (=> (= (gov_access_controlled s) true) (=> (= (gov_audit_logged s) true) (= (controls_match_classification s) true))))))) ; mampu_rahsia
 
 ; mampu_rahsia_besar (matches Coq: Theorem mampu_rahsia_besar)
-(assert (= true true)) ; mampu_rahsia_besar [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) RahsiaBesar) (=> (= (gov_encrypted s) true) (=> (= (gov_access_controlled s) true) (=> (= (gov_audit_logged s) true) (=> (= (gov_isms_certified s) true) (= (controls_match_classification s) true)))))))) ; mampu_rahsia_besar
 
 ; mampu_assessment (matches Coq: Theorem mampu_assessment)
-(assert (= true true)) ; mampu_assessment [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_security_assessed s) true) (= (security_assessed s) true)))) ; mampu_assessment
 
 ; mampu_isms (matches Coq: Theorem mampu_isms)
-(assert (= true true)) ; mampu_isms [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_isms_certified s) true) (= (isms_compliant s) true)))) ; mampu_isms
 
 ; classification_ordering (matches Coq: Theorem classification_ordering)
-(assert (= true true)) ; classification_ordering [untranslatable]
+(assert (forall ((c1 GovClassification) (c2 GovClassification)) (or (<= (classification_level c1) (classification_level c2)) (<= (classification_level c2) (classification_level c1))))) ; classification_ordering
 
 ; rahsia_besar_highest (matches Coq: Theorem rahsia_besar_highest)
-(assert (= true true)) ; rahsia_besar_highest [untranslatable]
+(assert (forall ((c GovClassification)) (<= (classification_level c) (classification_level RahsiaBesar)))) ; rahsia_besar_highest
 
 ; mampu_composition (matches Coq: Theorem mampu_composition)
-(assert (= true true)) ; mampu_composition [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (data_sovereign s) true) (=> (= (controls_match_classification s) true) (=> (= (security_assessed s) true) (= (mampu_fully_compliant s) true)))))) ; mampu_composition
 
 ; gov_classification_coverage (matches Coq: Theorem gov_classification_coverage)
-(assert (= true true)) ; gov_classification_coverage [untranslatable]
+(assert (forall ((c GovClassification)) (= (In c all_gov_classifications) true))) ; gov_classification_coverage
 
 ; terbuka_is_level_zero (matches Coq: Theorem terbuka_is_level_zero)
 (assert (= (classification_level Terbuka) 0)) ; terbuka_is_level_zero
@@ -83,49 +83,49 @@
 (assert (= (classification_level RahsiaBesar) 4)) ; rahsia_besar_is_level_four
 
 ; classification_level_positive_for_non_terbuka (matches Coq: Theorem classification_level_positive_for_non_terbuka)
-(assert (= true true)) ; classification_level_positive_for_non_terbuka [untranslatable]
+(assert (forall ((c GovClassification)) (=> (not (= c Terbuka)) (>= (classification_level c) 1)))) ; classification_level_positive_for_non_terbuka
 
 ; mampu_terhad (matches Coq: Theorem mampu_terhad)
-(assert (= true true)) ; mampu_terhad [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) Terhad) (=> (= (gov_access_controlled s) true) (= (controls_match_classification s) true))))) ; mampu_terhad
 
 ; mampu_sulit (matches Coq: Theorem mampu_sulit)
-(assert (= true true)) ; mampu_sulit [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) Sulit) (=> (= (gov_encrypted s) true) (=> (= (gov_access_controlled s) true) (= (controls_match_classification s) true)))))) ; mampu_sulit
 
 ; rahsia_besar_requires_encryption (matches Coq: Theorem rahsia_besar_requires_encryption)
-(assert (= true true)) ; rahsia_besar_requires_encryption [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) RahsiaBesar) (=> (= (controls_match_classification s) true) (= (gov_encrypted s) true))))) ; rahsia_besar_requires_encryption
 
 ; rahsia_besar_requires_access_control (matches Coq: Theorem rahsia_besar_requires_access_control)
-(assert (= true true)) ; rahsia_besar_requires_access_control [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) RahsiaBesar) (=> (= (controls_match_classification s) true) (= (gov_access_controlled s) true))))) ; rahsia_besar_requires_access_control
 
 ; rahsia_besar_requires_audit (matches Coq: Theorem rahsia_besar_requires_audit)
-(assert (= true true)) ; rahsia_besar_requires_audit [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) RahsiaBesar) (=> (= (controls_match_classification s) true) (= (gov_audit_logged s) true))))) ; rahsia_besar_requires_audit
 
 ; rahsia_besar_requires_isms (matches Coq: Theorem rahsia_besar_requires_isms)
-(assert (= true true)) ; rahsia_besar_requires_isms [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_classification s) RahsiaBesar) (=> (= (controls_match_classification s) true) (= (gov_isms_certified s) true))))) ; rahsia_besar_requires_isms
 
 ; sovereignty_mandatory_for_all_levels (matches Coq: Theorem sovereignty_mandatory_for_all_levels)
-(assert (= true true)) ; sovereignty_mandatory_for_all_levels [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (mampu_fully_compliant s) true) (= (data_sovereign s) true)))) ; sovereignty_mandatory_for_all_levels
 
 ; sovereignty_violation_blocks_compliance (matches Coq: Theorem sovereignty_violation_blocks_compliance)
-(assert (= true true)) ; sovereignty_violation_blocks_compliance [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_data_in_malaysia s) false) (not (= (data_sovereign s) true))))) ; sovereignty_violation_blocks_compliance
 
 ; rakkssa_assessment_complete (matches Coq: Theorem rakkssa_assessment_complete)
-(assert (= true true)) ; rakkssa_assessment_complete [untranslatable]
+(assert (forall ((ra RAKKSSAAssessment)) (=> (= (rk_vulnerability_scan ra) true) (=> (= (rk_penetration_test ra) true) (=> (= (rk_risk_assessment ra) true) (=> (= (rk_compliance_check ra) true) (=> (>= (rk_score ra) (rk_min_score ra)) (= (rakkssa_passed ra) true)))))))) ; rakkssa_assessment_complete
 
 ; rakkssa_score_insufficient (matches Coq: Theorem rakkssa_score_insufficient)
-(assert (= true true)) ; rakkssa_score_insufficient [untranslatable]
+(assert (forall ((ra RAKKSSAAssessment)) (=> (< (rk_score ra) (rk_min_score ra)) (not (>= (rk_score ra) (rk_min_score ra)))))) ; rakkssa_score_insufficient
 
 ; mygovcloud_check (matches Coq: Theorem mygovcloud_check)
-(assert (= true true)) ; mygovcloud_check [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (gov_data_in_malaysia s) true) (=> (= (gov_security_assessed s) true) (=> (not (= (gov_classification s) RahsiaBesar)) (= (mygovcloud_eligible s) true)))))) ; mygovcloud_check
 
 ; dkict_full_compliance (matches Coq: Theorem dkict_full_compliance)
-(assert (= true true)) ; dkict_full_compliance [untranslatable]
+(assert (forall ((d DKICTCompliance)) (=> (= (dkict_password_policy d) true) (=> (= (dkict_access_review d) true) (=> (= (dkict_incident_response d) true) (=> (= (dkict_backup_tested d) true) (= (dkict_compliant d) true))))))) ; dkict_full_compliance
 
 ; mampu_full_implies_sovereign (matches Coq: Theorem mampu_full_implies_sovereign)
-(assert (= true true)) ; mampu_full_implies_sovereign [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (mampu_fully_compliant s) true) (= (gov_data_in_malaysia s) true)))) ; mampu_full_implies_sovereign
 
 ; mampu_full_implies_assessed (matches Coq: Theorem mampu_full_implies_assessed)
-(assert (= true true)) ; mampu_full_implies_assessed [untranslatable]
+(assert (forall ((s GovSystem)) (=> (= (mampu_fully_compliant s) true) (= (gov_security_assessed s) true)))) ; mampu_full_implies_assessed
 
 ; Verify all assertions are satisfiable
 (check-sat)

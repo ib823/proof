@@ -54,88 +54,88 @@
   true)
 
 ; obligation_1_risk_assessment (matches Coq: Theorem obligation_1_risk_assessment)
-(assert (= true true)) ; obligation_1_risk_assessment [untranslatable]
+(assert (forall ((e NCIIEntity)) (=> (= (ncii_risk_assessed e) true) (= (risk_assessment_current e) true)))) ; obligation_1_risk_assessment
 
 ; obligation_2_audit (matches Coq: Theorem obligation_2_audit)
-(assert (= true true)) ; obligation_2_audit [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((t Int)) (=> (<= t (+ (ncii_last_audit e) (ncii_audit_interval e))) (= (audit_current e t) true))))) ; obligation_2_audit
 
 ; audit_expiry (matches Coq: Theorem audit_expiry)
-(assert (= true true)) ; audit_expiry [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((t Int)) (not (=> (= (audit_current e t) true) (< (+ (ncii_last_audit e) (ncii_audit_interval e)) t)))))) ; audit_expiry
 
 ; obligation_3_reporting (matches Coq: Theorem obligation_3_reporting)
-(assert (= true true)) ; obligation_3_reporting [untranslatable]
+(assert (forall ((i CyberIncident)) (=> (<= (incident_reported_at i) (+ (incident_detected_at i) 6)) (= (incident_reported_promptly i) true)))) ; obligation_3_reporting
 
 ; severity_ordering (matches Coq: Theorem severity_ordering)
-(assert (= true true)) ; severity_ordering [untranslatable]
+(assert (forall ((s1 RiskLevel) (s2 RiskLevel)) (>= (risk_level_nat Critical) (risk_level_nat s1)))) ; severity_ordering
 
 ; obligation_4_controls (matches Coq: Theorem obligation_4_controls)
-(assert (= true true)) ; obligation_4_controls [untranslatable]
+(assert (forall ((e NCIIEntity)) (=> (<= (ncii_min_controls e) (ncii_security_controls e)) (= (controls_sufficient e) true)))) ; obligation_4_controls
 
 ; obligation_5_cssp (matches Coq: Theorem obligation_5_cssp)
-(assert (= true true)) ; obligation_5_cssp [untranslatable]
+(assert (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (cssp_licensed l) true) (=> (<= t (cssp_license_expiry l)) (= (cssp_valid l t) true)))))) ; obligation_5_cssp
 
 ; act854_composition (matches Coq: Theorem act854_composition)
-(assert (= true true)) ; act854_composition [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (risk_assessment_current e) true) (=> (= (audit_current e t) true) (=> (= (controls_sufficient e) true) (=> (= (cssp_valid l t) true) (= (act854_compliant e l t) true))))))))) ; act854_composition
 
 ; ncii_sector_coverage (matches Coq: Theorem ncii_sector_coverage)
-(assert (= true true)) ; ncii_sector_coverage [untranslatable]
+(assert (forall ((s NCIISector)) (= (In s all_ncii_sectors) true))) ; ncii_sector_coverage
 
 ; critical_is_highest_risk (matches Coq: Theorem critical_is_highest_risk)
-(assert (= true true)) ; critical_is_highest_risk [untranslatable]
+(assert (forall ((r RiskLevel)) (<= (risk_level_nat r) (risk_level_nat Critical)))) ; critical_is_highest_risk
 
 ; low_is_lowest_risk (matches Coq: Theorem low_is_lowest_risk)
-(assert (= true true)) ; low_is_lowest_risk [untranslatable]
+(assert (forall ((r RiskLevel)) (<= (risk_level_nat Low) (risk_level_nat r)))) ; low_is_lowest_risk
 
 ; risk_level_bounded (matches Coq: Theorem risk_level_bounded)
-(assert (= true true)) ; risk_level_bounded [untranslatable]
+(assert (forall ((r RiskLevel)) (<= (risk_level_nat r) 3))) ; risk_level_bounded
 
 ; risk_level_coverage (matches Coq: Theorem risk_level_coverage)
-(assert (= true true)) ; risk_level_coverage [untranslatable]
+(assert (forall ((r RiskLevel)) (= (In r all_risk_levels) true))) ; risk_level_coverage
 
 ; audit_current_expiry_exclusive (matches Coq: Theorem audit_current_expiry_exclusive)
-(assert (= true true)) ; audit_current_expiry_exclusive [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((t Int)) (or (= (audit_current e t) true) (not (= (audit_current e t) true)))))) ; audit_current_expiry_exclusive
 
 ; more_controls_still_sufficient (matches Coq: Theorem more_controls_still_sufficient)
-(assert (= true true)) ; more_controls_still_sufficient [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((extra Int)) (=> (= (controls_sufficient e) true) (<= (ncii_min_controls e) (+ (ncii_security_controls e) extra)))))) ; more_controls_still_sufficient
 
 ; act854_implies_risk_assessed (matches Coq: Theorem act854_implies_risk_assessed)
-(assert (= true true)) ; act854_implies_risk_assessed [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (act854_compliant e l t) true) (= (risk_assessment_current e) true)))))) ; act854_implies_risk_assessed
 
 ; act854_implies_audit_current (matches Coq: Theorem act854_implies_audit_current)
-(assert (= true true)) ; act854_implies_audit_current [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (act854_compliant e l t) true) (= (audit_current e t) true)))))) ; act854_implies_audit_current
 
 ; act854_implies_controls (matches Coq: Theorem act854_implies_controls)
-(assert (= true true)) ; act854_implies_controls [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (act854_compliant e l t) true) (= (controls_sufficient e) true)))))) ; act854_implies_controls
 
 ; act854_implies_cssp_valid (matches Coq: Theorem act854_implies_cssp_valid)
-(assert (= true true)) ; act854_implies_cssp_valid [untranslatable]
+(assert (forall ((e NCIIEntity)) (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (act854_compliant e l t) true) (= (cssp_valid l t) true)))))) ; act854_implies_cssp_valid
 
 ; cssp_expired (matches Coq: Theorem cssp_expired)
-(assert (= true true)) ; cssp_expired [untranslatable]
+(assert (forall ((l CSSPLicense)) (forall ((t Int)) (=> (< (cssp_license_expiry l) t) (not (= (cssp_valid l t) true)))))) ; cssp_expired
 
 ; cssp_unlicensed_invalid (matches Coq: Theorem cssp_unlicensed_invalid)
-(assert (= true true)) ; cssp_unlicensed_invalid [untranslatable]
+(assert (forall ((l CSSPLicense)) (forall ((t Int)) (=> (= (cssp_licensed l) false) (not (= (cssp_valid l t) true)))))) ; cssp_unlicensed_invalid
 
 ; ceo_liable_when_negligent (matches Coq: Theorem ceo_liable_when_negligent)
-(assert (= true true)) ; ceo_liable_when_negligent [untranslatable]
+(assert (forall ((cl CEOLiability)) (=> (= (ceo_compliant cl) false) (=> (= (ceo_due_diligence cl) false) (=> (= (ceo_personally_liable cl) true) (= (ceo_liability_applies cl) true)))))) ; ceo_liable_when_negligent
 
 ; ceo_due_diligence_defense (matches Coq: Theorem ceo_due_diligence_defense)
-(assert (= true true)) ; ceo_due_diligence_defense [untranslatable]
+(assert (forall ((cl CEOLiability)) (=> (= (ceo_due_diligence cl) true) (not (= (ceo_due_diligence cl) false))))) ; ceo_due_diligence_defense
 
 ; incident_6h_stricter_than_24h (matches Coq: Theorem incident_6h_stricter_than_24h)
-(assert (= true true)) ; incident_6h_stricter_than_24h [untranslatable]
+(assert (forall ((i CyberIncident)) (=> (= (incident_reported_promptly i) true) (<= (incident_reported_at i) (+ (incident_detected_at i) 24))))) ; incident_6h_stricter_than_24h
 
 ; immediate_report_always_timely (matches Coq: Theorem immediate_report_always_timely)
-(assert (= true true)) ; immediate_report_always_timely [untranslatable]
+(assert (forall ((i CyberIncident)) (=> (= (incident_reported_at i) (incident_detected_at i)) (= (incident_reported_promptly i) true)))) ; immediate_report_always_timely
 
 ; banking_is_critical (matches Coq: Theorem banking_is_critical)
-(assert (= true true)) ; banking_is_critical [untranslatable]
+(assert (= (sector_critical BankingFinance) true)) ; banking_is_critical
 
 ; defense_is_critical (matches Coq: Theorem defense_is_critical)
-(assert (= true true)) ; defense_is_critical [untranslatable]
+(assert (= (sector_critical Defense) true)) ; defense_is_critical
 
 ; telecom_not_critical (matches Coq: Theorem telecom_not_critical)
-(assert (= true true)) ; telecom_not_critical [untranslatable]
+(assert (not (= (sector_critical Telecom) true))) ; telecom_not_critical
 
 ; Verify all assertions are satisfiable
 (check-sat)

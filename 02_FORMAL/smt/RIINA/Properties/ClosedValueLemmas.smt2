@@ -12,37 +12,37 @@
   true)
 
 ; value_typed_closed (matches Coq: Lemma value_typed_closed)
-(assert (= true true)) ; value_typed_closed [untranslatable]
+(assert (forall ((Σ Bool) (Δ Bool) (v Bool) (T Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type nil Σ Δ v T ε) true) (= (closed_expr_cv v) true))))) ; value_typed_closed
 
 ; closed_pair_cv (matches Coq: Lemma closed_pair_cv)
-(assert (= true true)) ; closed_pair_cv [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (and (=> (= (closed_expr_cv (EPair e1 e2)) true) (and (= (closed_expr_cv e1) true) (= (closed_expr_cv e2) true))) (=> (and (= (closed_expr_cv e1) true) (= (closed_expr_cv e2) true)) (= (closed_expr_cv (EPair e1 e2)) true))))) ; closed_pair_cv
 
 ; closed_inl_cv (matches Coq: Lemma closed_inl_cv)
-(assert (= true true)) ; closed_inl_cv [untranslatable]
+(assert (forall ((e Bool) (T Bool)) (and (=> (= (closed_expr_cv (EInl e T)) true) (= (closed_expr_cv e) true)) (=> (= (closed_expr_cv e) true) (= (closed_expr_cv (EInl e T)) true))))) ; closed_inl_cv
 
 ; closed_inr_cv (matches Coq: Lemma closed_inr_cv)
-(assert (= true true)) ; closed_inr_cv [untranslatable]
+(assert (forall ((e Bool) (T Bool)) (and (=> (= (closed_expr_cv (EInr e T)) true) (= (closed_expr_cv e) true)) (=> (= (closed_expr_cv e) true) (= (closed_expr_cv (EInr e T)) true))))) ; closed_inr_cv
 
 ; closed_app_cv (matches Coq: Lemma closed_app_cv)
-(assert (= true true)) ; closed_app_cv [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (and (=> (= (closed_expr_cv (EApp e1 e2)) true) (and (= (closed_expr_cv e1) true) (= (closed_expr_cv e2) true))) (=> (and (= (closed_expr_cv e1) true) (= (closed_expr_cv e2) true)) (= (closed_expr_cv (EApp e1 e2)) true))))) ; closed_app_cv
 
 ; closed_unit_cv (matches Coq: Lemma closed_unit_cv)
-(assert (= true true)) ; closed_unit_cv [untranslatable]
+(assert (= (closed_expr_cv EUnit) true)) ; closed_unit_cv
 
 ; closed_bool_cv (matches Coq: Lemma closed_bool_cv)
-(assert (= true true)) ; closed_bool_cv [untranslatable]
+(assert (forall ((b Bool)) (= (closed_expr_cv (EBool b)) true))) ; closed_bool_cv
 
 ; closed_int_cv (matches Coq: Lemma closed_int_cv)
-(assert (= true true)) ; closed_int_cv [untranslatable]
+(assert (forall ((n Bool)) (= (closed_expr_cv (EInt n)) true))) ; closed_int_cv
 
 ; closed_string_cv (matches Coq: Lemma closed_string_cv)
-(assert (= true true)) ; closed_string_cv [untranslatable]
+(assert (forall ((s Bool)) (= (closed_expr_cv (EString s)) true))) ; closed_string_cv
 
 ; closed_loc_cv (matches Coq: Lemma closed_loc_cv)
-(assert (= true true)) ; closed_loc_cv [untranslatable]
+(assert (forall ((l Bool)) (= (closed_expr_cv (ELoc l)) true))) ; closed_loc_cv
 
 ; closed_lam_body_cv (matches Coq: Lemma closed_lam_body_cv)
-(assert (= true true)) ; closed_lam_body_cv [untranslatable]
+(assert (forall ((x Bool) (T Bool) (body Bool) (y Bool)) (=> (= (closed_expr_cv (ELam x T body)) true) (=> (= (free_in y body) true) (= y x))))) ; closed_lam_body_cv
 
 ; Verify all assertions are satisfiable
 (check-sat)

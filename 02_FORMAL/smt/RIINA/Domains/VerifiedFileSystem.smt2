@@ -184,16 +184,16 @@
   (mk-verified_fs (riina_fs_integrity) (riina_fs_security) true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; negb_false_iff (matches Coq: Lemma negb_false_iff)
-(assert (= true true)) ; negb_false_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) false) (= b true)) (=> (= b true) (= (not b) false))))) ; negb_false_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; VFS_001 (matches Coq: Theorem VFS_001)
 (assert (= (fs_integrity_sound riina_fs_integrity) true)) ; VFS_001
@@ -235,280 +235,280 @@
 (assert (= (vfs_verified_implementation riina_vfs) true)) ; VFS_013
 
 ; VFS_014 (matches Coq: Theorem VFS_014)
-(assert (= true true)) ; VFS_014 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (fs_integrity_sound i) true) (= (fsi_crash_consistent i) true)))) ; VFS_014
 
 ; VFS_015 (matches Coq: Theorem VFS_015)
-(assert (= true true)) ; VFS_015 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (fs_integrity_sound i) true) (= (fsi_atomic_writes i) true)))) ; VFS_015
 
 ; VFS_016 (matches Coq: Theorem VFS_016)
-(assert (= true true)) ; VFS_016 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (fs_integrity_sound i) true) (= (fsi_journaling i) true)))) ; VFS_016
 
 ; VFS_017 (matches Coq: Theorem VFS_017)
-(assert (= true true)) ; VFS_017 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (fs_integrity_sound i) true) (= (fsi_checksum_verified i) true)))) ; VFS_017
 
 ; VFS_018 (matches Coq: Theorem VFS_018)
-(assert (= true true)) ; VFS_018 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (fs_security_sound s) true) (= (fss_access_control s) true)))) ; VFS_018
 
 ; VFS_019 (matches Coq: Theorem VFS_019)
-(assert (= true true)) ; VFS_019 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (fs_security_sound s) true) (= (fss_encryption_at_rest s) true)))) ; VFS_019
 
 ; VFS_020 (matches Coq: Theorem VFS_020)
-(assert (= true true)) ; VFS_020 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (fs_security_sound s) true) (= (fss_secure_delete s) true)))) ; VFS_020
 
 ; VFS_021 (matches Coq: Theorem VFS_021)
-(assert (= true true)) ; VFS_021 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (fs_security_sound s) true) (= (fss_quota_enforcement s) true)))) ; VFS_021
 
 ; VFS_022 (matches Coq: Theorem VFS_022)
-(assert (= true true)) ; VFS_022 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (fs_integrity_sound (vfs_integrity f)) true)))) ; VFS_022
 
 ; VFS_023 (matches Coq: Theorem VFS_023)
-(assert (= true true)) ; VFS_023 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (fs_security_sound (vfs_security f)) true)))) ; VFS_023
 
 ; VFS_024 (matches Coq: Theorem VFS_024)
-(assert (= true true)) ; VFS_024 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (vfs_posix_compliant f) true)))) ; VFS_024
 
 ; VFS_025 (matches Coq: Theorem VFS_025)
-(assert (= true true)) ; VFS_025 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (vfs_verified_implementation f) true)))) ; VFS_025
 
 ; VFS_026 (matches Coq: Theorem VFS_026)
-(assert (= true true)) ; VFS_026 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (fsi_crash_consistent (vfs_integrity f)) true)))) ; VFS_026
 
 ; VFS_027 (matches Coq: Theorem VFS_027)
-(assert (= true true)) ; VFS_027 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (fss_access_control (vfs_security f)) true)))) ; VFS_027
 
 ; VFS_028 (matches Coq: Theorem VFS_028)
-(assert (= true true)) ; VFS_028 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (= (fss_encryption_at_rest (vfs_security f)) true)))) ; VFS_028
 
 ; VFS_029 (matches Coq: Theorem VFS_029)
-(assert (= true true)) ; VFS_029 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (fs_integrity_sound i) true) (and (= (fsi_crash_consistent i) true) (= (fsi_atomic_writes i) true) (= (fsi_journaling i) true))))) ; VFS_029
 
 ; VFS_030_complete (matches Coq: Theorem VFS_030_complete)
-(assert (= true true)) ; VFS_030_complete [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (and (= (fsi_crash_consistent (vfs_integrity f)) true) (= (fss_access_control (vfs_security f)) true) (= (vfs_posix_compliant f) true) (= (vfs_verified_implementation f) true))))) ; VFS_030_complete
 
 ; VFS_031_root_can_read (matches Coq: Theorem VFS_031_root_can_read)
-(assert (= true true)) ; VFS_031_root_can_read [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) true) (= (can_read ctx ino) true)))) ; VFS_031_root_can_read
 
 ; VFS_032_root_can_write (matches Coq: Theorem VFS_032_root_can_write)
-(assert (= true true)) ; VFS_032_root_can_write [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) true) (= (can_write ctx ino) true)))) ; VFS_032_root_can_write
 
 ; VFS_033_root_can_execute (matches Coq: Theorem VFS_033_root_can_execute)
-(assert (= true true)) ; VFS_033_root_can_execute [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) true) (= (can_execute ctx ino) true)))) ; VFS_033_root_can_execute
 
 ; VFS_034_owner_read (matches Coq: Theorem VFS_034_owner_read)
-(assert (= true true)) ; VFS_034_owner_read [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (is_owner ctx ino) true) (=> (= (perm_read (inode_perm_owner ino)) true) (= (can_read ctx ino) true))))) ; VFS_034_owner_read
 
 ; VFS_035_owner_write (matches Coq: Theorem VFS_035_owner_write)
-(assert (= true true)) ; VFS_035_owner_write [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (is_owner ctx ino) true) (=> (= (perm_write (inode_perm_owner ino)) true) (= (can_write ctx ino) true))))) ; VFS_035_owner_write
 
 ; VFS_036_owner_execute (matches Coq: Theorem VFS_036_owner_execute)
-(assert (= true true)) ; VFS_036_owner_execute [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (is_owner ctx ino) true) (=> (= (perm_execute (inode_perm_owner ino)) true) (= (can_execute ctx ino) true))))) ; VFS_036_owner_execute
 
 ; VFS_037_other_permissions (matches Coq: Theorem VFS_037_other_permissions)
-(assert (= true true)) ; VFS_037_other_permissions [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) false) (=> (= (is_owner ctx ino) false) (=> (= (in_group ctx ino) false) (= (get_permission ctx ino) (inode_perm_other ino))))))) ; VFS_037_other_permissions
 
 ; VFS_038_group_permissions (matches Coq: Theorem VFS_038_group_permissions)
-(assert (= true true)) ; VFS_038_group_permissions [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (is_owner ctx ino) false) (=> (= (in_group ctx ino) true) (= (get_permission ctx ino) (inode_perm_group ino)))))) ; VFS_038_group_permissions
 
 ; VFS_039_no_read_without_perm (matches Coq: Theorem VFS_039_no_read_without_perm)
-(assert (= true true)) ; VFS_039_no_read_without_perm [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) false) (=> (= (is_owner ctx ino) false) (=> (= (in_group ctx ino) false) (=> (= (perm_read (inode_perm_other ino)) false) (= (can_read ctx ino) false))))))) ; VFS_039_no_read_without_perm
 
 ; VFS_040_no_write_without_perm (matches Coq: Theorem VFS_040_no_write_without_perm)
-(assert (= true true)) ; VFS_040_no_write_without_perm [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) false) (=> (= (is_owner ctx ino) false) (=> (= (in_group ctx ino) false) (=> (= (perm_write (inode_perm_other ino)) false) (= (can_write ctx ino) false))))))) ; VFS_040_no_write_without_perm
 
 ; VFS_041_no_execute_without_perm (matches Coq: Theorem VFS_041_no_execute_without_perm)
-(assert (= true true)) ; VFS_041_no_execute_without_perm [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) false) (=> (= (is_owner ctx ino) false) (=> (= (in_group ctx ino) false) (=> (= (perm_execute (inode_perm_other ino)) false) (= (can_execute ctx ino) false))))))) ; VFS_041_no_execute_without_perm
 
 ; VFS_042_access_deterministic (matches Coq: Theorem VFS_042_access_deterministic)
-(assert (= true true)) ; VFS_042_access_deterministic [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (or (= (can_read ctx ino) true) (= (can_read ctx ino) false)))) ; VFS_042_access_deterministic
 
 ; VFS_043_owner_full_access (matches Coq: Theorem VFS_043_owner_full_access)
-(assert (= true true)) ; VFS_043_owner_full_access [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (is_owner ctx ino) true) (=> (= (perm_read (inode_perm_owner ino)) true) (=> (= (perm_write (inode_perm_owner ino)) true) (=> (= (perm_execute (inode_perm_owner ino)) true) (and (= (can_read ctx ino) true) (= (can_write ctx ino) true) (= (can_execute ctx ino) true)))))))) ; VFS_043_owner_full_access
 
 ; VFS_044_root_full_access (matches Coq: Theorem VFS_044_root_full_access)
-(assert (= true true)) ; VFS_044_root_full_access [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (ctx_is_root ctx) true) (and (= (can_read ctx ino) true) (= (can_write ctx ino) true) (= (can_execute ctx ino) true))))) ; VFS_044_root_full_access
 
 ; VFS_045_permission_consistency (matches Coq: Theorem VFS_045_permission_consistency)
-(assert (= true true)) ; VFS_045_permission_consistency [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool)) (=> (= (is_owner ctx ino) true) (= (get_permission ctx ino) (inode_perm_owner ino))))) ; VFS_045_permission_consistency
 
 ; VFS_046_committed_is_complete (matches Coq: Theorem VFS_046_committed_is_complete)
-(assert (= true true)) ; VFS_046_committed_is_complete [untranslatable]
+(assert (forall ((txn Bool)) (=> (= (txn_state txn) TxnCommitted) (= (txn_complete txn) true)))) ; VFS_046_committed_is_complete
 
 ; VFS_047_checkpointed_is_complete (matches Coq: Theorem VFS_047_checkpointed_is_complete)
-(assert (= true true)) ; VFS_047_checkpointed_is_complete [untranslatable]
+(assert (forall ((txn Bool)) (=> (= (txn_state txn) TxnCheckpointed) (= (txn_complete txn) true)))) ; VFS_047_checkpointed_is_complete
 
 ; VFS_048_pending_not_complete (matches Coq: Theorem VFS_048_pending_not_complete)
-(assert (= true true)) ; VFS_048_pending_not_complete [untranslatable]
+(assert (forall ((txn Bool)) (=> (= (txn_state txn) TxnPending) (= (txn_complete txn) false)))) ; VFS_048_pending_not_complete
 
 ; VFS_049_aborted_not_complete (matches Coq: Theorem VFS_049_aborted_not_complete)
-(assert (= true true)) ; VFS_049_aborted_not_complete [untranslatable]
+(assert (forall ((txn Bool)) (=> (= (txn_state txn) TxnAborted) (= (txn_complete txn) false)))) ; VFS_049_aborted_not_complete
 
 ; VFS_050_empty_journal_consistent (matches Coq: Theorem VFS_050_empty_journal_consistent)
-(assert (= true true)) ; VFS_050_empty_journal_consistent [untranslatable]
+(assert (forall ((head Bool) (tail Bool)) (=> (= (<= tail head) true) (= (journal_consistent (mkJournal nil head tail)) true)))) ; VFS_050_empty_journal_consistent
 
 ; VFS_051_single_committed_consistent (matches Coq: Theorem VFS_051_single_committed_consistent)
-(assert (= true true)) ; VFS_051_single_committed_consistent [untranslatable]
+(assert (forall ((txn_id Bool) (ops Bool) (head Bool) (tail Bool)) (=> (= (<= tail head) true) (let ((txn (mkTransaction txn_id ops TxnCommitted))) (let ((j (mkJournal (insert txn nil) head tail))) (= (journal_consistent j) true)))))) ; VFS_051_single_committed_consistent
 
 ; VFS_052_txn_complete_decidable (matches Coq: Theorem VFS_052_txn_complete_decidable)
-(assert (= true true)) ; VFS_052_txn_complete_decidable [untranslatable]
+(assert (forall ((txn Bool)) (or (= (txn_complete txn) true) (= (txn_complete txn) false)))) ; VFS_052_txn_complete_decidable
 
 ; VFS_053_journal_head_ge_tail (matches Coq: Theorem VFS_053_journal_head_ge_tail)
-(assert (= true true)) ; VFS_053_journal_head_ge_tail [untranslatable]
+(assert (forall ((j Bool)) (=> (= (journal_consistent j) true) (= (<= (journal_tail j) (journal_head j)) true)))) ; VFS_053_journal_head_ge_tail
 
 ; VFS_054_all_txns_complete (matches Coq: Theorem VFS_054_all_txns_complete)
-(assert (= true true)) ; VFS_054_all_txns_complete [untranslatable]
+(assert (forall ((j Bool)) (=> (= (journal_consistent j) true) (= (forallb txn_complete (journal_transactions j)) true)))) ; VFS_054_all_txns_complete
 
 ; VFS_055_complete_txn_valid_state (matches Coq: Theorem VFS_055_complete_txn_valid_state)
-(assert (= true true)) ; VFS_055_complete_txn_valid_state [untranslatable]
+(assert (forall ((txn Bool)) (=> (= (txn_complete txn) true) (or (= (txn_state txn) TxnCommitted) (= (txn_state txn) TxnCheckpointed))))) ; VFS_055_complete_txn_valid_state
 
 ; VFS_056_no_self_cycle (matches Coq: Theorem VFS_056_no_self_cycle)
-(assert (= true true)) ; VFS_056_no_self_cycle [untranslatable]
+(assert (forall ((inode Bool) (parent Bool) (entries Bool)) (=> (not (= inode parent)) (= (dir_no_self_cycle (mkDirectory inode parent entries)) true)))) ; VFS_056_no_self_cycle
 
 ; VFS_057_self_cycle_detected (matches Coq: Theorem VFS_057_self_cycle_detected)
-(assert (= true true)) ; VFS_057_self_cycle_detected [untranslatable]
+(assert (forall ((inode Bool) (entries Bool)) (= (dir_no_self_cycle (mkDirectory inode inode entries)) false))) ; VFS_057_self_cycle_detected
 
 ; VFS_058_integrity_requires_no_cycle (matches Coq: Theorem VFS_058_integrity_requires_no_cycle)
-(assert (= true true)) ; VFS_058_integrity_requires_no_cycle [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dir_integrity d) true) (= (dir_no_self_cycle d) true)))) ; VFS_058_integrity_requires_no_cycle
 
 ; VFS_059_integrity_requires_parent (matches Coq: Theorem VFS_059_integrity_requires_parent)
-(assert (= true true)) ; VFS_059_integrity_requires_parent [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dir_integrity d) true) (= (dir_has_parent_link d) true)))) ; VFS_059_integrity_requires_parent
 
 ; VFS_060_integrity_requires_dot (matches Coq: Theorem VFS_060_integrity_requires_dot)
-(assert (= true true)) ; VFS_060_integrity_requires_dot [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dir_integrity d) true) (= (dir_has_dot_entry d) true)))) ; VFS_060_integrity_requires_dot
 
 ; VFS_061_empty_dir_no_parent_link (matches Coq: Theorem VFS_061_empty_dir_no_parent_link)
-(assert (= true true)) ; VFS_061_empty_dir_no_parent_link [untranslatable]
+(assert (forall ((inode Bool) (parent Bool)) (= (dir_has_parent_link (mkDirectory inode parent nil)) false))) ; VFS_061_empty_dir_no_parent_link
 
 ; VFS_062_empty_dir_no_dot (matches Coq: Theorem VFS_062_empty_dir_no_dot)
-(assert (= true true)) ; VFS_062_empty_dir_no_dot [untranslatable]
+(assert (forall ((inode Bool) (parent Bool)) (= (dir_has_dot_entry (mkDirectory inode parent nil)) false))) ; VFS_062_empty_dir_no_dot
 
 ; VFS_063_empty_dir_no_integrity (matches Coq: Theorem VFS_063_empty_dir_no_integrity)
-(assert (= true true)) ; VFS_063_empty_dir_no_integrity [untranslatable]
+(assert (forall ((inode Bool) (parent Bool)) (=> (not (= inode parent)) (= (dir_integrity (mkDirectory inode parent nil)) false)))) ; VFS_063_empty_dir_no_integrity
 
 ; VFS_064_wellformed_dir_complete (matches Coq: Theorem VFS_064_wellformed_dir_complete)
-(assert (= true true)) ; VFS_064_wellformed_dir_complete [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dir_integrity d) true) (and (= (dir_no_self_cycle d) true) (= (dir_has_parent_link d) true) (= (dir_has_dot_entry d) true))))) ; VFS_064_wellformed_dir_complete
 
 ; VFS_065_dir_integrity_decidable (matches Coq: Theorem VFS_065_dir_integrity_decidable)
-(assert (= true true)) ; VFS_065_dir_integrity_decidable [untranslatable]
+(assert (forall ((d Bool)) (or (= (dir_integrity d) true) (= (dir_integrity d) false)))) ; VFS_065_dir_integrity_decidable
 
 ; VFS_066_zero_usage_ok (matches Coq: Theorem VFS_066_zero_usage_ok)
-(assert (= true true)) ; VFS_066_zero_usage_ok [untranslatable]
+(assert (forall ((uid Bool) (limit_b Bool) (limit_i Bool)) (= (quota_enforced (mkQuota uid limit_b limit_i 0 0)) true))) ; VFS_066_zero_usage_ok
 
 ; VFS_067_at_limit_ok (matches Coq: Theorem VFS_067_at_limit_ok)
-(assert (= true true)) ; VFS_067_at_limit_ok [untranslatable]
+(assert (forall ((uid Bool) (limit_b Bool) (limit_i Bool)) (= (quota_enforced (mkQuota uid limit_b limit_i limit_b limit_i)) true))) ; VFS_067_at_limit_ok
 
 ; VFS_068_enforced_bytes_ok (matches Coq: Theorem VFS_068_enforced_bytes_ok)
-(assert (= true true)) ; VFS_068_enforced_bytes_ok [untranslatable]
+(assert (forall ((q Bool)) (=> (= (quota_enforced q) true) (= (quota_bytes_ok q) true)))) ; VFS_068_enforced_bytes_ok
 
 ; VFS_069_enforced_inodes_ok (matches Coq: Theorem VFS_069_enforced_inodes_ok)
-(assert (= true true)) ; VFS_069_enforced_inodes_ok [untranslatable]
+(assert (forall ((q Bool)) (=> (= (quota_enforced q) true) (= (quota_inodes_ok q) true)))) ; VFS_069_enforced_inodes_ok
 
 ; VFS_070_can_alloc_zero_bytes (matches Coq: Theorem VFS_070_can_alloc_zero_bytes)
-(assert (= true true)) ; VFS_070_can_alloc_zero_bytes [untranslatable]
+(assert (forall ((q Bool)) (=> (= (quota_enforced q) true) (= (can_allocate_bytes q 0) true)))) ; VFS_070_can_alloc_zero_bytes
 
 ; VFS_071_cannot_exceed_quota (matches Coq: Theorem VFS_071_cannot_exceed_quota)
-(assert (= true true)) ; VFS_071_cannot_exceed_quota [untranslatable]
+(assert (forall ((uid Bool) (limit Bool) (used Bool)) (=> (< used limit) (= (can_allocate_bytes (mkQuota uid limit 0 used 0) (- limit used)) true)))) ; VFS_071_cannot_exceed_quota
 
 ; VFS_072_bytes_ok_semantics (matches Coq: Theorem VFS_072_bytes_ok_semantics)
-(assert (= true true)) ; VFS_072_bytes_ok_semantics [untranslatable]
+(assert (forall ((q Bool)) (=> (= (quota_bytes_ok q) true) (<= (quota_used_bytes q) (quota_limit_bytes q))))) ; VFS_072_bytes_ok_semantics
 
 ; VFS_073_inodes_ok_semantics (matches Coq: Theorem VFS_073_inodes_ok_semantics)
-(assert (= true true)) ; VFS_073_inodes_ok_semantics [untranslatable]
+(assert (forall ((q Bool)) (=> (= (quota_inodes_ok q) true) (<= (quota_used_inodes q) (quota_limit_inodes q))))) ; VFS_073_inodes_ok_semantics
 
 ; VFS_074_can_alloc_inode_under_limit (matches Coq: Theorem VFS_074_can_alloc_inode_under_limit)
-(assert (= true true)) ; VFS_074_can_alloc_inode_under_limit [untranslatable]
+(assert (forall ((uid Bool) (lb Bool) (li Bool) (ub Bool) (ui Bool)) (=> (< ui li) (= (can_allocate_inode (mkQuota uid lb li ub ui)) true)))) ; VFS_074_can_alloc_inode_under_limit
 
 ; VFS_075_cannot_alloc_inode_at_limit (matches Coq: Theorem VFS_075_cannot_alloc_inode_at_limit)
-(assert (= true true)) ; VFS_075_cannot_alloc_inode_at_limit [untranslatable]
+(assert (forall ((uid Bool) (lb Bool) (li Bool) (ub Bool)) (= (can_allocate_inode (mkQuota uid lb li ub li)) false))) ; VFS_075_cannot_alloc_inode_at_limit
 
 ; VFS_076_online_no_recovery (matches Coq: Theorem VFS_076_online_no_recovery)
-(assert (= true true)) ; VFS_076_online_no_recovery [untranslatable]
+(assert (forall ((j Bool) (cp Bool)) (= (recovery_complete (mkCrashState j FSOnline cp false)) true))) ; VFS_076_online_no_recovery
 
 ; VFS_077_clean_no_recovery (matches Coq: Theorem VFS_077_clean_no_recovery)
-(assert (= true true)) ; VFS_077_clean_no_recovery [untranslatable]
+(assert (forall ((j Bool) (cp Bool)) (= (recovery_complete (mkCrashState j FSClean cp false)) true))) ; VFS_077_clean_no_recovery
 
 ; VFS_078_mounting_not_complete (matches Coq: Theorem VFS_078_mounting_not_complete)
-(assert (= true true)) ; VFS_078_mounting_not_complete [untranslatable]
+(assert (forall ((j Bool) (cp Bool) (rec Bool)) (= (recovery_complete (mkCrashState j FSMounting cp rec)) false))) ; VFS_078_mounting_not_complete
 
 ; VFS_079_recovering_not_complete (matches Coq: Theorem VFS_079_recovering_not_complete)
-(assert (= true true)) ; VFS_079_recovering_not_complete [untranslatable]
+(assert (forall ((j Bool) (cp Bool) (rec Bool)) (= (recovery_complete (mkCrashState j FSRecovering cp rec)) false))) ; VFS_079_recovering_not_complete
 
 ; VFS_080_error_not_complete (matches Coq: Theorem VFS_080_error_not_complete)
-(assert (= true true)) ; VFS_080_error_not_complete [untranslatable]
+(assert (forall ((j Bool) (cp Bool) (rec Bool)) (= (recovery_complete (mkCrashState j FSError cp rec)) false))) ; VFS_080_error_not_complete
 
 ; VFS_081_recovery_needed_blocks (matches Coq: Theorem VFS_081_recovery_needed_blocks)
-(assert (= true true)) ; VFS_081_recovery_needed_blocks [untranslatable]
+(assert (forall ((j Bool) (cp Bool)) (= (recovery_complete (mkCrashState j FSOnline cp true)) false))) ; VFS_081_recovery_needed_blocks
 
 ; VFS_082_crash_safe_journal (matches Coq: Theorem VFS_082_crash_safe_journal)
-(assert (= true true)) ; VFS_082_crash_safe_journal [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (crash_safe cs) true) (= (journal_consistent (cs_journal cs)) true)))) ; VFS_082_crash_safe_journal
 
 ; VFS_083_empty_journal_safe (matches Coq: Theorem VFS_083_empty_journal_safe)
-(assert (= true true)) ; VFS_083_empty_journal_safe [untranslatable]
+(assert (forall ((st Bool) (cp Bool) (rec Bool)) (= (crash_safe (mkCrashState (mkJournal nil 0 0) st cp rec)) true))) ; VFS_083_empty_journal_safe
 
 ; VFS_084_recovery_complete_valid_state (matches Coq: Theorem VFS_084_recovery_complete_valid_state)
-(assert (= true true)) ; VFS_084_recovery_complete_valid_state [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (recovery_complete cs) true) (or (= (cs_fs_state cs) FSOnline) (= (cs_fs_state cs) FSClean))))) ; VFS_084_recovery_complete_valid_state
 
 ; VFS_085_recovery_complete_no_recovery (matches Coq: Theorem VFS_085_recovery_complete_no_recovery)
-(assert (= true true)) ; VFS_085_recovery_complete_no_recovery [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (recovery_complete cs) true) (= (cs_recovery_needed cs) false)))) ; VFS_085_recovery_complete_no_recovery
 
 ; VFS_086_success_is_atomic (matches Coq: Theorem VFS_086_success_is_atomic)
-(assert (= true true)) ; VFS_086_success_is_atomic [untranslatable]
+(assert (forall ((op Bool) (jentry Bool)) (= (op_is_atomic (mkAtomicOp op OpSuccess jentry)) true))) ; VFS_086_success_is_atomic
 
 ; VFS_087_failure_is_atomic (matches Coq: Theorem VFS_087_failure_is_atomic)
-(assert (= true true)) ; VFS_087_failure_is_atomic [untranslatable]
+(assert (forall ((op Bool) (jentry Bool)) (= (op_is_atomic (mkAtomicOp op OpFailure jentry)) true))) ; VFS_087_failure_is_atomic
 
 ; VFS_088_partial_not_atomic (matches Coq: Theorem VFS_088_partial_not_atomic)
-(assert (= true true)) ; VFS_088_partial_not_atomic [untranslatable]
+(assert (forall ((op Bool) (jentry Bool)) (= (op_is_atomic (mkAtomicOp op OpPartial jentry)) false))) ; VFS_088_partial_not_atomic
 
 ; VFS_089_atomic_definite_result (matches Coq: Theorem VFS_089_atomic_definite_result)
-(assert (= true true)) ; VFS_089_atomic_definite_result [untranslatable]
+(assert (forall ((aop Bool)) (=> (= (op_is_atomic aop) true) (or (= (aop_result aop) OpSuccess) (= (aop_result aop) OpFailure))))) ; VFS_089_atomic_definite_result
 
 ; VFS_090_journaled_has_entry (matches Coq: Theorem VFS_090_journaled_has_entry)
-(assert (= true true)) ; VFS_090_journaled_has_entry [untranslatable]
+(assert (forall ((aop Bool)) (=> (= (op_is_journaled aop) true) (exists ((je Bool)) (= (aop_journal_entry aop) (some je)))))) ; VFS_090_journaled_has_entry
 
 ; VFS_091_non_journaled_no_entry (matches Coq: Theorem VFS_091_non_journaled_no_entry)
-(assert (= true true)) ; VFS_091_non_journaled_no_entry [untranslatable]
+(assert (forall ((aop Bool)) (=> (= (op_is_journaled aop) false) (= (aop_journal_entry aop) none)))) ; VFS_091_non_journaled_no_entry
 
 ; VFS_092_create_journaled (matches Coq: Theorem VFS_092_create_journaled)
-(assert (= true true)) ; VFS_092_create_journaled [untranslatable]
+(assert (forall ((parent Bool) (new_ino Bool)) (let ((jop (JOpCreate new_ino))) (let ((aop (mkAtomicOp (OpCreate parent new_ino) OpSuccess (some jop)))) (and (= (op_is_atomic aop) true) (= (op_is_journaled aop) true)))))) ; VFS_092_create_journaled
 
 ; VFS_093_delete_journaled (matches Coq: Theorem VFS_093_delete_journaled)
-(assert (= true true)) ; VFS_093_delete_journaled [untranslatable]
+(assert (forall ((parent Bool) (del_ino Bool)) (let ((jop (JOpDelete del_ino))) (let ((aop (mkAtomicOp (OpDelete parent del_ino) OpSuccess (some jop)))) (and (= (op_is_atomic aop) true) (= (op_is_journaled aop) true)))))) ; VFS_093_delete_journaled
 
 ; VFS_094_rename_journaled (matches Coq: Theorem VFS_094_rename_journaled)
-(assert (= true true)) ; VFS_094_rename_journaled [untranslatable]
+(assert (forall ((sp Bool) (si Bool) (dp Bool) (di Bool)) (let ((jop (JOpRename si dp))) (let ((aop (mkAtomicOp (OpRename sp si dp di) OpSuccess (some jop)))) (and (= (op_is_atomic aop) true) (= (op_is_journaled aop) true)))))) ; VFS_094_rename_journaled
 
 ; VFS_095_atomicity_decidable (matches Coq: Theorem VFS_095_atomicity_decidable)
-(assert (= true true)) ; VFS_095_atomicity_decidable [untranslatable]
+(assert (forall ((aop Bool)) (or (= (op_is_atomic aop) true) (= (op_is_atomic aop) false)))) ; VFS_095_atomicity_decidable
 
 ; VFS_096_full_security (matches Coq: Theorem VFS_096_full_security)
-(assert (= true true)) ; VFS_096_full_security [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (and (= (fss_access_control (vfs_security f)) true) (= (fss_encryption_at_rest (vfs_security f)) true) (= (fss_secure_delete (vfs_security f)) true) (= (fss_quota_enforcement (vfs_security f)) true))))) ; VFS_096_full_security
 
 ; VFS_097_full_integrity (matches Coq: Theorem VFS_097_full_integrity)
-(assert (= true true)) ; VFS_097_full_integrity [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (and (= (fsi_crash_consistent (vfs_integrity f)) true) (= (fsi_atomic_writes (vfs_integrity f)) true) (= (fsi_journaling (vfs_integrity f)) true) (= (fsi_checksum_verified (vfs_integrity f)) true))))) ; VFS_097_full_integrity
 
 ; VFS_098_safe_recovery_sound (matches Coq: Theorem VFS_098_safe_recovery_sound)
-(assert (= true true)) ; VFS_098_safe_recovery_sound [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (crash_safe cs) true) (=> (= (recovery_complete cs) true) (and (= (journal_consistent (cs_journal cs)) true) (= (cs_recovery_needed cs) false)))))) ; VFS_098_safe_recovery_sound
 
 ; VFS_099_quota_access_combined (matches Coq: Theorem VFS_099_quota_access_combined)
-(assert (= true true)) ; VFS_099_quota_access_combined [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool) (q Bool)) (=> (= (ctx_is_root ctx) true) (=> (= (quota_enforced q) true) (and (= (can_read ctx ino) true) (= (can_write ctx ino) true) (= (quota_bytes_ok q) true) (= (quota_inodes_ok q) true)))))) ; VFS_099_quota_access_combined
 
 ; VFS_100_atomic_journaled_durable (matches Coq: Theorem VFS_100_atomic_journaled_durable)
-(assert (= true true)) ; VFS_100_atomic_journaled_durable [untranslatable]
+(assert (forall ((aop Bool)) (=> (= (op_is_atomic aop) true) (=> (= (op_is_journaled aop) true) (or (= (aop_result aop) OpSuccess) (= (aop_result aop) OpFailure)))))) ; VFS_100_atomic_journaled_durable
 
 ; VFS_101_dir_with_quota (matches Coq: Theorem VFS_101_dir_with_quota)
-(assert (= true true)) ; VFS_101_dir_with_quota [untranslatable]
+(assert (forall ((d Bool) (q Bool)) (=> (= (dir_integrity d) true) (=> (= (quota_enforced q) true) (and (= (dir_no_self_cycle d) true) (= (quota_bytes_ok q) true)))))) ; VFS_101_dir_with_quota
 
 ; VFS_102_verification_chain (matches Coq: Theorem VFS_102_verification_chain)
-(assert (= true true)) ; VFS_102_verification_chain [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fs_fully_verified f) true) (and (= (fs_integrity_sound (vfs_integrity f)) true) (= (fs_security_sound (vfs_security f)) true) (= (vfs_posix_compliant f) true) (= (vfs_verified_implementation f) true))))) ; VFS_102_verification_chain
 
 ; VFS_103_journal_consistency_preservation (matches Coq: Theorem VFS_103_journal_consistency_preservation)
-(assert (= true true)) ; VFS_103_journal_consistency_preservation [untranslatable]
+(assert (forall ((txns Bool) (h Bool) (t Bool)) (=> (= (<= t h) true) (=> (= (forallb txn_complete txns) true) (= (journal_consistent (mkJournal txns h t)) true))))) ; VFS_103_journal_consistency_preservation
 
 ; VFS_104_access_dir_combined (matches Coq: Theorem VFS_104_access_dir_combined)
-(assert (= true true)) ; VFS_104_access_dir_combined [untranslatable]
+(assert (forall ((ctx Bool) (ino Bool) (d Bool)) (=> (= (can_read ctx ino) true) (=> (= (dir_integrity d) true) (and (= (can_read ctx ino) true) (= (dir_no_self_cycle d) true)))))) ; VFS_104_access_dir_combined
 
 ; VFS_105_system_soundness (matches Coq: Theorem VFS_105_system_soundness)
-(assert (= true true)) ; VFS_105_system_soundness [untranslatable]
+(assert (forall ((f Bool) (cs Bool)) (=> (= (fs_fully_verified f) true) (=> (= (crash_safe cs) true) (=> (= (recovery_complete cs) true) (and (= (fs_integrity_sound (vfs_integrity f)) true) (= (fs_security_sound (vfs_security f)) true) (= (journal_consistent (cs_journal cs)) true) (= (cs_recovery_needed cs) false))))))) ; VFS_105_system_soundness
 
 ; Verify all assertions are satisfiable
 (check-sat)

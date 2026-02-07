@@ -11,70 +11,70 @@
 (declare-datatypes ((expr 0)) (((EConst) (EVar) (EPlus) (EIf) (ESeq))))
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((ex Bool)) (<= 1 (wcet_bound ex)))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (v Bool) (c Bool)) (=> (= (eval e ex v c) true) (<= 1 c)))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (v Bool) (c Bool)) (=> (= (eval e ex v c) true) (<= c (wcet_bound ex))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((e Bool) (e1 Bool) (e2 Bool) (v1 Bool) (v2 Bool) (c1 Bool) (c2 Bool)) (=> (= (eval e e1 v1 c1) true) (=> (= (eval e e2 v2 c2) true) (= (eval e (ESeq e1 e2) v2 (+ c1 c2)) true))))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (wcet_bound (ESeq e1 e2)) (+ (wcet_bound e1) (wcet_bound e2))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((ec Bool) (et Bool) (ef Bool)) (= (wcet_bound (EIf ec et ef)) (+ (+ (wcet_bound ec) (Nat.max (wcet_bound et) (wcet_bound ef))) 1)))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (v1 Bool) (c1 Bool) (v2 Bool) (c2 Bool)) (=> (= (eval e ex v1 c1) true) (=> (= (eval e ex v2 c2) true) (and (= v1 v2) (= c1 c2)))))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((ec1 Bool) (ec2 Bool) (et1 Bool) (et2 Bool) (ef1 Bool) (ef2 Bool)) (<= (wcet_bound (EIf ec1 (EIf ec2 et1 ef1) (EIf ec2 et2 ef2))) (+ (+ (+ (wcet_bound ec1) (wcet_bound ec2)) (Nat.max (Nat.max (wcet_bound et1) (wcet_bound ef1)) (Nat.max (wcet_bound et2) (wcet_bound ef2)))) 2)))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (wcet_bound (EPlus e1 e2)) (+ (+ (wcet_bound e1) (wcet_bound e2)) 1)))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((e Bool) (n Bool) (v Bool) (c Bool)) (=> (= (eval e (EConst n) v c) true) (= c 1)))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((e Bool) (i Bool) (v Bool) (c Bool)) (=> (= (eval e (EVar i) v c) true) (= c 1)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((e Bool) (n Bool) (v Bool) (c Bool)) (=> (= (eval e (EConst n) v c) true) (= v n)))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (<= (wcet_bound e1) (wcet_bound (EPlus e1 e2))))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (<= (wcet_bound e2) (wcet_bound (EPlus e1 e2))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((e Bool) (e1 Bool) (e2 Bool) (v1 Bool) (v2 Bool) (c1 Bool) (c2 Bool)) (=> (= (eval e e1 v1 c1) true) (=> (= (eval e e2 v2 c2) true) (exists ((c Bool)) (and (= (eval e (ESeq e1 e2) v2 c) true) (= c (+ c1 c2)))))))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((e Bool) (e1 Bool) (e2 Bool) (v Bool) (c Bool)) (=> (= (eval e (EPlus e1 e2) v c) true) (>= c 3)))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (= (wcet_bound (ESeq (ESeq e1 e2) e3)) (+ (+ (wcet_bound e1) (wcet_bound e2)) (wcet_bound e3))))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (>= (wcet_bound (EPlus e1 e2)) 3))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (v Bool) (c Bool)) (=> (= (eval e ex v c) true) (> c 0)))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((ec Bool) (et Bool) (ef Bool)) (>= (wcet_bound (EIf ec et ef)) (+ (wcet_bound ec) 1)))) ; 20
 
 ; 21 (matches Coq: Theorem 21)
-(assert (= true true)) ; 21 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (>= (wcet_bound (ESeq e1 e2)) (wcet_bound e2)))) ; 21
 
 ; 22 (matches Coq: Theorem 22)
-(assert (= true true)) ; 22 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (>= (wcet_bound (ESeq e1 e2)) (wcet_bound e1)))) ; 22
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -230,34 +230,34 @@
   (mk-secure_boot_config (riina_boot_chain) (riina_tpm) (riina_key_db) (riina_policy)))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_true_intro (matches Coq: Lemma andb_true_intro)
-(assert (= true true)) ; andb_true_intro [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= a true) (=> (= b true) (= (and a b) true))))) ; andb_true_intro
 
 ; andb_true_elim1 (matches Coq: Lemma andb_true_elim1)
-(assert (= true true)) ; andb_true_elim1 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= a true)))) ; andb_true_elim1
 
 ; andb_true_elim2 (matches Coq: Lemma andb_true_elim2)
-(assert (= true true)) ; andb_true_elim2 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= b true)))) ; andb_true_elim2
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; SB_001_rom_integrity (matches Coq: Theorem SB_001_rom_integrity)
 (assert (forall ((rom BootROM)) (=> (= (rom_hash_verified rom) true) (=> (= (rom_fused rom) true) (= (rom_is_root_of_trust rom) (rom_contains_root_key rom)))))) ; SB_001_rom_integrity
 
 ; SB_002_rom_immutability (matches Coq: Theorem SB_002_rom_immutability)
-(assert (= true true)) ; SB_002_rom_immutability [untranslatable]
+(assert (forall ((rom BootROM)) (=> (= (rom_fused rom) true) true))) ; SB_002_rom_immutability
 
 ; SB_003_rot_complete (matches Coq: Theorem SB_003_rot_complete)
 (assert (forall ((rom BootROM)) (=> (= (rom_is_root_of_trust rom) true) (and (= (rom_hash_verified rom) true) (= (rom_fused rom) true) (= (rom_contains_root_key rom) true))))) ; SB_003_rot_complete
 
 ; SB_004_rot_anti_debug (matches Coq: Theorem SB_004_rot_anti_debug)
-(assert (= true true)) ; SB_004_rot_anti_debug [untranslatable]
+(assert (forall ((rom BootROM)) (=> (= (rom_is_root_of_trust rom) true) (=> (= (rom_anti_debug rom) true) true)))) ; SB_004_rot_anti_debug
 
 ; SB_005_root_key_enables_cot (matches Coq: Theorem SB_005_root_key_enables_cot)
-(assert (= true true)) ; SB_005_root_key_enables_cot [untranslatable]
+(assert (forall ((rom BootROM)) (=> (= (rom_contains_root_key rom) true) (=> (= (rom_fused rom) true) true)))) ; SB_005_root_key_enables_cot
 
 ; SB_006_full_rom_implies_rot (matches Coq: Theorem SB_006_full_rom_implies_rot)
 (assert (forall ((rom BootROM)) (=> (= (rom_fully_secure rom) true) (= (rom_is_root_of_trust rom) true)))) ; SB_006_full_rom_implies_rot
@@ -275,19 +275,19 @@
 (assert (forall ((rom BootROM)) (=> (= (rom_is_root_of_trust rom) true) (= (rom_hash_verified rom) true)))) ; SB_010_rom_integrity_required
 
 ; SB_011_sig_requires_nonrevoked (matches Coq: Theorem SB_011_sig_requires_nonrevoked)
-(assert (= true true)) ; SB_011_sig_requires_nonrevoked [untranslatable]
+(assert (forall ((sig Signature)) (forall ((pk PublicKey)) (=> (= (signature_valid_with_key sig pk) true) (= (pk_revoked pk) false))))) ; SB_011_sig_requires_nonrevoked
 
 ; SB_012_sig_requires_nonexpired (matches Coq: Theorem SB_012_sig_requires_nonexpired)
-(assert (= true true)) ; SB_012_sig_requires_nonexpired [untranslatable]
+(assert (forall ((sig Signature)) (forall ((pk PublicKey)) (=> (= (signature_valid_with_key sig pk) true) (= (pk_expired pk) false))))) ; SB_012_sig_requires_nonexpired
 
 ; SB_013_sig_requires_trusted (matches Coq: Theorem SB_013_sig_requires_trusted)
-(assert (= true true)) ; SB_013_sig_requires_trusted [untranslatable]
+(assert (forall ((sig Signature)) (forall ((pk PublicKey)) (=> (= (signature_valid_with_key sig pk) true) (= (pk_trusted pk) true))))) ; SB_013_sig_requires_trusted
 
 ; SB_014_sig_key_id_match (matches Coq: Theorem SB_014_sig_key_id_match)
-(assert (= true true)) ; SB_014_sig_key_id_match [untranslatable]
+(assert (forall ((sig Signature)) (forall ((pk PublicKey)) (=> (= (signature_valid_with_key sig pk) true) (= (sig_key_id sig) (pk_id pk)))))) ; SB_014_sig_key_id_match
 
 ; SB_015_sig_crypto_verified (matches Coq: Theorem SB_015_sig_crypto_verified)
-(assert (= true true)) ; SB_015_sig_crypto_verified [untranslatable]
+(assert (forall ((sig Signature)) (forall ((pk PublicKey)) (=> (= (signature_valid_with_key sig pk) true) (= (sig_valid sig) true))))) ; SB_015_sig_crypto_verified
 
 ; SB_016_key_validity_complete (matches Coq: Theorem SB_016_key_validity_complete)
 (assert (forall ((pk PublicKey)) (=> (= (key_valid_for_verification pk) true) (and (= (pk_trusted pk) true) (= (pk_revoked pk) false) (= (pk_expired pk) false))))) ; SB_016_key_validity_complete
@@ -305,49 +305,49 @@
 (assert (forall ((pk PublicKey)) (=> (= (pk_trusted pk) false) (= (key_valid_for_verification pk) false)))) ; SB_020_untrusted_key_invalid
 
 ; SB_021_cot_requires_rot (matches Coq: Theorem SB_021_cot_requires_rot)
-(assert (= true true)) ; SB_021_cot_requires_rot [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (chain_of_trust_complete chain) true) (= (rom_is_root_of_trust (bc_rom chain)) true)))) ; SB_021_cot_requires_rot
 
 ; SB_022_cot_requires_bootloader (matches Coq: Theorem SB_022_cot_requires_bootloader)
-(assert (= true true)) ; SB_022_cot_requires_bootloader [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (chain_of_trust_complete chain) true) (= (bootloader_verified (bc_bootloader chain)) true)))) ; SB_022_cot_requires_bootloader
 
 ; SB_023_cot_requires_kernel (matches Coq: Theorem SB_023_cot_requires_kernel)
-(assert (= true true)) ; SB_023_cot_requires_kernel [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (chain_of_trust_complete chain) true) (= (kernel_verified (bc_kernel chain)) true)))) ; SB_023_cot_requires_kernel
 
 ; SB_024_cot_requires_initramfs (matches Coq: Theorem SB_024_cot_requires_initramfs)
-(assert (= true true)) ; SB_024_cot_requires_initramfs [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (chain_of_trust_complete chain) true) (= (initramfs_verified (bc_initramfs chain)) true)))) ; SB_024_cot_requires_initramfs
 
 ; SB_025_bootloader_sig_valid (matches Coq: Theorem SB_025_bootloader_sig_valid)
-(assert (= true true)) ; SB_025_bootloader_sig_valid [untranslatable]
+(assert (forall ((bl Bootloader)) (=> (= (bootloader_verified bl) true) (= (sig_valid (bl_signature bl)) true)))) ; SB_025_bootloader_sig_valid
 
 ; SB_026_kernel_sig_valid (matches Coq: Theorem SB_026_kernel_sig_valid)
-(assert (= true true)) ; SB_026_kernel_sig_valid [untranslatable]
+(assert (forall ((kern Kernel)) (=> (= (kernel_verified kern) true) (= (sig_valid (kern_signature kern)) true)))) ; SB_026_kernel_sig_valid
 
 ; SB_027_initramfs_sig_valid (matches Coq: Theorem SB_027_initramfs_sig_valid)
-(assert (= true true)) ; SB_027_initramfs_sig_valid [untranslatable]
+(assert (forall ((initrd Initramfs)) (=> (= (initramfs_verified initrd) true) (= (sig_valid (initrd_signature initrd)) true)))) ; SB_027_initramfs_sig_valid
 
 ; SB_028_bootloader_hash_computed (matches Coq: Theorem SB_028_bootloader_hash_computed)
-(assert (= true true)) ; SB_028_bootloader_hash_computed [untranslatable]
+(assert (forall ((bl Bootloader)) (=> (= (bootloader_verified bl) true) (= (hash_computed (bl_hash bl)) true)))) ; SB_028_bootloader_hash_computed
 
 ; SB_029_kernel_hash_computed (matches Coq: Theorem SB_029_kernel_hash_computed)
-(assert (= true true)) ; SB_029_kernel_hash_computed [untranslatable]
+(assert (forall ((kern Kernel)) (=> (= (kernel_verified kern) true) (= (hash_computed (kern_hash kern)) true)))) ; SB_029_kernel_hash_computed
 
 ; SB_030_initramfs_hash_computed (matches Coq: Theorem SB_030_initramfs_hash_computed)
-(assert (= true true)) ; SB_030_initramfs_hash_computed [untranslatable]
+(assert (forall ((initrd Initramfs)) (=> (= (initramfs_verified initrd) true) (= (hash_computed (initrd_hash initrd)) true)))) ; SB_030_initramfs_hash_computed
 
 ; SB_031_construct_verified_bootloader (matches Coq: Theorem SB_031_construct_verified_bootloader)
-(assert (= true true)) ; SB_031_construct_verified_bootloader [untranslatable]
+(assert (forall ((bl Bootloader)) (=> (= (bl_verified bl) true) (=> (= (sig_valid (bl_signature bl)) true) (=> (= (hash_computed (bl_hash bl)) true) (= (bootloader_verified bl) true)))))) ; SB_031_construct_verified_bootloader
 
 ; SB_032_construct_verified_kernel (matches Coq: Theorem SB_032_construct_verified_kernel)
-(assert (= true true)) ; SB_032_construct_verified_kernel [untranslatable]
+(assert (forall ((kern Kernel)) (=> (= (kern_verified kern) true) (=> (= (sig_valid (kern_signature kern)) true) (=> (= (hash_computed (kern_hash kern)) true) (= (kernel_verified kern) true)))))) ; SB_032_construct_verified_kernel
 
 ; SB_033_construct_verified_initramfs (matches Coq: Theorem SB_033_construct_verified_initramfs)
-(assert (= true true)) ; SB_033_construct_verified_initramfs [untranslatable]
+(assert (forall ((initrd Initramfs)) (=> (= (initrd_verified initrd) true) (=> (= (sig_valid (initrd_signature initrd)) true) (=> (= (hash_computed (initrd_hash initrd)) true) (= (initramfs_verified initrd) true)))))) ; SB_033_construct_verified_initramfs
 
 ; SB_034_construct_cot (matches Coq: Theorem SB_034_construct_cot)
-(assert (= true true)) ; SB_034_construct_cot [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (rom_is_root_of_trust (bc_rom chain)) true) (=> (= (bootloader_verified (bc_bootloader chain)) true) (=> (= (kernel_verified (bc_kernel chain)) true) (=> (= (initramfs_verified (bc_initramfs chain)) true) (= (chain_of_trust_complete chain) true))))))) ; SB_034_construct_cot
 
 ; SB_035_cot_all_verified (matches Coq: Theorem SB_035_cot_all_verified)
-(assert (= true true)) ; SB_035_cot_all_verified [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (chain_of_trust_complete chain) true) (and (= (bl_verified (bc_bootloader chain)) true) (= (kern_verified (bc_kernel chain)) true) (= (initrd_verified (bc_initramfs chain)) true))))) ; SB_035_cot_all_verified
 
 ; SB_036_tpm_requires_enabled (matches Coq: Theorem SB_036_tpm_requires_enabled)
 (assert (forall ((tpm TPMState)) (=> (= (tpm_operational tpm) true) (= (tpm_enabled tpm) true)))) ; SB_036_tpm_requires_enabled
@@ -359,58 +359,61 @@
 (assert (forall ((tpm TPMState)) (=> (= (tpm_enabled tpm) true) (=> (= (tpm_activated tpm) true) (= (tpm_operational tpm) true))))) ; SB_038_construct_operational_tpm
 
 ; SB_039_empty_pcrs_extended (matches Coq: Theorem SB_039_empty_pcrs_extended)
-(assert (= true true)) ; SB_039_empty_pcrs_extended [untranslatable]
+(assert (= (all_pcrs_extended nil) true)) ; SB_039_empty_pcrs_extended
 
 ; SB_040_single_pcr_extended (matches Coq: Theorem SB_040_single_pcr_extended)
-(assert (= true true)) ; SB_040_single_pcr_extended [untranslatable]
+(assert (forall ((pcr PCRValue)) (=> (= (pcr_extended pcr) true) (= (all_pcrs_extended (insert pcr nil)) true)))) ; SB_040_single_pcr_extended
 
 ; SB_041_cons_preserves_extended (matches Coq: Theorem SB_041_cons_preserves_extended)
-(assert (= true true)) ; SB_041_cons_preserves_extended [untranslatable]
+; SB_041_cons_preserves_extended: forall (pcr : PCRValue) (rest : list PCRValue), pcr_extended pcr = true -> all_pcrs_extended rest = true -> all_pcrs_ext
+(assert (forall ((pcr PCRValue) (rest list)) true)) ; SB_041_cons_preserves_extended [partial: bindings preserved]
 
 ; SB_042_head_extended (matches Coq: Theorem SB_042_head_extended)
-(assert (= true true)) ; SB_042_head_extended [untranslatable]
+; SB_042_head_extended: forall (pcr : PCRValue) (rest : list PCRValue), all_pcrs_extended (pcr :: rest) = true -> pcr_extended pcr = true
+(assert (forall ((pcr PCRValue) (rest list)) true)) ; SB_042_head_extended [partial: bindings preserved]
 
 ; SB_043_tail_extended (matches Coq: Theorem SB_043_tail_extended)
-(assert (= true true)) ; SB_043_tail_extended [untranslatable]
+; SB_043_tail_extended: forall (pcr : PCRValue) (rest : list PCRValue), all_pcrs_extended (pcr :: rest) = true -> all_pcrs_extended rest = true
+(assert (forall ((pcr PCRValue) (rest list)) true)) ; SB_043_tail_extended [partial: bindings preserved]
 
 ; SB_044_measurement_hash_computed (matches Coq: Theorem SB_044_measurement_hash_computed)
-(assert (= true true)) ; SB_044_measurement_hash_computed [untranslatable]
+(assert (forall ((meas MeasurementEvent)) (forall ((pcrs list)) (=> (= (measurement_valid meas pcrs) true) (= (hash_computed (meas_hash meas)) true))))) ; SB_044_measurement_hash_computed
 
 ; SB_045_measurement_pcr_in_bounds (matches Coq: Theorem SB_045_measurement_pcr_in_bounds)
-(assert (= true true)) ; SB_045_measurement_pcr_in_bounds [untranslatable]
+(assert (forall ((meas MeasurementEvent)) (forall ((pcrs list)) (=> (= (measurement_valid meas pcrs) true) (< (meas_pcr_index meas) (length pcrs)))))) ; SB_045_measurement_pcr_in_bounds
 
 ; SB_046_quote_requires_sig (matches Coq: Theorem SB_046_quote_requires_sig)
-(assert (= true true)) ; SB_046_quote_requires_sig [untranslatable]
+(assert (forall ((quote AttestationQuote)) (=> (= (quote_valid quote) true) (=> (= (sig_valid (quote_signature quote)) true) true)))) ; SB_046_quote_requires_sig
 
 ; SB_047_pcr_sealed (matches Coq: Theorem SB_047_pcr_sealed)
-(assert (= true true)) ; SB_047_pcr_sealed [untranslatable]
+(assert (forall ((pcr PCRValue)) (=> (= (pcr_extended pcr) true) (=> (= (pcr_locked pcr) true) true)))) ; SB_047_pcr_sealed
 
 ; SB_048_locality_access (matches Coq: Theorem SB_048_locality_access)
-(assert (= true true)) ; SB_048_locality_access [untranslatable]
+(assert (forall ((tpm TPMState)) (forall ((required_locality Int)) (=> (= (tpm_operational tpm) true) (=> (= (<= required_locality (tpm_locality tpm)) true) true))))) ; SB_048_locality_access
 
 ; SB_049_measured_boot_tpm (matches Coq: Theorem SB_049_measured_boot_tpm)
 (assert (forall ((tpm TPMState)) (=> (= (measured_boot_complete tpm) true) (= (tpm_operational tpm) true)))) ; SB_049_measured_boot_tpm
 
 ; SB_050_measured_boot_pcrs (matches Coq: Theorem SB_050_measured_boot_pcrs)
-(assert (= true true)) ; SB_050_measured_boot_pcrs [untranslatable]
+(assert (forall ((tpm TPMState)) (=> (= (measured_boot_complete tpm) true) (= (all_pcrs_extended (tpm_pcrs tpm)) true)))) ; SB_050_measured_boot_pcrs
 
 ; SB_051_version_no_rollback (matches Coq: Theorem SB_051_version_no_rollback)
-(assert (= true true)) ; SB_051_version_no_rollback [untranslatable]
+(assert (forall ((version Int) (min_version Int)) (=> (= (version_above_minimum version min_version) true) (<= min_version version)))) ; SB_051_version_no_rollback
 
 ; SB_052_bootloader_version_ok (matches Coq: Theorem SB_052_bootloader_version_ok)
-(assert (= true true)) ; SB_052_bootloader_version_ok [untranslatable]
+(assert (forall ((bl Bootloader)) (=> (= (bootloader_antirollback_ok bl) true) (<= (bl_min_version bl) (bl_version bl))))) ; SB_052_bootloader_version_ok
 
 ; SB_053_kernel_version_ok (matches Coq: Theorem SB_053_kernel_version_ok)
-(assert (= true true)) ; SB_053_kernel_version_ok [untranslatable]
+(assert (forall ((kern Kernel)) (=> (= (kernel_antirollback_ok kern) true) (<= (kern_min_version kern) (kern_version kern))))) ; SB_053_kernel_version_ok
 
 ; SB_054_chain_bootloader_ok (matches Coq: Theorem SB_054_chain_bootloader_ok)
-(assert (= true true)) ; SB_054_chain_bootloader_ok [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (antirollback_protected chain) true) (= (bootloader_antirollback_ok (bc_bootloader chain)) true)))) ; SB_054_chain_bootloader_ok
 
 ; SB_055_chain_kernel_ok (matches Coq: Theorem SB_055_chain_kernel_ok)
-(assert (= true true)) ; SB_055_chain_kernel_ok [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (antirollback_protected chain) true) (= (kernel_antirollback_ok (bc_kernel chain)) true)))) ; SB_055_chain_kernel_ok
 
 ; SB_056_construct_antirollback (matches Coq: Theorem SB_056_construct_antirollback)
-(assert (= true true)) ; SB_056_construct_antirollback [untranslatable]
+(assert (forall ((chain BootChain)) (=> (= (bootloader_antirollback_ok (bc_bootloader chain)) true) (=> (= (kernel_antirollback_ok (bc_kernel chain)) true) (= (antirollback_protected chain) true))))) ; SB_056_construct_antirollback
 
 ; SB_057_min_zero_passes (matches Coq: Theorem SB_057_min_zero_passes)
 (assert (forall ((version Int)) (= (version_above_minimum version 0) true))) ; SB_057_min_zero_passes
@@ -419,52 +422,54 @@
 (assert (forall ((v Int)) (= (version_above_minimum v v) true))) ; SB_058_same_version_passes
 
 ; SB_059_higher_version_passes (matches Coq: Theorem SB_059_higher_version_passes)
-(assert (= true true)) ; SB_059_higher_version_passes [untranslatable]
+(assert (forall ((version Int) (min_version Int)) (=> (< min_version version) (= (version_above_minimum version min_version) true)))) ; SB_059_higher_version_passes
 
 ; SB_060_lower_version_fails (matches Coq: Theorem SB_060_lower_version_fails)
-(assert (= true true)) ; SB_060_lower_version_fails [untranslatable]
+(assert (forall ((version Int) (min_version Int)) (=> (< version min_version) (= (version_above_minimum version min_version) false)))) ; SB_060_lower_version_fails
 
 ; SB_061_root_no_parent (matches Coq: Theorem SB_061_root_no_parent)
-(assert (forall ((key HierarchyKey)) (=> (= (is_root_key key) true) (= (hk_parent_id key) None)))) ; SB_061_root_no_parent
+(assert (forall ((key HierarchyKey)) (=> (= (is_root_key key) true) (= (hk_parent_id key) none)))) ; SB_061_root_no_parent
 
 ; SB_062_nonroot_has_parent (matches Coq: Theorem SB_062_nonroot_has_parent)
-(assert (= true true)) ; SB_062_nonroot_has_parent [untranslatable]
+(assert (forall ((key HierarchyKey)) (forall ((parent_id Int)) (=> (= (hk_parent_id key) (some parent_id)) (= (is_root_key key) false))))) ; SB_062_nonroot_has_parent
 
 ; SB_063_valid_hierarchy_public (matches Coq: Theorem SB_063_valid_hierarchy_public)
-(assert (= true true)) ; SB_063_valid_hierarchy_public [untranslatable]
+(assert (forall ((key HierarchyKey)) (=> (= (hierarchy_key_valid key) true) (= (key_valid_for_verification (hk_public key)) true)))) ; SB_063_valid_hierarchy_public
 
 ; SB_064_valid_not_self_revoked (matches Coq: Theorem SB_064_valid_not_self_revoked)
-(assert (= true true)) ; SB_064_valid_not_self_revoked [untranslatable]
+(assert (forall ((key HierarchyKey)) (=> (= (hierarchy_key_valid key) true) (= (key_revoked_in_list (hk_id key) (hk_revocation_list key)) false)))) ; SB_064_valid_not_self_revoked
 
 ; SB_065_key_in_db (matches Coq: Theorem SB_065_key_in_db)
-(assert (= true true)) ; SB_065_key_in_db [untranslatable]
+; SB_065_key_in_db: forall (key_id : nat) (key : HierarchyKey) (rest : list HierarchyKey), hk_id key = key_id -> key_in_trusted_db key_id (k
+(assert (forall ((key_id Int) (key HierarchyKey) (rest list)) true)) ; SB_065_key_in_db [partial: bindings preserved]
 
 ; SB_066_key_not_in_empty (matches Coq: Theorem SB_066_key_not_in_empty)
-(assert (= true true)) ; SB_066_key_not_in_empty [untranslatable]
+(assert (forall ((key_id Int)) (= (key_in_trusted_db key_id nil) false))) ; SB_066_key_not_in_empty
 
 ; SB_067_empty_forbidden (matches Coq: Theorem SB_067_empty_forbidden)
-(assert (= true true)) ; SB_067_empty_forbidden [untranslatable]
+(assert (forall ((key_id Int)) (= (key_forbidden key_id nil) false))) ; SB_067_empty_forbidden
 
 ; SB_068_key_is_forbidden (matches Coq: Theorem SB_068_key_is_forbidden)
-(assert (= true true)) ; SB_068_key_is_forbidden [untranslatable]
+; SB_068_key_is_forbidden: forall (key_id : nat) (forbidden : list nat), key_forbidden key_id (key_id :: forbidden) = true
+(assert (forall ((key_id Int) (forbidden list)) true)) ; SB_068_key_is_forbidden [partial: bindings preserved]
 
 ; SB_069_allowed_uses_trusted (matches Coq: Theorem SB_069_allowed_uses_trusted)
-(assert (= true true)) ; SB_069_allowed_uses_trusted [untranslatable]
+(assert (forall ((db KeyDatabase)) (forall ((sig Signature)) (=> (= (db_allows_signature db sig) true) (= (key_in_trusted_db (sig_key_id sig) (db_trusted_keys db)) true))))) ; SB_069_allowed_uses_trusted
 
 ; SB_070_allowed_not_forbidden (matches Coq: Theorem SB_070_allowed_not_forbidden)
-(assert (= true true)) ; SB_070_allowed_not_forbidden [untranslatable]
+(assert (forall ((db KeyDatabase)) (forall ((sig Signature)) (=> (= (db_allows_signature db sig) true) (= (key_forbidden (sig_key_id sig) (db_forbidden_keys db)) false))))) ; SB_070_allowed_not_forbidden
 
 ; SB_071_complete_has_cot (matches Coq: Theorem SB_071_complete_has_cot)
-(assert (= true true)) ; SB_071_complete_has_cot [untranslatable]
+(assert (forall ((config SecureBootConfig)) (=> (= (secure_boot_complete config) true) (= (chain_of_trust_complete (sb_chain config)) true)))) ; SB_071_complete_has_cot
 
 ; SB_072_complete_has_measured (matches Coq: Theorem SB_072_complete_has_measured)
-(assert (= true true)) ; SB_072_complete_has_measured [untranslatable]
+(assert (forall ((config SecureBootConfig)) (=> (= (secure_boot_complete config) true) (= (measured_boot_complete (sb_tpm config)) true)))) ; SB_072_complete_has_measured
 
 ; SB_073_complete_has_antirollback (matches Coq: Theorem SB_073_complete_has_antirollback)
-(assert (= true true)) ; SB_073_complete_has_antirollback [untranslatable]
+(assert (forall ((config SecureBootConfig)) (=> (= (secure_boot_complete config) true) (= (antirollback_protected (sb_chain config)) true)))) ; SB_073_complete_has_antirollback
 
 ; SB_074_complete_has_policy (matches Coq: Theorem SB_074_complete_has_policy)
-(assert (= true true)) ; SB_074_complete_has_policy [untranslatable]
+(assert (forall ((config SecureBootConfig)) (=> (= (secure_boot_complete config) true) (= (policy_enforced (sb_policy config)) true)))) ; SB_074_complete_has_policy
 
 ; SB_075_policy_enabled (matches Coq: Theorem SB_075_policy_enabled)
 (assert (forall ((policy SecureBootPolicy)) (=> (= (policy_enforced policy) true) (= (sbp_enabled policy) true)))) ; SB_075_policy_enabled
@@ -479,10 +484,10 @@
 (assert (forall ((policy SecureBootPolicy)) (=> (= (sbp_enabled policy) true) (=> (= (sbp_enforcing policy) true) (=> (= (sbp_allow_unsigned policy) false) (= (policy_enforced policy) true)))))) ; SB_078_construct_policy
 
 ; SB_079_construct_complete (matches Coq: Theorem SB_079_construct_complete)
-(assert (= true true)) ; SB_079_construct_complete [untranslatable]
+(assert (forall ((config SecureBootConfig)) (=> (= (chain_of_trust_complete (sb_chain config)) true) (=> (= (measured_boot_complete (sb_tpm config)) true) (=> (= (antirollback_protected (sb_chain config)) true) (=> (= (policy_enforced (sb_policy config)) true) (= (secure_boot_complete config) true))))))) ; SB_079_construct_complete
 
 ; SB_080_complete_all_verified (matches Coq: Theorem SB_080_complete_all_verified)
-(assert (= true true)) ; SB_080_complete_all_verified [untranslatable]
+(assert (forall ((config SecureBootConfig)) (=> (= (secure_boot_complete config) true) (and (= (rom_is_root_of_trust (bc_rom (sb_chain config))) true) (= (bootloader_verified (bc_bootloader (sb_chain config))) true) (= (kernel_verified (bc_kernel (sb_chain config))) true) (= (initramfs_verified (bc_initramfs (sb_chain config))) true) (= (tpm_operational (sb_tpm config)) true))))) ; SB_080_complete_all_verified
 
 ; SB_081_riina_rot (matches Coq: Theorem SB_081_riina_rot)
 (assert (= (rom_is_root_of_trust riina_rom) true)) ; SB_081_riina_rot

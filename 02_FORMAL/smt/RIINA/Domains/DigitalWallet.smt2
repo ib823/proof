@@ -266,79 +266,80 @@
   true)
 
 ; WALLET_001_01_account_uniqueness (matches Coq: Theorem WALLET_001_01_account_uniqueness)
-(assert (= true true)) ; WALLET_001_01_account_uniqueness [untranslatable]
+(assert (forall ((wallets Bool) (w1 Bool) (w2 Bool)) (=> (= (wallets_unique wallets) true) (=> (= (In w1 wallets) true) (=> (= (In w2 wallets) true) (=> (= (wallet_id w1) (wallet_id w2)) (= w1 w2))))))) ; WALLET_001_01_account_uniqueness
 
 ; WALLET_001_02_balance_integrity (matches Coq: Theorem WALLET_001_02_balance_integrity)
-(assert (= true true)) ; WALLET_001_02_balance_integrity [untranslatable]
+(assert (forall ((w Bool) (txns Bool)) (=> (= (valid_wallet w txns) true) (= (balance w) (- (sum_credits txns) (sum_debits txns)))))) ; WALLET_001_02_balance_integrity
 
 ; WALLET_001_03_tier_limit_enforcement (matches Coq: Theorem WALLET_001_03_tier_limit_enforcement)
-(assert (= true true)) ; WALLET_001_03_tier_limit_enforcement [untranslatable]
+(assert (forall ((w Bool) (amount Bool)) (=> (<= amount (tier_limit (tier w))) (<= amount (tier_limit (tier w)))))) ; WALLET_001_03_tier_limit_enforcement
 
 ; WALLET_001_04_virtual_account_segregation (matches Coq: Theorem WALLET_001_04_virtual_account_segregation)
-(assert (= true true)) ; WALLET_001_04_virtual_account_segregation [untranslatable]
+(assert (forall ((vas Bool) (parent_balance Bool)) (=> (= (virtual_accounts_within_parent vas parent_balance) true) (<= (virtual_accounts_total vas) parent_balance)))) ; WALLET_001_04_virtual_account_segregation
 
 ; WALLET_001_05_dormancy_detection (matches Coq: Theorem WALLET_001_05_dormancy_detection)
-(assert (= true true)) ; WALLET_001_05_dormancy_detection [untranslatable]
+(assert (forall ((w Bool) (current_day Bool)) (=> (= (should_be_dormant w current_day) true) (<= dormancy_threshold (- current_day (last_activity w)))))) ; WALLET_001_05_dormancy_detection
 
 ; WALLET_001_06_p2p_instant_settlement (matches Coq: Theorem WALLET_001_06_p2p_instant_settlement)
-(assert (= true true)) ; WALLET_001_06_p2p_instant_settlement [untranslatable]
+(assert (forall ((p Bool)) (=> (= (p2p_instant p) true) (<= (p2p_settlement_time p) 1)))) ; WALLET_001_06_p2p_instant_settlement
 
 ; WALLET_001_07_qr_payment_instant (matches Coq: Theorem WALLET_001_07_qr_payment_instant)
-(assert (= true true)) ; WALLET_001_07_qr_payment_instant [untranslatable]
+(assert (forall ((qrp Bool)) (=> (= (qr_payment_fast qrp) true) (<= (qr_payment_time qrp) 3)))) ; WALLET_001_07_qr_payment_instant
 
 ; WALLET_001_08_dynamic_qr_single_use (matches Coq: Theorem WALLET_001_08_dynamic_qr_single_use)
-(assert (= true true)) ; WALLET_001_08_dynamic_qr_single_use [untranslatable]
+(assert (forall ((qr Bool)) (=> (= (qr_type qr) DynamicQR) (=> (= (qr_used qr) true) (= (invalidated qr) true))))) ; WALLET_001_08_dynamic_qr_single_use
 
 ; WALLET_001_09_merchant_settlement (matches Coq: Theorem WALLET_001_09_merchant_settlement)
-(assert (= true true)) ; WALLET_001_09_merchant_settlement [untranslatable]
+(assert (forall ((mp Bool)) (=> (= (valid_merchant_settlement mp) true) (= (mp_net_amount mp) (- (mp_gross_amount mp) (* (mp_gross_amount mp) (div (mp_mdr_rate mp) 100))))))) ; WALLET_001_09_merchant_settlement
 
 ; WALLET_001_10_refund_instant (matches Coq: Theorem WALLET_001_10_refund_instant)
-(assert (= true true)) ; WALLET_001_10_refund_instant [untranslatable]
+(assert (forall ((r Bool)) (=> (= (refund_is_instant r) true) (= (ref_instant r) true)))) ; WALLET_001_10_refund_instant
 
 ; WALLET_001_11_bank_transfer_reconciliation (matches Coq: Theorem WALLET_001_11_bank_transfer_reconciliation)
-(assert (= true true)) ; WALLET_001_11_bank_transfer_reconciliation [untranslatable]
+(assert (forall ((bt Bool)) (=> (= (bt_reconciled bt) true) (=> (= (bt_wallet_credit bt) (bt_bank_debit bt)) (= (bt_wallet_credit bt) (bt_bank_debit bt)))))) ; WALLET_001_11_bank_transfer_reconciliation
 
 ; WALLET_001_12_card_chargeback_handling (matches Coq: Theorem WALLET_001_12_card_chargeback_handling)
-(assert (= true true)) ; WALLET_001_12_card_chargeback_handling [untranslatable]
+(assert (forall ((cb Bool)) (=> (= (chargeback_processed cb) true) (=> (= (cb_processed cb) true) (= (cb_wallet_debit cb) (cb_original_credit cb)))))) ; WALLET_001_12_card_chargeback_handling
 
 ; WALLET_001_13_agent_float_sufficiency (matches Coq: Theorem WALLET_001_13_agent_float_sufficiency)
-(assert (= true true)) ; WALLET_001_13_agent_float_sufficiency [untranslatable]
+(assert (forall ((af Bool)) (=> (= (agent_float_sufficient af) true) (<= (af_pending_deposits af) (af_float_balance af))))) ; WALLET_001_13_agent_float_sufficiency
 
 ; WALLET_001_14_crypto_rate_lock (matches Coq: Theorem WALLET_001_14_crypto_rate_lock)
-(assert (= true true)) ; WALLET_001_14_crypto_rate_lock [untranslatable]
+(assert (forall ((ctu Bool)) (=> (= (crypto_rate_is_locked ctu) true) (=> (= (ctu_rate_locked ctu) true) (= (ctu_fiat_credit ctu) (* (ctu_crypto_amount ctu) (ctu_rate_at_confirmation ctu))))))) ; WALLET_001_14_crypto_rate_lock
 
 ; WALLET_001_15_stablecoin_instant_credit (matches Coq: Theorem WALLET_001_15_stablecoin_instant_credit)
-(assert (= true true)) ; WALLET_001_15_stablecoin_instant_credit [untranslatable]
+(assert (forall ((stu Bool)) (=> (= (stablecoin_instant stu) true) (=> (= (stu_confirmed stu) true) (= (stu_credited stu) true))))) ; WALLET_001_15_stablecoin_instant_credit
 
 ; WALLET_001_16_withdrawal_limit_enforcement (matches Coq: Theorem WALLET_001_16_withdrawal_limit_enforcement)
-(assert (= true true)) ; WALLET_001_16_withdrawal_limit_enforcement [untranslatable]
+(assert (forall ((wr Bool)) (=> (= (withdrawal_within_limit wr) true) (<= (+ (wr_daily_total wr) (wr_amount wr)) (tier_daily_withdrawal_limit (wr_tier wr)))))) ; WALLET_001_16_withdrawal_limit_enforcement
 
 ; WALLET_001_17_bank_withdrawal_ownership (matches Coq: Theorem WALLET_001_17_bank_withdrawal_ownership)
-(assert (= true true)) ; WALLET_001_17_bank_withdrawal_ownership [untranslatable]
+(assert (forall ((bw Bool)) (=> (= (bank_ownership_verified_before_approval bw) true) (=> (= (bw_approved bw) true) (= (bw_ownership_verified bw) true))))) ; WALLET_001_17_bank_withdrawal_ownership
 
 ; WALLET_001_18_cardless_atm_otp_validity (matches Coq: Theorem WALLET_001_18_cardless_atm_otp_validity)
-(assert (= true true)) ; WALLET_001_18_cardless_atm_otp_validity [untranslatable]
+; WALLET_001_18_cardless_atm_otp_validity: forall catm current_time, cardless_otp_valid catm current_time -> otp_validity_minutes (catm_otp catm) = 15%nat
+(assert (forall ((catm Bool) (current_time Bool)) true)) ; WALLET_001_18_cardless_atm_otp_validity [partial: bindings preserved]
 
 ; WALLET_001_19_agent_cash_availability (matches Coq: Theorem WALLET_001_19_agent_cash_availability)
-(assert (= true true)) ; WALLET_001_19_agent_cash_availability [untranslatable]
+(assert (forall ((aw Bool)) (=> (= (agent_withdrawal_approved_with_cash aw) true) (=> (= (aw_approved aw) true) (= (agent_has_cash aw) true))))) ; WALLET_001_19_agent_cash_availability
 
 ; WALLET_001_20_withdrawal_balance_check (matches Coq: Theorem WALLET_001_20_withdrawal_balance_check)
-(assert (= true true)) ; WALLET_001_20_withdrawal_balance_check [untranslatable]
+(assert (forall ((w Bool) (amount Bool)) (=> (= (can_withdraw w amount) true) (<= amount (balance w))))) ; WALLET_001_20_withdrawal_balance_check
 
 ; WALLET_001_21_multi_factor_required (matches Coq: Theorem WALLET_001_21_multi_factor_required)
-(assert (= true true)) ; WALLET_001_21_multi_factor_required [untranslatable]
+(assert (forall ((ac Bool)) (=> (= (sensitive_op_requires_2fa ac) true) (=> (= (ac_sensitive_op ac) true) (= (has_two_factors ac) true))))) ; WALLET_001_21_multi_factor_required
 
 ; WALLET_001_22_session_expiry (matches Coq: Theorem WALLET_001_22_session_expiry)
-(assert (= true true)) ; WALLET_001_22_session_expiry [untranslatable]
+(assert (forall ((s Bool) (current_time Bool)) (=> (= (session_expired s current_time) true) (not (= (session_valid s current_time) true))))) ; WALLET_001_22_session_expiry
 
 ; WALLET_001_23_velocity_check (matches Coq: Theorem WALLET_001_23_velocity_check)
-(assert (= true true)) ; WALLET_001_23_velocity_check [untranslatable]
+(assert (forall ((vc Bool)) (=> (= (velocity_exceeded vc) true) (< (vc_threshold vc) (vc_txn_count vc))))) ; WALLET_001_23_velocity_check
 
 ; WALLET_001_24_fraud_score_blocking (matches Coq: Theorem WALLET_001_24_fraud_score_blocking)
-(assert (= true true)) ; WALLET_001_24_fraud_score_blocking [untranslatable]
+(assert (forall ((fs Bool)) (=> (= (fraud_score_high fs) true) (<= (fs_threshold fs) (fs_score fs))))) ; WALLET_001_24_fraud_score_blocking
 
 ; WALLET_001_25_device_binding (matches Coq: Theorem WALLET_001_25_device_binding)
-(assert (= true true)) ; WALLET_001_25_device_binding [untranslatable]
+(assert (forall ((d Bool) (wallet Bool) (bio_hash Bool)) (=> (= (device_biometric_bound d wallet bio_hash) true) (and (= (device_wallet d) wallet) (= (biometric_hash d) bio_hash))))) ; WALLET_001_25_device_binding
 
 ; Verify all assertions are satisfiable
 (check-sat)

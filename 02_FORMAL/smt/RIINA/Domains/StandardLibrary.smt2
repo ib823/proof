@@ -225,139 +225,143 @@
 (define-fun label_meet () Label true)
 
 ; P_001_01 (matches Coq: Theorem P_001_01)
-(assert (= true true)) ; P_001_01 [untranslatable]
+; P_001_01: forall (A B C : Type) (x : A) (f : A -> Option B) (g : B -> Option C) (m : Option A), option_bind (option_return x) f = 
+(assert (forall ((A Type) (B Type) (C Type) (x A) (f A) (g B) (m Option)) true)) ; P_001_01 [partial: bindings preserved]
 
 ; P_001_02 (matches Coq: Theorem P_001_02)
-(assert (= true true)) ; P_001_02 [untranslatable]
+; P_001_02: forall (T U V E : Type) (x : T) (f : T -> Result U E) (g : U -> Result V E) (m : Result T E), result_bind (result_return
+(assert (forall ((T Type) (U Type) (V Type) (E Type) (x T) (f T) (g U) (m Result)) true)) ; P_001_02 [partial: bindings preserved]
 
 ; P_001_03 (matches Coq: Theorem P_001_03)
-(assert (= true true)) ; P_001_03 [untranslatable]
+(assert (forall ((A Type) (B Type) (E Type) (e E)) (and (forall ((h A)) (= (option_bind (@None A) h) (@None B))) (forall ((h A)) (= (result_bind (@Err A E e) h) (@Err B E e)))))) ; P_001_03
 
 ; rev_app_single (matches Coq: Lemma rev_app_single)
-(assert (= true true)) ; rev_app_single [untranslatable]
+; rev_app_single: forall {A : Type} (l : list A) (x : A), rev (l ++ [x]) = x :: rev l
+(assert true) ; rev_app_single [Coq-only]
 
 ; P_001_04 (matches Coq: Theorem P_001_04)
-(assert (= true true)) ; P_001_04 [untranslatable]
+(assert (forall ((A Type)) (forall ((v Vec A)) (forall ((x A)) (=> (> (vlen v) 0) (exists ((v' Bool)) (and (= (vec_pop (vec_push v x)) (some (mk-tuple x v'))) (= (vdata v') (vdata v)) (= (vlen v') (vlen v))))))))) ; P_001_04
 
 ; P_001_05 (matches Coq: Theorem P_001_05)
-(assert (= true true)) ; P_001_05 [untranslatable]
+(assert (forall ((A Type)) (forall ((v Vec A)) (forall ((i Int)) (and (=> (= (vec_in_bounds v i) true) (< i (vlen v))) (=> (< i (vlen v)) (= (vec_in_bounds v i) true))))))) ; P_001_05
 
 ; P_001_06 (matches Coq: Theorem P_001_06)
-(assert (= true true)) ; P_001_06 [untranslatable]
+(assert (forall ((K Type) (V Type) (eq K) (m HashMap) (k K) (v V)) (=> (forall ((k' Bool)) (and (=> (= (eq k k') true) (= k k')) (=> (= k k') (= (eq k k') true)))) (= (hashmap_get eq (hashmap_insert eq m k v) k) (some v))))) ; P_001_06
 
 ; P_001_07 (matches Coq: Theorem P_001_07)
-(assert (= true true)) ; P_001_07 [untranslatable]
+(assert (forall ((h SipHashState)) (= (siphash_collision_resistant h) true))) ; P_001_07
 
 ; P_001_08 (matches Coq: Theorem P_001_08)
-(assert (= true true)) ; P_001_08 [untranslatable]
+(assert (forall ((K Type) (V Type) (lt K) (t BTree) (k K) (v V)) (=> (forall ((a Bool) (b Bool)) (or (= (lt a b) true) (= a b) (= (lt b a) true))) (=> (= (btree_ordered lt t) true) (= (btree_ordered lt (btree_insert lt t k v)) true))))) ; P_001_08
 
 ; P_001_09 (matches Coq: Theorem P_001_09)
-(assert (= true true)) ; P_001_09 [untranslatable]
+(assert (forall ((A Type)) (forall ((zero A)) (forall ((sv SecureVec)) (let ((dropped (secure_vec_drop zero sv))) (=> (and (= (svec_zeroized dropped) true) (forall ((x Bool)) (= (In x (svec_data dropped)) true))) (= x zero))))))) ; P_001_09
 
 ; P_001_10 (matches Coq: Theorem P_001_10)
-(assert (= true true)) ; P_001_10 [untranslatable]
+(assert (forall ((bytes list)) (=> (= (all_valid_utf8 bytes) true) (= (str_is_utf8 (string_from_bytes bytes)) true)))) ; P_001_10
 
 ; P_001_11 (matches Coq: Theorem P_001_11)
-(assert (= true true)) ; P_001_11 [untranslatable]
+(assert (forall ((s RiinaString)) (forall ((start Int) (len Int) (s' RiinaString)) (=> (= (string_slice s start len) (some s')) (and (<= start (length (str_bytes s))) (<= (+ start len) (length (str_bytes s)))))))) ; P_001_11
 
 ; P_001_12 (matches Coq: Theorem P_001_12)
-(assert (= true true)) ; P_001_12 [untranslatable]
+(assert (forall ((ss SecureString)) (let ((dropped (secure_string_drop ss))) (=> (and (= (sstr_zeroized dropped) true) (forall ((x Bool)) (= (In x (sstr_data dropped)) true))) (= x 0))))) ; P_001_12
 
 ; P_001_13 (matches Coq: Theorem P_001_13)
-(assert (= true true)) ; P_001_13 [untranslatable]
+(assert (forall ((ss SecureString)) (=> (= (sstr_redacted ss) true) (= (secure_string_debug ss) (insert 42 (insert 42 (insert 42 nil))))))) ; P_001_13
 
 ; P_001_14 (matches Coq: Theorem P_001_14)
-(assert (= true true)) ; P_001_14 [untranslatable]
+(assert (forall ((rr ReadResult)) (<= (read_count rr) (read_buffer_size rr)))) ; P_001_14
 
 ; P_001_15 (matches Coq: Theorem P_001_15)
-(assert (= true true)) ; P_001_15 [untranslatable]
+(assert (forall ((wr WriteResult)) (<= (write_count wr) (write_buffer_size wr)))) ; P_001_15
 
 ; P_001_16 (matches Coq: Theorem P_001_16)
-(assert (= true true)) ; P_001_16 [untranslatable]
+(assert (forall ((fh FileHandle)) (forall ((buf_size Int)) (=> (= (has_capability (fh_caps fh) CapFileRead) false) (= (file_read fh buf_size) none))))) ; P_001_16
 
 ; P_001_17 (matches Coq: Theorem P_001_17)
-(assert (= true true)) ; P_001_17 [untranslatable]
+(assert (forall ((af AuditedFile)) (forall ((buf_size Int)) (forall ((rr ReadResult)) (forall ((af' AuditedFile)) (=> (= (audited_read af buf_size) (some (mk-tuple rr af'))) (= (length (af_log af')) (S (length (af_log af)))))))))) ; P_001_17
 
 ; P_001_18 (matches Coq: Theorem P_001_18)
-(assert (= true true)) ; P_001_18 [untranslatable]
+(assert (forall ((s TcpStream)) (forall ((data list nat)) (forall ((s' TcpStream)) (=> (= (has_capability (tcp_caps s) CapNetConnect) true) (=> (= (tcp_write s data) (some s')) (= (tcp_buffer s') (concat (tcp_buffer s) data)))))))) ; P_001_18
 
 ; P_001_19 (matches Coq: Theorem P_001_19)
-(assert (= true true)) ; P_001_19 [untranslatable]
+(assert (forall ((s TcpStream)) (forall ((n Int)) (=> (= (has_capability (tcp_caps s) CapNetConnect) false) (= (tcp_read s n) none))))) ; P_001_19
 
 ; P_001_20 (matches Coq: Theorem P_001_20)
-(assert (= true true)) ; P_001_20 [untranslatable]
+(assert (forall ((cfg TlsConfig)) (forall ((offered TlsVersion)) (forall ((conn TlsConnection)) (=> (= (tls_handshake cfg offered) (some conn)) (= (tls_version_geq (tls_negotiated_version conn) (tls_min_version cfg)) true)))))) ; P_001_20
 
 ; P_001_21 (matches Coq: Theorem P_001_21)
-(assert (= true true)) ; P_001_21 [untranslatable]
+(assert (forall ((ca ConnectionAudit)) (forall ((entry AuditEntry)) (= (length (ca_log ca')) (S (length (ca_log ca))))))) ; P_001_21
 
 ; P_001_22 (matches Coq: Theorem P_001_22)
-(assert (= true true)) ; P_001_22 [untranslatable]
+(assert (forall ((d1 Duration) (d2 Duration)) (< (dur_nanos (duration_add d1 d2)) NANOS_PER_SEC))) ; P_001_22
 
 ; P_001_23 (matches Coq: Theorem P_001_23)
-(assert (= true true)) ; P_001_23 [untranslatable]
+(assert (forall ((i1 Instant) (i2 Instant)) (=> (<= (inst_ticks i1) (inst_ticks i2)) (>= (instant_elapsed i1 i2) 0)))) ; P_001_23
 
 ; P_001_24 (matches Coq: Theorem P_001_24)
-(assert (= true true)) ; P_001_24 [untranslatable]
+(assert (forall ((ts SecureTimestamp)) (forall ((expected_sig Int)) (=> (= (verify_timestamp ts expected_sig) true) (and (= (st_signed ts) true) (= (st_signature ts) expected_sig)))))) ; P_001_24
 
 ; P_001_25 (matches Coq: Theorem P_001_25)
-(assert (= true true)) ; P_001_25 [untranslatable]
+(assert (forall ((c MonotonicCounter)) (> (mc_value (mono_increment c)) (mc_value c)))) ; P_001_25
 
 ; P_001_26 (matches Coq: Theorem P_001_26)
-(assert (= true true)) ; P_001_26 [untranslatable]
+(assert (forall ((m MutexState)) (forall ((t1 Int) (t2 Int) (m' MutexState)) (=> (= (mutex_acquire m t1) (some m')) (= (mutex_acquire m' t2) none))))) ; P_001_26
 
 ; P_001_27 (matches Coq: Theorem P_001_27)
-(assert (= true true)) ; P_001_27 [untranslatable]
+(assert (forall ((rw RwLockState)) (forall ((t1 Int) (t2 Int) (rw' RwLockState)) (=> (= (rwlock_write_acquire rw t1) (some rw')) (= (rwlock_read_acquire rw' t2) none))))) ; P_001_27
 
 ; P_001_28 (matches Coq: Theorem P_001_28)
-(assert (= true true)) ; P_001_28 [untranslatable]
+(assert (forall ((a AtomicNat)) (forall ((v Int)) (let ((a' (atomic_store a v))) (and (> (atomic_seq a') (atomic_seq a)) (= (atomic_value a') v)))))) ; P_001_28
 
 ; P_001_29 (matches Coq: Theorem P_001_29)
-(assert (= true true)) ; P_001_29 [untranslatable]
+; P_001_29: forall (cv : CondvarState) (t : nat), cv_waiters cv = [t] -> let (cv', signaled) := condvar_signal cv in signaled = Some
+(assert (forall ((cv CondvarState) (t Int)) true)) ; P_001_29 [partial: bindings preserved]
 
 ; P_001_30 (matches Coq: Theorem P_001_30)
-(assert (= true true)) ; P_001_30 [untranslatable]
+(assert (forall ((ro ResourceOrder)) (forall ((r1 Int) (r2 Int)) (=> (= (ro_acquired ro) nil) (=> (< r1 r2) (exists ((ro' Bool)) (and (= (acquire_ordered ro r1) (some ro')) (exists ((ro'' Bool)) (= (acquire_ordered ro' r2) (some ro'')))))))))) ; P_001_30
 
 ; P_001_31 (matches Coq: Theorem P_001_31)
-(assert (= true true)) ; P_001_31 [untranslatable]
+(assert (forall ((k AesKey)) (let ((dropped (aes_key_drop k))) (=> (and (= (aes_key_zeroized dropped) true) (forall ((x Bool)) (= (In x (aes_key_data dropped)) true))) (= x 0))))) ; P_001_31
 
 ; P_001_32 (matches Coq: Theorem P_001_32)
-(assert (= true true)) ; P_001_32 [untranslatable]
+(assert (forall ((data list)) (= (hash_function data) (hash_function data)))) ; P_001_32
 
 ; P_001_33 (matches Coq: Theorem P_001_33)
-(assert (= true true)) ; P_001_33 [untranslatable]
+(assert (forall ((data list nat)) (forall ((private_key Int)) (let ((sig (sign_data data private_key))) (let ((public_key (+ private_key 1))) (= (verify_signature sig data public_key) true)))))) ; P_001_33
 
 ; P_001_34 (matches Coq: Theorem P_001_34)
-(assert (= true true)) ; P_001_34 [untranslatable]
+(assert (forall ((k CryptoKey)) (let ((dropped (crypto_key_drop k))) (=> (and (= (ck_zeroized dropped) true) (forall ((x Bool)) (= (In x (ck_data dropped)) true))) (= x 0))))) ; P_001_34
 
 ; P_001_35 (matches Coq: Theorem P_001_35)
-(assert (= true true)) ; P_001_35 [untranslatable]
+(assert (forall ((s1 CapabilitySet) (s2 CapabilitySet) (c Capability)) (=> (or (= (cap_set_contains s1 c) true) (= (cap_set_contains s2 c) true)) (= (cap_set_contains (cap_set_union s1 s2) c) true)))) ; P_001_35
 
 ; P_001_36 (matches Coq: Theorem P_001_36)
-(assert (= true true)) ; P_001_36 [untranslatable]
+(assert (forall ((s1 CapabilitySet) (s2 CapabilitySet) (c Capability)) (=> (= (cap_set_contains (cap_set_inter s1 s2) c) true) (and (= (cap_set_contains s1 c) true) (= (cap_set_contains s2 c) true))))) ; P_001_36
 
 ; P_001_37 (matches Coq: Theorem P_001_37)
-(assert (= true true)) ; P_001_37 [untranslatable]
+(assert (forall ((s CapabilitySet)) (forall ((c Capability)) (=> (= (cap_set_contains s c) false) (=> (forall ((c' Bool)) (= (In c' s) true)) (= (cap_eq c c') false)))))) ; P_001_37
 
 ; level_leq_refl (matches Coq: Lemma level_leq_refl)
-(assert (= true true)) ; level_leq_refl [untranslatable]
+(assert (forall ((l Bool)) (= (level_leq l l) true))) ; level_leq_refl
 
 ; compartments_subset_refl (matches Coq: Lemma compartments_subset_refl)
-(assert (= true true)) ; compartments_subset_refl [untranslatable]
+(assert (forall ((c Bool)) (= (compartments_subset c c) true))) ; compartments_subset_refl
 
 ; P_001_38 (matches Coq: Theorem P_001_38)
-(assert (= true true)) ; P_001_38 [untranslatable]
+(assert (forall ((l1 Label) (l2 Label)) (and (= (flows_to l1 (label_join l1 l2)) true) (= (flows_to l2 (label_join l1 l2)) true) (= (flows_to l1 l1) true)))) ; P_001_38
 
 ; level_leq_trans (matches Coq: Lemma level_leq_trans)
-(assert (= true true)) ; level_leq_trans [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (=> (= (level_leq l1 l2) true) (=> (= (level_leq l2 l3) true) (= (level_leq l1 l3) true))))) ; level_leq_trans
 
 ; compartments_subset_trans (matches Coq: Lemma compartments_subset_trans)
-(assert (= true true)) ; compartments_subset_trans [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool) (c3 Bool)) (=> (= (compartments_subset c1 c2) true) (=> (= (compartments_subset c2 c3) true) (= (compartments_subset c1 c3) true))))) ; compartments_subset_trans
 
 ; P_001_39 (matches Coq: Theorem P_001_39)
-(assert (= true true)) ; P_001_39 [untranslatable]
+(assert (forall ((l1 Label) (l2 Label) (l3 Label)) (=> (= (flows_to l1 l2) true) (=> (= (flows_to l2 l3) true) (= (flows_to l1 l3) true))))) ; P_001_39
 
 ; P_001_40 (matches Coq: Theorem P_001_40)
-(assert (= true true)) ; P_001_40 [untranslatable]
+(assert (forall ((A Type)) (forall ((lv Labeled A)) (forall ((clearance Label)) (forall ((v A)) (=> (= (unlabel lv clearance) (some v)) (and (= (flows_to (labeled_label lv) clearance) true) (= v (labeled_value lv))))))))) ; P_001_40
 
 ; Verify all assertions are satisfiable
 (check-sat)

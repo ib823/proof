@@ -70,100 +70,100 @@
   true)
 
 ; bridge_001_jni_roundtrip_int (matches Coq: Theorem bridge_001_jni_roundtrip_int)
-(assert (= true true)) ; bridge_001_jni_roundtrip_int [untranslatable]
+(assert (forall ((n Bool)) (exists ((jv Bool) (rv Bool)) (and (= (marshal_jni (RVInt n) jv) true) (= (unmarshal_jni jv rv) true) (= rv (RVInt n)))))) ; bridge_001_jni_roundtrip_int
 
 ; bridge_001_jni_roundtrip_bool (matches Coq: Theorem bridge_001_jni_roundtrip_bool)
-(assert (= true true)) ; bridge_001_jni_roundtrip_bool [untranslatable]
+(assert (forall ((b Bool)) (exists ((jv Bool) (rv Bool)) (and (= (marshal_jni (RVBool b) jv) true) (= (unmarshal_jni jv rv) true) (= rv (RVBool b)))))) ; bridge_001_jni_roundtrip_bool
 
 ; bridge_001_swift_roundtrip_int (matches Coq: Theorem bridge_001_swift_roundtrip_int)
-(assert (= true true)) ; bridge_001_swift_roundtrip_int [untranslatable]
+(assert (forall ((n Bool)) (exists ((sv Bool) (rv Bool)) (and (= (marshal_swift (RVInt n) sv) true) (= (unmarshal_swift sv rv) true) (= rv (RVInt n)))))) ; bridge_001_swift_roundtrip_int
 
 ; bridge_001_swift_roundtrip_bool (matches Coq: Theorem bridge_001_swift_roundtrip_bool)
-(assert (= true true)) ; bridge_001_swift_roundtrip_bool [untranslatable]
+(assert (forall ((b Bool)) (exists ((sv Bool) (rv Bool)) (and (= (marshal_swift (RVBool b) sv) true) (= (unmarshal_swift sv rv) true) (= rv (RVBool b)))))) ; bridge_001_swift_roundtrip_bool
 
 ; bridge_002_jni_pure_always_allowed (matches Coq: Theorem bridge_002_jni_pure_always_allowed)
-(assert (= true true)) ; bridge_002_jni_pure_always_allowed [untranslatable]
+(assert (forall ((cap Bool)) (=> (= (cap_valid cap) true) (= (cap_allows cap BPure) true)))) ; bridge_002_jni_pure_always_allowed
 
 ; bridge_002_jni_invalid_blocks_all (matches Coq: Theorem bridge_002_jni_invalid_blocks_all)
-(assert (= true true)) ; bridge_002_jni_invalid_blocks_all [untranslatable]
+(assert (forall ((cap Bool) (eff Bool)) (=> (= (cap_valid cap) false) (= (cap_allows cap eff) false)))) ; bridge_002_jni_invalid_blocks_all
 
 ; bridge_002_jni_io_requires_io_cap (matches Coq: Theorem bridge_002_jni_io_requires_io_cap)
-(assert (= true true)) ; bridge_002_jni_io_requires_io_cap [untranslatable]
+(assert (forall ((cap Bool)) (=> (= (cap_allows cap BIO) true) (= (cap_valid cap) true)))) ; bridge_002_jni_io_requires_io_cap
 
 ; bridge_003_swift_pure_always_allowed (matches Coq: Theorem bridge_003_swift_pure_always_allowed)
-(assert (= true true)) ; bridge_003_swift_pure_always_allowed [untranslatable]
+(assert (forall ((cap Bool)) (=> (= (cap_valid cap) true) (= (cap_allows cap BPure) true)))) ; bridge_003_swift_pure_always_allowed
 
 ; bridge_003_swift_net_requires_net (matches Coq: Theorem bridge_003_swift_net_requires_net)
-(assert (= true true)) ; bridge_003_swift_net_requires_net [untranslatable]
+(assert (forall ((id Bool)) (= (cap_allows (mkCap id BNet true) BNet) true))) ; bridge_003_swift_net_requires_net
 
 ; bridge_003_swift_ui_requires_ui (matches Coq: Theorem bridge_003_swift_ui_requires_ui)
-(assert (= true true)) ; bridge_003_swift_ui_requires_ui [untranslatable]
+(assert (forall ((id Bool)) (= (cap_allows (mkCap id BUI true) BUI) true))) ; bridge_003_swift_ui_requires_ui
 
 ; bridge_004_safe_call_requires_cap (matches Coq: Theorem bridge_004_safe_call_requires_cap)
-(assert (= true true)) ; bridge_004_safe_call_requires_cap [untranslatable]
+(assert (forall ((f Bool) (args Bool) (eff Bool) (cap Bool)) (=> (= (bridge_call_safe (mkBridgeCall f args eff cap)) true) (= (cap_valid cap) true)))) ; bridge_004_safe_call_requires_cap
 
 ; bridge_004_pure_call_always_safe (matches Coq: Theorem bridge_004_pure_call_always_safe)
-(assert (= true true)) ; bridge_004_pure_call_always_safe [untranslatable]
+(assert (forall ((f Bool) (args Bool) (cap Bool)) (=> (= (cap_valid cap) true) (= (bridge_call_safe (mkBridgeCall f args BPure cap)) true)))) ; bridge_004_pure_call_always_safe
 
 ; bridge_005_error_is_safe (matches Coq: Theorem bridge_005_error_is_safe)
-(assert (= true true)) ; bridge_005_error_is_safe [untranslatable]
+(assert (forall ((code Bool)) (= (error_safe (BRError code)) true))) ; bridge_005_error_is_safe
 
 ; bridge_005_ok_is_safe (matches Coq: Theorem bridge_005_ok_is_safe)
-(assert (= true true)) ; bridge_005_ok_is_safe [untranslatable]
+(assert (forall ((v Bool)) (= (error_safe (BROk v)) true))) ; bridge_005_ok_is_safe
 
 ; bridge_005_no_secret_leak (matches Coq: Theorem bridge_005_no_secret_leak)
-(assert (= true true)) ; bridge_005_no_secret_leak [untranslatable]
+(assert (forall ((result Bool)) (= (no_secret_in_error result) true))) ; bridge_005_no_secret_leak
 
 ; bridge_006_jni_string_roundtrip_len (matches Coq: Theorem bridge_006_jni_string_roundtrip_len)
-(assert (= true true)) ; bridge_006_jni_string_roundtrip_len [untranslatable]
+(assert (forall ((s Bool)) (= (cstr_len (jni_to_c_string (c_to_jni_string s))) (cstr_len s)))) ; bridge_006_jni_string_roundtrip_len
 
 ; bridge_006_jni_string_roundtrip_hash (matches Coq: Theorem bridge_006_jni_string_roundtrip_hash)
-(assert (= true true)) ; bridge_006_jni_string_roundtrip_hash [untranslatable]
+(assert (forall ((s Bool)) (= (cstr_hash (jni_to_c_string (c_to_jni_string s))) (cstr_hash s)))) ; bridge_006_jni_string_roundtrip_hash
 
 ; bridge_006_jni_string_is_utf8 (matches Coq: Theorem bridge_006_jni_string_is_utf8)
-(assert (= true true)) ; bridge_006_jni_string_is_utf8 [untranslatable]
+(assert (forall ((s Bool)) (= (jstr_is_utf8 (c_to_jni_string s)) true))) ; bridge_006_jni_string_is_utf8
 
 ; bridge_006_jni_string_full_roundtrip (matches Coq: Theorem bridge_006_jni_string_full_roundtrip)
-(assert (= true true)) ; bridge_006_jni_string_full_roundtrip [untranslatable]
+(assert (forall ((s Bool)) (= (jni_to_c_string (c_to_jni_string s)) s))) ; bridge_006_jni_string_full_roundtrip
 
 ; bridge_006_rvalue_string_jni_roundtrip (matches Coq: Theorem bridge_006_rvalue_string_jni_roundtrip)
-(assert (= true true)) ; bridge_006_rvalue_string_jni_roundtrip [untranslatable]
+(assert (forall ((n Bool)) (exists ((jv Bool) (rv Bool)) (and (= (marshal_jni (RVString n) jv) true) (= (unmarshal_jni jv rv) true) (= rv (RVString n)))))) ; bridge_006_rvalue_string_jni_roundtrip
 
 ; bridge_007_swift_type_preserved_int (matches Coq: Theorem bridge_007_swift_type_preserved_int)
-(assert (= true true)) ; bridge_007_swift_type_preserved_int [untranslatable]
+(assert (forall ((n Bool)) (= (swift_value_tag (SwInt n)) (swift_type_of (RVInt n))))) ; bridge_007_swift_type_preserved_int
 
 ; bridge_007_swift_type_preserved_bool (matches Coq: Theorem bridge_007_swift_type_preserved_bool)
-(assert (= true true)) ; bridge_007_swift_type_preserved_bool [untranslatable]
+(assert (forall ((b Bool)) (= (swift_value_tag (SwBool b)) (swift_type_of (RVBool b))))) ; bridge_007_swift_type_preserved_bool
 
 ; bridge_007_swift_type_preserved_string (matches Coq: Theorem bridge_007_swift_type_preserved_string)
-(assert (= true true)) ; bridge_007_swift_type_preserved_string [untranslatable]
+(assert (forall ((n Bool)) (= (swift_value_tag (SwString n)) (swift_type_of (RVString n))))) ; bridge_007_swift_type_preserved_string
 
 ; bridge_007_swift_type_preserved_unit (matches Coq: Theorem bridge_007_swift_type_preserved_unit)
 (assert (= (swift_value_tag SwVoid) (swift_type_of RVUnit))) ; bridge_007_swift_type_preserved_unit
 
 ; bridge_007_marshal_swift_type_safe (matches Coq: Theorem bridge_007_marshal_swift_type_safe)
-(assert (= true true)) ; bridge_007_marshal_swift_type_safe [untranslatable]
+(assert (forall ((rv Bool) (sv Bool)) (=> (= (marshal_swift rv sv) true) (= (swift_value_tag sv) (swift_type_of rv))))) ; bridge_007_marshal_swift_type_safe
 
 ; bridge_007_unmarshal_swift_type_safe (matches Coq: Theorem bridge_007_unmarshal_swift_type_safe)
-(assert (= true true)) ; bridge_007_unmarshal_swift_type_safe [untranslatable]
+(assert (forall ((sv Bool) (rv Bool)) (=> (= (unmarshal_swift sv rv) true) (= (swift_type_of rv) (swift_value_tag sv))))) ; bridge_007_unmarshal_swift_type_safe
 
 ; bridge_007_rvalue_string_swift_roundtrip (matches Coq: Theorem bridge_007_rvalue_string_swift_roundtrip)
-(assert (= true true)) ; bridge_007_rvalue_string_swift_roundtrip [untranslatable]
+(assert (forall ((n Bool)) (exists ((sv Bool) (rv Bool)) (and (= (marshal_swift (RVString n) sv) true) (= (unmarshal_swift sv rv) true) (= rv (RVString n)))))) ; bridge_007_rvalue_string_swift_roundtrip
 
 ; bridge_008_pure_callback_safe (matches Coq: Theorem bridge_008_pure_callback_safe)
-(assert (= true true)) ; bridge_008_pure_callback_safe [untranslatable]
+(assert (forall ((id Bool)) (= (callback_safe (mkCallback id nil BPublic BPure)) true))) ; bridge_008_pure_callback_safe
 
 ; bridge_008_public_args_safe (matches Coq: Theorem bridge_008_public_args_safe)
-(assert (= true true)) ; bridge_008_public_args_safe [untranslatable]
+(assert (forall ((id Bool) (n Bool) (eff Bool)) (= (callback_args_safe (mkCallback id (repeat BPublic n) BPublic eff)) true))) ; bridge_008_public_args_safe
 
 ; bridge_008_secret_ret_rejected (matches Coq: Theorem bridge_008_secret_ret_rejected)
-(assert (= true true)) ; bridge_008_secret_ret_rejected [untranslatable]
+(assert (forall ((id Bool) (args Bool) (eff Bool)) (= (callback_rejected (mkCallback id args BSecret eff)) true))) ; bridge_008_secret_ret_rejected
 
 ; bridge_008_safe_not_rejected (matches Coq: Theorem bridge_008_safe_not_rejected)
-(assert (= true true)) ; bridge_008_safe_not_rejected [untranslatable]
+(assert (forall ((cb Bool)) (=> (= (callback_safe cb) true) (not (= (cb_ret_label cb) BSecret))))) ; bridge_008_safe_not_rejected
 
 ; bridge_008_no_secret_through_safe_callback (matches Coq: Theorem bridge_008_no_secret_through_safe_callback)
-(assert (= true true)) ; bridge_008_no_secret_through_safe_callback [untranslatable]
+(assert (forall ((cb Bool)) (=> (= (callback_safe cb) true) (and (= (cb_ret_label cb) BPublic) (forall ((l Bool)) (=> (= (In l (cb_arg_labels cb)) true) (= l BPublic))))))) ; bridge_008_no_secret_through_safe_callback
 
 ; Verify all assertions are satisfiable
 (check-sat)

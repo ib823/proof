@@ -186,85 +186,85 @@
   true)
 
 ; store_malware_free (matches Coq: Theorem store_malware_free)
-(assert (= true true)) ; store_malware_free [untranslatable]
+(assert (forall ((app StoreApplication)) (=> (= (in_store app) true) (=> (= (store_well_formed (insert app nil)) true) (= (no_malware app) true))))) ; store_malware_free
 
 ; security_scan_complete (matches Coq: Theorem security_scan_complete)
-(assert (= true true)) ; security_scan_complete [untranslatable]
+(assert (forall ((app StoreApplication)) (=> (= (no_malware app) true) (= (passes_security_checks (scan_result app)) true)))) ; security_scan_complete
 
 ; update_is_atomic (matches Coq: Theorem update_is_atomic)
-(assert (= true true)) ; update_is_atomic [untranslatable]
+(assert (forall ((inst_before Installation) (inst_after Installation) (upd AppUpdate)) (=> (= (update_verified upd) true) (=> (= (update_atomic inst_before inst_after upd) true) (or (= (installed_version inst_after) (new_version upd)) (= (installed_version inst_after) (installed_version inst_before))))))) ; update_is_atomic
 
 ; update_rollback_available (matches Coq: Theorem update_rollback_available)
-(assert (= true true)) ; update_rollback_available [untranslatable]
+(assert (forall ((inst Installation)) (=> (= (rollback_possible inst) true) (= (rollback_available inst) true)))) ; update_rollback_available
 
 ; no_version_downgrade (matches Coq: Theorem no_version_downgrade)
-(assert (= true true)) ; no_version_downgrade [untranslatable]
+(assert (forall ((upd AppUpdate)) (=> (= (update_verified upd) true) (=> (= (version_increases upd) true) (> (new_version upd) (old_version upd)))))) ; no_version_downgrade
 
 ; signature_required_for_store (matches Coq: Theorem signature_required_for_store)
-(assert (= true true)) ; signature_required_for_store [untranslatable]
+(assert (forall ((app StoreApplication)) (=> (= (no_malware app) true) (= (signature_valid (scan_result app)) true)))) ; signature_required_for_store
 
 ; failed_install_no_corruption (matches Coq: Theorem failed_install_no_corruption)
-(assert (= true true)) ; failed_install_no_corruption [untranslatable]
+(assert (forall ((inst_before Installation) (inst_after Installation) (upd AppUpdate)) (=> (= (install_state inst_after) Failed) (=> (= (update_atomic inst_before inst_after upd) true) (= (installed_version inst_after) (installed_version inst_before)))))) ; failed_install_no_corruption
 
 ; app_signature_verified_thm (matches Coq: Theorem app_signature_verified_thm)
-(assert (= true true)) ; app_signature_verified_thm [untranslatable]
+(assert (forall ((s AppSignature)) (=> (= (app_signature_verified s) true) (= (sig_verified s) true)))) ; app_signature_verified_thm
 
 ; code_integrity_checked_thm (matches Coq: Theorem code_integrity_checked_thm)
-(assert (= true true)) ; code_integrity_checked_thm [untranslatable]
+(assert (forall ((ci CodeIntegrity)) (=> (= (code_integrity_checked ci) true) (= (ci_hash_original ci) (ci_hash_current ci))))) ; code_integrity_checked_thm
 
 ; entitlements_validated_thm (matches Coq: Theorem entitlements_validated_thm)
-(assert (= true true)) ; entitlements_validated_thm [untranslatable]
+(assert (forall ((es EntitlementSet)) (=> (= (entitlements_validated es) true) (= (ent_validated es) true)))) ; entitlements_validated_thm
 
 ; provisioning_profile_valid_thm (matches Coq: Theorem provisioning_profile_valid_thm)
-(assert (= true true)) ; provisioning_profile_valid_thm [untranslatable]
+(assert (forall ((pp ProvisioningProfile)) (=> (= (provisioning_profile_valid pp) true) (= (pp_valid pp) true)))) ; provisioning_profile_valid_thm
 
 ; app_review_required_thm (matches Coq: Theorem app_review_required_thm)
-(assert (= true true)) ; app_review_required_thm [untranslatable]
+(assert (forall ((ar AppReview)) (=> (= (app_review_required ar) true) (=> (= (ar_passed ar) true) (= (ar_reviewed ar) true))))) ; app_review_required_thm
 
 ; binary_size_reported_thm (matches Coq: Theorem binary_size_reported_thm)
-(assert (= true true)) ; binary_size_reported_thm [untranslatable]
+(assert (forall ((br BinaryReport)) (=> (= (binary_size_reported br) true) (= (br_size_bytes br) (br_reported_size br))))) ; binary_size_reported_thm
 
 ; app_version_monotonic_thm (matches Coq: Theorem app_version_monotonic_thm)
-(assert (= true true)) ; app_version_monotonic_thm [untranslatable]
+(assert (forall ((vh AppVersionHistory)) (=> (= (app_version_monotonic vh) true) (= (list_monotonic (vh_versions vh)) true)))) ; app_version_monotonic_thm
 
 ; minimum_os_version_enforced_thm (matches Coq: Theorem minimum_os_version_enforced_thm)
-(assert (= true true)) ; minimum_os_version_enforced_thm [untranslatable]
+(assert (forall ((req OSRequirement)) (=> (= (minimum_os_version_enforced req) true) (=> (= (os_req_enforced req) true) (>= (os_current_version req) (os_req_min_version req)))))) ; minimum_os_version_enforced_thm
 
 ; deprecated_api_flagged_thm (matches Coq: Theorem deprecated_api_flagged_thm)
-(assert (= true true)) ; deprecated_api_flagged_thm [untranslatable]
+(assert (forall ((au APIUsage)) (=> (= (deprecated_api_flagged au) true) (=> (= (api_deprecated au) true) (= (api_flagged au) true))))) ; deprecated_api_flagged_thm
 
 ; privacy_manifest_required_thm (matches Coq: Theorem privacy_manifest_required_thm)
-(assert (= true true)) ; privacy_manifest_required_thm [untranslatable]
+(assert (forall ((pm PrivacyManifest)) (=> (= (privacy_manifest_required pm) true) (= (pm_manifest_present pm) true)))) ; privacy_manifest_required_thm
 
 ; data_collection_declared_thm (matches Coq: Theorem data_collection_declared_thm)
-(assert (= true true)) ; data_collection_declared_thm [untranslatable]
+(assert (forall ((dd DataDeclaration)) (=> (= (data_collection_declared dd) true) (= (dd_declared dd) true)))) ; data_collection_declared_thm
 
 ; app_clip_size_bounded_thm (matches Coq: Theorem app_clip_size_bounded_thm)
-(assert (= true true)) ; app_clip_size_bounded_thm [untranslatable]
+(assert (forall ((ac AppClip)) (=> (= (app_clip_size_bounded ac) true) (<= (ac_size_mb ac) (ac_max_size_mb ac))))) ; app_clip_size_bounded_thm
 
 ; testflight_expiry_enforced_thm (matches Coq: Theorem testflight_expiry_enforced_thm)
-(assert (= true true)) ; testflight_expiry_enforced_thm [untranslatable]
+(assert (forall ((tf TestFlightBuild)) (=> (= (testflight_expiry_enforced tf) true) (= (tf_enforced tf) true)))) ; testflight_expiry_enforced_thm
 
 ; enterprise_certificate_validated_thm (matches Coq: Theorem enterprise_certificate_validated_thm)
-(assert (= true true)) ; enterprise_certificate_validated_thm [untranslatable]
+(assert (forall ((ec EnterpriseCert)) (=> (= (enterprise_certificate_validated ec) true) (and (= (ec_valid ec) true) (= (ec_revoked ec) false))))) ; enterprise_certificate_validated_thm
 
 ; notarization_required_thm (matches Coq: Theorem notarization_required_thm)
-(assert (= true true)) ; notarization_required_thm [untranslatable]
+(assert (forall ((ns NotarizationStatus)) (=> (= (notarization_required ns) true) (= (ns_notarized ns) true)))) ; notarization_required_thm
 
 ; provisioning_profile_not_expired (matches Coq: Theorem provisioning_profile_not_expired)
-(assert (= true true)) ; provisioning_profile_not_expired [untranslatable]
+(assert (forall ((pp ProvisioningProfile)) (=> (= (provisioning_profile_valid pp) true) (<= (pp_current_date pp) (pp_expiry_date pp))))) ; provisioning_profile_not_expired
 
 ; entitlements_granted_bounded (matches Coq: Theorem entitlements_granted_bounded)
-(assert (= true true)) ; entitlements_granted_bounded [untranslatable]
+(assert (forall ((es EntitlementSet)) (=> (= (entitlements_validated es) true) (<= (length (ent_granted es)) (length (ent_requested es)))))) ; entitlements_granted_bounded
 
 ; enterprise_cert_not_revoked (matches Coq: Theorem enterprise_cert_not_revoked)
-(assert (= true true)) ; enterprise_cert_not_revoked [untranslatable]
+(assert (forall ((ec EnterpriseCert)) (=> (= (enterprise_certificate_validated ec) true) (= (ec_revoked ec) false)))) ; enterprise_cert_not_revoked
 
 ; notarization_ticket_stapled (matches Coq: Theorem notarization_ticket_stapled)
-(assert (= true true)) ; notarization_ticket_stapled [untranslatable]
+(assert (forall ((ns NotarizationStatus)) (=> (= (notarization_required ns) true) (= (ns_ticket_stapled ns) true)))) ; notarization_ticket_stapled
 
 ; app_signature_has_timestamp (matches Coq: Theorem app_signature_has_timestamp)
-(assert (= true true)) ; app_signature_has_timestamp [untranslatable]
+(assert (forall ((s AppSignature)) (=> (= (app_signature_verified s) true) (> (sig_timestamp s) 0)))) ; app_signature_has_timestamp
 
 ; Verify all assertions are satisfiable
 (check-sat)

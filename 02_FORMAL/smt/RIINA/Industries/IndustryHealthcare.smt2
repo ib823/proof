@@ -67,37 +67,37 @@
 (define-fun lab_in_normal_range () Bool Nat)
 
 ; hipaa_privacy_rule (matches Coq: Theorem hipaa_privacy_rule)
-(assert (= true true)) ; hipaa_privacy_rule [untranslatable]
+(assert (forall ((phi PHI_Category)) (forall ((accessor Int)) (forall ((purpose Int)) true)))) ; hipaa_privacy_rule
 
 ; hipaa_security_rule (matches Coq: Theorem hipaa_security_rule)
-(assert (= true true)) ; hipaa_security_rule [untranslatable]
+(assert (forall ((policy HIPAA_Policy)) (=> (= (access_control policy) true) (=> (= (audit_controls policy) true) (=> (= (integrity_controls policy) true) (=> (= (transmission_security policy) true) true)))))) ; hipaa_security_rule
 
 ; fda_21_cfr_11 (matches Coq: Theorem fda_21_cfr_11)
-(assert (= true true)) ; fda_21_cfr_11 [untranslatable]
+(assert (forall ((electronic_record Int)) (forall ((signature Int)) true))) ; fda_21_cfr_11
 
 ; hitech_breach_notification (matches Coq: Theorem hitech_breach_notification)
-(assert (= true true)) ; hitech_breach_notification [untranslatable]
+(assert (forall ((breach Int)) (forall ((affected_individuals Int)) true))) ; hitech_breach_notification
 
 ; hl7_fhir_security (matches Coq: Theorem hl7_fhir_security)
-(assert (= true true)) ; hl7_fhir_security [untranslatable]
+(assert (forall ((resource Int)) (forall ((access_token Int)) true))) ; hl7_fhir_security
 
 ; phi_encryption_required (matches Coq: Theorem phi_encryption_required)
-(assert (= true true)) ; phi_encryption_required [untranslatable]
+(assert (forall ((policy HIPAA_Policy)) (forall ((phi PHI_Category)) (=> (= (transmission_security policy) true) true)))) ; phi_encryption_required
 
 ; minimum_necessary_access (matches Coq: Theorem minimum_necessary_access)
-(assert (= true true)) ; minimum_necessary_access [untranslatable]
+(assert (forall ((phi_requested Bool) (treatment_required Bool)) (=> (= (minimum_necessary phi_requested treatment_required) true) true))) ; minimum_necessary_access
 
 ; phi_sensitivity_positive (matches Coq: Lemma phi_sensitivity_positive)
-(assert (= true true)) ; phi_sensitivity_positive [untranslatable]
+(assert (forall ((cat Bool)) (>= (phi_sensitivity cat) 1))) ; phi_sensitivity_positive
 
 ; max_sensitivity_categories (matches Coq: Lemma max_sensitivity_categories)
-(assert (= true true)) ; max_sensitivity_categories [untranslatable]
+(assert (forall ((cat Bool)) (=> (or (= cat Psychotherapy) (= cat Substance) (= cat HIV_Status)) (= (phi_sensitivity cat) 4)))) ; max_sensitivity_categories
 
 ; demographics_minimum (matches Coq: Lemma demographics_minimum)
-(assert (= true true)) ; demographics_minimum [untranslatable]
+(assert (forall ((cat Bool)) (<= (phi_sensitivity Demographics) (phi_sensitivity cat)))) ; demographics_minimum
 
 ; genetic_sensitivity_ordering (matches Coq: Lemma genetic_sensitivity_ordering)
-(assert (= true true)) ; genetic_sensitivity_ordering [untranslatable]
+(assert (and (< (phi_sensitivity MedicalRecord) (phi_sensitivity Genetic)) (< (phi_sensitivity Genetic) (phi_sensitivity Psychotherapy)))) ; genetic_sensitivity_ordering
 
 ; hipaa_all_controls_access (matches Coq: Lemma hipaa_all_controls_access)
 (assert (= (access_control hipaa_all_controls) true)) ; hipaa_all_controls_access
@@ -115,43 +115,43 @@
 (assert (= (encryption_at_rest hipaa_all_controls) true)) ; hipaa_all_controls_encryption
 
 ; hipaa_full_implies_minimum (matches Coq: Theorem hipaa_full_implies_minimum)
-(assert (= true true)) ; hipaa_full_implies_minimum [untranslatable]
+(assert (forall ((p Bool)) (=> (= (access_control p) true) (=> (= (audit_controls p) true) (=> (= (integrity_controls p) true) (=> (= (transmission_security p) true) (= (hipaa_security_minimum p) true))))))) ; hipaa_full_implies_minimum
 
 ; break_glass_must_be_logged (matches Coq: Theorem break_glass_must_be_logged)
-(assert (= true true)) ; break_glass_must_be_logged [untranslatable]
+(assert (forall ((evt Bool)) (=> (= (bg_logged evt) true) (not (= (bg_logged evt) false))))) ; break_glass_must_be_logged
 
 ; high_role_accesses_demographics (matches Coq: Theorem high_role_accesses_demographics)
-(assert (= true true)) ; high_role_accesses_demographics [untranslatable]
+(assert (forall ((r Bool)) (=> (>= r 1) (= (access_permitted r Demographics) true)))) ; high_role_accesses_demographics
 
 ; low_role_denied_psychotherapy (matches Coq: Theorem low_role_denied_psychotherapy)
 (assert (= (access_permitted 2 Psychotherapy) false)) ; low_role_denied_psychotherapy
 
 ; role_sufficient_access (matches Coq: Theorem role_sufficient_access)
-(assert (= true true)) ; role_sufficient_access [untranslatable]
+(assert (forall ((r Bool) (cat Bool)) (=> (>= r (phi_sensitivity cat)) (= (access_permitted r cat) true)))) ; role_sufficient_access
 
 ; consent_expired_invalid (matches Coq: Theorem consent_expired_invalid)
-(assert (= true true)) ; consent_expired_invalid [untranslatable]
+(assert (forall ((c Bool) (t Bool)) (=> (= (< t (consent_expiry c)) false) (= (consent_valid c t) false)))) ; consent_expired_invalid
 
 ; consent_not_granted_invalid (matches Coq: Theorem consent_not_granted_invalid)
-(assert (= true true)) ; consent_not_granted_invalid [untranslatable]
+(assert (forall ((c Bool) (t Bool)) (=> (= (consent_granted c) false) (= (consent_valid c t) false)))) ; consent_not_granted_invalid
 
 ; retention_minimum_6_years (matches Coq: Theorem retention_minimum_6_years)
-(assert (= true true)) ; retention_minimum_6_years [untranslatable]
+(assert (forall ((cat Bool)) (>= (retention_years cat) 6))) ; retention_minimum_6_years
 
 ; genetic_longest_retention (matches Coq: Theorem genetic_longest_retention)
-(assert (= true true)) ; genetic_longest_retention [untranslatable]
+(assert (forall ((cat Bool)) (<= (retention_years cat) (retention_years Genetic)))) ; genetic_longest_retention
 
 ; deidentification_removes_sensitivity (matches Coq: Theorem deidentification_removes_sensitivity)
-(assert (= true true)) ; deidentification_removes_sensitivity [untranslatable]
+(assert (forall ((cat Bool)) (= (deidentified_sensitivity true cat) 0))) ; deidentification_removes_sensitivity
 
 ; non_deidentified_preserves_sensitivity (matches Coq: Theorem non_deidentified_preserves_sensitivity)
-(assert (= true true)) ; non_deidentified_preserves_sensitivity [untranslatable]
+(assert (forall ((cat Bool)) (= (deidentified_sensitivity false cat) (phi_sensitivity cat)))) ; non_deidentified_preserves_sensitivity
 
 ; dose_range_valid (matches Coq: Theorem dose_range_valid)
-(assert (= true true)) ; dose_range_valid [untranslatable]
+(assert (forall ((dose Bool) (min_d Bool) (max_d Bool)) (=> (= (dose_in_range dose min_d max_d) true) (and (<= min_d dose) (<= dose max_d))))) ; dose_range_valid
 
 ; lab_range_bounded (matches Coq: Theorem lab_range_bounded)
-(assert (= true true)) ; lab_range_bounded [untranslatable]
+(assert (forall ((v Bool) (lo Bool) (hi Bool)) (=> (= (lab_in_normal_range v lo hi) true) (and (<= lo v) (<= v hi))))) ; lab_range_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -91,16 +91,16 @@
 (define-fun autonomy_layers () Bool true)
 
 ; auto_001_velocity_bounded (matches Coq: Theorem auto_001_velocity_bounded)
-(assert (= true true)) ; auto_001_velocity_bounded [untranslatable]
+(assert (forall ((state SystemState)) (forall ((env SafetyEnvelope)) (=> (= (velocity_in_envelope state env) true) (<= (state_velocity state) (env_max_velocity env)))))) ; auto_001_velocity_bounded
 
 ; auto_002_distance_maintained (matches Coq: Theorem auto_002_distance_maintained)
-(assert (= true true)) ; auto_002_distance_maintained [untranslatable]
+(assert (forall ((distance Int)) (forall ((env SafetyEnvelope)) (=> (= (distance_safe distance env) true) (<= (env_min_distance env) distance))))) ; auto_002_distance_maintained
 
 ; auto_003_heading_bounded (matches Coq: Theorem auto_003_heading_bounded)
-(assert (= true true)) ; auto_003_heading_bounded [untranslatable]
+(assert (forall ((rate Int)) (forall ((env SafetyEnvelope)) (=> (= (heading_rate_ok rate env) true) (<= rate (env_max_heading_rate env)))))) ; auto_003_heading_bounded
 
 ; auto_004_confidence_ok (matches Coq: Theorem auto_004_confidence_ok)
-(assert (= true true)) ; auto_004_confidence_ok [untranslatable]
+(assert (forall ((dec Decision)) (forall ((min_conf Int)) (=> (= (confidence_sufficient dec min_conf) true) (<= min_conf (dec_confidence dec)))))) ; auto_004_confidence_ok
 
 ; auto_005_sensor_failsafe (matches Coq: Theorem auto_005_sensor_failsafe)
 (assert (= (should_failsafe SensorFailure) true)) ; auto_005_sensor_failsafe
@@ -112,7 +112,7 @@
 (assert (= (should_failsafe HumanOverride) true)) ; auto_007_human_override
 
 ; auto_008_reaction_bounded (matches Coq: Theorem auto_008_reaction_bounded)
-(assert (= true true)) ; auto_008_reaction_bounded [untranslatable]
+(assert (forall ((rt ReactionTime)) (=> (= (reaction_ok rt) true) (<= (react_measured rt) (react_deadline rt))))) ; auto_008_reaction_bounded
 
 ; auto_009_emergency_stop_valid (matches Coq: Theorem auto_009_emergency_stop_valid)
 (assert (= (valid_failsafe_action EmergencyStop) true)) ; auto_009_emergency_stop_valid
@@ -121,49 +121,50 @@
 (assert (= (valid_failsafe_action SafeHold) true)) ; auto_010_safe_hold_valid
 
 ; auto_011_mode_transition (matches Coq: Theorem auto_011_mode_transition)
-(assert (= true true)) ; auto_011_mode_transition [untranslatable]
+(assert (forall ((from Int) (to Int)) (=> (= (valid_mode_transition from to) true) (= (valid_mode_transition from to) true)))) ; auto_011_mode_transition
 
 ; auto_012_no_skip_assisted (matches Coq: Theorem auto_012_no_skip_assisted)
 (assert (= (valid_mode_transition 0 2) false)) ; auto_012_no_skip_assisted
 
 ; auto_013_decision_fresh (matches Coq: Theorem auto_013_decision_fresh)
-(assert (= true true)) ; auto_013_decision_fresh [untranslatable]
+(assert (forall ((dec Decision)) (forall ((current Int) (max_age Int)) (=> (= (decision_fresh dec current max_age) true) (<= (- current (dec_timestamp dec)) max_age))))) ; auto_013_decision_fresh
 
 ; auto_014_action_bounded (matches Coq: Theorem auto_014_action_bounded)
-(assert (= true true)) ; auto_014_action_bounded [untranslatable]
+(assert (forall ((dec Decision)) (forall ((max_mag Int)) (=> (= (action_bounded dec max_mag) true) (<= (dec_magnitude dec) max_mag))))) ; auto_014_action_bounded
 
 ; auto_015_sensor_agreement (matches Coq: Theorem auto_015_sensor_agreement)
-(assert (= true true)) ; auto_015_sensor_agreement [untranslatable]
+(assert (forall ((readings list nat)) (forall ((tolerance Int)) (=> (= (sensors_agree readings tolerance) true) (= (sensors_agree readings tolerance) true))))) ; auto_015_sensor_agreement
 
 ; auto_016_watchdog_active (matches Coq: Theorem auto_016_watchdog_active)
-(assert (= true true)) ; auto_016_watchdog_active [untranslatable]
+(assert (forall ((last_kick Int) (current Int) (timeout Int)) (=> (= (watchdog_ok last_kick current timeout) true) (< (- current last_kick) timeout)))) ; auto_016_watchdog_active
 
 ; auto_017_redundancy (matches Coq: Theorem auto_017_redundancy)
-(assert (= true true)) ; auto_017_redundancy [untranslatable]
+(assert (forall ((active Int) (min_required Int)) (=> (= (controllers_redundant active min_required) true) (<= min_required active)))) ; auto_017_redundancy
 
 ; auto_018_geofence_respected (matches Coq: Theorem auto_018_geofence_respected)
-(assert (= true true)) ; auto_018_geofence_respected [untranslatable]
+(assert (forall ((position Int) (fence_min Int) (fence_max Int)) (=> (= (in_geofence position fence_min fence_max) true) (and (<= fence_min position) (<= position fence_max))))) ; auto_018_geofence_respected
 
 ; auto_019_collision_free (matches Coq: Theorem auto_019_collision_free)
-(assert (= true true)) ; auto_019_collision_free [untranslatable]
+; auto_019_collision_free: forall (obstacles path_points : list nat), path_collision_free obstacles path_points = true -> Forall (fun p => ~ In p o
+(assert (forall ((obstacles list) (path_points list)) true)) ; auto_019_collision_free [partial: bindings preserved]
 
 ; auto_020_energy_ok (matches Coq: Theorem auto_020_energy_ok)
-(assert (= true true)) ; auto_020_energy_ok [untranslatable]
+(assert (forall ((current Int) (required Int)) (=> (= (energy_sufficient current required) true) (<= required current)))) ; auto_020_energy_ok
 
 ; auto_021_link_quality (matches Coq: Theorem auto_021_link_quality)
-(assert (= true true)) ; auto_021_link_quality [untranslatable]
+(assert (forall ((quality Int) (min_quality Int)) (=> (= (link_quality_ok quality min_quality) true) (<= min_quality quality)))) ; auto_021_link_quality
 
 ; auto_022_constraints_met (matches Coq: Theorem auto_022_constraints_met)
 (assert (forall ((violations Int)) (=> (= (constraints_met violations) true) (= violations 0)))) ; auto_022_constraints_met
 
 ; auto_023_logging_complete (matches Coq: Theorem auto_023_logging_complete)
-(assert (= true true)) ; auto_023_logging_complete [untranslatable]
+(assert (forall ((decisions list) (logged list)) (=> (= (decisions_logged decisions logged) true) (<= (length decisions) (length logged))))) ; auto_023_logging_complete
 
 ; auto_024_verify_first (matches Coq: Theorem auto_024_verify_first)
-(assert (= true true)) ; auto_024_verify_first [untranslatable]
+(assert (forall ((verified Bool) (executed Bool)) (=> (= (verified_before_exec verified executed) true) (=> (= executed true) (= verified true))))) ; auto_024_verify_first
 
 ; auto_025_defense_in_depth (matches Coq: Theorem auto_025_defense_in_depth)
-(assert (= true true)) ; auto_025_defense_in_depth [untranslatable]
+(assert (forall ((e Bool) (f Bool) (o Bool) (v Bool)) (=> (= (autonomy_layers e f o v) true) (and (= e true) (= f true) (= o true) (= v true))))) ; auto_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -107,64 +107,64 @@
   true)
 
 ; DOMAIN_001_01 (matches Coq: Theorem DOMAIN_001_01)
-(assert (= true true)) ; DOMAIN_001_01 [untranslatable]
+(assert (forall ((v Int)) (let ((t (mkTMR v v v))) (= (tmr_read t) (some v))))) ; DOMAIN_001_01
 
 ; DOMAIN_001_02 (matches Coq: Theorem DOMAIN_001_02)
-(assert (= true true)) ; DOMAIN_001_02 [untranslatable]
+(assert (forall ((a Int) (b Int) (c Int)) (=> (or (= a b) (= b c) (= a c)) (exists ((v Bool)) (and (= (majority_vote_nat a b c) (some v)) (or (= v a) (= v b) (= v c))))))) ; DOMAIN_001_02
 
 ; DOMAIN_001_03 (matches Coq: Theorem DOMAIN_001_03)
-(assert (= true true)) ; DOMAIN_001_03 [untranslatable]
+(assert (forall ((data Word)) (= (ecc_syndrome ecc_clean) 0))) ; DOMAIN_001_03
 
 ; DOMAIN_001_04 (matches Coq: Theorem DOMAIN_001_04)
 (assert (forall ((w Word)) (= (hamming_distance w w) 0))) ; DOMAIN_001_04
 
 ; DOMAIN_001_05 (matches Coq: Theorem DOMAIN_001_05)
-(assert (= true true)) ; DOMAIN_001_05 [untranslatable]
+(assert (forall ((wd Watchdog)) (forall ((current_time Int)) (=> (> current_time (+ (wd_last_kick wd) (wd_timeout wd))) (= (watchdog_expired wd current_time) true))))) ; DOMAIN_001_05
 
 ; DOMAIN_001_06 (matches Coq: Theorem DOMAIN_001_06)
-(assert (= true true)) ; DOMAIN_001_06 [untranslatable]
+(assert (forall ((state Int) (timestamp Int)) (let ((cp (mkCP state timestamp true))) (= (restore_checkpoint cp) (some state))))) ; DOMAIN_001_06
 
 ; DOMAIN_001_07 (matches Coq: Theorem DOMAIN_001_07)
-(assert (= true true)) ; DOMAIN_001_07 [untranslatable]
+(assert (forall ((v Int)) (let ((t (store_critical v))) (and (= (tmr_copy1 t) v) (= (tmr_copy2 t) v) (= (tmr_copy3 t) v))))) ; DOMAIN_001_07
 
 ; DOMAIN_001_08 (matches Coq: Theorem DOMAIN_001_08)
-(assert (= true true)) ; DOMAIN_001_08 [untranslatable]
+(assert (forall ((cfs CFSignature)) (forall ((addr Int)) (=> (= (In addr (cfs_expected_next cfs)) true) (= (cf_valid cfs addr) true))))) ; DOMAIN_001_08
 
 ; DOMAIN_001_09 (matches Coq: Theorem DOMAIN_001_09)
-(assert (= true true)) ; DOMAIN_001_09 [untranslatable]
+(assert (forall ((canary Int) (data Int)) (let ((sf (mkSF canary data canary))) (= (canary_valid sf) true)))) ; DOMAIN_001_09
 
 ; DOMAIN_001_09_corrupted (matches Coq: Theorem DOMAIN_001_09_corrupted)
-(assert (= true true)) ; DOMAIN_001_09_corrupted [untranslatable]
+(assert (forall ((canary Int) (data Int) (expected Int)) (=> (not (= canary expected)) (let ((sf (mkSF canary data expected))) (= (canary_valid sf) false))))) ; DOMAIN_001_09_corrupted
 
 ; DOMAIN_001_10 (matches Coq: Theorem DOMAIN_001_10)
-(assert (= true true)) ; DOMAIN_001_10 [untranslatable]
+(assert (forall ((addr Int) (found Int) (corrected Int)) (=> (<= corrected found) (let ((ss (mkScrub addr found corrected))) (= (scrub_effective ss) true))))) ; DOMAIN_001_10
 
 ; DOMAIN_001_11 (matches Coq: Theorem DOMAIN_001_11)
 (assert (forall ((current_mode SystemMode)) (= (seu_response true current_mode) SafeMode))) ; DOMAIN_001_11
 
 ; DOMAIN_001_12 (matches Coq: Theorem DOMAIN_001_12)
-(assert (= true true)) ; DOMAIN_001_12 [untranslatable]
+(assert (forall ((v Int)) (forall ((threshold Int)) (=> (<= threshold 3) (= (nvr_consensus nvr) (some v)))))) ; DOMAIN_001_12
 
 ; DOMAIN_001_13 (matches Coq: Theorem DOMAIN_001_13)
-(assert (= true true)) ; DOMAIN_001_13 [untranslatable]
+(assert (forall ((p_actual Probability) (p_threshold Probability)) (=> (< (* (prob_num p_actual) (prob_denom p_threshold)) (* (prob_num p_threshold) (prob_denom p_actual))) (= (prob_lt p_actual p_threshold) true)))) ; DOMAIN_001_13
 
 ; DOMAIN_001_14 (matches Coq: Theorem DOMAIN_001_14)
-(assert (= true true)) ; DOMAIN_001_14 [untranslatable]
+(assert (forall ((mttr Int) (requirement Int)) (=> (<= mttr requirement) (let ((rm (mkRM mttr requirement))) (= (recovery_within_bound rm) true))))) ; DOMAIN_001_14
 
 ; DOMAIN_001_15 (matches Coq: Theorem DOMAIN_001_15)
-(assert (= true true)) ; DOMAIN_001_15 [untranslatable]
+(assert (forall ((v Int)) (let ((cd (mkCD v v v 0))) (= (cd_recover cd) v)))) ; DOMAIN_001_15
 
 ; DOMAIN_001_15_single_corruption (matches Coq: Theorem DOMAIN_001_15_single_corruption)
-(assert (= true true)) ; DOMAIN_001_15_single_corruption [untranslatable]
+(assert (forall ((v Int) (corrupted Int)) (let ((cd (mkCD corrupted v v 0))) (= (cd_recover cd) v)))) ; DOMAIN_001_15_single_corruption
 
 ; DOMAIN_001_16 (matches Coq: Theorem DOMAIN_001_16)
 (assert (forall ((b Bool)) (= (majority_vote b b b) b))) ; DOMAIN_001_16
 
 ; DOMAIN_001_17 (matches Coq: Theorem DOMAIN_001_17)
-(assert (= true true)) ; DOMAIN_001_17 [untranslatable]
+(assert (forall ((v Int)) (forall ((chk Int)) (= (cd_consistent (mkCD v v v chk)) true)))) ; DOMAIN_001_17
 
 ; DOMAIN_001_18 (matches Coq: Theorem DOMAIN_001_18)
-(assert (= true true)) ; DOMAIN_001_18 [untranslatable]
+(assert (forall ((b Bit)) (= (flip_bit (flip_bit b)) b))) ; DOMAIN_001_18
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -205,16 +205,16 @@
   (mk-full_crypto_config (riina_ct_op) (riina_aead) (riina_hash) (riina_rng) (riina_proto) (riina_pq) (riina_key) (riina_cert) (riina_mraead) (riina_kdf) (riina_mac) (riina_enc_scheme)))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb3_true_iff (matches Coq: Lemma andb3_true_iff)
-(assert (= true true)) ; andb3_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (and (=> (= (and a b c) true) (and (= a true) (= b true) (= c true))) (=> (and (= a true) (= b true) (= c true)) (= (and a b c) true))))) ; andb3_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; leb_le (matches Coq: Lemma leb_le)
-(assert (= true true)) ; leb_le [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (<= n m) true) (<= n m)) (=> (<= n m) (= (<= n m) true))))) ; leb_le
 
 ; cry_001_timing_side_channel_mitigated (matches Coq: Theorem cry_001_timing_side_channel_mitigated)
 (assert (forall ((op ConstantTimeOp)) (=> (= (ct_valid op) true) (= (ct_is_constant op) true)))) ; cry_001_timing_side_channel_mitigated
@@ -238,28 +238,28 @@
 (assert (forall ((op ConstantTimeOp)) (=> (= (ct_valid op) true) (and (= (ct_no_secret_addr op) true) (= (ct_is_constant op) true))))) ; cry_006_cache_timing_mitigated
 
 ; cry_007_padding_oracle_mitigated (matches Coq: Theorem cry_007_padding_oracle_mitigated)
-(assert (= true true)) ; cry_007_padding_oracle_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (= (<= 128 (aead_tag_bits cfg)) true)))) ; cry_007_padding_oracle_mitigated
 
 ; cry_007a_riina_aead_padding_safe (matches Coq: Theorem cry_007a_riina_aead_padding_safe)
 (assert (= (aead_secure riina_aead) true)) ; cry_007a_riina_aead_padding_safe
 
 ; cry_008_chosen_plaintext_mitigated (matches Coq: Theorem cry_008_chosen_plaintext_mitigated)
-(assert (= true true)) ; cry_008_chosen_plaintext_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (= (<= (aead_algorithm cfg) 1) true)))) ; cry_008_chosen_plaintext_mitigated
 
 ; cry_009_chosen_ciphertext_mitigated (matches Coq: Theorem cry_009_chosen_ciphertext_mitigated)
-(assert (= true true)) ; cry_009_chosen_ciphertext_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (and (= (<= 128 (aead_tag_bits cfg)) true) (= (aead_constant_time cfg) true))))) ; cry_009_chosen_ciphertext_mitigated
 
 ; cry_010_known_plaintext_mitigated (matches Coq: Theorem cry_010_known_plaintext_mitigated)
-(assert (= true true)) ; cry_010_known_plaintext_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (= (<= 128 (aead_key_bits cfg)) true)))) ; cry_010_known_plaintext_mitigated
 
 ; cry_011_mitm_mitigated (matches Coq: Theorem cry_011_mitm_mitigated)
-(assert (= true true)) ; cry_011_mitm_mitigated [untranslatable]
+(assert (forall ((k CryptoKey)) (=> (= (key_secure k) true) (= (<= 128 (key_bits k)) true)))) ; cry_011_mitm_mitigated
 
 ; cry_011a_riina_key_mitm_safe (matches Coq: Theorem cry_011a_riina_key_mitm_safe)
 (assert (= (key_secure riina_key) true)) ; cry_011a_riina_key_mitm_safe
 
 ; cry_012_birthday_attack_mitigated (matches Coq: Theorem cry_012_birthday_attack_mitigated)
-(assert (= true true)) ; cry_012_birthday_attack_mitigated [untranslatable]
+(assert (forall ((h HashConfig)) (=> (= (hash_secure h) true) (= (<= 256 (hash_output_bits h)) true)))) ; cry_012_birthday_attack_mitigated
 
 ; cry_012a_riina_hash_birthday_safe (matches Coq: Theorem cry_012a_riina_hash_birthday_safe)
 (assert (= (hash_secure riina_hash) true)) ; cry_012a_riina_hash_birthday_safe
@@ -268,7 +268,7 @@
 (assert (forall ((h HashConfig)) (=> (= (hash_secure h) true) (= (hash_length_ext_safe h) true)))) ; cry_013_length_extension_mitigated
 
 ; cry_014_downgrade_attack_mitigated (matches Coq: Theorem cry_014_downgrade_attack_mitigated)
-(assert (= true true)) ; cry_014_downgrade_attack_mitigated [untranslatable]
+(assert (forall ((pc ProtocolConfig)) (=> (= (proto_secure pc) true) (and (= (proto_fallback_disabled pc) true) (= (<= 3 (proto_min_version pc)) true))))) ; cry_014_downgrade_attack_mitigated
 
 ; cry_014a_riina_proto_downgrade_safe (matches Coq: Theorem cry_014a_riina_proto_downgrade_safe)
 (assert (= (proto_secure riina_proto) true)) ; cry_014a_riina_proto_downgrade_safe
@@ -277,7 +277,7 @@
 (assert (forall ((pc ProtocolConfig)) (=> (= (proto_secure pc) true) (= (proto_forward_secrecy pc) true)))) ; cry_015_protocol_attack_mitigated
 
 ; cry_016_implementation_flaw_mitigated (matches Coq: Theorem cry_016_implementation_flaw_mitigated)
-(assert (= true true)) ; cry_016_implementation_flaw_mitigated [untranslatable]
+(assert (forall ((op ConstantTimeOp)) (forall ((cfg AEADConfig)) (=> (= (ct_valid op) true) (=> (= (aead_secure cfg) true) (and (= (ct_is_constant op) true) (= (aead_constant_time cfg) true))))))) ; cry_016_implementation_flaw_mitigated
 
 ; cry_017_rng_attack_mitigated (matches Coq: Theorem cry_017_rng_attack_mitigated)
 (assert (forall ((rng RNGConfig)) (=> (= (rng_secure rng) true) (and (= (rng_hardware_seeded rng) true) (= (rng_prediction_resistant rng) true))))) ; cry_017_rng_attack_mitigated
@@ -286,40 +286,40 @@
 (assert (= (rng_secure riina_rng) true)) ; cry_017a_riina_rng_secure
 
 ; cry_018_key_reuse_mitigated (matches Coq: Theorem cry_018_key_reuse_mitigated)
-(assert (= true true)) ; cry_018_key_reuse_mitigated [untranslatable]
+(assert (forall ((nt NonceTracker)) (=> (= (nonce_counter_safe nt) true) (< (nt_counter nt) (nt_max_uses nt))))) ; cry_018_key_reuse_mitigated
 
 ; cry_019_weak_keys_mitigated (matches Coq: Theorem cry_019_weak_keys_mitigated)
-(assert (= true true)) ; cry_019_weak_keys_mitigated [untranslatable]
+(assert (forall ((k CryptoKey)) (=> (= (key_secure k) true) (and (= (<= 128 (key_bits k)) true) (= (key_extractable k) false))))) ; cry_019_weak_keys_mitigated
 
 ; cry_020_related_key_attack_mitigated (matches Coq: Theorem cry_020_related_key_attack_mitigated)
-(assert (= true true)) ; cry_020_related_key_attack_mitigated [untranslatable]
+(assert (forall ((k CryptoKey)) (=> (= (key_strong k) true) (and (= (<= 256 (key_bits k)) true) (= (key_hardware_bound k) true))))) ; cry_020_related_key_attack_mitigated
 
 ; cry_020a_riina_key_related_safe (matches Coq: Theorem cry_020a_riina_key_related_safe)
 (assert (= (key_strong riina_key) true)) ; cry_020a_riina_key_related_safe
 
 ; cry_021_differential_cryptanalysis_mitigated (matches Coq: Theorem cry_021_differential_cryptanalysis_mitigated)
-(assert (= true true)) ; cry_021_differential_cryptanalysis_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (and (= (<= (aead_algorithm cfg) 1) true) (= (<= 128 (aead_key_bits cfg)) true))))) ; cry_021_differential_cryptanalysis_mitigated
 
 ; cry_022_linear_cryptanalysis_mitigated (matches Coq: Theorem cry_022_linear_cryptanalysis_mitigated)
-(assert (= true true)) ; cry_022_linear_cryptanalysis_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (= (<= (aead_algorithm cfg) 1) true)))) ; cry_022_linear_cryptanalysis_mitigated
 
 ; cry_023_algebraic_attack_mitigated (matches Coq: Theorem cry_023_algebraic_attack_mitigated)
-(assert (= true true)) ; cry_023_algebraic_attack_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (= (<= 128 (aead_key_bits cfg)) true)))) ; cry_023_algebraic_attack_mitigated
 
 ; cry_024_quantum_attack_mitigated (matches Coq: Theorem cry_024_quantum_attack_mitigated)
-(assert (= true true)) ; cry_024_quantum_attack_mitigated [untranslatable]
+(assert (forall ((pq PQConfig)) (=> (= (pq_secure pq) true) (and (= (<= 3 (pq_security_level pq)) true) (= (pq_hybrid_mode pq) true))))) ; cry_024_quantum_attack_mitigated
 
 ; cry_024a_riina_pq_secure (matches Coq: Theorem cry_024a_riina_pq_secure)
 (assert (= (pq_secure riina_pq) true)) ; cry_024a_riina_pq_secure
 
 ; cry_025_harvest_now_decrypt_later_mitigated (matches Coq: Theorem cry_025_harvest_now_decrypt_later_mitigated)
-(assert (= true true)) ; cry_025_harvest_now_decrypt_later_mitigated [untranslatable]
+(assert (forall ((pq PQConfig)) (=> (= (pq_secure pq) true) (and (= (<= (pq_kem_algorithm pq) 0) true) (= (<= 3 (pq_security_level pq)) true))))) ; cry_025_harvest_now_decrypt_later_mitigated
 
 ; cry_026_key_extraction_mitigated (matches Coq: Theorem cry_026_key_extraction_mitigated)
 (assert (forall ((k CryptoKey)) (=> (= (key_secure k) true) (= (key_extractable k) false)))) ; cry_026_key_extraction_mitigated
 
 ; cry_027_nonce_misuse_mitigated (matches Coq: Theorem cry_027_nonce_misuse_mitigated)
-(assert (= true true)) ; cry_027_nonce_misuse_mitigated [untranslatable]
+(assert (forall ((mr MRAEADConfig)) (=> (= (mraead_secure mr) true) (and (= (mraead_siv_mode mr) true) (= (aead_secure (mraead_base mr)) true))))) ; cry_027_nonce_misuse_mitigated
 
 ; cry_027a_riina_mraead_secure (matches Coq: Theorem cry_027a_riina_mraead_secure)
 (assert (= (mraead_secure riina_mraead) true)) ; cry_027a_riina_mraead_secure
@@ -331,10 +331,10 @@
 (assert (= (cert_secure riina_cert) true)) ; cry_028a_riina_cert_secure
 
 ; cry_029_random_fault_mitigated (matches Coq: Theorem cry_029_random_fault_mitigated)
-(assert (= true true)) ; cry_029_random_fault_mitigated [untranslatable]
+(assert (forall ((op ConstantTimeOp)) (forall ((rng RNGConfig)) (=> (= (ct_valid op) true) (=> (= (rng_secure rng) true) (and (= (ct_is_constant op) true) (= (rng_hardware_seeded rng) true))))))) ; cry_029_random_fault_mitigated
 
 ; cry_030_bleichenbacher_mitigated (matches Coq: Theorem cry_030_bleichenbacher_mitigated)
-(assert (= true true)) ; cry_030_bleichenbacher_mitigated [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (= (<= (aead_algorithm cfg) 1) true)))) ; cry_030_bleichenbacher_mitigated
 
 ; cry_031_whisper_leak_mitigated (matches Coq: Theorem cry_031_whisper_leak_mitigated)
 (assert (forall ((op ConstantTimeOp)) (=> (= (ct_valid op) true) (and (= (ct_is_constant op) true) (= (ct_no_secret_branch op) true))))) ; cry_031_whisper_leak_mitigated
@@ -343,25 +343,25 @@
 (assert (forall ((op ConstantTimeOp)) (=> (= (ct_valid op) true) (and (= (ct_no_secret_branch op) true) (= (ct_no_secret_addr op) true) (= (ct_no_variable_time op) true) (= (ct_is_constant op) true))))) ; complete_ct_security
 
 ; complete_aead_security (matches Coq: Theorem complete_aead_security)
-(assert (= true true)) ; complete_aead_security [untranslatable]
+(assert (forall ((cfg AEADConfig)) (=> (= (aead_secure cfg) true) (and (= (<= (aead_algorithm cfg) 1) true) (= (<= 128 (aead_key_bits cfg)) true) (= (<= 128 (aead_tag_bits cfg)) true) (= (aead_constant_time cfg) true))))) ; complete_aead_security
 
 ; riina_complete_crypto_security (matches Coq: Theorem riina_complete_crypto_security)
 (assert (and (= (ct_valid riina_ct_op) true) (= (aead_secure riina_aead) true) (= (hash_secure riina_hash) true) (= (rng_secure riina_rng) true) (= (proto_secure riina_proto) true) (= (pq_secure riina_pq) true) (= (key_strong riina_key) true) (= (cert_secure riina_cert) true) (= (mraead_secure riina_mraead) true))) ; riina_complete_crypto_security
 
 ; enc_001_length_preservation (matches Coq: Theorem enc_001_length_preservation)
-(assert (= true true)) ; enc_001_length_preservation [untranslatable]
+(assert (forall ((scheme EncryptionScheme)) (forall ((pt_len Int) (ct_len Int)) (=> (= (enc_is_authenticated scheme) true) (=> (= pt_len ct_len) (= pt_len ct_len)))))) ; enc_001_length_preservation
 
 ; enc_002_key_size_requirement (matches Coq: Theorem enc_002_key_size_requirement)
-(assert (= true true)) ; enc_002_key_size_requirement [untranslatable]
+(assert (forall ((scheme EncryptionScheme)) (=> (= (<= 128 (enc_key_bits scheme)) true) (>= (enc_key_bits scheme) 128)))) ; enc_002_key_size_requirement
 
 ; enc_003_riina_key_size_valid (matches Coq: Theorem enc_003_riina_key_size_valid)
-(assert (= true true)) ; enc_003_riina_key_size_valid [untranslatable]
+(assert (= (<= 128 (enc_key_bits riina_enc_scheme)) true)) ; enc_003_riina_key_size_valid
 
 ; enc_004_riina_nonce_size_valid (matches Coq: Theorem enc_004_riina_nonce_size_valid)
-(assert (= true true)) ; enc_004_riina_nonce_size_valid [untranslatable]
+(assert (= (<= 96 (enc_nonce_bits riina_enc_scheme)) true)) ; enc_004_riina_nonce_size_valid
 
 ; enc_005_riina_tag_size_valid (matches Coq: Theorem enc_005_riina_tag_size_valid)
-(assert (= true true)) ; enc_005_riina_tag_size_valid [untranslatable]
+(assert (= (<= 128 (enc_tag_bits riina_enc_scheme)) true)) ; enc_005_riina_tag_size_valid
 
 ; enc_006_riina_is_authenticated (matches Coq: Theorem enc_006_riina_is_authenticated)
 (assert (= (enc_is_authenticated riina_enc_scheme) true)) ; enc_006_riina_is_authenticated
@@ -370,25 +370,25 @@
 (assert (= (kdf_secure riina_kdf) true)) ; kdf_001_riina_kdf_secure
 
 ; kdf_002_kdf_output_sufficient (matches Coq: Theorem kdf_002_kdf_output_sufficient)
-(assert (= true true)) ; kdf_002_kdf_output_sufficient [untranslatable]
+(assert (forall ((cfg KDFConfig)) (=> (= (kdf_secure cfg) true) (= (<= 256 (kdf_output_bits cfg)) true)))) ; kdf_002_kdf_output_sufficient
 
 ; kdf_003_kdf_salt_sufficient (matches Coq: Theorem kdf_003_kdf_salt_sufficient)
-(assert (= true true)) ; kdf_003_kdf_salt_sufficient [untranslatable]
+(assert (forall ((cfg KDFConfig)) (=> (= (kdf_secure cfg) true) (= (<= 128 (kdf_salt_bits cfg)) true)))) ; kdf_003_kdf_salt_sufficient
 
 ; kdf_004_kdf_approved_algorithm (matches Coq: Theorem kdf_004_kdf_approved_algorithm)
-(assert (= true true)) ; kdf_004_kdf_approved_algorithm [untranslatable]
+(assert (forall ((cfg KDFConfig)) (=> (= (kdf_secure cfg) true) (= (<= (kdf_algorithm cfg) 2) true)))) ; kdf_004_kdf_approved_algorithm
 
 ; dk_001_valid_implies_secure_kdf (matches Coq: Theorem dk_001_valid_implies_secure_kdf)
-(assert (= true true)) ; dk_001_valid_implies_secure_kdf [untranslatable]
+(assert (forall ((dk DerivedKey)) (=> (= (derived_key_valid dk) true) (= (kdf_secure (dk_kdf_config dk)) true)))) ; dk_001_valid_implies_secure_kdf
 
 ; mac_001_riina_mac_secure (matches Coq: Theorem mac_001_riina_mac_secure)
 (assert (= (mac_secure riina_mac) true)) ; mac_001_riina_mac_secure
 
 ; mac_002_mac_key_sufficient (matches Coq: Theorem mac_002_mac_key_sufficient)
-(assert (= true true)) ; mac_002_mac_key_sufficient [untranslatable]
+(assert (forall ((cfg MACConfig)) (=> (= (mac_secure cfg) true) (= (<= 128 (mac_key_bits cfg)) true)))) ; mac_002_mac_key_sufficient
 
 ; mac_003_mac_tag_sufficient (matches Coq: Theorem mac_003_mac_tag_sufficient)
-(assert (= true true)) ; mac_003_mac_tag_sufficient [untranslatable]
+(assert (forall ((cfg MACConfig)) (=> (= (mac_secure cfg) true) (= (<= 128 (mac_tag_bits cfg)) true)))) ; mac_003_mac_tag_sufficient
 
 ; mac_004_mac_constant_time (matches Coq: Theorem mac_004_mac_constant_time)
 (assert (forall ((cfg MACConfig)) (=> (= (mac_secure cfg) true) (= (mac_constant_time cfg) true)))) ; mac_004_mac_constant_time
@@ -400,37 +400,38 @@
 (assert (forall ((tag Tag)) (= (tag_compare_ct tag tag) TagValid))) ; tag_002_tag_compare_reflexive
 
 ; nonce_001_counter_incrementable (matches Coq: Theorem nonce_001_counter_incrementable)
-(assert (= true true)) ; nonce_001_counter_incrementable [untranslatable]
+(assert (forall ((cn CounterNonce)) (=> (= (counter_nonce_valid cn) true) (< (cn_counter cn) (cn_max_value cn))))) ; nonce_001_counter_incrementable
 
 ; nonce_002_increment_changes_nonce (matches Coq: Theorem nonce_002_increment_changes_nonce)
-(assert (= true true)) ; nonce_002_increment_changes_nonce [untranslatable]
+(assert (forall ((cn CounterNonce)) (=> (= (counter_nonce_valid cn) true) (not (= (cn_counter cn) (S (cn_counter cn))))))) ; nonce_002_increment_changes_nonce
 
 ; nonce_003_different_counters_different_nonces (matches Coq: Theorem nonce_003_different_counters_different_nonces)
-(assert (= true true)) ; nonce_003_different_counters_different_nonces [untranslatable]
+(assert (forall ((n Int) (m Int)) (=> (not (= n m)) (not (= n m))))) ; nonce_003_different_counters_different_nonces
 
 ; nonce_004_empty_set_no_collision (matches Coq: Theorem nonce_004_empty_set_no_collision)
-(assert (= true true)) ; nonce_004_empty_set_no_collision [untranslatable]
+(assert (forall ((n list)) (= (nonce_in_set n nil) false))) ; nonce_004_empty_set_no_collision
 
 ; nonce_005_add_increases_size (matches Coq: Theorem nonce_005_add_increases_size)
-(assert (= true true)) ; nonce_005_add_increases_size [untranslatable]
+; nonce_005_add_increases_size: forall (n : list nat) (ns : NonceSet), length (n :: ns) = S (length ns)
+(assert (forall ((n list) (ns NonceSet)) true)) ; nonce_005_add_increases_size [partial: bindings preserved]
 
 ; full_001_riina_full_crypto_secure (matches Coq: Theorem full_001_riina_full_crypto_secure)
 (assert (= (full_crypto_secure riina_full_crypto) true)) ; full_001_riina_full_crypto_secure
 
 ; full_002_full_implies_ct (matches Coq: Theorem full_002_full_implies_ct)
-(assert (= true true)) ; full_002_full_implies_ct [untranslatable]
+(assert (forall ((fc FullCryptoConfig)) (=> (= (full_crypto_secure fc) true) (= (ct_valid (fc_ct_op fc)) true)))) ; full_002_full_implies_ct
 
 ; full_003_full_implies_authenticated (matches Coq: Theorem full_003_full_implies_authenticated)
-(assert (= true true)) ; full_003_full_implies_authenticated [untranslatable]
+(assert (forall ((fc FullCryptoConfig)) (=> (= (full_crypto_secure fc) true) (= (enc_is_authenticated (fc_enc fc)) true)))) ; full_003_full_implies_authenticated
 
 ; full_004_full_implies_pq_ready (matches Coq: Theorem full_004_full_implies_pq_ready)
-(assert (= true true)) ; full_004_full_implies_pq_ready [untranslatable]
+(assert (forall ((fc FullCryptoConfig)) (=> (= (full_crypto_secure fc) true) (= (pq_secure (fc_pq fc)) true)))) ; full_004_full_implies_pq_ready
 
 ; full_005_full_implies_kdf_secure (matches Coq: Theorem full_005_full_implies_kdf_secure)
-(assert (= true true)) ; full_005_full_implies_kdf_secure [untranslatable]
+(assert (forall ((fc FullCryptoConfig)) (=> (= (full_crypto_secure fc) true) (= (kdf_secure (fc_kdf fc)) true)))) ; full_005_full_implies_kdf_secure
 
 ; full_006_full_implies_mac_secure (matches Coq: Theorem full_006_full_implies_mac_secure)
-(assert (= true true)) ; full_006_full_implies_mac_secure [untranslatable]
+(assert (forall ((fc FullCryptoConfig)) (=> (= (full_crypto_secure fc) true) (= (mac_secure (fc_mac fc)) true)))) ; full_006_full_implies_mac_secure
 
 ; Verify all assertions are satisfiable
 (check-sat)

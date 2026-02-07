@@ -126,7 +126,7 @@
 (assert (and (= (display_compliant MaskedPAN) true) (= (display_compliant TokenizedPAN) true))) ; COMPLY_002_01_pan_masking_valid
 
 ; COMPLY_002_02_pan_encryption (matches Coq: Theorem COMPLY_002_02_pan_encryption)
-(assert (= true true)) ; COMPLY_002_02_pan_encryption [untranslatable]
+(assert (forall ((enc EncState)) (=> (= (pci_compliant_encryption enc PAN) true) (or (= enc AES256) (= enc Tokenized))))) ; COMPLY_002_02_pan_encryption
 
 ; COMPLY_002_02_pan_plain_forbidden (matches Coq: Theorem COMPLY_002_02_pan_plain_forbidden)
 (assert (= (pci_compliant_encryption Plain PAN) false)) ; COMPLY_002_02_pan_plain_forbidden
@@ -147,10 +147,10 @@
 (assert (forall ((enc EncState)) (= (pci_compliant_encryption enc PIN) false))) ; COMPLY_002_04_pin_no_compliant_encryption
 
 ; COMPLY_002_05_key_rotation_detection (matches Coq: Theorem COMPLY_002_05_key_rotation_detection)
-(assert (= true true)) ; COMPLY_002_05_key_rotation_detection [untranslatable]
+(assert (forall ((k KeyState)) (forall ((current_time Int)) (=> (< (+ (key_creation_time k) (key_rotation_period k)) current_time) (= (key_needs_rotation k current_time) true))))) ; COMPLY_002_05_key_rotation_detection
 
 ; COMPLY_002_05_key_no_rotation_needed (matches Coq: Theorem COMPLY_002_05_key_no_rotation_needed)
-(assert (= true true)) ; COMPLY_002_05_key_no_rotation_needed [untranslatable]
+(assert (forall ((k KeyState)) (forall ((current_time Int)) (=> (<= current_time (+ (key_creation_time k) (key_rotation_period k))) (= (key_needs_rotation k current_time) false))))) ; COMPLY_002_05_key_no_rotation_needed
 
 ; COMPLY_002_06_access_requires_need_to_know (matches Coq: Theorem COMPLY_002_06_access_requires_need_to_know)
 (assert (forall ((u User)) (=> (= (user_need_to_know u) false) (= (grant_chd_access u) false)))) ; COMPLY_002_06_access_requires_need_to_know
@@ -159,31 +159,31 @@
 (assert (forall ((u User)) (=> (= (user_access_level u) NoAccess) (= (grant_chd_access u) false)))) ; COMPLY_002_06_no_access_level_denied
 
 ; COMPLY_002_07_unique_ids_singleton (matches Coq: Theorem COMPLY_002_07_unique_ids_singleton)
-(assert (= true true)) ; COMPLY_002_07_unique_ids_singleton [untranslatable]
+(assert (forall ((u User)) (= (users_unique_ids (insert u nil)) true))) ; COMPLY_002_07_unique_ids_singleton
 
 ; COMPLY_002_07_unique_ids_empty (matches Coq: Theorem COMPLY_002_07_unique_ids_empty)
-(assert (= true true)) ; COMPLY_002_07_unique_ids_empty [untranslatable]
+(assert (= (users_unique_ids nil) true)) ; COMPLY_002_07_unique_ids_empty
 
 ; COMPLY_002_08_mfa_required (matches Coq: Theorem COMPLY_002_08_mfa_required)
-(assert (= true true)) ; COMPLY_002_08_mfa_required [untranslatable]
+(assert (forall ((u User)) (=> (= (user_mfa_enabled u) false) (=> (not (= (user_access_level u) NoAccess)) (= (grant_chd_access u) false))))) ; COMPLY_002_08_mfa_required
 
 ; COMPLY_002_08_access_granted_implies_mfa (matches Coq: Theorem COMPLY_002_08_access_granted_implies_mfa)
 (assert (forall ((u User)) (=> (= (grant_chd_access u) true) (= (user_mfa_enabled u) true)))) ; COMPLY_002_08_access_granted_implies_mfa
 
 ; COMPLY_002_09_audit_entry_has_timestamp (matches Coq: Theorem COMPLY_002_09_audit_entry_has_timestamp)
-(assert (= true true)) ; COMPLY_002_09_audit_entry_has_timestamp [untranslatable]
+(assert (forall ((ts Int) (usr Int) (act Int) (chd CHDType) (succ Bool) (prev Int)) (= (pci_timestamp (create_audit_entry ts usr act chd succ prev)) ts))) ; COMPLY_002_09_audit_entry_has_timestamp
 
 ; COMPLY_002_09_audit_entry_has_user (matches Coq: Theorem COMPLY_002_09_audit_entry_has_user)
-(assert (= true true)) ; COMPLY_002_09_audit_entry_has_user [untranslatable]
+(assert (forall ((ts Int) (usr Int) (act Int) (chd CHDType) (succ Bool) (prev Int)) (= (pci_user (create_audit_entry ts usr act chd succ prev)) usr))) ; COMPLY_002_09_audit_entry_has_user
 
 ; COMPLY_002_09_audit_entry_has_action (matches Coq: Theorem COMPLY_002_09_audit_entry_has_action)
-(assert (= true true)) ; COMPLY_002_09_audit_entry_has_action [untranslatable]
+(assert (forall ((ts Int) (usr Int) (act Int) (chd CHDType) (succ Bool) (prev Int)) (= (pci_action (create_audit_entry ts usr act chd succ prev)) act))) ; COMPLY_002_09_audit_entry_has_action
 
 ; COMPLY_002_10_audit_has_hash (matches Coq: Theorem COMPLY_002_10_audit_has_hash)
-(assert (= true true)) ; COMPLY_002_10_audit_has_hash [untranslatable]
+(assert (forall ((ts Int) (usr Int) (act Int) (chd CHDType) (succ Bool) (prev Int)) (= (pci_hash (create_audit_entry ts usr act chd succ prev)) (+ (+ (+ prev ts) usr) act)))) ; COMPLY_002_10_audit_has_hash
 
 ; COMPLY_002_10_empty_log_valid (matches Coq: Theorem COMPLY_002_10_empty_log_valid)
-(assert (= true true)) ; COMPLY_002_10_empty_log_valid [untranslatable]
+(assert (forall ((h Int)) (= (audit_chain_valid nil h) true))) ; COMPLY_002_10_empty_log_valid
 
 ; COMPLY_002_11_tls12_compliant (matches Coq: Theorem COMPLY_002_11_tls12_compliant)
 (assert (= (tls_compliant TLS12) true)) ; COMPLY_002_11_tls12_compliant
@@ -198,16 +198,16 @@
 (assert (forall ((t Transmission)) (=> (= (transmission_compliant t) true) (= (trans_encrypted t) true)))) ; COMPLY_002_11_transmission_requires_encryption
 
 ; COMPLY_002_12_token_no_key_no_pan (matches Coq: Theorem COMPLY_002_12_token_no_key_no_pan)
-(assert (= true true)) ; COMPLY_002_12_token_no_key_no_pan [untranslatable]
+(assert (forall ((vault TokenVault)) (forall ((token Int)) (= (token_lookup vault token false) none)))) ; COMPLY_002_12_token_no_key_no_pan
 
 ; COMPLY_002_12_tokenization_irreversible_without_key (matches Coq: Theorem COMPLY_002_12_tokenization_irreversible_without_key)
-(assert (= true true)) ; COMPLY_002_12_tokenization_irreversible_without_key [untranslatable]
+(assert (forall ((vault TokenVault)) (forall ((token Int) (pan Int)) (=> (= (token_lookup vault token false) (some pan)) false)))) ; COMPLY_002_12_tokenization_irreversible_without_key
 
 ; COMPLY_002_13_past_retention_detected (matches Coq: Theorem COMPLY_002_13_past_retention_detected)
-(assert (= true true)) ; COMPLY_002_13_past_retention_detected [untranslatable]
+(assert (forall ((creation Int) (current Int) (max_days Int)) (=> (< (+ creation max_days) current) (= (data_past_retention creation current max_days) true)))) ; COMPLY_002_13_past_retention_detected
 
 ; COMPLY_002_13_within_retention_ok (matches Coq: Theorem COMPLY_002_13_within_retention_ok)
-(assert (= true true)) ; COMPLY_002_13_within_retention_ok [untranslatable]
+(assert (forall ((creation Int) (current Int) (max_days Int)) (=> (<= current (+ creation max_days)) (= (data_past_retention creation current max_days) false)))) ; COMPLY_002_13_within_retention_ok
 
 ; COMPLY_002_14_secure_deletion_unrecoverable (matches Coq: Theorem COMPLY_002_14_secure_deletion_unrecoverable)
 (assert (forall ((ds DeletionState)) (=> (= (deletion_secure ds) true) (= (deletion_unrecoverable ds) true)))) ; COMPLY_002_14_secure_deletion_unrecoverable
@@ -228,7 +228,7 @@
 (assert (forall ((z NetworkZone)) (=> (= (zone_is_cde z) false) (= (zone_compliant z) true)))) ; COMPLY_002_15_non_cde_always_compliant
 
 ; COMPLY_002_15_vault_isolation (matches Coq: Theorem COMPLY_002_15_vault_isolation)
-(assert (= true true)) ; COMPLY_002_15_vault_isolation [untranslatable]
+(assert (forall ((sys PCISystem)) (=> (= (vault_isolated (pci_vault sys)) true) (= (system_scope_isolated sys) true)))) ; COMPLY_002_15_vault_isolation
 
 ; Verify all assertions are satisfiable
 (check-sat)

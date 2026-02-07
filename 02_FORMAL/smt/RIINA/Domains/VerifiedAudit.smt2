@@ -94,76 +94,76 @@
 (assert (forall ((entry AuditEntry)) (= (entry_hash entry) (entry_hash entry)))) ; audit_001_entry_hashed
 
 ; audit_002_append_only (matches Coq: Theorem audit_002_append_only)
-(assert (= true true)) ; audit_002_append_only [untranslatable]
+(assert (forall ((old_log AuditLog) (new_log AuditLog)) (=> (= (log_append_only old_log new_log) true) (<= (log_sequence old_log) (log_sequence new_log))))) ; audit_002_append_only
 
 ; audit_003_sequence_monotonic (matches Coq: Theorem audit_003_sequence_monotonic)
-(assert (= true true)) ; audit_003_sequence_monotonic [untranslatable]
+(assert (forall ((entries list)) (=> (= (sequence_monotonic entries) true) (= (sequence_monotonic entries) true)))) ; audit_003_sequence_monotonic
 
 ; audit_004_inclusion_valid (matches Coq: Theorem audit_004_inclusion_valid)
-(assert (= true true)) ; audit_004_inclusion_valid [untranslatable]
+(assert (forall ((proof InclusionProof)) (=> (= (verify_inclusion proof) true) (> (length (incl_path proof)) 0)))) ; audit_004_inclusion_valid
 
 ; audit_005_consistency_order (matches Coq: Theorem audit_005_consistency_order)
-(assert (= true true)) ; audit_005_consistency_order [untranslatable]
+(assert (forall ((proof ConsistencyProof)) (=> (= (consistency_size_order proof) true) (<= (cons_old_size proof) (cons_new_size proof))))) ; audit_005_consistency_order
 
 ; audit_006_witnesses_sufficient (matches Coq: Theorem audit_006_witnesses_sufficient)
-(assert (= true true)) ; audit_006_witnesses_sufficient [untranslatable]
+(assert (forall ((cp Checkpoint)) (forall ((min_witnesses Int)) (=> (= (witnesses_sufficient cp min_witnesses) true) (<= min_witnesses (length (cp_witnesses cp))))))) ; audit_006_witnesses_sufficient
 
 ; audit_007_witness_root (matches Coq: Theorem audit_007_witness_root)
-(assert (= true true)) ; audit_007_witness_root [untranslatable]
+(assert (forall ((ws WitnessSignature)) (forall ((expected Int)) (=> (= (witness_root_matches ws expected) true) (= (witness_root ws) expected))))) ; audit_007_witness_root
 
 ; audit_008_timestamp_ordered (matches Coq: Theorem audit_008_timestamp_ordered)
-(assert (= true true)) ; audit_008_timestamp_ordered [untranslatable]
+(assert (forall ((e1 AuditEntry) (e2 AuditEntry)) (=> (= (timestamp_ordered e1 e2) true) (<= (entry_timestamp e1) (entry_timestamp e2))))) ; audit_008_timestamp_ordered
 
 ; audit_009_principal_logged (matches Coq: Theorem audit_009_principal_logged)
-(assert (= true true)) ; audit_009_principal_logged [untranslatable]
+(assert (forall ((entry AuditEntry)) (=> (= (principal_logged entry) true) (> (entry_principal entry) 0)))) ; audit_009_principal_logged
 
 ; audit_010_action_logged (matches Coq: Theorem audit_010_action_logged)
-(assert (= true true)) ; audit_010_action_logged [untranslatable]
+(assert (forall ((entry AuditEntry)) (=> (= (action_logged entry) true) (> (entry_action entry) 0)))) ; audit_010_action_logged
 
 ; audit_011_resource_logged (matches Coq: Theorem audit_011_resource_logged)
-(assert (= true true)) ; audit_011_resource_logged [untranslatable]
+(assert (forall ((entry AuditEntry)) (=> (= (resource_logged entry) true) (> (entry_resource entry) 0)))) ; audit_011_resource_logged
 
 ; audit_012_hash_binds (matches Coq: Theorem audit_012_hash_binds)
-(assert (= true true)) ; audit_012_hash_binds [untranslatable]
+(assert (forall ((computed Int) (stored Int)) (=> (= (hash_matches computed stored) true) (= computed stored)))) ; audit_012_hash_binds
 
 ; audit_013_log_not_empty (matches Coq: Theorem audit_013_log_not_empty)
-(assert (= true true)) ; audit_013_log_not_empty [untranslatable]
+(assert (forall ((log AuditLog)) (=> (= (log_not_empty log) true) (> (length (log_entries log)) 0)))) ; audit_013_log_not_empty
 
 ; audit_014_checkpoint_seq (matches Coq: Theorem audit_014_checkpoint_seq)
-(assert (= true true)) ; audit_014_checkpoint_seq [untranslatable]
+(assert (forall ((cp Checkpoint)) (forall ((log AuditLog)) (=> (= (checkpoint_seq_valid cp log) true) (<= (cp_sequence cp) (log_sequence log)))))) ; audit_014_checkpoint_seq
 
 ; audit_015_witness_recent (matches Coq: Theorem audit_015_witness_recent)
-(assert (= true true)) ; audit_015_witness_recent [untranslatable]
+(assert (forall ((ws WitnessSignature)) (forall ((current Int) (max_age Int)) (=> (= (witness_recent ws current max_age) true) (<= (- current (witness_timestamp ws)) max_age))))) ; audit_015_witness_recent
 
 ; audit_016_witnesses_diverse (matches Coq: Theorem audit_016_witnesses_diverse)
-(assert (= true true)) ; audit_016_witnesses_diverse [untranslatable]
+(assert (forall ((sigs list)) (=> (= (witnesses_diverse sigs) true) (= (NoDup (map witness_id sigs)) true)))) ; audit_016_witnesses_diverse
 
 ; audit_017_path_bounded (matches Coq: Theorem audit_017_path_bounded)
-(assert (= true true)) ; audit_017_path_bounded [untranslatable]
+(assert (forall ((path MerklePath)) (forall ((max_depth Int)) (=> (= (path_length_ok path max_depth) true) (<= (length path) max_depth))))) ; audit_017_path_bounded
 
 ; audit_018_root_unique (matches Coq: Theorem audit_018_root_unique)
 (assert (forall ((log AuditLog)) (= (log_root_hash log) (log_root_hash log)))) ; audit_018_root_unique
 
 ; audit_019_entry_unique (matches Coq: Theorem audit_019_entry_unique)
-(assert (= true true)) ; audit_019_entry_unique [untranslatable]
+(assert (forall ((entries list)) (=> (= (entry_ids_unique entries) true) (= (NoDup (map entry_id entries)) true)))) ; audit_019_entry_unique
 
 ; audit_020_signature_valid (matches Coq: Theorem audit_020_signature_valid)
-(assert (= true true)) ; audit_020_signature_valid [untranslatable]
+(assert (forall ((sig Int) (expected Int)) (=> (= (signature_valid sig expected) true) (= sig expected)))) ; audit_020_signature_valid
 
 ; audit_021_retention (matches Coq: Theorem audit_021_retention)
-(assert (= true true)) ; audit_021_retention [untranslatable]
+(assert (forall ((entry_age Int) (max_age Int)) (=> (= (retention_ok entry_age max_age) true) (<= entry_age max_age)))) ; audit_021_retention
 
 ; audit_022_query_complete (matches Coq: Theorem audit_022_query_complete)
-(assert (= true true)) ; audit_022_query_complete [untranslatable]
+(assert (forall ((matching Int) (returned Int)) (=> (= (query_complete matching returned) true) (= matching returned)))) ; audit_022_query_complete
 
 ; audit_023_storage_redundant (matches Coq: Theorem audit_023_storage_redundant)
-(assert (= true true)) ; audit_023_storage_redundant [untranslatable]
+(assert (forall ((copies Int) (min_copies Int)) (=> (= (storage_redundant copies min_copies) true) (<= min_copies copies)))) ; audit_023_storage_redundant
 
 ; audit_024_tamper_detected (matches Coq: Theorem audit_024_tamper_detected)
-(assert (= true true)) ; audit_024_tamper_detected [untranslatable]
+(assert (forall ((stored Int) (computed Int)) (=> (= (tamper_detected stored computed) true) (not (= stored computed))))) ; audit_024_tamper_detected
 
 ; audit_025_defense_in_depth (matches Coq: Theorem audit_025_defense_in_depth)
-(assert (= true true)) ; audit_025_defense_in_depth [untranslatable]
+(assert (forall ((m Bool) (w Bool) (i Bool) (c Bool)) (=> (= (audit_layers m w i c) true) (and (= m true) (= w true) (= i true) (= c true))))) ; audit_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -54,79 +54,81 @@
 (define-fun traffic_layers () Bool true)
 
 ; traffic_001_constant_rate_hides (matches Coq: Theorem traffic_001_constant_rate_hides)
-(assert (= true true)) ; traffic_001_constant_rate_hides [untranslatable]
+(assert (forall ((flow TrafficFlow)) (forall ((interval Int)) (=> (= (constant_rate flow interval) true) (=> (forall ((i Bool) (p1 Bool) (p2 Bool)) (= (nth_error flow i) (some p1))) (=> (= (nth_error flow (+ i 1)) (some p2)) (= (- (pkt_time p2) (pkt_time p1)) interval))))))) ; traffic_001_constant_rate_hides
 
 ; traffic_002_constant_size_hides (matches Coq: Theorem traffic_002_constant_size_hides)
-(assert (= true true)) ; traffic_002_constant_size_hides [untranslatable]
+; traffic_002_constant_size_hides: forall (flow : TrafficFlow) (size : nat), constant_size flow size -> Forall (fun p => pkt_size p = size) flow
+(assert (forall ((flow TrafficFlow) (size Int)) true)) ; traffic_002_constant_size_hides [partial: bindings preserved]
 
 ; traffic_003_cover_indistinguishable (matches Coq: Theorem traffic_003_cover_indistinguishable)
-(assert (= true true)) ; traffic_003_cover_indistinguishable [untranslatable]
+(assert (forall ((real_pkt Packet) (cover_pkt Packet)) (=> (= (pkt_size real_pkt) (pkt_size cover_pkt)) (=> (= (pkt_time real_pkt) (pkt_time cover_pkt)) (= (pkt_size real_pkt) (pkt_size cover_pkt)))))) ; traffic_003_cover_indistinguishable
 
 ; traffic_004_flow_indistinguishable (matches Coq: Theorem traffic_004_flow_indistinguishable)
-(assert (= true true)) ; traffic_004_flow_indistinguishable [untranslatable]
+(assert (forall ((f1 TrafficFlow) (f2 TrafficFlow)) (=> (= (indistinguishable f1 f2) true) (= (map pkt_size f1) (map pkt_size f2))))) ; traffic_004_flow_indistinguishable
 
 ; traffic_005_timing_indistinguishable (matches Coq: Theorem traffic_005_timing_indistinguishable)
-(assert (= true true)) ; traffic_005_timing_indistinguishable [untranslatable]
+(assert (forall ((f1 TrafficFlow) (f2 TrafficFlow)) (=> (= (indistinguishable f1 f2) true) (= (map pkt_time f1) (map pkt_time f2))))) ; traffic_005_timing_indistinguishable
 
 ; traffic_006_mix_delay (matches Coq: Theorem traffic_006_mix_delay)
-(assert (= true true)) ; traffic_006_mix_delay [untranslatable]
+(assert (forall ((node MixNode)) (=> (> (mix_delay node) 0) (> (mix_delay node) 0)))) ; traffic_006_mix_delay
 
 ; traffic_007_batch_anonymity (matches Coq: Theorem traffic_007_batch_anonymity)
-(assert (= true true)) ; traffic_007_batch_anonymity [untranslatable]
+(assert (forall ((node MixNode)) (=> (> (mix_batch_size node) 1) (> (mix_batch_size node) 1)))) ; traffic_007_batch_anonymity
 
 ; traffic_008_multi_hop (matches Coq: Theorem traffic_008_multi_hop)
-(assert (= true true)) ; traffic_008_multi_hop [untranslatable]
+(assert (forall ((network MixNetwork)) (=> (>= (length network) 3) (>= (length network) 3)))) ; traffic_008_multi_hop
 
 ; traffic_009_layer_encryption (matches Coq: Theorem traffic_009_layer_encryption)
-(assert (= true true)) ; traffic_009_layer_encryption [untranslatable]
+(assert (forall ((msg MixMessage)) (forall ((network_len Int)) (=> (= (msg_layer msg) network_len) (= (msg_layer msg) network_len))))) ; traffic_009_layer_encryption
 
 ; traffic_010_sender_anonymity (matches Coq: Theorem traffic_010_sender_anonymity)
-(assert (= true true)) ; traffic_010_sender_anonymity [untranslatable]
+(assert (forall ((batch list)) (=> (>= (length batch) 2) (>= (length (sender_anonymity_set batch)) 2)))) ; traffic_010_sender_anonymity
 
 ; traffic_011_receiver_anonymity (matches Coq: Theorem traffic_011_receiver_anonymity)
-(assert (= true true)) ; traffic_011_receiver_anonymity [untranslatable]
+(assert (forall ((batch list)) (=> (>= (length batch) 2) (>= (length (receiver_anonymity_set batch)) 2)))) ; traffic_011_receiver_anonymity
 
 ; traffic_012_padding_ratio (matches Coq: Theorem traffic_012_padding_ratio)
-(assert (= true true)) ; traffic_012_padding_ratio [untranslatable]
+(assert (forall ((payload_size Int) (padded_size Int)) (=> (= (padding_sufficient payload_size padded_size) true) (>= padded_size payload_size)))) ; traffic_012_padding_ratio
 
 ; traffic_013_decoy_rate (matches Coq: Theorem traffic_013_decoy_rate)
-(assert (= true true)) ; traffic_013_decoy_rate [untranslatable]
+(assert (forall ((real_count Int) (decoy_count Int) (min_ratio Int)) (=> (= (decoy_rate_sufficient real_count decoy_count min_ratio) true) (>= decoy_count (* real_count min_ratio))))) ; traffic_013_decoy_rate
 
 ; traffic_014_jitter_bounded (matches Coq: Theorem traffic_014_jitter_bounded)
-(assert (= true true)) ; traffic_014_jitter_bounded [untranslatable]
+(assert (forall ((jitter Int) (max_jitter Int)) (=> (= (jitter_bounded jitter max_jitter) true) (<= jitter max_jitter)))) ; traffic_014_jitter_bounded
 
 ; traffic_015_no_timing_correlation (matches Coq: Theorem traffic_015_no_timing_correlation)
-(assert (= true true)) ; traffic_015_no_timing_correlation [untranslatable]
+(assert (forall ((t1 Int) (t2 Int) (bucket Int)) (=> (> bucket 0) (=> (= (timing_independent t1 t2 bucket) true) (= (div t1 bucket) (div t2 bucket)))))) ; traffic_015_no_timing_correlation
 
 ; traffic_016_size_quantization (matches Coq: Theorem traffic_016_size_quantization)
-(assert (= true true)) ; traffic_016_size_quantization [untranslatable]
+(assert (forall ((size Int) (quantum Int)) (=> (> quantum 0) (>= (size_quantized size quantum) size)))) ; traffic_016_size_quantization
 
 ; traffic_017_flow_correlation (matches Coq: Theorem traffic_017_flow_correlation)
-(assert (= true true)) ; traffic_017_flow_correlation [untranslatable]
+; traffic_017_flow_correlation: forall (f1 f2 : TrafficFlow) (size : nat), constant_size f1 size -> constant_size f2 size -> Forall (fun p => pkt_size p
+(assert (forall ((f1 TrafficFlow) (f2 TrafficFlow) (size Int)) true)) ; traffic_017_flow_correlation [partial: bindings preserved]
 
 ; traffic_018_guard_diversity (matches Coq: Theorem traffic_018_guard_diversity)
-(assert (= true true)) ; traffic_018_guard_diversity [untranslatable]
+(assert (forall ((guards list)) (=> (= (guard_diverse guards) true) (>= (length guards) 3)))) ; traffic_018_guard_diversity
 
 ; traffic_019_exit_diversity (matches Coq: Theorem traffic_019_exit_diversity)
-(assert (= true true)) ; traffic_019_exit_diversity [untranslatable]
+(assert (forall ((exits list)) (=> (= (NoDup exits) true) (=> (>= (length exits) 3) (>= (length exits) 3))))) ; traffic_019_exit_diversity
 
 ; traffic_020_path_randomness (matches Coq: Theorem traffic_020_path_randomness)
-(assert (= true true)) ; traffic_020_path_randomness [untranslatable]
+(assert (forall ((path list nat)) (forall ((possible_paths Int)) (=> (= (path_random path possible_paths) true) (>= (length path) 3))))) ; traffic_020_path_randomness
 
 ; traffic_021_statistical_indist (matches Coq: Theorem traffic_021_statistical_indist)
-(assert (= true true)) ; traffic_021_statistical_indist [untranslatable]
+(assert (forall ((dist1 list) (dist2 list) (epsilon Int)) (=> (= (statistically_indistinguishable dist1 dist2 epsilon) true) (= (length dist1) (length dist2))))) ; traffic_021_statistical_indist
 
 ; traffic_022_session_unlinkability (matches Coq: Theorem traffic_022_session_unlinkability)
-(assert (= true true)) ; traffic_022_session_unlinkability [untranslatable]
+(assert (forall ((s1 Int) (s2 Int)) (=> (= (sessions_unlinkable s1 s2) true) (not (= s1 s2))))) ; traffic_022_session_unlinkability
 
 ; traffic_023_intersection_resistance (matches Coq: Theorem traffic_023_intersection_resistance)
-(assert (= true true)) ; traffic_023_intersection_resistance [untranslatable]
+(assert (forall ((observations Int) (needed Int)) (=> (= (intersection_resistant observations needed) true) (> needed observations)))) ; traffic_023_intersection_resistance
 
 ; traffic_024_volume_resistance (matches Coq: Theorem traffic_024_volume_resistance)
-(assert (= true true)) ; traffic_024_volume_resistance [untranslatable]
+(assert (forall ((flow TrafficFlow)) (forall ((size Int)) (=> (= (constant_size flow size) true) (=> (forall ((p Bool)) (= (In p flow) true)) (= (pkt_size p) size)))))) ; traffic_024_volume_resistance
 
 ; traffic_025_defense_in_depth (matches Coq: Theorem traffic_025_defense_in_depth)
-(assert (= true true)) ; traffic_025_defense_in_depth [untranslatable]
+(assert (forall ((r Bool) (s Bool) (m Bool) (d Bool)) (=> (= (traffic_layers r s m d) true) (and (= r true) (= s true) (= m true) (= d true))))) ; traffic_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

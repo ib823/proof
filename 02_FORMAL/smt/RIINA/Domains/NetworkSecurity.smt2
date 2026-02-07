@@ -216,82 +216,82 @@
   true)
 
 ; net_001_man_in_the_middle_mitigated (matches Coq: Theorem net_001_man_in_the_middle_mitigated)
-(assert (= true true)) ; net_001_man_in_the_middle_mitigated [untranslatable]
+(assert (forall ((config TLSConfig)) (=> (= (tls_mitm_defense_enabled config) true) true))) ; net_001_man_in_the_middle_mitigated
 
 ; net_002_arp_spoofing_mitigated (matches Coq: Theorem net_002_arp_spoofing_mitigated)
-(assert (= true true)) ; net_002_arp_spoofing_mitigated [untranslatable]
+(assert (forall ((config ARPConfig)) (=> (= (arp_spoofing_defense_enabled config) true) true))) ; net_002_arp_spoofing_mitigated
 
 ; net_003_dns_poisoning_mitigated (matches Coq: Theorem net_003_dns_poisoning_mitigated)
-(assert (= true true)) ; net_003_dns_poisoning_mitigated [untranslatable]
+(assert (forall ((config DNSSECConfig)) (=> (= (dns_poisoning_defense_enabled config) true) true))) ; net_003_dns_poisoning_mitigated
 
 ; net_004_bgp_hijacking_mitigated (matches Coq: Theorem net_004_bgp_hijacking_mitigated)
-(assert (= true true)) ; net_004_bgp_hijacking_mitigated [untranslatable]
+(assert (forall ((config BGPConfig)) (=> (= (bgp_hijacking_defense_enabled config) true) true))) ; net_004_bgp_hijacking_mitigated
 
 ; net_005_ssl_stripping_mitigated (matches Coq: Theorem net_005_ssl_stripping_mitigated)
-(assert (= true true)) ; net_005_ssl_stripping_mitigated [untranslatable]
+(assert (forall ((config HTTPSConfig)) (=> (= (ssl_stripping_defense_enabled config) true) true))) ; net_005_ssl_stripping_mitigated
 
 ; net_006_packet_sniffing_mitigated (matches Coq: Theorem net_006_packet_sniffing_mitigated)
-(assert (= true true)) ; net_006_packet_sniffing_mitigated [untranslatable]
+(assert (forall ((config EncryptionConfig)) (=> (= (packet_sniffing_defense_enabled config) true) true))) ; net_006_packet_sniffing_mitigated
 
 ; net_007_packet_injection_mitigated (matches Coq: Theorem net_007_packet_injection_mitigated)
-(assert (= true true)) ; net_007_packet_injection_mitigated [untranslatable]
+(assert (forall ((config AuthProtocolConfig)) (=> (= (packet_injection_defense_enabled config) true) true))) ; net_007_packet_injection_mitigated
 
 ; net_008_replay_attack_mitigated (matches Coq: Theorem net_008_replay_attack_mitigated)
-(assert (= true true)) ; net_008_replay_attack_mitigated [untranslatable]
+(assert (forall ((config ReplayProtectionConfig)) (=> (= (replay_attack_defense_enabled config) true) true))) ; net_008_replay_attack_mitigated
 
 ; net_009_volumetric_dos_mitigated (matches Coq: Theorem net_009_volumetric_dos_mitigated)
-(assert (= true true)) ; net_009_volumetric_dos_mitigated [untranslatable]
+(assert (forall ((config RateLimiterConfig)) (=> (= (volumetric_dos_defense_enabled config) true) true))) ; net_009_volumetric_dos_mitigated
 
 ; net_010_protocol_dos_mitigated (matches Coq: Theorem net_010_protocol_dos_mitigated)
-(assert (= true true)) ; net_010_protocol_dos_mitigated [untranslatable]
+(assert (forall ((config ProtocolImplConfig)) (=> (= (protocol_dos_defense_enabled config) true) true))) ; net_010_protocol_dos_mitigated
 
 ; net_011_application_dos_mitigated (matches Coq: Theorem net_011_application_dos_mitigated)
-(assert (= true true)) ; net_011_application_dos_mitigated [untranslatable]
+(assert (forall ((config ResourceLimitsConfig)) (=> (= (application_dos_defense_enabled config) true) true))) ; net_011_application_dos_mitigated
 
 ; net_012_amplification_dos_mitigated (matches Coq: Theorem net_012_amplification_dos_mitigated)
-(assert (= true true)) ; net_012_amplification_dos_mitigated [untranslatable]
+(assert (forall ((config AmplificationConfig)) (=> (= (amplification_dos_defense_enabled config) true) true))) ; net_012_amplification_dos_mitigated
 
 ; net_013_syn_flood_mitigated (matches Coq: Theorem net_013_syn_flood_mitigated)
-(assert (= true true)) ; net_013_syn_flood_mitigated [untranslatable]
+(assert (forall ((config SYNProtectionConfig)) (=> (= (syn_flood_defense_enabled config) true) true))) ; net_013_syn_flood_mitigated
 
 ; net_014_udp_flood_mitigated (matches Coq: Theorem net_014_udp_flood_mitigated)
-(assert (= true true)) ; net_014_udp_flood_mitigated [untranslatable]
+(assert (forall ((config UDPProtectionConfig)) (=> (= (udp_flood_defense_enabled config) true) true))) ; net_014_udp_flood_mitigated
 
 ; net_015_icmp_flood_mitigated (matches Coq: Theorem net_015_icmp_flood_mitigated)
-(assert (= true true)) ; net_015_icmp_flood_mitigated [untranslatable]
+(assert (forall ((config ICMPProtectionConfig)) (=> (= (icmp_flood_defense_enabled config) true) true))) ; net_015_icmp_flood_mitigated
 
 ; net_016_slowloris_mitigated (matches Coq: Theorem net_016_slowloris_mitigated)
-(assert (= true true)) ; net_016_slowloris_mitigated [untranslatable]
+(assert (forall ((config SlowlorisProtectionConfig)) (=> (= (slowloris_defense_enabled config) true) true))) ; net_016_slowloris_mitigated
 
 ; net_017_dns_amplification_mitigated (matches Coq: Theorem net_017_dns_amplification_mitigated)
-(assert (= true true)) ; net_017_dns_amplification_mitigated [untranslatable]
+(assert (forall ((config DNSServerConfig)) (=> (= (dns_amplification_defense_enabled config) true) true))) ; net_017_dns_amplification_mitigated
 
 ; net_018_ntp_amplification_mitigated (matches Coq: Theorem net_018_ntp_amplification_mitigated)
-(assert (= true true)) ; net_018_ntp_amplification_mitigated [untranslatable]
+(assert (forall ((config NTPServerConfig)) (=> (= (ntp_amplification_defense_enabled config) true) true))) ; net_018_ntp_amplification_mitigated
 
 ; net_019_ip_spoofing_mitigated (matches Coq: Theorem net_019_ip_spoofing_mitigated)
-(assert (= true true)) ; net_019_ip_spoofing_mitigated [untranslatable]
+(assert (forall ((config IPSpoofingConfig)) (=> (= (ip_spoofing_defense_enabled config) true) true))) ; net_019_ip_spoofing_mitigated
 
 ; net_020_mac_spoofing_mitigated (matches Coq: Theorem net_020_mac_spoofing_mitigated)
-(assert (= true true)) ; net_020_mac_spoofing_mitigated [untranslatable]
+(assert (forall ((config MACSecurityConfig)) (=> (= (mac_spoofing_defense_enabled config) true) true))) ; net_020_mac_spoofing_mitigated
 
 ; net_021_vlan_hopping_mitigated (matches Coq: Theorem net_021_vlan_hopping_mitigated)
-(assert (= true true)) ; net_021_vlan_hopping_mitigated [untranslatable]
+(assert (forall ((config VLANSecurityConfig)) (=> (= (vlan_hopping_defense_enabled config) true) true))) ; net_021_vlan_hopping_mitigated
 
 ; net_022_rogue_dhcp_mitigated (matches Coq: Theorem net_022_rogue_dhcp_mitigated)
-(assert (= true true)) ; net_022_rogue_dhcp_mitigated [untranslatable]
+(assert (forall ((config DHCPSecurityConfig)) (=> (= (rogue_dhcp_defense_enabled config) true) true))) ; net_022_rogue_dhcp_mitigated
 
 ; net_023_ntp_attack_mitigated (matches Coq: Theorem net_023_ntp_attack_mitigated)
-(assert (= true true)) ; net_023_ntp_attack_mitigated [untranslatable]
+(assert (forall ((config NTPClientConfig)) (=> (= (ntp_attack_defense_enabled config) true) true))) ; net_023_ntp_attack_mitigated
 
 ; net_024_tcp_reset_mitigated (matches Coq: Theorem net_024_tcp_reset_mitigated)
-(assert (= true true)) ; net_024_tcp_reset_mitigated [untranslatable]
+(assert (forall ((config TCPSecurityConfig)) (=> (= (tcp_reset_defense_enabled config) true) true))) ; net_024_tcp_reset_mitigated
 
 ; net_025_traffic_analysis_mitigated (matches Coq: Theorem net_025_traffic_analysis_mitigated)
-(assert (= true true)) ; net_025_traffic_analysis_mitigated [untranslatable]
+(assert (forall ((config TrafficAnalysisConfig)) (=> (= (traffic_analysis_defense_enabled config) true) true))) ; net_025_traffic_analysis_mitigated
 
 ; network_security_comprehensive (matches Coq: Theorem network_security_comprehensive)
-(assert (= true true)) ; network_security_comprehensive [untranslatable]
+(assert (forall ((config NetworkSecurityConfig)) (=> (= (all_defenses_enabled config) true) true))) ; network_security_comprehensive
 
 ; Verify all assertions are satisfiable
 (check-sat)

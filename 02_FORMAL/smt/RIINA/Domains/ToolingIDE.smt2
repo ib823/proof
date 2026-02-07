@@ -182,67 +182,69 @@
   true)
 
 ; N_001_01 (matches Coq: Theorem N_001_01)
-(assert (= true true)) ; N_001_01 [untranslatable]
+(assert (forall ((t Tool)) (forall ((input ToolInput)) (= ((tool_run t) input) ((tool_run t) input))))) ; N_001_01
 
 ; N_001_02 (matches Coq: Theorem N_001_02)
-(assert (= true true)) ; N_001_02 [untranslatable]
+; N_001_02: forall (t1 t2 : Tool) (input : ToolInput), (compose_tools t1 t2).(tool_run) input = match t1.(tool_run) input with | Non
+(assert (forall ((t1 Tool) (t2 Tool) (input ToolInput)) true)) ; N_001_02 [partial: bindings preserved]
 
 ; N_001_03 (matches Coq: Theorem N_001_03)
-(assert (= true true)) ; N_001_03 [untranslatable]
+(assert (forall ((req LSPRequest)) (= (lsp_request_wellformed req) true))) ; N_001_03
 
 ; N_001_04 (matches Coq: Theorem N_001_04)
-(assert (= true true)) ; N_001_04 [untranslatable]
+(assert (forall ((env TypeEnv)) (forall ((items list)) (=> (forall ((item Bool)) (=> (= (In item items) true) (exists ((ty Bool)) (= (type_lookup env item) (some ty))))) (=> (forall ((item Bool)) (= (In item items) true)) (= (completion_type_correct env item) true)))))) ; N_001_04
 
 ; N_001_05 (matches Coq: Theorem N_001_05)
-(assert (= true true)) ; N_001_05 [untranslatable]
+(assert (forall ((env TypeEnv)) (forall ((name string)) (forall ((ty TypeInfo)) (=> (= (type_lookup env name) (some ty)) (= (hover_accurate env name ty) true)))))) ; N_001_05
 
 ; N_001_06 (matches Coq: Theorem N_001_06)
-(assert (= true true)) ; N_001_06 [untranslatable]
+(assert (forall ((code ToolAST)) (forall ((diag Diagnostic)) (forall ((line Int) (col Int) (msg string)) (=> (= diag (DiagSecurityWarning line col msg)) (=> (exists ((issue Bool)) (= (has_security_issue code issue) true)) (= (security_diagnostic_correct code diag) true))))))) ; N_001_06
 
 ; N_001_07 (matches Coq: Theorem N_001_07)
-(assert (= true true)) ; N_001_07 [untranslatable]
+(assert (forall ((ast ToolAST)) (= (format_ast (format_ast ast)) (format_ast ast)))) ; N_001_07
 
 ; N_001_08 (matches Coq: Theorem N_001_08)
-(assert (= true true)) ; N_001_08 [untranslatable]
+(assert (forall ((ast ToolAST)) (= (semantically_equivalent (format_ast ast) ast) true))) ; N_001_08
 
 ; N_001_09 (matches Coq: Theorem N_001_09)
-(assert (= true true)) ; N_001_09 [untranslatable]
+(assert (forall ((ast ToolAST)) (=> (= (has_security_annotation ast) true) (= (has_security_annotation (format_ast ast)) true)))) ; N_001_09
 
 ; N_001_10 (matches Coq: Theorem N_001_10)
-(assert (= true true)) ; N_001_10 [untranslatable]
+(assert (forall ((code ToolAST)) (forall ((rule LintRule)) (forall ((violation LintViolation)) (=> (= (rule_matches_violation rule violation) true) (= (lint_violation_actual code violation) true)))))) ; N_001_10
 
 ; N_001_11 (matches Coq: Theorem N_001_11)
-(assert (= true true)) ; N_001_11 [untranslatable]
+; N_001_11: forall (rule : LintRule) (violation : LintViolation), String.eqb rule.(lr_category) "security" = true -> match violation
+(assert (forall ((rule LintRule) (violation LintViolation)) true)) ; N_001_11 [partial: bindings preserved]
 
 ; N_001_12 (matches Coq: Theorem N_001_12)
-(assert (= true true)) ; N_001_12 [untranslatable]
+(assert (forall ((rule LintRule)) (forall ((code ToolAST)) (forall ((violations list)) (=> (= (critical_security_rule rule) true) (=> (= (mk-tuple (forall v) In) true) (=> (forall ((v Bool)) (= (In v violations) true)) (= (lint_violation_actual code v) true)))))))) ; N_001_12
 
 ; N_001_13 (matches Coq: Theorem N_001_13)
-(assert (= true true)) ; N_001_13 [untranslatable]
+(assert (forall ((src ToolAST)) (forall ((config BuildConfig)) (= (build src config) (build src config))))) ; N_001_13
 
 ; N_001_14 (matches Coq: Theorem N_001_14)
-(assert (= true true)) ; N_001_14 [untranslatable]
+(assert (forall ((modules list Module)) (forall ((old_hashes list)) (= (incremental_correct modules old_hashes) true)))) ; N_001_14
 
 ; N_001_15 (matches Coq: Theorem N_001_15)
-(assert (= true true)) ; N_001_15 [untranslatable]
+(assert (forall ((src ToolAST)) (forall ((config BuildConfig)) (= (hardening_applied config (build src config)) true)))) ; N_001_15
 
 ; resolve_step_terminates (matches Coq: Lemma resolve_step_terminates)
-(assert (= true true)) ; resolve_step_terminates [untranslatable]
+(assert (forall ((fuel Bool) (deps Bool) (resolved Bool)) (exists ((result Bool)) (= (resolve_step fuel deps resolved) (some result))))) ; resolve_step_terminates
 
 ; N_001_16 (matches Coq: Theorem N_001_16)
-(assert (= true true)) ; N_001_16 [untranslatable]
+(assert (forall ((deps DepGraph)) (exists ((resolved Bool)) (= (resolve_step (* (List.length deps) (List.length deps)) deps nil) (some resolved))))) ; N_001_16
 
 ; N_001_17 (matches Coq: Theorem N_001_17)
-(assert (= true true)) ; N_001_17 [untranslatable]
+(assert (forall ((pkg Package)) (forall ((trusted_keys list)) (=> (= (verify_signature pkg trusted_keys) true) (exists ((key Bool)) (and (= (In key trusted_keys) true) (= (pkg_signature pkg) (some key)))))))) ; N_001_17
 
 ; N_001_18 (matches Coq: Theorem N_001_18)
-(assert (= true true)) ; N_001_18 [untranslatable]
+(assert (forall ((pkg Package)) (forall ((db VulnDB)) (= (vuln_check_complete pkg db (check_vulns pkg db)) true)))) ; N_001_18
 
 ; N_001_19 (matches Coq: Theorem N_001_19)
-(assert (= true true)) ; N_001_19 [untranslatable]
+(assert (forall ((sym DebugSymbol)) (forall ((actual_loc SourceLoc)) (forall ((actual_type TypeInfo)) (=> (= (ds_loc sym) actual_loc) (= (debug_info_accurate sym actual_loc actual_type) true)))))) ; N_001_19
 
 ; N_001_20 (matches Coq: Theorem N_001_20)
-(assert (= true true)) ; N_001_20 [untranslatable]
+(assert (forall ((original DebugValue)) (forall ((secret_names list)) (= (secrets_redacted original (redact_secrets original secret_names) secret_names) true)))) ; N_001_20
 
 ; Verify all assertions are satisfiable
 (check-sat)

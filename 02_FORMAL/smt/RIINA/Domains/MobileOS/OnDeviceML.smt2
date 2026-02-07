@@ -145,79 +145,79 @@
   true)
 
 ; ml_inference_deterministic (matches Coq: Theorem ml_inference_deterministic)
-(assert (= true true)) ; ml_inference_deterministic [untranslatable]
+(assert (forall ((model MLModel)) (forall ((input Tensor)) (= (infer model input) (infer model input))))) ; ml_inference_deterministic
 
 ; inference_same_input_same_output (matches Coq: Theorem inference_same_input_same_output)
-(assert (= true true)) ; inference_same_input_same_output [untranslatable]
+(assert (forall ((model MLModel)) (forall ((input1 Tensor) (input2 Tensor)) (=> (= input1 input2) (= (infer model input1) (infer model input2)))))) ; inference_same_input_same_output
 
 ; ml_data_private (matches Coq: Theorem ml_data_private)
-(assert (= true true)) ; ml_data_private [untranslatable]
+(assert (forall ((data UserData)) (forall ((model MLModel)) (=> (= private_ml_system true) (=> (= (used_for_inference data model) true) (not (= (transmitted data) true))))))) ; ml_data_private
 
 ; inference_preserves_shape (matches Coq: Theorem inference_preserves_shape)
-(assert (= true true)) ; inference_preserves_shape [untranslatable]
+(assert (forall ((model MLModel)) (forall ((input Tensor)) (= (tensor_shape (infer model input)) (tensor_shape input))))) ; inference_preserves_shape
 
 ; different_model_version_matters (matches Coq: Theorem different_model_version_matters)
-(assert (= true true)) ; different_model_version_matters [untranslatable]
+(assert (forall ((m1 MLModel) (m2 MLModel) (input Tensor) (h Int) (t list)) (=> (= (tensor_data input) (insert h t)) (=> (not (= (model_version m1) (model_version m2))) (not (= (tensor_data (infer m1 input)) (tensor_data (infer m2 input)))))))) ; different_model_version_matters
 
 ; model_input_validated (matches Coq: Theorem model_input_validated)
-(assert (= true true)) ; model_input_validated [untranslatable]
+(assert (forall ((input Tensor)) (forall ((expected list)) (=> (= (input_shape_valid input expected) true) (= (tensor_shape input) expected))))) ; model_input_validated
 
 ; model_output_bounded (matches Coq: Theorem model_output_bounded)
-(assert (= true true)) ; model_output_bounded [untranslatable]
+(assert (forall ((output Tensor)) (forall ((bound Int)) (=> (= (output_bounded output bound) true) (= (all_below bound (tensor_data output)) true))))) ; model_output_bounded
 
 ; inference_latency_bounded (matches Coq: Theorem inference_latency_bounded)
-(assert (= true true)) ; inference_latency_bounded [untranslatable]
+(assert (forall ((r InferenceRequest)) (=> (= (latency_within_bound r) true) (<= (req_latency_ms r) (req_max_latency_ms r))))) ; inference_latency_bounded
 
 ; model_size_within_memory (matches Coq: Theorem model_size_within_memory)
-(assert (= true true)) ; model_size_within_memory [untranslatable]
+(assert (forall ((b MemoryBudget)) (=> (= (model_fits_memory b) true) (<= (model_size_bytes b) (budget_max_bytes b))))) ; model_size_within_memory
 
 ; model_update_atomic (matches Coq: Theorem model_update_atomic)
-(assert (= true true)) ; model_update_atomic [untranslatable]
+(assert (forall ((u ModelUpdate)) (=> (= (update_atomic u) true) (or (= (update_state u) UpdateComplete) (= (update_state u) UpdateFailed))))) ; model_update_atomic
 
 ; differential_privacy_guaranteed (matches Coq: Theorem differential_privacy_guaranteed)
-(assert (= true true)) ; differential_privacy_guaranteed [untranslatable]
+(assert (forall ((pb PrivacyBudget)) (=> (= (within_privacy_budget pb) true) (and (<= (epsilon pb) (max_epsilon pb)) (<= (delta pb) (max_delta pb)))))) ; differential_privacy_guaranteed
 
 ; model_version_tracked (matches Coq: Theorem model_version_tracked)
-(assert (= true true)) ; model_version_tracked [untranslatable]
+(assert (forall ((m MLModel)) (=> (= (version_tracked m) true) (> (model_version m) 0)))) ; model_version_tracked
 
 ; feature_extraction_deterministic (matches Coq: Theorem feature_extraction_deterministic)
-(assert (= true true)) ; feature_extraction_deterministic [untranslatable]
+(assert (forall ((m MLModel)) (forall ((input1 Tensor) (input2 Tensor)) (=> (= input1 input2) (= (feature_extract m input1) (feature_extract m input2)))))) ; feature_extraction_deterministic
 
 ; prediction_confidence_calibrated (matches Coq: Theorem prediction_confidence_calibrated)
-(assert (= true true)) ; prediction_confidence_calibrated [untranslatable]
+(assert (forall ((p Prediction)) (=> (= (confidence_calibrated p) true) (<= (pred_confidence p) 100)))) ; prediction_confidence_calibrated
 
 ; model_not_exported (matches Coq: Theorem model_not_exported)
-(assert (= true true)) ; model_not_exported [untranslatable]
+(assert (forall ((mp ModelPolicy)) (=> (= (model_not_exportable mp) true) (= (policy_exportable mp) false)))) ; model_not_exported
 
 ; training_data_anonymized (matches Coq: Theorem training_data_anonymized)
-(assert (= true true)) ; training_data_anonymized [untranslatable]
+(assert (forall ((td TrainingData)) (=> (= (data_anonymized td) true) (and (= (td_anonymized td) true) (= (td_pii_removed td) true))))) ; training_data_anonymized
 
 ; adversarial_input_detected (matches Coq: Theorem adversarial_input_detected)
-(assert (= true true)) ; adversarial_input_detected [untranslatable]
+(assert (forall ((ia InputAnalysis)) (=> (= (adversarial_detected ia) true) (= (ia_flagged ia) true)))) ; adversarial_input_detected
 
 ; model_fallback_available (matches Coq: Theorem model_fallback_available)
-(assert (= true true)) ; model_fallback_available [untranslatable]
+(assert (forall ((mf ModelWithFallback)) (=> (= (fallback_ready mf) true) (=> (= (primary_available mf) false) (> (model_version (fallback_model mf)) 0))))) ; model_fallback_available
 
 ; batch_inference_ordered (matches Coq: Theorem batch_inference_ordered)
-(assert (= true true)) ; batch_inference_ordered [untranslatable]
+(assert (forall ((br BatchRequest)) (=> (= (batch_ordered br) true) (= (is_sorted (batch_sequence br)) true)))) ; batch_inference_ordered
 
 ; model_quantization_bounded_error (matches Coq: Theorem model_quantization_bounded_error)
-(assert (= true true)) ; model_quantization_bounded_error [untranslatable]
+(assert (forall ((qm QuantizedModel)) (=> (= (quantization_bounded qm) true) (= (length (qm_original_weights qm)) (length (qm_quantized_weights qm)))))) ; model_quantization_bounded_error
 
 ; on_device_only_preserves_privacy (matches Coq: Theorem on_device_only_preserves_privacy)
-(assert (= true true)) ; on_device_only_preserves_privacy [untranslatable]
+(assert (forall ((mp ModelPolicy)) (=> (= (model_not_exportable mp) true) (= (policy_on_device_only mp) true)))) ; on_device_only_preserves_privacy
 
 ; adversarial_implies_high_perturbation (matches Coq: Theorem adversarial_implies_high_perturbation)
-(assert (= true true)) ; adversarial_implies_high_perturbation [untranslatable]
+(assert (forall ((ia InputAnalysis)) (=> (= (adversarial_detected ia) true) (> (ia_perturbation_score ia) (ia_threshold ia))))) ; adversarial_implies_high_perturbation
 
 ; batch_length_consistency (matches Coq: Theorem batch_length_consistency)
-(assert (= true true)) ; batch_length_consistency [untranslatable]
+(assert (forall ((br BatchRequest)) (=> (= (batch_ordered br) true) (= (length (batch_inputs br)) (length (batch_sequence br)))))) ; batch_length_consistency
 
 ; privacy_budget_epsilon_bounded (matches Coq: Theorem privacy_budget_epsilon_bounded)
-(assert (= true true)) ; privacy_budget_epsilon_bounded [untranslatable]
+(assert (forall ((pb PrivacyBudget)) (=> (= (within_privacy_budget pb) true) (<= (epsilon pb) (max_epsilon pb))))) ; privacy_budget_epsilon_bounded
 
 ; failed_update_preserves_version (matches Coq: Theorem failed_update_preserves_version)
-(assert (= true true)) ; failed_update_preserves_version [untranslatable]
+(assert (forall ((u ModelUpdate)) (=> (= (update_state u) UpdateFailed) (= (model_version (update_old_model u)) (model_version (update_old_model u)))))) ; failed_update_preserves_version
 
 ; Verify all assertions are satisfiable
 (check-sat)

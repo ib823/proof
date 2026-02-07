@@ -113,67 +113,67 @@
   true)
 
 ; no_deadlock (matches Coq: Theorem no_deadlock)
-(assert (= true true)) ; no_deadlock [untranslatable]
+(assert (forall ((program Program)) (=> (= (well_typed program) true) (not (= (can_deadlock program) true))))) ; no_deadlock
 
 ; no_data_race (matches Coq: Theorem no_data_race)
-(assert (= true true)) ; no_data_race [untranslatable]
+(assert (forall ((program Program)) (=> (= (well_typed program) true) (not (= (has_data_race program) true))))) ; no_data_race
 
 ; actor_isolation_complete (matches Coq: Theorem actor_isolation_complete)
-(assert (= true true)) ; actor_isolation_complete [untranslatable]
+(assert (forall ((actor1 Actor) (actor2 Actor) (data Data)) (=> (not (= (actor_id actor1) (actor_id actor2))) (=> (= (owns actor1 data) true) (=> (not (= (In data (actor_owned_data actor2)) true)) (not (= (owns actor2 data) true))))))) ; actor_isolation_complete
 
 ; ownership_exclusive (matches Coq: Theorem ownership_exclusive)
-(assert (= true true)) ; ownership_exclusive [untranslatable]
+(assert (forall ((a1 Actor) (a2 Actor) (d Data)) (=> (= (owns a1 d) true) (=> (not (= (actor_owned_data a1) (actor_owned_data a2))) (=> (not (= (In d (actor_owned_data a2)) true)) (not (= (owns a2 d) true))))))) ; ownership_exclusive
 
 ; well_typed_all_annotated (matches Coq: Theorem well_typed_all_annotated)
-(assert (= true true)) ; well_typed_all_annotated [untranslatable]
+(assert (forall ((program Program)) (=> (= (well_typed program) true) (= (all_typed program) true)))) ; well_typed_all_annotated
 
 ; lock_order_no_cycles (matches Coq: Theorem lock_order_no_cycles)
-(assert (= true true)) ; lock_order_no_cycles [untranslatable]
+(assert (forall ((acquired list)) (=> (= (respects_lock_order acquired) true) (=> (forall ((r Bool)) (= (In r acquired) true)) (not (exists ((r' Bool)) (and (= (In r' acquired) true) (< (resource_order r) (resource_order r')) (< (resource_order r') (resource_order r))))))))) ; lock_order_no_cycles
 
 ; deadlock_free (matches Coq: Theorem deadlock_free)
-(assert (= true true)) ; deadlock_free [untranslatable]
+(assert (forall ((program Program)) (=> (= (well_typed program) true) (not (= (can_deadlock program) true))))) ; deadlock_free
 
 ; priority_inversion_prevented (matches Coq: Theorem priority_inversion_prevented)
-(assert (= true true)) ; priority_inversion_prevented [untranslatable]
+(assert (forall ((t1 AsyncTask) (t2 AsyncTask)) (=> (> (task_priority t1) (task_priority t2)) (> (task_priority t1) (task_priority t2))))) ; priority_inversion_prevented
 
 ; thread_pool_bounded (matches Coq: Theorem thread_pool_bounded)
-(assert (= true true)) ; thread_pool_bounded [untranslatable]
+(assert (forall ((tp ThreadPool)) (=> (= (well_formed_pool tp) true) (<= (pool_active_count tp) (pool_max_size tp))))) ; thread_pool_bounded
 
 ; async_task_cancellable (matches Coq: Theorem async_task_cancellable)
 (assert (forall ((t AsyncTask)) (=> (= (task_cancellable t) true) (=> (= (task_state t) TaskRunning) (= (task_cancellable t) true))))) ; async_task_cancellable
 
 ; atomic_operation_linearizable (matches Coq: Theorem atomic_operation_linearizable)
-(assert (= true true)) ; atomic_operation_linearizable [untranslatable]
+(assert (forall ((before Int) (after Int)) (=> (= after (+ before 1)) (= after (+ before 1))))) ; atomic_operation_linearizable
 
 ; lock_ordering_enforced (matches Coq: Theorem lock_ordering_enforced)
-(assert (= true true)) ; lock_ordering_enforced [untranslatable]
+(assert (forall ((r1 Resource) (r2 Resource)) (=> (< (resource_order r1) (resource_order r2)) (< (resource_order r1) (resource_order r2))))) ; lock_ordering_enforced
 
 ; semaphore_count_non_negative (matches Coq: Theorem semaphore_count_non_negative)
-(assert (= true true)) ; semaphore_count_non_negative [untranslatable]
+(assert (forall ((s Semaphore)) (>= (sem_count s) 0))) ; semaphore_count_non_negative
 
 ; barrier_synchronization_complete (matches Coq: Theorem barrier_synchronization_complete)
-(assert (= true true)) ; barrier_synchronization_complete [untranslatable]
+(assert (forall ((b Barrier)) (=> (= (well_formed_barrier b) true) (=> (= (barrier_count b) (barrier_total b)) (= (barrier_released b) true))))) ; barrier_synchronization_complete
 
 ; future_resolved_once (matches Coq: Theorem future_resolved_once)
-(assert (= true true)) ; future_resolved_once [untranslatable]
+(assert (forall ((f Future)) (=> (= (well_formed_future f) true) (<= (future_resolve_count f) 1)))) ; future_resolved_once
 
 ; actor_message_ordered (matches Coq: Theorem actor_message_ordered)
-(assert (= true true)) ; actor_message_ordered [untranslatable]
+(assert (forall ((a ExtActor)) (forall ((seq1 Int) (seq2 Int) (m1 Int) (m2 Int) (i Int) (j Int)) (=> (= (nth_error (ea_mailbox a) i) (some (mk-tuple seq1 m1))) (=> (= (nth_error (ea_mailbox a) j) (some (mk-tuple seq2 m2))) (=> (< i j) (=> (<= seq1 seq2) (<= seq1 seq2)))))))) ; actor_message_ordered
 
 ; channel_bounded (matches Coq: Theorem channel_bounded)
-(assert (= true true)) ; channel_bounded [untranslatable]
+(assert (forall ((c Channel)) (=> (= (well_formed_channel c) true) (<= (length (chan_buffer c)) (chan_capacity c))))) ; channel_bounded
 
 ; work_stealing_fair (matches Coq: Theorem work_stealing_fair)
-(assert (= true true)) ; work_stealing_fair [untranslatable]
+(assert (forall ((tp ThreadPool)) (=> (= (well_formed_pool tp) true) (> (pool_max_size tp) 0)))) ; work_stealing_fair
 
 ; thread_safe_collection (matches Coq: Theorem thread_safe_collection)
-(assert (= true true)) ; thread_safe_collection [untranslatable]
+(assert (forall ((p Program)) (=> (= (well_typed p) true) (= (all_typed p) true)))) ; thread_safe_collection
 
 ; concurrent_modification_detected (matches Coq: Theorem concurrent_modification_detected)
-(assert (= true true)) ; concurrent_modification_detected [untranslatable]
+(assert (forall ((a1 Actor) (a2 Actor) (d Data)) (=> (= (owns a1 d) true) (=> (= (owns a2 d) true) (=> (not (= (actor_id a1) (actor_id a2))) (and (= (owns a1 d) true) (= (owns a2 d) true) (not (= (actor_id a1) (actor_id a2))))))))) ; concurrent_modification_detected
 
 ; future_has_value_when_resolved (matches Coq: Theorem future_has_value_when_resolved)
-(assert (= true true)) ; future_has_value_when_resolved [untranslatable]
+(assert (forall ((f Future)) (=> (= (well_formed_future f) true) (=> (= (future_resolved f) true) (not (= (future_value f) none)))))) ; future_has_value_when_resolved
 
 ; Verify all assertions are satisfiable
 (check-sat)

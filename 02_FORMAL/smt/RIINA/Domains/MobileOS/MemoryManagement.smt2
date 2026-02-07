@@ -136,67 +136,67 @@
   true)
 
 ; memory_compression_lossless (matches Coq: Theorem memory_compression_lossless)
-(assert (= true true)) ; memory_compression_lossless [untranslatable]
+(assert (forall ((page MemoryPage)) (= (page_contents (decompress (compress page))) (page_contents page)))) ; memory_compression_lossless
 
 ; compression_preserves_id (matches Coq: Theorem compression_preserves_id)
-(assert (= true true)) ; compression_preserves_id [untranslatable]
+(assert (forall ((page MemoryPage)) (= (page_id (compress page)) (page_id page)))) ; compression_preserves_id
 
 ; compression_preserves_owner (matches Coq: Theorem compression_preserves_owner)
-(assert (= true true)) ; compression_preserves_owner [untranslatable]
+(assert (forall ((page MemoryPage)) (= (page_owner (compress page)) (page_owner page)))) ; compression_preserves_owner
 
 ; no_system_oom_from_app (matches Coq: Theorem no_system_oom_from_app)
-(assert (= true true)) ; no_system_oom_from_app [untranslatable]
+(assert (forall ((app Application)) (=> (= (well_behaved_app app) true) (not (= (can_cause app system_out_of_memory) true))))) ; no_system_oom_from_app
 
 ; memory_isolation_sound (matches Coq: Theorem memory_isolation_sound)
-(assert (= true true)) ; memory_isolation_sound [untranslatable]
+(assert (forall ((pages list)) (=> (= (pages_isolated pages) true) (=> (forall ((p1 Bool) (p2 Bool)) (= (In p1 pages) true)) (=> (= (In p2 pages) true) (=> (not (= (page_owner p1) (page_owner p2))) (not (= (page_id p1) (page_id p2))))))))) ; memory_isolation_sound
 
 ; decompress_compress_contents (matches Coq: Theorem decompress_compress_contents)
-(assert (= true true)) ; decompress_compress_contents [untranslatable]
+(assert (forall ((page MemoryPage)) (= (page_contents (decompress (compress page))) (page_contents page)))) ; decompress_compress_contents
 
 ; allocation_always_bounded (matches Coq: Theorem allocation_always_bounded)
-(assert (= true true)) ; allocation_always_bounded [untranslatable]
+(assert (forall ((h Heap)) (=> (= (allocation_bounded h) true) (<= (heap_used_size h) (heap_total_size h))))) ; allocation_always_bounded
 
 ; deallocation_complete (matches Coq: Theorem deallocation_complete)
-(assert (= true true)) ; deallocation_complete [untranslatable]
+(assert (forall ((b MemoryBlock)) (=> (= (block_state b) Freed) (= (block_freed b) true)))) ; deallocation_complete
 
 ; no_double_free (matches Coq: Theorem no_double_free)
-(assert (= true true)) ; no_double_free [untranslatable]
+(assert (forall ((b MemoryBlock)) (=> (= (block_freed b) true) (not (= (block_allocated b) true))))) ; no_double_free
 
 ; no_use_after_free (matches Coq: Theorem no_use_after_free)
-(assert (= true true)) ; no_use_after_free [untranslatable]
+(assert (forall ((b MemoryBlock)) (=> (= (block_freed b) true) (not (= (block_allocated b) true))))) ; no_use_after_free
 
 ; memory_leak_impossible (matches Coq: Theorem memory_leak_impossible)
-(assert (= true true)) ; memory_leak_impossible [untranslatable]
+(assert (forall ((h Heap)) (=> (forall ((b Bool)) (=> (= (In b (heap_blocks h)) true) (or (= (block_allocated b) true) (= (block_freed b) true)))) (=> (forall ((b Bool)) (= (In b (heap_blocks h)) true)) (or (= (block_state b) Allocated) (= (block_state b) Freed)))))) ; memory_leak_impossible
 
 ; stack_overflow_prevented (matches Coq: Theorem stack_overflow_prevented)
-(assert (= true true)) ; stack_overflow_prevented [untranslatable]
+(assert (forall ((s Stack)) (=> (= (stack_within_bounds s) true) (<= (stack_current_depth s) (stack_max_depth s))))) ; stack_overflow_prevented
 
 ; heap_fragmentation_bounded (matches Coq: Theorem heap_fragmentation_bounded)
-(assert (= true true)) ; heap_fragmentation_bounded [untranslatable]
+(assert (forall ((h Heap)) (forall ((max_frag Int)) (=> (= (heap_fragmentation_bounded_prop h max_frag) true) (<= (heap_fragmentation_ratio h) max_frag))))) ; heap_fragmentation_bounded
 
 ; memory_pressure_handled (matches Coq: Theorem memory_pressure_handled)
-(assert (= true true)) ; memory_pressure_handled [untranslatable]
+(assert (forall ((h Heap)) (=> (= (memory_pressure_handled_prop h) true) (=> (> (heap_used_size h) (div (* (heap_total_size h) 90) 100)) (<= (heap_fragmentation_ratio h) 50))))) ; memory_pressure_handled
 
 ; oom_graceful_recovery (matches Coq: Theorem oom_graceful_recovery)
-(assert (= true true)) ; oom_graceful_recovery [untranslatable]
+(assert (forall ((h Heap)) (forall ((request Int)) (=> (= (oom_graceful h request) true) (=> (> (+ (heap_used_size h) request) (heap_total_size h)) (<= (heap_used_size h) (heap_total_size h))))))) ; oom_graceful_recovery
 
 ; virtual_memory_page_aligned (matches Coq: Theorem virtual_memory_page_aligned)
-(assert (= true true)) ; virtual_memory_page_aligned [untranslatable]
+(assert (forall ((vm VirtualMapping)) (=> (= (page_aligned vm) true) (> (vmap_page_size vm) 0)))) ; virtual_memory_page_aligned
 
 ; memory_mapping_non_overlapping (matches Coq: Theorem memory_mapping_non_overlapping)
-(assert (= true true)) ; memory_mapping_non_overlapping [untranslatable]
+(assert (forall ((vm1 VirtualMapping) (vm2 VirtualMapping)) (=> (= (mappings_non_overlapping vm1 vm2) true) (=> (forall ((addr Bool)) (<= (vmap_virtual_page vm1) addr)) (=> (< addr (+ (vmap_virtual_page vm1) (vmap_page_size vm1))) (not (and (<= (vmap_virtual_page vm2) addr) (< addr (+ (vmap_virtual_page vm2) (vmap_page_size vm2)))))))))) ; memory_mapping_non_overlapping
 
 ; shared_memory_synchronized (matches Coq: Theorem shared_memory_synchronized)
-(assert (= true true)) ; shared_memory_synchronized [untranslatable]
+(assert (forall ((b1 MemoryBlock) (b2 MemoryBlock)) (=> (= (shared_memory_sync b1 b2) true) (=> (= (block_id b1) (block_id b2)) (= (block_start b1) (block_start b2)))))) ; shared_memory_synchronized
 
 ; cache_coherent (matches Coq: Theorem cache_coherent)
-(assert (= true true)) ; cache_coherent [untranslatable]
+(assert (forall ((b1 MemoryBlock) (b2 MemoryBlock)) (=> (= (shared_memory_sync b1 b2) true) (=> (= (block_id b1) (block_id b2)) (and (= (block_start b1) (block_start b2)) (= (block_size b1) (block_size b2))))))) ; cache_coherent
 
 ; dma_buffer_protected (matches Coq: Theorem dma_buffer_protected)
-(assert (= true true)) ; dma_buffer_protected [untranslatable]
+(assert (forall ((b MemoryBlock)) (=> (= (dma_buffer_protected_prop b) true) (=> (= (block_allocated b) true) (> (block_owner b) 0))))) ; dma_buffer_protected
 
 ; memory_zeroed_on_free (matches Coq: Theorem memory_zeroed_on_free)
-(assert (= true true)) ; memory_zeroed_on_free [untranslatable]
+(assert (forall ((b MemoryBlock)) (=> (= (block_zeroed_on_free b) true) (=> (= (block_freed b) true) (= (block_zeroed b) true))))) ; memory_zeroed_on_free
 
 ; Verify all assertions are satisfiable
 (check-sat)

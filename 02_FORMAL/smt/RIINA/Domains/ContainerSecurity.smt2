@@ -195,16 +195,16 @@
   (mk-container_config (riina_ns) (riina_cgroup) (riina_seccomp) (riina_caps) (riina_image) (riina_escape) true))
 
 ; andb_true_intro (matches Coq: Lemma andb_true_intro)
-(assert (= true true)) ; andb_true_intro [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= a true) (=> (= b true) (= (and a b) true))))) ; andb_true_intro
 
 ; andb_true_elim1 (matches Coq: Lemma andb_true_elim1)
-(assert (= true true)) ; andb_true_elim1 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= a true)))) ; andb_true_elim1
 
 ; andb_true_elim2 (matches Coq: Lemma andb_true_elim2)
-(assert (= true true)) ; andb_true_elim2 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= b true)))) ; andb_true_elim2
 
 ; andb7_true (matches Coq: Lemma andb7_true)
-(assert (= true true)) ; andb7_true [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool) (d Bool) (e Bool) (f Bool) (g Bool)) (=> (= (and a b c d e f g) true) (and (= a true) (= b true) (= c true) (= d true) (= e true) (= f true) (= g true))))) ; andb7_true
 
 ; NS_001_full_isolation (matches Coq: Theorem NS_001_full_isolation)
 (assert (= (ns_fully_isolated riina_ns) true)) ; NS_001_full_isolation
@@ -243,13 +243,13 @@
 (assert (= (ns_process_safe riina_ns) true)) ; NS_012_process_safe
 
 ; NS_013_full_implies_pid (matches Coq: Theorem NS_013_full_implies_pid)
-(assert (= true true)) ; NS_013_full_implies_pid [untranslatable]
+(assert (forall ((n Bool)) (=> (= (ns_fully_isolated n) true) (= (ns_pid_isolated n) true)))) ; NS_013_full_implies_pid
 
 ; NS_014_full_implies_net (matches Coq: Theorem NS_014_full_implies_net)
-(assert (= true true)) ; NS_014_full_implies_net [untranslatable]
+(assert (forall ((n Bool)) (=> (= (ns_fully_isolated n) true) (= (ns_net_isolated n) true)))) ; NS_014_full_implies_net
 
 ; NS_015_full_implies_user (matches Coq: Theorem NS_015_full_implies_user)
-(assert (= true true)) ; NS_015_full_implies_user [untranslatable]
+(assert (forall ((n Bool)) (=> (= (ns_fully_isolated n) true) (= (ns_user_isolated n) true)))) ; NS_015_full_implies_user
 
 ; CG_001_cpu_safe (matches Coq: Theorem CG_001_cpu_safe)
 (assert (= (cgroup_cpu_safe riina_cgroup) true)) ; CG_001_cpu_safe
@@ -267,16 +267,16 @@
 (assert (= (cgroup_fully_limited riina_cgroup) true)) ; CG_005_fully_limited
 
 ; CG_006_full_implies_cpu (matches Coq: Theorem CG_006_full_implies_cpu)
-(assert (= true true)) ; CG_006_full_implies_cpu [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cgroup_fully_limited c) true) (= (cgroup_cpu_safe c) true)))) ; CG_006_full_implies_cpu
 
 ; CG_007_full_implies_memory (matches Coq: Theorem CG_007_full_implies_memory)
-(assert (= true true)) ; CG_007_full_implies_memory [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cgroup_fully_limited c) true) (= (cgroup_memory_safe c) true)))) ; CG_007_full_implies_memory
 
 ; CG_008_full_implies_pids (matches Coq: Theorem CG_008_full_implies_pids)
-(assert (= true true)) ; CG_008_full_implies_pids [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cgroup_fully_limited c) true) (= (cgroup_pids_safe c) true)))) ; CG_008_full_implies_pids
 
 ; CG_009_full_implies_io (matches Coq: Theorem CG_009_full_implies_io)
-(assert (= true true)) ; CG_009_full_implies_io [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cgroup_fully_limited c) true) (= (cgroup_io_safe c) true)))) ; CG_009_full_implies_io
 
 ; CG_010_swap_disabled (matches Coq: Theorem CG_010_swap_disabled)
 (assert (= (cg_swap_disabled riina_cgroup) true)) ; CG_010_swap_disabled
@@ -315,10 +315,10 @@
 (assert (= (sc_block_namespace riina_seccomp) true)) ; SC_011_block_namespace
 
 ; SC_012_hardened_implies_filter (matches Coq: Theorem SC_012_hardened_implies_filter)
-(assert (= true true)) ; SC_012_hardened_implies_filter [untranslatable]
+(assert (forall ((s Bool)) (=> (= (seccomp_fully_hardened s) true) (= (sc_syscall_filter s) true)))) ; SC_012_hardened_implies_filter
 
 ; SC_013_hardened_implies_block_priv (matches Coq: Theorem SC_013_hardened_implies_block_priv)
-(assert (= true true)) ; SC_013_hardened_implies_block_priv [untranslatable]
+(assert (forall ((s Bool)) (=> (= (seccomp_fully_hardened s) true) (= (sc_block_privileged s) true)))) ; SC_013_hardened_implies_block_priv
 
 ; CAP_001_dangerous_dropped (matches Coq: Theorem CAP_001_dangerous_dropped)
 (assert (= (caps_dangerous_dropped riina_caps) true)) ; CAP_001_dangerous_dropped
@@ -396,10 +396,10 @@
 (assert (= (img_base_verified riina_image) true)) ; IMG_012_base_verified
 
 ; IMG_013_full_implies_signed (matches Coq: Theorem IMG_013_full_implies_signed)
-(assert (= true true)) ; IMG_013_full_implies_signed [untranslatable]
+(assert (forall ((i Bool)) (=> (= (image_fully_verified i) true) (= (img_signed i) true)))) ; IMG_013_full_implies_signed
 
 ; IMG_014_full_implies_no_vulns (matches Coq: Theorem IMG_014_full_implies_no_vulns)
-(assert (= true true)) ; IMG_014_full_implies_no_vulns [untranslatable]
+(assert (forall ((i Bool)) (=> (= (image_fully_verified i) true) (= (img_no_critical_vulns i) true)))) ; IMG_014_full_implies_no_vulns
 
 ; ESC_001_basic_protected (matches Coq: Theorem ESC_001_basic_protected)
 (assert (= (escape_basic_protected riina_escape) true)) ; ESC_001_basic_protected
@@ -438,10 +438,10 @@
 (assert (= (esc_drop_all_caps riina_escape) true)) ; ESC_012_drop_all_caps
 
 ; ESC_013_full_implies_no_priv (matches Coq: Theorem ESC_013_full_implies_no_priv)
-(assert (= true true)) ; ESC_013_full_implies_no_priv [untranslatable]
+(assert (forall ((e Bool)) (=> (= (escape_fully_protected e) true) (= (esc_no_privileged e) true)))) ; ESC_013_full_implies_no_priv
 
 ; ESC_014_full_implies_seccomp (matches Coq: Theorem ESC_014_full_implies_seccomp)
-(assert (= true true)) ; ESC_014_full_implies_seccomp [untranslatable]
+(assert (forall ((e Bool)) (=> (= (escape_fully_protected e) true) (= (esc_seccomp_enabled e) true)))) ; ESC_014_full_implies_seccomp
 
 ; CONT_001_isolated (matches Coq: Theorem CONT_001_isolated)
 (assert (= (container_isolated riina_container) true)) ; CONT_001_isolated
@@ -468,28 +468,28 @@
 (assert (= (cont_rootless riina_container) true)) ; CONT_008_rootless
 
 ; CONT_009_secure_implies_isolated (matches Coq: Theorem CONT_009_secure_implies_isolated)
-(assert (= true true)) ; CONT_009_secure_implies_isolated [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (container_isolated c) true)))) ; CONT_009_secure_implies_isolated
 
 ; CONT_010_secure_implies_resource (matches Coq: Theorem CONT_010_secure_implies_resource)
-(assert (= true true)) ; CONT_010_secure_implies_resource [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (container_resource_safe c) true)))) ; CONT_010_secure_implies_resource
 
 ; CONT_011_secure_implies_syscall (matches Coq: Theorem CONT_011_secure_implies_syscall)
-(assert (= true true)) ; CONT_011_secure_implies_syscall [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (container_syscall_safe c) true)))) ; CONT_011_secure_implies_syscall
 
 ; CONT_012_secure_implies_capability (matches Coq: Theorem CONT_012_secure_implies_capability)
-(assert (= true true)) ; CONT_012_secure_implies_capability [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (container_capability_safe c) true)))) ; CONT_012_secure_implies_capability
 
 ; CONT_013_secure_implies_image (matches Coq: Theorem CONT_013_secure_implies_image)
-(assert (= true true)) ; CONT_013_secure_implies_image [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (container_image_safe c) true)))) ; CONT_013_secure_implies_image
 
 ; CONT_014_secure_implies_escape (matches Coq: Theorem CONT_014_secure_implies_escape)
-(assert (= true true)) ; CONT_014_secure_implies_escape [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (container_escape_safe c) true)))) ; CONT_014_secure_implies_escape
 
 ; CONT_015_secure_implies_rootless (matches Coq: Theorem CONT_015_secure_implies_rootless)
-(assert (= true true)) ; CONT_015_secure_implies_rootless [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (= (cont_rootless c) true)))) ; CONT_015_secure_implies_rootless
 
 ; CROSS_001_all_protections (matches Coq: Theorem CROSS_001_all_protections)
-(assert (= true true)) ; CROSS_001_all_protections [untranslatable]
+(assert (forall ((c Bool)) (=> (= (container_fully_secure c) true) (and (= (container_isolated c) true) (= (container_resource_safe c) true) (= (container_syscall_safe c) true) (= (container_capability_safe c) true) (= (container_image_safe c) true) (= (container_escape_safe c) true) (= (cont_rootless c) true))))) ; CROSS_001_all_protections
 
 ; RIINA_001_defense_in_depth (matches Coq: Theorem RIINA_001_defense_in_depth)
 (assert (and (= (container_fully_secure riina_container) true) (= (ns_fully_isolated riina_ns) true) (= (cgroup_fully_limited riina_cgroup) true) (= (seccomp_fully_hardened riina_seccomp) true) (= (caps_rootless_safe riina_caps) true) (= (image_fully_verified riina_image) true) (= (escape_fully_protected riina_escape) true))) ; RIINA_001_defense_in_depth

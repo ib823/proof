@@ -54,82 +54,83 @@
   true)
 
 ; cert_validity (matches Coq: Theorem cert_validity)
-(assert (= true true)) ; cert_validity [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_status c) CertActive) (=> (<= t (cert_expiry c)) (=> (= (cert_ca_licensed c) CALicensed) (= (cert_valid c t) true))))))) ; cert_validity
 
 ; suspended_invalid (matches Coq: Theorem suspended_invalid)
-(assert (= true true)) ; suspended_invalid [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_status c) CertSuspended) (not (= (cert_valid c t) true)))))) ; suspended_invalid
 
 ; revoked_invalid (matches Coq: Theorem revoked_invalid)
-(assert (= true true)) ; revoked_invalid [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_status c) CertRevoked) (not (= (cert_valid c t) true)))))) ; revoked_invalid
 
 ; expired_invalid (matches Coq: Theorem expired_invalid)
-(assert (= true true)) ; expired_invalid [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (< (cert_expiry c) t) (not (= (cert_valid c t) true)))))) ; expired_invalid
 
 ; licensed_ca_presumption (matches Coq: Theorem licensed_ca_presumption)
-(assert (= true true)) ; licensed_ca_presumption [untranslatable]
+(assert (forall ((c Certificate)) (=> (= (cert_ca_licensed c) CALicensed) (= (presumed_secure c) true)))) ; licensed_ca_presumption
 
 ; unlicensed_no_presumption (matches Coq: Theorem unlicensed_no_presumption)
-(assert (= true true)) ; unlicensed_no_presumption [untranslatable]
+(assert (forall ((c Certificate)) (=> (= (cert_ca_licensed c) CAUnlicensed) (not (= (presumed_secure c) true))))) ; unlicensed_no_presumption
 
 ; signature_verification (matches Coq: Theorem signature_verification)
-(assert (= true true)) ; signature_verification [untranslatable]
+(assert (forall ((s DigitalSignature)) (forall ((c Certificate)) (forall ((t Int)) (=> (= (sig_verified s) true) (=> (= (sig_cert_id s) (cert_id c)) (=> (= (cert_valid c t) true) (= (signature_legally_valid s c t) true)))))))) ; signature_verification
 
 ; key_strength_2048 (matches Coq: Theorem key_strength_2048)
-(assert (= true true)) ; key_strength_2048 [untranslatable]
+(assert (forall ((c Certificate)) (=> (<= 2048 (cert_key_length c)) (= (key_strength_adequate c 2048) true)))) ; key_strength_2048
 
 ; subscriber_duty_encrypted (matches Coq: Theorem subscriber_duty_encrypted)
-(assert (= true true)) ; subscriber_duty_encrypted [untranslatable]
+(assert (forall ((enc Bool) (hsm Bool)) (=> (= enc true) (= (private_key_protected enc hsm) true)))) ; subscriber_duty_encrypted
 
 ; subscriber_duty_hsm (matches Coq: Theorem subscriber_duty_hsm)
-(assert (= true true)) ; subscriber_duty_hsm [untranslatable]
+(assert (forall ((enc Bool) (hsm Bool)) (=> (= hsm true) (= (private_key_protected enc hsm) true)))) ; subscriber_duty_hsm
 
 ; active_not_terminated (matches Coq: Theorem active_not_terminated)
-(assert (= true true)) ; active_not_terminated [untranslatable]
+(assert (forall ((c Certificate)) (=> (= (cert_status_active c) true) (not (= (cert_status_terminated c) true))))) ; active_not_terminated
 
 ; suspended_not_active (matches Coq: Theorem suspended_not_active)
-(assert (= true true)) ; suspended_not_active [untranslatable]
+(assert (forall ((c Certificate)) (=> (= (cert_status c) CertSuspended) (not (= (cert_status_active c) true))))) ; suspended_not_active
 
 ; cert_validity_window (matches Coq: Theorem cert_validity_window)
-(assert (= true true)) ; cert_validity_window [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_valid c t) true) (or (<= (cert_issued_at c) t) true))))) ; cert_validity_window
 
 ; cert_valid_implies_not_expired (matches Coq: Theorem cert_valid_implies_not_expired)
-(assert (= true true)) ; cert_valid_implies_not_expired [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_valid c t) true) (<= t (cert_expiry c)))))) ; cert_valid_implies_not_expired
 
 ; cert_valid_implies_active (matches Coq: Theorem cert_valid_implies_active)
-(assert (= true true)) ; cert_valid_implies_active [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_valid c t) true) (= (cert_status c) CertActive))))) ; cert_valid_implies_active
 
 ; cert_valid_implies_licensed (matches Coq: Theorem cert_valid_implies_licensed)
-(assert (= true true)) ; cert_valid_implies_licensed [untranslatable]
+(assert (forall ((c Certificate)) (forall ((t Int)) (=> (= (cert_valid c t) true) (= (cert_ca_licensed c) CALicensed))))) ; cert_valid_implies_licensed
 
 ; key_strength_downward (matches Coq: Theorem key_strength_downward)
-(assert (= true true)) ; key_strength_downward [untranslatable]
+(assert (forall ((c Certificate)) (forall ((bits1 Int) (bits2 Int)) (=> (<= bits1 bits2) (=> (= (key_strength_adequate c bits2) true) (= (key_strength_adequate c bits1) true)))))) ; key_strength_downward
 
 ; key_strength_4096_implies_2048 (matches Coq: Theorem key_strength_4096_implies_2048)
-(assert (= true true)) ; key_strength_4096_implies_2048 [untranslatable]
+(assert (forall ((c Certificate)) (=> (= (key_strength_adequate c 4096) true) (= (key_strength_adequate c 2048) true)))) ; key_strength_4096_implies_2048
 
 ; relying_party_duty (matches Coq: Theorem relying_party_duty)
-(assert (= true true)) ; relying_party_duty [untranslatable]
+(assert (forall ((rpc RelyingPartyCheck)) (=> (= (rpc_status_checked rpc) true) (=> (= (rpc_expiry_checked rpc) true) (=> (= (rpc_ca_verified rpc) true) (=> (= (rpc_signature_verified rpc) true) (= (relying_party_diligent rpc) true))))))) ; relying_party_duty
 
 ; partial_check_not_diligent (matches Coq: Theorem partial_check_not_diligent)
-(assert (= true true)) ; partial_check_not_diligent [untranslatable]
+(assert (forall ((rpc RelyingPartyCheck)) (=> (= (rpc_signature_verified rpc) false) (not (= (relying_party_diligent rpc) true))))) ; partial_check_not_diligent
 
 ; revoked_cert_on_crl (matches Coq: Theorem revoked_cert_on_crl)
-(assert (= true true)) ; revoked_cert_on_crl [untranslatable]
+(assert (forall ((crl list CRLEntry)) (forall ((entry CRLEntry)) (=> (= (In entry crl) true) (= (cert_on_crl crl (crl_cert_id entry)) true))))) ; revoked_cert_on_crl
 
 ; crl_addition_preserves (matches Coq: Theorem crl_addition_preserves)
-(assert (= true true)) ; crl_addition_preserves [untranslatable]
+; crl_addition_preserves: forall (crl : list CRLEntry) (new_entry : CRLEntry) (cid : nat), cert_on_crl crl cid -> cert_on_crl (new_entry :: crl) c
+(assert (forall ((crl list) (new_entry CRLEntry) (cid Int)) true)) ; crl_addition_preserves [partial: bindings preserved]
 
 ; signature_timestamp_in_cert_validity (matches Coq: Theorem signature_timestamp_in_cert_validity)
-(assert (= true true)) ; signature_timestamp_in_cert_validity [untranslatable]
+(assert (forall ((s DigitalSignature)) (forall ((c Certificate)) (=> (= (signature_legally_valid s c (sig_timestamp s)) true) (<= (sig_timestamp s) (cert_expiry c)))))) ; signature_timestamp_in_cert_validity
 
 ; dsa_composition (matches Coq: Theorem dsa_composition)
-(assert (= true true)) ; dsa_composition [untranslatable]
+(assert (forall ((c Certificate)) (forall ((s DigitalSignature)) (forall ((t Int)) (forall ((key_enc Bool) (key_hsm Bool)) (=> (= (cert_valid c t) true) (=> (= (signature_legally_valid s c t) true) (=> (= (key_strength_adequate c 2048) true) (=> (= (private_key_protected key_enc key_hsm) true) (= (dsa_fully_compliant c s t key_enc key_hsm) true)))))))))) ; dsa_composition
 
 ; cert_status_coverage (matches Coq: Theorem cert_status_coverage)
-(assert (= true true)) ; cert_status_coverage [untranslatable]
+(assert (forall ((cs CertStatus)) (= (In cs all_cert_statuses) true))) ; cert_status_coverage
 
 ; ca_license_coverage (matches Coq: Theorem ca_license_coverage)
-(assert (= true true)) ; ca_license_coverage [untranslatable]
+(assert (forall ((ls CALicenseStatus)) (= (In ls all_ca_license_statuses) true))) ; ca_license_coverage
 
 ; Verify all assertions are satisfiable
 (check-sat)

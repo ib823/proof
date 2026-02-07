@@ -234,16 +234,16 @@
   (mk-aead_properties true true true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; negb_false_iff (matches Coq: Lemma negb_false_iff)
-(assert (= true true)) ; negb_false_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) false) (= b true)) (=> (= b true) (= (not b) false))))) ; negb_false_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; QSTLS_001 (matches Coq: Theorem QSTLS_001)
 (assert (= (hybrid_kex_secure riina_kex) true)) ; QSTLS_001
@@ -282,31 +282,31 @@
 (assert (= (qstls_version_13 riina_qstls) true)) ; QSTLS_012
 
 ; QSTLS_013 (matches Coq: Theorem QSTLS_013)
-(assert (= true true)) ; QSTLS_013 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hybrid_kex_secure h) true) (= (hkex_post_quantum h) true)))) ; QSTLS_013
 
 ; QSTLS_014 (matches Coq: Theorem QSTLS_014)
-(assert (= true true)) ; QSTLS_014 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hybrid_kex_secure h) true) (= (hkex_combined h) true)))) ; QSTLS_014
 
 ; QSTLS_015 (matches Coq: Theorem QSTLS_015)
-(assert (= true true)) ; QSTLS_015 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hybrid_kex_secure h) true) (= (hkex_classical h) true)))) ; QSTLS_015
 
 ; QSTLS_016 (matches Coq: Theorem QSTLS_016)
-(assert (= true true)) ; QSTLS_016 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (hybrid_config_valid c) true) (= (hybrid_combiner c) true)))) ; QSTLS_016
 
 ; QSTLS_017 (matches Coq: Theorem QSTLS_017)
-(assert (= true true)) ; QSTLS_017 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (hybrid_config_valid c) true) (= (hybrid_label c) true)))) ; QSTLS_017
 
 ; QSTLS_018 (matches Coq: Theorem QSTLS_018)
 (assert (= (hybrid_config_valid riina_hybrid_config) true)) ; QSTLS_018
 
 ; QSTLS_019 (matches Coq: Theorem QSTLS_019)
-(assert (= true true)) ; QSTLS_019 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (pq_auth_secure p) true) (= (pqa_pq_sig p) true)))) ; QSTLS_019
 
 ; QSTLS_020 (matches Coq: Theorem QSTLS_020)
-(assert (= true true)) ; QSTLS_020 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (pq_auth_secure p) true) (= (pqa_classical_sig p) true)))) ; QSTLS_020
 
 ; QSTLS_021 (matches Coq: Theorem QSTLS_021)
-(assert (= true true)) ; QSTLS_021 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (pq_auth_secure p) true) (= (pqa_certificate_chain p) true)))) ; QSTLS_021
 
 ; QSTLS_022 (matches Coq: Theorem QSTLS_022)
 (assert (= (sig_is_post_quantum ML_DSA_87) true)) ; QSTLS_022
@@ -318,73 +318,73 @@
 (assert (= (sig_security_level ML_DSA_87) Level5)) ; QSTLS_024
 
 ; QSTLS_025 (matches Coq: Theorem QSTLS_025)
-(assert (= true true)) ; QSTLS_025 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (handshake_secure t) true) (= (ths_forward_secrecy t) true)))) ; QSTLS_025
 
 ; QSTLS_026 (matches Coq: Theorem QSTLS_026)
-(assert (= true true)) ; QSTLS_026 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (handshake_secure t) true) (= (ths_downgrade_protection t) true)))) ; QSTLS_026
 
 ; QSTLS_027 (matches Coq: Theorem QSTLS_027)
-(assert (= true true)) ; QSTLS_027 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (handshake_secure t) true) (= (ths_replay_protection t) true)))) ; QSTLS_027
 
 ; QSTLS_028 (matches Coq: Theorem QSTLS_028)
-(assert (= true true)) ; QSTLS_028 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (handshake_secure t) true) (= (ths_key_confirmation t) true)))) ; QSTLS_028
 
 ; QSTLS_029 (matches Coq: Theorem QSTLS_029)
-(assert (= true true)) ; QSTLS_029 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (record_secure r) true) (= (rec_aead r) true)))) ; QSTLS_029
 
 ; QSTLS_030 (matches Coq: Theorem QSTLS_030)
-(assert (= true true)) ; QSTLS_030 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (record_secure r) true) (= (rec_sequence_numbers r) true)))) ; QSTLS_030
 
 ; QSTLS_031 (matches Coq: Theorem QSTLS_031)
-(assert (= true true)) ; QSTLS_031 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (hybrid_kex_secure (qstls_kex q)) true)))) ; QSTLS_031
 
 ; QSTLS_032 (matches Coq: Theorem QSTLS_032)
-(assert (= true true)) ; QSTLS_032 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (pq_auth_secure (qstls_auth q)) true)))) ; QSTLS_032
 
 ; QSTLS_033 (matches Coq: Theorem QSTLS_033)
-(assert (= true true)) ; QSTLS_033 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (handshake_secure (qstls_handshake q)) true)))) ; QSTLS_033
 
 ; QSTLS_034 (matches Coq: Theorem QSTLS_034)
-(assert (= true true)) ; QSTLS_034 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (record_secure (qstls_record q)) true)))) ; QSTLS_034
 
 ; QSTLS_035 (matches Coq: Theorem QSTLS_035)
-(assert (= true true)) ; QSTLS_035 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (qstls_version_13 q) true)))) ; QSTLS_035
 
 ; QSTLS_036 (matches Coq: Theorem QSTLS_036)
-(assert (= true true)) ; QSTLS_036 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (hkex_post_quantum (qstls_kex q)) true)))) ; QSTLS_036
 
 ; QSTLS_037 (matches Coq: Theorem QSTLS_037)
 (assert (= (forward_secrecy_complete riina_fs_config) true)) ; QSTLS_037
 
 ; QSTLS_038 (matches Coq: Theorem QSTLS_038)
-(assert (= true true)) ; QSTLS_038 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (forward_secrecy_complete f) true) (= (fs_ephemeral_keys f) true)))) ; QSTLS_038
 
 ; QSTLS_039 (matches Coq: Theorem QSTLS_039)
-(assert (= true true)) ; QSTLS_039 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (forward_secrecy_complete f) true) (= (fs_key_deletion f) true)))) ; QSTLS_039
 
 ; QSTLS_040 (matches Coq: Theorem QSTLS_040)
-(assert (= true true)) ; QSTLS_040 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (forward_secrecy_complete f) true) (= (fs_no_static_dh f) true)))) ; QSTLS_040
 
 ; QSTLS_041 (matches Coq: Theorem QSTLS_041)
-(assert (= true true)) ; QSTLS_041 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (forward_secrecy_complete f) true) (= (fs_pfs_per_session f) true)))) ; QSTLS_041
 
 ; QSTLS_042 (matches Coq: Theorem QSTLS_042)
-(assert (= true true)) ; QSTLS_042 [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (= (ths_forward_secrecy (qstls_handshake q)) true)))) ; QSTLS_042
 
 ; QSTLS_043 (matches Coq: Theorem QSTLS_043)
 (assert (= (algorithm_agility_valid riina_agility) true)) ; QSTLS_043
 
 ; QSTLS_044 (matches Coq: Theorem QSTLS_044)
-(assert (= true true)) ; QSTLS_044 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (algorithm_agility_valid a) true) (= (agility_negotiation a) true)))) ; QSTLS_044
 
 ; QSTLS_045 (matches Coq: Theorem QSTLS_045)
-(assert (= true true)) ; QSTLS_045 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (algorithm_agility_valid a) true) (= (agility_fallback a) true)))) ; QSTLS_045
 
 ; QSTLS_046 (matches Coq: Theorem QSTLS_046)
-(assert (= true true)) ; QSTLS_046 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (algorithm_agility_valid a) true) (= (agility_versioning a) true)))) ; QSTLS_046
 
 ; QSTLS_047 (matches Coq: Theorem QSTLS_047)
-(assert (= true true)) ; QSTLS_047 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (algorithm_agility_valid a) true) (= (agility_extension a) true)))) ; QSTLS_047
 
 ; QSTLS_048 (matches Coq: Theorem QSTLS_048)
 (assert (= (tls13_extensions_valid riina_extensions) true)) ; QSTLS_048
@@ -393,16 +393,16 @@
 (assert (= (kem_fully_secure riina_kem_security) true)) ; QSTLS_049
 
 ; QSTLS_050 (matches Coq: Theorem QSTLS_050)
-(assert (= true true)) ; QSTLS_050 [untranslatable]
+(assert (forall ((k Bool)) (=> (= (kem_fully_secure k) true) (= (kem_sec_indcca2 k) true)))) ; QSTLS_050
 
 ; QSTLS_051 (matches Coq: Theorem QSTLS_051)
-(assert (= true true)) ; QSTLS_051 [untranslatable]
+(assert (forall ((k Bool)) (=> (= (kem_fully_secure k) true) (= (kem_sec_module_lwe k) true)))) ; QSTLS_051
 
 ; QSTLS_052 (matches Coq: Theorem QSTLS_052)
-(assert (= true true)) ; QSTLS_052 [untranslatable]
+(assert (forall ((k Bool)) (=> (= (kem_fully_secure k) true) (= (kem_sec_nist_approved k) true)))) ; QSTLS_052
 
 ; QSTLS_053 (matches Coq: Theorem QSTLS_053)
-(assert (= true true)) ; QSTLS_053 [untranslatable]
+(assert (forall ((k Bool)) (=> (= (kem_fully_secure k) true) (= (kem_sec_constant_time k) true)))) ; QSTLS_053
 
 ; QSTLS_054 (matches Coq: Theorem QSTLS_054)
 (assert (= (kem_security_level ML_KEM_1024) Level5)) ; QSTLS_054
@@ -411,19 +411,19 @@
 (assert (= (sig_fully_secure riina_sig_security) true)) ; QSTLS_055
 
 ; QSTLS_056 (matches Coq: Theorem QSTLS_056)
-(assert (= true true)) ; QSTLS_056 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sig_fully_secure s) true) (= (sig_euf_cma s) true)))) ; QSTLS_056
 
 ; QSTLS_057 (matches Coq: Theorem QSTLS_057)
-(assert (= true true)) ; QSTLS_057 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sig_fully_secure s) true) (= (sig_strong_euf s) true)))) ; QSTLS_057
 
 ; QSTLS_058 (matches Coq: Theorem QSTLS_058)
-(assert (= true true)) ; QSTLS_058 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sig_fully_secure s) true) (= (sig_nist_approved s) true)))) ; QSTLS_058
 
 ; QSTLS_059 (matches Coq: Theorem QSTLS_059)
-(assert (= true true)) ; QSTLS_059 [untranslatable]
+(assert (= (sig_is_post_quantum (qstls_sig_scheme riina_qstls_full)) true)) ; QSTLS_059
 
 ; QSTLS_060 (matches Coq: Theorem QSTLS_060)
-(assert (= true true)) ; QSTLS_060 [untranslatable]
+(assert (= (sig_security_level (qstls_sig_scheme riina_qstls_full)) Level5)) ; QSTLS_060
 
 ; QSTLS_061 (matches Coq: Theorem QSTLS_061)
 (assert (= (qstls_full_secure riina_qstls_full) true)) ; QSTLS_061
@@ -432,10 +432,10 @@
 (assert (= (aead_secure riina_aead) true)) ; QSTLS_062
 
 ; QSTLS_063_complete (matches Coq: Theorem QSTLS_063_complete)
-(assert (= true true)) ; QSTLS_063_complete [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (and (= (hkex_post_quantum (qstls_kex q)) true) (= (pqa_pq_sig (qstls_auth q)) true) (= (ths_forward_secrecy (qstls_handshake q)) true) (= (rec_aead (qstls_record q)) true) (= (qstls_version_13 q) true))))) ; QSTLS_063_complete
 
 ; QSTLS_064_hybrid_security (matches Coq: Theorem QSTLS_064_hybrid_security)
-(assert (= true true)) ; QSTLS_064_hybrid_security [untranslatable]
+(assert (forall ((q Bool)) (=> (= (qstls_fully_secure q) true) (and (= (hkex_classical (qstls_kex q)) true) (= (hkex_post_quantum (qstls_kex q)) true) (= (hkex_combined (qstls_kex q)) true))))) ; QSTLS_064_hybrid_security
 
 ; QSTLS_065_full_chain (matches Coq: Theorem QSTLS_065_full_chain)
 (assert (and (= (qstls_fully_secure riina_qstls) true) (= (qstls_full_secure riina_qstls_full) true) (= (forward_secrecy_complete riina_fs_config) true) (= (algorithm_agility_valid riina_agility) true) (= (kem_fully_secure riina_kem_security) true) (= (sig_fully_secure riina_sig_security) true))) ; QSTLS_065_full_chain

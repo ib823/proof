@@ -78,70 +78,77 @@
 (define-fun all_false_mask () SIMDMask Vector)
 
 ; PERF_003_01_simd_add_equivalence (matches Coq: Theorem PERF_003_01_simd_add_equivalence)
-(assert (= true true)) ; PERF_003_01_simd_add_equivalence [untranslatable]
+; PERF_003_01_simd_add_equivalence: forall (a b : SIMDVec), simd_add a b = Vector.map2 Nat.add a b
+(assert (forall ((a SIMDVec) (b SIMDVec)) true)) ; PERF_003_01_simd_add_equivalence [partial: bindings preserved]
 
 ; PERF_003_02_simd_mul_equivalence (matches Coq: Theorem PERF_003_02_simd_mul_equivalence)
-(assert (= true true)) ; PERF_003_02_simd_mul_equivalence [untranslatable]
+; PERF_003_02_simd_mul_equivalence: forall (a b : SIMDVec), simd_mul a b = Vector.map2 Nat.mul a b
+(assert (forall ((a SIMDVec) (b SIMDVec)) true)) ; PERF_003_02_simd_mul_equivalence [partial: bindings preserved]
 
 ; PERF_003_03_simd_cmp_equivalence (matches Coq: Theorem PERF_003_03_simd_cmp_equivalence)
-(assert (= true true)) ; PERF_003_03_simd_cmp_equivalence [untranslatable]
+; PERF_003_03_simd_cmp_equivalence: forall (a b : SIMDVec), simd_cmp a b = Vector.map2 Nat.leb a b
+(assert (forall ((a SIMDVec) (b SIMDVec)) true)) ; PERF_003_03_simd_cmp_equivalence [partial: bindings preserved]
 
 ; PERF_003_04_simd_shuffle_correctness (matches Coq: Theorem PERF_003_04_simd_shuffle_correctness)
-(assert (= true true)) ; PERF_003_04_simd_shuffle_correctness [untranslatable]
+(assert (forall ((v SIMDVec)) (forall ((perm Vector.t) (i Fin.t)) (= (Vector.nth (simd_shuffle v perm) i) (Vector.nth v (Vector.nth perm i)))))) ; PERF_003_04_simd_shuffle_correctness
 
 ; PERF_003_05_simd_alignment_requirement (matches Coq: Theorem PERF_003_05_simd_alignment_requirement)
-(assert (= true true)) ; PERF_003_05_simd_alignment_requirement [untranslatable]
+(assert (forall ((mem list nat)) (forall ((addr Int)) (and (=> (exists ((v Bool)) (= (aligned_load mem addr) (MemOK v))) (and (= (is_aligned addr VWidth) true) (= (<= (+ addr VWidth) (length mem)) true))) (=> (and (= (is_aligned addr VWidth) true) (= (<= (+ addr VWidth) (length mem)) true)) (exists ((v Bool)) (= (aligned_load mem addr) (MemOK v)))))))) ; PERF_003_05_simd_alignment_requirement
 
 ; PERF_003_06_simd_lane_independence (matches Coq: Theorem PERF_003_06_simd_lane_independence)
-(assert (= true true)) ; PERF_003_06_simd_lane_independence [untranslatable]
+(assert (forall ((a SIMDVec) (b SIMDVec) (i Fin.t)) (= (Vector.nth (simd_add a b) i) (scalar_add (Vector.nth a i) (Vector.nth b i))))) ; PERF_003_06_simd_lane_independence
 
 ; PERF_003_07_simd_reduce_equivalence (matches Coq: Theorem PERF_003_07_simd_reduce_equivalence)
-(assert (= true true)) ; PERF_003_07_simd_reduce_equivalence [untranslatable]
+; PERF_003_07_simd_reduce_equivalence: forall (v : SIMDVec) (init : nat), simd_reduce Nat.add init v = List.fold_left Nat.add (Vector.to_list v) init
+(assert (forall ((v SIMDVec) (init Int)) true)) ; PERF_003_07_simd_reduce_equivalence [partial: bindings preserved]
 
 ; PERF_003_08_simd_broadcast_correctness (matches Coq: Theorem PERF_003_08_simd_broadcast_correctness)
-(assert (= true true)) ; PERF_003_08_simd_broadcast_correctness [untranslatable]
+(assert (forall ((x Int)) (forall ((i Fin.t)) (= (Vector.nth (simd_broadcast x) i) x)))) ; PERF_003_08_simd_broadcast_correctness
 
 ; fold_and_all_true (matches Coq: Lemma fold_and_all_true)
-(assert (= true true)) ; fold_and_all_true [untranslatable]
+; fold_and_all_true: forall {n} (v : Vector.t nat n) (f : nat -> bool), (forall i, f (Vector.nth v i) = true) -> Vector.fold_left (fun acc x 
+(assert (forall ((v Vector.t) (f Int)) true)) ; fold_and_all_true [partial: bindings preserved]
 
 ; PERF_003_09_simd_gather_safety (matches Coq: Theorem PERF_003_09_simd_gather_safety)
-(assert (= true true)) ; PERF_003_09_simd_gather_safety [untranslatable]
+(assert (forall ((mem list nat)) (forall ((indices Vector.t)) (=> (= (mk-tuple forall Vector.nth) true) (exists ((result Bool)) (= (gather mem indices) (some result))))))) ; PERF_003_09_simd_gather_safety
 
 ; PERF_003_10_simd_masking_correctness (matches Coq: Theorem PERF_003_10_simd_masking_correctness)
-(assert (= true true)) ; PERF_003_10_simd_masking_correctness [untranslatable]
+; PERF_003_10_simd_masking_correctness: forall (mask : SIMDMask) (a b old : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_masked_add mask a b old) i = if Vector
+(assert (forall ((mask SIMDMask) (a SIMDVec) (b SIMDVec) (old SIMDVec) (i Fin.t)) true)) ; PERF_003_10_simd_masking_correctness [partial: bindings preserved]
 
 ; PERF_003_11_vectorization_legality (matches Coq: Theorem PERF_003_11_vectorization_legality)
-(assert (= true true)) ; PERF_003_11_vectorization_legality [untranslatable]
+(assert (forall ((l Loop)) (and (=> (= (vectorizable l) true) (= (has_carried_dependency l) false)) (=> (= (has_carried_dependency l) false) (= (vectorizable l) true))))) ; PERF_003_11_vectorization_legality
 
 ; to_list_map2 (matches Coq: Lemma to_list_map2)
-(assert (= true true)) ; to_list_map2 [untranslatable]
+; to_list_map2: forall {A B C : Type} {n : nat} (f : A -> B -> C) (v1 : Vector.t A n) (v2 : Vector.t B n), Vector.to_list (Vector.map2 f
+(assert true) ; to_list_map2 [Coq-only]
 
 ; PERF_003_12_simd_semantic_preservation (matches Coq: Theorem PERF_003_12_simd_semantic_preservation)
-(assert (= true true)) ; PERF_003_12_simd_semantic_preservation [untranslatable]
+(assert (forall ((a SIMDVec) (b SIMDVec)) (= (Vector.to_list (simd_add a b)) (scalar_exec_add (Vector.to_list a) (Vector.to_list b))))) ; PERF_003_12_simd_semantic_preservation
 
 ; PERF_003_13_simd_mul_lane_independence (matches Coq: Theorem PERF_003_13_simd_mul_lane_independence)
-(assert (= true true)) ; PERF_003_13_simd_mul_lane_independence [untranslatable]
+(assert (forall ((a SIMDVec) (b SIMDVec) (i Fin.t)) (= (Vector.nth (simd_mul a b) i) (scalar_mul (Vector.nth a i) (Vector.nth b i))))) ; PERF_003_13_simd_mul_lane_independence
 
 ; PERF_003_14_simd_cmp_lane_independence (matches Coq: Theorem PERF_003_14_simd_cmp_lane_independence)
-(assert (= true true)) ; PERF_003_14_simd_cmp_lane_independence [untranslatable]
+(assert (forall ((a SIMDVec) (b SIMDVec) (i Fin.t)) (= (Vector.nth (simd_cmp a b) i) (scalar_cmp (Vector.nth a i) (Vector.nth b i))))) ; PERF_003_14_simd_cmp_lane_independence
 
 ; PERF_003_15_broadcast_add_equiv (matches Coq: Theorem PERF_003_15_broadcast_add_equiv)
-(assert (= true true)) ; PERF_003_15_broadcast_add_equiv [untranslatable]
+(assert (forall ((v SIMDVec)) (forall ((x Int)) (forall ((i Fin.t)) (= (Vector.nth (simd_add v (simd_broadcast x)) i) (scalar_add (Vector.nth v i) x)))))) ; PERF_003_15_broadcast_add_equiv
 
 ; PERF_003_16_identity_shuffle (matches Coq: Theorem PERF_003_16_identity_shuffle)
-(assert (= true true)) ; PERF_003_16_identity_shuffle [untranslatable]
+(assert (forall ((v SIMDVec)) (forall ((perm Vector.t)) (=> (= (mk-tuple forall Vector.nth) true) (= (simd_shuffle v perm) v))))) ; PERF_003_16_identity_shuffle
 
 ; PERF_003_17_simd_add_commutative (matches Coq: Theorem PERF_003_17_simd_add_commutative)
-(assert (= true true)) ; PERF_003_17_simd_add_commutative [untranslatable]
+(assert (forall ((a SIMDVec) (b SIMDVec) (i Fin.t)) (= (Vector.nth (simd_add a b) i) (Vector.nth (simd_add b a) i)))) ; PERF_003_17_simd_add_commutative
 
 ; PERF_003_18_all_true_mask_selects_new (matches Coq: Theorem PERF_003_18_all_true_mask_selects_new)
-(assert (= true true)) ; PERF_003_18_all_true_mask_selects_new [untranslatable]
+(assert (forall ((old SIMDVec) (new_val SIMDVec) (i Fin.t)) (= (Vector.nth (simd_select all_true_mask old new_val) i) (Vector.nth new_val i)))) ; PERF_003_18_all_true_mask_selects_new
 
 ; PERF_003_19_all_false_mask_preserves_old (matches Coq: Theorem PERF_003_19_all_false_mask_preserves_old)
-(assert (= true true)) ; PERF_003_19_all_false_mask_preserves_old [untranslatable]
+(assert (forall ((old SIMDVec) (new_val SIMDVec) (i Fin.t)) (= (Vector.nth (simd_select all_false_mask old new_val) i) (Vector.nth old i)))) ; PERF_003_19_all_false_mask_preserves_old
 
 ; PERF_003_20_zero_aligned (matches Coq: Theorem PERF_003_20_zero_aligned)
-(assert (= true true)) ; PERF_003_20_zero_aligned [untranslatable]
+(assert (forall ((alignment Int)) (=> (> alignment 0) (= (is_aligned 0 alignment) true)))) ; PERF_003_20_zero_aligned
 
 ; Verify all assertions are satisfiable
 (check-sat)

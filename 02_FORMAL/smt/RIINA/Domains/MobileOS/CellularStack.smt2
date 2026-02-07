@@ -174,76 +174,76 @@
   true)
 
 ; baseband_isolation (matches Coq: Theorem baseband_isolation)
-(assert (= true true)) ; baseband_isolation [untranslatable]
+(assert (forall ((baseband BasebandProcessor)) (forall ((ap_mem Memory)) (=> (= (baseband_properly_isolated baseband) true) (=> (= (bb_isolated baseband) true) (=> (= (is_ap_memory ap_mem) true) (not (= (can_access_mem baseband ap_mem) true)))))))) ; baseband_isolation
 
 ; call_handoff_is_seamless (matches Coq: Theorem call_handoff_is_seamless)
-(assert (= true true)) ; call_handoff_is_seamless [untranslatable]
+(assert (forall ((call Call)) (forall ((handoff Handoff)) (=> (= (seamless_handoff_system call handoff) true) (=> (= (during_call call handoff) true) (=> (= (handoff_seamless handoff) true) (= (no_audio_gap call) true))))))) ; call_handoff_is_seamless
 
 ; isolation_preserves_separation (matches Coq: Theorem isolation_preserves_separation)
-(assert (= true true)) ; isolation_preserves_separation [untranslatable]
+(assert (forall ((bb BasebandProcessor)) (=> (= (bb_isolated bb) true) (=> (= (bb_accessible_memory bb) nil) (forall ((m Bool)) (not (= (can_access_mem bb m) true))))))) ; isolation_preserves_separation
 
 ; baseband_isolation_contrapositive (matches Coq: Theorem baseband_isolation_contrapositive)
-(assert (= true true)) ; baseband_isolation_contrapositive [untranslatable]
+(assert (forall ((bb BasebandProcessor)) (forall ((m Memory)) (=> (= (baseband_properly_isolated bb) true) (=> (= (bb_isolated bb) true) (=> (= (can_access_mem bb m) true) (not (= (is_ap_memory m) true)))))))) ; baseband_isolation_contrapositive
 
 ; imsi_protected_thm (matches Coq: Theorem imsi_protected_thm)
-(assert (= true true)) ; imsi_protected_thm [untranslatable]
+(assert (forall ((ip IMSIProtection)) (=> (= (imsi_protected ip) true) (= (imsi_encrypted ip) true)))) ; imsi_protected_thm
 
 ; baseband_isolated_thm (matches Coq: Theorem baseband_isolated_thm)
-(assert (= true true)) ; baseband_isolated_thm [untranslatable]
+(assert (forall ((bbi BasebandIsolation)) (=> (= (baseband_fully_isolated bbi) true) (= (bbi_memory_isolated bbi) true)))) ; baseband_isolated_thm
 
 ; sim_authentication_complete_thm (matches Coq: Theorem sim_authentication_complete_thm)
-(assert (= true true)) ; sim_authentication_complete_thm [untranslatable]
+(assert (forall ((sa SIMAuth)) (=> (= (sim_authentication_complete sa) true) (= (sim_auth_complete sa) true)))) ; sim_authentication_complete_thm
 
 ; data_roaming_permission (matches Coq: Theorem data_roaming_permission)
-(assert (= true true)) ; data_roaming_permission [untranslatable]
+(assert (forall ((rc RoamingConfig)) (=> (= (data_roaming_permitted rc) true) (=> (= (roaming_enabled rc) true) (= (roaming_user_consented rc) true))))) ; data_roaming_permission
 
 ; cellular_encryption_enforced_thm (matches Coq: Theorem cellular_encryption_enforced_thm)
-(assert (= true true)) ; cellular_encryption_enforced_thm [untranslatable]
+(assert (forall ((ce CellularEncryption)) (=> (= (cellular_encryption_enforced ce) true) (= (cell_encrypted ce) true)))) ; cellular_encryption_enforced_thm
 
 ; stingray_detection_thm (matches Coq: Theorem stingray_detection_thm)
-(assert (= true true)) ; stingray_detection_thm [untranslatable]
+(assert (forall ((ct CellTowerInfo)) (=> (= (stingray_detection ct) true) (=> (= (tower_anomaly_detected ct) true) (= (tower_stingray_suspected ct) true))))) ; stingray_detection_thm
 
 ; sms_encryption_available_thm (matches Coq: Theorem sms_encryption_available_thm)
-(assert (= true true)) ; sms_encryption_available_thm [untranslatable]
+(assert (forall ((sms SMSMessage)) (=> (= (sms_encryption_available sms) true) (=> (= (sms_rcs_enabled sms) true) (= (sms_encrypted sms) true))))) ; sms_encryption_available_thm
 
 ; volte_quality_guaranteed_thm (matches Coq: Theorem volte_quality_guaranteed_thm)
-(assert (= true true)) ; volte_quality_guaranteed_thm [untranslatable]
+(assert (forall ((vc VoLTECall)) (=> (= (volte_quality_guaranteed vc) true) (>= (volte_quality_score vc) (volte_min_quality vc))))) ; volte_quality_guaranteed_thm
 
 ; esim_activation_secure_thm (matches Coq: Theorem esim_activation_secure_thm)
-(assert (= true true)) ; esim_activation_secure_thm [untranslatable]
+(assert (forall ((ea eSIMActivation)) (=> (= (esim_activation_secure ea) true) (= (esim_profile_encrypted ea) true)))) ; esim_activation_secure_thm
 
 ; carrier_settings_validated_thm (matches Coq: Theorem carrier_settings_validated_thm)
-(assert (= true true)) ; carrier_settings_validated_thm [untranslatable]
+(assert (forall ((cs CarrierSettings)) (=> (= (carrier_settings_validated cs) true) (= (carrier_validated cs) true)))) ; carrier_settings_validated_thm
 
 ; data_usage_tracked_thm (matches Coq: Theorem data_usage_tracked_thm)
-(assert (= true true)) ; data_usage_tracked_thm [untranslatable]
+(assert (forall ((du DataUsage)) (=> (= (data_usage_tracked du) true) (= (du_tracked du) true)))) ; data_usage_tracked_thm
 
 ; cellular_failover_handled_thm (matches Coq: Theorem cellular_failover_handled_thm)
-(assert (= true true)) ; cellular_failover_handled_thm [untranslatable]
+(assert (forall ((cf CellularFailover)) (=> (= (cellular_failover_handled cf) true) (= (fo_failover_handled cf) true)))) ; cellular_failover_handled_thm
 
 ; signal_strength_accurate_thm (matches Coq: Theorem signal_strength_accurate_thm)
-(assert (= true true)) ; signal_strength_accurate_thm [untranslatable]
+(assert (forall ((sm SignalMeasurement)) (=> (= (signal_strength_accurate sm) true) (= (sm_accurate sm) true)))) ; signal_strength_accurate_thm
 
 ; emergency_call_always_available_thm (matches Coq: Theorem emergency_call_always_available_thm)
-(assert (= true true)) ; emergency_call_always_available_thm [untranslatable]
+(assert (forall ((ec EmergencyCall)) (=> (= (emergency_call_always_available ec) true) (= (ec_available ec) true)))) ; emergency_call_always_available_thm
 
 ; carrier_lock_enforced_thm (matches Coq: Theorem carrier_lock_enforced_thm)
-(assert (= true true)) ; carrier_lock_enforced_thm [untranslatable]
+(assert (forall ((cl CarrierLock)) (=> (= (carrier_lock_enforced cl) true) (=> (= (cl_locked cl) true) (= (cl_enforced cl) true))))) ; carrier_lock_enforced_thm
 
 ; imsi_not_exposed (matches Coq: Theorem imsi_not_exposed)
-(assert (= true true)) ; imsi_not_exposed [untranslatable]
+(assert (forall ((ip IMSIProtection)) (=> (= (imsi_protected ip) true) (= (imsi_exposed ip) false)))) ; imsi_not_exposed
 
 ; baseband_dma_blocked (matches Coq: Theorem baseband_dma_blocked)
-(assert (= true true)) ; baseband_dma_blocked [untranslatable]
+(assert (forall ((bbi BasebandIsolation)) (=> (= (baseband_fully_isolated bbi) true) (= (bbi_dma_blocked bbi) true)))) ; baseband_dma_blocked
 
 ; sim_mutual_auth_thm (matches Coq: Theorem sim_mutual_auth_thm)
-(assert (= true true)) ; sim_mutual_auth_thm [untranslatable]
+(assert (forall ((sa SIMAuth)) (=> (= (sim_authentication_complete sa) true) (= (sim_mutual_auth sa) true)))) ; sim_mutual_auth_thm
 
 ; emergency_call_any_network (matches Coq: Theorem emergency_call_any_network)
-(assert (= true true)) ; emergency_call_any_network [untranslatable]
+(assert (forall ((ec EmergencyCall)) (=> (= (emergency_call_always_available ec) true) (= (ec_any_network ec) true)))) ; emergency_call_any_network
 
 ; esim_activation_code_valid_thm (matches Coq: Theorem esim_activation_code_valid_thm)
-(assert (= true true)) ; esim_activation_code_valid_thm [untranslatable]
+(assert (forall ((ea eSIMActivation)) (=> (= (esim_activation_secure ea) true) (= (esim_activation_code_valid ea) true)))) ; esim_activation_code_valid_thm
 
 ; Verify all assertions are satisfiable
 (check-sat)

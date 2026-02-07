@@ -38,64 +38,70 @@
 (define-fun conj_elim_right () proof_term true)
 
 ; formula_eqb_refl (matches Coq: Lemma formula_eqb_refl)
-(assert (= true true)) ; formula_eqb_refl [untranslatable]
+(assert (forall ((f Bool)) (= (formula_eqb f f) true))) ; formula_eqb_refl
 
 ; formula_eqb_eq (matches Coq: Lemma formula_eqb_eq)
-(assert (= true true)) ; formula_eqb_eq [untranslatable]
+(assert (forall ((f1 Bool) (f2 Bool)) (=> (= (formula_eqb f1 f2) true) (= f1 f2)))) ; formula_eqb_eq
 
 ; formula_eqb_neq (matches Coq: Lemma formula_eqb_neq)
-(assert (= true true)) ; formula_eqb_neq [untranslatable]
+(assert (forall ((f1 Bool) (f2 Bool)) (=> (= (formula_eqb f1 f2) false) (not (= f1 f2))))) ; formula_eqb_neq
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((ctx Bool) (p Bool) (f Bool)) (=> (= (check ctx p) (some f)) (= (derives ctx f) true)))) ; 1
 
 ; derives_sound (matches Coq: Lemma derives_sound)
-(assert (= true true)) ; derives_sound [untranslatable]
+(assert (forall ((ctx Bool) (f Bool)) (=> (= (derives ctx f) true) (=> (forall ((v Bool)) (= (satisfies_ctx v ctx) true)) (= (sem v f) true))))) ; derives_sound
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+; 2: Identity proof A -> A is valid *)  Definition identity_proof (a : formula) : proof_term := PImplIntro a (PAxiom 0). Theo
+(assert true) ; 2 [Coq-only]
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+; 3: Composition of proofs (A->B, B->C gives A->C) *)  Definition compose_proof (a b c : formula) : proof_term :=   PImplIntr
+(assert true) ; 3 [Coq-only]
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+; 4: Conjunction introduction is valid *)  Definition conj_intro_proof (a b : formula) : proof_term := PConjIntro (PAxiom 0) 
+(assert true) ; 4 [Coq-only]
 
 ; 5a (matches Coq: Theorem 5a)
-(assert (= true true)) ; 5a [untranslatable]
+; 5a: Conjunction elimination left *)  Definition conj_elim_left (a b : formula) : proof_term := PConjElimL (PAxiom 0). Theore
+(assert true) ; 5a [Coq-only]
 
 ; 5b (matches Coq: Theorem 5b)
-(assert (= true true)) ; 5b [untranslatable]
+; 5b: Conjunction elimination right *)  Definition conj_elim_right (a b : formula) : proof_term := PConjElimR (PAxiom 0). Theo
+(assert true) ; 5b [Coq-only]
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((ctx Bool) (p Bool) (f1 Bool) (f2 Bool)) (=> (= (check ctx p) (some f1)) (=> (= (check ctx p) (some f2)) (= f1 f2))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((ctx Bool) (p1 Bool) (p2 Bool) (a Bool)) (=> (= (check ctx p1) (some (FVar a))) (= (check ctx (PImplElim p1 p2)) none)))) ; 7
 
 ; invalid_axiom_rejected (matches Coq: Theorem invalid_axiom_rejected)
-(assert (= true true)) ; invalid_axiom_rejected [untranslatable]
+(assert (forall ((ctx Bool) (n Bool)) (=> (= (nth_error ctx n) none) (= (check ctx (PAxiom n)) none)))) ; invalid_axiom_rejected
 
 ; invalid_mismatch_rejected (matches Coq: Theorem invalid_mismatch_rejected)
-(assert (= true true)) ; invalid_mismatch_rejected [untranslatable]
+(assert (forall ((ctx Bool) (p1 Bool) (p2 Bool) (a Bool) (a' Bool) (b Bool)) (=> (= (check ctx p1) (some (FImpl a b))) (=> (= (check ctx p2) (some a')) (=> (= (formula_eqb a a') false) (= (check ctx (PImplElim p1 p2)) none)))))) ; invalid_mismatch_rejected
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+; 8: Weakening — valid proof in Γ is valid in Γ,A *)   Lemma nth_error_insert : forall (ctx : context) (n pos : nat) (a : for
+(assert true) ; 8 [Coq-only]
 
 ; weakening_derives (matches Coq: Lemma weakening_derives)
-(assert (= true true)) ; weakening_derives [untranslatable]
+(assert (forall ((ctx Bool) (f Bool)) (=> (= (derives ctx f) true) (forall ((a Bool)) (= (derives (concat ctx (insert a nil)) f) true))))) ; weakening_derives
 
 ; weakening (matches Coq: Theorem weakening)
-(assert (= true true)) ; weakening [untranslatable]
+(assert (forall ((ctx Bool) (f Bool) (a Bool)) (=> (= (derives ctx f) true) (= (derives (concat ctx (insert a nil)) f) true)))) ; weakening
 
 ; pipeline_soundness (matches Coq: Theorem pipeline_soundness)
-(assert (= true true)) ; pipeline_soundness [untranslatable]
+(assert (forall ((p Bool) (f Bool)) (=> (= (check nil p) (some f)) (= (valid f) true)))) ; pipeline_soundness
 
 ; identity_is_valid (matches Coq: Theorem identity_is_valid)
-(assert (= true true)) ; identity_is_valid [untranslatable]
+(assert (forall ((a Bool) (v Bool)) (= (sem v (FImpl a a)) true))) ; identity_is_valid
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((a Bool) (b Bool) (v Bool)) (=> (= (sem v (FConj a b)) true) (= (sem v (FConj b a)) true)))) ; 11
 
 ; Verify all assertions are satisfiable
 (check-sat)

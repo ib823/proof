@@ -30,91 +30,92 @@
   true)
 
 ; mem_true_In (matches Coq: Lemma mem_true_In)
-(assert (= true true)) ; mem_true_In [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (=> (= (mem n l) true) (= (In n l) true)))) ; mem_true_In
 
 ; In_mem_true (matches Coq: Lemma In_mem_true)
-(assert (= true true)) ; In_mem_true [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (=> (= (In n l) true) (= (mem n l) true)))) ; In_mem_true
 
 ; mem_false_not_In (matches Coq: Lemma mem_false_not_In)
-(assert (= true true)) ; mem_false_not_In [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (=> (= (mem n l) false) (not (= (In n l) true))))) ; mem_false_not_In
 
 ; remove_length (matches Coq: Lemma remove_length)
-(assert (= true true)) ; remove_length [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (=> (= (mem n l) true) (= (length (remove n l)) (pred (length l)))))) ; remove_length
 
 ; remove_not_first (matches Coq: Lemma remove_not_first)
-(assert (= true true)) ; remove_not_first [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (=> (= (mem n l) true) (not (or (= (In n (remove n l)) true) (= (In n (remove n l)) true)))))) ; remove_not_first
 
 ; count_remove_helper (matches Coq: Lemma count_remove_helper)
-(assert (= true true)) ; count_remove_helper [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (=> (= (mem n l) true) (= (+ (count n (remove n l)) 1) (count n l))))) ; count_remove_helper
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (mem q ctx) true) (= (check ctx (ICreate q)) none)))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (fully_consumed p) true) (= (check nil p) (some nil))))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((q Bool) (ctx Bool) (ctx' Bool)) (=> (= (check ctx (IMeasure q)) (some ctx')) (and (= ctx' (remove q ctx)) (= (mem q ctx) true))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((g Bool) (q Bool) (ctx Bool) (ctx' Bool)) (=> (= (check ctx (IGate g q)) (some ctx')) (= ctx' ctx)))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((p Bool)) (and (=> (= (well_typed_b p) true) (= (well_typed p) true)) (=> (= (well_typed p) true) (= (well_typed_b p) true))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (fully_consumed_b p) true) (= (check nil p) (some nil))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((i1 Bool) (i2 Bool) (ctx Bool) (ctx1 Bool) (ctx2 Bool)) (=> (= (check ctx i1) (some ctx1)) (=> (= (check ctx1 i2) (some ctx2)) (= (check ctx (ISeq i1 i2)) (some ctx2)))))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((q Bool) (ctx Bool) (ctx' Bool)) (=> (= (check ctx (ICreate q)) (some ctx')) (= (length ctx') (S (length ctx)))))) ; 8
 
 ; measure_decreases_resources (matches Coq: Theorem measure_decreases_resources)
-(assert (= true true)) ; measure_decreases_resources [untranslatable]
+(assert (forall ((q Bool) (ctx Bool) (ctx' Bool)) (=> (= (check ctx (IMeasure q)) (some ctx')) (= (length ctx') (pred (length ctx)))))) ; measure_decreases_resources
 
 ; create_measure_consumed (matches Coq: Theorem create_measure_consumed)
-(assert (= true true)) ; create_measure_consumed [untranslatable]
+(assert (forall ((q Bool)) (= (fully_consumed (ISeq (ICreate q) (IMeasure q))) true))) ; create_measure_consumed
 
 ; create_gate_measure_consumed (matches Coq: Theorem create_gate_measure_consumed)
-(assert (= true true)) ; create_gate_measure_consumed [untranslatable]
+(assert (forall ((q Bool) (g Bool)) (= (fully_consumed (ISeq (ICreate q) (ISeq (IGate g q) (IMeasure q)))) true))) ; create_gate_measure_consumed
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+; 12: mem reflects membership for the head of a list *) Theorem mem_head : forall n l, mem n (n :: l) = true
+(assert true) ; 12 [Coq-only]
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((n Bool)) (= (mem n nil) false))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((n Bool)) (= (count n nil) 0))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((n Bool) (l Bool)) (<= (count n l) (length l)))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((n Bool)) (= (remove n nil) nil))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((g Bool) (q Bool) (ctx Bool)) (=> (= (mem q ctx) false) (= (check ctx (IGate g q)) none)))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (mem q ctx) false) (= (check ctx (IMeasure q)) none)))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((g Bool) (q Bool) (ctx Bool)) (= (check ctx (IGate2 g q q)) none))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((q Bool)) (= (check nil (ISeq (ICreate q) (ICreate q))) none))) ; 20
 
 ; 21 (matches Coq: Theorem 21)
-(assert (= true true)) ; 21 [untranslatable]
+(assert (forall ((n Bool)) (= (count n (insert n nil)) 1))) ; 21
 
 ; 22 (matches Coq: Theorem 22)
-(assert (= true true)) ; 22 [untranslatable]
+(assert (forall ((n Bool)) (= (mem n (insert n nil)) true))) ; 22
 
 ; 23 (matches Coq: Theorem 23)
-(assert (= true true)) ; 23 [untranslatable]
+(assert (forall ((q Bool)) (= (check nil (ICreate q)) (some (insert q nil))))) ; 23
 
 ; Verify all assertions are satisfiable
 (check-sat)

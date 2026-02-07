@@ -184,133 +184,139 @@
   true)
 
 ; list_eq_dec_refl (matches Coq: Lemma list_eq_dec_refl)
-(assert (= true true)) ; list_eq_dec_refl [untranslatable]
+; list_eq_dec_refl: forall (l : list nat), (if list_eq_dec Nat.eq_dec l l then true else false) = true
+(assert (forall ((l list)) true)) ; list_eq_dec_refl [partial: bindings preserved]
 
 ; Nat_eqb_refl (matches Coq: Lemma Nat_eqb_refl)
-(assert (= true true)) ; Nat_eqb_refl [untranslatable]
+(assert (forall ((n Bool)) (= (Nat.eqb n n) true))) ; Nat_eqb_refl
 
 ; min_le_l (matches Coq: Lemma min_le_l)
-(assert (= true true)) ; min_le_l [untranslatable]
+(assert (forall ((n Bool) (m Bool)) (<= (Nat.min n m) n))) ; min_le_l
 
 ; min_le_r (matches Coq: Lemma min_le_r)
-(assert (= true true)) ; min_le_r [untranslatable]
+(assert (forall ((n Bool) (m Bool)) (<= (Nat.min n m) m))) ; min_le_r
 
 ; forallb_impl (matches Coq: Lemma forallb_impl)
-(assert (= true true)) ; forallb_impl [untranslatable]
+; forallb_impl: forall {A : Type} (f g : A -> bool) (l : list A), (forall x, f x = true -> g x = true) -> forallb f l = true -> forallb 
+(assert true) ; forallb_impl [Coq-only]
 
 ; existsb_exists (matches Coq: Lemma existsb_exists)
-(assert (= true true)) ; existsb_exists [untranslatable]
+; existsb_exists: forall {A : Type} (f : A -> bool) (l : list A), existsb f l = true <-> exists x, In x l /\ f x = true
+(assert true) ; existsb_exists [Coq-only]
 
 ; OMEGA_001_01_puzzle_work_bound (matches Coq: Theorem OMEGA_001_01_puzzle_work_bound)
-(assert (= true true)) ; OMEGA_001_01_puzzle_work_bound [untranslatable]
+(assert (forall ((p Bool)) (= (expected_work p) (Nat.pow 2 (puzzle_difficulty p))))) ; OMEGA_001_01_puzzle_work_bound
 
 ; OMEGA_001_02_puzzle_verify_cheap (matches Coq: Theorem OMEGA_001_02_puzzle_verify_cheap)
-(assert (= true true)) ; OMEGA_001_02_puzzle_verify_cheap [untranslatable]
+(assert (forall ((sol Bool)) (= (verification_cost sol) 1))) ; OMEGA_001_02_puzzle_verify_cheap
 
 ; OMEGA_001_03_puzzle_unforgeable (matches Coq: Theorem OMEGA_001_03_puzzle_unforgeable)
-(assert (= true true)) ; OMEGA_001_03_puzzle_unforgeable [untranslatable]
+(assert (forall ((sol Bool)) (=> (= (valid_solution sol) true) (>= (leading_zeros (sha256 (concat (puzzle_challenge (sol_puzzle sol)) (sol_client_nonce sol)))) (puzzle_difficulty (sol_puzzle sol)))))) ; OMEGA_001_03_puzzle_unforgeable
 
 ; OMEGA_001_04_puzzle_fresh (matches Coq: Theorem OMEGA_001_04_puzzle_fresh)
-(assert (= true true)) ; OMEGA_001_04_puzzle_fresh [untranslatable]
+(assert (forall ((p Bool) (current_time Bool) (max_age Bool)) (=> (= (puzzle_expired p current_time max_age) true) (> (- current_time (puzzle_timestamp p)) max_age)))) ; OMEGA_001_04_puzzle_fresh
 
 ; OMEGA_001_05_puzzle_difficulty_adaptive (matches Coq: Theorem OMEGA_001_05_puzzle_difficulty_adaptive)
-(assert (= true true)) ; OMEGA_001_05_puzzle_difficulty_adaptive [untranslatable]
+(assert (forall ((base Bool) (load Bool) (capacity Bool)) (=> (> capacity 0) (=> (> load (div capacity 2)) (> (adaptive_difficulty base load capacity) base))))) ; OMEGA_001_05_puzzle_difficulty_adaptive
 
 ; OMEGA_001_06_puzzle_non_parallelizable (matches Coq: Theorem OMEGA_001_06_puzzle_non_parallelizable)
-(assert (= true true)) ; OMEGA_001_06_puzzle_non_parallelizable [untranslatable]
+(assert (forall ((p Bool) (n_workers Bool)) (=> (> n_workers 1) (=> (> (expected_work p) 0) (< (div (expected_work p) n_workers) (expected_work p)))))) ; OMEGA_001_06_puzzle_non_parallelizable
 
 ; OMEGA_001_07_puzzle_stateless (matches Coq: Theorem OMEGA_001_07_puzzle_stateless)
 (assert (= server_state_pre_verify 0)) ; OMEGA_001_07_puzzle_stateless
 
 ; pow2_ge_1 (matches Coq: Lemma pow2_ge_1)
-(assert (= true true)) ; pow2_ge_1 [untranslatable]
+(assert (forall ((n Bool)) (>= (Nat.pow 2 n) 1))) ; pow2_ge_1
 
 ; pow2_ge_2 (matches Coq: Lemma pow2_ge_2)
-(assert (= true true)) ; pow2_ge_2 [untranslatable]
+(assert (forall ((n Bool)) (=> (> n 0) (>= (Nat.pow 2 n) 2)))) ; pow2_ge_2
 
 ; OMEGA_001_08_puzzle_asymmetric (matches Coq: Theorem OMEGA_001_08_puzzle_asymmetric)
-(assert (= true true)) ; OMEGA_001_08_puzzle_asymmetric [untranslatable]
+(assert (forall ((p Bool) (sol Bool)) (=> (> (puzzle_difficulty p) 0) (< (server_work sol) (client_work p))))) ; OMEGA_001_08_puzzle_asymmetric
 
 ; OMEGA_001_09_token_bucket_correct (matches Coq: Theorem OMEGA_001_09_token_bucket_correct)
-(assert (= true true)) ; OMEGA_001_09_token_bucket_correct [untranslatable]
+(assert (forall ((tb Bool) (now Bool)) (=> (= (bucket_valid tb) true) (= (bucket_valid (refill tb now)) true)))) ; OMEGA_001_09_token_bucket_correct
 
 ; OMEGA_001_10_rate_limit_bound (matches Coq: Theorem OMEGA_001_10_rate_limit_bound)
-(assert (= true true)) ; OMEGA_001_10_rate_limit_bound [untranslatable]
+(assert (forall ((tb Bool) (window Bool)) (=> (= (bucket_valid tb) true) (<= (requests_allowed tb window) (+ (* (bucket_refill_rate tb) window) (bucket_max tb)))))) ; OMEGA_001_10_rate_limit_bound
 
 ; OMEGA_001_11_rate_limit_fair (matches Coq: Theorem OMEGA_001_11_rate_limit_fair)
-(assert (= true true)) ; OMEGA_001_11_rate_limit_fair [untranslatable]
+(assert (forall ((buckets Bool) (total Bool)) (=> (= (allocation_fair buckets total) true) (=> (forall ((cb1 Bool) (cb2 Bool)) (= (In cb1 buckets) true)) (=> (= (In cb2 buckets) true) (= (bucket_refill_rate (cb_bucket cb1)) (bucket_refill_rate (cb_bucket cb2)))))))) ; OMEGA_001_11_rate_limit_fair
 
 ; OMEGA_001_12_no_starvation (matches Coq: Theorem OMEGA_001_12_no_starvation)
-(assert (= true true)) ; OMEGA_001_12_no_starvation [untranslatable]
+(assert (forall ((tb Bool)) (=> (> (bucket_refill_rate tb) 0) (=> (> (bucket_max tb) 0) (=> (forall ((now Bool)) (>= now (+ (bucket_last_refill tb) 1))) (> (bucket_tokens (refill tb now)) 0)))))) ; OMEGA_001_12_no_starvation
 
 ; OMEGA_001_13_burst_bounded (matches Coq: Theorem OMEGA_001_13_burst_bounded)
-(assert (= true true)) ; OMEGA_001_13_burst_bounded [untranslatable]
+(assert (forall ((tb Bool)) (=> (= (bucket_valid tb) true) (<= (bucket_tokens tb) (bucket_max tb))))) ; OMEGA_001_13_burst_bounded
 
 ; OMEGA_001_14_rate_adaptive (matches Coq: Theorem OMEGA_001_14_rate_adaptive)
-(assert (= true true)) ; OMEGA_001_14_rate_adaptive [untranslatable]
+(assert (forall ((current_load Bool) (max_capacity Bool) (base_rate Bool)) (=> (> max_capacity 0) (=> (> current_load (div max_capacity 2)) (<= (adaptive_rate current_load max_capacity base_rate) base_rate))))) ; OMEGA_001_14_rate_adaptive
 
 ; OMEGA_001_15_rate_composition (matches Coq: Theorem OMEGA_001_15_rate_composition)
-(assert (= true true)) ; OMEGA_001_15_rate_composition [untranslatable]
+(assert (forall ((tb1 Bool) (tb2 Bool)) (=> (= (bucket_valid tb1) true) (=> (= (bucket_valid tb2) true) (= (bucket_valid (compose_limits tb1 tb2)) true))))) ; OMEGA_001_15_rate_composition
 
 ; OMEGA_001_16_cap_unforgeable (matches Coq: Theorem OMEGA_001_16_cap_unforgeable)
-(assert (= true true)) ; OMEGA_001_16_cap_unforgeable [untranslatable]
+(assert (forall ((cap Bool) (now Bool) (pubkey Bool)) (=> (= (cap_valid cap now pubkey) true) (= (verify_signature pubkey cap) true)))) ; OMEGA_001_16_cap_unforgeable
 
 ; OMEGA_001_17_cap_required (matches Coq: Theorem OMEGA_001_17_cap_required)
-(assert (= true true)) ; OMEGA_001_17_cap_required [untranslatable]
+; OMEGA_001_17_cap_required: forall (action : NetworkAction) (cap : NetCapability) now pubkey, grants_access cap (action_target action) (action_to_pe
+(assert true) ; OMEGA_001_17_cap_required [Coq-only]
 
 ; OMEGA_001_18_cap_attenuate (matches Coq: Theorem OMEGA_001_18_cap_attenuate)
-(assert (= true true)) ; OMEGA_001_18_cap_attenuate [untranslatable]
+(assert (forall ((cap Bool) (new_perms Bool) (new_expiry Bool) (cap' Bool)) (=> (= (attenuate_cap cap new_perms new_expiry) (some cap')) (and (forall ((p Bool)) (=> (= (In p (cap_permissions cap')) true) (= (In p (cap_permissions cap)) true))) (<= (cap_valid_until cap') (cap_valid_until cap)))))) ; OMEGA_001_18_cap_attenuate
 
 ; OMEGA_001_19_cap_revocable (matches Coq: Theorem OMEGA_001_19_cap_revocable)
-(assert (= true true)) ; OMEGA_001_19_cap_revocable [untranslatable]
+(assert (forall ((cap Bool) (revoked Bool)) (=> (= (In (cap_signature cap) revoked) true) (= (cap_revoked cap revoked) true)))) ; OMEGA_001_19_cap_revocable
 
 ; OMEGA_001_20_cap_bound_target (matches Coq: Theorem OMEGA_001_20_cap_bound_target)
-(assert (= true true)) ; OMEGA_001_20_cap_bound_target [untranslatable]
+(assert (forall ((cap Bool) (target Bool) (perm Bool)) (=> (= (grants_access cap target perm) true) (= (endpoint_eq (cap_target cap) target) true)))) ; OMEGA_001_20_cap_bound_target
 
 ; OMEGA_001_21_cap_delegation_safe (matches Coq: Theorem OMEGA_001_21_cap_delegation_safe)
-(assert (= true true)) ; OMEGA_001_21_cap_delegation_safe [untranslatable]
+(assert (forall ((cap Bool) (new_perms Bool) (new_expiry Bool) (cap' Bool)) (=> (= (attenuate_cap cap new_perms new_expiry) (some cap')) (= (cap_target cap') (cap_target cap))))) ; OMEGA_001_21_cap_delegation_safe
 
 ; OMEGA_001_22_cap_no_amplification (matches Coq: Theorem OMEGA_001_22_cap_no_amplification)
-(assert (= true true)) ; OMEGA_001_22_cap_no_amplification [untranslatable]
+(assert (forall ((request_size Bool) (response_size Bool)) (=> (> request_size 0) (<= (amplification_factor request_size response_size) response_size)))) ; OMEGA_001_22_cap_no_amplification
 
 ; OMEGA_001_23_cap_no_reflection (matches Coq: Theorem OMEGA_001_23_cap_no_reflection)
-(assert (= true true)) ; OMEGA_001_23_cap_no_reflection [untranslatable]
+; OMEGA_001_23_cap_no_reflection: forall cap, existsb (fun p => netperm_eq p NPSend) (cap_permissions cap) = true -> existsb (fun p => netperm_eq p NPRece
+(assert (forall ((cap Bool)) true)) ; OMEGA_001_23_cap_no_reflection [partial: bindings preserved]
 
 ; OMEGA_001_24_syn_cookie_stateless (matches Coq: Theorem OMEGA_001_24_syn_cookie_stateless)
 (assert (= syn_cookie_state_required 0)) ; OMEGA_001_24_syn_cookie_stateless
 
 ; OMEGA_001_25_syn_cookie_unforgeable (matches Coq: Theorem OMEGA_001_25_syn_cookie_unforgeable)
-(assert (= true true)) ; OMEGA_001_25_syn_cookie_unforgeable [untranslatable]
+(assert (forall ((secret Bool) (conn Bool) (time Bool)) (= (syn_cookie secret conn time) (hash_to_nat (sha256 (concat (concat (encode_connection conn) (encode_nat time)) secret)))))) ; OMEGA_001_25_syn_cookie_unforgeable
 
 ; OMEGA_001_26_syn_cookie_verify (matches Coq: Theorem OMEGA_001_26_syn_cookie_verify)
-(assert (= true true)) ; OMEGA_001_26_syn_cookie_verify [untranslatable]
+(assert (forall ((secret Bool) (conn Bool) (time Bool)) (= (verify_syn_cookie secret conn (syn_cookie secret conn time) time) true))) ; OMEGA_001_26_syn_cookie_verify
 
 ; OMEGA_001_27_syn_cookie_replay_prevent (matches Coq: Theorem OMEGA_001_27_syn_cookie_replay_prevent)
-(assert (= true true)) ; OMEGA_001_27_syn_cookie_replay_prevent [untranslatable]
+(assert (forall ((secret Bool) (conn Bool) (time_old Bool) (time_now Bool)) (=> (> time_now (+ time_old 2)) (=> (= (verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now) true) (or (= (syn_cookie secret conn time_old) (syn_cookie secret conn time_now)) (= (syn_cookie secret conn time_old) (syn_cookie secret conn (- time_now 1))) (= (syn_cookie secret conn time_old) (syn_cookie secret conn (- time_now 2)))))))) ; OMEGA_001_27_syn_cookie_replay_prevent
 
 ; OMEGA_001_28_syn_flood_mitigated (matches Coq: Theorem OMEGA_001_28_syn_flood_mitigated)
-(assert (= true true)) ; OMEGA_001_28_syn_flood_mitigated [untranslatable]
+(assert (forall ((num_pending Bool)) (= (syn_cookie_memory_usage num_pending) 0))) ; OMEGA_001_28_syn_flood_mitigated
 
 ; OMEGA_001_29_legitimate_connections (matches Coq: Theorem OMEGA_001_29_legitimate_connections)
-(assert (= true true)) ; OMEGA_001_29_legitimate_connections [untranslatable]
+(assert (forall ((secret Bool) (conn Bool) (time Bool)) (= (verify_syn_cookie secret conn (syn_cookie secret conn time) time) true))) ; OMEGA_001_29_legitimate_connections
 
 ; OMEGA_001_30_hash_collision_resistant (matches Coq: Theorem OMEGA_001_30_hash_collision_resistant)
-(assert (= true true)) ; OMEGA_001_30_hash_collision_resistant [untranslatable]
+(assert (forall ((ht Bool) (key1 Bool) (key2 Bool) (v1 Bool) (v2 Bool)) (=> (= (siphash_lookup ht key1) (some v1)) (=> (= (siphash_lookup ht key2) (some v2)) (=> (not (= key1 key2)) (exists ((bound Bool)) (<= (max_bucket_size ht) bound))))))) ; OMEGA_001_30_hash_collision_resistant
 
 ; OMEGA_001_31_regex_terminates (matches Coq: Theorem OMEGA_001_31_regex_terminates)
-(assert (= true true)) ; OMEGA_001_31_regex_terminates [untranslatable]
+(assert (forall ((r Bool) (input Bool) (fuel Bool)) (=> (>= fuel (* (regex_size r) (+ (length input) 1))) (exists ((result Bool)) (= (regex_match_bounded r input fuel) (BROk result)))))) ; OMEGA_001_31_regex_terminates
 
 ; OMEGA_001_32_decompression_bounded (matches Coq: Theorem OMEGA_001_32_decompression_bounded)
-(assert (= true true)) ; OMEGA_001_32_decompression_bounded [untranslatable]
+(assert (forall ((data Bool) (limit Bool) (result Bool)) (=> (= (bounded_decompress data limit) (BROk result)) (<= (length result) limit)))) ; OMEGA_001_32_decompression_bounded
 
 ; OMEGA_001_33_json_parse_bounded (matches Coq: Theorem OMEGA_001_33_json_parse_bounded)
-(assert (= true true)) ; OMEGA_001_33_json_parse_bounded [untranslatable]
+(assert (forall ((data Bool) (depth_limit Bool) (size_limit Bool) (result Bool)) (=> (= (bounded_json_parse data depth_limit size_limit) (BROk result)) (<= result size_limit)))) ; OMEGA_001_33_json_parse_bounded
 
 ; OMEGA_001_34_xml_parse_bounded (matches Coq: Theorem OMEGA_001_34_xml_parse_bounded)
-(assert (= true true)) ; OMEGA_001_34_xml_parse_bounded [untranslatable]
+(assert (forall ((data Bool) (depth_limit Bool) (size_limit Bool) (result Bool)) (=> (= (bounded_xml_parse data depth_limit size_limit) (BROk result)) (<= result size_limit)))) ; OMEGA_001_34_xml_parse_bounded
 
 ; OMEGA_001_35_no_algorithmic_dos (matches Coq: Theorem OMEGA_001_35_no_algorithmic_dos)
-(assert (= true true)) ; OMEGA_001_35_no_algorithmic_dos [untranslatable]
+; OMEGA_001_35_no_algorithmic_dos: forall {A : Type} (input : list nat) (limit : nat) (op : list nat -> A) result, bounded_operation input limit op = BROk 
+(assert true) ; OMEGA_001_35_no_algorithmic_dos [Coq-only]
 
 ; Verify all assertions are satisfiable
 (check-sat)

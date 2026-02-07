@@ -8,79 +8,79 @@
 (set-option :produce-models true)
 
 ; store_rel_simple_max (matches Coq: Lemma store_rel_simple_max)
-(assert (= true true)) ; store_rel_simple_max [untranslatable]
+(assert (forall ((Σ Bool) (st1 Bool) (st2 Bool)) (=> (= (store_rel_simple Σ st1 st2) true) (= (store_max st1) (store_max st2))))) ; store_rel_simple_max
 
 ; store_rel_simple_fresh (matches Coq: Lemma store_rel_simple_fresh)
-(assert (= true true)) ; store_rel_simple_fresh [untranslatable]
+(assert (forall ((Σ Bool) (st1 Bool) (st2 Bool)) (=> (= (store_rel_simple Σ st1 st2) true) (= (fresh_loc st1) (fresh_loc st2))))) ; store_rel_simple_fresh
 
 ; store_max_update_bound (matches Coq: Lemma store_max_update_bound)
-(assert (= true true)) ; store_max_update_bound [untranslatable]
+(assert (forall ((l Bool) (v Bool) (st Bool)) (<= (store_max (store_update l v st)) (Nat.max l (store_max st))))) ; store_max_update_bound
 
 ; store_max_update_lower (matches Coq: Lemma store_max_update_lower)
-(assert (= true true)) ; store_max_update_lower [untranslatable]
+(assert (forall ((l Bool) (v Bool) (st Bool)) (<= (store_max st) (store_max (store_update l v st))))) ; store_max_update_lower
 
 ; store_max_update_includes_l (matches Coq: Lemma store_max_update_includes_l)
-(assert (= true true)) ; store_max_update_includes_l [untranslatable]
+(assert (forall ((l Bool) (v Bool) (st Bool)) (<= l (store_max (store_update l v st))))) ; store_max_update_includes_l
 
 ; store_max_update_eq (matches Coq: Lemma store_max_update_eq)
-(assert (= true true)) ; store_max_update_eq [untranslatable]
+(assert (forall ((l Bool) (v1 Bool) (v2 Bool) (st1 Bool) (st2 Bool)) (=> (= (store_max st1) (store_max st2)) (= (store_max (store_update l v1 st1)) (store_max (store_update l v2 st2)))))) ; store_max_update_eq
 
 ; store_rel_simple_update (matches Coq: Lemma store_rel_simple_update)
-(assert (= true true)) ; store_rel_simple_update [untranslatable]
+(assert (forall ((Σ Bool) (st1 Bool) (st2 Bool) (l Bool) (v1 Bool) (v2 Bool)) (=> (= (store_rel_simple Σ st1 st2) true) (= (store_rel_simple Σ (store_update l v1 st1) (store_update l v2 st2)) true)))) ; store_rel_simple_update
 
 ; store_lookup_update_eq (matches Coq: Lemma store_lookup_update_eq)
-(assert (= true true)) ; store_lookup_update_eq [untranslatable]
+(assert (forall ((l Bool) (v Bool) (st Bool)) (= (store_lookup l (store_update l v st)) (some v)))) ; store_lookup_update_eq
 
 ; store_lookup_update_neq (matches Coq: Lemma store_lookup_update_neq)
-(assert (= true true)) ; store_lookup_update_neq [untranslatable]
+(assert (forall ((l Bool) (l' Bool) (v Bool) (st Bool)) (=> (not (= l l')) (= (store_lookup l' (store_update l v st)) (store_lookup l' st))))) ; store_lookup_update_neq
 
 ; store_ty_lookup_update_eq (matches Coq: Lemma store_ty_lookup_update_eq)
-(assert (= true true)) ; store_ty_lookup_update_eq [untranslatable]
+(assert (forall ((l Bool) (T Bool) (sl Bool) (Σ Bool)) (= (store_ty_lookup l (store_ty_update l T sl Σ)) (some (mk-tuple T sl))))) ; store_ty_lookup_update_eq
 
 ; store_ty_lookup_update_neq (matches Coq: Lemma store_ty_lookup_update_neq)
-(assert (= true true)) ; store_ty_lookup_update_neq [untranslatable]
+(assert (forall ((l Bool) (l' Bool) (T Bool) (sl Bool) (Σ Bool)) (=> (not (= l l')) (= (store_ty_lookup l' (store_ty_update l T sl Σ)) (store_ty_lookup l' Σ))))) ; store_ty_lookup_update_neq
 
 ; store_rel_le_update (matches Coq: Lemma store_rel_le_update)
-(assert (= true true)) ; store_rel_le_update [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (st1 Bool) (st2 Bool) (l Bool) (T Bool) (sl Bool) (v1 Bool) (v2 Bool)) (=> (= (store_rel_le n Σ st1 st2) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (=> (= (val_rel_le n Σ T v1 v2) true) (= (store_rel_le n Σ (store_update l v1 st1) (store_update l v2 st2)) true)))))) ; store_rel_le_update
 
 ; store_lookup_fresh_none (matches Coq: Lemma store_lookup_fresh_none)
-(assert (= true true)) ; store_lookup_fresh_none [untranslatable]
+(assert (forall ((st Bool)) (= (store_lookup (fresh_loc st) st) none))) ; store_lookup_fresh_none
 
 ; store_alloc_same (matches Coq: Lemma store_alloc_same)
-(assert (= true true)) ; store_alloc_same [untranslatable]
+(assert (forall ((Σ Bool) (st1 Bool) (st2 Bool)) (=> (= (store_rel_simple Σ st1 st2) true) (= (fresh_loc st1) (fresh_loc st2))))) ; store_alloc_same
 
 ; store_rel_simple_alloc (matches Coq: Lemma store_rel_simple_alloc)
-(assert (= true true)) ; store_rel_simple_alloc [untranslatable]
+(assert (forall ((Σ Bool) (st1 Bool) (st2 Bool) (v1 Bool) (v2 Bool)) (=> (= (store_rel_simple Σ st1 st2) true) (= (store_rel_simple Σ (store_update (fresh_loc st1) v1 st1) (store_update (fresh_loc st2) v2 st2)) true)))) ; store_rel_simple_alloc
 
 ; fresh_loc_not_in_store_ty (matches Coq: Lemma fresh_loc_not_in_store_ty)
-(assert (= true true)) ; fresh_loc_not_in_store_ty [untranslatable]
+(assert (forall ((Σ Bool) (st Bool)) (=> (= (store_wf Σ st) true) (= (store_ty_lookup (fresh_loc st) Σ) none)))) ; fresh_loc_not_in_store_ty
 
 ; store_ty_extends_alloc (matches Coq: Lemma store_ty_extends_alloc)
-(assert (= true true)) ; store_ty_extends_alloc [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (T Bool) (sl Bool)) (=> (= (store_ty_lookup l Σ) none) (= (store_ty_extends Σ (store_ty_update l T sl Σ)) true)))) ; store_ty_extends_alloc
 
 ; store_rel_le_alloc (matches Coq: Lemma store_rel_le_alloc)
-(assert (= true true)) ; store_rel_le_alloc [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (st1 Bool) (st2 Bool) (T Bool) (sl Bool) (v1 Bool) (v2 Bool)) (=> (= (store_rel_le n Σ st1 st2) true) (=> (= (val_rel_le n Σ T v1 v2) true) (=> (= (store_ty_lookup (fresh_loc st1) Σ) none) (=> (= (fresh_loc st1) (fresh_loc st2)) (let ((Σ' (store_ty_update (fresh_loc st1) T sl Σ))) (let ((st1' (store_update (fresh_loc st1) v1 st1))) (let ((st2' (store_update (fresh_loc st2) v2 st2))) (= (store_rel_le n Σ' st1' st2') true)))))))))) ; store_rel_le_alloc
 
 ; val_rel_le_ref_same_loc (matches Coq: Lemma val_rel_le_ref_same_loc)
-(assert (= true true)) ; val_rel_le_ref_same_loc [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_le n Σ (TRef T sl) v1 v2) true) (exists ((l Bool)) (and (= v1 (ELoc l)) (= v2 (ELoc l)))))))) ; val_rel_le_ref_same_loc
 
 ; val_rel_le_build_ref (matches Coq: Lemma val_rel_le_build_ref)
-(assert (= true true)) ; val_rel_le_build_ref [untranslatable]
+(assert (forall ((m Bool) (Σ Bool) (T Bool) (sl Bool) (l Bool)) (= (val_rel_le m Σ (TRef T sl) (ELoc l) (ELoc l)) true))) ; val_rel_le_build_ref
 
 ; store_rel_le_lookup (matches Coq: Lemma store_rel_le_lookup)
-(assert (= true true)) ; store_rel_le_lookup [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (st1 Bool) (st2 Bool) (l Bool) (T Bool) (sl Bool)) (=> (= (store_rel_le n Σ st1 st2) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (exists ((v1 Bool) (v2 Bool)) (and (= (store_lookup l st1) (some v1)) (= (store_lookup l st2) (some v2)) (= (val_rel_le n Σ T v1 v2) true))))))) ; store_rel_le_lookup
 
 ; val_rel_le_secret_always (matches Coq: Lemma val_rel_le_secret_always)
-(assert (= true true)) ; val_rel_le_secret_always [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (closed_expr v1) true) (=> (= (closed_expr v2) true) (= (val_rel_le n Σ (TSecret T) v1 v2) true))))))) ; val_rel_le_secret_always
 
 ; val_rel_le_secret_value_left (matches Coq: Lemma val_rel_le_secret_value_left)
-(assert (= true true)) ; val_rel_le_secret_value_left [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_le n Σ (TSecret T) v1 v2) true) (= (value v1) true))))) ; val_rel_le_secret_value_left
 
 ; val_rel_le_secret_value_right (matches Coq: Lemma val_rel_le_secret_value_right)
-(assert (= true true)) ; val_rel_le_secret_value_right [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_le n Σ (TSecret T) v1 v2) true) (= (value v2) true))))) ; val_rel_le_secret_value_right
 
 ; val_rel_le_unit (matches Coq: Lemma val_rel_le_unit)
-(assert (= true true)) ; val_rel_le_unit [untranslatable]
+(assert (forall ((n Bool) (Σ Bool)) (= (val_rel_le n Σ TUnit EUnit EUnit) true))) ; val_rel_le_unit
 
 ; Verify all assertions are satisfiable
 (check-sat)

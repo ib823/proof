@@ -122,67 +122,67 @@
   true)
 
 ; PHY_001_01_rtl_gate_equivalent (matches Coq: Theorem PHY_001_01_rtl_gate_equivalent)
-(assert (= true true)) ; PHY_001_01_rtl_gate_equivalent [untranslatable]
+(assert (forall ((rtl Bool) (nl Bool)) (=> (= (synthesize rtl) nl) (= (semantic_equivalent rtl nl) true)))) ; PHY_001_01_rtl_gate_equivalent
 
 ; PHY_001_02_timing_closed (matches Coq: Theorem PHY_001_02_timing_closed)
-(assert (= true true)) ; PHY_001_02_timing_closed [untranslatable]
+(assert (forall ((nl Bool) (clk Bool)) (=> (= (timing_analysis nl clk) true) (= (timing_met nl clk) true)))) ; PHY_001_02_timing_closed
 
 ; PHY_001_03_no_trojans (matches Coq: Theorem PHY_001_03_no_trojans)
-(assert (= true true)) ; PHY_001_03_no_trojans [untranslatable]
+(assert (forall ((rtl Bool)) (=> (= (trojan_scan rtl) TrojanFree) (= (no_hardware_trojans rtl) true)))) ; PHY_001_03_no_trojans
 
 ; PHY_001_04_hw_constant_time (matches Coq: Theorem PHY_001_04_hw_constant_time)
-(assert (= true true)) ; PHY_001_04_hw_constant_time [untranslatable]
+(assert (forall ((op Bool)) (=> (= (crypto_operation op) true) (= (constant_time_hw op) true)))) ; PHY_001_04_hw_constant_time
 
 ; PHY_001_05_design_deterministic (matches Coq: Theorem PHY_001_05_design_deterministic)
-(assert (= true true)) ; PHY_001_05_design_deterministic [untranslatable]
+(assert (forall ((rtl Bool)) (= (deterministic_design rtl) true))) ; PHY_001_05_design_deterministic
 
 ; PHY_001_06_golden_equivalent (matches Coq: Theorem PHY_001_06_golden_equivalent)
-(assert (= true true)) ; PHY_001_06_golden_equivalent [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (=> (= (x_ray_compare c g) Match) (= (chip_xray c) (golden_xray g))))) ; PHY_001_06_golden_equivalent
 
 ; PHY_001_07_puf_unique (matches Coq: Theorem PHY_001_07_puf_unique)
-(assert (= true true)) ; PHY_001_07_puf_unique [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool) (challenge Bool)) (=> (not (= (chip_id c1) (chip_id c2))) (not (= (chip_puf c1 challenge) (chip_puf c2 challenge)))))) ; PHY_001_07_puf_unique
 
 ; PHY_001_08_puf_stable (matches Coq: Theorem PHY_001_08_puf_stable)
-(assert (= true true)) ; PHY_001_08_puf_stable [untranslatable]
+(assert (forall ((c Bool) (t1 Bool) (t2 Bool) (challenge Bool)) (= (chip_puf_at_time c t1 challenge) (chip_puf_at_time c t2 challenge)))) ; PHY_001_08_puf_stable
 
 ; PHY_001_09_counterfeit_detected (matches Coq: Theorem PHY_001_09_counterfeit_detected)
-(assert (= true true)) ; PHY_001_09_counterfeit_detected [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (not (=> (= (is_genuine c g) true) (= (authenticate_chip c g) Counterfeit))))) ; PHY_001_09_counterfeit_detected
 
 ; PHY_001_10_no_fab_tampering (matches Coq: Theorem PHY_001_10_no_fab_tampering)
-(assert (= true true)) ; PHY_001_10_no_fab_tampering [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (=> (= (fab_integrity_check c g) FabClean) (= (chip_xray c) (golden_xray g))))) ; PHY_001_10_no_fab_tampering
 
 ; PHY_001_11_mesh_integrity (matches Coq: Theorem PHY_001_11_mesh_integrity)
-(assert (= true true)) ; PHY_001_11_mesh_integrity [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dev_mesh_intact d) false) (= (detect_probe d) ProbeDetected)))) ; PHY_001_11_mesh_integrity
 
 ; PHY_001_12_tamper_response (matches Coq: Theorem PHY_001_12_tamper_response)
-(assert (= true true)) ; PHY_001_12_tamper_response [untranslatable]
+(assert (forall ((d Bool) (d' Bool)) (=> (= (tamper_detected d) true) (=> (= (step d d') true) (= (keys_zeroized d') true))))) ; PHY_001_12_tamper_response
 
 ; PHY_001_13_voltage_glitch_detected (matches Coq: Theorem PHY_001_13_voltage_glitch_detected)
-(assert (= true true)) ; PHY_001_13_voltage_glitch_detected [untranslatable]
+(assert (forall ((d Bool)) (=> (= (voltage_glitch d) true) (= (voltage_monitor d) true)))) ; PHY_001_13_voltage_glitch_detected
 
 ; PHY_001_14_temperature_bounds (matches Coq: Theorem PHY_001_14_temperature_bounds)
-(assert (= true true)) ; PHY_001_14_temperature_bounds [untranslatable]
+(assert (forall ((d Bool)) (=> (= (temp_violation d) true) (= (temp_monitor d) true)))) ; PHY_001_14_temperature_bounds
 
 ; PHY_001_15_power_independent (matches Coq: Theorem PHY_001_15_power_independent)
-(assert (= true true)) ; PHY_001_15_power_independent [untranslatable]
+(assert (forall ((op Bool)) (=> (= (crypto_operation op) true) (= (power_independent op) true)))) ; PHY_001_15_power_independent
 
 ; PHY_001_16_tamper_disables_operation (matches Coq: Theorem PHY_001_16_tamper_disables_operation)
-(assert (= true true)) ; PHY_001_16_tamper_disables_operation [untranslatable]
+(assert (forall ((d Bool) (d' Bool)) (=> (= (tamper_detected d) true) (=> (= (step d d') true) (= (dev_operational d') false))))) ; PHY_001_16_tamper_disables_operation
 
 ; PHY_001_17_normal_preserves_state (matches Coq: Theorem PHY_001_17_normal_preserves_state)
-(assert (= true true)) ; PHY_001_17_normal_preserves_state [untranslatable]
+(assert (forall ((d Bool) (d' Bool)) (not (=> (= (tamper_detected d) true) (=> (= (step d d') true) (= d' d)))))) ; PHY_001_17_normal_preserves_state
 
 ; PHY_001_18_mesh_broken_tamper (matches Coq: Theorem PHY_001_18_mesh_broken_tamper)
-(assert (= true true)) ; PHY_001_18_mesh_broken_tamper [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dev_mesh_intact d) false) (= (tamper_detected d) true)))) ; PHY_001_18_mesh_broken_tamper
 
 ; PHY_001_19_voltage_oor_tamper (matches Coq: Theorem PHY_001_19_voltage_oor_tamper)
-(assert (= true true)) ; PHY_001_19_voltage_oor_tamper [untranslatable]
+(assert (forall ((d Bool)) (not (=> (= (voltage_ok d) true) (= (tamper_detected d) true))))) ; PHY_001_19_voltage_oor_tamper
 
 ; PHY_001_20_temp_oor_tamper (matches Coq: Theorem PHY_001_20_temp_oor_tamper)
-(assert (= true true)) ; PHY_001_20_temp_oor_tamper [untranslatable]
+(assert (forall ((d Bool)) (not (=> (= (temp_ok d) true) (= (tamper_detected d) true))))) ; PHY_001_20_temp_oor_tamper
 
 ; PHY_001_21_synthesis_all_inputs (matches Coq: Theorem PHY_001_21_synthesis_all_inputs)
-(assert (= true true)) ; PHY_001_21_synthesis_all_inputs [untranslatable]
+(assert (forall ((rtl Bool) (inputs Bool)) (= (rtl_behavior rtl inputs) (nl_behavior (synthesize rtl) inputs)))) ; PHY_001_21_synthesis_all_inputs
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -221,109 +221,132 @@
   true)
 
 ; ESG_001_01_scope1_completeness (matches Coq: Theorem ESG_001_01_scope1_completeness)
-(assert (= true true)) ; ESG_001_01_scope1_completeness [untranslatable]
+; ESG_001_01_scope1_completeness: forall (sys : ESGCompliantSystem) s, In s (sys_emissions sys) -> source_type s = Scope1 -> owned_or_controlled_flag s = 
+(assert true) ; ESG_001_01_scope1_completeness [Coq-only]
 
 ; ESG_001_02_scope2_calculation (matches Coq: Theorem ESG_001_02_scope2_calculation)
-(assert (= true true)) ; ESG_001_02_scope2_calculation [untranslatable]
+; ESG_001_02_scope2_calculation: forall (sys : ESGCompliantSystem) s, In s (sys_emissions sys) -> (source_type s = Scope2_Location \/ source_type s = Sco
+(assert true) ; ESG_001_02_scope2_calculation [Coq-only]
 
 ; ESG_001_03_scope3_coverage (matches Coq: Theorem ESG_001_03_scope3_coverage)
-(assert (= true true)) ; ESG_001_03_scope3_coverage [untranslatable]
+; ESG_001_03_scope3_coverage: forall (sys : ESGCompliantSystem) n, valid_scope3_category n -> exists s, In s (sys_emissions sys) /\ source_type s = Sc
+(assert true) ; ESG_001_03_scope3_coverage [Coq-only]
 
 ; ESG_001_04_emission_factor_accuracy (matches Coq: Theorem ESG_001_04_emission_factor_accuracy)
-(assert (= true true)) ; ESG_001_04_emission_factor_accuracy [untranslatable]
+; ESG_001_04_emission_factor_accuracy: forall (sys : ESGCompliantSystem) s, In s (sys_emissions sys) -> emission_factor s > 0
+(assert true) ; ESG_001_04_emission_factor_accuracy [Coq-only]
 
 ; ESG_001_05_no_double_counting (matches Coq: Theorem ESG_001_05_no_double_counting)
-(assert (= true true)) ; ESG_001_05_no_double_counting [untranslatable]
+; ESG_001_05_no_double_counting: forall (sys : ESGCompliantSystem) s1 s2, In s1 (sys_emissions sys) -> In s2 (sys_emissions sys) -> same_emission s1 s2 -
+(assert true) ; ESG_001_05_no_double_counting [Coq-only]
 
 ; ESG_001_06_renewable_tracking (matches Coq: Theorem ESG_001_06_renewable_tracking)
-(assert (= true true)) ; ESG_001_06_renewable_tracking [untranslatable]
+; ESG_001_06_renewable_tracking: forall (sys : ESGCompliantSystem) r, In r (sys_renewables sys) -> unique_claim r = true
+(assert true) ; ESG_001_06_renewable_tracking [Coq-only]
 
 ; ESG_001_07_carbon_calculation_precision (matches Coq: Theorem ESG_001_07_carbon_calculation_precision)
-(assert (= true true)) ; ESG_001_07_carbon_calculation_precision [untranslatable]
+; ESG_001_07_carbon_calculation_precision: forall (sys : ESGCompliantSystem) s, In s (sys_emissions sys) -> exists scaled_emission : Z, scaled_emission = emission 
+(assert true) ; ESG_001_07_carbon_calculation_precision [Coq-only]
 
 ; ESG_001_08_water_withdrawal_tracking (matches Coq: Theorem ESG_001_08_water_withdrawal_tracking)
-(assert (= true true)) ; ESG_001_08_water_withdrawal_tracking [untranslatable]
+; ESG_001_08_water_withdrawal_tracking: forall (sys : ESGCompliantSystem) w, In w (sys_water sys) -> source_documented w = true
+(assert true) ; ESG_001_08_water_withdrawal_tracking [Coq-only]
 
 ; ESG_001_09_waste_diversion_rate (matches Coq: Theorem ESG_001_09_waste_diversion_rate)
-(assert (= true true)) ; ESG_001_09_waste_diversion_rate [untranslatable]
+; ESG_001_09_waste_diversion_rate: forall (sys : ESGCompliantSystem) w, In w (sys_waste sys) -> waste_accounting_correct w
+(assert true) ; ESG_001_09_waste_diversion_rate [Coq-only]
 
 ; ESG_001_10_biodiversity_assessment (matches Coq: Theorem ESG_001_10_biodiversity_assessment)
-(assert (= true true)) ; ESG_001_10_biodiversity_assessment [untranslatable]
+; ESG_001_10_biodiversity_assessment: forall (sys : ESGCompliantSystem) b, In b (sys_biodiversity sys) -> dependencies_mapped b = true
+(assert true) ; ESG_001_10_biodiversity_assessment [Coq-only]
 
 ; ESG_001_11_circular_economy_metrics (matches Coq: Theorem ESG_001_11_circular_economy_metrics)
-(assert (= true true)) ; ESG_001_11_circular_economy_metrics [untranslatable]
+; ESG_001_11_circular_economy_metrics: forall (sys : ESGCompliantSystem) c, In c (sys_circular sys) -> measurement_verified c = true
+(assert true) ; ESG_001_11_circular_economy_metrics [Coq-only]
 
 ; ESG_001_12_pollution_compliance (matches Coq: Theorem ESG_001_12_pollution_compliance)
-(assert (= true true)) ; ESG_001_12_pollution_compliance [untranslatable]
+; ESG_001_12_pollution_compliance: forall (sys : ESGCompliantSystem) p, In p (sys_pollution sys) -> pollution_compliant p
+(assert true) ; ESG_001_12_pollution_compliance [Coq-only]
 
 ; ESG_001_13_living_wage_guarantee (matches Coq: Theorem ESG_001_13_living_wage_guarantee)
-(assert (= true true)) ; ESG_001_13_living_wage_guarantee [untranslatable]
+; ESG_001_13_living_wage_guarantee: forall (sys : ESGCompliantSystem) e, In e (sys_employees sys) -> employed_flag e = true -> paid_living_wage e
+(assert true) ; ESG_001_13_living_wage_guarantee [Coq-only]
 
 ; ESG_001_14_no_forced_labor (matches Coq: Theorem ESG_001_14_no_forced_labor)
-(assert (= true true)) ; ESG_001_14_no_forced_labor [untranslatable]
+; ESG_001_14_no_forced_labor: forall (sys : ESGCompliantSystem) e, In e (sys_employees sys) -> employed_flag e = true -> no_forced_labor e
+(assert true) ; ESG_001_14_no_forced_labor [Coq-only]
 
 ; ESG_001_15_no_child_labor (matches Coq: Theorem ESG_001_15_no_child_labor)
-(assert (= true true)) ; ESG_001_15_no_child_labor [untranslatable]
+; ESG_001_15_no_child_labor: forall (sys : ESGCompliantSystem) e, In e (sys_employees sys) -> employed_flag e = true -> no_child_labor e
+(assert true) ; ESG_001_15_no_child_labor [Coq-only]
 
 ; ESG_001_16_safety_incident_tracking (matches Coq: Theorem ESG_001_16_safety_incident_tracking)
-(assert (= true true)) ; ESG_001_16_safety_incident_tracking [untranslatable]
+; ESG_001_16_safety_incident_tracking: forall (sys : ESGCompliantSystem) i, In i (sys_incidents sys) -> incident_properly_handled i
+(assert true) ; ESG_001_16_safety_incident_tracking [Coq-only]
 
 ; ESG_001_17_non_discrimination (matches Coq: Theorem ESG_001_17_non_discrimination)
-(assert (= true true)) ; ESG_001_17_non_discrimination [untranslatable]
+; ESG_001_17_non_discrimination: forall (sys : ESGCompliantSystem) d, In d (sys_decisions sys) -> non_discriminatory d
+(assert true) ; ESG_001_17_non_discrimination [Coq-only]
 
 ; ESG_001_18_equal_pay_verification (matches Coq: Theorem ESG_001_18_equal_pay_verification)
-(assert (= true true)) ; ESG_001_18_equal_pay_verification [untranslatable]
+; ESG_001_18_equal_pay_verification: forall (sys : ESGCompliantSystem) p, In p (sys_paygap sys) -> gap_calculated p = true /\ gap_disclosed p = true
+(assert true) ; ESG_001_18_equal_pay_verification [Coq-only]
 
 ; ESG_001_19_hrdd_process (matches Coq: Theorem ESG_001_19_hrdd_process)
-(assert (= true true)) ; ESG_001_19_hrdd_process [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (hrdd_implemented (sys_hrdd sys)) true))) ; ESG_001_19_hrdd_process
 
 ; ESG_001_20_supply_chain_assessment (matches Coq: Theorem ESG_001_20_supply_chain_assessment)
-(assert (= true true)) ; ESG_001_20_supply_chain_assessment [untranslatable]
+; ESG_001_20_supply_chain_assessment: forall (sys : ESGCompliantSystem) s year, In s (sys_suppliers sys) -> supplier_recently_assessed s year
+(assert true) ; ESG_001_20_supply_chain_assessment [Coq-only]
 
 ; ESG_001_21_fpic_requirement (matches Coq: Theorem ESG_001_21_fpic_requirement)
-(assert (= true true)) ; ESG_001_21_fpic_requirement [untranslatable]
+; ESG_001_21_fpic_requirement: forall (sys : ESGCompliantSystem) c, In c (sys_indigenous sys) -> fpic_satisfied c
+(assert true) ; ESG_001_21_fpic_requirement [Coq-only]
 
 ; ESG_001_22_grievance_mechanism (matches Coq: Theorem ESG_001_22_grievance_mechanism)
-(assert (= true true)) ; ESG_001_22_grievance_mechanism [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (grievance_adequate (sys_grievance sys)) true))) ; ESG_001_22_grievance_mechanism
 
 ; ESG_001_23_stakeholder_engagement (matches Coq: Theorem ESG_001_23_stakeholder_engagement)
-(assert (= true true)) ; ESG_001_23_stakeholder_engagement [untranslatable]
+; ESG_001_23_stakeholder_engagement: forall (sys : ESGCompliantSystem) s, In s (sys_stakeholder sys) -> stakeholder_engaged s
+(assert true) ; ESG_001_23_stakeholder_engagement [Coq-only]
 
 ; ESG_001_24_board_independence (matches Coq: Theorem ESG_001_24_board_independence)
-(assert (= true true)) ; ESG_001_24_board_independence [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (independent_majority (sys_board sys)) true))) ; ESG_001_24_board_independence
 
 ; ESG_001_25_esg_linked_compensation (matches Coq: Theorem ESG_001_25_esg_linked_compensation)
-(assert (= true true)) ; ESG_001_25_esg_linked_compensation [untranslatable]
+; ESG_001_25_esg_linked_compensation: forall (sys : ESGCompliantSystem) ec, In ec (sys_exec_comp sys) -> esg_linked ec
+(assert true) ; ESG_001_25_esg_linked_compensation [Coq-only]
 
 ; ESG_001_26_anti_corruption_policy (matches Coq: Theorem ESG_001_26_anti_corruption_policy)
-(assert (= true true)) ; ESG_001_26_anti_corruption_policy [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (anti_corruption_adequate (sys_anti_corruption sys)) true))) ; ESG_001_26_anti_corruption_policy
 
 ; ESG_001_27_whistleblower_protection (matches Coq: Theorem ESG_001_27_whistleblower_protection)
-(assert (= true true)) ; ESG_001_27_whistleblower_protection [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (whistleblower_protected (sys_whistleblower sys)) true))) ; ESG_001_27_whistleblower_protection
 
 ; ESG_001_28_conflict_of_interest (matches Coq: Theorem ESG_001_28_conflict_of_interest)
-(assert (= true true)) ; ESG_001_28_conflict_of_interest [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (coi_managed (sys_coi sys)) true))) ; ESG_001_28_conflict_of_interest
 
 ; ESG_001_29_related_party_disclosure (matches Coq: Theorem ESG_001_29_related_party_disclosure)
-(assert (= true true)) ; ESG_001_29_related_party_disclosure [untranslatable]
+; ESG_001_29_related_party_disclosure: forall (sys : ESGCompliantSystem) r, In r (sys_rpt sys) -> rpt_compliant r
+(assert true) ; ESG_001_29_related_party_disclosure [Coq-only]
 
 ; ESG_001_30_gri_compliance (matches Coq: Theorem ESG_001_30_gri_compliance)
-(assert (= true true)) ; ESG_001_30_gri_compliance [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (gri_compliant (sys_disclosure sys)) true))) ; ESG_001_30_gri_compliance
 
 ; ESG_001_31_tcfd_alignment (matches Coq: Theorem ESG_001_31_tcfd_alignment)
-(assert (= true true)) ; ESG_001_31_tcfd_alignment [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (tcfd_aligned (sys_disclosure sys)) true))) ; ESG_001_31_tcfd_alignment
 
 ; ESG_001_32_sasb_alignment (matches Coq: Theorem ESG_001_32_sasb_alignment)
-(assert (= true true)) ; ESG_001_32_sasb_alignment [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (sasb_aligned (sys_disclosure sys)) true))) ; ESG_001_32_sasb_alignment
 
 ; ESG_001_33_data_quality (matches Coq: Theorem ESG_001_33_data_quality)
-(assert (= true true)) ; ESG_001_33_data_quality [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (methodology_documented (sys_disclosure sys)) true))) ; ESG_001_33_data_quality
 
 ; ESG_001_34_third_party_assurance (matches Coq: Theorem ESG_001_34_third_party_assurance)
-(assert (= true true)) ; ESG_001_34_third_party_assurance [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (= (externally_verified (sys_disclosure sys)) true))) ; ESG_001_34_third_party_assurance
 
 ; ESG_001_35_sbti_validation (matches Coq: Theorem ESG_001_35_sbti_validation)
-(assert (= true true)) ; ESG_001_35_sbti_validation [untranslatable]
+(assert (forall ((sys ESGCompliantSystem)) (=> (= (science_based (sys_sbt sys)) true) (= (validated (sys_sbt sys)) true)))) ; ESG_001_35_sbti_validation
 
 ; Verify all assertions are satisfiable
 (check-sat)

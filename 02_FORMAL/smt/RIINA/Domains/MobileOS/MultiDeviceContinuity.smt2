@@ -161,79 +161,79 @@
   true)
 
 ; cross_device_handoff_complete (matches Coq: Theorem cross_device_handoff_complete)
-(assert (= true true)) ; cross_device_handoff_complete [untranslatable]
+(assert (forall ((app Application)) (forall ((device1 Device) (device2 Device)) (=> (= (handoff app device1 device2) true) (= (state app device2) (state app device1)))))) ; cross_device_handoff_complete
 
 ; handoff_requires_auth (matches Coq: Theorem handoff_requires_auth)
-(assert (= true true)) ; handoff_requires_auth [untranslatable]
+(assert (forall ((app Application)) (forall ((d1 Device) (d2 Device)) (=> (= (handoff app d1 d2) true) (and (= (dev_authenticated d1) true) (= (dev_authenticated d2) true)))))) ; handoff_requires_auth
 
 ; handoff_requires_pairing (matches Coq: Theorem handoff_requires_pairing)
-(assert (= true true)) ; handoff_requires_pairing [untranslatable]
+(assert (forall ((app Application)) (forall ((d1 Device) (d2 Device)) (=> (= (handoff app d1 d2) true) (and (= (dev_paired d1) true) (= (dev_paired d2) true)))))) ; handoff_requires_pairing
 
 ; complete_handoff_encrypted (matches Coq: Theorem complete_handoff_encrypted)
-(assert (= true true)) ; complete_handoff_encrypted [untranslatable]
+(assert (forall ((h Handoff)) (=> (= (complete_handoff h) true) (= (handoff_encrypted h) true)))) ; complete_handoff_encrypted
 
 ; only_enabled_apps_handoff (matches Coq: Theorem only_enabled_apps_handoff)
-(assert (= true true)) ; only_enabled_apps_handoff [untranslatable]
+(assert (forall ((app Application)) (forall ((d1 Device) (d2 Device)) (=> (= (handoff app d1 d2) true) (= (app_supports_handoff app) true))))) ; only_enabled_apps_handoff
 
 ; handoff_data_encrypted_thm (matches Coq: Theorem handoff_data_encrypted_thm)
-(assert (= true true)) ; handoff_data_encrypted_thm [untranslatable]
+(assert (forall ((hd HandoffData)) (=> (= (handoff_data_encrypted hd) true) (= (hd_encrypted hd) true)))) ; handoff_data_encrypted_thm
 
 ; clipboard_sync_encrypted (matches Coq: Theorem clipboard_sync_encrypted)
-(assert (= true true)) ; clipboard_sync_encrypted [untranslatable]
+(assert (forall ((cs ClipboardSync)) (=> (= (clipboard_sync_is_encrypted cs) true) (= (cb_encrypted cs) true)))) ; clipboard_sync_encrypted
 
 ; device_trust_verified_thm (matches Coq: Theorem device_trust_verified_thm)
-(assert (= true true)) ; device_trust_verified_thm [untranslatable]
+(assert (forall ((dt DeviceTrust)) (=> (= (device_trust_verified dt) true) (= (dt_verified dt) true)))) ; device_trust_verified_thm
 
 ; proximity_required_thm (matches Coq: Theorem proximity_required_thm)
-(assert (= true true)) ; proximity_required_thm [untranslatable]
+(assert (forall ((pc ProximityCheck)) (=> (= (proximity_required pc) true) (<= (pc_distance_m pc) (pc_max_distance_m pc))))) ; proximity_required_thm
 
 ; continuity_permission_explicit_thm (matches Coq: Theorem continuity_permission_explicit_thm)
-(assert (= true true)) ; continuity_permission_explicit_thm [untranslatable]
+(assert (forall ((cp ContinuityPermission)) (=> (= (continuity_permission_explicit cp) true) (= (cp_explicit_grant cp) true)))) ; continuity_permission_explicit_thm
 
 ; shared_clipboard_expiry (matches Coq: Theorem shared_clipboard_expiry)
-(assert (= true true)) ; shared_clipboard_expiry [untranslatable]
+(assert (forall ((cs ClipboardSync)) (=> (= (clipboard_has_expiry cs) true) (> (cb_expiry_seconds cs) 0)))) ; shared_clipboard_expiry
 
 ; universal_link_validated_thm (matches Coq: Theorem universal_link_validated_thm)
-(assert (= true true)) ; universal_link_validated_thm [untranslatable]
+(assert (forall ((ul UniversalLink)) (=> (= (universal_link_validated ul) true) (and (= (ul_validated ul) true) (= (ul_domain_verified ul) true))))) ; universal_link_validated_thm
 
 ; device_pairing_authenticated_thm (matches Coq: Theorem device_pairing_authenticated_thm)
-(assert (= true true)) ; device_pairing_authenticated_thm [untranslatable]
+(assert (forall ((dp DevicePairing)) (=> (= (device_pairing_authenticated dp) true) (= (dp_authenticated dp) true)))) ; device_pairing_authenticated_thm
 
 ; sync_conflict_resolved_thm (matches Coq: Theorem sync_conflict_resolved_thm)
-(assert (= true true)) ; sync_conflict_resolved_thm [untranslatable]
+(assert (forall ((sc SyncConflict)) (=> (= (sync_conflict_resolved sc) true) (= (sc_resolved sc) true)))) ; sync_conflict_resolved_thm
 
 ; continuity_fallback_available_thm (matches Coq: Theorem continuity_fallback_available_thm)
-(assert (= true true)) ; continuity_fallback_available_thm [untranslatable]
+(assert (forall ((cf ContinuityFallback)) (=> (= (continuity_fallback_available cf) true) (= (cf_fallback_available cf) true)))) ; continuity_fallback_available_thm
 
 ; shared_keychain_access_controlled_thm (matches Coq: Theorem shared_keychain_access_controlled_thm)
-(assert (= true true)) ; shared_keychain_access_controlled_thm [untranslatable]
+(assert (forall ((sk SharedKeychain)) (=> (= (shared_keychain_access_controlled sk) true) (= (sk_access_controlled sk) true)))) ; shared_keychain_access_controlled_thm
 
 ; nearby_interaction_consent (matches Coq: Theorem nearby_interaction_consent)
-(assert (= true true)) ; nearby_interaction_consent [untranslatable]
+(assert (forall ((ni NearbyInteraction)) (=> (= (nearby_interaction_consented ni) true) (= (ni_consent_given ni) true)))) ; nearby_interaction_consent
 
 ; device_discovery_limited_thm (matches Coq: Theorem device_discovery_limited_thm)
-(assert (= true true)) ; device_discovery_limited_thm [untranslatable]
+(assert (forall ((dd DeviceDiscovery)) (=> (= (device_discovery_limited dd) true) (<= (length (dd_devices_found dd)) (dd_max_devices dd))))) ; device_discovery_limited_thm
 
 ; relay_traffic_encrypted_thm (matches Coq: Theorem relay_traffic_encrypted_thm)
-(assert (= true true)) ; relay_traffic_encrypted_thm [untranslatable]
+(assert (forall ((rt RelayTraffic)) (=> (= (relay_traffic_encrypted rt) true) (= (rt_encrypted rt) true)))) ; relay_traffic_encrypted_thm
 
 ; continuity_session_timeout (matches Coq: Theorem continuity_session_timeout)
-(assert (= true true)) ; continuity_session_timeout [untranslatable]
+(assert (forall ((cs ContinuitySession)) (=> (= (session_within_timeout cs) true) (=> (= (cs_active cs) true) (<= (cs_elapsed_seconds cs) (cs_timeout_seconds cs)))))) ; continuity_session_timeout
 
 ; device_pairing_key_exchange (matches Coq: Theorem device_pairing_key_exchange)
-(assert (= true true)) ; device_pairing_key_exchange [untranslatable]
+(assert (forall ((dp DevicePairing)) (=> (= (device_pairing_authenticated dp) true) (= (dp_encryption_key_exchanged dp) true)))) ; device_pairing_key_exchange
 
 ; continuity_permission_revocable (matches Coq: Theorem continuity_permission_revocable)
-(assert (= true true)) ; continuity_permission_revocable [untranslatable]
+(assert (forall ((cp ContinuityPermission)) (=> (= (continuity_permission_explicit cp) true) (= (cp_revocable cp) true)))) ; continuity_permission_revocable
 
 ; clipboard_expiry_within_max (matches Coq: Theorem clipboard_expiry_within_max)
-(assert (= true true)) ; clipboard_expiry_within_max [untranslatable]
+(assert (forall ((cs ClipboardSync)) (=> (= (clipboard_has_expiry cs) true) (<= (cb_expiry_seconds cs) (cb_max_expiry_seconds cs))))) ; clipboard_expiry_within_max
 
 ; shared_keychain_has_group (matches Coq: Theorem shared_keychain_has_group)
-(assert (= true true)) ; shared_keychain_has_group [untranslatable]
+(assert (forall ((sk SharedKeychain)) (=> (= (shared_keychain_access_controlled sk) true) (not (= (sk_access_group sk) nil))))) ; shared_keychain_has_group
 
 ; handoff_data_integrity_checked (matches Coq: Theorem handoff_data_integrity_checked)
-(assert (= true true)) ; handoff_data_integrity_checked [untranslatable]
+(assert (forall ((hd HandoffData)) (=> (= (handoff_data_encrypted hd) true) (= (hd_integrity_checked hd) true)))) ; handoff_data_integrity_checked
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -107,67 +107,67 @@
   true)
 
 ; raw_capture_lossless (matches Coq: Theorem raw_capture_lossless)
-(assert (= true true)) ; raw_capture_lossless [untranslatable]
+(assert (forall ((scene Scene)) (forall ((capture RawPhoto)) (=> (= (captures scene capture) true) (= (sensor_data scene) (pixel_data capture)))))) ; raw_capture_lossless
 
 ; video_no_frame_drop (matches Coq: Theorem video_no_frame_drop)
-(assert (= true true)) ; video_no_frame_drop [untranslatable]
+(assert (forall ((recording VideoRecording)) (=> (= (well_formed_video recording) true) (= (frames_captured recording) (expected_frames recording))))) ; video_no_frame_drop
 
 ; audio_latency_bounded (matches Coq: Theorem audio_latency_bounded)
-(assert (= true true)) ; audio_latency_bounded [untranslatable]
+(assert (forall ((sample AudioSample)) (=> (= (low_latency_audio sample) true) (<= (input_to_output_latency sample) 5000)))) ; audio_latency_bounded
 
 ; capture_preserves_identity (matches Coq: Theorem capture_preserves_identity)
-(assert (= true true)) ; capture_preserves_identity [untranslatable]
+(assert (forall ((s1 Scene) (s2 Scene) (p RawPhoto)) (=> (= (captures s1 p) true) (=> (= (captures s2 p) true) (= (sensor_data s1) (sensor_data s2)))))) ; capture_preserves_identity
 
 ; empty_video_zero_frames (matches Coq: Theorem empty_video_zero_frames)
-(assert (= true true)) ; empty_video_zero_frames [untranslatable]
+(assert (forall ((v VideoRecording)) (=> (= (video_frames v) nil) (= (frames_captured v) 0)))) ; empty_video_zero_frames
 
 ; audio_latency_nonnegative (matches Coq: Theorem audio_latency_nonnegative)
-(assert (= true true)) ; audio_latency_nonnegative [untranslatable]
+(assert (forall ((sample AudioSample)) (=> (>= (audio_output_time sample) (audio_input_time sample)) (>= (input_to_output_latency sample) 0)))) ; audio_latency_nonnegative
 
 ; camera_access_indicator_visible (matches Coq: Theorem camera_access_indicator_visible)
-(assert (= true true)) ; camera_access_indicator_visible [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (well_formed_recording rs) true) (=> (= (rec_state rs) Recording) (= (indicator_visible (rec_indicator rs)) true))))) ; camera_access_indicator_visible
 
 ; microphone_access_indicator_visible (matches Coq: Theorem microphone_access_indicator_visible)
-(assert (= true true)) ; microphone_access_indicator_visible [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (well_formed_recording rs) true) (=> (= (rec_state rs) Recording) (=> (or (= (indicator_type (rec_indicator rs)) 1) (= (indicator_type (rec_indicator rs)) 2)) (= (indicator_visible (rec_indicator rs)) true)))))) ; microphone_access_indicator_visible
 
 ; recording_indicator_persistent (matches Coq: Theorem recording_indicator_persistent)
-(assert (= true true)) ; recording_indicator_persistent [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (well_formed_recording rs) true) (=> (= (rec_state rs) Recording) (= (indicator_persistent (rec_indicator rs)) true))))) ; recording_indicator_persistent
 
 ; no_silent_recording (matches Coq: Theorem no_silent_recording)
-(assert (= true true)) ; no_silent_recording [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (well_formed_recording rs) true) (=> (= (indicator_visible (rec_indicator rs)) false) (not (= (rec_state rs) Recording)))))) ; no_silent_recording
 
 ; camera_preview_matches_capture (matches Coq: Theorem camera_preview_matches_capture)
-(assert (= true true)) ; camera_preview_matches_capture [untranslatable]
+(assert (forall ((s Scene)) (forall ((p RawPhoto)) (=> (= (captures s p) true) (= (scene_data s) (photo_pixels p)))))) ; camera_preview_matches_capture
 
 ; audio_sample_rate_valid (matches Coq: Theorem audio_sample_rate_valid)
-(assert (= true true)) ; audio_sample_rate_valid [untranslatable]
+(assert (forall ((ac AudioConfig)) (=> (= (well_formed_audio ac) true) (and (>= (sample_rate ac) 8000) (<= (sample_rate ac) 192000))))) ; audio_sample_rate_valid
 
 ; video_frame_rate_bounded (matches Coq: Theorem video_frame_rate_bounded)
-(assert (= true true)) ; video_frame_rate_bounded [untranslatable]
+(assert (forall ((vc VideoConfig)) (=> (= (well_formed_video_config vc) true) (and (>= (video_frame_rate vc) 1) (<= (video_frame_rate vc) 240))))) ; video_frame_rate_bounded
 
 ; photo_metadata_strippable (matches Coq: Theorem photo_metadata_strippable)
 (assert (forall ((pc PhotoCapture)) (=> (= (capture_has_metadata pc) true) (=> (= (capture_metadata_stripped pc) true) (= (capture_metadata_stripped pc) true))))) ; photo_metadata_strippable
 
 ; audio_level_bounded (matches Coq: Theorem audio_level_bounded)
-(assert (= true true)) ; audio_level_bounded [untranslatable]
+(assert (forall ((ac AudioConfig)) (=> (= (well_formed_audio ac) true) (<= (audio_level ac) 100)))) ; audio_level_bounded
 
 ; camera_permission_per_session (matches Coq: Theorem camera_permission_per_session)
-(assert (= true true)) ; camera_permission_per_session [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (per_session_only (rec_permission rs)) true) (=> (= (rec_state rs) NotRecording) (=> (= (camera_granted (rec_permission rs)) true) (= (per_session_only (rec_permission rs)) true)))))) ; camera_permission_per_session
 
 ; background_camera_blocked (matches Coq: Theorem background_camera_blocked)
-(assert (= true true)) ; background_camera_blocked [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (well_formed_recording rs) true) (=> (= (rec_background rs) true) (= (rec_state rs) NotRecording))))) ; background_camera_blocked
 
 ; camera_interrupt_handled (matches Coq: Theorem camera_interrupt_handled)
-(assert (= true true)) ; camera_interrupt_handled [untranslatable]
+(assert (forall ((rs RecordingSession)) (=> (= (well_formed_recording rs) true) (=> (= (camera_granted (rec_permission rs)) false) (= (rec_state rs) NotRecording))))) ; camera_interrupt_handled
 
 ; audio_route_change_handled (matches Coq: Theorem audio_route_change_handled)
-(assert (= true true)) ; audio_route_change_handled [untranslatable]
+(assert (forall ((ac1 AudioConfig) (ac2 AudioConfig)) (=> (= (well_formed_audio ac1) true) (=> (= (well_formed_audio ac2) true) (and (>= (sample_rate ac1) 8000) (>= (sample_rate ac2) 8000)))))) ; audio_route_change_handled
 
 ; video_stabilization_bounded (matches Coq: Theorem video_stabilization_bounded)
-(assert (= true true)) ; video_stabilization_bounded [untranslatable]
+(assert (forall ((vc VideoConfig)) (=> (= (well_formed_video_config vc) true) (<= (stabilization_offset vc) 50)))) ; video_stabilization_bounded
 
 ; capture_resolution_bounded (matches Coq: Theorem capture_resolution_bounded)
-(assert (= true true)) ; capture_resolution_bounded [untranslatable]
+(assert (forall ((vc VideoConfig)) (=> (= (well_formed_video_config vc) true) (and (>= (video_width vc) 1) (>= (video_height vc) 1))))) ; capture_resolution_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

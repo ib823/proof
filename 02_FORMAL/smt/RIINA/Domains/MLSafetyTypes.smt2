@@ -18,76 +18,85 @@
   true)
 
 ; forallb_combine_refl (matches Coq: Lemma forallb_combine_refl)
-(assert (= true true)) ; forallb_combine_refl [untranslatable]
+; forallb_combine_refl: forall s, forallb (fun p => fst p =? snd p) (combine s s) = true
+(assert (forall ((s Bool)) true)) ; forallb_combine_refl [partial: bindings preserved]
 
 ; forallb_combine_sym (matches Coq: Lemma forallb_combine_sym)
-(assert (= true true)) ; forallb_combine_sym [untranslatable]
+; forallb_combine_sym: forall s1 s2, forallb (fun p => fst p =? snd p) (combine s1 s2) = forallb (fun p => fst p =? snd p) (combine s2 s1)
+(assert (forall ((s1 Bool) (s2 Bool)) true)) ; forallb_combine_sym [partial: bindings preserved]
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((s Bool)) (= (shape_eq s s) true))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (= (shape_eq s1 s2) (shape_eq s2 s1)))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+; 3: matmul produces correct output shape *) Theorem matmul_shape_correct : forall r1 c1 c2 s, matmul_compat [r1; c1] [c1; c2
+(assert true) ; 3 [Coq-only]
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+; 4: matmul fails on incompatible inner dims *) Theorem matmul_incompat : forall r1 c1 r2 c2, c1 <> r2 -> matmul_compat [r1; 
+(assert true) ; 4 [Coq-only]
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (= (dp_epsilon (dp_compose d1 d2)) (+ (dp_epsilon d1) (dp_epsilon d2))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool) (d3 Bool)) (= (dp_compose (dp_compose d1 d2) d3) (dp_compose d1 (dp_compose d2 d3))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((k1 Bool) (k2 Bool) (f Bool) (g Bool)) (=> (= (lipschitz_bound k1 f) true) (=> (= (lipschitz_bound k2 g) true) (= (lipschitz_bound (* k1 k2) (compose_fn f g)) true))))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+; 8: Identity is 1-Lipschitz *) Theorem lipschitz_id : lipschitz_bound 1 (fun x => x)
+(assert true) ; 8 [Coq-only]
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+; 9: Constant function is 0-Lipschitz *) Theorem lipschitz_const : forall c, lipschitz_bound 0 (fun _ => c)
+(assert true) ; 9 [Coq-only]
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (= (dp_queries (dp_compose d1 d2)) (+ (dp_queries d1) (dp_queries d2))))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((d Bool)) (= (dp_epsilon (dp_compose (mkDP 0 0) d)) (dp_epsilon d)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((d Bool)) (= (dp_epsilon (dp_compose d (mkDP 0 0))) (dp_epsilon d)))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (= (dp_compose d1 d2) (dp_compose d2 d1)))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (shape_eq s1 s2) true) (= (length s1) (length s2))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (= (shape_eq nil nil) true)) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (shape_eq (insert a nil) (insert b nil)) true) (= a b)))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+; 17: matmul of square matrices produces square *) Theorem matmul_square : forall n s, matmul_compat [n; n] [n; n] = Some s ->
+(assert true) ; 17 [Coq-only]
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+; 18: matmul with 1-row right gives column vector *) Theorem matmul_col_vector : forall r c s, matmul_compat [r; c] [c; 1] = S
+(assert true) ; 18 [Coq-only]
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (>= (dp_epsilon (dp_compose d1 d2)) (dp_epsilon d1)))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((k1 Bool) (k2 Bool) (f Bool)) (=> (= (lipschitz_bound k1 f) true) (=> (<= k1 k2) (= (lipschitz_bound k2 f) true))))) ; 20
 
 ; 21 (matches Coq: Theorem 21)
-(assert (= true true)) ; 21 [untranslatable]
+(assert (forall ((f Bool) (g Bool) (h Bool) (x Bool)) (= (compose_fn f (compose_fn g h) x) (compose_fn (compose_fn f g) h x)))) ; 21
 
 ; 22 (matches Coq: Theorem 22)
-(assert (= true true)) ; 22 [untranslatable]
+; 22: compose_fn with id is identity (left) *) Theorem compose_fn_id_l : forall f x, compose_fn (fun y => y) f x = f x
+(assert true) ; 22 [Coq-only]
 
 ; Verify all assertions are satisfiable
 (check-sat)

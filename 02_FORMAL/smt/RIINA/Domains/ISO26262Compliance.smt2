@@ -86,13 +86,13 @@
   (mk-iso26262_compliance ASIL_D (mk_compliant_hara) (mk_compliant_safety_concept) (mk_compliant_sw_dev) (mk_compliant_verif_methods) (mk_compliant_testing)))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; ISO_001_asil_reflexive (matches Coq: Theorem ISO_001_asil_reflexive)
 (assert (forall ((a ASIL)) (= (asil_leq a a) true))) ; ISO_001_asil_reflexive
 
 ; ISO_002_asil_transitive (matches Coq: Theorem ISO_002_asil_transitive)
-(assert (= true true)) ; ISO_002_asil_transitive [untranslatable]
+(assert (forall ((a1 ASIL) (a2 ASIL) (a3 ASIL)) (=> (= (asil_leq a1 a2) true) (=> (= (asil_leq a2 a3) true) (= (asil_leq a1 a3) true))))) ; ISO_002_asil_transitive
 
 ; ISO_003_qm_bottom (matches Coq: Theorem ISO_003_qm_bottom)
 (assert (forall ((a ASIL)) (= (asil_leq QM a) true))) ; ISO_003_qm_bottom
@@ -155,28 +155,28 @@
 (assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (iso_asil c) ASIL_D)))) ; ISO_022_asil_d_level
 
 ; ISO_023_asil_d_hara (matches Coq: Theorem ISO_023_asil_d_hara)
-(assert (= true true)) ; ISO_023_asil_d_hara [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (hara_compliant (iso_hara c)) true)))) ; ISO_023_asil_d_hara
 
 ; ISO_024_asil_d_sw_dev (matches Coq: Theorem ISO_024_asil_d_sw_dev)
-(assert (= true true)) ; ISO_024_asil_d_sw_dev [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (sw_dev_compliant (iso_sw_dev c)) true)))) ; ISO_024_asil_d_sw_dev
 
 ; ISO_025_asil_d_verification (matches Coq: Theorem ISO_025_asil_d_verification)
-(assert (= true true)) ; ISO_025_asil_d_verification [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (verif_methods_compliant (iso_verif_methods c)) true)))) ; ISO_025_asil_d_verification
 
 ; ISO_026_asil_d_testing (matches Coq: Theorem ISO_026_asil_d_testing)
-(assert (= true true)) ; ISO_026_asil_d_testing [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (testing_compliant (iso_testing c)) true)))) ; ISO_026_asil_d_testing
 
 ; ISO_027_riina_is_asil_d (matches Coq: Theorem ISO_027_riina_is_asil_d)
 (assert (= (iso_asil riina_iso26262) ASIL_D)) ; ISO_027_riina_is_asil_d
 
 ; ISO_028_riina_formal_verif (matches Coq: Theorem ISO_028_riina_formal_verif)
-(assert (= true true)) ; ISO_028_riina_formal_verif [untranslatable]
+(assert (= (vm_formal_verification (iso_verif_methods riina_iso26262)) true)) ; ISO_028_riina_formal_verif
 
 ; ISO_029_riina_mcdc (matches Coq: Theorem ISO_029_riina_mcdc)
-(assert (= true true)) ; ISO_029_riina_mcdc [untranslatable]
+(assert (= (test_mc_dc_coverage (iso_testing riina_iso26262)) true)) ; ISO_029_riina_mcdc
 
 ; ISO_030_riina_safety_goals (matches Coq: Theorem ISO_030_riina_safety_goals)
-(assert (= true true)) ; ISO_030_riina_safety_goals [untranslatable]
+(assert (= (hara_safety_goals_defined (iso_hara riina_iso26262)) true)) ; ISO_030_riina_safety_goals
 
 ; ISO_031_asil_d_implies_all (matches Coq: Theorem ISO_031_asil_d_implies_all)
 (assert (forall ((a ASIL)) (= (asil_leq a ASIL_D) true))) ; ISO_031_asil_d_implies_all
@@ -185,13 +185,13 @@
 (assert (forall ((v VerificationMethods)) (=> (= (verif_methods_compliant v) true) (=> (= (vm_formal_verification v) true) (= (vm_static_analysis v) true))))) ; ISO_032_formal_methods_cascade
 
 ; ISO_033_asil_d_implies_formal (matches Coq: Theorem ISO_033_asil_d_implies_formal)
-(assert (= true true)) ; ISO_033_asil_d_implies_formal [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (vm_formal_verification (iso_verif_methods c)) true)))) ; ISO_033_asil_d_implies_formal
 
 ; ISO_034_asil_d_implies_mcdc (matches Coq: Theorem ISO_034_asil_d_implies_mcdc)
-(assert (= true true)) ; ISO_034_asil_d_implies_mcdc [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (= (test_mc_dc_coverage (iso_testing c)) true)))) ; ISO_034_asil_d_implies_mcdc
 
 ; ISO_035_complete_certification (matches Coq: Theorem ISO_035_complete_certification)
-(assert (= true true)) ; ISO_035_complete_certification [untranslatable]
+(assert (forall ((c ISO26262Compliance)) (=> (= (asil_d_compliant c) true) (and (= (hara_compliant (iso_hara c)) true) (= (safety_concept_compliant (iso_safety_concept c)) true) (= (sw_dev_compliant (iso_sw_dev c)) true) (= (verif_methods_compliant (iso_verif_methods c)) true) (= (testing_compliant (iso_testing c)) true))))) ; ISO_035_complete_certification
 
 ; Verify all assertions are satisfiable
 (check-sat)

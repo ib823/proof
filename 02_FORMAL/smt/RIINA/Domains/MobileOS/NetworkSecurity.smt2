@@ -131,64 +131,64 @@
 (define-fun dns_poisoning_detected () Prop true)
 
 ; vpn_verified (matches Coq: Theorem vpn_verified)
-(assert (= true true)) ; vpn_verified [untranslatable]
+(assert (forall ((vpn VPNConnection)) (=> (= (vpn_secure vpn) true) (and (= (vpn_encrypted vpn) true) (= (vpn_authenticated vpn) true))))) ; vpn_verified
 
 ; vpn_min_version (matches Coq: Theorem vpn_min_version)
-(assert (= true true)) ; vpn_min_version [untranslatable]
+(assert (forall ((vpn VPNConnection)) (=> (= (vpn_secure vpn) true) (>= (vpn_protocol_version vpn) min_tls_version)))) ; vpn_min_version
 
 ; no_downgrade_attack (matches Coq: Theorem no_downgrade_attack)
-(assert (= true true)) ; no_downgrade_attack [untranslatable]
+(assert (forall ((negotiation ConnectionNegotiation)) (=> (= (valid_negotiation negotiation) true) (=> (= (neg_selected_version negotiation) (min (neg_client_max_version negotiation) (neg_server_max_version negotiation))) (not (and (< (neg_selected_version negotiation) (neg_client_max_version negotiation)) (< (neg_selected_version negotiation) (neg_server_max_version negotiation)))))))) ; no_downgrade_attack
 
 ; secure_negotiation_highest_common (matches Coq: Theorem secure_negotiation_highest_common)
-(assert (= true true)) ; secure_negotiation_highest_common [untranslatable]
+(assert (forall ((n ConnectionNegotiation)) (=> (= (valid_negotiation n) true) (and (<= (neg_selected_version n) (neg_client_max_version n)) (<= (neg_selected_version n) (neg_server_max_version n)))))) ; secure_negotiation_highest_common
 
 ; minimum_version_enforced (matches Coq: Theorem minimum_version_enforced)
-(assert (= true true)) ; minimum_version_enforced [untranslatable]
+(assert (forall ((n ConnectionNegotiation)) (=> (= (valid_negotiation n) true) (>= (neg_selected_version n) 12)))) ; minimum_version_enforced
 
 ; packet_inspection_complete (matches Coq: Theorem packet_inspection_complete)
-(assert (= true true)) ; packet_inspection_complete [untranslatable]
+(assert (forall ((p Packet)) (=> (= (packet_inspected_prop p) true) (= (pkt_inspected p) true)))) ; packet_inspection_complete
 
 ; malicious_payload_blocked (matches Coq: Theorem malicious_payload_blocked)
-(assert (= true true)) ; malicious_payload_blocked [untranslatable]
+(assert (forall ((p Packet)) (=> (= (malicious_blocked p) true) (=> (= (pkt_malicious p) true) (= (pkt_inspected p) true))))) ; malicious_payload_blocked
 
 ; rate_limiting_enforced (matches Coq: Theorem rate_limiting_enforced)
-(assert (= true true)) ; rate_limiting_enforced [untranslatable]
+(assert (forall ((rl RateLimiter)) (=> (= (rate_limit_enforced rl) true) (<= (rl_current_count rl) (rl_max_requests rl))))) ; rate_limiting_enforced
 
 ; ddos_mitigation_active (matches Coq: Theorem ddos_mitigation_active)
-(assert (= true true)) ; ddos_mitigation_active [untranslatable]
+(assert (forall ((rl RateLimiter)) (=> (= (rate_limit_enforced rl) true) (not (> (rl_current_count rl) (rl_max_requests rl)))))) ; ddos_mitigation_active
 
 ; man_in_middle_detected (matches Coq: Theorem man_in_middle_detected)
-(assert (= true true)) ; man_in_middle_detected [untranslatable]
+(assert (forall ((p1 Packet) (p2 Packet)) (=> (= (pkt_src_ip p1) (pkt_src_ip p2)) (=> (not (= (pkt_payload_hash p1) (pkt_payload_hash p2))) (= (mitm_detected p1 p2) true))))) ; man_in_middle_detected
 
 ; replay_attack_prevented (matches Coq: Theorem replay_attack_prevented)
-(assert (= true true)) ; replay_attack_prevented [untranslatable]
+(assert (forall ((p1 Packet) (p2 Packet)) (=> (= (replay_prevented p1 p2) true) (=> (= (pkt_sequence p1) (pkt_sequence p2)) (=> (= (pkt_timestamp p1) (pkt_timestamp p2)) (= (pkt_id p1) (pkt_id p2))))))) ; replay_attack_prevented
 
 ; session_hijacking_prevented (matches Coq: Theorem session_hijacking_prevented)
-(assert (= true true)) ; session_hijacking_prevented [untranslatable]
+(assert (forall ((s Session)) (forall ((claimed_ip Int)) (=> (= (session_hijack_prevented s claimed_ip) true) (=> (= (session_valid s) true) (= (session_ip s) claimed_ip)))))) ; session_hijacking_prevented
 
 ; ssl_stripping_prevented_thm (matches Coq: Theorem ssl_stripping_prevented_thm)
-(assert (= true true)) ; ssl_stripping_prevented_thm [untranslatable]
+(assert (forall ((cfg SSLConfig)) (=> (= (ssl_stripping_prevented cfg) true) (and (>= (ssl_min_version cfg) min_tls_version) (= (ssl_compression_disabled cfg) true))))) ; ssl_stripping_prevented_thm
 
 ; dns_poisoning_detected_thm (matches Coq: Theorem dns_poisoning_detected_thm)
-(assert (= true true)) ; dns_poisoning_detected_thm [untranslatable]
+(assert (forall ((q1 ConnectionNegotiation) (q2 ConnectionNegotiation)) (=> (not (= (neg_selected_version q1) (neg_selected_version q2))) (= (dns_poisoning_detected q1 q2) true)))) ; dns_poisoning_detected_thm
 
 ; arp_spoofing_detected (matches Coq: Theorem arp_spoofing_detected)
-(assert (= true true)) ; arp_spoofing_detected [untranslatable]
+(assert (forall ((p1 Packet) (p2 Packet)) (=> (= (pkt_src_ip p1) (pkt_src_ip p2)) (=> (not (= (pkt_id p1) (pkt_id p2))) (=> (not (= (pkt_payload_hash p1) (pkt_payload_hash p2))) (not (= (pkt_payload_hash p1) (pkt_payload_hash p2)))))))) ; arp_spoofing_detected
 
 ; port_scanning_limited (matches Coq: Theorem port_scanning_limited)
-(assert (= true true)) ; port_scanning_limited [untranslatable]
+(assert (forall ((psd PortScanDetector)) (=> (= (port_scan_limited psd) true) (=> (> (psd_ports_probed psd) (psd_threshold psd)) (= (psd_blocked psd) true))))) ; port_scanning_limited
 
 ; connection_limit_per_ip (matches Coq: Theorem connection_limit_per_ip)
-(assert (= true true)) ; connection_limit_per_ip [untranslatable]
+(assert (forall ((ct ConnectionTracker)) (=> (= (connection_limit ct) true) (<= (ct_connection_count ct) (ct_max_per_ip ct))))) ; connection_limit_per_ip
 
 ; ssl_version_minimum (matches Coq: Theorem ssl_version_minimum)
-(assert (= true true)) ; ssl_version_minimum [untranslatable]
+(assert (forall ((cfg SSLConfig)) (=> (= (ssl_version_minimum_prop cfg) true) (>= (ssl_min_version cfg) min_tls_version)))) ; ssl_version_minimum
 
 ; cipher_suite_strong (matches Coq: Theorem cipher_suite_strong)
-(assert (= true true)) ; cipher_suite_strong [untranslatable]
+(assert (forall ((cfg SSLConfig)) (=> (= (cipher_strong cfg) true) (>= (ssl_cipher_strength cfg) 128)))) ; cipher_suite_strong
 
 ; certificate_revocation_checked (matches Coq: Theorem certificate_revocation_checked)
-(assert (= true true)) ; certificate_revocation_checked [untranslatable]
+(assert (forall ((cfg SSLConfig)) (=> (= (revocation_checked cfg) true) (= (ssl_revocation_checked cfg) true)))) ; certificate_revocation_checked
 
 ; Verify all assertions are satisfiable
 (check-sat)

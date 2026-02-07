@@ -50,55 +50,55 @@
   true)
 
 ; ffi_safe_implies_sandboxed (matches Coq: Theorem ffi_safe_implies_sandboxed)
-(assert (= true true)) ; ffi_safe_implies_sandboxed [untranslatable]
+(assert (forall ((call Bool)) (=> (= (ffi_call_safe call) true) (= (ffi_sandboxed call) true)))) ; ffi_safe_implies_sandboxed
 
 ; ffi_safe_implies_validated (matches Coq: Theorem ffi_safe_implies_validated)
-(assert (= true true)) ; ffi_safe_implies_validated [untranslatable]
+(assert (forall ((call Bool)) (=> (= (ffi_call_safe call) true) (= (ffi_validated call) true)))) ; ffi_safe_implies_validated
 
 ; ffi_safe_construct (matches Coq: Theorem ffi_safe_construct)
-(assert (= true true)) ; ffi_safe_construct [untranslatable]
+(assert (forall ((call Bool)) (=> (= (ffi_sandboxed call) true) (=> (= (ffi_validated call) true) (= (ffi_call_safe call) true))))) ; ffi_safe_construct
 
 ; int8_alignment_positive (matches Coq: Theorem int8_alignment_positive)
 (assert (= (ffi_type_align FFI_Int8) 1)) ; int8_alignment_positive
 
 ; ffi_type_align_ge_1 (matches Coq: Lemma ffi_type_align_ge_1)
-(assert (= true true)) ; ffi_type_align_ge_1 [untranslatable]
+(assert (forall ((t Bool)) (>= (ffi_type_align t) 1))) ; ffi_type_align_ge_1
 
 ; ptr_size_constant (matches Coq: Theorem ptr_size_constant)
-(assert (= true true)) ; ptr_size_constant [untranslatable]
+(assert (forall ((t Bool)) (= (ffi_type_size (FFI_Ptr t)) 8))) ; ptr_size_constant
 
 ; array_size_correct (matches Coq: Theorem array_size_correct)
-(assert (= true true)) ; array_size_correct [untranslatable]
+(assert (forall ((elem Bool) (n Bool)) (= (ffi_type_size (FFI_Array elem n)) (* n (ffi_type_size elem))))) ; array_size_correct
 
 ; empty_struct_zero_size (matches Coq: Theorem empty_struct_zero_size)
-(assert (= true true)) ; empty_struct_zero_size [untranslatable]
+(assert (= (ffi_type_size (FFI_Struct nil)) 0)) ; empty_struct_zero_size
 
 ; marshal_preserves_capacity (matches Coq: Theorem marshal_preserves_capacity)
-(assert (= true true)) ; marshal_preserves_capacity [untranslatable]
+(assert (forall ((b Bool) (t Bool) (b' Bool)) (=> (= (marshal_into b t) (some b')) (= (buf_capacity b') (buf_capacity b))))) ; marshal_preserves_capacity
 
 ; marshal_increases_used (matches Coq: Theorem marshal_increases_used)
-(assert (= true true)) ; marshal_increases_used [untranslatable]
+(assert (forall ((b Bool) (t Bool) (b' Bool)) (=> (= (marshal_into b t) (some b')) (= (buf_used b') (+ (buf_used b) (ffi_type_size t)))))) ; marshal_increases_used
 
 ; marshal_never_overflows (matches Coq: Theorem marshal_never_overflows)
-(assert (= true true)) ; marshal_never_overflows [untranslatable]
+(assert (forall ((b Bool) (t Bool) (b' Bool)) (=> (= (marshal_into b t) (some b')) (<= (buf_used b') (buf_capacity b'))))) ; marshal_never_overflows
 
 ; marshal_failure_means_insufficient (matches Coq: Theorem marshal_failure_means_insufficient)
-(assert (= true true)) ; marshal_failure_means_insufficient [untranslatable]
+(assert (forall ((b Bool) (t Bool)) (=> (= (marshal_into b t) none) (< (buf_capacity b) (+ (buf_used b) (ffi_type_size t)))))) ; marshal_failure_means_insufficient
 
 ; marshal_void_always_succeeds (matches Coq: Theorem marshal_void_always_succeeds)
-(assert (= true true)) ; marshal_void_always_succeeds [untranslatable]
+(assert (forall ((b Bool)) (=> (<= (buf_used b) (buf_capacity b)) (exists ((b' Bool)) (= (marshal_into b FFI_Void) (some b')))))) ; marshal_void_always_succeeds
 
 ; disjoint_regions_no_overlap (matches Coq: Theorem disjoint_regions_no_overlap)
-(assert (= true true)) ; disjoint_regions_no_overlap [untranslatable]
+(assert (forall ((r1 Bool) (r2 Bool) (addr Bool) (sz Bool)) (=> (= (regions_disjoint r1 r2) true) (=> (= (addr_in_region addr sz r1) true) (=> (> sz 0) (not (= (addr_in_region addr sz r2) true))))))) ; disjoint_regions_no_overlap
 
 ; sandbox_call_allowed_decidable (matches Coq: Theorem sandbox_call_allowed_decidable)
-(assert (= true true)) ; sandbox_call_allowed_decidable [untranslatable]
+(assert (forall ((sb Bool) (cid Bool)) (or (= (call_allowed sb cid) true) (= (call_allowed sb cid) false)))) ; sandbox_call_allowed_decidable
 
 ; disjoint_symmetric (matches Coq: Theorem disjoint_symmetric)
-(assert (= true true)) ; disjoint_symmetric [untranslatable]
+(assert (forall ((r1 Bool) (r2 Bool)) (=> (= (regions_disjoint r1 r2) true) (= (regions_disjoint r2 r1) true)))) ; disjoint_symmetric
 
 ; addr_in_region_bounds (matches Coq: Theorem addr_in_region_bounds)
-(assert (= true true)) ; addr_in_region_bounds [untranslatable]
+(assert (forall ((addr Bool) (sz Bool) (r Bool)) (=> (= (addr_in_region addr sz r) true) (and (>= addr (region_base r)) (<= (+ addr sz) (+ (region_base r) (region_size r))))))) ; addr_in_region_bounds
 
 ; ffi_void_size_zero (matches Coq: Theorem ffi_void_size_zero)
 (assert (= (ffi_type_size FFI_Void) 0)) ; ffi_void_size_zero
@@ -107,7 +107,7 @@
 (assert (= (ffi_type_size FFI_Int8) 1)) ; ffi_int8_size
 
 ; marshal_void_preserves_used (matches Coq: Theorem marshal_void_preserves_used)
-(assert (= true true)) ; marshal_void_preserves_used [untranslatable]
+(assert (forall ((b Bool) (b' Bool)) (=> (<= (buf_used b) (buf_capacity b)) (=> (= (marshal_into b FFI_Void) (some b')) (= (buf_used b') (buf_used b)))))) ; marshal_void_preserves_used
 
 ; Verify all assertions are satisfiable
 (check-sat)

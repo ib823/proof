@@ -33,67 +33,70 @@
 (define-fun funion () fheap true)
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (= (satisfies nil HEmpty) true)) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+; 2: Singleton heap satisfies points-to *) Theorem points_to_singleton : forall l v, satisfies [(l, v)] (HPointsTo l v)
+(assert true) ; 2 [Coq-only]
 
 ; disjoint_sym (matches Coq: Lemma disjoint_sym)
-(assert (= true true)) ; disjoint_sym [untranslatable]
+(assert (forall ((h1 Bool) (h2 Bool)) (=> (= (disjoint h1 h2) true) (= (disjoint h2 h1) true)))) ; disjoint_sym
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool) (h Bool)) (=> (= (fsat h (FStar p1 p2)) true) (= (fsat h (FStar p2 p1)) true)))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((p Bool) (h Bool)) (=> (= (fsat h p) true) (= (fsat h (FStar FEmpty p)) true)))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((l Bool) (v1 Bool) (v2 Bool) (h Bool)) (=> (= (fsat h (FStar (FPointsTo l v1) (FPointsTo l v2))) true) false))) ; 5
 
 ; frame_rule (matches Coq: Theorem frame_rule)
-(assert (= true true)) ; frame_rule [untranslatable]
+(assert (forall ((p Bool) (f Bool) (h1 Bool) (h2 Bool)) (=> (= (fsat h1 p) true) (=> (= (fsat h2 f) true) (=> (= (fdisjoint h1 h2) true) (= (fsat (funion h1 h2) (FStar p f)) true)))))) ; frame_rule
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((h Bool)) (= (fdisjoint fempty h) true))) ; 7
 
 ; fdisjoint_empty_r (matches Coq: Theorem fdisjoint_empty_r)
-(assert (= true true)) ; fdisjoint_empty_r [untranslatable]
+(assert (forall ((h Bool)) (= (fdisjoint h fempty) true))) ; fdisjoint_empty_r
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((h Bool) (l Bool)) (= (funion fempty h l) (h l)))) ; 9
 
 ; funion_empty_r (matches Coq: Theorem funion_empty_r)
-(assert (= true true)) ; funion_empty_r [untranslatable]
+(assert (forall ((h Bool) (l Bool)) (= (funion h fempty l) (h l)))) ; funion_empty_r
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((h1 Bool) (h2 Bool)) (=> (= (fdisjoint h1 h2) true) (= (fdisjoint h2 h1) true)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+; 12: Pure proposition extraction *) Theorem pure_extract : forall (P : Prop) h, fsat h (FPure P) -> P
+(assert true) ; 12 [Coq-only]
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+; 13: Pure proposition implies empty heap *) Theorem pure_empty_heap : forall (P : Prop) h, fsat h (FPure P) -> forall l, h l 
+(assert true) ; 13 [Coq-only]
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((l Bool) (v Bool) (h Bool)) (=> (= (fsat h (FPointsTo l v)) true) (= (h l) (some v))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((l Bool) (v Bool) (h Bool) (l' Bool)) (=> (= (fsat h (FPointsTo l v)) true) (=> (not (= l' l)) (= (h l') none))))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (= (fsat fempty FEmpty) true)) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((l Bool) (v Bool)) (= (fsat (fsingleton l v) (FPointsTo l v)) true))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((l Bool) (l' Bool) (v Bool)) (=> (not (= l' l)) (= (fsingleton l v l') none)))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (v1 Bool) (v2 Bool)) (=> (not (= l1 l2)) (= (fdisjoint (fsingleton l1 v1) (fsingleton l2 v2)) true)))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (= (fsat fempty (FPure true)) true)) ; 20
 
 ; Verify all assertions are satisfiable
 (check-sat)

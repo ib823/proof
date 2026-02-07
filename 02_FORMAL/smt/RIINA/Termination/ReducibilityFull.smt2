@@ -34,124 +34,125 @@
   true)
 
 ; value_not_step (matches Coq: Lemma value_not_step)
-(assert (= true true)) ; value_not_step [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (=> (= ((v, st, ctx) step_to (mk-tuple e' st' ctx')) true) false)))) ; value_not_step
 
 ; value_SN (matches Coq: Lemma value_SN)
-(assert (= true true)) ; value_SN [untranslatable]
+(assert (forall ((v Bool)) (=> (= (value v) true) (= (SN_expr v) true)))) ; value_SN
 
 ; SN_step (matches Coq: Lemma SN_step)
-(assert (= true true)) ; SN_step [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= (SN (mk-tuple e' st' ctx')) true))))) ; SN_step
 
 ; SN_classify_aux (matches Coq: Lemma SN_classify_aux)
-(assert (= true true)) ; SN_classify_aux [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EClassify (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_classify_aux
 
 ; SN_classify (matches Coq: Lemma SN_classify)
-(assert (= true true)) ; SN_classify [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EClassify e) st ctx)) true)))) ; SN_classify
 
 ; SN_prove_aux (matches Coq: Lemma SN_prove_aux)
-(assert (= true true)) ; SN_prove_aux [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EProve (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_prove_aux
 
 ; SN_prove (matches Coq: Lemma SN_prove)
-(assert (= true true)) ; SN_prove [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EProve e) st ctx)) true)))) ; SN_prove
 
 ; SN_perform_aux (matches Coq: Lemma SN_perform_aux)
-(assert (= true true)) ; SN_perform_aux [untranslatable]
+(assert (forall ((cfg Bool) (eff Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EPerform eff (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_perform_aux
 
 ; SN_perform (matches Coq: Lemma SN_perform)
-(assert (= true true)) ; SN_perform [untranslatable]
+(assert (forall ((eff Bool) (e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EPerform eff e) st ctx)) true)))) ; SN_perform
 
 ; SN_require_aux (matches Coq: Lemma SN_require_aux)
-(assert (= true true)) ; SN_require_aux [untranslatable]
+(assert (forall ((cfg Bool) (eff Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (ERequire eff (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_require_aux
 
 ; SN_require (matches Coq: Lemma SN_require)
-(assert (= true true)) ; SN_require [untranslatable]
+(assert (forall ((eff Bool) (e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (ERequire eff e) st ctx)) true)))) ; SN_require
 
 ; SN_grant_aux (matches Coq: Lemma SN_grant_aux)
-(assert (= true true)) ; SN_grant_aux [untranslatable]
+(assert (forall ((cfg Bool) (eff Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EGrant eff (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_grant_aux
 
 ; SN_grant (matches Coq: Lemma SN_grant)
-(assert (= true true)) ; SN_grant [untranslatable]
+(assert (forall ((eff Bool) (e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EGrant eff e) st ctx)) true)))) ; SN_grant
 
 ; SN_declassify_value_left_aux (matches Coq: Lemma SN_declassify_value_left_aux)
-(assert (= true true)) ; SN_declassify_value_left_aux [untranslatable]
+(assert (forall ((cfg Bool) (v Bool)) (=> (= (value v) true) (=> (= (SN cfg) true) (= (SN (mk-tuple (EDeclassify v (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true))))) ; SN_declassify_value_left_aux
 
 ; SN_declassify_value_left (matches Coq: Lemma SN_declassify_value_left)
-(assert (= true true)) ; SN_declassify_value_left [untranslatable]
+(assert (forall ((v Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (=> (= (SN (mk-tuple e2 st ctx)) true) (= (SN (mk-tuple (EDeclassify v e2) st ctx)) true))))) ; SN_declassify_value_left
 
 ; SN_declassify_aux (matches Coq: Lemma SN_declassify_aux)
-(assert (= true true)) ; SN_declassify_aux [untranslatable]
+(assert (forall ((cfg Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((st Bool) (ctx Bool)) (= (SN (mk-tuple e2 st ctx)) true)) (= (SN (mk-tuple (EDeclassify (fst (fst cfg)) e2) (snd (fst cfg)) (snd cfg))) true))))) ; SN_declassify_aux
 
 ; SN_declassify (matches Coq: Lemma SN_declassify)
-(assert (= true true)) ; SN_declassify [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e1 st ctx)) true) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (= (SN (mk-tuple (EDeclassify e1 e2) st ctx)) true))))) ; SN_declassify
 
 ; extend_rho_id (matches Coq: Lemma extend_rho_id)
-(assert (= true true)) ; extend_rho_id [untranslatable]
+(assert (forall ((x Bool)) (= (extend_rho id_rho x (EVar x)) id_rho))) ; extend_rho_id
 
 ; subst_env_id (matches Coq: Lemma subst_env_id)
-(assert (= true true)) ; subst_env_id [untranslatable]
+(assert (forall ((e Bool)) (= (subst_env id_rho e) e))) ; subst_env_id
 
 ; subst_not_free_in (matches Coq: Lemma subst_not_free_in)
-(assert (= true true)) ; subst_not_free_in [untranslatable]
+(assert (forall ((x Bool) (v Bool) (e Bool)) (not (=> (= (free_in x e) true) (= e e))))) ; subst_not_free_in
 
 ; free_in_var (matches Coq: Lemma free_in_var)
-(assert (= true true)) ; free_in_var [untranslatable]
+(assert (forall ((x Bool) (y Bool)) (=> (= (free_in x (EVar y)) true) (= x y)))) ; free_in_var
 
 ; not_free_in_var_neq (matches Coq: Lemma not_free_in_var_neq)
-(assert (= true true)) ; not_free_in_var_neq [untranslatable]
+(assert (forall ((x Bool) (y Bool)) (=> (not (= x y)) (not (= (free_in x (EVar y)) true))))) ; not_free_in_var_neq
 
 ; extend_rho_shadow (matches Coq: Lemma extend_rho_shadow)
-(assert (= true true)) ; extend_rho_shadow [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (e1 Bool) (e2 Bool) (y Bool)) (= (extend_rho (extend_rho ρ x e1) x e2 y) (extend_rho ρ x e2 y)))) ; extend_rho_shadow
 
 ; extend_rho_commute (matches Coq: Lemma extend_rho_commute)
-(assert (= true true)) ; extend_rho_commute [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (y Bool) (e1 Bool) (e2 Bool) (z Bool)) (=> (not (= x y)) (= (extend_rho (extend_rho ρ x e1) y e2 z) (extend_rho (extend_rho ρ y e2) x e1 z))))) ; extend_rho_commute
 
 ; subst_env_ext (matches Coq: Lemma subst_env_ext)
-(assert (= true true)) ; subst_env_ext [untranslatable]
+(assert (forall ((ρ1 Bool) (ρ2 Bool) (e Bool)) (=> (forall ((y Bool)) (= (ρ1 y) (ρ2 y))) (= (subst_env ρ1 e) (subst_env ρ2 e))))) ; subst_env_ext
 
 ; subst_subst_env_commute_gen (matches Coq: Lemma subst_subst_env_commute_gen)
-(assert (= true true)) ; subst_subst_env_commute_gen [untranslatable]
+(assert (forall ((e Bool) (ρ Bool) (x Bool) (v Bool)) (=> (forall ((y Bool)) (=> (not (= y x)) (not (= (free_in x (ρ y)) true)))) (= (subst_env (extend_rho ρ x (EVar x)) e) (subst_env (extend_rho ρ x v) e))))) ; subst_subst_env_commute_gen
 
 ; subst_subst_env_commute (matches Coq: Lemma subst_subst_env_commute)
-(assert (= true true)) ; subst_subst_env_commute [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (v Bool) (e Bool)) (=> (= (closed_rho ρ) true) (= (subst_env (extend_rho ρ x (EVar x)) e) (subst_env (extend_rho ρ x v) e))))) ; subst_subst_env_commute
 
 ; CR1 (matches Coq: Lemma CR1)
-(assert (= true true)) ; CR1 [untranslatable]
+(assert (forall ((T Bool) (x Bool)) (=> (= (Reducible T x) true) (= (SN_expr x) true)))) ; CR1
 
 ; CR3_base (matches Coq: Lemma CR3_base)
-(assert (= true true)) ; CR3_base [untranslatable]
+(assert (forall ((e Bool)) (=> (= (neutral e) true) (=> (= (SN_expr e) true) (and (= (Reducible TUnit e) true) (= (Reducible TBool e) true) (= (Reducible TInt e) true) (= (Reducible TString e) true) (= (Reducible TBytes e) true)))))) ; CR3_base
 
 ; unit_reducible (matches Coq: Lemma unit_reducible)
-(assert (= true true)) ; unit_reducible [untranslatable]
+(assert (= (Reducible TUnit EUnit) true)) ; unit_reducible
 
 ; bool_reducible (matches Coq: Lemma bool_reducible)
-(assert (= true true)) ; bool_reducible [untranslatable]
+(assert (forall ((b Bool)) (= (Reducible TBool (EBool b)) true))) ; bool_reducible
 
 ; int_reducible (matches Coq: Lemma int_reducible)
-(assert (= true true)) ; int_reducible [untranslatable]
+(assert (forall ((n Bool)) (= (Reducible TInt (EInt n)) true))) ; int_reducible
 
 ; string_reducible (matches Coq: Lemma string_reducible)
-(assert (= true true)) ; string_reducible [untranslatable]
+(assert (forall ((s Bool)) (= (Reducible TString (EString s)) true))) ; string_reducible
 
 ; env_reducible_nil (matches Coq: Lemma env_reducible_nil)
-(assert (= true true)) ; env_reducible_nil [untranslatable]
+(assert (forall ((ρ Bool)) (= (env_reducible nil ρ) true))) ; env_reducible_nil
 
 ; env_reducible_cons (matches Coq: Lemma env_reducible_cons)
-(assert (= true true)) ; env_reducible_cons [untranslatable]
+; env_reducible_cons: forall Γ ρ x T v, env_reducible Γ ρ -> value v -> Reducible T v -> env_reducible ((x, T) :: Γ) (extend_rho ρ x v)
+(assert (forall ((Γ Bool) (ρ Bool) (x Bool) (T Bool) (v Bool)) true)) ; env_reducible_cons [partial: bindings preserved]
 
 ; fundamental_reducibility (matches Coq: Lemma fundamental_reducibility)
-(assert (= true true)) ; fundamental_reducibility [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (pc Bool) (e Bool) (T Bool) (ε Bool) (ρ Bool)) (=> (= (has_type Γ Σ pc e T ε) true) (=> (= (env_reducible Γ ρ) true) (= (Reducible T (subst_env ρ e)) true))))) ; fundamental_reducibility
 
 ; well_typed_SN (matches Coq: Theorem well_typed_SN)
-(assert (= true true)) ; well_typed_SN [untranslatable]
+(assert (forall ((Σ Bool) (pc Bool) (e Bool) (T Bool) (ε Bool)) (=> (= (has_type nil Σ pc e T ε) true) (= (SN_expr e) true)))) ; well_typed_SN
 
 ; SN_app (matches Coq: Theorem SN_app)
-(assert (= true true)) ; SN_app [untranslatable]
+(assert (forall ((f Bool) (a Bool) (T1 Bool) (T2 Bool) (eff Bool) (Σ Bool) (pc Bool)) (=> (= (has_type nil Σ pc f (TFn T1 T2 eff) EffectPure) true) (=> (= (has_type nil Σ pc a T1 EffectPure) true) (= (SN_expr (EApp f a)) true))))) ; SN_app
 
 ; SN_closed_step (matches Coq: Lemma SN_closed_step)
-(assert (= true true)) ; SN_closed_step [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (forall ((e' Bool) (st' Bool) (ctx' Bool)) (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true)) (= (SN (mk-tuple e' st' ctx')) true))))) ; SN_closed_step
 
 ; SN_beta_value (matches Coq: Lemma SN_beta_value)
-(assert (= true true)) ; SN_beta_value [untranslatable]
+(assert (forall ((x Bool) (T Bool) (body Bool) (a Bool) (st Bool) (ctx Bool)) (=> (= (value a) true) (=> (= (SN (mk-tuple body st ctx)) true) (= (SN (mk-tuple (EApp (ELam x T body) a) st ctx)) true))))) ; SN_beta_value
 
 ; Verify all assertions are satisfiable
 (check-sat)

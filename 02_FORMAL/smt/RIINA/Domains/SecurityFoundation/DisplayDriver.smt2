@@ -50,73 +50,73 @@
   true)
 
 ; display_buffer_isolated (matches Coq: Theorem display_buffer_isolated)
-(assert (= true true)) ; display_buffer_isolated [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (buffer FrameBuffer)) (=> (not (= (app_id app1) (app_id app2))) (=> (= (owns_buffer app1 buffer) true) (=> (= (app_screen_capture_perm app2) false) (not (= (can_read_buffer app2 buffer) true))))))) ; display_buffer_isolated
 
 ; screen_capture_requires_permission (matches Coq: Theorem screen_capture_requires_permission)
-(assert (= true true)) ; screen_capture_requires_permission [untranslatable]
+(assert (forall ((app Application)) (forall ((frame Frame)) (=> (= (captures_screen app frame) true) (= (has_screen_capture_permission app) true))))) ; screen_capture_requires_permission
 
 ; protected_buffer_access (matches Coq: Theorem protected_buffer_access)
-(assert (= true true)) ; protected_buffer_access [untranslatable]
+(assert (forall ((app Application)) (forall ((fb FrameBuffer)) (=> (= (fb_protected fb) true) (=> (= (owns_buffer app fb) true) (not (or (= (can_read_buffer app fb) true) (= (app_screen_capture_perm app) true)))))))) ; protected_buffer_access
 
 ; no_permission_no_capture (matches Coq: Theorem no_permission_no_capture)
-(assert (= true true)) ; no_permission_no_capture [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_screen_capture_perm app) false) (forall ((frame Bool)) (not (= (captures_screen app frame) true)))))) ; no_permission_no_capture
 
 ; buffer_ownership_exclusive (matches Coq: Theorem buffer_ownership_exclusive)
-(assert (= true true)) ; buffer_ownership_exclusive [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (fb FrameBuffer)) (=> (= (owns_buffer app1 fb) true) (=> (= (owns_buffer app2 fb) true) (= (app_id app1) (app_id app2)))))) ; buffer_ownership_exclusive
 
 ; overlay_requires_permission (matches Coq: Theorem overlay_requires_permission)
-(assert (= true true)) ; overlay_requires_permission [untranslatable]
+(assert (forall ((app Application)) (=> (= (creates_overlay app) true) (= (has_overlay_permission app) true)))) ; overlay_requires_permission
 
 ; no_overlay_without_permission (matches Coq: Theorem no_overlay_without_permission)
-(assert (= true true)) ; no_overlay_without_permission [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_overlay_perm app) false) (not (= (creates_overlay app) true))))) ; no_overlay_without_permission
 
 ; display_output_integrity (matches Coq: Theorem display_output_integrity)
-(assert (= true true)) ; display_output_integrity [untranslatable]
+(assert (forall ((app Application)) (forall ((fb FrameBuffer)) (forall ((frame Frame)) (=> (= (owns_buffer app fb) true) (=> (= (frame_source frame) (fb_id fb)) (= (fb_owner fb) (app_id app)))))))) ; display_output_integrity
 
 ; valid_fb_positive_pixels (matches Coq: Theorem valid_fb_positive_pixels)
-(assert (= true true)) ; valid_fb_positive_pixels [untranslatable]
+(assert (forall ((fb FrameBuffer)) (=> (= (valid_framebuffer fb) true) (> (pixel_count fb) 0)))) ; valid_fb_positive_pixels
 
 ; no_capture_perm_blocks_all_frames (matches Coq: Theorem no_capture_perm_blocks_all_frames)
-(assert (= true true)) ; no_capture_perm_blocks_all_frames [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_screen_capture_perm app) false) (forall ((f Bool)) (not (= (captures_screen app f) true)))))) ; no_capture_perm_blocks_all_frames
 
 ; protected_buffer_blocks_non_owner (matches Coq: Theorem protected_buffer_blocks_non_owner)
-(assert (= true true)) ; protected_buffer_blocks_non_owner [untranslatable]
+(assert (forall ((app Application)) (forall ((fb FrameBuffer)) (=> (= (fb_protected fb) true) (=> (not (= (fb_owner fb) (app_id app))) (=> (= (app_screen_capture_perm app) false) (not (= (can_read_buffer app fb) true)))))))) ; protected_buffer_blocks_non_owner
 
 ; read_requires_ownership_or_capture (matches Coq: Theorem read_requires_ownership_or_capture)
-(assert (= true true)) ; read_requires_ownership_or_capture [untranslatable]
+(assert (forall ((app Application)) (forall ((fb FrameBuffer)) (=> (= (can_read_buffer app fb) true) (or (and (= (owns_buffer app fb) true) (= (fb_protected fb) false)) (= (app_screen_capture_perm app) true)))))) ; read_requires_ownership_or_capture
 
 ; capture_perm_reads_all (matches Coq: Theorem capture_perm_reads_all)
-(assert (= true true)) ; capture_perm_reads_all [untranslatable]
+(assert (forall ((app Application)) (forall ((fb FrameBuffer)) (=> (= (app_screen_capture_perm app) true) (= (can_read_buffer app fb) true))))) ; capture_perm_reads_all
 
 ; owner_reads_unprotected (matches Coq: Theorem owner_reads_unprotected)
-(assert (= true true)) ; owner_reads_unprotected [untranslatable]
+(assert (forall ((app Application)) (forall ((fb FrameBuffer)) (=> (= (owns_buffer app fb) true) (=> (= (fb_protected fb) false) (= (can_read_buffer app fb) true)))))) ; owner_reads_unprotected
 
 ; overlay_state_consistent (matches Coq: Theorem overlay_state_consistent)
-(assert (= true true)) ; overlay_state_consistent [untranslatable]
+(assert (forall ((ds DisplayState)) (forall ((app_id AppId)) (=> (= (active_overlay ds) (some app_id)) (not (= (active_overlay ds) none)))))) ; overlay_state_consistent
 
 ; no_overlay_no_app (matches Coq: Theorem no_overlay_no_app)
-(assert (= true true)) ; no_overlay_no_app [untranslatable]
+(assert (forall ((ds DisplayState)) (=> (= (active_overlay ds) none) (forall ((aid Bool)) (not (= (active_overlay ds) (some aid))))))) ; no_overlay_no_app
 
 ; fb_id_determines_buffer (matches Coq: Theorem fb_id_determines_buffer)
-(assert (= true true)) ; fb_id_determines_buffer [untranslatable]
+(assert (forall ((fb1 FrameBuffer) (fb2 FrameBuffer)) (=> (= (fb_id fb1) (fb_id fb2)) (=> (= (fb_owner fb1) (fb_owner fb2)) (=> (= (fb_width fb1) (fb_width fb2)) (=> (= (fb_height fb1) (fb_height fb2)) (=> (= (fb_protected fb1) (fb_protected fb2)) (= fb1 fb2)))))))) ; fb_id_determines_buffer
 
 ; display_isolation_symmetric (matches Coq: Theorem display_isolation_symmetric)
-(assert (= true true)) ; display_isolation_symmetric [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (fb FrameBuffer)) (=> (not (= (app_id app1) (app_id app2))) (=> (= (owns_buffer app2 fb) true) (=> (= (app_screen_capture_perm app1) false) (not (= (can_read_buffer app1 fb) true))))))) ; display_isolation_symmetric
 
 ; capture_overlay_independent (matches Coq: Theorem capture_overlay_independent)
-(assert (= true true)) ; capture_overlay_independent [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_screen_capture_perm app) true) (=> (= (app_overlay_perm app) false) (and (= (has_screen_capture_permission app) true) (not (= (has_overlay_permission app) true))))))) ; capture_overlay_independent
 
 ; dual_perm_app (matches Coq: Theorem dual_perm_app)
-(assert (= true true)) ; dual_perm_app [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_screen_capture_perm app) true) (=> (= (app_overlay_perm app) true) (and (= (has_screen_capture_permission app) true) (= (has_overlay_permission app) true)))))) ; dual_perm_app
 
 ; no_perm_app (matches Coq: Theorem no_perm_app)
-(assert (= true true)) ; no_perm_app [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_screen_capture_perm app) false) (=> (= (app_overlay_perm app) false) (not (and (= (has_screen_capture_permission app) true) (not (= (has_overlay_permission app) true)))))))) ; no_perm_app
 
 ; empty_display_no_read (matches Coq: Theorem empty_display_no_read)
-(assert (= true true)) ; empty_display_no_read [untranslatable]
+(assert (forall ((ds DisplayState)) (forall ((app Application)) (forall ((fb FrameBuffer)) (=> (= (frame_buffers ds) nil) (=> (= (In fb (frame_buffers ds)) true) (= (can_read_buffer app fb) true))))))) ; empty_display_no_read
 
 ; frame_timestamp_order (matches Coq: Theorem frame_timestamp_order)
-(assert (= true true)) ; frame_timestamp_order [untranslatable]
+(assert (forall ((f1 Frame) (f2 Frame)) (or (<= (frame_timestamp f1) (frame_timestamp f2)) (< (frame_timestamp f2) (frame_timestamp f1))))) ; frame_timestamp_order
 
 ; Verify all assertions are satisfiable
 (check-sat)

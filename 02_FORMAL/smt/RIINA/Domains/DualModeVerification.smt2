@@ -33,70 +33,70 @@
 (define-fun refine_conj () RefinedType true)
 
 ; lightweight_sound (matches Coq: Theorem lightweight_sound)
-(assert (= true true)) ; lightweight_sound [untranslatable]
+(assert (forall ((rt RefinedType)) (forall ((v Int)) (=> (= (lightweight_check rt v) true) (= (full_check rt v) true))))) ; lightweight_sound
 
 ; lightweight_complete_decidable (matches Coq: Theorem lightweight_complete_decidable)
-(assert (= true true)) ; lightweight_complete_decidable [untranslatable]
+(assert (forall ((rt RefinedType)) (forall ((v Int)) (=> (= (decidable_refinement rt) true) (=> (= (full_check rt v) true) (= (lightweight_check rt v) true)))))) ; lightweight_complete_decidable
 
 ; refine_subtype_refl (matches Coq: Theorem refine_subtype_refl)
-(assert (= true true)) ; refine_subtype_refl [untranslatable]
+(assert (forall ((rt RefinedType)) (= (refine_subtype rt rt) true))) ; refine_subtype_refl
 
 ; refine_subtype_trans (matches Coq: Theorem refine_subtype_trans)
-(assert (= true true)) ; refine_subtype_trans [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (r3 RefinedType)) (=> (= (refine_subtype r1 r2) true) (=> (= (refine_subtype r2 r3) true) (= (refine_subtype r1 r3) true))))) ; refine_subtype_trans
 
 ; checked_values_satisfy (matches Coq: Theorem checked_values_satisfy)
-(assert (= true true)) ; checked_values_satisfy [untranslatable]
+(assert (forall ((rt RefinedType)) (forall ((e expr)) (=> (= (lightweight_check rt (eval e)) true) (= (full_check rt (eval e)) true))))) ; checked_values_satisfy
 
 ; dual_mode_agreement (matches Coq: Theorem dual_mode_agreement)
-(assert (= true true)) ; dual_mode_agreement [untranslatable]
+(assert (forall ((rt RefinedType)) (forall ((v Int)) (=> (= (decidable_refinement rt) true) (and (=> (= (lightweight_check rt v) true) (= (full_check rt v) true)) (=> (= (full_check rt v) true) (= (lightweight_check rt v) true))))))) ; dual_mode_agreement
 
 ; refinement_weakening (matches Coq: Theorem refinement_weakening)
-(assert (= true true)) ; refinement_weakening [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (v Int)) (=> (= (refine_subtype r1 r2) true) (=> (= (full_check r1 v) true) (= (full_check r2 v) true))))) ; refinement_weakening
 
 ; conj_subtype_left (matches Coq: Theorem conj_subtype_left)
-(assert (= true true)) ; conj_subtype_left [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType)) (= (refine_subtype (refine_conj r1 r2) r1) true))) ; conj_subtype_left
 
 ; conj_subtype_right (matches Coq: Theorem conj_subtype_right)
-(assert (= true true)) ; conj_subtype_right [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType)) (= (refine_subtype (refine_conj r1 r2) r2) true))) ; conj_subtype_right
 
 ; conj_greatest_lower_bound (matches Coq: Theorem conj_greatest_lower_bound)
-(assert (= true true)) ; conj_greatest_lower_bound [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (r3 RefinedType)) (=> (= (refine_subtype r3 r1) true) (=> (= (refine_subtype r3 r2) true) (= (refine_subtype r3 (refine_conj r1 r2)) true))))) ; conj_greatest_lower_bound
 
 ; conj_full_pred_comm (matches Coq: Theorem conj_full_pred_comm)
-(assert (= true true)) ; conj_full_pred_comm [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (v Int)) (and (=> (= (full_pred (refine_conj r1 r2) v) true) (= (full_pred (refine_conj r2 r1) v) true)) (=> (= (full_pred (refine_conj r2 r1) v) true) (= (full_pred (refine_conj r1 r2) v) true))))) ; conj_full_pred_comm
 
 ; conj_full_pred_assoc (matches Coq: Theorem conj_full_pred_assoc)
-(assert (= true true)) ; conj_full_pred_assoc [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (r3 RefinedType) (v Int)) (and (=> (= (full_pred (refine_conj (refine_conj r1 r2) r3) v) true) (= (full_pred (refine_conj r1 (refine_conj r2 r3)) v) true)) (=> (= (full_pred (refine_conj r1 (refine_conj r2 r3)) v) true) (= (full_pred (refine_conj (refine_conj r1 r2) r3) v) true))))) ; conj_full_pred_assoc
 
 ; conj_light_is_andb (matches Coq: Theorem conj_light_is_andb)
-(assert (= true true)) ; conj_light_is_andb [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (v Int)) (= (light_pred (refine_conj r1 r2) v) (and (light_pred r1 v) (light_pred r2 v))))) ; conj_light_is_andb
 
 ; eval_const (matches Coq: Theorem eval_const)
-(assert (= true true)) ; eval_const [untranslatable]
+(assert (forall ((n Bool)) (= (eval (EConst n)) n))) ; eval_const
 
 ; eval_plus (matches Coq: Theorem eval_plus)
-(assert (= true true)) ; eval_plus [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (eval (EPlus e1 e2)) (+ (eval e1) (eval e2))))) ; eval_plus
 
 ; lightweight_false_implies_not_full (matches Coq: Theorem lightweight_false_implies_not_full)
-(assert (= true true)) ; lightweight_false_implies_not_full [untranslatable]
+(assert (forall ((rt RefinedType)) (forall ((v Int)) (=> (= (decidable_refinement rt) true) (=> (= (lightweight_check rt v) false) (not (= (full_check rt v) true))))))) ; lightweight_false_implies_not_full
 
 ; subtype_lightweight_sound (matches Coq: Theorem subtype_lightweight_sound)
-(assert (= true true)) ; subtype_lightweight_sound [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (v Int)) (=> (= (refine_subtype r1 r2) true) (=> (= (lightweight_check r1 v) true) (= (full_check r2 v) true))))) ; subtype_lightweight_sound
 
 ; conj_decidable (matches Coq: Theorem conj_decidable)
-(assert (= true true)) ; conj_decidable [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType)) (=> (= (decidable_refinement r1) true) (=> (= (decidable_refinement r2) true) (= (decidable_refinement (refine_conj r1 r2)) true))))) ; conj_decidable
 
 ; refine_subtype_antisym_eq (matches Coq: Theorem refine_subtype_antisym_eq)
-(assert (= true true)) ; refine_subtype_antisym_eq [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType)) (and (=> (=> (= (refine_subtype r1 r2) true) (=> (= (refine_subtype r2 r1) true) (forall ((n Bool)) (= (full_pred r1 n) true)))) (= (full_pred r2 n) true)) (=> (= (full_pred r2 n) true) (=> (= (refine_subtype r1 r2) true) (=> (= (refine_subtype r2 r1) true) (forall ((n Bool)) (= (full_pred r1 n) true)))))))) ; refine_subtype_antisym_eq
 
 ; eval_if_false (matches Coq: Theorem eval_if_false)
-(assert (= true true)) ; eval_if_false [untranslatable]
+(assert (forall ((et Bool) (ef Bool)) (= (eval (EIf (EConst 0) et ef)) (eval ef)))) ; eval_if_false
 
 ; eval_if_true (matches Coq: Theorem eval_if_true)
-(assert (= true true)) ; eval_if_true [untranslatable]
+(assert (forall ((n Bool) (et Bool) (ef Bool)) (=> (not (= n 0)) (= (eval (EIf (EConst n) et ef)) (eval et))))) ; eval_if_true
 
 ; conj_sub_both (matches Coq: Theorem conj_sub_both)
-(assert (= true true)) ; conj_sub_both [untranslatable]
+(assert (forall ((r1 RefinedType) (r2 RefinedType) (v Int)) (=> (= (full_check (refine_conj r1 r2) v) true) (and (= (full_check r1 v) true) (= (full_check r2 v) true))))) ; conj_sub_both
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -68,82 +68,83 @@
 (define-fun ticks_monotonic () Prop true)
 
 ; buy_priority_reflexive (matches Coq: Theorem buy_priority_reflexive)
-(assert (= true true)) ; buy_priority_reflexive [untranslatable]
+(assert (forall ((o Bool)) (= (buy_has_priority o o) true))) ; buy_priority_reflexive
 
 ; sell_priority_reflexive (matches Coq: Theorem sell_priority_reflexive)
-(assert (= true true)) ; sell_priority_reflexive [untranslatable]
+(assert (forall ((o Bool)) (= (sell_has_priority o o) true))) ; sell_priority_reflexive
 
 ; higher_price_buy_wins (matches Coq: Theorem higher_price_buy_wins)
-(assert (= true true)) ; higher_price_buy_wins [untranslatable]
+(assert (forall ((o1 Bool) (o2 Bool)) (=> (> (order_price o1) (order_price o2)) (= (buy_has_priority o1 o2) true)))) ; higher_price_buy_wins
 
 ; lower_price_sell_wins (matches Coq: Theorem lower_price_sell_wins)
-(assert (= true true)) ; lower_price_sell_wins [untranslatable]
+(assert (forall ((o1 Bool) (o2 Bool)) (=> (< (order_price o1) (order_price o2)) (= (sell_has_priority o1 o2) true)))) ; lower_price_sell_wins
 
 ; trade_always_balanced (matches Coq: Theorem trade_always_balanced)
-(assert (= true true)) ; trade_always_balanced [untranslatable]
+(assert (forall ((t Bool)) (= (trade_balanced t) true))) ; trade_always_balanced
 
 ; settlement_balanced_implies_equal_payment (matches Coq: Theorem settlement_balanced_implies_equal_payment)
-(assert (= true true)) ; settlement_balanced_implies_equal_payment [untranslatable]
+(assert (forall ((s Bool)) (=> (= (settlement_balanced s) true) (= (buyer_paid s) (seller_received s))))) ; settlement_balanced_implies_equal_payment
 
 ; settlement_complete_implies_balanced (matches Coq: Theorem settlement_complete_implies_balanced)
-(assert (= true true)) ; settlement_complete_implies_balanced [untranslatable]
+(assert (forall ((s Bool)) (=> (= (settlement_complete s) true) (= (buyer_paid s) (seller_received s))))) ; settlement_complete_implies_balanced
 
 ; match_only_when_price_crosses (matches Coq: Theorem match_only_when_price_crosses)
-(assert (= true true)) ; match_only_when_price_crosses [untranslatable]
+(assert (forall ((tid Bool) (buy Bool) (sell Bool) (t Bool)) (=> (= (execute_match tid buy sell) (some t)) (>= (order_price buy) (order_price sell))))) ; match_only_when_price_crosses
 
 ; no_match_when_price_gap (matches Coq: Theorem no_match_when_price_gap)
-(assert (= true true)) ; no_match_when_price_gap [untranslatable]
+(assert (forall ((tid Bool) (buy Bool) (sell Bool)) (=> (< (order_price buy) (order_price sell)) (= (execute_match tid buy sell) none)))) ; no_match_when_price_gap
 
 ; match_qty_bounded_by_buy (matches Coq: Theorem match_qty_bounded_by_buy)
-(assert (= true true)) ; match_qty_bounded_by_buy [untranslatable]
+(assert (forall ((buy Bool) (sell Bool)) (<= (match_qty buy sell) (order_qty buy)))) ; match_qty_bounded_by_buy
 
 ; match_qty_bounded_by_sell (matches Coq: Theorem match_qty_bounded_by_sell)
-(assert (= true true)) ; match_qty_bounded_by_sell [untranslatable]
+(assert (forall ((buy Bool) (sell Bool)) (<= (match_qty buy sell) (order_qty sell)))) ; match_qty_bounded_by_sell
 
 ; match_uses_sell_price (matches Coq: Theorem match_uses_sell_price)
-(assert (= true true)) ; match_uses_sell_price [untranslatable]
+(assert (forall ((tid Bool) (buy Bool) (sell Bool) (t Bool)) (=> (= (execute_match tid buy sell) (some t)) (= (trade_price t) (order_price sell))))) ; match_uses_sell_price
 
 ; empty_ticks_ordered (matches Coq: Theorem empty_ticks_ordered)
-(assert (= true true)) ; empty_ticks_ordered [untranslatable]
+(assert (= (ticks_ordered nil) true)) ; empty_ticks_ordered
 
 ; singleton_ticks_ordered (matches Coq: Theorem singleton_ticks_ordered)
-(assert (= true true)) ; singleton_ticks_ordered [untranslatable]
+(assert (forall ((t Bool)) (= (ticks_ordered (insert t nil)) true))) ; singleton_ticks_ordered
 
 ; ordered_ticks_head_smallest (matches Coq: Theorem ordered_ticks_head_smallest)
-(assert (= true true)) ; ordered_ticks_head_smallest [untranslatable]
+; ordered_ticks_head_smallest: forall t1 t2 rest, ticks_ordered (t1 :: t2 :: rest) -> tick_seq t1 < tick_seq t2
+(assert (forall ((t1 Bool) (t2 Bool) (rest Bool)) true)) ; ordered_ticks_head_smallest [partial: bindings preserved]
 
 ; trade_consideration_comm (matches Coq: Theorem trade_consideration_comm)
-(assert (= true true)) ; trade_consideration_comm [untranslatable]
+(assert (forall ((t Bool)) (= (trade_consideration t) (* (trade_qty t) (trade_price t))))) ; trade_consideration_comm
 
 ; trade_consideration_zero_qty (matches Coq: Theorem trade_consideration_zero_qty)
-(assert (= true true)) ; trade_consideration_zero_qty [untranslatable]
+(assert (forall ((t Bool)) (=> (= (trade_qty t) 0) (= (trade_consideration t) 0)))) ; trade_consideration_zero_qty
 
 ; trade_consideration_zero_price (matches Coq: Theorem trade_consideration_zero_price)
-(assert (= true true)) ; trade_consideration_zero_price [untranslatable]
+(assert (forall ((t Bool)) (=> (= (trade_price t) 0) (= (trade_consideration t) 0)))) ; trade_consideration_zero_price
 
 ; settlement_complete_implies_final (matches Coq: Theorem settlement_complete_implies_final)
-(assert (= true true)) ; settlement_complete_implies_final [untranslatable]
+(assert (forall ((s Bool)) (=> (= (settlement_complete s) true) (= (settle_final s) true)))) ; settlement_complete_implies_final
 
 ; settlement_complete_implies_assets (matches Coq: Theorem settlement_complete_implies_assets)
-(assert (= true true)) ; settlement_complete_implies_assets [untranslatable]
+(assert (forall ((s Bool)) (=> (= (settlement_complete s) true) (> (assets_delivered s) 0)))) ; settlement_complete_implies_assets
 
 ; orders_can_match_same_price (matches Coq: Theorem orders_can_match_same_price)
-(assert (= true true)) ; orders_can_match_same_price [untranslatable]
+(assert (forall ((buy Bool) (sell Bool)) (=> (= (order_price buy) (order_price sell)) (= (orders_can_match buy sell) true)))) ; orders_can_match_same_price
 
 ; match_qty_comm (matches Coq: Theorem match_qty_comm)
-(assert (= true true)) ; match_qty_comm [untranslatable]
+(assert (forall ((buy Bool) (sell Bool)) (= (match_qty buy sell) (match_qty sell buy)))) ; match_qty_comm
 
 ; match_qty_positive (matches Coq: Theorem match_qty_positive)
-(assert (= true true)) ; match_qty_positive [untranslatable]
+(assert (forall ((buy Bool) (sell Bool)) (=> (> (order_qty buy) 0) (=> (> (order_qty sell) 0) (> (match_qty buy sell) 0))))) ; match_qty_positive
 
 ; execute_match_preserves_ids (matches Coq: Theorem execute_match_preserves_ids)
-(assert (= true true)) ; execute_match_preserves_ids [untranslatable]
+(assert (forall ((tid Bool) (buy Bool) (sell Bool) (t Bool)) (=> (= (execute_match tid buy sell) (some t)) (and (= (trade_buy_id t) (order_id buy)) (= (trade_sell_id t) (order_id sell)))))) ; execute_match_preserves_ids
 
 ; execute_match_preserves_tid (matches Coq: Theorem execute_match_preserves_tid)
-(assert (= true true)) ; execute_match_preserves_tid [untranslatable]
+(assert (forall ((tid Bool) (buy Bool) (sell Bool) (t Bool)) (=> (= (execute_match tid buy sell) (some t)) (= (trade_id t) tid)))) ; execute_match_preserves_tid
 
 ; side_eqb_refl (matches Coq: Theorem side_eqb_refl)
-(assert (= true true)) ; side_eqb_refl [untranslatable]
+(assert (forall ((s Bool)) (= (side_eqb s s) true))) ; side_eqb_refl
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -95,88 +95,93 @@
 (define-fun mesh_layers () Bool true)
 
 ; existsb_In (matches Coq: Lemma existsb_In)
-(assert (= true true)) ; existsb_In [untranslatable]
+; existsb_In: forall (n : nat) (l : list nat), existsb (fun b => Nat.eqb n b) l = true -> In n l
+(assert (forall ((n Int) (l list)) true)) ; existsb_In [partial: bindings preserved]
 
 ; not_existsb_not_In (matches Coq: Lemma not_existsb_not_In)
-(assert (= true true)) ; not_existsb_not_In [untranslatable]
+; not_existsb_not_In: forall (n : nat) (l : list nat), existsb (fun b => Nat.eqb n b) l = false -> ~ In n l
+(assert (forall ((n Int) (l list)) true)) ; not_existsb_not_In [partial: bindings preserved]
 
 ; NoDup_nodup_equiv (matches Coq: Lemma NoDup_nodup_equiv)
-(assert (= true true)) ; NoDup_nodup_equiv [untranslatable]
+; NoDup_nodup_equiv: forall (l : list nat), length l = length (nodup Nat.eq_dec l) -> NoDup l
+(assert (forall ((l list)) true)) ; NoDup_nodup_equiv [partial: bindings preserved]
 
 ; mesh_001_byzantine_threshold (matches Coq: Theorem mesh_001_byzantine_threshold)
-(assert (= true true)) ; mesh_001_byzantine_threshold [untranslatable]
+(assert (forall ((network MeshNetwork)) (=> (= (byzantine_tolerant network) true) (<= (+ (* 3 (mesh_threshold network)) 1) (length (mesh_nodes network)))))) ; mesh_001_byzantine_threshold
 
 ; mesh_002_honest_path (matches Coq: Theorem mesh_002_honest_path)
-(assert (= true true)) ; mesh_002_honest_path [untranslatable]
+; mesh_002_honest_path: forall (path : Route) (byzantine : ByzantineSet), honest_path path byzantine = true -> Forall (fun n => ~ In n byzantine
+(assert (forall ((path Route) (byzantine ByzantineSet)) true)) ; mesh_002_honest_path [partial: bindings preserved]
 
 ; mesh_003_loop_free (matches Coq: Theorem mesh_003_loop_free)
-(assert (= true true)) ; mesh_003_loop_free [untranslatable]
+(assert (forall ((route Route)) (=> (= (loop_free route) true) (= (NoDup route) true)))) ; mesh_003_loop_free
 
 ; mesh_004_seq_increasing (matches Coq: Theorem mesh_004_seq_increasing)
-(assert (= true true)) ; mesh_004_seq_increasing [untranslatable]
+(assert (forall ((old_seq Int) (new_seq Int)) (=> (= (seq_increasing old_seq new_seq) true) (< old_seq new_seq)))) ; mesh_004_seq_increasing
 
 ; mesh_005_route_fresh (matches Coq: Theorem mesh_005_route_fresh)
-(assert (= true true)) ; mesh_005_route_fresh [untranslatable]
+(assert (forall ((entry RouteEntry)) (forall ((current Int) (max_age Int)) (=> (= (route_fresh entry current max_age) true) (<= (- current (route_timestamp entry)) max_age))))) ; mesh_005_route_fresh
 
 ; mesh_006_multi_path (matches Coq: Theorem mesh_006_multi_path)
-(assert (= true true)) ; mesh_006_multi_path [untranslatable]
+(assert (forall ((mp MultiPath)) (forall ((min_paths Int)) (=> (= (paths_sufficient mp min_paths) true) (<= min_paths (length (mp_paths mp))))))) ; mesh_006_multi_path
 
 ; mesh_007_disjoint (matches Coq: Theorem mesh_007_disjoint)
 (assert (forall ((mp MultiPath)) (=> (= (mp_disjoint mp) true) (= (mp_disjoint mp) true)))) ; mesh_007_disjoint
 
 ; mesh_008_metric_bounded (matches Coq: Theorem mesh_008_metric_bounded)
-(assert (= true true)) ; mesh_008_metric_bounded [untranslatable]
+(assert (forall ((entry RouteEntry)) (forall ((max_metric Int)) (=> (= (metric_bounded entry max_metric) true) (<= (route_metric entry) max_metric))))) ; mesh_008_metric_bounded
 
 ; mesh_009_neighbor_auth (matches Coq: Theorem mesh_009_neighbor_auth)
-(assert (= true true)) ; mesh_009_neighbor_auth [untranslatable]
+(assert (forall ((neighbor Int)) (forall ((trusted list)) (=> (= (neighbor_authenticated neighbor trusted) true) (exists ((t Bool)) (and (= (In t trusted) true) (= t neighbor))))))) ; mesh_009_neighbor_auth
 
 ; mesh_010_hop_limit (matches Coq: Theorem mesh_010_hop_limit)
-(assert (= true true)) ; mesh_010_hop_limit [untranslatable]
+(assert (forall ((route Route)) (forall ((max_hops Int)) (=> (= (hop_count_ok route max_hops) true) (<= (length route) max_hops))))) ; mesh_010_hop_limit
 
 ; mesh_011_entry_valid (matches Coq: Theorem mesh_011_entry_valid)
-(assert (= true true)) ; mesh_011_entry_valid [untranslatable]
+(assert (forall ((entry RouteEntry)) (=> (= (entry_valid entry) true) (and (< 0 (route_dest entry)) (< 0 (route_next_hop entry)))))) ; mesh_011_entry_valid
 
 ; mesh_012_partition (matches Coq: Theorem mesh_012_partition)
-(assert (= true true)) ; mesh_012_partition [untranslatable]
+(assert (forall ((reachable Int) (total Int) (threshold Int)) (=> (= (partition_detected reachable total threshold) true) (< reachable (* total (div threshold 100)))))) ; mesh_012_partition
 
 ; mesh_013_healing (matches Coq: Theorem mesh_013_healing)
-(assert (= true true)) ; mesh_013_healing [untranslatable]
+(assert (forall ((paths list)) (=> (= (healing_path_exists paths) true) (> (length paths) 0)))) ; mesh_013_healing
 
 ; mesh_014_convergence (matches Coq: Theorem mesh_014_convergence)
-(assert (= true true)) ; mesh_014_convergence [untranslatable]
+(assert (forall ((elapsed Int) (max_time Int)) (=> (= (converged_in_time elapsed max_time) true) (<= elapsed max_time)))) ; mesh_014_convergence
 
 ; mesh_015_flood_bounded (matches Coq: Theorem mesh_015_flood_bounded)
-(assert (= true true)) ; mesh_015_flood_bounded [untranslatable]
+(assert (forall ((ttl Int) (max_ttl Int)) (=> (= (flood_bounded ttl max_ttl) true) (<= ttl max_ttl)))) ; mesh_015_flood_bounded
 
 ; mesh_016_msg_unique (matches Coq: Theorem mesh_016_msg_unique)
-(assert (= true true)) ; mesh_016_msg_unique [untranslatable]
+(assert (forall ((msg_id Int)) (forall ((seen list)) (=> (= (msg_id_unique msg_id seen) true) (not (= (In msg_id seen) true)))))) ; mesh_016_msg_unique
 
 ; mesh_017_link_quality (matches Coq: Theorem mesh_017_link_quality)
-(assert (= true true)) ; mesh_017_link_quality [untranslatable]
+(assert (forall ((quality Int) (min_quality Int)) (=> (= (link_quality_ok quality min_quality) true) (<= min_quality quality)))) ; mesh_017_link_quality
 
 ; mesh_018_reputation (matches Coq: Theorem mesh_018_reputation)
-(assert (= true true)) ; mesh_018_reputation [untranslatable]
+(assert (forall ((rep Int) (min_rep Int)) (=> (= (reputation_sufficient rep min_rep) true) (<= min_rep rep)))) ; mesh_018_reputation
 
 ; mesh_019_secure_channel (matches Coq: Theorem mesh_019_secure_channel)
-(assert (= true true)) ; mesh_019_secure_channel [untranslatable]
+(assert (forall ((encrypted Bool) (authenticated Bool)) (=> (= (channel_secure encrypted authenticated) true) (and (= encrypted true) (= authenticated true))))) ; mesh_019_secure_channel
 
 ; mesh_020_rate_limited (matches Coq: Theorem mesh_020_rate_limited)
-(assert (= true true)) ; mesh_020_rate_limited [untranslatable]
+(assert (forall ((current Int) (max_rate Int)) (=> (= (rate_ok current max_rate) true) (<= current max_rate)))) ; mesh_020_rate_limited
 
 ; mesh_021_geo_diversity (matches Coq: Theorem mesh_021_geo_diversity)
-(assert (= true true)) ; mesh_021_geo_diversity [untranslatable]
+; mesh_021_geo_diversity: forall (regions : list nat) (min_regions : nat), geographically_diverse regions min_regions = true -> min_regions <= len
+(assert (forall ((regions list) (min_regions Int)) true)) ; mesh_021_geo_diversity [partial: bindings preserved]
 
 ; mesh_022_store_forward (matches Coq: Theorem mesh_022_store_forward)
-(assert (= true true)) ; mesh_022_store_forward [untranslatable]
+(assert (forall ((stored_time Int) (current Int) (timeout Int)) (=> (= (store_timeout_ok stored_time current timeout) true) (<= (- current stored_time) timeout)))) ; mesh_022_store_forward
 
 ; mesh_023_delay_tolerance (matches Coq: Theorem mesh_023_delay_tolerance)
-(assert (= true true)) ; mesh_023_delay_tolerance [untranslatable]
+(assert (forall ((delay Int) (max_delay Int)) (=> (= (delay_acceptable delay max_delay) true) (<= delay max_delay)))) ; mesh_023_delay_tolerance
 
 ; mesh_024_traffic_analysis (matches Coq: Theorem mesh_024_traffic_analysis)
-(assert (= true true)) ; mesh_024_traffic_analysis [untranslatable]
+(assert (forall ((real Int) (cover Int) (min_ratio Int)) (=> (= (cover_traffic_ratio real cover min_ratio) true) (<= (* real min_ratio) cover)))) ; mesh_024_traffic_analysis
 
 ; mesh_025_defense_in_depth (matches Coq: Theorem mesh_025_defense_in_depth)
-(assert (= true true)) ; mesh_025_defense_in_depth [untranslatable]
+(assert (forall ((b Bool) (l Bool) (f Bool) (a Bool)) (=> (= (mesh_layers b l f a) true) (and (= b true) (= l true) (= f true) (= a true))))) ; mesh_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

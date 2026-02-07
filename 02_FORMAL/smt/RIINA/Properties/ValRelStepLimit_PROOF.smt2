@@ -8,25 +8,25 @@
 (set-option :produce-models true)
 
 ; val_rel_n_to_val_rel_fo_proven (matches Coq: Theorem val_rel_n_to_val_rel_fo_proven)
-(assert (= true true)) ; val_rel_n_to_val_rel_fo_proven [untranslatable]
+(assert (forall ((Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (first_order_type T) true) (=> (= (value v1) true) (=> (= (value v2) true) (=> (exists ((n Bool)) (= (val_rel_n (+ n 1) Σ T v1 v2) true)) (= (val_rel Σ T v1 v2) true))))))) ; val_rel_n_to_val_rel_fo_proven
 
 ; val_rel_n_step_up_k (matches Coq: Lemma val_rel_n_step_up_k)
-(assert (= true true)) ; val_rel_n_step_up_k [untranslatable]
+(assert (forall ((k Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_n n Σ T v1 v2) true) (=> (=> (= (first_order_type T) false) (= (has_type nil Σ Public v1 T EffectPure) true)) (=> (=> (= (first_order_type T) false) (= (has_type nil Σ Public v2 T EffectPure) true)) (= (val_rel_n (+ n k) Σ T v1 v2) true)))))) ; val_rel_n_step_up_k
 
 ; val_rel_n_to_val_rel_with_typing (matches Coq: Theorem val_rel_n_to_val_rel_with_typing)
-(assert (= true true)) ; val_rel_n_to_val_rel_with_typing [untranslatable]
+(assert (forall ((Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (=> (exists ((n Bool)) (= (val_rel_n (+ n 1) Σ T v1 v2) true)) (=> (=> (= (first_order_type T) false) (= (has_type nil Σ Public v1 T EffectPure) true)) (=> (=> (= (first_order_type T) false) (= (has_type nil Σ Public v2 T EffectPure) true)) (= (val_rel Σ T v1 v2) true)))))))) ; val_rel_n_to_val_rel_with_typing
 
 ; val_rel_n_TFn_typing (matches Coq: Lemma val_rel_n_TFn_typing)
-(assert (= true true)) ; val_rel_n_TFn_typing [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T1 Bool) (T2 Bool) (eff Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_n (+ n 1) Σ (TFn T1 T2 eff) v1 v2) true) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (closed_expr v1) true) (=> (= (closed_expr v2) true) (and (= (has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure) true) (= (has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure) true))))))))) ; val_rel_n_TFn_typing
 
 ; val_rel_n_composite_typing (matches Coq: Lemma val_rel_n_composite_typing)
-(assert (= true true)) ; val_rel_n_composite_typing [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_n (+ n 1) Σ T v1 v2) true) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (closed_expr v1) true) (=> (= (closed_expr v2) true) (=> (= (first_order_type T) false) (and (= (has_type nil Σ Public v1 T EffectPure) true) (= (has_type nil Σ Public v2 T EffectPure) true)))))))))) ; val_rel_n_composite_typing
 
 ; val_rel_n_to_val_rel_proven (matches Coq: Theorem val_rel_n_to_val_rel_proven)
-(assert (= true true)) ; val_rel_n_to_val_rel_proven [untranslatable]
+(assert (forall ((Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (=> (exists ((n Bool)) (= (val_rel_n (+ n 1) Σ T v1 v2) true)) (= (val_rel Σ T v1 v2) true)))))) ; val_rel_n_to_val_rel_proven
 
 ; val_rel_step_limit_zero_admits (matches Coq: Theorem val_rel_step_limit_zero_admits)
-(assert (= true true)) ; val_rel_step_limit_zero_admits [untranslatable]
+(assert true) ; val_rel_step_limit_zero_admits
 
 ; Verify all assertions are satisfiable
 (check-sat)

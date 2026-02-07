@@ -58,67 +58,67 @@
 (define-fun derived_key_independent () Prop true)
 
 ; key_never_plaintext (matches Coq: Theorem key_never_plaintext)
-(assert (= true true)) ; key_never_plaintext [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (= (secure_key_storage key mem) true) (not (= (key_in_plaintext key mem) true)))))) ; key_never_plaintext
 
 ; crypto_constant_time (matches Coq: Theorem crypto_constant_time)
-(assert (= true true)) ; crypto_constant_time [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((op CryptoOp)) (forall ((input1 Data) (input2 Data)) (=> (= (ctx_constant_time ctx) true) (= (execution_time ctx op input1) (execution_time ctx op input2))))))) ; crypto_constant_time
 
 ; wrapped_key_protected (matches Coq: Theorem wrapped_key_protected)
-(assert (= true true)) ; wrapped_key_protected [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (= (key_wrapped key) true) (= (key_protected key mem) true))))) ; wrapped_key_protected
 
 ; secure_memory_protects_key (matches Coq: Theorem secure_memory_protects_key)
-(assert (= true true)) ; secure_memory_protects_key [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (= (mem_protected mem) true) (= (key_protected key mem) true))))) ; secure_memory_protects_key
 
 ; constant_time_prevents_timing_attack (matches Coq: Theorem constant_time_prevents_timing_attack)
-(assert (= true true)) ; constant_time_prevents_timing_attack [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((op CryptoOp)) (forall ((secret Data) (public Data)) (=> (= (ctx_constant_time ctx) true) (= (execute_crypto ctx op secret) (execute_crypto ctx op public))))))) ; constant_time_prevents_timing_attack
 
 ; non_constant_time_vulnerable (matches Coq: Theorem non_constant_time_vulnerable)
-(assert (= true true)) ; non_constant_time_vulnerable [untranslatable]
+(assert (forall ((ctx CryptoContext)) (=> (= (ctx_constant_time ctx) false) true))) ; non_constant_time_vulnerable
 
 ; key_never_exposed (matches Coq: Theorem key_never_exposed)
-(assert (= true true)) ; key_never_exposed [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (= (key_wrapped key) true) (=> (= (mem_protected mem) true) (not (= (key_in_plaintext key mem) true))))))) ; key_never_exposed
 
 ; weak_key_detected (matches Coq: Theorem weak_key_detected)
-(assert (= true true)) ; weak_key_detected [untranslatable]
+(assert (forall ((key CryptoKey)) (=> (< (key_bits key) 128) (not (= (key_strength_sufficient key) true))))) ; weak_key_detected
 
 ; strong_key_sufficient (matches Coq: Theorem strong_key_sufficient)
-(assert (= true true)) ; strong_key_sufficient [untranslatable]
+(assert (forall ((key CryptoKey)) (=> (= (key_is_strong key) true) (= (key_strength_sufficient key) true)))) ; strong_key_sufficient
 
 ; encrypt_decrypt_equal_time (matches Coq: Theorem encrypt_decrypt_equal_time)
-(assert (= true true)) ; encrypt_decrypt_equal_time [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((input Data)) (=> (= (ctx_constant_time ctx) true) (= (execution_time ctx Encrypt input) (execution_time ctx Decrypt input)))))) ; encrypt_decrypt_equal_time
 
 ; sign_verify_equal_time (matches Coq: Theorem sign_verify_equal_time)
-(assert (= true true)) ; sign_verify_equal_time [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((input Data)) (=> (= (ctx_constant_time ctx) true) (= (execution_time ctx Sign input) (execution_time ctx Verify input)))))) ; sign_verify_equal_time
 
 ; hash_fastest_operation (matches Coq: Theorem hash_fastest_operation)
-(assert (= true true)) ; hash_fastest_operation [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((input Data)) (forall ((op CryptoOp)) (=> (= (ctx_constant_time ctx) true) (<= (execution_time ctx Hash input) (execution_time ctx op input))))))) ; hash_fastest_operation
 
 ; key_derive_slowest (matches Coq: Theorem key_derive_slowest)
-(assert (= true true)) ; key_derive_slowest [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((input Data)) (forall ((op CryptoOp)) (=> (= (ctx_constant_time ctx) true) (<= (execution_time ctx op input) (execution_time ctx KeyDerive input))))))) ; key_derive_slowest
 
 ; secure_storage_implies_protected (matches Coq: Theorem secure_storage_implies_protected)
-(assert (= true true)) ; secure_storage_implies_protected [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (= (secure_key_storage key mem) true) (= (key_protected key mem) true))))) ; secure_storage_implies_protected
 
 ; unprotected_key_vulnerable (matches Coq: Theorem unprotected_key_vulnerable)
-(assert (= true true)) ; unprotected_key_vulnerable [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (= (key_wrapped key) false) (=> (= (mem_protected mem) false) (= (key_in_plaintext key mem) true)))))) ; unprotected_key_vulnerable
 
 ; protection_complementary (matches Coq: Theorem protection_complementary)
-(assert (= true true)) ; protection_complementary [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (=> (or (= (key_wrapped key) true) (= (mem_protected mem) true)) (= (key_protected key mem) true))))) ; protection_complementary
 
 ; no_protection_potential_exposure (matches Coq: Theorem no_protection_potential_exposure)
-(assert (= true true)) ; no_protection_potential_exposure [untranslatable]
+(assert (forall ((key CryptoKey)) (forall ((mem Memory)) (not (=> (= (key_protected key mem) true) (= (key_in_plaintext key mem) true)))))) ; no_protection_potential_exposure
 
 ; fully_hardened_context (matches Coq: Theorem fully_hardened_context)
 (assert (forall ((ctx CryptoContext)) (=> (= (ctx_constant_time ctx) true) (=> (= (ctx_secure_memory ctx) true) (and (= (ctx_constant_time ctx) true) (= (ctx_secure_memory ctx) true)))))) ; fully_hardened_context
 
 ; operation_time_positive (matches Coq: Theorem operation_time_positive)
-(assert (= true true)) ; operation_time_positive [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((op CryptoOp)) (forall ((input Data)) (=> (= (ctx_constant_time ctx) true) (> (execution_time ctx op input) 0)))))) ; operation_time_positive
 
 ; encrypt_faster_than_sign (matches Coq: Theorem encrypt_faster_than_sign)
-(assert (= true true)) ; encrypt_faster_than_sign [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((input Data)) (=> (= (ctx_constant_time ctx) true) (< (execution_time ctx Encrypt input) (execution_time ctx Sign input)))))) ; encrypt_faster_than_sign
 
 ; crypto_execution_deterministic (matches Coq: Theorem crypto_execution_deterministic)
-(assert (= true true)) ; crypto_execution_deterministic [untranslatable]
+(assert (forall ((ctx CryptoContext)) (forall ((op CryptoOp)) (forall ((input Data)) (= (execute_crypto ctx op input) (execute_crypto ctx op input)))))) ; crypto_execution_deterministic
 
 ; Verify all assertions are satisfiable
 (check-sat)

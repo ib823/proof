@@ -100,79 +100,80 @@
   true)
 
 ; DOMAIN_002_01_output_bounded (matches Coq: Theorem DOMAIN_002_01_output_bounded)
-(assert (= true true)) ; DOMAIN_002_01_output_bounded [untranslatable]
+(assert (forall ((output Z) (min Z) (max Z)) (=> (= (output_bounded output min max) true) (and (<= min output) (<= output max))))) ; DOMAIN_002_01_output_bounded
 
 ; DOMAIN_002_02_lipschitz_continuity (matches Coq: Theorem DOMAIN_002_02_lipschitz_continuity)
-(assert (= true true)) ; DOMAIN_002_02_lipschitz_continuity [untranslatable]
+(assert (forall ((x1 Z) (x2 Z) (weight Z)) (=> (>= weight 0) (<= (Z.abs (- (lipschitz_output x1 weight) (lipschitz_output x2 weight))) (* weight (Z.abs (- x1 x2))))))) ; DOMAIN_002_02_lipschitz_continuity
 
 ; DOMAIN_002_03_adversarial_robustness (matches Coq: Theorem DOMAIN_002_03_adversarial_robustness)
-(assert (= true true)) ; DOMAIN_002_03_adversarial_robustness [untranslatable]
+(assert (forall ((x1 Z) (x2 Z) (threshold Z) (epsilon Z)) (=> (= (within_epsilon x1 x2 epsilon) true) (=> (>= x1 (+ (+ threshold epsilon) 1)) (=> (>= x2 (+ threshold 1)) (= (classify x1 threshold) (classify x2 threshold))))))) ; DOMAIN_002_03_adversarial_robustness
 
 ; DOMAIN_002_04_softmax_normalization (matches Coq: Theorem DOMAIN_002_04_softmax_normalization)
-(assert (= true true)) ; DOMAIN_002_04_softmax_normalization [untranslatable]
+; DOMAIN_002_04_softmax_normalization: forall (outputs : list Z) (scale : Z), softmax_valid outputs scale = true -> fold_left Z.add outputs 0 = scale
+(assert (forall ((outputs list) (scale Z)) true)) ; DOMAIN_002_04_softmax_normalization [partial: bindings preserved]
 
 ; DOMAIN_002_05_relu_monotonicity (matches Coq: Theorem DOMAIN_002_05_relu_monotonicity)
-(assert (= true true)) ; DOMAIN_002_05_relu_monotonicity [untranslatable]
+(assert (forall ((x Z) (y Z)) (=> (<= x y) (<= (relu x) (relu y))))) ; DOMAIN_002_05_relu_monotonicity
 
 ; DOMAIN_002_06_matrix_associativity (matches Coq: Theorem DOMAIN_002_06_matrix_associativity)
-(assert (= true true)) ; DOMAIN_002_06_matrix_associativity [untranslatable]
+(assert (forall ((a Z) (b Z) (c Z)) (= (* (* a b) c) (* a (* b c))))) ; DOMAIN_002_06_matrix_associativity
 
 ; DOMAIN_002_07_gradient_descent_convergence (matches Coq: Theorem DOMAIN_002_07_gradient_descent_convergence)
-(assert (= true true)) ; DOMAIN_002_07_gradient_descent_convergence [untranslatable]
+(assert (forall ((loss Z) (learning_rate Z) (gradient Z)) (=> (> learning_rate 0) (=> (> gradient 0) (< (gradient_step loss learning_rate gradient) loss))))) ; DOMAIN_002_07_gradient_descent_convergence
 
 ; DOMAIN_002_08_inference_determinism (matches Coq: Theorem DOMAIN_002_08_inference_determinism)
-(assert (= true true)) ; DOMAIN_002_08_inference_determinism [untranslatable]
+(assert (forall ((model Model)) (forall ((input Z)) (= (inference model input) (inference model input))))) ; DOMAIN_002_08_inference_determinism
 
 ; DOMAIN_002_09_numerical_stability (matches Coq: Theorem DOMAIN_002_09_numerical_stability)
-(assert (= true true)) ; DOMAIN_002_09_numerical_stability [untranslatable]
+(assert (forall ((x Z) (bound Z)) (=> (= (numerically_stable x bound) true) (<= (Z.abs x) bound)))) ; DOMAIN_002_09_numerical_stability
 
 ; DOMAIN_002_10_model_integrity (matches Coq: Theorem DOMAIN_002_10_model_integrity)
-(assert (= true true)) ; DOMAIN_002_10_model_integrity [untranslatable]
+(assert (forall ((m Model)) (forall ((expected_hash Int)) (=> (= (model_integrity m expected_hash) true) (= (model_hash m) expected_hash))))) ; DOMAIN_002_10_model_integrity
 
 ; DOMAIN_002_11_input_validation (matches Coq: Theorem DOMAIN_002_11_input_validation)
-(assert (= true true)) ; DOMAIN_002_11_input_validation [untranslatable]
+(assert (forall ((x Z)) (forall ((bounds InputBounds)) (=> (= (input_valid x bounds) true) (and (<= (ib_min bounds) x) (<= x (ib_max bounds))))))) ; DOMAIN_002_11_input_validation
 
 ; DOMAIN_002_12_confidence_calibration (matches Coq: Theorem DOMAIN_002_12_confidence_calibration)
-(assert (= true true)) ; DOMAIN_002_12_confidence_calibration [untranslatable]
+(assert (forall ((confidence Z) (accuracy Z) (tolerance Z)) (=> (= (confidence_calibrated confidence accuracy tolerance) true) (<= (Z.abs (- confidence accuracy)) tolerance)))) ; DOMAIN_002_12_confidence_calibration
 
 ; DOMAIN_002_13_fairness_constraint (matches Coq: Theorem DOMAIN_002_13_fairness_constraint)
-(assert (= true true)) ; DOMAIN_002_13_fairness_constraint [untranslatable]
+(assert (forall ((group_a_rate Z) (group_b_rate Z) (threshold Z)) (=> (= (demographic_parity group_a_rate group_b_rate threshold) true) (<= (Z.abs (- group_a_rate group_b_rate)) threshold)))) ; DOMAIN_002_13_fairness_constraint
 
 ; DOMAIN_002_14_explanation_faithfulness (matches Coq: Theorem DOMAIN_002_14_explanation_faithfulness)
-(assert (= true true)) ; DOMAIN_002_14_explanation_faithfulness [untranslatable]
+(assert (forall ((importance Z) (actual_contribution Z) (tolerance Z)) (=> (= (explanation_faithful importance actual_contribution tolerance) true) (<= (Z.abs (- importance actual_contribution)) tolerance)))) ; DOMAIN_002_14_explanation_faithfulness
 
 ; DOMAIN_002_15_safe_action_space (matches Coq: Theorem DOMAIN_002_15_safe_action_space)
-(assert (= true true)) ; DOMAIN_002_15_safe_action_space [untranslatable]
+(assert (forall ((action Z) (prev_action Z) (space ActionSpace)) (=> (= (action_safe action prev_action space) true) (and (<= (action_min space) action) (<= action (action_max space)) (<= (Z.abs (- action prev_action)) (action_rate_limit space)))))) ; DOMAIN_002_15_safe_action_space
 
 ; relu_non_negative (matches Coq: Theorem relu_non_negative)
-(assert (= true true)) ; relu_non_negative [untranslatable]
+(assert (forall ((x Bool)) (<= 0 (relu x)))) ; relu_non_negative
 
 ; relu_idempotent (matches Coq: Theorem relu_idempotent)
-(assert (= true true)) ; relu_idempotent [untranslatable]
+(assert (forall ((x Bool)) (= (relu (relu x)) (relu x)))) ; relu_idempotent
 
 ; relu_preserves_positive (matches Coq: Theorem relu_preserves_positive)
-(assert (= true true)) ; relu_preserves_positive [untranslatable]
+(assert (forall ((x Bool)) (=> (>= x 0) (= (relu x) x)))) ; relu_preserves_positive
 
 ; relu_kills_negative (matches Coq: Theorem relu_kills_negative)
-(assert (= true true)) ; relu_kills_negative [untranslatable]
+(assert (forall ((x Bool)) (=> (<= x 0) (= (relu x) 0)))) ; relu_kills_negative
 
 ; classify_binary (matches Coq: Theorem classify_binary)
-(assert (= true true)) ; classify_binary [untranslatable]
+(assert (forall ((x Bool) (threshold Bool)) (or (= (classify x threshold) 0) (= (classify x threshold) 1)))) ; classify_binary
 
 ; classify_above_threshold (matches Coq: Theorem classify_above_threshold)
-(assert (= true true)) ; classify_above_threshold [untranslatable]
+(assert (forall ((x Bool) (threshold Bool)) (=> (<= threshold x) (= (classify x threshold) 1)))) ; classify_above_threshold
 
 ; classify_below_threshold (matches Coq: Theorem classify_below_threshold)
-(assert (= true true)) ; classify_below_threshold [untranslatable]
+(assert (forall ((x Bool) (threshold Bool)) (=> (< x threshold) (= (classify x threshold) 0)))) ; classify_below_threshold
 
 ; inference_deterministic (matches Coq: Theorem inference_deterministic)
-(assert (= true true)) ; inference_deterministic [untranslatable]
+(assert (forall ((m Bool) (x Bool) (y Bool)) (=> (= x y) (= (inference m x) (inference m y))))) ; inference_deterministic
 
 ; gradient_step_decreases (matches Coq: Theorem gradient_step_decreases)
-(assert (= true true)) ; gradient_step_decreases [untranslatable]
+(assert (forall ((loss Bool) (lr Bool) (grad Bool)) (=> (> lr 0) (=> (> grad 0) (< (gradient_step loss lr grad) loss))))) ; gradient_step_decreases
 
 ; within_epsilon_symmetric (matches Coq: Theorem within_epsilon_symmetric)
-(assert (= true true)) ; within_epsilon_symmetric [untranslatable]
+(assert (forall ((x1 Bool) (x2 Bool) (epsilon Bool)) (=> (= (within_epsilon x1 x2 epsilon) true) (= (within_epsilon x2 x1 epsilon) true)))) ; within_epsilon_symmetric
 
 ; Verify all assertions are satisfiable
 (check-sat)

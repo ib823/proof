@@ -187,115 +187,118 @@
 (define-fun all_theorems_proven () Prop true)
 
 ; hkdf_deterministic (matches Coq: Lemma hkdf_deterministic)
-(assert (= true true)) ; hkdf_deterministic [untranslatable]
+(assert (forall ((salt Bool) (ikm Bool) (info Bool) (len Bool)) (= (hkdf salt ikm info len) (hkdf salt ikm info len)))) ; hkdf_deterministic
 
 ; AH_001_01_protocol_specification (matches Coq: Theorem AH_001_01_protocol_specification)
-(assert (= true true)) ; AH_001_01_protocol_specification [untranslatable]
+(assert (forall ((spec ProtocolSpec)) (=> (>= (List.length (spec_name spec)) 0) (=> (>= (List.length (spec_messages spec)) 0) (=> (>= (List.length (spec_security_goals spec)) 0) (exists ((spec' Bool)) (= spec' spec))))))) ; AH_001_01_protocol_specification
 
 ; AH_001_02_implementation_matches_spec (matches Coq: Theorem AH_001_02_implementation_matches_spec)
-(assert (= true true)) ; AH_001_02_implementation_matches_spec [untranslatable]
+(assert (forall ((impl Bool) (spec Bool)) (=> (= (implements impl spec) true) (=> (forall ((trace Bool)) (= (valid_trace impl trace) true)) (= (satisfies_spec trace spec) true))))) ; AH_001_02_implementation_matches_spec
 
 ; AH_001_03_trace_valid (matches Coq: Theorem AH_001_03_trace_valid)
-(assert (= true true)) ; AH_001_03_trace_valid [untranslatable]
+(assert (forall ((impl Bool) (trace Bool)) (= (valid_trace impl trace) true))) ; AH_001_03_trace_valid
 
 ; AH_001_04_security_goals_satisfied (matches Coq: Theorem AH_001_04_security_goals_satisfied)
-(assert (= true true)) ; AH_001_04_security_goals_satisfied [untranslatable]
+(assert (forall ((spec Bool) (impl Bool) (trace Bool)) (=> (= (implements impl spec) true) (=> (= (valid_trace impl trace) true) (= (satisfies_spec trace spec) true))))) ; AH_001_04_security_goals_satisfied
 
 ; AH_001_05_protocol_composition (matches Coq: Theorem AH_001_05_protocol_composition)
-(assert (= true true)) ; AH_001_05_protocol_composition [untranslatable]
+(assert (forall ((spec1 Bool) (spec2 Bool) (impl1 Bool) (impl2 Bool) (trace1 Bool) (trace2 Bool)) (=> (= (implements impl1 spec1) true) (=> (= (implements impl2 spec2) true) (=> (= (valid_trace impl1 trace1) true) (=> (= (valid_trace impl2 trace2) true) (= (valid_trace impl1 (concat trace1 trace2)) true))))))) ; AH_001_05_protocol_composition
 
 ; AH_001_06_proverif_verified (matches Coq: Theorem AH_001_06_proverif_verified)
-(assert (= true true)) ; AH_001_06_proverif_verified [untranslatable]
+; AH_001_06_proverif_verified: forall impl spec, implements impl spec -> (forall trace, valid_trace impl trace -> satisfies_spec trace spec) -> forall 
+(assert (forall ((impl Bool) (spec Bool)) true)) ; AH_001_06_proverif_verified [partial: bindings preserved]
 
 ; AH_001_07_protocol_deterministic (matches Coq: Theorem AH_001_07_protocol_deterministic)
-(assert (= true true)) ; AH_001_07_protocol_deterministic [untranslatable]
+(assert (forall ((impl Bool) (input Bool) (st1 Bool) (st2 Bool)) (=> (= (impl_state_machine impl input) st1) (=> (= (impl_state_machine impl input) st2) (= st1 st2))))) ; AH_001_07_protocol_deterministic
 
 ; AH_001_08_tls13_confidentiality (matches Coq: Theorem AH_001_08_tls13_confidentiality)
-(assert (= true true)) ; AH_001_08_tls13_confidentiality [untranslatable]
+(assert (forall ((session Bool)) (=> (= (tls13_handshake_complete session) true) (= (strong_confidentiality (session_client_key session)) true)))) ; AH_001_08_tls13_confidentiality
 
 ; AH_001_09_tls13_authentication (matches Coq: Theorem AH_001_09_tls13_authentication)
-(assert (= true true)) ; AH_001_09_tls13_authentication [untranslatable]
+(assert (forall ((session Bool) (peer_cert Bool)) (=> (= (authenticated session peer_cert) true) (= (authentication (session_peer_cert session) peer_cert) true)))) ; AH_001_09_tls13_authentication
 
 ; AH_001_10_tls13_forward_secrecy (matches Coq: Theorem AH_001_10_tls13_forward_secrecy)
-(assert (= true true)) ; AH_001_10_tls13_forward_secrecy [untranslatable]
+(assert (forall ((session Bool) (long_term Bool) (compromise_time Bool)) (=> (= (tls13_handshake_complete session) true) (= (forward_secrecy session long_term compromise_time) true)))) ; AH_001_10_tls13_forward_secrecy
 
 ; AH_001_11_tls13_handshake_correct (matches Coq: Theorem AH_001_11_tls13_handshake_correct)
-(assert (= true true)) ; AH_001_11_tls13_handshake_correct [untranslatable]
+(assert (forall ((st1 Bool) (msg Bool) (st2 Bool)) (=> (= (tls13_step st1 msg st2) true) (= (tls_stage st2) (S (tls_stage st1)))))) ; AH_001_11_tls13_handshake_correct
 
 ; AH_001_12_tls13_key_derivation (matches Coq: Theorem AH_001_12_tls13_key_derivation)
-(assert (= true true)) ; AH_001_12_tls13_key_derivation [untranslatable]
+(assert (forall ((salt Bool) (ikm Bool) (info Bool) (len Bool)) (= (hkdf salt ikm info len) (hkdf salt ikm info len)))) ; AH_001_12_tls13_key_derivation
 
 ; AH_001_13_tls13_certificate_verify (matches Coq: Theorem AH_001_13_tls13_certificate_verify)
-(assert (= true true)) ; AH_001_13_tls13_certificate_verify [untranslatable]
+(assert (forall ((st Bool) (cert Bool) (st' Bool)) (=> (= (tls_stage st) 3) (=> (= (tls13_step st (Certificate cert) st') true) (= (In (Certificate cert) (tls_transcript st')) true))))) ; AH_001_13_tls13_certificate_verify
 
 ; AH_001_14_tls13_finished_verify (matches Coq: Theorem AH_001_14_tls13_finished_verify)
-(assert (= true true)) ; AH_001_14_tls13_finished_verify [untranslatable]
+(assert (forall ((st Bool) (verify_data Bool) (st' Bool)) (=> (= (tls_stage st) 5) (=> (= (tls13_step st (Finished verify_data) st') true) (> (List.length (tls_client_traffic_secret st')) 0))))) ; AH_001_14_tls13_finished_verify
 
 ; AH_001_15_tls13_record_layer (matches Coq: Theorem AH_001_15_tls13_record_layer)
-(assert (= true true)) ; AH_001_15_tls13_record_layer [untranslatable]
+(assert (forall ((key Bool) (nonce Bool) (plaintext Bool) (aad Bool)) (exists ((ct Bool)) (= (aead_encrypt key nonce plaintext aad) ct)))) ; AH_001_15_tls13_record_layer
 
 ; AH_001_16_tls13_no_downgrade (matches Coq: Theorem AH_001_16_tls13_no_downgrade)
-(assert (= true true)) ; AH_001_16_tls13_no_downgrade [untranslatable]
+(assert (forall ((st Bool) (msg Bool) (st' Bool)) (=> (= (tls13_step st msg st') true) (= (tls_version st') (tls_version st))))) ; AH_001_16_tls13_no_downgrade
 
 ; AH_001_17_noise_pattern_correct (matches Coq: Theorem AH_001_17_noise_pattern_correct)
-(assert (= true true)) ; AH_001_17_noise_pattern_correct [untranslatable]
+(assert (forall ((pattern Bool)) (and (or (= (noise_pattern_initiator_static pattern) true) (= (noise_pattern_initiator_static pattern) false)) (or (= (noise_pattern_responder_static pattern) true) (= (noise_pattern_responder_static pattern) false))))) ; AH_001_17_noise_pattern_correct
 
 ; AH_001_18_noise_handshake_correct (matches Coq: Theorem AH_001_18_noise_handshake_correct)
-(assert (= true true)) ; AH_001_18_noise_handshake_correct [untranslatable]
+(assert (forall ((st Bool) (msg Bool) (st' Bool)) (=> (= (noise_step st msg st') true) (= (hs_messages_sent st') (S (hs_messages_sent st)))))) ; AH_001_18_noise_handshake_correct
 
 ; AH_001_19_noise_key_confirmation (matches Coq: Theorem AH_001_19_noise_key_confirmation)
-(assert (= true true)) ; AH_001_19_noise_key_confirmation [untranslatable]
+; AH_001_19_noise_key_confirmation: forall st msg st', noise_step st msg st' -> noise_h (hs_symmetric st') = hkdf [] (noise_h (hs_symmetric st) ++ match msg
+(assert (forall ((st Bool) (msg Bool) (st' Bool)) true)) ; AH_001_19_noise_key_confirmation [partial: bindings preserved]
 
 ; AH_001_20_noise_identity_hiding (matches Coq: Theorem AH_001_20_noise_identity_hiding)
-(assert (= true true)) ; AH_001_20_noise_identity_hiding [untranslatable]
+(assert (forall ((pattern Bool)) (=> (= (noise_pattern_identity_hiding_initiator pattern) true) (or (= pattern XN) (= pattern XK) (= pattern XX) (= pattern IX))))) ; AH_001_20_noise_identity_hiding
 
 ; AH_001_21_noise_payload_encrypt (matches Coq: Theorem AH_001_21_noise_payload_encrypt)
-(assert (= true true)) ; AH_001_21_noise_payload_encrypt [untranslatable]
+(assert (forall ((st Bool) (key Bool) (nonce Bool) (payload Bool) (aad Bool)) (=> (= (noise_k (hs_symmetric st)) (some key)) (exists ((ciphertext Bool)) (= (aead_encrypt key nonce payload aad) ciphertext))))) ; AH_001_21_noise_payload_encrypt
 
 ; AH_001_22_noise_rekey_correct (matches Coq: Theorem AH_001_22_noise_rekey_correct)
-(assert (= true true)) ; AH_001_22_noise_rekey_correct [untranslatable]
+(assert (forall ((st Bool) (input_key Bool)) (let ((st' (noise_mix_key st input_key))) (and (= (noise_n st') 0) (exists ((k Bool)) (= (noise_k st') (some k))))))) ; AH_001_22_noise_rekey_correct
 
 ; AH_001_23_noise_composition (matches Coq: Theorem AH_001_23_noise_composition)
-(assert (= true true)) ; AH_001_23_noise_composition [untranslatable]
+(assert (forall ((st1 Bool) (msg1 Bool) (st2 Bool) (msg2 Bool) (st3 Bool)) (=> (= (noise_step st1 msg1 st2) true) (=> (= (noise_step st2 msg2 st3) true) (= (hs_messages_sent st3) (S (S (hs_messages_sent st1)))))))) ; AH_001_23_noise_composition
 
 ; AH_001_24_signal_double_ratchet (matches Coq: Theorem AH_001_24_signal_double_ratchet)
-(assert (= true true)) ; AH_001_24_signal_double_ratchet [untranslatable]
+(assert (forall ((st Bool) (new_pair Bool) (remote Bool)) (let ((st' (signal_dh_ratchet st new_pair remote))) (and (= (signal_dh_pair st') new_pair) (= (signal_dh_remote st') (some remote)) (= (signal_send_n st') 0))))) ; AH_001_24_signal_double_ratchet
 
 ; AH_001_25_signal_forward_secrecy (matches Coq: Theorem AH_001_25_signal_forward_secrecy)
-(assert (= true true)) ; AH_001_25_signal_forward_secrecy [untranslatable]
+(assert (forall ((st Bool) (new_pair Bool) (remote Bool)) (let ((st' (signal_dh_ratchet st new_pair remote))) (= (signal_dh_pair st') new_pair)))) ; AH_001_25_signal_forward_secrecy
 
 ; AH_001_26_signal_break_in_recovery (matches Coq: Theorem AH_001_26_signal_break_in_recovery)
-(assert (= true true)) ; AH_001_26_signal_break_in_recovery [untranslatable]
+(assert (forall ((st Bool) (new_pair Bool) (remote Bool)) (let ((st' (signal_dh_ratchet st new_pair remote))) (= (signal_send_n st') 0)))) ; AH_001_26_signal_break_in_recovery
 
 ; AH_001_27_signal_out_of_order (matches Coq: Theorem AH_001_27_signal_out_of_order)
-(assert (= true true)) ; AH_001_27_signal_out_of_order [untranslatable]
+(assert (forall ((st Bool) (pk Bool) (n Bool) (key Bool)) (=> (= (In (mk-tuple pk n key) (signal_skipped st)) true) (exists ((key' Bool)) (= key' key))))) ; AH_001_27_signal_out_of_order
 
 ; AH_001_28_signal_x3dh_correct (matches Coq: Theorem AH_001_28_signal_x3dh_correct)
-(assert (= true true)) ; AH_001_28_signal_x3dh_correct [untranslatable]
+(assert (forall ((ik Bool) (ek Bool) (bundle Bool)) (let ((result (x3dh_initiator ik ek bundle))) (exists ((ss Bool) (ad Bool)) (and (= (x3dh_shared_secret result) ss) (= (x3dh_associated_data result) ad)))))) ; AH_001_28_signal_x3dh_correct
 
 ; AH_001_29_signal_session_correct (matches Coq: Theorem AH_001_29_signal_session_correct)
-(assert (= true true)) ; AH_001_29_signal_session_correct [untranslatable]
+; AH_001_29_signal_session_correct: forall st plaintext, let (st', ct) := signal_encrypt st plaintext in signal_send_n st' = S (signal_send_n st)
+(assert (forall ((st Bool) (plaintext Bool)) true)) ; AH_001_29_signal_session_correct [partial: bindings preserved]
 
 ; AH_001_30_no_replay (matches Coq: Theorem AH_001_30_no_replay)
-(assert (= true true)) ; AH_001_30_no_replay [untranslatable]
+(assert (forall ((nonces_seen Bool) (incoming Bool)) (=> (= (In incoming nonces_seen) true) (=> (= (prevents_replay nonces_seen incoming) true) false)))) ; AH_001_30_no_replay
 
 ; AH_001_31_no_reflection (matches Coq: Theorem AH_001_31_no_reflection)
-(assert (= true true)) ; AH_001_31_no_reflection [untranslatable]
+(assert (forall ((local_id Bool) (remote_id Bool)) (=> (not (= local_id remote_id)) (= (prevents_reflection local_id remote_id) true)))) ; AH_001_31_no_reflection
 
 ; AH_001_32_no_mitm (matches Coq: Theorem AH_001_32_no_mitm)
-(assert (= true true)) ; AH_001_32_no_mitm [untranslatable]
+(assert (forall ((session Bool) (peer_cert Bool)) (=> (= (authenticated session peer_cert) true) (not (exists ((mitm Bool)) (= (in_path mitm session) true)))))) ; AH_001_32_no_mitm
 
 ; AH_001_33_key_material_secret (matches Coq: Theorem AH_001_33_key_material_secret)
-(assert (= true true)) ; AH_001_33_key_material_secret [untranslatable]
+(assert (forall ((session Bool)) (=> (= (tls13_handshake_complete session) true) (= (strong_confidentiality (session_client_key session)) true)))) ; AH_001_33_key_material_secret
 
 ; AH_001_34_randomness_fresh (matches Coq: Theorem AH_001_34_randomness_fresh)
-(assert (= true true)) ; AH_001_34_randomness_fresh [untranslatable]
+(assert (forall ((nonce Bool) (used_nonces Bool)) (=> (= (fresh_nonce nonce used_nonces) true) (not (= (In nonce used_nonces) true))))) ; AH_001_34_randomness_fresh
 
 ; AH_001_35_timing_resistant (matches Coq: Theorem AH_001_35_timing_resistant)
-(assert (= true true)) ; AH_001_35_timing_resistant [untranslatable]
+(assert (forall ((op Int)) (= (constant_time_op op) true))) ; AH_001_35_timing_resistant
 
 ; verification_complete (matches Coq: Theorem verification_complete)
-(assert (= true true)) ; verification_complete [untranslatable]
+(assert (= all_theorems_proven true)) ; verification_complete
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -33,76 +33,77 @@
 (define-fun confidence_ge () Prop true)
 
 ; formula_eqb_refl (matches Coq: Lemma formula_eqb_refl)
-(assert (= true true)) ; formula_eqb_refl [untranslatable]
+(assert (forall ((f Bool)) (= (formula_eqb f f) true))) ; formula_eqb_refl
 
 ; formula_eqb_eq (matches Coq: Lemma formula_eqb_eq)
-(assert (= true true)) ; formula_eqb_eq [untranslatable]
+(assert (forall ((f1 Bool) (f2 Bool)) (and (=> (= (formula_eqb f1 f2) true) (= f1 f2)) (=> (= f1 f2) (= (formula_eqb f1 f2) true))))) ; formula_eqb_eq
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((c Bool) (n Bool)) (=> (= (validate_atomic c n) true) (= (cert_formula c) (FAtom n))))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((f Bool)) (= (translate_from_A (translate_to_A f)) f))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((f Bool)) (= (translate_from_B (translate_to_B f)) f))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((vA Bool) (vB Bool)) (=> (= vA true) (=> (= vB true) (= (confidence_level vA vB) DualProver))))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (= (confidence_ge DualProver SingleProver) true)) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((cA Bool) (cAB Bool) (a Bool) (b Bool)) (=> (= (cert_formula cA) a) (=> (= (cert_formula cAB) (FImpl a b)) (= (cert_formula (CertImplE cAB cA)) b))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((asms Bool) (c Bool) (f Bool) (r1 Bool) (r2 Bool)) (=> (= (validate asms c f) r1) (=> (= (validate asms c f) r2) (= r1 r2))))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+; 8: Formula equivalence is decidable *) Theorem formula_eq_dec : forall f1 f2 : formula, {f1 = f2} + {f1 <> f2}
+(assert true) ; 8 [Coq-only]
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((f1 Bool) (f2 Bool)) (=> (= (translate_to_A f1) (translate_to_A f2)) (= f1 f2)))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((f1 Bool) (f2 Bool)) (=> (= (translate_to_B f1) (translate_to_B f2)) (= f1 f2)))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((n Bool)) (= (validate_atomic (CertAtom n) n) true))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((f Bool)) (= (translate_from_A (translate_to_A f)) (translate_from_B (translate_to_B f))))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((vA Bool) (vB Bool)) (=> (= (confidence_level vA vB) (confidence_level vB vA)) (or (= vA vB) (= (confidence_level vA vB) SingleProver))))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((vA Bool) (vB Bool)) (=> (= (confidence_level vA vB) NoConfidence) (and (= vA false) (= vB false))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((vA Bool) (vB Bool)) (=> (= (confidence_level vA vB) SingleProver) (or (and (= vA true) (= vB false)) (and (= vA false) (= vB true)))))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((vA Bool) (vB Bool)) (=> (= (confidence_level vA vB) DualProver) (and (= vA true) (= vB true))))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((c Bool)) (= (confidence_ge c c) true))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool) (c3 Bool)) (=> (= (confidence_ge c1 c2) true) (=> (= (confidence_ge c2 c3) true) (= (confidence_ge c1 c3) true))))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((vA Bool)) (= (confidence_ge (confidence_level vA true) (confidence_level vA false)) true))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (= (cert_formula (CertAndI c1 c2)) (FAnd (cert_formula c1) (cert_formula c2))))) ; 20
 
 ; 21 (matches Coq: Theorem 21)
-(assert (= true true)) ; 21 [untranslatable]
+(assert (forall ((f1 Bool) (f2 Bool)) (= (formula_eqb f1 f2) (formula_eqb f2 f1)))) ; 21
 
 ; 22 (matches Coq: Theorem 22)
-(assert (= true true)) ; 22 [untranslatable]
+(assert (forall ((f Bool) (c Bool) (n Bool)) (= (validate_atomic (CertNotI f c) n) false))) ; 22
 
 ; Verify all assertions are satisfiable
 (check-sat)

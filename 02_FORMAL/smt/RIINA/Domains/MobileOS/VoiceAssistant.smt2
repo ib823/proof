@@ -162,76 +162,76 @@
   true)
 
 ; voice_recognition_accurate (matches Coq: Theorem voice_recognition_accurate)
-(assert (= true true)) ; voice_recognition_accurate [untranslatable]
+(assert (forall ((result RecognitionResult)) (=> (= (accurate_voice_system result) true) (>= (recog_confidence result) 90)))) ; voice_recognition_accurate
 
 ; voice_data_stays_local (matches Coq: Theorem voice_data_stays_local)
-(assert (= true true)) ; voice_data_stays_local [untranslatable]
+(assert (forall ((input VoiceInput)) (=> (= private_voice_system true) (=> (= (voice_processed_locally input) true) (= (recog_processed_on_device (recognize input)) true))))) ; voice_data_stays_local
 
 ; local_processing_preserves_privacy (matches Coq: Theorem local_processing_preserves_privacy)
-(assert (= true true)) ; local_processing_preserves_privacy [untranslatable]
+(assert (forall ((input VoiceInput)) (=> (= (voice_processed_locally input) true) (= (voice_data_private input) true)))) ; local_processing_preserves_privacy
 
 ; recognition_reflects_locality (matches Coq: Theorem recognition_reflects_locality)
-(assert (= true true)) ; recognition_reflects_locality [untranslatable]
+(assert (forall ((input VoiceInput)) (= (recog_processed_on_device (recognize input)) (voice_processed_locally input)))) ; recognition_reflects_locality
 
 ; voice_data_processed_locally_thm (matches Coq: Theorem voice_data_processed_locally_thm)
-(assert (= true true)) ; voice_data_processed_locally_thm [untranslatable]
+(assert (forall ((vp VoiceProcessing)) (=> (= (voice_data_processed_locally vp) true) (= (vp_processed_locally vp) true)))) ; voice_data_processed_locally_thm
 
 ; wake_word_detection_on_device (matches Coq: Theorem wake_word_detection_on_device)
-(assert (= true true)) ; wake_word_detection_on_device [untranslatable]
+(assert (forall ((ww WakeWordDetector)) (=> (= (wake_word_on_device ww) true) (= (ww_model_on_device ww) true)))) ; wake_word_detection_on_device
 
 ; no_always_listening (matches Coq: Theorem no_always_listening)
-(assert (= true true)) ; no_always_listening [untranslatable]
+(assert (forall ((ww WakeWordDetector)) (=> (= (not_always_listening ww) true) (= (ww_always_listening ww) false)))) ; no_always_listening
 
 ; audio_deleted_after_processing_thm (matches Coq: Theorem audio_deleted_after_processing_thm)
-(assert (= true true)) ; audio_deleted_after_processing_thm [untranslatable]
+(assert (forall ((al AudioLifecycle)) (=> (= (audio_deleted_after_processing al) true) (=> (= (al_processing_complete al) true) (= (al_audio_deleted al) true))))) ; audio_deleted_after_processing_thm
 
 ; voice_command_intent_validated_thm (matches Coq: Theorem voice_command_intent_validated_thm)
-(assert (= true true)) ; voice_command_intent_validated_thm [untranslatable]
+(assert (forall ((vc VoiceCommand)) (=> (= (voice_command_intent_validated vc) true) (= (vc_intent_validated vc) true)))) ; voice_command_intent_validated_thm
 
 ; speech_recognition_language_supported_thm (matches Coq: Theorem speech_recognition_language_supported_thm)
-(assert (= true true)) ; speech_recognition_language_supported_thm [untranslatable]
+(assert (forall ((sr SpeechRecognition)) (=> (= (speech_recognition_language_supported sr) true) (= (sr_language_supported sr) true)))) ; speech_recognition_language_supported_thm
 
 ; voice_feedback_appropriate_thm (matches Coq: Theorem voice_feedback_appropriate_thm)
-(assert (= true true)) ; voice_feedback_appropriate_thm [untranslatable]
+(assert (forall ((vf VoiceFeedback)) (=> (= (voice_feedback_appropriate vf) true) (= (vf_appropriate vf) true)))) ; voice_feedback_appropriate_thm
 
 ; voice_permission_explicit_thm (matches Coq: Theorem voice_permission_explicit_thm)
-(assert (= true true)) ; voice_permission_explicit_thm [untranslatable]
+(assert (forall ((vp VoicePermission)) (=> (= (voice_permission_explicit vp) true) (= (vperm_explicit vp) true)))) ; voice_permission_explicit_thm
 
 ; conversation_context_bounded_thm (matches Coq: Theorem conversation_context_bounded_thm)
-(assert (= true true)) ; conversation_context_bounded_thm [untranslatable]
+(assert (forall ((cc ConversationContext)) (=> (= (conversation_context_bounded cc) true) (<= (length (cc_turns cc)) (cc_max_turns cc))))) ; conversation_context_bounded_thm
 
 ; voice_authentication_secure_thm (matches Coq: Theorem voice_authentication_secure_thm)
-(assert (= true true)) ; voice_authentication_secure_thm [untranslatable]
+(assert (forall ((va VoiceAuth)) (=> (= (voice_authentication_secure va) true) (= (va_voiceprint_match va) true)))) ; voice_authentication_secure_thm
 
 ; noise_cancellation_bounded_thm (matches Coq: Theorem noise_cancellation_bounded_thm)
-(assert (= true true)) ; noise_cancellation_bounded_thm [untranslatable]
+(assert (forall ((nc NoiseCancellation)) (=> (= (noise_cancellation_bounded nc) true) (>= (nc_output_snr nc) (nc_input_snr nc))))) ; noise_cancellation_bounded_thm
 
 ; voice_synthesis_quality_bounded_thm (matches Coq: Theorem voice_synthesis_quality_bounded_thm)
-(assert (= true true)) ; voice_synthesis_quality_bounded_thm [untranslatable]
+(assert (forall ((vs VoiceSynthesis)) (=> (= (voice_synthesis_quality_bounded vs) true) (>= (vs_quality_score vs) (vs_min_quality vs))))) ; voice_synthesis_quality_bounded_thm
 
 ; voice_command_undo_available_thm (matches Coq: Theorem voice_command_undo_available_thm)
-(assert (= true true)) ; voice_command_undo_available_thm [untranslatable]
+(assert (forall ((vu VoiceUndo)) (=> (= (voice_command_undo_available vu) true) (= (vu_undoable vu) true)))) ; voice_command_undo_available_thm
 
 ; accessibility_voice_control_complete_thm (matches Coq: Theorem accessibility_voice_control_complete_thm)
-(assert (= true true)) ; accessibility_voice_control_complete_thm [untranslatable]
+(assert (forall ((avc AccessibilityVoiceControl)) (=> (= (accessibility_voice_control_complete avc) true) (= (avc_all_elements_reachable avc) true)))) ; accessibility_voice_control_complete_thm
 
 ; dictation_privacy_mode_thm (matches Coq: Theorem dictation_privacy_mode_thm)
-(assert (= true true)) ; dictation_privacy_mode_thm [untranslatable]
+(assert (forall ((dm DictationMode)) (=> (= (dictation_privacy_mode dm) true) (= (dm_server_processing dm) false)))) ; dictation_privacy_mode_thm
 
 ; voice_data_not_sent_to_server (matches Coq: Theorem voice_data_not_sent_to_server)
-(assert (= true true)) ; voice_data_not_sent_to_server [untranslatable]
+(assert (forall ((vp VoiceProcessing)) (=> (= (voice_data_processed_locally vp) true) (= (vp_data_sent_to_server vp) false)))) ; voice_data_not_sent_to_server
 
 ; voice_permission_requires_microphone (matches Coq: Theorem voice_permission_requires_microphone)
-(assert (= true true)) ; voice_permission_requires_microphone [untranslatable]
+(assert (forall ((vp VoicePermission)) (=> (= (voice_permission_explicit vp) true) (= (vperm_microphone_granted vp) true)))) ; voice_permission_requires_microphone
 
 ; voice_command_known_intent (matches Coq: Theorem voice_command_known_intent)
-(assert (= true true)) ; voice_command_known_intent [untranslatable]
+(assert (forall ((vc VoiceCommand)) (=> (= (voice_command_intent_validated vc) true) (not (= (vc_intent vc) UnknownIntent))))) ; voice_command_known_intent
 
 ; voice_undo_window_positive (matches Coq: Theorem voice_undo_window_positive)
-(assert (= true true)) ; voice_undo_window_positive [untranslatable]
+(assert (forall ((vu VoiceUndo)) (=> (= (voice_command_undo_available vu) true) (> (vu_undo_window_seconds vu) 0)))) ; voice_undo_window_positive
 
 ; accessibility_labels_complete (matches Coq: Theorem accessibility_labels_complete)
-(assert (= true true)) ; accessibility_labels_complete [untranslatable]
+(assert (forall ((avc AccessibilityVoiceControl)) (=> (= (accessibility_voice_control_complete avc) true) (= (avc_labels_complete avc) true)))) ; accessibility_labels_complete
 
 ; Verify all assertions are satisfiable
 (check-sat)

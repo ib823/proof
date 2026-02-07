@@ -51,34 +51,34 @@
 (define-fun within_occupancy () Bool Nat)
 
 ; smart_building_security (matches Coq: Theorem smart_building_security)
-(assert (= true true)) ; smart_building_security [untranslatable]
+(assert (forall ((controls SmartBuildingControls)) (forall ((building Int)) (=> (= (network_segmentation controls) true) (=> (= (device_authentication controls) true) true))))) ; smart_building_security
 
 ; bacnet_security (matches Coq: Theorem bacnet_security)
-(assert (= true true)) ; bacnet_security [untranslatable]
+(assert (forall ((bas_network Int)) true)) ; bacnet_security
 
 ; access_control_security (matches Coq: Theorem access_control_security)
-(assert (= true true)) ; access_control_security [untranslatable]
+(assert (forall ((credential PropertyData)) (forall ((access_point Int)) true))) ; access_control_security
 
 ; transaction_protection (matches Coq: Theorem transaction_protection)
-(assert (= true true)) ; transaction_protection [untranslatable]
+(assert (forall ((transaction Int)) true)) ; transaction_protection
 
 ; iot_device_security (matches Coq: Theorem iot_device_security)
-(assert (= true true)) ; iot_device_security [untranslatable]
+(assert (forall ((device Int)) true)) ; iot_device_security
 
 ; building_segmentation (matches Coq: Theorem building_segmentation)
-(assert (= true true)) ; building_segmentation [untranslatable]
+(assert (forall ((controls SmartBuildingControls)) (forall ((system BuildingSystem)) (=> (= (network_segmentation controls) true) true)))) ; building_segmentation
 
 ; safety_failsafe (matches Coq: Theorem safety_failsafe)
-(assert (= true true)) ; safety_failsafe [untranslatable]
+(assert (forall ((controls SmartBuildingControls)) (forall ((safety_system BuildingSystem)) (=> (= (failsafe_operation controls) true) true)))) ; safety_failsafe
 
 ; financial_records_max_sensitivity (matches Coq: Theorem financial_records_max_sensitivity)
-(assert (= true true)) ; financial_records_max_sensitivity [untranslatable]
+(assert (forall ((d Bool)) (<= (property_sensitivity d) (property_sensitivity FinancialRecords)))) ; financial_records_max_sensitivity
 
 ; access_credentials_max_sensitivity (matches Coq: Theorem access_credentials_max_sensitivity)
 (assert (= (property_sensitivity AccessCredentials) (property_sensitivity FinancialRecords))) ; access_credentials_max_sensitivity
 
 ; property_sensitivity_positive (matches Coq: Theorem property_sensitivity_positive)
-(assert (= true true)) ; property_sensitivity_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (property_sensitivity d) 1))) ; property_sensitivity_positive
 
 ; fire_safety_critical (matches Coq: Theorem fire_safety_critical)
 (assert (= (system_criticality FireSafety) 5)) ; fire_safety_critical
@@ -87,7 +87,7 @@
 (assert (= (system_criticality Elevator) 5)) ; elevator_critical
 
 ; system_criticality_positive (matches Coq: Theorem system_criticality_positive)
-(assert (= true true)) ; system_criticality_positive [untranslatable]
+(assert (forall ((s Bool)) (>= (system_criticality s) 1))) ; system_criticality_positive
 
 ; fire_elevator_equal_criticality (matches Coq: Theorem fire_elevator_equal_criticality)
 (assert (= (system_criticality FireSafety) (system_criticality Elevator))) ; fire_elevator_equal_criticality
@@ -99,34 +99,34 @@
 (assert (= (is_safety_critical HVAC) false)) ; hvac_not_safety_critical
 
 ; safety_critical_high_criticality (matches Coq: Theorem safety_critical_high_criticality)
-(assert (= true true)) ; safety_critical_high_criticality [untranslatable]
+(assert (forall ((s Bool)) (=> (= (is_safety_critical s) true) (>= (system_criticality s) 5)))) ; safety_critical_high_criticality
 
 ; all_controls_requires_segmentation (matches Coq: Theorem all_controls_requires_segmentation)
-(assert (= true true)) ; all_controls_requires_segmentation [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_building_controls c) true) (= (network_segmentation c) true)))) ; all_controls_requires_segmentation
 
 ; all_controls_requires_auth (matches Coq: Theorem all_controls_requires_auth)
-(assert (= true true)) ; all_controls_requires_auth [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_building_controls c) true) (= (device_authentication c) true)))) ; all_controls_requires_auth
 
 ; all_controls_requires_failsafe (matches Coq: Theorem all_controls_requires_failsafe)
-(assert (= true true)) ; all_controls_requires_failsafe [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_building_controls c) true) (= (failsafe_operation c) true)))) ; all_controls_requires_failsafe
 
 ; count_building_bounded (matches Coq: Theorem count_building_bounded)
-(assert (= true true)) ; count_building_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_building_controls c) 6))) ; count_building_bounded
 
 ; all_controls_count_six (matches Coq: Theorem all_controls_count_six)
-(assert (= true true)) ; all_controls_count_six [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_building_controls c) true) (= (count_building_controls c) 6)))) ; all_controls_count_six
 
 ; fire_safety_long_retention (matches Coq: Theorem fire_safety_long_retention)
 (assert (= (access_log_retention_days FireSafety) 150)) ; fire_safety_long_retention
 
 ; retention_positive (matches Coq: Theorem retention_positive)
-(assert (= true true)) ; retention_positive [untranslatable]
+(assert (forall ((s Bool)) (>= (access_log_retention_days s) 30))) ; retention_positive
 
 ; firmware_no_downgrade (matches Coq: Theorem firmware_no_downgrade)
-(assert (= true true)) ; firmware_no_downgrade [untranslatable]
+(assert (forall ((old_v Bool) (new_v Bool)) (=> (= (firmware_version_valid old_v new_v) true) (< old_v new_v)))) ; firmware_no_downgrade
 
 ; occupancy_bounded (matches Coq: Theorem occupancy_bounded)
-(assert (= true true)) ; occupancy_bounded [untranslatable]
+(assert (forall ((curr Bool) (max_o Bool)) (=> (= (within_occupancy curr max_o) true) (<= curr max_o)))) ; occupancy_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

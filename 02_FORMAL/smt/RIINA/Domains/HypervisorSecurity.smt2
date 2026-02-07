@@ -103,16 +103,16 @@
   (mk-hypervisor_config (riina_vm_isolation) true true true true true (riina_side_channel) (riina_mem_virt) (riina_int_virt) (riina_world_switch)))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_true_intro (matches Coq: Lemma andb_true_intro)
-(assert (= true true)) ; andb_true_intro [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= a true) (=> (= b true) (= (and a b) true))))) ; andb_true_intro
 
 ; andb_true_elim_l (matches Coq: Lemma andb_true_elim_l)
-(assert (= true true)) ; andb_true_elim_l [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= a true)))) ; andb_true_elim_l
 
 ; andb_true_elim_r (matches Coq: Lemma andb_true_elim_r)
-(assert (= true true)) ; andb_true_elim_r [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= b true)))) ; andb_true_elim_r
 
 ; HV_001 (matches Coq: Theorem HV_001)
 (assert (= (vm_fully_isolated riina_vm_isolation) true)) ; HV_001
@@ -148,46 +148,46 @@
 (assert (= (hv_iommu_enabled riina_hypervisor) true)) ; HV_011
 
 ; HV_012 (matches Coq: Theorem HV_012)
-(assert (= true true)) ; HV_012 [untranslatable]
+(assert (forall ((v Bool)) (=> (= (vm_fully_isolated v) true) (= (vmi_memory_isolated v) true)))) ; HV_012
 
 ; HV_013 (matches Coq: Theorem HV_013)
-(assert (= true true)) ; HV_013 [untranslatable]
+(assert (forall ((v Bool)) (=> (= (vm_fully_isolated v) true) (= (vmi_cpu_isolated v) true)))) ; HV_013
 
 ; HV_014 (matches Coq: Theorem HV_014)
-(assert (= true true)) ; HV_014 [untranslatable]
+(assert (forall ((v Bool)) (=> (= (vm_fully_isolated v) true) (= (vmi_io_isolated v) true)))) ; HV_014
 
 ; HV_015 (matches Coq: Theorem HV_015)
-(assert (= true true)) ; HV_015 [untranslatable]
+(assert (forall ((v Bool)) (=> (= (vm_fully_isolated v) true) (= (vmi_interrupt_isolated v) true)))) ; HV_015
 
 ; HV_016 (matches Coq: Theorem HV_016)
-(assert (= true true)) ; HV_016 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (vm_fully_isolated (hv_isolation h)) true)))) ; HV_016
 
 ; HV_017 (matches Coq: Theorem HV_017)
-(assert (= true true)) ; HV_017 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (hv_secure_boot h) true)))) ; HV_017
 
 ; HV_018 (matches Coq: Theorem HV_018)
-(assert (= true true)) ; HV_018 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (hv_attestation h) true)))) ; HV_018
 
 ; HV_019 (matches Coq: Theorem HV_019)
-(assert (= true true)) ; HV_019 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (hv_memory_encryption h) true)))) ; HV_019
 
 ; HV_020 (matches Coq: Theorem HV_020)
-(assert (= true true)) ; HV_020 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (hv_nested_paging h) true)))) ; HV_020
 
 ; HV_021 (matches Coq: Theorem HV_021)
-(assert (= true true)) ; HV_021 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (hv_iommu_enabled h) true)))) ; HV_021
 
 ; HV_022 (matches Coq: Theorem HV_022)
-(assert (= true true)) ; HV_022 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (vmi_memory_isolated (hv_isolation h)) true)))) ; HV_022
 
 ; HV_023 (matches Coq: Theorem HV_023)
-(assert (= true true)) ; HV_023 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (vmi_cpu_isolated (hv_isolation h)) true)))) ; HV_023
 
 ; HV_024 (matches Coq: Theorem HV_024)
-(assert (= true true)) ; HV_024 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (vmi_io_isolated (hv_isolation h)) true)))) ; HV_024
 
 ; HV_025 (matches Coq: Theorem HV_025)
-(assert (= true true)) ; HV_025 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (= (vmi_interrupt_isolated (hv_isolation h)) true)))) ; HV_025
 
 ; HV_026 (matches Coq: Theorem HV_026)
 (assert (= (mem_virt_secure riina_mem_virt) true)) ; HV_026
@@ -202,22 +202,22 @@
 (assert (= (mv_accessed_dirty riina_mem_virt) true)) ; HV_029
 
 ; HV_030 (matches Coq: Theorem HV_030)
-(assert (= true true)) ; HV_030 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (mem_virt_secure m) true) (= (mv_ept_enabled m) true)))) ; HV_030
 
 ; HV_031 (matches Coq: Theorem HV_031)
-(assert (= true true)) ; HV_031 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (mem_virt_secure m) true) (= (mv_vpid_enabled m) true)))) ; HV_031
 
 ; HV_032 (matches Coq: Theorem HV_032)
-(assert (= true true)) ; HV_032 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (mem_virt_secure m) true) (= (mv_accessed_dirty m) true)))) ; HV_032
 
 ; HV_033 (matches Coq: Theorem HV_033)
-(assert (= true true)) ; HV_033 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (mem_virt_secure (hv_mem_virt h)) true) (and (= (mv_ept_enabled (hv_mem_virt h)) true) (= (mv_vpid_enabled (hv_mem_virt h)) true))))) ; HV_033
 
 ; HV_034 (matches Coq: Theorem HV_034)
-(assert (= true true)) ; HV_034 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (=> (= (mem_virt_secure (hv_mem_virt h)) true) (and (= (hv_nested_paging h) true) (= (mv_ept_enabled (hv_mem_virt h)) true)))))) ; HV_034
 
 ; HV_035 (matches Coq: Theorem HV_035)
-(assert (= true true)) ; HV_035 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (and (= (hv_iommu_enabled h) true) (= (hv_nested_paging h) true))))) ; HV_035
 
 ; HV_036 (matches Coq: Theorem HV_036)
 (assert (= (int_virt_secure riina_int_virt) true)) ; HV_036
@@ -235,25 +235,25 @@
 (assert (= (iv_virtual_nmi riina_int_virt) true)) ; HV_040
 
 ; HV_041 (matches Coq: Theorem HV_041)
-(assert (= true true)) ; HV_041 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (int_virt_secure i) true) (= (iv_apic_virtualization i) true)))) ; HV_041
 
 ; HV_042 (matches Coq: Theorem HV_042)
-(assert (= true true)) ; HV_042 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (int_virt_secure i) true) (= (iv_interrupt_exit i) true)))) ; HV_042
 
 ; HV_043 (matches Coq: Theorem HV_043)
-(assert (= true true)) ; HV_043 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (int_virt_secure i) true) (= (iv_nmi_exiting i) true)))) ; HV_043
 
 ; HV_044 (matches Coq: Theorem HV_044)
-(assert (= true true)) ; HV_044 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (int_virt_secure (hv_int_virt h)) true) (and (= (iv_apic_virtualization (hv_int_virt h)) true) (= (iv_interrupt_exit (hv_int_virt h)) true))))) ; HV_044
 
 ; HV_045 (matches Coq: Theorem HV_045)
-(assert (= true true)) ; HV_045 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (=> (= (int_virt_secure (hv_int_virt h)) true) (and (= (vmi_interrupt_isolated (hv_isolation h)) true) (= (iv_nmi_exiting (hv_int_virt h)) true)))))) ; HV_045
 
 ; HV_046 (matches Coq: Theorem HV_046)
-(assert (= true true)) ; HV_046 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (int_virt_secure i) true) (= (iv_nmi_exiting i) true)))) ; HV_046
 
 ; HV_047 (matches Coq: Theorem HV_047)
-(assert (= true true)) ; HV_047 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (int_virt_secure i) true) (and (= (iv_apic_virtualization i) true) (= (iv_nmi_exiting i) true))))) ; HV_047
 
 ; HV_048 (matches Coq: Theorem HV_048)
 (assert (and (= (int_virt_secure riina_int_virt) true) (= (vmi_interrupt_isolated riina_vm_isolation) true))) ; HV_048
@@ -286,28 +286,28 @@
 (assert (= (scm_mds_clear riina_side_channel) true)) ; HV_057
 
 ; HV_058 (matches Coq: Theorem HV_058)
-(assert (= true true)) ; HV_058 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (= (scm_flush_l1d s) true)))) ; HV_058
 
 ; HV_059 (matches Coq: Theorem HV_059)
-(assert (= true true)) ; HV_059 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (= (scm_ibrs_enabled s) true)))) ; HV_059
 
 ; HV_060 (matches Coq: Theorem HV_060)
-(assert (= true true)) ; HV_060 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (= (scm_ibpb_enabled s) true)))) ; HV_060
 
 ; HV_061 (matches Coq: Theorem HV_061)
-(assert (= true true)) ; HV_061 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (= (scm_stibp_enabled s) true)))) ; HV_061
 
 ; HV_062 (matches Coq: Theorem HV_062)
-(assert (= true true)) ; HV_062 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (= (scm_ssbd_enabled s) true)))) ; HV_062
 
 ; HV_063 (matches Coq: Theorem HV_063)
-(assert (= true true)) ; HV_063 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (= (scm_mds_clear s) true)))) ; HV_063
 
 ; HV_064 (matches Coq: Theorem HV_064)
-(assert (= true true)) ; HV_064 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (and (= (scm_ibrs_enabled s) true) (= (scm_ibpb_enabled s) true) (= (scm_stibp_enabled s) true))))) ; HV_064
 
 ; HV_065 (matches Coq: Theorem HV_065)
-(assert (= true true)) ; HV_065 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (side_channel_mitigated s) true) (and (= (scm_flush_l1d s) true) (= (scm_mds_clear s) true))))) ; HV_065
 
 ; HV_066 (matches Coq: Theorem HV_066)
 (assert (= (world_switch_secure riina_world_switch) true)) ; HV_066
@@ -328,43 +328,43 @@
 (assert (= (ws_tzpc_enabled riina_world_switch) true)) ; HV_071
 
 ; HV_072 (matches Coq: Theorem HV_072)
-(assert (= true true)) ; HV_072 [untranslatable]
+(assert (forall ((w Bool)) (=> (= (world_switch_secure w) true) (= (ws_smc_filtering w) true)))) ; HV_072
 
 ; HV_073 (matches Coq: Theorem HV_073)
-(assert (= true true)) ; HV_073 [untranslatable]
+(assert (forall ((w Bool)) (=> (= (world_switch_secure w) true) (= (ws_ns_bit_control w) true)))) ; HV_073
 
 ; HV_074 (matches Coq: Theorem HV_074)
-(assert (= true true)) ; HV_074 [untranslatable]
+(assert (forall ((w Bool)) (=> (= (world_switch_secure w) true) (= (ws_secure_monitor w) true)))) ; HV_074
 
 ; HV_075 (matches Coq: Theorem HV_075)
-(assert (= true true)) ; HV_075 [untranslatable]
+(assert (forall ((w Bool)) (=> (= (world_switch_secure w) true) (and (= (ws_smc_filtering w) true) (= (ws_ns_bit_control w) true))))) ; HV_075
 
 ; HV_076 (matches Coq: Theorem HV_076)
-(assert (= true true)) ; HV_076 [untranslatable]
+(assert (forall ((w Bool)) (=> (= (world_switch_secure w) true) (= (ws_secure_monitor w) true)))) ; HV_076
 
 ; HV_077 (matches Coq: Theorem HV_077)
 (assert (and (= (ws_tzasc_enabled riina_world_switch) true) (= (ws_tzpc_enabled riina_world_switch) true))) ; HV_077
 
 ; HV_078 (matches Coq: Theorem HV_078)
-(assert (= true true)) ; HV_078 [untranslatable]
+(assert (forall ((w Bool)) (=> (= (world_switch_secure w) true) (and (= (ws_smc_filtering w) true) (= (ws_ns_bit_control w) true) (= (ws_secure_monitor w) true))))) ; HV_078
 
 ; HV_079 (matches Coq: Theorem HV_079)
-(assert (= true true)) ; HV_079 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_secure h) true) (=> (= (world_switch_secure (hv_world_switch h)) true) (and (= (vm_fully_isolated (hv_isolation h)) true) (= (ws_secure_monitor (hv_world_switch h)) true)))))) ; HV_079
 
 ; HV_080 (matches Coq: Theorem HV_080)
-(assert (= true true)) ; HV_080 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (world_switch_secure (hv_world_switch h)) true) (= (ws_smc_filtering (hv_world_switch h)) true)))) ; HV_080
 
 ; HV_081 (matches Coq: Theorem HV_081)
 (assert (= (hv_fully_secure riina_hypervisor) true)) ; HV_081
 
 ; HV_082 (matches Coq: Theorem HV_082)
-(assert (= true true)) ; HV_082 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_fully_secure h) true) (and (= (hv_secure h) true) (= (mem_virt_secure (hv_mem_virt h)) true))))) ; HV_082
 
 ; HV_083 (matches Coq: Theorem HV_083)
-(assert (= true true)) ; HV_083 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_fully_secure h) true) (and (= (int_virt_secure (hv_int_virt h)) true) (= (world_switch_secure (hv_world_switch h)) true))))) ; HV_083
 
 ; HV_084 (matches Coq: Theorem HV_084)
-(assert (= true true)) ; HV_084 [untranslatable]
+(assert (forall ((h Bool)) (=> (= (hv_fully_secure h) true) (and (= (vm_fully_isolated (hv_isolation h)) true) (= (side_channel_mitigated (hv_side_channel h)) true) (= (mem_virt_secure (hv_mem_virt h)) true) (= (int_virt_secure (hv_int_virt h)) true) (= (world_switch_secure (hv_world_switch h)) true))))) ; HV_084
 
 ; HV_085_complete (matches Coq: Theorem HV_085_complete)
 (assert (and (= (hv_fully_secure riina_hypervisor) true) (= (vm_fully_isolated riina_vm_isolation) true) (= (side_channel_mitigated riina_side_channel) true) (= (mem_virt_secure riina_mem_virt) true) (= (int_virt_secure riina_int_virt) true) (= (world_switch_secure riina_world_switch) true))) ; HV_085_complete

@@ -8,25 +8,25 @@
 (set-option :produce-models true)
 
 ; val_rel_le_monotone (matches Coq: Theorem val_rel_le_monotone)
-(assert (= true true)) ; val_rel_le_monotone [untranslatable]
+(assert (forall ((m Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (<= m n) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le m Σ T v1 v2) true))))) ; val_rel_le_monotone
 
 ; val_rel_le_pred (matches Coq: Lemma val_rel_le_pred)
-(assert (= true true)) ; val_rel_le_pred [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_le (+ n 1) Σ T v1 v2) true) (= (val_rel_le n Σ T v1 v2) true)))) ; val_rel_le_pred
 
 ; val_rel_le_trans_mono (matches Coq: Lemma val_rel_le_trans_mono)
-(assert (= true true)) ; val_rel_le_trans_mono [untranslatable]
+(assert (forall ((k Bool) (m Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (<= k m) (=> (<= m n) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le k Σ T v1 v2) true)))))) ; val_rel_le_trans_mono
 
 ; val_rel_le_max (matches Coq: Lemma val_rel_le_max)
-(assert (= true true)) ; val_rel_le_max [untranslatable]
+(assert (forall ((m Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_le m Σ T v1 v2) true) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le (max m n) Σ T v1 v2) true))))) ; val_rel_le_max
 
 ; val_rel_le_from_max (matches Coq: Lemma val_rel_le_from_max)
-(assert (= true true)) ; val_rel_le_from_max [untranslatable]
+(assert (forall ((m Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_le (max m n) Σ T v1 v2) true) (and (= (val_rel_le m Σ T v1 v2) true) (= (val_rel_le n Σ T v1 v2) true))))) ; val_rel_le_from_max
 
 ; val_rel_le_to_min (matches Coq: Lemma val_rel_le_to_min)
-(assert (= true true)) ; val_rel_le_to_min [untranslatable]
+(assert (forall ((m Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_le m Σ T v1 v2) true) (= (val_rel_le (min m n) Σ T v1 v2) true)))) ; val_rel_le_to_min
 
 ; val_rel_le_to_min_r (matches Coq: Lemma val_rel_le_to_min_r)
-(assert (= true true)) ; val_rel_le_to_min_r [untranslatable]
+(assert (forall ((m Bool) (n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le (min m n) Σ T v1 v2) true)))) ; val_rel_le_to_min_r
 
 ; Verify all assertions are satisfiable
 (check-sat)

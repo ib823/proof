@@ -109,112 +109,114 @@
   true)
 
 ; principal_eqb_refl (matches Coq: Lemma principal_eqb_refl)
-(assert (= true true)) ; principal_eqb_refl [untranslatable]
+(assert (forall ((p Bool)) (= (principal_eqb p p) true))) ; principal_eqb_refl
 
 ; Z_001_01_principal_lattice (matches Coq: Theorem Z_001_01_principal_lattice)
-(assert (= true true)) ; Z_001_01_principal_lattice [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (exists ((join_p Bool) (meet_p Bool)) (and (= join_p (PJoin p1 p2)) (= meet_p (PMeet p1 p2)))))) ; Z_001_01_principal_lattice
 
 ; Z_001_02_acts_for_transitive (matches Coq: Theorem Z_001_02_acts_for_transitive)
-(assert (= true true)) ; Z_001_02_acts_for_transitive [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool) (p3 Bool)) (=> (= (acts_for p1 p2) true) (=> (= (acts_for p2 p3) true) (= (acts_for p1 p3) true))))) ; Z_001_02_acts_for_transitive
 
 ; Z_001_03_acts_for_reflexive (matches Coq: Theorem Z_001_03_acts_for_reflexive)
-(assert (= true true)) ; Z_001_03_acts_for_reflexive [untranslatable]
+(assert (forall ((p Bool)) (= (acts_for p p) true))) ; Z_001_03_acts_for_reflexive
 
 ; Z_001_04_authority_delegation (matches Coq: Theorem Z_001_04_authority_delegation)
-(assert (= true true)) ; Z_001_04_authority_delegation [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (=> (= (principal_eqb p1 p2) true) (= (acts_for p1 p2) true)))) ; Z_001_04_authority_delegation
 
 ; Z_001_05_authority_bounded (matches Coq: Theorem Z_001_05_authority_bounded)
-(assert (= true true)) ; Z_001_05_authority_bounded [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool) (p3 Bool)) (=> (= (acts_for p1 p2) true) (=> (= (acts_for p2 p3) true) (=> (= (principal_leq p2 p3) true) (= (principal_leq p1 p3) true)))))) ; Z_001_05_authority_bounded
 
 ; Z_001_06_principal_join (matches Coq: Theorem Z_001_06_principal_join)
-(assert (= true true)) ; Z_001_06_principal_join [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (exists ((join Bool)) (and (= join (PJoin p1 p2)) (or (= (principal_leq p1 join) true) (= (principal_leq p2 join) true)))))) ; Z_001_06_principal_join
 
 ; Z_001_07_principal_meet (matches Coq: Theorem Z_001_07_principal_meet)
-(assert (= true true)) ; Z_001_07_principal_meet [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (exists ((meet Bool)) (and (= meet (PMeet p1 p2)) (or (= (principal_leq meet p1) true) (= (principal_leq meet p2) true)))))) ; Z_001_07_principal_meet
 
 ; Z_001_08_robust_definition (matches Coq: Theorem Z_001_08_robust_definition)
-(assert (= true true)) ; Z_001_08_robust_definition [untranslatable]
+(assert (forall ((e Bool) (public Bool)) (and (=> (= (robust e public) true) (forall ((s1 Bool) (s2 Bool)) (=> (= (low_equiv s1 s2 public) true) (= (e s1) (e s2))))) (=> (forall ((s1 Bool) (s2 Bool)) (=> (= (low_equiv s1 s2 public) true) (= (e s1) (e s2)))) (= (robust e public) true))))) ; Z_001_08_robust_definition
 
 ; Z_001_09_robust_guard (matches Coq: Theorem Z_001_09_robust_guard)
-(assert (= true true)) ; Z_001_09_robust_guard [untranslatable]
+(assert (forall ((de Bool) (public Bool)) (=> (= (valid_declass de public) true) (= (robust (declass_guard de) public) true)))) ; Z_001_09_robust_guard
 
 ; Z_001_10_robust_decision (matches Coq: Theorem Z_001_10_robust_decision)
-(assert (= true true)) ; Z_001_10_robust_decision [untranslatable]
+(assert (forall ((de Bool) (public Bool) (s1 Bool) (s2 Bool)) (=> (= (valid_declass de public) true) (=> (= (low_equiv s1 s2 public) true) (= (declass_guard de s1) (declass_guard de s2)))))) ; Z_001_10_robust_decision
 
 ; Z_001_11_robust_composition (matches Coq: Theorem Z_001_11_robust_composition)
-(assert (= true true)) ; Z_001_11_robust_composition [untranslatable]
+; Z_001_11_robust_composition: forall e1 e2 public, robust e1 public -> robust e2 public -> robust (fun s => e1 s + e2 s) public
+(assert (forall ((e1 Bool) (e2 Bool) (public Bool)) true)) ; Z_001_11_robust_composition [partial: bindings preserved]
 
 ; Z_001_12_no_attacker_controlled (matches Coq: Theorem Z_001_12_no_attacker_controlled)
-(assert (= true true)) ; Z_001_12_no_attacker_controlled [untranslatable]
+(assert (forall ((de Bool) (public Bool)) (=> (= (valid_declass de public) true) (=> (forall ((s1 Bool) (s2 Bool)) (= (low_equiv s1 s2 public) true)) (= (declass_guard de s1) (declass_guard de s2)))))) ; Z_001_12_no_attacker_controlled
 
 ; Z_001_13_robust_preserves_ni (matches Coq: Theorem Z_001_13_robust_preserves_ni)
-(assert (= true true)) ; Z_001_13_robust_preserves_ni [untranslatable]
+(assert (forall ((de Bool) (public Bool) (s1 Bool) (s2 Bool) (s1' Bool) (s2' Bool)) (=> (= (valid_declass de public) true) (=> (= (low_equiv s1 s2 public) true) (=> (= (steps (PDeclass de) s1 s1') true) (=> (= (steps (PDeclass de) s2 s2') true) (= (low_equiv s1' s2' public) true))))))) ; Z_001_13_robust_preserves_ni
 
 ; Z_001_14_downgrade_bounded (matches Coq: Theorem Z_001_14_downgrade_bounded)
-(assert (= true true)) ; Z_001_14_downgrade_bounded [untranslatable]
+(assert (forall ((de Bool)) (=> (= (valid_policy (declass_policy de)) true) (= (level_leq (target_level (declass_policy de)) (source_level (declass_policy de))) true)))) ; Z_001_14_downgrade_bounded
 
 ; Z_001_15_robust_checker_sound (matches Coq: Theorem Z_001_15_robust_checker_sound)
-(assert (= true true)) ; Z_001_15_robust_checker_sound [untranslatable]
+(assert (forall ((e Bool) (public Bool)) (=> (= (robust e public) true) (=> (forall ((s1 Bool) (s2 Bool)) (= (low_equiv s1 s2 public) true)) (= (e s1) (e s2)))))) ; Z_001_15_robust_checker_sound
 
 ; Z_001_16_budget_wellformed (matches Coq: Theorem Z_001_16_budget_wellformed)
-(assert (= true true)) ; Z_001_16_budget_wellformed [untranslatable]
+(assert (forall ((bs Bool)) (=> (= (wellformed_budget bs) true) (<= (total_leaked bs) (budget_total_limit bs))))) ; Z_001_16_budget_wellformed
 
 ; Z_001_17_budget_consumption (matches Coq: Theorem Z_001_17_budget_consumption)
-(assert (= true true)) ; Z_001_17_budget_consumption [untranslatable]
+(assert (forall ((bs Bool) (pid Bool) (bits Bool) (bs' Bool)) (=> (= (consume_budget bs pid bits) (some bs')) (= (budget_per_policy bs' pid) (- (budget_per_policy bs pid) bits))))) ; Z_001_17_budget_consumption
 
 ; Z_001_18_budget_exhaustion (matches Coq: Theorem Z_001_18_budget_exhaustion)
-(assert (= true true)) ; Z_001_18_budget_exhaustion [untranslatable]
+(assert (forall ((bs Bool) (pid Bool) (bits Bool)) (=> (< (budget_per_policy bs pid) bits) (= (consume_budget bs pid bits) none)))) ; Z_001_18_budget_exhaustion
 
 ; Z_001_19_budget_reset (matches Coq: Theorem Z_001_19_budget_reset)
-(assert (= true true)) ; Z_001_19_budget_reset [untranslatable]
+(assert (forall ((bs Bool) (pid Bool) (new_budget Bool) (authorizer Bool) (bs' Bool)) (=> (= (reset_budget bs pid new_budget authorizer) (some bs')) (= (principal_eqb authorizer PSystem) true)))) ; Z_001_19_budget_reset
 
 ; Z_001_20_total_leakage_bounded (matches Coq: Theorem Z_001_20_total_leakage_bounded)
-(assert (= true true)) ; Z_001_20_total_leakage_bounded [untranslatable]
+(assert (forall ((bs Bool) (pid Bool) (bits Bool) (bs' Bool)) (=> (= (consume_budget bs pid bits) (some bs')) (= (total_leaked bs') (+ (total_leaked bs) bits))))) ; Z_001_20_total_leakage_bounded
 
 ; Z_001_21_mutual_information_bounded (matches Coq: Theorem Z_001_21_mutual_information_bounded)
-(assert (= true true)) ; Z_001_21_mutual_information_bounded [untranslatable]
+(assert (forall ((bs Bool) (pid Bool) (bits Bool) (bs' Bool)) (=> (= (wellformed_budget bs) true) (=> (= (consume_budget bs pid bits) (some bs')) (<= (total_leaked bs') (budget_total_limit bs')))))) ; Z_001_21_mutual_information_bounded
 
 ; Z_001_22_budget_composition (matches Coq: Theorem Z_001_22_budget_composition)
-(assert (= true true)) ; Z_001_22_budget_composition [untranslatable]
+(assert (forall ((bs Bool) (pid1 Bool) (pid2 Bool) (bits1 Bool) (bits2 Bool) (bs' Bool) (bs'' Bool)) (=> (not (= pid1 pid2)) (=> (= (consume_budget bs pid1 bits1) (some bs')) (=> (= (consume_budget bs' pid2 bits2) (some bs'')) (= (total_leaked bs'') (+ (+ (total_leaked bs) bits1) bits2))))))) ; Z_001_22_budget_composition
 
 ; Z_001_23_budget_per_principal (matches Coq: Theorem Z_001_23_budget_per_principal)
-(assert (= true true)) ; Z_001_23_budget_per_principal [untranslatable]
+(assert (forall ((bs Bool) (pid1 Bool) (pid2 Bool) (bits Bool) (bs' Bool)) (=> (not (= pid1 pid2)) (=> (= (consume_budget bs pid1 bits) (some bs')) (= (budget_per_policy bs' pid2) (budget_per_policy bs pid2)))))) ; Z_001_23_budget_per_principal
 
 ; Z_001_24_policy_authorized (matches Coq: Theorem Z_001_24_policy_authorized)
-(assert (= true true)) ; Z_001_24_policy_authorized [untranslatable]
+(assert (forall ((de Bool) (p Bool)) (=> (= (can_declassify de p) true) (= (acts_for p (authorized_principal (declass_policy de))) true)))) ; Z_001_24_policy_authorized
 
 ; Z_001_25_policy_guard_satisfied (matches Coq: Theorem Z_001_25_policy_guard_satisfied)
-(assert (= true true)) ; Z_001_25_policy_guard_satisfied [untranslatable]
+(assert (forall ((de Bool) (s Bool)) (=> (= (guard_satisfied de s) true) (= (guard_fn (declass_policy de) (declass_guard de s)) true)))) ; Z_001_25_policy_guard_satisfied
 
 ; Z_001_26_policy_transform_applied (matches Coq: Theorem Z_001_26_policy_transform_applied)
-(assert (= true true)) ; Z_001_26_policy_transform_applied [untranslatable]
+(assert (forall ((de Bool) (s Bool)) (= (apply_transform de s) (transform (declass_policy de) (declass_value de s))))) ; Z_001_26_policy_transform_applied
 
 ; Z_001_27_policy_audit_logged (matches Coq: Theorem Z_001_27_policy_audit_logged)
-(assert (= true true)) ; Z_001_27_policy_audit_logged [untranslatable]
+(assert (forall ((de Bool) (log Bool) (log' Bool)) (=> (= (logged_declass de log log') true) (exists ((entry Bool)) (and (= (In entry log') true) (= (audit_policy_id entry) (policy_id (declass_policy de)))))))) ; Z_001_27_policy_audit_logged
 
 ; Z_001_28_policy_no_bypass (matches Coq: Theorem Z_001_28_policy_no_bypass)
-(assert (= true true)) ; Z_001_28_policy_no_bypass [untranslatable]
+(assert (forall ((de Bool)) (= (uses_policy (PDeclass de) de) true))) ; Z_001_28_policy_no_bypass
 
 ; Z_001_29_policy_composition (matches Coq: Theorem Z_001_29_policy_composition)
-(assert (= true true)) ; Z_001_29_policy_composition [untranslatable]
+; Z_001_29_policy_composition: forall de1 de2 public, valid_declass de1 public -> valid_declass de2 public -> robust (fun s => declass_guard de1 s + de
+(assert (forall ((de1 Bool) (de2 Bool) (public Bool)) true)) ; Z_001_29_policy_composition [partial: bindings preserved]
 
 ; Z_001_30_policy_revocation (matches Coq: Theorem Z_001_30_policy_revocation)
-(assert (= true true)) ; Z_001_30_policy_revocation [untranslatable]
+(assert (forall ((p Bool)) (= (policy_active (revoke_policy p)) false))) ; Z_001_30_policy_revocation
 
 ; Z_001_31_dp_definition (matches Coq: Theorem Z_001_31_dp_definition)
-(assert (= true true)) ; Z_001_31_dp_definition [untranslatable]
+(assert (forall ((epsilon Bool) (delta Bool)) (=> (> epsilon 0) (=> (>= delta 0) (= (dp_well_defined epsilon delta) true))))) ; Z_001_31_dp_definition
 
 ; Z_001_32_dp_composition (matches Coq: Theorem Z_001_32_dp_composition)
-(assert (= true true)) ; Z_001_32_dp_composition [untranslatable]
+(assert (forall ((pb Bool) (eps1 Bool) (delta1 Bool) (eps2 Bool) (delta2 Bool) (pb' Bool) (pb'' Bool)) (=> (= (compose_budget pb eps1 delta1) (some pb')) (=> (= (compose_budget pb' eps2 delta2) (some pb'')) (and (= (epsilon_used pb'') (+ (+ (epsilon_used pb) eps1) eps2)) (= (delta_used pb'') (+ (+ (delta_used pb) delta1) delta2))))))) ; Z_001_32_dp_composition
 
 ; Z_001_33_dp_laplace_correct (matches Coq: Theorem Z_001_33_dp_laplace_correct)
-(assert (= true true)) ; Z_001_33_dp_laplace_correct [untranslatable]
+(assert (forall ((q Bool) (sensitivity Bool) (epsilon Bool)) (=> (> sensitivity 0) (=> (> epsilon 0) (exists ((mechanism Bool)) (and (= mechanism (laplace_mechanism q sensitivity epsilon)) (forall ((db Bool) (seed Bool)) (>= (mechanism db seed) (q db))))))))) ; Z_001_33_dp_laplace_correct
 
 ; Z_001_34_dp_gaussian_correct (matches Coq: Theorem Z_001_34_dp_gaussian_correct)
-(assert (= true true)) ; Z_001_34_dp_gaussian_correct [untranslatable]
+(assert (forall ((q Bool) (sensitivity Bool) (epsilon Bool) (delta Bool)) (=> (> sensitivity 0) (=> (> epsilon 0) (=> (> delta 0) (exists ((mechanism Bool)) (and (= mechanism (gaussian_mechanism q sensitivity epsilon delta)) (forall ((db Bool) (seed Bool)) (>= (mechanism db seed) (q db)))))))))) ; Z_001_34_dp_gaussian_correct
 
 ; Z_001_35_dp_privacy_budget (matches Coq: Theorem Z_001_35_dp_privacy_budget)
-(assert (= true true)) ; Z_001_35_dp_privacy_budget [untranslatable]
+(assert (forall ((pb Bool) (eps Bool) (delta Bool) (pb' Bool)) (=> (= (compose_budget pb eps delta) (some pb')) (and (= (epsilon_used pb') (+ (epsilon_used pb) eps)) (= (delta_used pb') (+ (delta_used pb) delta)) (<= (epsilon_used pb') (epsilon_total pb')) (<= (delta_used pb') (delta_total pb')))))) ; Z_001_35_dp_privacy_budget
 
 ; Verify all assertions are satisfiable
 (check-sat)

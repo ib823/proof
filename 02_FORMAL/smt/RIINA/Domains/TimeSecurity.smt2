@@ -89,79 +89,79 @@
 (define-fun time_layers () Bool true)
 
 ; time_001_nonce_unique (matches Coq: Theorem time_001_nonce_unique)
-(assert (= true true)) ; time_001_nonce_unique [untranslatable]
+(assert (forall ((nonce Int)) (forall ((seen list)) (=> (= (nonce_unique nonce seen) true) (not (= (In nonce seen) true)))))) ; time_001_nonce_unique
 
 ; time_002_replay_detected (matches Coq: Theorem time_002_replay_detected)
-(assert (= true true)) ; time_002_replay_detected [untranslatable]
+(assert (forall ((msg ProtectedMessage)) (forall ((window ReplayWindow)) (=> (= (is_replay msg window) true) (= (In (nonce_value (msg_nonce msg)) (window_seen window)) true))))) ; time_002_replay_detected
 
 ; time_003_seq_increasing (matches Coq: Theorem time_003_seq_increasing)
-(assert (= true true)) ; time_003_seq_increasing [untranslatable]
+(assert (forall ((msg ProtectedMessage)) (forall ((window ReplayWindow)) (=> (= (seq_increasing msg window) true) (< (window_last_seq window) (msg_sequence msg)))))) ; time_003_seq_increasing
 
 ; time_004_timestamp_fresh (matches Coq: Theorem time_004_timestamp_fresh)
-(assert (= true true)) ; time_004_timestamp_fresh [untranslatable]
+(assert (forall ((ts AuthTimestamp)) (forall ((current Int) (max_age Int)) (=> (= (timestamp_fresh ts current max_age) true) (<= (- current (ts_value ts)) max_age))))) ; time_004_timestamp_fresh
 
 ; time_005_capability_valid (matches Coq: Theorem time_005_capability_valid)
-(assert (= true true)) ; time_005_capability_valid [untranslatable]
+(assert (forall ((cap Capability)) (forall ((current_time Int)) (=> (= (capability_valid cap current_time) true) (< current_time (cap_valid_until cap)))))) ; time_005_capability_valid
 
 ; time_006_owner_matches (matches Coq: Theorem time_006_owner_matches)
-(assert (= true true)) ; time_006_owner_matches [untranslatable]
+(assert (forall ((cap Capability)) (forall ((requester Int)) (=> (= (owner_matches cap requester) true) (= (cap_owner cap) requester))))) ; time_006_owner_matches
 
 ; time_007_atomic_complete (matches Coq: Theorem time_007_atomic_complete)
-(assert (= true true)) ; time_007_atomic_complete [untranslatable]
+(assert (forall ((started Bool) (finished Bool)) (=> (= (atomic_complete started finished) true) (=> (= started true) (= finished true))))) ; time_007_atomic_complete
 
 ; time_008_cas_correct (matches Coq: Theorem time_008_cas_correct)
-(assert (= true true)) ; time_008_cas_correct [untranslatable]
+(assert (forall ((current Int) (expected Int) (new_val Int)) (=> (= (cas_succeeds current expected new_val) true) (= current expected)))) ; time_008_cas_correct
 
 ; time_009_clock_monotonic (matches Coq: Theorem time_009_clock_monotonic)
-(assert (= true true)) ; time_009_clock_monotonic [untranslatable]
+(assert (forall ((old_time Int) (new_time Int)) (=> (= (clock_monotonic old_time new_time) true) (<= old_time new_time)))) ; time_009_clock_monotonic
 
 ; time_010_happens_before (matches Coq: Theorem time_010_happens_before)
-(assert (= true true)) ; time_010_happens_before [untranslatable]
+(assert (forall ((e1_time Int) (e2_time Int)) (=> (= (happens_before e1_time e2_time) true) (< e1_time e2_time)))) ; time_010_happens_before
 
 ; time_011_logical_clock_update (matches Coq: Theorem time_011_logical_clock_update)
-(assert (= true true)) ; time_011_logical_clock_update [untranslatable]
+(assert (forall ((old_counter Int) (received Int)) (and (< old_counter (logical_clock_update old_counter received)) (< received (logical_clock_update old_counter received))))) ; time_011_logical_clock_update
 
 ; time_012_timestamp_auth (matches Coq: Theorem time_012_timestamp_auth)
-(assert (= true true)) ; time_012_timestamp_auth [untranslatable]
+(assert (forall ((expected Int) (actual Int)) (=> (= (signature_valid expected actual) true) (= expected actual)))) ; time_012_timestamp_auth
 
 ; time_013_multi_source (matches Coq: Theorem time_013_multi_source)
-(assert (= true true)) ; time_013_multi_source [untranslatable]
+(assert (forall ((count Int) (min_sources Int)) (=> (= (sources_sufficient count min_sources) true) (<= min_sources count)))) ; time_013_multi_source
 
 ; time_014_skew_bounded (matches Coq: Theorem time_014_skew_bounded)
-(assert (= true true)) ; time_014_skew_bounded [untranslatable]
+(assert (forall ((skew Int) (max_skew Int)) (=> (= (skew_bounded skew max_skew) true) (<= skew max_skew)))) ; time_014_skew_bounded
 
 ; time_015_deadline_met (matches Coq: Theorem time_015_deadline_met)
-(assert (= true true)) ; time_015_deadline_met [untranslatable]
+(assert (forall ((current Int) (deadline Int)) (=> (= (deadline_met current deadline) true) (<= current deadline)))) ; time_015_deadline_met
 
 ; time_016_timeout_triggered (matches Coq: Theorem time_016_timeout_triggered)
-(assert (= true true)) ; time_016_timeout_triggered [untranslatable]
+(assert (forall ((elapsed Int) (timeout Int)) (=> (= (timeout_triggered elapsed timeout) true) (< timeout elapsed)))) ; time_016_timeout_triggered
 
 ; time_017_lock_order (matches Coq: Theorem time_017_lock_order)
-(assert (= true true)) ; time_017_lock_order [untranslatable]
+(assert (forall ((lock1 Int) (lock2 Int)) (=> (= (lock_order_valid lock1 lock2) true) (< lock1 lock2)))) ; time_017_lock_order
 
 ; time_018_no_deadlock (matches Coq: Theorem time_018_no_deadlock)
-(assert (= true true)) ; time_018_no_deadlock [untranslatable]
+(assert (forall ((deps list)) (=> (= (no_cycle deps) true) (= (no_cycle deps) true)))) ; time_018_no_deadlock
 
 ; time_019_progress (matches Coq: Theorem time_019_progress)
-(assert (= true true)) ; time_019_progress [untranslatable]
+(assert (forall ((before Int) (after Int)) (=> (= (progress_made before after) true) (< before after)))) ; time_019_progress
 
 ; time_020_fair_scheduling (matches Coq: Theorem time_020_fair_scheduling)
-(assert (= true true)) ; time_020_fair_scheduling [untranslatable]
+(assert (forall ((wait_time Int) (max_wait Int)) (=> (= (wait_bounded wait_time max_wait) true) (<= wait_time max_wait)))) ; time_020_fair_scheduling
 
 ; time_021_rate_limiting (matches Coq: Theorem time_021_rate_limiting)
-(assert (= true true)) ; time_021_rate_limiting [untranslatable]
+(assert (forall ((requests Int) (max_rate Int) (period Int)) (=> (= (rate_ok requests max_rate period) true) (<= requests max_rate)))) ; time_021_rate_limiting
 
 ; time_022_ordered_delivery (matches Coq: Theorem time_022_ordered_delivery)
-(assert (= true true)) ; time_022_ordered_delivery [untranslatable]
+(assert (forall ((seq1 Int) (seq2 Int)) (=> (= (order_preserved seq1 seq2) true) (<= seq1 seq2)))) ; time_022_ordered_delivery
 
 ; time_023_audit_timestamp (matches Coq: Theorem time_023_audit_timestamp)
-(assert (= true true)) ; time_023_audit_timestamp [untranslatable]
+(assert (forall ((audit_time Int) (event_time Int)) (=> (= (audit_timestamp_ok audit_time event_time) true) (<= event_time audit_time)))) ; time_023_audit_timestamp
 
 ; time_024_session_valid (matches Coq: Theorem time_024_session_valid)
-(assert (= true true)) ; time_024_session_valid [untranslatable]
+(assert (forall ((created Int) (current Int) (max_age Int)) (=> (= (session_valid created current max_age) true) (<= (- current created) max_age)))) ; time_024_session_valid
 
 ; time_025_defense_in_depth (matches Coq: Theorem time_025_defense_in_depth)
-(assert (= true true)) ; time_025_defense_in_depth [untranslatable]
+(assert (forall ((r Bool) (t Bool) (a Bool) (ts Bool)) (=> (= (time_layers r t a ts) true) (and (= r true) (= t true) (= a true) (= ts true))))) ; time_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

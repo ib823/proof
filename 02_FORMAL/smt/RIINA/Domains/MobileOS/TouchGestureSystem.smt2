@@ -103,67 +103,68 @@
   true)
 
 ; touch_latency_bounded (matches Coq: Theorem touch_latency_bounded)
-(assert (= true true)) ; touch_latency_bounded [untranslatable]
+(assert (forall ((touch TouchEvent)) (=> (= (touch_system_correct touch) true) (=> (= (physical_touch touch) true) (<= (display_latency touch) 10000))))) ; touch_latency_bounded
 
 ; touch_registration_complete (matches Coq: Theorem touch_registration_complete)
-(assert (= true true)) ; touch_registration_complete [untranslatable]
+(assert (forall ((touch TouchEvent)) (=> (= (touch_system_correct touch) true) (=> (= (physical_touch touch) true) (= (registered touch) true))))) ; touch_registration_complete
 
 ; no_ghost_touches (matches Coq: Theorem no_ghost_touches)
-(assert (= true true)) ; no_ghost_touches [untranslatable]
+(assert (forall ((event TouchEvent)) (=> (= (touch_system_correct event) true) (=> (= (registered event) true) (= (physical_touch event) true))))) ; no_ghost_touches
 
 ; gesture_recognition_tap (matches Coq: Theorem gesture_recognition_tap)
-(assert (= true true)) ; gesture_recognition_tap [untranslatable]
+(assert (forall ((t TouchEvent)) (=> (< 0 (touch_pressure t)) (=> (< (touch_pressure t) 100) (= (recognized_gesture (insert t nil)) Tap))))) ; gesture_recognition_tap
 
 ; touch_physical_registered_equiv (matches Coq: Theorem touch_physical_registered_equiv)
-(assert (= true true)) ; touch_physical_registered_equiv [untranslatable]
+(assert (forall ((event TouchEvent)) (=> (= (touch_system_correct event) true) (and (=> (= (physical_touch event) true) (= (registered event) true)) (=> (= (registered event) true) (= (physical_touch event) true)))))) ; touch_physical_registered_equiv
 
 ; touch_event_ordered (matches Coq: Theorem touch_event_ordered)
-(assert (= true true)) ; touch_event_ordered [untranslatable]
+; touch_event_ordered: forall (t1 t2 : TouchEvent) (rest : TouchSequence), timestamps_monotonic (t1 :: t2 :: rest) = true -> touch_timestamp t1
+(assert (forall ((t1 TouchEvent) (t2 TouchEvent) (rest TouchSequence)) true)) ; touch_event_ordered [partial: bindings preserved]
 
 ; multi_touch_tracked (matches Coq: Theorem multi_touch_tracked)
-(assert (= true true)) ; multi_touch_tracked [untranslatable]
+(assert (forall ((mt MultiTouchState)) (=> (= (well_formed_multi_touch mt) true) (<= (multi_touch_count mt) (max_simultaneous mt))))) ; multi_touch_tracked
 
 ; touch_cancel_handled (matches Coq: Theorem touch_cancel_handled)
-(assert (= true true)) ; touch_cancel_handled [untranslatable]
+(assert (forall ((seq TouchSequence)) (=> (= seq nil) (= (touch_cancelled seq) true)))) ; touch_cancel_handled
 
 ; gesture_priority_defined (matches Coq: Theorem gesture_priority_defined)
-(assert (= true true)) ; gesture_priority_defined [untranslatable]
+(assert (forall ((g GestureType)) (>= (gesture_priority g) 0))) ; gesture_priority_defined
 
 ; touch_area_at_least_minimum (matches Coq: Theorem touch_area_at_least_minimum)
-(assert (= true true)) ; touch_area_at_least_minimum [untranslatable]
+(assert (forall ((t TouchEvent)) (>= (touch_area t) touch_area_minimum))) ; touch_area_at_least_minimum
 
 ; touch_pressure_bounded (matches Coq: Theorem touch_pressure_bounded)
-(assert (= true true)) ; touch_pressure_bounded [untranslatable]
+(assert (forall ((t TouchEvent)) (=> (<= (touch_pressure t) touch_pressure_max) (<= (touch_pressure t) 1023)))) ; touch_pressure_bounded
 
 ; touch_latency_bounded_16ms (matches Coq: Theorem touch_latency_bounded_16ms)
-(assert (= true true)) ; touch_latency_bounded_16ms [untranslatable]
+(assert (forall ((t TouchEvent)) (=> (<= (touch_display_latency t) touch_latency_max) (<= (touch_display_latency t) 16000)))) ; touch_latency_bounded_16ms
 
 ; hover_event_supported (matches Coq: Theorem hover_event_supported)
 (assert (forall ((t TouchEvent)) (=> (= (is_hover_event t) true) (= (touch_is_physical t) false)))) ; hover_event_supported
 
 ; stylus_pressure_sensitive (matches Coq: Theorem stylus_pressure_sensitive)
-(assert (= true true)) ; stylus_pressure_sensitive [untranslatable]
+(assert (forall ((t TouchEvent)) (=> (= (is_stylus_event t) true) (> (touch_pressure t) 0)))) ; stylus_pressure_sensitive
 
 ; touch_coalescing_correct (matches Coq: Theorem touch_coalescing_correct)
-(assert (= true true)) ; touch_coalescing_correct [untranslatable]
+(assert (forall ((mt MultiTouchState)) (=> (<= (length (coalesced_events mt)) (length (active_touches mt))) (<= (length (coalesced_events mt)) (multi_touch_count mt))))) ; touch_coalescing_correct
 
 ; touch_prediction_bounded (matches Coq: Theorem touch_prediction_bounded)
-(assert (= true true)) ; touch_prediction_bounded [untranslatable]
+(assert (forall ((mt MultiTouchState)) (=> (= (well_formed_multi_touch mt) true) (=> (<= (length (predicted_events mt)) (max_simultaneous mt)) (<= (length (predicted_events mt)) (max_simultaneous mt)))))) ; touch_prediction_bounded
 
 ; edge_touch_distinguished (matches Coq: Theorem edge_touch_distinguished)
-(assert (= true true)) ; edge_touch_distinguished [untranslatable]
+(assert (forall ((t TouchEvent)) (forall ((w Int) (h Int)) (=> (< (fst (touch_position t)) edge_margin) (= (is_edge_touch t w h) true))))) ; edge_touch_distinguished
 
 ; accidental_touch_rejected (matches Coq: Theorem accidental_touch_rejected)
-(assert (= true true)) ; accidental_touch_rejected [untranslatable]
+(assert (forall ((t TouchEvent)) (=> (= (is_accidental_touch t) true) (< (touch_pressure t) 5)))) ; accidental_touch_rejected
 
 ; touch_event_timestamp_monotonic_single (matches Coq: Theorem touch_event_timestamp_monotonic_single)
-(assert (= true true)) ; touch_event_timestamp_monotonic_single [untranslatable]
+(assert (forall ((t TouchEvent)) (= (timestamps_monotonic (insert t nil)) true))) ; touch_event_timestamp_monotonic_single
 
 ; simultaneous_gesture_resolution (matches Coq: Theorem simultaneous_gesture_resolution)
-(assert (= true true)) ; simultaneous_gesture_resolution [untranslatable]
+(assert (forall ((g1 GestureType) (g2 GestureType)) (=> (> (gesture_priority g1) (gesture_priority g2)) (not (= (gesture_priority g1) (gesture_priority g2)))))) ; simultaneous_gesture_resolution
 
 ; unknown_gesture_lowest_priority (matches Coq: Theorem unknown_gesture_lowest_priority)
-(assert (= true true)) ; unknown_gesture_lowest_priority [untranslatable]
+(assert (forall ((g GestureType)) (=> (not (= g Unknown)) (> (gesture_priority g) (gesture_priority Unknown))))) ; unknown_gesture_lowest_priority
 
 ; Verify all assertions are satisfiable
 (check-sat)

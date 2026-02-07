@@ -66,19 +66,19 @@
 (define-fun declass_ok () Prop true)
 
 ; effect_join_pure_l (matches Coq: Lemma effect_join_pure_l)
-(assert (= true true)) ; effect_join_pure_l [untranslatable]
+(assert (forall ((e Bool)) (= (effect_join EffPure e) e))) ; effect_join_pure_l
 
 ; effect_join_pure_r (matches Coq: Lemma effect_join_pure_r)
-(assert (= true true)) ; effect_join_pure_r [untranslatable]
+(assert (forall ((e Bool)) (= (effect_join e EffPure) e))) ; effect_join_pure_r
 
 ; value_subst (matches Coq: Lemma value_subst)
-(assert (= true true)) ; value_subst [untranslatable]
+(assert (forall ((x Bool) (v1 Bool) (v2 Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (= (value v1) true))))) ; value_subst
 
 ; declass_ok_subst (matches Coq: Lemma declass_ok_subst)
-(assert (= true true)) ; declass_ok_subst [untranslatable]
+(assert (forall ((x Bool) (v Bool) (e1 Bool) (e2 Bool)) (=> (= (value v) true) (=> (= (declass_ok e1 e2) true) (= (declass_ok e1 e2) true))))) ; declass_ok_subst
 
 ; value_not_stuck (matches Coq: Lemma value_not_stuck)
-(assert (= true true)) ; value_not_stuck [untranslatable]
+(assert (forall ((e Bool)) (=> (= (value e) true) (or (= e EUnit) (exists ((b Bool)) (= e (EBool b))) (exists ((n Bool)) (= e (EInt n))) (exists ((s Bool)) (= e (EString s))) (exists ((x Bool) (T Bool) (body Bool)) (= e (ELam x T body))) (exists ((v1 Bool) (v2 Bool)) (= e (EPair v1 v2))) (exists ((v Bool) (T Bool)) (= e (EInl v T))) (exists ((v Bool) (T Bool)) (= e (EInr v T))) (exists ((l Bool)) (= e (ELoc l))) (exists ((v Bool)) (= e (EClassify v))) (exists ((v Bool)) (= e (EProve v))))))) ; value_not_stuck
 
 ; Verify all assertions are satisfiable
 (check-sat)

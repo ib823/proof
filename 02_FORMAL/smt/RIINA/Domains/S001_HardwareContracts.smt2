@@ -85,91 +85,95 @@
   true)
 
 ; S_001_01_isa_state_deterministic (matches Coq: Theorem S_001_01_isa_state_deterministic)
-(assert (= true true)) ; S_001_01_isa_state_deterministic [untranslatable]
+(assert (forall ((instr Bool) (s Bool)) (= (isa_step instr s) (isa_step instr s)))) ; S_001_01_isa_state_deterministic
 
 ; S_001_02_microarch_state_extended (matches Coq: Theorem S_001_02_microarch_state_extended)
-(assert (= true true)) ; S_001_02_microarch_state_extended [untranslatable]
+(assert (forall ((ms MicroarchState)) (exists ((as' Bool) (cache' Bool) (bp' Bool) (ss' Bool) (cc' Bool)) (= ms (mkMicroarchState as' cache' bp' ss' cc'))))) ; S_001_02_microarch_state_extended
 
 ; S_001_03_cache_state_modeled (matches Coq: Theorem S_001_03_cache_state_modeled)
-(assert (= true true)) ; S_001_03_cache_state_modeled [untranslatable]
+(assert (forall ((ms MicroarchState)) (exists ((c Cache)) (= (cache ms) c)))) ; S_001_03_cache_state_modeled
 
 ; S_001_04_branch_predictor_modeled (matches Coq: Theorem S_001_04_branch_predictor_modeled)
-(assert (= true true)) ; S_001_04_branch_predictor_modeled [untranslatable]
+(assert (forall ((ms MicroarchState)) (exists ((bp BranchHistory)) (= (branch_predictor ms) bp)))) ; S_001_04_branch_predictor_modeled
 
 ; S_001_05_speculation_state_modeled (matches Coq: Theorem S_001_05_speculation_state_modeled)
-(assert (= true true)) ; S_001_05_speculation_state_modeled [untranslatable]
+(assert (forall ((ms MicroarchState)) (or (= (spec_state ms) NotSpeculating) (exists ((depth Bool) (checkpoint Bool)) (= (spec_state ms) (Speculating depth checkpoint)))))) ; S_001_05_speculation_state_modeled
 
 ; S_001_06_leakage_function_defined (matches Coq: Theorem S_001_06_leakage_function_defined)
-(assert (= true true)) ; S_001_06_leakage_function_defined [untranslatable]
+(assert (forall ((ms Bool) (ms' Bool)) (exists ((trace LeakageTrace)) (= (leakage ms ms') trace)))) ; S_001_06_leakage_function_defined
 
 ; S_001_07_timing_observable (matches Coq: Theorem S_001_07_timing_observable)
-(assert (= true true)) ; S_001_07_timing_observable [untranslatable]
+(assert (forall ((n Bool)) (exists ((trace LeakageTrace)) (= (In (CyclesTaken n) trace) true)))) ; S_001_07_timing_observable
 
 ; S_001_08_power_observable (matches Coq: Theorem S_001_08_power_observable)
-(assert (= true true)) ; S_001_08_power_observable [untranslatable]
+(assert (forall ((n Bool)) (exists ((trace LeakageTrace)) (= (In (PowerConsumed n) trace) true)))) ; S_001_08_power_observable
 
 ; S_001_09_constant_time_definition (matches Coq: Theorem S_001_09_constant_time_definition)
-(assert (= true true)) ; S_001_09_constant_time_definition [untranslatable]
+(assert (forall ((prog Bool) (l Bool)) (and (=> (= (constant_time prog l) true) (forall ((ms1 Bool) (ms2 Bool)) (=> (= (low_equiv l ms1 ms2) true) (= (leakage ms1 (prog ms1)) (leakage ms2 (prog ms2)))))) (=> (forall ((ms1 Bool) (ms2 Bool)) (=> (= (low_equiv l ms1 ms2) true) (= (leakage ms1 (prog ms1)) (leakage ms2 (prog ms2))))) (= (constant_time prog l) true))))) ; S_001_09_constant_time_definition
 
 ; S_001_10_ct_independent_of_secrets (matches Coq: Theorem S_001_10_ct_independent_of_secrets)
-(assert (= true true)) ; S_001_10_ct_independent_of_secrets [untranslatable]
+(assert (forall ((prog Bool) (l Bool)) (=> (= (constant_time prog l) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv l ms1 ms2) true)) (= (leakage ms1 (prog ms1)) (leakage ms2 (prog ms2))))))) ; S_001_10_ct_independent_of_secrets
 
 ; S_001_11_ct_memory_access_pattern (matches Coq: Theorem S_001_11_ct_memory_access_pattern)
-(assert (= true true)) ; S_001_11_ct_memory_access_pattern [untranslatable]
+(assert (forall ((prog Bool) (l Bool)) (=> (= (constant_time prog l) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv l ms1 ms2) true)) (= (leakage ms1 (prog ms1)) (leakage ms2 (prog ms2))))))) ; S_001_11_ct_memory_access_pattern
 
 ; S_001_12_ct_branch_pattern (matches Coq: Theorem S_001_12_ct_branch_pattern)
-(assert (= true true)) ; S_001_12_ct_branch_pattern [untranslatable]
+(assert (forall ((prog Bool) (l Bool)) (=> (= (constant_time prog l) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv l ms1 ms2) true)) (= (leakage ms1 (prog ms1)) (leakage ms2 (prog ms2))))))) ; S_001_12_ct_branch_pattern
 
 ; S_001_13_ct_composition (matches Coq: Theorem S_001_13_ct_composition)
-(assert (= true true)) ; S_001_13_ct_composition [untranslatable]
+; S_001_13_ct_composition: forall prog1 prog2 l, constant_time prog1 l -> constant_time prog2 l -> (forall ms, low_equiv l ms ms) -> constant_time 
+(assert (forall ((prog1 Bool) (prog2 Bool) (l Bool)) true)) ; S_001_13_ct_composition [partial: bindings preserved]
 
 ; S_001_14_ct_loop_invariant (matches Coq: Theorem S_001_14_ct_loop_invariant)
-(assert (= true true)) ; S_001_14_ct_loop_invariant [untranslatable]
+; S_001_14_ct_loop_invariant: forall (body : MicroarchState -> MicroarchState) l n, constant_time body l -> constant_time (fun ms => Nat.iter n body m
+(assert true) ; S_001_14_ct_loop_invariant [Coq-only]
 
 ; S_001_15_ct_function_calls (matches Coq: Theorem S_001_15_ct_function_calls)
-(assert (= true true)) ; S_001_15_ct_function_calls [untranslatable]
+(assert (forall ((f Bool) (l Bool)) (=> (= (constant_time f l) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv l ms1 ms2) true)) (= (leakage ms1 (f ms1)) (leakage ms2 (f ms2))))))) ; S_001_15_ct_function_calls
 
 ; S_001_16_ct_cache_behavior (matches Coq: Theorem S_001_16_ct_cache_behavior)
-(assert (= true true)) ; S_001_16_ct_cache_behavior [untranslatable]
+(assert (forall ((prog Bool) (l Bool)) (=> (= (constant_time prog l) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv l ms1 ms2) true)) (= (leakage ms1 (prog ms1)) (leakage ms2 (prog ms2))))))) ; S_001_16_ct_cache_behavior
 
 ; S_001_17_speculation_rollback (matches Coq: Theorem S_001_17_speculation_rollback)
-(assert (= true true)) ; S_001_17_speculation_rollback [untranslatable]
+(assert (forall ((ms Bool) (checkpoint Bool) (depth Bool)) (=> (= (spec_state ms) (Speculating depth checkpoint)) (= (arch (rollback ms)) checkpoint)))) ; S_001_17_speculation_rollback
 
 ; S_001_18_speculation_microarch_persist (matches Coq: Theorem S_001_18_speculation_microarch_persist)
-(assert (= true true)) ; S_001_18_speculation_microarch_persist [untranslatable]
+(assert (forall ((ms Bool) (depth Bool) (checkpoint Bool)) (=> (= (spec_state ms) (Speculating depth checkpoint)) (= (cache (rollback ms)) (cache ms))))) ; S_001_18_speculation_microarch_persist
 
 ; S_001_19_speculation_fence (matches Coq: Theorem S_001_19_speculation_fence)
-(assert (= true true)) ; S_001_19_speculation_fence [untranslatable]
+(assert (forall ((ms Bool) (secrets Bool) (a Bool)) (=> (= (secrets a) true) (not (= (spec_accesses (scub_barrier ms) a) true))))) ; S_001_19_speculation_fence
 
 ; S_001_20_speculation_no_secret_load (matches Coq: Theorem S_001_20_speculation_no_secret_load)
-(assert (= true true)) ; S_001_20_speculation_no_secret_load [untranslatable]
+(assert (forall ((ms Bool)) (= (spec_state (scub_barrier ms)) NotSpeculating))) ; S_001_20_speculation_no_secret_load
 
 ; S_001_21_speculation_no_secret_branch (matches Coq: Theorem S_001_21_speculation_no_secret_branch)
-(assert (= true true)) ; S_001_21_speculation_no_secret_branch [untranslatable]
+(assert (forall ((ms Bool)) (=> (= (spec_state (scub_barrier ms)) NotSpeculating) (forall ((a Bool)) (not (= (spec_accesses (scub_barrier ms) a) true)))))) ; S_001_21_speculation_no_secret_branch
 
 ; S_001_22_speculation_bounded (matches Coq: Theorem S_001_22_speculation_bounded)
-(assert (= true true)) ; S_001_22_speculation_bounded [untranslatable]
+(assert (forall ((ms Bool) (depth Bool) (checkpoint Bool)) (=> (= (spec_state ms) (Speculating depth checkpoint)) (exists ((bound Bool)) (<= depth bound))))) ; S_001_22_speculation_bounded
 
 ; S_001_23_speculation_safe_program (matches Coq: Theorem S_001_23_speculation_safe_program)
-(assert (= true true)) ; S_001_23_speculation_safe_program [untranslatable]
+; S_001_23_speculation_safe_program: forall (prog : MicroarchState -> MicroarchState) secrets, (forall ms, spec_state (prog (scub_barrier ms)) = NotSpeculati
+(assert true) ; S_001_23_speculation_safe_program [Coq-only]
 
 ; S_001_24_speculation_composition (matches Coq: Theorem S_001_24_speculation_composition)
-(assert (= true true)) ; S_001_24_speculation_composition [untranslatable]
+; S_001_24_speculation_composition: forall prog1 prog2 secrets, speculation_safe prog1 secrets -> speculation_safe prog2 secrets -> (forall ms, spec_state (
+(assert (forall ((prog1 Bool) (prog2 Bool) (secrets Bool)) true)) ; S_001_24_speculation_composition [partial: bindings preserved]
 
 ; S_001_25_rowhammer_threshold (matches Coq: Theorem S_001_25_rowhammer_threshold)
 (assert (= ROWHAMMER_THRESHOLD 100000)) ; S_001_25_rowhammer_threshold
 
 ; S_001_26_rowhammer_pattern_safe (matches Coq: Theorem S_001_26_rowhammer_pattern_safe)
-(assert (= true true)) ; S_001_26_rowhammer_pattern_safe [untranslatable]
+(assert (forall ((accesses Bool)) (=> (= (rowhammer_safe accesses) true) (forall ((row Bool)) (< (accesses row) ROWHAMMER_THRESHOLD))))) ; S_001_26_rowhammer_pattern_safe
 
 ; S_001_27_memory_row_adjacency (matches Coq: Theorem S_001_27_memory_row_adjacency)
-(assert (= true true)) ; S_001_27_memory_row_adjacency [untranslatable]
+(assert (forall ((a1 Bool) (a2 Bool)) (and (=> (= (row_of_addr a1) (row_of_addr a2)) (= (div a1 1024) (div a2 1024))) (=> (= (div a1 1024) (div a2 1024)) (= (row_of_addr a1) (row_of_addr a2)))))) ; S_001_27_memory_row_adjacency
 
 ; S_001_28_power_independent (matches Coq: Theorem S_001_28_power_independent)
-(assert (= true true)) ; S_001_28_power_independent [untranslatable]
+(assert (forall ((prog Bool) (secrets Bool)) (=> (= (power_independent prog secrets) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv secrets ms1 ms2) true)) (= (cycle_count (prog ms1)) (cycle_count (prog ms2))))))) ; S_001_28_power_independent
 
 ; S_001_29_em_independent (matches Coq: Theorem S_001_29_em_independent)
-(assert (= true true)) ; S_001_29_em_independent [untranslatable]
+(assert (forall ((prog Bool) (secrets Bool)) (=> (= (power_independent prog secrets) true) (=> (forall ((ms1 Bool) (ms2 Bool)) (= (low_equiv secrets ms1 ms2) true)) (= (cycle_count (prog ms1)) (cycle_count (prog ms2))))))) ; S_001_29_em_independent
 
 ; S_001_30_physical_leakage_bounded (matches Coq: Theorem S_001_30_physical_leakage_bounded)
 (assert (= PHYSICAL_LEAKAGE_BOUND 1)) ; S_001_30_physical_leakage_bounded

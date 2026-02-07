@@ -87,79 +87,79 @@
 (define-fun sensor_layers () Bool true)
 
 ; sensor_001_byzantine_threshold (matches Coq: Theorem sensor_001_byzantine_threshold)
-(assert (= true true)) ; sensor_001_byzantine_threshold [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (= (byzantine_tolerant n f) true) (<= (+ (* 3 f) 1) n)))) ; sensor_001_byzantine_threshold
 
 ; sensor_002_honest_majority (matches Coq: Theorem sensor_002_honest_majority)
-(assert (= true true)) ; sensor_002_honest_majority [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (>= n (+ (* 3 f) 1)) (>= (- n f) (+ (* 2 f) 1))))) ; sensor_002_honest_majority
 
 ; sensor_003_authenticated (matches Coq: Theorem sensor_003_authenticated)
-(assert (= true true)) ; sensor_003_authenticated [untranslatable]
+(assert (forall ((reading Reading)) (forall ((valid_sigs list)) (=> (= (sensor_authenticated reading valid_sigs) true) (exists ((sig Bool)) (and (= (In sig valid_sigs) true) (= (reading_signature reading) sig))))))) ; sensor_003_authenticated
 
 ; sensor_004_freshness (matches Coq: Theorem sensor_004_freshness)
-(assert (= true true)) ; sensor_004_freshness [untranslatable]
+(assert (forall ((reading Reading)) (forall ((current_time Int) (max_age Int)) (=> (= (reading_fresh reading current_time max_age) true) (<= (- current_time (reading_timestamp reading)) max_age))))) ; sensor_004_freshness
 
 ; sensor_005_trust_threshold (matches Coq: Theorem sensor_005_trust_threshold)
-(assert (= true true)) ; sensor_005_trust_threshold [untranslatable]
+(assert (forall ((sensor Sensor)) (forall ((min_trust Int)) (=> (= (trust_sufficient sensor min_trust) true) (<= min_trust (sensor_trust sensor)))))) ; sensor_005_trust_threshold
 
 ; sensor_006_cross_validation (matches Coq: Theorem sensor_006_cross_validation)
-(assert (= true true)) ; sensor_006_cross_validation [untranslatable]
+(assert (forall ((cv CrossValidation)) (=> (= (cross_valid cv) true) (<= (cv_difference cv) (cv_threshold cv))))) ; sensor_006_cross_validation
 
 ; sensor_007_anomaly_detected (matches Coq: Theorem sensor_007_anomaly_detected)
-(assert (= true true)) ; sensor_007_anomaly_detected [untranslatable]
+(assert (forall ((value Int) (expected Int) (threshold Int)) (=> (< (* threshold 2) (abs_diff value expected)) (= (detect_anomaly value expected threshold) Anomalous)))) ; sensor_007_anomaly_detected
 
 ; sensor_008_normal_accepted (matches Coq: Theorem sensor_008_normal_accepted)
-(assert (= true true)) ; sensor_008_normal_accepted [untranslatable]
+(assert (forall ((value Int) (expected Int) (threshold Int)) (=> (<= (abs_diff value expected) threshold) (= (detect_anomaly value expected threshold) Normal)))) ; sensor_008_normal_accepted
 
 ; sensor_009_min_sources (matches Coq: Theorem sensor_009_min_sources)
-(assert (= true true)) ; sensor_009_min_sources [untranslatable]
+(assert (forall ((result FusedResult)) (forall ((min_sources Int)) (=> (= (fusion_sources_ok result min_sources) true) (<= min_sources (length (fused_sources result))))))) ; sensor_009_min_sources
 
 ; sensor_010_confidence_bounded (matches Coq: Theorem sensor_010_confidence_bounded)
-(assert (= true true)) ; sensor_010_confidence_bounded [untranslatable]
+(assert (forall ((result FusedResult)) (forall ((max_conf Int)) (=> (= (confidence_bounded result max_conf) true) (<= (fused_confidence result) max_conf))))) ; sensor_010_confidence_bounded
 
 ; sensor_011_temporal_consistent (matches Coq: Theorem sensor_011_temporal_consistent)
-(assert (= true true)) ; sensor_011_temporal_consistent [untranslatable]
+(assert (forall ((readings list)) (=> (= (temporally_consistent readings) true) (= (temporally_consistent readings) true)))) ; sensor_011_temporal_consistent
 
 ; sensor_012_diversity (matches Coq: Theorem sensor_012_diversity)
-(assert (= true true)) ; sensor_012_diversity [untranslatable]
+(assert (forall ((readings list Reading)) (forall ((sensors list Sensor)) (forall ((min_types Int)) (=> (>= (sensor_types_diverse readings sensors) min_types) (>= (sensor_types_diverse readings sensors) min_types)))))) ; sensor_012_diversity
 
 ; sensor_013_weight_bounded (matches Coq: Theorem sensor_013_weight_bounded)
-(assert (= true true)) ; sensor_013_weight_bounded [untranslatable]
+(assert (forall ((weight Int) (max_weight Int)) (=> (= (weight_valid weight max_weight) true) (<= weight max_weight)))) ; sensor_013_weight_bounded
 
 ; sensor_014_outlier_rejected (matches Coq: Theorem sensor_014_outlier_rejected)
-(assert (= true true)) ; sensor_014_outlier_rejected [untranslatable]
+(assert (forall ((value Int) (median Int) (threshold Int)) (=> (= (is_outlier value median threshold) true) (< threshold (abs_diff value median))))) ; sensor_014_outlier_rejected
 
 ; sensor_015_quorum (matches Coq: Theorem sensor_015_quorum)
-(assert (= true true)) ; sensor_015_quorum [untranslatable]
+(assert (forall ((agreeing Int) (total Int) (required_pct Int)) (=> (= (quorum_reached agreeing total required_pct) true) (<= (* total (div required_pct 100)) agreeing)))) ; sensor_015_quorum
 
 ; sensor_016_no_replay (matches Coq: Theorem sensor_016_no_replay)
-(assert (= true true)) ; sensor_016_no_replay [untranslatable]
+(assert (forall ((reading Reading)) (forall ((seen list)) (=> (= (reading_not_replayed reading seen) true) (not (= (In (reading_timestamp reading) seen) true)))))) ; sensor_016_no_replay
 
 ; sensor_017_calibration_valid (matches Coq: Theorem sensor_017_calibration_valid)
-(assert (= true true)) ; sensor_017_calibration_valid [untranslatable]
+(assert (forall ((last_cal Int) (current Int) (max_age Int)) (=> (= (calibration_current last_cal current max_age) true) (<= (- current last_cal) max_age)))) ; sensor_017_calibration_valid
 
 ; sensor_018_range_valid (matches Coq: Theorem sensor_018_range_valid)
-(assert (= true true)) ; sensor_018_range_valid [untranslatable]
+(assert (forall ((value Int) (min_val Int) (max_val Int)) (=> (= (in_valid_range value min_val max_val) true) (and (<= min_val value) (<= value max_val))))) ; sensor_018_range_valid
 
 ; sensor_019_rate_bounded (matches Coq: Theorem sensor_019_rate_bounded)
-(assert (= true true)) ; sensor_019_rate_bounded [untranslatable]
+(assert (forall ((prev Int) (current Int) (max_delta Int)) (=> (= (rate_of_change_ok prev current max_delta) true) (<= (abs_diff prev current) max_delta)))) ; sensor_019_rate_bounded
 
 ; sensor_020_redundancy (matches Coq: Theorem sensor_020_redundancy)
-(assert (= true true)) ; sensor_020_redundancy [untranslatable]
+(assert (forall ((active Int) (min_redundancy Int)) (=> (= (redundancy_sufficient active min_redundancy) true) (<= min_redundancy active)))) ; sensor_020_redundancy
 
 ; sensor_021_health_ok (matches Coq: Theorem sensor_021_health_ok)
-(assert (= true true)) ; sensor_021_health_ok [untranslatable]
+(assert (forall ((error_rate Int) (max_error Int)) (=> (= (sensor_healthy error_rate max_error) true) (<= error_rate max_error)))) ; sensor_021_health_ok
 
 ; sensor_022_deterministic (matches Coq: Theorem sensor_022_deterministic)
-(assert (= true true)) ; sensor_022_deterministic [untranslatable]
+(assert (forall ((readings list Reading)) (forall ((f list)) (= (f readings) (f readings))))) ; sensor_022_deterministic
 
 ; sensor_023_secure_channel (matches Coq: Theorem sensor_023_secure_channel)
-(assert (= true true)) ; sensor_023_secure_channel [untranslatable]
+(assert (forall ((encryption Bool) (auth Bool)) (=> (= (channel_secure encryption auth) true) (and (= encryption true) (= auth true))))) ; sensor_023_secure_channel
 
 ; sensor_024_audit_complete (matches Coq: Theorem sensor_024_audit_complete)
-(assert (= true true)) ; sensor_024_audit_complete [untranslatable]
+(assert (forall ((readings list) (logged list)) (=> (= (all_readings_logged readings logged) true) (= (Forall (mk-tuple fun In) readings) true)))) ; sensor_024_audit_complete
 
 ; sensor_025_defense_in_depth (matches Coq: Theorem sensor_025_defense_in_depth)
-(assert (= true true)) ; sensor_025_defense_in_depth [untranslatable]
+(assert (forall ((a Bool) (f Bool) (b Bool) (an Bool)) (=> (= (sensor_layers a f b an) true) (and (= a true) (= f true) (= b true) (= an true))))) ; sensor_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

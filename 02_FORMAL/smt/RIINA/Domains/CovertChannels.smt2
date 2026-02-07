@@ -162,55 +162,55 @@
 (define-fun secret_partition () Partition true)
 
 ; secure_execute_deterministic (matches Coq: Lemma secure_execute_deterministic)
-(assert (= true true)) ; secure_execute_deterministic [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (low_equiv s1 s2) true) (= (secure_execute s1) (secure_execute s2))))) ; secure_execute_deterministic
 
 ; SEC_002_01 (matches Coq: Theorem SEC_002_01)
-(assert (= true true)) ; SEC_002_01 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((t1 (prog_execute riina_program s1))) (let ((t2 (prog_execute riina_program s2))) (= (constant_time s1 s2 t1 t2) true))))) ; SEC_002_01
 
 ; SEC_002_02 (matches Coq: Theorem SEC_002_02)
-(assert (= true true)) ; SEC_002_02 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((st1 (secure_storage s1))) (let ((st2 (secure_storage s2))) (= (storage_no_leak s1 s2 st1 st2) true))))) ; SEC_002_02
 
 ; SEC_002_03 (matches Coq: Theorem SEC_002_03)
-(assert (= true true)) ; SEC_002_03 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((t1 (prog_execute riina_program s1))) (let ((t2 (prog_execute riina_program s2))) (= (constant_cache s1 s2 t1 t2) true))))) ; SEC_002_03
 
 ; SEC_002_04 (matches Coq: Theorem SEC_002_04)
-(assert (= true true)) ; SEC_002_04 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((b1 (secure_branch s1))) (let ((b2 (secure_branch s2))) (= (constant_branch s1 s2 b1 b2) true))))) ; SEC_002_04
 
 ; SEC_002_05 (matches Coq: Theorem SEC_002_05)
-(assert (= true true)) ; SEC_002_05 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((t1 (prog_execute riina_program s1))) (let ((t2 (prog_execute riina_program s2))) (= (constant_memory_pattern s1 s2 t1 t2) true))))) ; SEC_002_05
 
 ; SEC_002_06 (matches Coq: Theorem SEC_002_06)
-(assert (= true true)) ; SEC_002_06 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((p1 (secure_power s1))) (let ((p2 (secure_power s2))) (= (constant_power s1 s2 p1 p2) true))))) ; SEC_002_06
 
 ; SEC_002_07 (matches Coq: Theorem SEC_002_07)
-(assert (= true true)) ; SEC_002_07 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((e1 (secure_em s1))) (let ((e2 (secure_em s2))) (= (constant_em s1 s2 e1 e2) true))))) ; SEC_002_07
 
 ; SEC_002_08 (matches Coq: Theorem SEC_002_08)
-(assert (= true true)) ; SEC_002_08 [untranslatable]
+(assert (forall ((obs list Observation)) (forall ((secret_bits Int)) (=> (<= (channel_bandwidth obs secret_bits) bandwidth_threshold) (<= (channel_bandwidth obs secret_bits) 1))))) ; SEC_002_08
 
 ; SEC_002_09 (matches Coq: Theorem SEC_002_09)
-(assert (= true true)) ; SEC_002_09 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((t1 (prog_execute riina_program s1))) (let ((t2 (prog_execute riina_program s2))) (= (constant_termination s1 s2 t1 t2) true))))) ; SEC_002_09
 
 ; SEC_002_10 (matches Coq: Theorem SEC_002_10)
-(assert (= true true)) ; SEC_002_10 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((t1 (prog_execute riina_program s1))) (let ((t2 (prog_execute riina_program s2))) (= (constant_exception s1 s2 t1 t2) true))))) ; SEC_002_10
 
 ; SEC_002_11 (matches Coq: Theorem SEC_002_11)
-(assert (= true true)) ; SEC_002_11 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((r1 (prog_resources riina_program s1))) (let ((r2 (prog_resources riina_program s2))) (= (constant_resources s1 s2 r1 r2) true))))) ; SEC_002_11
 
 ; SEC_002_12 (matches Coq: Theorem SEC_002_12)
-(assert (= true true)) ; SEC_002_12 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((sc1 (secure_schedule s1))) (let ((sc2 (secure_schedule s2))) (= (constant_schedule s1 s2 sc1 sc2) true))))) ; SEC_002_12
 
 ; SEC_002_13 (matches Coq: Theorem SEC_002_13)
-(assert (= true true)) ; SEC_002_13 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((n1 (secure_network s1))) (let ((n2 (secure_network s2))) (= (constant_network s1 s2 n1 n2) true))))) ; SEC_002_13
 
 ; SEC_002_14 (matches Coq: Theorem SEC_002_14)
-(assert (= true true)) ; SEC_002_14 [untranslatable]
+(assert (forall ((addr Int)) (=> (< addr (length zeroed_memory)) (= (memory_zeroed addr zeroed_memory) true)))) ; SEC_002_14
 
 ; SEC_002_15 (matches Coq: Theorem SEC_002_15)
 (assert (= (partitions_disjoint public_partition secret_partition) true)) ; SEC_002_15
 
 ; SEC_002_16 (matches Coq: Theorem SEC_002_16)
-(assert (= true true)) ; SEC_002_16 [untranslatable]
+(assert (forall ((s1 State) (s2 State)) (let ((t1 (prog_execute riina_program s1))) (let ((t2 (prog_execute riina_program s2))) (= (constant_output s1 s2 t1 t2) true))))) ; SEC_002_16
 
 ; SEC_002_17 (matches Coq: Theorem SEC_002_17)
 (assert (forall ((l SecLevel)) (= (level_leq l l) true))) ; SEC_002_17
@@ -228,10 +228,10 @@
 (assert (forall ((s State)) (= (low_equiv s s) true))) ; SEC_002_21
 
 ; level_leq_refl (matches Coq: Theorem level_leq_refl)
-(assert (= true true)) ; level_leq_refl [untranslatable]
+(assert (forall ((l Bool)) (= (level_leq l l) true))) ; level_leq_refl
 
 ; public_lowest (matches Coq: Theorem public_lowest)
-(assert (= true true)) ; public_lowest [untranslatable]
+(assert (forall ((l Bool)) (= (level_leq Public l) true))) ; public_lowest
 
 ; topsecret_no_flow_public (matches Coq: Theorem topsecret_no_flow_public)
 (assert (= (level_leq TopSecret Public) false)) ; topsecret_no_flow_public

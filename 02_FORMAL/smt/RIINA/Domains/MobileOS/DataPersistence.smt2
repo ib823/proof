@@ -152,64 +152,65 @@
   true)
 
 ; migration_lossless (matches Coq: Theorem migration_lossless)
-(assert (= true true)) ; migration_lossless [untranslatable]
+(assert (forall ((data Database)) (forall ((schema1 Schema) (schema2 Schema)) (=> (= (migrates data schema1 schema2) true) (=> (forall ((fn Bool)) (=> (= (In fn (schema_fields schema1)) true) (= (In fn (schema_fields schema2)) true))) (=> (= (no_data_loss data) true) (= (no_data_loss data) true))))))) ; migration_lossless
 
 ; migration_preserves_existing_fields (matches Coq: Theorem migration_preserves_existing_fields)
-(assert (= true true)) ; migration_preserves_existing_fields [untranslatable]
+(assert (forall ((old_s Schema) (new_s Schema) (r Record) (fn FieldName) (fv FieldValue)) (=> (= (In (mk-tuple fn fv) r) true) (=> (= (In fn (schema_fields new_s)) true) (=> (= (existsb (Nat.eqb fn) (schema_fields new_s)) true) (= (In (mk-tuple fn fv) (migrate_record old_s new_s r)) true)))))) ; migration_preserves_existing_fields
 
 ; migration_increases_version (matches Coq: Theorem migration_increases_version)
-(assert (= true true)) ; migration_increases_version [untranslatable]
+(assert (forall ((db Database)) (forall ((old_s Schema) (new_s Schema)) (=> (= (migrates db old_s new_s) true) (> (schema_version new_s) (schema_version old_s)))))) ; migration_increases_version
 
 ; sync_after_resolution (matches Coq: Theorem sync_after_resolution)
-(assert (= true true)) ; sync_after_resolution [untranslatable]
+(assert (forall ((s SyncState)) (=> (= (local_version s) (remote_version s)) (=> (= (conflicts s) nil) (= (sync_correct s) true))))) ; sync_after_resolution
 
 ; empty_db_no_loss (matches Coq: Theorem empty_db_no_loss)
-(assert (= true true)) ; empty_db_no_loss [untranslatable]
+(assert (forall ((db Database)) (=> (= (db_records db) nil) (= (no_data_loss db) true)))) ; empty_db_no_loss
 
 ; data_encrypted_at_rest (matches Coq: Theorem data_encrypted_at_rest)
-(assert (= true true)) ; data_encrypted_at_rest [untranslatable]
+(assert (forall ((s EncryptedStore)) (=> (= (data_encrypted_at_rest_prop s) true) (= (store_encrypted s) true)))) ; data_encrypted_at_rest
 
 ; backup_encrypted_thm (matches Coq: Theorem backup_encrypted_thm)
-(assert (= true true)) ; backup_encrypted_thm [untranslatable]
+(assert (forall ((b Backup)) (=> (= (backup_encrypted_prop b) true) (= (backup_encrypted b) true)))) ; backup_encrypted_thm
 
 ; migration_atomic (matches Coq: Theorem migration_atomic)
-(assert (= true true)) ; migration_atomic [untranslatable]
+(assert (forall ((m Migration)) (=> (= (migration_atomic_prop m) true) (=> (= (mig_atomic m) true) (= (length (mig_records_before m)) (length (mig_records_after m))))))) ; migration_atomic
 
 ; schema_version_tracked (matches Coq: Theorem schema_version_tracked)
-(assert (= true true)) ; schema_version_tracked [untranslatable]
+(assert (forall ((m Migration)) (=> (= (schema_version_tracked_prop m) true) (> (mig_to_version m) (mig_from_version m))))) ; schema_version_tracked
 
 ; corruption_detected (matches Coq: Theorem corruption_detected)
-(assert (= true true)) ; corruption_detected [untranslatable]
+(assert (forall ((s EncryptedStore)) (forall ((expected Int)) (=> (not (= (store_checksum s) expected)) (= (corruption_detected_prop s expected) true))))) ; corruption_detected
 
 ; data_integrity_verified (matches Coq: Theorem data_integrity_verified)
-(assert (= true true)) ; data_integrity_verified [untranslatable]
+; data_integrity_verified: forall (s : EncryptedStore), data_integrity_verified_prop s -> store_checksum s = fold_left plus (map (fun r => length r
+(assert (forall ((s EncryptedStore)) true)) ; data_integrity_verified [partial: bindings preserved]
 
 ; transaction_acid_compliant (matches Coq: Theorem transaction_acid_compliant)
-(assert (= true true)) ; transaction_acid_compliant [untranslatable]
+(assert (forall ((txn Transaction)) (=> (= (transaction_acid txn) true) (=> (= (txn_committed txn) true) (= (txn_rolled_back txn) false))))) ; transaction_acid_compliant
 
 ; concurrent_access_safe (matches Coq: Theorem concurrent_access_safe)
-(assert (= true true)) ; concurrent_access_safe [untranslatable]
+(assert (forall ((txn1 Transaction) (txn2 Transaction)) (=> (= (concurrent_access_safe_prop txn1 txn2) true) (=> (not (= (txn_id txn1) (txn_id txn2))) (not (and (= (txn_committed txn1) true) (= (txn_rolled_back txn1) true))))))) ; concurrent_access_safe
 
 ; data_deletion_complete (matches Coq: Theorem data_deletion_complete)
-(assert (= true true)) ; data_deletion_complete [untranslatable]
+(assert (forall ((s EncryptedStore)) (=> (= (data_deletion_complete_prop s) true) (=> (= (store_records s) nil) (= (store_checksum s) 0))))) ; data_deletion_complete
 
 ; index_consistent (matches Coq: Theorem index_consistent)
-(assert (= true true)) ; index_consistent [untranslatable]
+(assert (forall ((idx IndexEntry)) (forall ((records list)) (=> (= (index_consistent_prop idx records) true) (=> (= (idx_valid idx) true) (< (idx_record_id idx) (length records))))))) ; index_consistent
 
 ; cache_invalidation_correct_thm (matches Coq: Theorem cache_invalidation_correct_thm)
-(assert (= true true)) ; cache_invalidation_correct_thm [untranslatable]
+(assert (forall ((c CacheEntry)) (forall ((current_time Int)) (=> (= (cache_invalidation_correct c current_time) true) (=> (= (cache_valid c) true) (<= (cache_timestamp c) current_time)))))) ; cache_invalidation_correct_thm
 
 ; serialization_safe (matches Coq: Theorem serialization_safe)
-(assert (= true true)) ; serialization_safe [untranslatable]
+(assert (forall ((sd SerializedData)) (=> (= (serialization_safe_prop sd) true) (=> (= (ser_validated sd) true) (> (ser_checksum sd) 0))))) ; serialization_safe
 
 ; deserialization_validated (matches Coq: Theorem deserialization_validated)
-(assert (= true true)) ; deserialization_validated [untranslatable]
+(assert (forall ((sd SerializedData)) (=> (= (deserialization_validated_prop sd) true) (= (ser_validated sd) true)))) ; deserialization_validated
 
 ; storage_quota_respected_thm (matches Coq: Theorem storage_quota_respected_thm)
-(assert (= true true)) ; storage_quota_respected_thm [untranslatable]
+(assert (forall ((sq StorageQuota)) (=> (= (storage_quota_respected sq) true) (<= (sq_used_bytes sq) (sq_limit_bytes sq))))) ; storage_quota_respected_thm
 
 ; data_export_sanitized_thm (matches Coq: Theorem data_export_sanitized_thm)
-(assert (= true true)) ; data_export_sanitized_thm [untranslatable]
+(assert (forall ((de DataExport)) (=> (= (data_export_sanitized de) true) (and (= (export_sanitized de) true) (= (export_encrypted de) true))))) ; data_export_sanitized_thm
 
 ; Verify all assertions are satisfiable
 (check-sat)

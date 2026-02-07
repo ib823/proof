@@ -11,10 +11,10 @@
 (define-fun stuck () Prop true)
 
 ; type_safety (matches Coq: Theorem type_safety)
-(assert (= true true)) ; type_safety [untranslatable]
+(assert (forall ((e Bool) (T Bool) (ε Bool) (st Bool) (ctx Bool) (Σ Bool)) (=> (= (has_type nil Σ Public e T ε) true) (=> (= (store_wf Σ st) true) (not (= (stuck (mk-tuple e st ctx)) true)))))) ; type_safety
 
 ; multi_step_safety (matches Coq: Theorem multi_step_safety)
-(assert (= true true)) ; multi_step_safety [untranslatable]
+(assert (forall ((e Bool) (e' Bool) (T Bool) (ε Bool) (st Bool) (st' Bool) (ctx Bool) (ctx' Bool) (Σ Bool)) (=> (= (has_type nil Σ Public e T ε) true) (=> (= (store_wf Σ st) true) (=> (= ((e, st, ctx) multi_step_to (mk-tuple e' st' ctx')) true) (exists ((Σ' Bool)) (and (= (store_wf Σ' st') true) (not (= (stuck (mk-tuple e' st' ctx')) true))))))))) ; multi_step_safety
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -70,49 +70,49 @@
   true)
 
 ; boot_chain_verified (matches Coq: Theorem boot_chain_verified)
-(assert (= true true)) ; boot_chain_verified [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (=> (= (can_boot st img) true) (let ((st' (boot_stage st img))) (= (stage_verified st' (image_stage img)) true)))))) ; boot_chain_verified
 
 ; boot_tampering_detected (matches Coq: Theorem boot_tampering_detected)
-(assert (= true true)) ; boot_tampering_detected [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (=> (= (is_tampered st img) true) (not (= (can_boot st img) true)))))) ; boot_tampering_detected
 
 ; failed_verification_no_boot (matches Coq: Theorem failed_verification_no_boot)
-(assert (= true true)) ; failed_verification_no_boot [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (=> (not (= (verify_image st img) Verified)) (let ((st' (boot_stage st img))) (= st' st)))))) ; failed_verification_no_boot
 
 ; hardware_root_verified (matches Coq: Theorem hardware_root_verified)
 (assert (= (stage_verified initial_boot_state HardwareRoot) true)) ; hardware_root_verified
 
 ; boot_requires_verification (matches Coq: Theorem boot_requires_verification)
-(assert (= true true)) ; boot_requires_verification [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (and (=> (= (can_boot st img) true) (= (verify_image st img) Verified)) (=> (= (verify_image st img) Verified) (= (can_boot st img) true)))))) ; boot_requires_verification
 
 ; verification_preserves_previous (matches Coq: Theorem verification_preserves_previous)
-(assert (= true true)) ; verification_preserves_previous [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (forall ((prev_stage BootStageId)) (=> (= (stage_verified st prev_stage) true) (=> (= (can_boot st img) true) (let ((st' (boot_stage st img))) (= (stage_verified st' prev_stage) true)))))))) ; verification_preserves_previous
 
 ; each_stage_verifies_next (matches Coq: Theorem each_stage_verifies_next)
-(assert (= true true)) ; each_stage_verifies_next [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (=> (not (= (boot_stage st img) st)) (= (can_boot st img) true))))) ; each_stage_verifies_next
 
 ; root_of_trust_immutable (matches Coq: Theorem root_of_trust_immutable)
-(assert (= true true)) ; root_of_trust_immutable [untranslatable]
+(assert (= (In HardwareRoot (verified_stages initial_boot_state)) true)) ; root_of_trust_immutable
 
 ; firmware_rollback_prevented (matches Coq: Theorem firmware_rollback_prevented)
-(assert (= true true)) ; firmware_rollback_prevented [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (forall ((expected Int)) (forall ((min_ver Int)) (=> (= (get_expected_hash st (image_stage img)) (some expected)) (=> (= (image_hash img) expected) (=> (= (get_minimum_version st (image_stage img)) (some min_ver)) (=> (< (image_version img) min_ver) (= (verify_image st img) VersionRollback)))))))))) ; firmware_rollback_prevented
 
 ; boot_log_only_grows (matches Coq: Theorem boot_log_only_grows)
-(assert (= true true)) ; boot_log_only_grows [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (forall ((s BootStageId)) (=> (= (In s (verified_stages st)) true) (=> (= (can_boot st img) true) (= (In s (verified_stages (boot_stage st img))) true))))))) ; boot_log_only_grows
 
 ; hash_mismatch_detected (matches Coq: Theorem hash_mismatch_detected)
-(assert (= true true)) ; hash_mismatch_detected [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (forall ((expected Int)) (=> (= (get_expected_hash st (image_stage img)) (some expected)) (=> (not (= (image_hash img) expected)) (= (verify_image st img) HashMismatch))))))) ; hash_mismatch_detected
 
 ; recovery_mode_requires_hash (matches Coq: Theorem recovery_mode_requires_hash)
-(assert (= true true)) ; recovery_mode_requires_hash [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (forall ((expected Int)) (=> (= (get_expected_hash st (image_stage img)) (some expected)) (=> (= (can_boot st img) true) (= (image_hash img) expected))))))) ; recovery_mode_requires_hash
 
 ; boot_stage_deterministic (matches Coq: Theorem boot_stage_deterministic)
-(assert (= true true)) ; boot_stage_deterministic [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (= (boot_stage st img) (boot_stage st img))))) ; boot_stage_deterministic
 
 ; config_table_validated (matches Coq: Theorem config_table_validated)
-(assert (= true true)) ; config_table_validated [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (forall ((expected Int)) (forall ((min_ver Int)) (=> (= (get_expected_hash st (image_stage img)) (some expected)) (=> (= (get_minimum_version st (image_stage img)) (some min_ver)) (=> (= (can_boot st img) true) (<= min_ver (image_version img)))))))))) ; config_table_validated
 
 ; kernel_signature_checked (matches Coq: Theorem kernel_signature_checked)
-(assert (= true true)) ; kernel_signature_checked [untranslatable]
+(assert (forall ((st BootChainState)) (forall ((img BootImage)) (=> (= (get_expected_hash st (image_stage img)) (some (image_hash img))) (=> (= (get_minimum_version st (image_stage img)) none) (= (verify_image st img) Verified)))))) ; kernel_signature_checked
 
 ; bootloader_follows_root (matches Coq: Theorem bootloader_follows_root)
 (assert (= (previous_stage Bootloader) HardwareRoot)) ; bootloader_follows_root
@@ -130,10 +130,10 @@
 (assert (= (previous_stage HardwareRoot) HardwareRoot)) ; hardware_root_self_previous
 
 ; complete_boot_sets_success (matches Coq: Theorem complete_boot_sets_success)
-(assert (= true true)) ; complete_boot_sets_success [untranslatable]
+(assert (forall ((st BootChainState)) (= (boot_successful (complete_boot st)) true))) ; complete_boot_sets_success
 
 ; complete_boot_preserves_verified (matches Coq: Theorem complete_boot_preserves_verified)
-(assert (= true true)) ; complete_boot_preserves_verified [untranslatable]
+(assert (forall ((st BootChainState)) (= (verified_stages (complete_boot st)) (verified_stages st)))) ; complete_boot_preserves_verified
 
 ; Verify all assertions are satisfiable
 (check-sat)

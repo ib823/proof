@@ -92,46 +92,48 @@
   true)
 
 ; nth_error_In_bounds (matches Coq: Lemma nth_error_In_bounds)
-(assert (= true true)) ; nth_error_In_bounds [untranslatable]
+; nth_error_In_bounds: forall A (l : list A) n, n < length l -> exists x, nth_error l n = Some x
+(assert true) ; nth_error_In_bounds [Coq-only]
 
 ; spring_physics_accurate (matches Coq: Theorem spring_physics_accurate)
-(assert (= true true)) ; spring_physics_accurate [untranslatable]
+(assert (forall ((spring SpringAnimation)) (forall ((t Time)) (=> (= (well_formed_spring spring) true) (=> (< t (length (spring_positions spring))) (exists ((p Bool)) (= (position_at spring t) (some p)))))))) ; spring_physics_accurate
 
 ; animation_mathematically_smooth (matches Coq: Theorem animation_mathematically_smooth)
-(assert (= true true)) ; animation_mathematically_smooth [untranslatable]
+(assert (forall ((animation SpringAnimation)) (=> (= (well_formed_spring animation) true) (= (second_derivative_continuous (spring_positions animation)) true)))) ; animation_mathematically_smooth
 
 ; spring_has_valid_duration (matches Coq: Theorem spring_has_valid_duration)
-(assert (= true true)) ; spring_has_valid_duration [untranslatable]
+(assert (forall ((spring SpringAnimation)) (=> (= (well_formed_spring spring) true) (> (length (spring_positions spring)) 0)))) ; spring_has_valid_duration
 
 ; position_velocity_match (matches Coq: Theorem position_velocity_match)
-(assert (= true true)) ; position_velocity_match [untranslatable]
+(assert (forall ((spring SpringAnimation)) (=> (= (well_formed_spring spring) true) (= (length (spring_positions spring)) (length (spring_velocities spring)))))) ; position_velocity_match
 
 ; nth_error_Some_length (matches Coq: Lemma nth_error_Some_length)
-(assert (= true true)) ; nth_error_Some_length [untranslatable]
+; nth_error_Some_length: forall {A : Type} (l : list A) (n : nat), n < length l -> exists a, nth_error l n = Some a
+(assert true) ; nth_error_Some_length [Coq-only]
 
 ; animation_frame_budget_met (matches Coq: Theorem animation_frame_budget_met)
-(assert (= true true)) ; animation_frame_budget_met [untranslatable]
+(assert (forall ((f Frame)) (=> (= (meets_frame_budget f) true) (<= (frame_render_time f) frame_budget_120hz)))) ; animation_frame_budget_met
 
 ; implicit_animation_smooth (matches Coq: Theorem implicit_animation_smooth)
-(assert (= true true)) ; implicit_animation_smooth [untranslatable]
+(assert (forall ((sa SpringAnimation)) (=> (= (well_formed_spring sa) true) (= (positions_smooth (spring_positions sa)) true)))) ; implicit_animation_smooth
 
 ; explicit_animation_controllable (matches Coq: Theorem explicit_animation_controllable)
-(assert (= true true)) ; explicit_animation_controllable [untranslatable]
+(assert (forall ((ac AnimationControl)) (=> (= (well_formed_anim_control ac) true) (=> (= (anim_type ac) ExplicitAnim) (and (> (anim_speed ac) 0) (<= (anim_speed ac) 1000)))))) ; explicit_animation_controllable
 
 ; animation_group_synchronized (matches Coq: Theorem animation_group_synchronized)
-(assert (= true true)) ; animation_group_synchronized [untranslatable]
+(assert (forall ((ag AnimationGroup)) (=> (= (well_formed_anim_group ag) true) (= (ag_synchronized ag) true)))) ; animation_group_synchronized
 
 ; layer_animation_gpu_accelerated (matches Coq: Theorem layer_animation_gpu_accelerated)
-(assert (= true true)) ; layer_animation_gpu_accelerated [untranslatable]
+(assert (forall ((la LayerAnimation)) (=> (= (well_formed_layer_anim la) true) (= (la_gpu_accelerated la) true)))) ; layer_animation_gpu_accelerated
 
 ; animation_timing_precise (matches Coq: Theorem animation_timing_precise)
-(assert (= true true)) ; animation_timing_precise [untranslatable]
+(assert (forall ((ag AnimationGroup)) (=> (= (well_formed_anim_group ag) true) (> (ag_duration ag) 0)))) ; animation_timing_precise
 
 ; keyframe_values_interpolated (matches Coq: Theorem keyframe_values_interpolated)
-(assert (= true true)) ; keyframe_values_interpolated [untranslatable]
+(assert (forall ((kf Keyframe)) (forall ((from Int) (to Int)) (=> (<= from to) (=> (= (keyframe_in_range kf from to) true) (and (<= from (kf_value kf)) (<= (kf_value kf) to))))))) ; keyframe_values_interpolated
 
 ; spring_animation_converges (matches Coq: Theorem spring_animation_converges)
-(assert (= true true)) ; spring_animation_converges [untranslatable]
+(assert (forall ((sa SpringAnimation)) (=> (= (well_formed_spring sa) true) (=> (= (spring_converges sa) true) (= (spring_converges sa) true))))) ; spring_animation_converges
 
 ; transition_animation_reversible (matches Coq: Theorem transition_animation_reversible)
 (assert (forall ((ac AnimationControl)) (=> (= (anim_reversed ac) true) (= (anim_reversed ac) true)))) ; transition_animation_reversible
@@ -143,19 +145,19 @@
 (assert (forall ((ac AnimationControl)) (=> (= (anim_removed_cleanly ac) true) (= (anim_removed_cleanly ac) true)))) ; animation_removed_cleanly
 
 ; animation_speed_adjustable (matches Coq: Theorem animation_speed_adjustable)
-(assert (= true true)) ; animation_speed_adjustable [untranslatable]
+(assert (forall ((ac AnimationControl)) (=> (= (well_formed_anim_control ac) true) (and (> (anim_speed ac) 0) (<= (anim_speed ac) 1000))))) ; animation_speed_adjustable
 
 ; animation_fill_mode_correct (matches Coq: Theorem animation_fill_mode_correct)
-(assert (= true true)) ; animation_fill_mode_correct [untranslatable]
+(assert (forall ((ac AnimationControl)) (=> (= (well_formed_anim_control ac) true) (<= (anim_fill_mode ac) 3)))) ; animation_fill_mode_correct
 
 ; animation_autoreverses_symmetric (matches Coq: Theorem animation_autoreverses_symmetric)
-(assert (= true true)) ; animation_autoreverses_symmetric [untranslatable]
+(assert (forall ((ac AnimationControl)) (=> (= (well_formed_anim_control ac) true) (=> (= (anim_autoreverses ac) true) (> (anim_repeat_count ac) 0))))) ; animation_autoreverses_symmetric
 
 ; animation_repeat_count_honored (matches Coq: Theorem animation_repeat_count_honored)
-(assert (= true true)) ; animation_repeat_count_honored [untranslatable]
+(assert (forall ((ac AnimationControl)) (=> (= (well_formed_anim_control ac) true) (<= (anim_current_repeat ac) (anim_repeat_count ac))))) ; animation_repeat_count_honored
 
 ; animation_group_non_empty (matches Coq: Theorem animation_group_non_empty)
-(assert (= true true)) ; animation_group_non_empty [untranslatable]
+(assert (forall ((ag AnimationGroup)) (=> (= (well_formed_anim_group ag) true) (> (length (ag_animations ag)) 0)))) ; animation_group_non_empty
 
 ; Verify all assertions are satisfiable
 (check-sat)

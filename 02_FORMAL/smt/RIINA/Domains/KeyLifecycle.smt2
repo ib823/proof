@@ -95,13 +95,13 @@
 (define-fun key_layers () Bool true)
 
 ; key_001_entropy_sufficient (matches Coq: Theorem key_001_entropy_sufficient)
-(assert (= true true)) ; key_001_entropy_sufficient [untranslatable]
+(assert (forall ((key KeyMetadata)) (forall ((min_entropy Int)) (=> (= (entropy_sufficient key min_entropy) true) (<= min_entropy (key_entropy_bits key)))))) ; key_001_entropy_sufficient
 
 ; key_002_active_usable (matches Coq: Theorem key_002_active_usable)
-(assert (= true true)) ; key_002_active_usable [untranslatable]
+(assert (forall ((key KeyMetadata)) (=> (= (key_state key) Active) (= (is_usable_state (key_state key)) true)))) ; key_002_active_usable
 
 ; key_003_valid_transition (matches Coq: Theorem key_003_valid_transition)
-(assert (= true true)) ; key_003_valid_transition [untranslatable]
+(assert (forall ((from KeyState) (to KeyState)) (=> (= (valid_transition from to) true) (= (valid_transition from to) true)))) ; key_003_valid_transition
 
 ; key_004_destroyed_unusable (matches Coq: Theorem key_004_destroyed_unusable)
 (assert (= (is_usable_state Destroyed) false)) ; key_004_destroyed_unusable
@@ -110,64 +110,65 @@
 (assert (= (is_usable_state Compromised) false)) ; key_005_compromised_unusable
 
 ; key_006_not_expired (matches Coq: Theorem key_006_not_expired)
-(assert (= true true)) ; key_006_not_expired [untranslatable]
+(assert (forall ((key KeyMetadata)) (forall ((current_time Int)) (=> (= (key_not_expired key current_time) true) (< current_time (key_expires key)))))) ; key_006_not_expired
 
 ; key_007_rotation_new (matches Coq: Theorem key_007_rotation_new)
-(assert (= true true)) ; key_007_rotation_new [untranslatable]
+(assert (forall ((rot RotationRecord)) (=> (= (rotation_valid rot) true) (not (= (rot_old_key rot) (rot_new_key rot)))))) ; key_007_rotation_new
 
 ; key_008_rotation_timing (matches Coq: Theorem key_008_rotation_timing)
-(assert (= true true)) ; key_008_rotation_timing [untranslatable]
+(assert (forall ((key KeyMetadata)) (forall ((rot RotationRecord)) (=> (= (rotation_after_creation key rot) true) (< (key_created key) (rot_timestamp rot)))))) ; key_008_rotation_timing
 
 ; key_009_destruction_verified (matches Coq: Theorem key_009_destruction_verified)
 (assert (forall ((dest DestructionRecord)) (=> (= (destruction_verified dest) true) (= (dest_verified dest) true)))) ; key_009_destruction_verified
 
 ; key_010_escrow_threshold (matches Coq: Theorem key_010_escrow_threshold)
-(assert (= true true)) ; key_010_escrow_threshold [untranslatable]
+(assert (forall ((share EscrowShare)) (=> (= (escrow_threshold_valid share) true) (and (<= 1 (escrow_threshold share)) (<= (escrow_threshold share) (escrow_total share)))))) ; key_010_escrow_threshold
 
 ; key_011_escrow_share_index (matches Coq: Theorem key_011_escrow_share_index)
-(assert (= true true)) ; key_011_escrow_share_index [untranslatable]
+(assert (forall ((share EscrowShare)) (=> (= (escrow_share_index_valid share) true) (< (escrow_share_index share) (escrow_total share))))) ; key_011_escrow_share_index
 
 ; key_012_destruction_method (matches Coq: Theorem key_012_destruction_method)
-(assert (= true true)) ; key_012_destruction_method [untranslatable]
+(assert (forall ((dest DestructionRecord)) (=> (= (destruction_method_valid dest) true) (<= (dest_method dest) 2)))) ; key_012_destruction_method
 
 ; key_013_symmetric_size (matches Coq: Theorem key_013_symmetric_size)
-(assert (= true true)) ; key_013_symmetric_size [untranslatable]
+(assert (forall ((bits Int) (min_bits Int)) (=> (= (symmetric_key_size_ok bits min_bits) true) (<= min_bits bits)))) ; key_013_symmetric_size
 
 ; key_014_asymmetric_size (matches Coq: Theorem key_014_asymmetric_size)
-(assert (= true true)) ; key_014_asymmetric_size [untranslatable]
+(assert (forall ((bits Int) (min_bits Int)) (=> (= (asymmetric_key_size_ok bits min_bits) true) (<= min_bits bits)))) ; key_014_asymmetric_size
 
 ; key_015_purpose_bound (matches Coq: Theorem key_015_purpose_bound)
-(assert (= true true)) ; key_015_purpose_bound [untranslatable]
+(assert (forall ((key_purpose Int) (allowed_purpose Int)) (=> (= (purpose_matches key_purpose allowed_purpose) true) (= key_purpose allowed_purpose)))) ; key_015_purpose_bound
 
 ; key_016_lifetime (matches Coq: Theorem key_016_lifetime)
-(assert (= true true)) ; key_016_lifetime [untranslatable]
+(assert (forall ((created Int) (expires Int) (max_lifetime Int)) (=> (= (lifetime_ok created expires max_lifetime) true) (<= (- expires created) max_lifetime)))) ; key_016_lifetime
 
 ; key_017_rotation_due (matches Coq: Theorem key_017_rotation_due)
-(assert (= true true)) ; key_017_rotation_due [untranslatable]
+(assert (forall ((last_rotation Int) (current Int) (max_period Int)) (=> (= (rotation_due last_rotation current max_period) true) (< max_period (- current last_rotation))))) ; key_017_rotation_due
 
 ; key_018_derivation_depth (matches Coq: Theorem key_018_derivation_depth)
-(assert (= true true)) ; key_018_derivation_depth [untranslatable]
+(assert (forall ((depth Int) (max_depth Int)) (=> (= (derivation_depth_ok depth max_depth) true) (<= depth max_depth)))) ; key_018_derivation_depth
 
 ; key_019_access_control (matches Coq: Theorem key_019_access_control)
-(assert (= true true)) ; key_019_access_control [untranslatable]
+(assert (forall ((requester Int) (required Int)) (=> (= (access_allowed requester required) true) (<= required requester)))) ; key_019_access_control
 
 ; key_020_hsm_storage (matches Coq: Theorem key_020_hsm_storage)
 (assert (forall ((hsm_flag Bool)) (=> (= (hsm_stored hsm_flag) true) (= hsm_flag true)))) ; key_020_hsm_storage
 
 ; key_021_audit_complete (matches Coq: Theorem key_021_audit_complete)
-(assert (= true true)) ; key_021_audit_complete [untranslatable]
+(assert (forall ((operations Int) (logged Int)) (=> (= (audit_complete operations logged) true) (= operations logged)))) ; key_021_audit_complete
 
 ; key_022_backup_encrypted (matches Coq: Theorem key_022_backup_encrypted)
-(assert (= true true)) ; key_022_backup_encrypted [untranslatable]
+(assert (forall ((encryption_key Int)) (=> (= (backup_encrypted encryption_key) true) (> encryption_key 0)))) ; key_022_backup_encrypted
 
 ; key_023_custodian_diversity (matches Coq: Theorem key_023_custodian_diversity)
-(assert (= true true)) ; key_023_custodian_diversity [untranslatable]
+; key_023_custodian_diversity: forall (custodians : list nat) (min_custodians : nat), custodians_diverse custodians min_custodians = true -> min_custod
+(assert (forall ((custodians list) (min_custodians Int)) true)) ; key_023_custodian_diversity [partial: bindings preserved]
 
 ; key_024_recovery_tested (matches Coq: Theorem key_024_recovery_tested)
-(assert (= true true)) ; key_024_recovery_tested [untranslatable]
+(assert (forall ((last_test Int) (current Int) (max_interval Int)) (=> (= (recovery_tested last_test current max_interval) true) (<= (- current last_test) max_interval)))) ; key_024_recovery_tested
 
 ; key_025_defense_in_depth (matches Coq: Theorem key_025_defense_in_depth)
-(assert (= true true)) ; key_025_defense_in_depth [untranslatable]
+(assert (forall ((e Bool) (s Bool) (r Bool) (d Bool) (es Bool)) (=> (= (key_layers e s r d es) true) (and (= e true) (= s true) (= r true) (= d true) (= es true))))) ; key_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

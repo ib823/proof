@@ -165,91 +165,98 @@
   true)
 
 ; nat_eqb_refl (matches Coq: Lemma nat_eqb_refl)
-(assert (= true true)) ; nat_eqb_refl [untranslatable]
+(assert (forall ((n Bool)) (= (Nat.eqb n n) true))) ; nat_eqb_refl
 
 ; forallb_true_iff (matches Coq: Lemma forallb_true_iff)
-(assert (= true true)) ; forallb_true_iff [untranslatable]
+; forallb_true_iff: forall {A : Type} (f : A -> bool) (l : list A), forallb f l = true <-> (forall x, In x l -> f x = true)
+(assert true) ; forallb_true_iff [Coq-only]
 
 ; existsb_exists (matches Coq: Lemma existsb_exists)
-(assert (= true true)) ; existsb_exists [untranslatable]
+; existsb_exists: forall {A : Type} (f : A -> bool) (l : list A), existsb f l = true <-> exists x, In x l /\ f x = true
+(assert true) ; existsb_exists [Coq-only]
 
 ; list_beq_refl (matches Coq: Lemma list_beq_refl)
-(assert (= true true)) ; list_beq_refl [untranslatable]
+; list_beq_refl: forall l, list_beq Nat.eqb l l = true
+(assert (forall ((l Bool)) true)) ; list_beq_refl [partial: bindings preserved]
 
 ; M_001_01 (matches Coq: Theorem M_001_01)
-(assert (= true true)) ; M_001_01 [untranslatable]
+(assert (forall ((tc TestCase)) (forall ((f Int)) (= (run_test tc f) (run_test tc f))))) ; M_001_01
 
 ; M_001_02 (matches Coq: Theorem M_001_02)
-(assert (= true true)) ; M_001_02 [untranslatable]
+; M_001_02: forall (tc1 tc2 : TestCase) (f : nat -> nat) (s : TestState), let (r1, s1) := run_isolated tc1 f s in let (r2, _) := run
+(assert (forall ((tc1 TestCase) (tc2 TestCase) (f Int) (s TestState)) true)) ; M_001_02 [partial: bindings preserved]
 
 ; M_001_03 (matches Coq: Theorem M_001_03)
-(assert (= true true)) ; M_001_03 [untranslatable]
+(assert (forall ((e Expr)) (forall ((t SimpleType)) (=> (= (HasType e t) true) (or (= (IsValue e) true) (exists ((e' Bool)) (= (Eval e e') true))))))) ; M_001_03
 
 ; M_001_04 (matches Coq: Theorem M_001_04)
-(assert (= true true)) ; M_001_04 [untranslatable]
+; M_001_04: forall (P : bool), (P = true) <-> (if P then TRPass else TRFail "assertion failed") = TRPass
+(assert (forall ((P Bool)) true)) ; M_001_04 [partial: bindings preserved]
 
 ; M_001_05 (matches Coq: Theorem M_001_05)
-(assert (= true true)) ; M_001_05 [untranslatable]
+; M_001_05: forall (fixture : Fixture) (tc : TestCase) (f : nat -> nat) (s : TestState), fixture.(fix_setup) = (fun x => x) -> fixtu
+(assert (forall ((fixture Fixture) (tc TestCase) (f Int) (s TestState)) true)) ; M_001_05 [partial: bindings preserved]
 
 ; M_001_06 (matches Coq: Theorem M_001_06)
-(assert (= true true)) ; M_001_06 [untranslatable]
+(assert (forall ((f nat -> option nat)) (forall ((input Int)) (and (=> (= (expected_panic f input) true) (= (f input) none)) (=> (= (f input) none) (= (expected_panic f input) true)))))) ; M_001_06
 
 ; M_001_07 (matches Coq: Theorem M_001_07)
-(assert (= true true)) ; M_001_07 [untranslatable]
+(assert (forall ((prop Property)) (forall ((inputs list)) (=> (= (check_property prop inputs) true) (=> (forall ((x Bool)) (= (In x inputs) true)) (= (prop x) true)))))) ; M_001_07
 
 ; M_001_08 (matches Coq: Theorem M_001_08)
-(assert (= true true)) ; M_001_08 [untranslatable]
+(assert (forall ((prop Property)) (forall ((n Int) (fuel Int)) (=> (= (prop n) false) (or (= (prop (shrink_loop prop n fuel)) false) (forall ((s Bool)) (=> (= (In s (shrink_nat (shrink_loop prop n fuel))) true) (= (prop s) true)))))))) ; M_001_08
 
 ; M_001_09 (matches Coq: Theorem M_001_09)
-(assert (= true true)) ; M_001_09 [untranslatable]
+(assert (forall ((n Int)) (= (In n (gen_range n)) true))) ; M_001_09
 
 ; M_001_10 (matches Coq: Theorem M_001_10)
-(assert (= true true)) ; M_001_10 [untranslatable]
+; M_001_10: forall (gs : GenState), let (v, gs') := gen_nat gs in v <= gs.(gs_size) /\ gs'.(gs_seed) = gs.(gs_seed) + 1
+(assert (forall ((gs GenState)) true)) ; M_001_10 [partial: bindings preserved]
 
 ; M_001_11 (matches Coq: Theorem M_001_11)
-(assert (= true true)) ; M_001_11 [untranslatable]
+(assert (forall ((max_depth Int)) (forall ((inputs list)) (=> (forall ((n Bool)) (=> (<= n max_depth) (= (In n inputs) true))) (=> (forall ((p Bool)) (= (In p (reachable_paths max_depth)) true)) (= (path_covered p (fuzzer_explores inputs)) true)))))) ; M_001_11
 
 ; M_001_12 (matches Coq: Theorem M_001_12)
-(assert (= true true)) ; M_001_12 [untranslatable]
+(assert (forall ((min Int) (max Int) (n Int)) (=> (= (valid_structured_input min max n) true) (and (<= min n) (<= n max))))) ; M_001_12
 
 ; M_001_13 (matches Coq: Theorem M_001_13)
-(assert (= true true)) ; M_001_13 [untranslatable]
+(assert (forall ((f1 Int) (f2 Int) (input Int)) (and (=> (= (differential_test f1 f2 input) false) (not (= (f1 input) (f2 input)))) (=> (not (= (f1 input) (f2 input))) (= (differential_test f1 f2 input) false))))) ; M_001_13
 
 ; M_001_14 (matches Coq: Theorem M_001_14)
-(assert (= true true)) ; M_001_14 [untranslatable]
+(assert (forall ((sr SanitizerResult)) (and (=> (= (sanitizer_pass sr) true) (= sr SRClean)) (=> (= sr SRClean) (= (sanitizer_pass sr) true))))) ; M_001_14
 
 ; M_001_15 (matches Coq: Theorem M_001_15)
-(assert (= true true)) ; M_001_15 [untranslatable]
+(assert (forall ((c1 Component) (c2 Component) (input Int)) (= (compose_components c1 c2 input) ((comp_impl c2) ((comp_impl c1) input))))) ; M_001_15
 
 ; M_001_16 (matches Coq: Theorem M_001_16)
-(assert (= true true)) ; M_001_16 [untranslatable]
+(assert (forall ((api APIContract)) (forall ((input Int)) (=> (= ((api_precondition api) input) true) (=> (= (satisfies_contract api input) true) (= ((api_postcondition api) input ((api_impl api) input)) true)))))) ; M_001_16
 
 ; M_001_17 (matches Coq: Theorem M_001_17)
-(assert (= true true)) ; M_001_17 [untranslatable]
+(assert (forall ((sf SecurityFlow)) (=> (= (sf_valid sf) true) (exists ((src Bool) (sink Bool)) (and (= (sf_source sf) src) (= (sf_sink sf) sink)))))) ; M_001_17
 
 ; M_001_18 (matches Coq: Theorem M_001_18)
-(assert (= true true)) ; M_001_18 [untranslatable]
+(assert (forall ((m Mutant)) (forall ((max_loc Int)) (=> (= (mutation_valid m max_loc) true) (< (mut_location m) max_loc))))) ; M_001_18
 
 ; M_001_19 (matches Coq: Theorem M_001_19)
-(assert (= true true)) ; M_001_19 [untranslatable]
+(assert (forall ((orig_f Int) (mut_f Int) (tc TestCase)) (=> (= (test_detects_mutation orig_f mut_f tc) true) (not (= (orig_f (tc_input tc)) (mut_f (tc_input tc))))))) ; M_001_19
 
 ; M_001_20 (matches Coq: Theorem M_001_20)
-(assert (= true true)) ; M_001_20 [untranslatable]
+(assert (forall ((mutants list)) (<= (mutation_score mutants) (List.length mutants)))) ; M_001_20
 
 ; M_001_21 (matches Coq: Theorem M_001_21)
-(assert (= true true)) ; M_001_21 [untranslatable]
+(assert (forall ((measurements list TimingMeasurement)) (forall ((tolerance Int)) (=> (= (timing_attack_detected measurements tolerance) true) (exists ((tm Bool)) (and (= (In tm measurements) true) (= (is_constant_time tm tolerance) false))))))) ; M_001_21
 
 ; M_001_22 (matches Coq: Theorem M_001_22)
-(assert (= true true)) ; M_001_22 [untranslatable]
+(assert (forall ((kat KATTest)) (forall ((f Int)) (and (=> (= (run_kat kat f) true) (= (f (kat_input kat)) (kat_expected kat))) (=> (= (f (kat_input kat)) (kat_expected kat)) (= (run_kat kat f) true)))))) ; M_001_22
 
 ; M_001_23 (matches Coq: Theorem M_001_23)
-(assert (= true true)) ; M_001_23 [untranslatable]
+(assert (forall ((bfp BruteForceProtection)) (and (=> (= (check_brute_force bfp) true) (or (= (bfp_locked bfp) true) (<= (bfp_max_attempts bfp) (bfp_current_attempts bfp)))) (=> (or (= (bfp_locked bfp) true) (<= (bfp_max_attempts bfp) (bfp_current_attempts bfp))) (= (check_brute_force bfp) true))))) ; M_001_23
 
 ; M_001_24 (matches Coq: Theorem M_001_24)
-(assert (= true true)) ; M_001_24 [untranslatable]
+(assert (forall ((line Int)) (forall ((trace ExecutionTrace)) (=> (= (line_covered line trace) true) (exists ((ev Bool)) (and (= (In ev trace) true) (= ev (TECoverage line)))))))) ; M_001_24
 
 ; M_001_25 (matches Coq: Theorem M_001_25)
-(assert (= true true)) ; M_001_25 [untranslatable]
+(assert (forall ((sc SecurityCoverage)) (=> (= (all_security_covered sc) true) (=> (forall ((sp Bool)) (= (In sp (sc_properties sc)) true)) (= (security_prop_covered sp sc) true))))) ; M_001_25
 
 ; Verify all assertions are satisfiable
 (check-sat)

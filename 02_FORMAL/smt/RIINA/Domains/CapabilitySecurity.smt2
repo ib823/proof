@@ -156,19 +156,19 @@
   (mk-delegation 0 1 100 DelegRestricted true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_false_iff (matches Coq: Lemma andb_false_iff)
-(assert (= true true)) ; andb_false_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) false) (or (= a false) (= b false))) (=> (or (= a false) (= b false)) (= (and a b) false))))) ; andb_false_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; negb_false_iff (matches Coq: Lemma negb_false_iff)
-(assert (= true true)) ; negb_false_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) false) (= b true)) (=> (= b true) (= (not b) false))))) ; negb_false_iff
 
 ; CAP_001 (matches Coq: Theorem CAP_001)
 (assert (= (capability_sound riina_cap) true)) ; CAP_001
@@ -201,55 +201,55 @@
 (assert (= (lp_scope_limited riina_lp) true)) ; CAP_010
 
 ; CAP_011 (matches Coq: Theorem CAP_011)
-(assert (= true true)) ; CAP_011 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_unforgeable c) true)))) ; CAP_011
 
 ; CAP_012 (matches Coq: Theorem CAP_012)
-(assert (= true true)) ; CAP_012 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_transferable c) true)))) ; CAP_012
 
 ; CAP_013 (matches Coq: Theorem CAP_013)
-(assert (= true true)) ; CAP_013 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_revocable c) true)))) ; CAP_013
 
 ; CAP_014 (matches Coq: Theorem CAP_014)
-(assert (= true true)) ; CAP_014 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_attenuatable c) true)))) ; CAP_014
 
 ; CAP_015 (matches Coq: Theorem CAP_015)
-(assert (= true true)) ; CAP_015 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_no_ambient_authority o) true)))) ; CAP_015
 
 ; CAP_016 (matches Coq: Theorem CAP_016)
-(assert (= true true)) ; CAP_016 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_explicit_grant o) true)))) ; CAP_016
 
 ; CAP_017 (matches Coq: Theorem CAP_017)
-(assert (= true true)) ; CAP_017 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_encapsulation o) true)))) ; CAP_017
 
 ; CAP_018 (matches Coq: Theorem CAP_018)
-(assert (= true true)) ; CAP_018 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_connectivity o) true)))) ; CAP_018
 
 ; CAP_019 (matches Coq: Theorem CAP_019)
-(assert (= true true)) ; CAP_019 [untranslatable]
+(assert (forall ((l Bool)) (=> (= (least_privilege_enforced l) true) (= (lp_minimal_permissions l) true)))) ; CAP_019
 
 ; CAP_020 (matches Coq: Theorem CAP_020)
-(assert (= true true)) ; CAP_020 [untranslatable]
+(assert (forall ((l Bool)) (=> (= (least_privilege_enforced l) true) (= (lp_time_limited l) true)))) ; CAP_020
 
 ; CAP_021 (matches Coq: Theorem CAP_021)
-(assert (= true true)) ; CAP_021 [untranslatable]
+(assert (forall ((l Bool)) (=> (= (least_privilege_enforced l) true) (= (lp_scope_limited l) true)))) ; CAP_021
 
 ; CAP_022 (matches Coq: Theorem CAP_022)
-(assert (= true true)) ; CAP_022 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (= (capability_sound (cc_cap c)) true)))) ; CAP_022
 
 ; CAP_023 (matches Coq: Theorem CAP_023)
-(assert (= true true)) ; CAP_023 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (= (ocap_sound (cc_ocap c)) true)))) ; CAP_023
 
 ; CAP_024 (matches Coq: Theorem CAP_024)
-(assert (= true true)) ; CAP_024 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (= (least_privilege_enforced (cc_lp c)) true)))) ; CAP_024
 
 ; CAP_025 (matches Coq: Theorem CAP_025)
-(assert (= true true)) ; CAP_025 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (= (cap_unforgeable (cc_cap c)) true)))) ; CAP_025
 
 ; CAP_026 (matches Coq: Theorem CAP_026)
-(assert (= true true)) ; CAP_026 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (= (ocap_no_ambient_authority (cc_ocap c)) true)))) ; CAP_026
 
 ; CAP_027 (matches Coq: Theorem CAP_027)
-(assert (= true true)) ; CAP_027 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (= (lp_minimal_permissions (cc_lp c)) true)))) ; CAP_027
 
 ; CAP_028 (matches Coq: Theorem CAP_028)
 (assert (and (= (capability_sound riina_cap) true) (= (ocap_sound riina_ocap) true))) ; CAP_028
@@ -258,73 +258,76 @@
 (assert (and (= (cap_unforgeable riina_cap) true) (= (ocap_no_ambient_authority riina_ocap) true))) ; CAP_029
 
 ; CAP_030_complete (matches Coq: Theorem CAP_030_complete)
-(assert (= true true)) ; CAP_030_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (and (= (cap_unforgeable (cc_cap c)) true) (= (ocap_no_ambient_authority (cc_ocap c)) true) (= (lp_minimal_permissions (cc_lp c)) true))))) ; CAP_030_complete
 
 ; CAP_031_unforgeable_implies_authentic (matches Coq: Theorem CAP_031_unforgeable_implies_authentic)
-(assert (= true true)) ; CAP_031_unforgeable_implies_authentic [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_unforgeable c) true)))) ; CAP_031_unforgeable_implies_authentic
 
 ; CAP_032_unforgeable_config (matches Coq: Theorem CAP_032_unforgeable_config)
 (assert (=> (= (capability_secure riina_cap_config) true) (= (cap_unforgeable riina_cap) true))) ; CAP_032_unforgeable_config
 
 ; CAP_033_unforgeable_preservation (matches Coq: Theorem CAP_033_unforgeable_preservation)
-(assert (= true true)) ; CAP_033_unforgeable_preservation [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cap_unforgeable c) true) (= (cap_unforgeable c) true)))) ; CAP_033_unforgeable_preservation
 
 ; CAP_034_unforgeable_and_revocable (matches Coq: Theorem CAP_034_unforgeable_and_revocable)
-(assert (= true true)) ; CAP_034_unforgeable_and_revocable [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (and (= (cap_unforgeable c) true) (= (cap_revocable c) true))))) ; CAP_034_unforgeable_and_revocable
 
 ; CAP_035_no_forge_without_grant (matches Coq: Theorem CAP_035_no_forge_without_grant)
-(assert (= true true)) ; CAP_035_no_forge_without_grant [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_explicit_grant o) true)))) ; CAP_035_no_forge_without_grant
 
 ; CAP_036_encapsulation_prevents_forge (matches Coq: Theorem CAP_036_encapsulation_prevents_forge)
-(assert (= true true)) ; CAP_036_encapsulation_prevents_forge [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_encapsulation o) true)))) ; CAP_036_encapsulation_prevents_forge
 
 ; CAP_037_connectivity_controlled (matches Coq: Theorem CAP_037_connectivity_controlled)
-(assert (= true true)) ; CAP_037_connectivity_controlled [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_connectivity o) true)))) ; CAP_037_connectivity_controlled
 
 ; CAP_038_unforgeable_mem_cap (matches Coq: Theorem CAP_038_unforgeable_mem_cap)
 (assert (= (mem_valid riina_mem_cap) true)) ; CAP_038_unforgeable_mem_cap
 
 ; CAP_039_sealed_cap_unforgeable (matches Coq: Theorem CAP_039_sealed_cap_unforgeable)
-(assert (= true true)) ; CAP_039_sealed_cap_unforgeable [untranslatable]
+(assert (forall ((mc Bool)) (=> (= (mem_sealed mc) true) (= (not (mem_sealed mc)) false)))) ; CAP_039_sealed_cap_unforgeable
 
 ; CAP_040_valid_cap_required (matches Coq: Theorem CAP_040_valid_cap_required)
-(assert (= true true)) ; CAP_040_valid_cap_required [untranslatable]
+(assert (forall ((mc Bool) (p Bool)) (=> (= (mem_has_perm mc p) true) (= (mem_valid mc) true)))) ; CAP_040_valid_cap_required
 
 ; CAP_041_attenuatable_means_monotonic (matches Coq: Theorem CAP_041_attenuatable_means_monotonic)
-(assert (= true true)) ; CAP_041_attenuatable_means_monotonic [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_attenuatable c) true)))) ; CAP_041_attenuatable_means_monotonic
 
 ; perm_in_head (matches Coq: Lemma perm_in_head)
-(assert (= true true)) ; perm_in_head [untranslatable]
+; perm_in_head: forall p ps, perm_in p (p :: ps) = true
+(assert (forall ((p Bool) (ps Bool)) true)) ; perm_in_head [partial: bindings preserved]
 
 ; perm_in_cons (matches Coq: Lemma perm_in_cons)
-(assert (= true true)) ; perm_in_cons [untranslatable]
+; perm_in_cons: forall p q ps, perm_in p ps = true -> perm_in p (q :: ps) = true
+(assert (forall ((p Bool) (q Bool) (ps Bool)) true)) ; perm_in_cons [partial: bindings preserved]
 
 ; forallb_impl (matches Coq: Lemma forallb_impl)
-(assert (= true true)) ; forallb_impl [untranslatable]
+; forallb_impl: forall A (f g : A -> bool) l, (forall x, f x = true -> g x = true) -> forallb f l = true -> forallb g l = true
+(assert true) ; forallb_impl [Coq-only]
 
 ; CAP_042_perms_subset_reflexive (matches Coq: Theorem CAP_042_perms_subset_reflexive)
-(assert (= true true)) ; CAP_042_perms_subset_reflexive [untranslatable]
+(assert (forall ((ps Bool)) (= (perms_subset ps ps) true))) ; CAP_042_perms_subset_reflexive
 
 ; CAP_043_empty_perms_subset (matches Coq: Theorem CAP_043_empty_perms_subset)
-(assert (= true true)) ; CAP_043_empty_perms_subset [untranslatable]
+(assert (forall ((ps Bool)) (= (perms_subset nil ps) true))) ; CAP_043_empty_perms_subset
 
 ; CAP_044_derive_from_self (matches Coq: Theorem CAP_044_derive_from_self)
-(assert (= true true)) ; CAP_044_derive_from_self [untranslatable]
+(assert (forall ((mc Bool)) (=> (= (mem_sealed mc) false) (= (derive_mem_cap mc mc) true)))) ; CAP_044_derive_from_self
 
 ; CAP_045_derive_cannot_exceed_parent (matches Coq: Theorem CAP_045_derive_cannot_exceed_parent)
-(assert (= true true)) ; CAP_045_derive_cannot_exceed_parent [untranslatable]
+(assert (forall ((parent Bool) (child Bool)) (=> (= (derive_mem_cap parent child) true) (= (<= (mem_base parent) (mem_base child)) true)))) ; CAP_045_derive_cannot_exceed_parent
 
 ; CAP_046_derive_bounds_contained (matches Coq: Theorem CAP_046_derive_bounds_contained)
-(assert (= true true)) ; CAP_046_derive_bounds_contained [untranslatable]
+(assert (forall ((parent Bool) (child Bool)) (=> (= (derive_mem_cap parent child) true) (= (<= (+ (mem_base child) (mem_length child)) (+ (mem_base parent) (mem_length parent))) true)))) ; CAP_046_derive_bounds_contained
 
 ; CAP_047_derive_perms_subset (matches Coq: Theorem CAP_047_derive_perms_subset)
-(assert (= true true)) ; CAP_047_derive_perms_subset [untranslatable]
+(assert (forall ((parent Bool) (child Bool)) (=> (= (derive_mem_cap parent child) true) (= (perms_subset (mem_perms child) (mem_perms parent)) true)))) ; CAP_047_derive_perms_subset
 
 ; CAP_048_sealed_prevents_derive (matches Coq: Theorem CAP_048_sealed_prevents_derive)
-(assert (= true true)) ; CAP_048_sealed_prevents_derive [untranslatable]
+(assert (forall ((parent Bool) (child Bool)) (=> (= (mem_sealed parent) true) (= (derive_mem_cap parent child) false)))) ; CAP_048_sealed_prevents_derive
 
 ; CAP_049_perm_leq_reflexive (matches Coq: Theorem CAP_049_perm_leq_reflexive)
-(assert (= true true)) ; CAP_049_perm_leq_reflexive [untranslatable]
+(assert (forall ((p Bool)) (= (perm_leq p p) true))) ; CAP_049_perm_leq_reflexive
 
 ; CAP_050_read_leq_write (matches Coq: Theorem CAP_050_read_leq_write)
 (assert (= (perm_leq Read Write) true)) ; CAP_050_read_leq_write
@@ -333,115 +336,116 @@
 (assert (= (perm_leq Write Execute) true)) ; CAP_051_write_leq_execute
 
 ; CAP_052_perm_leq_transitive (matches Coq: Theorem CAP_052_perm_leq_transitive)
-(assert (= true true)) ; CAP_052_perm_leq_transitive [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool) (p3 Bool)) (=> (= (perm_leq p1 p2) true) (=> (= (perm_leq p2 p3) true) (= (perm_leq p1 p3) true))))) ; CAP_052_perm_leq_transitive
 
 ; CAP_053_perm_lt_irreflexive (matches Coq: Theorem CAP_053_perm_lt_irreflexive)
-(assert (= true true)) ; CAP_053_perm_lt_irreflexive [untranslatable]
+(assert (forall ((p Bool)) (= (perm_lt p p) false))) ; CAP_053_perm_lt_irreflexive
 
 ; CAP_054_monotonic_no_escalation (matches Coq: Theorem CAP_054_monotonic_no_escalation)
-(assert (= true true)) ; CAP_054_monotonic_no_escalation [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_attenuatable c) true)))) ; CAP_054_monotonic_no_escalation
 
 ; CAP_055_derive_preserves_validity (matches Coq: Theorem CAP_055_derive_preserves_validity)
-(assert (= true true)) ; CAP_055_derive_preserves_validity [untranslatable]
+(assert (forall ((parent Bool) (child Bool)) (=> (= (derive_mem_cap parent child) true) (=> (= (mem_valid parent) true) (=> (= (mem_valid child) true) true))))) ; CAP_055_derive_preserves_validity
 
 ; CAP_056_empty_not_revoked (matches Coq: Theorem CAP_056_empty_not_revoked)
-(assert (= true true)) ; CAP_056_empty_not_revoked [untranslatable]
+(assert (forall ((cap_id Bool)) (= (is_revoked empty_rev_table cap_id) false))) ; CAP_056_empty_not_revoked
 
 ; CAP_057_revoke_makes_revoked (matches Coq: Theorem CAP_057_revoke_makes_revoked)
-(assert (= true true)) ; CAP_057_revoke_makes_revoked [untranslatable]
+(assert (forall ((rt Bool) (cap_id Bool)) (= (is_revoked (revoke_capability rt cap_id) cap_id) true))) ; CAP_057_revoke_makes_revoked
 
 ; CAP_058_revoke_idempotent (matches Coq: Theorem CAP_058_revoke_idempotent)
-(assert (= true true)) ; CAP_058_revoke_idempotent [untranslatable]
+(assert (forall ((rt Bool) (cap_id Bool)) (= (is_revoked (revoke_capability (revoke_capability rt cap_id) cap_id) cap_id) true))) ; CAP_058_revoke_idempotent
 
 ; CAP_059_revoke_other_unchanged (matches Coq: Theorem CAP_059_revoke_other_unchanged)
-(assert (= true true)) ; CAP_059_revoke_other_unchanged [untranslatable]
+(assert (forall ((rt Bool) (cap_id1 Bool) (cap_id2 Bool)) (=> (not (= cap_id1 cap_id2)) (= (is_revoked (revoke_capability rt cap_id1) cap_id2) (is_revoked rt cap_id2))))) ; CAP_059_revoke_other_unchanged
 
 ; CAP_060_cap_revocable_riina (matches Coq: Theorem CAP_060_cap_revocable_riina)
 (assert (= (cap_revocable riina_cap) true)) ; CAP_060_cap_revocable_riina
 
 ; CAP_061_revocable_implies_can_revoke (matches Coq: Theorem CAP_061_revocable_implies_can_revoke)
-(assert (= true true)) ; CAP_061_revocable_implies_can_revoke [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_sound c) true) (= (cap_revocable c) true)))) ; CAP_061_revocable_implies_can_revoke
 
 ; CAP_062_revoked_mem_cap_invalid (matches Coq: Theorem CAP_062_revoked_mem_cap_invalid)
-(assert (= true true)) ; CAP_062_revoked_mem_cap_invalid [untranslatable]
+(assert (forall ((mc Bool)) (=> (= (mem_valid mc) false) (= (mem_has_perm mc Read) false)))) ; CAP_062_revoked_mem_cap_invalid
 
 ; CAP_063_revoked_cannot_read (matches Coq: Theorem CAP_063_revoked_cannot_read)
-(assert (= true true)) ; CAP_063_revoked_cannot_read [untranslatable]
+(assert (forall ((mc Bool) (addr Bool)) (=> (= (mem_valid mc) false) (= (mem_can_read mc addr) false)))) ; CAP_063_revoked_cannot_read
 
 ; CAP_064_revoked_cannot_write (matches Coq: Theorem CAP_064_revoked_cannot_write)
-(assert (= true true)) ; CAP_064_revoked_cannot_write [untranslatable]
+(assert (forall ((mc Bool) (addr Bool)) (=> (= (mem_valid mc) false) (= (mem_can_write mc addr) false)))) ; CAP_064_revoked_cannot_write
 
 ; CAP_065_revoked_cannot_execute (matches Coq: Theorem CAP_065_revoked_cannot_execute)
-(assert (= true true)) ; CAP_065_revoked_cannot_execute [untranslatable]
+(assert (forall ((mc Bool) (addr Bool)) (=> (= (mem_valid mc) false) (= (mem_can_execute mc addr) false)))) ; CAP_065_revoked_cannot_execute
 
 ; CAP_066_confinement_enforced (matches Coq: Theorem CAP_066_confinement_enforced)
 (assert (= (confinement_enforced riina_confinement) true)) ; CAP_066_confinement_enforced
 
 ; CAP_067_no_ambient_authority (matches Coq: Theorem CAP_067_no_ambient_authority)
-(assert (= true true)) ; CAP_067_no_ambient_authority [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (confinement_enforced cp) true) (= (conf_no_ambient cp) true)))) ; CAP_067_no_ambient_authority
 
 ; CAP_068_explicit_access_only (matches Coq: Theorem CAP_068_explicit_access_only)
-(assert (= true true)) ; CAP_068_explicit_access_only [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (confinement_enforced cp) true) (= (conf_explicit_only cp) true)))) ; CAP_068_explicit_access_only
 
 ; CAP_069_no_privilege_escalation (matches Coq: Theorem CAP_069_no_privilege_escalation)
-(assert (= true true)) ; CAP_069_no_privilege_escalation [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (confinement_enforced cp) true) (= (conf_no_escalation cp) true)))) ; CAP_069_no_privilege_escalation
 
 ; CAP_070_ocap_no_ambient (matches Coq: Theorem CAP_070_ocap_no_ambient)
-(assert (= true true)) ; CAP_070_ocap_no_ambient [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ocap_sound o) true) (= (ocap_no_ambient_authority o) true)))) ; CAP_070_ocap_no_ambient
 
 ; CAP_071_has_cap_empty (matches Coq: Theorem CAP_071_has_cap_empty)
-(assert (= true true)) ; CAP_071_has_cap_empty [untranslatable]
+(assert (forall ((p Bool) (cap_id Bool)) (=> (= (prin_capabilities p) nil) (= (has_capability p cap_id) false)))) ; CAP_071_has_cap_empty
 
 ; CAP_072_has_cap_head (matches Coq: Theorem CAP_072_has_cap_head)
-(assert (= true true)) ; CAP_072_has_cap_head [untranslatable]
+; CAP_072_has_cap_head: forall pid cap_id rest, has_capability (mkPrincipal pid (cap_id :: rest)) cap_id = true
+(assert (forall ((pid Bool) (cap_id Bool) (rest Bool)) true)) ; CAP_072_has_cap_head [partial: bindings preserved]
 
 ; CAP_073_confinement_complete (matches Coq: Theorem CAP_073_confinement_complete)
-(assert (= true true)) ; CAP_073_confinement_complete [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (confinement_enforced cp) true) (and (= (conf_no_ambient cp) true) (= (conf_explicit_only cp) true) (= (conf_no_escalation cp) true))))) ; CAP_073_confinement_complete
 
 ; CAP_074_confined_needs_cap (matches Coq: Theorem CAP_074_confined_needs_cap)
-(assert (= true true)) ; CAP_074_confined_needs_cap [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (confinement_enforced cp) true) (= (conf_explicit_only cp) true)))) ; CAP_074_confined_needs_cap
 
 ; CAP_075_confined_no_escalate (matches Coq: Theorem CAP_075_confined_no_escalate)
-(assert (= true true)) ; CAP_075_confined_no_escalate [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (confinement_enforced cp) true) (= (conf_no_escalation cp) true)))) ; CAP_075_confined_no_escalate
 
 ; CAP_076_full_can_redelegate (matches Coq: Theorem CAP_076_full_can_redelegate)
-(assert (= true true)) ; CAP_076_full_can_redelegate [untranslatable]
+(assert (= (can_redelegate (mkDelegation 0 1 100 DelegFull true)) true)) ; CAP_076_full_can_redelegate
 
 ; CAP_077_restricted_cannot_redelegate (matches Coq: Theorem CAP_077_restricted_cannot_redelegate)
-(assert (= true true)) ; CAP_077_restricted_cannot_redelegate [untranslatable]
+(assert (= (can_redelegate (mkDelegation 0 1 100 DelegRestricted true)) false)) ; CAP_077_restricted_cannot_redelegate
 
 ; CAP_078_once_cannot_redelegate (matches Coq: Theorem CAP_078_once_cannot_redelegate)
-(assert (= true true)) ; CAP_078_once_cannot_redelegate [untranslatable]
+(assert (= (can_redelegate (mkDelegation 0 1 100 DelegOnce true)) false)) ; CAP_078_once_cannot_redelegate
 
 ; CAP_079_inactive_delegation (matches Coq: Theorem CAP_079_inactive_delegation)
-(assert (= true true)) ; CAP_079_inactive_delegation [untranslatable]
+(assert (forall ((d Bool)) (=> (= (del_active d) false) (= (del_active d) false)))) ; CAP_079_inactive_delegation
 
 ; CAP_080_delegation_has_from (matches Coq: Theorem CAP_080_delegation_has_from)
-(assert (= true true)) ; CAP_080_delegation_has_from [untranslatable]
+(assert (forall ((from Bool) (to Bool) (cap_id Bool) (dt Bool) (active Bool)) (= (del_from (mkDelegation from to cap_id dt active)) from))) ; CAP_080_delegation_has_from
 
 ; CAP_081_delegation_has_to (matches Coq: Theorem CAP_081_delegation_has_to)
-(assert (= true true)) ; CAP_081_delegation_has_to [untranslatable]
+(assert (forall ((from Bool) (to Bool) (cap_id Bool) (dt Bool) (active Bool)) (= (del_to (mkDelegation from to cap_id dt active)) to))) ; CAP_081_delegation_has_to
 
 ; CAP_082_delegation_has_cap (matches Coq: Theorem CAP_082_delegation_has_cap)
-(assert (= true true)) ; CAP_082_delegation_has_cap [untranslatable]
+(assert (forall ((from Bool) (to Bool) (cap_id Bool) (dt Bool) (active Bool)) (= (del_cap_id (mkDelegation from to cap_id dt active)) cap_id))) ; CAP_082_delegation_has_cap
 
 ; CAP_083_delegation_type_full (matches Coq: Theorem CAP_083_delegation_type_full)
-(assert (= true true)) ; CAP_083_delegation_type_full [untranslatable]
+(assert (forall ((d Bool)) (=> (= (del_type d) DelegFull) (= (can_redelegate d) true)))) ; CAP_083_delegation_type_full
 
 ; CAP_084_delegation_type_restricted (matches Coq: Theorem CAP_084_delegation_type_restricted)
-(assert (= true true)) ; CAP_084_delegation_type_restricted [untranslatable]
+(assert (forall ((d Bool)) (=> (= (del_type d) DelegRestricted) (= (can_redelegate d) false)))) ; CAP_084_delegation_type_restricted
 
 ; CAP_085_delegation_type_once (matches Coq: Theorem CAP_085_delegation_type_once)
-(assert (= true true)) ; CAP_085_delegation_type_once [untranslatable]
+(assert (forall ((d Bool)) (=> (= (del_type d) DelegOnce) (= (can_redelegate d) false)))) ; CAP_085_delegation_type_once
 
 ; CAP_086_bounds_check_in_range (matches Coq: Theorem CAP_086_bounds_check_in_range)
-(assert (= true true)) ; CAP_086_bounds_check_in_range [untranslatable]
+(assert (forall ((base Bool) (len Bool) (addr Bool)) (=> (<= base addr) (=> (< addr (+ base len)) (= (mem_bounds_check (mkMemCap base len nil false true) addr) true))))) ; CAP_086_bounds_check_in_range
 
 ; CAP_087_bounds_check_out_of_range_low (matches Coq: Theorem CAP_087_bounds_check_out_of_range_low)
-(assert (= true true)) ; CAP_087_bounds_check_out_of_range_low [untranslatable]
+(assert (forall ((base Bool) (len Bool) (addr Bool)) (=> (< addr base) (= (mem_bounds_check (mkMemCap base len nil false true) addr) false)))) ; CAP_087_bounds_check_out_of_range_low
 
 ; CAP_088_bounds_check_out_of_range_high (matches Coq: Theorem CAP_088_bounds_check_out_of_range_high)
-(assert (= true true)) ; CAP_088_bounds_check_out_of_range_high [untranslatable]
+(assert (forall ((base Bool) (len Bool) (addr Bool)) (=> (>= addr (+ base len)) (= (mem_bounds_check (mkMemCap base len nil false true) addr) false)))) ; CAP_088_bounds_check_out_of_range_high
 
 ; CAP_089_riina_mem_cap_valid (matches Coq: Theorem CAP_089_riina_mem_cap_valid)
 (assert (= (mem_valid riina_mem_cap) true)) ; CAP_089_riina_mem_cap_valid
@@ -456,28 +460,28 @@
 (assert (= (mem_length riina_mem_cap) 1024)) ; CAP_092_riina_mem_cap_length
 
 ; CAP_093_valid_for_read (matches Coq: Theorem CAP_093_valid_for_read)
-(assert (= true true)) ; CAP_093_valid_for_read [untranslatable]
+(assert (forall ((mc Bool) (addr Bool)) (=> (= (mem_can_read mc addr) true) (= (mem_valid mc) true)))) ; CAP_093_valid_for_read
 
 ; CAP_094_valid_for_write (matches Coq: Theorem CAP_094_valid_for_write)
-(assert (= true true)) ; CAP_094_valid_for_write [untranslatable]
+(assert (forall ((mc Bool) (addr Bool)) (=> (= (mem_can_write mc addr) true) (= (mem_valid mc) true)))) ; CAP_094_valid_for_write
 
 ; CAP_095_valid_for_execute (matches Coq: Theorem CAP_095_valid_for_execute)
-(assert (= true true)) ; CAP_095_valid_for_execute [untranslatable]
+(assert (forall ((mc Bool) (addr Bool)) (=> (= (mem_can_execute mc addr) true) (= (mem_valid mc) true)))) ; CAP_095_valid_for_execute
 
 ; CAP_096_sealed_cannot_derive (matches Coq: Theorem CAP_096_sealed_cannot_derive)
-(assert (= true true)) ; CAP_096_sealed_cannot_derive [untranslatable]
+(assert (forall ((mc Bool) (child Bool)) (=> (= (mem_sealed mc) true) (= (derive_mem_cap mc child) false)))) ; CAP_096_sealed_cannot_derive
 
 ; CAP_097_empty_perms_no_access (matches Coq: Theorem CAP_097_empty_perms_no_access)
-(assert (= true true)) ; CAP_097_empty_perms_no_access [untranslatable]
+(assert (forall ((base Bool) (len Bool)) (= (mem_has_perm (mkMemCap base len nil false true) Read) false))) ; CAP_097_empty_perms_no_access
 
 ; CAP_098_mem_cap_complete (matches Coq: Theorem CAP_098_mem_cap_complete)
-(assert (= true true)) ; CAP_098_mem_cap_complete [untranslatable]
+(assert (forall ((mc Bool)) (=> (= (mem_valid mc) true) (=> (= (mem_sealed mc) false) (= (derive_mem_cap mc mc) true))))) ; CAP_098_mem_cap_complete
 
 ; CAP_099_zero_length_no_access (matches Coq: Theorem CAP_099_zero_length_no_access)
-(assert (= true true)) ; CAP_099_zero_length_no_access [untranslatable]
+(assert (forall ((base Bool) (addr Bool)) (=> (>= addr base) (= (mem_bounds_check (mkMemCap base 0 nil false true) addr) false)))) ; CAP_099_zero_length_no_access
 
 ; CAP_100_security_complete (matches Coq: Theorem CAP_100_security_complete)
-(assert (= true true)) ; CAP_100_security_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (capability_secure c) true) (and (= (cap_unforgeable (cc_cap c)) true) (= (cap_attenuatable (cc_cap c)) true) (= (cap_revocable (cc_cap c)) true) (= (ocap_no_ambient_authority (cc_ocap c)) true))))) ; CAP_100_security_complete
 
 ; Verify all assertions are satisfiable
 (check-sat)

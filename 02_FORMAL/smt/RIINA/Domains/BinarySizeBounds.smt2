@@ -95,64 +95,64 @@
   true)
 
 ; PERF_002_01 (matches Coq: Theorem PERF_002_01)
-(assert (= true true)) ; PERF_002_01 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((i Instr)) (<= (instr_size arch i) (arch_max_instr_size arch))))) ; PERF_002_01
 
 ; PERF_002_02 (matches Coq: Theorem PERF_002_02)
-(assert (= true true)) ; PERF_002_02 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((bb BasicBlock)) (= (bb_size arch bb) (* (length bb) (arch_max_instr_size arch)))))) ; PERF_002_02
 
 ; sum_bb_sizes_app (matches Coq: Lemma sum_bb_sizes_app)
-(assert (= true true)) ; sum_bb_sizes_app [untranslatable]
+(assert (forall ((arch Bool) (bbs1 Bool) (bbs2 Bool)) (= (sum_bb_sizes arch (concat bbs1 bbs2)) (+ (sum_bb_sizes arch bbs1) (sum_bb_sizes arch bbs2))))) ; sum_bb_sizes_app
 
 ; PERF_002_03 (matches Coq: Theorem PERF_002_03)
-(assert (= true true)) ; PERF_002_03 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((f Function)) (= (func_size arch f) (+ (+ (sum_bb_sizes arch (func_blocks f)) (arch_call_overhead arch)) (arch_ret_overhead arch)))))) ; PERF_002_03
 
 ; sum_func_sizes_app (matches Coq: Lemma sum_func_sizes_app)
-(assert (= true true)) ; sum_func_sizes_app [untranslatable]
+(assert (forall ((arch Bool) (funcs1 Bool) (funcs2 Bool)) (= (sum_func_sizes arch (concat funcs1 funcs2)) (+ (sum_func_sizes arch funcs1) (sum_func_sizes arch funcs2))))) ; sum_func_sizes_app
 
 ; PERF_002_04 (matches Coq: Theorem PERF_002_04)
-(assert (= true true)) ; PERF_002_04 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((m Module)) (= (mod_size arch m) (+ (sum_func_sizes arch (mod_functions m)) (mod_data m)))))) ; PERF_002_04
 
 ; sum_mod_sizes_app (matches Coq: Lemma sum_mod_sizes_app)
-(assert (= true true)) ; sum_mod_sizes_app [untranslatable]
+(assert (forall ((arch Bool) (mods1 Bool) (mods2 Bool)) (= (sum_mod_sizes arch (concat mods1 mods2)) (+ (sum_mod_sizes arch mods1) (sum_mod_sizes arch mods2))))) ; sum_mod_sizes_app
 
 ; PERF_002_05 (matches Coq: Theorem PERF_002_05)
-(assert (= true true)) ; PERF_002_05 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((p Program)) (= (prog_size arch p) (+ (sum_mod_sizes arch (prog_modules p)) (prog_startup p)))))) ; PERF_002_05
 
 ; data_section_size_app (matches Coq: Lemma data_section_size_app)
-(assert (= true true)) ; data_section_size_app [untranslatable]
+(assert (forall ((ds1 Bool) (ds2 Bool)) (= (data_section_size (concat ds1 ds2)) (+ (data_section_size ds1) (data_section_size ds2))))) ; data_section_size_app
 
 ; PERF_002_06 (matches Coq: Theorem PERF_002_06)
-(assert (= true true)) ; PERF_002_06 [untranslatable]
+(assert (forall ((ds DataSection)) (forall ((var_size Size)) (=> (= (In var_size ds) true) (<= var_size (data_section_size ds)))))) ; PERF_002_06
 
 ; bss_section_size_app (matches Coq: Lemma bss_section_size_app)
-(assert (= true true)) ; bss_section_size_app [untranslatable]
+(assert (forall ((bs1 Bool) (bs2 Bool)) (= (bss_section_size (concat bs1 bs2)) (+ (bss_section_size bs1) (bss_section_size bs2))))) ; bss_section_size_app
 
 ; PERF_002_07 (matches Coq: Theorem PERF_002_07)
-(assert (= true true)) ; PERF_002_07 [untranslatable]
+(assert (forall ((bs BSSSection)) (forall ((var_size Size)) (=> (= (In var_size bs) true) (<= var_size (bss_section_size bs)))))) ; PERF_002_07
 
 ; PERF_002_08 (matches Coq: Theorem PERF_002_08)
-(assert (= true true)) ; PERF_002_08 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((sf StackFrame)) (forall ((max_locals Int) (max_saved_regs Int)) (=> (<= (sf_locals sf) max_locals) (=> (<= (sf_saved_regs sf) max_saved_regs) (<= (stack_frame_size arch sf) (+ (* max_locals (arch_word_size arch)) (* max_saved_regs (arch_word_size arch)))))))))) ; PERF_002_08
 
 ; PERF_002_09 (matches Coq: Theorem PERF_002_09)
-(assert (= true true)) ; PERF_002_09 [untranslatable]
+(assert (forall ((info InlineInfo)) (forall ((call_overhead Size)) (=> (>= (inline_call_sites info) 1) (= (inline_expanded_size info) (* (inline_original_size info) (inline_call_sites info))))))) ; PERF_002_09
 
 ; PERF_002_10 (matches Coq: Theorem PERF_002_10)
-(assert (= true true)) ; PERF_002_10 [untranslatable]
+(assert (forall ((info LoopInfo)) (= (unrolled_loop_size info) (* (loop_body_size info) (loop_unroll_factor info))))) ; PERF_002_10
 
 ; PERF_002_11 (matches Coq: Theorem PERF_002_11)
-(assert (= true true)) ; PERF_002_11 [untranslatable]
+(assert (forall ((info GenericInfo)) (= (monomorphized_size info) (* (generic_template_size info) (generic_instantiation_count info))))) ; PERF_002_11
 
 ; PERF_002_12 (matches Coq: Theorem PERF_002_12)
-(assert (= true true)) ; PERF_002_12 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((layout ROMLayout)) (=> (<= (total_rom_size layout) (arch_flash_size arch)) (and (<= (rom_text layout) (arch_flash_size arch)) (<= (rom_rodata layout) (arch_flash_size arch)) (<= (rom_init_data layout) (arch_flash_size arch))))))) ; PERF_002_12
 
 ; PERF_002_13 (matches Coq: Theorem PERF_002_13)
-(assert (= true true)) ; PERF_002_13 [untranslatable]
+(assert (forall ((arch ArchParams)) (= (bb_size arch nil) 0))) ; PERF_002_13
 
 ; PERF_002_14 (matches Coq: Theorem PERF_002_14)
-(assert (= true true)) ; PERF_002_14 [untranslatable]
+(assert (forall ((arch ArchParams)) (forall ((data Size) (bss Size)) (let ((m (mkMod nil data bss))) (= (mod_size arch m) data))))) ; PERF_002_14
 
 ; PERF_002_15 (matches Coq: Theorem PERF_002_15)
-(assert (= true true)) ; PERF_002_15 [untranslatable]
+(assert (forall ((t Size) (r Size) (d Size)) (let ((layout (mkROMLayout t r d))) (= (total_rom_size layout) (+ (+ t r) d))))) ; PERF_002_15
 
 ; Verify all assertions are satisfiable
 (check-sat)

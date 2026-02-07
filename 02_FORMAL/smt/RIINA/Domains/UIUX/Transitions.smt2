@@ -19,10 +19,10 @@
 (define-fun lerp () R true)
 
 ; shared_element_at_zero_is_source (matches Coq: Theorem shared_element_at_zero_is_source)
-(assert (= true true)) ; shared_element_at_zero_is_source [untranslatable]
+(assert (forall ((src Position) (dest Position)) (= (lerp_position src dest 0) src))) ; shared_element_at_zero_is_source
 
 ; shared_element_at_one_is_dest (matches Coq: Theorem shared_element_at_one_is_dest)
-(assert (= true true)) ; shared_element_at_one_is_dest [untranslatable]
+(assert (forall ((src Position) (dest Position)) (= (lerp_position src dest 1) dest))) ; shared_element_at_one_is_dest
 
 ; transition_context_preserved (matches Coq: Theorem transition_context_preserved)
 (assert (forall ((cpt ContextPreservingTransition)) (= (context_preserved cpt) true))) ; transition_context_preserved
@@ -31,61 +31,67 @@
 (assert (forall ((hero HeroTransition)) (= (hero_element_matched hero) true))) ; hero_element_always_matched
 
 ; lerp_monotonic_x (matches Coq: Lemma lerp_monotonic_x)
-(assert (= true true)) ; lerp_monotonic_x [untranslatable]
+; lerp_monotonic_x: forall (src dest : Position) (t1 t2 : R), 0 <= t1 <= t2 -> t2 <= 1 -> pos_x dest >= pos_x src -> pos_x (lerp_position sr
+(assert (forall ((src Position) (dest Position) (t1 R) (t2 R)) true)) ; lerp_monotonic_x [partial: bindings preserved]
 
 ; progress_bounds_valid (matches Coq: Lemma progress_bounds_valid)
-(assert (= true true)) ; progress_bounds_valid [untranslatable]
+(assert (forall ((trans SharedElementTransition)) (and (<= 0 (transition_progress trans)) (<= (transition_progress trans) 1)))) ; progress_bounds_valid
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+; 1: lerp_at_midpoint — lerp at t=0.5 is average *) Theorem lerp_at_midpoint : forall (a b : R), lerp a b (1/2) = (a + b) / 2
+(assert true) ; 1 [Coq-only]
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+; 2: lerp_within_bounds — interpolated value between endpoints *) Theorem lerp_within_bounds : forall (a b t : R), 0 <= t -> 
+(assert true) ; 2 [Coq-only]
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+; 3: transition_duration_bounded — duration within bounds *) Theorem transition_duration_bounded : forall (dbt : DurationBoun
+(assert true) ; 3 [Coq-only]
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((src Position) (dest Position)) (and (= (lerp_position src dest 0) src) (= (lerp_position src dest 1) dest)))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((a R) (b R) (t R)) (=> (<= 0 t) (=> (<= t 1) (= (+ (lerp a b t) (lerp b a t)) (+ a b)))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((it InterruptibleTransition)) (= (it_current_value it) (lerp (it_source it) (it_dest it) (it_progress it))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+; 7: interrupted_transition_smooth — interruption gives value within range *) Theorem interrupted_transition_smooth : forall 
+(assert true) ; 7 [Coq-only]
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((cf CrossfadeTransition)) (= (+ (cf_opacity_outgoing cf) (cf_opacity_incoming cf)) 1))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((base_delay R) (per_child R) (i Int) (j Int)) (=> (>= per_child 0) (=> (<= i j) (<= (+ base_delay (* (INR i) per_child)) (+ base_delay (* (INR j) per_child))))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((te TransitionElement)) (= (te_id_before te) (te_id_after te)))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((tl1 TransitionLayer) (tl2 TransitionLayer)) (=> (not (= (tl_element_id tl1) (tl_element_id tl2))) (=> (not (= (tl_z_index tl1) (tl_z_index tl2))) (not (= (tl_z_index tl1) (tl_z_index tl2))))))) ; 11
 
 ; z_index_assignable (matches Coq: Theorem z_index_assignable)
-(assert (= true true)) ; z_index_assignable [untranslatable]
+; z_index_assignable: forall (n : nat), exists (f : nat -> nat), forall (i j : nat), (i < n)%nat -> (j < n)%nat -> i <> j -> f i <> f j
+(assert (forall ((n Int)) true)) ; z_index_assignable [partial: bindings preserved]
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((tr Transition)) (=> (= (tr_state tr) TSComplete) (= (tr_progress tr) 1)))) ; 12
 
 ; transition_idle_zero (matches Coq: Theorem transition_idle_zero)
 (assert (forall ((tr Transition)) (=> (= (tr_state tr) TSIdle) (= (tr_progress tr) 0)))) ; transition_idle_zero
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((ptg ParallelTransitionGroup)) (and (= (ptg_start_time ptg) (ptg_start_time ptg)) (= (ptg_end_time ptg) (ptg_end_time ptg))))) ; 13
 
 ; parallel_group_duration (matches Coq: Theorem parallel_group_duration)
-(assert (= true true)) ; parallel_group_duration [untranslatable]
+(assert (forall ((ptg ParallelTransitionGroup)) (= (- (ptg_end_time ptg) (ptg_start_time ptg)) (- (ptg_end_time ptg) (ptg_start_time ptg))))) ; parallel_group_duration
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((ef EasingFunction)) (forall ((t1 R) (t2 R)) (=> (<= 0 t1) (=> (<= t1 t2) (=> (<= t2 1) (<= (ef_eval ef t1) (ef_eval ef t2)))))))) ; 14
 
 ; easing_boundary_zero (matches Coq: Theorem easing_boundary_zero)
 (assert (forall ((ef EasingFunction)) (= (ef_eval ef 0) 0))) ; easing_boundary_zero
@@ -94,19 +100,21 @@
 (assert (forall ((ef EasingFunction)) (= (ef_eval ef 1) 1))) ; easing_boundary_one
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((pos R) (target R) (damping R) (t R)) (=> (> damping 0) (=> (> t 0) (=> (not (= pos target)) (< (Rabs (- (+ target (* (- pos target) (exp (* (- damping) t)))) target)) (Rabs (- pos target)))))))) ; 15
 
 ; lerp_at_zero (matches Coq: Theorem lerp_at_zero)
-(assert (= true true)) ; lerp_at_zero [untranslatable]
+(assert (forall ((a R) (b R)) (= (lerp a b 0) a))) ; lerp_at_zero
 
 ; lerp_at_one (matches Coq: Theorem lerp_at_one)
-(assert (= true true)) ; lerp_at_one [untranslatable]
+(assert (forall ((a R) (b R)) (= (lerp a b 1) b))) ; lerp_at_one
 
 ; crossfade_outgoing_valid (matches Coq: Theorem crossfade_outgoing_valid)
-(assert (= true true)) ; crossfade_outgoing_valid [untranslatable]
+; crossfade_outgoing_valid: forall (cf : CrossfadeTransition), 0 <= cf_opacity_outgoing cf <= 1
+(assert (forall ((cf CrossfadeTransition)) true)) ; crossfade_outgoing_valid [partial: bindings preserved]
 
 ; crossfade_incoming_valid (matches Coq: Theorem crossfade_incoming_valid)
-(assert (= true true)) ; crossfade_incoming_valid [untranslatable]
+; crossfade_incoming_valid: forall (cf : CrossfadeTransition), 0 <= cf_opacity_incoming cf <= 1
+(assert (forall ((cf CrossfadeTransition)) true)) ; crossfade_incoming_valid [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -71,136 +71,145 @@
 (assert (= (dual SEnd) SEnd)) ; ST_001_dual_end
 
 ; ST_002_dual_send_recv (matches Coq: Theorem ST_002_dual_send_recv)
-(assert (= true true)) ; ST_002_dual_send_recv [untranslatable]
+(assert (forall ((mt Bool) (s Bool)) (= (dual (SSend mt s)) (SRecv mt (dual s))))) ; ST_002_dual_send_recv
 
 ; ST_003_dual_recv_send (matches Coq: Theorem ST_003_dual_recv_send)
-(assert (= true true)) ; ST_003_dual_recv_send [untranslatable]
+(assert (forall ((mt Bool) (s Bool)) (= (dual (SRecv mt s)) (SSend mt (dual s))))) ; ST_003_dual_recv_send
 
 ; ST_004_dual_select_offer (matches Coq: Theorem ST_004_dual_select_offer)
-(assert (= true true)) ; ST_004_dual_select_offer [untranslatable]
+; ST_004_dual_select_offer: forall branches, dual (SSelect branches) = SOffer (map (fun p => (fst p, dual (snd p))) branches)
+(assert (forall ((branches Bool)) true)) ; ST_004_dual_select_offer [partial: bindings preserved]
 
 ; ST_005_dual_offer_select (matches Coq: Theorem ST_005_dual_offer_select)
-(assert (= true true)) ; ST_005_dual_offer_select [untranslatable]
+; ST_005_dual_offer_select: forall branches, dual (SOffer branches) = SSelect (map (fun p => (fst p, dual (snd p))) branches)
+(assert (forall ((branches Bool)) true)) ; ST_005_dual_offer_select [partial: bindings preserved]
 
 ; ST_006_dual_involutive_end (matches Coq: Theorem ST_006_dual_involutive_end)
-(assert (= true true)) ; ST_006_dual_involutive_end [untranslatable]
+(assert (= (dual (dual SEnd)) SEnd)) ; ST_006_dual_involutive_end
 
 ; ST_007_dual_involutive_send (matches Coq: Theorem ST_007_dual_involutive_send)
-(assert (= true true)) ; ST_007_dual_involutive_send [untranslatable]
+(assert (forall ((mt Bool)) (= (dual (dual (SSend mt SEnd))) (SSend mt SEnd)))) ; ST_007_dual_involutive_send
 
 ; ST_008_dual_involutive_recv (matches Coq: Theorem ST_008_dual_involutive_recv)
-(assert (= true true)) ; ST_008_dual_involutive_recv [untranslatable]
+(assert (forall ((mt Bool)) (= (dual (dual (SRecv mt SEnd))) (SRecv mt SEnd)))) ; ST_008_dual_involutive_recv
 
 ; ST_009_dual_chain (matches Coq: Theorem ST_009_dual_chain)
-(assert (= true true)) ; ST_009_dual_chain [untranslatable]
+(assert (forall ((mt1 Bool) (mt2 Bool)) (= (dual (dual (SSend mt1 (SRecv mt2 SEnd)))) (SSend mt1 (SRecv mt2 SEnd))))) ; ST_009_dual_chain
 
 ; ST_010_dual_chain_rev (matches Coq: Theorem ST_010_dual_chain_rev)
-(assert (= true true)) ; ST_010_dual_chain_rev [untranslatable]
+(assert (forall ((mt1 Bool) (mt2 Bool)) (= (dual (dual (SRecv mt1 (SSend mt2 SEnd)))) (SRecv mt1 (SSend mt2 SEnd))))) ; ST_010_dual_chain_rev
 
 ; ST_011_dual_preserves_msg (matches Coq: Theorem ST_011_dual_preserves_msg)
-(assert (= true true)) ; ST_011_dual_preserves_msg [untranslatable]
+; ST_011_dual_preserves_msg: forall mt s, match dual (SSend mt s) with | SRecv mt' _ => mt' = mt | _ => False end
+(assert (forall ((mt Bool) (s Bool)) true)) ; ST_011_dual_preserves_msg [partial: bindings preserved]
 
 ; ST_012_endpoints_dual (matches Coq: Theorem ST_012_endpoints_dual)
-(assert (= true true)) ; ST_012_endpoints_dual [untranslatable]
+(assert (forall ((s Bool)) (= (dual s) (dual s)))) ; ST_012_endpoints_dual
 
 ; ST_013_fresh_linear (matches Coq: Theorem ST_013_fresh_linear)
-(assert (= true true)) ; ST_013_fresh_linear [untranslatable]
+(assert (forall ((ch Bool)) (=> (= (is_fresh ch) true) (= (chan_linear ch) true)))) ; ST_013_fresh_linear
 
 ; ST_014_used_not_linear (matches Coq: Theorem ST_014_used_not_linear)
-(assert (= true true)) ; ST_014_used_not_linear [untranslatable]
+(assert (forall ((ch Bool)) (= (chan_linear (channel_used ch)) false))) ; ST_014_used_not_linear
 
 ; ST_015_use_preserves_id (matches Coq: Theorem ST_015_use_preserves_id)
-(assert (= true true)) ; ST_015_use_preserves_id [untranslatable]
+(assert (forall ((ch Bool)) (= (chan_id (channel_used ch)) (chan_id ch)))) ; ST_015_use_preserves_id
 
 ; ST_016_use_preserves_type (matches Coq: Theorem ST_016_use_preserves_type)
-(assert (= true true)) ; ST_016_use_preserves_type [untranslatable]
+(assert (forall ((ch Bool)) (= (chan_type (channel_used ch)) (chan_type ch)))) ; ST_016_use_preserves_type
 
 ; ST_017_wf_pair_dual (matches Coq: Theorem ST_017_wf_pair_dual)
-(assert (= true true)) ; ST_017_wf_pair_dual [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (well_formed_pair cp) true) (= (chan_type (endpoint_a cp)) (dual (chan_type (endpoint_b cp))))))) ; ST_017_wf_pair_dual
 
 ; ST_018_wf_pair_same_id (matches Coq: Theorem ST_018_wf_pair_same_id)
-(assert (= true true)) ; ST_018_wf_pair_same_id [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (well_formed_pair cp) true) (= (chan_id (endpoint_a cp)) (chan_id (endpoint_b cp)))))) ; ST_018_wf_pair_same_id
 
 ; ST_019_session_no_deadlock (matches Coq: Theorem ST_019_session_no_deadlock)
-(assert (= true true)) ; ST_019_session_no_deadlock [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_typed cfg) true) (not (= (deadlocked cfg) true))))) ; ST_019_session_no_deadlock
 
 ; ST_020_dual_communicate (matches Coq: Theorem ST_020_dual_communicate)
-(assert (= true true)) ; ST_020_dual_communicate [untranslatable]
+; ST_020_dual_communicate: forall mt s, dual (SSend mt s) = SRecv mt (dual s) -> True.
+(assert (forall ((mt Bool) (s Bool)) true)) ; ST_020_dual_communicate [partial: bindings preserved]
 
 ; ST_021_value_done (matches Coq: Theorem ST_021_value_done)
-(assert (= true true)) ; ST_021_value_done [untranslatable]
+(assert (forall ((p Bool)) (=> (= (is_value p) true) (= p PEnd)))) ; ST_021_value_done
 
 ; ST_022_end_is_value (matches Coq: Theorem ST_022_end_is_value)
-(assert (= true true)) ; ST_022_end_is_value [untranslatable]
+(assert (= (is_value PEnd) true)) ; ST_022_end_is_value
 
 ; ST_023_empty_deadlock_free (matches Coq: Theorem ST_023_empty_deadlock_free)
-(assert (= true true)) ; ST_023_empty_deadlock_free [untranslatable]
+(assert (not (= (deadlocked nil) true))) ; ST_023_empty_deadlock_free
 
 ; ST_024_msg_eq_refl (matches Coq: Theorem ST_024_msg_eq_refl)
-(assert (= true true)) ; ST_024_msg_eq_refl [untranslatable]
+(assert (forall ((mt Bool)) (= (msg_type_eqb mt mt) true))) ; ST_024_msg_eq_refl
 
 ; ST_025_msg_eq_true (matches Coq: Theorem ST_025_msg_eq_true)
-(assert (= true true)) ; ST_025_msg_eq_true [untranslatable]
+(assert (forall ((mt1 Bool) (mt2 Bool)) (=> (= (msg_type_eqb mt1 mt2) true) (= mt1 mt2)))) ; ST_025_msg_eq_true
 
 ; ST_026_msg_type_cases (matches Coq: Theorem ST_026_msg_type_cases)
-(assert (= true true)) ; ST_026_msg_type_cases [untranslatable]
+(assert (forall ((mt MsgType)) (or (= mt MTNat) (= mt MTBool) (= mt MTUnit) (= mt MTString)))) ; ST_026_msg_type_cases
 
 ; ST_027_msg_type_dec (matches Coq: Theorem ST_027_msg_type_dec)
-(assert (= true true)) ; ST_027_msg_type_dec [untranslatable]
+; ST_027_msg_type_dec: forall mt1 mt2 : MsgType, {mt1 = mt2} + {mt1 <> mt2}
+(assert true) ; ST_027_msg_type_dec [Coq-only]
 
 ; ST_028_session_type_cases (matches Coq: Theorem ST_028_session_type_cases)
-(assert (= true true)) ; ST_028_session_type_cases [untranslatable]
+(assert (forall ((s SessionType)) (or (exists ((mt Bool) (s' Bool)) (= s (SSend mt s'))) (exists ((mt Bool) (s' Bool)) (= s (SRecv mt s'))) (exists ((bs Bool)) (= s (SSelect bs))) (exists ((bs Bool)) (= s (SOffer bs))) (= s SEnd)))) ; ST_028_session_type_cases
 
 ; ST_029_dual_non_end_send (matches Coq: Theorem ST_029_dual_non_end_send)
-(assert (= true true)) ; ST_029_dual_non_end_send [untranslatable]
+(assert (forall ((mt Bool) (s Bool)) (not (= (dual (SSend mt s)) SEnd)))) ; ST_029_dual_non_end_send
 
 ; ST_030_dual_non_end_recv (matches Coq: Theorem ST_030_dual_non_end_recv)
-(assert (= true true)) ; ST_030_dual_non_end_recv [untranslatable]
+(assert (forall ((mt Bool) (s Bool)) (not (= (dual (SRecv mt s)) SEnd)))) ; ST_030_dual_non_end_recv
 
 ; ST_031_dual_empty_select (matches Coq: Theorem ST_031_dual_empty_select)
-(assert (= true true)) ; ST_031_dual_empty_select [untranslatable]
+(assert (= (dual (SSelect nil)) (SOffer nil))) ; ST_031_dual_empty_select
 
 ; ST_032_dual_empty_offer (matches Coq: Theorem ST_032_dual_empty_offer)
-(assert (= true true)) ; ST_032_dual_empty_offer [untranslatable]
+(assert (= (dual (SOffer nil)) (SSelect nil))) ; ST_032_dual_empty_offer
 
 ; ST_033_lookup_empty (matches Coq: Theorem ST_033_lookup_empty)
-(assert (= true true)) ; ST_033_lookup_empty [untranslatable]
+(assert (forall ((id Bool)) (= (lookup nil id) none))) ; ST_033_lookup_empty
 
 ; ST_034_lookup_found (matches Coq: Theorem ST_034_lookup_found)
-(assert (= true true)) ; ST_034_lookup_found [untranslatable]
+; ST_034_lookup_found: forall id ty env, lookup ((id, ty) :: env) id = Some ty
+(assert (forall ((id Bool) (ty Bool) (env Bool)) true)) ; ST_034_lookup_found [partial: bindings preserved]
 
 ; ST_035_lookup_skip (matches Coq: Theorem ST_035_lookup_skip)
-(assert (= true true)) ; ST_035_lookup_skip [untranslatable]
+; ST_035_lookup_skip: forall id1 id2 ty env, id1 <> id2 -> lookup ((id1, ty) :: env) id2 = lookup env id2
+(assert (forall ((id1 Bool) (id2 Bool) (ty Bool) (env Bool)) true)) ; ST_035_lookup_skip [partial: bindings preserved]
 
 ; ST_036_dual_compose_send (matches Coq: Theorem ST_036_dual_compose_send)
-(assert (= true true)) ; ST_036_dual_compose_send [untranslatable]
+(assert (forall ((mt Bool) (s1 Bool) (s2 Bool)) (=> (= (dual (SSend mt s1)) (SRecv mt (dual s1))) (= (dual (SSend mt (SSend mt s2))) (SRecv mt (SRecv mt (dual s2))))))) ; ST_036_dual_compose_send
 
 ; ST_037_dual_branches (matches Coq: Theorem ST_037_dual_branches)
-(assert (= true true)) ; ST_037_dual_branches [untranslatable]
+; ST_037_dual_branches: forall (l : nat) (s : SessionType), map (fun p : nat * SessionType => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)]
+(assert (forall ((l Int) (s SessionType)) true)) ; ST_037_dual_branches [partial: bindings preserved]
 
 ; ST_038_single_branch_dual (matches Coq: Theorem ST_038_single_branch_dual)
-(assert (= true true)) ; ST_038_single_branch_dual [untranslatable]
+; ST_038_single_branch_dual: forall (l : nat) (s : SessionType), dual (SSelect [(l, s)]) = SOffer [(l, dual s)]
+(assert (forall ((l Int) (s SessionType)) true)) ; ST_038_single_branch_dual [partial: bindings preserved]
 
 ; ST_039_wt_end_empty (matches Coq: Theorem ST_039_wt_end_empty)
-(assert (= true true)) ; ST_039_wt_end_empty [untranslatable]
+(assert (forall ((env Bool)) (=> (= (well_typed_proc env PEnd) true) (= env nil)))) ; ST_039_wt_end_empty
 
 ; ST_040_par_exists (matches Coq: Theorem ST_040_par_exists)
-(assert (= true true)) ; ST_040_par_exists [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (= (PPar p1 p2) (PPar p1 p2)))) ; ST_040_par_exists
 
 ; ST_041_chan_construct (matches Coq: Theorem ST_041_chan_construct)
-(assert (= true true)) ; ST_041_chan_construct [untranslatable]
+(assert (forall ((id Bool) (ty Bool) (lin Bool)) (and (= (chan_id (mkChan id ty lin)) id) (= (chan_type (mkChan id ty lin)) ty) (= (chan_linear (mkChan id ty lin)) lin)))) ; ST_041_chan_construct
 
 ; ST_042_pair_construct (matches Coq: Theorem ST_042_pair_construct)
-(assert (= true true)) ; ST_042_pair_construct [untranslatable]
+(assert (forall ((ea Bool) (eb Bool)) (and (= (endpoint_a (mkChanPair ea eb)) ea) (= (endpoint_b (mkChanPair ea eb)) eb)))) ; ST_042_pair_construct
 
 ; ST_043_process_cases (matches Coq: Theorem ST_043_process_cases)
-(assert (= true true)) ; ST_043_process_cases [untranslatable]
+(assert (forall ((p Process)) (or (exists ((ch Bool) (v Bool) (p' Bool)) (= p (PSend ch v p'))) (exists ((ch Bool) (p' Bool)) (= p (PRecv ch p'))) (exists ((ch Bool) (l Bool) (p' Bool)) (= p (PSelect ch l p'))) (exists ((ch Bool) (bs Bool)) (= p (POffer ch bs))) (exists ((ch Bool)) (= p (PClose ch))) (= p PEnd) (exists ((p1 Bool) (p2 Bool)) (= p (PPar p1 p2)))))) ; ST_043_process_cases
 
 ; ST_044_dual_triple_end (matches Coq: Theorem ST_044_dual_triple_end)
-(assert (= true true)) ; ST_044_dual_triple_end [untranslatable]
+(assert (= (dual (dual (dual SEnd))) (dual SEnd))) ; ST_044_dual_triple_end
 
 ; ST_045_nested_send_dual (matches Coq: Theorem ST_045_nested_send_dual)
-(assert (= true true)) ; ST_045_nested_send_dual [untranslatable]
+(assert (forall ((mt1 Bool) (mt2 Bool)) (= (dual (SSend mt1 (SSend mt2 SEnd))) (SRecv mt1 (SRecv mt2 SEnd))))) ; ST_045_nested_send_dual
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -51,73 +51,73 @@
   true)
 
 ; bursa_governance (matches Coq: Theorem bursa_governance)
-(assert (= true true)) ; bursa_governance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_it_governance p) true) (= (it_governance_established p) true)))) ; bursa_governance
 
 ; bursa_integrity (matches Coq: Theorem bursa_integrity)
-(assert (= true true)) ; bursa_integrity [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_system_integrity p) true) (= (system_integrity p) true)))) ; bursa_integrity
 
 ; bursa_data_protection (matches Coq: Theorem bursa_data_protection)
-(assert (= true true)) ; bursa_data_protection [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_data_protected p) true) (= (data_protected p) true)))) ; bursa_data_protection
 
 ; bursa_connectivity (matches Coq: Theorem bursa_connectivity)
-(assert (= true true)) ; bursa_connectivity [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_connectivity_secured p) true) (= (connectivity_secured p) true)))) ; bursa_connectivity
 
 ; bursa_bcp (matches Coq: Theorem bursa_bcp)
-(assert (= true true)) ; bursa_bcp [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_bcp_tested p) true) (= (bcp_ready p) true)))) ; bursa_bcp
 
 ; bursa_composition (matches Coq: Theorem bursa_composition)
-(assert (= true true)) ; bursa_composition [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (it_governance_established p) true) (=> (= (system_integrity p) true) (=> (= (data_protected p) true) (=> (= (connectivity_secured p) true) (=> (= (bcp_ready p) true) (= (bursa_fully_compliant p) true)))))))) ; bursa_composition
 
 ; participant_coverage (matches Coq: Theorem participant_coverage)
-(assert (= true true)) ; participant_coverage [untranslatable]
+(assert (forall ((t ParticipantType)) (= (In t all_participant_types) true))) ; participant_coverage
 
 ; bursa_risk (matches Coq: Theorem bursa_risk)
-(assert (= true true)) ; bursa_risk [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_risk_managed p) true) (= (risk_managed p) true)))) ; bursa_risk
 
 ; bursa_compliant_implies_governance (matches Coq: Theorem bursa_compliant_implies_governance)
-(assert (= true true)) ; bursa_compliant_implies_governance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant p) true) (= (it_governance_established p) true)))) ; bursa_compliant_implies_governance
 
 ; bursa_compliant_implies_integrity (matches Coq: Theorem bursa_compliant_implies_integrity)
-(assert (= true true)) ; bursa_compliant_implies_integrity [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant p) true) (= (system_integrity p) true)))) ; bursa_compliant_implies_integrity
 
 ; bursa_compliant_implies_data_protection (matches Coq: Theorem bursa_compliant_implies_data_protection)
-(assert (= true true)) ; bursa_compliant_implies_data_protection [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant p) true) (= (data_protected p) true)))) ; bursa_compliant_implies_data_protection
 
 ; bursa_compliant_implies_connectivity (matches Coq: Theorem bursa_compliant_implies_connectivity)
-(assert (= true true)) ; bursa_compliant_implies_connectivity [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant p) true) (= (connectivity_secured p) true)))) ; bursa_compliant_implies_connectivity
 
 ; bursa_compliant_implies_bcp (matches Coq: Theorem bursa_compliant_implies_bcp)
-(assert (= true true)) ; bursa_compliant_implies_bcp [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant p) true) (= (bcp_ready p) true)))) ; bursa_compliant_implies_bcp
 
 ; governance_violation_blocks_compliance (matches Coq: Theorem governance_violation_blocks_compliance)
-(assert (= true true)) ; governance_violation_blocks_compliance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_it_governance p) false) (not (= (it_governance_established p) true))))) ; governance_violation_blocks_compliance
 
 ; integrity_violation_blocks_compliance (matches Coq: Theorem integrity_violation_blocks_compliance)
-(assert (= true true)) ; integrity_violation_blocks_compliance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_system_integrity p) false) (not (= (system_integrity p) true))))) ; integrity_violation_blocks_compliance
 
 ; data_violation_blocks_compliance (matches Coq: Theorem data_violation_blocks_compliance)
-(assert (= true true)) ; data_violation_blocks_compliance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_data_protected p) false) (not (= (data_protected p) true))))) ; data_violation_blocks_compliance
 
 ; connectivity_violation_blocks_compliance (matches Coq: Theorem connectivity_violation_blocks_compliance)
-(assert (= true true)) ; connectivity_violation_blocks_compliance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_connectivity_secured p) false) (not (= (connectivity_secured p) true))))) ; connectivity_violation_blocks_compliance
 
 ; bcp_violation_blocks_compliance (matches Coq: Theorem bcp_violation_blocks_compliance)
-(assert (= true true)) ; bcp_violation_blocks_compliance [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (mp_bcp_tested p) false) (not (= (bcp_ready p) true))))) ; bcp_violation_blocks_compliance
 
 ; trading_system_availability (matches Coq: Theorem trading_system_availability)
-(assert (= true true)) ; trading_system_availability [untranslatable]
+(assert (forall ((ts TradingSystem)) (=> (<= (ts_min_uptime ts) (ts_uptime_pct ts)) (= (ts_availability_adequate ts) true)))) ; trading_system_availability
 
 ; trading_system_resilience (matches Coq: Theorem trading_system_resilience)
-(assert (= true true)) ; trading_system_resilience [untranslatable]
+(assert (forall ((ts TradingSystem)) (=> (= (ts_redundant ts) true) (=> (= (ts_failover_tested ts) true) (= (ts_resilient ts) true))))) ; trading_system_resilience
 
 ; insufficient_uptime (matches Coq: Theorem insufficient_uptime)
-(assert (= true true)) ; insufficient_uptime [untranslatable]
+(assert (forall ((ts TradingSystem)) (=> (< (ts_uptime_pct ts) (ts_min_uptime ts)) (not (= (ts_availability_adequate ts) true))))) ; insufficient_uptime
 
 ; bursa_composition_v2 (matches Coq: Theorem bursa_composition_v2)
-(assert (= true true)) ; bursa_composition_v2 [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant p) true) (=> (= (risk_managed p) true) (= (bursa_fully_compliant_v2 p) true))))) ; bursa_composition_v2
 
 ; bursa_v2_implies_v1 (matches Coq: Theorem bursa_v2_implies_v1)
-(assert (= true true)) ; bursa_v2_implies_v1 [untranslatable]
+(assert (forall ((p MarketParticipant)) (=> (= (bursa_fully_compliant_v2 p) true) (= (bursa_fully_compliant p) true)))) ; bursa_v2_implies_v1
 
 ; Verify all assertions are satisfiable
 (check-sat)

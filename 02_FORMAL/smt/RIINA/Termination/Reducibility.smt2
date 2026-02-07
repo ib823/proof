@@ -12,31 +12,31 @@
   true)
 
 ; value_SN (matches Coq: Lemma value_SN)
-(assert (= true true)) ; value_SN [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (= (SN st ctx v) true)))) ; value_SN
 
 ; SN_step (matches Coq: Lemma SN_step)
-(assert (= true true)) ; SN_step [untranslatable]
+(assert (forall ((e Bool) (e' Bool) (st Bool) (st' Bool) (ctx Bool) (ctx' Bool)) (=> (= (SN st ctx e) true) (=> (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= (SN st' ctx' e') true))))) ; SN_step
 
 ; fst_typed_steps_to_value (matches Coq: Lemma fst_typed_steps_to_value)
-(assert (= true true)) ; fst_typed_steps_to_value [untranslatable]
+(assert (forall ((v Bool) (T1 Bool) (T2 Bool) (ε Bool) (Σ Bool) (st Bool) (ctx Bool)) (=> (= (has_type nil Σ Public v (TProd T1 T2) ε) true) (=> (= (value v) true) (exists ((v1 Bool) (st' Bool) (ctx' Bool)) (and (= ((EFst v, st, ctx) step_to (mk-tuple v1 st' ctx')) true) (= (value v1) true) (= st' st) (= ctx' ctx))))))) ; fst_typed_steps_to_value
 
 ; snd_typed_steps_to_value (matches Coq: Lemma snd_typed_steps_to_value)
-(assert (= true true)) ; snd_typed_steps_to_value [untranslatable]
+(assert (forall ((v Bool) (T1 Bool) (T2 Bool) (ε Bool) (Σ Bool) (st Bool) (ctx Bool)) (=> (= (has_type nil Σ Public v (TProd T1 T2) ε) true) (=> (= (value v) true) (exists ((v2 Bool) (st' Bool) (ctx' Bool)) (and (= ((ESnd v, st, ctx) step_to (mk-tuple v2 st' ctx')) true) (= (value v2) true) (= st' st) (= ctx' ctx))))))) ; snd_typed_steps_to_value
 
 ; case_typed_steps_once (matches Coq: Lemma case_typed_steps_once)
-(assert (= true true)) ; case_typed_steps_once [untranslatable]
+(assert (forall ((v Bool) (T1 Bool) (T2 Bool) (ε Bool) (Σ Bool) (x1 Bool) (e1 Bool) (x2 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (has_type nil Σ Public v (TSum T1 T2) ε) true) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((ECase v x1 e1 x2 e2, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx))))))) ; case_typed_steps_once
 
 ; if_typed_steps_once (matches Coq: Lemma if_typed_steps_once)
-(assert (= true true)) ; if_typed_steps_once [untranslatable]
+(assert (forall ((v Bool) (ε Bool) (Σ Bool) (e2 Bool) (e3 Bool) (st Bool) (ctx Bool)) (=> (= (has_type nil Σ Public v TBool ε) true) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((EIf v e2 e3, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx))))))) ; if_typed_steps_once
 
 ; let_typed_steps_once (matches Coq: Lemma let_typed_steps_once)
-(assert (= true true)) ; let_typed_steps_once [untranslatable]
+(assert (forall ((v Bool) (x Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((ELet x v e2, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx)))))) ; let_typed_steps_once
 
 ; handle_typed_steps_once (matches Coq: Lemma handle_typed_steps_once)
-(assert (= true true)) ; handle_typed_steps_once [untranslatable]
+(assert (forall ((v Bool) (x Bool) (h Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((EHandle v x h, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx)))))) ; handle_typed_steps_once
 
 ; app_typed_steps_once (matches Coq: Lemma app_typed_steps_once)
-(assert (= true true)) ; app_typed_steps_once [untranslatable]
+(assert (forall ((f Bool) (T1 Bool) (T2 Bool) (ε Bool) (ε' Bool) (Σ Bool) (a Bool) (st Bool) (ctx Bool)) (=> (= (has_type nil Σ Public f (TFn T1 T2 ε) ε') true) (=> (= (value f) true) (=> (= (value a) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((EApp f a, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx)))))))) ; app_typed_steps_once
 
 ; Verify all assertions are satisfiable
 (check-sat)

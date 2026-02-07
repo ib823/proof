@@ -85,64 +85,66 @@
   true)
 
 ; existsb_false_forall (matches Coq: Lemma existsb_false_forall)
-(assert (= true true)) ; existsb_false_forall [untranslatable]
+(assert (forall ((f A -> bool)) (forall ((l list)) (=> (= (existsb f l) false) (=> (forall ((x Bool)) (= (In x l) true)) (= (f x) false)))))) ; existsb_false_forall
 
 ; find_var_map_moved (matches Coq: Lemma find_var_map_moved)
-(assert (= true true)) ; find_var_map_moved [untranslatable]
+; find_var_map_moved: forall vars from_id v, find_var vars from_id = Some v -> find_var (map (fun var => if Nat.eqb (ov_id var) from_id then m
+(assert (forall ((vars Bool) (from_id Bool) (v Bool)) true)) ; find_var_map_moved [partial: bindings preserved]
 
 ; MEM_001_01 (matches Coq: Theorem MEM_001_01)
-(assert (= true true)) ; MEM_001_01 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((from_id Int) (to_id Int) (ctx' OwnCtx) (v OwnedVar)) (=> (= (find_var (oc_vars ctx) from_id) (some v)) (=> (= (ov_is_copy v) false) (=> (= (ov_state v) Owned) (=> (not (= to_id from_id)) (=> (= (move_var ctx from_id to_id) (some ctx')) (=> (forall ((v' Bool)) (= (find_var (oc_vars ctx') from_id) (some v'))) (= (ov_state v') Moved)))))))))) ; MEM_001_01
 
 ; MEM_001_02 (matches Coq: Theorem MEM_001_02)
-(assert (= true true)) ; MEM_001_02 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((from_id Int) (to_id Int) (ctx' OwnCtx) (v OwnedVar)) (=> (= (find_var (oc_vars ctx) from_id) (some v)) (=> (= (ov_is_copy v) false) (=> (= (ov_state v) Owned) (=> (= (move_var ctx from_id to_id) (some ctx')) (exists ((v_new Bool)) (and (= (find_var (oc_vars ctx') to_id) (some v_new)) (= (ov_state v_new) Owned)))))))))) ; MEM_001_02
 
 ; MEM_001_03 (matches Coq: Theorem MEM_001_03)
-(assert (= true true)) ; MEM_001_03 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((id Int)) (forall ((v OwnedVar)) (=> (= (find_var (oc_vars ctx) id) (some v)) (=> (= (ov_state v) Owned) (=> (= (count_mut_borrows ctx id) 0) (= (can_shared_borrow ctx id) true)))))))) ; MEM_001_03
 
 ; filter_all_false_empty (matches Coq: Lemma filter_all_false_empty)
-(assert (= true true)) ; filter_all_false_empty [untranslatable]
+(assert (forall ((f A -> bool)) (forall ((l list)) (=> (forall ((x Bool)) (=> (= (In x l) true) (= (f x) false))) (= (filter f l) nil))))) ; filter_all_false_empty
 
 ; MEM_001_04 (matches Coq: Theorem MEM_001_04)
-(assert (= true true)) ; MEM_001_04 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((id Int)) (forall ((v OwnedVar)) (=> (= (find_var (oc_vars ctx) id) (some v)) (=> (= (ov_state v) Owned) (=> (= (can_mut_borrow ctx id) true) (= (count_borrows ctx id) 0)))))))) ; MEM_001_04
 
 ; MEM_001_05 (matches Coq: Theorem MEM_001_05)
-(assert (= true true)) ; MEM_001_05 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((b Borrow)) (forall ((v OwnedVar)) (=> (= (In b (oc_borrows ctx)) true) (=> (= (find_var (oc_vars ctx) (br_source b)) (some v)) (=> (= (borrow_lifetime_valid ctx b) true) (= (lifetime_outlives (ov_lifetime v) (br_lifetime b)) true)))))))) ; MEM_001_05
 
 ; MEM_001_06 (matches Coq: Theorem MEM_001_06)
 (assert (forall ((v OwnedVar)) (=> (= (ov_state v) Moved) (= (is_usable v) false)))) ; MEM_001_06
 
 ; MEM_001_07 (matches Coq: Theorem MEM_001_07)
-(assert (= true true)) ; MEM_001_07 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((id Int)) (forall ((v OwnedVar)) (forall ((b Borrow)) (=> (= (find_var (oc_vars ctx) id) (some v)) (=> (= (ov_state v) Owned) (=> (= (In b (oc_borrows ctx)) true) (=> (= (br_source b) id) (=> (= (br_mutable b) false) (= (can_mut_borrow ctx id) false))))))))))) ; MEM_001_07
 
 ; MEM_001_08 (matches Coq: Theorem MEM_001_08)
-(assert (= true true)) ; MEM_001_08 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((id Int)) (forall ((v OwnedVar)) (forall ((b Borrow)) (=> (= (find_var (oc_vars ctx) id) (some v)) (=> (= (ov_state v) Owned) (=> (= (In b (oc_borrows ctx)) true) (=> (= (br_source b) id) (=> (= (br_mutable b) true) (= (can_shared_borrow ctx id) false))))))))))) ; MEM_001_08
 
 ; MEM_001_09 (matches Coq: Theorem MEM_001_09)
-(assert (= true true)) ; MEM_001_09 [untranslatable]
+(assert (forall ((orig_lt Lifetime) (reborrow_lt Lifetime)) (=> (= (lifetime_outlives orig_lt reborrow_lt) true) (= (<= reborrow_lt orig_lt) true)))) ; MEM_001_09
 
 ; find_var_map_dropped (matches Coq: Lemma find_var_map_dropped)
-(assert (= true true)) ; find_var_map_dropped [untranslatable]
+; find_var_map_dropped: forall vars id v, find_var vars id = Some v -> ov_state v = Owned -> find_var (map (fun var => if Nat.eqb (ov_id var) id
+(assert (forall ((vars Bool) (id Bool) (v Bool)) true)) ; find_var_map_dropped [partial: bindings preserved]
 
 ; MEM_001_10 (matches Coq: Theorem MEM_001_10)
-(assert (= true true)) ; MEM_001_10 [untranslatable]
+(assert (forall ((ctx OwnCtx) (ctx' OwnCtx) (id Int) (v OwnedVar)) (=> (= (find_var (oc_vars ctx) id) (some v)) (=> (= (ov_state v) Owned) (=> (= (drop_var ctx id) (some ctx')) (= (drop_var ctx' id) none)))))) ; MEM_001_10
 
 ; MEM_001_11 (matches Coq: Theorem MEM_001_11)
-(assert (= true true)) ; MEM_001_11 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((b Borrow)) (forall ((v OwnedVar)) (=> (= (well_formed_ctx ctx) true) (=> (= (In b (oc_borrows ctx)) true) (=> (= (find_var (oc_vars ctx) (br_source b)) (some v)) (=> (and (not (= (ov_state v) Dropped)) (not (= (ov_state v) Moved))) (= (lifetime_outlives (ov_lifetime v) (br_lifetime b)) true))))))))) ; MEM_001_11
 
 ; MEM_001_12 (matches Coq: Theorem MEM_001_12)
-(assert (forall ((rc RefCell)) (=> (= (rc_state rc) RCMutBorrow) (and (= (refcell_try_borrow rc) None) (= (refcell_try_borrow_mut rc) None))))) ; MEM_001_12
+(assert (forall ((rc RefCell)) (=> (= (rc_state rc) RCMutBorrow) (and (= (refcell_try_borrow rc) none) (= (refcell_try_borrow_mut rc) none))))) ; MEM_001_12
 
 ; MEM_001_13 (matches Coq: Theorem MEM_001_13)
-(assert (= true true)) ; MEM_001_13 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (forall ((from_id Int) (to_id Int) (v OwnedVar)) (=> (= (find_var (oc_vars ctx) from_id) (some v)) (=> (= (ov_is_copy v) true) (= (move_var ctx from_id to_id) (some ctx))))))) ; MEM_001_13
 
 ; MEM_001_14 (matches Coq: Theorem MEM_001_14)
-(assert (= true true)) ; MEM_001_14 [untranslatable]
+(assert (forall ((id Int)) (let ((b (box_new id))) (and (= (box_allocated b) true) (= (box_dropped b) false) (exists ((b' Bool)) (and (= (box_drop b) (some b')) (= (box_dropped b') true))))))) ; MEM_001_14
 
 ; MEM_001_15 (matches Coq: Theorem MEM_001_15)
-(assert (= true true)) ; MEM_001_15 [untranslatable]
+(assert (forall ((ctx OwnCtx)) (=> (= (memory_safe ctx) true) (and (= (well_formed_ctx ctx) true) (forall ((v Bool)) (=> (= (In v (oc_vars ctx)) true) (=> (= (ov_state v) Moved) (= (is_usable v) false)))) (forall ((v Bool)) (=> (= (In v (oc_vars ctx)) true) (=> (= (ov_state v) Dropped) (= (is_usable v) false)))))))) ; MEM_001_15
 
 ; lifetime_outlives_refl (matches Coq: Theorem lifetime_outlives_refl)
-(assert (= true true)) ; lifetime_outlives_refl [untranslatable]
+(assert (forall ((l Bool)) (= (lifetime_outlives l l) true))) ; lifetime_outlives_refl
 
 ; Verify all assertions are satisfiable
 (check-sat)

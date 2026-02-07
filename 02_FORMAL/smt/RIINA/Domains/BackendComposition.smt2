@@ -56,67 +56,67 @@
   true)
 
 ; ni_secure_binary (matches Coq: Theorem ni_secure_binary)
-(assert (= true true)) ; ni_secure_binary [untranslatable]
+(assert (forall ((p Program)) (forall ((b Backend)) (=> (= (ni_secure p) true) (=> (= (semantics_preserving b) true) (= (ni_secure (b p)) true)))))) ; ni_secure_binary
 
 ; ni_strong_binary (matches Coq: Theorem ni_strong_binary)
-(assert (= true true)) ; ni_strong_binary [untranslatable]
+(assert (forall ((p Program)) (forall ((b Backend)) (=> (= (ni_strong p) true) (=> (= (semantics_preserving b) true) (= (ni_strong (b p)) true)))))) ; ni_strong_binary
 
 ; id_backend_semantics_preserving (matches Coq: Theorem id_backend_semantics_preserving)
-(assert (= true true)) ; id_backend_semantics_preserving [untranslatable]
+(assert (= (semantics_preserving id_backend) true)) ; id_backend_semantics_preserving
 
 ; id_backend_preserves_ni (matches Coq: Theorem id_backend_preserves_ni)
-(assert (= true true)) ; id_backend_preserves_ni [untranslatable]
+(assert (forall ((p Bool)) (=> (= (ni_secure p) true) (= (ni_secure (id_backend p)) true)))) ; id_backend_preserves_ni
 
 ; compose_semantics_preserving (matches Coq: Theorem compose_semantics_preserving)
-(assert (= true true)) ; compose_semantics_preserving [untranslatable]
+(assert (forall ((b1 Bool) (b2 Bool)) (=> (= (semantics_preserving b1) true) (=> (= (semantics_preserving b2) true) (= (semantics_preserving (compose_backend b1 b2)) true))))) ; compose_semantics_preserving
 
 ; ni_secure_composed (matches Coq: Theorem ni_secure_composed)
-(assert (= true true)) ; ni_secure_composed [untranslatable]
+(assert (forall ((p Bool) (b1 Bool) (b2 Bool)) (=> (= (ni_secure p) true) (=> (= (semantics_preserving b1) true) (=> (= (semantics_preserving b2) true) (= (ni_secure (compose_backend b1 b2 p)) true)))))) ; ni_secure_composed
 
 ; sem_pres_implies_label_pres (matches Coq: Theorem sem_pres_implies_label_pres)
-(assert (= true true)) ; sem_pres_implies_label_pres [untranslatable]
+(assert (forall ((b Bool)) (=> (= (semantics_preserving b) true) (= (label_preserving b) true)))) ; sem_pres_implies_label_pres
 
 ; public_output_preserved (matches Coq: Theorem public_output_preserved)
-(assert (= true true)) ; public_output_preserved [untranslatable]
+(assert (forall ((p Bool) (b Bool) (input Bool)) (=> (= (semantics_preserving b) true) (=> (= (lv_label (p input)) Lo) (= (lv_label (b p input)) Lo))))) ; public_output_preserved
 
 ; secret_output_preserved (matches Coq: Theorem secret_output_preserved)
-(assert (= true true)) ; secret_output_preserved [untranslatable]
+(assert (forall ((p Bool) (b Bool) (input Bool)) (=> (= (semantics_preserving b) true) (=> (= (lv_label (p input)) Hi) (= (lv_label (b p input)) Hi))))) ; secret_output_preserved
 
 ; full_pipeline_ni (matches Coq: Theorem full_pipeline_ni)
-(assert (= true true)) ; full_pipeline_ni [untranslatable]
+(assert (forall ((p Bool) (wb Bool) (jb Bool)) (=> (= (ni_secure p) true) (=> (= (wasm_backend_correct wb) true) (=> (= (jni_backend_correct jb) true) (= (ni_secure (compose_backend wb jb p)) true)))))) ; full_pipeline_ni
 
 ; full_pipeline_swift_ni (matches Coq: Theorem full_pipeline_swift_ni)
-(assert (= true true)) ; full_pipeline_swift_ni [untranslatable]
+(assert (forall ((p Bool) (wb Bool) (sb Bool)) (=> (= (ni_secure p) true) (=> (= (wasm_backend_correct wb) true) (=> (= (swift_backend_correct sb) true) (= (ni_secure (compose_backend wb sb p)) true)))))) ; full_pipeline_swift_ni
 
 ; label_le_refl (matches Coq: Theorem label_le_refl)
-(assert (= true true)) ; label_le_refl [untranslatable]
+(assert (forall ((l Bool)) (= (label_le l l) true))) ; label_le_refl
 
 ; label_le_trans (matches Coq: Theorem label_le_trans)
-(assert (= true true)) ; label_le_trans [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (=> (= (label_le l1 l2) true) (=> (= (label_le l2 l3) true) (= (label_le l1 l3) true))))) ; label_le_trans
 
 ; lo_is_bottom (matches Coq: Theorem lo_is_bottom)
-(assert (= true true)) ; lo_is_bottom [untranslatable]
+(assert (forall ((l Bool)) (= (label_le Lo l) true))) ; lo_is_bottom
 
 ; hi_is_top (matches Coq: Theorem hi_is_top)
-(assert (= true true)) ; hi_is_top [untranslatable]
+(assert (forall ((l Bool)) (= (label_le l Hi) true))) ; hi_is_top
 
 ; compose_id_left (matches Coq: Theorem compose_id_left)
-(assert (= true true)) ; compose_id_left [untranslatable]
+(assert (forall ((b Bool) (p Bool) (input Bool)) (= (compose_backend id_backend b p input) (b p input)))) ; compose_id_left
 
 ; compose_id_right (matches Coq: Theorem compose_id_right)
-(assert (= true true)) ; compose_id_right [untranslatable]
+(assert (forall ((b Bool) (p Bool) (input Bool)) (= (compose_backend b id_backend p input) (b p input)))) ; compose_id_right
 
 ; compose_backend_assoc (matches Coq: Theorem compose_backend_assoc)
-(assert (= true true)) ; compose_backend_assoc [untranslatable]
+(assert (forall ((b1 Bool) (b2 Bool) (b3 Bool) (p Bool) (input Bool)) (= (compose_backend (compose_backend b1 b2) b3 p input) (compose_backend b1 (compose_backend b2 b3) p input)))) ; compose_backend_assoc
 
 ; label_preserving_compose (matches Coq: Theorem label_preserving_compose)
-(assert (= true true)) ; label_preserving_compose [untranslatable]
+(assert (forall ((b1 Bool) (b2 Bool)) (=> (= (label_preserving b1) true) (=> (= (label_preserving b2) true) (= (label_preserving (compose_backend b1 b2)) true))))) ; label_preserving_compose
 
 ; sem_pres_implies_public_sem_pres (matches Coq: Theorem sem_pres_implies_public_sem_pres)
-(assert (= true true)) ; sem_pres_implies_public_sem_pres [untranslatable]
+(assert (forall ((b Bool)) (=> (= (semantics_preserving b) true) (= (public_semantics_preserving b) true)))) ; sem_pres_implies_public_sem_pres
 
 ; ni_strong_triple_pipeline (matches Coq: Theorem ni_strong_triple_pipeline)
-(assert (= true true)) ; ni_strong_triple_pipeline [untranslatable]
+(assert (forall ((p Bool) (b1 Bool) (b2 Bool) (b3 Bool)) (=> (= (ni_strong p) true) (=> (= (semantics_preserving b1) true) (=> (= (semantics_preserving b2) true) (=> (= (semantics_preserving b3) true) (= (ni_strong (compose_backend (compose_backend b1 b2) b3 p)) true))))))) ; ni_strong_triple_pipeline
 
 ; Verify all assertions are satisfiable
 (check-sat)

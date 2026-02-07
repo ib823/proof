@@ -225,16 +225,16 @@
   (mk-secure_memory_region (allocated_region) DomainGuest PermRead false))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_false_iff (matches Coq: Lemma andb_false_iff)
-(assert (= true true)) ; andb_false_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) false) (or (= a false) (= b false))) (=> (or (= a false) (= b false)) (= (and a b) false))))) ; andb_false_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; negb_false_iff (matches Coq: Lemma negb_false_iff)
-(assert (= true true)) ; negb_false_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) false) (= b true)) (=> (= b true) (= (not b) false))))) ; negb_false_iff
 
 ; MEM_001 (matches Coq: Theorem MEM_001)
 (assert (= (uaf_protected riina_uaf) true)) ; MEM_001
@@ -282,64 +282,64 @@
 (assert (= (bg_fat_pointers riina_bounds) true)) ; MEM_015
 
 ; MEM_016 (matches Coq: Theorem MEM_016)
-(assert (= true true)) ; MEM_016 [untranslatable]
+(assert (forall ((u Bool)) (=> (= (uaf_protected u) true) (= (uaf_lifetime_tracking u) true)))) ; MEM_016
 
 ; MEM_017 (matches Coq: Theorem MEM_017)
-(assert (= true true)) ; MEM_017 [untranslatable]
+(assert (forall ((u Bool)) (=> (= (uaf_protected u) true) (= (uaf_ownership_clear u) true)))) ; MEM_017
 
 ; MEM_018 (matches Coq: Theorem MEM_018)
-(assert (= true true)) ; MEM_018 [untranslatable]
+(assert (forall ((u Bool)) (=> (= (uaf_protected u) true) (= (uaf_access_check u) true)))) ; MEM_018
 
 ; MEM_019 (matches Coq: Theorem MEM_019)
-(assert (= true true)) ; MEM_019 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (df_protected d) true) (= (df_state_tracking d) true)))) ; MEM_019
 
 ; MEM_020 (matches Coq: Theorem MEM_020)
-(assert (= true true)) ; MEM_020 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (df_protected d) true) (= (df_single_owner d) true)))) ; MEM_020
 
 ; MEM_021 (matches Coq: Theorem MEM_021)
-(assert (= true true)) ; MEM_021 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (df_protected d) true) (= (df_freed_check d) true)))) ; MEM_021
 
 ; MEM_022 (matches Coq: Theorem MEM_022)
-(assert (= true true)) ; MEM_022 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (nd_protected n) true) (= (nd_null_check n) true)))) ; MEM_022
 
 ; MEM_023 (matches Coq: Theorem MEM_023)
-(assert (= true true)) ; MEM_023 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (nd_protected n) true) (= (nd_option_types n) true)))) ; MEM_023
 
 ; MEM_024 (matches Coq: Theorem MEM_024)
-(assert (= true true)) ; MEM_024 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (nd_protected n) true) (= (nd_init_required n) true)))) ; MEM_024
 
 ; MEM_025 (matches Coq: Theorem MEM_025)
-(assert (= true true)) ; MEM_025 [untranslatable]
+(assert (forall ((b Bool)) (=> (= (bounds_protected b) true) (= (bg_bounds_check b) true)))) ; MEM_025
 
 ; MEM_026 (matches Coq: Theorem MEM_026)
-(assert (= true true)) ; MEM_026 [untranslatable]
+(assert (forall ((b Bool)) (=> (= (bounds_protected b) true) (= (bg_fat_pointers b) true)))) ; MEM_026
 
 ; MEM_027 (matches Coq: Theorem MEM_027)
-(assert (= true true)) ; MEM_027 [untranslatable]
+(assert (forall ((b Bool)) (=> (= (bounds_protected b) true) (= (bg_slice_safety b) true)))) ; MEM_027
 
 ; MEM_028 (matches Coq: Theorem MEM_028)
-(assert (= true true)) ; MEM_028 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (uaf_protected (ms_uaf m)) true)))) ; MEM_028
 
 ; MEM_029 (matches Coq: Theorem MEM_029)
-(assert (= true true)) ; MEM_029 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (df_protected (ms_df m)) true)))) ; MEM_029
 
 ; MEM_030 (matches Coq: Theorem MEM_030)
-(assert (= true true)) ; MEM_030 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (nd_protected (ms_nd m)) true)))) ; MEM_030
 
 ; MEM_031 (matches Coq: Theorem MEM_031)
-(assert (= true true)) ; MEM_031 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (bounds_protected (ms_bounds m)) true)))) ; MEM_031
 
 ; MEM_032 (matches Coq: Theorem MEM_032)
-(assert (= true true)) ; MEM_032 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (uaf_lifetime_tracking (ms_uaf m)) true)))) ; MEM_032
 
 ; MEM_033 (matches Coq: Theorem MEM_033)
-(assert (= true true)) ; MEM_033 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (df_single_owner (ms_df m)) true)))) ; MEM_033
 
 ; MEM_034 (matches Coq: Theorem MEM_034)
-(assert (= true true)) ; MEM_034 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (nd_null_check (ms_nd m)) true)))) ; MEM_034
 
 ; MEM_035 (matches Coq: Theorem MEM_035)
-(assert (= true true)) ; MEM_035 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (bg_bounds_check (ms_bounds m)) true)))) ; MEM_035
 
 ; MEM_036 (matches Coq: Theorem MEM_036)
 (assert (and (= (uaf_protected riina_uaf) true) (= (df_protected riina_df) true))) ; MEM_036
@@ -348,13 +348,13 @@
 (assert (and (= (nd_protected riina_nd) true) (= (bounds_protected riina_bounds) true))) ; MEM_037
 
 ; MEM_038 (matches Coq: Theorem MEM_038)
-(assert (= true true)) ; MEM_038 [untranslatable]
+(assert (forall ((u Bool)) (=> (= (uaf_protected u) true) (and (= (uaf_lifetime_tracking u) true) (= (uaf_access_check u) true))))) ; MEM_038
 
 ; MEM_039 (matches Coq: Theorem MEM_039)
-(assert (= true true)) ; MEM_039 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (df_protected d) true) (and (= (df_state_tracking d) true) (= (df_freed_check d) true))))) ; MEM_039
 
 ; MEM_040_complete (matches Coq: Theorem MEM_040_complete)
-(assert (= true true)) ; MEM_040_complete [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (and (= (uaf_lifetime_tracking (ms_uaf m)) true) (= (df_single_owner (ms_df m)) true) (= (nd_null_check (ms_nd m)) true) (= (bg_bounds_check (ms_bounds m)) true))))) ; MEM_040_complete
 
 ; MEM_041_valid_pointer_is_valid (matches Coq: Theorem MEM_041_valid_pointer_is_valid)
 (assert (= (ptr_is_valid valid_pointer) true)) ; MEM_041_valid_pointer_is_valid
@@ -396,10 +396,10 @@
 (assert (= (ptr_safe_for_access dangling_pointer) false)) ; MEM_053_dangling_not_safe_for_access
 
 ; MEM_054_safe_access_implies_valid (matches Coq: Theorem MEM_054_safe_access_implies_valid)
-(assert (= true true)) ; MEM_054_safe_access_implies_valid [untranslatable]
+(assert (forall ((p Bool)) (=> (= (ptr_safe_for_access p) true) (= (ptr_is_valid p) true)))) ; MEM_054_safe_access_implies_valid
 
 ; MEM_055_safe_access_implies_in_bounds (matches Coq: Theorem MEM_055_safe_access_implies_in_bounds)
-(assert (= true true)) ; MEM_055_safe_access_implies_in_bounds [untranslatable]
+(assert (forall ((p Bool)) (=> (= (ptr_safe_for_access p) true) (= (ptr_in_bounds p) true)))) ; MEM_055_safe_access_implies_in_bounds
 
 ; MEM_056_allocated_region_is_allocated (matches Coq: Theorem MEM_056_allocated_region_is_allocated)
 (assert (= (region_is_allocated allocated_region) true)) ; MEM_056_allocated_region_is_allocated
@@ -423,13 +423,13 @@
 (assert (= (region_can_access freed_region) false)) ; MEM_062_freed_cannot_access
 
 ; MEM_063_access_implies_allocated (matches Coq: Theorem MEM_063_access_implies_allocated)
-(assert (= true true)) ; MEM_063_access_implies_allocated [untranslatable]
+(assert (forall ((r Bool)) (=> (= (region_can_access r) true) (= (region_is_allocated r) true)))) ; MEM_063_access_implies_allocated
 
 ; MEM_064_access_implies_owned (matches Coq: Theorem MEM_064_access_implies_owned)
-(assert (= true true)) ; MEM_064_access_implies_owned [untranslatable]
+(assert (forall ((r Bool)) (=> (= (region_can_access r) true) (= (mr_owned r) true)))) ; MEM_064_access_implies_owned
 
 ; MEM_065_uaf_prevented (matches Coq: Theorem MEM_065_uaf_prevented)
-(assert (= true true)) ; MEM_065_uaf_prevented [untranslatable]
+(assert (forall ((r Bool)) (=> (= (region_is_freed r) true) (= (region_can_access r) false)))) ; MEM_065_uaf_prevented
 
 ; MEM_066_stack_protected (matches Coq: Theorem MEM_066_stack_protected)
 (assert (= (stack_protected riina_stack) true)) ; MEM_066_stack_protected
@@ -447,19 +447,19 @@
 (assert (= (sg_shadow_stack riina_stack) true)) ; MEM_070_shadow_stack
 
 ; MEM_071_stack_implies_canary (matches Coq: Theorem MEM_071_stack_implies_canary)
-(assert (= true true)) ; MEM_071_stack_implies_canary [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stack_protected s) true) (= (sg_canary_enabled s) true)))) ; MEM_071_stack_implies_canary
 
 ; MEM_072_stack_implies_return_protected (matches Coq: Theorem MEM_072_stack_implies_return_protected)
-(assert (= true true)) ; MEM_072_stack_implies_return_protected [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stack_protected s) true) (= (sg_return_addr_protected s) true)))) ; MEM_072_stack_implies_return_protected
 
 ; MEM_073_stack_implies_frame_isolation (matches Coq: Theorem MEM_073_stack_implies_frame_isolation)
-(assert (= true true)) ; MEM_073_stack_implies_frame_isolation [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stack_protected s) true) (= (sg_frame_isolation s) true)))) ; MEM_073_stack_implies_frame_isolation
 
 ; MEM_074_stack_implies_shadow (matches Coq: Theorem MEM_074_stack_implies_shadow)
-(assert (= true true)) ; MEM_074_stack_implies_shadow [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stack_protected s) true) (= (sg_shadow_stack s) true)))) ; MEM_074_stack_implies_shadow
 
 ; MEM_075_complete_stack_protection (matches Coq: Theorem MEM_075_complete_stack_protection)
-(assert (= true true)) ; MEM_075_complete_stack_protection [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stack_protected s) true) (and (= (sg_canary_enabled s) true) (= (sg_return_addr_protected s) true) (= (sg_frame_isolation s) true) (= (sg_shadow_stack s) true))))) ; MEM_075_complete_stack_protection
 
 ; MEM_076_heap_protected (matches Coq: Theorem MEM_076_heap_protected)
 (assert (= (heap_protected riina_heap) true)) ; MEM_076_heap_protected
@@ -477,19 +477,19 @@
 (assert (= (hg_metadata_integrity riina_heap) true)) ; MEM_080_metadata_integrity
 
 ; MEM_081_heap_implies_allocation_tracking (matches Coq: Theorem MEM_081_heap_implies_allocation_tracking)
-(assert (= true true)) ; MEM_081_heap_implies_allocation_tracking [untranslatable]
+(assert (forall ((h Bool)) (=> (= (heap_protected h) true) (= (hg_allocation_tracking h) true)))) ; MEM_081_heap_implies_allocation_tracking
 
 ; MEM_082_heap_implies_deallocation_check (matches Coq: Theorem MEM_082_heap_implies_deallocation_check)
-(assert (= true true)) ; MEM_082_heap_implies_deallocation_check [untranslatable]
+(assert (forall ((h Bool)) (=> (= (heap_protected h) true) (= (hg_deallocation_check h) true)))) ; MEM_082_heap_implies_deallocation_check
 
 ; MEM_083_heap_implies_fragmentation_prevention (matches Coq: Theorem MEM_083_heap_implies_fragmentation_prevention)
-(assert (= true true)) ; MEM_083_heap_implies_fragmentation_prevention [untranslatable]
+(assert (forall ((h Bool)) (=> (= (heap_protected h) true) (= (hg_fragmentation_prevention h) true)))) ; MEM_083_heap_implies_fragmentation_prevention
 
 ; MEM_084_heap_implies_metadata_integrity (matches Coq: Theorem MEM_084_heap_implies_metadata_integrity)
-(assert (= true true)) ; MEM_084_heap_implies_metadata_integrity [untranslatable]
+(assert (forall ((h Bool)) (=> (= (heap_protected h) true) (= (hg_metadata_integrity h) true)))) ; MEM_084_heap_implies_metadata_integrity
 
 ; MEM_085_complete_heap_protection (matches Coq: Theorem MEM_085_complete_heap_protection)
-(assert (= true true)) ; MEM_085_complete_heap_protection [untranslatable]
+(assert (forall ((h Bool)) (=> (= (heap_protected h) true) (and (= (hg_allocation_tracking h) true) (= (hg_deallocation_check h) true) (= (hg_fragmentation_prevention h) true) (= (hg_metadata_integrity h) true))))) ; MEM_085_complete_heap_protection
 
 ; MEM_086_isolation_protected (matches Coq: Theorem MEM_086_isolation_protected)
 (assert (= (isolation_protected riina_isolation) true)) ; MEM_086_isolation_protected
@@ -507,19 +507,19 @@
 (assert (= (ig_capability_required riina_isolation) true)) ; MEM_090_capability_required
 
 ; MEM_091_isolation_implies_domain_separation (matches Coq: Theorem MEM_091_isolation_implies_domain_separation)
-(assert (= true true)) ; MEM_091_isolation_implies_domain_separation [untranslatable]
+(assert (forall ((i Bool)) (=> (= (isolation_protected i) true) (= (ig_domain_separation i) true)))) ; MEM_091_isolation_implies_domain_separation
 
 ; MEM_092_isolation_implies_permission_enforcement (matches Coq: Theorem MEM_092_isolation_implies_permission_enforcement)
-(assert (= true true)) ; MEM_092_isolation_implies_permission_enforcement [untranslatable]
+(assert (forall ((i Bool)) (=> (= (isolation_protected i) true) (= (ig_permission_enforcement i) true)))) ; MEM_092_isolation_implies_permission_enforcement
 
 ; MEM_093_isolation_implies_cross_domain_check (matches Coq: Theorem MEM_093_isolation_implies_cross_domain_check)
-(assert (= true true)) ; MEM_093_isolation_implies_cross_domain_check [untranslatable]
+(assert (forall ((i Bool)) (=> (= (isolation_protected i) true) (= (ig_cross_domain_check i) true)))) ; MEM_093_isolation_implies_cross_domain_check
 
 ; MEM_094_isolation_implies_capability (matches Coq: Theorem MEM_094_isolation_implies_capability)
-(assert (= true true)) ; MEM_094_isolation_implies_capability [untranslatable]
+(assert (forall ((i Bool)) (=> (= (isolation_protected i) true) (= (ig_capability_required i) true)))) ; MEM_094_isolation_implies_capability
 
 ; MEM_095_complete_isolation (matches Coq: Theorem MEM_095_complete_isolation)
-(assert (= true true)) ; MEM_095_complete_isolation [untranslatable]
+(assert (forall ((i Bool)) (=> (= (isolation_protected i) true) (and (= (ig_domain_separation i) true) (= (ig_permission_enforcement i) true) (= (ig_cross_domain_check i) true) (= (ig_capability_required i) true))))) ; MEM_095_complete_isolation
 
 ; MEM_096_kernel_can_access_kernel (matches Coq: Theorem MEM_096_kernel_can_access_kernel)
 (assert (= (domain_can_access DomainKernel DomainKernel) true)) ; MEM_096_kernel_can_access_kernel
@@ -546,10 +546,10 @@
 (assert (= (domain_can_access DomainUntrusted DomainGuest) false)) ; MEM_103_untrusted_cannot_access_guest
 
 ; MEM_104_domain_access_reflexive (matches Coq: Theorem MEM_104_domain_access_reflexive)
-(assert (= true true)) ; MEM_104_domain_access_reflexive [untranslatable]
+(assert (forall ((d Bool)) (= (domain_can_access d d) true))) ; MEM_104_domain_access_reflexive
 
 ; MEM_105_domain_hierarchy_transitive (matches Coq: Theorem MEM_105_domain_hierarchy_transitive)
-(assert (= true true)) ; MEM_105_domain_hierarchy_transitive [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool) (d3 Bool)) (=> (= (domain_can_access d1 d2) true) (=> (= (domain_can_access d2 d3) true) (= (domain_can_access d1 d3) true))))) ; MEM_105_domain_hierarchy_transitive
 
 ; MEM_106_kernel_read_kernel_region (matches Coq: Theorem MEM_106_kernel_read_kernel_region)
 (assert (= (secure_region_can_read kernel_region DomainKernel) true)) ; MEM_106_kernel_read_kernel_region
@@ -573,40 +573,40 @@
 (assert (= (secure_region_can_write user_region DomainKernel) true)) ; MEM_112_kernel_write_user_region
 
 ; MEM_113_read_requires_allocation (matches Coq: Theorem MEM_113_read_requires_allocation)
-(assert (= true true)) ; MEM_113_read_requires_allocation [untranslatable]
+(assert (forall ((r Bool) (d Bool)) (=> (= (secure_region_can_read r d) true) (= (region_is_allocated (smr_base r)) true)))) ; MEM_113_read_requires_allocation
 
 ; MEM_114_write_requires_allocation (matches Coq: Theorem MEM_114_write_requires_allocation)
-(assert (= true true)) ; MEM_114_write_requires_allocation [untranslatable]
+(assert (forall ((r Bool) (d Bool)) (=> (= (secure_region_can_write r d) true) (= (region_is_allocated (smr_base r)) true)))) ; MEM_114_write_requires_allocation
 
 ; MEM_115_read_requires_permission (matches Coq: Theorem MEM_115_read_requires_permission)
-(assert (= true true)) ; MEM_115_read_requires_permission [untranslatable]
+(assert (forall ((r Bool) (d Bool)) (=> (= (secure_region_can_read r d) true) (= (permission_allows_read (smr_permission r)) true)))) ; MEM_115_read_requires_permission
 
 ; MEM_116_full_memory_safe_implies_stack (matches Coq: Theorem MEM_116_full_memory_safe_implies_stack)
-(assert (= true true)) ; MEM_116_full_memory_safe_implies_stack [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (stack_protected (ms_stack m)) true)))) ; MEM_116_full_memory_safe_implies_stack
 
 ; MEM_117_full_memory_safe_implies_heap (matches Coq: Theorem MEM_117_full_memory_safe_implies_heap)
-(assert (= true true)) ; MEM_117_full_memory_safe_implies_heap [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (heap_protected (ms_heap m)) true)))) ; MEM_117_full_memory_safe_implies_heap
 
 ; MEM_118_full_memory_safe_implies_isolation (matches Coq: Theorem MEM_118_full_memory_safe_implies_isolation)
-(assert (= true true)) ; MEM_118_full_memory_safe_implies_isolation [untranslatable]
+(assert (forall ((m Bool)) (=> (= (memory_safe m) true) (= (isolation_protected (ms_isolation m)) true)))) ; MEM_118_full_memory_safe_implies_isolation
 
 ; MEM_119_riina_full_protection (matches Coq: Theorem MEM_119_riina_full_protection)
 (assert (and (= (memory_safe riina_mem_safety) true) (= (stack_protected riina_stack) true) (= (heap_protected riina_heap) true) (= (isolation_protected riina_isolation) true))) ; MEM_119_riina_full_protection
 
 ; MEM_120_no_uaf_with_tracking (matches Coq: Theorem MEM_120_no_uaf_with_tracking)
-(assert (= true true)) ; MEM_120_no_uaf_with_tracking [untranslatable]
+(assert (forall ((u Bool)) (=> (= (uaf_protected u) true) (=> (forall ((r Bool)) (= (region_is_freed r) true)) (=> (= (uaf_access_check u) true) (= (region_can_access r) false)))))) ; MEM_120_no_uaf_with_tracking
 
 ; MEM_121_no_double_free_with_tracking (matches Coq: Theorem MEM_121_no_double_free_with_tracking)
-(assert (= true true)) ; MEM_121_no_double_free_with_tracking [untranslatable]
+(assert (forall ((d Bool)) (=> (= (df_protected d) true) (and (= (df_state_tracking d) true) (= (df_freed_check d) true))))) ; MEM_121_no_double_free_with_tracking
 
 ; MEM_122_null_safety_complete (matches Coq: Theorem MEM_122_null_safety_complete)
-(assert (= true true)) ; MEM_122_null_safety_complete [untranslatable]
+(assert (forall ((n Bool)) (=> (= (nd_protected n) true) (and (= (nd_null_check n) true) (= (nd_option_types n) true) (= (nd_init_required n) true))))) ; MEM_122_null_safety_complete
 
 ; MEM_123_bounds_safety_complete (matches Coq: Theorem MEM_123_bounds_safety_complete)
-(assert (= true true)) ; MEM_123_bounds_safety_complete [untranslatable]
+(assert (forall ((b Bool)) (=> (= (bounds_protected b) true) (and (= (bg_bounds_check b) true) (= (bg_fat_pointers b) true) (= (bg_slice_safety b) true))))) ; MEM_123_bounds_safety_complete
 
 ; MEM_124_ptr_safe_zero_offset (matches Coq: Theorem MEM_124_ptr_safe_zero_offset)
-(assert (= true true)) ; MEM_124_ptr_safe_zero_offset [untranslatable]
+(assert (forall ((bounds Bool)) (=> (> bounds 0) (= (ptr_safe_for_access (mkPointer Valid 0 bounds)) true)))) ; MEM_124_ptr_safe_zero_offset
 
 ; MEM_125_complete_memory_safety_riina (matches Coq: Theorem MEM_125_complete_memory_safety_riina)
 (assert (=> (= (memory_safe riina_mem_safety) true) (and (= (uaf_protected riina_uaf) true) (= (df_protected riina_df) true) (= (nd_protected riina_nd) true) (= (bounds_protected riina_bounds) true) (= (stack_protected riina_stack) true) (= (heap_protected riina_heap) true) (= (isolation_protected riina_isolation) true)))) ; MEM_125_complete_memory_safety_riina
@@ -624,22 +624,22 @@
 (assert (= (ptr_safe_for_access_range dangling_pointer 1) false)) ; MEM_129_dangling_unsafe_for_range
 
 ; MEM_130_safe_range_implies_valid (matches Coq: Theorem MEM_130_safe_range_implies_valid)
-(assert (= true true)) ; MEM_130_safe_range_implies_valid [untranslatable]
+(assert (forall ((p Bool) (len Bool)) (=> (= (ptr_safe_for_access_range p len) true) (= (ptr_is_valid p) true)))) ; MEM_130_safe_range_implies_valid
 
 ; MEM_131_zero_range_safe_if_valid (matches Coq: Theorem MEM_131_zero_range_safe_if_valid)
-(assert (= true true)) ; MEM_131_zero_range_safe_if_valid [untranslatable]
+(assert (forall ((p Bool)) (=> (= (ptr_is_valid p) true) (=> (<= (ptr_offset p) (ptr_bounds p)) (= (ptr_safe_for_access_range p 0) true))))) ; MEM_131_zero_range_safe_if_valid
 
 ; MEM_132_safe_range_monotonic (matches Coq: Theorem MEM_132_safe_range_monotonic)
-(assert (= true true)) ; MEM_132_safe_range_monotonic [untranslatable]
+(assert (forall ((p Bool) (len1 Bool) (len2 Bool)) (=> (<= len1 len2) (=> (= (ptr_safe_for_access_range p len2) true) (= (ptr_safe_for_access_range p len1) true))))) ; MEM_132_safe_range_monotonic
 
 ; MEM_133_single_access_from_range (matches Coq: Theorem MEM_133_single_access_from_range)
-(assert (= true true)) ; MEM_133_single_access_from_range [untranslatable]
+(assert (forall ((p Bool)) (=> (= (ptr_safe_for_access_range p 1) true) (= (ptr_safe_for_access p) true)))) ; MEM_133_single_access_from_range
 
 ; MEM_134_out_of_bounds_unsafe (matches Coq: Theorem MEM_134_out_of_bounds_unsafe)
-(assert (= true true)) ; MEM_134_out_of_bounds_unsafe [untranslatable]
+(assert (forall ((p Bool) (len Bool)) (=> (> (+ (ptr_offset p) len) (ptr_bounds p)) (= (ptr_safe_for_access_range p len) false)))) ; MEM_134_out_of_bounds_unsafe
 
 ; MEM_135_safe_implies_not_exceeds_bounds (matches Coq: Theorem MEM_135_safe_implies_not_exceeds_bounds)
-(assert (= true true)) ; MEM_135_safe_implies_not_exceeds_bounds [untranslatable]
+(assert (forall ((p Bool) (len Bool)) (=> (= (ptr_safe_for_access_range p len) true) (<= (+ (ptr_offset p) len) (ptr_bounds p))))) ; MEM_135_safe_implies_not_exceeds_bounds
 
 ; Verify all assertions are satisfiable
 (check-sat)

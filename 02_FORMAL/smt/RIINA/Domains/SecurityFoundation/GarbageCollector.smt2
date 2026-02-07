@@ -51,64 +51,64 @@
   true)
 
 ; gc_preserves_live_objects (matches Coq: Theorem gc_preserves_live_objects)
-(assert (= true true)) ; gc_preserves_live_objects [untranslatable]
+(assert (forall ((result GCResult)) (forall ((oid ObjectId)) (=> (= (valid_gc result) true) (=> (= (reachable (gc_pre_state result) oid) true) (= (exists_in_heap (gc_post_state result) oid) true)))))) ; gc_preserves_live_objects
 
 ; gc_collects_garbage (matches Coq: Theorem gc_collects_garbage)
-(assert (= true true)) ; gc_collects_garbage [untranslatable]
+(assert (forall ((result GCResult)) (forall ((obj Object)) (=> (= (valid_gc result) true) (=> (not (= (reachable (gc_pre_state result) (obj_id obj)) true)) (not (= (exists_obj (gc_post_state result) obj) true))))))) ; gc_collects_garbage
 
 ; roots_reachable (matches Coq: Theorem roots_reachable)
-(assert (= true true)) ; roots_reachable [untranslatable]
+(assert (forall ((st HeapState)) (forall ((oid ObjectId)) (=> (= (In oid (root_set st)) true) (=> (= (exists_in_heap st oid) true) (= (reachable st oid) true)))))) ; roots_reachable
 
 ; references_reachable (matches Coq: Theorem references_reachable)
-(assert (= true true)) ; references_reachable [untranslatable]
+(assert (forall ((st HeapState)) (forall ((parent Object)) (forall ((child_oid ObjectId)) (=> (= (reachable st (obj_id parent)) true) (=> (= (In parent (live_objects st)) true) (=> (= (In child_oid (obj_references parent)) true) (=> (= (exists_in_heap st child_oid) true) (= (reachable st child_oid) true))))))))) ; references_reachable
 
 ; empty_roots_gc (matches Coq: Theorem empty_roots_gc)
-(assert (= true true)) ; empty_roots_gc [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (valid_gc result) true) (=> (= (root_set (gc_pre_state result)) nil) (=> (forall ((obj Bool)) (not (= (reachable (gc_pre_state result) (obj_id obj)) true))) (not (= (exists_obj (gc_post_state result) obj) true))))))) ; empty_roots_gc
 
 ; gc_preserves_root_set (matches Coq: Theorem gc_preserves_root_set)
-(assert (= true true)) ; gc_preserves_root_set [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (valid_gc result) true) (=> (forall ((oid Bool)) (= (In oid (root_set (gc_pre_state result))) true)) (=> (= (exists_in_heap (gc_pre_state result) oid) true) (= (exists_in_heap (gc_post_state result) oid) true)))))) ; gc_preserves_root_set
 
 ; unreachable_heap_cleared (matches Coq: Theorem unreachable_heap_cleared)
-(assert (= true true)) ; unreachable_heap_cleared [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (valid_gc result) true) (=> (forall ((oid Bool)) (not (= (reachable (gc_pre_state result) oid) true))) (forall ((obj Bool)) (not (= (exists_obj (gc_post_state result) obj) true))))))) ; unreachable_heap_cleared
 
 ; gc_safety (matches Coq: Theorem gc_safety)
-(assert (= true true)) ; gc_safety [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (valid_gc result) true) (=> (forall ((obj Bool)) (= (exists_obj (gc_post_state result) obj) true)) (= (reachable (gc_pre_state result) (obj_id obj)) true))))) ; gc_safety
 
 ; root_reachable_subset (matches Coq: Theorem root_reachable_subset)
-(assert (= true true)) ; root_reachable_subset [untranslatable]
+(assert (forall ((st HeapState)) (forall ((oid ObjectId)) (=> (= (In oid (root_set st)) true) (=> (= (exists_in_heap st oid) true) (= (reachable st oid) true)))))) ; root_reachable_subset
 
 ; reachability_transitive (matches Coq: Theorem reachability_transitive)
-(assert (= true true)) ; reachability_transitive [untranslatable]
+(assert (forall ((st HeapState)) (forall ((a_oid ObjectId) (c_oid ObjectId) (b Object)) (=> (= (reachable st a_oid) true) (=> (= (In b (live_objects st)) true) (=> (= (obj_id b) a_oid) (=> (= (In c_oid (obj_references b)) true) (=> (= (exists_in_heap st c_oid) true) (= (reachable st c_oid) true))))))))) ; reachability_transitive
 
 ; gc_idempotent (matches Coq: Theorem gc_idempotent)
-(assert (= true true)) ; gc_idempotent [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (valid_gc result) true) (=> (forall ((obj Bool)) (= (exists_obj (gc_post_state result) obj) true)) (= (reachable (gc_pre_state result) (obj_id obj)) true))))) ; gc_idempotent
 
 ; empty_heap_gc_safe (matches Coq: Theorem empty_heap_gc_safe)
-(assert (= true true)) ; empty_heap_gc_safe [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (live_objects (gc_pre_state result)) nil) (=> (= (valid_gc result) true) (forall ((obj Bool)) (not (= (exists_obj (gc_post_state result) obj) true))))))) ; empty_heap_gc_safe
 
 ; no_refs_no_children (matches Coq: Theorem no_refs_no_children)
-(assert (= true true)) ; no_refs_no_children [untranslatable]
+(assert (forall ((st HeapState)) (forall ((parent Object)) (forall ((child_oid ObjectId)) (=> (= (obj_references parent) nil) (not (and (= (In parent (live_objects st)) true) (= (In child_oid (obj_references parent)) true)))))))) ; no_refs_no_children
 
 ; gc_preserves_deterministic (matches Coq: Theorem gc_preserves_deterministic)
-(assert (= true true)) ; gc_preserves_deterministic [untranslatable]
+(assert (forall ((result GCResult)) (forall ((oid ObjectId)) (=> (= (valid_gc result) true) (=> (= (reachable (gc_pre_state result) oid) true) (= (exists_in_heap (gc_post_state result) oid) true)))))) ; gc_preserves_deterministic
 
 ; single_root_survives (matches Coq: Theorem single_root_survives)
-(assert (= true true)) ; single_root_survives [untranslatable]
+(assert (forall ((result GCResult)) (forall ((obj Object)) (=> (= (valid_gc result) true) (=> (= (live_objects (gc_pre_state result)) (insert obj nil)) (=> (= (In (obj_id obj) (root_set (gc_pre_state result))) true) (= (exists_in_heap (gc_post_state result) (obj_id obj)) true))))))) ; single_root_survives
 
 ; heap_utilization_nonneg (matches Coq: Theorem heap_utilization_nonneg)
-(assert (= true true)) ; heap_utilization_nonneg [untranslatable]
+(assert (forall ((st HeapState)) (>= (heap_utilization st) 0))) ; heap_utilization_nonneg
 
 ; empty_heap_zero_utilization (matches Coq: Theorem empty_heap_zero_utilization)
-(assert (= true true)) ; empty_heap_zero_utilization [untranslatable]
+(assert (forall ((st HeapState)) (=> (= (live_objects st) nil) (= (heap_utilization st) 0)))) ; empty_heap_zero_utilization
 
 ; object_id_eq_refl (matches Coq: Theorem object_id_eq_refl)
 (assert (forall ((oid ObjectId)) (= (ObjectId_eq_dec oid oid) (left eq_refl)))) ; object_id_eq_refl
 
 ; reachable_implies_exists (matches Coq: Theorem reachable_implies_exists)
-(assert (= true true)) ; reachable_implies_exists [untranslatable]
+(assert (forall ((st HeapState)) (forall ((oid ObjectId)) (=> (= (reachable st oid) true) (= (exists_in_heap st oid) true))))) ; reachable_implies_exists
 
 ; valid_gc_reflects_reachability (matches Coq: Theorem valid_gc_reflects_reachability)
-(assert (= true true)) ; valid_gc_reflects_reachability [untranslatable]
+(assert (forall ((result GCResult)) (=> (= (valid_gc result) true) (and (forall ((oid Bool)) (=> (= (reachable (gc_pre_state result) oid) true) (= (exists_in_heap (gc_post_state result) oid) true))) (forall ((obj Bool)) (=> (= (exists_obj (gc_post_state result) obj) true) (= (reachable (gc_pre_state result) (obj_id obj)) true))))))) ; valid_gc_reflects_reachability
 
 ; Verify all assertions are satisfiable
 (check-sat)

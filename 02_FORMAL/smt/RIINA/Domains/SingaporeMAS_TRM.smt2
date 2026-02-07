@@ -66,64 +66,64 @@
   true)
 
 ; mas_cyber_hygiene (matches Coq: Theorem mas_cyber_hygiene)
-(assert (= true true)) ; mas_cyber_hygiene [untranslatable]
+(assert (forall ((e MASRegulatedEntity)) (=> (= (mas_mfa_enabled e) true) (=> (= (mas_patching_current e) true) (=> (= (mas_network_secured e) true) (=> (= (mas_antimalware e) true) (=> (= (mas_privileged_access_managed e) true) (= (cyber_hygiene_compliant e) true)))))))) ; mas_cyber_hygiene
 
 ; critical_patch_14_days (matches Coq: Theorem critical_patch_14_days)
-(assert (= true true)) ; critical_patch_14_days [untranslatable]
+(assert (forall ((d Int) (a Int)) (=> (<= a (+ d 14)) (= (patch_applied_in_time PatchCritical d a) true)))) ; critical_patch_14_days
 
 ; critical_strictest (matches Coq: Theorem critical_strictest)
-(assert (= true true)) ; critical_strictest [untranslatable]
+(assert (forall ((d Int) (a Int)) (=> (= (patch_applied_in_time PatchCritical d a) true) (= (patch_applied_in_time PatchHigh d a) true)))) ; critical_strictest
 
 ; trm_governance_proof (matches Coq: Theorem trm_governance_proof)
-(assert (= true true)) ; trm_governance_proof [untranslatable]
+(assert (forall ((e MASRegulatedEntity)) (=> (= (mas_board_oversight e) true) (=> (= (mas_risk_assessment_done e) true) (= (trm_governance e) true))))) ; trm_governance_proof
 
 ; mas_composition (matches Coq: Theorem mas_composition)
-(assert (= true true)) ; mas_composition [untranslatable]
+(assert (forall ((e MASRegulatedEntity)) (=> (= (cyber_hygiene_compliant e) true) (=> (= (trm_governance e) true) (=> (= (trm_security_testing e) true) (=> (= (trm_resilience e) true) (= (mas_fully_compliant e) true))))))) ; mas_composition
 
 ; mas_license_coverage (matches Coq: Theorem mas_license_coverage)
-(assert (= true true)) ; mas_license_coverage [untranslatable]
+(assert (forall ((l MASLicenseType)) (= (In l all_mas_license_types) true))) ; mas_license_coverage
 
 ; ch_requires_mfa (matches Coq: Theorem ch_requires_mfa)
-(assert (= true true)) ; ch_requires_mfa [untranslatable]
+(assert (forall ((e Bool)) (=> (= (cyber_hygiene_compliant e) true) (= (mas_mfa_enabled e) true)))) ; ch_requires_mfa
 
 ; ch_requires_patching (matches Coq: Theorem ch_requires_patching)
-(assert (= true true)) ; ch_requires_patching [untranslatable]
+(assert (forall ((e Bool)) (=> (= (cyber_hygiene_compliant e) true) (= (mas_patching_current e) true)))) ; ch_requires_patching
 
 ; ch_requires_network (matches Coq: Theorem ch_requires_network)
-(assert (= true true)) ; ch_requires_network [untranslatable]
+(assert (forall ((e Bool)) (=> (= (cyber_hygiene_compliant e) true) (= (mas_network_secured e) true)))) ; ch_requires_network
 
 ; ch_requires_antimalware (matches Coq: Theorem ch_requires_antimalware)
-(assert (= true true)) ; ch_requires_antimalware [untranslatable]
+(assert (forall ((e Bool)) (=> (= (cyber_hygiene_compliant e) true) (= (mas_antimalware e) true)))) ; ch_requires_antimalware
 
 ; ch_requires_pam (matches Coq: Theorem ch_requires_pam)
-(assert (= true true)) ; ch_requires_pam [untranslatable]
+(assert (forall ((e Bool)) (=> (= (cyber_hygiene_compliant e) true) (= (mas_privileged_access_managed e) true)))) ; ch_requires_pam
 
 ; patch_critical_strictest (matches Coq: Theorem patch_critical_strictest)
-(assert (= true true)) ; patch_critical_strictest [untranslatable]
+(assert (forall ((p Bool)) (<= (patch_deadline PatchCritical) (patch_deadline p)))) ; patch_critical_strictest
 
 ; patch_low_most_lenient (matches Coq: Theorem patch_low_most_lenient)
-(assert (= true true)) ; patch_low_most_lenient [untranslatable]
+(assert (forall ((p Bool)) (<= (patch_deadline p) (patch_deadline PatchLow)))) ; patch_low_most_lenient
 
 ; patch_deadline_positive (matches Coq: Theorem patch_deadline_positive)
-(assert (= true true)) ; patch_deadline_positive [untranslatable]
+(assert (forall ((p Bool)) (>= (patch_deadline p) 14))) ; patch_deadline_positive
 
 ; patch_critical_subsumes_all (matches Coq: Theorem patch_critical_subsumes_all)
-(assert (= true true)) ; patch_critical_subsumes_all [untranslatable]
+(assert (forall ((d Bool) (a Bool) (p Bool)) (=> (= (patch_applied_in_time PatchCritical d a) true) (= (patch_applied_in_time p d a) true)))) ; patch_critical_subsumes_all
 
 ; mas_full_requires_hygiene (matches Coq: Theorem mas_full_requires_hygiene)
-(assert (= true true)) ; mas_full_requires_hygiene [untranslatable]
+(assert (forall ((e Bool)) (=> (= (mas_fully_compliant e) true) (= (cyber_hygiene_compliant e) true)))) ; mas_full_requires_hygiene
 
 ; mas_full_requires_governance (matches Coq: Theorem mas_full_requires_governance)
-(assert (= true true)) ; mas_full_requires_governance [untranslatable]
+(assert (forall ((e Bool)) (=> (= (mas_fully_compliant e) true) (= (trm_governance e) true)))) ; mas_full_requires_governance
 
 ; mas_full_requires_testing (matches Coq: Theorem mas_full_requires_testing)
-(assert (= true true)) ; mas_full_requires_testing [untranslatable]
+(assert (forall ((e Bool)) (=> (= (mas_fully_compliant e) true) (= (trm_security_testing e) true)))) ; mas_full_requires_testing
 
 ; mas_full_requires_resilience (matches Coq: Theorem mas_full_requires_resilience)
-(assert (= true true)) ; mas_full_requires_resilience [untranslatable]
+(assert (forall ((e Bool)) (=> (= (mas_fully_compliant e) true) (= (trm_resilience e) true)))) ; mas_full_requires_resilience
 
 ; count_mas_bounded (matches Coq: Theorem count_mas_bounded)
-(assert (= true true)) ; count_mas_bounded [untranslatable]
+(assert (forall ((e Bool)) (<= (count_mas_controls e) 10))) ; count_mas_bounded
 
 ; mas_seven_licenses (matches Coq: Theorem mas_seven_licenses)
 (assert (= (length all_mas_license_types) 7)) ; mas_seven_licenses

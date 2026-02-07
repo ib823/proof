@@ -140,70 +140,71 @@
   true)
 
 ; boot_time_bounded (matches Coq: Theorem boot_time_bounded)
-(assert (= true true)) ; boot_time_bounded [untranslatable]
+(assert (forall ((device Device)) (=> (= (well_formed_device device) true) (=> (= (verified_boot device) true) (<= (boot_time device) 5000))))) ; boot_time_bounded
 
 ; ota_update_atomic (matches Coq: Theorem ota_update_atomic)
-(assert (= true true)) ; ota_update_atomic [untranslatable]
+; ota_update_atomic: forall (sys : System) (upd : SystemUpdate), let (new_sys, result) := apply_update sys upd in result = UpdateSuccess \/ s
+(assert (forall ((sys System) (upd SystemUpdate)) true)) ; ota_update_atomic [partial: bindings preserved]
 
 ; no_boot_loop (matches Coq: Theorem no_boot_loop)
-(assert (= true true)) ; no_boot_loop [untranslatable]
+(assert (forall ((device Device)) (=> (= (valid_boot_device device) true) (=> (= (verified_boot device) true) (= (always (eventually boots_successfully) device) true))))) ; no_boot_loop
 
 ; process_isolation_sound (matches Coq: Theorem process_isolation_sound)
-(assert (= true true)) ; process_isolation_sound [untranslatable]
+(assert (forall ((procs list)) (=> (= (well_isolated_processes procs) true) (=> (forall ((p1 Bool) (p2 Bool)) (= (In p1 procs) true)) (=> (= (In p2 procs) true) (=> (not (= p1 p2)) (= (memory_disjoint p1 p2) true))))))) ; process_isolation_sound
 
 ; process_isolation_enforced (matches Coq: Theorem process_isolation_enforced)
-(assert (= true true)) ; process_isolation_enforced [untranslatable]
+(assert (forall ((pt ProcessTable)) (=> (forall ((p1 Bool) (p2 Bool)) (=> (= (In p1 pt) true) (=> (= (In p2 pt) true) (=> (not (= p1 p2)) (= (ext_mem_disjoint p1 p2) true))))) (=> (forall ((p1 Bool) (p2 Bool)) (= (In p1 pt) true)) (=> (= (In p2 pt) true) (=> (not (= p1 p2)) (or (<= (+ (ext_mem_start p1) (ext_mem_size p1)) (ext_mem_start p2)) (<= (+ (ext_mem_start p2) (ext_mem_size p2)) (ext_mem_start p1))))))))) ; process_isolation_enforced
 
 ; memory_space_disjoint (matches Coq: Theorem memory_space_disjoint)
-(assert (= true true)) ; memory_space_disjoint [untranslatable]
+(assert (forall ((p1 ExtProcess) (p2 ExtProcess)) (=> (= (ext_mem_disjoint p1 p2) true) (=> (forall ((addr Bool)) (and (<= (ext_mem_start p1) addr) (< addr (+ (ext_mem_start p1) (ext_mem_size p1))))) (not (and (<= (ext_mem_start p2) addr) (< addr (+ (ext_mem_start p2) (ext_mem_size p2))))))))) ; memory_space_disjoint
 
 ; syscall_validation_complete (matches Coq: Theorem syscall_validation_complete)
-(assert (= true true)) ; syscall_validation_complete [untranslatable]
+(assert (forall ((sc Syscall)) (=> (= (syscall_authorized sc) true) (= (syscall_validated sc) true)))) ; syscall_validation_complete
 
 ; privilege_escalation_impossible (matches Coq: Theorem privilege_escalation_impossible)
-(assert (= true true)) ; privilege_escalation_impossible [untranslatable]
+(assert (forall ((sc Syscall)) (=> (= (syscall_caller_privilege sc) UserMode) (=> (= (syscall_required_privilege sc) KernelMode) (not (= (syscall_authorized sc) true)))))) ; privilege_escalation_impossible
 
 ; kernel_memory_protected (matches Coq: Theorem kernel_memory_protected)
-(assert (= true true)) ; kernel_memory_protected [untranslatable]
+(assert (forall ((p ExtProcess)) (=> (= (in_user_space p) true) (=> (> (ext_mem_size p) 0) (not (= (in_kernel_space (ext_mem_start p)) true)))))) ; kernel_memory_protected
 
 ; user_space_bounded (matches Coq: Theorem user_space_bounded)
-(assert (= true true)) ; user_space_bounded [untranslatable]
+(assert (forall ((p ExtProcess)) (=> (= (in_user_space p) true) (>= (ext_mem_start p) kernel_mem_boundary)))) ; user_space_bounded
 
 ; ipc_channels_typed (matches Coq: Theorem ipc_channels_typed)
-(assert (= true true)) ; ipc_channels_typed [untranslatable]
+(assert (forall ((ch IPCChannel)) (=> (= (ipc_typed ch) true) (=> (<= (ipc_current_size ch) (ipc_capacity ch)) (and (= (ipc_typed ch) true) (<= (ipc_current_size ch) (ipc_capacity ch))))))) ; ipc_channels_typed
 
 ; resource_limits_enforced (matches Coq: Theorem resource_limits_enforced)
-(assert (= true true)) ; resource_limits_enforced [untranslatable]
+(assert (forall ((p ExtProcess)) (=> (= (resource_within_limit p) true) (<= (ext_resource_used p) (ext_resource_limit p))))) ; resource_limits_enforced
 
 ; process_termination_clean (matches Coq: Theorem process_termination_clean)
-(assert (= true true)) ; process_termination_clean [untranslatable]
+(assert (forall ((p ExtProcess)) (=> (= (process_cleanly_terminated p) true) (= (ext_resource_used p) 0)))) ; process_termination_clean
 
 ; zombie_process_impossible (matches Coq: Theorem zombie_process_impossible)
-(assert (= true true)) ; zombie_process_impossible [untranslatable]
+(assert (forall ((pt ProcessTable)) (=> (forall ((p Bool)) (=> (= (In p pt) true) (or (= (ext_alive p) true) (= (process_cleanly_terminated p) true)))) (=> (forall ((p Bool)) (= (In p pt) true)) (=> (= (ext_alive p) false) (= (ext_resource_used p) 0)))))) ; zombie_process_impossible
 
 ; init_process_always_running (matches Coq: Theorem init_process_always_running)
-(assert (= true true)) ; init_process_always_running [untranslatable]
+(assert (forall ((pt ProcessTable)) (=> (= (init_process_present pt) true) (exists ((p Bool)) (and (= (In p pt) true) (= (ext_pid p) 1) (= (ext_alive p) true)))))) ; init_process_always_running
 
 ; pid_uniqueness (matches Coq: Theorem pid_uniqueness)
-(assert (= true true)) ; pid_uniqueness [untranslatable]
+(assert (forall ((pt ProcessTable)) (=> (= (all_pids_unique pt) true) (=> (forall ((p1 Bool) (p2 Bool)) (= (In p1 pt) true)) (=> (= (In p2 pt) true) (=> (= (ext_pid p1) (ext_pid p2)) (= p1 p2))))))) ; pid_uniqueness
 
 ; scheduler_fairness (matches Coq: Theorem scheduler_fairness)
-(assert (= true true)) ; scheduler_fairness [untranslatable]
+(assert (forall ((sched SchedulerState)) (forall ((pid Int)) (=> (= (In pid (sched_ready_queue sched)) true) (=> (> (sched_time_slice sched) 0) (exists ((ts Bool)) (and (> ts 0) (= ts (sched_time_slice sched))))))))) ; scheduler_fairness
 
 ; context_switch_atomic (matches Coq: Theorem context_switch_atomic)
-(assert (= true true)) ; context_switch_atomic [untranslatable]
+(assert (forall ((sched SchedulerState)) (=> (= (sched_context_saved sched) true) (=> (not (= (sched_ready_queue sched) nil)) (= (sched_context_saved sched) true))))) ; context_switch_atomic
 
 ; signal_delivery_guaranteed (matches Coq: Theorem signal_delivery_guaranteed)
-(assert (= true true)) ; signal_delivery_guaranteed [untranslatable]
+(assert (forall ((pt ProcessTable)) (forall ((target_pid Int)) (=> (= (pid_in_table target_pid pt) true) (=> (forall ((p Bool)) (=> (= (In p pt) true) (=> (= (ext_pid p) target_pid) (= (ext_alive p) true)))) (exists ((p Bool)) (and (= (In p pt) true) (= (ext_pid p) target_pid) (= (ext_alive p) true)))))))) ; signal_delivery_guaranteed
 
 ; supervisor_cannot_kernel (matches Coq: Theorem supervisor_cannot_kernel)
-(assert (= true true)) ; supervisor_cannot_kernel [untranslatable]
+(assert (forall ((sc Syscall)) (=> (= (syscall_caller_privilege sc) SupervisorMode) (=> (= (syscall_required_privilege sc) KernelMode) (not (= (syscall_authorized sc) true)))))) ; supervisor_cannot_kernel
 
 ; user_kernel_memory_separation (matches Coq: Theorem user_kernel_memory_separation)
-(assert (= true true)) ; user_kernel_memory_separation [untranslatable]
+(assert (forall ((p ExtProcess)) (forall ((kaddr Int)) (=> (= (in_user_space p) true) (=> (= (in_kernel_space kaddr) true) (not (and (<= (ext_mem_start p) kaddr) (< kaddr (+ (ext_mem_start p) (ext_mem_size p)))))))))) ; user_kernel_memory_separation
 
 ; resource_usage_bounded (matches Coq: Theorem resource_usage_bounded)
-(assert (= true true)) ; resource_usage_bounded [untranslatable]
+(assert (forall ((p ExtProcess)) (forall ((extra Int)) (=> (= (resource_within_limit p) true) (=> (<= (+ (ext_resource_used p) extra) (ext_resource_limit p)) (<= (+ (ext_resource_used p) extra) (ext_resource_limit p))))))) ; resource_usage_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

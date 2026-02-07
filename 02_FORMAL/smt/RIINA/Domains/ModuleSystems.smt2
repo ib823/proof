@@ -218,13 +218,14 @@
   (caps_satisfied si))
 
 ; J_001_01 (matches Coq: Theorem J_001_01)
-(assert (= true true)) ; J_001_01 [untranslatable]
+(assert (forall ((m Module)) (=> (= (module_wellformed m) true) (=> (forall ((name Bool)) (= (In name (mod_exports m)) true)) (= (item_exists (mod_items m) name) true))))) ; J_001_01
 
 ; J_001_02 (matches Coq: Theorem J_001_02)
-(assert (= true true)) ; J_001_02 [untranslatable]
+(assert (forall ((m1 Module) (m2 Module) (m3 Module)) (= (compose_modules (compose_modules m1 m2) m3) (mkModule (concat (concat (mod_path m1) (mod_path m2)) (mod_path m3)) (concat (concat (mod_items m1) (mod_items m2)) (mod_items m3)) (concat (concat (mod_exports m1) (mod_exports m2)) (mod_exports m3)))))) ; J_001_02
 
 ; J_001_03 (matches Coq: Theorem J_001_03)
-(assert (= true true)) ; J_001_03 [untranslatable]
+; J_001_03: forall (root : list (string * Module)) (name : string) (m : Module), find (fun p => String.eqb (fst p) name) root = Some
+(assert (forall ((root list) (name string) (m Module)) true)) ; J_001_03 [partial: bindings preserved]
 
 ; J_001_04 (matches Coq: Theorem J_001_04)
 (assert (forall ((caller Visibility)) (= (vis_accessible caller VPrivate) false))) ; J_001_04
@@ -236,64 +237,67 @@
 (assert (forall ((in_same_crate Bool)) (= (crate_accessible in_same_crate VCrate) in_same_crate))) ; J_001_06
 
 ; J_001_07 (matches Coq: Theorem J_001_07)
-(assert (= true true)) ; J_001_07 [untranslatable]
+(assert (forall ((caller_level Int) (callee_level Int)) (= (vis_accessible (VSecurityLevel caller_level) (VSecurityLevel callee_level)) (<= callee_level caller_level)))) ; J_001_07
 
 ; J_001_08 (matches Coq: Theorem J_001_08)
-(assert (= true true)) ; J_001_08 [untranslatable]
+; J_001_08: forall (ctx : ImportContext) (name : string), valid_import ctx -> In name ctx.(import_names) -> item_exists ctx.(import_
+(assert (forall ((ctx ImportContext) (name string)) true)) ; J_001_08 [partial: bindings preserved]
 
 ; J_001_09 (matches Coq: Theorem J_001_09)
-(assert (= true true)) ; J_001_09 [untranslatable]
+(assert (forall ((r ReExport)) (forall ((name string)) (=> (= (valid_reexport r) true) (=> (= (In name (reexp_names r)) true) (=> (= (is_exported (reexp_source r) name) true) (= (is_exported (reexp_target r) name) true))))))) ; J_001_09
 
 ; J_001_10 (matches Coq: Theorem J_001_10)
-(assert (= true true)) ; J_001_10 [untranslatable]
+(assert (forall ((m Module)) (forall ((name string)) (=> (= (In name (get_public_items (mod_items m))) true) (=> (= (is_exported m name) true) (= (In name (glob_import m)) true)))))) ; J_001_10
 
 ; J_001_11 (matches Coq: Theorem J_001_11)
-(assert (= true true)) ; J_001_11 [untranslatable]
+; J_001_11: forall (scope : CapabilityScope) (name : string) (req_level : nat), capability_allows_import scope name req_level = true
+(assert (forall ((scope CapabilityScope) (name string) (req_level Int)) true)) ; J_001_11 [partial: bindings preserved]
 
 ; J_001_12 (matches Coq: Theorem J_001_12)
-(assert (= true true)) ; J_001_12 [untranslatable]
+(assert (forall ((abs_ty AbstractType)) (=> (= (abs_exposed abs_ty) false) (forall ((observer_repr option)) (or (= (abs_repr abs_ty) observer_repr) (not (= (abs_repr abs_ty) observer_repr))))))) ; J_001_12
 
 ; J_001_13 (matches Coq: Theorem J_001_13)
-(assert (= true true)) ; J_001_13 [untranslatable]
+(assert (forall ((m Module)) (forall ((s Signature)) (forall ((t string)) (=> (= (impl_matches_sig m s) true) (=> (= (In t (sig_types s)) true) (exists ((item Bool)) (and (= (In item (mod_items m)) true) (= (item_name item) t))))))))) ; J_001_13
 
 ; J_001_14 (matches Coq: Theorem J_001_14)
-(assert (= true true)) ; J_001_14 [untranslatable]
+(assert (forall ((st SealedTrait)) (forall ((impl_name string)) (=> (= (sealed_impl_allowed st impl_name) false) (not (= (In impl_name (sealed_impls st)) true)))))) ; J_001_14
 
 ; J_001_15 (matches Coq: Theorem J_001_15)
-(assert (= true true)) ; J_001_15 [untranslatable]
+(assert (forall ((mappings list AssocTypeMapping)) (forall ((m1 AssocTypeMapping) (m2 AssocTypeMapping)) (=> (= (assoc_type_consistent mappings) true) (=> (= (In m1 mappings) true) (=> (= (In m2 mappings) true) (=> (= (assoc_trait m1) (assoc_trait m2)) (=> (= (assoc_impl m1) (assoc_impl m2)) (=> (= (assoc_type_name m1) (assoc_type_name m2)) (= (assoc_resolved m1) (assoc_resolved m2))))))))))) ; J_001_15
 
 ; J_001_16 (matches Coq: Theorem J_001_16)
-(assert (= true true)) ; J_001_16 [untranslatable]
+(assert (forall ((m Module)) (forall ((iface InterfaceFile)) (=> (= (interface_sound m iface) true) (=> (forall ((name Bool)) (= (In name (get_public_items (mod_items m))) true)) (=> (= (is_exported m name) true) (or (= (In name (iface_public_types iface)) true) (= (In name (iface_public_fns iface)) true)))))))) ; J_001_16
 
 ; J_001_17 (matches Coq: Theorem J_001_17)
-(assert (= true true)) ; J_001_17 [untranslatable]
+(assert (forall ((old_cu CompilationUnit) (new_cu CompilationUnit) (recompiled Bool)) (=> (= (incremental_correct old_cu new_cu recompiled) true) (=> (= (cu_unchanged old_cu new_cu) true) (= recompiled false))))) ; J_001_17
 
 ; J_001_18 (matches Coq: Theorem J_001_18)
-(assert (= true true)) ; J_001_18 [untranslatable]
+(assert (forall ((cu1 CompilationUnit) (cu2 CompilationUnit) (type_name string)) (=> (= (type_preserved cu1 cu2) true) (=> (= (cu_has_type cu1 type_name) true) (=> (= (is_exported (cu_module cu1) type_name) true) (= (cu_has_type cu2 type_name) true)))))) ; J_001_18
 
 ; J_001_19 (matches Coq: Theorem J_001_19)
-(assert (= true true)) ; J_001_19 [untranslatable]
+(assert (forall ((m Module)) (forall ((iface InterfaceFile)) (forall ((effects list EffectSig)) (forall ((e EffectSig)) (=> (= (effects_preserved m iface effects) true) (=> (= (In e effects) true) (= (In (effect_name e) (iface_effects iface)) true)))))))) ; J_001_19
 
 ; find_exists (matches Coq: Lemma find_exists)
-(assert (= true true)) ; find_exists [untranslatable]
+; find_exists: forall {A : Type} (f : A -> bool) (l : list A) (x : A), In x l -> f x = true -> exists y, find f l = Some y
+(assert true) ; find_exists [Coq-only]
 
 ; J_001_20 (matches Coq: Theorem J_001_20)
-(assert (= true true)) ; J_001_20 [untranslatable]
+(assert (forall ((pkgs list Package)) (forall ((name string)) (forall ((fuel Int)) (=> (> fuel 0) (=> (exists ((p Bool)) (and (= (In p pkgs) true) (= (String.eqb (pkg_name p) name) true))) (exists ((result Bool)) (= (resolve_deps_fuel fuel pkgs name) (some result))))))))) ; J_001_20
 
 ; J_001_21 (matches Coq: Theorem J_001_21)
-(assert (= true true)) ; J_001_21 [untranslatable]
+(assert (forall ((pkg Package)) (forall ((available list Package)) (forall ((d Dependency)) (=> (= (all_deps_satisfied pkg available) true) (=> (= (In d (pkg_deps pkg)) true) (exists ((p Bool)) (and (= (In p available) true) (= (String.eqb (pkg_name p) (dep_name d)) true) (= (version_satisfies (dep_version d) (pkg_version p)) true))))))))) ; J_001_21
 
 ; J_001_22 (matches Coq: Theorem J_001_22)
-(assert (= true true)) ; J_001_22 [untranslatable]
+(assert (forall ((pkg Package)) (forall ((available list Package)) (forall ((d Dependency)) (forall ((p Package)) (=> (= (security_versions_enforced pkg available) true) (=> (= (In d (pkg_deps pkg)) true) (=> (= (In p available) true) (=> (= (String.eqb (pkg_name p) (dep_name d)) true) (= (security_version_ok d (pkg_version p)) true)))))))))) ; J_001_22
 
 ; J_001_23 (matches Coq: Theorem J_001_23)
-(assert (= true true)) ; J_001_23 [untranslatable]
+(assert (forall ((order list ModulePath)) (forall ((deps ModulePath)) (=> (= (init_respects_deps order deps) true) (=> (forall ((i Bool) (j Bool) (m_dep Bool) (m_mod Bool)) (= (nth_error order i) (some m_dep))) (=> (= (nth_error order j) (some m_mod)) (=> (= (In m_dep (deps m_mod)) true) (< i j)))))))) ; J_001_23
 
 ; J_001_24 (matches Coq: Theorem J_001_24)
-(assert (= true true)) ; J_001_24 [untranslatable]
+(assert (forall ((inits list StaticInit)) (forall ((si1 StaticInit) (si2 StaticInit)) (=> (= (init_deterministic inits) true) (=> (= (In si1 inits) true) (=> (= (In si2 inits) true) (=> (= (si_module si1) (si_module si2)) (= (si_value si1) (si_value si2))))))))) ; J_001_24
 
 ; J_001_25 (matches Coq: Theorem J_001_25)
-(assert (= true true)) ; J_001_25 [untranslatable]
+(assert (forall ((si SecureInit)) (forall ((available_caps list)) (=> (= (secure_init_valid si available_caps) true) (= (caps_satisfied (sec_init_cap_required si) available_caps) true))))) ; J_001_25
 
 ; Verify all assertions are satisfiable
 (check-sat)

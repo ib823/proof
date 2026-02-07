@@ -17,52 +17,52 @@
 (define-fun triple_lt () Prop true)
 
 ; lex_lt_wf (matches Coq: Theorem lex_lt_wf)
-(assert (= true true)) ; lex_lt_wf [untranslatable]
+(assert (= (well_founded lex_lt) true)) ; lex_lt_wf
 
 ; lex_induction (matches Coq: Theorem lex_induction)
-(assert (= true true)) ; lex_induction [untranslatable]
+(assert (forall ((P Int)) (=> (forall ((n Bool) (m Bool)) (=> (forall ((n' Bool) (m' Bool)) (=> (= (lex_lt (mk-tuple n' m') (mk-tuple n m)) true) (= (P n' m') true))) (= (P n m) true))) (forall ((n Bool) (m Bool)) (= (P n m) true))))) ; lex_induction
 
 ; lex_lt_left (matches Coq: Lemma lex_lt_left)
-(assert (= true true)) ; lex_lt_left [untranslatable]
+(assert (forall ((n Bool) (m Bool) (n' Bool) (m' Bool)) (=> (< n' n) (= (lex_lt (mk-tuple n' m') (mk-tuple n m)) true)))) ; lex_lt_left
 
 ; lex_lt_right (matches Coq: Lemma lex_lt_right)
-(assert (= true true)) ; lex_lt_right [untranslatable]
+(assert (forall ((n Bool) (m Bool) (m' Bool)) (=> (< m' m) (= (lex_lt (mk-tuple n m') (mk-tuple n m)) true)))) ; lex_lt_right
 
 ; step_ty_lt_wf (matches Coq: Theorem step_ty_lt_wf)
-(assert (= true true)) ; step_ty_lt_wf [untranslatable]
+(assert (= (well_founded step_ty_lt) true)) ; step_ty_lt_wf
 
 ; step_ty_induction (matches Coq: Theorem step_ty_induction)
-(assert (= true true)) ; step_ty_induction [untranslatable]
+(assert (forall ((P Int)) (=> (forall ((n Bool) (T Bool)) (=> (forall ((n' Bool) (T' Bool)) (=> (= (step_ty_lt (mk-tuple n' T') (mk-tuple n T)) true) (= (P n' T') true))) (= (P n T) true))) (forall ((n Bool) (T Bool)) (= (P n T) true))))) ; step_ty_induction
 
 ; step_ty_lt_step (matches Coq: Lemma step_ty_lt_step)
-(assert (= true true)) ; step_ty_lt_step [untranslatable]
+(assert (forall ((n Bool) (T Bool) (T' Bool)) (= (step_ty_lt (mk-tuple n T') (mk-tuple (+ n 1) T)) true))) ; step_ty_lt_step
 
 ; step_ty_lt_ty (matches Coq: Lemma step_ty_lt_ty)
-(assert (= true true)) ; step_ty_lt_ty [untranslatable]
+(assert (forall ((n Bool) (T Bool) (T' Bool)) (=> (< (ty_size T') (ty_size T)) (= (step_ty_lt (mk-tuple n T') (mk-tuple n T)) true)))) ; step_ty_lt_ty
 
 ; step_ty_lt_fn_arg (matches Coq: Lemma step_ty_lt_fn_arg)
-(assert (= true true)) ; step_ty_lt_fn_arg [untranslatable]
+(assert (forall ((n Bool) (T1 Bool) (T2 Bool) (eff Bool)) (= (step_ty_lt (mk-tuple n T1) (mk-tuple n (TFn T1 T2 eff))) true))) ; step_ty_lt_fn_arg
 
 ; step_ty_lt_fn_res (matches Coq: Lemma step_ty_lt_fn_res)
-(assert (= true true)) ; step_ty_lt_fn_res [untranslatable]
+(assert (forall ((n Bool) (T1 Bool) (T2 Bool) (eff Bool)) (= (step_ty_lt (mk-tuple n T2) (mk-tuple n (TFn T1 T2 eff))) true))) ; step_ty_lt_fn_res
 
 ; step_ty_lt_prod_left (matches Coq: Lemma step_ty_lt_prod_left)
-(assert (= true true)) ; step_ty_lt_prod_left [untranslatable]
+(assert (forall ((n Bool) (T1 Bool) (T2 Bool)) (= (step_ty_lt (mk-tuple n T1) (mk-tuple n (TProd T1 T2))) true))) ; step_ty_lt_prod_left
 
 ; step_ty_lt_prod_right (matches Coq: Lemma step_ty_lt_prod_right)
-(assert (= true true)) ; step_ty_lt_prod_right [untranslatable]
+(assert (forall ((n Bool) (T1 Bool) (T2 Bool)) (= (step_ty_lt (mk-tuple n T2) (mk-tuple n (TProd T1 T2))) true))) ; step_ty_lt_prod_right
 
 ; step_ty_lt_sum_left (matches Coq: Lemma step_ty_lt_sum_left)
-(assert (= true true)) ; step_ty_lt_sum_left [untranslatable]
+(assert (forall ((n Bool) (T1 Bool) (T2 Bool)) (= (step_ty_lt (mk-tuple n T1) (mk-tuple n (TSum T1 T2))) true))) ; step_ty_lt_sum_left
 
 ; step_ty_lt_sum_right (matches Coq: Lemma step_ty_lt_sum_right)
-(assert (= true true)) ; step_ty_lt_sum_right [untranslatable]
+(assert (forall ((n Bool) (T1 Bool) (T2 Bool)) (= (step_ty_lt (mk-tuple n T2) (mk-tuple n (TSum T1 T2))) true))) ; step_ty_lt_sum_right
 
 ; step_ty_lt_step_any (matches Coq: Lemma step_ty_lt_step_any)
-(assert (= true true)) ; step_ty_lt_step_any [untranslatable]
+(assert (forall ((n Bool) (n' Bool) (T Bool) (T' Bool)) (=> (< n' n) (= (step_ty_lt (mk-tuple n' T') (mk-tuple n T)) true)))) ; step_ty_lt_step_any
 
 ; triple_lt_wf (matches Coq: Theorem triple_lt_wf)
-(assert (= true true)) ; triple_lt_wf [untranslatable]
+(assert (= (well_founded triple_lt) true)) ; triple_lt_wf
 
 ; Verify all assertions are satisfiable
 (check-sat)

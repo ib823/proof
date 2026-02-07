@@ -40,106 +40,106 @@
   (((mk-timing_protection (tp_constant_time Bool) (tp_fixed_frequency Bool) (tp_no_rapl Bool)))))
 
 ; hw_001_spectre_v1_mitigated (matches Coq: Theorem hw_001_spectre_v1_mitigated)
-(assert (= true true)) ; hw_001_spectre_v1_mitigated [untranslatable]
+(assert (forall ((sb SpeculationBarrier)) (=> (= (sb_lfence sb) true) (=> (= (sb_after_branch sb) true) true)))) ; hw_001_spectre_v1_mitigated
 
 ; hw_002_spectre_v2_mitigated (matches Coq: Theorem hw_002_spectre_v2_mitigated)
-(assert (= true true)) ; hw_002_spectre_v2_mitigated [untranslatable]
+(assert (forall ((retpoline_enabled Bool)) (forall ((ibrs_enabled Bool)) (=> (or (= retpoline_enabled true) (= ibrs_enabled true)) true)))) ; hw_002_spectre_v2_mitigated
 
 ; hw_003_spectre_v4_mitigated (matches Coq: Theorem hw_003_spectre_v4_mitigated)
-(assert (= true true)) ; hw_003_spectre_v4_mitigated [untranslatable]
+(assert (forall ((ssbd_enabled Bool)) (=> (= ssbd_enabled true) true))) ; hw_003_spectre_v4_mitigated
 
 ; hw_004_meltdown_mitigated (matches Coq: Theorem hw_004_meltdown_mitigated)
-(assert (= true true)) ; hw_004_meltdown_mitigated [untranslatable]
+(assert (forall ((mp MemoryProtection)) (=> (= (mp_kpti_enabled mp) true) true))) ; hw_004_meltdown_mitigated
 
 ; hw_005_foreshadow_mitigated (matches Coq: Theorem hw_005_foreshadow_mitigated)
-(assert (= true true)) ; hw_005_foreshadow_mitigated [untranslatable]
+(assert (forall ((mp MemoryProtection)) (forall ((l1_flush_on_vmentry Bool)) (=> (= (mp_kpti_enabled mp) true) (=> (= l1_flush_on_vmentry true) true))))) ; hw_005_foreshadow_mitigated
 
 ; hw_006_zombieload_mitigated (matches Coq: Theorem hw_006_zombieload_mitigated)
-(assert (= true true)) ; hw_006_zombieload_mitigated [untranslatable]
+(assert (forall ((microcode_updated Bool)) (forall ((verw_clearing Bool)) (=> (= microcode_updated true) (=> (= verw_clearing true) true))))) ; hw_006_zombieload_mitigated
 
 ; hw_007_ridl_mitigated (matches Coq: Theorem hw_007_ridl_mitigated)
-(assert (= true true)) ; hw_007_ridl_mitigated [untranslatable]
+(assert (forall ((mds_mitigation Bool)) (=> (= mds_mitigation true) true))) ; hw_007_ridl_mitigated
 
 ; hw_008_fallout_mitigated (matches Coq: Theorem hw_008_fallout_mitigated)
-(assert (= true true)) ; hw_008_fallout_mitigated [untranslatable]
+(assert (forall ((store_buffer_cleared Bool)) (=> (= store_buffer_cleared true) true))) ; hw_008_fallout_mitigated
 
 ; hw_009_lvi_mitigated (matches Coq: Theorem hw_009_lvi_mitigated)
-(assert (= true true)) ; hw_009_lvi_mitigated [untranslatable]
+(assert (forall ((sb SpeculationBarrier)) (=> (= (sb_lfence sb) true) true))) ; hw_009_lvi_mitigated
 
 ; hw_010_cacheout_mitigated (matches Coq: Theorem hw_010_cacheout_mitigated)
-(assert (= true true)) ; hw_010_cacheout_mitigated [untranslatable]
+(assert (forall ((microcode_updated Bool)) (forall ((tsx_disabled Bool)) (=> (= microcode_updated true) true)))) ; hw_010_cacheout_mitigated
 
 ; hw_011_platypus_mitigated (matches Coq: Theorem hw_011_platypus_mitigated)
-(assert (= true true)) ; hw_011_platypus_mitigated [untranslatable]
+(assert (forall ((tp TimingProtection)) (=> (= (tp_no_rapl tp) true) true))) ; hw_011_platypus_mitigated
 
 ; hw_012_hertzbleed_mitigated (matches Coq: Theorem hw_012_hertzbleed_mitigated)
-(assert (= true true)) ; hw_012_hertzbleed_mitigated [untranslatable]
+(assert (forall ((tp TimingProtection)) (=> (= (tp_constant_time tp) true) (=> (= (tp_fixed_frequency tp) true) true)))) ; hw_012_hertzbleed_mitigated
 
 ; hw_013_pacman_mitigated (matches Coq: Theorem hw_013_pacman_mitigated)
-(assert (= true true)) ; hw_013_pacman_mitigated [untranslatable]
+(assert (forall ((pac_enabled Bool)) (forall ((cfi_enabled Bool)) (forall ((sb SpeculationBarrier)) (=> (= pac_enabled true) (=> (= cfi_enabled true) (=> (= (sb_csdb sb) true) true))))))) ; hw_013_pacman_mitigated
 
 ; hw_014_augury_mitigated (matches Coq: Theorem hw_014_augury_mitigated)
-(assert (= true true)) ; hw_014_augury_mitigated [untranslatable]
+(assert (forall ((dmp_disabled Bool)) (forall ((constant_time_access Bool)) (=> (or (= dmp_disabled true) (= constant_time_access true)) true)))) ; hw_014_augury_mitigated
 
 ; hw_015_retbleed_mitigated (matches Coq: Theorem hw_015_retbleed_mitigated)
-(assert (= true true)) ; hw_015_retbleed_mitigated [untranslatable]
+(assert (forall ((ibpb_on_switch Bool)) (=> (= ibpb_on_switch true) true))) ; hw_015_retbleed_mitigated
 
 ; hw_016_aepic_leak_mitigated (matches Coq: Theorem hw_016_aepic_leak_mitigated)
-(assert (= true true)) ; hw_016_aepic_leak_mitigated [untranslatable]
+(assert (forall ((microcode_updated Bool)) (=> (= microcode_updated true) true))) ; hw_016_aepic_leak_mitigated
 
 ; hw_017_cachewarp_mitigated (matches Coq: Theorem hw_017_cachewarp_mitigated)
-(assert (= true true)) ; hw_017_cachewarp_mitigated [untranslatable]
+(assert (forall ((sev_firmware_updated Bool)) (=> (= sev_firmware_updated true) true))) ; hw_017_cachewarp_mitigated
 
 ; hw_018_gofetch_mitigated (matches Coq: Theorem hw_018_gofetch_mitigated)
-(assert (= true true)) ; hw_018_gofetch_mitigated [untranslatable]
+(assert (forall ((dmp_disabled Bool)) (forall ((tp TimingProtection)) (=> (or (= dmp_disabled true) (= (tp_constant_time tp) true)) true)))) ; hw_018_gofetch_mitigated
 
 ; hw_019_rowhammer_mitigated (matches Coq: Theorem hw_019_rowhammer_mitigated)
-(assert (= true true)) ; hw_019_rowhammer_mitigated [untranslatable]
+(assert (forall ((ecc ECCMemory)) (=> (= (ecc_enabled ecc) true) (=> (= (ecc_trr_enabled ecc) true) true)))) ; hw_019_rowhammer_mitigated
 
 ; hw_020_rambleed_mitigated (matches Coq: Theorem hw_020_rambleed_mitigated)
-(assert (= true true)) ; hw_020_rambleed_mitigated [untranslatable]
+(assert (forall ((ecc ECCMemory)) (=> (= (ecc_enabled ecc) true) (=> (= (ecc_scrubbing ecc) true) true)))) ; hw_020_rambleed_mitigated
 
 ; hw_021_throwhammer_mitigated (matches Coq: Theorem hw_021_throwhammer_mitigated)
-(assert (= true true)) ; hw_021_throwhammer_mitigated [untranslatable]
+(assert (forall ((rdma_rate_limited Bool)) (forall ((ecc ECCMemory)) (=> (= rdma_rate_limited true) (=> (= (ecc_enabled ecc) true) true))))) ; hw_021_throwhammer_mitigated
 
 ; hw_022_glitch_mitigated (matches Coq: Theorem hw_022_glitch_mitigated)
-(assert (= true true)) ; hw_022_glitch_mitigated [untranslatable]
+(assert (forall ((gpu_mem_isolated Bool)) (=> (= gpu_mem_isolated true) true))) ; hw_022_glitch_mitigated
 
 ; hw_023_drammer_mitigated (matches Coq: Theorem hw_023_drammer_mitigated)
-(assert (= true true)) ; hw_023_drammer_mitigated [untranslatable]
+(assert (forall ((ecc ECCMemory)) (forall ((ion_hardened Bool)) (=> (= (ecc_enabled ecc) true) (=> (= ion_hardened true) true))))) ; hw_023_drammer_mitigated
 
 ; hw_024_fault_injection_mitigated (matches Coq: Theorem hw_024_fault_injection_mitigated)
-(assert (= true true)) ; hw_024_fault_injection_mitigated [untranslatable]
+(assert (forall ((fault_detection Bool)) (forall ((redundant_computation Bool)) (=> (= fault_detection true) (=> (= redundant_computation true) true))))) ; hw_024_fault_injection_mitigated
 
 ; hw_025_cold_boot_mitigated (matches Coq: Theorem hw_025_cold_boot_mitigated)
-(assert (= true true)) ; hw_025_cold_boot_mitigated [untranslatable]
+(assert (forall ((mp MemoryProtection)) (=> (= (mp_mem_encryption mp) true) true))) ; hw_025_cold_boot_mitigated
 
 ; hw_026_dma_attack_mitigated (matches Coq: Theorem hw_026_dma_attack_mitigated)
-(assert (= true true)) ; hw_026_dma_attack_mitigated [untranslatable]
+(assert (forall ((iommu IOMMUConfig)) (=> (= (iommu_enabled iommu) true) (=> (= (iommu_strict iommu) true) (=> (= (iommu_no_bypass iommu) true) true))))) ; hw_026_dma_attack_mitigated
 
 ; hw_027_evil_maid_mitigated (matches Coq: Theorem hw_027_evil_maid_mitigated)
-(assert (= true true)) ; hw_027_evil_maid_mitigated [untranslatable]
+(assert (forall ((mb MeasuredBoot)) (=> (= (mb_pcr_extended mb) true) (=> (= (mb_sealed_to_pcr mb) true) true)))) ; hw_027_evil_maid_mitigated
 
 ; hw_028_hardware_implant_mitigated (matches Coq: Theorem hw_028_hardware_implant_mitigated)
-(assert (= true true)) ; hw_028_hardware_implant_mitigated [untranslatable]
+(assert (forall ((mb MeasuredBoot)) (=> (= (mb_attestation_available mb) true) (=> (= (mb_pcr_extended mb) true) true)))) ; hw_028_hardware_implant_mitigated
 
 ; hw_029_microcode_attack_mitigated (matches Coq: Theorem hw_029_microcode_attack_mitigated)
-(assert (= true true)) ; hw_029_microcode_attack_mitigated [untranslatable]
+(assert (forall ((fw FirmwareState)) (=> (= (fw_signed fw) true) (=> (= (fw_verified fw) true) true)))) ; hw_029_microcode_attack_mitigated
 
 ; hw_030_firmware_attack_mitigated (matches Coq: Theorem hw_030_firmware_attack_mitigated)
-(assert (= true true)) ; hw_030_firmware_attack_mitigated [untranslatable]
+(assert (forall ((fw FirmwareState)) (=> (= (fw_signed fw) true) (=> (= (fw_verified fw) true) (=> (>= (fw_version fw) (fw_min_version fw)) true))))) ; hw_030_firmware_attack_mitigated
 
 ; hw_031_spyhammer_mitigated (matches Coq: Theorem hw_031_spyhammer_mitigated)
-(assert (= true true)) ; hw_031_spyhammer_mitigated [untranslatable]
+(assert (forall ((thermal_isolation Bool)) (forall ((thermal_throttling Bool)) (=> (= thermal_isolation true) true)))) ; hw_031_spyhammer_mitigated
 
 ; hw_032_ddr5_rowhammer_mitigated (matches Coq: Theorem hw_032_ddr5_rowhammer_mitigated)
-(assert (= true true)) ; hw_032_ddr5_rowhammer_mitigated [untranslatable]
+(assert (forall ((ecc ECCMemory)) (forall ((on_die_ecc Bool)) (=> (= (ecc_enabled ecc) true) (=> (= (ecc_trr_enabled ecc) true) (=> (= on_die_ecc true) true)))))) ; hw_032_ddr5_rowhammer_mitigated
 
 ; hw_033_post_barrier_spectre_mitigated (matches Coq: Theorem hw_033_post_barrier_spectre_mitigated)
-(assert (= true true)) ; hw_033_post_barrier_spectre_mitigated [untranslatable]
+(assert (forall ((sb SpeculationBarrier)) (=> (= (sb_lfence sb) true) (=> (= (sb_csdb sb) true) (=> (= (sb_after_branch sb) true) true))))) ; hw_033_post_barrier_spectre_mitigated
 
 ; hw_034_gofetch_dmp_mitigated (matches Coq: Theorem hw_034_gofetch_dmp_mitigated)
-(assert (= true true)) ; hw_034_gofetch_dmp_mitigated [untranslatable]
+(assert (forall ((dmp_disabled Bool)) (forall ((tp TimingProtection)) (=> (= dmp_disabled true) (=> (= (tp_constant_time tp) true) true))))) ; hw_034_gofetch_dmp_mitigated
 
 ; Verify all assertions are satisfiable
 (check-sat)

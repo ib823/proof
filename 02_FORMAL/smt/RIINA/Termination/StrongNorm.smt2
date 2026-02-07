@@ -8,28 +8,28 @@
 (set-option :produce-models true)
 
 ; value_strongly_normalizing (matches Coq: Theorem value_strongly_normalizing)
-(assert (= true true)) ; value_strongly_normalizing [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (= (SN st ctx v) true)))) ; value_strongly_normalizing
 
 ; fst_terminates_to_value (matches Coq: Lemma fst_terminates_to_value)
-(assert (= true true)) ; fst_terminates_to_value [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (st Bool) (ctx Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (exists ((v Bool) (st' Bool) (ctx' Bool)) (and (= ((EFst (EPair v1 v2), st, ctx) multi_step_to (mk-tuple v st' ctx')) true) (= (value v) true) (= v v1))))))) ; fst_terminates_to_value
 
 ; snd_terminates_to_value (matches Coq: Lemma snd_terminates_to_value)
-(assert (= true true)) ; snd_terminates_to_value [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (st Bool) (ctx Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (exists ((v Bool) (st' Bool) (ctx' Bool)) (and (= ((ESnd (EPair v1 v2), st, ctx) multi_step_to (mk-tuple v st' ctx')) true) (= (value v) true) (= v v2))))))) ; snd_terminates_to_value
 
 ; if_bool_terminates_once (matches Coq: Lemma if_bool_terminates_once)
-(assert (= true true)) ; if_bool_terminates_once [untranslatable]
+(assert (forall ((b Bool) (e2 Bool) (e3 Bool) (st Bool) (ctx Bool)) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((EIf (EBool b) e2 e3, st, ctx) multi_step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx) (=> (= b true) (= e' e2)) (=> (= b false) (= e' e3)))))) ; if_bool_terminates_once
 
 ; let_terminates_once (matches Coq: Lemma let_terminates_once)
-(assert (= true true)) ; let_terminates_once [untranslatable]
+(assert (forall ((x Bool) (v Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((ELet x v e2, st, ctx) multi_step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx)))))) ; let_terminates_once
 
 ; handle_terminates_once (matches Coq: Lemma handle_terminates_once)
-(assert (= true true)) ; handle_terminates_once [untranslatable]
+(assert (forall ((x Bool) (v Bool) (h Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((EHandle v x h, st, ctx) multi_step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx)))))) ; handle_terminates_once
 
 ; app_lam_terminates_once (matches Coq: Lemma app_lam_terminates_once)
-(assert (= true true)) ; app_lam_terminates_once [untranslatable]
+(assert (forall ((x Bool) (T Bool) (body Bool) (v Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (exists ((e' Bool) (st' Bool) (ctx' Bool)) (and (= ((EApp (ELam x T body) v, st, ctx) multi_step_to (mk-tuple e' st' ctx')) true) (= st' st) (= ctx' ctx)))))) ; app_lam_terminates_once
 
 ; store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
-(assert (= true true)) ; store_ty_extends_refl [untranslatable]
+(assert (forall ((Σ Bool)) (= (store_ty_extends Σ Σ) true))) ; store_ty_extends_refl
 
 ; Verify all assertions are satisfiable
 (check-sat)

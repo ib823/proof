@@ -23,70 +23,71 @@
 (define-fun low_equiv () Prop true)
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (b Bool) (v Bool) (b' Bool)) (=> (= (eval e ex b v b') true) (<= b' b)))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (b Bool) (v1 Bool) (b1 Bool) (v2 Bool) (b2 Bool)) (=> (= (eval e ex b v1 b1) true) (=> (= (eval e ex b v2 b2) true) (and (= v1 v2) (= b1 b2)))))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((e Bool) (ex1 Bool) (ex2 Bool) (b Bool) (v1 Bool) (b1 Bool) (v2 Bool) (b2 Bool)) (=> (= (eval e ex1 b v1 b1) true) (=> (= (eval e ex2 b1 v2 b2) true) (<= b2 b))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+; 4: Zero-budget expressions don't declassify *) Inductive no_declass : expr -> Prop := | NDConst : forall n, no_declass (ECo
+(assert true) ; 4 [Coq-only]
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (b Bool) (v Bool) (b' Bool)) (=> (= (eval e ex b v b') true) (=> (= (no_declass ex) true) (= b' b))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (ex Bool) (b Bool) (v1 Bool) (b1 Bool) (v2 Bool) (b2 Bool)) (=> (= (low_equiv e1 e2) true) (=> (= (no_declass ex) true) (=> (= (eval e1 ex b v1 b1) true) (=> (= (eval e2 ex b v2 b2) true) (=> (= (mk-tuple (forall i) (match nth_error e1 i) nth_error Some None _) true) (= v1 v2)))))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((e Bool) (n Bool) (b Bool)) (= (eval e (EConst n) b n b) true))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (b Bool) (v Bool) (b' Bool) (cost Bool)) (=> (= (eval e (EDeclass ex cost) b v b') true) (exists ((b_inner Bool)) (and (= (eval e ex b v b_inner) true) (<= cost b_inner) (= b' (- b_inner cost))))))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((l Bool)) (= (level_leq l l) true))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (=> (= (level_leq l1 l2) true) (=> (= (level_leq l2 l3) true) (= (level_leq l1 l3) true))))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (level_join l1 l2) (level_join l2 l1)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (= (level_join (level_join l1 l2) l3) (level_join l1 (level_join l2 l3))))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((l Bool)) (= (level_join l l) l))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((l Bool)) (= (level_leq Low l) true))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (level_leq l1 (level_join l1 l2)) true))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (level_leq l2 (level_join l1 l2)) true))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((e Bool) (n Bool) (b Bool) (v Bool) (b' Bool)) (=> (= (eval e (EConst n) b v b') true) (= b' b)))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((e Bool) (i Bool) (b Bool) (v Bool) (b' Bool)) (=> (= (eval e (EVar i) b v b') true) (= b' b)))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((e Bool) (e1 Bool) (e2 Bool) (b Bool) (v Bool) (b' Bool)) (=> (= (eval e (EPlus e1 e2) b v b') true) (exists ((v1 Bool) (v2 Bool) (b1 Bool)) (and (= (eval e e1 b v1 b1) true) (= (eval e e2 b1 v2 b') true) (= v (+ v1 v2))))))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (b Bool) (v Bool) (b' Bool) (c1 Bool) (c2 Bool)) (=> (= (eval e (EDeclass (EDeclass ex c1) c2) b v b') true) (<= b' b)))) ; 20
 
 ; 21 (matches Coq: Theorem 21)
-(assert (= true true)) ; 21 [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (=> (= (no_declass e1) true) (=> (= (no_declass e2) true) (= (no_declass (EPlus e1 e2)) true))))) ; 21
 
 ; 22 (matches Coq: Theorem 22)
-(assert (= true true)) ; 22 [untranslatable]
+(assert (forall ((e Bool) (ex Bool) (b Bool) (v Bool) (b' Bool)) (=> (= (eval e ex b v b') true) (<= (- b b') b)))) ; 22
 
 ; Verify all assertions are satisfiable
 (check-sat)

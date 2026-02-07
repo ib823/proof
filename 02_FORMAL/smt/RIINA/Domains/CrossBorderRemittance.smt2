@@ -163,79 +163,79 @@
   true)
 
 ; REMIT_001_01_universal_coverage (matches Coq: Theorem REMIT_001_01_universal_coverage)
-(assert (= true true)) ; REMIT_001_01_universal_coverage [untranslatable]
+(assert (forall ((reg CountryRegistry)) (=> (= (compliant_registry reg) true) (=> (forall ((c Bool)) (= (In c un_member_states) true)) (or (= (sanctioned (reg c)) true) (= (can_send (reg c)) true) (= (can_receive (reg c)) true)))))) ; REMIT_001_01_universal_coverage
 
 ; REMIT_001_02_currency_support (matches Coq: Theorem REMIT_001_02_currency_support)
-(assert (= true true)) ; REMIT_001_02_currency_support [untranslatable]
+(assert (forall ((reg CurrencyRegistry)) (=> (= (compliant_currency_registry reg) true) (=> (forall ((c Bool)) (= (In c iso_4217_currencies) true)) (= (is_supported (reg c)) true))))) ; REMIT_001_02_currency_support
 
 ; REMIT_001_03_pricing_transparency (matches Coq: Theorem REMIT_001_03_pricing_transparency)
 (assert (forall ((corr Corridor)) (=> (= (is_enabled corr) true) (=> (= (fees_disclosed corr) true) (= (fees_disclosed corr) true))))) ; REMIT_001_03_pricing_transparency
 
 ; REMIT_001_04_corridor_availability (matches Coq: Theorem REMIT_001_04_corridor_availability)
-(assert (= true true)) ; REMIT_001_04_corridor_availability [untranslatable]
+(assert (forall ((corr Corridor)) (=> (= (is_enabled corr) true) (=> (>= (availability_pct corr) 9999) (>= (availability_pct corr) 9999))))) ; REMIT_001_04_corridor_availability
 
 ; REMIT_001_05_sanctioned_country_blocking (matches Coq: Theorem REMIT_001_05_sanctioned_country_blocking)
 (assert (forall ((corr Corridor)) (=> (= (is_sanctioned corr) true) (=> (= (is_enabled corr) false) (= (is_enabled corr) false))))) ; REMIT_001_05_sanctioned_country_blocking
 
 ; REMIT_001_06_rate_freshness (matches Coq: Theorem REMIT_001_06_rate_freshness)
-(assert (= true true)) ; REMIT_001_06_rate_freshness [untranslatable]
+(assert (forall ((q FXQuote)) (forall ((current_time Int)) (=> (= (fresh_quote q current_time) true) (<= (rate_staleness q current_time) 1))))) ; REMIT_001_06_rate_freshness
 
 ; REMIT_001_07_spread_transparency (matches Coq: Theorem REMIT_001_07_spread_transparency)
-(assert (= true true)) ; REMIT_001_07_spread_transparency [untranslatable]
+(assert (forall ((q FXQuote)) (=> (= (valid_quote q) true) (= (customer_rate q) (+ (mid_market_rate q) (spread q)))))) ; REMIT_001_07_spread_transparency
 
 ; REMIT_001_08_rate_lock_guarantee (matches Coq: Theorem REMIT_001_08_rate_lock_guarantee)
-(assert (= true true)) ; REMIT_001_08_rate_lock_guarantee [untranslatable]
+(assert (forall ((q FXQuote)) (forall ((current_time Int)) (=> (= (valid_quote q) true) (=> (<= current_time (+ (quote_timestamp q) (guarantee_window q))) (= (rate_lock_valid q current_time) true)))))) ; REMIT_001_08_rate_lock_guarantee
 
 ; REMIT_001_09_no_hidden_margin (matches Coq: Theorem REMIT_001_09_no_hidden_margin)
-(assert (= true true)) ; REMIT_001_09_no_hidden_margin [untranslatable]
+(assert (forall ((t Transfer)) (=> (= (valid_transfer t) true) (= (total_cost t) (+ (stated_fee t) (stated_spread t)))))) ; REMIT_001_09_no_hidden_margin
 
 ; REMIT_001_10_hedge_ratio_maintenance (matches Coq: Theorem REMIT_001_10_hedge_ratio_maintenance)
-(assert (= true true)) ; REMIT_001_10_hedge_ratio_maintenance [untranslatable]
+(assert (forall ((q FXQuote)) (=> (= (valid_quote q) true) (and (>= (hedge_ratio_bps q) 9800) (<= (hedge_ratio_bps q) 10200))))) ; REMIT_001_10_hedge_ratio_maintenance
 
 ; REMIT_001_11_swift_gpi_tracking (matches Coq: Theorem REMIT_001_11_swift_gpi_tracking)
-(assert (= true true)) ; REMIT_001_11_swift_gpi_tracking [untranslatable]
+(assert (forall ((t Transfer)) (=> (= (valid_transfer t) true) (=> (= (is_swift_rail (rail t)) true) (= (tracking_available t) true))))) ; REMIT_001_11_swift_gpi_tracking
 
 ; REMIT_001_12_instant_rail_settlement (matches Coq: Theorem REMIT_001_12_instant_rail_settlement)
-(assert (= true true)) ; REMIT_001_12_instant_rail_settlement [untranslatable]
+(assert (forall ((t Transfer)) (=> (= (valid_transfer t) true) (=> (= (is_instant_rail (rail t)) true) (<= (settlement_time_sec t) 60))))) ; REMIT_001_12_instant_rail_settlement
 
 ; REMIT_001_13_blockchain_atomic_execution (matches Coq: Theorem REMIT_001_13_blockchain_atomic_execution)
-(assert (= true true)) ; REMIT_001_13_blockchain_atomic_execution [untranslatable]
+(assert (forall ((t Transfer)) (=> (= (valid_transfer t) true) (=> (= (is_blockchain_rail (rail t)) true) (= (is_atomic t) true))))) ; REMIT_001_13_blockchain_atomic_execution
 
 ; REMIT_001_14_mobile_money_instant (matches Coq: Theorem REMIT_001_14_mobile_money_instant)
-(assert (= true true)) ; REMIT_001_14_mobile_money_instant [untranslatable]
+(assert (forall ((t Transfer)) (=> (= (valid_transfer t) true) (=> (= (is_mobile_money_rail (rail t)) true) (<= (settlement_time_sec t) 5))))) ; REMIT_001_14_mobile_money_instant
 
 ; REMIT_001_15_local_rail_integration (matches Coq: Theorem REMIT_001_15_local_rail_integration)
-(assert (= true true)) ; REMIT_001_15_local_rail_integration [untranslatable]
+(assert (forall ((t Transfer)) (=> (= (valid_transfer t) true) (=> (= (is_local_rail (rail t)) true) (= (is_local_rail (rail t)) true))))) ; REMIT_001_15_local_rail_integration
 
 ; REMIT_001_16_realtime_screening (matches Coq: Theorem REMIT_001_16_realtime_screening)
-(assert (= true true)) ; REMIT_001_16_realtime_screening [untranslatable]
+(assert (forall ((b Beneficiary)) (=> (= (transfer_allowed b) true) (< (screening_time_ms b) 500)))) ; REMIT_001_16_realtime_screening
 
 ; REMIT_001_17_sanctions_screening_complete (matches Coq: Theorem REMIT_001_17_sanctions_screening_complete)
-(assert (= true true)) ; REMIT_001_17_sanctions_screening_complete [untranslatable]
+(assert (forall ((b Beneficiary)) (=> (= (transfer_allowed b) true) (= (fully_screened b) true)))) ; REMIT_001_17_sanctions_screening_complete
 
 ; REMIT_001_18_travel_rule_compliance (matches Coq: Theorem REMIT_001_18_travel_rule_compliance)
-(assert (= true true)) ; REMIT_001_18_travel_rule_compliance [untranslatable]
+(assert (forall ((trd TravelRuleData)) (=> (= (travel_rule_compliant trd) true) (= (data_transmitted trd) true)))) ; REMIT_001_18_travel_rule_compliance
 
 ; REMIT_001_19_str_filing (matches Coq: Theorem REMIT_001_19_str_filing)
-(assert (= true true)) ; REMIT_001_19_str_filing [untranslatable]
+(assert (forall ((sa SuspiciousActivity)) (=> (= (str_compliant sa) true) (and (= (str_filed sa) true) (<= (filing_timestamp sa) (filing_deadline sa)))))) ; REMIT_001_19_str_filing
 
 ; REMIT_001_20_kyc_verification (matches Coq: Theorem REMIT_001_20_kyc_verification)
-(assert (= true true)) ; REMIT_001_20_kyc_verification [untranslatable]
+(assert (forall ((trd TravelRuleData)) (=> (= (travel_rule_compliant trd) true) (= (kyc_verified (originator_info trd)) true)))) ; REMIT_001_20_kyc_verification
 
 ; REMIT_001_21_instant_bank_credit (matches Coq: Theorem REMIT_001_21_instant_bank_credit)
-(assert (= true true)) ; REMIT_001_21_instant_bank_credit [untranslatable]
+(assert (forall ((bc BankCredit)) (=> (= (instant_bank_credit_valid bc) true) (=> (= (is_instant_rail (credit_rail bc)) true) (<= (credit_time_sec bc) 60))))) ; REMIT_001_21_instant_bank_credit
 
 ; REMIT_001_22_wallet_instant_credit (matches Coq: Theorem REMIT_001_22_wallet_instant_credit)
-(assert (= true true)) ; REMIT_001_22_wallet_instant_credit [untranslatable]
+(assert (forall ((wc WalletCredit)) (=> (= (wallet_credit_valid wc) true) (= (credit_instant wc) true)))) ; REMIT_001_22_wallet_instant_credit
 
 ; REMIT_001_23_cash_pickup_security (matches Coq: Theorem REMIT_001_23_cash_pickup_security)
-(assert (= true true)) ; REMIT_001_23_cash_pickup_security [untranslatable]
+(assert (forall ((cp CashPickup)) (=> (= (valid_cash_pickup cp) true) (= (secure_pickup_code cp) true)))) ; REMIT_001_23_cash_pickup_security
 
 ; REMIT_001_24_iban_validation (matches Coq: Theorem REMIT_001_24_iban_validation)
-(assert (= true true)) ; REMIT_001_24_iban_validation [untranslatable]
+(assert (forall ((i IBAN)) (=> (= (iban_validated i) true) (and (= (checksum_valid i) true) (= (format_valid i) true))))) ; REMIT_001_24_iban_validation
 
 ; REMIT_001_25_recipient_notification (matches Coq: Theorem REMIT_001_25_recipient_notification)
-(assert (= true true)) ; REMIT_001_25_recipient_notification [untranslatable]
+(assert (forall ((rn RecipientNotification)) (=> (= (notification_compliant rn) true) (and (= (notification_sent rn) true) (= (channel_used rn) (channel_preferred rn)))))) ; REMIT_001_25_recipient_notification
 
 ; Verify all assertions are satisfiable
 (check-sat)

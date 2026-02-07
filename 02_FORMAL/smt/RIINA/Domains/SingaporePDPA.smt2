@@ -148,205 +148,205 @@
   true)
 
 ; obligation_1_consent (matches Coq: Theorem obligation_1_consent)
-(assert (= true true)) ; obligation_1_consent [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_category r) SGPersonalData) (=> (= (sg_has_consent r) true) (= (sg_consent_for_category r) true))))) ; obligation_1_consent
 
 ; obligation_1_business_exempt (matches Coq: Theorem obligation_1_business_exempt)
-(assert (= true true)) ; obligation_1_business_exempt [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_category r) SGBusinessContact) (= (sg_consent_for_category r) true)))) ; obligation_1_business_exempt
 
 ; consent_withdrawal_effect (matches Coq: Theorem consent_withdrawal_effect)
-(assert (= true true)) ; consent_withdrawal_effect [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_consent r) SGWithdrawnConsent) (not (= (sg_has_consent r) true))))) ; consent_withdrawal_effect
 
 ; obligation_2_purpose (matches Coq: Theorem obligation_2_purpose)
-(assert (= true true)) ; obligation_2_purpose [untranslatable]
+(assert (forall ((r SGDataRecord)) (= (sg_purpose_limited r (sg_purpose_id r)) true))) ; obligation_2_purpose
 
 ; obligation_6_encrypted (matches Coq: Theorem obligation_6_encrypted)
-(assert (= true true)) ; obligation_6_encrypted [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_encrypted r) true) (= (sg_protection_adequate r) true)))) ; obligation_6_encrypted
 
 ; obligation_6_anonymized (matches Coq: Theorem obligation_6_anonymized)
-(assert (= true true)) ; obligation_6_anonymized [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_anonymized r) true) (= (sg_protection_adequate r) true)))) ; obligation_6_anonymized
 
 ; obligation_7_retention (matches Coq: Theorem obligation_7_retention)
-(assert (= true true)) ; obligation_7_retention [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((t Int)) (not (=> (= (sg_within_retention r t) true) (= (sg_must_dispose r t) true)))))) ; obligation_7_retention
 
 ; obligation_8_adequate (matches Coq: Theorem obligation_8_adequate)
-(assert (= true true)) ; obligation_8_adequate [untranslatable]
+(assert (forall ((a TransferAdequacy)) (=> (= a AdequateJurisdiction) (= (sg_transfer_lawful a) true)))) ; obligation_8_adequate
 
 ; obligation_8_contractual (matches Coq: Theorem obligation_8_contractual)
-(assert (= true true)) ; obligation_8_contractual [untranslatable]
+(assert (forall ((a TransferAdequacy)) (=> (= a ContractualSafeguards) (= (sg_transfer_lawful a) true)))) ; obligation_8_contractual
 
 ; obligation_8_no_safeguards_blocked (matches Coq: Theorem obligation_8_no_safeguards_blocked)
-(assert (= true true)) ; obligation_8_no_safeguards_blocked [untranslatable]
+(assert (forall ((a TransferAdequacy)) (=> (= a NoSafeguards) (not (= (sg_transfer_lawful a) true))))) ; obligation_8_no_safeguards_blocked
 
 ; obligation_9_notification (matches Coq: Theorem obligation_9_notification)
-(assert (= true true)) ; obligation_9_notification [untranslatable]
+(assert (forall ((b SGBreachEvent)) (forall ((t Int)) (=> (= (sg_breach_notifiable b) true) (=> (<= t (+ (sg_breach_detected_at b) 72)) (= (sg_pdpc_notified_in_time b t) true)))))) ; obligation_9_notification
 
 ; sg_pdpa_composition (matches Coq: Theorem sg_pdpa_composition)
-(assert (= true true)) ; sg_pdpa_composition [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((transfer TransferAdequacy)) (forall ((t Int)) (=> (= (sg_consent_for_category r) true) (=> (= (sg_protection_adequate r) true) (=> (= (sg_within_retention r t) true) (=> (= (sg_transfer_lawful transfer) true) (= (sg_pdpa_fully_compliant r transfer t) true))))))))) ; sg_pdpa_composition
 
 ; purpose_limitation_enforced (matches Coq: Theorem purpose_limitation_enforced)
-(assert (= true true)) ; purpose_limitation_enforced [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((actual Int)) (=> (not (= (sg_purpose_id r) actual)) (= (sg_purpose_violation r actual) true))))) ; purpose_limitation_enforced
 
 ; purpose_match_no_violation (matches Coq: Theorem purpose_match_no_violation)
-(assert (= true true)) ; purpose_match_no_violation [untranslatable]
+(assert (forall ((r SGDataRecord)) (not (= (sg_purpose_violation r (sg_purpose_id r)) true)))) ; purpose_match_no_violation
 
 ; notification_obligation_valid (matches Coq: Theorem notification_obligation_valid)
-(assert (= true true)) ; notification_obligation_valid [untranslatable]
+(assert (forall ((n SGNotificationRecord)) (=> (= (sgn_notified_before_collection n) true) (=> (= (sgn_language_understood n) true) (=> (not (= (sgn_purposes_notified n) nil)) (= (notification_obligation_met n) true)))))) ; notification_obligation_valid
 
 ; access_correction_right (matches Coq: Theorem access_correction_right)
-(assert (= true true)) ; access_correction_right [untranslatable]
+(assert (forall ((req SGAccessCorrectionRequest)) (=> (<= (sgacr_responded_at req) (+ (sgacr_requested_at req) sg_access_correction_deadline)) (=> (= (sgacr_access_provided req) true) (= (access_correction_fulfilled req) true))))) ; access_correction_right
 
 ; correction_within_deadline (matches Coq: Theorem correction_within_deadline)
-(assert (= true true)) ; correction_within_deadline [untranslatable]
+(assert (forall ((req SGAccessCorrectionRequest)) (=> (<= (sgacr_responded_at req) (+ (sgacr_requested_at req) sg_access_correction_deadline)) (=> (= (sgacr_correction_made req) true) (= (access_correction_fulfilled req) true))))) ; correction_within_deadline
 
 ; transfer_limitation_satisfied (matches Coq: Theorem transfer_limitation_satisfied)
-(assert (= true true)) ; transfer_limitation_satisfied [untranslatable]
+(assert (forall ((a TransferAdequacy)) (=> (not (= a NoSafeguards)) (= (sg_transfer_lawful a) true)))) ; transfer_limitation_satisfied
 
 ; data_protection_officer_appointed (matches Coq: Theorem data_protection_officer_appointed)
-(assert (= true true)) ; data_protection_officer_appointed [untranslatable]
+(assert (forall ((dpo SGDataProtectionOfficer)) (=> (= (sg_dpo_active dpo) true) (=> (= (sg_dpo_contact_public dpo) true) (= (sg_dpo_appointed dpo) true))))) ; data_protection_officer_appointed
 
 ; do_not_call_registry_checked (matches Coq: Theorem do_not_call_registry_checked)
-(assert (= true true)) ; do_not_call_registry_checked [untranslatable]
+(assert (forall ((status DNCStatus)) (=> (= status DNCRegistered) (= (dnc_checked status false) true)))) ; do_not_call_registry_checked
 
 ; dnc_not_registered_allows (matches Coq: Theorem dnc_not_registered_allows)
-(assert (= true true)) ; dnc_not_registered_allows [untranslatable]
+(assert (forall ((sent Bool)) (= (dnc_checked DNCNotRegistered sent) true))) ; dnc_not_registered_allows
 
 ; breach_notification_72_hours (matches Coq: Theorem breach_notification_72_hours)
-(assert (= true true)) ; breach_notification_72_hours [untranslatable]
+(assert (forall ((b SGBreachEvent)) (forall ((t Int)) (=> (= (sg_breach_notifiable b) true) (=> (<= t (+ (sg_breach_detected_at b) 72)) (= (sg_pdpc_notified_in_time b t) true)))))) ; breach_notification_72_hours
 
 ; breach_not_notifiable_threshold (matches Coq: Theorem breach_not_notifiable_threshold)
-(assert (= true true)) ; breach_not_notifiable_threshold [untranslatable]
+(assert (forall ((b SGBreachEvent)) (=> (< (sg_breach_records_count b) 500) (=> (= (sg_breach_significant_harm b) false) (not (= (sg_breach_notifiable b) true)))))) ; breach_not_notifiable_threshold
 
 ; deemed_consent_valid (matches Coq: Theorem deemed_consent_valid)
-(assert (= true true)) ; deemed_consent_valid [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_consent r) SGDeemedConsent) (= (sg_has_consent r) true)))) ; deemed_consent_valid
 
 ; deemed_consent_notification_valid (matches Coq: Theorem deemed_consent_notification_valid)
-(assert (= true true)) ; deemed_consent_notification_valid [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_consent r) SGDeemedConsentNotification) (= (sg_has_consent r) true)))) ; deemed_consent_notification_valid
 
 ; business_improvement_exception (matches Coq: Theorem business_improvement_exception)
-(assert (= true true)) ; business_improvement_exception [untranslatable]
+(assert (forall ((proportionate Bool) (safeguards Bool)) (=> (= proportionate true) (=> (= safeguards true) (= (business_improvement_applicable SGBusinessImprovement proportionate safeguards) true))))) ; business_improvement_exception
 
 ; accountability_complete (matches Coq: Theorem accountability_complete)
-(assert (= true true)) ; accountability_complete [untranslatable]
+(assert (forall ((ar SGAccountabilityRecord)) (=> (= (sga_policies_documented ar) true) (=> (= (sga_training_conducted ar) true) (=> (= (sga_dpo_designated ar) true) (=> (= (sga_complaint_process ar) true) (=> (= (sga_breach_response_plan ar) true) (= (accountability_documented ar) true)))))))) ; accountability_complete
 
 ; data_anonymization_excludes (matches Coq: Theorem data_anonymization_excludes)
-(assert (= true true)) ; data_anonymization_excludes [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_anonymized r) true) (= (sg_protection_adequate r) true)))) ; data_anonymization_excludes
 
 ; sg_consent_coverage (matches Coq: Theorem sg_consent_coverage)
-(assert (= true true)) ; sg_consent_coverage [untranslatable]
+(assert (forall ((cs SGConsentStatus)) (= (In cs all_sg_consent_statuses) true))) ; sg_consent_coverage
 
 ; sg_data_category_coverage (matches Coq: Theorem sg_data_category_coverage)
-(assert (= true true)) ; sg_data_category_coverage [untranslatable]
+(assert (forall ((dc SGDataCategory)) (= (In dc all_sg_data_categories) true))) ; sg_data_category_coverage
 
 ; transfer_adequacy_coverage (matches Coq: Theorem transfer_adequacy_coverage)
-(assert (= true true)) ; transfer_adequacy_coverage [untranslatable]
+(assert (forall ((ta TransferAdequacy)) (= (In ta all_transfer_adequacies) true))) ; transfer_adequacy_coverage
 
 ; notification_purposes_nonempty (matches Coq: Theorem notification_purposes_nonempty)
-(assert (= true true)) ; notification_purposes_nonempty [untranslatable]
+(assert (forall ((n SGNotificationRecord)) (forall ((p Int)) (forall ((ps list)) (=> (= (sgn_purposes_notified n) (insert p ps)) (> (length (sgn_purposes_notified n)) 0)))))) ; notification_purposes_nonempty
 
 ; notification_first_purpose_notified (matches Coq: Theorem notification_first_purpose_notified)
-(assert (= true true)) ; notification_first_purpose_notified [untranslatable]
+(assert (forall ((n SGNotificationRecord)) (forall ((p Int)) (forall ((ps list)) (=> (= (sgn_purposes_notified n) (insert p ps)) (= (sg_notified_purposes n p) true)))))) ; notification_first_purpose_notified
 
 ; access_deadline_monotone (matches Coq: Theorem access_deadline_monotone)
-(assert (= true true)) ; access_deadline_monotone [untranslatable]
+(assert (forall ((req SGAccessCorrectionRequest)) (forall ((t1 Int) (t2 Int)) (=> (<= t1 t2) (=> (<= (sgacr_responded_at req) (+ (sgacr_requested_at req) t1)) (<= (sgacr_responded_at req) (+ (sgacr_requested_at req) t2))))))) ; access_deadline_monotone
 
 ; access_request_immediate_response (matches Coq: Theorem access_request_immediate_response)
-(assert (= true true)) ; access_request_immediate_response [untranslatable]
+(assert (forall ((req SGAccessCorrectionRequest)) (=> (= (sgacr_responded_at req) (sgacr_requested_at req)) (=> (= (sgacr_access_provided req) true) (= (access_correction_fulfilled req) true))))) ; access_request_immediate_response
 
 ; accuracy_within_interval (matches Coq: Theorem accuracy_within_interval)
-(assert (= true true)) ; accuracy_within_interval [untranslatable]
+(assert (forall ((acc SGAccuracyRecord)) (forall ((t Int)) (=> (<= t (+ (sgacc_last_verified acc) (sgacc_verification_interval acc))) (=> (= (sgacc_source_reliable acc) true) (= (accuracy_maintained acc t) true)))))) ; accuracy_within_interval
 
 ; accuracy_stale_requires_reverification (matches Coq: Theorem accuracy_stale_requires_reverification)
-(assert (= true true)) ; accuracy_stale_requires_reverification [untranslatable]
+(assert (forall ((acc SGAccuracyRecord)) (forall ((t Int)) (=> (< (+ (sgacc_last_verified acc) (sgacc_verification_interval acc)) t) (not (= (accuracy_maintained acc t) true)))))) ; accuracy_stale_requires_reverification
 
 ; dnc_registered_blocks_all_marketing_types (matches Coq: Theorem dnc_registered_blocks_all_marketing_types)
-(assert (= true true)) ; dnc_registered_blocks_all_marketing_types [untranslatable]
+(assert (forall ((dnc SGDNCRecord)) (=> (= (sg_dnc_status dnc) DNCRegistered) (= (sg_dnc_compliant_marketing dnc false) true)))) ; dnc_registered_blocks_all_marketing_types
 
 ; dnc_exempt_allows_marketing (matches Coq: Theorem dnc_exempt_allows_marketing)
-(assert (= true true)) ; dnc_exempt_allows_marketing [untranslatable]
+(assert (forall ((dnc SGDNCRecord)) (forall ((sent Bool)) (=> (= (sg_dnc_status dnc) DNCExempt) (= (sg_dnc_compliant_marketing dnc sent) true))))) ; dnc_exempt_allows_marketing
 
 ; dnc_status_decidable (matches Coq: Theorem dnc_status_decidable)
-(assert (= true true)) ; dnc_status_decidable [untranslatable]
+(assert (forall ((s DNCStatus)) (or (= s DNCRegistered) (= s DNCNotRegistered) (= s DNCExempt)))) ; dnc_status_decidable
 
 ; portability_obligation_met (matches Coq: Theorem portability_obligation_met)
-(assert (= true true)) ; portability_obligation_met [untranslatable]
+(assert (forall ((req SGPortabilityRequest)) (=> (<= (sg_port_completed_at req) (+ (sg_port_requested_at req) sg_portability_deadline)) (=> (= (sg_port_format_standard req) true) (=> (= (sg_port_data_machine_readable req) true) (= (portability_fulfilled req) true)))))) ; portability_obligation_met
 
 ; portability_late_response_violation (matches Coq: Theorem portability_late_response_violation)
-(assert (= true true)) ; portability_late_response_violation [untranslatable]
+(assert (forall ((req SGPortabilityRequest)) (=> (< (+ (sg_port_requested_at req) sg_portability_deadline) (sg_port_completed_at req)) (not (= (portability_fulfilled req) true))))) ; portability_late_response_violation
 
 ; portability_requires_standard_format (matches Coq: Theorem portability_requires_standard_format)
-(assert (= true true)) ; portability_requires_standard_format [untranslatable]
+(assert (forall ((req SGPortabilityRequest)) (=> (= (sg_port_format_standard req) false) (not (= (portability_fulfilled req) true))))) ; portability_requires_standard_format
 
 ; pdpc_penalty_cap_respected (matches Coq: Theorem pdpc_penalty_cap_respected)
-(assert (= true true)) ; pdpc_penalty_cap_respected [untranslatable]
+(assert (forall ((action PDPCEnforcementAction)) (=> (<= (pdpc_penalty_amount action) (pdpc_max_penalty action)) (= (pdpc_penalty_within_cap action) true)))) ; pdpc_penalty_cap_respected
 
 ; pdpc_minor_breach_no_fine (matches Coq: Theorem pdpc_minor_breach_no_fine)
-(assert (= true true)) ; pdpc_minor_breach_no_fine [untranslatable]
+(assert (forall ((action PDPCEnforcementAction)) (=> (= (pdpc_breach_severity action) 0) (=> (= (pdpc_penalty_amount action) 0) (= (pdpc_penalty_proportionate action) true))))) ; pdpc_minor_breach_no_fine
 
 ; pdpc_moderate_breach_half_cap (matches Coq: Theorem pdpc_moderate_breach_half_cap)
-(assert (= true true)) ; pdpc_moderate_breach_half_cap [untranslatable]
+(assert (forall ((action PDPCEnforcementAction)) (=> (= (pdpc_breach_severity action) 1) (=> (<= (pdpc_penalty_amount action) (div (pdpc_max_penalty action) 2)) (= (pdpc_penalty_proportionate action) true))))) ; pdpc_moderate_breach_half_cap
 
 ; pdpc_severe_breach_full_cap (matches Coq: Theorem pdpc_severe_breach_full_cap)
-(assert (= true true)) ; pdpc_severe_breach_full_cap [untranslatable]
+(assert (forall ((action PDPCEnforcementAction)) (=> (>= (pdpc_breach_severity action) 2) (=> (<= (pdpc_penalty_amount action) (pdpc_max_penalty action)) (= (pdpc_penalty_proportionate action) true))))) ; pdpc_severe_breach_full_cap
 
 ; consent_explicit_always_valid (matches Coq: Theorem consent_explicit_always_valid)
-(assert (= true true)) ; consent_explicit_always_valid [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_consent r) SGExplicitConsent) (= (sg_has_consent r) true)))) ; consent_explicit_always_valid
 
 ; no_consent_personal_data_violation (matches Coq: Theorem no_consent_personal_data_violation)
-(assert (= true true)) ; no_consent_personal_data_violation [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_category r) SGPersonalData) (=> (= (sg_consent r) SGNoConsent) (not (= (sg_consent_for_category r) true)))))) ; no_consent_personal_data_violation
 
 ; public_data_no_consent_needed (matches Coq: Theorem public_data_no_consent_needed)
-(assert (= true true)) ; public_data_no_consent_needed [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_category r) SGPublicData) (= (sg_consent_for_category r) true)))) ; public_data_no_consent_needed
 
 ; retention_within_implies_not_dispose (matches Coq: Theorem retention_within_implies_not_dispose)
-(assert (= true true)) ; retention_within_implies_not_dispose [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((t Int)) (=> (= (sg_within_retention r t) true) (not (= (sg_must_dispose r t) true)))))) ; retention_within_implies_not_dispose
 
 ; retention_dispose_exclusive (matches Coq: Theorem retention_dispose_exclusive)
-(assert (= true true)) ; retention_dispose_exclusive [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((t Int)) (or (= (sg_within_retention r t) true) (= (sg_must_dispose r t) true))))) ; retention_dispose_exclusive
 
 ; retention_at_limit_valid (matches Coq: Theorem retention_at_limit_valid)
-(assert (= true true)) ; retention_at_limit_valid [untranslatable]
+(assert (forall ((r SGDataRecord)) (= (sg_within_retention r (sg_retention_limit r)) true))) ; retention_at_limit_valid
 
 ; retention_past_limit_dispose (matches Coq: Theorem retention_past_limit_dispose)
-(assert (= true true)) ; retention_past_limit_dispose [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((t Int)) (=> (> t (sg_retention_limit r)) (= (sg_must_dispose r t) true))))) ; retention_past_limit_dispose
 
 ; cross_border_composition (matches Coq: Theorem cross_border_composition)
-(assert (= true true)) ; cross_border_composition [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((a TransferAdequacy)) (=> (= (sg_consent_for_category r) true) (=> (= (sg_transfer_lawful a) true) (=> (= (sg_protection_adequate r) true) (= (sg_cross_border_lawful r a) true))))))) ; cross_border_composition
 
 ; cross_border_no_safeguards_fails (matches Coq: Theorem cross_border_no_safeguards_fails)
-(assert (= true true)) ; cross_border_no_safeguards_fails [untranslatable]
+(assert (forall ((r SGDataRecord)) (not (= (sg_cross_border_lawful r NoSafeguards) true)))) ; cross_border_no_safeguards_fails
 
 ; individual_notification_harm_assessment (matches Coq: Theorem individual_notification_harm_assessment)
-(assert (= true true)) ; individual_notification_harm_assessment [untranslatable]
+(assert (forall ((b SGBreachEvent)) (=> (= (sg_breach_significant_harm b) true) (= (sg_individual_notification_required b) true)))) ; individual_notification_harm_assessment
 
 ; no_harm_no_individual_notification (matches Coq: Theorem no_harm_no_individual_notification)
-(assert (= true true)) ; no_harm_no_individual_notification [untranslatable]
+(assert (forall ((b SGBreachEvent)) (=> (= (sg_breach_significant_harm b) false) (not (= (sg_individual_notification_required b) true))))) ; no_harm_no_individual_notification
 
 ; breach_500_is_notifiable (matches Coq: Theorem breach_500_is_notifiable)
-(assert (= true true)) ; breach_500_is_notifiable [untranslatable]
+(assert (forall ((b SGBreachEvent)) (=> (>= (sg_breach_records_count b) 500) (= (sg_breach_notifiable b) true)))) ; breach_500_is_notifiable
 
 ; breach_harm_is_notifiable (matches Coq: Theorem breach_harm_is_notifiable)
-(assert (= true true)) ; breach_harm_is_notifiable [untranslatable]
+(assert (forall ((b SGBreachEvent)) (=> (= (sg_breach_significant_harm b) true) (= (sg_breach_notifiable b) true)))) ; breach_harm_is_notifiable
 
 ; dpo_qualified_implies_appointed (matches Coq: Theorem dpo_qualified_implies_appointed)
-(assert (= true true)) ; dpo_qualified_implies_appointed [untranslatable]
+(assert (forall ((dpo SGDataProtectionOfficer)) (=> (= (sg_dpo_fully_qualified dpo) true) (= (sg_dpo_appointed dpo) true)))) ; dpo_qualified_implies_appointed
 
 ; dpo_not_trained_not_qualified (matches Coq: Theorem dpo_not_trained_not_qualified)
-(assert (= true true)) ; dpo_not_trained_not_qualified [untranslatable]
+(assert (forall ((dpo SGDataProtectionOfficer)) (=> (= (sg_dpo_trained dpo) false) (not (= (sg_dpo_fully_qualified dpo) true))))) ; dpo_not_trained_not_qualified
 
 ; enterprise_compliance_composition (matches Coq: Theorem enterprise_compliance_composition)
-(assert (= true true)) ; enterprise_compliance_composition [untranslatable]
+(assert (forall ((r SGDataRecord)) (forall ((transfer TransferAdequacy)) (forall ((t Int)) (forall ((acct SGAccountabilityRecord)) (forall ((dpo SGDataProtectionOfficer)) (=> (= (sg_pdpa_fully_compliant r transfer t) true) (=> (= (accountability_documented acct) true) (=> (= (sg_dpo_appointed dpo) true) (= (sg_pdpa_enterprise_compliant r transfer t acct dpo) true)))))))))) ; enterprise_compliance_composition
 
 ; processing_basis_coverage (matches Coq: Theorem processing_basis_coverage)
-(assert (= true true)) ; processing_basis_coverage [untranslatable]
+(assert (forall ((b SGProcessingBasis)) (= (In b all_processing_bases) true))) ; processing_basis_coverage
 
 ; pdpc_direction_coverage (matches Coq: Theorem pdpc_direction_coverage)
-(assert (= true true)) ; pdpc_direction_coverage [untranslatable]
+(assert (forall ((d PDPCDirection)) (= (In d all_pdpc_directions) true))) ; pdpc_direction_coverage
 
 ; withdrawal_halts_processing (matches Coq: Theorem withdrawal_halts_processing)
-(assert (= true true)) ; withdrawal_halts_processing [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_consent r) SGWithdrawnConsent) (= (sg_processing_halted_on_withdrawal r false) true)))) ; withdrawal_halts_processing
 
 ; active_processing_implies_consent (matches Coq: Theorem active_processing_implies_consent)
-(assert (= true true)) ; active_processing_implies_consent [untranslatable]
+(assert (forall ((r SGDataRecord)) (=> (= (sg_processing_halted_on_withdrawal r true) true) (not (= (sg_consent r) SGWithdrawnConsent))))) ; active_processing_implies_consent
 
 ; Verify all assertions are satisfiable
 (check-sat)

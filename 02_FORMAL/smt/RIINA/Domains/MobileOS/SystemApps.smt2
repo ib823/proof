@@ -114,55 +114,55 @@
   true)
 
 ; system_apps_verified_correct (matches Coq: Theorem system_apps_verified_correct)
-(assert (= true true)) ; system_apps_verified_correct [untranslatable]
+(assert (forall ((app SystemApp)) (=> (= (wellformed_system_app app) true) (= (system_app_correct app) true)))) ; system_apps_verified_correct
 
 ; system_app_data_encrypted (matches Coq: Theorem system_app_data_encrypted)
-(assert (= true true)) ; system_app_data_encrypted [untranslatable]
+(assert (forall ((app SystemApp)) (=> (= (wellformed_system_app app) true) (= (data_encrypted app) true)))) ; system_app_data_encrypted
 
 ; state_transition_valid (matches Coq: Theorem state_transition_valid)
-(assert (= true true)) ; state_transition_valid [untranslatable]
+(assert (forall ((trans StateTransition)) (=> (= (valid_transition trans) true) (= (state_valid (to_state trans)) true)))) ; state_transition_valid
 
 ; sync_preserves_data (matches Coq: Theorem sync_preserves_data)
-(assert (= true true)) ; sync_preserves_data [untranslatable]
+(assert (forall ((sync SyncOperation)) (=> (= (sync_lossless sync) true) (=> (= (sync_successful sync) true) (= (state_valid (merged_state sync)) true))))) ; sync_preserves_data
 
 ; system_apps_sandboxed (matches Coq: Theorem system_apps_sandboxed)
-(assert (= true true)) ; system_apps_sandboxed [untranslatable]
+(assert (forall ((app SystemApp)) (=> (= (system_app_correct app) true) (= (has_sandbox app) true)))) ; system_apps_sandboxed
 
 ; minimal_permissions_enforced (matches Coq: Theorem minimal_permissions_enforced)
-(assert (= true true)) ; minimal_permissions_enforced [untranslatable]
+(assert (forall ((app SystemApp)) (=> (= (system_app_correct app) true) (= (permissions_minimal app) true)))) ; minimal_permissions_enforced
 
 ; system_app_response_correct (matches Coq: Theorem system_app_response_correct)
-(assert (= true true)) ; system_app_response_correct [untranslatable]
+(assert (forall ((resp AppResponse)) (=> (= (app_responds_correctly resp) true) (= (response_correct resp) true)))) ; system_app_response_correct
 
 ; security_apps_encrypted (matches Coq: Theorem security_apps_encrypted)
-(assert (= true true)) ; security_apps_encrypted [untranslatable]
+(assert (forall ((app SystemApp)) (=> (= (app_category app) Security) (=> (= (wellformed_system_app app) true) (and (= (data_encrypted app) true) (= (has_sandbox app) true)))))) ; security_apps_encrypted
 
 ; app_sandbox_enforced (matches Coq: Theorem app_sandbox_enforced)
-(assert (= true true)) ; app_sandbox_enforced [untranslatable]
+(assert (forall ((app SystemApp)) (forall ((perm AppPermission)) (=> (= (app_sandbox_holds app perm) true) (= (has_sandbox app) true))))) ; app_sandbox_enforced
 
 ; no_cross_app_data_access (matches Coq: Theorem no_cross_app_data_access)
-(assert (= true true)) ; no_cross_app_data_access [untranslatable]
+(assert (forall ((app1 SystemApp) (app2 SystemApp)) (=> (= (no_cross_app_access app1 app2) true) (=> (not (= (sys_app_id app1) (sys_app_id app2))) (and (= (has_sandbox app1) true) (= (has_sandbox app2) true)))))) ; no_cross_app_data_access
 
 ; app_permission_checked_at_runtime (matches Coq: Theorem app_permission_checked_at_runtime)
-(assert (= true true)) ; app_permission_checked_at_runtime [untranslatable]
+(assert (forall ((perm AppPermission)) (=> (= (app_permission_runtime_check perm) true) (= (perm_granted_explicitly perm) true)))) ; app_permission_checked_at_runtime
 
 ; background_app_limited (matches Coq: Theorem background_app_limited)
-(assert (= true true)) ; background_app_limited [untranslatable]
+(assert (forall ((lc AppLifecycle)) (=> (= (background_app_is_limited lc) true) (=> (= (lc_background lc) true) (= (lc_background_limited lc) true))))) ; background_app_limited
 
 ; foreground_app_priority (matches Coq: Theorem foreground_app_priority)
-(assert (= true true)) ; foreground_app_priority [untranslatable]
+(assert (forall ((lc AppLifecycle)) (=> (= (foreground_has_priority lc) true) (=> (= (lc_foreground lc) true) (= (lc_background lc) false))))) ; foreground_app_priority
 
 ; app_install_verified (matches Coq: Theorem app_install_verified)
-(assert (= true true)) ; app_install_verified [untranslatable]
+(assert (forall ((lc AppLifecycle)) (=> (= (install_is_verified lc) true) (=> (= (lc_installed lc) true) (= (lc_install_verified lc) true))))) ; app_install_verified
 
 ; app_update_atomic (matches Coq: Theorem app_update_atomic)
-(assert (= true true)) ; app_update_atomic [untranslatable]
+(assert (forall ((upd AppUpdate)) (=> (= (update_is_atomic upd) true) (=> (= (upd_applied upd) true) (and (= (upd_signature_valid upd) true) (> (upd_new_version upd) (upd_old_version upd))))))) ; app_update_atomic
 
 ; app_uninstall_complete (matches Coq: Theorem app_uninstall_complete)
-(assert (= true true)) ; app_uninstall_complete [untranslatable]
+(assert (forall ((lc AppLifecycle)) (=> (= (uninstall_is_complete lc) true) (=> (= (lc_installed lc) false) (= (lc_data_on_disk lc) false))))) ; app_uninstall_complete
 
 ; app_data_encrypted_at_rest (matches Coq: Theorem app_data_encrypted_at_rest)
-(assert (= true true)) ; app_data_encrypted_at_rest [untranslatable]
+(assert (forall ((app SystemApp)) (=> (= (wellformed_system_app app) true) (= (data_encrypted app) true)))) ; app_data_encrypted_at_rest
 
 ; app_network_permission_required (matches Coq: Theorem app_network_permission_required)
 (assert (forall ((perm AppPermission)) (=> (= (perm_network perm) true) (=> (= (perm_granted_explicitly perm) true) (and (= (perm_network perm) true) (= (perm_granted_explicitly perm) true)))))) ; app_network_permission_required
@@ -171,13 +171,13 @@
 (assert (forall ((perm AppPermission)) (=> (= (perm_clipboard perm) true) (=> (= (perm_granted_explicitly perm) true) (= (perm_clipboard perm) true))))) ; clipboard_access_notified
 
 ; camera_access_indicator (matches Coq: Theorem camera_access_indicator)
-(assert (= true true)) ; camera_access_indicator [untranslatable]
+(assert (forall ((perm AppPermission)) (=> (= (perm_camera perm) true) (=> (= (app_permission_runtime_check perm) true) (and (= (perm_camera perm) true) (= (perm_granted_explicitly perm) true)))))) ; camera_access_indicator
 
 ; microphone_access_indicator (matches Coq: Theorem microphone_access_indicator)
-(assert (= true true)) ; microphone_access_indicator [untranslatable]
+(assert (forall ((perm AppPermission)) (=> (= (perm_microphone perm) true) (=> (= (app_permission_runtime_check perm) true) (and (= (perm_microphone perm) true) (= (perm_granted_explicitly perm) true)))))) ; microphone_access_indicator
 
 ; location_access_indicator (matches Coq: Theorem location_access_indicator)
-(assert (= true true)) ; location_access_indicator [untranslatable]
+(assert (forall ((perm AppPermission)) (=> (= (perm_location perm) true) (=> (= (app_permission_runtime_check perm) true) (and (= (perm_location perm) true) (= (perm_granted_explicitly perm) true)))))) ; location_access_indicator
 
 ; notification_permission_explicit (matches Coq: Theorem notification_permission_explicit)
 (assert (forall ((perm AppPermission)) (=> (= (perm_notification perm) true) (=> (= (perm_granted_explicitly perm) true) (and (= (perm_notification perm) true) (= (perm_granted_explicitly perm) true)))))) ; notification_permission_explicit

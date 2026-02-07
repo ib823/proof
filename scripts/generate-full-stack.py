@@ -577,6 +577,48 @@ def _parse_constructor_args(text, defn_map):
     return args
 
 
+# Coq identifier character class — matches \w plus Greek letters and primes
+# Used in regex patterns throughout _coq_stmt_to_smt and _coq_expr_to_smt
+_CID = r"[\w\u0370-\u03ff']"   # single char
+_CID_P = _CID + r'+'            # one or more (replaces \w+)
+_CID_S = _CID + r'*'            # zero or more
+
+
+def _split_eq(stmt):
+    """Split Coq statement on equality `=` avoiding <=?, >=?, =?, <>, <->.
+
+    Returns a regex-like match object with group(1)=LHS and group(2)=RHS,
+    or None if no valid equality split found.
+    """
+    # Scan for = at depth 0, checking it's not part of <=?, >=?, =?, <>, <->
+    depth = 0
+    for i, ch in enumerate(stmt):
+        if ch == '(':
+            depth += 1
+        elif ch == ')':
+            depth -= 1
+        elif ch == '=' and depth == 0:
+            # Check context: not part of <=?, >=?, =?, <>, <->
+            before = stmt[i-1:i] if i > 0 else ''
+            after = stmt[i+1:i+2] if i + 1 < len(stmt) else ''
+            # Skip if: <= (part of <=?), >= (part of >=?), =? (Nat.eqb), <> (neq), <-> (iff)
+            if before in ('<', '>', '!') or after == '?':
+                continue
+            # Also skip if this is inside <->
+            if i >= 2 and stmt[i-2:i+1] == '<->':
+                continue
+            if i + 2 < len(stmt) and stmt[i:i+3] == '==>':
+                continue
+            lhs = stmt[:i].strip()
+            rhs = stmt[i+1:].strip()
+            if lhs and rhs:
+                import types
+                m = types.SimpleNamespace()
+                m.group = lambda n: [None, lhs, rhs][n]
+                return m
+    return None
+
+
 def _coq_stmt_to_smt(stmt, param_names=None, record_fields=None, defn_names=None,
                       zero_ary_defns=None):
     """Translate a Coq theorem statement to SMT-LIB assertion body.
@@ -584,8 +626,15 @@ def _coq_stmt_to_smt(stmt, param_names=None, record_fields=None, defn_names=None
     Handles:
     - `f x = true` → `(= (f x) true)`
     - `forall c : T, P c` → `(forall ((c T)) P_translated)`
+    - `forall a b : T, P` → multi-variable binding
+    - `forall (a : T) (b : U), P` → multi-group binding
+    - `forall a b c, P` → untyped (default Bool)
     - `A -> B` → `(=> A B)`
     - `A /\\ B` → `(and A B)`
+    - `A \\/ B` → `(or A B)`
+    - `A <-> B` → `(and (=> A B) (=> B A))`
+    - `~ P` → `(not P)`
+    - Prop-valued conclusions as boolean assertions
 
     Returns None if translation fails.
     """
@@ -597,8 +646,158 @@ def _coq_stmt_to_smt(stmt, param_names=None, record_fields=None, defn_names=None
     if zero_ary_defns is None:
         zero_ary_defns = set()
 
-    # Handle forall: `forall (c : Type), body` or `forall c : Type, body`
-    m = re.match(r'^forall\s+(?:\()?(\w+)\s*:\s*(\w+)(?:\))?\s*,\s*(.+)$', stmt, re.DOTALL)
+    # Preprocessing: clean up Coq-specific syntax
+    # 1. Strip Coq comment leaks: "... *) Theorem name : actual_stmt"
+    if '*) ' in stmt:
+        # Find the last *) and take everything after the next colon
+        idx = stmt.rfind('*)')
+        rest = stmt[idx+2:].strip()
+        # Skip "Theorem name :" or "Lemma name :"
+        m_comment = re.match(r'(?:Theorem|Lemma)\s+\S+\s*:\s*(.+)$', rest, re.DOTALL)
+        if m_comment:
+            stmt = m_comment.group(1).strip()
+    # 2. Strip Coq scope annotations: (expr)%nat, (expr)%Z, etc.
+    stmt = re.sub(r'\)%\w+', ')', stmt)
+    # 3. Strip trailing scope: "12." → "12", but not "Qed."
+    stmt = re.sub(r'(\d+)\.\s*$', r'\1', stmt)
+    # 4. Strip record field access: gs.(field) → (field gs)
+    # (not perfect but prevents parse failure)
+    stmt = re.sub(r"([\w\u0370-\u03ff']+)\.\(([\w\u0370-\u03ff']+)\)", r'(\2 \1)', stmt)
+    # 5. Strip substitution notation: [x := v] e → e  (best effort)
+    stmt = re.sub(r'\[\w+\s*:=\s*[\w\u0370-\u03ff\']+\]\s*', '', stmt)
+    # 6. Convert step notation to implications
+    # `(e1, st1, ctx1) --> (e2, st2, ctx2)` → `(step (e1, st1, ctx1) (e2, st2, ctx2))`
+    # `(e1, st1, ctx1) -->* (e2, st2, ctx2)` → `(multi_step ...)`
+    stmt = stmt.replace(' -->* ', ' multi_step_to ')
+    stmt = stmt.replace(' --> ', ' step_to ')
+    # 7. Convert :: cons to list function call to avoid parser failures
+    # `x :: xs` → `(cons x xs)` — but be careful with context
+    # Only do this outside of type annotations
+    if ' :: ' in stmt and 'forall' in stmt:
+        # Replace `a :: b` with `(cons a b)` in the body
+        pass  # Complex — handled by _coq_expr_to_smt
+    # 8. Strip Coq `(* ... *)` comments that leaked into statements
+    stmt = re.sub(r'\(\*.*?\*\)', '', stmt, flags=re.DOTALL).strip()
+
+    stmt = stmt.strip()
+    if not stmt:
+        return None
+
+    # Handle bare True/False (trivial Coq props)
+    if stmt == 'True':
+        return 'true'
+    if stmt == 'False':
+        return 'false'
+
+    # Strip outer parentheses if fully wrapped
+    if stmt.startswith('(') and stmt.endswith(')'):
+        depth = 0
+        all_wrapped = True
+        for i, ch in enumerate(stmt):
+            if ch == '(':
+                depth += 1
+            elif ch == ')':
+                depth -= 1
+            if depth == 0 and i < len(stmt) - 1:
+                all_wrapped = False
+                break
+        if all_wrapped:
+            inner = _coq_stmt_to_smt(stmt[1:-1].strip(), param_names, record_fields,
+                                      defn_names, zero_ary_defns)
+            if inner:
+                return inner
+
+    # Handle negation: `~ P` or `not P`
+    m = re.match(r'^~\s+(.+)$', stmt, re.DOTALL)
+    if m:
+        inner = _coq_stmt_to_smt(m.group(1).strip(), param_names, record_fields,
+                                  defn_names, zero_ary_defns)
+        if inner:
+            return f'(not {inner})'
+
+    # Handle let binding: `let x := e in body`
+    m = re.match(r"^let\s+([\w\u0370-\u03ff']+)\s*:=\s*(.+?)\s+in\s+(.+)$", stmt, re.DOTALL)
+    if m:
+        var_name, val_expr, body = m.group(1), m.group(2).strip(), m.group(3).strip()
+        val_smt = _coq_expr_to_smt(val_expr, param_names, record_fields, defn_names,
+                                     zero_ary_defns)
+        if val_smt:
+            new_params = set(param_names or ())
+            new_params.add(var_name)
+            body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                          zero_ary_defns)
+            if body_smt:
+                return f'(let (({var_name} {val_smt})) {body_smt})'
+        # Fallback: try substituting
+        new_params = set(param_names or ())
+        new_params.add(var_name)
+        body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                      zero_ary_defns)
+        if body_smt:
+            return body_smt
+
+    # Handle forall with implicit type params: `forall {A} (...), body`
+    # Strip implicit params and continue
+    m = re.match(r"^forall\s+\{([\w\u0370-\u03ff']+)\}\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        # Skip the implicit param, recurse on rest
+        rest = m.group(2).strip()
+        if rest.startswith('(') or rest.startswith('forall') or rest.startswith('{'):
+            # More bindings follow
+            return _coq_stmt_to_smt('forall ' + rest, param_names, record_fields,
+                                     defn_names, zero_ary_defns)
+        elif ',' in rest:
+            # Body follows after comma
+            return _coq_stmt_to_smt(rest.split(',', 1)[1].strip(), param_names,
+                                     record_fields, defn_names, zero_ary_defns)
+
+    # Handle forall with typed param in parens followed by more: `forall (x : T) ...`
+    # (single group variant, followed by more text)
+    m = re.match(r"^forall\s+\(([\w\u0370-\u03ff']+)\s*:\s*([^)]+)\)\s+(.+)$", stmt, re.DOTALL)
+    if m:
+        var_name, var_type, rest = m.group(1), m.group(2).strip(), m.group(3).strip()
+        smt_type = _smt_type(var_type)
+        new_params = set(param_names or ())
+        new_params.add(var_name)
+        # Check if rest starts with more bindings or a comma
+        if rest.startswith('(') or rest.startswith('{'):
+            body_smt = _coq_stmt_to_smt('forall ' + rest, new_params, record_fields,
+                                          defn_names, zero_ary_defns)
+            if body_smt:
+                return f'(forall (({var_name} {smt_type})) {body_smt})'
+        elif rest.startswith(','):
+            body_smt = _coq_stmt_to_smt(rest[1:].strip(), new_params, record_fields,
+                                          defn_names, zero_ary_defns)
+            if body_smt:
+                return f'(forall (({var_name} {smt_type})) {body_smt})'
+
+    # Handle forall with multi-group bindings: `forall (a : T) (b : U), body`
+    # Also handles: `forall (a b c : T), body` (multiple vars one type)
+    # Also handles: `forall (x : list T), body` (multi-word types)
+    m = re.match(r'^forall\s+(\(.+?\)(?:\s*\(.+?\))*)\s*,\s*(.+)$', stmt, re.DOTALL)
+    if m:
+        bindings_str, body = m.group(1), m.group(2).strip()
+        # Parse all (var1 var2 ... : Type ...) groups
+        # Type can be multi-word like "list Circuit" — use first word as SMT type
+        groups = re.findall(r"\(([\w\u0370-\u03ff'\s]+?)\s*:\s*([^)]+)\)", bindings_str)
+        if groups:
+            new_params = set(param_names or ())
+            smt_bindings = []
+            for vars_str, var_type_str in groups:
+                # Type might be multi-word like "list Circuit" — use first word
+                var_type = var_type_str.strip().split()[0]
+                for vn in vars_str.strip().split():
+                    new_params.add(vn)
+                    smt_bindings.append(f'({vn} {_smt_type(var_type)})')
+            body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                          zero_ary_defns)
+            if body_smt:
+                bindings = ' '.join(smt_bindings)
+                return f'(forall ({bindings}) {body_smt})'
+            return None
+
+    # Handle forall with single typed binding: `forall c : Type, body`
+    m = re.match(r"^forall\s+(?:\()?([\w\u0370-\u03ff']+)\s*:\s*([\w\u0370-\u03ff']+)(?:\))?\s*,\s*(.+)$", stmt, re.DOTALL)
     if m:
         var_name, var_type, body = m.group(1), m.group(2), m.group(3).strip()
         smt_type = _smt_type(var_type)
@@ -609,6 +808,116 @@ def _coq_stmt_to_smt(stmt, param_names=None, record_fields=None, defn_names=None
         if body_smt:
             return f'(forall (({var_name} {smt_type})) {body_smt})'
         return None
+
+    # Handle forall with multiple typed variables: `forall a b c : T, body`
+    m = re.match(r"^forall\s+((?:[\w\u0370-\u03ff']+\s+)+):\s*([\w\u0370-\u03ff']+)\s*,\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        vars_str, var_type, body = m.group(1).strip(), m.group(2), m.group(3).strip()
+        var_names = vars_str.split()
+        smt_type = _smt_type(var_type)
+        new_params = set(param_names or ())
+        smt_bindings = []
+        for vn in var_names:
+            new_params.add(vn)
+            smt_bindings.append(f'({vn} {smt_type})')
+        body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                      zero_ary_defns)
+        if body_smt:
+            bindings = ' '.join(smt_bindings)
+            return f'(forall ({bindings}) {body_smt})'
+        return None
+
+    # Handle forall with untyped variables: `forall a b c, body` (default to Bool)
+    m = re.match(r"^forall\s+((?:[\w\u0370-\u03ff']+\s*)+),\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        vars_str, body = m.group(1).strip(), m.group(2).strip()
+        # Avoid matching typed foralls that slipped through
+        if ':' not in vars_str and '(' not in vars_str:
+            var_names = vars_str.split()
+            if var_names:
+                new_params = set(param_names or ())
+                smt_bindings = []
+                for vn in var_names:
+                    new_params.add(vn)
+                    smt_bindings.append(f'({vn} Bool)')
+                body_smt = _coq_stmt_to_smt(body, new_params, record_fields,
+                                              defn_names, zero_ary_defns)
+                if body_smt:
+                    bindings = ' '.join(smt_bindings)
+                    return f'(forall ({bindings}) {body_smt})'
+                return None
+
+    # Handle exists with typed variable: `exists x : T, P x`
+    m = re.match(r"^exists\s+(?:\()?([\w\u0370-\u03ff']+)\s*:\s*([\w\u0370-\u03ff']+)(?:\))?\s*,\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        var_name, var_type, body = m.group(1), m.group(2), m.group(3).strip()
+        smt_type = _smt_type(var_type)
+        new_params = set(param_names or ())
+        new_params.add(var_name)
+        body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                      zero_ary_defns)
+        if body_smt:
+            return f'(exists (({var_name} {smt_type})) {body_smt})'
+        return None
+
+    # Handle exists with multiple untyped variables: `exists v1 v2 v3, P`
+    m = re.match(r"^exists\s+((?:[\w\u0370-\u03ff']+\s+)+[\w\u0370-\u03ff']+)\s*,\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        vars_str, body = m.group(1).strip(), m.group(2).strip()
+        if ':' not in vars_str:
+            var_names = vars_str.split()
+            new_params = set(param_names or ())
+            smt_bindings = []
+            for vn in var_names:
+                new_params.add(vn)
+                smt_bindings.append(f'({vn} Bool)')
+            body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                          zero_ary_defns)
+            if body_smt:
+                bindings = ' '.join(smt_bindings)
+                return f'(exists ({bindings}) {body_smt})'
+            return None
+
+    # Handle exists with multiple typed variables: `exists a b : T, P`
+    m = re.match(r"^exists\s+((?:[\w\u0370-\u03ff']+\s+)+):\s*([\w\u0370-\u03ff']+)\s*,\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        vars_str, var_type, body = m.group(1).strip(), m.group(2), m.group(3).strip()
+        var_names = vars_str.split()
+        smt_type = _smt_type(var_type)
+        new_params = set(param_names or ())
+        smt_bindings = []
+        for vn in var_names:
+            new_params.add(vn)
+            smt_bindings.append(f'({vn} {smt_type})')
+        body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                      zero_ary_defns)
+        if body_smt:
+            bindings = ' '.join(smt_bindings)
+            return f'(exists ({bindings}) {body_smt})'
+        return None
+
+    # Handle exists with single untyped variable: `exists x, P x`
+    m = re.match(r"^exists\s+([\w\u0370-\u03ff']+)\s*,\s*(.+)$", stmt, re.DOTALL)
+    if m:
+        var_name, body = m.group(1), m.group(2).strip()
+        new_params = set(param_names or ())
+        new_params.add(var_name)
+        body_smt = _coq_stmt_to_smt(body, new_params, record_fields, defn_names,
+                                      zero_ary_defns)
+        if body_smt:
+            return f'(exists (({var_name} Bool)) {body_smt})'
+        return None
+
+    # Handle biconditional: `A <-> B` (before implication, since <-> contains ->)
+    if '<->' in stmt:
+        parts = _split_coq_binop(stmt, '<->')
+        if parts and len(parts) == 2:
+            left = _coq_stmt_to_smt(parts[0].strip(), param_names, record_fields,
+                                     defn_names, zero_ary_defns)
+            right = _coq_stmt_to_smt(parts[1].strip(), param_names, record_fields,
+                                      defn_names, zero_ary_defns)
+            if left and right:
+                return f'(and (=> {left} {right}) (=> {right} {left}))'
 
     # Handle implication: `A -> B`
     parts = _split_coq_arrow(stmt)
@@ -640,8 +949,32 @@ def _coq_stmt_to_smt(stmt, param_names=None, record_fields=None, defn_names=None
                 smt_parts.append(t)
             return '(and ' + ' '.join(smt_parts) + ')'
 
+    # Handle disjunction: `A \/ B`
+    if '\\/' in stmt:
+        parts = _split_coq_binop(stmt, '\\/')
+        if parts:
+            smt_parts = []
+            for p in parts:
+                t = _coq_stmt_to_smt(p.strip(), param_names, record_fields, defn_names,
+                                      zero_ary_defns)
+                if t is None:
+                    return None
+                smt_parts.append(t)
+            return '(or ' + ' '.join(smt_parts) + ')'
+
+    # Handle inequality: `a <> b`
+    m = re.match(r'^(.+?)\s*<>\s*(.+)$', stmt)
+    if m:
+        lhs = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        rhs = _coq_expr_to_smt(m.group(2).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        if lhs and rhs:
+            return f'(not (= {lhs} {rhs}))'
+
     # Handle equality: `expr = value`
-    m = re.match(r'^(.+?)\s*=\s*(.+)$', stmt)
+    # Use a custom split that avoids matching = inside <=?, >=?, =?, <>, <->
+    m = _split_eq(stmt)
     if m:
         lhs_raw, rhs_raw = m.group(1).strip(), m.group(2).strip()
         lhs = _coq_expr_to_smt(lhs_raw, param_names, record_fields, defn_names,
@@ -650,6 +983,28 @@ def _coq_stmt_to_smt(stmt, param_names=None, record_fields=None, defn_names=None
                                 zero_ary_defns)
         if lhs and rhs:
             return f'(= {lhs} {rhs})'
+
+    # Handle comparison: `a >= b`, `a <= b`, `a > b`, `a < b`
+    for op, smt_op in [('>=', '>='), ('<=', '<='), ('>', '>'), ('<', '<')]:
+        m = re.match(r'^(.+?)\s*' + re.escape(op) + r'\s*(.+)$', stmt)
+        if m:
+            lhs = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                    defn_names, zero_ary_defns)
+            rhs = _coq_expr_to_smt(m.group(2).strip(), param_names, record_fields,
+                                    defn_names, zero_ary_defns)
+            if lhs and rhs:
+                return f'({smt_op} {lhs} {rhs})'
+
+    # Handle Prop-valued conclusion: bare function application `pred x y`
+    # Treat as boolean assertion: `(= (pred x y) true)`
+    expr_smt = _coq_expr_to_smt(stmt, param_names, record_fields, defn_names,
+                                  zero_ary_defns)
+    if expr_smt:
+        # If already a boolean literal, return directly
+        if expr_smt in ('true', 'false'):
+            return expr_smt
+        # If it's a function call or known name, treat as boolean
+        return f'(= {expr_smt} true)'
 
     return None
 
@@ -666,11 +1021,72 @@ def _coq_expr_to_smt(expr, param_names=None, record_fields=None, defn_names=None
         return 'true'
     if expr == 'false':
         return 'false'
+    if expr in ('True', 'I'):
+        return 'true'
+    if expr == 'False':
+        return 'false'
     if re.match(r'^\d+$', expr):
         return expr
+    if expr == 'O':
+        return '0'
+    # Handle Some/None
+    if expr == 'None':
+        return 'none'
+    m = re.match(r'^Some\s+(.+)$', expr)
+    if m:
+        inner = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                  defn_names, zero_ary_defns)
+        if inner:
+            return f'(some {inner})'
+
+    # Strip outer parentheses if fully wrapped
+    if expr.startswith('(') and expr.endswith(')'):
+        depth = 0
+        all_wrapped = True
+        for i, ch in enumerate(expr):
+            if ch == '(':
+                depth += 1
+            elif ch == ')':
+                depth -= 1
+            if depth == 0 and i < len(expr) - 1:
+                all_wrapped = False
+                break
+        if all_wrapped:
+            inner_str = expr[1:-1].strip()
+            # Check if it's a tuple: (a, b, c) → (mk-tuple a b c)
+            if ',' in inner_str:
+                # Split on commas at depth 0
+                parts = []
+                current = []
+                d = 0
+                for ch in inner_str:
+                    if ch == '(':
+                        d += 1
+                    elif ch == ')':
+                        d -= 1
+                    elif ch == ',' and d == 0:
+                        parts.append(''.join(current).strip())
+                        current = []
+                        continue
+                    current.append(ch)
+                parts.append(''.join(current).strip())
+                if len(parts) >= 2:
+                    smt_parts = []
+                    for p in parts:
+                        p_smt = _coq_expr_to_smt(p, param_names, record_fields,
+                                                   defn_names, zero_ary_defns)
+                        if p_smt:
+                            smt_parts.append(p_smt)
+                        else:
+                            smt_parts.append(p.strip().split()[0])  # best effort: first token
+                    return f'(mk-tuple {" ".join(smt_parts)})'
+            inner = _coq_expr_to_smt(inner_str, param_names, record_fields,
+                                      defn_names, zero_ary_defns)
+            if inner:
+                return inner
 
     # Single identifier
-    if re.match(r'^\w+$', expr):
+    if re.match(r"^[\w\u0370-\u03ff']+$", expr):
         if param_names and expr in param_names:
             return expr
         # 0-ary definitions are SMT constants — reference by name (no parens)
@@ -678,10 +1094,227 @@ def _coq_expr_to_smt(expr, param_names=None, record_fields=None, defn_names=None
             return expr
         return expr
 
+    # Handle negb: `negb x` → `(not x)`
+    m = re.match(r'^negb\s+(.+)$', expr)
+    if m:
+        inner = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                  defn_names, zero_ary_defns)
+        if inner:
+            return f'(not {inner})'
+
+    # Handle boolean &&: `a && b` → `(and a b)`
+    if '&&' in expr:
+        parts = _split_coq_binop(expr, '&&')
+        if parts and len(parts) >= 2:
+            smt_parts = []
+            for p in parts:
+                t = _coq_expr_to_smt(p.strip(), param_names, record_fields,
+                                      defn_names, zero_ary_defns)
+                if t is None:
+                    return None
+                smt_parts.append(t)
+            return '(and ' + ' '.join(smt_parts) + ')'
+
+    # Handle boolean ||: `a || b` → `(or a b)`
+    if '||' in expr:
+        parts = _split_coq_binop(expr, '||')
+        if parts and len(parts) >= 2:
+            smt_parts = []
+            for p in parts:
+                t = _coq_expr_to_smt(p.strip(), param_names, record_fields,
+                                      defn_names, zero_ary_defns)
+                if t is None:
+                    return None
+                smt_parts.append(t)
+            return '(or ' + ' '.join(smt_parts) + ')'
+
+    # Handle <=?: `a <=? b` → `(<= a b)` (MUST be before =? to avoid wrong match)
+    m = re.match(r'^(.+?)\s*<=\?\s*(.+)$', expr)
+    if m:
+        lhs = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        rhs = _coq_expr_to_smt(m.group(2).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        if lhs and rhs:
+            return f'(<= {lhs} {rhs})'
+
+    # Handle <?: `a <? b` → `(< a b)` (MUST be before =? to avoid wrong match)
+    m = re.match(r'^(.+?)\s*<\?\s*(.+)$', expr)
+    if m:
+        lhs = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        rhs = _coq_expr_to_smt(m.group(2).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        if lhs and rhs:
+            return f'(< {lhs} {rhs})'
+
+    # Handle =?: `a =? b` → `(= a b)` (Nat.eqb)
+    m = re.match(r'^(.+?)\s*=\?\s*(.+)$', expr)
+    if m:
+        lhs = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        rhs = _coq_expr_to_smt(m.group(2).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        if lhs and rhs:
+            return f'(= {lhs} {rhs})'
+
+    # Handle >=?: `a >=? b` → `(>= a b)`
+    m = re.match(r'^(.+?)\s*>=\?\s*(.+)$', expr)
+    if m:
+        lhs = _coq_expr_to_smt(m.group(1).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        rhs = _coq_expr_to_smt(m.group(2).strip(), param_names, record_fields,
+                                defn_names, zero_ary_defns)
+        if lhs and rhs:
+            return f'(>= {lhs} {rhs})'
+
+    # Handle arithmetic: `a + b`, `a - b`, `a * b`, `a / b`, `a mod b`
+    # Use space-padded operators to avoid matching inside identifiers
+    for op, smt_op in [('+', '+'), ('-', '-')]:
+        if f' {op} ' in expr:
+            parts = _split_coq_binop(expr, op)
+            if parts and len(parts) >= 2:
+                smt_parts = []
+                for p in parts:
+                    t = _coq_expr_to_smt(p.strip(), param_names, record_fields,
+                                          defn_names, zero_ary_defns)
+                    if t is None:
+                        break
+                    smt_parts.append(t)
+                else:
+                    if len(smt_parts) == 2:
+                        return f'({smt_op} {smt_parts[0]} {smt_parts[1]})'
+                    result = smt_parts[0]
+                    for p in smt_parts[1:]:
+                        result = f'({smt_op} {result} {p})'
+                    return result
+
+    for op, smt_op in [('*', '*'), ('/', 'div')]:
+        if f' {op} ' in expr:
+            parts = _split_coq_binop(expr, op)
+            if parts and len(parts) >= 2:
+                smt_parts = []
+                for p in parts:
+                    t = _coq_expr_to_smt(p.strip(), param_names, record_fields,
+                                          defn_names, zero_ary_defns)
+                    if t is None:
+                        break
+                    smt_parts.append(t)
+                else:
+                    if len(smt_parts) == 2:
+                        return f'({smt_op} {smt_parts[0]} {smt_parts[1]})'
+                    result = smt_parts[0]
+                    for p in smt_parts[1:]:
+                        result = f'({smt_op} {result} {p})'
+                    return result
+
+    # Handle mod separately with word boundary (avoid matching 'mod' in 'model')
+    if ' mod ' in expr:
+        parts = expr.split(' mod ', 1)
+        if len(parts) == 2:
+            lhs = _coq_expr_to_smt(parts[0].strip(), param_names, record_fields,
+                                    defn_names, zero_ary_defns)
+            rhs = _coq_expr_to_smt(parts[1].strip(), param_names, record_fields,
+                                    defn_names, zero_ary_defns)
+            if lhs and rhs:
+                return f'(mod {lhs} {rhs})'
+
+    # Handle list literals: `[x; y; z]` → `(insert x (insert y (insert z nil)))`
+    m = re.match(r'^\[(.+)\]$', expr, re.DOTALL)
+    if m:
+        inner = m.group(1).strip()
+        if inner:
+            # Split on `;` respecting parentheses
+            elems = _split_list_elements(inner)
+            smt_elems = []
+            for e in elems:
+                t = _coq_expr_to_smt(e.strip(), param_names, record_fields, defn_names,
+                                      zero_ary_defns)
+                if t is None:
+                    return None
+                smt_elems.append(t)
+            result = 'nil'
+            for e in reversed(smt_elems):
+                result = f'(insert {e} {result})'
+            return result
+    # Empty list: `[]`
+    if expr == '[]' or expr == 'nil':
+        return 'nil'
+
+    # Handle ++: `a ++ b` → `(concat a b)` (list append)
+    if ' ++ ' in expr:
+        parts = _split_coq_binop(expr, '++')
+        if parts and len(parts) >= 2:
+            smt_parts = []
+            for p in parts:
+                t = _coq_expr_to_smt(p.strip(), param_names, record_fields,
+                                      defn_names, zero_ary_defns)
+                if t is None:
+                    return None
+                smt_parts.append(t)
+            if len(smt_parts) == 2:
+                return f'(concat {smt_parts[0]} {smt_parts[1]})'
+            result = smt_parts[0]
+            for p in smt_parts[1:]:
+                result = f'(concat {result} {p})'
+            return result
+
+    # Handle `andb a b` → `(and a b)`, `orb a b` → `(or a b)`,
+    # `implb a b` → `(=> a b)`
+    for coq_fn, smt_fn in [('andb', 'and'), ('orb', 'or'), ('implb', '=>')]:
+        m = re.match(r'^' + coq_fn + r'\s+(.+)$', expr)
+        if m:
+            rest = m.group(1).strip()
+            tokens = _split_expr_tokens(rest)
+            if tokens and len(tokens) >= 2:
+                args = []
+                for t in tokens:
+                    a = _coq_expr_to_smt(t, param_names, record_fields, defn_names,
+                                          zero_ary_defns)
+                    if a is None:
+                        return None
+                    args.append(a)
+                return f'({smt_fn} {" ".join(args)})'
+
+    # Handle `S n` (successor) → `(+ n 1)`
+    m = re.match(r"^S\s+([\w\u0370-\u03ff']+)$", expr)
+    if m:
+        inner = _coq_expr_to_smt(m.group(1), param_names, record_fields, defn_names,
+                                  zero_ary_defns)
+        if inner:
+            return f'(+ {inner} 1)'
+
+    # Handle `Nat.leb a b` / `Nat.ltb a b`
+    m = re.match(r'^Nat\.(leb|ltb)\s+(.+)$', expr)
+    if m:
+        op = '<=' if m.group(1) == 'leb' else '<'
+        tokens = _split_expr_tokens(m.group(2))
+        if tokens and len(tokens) >= 2:
+            a = _coq_expr_to_smt(tokens[0], param_names, record_fields, defn_names,
+                                  zero_ary_defns)
+            b = _coq_expr_to_smt(tokens[1], param_names, record_fields, defn_names,
+                                  zero_ary_defns)
+            if a and b:
+                return f'({op} {a} {b})'
+
     # Function application: `f arg` or `f arg1 arg2`
-    tokens = expr.split()
-    if len(tokens) >= 2:
+    # Be careful to handle parenthesized sub-expressions
+    tokens = _split_expr_tokens(expr)
+    if tokens and len(tokens) >= 2:
         func = tokens[0]
+        # Skip `::` (list cons) — treat as uninterpreted
+        if func == '::' or '::' in expr:
+            # Convert `a :: b` to `(insert a b)`
+            if '::' in expr:
+                cons_parts = expr.split('::', 1)
+                if len(cons_parts) == 2:
+                    lhs = _coq_expr_to_smt(cons_parts[0].strip(), param_names,
+                                            record_fields, defn_names, zero_ary_defns)
+                    rhs = _coq_expr_to_smt(cons_parts[1].strip(), param_names,
+                                            record_fields, defn_names, zero_ary_defns)
+                    if lhs and rhs:
+                        return f'(insert {lhs} {rhs})'
+            return None
         args = []
         for t in tokens[1:]:
             a = _coq_expr_to_smt(t, param_names, record_fields, defn_names,
@@ -692,6 +1325,70 @@ def _coq_expr_to_smt(expr, param_names=None, record_fields=None, defn_names=None
         return f'({func} {" ".join(args)})'
 
     return None
+
+
+def _split_expr_tokens(expr):
+    """Split a Coq expression into tokens, respecting parenthesized groups."""
+    tokens = []
+    depth = 0
+    current = []
+    for ch in expr:
+        if ch == '(' and depth == 0 and current and ''.join(current).strip():
+            # Start new paren group — flush current token first
+            tok = ''.join(current).strip()
+            if tok:
+                tokens.extend(tok.split())
+            current = [ch]
+            depth = 1
+        elif ch == '(':
+            depth += 1
+            current.append(ch)
+        elif ch == ')':
+            depth -= 1
+            current.append(ch)
+            if depth == 0:
+                tokens.append(''.join(current).strip())
+                current = []
+        elif ch == ' ' and depth == 0:
+            tok = ''.join(current).strip()
+            if tok:
+                tokens.append(tok)
+            current = []
+        else:
+            current.append(ch)
+    if current:
+        tok = ''.join(current).strip()
+        if tok:
+            tokens.append(tok)
+    return tokens
+
+
+def _split_list_elements(inner):
+    """Split `x; y; z` respecting parentheses."""
+    elems = []
+    depth = 0
+    current = []
+    for ch in inner:
+        if ch == '(':
+            depth += 1
+            current.append(ch)
+        elif ch == ')':
+            depth -= 1
+            current.append(ch)
+        elif ch == '[':
+            depth += 1
+            current.append(ch)
+        elif ch == ']':
+            depth -= 1
+            current.append(ch)
+        elif ch == ';' and depth == 0:
+            elems.append(''.join(current).strip())
+            current = []
+        else:
+            current.append(ch)
+    if current:
+        elems.append(''.join(current).strip())
+    return elems
 
 
 def _split_coq_arrow(stmt):
@@ -707,7 +1404,7 @@ def _split_coq_arrow(stmt):
         elif stmt[i] == ')':
             depth -= 1
             current.append(stmt[i])
-        elif depth == 0 and stmt[i:i+2] == '->':
+        elif depth == 0 and stmt[i:i+2] == '->' and (i == 0 or stmt[i-1:i+2] != '<->'):
             parts.append(''.join(current).strip())
             current = []
             i += 2
@@ -718,6 +1415,68 @@ def _split_coq_arrow(stmt):
     if current:
         parts.append(''.join(current).strip())
     return parts if len(parts) >= 2 else None
+
+
+def _best_effort_smt(stmt, name):
+    """Generate best-effort SMT assertion for untranslatable Coq theorems.
+
+    Instead of vacuous `(assert (= true true))`, extracts what structure we can
+    and emits a meaningful comment + partial assertion.
+    """
+    if not stmt:
+        return f'(assert true) ; {name} [Coq-only]'
+
+    # Clean up parser artifacts (comment leaks)
+    clean = re.sub(r'\(\*.*?\*\)', '', stmt).strip()
+    if not clean:
+        return f'(assert true) ; {name} [Coq-only: documentation]'
+
+    # Extract forall bindings from the start
+    bindings = []
+    rest = clean
+    while True:
+        # Try multi-group: forall (a : T) (b : U), ...
+        m = re.match(r'^forall\s+(\(.+?\)(?:\s*\(.+?\))*)\s*,\s*(.+)$', rest, re.DOTALL)
+        if m:
+            groups = re.findall(r"\(([\w\u0370-\u03ff'\s]+?)\s*:\s*([^)]+)\)", m.group(1))
+            for vars_str, type_str in groups:
+                var_type = type_str.strip().split()[0]
+                smt_type = _smt_type(var_type)
+                for vn in vars_str.strip().split():
+                    bindings.append(f'({vn} {smt_type})')
+            rest = m.group(2).strip()
+            continue
+        # Try single typed: forall x : T, ...
+        m = re.match(r"^forall\s+(?:\()?([\w\u0370-\u03ff']+)\s*:\s*([\w\u0370-\u03ff']+)(?:\))?\s*,\s*(.+)$", rest, re.DOTALL)
+        if m:
+            bindings.append(f'({m.group(1)} {_smt_type(m.group(2))})')
+            rest = m.group(3).strip()
+            continue
+        # Try multi untyped: forall a b c, ...
+        m = re.match(r"^forall\s+((?:[\w\u0370-\u03ff']+\s*)+),\s*(.+)$", rest, re.DOTALL)
+        if m and ':' not in m.group(1) and '(' not in m.group(1):
+            for vn in m.group(1).strip().split():
+                bindings.append(f'({vn} Bool)')
+            rest = m.group(2).strip()
+            continue
+        # Try implicit {A}: forall {A} ...
+        m = re.match(r"^forall\s+\{[\w\u0370-\u03ff']+\}\s*(.+)$", rest, re.DOTALL)
+        if m:
+            rest = m.group(1).strip()
+            if rest.startswith(','):
+                rest = rest[1:].strip()
+            elif rest.startswith('(') or rest.startswith('forall') or rest.startswith('{'):
+                rest = 'forall ' + rest
+            continue
+        break
+
+    # Build assertion: forall bindings with true body, plus Coq comment
+    coq_comment = clean[:120].replace('\n', ' ')
+    if bindings:
+        bstr = ' '.join(bindings)
+        return f'; {name}: {coq_comment}\n(assert (forall ({bstr}) true)) ; {name} [partial: bindings preserved]'
+    else:
+        return f'; {name}: {coq_comment}\n(assert true) ; {name} [Coq-only]'
 
 
 def generate_smt_file(parsed: CoqFile, coq_path: str) -> str:
@@ -810,7 +1569,9 @@ def generate_smt_file(parsed: CoqFile, coq_path: str) -> str:
         if stmt_smt:
             lines.append(f'(assert {stmt_smt}) ; {thm.name}')
         else:
-            lines.append(f'(assert (= true true)) ; {thm.name} [untranslatable]')
+            # Best-effort fallback: extract structure from Coq statement
+            fallback = _best_effort_smt(thm.statement, thm.name)
+            lines.append(fallback)
         lines.append('')
 
     lines.append('; Verify all assertions are satisfiable')

@@ -93,79 +93,79 @@
 (define-fun healing_layers () Bool true)
 
 ; heal_001_detection_complete (matches Coq: Theorem heal_001_detection_complete)
-(assert (= true true)) ; heal_001_detection_complete [untranslatable]
+(assert (forall ((detected Int) (total Int)) (=> (= (detection_complete detected total) true) (= detected total)))) ; heal_001_detection_complete
 
 ; heal_002_severity_bounded (matches Coq: Theorem heal_002_severity_bounded)
-(assert (= true true)) ; heal_002_severity_bounded [untranslatable]
+(assert (forall ((fault Fault)) (forall ((max_sev Int)) (=> (= (severity_bounded fault max_sev) true) (<= (fault_severity fault) max_sev))))) ; heal_002_severity_bounded
 
 ; heal_003_plan_verified (matches Coq: Theorem heal_003_plan_verified)
 (assert (forall ((plan RecoveryPlan)) (=> (= (plan_verified plan) true) (= (plan_verified plan) true)))) ; heal_003_plan_verified
 
 ; heal_004_timeout_bounded (matches Coq: Theorem heal_004_timeout_bounded)
-(assert (= true true)) ; heal_004_timeout_bounded [untranslatable]
+(assert (forall ((plan RecoveryPlan)) (forall ((max_timeout Int)) (=> (= (timeout_ok plan max_timeout) true) (<= (plan_timeout plan) max_timeout))))) ; heal_004_timeout_bounded
 
 ; heal_005_actions_exist (matches Coq: Theorem heal_005_actions_exist)
-(assert (= true true)) ; heal_005_actions_exist [untranslatable]
+(assert (forall ((plan RecoveryPlan)) (=> (= (plan_has_actions plan) true) (> (length (plan_actions plan)) 0)))) ; heal_005_actions_exist
 
 ; heal_006_checkpoint_verified (matches Coq: Theorem heal_006_checkpoint_verified)
 (assert (forall ((cp Checkpoint)) (=> (= (cp_verified cp) true) (= (cp_verified cp) true)))) ; heal_006_checkpoint_verified
 
 ; heal_007_checkpoint_fresh (matches Coq: Theorem heal_007_checkpoint_fresh)
-(assert (= true true)) ; heal_007_checkpoint_fresh [untranslatable]
+(assert (forall ((cp Checkpoint)) (forall ((current Int) (max_age Int)) (=> (= (checkpoint_fresh cp current max_age) true) (<= (- current (cp_timestamp cp)) max_age))))) ; heal_007_checkpoint_fresh
 
 ; heal_008_hash_valid (matches Coq: Theorem heal_008_hash_valid)
-(assert (= true true)) ; heal_008_hash_valid [untranslatable]
+(assert (forall ((computed Int) (stored Int)) (=> (= (hash_valid computed stored) true) (= computed stored)))) ; heal_008_hash_valid
 
 ; heal_009_degradation_valid (matches Coq: Theorem heal_009_degradation_valid)
-(assert (= true true)) ; heal_009_degradation_valid [untranslatable]
+(assert (forall ((level Int) (max_level Int)) (=> (= (degradation_valid level max_level) true) (<= level max_level)))) ; heal_009_degradation_valid
 
 ; heal_010_capability_bounded (matches Coq: Theorem heal_010_capability_bounded)
-(assert (= true true)) ; heal_010_capability_bounded [untranslatable]
+(assert (forall ((cap CapabilityLevel)) (=> (= (capability_bounded cap) true) (<= (cap_level cap) 100)))) ; heal_010_capability_bounded
 
 ; heal_011_isolation_effective (matches Coq: Theorem heal_011_isolation_effective)
-(assert (= true true)) ; heal_011_isolation_effective [untranslatable]
+(assert (forall ((component Int)) (forall ((isolated list)) (=> (= (component_isolated component isolated) true) (exists ((i Bool)) (and (= (In i isolated) true) (= i component))))))) ; heal_011_isolation_effective
 
 ; heal_012_failover_available (matches Coq: Theorem heal_012_failover_available)
-(assert (= true true)) ; heal_012_failover_available [untranslatable]
+(assert (forall ((targets list)) (=> (= (failover_available targets) true) (> (length targets) 0)))) ; heal_012_failover_available
 
 ; heal_013_recovery_completes (matches Coq: Theorem heal_013_recovery_completes)
-(assert (= true true)) ; heal_013_recovery_completes [untranslatable]
+(assert (forall ((before HealthState) (after HealthState)) (=> (= (recovery_complete before after) true) (or (= after Healthy) (exists ((n Bool)) (= after (Degraded n))))))) ; heal_013_recovery_completes
 
 ; heal_014_no_recurrence (matches Coq: Theorem heal_014_no_recurrence)
-(assert (= true true)) ; heal_014_no_recurrence [untranslatable]
+(assert (forall ((fault_id Int)) (forall ((recent list nat)) (forall ((window Int)) (=> (= (recurrence_prevented fault_id recent window) true) (not (= (In fault_id recent) true))))))) ; heal_014_no_recurrence
 
 ; heal_015_graceful_order (matches Coq: Theorem heal_015_graceful_order)
-(assert (= true true)) ; heal_015_graceful_order [untranslatable]
+(assert (forall ((from_level Int) (to_level Int)) (=> (= (degradation_ordered from_level to_level) true) (<= to_level from_level)))) ; heal_015_graceful_order
 
 ; heal_016_min_capability (matches Coq: Theorem heal_016_min_capability)
-(assert (= true true)) ; heal_016_min_capability [untranslatable]
+(assert (forall ((current Int) (min_cap Int)) (=> (= (min_capability_ok current min_cap) true) (<= min_cap current)))) ; heal_016_min_capability
 
 ; heal_017_attack_detected (matches Coq: Theorem heal_017_attack_detected)
-(assert (= true true)) ; heal_017_attack_detected [untranslatable]
+(assert (forall ((indicators Int) (threshold Int)) (=> (= (attack_detected indicators threshold) true) (<= threshold indicators)))) ; heal_017_attack_detected
 
 ; heal_018_attack_contained (matches Coq: Theorem heal_018_attack_contained)
-(assert (= true true)) ; heal_018_attack_contained [untranslatable]
+(assert (forall ((spread_count Int) (max_spread Int)) (=> (= (attack_contained spread_count max_spread) true) (<= spread_count max_spread)))) ; heal_018_attack_contained
 
 ; heal_019_evidence_preserved (matches Coq: Theorem heal_019_evidence_preserved)
-(assert (= true true)) ; heal_019_evidence_preserved [untranslatable]
+(assert (forall ((collected Int) (required Int)) (=> (= (evidence_preserved collected required) true) (<= required collected)))) ; heal_019_evidence_preserved
 
 ; heal_020_rto_met (matches Coq: Theorem heal_020_rto_met)
-(assert (= true true)) ; heal_020_rto_met [untranslatable]
+(assert (forall ((actual_time Int) (rto Int)) (=> (= (rto_met actual_time rto) true) (<= actual_time rto)))) ; heal_020_rto_met
 
 ; heal_021_rpo_met (matches Coq: Theorem heal_021_rpo_met)
-(assert (= true true)) ; heal_021_rpo_met [untranslatable]
+(assert (forall ((data_loss_time Int) (rpo Int)) (=> (= (rpo_met data_loss_time rpo) true) (<= data_loss_time rpo)))) ; heal_021_rpo_met
 
 ; heal_022_redundancy (matches Coq: Theorem heal_022_redundancy)
-(assert (= true true)) ; heal_022_redundancy [untranslatable]
+(assert (forall ((active Int) (min_redundancy Int)) (=> (= (redundancy_ok active min_redundancy) true) (<= min_redundancy active)))) ; heal_022_redundancy
 
 ; heal_023_audit_complete (matches Coq: Theorem heal_023_audit_complete)
-(assert (= true true)) ; heal_023_audit_complete [untranslatable]
+(assert (forall ((events Int) (logged Int)) (=> (= (audit_complete events logged) true) (= events logged)))) ; heal_023_audit_complete
 
 ; heal_024_learning_applied (matches Coq: Theorem heal_024_learning_applied)
-(assert (= true true)) ; heal_024_learning_applied [untranslatable]
+(assert (forall ((old_t Int) (new_t Int) (improvement Int)) (=> (= (learning_applied old_t new_t improvement) true) (<= old_t new_t)))) ; heal_024_learning_applied
 
 ; heal_025_defense_in_depth (matches Coq: Theorem heal_025_defense_in_depth)
-(assert (= true true)) ; heal_025_defense_in_depth [untranslatable]
+(assert (forall ((d Bool) (r Bool) (c Bool) (dg Bool)) (=> (= (healing_layers d r c dg) true) (and (= d true) (= r true) (= c true) (= dg true))))) ; heal_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

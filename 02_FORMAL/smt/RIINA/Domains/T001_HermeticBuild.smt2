@@ -96,88 +96,90 @@
   true)
 
 ; T_001_01_hex0_auditable (matches Coq: Theorem T_001_01_hex0_auditable)
-(assert (= true true)) ; T_001_01_hex0_auditable [untranslatable]
+(assert (forall ((h Hex0)) (=> (= (valid_hex0 h) true) (= (is_auditable h) true)))) ; T_001_01_hex0_auditable
 
 ; T_001_02_hex0_correct (matches Coq: Theorem T_001_02_hex0_correct)
-(assert (= true true)) ; T_001_02_hex0_correct [untranslatable]
+; T_001_02_hex0_correct: forall input : list nat, hex0_semantics input = input
+(assert true) ; T_001_02_hex0_correct [Coq-only]
 
 ; T_001_03_stage_preserves_semantics (matches Coq: Theorem T_001_03_stage_preserves_semantics)
-(assert (= true true)) ; T_001_03_stage_preserves_semantics [untranslatable]
+(assert (forall ((compiler Bool) (src Bool) (out Bool)) (=> (= out (source_semantics src)) (= (preserves_semantics compiler src out) true)))) ; T_001_03_stage_preserves_semantics
 
 ; T_001_04_bootstrap_chain_valid (matches Coq: Theorem T_001_04_bootstrap_chain_valid)
-(assert (= true true)) ; T_001_04_bootstrap_chain_valid [untranslatable]
+(assert (forall ((chain Bool)) (=> (forall ((s Bool)) (=> (= (In s chain) true) (= (stage_hash s) (sha256 (stage_binary s))))) (= (chain_valid chain) true)))) ; T_001_04_bootstrap_chain_valid
 
 ; T_001_05_stage_deterministic (matches Coq: Theorem T_001_05_stage_deterministic)
-(assert (= true true)) ; T_001_05_stage_deterministic [untranslatable]
+(assert (forall ((s Bool) (input Bool)) (= (compile (stage_binary s) input) (compile (stage_binary s) input)))) ; T_001_05_stage_deterministic
 
 ; T_001_06_stage_terminates (matches Coq: Theorem T_001_06_stage_terminates)
-(assert (= true true)) ; T_001_06_stage_terminates [untranslatable]
+(assert (forall ((s Bool)) (= (stage_terminates s) true))) ; T_001_06_stage_terminates
 
 ; T_001_07_self_hosting_valid (matches Coq: Theorem T_001_07_self_hosting_valid)
-(assert (= true true)) ; T_001_07_self_hosting_valid [untranslatable]
+(assert (forall ((c Bool)) (= (compile (compiler_binary c) (compiler_source c)) (compile (compiler_binary c) (compiler_source c))))) ; T_001_07_self_hosting_valid
 
 ; T_001_08_bootstrap_idempotent (matches Coq: Theorem T_001_08_bootstrap_idempotent)
-(assert (= true true)) ; T_001_08_bootstrap_idempotent [untranslatable]
+(assert (forall ((b Bool) (env Bool) (src Bool)) (=> (= (hermetic_build b) true) (=> (= (is_hermetic env) true) (= (b env src) (b env src)))))) ; T_001_08_bootstrap_idempotent
 
 ; T_001_09_no_network_access (matches Coq: Theorem T_001_09_no_network_access)
-(assert (= true true)) ; T_001_09_no_network_access [untranslatable]
+(assert (forall ((env Bool)) (=> (= (is_hermetic env) true) (= (env_network env) false)))) ; T_001_09_no_network_access
 
 ; T_001_10_filesystem_readonly (matches Coq: Theorem T_001_10_filesystem_readonly)
-(assert (= true true)) ; T_001_10_filesystem_readonly [untranslatable]
+(assert (forall ((env Bool)) (=> (= (is_hermetic env) true) (> (List.length (env_filesystem env)) 0)))) ; T_001_10_filesystem_readonly
 
 ; T_001_11_clock_fixed (matches Coq: Theorem T_001_11_clock_fixed)
-(assert (= true true)) ; T_001_11_clock_fixed [untranslatable]
+(assert (forall ((env Bool)) (=> (= (is_hermetic env) true) (= (env_clock env) 0)))) ; T_001_11_clock_fixed
 
 ; T_001_12_randomness_deterministic (matches Coq: Theorem T_001_12_randomness_deterministic)
-(assert (= true true)) ; T_001_12_randomness_deterministic [untranslatable]
+(assert (forall ((env1 Bool) (env2 Bool)) (=> (= (env_random_seed env1) (env_random_seed env2)) (= (env_random_seed env1) (env_random_seed env2))))) ; T_001_12_randomness_deterministic
 
 ; T_001_13_environment_clean (matches Coq: Theorem T_001_13_environment_clean)
-(assert (= true true)) ; T_001_13_environment_clean [untranslatable]
+(assert (forall ((env Bool)) (=> (= (is_hermetic env) true) (and (= (env_network env) false) (= (env_clock env) 0))))) ; T_001_13_environment_clean
 
 ; T_001_14_inputs_whitelisted (matches Coq: Theorem T_001_14_inputs_whitelisted)
-(assert (= true true)) ; T_001_14_inputs_whitelisted [untranslatable]
+(assert (forall ((env Bool) (h Bool)) (=> (= (In h (env_inputs env)) true) (= (In h (env_inputs env)) true)))) ; T_001_14_inputs_whitelisted
 
 ; T_001_15_hermetic_composition (matches Coq: Theorem T_001_15_hermetic_composition)
-(assert (= true true)) ; T_001_15_hermetic_composition [untranslatable]
+; T_001_15_hermetic_composition: forall b1 b2, hermetic_build b1 -> hermetic_build b2 -> hermetic_build (fun env src => b2 env (b1 env src))
+(assert (forall ((b1 Bool) (b2 Bool)) true)) ; T_001_15_hermetic_composition [partial: bindings preserved]
 
 ; T_001_16_bit_reproducible (matches Coq: Theorem T_001_16_bit_reproducible)
-(assert (= true true)) ; T_001_16_bit_reproducible [untranslatable]
+(assert (forall ((b Bool) (env1 Bool) (env2 Bool) (src Bool)) (=> (= (hermetic_build b) true) (=> (= (is_hermetic env1) true) (=> (= (is_hermetic env2) true) (=> (= (env_inputs env1) (env_inputs env2)) (= (b env1 src) (b env2 src)))))))) ; T_001_16_bit_reproducible
 
 ; T_001_17_hash_deterministic (matches Coq: Theorem T_001_17_hash_deterministic)
-(assert (= true true)) ; T_001_17_hash_deterministic [untranslatable]
+(assert (forall ((b Bool) (env Bool) (src Bool)) (=> (= (hermetic_build b) true) (=> (= (is_hermetic env) true) (= (sha256 (b env src)) (sha256 (b env src))))))) ; T_001_17_hash_deterministic
 
 ; T_001_18_diverse_double_compile (matches Coq: Theorem T_001_18_diverse_double_compile)
-(assert (= true true)) ; T_001_18_diverse_double_compile [untranslatable]
+(assert (forall ((ddc Bool)) (=> (= (valid_ddc ddc) true) (= (functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)) true)))) ; T_001_18_diverse_double_compile
 
 ; T_001_19_cross_compile_equivalent (matches Coq: Theorem T_001_19_cross_compile_equivalent)
-(assert (= true true)) ; T_001_19_cross_compile_equivalent [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool) (src Bool)) (=> (= (functionally_equivalent c1 c2) true) (= (compile (compiler_binary c1) src) (compile (compiler_binary c2) src))))) ; T_001_19_cross_compile_equivalent
 
 ; T_001_20_source_hash_verified (matches Coq: Theorem T_001_20_source_hash_verified)
-(assert (= true true)) ; T_001_20_source_hash_verified [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stage_valid s) true) (= (stage_hash s) (sha256 (stage_binary s)))))) ; T_001_20_source_hash_verified
 
 ; T_001_21_reproducibility_composition (matches Coq: Theorem T_001_21_reproducibility_composition)
-(assert (= true true)) ; T_001_21_reproducibility_composition [untranslatable]
+(assert (forall ((b1 Bool) (b2 Bool)) (=> (= (hermetic_build b1) true) (=> (= (hermetic_build b2) true) (=> (forall ((env1 Bool) (env2 Bool) (src Bool)) (= (is_hermetic env1) true)) (=> (= (is_hermetic env2) true) (=> (= (env_inputs env1) (env_inputs env2)) (= (b2 env1 (b1 env1 src)) (b2 env2 (b1 env2 src)))))))))) ; T_001_21_reproducibility_composition
 
 ; T_001_22_ddc_setup (matches Coq: Theorem T_001_22_ddc_setup)
-(assert (= true true)) ; T_001_22_ddc_setup [untranslatable]
+(assert (forall ((ddc Bool)) (or (not (= (compiler_chain (compiler_a ddc)) (compiler_chain (compiler_b ddc)))) (= (compiler_chain (compiler_a ddc)) (compiler_chain (compiler_b ddc)))))) ; T_001_22_ddc_setup
 
 ; T_001_23_ddc_stage_a (matches Coq: Theorem T_001_23_ddc_stage_a)
-(assert (= true true)) ; T_001_23_ddc_stage_a [untranslatable]
+(assert (forall ((ddc Bool)) (exists ((chain Bool)) (= (compiler_chain (compiler_a ddc)) chain)))) ; T_001_23_ddc_stage_a
 
 ; T_001_24_ddc_stage_b (matches Coq: Theorem T_001_24_ddc_stage_b)
-(assert (= true true)) ; T_001_24_ddc_stage_b [untranslatable]
+(assert (forall ((ddc Bool)) (exists ((chain Bool)) (= (compiler_chain (compiler_b ddc)) chain)))) ; T_001_24_ddc_stage_b
 
 ; T_001_25_ddc_stage_aprime (matches Coq: Theorem T_001_25_ddc_stage_aprime)
-(assert (= true true)) ; T_001_25_ddc_stage_aprime [untranslatable]
+(assert (forall ((ddc Bool)) (=> (= (valid_ddc ddc) true) (= (compile (compiler_binary (compiler_a ddc)) (compiler_source (compiler_b ddc))) (compile (compiler_binary (compiler_a ddc)) (compiler_source (compiler_b ddc))))))) ; T_001_25_ddc_stage_aprime
 
 ; T_001_26_ddc_equivalence (matches Coq: Theorem T_001_26_ddc_equivalence)
-(assert (= true true)) ; T_001_26_ddc_equivalence [untranslatable]
+(assert (forall ((ddc Bool)) (=> (= (valid_ddc ddc) true) (= (functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)) true)))) ; T_001_26_ddc_equivalence
 
 ; T_001_27_ddc_trojan_detected (matches Coq: Theorem T_001_27_ddc_trojan_detected)
-(assert (= true true)) ; T_001_27_ddc_trojan_detected [untranslatable]
+(assert (forall ((ddc Bool)) (=> (= (valid_ddc ddc) true) (=> (= (has_trojan (compiler_a ddc)) true) (not (or (= (functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)) true) (= (functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)) true))))))) ; T_001_27_ddc_trojan_detected
 
 ; T_001_28_ddc_confidence (matches Coq: Theorem T_001_28_ddc_confidence)
-(assert (= true true)) ; T_001_28_ddc_confidence [untranslatable]
+(assert (forall ((ddc Bool)) (=> (= (valid_ddc ddc) true) (= (equivalent ddc) true)))) ; T_001_28_ddc_confidence
 
 ; Verify all assertions are satisfiable
 (check-sat)

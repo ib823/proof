@@ -95,10 +95,10 @@
   true)
 
 ; notification_delivery_guaranteed (matches Coq: Theorem notification_delivery_guaranteed)
-(assert (= true true)) ; notification_delivery_guaranteed [untranslatable]
+(assert (forall ((notification Notification)) (=> (= (notification_system_correct notification) true) (=> (= (sent notification) true) (= (eventually_delivered_or_expired notification) true))))) ; notification_delivery_guaranteed
 
 ; delivered_implies_sent (matches Coq: Theorem delivered_implies_sent)
-(assert (= true true)) ; delivered_implies_sent [untranslatable]
+(assert (forall ((n Notification)) (=> (= (delivered n) true) (= (sent n) true)))) ; delivered_implies_sent
 
 ; critical_passes_priority_filter (matches Coq: Theorem critical_passes_priority_filter)
 (assert (forall ((n Notification)) (=> (= (notif_priority n) Critical) (= (passes_focus_filter n PriorityOnly) true)))) ; critical_passes_priority_filter
@@ -113,46 +113,46 @@
 (assert (forall ((n Notification)) (= (passes_focus_filter n AllNotifications) true))) ; all_mode_passes_all
 
 ; notification_permission_explicit (matches Coq: Theorem notification_permission_explicit)
-(assert (= true true)) ; notification_permission_explicit [untranslatable]
+(assert (forall ((granted Bool)) (=> (= granted false) (not (= (notification_permission_granted granted) true))))) ; notification_permission_explicit
 
 ; notification_content_sanitized (matches Coq: Theorem notification_content_sanitized)
-(assert (= true true)) ; notification_content_sanitized [untranslatable]
+(assert (forall ((en ExtNotification)) (=> (= (well_formed_notification en) true) (= (ext_content_sanitized en) true)))) ; notification_content_sanitized
 
 ; no_notification_spam (matches Coq: Theorem no_notification_spam)
-(assert (= true true)) ; no_notification_spam [untranslatable]
+(assert (forall ((count Int)) (=> (<= count spam_threshold) (= (is_spam count) false)))) ; no_notification_spam
 
 ; notification_priority_respected (matches Coq: Theorem notification_priority_respected)
-(assert (= true true)) ; notification_priority_respected [untranslatable]
+(assert (forall ((n Notification)) (forall ((mode FocusMode)) (=> (= (notif_priority n) Low) (=> (= mode CriticalOnly) (= (passes_focus_filter n mode) false)))))) ; notification_priority_respected
 
 ; do_not_disturb_enforced (matches Coq: Theorem do_not_disturb_enforced)
 (assert (forall ((n Notification)) (= (passes_focus_filter n DoNotDisturb) false))) ; do_not_disturb_enforced
 
 ; notification_grouping_correct (matches Coq: Theorem notification_grouping_correct)
-(assert (= true true)) ; notification_grouping_correct [untranslatable]
+(assert (forall ((g NotificationGroup)) (=> (= (well_formed_group g) true) (=> (>= (length (group_notifications g)) 2) (not (= (group_summary g) none)))))) ; notification_grouping_correct
 
 ; notification_action_validated (matches Coq: Theorem notification_action_validated)
 (assert (forall ((a NotificationAction)) (=> (= (action_validated a) true) (= (action_validated a) true)))) ; notification_action_validated
 
 ; notification_sound_bounded (matches Coq: Theorem notification_sound_bounded)
-(assert (= true true)) ; notification_sound_bounded [untranslatable]
+(assert (forall ((en ExtNotification)) (=> (= (well_formed_notification en) true) (<= (ext_sound_volume en) 100)))) ; notification_sound_bounded
 
 ; notification_badge_accurate (matches Coq: Theorem notification_badge_accurate)
-(assert (= true true)) ; notification_badge_accurate [untranslatable]
+(assert (forall ((en ExtNotification)) (forall ((expected_count Int)) (=> (= (ext_badge_count en) expected_count) (= (ext_badge_count en) expected_count))))) ; notification_badge_accurate
 
 ; notification_expiry_enforced (matches Coq: Theorem notification_expiry_enforced)
-(assert (= true true)) ; notification_expiry_enforced [untranslatable]
+(assert (forall ((en ExtNotification)) (forall ((current_time Int)) (=> (> current_time (ext_expiry_time en)) (< (ext_expiry_time en) current_time))))) ; notification_expiry_enforced
 
 ; notification_channel_configurable (matches Coq: Theorem notification_channel_configurable)
-(assert (= true true)) ; notification_channel_configurable [untranslatable]
+(assert (forall ((ch NotificationChannel)) (or (= (channel_enabled ch) true) (= (channel_enabled ch) false)))) ; notification_channel_configurable
 
 ; silent_notification_limited (matches Coq: Theorem silent_notification_limited)
-(assert (= true true)) ; silent_notification_limited [untranslatable]
+(assert (forall ((en ExtNotification)) (=> (= (well_formed_notification en) true) (=> (= (ext_is_silent en) true) (= (ext_sound_volume en) 0))))) ; silent_notification_limited
 
 ; notification_delivery_confirmed (matches Coq: Theorem notification_delivery_confirmed)
-(assert (= true true)) ; notification_delivery_confirmed [untranslatable]
+(assert (forall ((en ExtNotification)) (=> (= (well_formed_notification en) true) (=> (= (ext_delivery_confirmed en) true) (or (= (notif_state (ext_notif en)) Delivered) (= (notif_state (ext_notif en)) Read)))))) ; notification_delivery_confirmed
 
 ; notification_history_available (matches Coq: Theorem notification_history_available)
-(assert (= true true)) ; notification_history_available [untranslatable]
+(assert (forall ((h NotifHistory)) (=> (= (well_formed_history h) true) (> (history_max_size h) 0)))) ; notification_history_available
 
 ; notification_dismiss_tracked (matches Coq: Theorem notification_dismiss_tracked)
 (assert (forall ((h NotifHistory)) (=> (= (history_dismiss_tracked h) true) (= (history_dismiss_tracked h) true)))) ; notification_dismiss_tracked

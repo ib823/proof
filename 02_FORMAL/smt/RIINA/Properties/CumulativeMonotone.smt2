@@ -8,19 +8,19 @@
 (set-option :produce-models true)
 
 ; val_rel_le_mono_step (matches Coq: Theorem val_rel_le_mono_step)
-(assert (= true true)) ; val_rel_le_mono_step [untranslatable]
+(assert (forall ((n Bool) (m Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (<= m n) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le m Σ T v1 v2) true))))) ; val_rel_le_mono_step
 
 ; val_rel_le_mono_store (matches Coq: Lemma val_rel_le_mono_store)
-(assert (= true true)) ; val_rel_le_mono_store [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (Σ' Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (store_ty_extends Σ Σ') true) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le n Σ' T v1 v2) true))))) ; val_rel_le_mono_store
 
 ; val_rel_le_mono (matches Coq: Theorem val_rel_le_mono)
-(assert (= true true)) ; val_rel_le_mono [untranslatable]
+(assert (forall ((n Bool) (m Bool) (Σ Bool) (Σ' Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (<= m n) (=> (= (store_ty_extends Σ Σ') true) (=> (= (val_rel_le n Σ T v1 v2) true) (= (val_rel_le m Σ' T v1 v2) true)))))) ; val_rel_le_mono
 
 ; val_rel_le_step_down (matches Coq: Lemma val_rel_le_step_down)
-(assert (= true true)) ; val_rel_le_step_down [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_le (+ n 1) Σ T v1 v2) true) (= (val_rel_le n Σ T v1 v2) true)))) ; val_rel_le_step_down
 
 ; store_rel_le_mono_step (matches Coq: Lemma store_rel_le_mono_step)
-(assert (= true true)) ; store_rel_le_mono_step [untranslatable]
+(assert (forall ((n Bool) (m Bool) (Σ Bool) (st1 Bool) (st2 Bool)) (=> (<= m n) (=> (= (store_rel_le n Σ st1 st2) true) (= (store_rel_le m Σ st1 st2) true))))) ; store_rel_le_mono_step
 
 ; Verify all assertions are satisfiable
 (check-sat)

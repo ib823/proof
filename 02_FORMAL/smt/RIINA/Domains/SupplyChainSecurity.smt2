@@ -88,112 +88,112 @@
 (assert (forall ((h Hash)) (= (hash_eq h h) true))) ; hash_eq_refl
 
 ; hash_eq_sym (matches Coq: Lemma hash_eq_sym)
-(assert (= true true)) ; hash_eq_sym [untranslatable]
+(assert (forall ((h1 Hash) (h2 Hash)) (=> (= (hash_eq h1 h2) true) (= (hash_eq h2 h1) true)))) ; hash_eq_sym
 
 ; hash_eq_implies_eq (matches Coq: Lemma hash_eq_implies_eq)
-(assert (= true true)) ; hash_eq_implies_eq [untranslatable]
+(assert (forall ((h1 Hash) (h2 Hash)) (=> (= (hash_eq h1 h2) true) (= h1 h2)))) ; hash_eq_implies_eq
 
 ; bool_impl (matches Coq: Lemma bool_impl)
-(assert (= true true)) ; bool_impl [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= a true) (=> (=> (= a true) (= b true)) (= b true))))) ; bool_impl
 
 ; sup_001_dependency_compromise_mitigated (matches Coq: Theorem sup_001_dependency_compromise_mitigated)
-(assert (= true true)) ; sup_001_dependency_compromise_mitigated [untranslatable]
+(assert (forall ((sa SignedArtifact)) (=> (= (sa_verified sa) true) (= DependencyMitigated true)))) ; sup_001_dependency_compromise_mitigated
 
 ; sup_001_hash_signature_integrity (matches Coq: Theorem sup_001_hash_signature_integrity)
-(assert (= true true)) ; sup_001_hash_signature_integrity [untranslatable]
+(assert (forall ((sa SignedArtifact)) (forall ((expected_hash Hash)) (=> (= (sa_verified sa) true) (=> (= (hash_eq (sa_content_hash sa) expected_hash) true) (= (sa_content_hash sa) expected_hash)))))) ; sup_001_hash_signature_integrity
 
 ; sup_002_typosquatting_mitigated (matches Coq: Theorem sup_002_typosquatting_mitigated)
-(assert (= true true)) ; sup_002_typosquatting_mitigated [untranslatable]
+(assert (forall ((vp VerifiedPackage)) (=> (= (vp_name_verified vp) true) (=> (= (vp_in_allowlist vp) true) (= TyposquatMitigated true))))) ; sup_002_typosquatting_mitigated
 
 ; sup_002_name_verification_canonical (matches Coq: Theorem sup_002_name_verification_canonical)
-(assert (= true true)) ; sup_002_name_verification_canonical [untranslatable]
+(assert (forall ((vp VerifiedPackage)) (=> (= (vp_name_verified vp) true) (=> (= (name_eq (vp_name vp) (vp_canonical_name vp)) true) (= (vp_name vp) (vp_canonical_name vp)))))) ; sup_002_name_verification_canonical
 
 ; sup_003_dependency_confusion_mitigated (matches Coq: Theorem sup_003_dependency_confusion_mitigated)
-(assert (= true true)) ; sup_003_dependency_confusion_mitigated [untranslatable]
+(assert (forall ((sp ScopedPackage)) (=> (= (sp_namespace_verified sp) true) (=> (= (sp_internal_registry sp) true) (= ConfusionMitigated true))))) ; sup_003_dependency_confusion_mitigated
 
 ; sup_003_internal_registry_isolation (matches Coq: Theorem sup_003_internal_registry_isolation)
-(assert (= true true)) ; sup_003_internal_registry_isolation [untranslatable]
+(assert (forall ((sp1 ScopedPackage) (sp2 ScopedPackage)) (=> (= (sp_internal_registry sp1) true) (=> (= (sp_internal_registry sp2) true) (=> (not (= (sp_namespace sp1) (sp_namespace sp2))) (=> (= (sp_name sp1) (sp_name sp2)) (= ConfusionMitigated true))))))) ; sup_003_internal_registry_isolation
 
 ; sup_004_build_compromise_mitigated (matches Coq: Theorem sup_004_build_compromise_mitigated)
-(assert (= true true)) ; sup_004_build_compromise_mitigated [untranslatable]
+(assert (forall ((rb ReproducibleBuild)) (=> (= (rb_hashes_match rb) true) (=> (= (hash_eq (rb_builder1_hash rb) (rb_builder2_hash rb)) true) (= (rb_builder1_hash rb) (rb_builder2_hash rb)))))) ; sup_004_build_compromise_mitigated
 
 ; sup_004_reproducible_detection (matches Coq: Theorem sup_004_reproducible_detection)
-(assert (= true true)) ; sup_004_reproducible_detection [untranslatable]
+(assert (forall ((rb ReproducibleBuild)) (=> (= (rb_hashes_match rb) true) (= BuildMitigated true)))) ; sup_004_reproducible_detection
 
 ; sup_005_package_manager_mitigated (matches Coq: Theorem sup_005_package_manager_mitigated)
-(assert (= true true)) ; sup_005_package_manager_mitigated [untranslatable]
+(assert (forall ((tuf TUFPackage)) (=> (= (tuf_root_signed tuf) true) (=> (= (tuf_targets_signed tuf) true) (=> (= (tuf_snapshot_signed tuf) true) (=> (= (tuf_timestamp_signed tuf) true) (=> (= (tuf_threshold_met tuf) true) (= PackageManagerMitigated true)))))))) ; sup_005_package_manager_mitigated
 
 ; sup_005_tuf_threshold_security (matches Coq: Theorem sup_005_tuf_threshold_security)
-(assert (= true true)) ; sup_005_tuf_threshold_security [untranslatable]
+(assert (forall ((tuf TUFPackage)) (=> (= (tuf_threshold_met tuf) true) (=> (= (tuf_root_signed tuf) true) (= PackageManagerMitigated true))))) ; sup_005_tuf_threshold_security
 
 ; sup_006_firmware_mitigated (matches Coq: Theorem sup_006_firmware_mitigated)
-(assert (= true true)) ; sup_006_firmware_mitigated [untranslatable]
+(assert (forall ((fw VerifiedFirmware)) (=> (= (fw_signature_valid fw) true) (=> (= (fw_rollback_protected fw) true) (= FirmwareMitigated true))))) ; sup_006_firmware_mitigated
 
 ; sup_006_firmware_integrity (matches Coq: Theorem sup_006_firmware_integrity)
-(assert (= true true)) ; sup_006_firmware_integrity [untranslatable]
+(assert (forall ((fw VerifiedFirmware)) (forall ((expected_hash Hash)) (=> (= (fw_signature_valid fw) true) (=> (= (hash_eq (fw_hash fw) expected_hash) true) (= (fw_hash fw) expected_hash)))))) ; sup_006_firmware_integrity
 
 ; sup_007_hardware_mitigated (matches Coq: Theorem sup_007_hardware_mitigated)
-(assert (= true true)) ; sup_007_hardware_mitigated [untranslatable]
+(assert (forall ((hw HardwareAttestation)) (=> (= (hw_tpm_present hw) true) (=> (= (hw_secure_boot hw) true) (=> (= (hw_chain_valid hw) true) (= HardwareMitigated true)))))) ; sup_007_hardware_mitigated
 
 ; sup_007_attestation_chain_security (matches Coq: Theorem sup_007_attestation_chain_security)
-(assert (= true true)) ; sup_007_attestation_chain_security [untranslatable]
+(assert (forall ((hw HardwareAttestation)) (=> (= (hw_chain_valid hw) true) (=> (= (hw_tpm_present hw) true) (=> (> (length (hw_attestation_chain hw)) 0) (= HardwareMitigated true)))))) ; sup_007_attestation_chain_security
 
 ; sup_008_third_party_mitigated (matches Coq: Theorem sup_008_third_party_mitigated)
-(assert (= true true)) ; sup_008_third_party_mitigated [untranslatable]
+(assert (forall ((v VendorVerification)) (=> (= (vendor_cert_valid v) true) (=> (= (vendor_audit_passed v) true) (=> (= (vendor_in_approved_list v) true) (= ThirdPartyMitigated true)))))) ; sup_008_third_party_mitigated
 
 ; sup_008_vendor_audit_security (matches Coq: Theorem sup_008_vendor_audit_security)
-(assert (= true true)) ; sup_008_vendor_audit_security [untranslatable]
+(assert (forall ((v VendorVerification)) (=> (= (vendor_audit_passed v) true) (=> (= (vendor_in_approved_list v) true) (= ThirdPartyMitigated true))))) ; sup_008_vendor_audit_security
 
 ; sup_009_watering_hole_mitigated (matches Coq: Theorem sup_009_watering_hole_mitigated)
-(assert (= true true)) ; sup_009_watering_hole_mitigated [untranslatable]
+(assert (forall ((ns NetworkSegmentation)) (=> (= (ns_segments_isolated ns) true) (= WateringHoleMitigated true)))) ; sup_009_watering_hole_mitigated
 
 ; sup_009_segment_isolation_lateral (matches Coq: Theorem sup_009_segment_isolation_lateral)
-(assert (= true true)) ; sup_009_segment_isolation_lateral [untranslatable]
+(assert (forall ((ns NetworkSegmentation)) (=> (= (ns_segments_isolated ns) true) (=> (not (= (ns_source_segment ns) (ns_dest_segment ns))) (=> (= (pair_in_list (mk-tuple (ns_source_segment ns) (ns_dest_segment ns)) (ns_firewall_rules ns)) false) (= WateringHoleMitigated true)))))) ; sup_009_segment_isolation_lateral
 
 ; sup_010_update_attack_mitigated (matches Coq: Theorem sup_010_update_attack_mitigated)
-(assert (= true true)) ; sup_010_update_attack_mitigated [untranslatable]
+(assert (forall ((upd SignedUpdate)) (=> (= (upd_signature_valid upd) true) (=> (= (upd_version_incremented upd) true) (= UpdateMitigated true))))) ; sup_010_update_attack_mitigated
 
 ; sup_010_version_rollback_prevention (matches Coq: Theorem sup_010_version_rollback_prevention)
-(assert (= true true)) ; sup_010_version_rollback_prevention [untranslatable]
+(assert (forall ((upd SignedUpdate)) (=> (= (upd_signature_valid upd) true) (=> (> (upd_new_version upd) (upd_current_version upd)) (= UpdateMitigated true))))) ; sup_010_version_rollback_prevention
 
 ; sup_011_source_compromise_mitigated (matches Coq: Theorem sup_011_source_compromise_mitigated)
-(assert (= true true)) ; sup_011_source_compromise_mitigated [untranslatable]
+(assert (forall ((sc SignedCode)) (=> (= (code_signature_valid sc) true) (=> (= (code_review_approved sc) true) (= SourceMitigated true))))) ; sup_011_source_compromise_mitigated
 
 ; sup_011_multi_reviewer_security (matches Coq: Theorem sup_011_multi_reviewer_security)
-(assert (= true true)) ; sup_011_multi_reviewer_security [untranslatable]
+(assert (forall ((sc SignedCode)) (=> (= (code_signature_valid sc) true) (=> (= (code_review_approved sc) true) (=> (>= (code_reviewer_count sc) (code_min_reviewers sc)) (= SourceMitigated true)))))) ; sup_011_multi_reviewer_security
 
 ; sup_012_compiler_attack_mitigated (matches Coq: Theorem sup_012_compiler_attack_mitigated)
-(assert (= true true)) ; sup_012_compiler_attack_mitigated [untranslatable]
+(assert (forall ((ddc DDCBuild)) (=> (= (ddc_compilers_different ddc) true) (=> (= (ddc_outputs_match ddc) true) (= CompilerMitigated true))))) ; sup_012_compiler_attack_mitigated
 
 ; sup_012_ddc_output_verification (matches Coq: Theorem sup_012_ddc_output_verification)
-(assert (= true true)) ; sup_012_ddc_output_verification [untranslatable]
+(assert (forall ((ddc DDCBuild)) (=> (= (ddc_compilers_different ddc) true) (=> (= (ddc_outputs_match ddc) true) (=> (= (hash_eq (ddc_output1_hash ddc) (ddc_output2_hash ddc)) true) (= (ddc_output1_hash ddc) (ddc_output2_hash ddc))))))) ; sup_012_ddc_output_verification
 
 ; sup_013_binary_backdoor_mitigated (matches Coq: Theorem sup_013_binary_backdoor_mitigated)
-(assert (= true true)) ; sup_013_binary_backdoor_mitigated [untranslatable]
+(assert (forall ((bv BinaryVerification)) (=> (= (bin_reproducible bv) true) (= BinaryMitigated true)))) ; sup_013_binary_backdoor_mitigated
 
 ; sup_013_binary_hash_verification (matches Coq: Theorem sup_013_binary_hash_verification)
-(assert (= true true)) ; sup_013_binary_hash_verification [untranslatable]
+(assert (forall ((bv BinaryVerification)) (=> (= (bin_reproducible bv) true) (=> (= (hash_eq (bin_claimed_hash bv) (bin_reproduced_hash bv)) true) (= (bin_claimed_hash bv) (bin_reproduced_hash bv)))))) ; sup_013_binary_hash_verification
 
 ; sup_014_certificate_compromise_mitigated (matches Coq: Theorem sup_014_certificate_compromise_mitigated)
-(assert (= true true)) ; sup_014_certificate_compromise_mitigated [untranslatable]
+(assert (forall ((ct CertificateTransparency)) (=> (= (ct_in_log ct) true) (=> (= (ct_sct_valid ct) true) (=> (= (ct_log_consistent ct) true) (= CertificateMitigated true)))))) ; sup_014_certificate_compromise_mitigated
 
 ; sup_014_ct_log_verification (matches Coq: Theorem sup_014_ct_log_verification)
-(assert (= true true)) ; sup_014_ct_log_verification [untranslatable]
+(assert (forall ((ct CertificateTransparency)) (=> (= (ct_in_log ct) true) (=> (= (ct_sct_valid ct) true) (= CertificateMitigated true))))) ; sup_014_ct_log_verification
 
 ; sup_015_developer_compromise_mitigated (matches Coq: Theorem sup_015_developer_compromise_mitigated)
-(assert (= true true)) ; sup_015_developer_compromise_mitigated [untranslatable]
+(assert (forall ((ac AccessControl)) (=> (= (ac_mfa_enabled ac) true) (=> (= (ac_role_verified ac) true) (=> (= (ac_access_logged ac) true) (= DeveloperMitigated true)))))) ; sup_015_developer_compromise_mitigated
 
 ; sup_015_mfa_security (matches Coq: Theorem sup_015_mfa_security)
-(assert (= true true)) ; sup_015_mfa_security [untranslatable]
+(assert (forall ((ac AccessControl)) (=> (= (ac_mfa_enabled ac) true) (=> (= (ac_role_verified ac) true) (= DeveloperMitigated true))))) ; sup_015_mfa_security
 
 ; sup_016_malware_mitigated (matches Coq: Theorem sup_016_malware_mitigated)
-(assert (= true true)) ; sup_016_malware_mitigated [untranslatable]
+(assert (forall ((di DependencyIsolation)) (=> (= (di_sandboxed di) true) (=> (= (di_network_restricted di) true) (=> (= (di_filesystem_restricted di) true) (= MalwareMitigated true)))))) ; sup_016_malware_mitigated
 
 ; sup_016_isolation_level_security (matches Coq: Theorem sup_016_isolation_level_security)
-(assert (= true true)) ; sup_016_isolation_level_security [untranslatable]
+(assert (forall ((di DependencyIsolation)) (=> (= (di_sandboxed di) true) (=> (= (isolation_sufficient (di_isolation_level di)) true) (= MalwareMitigated true))))) ; sup_016_isolation_level_security
 
 ; supply_chain_full_security (matches Coq: Theorem supply_chain_full_security)
-(assert (= true true)) ; supply_chain_full_security [untranslatable]
+(assert (=> (= DependencyMitigated true) (=> (= TyposquatMitigated true) (=> (= ConfusionMitigated true) (=> (= BuildMitigated true) (=> (= PackageManagerMitigated true) (=> (= FirmwareMitigated true) (=> (= HardwareMitigated true) (=> (= ThirdPartyMitigated true) (=> (= WateringHoleMitigated true) (=> (= UpdateMitigated true) (=> (= SourceMitigated true) (=> (= CompilerMitigated true) (=> (= BinaryMitigated true) (=> (= CertificateMitigated true) (=> (= DeveloperMitigated true) (=> (= MalwareMitigated true) (= FullSupplyChainSecurity true)))))))))))))))))) ; supply_chain_full_security
 
 ; Verify all assertions are satisfiable
 (check-sat)

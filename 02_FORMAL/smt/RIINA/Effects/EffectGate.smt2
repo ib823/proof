@@ -12,7 +12,7 @@
   true)
 
 ; gate_enforcement (matches Coq: Theorem gate_enforcement)
-(assert (= true true)) ; gate_enforcement [untranslatable]
+(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff_allowed Bool) (eff_used Bool)) (=> (= (has_type_full G S D e T eff_used) true) (=> (<= (effect_level eff_used) (effect_level eff_allowed)) (= (performs_within e eff_allowed) true))))) ; gate_enforcement
 
 ; Verify all assertions are satisfiable
 (check-sat)

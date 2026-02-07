@@ -122,10 +122,10 @@
   true)
 
 ; layer_eqb_refl (matches Coq: Lemma layer_eqb_refl)
-(assert (= true true)) ; layer_eqb_refl [untranslatable]
+(assert (forall ((l Bool)) (= (layer_eqb l l) true))) ; layer_eqb_refl
 
 ; layer_eqb_eq (matches Coq: Lemma layer_eqb_eq)
-(assert (= true true)) ; layer_eqb_eq [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (and (=> (= (layer_eqb l1 l2) true) (= l1 l2)) (=> (= l1 l2) (= (layer_eqb l1 l2) true))))) ; layer_eqb_eq
 
 ; layer_adjacent_L0_L1 (matches Coq: Lemma layer_adjacent_L0_L1)
 (assert (= (layer_adjacent L0_Physics L1_Silicon) true)) ; layer_adjacent_L0_L1
@@ -149,22 +149,26 @@
 (assert (= (layer_adjacent L6_App L7_UX) true)) ; layer_adjacent_L6_L7
 
 ; sp_eqb_refl (matches Coq: Lemma sp_eqb_refl)
-(assert (= true true)) ; sp_eqb_refl [untranslatable]
+(assert (forall ((sp Bool)) (= (sp_eqb sp sp) true))) ; sp_eqb_refl
 
 ; existsb_app (matches Coq: Lemma existsb_app)
-(assert (= true true)) ; existsb_app [untranslatable]
+; existsb_app: forall {A} (f : A -> bool) l1 l2, existsb f (l1 ++ l2) = existsb f l1 || existsb f l2
+(assert true) ; existsb_app [Coq-only]
 
 ; existsb_cons_true (matches Coq: Lemma existsb_cons_true)
-(assert (= true true)) ; existsb_cons_true [untranslatable]
+; existsb_cons_true: forall {A} (f : A -> bool) x xs, f x = true -> existsb f (x :: xs) = true
+(assert true) ; existsb_cons_true [Coq-only]
 
 ; existsb_cons_or (matches Coq: Lemma existsb_cons_or)
-(assert (= true true)) ; existsb_cons_or [untranslatable]
+; existsb_cons_or: forall {A} (f : A -> bool) x xs, existsb f (x :: xs) = f x || existsb f xs
+(assert true) ; existsb_cons_or [Coq-only]
 
 ; forallb_impl (matches Coq: Lemma forallb_impl)
-(assert (= true true)) ; forallb_impl [untranslatable]
+; forallb_impl: forall {A} (f g : A -> bool) l, (forall x, f x = true -> g x = true) -> forallb f l = true -> forallb g l = true
+(assert true) ; forallb_impl [Coq-only]
 
 ; andb_true_intro_both (matches Coq: Lemma andb_true_intro_both)
-(assert (= true true)) ; andb_true_intro_both [untranslatable]
+(assert (forall ((b1 Bool) (b2 Bool)) (=> (= b1 true) (=> (= b2 true) (= (and b1 b2) true))))) ; andb_true_intro_both
 
 ; TOTAL_001_01_l0_l1_interface_security (matches Coq: Theorem TOTAL_001_01_l0_l1_interface_security)
 (assert (forall ((ss StackState)) (=> (= (interface_verified ss L0_Physics L1_Silicon) true) (=> (= (layer_verified_in_stack ss L0_Physics) true) (=> (= (layer_verified_in_stack ss L1_Silicon) true) (= (layer_adjacent L0_Physics L1_Silicon) true)))))) ; TOTAL_001_01_l0_l1_interface_security
@@ -188,19 +192,19 @@
 (assert (forall ((ss StackState)) (=> (= (interface_verified ss L6_App L7_UX) true) (=> (= (layer_verified_in_stack ss L6_App) true) (=> (= (layer_verified_in_stack ss L7_UX) true) (= (layer_adjacent L6_App L7_UX) true)))))) ; TOTAL_001_07_l6_l7_interface_security
 
 ; TOTAL_001_08_confidentiality_preserved (matches Coq: Theorem TOTAL_001_08_confidentiality_preserved)
-(assert (= true true)) ; TOTAL_001_08_confidentiality_preserved [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_layers_verified ss) true) (=> (forall ((l Bool)) (=> (= (In l full_stack) true) (= (property_in_layer ss l SPConfidentiality) true))) (= (property_preserved_across_layers ss SPConfidentiality full_stack) true))))) ; TOTAL_001_08_confidentiality_preserved
 
 ; TOTAL_001_09_integrity_preserved (matches Coq: Theorem TOTAL_001_09_integrity_preserved)
-(assert (= true true)) ; TOTAL_001_09_integrity_preserved [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_layers_verified ss) true) (=> (forall ((l Bool)) (=> (= (In l full_stack) true) (= (property_in_layer ss l SPIntegrity) true))) (= (property_preserved_across_layers ss SPIntegrity full_stack) true))))) ; TOTAL_001_09_integrity_preserved
 
 ; TOTAL_001_10_availability_preserved (matches Coq: Theorem TOTAL_001_10_availability_preserved)
-(assert (= true true)) ; TOTAL_001_10_availability_preserved [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_layers_verified ss) true) (=> (forall ((l Bool)) (=> (= (In l full_stack) true) (= (property_in_layer ss l SPAvailability) true))) (= (property_preserved_across_layers ss SPAvailability full_stack) true))))) ; TOTAL_001_10_availability_preserved
 
 ; TOTAL_001_11_authentication_preserved (matches Coq: Theorem TOTAL_001_11_authentication_preserved)
-(assert (= true true)) ; TOTAL_001_11_authentication_preserved [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_layers_verified ss) true) (=> (forall ((l Bool)) (=> (= (In l network_to_ux_layers) true) (= (property_in_layer ss l SPAuthentication) true))) (= (property_preserved_across_layers ss SPAuthentication network_to_ux_layers) true))))) ; TOTAL_001_11_authentication_preserved
 
 ; TOTAL_001_12_authorization_preserved (matches Coq: Theorem TOTAL_001_12_authorization_preserved)
-(assert (= true true)) ; TOTAL_001_12_authorization_preserved [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_layers_verified ss) true) (=> (forall ((l Bool)) (=> (= (In l os_to_ux_layers) true) (= (property_in_layer ss l SPAuthorization) true))) (= (property_preserved_across_layers ss SPAuthorization os_to_ux_layers) true))))) ; TOTAL_001_12_authorization_preserved
 
 ; TOTAL_001_13_memory_corruption_impossible (matches Coq: Theorem TOTAL_001_13_memory_corruption_impossible)
 (assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L1_Silicon) true) (= (attack_blocked ss ATMemoryCorruption) true)))) ; TOTAL_001_13_memory_corruption_impossible
@@ -221,34 +225,35 @@
 (assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L2_Firmware) true) (= (attack_blocked ss ATBootCompromise) true)))) ; TOTAL_001_18_boot_compromise_impossible
 
 ; TOTAL_001_19_adjacent_layers_compose (matches Coq: Theorem TOTAL_001_19_adjacent_layers_compose)
-(assert (= true true)) ; TOTAL_001_19_adjacent_layers_compose [untranslatable]
+(assert (forall ((ss StackState)) (forall ((l1 Layer) (l2 Layer)) (=> (= (layer_adjacent l1 l2) true) (=> (= (layer_verified_in_stack ss l1) true) (=> (= (layer_verified_in_stack ss l2) true) (=> (= (interface_verified ss l1 l2) true) (= (and (layer_in_stack ss l1) (layer_in_stack ss l2)) true)))))))) ; TOTAL_001_19_adjacent_layers_compose
 
 ; TOTAL_001_20_security_property_transitivity (matches Coq: Theorem TOTAL_001_20_security_property_transitivity)
-(assert (= true true)) ; TOTAL_001_20_security_property_transitivity [untranslatable]
+(assert (forall ((ss StackState)) (forall ((p SecurityProperty)) (forall ((l1 Layer) (l2 Layer) (l3 Layer)) (=> (= (property_in_layer ss l1 p) true) (=> (= (property_in_layer ss l2 p) true) (=> (= (property_in_layer ss l3 p) true) (=> (= (layer_adjacent l1 l2) true) (=> (= (layer_adjacent l2 l3) true) (=> (= (interface_verified ss l1 l2) true) (=> (= (interface_verified ss l2 l3) true) (and (= (property_in_layer ss l1 p) true) (= (property_in_layer ss l2 p) true) (= (property_in_layer ss l3 p) true))))))))))))) ; TOTAL_001_20_security_property_transitivity
 
 ; TOTAL_001_21_no_security_gap (matches Coq: Theorem TOTAL_001_21_no_security_gap)
-(assert (= true true)) ; TOTAL_001_21_no_security_gap [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_interfaces_verified ss) true) (forall ((l1 Bool) (l2 Bool)) (=> (= (layer_adjacent l1 l2) true) (= (interface_verified ss l1 l2) true)))))) ; TOTAL_001_21_no_security_gap
 
 ; TOTAL_001_22_defense_in_depth (matches Coq: Theorem TOTAL_001_22_defense_in_depth)
-(assert (= true true)) ; TOTAL_001_22_defense_in_depth [untranslatable]
+; TOTAL_001_22_defense_in_depth: forall ss : StackState, forall a : AttackType, attack_blocked ss a = true -> existsb (fun lv => lv.(lv_verified) && laye
+(assert (forall ((ss StackState) (a AttackType)) true)) ; TOTAL_001_22_defense_in_depth [partial: bindings preserved]
 
 ; TOTAL_001_23_single_layer_compromise_bounded (matches Coq: Theorem TOTAL_001_23_single_layer_compromise_bounded)
-(assert (= true true)) ; TOTAL_001_23_single_layer_compromise_bounded [untranslatable]
+(assert (forall ((ss StackState)) (forall ((l_comp Layer)) (forall ((a AttackType)) (=> (= (layer_compromised ss l_comp) true) (=> (exists ((l_def Layer)) (and (not (= l_def l_comp)) (= (layer_verified_in_stack ss l_def) true) (= (layer_defends l_def a) true))) (= (attack_blocked ss a) true))))))) ; TOTAL_001_23_single_layer_compromise_bounded
 
 ; TOTAL_001_24_hardware_root_of_trust (matches Coq: Theorem TOTAL_001_24_hardware_root_of_trust)
-(assert (= true true)) ; TOTAL_001_24_hardware_root_of_trust [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L0_Physics) true) (=> (= (layer_verified_in_stack ss L1_Silicon) true) (=> (= (interface_verified ss L0_Physics L1_Silicon) true) (= (hardware_root_of_trust ss) true)))))) ; TOTAL_001_24_hardware_root_of_trust
 
 ; TOTAL_001_25_measured_boot_integrity (matches Coq: Theorem TOTAL_001_25_measured_boot_integrity)
-(assert (= true true)) ; TOTAL_001_25_measured_boot_integrity [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L2_Firmware) true) (= (measured_boot_integrity ss) true)))) ; TOTAL_001_25_measured_boot_integrity
 
 ; TOTAL_001_26_secure_channel_establishment (matches Coq: Theorem TOTAL_001_26_secure_channel_establishment)
-(assert (= true true)) ; TOTAL_001_26_secure_channel_establishment [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L3_Network) true) (= (secure_channel ss) true)))) ; TOTAL_001_26_secure_channel_establishment
 
 ; TOTAL_001_27_capability_delegation (matches Coq: Theorem TOTAL_001_27_capability_delegation)
-(assert (= true true)) ; TOTAL_001_27_capability_delegation [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L4_OS) true) (=> (= (layer_verified_in_stack ss L5_Runtime) true) (=> (= (layer_verified_in_stack ss L6_App) true) (= (capability_delegation_correct ss) true)))))) ; TOTAL_001_27_capability_delegation
 
 ; TOTAL_001_28_end_to_end_encryption (matches Coq: Theorem TOTAL_001_28_end_to_end_encryption)
-(assert (= true true)) ; TOTAL_001_28_end_to_end_encryption [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L3_Network) true) (=> (= (layer_verified_in_stack ss L6_App) true) (= (end_to_end_encryption ss) true))))) ; TOTAL_001_28_end_to_end_encryption
 
 ; TOTAL_001_29_remote_code_execution_impossible (matches Coq: Theorem TOTAL_001_29_remote_code_execution_impossible)
 (assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L4_OS) true) (= (attack_blocked ss ATRemoteCodeExec) true)))) ; TOTAL_001_29_remote_code_execution_impossible
@@ -266,13 +271,13 @@
 (assert (forall ((ss StackState)) (=> (= (layer_verified_in_stack ss L6_App) true) (= (attack_blocked ss ATInsiderThreat) true)))) ; TOTAL_001_33_insider_threat_bounded
 
 ; TOTAL_001_34_all_layer_proofs_compose (matches Coq: Theorem TOTAL_001_34_all_layer_proofs_compose)
-(assert (= true true)) ; TOTAL_001_34_all_layer_proofs_compose [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_critical_layers_verified ss) true) (=> (= (all_interfaces_verified ss) true) (and (= (attack_blocked ss ATMemoryCorruption) true) (= (attack_blocked ss ATSideChannel) true) (= (attack_blocked ss ATNetworkAttack) true) (= (attack_blocked ss ATPrivilegeEscalation) true) (= (attack_blocked ss ATUIDeception) true) (= (attack_blocked ss ATBootCompromise) true) (= (attack_blocked ss ATRemoteCodeExec) true) (= (attack_blocked ss ATDataExfiltration) true) (= (attack_blocked ss ATDenialOfService) true) (= (attack_blocked ss ATMalwareExec) true) (= (attack_blocked ss ATInsiderThreat) true)))))) ; TOTAL_001_34_all_layer_proofs_compose
 
 ; attack_blocked_by_layer (matches Coq: Lemma attack_blocked_by_layer)
-(assert (= true true)) ; attack_blocked_by_layer [untranslatable]
+(assert (forall ((a AttackType)) (exists ((l Layer)) (= (layer_defends l a) true)))) ; attack_blocked_by_layer
 
 ; TOTAL_001_35_total_stack_security (matches Coq: Theorem TOTAL_001_35_total_stack_security)
-(assert (= true true)) ; TOTAL_001_35_total_stack_security [untranslatable]
+(assert (forall ((ss StackState)) (=> (= (all_critical_layers_verified ss) true) (=> (= (all_interfaces_verified ss) true) (forall ((attack AttackType)) (= (attack_blocked ss attack) true)))))) ; TOTAL_001_35_total_stack_security
 
 ; Verify all assertions are satisfiable
 (check-sat)

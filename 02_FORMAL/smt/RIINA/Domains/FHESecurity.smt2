@@ -270,25 +270,25 @@
   (mk-rlwe_config 2048 32769 8 true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb3_true_iff (matches Coq: Lemma andb3_true_iff)
-(assert (= true true)) ; andb3_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (and (=> (= (and a b c) true) (and (= a true) (= b true) (= c true))) (=> (and (= a true) (= b true) (= c true)) (= (and a b c) true))))) ; andb3_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; leb_le (matches Coq: Lemma leb_le)
-(assert (= true true)) ; leb_le [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (<= n m) true) (<= n m)) (=> (<= n m) (= (<= n m) true))))) ; leb_le
 
 ; ltb_lt (matches Coq: Lemma ltb_lt)
-(assert (= true true)) ; ltb_lt [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (< n m) true) (< n m)) (=> (< n m) (= (< n m) true))))) ; ltb_lt
 
 ; mult_le_compat (matches Coq: Lemma mult_le_compat)
-(assert (= true true)) ; mult_le_compat [untranslatable]
+(assert (forall ((a Int) (b Int) (c Int) (d Int)) (=> (<= a b) (=> (<= c d) (<= (* a c) (* b d)))))) ; mult_le_compat
 
 ; add_le_compat (matches Coq: Lemma add_le_compat)
-(assert (= true true)) ; add_le_compat [untranslatable]
+(assert (forall ((a Int) (b Int) (c Int) (d Int)) (=> (<= a b) (=> (<= c d) (<= (+ a c) (+ b d)))))) ; add_le_compat
 
 ; FHE_001 (matches Coq: Theorem FHE_001)
 (assert (= (ops_fully_homomorphic riina_fhe_ops) true)) ; FHE_001
@@ -327,229 +327,229 @@
 (assert (= (fhe_post_quantum riina_fhe) true)) ; FHE_012
 
 ; FHE_013 (matches Coq: Theorem FHE_013)
-(assert (= true true)) ; FHE_013 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ops_fully_homomorphic o) true) (= (ho_multiplication o) true)))) ; FHE_013
 
 ; FHE_014 (matches Coq: Theorem FHE_014)
-(assert (= true true)) ; FHE_014 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (ops_fully_homomorphic o) true) (= (ho_arbitrary_depth o) true)))) ; FHE_014
 
 ; FHE_015 (matches Coq: Theorem FHE_015)
-(assert (= true true)) ; FHE_015 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (fhe_security_complete s) true) (= (fhe_ind_cpa s) true)))) ; FHE_015
 
 ; FHE_016 (matches Coq: Theorem FHE_016)
-(assert (= true true)) ; FHE_016 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (noise_managed n) true) (= (nm_bootstrapping n) true)))) ; FHE_016
 
 ; FHE_017 (matches Coq: Theorem FHE_017)
-(assert (= true true)) ; FHE_017 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (ops_fully_homomorphic (fhe_ops f)) true)))) ; FHE_017
 
 ; FHE_018 (matches Coq: Theorem FHE_018)
-(assert (= true true)) ; FHE_018 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (fhe_security_complete (fhe_security f)) true)))) ; FHE_018
 
 ; FHE_019 (matches Coq: Theorem FHE_019)
-(assert (= true true)) ; FHE_019 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (noise_managed (fhe_noise f)) true)))) ; FHE_019
 
 ; FHE_020 (matches Coq: Theorem FHE_020)
-(assert (= true true)) ; FHE_020 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (fhe_post_quantum f) true)))) ; FHE_020
 
 ; FHE_021 (matches Coq: Theorem FHE_021)
-(assert (= true true)) ; FHE_021 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (ho_arbitrary_depth (fhe_ops f)) true)))) ; FHE_021
 
 ; FHE_022 (matches Coq: Theorem FHE_022)
-(assert (= true true)) ; FHE_022 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (fhe_ind_cpa (fhe_security f)) true)))) ; FHE_022
 
 ; FHE_023 (matches Coq: Theorem FHE_023)
-(assert (= true true)) ; FHE_023 [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (= (nm_bootstrapping (fhe_noise f)) true)))) ; FHE_023
 
 ; FHE_024 (matches Coq: Theorem FHE_024)
 (assert (and (= (fhe_fully_secure riina_fhe) true) (= (fhe_post_quantum riina_fhe) true))) ; FHE_024
 
 ; FHE_025_complete (matches Coq: Theorem FHE_025_complete)
-(assert (= true true)) ; FHE_025_complete [untranslatable]
+(assert (forall ((f Bool)) (=> (= (fhe_fully_secure f) true) (and (= (ho_arbitrary_depth (fhe_ops f)) true) (= (fhe_ind_cpa (fhe_security f)) true) (= (nm_bootstrapping (fhe_noise f)) true) (= (fhe_post_quantum f) true))))) ; FHE_025_complete
 
 ; indcpa_001_riina_secure (matches Coq: Theorem indcpa_001_riina_secure)
 (assert (= (indcpa_secure riina_indcpa) true)) ; indcpa_001_riina_secure
 
 ; indcpa_002_key_size_sufficient (matches Coq: Theorem indcpa_002_key_size_sufficient)
-(assert (= true true)) ; indcpa_002_key_size_sufficient [untranslatable]
+(assert (forall ((g Bool)) (=> (= (indcpa_secure g) true) (= (<= 128 (icpa_key_size g)) true)))) ; indcpa_002_key_size_sufficient
 
 ; indcpa_003_has_oracle (matches Coq: Theorem indcpa_003_has_oracle)
-(assert (= true true)) ; indcpa_003_has_oracle [untranslatable]
+(assert (forall ((g Bool)) (=> (= (indcpa_secure g) true) (= (icpa_encryption_oracle g) true)))) ; indcpa_003_has_oracle
 
 ; indcpa_004_negligible_advantage (matches Coq: Theorem indcpa_004_negligible_advantage)
-(assert (= true true)) ; indcpa_004_negligible_advantage [untranslatable]
+(assert (forall ((g Bool)) (=> (= (indcpa_secure g) true) (= (<= negligible_threshold (icpa_distinguisher_adv g)) true)))) ; indcpa_004_negligible_advantage
 
 ; ss_001_riina_semantic_secure (matches Coq: Theorem ss_001_riina_semantic_secure)
 (assert (= (semantic_secure riina_semantic) true)) ; ss_001_riina_semantic_secure
 
 ; ss_002_implies_indistinguishable (matches Coq: Theorem ss_002_implies_indistinguishable)
-(assert (= true true)) ; ss_002_implies_indistinguishable [untranslatable]
+(assert (forall ((ss Bool)) (=> (= (semantic_secure ss) true) (= (ss_indistinguishable ss) true)))) ; ss_002_implies_indistinguishable
 
 ; ss_003_implies_randomized (matches Coq: Theorem ss_003_implies_randomized)
-(assert (= true true)) ; ss_003_implies_randomized [untranslatable]
+(assert (forall ((ss Bool)) (=> (= (semantic_secure ss) true) (= (ss_randomized ss) true)))) ; ss_003_implies_randomized
 
 ; ss_004_ciphertext_expansion (matches Coq: Theorem ss_004_ciphertext_expansion)
-(assert (= true true)) ; ss_004_ciphertext_expansion [untranslatable]
+(assert (forall ((ss Bool)) (=> (= (semantic_secure ss) true) (= (< (ss_message_space ss) (ss_ciphertext_space ss)) true)))) ; ss_004_ciphertext_expansion
 
 ; hadd_001_riina_correct (matches Coq: Theorem hadd_001_riina_correct)
 (assert (= (hom_add_correct riina_hom_add) true)) ; hadd_001_riina_correct
 
 ; hadd_002_preserves_structure (matches Coq: Theorem hadd_002_preserves_structure)
-(assert (= true true)) ; hadd_002_preserves_structure [untranslatable]
+(assert (forall ((ha Bool)) (=> (= (hom_add_correct ha) true) (= (ha_preserves_structure ha) true)))) ; hadd_002_preserves_structure
 
 ; hadd_003_modulus_relation (matches Coq: Theorem hadd_003_modulus_relation)
-(assert (= true true)) ; hadd_003_modulus_relation [untranslatable]
+(assert (forall ((ha Bool)) (=> (= (hom_add_correct ha) true) (= (< (ha_plaintext_modulus ha) (ha_ciphertext_modulus ha)) true)))) ; hadd_003_modulus_relation
 
 ; hmult_001_riina_correct (matches Coq: Theorem hmult_001_riina_correct)
 (assert (= (hom_mult_correct riina_hom_mult) true)) ; hmult_001_riina_correct
 
 ; hmult_002_relinearization (matches Coq: Theorem hmult_002_relinearization)
-(assert (= true true)) ; hmult_002_relinearization [untranslatable]
+(assert (forall ((hm Bool)) (=> (= (hom_mult_correct hm) true) (= (hm_relinearization hm) true)))) ; hmult_002_relinearization
 
 ; hmult_003_key_switching (matches Coq: Theorem hmult_003_key_switching)
-(assert (= true true)) ; hmult_003_key_switching [untranslatable]
+(assert (forall ((hm Bool)) (=> (= (hom_mult_correct hm) true) (= (hm_key_switching hm) true)))) ; hmult_003_key_switching
 
 ; hops_001_riina_valid (matches Coq: Theorem hops_001_riina_valid)
 (assert (= (hom_ops_valid riina_hom_ops) true)) ; hops_001_riina_valid
 
 ; hops_002_addition_correct (matches Coq: Theorem hops_002_addition_correct)
-(assert (= true true)) ; hops_002_addition_correct [untranslatable]
+(assert (forall ((ho Bool)) (=> (= (hom_ops_valid ho) true) (= (hom_add_correct (hops_addition ho)) true)))) ; hops_002_addition_correct
 
 ; hops_003_multiplication_correct (matches Coq: Theorem hops_003_multiplication_correct)
-(assert (= true true)) ; hops_003_multiplication_correct [untranslatable]
+(assert (forall ((ho Bool)) (=> (= (hom_ops_valid ho) true) (= (hom_mult_correct (hops_multiplication ho)) true)))) ; hops_003_multiplication_correct
 
 ; hops_004_composition (matches Coq: Theorem hops_004_composition)
-(assert (= true true)) ; hops_004_composition [untranslatable]
+(assert (forall ((ho Bool)) (=> (= (hom_ops_valid ho) true) (= (hops_composition ho) true)))) ; hops_004_composition
 
 ; noise_001_initial_safe (matches Coq: Theorem noise_001_initial_safe)
-(assert (= true true)) ; noise_001_initial_safe [untranslatable]
+(assert (= (noise_safe riina_noise_model (noise_initial riina_noise_model)) true)) ; noise_001_initial_safe
 
 ; noise_002_100_additions_safe (matches Coq: Theorem noise_002_100_additions_safe)
-(assert (= true true)) ; noise_002_100_additions_safe [untranslatable]
+(assert (= (noise_safe riina_noise_model (noise_after_additions riina_noise_model 100)) true)) ; noise_002_100_additions_safe
 
 ; noise_003_10_multiplications_safe (matches Coq: Theorem noise_003_10_multiplications_safe)
-(assert (= true true)) ; noise_003_10_multiplications_safe [untranslatable]
+(assert (= (noise_safe riina_noise_model (noise_after_multiplications riina_noise_model 10)) true)) ; noise_003_10_multiplications_safe
 
 ; noise_004_add_linear_growth (matches Coq: Theorem noise_004_add_linear_growth)
-(assert (= true true)) ; noise_004_add_linear_growth [untranslatable]
+(assert (forall ((nm Bool) (n Bool)) (= (noise_after_additions nm (+ n 1)) (+ (noise_after_additions nm n) (noise_add_growth nm))))) ; noise_004_add_linear_growth
 
 ; noise_005_zero_additions (matches Coq: Theorem noise_005_zero_additions)
-(assert (= true true)) ; noise_005_zero_additions [untranslatable]
+(assert (forall ((nm Bool)) (= (noise_after_additions nm 0) (noise_initial nm)))) ; noise_005_zero_additions
 
 ; nb_001_riina_valid (matches Coq: Theorem nb_001_riina_valid)
 (assert (= (noise_bound_valid riina_noise_model riina_noise_bound) true)) ; nb_001_riina_valid
 
 ; nb_002_additions_safe (matches Coq: Theorem nb_002_additions_safe)
-(assert (= true true)) ; nb_002_additions_safe [untranslatable]
+(assert (forall ((nm Bool) (nb Bool)) (=> (= (noise_bound_valid nm nb) true) (= (noise_safe nm (noise_after_additions nm (nb_max_additions nb))) true)))) ; nb_002_additions_safe
 
 ; nb_003_multiplications_safe (matches Coq: Theorem nb_003_multiplications_safe)
-(assert (= true true)) ; nb_003_multiplications_safe [untranslatable]
+(assert (forall ((nm Bool) (nb Bool)) (=> (= (noise_bound_valid nm nb) true) (= (noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb))) true)))) ; nb_003_multiplications_safe
 
 ; boot_001_riina_correct (matches Coq: Theorem boot_001_riina_correct)
 (assert (= (bootstrapping_correct riina_bootstrap) true)) ; boot_001_riina_correct
 
 ; boot_002_reduces_noise (matches Coq: Theorem boot_002_reduces_noise)
-(assert (= true true)) ; boot_002_reduces_noise [untranslatable]
+(assert (forall ((bc Bool)) (=> (= (bootstrapping_correct bc) true) (= (bs_reduces_noise bc) true)))) ; boot_002_reduces_noise
 
 ; boot_003_preserves_message (matches Coq: Theorem boot_003_preserves_message)
-(assert (= true true)) ; boot_003_preserves_message [untranslatable]
+(assert (forall ((bc Bool)) (=> (= (bootstrapping_correct bc) true) (= (bs_preserves_message bc) true)))) ; boot_003_preserves_message
 
 ; boot_004_polynomial_time (matches Coq: Theorem boot_004_polynomial_time)
-(assert (= true true)) ; boot_004_polynomial_time [untranslatable]
+(assert (forall ((bc Bool)) (=> (= (bootstrapping_correct bc) true) (= (bs_polynomial_time bc) true)))) ; boot_004_polynomial_time
 
 ; boot_005_noise_reduction (matches Coq: Theorem boot_005_noise_reduction)
-(assert (= true true)) ; boot_005_noise_reduction [untranslatable]
+(assert (forall ((bc Bool)) (=> (= (bootstrapping_correct bc) true) (= (< (bs_noise_output bc) (bs_noise_input_max bc)) true)))) ; boot_005_noise_reduction
 
 ; ufhe_001_riina_valid (matches Coq: Theorem ufhe_001_riina_valid)
 (assert (= (unlimited_fhe_valid riina_unlimited) true)) ; ufhe_001_riina_valid
 
 ; ufhe_002_bootstrap_correct (matches Coq: Theorem ufhe_002_bootstrap_correct)
-(assert (= true true)) ; ufhe_002_bootstrap_correct [untranslatable]
+(assert (forall ((u Bool)) (=> (= (unlimited_fhe_valid u) true) (= (bootstrapping_correct (ufhe_bootstrap_config u)) true)))) ; ufhe_002_bootstrap_correct
 
 ; kg_001_riina_secure (matches Coq: Theorem kg_001_riina_secure)
 (assert (= (keygen_secure riina_keygen) true)) ; kg_001_riina_secure
 
 ; kg_002_security_parameter (matches Coq: Theorem kg_002_security_parameter)
-(assert (= true true)) ; kg_002_security_parameter [untranslatable]
+(assert (forall ((kg Bool)) (=> (= (keygen_secure kg) true) (= (<= 128 (kg_security_parameter kg)) true)))) ; kg_002_security_parameter
 
 ; kg_003_polynomial_degree (matches Coq: Theorem kg_003_polynomial_degree)
-(assert (= true true)) ; kg_003_polynomial_degree [untranslatable]
+(assert (forall ((kg Bool)) (=> (= (keygen_secure kg) true) (= (<= 1024 (kg_polynomial_degree kg)) true)))) ; kg_003_polynomial_degree
 
 ; kg_004_error_distribution (matches Coq: Theorem kg_004_error_distribution)
-(assert (= true true)) ; kg_004_error_distribution [untranslatable]
+(assert (forall ((kg Bool)) (=> (= (keygen_secure kg) true) (= (< 0 (kg_error_distribution kg)) true)))) ; kg_004_error_distribution
 
 ; kg_005_modulus_bits (matches Coq: Theorem kg_005_modulus_bits)
-(assert (= true true)) ; kg_005_modulus_bits [untranslatable]
+(assert (forall ((kg Bool)) (=> (= (keygen_secure kg) true) (= (<= 32 (kg_modulus_bits kg)) true)))) ; kg_005_modulus_bits
 
 ; kp_001_riina_valid (matches Coq: Theorem kp_001_riina_valid)
 (assert (= (keypair_valid riina_keypair) true)) ; kp_001_riina_valid
 
 ; kp_002_secure_params (matches Coq: Theorem kp_002_secure_params)
-(assert (= true true)) ; kp_002_secure_params [untranslatable]
+(assert (forall ((kp Bool)) (=> (= (keypair_valid kp) true) (= (keygen_secure (kp_params kp)) true)))) ; kp_002_secure_params
 
 ; ct_001_riina_valid (matches Coq: Theorem ct_001_riina_valid)
 (assert (= (ciphertext_valid riina_ciphertext riina_noise_model) true)) ; ct_001_riina_valid
 
 ; ct_002_valid_encryption (matches Coq: Theorem ct_002_valid_encryption)
-(assert (= true true)) ; ct_002_valid_encryption [untranslatable]
+(assert (forall ((ct Bool) (nm Bool)) (=> (= (ciphertext_valid ct nm) true) (= (ct_valid_encryption ct) true)))) ; ct_002_valid_encryption
 
 ; ct_003_safe_noise (matches Coq: Theorem ct_003_safe_noise)
-(assert (= true true)) ; ct_003_safe_noise [untranslatable]
+(assert (forall ((ct Bool) (nm Bool)) (=> (= (ciphertext_valid ct nm) true) (= (noise_safe nm (ct_noise_estimate ct)) true)))) ; ct_003_safe_noise
 
 ; ct_004_positive_level (matches Coq: Theorem ct_004_positive_level)
-(assert (= true true)) ; ct_004_positive_level [untranslatable]
+(assert (forall ((ct Bool) (nm Bool)) (=> (= (ciphertext_valid ct nm) true) (= (< 0 (ct_level ct)) true)))) ; ct_004_positive_level
 
 ; cao_001_valid_preserves (matches Coq: Theorem cao_001_valid_preserves)
-(assert (= true true)) ; cao_001_valid_preserves [untranslatable]
+(assert (forall ((cao Bool) (nm Bool)) (=> (= (op_preserves_validity cao nm) true) (= (ciphertext_valid (cao_original cao) nm) true)))) ; cao_001_valid_preserves
 
 ; cao_002_result_valid (matches Coq: Theorem cao_002_result_valid)
-(assert (= true true)) ; cao_002_result_valid [untranslatable]
+(assert (forall ((cao Bool) (nm Bool)) (=> (= (op_preserves_validity cao nm) true) (= (ciphertext_valid (cao_result cao) nm) true)))) ; cao_002_result_valid
 
 ; cfhe_001_riina_secure (matches Coq: Theorem cfhe_001_riina_secure)
 (assert (= (complete_fhe_secure riina_complete_fhe) true)) ; cfhe_001_riina_secure
 
 ; cfhe_002_config_secure (matches Coq: Theorem cfhe_002_config_secure)
-(assert (= true true)) ; cfhe_002_config_secure [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (fhe_fully_secure (cfhe_config sys)) true)))) ; cfhe_002_config_secure
 
 ; cfhe_003_keygen_secure (matches Coq: Theorem cfhe_003_keygen_secure)
-(assert (= true true)) ; cfhe_003_keygen_secure [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (keygen_secure (cfhe_keygen sys)) true)))) ; cfhe_003_keygen_secure
 
 ; cfhe_004_indcpa_secure (matches Coq: Theorem cfhe_004_indcpa_secure)
-(assert (= true true)) ; cfhe_004_indcpa_secure [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (indcpa_secure (cfhe_indcpa sys)) true)))) ; cfhe_004_indcpa_secure
 
 ; cfhe_005_bootstrap_correct (matches Coq: Theorem cfhe_005_bootstrap_correct)
-(assert (= true true)) ; cfhe_005_bootstrap_correct [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (bootstrapping_correct (cfhe_bootstrap sys)) true)))) ; cfhe_005_bootstrap_correct
 
 ; cfhe_006_ops_valid (matches Coq: Theorem cfhe_006_ops_valid)
-(assert (= true true)) ; cfhe_006_ops_valid [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (hom_ops_valid (cfhe_operations sys)) true)))) ; cfhe_006_ops_valid
 
 ; cfhe_007_pq_safe (matches Coq: Theorem cfhe_007_pq_safe)
-(assert (= true true)) ; cfhe_007_pq_safe [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (fhe_post_quantum (cfhe_config sys)) true)))) ; cfhe_007_pq_safe
 
 ; cfhe_008_arbitrary_depth (matches Coq: Theorem cfhe_008_arbitrary_depth)
-(assert (= true true)) ; cfhe_008_arbitrary_depth [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (ho_arbitrary_depth (fhe_ops (cfhe_config sys))) true)))) ; cfhe_008_arbitrary_depth
 
 ; cfhe_009_semantic_secure (matches Coq: Theorem cfhe_009_semantic_secure)
-(assert (= true true)) ; cfhe_009_semantic_secure [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (fhe_semantic_secure (fhe_security (cfhe_config sys))) true)))) ; cfhe_009_semantic_secure
 
 ; cfhe_010_noise_managed (matches Coq: Theorem cfhe_010_noise_managed)
-(assert (= true true)) ; cfhe_010_noise_managed [untranslatable]
+(assert (forall ((sys Bool)) (=> (= (complete_fhe_secure sys) true) (= (noise_managed (fhe_noise (cfhe_config sys))) true)))) ; cfhe_010_noise_managed
 
 ; circ_001_riina_secure (matches Coq: Theorem circ_001_riina_secure)
 (assert (= (circular_secure riina_circular) true)) ; circ_001_riina_secure
 
 ; circ_002_key_encryption (matches Coq: Theorem circ_002_key_encryption)
-(assert (= true true)) ; circ_002_key_encryption [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (circular_secure cs) true) (= (cs_key_encryption_safe cs) true)))) ; circ_002_key_encryption
 
 ; lwe_001_riina_secure (matches Coq: Theorem lwe_001_riina_secure)
 (assert (= (lwe_secure riina_lwe) true)) ; lwe_001_riina_secure
 
 ; lwe_002_dimension (matches Coq: Theorem lwe_002_dimension)
-(assert (= true true)) ; lwe_002_dimension [untranslatable]
+(assert (forall ((lwe Bool)) (=> (= (lwe_secure lwe) true) (= (<= 512 (lwe_dimension lwe)) true)))) ; lwe_002_dimension
 
 ; rlwe_001_riina_secure (matches Coq: Theorem rlwe_001_riina_secure)
 (assert (= (rlwe_secure riina_rlwe) true)) ; rlwe_001_riina_secure
 
 ; rlwe_002_ring_degree (matches Coq: Theorem rlwe_002_ring_degree)
-(assert (= true true)) ; rlwe_002_ring_degree [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rlwe_secure r) true) (= (<= 1024 (rlwe_ring_degree r)) true)))) ; rlwe_002_ring_degree
 
 ; Verify all assertions are satisfiable
 (check-sat)

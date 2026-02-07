@@ -103,13 +103,13 @@
 (define-fun riina_do178c () DO178CCompliance true)
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; DO178_001_dal_reflexive (matches Coq: Theorem DO178_001_dal_reflexive)
 (assert (forall ((d DAL)) (= (dal_leq d d) true))) ; DO178_001_dal_reflexive
 
 ; DO178_002_dal_transitive (matches Coq: Theorem DO178_002_dal_transitive)
-(assert (= true true)) ; DO178_002_dal_transitive [untranslatable]
+(assert (forall ((d1 DAL) (d2 DAL) (d3 DAL)) (=> (= (dal_leq d1 d2) true) (=> (= (dal_leq d2 d3) true) (= (dal_leq d1 d3) true))))) ; DO178_002_dal_transitive
 
 ; DO178_003_dal_e_bottom (matches Coq: Theorem DO178_003_dal_e_bottom)
 (assert (forall ((d DAL)) (= (dal_leq DAL_E d) true))) ; DO178_003_dal_e_bottom
@@ -193,37 +193,37 @@
 (assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (= (do178c_dal c) DAL_A)))) ; DO178_029_level_a_all_objectives
 
 ; DO178_030_level_a_planning (matches Coq: Theorem DO178_030_level_a_planning)
-(assert (= true true)) ; DO178_030_level_a_planning [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (= (planning_compliant (do178c_planning c)) true)))) ; DO178_030_level_a_planning
 
 ; DO178_031_level_a_development (matches Coq: Theorem DO178_031_level_a_development)
-(assert (= true true)) ; DO178_031_level_a_development [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (= (development_compliant (do178c_development c)) true)))) ; DO178_031_level_a_development
 
 ; DO178_032_level_a_verification (matches Coq: Theorem DO178_032_level_a_verification)
-(assert (= true true)) ; DO178_032_level_a_verification [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (= (verification_compliant (do178c_verification c)) true)))) ; DO178_032_level_a_verification
 
 ; DO178_033_level_a_cm (matches Coq: Theorem DO178_033_level_a_cm)
-(assert (= true true)) ; DO178_033_level_a_cm [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (= (cm_compliant (do178c_cm c)) true)))) ; DO178_033_level_a_cm
 
 ; DO178_034_level_a_qa (matches Coq: Theorem DO178_034_level_a_qa)
-(assert (= true true)) ; DO178_034_level_a_qa [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (= (qa_compliant (do178c_qa c)) true)))) ; DO178_034_level_a_qa
 
 ; DO178_035_riina_dal_a (matches Coq: Theorem DO178_035_riina_dal_a)
 (assert (= (do178c_dal riina_do178c) DAL_A)) ; DO178_035_riina_dal_a
 
 ; DO178_036_riina_has_fm (matches Coq: Theorem DO178_036_riina_has_fm)
-(assert (= (do178c_fm riina_do178c) (Some mk_compliant_fm))) ; DO178_036_riina_has_fm
+(assert (= (do178c_fm riina_do178c) (some mk_compliant_fm))) ; DO178_036_riina_has_fm
 
 ; DO178_037_riina_fm_coq (matches Coq: Theorem DO178_037_riina_fm_coq)
 (assert (= (fm_category mk_compliant_fm) FM_TheoremProving)) ; DO178_037_riina_fm_coq
 
 ; DO178_038_riina_planning (matches Coq: Theorem DO178_038_riina_planning)
-(assert (= true true)) ; DO178_038_riina_planning [untranslatable]
+(assert (= (planning_compliant (do178c_planning riina_do178c)) true)) ; DO178_038_riina_planning
 
 ; DO178_039_riina_development (matches Coq: Theorem DO178_039_riina_development)
-(assert (= true true)) ; DO178_039_riina_development [untranslatable]
+(assert (= (development_compliant (do178c_development riina_do178c)) true)) ; DO178_039_riina_development
 
 ; DO178_040_complete_certification (matches Coq: Theorem DO178_040_complete_certification)
-(assert (= true true)) ; DO178_040_complete_certification [untranslatable]
+(assert (forall ((c DO178CCompliance)) (=> (= (do178c_level_a_compliant c) true) (and (= (planning_compliant (do178c_planning c)) true) (= (development_compliant (do178c_development c)) true) (= (verification_compliant (do178c_verification c)) true) (= (cm_compliant (do178c_cm c)) true) (= (qa_compliant (do178c_qa c)) true))))) ; DO178_040_complete_certification
 
 ; Verify all assertions are satisfiable
 (check-sat)

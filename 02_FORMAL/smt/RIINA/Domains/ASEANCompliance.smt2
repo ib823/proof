@@ -77,91 +77,96 @@
   true)
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+; 1: Data Residency — data stays in declared jurisdiction *)  Definition data_resident (d : DataItem) (loc : jurisdiction) : 
+(assert true) ; 1 [Coq-only]
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+; 2: Cross-border transfer requires authorization *)  Definition well_formed_transfer (agreements : Agreements) (trail : Audi
+(assert true) ; 2 [Coq-only]
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((j jurisdiction)) (= (jurisdiction_leq j j) true))) ; 3
 
 ; jurisdiction_leq_transitive (matches Coq: Theorem jurisdiction_leq_transitive)
-(assert (= true true)) ; jurisdiction_leq_transitive [untranslatable]
+(assert (forall ((j1 jurisdiction) (j2 jurisdiction) (j3 jurisdiction)) (=> (= (jurisdiction_leq j1 j2) true) (=> (= (jurisdiction_leq j2 j3) true) (= (jurisdiction_leq j1 j3) true))))) ; jurisdiction_leq_transitive
 
 ; jurisdiction_preorder (matches Coq: Theorem jurisdiction_preorder)
-(assert (= true true)) ; jurisdiction_preorder [untranslatable]
+(assert (forall ((j jurisdiction)) (and (= (jurisdiction_leq j j) true) (forall ((j2 Bool) (j3 Bool)) (=> (= (jurisdiction_leq j j2) true) (=> (= (jurisdiction_leq j2 j3) true) (= (jurisdiction_leq j j3) true))))))) ; jurisdiction_preorder
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+; 4: Compliance composition — compliant legs compose *)  Definition compliant_op (agreements : Agreements) (from to : jurisdi
+(assert true) ; 4 [Coq-only]
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((agreements Agreements)) (forall ((d DataItem)) (forall ((target jurisdiction)) (=> (not (= (data_jurisdiction d) target)) (=> (= (compliant_op agreements (data_jurisdiction d) target (data_classification d)) true) (= (authorized agreements (data_jurisdiction d) target (data_classification d)) true))))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((agreements Agreements)) (forall ((from jurisdiction) (to jurisdiction) (cls Int) (cls' Int)) (=> (= (authorized agreements from to cls) true) (=> (<= cls' cls) (= (authorized agreements from to cls') true)))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+; 7: Audit trail completeness — every transfer is logged *)  Definition log_transfer (trail : AuditTrail) (did from to : nat)
+(assert true) ; 7 [Coq-only]
 
 ; audit_trail_preservation (matches Coq: Theorem audit_trail_preservation)
-(assert (= true true)) ; audit_trail_preservation [untranslatable]
+(assert (forall ((trail AuditTrail)) (forall ((did Int) (from Int) (to Int) (did' Int) (from' Int) (to' Int)) (=> (= (transfer_logged trail did from to) true) (= (transfer_logged (log_transfer trail did' from' to') did from to) true))))) ; audit_trail_preservation
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+; 8: Policy monotonicity — stricter policies subsume *)   Definition policy_allows (threshold : nat) (cls : nat) : Prop := cl
+(assert true) ; 8 [Coq-only]
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((agreements Agreements)) (forall ((j jurisdiction)) (forall ((cls Int)) (= (compliant_op agreements j j cls) true))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((trail AuditTrail)) (forall ((did Int) (from Int) (to Int)) (= (length (log_transfer trail did from to)) (S (length trail)))))) ; 10
 
 ; local_only_blocks_cross_border (matches Coq: Theorem local_only_blocks_cross_border)
-(assert (= true true)) ; local_only_blocks_cross_border [untranslatable]
+(assert (forall ((from jurisdiction) (to jurisdiction)) (=> (not (= from to)) (not (= (localization_permits_transfer LocalOnly from to) true))))) ; local_only_blocks_cross_border
 
 ; regional_allows_intra_asean (matches Coq: Theorem regional_allows_intra_asean)
-(assert (= true true)) ; regional_allows_intra_asean [untranslatable]
+(assert (forall ((from jurisdiction) (to jurisdiction)) (=> (<= from 9) (=> (<= to 9) (= (localization_permits_transfer RegionalASEAN from to) true))))) ; regional_allows_intra_asean
 
 ; global_allows_all (matches Coq: Theorem global_allows_all)
-(assert (= true true)) ; global_allows_all [untranslatable]
+(assert (forall ((from jurisdiction) (to jurisdiction)) (= (localization_permits_transfer GlobalAllowed from to) true))) ; global_allows_all
 
 ; adequacy_list_membership (matches Coq: Theorem adequacy_list_membership)
-(assert (= true true)) ; adequacy_list_membership [untranslatable]
+(assert (forall ((policy ASEANDataPolicy)) (forall ((j jurisdiction)) (forall ((rest list)) (=> (= (adp_adequacy_recognized policy) (insert j rest)) (= (adequacy_recognized policy j) true)))))) ; adequacy_list_membership
 
 ; asean_data_flow_compliant (matches Coq: Theorem asean_data_flow_compliant)
-(assert (= true true)) ; asean_data_flow_compliant [untranslatable]
+(assert (forall ((flow CBDataFlow)) (=> (=> (= (adp_consent_required (cbf_source_policy flow)) true) (= (cbf_consent_obtained flow) true)) (=> (= (localization_permits_transfer (adp_localization (cbf_source_policy flow)) (data_jurisdiction (cbf_data flow)) (cbf_target_jurisdiction flow)) true) (=> (= (cbf_safeguards_in_place flow) true) (= (cbf_compliant flow) true)))))) ; asean_data_flow_compliant
 
 ; breach_notification_timeliness (matches Coq: Theorem breach_notification_timeliness)
-(assert (= true true)) ; breach_notification_timeliness [untranslatable]
+(assert (forall ((policy ASEANDataPolicy)) (forall ((det Int) (notif Int)) (=> (<= notif (+ det (adp_breach_notification_hours policy))) (= (breach_notification_compliant policy det notif) true))))) ; breach_notification_timeliness
 
 ; stricter_deadline_satisfies_weaker (matches Coq: Theorem stricter_deadline_satisfies_weaker)
-(assert (= true true)) ; stricter_deadline_satisfies_weaker [untranslatable]
+(assert (forall ((p1 ASEANDataPolicy) (p2 ASEANDataPolicy) (det Int) (notif Int)) (=> (<= (adp_breach_notification_hours p1) (adp_breach_notification_hours p2)) (=> (= (breach_notification_compliant p1 det notif) true) (= (breach_notification_compliant p2 det notif) true))))) ; stricter_deadline_satisfies_weaker
 
 ; mcc_compliance (matches Coq: Theorem mcc_compliance)
-(assert (= true true)) ; mcc_compliance [untranslatable]
+(assert (forall ((mcc ModelContractualClause)) (forall ((min Int)) (=> (>= (mcc_data_protection_standard mcc) min) (=> (= (mcc_audit_rights mcc) true) (=> (= (mcc_termination_clause mcc) true) (= (mcc_adequate mcc min) true))))))) ; mcc_compliance
 
 ; higher_standard_subsumes (matches Coq: Theorem higher_standard_subsumes)
-(assert (= true true)) ; higher_standard_subsumes [untranslatable]
+(assert (forall ((mcc ModelContractualClause)) (forall ((s1 Int) (s2 Int)) (=> (<= s1 s2) (=> (= (mcc_adequate mcc s2) true) (= (mcc_adequate mcc s1) true)))))) ; higher_standard_subsumes
 
 ; mutual_recognition_symmetric (matches Coq: Theorem mutual_recognition_symmetric)
-(assert (= true true)) ; mutual_recognition_symmetric [untranslatable]
+(assert (forall ((j1 jurisdiction) (j2 jurisdiction) (agreements Agreements)) (=> (= (mutual_recognition j1 j2 agreements) true) (= (mutual_recognition j2 j1 agreements) true)))) ; mutual_recognition_symmetric
 
 ; classification_bounded (matches Coq: Theorem classification_bounded)
-(assert (= true true)) ; classification_bounded [untranslatable]
+(assert (forall ((d DataItem)) (or (<= (data_classification d) 3) (> (data_classification d) 3)))) ; classification_bounded
 
 ; audit_trail_monotonic (matches Coq: Theorem audit_trail_monotonic)
-(assert (= true true)) ; audit_trail_monotonic [untranslatable]
+(assert (forall ((trail AuditTrail)) (forall ((did Int) (from Int) (to Int) (e TransferEntry)) (=> (= (In e trail) true) (= (In e (log_transfer trail did from to)) true))))) ; audit_trail_monotonic
 
 ; two_transfers_logged (matches Coq: Theorem two_transfers_logged)
-(assert (= true true)) ; two_transfers_logged [untranslatable]
+(assert (forall ((trail AuditTrail)) (forall ((d1 Int) (f1 Int) (t1 Int) (d2 Int) (f2 Int) (t2 Int)) (let ((trail1 (log_transfer trail d1 f1 t1))) (let ((trail2 (log_transfer trail1 d2 f2 t2))) (and (= (transfer_logged trail2 d1 f1 t1) true) (= (transfer_logged trail2 d2 f2 t2) true))))))) ; two_transfers_logged
 
 ; localization_coverage (matches Coq: Theorem localization_coverage)
-(assert (= true true)) ; localization_coverage [untranslatable]
+(assert (forall ((dl DataLocalization)) (= (In dl all_localizations) true))) ; localization_coverage
 
 ; dpo_appointed_when_required (matches Coq: Theorem dpo_appointed_when_required)
-(assert (= true true)) ; dpo_appointed_when_required [untranslatable]
+(assert (forall ((policy ASEANDataPolicy)) (=> (= (adp_dpo_required policy) true) (= (dpo_requirement_met policy true) true)))) ; dpo_appointed_when_required
 
 ; dpo_not_required_always_met (matches Coq: Theorem dpo_not_required_always_met)
-(assert (= true true)) ; dpo_not_required_always_met [untranslatable]
+(assert (forall ((policy ASEANDataPolicy)) (forall ((appointed Bool)) (=> (= (adp_dpo_required policy) false) (= (dpo_requirement_met policy appointed) true))))) ; dpo_not_required_always_met
 
 ; Verify all assertions are satisfiable
 (check-sat)

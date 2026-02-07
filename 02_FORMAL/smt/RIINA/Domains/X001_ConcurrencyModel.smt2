@@ -162,121 +162,127 @@
   True)
 
 ; X_001_01_shared_xor_mutable (matches Coq: Theorem X_001_01_shared_xor_mutable)
-(assert (= true true)) ; X_001_01_shared_xor_mutable [untranslatable]
+(assert (forall ((as_ Bool) (t1 Bool) (t2 Bool) (l Bool)) (=> (= (well_formed_access as_) true) (=> (= (as_ t1 l) (some Exclusive)) (=> (not (= t1 t2)) (not (= (as_ t2 l) (some Shared)))))))) ; X_001_01_shared_xor_mutable
 
 ; X_001_02_ownership_exclusive (matches Coq: Theorem X_001_02_ownership_exclusive)
-(assert (= true true)) ; X_001_02_ownership_exclusive [untranslatable]
+(assert (forall ((as_ Bool) (t1 Bool) (t2 Bool) (l Bool)) (=> (= (well_formed_access as_) true) (=> (= (as_ t1 l) (some Exclusive)) (=> (not (= t1 t2)) (= (as_ t2 l) none)))))) ; X_001_02_ownership_exclusive
 
 ; X_001_03_no_concurrent_write (matches Coq: Theorem X_001_03_no_concurrent_write)
-(assert (= true true)) ; X_001_03_no_concurrent_write [untranslatable]
+(assert (forall ((as_ Bool)) (=> (= (well_formed_access as_) true) (= (no_concurrent_writes as_) true)))) ; X_001_03_no_concurrent_write
 
 ; X_001_04_no_write_during_read (matches Coq: Theorem X_001_04_no_write_during_read)
-(assert (= true true)) ; X_001_04_no_write_during_read [untranslatable]
+(assert (forall ((as_ Bool)) (=> (= (well_formed_access as_) true) (=> (forall ((t1 Bool) (t2 Bool) (l Bool)) (=> (not (= t1 t2)) (=> (= (as_ t1 l) (some Shared)) (or (= (as_ t2 l) none) (= (as_ t2 l) (some Shared)))))) (= (no_write_during_read as_) true))))) ; X_001_04_no_write_during_read
 
 ; X_001_05_race_freedom (matches Coq: Theorem X_001_05_race_freedom)
-(assert (= true true)) ; X_001_05_race_freedom [untranslatable]
+(assert (forall ((cfg Bool) (l Bool)) (=> (= (well_typed cfg) true) (not (= (data_race cfg l) true))))) ; X_001_05_race_freedom
 
 ; X_001_06_race_freedom_composition (matches Coq: Theorem X_001_06_race_freedom_composition)
-(assert (= true true)) ; X_001_06_race_freedom_composition [untranslatable]
+(assert (forall ((cfg1 Bool) (cfg2 Bool) (l Bool)) (=> (not (= (data_race cfg1 l) true)) (=> (not (= (data_race cfg2 l) true)) (=> (forall ((t Bool)) (not (and (= (In t (map thread_id cfg1)) true) (= (In t (map thread_id cfg2)) true)))) (not (= (data_race (concat cfg1 cfg2) l) true))))))) ; X_001_06_race_freedom_composition
 
 ; X_001_07_atomic_operations (matches Coq: Theorem X_001_07_atomic_operations)
-(assert (= true true)) ; X_001_07_atomic_operations [untranslatable]
+(assert (forall ((op Bool)) (= (atomic_race_free op) true))) ; X_001_07_atomic_operations
 
 ; X_001_08_lock_protects (matches Coq: Theorem X_001_08_lock_protects)
-(assert (= true true)) ; X_001_08_lock_protects [untranslatable]
+(assert (forall ((m Bool) (t Bool) (m' Bool)) (=> (= (mutex_acquire m t) (some m')) (= (mutex_locked m') true)))) ; X_001_08_lock_protects
 
 ; X_001_09_session_type_dual (matches Coq: Theorem X_001_09_session_type_dual)
-(assert (= true true)) ; X_001_09_session_type_dual [untranslatable]
+; X_001_09_session_type_dual: forall s, match s with | SSend m s' => dual (dual (SSend m s')) = SSend m s' -> dual (dual s') = s' -> True | SRecv m s'
+(assert (forall ((s Bool)) true)) ; X_001_09_session_type_dual [partial: bindings preserved]
 
 ; X_001_09b_dual_send_recv (matches Coq: Theorem X_001_09b_dual_send_recv)
-(assert (= true true)) ; X_001_09b_dual_send_recv [untranslatable]
+(assert (forall ((m Bool)) (and (= (dual (dual (SSend m SEnd))) (SSend m SEnd)) (= (dual (dual (SRecv m SEnd))) (SRecv m SEnd))))) ; X_001_09b_dual_send_recv
 
 ; X_001_09c_dual_compose (matches Coq: Theorem X_001_09c_dual_compose)
-(assert (= true true)) ; X_001_09c_dual_compose [untranslatable]
+(assert (forall ((m1 Bool) (m2 Bool)) (= (dual (dual (SSend m1 (SRecv m2 SEnd)))) (SSend m1 (SRecv m2 SEnd))))) ; X_001_09c_dual_compose
 
 ; X_001_10_session_fidelity (matches Coq: Theorem X_001_10_session_fidelity)
-(assert (= true true)) ; X_001_10_session_fidelity [untranslatable]
+(assert (forall ((ch Bool) (mt Bool) (s Bool)) (=> (= (chan_type ch) (SSend mt s)) (= (chan_type (mkChan (chan_id ch) s (chan_linear ch))) s)))) ; X_001_10_session_fidelity
 
 ; X_001_11_session_progress (matches Coq: Theorem X_001_11_session_progress)
-(assert (= true true)) ; X_001_11_session_progress [untranslatable]
+; X_001_11_session_progress: forall cfg : Config, session_typed cfg -> cfg <> [] -> exists cfg' : Config, True.
+(assert (forall ((cfg Config)) true)) ; X_001_11_session_progress [partial: bindings preserved]
 
 ; X_001_12_session_safety (matches Coq: Theorem X_001_12_session_safety)
-(assert (= true true)) ; X_001_12_session_safety [untranslatable]
+; X_001_12_session_safety: forall ch1 ch2, chan_type ch1 = dual (chan_type ch2) -> chan_id ch1 = chan_id ch2 -> True.
+(assert (forall ((ch1 Bool) (ch2 Bool)) true)) ; X_001_12_session_safety [partial: bindings preserved]
 
 ; X_001_13_channel_linear (matches Coq: Theorem X_001_13_channel_linear)
-(assert (= true true)) ; X_001_13_channel_linear [untranslatable]
+(assert (forall ((ch Bool)) (=> (= (is_fresh ch) true) (= (chan_linear ch) true)))) ; X_001_13_channel_linear
 
 ; X_001_14_no_channel_reuse (matches Coq: Theorem X_001_14_no_channel_reuse)
-(assert (= true true)) ; X_001_14_no_channel_reuse [untranslatable]
+(assert (forall ((ch Bool)) (= (chan_linear (channel_used ch)) false))) ; X_001_14_no_channel_reuse
 
 ; X_001_15_send_recv_match (matches Coq: Theorem X_001_15_send_recv_match)
-(assert (= true true)) ; X_001_15_send_recv_match [untranslatable]
+(assert (forall ((mt Bool) (s Bool)) (= (dual (SSend mt s)) (SRecv mt (dual s))))) ; X_001_15_send_recv_match
 
 ; X_001_16_select_offer_match (matches Coq: Theorem X_001_16_select_offer_match)
-(assert (= true true)) ; X_001_16_select_offer_match [untranslatable]
+; X_001_16_select_offer_match: forall branches, dual (SSelect branches) = SOffer (map (fun p => (fst p, dual (snd p))) branches)
+(assert (forall ((branches Bool)) true)) ; X_001_16_select_offer_match [partial: bindings preserved]
 
 ; X_001_17_session_composition (matches Coq: Theorem X_001_17_session_composition)
-(assert (= true true)) ; X_001_17_session_composition [untranslatable]
+(assert (forall ((s Bool)) (=> (= (dual (dual s)) s) (=> (forall ((s2 Bool)) (= (dual s) s2)) (= (dual s2) s))))) ; X_001_17_session_composition
 
 ; X_001_17b_dual_base_involutive (matches Coq: Theorem X_001_17b_dual_base_involutive)
-(assert (= true true)) ; X_001_17b_dual_base_involutive [untranslatable]
+(assert (forall ((m Bool)) (and (= (dual (dual SEnd)) SEnd) (= (dual (dual (SSend m SEnd))) (SSend m SEnd)) (= (dual (dual (SRecv m SEnd))) (SRecv m SEnd))))) ; X_001_17b_dual_base_involutive
 
 ; X_001_17c_dual_chain (matches Coq: Theorem X_001_17c_dual_chain)
-(assert (= true true)) ; X_001_17c_dual_chain [untranslatable]
+(assert (forall ((m1 Bool) (m2 Bool)) (and (= (dual (dual (SSend m1 (SRecv m2 SEnd)))) (SSend m1 (SRecv m2 SEnd))) (= (dual (dual (SRecv m1 (SSend m2 SEnd)))) (SRecv m1 (SSend m2 SEnd)))))) ; X_001_17c_dual_chain
 
 ; X_001_18_no_circular_wait (matches Coq: Theorem X_001_18_no_circular_wait)
-(assert (= true true)) ; X_001_18_no_circular_wait [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (well_typed cfg) true) (=> (= (all_respect_order cfg) true) (not (= (circular_wait cfg) true)))))) ; X_001_18_no_circular_wait
 
 ; X_001_19_lock_ordering (matches Coq: Theorem X_001_19_lock_ordering)
-(assert (= true true)) ; X_001_19_lock_ordering [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (=> (not (= l1 l2)) (or (= (lock_order l1 l2) true) (= (lock_order l2 l1) true))))) ; X_001_19_lock_ordering
 
 ; X_001_20_session_deadlock_free (matches Coq: Theorem X_001_20_session_deadlock_free)
-(assert (= true true)) ; X_001_20_session_deadlock_free [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_typed cfg) true) (not (= (deadlocked cfg) true))))) ; X_001_20_session_deadlock_free
 
 ; X_001_21_resource_ordering (matches Coq: Theorem X_001_21_resource_ordering)
-(assert (= true true)) ; X_001_21_resource_ordering [untranslatable]
+(assert (forall ((r1 Bool) (r2 Bool)) (=> (not (= r1 r2)) (or (< r1 r2) (< r2 r1))))) ; X_001_21_resource_ordering
 
 ; X_001_22_timeout_prevents_deadlock (matches Coq: Theorem X_001_22_timeout_prevents_deadlock)
-(assert (= true true)) ; X_001_22_timeout_prevents_deadlock [untranslatable]
+; X_001_22_timeout_prevents_deadlock: forall cfg, has_timeout cfg -> ~ deadlocked cfg \/ True.
+(assert (forall ((cfg Bool)) true)) ; X_001_22_timeout_prevents_deadlock [partial: bindings preserved]
 
 ; X_001_23_deadlock_detection (matches Coq: Theorem X_001_23_deadlock_detection)
-(assert (= true true)) ; X_001_23_deadlock_detection [untranslatable]
+(assert (forall ((cfg Bool)) (or (= (deadlocked cfg) true) (not (= (deadlocked cfg) true))))) ; X_001_23_deadlock_detection
 
 ; X_001_24_livelock_freedom (matches Coq: Theorem X_001_24_livelock_freedom)
-(assert (= true true)) ; X_001_24_livelock_freedom [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (bounded cfg) true) (not (= (livelock cfg) true))))) ; X_001_24_livelock_freedom
 
 ; X_001_25_starvation_freedom (matches Coq: Theorem X_001_25_starvation_freedom)
-(assert (= true true)) ; X_001_25_starvation_freedom [untranslatable]
+(assert (forall ((cfg Bool) (t Bool)) (=> (= (fair_scheduling cfg) true) (not (= (starved cfg t) true))))) ; X_001_25_starvation_freedom
 
 ; X_001_26_mutex_correct (matches Coq: Theorem X_001_26_mutex_correct)
-(assert (= true true)) ; X_001_26_mutex_correct [untranslatable]
+(assert (forall ((m Bool) (t1 Bool) (t2 Bool) (m1 Bool)) (=> (= (mutex_acquire m t1) (some m1)) (= (mutex_acquire m1 t2) none)))) ; X_001_26_mutex_correct
 
 ; X_001_27_rwlock_correct (matches Coq: Theorem X_001_27_rwlock_correct)
-(assert (= true true)) ; X_001_27_rwlock_correct [untranslatable]
+(assert (forall ((rw Bool)) (=> (= (rwlock_writer rw) none) (>= (rwlock_readers rw) 0)))) ; X_001_27_rwlock_correct
 
 ; X_001_28_barrier_correct (matches Coq: Theorem X_001_28_barrier_correct)
-(assert (= true true)) ; X_001_28_barrier_correct [untranslatable]
+(assert (forall ((b Bool)) (=> (<= (barrier_count b) (barrier_total b)) (or (= (barrier_count b) (barrier_total b)) (< (barrier_count b) (barrier_total b)))))) ; X_001_28_barrier_correct
 
 ; X_001_29_semaphore_correct (matches Coq: Theorem X_001_29_semaphore_correct)
-(assert (= true true)) ; X_001_29_semaphore_correct [untranslatable]
+(assert (forall ((s Bool)) (<= (sem_count s) (sem_max s)))) ; X_001_29_semaphore_correct
 
 ; X_001_30_condvar_correct (matches Coq: Theorem X_001_30_condvar_correct)
-(assert (= true true)) ; X_001_30_condvar_correct [untranslatable]
+; X_001_30_condvar_correct: forall cv t, condvar_waiters (mkCondVar (t :: condvar_waiters cv)) = t :: condvar_waiters cv
+(assert (forall ((cv Bool) (t Bool)) true)) ; X_001_30_condvar_correct [partial: bindings preserved]
 
 ; X_001_31_global_type_projectable (matches Coq: Theorem X_001_31_global_type_projectable)
-(assert (= true true)) ; X_001_31_global_type_projectable [untranslatable]
+(assert (forall ((g Bool) (r Bool)) (exists ((s Bool)) (= (project g r) s)))) ; X_001_31_global_type_projectable
 
 ; X_001_32_multiparty_safety (matches Coq: Theorem X_001_32_multiparty_safety)
-(assert (= true true)) ; X_001_32_multiparty_safety [untranslatable]
+(assert (forall ((g Bool) (r1 Bool) (r2 Bool)) (=> (not (= r1 r2)) (exists ((s1 Bool) (s2 Bool)) (and (= (project g r1) s1) (= (project g r2) s2)))))) ; X_001_32_multiparty_safety
 
 ; X_001_33_multiparty_progress (matches Coq: Theorem X_001_33_multiparty_progress)
-(assert (= true true)) ; X_001_33_multiparty_progress [untranslatable]
+(assert (forall ((g Bool)) (=> (not (= g GEnd)) (exists ((r1 Bool) (r2 Bool) (mt Bool) (g' Bool)) (or (= g (GMsg r1 r2 mt g')) (exists ((branches Bool)) (= g (GChoice r1 branches)))))))) ; X_001_33_multiparty_progress
 
 ; X_001_34_role_conformance (matches Coq: Theorem X_001_34_role_conformance)
-(assert (= true true)) ; X_001_34_role_conformance [untranslatable]
+(assert (forall ((e Bool) (g Bool) (r Bool)) (=> (= (conforms e (project g r)) true) true))) ; X_001_34_role_conformance
 
 ; X_001_35_multiparty_composition (matches Coq: Theorem X_001_35_multiparty_composition)
-(assert (= true true)) ; X_001_35_multiparty_composition [untranslatable]
+(assert (forall ((g1 Bool) (g2 Bool) (r Bool)) (=> (= (project g1 r) SEnd) (= (project g2 r) (project g2 r))))) ; X_001_35_multiparty_composition
 
 ; Verify all assertions are satisfiable
 (check-sat)

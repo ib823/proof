@@ -264,94 +264,95 @@
   true)
 
 ; HIS_001_01_patient_identity_uniqueness (matches Coq: Theorem HIS_001_01_patient_identity_uniqueness)
-(assert (= true true)) ; HIS_001_01_patient_identity_uniqueness [untranslatable]
+; HIS_001_01_patient_identity_uniqueness: forall (reg : PatientRegistry) p1 p2, In p1 (patients reg) -> In p2 (patients reg) -> mrn p1 = mrn p2 -> p1 = p2
+(assert true) ; HIS_001_01_patient_identity_uniqueness [Coq-only]
 
 ; HIS_001_02_patient_matching_accuracy (matches Coq: Theorem HIS_001_02_patient_matching_accuracy)
-(assert (= true true)) ; HIS_001_02_patient_matching_accuracy [untranslatable]
+(assert (forall ((pm Bool)) (=> (>= (match_score pm) 999) (= (high_confidence_match pm) true)))) ; HIS_001_02_patient_matching_accuracy
 
 ; HIS_001_03_duplicate_detection (matches Coq: Theorem HIS_001_03_duplicate_detection)
-(assert (= true true)) ; HIS_001_03_duplicate_detection [untranslatable]
+(assert (forall ((dc Bool)) (=> (>= (similarity_score dc) 800) (=> (= (flagged_for_review dc) true) (= (properly_flagged dc) true))))) ; HIS_001_03_duplicate_detection
 
 ; HIS_001_04_patient_merge_integrity (matches Coq: Theorem HIS_001_04_patient_merge_integrity)
-(assert (= true true)) ; HIS_001_04_patient_merge_integrity [untranslatable]
+(assert (forall ((m Bool)) (=> (= (merge_complete m) true) (=> (= (length (target_records_after m)) (+ (length (source_records m)) (length (target_records_before m)))) (= (merge_preserves_records m) true))))) ; HIS_001_04_patient_merge_integrity
 
 ; HIS_001_05_amendment_tracking (matches Coq: Theorem HIS_001_05_amendment_tracking)
-(assert (= true true)) ; HIS_001_05_amendment_tracking [untranslatable]
+(assert (forall ((a Bool)) (=> (= (valid_amendment a) true) (and (= (linked_to_original a) true) (> (amend_timestamp a) 0))))) ; HIS_001_05_amendment_tracking
 
 ; HIS_001_06_encounter_completeness (matches Coq: Theorem HIS_001_06_encounter_completeness)
-(assert (= true true)) ; HIS_001_06_encounter_completeness [untranslatable]
+(assert (forall ((e Bool)) (=> (= (finalized e) true) (= (encounter_complete e) true)))) ; HIS_001_06_encounter_completeness
 
 ; HIS_001_07_documentation_immutability (matches Coq: Theorem HIS_001_07_documentation_immutability)
-(assert (= true true)) ; HIS_001_07_documentation_immutability [untranslatable]
+(assert (forall ((n Bool)) (=> (= (is_signed n) true) (= (note_content_hash n) (note_content_hash n))))) ; HIS_001_07_documentation_immutability
 
 ; HIS_001_08_allergy_documentation (matches Coq: Theorem HIS_001_08_allergy_documentation)
-(assert (= true true)) ; HIS_001_08_allergy_documentation [untranslatable]
+(assert (forall ((a Bool)) (=> (= (allergy_complete a) true) (and (= (allergen_documented a) true) (= (reaction_documented a) true) (= (severity_documented a) true))))) ; HIS_001_08_allergy_documentation
 
 ; HIS_001_09_drug_allergy_alert (matches Coq: Theorem HIS_001_09_drug_allergy_alert)
-(assert (= true true)) ; HIS_001_09_drug_allergy_alert [untranslatable]
+(assert (forall ((dai Bool)) (=> (= (interaction_detected dai) true) (= (alert_triggered dai) true)))) ; HIS_001_09_drug_allergy_alert
 
 ; HIS_001_10_problem_list_coded (matches Coq: Theorem HIS_001_10_problem_list_coded)
-(assert (= true true)) ; HIS_001_10_problem_list_coded [untranslatable]
+(assert (forall ((p Bool)) (=> (= (problem_coded p) true) (and (= (snomed_assigned p) true) (> (problem_snomed p) 0))))) ; HIS_001_10_problem_list_coded
 
 ; HIS_001_11_five_rights_verification (matches Coq: Theorem HIS_001_11_five_rights_verification)
-(assert (= true true)) ; HIS_001_11_five_rights_verification [untranslatable]
+(assert (forall ((a Bool)) (=> (= (administration_allowed a) true) (= (five_rights_verified a) true)))) ; HIS_001_11_five_rights_verification
 
 ; HIS_001_12_drug_interaction_checking (matches Coq: Theorem HIS_001_12_drug_interaction_checking)
-(assert (= true true)) ; HIS_001_12_drug_interaction_checking [untranslatable]
+(assert (forall ((di Bool)) (=> (= (interaction_alerted di) true) (= (interaction_alert_shown di) true)))) ; HIS_001_12_drug_interaction_checking
 
 ; HIS_001_13_dose_range_checking (matches Coq: Theorem HIS_001_13_dose_range_checking)
-(assert (= true true)) ; HIS_001_13_dose_range_checking [untranslatable]
+(assert (forall ((dc Bool)) (=> (= (dose_in_range dc) true) (and (>= (check_dose dc) (min_safe_dose dc)) (<= (check_dose dc) (max_safe_dose dc)))))) ; HIS_001_13_dose_range_checking
 
 ; HIS_001_14_high_alert_safeguards (matches Coq: Theorem HIS_001_14_high_alert_safeguards)
-(assert (= true true)) ; HIS_001_14_high_alert_safeguards [untranslatable]
+(assert (forall ((ham Bool)) (=> (= (high_alert_safe ham) true) (=> (= (is_high_alert ham) true) (and (= (double_check_required ham) true) (= (double_check_performed ham) true)))))) ; HIS_001_14_high_alert_safeguards
 
 ; HIS_001_15_barcode_verification (matches Coq: Theorem HIS_001_15_barcode_verification)
-(assert (= true true)) ; HIS_001_15_barcode_verification [untranslatable]
+(assert (forall ((a Bool)) (=> (= (administration_allowed a) true) (= (barcode_verified a) true)))) ; HIS_001_15_barcode_verification
 
 ; HIS_001_16_order_completeness (matches Coq: Theorem HIS_001_16_order_completeness)
-(assert (= true true)) ; HIS_001_16_order_completeness [untranslatable]
+(assert (forall ((o Bool)) (=> (= (order_complete_check o) true) (and (= (has_all_fields o) true) (> (ord_drug o) 0) (> (ord_dose o) 0))))) ; HIS_001_16_order_completeness
 
 ; HIS_001_17_order_signature (matches Coq: Theorem HIS_001_17_order_signature)
-(assert (= true true)) ; HIS_001_17_order_signature [untranslatable]
+(assert (forall ((o Bool)) (=> (= (order_signed o) true) (and (= (has_signature o) true) (= (signature_valid o) true))))) ; HIS_001_17_order_signature
 
 ; HIS_001_18_verbal_order_auth (matches Coq: Theorem HIS_001_18_verbal_order_auth)
-(assert (= true true)) ; HIS_001_18_verbal_order_auth [untranslatable]
+(assert (forall ((vo Bool)) (=> (= (verbal_order_valid vo) true) (= (authenticated_within_24h vo) true)))) ; HIS_001_18_verbal_order_auth
 
 ; HIS_001_19_duplicate_order_prevention (matches Coq: Theorem HIS_001_19_duplicate_order_prevention)
-(assert (= true true)) ; HIS_001_19_duplicate_order_prevention [untranslatable]
+(assert (forall ((doc Bool)) (=> (= (duplicate_handled doc) true) (=> (= (is_duplicate doc) true) (and (= (warning_shown doc) true) (= (override_required doc) true)))))) ; HIS_001_19_duplicate_order_prevention
 
 ; HIS_001_20_contraindication_alert (matches Coq: Theorem HIS_001_20_contraindication_alert)
-(assert (= true true)) ; HIS_001_20_contraindication_alert [untranslatable]
+(assert (forall ((c Bool)) (=> (= (contraindication_blocked c) true) (=> (= (contra_detected c) true) (= (hard_stop_triggered c) true))))) ; HIS_001_20_contraindication_alert
 
 ; HIS_001_21_specimen_tracking (matches Coq: Theorem HIS_001_21_specimen_tracking)
-(assert (= true true)) ; HIS_001_21_specimen_tracking [untranslatable]
+(assert (forall ((s Bool)) (=> (= (specimen_tracked s) true) (and (= (fully_tracked s) true) (> (collection_time s) 0))))) ; HIS_001_21_specimen_tracking
 
 ; HIS_001_22_critical_value_notification (matches Coq: Theorem HIS_001_22_critical_value_notification)
-(assert (= true true)) ; HIS_001_22_critical_value_notification [untranslatable]
+(assert (forall ((r Bool)) (=> (= (critical_notified r) true) (=> (= (is_critical r) true) (= (notified_within_30min r) true))))) ; HIS_001_22_critical_value_notification
 
 ; HIS_001_23_result_validation (matches Coq: Theorem HIS_001_23_result_validation)
-(assert (= true true)) ; HIS_001_23_result_validation [untranslatable]
+(assert (forall ((r Bool)) (=> (= (result_validated r) true) (or (= (validated r) true) (= (needs_review r) true))))) ; HIS_001_23_result_validation
 
 ; HIS_001_24_delta_check (matches Coq: Theorem HIS_001_24_delta_check)
-(assert (= true true)) ; HIS_001_24_delta_check [untranslatable]
+(assert (forall ((dc Bool)) (=> (= (delta_flagged dc) true) (=> (= (exceeds_threshold dc) true) (= (flagged dc) true))))) ; HIS_001_24_delta_check
 
 ; HIS_001_25_reference_range_adjusted (matches Coq: Theorem HIS_001_25_reference_range_adjusted)
-(assert (= true true)) ; HIS_001_25_reference_range_adjusted [untranslatable]
+(assert (forall ((rr Bool)) (=> (= (range_adjusted rr) true) (and (= (age_adjusted rr) true) (= (sex_adjusted rr) true))))) ; HIS_001_25_reference_range_adjusted
 
 ; HIS_001_26_phi_access_control (matches Coq: Theorem HIS_001_26_phi_access_control)
-(assert (= true true)) ; HIS_001_26_phi_access_control [untranslatable]
+(assert (forall ((pa Bool)) (=> (= (phi_access_valid pa) true) (and (= (role_based pa) true) (= (minimum_necessary pa) true))))) ; HIS_001_26_phi_access_control
 
 ; HIS_001_27_audit_trail_complete (matches Coq: Theorem HIS_001_27_audit_trail_complete)
-(assert (= true true)) ; HIS_001_27_audit_trail_complete [untranslatable]
+(assert (forall ((pa Bool)) (=> (= (phi_accessed pa) true) (= (logged pa) true)))) ; HIS_001_27_audit_trail_complete
 
 ; HIS_001_28_breach_notification (matches Coq: Theorem HIS_001_28_breach_notification)
-(assert (= true true)) ; HIS_001_28_breach_notification [untranslatable]
+(assert (forall ((b Bool)) (=> (= (breach_notified b) true) (= (notified_within_60days b) true)))) ; HIS_001_28_breach_notification
 
 ; HIS_001_29_consent_required (matches Coq: Theorem HIS_001_29_consent_required)
-(assert (= true true)) ; HIS_001_29_consent_required [untranslatable]
+(assert (forall ((c Bool)) (=> (= (consent_valid c) true) (and (= (explicit_consent c) true) (= (processing_allowed c) true))))) ; HIS_001_29_consent_required
 
 ; HIS_001_30_data_portability (matches Coq: Theorem HIS_001_30_data_portability)
-(assert (= true true)) ; HIS_001_30_data_portability [untranslatable]
+(assert (forall ((de Bool)) (=> (= (data_portable de) true) (and (= (machine_readable de) true) (= (export_complete de) true))))) ; HIS_001_30_data_portability
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -11,103 +11,114 @@
 (declare-datatypes ((DTerm 0)) (((DVar) (DLam) (DApp) (DPair) (DFst) (DSnd) (DRefl) (DJ) (DNil) (DCons) (DHead) (DTail))))
 
 ; TYPE_005_01 (matches Coq: Theorem TYPE_005_01)
-(assert (= true true)) ; TYPE_005_01 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((A DTy 0)) (forall ((B Int)) (=> (= (WfTy ctx A) true) (=> (= (mk-tuple (forall n) WfTy) true) (= (WfTy ctx (DPi 0 A B)) true))))))) ; TYPE_005_01
 
 ; TYPE_005_02 (matches Coq: Theorem TYPE_005_02)
-(assert (= true true)) ; TYPE_005_02 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((A DTy 0)) (forall ((B nat -> DTy 0)) (forall ((b DTerm)) (=> (= (WfTy ctx A) true) (=> (= (mk-tuple (forall n) HasType) true) (= (HasType ctx (DLam A b) (DPi 0 A B)) true)))))))) ; TYPE_005_02
 
 ; TYPE_005_03 (matches Coq: Theorem TYPE_005_03)
-(assert (= true true)) ; TYPE_005_03 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((f DTerm) (a DTerm) (A DTy) (B Int) (v Int)) (=> (= (HasType ctx f (DPi 0 A B)) true) (=> (= (HasType ctx a A) true) (= (HasType ctx (DApp f a) (B v)) true)))))) ; TYPE_005_03
 
 ; TYPE_005_04 (matches Coq: Theorem TYPE_005_04)
-(assert (= true true)) ; TYPE_005_04 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((A DTy 0)) (forall ((B Int)) (=> (= (WfTy ctx A) true) (=> (= (mk-tuple (forall n) WfTy) true) (= (WfTy ctx (DSigma 0 A B)) true))))))) ; TYPE_005_04
 
 ; TYPE_005_05 (matches Coq: Theorem TYPE_005_05)
-(assert (= true true)) ; TYPE_005_05 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((a DTerm) (b DTerm) (A DTy) (B Int) (v Int)) (=> (= (HasType ctx a A) true) (=> (= (HasType ctx b (B v)) true) (=> (= (WfTy ctx (DSigma 0 A B)) true) (= (HasType ctx (DPair a b) (DSigma 0 A B)) true))))))) ; TYPE_005_05
 
 ; TYPE_005_06 (matches Coq: Theorem TYPE_005_06)
-(assert (= true true)) ; TYPE_005_06 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((p DTerm)) (forall ((A DTy 0)) (forall ((B Int)) (=> (= (HasType ctx p (DSigma 0 A B)) true) (and (= (HasType ctx (DFst p) A) true) (forall ((v Bool)) (= (HasType ctx (DSnd p) (B v)) true))))))))) ; TYPE_005_06
 
 ; TYPE_005_07 (matches Coq: Theorem TYPE_005_07)
-(assert (= true true)) ; TYPE_005_07 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((A DTy 0)) (forall ((n Int)) (=> (= (WfTy ctx A) true) (= (WfTy ctx (DVec 0 A n)) true)))))) ; TYPE_005_07
 
 ; TYPE_005_08 (matches Coq: Theorem TYPE_005_08)
-(assert (= true true)) ; TYPE_005_08 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((h DTerm) (t DTerm) (A DTy) (n Int)) (=> (= (HasType ctx h A) true) (=> (= (HasType ctx t (DVec 0 A n)) true) (= (HasType ctx (DCons h t) (DVec 0 A (+ n 1))) true)))))) ; TYPE_005_08
 
 ; vec_cons_length_semantic (matches Coq: Lemma vec_cons_length_semantic)
-(assert (= true true)) ; vec_cons_length_semantic [untranslatable]
+; vec_cons_length_semantic: forall (A : Type) (n : nat) (h : A) (t : Vec A n), Vector.cons A h n t = Vector.cons A h n t /\ exists (v : Vec A (S n))
+(assert (forall ((A Type) (n Int) (h A) (t Vec)) true)) ; vec_cons_length_semantic [partial: bindings preserved]
 
 ; TYPE_005_09 (matches Coq: Theorem TYPE_005_09)
-(assert (= true true)) ; TYPE_005_09 [untranslatable]
+(assert (forall ((ctx DCtx)) (forall ((v DTerm)) (forall ((A DTy 0)) (forall ((n Int)) (=> (= (HasType ctx v (DVec 0 A (+ n 1))) true) (= (HasType ctx (DHead v) A) true))))))) ; TYPE_005_09
 
 ; vec_head_nonempty_semantic (matches Coq: Lemma vec_head_nonempty_semantic)
-(assert (= true true)) ; vec_head_nonempty_semantic [untranslatable]
+(assert (forall ((A Type)) (forall ((n Int)) (forall ((v Vec)) (exists ((h A)) (= (Vector.hd v) h)))))) ; vec_head_nonempty_semantic
 
 ; TYPE_005_10 (matches Coq: Theorem TYPE_005_10)
-(assert (= true true)) ; TYPE_005_10 [untranslatable]
+; TYPE_005_10: forall (P : nat_motive) (base : P 0) (step : forall n, P n -> P (S n)) (m : nat), exists (result : P m), result = nat_re
+(assert (forall ((P nat_motive) (base P) (step forall) (m Int)) true)) ; TYPE_005_10 [partial: bindings preserved]
 
 ; vec_dep_pattern_match (matches Coq: Lemma vec_dep_pattern_match)
-(assert (= true true)) ; vec_dep_pattern_match [untranslatable]
+; vec_dep_pattern_match: forall (A : Type) (P : forall n, Vec A n -> Type) (base : P 0 (Vector.nil A)) (step : forall h n t, P n t -> P (S n) (Ve
+(assert (forall ((A Type) (P forall) (base P) (step forall) (n Int) (v Vec)) true)) ; vec_dep_pattern_match [partial: bindings preserved]
 
 ; TYPE_005_11 (matches Coq: Theorem TYPE_005_11)
-(assert (= true true)) ; TYPE_005_11 [untranslatable]
+; TYPE_005_11: forall (A : Type) (P : A -> Type) (x y : A) (eq : x = y) (px : P x), exists (py : P y), py = transport P eq px
+(assert (forall ((A Type) (P A) (x A) (y A) (eq x) (px P)) true)) ; TYPE_005_11 [partial: bindings preserved]
 
 ; transport_refl (matches Coq: Lemma transport_refl)
-(assert (= true true)) ; transport_refl [untranslatable]
+(assert (forall ((A Type)) (forall ((P A -> Type)) (forall ((x A)) (forall ((px P)) (= (transport P eq_refl px) px)))))) ; transport_refl
 
 ; transport_trans (matches Coq: Lemma transport_trans)
-(assert (= true true)) ; transport_trans [untranslatable]
+(assert (forall ((A Type)) (forall ((P A -> Type)) (forall ((x A) (y A) (z A) (eq1 x) (eq2 y) (px P)) (= (transport P eq2 (transport P eq1 px)) (transport P (eq_trans eq1 eq2) px)))))) ; transport_trans
 
 ; TYPE_005_12 (matches Coq: Theorem TYPE_005_12)
-(assert (= true true)) ; TYPE_005_12 [untranslatable]
+(assert (forall ((A Type) (B Type) (f A) (x A) (y A)) (=> (= x y) (= (f x) (f y))))) ; TYPE_005_12
 
 ; dep_congruence (matches Coq: Lemma dep_congruence)
-(assert (= true true)) ; dep_congruence [untranslatable]
+(assert (forall ((A Type)) (forall ((B A -> Type)) (forall ((f forall a, B a)) (forall ((x A) (y A) (eq x)) (= (transport B eq (f x)) (f y))))))) ; dep_congruence
 
 ; congruence2 (matches Coq: Lemma congruence2)
-(assert (= true true)) ; congruence2 [untranslatable]
+(assert (forall ((A Type) (B Type) (C Type) (f A) (x1 A) (x2 A) (y1 B) (y2 B)) (=> (= x1 x2) (=> (= y1 y2) (= (f x1 y1) (f x2 y2)))))) ; congruence2
 
 ; lt_wf_aux (matches Coq: Lemma lt_wf_aux)
-(assert (= true true)) ; lt_wf_aux [untranslatable]
+(assert (forall ((n Bool) (m Bool)) (=> (< m n) (= (Acc lt m) true)))) ; lt_wf_aux
 
 ; lt_well_founded (matches Coq: Lemma lt_well_founded)
-(assert (= true true)) ; lt_well_founded [untranslatable]
+(assert (= (well_founded lt) true)) ; lt_well_founded
 
 ; TYPE_005_13 (matches Coq: Theorem TYPE_005_13)
-(assert (= true true)) ; TYPE_005_13 [untranslatable]
+(assert (forall ((A Type)) (forall ((R A -> A -> Prop)) (forall ((P A)) (=> (= (well_founded R) true) (=> (forall ((x Bool)) (=> (forall ((y Bool)) (=> (= (R y x) true) (= (P y) true))) (= (P x) true))) (forall ((x Bool)) (= (P x) true)))))))) ; TYPE_005_13
 
 ; nat_dep_ind (matches Coq: Lemma nat_dep_ind)
-(assert (= true true)) ; nat_dep_ind [untranslatable]
+(assert (forall ((P Int)) (=> (= (P 0) true) (=> (forall ((n Bool)) (=> (= (P n) true) (= (P (+ n 1)) true))) (forall ((n Bool)) (= (P n) true)))))) ; nat_dep_ind
 
 ; strong_ind (matches Coq: Lemma strong_ind)
-(assert (= true true)) ; strong_ind [untranslatable]
+(assert (forall ((P Int)) (=> (forall ((n Bool)) (=> (forall ((m Bool)) (=> (< m n) (= (P m) true))) (= (P n) true))) (forall ((n Bool)) (= (P n) true))))) ; strong_ind
 
 ; TYPE_005_14 (matches Coq: Theorem TYPE_005_14)
-(assert (= true true)) ; TYPE_005_14 [untranslatable]
+; TYPE_005_14: forall (A : Type), (forall x y : A, {x = y} + {x <> y}) -> forall (x y : A), Dec (x = y)
+(assert (forall ((A Type)) true)) ; TYPE_005_14 [partial: bindings preserved]
 
 ; dec_eq_nat (matches Coq: Lemma dec_eq_nat)
-(assert (= true true)) ; dec_eq_nat [untranslatable]
+; dec_eq_nat: forall (x y : nat), Dec (x = y)
+(assert (forall ((x Int) (y Int)) true)) ; dec_eq_nat [partial: bindings preserved]
 
 ; dec_eq_bool (matches Coq: Lemma dec_eq_bool)
-(assert (= true true)) ; dec_eq_bool [untranslatable]
+; dec_eq_bool: forall (x y : bool), Dec (x = y)
+(assert (forall ((x Bool) (y Bool)) true)) ; dec_eq_bool [partial: bindings preserved]
 
 ; dec_eq_prod (matches Coq: Lemma dec_eq_prod)
-(assert (= true true)) ; dec_eq_prod [untranslatable]
+; dec_eq_prod: forall (A B : Type), (forall x y : A, Dec (x = y)) -> (forall x y : B, Dec (x = y)) -> forall (p1 p2 : A * B), Dec (p1 =
+(assert (forall ((A Type) (B Type)) true)) ; dec_eq_prod [partial: bindings preserved]
 
 ; dec_eq_option (matches Coq: Lemma dec_eq_option)
-(assert (= true true)) ; dec_eq_option [untranslatable]
+; dec_eq_option: forall (A : Type), (forall x y : A, Dec (x = y)) -> forall (o1 o2 : option A), Dec (o1 = o2)
+(assert (forall ((A Type)) true)) ; dec_eq_option [partial: bindings preserved]
 
 ; dec_eq_list (matches Coq: Lemma dec_eq_list)
-(assert (= true true)) ; dec_eq_list [untranslatable]
+; dec_eq_list: forall (A : Type), (forall x y : A, Dec (x = y)) -> forall (l1 l2 : list A), Dec (l1 = l2)
+(assert (forall ((A Type)) true)) ; dec_eq_list [partial: bindings preserved]
 
 ; dec_to_bool (matches Coq: Lemma dec_to_bool)
-(assert (= true true)) ; dec_to_bool [untranslatable]
+; dec_to_bool: forall (P : Prop), Dec P -> {P} + {~P}
+(assert (forall ((P Prop)) true)) ; dec_to_bool [partial: bindings preserved]
 
 ; nat_eq_reflect (matches Coq: Lemma nat_eq_reflect)
-(assert (= true true)) ; nat_eq_reflect [untranslatable]
+(assert (forall ((x Int) (y Int)) (and (=> (= (Nat.eqb x y) true) (= x y)) (=> (= x y) (= (Nat.eqb x y) true))))) ; nat_eq_reflect
 
 ; uip_dec (matches Coq: Lemma uip_dec)
-(assert (= true true)) ; uip_dec [untranslatable]
+(assert (forall ((A Type)) (=> (= (mk-tuple forall Dec) true) (forall ((x A)) (forall ((p x)) (= p eq_refl)))))) ; uip_dec
 
 ; Verify all assertions are satisfiable
 (check-sat)

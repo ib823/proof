@@ -86,7 +86,7 @@
   (mk-smart_contract_security (riina_reentrancy) (riina_integer) (riina_access) (riina_delegate) (riina_flash)))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; SC_001_reentrancy_protected (matches Coq: Theorem SC_001_reentrancy_protected)
 (assert (= (reentrancy_protected riina_reentrancy) true)) ; SC_001_reentrancy_protected
@@ -152,19 +152,19 @@
 (assert (= (fully_secure_contract riina_contract_security) true)) ; SC_021_riina_fully_secure
 
 ; SC_022_full_implies_reentrancy (matches Coq: Theorem SC_022_full_implies_reentrancy)
-(assert (= true true)) ; SC_022_full_implies_reentrancy [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (reentrancy_protected (sc_reentrancy s)) true)))) ; SC_022_full_implies_reentrancy
 
 ; SC_023_full_implies_integer (matches Coq: Theorem SC_023_full_implies_integer)
-(assert (= true true)) ; SC_023_full_implies_integer [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (integer_safe (sc_integer s)) true)))) ; SC_023_full_implies_integer
 
 ; SC_024_full_implies_access (matches Coq: Theorem SC_024_full_implies_access)
-(assert (= true true)) ; SC_024_full_implies_access [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (access_controlled (sc_access s)) true)))) ; SC_024_full_implies_access
 
 ; SC_025_full_implies_delegate (matches Coq: Theorem SC_025_full_implies_delegate)
-(assert (= true true)) ; SC_025_full_implies_delegate [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (delegate_safe (sc_delegate s)) true)))) ; SC_025_full_implies_delegate
 
 ; SC_026_full_implies_flash (matches Coq: Theorem SC_026_full_implies_flash)
-(assert (= true true)) ; SC_026_full_implies_flash [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (flash_defended (sc_flash s)) true)))) ; SC_026_full_implies_flash
 
 ; SC_027_riina_no_reentrancy (matches Coq: Theorem SC_027_riina_no_reentrancy)
 (assert (= (rg_mutex_lock riina_reentrancy) true)) ; SC_027_riina_no_reentrancy
@@ -176,22 +176,22 @@
 (assert (= (ac_no_tx_origin riina_access) true)) ; SC_029_riina_no_txorigin
 
 ; SC_030_full_implies_mutex (matches Coq: Theorem SC_030_full_implies_mutex)
-(assert (= true true)) ; SC_030_full_implies_mutex [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (rg_mutex_lock (sc_reentrancy s)) true)))) ; SC_030_full_implies_mutex
 
 ; SC_031_full_implies_overflow (matches Coq: Theorem SC_031_full_implies_overflow)
-(assert (= true true)) ; SC_031_full_implies_overflow [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (is_overflow_check (sc_integer s)) true)))) ; SC_031_full_implies_overflow
 
 ; SC_032_full_implies_no_txorigin (matches Coq: Theorem SC_032_full_implies_no_txorigin)
-(assert (= true true)) ; SC_032_full_implies_no_txorigin [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (ac_no_tx_origin (sc_access s)) true)))) ; SC_032_full_implies_no_txorigin
 
 ; SC_033_full_implies_oracle (matches Coq: Theorem SC_033_full_implies_oracle)
-(assert (= true true)) ; SC_033_full_implies_oracle [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (fl_oracle_checks (sc_flash s)) true)))) ; SC_033_full_implies_oracle
 
 ; SC_034_full_implies_cei (matches Coq: Theorem SC_034_full_implies_cei)
-(assert (= true true)) ; SC_034_full_implies_cei [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (= (rg_cei_pattern (sc_reentrancy s)) true)))) ; SC_034_full_implies_cei
 
 ; SC_035_complete_security (matches Coq: Theorem SC_035_complete_security)
-(assert (= true true)) ; SC_035_complete_security [untranslatable]
+(assert (forall ((s SmartContractSecurity)) (=> (= (fully_secure_contract s) true) (and (= (rg_mutex_lock (sc_reentrancy s)) true) (= (is_overflow_check (sc_integer s)) true) (= (ac_no_tx_origin (sc_access s)) true) (= (dc_storage_collision_check (sc_delegate s)) true) (= (fl_oracle_checks (sc_flash s)) true))))) ; SC_035_complete_security
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -33,76 +33,78 @@
 (define-fun evidence_count () Int true)
 
 ; eqb_sym (matches Coq: Lemma eqb_sym)
-(assert (= true true)) ; eqb_sym [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (Bool.eqb a b) (Bool.eqb b a)))) ; eqb_sym
 
 ; forallb_eqb_combine_sym (matches Coq: Lemma forallb_eqb_combine_sym)
-(assert (= true true)) ; forallb_eqb_combine_sym [untranslatable]
+; forallb_eqb_combine_sym: forall v1 v2, forallb (fun p => Bool.eqb (fst p) (snd p)) (combine v1 v2) = true -> forallb (fun p => Bool.eqb (fst p) (
+(assert (forall ((v1 Bool) (v2 Bool)) true)) ; forallb_eqb_combine_sym [partial: bindings preserved]
 
 ; differ_at_one_sym (matches Coq: Lemma differ_at_one_sym)
-(assert (= true true)) ; differ_at_one_sym [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (pos Bool)) (=> (= (differ_at_one v1 v2) (some pos)) (= (differ_at_one v2 v1) (some pos))))) ; differ_at_one_sym
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (d Bool)) (=> (= (mcdc_pair v1 v2 d) true) (= (mcdc_pair v2 v1 d) true)))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((v Bool)) (= (differ_at_one v v) none))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (fully_traced t) true) (=> (forall ((r Bool)) (= (In r (tr_reqs t)) true)) (exists ((tid Bool)) (= (In tid (tr_map t r)) true)))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sfr_satisfied s) true) (>= (sfr_evidence_count s) 1)))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sfr_satisfied s) true) (= (sfr_verified s) true)))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((d Bool)) (= (dal_leq d DAL_A) true))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((d Bool)) (= (dal_leq d d) true))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool) (d3 Bool)) (=> (= (dal_leq d1 d2) true) (=> (= (dal_leq d2 d3) true) (= (dal_leq d1 d3) true))))) ; 8
 
 ; fold_left_add_acc (matches Coq: Lemma fold_left_add_acc)
-(assert (= true true)) ; fold_left_add_acc [untranslatable]
+; fold_left_add_acc: forall l acc, fold_left (fun a s => a + sfr_evidence_count s) l acc = acc + fold_left (fun a s => a + sfr_evidence_count
+(assert (forall ((l Bool) (acc Bool)) true)) ; fold_left_add_acc [partial: bindings preserved]
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (evidence_count (concat l1 l2)) (+ (evidence_count l1) (evidence_count l2))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((sfrs Bool)) (=> (= (Forall sfr_satisfied sfrs) true) (>= (evidence_count sfrs) (length sfrs))))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((tm Bool) (tt Bool)) (= (fully_traced (mkTrace nil tm tt)) true))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((d Bool)) (= (dal_leq DAL_E d) true))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((d1 Bool) (d2 Bool)) (=> (= (dal_leq d1 d2) true) (=> (= (dal_leq d2 d1) true) (= (dal_to_nat d1) (dal_to_nat d2)))))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((d Bool)) (and (<= (dal_to_nat d) 5) (>= (dal_to_nat d) 1)))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (= (evidence_count nil) 0)) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((s Bool)) (= (evidence_count (insert s nil)) (sfr_evidence_count s)))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((sid Bool) (sv Bool) (sec Bool)) (=> (= (sfr_satisfied (mkSFR sid sv sec)) true) (and (= sv true) (>= sec 1))))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((v Bool) (d Bool)) (not (= (mcdc_pair v v d) true)))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (> (dal_to_nat DAL_A) (dal_to_nat DAL_B))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((l Bool) (s Bool)) (<= (evidence_count l) (evidence_count (concat l (insert s nil)))))) ; 20
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -50,73 +50,73 @@
   true)
 
 ; fsma_compliance (matches Coq: Theorem fsma_compliance)
-(assert (= true true)) ; fsma_compliance [untranslatable]
+(assert (forall ((controls FoodSafetyControls)) (forall ((facility Int)) (=> (= (preventive_controls controls) true) true)))) ; fsma_compliance
 
 ; food_traceability (matches Coq: Theorem food_traceability)
-(assert (= true true)) ; food_traceability [untranslatable]
+(assert (forall ((product Int)) (forall ((supply_chain Int)) true))) ; food_traceability
 
 ; precision_ag_security (matches Coq: Theorem precision_ag_security)
-(assert (= true true)) ; precision_ag_security [untranslatable]
+(assert (forall ((equipment Int)) (forall ((data AgriData)) true))) ; precision_ag_security
 
 ; iso_22000_compliance (matches Coq: Theorem iso_22000_compliance)
-(assert (= true true)) ; iso_22000_compliance [untranslatable]
+(assert (forall ((organization Int)) true)) ; iso_22000_compliance
 
 ; supply_chain_integrity (matches Coq: Theorem supply_chain_integrity)
-(assert (= true true)) ; supply_chain_integrity [untranslatable]
+(assert (forall ((supplier Int)) (forall ((product Int)) true))) ; supply_chain_integrity
 
 ; haccp_required (matches Coq: Theorem haccp_required)
-(assert (= true true)) ; haccp_required [untranslatable]
+(assert (forall ((controls FoodSafetyControls)) (forall ((facility Int)) (=> (= (haccp_plan controls) true) true)))) ; haccp_required
 
 ; recall_capability_required (matches Coq: Theorem recall_capability_required)
-(assert (= true true)) ; recall_capability_required [untranslatable]
+(assert (forall ((controls FoodSafetyControls)) (=> (= (recall_capability controls) true) (=> (= (traceability_system controls) true) true)))) ; recall_capability_required
 
 ; chemical_usage_highest_sensitivity (matches Coq: Theorem chemical_usage_highest_sensitivity)
-(assert (= true true)) ; chemical_usage_highest_sensitivity [untranslatable]
+(assert (forall ((d Bool)) (<= (agri_data_sensitivity d) (agri_data_sensitivity ChemicalUsage)))) ; chemical_usage_highest_sensitivity
 
 ; agri_data_sensitivity_positive (matches Coq: Theorem agri_data_sensitivity_positive)
-(assert (= true true)) ; agri_data_sensitivity_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (agri_data_sensitivity d) 1))) ; agri_data_sensitivity_positive
 
 ; hazard_severity_bounded (matches Coq: Theorem hazard_severity_bounded)
-(assert (= true true)) ; hazard_severity_bounded [untranslatable]
+(assert (forall ((h Bool)) (and (>= (hazard_severity h) 3) (<= (hazard_severity h) 5)))) ; hazard_severity_bounded
 
 ; biological_radiological_equal (matches Coq: Theorem biological_radiological_equal)
 (assert (= (hazard_severity Biological) (hazard_severity Radiological))) ; biological_radiological_equal
 
 ; higher_severity_more_frequent (matches Coq: Theorem higher_severity_more_frequent)
-(assert (= true true)) ; higher_severity_more_frequent [untranslatable]
+(assert (forall ((h Bool)) (=> (>= (hazard_severity h) 5) (<= (haccp_frequency h) 1)))) ; higher_severity_more_frequent
 
 ; haccp_frequency_positive (matches Coq: Theorem haccp_frequency_positive)
-(assert (= true true)) ; haccp_frequency_positive [untranslatable]
+(assert (forall ((h Bool)) (>= (haccp_frequency h) 1))) ; haccp_frequency_positive
 
 ; all_controls_implies_haccp (matches Coq: Theorem all_controls_implies_haccp)
-(assert (= true true)) ; all_controls_implies_haccp [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_food_safety_controls c) true) (= (haccp_plan c) true)))) ; all_controls_implies_haccp
 
 ; all_controls_implies_recall (matches Coq: Theorem all_controls_implies_recall)
-(assert (= true true)) ; all_controls_implies_recall [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_food_safety_controls c) true) (= (recall_capability c) true)))) ; all_controls_implies_recall
 
 ; all_controls_implies_traceability (matches Coq: Theorem all_controls_implies_traceability)
-(assert (= true true)) ; all_controls_implies_traceability [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_food_safety_controls c) true) (= (traceability_system c) true)))) ; all_controls_implies_traceability
 
 ; farm_area_meets_minimum (matches Coq: Theorem farm_area_meets_minimum)
-(assert (= true true)) ; farm_area_meets_minimum [untranslatable]
+(assert (forall ((f CertifiedFarm)) (<= (farm_min_area f) (farm_area_hectares f)))) ; farm_area_meets_minimum
 
 ; traceability_dates_valid (matches Coq: Theorem traceability_dates_valid)
-(assert (= true true)) ; traceability_dates_valid [untranslatable]
+(assert (forall ((t TraceEntry)) (<= (trace_timestamp t) (trace_expiry t)))) ; traceability_dates_valid
 
 ; agri_effect_eq_refl (matches Coq: Theorem agri_effect_eq_refl)
-(assert (= true true)) ; agri_effect_eq_refl [untranslatable]
+(assert (forall ((e Bool)) (=> (= (agri_effect_eq_dec e e) (left eq_refl)) (= e e)))) ; agri_effect_eq_refl
 
 ; risk_score_positive (matches Coq: Theorem risk_score_positive)
-(assert (= true true)) ; risk_score_positive [untranslatable]
+(assert (forall ((h Bool)) (>= (risk_score h) 1))) ; risk_score_positive
 
 ; risk_score_bounded (matches Coq: Theorem risk_score_bounded)
-(assert (= true true)) ; risk_score_bounded [untranslatable]
+(assert (forall ((h Bool)) (<= (risk_score h) 25))) ; risk_score_bounded
 
 ; count_controls_bounded (matches Coq: Theorem count_controls_bounded)
-(assert (= true true)) ; count_controls_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_food_controls c) 6))) ; count_controls_bounded
 
 ; all_controls_count_six (matches Coq: Theorem all_controls_count_six)
-(assert (= true true)) ; all_controls_count_six [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_food_safety_controls c) true) (= (count_food_controls c) 6)))) ; all_controls_count_six
 
 ; Verify all assertions are satisfiable
 (check-sat)

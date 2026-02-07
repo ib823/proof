@@ -80,70 +80,72 @@
 (define-fun respects_effects () Prop true)
 
 ; effectOp_eqb_eq (matches Coq: Lemma effectOp_eqb_eq)
-(assert (= true true)) ; effectOp_eqb_eq [untranslatable]
+(assert (forall ((o1 Bool) (o2 Bool)) (and (=> (= (effectOp_eqb o1 o2) true) (= o1 o2)) (=> (= o1 o2) (= (effectOp_eqb o1 o2) true))))) ; effectOp_eqb_eq
 
 ; effectOp_eqb_refl (matches Coq: Lemma effectOp_eqb_refl)
-(assert (= true true)) ; effectOp_eqb_refl [untranslatable]
+(assert (forall ((o Bool)) (= (effectOp_eqb o o) true))) ; effectOp_eqb_refl
 
 ; in_row_In (matches Coq: Lemma in_row_In)
-(assert (= true true)) ; in_row_In [untranslatable]
+(assert (forall ((op Bool) (row Bool)) (and (=> (= (in_row op row) true) (= (In op row) true)) (=> (= (In op row) true) (= (in_row op row) true))))) ; in_row_In
 
 ; row_subset_incl (matches Coq: Lemma row_subset_incl)
-(assert (= true true)) ; row_subset_incl [untranslatable]
+(assert (forall ((r1 Bool) (r2 Bool)) (and (=> (= (row_subset r1 r2) true) (= (incl r1 r2) true)) (=> (= (incl r1 r2) true) (= (row_subset r1 r2) true))))) ; row_subset_incl
 
 ; row_minus_spec (matches Coq: Lemma row_minus_spec)
-(assert (= true true)) ; row_minus_spec [untranslatable]
+(assert (forall ((r Bool) (handled Bool) (op Bool)) (and (=> (= (In op (row_minus r handled)) true) (and (= (In op r) true) (= (~In op handled) true))) (=> (and (= (In op r) true) (= (~In op handled) true)) (= (In op (row_minus r handled)) true))))) ; row_minus_spec
 
 ; EFF_001_01_effect_signature_wellformedness (matches Coq: Theorem EFF_001_01_effect_signature_wellformedness)
-(assert (= true true)) ; EFF_001_01_effect_signature_wellformedness [untranslatable]
+(assert (forall ((sig EffectSig)) (=> (= (sig_wellformed sig) true) (=> (forall ((op1 Bool) (op2 Bool) (i Bool) (j Bool)) (= (nth_error sig i) (some op1))) (=> (= (nth_error sig j) (some op2)) (=> (= op1 op2) (= i j))))))) ; EFF_001_01_effect_signature_wellformedness
 
 ; EFF_001_02_operation_typing (matches Coq: Theorem EFF_001_02_operation_typing)
-(assert (= true true)) ; EFF_001_02_operation_typing [untranslatable]
+(assert (forall ((op EffectOp)) (forall ((v Val)) (forall ((sig EffectSig)) (=> (= (val_has_type v (opInputTy (opSignature op))) true) (=> (= (In op sig) true) (= (comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)) true))))))) ; EFF_001_02_operation_typing
 
 ; EFF_001_03_handler_typing (matches Coq: Theorem EFF_001_03_handler_typing)
-(assert (= true true)) ; EFF_001_03_handler_typing [untranslatable]
+(assert (forall ((h Handler)) (forall ((c Comp)) (forall ((t BaseTy)) (forall ((sig EffectRow) (sig' EffectRow)) (=> (= (comp_has_type c (CTyEff t sig)) true) (=> (= (handler_has_type h sig t sig') true) (= (comp_has_type (CHandle c h) (CTyEff t sig')) true)))))))) ; EFF_001_03_handler_typing
 
 ; EFF_001_04_effect_row_combination (matches Coq: Theorem EFF_001_04_effect_row_combination)
-(assert (= true true)) ; EFF_001_04_effect_row_combination [untranslatable]
+(assert (forall ((r1 EffectRow) (r2 EffectRow)) (=> (= (sig_wellformed r1) true) (=> (= (sig_wellformed r2) true) (=> (forall ((op Bool)) (=> (= (In op r1) true) (= (~In op r2) true))) (= (sig_wellformed (row_union r1 r2)) true)))))) ; EFF_001_04_effect_row_combination
 
 ; EFF_001_05_effect_subsumption (matches Coq: Theorem EFF_001_05_effect_subsumption)
-(assert (= true true)) ; EFF_001_05_effect_subsumption [untranslatable]
+(assert (forall ((op EffectOp)) (forall ((v Val)) (forall ((sig EffectRow) (sig' EffectRow)) (=> (= (comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)) true) (=> (= (incl sig sig') true) (= (comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig')) true))))))) ; EFF_001_05_effect_subsumption
 
 ; EFF_001_06_pure_computation (matches Coq: Theorem EFF_001_06_pure_computation)
-(assert (= true true)) ; EFF_001_06_pure_computation [untranslatable]
+(assert (forall ((c Comp)) (forall ((t BaseTy)) (=> (= (comp_has_type c (CTyPure t)) true) (= (is_pure c) true))))) ; EFF_001_06_pure_computation
 
 ; compose_handlers_effects (matches Coq: Lemma compose_handlers_effects)
-(assert (= true true)) ; compose_handlers_effects [untranslatable]
+(assert (forall ((h1 Bool) (h2 Bool)) (= (handler_effects (compose_handlers h1 h2)) (concat (handler_effects h1) (handler_effects h2))))) ; compose_handlers_effects
 
 ; EFF_001_07_handler_composition (matches Coq: Theorem EFF_001_07_handler_composition)
-(assert (= true true)) ; EFF_001_07_handler_composition [untranslatable]
+(assert (forall ((h1 Handler) (h2 Handler) (t BaseTy) (sig EffectRow)) (=> (= (handler_has_type h1 (handler_effects h1) t sig) true) (=> (= (handler_has_type h2 (handler_effects h2) t sig) true) (=> (forall ((op Bool)) (=> (= (In op (handler_effects h1)) true) (= (~In op (handler_effects h2)) true))) (= (handler_has_type (compose_handlers h1 h2) (concat (handler_effects h1) (handler_effects h2)) t sig) true)))))) ; EFF_001_07_handler_composition
 
 ; EFF_001_08_effect_polymorphism (matches Coq: Theorem EFF_001_08_effect_polymorphism)
-(assert (= true true)) ; EFF_001_08_effect_polymorphism [untranslatable]
+(assert (forall ((f forall)) (=> (forall ((sig Bool) (c Bool)) (= (f sig c) c)) (= (effect_polymorphic_fn f) true)))) ; EFF_001_08_effect_polymorphism
 
 ; EFF_001_09_deep_handler_semantics (matches Coq: Theorem EFF_001_09_deep_handler_semantics)
-(assert (= true true)) ; EFF_001_09_deep_handler_semantics [untranslatable]
+; EFF_001_09_deep_handler_semantics: forall (op : EffectOp) (v : Val) (f : Val -> (Val -> Comp) -> Comp) (h : Handler), deep_step (CHandle (CPerform op v) (H
+(assert (forall ((op EffectOp) (v Val) (f Val) (h Handler)) true)) ; EFF_001_09_deep_handler_semantics [partial: bindings preserved]
 
 ; EFF_001_10_shallow_handler_semantics (matches Coq: Theorem EFF_001_10_shallow_handler_semantics)
-(assert (= true true)) ; EFF_001_10_shallow_handler_semantics [untranslatable]
+; EFF_001_10_shallow_handler_semantics: forall (op : EffectOp) (v : Val) (f : Val -> (Val -> Comp) -> Comp) (h : Handler), shallow_step (CHandle (CPerform op v)
+(assert (forall ((op EffectOp) (v Val) (f Val) (h Handler)) true)) ; EFF_001_10_shallow_handler_semantics [partial: bindings preserved]
 
 ; EFF_001_11_effect_masking (matches Coq: Theorem EFF_001_11_effect_masking)
-(assert (= true true)) ; EFF_001_11_effect_masking [untranslatable]
+(assert (forall ((h Handler)) (forall ((sig EffectRow)) (forall ((op EffectOp)) (=> (= (In op (handler_effects h)) true) (=> (= (In op sig) true) (= (~In op (row_minus sig (handler_effects h))) true))))))) ; EFF_001_11_effect_masking
 
 ; EFF_001_12_resumption_linearity (matches Coq: Theorem EFF_001_12_resumption_linearity)
-(assert (= true true)) ; EFF_001_12_resumption_linearity [untranslatable]
+(assert (forall ((f Val) (v Val) (k Val)) (=> (= (linear_handler_clause f) true) (exists ((r Bool)) (= (f v k) (k r)))))) ; EFF_001_12_resumption_linearity
 
 ; EFF_001_13_effect_safety (matches Coq: Theorem EFF_001_13_effect_safety)
-(assert (= true true)) ; EFF_001_13_effect_safety [untranslatable]
+(assert (forall ((c Comp)) (forall ((t BaseTy)) (=> (= (comp_has_type c (CTyEff t empty_row)) true) (forall ((op Bool) (v Bool)) (not (= c (CPerform op v)))))))) ; EFF_001_13_effect_safety
 
 ; EFF_001_14_effect_parametricity (matches Coq: Theorem EFF_001_14_effect_parametricity)
-(assert (= true true)) ; EFF_001_14_effect_parametricity [untranslatable]
+(assert (forall ((f Comp)) (=> (forall ((c Bool)) (= (f c) c)) (= (respects_effects f) true)))) ; EFF_001_14_effect_parametricity
 
 ; eval_pure_deterministic (matches Coq: Lemma eval_pure_deterministic)
-(assert (= true true)) ; eval_pure_deterministic [untranslatable]
+(assert (forall ((c Bool) (v1 Bool) (v2 Bool)) (=> (= (eval_pure c v1) true) (=> (= (eval_pure c v2) true) (= v1 v2))))) ; eval_pure_deterministic
 
 ; EFF_001_15_effect_coherence (matches Coq: Theorem EFF_001_15_effect_coherence)
-(assert (= true true)) ; EFF_001_15_effect_coherence [untranslatable]
+(assert (forall ((c Comp)) (forall ((v1 Val) (v2 Val)) (=> (= (is_pure c) true) (=> (= (eval_pure c v1) true) (=> (= (eval_pure c v2) true) (= v1 v2))))))) ; EFF_001_15_effect_coherence
 
 ; Verify all assertions are satisfiable
 (check-sat)

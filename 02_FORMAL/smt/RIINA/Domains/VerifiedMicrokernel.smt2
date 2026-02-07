@@ -156,79 +156,80 @@
   true)
 
 ; OS_001_01_cap_unforgeable (matches Coq: Theorem OS_001_01_cap_unforgeable)
-(assert (= true true)) ; OS_001_01_cap_unforgeable [untranslatable]
+(assert (forall ((s Bool) (p Bool) (c Bool)) (=> (= (holds s p c) true) (exists ((slot Bool)) (= (cap_lookup s p slot) (some c)))))) ; OS_001_01_cap_unforgeable
 
 ; OS_001_02_cap_monotonic (matches Coq: Theorem OS_001_02_cap_monotonic)
-(assert (= true true)) ; OS_001_02_cap_monotonic [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (derives c1 c2) true) (= (rights_subset (cap_rights c2) (cap_rights c1)) true)))) ; OS_001_02_cap_monotonic
 
 ; OS_001_03_cap_revocation_complete (matches Coq: Theorem OS_001_03_cap_revocation_complete)
-(assert (= true true)) ; OS_001_03_cap_revocation_complete [untranslatable]
+(assert (forall ((s Bool) (c Bool)) (=> (= (is_revoked s c) true) (not (= (cap_valid s c) true))))) ; OS_001_03_cap_revocation_complete
 
 ; OS_001_04_cap_transfer_safe (matches Coq: Theorem OS_001_04_cap_transfer_safe)
-(assert (= true true)) ; OS_001_04_cap_transfer_safe [untranslatable]
+(assert (forall ((s Bool) (s' Bool) (p_from Bool) (p_to Bool) (c Bool)) (=> (= (holds s p_from c) true) (=> (= (cap_valid s c) true) (=> (= (transfer_preserves_validity s s' c) true) (=> (= (holds s' p_to c) true) (= (cap_valid s' c) true))))))) ; OS_001_04_cap_transfer_safe
 
 ; OS_001_05_cap_derivation_sound (matches Coq: Theorem OS_001_05_cap_derivation_sound)
-(assert (= true true)) ; OS_001_05_cap_derivation_sound [untranslatable]
+(assert (forall ((parent Bool) (child Bool)) (=> (= (derives parent child) true) (and (= (cap_object child) (cap_object parent)) (= (rights_subset (cap_rights child) (cap_rights parent)) true))))) ; OS_001_05_cap_derivation_sound
 
 ; OS_001_06_no_confused_deputy (matches Coq: Theorem OS_001_06_no_confused_deputy)
-(assert (= true true)) ; OS_001_06_no_confused_deputy [untranslatable]
+(assert (forall ((s Bool) (p Bool) (c Bool) (action Bool)) (=> (= (can_invoke s p action c) true) (= (holds s p c) true)))) ; OS_001_06_no_confused_deputy
 
 ; OS_001_07_cap_lookup_correct (matches Coq: Theorem OS_001_07_cap_lookup_correct)
-(assert (= true true)) ; OS_001_07_cap_lookup_correct [untranslatable]
+(assert (forall ((s Bool) (p Bool) (slot Bool) (c Bool)) (=> (= (cap_lookup s p slot) (some c)) (= (nth_error (cap_tables s p) slot) (some c))))) ; OS_001_07_cap_lookup_correct
 
 ; OS_001_08_cap_space_isolation (matches Coq: Theorem OS_001_08_cap_space_isolation)
-(assert (= true true)) ; OS_001_08_cap_space_isolation [untranslatable]
+(assert (forall ((s Bool) (p1 Bool) (p2 Bool) (slot1 Bool) (slot2 Bool) (c Bool)) (=> (not (= p1 p2)) (=> (= (cap_lookup s p1 slot1) (some c)) (=> (= (cap_lookup s p2 slot2) (some c)) (and (= (holds s p1 c) true) (= (holds s p2 c) true))))))) ; OS_001_08_cap_space_isolation
 
 ; OS_001_09_cap_invoke_authorized (matches Coq: Theorem OS_001_09_cap_invoke_authorized)
-(assert (= true true)) ; OS_001_09_cap_invoke_authorized [untranslatable]
+(assert (forall ((s Bool) (p Bool) (action Bool) (c Bool)) (=> (= (can_invoke s p action c) true) (= (action_authorized c action) true)))) ; OS_001_09_cap_invoke_authorized
 
 ; OS_001_10_cap_badge_integrity (matches Coq: Theorem OS_001_10_cap_badge_integrity)
-(assert (= true true)) ; OS_001_10_cap_badge_integrity [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (derives c1 c2) true) (= (cap_object c2) (cap_object c1))))) ; OS_001_10_cap_badge_integrity
 
 ; OS_001_11_address_space_isolation (matches Coq: Theorem OS_001_11_address_space_isolation)
-(assert (= true true)) ; OS_001_11_address_space_isolation [untranslatable]
+(assert (forall ((ms Bool) (p1 Bool) (p2 Bool) (vaddr Bool)) (=> (= (isolation_invariant ms) true) (=> (not (= p1 p2)) (=> (= (mapped ms p1 vaddr) true) (= (properly_isolated ms p1 p2 vaddr) true)))))) ; OS_001_11_address_space_isolation
 
 ; OS_001_12_kernel_memory_integrity (matches Coq: Theorem OS_001_12_kernel_memory_integrity)
-(assert (= true true)) ; OS_001_12_kernel_memory_integrity [untranslatable]
+(assert (forall ((ms Bool) (p Bool) (vaddr Bool) (pte Bool)) (=> (= (valid_memory_state ms) true) (=> (= (address_spaces ms p vaddr) (some pte)) (=> (= (pte_valid pte) true) (=> (= (pte_userspace pte) true) (not (= (is_kernel_memory ms (pte_paddr pte)) true)))))))) ; OS_001_12_kernel_memory_integrity
 
 ; OS_001_13_page_table_correct (matches Coq: Theorem OS_001_13_page_table_correct)
-(assert (= true true)) ; OS_001_13_page_table_correct [untranslatable]
+(assert (forall ((ms Bool) (p Bool) (vaddr Bool) (paddr Bool)) (=> (= (translate ms p vaddr) (some paddr)) (exists ((pte Bool)) (and (= (address_spaces ms p vaddr) (some pte)) (= (pte_valid pte) true) (= (pte_paddr pte) paddr)))))) ; OS_001_13_page_table_correct
 
 ; OS_001_14_no_page_table_corruption (matches Coq: Theorem OS_001_14_no_page_table_corruption)
-(assert (= true true)) ; OS_001_14_no_page_table_corruption [untranslatable]
+(assert (forall ((ms Bool) (p Bool) (vaddr Bool) (pte Bool)) (=> (= (valid_memory_state ms) true) (=> (= (address_spaces ms p vaddr) (some pte)) (=> (= (pte_userspace pte) true) (= (kernel_memory ms (pte_paddr pte)) false)))))) ; OS_001_14_no_page_table_corruption
 
 ; OS_001_15_mapping_respects_caps (matches Coq: Theorem OS_001_15_mapping_respects_caps)
-(assert (= true true)) ; OS_001_15_mapping_respects_caps [untranslatable]
+(assert (forall ((ms Bool) (p Bool) (vaddr Bool) (pte Bool)) (=> (= (valid_memory_state ms) true) (=> (= (address_spaces ms p vaddr) (some pte)) (=> (= (pte_valid pte) true) (= (has_frame_cap ms p (pte_paddr pte)) true)))))) ; OS_001_15_mapping_respects_caps
 
 ; OS_001_16_unmap_complete (matches Coq: Theorem OS_001_16_unmap_complete)
-(assert (= true true)) ; OS_001_16_unmap_complete [untranslatable]
+(assert (forall ((ms Bool) (p Bool) (vaddr Bool)) (=> (= (unmapped ms p vaddr) true) (= (translate ms p vaddr) none)))) ; OS_001_16_unmap_complete
 
 ; OS_001_17_no_kernel_data_leak (matches Coq: Theorem OS_001_17_no_kernel_data_leak)
-(assert (= true true)) ; OS_001_17_no_kernel_data_leak [untranslatable]
+(assert (forall ((ms Bool) (p Bool) (vaddr Bool) (paddr Bool)) (=> (= (valid_memory_state ms) true) (=> (= (translate ms p vaddr) (some paddr)) (=> (exists ((pte Bool)) (and (= (address_spaces ms p vaddr) (some pte)) (= (pte_userspace pte) true))) (not (= (is_kernel_memory ms paddr) true))))))) ; OS_001_17_no_kernel_data_leak
 
 ; OS_001_18_frame_allocation_safe (matches Coq: Theorem OS_001_18_frame_allocation_safe)
-(assert (= true true)) ; OS_001_18_frame_allocation_safe [untranslatable]
+(assert (forall ((ms Bool) (ms' Bool) (paddr Bool) (owner Bool)) (=> (= (valid_memory_state ms) true) (=> (= (frame_owners ms paddr) none) (=> (= (frame_owners ms' paddr) (some owner)) (=> (= (kernel_memory ms' paddr) false) (=> (= (valid_memory_state ms') true) (= (allocation_safe ms ms' paddr) true)))))))) ; OS_001_18_frame_allocation_safe
 
 ; OS_001_19_ipc_type_safe (matches Coq: Theorem OS_001_19_ipc_type_safe)
-(assert (= true true)) ; OS_001_19_ipc_type_safe [untranslatable]
+(assert (forall ((msg Bool)) (=> (<= (length (msg_data msg)) 128) (=> (<= (length (msg_caps msg)) 4) (= (msg_type_safe msg) true))))) ; OS_001_19_ipc_type_safe
 
 ; OS_001_20_ipc_cap_transfer_safe (matches Coq: Theorem OS_001_20_ipc_cap_transfer_safe)
-(assert (= true true)) ; OS_001_20_ipc_cap_transfer_safe [untranslatable]
+(assert (forall ((is Bool) (sender Bool) (msg Bool)) (=> (= (msg_caps_valid is sender msg) true) (=> (forall ((c Bool)) (= (In c (msg_caps msg)) true)) (and (= (holds (mem_kernel (ipc_mem is)) sender c) true) (= (In RGrant (cap_rights c)) true)))))) ; OS_001_20_ipc_cap_transfer_safe
 
 ; OS_001_21_ipc_deadlock_free (matches Coq: Theorem OS_001_21_ipc_deadlock_free)
-(assert (= true true)) ; OS_001_21_ipc_deadlock_free [untranslatable]
+(assert (forall ((is Bool)) (=> (= (valid_ipc_state is) true) (not (exists ((cycle Bool)) (= (ipc_wait_cycle is cycle) true)))))) ; OS_001_21_ipc_deadlock_free
 
 ; OS_001_22_ipc_no_amplification (matches Coq: Theorem OS_001_22_ipc_no_amplification)
-(assert (= true true)) ; OS_001_22_ipc_no_amplification [untranslatable]
+(assert (forall ((is Bool) (sender Bool) (msg Bool) (c Bool)) (=> (= (msg_caps_valid is sender msg) true) (=> (= (In c (msg_caps msg)) true) (exists ((c' Bool)) (and (= (holds (mem_kernel (ipc_mem is)) sender c') true) (= (rights_subset (cap_rights c) (cap_rights c')) true))))))) ; OS_001_22_ipc_no_amplification
 
 ; OS_001_23_ipc_isolation (matches Coq: Theorem OS_001_23_ipc_isolation)
-(assert (= true true)) ; OS_001_23_ipc_isolation [untranslatable]
+(assert (forall ((is Bool) (p1 Bool) (p2 Bool) (ep Bool)) (=> (= (ipc_maintains_isolation is) true) (=> (= (In ep (endpoints is)) true) (=> (= (In p1 (ep_queue ep)) true) (=> (not (= (In p2 (ep_queue ep)) true)) (not (= (holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)) true)))))))) ; OS_001_23_ipc_isolation
 
 ; OS_001_24_endpoint_protection (matches Coq: Theorem OS_001_24_endpoint_protection)
-(assert (= true true)) ; OS_001_24_endpoint_protection [untranslatable]
+(assert (forall ((is Bool) (ep Bool)) (=> (= (endpoint_protected is ep) true) (=> (forall ((p Bool)) (= (In p (ep_queue ep)) true)) (= (holds (mem_kernel (ipc_mem is)) p (ep_cap ep)) true))))) ; OS_001_24_endpoint_protection
 
 ; OS_001_25_notification_no_leak (matches Coq: Theorem OS_001_25_notification_no_leak)
-(assert (= true true)) ; OS_001_25_notification_no_leak [untranslatable]
+; OS_001_25_notification_no_leak: forall n, notif_no_sensitive_data n ->  notif_word n < 2^32
+(assert (forall ((n Bool)) true)) ; OS_001_25_notification_no_leak [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

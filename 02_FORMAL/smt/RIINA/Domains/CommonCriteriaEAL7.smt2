@@ -163,10 +163,10 @@
 (assert (forall ((l SecurityLabel)) (= (label_leq l l) true))) ; CC_001_label_reflexivity
 
 ; CC_002_label_transitivity (matches Coq: Theorem CC_002_label_transitivity)
-(assert (= true true)) ; CC_002_label_transitivity [untranslatable]
+(assert (forall ((l1 SecurityLabel) (l2 SecurityLabel) (l3 SecurityLabel)) (=> (= (label_leq l1 l2) true) (=> (= (label_leq l2 l3) true) (= (label_leq l1 l3) true))))) ; CC_002_label_transitivity
 
 ; CC_003_label_antisymmetry (matches Coq: Theorem CC_003_label_antisymmetry)
-(assert (= true true)) ; CC_003_label_antisymmetry [untranslatable]
+(assert (forall ((l1 SecurityLabel) (l2 SecurityLabel)) (=> (= (label_leq l1 l2) true) (=> (= (label_leq l2 l1) true) (= l1 l2))))) ; CC_003_label_antisymmetry
 
 ; CC_004_public_is_bottom (matches Coq: Theorem CC_004_public_is_bottom)
 (assert (forall ((l SecurityLabel)) (= (label_leq SL_Public l) true))) ; CC_004_public_is_bottom
@@ -175,25 +175,25 @@
 (assert (forall ((l SecurityLabel)) (= (label_leq l SL_TopSecret) true))) ; CC_005_topsecret_is_top
 
 ; CC_006_valid_context_clearance (matches Coq: Theorem CC_006_valid_context_clearance)
-(assert (= true true)) ; CC_006_valid_context_clearance [untranslatable]
+(assert (forall ((ctx SecurityContext)) (=> (= (valid_security_context ctx) true) (= (label_leq (ctx_current_label ctx) (ctx_clearance ctx)) true)))) ; CC_006_valid_context_clearance
 
 ; CC_007_no_write_down_preserves_confidentiality (matches Coq: Theorem CC_007_no_write_down_preserves_confidentiality)
-(assert (= true true)) ; CC_007_no_write_down_preserves_confidentiality [untranslatable]
+(assert (forall ((src SecurityLabel) (dst SecurityLabel)) (=> (= (no_write_down src dst) true) (= (label_leq src dst) true)))) ; CC_007_no_write_down_preserves_confidentiality
 
 ; CC_008_no_read_up_prevents_leakage (matches Coq: Theorem CC_008_no_read_up_prevents_leakage)
-(assert (= true true)) ; CC_008_no_read_up_prevents_leakage [untranslatable]
+(assert (forall ((clearance SecurityLabel) (obj_label SecurityLabel)) (=> (= (no_read_up clearance obj_label) true) (= (label_leq obj_label clearance) true)))) ; CC_008_no_read_up_prevents_leakage
 
 ; CC_009_blp_simple_security_sound (matches Coq: Theorem CC_009_blp_simple_security_sound)
-(assert (= true true)) ; CC_009_blp_simple_security_sound [untranslatable]
+(assert (forall ((subj_clear SecurityLabel) (obj_class SecurityLabel)) (=> (= (blp_simple_security subj_clear obj_class) true) (= (label_leq obj_class subj_clear) true)))) ; CC_009_blp_simple_security_sound
 
 ; CC_010_blp_star_property_sound (matches Coq: Theorem CC_010_blp_star_property_sound)
-(assert (= true true)) ; CC_010_blp_star_property_sound [untranslatable]
+(assert (forall ((subj_curr SecurityLabel) (obj_class SecurityLabel)) (=> (= (blp_star_property subj_curr obj_class) true) (= (label_leq subj_curr obj_class) true)))) ; CC_010_blp_star_property_sound
 
 ; CC_011_compliant_adv_valid (matches Coq: Theorem CC_011_compliant_adv_valid)
 (assert (= (adv_compliant mk_compliant_adv) true)) ; CC_011_compliant_adv_valid
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; CC_012_architecture_completeness (matches Coq: Theorem CC_012_architecture_completeness)
 (assert (forall ((adv DevelopmentAssurance)) (=> (= (adv_compliant adv) true) (= (adv_arc_complete adv) true)))) ; CC_012_architecture_completeness
@@ -226,49 +226,54 @@
 (assert (= (eal7_compliant mk_compliant_eal7) true)) ; CC_021_compliant_eal7_valid
 
 ; CC_022_eal7_implies_adv (matches Coq: Theorem CC_022_eal7_implies_adv)
-(assert (= true true)) ; CC_022_eal7_implies_adv [untranslatable]
+(assert (forall ((pkg EAL7Package)) (=> (= (eal7_compliant pkg) true) (= (adv_compliant (eal7_adv pkg)) true)))) ; CC_022_eal7_implies_adv
 
 ; CC_023_eal7_implies_ava (matches Coq: Theorem CC_023_eal7_implies_ava)
-(assert (= true true)) ; CC_023_eal7_implies_ava [untranslatable]
+(assert (forall ((pkg EAL7Package)) (=> (= (eal7_compliant pkg) true) (= (ava_compliant (eal7_ava pkg)) true)))) ; CC_023_eal7_implies_ava
 
 ; CC_024_eal7_implies_formal_verification (matches Coq: Theorem CC_024_eal7_implies_formal_verification)
-(assert (= true true)) ; CC_024_eal7_implies_formal_verification [untranslatable]
+(assert (forall ((pkg EAL7Package)) (=> (= (eal7_compliant pkg) true) (= (adv_imp_verified (eal7_adv pkg)) true)))) ; CC_024_eal7_implies_formal_verification
 
 ; CC_025_eal7_implies_high_attack_resistance (matches Coq: Theorem CC_025_eal7_implies_high_attack_resistance)
-(assert (= true true)) ; CC_025_eal7_implies_high_attack_resistance [untranslatable]
+(assert (forall ((pkg EAL7Package)) (=> (= (eal7_compliant pkg) true) (= (ava_van_high_attack (eal7_ava pkg)) true)))) ; CC_025_eal7_implies_high_attack_resistance
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; CC_026_audit_generation_verifiable (matches Coq: Theorem CC_026_audit_generation_verifiable)
-(assert (= true true)) ; CC_026_audit_generation_verifiable [untranslatable]
+; CC_026_audit_generation_verifiable: forall classes : list SecurityClass, has_audit classes = true -> In FAU_GEN classes
+(assert true) ; CC_026_audit_generation_verifiable [Coq-only]
 
 ; CC_027_crypto_key_mgmt_verifiable (matches Coq: Theorem CC_027_crypto_key_mgmt_verifiable)
-(assert (= true true)) ; CC_027_crypto_key_mgmt_verifiable [untranslatable]
+; CC_027_crypto_key_mgmt_verifiable: forall classes : list SecurityClass, has_crypto_key_mgmt classes = true -> In FCS_CKM classes
+(assert true) ; CC_027_crypto_key_mgmt_verifiable [Coq-only]
 
 ; CC_028_ifc_verifiable (matches Coq: Theorem CC_028_ifc_verifiable)
-(assert (= true true)) ; CC_028_ifc_verifiable [untranslatable]
+; CC_028_ifc_verifiable: forall classes : list SecurityClass, has_ifc classes = true -> In FDP_IFC classes
+(assert true) ; CC_028_ifc_verifiable [Coq-only]
 
 ; CC_029_domain_sep_verifiable (matches Coq: Theorem CC_029_domain_sep_verifiable)
-(assert (= true true)) ; CC_029_domain_sep_verifiable [untranslatable]
+; CC_029_domain_sep_verifiable: forall classes : list SecurityClass, has_domain_sep classes = true -> In FPT_SEP classes
+(assert true) ; CC_029_domain_sep_verifiable [Coq-only]
 
 ; CC_030_authentication_verifiable (matches Coq: Theorem CC_030_authentication_verifiable)
-(assert (= true true)) ; CC_030_authentication_verifiable [untranslatable]
+; CC_030_authentication_verifiable: forall classes : list SecurityClass, has_authentication classes = true -> In FIA_UAU classes
+(assert true) ; CC_030_authentication_verifiable [Coq-only]
 
 ; CC_031_riina_has_audit (matches Coq: Theorem CC_031_riina_has_audit)
-(assert (= true true)) ; CC_031_riina_has_audit [untranslatable]
+(assert (= (has_audit (toe_security_functions riina_toe)) true)) ; CC_031_riina_has_audit
 
 ; CC_032_riina_has_crypto (matches Coq: Theorem CC_032_riina_has_crypto)
-(assert (= true true)) ; CC_032_riina_has_crypto [untranslatable]
+(assert (= (has_crypto_key_mgmt (toe_security_functions riina_toe)) true)) ; CC_032_riina_has_crypto
 
 ; CC_033_riina_has_ifc (matches Coq: Theorem CC_033_riina_has_ifc)
-(assert (= true true)) ; CC_033_riina_has_ifc [untranslatable]
+(assert (= (has_ifc (toe_security_functions riina_toe)) true)) ; CC_033_riina_has_ifc
 
 ; CC_034_riina_has_domain_sep (matches Coq: Theorem CC_034_riina_has_domain_sep)
-(assert (= true true)) ; CC_034_riina_has_domain_sep [untranslatable]
+(assert (= (has_domain_sep (toe_security_functions riina_toe)) true)) ; CC_034_riina_has_domain_sep
 
 ; CC_035_riina_has_authentication (matches Coq: Theorem CC_035_riina_has_authentication)
-(assert (= true true)) ; CC_035_riina_has_authentication [untranslatable]
+(assert (= (has_authentication (toe_security_functions riina_toe)) true)) ; CC_035_riina_has_authentication
 
 ; CC_036_riina_boundary_defined (matches Coq: Theorem CC_036_riina_boundary_defined)
 (assert (= (toe_boundary_defined riina_toe) true)) ; CC_036_riina_boundary_defined
@@ -280,10 +285,10 @@
 (assert (= (toe_evaluated_configuration riina_toe) true)) ; CC_038_riina_evaluated_configuration
 
 ; CC_039_riina_complete_coverage (matches Coq: Theorem CC_039_riina_complete_coverage)
-(assert (= true true)) ; CC_039_riina_complete_coverage [untranslatable]
+(assert (= (has_complete_coverage (toe_security_functions riina_toe)) true)) ; CC_039_riina_complete_coverage
 
 ; CC_040_maximum_assurance (matches Coq: Theorem CC_040_maximum_assurance)
-(assert (= true true)) ; CC_040_maximum_assurance [untranslatable]
+(assert (forall ((pkg EAL7Package)) (forall ((toe TOEConfiguration)) (=> (= (eal7_compliant pkg) true) (=> (= (has_complete_coverage (toe_security_functions toe)) true) (and (= (adv_imp_verified (eal7_adv pkg)) true) (= (ava_van_high_attack (eal7_ava pkg)) true))))))) ; CC_040_maximum_assurance
 
 ; CC_041_lifecycle_compliance (matches Coq: Theorem CC_041_lifecycle_compliance)
 (assert (= (alc_compliant mk_compliant_alc) true)) ; CC_041_lifecycle_compliance
@@ -313,7 +318,7 @@
 (assert (forall ((ase SecurityTargetAssurance)) (=> (= (ase_compliant ase) true) (= (ase_obj_complete ase) true)))) ; CC_049_objectives_complete
 
 ; CC_050_eal7_complete_certification (matches Coq: Theorem CC_050_eal7_complete_certification)
-(assert (= true true)) ; CC_050_eal7_complete_certification [untranslatable]
+(assert (forall ((pkg EAL7Package)) (forall ((toe TOEConfiguration)) (=> (= (eal7_compliant pkg) true) (=> (= (toe_boundary_defined toe) true) (=> (= (toe_interfaces_specified toe) true) (=> (= (toe_evaluated_configuration toe) true) (=> (= (has_complete_coverage (toe_security_functions toe)) true) (and (= (adv_compliant (eal7_adv pkg)) true) (= (agd_compliant (eal7_agd pkg)) true) (= (alc_compliant (eal7_alc pkg)) true) (= (ase_compliant (eal7_ase pkg)) true) (= (ate_compliant (eal7_ate pkg)) true) (= (ava_compliant (eal7_ava pkg)) true)))))))))) ; CC_050_eal7_complete_certification
 
 ; Verify all assertions are satisfiable
 (check-sat)

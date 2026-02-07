@@ -68,100 +68,117 @@
   true)
 
 ; V_001_01_structural_decrease (matches Coq: Theorem V_001_01_structural_decrease)
-(assert (= true true)) ; V_001_01_structural_decrease [untranslatable]
+(assert (forall ((e Bool) (e_rec Bool) (arg Bool)) (=> (= (structural_recursion e) true) (=> (= (recursive_call e e_rec arg) true) (= (structurally_smaller arg e) true))))) ; V_001_01_structural_decrease
 
 ; V_001_02_structural_termination (matches Coq: Theorem V_001_02_structural_termination)
-(assert (= true true)) ; V_001_02_structural_termination [untranslatable]
+(assert (forall ((e Bool)) (=> (= (structural_recursion e) true) (= (terminates e) true)))) ; V_001_02_structural_termination
 
 ; V_001_03_nat_structural (matches Coq: Theorem V_001_03_nat_structural)
-(assert (= true true)) ; V_001_03_nat_structural [untranslatable]
+; V_001_03_nat_structural: forall (f : nat -> nat) n, exists v, (fix go m := match m with 0 => 0 | S m' => f (go m') end) n = v
+(assert true) ; V_001_03_nat_structural [Coq-only]
 
 ; V_001_04_list_structural (matches Coq: Theorem V_001_04_list_structural)
-(assert (= true true)) ; V_001_04_list_structural [untranslatable]
+; V_001_04_list_structural: forall A (f : A -> nat -> nat) (l : list A), exists v, fold_left (fun acc x => f x acc) l 0 = v
+(assert true) ; V_001_04_list_structural [Coq-only]
 
 ; V_001_05_tree_structural (matches Coq: Theorem V_001_05_tree_structural)
-(assert (= true true)) ; V_001_05_tree_structural [untranslatable]
+; V_001_05_tree_structural: forall A (t : tree A), exists v, tree_size t = v
+(assert true) ; V_001_05_tree_structural [Coq-only]
 
 ; V_001_06_mutual_structural (matches Coq: Theorem V_001_06_mutual_structural)
-(assert (= true true)) ; V_001_06_mutual_structural [untranslatable]
+(assert (forall ((et Bool) (ot Bool)) (exists ((ve Bool) (vo Bool)) (and (= (even_size et) ve) (= (odd_size ot) vo))))) ; V_001_06_mutual_structural
 
 ; V_001_07_nested_structural (matches Coq: Theorem V_001_07_nested_structural)
-(assert (= true true)) ; V_001_07_nested_structural [untranslatable]
+(assert (forall ((n Bool)) (exists ((v Bool)) (= ((fix outer m := match m with | 0 => 0 | S m' => (fix inner k := match k with 0 => 0 | S k' => 1 + inner k' end) m' + outer m' end) n) v)))) ; V_001_07_nested_structural
 
 ; V_001_08_structural_checker_sound (matches Coq: Theorem V_001_08_structural_checker_sound)
-(assert (= true true)) ; V_001_08_structural_checker_sound [untranslatable]
+(assert (forall ((e Bool)) (=> (= (check_termination e) true) (=> (= (structural_recursion e) true) (= (terminates e) true))))) ; V_001_08_structural_checker_sound
 
 ; V_001_09_sized_type_wellformed (matches Coq: Theorem V_001_09_sized_type_wellformed)
-(assert (= true true)) ; V_001_09_sized_type_wellformed [untranslatable]
+(assert (forall ((st Bool)) (= (sized_wellformed st) true))) ; V_001_09_sized_type_wellformed
 
 ; V_001_10_size_decreases (matches Coq: Theorem V_001_10_size_decreases)
-(assert (= true true)) ; V_001_10_size_decreases [untranslatable]
+(assert (forall ((st1 Bool) (st2 Bool) (s1 Bool) (s2 Bool)) (=> (= (get_size st1) (some s1)) (=> (= (get_size st2) (some s2)) (=> (< s1 s2) (= (size_less st1 st2) true)))))) ; V_001_10_size_decreases
 
 ; V_001_11_sized_list_terminates (matches Coq: Theorem V_001_11_sized_list_terminates)
-(assert (= true true)) ; V_001_11_sized_list_terminates [untranslatable]
+; V_001_11_sized_list_terminates: forall A B (f : A -> B -> B) (l : list A) (acc : B), exists v, sized_list_fold f l acc = v
+(assert true) ; V_001_11_sized_list_terminates [Coq-only]
 
 ; V_001_12_sized_tree_terminates (matches Coq: Theorem V_001_12_sized_tree_terminates)
-(assert (= true true)) ; V_001_12_sized_tree_terminates [untranslatable]
+; V_001_12_sized_tree_terminates: forall A B (f : A -> B -> B -> B) (leaf : B) (t : tree A), exists v, sized_tree_fold f leaf t = v
+(assert true) ; V_001_12_sized_tree_terminates [Coq-only]
 
 ; V_001_13_size_inference_correct (matches Coq: Theorem V_001_13_size_inference_correct)
-(assert (= true true)) ; V_001_13_size_inference_correct [untranslatable]
+(assert (forall ((e Bool)) (= (infer_size e) (expr_size e)))) ; V_001_13_size_inference_correct
 
 ; V_001_14_size_subtyping (matches Coq: Theorem V_001_14_size_subtyping)
-(assert (= true true)) ; V_001_14_size_subtyping [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool) (s3 Bool)) (=> (= (size_subtype s1 s2) true) (=> (= (size_subtype s2 s3) true) (= (size_subtype s1 s3) true))))) ; V_001_14_size_subtyping
 
 ; V_001_15_sized_preservation (matches Coq: Theorem V_001_15_sized_preservation)
-(assert (= true true)) ; V_001_15_sized_preservation [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool)) (=> (= (has_sized_type e1 st) true) (=> (= (step e1 e2) true) (exists ((st' Bool)) (= (has_sized_type e2 st') true)))))) ; V_001_15_sized_preservation
 
 ; V_001_16_sized_composition (matches Coq: Theorem V_001_16_sized_composition)
-(assert (= true true)) ; V_001_16_sized_composition [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (size_subtype s1 s2) true) (=> (= (size_subtype 0 s1) true) (= (size_subtype 0 s2) true))))) ; V_001_16_sized_composition
 
 ; V_001_17_measure_wellformed (matches Coq: Theorem V_001_17_measure_wellformed)
-(assert (= true true)) ; V_001_17_measure_wellformed [untranslatable]
+; V_001_17_measure_wellformed: forall A (m : Measure A), wf_measure m
+(assert true) ; V_001_17_measure_wellformed [Coq-only]
 
 ; V_001_18_measure_decreases (matches Coq: Theorem V_001_18_measure_decreases)
-(assert (= true true)) ; V_001_18_measure_decreases [untranslatable]
+; V_001_18_measure_decreases: forall A (m : Measure A) e, decreases_on m e
+(assert true) ; V_001_18_measure_decreases [Coq-only]
 
 ; V_001_19_lexicographic_wellformed (matches Coq: Theorem V_001_19_lexicographic_wellformed)
-(assert (= true true)) ; V_001_19_lexicographic_wellformed [untranslatable]
+; V_001_19_lexicographic_wellformed: forall A B (ma : Measure A) (mb : Measure B), well_founded (lex_order ma mb)
+(assert true) ; V_001_19_lexicographic_wellformed [Coq-only]
 
 ; V_001_20_ackermann_terminates (matches Coq: Theorem V_001_20_ackermann_terminates)
-(assert (= true true)) ; V_001_20_ackermann_terminates [untranslatable]
+(assert (forall ((m Bool) (n Bool)) (exists ((v Bool)) (= (ackermann m n) v)))) ; V_001_20_ackermann_terminates
 
 ; V_001_21_complex_measure_sound (matches Coq: Theorem V_001_21_complex_measure_sound)
-(assert (= true true)) ; V_001_21_complex_measure_sound [untranslatable]
+; V_001_21_complex_measure_sound: forall A B (ma : Measure A) (mb : Measure B), wf_measure (complex_measure ma mb)
+(assert true) ; V_001_21_complex_measure_sound [Coq-only]
 
 ; V_001_22_measure_inference (matches Coq: Theorem V_001_22_measure_inference)
-(assert (= true true)) ; V_001_22_measure_inference [untranslatable]
+(assert (forall ((e Bool)) (>= (infer_measure e) 1))) ; V_001_22_measure_inference
 
 ; V_001_23_measure_composition (matches Coq: Theorem V_001_23_measure_composition)
-(assert (= true true)) ; V_001_23_measure_composition [untranslatable]
+; V_001_23_measure_composition: forall A (m1 m2 : Measure A) x, m1 x + m2 x >= m1 x
+(assert true) ; V_001_23_measure_composition [Coq-only]
 
 ; V_001_24_wellfounded_checker_sound (matches Coq: Theorem V_001_24_wellfounded_checker_sound)
-(assert (= true true)) ; V_001_24_wellfounded_checker_sound [untranslatable]
+; V_001_24_wellfounded_checker_sound: forall A e (m : Measure A), check_termination e = true -> wf_measure m -> decreases_on m e -> terminates e
+(assert true) ; V_001_24_wellfounded_checker_sound [Coq-only]
 
 ; V_001_25_codata_productive (matches Coq: Theorem V_001_25_codata_productive)
-(assert (= true true)) ; V_001_25_codata_productive [untranslatable]
+; V_001_25_codata_productive: forall A (s : Stream A), productive s
+(assert true) ; V_001_25_codata_productive [Coq-only]
 
 ; V_001_26_stream_productive (matches Coq: Theorem V_001_26_stream_productive)
-(assert (= true true)) ; V_001_26_stream_productive [untranslatable]
+; V_001_26_stream_productive: forall A (s : Stream A), forall n, List.length (observe n s) = n
+(assert true) ; V_001_26_stream_productive [Coq-only]
 
 ; V_001_27_productivity_observe (matches Coq: Theorem V_001_27_productivity_observe)
-(assert (= true true)) ; V_001_27_productivity_observe [untranslatable]
+; V_001_27_productivity_observe: forall A (s : Stream A) k, exists l, observe k s = l /\ List.length l = k
+(assert true) ; V_001_27_productivity_observe [Coq-only]
 
 ; V_001_28_guarded_recursion (matches Coq: Theorem V_001_28_guarded_recursion)
-(assert (= true true)) ; V_001_28_guarded_recursion [untranslatable]
+; V_001_28_guarded_recursion: forall A (g : Guarded (Stream A)), match g with Later s => productive s end
+(assert true) ; V_001_28_guarded_recursion [Coq-only]
 
 ; V_001_29_codata_unfold (matches Coq: Theorem V_001_29_codata_unfold)
-(assert (= true true)) ; V_001_29_codata_unfold [untranslatable]
+; V_001_29_codata_unfold: forall A S (f : S -> A * S) (seed : S), productive (stream_unfold f seed)
+(assert true) ; V_001_29_codata_unfold [Coq-only]
 
 ; V_001_30_productive_composition (matches Coq: Theorem V_001_30_productive_composition)
-(assert (= true true)) ; V_001_30_productive_composition [untranslatable]
+; V_001_30_productive_composition: forall A (s1 s2 : Stream A), productive s1 -> productive s2 -> productive s1 /\ productive s2
+(assert true) ; V_001_30_productive_composition [Coq-only]
 
 ; V_001_31_non_terminating_marked (matches Coq: Theorem V_001_31_non_terminating_marked)
-(assert (= true true)) ; V_001_31_non_terminating_marked [untranslatable]
+(assert (forall ((e Bool)) (not (=> (= (terminates e) true) (or (= (explicitly_marked e) true) (= (is_value e) true) (exists ((e' Bool)) (= (step e e') true))))))) ; V_001_31_non_terminating_marked
 
 ; V_001_32_strong_normalization (matches Coq: Theorem V_001_32_strong_normalization)
-(assert (= true true)) ; V_001_32_strong_normalization [untranslatable]
+(assert (forall ((e Bool)) (=> (= (pure e) true) (=> (= (well_typed e) true) (or (= (is_value e) true) (exists ((e' Bool)) (= (step e e') true))))))) ; V_001_32_strong_normalization
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -179,19 +179,19 @@
   (mk-auth_config (riina_pwd) (riina_mfa) (riina_session)))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb3_true_iff (matches Coq: Lemma andb3_true_iff)
-(assert (= true true)) ; andb3_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (and (=> (= (and a b c) true) (and (= a true) (= b true) (= c true))) (=> (and (= a true) (= b true) (= c true)) (= (and a b c) true))))) ; andb3_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; leb_le (matches Coq: Lemma leb_le)
-(assert (= true true)) ; leb_le [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (<= n m) true) (<= n m)) (=> (<= n m) (= (<= n m) true))))) ; leb_le
 
 ; ltb_lt (matches Coq: Lemma ltb_lt)
-(assert (= true true)) ; ltb_lt [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (< n m) true) (< n m)) (=> (< n m) (= (< n m) true))))) ; ltb_lt
 
 ; AUTH_001 (matches Coq: Theorem AUTH_001)
 (assert (= (password_secure riina_pwd) true)) ; AUTH_001
@@ -215,37 +215,37 @@
 (assert (= (sess_secure_token riina_session) true)) ; AUTH_007
 
 ; AUTH_008 (matches Coq: Theorem AUTH_008)
-(assert (= true true)) ; AUTH_008 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (password_secure p) true) (= (pwd_bcrypt_argon p) true)))) ; AUTH_008
 
 ; AUTH_009 (matches Coq: Theorem AUTH_009)
-(assert (= true true)) ; AUTH_009 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (password_secure p) true) (= (pwd_salt_unique p) true)))) ; AUTH_009
 
 ; AUTH_010 (matches Coq: Theorem AUTH_010)
-(assert (= true true)) ; AUTH_010 [untranslatable]
+(assert (forall ((m Bool)) (=> (= (mfa_secure m) true) (= (mfa_webauthn m) true)))) ; AUTH_010
 
 ; AUTH_011 (matches Coq: Theorem AUTH_011)
-(assert (= true true)) ; AUTH_011 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (session_secure s) true) (= (sess_secure_token s) true)))) ; AUTH_011
 
 ; AUTH_012 (matches Coq: Theorem AUTH_012)
-(assert (= true true)) ; AUTH_012 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (session_secure s) true) (= (sess_rotation s) true)))) ; AUTH_012
 
 ; AUTH_013 (matches Coq: Theorem AUTH_013)
-(assert (= true true)) ; AUTH_013 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (= (password_secure (auth_pwd a)) true)))) ; AUTH_013
 
 ; AUTH_014 (matches Coq: Theorem AUTH_014)
-(assert (= true true)) ; AUTH_014 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (= (mfa_secure (auth_mfa a)) true)))) ; AUTH_014
 
 ; AUTH_015 (matches Coq: Theorem AUTH_015)
-(assert (= true true)) ; AUTH_015 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (= (session_secure (auth_session a)) true)))) ; AUTH_015
 
 ; AUTH_016 (matches Coq: Theorem AUTH_016)
-(assert (= true true)) ; AUTH_016 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (= (pwd_bcrypt_argon (auth_pwd a)) true)))) ; AUTH_016
 
 ; AUTH_017 (matches Coq: Theorem AUTH_017)
-(assert (= true true)) ; AUTH_017 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (= (mfa_webauthn (auth_mfa a)) true)))) ; AUTH_017
 
 ; AUTH_018 (matches Coq: Theorem AUTH_018)
-(assert (= true true)) ; AUTH_018 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (= (sess_secure_token (auth_session a)) true)))) ; AUTH_018
 
 ; AUTH_019 (matches Coq: Theorem AUTH_019)
 (assert (and (= (password_secure riina_pwd) true) (= (mfa_secure riina_mfa) true))) ; AUTH_019
@@ -257,202 +257,202 @@
 (assert (and (= (sess_secure_token riina_session) true) (= (sess_rotation riina_session) true))) ; AUTH_021
 
 ; AUTH_022 (matches Coq: Theorem AUTH_022)
-(assert (= true true)) ; AUTH_022 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (password_secure p) true) (and (= (pwd_bcrypt_argon p) true) (= (pwd_salt_unique p) true))))) ; AUTH_022
 
 ; AUTH_023 (matches Coq: Theorem AUTH_023)
-(assert (= true true)) ; AUTH_023 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (session_secure s) true) (and (= (sess_secure_token s) true) (= (sess_rotation s) true))))) ; AUTH_023
 
 ; AUTH_024 (matches Coq: Theorem AUTH_024)
-(assert (= true true)) ; AUTH_024 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (and (= (password_secure (auth_pwd a)) true) (= (mfa_secure (auth_mfa a)) true))))) ; AUTH_024
 
 ; AUTH_025_complete (matches Coq: Theorem AUTH_025_complete)
-(assert (= true true)) ; AUTH_025_complete [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (and (= (pwd_bcrypt_argon (auth_pwd a)) true) (= (mfa_webauthn (auth_mfa a)) true) (= (sess_secure_token (auth_session a)) true))))) ; AUTH_025_complete
 
 ; PBKDF2_001_riina_secure (matches Coq: Theorem PBKDF2_001_riina_secure)
 (assert (= (pbkdf2_secure riina_pbkdf2) true)) ; PBKDF2_001_riina_secure
 
 ; PBKDF2_002_sufficient_iterations (matches Coq: Theorem PBKDF2_002_sufficient_iterations)
-(assert (= true true)) ; PBKDF2_002_sufficient_iterations [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (pbkdf2_secure cfg) true) (= (<= 600000 (pbkdf2_iterations cfg)) true)))) ; PBKDF2_002_sufficient_iterations
 
 ; PBKDF2_003_sufficient_salt (matches Coq: Theorem PBKDF2_003_sufficient_salt)
-(assert (= true true)) ; PBKDF2_003_sufficient_salt [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (pbkdf2_secure cfg) true) (= (<= 128 (pbkdf2_salt_bits cfg)) true)))) ; PBKDF2_003_sufficient_salt
 
 ; PBKDF2_004_sufficient_output (matches Coq: Theorem PBKDF2_004_sufficient_output)
-(assert (= true true)) ; PBKDF2_004_sufficient_output [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (pbkdf2_secure cfg) true) (= (<= 256 (pbkdf2_output_bits cfg)) true)))) ; PBKDF2_004_sufficient_output
 
 ; PBKDF2_005_approved_algorithm (matches Coq: Theorem PBKDF2_005_approved_algorithm)
-(assert (= true true)) ; PBKDF2_005_approved_algorithm [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (pbkdf2_secure cfg) true) (= (<= (pbkdf2_hash_alg cfg) 1) true)))) ; PBKDF2_005_approved_algorithm
 
 ; PBKDF2_006_work_factor (matches Coq: Theorem PBKDF2_006_work_factor)
-(assert (= true true)) ; PBKDF2_006_work_factor [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (pbkdf2_secure cfg) true) (>= (pbkdf2_iterations cfg) 600000)))) ; PBKDF2_006_work_factor
 
 ; ARGON2_001_riina_secure (matches Coq: Theorem ARGON2_001_riina_secure)
 (assert (= (argon2_secure riina_argon2) true)) ; ARGON2_001_riina_secure
 
 ; ARGON2_002_sufficient_time (matches Coq: Theorem ARGON2_002_sufficient_time)
-(assert (= true true)) ; ARGON2_002_sufficient_time [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (argon2_secure cfg) true) (= (<= 3 (argon2_time_cost cfg)) true)))) ; ARGON2_002_sufficient_time
 
 ; ARGON2_003_sufficient_memory (matches Coq: Theorem ARGON2_003_sufficient_memory)
-(assert (= true true)) ; ARGON2_003_sufficient_memory [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (argon2_secure cfg) true) (= (<= 65536 (argon2_memory_cost cfg)) true)))) ; ARGON2_003_sufficient_memory
 
 ; ARGON2_004_argon2id_variant (matches Coq: Theorem ARGON2_004_argon2id_variant)
-(assert (= true true)) ; ARGON2_004_argon2id_variant [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (argon2_secure cfg) true) (= (= (argon2_variant cfg) 2) true)))) ; ARGON2_004_argon2id_variant
 
 ; ARGON2_005_memory_hardness (matches Coq: Theorem ARGON2_005_memory_hardness)
-(assert (= true true)) ; ARGON2_005_memory_hardness [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (argon2_secure cfg) true) (>= (argon2_memory_cost cfg) 65536)))) ; ARGON2_005_memory_hardness
 
 ; ARGON2_006_parallelism (matches Coq: Theorem ARGON2_006_parallelism)
-(assert (= true true)) ; ARGON2_006_parallelism [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (argon2_secure cfg) true) (>= (argon2_parallelism cfg) 1)))) ; ARGON2_006_parallelism
 
 ; BCRYPT_001_riina_secure (matches Coq: Theorem BCRYPT_001_riina_secure)
 (assert (= (bcrypt_secure riina_bcrypt) true)) ; BCRYPT_001_riina_secure
 
 ; BCRYPT_002_sufficient_cost (matches Coq: Theorem BCRYPT_002_sufficient_cost)
-(assert (= true true)) ; BCRYPT_002_sufficient_cost [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (bcrypt_secure cfg) true) (= (<= 12 (bcrypt_cost_factor cfg)) true)))) ; BCRYPT_002_sufficient_cost
 
 ; BCRYPT_003_fixed_salt (matches Coq: Theorem BCRYPT_003_fixed_salt)
-(assert (= true true)) ; BCRYPT_003_fixed_salt [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (bcrypt_secure cfg) true) (= (= (bcrypt_salt_bits cfg) 128) true)))) ; BCRYPT_003_fixed_salt
 
 ; BCRYPT_004_fixed_output (matches Coq: Theorem BCRYPT_004_fixed_output)
-(assert (= true true)) ; BCRYPT_004_fixed_output [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (bcrypt_secure cfg) true) (= (= (bcrypt_output_bits cfg) 184) true)))) ; BCRYPT_004_fixed_output
 
 ; BCRYPT_005_exponential_work (matches Coq: Theorem BCRYPT_005_exponential_work)
-(assert (= true true)) ; BCRYPT_005_exponential_work [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (bcrypt_secure cfg) true) (>= (bcrypt_cost_factor cfg) 12)))) ; BCRYPT_005_exponential_work
 
 ; TOTP_001_riina_secure (matches Coq: Theorem TOTP_001_riina_secure)
 (assert (= (totp_secure riina_totp) true)) ; TOTP_001_riina_secure
 
 ; TOTP_002_sufficient_secret (matches Coq: Theorem TOTP_002_sufficient_secret)
-(assert (= true true)) ; TOTP_002_sufficient_secret [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (totp_secure cfg) true) (= (<= 160 (totp_secret_bits cfg)) true)))) ; TOTP_002_sufficient_secret
 
 ; TOTP_003_sufficient_digits (matches Coq: Theorem TOTP_003_sufficient_digits)
-(assert (= true true)) ; TOTP_003_sufficient_digits [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (totp_secure cfg) true) (= (<= 6 (totp_digits cfg)) true)))) ; TOTP_003_sufficient_digits
 
 ; TOTP_004_standard_period (matches Coq: Theorem TOTP_004_standard_period)
-(assert (= true true)) ; TOTP_004_standard_period [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (totp_secure cfg) true) (= (= (totp_period cfg) 30) true)))) ; TOTP_004_standard_period
 
 ; TOTP_005_limited_drift (matches Coq: Theorem TOTP_005_limited_drift)
-(assert (= true true)) ; TOTP_005_limited_drift [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (totp_secure cfg) true) (= (<= (totp_drift_window cfg) 1) true)))) ; TOTP_005_limited_drift
 
 ; TOTP_006_brute_force_resistant (matches Coq: Theorem TOTP_006_brute_force_resistant)
-(assert (= true true)) ; TOTP_006_brute_force_resistant [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (totp_secure cfg) true) (>= (totp_secret_bits cfg) 160)))) ; TOTP_006_brute_force_resistant
 
 ; WEBAUTHN_001_riina_secure (matches Coq: Theorem WEBAUTHN_001_riina_secure)
 (assert (= (webauthn_secure riina_webauthn) true)) ; WEBAUTHN_001_riina_secure
 
 ; WEBAUTHN_002_user_verification (matches Coq: Theorem WEBAUTHN_002_user_verification)
-(assert (= true true)) ; WEBAUTHN_002_user_verification [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (webauthn_secure cfg) true) (= (= (webauthn_user_verification cfg) 2) true)))) ; WEBAUTHN_002_user_verification
 
 ; WEBAUTHN_003_challenge_entropy (matches Coq: Theorem WEBAUTHN_003_challenge_entropy)
-(assert (= true true)) ; WEBAUTHN_003_challenge_entropy [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (webauthn_secure cfg) true) (= (<= 128 (webauthn_challenge_bits cfg)) true)))) ; WEBAUTHN_003_challenge_entropy
 
 ; WEBAUTHN_004_timeout_range (matches Coq: Theorem WEBAUTHN_004_timeout_range)
-(assert (= true true)) ; WEBAUTHN_004_timeout_range [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (webauthn_secure cfg) true) (and (= (<= 60000 (webauthn_timeout_ms cfg)) true) (= (<= (webauthn_timeout_ms cfg) 300000) true))))) ; WEBAUTHN_004_timeout_range
 
 ; WEBAUTHN_005_impersonation_prevention (matches Coq: Theorem WEBAUTHN_005_impersonation_prevention)
-(assert (= true true)) ; WEBAUTHN_005_impersonation_prevention [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (webauthn_secure cfg) true) (= (webauthn_user_verification cfg) 2)))) ; WEBAUTHN_005_impersonation_prevention
 
 ; SESSION_001_riina_secure (matches Coq: Theorem SESSION_001_riina_secure)
 (assert (= (session_token_secure riina_session_token) true)) ; SESSION_001_riina_secure
 
 ; SESSION_002_sufficient_entropy (matches Coq: Theorem SESSION_002_sufficient_entropy)
-(assert (= true true)) ; SESSION_002_sufficient_entropy [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (= (<= 256 (token_entropy_bits cfg)) true)))) ; SESSION_002_sufficient_entropy
 
 ; SESSION_003_rotation_enabled (matches Coq: Theorem SESSION_003_rotation_enabled)
-(assert (= true true)) ; SESSION_003_rotation_enabled [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (= (token_rotation cfg) true)))) ; SESSION_003_rotation_enabled
 
 ; SESSION_004_binding_enabled (matches Coq: Theorem SESSION_004_binding_enabled)
-(assert (= true true)) ; SESSION_004_binding_enabled [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (= (token_binding cfg) true)))) ; SESSION_004_binding_enabled
 
 ; SESSION_005_secure_flag (matches Coq: Theorem SESSION_005_secure_flag)
-(assert (= true true)) ; SESSION_005_secure_flag [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (= (token_secure_flag cfg) true)))) ; SESSION_005_secure_flag
 
 ; SESSION_006_httponly_flag (matches Coq: Theorem SESSION_006_httponly_flag)
-(assert (= true true)) ; SESSION_006_httponly_flag [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (= (token_httponly_flag cfg) true)))) ; SESSION_006_httponly_flag
 
 ; SESSION_007_samesite_protection (matches Coq: Theorem SESSION_007_samesite_protection)
-(assert (= true true)) ; SESSION_007_samesite_protection [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (= (<= 1 (token_samesite cfg)) true)))) ; SESSION_007_samesite_protection
 
 ; SESSION_008_guessing_resistant (matches Coq: Theorem SESSION_008_guessing_resistant)
-(assert (= true true)) ; SESSION_008_guessing_resistant [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (session_token_secure cfg) true) (>= (token_entropy_bits cfg) 256)))) ; SESSION_008_guessing_resistant
 
 ; OAUTH2_001_riina_secure (matches Coq: Theorem OAUTH2_001_riina_secure)
 (assert (= (oauth2_secure riina_oauth2) true)) ; OAUTH2_001_riina_secure
 
 ; OAUTH2_002_pkce_required (matches Coq: Theorem OAUTH2_002_pkce_required)
-(assert (= true true)) ; OAUTH2_002_pkce_required [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oauth2_secure cfg) true) (= (oauth2_pkce cfg) true)))) ; OAUTH2_002_pkce_required
 
 ; OAUTH2_003_state_required (matches Coq: Theorem OAUTH2_003_state_required)
-(assert (= true true)) ; OAUTH2_003_state_required [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oauth2_secure cfg) true) (= (oauth2_state_param cfg) true)))) ; OAUTH2_003_state_required
 
 ; OAUTH2_004_code_entropy (matches Coq: Theorem OAUTH2_004_code_entropy)
-(assert (= true true)) ; OAUTH2_004_code_entropy [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oauth2_secure cfg) true) (= (<= 128 (oauth2_code_bits cfg)) true)))) ; OAUTH2_004_code_entropy
 
 ; OAUTH2_005_short_code_expiry (matches Coq: Theorem OAUTH2_005_short_code_expiry)
-(assert (= true true)) ; OAUTH2_005_short_code_expiry [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oauth2_secure cfg) true) (= (<= (oauth2_code_expiry cfg) 60) true)))) ; OAUTH2_005_short_code_expiry
 
 ; OAUTH2_006_refresh_rotation (matches Coq: Theorem OAUTH2_006_refresh_rotation)
-(assert (= true true)) ; OAUTH2_006_refresh_rotation [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oauth2_secure cfg) true) (= (oauth2_refresh_rotation cfg) true)))) ; OAUTH2_006_refresh_rotation
 
 ; OAUTH2_007_code_interception_prevention (matches Coq: Theorem OAUTH2_007_code_interception_prevention)
-(assert (= true true)) ; OAUTH2_007_code_interception_prevention [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oauth2_secure cfg) true) (and (= (oauth2_pkce cfg) true) (= (<= 128 (oauth2_code_bits cfg)) true))))) ; OAUTH2_007_code_interception_prevention
 
 ; OIDC_001_riina_secure (matches Coq: Theorem OIDC_001_riina_secure)
 (assert (= (oidc_secure riina_oidc) true)) ; OIDC_001_riina_secure
 
 ; OIDC_002_secure_base (matches Coq: Theorem OIDC_002_secure_base)
-(assert (= true true)) ; OIDC_002_secure_base [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oidc_secure cfg) true) (= (oauth2_secure (oidc_base cfg)) true)))) ; OIDC_002_secure_base
 
 ; OIDC_003_strong_signing (matches Coq: Theorem OIDC_003_strong_signing)
-(assert (= true true)) ; OIDC_003_strong_signing [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oidc_secure cfg) true) (= (<= 1 (oidc_id_token_alg cfg)) true)))) ; OIDC_003_strong_signing
 
 ; OIDC_004_short_id_expiry (matches Coq: Theorem OIDC_004_short_id_expiry)
-(assert (= true true)) ; OIDC_004_short_id_expiry [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oidc_secure cfg) true) (= (<= (oidc_id_token_expiry cfg) 3600) true)))) ; OIDC_004_short_id_expiry
 
 ; OIDC_005_claims_verified (matches Coq: Theorem OIDC_005_claims_verified)
-(assert (= true true)) ; OIDC_005_claims_verified [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oidc_secure cfg) true) (= (oidc_claims_verified cfg) true)))) ; OIDC_005_claims_verified
 
 ; OIDC_006_inherits_pkce (matches Coq: Theorem OIDC_006_inherits_pkce)
-(assert (= true true)) ; OIDC_006_inherits_pkce [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (oidc_secure cfg) true) (= (oauth2_pkce (oidc_base cfg)) true)))) ; OIDC_006_inherits_pkce
 
 ; CHALLENGE_001_riina_secure (matches Coq: Theorem CHALLENGE_001_riina_secure)
 (assert (= (challenge_secure riina_challenge) true)) ; CHALLENGE_001_riina_secure
 
 ; CHALLENGE_002_sufficient_entropy (matches Coq: Theorem CHALLENGE_002_sufficient_entropy)
-(assert (= true true)) ; CHALLENGE_002_sufficient_entropy [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (challenge_secure cfg) true) (= (<= 128 (challenge_bits cfg)) true)))) ; CHALLENGE_002_sufficient_entropy
 
 ; CHALLENGE_003_short_expiry (matches Coq: Theorem CHALLENGE_003_short_expiry)
-(assert (= true true)) ; CHALLENGE_003_short_expiry [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (challenge_secure cfg) true) (= (<= (challenge_expiry_ms cfg) 300000) true)))) ; CHALLENGE_003_short_expiry
 
 ; CHALLENGE_004_single_use (matches Coq: Theorem CHALLENGE_004_single_use)
-(assert (= true true)) ; CHALLENGE_004_single_use [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (challenge_secure cfg) true) (= (challenge_single_use cfg) true)))) ; CHALLENGE_004_single_use
 
 ; CHALLENGE_005_session_bound (matches Coq: Theorem CHALLENGE_005_session_bound)
-(assert (= true true)) ; CHALLENGE_005_session_bound [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (challenge_secure cfg) true) (= (challenge_bound cfg) true)))) ; CHALLENGE_005_session_bound
 
 ; CHALLENGE_006_guessing_resistant (matches Coq: Theorem CHALLENGE_006_guessing_resistant)
-(assert (= true true)) ; CHALLENGE_006_guessing_resistant [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (challenge_secure cfg) true) (>= (challenge_bits cfg) 128)))) ; CHALLENGE_006_guessing_resistant
 
 ; CHALLENGE_007_replay_prevention (matches Coq: Theorem CHALLENGE_007_replay_prevention)
-(assert (= true true)) ; CHALLENGE_007_replay_prevention [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (challenge_secure cfg) true) (and (= (challenge_single_use cfg) true) (= (challenge_bound cfg) true))))) ; CHALLENGE_007_replay_prevention
 
 ; REPLAY_001_riina_secure (matches Coq: Theorem REPLAY_001_riina_secure)
 (assert (= (replay_prevention_secure riina_nonce_tracker) true)) ; REPLAY_001_riina_secure
 
 ; REPLAY_002_sufficient_nonce (matches Coq: Theorem REPLAY_002_sufficient_nonce)
-(assert (= true true)) ; REPLAY_002_sufficient_nonce [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (replay_prevention_secure cfg) true) (= (<= 128 (nonce_size_bits cfg)) true)))) ; REPLAY_002_sufficient_nonce
 
 ; REPLAY_003_sufficient_window (matches Coq: Theorem REPLAY_003_sufficient_window)
-(assert (= true true)) ; REPLAY_003_sufficient_window [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (replay_prevention_secure cfg) true) (= (<= 1000 (nonce_window_size cfg)) true)))) ; REPLAY_003_sufficient_window
 
 ; REPLAY_004_bounded_timestamp (matches Coq: Theorem REPLAY_004_bounded_timestamp)
-(assert (= true true)) ; REPLAY_004_bounded_timestamp [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (replay_prevention_secure cfg) true) (= (<= (nonce_timestamp_bound cfg) 300) true)))) ; REPLAY_004_bounded_timestamp
 
 ; REPLAY_005_window_prevents_replay (matches Coq: Theorem REPLAY_005_window_prevents_replay)
-(assert (= true true)) ; REPLAY_005_window_prevents_replay [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (replay_prevention_secure cfg) true) (>= (nonce_window_size cfg) 1000)))) ; REPLAY_005_window_prevents_replay
 
 ; REPLAY_006_limited_attack_window (matches Coq: Theorem REPLAY_006_limited_attack_window)
-(assert (= true true)) ; REPLAY_006_limited_attack_window [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (replay_prevention_secure cfg) true) (<= (nonce_timestamp_bound cfg) 300)))) ; REPLAY_006_limited_attack_window
 
 ; COMPOSITE_001_password_hashing_secure (matches Coq: Theorem COMPOSITE_001_password_hashing_secure)
 (assert (and (= (pbkdf2_secure riina_pbkdf2) true) (= (argon2_secure riina_argon2) true) (= (bcrypt_secure riina_bcrypt) true))) ; COMPOSITE_001_password_hashing_secure
@@ -470,19 +470,19 @@
 (assert (and (= (auth_complete riina_auth) true) (= (pbkdf2_secure riina_pbkdf2) true) (= (argon2_secure riina_argon2) true) (= (bcrypt_secure riina_bcrypt) true) (= (totp_secure riina_totp) true) (= (webauthn_secure riina_webauthn) true) (= (session_token_secure riina_session_token) true) (= (oauth2_secure riina_oauth2) true) (= (oidc_secure riina_oidc) true) (= (challenge_secure riina_challenge) true) (= (replay_prevention_secure riina_nonce_tracker) true))) ; COMPOSITE_005_riina_auth_complete
 
 ; COMPOSITE_006_auth_implies_all (matches Coq: Theorem COMPOSITE_006_auth_implies_all)
-(assert (= true true)) ; COMPOSITE_006_auth_implies_all [untranslatable]
+(assert (forall ((a Bool)) (=> (= (auth_complete a) true) (and (= (pwd_bcrypt_argon (auth_pwd a)) true) (= (pwd_salt_unique (auth_pwd a)) true) (= (mfa_totp_support (auth_mfa a)) true) (= (mfa_webauthn (auth_mfa a)) true) (= (sess_secure_token (auth_session a)) true) (= (sess_rotation (auth_session a)) true))))) ; COMPOSITE_006_auth_implies_all
 
 ; TOKEN_001_valid_not_expired (matches Coq: Theorem TOKEN_001_valid_not_expired)
-(assert (= true true)) ; TOKEN_001_valid_not_expired [untranslatable]
+(assert (not (= TokenValid TokenExpired))) ; TOKEN_001_valid_not_expired
 
 ; TOKEN_002_valid_not_invalid (matches Coq: Theorem TOKEN_002_valid_not_invalid)
-(assert (= true true)) ; TOKEN_002_valid_not_invalid [untranslatable]
+(assert (not (= TokenValid TokenInvalid))) ; TOKEN_002_valid_not_invalid
 
 ; TOKEN_003_valid_not_revoked (matches Coq: Theorem TOKEN_003_valid_not_revoked)
-(assert (= true true)) ; TOKEN_003_valid_not_revoked [untranslatable]
+(assert (not (= TokenValid TokenRevoked))) ; TOKEN_003_valid_not_revoked
 
 ; TOKEN_004_expired_not_valid (matches Coq: Theorem TOKEN_004_expired_not_valid)
-(assert (= true true)) ; TOKEN_004_expired_not_valid [untranslatable]
+(assert (not (= TokenExpired TokenValid))) ; TOKEN_004_expired_not_valid
 
 ; Verify all assertions are satisfiable
 (check-sat)

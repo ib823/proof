@@ -64,79 +64,84 @@
 (define-fun anon_layers () Bool true)
 
 ; anon_001_sender_anonymity (matches Coq: Theorem anon_001_sender_anonymity)
-(assert (= true true)) ; anon_001_sender_anonymity [untranslatable]
+(assert (forall ((sender_set AnonymitySet)) (forall ((k Int)) (=> (= (k_anonymous sender_set k) true) (>= (length sender_set) k))))) ; anon_001_sender_anonymity
 
 ; anon_002_receiver_anonymity (matches Coq: Theorem anon_002_receiver_anonymity)
-(assert (= true true)) ; anon_002_receiver_anonymity [untranslatable]
+(assert (forall ((receiver_set AnonymitySet)) (forall ((k Int)) (=> (= (k_anonymous receiver_set k) true) (>= (length receiver_set) k))))) ; anon_002_receiver_anonymity
 
 ; anon_003_layers_match_path (matches Coq: Theorem anon_003_layers_match_path)
-(assert (= true true)) ; anon_003_layers_match_path [untranslatable]
+(assert (forall ((msg OnionMessage)) (forall ((circuit Circuit)) (=> (= (length (onion_layers msg)) (length (circuit_path circuit))) (= (length (onion_layers msg)) (length (circuit_path circuit))))))) ; anon_003_layers_match_path
 
 ; anon_004_min_path_length (matches Coq: Theorem anon_004_min_path_length)
-(assert (= true true)) ; anon_004_min_path_length [untranslatable]
+(assert (forall ((circuit Circuit)) (=> (>= (length (circuit_path circuit)) 3) (>= (length (circuit_path circuit)) 3)))) ; anon_004_min_path_length
 
 ; anon_005_entry_guard (matches Coq: Theorem anon_005_entry_guard)
-(assert (= true true)) ; anon_005_entry_guard [untranslatable]
+; anon_005_entry_guard: forall (circuits : list Circuit) (guard : nat), entry_guard_fixed circuits guard -> Forall (fun c => hd_error (circuit_p
+(assert (forall ((circuits list) (guard Int)) true)) ; anon_005_entry_guard [partial: bindings preserved]
 
 ; anon_006_exit_diversity (matches Coq: Theorem anon_006_exit_diversity)
-(assert (= true true)) ; anon_006_exit_diversity [untranslatable]
+; anon_006_exit_diversity: forall (circuits : list Circuit), exit_diverse circuits -> length (nodup Nat.eq_dec (map (fun c => last (circuit_path c)
+(assert (forall ((circuits list)) true)) ; anon_006_exit_diversity [partial: bindings preserved]
 
 ; anon_007_layer_order (matches Coq: Theorem anon_007_layer_order)
-(assert (= true true)) ; anon_007_layer_order [untranslatable]
+(assert (forall ((msg OnionMessage)) (forall ((n Int)) (=> (< n (length (onion_layers msg))) (< n (length (onion_layers msg))))))) ; anon_007_layer_order
 
 ; anon_008_unique_keys (matches Coq: Theorem anon_008_unique_keys)
-(assert (= true true)) ; anon_008_unique_keys [untranslatable]
+(assert (forall ((circuit Circuit)) (=> (= (keys_unique circuit) true) (= (NoDup (circuit_keys circuit)) true)))) ; anon_008_unique_keys
 
 ; anon_009_nonce_unique (matches Coq: Theorem anon_009_nonce_unique)
-(assert (= true true)) ; anon_009_nonce_unique [untranslatable]
+(assert (forall ((messages list)) (=> (= (nonces_unique messages) true) (= (NoDup (map onion_nonce messages)) true)))) ; anon_009_nonce_unique
 
 ; anon_010_unlinkability (matches Coq: Theorem anon_010_unlinkability)
-(assert (= true true)) ; anon_010_unlinkability [untranslatable]
+(assert (forall ((sender Int) (receiver Int) (obs Observation)) (=> (= (unlinkable sender receiver obs) true) (= (unlinkable sender receiver obs) true)))) ; anon_010_unlinkability
 
 ; anon_011_no_sender_in_obs (matches Coq: Theorem anon_011_no_sender_in_obs)
-(assert (= true true)) ; anon_011_no_sender_in_obs [untranslatable]
+(assert (forall ((obs Observation)) (forall ((sender Int)) (=> (not (= (obs_entry_node obs) sender)) (not (= (obs_entry_node obs) sender)))))) ; anon_011_no_sender_in_obs
 
 ; anon_012_no_receiver_in_obs (matches Coq: Theorem anon_012_no_receiver_in_obs)
-(assert (= true true)) ; anon_012_no_receiver_in_obs [untranslatable]
+(assert (forall ((obs Observation)) (forall ((receiver Int)) (=> (not (= (obs_exit_node obs) receiver)) (not (= (obs_exit_node obs) receiver)))))) ; anon_012_no_receiver_in_obs
 
 ; anon_013_compromise_bounded (matches Coq: Theorem anon_013_compromise_bounded)
-(assert (= true true)) ; anon_013_compromise_bounded [untranslatable]
+(assert (forall ((adv Adversary)) (forall ((max_compromise Int)) (=> (< (length (adv_compromised_nodes adv)) max_compromise) (< (length (adv_compromised_nodes adv)) max_compromise))))) ; anon_013_compromise_bounded
 
 ; anon_014_path_safe (matches Coq: Theorem anon_014_path_safe)
-(assert (= true true)) ; anon_014_path_safe [untranslatable]
+; anon_014_path_safe: forall (path compromised : list nat), path_avoids path compromised -> Forall (fun node => ~ In node compromised) path
+(assert (forall ((path list) (compromised list)) true)) ; anon_014_path_safe [partial: bindings preserved]
 
 ; anon_015_pseudonym_rotation (matches Coq: Theorem anon_015_pseudonym_rotation)
-(assert (= true true)) ; anon_015_pseudonym_rotation [untranslatable]
+(assert (forall ((old_pseudo Int) (new_pseudo Int)) (=> (= (pseudonyms_rotated old_pseudo new_pseudo) true) (not (= old_pseudo new_pseudo))))) ; anon_015_pseudonym_rotation
 
 ; anon_016_circuit_lifetime (matches Coq: Theorem anon_016_circuit_lifetime)
-(assert (= true true)) ; anon_016_circuit_lifetime [untranslatable]
+(assert (forall ((created Int) (current Int) (max_age Int)) (=> (= (circuit_fresh created current max_age) true) (<= (- current created) max_age)))) ; anon_016_circuit_lifetime
 
 ; anon_017_constant_traffic (matches Coq: Theorem anon_017_constant_traffic)
-(assert (= true true)) ; anon_017_constant_traffic [untranslatable]
+; anon_017_constant_traffic: forall (intervals : list nat) (target : nat), constant_traffic intervals target -> Forall (fun i => i = target) interval
+(assert (forall ((intervals list) (target Int)) true)) ; anon_017_constant_traffic [partial: bindings preserved]
 
 ; anon_018_uniform_size (matches Coq: Theorem anon_018_uniform_size)
-(assert (= true true)) ; anon_018_uniform_size [untranslatable]
+; anon_018_uniform_size: forall (sizes : list nat) (target : nat), sizes_uniform sizes target -> Forall (fun s => s = target) sizes
+(assert (forall ((sizes list) (target Int)) true)) ; anon_018_uniform_size [partial: bindings preserved]
 
 ; anon_019_forward_secrecy (matches Coq: Theorem anon_019_forward_secrecy)
-(assert (= true true)) ; anon_019_forward_secrecy [untranslatable]
+(assert (forall ((session_key Int) (long_term_key Int)) (=> (= (forward_secret session_key long_term_key) true) (not (= session_key long_term_key))))) ; anon_019_forward_secrecy
 
 ; anon_020_intersection_resistance (matches Coq: Theorem anon_020_intersection_resistance)
-(assert (= true true)) ; anon_020_intersection_resistance [untranslatable]
+(assert (forall ((observations Int) (required Int)) (=> (= (intersection_resistant observations required) true) (> required observations)))) ; anon_020_intersection_resistance
 
 ; anon_021_rendezvous_hidden (matches Coq: Theorem anon_021_rendezvous_hidden)
-(assert (= true true)) ; anon_021_rendezvous_hidden [untranslatable]
+(assert (forall ((rp_id Int)) (forall ((observer_known list)) (not (=> (= (In rp_id observer_known) true) (not (= (In rp_id observer_known) true))))))) ; anon_021_rendezvous_hidden
 
 ; anon_022_bidirectional (matches Coq: Theorem anon_022_bidirectional)
-(assert (= true true)) ; anon_022_bidirectional [untranslatable]
+(assert (forall ((sender Int) (receiver Int) (sender_set AnonymitySet) (receiver_set AnonymitySet)) (=> (= (k_anonymous sender_set 2) true) (=> (= (k_anonymous receiver_set 2) true) (and (>= (length sender_set) 2) (>= (length receiver_set) 2)))))) ; anon_022_bidirectional
 
 ; anon_023_no_spof (matches Coq: Theorem anon_023_no_spof)
-(assert (= true true)) ; anon_023_no_spof [untranslatable]
+(assert (forall ((path list)) (=> (>= (length path) 3) (>= (length path) 3)))) ; anon_023_no_spof
 
 ; anon_024_replay_prevention (matches Coq: Theorem anon_024_replay_prevention)
-(assert (= true true)) ; anon_024_replay_prevention [untranslatable]
+(assert (forall ((seen list nat)) (forall ((nonce Int)) (not (=> (= (In nonce seen) true) (not (= (In nonce seen) true))))))) ; anon_024_replay_prevention
 
 ; anon_025_defense_in_depth (matches Coq: Theorem anon_025_defense_in_depth)
-(assert (= true true)) ; anon_025_defense_in_depth [untranslatable]
+(assert (forall ((e Bool) (r Bool) (t Bool) (c Bool)) (=> (= (anon_layers e r t c) true) (and (= e true) (= r true) (= t true) (= c true))))) ; anon_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -8,22 +8,22 @@
 (set-option :produce-models true)
 
 ; effect_leq_pure (matches Coq: Lemma effect_leq_pure)
-(assert (= true true)) ; effect_leq_pure [untranslatable]
+(assert (forall ((eff Bool)) (= (effect_leq EffectPure eff) true))) ; effect_leq_pure
 
 ; performs_within_mono (matches Coq: Lemma performs_within_mono)
-(assert (= true true)) ; performs_within_mono [untranslatable]
+(assert (forall ((e Bool) (eff1 Bool) (eff2 Bool)) (=> (= (effect_leq eff1 eff2) true) (=> (= (performs_within e eff1) true) (= (performs_within e eff2) true))))) ; performs_within_mono
 
 ; effect_leq_join_ub_l_trans (matches Coq: Lemma effect_leq_join_ub_l_trans)
-(assert (= true true)) ; effect_leq_join_ub_l_trans [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (= (effect_leq e1 (effect_join e2 (effect_join e1 e3))) true))) ; effect_leq_join_ub_l_trans
 
 ; effect_leq_join_ub_r_trans (matches Coq: Lemma effect_leq_join_ub_r_trans)
-(assert (= true true)) ; effect_leq_join_ub_r_trans [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (= (effect_leq e3 (effect_join e2 (effect_join e1 e3))) true))) ; effect_leq_join_ub_r_trans
 
 ; core_effects_within (matches Coq: Lemma core_effects_within)
-(assert (= true true)) ; core_effects_within [untranslatable]
+(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool)) (=> (= (has_type G S D e T eff) true) (= (performs_within e eff) true)))) ; core_effects_within
 
 ; effect_safety (matches Coq: Theorem effect_safety)
-(assert (= true true)) ; effect_safety [untranslatable]
+(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool)) (=> (= (has_type_full G S D e T eff) true) (= (performs_within e eff) true)))) ; effect_safety
 
 ; Verify all assertions are satisfiable
 (check-sat)

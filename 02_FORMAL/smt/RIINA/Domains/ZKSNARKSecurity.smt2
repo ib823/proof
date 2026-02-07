@@ -260,25 +260,25 @@
   (mk-proof_system_type true false true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb3_true_iff (matches Coq: Lemma andb3_true_iff)
-(assert (= true true)) ; andb3_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (and (=> (= (and a b c) true) (and (= a true) (= b true) (= c true))) (=> (and (= a true) (= b true) (= c true)) (= (and a b c) true))))) ; andb3_true_iff
 
 ; andb4_true_iff (matches Coq: Lemma andb4_true_iff)
-(assert (= true true)) ; andb4_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool) (d Bool)) (and (=> (= (and a b c d) true) (and (= a true) (= b true) (= c true) (= d true))) (=> (and (= a true) (= b true) (= c true) (= d true)) (= (and a b c d) true))))) ; andb4_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; leb_le (matches Coq: Lemma leb_le)
-(assert (= true true)) ; leb_le [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (<= n m) true) (<= n m)) (=> (<= n m) (= (<= n m) true))))) ; leb_le
 
 ; ltb_lt (matches Coq: Lemma ltb_lt)
-(assert (= true true)) ; ltb_lt [untranslatable]
+(assert (forall ((n Int) (m Int)) (and (=> (= (< n m) true) (< n m)) (=> (< n m) (= (< n m) true))))) ; ltb_lt
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; ZK_001 (matches Coq: Theorem ZK_001)
 (assert (= (zk_secure riina_zk) true)) ; ZK_001
@@ -320,103 +320,103 @@
 (assert (= (ts_verifiable riina_setup) true)) ; ZK_013
 
 ; ZK_014 (matches Coq: Theorem ZK_014)
-(assert (= true true)) ; ZK_014 [untranslatable]
+(assert (forall ((z Bool)) (=> (= (zk_secure z) true) (= (zk_completeness z) true)))) ; ZK_014
 
 ; ZK_015 (matches Coq: Theorem ZK_015)
-(assert (= true true)) ; ZK_015 [untranslatable]
+(assert (forall ((z Bool)) (=> (= (zk_secure z) true) (= (zk_soundness z) true)))) ; ZK_015
 
 ; ZK_016 (matches Coq: Theorem ZK_016)
-(assert (= true true)) ; ZK_016 [untranslatable]
+(assert (forall ((z Bool)) (=> (= (zk_secure z) true) (= (zk_zero_knowledge z) true)))) ; ZK_016
 
 ; ZK_017 (matches Coq: Theorem ZK_017)
-(assert (= true true)) ; ZK_017 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (snark_secure s) true) (= (snark_knowledge_sound s) true)))) ; ZK_017
 
 ; ZK_018 (matches Coq: Theorem ZK_018)
-(assert (= true true)) ; ZK_018 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (setup_secure t) true) (= (ts_toxic_waste_destroyed t) true)))) ; ZK_018
 
 ; ZK_019 (matches Coq: Theorem ZK_019)
-(assert (= true true)) ; ZK_019 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (= (zk_secure (zks_zk c)) true)))) ; ZK_019
 
 ; ZK_020 (matches Coq: Theorem ZK_020)
-(assert (= true true)) ; ZK_020 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (= (snark_secure (zks_snark c)) true)))) ; ZK_020
 
 ; ZK_021 (matches Coq: Theorem ZK_021)
-(assert (= true true)) ; ZK_021 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (= (setup_secure (zks_setup c)) true)))) ; ZK_021
 
 ; ZK_022 (matches Coq: Theorem ZK_022)
-(assert (= true true)) ; ZK_022 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (= (zk_soundness (zks_zk c)) true)))) ; ZK_022
 
 ; ZK_023 (matches Coq: Theorem ZK_023)
-(assert (= true true)) ; ZK_023 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (= (zk_zero_knowledge (zks_zk c)) true)))) ; ZK_023
 
 ; ZK_024 (matches Coq: Theorem ZK_024)
-(assert (= true true)) ; ZK_024 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (= (snark_knowledge_sound (zks_snark c)) true)))) ; ZK_024
 
 ; ZK_025_complete (matches Coq: Theorem ZK_025_complete)
-(assert (= true true)) ; ZK_025_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (zksnark_secure c) true) (and (= (zk_soundness (zks_zk c)) true) (= (zk_zero_knowledge (zks_zk c)) true) (= (snark_knowledge_sound (zks_snark c)) true) (= (ts_toxic_waste_destroyed (zks_setup c)) true))))) ; ZK_025_complete
 
 ; ke_001_riina_ke_secure (matches Coq: Theorem ke_001_riina_ke_secure)
 (assert (= (ke_secure riina_ke) true)) ; ke_001_riina_ke_secure
 
 ; ke_002_extractor_exists (matches Coq: Theorem ke_002_extractor_exists)
-(assert (= true true)) ; ke_002_extractor_exists [untranslatable]
+(assert (forall ((ke Bool)) (=> (= (ke_secure ke) true) (= (ke_exists ke) true)))) ; ke_002_extractor_exists
 
 ; ke_003_extractor_polynomial (matches Coq: Theorem ke_003_extractor_polynomial)
-(assert (= true true)) ; ke_003_extractor_polynomial [untranslatable]
+(assert (forall ((ke Bool)) (=> (= (ke_secure ke) true) (= (ke_polynomial_time ke) true)))) ; ke_003_extractor_polynomial
 
 ; ke_004_extractor_probability (matches Coq: Theorem ke_004_extractor_probability)
-(assert (= true true)) ; ke_004_extractor_probability [untranslatable]
+(assert (forall ((ke Bool)) (=> (= (ke_secure ke) true) (>= (ke_extraction_prob ke) 90)))) ; ke_004_extractor_probability
 
 ; ke_005_riina_wr_valid (matches Coq: Theorem ke_005_riina_wr_valid)
 (assert (= (wr_valid riina_wr) true)) ; ke_005_riina_wr_valid
 
 ; ke_006_valid_satisfiable (matches Coq: Theorem ke_006_valid_satisfiable)
-(assert (= true true)) ; ke_006_valid_satisfiable [untranslatable]
+(assert (forall ((wr Bool)) (=> (= (wr_valid wr) true) (= (wr_satisfiable wr) true)))) ; ke_006_valid_satisfiable
 
 ; ke_007_positive_statement (matches Coq: Theorem ke_007_positive_statement)
-(assert (= true true)) ; ke_007_positive_statement [untranslatable]
+(assert (forall ((wr Bool)) (=> (= (wr_valid wr) true) (> (wr_statement_size wr) 0)))) ; ke_007_positive_statement
 
 ; ke_008_positive_witness (matches Coq: Theorem ke_008_positive_witness)
-(assert (= true true)) ; ke_008_positive_witness [untranslatable]
+(assert (forall ((wr Bool)) (=> (= (wr_valid wr) true) (> (wr_witness_size wr) 0)))) ; ke_008_positive_witness
 
 ; sim_001_riina_sim_secure (matches Coq: Theorem sim_001_riina_sim_secure)
 (assert (= (sim_secure riina_sim) true)) ; sim_001_riina_sim_secure
 
 ; sim_002_simulator_exists (matches Coq: Theorem sim_002_simulator_exists)
-(assert (= true true)) ; sim_002_simulator_exists [untranslatable]
+(assert (forall ((sim Bool)) (=> (= (sim_secure sim) true) (= (sim_exists sim) true)))) ; sim_002_simulator_exists
 
 ; sim_003_simulator_poly (matches Coq: Theorem sim_003_simulator_poly)
-(assert (= true true)) ; sim_003_simulator_poly [untranslatable]
+(assert (forall ((sim Bool)) (=> (= (sim_secure sim) true) (= (sim_polynomial_time sim) true)))) ; sim_003_simulator_poly
 
 ; sim_004_simulator_indist (matches Coq: Theorem sim_004_simulator_indist)
-(assert (= true true)) ; sim_004_simulator_indist [untranslatable]
+(assert (forall ((sim Bool)) (=> (= (sim_secure sim) true) (= (sim_indistinguishable sim) true)))) ; sim_004_simulator_indist
 
 ; sim_005_simulator_no_witness (matches Coq: Theorem sim_005_simulator_no_witness)
-(assert (= true true)) ; sim_005_simulator_no_witness [untranslatable]
+(assert (forall ((sim Bool)) (=> (= (sim_secure sim) true) (= (sim_no_witness_needed sim) true)))) ; sim_005_simulator_no_witness
 
 ; sim_006_riina_di_strong (matches Coq: Theorem sim_006_riina_di_strong)
 (assert (= (di_strong riina_di) true)) ; sim_006_riina_di_strong
 
 ; sim_007_strong_implies_computational (matches Coq: Theorem sim_007_strong_implies_computational)
-(assert (= true true)) ; sim_007_strong_implies_computational [untranslatable]
+(assert (forall ((di Bool)) (=> (= (di_strong di) true) (= (di_computational di) true)))) ; sim_007_strong_implies_computational
 
 ; sim_008_strong_bounded_advantage (matches Coq: Theorem sim_008_strong_bounded_advantage)
-(assert (= true true)) ; sim_008_strong_bounded_advantage [untranslatable]
+(assert (forall ((di Bool)) (=> (= (di_strong di) true) (<= (di_advantage_bound di) 1)))) ; sim_008_strong_bounded_advantage
 
 ; comp_001_riina_completeness (matches Coq: Theorem comp_001_riina_completeness)
 (assert (= (completeness_holds riina_prover riina_verifier) true)) ; comp_001_riina_completeness
 
 ; comp_002_requires_honest_prover (matches Coq: Theorem comp_002_requires_honest_prover)
-(assert (= true true)) ; comp_002_requires_honest_prover [untranslatable]
+(assert (forall ((pv Bool) (vf Bool)) (=> (= (completeness_holds pv vf) true) (= (pv_honest pv) true)))) ; comp_002_requires_honest_prover
 
 ; comp_003_requires_witness (matches Coq: Theorem comp_003_requires_witness)
-(assert (= true true)) ; comp_003_requires_witness [untranslatable]
+(assert (forall ((pv Bool) (vf Bool)) (=> (= (completeness_holds pv vf) true) (= (pv_knows_witness pv) true)))) ; comp_003_requires_witness
 
 ; comp_004_requires_protocol (matches Coq: Theorem comp_004_requires_protocol)
-(assert (= true true)) ; comp_004_requires_protocol [untranslatable]
+(assert (forall ((pv Bool) (vf Bool)) (=> (= (completeness_holds pv vf) true) (= (pv_follows_protocol pv) true)))) ; comp_004_requires_protocol
 
 ; comp_005_verifier_accepts (matches Coq: Theorem comp_005_verifier_accepts)
-(assert (= true true)) ; comp_005_verifier_accepts [untranslatable]
+(assert (forall ((pv Bool) (vf Bool)) (=> (= (completeness_holds pv vf) true) (= (vf_accepts_valid vf) true)))) ; comp_005_verifier_accepts
 
 ; comp_006_riina_prover_honest (matches Coq: Theorem comp_006_riina_prover_honest)
 (assert (= (pv_honest riina_prover) true)) ; comp_006_riina_prover_honest
@@ -431,19 +431,19 @@
 (assert (= (ac_polylog riina_ac) true)) ; succ_002_riina_polylog
 
 ; succ_003_bounded_size (matches Coq: Theorem succ_003_bounded_size)
-(assert (= true true)) ; succ_003_bounded_size [untranslatable]
+(assert (forall ((ps Bool)) (=> (= (ps_succinct ps) true) (<= (ps_proof_bytes ps) 512)))) ; succ_003_bounded_size
 
 ; succ_004_bounded_verification (matches Coq: Theorem succ_004_bounded_verification)
-(assert (= true true)) ; succ_004_bounded_verification [untranslatable]
+(assert (forall ((ps Bool)) (=> (= (ps_succinct ps) true) (<= (ps_verification_ops ps) 1000)))) ; succ_004_bounded_verification
 
 ; succ_005_witness_independent (matches Coq: Theorem succ_005_witness_independent)
-(assert (= true true)) ; succ_005_witness_independent [untranslatable]
+(assert (forall ((ps Bool)) (=> (= (ps_succinct ps) true) (= (ps_witness_independent ps) true)))) ; succ_005_witness_independent
 
 ; succ_006_polylog_proof_size (matches Coq: Theorem succ_006_polylog_proof_size)
-(assert (= true true)) ; succ_006_polylog_proof_size [untranslatable]
+(assert (forall ((ac Bool)) (=> (= (ac_polylog ac) true) (<= (ac_proof_size ac) 1)))) ; succ_006_polylog_proof_size
 
 ; succ_007_polylog_verification (matches Coq: Theorem succ_007_polylog_verification)
-(assert (= true true)) ; succ_007_polylog_verification [untranslatable]
+(assert (forall ((ac Bool)) (=> (= (ac_polylog ac) true) (<= (ac_verification_time ac) 1)))) ; succ_007_polylog_verification
 
 ; mpc_001_riina_mpc_secure (matches Coq: Theorem mpc_001_riina_mpc_secure)
 (assert (= (mpc_secure riina_mpc) true)) ; mpc_001_riina_mpc_secure
@@ -452,19 +452,19 @@
 (assert (= (tw_secure riina_tw) true)) ; mpc_002_riina_tw_secure
 
 ; mpc_003_multiple_participants (matches Coq: Theorem mpc_003_multiple_participants)
-(assert (= true true)) ; mpc_003_multiple_participants [untranslatable]
+(assert (forall ((mpc Bool)) (=> (= (mpc_secure mpc) true) (>= (mpc_participants mpc) 2)))) ; mpc_003_multiple_participants
 
 ; mpc_004_valid_threshold (matches Coq: Theorem mpc_004_valid_threshold)
-(assert (= true true)) ; mpc_004_valid_threshold [untranslatable]
+(assert (forall ((mpc Bool)) (=> (= (mpc_secure mpc) true) (>= (mpc_threshold mpc) 1)))) ; mpc_004_valid_threshold
 
 ; mpc_005_verifiable (matches Coq: Theorem mpc_005_verifiable)
-(assert (= true true)) ; mpc_005_verifiable [untranslatable]
+(assert (forall ((mpc Bool)) (=> (= (mpc_secure mpc) true) (= (mpc_verifiable mpc) true)))) ; mpc_005_verifiable
 
 ; mpc_006_tw_destroyed (matches Coq: Theorem mpc_006_tw_destroyed)
-(assert (= true true)) ; mpc_006_tw_destroyed [untranslatable]
+(assert (forall ((tw Bool)) (=> (= (tw_secure tw) true) (= (tw_destroyed_immediately tw) true)))) ; mpc_006_tw_destroyed
 
 ; mpc_007_tw_multi_party (matches Coq: Theorem mpc_007_tw_multi_party)
-(assert (= true true)) ; mpc_007_tw_multi_party [untranslatable]
+(assert (forall ((tw Bool)) (=> (= (tw_secure tw) true) (= (tw_multi_party tw) true)))) ; mpc_007_tw_multi_party
 
 ; g16_001_riina_secure (matches Coq: Theorem g16_001_riina_secure)
 (assert (= (g16_secure riina_g16) true)) ; g16_001_riina_secure
@@ -473,19 +473,19 @@
 (assert (= (g16p_valid riina_g16_proof) true)) ; g16_002_riina_proof_valid
 
 ; g16_003_pairing_friendly (matches Coq: Theorem g16_003_pairing_friendly)
-(assert (= true true)) ; g16_003_pairing_friendly [untranslatable]
+(assert (forall ((g Bool)) (=> (= (g16_secure g) true) (= (g16_pairing_friendly g) true)))) ; g16_003_pairing_friendly
 
 ; g16_004_three_elements (matches Coq: Theorem g16_004_three_elements)
-(assert (= true true)) ; g16_004_three_elements [untranslatable]
+(assert (forall ((g Bool)) (=> (= (g16_secure g) true) (= (g16_proof_elements g) 3)))) ; g16_004_three_elements
 
 ; g16_005_bounded_pairings (matches Coq: Theorem g16_005_bounded_pairings)
-(assert (= true true)) ; g16_005_bounded_pairings [untranslatable]
+(assert (forall ((g Bool)) (=> (= (g16_secure g) true) (<= (g16_verification_pairings g) 4)))) ; g16_005_bounded_pairings
 
 ; g16_006_valid_curve_points (matches Coq: Theorem g16_006_valid_curve_points)
-(assert (= true true)) ; g16_006_valid_curve_points [untranslatable]
+(assert (forall ((p Bool)) (=> (= (g16p_valid p) true) (= (g16p_valid_curve_points p) true)))) ; g16_006_valid_curve_points
 
 ; g16_007_valid_subgroup (matches Coq: Theorem g16_007_valid_subgroup)
-(assert (= true true)) ; g16_007_valid_subgroup [untranslatable]
+(assert (forall ((p Bool)) (=> (= (g16p_valid p) true) (= (g16p_valid_subgroup p) true)))) ; g16_007_valid_subgroup
 
 ; plonk_001_riina_secure (matches Coq: Theorem plonk_001_riina_secure)
 (assert (= (plonk_secure riina_plonk) true)) ; plonk_001_riina_secure
@@ -494,40 +494,40 @@
 (assert (= (pg_valid riina_plonk_gate) true)) ; plonk_002_riina_gate_valid
 
 ; plonk_003_universal_setup (matches Coq: Theorem plonk_003_universal_setup)
-(assert (= true true)) ; plonk_003_universal_setup [untranslatable]
+(assert (forall ((p Bool)) (=> (= (plonk_secure p) true) (= (plonk_universal_setup p) true)))) ; plonk_003_universal_setup
 
 ; plonk_004_polynomial_commitment (matches Coq: Theorem plonk_004_polynomial_commitment)
-(assert (= true true)) ; plonk_004_polynomial_commitment [untranslatable]
+(assert (forall ((p Bool)) (=> (= (plonk_secure p) true) (= (plonk_polynomial_commitment p) true)))) ; plonk_004_polynomial_commitment
 
 ; plonk_005_arithmetic_gates (matches Coq: Theorem plonk_005_arithmetic_gates)
-(assert (= true true)) ; plonk_005_arithmetic_gates [untranslatable]
+(assert (forall ((p Bool)) (=> (= (plonk_secure p) true) (= (plonk_arithmetic_gates p) true)))) ; plonk_005_arithmetic_gates
 
 ; plonk_006_bounded_degree (matches Coq: Theorem plonk_006_bounded_degree)
-(assert (= true true)) ; plonk_006_bounded_degree [untranslatable]
+(assert (forall ((g Bool)) (=> (= (pg_valid g) true) (<= (pg_degree g) 4)))) ; plonk_006_bounded_degree
 
 ; plonk_007_sufficient_fan_in (matches Coq: Theorem plonk_007_sufficient_fan_in)
-(assert (= true true)) ; plonk_007_sufficient_fan_in [untranslatable]
+(assert (forall ((g Bool)) (=> (= (pg_valid g) true) (>= (pg_fan_in g) 2)))) ; plonk_007_sufficient_fan_in
 
 ; full_001_riina_full_zk_secure (matches Coq: Theorem full_001_riina_full_zk_secure)
 (assert (= (full_zk_secure riina_full_zk) true)) ; full_001_riina_full_zk_secure
 
 ; full_002_implies_base (matches Coq: Theorem full_002_implies_base)
-(assert (= true true)) ; full_002_implies_base [untranslatable]
+(assert (forall ((f Bool)) (=> (= (full_zk_secure f) true) (= (zksnark_secure (fzk_base f)) true)))) ; full_002_implies_base
 
 ; full_003_implies_ke (matches Coq: Theorem full_003_implies_ke)
-(assert (= true true)) ; full_003_implies_ke [untranslatable]
+(assert (forall ((f Bool)) (=> (= (full_zk_secure f) true) (= (ke_secure (fzk_extractor f)) true)))) ; full_003_implies_ke
 
 ; full_004_implies_sim (matches Coq: Theorem full_004_implies_sim)
-(assert (= true true)) ; full_004_implies_sim [untranslatable]
+(assert (forall ((f Bool)) (=> (= (full_zk_secure f) true) (= (sim_secure (fzk_simulator f)) true)))) ; full_004_implies_sim
 
 ; full_005_implies_succinct (matches Coq: Theorem full_005_implies_succinct)
-(assert (= true true)) ; full_005_implies_succinct [untranslatable]
+(assert (forall ((f Bool)) (=> (= (full_zk_secure f) true) (= (ps_succinct (fzk_proof_size f)) true)))) ; full_005_implies_succinct
 
 ; full_006_implies_mpc (matches Coq: Theorem full_006_implies_mpc)
-(assert (= true true)) ; full_006_implies_mpc [untranslatable]
+(assert (forall ((f Bool)) (=> (= (full_zk_secure f) true) (= (mpc_secure (fzk_mpc f)) true)))) ; full_006_implies_mpc
 
 ; full_007_implies_tw (matches Coq: Theorem full_007_implies_tw)
-(assert (= true true)) ; full_007_implies_tw [untranslatable]
+(assert (forall ((f Bool)) (=> (= (full_zk_secure f) true) (= (tw_secure (fzk_tw f)) true)))) ; full_007_implies_tw
 
 ; full_008_riina_all_properties (matches Coq: Theorem full_008_riina_all_properties)
 (assert (and (= (zk_secure riina_zk) true) (= (snark_secure riina_snark) true) (= (setup_secure riina_setup) true) (= (ke_secure riina_ke) true) (= (sim_secure riina_sim) true) (= (ps_succinct riina_proof_size) true) (= (mpc_secure riina_mpc) true) (= (tw_secure riina_tw) true) (= (g16_secure riina_g16) true) (= (plonk_secure riina_plonk) true))) ; full_008_riina_all_properties
@@ -536,22 +536,22 @@
 (assert (= (se_secure riina_se) true)) ; se_001_riina_se_secure
 
 ; se_002_security_parameter (matches Coq: Theorem se_002_security_parameter)
-(assert (= true true)) ; se_002_security_parameter [untranslatable]
+(assert (forall ((se Bool)) (=> (= (se_secure se) true) (>= (se_security_parameter se) 128)))) ; se_002_security_parameter
 
 ; se_003_statistical_bounded (matches Coq: Theorem se_003_statistical_bounded)
-(assert (= true true)) ; se_003_statistical_bounded [untranslatable]
+(assert (forall ((se Bool)) (=> (= (se_secure se) true) (>= (se_statistical se) (se_security_parameter se))))) ; se_003_statistical_bounded
 
 ; pst_001_riina_is_snark (matches Coq: Theorem pst_001_riina_is_snark)
 (assert (= (pst_is_snark riina_pst) true)) ; pst_001_riina_is_snark
 
 ; pst_002_snark_is_argument (matches Coq: Theorem pst_002_snark_is_argument)
-(assert (= true true)) ; pst_002_snark_is_argument [untranslatable]
+(assert (forall ((pst Bool)) (=> (= (pst_is_snark pst) true) (= (pst_is_argument pst) true)))) ; pst_002_snark_is_argument
 
 ; pst_003_snark_knowledge (matches Coq: Theorem pst_003_snark_knowledge)
-(assert (= true true)) ; pst_003_snark_knowledge [untranslatable]
+(assert (forall ((pst Bool)) (=> (= (pst_is_snark pst) true) (= (pst_knowledge_property pst) true)))) ; pst_003_snark_knowledge
 
 ; pst_004_snark_succinct (matches Coq: Theorem pst_004_snark_succinct)
-(assert (= true true)) ; pst_004_snark_succinct [untranslatable]
+(assert (forall ((pst Bool)) (=> (= (pst_is_snark pst) true) (= (pst_succinctness pst) true)))) ; pst_004_snark_succinct
 
 ; Verify all assertions are satisfiable
 (check-sat)

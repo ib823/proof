@@ -8,19 +8,21 @@
 (set-option :produce-models true)
 
 ; store_ty_extends_trans_early (matches Coq: Lemma store_ty_extends_trans_early)
-(assert (= true true)) ; store_ty_extends_trans_early [untranslatable]
+(assert (forall ((Σ1 Bool) (Σ2 Bool) (Σ3 Bool)) (=> (= (store_ty_extends Σ1 Σ2) true) (=> (= (store_ty_extends Σ2 Σ3) true) (= (store_ty_extends Σ1 Σ3) true))))) ; store_ty_extends_trans_early
 
 ; val_rel_at_type_mono_store (matches Coq: Lemma val_rel_at_type_mono_store)
-(assert (= true true)) ; val_rel_at_type_mono_store [untranslatable]
+; val_rel_at_type_mono_store: forall T Σ Σ' (sp : store_ty -> store -> store -> Prop) (vl : store_ty -> ty -> expr -> expr -> Prop) (sl : store_ty -> 
+(assert true) ; val_rel_at_type_mono_store [Coq-only]
 
 ; first_order_decidable_local (matches Coq: Lemma first_order_decidable_local)
-(assert (= true true)) ; first_order_decidable_local [untranslatable]
+; first_order_decidable_local: forall T, {first_order_type T = true} + {first_order_type T = false}
+(assert (forall ((T Bool)) true)) ; first_order_decidable_local [partial: bindings preserved]
 
 ; val_rel_n_mono_store_fo (matches Coq: Lemma val_rel_n_mono_store_fo)
-(assert (= true true)) ; val_rel_n_mono_store_fo [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (Σ' Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (first_order_type T) true) (=> (= (store_ty_extends Σ Σ') true) (=> (= (val_rel_n n Σ T v1 v2) true) (= (val_rel_n n Σ' T v1 v2) true)))))) ; val_rel_n_mono_store_fo
 
 ; val_rel_n_mono_store (matches Coq: Lemma val_rel_n_mono_store)
-(assert (= true true)) ; val_rel_n_mono_store [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (Σ' Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (store_ty_extends Σ Σ') true) (=> (= (val_rel_n n Σ T v1 v2) true) (= (val_rel_n n Σ' T v1 v2) true))))) ; val_rel_n_mono_store
 
 ; Verify all assertions are satisfiable
 (check-sat)

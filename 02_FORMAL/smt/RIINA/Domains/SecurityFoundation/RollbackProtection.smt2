@@ -69,67 +69,67 @@
   true)
 
 ; rollback_protection (matches Coq: Theorem rollback_protection)
-(assert (= true true)) ; rollback_protection [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((old_ver Version)) (=> (= (rollback_enforced st) true) (=> (= (is_rollback st comp old_ver) true) (= (version_allowed st comp old_ver) false))))))) ; rollback_protection
 
 ; old_version_cannot_boot (matches Coq: Theorem old_version_cannot_boot)
-(assert (= true true)) ; old_version_cannot_boot [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp VersionedComponent)) (=> (= (rollback_enforced st) true) (=> (= (is_rollback st (comp_id comp) (comp_version comp)) true) (not (= (can_boot_prop st comp) true))))))) ; old_version_cannot_boot
 
 ; current_or_newer_allowed (matches Coq: Theorem current_or_newer_allowed)
-(assert (= true true)) ; current_or_newer_allowed [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (=> (= (rollback_enforced st) true) (=> (forall ((min_ver Bool)) (=> (= (get_min_version st comp) (some min_ver)) (= (version_lt ver min_ver) false))) (= (version_allowed st comp ver) true))))))) ; current_or_newer_allowed
 
 ; min_version_monotonic (matches Coq: Theorem min_version_monotonic)
-(assert (= true true)) ; min_version_monotonic [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((old_ver Version) (new_ver Version)) (=> (= (get_min_version st comp) (some old_ver)) (=> (= (version_lt new_ver old_ver) true) (let ((st' (update_min_version st comp new_ver true))) (= (get_min_version st' comp) (some new_ver))))))))) ; min_version_monotonic
 
 ; no_minimum_any_allowed (matches Coq: Theorem no_minimum_any_allowed)
-(assert (= true true)) ; no_minimum_any_allowed [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (=> (= (get_min_version st comp) none) (= (version_allowed st comp ver) true)))))) ; no_minimum_any_allowed
 
 ; disabled_rollback_allows_all (matches Coq: Theorem disabled_rollback_allows_all)
-(assert (= true true)) ; disabled_rollback_allows_all [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (=> (= (anti_rollback_enabled st) false) (= (version_allowed st comp ver) true)))))) ; disabled_rollback_allows_all
 
 ; version_lt_irreflexive (matches Coq: Theorem version_lt_irreflexive)
 (assert (forall ((v Version)) (= (version_lt v v) false))) ; version_lt_irreflexive
 
 ; same_version_always_allowed (matches Coq: Theorem same_version_always_allowed)
-(assert (= true true)) ; same_version_always_allowed [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (=> (= (rollback_enforced st) true) (=> (= (get_min_version st comp) (some ver)) (= (version_allowed st comp ver) true))))))) ; same_version_always_allowed
 
 ; update_stores_new_min (matches Coq: Theorem update_stores_new_min)
-(assert (= true true)) ; update_stores_new_min [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (forall ((hw Bool)) (= (get_min_version (update_min_version st comp ver hw) comp) (some ver))))))) ; update_stores_new_min
 
 ; record_preserves_anti_rollback (matches Coq: Theorem record_preserves_anti_rollback)
-(assert (= true true)) ; record_preserves_anti_rollback [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp VersionedComponent)) (= (anti_rollback_enabled (record_current_version st comp)) (anti_rollback_enabled st))))) ; record_preserves_anti_rollback
 
 ; record_preserves_minimums (matches Coq: Theorem record_preserves_minimums)
-(assert (= true true)) ; record_preserves_minimums [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp VersionedComponent)) (= (minimum_versions (record_current_version st comp)) (minimum_versions st))))) ; record_preserves_minimums
 
 ; update_preserves_anti_rollback (matches Coq: Theorem update_preserves_anti_rollback)
-(assert (= true true)) ; update_preserves_anti_rollback [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (forall ((hw Bool)) (= (anti_rollback_enabled (update_min_version st comp ver hw)) (anti_rollback_enabled st))))))) ; update_preserves_anti_rollback
 
 ; advance_preserves_anti_rollback (matches Coq: Theorem advance_preserves_anti_rollback)
-(assert (= true true)) ; advance_preserves_anti_rollback [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (= (anti_rollback_enabled (advance_min_to_current st comp)) (anti_rollback_enabled st))))) ; advance_preserves_anti_rollback
 
 ; equal_version_not_rollback (matches Coq: Theorem equal_version_not_rollback)
-(assert (= true true)) ; equal_version_not_rollback [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (=> (= (get_min_version st comp) (some ver)) (not (= (is_rollback st comp ver) true))))))) ; equal_version_not_rollback
 
 ; initial_state_allows_all (matches Coq: Theorem initial_state_allows_all)
-(assert (= true true)) ; initial_state_allows_all [untranslatable]
+(assert (forall ((comp ComponentId)) (forall ((ver Version)) (= (version_allowed initial_rollback_state comp ver) true)))) ; initial_state_allows_all
 
 ; initial_state_no_minimums (matches Coq: Theorem initial_state_no_minimums)
-(assert (forall ((comp ComponentId)) (= (get_min_version initial_rollback_state comp) None))) ; initial_state_no_minimums
+(assert (forall ((comp ComponentId)) (= (get_min_version initial_rollback_state comp) none))) ; initial_state_no_minimums
 
 ; initial_state_no_current (matches Coq: Theorem initial_state_no_current)
-(assert (forall ((comp ComponentId)) (= (get_current_version initial_rollback_state comp) None))) ; initial_state_no_current
+(assert (forall ((comp ComponentId)) (= (get_current_version initial_rollback_state comp) none))) ; initial_state_no_current
 
 ; enforced_detects_rollback (matches Coq: Theorem enforced_detects_rollback)
-(assert (= true true)) ; enforced_detects_rollback [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (=> (= (rollback_enforced st) true) (=> (= (is_rollback st comp ver) true) (= (can_boot_version st (mkVersionedComp comp ver 0)) false))))))) ; enforced_detects_rollback
 
 ; hardware_stored_minimum_recorded (matches Coq: Theorem hardware_stored_minimum_recorded)
-(assert (= true true)) ; hardware_stored_minimum_recorded [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (forall ((ver Version)) (let ((st' (update_min_version st comp ver true))) (= (In (mkMinVersion comp ver true) (minimum_versions st')) true)))))) ; hardware_stored_minimum_recorded
 
 ; advance_missing_current_identity (matches Coq: Theorem advance_missing_current_identity)
-(assert (= true true)) ; advance_missing_current_identity [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp ComponentId)) (=> (= (get_current_version st comp) none) (= (advance_min_to_current st comp) st))))) ; advance_missing_current_identity
 
 ; independent_component_minimums (matches Coq: Theorem independent_component_minimums)
-(assert (= true true)) ; independent_component_minimums [untranslatable]
+(assert (forall ((st RollbackState)) (forall ((comp1 ComponentId) (comp2 ComponentId) (ver Version) (hw Bool)) (=> (not (= comp1 comp2)) (=> (= (get_min_version st comp2) none) (let ((st' (update_min_version st comp1 ver hw))) (= (get_min_version st' comp2) none))))))) ; independent_component_minimums
 
 ; Verify all assertions are satisfiable
 (check-sat)

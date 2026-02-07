@@ -289,97 +289,98 @@
   true)
 
 ; BANK_001_01_customer_identity_uniqueness (matches Coq: Theorem BANK_001_01_customer_identity_uniqueness)
-(assert (= true true)) ; BANK_001_01_customer_identity_uniqueness [untranslatable]
+(assert (forall ((customers list Customer)) (forall ((c1 Customer) (c2 Customer)) (=> (= (unique_customer_ids customers) true) (=> (= (In c1 customers) true) (=> (= (In c2 customers) true) (=> (= (customer_id c1) (customer_id c2)) (= c1 c2)))))))) ; BANK_001_01_customer_identity_uniqueness
 
 ; BANK_001_02_kyc_completeness (matches Coq: Theorem BANK_001_02_kyc_completeness)
-(assert (= true true)) ; BANK_001_02_kyc_completeness [untranslatable]
+(assert (forall ((c Customer)) (=> (= (is_onboarded c) true) (=> (= (kyc_verified c) true) (=> (= (address_verified c) true) (=> (= (risk_assessed c) true) (=> (= (pep_screened c) true) (=> (= (sanctions_screened c) true) (= (kyc_complete c) true))))))))) ; BANK_001_02_kyc_completeness
 
 ; BANK_001_03_beneficial_ownership_complete (matches Coq: Theorem BANK_001_03_beneficial_ownership_complete)
-(assert (= true true)) ; BANK_001_03_beneficial_ownership_complete [untranslatable]
+(assert (forall ((owners list)) (=> (= (complete_ownership owners) true) (= (total_ownership owners) 100)))) ; BANK_001_03_beneficial_ownership_complete
 
 ; BANK_001_04_sanctions_check_mandatory (matches Coq: Theorem BANK_001_04_sanctions_check_mandatory)
-(assert (= true true)) ; BANK_001_04_sanctions_check_mandatory [untranslatable]
+(assert (forall ((parties list)) (=> (= (all_parties_screened parties) true) (=> (forall ((p Bool)) (= (In p parties) true)) (= (party_screened p) true))))) ; BANK_001_04_sanctions_check_mandatory
 
 ; BANK_001_05_pep_enhanced_monitoring (matches Coq: Theorem BANK_001_05_pep_enhanced_monitoring)
 (assert (forall ((c Customer)) (=> (= (is_pep c) true) (=> (= (enhanced_due_diligence c) true) (and (= (is_pep c) true) (= (enhanced_due_diligence c) true)))))) ; BANK_001_05_pep_enhanced_monitoring
 
 ; BANK_001_06_balance_non_negative (matches Coq: Theorem BANK_001_06_balance_non_negative)
-(assert (= true true)) ; BANK_001_06_balance_non_negative [untranslatable]
+(assert (forall ((a Account)) (=> (= (well_formed_savings a) true) (=> (= (account_type a) Savings) (>= (balance a) 0))))) ; BANK_001_06_balance_non_negative
 
 ; BANK_001_07_interest_calculation_precise (matches Coq: Theorem BANK_001_07_interest_calculation_precise)
-(assert (= true true)) ; BANK_001_07_interest_calculation_precise [untranslatable]
+(assert (forall ((ic InterestCalculation)) (=> (= (precise_interest ic) true) (= (ic_calculated_interest ic) (interest_formula ic))))) ; BANK_001_07_interest_calculation_precise
 
 ; fold_left_add_acc_general (matches Coq: Lemma fold_left_add_acc_general)
-(assert (= true true)) ; fold_left_add_acc_general [untranslatable]
+; fold_left_add_acc_general: forall (A : Type) (f : A -> Z) (l : list A) (acc : Z), fold_left (fun a x => a + f x) l acc = acc + fold_left (fun a x =
+(assert (forall ((A Type) (f A) (l list) (acc Z)) true)) ; fold_left_add_acc_general [partial: bindings preserved]
 
 ; BANK_001_08_double_entry_invariant (matches Coq: Theorem BANK_001_08_double_entry_invariant)
-(assert (= true true)) ; BANK_001_08_double_entry_invariant [untranslatable]
+(assert (forall ((entries list)) (=> (= (valid_entries entries) true) (= (debits entries) (credits entries))))) ; BANK_001_08_double_entry_invariant
 
 ; BANK_001_09_term_deposit_lock (matches Coq: Theorem BANK_001_09_term_deposit_lock)
-(assert (= true true)) ; BANK_001_09_term_deposit_lock [untranslatable]
+(assert (forall ((td TermDepositContract)) (=> (= (penalty_enforced td) true) (=> (= (early_withdrawal td) true) (= (td_penalty_applied td) true))))) ; BANK_001_09_term_deposit_lock
 
 ; BANK_001_10_dormancy_detection (matches Coq: Theorem BANK_001_10_dormancy_detection)
-(assert (= true true)) ; BANK_001_10_dormancy_detection [untranslatable]
+(assert (forall ((a Account)) (=> (= (dormancy_consistent a) true) (=> (= (should_be_dormant a) true) (= (is_dormant a) true))))) ; BANK_001_10_dormancy_detection
 
 ; BANK_001_11_loan_within_eligibility (matches Coq: Theorem BANK_001_11_loan_within_eligibility)
-(assert (= true true)) ; BANK_001_11_loan_within_eligibility [untranslatable]
+(assert (forall ((l Loan)) (=> (= (within_eligibility l) true) (<= (approved_amount l) (eligibility_limit l))))) ; BANK_001_11_loan_within_eligibility
 
 ; BANK_001_12_collateral_coverage (matches Coq: Theorem BANK_001_12_collateral_coverage)
-(assert (= true true)) ; BANK_001_12_collateral_coverage [untranslatable]
+(assert (forall ((l Loan)) (=> (= (sufficient_collateral l) true) (=> (= (is_secured l) true) (>= (* (collateral_value l) 10000) (* (principal l) (required_coverage l))))))) ; BANK_001_12_collateral_coverage
 
 ; BANK_001_13_amortization_correctness (matches Coq: Theorem BANK_001_13_amortization_correctness)
-(assert (= true true)) ; BANK_001_13_amortization_correctness [untranslatable]
+(assert (forall ((sched AmortizationSchedule)) (=> (= (amortization_correct sched) true) (= (sum_installment_principals (amort_installments sched)) (amort_principal sched))))) ; BANK_001_13_amortization_correctness
 
 ; BANK_001_14_covenant_monitoring (matches Coq: Theorem BANK_001_14_covenant_monitoring)
-(assert (= true true)) ; BANK_001_14_covenant_monitoring [untranslatable]
+(assert (forall ((cov Covenant)) (=> (= (covenant_monitoring_correct cov) true) (=> (= (covenant_breached cov) true) (= (event_of_default cov) true))))) ; BANK_001_14_covenant_monitoring
 
 ; BANK_001_15_facility_limit_enforcement (matches Coq: Theorem BANK_001_15_facility_limit_enforcement)
-(assert (= true true)) ; BANK_001_15_facility_limit_enforcement [untranslatable]
+(assert (forall ((cf CreditFacility)) (=> (= (within_facility_limit cf) true) (<= (+ (total_drawdown cf) (current_drawdown_request cf)) (facility_limit cf))))) ; BANK_001_15_facility_limit_enforcement
 
 ; BANK_001_16_instant_payment_completion (matches Coq: Theorem BANK_001_16_instant_payment_completion)
-(assert (= true true)) ; BANK_001_16_instant_payment_completion [untranslatable]
+(assert (forall ((p Payment)) (=> (= (payment_within_sla p) true) (=> (= (status p) Completed) (<= (processing_time_ms p) (sla_limit_ms p)))))) ; BANK_001_16_instant_payment_completion
 
 ; BANK_001_17_payment_irrevocability (matches Coq: Theorem BANK_001_17_payment_irrevocability)
-(assert (= true true)) ; BANK_001_17_payment_irrevocability [untranslatable]
+(assert (forall ((p Payment)) (=> (= (status p) Completed) (= (payment_irrevocable p) true)))) ; BANK_001_17_payment_irrevocability
 
 ; BANK_001_18_idempotency (matches Coq: Theorem BANK_001_18_idempotency)
-(assert (= true true)) ; BANK_001_18_idempotency [untranslatable]
+(assert (forall ((p1 Payment) (p2 Payment) (executed list)) (=> (= (unique_idempotency_keys executed) true) (=> (= (In p1 executed) true) (=> (= (In p2 executed) true) (=> (= (idempotency_key p1) (idempotency_key p2)) (= p1 p2))))))) ; BANK_001_18_idempotency
 
 ; BANK_001_19_nostro_reconciliation (matches Coq: Theorem BANK_001_19_nostro_reconciliation)
-(assert (= true true)) ; BANK_001_19_nostro_reconciliation [untranslatable]
+(assert (forall ((n NostroAccount)) (=> (= (nostro_balanced n) true) (=> (= (is_reconciled n) true) (= (internal_balance n) (external_balance n)))))) ; BANK_001_19_nostro_reconciliation
 
 ; BANK_001_20_swift_message_validation (matches Coq: Theorem BANK_001_20_swift_message_validation)
-(assert (= true true)) ; BANK_001_20_swift_message_validation [untranslatable]
+(assert (forall ((msg SwiftMessage)) (=> (= (swift_validation_enforced msg) true) (=> (> (sender_bic msg) 0) (=> (> (receiver_bic msg) 0) (= (is_schema_valid msg) true)))))) ; BANK_001_20_swift_message_validation
 
 ; BANK_001_21_fx_spot_settlement (matches Coq: Theorem BANK_001_21_fx_spot_settlement)
-(assert (= true true)) ; BANK_001_21_fx_spot_settlement [untranslatable]
+(assert (forall ((trade FxSpotTrade)) (=> (= (spot_settlement_correct trade) true) (and (= (settlement_date trade) (+ (trade_date trade) 2)) (= (fx_settled trade) true))))) ; BANK_001_21_fx_spot_settlement
 
 ; BANK_001_22_repo_collateral_haircut (matches Coq: Theorem BANK_001_22_repo_collateral_haircut)
-(assert (= true true)) ; BANK_001_22_repo_collateral_haircut [untranslatable]
+(assert (forall ((repo RepoTransaction)) (=> (= (repo_haircut_applied repo) true) (= (repo_cash_amount repo) (* (collateral_market_value repo) (div (- 10000 (haircut_bps repo)) 10000)))))) ; BANK_001_22_repo_collateral_haircut
 
 ; BANK_001_23_bond_accrued_interest (matches Coq: Theorem BANK_001_23_bond_accrued_interest)
-(assert (= true true)) ; BANK_001_23_bond_accrued_interest [untranslatable]
+(assert (forall ((bp BondPosition)) (=> (= (accrued_interest_correct bp) true) (=> (> (coupon_period_days bp) 0) (= (calculated_accrued bp) (bond_accrued_formula bp)))))) ; BANK_001_23_bond_accrued_interest
 
 ; BANK_001_24_derivative_valuation (matches Coq: Theorem BANK_001_24_derivative_valuation)
-(assert (= true true)) ; BANK_001_24_derivative_valuation [untranslatable]
+(assert (forall ((irs InterestRateSwap)) (=> (= (irs_valuation_correct irs) true) (= (calculated_npv irs) (- (fixed_leg_pv irs) (float_leg_pv irs)))))) ; BANK_001_24_derivative_valuation
 
 ; BANK_001_25_collateral_call_trigger (matches Coq: Theorem BANK_001_25_collateral_call_trigger)
-(assert (= true true)) ; BANK_001_25_collateral_call_trigger [untranslatable]
+(assert (forall ((cp CollateralPosition)) (=> (= (collateral_call_correct cp) true) (=> (= (mtm_beyond_threshold cp) true) (= (margin_call_triggered cp) true))))) ; BANK_001_25_collateral_call_trigger
 
 ; BANK_001_26_murabaha_cost_plus (matches Coq: Theorem BANK_001_26_murabaha_cost_plus)
-(assert (= true true)) ; BANK_001_26_murabaha_cost_plus [untranslatable]
+(assert (forall ((m Murabaha)) (=> (= (profit_disclosed m) true) (= (murabaha_selling_price m) (+ (murabaha_cost m) (murabaha_profit m)))))) ; BANK_001_26_murabaha_cost_plus
 
 ; BANK_001_27_ijarah_ownership (matches Coq: Theorem BANK_001_27_ijarah_ownership)
-(assert (= true true)) ; BANK_001_27_ijarah_ownership [untranslatable]
+(assert (forall ((ij Ijarah)) (=> (= (bank_retains_ownership ij) true) (=> (= (during_tenure ij) true) (= (bank_owns_asset ij) true))))) ; BANK_001_27_ijarah_ownership
 
 ; BANK_001_28_musharakah_profit_loss (matches Coq: Theorem BANK_001_28_musharakah_profit_loss)
-(assert (= true true)) ; BANK_001_28_musharakah_profit_loss [untranslatable]
+(assert (forall ((p MusharakahPartner)) (forall ((m Musharakah)) (forall ((actual_profit_share Z) (actual_loss_share Z)) (=> (= (profit_by_ratio_loss_by_capital p m actual_profit_share actual_loss_share) true) (=> (> (total_capital m) 0) (and (= actual_profit_share (partner_profit_share p m)) (= actual_loss_share (partner_loss_share p m))))))))) ; BANK_001_28_musharakah_profit_loss
 
 ; BANK_001_29_sukuk_asset_backing (matches Coq: Theorem BANK_001_29_sukuk_asset_backing)
-(assert (= true true)) ; BANK_001_29_sukuk_asset_backing [untranslatable]
+(assert (forall ((s Sukuk)) (=> (= (sukuk_backed_by_assets s) true) (=> (= (is_asset_backed s) true) (>= (underlying_asset_value s) (sukuk_value s)))))) ; BANK_001_29_sukuk_asset_backing
 
 ; BANK_001_30_shariah_no_riba (matches Coq: Theorem BANK_001_30_shariah_no_riba)
-(assert (= true true)) ; BANK_001_30_shariah_no_riba [untranslatable]
+(assert (forall ((st ShariahTransaction)) (=> (= (no_riba st) true) (=> (= (shariah_compliant st) true) (not (= (txn_type st) InterestBased)))))) ; BANK_001_30_shariah_no_riba
 
 ; Verify all assertions are satisfiable
 (check-sat)

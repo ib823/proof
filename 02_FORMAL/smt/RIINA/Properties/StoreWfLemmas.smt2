@@ -8,16 +8,16 @@
 (set-option :produce-models true)
 
 ; store_wf_lookup_value (matches Coq: Lemma store_wf_lookup_value)
-(assert (= true true)) ; store_wf_lookup_value [untranslatable]
+(assert (forall ((Σ Bool) (st Bool) (l Bool) (v Bool)) (=> (= (store_wf Σ st) true) (=> (= (store_lookup l st) (some v)) (= (value v) true))))) ; store_wf_lookup_value
 
 ; store_wf_lookup_typed (matches Coq: Lemma store_wf_lookup_typed)
-(assert (= true true)) ; store_wf_lookup_typed [untranslatable]
+(assert (forall ((Σ Bool) (st Bool) (l Bool) (v Bool)) (=> (= (store_wf Σ st) true) (=> (= (store_lookup l st) (some v)) (exists ((T Bool) (sl Bool)) (and (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (= (has_type nil Σ Public v T EffectPure) true))))))) ; store_wf_lookup_typed
 
 ; store_wf_typed_loc_has_value (matches Coq: Lemma store_wf_typed_loc_has_value)
-(assert (= true true)) ; store_wf_typed_loc_has_value [untranslatable]
+(assert (forall ((Σ Bool) (st Bool) (l Bool) (T Bool) (sl Bool)) (=> (= (store_wf Σ st) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (exists ((v Bool)) (and (= (store_lookup l st) (some v)) (= (value v) true))))))) ; store_wf_typed_loc_has_value
 
 ; store_wf_typed_loc_gives_typed_value (matches Coq: Lemma store_wf_typed_loc_gives_typed_value)
-(assert (= true true)) ; store_wf_typed_loc_gives_typed_value [untranslatable]
+(assert (forall ((Σ Bool) (st Bool) (l Bool) (T Bool) (sl Bool)) (=> (= (store_wf Σ st) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (exists ((v Bool)) (and (= (store_lookup l st) (some v)) (= (value v) true) (= (has_type nil Σ Public v T EffectPure) true))))))) ; store_wf_typed_loc_gives_typed_value
 
 ; Verify all assertions are satisfiable
 (check-sat)

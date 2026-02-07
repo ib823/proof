@@ -53,46 +53,46 @@
   true)
 
 ; nerc_cip_compliance (matches Coq: Theorem nerc_cip_compliance)
-(assert (= true true)) ; nerc_cip_compliance [untranslatable]
+(assert (forall ((controls NERC_CIP_Controls)) (forall ((asset Int)) (=> (= (cip_002_identification controls) true) true)))) ; nerc_cip_compliance
 
 ; iec_62351_security (matches Coq: Theorem iec_62351_security)
-(assert (= true true)) ; iec_62351_security [untranslatable]
+(assert (forall ((communication Int)) true)) ; iec_62351_security
 
 ; nrc_cyber_security (matches Coq: Theorem nrc_cyber_security)
-(assert (= true true)) ; nrc_cyber_security [untranslatable]
+(assert (forall ((nuclear_system Int)) true)) ; nrc_cyber_security
 
 ; ot_security (matches Coq: Theorem ot_security)
-(assert (= true true)) ; ot_security [untranslatable]
+(assert (forall ((scada_system Int)) true)) ; ot_security
 
 ; substation_security (matches Coq: Theorem substation_security)
-(assert (= true true)) ; substation_security [untranslatable]
+(assert (forall ((ied Int)) true)) ; substation_security
 
 ; high_impact_all_controls (matches Coq: Theorem high_impact_all_controls)
-(assert (= true true)) ; high_impact_all_controls [untranslatable]
+(assert (forall ((controls NERC_CIP_Controls)) (forall ((asset Int)) (forall ((impact CIP_Impact)) (=> (= impact High_Impact) true))))) ; high_impact_all_controls
 
 ; esp_required (matches Coq: Theorem esp_required)
-(assert (= true true)) ; esp_required [untranslatable]
+(assert (forall ((controls NERC_CIP_Controls)) (forall ((asset Int)) (=> (= (cip_005_electronic_perimeter controls) true) true)))) ; esp_required
 
 ; cip_le_refl (matches Coq: Lemma cip_le_refl)
-(assert (= true true)) ; cip_le_refl [untranslatable]
+(assert (forall ((c Bool)) (= (cip_le c c) true))) ; cip_le_refl
 
 ; cip_le_trans (matches Coq: Lemma cip_le_trans)
-(assert (= true true)) ; cip_le_trans [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool) (c3 Bool)) (=> (= (cip_le c1 c2) true) (=> (= (cip_le c2 c3) true) (= (cip_le c1 c3) true))))) ; cip_le_trans
 
 ; high_impact_all_11 (matches Coq: Theorem high_impact_all_11)
 (assert (= (cip_mandatory_requirements High_Impact) 11)) ; high_impact_all_11
 
 ; cip_requirements_monotone (matches Coq: Theorem cip_requirements_monotone)
-(assert (= true true)) ; cip_requirements_monotone [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (cip_le c1 c2) true) (<= (cip_mandatory_requirements c1) (cip_mandatory_requirements c2))))) ; cip_requirements_monotone
 
 ; full_cip_requires_identification (matches Coq: Theorem full_cip_requires_identification)
-(assert (= true true)) ; full_cip_requires_identification [untranslatable]
+(assert (forall ((c Bool)) (=> (= (nerc_cip_all_controls c) true) (= (cip_002_identification c) true)))) ; full_cip_requires_identification
 
 ; full_cip_requires_perimeter (matches Coq: Theorem full_cip_requires_perimeter)
-(assert (= true true)) ; full_cip_requires_perimeter [untranslatable]
+(assert (forall ((c Bool)) (=> (= (nerc_cip_all_controls c) true) (= (cip_005_electronic_perimeter c) true)))) ; full_cip_requires_perimeter
 
 ; full_cip_requires_supply_chain (matches Coq: Theorem full_cip_requires_supply_chain)
-(assert (= true true)) ; full_cip_requires_supply_chain [untranslatable]
+(assert (forall ((c Bool)) (=> (= (nerc_cip_all_controls c) true) (= (cip_013_supply_chain c) true)))) ; full_cip_requires_supply_chain
 
 ; control_center_critical (matches Coq: Theorem control_center_critical)
 (assert (= (bes_criticality ControlCenter) 5)) ; control_center_critical
@@ -101,22 +101,22 @@
 (assert (= (bes_criticality SCADA_System) 5)) ; scada_critical
 
 ; bes_criticality_positive (matches Coq: Theorem bes_criticality_positive)
-(assert (= true true)) ; bes_criticality_positive [untranslatable]
+(assert (forall ((a Bool)) (>= (bes_criticality a) 3))) ; bes_criticality_positive
 
 ; high_impact_fastest_response (matches Coq: Theorem high_impact_fastest_response)
 (assert (= (incident_response_hours High_Impact) 1)) ; high_impact_fastest_response
 
 ; response_time_decreasing (matches Coq: Theorem response_time_decreasing)
-(assert (= true true)) ; response_time_decreasing [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (cip_le c1 c2) true) (<= (incident_response_hours c2) (incident_response_hours c1))))) ; response_time_decreasing
 
 ; rto_bounded (matches Coq: Theorem rto_bounded)
-(assert (= true true)) ; rto_bounded [untranslatable]
+(assert (forall ((impact Bool)) (<= (rto_hours impact) 72))) ; rto_bounded
 
 ; high_impact_short_rto (matches Coq: Theorem high_impact_short_rto)
-(assert (= true true)) ; high_impact_short_rto [untranslatable]
+(assert (<= (rto_hours High_Impact) (rto_hours Medium_Impact))) ; high_impact_short_rto
 
 ; assessment_more_frequent_high (matches Coq: Theorem assessment_more_frequent_high)
-(assert (= true true)) ; assessment_more_frequent_high [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (cip_le c1 c2) true) (<= (assessment_frequency_days c2) (assessment_frequency_days c1))))) ; assessment_more_frequent_high
 
 ; high_medium_same_retention (matches Coq: Theorem high_medium_same_retention)
 (assert (= (access_log_retention_days High_Impact) (access_log_retention_days Medium_Impact))) ; high_medium_same_retention

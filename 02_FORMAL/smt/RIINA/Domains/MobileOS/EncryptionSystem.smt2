@@ -141,70 +141,70 @@
   true)
 
 ; e2e_encryption_verified (matches Coq: Theorem e2e_encryption_verified)
-(assert (= true true)) ; e2e_encryption_verified [untranslatable]
+(assert (forall ((msg EncryptedMessage)) (=> (= (e2e_encrypted msg) true) (= (strong_encryption (encryption_key_used msg)) true)))) ; e2e_encryption_verified
 
 ; private_keys_in_secure_enclave (matches Coq: Theorem private_keys_in_secure_enclave)
-(assert (= true true)) ; private_keys_in_secure_enclave [untranslatable]
+(assert (forall ((key EncryptionKey)) (=> (= (securely_managed key) true) (=> (= (key_is_private key) true) (= (key_stored_in_se key) true))))) ; private_keys_in_secure_enclave
 
 ; e2e_channel_provides_security (matches Coq: Theorem e2e_channel_provides_security)
-(assert (= true true)) ; e2e_channel_provides_security [untranslatable]
+(assert (forall ((ch SecureChannel)) (=> (= (full_e2e_security ch) true) (and (= (provides_confidentiality ch) true) (= (provides_integrity ch) true))))) ; e2e_channel_provides_security
 
 ; forward_secrecy_maintained (matches Coq: Theorem forward_secrecy_maintained)
-(assert (= true true)) ; forward_secrecy_maintained [untranslatable]
+(assert (forall ((ch SecureChannel)) (=> (= (full_e2e_security ch) true) (= (forward_secrecy ch) true)))) ; forward_secrecy_maintained
 
 ; strong_encryption_minimum_bits (matches Coq: Theorem strong_encryption_minimum_bits)
-(assert (= true true)) ; strong_encryption_minimum_bits [untranslatable]
+(assert (forall ((key EncryptionKey)) (=> (= (strong_encryption key) true) (>= (key_bits key) 256)))) ; strong_encryption_minimum_bits
 
 ; decryption_verifies_integrity (matches Coq: Theorem decryption_verifies_integrity)
-(assert (= true true)) ; decryption_verifies_integrity [untranslatable]
+(assert (forall ((enc EncryptedMessage)) (forall ((dec DecryptedMessage)) (=> (= (correct_decryption enc dec) true) (= (integrity_verified dec) true))))) ; decryption_verifies_integrity
 
 ; key_derivation_preserves_strength (matches Coq: Theorem key_derivation_preserves_strength)
-(assert (= true true)) ; key_derivation_preserves_strength [untranslatable]
+(assert (forall ((kd KeyDerivation)) (=> (= (strong_encryption (master_key kd)) true) (=> (>= (key_bits (derived_key kd)) (key_bits (master_key kd))) (=> (= (key_algorithm (derived_key kd)) (key_algorithm (master_key kd))) (= (strong_encryption (derived_key kd)) true)))))) ; key_derivation_preserves_strength
 
 ; encryption_decryption_inverse (matches Coq: Theorem encryption_decryption_inverse)
-(assert (= true true)) ; encryption_decryption_inverse [untranslatable]
+(assert (forall ((key Int)) (forall ((plaintext list)) (=> (forall ((x Bool)) (=> (= (In x plaintext) true) (>= x key))) (= (decrypt_data key (encrypt_data key plaintext)) plaintext))))) ; encryption_decryption_inverse
 
 ; key_generation_random (matches Coq: Theorem key_generation_random)
-(assert (= true true)) ; key_generation_random [untranslatable]
+(assert (forall ((k1 EncryptionKey) (k2 EncryptionKey)) (=> (not (= (key_id k1) (key_id k2))) (not (= k1 k2))))) ; key_generation_random
 
 ; key_length_sufficient (matches Coq: Theorem key_length_sufficient)
-(assert (= true true)) ; key_length_sufficient [untranslatable]
+(assert (forall ((key EncryptionKey)) (=> (= (strong_encryption key) true) (>= (key_bits key) 256)))) ; key_length_sufficient
 
 ; iv_never_reused_thm (matches Coq: Theorem iv_never_reused_thm)
-(assert (= true true)) ; iv_never_reused_thm [untranslatable]
+(assert (forall ((tracker IVTracker)) (=> (= (iv_never_reused tracker) true) (not (= (In (iv_current tracker) (iv_used_list tracker)) true))))) ; iv_never_reused_thm
 
 ; aead_authentication_verified (matches Coq: Theorem aead_authentication_verified)
-(assert (= true true)) ; aead_authentication_verified [untranslatable]
+(assert (forall ((op EncryptionOperation)) (=> (= (aead_verified op) true) (= (enc_op_aead_verified op) true)))) ; aead_authentication_verified
 
 ; key_derivation_deterministic (matches Coq: Theorem key_derivation_deterministic)
-(assert (= true true)) ; key_derivation_deterministic [untranslatable]
+(assert (forall ((kd1 KeyDerivation) (kd2 KeyDerivation)) (=> (= (key_derivation_deterministic_prop kd1 kd2) true) (=> (= (derivation_salt kd1) (derivation_salt kd2)) (=> (= (derivation_iterations kd1) (derivation_iterations kd2)) (=> (= (key_id (master_key kd1)) (key_id (master_key kd2))) (= (key_id (derived_key kd1)) (key_id (derived_key kd2))))))))) ; key_derivation_deterministic
 
 ; password_hash_one_way_thm (matches Coq: Theorem password_hash_one_way_thm)
-(assert (= true true)) ; password_hash_one_way_thm [untranslatable]
+(assert (forall ((h PasswordHash)) (=> (= (password_hash_one_way h) true) (and (> (pwd_hash_value h) 0) (>= (pwd_iterations h) 10000))))) ; password_hash_one_way_thm
 
 ; salt_unique_per_password (matches Coq: Theorem salt_unique_per_password)
-(assert (= true true)) ; salt_unique_per_password [untranslatable]
+(assert (forall ((h1 PasswordHash) (h2 PasswordHash)) (=> (= (salt_unique h1 h2) true) (not (= (pwd_salt h1) (pwd_salt h2)))))) ; salt_unique_per_password
 
 ; key_rotation_seamless_thm (matches Coq: Theorem key_rotation_seamless_thm)
-(assert (= true true)) ; key_rotation_seamless_thm [untranslatable]
+(assert (forall ((kr KeyRotation)) (=> (= (key_rotation_seamless kr) true) (=> (= (kr_rotation_complete kr) true) (= (kr_old_key_destroyed kr) true))))) ; key_rotation_seamless_thm
 
 ; encrypted_data_indistinguishable_thm (matches Coq: Theorem encrypted_data_indistinguishable_thm)
-(assert (= true true)) ; encrypted_data_indistinguishable_thm [untranslatable]
+(assert (forall ((op1 EncryptionOperation) (op2 EncryptionOperation)) (=> (= (encrypted_data_indistinguishable op1 op2) true) (=> (= (enc_op_key op1) (enc_op_key op2)) (=> (= (length (enc_op_ciphertext op1)) (length (enc_op_ciphertext op2))) (= (length (enc_op_plaintext op1)) (length (enc_op_plaintext op2)))))))) ; encrypted_data_indistinguishable_thm
 
 ; padding_oracle_prevented_thm (matches Coq: Theorem padding_oracle_prevented_thm)
-(assert (= true true)) ; padding_oracle_prevented_thm [untranslatable]
+(assert (forall ((op EncryptionOperation)) (=> (= (padding_oracle_prevented op) true) (= (enc_op_aead_verified op) true)))) ; padding_oracle_prevented_thm
 
 ; timing_attack_prevented_thm (matches Coq: Theorem timing_attack_prevented_thm)
-(assert (= true true)) ; timing_attack_prevented_thm [untranslatable]
+(assert (forall ((tt TimingTest)) (=> (= (timing_attack_prevented tt) true) (= (tt_constant_time tt) true)))) ; timing_attack_prevented_thm
 
 ; key_zeroization_complete_thm (matches Coq: Theorem key_zeroization_complete_thm)
-(assert (= true true)) ; key_zeroization_complete_thm [untranslatable]
+(assert (forall ((kr KeyRotation)) (=> (= (key_zeroization_complete kr) true) (=> (= (kr_old_key_destroyed kr) true) (>= (key_bits (kr_old_key kr)) 0))))) ; key_zeroization_complete_thm
 
 ; hardware_key_storage (matches Coq: Theorem hardware_key_storage)
-(assert (= true true)) ; hardware_key_storage [untranslatable]
+(assert (forall ((key EncryptionKey)) (=> (= (hardware_key_storage_prop key) true) (=> (= (key_is_private key) true) (= (key_stored_in_se key) true))))) ; hardware_key_storage
 
 ; encryption_algorithm_approved_thm (matches Coq: Theorem encryption_algorithm_approved_thm)
-(assert (= true true)) ; encryption_algorithm_approved_thm [untranslatable]
+(assert (forall ((key EncryptionKey)) (=> (= (encryption_algorithm_approved key) true) (or (= (key_algorithm key) 0) (= (key_algorithm key) 1))))) ; encryption_algorithm_approved_thm
 
 ; Verify all assertions are satisfiable
 (check-sat)

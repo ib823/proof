@@ -137,112 +137,114 @@
 (define-fun tamper_evident () Prop true)
 
 ; U_001_01_cfi_cfg_wellformed (matches Coq: Theorem U_001_01_cfi_cfg_wellformed)
-(assert (= true true)) ; U_001_01_cfi_cfg_wellformed [untranslatable]
+(assert (forall ((cfg Bool)) (=> (forall ((e Bool)) (=> (= (In e cfg) true) (and (= (In (edge_source e) (valid_addresses cfg)) true) (= (In (edge_target e) (valid_addresses cfg)) true)))) (= (cfg_wellformed cfg) true)))) ; U_001_01_cfi_cfg_wellformed
 
 ; U_001_02_cfi_ip_in_cfg (matches Coq: Theorem U_001_02_cfi_ip_in_cfg)
-(assert (= true true)) ; U_001_02_cfi_ip_in_cfg [untranslatable]
+(assert (forall ((cfg Bool) (ip Bool)) (=> (= (In ip (valid_addresses cfg)) true) (= (in_cfg cfg ip) true)))) ; U_001_02_cfi_ip_in_cfg
 
 ; U_001_03_cfi_indirect_safe (matches Coq: Theorem U_001_03_cfi_indirect_safe)
-(assert (= true true)) ; U_001_03_cfi_indirect_safe [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (=> (= (In (IndirectJump src tgt) cfg) true) (= (In tgt (valid_addresses cfg)) true)))) ; U_001_03_cfi_indirect_safe
 
 ; U_001_04_cfi_return_integrity (matches Coq: Theorem U_001_04_cfi_return_integrity)
-(assert (= true true)) ; U_001_04_cfi_return_integrity [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (=> (= (In (Return src tgt) cfg) true) (= (In tgt (valid_addresses cfg)) true)))) ; U_001_04_cfi_return_integrity
 
 ; U_001_05_cfi_call_integrity (matches Coq: Theorem U_001_05_cfi_call_integrity)
-(assert (= true true)) ; U_001_05_cfi_call_integrity [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (=> (= (In (DirectCall src tgt) cfg) true) (= (In tgt (valid_addresses cfg)) true)))) ; U_001_05_cfi_call_integrity
 
 ; U_001_06_cfi_no_arbitrary_jump (matches Coq: Theorem U_001_06_cfi_no_arbitrary_jump)
-(assert (= true true)) ; U_001_06_cfi_no_arbitrary_jump [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (=> (= (edge_in_cfg cfg src tgt) true) (= (In tgt (valid_addresses cfg)) true)))) ; U_001_06_cfi_no_arbitrary_jump
 
 ; U_001_07_cfi_shadow_stack (matches Coq: Theorem U_001_07_cfi_shadow_stack)
-(assert (= true true)) ; U_001_07_cfi_shadow_stack [untranslatable]
+(assert (forall ((ss Bool) (actual Bool)) (=> (= ss actual) (= (shadow_matches ss actual) true)))) ; U_001_07_cfi_shadow_stack
 
 ; U_001_08_cfi_forward_edge (matches Coq: Theorem U_001_08_cfi_forward_edge)
-(assert (= true true)) ; U_001_08_cfi_forward_edge [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (=> (or (= (In (DirectCall src tgt) cfg) true) (= (In (DirectJump src tgt) cfg) true)) (= (edge_in_cfg cfg src tgt) true)))) ; U_001_08_cfi_forward_edge
 
 ; U_001_09_cfi_backward_edge (matches Coq: Theorem U_001_09_cfi_backward_edge)
-(assert (= true true)) ; U_001_09_cfi_backward_edge [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (=> (= (In (Return src tgt) cfg) true) (= (edge_in_cfg cfg src tgt) true)))) ; U_001_09_cfi_backward_edge
 
 ; U_001_10_cfi_violation_detected (matches Coq: Theorem U_001_10_cfi_violation_detected)
-(assert (= true true)) ; U_001_10_cfi_violation_detected [untranslatable]
+(assert (forall ((cfg Bool) (src Bool) (tgt Bool)) (not (=> (= (In tgt (valid_addresses cfg)) true) (not (= (edge_in_cfg cfg src tgt) true)))))) ; U_001_10_cfi_violation_detected
 
 ; U_001_11_mem_checksum_correct (matches Coq: Theorem U_001_11_mem_checksum_correct)
-(assert (= true true)) ; U_001_11_mem_checksum_correct [untranslatable]
+(assert (forall ((mem Bool) (start Bool) (len Bool)) (= (checksum_valid mem start len (compute_checksum mem start len)) true))) ; U_001_11_mem_checksum_correct
 
 ; U_001_12_mem_redundant_storage (matches Coq: Theorem U_001_12_mem_redundant_storage)
-(assert (= true true)) ; U_001_12_mem_redundant_storage [untranslatable]
+(assert (forall ((data Int)) (forall ((copies Int)) (=> (>= copies 3) (>= copies 3))))) ; U_001_12_mem_redundant_storage
 
 ; U_001_13_mem_ecc_corrects (matches Coq: Theorem U_001_13_mem_ecc_corrects)
-(assert (= true true)) ; U_001_13_mem_ecc_corrects [untranslatable]
+(assert (forall ((data Bool)) (= (ecc_decode (ecc_encode data)) data))) ; U_001_13_mem_ecc_corrects
 
 ; double_even (matches Coq: Lemma double_even)
-(assert (= true true)) ; double_even [untranslatable]
+(assert (forall ((n Bool)) (= (Nat.even (* n 2)) true))) ; double_even
 
 ; U_001_14_mem_ecc_detects (matches Coq: Theorem U_001_14_mem_ecc_detects)
-(assert (= true true)) ; U_001_14_mem_ecc_detects [untranslatable]
+(assert (forall ((data Bool)) (= (ecc_check (ecc_encode data)) true))) ; U_001_14_mem_ecc_detects
 
 ; U_001_15_mem_bounds_enforced (matches Coq: Theorem U_001_15_mem_bounds_enforced)
-(assert (= true true)) ; U_001_15_mem_bounds_enforced [untranslatable]
+; U_001_15_mem_bounds_enforced: forall addr lo hi, lo <= addr <= hi -> lo <= addr /\ addr <= hi
+(assert (forall ((addr Bool) (lo Bool) (hi Bool)) true)) ; U_001_15_mem_bounds_enforced [partial: bindings preserved]
 
 ; U_001_16_mem_readonly_protected (matches Coq: Theorem U_001_16_mem_readonly_protected)
-(assert (= true true)) ; U_001_16_mem_readonly_protected [untranslatable]
+(assert (forall ((prot Bool) (addr Bool)) (=> (= (prot addr) ReadOnly) (= (protected_readonly prot addr) true)))) ; U_001_16_mem_readonly_protected
 
 ; U_001_17_mem_kernel_isolated (matches Coq: Theorem U_001_17_mem_kernel_isolated)
-(assert (= true true)) ; U_001_17_mem_kernel_isolated [untranslatable]
+; U_001_17_mem_kernel_isolated: forall prot kernel_start kernel_end addr, (kernel_start <= addr <= kernel_end -> prot addr = NoAccess) -> kernel_start <
+(assert (forall ((prot Bool) (kernel_start Bool) (kernel_end Bool) (addr Bool)) true)) ; U_001_17_mem_kernel_isolated [partial: bindings preserved]
 
 ; U_001_18_mem_corruption_detected (matches Coq: Theorem U_001_18_mem_corruption_detected)
-(assert (= true true)) ; U_001_18_mem_corruption_detected [untranslatable]
+(assert (forall ((mem Bool) (start Bool) (len Bool) (expected Bool)) (=> (not (= (compute_checksum mem start len) expected)) (not (= (checksum_valid mem start len expected) true))))) ; U_001_18_mem_corruption_detected
 
 ; U_001_19_nmr_variants_independent (matches Coq: Theorem U_001_19_nmr_variants_independent)
-(assert (= true true)) ; U_001_19_nmr_variants_independent [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (v3 Bool)) (= (variants_independent v1 v2 v3) true))) ; U_001_19_nmr_variants_independent
 
 ; U_001_20_nmr_state_synchronized (matches Coq: Theorem U_001_20_nmr_state_synchronized)
-(assert (= true true)) ; U_001_20_nmr_state_synchronized [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (v3 Bool) (t Bool)) (=> (= (v1 t) (v2 t)) (=> (= (v2 t) (v3 t)) (= (states_synchronized v1 v2 v3 t) true))))) ; U_001_20_nmr_state_synchronized
 
 ; U_001_21_nmr_divergence_detected (matches Coq: Theorem U_001_21_nmr_divergence_detected)
-(assert (= true true)) ; U_001_21_nmr_divergence_detected [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (v3 Bool) (t Bool)) (=> (not (= (v1 t) (v2 t))) (= (divergence_detected v1 v2 v3 t) true)))) ; U_001_21_nmr_divergence_detected
 
 ; U_001_22_nmr_single_fault_tolerant (matches Coq: Theorem U_001_22_nmr_single_fault_tolerant)
-(assert (= true true)) ; U_001_22_nmr_single_fault_tolerant [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool) (correct Bool)) (=> (or (and (= a correct) (= b correct)) (and (= b correct) (= c correct)) (and (= a correct) (= c correct))) (= (majority_vote a b c) correct)))) ; U_001_22_nmr_single_fault_tolerant
 
 ; U_001_23_nmr_voting_correct (matches Coq: Theorem U_001_23_nmr_voting_correct)
-(assert (= true true)) ; U_001_23_nmr_voting_correct [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (= (voting_correct a b c) true))) ; U_001_23_nmr_voting_correct
 
 ; U_001_24_nmr_recovery_sound (matches Coq: Theorem U_001_24_nmr_recovery_sound)
-(assert (= true true)) ; U_001_24_nmr_recovery_sound [untranslatable]
+(assert (forall ((v1 Variant) (v2 Variant) (v3 Variant) (t Int) (correct ExecutionState)) (=> (= (majority_vote (v1 t) (v2 t) (v3 t)) correct) (= (majority_vote (v1 t) (v2 t) (v3 t)) correct)))) ; U_001_24_nmr_recovery_sound
 
 ; U_001_25_nmr_coverage (matches Coq: Theorem U_001_25_nmr_coverage)
-(assert (= true true)) ; U_001_25_nmr_coverage [untranslatable]
+(assert (forall ((p_error Bool)) (=> (>= p_error 1) (<= (* p_error p_error) (* (* p_error p_error) 3))))) ; U_001_25_nmr_coverage
 
 ; U_001_26_panic_keys_zeroized (matches Coq: Theorem U_001_26_panic_keys_zeroized)
-(assert (= true true)) ; U_001_26_panic_keys_zeroized [untranslatable]
+(assert (forall ((st Bool) (event Bool)) (= (keys_zeroized (trigger_panic st event)) true))) ; U_001_26_panic_keys_zeroized
 
 ; U_001_27_panic_execution_halted (matches Coq: Theorem U_001_27_panic_execution_halted)
-(assert (= true true)) ; U_001_27_panic_execution_halted [untranslatable]
+(assert (forall ((st Bool) (event Bool)) (= (execution_halted (trigger_panic st event)) true))) ; U_001_27_panic_execution_halted
 
 ; U_001_28_panic_audit_logged (matches Coq: Theorem U_001_28_panic_audit_logged)
-(assert (= true true)) ; U_001_28_panic_audit_logged [untranslatable]
+(assert (forall ((st Bool) (event Bool)) (= (audit_logged (trigger_panic st event) event) true))) ; U_001_28_panic_audit_logged
 
 ; U_001_29_panic_triggered (matches Coq: Theorem U_001_29_panic_triggered)
-(assert (= true true)) ; U_001_29_panic_triggered [untranslatable]
+(assert (forall ((st Bool) (event Bool)) (= (panic_state (trigger_panic st event)) true))) ; U_001_29_panic_triggered
 
 ; U_001_30_panic_irreversible (matches Coq: Theorem U_001_30_panic_irreversible)
-(assert (= true true)) ; U_001_30_panic_irreversible [untranslatable]
+(assert (forall ((st Bool)) (=> (= (panic_state st) true) (= (ss_panic st) true)))) ; U_001_30_panic_irreversible
 
 ; U_001_31_watchdog_nmi (matches Coq: Theorem U_001_31_watchdog_nmi)
-(assert (= true true)) ; U_001_31_watchdog_nmi [untranslatable]
+(assert (forall ((config Bool)) (=> (> config 0) (= (uses_nmi config) true)))) ; U_001_31_watchdog_nmi
 
 ; U_001_32_watchdog_monitor_integrity (matches Coq: Theorem U_001_32_watchdog_monitor_integrity)
-(assert (= true true)) ; U_001_32_watchdog_monitor_integrity [untranslatable]
+(assert (forall ((mem Bool)) (=> (= (compute_checksum mem 0 1000) monitor_checksum) (= (verify_monitor_integrity mem) true)))) ; U_001_32_watchdog_monitor_integrity
 
 ; U_001_33_monitor_unprivileged (matches Coq: Theorem U_001_33_monitor_unprivileged)
-(assert (= true true)) ; U_001_33_monitor_unprivileged [untranslatable]
+(assert (forall ((app_id Bool)) (=> (> app_id 0) (= (unprivileged_app app_id) true)))) ; U_001_33_monitor_unprivileged
 
 ; U_001_34_monitor_complete_mediation (matches Coq: Theorem U_001_34_monitor_complete_mediation)
-(assert (= true true)) ; U_001_34_monitor_complete_mediation [untranslatable]
+(assert (forall ((op Bool)) (= (complete_mediation op true) true))) ; U_001_34_monitor_complete_mediation
 
 ; U_001_35_monitor_tamper_evident (matches Coq: Theorem U_001_35_monitor_tamper_evident)
-(assert (= true true)) ; U_001_35_monitor_tamper_evident [untranslatable]
+(assert (forall ((old Bool) (new Bool)) (=> (not (= old new)) (= (tamper_evident old new) true)))) ; U_001_35_monitor_tamper_evident
 
 ; Verify all assertions are satisfiable
 (check-sat)

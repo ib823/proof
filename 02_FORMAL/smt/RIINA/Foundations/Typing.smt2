@@ -15,40 +15,41 @@
 (define-fun store_ty_extends () Prop true)
 
 ; type_uniqueness (matches Coq: Lemma type_uniqueness)
-(assert (= true true)) ; type_uniqueness [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (e Bool) (T1 Bool) (T2 Bool) (ε1 Bool) (ε2 Bool)) (=> (= (has_type Γ Σ Δ e T1 ε1) true) (=> (= (has_type Γ Σ Δ e T2 ε2) true) (and (= T1 T2) (= ε1 ε2)))))) ; type_uniqueness
 
 ; canonical_forms_unit (matches Coq: Lemma canonical_forms_unit)
-(assert (= true true)) ; canonical_forms_unit [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v TUnit ε) true) (= v EUnit))))) ; canonical_forms_unit
 
 ; canonical_forms_bool (matches Coq: Lemma canonical_forms_bool)
-(assert (= true true)) ; canonical_forms_bool [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v TBool ε) true) (exists ((b Bool)) (= v (EBool b))))))) ; canonical_forms_bool
 
 ; canonical_forms_int (matches Coq: Lemma canonical_forms_int)
-(assert (= true true)) ; canonical_forms_int [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v TInt ε) true) (exists ((n Bool)) (= v (EInt n))))))) ; canonical_forms_int
 
 ; canonical_forms_string (matches Coq: Lemma canonical_forms_string)
-(assert (= true true)) ; canonical_forms_string [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v TString ε) true) (exists ((s Bool)) (= v (EString s))))))) ; canonical_forms_string
 
 ; canonical_forms_fn (matches Coq: Lemma canonical_forms_fn)
-(assert (= true true)) ; canonical_forms_fn [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T1 Bool) (T2 Bool) (ε_fn Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v (TFn T1 T2 ε_fn) ε) true) (exists ((x Bool) (body Bool)) (= v (ELam x T1 body))))))) ; canonical_forms_fn
 
 ; canonical_forms_prod (matches Coq: Lemma canonical_forms_prod)
-(assert (= true true)) ; canonical_forms_prod [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T1 Bool) (T2 Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v (TProd T1 T2) ε) true) (exists ((v1 Bool) (v2 Bool)) (and (= v (EPair v1 v2)) (= (value v1) true) (= (value v2) true))))))) ; canonical_forms_prod
 
 ; canonical_forms_sum (matches Coq: Lemma canonical_forms_sum)
-(assert (= true true)) ; canonical_forms_sum [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T1 Bool) (T2 Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v (TSum T1 T2) ε) true) (or (exists ((v' Bool)) (and (= v (EInl v' T2)) (= (value v') true))) (exists ((v' Bool)) (and (= v (EInr v' T1)) (= (value v') true)))))))) ; canonical_forms_sum
 
 ; canonical_forms_ref (matches Coq: Lemma canonical_forms_ref)
-(assert (= true true)) ; canonical_forms_ref [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T Bool) (sl Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v (TRef T sl) ε) true) (exists ((l Bool)) (= v (ELoc l))))))) ; canonical_forms_ref
 
 ; canonical_forms_secret (matches Coq: Lemma canonical_forms_secret)
-(assert (= true true)) ; canonical_forms_secret [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v (TSecret T) ε) true) (exists ((v' Bool)) (and (= v (EClassify v')) (= (value v') true))))))) ; canonical_forms_secret
 
 ; canonical_forms_proof (matches Coq: Lemma canonical_forms_proof)
-(assert (= true true)) ; canonical_forms_proof [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T Bool) (ε Bool)) (=> (= (value v) true) (=> (= (has_type Γ Σ Δ v (TProof T) ε) true) (exists ((v' Bool)) (and (= v (EProve v')) (= (value v') true))))))) ; canonical_forms_proof
 
 ; canonical_forms (matches Coq: Lemma canonical_forms)
-(assert (= true true)) ; canonical_forms [untranslatable]
+; canonical_forms: forall Γ Σ Δ v T ε, value v -> has_type Γ Σ Δ v T ε -> match T with | TUnit => v = EUnit | TBool => exists b, v = EBool 
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (v Bool) (T Bool) (ε Bool)) true)) ; canonical_forms [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

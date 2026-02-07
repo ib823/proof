@@ -48,163 +48,165 @@
 (define-fun label_join () sec_label true)
 
 ; label_leq_refl (matches Coq: Lemma label_leq_refl)
-(assert (= true true)) ; label_leq_refl [untranslatable]
+(assert (forall ((l Bool)) (= (label_leq l l) true))) ; label_leq_refl
 
 ; label_leq_trans (matches Coq: Lemma label_leq_trans)
-(assert (= true true)) ; label_leq_trans [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (=> (= (label_leq l1 l2) true) (=> (= (label_leq l2 l3) true) (= (label_leq l1 l3) true))))) ; label_leq_trans
 
 ; label_leq_antisym (matches Coq: Lemma label_leq_antisym)
-(assert (= true true)) ; label_leq_antisym [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (=> (= (label_leq l1 l2) true) (=> (= (label_leq l2 l1) true) (= l1 l2))))) ; label_leq_antisym
 
 ; ty_size_pos (matches Coq: Lemma ty_size_pos)
-(assert (= true true)) ; ty_size_pos [untranslatable]
+(assert (forall ((T Bool)) (> (ty_size T) 0))) ; ty_size_pos
 
 ; ty_size_prod_left (matches Coq: Lemma ty_size_prod_left)
-(assert (= true true)) ; ty_size_prod_left [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T1) (ty_size (TProd T1 T2))))) ; ty_size_prod_left
 
 ; ty_size_prod_right (matches Coq: Lemma ty_size_prod_right)
-(assert (= true true)) ; ty_size_prod_right [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T2) (ty_size (TProd T1 T2))))) ; ty_size_prod_right
 
 ; ty_size_sum_left (matches Coq: Lemma ty_size_sum_left)
-(assert (= true true)) ; ty_size_sum_left [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T1) (ty_size (TSum T1 T2))))) ; ty_size_sum_left
 
 ; ty_size_sum_right (matches Coq: Lemma ty_size_sum_right)
-(assert (= true true)) ; ty_size_sum_right [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T2) (ty_size (TSum T1 T2))))) ; ty_size_sum_right
 
 ; store_update_lookup_eq (matches Coq: Lemma store_update_lookup_eq)
-(assert (= true true)) ; store_update_lookup_eq [untranslatable]
+(assert (forall ((σ Bool) (l Bool) (v Bool)) (= (store_lookup l (store_update σ l v)) (some v)))) ; store_update_lookup_eq
 
 ; store_update_lookup_neq (matches Coq: Lemma store_update_lookup_neq)
-(assert (= true true)) ; store_update_lookup_neq [untranslatable]
+(assert (forall ((σ Bool) (l Bool) (l' Bool) (v Bool)) (=> (not (= l l')) (= (store_lookup l' (store_update σ l v)) (store_lookup l' σ))))) ; store_update_lookup_neq
 
 ; store_ty_update_lookup_eq (matches Coq: Lemma store_ty_update_lookup_eq)
-(assert (= true true)) ; store_ty_update_lookup_eq [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (T Bool) (lab Bool)) (= (store_ty_lookup l (store_ty_update Σ l T lab)) (some (mk-tuple T lab))))) ; store_ty_update_lookup_eq
 
 ; store_ty_update_lookup_neq (matches Coq: Lemma store_ty_update_lookup_neq)
-(assert (= true true)) ; store_ty_update_lookup_neq [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (l' Bool) (T Bool) (lab Bool)) (=> (not (= l l')) (= (store_ty_lookup l' (store_ty_update Σ l T lab)) (store_ty_lookup l' Σ))))) ; store_ty_update_lookup_neq
 
 ; store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
-(assert (= true true)) ; store_ty_extends_refl [untranslatable]
+(assert (forall ((Σ Bool)) (= (store_ty_extends Σ Σ) true))) ; store_ty_extends_refl
 
 ; store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
-(assert (= true true)) ; store_ty_extends_trans [untranslatable]
+(assert (forall ((Σ1 Bool) (Σ2 Bool) (Σ3 Bool)) (=> (= (store_ty_extends Σ1 Σ2) true) (=> (= (store_ty_extends Σ2 Σ3) true) (= (store_ty_extends Σ1 Σ3) true))))) ; store_ty_extends_trans
 
 ; val_rel_n_zero (matches Coq: Lemma val_rel_n_zero)
-(assert (= true true)) ; val_rel_n_zero [untranslatable]
+(assert (forall ((Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (= (val_rel_n 0 Σ T v1 v2) true))) ; val_rel_n_zero
 
 ; val_rel_n_unit (matches Coq: Lemma val_rel_n_unit)
-(assert (= true true)) ; val_rel_n_unit [untranslatable]
+(assert (forall ((n Bool) (Σ Bool)) (=> (> n 0) (= (val_rel_n n Σ TUnit EUnit EUnit) true)))) ; val_rel_n_unit
 
 ; val_rel_n_bool (matches Coq: Lemma val_rel_n_bool)
-(assert (= true true)) ; val_rel_n_bool [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (b Bool)) (=> (> n 0) (= (val_rel_n n Σ TBool (EBool b) (EBool b)) true)))) ; val_rel_n_bool
 
 ; val_rel_n_nat (matches Coq: Lemma val_rel_n_nat)
-(assert (= true true)) ; val_rel_n_nat [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (m Bool)) (=> (> n 0) (= (val_rel_n n Σ TNat (ENat m) (ENat m)) true)))) ; val_rel_n_nat
 
 ; val_rel_n_ref (matches Coq: Lemma val_rel_n_ref)
-(assert (= true true)) ; val_rel_n_ref [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (l Bool) (T Bool) (lab Bool)) (=> (> n 0) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T lab))) (= (val_rel_n n Σ (TRef T lab) (ELoc l) (ELoc l)) true))))) ; val_rel_n_ref
 
 ; val_rel_n_ref_same_loc (matches Coq: Lemma val_rel_n_ref_same_loc)
-(assert (= true true)) ; val_rel_n_ref_same_loc [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (lab Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_n n Σ (TRef T lab) v1 v2) true) (exists ((l Bool)) (and (= v1 (ELoc l)) (= v2 (ELoc l)) (= (store_ty_lookup l Σ) (some (mk-tuple T lab))))))))) ; val_rel_n_ref_same_loc
 
 ; val_rel_n_cumulative (matches Coq: Lemma val_rel_n_cumulative)
-(assert (= true true)) ; val_rel_n_cumulative [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel_n (+ n 1) Σ T v1 v2) true) (= (val_rel_n n Σ T v1 v2) true)))) ; val_rel_n_cumulative
 
 ; val_rel_n_step_down (matches Coq: Lemma val_rel_n_step_down)
-(assert (= true true)) ; val_rel_n_step_down [untranslatable]
+(assert (forall ((n Bool) (m Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (<= m n) (=> (= (val_rel_n n Σ T v1 v2) true) (= (val_rel_n m Σ T v1 v2) true))))) ; val_rel_n_step_down
 
 ; val_rel_n_value_left (matches Coq: Lemma val_rel_n_value_left)
-(assert (= true true)) ; val_rel_n_value_left [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_n n Σ T v1 v2) true) (= (is_value v1) true))))) ; val_rel_n_value_left
 
 ; val_rel_n_value_right (matches Coq: Lemma val_rel_n_value_right)
-(assert (= true true)) ; val_rel_n_value_right [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_n n Σ T v1 v2) true) (= (is_value v2) true))))) ; val_rel_n_value_right
 
 ; val_rel_n_prod (matches Coq: Lemma val_rel_n_prod)
-(assert (= true true)) ; val_rel_n_prod [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T1 Bool) (T2 Bool) (v1a Bool) (v1b Bool) (v2a Bool) (v2b Bool)) (=> (> n 0) (=> (= (val_rel_n n Σ T1 v1a v2a) true) (=> (= (val_rel_n n Σ T2 v1b v2b) true) (=> (= (is_value v1a) true) (=> (= (is_value v1b) true) (=> (= (is_value v2a) true) (=> (= (is_value v2b) true) (= (val_rel_n n Σ (TProd T1 T2) (EPair v1a v1b) (EPair v2a v2b)) true)))))))))) ; val_rel_n_prod
 
 ; val_rel_n_inl (matches Coq: Lemma val_rel_n_inl)
-(assert (= true true)) ; val_rel_n_inl [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_n n Σ T1 v1 v2) true) (=> (= (is_value v1) true) (=> (= (is_value v2) true) (= (val_rel_n n Σ (TSum T1 T2) (EInl v1) (EInl v2)) true))))))) ; val_rel_n_inl
 
 ; val_rel_n_inr (matches Coq: Lemma val_rel_n_inr)
-(assert (= true true)) ; val_rel_n_inr [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v2 Bool)) (=> (> n 0) (=> (= (val_rel_n n Σ T2 v1 v2) true) (=> (= (is_value v1) true) (=> (= (is_value v2) true) (= (val_rel_n n Σ (TSum T1 T2) (EInr v1) (EInr v2)) true))))))) ; val_rel_n_inr
 
 ; val_rel_n_lam (matches Coq: Lemma val_rel_n_lam)
-(assert (= true true)) ; val_rel_n_lam [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T1 Bool) (T2 Bool) (e1 Bool) (e2 Bool)) (=> (> n 0) (= (val_rel_n n Σ (TArrow T1 T2) (ELam T1 e1) (ELam T1 e2)) true)))) ; val_rel_n_lam
 
 ; val_rel_n_fo_step_independent (matches Coq: Lemma val_rel_n_fo_step_independent)
-(assert (= true true)) ; val_rel_n_fo_step_independent [untranslatable]
+(assert (forall ((T Bool) (m Bool) (n Bool) (Σ Bool) (v1 Bool) (v2 Bool)) (=> (= (first_order_type T) true) (=> (> m (fo_compound_depth T)) (=> (> n 0) (=> (= (val_rel_n m Σ T v1 v2) true) (= (val_rel_n n Σ T v1 v2) true))))))) ; val_rel_n_fo_step_independent
 
 ; store_rel_n_zero (matches Coq: Lemma store_rel_n_zero)
-(assert (= true true)) ; store_rel_n_zero [untranslatable]
+(assert (forall ((Σ Bool) (s1 Bool) (s2 Bool)) (= (store_rel_n 0 Σ s1 s2) true))) ; store_rel_n_zero
 
 ; store_rel_n_step_down (matches Coq: Lemma store_rel_n_step_down)
-(assert (= true true)) ; store_rel_n_step_down [untranslatable]
+(assert (forall ((n Bool) (m Bool) (Σ Bool) (σ1 Bool) (σ2 Bool)) (=> (<= m n) (=> (= (store_rel_n n Σ σ1 σ2) true) (= (store_rel_n m Σ σ1 σ2) true))))) ; store_rel_n_step_down
 
 ; store_rel_n_empty (matches Coq: Lemma store_rel_n_empty)
-(assert (= true true)) ; store_rel_n_empty [untranslatable]
+(assert (forall ((n Bool)) (= (store_rel_n n store_ty_empty store_empty store_empty) true))) ; store_rel_n_empty
 
 ; store_update_preserves_rel (matches Coq: Lemma store_update_preserves_rel)
-(assert (= true true)) ; store_update_preserves_rel [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (σ1 Bool) (σ2 Bool) (l Bool) (T Bool) (lab Bool) (v1 Bool) (v2 Bool)) (=> (= (store_rel_n n Σ σ1 σ2) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T lab))) (=> (= (val_rel_n n Σ T v1 v2) true) (= (store_rel_n n Σ (store_update σ1 l v1) (store_update σ2 l v2)) true)))))) ; store_update_preserves_rel
 
 ; store_ty_extends_antisym (matches Coq: Lemma store_ty_extends_antisym)
-(assert (= true true)) ; store_ty_extends_antisym [untranslatable]
+(assert (forall ((Σ1 Bool) (Σ2 Bool)) (=> (= (store_ty_extends Σ1 Σ2) true) (=> (= (store_ty_extends Σ2 Σ1) true) (forall ((l Bool)) (= (store_ty_lookup l Σ1) (store_ty_lookup l Σ2))))))) ; store_ty_extends_antisym
 
 ; store_ty_update_extends (matches Coq: Lemma store_ty_update_extends)
-(assert (= true true)) ; store_ty_update_extends [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (T Bool) (lab Bool)) (=> (= (store_ty_lookup l Σ) none) (= (store_ty_extends Σ (store_ty_update Σ l T lab)) true)))) ; store_ty_update_extends
 
 ; store_lookup_deterministic (matches Coq: Lemma store_lookup_deterministic)
-(assert (= true true)) ; store_lookup_deterministic [untranslatable]
+(assert (forall ((s Bool) (l Bool) (v1 Bool) (v2 Bool)) (=> (= (store_lookup l s) (some v1)) (=> (= (store_lookup l s) (some v2)) (= v1 v2))))) ; store_lookup_deterministic
 
 ; store_ty_lookup_deterministic (matches Coq: Lemma store_ty_lookup_deterministic)
-(assert (= true true)) ; store_ty_lookup_deterministic [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (T1 Bool) (sl1 Bool) (T2 Bool) (sl2 Bool)) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T1 sl1))) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T2 sl2))) (and (= T1 T2) (= sl1 sl2)))))) ; store_ty_lookup_deterministic
 
 ; store_update_idem (matches Coq: Lemma store_update_idem)
-(assert (= true true)) ; store_update_idem [untranslatable]
+(assert (forall ((s Bool) (l Bool) (v Bool)) (= (store_update (store_update s l v) l v) (store_update s l v)))) ; store_update_idem
 
 ; store_update_comm (matches Coq: Lemma store_update_comm)
-(assert (= true true)) ; store_update_comm [untranslatable]
+(assert (forall ((s Bool) (l1 Bool) (l2 Bool) (v1 Bool) (v2 Bool)) (=> (not (= l1 l2)) (= (store_update (store_update s l1 v1) l2 v2) (store_update (store_update s l2 v2) l1 v1))))) ; store_update_comm
 
 ; exp_rel_n_zero (matches Coq: Lemma exp_rel_n_zero)
-(assert (= true true)) ; exp_rel_n_zero [untranslatable]
+(assert (forall ((Σ Bool) (T Bool) (e1 Bool) (e2 Bool)) (= (exp_rel_n 0 Σ T e1 e2) true))) ; exp_rel_n_zero
 
 ; exp_rel_n_unit_expr (matches Coq: Lemma exp_rel_n_unit_expr)
-(assert (= true true)) ; exp_rel_n_unit_expr [untranslatable]
+(assert (forall ((n Bool) (Σ Bool)) (=> (> n 0) (= (exp_rel_n n Σ TUnit EUnit EUnit) true)))) ; exp_rel_n_unit_expr
 
 ; exp_rel_n_step_down (matches Coq: Lemma exp_rel_n_step_down)
-(assert (= true true)) ; exp_rel_n_step_down [untranslatable]
+(assert (forall ((n Bool) (m Bool) (Σ Bool) (T Bool) (e1 Bool) (e2 Bool)) (=> (<= m n) (=> (= (exp_rel_n n Σ T e1 e2) true) (= (exp_rel_n m Σ T e1 e2) true))))) ; exp_rel_n_step_down
 
 ; val_rel_implies_exp_rel (matches Coq: Lemma val_rel_implies_exp_rel)
-(assert (= true true)) ; val_rel_implies_exp_rel [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (is_value v1) true) (=> (= (is_value v2) true) (=> (= (val_rel_n n Σ T v1 v2) true) (= (exp_rel_n n Σ T v1 v2) true)))))) ; val_rel_implies_exp_rel
 
 ; exp_rel_n_bool_expr (matches Coq: Lemma exp_rel_n_bool_expr)
-(assert (= true true)) ; exp_rel_n_bool_expr [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (b Bool)) (=> (> n 0) (= (exp_rel_n n Σ TBool (EBool b) (EBool b)) true)))) ; exp_rel_n_bool_expr
 
 ; label_join_comm (matches Coq: Lemma label_join_comm)
-(assert (= true true)) ; label_join_comm [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (= (label_join l1 l2) (label_join l2 l1)))) ; label_join_comm
 
 ; label_join_assoc (matches Coq: Lemma label_join_assoc)
-(assert (= true true)) ; label_join_assoc [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool) (l3 Bool)) (= (label_join (label_join l1 l2) l3) (label_join l1 (label_join l2 l3))))) ; label_join_assoc
 
 ; label_join_idem (matches Coq: Lemma label_join_idem)
-(assert (= true true)) ; label_join_idem [untranslatable]
+(assert (forall ((l Bool)) (= (label_join l l) l))) ; label_join_idem
 
 ; ty_eq_dec (matches Coq: Lemma ty_eq_dec)
-(assert (= true true)) ; ty_eq_dec [untranslatable]
+; ty_eq_dec: forall (T1 T2 : ty), {T1 = T2} + {T1 <> T2}
+(assert (forall ((T1 ty) (T2 ty)) true)) ; ty_eq_dec [partial: bindings preserved]
 
 ; first_order_prod_components (matches Coq: Lemma first_order_prod_components)
-(assert (= true true)) ; first_order_prod_components [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (=> (= (first_order_type (TProd T1 T2)) true) (and (= (first_order_type T1) true) (= (first_order_type T2) true))))) ; first_order_prod_components
 
 ; first_order_sum_components (matches Coq: Lemma first_order_sum_components)
-(assert (= true true)) ; first_order_sum_components [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (=> (= (first_order_type (TSum T1 T2)) true) (and (= (first_order_type T1) true) (= (first_order_type T2) true))))) ; first_order_sum_components
 
 ; fo_depth_prod (matches Coq: Lemma fo_depth_prod)
-(assert (= true true)) ; fo_depth_prod [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (= (fo_compound_depth (TProd T1 T2)) (+ 1 (max (fo_compound_depth T1) (fo_compound_depth T2)))))) ; fo_depth_prod
 
 ; fo_depth_sum (matches Coq: Lemma fo_depth_sum)
-(assert (= true true)) ; fo_depth_sum [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (= (fo_compound_depth (TSum T1 T2)) (+ 1 (max (fo_compound_depth T1) (fo_compound_depth T2)))))) ; fo_depth_sum
 
 ; fo_depth_primitive (matches Coq: Lemma fo_depth_primitive)
-(assert (= true true)) ; fo_depth_primitive [untranslatable]
+; fo_depth_primitive: forall T, match T with TUnit | TBool | TNat | TRef _ _ => True | _ => False end -> fo_compound_depth T = 0
+(assert (forall ((T Bool)) true)) ; fo_depth_primitive [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

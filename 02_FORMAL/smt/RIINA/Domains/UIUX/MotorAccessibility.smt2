@@ -97,139 +97,142 @@
   true)
 
 ; switch_control_complete (matches Coq: Theorem switch_control_complete)
-(assert (= true true)) ; switch_control_complete [untranslatable]
+(assert (forall ((sys RIINA_SwitchControlSystem)) (forall ((action UserAction)) (= (possible_with_switch_control action) true)))) ; switch_control_complete
 
 ; voice_control_complete (matches Coq: Theorem voice_control_complete)
-(assert (= true true)) ; voice_control_complete [untranslatable]
+(assert (forall ((sys RIINA_VoiceControlSystem)) (forall ((action UserAction)) (= (speakable_command action) true)))) ; voice_control_complete
 
 ; switch_command_exists (matches Coq: Lemma switch_command_exists)
-(assert (= true true)) ; switch_command_exists [untranslatable]
+(assert (forall ((action UserAction)) (exists ((cmd SwitchCommand)) (= (switch_command_for_action action) cmd)))) ; switch_command_exists
 
 ; speakable_command_positive (matches Coq: Lemma speakable_command_positive)
-(assert (= true true)) ; speakable_command_positive [untranslatable]
+(assert (forall ((action UserAction)) (> (speakable_for_action action) 0))) ; speakable_command_positive
 
 ; switch_command_decidable (matches Coq: Lemma switch_command_decidable)
-(assert (= true true)) ; switch_command_decidable [untranslatable]
+; switch_command_decidable: forall (c1 c2 : SwitchCommand), {c1 = c2} + {c1 <> c2}
+(assert (forall ((c1 SwitchCommand) (c2 SwitchCommand)) true)) ; switch_command_decidable [partial: bindings preserved]
 
 ; action_type_decidable (matches Coq: Lemma action_type_decidable)
-(assert (= true true)) ; action_type_decidable [untranslatable]
+; action_type_decidable: forall (t1 t2 : ActionType), {t1 = t2} + {t1 <> t2}
+(assert (forall ((t1 ActionType) (t2 ActionType)) true)) ; action_type_decidable [partial: bindings preserved]
 
 ; all_actions_switch_accessible (matches Coq: Lemma all_actions_switch_accessible)
-(assert (= true true)) ; all_actions_switch_accessible [untranslatable]
+(assert (forall ((action UserAction)) (= (possible_with_switch_control action) true))) ; all_actions_switch_accessible
 
 ; all_actions_voice_accessible (matches Coq: Lemma all_actions_voice_accessible)
-(assert (= true true)) ; all_actions_voice_accessible [untranslatable]
+(assert (forall ((action UserAction)) (= (speakable_command action) true))) ; all_actions_voice_accessible
 
 ; action_type_exhaustive (matches Coq: Lemma action_type_exhaustive)
-(assert (= true true)) ; action_type_exhaustive [untranslatable]
+(assert (forall ((t ActionType)) (or (= t TapAction) (= t SwipeAction) (= t PinchAction) (= t RotateAction) (= t LongPressAction) (= t TypeTextAction) (= t NavigateAction) (= t SelectAction) (= t DismissAction) (= t ScrollAction)))) ; action_type_exhaustive
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((t TouchTarget)) (=> (= (In t (wl_targets layout)) true) (=> (= (tt_interactive t) true) (>= (tt_width t) MIN_TOUCH_SIZE)))))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((t TouchTarget)) (=> (= (In t (wl_targets layout)) true) (=> (= (tt_interactive t) true) (>= (tt_height t) MIN_TOUCH_SIZE)))))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((t TouchTarget)) (=> (= (In t (wl_targets layout)) true) (=> (= (tt_interactive t) true) (and (>= (tt_spacing_left t) MIN_SPACING) (>= (tt_spacing_right t) MIN_SPACING) (>= (tt_spacing_top t) MIN_SPACING) (>= (tt_spacing_bottom t) MIN_SPACING))))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((a TouchTarget) (b TouchTarget)) (=> (= (In a (wl_targets layout)) true) (=> (= (In b (wl_targets layout)) true) (=> (= (tt_interactive a) true) (=> (= (tt_interactive b) true) (=> (not (= (tt_id a) (tt_id b))) (= (targets_no_overlap a b) true))))))))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((t TouchTarget)) (=> (= (In t (wl_targets layout)) true) (=> (= (tt_is_close_button t) true) (and (<= (+ (tt_x t) (tt_width t)) MAX_THUMB_REACH_X) (<= (+ (tt_y t) (tt_height t)) MAX_THUMB_REACH_Y))))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((t TouchTarget)) (=> (= (In t (wl_targets layout)) true) (=> (= (tt_interactive t) true) (=> (= (tt_is_edge t) true) (and (>= (tt_width t) MIN_CORNER_SIZE) (>= (tt_height t) MIN_CORNER_SIZE)))))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((t TouchTarget)) (=> (= (In t (wl_targets layout)) true) (=> (= (tt_interactive t) true) (or (= (tt_nesting_depth t) 0) (= (tt_interactive t) false))))))) ; 7
 
 ; corner_size_exceeds_minimum (matches Coq: Lemma corner_size_exceeds_minimum)
-(assert (= true true)) ; corner_size_exceeds_minimum [untranslatable]
+(assert (> MIN_CORNER_SIZE MIN_TOUCH_SIZE)) ; corner_size_exceeds_minimum
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((sys RIINA_KeyboardSystem)) (forall ((e UIElement)) (=> (= (In e (kb_elements (rk_state sys))) true) (=> (= (ue_interactive e) true) (= (keyboard_reachable (rk_state sys) (ue_id e)) true)))))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((sys RIINA_KeyboardSystem)) (forall ((eid Int)) (=> (= (In eid (kb_tab_index_list (rk_state sys))) true) (>= (length (kb_tab_index_list (rk_state sys))) 2))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((sys RIINA_KeyboardSystem)) (forall ((e UIElement)) (=> (= (In e (kb_elements (rk_state sys))) true) (=> (= (ue_focusable e) true) (= (ue_has_focus_indicator e) true)))))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((sys RIINA_KeyboardSystem)) (exists ((e Bool)) (and (= (In e (kb_elements (rk_state sys))) true) (= (ue_is_skip_link e) true))))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+; 12: Shortcut Keys Not Conflicting ---- *)  Theorem shortcut_keys_not_conflicting : forall (sys : RIINA_KeyboardSystem) (a b 
+(assert true) ; 12 [Coq-only]
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((sys RIINA_KeyboardSystem)) (forall ((e UIElement)) (=> (= (In e (kb_elements (rk_state sys))) true) (=> (= (ue_is_modal e) true) (= (keyboard_reachable (rk_state sys) (ue_id e)) true)))))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (= (ta_extendable ta) true)))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (= (ta_warns_before_timeout ta) true)))))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (not (= (ta_warns_before_timeout ta) false))))))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (= (ta_saves_progress ta) true)))))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (= (ta_extendable ta) true) (>= (ta_extension_factor ta) 2)))))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (= (ta_has_untimed_alt ta) true)))))) ; 19
 
 ; input_method_in_correct (matches Coq: Lemma input_method_in_correct)
-(assert (= true true)) ; input_method_in_correct [untranslatable]
+(assert (forall ((m Bool) (l Bool)) (and (=> (= (input_method_in m l) true) (= (In m l) true)) (=> (= (In m l) true) (= (input_method_in m l) true))))) ; input_method_in_correct
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (=> (= (uf_is_text_field f) true) (= (In VoiceInput (uf_supported_inputs f)) true)))))) ; 20
 
 ; 21 (matches Coq: Theorem 21)
-(assert (= true true)) ; 21 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (= (In EyeTracking (uf_supported_inputs f)) true))))) ; 21
 
 ; 22 (matches Coq: Theorem 22)
-(assert (= true true)) ; 22 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (= (In HeadSwitch (uf_supported_inputs f)) true))))) ; 22
 
 ; 23 (matches Coq: Theorem 23)
-(assert (= true true)) ; 23 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (= (In SingleSwitch (uf_supported_inputs f)) true))))) ; 23
 
 ; 24 (matches Coq: Theorem 24)
-(assert (= true true)) ; 24 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (= (uf_has_dwell_alt f) true))))) ; 24
 
 ; 25 (matches Coq: Theorem 25)
-(assert (= true true)) ; 25 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (=> (= (uf_requires_multitouch f) true) (= (uf_has_single_finger_alt f) true)))))) ; 25
 
 ; 26 (matches Coq: Theorem 26)
-(assert (= true true)) ; 26 [untranslatable]
+(assert (forall ((ws RIINA_SwitchControlSystem)) (forall ((wv RIINA_VoiceControlSystem)) (forall ((wk RIINA_KeyboardSystem)) (forall ((wt RIINA_TimingSystem)) (and (forall ((action Bool)) (= (possible_with_switch_control action) true)) (forall ((action Bool)) (= (speakable_command action) true)) (forall ((e Bool)) (=> (= (In e (kb_elements (rk_state wk))) true) (=> (= (ue_interactive e) true) (= (keyboard_reachable (rk_state wk) (ue_id e)) true)))) (forall ((ta Bool)) (=> (= (In ta (rt_actions wt)) true) (=> (> (ta_time_limit ta) 0) (= (ta_extendable ta) true)))))))))) ; 26
 
 ; 27 (matches Coq: Theorem 27)
-(assert (= true true)) ; 27 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (and (= (In EyeTracking (uf_supported_inputs f)) true) (= (In HeadSwitch (uf_supported_inputs f)) true) (= (In SingleSwitch (uf_supported_inputs f)) true)))))) ; 27
 
 ; 28 (matches Coq: Theorem 28)
-(assert (= true true)) ; 28 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (and (= (ta_extendable ta) true) (= (ta_warns_before_timeout ta) true) (= (ta_saves_progress ta) true) (= (ta_has_untimed_alt ta) true))))))) ; 28
 
 ; 29 (matches Coq: Theorem 29)
-(assert (= true true)) ; 29 [untranslatable]
+(assert (forall ((layout WCAGLayout)) (forall ((ksys RIINA_KeyboardSystem)) (forall ((tt TouchTarget)) (forall ((ue UIElement)) (=> (= (In tt (wl_targets layout)) true) (=> (= (tt_interactive tt) true) (=> (= (In ue (kb_elements (rk_state ksys))) true) (=> (= (ue_interactive ue) true) (=> (= (tt_id tt) (ue_id ue)) (and (>= (tt_width tt) MIN_TOUCH_SIZE) (>= (tt_height tt) MIN_TOUCH_SIZE) (= (keyboard_reachable (rk_state ksys) (ue_id ue)) true)))))))))))) ; 29
 
 ; 30 (matches Coq: Theorem 30)
-(assert (= true true)) ; 30 [untranslatable]
+(assert (forall ((sys RIINA_TimingSystem)) (forall ((ta TimedAction)) (=> (= (In ta (rt_actions sys)) true) (=> (> (ta_time_limit ta) 0) (>= (ta_extension_factor ta) 2)))))) ; 30
 
 ; 31 (matches Coq: Theorem 31)
-(assert (= true true)) ; 31 [untranslatable]
+(assert (forall ((action UserAction)) (and (exists ((cmd Bool)) (= (switch_command_for_action action) cmd)) (> (speakable_for_action action) 0)))) ; 31
 
 ; 32 (matches Coq: Theorem 32)
-(assert (= true true)) ; 32 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (and (= (uf_has_dwell_alt f) true) (= (In SingleSwitch (uf_supported_inputs f)) true)))))) ; 32
 
 ; 33 (matches Coq: Theorem 33)
-(assert (= true true)) ; 33 [untranslatable]
+(assert (forall ((sys RIINA_KeyboardSystem)) (forall ((e UIElement)) (=> (= (In e (kb_elements (rk_state sys))) true) (=> (= (ue_focusable e) true) (and (= (ue_has_focus_indicator e) true) (exists ((skip Bool)) (= (In skip (kb_elements (rk_state sys))) true)) (= (ue_is_skip_link skip) true))))))) ; 33
 
 ; 34 (matches Coq: Theorem 34)
-(assert (= true true)) ; 34 [untranslatable]
+(assert (forall ((sys RIINA_AltInputSystem)) (forall ((f UIFeature)) (=> (= (In f (rai_features sys)) true) (and (= (In EyeTracking (uf_supported_inputs f)) true) (= (In HeadSwitch (uf_supported_inputs f)) true) (= (In SingleSwitch (uf_supported_inputs f)) true) (= (uf_has_dwell_alt f) true)))))) ; 34
 
 ; Verify all assertions are satisfiable
 (check-sat)

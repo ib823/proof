@@ -96,7 +96,7 @@
   (mk-signature_security (mk_compliant_eufcma) (mk_compliant_sig_qr) Level5))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; PQ_SIG_001_mldsa_lattice (matches Coq: Theorem PQ_SIG_001_mldsa_lattice)
 (assert (= (scheme_category ML_DSA_87) Lattice_Based)) ; PQ_SIG_001_mldsa_lattice
@@ -159,19 +159,19 @@
 (assert (= (sig_scheme riina_sig_slh_dsa_256s) SLH_DSA_256s)) ; PQ_SIG_020_riina_scheme_slhdsa
 
 ; PQ_SIG_021_security_implies_eufcma (matches Coq: Theorem PQ_SIG_021_security_implies_eufcma)
-(assert (= true true)) ; PQ_SIG_021_security_implies_eufcma [untranslatable]
+(assert (forall ((s SignatureSecurity)) (=> (= (sig_secure s) true) (= (eufcma_compliant (sig_sec_eufcma s)) true)))) ; PQ_SIG_021_security_implies_eufcma
 
 ; PQ_SIG_022_security_implies_qr (matches Coq: Theorem PQ_SIG_022_security_implies_qr)
-(assert (= true true)) ; PQ_SIG_022_security_implies_qr [untranslatable]
+(assert (forall ((s SignatureSecurity)) (=> (= (sig_secure s) true) (= (sig_quantum_resistant (sig_sec_quantum s)) true)))) ; PQ_SIG_022_security_implies_qr
 
 ; PQ_SIG_023_correct_key (matches Coq: Theorem PQ_SIG_023_correct_key)
-(assert (= true true)) ; PQ_SIG_023_correct_key [untranslatable]
+(assert (forall ((si SignatureInstance)) (=> (= (sig_correct si) true) (= (skp_valid (sig_keypair si)) true)))) ; PQ_SIG_023_correct_key
 
 ; PQ_SIG_024_correct_verify (matches Coq: Theorem PQ_SIG_024_correct_verify)
 (assert (forall ((si SignatureInstance)) (=> (= (sig_correct si) true) (= (sig_verification si) true)))) ; PQ_SIG_024_correct_verify
 
 ; PQ_SIG_025_complete_security (matches Coq: Theorem PQ_SIG_025_complete_security)
-(assert (= true true)) ; PQ_SIG_025_complete_security [untranslatable]
+(assert (forall ((s SignatureSecurity)) (=> (= (sig_secure s) true) (and (= (eufcma_unforgeable (sig_sec_eufcma s)) true) (= (eufcma_strong_unforgeability (sig_sec_eufcma s)) true) (= (sqr_post_quantum (sig_sec_quantum s)) true) (= (sqr_no_shor_attack (sig_sec_quantum s)) true))))) ; PQ_SIG_025_complete_security
 
 ; Verify all assertions are satisfiable
 (check-sat)

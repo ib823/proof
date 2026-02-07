@@ -66,82 +66,82 @@
   true)
 
 ; cii_obligation_1 (matches Coq: Theorem cii_obligation_1)
-(assert (= true true)) ; cii_obligation_1 [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (= (cii_risk_assessed e) true) (= (cii_risk_current e) true)))) ; cii_obligation_1
 
 ; cii_obligation_2 (matches Coq: Theorem cii_obligation_2)
-(assert (= true true)) ; cii_obligation_2 [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (cii_audit_completed e) true) (=> (<= t (+ (cii_last_audit e) 365)) (= (cii_audit_current e t) true)))))) ; cii_obligation_2
 
 ; cii_obligation_3 (matches Coq: Theorem cii_obligation_3)
-(assert (= true true)) ; cii_obligation_3 [untranslatable]
+(assert (forall ((i SGCyberIncident)) (=> (<= (sg_incident_reported_at i) (+ (sg_incident_detected_at i) 2)) (= (sg_incident_reported_in_time i) true)))) ; cii_obligation_3
 
 ; sg_stricter_than_my (matches Coq: Theorem sg_stricter_than_my)
-(assert (= true true)) ; sg_stricter_than_my [untranslatable]
+(assert (forall ((detected_at Int) (reported_at Int)) (=> (<= reported_at (+ detected_at 2)) (<= reported_at (+ detected_at 6))))) ; sg_stricter_than_my
 
 ; cii_obligation_4 (matches Coq: Theorem cii_obligation_4)
-(assert (= true true)) ; cii_obligation_4 [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (<= (cii_min_controls e) (cii_security_controls e)) (= (cii_controls_adequate e) true)))) ; cii_obligation_4
 
 ; esci_compliance (matches Coq: Theorem esci_compliance)
-(assert (= true true)) ; esci_compliance [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (= (cii_classification e) ESCI) (=> (= (cii_risk_assessed e) true) (=> (= (cii_incident_response_plan e) true) (= (esci_obligations_met e) true)))))) ; esci_compliance
 
 ; cssp_obligation (matches Coq: Theorem cssp_obligation)
-(assert (= true true)) ; cssp_obligation [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (= (cii_cssp_licensed e) true) (= (cssp_licensed_sg e) true)))) ; cssp_obligation
 
 ; sg_cybersecurity_composition (matches Coq: Theorem sg_cybersecurity_composition)
-(assert (= true true)) ; sg_cybersecurity_composition [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (cii_risk_current e) true) (=> (= (cii_audit_current e t) true) (=> (= (cii_controls_adequate e) true) (=> (= (cii_incident_response_plan e) true) (= (sg_cybersecurity_act_compliant e t) true)))))))) ; sg_cybersecurity_composition
 
 ; cii_sector_coverage (matches Coq: Theorem cii_sector_coverage)
-(assert (= true true)) ; cii_sector_coverage [untranslatable]
+(assert (forall ((s CIISector)) (= (In s all_cii_sectors) true))) ; cii_sector_coverage
 
 ; entity_classification_coverage (matches Coq: Theorem entity_classification_coverage)
-(assert (= true true)) ; entity_classification_coverage [untranslatable]
+(assert (forall ((c EntityClassification)) (= (In c all_entity_classifications) true))) ; entity_classification_coverage
 
 ; stcc_compliance (matches Coq: Theorem stcc_compliance)
-(assert (= true true)) ; stcc_compliance [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (= (cii_classification e) STCC) (=> (= (cii_risk_assessed e) true) (=> (>= (cii_security_controls e) (cii_min_controls e)) (= (stcc_obligations_met e) true)))))) ; stcc_compliance
 
 ; cii_owner_strictest (matches Coq: Theorem cii_owner_strictest)
-(assert (= true true)) ; cii_owner_strictest [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (cii_owner_obligations e t) true) (= (cii_risk_current e) true))))) ; cii_owner_strictest
 
 ; cii_owner_implies_esci_risk (matches Coq: Theorem cii_owner_implies_esci_risk)
-(assert (= true true)) ; cii_owner_implies_esci_risk [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (cii_owner_obligations e t) true) (and (= (cii_risk_assessed e) true) (= (cii_incident_response_plan e) true)))))) ; cii_owner_implies_esci_risk
 
 ; significant_incident_must_notify (matches Coq: Theorem significant_incident_must_notify)
-(assert (= true true)) ; significant_incident_must_notify [untranslatable]
+(assert (forall ((i SGCyberIncident)) (=> (= (sg_incident_significant i) true) (= (incident_needs_notification i) true)))) ; significant_incident_must_notify
 
 ; two_hour_deadline_tight (matches Coq: Theorem two_hour_deadline_tight)
-(assert (= true true)) ; two_hour_deadline_tight [untranslatable]
+(assert (forall ((detected Int)) (< (+ detected 2) (+ detected 6)))) ; two_hour_deadline_tight
 
 ; sg_2h_stricter_than_my_6h (matches Coq: Theorem sg_2h_stricter_than_my_6h)
-(assert (= true true)) ; sg_2h_stricter_than_my_6h [untranslatable]
+(assert (forall ((i SGCyberIncident)) (=> (= (sg_incident_reported_in_time i) true) (<= (sg_incident_reported_at i) (+ (sg_incident_detected_at i) 6))))) ; sg_2h_stricter_than_my_6h
 
 ; sg_2h_stricter_than_72h (matches Coq: Theorem sg_2h_stricter_than_72h)
-(assert (= true true)) ; sg_2h_stricter_than_72h [untranslatable]
+(assert (forall ((i SGCyberIncident)) (=> (= (sg_incident_reported_in_time i) true) (<= (sg_incident_reported_at i) (+ (sg_incident_detected_at i) 72))))) ; sg_2h_stricter_than_72h
 
 ; audit_schedule_valid (matches Coq: Theorem audit_schedule_valid)
-(assert (= true true)) ; audit_schedule_valid [untranslatable]
+(assert (forall ((sched AuditSchedule)) (=> (= (as_next_audit sched) (+ (as_last_audit sched) (as_audit_interval sched))) (= (audit_schedule_consistent sched) true)))) ; audit_schedule_valid
 
 ; more_controls_still_adequate (matches Coq: Theorem more_controls_still_adequate)
-(assert (= true true)) ; more_controls_still_adequate [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((extra Int)) (=> (= (cii_controls_adequate e) true) (<= (cii_min_controls e) (+ (cii_security_controls e) extra)))))) ; more_controls_still_adequate
 
 ; sg_cyber_full_implies_risk (matches Coq: Theorem sg_cyber_full_implies_risk)
-(assert (= true true)) ; sg_cyber_full_implies_risk [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (sg_cybersecurity_act_compliant e t) true) (= (cii_risk_current e) true))))) ; sg_cyber_full_implies_risk
 
 ; sg_cyber_full_implies_audit (matches Coq: Theorem sg_cyber_full_implies_audit)
-(assert (= true true)) ; sg_cyber_full_implies_audit [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (sg_cybersecurity_act_compliant e t) true) (= (cii_audit_current e t) true))))) ; sg_cyber_full_implies_audit
 
 ; sg_cyber_full_implies_controls (matches Coq: Theorem sg_cyber_full_implies_controls)
-(assert (= true true)) ; sg_cyber_full_implies_controls [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (sg_cybersecurity_act_compliant e t) true) (= (cii_controls_adequate e) true))))) ; sg_cyber_full_implies_controls
 
 ; sg_cyber_full_implies_irp (matches Coq: Theorem sg_cyber_full_implies_irp)
-(assert (= true true)) ; sg_cyber_full_implies_irp [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (sg_cybersecurity_act_compliant e t) true) (= (cii_incident_response_plan e) true))))) ; sg_cyber_full_implies_irp
 
 ; cssp_expired_non_compliant (matches Coq: Theorem cssp_expired_non_compliant)
-(assert (= true true)) ; cssp_expired_non_compliant [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (= (cii_cssp_licensed e) false) (not (= (cssp_licensed_sg e) true))))) ; cssp_expired_non_compliant
 
 ; regular_entity_no_cii_obligation (matches Coq: Theorem regular_entity_no_cii_obligation)
-(assert (= true true)) ; regular_entity_no_cii_obligation [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (=> (= (cii_classification e) RegularEntity) (= (regular_entity_exempt e) true)))) ; regular_entity_no_cii_obligation
 
 ; compliance_eliminates_penalty (matches Coq: Theorem compliance_eliminates_penalty)
-(assert (= true true)) ; compliance_eliminates_penalty [untranslatable]
+(assert (forall ((e CIIOwnerEntity)) (forall ((t Int)) (=> (= (sg_cybersecurity_act_compliant e t) true) (not (= (penalty_exposure_exists e t) true)))))) ; compliance_eliminates_penalty
 
 ; Verify all assertions are satisfiable
 (check-sat)

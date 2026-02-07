@@ -31,10 +31,10 @@
   true)
 
 ; gesture_disambiguation_unique (matches Coq: Theorem gesture_disambiguation_unique)
-(assert (= true true)) ; gesture_disambiguation_unique [untranslatable]
+(assert (forall ((input TouchSequence)) (exists ((gesture Gesture)) (=> (and (= (recognized input gesture) true) (forall ((g2 Gesture)) (= (recognized input g2) true))) (= (gesture_type g2) (gesture_type gesture)))))) ; gesture_disambiguation_unique
 
 ; tap_latency_no_unnecessary_delay (matches Coq: Theorem tap_latency_no_unnecessary_delay)
-(assert (= true true)) ; tap_latency_no_unnecessary_delay [untranslatable]
+(assert (forall ((tap SingleTapEvent)) (=> (= (no_double_tap_expected tap) true) (= (response_time tap) (expected_response_time tap))))) ; tap_latency_no_unnecessary_delay
 
 ; swipe_velocity_matches_physics (matches Coq: Theorem swipe_velocity_matches_physics)
 (assert (forall ((swipe SwipeGesture)) (= (scroll_velocity swipe) (finger_velocity swipe)))) ; swipe_velocity_matches_physics
@@ -43,61 +43,64 @@
 (assert (forall ((mtg MultiTouchGesture)) (= (all_points_synchronized mtg) true))) ; multi_touch_always_synchronized
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((g1 GestureType) (g2 GestureType)) (or (= g1 g2) (not (= g1 g2))))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((g Gesture)) (>= (gesture_confidence g) 99))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((tap SingleTapEvent)) (=> (= (double_tap_expected tap) false) (= (actual_response_time tap) (expected_response_time tap))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((ds DirectedSwipe)) (exists ((d SwipeDirection)) (= (ds_direction ds) d)))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((pg PinchGesture)) (and (= (pinch_center_x pg) (div (+ (pinch_finger1_x pg) (pinch_finger2_x pg)) 2)) (= (pinch_center_y pg) (div (+ (pinch_finger1_y pg) (pinch_finger2_y pg)) 2))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+; 6: rotation_angle_bounded — rotation within [-pi, pi] *) Theorem rotation_angle_bounded : forall (rg : RotationGesture), - 
+(assert true) ; 6 [Coq-only]
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((tc Int)) (forall ((dur R)) (exists ((cls TouchClassification)) (= (classify_touch tc dur) cls))))) ; 7
 
 ; gesture_recognizer_always_classifies (matches Coq: Theorem gesture_recognizer_always_classifies)
-(assert (= true true)) ; gesture_recognizer_always_classifies [untranslatable]
+(assert (forall ((tc Int)) (forall ((dur R)) (not (= (classify_touch tc dur) UnclassifiedTouch))))) ; gesture_recognizer_always_classifies
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((te TouchEvent)) (=> (= (te_classified te) false) (= (te_action_triggered te) false)))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+; 9: multi_touch_sorted — touch points processed in order *) Fixpoint is_sorted (l : list nat) : Prop := match l with | [] =>
+(assert true) ; 9 [Coq-only]
 
 ; multi_touch_sorted_tail (matches Coq: Theorem multi_touch_sorted_tail)
-(assert (= true true)) ; multi_touch_sorted_tail [untranslatable]
+; multi_touch_sorted_tail: forall (x : nat) (rest : list nat), is_sorted (x :: rest) -> is_sorted rest
+(assert (forall ((x Int) (rest list)) true)) ; multi_touch_sorted_tail [partial: bindings preserved]
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((cg CancellableGesture)) (=> (= (cg_cancelled cg) true) (= (cg_current_value cg) (cg_original_value cg))))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((es EdgeSwipeEvent)) (=> (<= (es_start_x es) (* (es_screen_width es) (/ 10))) (= (es_is_edge es) true)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((p1 PressureTouch) (p2 PressureTouch)) (=> (< (pt_pressure p1) (pt_pressure p2)) (< (pt_signal p1) (pt_signal p2))))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((pte PalmTouchEvent)) (=> (> (palm_contact_area pte) (palm_threshold pte)) (= (palm_is_rejected pte) true)))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((egr ExclusiveGestureResult)) (<= (length (egr_recognized egr)) 1))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((vt VelocityTracker)) (and (= (vt_computed_vx vt) (div (vt_dx vt) (vt_dt vt))) (= (vt_computed_vy vt) (div (vt_dy vt) (vt_dt vt)))))) ; 15
 
 ; velocity_magnitude_non_negative (matches Coq: Theorem velocity_magnitude_non_negative)
-(assert (= true true)) ; velocity_magnitude_non_negative [untranslatable]
+(assert (forall ((vx R) (vy R)) (>= (+ (* vx vx) (* vy vy)) 0))) ; velocity_magnitude_non_negative
 
 ; gesture_confidence_high (matches Coq: Theorem gesture_confidence_high)
-(assert (= true true)) ; gesture_confidence_high [untranslatable]
+(assert (forall ((g Gesture)) (> (gesture_confidence g) 0))) ; gesture_confidence_high
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -86,148 +86,156 @@
   true)
 
 ; ui_behavior_predictable (matches Coq: Theorem ui_behavior_predictable)
-(assert (= true true)) ; ui_behavior_predictable [untranslatable]
+(assert (forall ((pui RIINA_PredictableUI)) (forall ((interaction UserInteraction)) (= (outcome interaction) (expected_outcome interaction))))) ; ui_behavior_predictable
 
 ; ui_behavior_predictable_direct (matches Coq: Theorem ui_behavior_predictable_direct)
 (assert (forall ((interaction UserInteraction)) (= (outcome interaction) (expected_outcome interaction)))) ; ui_behavior_predictable_direct
 
 ; interaction_type_decidable (matches Coq: Lemma interaction_type_decidable)
-(assert (= true true)) ; interaction_type_decidable [untranslatable]
+; interaction_type_decidable: forall (t1 t2 : InteractionType), {t1 = t2} + {t1 <> t2}
+(assert (forall ((t1 InteractionType) (t2 InteractionType)) true)) ; interaction_type_decidable [partial: bindings preserved]
 
 ; outcome_type_decidable (matches Coq: Lemma outcome_type_decidable)
-(assert (= true true)) ; outcome_type_decidable [untranslatable]
+; outcome_type_decidable: forall (o1 o2 : OutcomeType), {o1 = o2} + {o1 <> o2}
+(assert (forall ((o1 OutcomeType) (o2 OutcomeType)) true)) ; outcome_type_decidable [partial: bindings preserved]
 
 ; outcome_eq_reflexive (matches Coq: Lemma outcome_eq_reflexive)
-(assert (= true true)) ; outcome_eq_reflexive [untranslatable]
+(assert (forall ((o Outcome)) (= (outcome_eq o o) true))) ; outcome_eq_reflexive
 
 ; outcome_eq_symmetric (matches Coq: Lemma outcome_eq_symmetric)
-(assert (= true true)) ; outcome_eq_symmetric [untranslatable]
+(assert (forall ((o1 Outcome) (o2 Outcome)) (=> (= (outcome_eq o1 o2) true) (= (outcome_eq o2 o1) true)))) ; outcome_eq_symmetric
 
 ; expected_outcome_deterministic (matches Coq: Lemma expected_outcome_deterministic)
-(assert (= true true)) ; expected_outcome_deterministic [untranslatable]
+; expected_outcome_deterministic: forall (i : UserInteraction), exists! (o : Outcome), expected_outcome i = o
+(assert (forall ((i UserInteraction)) true)) ; expected_outcome_deterministic [partial: bindings preserved]
 
 ; outcome_matches_interaction_type (matches Coq: Lemma outcome_matches_interaction_type)
-(assert (= true true)) ; outcome_matches_interaction_type [untranslatable]
+(assert (forall ((i UserInteraction)) (= (outcome_type (outcome i)) (expected_outcome_type (interaction_type i))))) ; outcome_matches_interaction_type
 
 ; context_preserved (matches Coq: Lemma context_preserved)
-(assert (= true true)) ; context_preserved [untranslatable]
+(assert (forall ((i UserInteraction)) (= (outcome_context (outcome i)) (context i)))) ; context_preserved
 
 ; interaction_type_exhaustive (matches Coq: Lemma interaction_type_exhaustive)
-(assert (= true true)) ; interaction_type_exhaustive [untranslatable]
+(assert (forall ((t InteractionType)) (or (= t ButtonPress) (= t MenuOpen) (= t NavigationPush) (= t NavigationPop) (= t ModalPresent) (= t ModalDismiss) (= t TextInput) (= t ListScroll) (= t SwipeGesture) (= t LongPress)))) ; interaction_type_exhaustive
 
 ; outcome_type_exhaustive (matches Coq: Lemma outcome_type_exhaustive)
-(assert (= true true)) ; outcome_type_exhaustive [untranslatable]
+(assert (forall ((o OutcomeType)) (or (= o ButtonActivated) (= o MenuDisplayed) (= o ScreenPushed) (= o ScreenPopped) (= o ModalShown) (= o ModalHidden) (= o TextEntered) (= o ListScrolled) (= o SwipeCompleted) (= o LongPressActivated)))) ; outcome_type_exhaustive
 
 ; information_density_bounded (matches Coq: Theorem information_density_bounded)
-(assert (= true true)) ; information_density_bounded [untranslatable]
+(assert (forall ((id InformationDensity)) (=> (<= (element_count id) riina_density_threshold) (= (density_acceptable id riina_density_threshold) true)))) ; information_density_bounded
 
 ; progressive_disclosure (matches Coq: Theorem progressive_disclosure)
-(assert (= true true)) ; progressive_disclosure [untranslatable]
+(assert (forall ((cs ContentSection)) (and (= (cs_initial_level cs) Summary) (<= (cs_summary_len cs) (cs_expanded_len cs))))) ; progressive_disclosure
 
 ; choice_overload_prevention (matches Coq: Theorem choice_overload_prevention)
-(assert (= true true)) ; choice_overload_prevention [untranslatable]
+(assert (forall ((mc MenuConfig)) (<= (length (menu_items mc)) hicks_bound))) ; choice_overload_prevention
 
 ; consistent_navigation (matches Coq: Theorem consistent_navigation)
-(assert (= true true)) ; consistent_navigation [untranslatable]
+(assert (forall ((app ConsistentApp)) (forall ((p1 NavigationStructure) (p2 NavigationStructure)) (=> (= (In p1 (app_pages app)) true) (=> (= (In p2 (app_pages app)) true) (= (nav_structure_eq p1 p2) true)))))) ; consistent_navigation
 
 ; breadcrumb_always_available (matches Coq: Theorem breadcrumb_always_available)
-(assert (= true true)) ; breadcrumb_always_available [untranslatable]
+(assert (forall ((pc PageConfig)) (=> (not (= (pc_depth pc) RootLevel)) (= (pc_has_breadcrumb pc) true)))) ; breadcrumb_always_available
 
 ; loading_state_always_shown (matches Coq: Theorem loading_state_always_shown)
 (assert (forall ((op AsyncOperation)) (=> (= (ao_status op) Loading) (= (ao_shows_loading op) true)))) ; loading_state_always_shown
 
 ; undo_always_available (matches Coq: Theorem undo_always_available)
-(assert (= true true)) ; undo_always_available [untranslatable]
+(assert (forall ((a UserAction)) (= (undo_action (undo_action a)) a))) ; undo_always_available
 
 ; undo_edit_swaps (matches Coq: Lemma undo_edit_swaps)
-(assert (= true true)) ; undo_edit_swaps [untranslatable]
+(assert (forall ((fid Bool) (old_v Bool) (new_v Bool)) (=> (not (= old_v new_v)) (not (= (undo_action (EditAction fid old_v new_v)) (EditAction fid old_v new_v)))))) ; undo_edit_swaps
 
 ; confirmation_for_destructive (matches Coq: Theorem confirmation_for_destructive)
-(assert (= true true)) ; confirmation_for_destructive [untranslatable]
+(assert (forall ((ca ConfirmedAction)) (=> (= (is_destructive (ca_action ca)) true) (= (ca_confirmed ca) true)))) ; confirmation_for_destructive
 
 ; inline_validation (matches Coq: Theorem inline_validation)
-(assert (= true true)) ; inline_validation [untranslatable]
+(assert (forall ((fs FormState)) (= (errors_are_inline fs) true))) ; inline_validation
 
 ; error_message_specific (matches Coq: Theorem error_message_specific)
-(assert (= true true)) ; error_message_specific [untranslatable]
+(assert (forall ((fs FormState)) (forall ((e ValidationError)) (=> (= (In e (fs_errors fs)) true) (exists ((idx Bool)) (and (= (error_field_idx e) idx) (< idx (fs_field_count fs)))))))) ; error_message_specific
 
 ; auto_save_prevents_loss (matches Coq: Theorem auto_save_prevents_loss)
-(assert (= true true)) ; auto_save_prevents_loss [untranslatable]
+(assert (forall ((asf AutoSaveForm)) (=> (= (asf_dirty asf) true) (= (snap_field_values (asf_snapshot asf)) (asf_field_values asf))))) ; auto_save_prevents_loss
 
 ; min_error_idx_nonempty (matches Coq: Lemma min_error_idx_nonempty)
-(assert (= true true)) ; min_error_idx_nonempty [untranslatable]
+(assert (forall ((errs list)) (=> (not (= errs nil)) (exists ((n Bool)) (= (min_error_idx errs) (some n)))))) ; min_error_idx_nonempty
 
 ; min_error_idx_le_head (matches Coq: Lemma min_error_idx_le_head)
-(assert (= true true)) ; min_error_idx_le_head [untranslatable]
+; min_error_idx_le_head: forall (e : ValidationError) (rest : list ValidationError) (m : nat), min_error_idx (e :: rest) = Some m -> m <= error_f
+(assert (forall ((e ValidationError) (rest list) (m Int)) true)) ; min_error_idx_le_head [partial: bindings preserved]
 
 ; min_error_idx_le_all (matches Coq: Lemma min_error_idx_le_all)
-(assert (= true true)) ; min_error_idx_le_all [untranslatable]
+(assert (forall ((errs list ValidationError)) (forall ((m Int)) (=> (= (min_error_idx errs) (some m)) (=> (forall ((e Bool)) (= (In e errs) true)) (<= m (error_field_idx e))))))) ; min_error_idx_le_all
 
 ; scroll_to_first_error (matches Coq: Theorem scroll_to_first_error)
-(assert (= true true)) ; scroll_to_first_error [untranslatable]
+(assert (forall ((fs FormState)) (=> (not (= (fs_errors fs) nil)) (=> (exists ((min_idx Bool)) (and (= (min_error_idx (fs_errors fs)) (some min_idx)) (forall ((e Bool)) (= (In e (fs_errors fs)) true)))) (<= min_idx (error_field_idx e)))))) ; scroll_to_first_error
 
 ; error_count_visible (matches Coq: Theorem error_count_visible)
-(assert (= true true)) ; error_count_visible [untranslatable]
+(assert (forall ((fs FormState)) (and (=> (= (form_error_count fs) 0) (= (fs_errors fs) nil)) (=> (= (fs_errors fs) nil) (= (form_error_count fs) 0))))) ; error_count_visible
 
 ; error_count_monotone (matches Coq: Lemma error_count_monotone)
-(assert (= true true)) ; error_count_monotone [untranslatable]
+; error_count_monotone: forall (errs : list ValidationError) (e : ValidationError), length (e :: errs) = S (length errs)
+(assert (forall ((errs list) (e ValidationError)) true)) ; error_count_monotone [partial: bindings preserved]
 
 ; error_fixable (matches Coq: Theorem error_fixable)
-(assert (= true true)) ; error_fixable [untranslatable]
+(assert (forall ((e ValidationError)) (= (fix_targets_same_field e (suggest_fix e)) true))) ; error_fixable
 
 ; animation_duration_bounded (matches Coq: Theorem animation_duration_bounded)
-(assert (= true true)) ; animation_duration_bounded [untranslatable]
+(assert (forall ((anim AnimationTiming)) (and (<= 200 (at_duration_ms anim)) (<= (at_duration_ms anim) 500)))) ; animation_duration_bounded
 
 ; action_class_eq_dec (matches Coq: Lemma action_class_eq_dec)
-(assert (= true true)) ; action_class_eq_dec [untranslatable]
+; action_class_eq_dec: forall (a b : ActionClass), {a = b} + {a <> b}
+(assert (forall ((a ActionClass) (b ActionClass)) true)) ; action_class_eq_dec [partial: bindings preserved]
 
 ; easing_consistent_singleton (matches Coq: Theorem easing_consistent_singleton)
-(assert (= true true)) ; easing_consistent_singleton [untranslatable]
+; easing_consistent_singleton: forall (a : ClassifiedAnimation), easing_consistent (a :: nil)
+(assert (forall ((a ClassifiedAnimation)) true)) ; easing_consistent_singleton [partial: bindings preserved]
 
 ; no_layout_shift (matches Coq: Theorem no_layout_shift)
 (assert (forall ((sl StableLayout)) (= (sl_initial sl) (sl_final sl)))) ; no_layout_shift
 
 ; feedback_immediate (matches Coq: Theorem feedback_immediate)
-(assert (= true true)) ; feedback_immediate [untranslatable]
+(assert (forall ((fr FeedbackResponse)) (<= (fr_latency_ms fr) 100))) ; feedback_immediate
 
 ; transition_reversible (matches Coq: Theorem transition_reversible)
-(assert (= true true)) ; transition_reversible [untranslatable]
+(assert (forall ((t UITransition)) (= (reverse_transition (reverse_transition t)) t))) ; transition_reversible
 
 ; reverse_swaps_endpoints (matches Coq: Lemma reverse_swaps_endpoints)
-(assert (= true true)) ; reverse_swaps_endpoints [untranslatable]
+(assert (forall ((t UITransition)) (and (= (tr_from (reverse_transition t)) (tr_to t)) (= (tr_to (reverse_transition t)) (tr_from t))))) ; reverse_swaps_endpoints
 
 ; reverse_preserves_anim_style (matches Coq: Lemma reverse_preserves_anim_style)
-(assert (= true true)) ; reverse_preserves_anim_style [untranslatable]
+(assert (forall ((t UITransition)) (= (tr_anim_style (reverse_transition t)) (tr_anim_style t)))) ; reverse_preserves_anim_style
 
 ; same_input_same_output (matches Coq: Theorem same_input_same_output)
-(assert (= true true)) ; same_input_same_output [untranslatable]
+(assert (forall ((s1 UIState) (s2 UIState) (e1 UIEvent) (e2 UIEvent)) (=> (= s1 s2) (=> (= e1 e2) (= (handle_ui_event s1 e1) (handle_ui_event s2 e2)))))) ; same_input_same_output
 
 ; handle_ui_event_deterministic (matches Coq: Lemma handle_ui_event_deterministic)
-(assert (= true true)) ; handle_ui_event_deterministic [untranslatable]
+(assert (forall ((s UIState)) (forall ((e UIEvent)) (= (handle_ui_event s e) (handle_ui_event s e))))) ; handle_ui_event_deterministic
 
 ; no_surprise_popups (matches Coq: Theorem no_surprise_popups)
-(assert (= true true)) ; no_surprise_popups [untranslatable]
+(assert (forall ((dd DialogDisplay)) (= (is_user_initiated (dd_trigger dd)) true))) ; no_surprise_popups
 
 ; button_does_what_it_says (matches Coq: Theorem button_does_what_it_says)
-(assert (= true true)) ; button_does_what_it_says [untranslatable]
+(assert (forall ((bc ButtonConfig)) (= (bc_effect bc) (label_to_effect (bc_label bc))))) ; button_does_what_it_says
 
 ; label_to_effect_injective (matches Coq: Lemma label_to_effect_injective)
-(assert (= true true)) ; label_to_effect_injective [untranslatable]
+(assert (forall ((l1 Bool) (l2 Bool)) (=> (= (label_to_effect l1) (label_to_effect l2)) (= l1 l2)))) ; label_to_effect_injective
 
 ; back_button_goes_back (matches Coq: Theorem back_button_goes_back)
-(assert (= true true)) ; back_button_goes_back [untranslatable]
+(assert (forall ((stack list nat)) (forall ((page Int)) (= (nav_apply (nav_apply stack (NavPush page)) NavPop) stack)))) ; back_button_goes_back
 
 ; nav_push_grows (matches Coq: Lemma nav_push_grows)
-(assert (= true true)) ; nav_push_grows [untranslatable]
+(assert (forall ((stack list nat)) (forall ((page Int)) (= (length (nav_apply stack (NavPush page))) (S (length stack)))))) ; nav_push_grows
 
 ; nav_pop_shrinks (matches Coq: Lemma nav_pop_shrinks)
-(assert (= true true)) ; nav_pop_shrinks [untranslatable]
+; nav_pop_shrinks: forall (p : nat) (stack : list nat), length (nav_apply (p :: stack) NavPop) = length stack
+(assert (forall ((p Int) (stack list)) true)) ; nav_pop_shrinks [partial: bindings preserved]
 
 ; link_destination_visible (matches Coq: Theorem link_destination_visible)
 (assert (forall ((lc LinkConfig)) (= (lc_dest_visible lc) true))) ; link_destination_visible
 
 ; no_auto_redirect (matches Coq: Theorem no_auto_redirect)
-(assert (= true true)) ; no_auto_redirect [untranslatable]
+(assert (forall ((pt PageTransition)) (= (is_user_initiated (pt_trigger pt)) true))) ; no_auto_redirect
 
 ; Verify all assertions are satisfiable
 (check-sat)

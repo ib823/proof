@@ -49,76 +49,78 @@
 (define-fun positive_pred () Pred true)
 
 ; TYPE_004_01_refinement_subtyping (matches Coq: Theorem TYPE_004_01_refinement_subtyping)
-(assert (= true true)) ; TYPE_004_01_refinement_subtyping [untranslatable]
+(assert (forall ((b BaseTy)) (forall ((p Pred) (q Pred)) (=> (= (pred_implies p q) true) (= (refty_subtype (RRefine b p) (RRefine b q)) true))))) ; TYPE_004_01_refinement_subtyping
 
 ; TYPE_004_02_refinement_introduction (matches Coq: Theorem TYPE_004_02_refinement_introduction)
-(assert (= true true)) ; TYPE_004_02_refinement_introduction [untranslatable]
+(assert (forall ((v Int)) (forall ((b BaseTy)) (forall ((p Pred)) (=> (= (sat_pred v p) true) (= (inhabits_refinement v b p) true)))))) ; TYPE_004_02_refinement_introduction
 
 ; TYPE_004_03_refinement_elimination (matches Coq: Theorem TYPE_004_03_refinement_elimination)
-(assert (= true true)) ; TYPE_004_03_refinement_elimination [untranslatable]
+(assert (forall ((b BaseTy)) (forall ((p Pred)) (= (refty_subtype (RRefine b p) (RBase b)) true)))) ; TYPE_004_03_refinement_elimination
 
 ; TYPE_004_04_refinement_conjunction (matches Coq: Theorem TYPE_004_04_refinement_conjunction)
-(assert (= true true)) ; TYPE_004_04_refinement_conjunction [untranslatable]
+(assert (forall ((v Int)) (forall ((b BaseTy)) (forall ((p Pred) (q Pred)) (and (=> (= (sat_pred v (PAnd p q)) true) (and (= (sat_pred v p) true) (= (sat_pred v q) true))) (=> (and (= (sat_pred v p) true) (= (sat_pred v q) true)) (= (sat_pred v (PAnd p q)) true))))))) ; TYPE_004_04_refinement_conjunction
 
 ; TYPE_004_05_dependent_function_refinement (matches Coq: Theorem TYPE_004_05_dependent_function_refinement)
-(assert (= true true)) ; TYPE_004_05_dependent_function_refinement [untranslatable]
+(assert (forall ((b1 BaseTy) (b2 BaseTy) (p Pred) (q Int)) (=> (forall ((x Bool)) (=> (= (sat_pred x p) true) (exists ((y Bool)) (= (sat_pred y (q x)) true)))) (=> (forall ((f nat -> nat)) (forall ((arg Int)) (= (sat_pred arg p) true))) (=> (= (sat_pred (f arg) (q arg)) true) (exists ((result Bool)) (= (sat_pred result (q arg)) true))))))) ; TYPE_004_05_dependent_function_refinement
 
 ; TYPE_004_06_refinement_substitution (matches Coq: Theorem TYPE_004_06_refinement_substitution)
-(assert (= true true)) ; TYPE_004_06_refinement_substitution [untranslatable]
+; TYPE_004_06_refinement_substitution: forall (x : nat) (v : nat) (env : TyEnv) (e : Expr) (b : BaseTy) (p : Pred), has_type ((x, RRefine b p) :: env) e (RRefi
+(assert (forall ((x Int) (v Int) (env TyEnv) (e Expr) (b BaseTy) (p Pred)) true)) ; TYPE_004_06_refinement_substitution [partial: bindings preserved]
 
 ; TYPE_004_07_smt_decidability (matches Coq: Theorem TYPE_004_07_smt_decidability)
-(assert (= true true)) ; TYPE_004_07_smt_decidability [untranslatable]
+; TYPE_004_07_smt_decidability: forall (v : nat) (p : Pred), {sat_pred v p} + {~ sat_pred v p}
+(assert (forall ((v Int) (p Pred)) true)) ; TYPE_004_07_smt_decidability [partial: bindings preserved]
 
 ; TYPE_004_08_bounds_checking (matches Coq: Theorem TYPE_004_08_bounds_checking)
-(assert (= true true)) ; TYPE_004_08_bounds_checking [untranslatable]
+(assert (forall ((len Int)) (forall ((idx Int)) (=> (= (sat_pred idx (bounds_pred len)) true) (< idx len))))) ; TYPE_004_08_bounds_checking
 
 ; TYPE_004_09_non_null_refinement (matches Coq: Theorem TYPE_004_09_non_null_refinement)
-(assert (= true true)) ; TYPE_004_09_non_null_refinement [untranslatable]
+(assert (forall ((p Int)) (=> (= (sat_pred p non_null_pred) true) (= (is_non_null p) true)))) ; TYPE_004_09_non_null_refinement
 
 ; TYPE_004_10_array_bounds_safety (matches Coq: Theorem TYPE_004_10_array_bounds_safety)
-(assert (= true true)) ; TYPE_004_10_array_bounds_safety [untranslatable]
+(assert (forall ((arr Array)) (forall ((i Int)) (=> (= (sat_pred i (array_index_pred arr)) true) (< i (length (arr_data arr))))))) ; TYPE_004_10_array_bounds_safety
 
 ; TYPE_004_11_positive_refinement (matches Coq: Theorem TYPE_004_11_positive_refinement)
-(assert (= true true)) ; TYPE_004_11_positive_refinement [untranslatable]
+(assert (forall ((x Int) (y Int)) (=> (= (sat_pred x positive_pred) true) (=> (= (sat_pred y positive_pred) true) (= (sat_pred (* x y) positive_pred) true))))) ; TYPE_004_11_positive_refinement
 
 ; TYPE_004_12_refinement_preservation (matches Coq: Theorem TYPE_004_12_refinement_preservation)
-(assert (= true true)) ; TYPE_004_12_refinement_preservation [untranslatable]
+(assert (forall ((e Expr) (e' Expr) (b BaseTy) (p Pred) (n Int)) (=> (= (step_clean e e') true) (=> (= e' (EVal n)) (=> (= (sat_pred n p) true) (= (has_type nil e' (RRefine b p)) true)))))) ; TYPE_004_12_refinement_preservation
 
 ; TYPE_004_13_pred_true_satisfied (matches Coq: Theorem TYPE_004_13_pred_true_satisfied)
-(assert (= true true)) ; TYPE_004_13_pred_true_satisfied [untranslatable]
+(assert (forall ((v Bool)) (= (sat_pred v PTrue) true))) ; TYPE_004_13_pred_true_satisfied
 
 ; TYPE_004_14_pred_false_unsatisfied (matches Coq: Theorem TYPE_004_14_pred_false_unsatisfied)
-(assert (= true true)) ; TYPE_004_14_pred_false_unsatisfied [untranslatable]
+(assert (forall ((v Bool)) (not (= (sat_pred v PFalse) true)))) ; TYPE_004_14_pred_false_unsatisfied
 
 ; TYPE_004_15_pred_and_comm (matches Coq: Theorem TYPE_004_15_pred_and_comm)
-(assert (= true true)) ; TYPE_004_15_pred_and_comm [untranslatable]
+(assert (forall ((v Bool) (p Bool) (q Bool)) (and (=> (= (sat_pred v (PAnd p q)) true) (= (sat_pred v (PAnd q p)) true)) (=> (= (sat_pred v (PAnd q p)) true) (= (sat_pred v (PAnd p q)) true))))) ; TYPE_004_15_pred_and_comm
 
 ; TYPE_004_16_pred_or_comm (matches Coq: Theorem TYPE_004_16_pred_or_comm)
-(assert (= true true)) ; TYPE_004_16_pred_or_comm [untranslatable]
+(assert (forall ((v Bool) (p Bool) (q Bool)) (and (=> (= (sat_pred v (POr p q)) true) (= (sat_pred v (POr q p)) true)) (=> (= (sat_pred v (POr q p)) true) (= (sat_pred v (POr p q)) true))))) ; TYPE_004_16_pred_or_comm
 
 ; TYPE_004_17_pred_implies_ptrue (matches Coq: Theorem TYPE_004_17_pred_implies_ptrue)
-(assert (= true true)) ; TYPE_004_17_pred_implies_ptrue [untranslatable]
+(assert (forall ((p Bool)) (= (pred_implies p PTrue) true))) ; TYPE_004_17_pred_implies_ptrue
 
 ; TYPE_004_18_pred_pfalse_implies (matches Coq: Theorem TYPE_004_18_pred_pfalse_implies)
-(assert (= true true)) ; TYPE_004_18_pred_pfalse_implies [untranslatable]
+(assert (forall ((p Bool)) (= (pred_implies PFalse p) true))) ; TYPE_004_18_pred_pfalse_implies
 
 ; TYPE_004_19_subtype_refl (matches Coq: Theorem TYPE_004_19_subtype_refl)
-(assert (= true true)) ; TYPE_004_19_subtype_refl [untranslatable]
+(assert (forall ((b Bool)) (= (refty_subtype (RBase b) (RBase b)) true))) ; TYPE_004_19_subtype_refl
 
 ; TYPE_004_20_pred_double_neg (matches Coq: Theorem TYPE_004_20_pred_double_neg)
-(assert (= true true)) ; TYPE_004_20_pred_double_neg [untranslatable]
+(assert (forall ((v Bool) (p Bool)) (=> (= (sat_pred v p) true) (= (sat_pred v (PNot (PNot p))) true)))) ; TYPE_004_20_pred_double_neg
 
 ; TYPE_004_21_eval_val (matches Coq: Theorem TYPE_004_21_eval_val)
-(assert (= true true)) ; TYPE_004_21_eval_val [untranslatable]
+(assert (forall ((env Bool) (n Bool)) (= (eval env (EVal n)) (some n)))) ; TYPE_004_21_eval_val
 
 ; TYPE_004_22_pred_impl_refl (matches Coq: Theorem TYPE_004_22_pred_impl_refl)
-(assert (= true true)) ; TYPE_004_22_pred_impl_refl [untranslatable]
+(assert (forall ((v Bool) (p Bool)) (= (sat_pred v (PImpl p p)) true))) ; TYPE_004_22_pred_impl_refl
 
 ; TYPE_004_23_pred_and_assoc (matches Coq: Theorem TYPE_004_23_pred_and_assoc)
-(assert (= true true)) ; TYPE_004_23_pred_and_assoc [untranslatable]
+(assert (forall ((v Bool) (p Bool) (q Bool) (r Bool)) (and (=> (= (sat_pred v (PAnd (PAnd p q) r)) true) (= (sat_pred v (PAnd p (PAnd q r))) true)) (=> (= (sat_pred v (PAnd p (PAnd q r))) true) (= (sat_pred v (PAnd (PAnd p q) r)) true))))) ; TYPE_004_23_pred_and_assoc
 
 ; TYPE_004_24_pred_or_assoc (matches Coq: Theorem TYPE_004_24_pred_or_assoc)
-(assert (= true true)) ; TYPE_004_24_pred_or_assoc [untranslatable]
+(assert (forall ((v Bool) (p Bool) (q Bool) (r Bool)) (and (=> (= (sat_pred v (POr (POr p q) r)) true) (= (sat_pred v (POr p (POr q r))) true)) (=> (= (sat_pred v (POr p (POr q r))) true) (= (sat_pred v (POr (POr p q) r)) true))))) ; TYPE_004_24_pred_or_assoc
 
 ; Verify all assertions are satisfiable
 (check-sat)

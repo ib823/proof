@@ -62,100 +62,100 @@
   true)
 
 ; mtcs_level_1 (matches Coq: Theorem mtcs_level_1)
-(assert (= true true)) ; mtcs_level_1 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (cs_data_encrypted_in_transit s) true) (=> (= (cs_access_controlled s) true) (= (mtcs_l1_compliant s) true))))) ; mtcs_level_1
 
 ; mtcs_level_2 (matches Coq: Theorem mtcs_level_2)
-(assert (= true true)) ; mtcs_level_2 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l1_compliant s) true) (=> (= (cs_data_encrypted_at_rest s) true) (=> (= (cs_audit_logged s) true) (=> (= (cs_pen_tested s) true) (= (mtcs_l2_compliant s) true))))))) ; mtcs_level_2
 
 ; mtcs_level_3 (matches Coq: Theorem mtcs_level_3)
-(assert (= true true)) ; mtcs_level_3 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l2_compliant s) true) (=> (= (cs_data_sovereign s) true) (=> (= (cs_iso27001_certified s) true) (= (mtcs_l3_compliant s) true)))))) ; mtcs_level_3
 
 ; mtcs_l3_implies_l2 (matches Coq: Theorem mtcs_l3_implies_l2)
-(assert (= true true)) ; mtcs_l3_implies_l2 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l3_compliant s) true) (= (mtcs_l2_compliant s) true)))) ; mtcs_l3_implies_l2
 
 ; mtcs_l2_implies_l1 (matches Coq: Theorem mtcs_l2_implies_l1)
-(assert (= true true)) ; mtcs_l2_implies_l1 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l2_compliant s) true) (= (mtcs_l1_compliant s) true)))) ; mtcs_l2_implies_l1
 
 ; mtcs_l3_implies_l1 (matches Coq: Theorem mtcs_l3_implies_l1)
-(assert (= true true)) ; mtcs_l3_implies_l1 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l3_compliant s) true) (= (mtcs_l1_compliant s) true)))) ; mtcs_l3_implies_l1
 
 ; im8_official (matches Coq: Theorem im8_official)
-(assert (= true true)) ; im8_official [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Official) (= (im8_controls_adequate s) true)))) ; im8_official
 
 ; im8_secret (matches Coq: Theorem im8_secret)
-(assert (= true true)) ; im8_secret [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Secret) (=> (= (gt_encrypted s) true) (=> (= (gt_access_controlled_gt s) true) (=> (= (gt_audit_logged_gt s) true) (= (im8_controls_adequate s) true))))))) ; im8_secret
 
 ; im8_assessment (matches Coq: Theorem im8_assessment)
-(assert (= true true)) ; im8_assessment [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_security_assessed s) true) (=> (= (gt_vendor_cleared s) true) (= (im8_assessed s) true))))) ; im8_assessment
 
 ; im8_composition (matches Coq: Theorem im8_composition)
-(assert (= true true)) ; im8_composition [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (im8_controls_adequate s) true) (=> (= (im8_assessed s) true) (= (im8_fully_compliant s) true))))) ; im8_composition
 
 ; im8_secret_highest (matches Coq: Theorem im8_secret_highest)
-(assert (= true true)) ; im8_secret_highest [untranslatable]
+(assert (forall ((c IM8Classification)) (<= (im8_level c) (im8_level IM8_Secret)))) ; im8_secret_highest
 
 ; mtcs_level_coverage (matches Coq: Theorem mtcs_level_coverage)
-(assert (= true true)) ; mtcs_level_coverage [untranslatable]
+(assert (forall ((l MTCSLevel)) (= (In l all_mtcs_levels) true))) ; mtcs_level_coverage
 
 ; im8_classification_coverage (matches Coq: Theorem im8_classification_coverage)
-(assert (= true true)) ; im8_classification_coverage [untranslatable]
+(assert (forall ((c IM8Classification)) (= (In c all_im8_classifications) true))) ; im8_classification_coverage
 
 ; mtcs_level_positive (matches Coq: Theorem mtcs_level_positive)
-(assert (= true true)) ; mtcs_level_positive [untranslatable]
+(assert (forall ((l MTCSLevel)) (>= (mtcs_level_nat l) 1))) ; mtcs_level_positive
 
 ; mtcs_level_bounded (matches Coq: Theorem mtcs_level_bounded)
-(assert (= true true)) ; mtcs_level_bounded [untranslatable]
+(assert (forall ((l MTCSLevel)) (<= (mtcs_level_nat l) 3))) ; mtcs_level_bounded
 
 ; mtcs_level_ordering (matches Coq: Theorem mtcs_level_ordering)
-(assert (= true true)) ; mtcs_level_ordering [untranslatable]
+(assert (forall ((l1 MTCSLevel) (l2 MTCSLevel)) (or (<= (mtcs_level_nat l1) (mtcs_level_nat l2)) (<= (mtcs_level_nat l2) (mtcs_level_nat l1))))) ; mtcs_level_ordering
 
 ; mtcs_l2_requires_encryption (matches Coq: Theorem mtcs_l2_requires_encryption)
-(assert (= true true)) ; mtcs_l2_requires_encryption [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l2_compliant s) true) (= (cs_data_encrypted_at_rest s) true)))) ; mtcs_l2_requires_encryption
 
 ; mtcs_l3_requires_sovereignty (matches Coq: Theorem mtcs_l3_requires_sovereignty)
-(assert (= true true)) ; mtcs_l3_requires_sovereignty [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l3_compliant s) true) (= (cs_data_sovereign s) true)))) ; mtcs_l3_requires_sovereignty
 
 ; mtcs_l3_requires_iso27001 (matches Coq: Theorem mtcs_l3_requires_iso27001)
-(assert (= true true)) ; mtcs_l3_requires_iso27001 [untranslatable]
+(assert (forall ((s CloudService)) (=> (= (mtcs_l3_compliant s) true) (= (cs_iso27001_certified s) true)))) ; mtcs_l3_requires_iso27001
 
 ; mtcs_controls_monotonic (matches Coq: Theorem mtcs_controls_monotonic)
-(assert (= true true)) ; mtcs_controls_monotonic [untranslatable]
+(assert (forall ((l1 MTCSLevel) (l2 MTCSLevel)) (=> (<= (mtcs_level_nat l1) (mtcs_level_nat l2)) (<= (mtcs_min_controls l1) (mtcs_min_controls l2))))) ; mtcs_controls_monotonic
 
 ; im8_level_bounded (matches Coq: Theorem im8_level_bounded)
-(assert (= true true)) ; im8_level_bounded [untranslatable]
+(assert (forall ((c IM8Classification)) (<= (im8_level c) 3))) ; im8_level_bounded
 
 ; im8_official_lowest (matches Coq: Theorem im8_official_lowest)
-(assert (= true true)) ; im8_official_lowest [untranslatable]
+(assert (forall ((c IM8Classification)) (<= (im8_level IM8_Official) (im8_level c)))) ; im8_official_lowest
 
 ; im8_confidential (matches Coq: Theorem im8_confidential)
-(assert (= true true)) ; im8_confidential [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Confidential) (=> (= (gt_encrypted s) true) (=> (= (gt_access_controlled_gt s) true) (= (im8_controls_adequate s) true)))))) ; im8_confidential
 
 ; im8_restricted (matches Coq: Theorem im8_restricted)
-(assert (= true true)) ; im8_restricted [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Restricted) (=> (= (gt_access_controlled_gt s) true) (= (im8_controls_adequate s) true))))) ; im8_restricted
 
 ; im8_secret_requires_encryption (matches Coq: Theorem im8_secret_requires_encryption)
-(assert (= true true)) ; im8_secret_requires_encryption [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Secret) (=> (= (im8_controls_adequate s) true) (= (gt_encrypted s) true))))) ; im8_secret_requires_encryption
 
 ; im8_secret_requires_access_control (matches Coq: Theorem im8_secret_requires_access_control)
-(assert (= true true)) ; im8_secret_requires_access_control [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Secret) (=> (= (im8_controls_adequate s) true) (= (gt_access_controlled_gt s) true))))) ; im8_secret_requires_access_control
 
 ; im8_secret_requires_audit (matches Coq: Theorem im8_secret_requires_audit)
-(assert (= true true)) ; im8_secret_requires_audit [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Secret) (=> (= (im8_controls_adequate s) true) (= (gt_audit_logged_gt s) true))))) ; im8_secret_requires_audit
 
 ; gcc_required_for_restricted (matches Coq: Theorem gcc_required_for_restricted)
-(assert (= true true)) ; gcc_required_for_restricted [untranslatable]
+(assert (forall ((s GovTechSystem)) (=> (= (gt_classification s) IM8_Restricted) (=> (= (gt_on_gcc s) true) (= (gcc_required s) true))))) ; gcc_required_for_restricted
 
 ; im8_secret_maps_to_mtcs3 (matches Coq: Theorem im8_secret_maps_to_mtcs3)
 (assert (= (im8_to_mtcs_level IM8_Secret) MTCS_Level3)) ; im8_secret_maps_to_mtcs3
 
 ; im8_to_mtcs_monotonic (matches Coq: Theorem im8_to_mtcs_monotonic)
-(assert (= true true)) ; im8_to_mtcs_monotonic [untranslatable]
+(assert (forall ((c1 IM8Classification) (c2 IM8Classification)) (=> (<= (im8_level c1) (im8_level c2)) (<= (mtcs_level_nat (im8_to_mtcs_level c1)) (mtcs_level_nat (im8_to_mtcs_level c2)))))) ; im8_to_mtcs_monotonic
 
 ; integrated_compliance (matches Coq: Theorem integrated_compliance)
-(assert (= true true)) ; integrated_compliance [untranslatable]
+(assert (forall ((cs CloudService)) (forall ((gs GovTechSystem)) (=> (= (mtcs_l2_compliant cs) true) (=> (= (im8_fully_compliant gs) true) (= (integrated_sg_cloud_compliant cs gs) true)))))) ; integrated_compliance
 
 ; integrated_implies_encrypted (matches Coq: Theorem integrated_implies_encrypted)
-(assert (= true true)) ; integrated_implies_encrypted [untranslatable]
+(assert (forall ((cs CloudService)) (forall ((gs GovTechSystem)) (=> (= (integrated_sg_cloud_compliant cs gs) true) (= (cs_data_encrypted_at_rest cs) true))))) ; integrated_implies_encrypted
 
 ; Verify all assertions are satisfiable
 (check-sat)

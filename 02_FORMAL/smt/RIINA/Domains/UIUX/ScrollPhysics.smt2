@@ -14,70 +14,70 @@
 (define-fun rubber_band_displacement () R true)
 
 ; deceleration_initial_velocity (matches Coq: Theorem deceleration_initial_velocity)
-(assert (= true true)) ; deceleration_initial_velocity [untranslatable]
+(assert (forall ((v0 R) (friction R)) (=> (> friction 0) (= (velocity_at_time v0 friction 0) v0)))) ; deceleration_initial_velocity
 
 ; paging_exact_boundary (matches Coq: Theorem paging_exact_boundary)
-(assert (= true true)) ; paging_exact_boundary [untranslatable]
+(assert (forall ((ps PagingState)) (= (current_offset ps) (* (INR (target_page ps)) (page_width ps))))) ; paging_exact_boundary
 
 ; velocity_decays (matches Coq: Lemma velocity_decays)
-(assert (= true true)) ; velocity_decays [untranslatable]
+(assert (forall ((v0 R) (friction R) (t R)) (=> (> friction 0) (=> (> t 0) (=> (> v0 0) (< (velocity_at_time v0 friction t) v0)))))) ; velocity_decays
 
 ; page_width_positive_lemma (matches Coq: Lemma page_width_positive_lemma)
-(assert (= true true)) ; page_width_positive_lemma [untranslatable]
+(assert (forall ((ps PagingState)) (> (page_width ps) 0))) ; page_width_positive_lemma
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((v0 R) (friction R) (t R)) (=> (> friction 0) (=> (>= t 0) (=> (> v0 0) (> (velocity_at_time v0 friction t) 0)))))) ; 1
 
 ; velocity_negative_stays_negative (matches Coq: Theorem velocity_negative_stays_negative)
-(assert (= true true)) ; velocity_negative_stays_negative [untranslatable]
+(assert (forall ((v0 R) (friction R) (t R)) (=> (> friction 0) (=> (>= t 0) (=> (< v0 0) (< (velocity_at_time v0 friction t) 0)))))) ; velocity_negative_stays_negative
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((bss BoundedScrollState)) (and (<= 0 (bss_position bss)) (<= (bss_position bss) (- (bss_content_height bss) (bss_viewport_height bss)))))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((overshoot R) (max_distance R)) (=> (> overshoot 0) (=> (> max_distance 0) (< (rubber_band_displacement overshoot max_distance) overshoot))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((d1 R) (d2 R) (max_distance R)) (=> (< 0 d1) (=> (< d1 d2) (=> (> max_distance 0) (< (/ (+ 1 (div d2 max_distance))) (/ (+ 1 (div d1 max_distance))))))))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((v0 R) (friction R) (t1 R) (t2 R)) (=> (> friction 0) (=> (<= 0 t1) (=> (<= t1 t2) (=> (> v0 0) (<= (velocity_at_time v0 friction t2) (velocity_at_time v0 friction t1)))))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((sps SnapPointScroll)) (=> (= (sps_snapped sps) true) (= (sps_position sps) (sps_snap_point sps))))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((nss NestedScrollState)) (=> (= (nss_child_at_boundary nss) false) (= (nss_active_scroller nss) true)))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((si ScrollIndicator)) (= (si_indicator_position si) (div (si_scroll_offset si) (si_content_size si))))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((bss BoundedScrollState)) (>= (bss_position bss) 0))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+(assert (forall ((v0 R) (friction R)) (=> (> friction 0) (=> (> v0 0) (= (velocity_at_time v0 friction 0) v0))))) ; 10
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((ptr PullToRefresh)) (=> (>= (ptr_pull_distance ptr) (ptr_threshold ptr)) (= (ptr_triggered ptr) true)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((is_ InfiniteScroll)) (=> (>= (is_position is_) (- (is_content_end is_) (is_threshold is_))) (= (is_load_triggered is_) true)))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((sr ScrollRestoration)) (= (sr_restored_position sr) (sr_saved_position sr)))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((v0 R) (friction R) (t R)) (=> (> friction 0) (=> (> t 0) (=> (not (= v0 0)) (< (Rabs (velocity_at_time v0 friction t)) (Rabs v0))))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((ss ScrollState)) (> (friction_coefficient ss) 0))) ; 15
 
 ; velocity_strictly_decreasing (matches Coq: Theorem velocity_strictly_decreasing)
-(assert (= true true)) ; velocity_strictly_decreasing [untranslatable]
+(assert (forall ((v0 R) (friction R) (t1 R) (t2 R)) (=> (> friction 0) (=> (<= 0 t1) (=> (< t1 t2) (=> (> v0 0) (< (velocity_at_time v0 friction t2) (velocity_at_time v0 friction t1)))))))) ; velocity_strictly_decreasing
 
 ; paging_page_zero_offset (matches Coq: Theorem paging_page_zero_offset)
-(assert (= true true)) ; paging_page_zero_offset [untranslatable]
+(assert (forall ((pw R)) (=> (> pw 0) (= (* (INR 0) pw) 0)))) ; paging_page_zero_offset
 
 ; Verify all assertions are satisfiable
 (check-sat)

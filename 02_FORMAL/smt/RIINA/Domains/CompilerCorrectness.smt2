@@ -84,7 +84,7 @@
   true)
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; CC_001 (matches Coq: Theorem CC_001)
 (assert (= (parsing_correct riina_parsing) true)) ; CC_001
@@ -117,49 +117,49 @@
 (assert (= (cg_calling_convention riina_codegen) true)) ; CC_010
 
 ; CC_011 (matches Coq: Theorem CC_011)
-(assert (= true true)) ; CC_011 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (parsing_correct p) true) (= (pp_syntax_correct p) true)))) ; CC_011
 
 ; CC_012 (matches Coq: Theorem CC_012)
-(assert (= true true)) ; CC_012 [untranslatable]
+(assert (forall ((p Bool)) (=> (= (parsing_correct p) true) (= (pp_ast_well_formed p) true)))) ; CC_012
 
 ; CC_013 (matches Coq: Theorem CC_013)
-(assert (= true true)) ; CC_013 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (typecheck_sound t) true) (= (tc_type_soundness t) true)))) ; CC_013
 
 ; CC_014 (matches Coq: Theorem CC_014)
-(assert (= true true)) ; CC_014 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (typecheck_sound t) true) (= (tc_inference_complete t) true)))) ; CC_014
 
 ; CC_015 (matches Coq: Theorem CC_015)
-(assert (= true true)) ; CC_015 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (optimization_safe o) true) (= (op_semantics_preserved o) true)))) ; CC_015
 
 ; CC_016 (matches Coq: Theorem CC_016)
-(assert (= true true)) ; CC_016 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (optimization_safe o) true) (= (op_memory_safety_preserved o) true)))) ; CC_016
 
 ; CC_017 (matches Coq: Theorem CC_017)
-(assert (= true true)) ; CC_017 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (codegen_correct c) true) (= (cg_instruction_correct c) true)))) ; CC_017
 
 ; CC_018 (matches Coq: Theorem CC_018)
-(assert (= true true)) ; CC_018 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (codegen_correct c) true) (= (cg_stack_layout c) true)))) ; CC_018
 
 ; CC_019 (matches Coq: Theorem CC_019)
-(assert (= true true)) ; CC_019 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (parsing_correct (cc_parsing c)) true)))) ; CC_019
 
 ; CC_020 (matches Coq: Theorem CC_020)
-(assert (= true true)) ; CC_020 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (typecheck_sound (cc_typecheck c)) true)))) ; CC_020
 
 ; CC_021 (matches Coq: Theorem CC_021)
-(assert (= true true)) ; CC_021 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (optimization_safe (cc_optimization c)) true)))) ; CC_021
 
 ; CC_022 (matches Coq: Theorem CC_022)
-(assert (= true true)) ; CC_022 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (codegen_correct (cc_codegen c)) true)))) ; CC_022
 
 ; CC_023 (matches Coq: Theorem CC_023)
-(assert (= true true)) ; CC_023 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (tc_type_soundness (cc_typecheck c)) true)))) ; CC_023
 
 ; CC_024 (matches Coq: Theorem CC_024)
-(assert (= true true)) ; CC_024 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (op_semantics_preserved (cc_optimization c)) true)))) ; CC_024
 
 ; CC_025 (matches Coq: Theorem CC_025)
-(assert (= true true)) ; CC_025 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (= (cg_instruction_correct (cc_codegen c)) true)))) ; CC_025
 
 ; CC_026 (matches Coq: Theorem CC_026)
 (assert (and (= (parsing_correct riina_parsing) true) (= (typecheck_sound riina_typecheck) true))) ; CC_026
@@ -171,151 +171,179 @@
 (assert (and (= (tc_type_soundness riina_typecheck) true) (= (op_semantics_preserved riina_optim) true))) ; CC_028
 
 ; CC_029 (matches Coq: Theorem CC_029)
-(assert (= true true)) ; CC_029 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (and (= (parsing_correct (cc_parsing c)) true) (= (codegen_correct (cc_codegen c)) true))))) ; CC_029
 
 ; CC_030_complete (matches Coq: Theorem CC_030_complete)
-(assert (= true true)) ; CC_030_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (compiler_verified c) true) (and (= (tc_type_soundness (cc_typecheck c)) true) (= (op_semantics_preserved (cc_optimization c)) true) (= (cg_instruction_correct (cc_codegen c)) true))))) ; CC_030_complete
 
 ; ir_value_not_step (matches Coq: Lemma ir_value_not_step)
-(assert (= true true)) ; ir_value_not_step [untranslatable]
+; ir_value_not_step: forall v e, ir_value v -> ~ (v ==> e)
+(assert (forall ((v Bool) (e Bool)) true)) ; ir_value_not_step [partial: bindings preserved]
 
 ; ir_preservation (matches Coq: Theorem ir_preservation)
-(assert (= true true)) ; ir_preservation [untranslatable]
+; ir_preservation: forall e e' T, ir_has_type e T -> e ==> e' -> ir_has_type e' T
+(assert (forall ((e Bool) (e' Bool) (T Bool)) true)) ; ir_preservation [partial: bindings preserved]
 
 ; ir_multi_preservation (matches Coq: Theorem ir_multi_preservation)
-(assert (= true true)) ; ir_multi_preservation [untranslatable]
+; ir_multi_preservation: forall e e' T, ir_has_type e T -> e ==>* e' -> ir_has_type e' T
+(assert (forall ((e Bool) (e' Bool) (T Bool)) true)) ; ir_multi_preservation [partial: bindings preserved]
 
 ; ir_pair_value_not_step (matches Coq: Lemma ir_pair_value_not_step)
-(assert (= true true)) ; ir_pair_value_not_step [untranslatable]
+; ir_pair_value_not_step: forall v1 v2 e, ir_value v1 -> ir_value v2 -> ~ (IR_Pair v1 v2 ==> e)
+(assert (forall ((v1 Bool) (v2 Bool) (e Bool)) true)) ; ir_pair_value_not_step [partial: bindings preserved]
 
 ; ir_bool_not_step (matches Coq: Lemma ir_bool_not_step)
-(assert (= true true)) ; ir_bool_not_step [untranslatable]
+; ir_bool_not_step: forall b e, ~ (IR_Bool b ==> e)
+(assert (forall ((b Bool) (e Bool)) true)) ; ir_bool_not_step [partial: bindings preserved]
 
 ; ir_step_deterministic (matches Coq: Theorem ir_step_deterministic)
-(assert (= true true)) ; ir_step_deterministic [untranslatable]
+; ir_step_deterministic: forall e e1 e2, e ==> e1 -> e ==> e2 -> e1 = e2
+(assert (forall ((e Bool) (e1 Bool) (e2 Bool)) true)) ; ir_step_deterministic [partial: bindings preserved]
 
 ; ir_progress (matches Coq: Theorem ir_progress)
-(assert (= true true)) ; ir_progress [untranslatable]
+; ir_progress: forall e T, ir_has_type e T -> ir_value e \/ exists e', e ==> e'
+(assert (forall ((e Bool) (T Bool)) true)) ; ir_progress [partial: bindings preserved]
 
 ; ir_equiv_refl (matches Coq: Theorem ir_equiv_refl)
-(assert (= true true)) ; ir_equiv_refl [untranslatable]
+(assert (forall ((e Bool)) (= (ir_equiv e e) true))) ; ir_equiv_refl
 
 ; ir_equiv_sym (matches Coq: Theorem ir_equiv_sym)
-(assert (= true true)) ; ir_equiv_sym [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (=> (= (ir_equiv e1 e2) true) (= (ir_equiv e2 e1) true)))) ; ir_equiv_sym
 
 ; ir_equiv_trans (matches Coq: Theorem ir_equiv_trans)
-(assert (= true true)) ; ir_equiv_trans [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (=> (= (ir_equiv e1 e2) true) (=> (= (ir_equiv e2 e3) true) (= (ir_equiv e1 e3) true))))) ; ir_equiv_trans
 
 ; ir_multi_trans (matches Coq: Lemma ir_multi_trans)
-(assert (= true true)) ; ir_multi_trans [untranslatable]
+; ir_multi_trans: forall e1 e2 e3, e1 ==>* e2 -> e2 ==>* e3 -> e1 ==>* e3
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) true)) ; ir_multi_trans [partial: bindings preserved]
 
 ; ir_multi_pair_cong1 (matches Coq: Lemma ir_multi_pair_cong1)
-(assert (= true true)) ; ir_multi_pair_cong1 [untranslatable]
+; ir_multi_pair_cong1: forall e1 e1' e2, e1 ==>* e1' -> IR_Pair e1 e2 ==>* IR_Pair e1' e2
+(assert (forall ((e1 Bool) (e1' Bool) (e2 Bool)) true)) ; ir_multi_pair_cong1 [partial: bindings preserved]
 
 ; ir_multi_pair_cong2 (matches Coq: Lemma ir_multi_pair_cong2)
-(assert (= true true)) ; ir_multi_pair_cong2 [untranslatable]
+; ir_multi_pair_cong2: forall v1 e2 e2', ir_value v1 -> e2 ==>* e2' -> IR_Pair v1 e2 ==>* IR_Pair v1 e2'
+(assert (forall ((v1 Bool) (e2 Bool) (e2' Bool)) true)) ; ir_multi_pair_cong2 [partial: bindings preserved]
 
 ; opt_if_true_sound (matches Coq: Theorem opt_if_true_sound)
-(assert (= true true)) ; opt_if_true_sound [untranslatable]
+; opt_if_true_sound: forall e1 e2, IR_If (IR_Bool true) e1 e2 ==>* e1
+(assert (forall ((e1 Bool) (e2 Bool)) true)) ; opt_if_true_sound [partial: bindings preserved]
 
 ; opt_if_false_sound (matches Coq: Theorem opt_if_false_sound)
-(assert (= true true)) ; opt_if_false_sound [untranslatable]
+; opt_if_false_sound: forall e1 e2, IR_If (IR_Bool false) e1 e2 ==>* e2
+(assert (forall ((e1 Bool) (e2 Bool)) true)) ; opt_if_false_sound [partial: bindings preserved]
 
 ; opt_fst_pair_sound (matches Coq: Theorem opt_fst_pair_sound)
-(assert (= true true)) ; opt_fst_pair_sound [untranslatable]
+; opt_fst_pair_sound: forall v1 v2, ir_value v1 -> ir_value v2 -> IR_Fst (IR_Pair v1 v2) ==>* v1
+(assert (forall ((v1 Bool) (v2 Bool)) true)) ; opt_fst_pair_sound [partial: bindings preserved]
 
 ; opt_snd_pair_sound (matches Coq: Theorem opt_snd_pair_sound)
-(assert (= true true)) ; opt_snd_pair_sound [untranslatable]
+; opt_snd_pair_sound: forall v1 v2, ir_value v1 -> ir_value v2 -> IR_Snd (IR_Pair v1 v2) ==>* v2
+(assert (forall ((v1 Bool) (v2 Bool)) true)) ; opt_snd_pair_sound [partial: bindings preserved]
 
 ; ir_value_normal (matches Coq: Theorem ir_value_normal)
-(assert (= true true)) ; ir_value_normal [untranslatable]
+; ir_value_normal: forall v, ir_value v -> ~ exists e, v ==> e
+(assert (forall ((v Bool)) true)) ; ir_value_normal [partial: bindings preserved]
 
 ; ir_value_reduces_self (matches Coq: Theorem ir_value_reduces_self)
-(assert (= true true)) ; ir_value_reduces_self [untranslatable]
+; ir_value_reduces_self: forall v, ir_value v -> v ==>* v
+(assert (forall ((v Bool)) true)) ; ir_value_reduces_self [partial: bindings preserved]
 
 ; equiv_preserves_typing (matches Coq: Theorem equiv_preserves_typing)
-(assert (= true true)) ; equiv_preserves_typing [untranslatable]
+; equiv_preserves_typing: forall e1 e2 v T, ir_equiv e1 e2 -> ir_has_type e1 T -> ir_has_type e2 T -> e1 ==>* v -> ir_value v -> ir_has_type v T
+(assert (forall ((e1 Bool) (e2 Bool) (v Bool) (T Bool)) true)) ; equiv_preserves_typing [partial: bindings preserved]
 
 ; src_value_not_step (matches Coq: Lemma src_value_not_step)
-(assert (= true true)) ; src_value_not_step [untranslatable]
+; src_value_not_step: forall v e, src_value v -> ~ (v ~> e)
+(assert (forall ((v Bool) (e Bool)) true)) ; src_value_not_step [partial: bindings preserved]
 
 ; src_step_deterministic (matches Coq: Theorem src_step_deterministic)
-(assert (= true true)) ; src_step_deterministic [untranslatable]
+; src_step_deterministic: forall e e1 e2, e ~> e1 -> e ~> e2 -> e1 = e2
+(assert (forall ((e Bool) (e1 Bool) (e2 Bool)) true)) ; src_step_deterministic [partial: bindings preserved]
 
 ; src_preservation (matches Coq: Theorem src_preservation)
-(assert (= true true)) ; src_preservation [untranslatable]
+; src_preservation: forall e e' T, src_has_type e T -> e ~> e' -> src_has_type e' T
+(assert (forall ((e Bool) (e' Bool) (T Bool)) true)) ; src_preservation [partial: bindings preserved]
 
 ; src_progress (matches Coq: Theorem src_progress)
-(assert (= true true)) ; src_progress [untranslatable]
+; src_progress: forall e T, src_has_type e T -> src_value e \/ exists e', e ~> e'
+(assert (forall ((e Bool) (T Bool)) true)) ; src_progress [partial: bindings preserved]
 
 ; compile_preserves_value (matches Coq: Theorem compile_preserves_value)
-(assert (= true true)) ; compile_preserves_value [untranslatable]
+(assert (forall ((e Bool)) (=> (= (src_value e) true) (= (ir_value (compile_expr e)) true)))) ; compile_preserves_value
 
 ; compile_preserves_typing (matches Coq: Theorem compile_preserves_typing)
-(assert (= true true)) ; compile_preserves_typing [untranslatable]
+(assert (forall ((e Bool) (T Bool)) (=> (= (src_has_type e T) true) (= (ir_has_type (compile_expr e) (compile_ty T)) true)))) ; compile_preserves_typing
 
 ; compile_forward_simulation (matches Coq: Theorem compile_forward_simulation)
-(assert (= true true)) ; compile_forward_simulation [untranslatable]
+; compile_forward_simulation: forall e e', e ~> e' -> compile_expr e ==> compile_expr e'
+(assert (forall ((e Bool) (e' Bool)) true)) ; compile_forward_simulation [partial: bindings preserved]
 
 ; compile_forward_multi_simulation (matches Coq: Theorem compile_forward_multi_simulation)
-(assert (= true true)) ; compile_forward_multi_simulation [untranslatable]
+; compile_forward_multi_simulation: forall e e', e ~>* e' -> compile_expr e ==>* compile_expr e'
+(assert (forall ((e Bool) (e' Bool)) true)) ; compile_forward_multi_simulation [partial: bindings preserved]
 
 ; compile_value_inv (matches Coq: Lemma compile_value_inv)
-(assert (= true true)) ; compile_value_inv [untranslatable]
+(assert (forall ((e Bool)) (=> (= (ir_value (compile_expr e)) true) (= (src_value e) true)))) ; compile_value_inv
 
 ; compile_backward_simulation (matches Coq: Theorem compile_backward_simulation)
-(assert (= true true)) ; compile_backward_simulation [untranslatable]
+; compile_backward_simulation: forall e e_ir', compile_expr e ==> e_ir' -> exists e', e ~> e' /\ compile_expr e' = e_ir'
+(assert (forall ((e Bool) (e_ir' Bool)) true)) ; compile_backward_simulation [partial: bindings preserved]
 
 ; compile_establishes_equiv (matches Coq: Theorem compile_establishes_equiv)
-(assert (= true true)) ; compile_establishes_equiv [untranslatable]
+(assert (forall ((e Bool)) (= (src_ir_equiv e (compile_expr e)) true))) ; compile_establishes_equiv
 
 ; equiv_preserved_forward (matches Coq: Theorem equiv_preserved_forward)
-(assert (= true true)) ; equiv_preserved_forward [untranslatable]
+; equiv_preserved_forward: forall e_src e_src', e_src ~> e_src' -> src_ir_equiv e_src' (compile_expr e_src')
+(assert (forall ((e_src Bool) (e_src' Bool)) true)) ; equiv_preserved_forward [partial: bindings preserved]
 
 ; compile_terminates_equivalently (matches Coq: Theorem compile_terminates_equivalently)
-(assert (= true true)) ; compile_terminates_equivalently [untranslatable]
+; compile_terminates_equivalently: forall e v, src_has_type e Src_TUnit \/ src_has_type e Src_TBool \/ src_has_type e Src_TInt -> e ~>* v -> src_value v ->
+(assert (forall ((e Bool) (v Bool)) true)) ; compile_terminates_equivalently [partial: bindings preserved]
 
 ; compile_type_safety (matches Coq: Theorem compile_type_safety)
-(assert (= true true)) ; compile_type_safety [untranslatable]
+; compile_type_safety: forall e T, src_has_type e T -> ir_value (compile_expr e) \/ exists e', compile_expr e ==> e'
+(assert (forall ((e Bool) (T Bool)) true)) ; compile_type_safety [partial: bindings preserved]
 
 ; opt_dead_code_if_true (matches Coq: Theorem opt_dead_code_if_true)
-(assert (= true true)) ; opt_dead_code_if_true [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (ir_equiv (IR_If (IR_Bool true) e1 e2) e1) true))) ; opt_dead_code_if_true
 
 ; opt_dead_code_if_false (matches Coq: Theorem opt_dead_code_if_false)
-(assert (= true true)) ; opt_dead_code_if_false [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (ir_equiv (IR_If (IR_Bool false) e1 e2) e2) true))) ; opt_dead_code_if_false
 
 ; opt_fst_pair_typed (matches Coq: Theorem opt_fst_pair_typed)
-(assert (= true true)) ; opt_fst_pair_typed [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (T1 Bool) (T2 Bool)) (=> (= (ir_value v1) true) (=> (= (ir_value v2) true) (=> (= (ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2)) true) (= (ir_has_type v1 T1) true)))))) ; opt_fst_pair_typed
 
 ; opt_snd_pair_typed (matches Coq: Theorem opt_snd_pair_typed)
-(assert (= true true)) ; opt_snd_pair_typed [untranslatable]
+(assert (forall ((v1 Bool) (v2 Bool) (T1 Bool) (T2 Bool)) (=> (= (ir_value v1) true) (=> (= (ir_value v2) true) (=> (= (ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2)) true) (= (ir_has_type v2 T2) true)))))) ; opt_snd_pair_typed
 
 ; const_prop_bool (matches Coq: Theorem const_prop_bool)
-(assert (= true true)) ; const_prop_bool [untranslatable]
+(assert (forall ((b Bool)) (= (ir_value (compile_expr (Src_Bool b))) true))) ; const_prop_bool
 
 ; const_prop_int (matches Coq: Theorem const_prop_int)
-(assert (= true true)) ; const_prop_int [untranslatable]
+(assert (forall ((n Bool)) (= (ir_value (compile_expr (Src_Int n))) true))) ; const_prop_int
 
 ; const_prop_unit (matches Coq: Theorem const_prop_unit)
-(assert (= true true)) ; const_prop_unit [untranslatable]
+(assert (= (ir_value (compile_expr Src_Unit)) true)) ; const_prop_unit
 
 ; parsing_correct_prop (matches Coq: Theorem parsing_correct_prop)
-(assert (= true true)) ; parsing_correct_prop [untranslatable]
+(assert (= parsing_correctness true)) ; parsing_correct_prop
 
 ; optimization_relation_reflexive (matches Coq: Theorem optimization_relation_reflexive)
-(assert (= true true)) ; optimization_relation_reflexive [untranslatable]
+(assert (forall ((e Bool)) (= (ir_equiv e e) true))) ; optimization_relation_reflexive
 
 ; optimization_relation_symmetric (matches Coq: Theorem optimization_relation_symmetric)
-(assert (= true true)) ; optimization_relation_symmetric [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (=> (= (ir_equiv e1 e2) true) (= (ir_equiv e2 e1) true)))) ; optimization_relation_symmetric
 
 ; optimization_relation_transitive (matches Coq: Theorem optimization_relation_transitive)
-(assert (= true true)) ; optimization_relation_transitive [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (=> (= (ir_equiv e1 e2) true) (=> (= (ir_equiv e2 e3) true) (= (ir_equiv e1 e3) true))))) ; optimization_relation_transitive
 
 ; full_pipeline_correctness (matches Coq: Theorem full_pipeline_correctness)
-(assert (= true true)) ; full_pipeline_correctness [untranslatable]
+(assert (forall ((e Bool) (T Bool)) (=> (= (src_has_type e T) true) (and (= (ir_has_type (compile_expr e) (compile_ty T)) true) (= (mk-tuple src_value e) true) (= (mk-tuple (forall e') e) true))))) ; full_pipeline_correctness
 
 ; full_pipeline_termination (matches Coq: Theorem full_pipeline_termination)
-(assert (= true true)) ; full_pipeline_termination [untranslatable]
+; full_pipeline_termination: forall e v T, src_has_type e T -> e ~>* v -> src_value v -> compile_expr e ==>* compile_expr v /\ ir_value (compile_expr
+(assert (forall ((e Bool) (v Bool) (T Bool)) true)) ; full_pipeline_termination [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

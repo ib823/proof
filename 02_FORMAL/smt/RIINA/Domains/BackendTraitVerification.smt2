@@ -32,10 +32,10 @@
   true)
 
 ; backend_001_dispatch_total (matches Coq: Theorem backend_001_dispatch_total)
-(assert (= true true)) ; backend_001_dispatch_total [untranslatable]
+(assert (forall ((t Bool)) (exists ((bk Bool)) (= (dispatch t) bk)))) ; backend_001_dispatch_total
 
 ; backend_001_dispatch_deterministic (matches Coq: Theorem backend_001_dispatch_deterministic)
-(assert (= true true)) ; backend_001_dispatch_deterministic [untranslatable]
+(assert (forall ((t Bool) (bk1 Bool) (bk2 Bool)) (=> (= (dispatch t) bk1) (=> (= (dispatch t) bk2) (= bk1 bk2))))) ; backend_001_dispatch_deterministic
 
 ; backend_001_native_is_c (matches Coq: Theorem backend_001_native_is_c)
 (assert (= (dispatch TNative) BKC)) ; backend_001_native_is_c
@@ -56,43 +56,43 @@
 (assert (= (preserves BKC TypeSafety) true)) ; backend_002_c_preserves_types
 
 ; backend_002_c_format (matches Coq: Theorem backend_002_c_format)
-(assert (= true true)) ; backend_002_c_format [untranslatable]
+(assert (= (backend_format (dispatch TNative)) FmtC)) ; backend_002_c_format
 
 ; backend_003_all_preserve_ni (matches Coq: Theorem backend_003_all_preserve_ni)
-(assert (= true true)) ; backend_003_all_preserve_ni [untranslatable]
+(assert (forall ((bk Bool)) (= (preserves bk NonInterference) true))) ; backend_003_all_preserve_ni
 
 ; backend_003_all_preserve_effects (matches Coq: Theorem backend_003_all_preserve_effects)
-(assert (= true true)) ; backend_003_all_preserve_effects [untranslatable]
+(assert (forall ((bk Bool)) (= (preserves bk EffectSafety) true))) ; backend_003_all_preserve_effects
 
 ; backend_003_all_preserve_types (matches Coq: Theorem backend_003_all_preserve_types)
-(assert (= true true)) ; backend_003_all_preserve_types [untranslatable]
+(assert (forall ((bk Bool)) (= (preserves bk TypeSafety) true))) ; backend_003_all_preserve_types
 
 ; backend_003_dispatch_preserves_all (matches Coq: Theorem backend_003_dispatch_preserves_all)
-(assert (= true true)) ; backend_003_dispatch_preserves_all [untranslatable]
+(assert (forall ((t Bool) (prop Bool)) (= (preserves (dispatch t) prop) true))) ; backend_003_dispatch_preserves_all
 
 ; backend_004_format_total (matches Coq: Theorem backend_004_format_total)
-(assert (= true true)) ; backend_004_format_total [untranslatable]
+(assert (forall ((t Bool)) (exists ((fmt Bool)) (= (backend_format (dispatch t)) fmt)))) ; backend_004_format_total
 
 ; backend_004_wasm_produces_wasm (matches Coq: Theorem backend_004_wasm_produces_wasm)
-(assert (= true true)) ; backend_004_wasm_produces_wasm [untranslatable]
+(assert (forall ((t Bool)) (=> (= (dispatch t) BKWasm) (= (backend_format (dispatch t)) FmtWasm)))) ; backend_004_wasm_produces_wasm
 
 ; backend_004_mobile_produces_bridge (matches Coq: Theorem backend_004_mobile_produces_bridge)
-(assert (= true true)) ; backend_004_mobile_produces_bridge [untranslatable]
+(assert (forall ((t Bool)) (=> (= (dispatch t) BKMobile) (= (backend_format (dispatch t)) FmtCWithBridge)))) ; backend_004_mobile_produces_bridge
 
 ; backend_004_native_produces_c (matches Coq: Theorem backend_004_native_produces_c)
-(assert (= true true)) ; backend_004_native_produces_c [untranslatable]
+(assert (= (backend_format (dispatch TNative)) FmtC)) ; backend_004_native_produces_c
 
 ; backend_004_format_consistent (matches Coq: Theorem backend_004_format_consistent)
-(assert (= true true)) ; backend_004_format_consistent [untranslatable]
+(assert (forall ((t1 Bool) (t2 Bool)) (=> (= (dispatch t1) (dispatch t2)) (= (backend_format (dispatch t1)) (backend_format (dispatch t2)))))) ; backend_004_format_consistent
 
 ; backend_wasm32_format (matches Coq: Theorem backend_wasm32_format)
-(assert (= true true)) ; backend_wasm32_format [untranslatable]
+(assert (= (backend_format (dispatch TWasm32)) FmtWasm)) ; backend_wasm32_format
 
 ; backend_wasm64_format (matches Coq: Theorem backend_wasm64_format)
-(assert (= true true)) ; backend_wasm64_format [untranslatable]
+(assert (= (backend_format (dispatch TWasm64)) FmtWasm)) ; backend_wasm64_format
 
 ; backend_android_format (matches Coq: Theorem backend_android_format)
-(assert (= true true)) ; backend_android_format [untranslatable]
+(assert (= (backend_format (dispatch TAndroidArm64)) FmtCWithBridge)) ; backend_android_format
 
 ; Verify all assertions are satisfiable
 (check-sat)

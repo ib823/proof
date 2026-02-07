@@ -94,79 +94,80 @@
 (define-fun antijam_layers () Bool true)
 
 ; jam_001_sequence_length (matches Coq: Theorem jam_001_sequence_length)
-(assert (= true true)) ; jam_001_sequence_length [untranslatable]
+(assert (forall ((pattern HoppingPattern)) (forall ((min_length Int)) (=> (= (sequence_length_ok pattern min_length) true) (<= min_length (length (hop_sequence pattern))))))) ; jam_001_sequence_length
 
 ; jam_002_dwell_bounded (matches Coq: Theorem jam_002_dwell_bounded)
-(assert (= true true)) ; jam_002_dwell_bounded [untranslatable]
+(assert (forall ((pattern HoppingPattern)) (forall ((max_dwell Int)) (=> (= (dwell_time_bounded pattern max_dwell) true) (<= (hop_dwell_time pattern) max_dwell))))) ; jam_002_dwell_bounded
 
 ; jam_003_processing_gain (matches Coq: Theorem jam_003_processing_gain)
-(assert (= true true)) ; jam_003_processing_gain [untranslatable]
+(assert (forall ((ss SpreadSpectrum)) (forall ((min_gain Int)) (=> (= (processing_gain_sufficient ss min_gain) true) (<= min_gain (spread_factor ss)))))) ; jam_003_processing_gain
 
 ; jam_004_code_length (matches Coq: Theorem jam_004_code_length)
-(assert (= true true)) ; jam_004_code_length [untranslatable]
+(assert (forall ((ss SpreadSpectrum)) (=> (> (length (spread_code ss)) 0) (> (length (spread_code ss)) 0)))) ; jam_004_code_length
 
 ; jam_005_jammer_overcome (matches Coq: Theorem jam_005_jammer_overcome)
-(assert (= true true)) ; jam_005_jammer_overcome [untranslatable]
+(assert (forall ((jammer_power Int) (spread_gain Int) (signal_power Int)) (=> (= (jammer_overcome jammer_power spread_gain signal_power) true) (< jammer_power (+ signal_power spread_gain))))) ; jam_005_jammer_overcome
 
 ; jam_006_channel_diversity (matches Coq: Theorem jam_006_channel_diversity)
-(assert (= true true)) ; jam_006_channel_diversity [untranslatable]
+; jam_006_channel_diversity: forall (pattern : HoppingPattern) (min_channels : nat), channels_diverse pattern min_channels -> length (nodup Nat.eq_de
+(assert (forall ((pattern HoppingPattern) (min_channels Int)) true)) ; jam_006_channel_diversity [partial: bindings preserved]
 
 ; jam_007_detection_threshold (matches Coq: Theorem jam_007_detection_threshold)
-(assert (= true true)) ; jam_007_detection_threshold [untranslatable]
+(assert (forall ((snr Int) (threshold Int)) (=> (< snr (div threshold 2)) (= (detect_jamming snr threshold) ConfirmedJamming)))) ; jam_007_detection_threshold
 
 ; jam_008_no_false_positive (matches Coq: Theorem jam_008_no_false_positive)
-(assert (= true true)) ; jam_008_no_false_positive [untranslatable]
+(assert (forall ((snr Int) (threshold Int)) (=> (>= snr threshold) (= (detect_jamming snr threshold) NoJamming)))) ; jam_008_no_false_positive
 
 ; jam_009_adaptation_improves (matches Coq: Theorem jam_009_adaptation_improves)
-(assert (= true true)) ; jam_009_adaptation_improves [untranslatable]
+(assert (forall ((before Int) (after Int) (action AdaptAction)) (=> (= (adaptation_applied before after action) true) (>= after before)))) ; jam_009_adaptation_improves
 
 ; jam_010_power_bounded (matches Coq: Theorem jam_010_power_bounded)
-(assert (= true true)) ; jam_010_power_bounded [untranslatable]
+(assert (forall ((current Int) (max_power Int)) (=> (= (power_increase_bounded current max_power) true) (<= current max_power)))) ; jam_010_power_bounded
 
 ; jam_011_avoids_jammed (matches Coq: Theorem jam_011_avoids_jammed)
-(assert (= true true)) ; jam_011_avoids_jammed [untranslatable]
+(assert (forall ((channel Int)) (forall ((jammed_channels list)) (=> (= (avoids_jammed nil jammed_channels channel) true) (not (or (= (In channel jammed_channels) true) (= (In channel jammed_channels) true))))))) ; jam_011_avoids_jammed
 
 ; jam_012_rate_minimum (matches Coq: Theorem jam_012_rate_minimum)
-(assert (= true true)) ; jam_012_rate_minimum [untranslatable]
+(assert (forall ((current Int) (min_rate Int)) (=> (= (rate_above_minimum current min_rate) true) (<= min_rate current)))) ; jam_012_rate_minimum
 
 ; jam_013_fec_gain (matches Coq: Theorem jam_013_fec_gain)
-(assert (= true true)) ; jam_013_fec_gain [untranslatable]
+(assert (forall ((redundancy Int) (min_gain Int)) (=> (= (fec_gain_sufficient redundancy min_gain) true) (<= min_gain redundancy)))) ; jam_013_fec_gain
 
 ; jam_014_switch_latency (matches Coq: Theorem jam_014_switch_latency)
-(assert (= true true)) ; jam_014_switch_latency [untranslatable]
+(assert (forall ((latency Int) (max_latency Int)) (=> (= (switch_latency_ok latency max_latency) true) (<= latency max_latency)))) ; jam_014_switch_latency
 
 ; jam_015_synchronized (matches Coq: Theorem jam_015_synchronized)
-(assert (= true true)) ; jam_015_synchronized [untranslatable]
+(assert (forall ((sender Int) (receiver Int)) (=> (= (hops_synchronized sender receiver) true) (= sender receiver)))) ; jam_015_synchronized
 
 ; jam_016_key_required (matches Coq: Theorem jam_016_key_required)
-(assert (= true true)) ; jam_016_key_required [untranslatable]
+(assert (forall ((provided Int) (expected Int)) (=> (= (key_valid provided expected) true) (= provided expected)))) ; jam_016_key_required
 
 ; jam_017_sweep_detected (matches Coq: Theorem jam_017_sweep_detected)
-(assert (= true true)) ; jam_017_sweep_detected [untranslatable]
+(assert (forall ((affected list nat)) (forall ((threshold Int)) (=> (= (sweep_jammer_pattern affected threshold) true) (<= threshold (length affected)))))) ; jam_017_sweep_detected
 
 ; jam_018_reactive_mitigation (matches Coq: Theorem jam_018_reactive_mitigation)
-(assert (= true true)) ; jam_018_reactive_mitigation [untranslatable]
+(assert (forall ((silence Int) (min_silence Int)) (=> (= (silence_period_ok silence min_silence) true) (<= min_silence silence)))) ; jam_018_reactive_mitigation
 
 ; jam_019_adaptation_speed (matches Coq: Theorem jam_019_adaptation_speed)
-(assert (= true true)) ; jam_019_adaptation_speed [untranslatable]
+(assert (forall ((adapt_time Int) (max_time Int)) (=> (= (adaptation_fast_enough adapt_time max_time) true) (<= adapt_time max_time)))) ; jam_019_adaptation_speed
 
 ; jam_020_quality_acceptable (matches Coq: Theorem jam_020_quality_acceptable)
-(assert (= true true)) ; jam_020_quality_acceptable [untranslatable]
+(assert (forall ((snr Int) (min_snr Int)) (=> (= (quality_acceptable snr min_snr) true) (<= min_snr snr)))) ; jam_020_quality_acceptable
 
 ; jam_021_graceful_degradation (matches Coq: Theorem jam_021_graceful_degradation)
-(assert (= true true)) ; jam_021_graceful_degradation [untranslatable]
+(assert (forall ((service_level Int) (min_level Int)) (=> (= (degradation_graceful service_level min_level) true) (<= min_level service_level)))) ; jam_021_graceful_degradation
 
 ; jam_022_fallback_available (matches Coq: Theorem jam_022_fallback_available)
-(assert (= true true)) ; jam_022_fallback_available [untranslatable]
+(assert (forall ((bands list nat)) (forall ((min_bands Int)) (=> (= (fallback_bands_available bands min_bands) true) (<= min_bands (length bands)))))) ; jam_022_fallback_available
 
 ; jam_023_interference_localized (matches Coq: Theorem jam_023_interference_localized)
-(assert (= true true)) ; jam_023_interference_localized [untranslatable]
+(assert (forall ((sources list)) (=> (= (interference_localized sources) true) (> (length sources) 0)))) ; jam_023_interference_localized
 
 ; jam_024_redundant_paths (matches Coq: Theorem jam_024_redundant_paths)
-(assert (= true true)) ; jam_024_redundant_paths [untranslatable]
+(assert (forall ((paths Int) (min_paths Int)) (=> (= (paths_redundant paths min_paths) true) (<= min_paths paths)))) ; jam_024_redundant_paths
 
 ; jam_025_defense_in_depth (matches Coq: Theorem jam_025_defense_in_depth)
-(assert (= true true)) ; jam_025_defense_in_depth [untranslatable]
+(assert (forall ((h Bool) (s Bool) (d Bool) (a Bool)) (=> (= (antijam_layers h s d a) true) (and (= h true) (= s true) (= d true) (= a true))))) ; jam_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

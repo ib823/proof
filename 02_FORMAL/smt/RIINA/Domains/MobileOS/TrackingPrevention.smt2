@@ -179,79 +179,79 @@
   true)
 
 ; no_tracking_without_consent (matches Coq: Theorem no_tracking_without_consent)
-(assert (= true true)) ; no_tracking_without_consent [untranslatable]
+(assert (forall ((app Application)) (forall ((user User)) (=> (= (tracks app user) true) (= (explicit_consent user app) true))))) ; no_tracking_without_consent
 
 ; tracking_requires_transparency_prompt (matches Coq: Theorem tracking_requires_transparency_prompt)
-(assert (= true true)) ; tracking_requires_transparency_prompt [untranslatable]
+(assert (forall ((ps PrivacyState)) (forall ((app Application)) (forall ((user User)) (=> (= (privacy_state_well_formed ps) true) (=> (= (tracking_approved ps app user) true) (= (tracking_requested ps app user) true))))))) ; tracking_requires_transparency_prompt
 
 ; denied_tracking_not_approved (matches Coq: Theorem denied_tracking_not_approved)
-(assert (= true true)) ; denied_tracking_not_approved [untranslatable]
+(assert (forall ((ps PrivacyState)) (forall ((app Application)) (forall ((user User)) (=> (= (In (mk-tuple (app_id app) (user_id user)) (denied_tracking ps)) true) (=> (not (= (In (mk-tuple (app_id app) (user_id user)) (approved_tracking ps)) true)) (= (tracking_allowed ps app user) false))))))) ; denied_tracking_not_approved
 
 ; consent_revocation_effective (matches Coq: Theorem consent_revocation_effective)
-(assert (= true true)) ; consent_revocation_effective [untranslatable]
+(assert (forall ((user_before User) (user_after User) (app Application)) (=> (= (explicit_consent user_before app) true) (=> (= (tracking_consent_given user_after) false) (=> (= (user_id user_before) (user_id user_after)) (not (= (explicit_consent user_after app) true))))))) ; consent_revocation_effective
 
 ; no_consent_no_data (matches Coq: Theorem no_consent_no_data)
-(assert (= true true)) ; no_consent_no_data [untranslatable]
+(assert (forall ((event TrackingEvent)) (=> (= (tracking_event_well_formed event) true) (=> (= (tracking_consent_given (tracked_user event)) false) (= (tracking_data event) nil))))) ; no_consent_no_data
 
 ; cross_site_tracking_blocked_thm (matches Coq: Theorem cross_site_tracking_blocked_thm)
-(assert (= true true)) ; cross_site_tracking_blocked_thm [untranslatable]
+(assert (forall ((csr CrossSiteRequest)) (=> (= (cross_site_tracking_blocked csr) true) (=> (not (= (csr_source_domain csr) (csr_target_domain csr))) (=> (= (csr_has_tracking_params csr) true) (= (csr_blocked csr) true)))))) ; cross_site_tracking_blocked_thm
 
 ; fingerprinting_prevented_thm (matches Coq: Theorem fingerprinting_prevented_thm)
-(assert (= true true)) ; fingerprinting_prevented_thm [untranslatable]
+(assert (forall ((fa FingerprintAttempt)) (=> (= (fingerprinting_prevented fa) true) (=> (> (fp_entropy_bits fa) (fp_max_allowed_bits fa)) (= (fp_prevented fa) true))))) ; fingerprinting_prevented_thm
 
 ; third_party_cookies_blocked_thm (matches Coq: Theorem third_party_cookies_blocked_thm)
-(assert (= true true)) ; third_party_cookies_blocked_thm [untranslatable]
+(assert (forall ((cr CookieRequest)) (=> (= (third_party_cookies_blocked cr) true) (=> (= (cookie_is_third_party cr) true) (= (cookie_blocked cr) true))))) ; third_party_cookies_blocked_thm
 
 ; tracking_pixel_detected_thm (matches Coq: Theorem tracking_pixel_detected_thm)
-(assert (= true true)) ; tracking_pixel_detected_thm [untranslatable]
+(assert (forall ((rl ResourceLoad)) (=> (= (tracking_pixel_detected rl) true) (=> (= (res_is_tracking_pixel rl) true) (= (res_detected rl) true))))) ; tracking_pixel_detected_thm
 
 ; advertising_id_resettable_thm (matches Coq: Theorem advertising_id_resettable_thm)
-(assert (= true true)) ; advertising_id_resettable_thm [untranslatable]
+(assert (forall ((aid AdvertisingId)) (=> (= (advertising_id_resettable aid) true) (= (ad_id_resettable aid) true)))) ; advertising_id_resettable_thm
 
 ; app_tracking_permission_required_thm (matches Coq: Theorem app_tracking_permission_required_thm)
-(assert (= true true)) ; app_tracking_permission_required_thm [untranslatable]
+(assert (forall ((atr AppTrackingRequest)) (=> (= (app_tracking_permission_required atr) true) (=> (= (atr_permission_granted atr) true) (= (atr_permission_asked atr) true))))) ; app_tracking_permission_required_thm
 
 ; link_decoration_stripped_thm (matches Coq: Theorem link_decoration_stripped_thm)
-(assert (= true true)) ; link_decoration_stripped_thm [untranslatable]
+(assert (forall ((ld LinkDecoration)) (=> (= (link_decoration_stripped ld) true) (=> (not (= (ld_tracking_params ld) nil)) (= (ld_stripped ld) true))))) ; link_decoration_stripped_thm
 
 ; bounce_tracking_prevented_thm (matches Coq: Theorem bounce_tracking_prevented_thm)
-(assert (= true true)) ; bounce_tracking_prevented_thm [untranslatable]
+(assert (forall ((bt BounceTracking)) (=> (= (bounce_tracking_prevented bt) true) (=> (= (bt_bounce_detected bt) true) (= (bt_prevented bt) true))))) ; bounce_tracking_prevented_thm
 
 ; cname_cloaking_detected_thm (matches Coq: Theorem cname_cloaking_detected_thm)
-(assert (= true true)) ; cname_cloaking_detected_thm [untranslatable]
+(assert (forall ((cr CNAMERecord)) (=> (= (cname_cloaking_detected cr) true) (=> (= (cname_is_tracker cr) true) (= (cname_detected cr) true))))) ; cname_cloaking_detected_thm
 
 ; storage_access_partitioned_thm (matches Coq: Theorem storage_access_partitioned_thm)
-(assert (= true true)) ; storage_access_partitioned_thm [untranslatable]
+(assert (forall ((sa StorageAccess)) (=> (= (storage_access_partitioned sa) true) (=> (not (= (sa_origin sa) (sa_top_level_origin sa))) (= (sa_partitioned sa) true))))) ; storage_access_partitioned_thm
 
 ; referrer_policy_strict_thm (matches Coq: Theorem referrer_policy_strict_thm)
-(assert (= true true)) ; referrer_policy_strict_thm [untranslatable]
+(assert (forall ((rc ReferrerConfig)) (=> (= (referrer_policy_strict rc) true) (= (ref_is_strict rc) true)))) ; referrer_policy_strict_thm
 
 ; ip_address_masked_thm (matches Coq: Theorem ip_address_masked_thm)
-(assert (= true true)) ; ip_address_masked_thm [untranslatable]
+(assert (forall ((nr NetworkRequest)) (=> (= (ip_address_masked nr) true) (or (= (nr_ip_masked nr) true) (= (nr_uses_relay nr) true))))) ; ip_address_masked_thm
 
 ; device_graph_prevented_thm (matches Coq: Theorem device_graph_prevented_thm)
-(assert (= true true)) ; device_graph_prevented_thm [untranslatable]
+(assert (forall ((dg DeviceGraphAttempt)) (=> (= (device_graph_prevented dg) true) (=> (> (length (dg_identifiers_collected dg)) (dg_max_identifiers dg)) (= (dg_prevented dg) true))))) ; device_graph_prevented_thm
 
 ; tracker_list_updated_thm (matches Coq: Theorem tracker_list_updated_thm)
-(assert (= true true)) ; tracker_list_updated_thm [untranslatable]
+(assert (forall ((tl TrackerList)) (=> (= (tracker_list_updated tl) true) (> (tl_last_updated tl) 0)))) ; tracker_list_updated_thm
 
 ; tracking_report_available_thm (matches Coq: Theorem tracking_report_available_thm)
-(assert (= true true)) ; tracking_report_available_thm [untranslatable]
+(assert (forall ((tr TrackingReport)) (=> (= (tracking_report_available tr) true) (= (tr_report_available tr) true)))) ; tracking_report_available_thm
 
 ; referrer_policy_options (matches Coq: Theorem referrer_policy_options)
-(assert (= true true)) ; referrer_policy_options [untranslatable]
+(assert (forall ((rc ReferrerConfig)) (=> (= (referrer_policy_strict rc) true) (or (= (ref_policy rc) NoReferrer) (= (ref_policy rc) StrictOrigin))))) ; referrer_policy_options
 
 ; tracker_list_non_empty (matches Coq: Theorem tracker_list_non_empty)
-(assert (= true true)) ; tracker_list_non_empty [untranslatable]
+(assert (forall ((tl TrackerList)) (=> (= (tracker_list_updated tl) true) (not (= (tl_entries tl) nil))))) ; tracker_list_non_empty
 
 ; no_tracking_without_permission_request (matches Coq: Theorem no_tracking_without_permission_request)
-(assert (= true true)) ; no_tracking_without_permission_request [untranslatable]
+(assert (forall ((atr AppTrackingRequest)) (=> (= (app_tracking_permission_required atr) true) (=> (= (atr_permission_asked atr) false) (= (atr_permission_granted atr) false))))) ; no_tracking_without_permission_request
 
 ; revocation_prevents_future_tracking (matches Coq: Theorem revocation_prevents_future_tracking)
-(assert (= true true)) ; revocation_prevents_future_tracking [untranslatable]
+(assert (forall ((user User)) (forall ((app Application)) (=> (= (tracking_consent_given user) false) (not (= (tracks app user) true)))))) ; revocation_prevents_future_tracking
 
 ; ip_masked_via_relay (matches Coq: Theorem ip_masked_via_relay)
-(assert (= true true)) ; ip_masked_via_relay [untranslatable]
+(assert (forall ((nr NetworkRequest)) (=> (= (nr_uses_relay nr) true) (= (ip_address_masked nr) true)))) ; ip_masked_via_relay
 
 ; Verify all assertions are satisfiable
 (check-sat)

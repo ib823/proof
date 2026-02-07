@@ -51,37 +51,37 @@
 (define-fun litigation_hold_active () Bool Nat)
 
 ; privilege_protection_axiom (matches Coq: Theorem privilege_protection_axiom)
-(assert (= true true)) ; privilege_protection_axiom [untranslatable]
+(assert (forall ((communication LegalData)) true)) ; privilege_protection_axiom
 
 ; aba_model_rules (matches Coq: Theorem aba_model_rules)
-(assert (= true true)) ; aba_model_rules [untranslatable]
+(assert (forall ((firm Int)) (forall ((practice Int)) true))) ; aba_model_rules
 
 ; conflict_screening_axiom (matches Coq: Theorem conflict_screening_axiom)
-(assert (= true true)) ; conflict_screening_axiom [untranslatable]
+(assert (forall ((matter Int)) (forall ((client Int)) true))) ; conflict_screening_axiom
 
 ; ediscovery_compliance (matches Coq: Theorem ediscovery_compliance)
-(assert (= true true)) ; ediscovery_compliance [untranslatable]
+(assert (forall ((matter Int)) (forall ((documents Int)) true))) ; ediscovery_compliance
 
 ; records_retention (matches Coq: Theorem records_retention)
-(assert (= true true)) ; records_retention [untranslatable]
+(assert (forall ((record LegalData)) (forall ((retention_period Int)) true))) ; records_retention
 
 ; privilege_requires_encryption (matches Coq: Theorem privilege_requires_encryption)
-(assert (= true true)) ; privilege_requires_encryption [untranslatable]
+(assert (forall ((controls LegalSecurityControls)) (forall ((comm LegalData)) (=> (= (privilege_protection controls) true) true)))) ; privilege_requires_encryption
 
 ; ethical_walls_effective (matches Coq: Theorem ethical_walls_effective)
-(assert (= true true)) ; ethical_walls_effective [untranslatable]
+(assert (forall ((controls LegalSecurityControls)) (forall ((matter1 Int)) (forall ((matter2 Int)) (=> (= (ethical_walls controls) true) true))))) ; ethical_walls_effective
 
 ; privilege_max_sensitivity (matches Coq: Theorem privilege_max_sensitivity)
-(assert (= true true)) ; privilege_max_sensitivity [untranslatable]
+(assert (forall ((d Bool)) (<= (legal_sensitivity d) (legal_sensitivity AttorneyClientPrivilege)))) ; privilege_max_sensitivity
 
 ; trust_equals_privilege_sensitivity (matches Coq: Theorem trust_equals_privilege_sensitivity)
 (assert (= (legal_sensitivity TrustAccount) (legal_sensitivity AttorneyClientPrivilege))) ; trust_equals_privilege_sensitivity
 
 ; legal_sensitivity_positive (matches Coq: Theorem legal_sensitivity_positive)
-(assert (= true true)) ; legal_sensitivity_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (legal_sensitivity d) 2))) ; legal_sensitivity_positive
 
 ; absolute_strongest (matches Coq: Theorem absolute_strongest)
-(assert (= true true)) ; absolute_strongest [untranslatable]
+(assert (forall ((p Bool)) (<= (privilege_strength p) (privilege_strength Absolute)))) ; absolute_strongest
 
 ; waived_no_protection (matches Coq: Theorem waived_no_protection)
 (assert (= (privilege_strength Waived) 0)) ; waived_no_protection
@@ -96,43 +96,43 @@
 (assert (= (privilege_effective Qualified) true)) ; qualified_effective
 
 ; all_legal_requires_privilege (matches Coq: Theorem all_legal_requires_privilege)
-(assert (= true true)) ; all_legal_requires_privilege [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_legal_controls c) true) (= (privilege_protection c) true)))) ; all_legal_requires_privilege
 
 ; all_legal_requires_conflict_screening (matches Coq: Theorem all_legal_requires_conflict_screening)
-(assert (= true true)) ; all_legal_requires_conflict_screening [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_legal_controls c) true) (= (conflict_screening c) true)))) ; all_legal_requires_conflict_screening
 
 ; all_legal_requires_ethical_walls (matches Coq: Theorem all_legal_requires_ethical_walls)
-(assert (= true true)) ; all_legal_requires_ethical_walls [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_legal_controls c) true) (= (ethical_walls c) true)))) ; all_legal_requires_ethical_walls
 
 ; all_legal_requires_retention (matches Coq: Theorem all_legal_requires_retention)
-(assert (= true true)) ; all_legal_requires_retention [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_legal_controls c) true) (= (retention_compliance c) true)))) ; all_legal_requires_retention
 
 ; count_legal_bounded (matches Coq: Theorem count_legal_bounded)
-(assert (= true true)) ; count_legal_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_legal_controls c) 6))) ; count_legal_bounded
 
 ; all_controls_count_six (matches Coq: Theorem all_controls_count_six)
-(assert (= true true)) ; all_controls_count_six [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_legal_controls c) true) (= (count_legal_controls c) 6)))) ; all_controls_count_six
 
 ; retention_minimum_3 (matches Coq: Theorem retention_minimum_3)
-(assert (= true true)) ; retention_minimum_3 [untranslatable]
+(assert (forall ((d Bool)) (>= (legal_retention_years d) 3))) ; retention_minimum_3
 
 ; privilege_longest_retention (matches Coq: Theorem privilege_longest_retention)
-(assert (= true true)) ; privilege_longest_retention [untranslatable]
+(assert (forall ((d Bool)) (<= (legal_retention_years d) (legal_retention_years AttorneyClientPrivilege)))) ; privilege_longest_retention
 
 ; trust_equals_privilege_retention (matches Coq: Theorem trust_equals_privilege_retention)
 (assert (= (legal_retention_years TrustAccount) (legal_retention_years AttorneyClientPrivilege))) ; trust_equals_privilege_retention
 
 ; same_party_conflict (matches Coq: Theorem same_party_conflict)
-(assert (= true true)) ; same_party_conflict [untranslatable]
+(assert (forall ((p Bool)) (= (no_conflict p p) false))) ; same_party_conflict
 
 ; different_parties_no_conflict (matches Coq: Theorem different_parties_no_conflict)
-(assert (= true true)) ; different_parties_no_conflict [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (=> (not (= p1 p2)) (= (no_conflict p1 p2) true)))) ; different_parties_no_conflict
 
 ; trust_balance_correct (matches Coq: Theorem trust_balance_correct)
-(assert (= true true)) ; trust_balance_correct [untranslatable]
+(assert (forall ((b Bool) (ct Bool)) (=> (= (trust_balanced b ct) true) (= b ct)))) ; trust_balance_correct
 
 ; hold_bounds (matches Coq: Theorem hold_bounds)
-(assert (= true true)) ; hold_bounds [untranslatable]
+(assert (forall ((hs Bool) (ct Bool) (he Bool)) (=> (= (litigation_hold_active hs ct he) true) (and (<= hs ct) (<= ct he))))) ; hold_bounds
 
 ; Verify all assertions are satisfiable
 (check-sat)

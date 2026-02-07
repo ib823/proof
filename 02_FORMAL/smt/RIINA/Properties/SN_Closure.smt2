@@ -31,142 +31,142 @@
   true)
 
 ; SN_step (matches Coq: Lemma SN_step)
-(assert (= true true)) ; SN_step [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= (SN (mk-tuple e' st' ctx')) true))))) ; SN_step
 
 ; value_not_step (matches Coq: Lemma value_not_step)
-(assert (= true true)) ; value_not_step [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (=> (= ((v, st, ctx) step_to (mk-tuple e' st' ctx')) true) false)))) ; value_not_step
 
 ; value_SN (matches Coq: Lemma value_SN)
-(assert (= true true)) ; value_SN [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (= (SN (mk-tuple v st ctx)) true)))) ; value_SN
 
 ; SN_all_reducts (matches Coq: Lemma SN_all_reducts)
-(assert (= true true)) ; SN_all_reducts [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (forall ((e' Bool) (st' Bool) (ctx' Bool)) (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true)) (= (SN (mk-tuple e' st' ctx')) true))))) ; SN_all_reducts
 
 ; SN_app_value_left_aux (matches Coq: Lemma SN_app_value_left_aux)
-(assert (= true true)) ; SN_app_value_left_aux [untranslatable]
+(assert (forall ((v Bool) (cfg Bool)) (=> (= (value v) true) (=> (= (SN cfg) true) (=> (forall ((x Bool) (body Bool) (v' Bool) (st' Bool) (ctx' Bool)) (=> (= (value v') true) (= (SN (mk-tuple body st' ctx')) true))) (= (SN (mk-tuple (EApp v (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_app_value_left_aux
 
 ; SN_app_value_left (matches Coq: Lemma SN_app_value_left)
-(assert (= true true)) ; SN_app_value_left [untranslatable]
+(assert (forall ((v Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (=> (= (SN (mk-tuple e2 st ctx)) true) (=> (forall ((x Bool) (body Bool) (v' Bool) (st' Bool) (ctx' Bool)) (=> (= (value v') true) (= (SN (mk-tuple body st' ctx')) true))) (= (SN (mk-tuple (EApp v e2) st ctx)) true)))))) ; SN_app_value_left
 
 ; SN_app_aux (matches Coq: Lemma SN_app_aux)
-(assert (= true true)) ; SN_app_aux [untranslatable]
+(assert (forall ((cfg Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((st Bool) (ctx Bool)) (= (SN (mk-tuple e2 st ctx)) true)) (=> (forall ((x Bool) (body Bool) (v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple body st' ctx')) true))) (= (SN (mk-tuple (EApp (fst (fst cfg)) e2) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_app_aux
 
 ; SN_app (matches Coq: Lemma SN_app)
-(assert (= true true)) ; SN_app [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e1 st' ctx')) true)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (=> (forall ((x Bool) (body Bool) (v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple body st' ctx')) true))) (= (SN (mk-tuple (EApp e1 e2) st ctx)) true)))))) ; SN_app
 
 ; SN_app_value_left_direct_aux (matches Coq: Lemma SN_app_value_left_direct_aux)
-(assert (= true true)) ; SN_app_value_left_direct_aux [untranslatable]
+(assert (forall ((f Bool) (cfg Bool)) (=> (= (value f) true) (=> (= (SN cfg) true) (=> (= (direct_lambda_SN f) true) (= (SN (mk-tuple (EApp f (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_app_value_left_direct_aux
 
 ; SN_app_value_left_direct (matches Coq: Lemma SN_app_value_left_direct)
-(assert (= true true)) ; SN_app_value_left_direct [untranslatable]
+(assert (forall ((f Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (value f) true) (=> (= (SN (mk-tuple e2 st ctx)) true) (=> (= (direct_lambda_SN f) true) (= (SN (mk-tuple (EApp f e2) st ctx)) true)))))) ; SN_app_value_left_direct
 
 ; family_lambda_SN_step (matches Coq: Lemma family_lambda_SN_step)
-(assert (= true true)) ; family_lambda_SN_step [untranslatable]
+(assert (forall ((e1 Bool) (e1' Bool) (st Bool) (ctx Bool) (st' Bool) (ctx' Bool)) (=> (= ((e1, st, ctx) step_to (mk-tuple e1' st' ctx')) true) (=> (= (family_lambda_SN e1) true) (= (family_lambda_SN e1') true))))) ; family_lambda_SN_step
 
 ; SN_app_value_left_family_aux (matches Coq: Lemma SN_app_value_left_family_aux)
-(assert (= true true)) ; SN_app_value_left_family_aux [untranslatable]
+(assert (forall ((f Bool) (cfg Bool)) (=> (= (value f) true) (=> (= (SN cfg) true) (=> (= (direct_lambda_SN f) true) (= (SN (mk-tuple (EApp f (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_app_value_left_family_aux
 
 ; SN_app_family_aux (matches Coq: Lemma SN_app_family_aux)
-(assert (= true true)) ; SN_app_family_aux [untranslatable]
+(assert (forall ((cfg Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((st Bool) (ctx Bool)) (= (SN (mk-tuple e2 st ctx)) true)) (=> (= (family_lambda_SN (fst (fst cfg))) true) (= (SN (mk-tuple (EApp (fst (fst cfg)) e2) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_app_family_aux
 
 ; SN_app_family (matches Coq: Lemma SN_app_family)
-(assert (= true true)) ; SN_app_family [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e1 st' ctx')) true)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (=> (= (family_lambda_SN e1) true) (= (SN (mk-tuple (EApp e1 e2) st ctx)) true)))))) ; SN_app_family
 
 ; SN_pair_value_left_aux (matches Coq: Lemma SN_pair_value_left_aux)
-(assert (= true true)) ; SN_pair_value_left_aux [untranslatable]
+(assert (forall ((v Bool) (cfg Bool)) (=> (= (value v) true) (=> (= (SN cfg) true) (= (SN (mk-tuple (EPair v (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true))))) ; SN_pair_value_left_aux
 
 ; SN_pair_value_left (matches Coq: Lemma SN_pair_value_left)
-(assert (= true true)) ; SN_pair_value_left [untranslatable]
+(assert (forall ((v Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (=> (= (SN (mk-tuple e2 st ctx)) true) (= (SN (mk-tuple (EPair v e2) st ctx)) true))))) ; SN_pair_value_left
 
 ; SN_pair_aux (matches Coq: Lemma SN_pair_aux)
-(assert (= true true)) ; SN_pair_aux [untranslatable]
+(assert (forall ((cfg Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((st Bool) (ctx Bool)) (= (SN (mk-tuple e2 st ctx)) true)) (= (SN (mk-tuple (EPair (fst (fst cfg)) e2) (snd (fst cfg)) (snd cfg))) true))))) ; SN_pair_aux
 
 ; SN_pair (matches Coq: Lemma SN_pair)
-(assert (= true true)) ; SN_pair [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e1 st' ctx')) true)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (= (SN (mk-tuple (EPair e1 e2) st ctx)) true))))) ; SN_pair
 
 ; SN_fst_aux (matches Coq: Lemma SN_fst_aux)
-(assert (= true true)) ; SN_fst_aux [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EFst (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_fst_aux
 
 ; SN_fst (matches Coq: Lemma SN_fst)
-(assert (= true true)) ; SN_fst [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EFst e) st ctx)) true)))) ; SN_fst
 
 ; SN_snd_aux (matches Coq: Lemma SN_snd_aux)
-(assert (= true true)) ; SN_snd_aux [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (ESnd (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true)))) ; SN_snd_aux
 
 ; SN_snd (matches Coq: Lemma SN_snd)
-(assert (= true true)) ; SN_snd [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (ESnd e) st ctx)) true)))) ; SN_snd
 
 ; SN_inl_aux (matches Coq: Lemma SN_inl_aux)
-(assert (= true true)) ; SN_inl_aux [untranslatable]
+(assert (forall ((cfg Bool) (T Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EInl (fst (fst cfg)) T) (snd (fst cfg)) (snd cfg))) true)))) ; SN_inl_aux
 
 ; SN_inl (matches Coq: Lemma SN_inl)
-(assert (= true true)) ; SN_inl [untranslatable]
+(assert (forall ((e Bool) (T Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EInl e T) st ctx)) true)))) ; SN_inl
 
 ; SN_inr_aux (matches Coq: Lemma SN_inr_aux)
-(assert (= true true)) ; SN_inr_aux [untranslatable]
+(assert (forall ((cfg Bool) (T Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (EInr (fst (fst cfg)) T) (snd (fst cfg)) (snd cfg))) true)))) ; SN_inr_aux
 
 ; SN_inr (matches Coq: Lemma SN_inr)
-(assert (= true true)) ; SN_inr [untranslatable]
+(assert (forall ((e Bool) (T Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (EInr e T) st ctx)) true)))) ; SN_inr
 
 ; SN_case_aux (matches Coq: Lemma SN_case_aux)
-(assert (= true true)) ; SN_case_aux [untranslatable]
+(assert (forall ((cfg Bool) (x1 Bool) (e1 Bool) (x2 Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple e1 st' ctx')) true))) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple e2 st' ctx')) true))) (= (SN (mk-tuple (ECase (fst (fst cfg)) x1 e1 x2 e2) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_case_aux
 
 ; SN_case (matches Coq: Lemma SN_case)
-(assert (= true true)) ; SN_case [untranslatable]
+(assert (forall ((e Bool) (x1 Bool) (e1 Bool) (x2 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple e1 st' ctx')) true))) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple e2 st' ctx')) true))) (= (SN (mk-tuple (ECase e x1 e1 x2 e2) st ctx)) true)))))) ; SN_case
 
 ; SN_if_aux (matches Coq: Lemma SN_if_aux)
-(assert (= true true)) ; SN_if_aux [untranslatable]
+(assert (forall ((cfg Bool) (e2 Bool) (e3 Bool)) (=> (= (SN cfg) true) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e3 st' ctx')) true)) (= (SN (mk-tuple (EIf (fst (fst cfg)) e2 e3) (snd (fst cfg)) (snd cfg))) true)))))) ; SN_if_aux
 
 ; SN_if (matches Coq: Lemma SN_if)
-(assert (= true true)) ; SN_if [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e1 st ctx)) true) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e3 st' ctx')) true)) (= (SN (mk-tuple (EIf e1 e2 e3) st ctx)) true)))))) ; SN_if
 
 ; SN_let_aux (matches Coq: Lemma SN_let_aux)
-(assert (= true true)) ; SN_let_aux [untranslatable]
+(assert (forall ((cfg Bool) (x Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple e2 st' ctx')) true))) (= (SN (mk-tuple (ELet x (fst (fst cfg)) e2) (snd (fst cfg)) (snd cfg))) true))))) ; SN_let_aux
 
 ; SN_let (matches Coq: Lemma SN_let)
-(assert (= true true)) ; SN_let [untranslatable]
+(assert (forall ((x Bool) (e1 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e1 st ctx)) true) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple e2 st' ctx')) true))) (= (SN (mk-tuple (ELet x e1 e2) st ctx)) true))))) ; SN_let
 
 ; SN_ref_aux (matches Coq: Lemma SN_ref_aux)
-(assert (= true true)) ; SN_ref_aux [untranslatable]
+(assert (forall ((cfg Bool) (sl Bool)) (=> (= (SN cfg) true) (= (SN (mk-tuple (ERef (fst (fst cfg)) sl) (snd (fst cfg)) (snd cfg))) true)))) ; SN_ref_aux
 
 ; SN_ref (matches Coq: Lemma SN_ref)
-(assert (= true true)) ; SN_ref [untranslatable]
+(assert (forall ((e Bool) (sl Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (= (SN (mk-tuple (ERef e sl) st ctx)) true)))) ; SN_ref
 
 ; store_wf_nil (matches Coq: Lemma store_wf_nil)
-(assert (= true true)) ; store_wf_nil [untranslatable]
+(assert (= (store_wf nil) true)) ; store_wf_nil
 
 ; store_lookup_update_eq (matches Coq: Lemma store_lookup_update_eq)
-(assert (= true true)) ; store_lookup_update_eq [untranslatable]
+(assert (forall ((l Bool) (v Bool) (st Bool)) (= (store_lookup l (store_update l v st)) (some v)))) ; store_lookup_update_eq
 
 ; store_lookup_update_neq (matches Coq: Lemma store_lookup_update_neq)
-(assert (= true true)) ; store_lookup_update_neq [untranslatable]
+(assert (forall ((l0 Bool) (l Bool) (v Bool) (st Bool)) (=> (not (= l0 l)) (= (store_lookup l0 (store_update l v st)) (store_lookup l0 st))))) ; store_lookup_update_neq
 
 ; store_update_preserves_wf (matches Coq: Lemma store_update_preserves_wf)
-(assert (= true true)) ; store_update_preserves_wf [untranslatable]
+(assert (forall ((st Bool) (l Bool) (v Bool)) (=> (= (store_wf st) true) (=> (= (value v) true) (= (store_wf (store_update l v st)) true))))) ; store_update_preserves_wf
 
 ; step_preserves_store_wf (matches Coq: Lemma step_preserves_store_wf)
-(assert (= true true)) ; step_preserves_store_wf [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (store_wf st) true) (=> (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= (store_wf st') true))))) ; step_preserves_store_wf
 
 ; SN_deref_aux (matches Coq: Lemma SN_deref_aux)
-(assert (= true true)) ; SN_deref_aux [untranslatable]
+(assert (forall ((cfg Bool)) (=> (= (SN cfg) true) (=> (forall ((l Bool) (v Bool) (st' Bool)) (=> (= (store_lookup l st') (some v)) (= (value v) true))) (= (SN (mk-tuple (EDeref (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true))))) ; SN_deref_aux
 
 ; SN_deref (matches Coq: Lemma SN_deref)
-(assert (= true true)) ; SN_deref [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (forall ((l Bool) (v Bool) (st' Bool)) (=> (= (store_lookup l st') (some v)) (= (value v) true))) (= (SN (mk-tuple (EDeref e) st ctx)) true))))) ; SN_deref
 
 ; SN_assign_value_left_aux (matches Coq: Lemma SN_assign_value_left_aux)
-(assert (= true true)) ; SN_assign_value_left_aux [untranslatable]
+(assert (forall ((v Bool) (cfg Bool)) (=> (= (value v) true) (=> (= (SN cfg) true) (= (SN (mk-tuple (EAssign v (fst (fst cfg))) (snd (fst cfg)) (snd cfg))) true))))) ; SN_assign_value_left_aux
 
 ; SN_assign_aux (matches Coq: Lemma SN_assign_aux)
-(assert (= true true)) ; SN_assign_aux [untranslatable]
+(assert (forall ((cfg Bool) (e2 Bool)) (=> (= (SN cfg) true) (=> (forall ((st Bool) (ctx Bool)) (= (SN (mk-tuple e2 st ctx)) true)) (= (SN (mk-tuple (EAssign (fst (fst cfg)) e2) (snd (fst cfg)) (snd cfg))) true))))) ; SN_assign_aux
 
 ; SN_assign (matches Coq: Lemma SN_assign)
-(assert (= true true)) ; SN_assign [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool) (ctx Bool)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e1 st' ctx')) true)) (=> (forall ((st' Bool) (ctx' Bool)) (= (SN (mk-tuple e2 st' ctx')) true)) (= (SN (mk-tuple (EAssign e1 e2) st ctx)) true))))) ; SN_assign
 
 ; SN_handle_aux (matches Coq: Lemma SN_handle_aux)
-(assert (= true true)) ; SN_handle_aux [untranslatable]
+(assert (forall ((cfg Bool) (x Bool) (h Bool)) (=> (= (SN cfg) true) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple h st' ctx')) true))) (= (SN (mk-tuple (EHandle (fst (fst cfg)) x h) (snd (fst cfg)) (snd cfg))) true))))) ; SN_handle_aux
 
 ; SN_handle (matches Coq: Lemma SN_handle)
-(assert (= true true)) ; SN_handle [untranslatable]
+(assert (forall ((e Bool) (x Bool) (h Bool) (st Bool) (ctx Bool)) (=> (= (SN (mk-tuple e st ctx)) true) (=> (forall ((v Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (= (SN (mk-tuple h st' ctx')) true))) (= (SN (mk-tuple (EHandle e x h) st ctx)) true))))) ; SN_handle
 
 ; Verify all assertions are satisfiable
 (check-sat)

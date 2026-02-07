@@ -15,25 +15,27 @@
 (define-fun store_independent () Prop true)
 
 ; first_order_subtype (matches Coq: Lemma first_order_subtype)
-(assert (= true true)) ; first_order_subtype [untranslatable]
+; first_order_subtype: forall T, first_order_type T = true -> match T with | TProd T1 T2 => first_order_type T1 = true /\ first_order_type T2 =
+(assert (forall ((T Bool)) true)) ; first_order_subtype [partial: bindings preserved]
 
 ; first_order_subtypes_fo (matches Coq: Lemma first_order_subtypes_fo)
-(assert (= true true)) ; first_order_subtypes_fo [untranslatable]
+(assert (forall ((T Bool)) (=> (= (first_order_type T) true) (=> (forall ((T' Bool)) (or (exists ((T2 Bool)) (= T (TProd T' T2))) (exists ((T1 Bool)) (= T (TProd T1 T'))) (exists ((T2 Bool)) (= T (TSum T' T2))) (exists ((T1 Bool)) (= T (TSum T1 T'))) (= T (TList T')) (= T (TOption T')) (exists ((sl Bool)) (= T (TRef T' sl))) (= T (TSecret T')) (exists ((sl Bool)) (= T (TLabeled T' sl))) (exists ((src Bool)) (= T (TTainted T' src))) (exists ((san Bool)) (= T (TSanitized T' san))) (= T (TProof T')) (= T (TConstantTime T')) (= T (TZeroizing T')))) (= (first_order_type T') true))))) ; first_order_subtypes_fo
 
 ; base_type_first_order (matches Coq: Lemma base_type_first_order)
-(assert (= true true)) ; base_type_first_order [untranslatable]
+(assert (forall ((T Bool)) (=> (= (is_base_type T) true) (= (first_order_type T) true)))) ; base_type_first_order
 
 ; base_type_size_one (matches Coq: Lemma base_type_size_one)
-(assert (= true true)) ; base_type_size_one [untranslatable]
+(assert (forall ((T Bool)) (=> (= (is_base_type T) true) (= (ty_size T) 1)))) ; base_type_size_one
 
 ; first_order_value_structure (matches Coq: Lemma first_order_value_structure)
-(assert (= true true)) ; first_order_value_structure [untranslatable]
+; first_order_value_structure: forall T, first_order_type T = true -> match T with  | TUnit => True | TBool => True | TInt => True | TString => True | 
+(assert (forall ((T Bool)) true)) ; first_order_value_structure [partial: bindings preserved]
 
 ; first_order_induction_simple (matches Coq: Lemma first_order_induction_simple)
-(assert (= true true)) ; first_order_induction_simple [untranslatable]
+(assert (forall ((P ty)) (=> (= (P TUnit) true) (=> (= (P TBool) true) (=> (= (P TInt) true) (=> (= (P TString) true) (=> (= (P TBytes) true) (=> (forall ((k Bool)) (= (P (TCapability k)) true)) (=> (forall ((cap Bool)) (= (P (TCapabilityFull cap)) true)) (=> (forall ((T1 Bool) (T2 Bool)) (=> (= (first_order_type T1) true) (=> (= (first_order_type T2) true) (= (P (TProd T1 T2)) true)))) (=> (forall ((T1 Bool) (T2 Bool)) (=> (= (first_order_type T1) true) (=> (= (first_order_type T2) true) (= (P (TSum T1 T2)) true)))) (=> (forall ((T Bool)) (=> (= (first_order_type T) true) (= (P (TList T)) true))) (=> (forall ((T Bool)) (=> (= (first_order_type T) true) (= (P (TOption T)) true))) (=> (forall ((T Bool) (sl Bool)) (=> (= (first_order_type T) true) (= (P (TRef T sl)) true))) (=> (forall ((T Bool)) (=> (= (first_order_type T) true) (= (P (TSecret T)) true))) (=> (forall ((T Bool) (sl Bool)) (=> (= (first_order_type T) true) (= (P (TLabeled T sl)) true))) (=> (forall ((T Bool) (src Bool)) (=> (= (first_order_type T) true) (= (P (TTainted T src)) true))) (=> (forall ((T Bool) (san Bool)) (=> (= (first_order_type T) true) (= (P (TSanitized T san)) true))) (=> (forall ((T Bool)) (=> (= (first_order_type T) true) (= (P (TProof T)) true))) (=> (forall ((T Bool)) (=> (= (first_order_type T) true) (= (P (TConstantTime T)) true))) (=> (forall ((T Bool)) (=> (= (first_order_type T) true) (= (P (TZeroizing T)) true))) (=> (forall ((T Bool)) (= (first_order_type T) true)) (= (P T) true))))))))))))))))))))))) ; first_order_induction_simple
 
 ; ty_eqb_refl (matches Coq: Lemma ty_eqb_refl)
-(assert (= true true)) ; ty_eqb_refl [untranslatable]
+(assert (forall ((T Bool)) (= (ty_eqb T T) true))) ; ty_eqb_refl
 
 ; Verify all assertions are satisfiable
 (check-sat)

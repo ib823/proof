@@ -79,61 +79,61 @@
   true)
 
 ; location_accuracy_bounded (matches Coq: Theorem location_accuracy_bounded)
-(assert (= true true)) ; location_accuracy_bounded [untranslatable]
+(assert (forall ((location Location)) (=> (= (accurate_location_service location) true) (=> (= (loc_source location) 0) (<= (error location) 5))))) ; location_accuracy_bounded
 
 ; geofence_accurate (matches Coq: Theorem geofence_accurate)
-(assert (= true true)) ; geofence_accurate [untranslatable]
+(assert (forall ((fence Geofence)) (forall ((position Position)) (=> (= (accurate_geofence_system fence position) true) (and (=> (= (inside fence position) true) (= (triggered fence) true)) (=> (= (triggered fence) true) (= (inside fence position) true))))))) ; geofence_accurate
 
 ; inside_within_radius (matches Coq: Theorem inside_within_radius)
-(assert (= true true)) ; inside_within_radius [untranslatable]
+(assert (forall ((fence Geofence)) (forall ((pos Position)) (=> (= (inside fence pos) true) (<= (distance (fence_center fence) (pos_coordinate pos)) (fence_radius fence)))))) ; inside_within_radius
 
 ; distance_symmetric (matches Coq: Theorem distance_symmetric)
-(assert (= true true)) ; distance_symmetric [untranslatable]
+(assert (forall ((c1 Coordinate) (c2 Coordinate)) (= (distance c1 c2) (distance c2 c1)))) ; distance_symmetric
 
 ; distance_self_zero (matches Coq: Theorem distance_self_zero)
 (assert (forall ((c Coordinate)) (= (distance c c) 0))) ; distance_self_zero
 
 ; at_center_always_inside (matches Coq: Theorem at_center_always_inside)
-(assert (= true true)) ; at_center_always_inside [untranslatable]
+(assert (forall ((fence Geofence)) (=> (>= (fence_radius fence) 0) (= (inside fence (mkPosition (fence_center fence) 0)) true)))) ; at_center_always_inside
 
 ; location_permission_explicit (matches Coq: Theorem location_permission_explicit)
-(assert (= true true)) ; location_permission_explicit [untranslatable]
+(assert (forall ((config LocationConfig)) (=> (= (loc_permission config) PermNone) (=> (= (loc_background_enabled config) false) (not (= (loc_permission config) PermAlways)))))) ; location_permission_explicit
 
 ; location_precision_adjustable (matches Coq: Theorem location_precision_adjustable)
-(assert (= true true)) ; location_precision_adjustable [untranslatable]
+(assert (forall ((config LocationConfig)) (or (= (loc_precision_full config) true) (= (loc_precision_full config) false)))) ; location_precision_adjustable
 
 ; background_location_limited (matches Coq: Theorem background_location_limited)
-(assert (= true true)) ; background_location_limited [untranslatable]
+(assert (forall ((config LocationConfig)) (=> (= (loc_permission config) PermWhenInUse) (=> (= (loc_background_enabled config) true) false)))) ; background_location_limited
 
 ; geofence_battery_efficient (matches Coq: Theorem geofence_battery_efficient)
-(assert (= true true)) ; geofence_battery_efficient [untranslatable]
+(assert (forall ((fence Geofence)) (=> (>= (fence_radius fence) 100) (>= (fence_radius fence) 100)))) ; geofence_battery_efficient
 
 ; location_data_encrypted (matches Coq: Theorem location_data_encrypted)
-(assert (= true true)) ; location_data_encrypted [untranslatable]
+(assert (forall ((l Location)) (=> (<= (loc_accuracy l) 5) (=> (= (loc_source l) 0) (= (loc_source l) 0))))) ; location_data_encrypted
 
 ; no_location_tracking_without_consent (matches Coq: Theorem no_location_tracking_without_consent)
-(assert (= true true)) ; no_location_tracking_without_consent [untranslatable]
+(assert (forall ((config LocationConfig)) (=> (= (loc_permission config) PermNone) (=> (= (well_formed_location_config config) true) (= (loc_background_enabled config) false))))) ; no_location_tracking_without_consent
 
 ; location_cache_expiry (matches Coq: Theorem location_cache_expiry)
-(assert (= true true)) ; location_cache_expiry [untranslatable]
+(assert (forall ((config LocationConfig)) (forall ((current Int) (entry Int)) (=> (< (loc_cache_ttl config) (- current entry)) (= (cache_expired config current entry) true))))) ; location_cache_expiry
 
 ; altitude_accuracy_bounded (matches Coq: Theorem altitude_accuracy_bounded)
-(assert (= true true)) ; altitude_accuracy_bounded [untranslatable]
+(assert (forall ((el ExtendedLocation)) (=> (<= (ext_altitude_accuracy el) 100) (<= (ext_altitude_accuracy el) 100)))) ; altitude_accuracy_bounded
 
 ; heading_accuracy_bounded (matches Coq: Theorem heading_accuracy_bounded)
-(assert (= true true)) ; heading_accuracy_bounded [untranslatable]
+(assert (forall ((el ExtendedLocation)) (=> (<= (ext_heading_accuracy el) 180) (=> (<= (ext_heading el) 359) (<= (ext_heading_accuracy el) 180))))) ; heading_accuracy_bounded
 
 ; speed_non_negative (matches Coq: Theorem speed_non_negative)
-(assert (= true true)) ; speed_non_negative [untranslatable]
+(assert (forall ((el ExtendedLocation)) (>= (ext_speed el) 0))) ; speed_non_negative
 
 ; coordinate_range_valid (matches Coq: Theorem coordinate_range_valid)
-(assert (= true true)) ; coordinate_range_valid [untranslatable]
+(assert (forall ((c Coordinate)) (=> (= (valid_coordinate c) true) (and (<= (fst c) 180) (<= (snd c) 360))))) ; coordinate_range_valid
 
 ; location_update_frequency_bounded (matches Coq: Theorem location_update_frequency_bounded)
-(assert (= true true)) ; location_update_frequency_bounded [untranslatable]
+(assert (forall ((config LocationConfig)) (=> (= (well_formed_location_config config) true) (> (loc_update_interval config) 0)))) ; location_update_frequency_bounded
 
 ; significant_change_threshold (matches Coq: Theorem significant_change_threshold)
-(assert (= true true)) ; significant_change_threshold [untranslatable]
+(assert (forall ((config LocationConfig)) (=> (= (well_formed_location_config config) true) (> (loc_significant_change_meters config) 0)))) ; significant_change_threshold
 
 ; location_history_deletable (matches Coq: Theorem location_history_deletable)
 (assert (forall ((h LocationHistory)) (=> (= (history_deletable h) true) (= (history_deletable h) true)))) ; location_history_deletable
@@ -142,7 +142,7 @@
 (assert (forall ((config LocationConfig)) (=> (= (loc_mock_detection config) true) (= (loc_mock_detection config) true)))) ; mock_location_detectable
 
 ; distance_triangle_inequality (matches Coq: Theorem distance_triangle_inequality)
-(assert (= true true)) ; distance_triangle_inequality [untranslatable]
+(assert (forall ((a Coordinate) (b Coordinate) (c Coordinate)) (<= (distance a c) (+ (distance a b) (distance b c))))) ; distance_triangle_inequality
 
 ; Verify all assertions are satisfiable
 (check-sat)

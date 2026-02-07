@@ -149,19 +149,19 @@
   Nat)
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_false_iff (matches Coq: Lemma andb_false_iff)
-(assert (= true true)) ; andb_false_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) false) (or (= a false) (= b false))) (=> (or (= a false) (= b false)) (= (and a b) false))))) ; andb_false_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; forallb_true (matches Coq: Lemma forallb_true)
-(assert (= true true)) ; forallb_true [untranslatable]
+(assert (forall ((f A -> bool)) (forall ((l list)) (and (=> (= (forallb f l) true) (forall ((x Bool)) (=> (= (In x l) true) (= (f x) true)))) (=> (forall ((x Bool)) (=> (= (In x l) true) (= (f x) true))) (= (forallb f l) true)))))) ; forallb_true
 
 ; XSS_001 (matches Coq: Theorem XSS_001)
 (assert (= (output_safe riina_output) true)) ; XSS_001
@@ -188,31 +188,31 @@
 (assert (= (xss_dom_sanitization riina_xss) true)) ; XSS_008
 
 ; XSS_009 (matches Coq: Theorem XSS_009)
-(assert (= true true)) ; XSS_009 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (= (oe_html_escape o) true)))) ; XSS_009
 
 ; XSS_010 (matches Coq: Theorem XSS_010)
-(assert (= true true)) ; XSS_010 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (= (oe_js_escape o) true)))) ; XSS_010
 
 ; XSS_011 (matches Coq: Theorem XSS_011)
-(assert (= true true)) ; XSS_011 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_enforced c) true) (= (csp_script_src c) true)))) ; XSS_011
 
 ; XSS_012 (matches Coq: Theorem XSS_012)
-(assert (= true true)) ; XSS_012 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_enforced c) true) (= (csp_nonce_support c) true)))) ; XSS_012
 
 ; XSS_013 (matches Coq: Theorem XSS_013)
-(assert (= true true)) ; XSS_013 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (output_safe (xss_output x)) true)))) ; XSS_013
 
 ; XSS_014 (matches Coq: Theorem XSS_014)
-(assert (= true true)) ; XSS_014 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (csp_enforced (xss_csp x)) true)))) ; XSS_014
 
 ; XSS_015 (matches Coq: Theorem XSS_015)
-(assert (= true true)) ; XSS_015 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (xss_dom_sanitization x) true)))) ; XSS_015
 
 ; XSS_016 (matches Coq: Theorem XSS_016)
-(assert (= true true)) ; XSS_016 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (oe_html_escape (xss_output x)) true)))) ; XSS_016
 
 ; XSS_017 (matches Coq: Theorem XSS_017)
-(assert (= true true)) ; XSS_017 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (csp_script_src (xss_csp x)) true)))) ; XSS_017
 
 ; XSS_018 (matches Coq: Theorem XSS_018)
 (assert (and (= (output_safe riina_output) true) (= (csp_enforced riina_csp) true))) ; XSS_018
@@ -224,19 +224,19 @@
 (assert (and (= (csp_script_src riina_csp) true) (= (csp_nonce_support riina_csp) true))) ; XSS_020
 
 ; XSS_021 (matches Coq: Theorem XSS_021)
-(assert (= true true)) ; XSS_021 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (and (= (oe_html_escape o) true) (= (oe_js_escape o) true))))) ; XSS_021
 
 ; XSS_022 (matches Coq: Theorem XSS_022)
-(assert (= true true)) ; XSS_022 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_enforced c) true) (and (= (csp_script_src c) true) (= (csp_nonce_support c) true))))) ; XSS_022
 
 ; XSS_023 (matches Coq: Theorem XSS_023)
-(assert (= true true)) ; XSS_023 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (and (= (output_safe (xss_output x)) true) (= (csp_enforced (xss_csp x)) true))))) ; XSS_023
 
 ; XSS_024 (matches Coq: Theorem XSS_024)
 (assert (and (= (xss_protected riina_xss) true) (= (xss_dom_sanitization riina_xss) true))) ; XSS_024
 
 ; XSS_025_complete (matches Coq: Theorem XSS_025_complete)
-(assert (= true true)) ; XSS_025_complete [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (and (= (oe_html_escape (xss_output x)) true) (= (csp_script_src (xss_csp x)) true) (= (xss_dom_sanitization x) true))))) ; XSS_025_complete
 
 ; XSS_026 (matches Coq: Theorem XSS_026)
 (assert (= (oe_url_encode riina_output) true)) ; XSS_026
@@ -245,28 +245,28 @@
 (assert (= (oe_css_escape riina_output) true)) ; XSS_027
 
 ; XSS_028 (matches Coq: Theorem XSS_028)
-(assert (= true true)) ; XSS_028 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (= (oe_url_encode o) true)))) ; XSS_028
 
 ; XSS_029 (matches Coq: Theorem XSS_029)
-(assert (= true true)) ; XSS_029 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (= (oe_css_escape o) true)))) ; XSS_029
 
 ; XSS_030 (matches Coq: Theorem XSS_030)
-(assert (= true true)) ; XSS_030 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (and (= (oe_url_encode o) true) (= (oe_css_escape o) true))))) ; XSS_030
 
 ; XSS_031 (matches Coq: Theorem XSS_031)
-(assert (= true true)) ; XSS_031 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (oe_url_encode (xss_output x)) true)))) ; XSS_031
 
 ; XSS_032 (matches Coq: Theorem XSS_032)
-(assert (= true true)) ; XSS_032 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (oe_css_escape (xss_output x)) true)))) ; XSS_032
 
 ; XSS_033 (matches Coq: Theorem XSS_033)
-(assert (= true true)) ; XSS_033 [untranslatable]
+(assert (forall ((o Bool)) (=> (= (output_safe o) true) (and (= (oe_html_escape o) true) (= (oe_js_escape o) true) (= (oe_url_encode o) true) (= (oe_css_escape o) true))))) ; XSS_033
 
 ; XSS_034 (matches Coq: Theorem XSS_034)
 (assert (and (= (oe_url_encode riina_output) true) (= (oe_css_escape riina_output) true))) ; XSS_034
 
 ; XSS_035 (matches Coq: Theorem XSS_035)
-(assert (= true true)) ; XSS_035 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (and (= (oe_url_encode (xss_output x)) true) (= (oe_css_escape (xss_output x)) true))))) ; XSS_035
 
 ; XSS_036 (matches Coq: Theorem XSS_036)
 (assert (= (csp_style_src riina_csp) true)) ; XSS_036
@@ -284,34 +284,34 @@
 (assert (= (csp_report_uri riina_csp) true)) ; XSS_040
 
 ; XSS_041 (matches Coq: Theorem XSS_041)
-(assert (= true true)) ; XSS_041 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_enforced c) true) (= (csp_style_src c) true)))) ; XSS_041
 
 ; XSS_042 (matches Coq: Theorem XSS_042)
-(assert (= true true)) ; XSS_042 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_enforced c) true) (= (csp_default_src c) true)))) ; XSS_042
 
 ; XSS_043 (matches Coq: Theorem XSS_043)
 (assert (= (csp_maximum riina_csp) true)) ; XSS_043
 
 ; XSS_044 (matches Coq: Theorem XSS_044)
-(assert (= true true)) ; XSS_044 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_maximum c) true) (= (csp_enforced c) true)))) ; XSS_044
 
 ; XSS_045 (matches Coq: Theorem XSS_045)
-(assert (= true true)) ; XSS_045 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_maximum c) true) (= (csp_strict_dynamic c) true)))) ; XSS_045
 
 ; XSS_046 (matches Coq: Theorem XSS_046)
-(assert (= true true)) ; XSS_046 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_maximum c) true) (= (csp_frame_ancestors c) true)))) ; XSS_046
 
 ; XSS_047 (matches Coq: Theorem XSS_047)
-(assert (= true true)) ; XSS_047 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_maximum c) true) (= (csp_report_uri c) true)))) ; XSS_047
 
 ; XSS_048 (matches Coq: Theorem XSS_048)
-(assert (= true true)) ; XSS_048 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (csp_style_src (xss_csp x)) true)))) ; XSS_048
 
 ; XSS_049 (matches Coq: Theorem XSS_049)
-(assert (= true true)) ; XSS_049 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_protected x) true) (= (csp_default_src (xss_csp x)) true)))) ; XSS_049
 
 ; XSS_050 (matches Coq: Theorem XSS_050)
-(assert (= true true)) ; XSS_050 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csp_maximum c) true) (and (= (csp_script_src c) true) (= (csp_style_src c) true) (= (csp_default_src c) true) (= (csp_nonce_support c) true) (= (csp_strict_dynamic c) true) (= (csp_frame_ancestors c) true) (= (csp_report_uri c) true))))) ; XSS_050
 
 ; XSS_051 (matches Coq: Theorem XSS_051)
 (assert (= (dom_remove_scripts riina_dom) true)) ; XSS_051
@@ -332,28 +332,28 @@
 (assert (= (dom_sanitizer_complete riina_dom) true)) ; XSS_056
 
 ; XSS_057 (matches Coq: Theorem XSS_057)
-(assert (= true true)) ; XSS_057 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (= (dom_remove_scripts d) true)))) ; XSS_057
 
 ; XSS_058 (matches Coq: Theorem XSS_058)
-(assert (= true true)) ; XSS_058 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (= (dom_remove_event_handlers d) true)))) ; XSS_058
 
 ; XSS_059 (matches Coq: Theorem XSS_059)
-(assert (= true true)) ; XSS_059 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (= (dom_sanitize_urls d) true)))) ; XSS_059
 
 ; XSS_060 (matches Coq: Theorem XSS_060)
-(assert (= true true)) ; XSS_060 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (= (dom_allowlist_tags d) true)))) ; XSS_060
 
 ; XSS_061 (matches Coq: Theorem XSS_061)
-(assert (= true true)) ; XSS_061 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (= (dom_allowlist_attrs d) true)))) ; XSS_061
 
 ; XSS_062 (matches Coq: Theorem XSS_062)
-(assert (= true true)) ; XSS_062 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (and (= (dom_remove_scripts d) true) (= (dom_remove_event_handlers d) true))))) ; XSS_062
 
 ; XSS_063 (matches Coq: Theorem XSS_063)
-(assert (= true true)) ; XSS_063 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (and (= (dom_sanitize_urls d) true) (= (dom_allowlist_tags d) true) (= (dom_allowlist_attrs d) true))))) ; XSS_063
 
 ; XSS_064 (matches Coq: Theorem XSS_064)
-(assert (= true true)) ; XSS_064 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_sanitizer_complete d) true) (and (= (dom_remove_scripts d) true) (= (dom_remove_event_handlers d) true) (= (dom_sanitize_urls d) true) (= (dom_allowlist_tags d) true) (= (dom_allowlist_attrs d) true))))) ; XSS_064
 
 ; XSS_065 (matches Coq: Theorem XSS_065)
 (assert (and (= (dom_sanitizer_complete riina_dom) true) (= (dom_remove_scripts riina_dom) true))) ; XSS_065
@@ -374,19 +374,19 @@
 (assert (= (input_validation_complete riina_input) true)) ; XSS_070
 
 ; XSS_071 (matches Coq: Theorem XSS_071)
-(assert (= true true)) ; XSS_071 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (input_validation_complete i) true) (= (iv_encoding_validation i) true)))) ; XSS_071
 
 ; XSS_072 (matches Coq: Theorem XSS_072)
-(assert (= true true)) ; XSS_072 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (input_validation_complete i) true) (= (iv_strip_null_bytes i) true)))) ; XSS_072
 
 ; XSS_073 (matches Coq: Theorem XSS_073)
-(assert (= true true)) ; XSS_073 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (input_validation_complete i) true) (= (iv_normalize_unicode i) true)))) ; XSS_073
 
 ; XSS_074 (matches Coq: Theorem XSS_074)
-(assert (= true true)) ; XSS_074 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (input_validation_complete i) true) (< 0 (iv_max_length i))))) ; XSS_074
 
 ; XSS_075 (matches Coq: Theorem XSS_075)
-(assert (= true true)) ; XSS_075 [untranslatable]
+(assert (forall ((i Bool)) (=> (= (input_validation_complete i) true) (and (= (iv_encoding_validation i) true) (= (iv_strip_null_bytes i) true) (= (iv_normalize_unicode i) true))))) ; XSS_075
 
 ; XSS_076 (matches Coq: Theorem XSS_076)
 (assert (= (taint_safe TaintSanitized) true)) ; XSS_076
@@ -401,10 +401,10 @@
 (assert (= (taint_safe TaintValidated) false)) ; XSS_079
 
 ; XSS_080 (matches Coq: Theorem XSS_080)
-(assert (= true true)) ; XSS_080 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (taint_safe t) true) (or (= t TaintSanitized) (= t TaintTrusted))))) ; XSS_080
 
 ; XSS_081 (matches Coq: Theorem XSS_081)
-(assert (= true true)) ; XSS_081 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (taint_safe t) false) (or (= t TaintUntrusted) (= t TaintValidated))))) ; XSS_081
 
 ; XSS_082 (matches Coq: Theorem XSS_082)
 (assert (= (propagate_taint TaintTrusted TaintTrusted) TaintTrusted)) ; XSS_082
@@ -413,34 +413,34 @@
 (assert (= (propagate_taint TaintSanitized TaintSanitized) TaintSanitized)) ; XSS_083
 
 ; XSS_084 (matches Coq: Theorem XSS_084)
-(assert (= true true)) ; XSS_084 [untranslatable]
+(assert (forall ((t Bool)) (= (propagate_taint TaintUntrusted t) TaintUntrusted))) ; XSS_084
 
 ; XSS_085 (matches Coq: Theorem XSS_085)
-(assert (= true true)) ; XSS_085 [untranslatable]
+(assert (forall ((t Bool)) (= (propagate_taint t TaintUntrusted) TaintUntrusted))) ; XSS_085
 
 ; XSS_086 (matches Coq: Theorem XSS_086)
 (assert (= (reflected_xss_safe riina_reflected) true)) ; XSS_086
 
 ; XSS_087 (matches Coq: Theorem XSS_087)
-(assert (= true true)) ; XSS_087 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reflected_xss_safe r) true) (= (rx_sanitization_applied r) true)))) ; XSS_087
 
 ; XSS_088 (matches Coq: Theorem XSS_088)
-(assert (= true true)) ; XSS_088 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reflected_xss_safe r) true) (= (rx_output_encoded r) true)))) ; XSS_088
 
 ; XSS_089 (matches Coq: Theorem XSS_089)
-(assert (= true true)) ; XSS_089 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reflected_xss_safe r) true) (and (= (rx_sanitization_applied r) true) (= (rx_output_encoded r) true))))) ; XSS_089
 
 ; XSS_090 (matches Coq: Theorem XSS_090)
 (assert (and (= (rx_input_taint riina_reflected) TaintUntrusted) (= (reflected_xss_safe riina_reflected) true))) ; XSS_090
 
 ; XSS_091 (matches Coq: Theorem XSS_091)
-(assert (= true true)) ; XSS_091 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rx_sanitization_applied r) false) (= (reflected_xss_safe r) false)))) ; XSS_091
 
 ; XSS_092 (matches Coq: Theorem XSS_092)
-(assert (= true true)) ; XSS_092 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rx_output_encoded r) false) (= (reflected_xss_safe r) false)))) ; XSS_092
 
 ; XSS_093 (matches Coq: Theorem XSS_093)
-(assert (= true true)) ; XSS_093 [untranslatable]
+(assert (forall ((r Bool)) (and (=> (= (reflected_xss_safe r) true) (and (= (rx_sanitization_applied r) true) (= (rx_output_encoded r) true))) (=> (and (= (rx_sanitization_applied r) true) (= (rx_output_encoded r) true)) (= (reflected_xss_safe r) true))))) ; XSS_093
 
 ; XSS_094 (matches Coq: Theorem XSS_094)
 (assert (= (rx_sanitization_applied riina_reflected) true)) ; XSS_094
@@ -452,25 +452,25 @@
 (assert (= (stored_xss_safe riina_stored) true)) ; XSS_096
 
 ; XSS_097 (matches Coq: Theorem XSS_097)
-(assert (= true true)) ; XSS_097 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (= (sx_input_validated s) true)))) ; XSS_097
 
 ; XSS_098 (matches Coq: Theorem XSS_098)
-(assert (= true true)) ; XSS_098 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (= (sx_storage_sanitized s) true)))) ; XSS_098
 
 ; XSS_099 (matches Coq: Theorem XSS_099)
-(assert (= true true)) ; XSS_099 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (= (sx_retrieval_encoded s) true)))) ; XSS_099
 
 ; XSS_100 (matches Coq: Theorem XSS_100)
-(assert (= true true)) ; XSS_100 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (= (sx_output_context_aware s) true)))) ; XSS_100
 
 ; XSS_101 (matches Coq: Theorem XSS_101)
-(assert (= true true)) ; XSS_101 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (and (= (sx_input_validated s) true) (= (sx_storage_sanitized s) true))))) ; XSS_101
 
 ; XSS_102 (matches Coq: Theorem XSS_102)
-(assert (= true true)) ; XSS_102 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (and (= (sx_retrieval_encoded s) true) (= (sx_output_context_aware s) true))))) ; XSS_102
 
 ; XSS_103 (matches Coq: Theorem XSS_103)
-(assert (= true true)) ; XSS_103 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (stored_xss_safe s) true) (and (= (sx_input_validated s) true) (= (sx_storage_sanitized s) true) (= (sx_retrieval_encoded s) true) (= (sx_output_context_aware s) true))))) ; XSS_103
 
 ; XSS_104 (matches Coq: Theorem XSS_104)
 (assert (and (= (sx_input_validated riina_stored) true) (= (sx_storage_sanitized riina_stored) true))) ; XSS_104
@@ -482,25 +482,25 @@
 (assert (= (dom_xss_safe riina_dom_based) true)) ; XSS_106
 
 ; XSS_107 (matches Coq: Theorem XSS_107)
-(assert (= true true)) ; XSS_107 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (= (dx_source_sanitized d) true)))) ; XSS_107
 
 ; XSS_108 (matches Coq: Theorem XSS_108)
-(assert (= true true)) ; XSS_108 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (= (dx_sink_safe d) true)))) ; XSS_108
 
 ; XSS_109 (matches Coq: Theorem XSS_109)
-(assert (= true true)) ; XSS_109 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (= (dx_trusted_types d) true)))) ; XSS_109
 
 ; XSS_110 (matches Coq: Theorem XSS_110)
-(assert (= true true)) ; XSS_110 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (= (dx_no_eval d) true)))) ; XSS_110
 
 ; XSS_111 (matches Coq: Theorem XSS_111)
-(assert (= true true)) ; XSS_111 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (and (= (dx_source_sanitized d) true) (= (dx_sink_safe d) true))))) ; XSS_111
 
 ; XSS_112 (matches Coq: Theorem XSS_112)
-(assert (= true true)) ; XSS_112 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (and (= (dx_trusted_types d) true) (= (dx_no_eval d) true))))) ; XSS_112
 
 ; XSS_113 (matches Coq: Theorem XSS_113)
-(assert (= true true)) ; XSS_113 [untranslatable]
+(assert (forall ((d Bool)) (=> (= (dom_xss_safe d) true) (and (= (dx_source_sanitized d) true) (= (dx_sink_safe d) true) (= (dx_trusted_types d) true) (= (dx_no_eval d) true))))) ; XSS_113
 
 ; XSS_114 (matches Coq: Theorem XSS_114)
 (assert (and (= (dx_source_sanitized riina_dom_based) true) (= (dx_sink_safe riina_dom_based) true))) ; XSS_114
@@ -509,82 +509,84 @@
 (assert (and (= (dx_trusted_types riina_dom_based) true) (= (dx_no_eval riina_dom_based) true))) ; XSS_115
 
 ; XSS_116 (matches Coq: Theorem XSS_116)
-(assert (= true true)) ; XSS_116 [untranslatable]
+(assert (= (html_encode_char 60) (insert 38 (insert 108 (insert 116 (insert 59 nil)))))) ; XSS_116
 
 ; XSS_117 (matches Coq: Theorem XSS_117)
-(assert (= true true)) ; XSS_117 [untranslatable]
+(assert (= (html_encode_char 62) (insert 38 (insert 103 (insert 116 (insert 59 nil)))))) ; XSS_117
 
 ; XSS_118 (matches Coq: Theorem XSS_118)
-(assert (= true true)) ; XSS_118 [untranslatable]
+(assert (= (html_encode_char 38) (insert 38 (insert 97 (insert 109 (insert 112 (insert 59 nil))))))) ; XSS_118
 
 ; XSS_119 (matches Coq: Theorem XSS_119)
-(assert (= true true)) ; XSS_119 [untranslatable]
+(assert (= (html_encode_char 34) (insert 38 (insert 113 (insert 117 (insert 111 (insert 116 (insert 59 nil)))))))) ; XSS_119
 
 ; XSS_120 (matches Coq: Theorem XSS_120)
-(assert (= true true)) ; XSS_120 [untranslatable]
+(assert (= (html_encode_char 39) (insert 38 (insert 35 (insert 51 (insert 57 (insert 59 nil))))))) ; XSS_120
 
 ; XSS_121 (matches Coq: Theorem XSS_121)
-(assert (= true true)) ; XSS_121 [untranslatable]
+(assert (= (html_encode_char 65) (insert 65 nil))) ; XSS_121
 
 ; XSS_122 (matches Coq: Theorem XSS_122)
-(assert (= true true)) ; XSS_122 [untranslatable]
+; XSS_122: html_encode [60; 115; 99; 114; 105; 112; 116; 62] = [38; 108; 116; 59; 115; 99; 114; 105; 112; 116; 38; 103; 116; 59]
+(assert true) ; XSS_122 [Coq-only]
 
 ; XSS_123 (matches Coq: Theorem XSS_123)
-(assert (= true true)) ; XSS_123 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (is_html_dangerous c) false) (= (html_encode_char c) (insert c nil))))) ; XSS_123
 
 ; XSS_124 (matches Coq: Theorem XSS_124)
-(assert (= true true)) ; XSS_124 [untranslatable]
+(assert (= (html_encode nil) nil)) ; XSS_124
 
 ; XSS_125 (matches Coq: Theorem XSS_125)
-(assert (= true true)) ; XSS_125 [untranslatable]
+(assert (forall ((c Bool)) (>= (length (html_encode_char c)) 1))) ; XSS_125
 
 ; XSS_126 (matches Coq: Theorem XSS_126)
-(assert (= true true)) ; XSS_126 [untranslatable]
+(assert (= (js_escape_char 34) (insert 92 (insert 34 nil)))) ; XSS_126
 
 ; XSS_127 (matches Coq: Theorem XSS_127)
-(assert (= true true)) ; XSS_127 [untranslatable]
+(assert (= (js_escape_char 39) (insert 92 (insert 39 nil)))) ; XSS_127
 
 ; XSS_128 (matches Coq: Theorem XSS_128)
-(assert (= true true)) ; XSS_128 [untranslatable]
+(assert (= (js_escape_char 92) (insert 92 (insert 92 nil)))) ; XSS_128
 
 ; XSS_129 (matches Coq: Theorem XSS_129)
-(assert (= true true)) ; XSS_129 [untranslatable]
+(assert (= (js_escape_char 10) (insert 92 (insert 110 nil)))) ; XSS_129
 
 ; XSS_130 (matches Coq: Theorem XSS_130)
-(assert (= true true)) ; XSS_130 [untranslatable]
+(assert (= (js_escape_char 60) (insert 92 (insert 117 (insert 48 (insert 48 (insert 51 (insert 67 nil)))))))) ; XSS_130
 
 ; XSS_131 (matches Coq: Theorem XSS_131)
-(assert (= true true)) ; XSS_131 [untranslatable]
+(assert (= (js_escape_char 65) (insert 65 nil))) ; XSS_131
 
 ; XSS_132 (matches Coq: Theorem XSS_132)
-(assert (= true true)) ; XSS_132 [untranslatable]
+(assert (= (js_escape nil) nil)) ; XSS_132
 
 ; XSS_133 (matches Coq: Theorem XSS_133)
-(assert (= true true)) ; XSS_133 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (is_js_dangerous c) false) (= (js_escape_char c) (insert c nil))))) ; XSS_133
 
 ; XSS_134 (matches Coq: Theorem XSS_134)
-(assert (= true true)) ; XSS_134 [untranslatable]
+; XSS_134: js_escape [60; 47; 115; 99; 114; 105; 112; 116; 62] = [92; 117; 48; 48; 51; 67; 47; 115; 99; 114; 105; 112; 116; 92; 117
+(assert true) ; XSS_134 [Coq-only]
 
 ; XSS_135 (matches Coq: Theorem XSS_135)
-(assert (= true true)) ; XSS_135 [untranslatable]
+(assert (forall ((c Bool)) (>= (length (js_escape_char c)) 1))) ; XSS_135
 
 ; XSS_136 (matches Coq: Theorem XSS_136)
-(assert (= true true)) ; XSS_136 [untranslatable]
+(assert (= (url_encode_char 65) (insert 65 nil))) ; XSS_136
 
 ; XSS_137 (matches Coq: Theorem XSS_137)
-(assert (= true true)) ; XSS_137 [untranslatable]
+(assert (= (url_encode_char 60) (insert 37 (insert 51 (insert 67 nil))))) ; XSS_137
 
 ; XSS_138 (matches Coq: Theorem XSS_138)
-(assert (= true true)) ; XSS_138 [untranslatable]
+(assert (= (url_encode_char 62) (insert 37 (insert 51 (insert 69 nil))))) ; XSS_138
 
 ; XSS_139 (matches Coq: Theorem XSS_139)
-(assert (= true true)) ; XSS_139 [untranslatable]
+(assert (= (url_encode_char 32) (insert 37 (insert 50 (insert 48 nil))))) ; XSS_139
 
 ; XSS_140 (matches Coq: Theorem XSS_140)
-(assert (= true true)) ; XSS_140 [untranslatable]
+(assert (= (url_encode nil) nil)) ; XSS_140
 
 ; XSS_141 (matches Coq: Theorem XSS_141)
-(assert (= true true)) ; XSS_141 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (needs_url_encoding c) false) (= (url_encode_char c) (insert c nil))))) ; XSS_141
 
 ; XSS_142 (matches Coq: Theorem XSS_142)
 (assert (= (needs_url_encoding 65) false)) ; XSS_142
@@ -596,22 +598,23 @@
 (assert (= (needs_url_encoding 45) false)) ; XSS_144
 
 ; XSS_145 (matches Coq: Theorem XSS_145)
-(assert (= true true)) ; XSS_145 [untranslatable]
+; XSS_145: url_encode [106; 97; 118; 97; 115; 99; 114; 105; 112; 116; 58] = [106; 97; 118; 97; 115; 99; 114; 105; 112; 116; 37; 51;
+(assert true) ; XSS_145 [Coq-only]
 
 ; XSS_146 (matches Coq: Theorem XSS_146)
-(assert (= true true)) ; XSS_146 [untranslatable]
+(assert (= (css_escape_char 65) (insert 65 nil))) ; XSS_146
 
 ; XSS_147 (matches Coq: Theorem XSS_147)
-(assert (= true true)) ; XSS_147 [untranslatable]
+(assert (= (css_escape_char 60) (insert 92 (insert 51 (insert 67 (insert 32 nil)))))) ; XSS_147
 
 ; XSS_148 (matches Coq: Theorem XSS_148)
-(assert (= true true)) ; XSS_148 [untranslatable]
+(assert (= (css_escape_char 40) (insert 92 (insert 50 (insert 56 (insert 32 nil)))))) ; XSS_148
 
 ; XSS_149 (matches Coq: Theorem XSS_149)
-(assert (= true true)) ; XSS_149 [untranslatable]
+(assert (= (css_escape nil) nil)) ; XSS_149
 
 ; XSS_150 (matches Coq: Theorem XSS_150)
-(assert (= true true)) ; XSS_150 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (is_css_dangerous c) false) (= (css_escape_char c) (insert c nil))))) ; XSS_150
 
 ; XSS_151 (matches Coq: Theorem XSS_151)
 (assert (= (is_css_dangerous 65) false)) ; XSS_151
@@ -632,19 +635,19 @@
 (assert (= (xss_maximum_protection riina_xss) true)) ; XSS_156
 
 ; XSS_157 (matches Coq: Theorem XSS_157)
-(assert (= true true)) ; XSS_157 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_maximum_protection x) true) (=> (= (xss_dom_sanitization x) true) (= (xss_protected x) true))))) ; XSS_157
 
 ; XSS_158 (matches Coq: Theorem XSS_158)
-(assert (= true true)) ; XSS_158 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_maximum_protection x) true) (= (output_safe (xss_output x)) true)))) ; XSS_158
 
 ; XSS_159 (matches Coq: Theorem XSS_159)
-(assert (= true true)) ; XSS_159 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_maximum_protection x) true) (= (csp_maximum (xss_csp x)) true)))) ; XSS_159
 
 ; XSS_160 (matches Coq: Theorem XSS_160)
-(assert (= true true)) ; XSS_160 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_maximum_protection x) true) (= (dom_sanitizer_complete (xss_dom x)) true)))) ; XSS_160
 
 ; XSS_161 (matches Coq: Theorem XSS_161)
-(assert (= true true)) ; XSS_161 [untranslatable]
+(assert (forall ((x Bool)) (=> (= (xss_maximum_protection x) true) (= (input_validation_complete (xss_input x)) true)))) ; XSS_161
 
 ; XSS_162 (matches Coq: Theorem XSS_162)
 (assert (and (= (output_safe riina_output) true) (= (csp_maximum riina_csp) true) (= (dom_sanitizer_complete riina_dom) true) (= (input_validation_complete riina_input) true) (= (xss_dom_sanitization riina_xss) true))) ; XSS_162

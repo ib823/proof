@@ -8,28 +8,28 @@
 (set-option :produce-models true)
 
 ; val_rel_le_secret_trivial (matches Coq: Lemma val_rel_le_secret_trivial)
-(assert (= true true)) ; val_rel_le_secret_trivial [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (closed_expr v1) true) (=> (= (closed_expr v2) true) (= (val_rel_le n Σ (TSecret T) v1 v2) true))))))) ; val_rel_le_secret_trivial
 
 ; declassify_eval (matches Coq: Lemma declassify_eval)
-(assert (= true true)) ; declassify_eval [untranslatable]
+(assert (forall ((v Bool) (p Bool) (st Bool) (ctx Bool)) (=> (= (value v) true) (=> (= (declass_ok (EClassify v) p) true) (= (multi_step (mk-tuple (EDeclassify (EClassify v) p) st ctx) (mk-tuple v st ctx)) true))))) ; declassify_eval
 
 ; logical_relation_declassify_proven (matches Coq: Lemma logical_relation_declassify_proven)
-(assert (= true true)) ; logical_relation_declassify_proven [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (v1 Bool) (v2 Bool) (p Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (= (val_rel_le n Σ (TSecret T) (EClassify v1) (EClassify v2)) true) (=> (= (store_rel_simple Σ st1 st2) true) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (declass_ok (EClassify v1) p) true) (=> (= (declass_ok (EClassify v2) p) true) (and (= (multi_step (mk-tuple (EDeclassify (EClassify v1) p) st1 ctx) (mk-tuple v1 st1 ctx)) true) (= (multi_step (mk-tuple (EDeclassify (EClassify v2) p) st2 ctx) (mk-tuple v2 st2 ctx)) true) (= (store_rel_simple Σ st1 st2) true)))))))))) ; logical_relation_declassify_proven
 
 ; value_multi_step_refl_decl (matches Coq: Lemma value_multi_step_refl_decl)
-(assert (= true true)) ; value_multi_step_refl_decl [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool) (cfg Bool)) (=> (= (value v) true) (=> (= (multi_step (mk-tuple v st ctx) cfg) true) (= cfg (mk-tuple v st ctx)))))) ; value_multi_step_refl_decl
 
 ; eval_deterministic_cfg (matches Coq: Lemma eval_deterministic_cfg)
-(assert (= true true)) ; eval_deterministic_cfg [untranslatable]
+(assert (forall ((cfg Bool) (cfg1 Bool) (cfg2 Bool)) (=> (= (multi_step cfg cfg1) true) (=> (= (multi_step cfg cfg2) true) (=> (= (value (fst (fst cfg1))) true) (=> (= (value (fst (fst cfg2))) true) (= cfg1 cfg2))))))) ; eval_deterministic_cfg
 
 ; eval_deterministic (matches Coq: Lemma eval_deterministic)
-(assert (= true true)) ; eval_deterministic [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (v1 Bool) (st1 Bool) (v2 Bool) (st2 Bool)) (=> (= (multi_step (mk-tuple e st ctx) (mk-tuple v1 st1 ctx)) true) (=> (= (multi_step (mk-tuple e st ctx) (mk-tuple v2 st2 ctx)) true) (=> (= (value v1) true) (=> (= (value v2) true) (and (= v1 v2) (= st1 st2)))))))) ; eval_deterministic
 
 ; declassify_policy_safe (matches Coq: Lemma declassify_policy_safe)
-(assert (= true true)) ; declassify_policy_safe [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (e Bool) (T Bool) (eff1 Bool) (eff2 Bool) (p Bool)) (=> (= (has_type Γ Σ Δ e (TSecret T) eff1) true) (=> (= (has_type Γ Σ Δ p (TProof (TSecret T)) eff2) true) (=> (= (declass_ok e p) true) (= (has_type Γ Σ Δ (EDeclassify e p) T (effect_join eff1 eff2)) true)))))) ; declassify_policy_safe
 
 ; declassification_zero_admits (matches Coq: Theorem declassification_zero_admits)
-(assert (= true true)) ; declassification_zero_admits [untranslatable]
+(assert true) ; declassification_zero_admits
 
 ; Verify all assertions are satisfiable
 (check-sat)

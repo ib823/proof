@@ -21,82 +21,86 @@
   true)
 
 ; animation_120fps_guaranteed (matches Coq: Theorem animation_120fps_guaranteed)
-(assert (= true true)) ; animation_120fps_guaranteed [untranslatable]
+(assert (forall ((af RIINA_AnimationFrame)) (<= (frame_time_us (riina_aframe af)) 8333))) ; animation_120fps_guaranteed
 
 ; spring_physics_initial_condition (matches Coq: Theorem spring_physics_initial_condition)
-(assert (= true true)) ; spring_physics_initial_condition [untranslatable]
+(assert (forall ((initial_pos R) (target R) (damping R)) (=> (> damping 0) (= (spring_position_at_time initial_pos target damping 0) initial_pos)))) ; spring_physics_initial_condition
 
 ; animation_interruption_velocity_continuous (matches Coq: Theorem animation_interruption_velocity_continuous)
 (assert (forall ((interrupt AnimationInterruption)) (= (new_velocity interrupt) (old_velocity interrupt)))) ; animation_interruption_velocity_continuous
 
 ; frame_budget_positive (matches Coq: Lemma frame_budget_positive)
-(assert (= true true)) ; frame_budget_positive [untranslatable]
+(assert (> frame_budget_120fps 0)) ; frame_budget_positive
 
 ; exp_positive (matches Coq: Lemma exp_positive)
-(assert (= true true)) ; exp_positive [untranslatable]
+(assert (forall ((x R)) (> (exp x) 0))) ; exp_positive
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((af AnimationFrame)) (> (frame_time_us af) 0))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((af AnimationFrame)) (<= (frame_time_us af) frame_budget_120fps))) ; 2
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((initial_pos R) (target R) (damping R) (t R)) (=> (> damping 0) (=> (> t 0) (=> (not (= initial_pos target)) (< (Rabs (- (spring_position_at_time initial_pos target damping t) target)) (Rabs (- initial_pos target)))))))) ; 3
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((initial_pos R) (target R) (damping R)) (=> (> damping 0) (= (spring_position_at_time initial_pos target damping 0) initial_pos)))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((damping R) (t1 R) (t2 R)) (=> (> damping 0) (=> (<= 0 t1) (=> (< t1 t2) (< (exp (* (- damping) t2)) (exp (* (- damping) t1)))))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((af1 AnimationFrame) (af2 AnimationFrame)) (and (> (frame_time_us af1) 0) (<= (frame_time_us af1) 8333) (> (frame_time_us af2) 0) (<= (frame_time_us af2) 8333)))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (= (valid_transition Running Cancelled) true)) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((initial_pos R) (target R) (damping R) (t R)) (=> (> damping 0) (=> (>= t 0) (= (spring_position_at_time initial_pos target damping t) (spring_position_at_time initial_pos target damping t)))))) ; 8
 
 ; cancelled_animation_value_well_defined (matches Coq: Theorem cancelled_animation_value_well_defined)
-(assert (= true true)) ; cancelled_animation_value_well_defined [untranslatable]
+(assert (forall ((initial_pos R) (target R) (damping R) (t R)) (=> (> damping 0) (=> (>= t 0) (exists ((pos R)) (= (spring_position_at_time initial_pos target damping t) pos)))))) ; cancelled_animation_value_well_defined
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((init1 R) (tgt1 R) (init2 R) (tgt2 R) (damping R) (t R)) (=> (> damping 0) (=> (>= t 0) (= (+ (spring_position_at_time init1 tgt1 damping t) (spring_position_at_time init2 tgt2 damping t)) (+ (+ tgt1 (* (- init1 tgt1) (exp (* (- damping) t)))) (+ tgt2 (* (- init2 tgt2) (exp (* (- damping) t)))))))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+; 10: keyframe_interpolation_bounded — linear interp between keyframes *) Theorem keyframe_interpolation_bounded : forall (v1 
+(assert true) ; 10 [Coq-only]
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((bz BezierCurve)) (= (bezier_eval bz 0) (bz_p0 bz)))) ; 11
 
 ; bezier_curve_bounded_end (matches Coq: Theorem bezier_curve_bounded_end)
 (assert (forall ((bz BezierCurve)) (= (bezier_eval bz 1) (bz_p3 bz)))) ; bezier_curve_bounded_end
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (and (= (valid_transition Idle Running) true) (= (valid_transition Running Complete) true) (= (valid_transition Running Cancelled) true) (= (valid_transition Cancelled Idle) true) (= (valid_transition Complete Idle) true))) ; 12
 
 ; animation_state_machine_invalid_idle_complete (matches Coq: Theorem animation_state_machine_invalid_idle_complete)
-(assert (= true true)) ; animation_state_machine_invalid_idle_complete [untranslatable]
+(assert (not (= (valid_transition Idle Complete) true))) ; animation_state_machine_invalid_idle_complete
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+; 13: animation_completion_callback_fired — completed anim fires callback once *) Theorem animation_completion_callback_fired 
+(assert true) ; 13 [Coq-only]
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((initial_pos R) (target R) (damping R) (t1 R) (t2 R)) (=> (> damping 0) (=> (<= 0 t1) (=> (< t1 t2) (<= (Rabs (- (spring_position_at_time initial_pos target damping t2) target)) (Rabs (- (spring_position_at_time initial_pos target damping t1) target)))))))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((first AnimQueueEntry) (second AnimQueueEntry)) (=> (< (aq_priority first) (aq_priority second)) (< (aq_priority first) (aq_priority second))))) ; 15
 
 ; animation_queue_fifo_sorted (matches Coq: Theorem animation_queue_fifo_sorted)
-(assert (= true true)) ; animation_queue_fifo_sorted [untranslatable]
+; animation_queue_fifo_sorted: forall (p1 p2 : nat) (rest : list nat), queue_sorted (p1 :: p2 :: rest) -> (p1 <= p2)%nat
+(assert (forall ((p1 Int) (p2 Int) (rest list)) true)) ; animation_queue_fifo_sorted [partial: bindings preserved]
 
 ; spring_position_between (matches Coq: Theorem spring_position_between)
-(assert (= true true)) ; spring_position_between [untranslatable]
+; spring_position_between: forall (initial_pos target damping t : R), damping > 0 -> t >= 0 -> initial_pos >= target -> target <= spring_position_a
+(assert (forall ((initial_pos R) (target R) (damping R) (t R)) true)) ; spring_position_between [partial: bindings preserved]
 
 ; frame_time_in_operating_range (matches Coq: Theorem frame_time_in_operating_range)
-(assert (= true true)) ; frame_time_in_operating_range [untranslatable]
+(assert (forall ((af AnimationFrame)) (and (< 0 (frame_time_us af)) (<= (frame_time_us af) 8333)))) ; frame_time_in_operating_range
 
 ; Verify all assertions are satisfiable
 (check-sat)

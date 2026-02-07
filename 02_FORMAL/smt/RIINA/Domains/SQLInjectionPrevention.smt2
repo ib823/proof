@@ -31,7 +31,7 @@
   (mk-sql_security_config true true true true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; SQLI_001_untainted_safe (matches Coq: Theorem SQLI_001_untainted_safe)
 (assert (= (taint_safe Untainted) true)) ; SQLI_001_untainted_safe
@@ -73,7 +73,7 @@
 (assert (= (sql_parameterized_only riina_sql_config) true)) ; SQLI_013_riina_parameterized
 
 ; SQLI_014_sanitization_makes_safe (matches Coq: Theorem SQLI_014_sanitization_makes_safe)
-(assert (= true true)) ; SQLI_014_sanitization_makes_safe [untranslatable]
+(assert (forall ((t TaintLevel)) (=> (or (= t Sanitized) (= t Untainted)) (= (taint_safe t) true)))) ; SQLI_014_sanitization_makes_safe
 
 ; SQLI_015_complete_prevention (matches Coq: Theorem SQLI_015_complete_prevention)
 (assert (forall ((c SQLSecurityConfig)) (=> (= (sql_injection_protected c) true) (and (= (sql_parameterized_only c) true) (= (sql_no_string_concat c) true) (= (sql_input_sanitized c) true) (= (sql_escape_special_chars c) true))))) ; SQLI_015_complete_prevention

@@ -179,112 +179,117 @@
   true)
 
 ; pred_decidable_PTrue (matches Coq: Lemma pred_decidable_PTrue)
-(assert (= true true)) ; pred_decidable_PTrue [untranslatable]
+(assert (= (pred_decidable PTrue) true)) ; pred_decidable_PTrue
 
 ; pred_decidable_eval (matches Coq: Lemma pred_decidable_eval)
-(assert (= true true)) ; pred_decidable_eval [untranslatable]
+(assert (forall ((p Bool) (env Bool)) (or (= (eval_pred p env) true) (= (eval_pred p env) false)))) ; pred_decidable_eval
 
 ; E_001_01 (matches Coq: Theorem E_001_01)
-(assert (= true true)) ; E_001_01 [untranslatable]
+(assert (forall ((bt Bool) (p Bool)) (=> (= (pred_decidable p) true) (= (refinement_wf (RRefine bt p)) true)))) ; E_001_01
 
 ; E_001_02 (matches Coq: Theorem E_001_02)
-(assert (= true true)) ; E_001_02 [untranslatable]
+(assert (forall ((bt Bool) (p Bool) (q Bool)) (=> (= (pred_implies p q) true) (= (refinement_subtype (RRefine bt p) (RRefine bt q)) true)))) ; E_001_02
 
 ; smt_translation_correct (matches Coq: Lemma smt_translation_correct)
-(assert (= true true)) ; smt_translation_correct [untranslatable]
+(assert (forall ((p Bool) (env Bool)) (= (eval_pred p env) (eval_smt (pred_to_smt p) env)))) ; smt_translation_correct
 
 ; E_001_03 (matches Coq: Theorem E_001_03)
-(assert (= true true)) ; E_001_03 [untranslatable]
+(assert (forall ((p Bool) (env Bool)) (and (=> (= (eval_pred p env) true) (= (eval_smt (pred_to_smt p) env) true)) (=> (= (eval_smt (pred_to_smt p) env) true) (= (eval_pred p env) true))))) ; E_001_03
 
 ; E_001_04 (matches Coq: Theorem E_001_04)
-(assert (= true true)) ; E_001_04 [untranslatable]
+(assert (forall ((s Bool) (bound Bool)) (=> (< (liquid_iteration s) bound) (= (liquid_terminates (liquid_step s) bound) true)))) ; E_001_04
 
 ; E_001_05 (matches Coq: Theorem E_001_05)
-(assert (= true true)) ; E_001_05 [untranslatable]
+; E_001_05: forall ctx t1 t2, ty_wf ctx t1 -> ty_wf (t1 :: ctx) t2 -> ty_wf ctx (TEPi t1 t2)
+(assert (forall ((ctx Bool) (t1 Bool) (t2 Bool)) true)) ; E_001_05 [partial: bindings preserved]
 
 ; E_001_06 (matches Coq: Theorem E_001_06)
-(assert (= true true)) ; E_001_06 [untranslatable]
+; E_001_06: forall ctx t1 t2, ty_wf ctx t1 -> ty_wf (t1 :: ctx) t2 -> ty_wf ctx (TESigma t1 t2)
+(assert (forall ((ctx Bool) (t1 Bool) (t2 Bool)) true)) ; E_001_06 [partial: bindings preserved]
 
 ; E_001_07 (matches Coq: Theorem E_001_07)
-(assert (= true true)) ; E_001_07 [untranslatable]
+(assert (forall ((ctx Bool) (fam Bool)) (=> (forall ((n Bool)) (= (ty_wf ctx (fam n)) true)) (= (ty_family_wf ctx fam) true)))) ; E_001_07
 
 ; ty_subst_preserves_base (matches Coq: Lemma ty_subst_preserves_base)
-(assert (= true true)) ; ty_subst_preserves_base [untranslatable]
+(assert (forall ((b Bool) (n Bool) (s Bool)) (= (ty_subst (TEBase b) n s) (TEBase b)))) ; ty_subst_preserves_base
 
 ; E_001_08 (matches Coq: Theorem E_001_08)
-(assert (= true true)) ; E_001_08 [untranslatable]
+(assert (forall ((ctx Bool) (t1 Bool) (t2 Bool) (n Bool)) (=> (= (ty_wf ctx t1) true) (=> (= (ty_wf ctx t2) true) (=> (= (ty_wf ctx (TEBase TyNat)) true) (= (ty_subst (TEBase TyNat) n t2) (TEBase TyNat))))))) ; E_001_08
 
 ; E_001_09 (matches Coq: Theorem E_001_09)
-(assert (= true true)) ; E_001_09 [untranslatable]
+(assert (forall ((c Bool) (env Bool)) (=> (= (precondition_verified c env) true) (= (eval_pred (precondition c) env) true)))) ; E_001_09
 
 ; E_001_10 (matches Coq: Theorem E_001_10)
-(assert (= true true)) ; E_001_10 [untranslatable]
+(assert (forall ((c Bool) (pre_env Bool) (post_env Bool)) (=> (= (postcondition_verified c pre_env post_env) true) (= (contract_sat c pre_env post_env) true)))) ; E_001_10
 
 ; E_001_11 (matches Coq: Theorem E_001_11)
-(assert (= true true)) ; E_001_11 [untranslatable]
+(assert (forall ((inv Bool) (c Bool) (pre_env Bool) (post_env Bool)) (=> (= (eval_pred inv pre_env) true) (=> (= (pred_implies (PAnd inv (precondition c)) (postcondition c)) true) (=> (= (pred_implies (postcondition c) inv) true) (=> (=> (= (eval_pred (precondition c) pre_env) true) (= (eval_pred (postcondition c) post_env) true)) (=> (=> (= (eval_pred (precondition c) pre_env) false) (= pre_env post_env)) (= (invariant_preserved inv pre_env post_env) true)))))))) ; E_001_11
 
 ; E_001_12 (matches Coq: Theorem E_001_12)
-(assert (= true true)) ; E_001_12 [untranslatable]
+(assert (forall ((c_base Bool) (c_derived Bool)) (=> (= (contract_stronger c_derived c_base) true) (=> (forall ((pre_env Bool) (post_env Bool)) (= (contract_sat c_derived pre_env post_env) true)) (= (contract_sat c_base pre_env post_env) true))))) ; E_001_12
 
 ; E_001_13 (matches Coq: Theorem E_001_13)
-(assert (= true true)) ; E_001_13 [untranslatable]
+(assert (forall ((h1 Bool) (h2 Bool) (p1 Bool) (p2 Bool)) (=> (= (disjoint h1 h2) true) (=> (= (heap_sat h1 p1) true) (=> (= (heap_sat h2 p2) true) (= (heap_sat (heap_union h1 h2) (HPSep p1 p2)) true)))))) ; E_001_13
 
 ; E_001_14 (matches Coq: Theorem E_001_14)
-(assert (= true true)) ; E_001_14 [untranslatable]
+(assert (forall ((h Bool) (hp Bool) (hq Bool)) (=> (= (heap_sat h (HPWand hp hq)) true) (=> (forall ((h' Bool)) (= (disjoint h h') true)) (=> (= (heap_sat h' hp) true) (= (heap_sat (heap_union h h') hq) true)))))) ; E_001_14
 
 ; E_001_15 (matches Coq: Theorem E_001_15)
-(assert (= true true)) ; E_001_15 [untranslatable]
+(assert (forall ((p Bool) (q Bool) (r Bool) (c Bool)) (=> (= (hoare_triple p c q) true) (= (hoare_triple (HPSep p r) c (HPSep q r)) true)))) ; E_001_15
 
 ; E_001_16 (matches Coq: Theorem E_001_16)
-(assert (= true true)) ; E_001_16 [untranslatable]
+; E_001_16: forall l v, heap_sat (fun x => if Nat.eqb x l then Some v else None) (HPPointsTo l v)
+(assert (forall ((l Bool) (v Bool)) true)) ; E_001_16 [partial: bindings preserved]
 
 ; E_001_17 (matches Coq: Theorem E_001_17)
-(assert (= true true)) ; E_001_17 [untranslatable]
+(assert (forall ((trans Bool) (p Bool) (s Bool) (k Bool)) (=> (= (bmc_check trans (PropAtom p) s k) true) (= (eval_pred p s) true)))) ; E_001_17
 
 ; E_001_18 (matches Coq: Theorem E_001_18)
-(assert (= true true)) ; E_001_18 [untranslatable]
+(assert (forall ((p Bool) (s Bool)) (and (=> (= (prop_sat s (PropAtom p)) true) (= (eval_pred p s) true)) (=> (= (eval_pred p s) true) (= (prop_sat s (PropAtom p)) true))))) ; E_001_18
 
 ; E_001_19 (matches Coq: Theorem E_001_19)
-(assert (= true true)) ; E_001_19 [untranslatable]
+; E_001_19: forall trans prop trace s, valid_counterexample trans prop (s :: trace) -> exists s', (s' = s \/ List.In s' trace) /\ ~ 
+(assert (forall ((trans Bool) (prop Bool) (trace Bool) (s Bool)) true)) ; E_001_19 [partial: bindings preserved]
 
 ; E_001_20 (matches Coq: Theorem E_001_20)
-(assert (= true true)) ; E_001_20 [untranslatable]
+(assert (forall ((abs Bool) (trans Bool) (abs_trans Bool) (prop Bool)) (=> (= (abstraction_sound abs trans abs_trans) true) (=> (forall ((s Bool)) (=> (= (prop_sat (abs s) prop) true) (= (prop_sat s prop) true))) (=> (forall ((s Bool)) (= (prop_sat (abs s) prop) true)) (= (prop_sat s prop) true)))))) ; E_001_20
 
 ; E_001_21 (matches Coq: Theorem E_001_21)
-(assert (= true true)) ; E_001_21 [untranslatable]
+(assert (forall ((ctx Bool) (t Bool) (p Bool) (assignment Bool)) (=> (= (proof_typed ctx t p) true) (=> (= (ctx_valid ctx assignment) true) (= (interp_prop p assignment) true))))) ; E_001_21
 
 ; E_001_22 (matches Coq: Theorem E_001_22)
-(assert (= true true)) ; E_001_22 [untranslatable]
+(assert (forall ((ctx Bool) (t Bool) (p Bool) (assignment Bool)) (=> (= (proof_typed ctx t p) true) (=> (= (ctx_valid ctx assignment) true) (= (interp_prop p assignment) true))))) ; E_001_22
 
 ; bool_proof_irrelevant (matches Coq: Lemma bool_proof_irrelevant)
-(assert (= true true)) ; bool_proof_irrelevant [untranslatable]
+(assert (forall ((b Bool)) (forall ((p1 b) (p2 b)) (= p1 p2)))) ; bool_proof_irrelevant
 
 ; E_001_23 (matches Coq: Theorem E_001_23)
-(assert (= true true)) ; E_001_23 [untranslatable]
+; E_001_23: forall p env (pf1 pf2 : eval_pred p env = true), pf1 = pf2
+(assert true) ; E_001_23 [Coq-only]
 
 ; E_001_24 (matches Coq: Theorem E_001_24)
-(assert (= true true)) ; E_001_24 [untranslatable]
+(assert (forall ((ctx Bool) (t1 Bool) (t2 Bool) (p1 Bool) (p2 Bool)) (=> (= (proof_typed ctx t1 p1) true) (=> (= (proof_typed ctx t2 p2) true) (= (proof_typed ctx (PTAndI t1 t2) (SPAnd p1 p2)) true))))) ; E_001_24
 
 ; E_001_25 (matches Coq: Theorem E_001_25)
-(assert (= true true)) ; E_001_25 [untranslatable]
+(assert (forall ((ctx Bool) (e Bool) (t Bool)) (=> (= (src_typed ctx e t) true) (= (tgt_typed ctx (compile e) t) true)))) ; E_001_25
 
 ; E_001_26 (matches Coq: Theorem E_001_26)
-(assert (= true true)) ; E_001_26 [untranslatable]
+(assert (forall ((e Bool)) (= (src_effect e) (tgt_effect (compile e))))) ; E_001_26
 
 ; E_001_27 (matches Coq: Theorem E_001_27)
-(assert (= true true)) ; E_001_27 [untranslatable]
+(assert (forall ((e Bool)) (= (src_sec_label e) (tgt_sec_label (compile e))))) ; E_001_27
 
 ; E_001_28 (matches Coq: Theorem E_001_28)
-(assert (= true true)) ; E_001_28 [untranslatable]
+(assert (forall ((v Bool)) (= (obs_equiv v (compile_val v)) true))) ; E_001_28
 
 ; wp_skip_sound (matches Coq: Lemma wp_skip_sound)
-(assert (= true true)) ; wp_skip_sound [untranslatable]
+(assert (forall ((post Bool) (env Bool)) (=> (= (eval_pred (wp CmdSkip post) env) true) (= (eval_pred post env) true)))) ; wp_skip_sound
 
 ; E_001_29 (matches Coq: Theorem E_001_29)
-(assert (= true true)) ; E_001_29 [untranslatable]
+(assert (forall ((post Bool) (env Bool)) (=> (= (eval_pred (wp CmdSkip post) env) true) (=> (forall ((env2 Bool)) (= (cmd_eval CmdSkip env env2) true)) (= (eval_pred post env2) true))))) ; E_001_29
 
 ; E_001_30 (matches Coq: Theorem E_001_30)
-(assert (= true true)) ; E_001_30 [untranslatable]
+(assert (forall ((c Bool)) (and (=> (= (vc_valid (vc_from_contract c)) true) (forall ((env Bool)) (=> (= (eval_pred (precondition c) env) true) (= (eval_pred (postcondition c) env) true)))) (=> (forall ((env Bool)) (=> (= (eval_pred (precondition c) env) true) (= (eval_pred (postcondition c) env) true))) (= (vc_valid (vc_from_contract c)) true))))) ; E_001_30
 
 ; Verify all assertions are satisfiable
 (check-sat)

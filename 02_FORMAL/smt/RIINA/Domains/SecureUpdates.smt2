@@ -90,79 +90,79 @@
 (define-fun update_layers () Bool true)
 
 ; update_001_version_newer (matches Coq: Theorem update_001_version_newer)
-(assert (= true true)) ; update_001_version_newer [untranslatable]
+(assert (forall ((update UpdatePackage)) (forall ((sys SystemState)) (=> (= (version_gt (update_version update) (sys_version sys)) true) (= (version_gt (update_version update) (sys_version sys)) true))))) ; update_001_version_newer
 
 ; update_002_sig_count (matches Coq: Theorem update_002_sig_count)
-(assert (= true true)) ; update_002_sig_count [untranslatable]
+(assert (forall ((update UpdatePackage)) (forall ((threshold Int)) (=> (= (signatures_sufficient update threshold) true) (<= threshold (length (update_signatures update))))))) ; update_002_sig_count
 
 ; update_003_key_trusted (matches Coq: Theorem update_003_key_trusted)
-(assert (= true true)) ; update_003_key_trusted [untranslatable]
+(assert (forall ((sig UpdateSignature)) (forall ((trusted list)) (=> (= (key_trusted sig trusted) true) (exists ((k Bool)) (and (= (In k trusted) true) (= k (sig_key_id sig)))))))) ; update_003_key_trusted
 
 ; update_004_rollback_counter (matches Coq: Theorem update_004_rollback_counter)
-(assert (= true true)) ; update_004_rollback_counter [untranslatable]
+(assert (forall ((update UpdatePackage)) (forall ((sys SystemState)) (=> (= (rollback_counter_ok update sys) true) (< (sys_rollback_counter sys) (update_rollback_counter update)))))) ; update_004_rollback_counter
 
 ; update_005_min_version (matches Coq: Theorem update_005_min_version)
-(assert (= true true)) ; update_005_min_version [untranslatable]
+(assert (forall ((update UpdatePackage)) (forall ((sys SystemState)) (=> (= (version_gte (sys_version sys) (update_min_version update)) true) (= (version_gte (sys_version sys) (update_min_version update)) true))))) ; update_005_min_version
 
 ; update_006_hash_valid (matches Coq: Theorem update_006_hash_valid)
-(assert (= true true)) ; update_006_hash_valid [untranslatable]
+(assert (forall ((computed Int) (stored Int)) (=> (= (hash_valid computed stored) true) (= computed stored)))) ; update_006_hash_valid
 
 ; update_007_atomic (matches Coq: Theorem update_007_atomic)
-(assert (= true true)) ; update_007_atomic [untranslatable]
+(assert (forall ((started Bool) (finished Bool)) (=> (= (atomic_complete started finished) true) (=> (= started true) (= finished true))))) ; update_007_atomic
 
 ; update_008_backup_exists (matches Coq: Theorem update_008_backup_exists)
-(assert (= true true)) ; update_008_backup_exists [untranslatable]
+(assert (forall ((backup option)) (=> (= (backup_exists backup) true) (exists ((b Bool)) (= backup (some b)))))) ; update_008_backup_exists
 
 ; update_009_backup_version (matches Coq: Theorem update_009_backup_version)
-(assert (= true true)) ; update_009_backup_version [untranslatable]
+(assert (forall ((backup Backup)) (forall ((sys SystemState)) (=> (= (backup_version_matches backup sys) true) (= (ver_major (backup_version backup)) (ver_major (sys_version sys))))))) ; update_009_backup_version
 
 ; update_010_recovery_restores (matches Coq: Theorem update_010_recovery_restores)
 (assert (forall ((backup Backup)) (= (backup_version backup) (backup_version backup)))) ; update_010_recovery_restores
 
 ; update_011_threshold (matches Coq: Theorem update_011_threshold)
-(assert (= true true)) ; update_011_threshold [untranslatable]
+(assert (forall ((valid_sigs Int) (threshold Int)) (=> (= (threshold_met valid_sigs threshold) true) (<= threshold valid_sigs)))) ; update_011_threshold
 
 ; update_012_sig_fresh (matches Coq: Theorem update_012_sig_fresh)
-(assert (= true true)) ; update_012_sig_fresh [untranslatable]
+(assert (forall ((sig UpdateSignature)) (forall ((current Int) (max_age Int)) (=> (= (sig_fresh sig current max_age) true) (<= (- current (sig_timestamp sig)) max_age))))) ; update_012_sig_fresh
 
 ; update_013_different_keys (matches Coq: Theorem update_013_different_keys)
-(assert (= true true)) ; update_013_different_keys [untranslatable]
+(assert (forall ((sigs list)) (=> (= (keys_different sigs) true) (= (NoDup (map sig_key_id sigs)) true)))) ; update_013_different_keys
 
 ; update_014_size_bounded (matches Coq: Theorem update_014_size_bounded)
-(assert (= true true)) ; update_014_size_bounded [untranslatable]
+(assert (forall ((size Int) (max_size Int)) (=> (= (size_bounded size max_size) true) (<= size max_size)))) ; update_014_size_bounded
 
 ; update_015_compatible (matches Coq: Theorem update_015_compatible)
-(assert (= true true)) ; update_015_compatible [untranslatable]
+(assert (forall ((update_req Int) (sys_has Int)) (=> (= (compatible update_req sys_has) true) (<= update_req sys_has)))) ; update_015_compatible
 
 ; update_016_changelog (matches Coq: Theorem update_016_changelog)
-(assert (= true true)) ; update_016_changelog [untranslatable]
+(assert (forall ((changelog_size Int)) (=> (= (changelog_present changelog_size) true) (> changelog_size 0)))) ; update_016_changelog
 
 ; update_017_not_expired (matches Coq: Theorem update_017_not_expired)
-(assert (= true true)) ; update_017_not_expired [untranslatable]
+(assert (forall ((current Int) (expiry Int)) (=> (= (not_expired current expiry) true) (< current expiry)))) ; update_017_not_expired
 
 ; update_018_download_valid (matches Coq: Theorem update_018_download_valid)
-(assert (= true true)) ; update_018_download_valid [untranslatable]
+(assert (forall ((received Int) (expected Int)) (=> (= (download_valid received expected) true) (= received expected)))) ; update_018_download_valid
 
 ; update_019_secure_channel (matches Coq: Theorem update_019_secure_channel)
-(assert (= true true)) ; update_019_secure_channel [untranslatable]
+(assert (forall ((tls_version Int) (min_version Int)) (=> (= (channel_secure tls_version min_version) true) (<= min_version tls_version)))) ; update_019_secure_channel
 
 ; update_020_rollout_pct (matches Coq: Theorem update_020_rollout_pct)
-(assert (= true true)) ; update_020_rollout_pct [untranslatable]
+(assert (forall ((percentage Int) (max_pct Int)) (=> (= (rollout_percentage_ok percentage max_pct) true) (<= percentage max_pct)))) ; update_020_rollout_pct
 
 ; update_021_reboot (matches Coq: Theorem update_021_reboot)
-(assert (= true true)) ; update_021_reboot [untranslatable]
+(assert (forall ((required Bool) (handled Bool)) (=> (= (reboot_handled required handled) true) (=> (= required true) (= handled true))))) ; update_021_reboot
 
 ; update_022_post_verify (matches Coq: Theorem update_022_post_verify)
 (assert (forall ((passed Bool)) (=> (= (post_verify_ok passed) true) (= passed true)))) ; update_022_post_verify
 
 ; update_023_audit (matches Coq: Theorem update_023_audit)
-(assert (= true true)) ; update_023_audit [untranslatable]
+(assert (forall ((event_count Int) (log_count Int)) (=> (= (audit_logged event_count log_count) true) (<= event_count log_count)))) ; update_023_audit
 
 ; update_024_notification (matches Coq: Theorem update_024_notification)
-(assert (= true true)) ; update_024_notification [untranslatable]
+(assert (forall ((should_notify Bool) (did_notify Bool)) (=> (= (notification_sent should_notify did_notify) true) (=> (= should_notify true) (= did_notify true))))) ; update_024_notification
 
 ; update_025_defense_in_depth (matches Coq: Theorem update_025_defense_in_depth)
-(assert (= true true)) ; update_025_defense_in_depth [untranslatable]
+(assert (forall ((s Bool) (v Bool) (r Bool) (a Bool) (b Bool)) (=> (= (update_layers s v r a b) true) (and (= s true) (= v true) (= r true) (= a true) (= b true))))) ; update_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

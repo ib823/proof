@@ -31,7 +31,7 @@
   (mk-spectre_defense_config true true true true true true true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; SPECTRE_001_all_variants (matches Coq: Theorem SPECTRE_001_all_variants)
 (assert (= (all_variants_protected riina_spectre_config) true)) ; SPECTRE_001_all_variants

@@ -81,13 +81,13 @@
   (mk-kem_security (mk_compliant_indcca) (mk_compliant_qr) Level5))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; PQ_KEM_001_level_reflexive (matches Coq: Theorem PQ_KEM_001_level_reflexive)
 (assert (forall ((l SecurityLevel)) (= (level_leq l l) true))) ; PQ_KEM_001_level_reflexive
 
 ; PQ_KEM_002_level_transitive (matches Coq: Theorem PQ_KEM_002_level_transitive)
-(assert (= true true)) ; PQ_KEM_002_level_transitive [untranslatable]
+(assert (forall ((l1 SecurityLevel) (l2 SecurityLevel) (l3 SecurityLevel)) (=> (= (level_leq l1 l2) true) (=> (= (level_leq l2 l3) true) (= (level_leq l1 l3) true))))) ; PQ_KEM_002_level_transitive
 
 ; PQ_KEM_003_level1_minimum (matches Coq: Theorem PQ_KEM_003_level1_minimum)
 (assert (forall ((l SecurityLevel)) (= (level_leq Level1 l) true))) ; PQ_KEM_003_level1_minimum
@@ -105,7 +105,7 @@
 (assert (= (param_security_level ML_KEM_1024) Level5)) ; PQ_KEM_007_mlkem1024_level5
 
 ; PQ_KEM_008_params_ordered (matches Coq: Theorem PQ_KEM_008_params_ordered)
-(assert (= true true)) ; PQ_KEM_008_params_ordered [untranslatable]
+(assert (= (level_leq (param_security_level ML_KEM_512) (param_security_level ML_KEM_1024)) true)) ; PQ_KEM_008_params_ordered
 
 ; PQ_KEM_009_indcca_valid (matches Coq: Theorem PQ_KEM_009_indcca_valid)
 (assert (= (indcca_compliant mk_compliant_indcca) true)) ; PQ_KEM_009_indcca_valid
@@ -144,19 +144,19 @@
 (assert (= (kem_params riina_kem_1024) ML_KEM_1024)) ; PQ_KEM_020_riina_mlkem1024
 
 ; PQ_KEM_021_security_implies_indcca (matches Coq: Theorem PQ_KEM_021_security_implies_indcca)
-(assert (= true true)) ; PQ_KEM_021_security_implies_indcca [untranslatable]
+(assert (forall ((s KEMSecurity)) (=> (= (kem_secure s) true) (= (indcca_compliant (kem_sec_indcca s)) true)))) ; PQ_KEM_021_security_implies_indcca
 
 ; PQ_KEM_022_security_implies_qr (matches Coq: Theorem PQ_KEM_022_security_implies_qr)
-(assert (= true true)) ; PQ_KEM_022_security_implies_qr [untranslatable]
+(assert (forall ((s KEMSecurity)) (=> (= (kem_secure s) true) (= (quantum_resistant (kem_sec_quantum s)) true)))) ; PQ_KEM_022_security_implies_qr
 
 ; PQ_KEM_023_correct_keypair (matches Coq: Theorem PQ_KEM_023_correct_keypair)
-(assert (= true true)) ; PQ_KEM_023_correct_keypair [untranslatable]
+(assert (forall ((k KEMInstance)) (=> (= (kem_correct k) true) (= (kp_valid (kem_keypair k)) true)))) ; PQ_KEM_023_correct_keypair
 
 ; PQ_KEM_024_shared_secret_match (matches Coq: Theorem PQ_KEM_024_shared_secret_match)
-(assert (= true true)) ; PQ_KEM_024_shared_secret_match [untranslatable]
+(assert (forall ((k KEMInstance)) (=> (= (kem_correct k) true) (= (Nat.eqb (enc_shared_secret (kem_encaps_result k)) (kem_decaps_result k)) true)))) ; PQ_KEM_024_shared_secret_match
 
 ; PQ_KEM_025_complete_security (matches Coq: Theorem PQ_KEM_025_complete_security)
-(assert (= true true)) ; PQ_KEM_025_complete_security [untranslatable]
+(assert (forall ((s KEMSecurity)) (=> (= (kem_secure s) true) (and (= (indcca_ciphertext_indistinguishable (kem_sec_indcca s)) true) (= (indcca_key_indistinguishable (kem_sec_indcca s)) true) (= (qr_lattice_based (kem_sec_quantum s)) true) (= (qr_no_known_quantum_attack (kem_sec_quantum s)) true))))) ; PQ_KEM_025_complete_security
 
 ; Verify all assertions are satisfiable
 (check-sat)

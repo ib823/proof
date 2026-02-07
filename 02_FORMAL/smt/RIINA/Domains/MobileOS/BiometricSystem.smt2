@@ -124,64 +124,64 @@
   true)
 
 ; biometric_false_acceptance_bounded (matches Coq: Theorem biometric_false_acceptance_bounded)
-(assert (= true true)) ; biometric_false_acceptance_bounded [untranslatable]
+(assert (forall ((attempt BiometricAttempt)) (=> (= (secure_biometric_system attempt) true) (=> (not (= (authentic attempt) true)) (not (= (accepted attempt) true)))))) ; biometric_false_acceptance_bounded
 
 ; liveness_detection_accurate (matches Coq: Theorem liveness_detection_accurate)
-(assert (= true true)) ; liveness_detection_accurate [untranslatable]
+(assert (forall ((attempt BiometricAttempt)) (=> (= (secure_biometric_system attempt) true) (=> (= (is_spoof attempt) true) (= (rejected attempt) true))))) ; liveness_detection_accurate
 
 ; accepted_requires_high_score (matches Coq: Theorem accepted_requires_high_score)
-(assert (= true true)) ; accepted_requires_high_score [untranslatable]
+(assert (forall ((attempt BiometricAttempt)) (=> (= (secure_biometric_system attempt) true) (=> (= (accepted attempt) true) (>= (attempt_match_score attempt) match_threshold))))) ; accepted_requires_high_score
 
 ; accepted_requires_liveness (matches Coq: Theorem accepted_requires_liveness)
-(assert (= true true)) ; accepted_requires_liveness [untranslatable]
+(assert (forall ((attempt BiometricAttempt)) (=> (= (secure_biometric_system attempt) true) (=> (= (accepted attempt) true) (>= (attempt_liveness_score attempt) liveness_threshold))))) ; accepted_requires_liveness
 
 ; spoof_not_accepted (matches Coq: Theorem spoof_not_accepted)
-(assert (= true true)) ; spoof_not_accepted [untranslatable]
+(assert (forall ((attempt BiometricAttempt)) (=> (= (secure_biometric_system attempt) true) (=> (= (well_formed_attempt attempt) true) (=> (= (is_spoof attempt) true) (not (= (accepted attempt) true))))))) ; spoof_not_accepted
 
 ; biometric_data_never_exported_thm (matches Coq: Theorem biometric_data_never_exported_thm)
-(assert (= true true)) ; biometric_data_never_exported_thm [untranslatable]
+(assert (forall ((t BiometricTemplate)) (=> (= (biometric_data_never_exported t) true) (= (tmpl_exportable t) false)))) ; biometric_data_never_exported_thm
 
 ; false_acceptance_rate_bounded (matches Coq: Theorem false_acceptance_rate_bounded)
-(assert (= true true)) ; false_acceptance_rate_bounded [untranslatable]
+(assert (forall ((cfg BiometricConfig)) (forall ((attempt BiometricAttempt)) (=> (= (far_bounded cfg attempt) true) (=> (not (= (authentic attempt) true)) (=> (= (secure_biometric_system attempt) true) (not (= (accepted attempt) true)))))))) ; false_acceptance_rate_bounded
 
 ; false_rejection_rate_bounded (matches Coq: Theorem false_rejection_rate_bounded)
-(assert (= true true)) ; false_rejection_rate_bounded [untranslatable]
+(assert (forall ((cfg BiometricConfig)) (=> (= (frr_bounded cfg) true) (<= (bio_cfg_frr_threshold cfg) 5)))) ; false_rejection_rate_bounded
 
 ; biometric_template_encrypted (matches Coq: Theorem biometric_template_encrypted)
-(assert (= true true)) ; biometric_template_encrypted [untranslatable]
+(assert (forall ((t BiometricTemplate)) (=> (= (template_encrypted t) true) (= (tmpl_encrypted t) true)))) ; biometric_template_encrypted
 
 ; liveness_detection_active (matches Coq: Theorem liveness_detection_active)
-(assert (= true true)) ; liveness_detection_active [untranslatable]
+(assert (forall ((cfg BiometricConfig)) (=> (= (liveness_active cfg) true) (= (bio_cfg_liveness_required cfg) true)))) ; liveness_detection_active
 
 ; biometric_fallback_available (matches Coq: Theorem biometric_fallback_available)
-(assert (= true true)) ; biometric_fallback_available [untranslatable]
+(assert (forall ((s BiometricSession)) (=> (= (fallback_available s) true) (= (bio_session_fallback_available s) true)))) ; biometric_fallback_available
 
 ; enrollment_requires_auth (matches Coq: Theorem enrollment_requires_auth)
-(assert (= true true)) ; enrollment_requires_auth [untranslatable]
+(assert (forall ((e BiometricEnrollment)) (=> (= (enrollment_requires_auth_prop e) true) (= (enroll_auth_verified e) true)))) ; enrollment_requires_auth
 
 ; biometric_timeout_enforced (matches Coq: Theorem biometric_timeout_enforced)
-(assert (= true true)) ; biometric_timeout_enforced [untranslatable]
+(assert (forall ((s BiometricSession)) (=> (= (timeout_enforced s) true) (and (> (bio_session_timeout_ms s) 0) (<= (bio_session_timeout_ms s) 30000))))) ; biometric_timeout_enforced
 
 ; anti_spoofing_active (matches Coq: Theorem anti_spoofing_active)
-(assert (= true true)) ; anti_spoofing_active [untranslatable]
+(assert (forall ((cfg BiometricConfig)) (=> (= (anti_spoofing_active_prop cfg) true) (= (bio_cfg_anti_spoofing cfg) true)))) ; anti_spoofing_active
 
 ; biometric_data_on_device_only (matches Coq: Theorem biometric_data_on_device_only)
-(assert (= true true)) ; biometric_data_on_device_only [untranslatable]
+(assert (forall ((t BiometricTemplate)) (=> (= (on_device_only t) true) (and (= (tmpl_on_device t) true) (= (tmpl_exportable t) false))))) ; biometric_data_on_device_only
 
 ; multi_factor_supported (matches Coq: Theorem multi_factor_supported)
-(assert (= true true)) ; multi_factor_supported [untranslatable]
+(assert (forall ((s BiometricSession)) (=> (= (multi_factor_supported_prop s) true) (= (bio_session_multi_factor s) true)))) ; multi_factor_supported
 
 ; biometric_revocable_thm (matches Coq: Theorem biometric_revocable_thm)
-(assert (= true true)) ; biometric_revocable_thm [untranslatable]
+(assert (forall ((t BiometricTemplate)) (=> (= (biometric_revocable t) true) (> (tmpl_version t) 0)))) ; biometric_revocable_thm
 
 ; presentation_attack_detected (matches Coq: Theorem presentation_attack_detected)
-(assert (= true true)) ; presentation_attack_detected [untranslatable]
+(assert (forall ((attempt BiometricAttempt)) (forall ((cfg BiometricConfig)) (=> (= (presentation_attack_detected_prop attempt cfg) true) (=> (= (bio_cfg_anti_spoofing cfg) true) (=> (= (is_spoof attempt) true) (= (rejected attempt) true))))))) ; presentation_attack_detected
 
 ; template_update_secure_thm (matches Coq: Theorem template_update_secure_thm)
-(assert (= true true)) ; template_update_secure_thm [untranslatable]
+(assert (forall ((old_t BiometricTemplate) (new_t BiometricTemplate)) (=> (= (template_update_secure old_t new_t) true) (and (> (tmpl_version new_t) (tmpl_version old_t)) (= (tmpl_encrypted new_t) true))))) ; template_update_secure_thm
 
 ; biometric_not_sole_factor (matches Coq: Theorem biometric_not_sole_factor)
-(assert (= true true)) ; biometric_not_sole_factor [untranslatable]
+(assert (forall ((s BiometricSession)) (=> (= (biometric_not_sole_factor_prop s) true) (or (= (bio_session_multi_factor s) true) (= (bio_session_fallback_available s) true))))) ; biometric_not_sole_factor
 
 ; Verify all assertions are satisfiable
 (check-sat)

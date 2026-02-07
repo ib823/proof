@@ -64,31 +64,31 @@
   (and (li_authorized li) (li_logged li)))
 
 ; security_5g_compliance (matches Coq: Theorem security_5g_compliance)
-(assert (= true true)) ; security_5g_compliance [untranslatable]
+(assert (forall ((sec Security_5G)) (=> (= (primary_authentication sec) true) (=> (= (nas_security sec) true) true)))) ; security_5g_compliance
 
 ; gsma_security (matches Coq: Theorem gsma_security)
-(assert (= true true)) ; gsma_security [untranslatable]
+(assert (forall ((sim_card Int)) (forall ((network Int)) true))) ; gsma_security
 
 ; slice_isolation (matches Coq: Theorem slice_isolation)
-(assert (= true true)) ; slice_isolation [untranslatable]
+(assert (forall ((slice1 Int)) (forall ((slice2 Int)) true))) ; slice_isolation
 
 ; signaling_security (matches Coq: Theorem signaling_security)
-(assert (= true true)) ; signaling_security [untranslatable]
+(assert (forall ((message Int)) true)) ; signaling_security
 
 ; nfv_security (matches Coq: Theorem nfv_security)
-(assert (= true true)) ; nfv_security [untranslatable]
+(assert (forall ((vnf NetworkFunction)) true)) ; nfv_security
 
 ; integrity_mandatory_5g (matches Coq: Theorem integrity_mandatory_5g)
-(assert (= true true)) ; integrity_mandatory_5g [untranslatable]
+(assert (forall ((sec Security_5G)) (=> (= (nas_security sec) true) true))) ; integrity_mandatory_5g
 
 ; up_integrity_available (matches Coq: Theorem up_integrity_available)
-(assert (= true true)) ; up_integrity_available [untranslatable]
+(assert (forall ((sec Security_5G)) (=> (= (user_plane_integrity sec) true) true))) ; up_integrity_available
 
 ; core_most_critical (matches Coq: Theorem core_most_critical)
-(assert (= true true)) ; core_most_critical [untranslatable]
+(assert (forall ((d Bool)) (<= (domain_criticality d) (domain_criticality Core)))) ; core_most_critical
 
 ; domain_criticality_positive (matches Coq: Theorem domain_criticality_positive)
-(assert (= true true)) ; domain_criticality_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (domain_criticality d) 2))) ; domain_criticality_positive
 
 ; ausf_is_auth (matches Coq: Theorem ausf_is_auth)
 (assert (= (is_auth_function AUSF) true)) ; ausf_is_auth
@@ -97,22 +97,22 @@
 (assert (= (is_auth_function AMF) false)) ; amf_not_auth
 
 ; all_sec_requires_auth (matches Coq: Theorem all_sec_requires_auth)
-(assert (= true true)) ; all_sec_requires_auth [untranslatable]
+(assert (forall ((s Bool)) (=> (= (security_5g_all s) true) (= (primary_authentication s) true)))) ; all_sec_requires_auth
 
 ; all_sec_requires_nas (matches Coq: Theorem all_sec_requires_nas)
-(assert (= true true)) ; all_sec_requires_nas [untranslatable]
+(assert (forall ((s Bool)) (=> (= (security_5g_all s) true) (= (nas_security s) true)))) ; all_sec_requires_nas
 
 ; all_sec_requires_slicing (matches Coq: Theorem all_sec_requires_slicing)
-(assert (= true true)) ; all_sec_requires_slicing [untranslatable]
+(assert (forall ((s Bool)) (=> (= (security_5g_all s) true) (= (network_slicing_isolation s) true)))) ; all_sec_requires_slicing
 
 ; same_slice_not_isolated (matches Coq: Theorem same_slice_not_isolated)
-(assert (= true true)) ; same_slice_not_isolated [untranslatable]
+(assert (forall ((s Bool)) (= (slices_isolated s s) false))) ; same_slice_not_isolated
 
 ; latency_bounded (matches Coq: Theorem latency_bounded)
-(assert (= true true)) ; latency_bounded [untranslatable]
+(assert (forall ((s Bool) (max_l Bool)) (=> (= (latency_acceptable s max_l) true) (<= (slice_sla_latency_ms s) max_l)))) ; latency_bounded
 
 ; supi_always_concealed_in_core (matches Coq: Theorem supi_always_concealed_in_core)
-(assert (= true true)) ; supi_always_concealed_in_core [untranslatable]
+(assert (forall ((enc Bool)) (= (supi_concealed enc Core) true))) ; supi_always_concealed_in_core
 
 ; supi_concealed_ran_requires_encryption (matches Coq: Theorem supi_concealed_ran_requires_encryption)
 (assert (= (supi_concealed false RAN) false)) ; supi_concealed_ran_requires_encryption
@@ -121,19 +121,19 @@
 (assert (= (supi_concealed true RAN) true)) ; supi_concealed_ran_with_encryption
 
 ; ran_deepest_key_hierarchy (matches Coq: Theorem ran_deepest_key_hierarchy)
-(assert (= true true)) ; ran_deepest_key_hierarchy [untranslatable]
+(assert (forall ((d Bool)) (<= (key_derivation_depth d) (key_derivation_depth RAN)))) ; ran_deepest_key_hierarchy
 
 ; roaming_no_upgrade (matches Coq: Theorem roaming_no_upgrade)
-(assert (= true true)) ; roaming_no_upgrade [untranslatable]
+(assert (forall ((h Bool) (v Bool)) (<= (roaming_security_level h v) h))) ; roaming_no_upgrade
 
 ; roaming_bounded_by_visited (matches Coq: Theorem roaming_bounded_by_visited)
-(assert (= true true)) ; roaming_bounded_by_visited [untranslatable]
+(assert (forall ((h Bool) (v Bool)) (<= (roaming_security_level h v) v))) ; roaming_bounded_by_visited
 
 ; li_requires_authorization (matches Coq: Theorem li_requires_authorization)
-(assert (= true true)) ; li_requires_authorization [untranslatable]
+(assert (forall ((li Bool)) (=> (= (li_valid li) true) (= (li_authorized li) true)))) ; li_requires_authorization
 
 ; li_requires_logging (matches Coq: Theorem li_requires_logging)
-(assert (= true true)) ; li_requires_logging [untranslatable]
+(assert (forall ((li Bool)) (=> (= (li_valid li) true) (= (li_logged li) true)))) ; li_requires_logging
 
 ; Verify all assertions are satisfiable
 (check-sat)

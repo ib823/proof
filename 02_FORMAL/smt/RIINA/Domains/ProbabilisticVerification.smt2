@@ -17,64 +17,72 @@
 (define-fun xor_nat () Int Nat)
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+; 1: Uniform distribution has non-negative probabilities *) Theorem uniform_nonneg : forall n (Hn : (0 < n)%nat), all_nonneg 
+(assert true) ; 1 [Coq-only]
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+; 2: Zero function is negligible *) Theorem zero_negligible : negligible (fun _ => 0)
+(assert true) ; 2 [Coq-only]
 
 ; Qplus_lt_compat2 (matches Coq: Lemma Qplus_lt_compat2)
-(assert (= true true)) ; Qplus_lt_compat2 [untranslatable]
+(assert (forall ((a Q) (b Q) (c Q) (d Q)) (=> (< a b) (=> (< c d) (< (+ a c) (+ b d)))))) ; Qplus_lt_compat2
 
 ; two_over_nSc_le_one_over_nc (matches Coq: Lemma two_over_nSc_le_one_over_nc)
-(assert (= true true)) ; two_over_nSc_le_one_over_nc [untranslatable]
+; two_over_nSc_le_one_over_nc: forall n c : nat, (n > 2)%nat -> (0 < c)%nat -> (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) <= 1 # Pos.of_na
+(assert true) ; two_over_nSc_le_one_over_nc [Coq-only]
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+; 3: Sum of negligibles is negligible *) Theorem negligible_sum : forall f g, negligible f -> negligible g -> negligible (fun
+(assert true) ; 3 [Coq-only]
 
 ; Qabs_Qminus_self (matches Coq: Lemma Qabs_Qminus_self)
-(assert (= true true)) ; Qabs_Qminus_self [untranslatable]
+(assert (forall ((a Q)) (= (Qabs (- a a)) (= 0)))) ; Qabs_Qminus_self
 
 ; fold_combine_self_gen (matches Coq: Lemma fold_combine_self_gen)
-(assert (= true true)) ; fold_combine_self_gen [untranslatable]
+; fold_combine_self_gen: forall (l : list Q) (acc : Q), fold_left (fun a p => a + Qabs (fst p - snd p)) (combine l l) acc == acc
+(assert (forall ((l list) (acc Q)) true)) ; fold_combine_self_gen [partial: bindings preserved]
 
 ; fold_combine_self (matches Coq: Lemma fold_combine_self)
-(assert (= true true)) ; fold_combine_self [untranslatable]
+; fold_combine_self: forall (l : list Q), fold_left (fun acc p => acc + Qabs (fst p - snd p)) (combine l l) 0 == 0
+(assert (forall ((l list)) true)) ; fold_combine_self [partial: bindings preserved]
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((f Bool)) (= (comp_indist f f) true))) ; 4
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((f Bool)) (= (comp_indist f f) true))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (xor_nat (xor_nat a b) b) a))) ; 6
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (xor_nat a b) (xor_nat b a)))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((a Bool)) (= (xor_nat a 0) a))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (= (xor_nat (xor_nat a b) c) (xor_nat a (xor_nat b c))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+; 10: XOR self is zero *) Theorem xor_self_zero : forall a, xor_nat a a = 0%nat
+(assert true) ; 10 [Coq-only]
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((msg Bool) (key Bool)) (= (xor_nat (xor_nat msg key) key) msg))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((a Bool) (b Bool) (k Bool)) (=> (= (xor_nat a k) (xor_nat b k)) (= a b)))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+; 13: Uniform distribution has correct length *) Theorem uniform_length : forall n (Hn : (0 < n)%nat), length (uniform_dist n 
+(assert true) ; 13 [Coq-only]
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((q Q)) (<= 0 (Qabs q)))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (= (Qabs 0) (= 0))) ; 15
 
 ; Verify all assertions are satisfiable
 (check-sat)

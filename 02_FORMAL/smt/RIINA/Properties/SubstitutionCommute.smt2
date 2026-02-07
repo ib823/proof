@@ -23,37 +23,37 @@
   true)
 
 ; extend_rho_sc_same (matches Coq: Lemma extend_rho_sc_same)
-(assert (= true true)) ; extend_rho_sc_same [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (v Bool)) (= (extend_rho_sc ρ x v x) v))) ; extend_rho_sc_same
 
 ; extend_rho_sc_diff (matches Coq: Lemma extend_rho_sc_diff)
-(assert (= true true)) ; extend_rho_sc_diff [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (y Bool) (v Bool)) (=> (not (= x y)) (= (extend_rho_sc ρ x v y) (ρ y))))) ; extend_rho_sc_diff
 
 ; extend_rho_sc_shadow (matches Coq: Lemma extend_rho_sc_shadow)
-(assert (= true true)) ; extend_rho_sc_shadow [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (v1 Bool) (v2 Bool)) (= (extend_rho_sc (extend_rho_sc ρ x v1) x v2) (extend_rho_sc ρ x v2)))) ; extend_rho_sc_shadow
 
 ; extend_rho_sc_comm (matches Coq: Lemma extend_rho_sc_comm)
-(assert (= true true)) ; extend_rho_sc_comm [untranslatable]
+(assert (forall ((ρ Bool) (x Bool) (y Bool) (vx Bool) (vy Bool)) (=> (not (= x y)) (= (extend_rho_sc (extend_rho_sc ρ x vx) y vy) (extend_rho_sc (extend_rho_sc ρ y vy) x vx))))) ; extend_rho_sc_comm
 
 ; subst_not_free_sc (matches Coq: Lemma subst_not_free_sc)
-(assert (= true true)) ; subst_not_free_sc [untranslatable]
+(assert (forall ((x Bool) (v Bool) (e Bool)) (not (=> (= (free_in x e) true) (= e e))))) ; subst_not_free_sc
 
 ; subst_closed_sc (matches Coq: Lemma subst_closed_sc)
-(assert (= true true)) ; subst_closed_sc [untranslatable]
+(assert (forall ((x Bool) (v Bool) (e Bool)) (=> (= (closed_expr_sc e) true) (= e e)))) ; subst_closed_sc
 
 ; closed_unit_sub (matches Coq: Lemma closed_unit_sub)
-(assert (= true true)) ; closed_unit_sub [untranslatable]
+(assert (= (closed_expr_sc EUnit) true)) ; closed_unit_sub
 
 ; closed_bool_sub (matches Coq: Lemma closed_bool_sub)
-(assert (= true true)) ; closed_bool_sub [untranslatable]
+(assert (forall ((b Bool)) (= (closed_expr_sc (EBool b)) true))) ; closed_bool_sub
 
 ; closed_int_sub (matches Coq: Lemma closed_int_sub)
-(assert (= true true)) ; closed_int_sub [untranslatable]
+(assert (forall ((n Bool)) (= (closed_expr_sc (EInt n)) true))) ; closed_int_sub
 
 ; closed_string_sub (matches Coq: Lemma closed_string_sub)
-(assert (= true true)) ; closed_string_sub [untranslatable]
+(assert (forall ((s Bool)) (= (closed_expr_sc (EString s)) true))) ; closed_string_sub
 
 ; closed_loc_sub (matches Coq: Lemma closed_loc_sub)
-(assert (= true true)) ; closed_loc_sub [untranslatable]
+(assert (forall ((l Bool)) (= (closed_expr_sc (ELoc l)) true))) ; closed_loc_sub
 
 ; Verify all assertions are satisfiable
 (check-sat)

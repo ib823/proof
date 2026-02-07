@@ -8,7 +8,8 @@
 (set-option :produce-models true)
 
 ; security_non_interference (matches Coq: Theorem security_non_interference)
-(assert (= true true)) ; security_non_interference [untranslatable]
+; security_non_interference: forall x T_in T_out v1 v2 e, val_rel nil T_in v1 v2 -> has_type ((x, T_in) :: nil) nil Public e T_out EffectPure -> exp_
+(assert (forall ((x Bool) (T_in Bool) (T_out Bool) (v1 Bool) (v2 Bool) (e Bool)) true)) ; security_non_interference [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

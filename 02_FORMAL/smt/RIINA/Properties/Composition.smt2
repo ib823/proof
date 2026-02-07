@@ -8,22 +8,22 @@
 (set-option :produce-models true)
 
 ; val_rel_pair (matches Coq: Lemma val_rel_pair)
-(assert (= true true)) ; val_rel_pair [untranslatable]
+(assert (forall ((Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v1' Bool) (v2 Bool) (v2' Bool)) (=> (= (val_rel Σ T1 v1 v1') true) (=> (= (val_rel Σ T2 v2 v2') true) (=> (= (has_type nil Σ Public v1 T1 EffectPure) true) (=> (= (has_type nil Σ Public v1' T1 EffectPure) true) (=> (= (has_type nil Σ Public v2 T2 EffectPure) true) (=> (= (has_type nil Σ Public v2' T2 EffectPure) true) (= (val_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2')) true))))))))) ; val_rel_pair
 
 ; val_rel_inl (matches Coq: Lemma val_rel_inl)
-(assert (= true true)) ; val_rel_inl [untranslatable]
+(assert (forall ((Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel Σ T1 v1 v2) true) (=> (= (has_type nil Σ Public v1 T1 EffectPure) true) (=> (= (has_type nil Σ Public v2 T1 EffectPure) true) (= (val_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2)) true)))))) ; val_rel_inl
 
 ; val_rel_inr (matches Coq: Lemma val_rel_inr)
-(assert (= true true)) ; val_rel_inr [untranslatable]
+(assert (forall ((Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel Σ T2 v1 v2) true) (=> (= (has_type nil Σ Public v1 T2 EffectPure) true) (=> (= (has_type nil Σ Public v2 T2 EffectPure) true) (= (val_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1)) true)))))) ; val_rel_inr
 
 ; exp_rel_pair_values (matches Coq: Lemma exp_rel_pair_values)
-(assert (= true true)) ; exp_rel_pair_values [untranslatable]
+(assert (forall ((Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v1' Bool) (v2 Bool) (v2' Bool)) (=> (= (val_rel Σ T1 v1 v1') true) (=> (= (val_rel Σ T2 v2 v2') true) (=> (= (has_type nil Σ Public v1 T1 EffectPure) true) (=> (= (has_type nil Σ Public v1' T1 EffectPure) true) (=> (= (has_type nil Σ Public v2 T2 EffectPure) true) (=> (= (has_type nil Σ Public v2' T2 EffectPure) true) (= (exp_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2')) true))))))))) ; exp_rel_pair_values
 
 ; exp_rel_inl_values (matches Coq: Lemma exp_rel_inl_values)
-(assert (= true true)) ; exp_rel_inl_values [untranslatable]
+(assert (forall ((Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel Σ T1 v1 v2) true) (=> (= (has_type nil Σ Public v1 T1 EffectPure) true) (=> (= (has_type nil Σ Public v2 T1 EffectPure) true) (= (exp_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2)) true)))))) ; exp_rel_inl_values
 
 ; exp_rel_inr_values (matches Coq: Lemma exp_rel_inr_values)
-(assert (= true true)) ; exp_rel_inr_values [untranslatable]
+(assert (forall ((Σ Bool) (T1 Bool) (T2 Bool) (v1 Bool) (v2 Bool)) (=> (= (val_rel Σ T2 v1 v2) true) (=> (= (has_type nil Σ Public v1 T2 EffectPure) true) (=> (= (has_type nil Σ Public v2 T2 EffectPure) true) (= (exp_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1)) true)))))) ; exp_rel_inr_values
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -174,19 +174,19 @@
   (mk-key_derivation_params SP_MRSIGNER (riina_enclave_identity) 100 256))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_false_iff (matches Coq: Lemma andb_false_iff)
-(assert (= true true)) ; andb_false_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) false) (or (= a false) (= b false))) (=> (or (= a false) (= b false)) (= (and a b) false))))) ; andb_false_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; negb_false_iff (matches Coq: Lemma negb_false_iff)
-(assert (= true true)) ; negb_false_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) false) (= b true)) (=> (= b true) (= (not b) false))))) ; negb_false_iff
 
 ; TEE_001 (matches Coq: Theorem TEE_001)
 (assert (= (enclave_secure riina_enclave) true)) ; TEE_001
@@ -228,76 +228,76 @@
 (assert (= (tee_local_attestation riina_tee) true)) ; TEE_013
 
 ; TEE_014 (matches Coq: Theorem TEE_014)
-(assert (= true true)) ; TEE_014 [untranslatable]
+(assert (forall ((e Bool)) (=> (= (enclave_secure e) true) (= (enc_memory_encrypted e) true)))) ; TEE_014
 
 ; TEE_015 (matches Coq: Theorem TEE_015)
-(assert (= true true)) ; TEE_015 [untranslatable]
+(assert (forall ((e Bool)) (=> (= (enclave_secure e) true) (= (enc_isolated_execution e) true)))) ; TEE_015
 
 ; TEE_016 (matches Coq: Theorem TEE_016)
-(assert (= true true)) ; TEE_016 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (attestation_secure a) true) (= (att_measurement a) true)))) ; TEE_016
 
 ; TEE_017 (matches Coq: Theorem TEE_017)
-(assert (= true true)) ; TEE_017 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (attestation_secure a) true) (= (att_freshness a) true)))) ; TEE_017
 
 ; TEE_018 (matches Coq: Theorem TEE_018)
-(assert (= true true)) ; TEE_018 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (enclave_secure (tee_enclave t)) true)))) ; TEE_018
 
 ; TEE_019 (matches Coq: Theorem TEE_019)
-(assert (= true true)) ; TEE_019 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (attestation_secure (tee_attestation t)) true)))) ; TEE_019
 
 ; TEE_020 (matches Coq: Theorem TEE_020)
-(assert (= true true)) ; TEE_020 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (tee_remote_attestation t) true)))) ; TEE_020
 
 ; TEE_021 (matches Coq: Theorem TEE_021)
-(assert (= true true)) ; TEE_021 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (enc_memory_encrypted (tee_enclave t)) true)))) ; TEE_021
 
 ; TEE_022 (matches Coq: Theorem TEE_022)
-(assert (= true true)) ; TEE_022 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (att_measurement (tee_attestation t)) true)))) ; TEE_022
 
 ; TEE_023 (matches Coq: Theorem TEE_023)
-(assert (= true true)) ; TEE_023 [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (att_freshness (tee_attestation t)) true)))) ; TEE_023
 
 ; TEE_024 (matches Coq: Theorem TEE_024)
 (assert (and (= (tee_secure riina_tee) true) (= (tee_remote_attestation riina_tee) true))) ; TEE_024
 
 ; TEE_025_complete (matches Coq: Theorem TEE_025_complete)
-(assert (= true true)) ; TEE_025_complete [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (and (= (enc_memory_encrypted (tee_enclave t)) true) (= (att_measurement (tee_attestation t)) true) (= (att_freshness (tee_attestation t)) true) (= (tee_remote_attestation t) true))))) ; TEE_025_complete
 
 ; TEE_026_create_transition (matches Coq: Theorem TEE_026_create_transition)
-(assert (= (enclave_transition ES_Uninitialized EE_Create) (Some ES_Created))) ; TEE_026_create_transition
+(assert (= (enclave_transition ES_Uninitialized EE_Create) (some ES_Created))) ; TEE_026_create_transition
 
 ; TEE_027_init_transition (matches Coq: Theorem TEE_027_init_transition)
-(assert (= (enclave_transition ES_Created EE_Initialize) (Some ES_Initialized))) ; TEE_027_init_transition
+(assert (= (enclave_transition ES_Created EE_Initialize) (some ES_Initialized))) ; TEE_027_init_transition
 
 ; TEE_028_enter_transition (matches Coq: Theorem TEE_028_enter_transition)
-(assert (= (enclave_transition ES_Initialized EE_Enter) (Some ES_Running))) ; TEE_028_enter_transition
+(assert (= (enclave_transition ES_Initialized EE_Enter) (some ES_Running))) ; TEE_028_enter_transition
 
 ; TEE_029_exit_transition (matches Coq: Theorem TEE_029_exit_transition)
-(assert (= (enclave_transition ES_Running EE_Exit) (Some ES_Initialized))) ; TEE_029_exit_transition
+(assert (= (enclave_transition ES_Running EE_Exit) (some ES_Initialized))) ; TEE_029_exit_transition
 
 ; TEE_030_suspend_transition (matches Coq: Theorem TEE_030_suspend_transition)
-(assert (= (enclave_transition ES_Running EE_Suspend) (Some ES_Suspended))) ; TEE_030_suspend_transition
+(assert (= (enclave_transition ES_Running EE_Suspend) (some ES_Suspended))) ; TEE_030_suspend_transition
 
 ; TEE_031_resume_transition (matches Coq: Theorem TEE_031_resume_transition)
-(assert (= (enclave_transition ES_Suspended EE_Resume) (Some ES_Running))) ; TEE_031_resume_transition
+(assert (= (enclave_transition ES_Suspended EE_Resume) (some ES_Running))) ; TEE_031_resume_transition
 
 ; TEE_032_destroy_from_init (matches Coq: Theorem TEE_032_destroy_from_init)
-(assert (= (enclave_transition ES_Initialized EE_Destroy) (Some ES_Destroyed))) ; TEE_032_destroy_from_init
+(assert (= (enclave_transition ES_Initialized EE_Destroy) (some ES_Destroyed))) ; TEE_032_destroy_from_init
 
 ; TEE_033_destroy_from_created (matches Coq: Theorem TEE_033_destroy_from_created)
-(assert (= (enclave_transition ES_Created EE_Destroy) (Some ES_Destroyed))) ; TEE_033_destroy_from_created
+(assert (= (enclave_transition ES_Created EE_Destroy) (some ES_Destroyed))) ; TEE_033_destroy_from_created
 
 ; TEE_034_no_create_from_running (matches Coq: Theorem TEE_034_no_create_from_running)
-(assert (= (enclave_transition ES_Running EE_Create) None)) ; TEE_034_no_create_from_running
+(assert (= (enclave_transition ES_Running EE_Create) none)) ; TEE_034_no_create_from_running
 
 ; TEE_035_no_enter_uninitialized (matches Coq: Theorem TEE_035_no_enter_uninitialized)
-(assert (= (enclave_transition ES_Uninitialized EE_Enter) None)) ; TEE_035_no_enter_uninitialized
+(assert (= (enclave_transition ES_Uninitialized EE_Enter) none)) ; TEE_035_no_enter_uninitialized
 
 ; TEE_036_lifecycle_to_running (matches Coq: Theorem TEE_036_lifecycle_to_running)
-(assert (= true true)) ; TEE_036_lifecycle_to_running [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool) (s3 Bool)) (=> (= (enclave_transition ES_Uninitialized EE_Create) (some s1)) (=> (= (enclave_transition s1 EE_Initialize) (some s2)) (=> (= (enclave_transition s2 EE_Enter) (some s3)) (= s3 ES_Running)))))) ; TEE_036_lifecycle_to_running
 
 ; TEE_037_suspend_resume_cycle (matches Coq: Theorem TEE_037_suspend_resume_cycle)
-(assert (= true true)) ; TEE_037_suspend_resume_cycle [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (enclave_transition ES_Running EE_Suspend) (some s1)) (=> (= (enclave_transition s1 EE_Resume) (some s2)) (= s2 ES_Running))))) ; TEE_037_suspend_resume_cycle
 
 ; TEE_038_riina_quote_signature_valid (matches Coq: Theorem TEE_038_riina_quote_signature_valid)
 (assert (= (aq_signature_valid riina_quote) true)) ; TEE_038_riina_quote_signature_valid
@@ -321,52 +321,52 @@
 (assert (= (verify_quote riina_quote riina_verification_context) true)) ; TEE_044_riina_quote_verifies
 
 ; TEE_045_verified_quote_has_valid_signature (matches Coq: Theorem TEE_045_verified_quote_has_valid_signature)
-(assert (= true true)) ; TEE_045_verified_quote_has_valid_signature [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (aq_signature_valid q) true)))) ; TEE_045_verified_quote_has_valid_signature
 
 ; TEE_046_verified_quote_has_valid_measurement (matches Coq: Theorem TEE_046_verified_quote_has_valid_measurement)
-(assert (= true true)) ; TEE_046_verified_quote_has_valid_measurement [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (quote_measurement_valid q ctx) true)))) ; TEE_046_verified_quote_has_valid_measurement
 
 ; TEE_047_verified_quote_has_valid_nonce (matches Coq: Theorem TEE_047_verified_quote_has_valid_nonce)
-(assert (= true true)) ; TEE_047_verified_quote_has_valid_nonce [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (quote_nonce_valid q ctx) true)))) ; TEE_047_verified_quote_has_valid_nonce
 
 ; TEE_048_verified_quote_is_fresh (matches Coq: Theorem TEE_048_verified_quote_is_fresh)
-(assert (= true true)) ; TEE_048_verified_quote_is_fresh [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (quote_fresh q ctx) true)))) ; TEE_048_verified_quote_is_fresh
 
 ; TEE_049_invalid_signature_fails_verification (matches Coq: Theorem TEE_049_invalid_signature_fails_verification)
-(assert (= true true)) ; TEE_049_invalid_signature_fails_verification [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (aq_signature_valid q) false) (= (verify_quote q ctx) false)))) ; TEE_049_invalid_signature_fails_verification
 
 ; TEE_050_stale_quote_fails_verification (matches Coq: Theorem TEE_050_stale_quote_fails_verification)
-(assert (= true true)) ; TEE_050_stale_quote_fails_verification [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (quote_fresh q ctx) false) (= (verify_quote q ctx) false)))) ; TEE_050_stale_quote_fails_verification
 
 ; TEE_051_derive_key_mrenclave (matches Coq: Theorem TEE_051_derive_key_mrenclave)
-(assert (= true true)) ; TEE_051_derive_key_mrenclave [untranslatable]
+(assert (= (derive_seal_key_id sample_kdp_mrenclave) (+ (ei_measurement riina_enclave_identity) 100))) ; TEE_051_derive_key_mrenclave
 
 ; TEE_052_derive_key_mrsigner (matches Coq: Theorem TEE_052_derive_key_mrsigner)
-(assert (= true true)) ; TEE_052_derive_key_mrsigner [untranslatable]
+(assert (= (derive_seal_key_id sample_kdp_mrsigner) (+ (ei_signer riina_enclave_identity) 100))) ; TEE_052_derive_key_mrsigner
 
 ; TEE_053_key_derivation_deterministic (matches Coq: Theorem TEE_053_key_derivation_deterministic)
-(assert (= true true)) ; TEE_053_key_derivation_deterministic [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (=> (= (kdp_policy p1) (kdp_policy p2)) (=> (= (kdp_enclave_id p1) (kdp_enclave_id p2)) (=> (= (kdp_key_name p1) (kdp_key_name p2)) (= (derive_seal_key_id p1) (derive_seal_key_id p2))))))) ; TEE_053_key_derivation_deterministic
 
 ; TEE_054_different_policy_different_key (matches Coq: Theorem TEE_054_different_policy_different_key)
-(assert (= true true)) ; TEE_054_different_policy_different_key [untranslatable]
+(assert (forall ((eid Bool) (kn Bool)) (=> (not (= (ei_measurement eid) (ei_signer eid))) (not (= (derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid kn 256)) (derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid kn 256))))))) ; TEE_054_different_policy_different_key
 
 ; TEE_055_keypolicy_uses_name_only (matches Coq: Theorem TEE_055_keypolicy_uses_name_only)
-(assert (= true true)) ; TEE_055_keypolicy_uses_name_only [untranslatable]
+(assert (forall ((eid1 Bool) (eid2 Bool) (kn Bool) (ks Bool)) (= (derive_seal_key_id (mkKeyDerivationParams SP_KEYPOLICY eid1 kn ks)) (derive_seal_key_id (mkKeyDerivationParams SP_KEYPOLICY eid2 kn ks))))) ; TEE_055_keypolicy_uses_name_only
 
 ; TEE_056_mrenclave_binding_enclave_specific (matches Coq: Theorem TEE_056_mrenclave_binding_enclave_specific)
-(assert (= true true)) ; TEE_056_mrenclave_binding_enclave_specific [untranslatable]
+(assert (forall ((eid1 Bool) (eid2 Bool) (kn Bool) (ks Bool)) (=> (not (= (ei_measurement eid1) (ei_measurement eid2))) (not (= (derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid1 kn ks)) (derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid2 kn ks))))))) ; TEE_056_mrenclave_binding_enclave_specific
 
 ; TEE_057_mrsigner_binding_signer_specific (matches Coq: Theorem TEE_057_mrsigner_binding_signer_specific)
-(assert (= true true)) ; TEE_057_mrsigner_binding_signer_specific [untranslatable]
+(assert (forall ((eid1 Bool) (eid2 Bool) (kn Bool) (ks Bool)) (=> (not (= (ei_signer eid1) (ei_signer eid2))) (not (= (derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid1 kn ks)) (derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid2 kn ks))))))) ; TEE_057_mrsigner_binding_signer_specific
 
 ; TEE_058_different_key_names_different_keys (matches Coq: Theorem TEE_058_different_key_names_different_keys)
-(assert (= true true)) ; TEE_058_different_key_names_different_keys [untranslatable]
+(assert (forall ((pol Bool) (eid Bool) (kn1 Bool) (kn2 Bool) (ks Bool)) (=> (not (= kn1 kn2)) (not (= (derive_seal_key_id (mkKeyDerivationParams pol eid kn1 ks)) (derive_seal_key_id (mkKeyDerivationParams pol eid kn2 ks))))))) ; TEE_058_different_key_names_different_keys
 
 ; TEE_059_keypolicy_unseal_always_possible (matches Coq: Theorem TEE_059_keypolicy_unseal_always_possible)
-(assert (= true true)) ; TEE_059_keypolicy_unseal_always_possible [untranslatable]
+(assert (forall ((sealed Bool) (current Bool)) (=> (= (sd_policy sealed) SP_KEYPOLICY) (= (can_unseal sealed current) true)))) ; TEE_059_keypolicy_unseal_always_possible
 
 ; TEE_060_key_size_does_not_affect_id (matches Coq: Theorem TEE_060_key_size_does_not_affect_id)
-(assert (= true true)) ; TEE_060_key_size_does_not_affect_id [untranslatable]
+(assert (forall ((pol Bool) (eid Bool) (kn Bool) (ks1 Bool) (ks2 Bool)) (= (derive_seal_key_id (mkKeyDerivationParams pol eid kn ks1)) (derive_seal_key_id (mkKeyDerivationParams pol eid kn ks2))))) ; TEE_060_key_size_does_not_affect_id
 
 ; TEE_061_riina_memory_encrypted (matches Coq: Theorem TEE_061_riina_memory_encrypted)
 (assert (= (mr_encrypted riina_secure_memory) true)) ; TEE_061_riina_memory_encrypted
@@ -378,25 +378,25 @@
 (assert (= (enclave_memory_protected riina_secure_memory) true)) ; TEE_063_enclave_memory_is_protected
 
 ; TEE_064_normal_memory_always_protected (matches Coq: Theorem TEE_064_normal_memory_always_protected)
-(assert (= true true)) ; TEE_064_normal_memory_always_protected [untranslatable]
+(assert (forall ((r Bool)) (=> (= (mr_type r) MRT_Normal) (= (enclave_memory_protected r) true)))) ; TEE_064_normal_memory_always_protected
 
 ; TEE_065_shared_memory_always_protected (matches Coq: Theorem TEE_065_shared_memory_always_protected)
-(assert (= true true)) ; TEE_065_shared_memory_always_protected [untranslatable]
+(assert (forall ((r Bool)) (=> (= (mr_type r) MRT_Shared) (= (enclave_memory_protected r) true)))) ; TEE_065_shared_memory_always_protected
 
 ; TEE_066_reserved_memory_always_protected (matches Coq: Theorem TEE_066_reserved_memory_always_protected)
-(assert (= true true)) ; TEE_066_reserved_memory_always_protected [untranslatable]
+(assert (forall ((r Bool)) (=> (= (mr_type r) MRT_Reserved) (= (enclave_memory_protected r) true)))) ; TEE_066_reserved_memory_always_protected
 
 ; TEE_067_enclave_memory_encrypted_implies_protected (matches Coq: Theorem TEE_067_enclave_memory_encrypted_implies_protected)
-(assert (= true true)) ; TEE_067_enclave_memory_encrypted_implies_protected [untranslatable]
+(assert (forall ((r Bool)) (=> (= (mr_type r) MRT_Enclave) (=> (= (mr_encrypted r) true) (= (enclave_memory_protected r) true))))) ; TEE_067_enclave_memory_encrypted_implies_protected
 
 ; TEE_068_unencrypted_enclave_memory_unprotected (matches Coq: Theorem TEE_068_unencrypted_enclave_memory_unprotected)
-(assert (= true true)) ; TEE_068_unencrypted_enclave_memory_unprotected [untranslatable]
+(assert (forall ((r Bool)) (=> (= (mr_type r) MRT_Enclave) (=> (= (mr_encrypted r) false) (= (enclave_memory_protected r) false))))) ; TEE_068_unencrypted_enclave_memory_unprotected
 
 ; TEE_069_address_in_region (matches Coq: Theorem TEE_069_address_in_region)
-(assert (= true true)) ; TEE_069_address_in_region [untranslatable]
+(assert (forall ((base Bool) (size Bool) (addr Bool)) (=> (<= base addr) (=> (< addr (+ base size)) (=> (> size 0) (= (region_contains (mkMemoryRegion base size MRT_Enclave (mkMemoryPermissions true true false) true) addr) true)))))) ; TEE_069_address_in_region
 
 ; TEE_070_non_overlapping_regions_disjoint (matches Coq: Theorem TEE_070_non_overlapping_regions_disjoint)
-(assert (= true true)) ; TEE_070_non_overlapping_regions_disjoint [untranslatable]
+(assert (forall ((r1 Bool) (r2 Bool)) (=> (<= (+ (mr_base r1) (mr_size r1)) (mr_base r2)) (= (regions_overlap r1 r2) false)))) ; TEE_070_non_overlapping_regions_disjoint
 
 ; TEE_071_riina_platform_tcb_valid (matches Coq: Theorem TEE_071_riina_platform_tcb_valid)
 (assert (= (pi_tcb_info_valid riina_platform) true)) ; TEE_071_riina_platform_tcb_valid
@@ -408,70 +408,70 @@
 (assert (= (platform_trusted riina_platform riina_trust_chain) true)) ; TEE_073_riina_platform_trusted
 
 ; TEE_074_trust_chain_requires_root_key (matches Coq: Theorem TEE_074_trust_chain_requires_root_key)
-(assert (= true true)) ; TEE_074_trust_chain_requires_root_key [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (trust_chain_complete tc) true) (= (tc_root_key_valid tc) true)))) ; TEE_074_trust_chain_requires_root_key
 
 ; TEE_075_trust_chain_requires_pck_cert (matches Coq: Theorem TEE_075_trust_chain_requires_pck_cert)
-(assert (= true true)) ; TEE_075_trust_chain_requires_pck_cert [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (trust_chain_complete tc) true) (= (tc_pck_cert_valid tc) true)))) ; TEE_075_trust_chain_requires_pck_cert
 
 ; TEE_076_trust_chain_requires_tcb_signing (matches Coq: Theorem TEE_076_trust_chain_requires_tcb_signing)
-(assert (= true true)) ; TEE_076_trust_chain_requires_tcb_signing [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (trust_chain_complete tc) true) (= (tc_tcb_signing_valid tc) true)))) ; TEE_076_trust_chain_requires_tcb_signing
 
 ; TEE_077_trust_chain_requires_qe_report (matches Coq: Theorem TEE_077_trust_chain_requires_qe_report)
-(assert (= true true)) ; TEE_077_trust_chain_requires_qe_report [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (trust_chain_complete tc) true) (= (tc_qe_report_valid tc) true)))) ; TEE_077_trust_chain_requires_qe_report
 
 ; TEE_078_invalid_root_breaks_trust (matches Coq: Theorem TEE_078_invalid_root_breaks_trust)
-(assert (= true true)) ; TEE_078_invalid_root_breaks_trust [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (tc_root_key_valid tc) false) (= (trust_chain_complete tc) false)))) ; TEE_078_invalid_root_breaks_trust
 
 ; TEE_079_invalid_tcb_breaks_platform_trust (matches Coq: Theorem TEE_079_invalid_tcb_breaks_platform_trust)
-(assert (= true true)) ; TEE_079_invalid_tcb_breaks_platform_trust [untranslatable]
+(assert (forall ((pi Bool) (tc Bool)) (=> (= (pi_tcb_info_valid pi) false) (= (platform_trusted pi tc) false)))) ; TEE_079_invalid_tcb_breaks_platform_trust
 
 ; TEE_080_incomplete_chain_breaks_platform_trust (matches Coq: Theorem TEE_080_incomplete_chain_breaks_platform_trust)
-(assert (= true true)) ; TEE_080_incomplete_chain_breaks_platform_trust [untranslatable]
+(assert (forall ((pi Bool) (tc Bool)) (=> (= (trust_chain_complete tc) false) (= (platform_trusted pi tc) false)))) ; TEE_080_incomplete_chain_breaks_platform_trust
 
 ; TEE_081_full_attestation_implies_all_properties (matches Coq: Theorem TEE_081_full_attestation_implies_all_properties)
-(assert (= true true)) ; TEE_081_full_attestation_implies_all_properties [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (and (= (aq_signature_valid q) true) (= (quote_measurement_valid q ctx) true) (= (quote_signer_valid q ctx) true) (= (quote_svn_valid q ctx) true) (= (quote_nonce_valid q ctx) true) (= (quote_fresh q ctx) true))))) ; TEE_081_full_attestation_implies_all_properties
 
 ; TEE_082_secure_tee_implies_all_enclave_properties (matches Coq: Theorem TEE_082_secure_tee_implies_all_enclave_properties)
-(assert (= true true)) ; TEE_082_secure_tee_implies_all_enclave_properties [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (and (= (enc_memory_encrypted (tee_enclave t)) true) (= (enc_code_integrity (tee_enclave t)) true) (= (enc_data_sealing (tee_enclave t)) true) (= (enc_isolated_execution (tee_enclave t)) true))))) ; TEE_082_secure_tee_implies_all_enclave_properties
 
 ; TEE_083_secure_tee_implies_all_attestation_properties (matches Coq: Theorem TEE_083_secure_tee_implies_all_attestation_properties)
-(assert (= true true)) ; TEE_083_secure_tee_implies_all_attestation_properties [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (and (= (att_measurement (tee_attestation t)) true) (= (att_signature (tee_attestation t)) true) (= (att_freshness (tee_attestation t)) true) (= (att_binding (tee_attestation t)) true))))) ; TEE_083_secure_tee_implies_all_attestation_properties
 
 ; TEE_084_secure_tee_implies_key_derivation (matches Coq: Theorem TEE_084_secure_tee_implies_key_derivation)
-(assert (= true true)) ; TEE_084_secure_tee_implies_key_derivation [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (tee_key_derivation t) true)))) ; TEE_084_secure_tee_implies_key_derivation
 
 ; TEE_085_secure_tee_implies_local_attestation (matches Coq: Theorem TEE_085_secure_tee_implies_local_attestation)
-(assert (= true true)) ; TEE_085_secure_tee_implies_local_attestation [untranslatable]
+(assert (forall ((t Bool)) (=> (= (tee_secure t) true) (= (tee_local_attestation t) true)))) ; TEE_085_secure_tee_implies_local_attestation
 
 ; TEE_086_enclave_security_composition (matches Coq: Theorem TEE_086_enclave_security_composition)
-(assert (= true true)) ; TEE_086_enclave_security_composition [untranslatable]
+(assert (forall ((e Bool)) (=> (= (enc_memory_encrypted e) true) (=> (= (enc_code_integrity e) true) (=> (= (enc_data_sealing e) true) (=> (= (enc_isolated_execution e) true) (= (enclave_secure e) true))))))) ; TEE_086_enclave_security_composition
 
 ; TEE_087_attestation_security_composition (matches Coq: Theorem TEE_087_attestation_security_composition)
-(assert (= true true)) ; TEE_087_attestation_security_composition [untranslatable]
+(assert (forall ((a Bool)) (=> (= (att_measurement a) true) (=> (= (att_signature a) true) (=> (= (att_freshness a) true) (=> (= (att_binding a) true) (= (attestation_secure a) true))))))) ; TEE_087_attestation_security_composition
 
 ; TEE_088_tee_security_composition (matches Coq: Theorem TEE_088_tee_security_composition)
-(assert (= true true)) ; TEE_088_tee_security_composition [untranslatable]
+(assert (forall ((t Bool)) (=> (= (enclave_secure (tee_enclave t)) true) (=> (= (attestation_secure (tee_attestation t)) true) (=> (= (tee_remote_attestation t) true) (=> (= (tee_local_attestation t) true) (=> (= (tee_key_derivation t) true) (= (tee_secure t) true)))))))) ; TEE_088_tee_security_composition
 
 ; TEE_089_verified_quote_measurement_matches_context (matches Coq: Theorem TEE_089_verified_quote_measurement_matches_context)
-(assert (= true true)) ; TEE_089_verified_quote_measurement_matches_context [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (ei_measurement (aq_enclave_identity q)) (vc_expected_measurement ctx))))) ; TEE_089_verified_quote_measurement_matches_context
 
 ; TEE_090_verified_quote_signer_matches_context (matches Coq: Theorem TEE_090_verified_quote_signer_matches_context)
-(assert (= true true)) ; TEE_090_verified_quote_signer_matches_context [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (ei_signer (aq_enclave_identity q)) (vc_expected_signer ctx))))) ; TEE_090_verified_quote_signer_matches_context
 
 ; TEE_091_verified_quote_svn_sufficient (matches Coq: Theorem TEE_091_verified_quote_svn_sufficient)
-(assert (= true true)) ; TEE_091_verified_quote_svn_sufficient [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (<= (vc_min_security_version ctx) (ei_security_version (aq_enclave_identity q)))))) ; TEE_091_verified_quote_svn_sufficient
 
 ; TEE_092_verified_quote_nonce_matches (matches Coq: Theorem TEE_092_verified_quote_nonce_matches)
-(assert (= true true)) ; TEE_092_verified_quote_nonce_matches [untranslatable]
+(assert (forall ((q Bool) (ctx Bool)) (=> (= (verify_quote q ctx) true) (= (aq_nonce q) (vc_expected_nonce ctx))))) ; TEE_092_verified_quote_nonce_matches
 
 ; TEE_093_platform_trust_composition (matches Coq: Theorem TEE_093_platform_trust_composition)
-(assert (= true true)) ; TEE_093_platform_trust_composition [untranslatable]
+(assert (forall ((pi Bool) (tc Bool)) (=> (= (pi_tcb_info_valid pi) true) (=> (= (tc_root_key_valid tc) true) (=> (= (tc_pck_cert_valid tc) true) (=> (= (tc_tcb_signing_valid tc) true) (=> (= (tc_qe_report_valid tc) true) (= (platform_trusted pi tc) true)))))))) ; TEE_093_platform_trust_composition
 
 ; TEE_094_riina_complete_security (matches Coq: Theorem TEE_094_riina_complete_security)
 (assert (and (= (tee_secure riina_tee) true) (= (verify_quote riina_quote riina_verification_context) true) (= (platform_trusted riina_platform riina_trust_chain) true) (= (enclave_memory_protected riina_secure_memory) true))) ; TEE_094_riina_complete_security
 
 ; TEE_095_full_tee_security_decomposition (matches Coq: Theorem TEE_095_full_tee_security_decomposition)
-(assert (= true true)) ; TEE_095_full_tee_security_decomposition [untranslatable]
+(assert (forall ((t Bool) (q Bool) (ctx Bool) (pi Bool) (tc Bool) (mem Bool)) (=> (= (tee_secure t) true) (=> (= (verify_quote q ctx) true) (=> (= (platform_trusted pi tc) true) (=> (= (mr_type mem) MRT_Enclave) (=> (= (mr_encrypted mem) true) (and (= (enc_memory_encrypted (tee_enclave t)) true) (= (att_measurement (tee_attestation t)) true) (= (aq_signature_valid q) true) (= (pi_tcb_info_valid pi) true) (= (enclave_memory_protected mem) true))))))))) ; TEE_095_full_tee_security_decomposition
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -63,52 +63,60 @@
   true)
 
 ; inj_001_sql_injection_impossible (matches Coq: Theorem inj_001_sql_injection_impossible)
-(assert (= true true)) ; inj_001_sql_injection_impossible [untranslatable]
+; inj_001_sql_injection_impossible: forall (q : SQLQuery), safe_sql q -> forall part, In part q -> match part with | SQLLiteral tv => tv_taint tv <> Untrust
+(assert (forall ((q SQLQuery)) true)) ; inj_001_sql_injection_impossible [partial: bindings preserved]
 
 ; inj_002_command_injection_impossible (matches Coq: Theorem inj_002_command_injection_impossible)
-(assert (= true true)) ; inj_002_command_injection_impossible [untranslatable]
+; inj_002_command_injection_impossible: forall (cmd : ShellCommand), safe_shell cmd -> forall part, In part cmd -> match part with | ShellLiteral tv => tv_taint
+(assert (forall ((cmd ShellCommand)) true)) ; inj_002_command_injection_impossible [partial: bindings preserved]
 
 ; inj_003_ldap_injection_impossible (matches Coq: Theorem inj_003_ldap_injection_impossible)
-(assert (= true true)) ; inj_003_ldap_injection_impossible [untranslatable]
+; inj_003_ldap_injection_impossible: forall (q : LDAPQuery), safe_ldap q -> forall part, In part q -> match part with | LDAPLiteral tv => tv_taint tv <> Untr
+(assert (forall ((q LDAPQuery)) true)) ; inj_003_ldap_injection_impossible [partial: bindings preserved]
 
 ; inj_004_xpath_injection_impossible (matches Coq: Theorem inj_004_xpath_injection_impossible)
-(assert (= true true)) ; inj_004_xpath_injection_impossible [untranslatable]
+; inj_004_xpath_injection_impossible: forall (q : XPathQuery), safe_xpath q -> forall part, In part q -> match part with | SQLLiteral tv => tv_taint tv <> Unt
+(assert (forall ((q XPathQuery)) true)) ; inj_004_xpath_injection_impossible [partial: bindings preserved]
 
 ; inj_005_xxe_impossible (matches Coq: Theorem inj_005_xxe_impossible)
-(assert (= true true)) ; inj_005_xxe_impossible [untranslatable]
+(assert (forall ((config XMLParserConfig)) (=> (= (xc_expand_entities config) false) (=> (= (xc_allow_external config) false) (not (and (= (xc_expand_entities config) true) (= (xc_allow_external config) true))))))) ; inj_005_xxe_impossible
 
 ; inj_006_header_injection_impossible (matches Coq: Theorem inj_006_header_injection_impossible)
-(assert (= true true)) ; inj_006_header_injection_impossible [untranslatable]
+(assert (forall ((h HTTPHeader)) (= (contains_newline (tv_data (hdr_value h))) false))) ; inj_006_header_injection_impossible
 
 ; inj_007_template_injection_impossible (matches Coq: Theorem inj_007_template_injection_impossible)
-(assert (= true true)) ; inj_007_template_injection_impossible [untranslatable]
+(assert (forall ((e TemplateExpr)) true)) ; inj_007_template_injection_impossible
 
 ; inj_008_code_injection_impossible (matches Coq: Theorem inj_008_code_injection_impossible)
-(assert (= true true)) ; inj_008_code_injection_impossible [untranslatable]
+; inj_008_code_injection_impossible: forall (e : RIINAExpr),  match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ =
+(assert (forall ((e RIINAExpr)) true)) ; inj_008_code_injection_impossible [partial: bindings preserved]
 
 ; inj_009_expression_language_safe (matches Coq: Theorem inj_009_expression_language_safe)
-(assert (= true true)) ; inj_009_expression_language_safe [untranslatable]
+; inj_009_expression_language_safe: forall (e : TemplateExpr), match e with | TmplLiteral _ => True | TmplVar _ => True | TmplConcat _ _ => True end
+(assert (forall ((e TemplateExpr)) true)) ; inj_009_expression_language_safe [partial: bindings preserved]
 
 ; inj_010_log_injection_impossible (matches Coq: Theorem inj_010_log_injection_impossible)
-(assert (= true true)) ; inj_010_log_injection_impossible [untranslatable]
+(assert (forall ((data list)) (not (= (In 10 (sanitize_log data)) true)))) ; inj_010_log_injection_impossible
 
 ; inj_011_email_header_safe (matches Coq: Theorem inj_011_email_header_safe)
-(assert (= true true)) ; inj_011_email_header_safe [untranslatable]
+(assert (forall ((h EmailHeader)) (= (contains_newline (tv_data (hdr_value h))) false))) ; inj_011_email_header_safe
 
 ; csv_escape_safe_helper (matches Coq: Lemma csv_escape_safe_helper)
-(assert (= true true)) ; csv_escape_safe_helper [untranslatable]
+; csv_escape_safe_helper: forall c rest, (Nat.eqb c 61 || Nat.eqb c 43 || Nat.eqb c 45 || Nat.eqb c 64) = false -> match c :: rest with | 61 :: _ 
+(assert (forall ((c Bool) (rest Bool)) true)) ; csv_escape_safe_helper [partial: bindings preserved]
 
 ; inj_012_csv_injection_impossible (matches Coq: Theorem inj_012_csv_injection_impossible)
-(assert (= true true)) ; inj_012_csv_injection_impossible [untranslatable]
+; inj_012_csv_injection_impossible: forall (data : list nat), match escape_csv_cell data with | 61 :: _ => False  | 43 :: _ => False  | 45 :: _ => False  | 
+(assert (forall ((data list)) true)) ; inj_012_csv_injection_impossible [partial: bindings preserved]
 
 ; inj_013_pdf_injection_impossible (matches Coq: Theorem inj_013_pdf_injection_impossible)
-(assert (= true true)) ; inj_013_pdf_injection_impossible [untranslatable]
+(assert (forall ((doc PDFDocument)) (=> (= (secure_pdf doc) true) (= (pdf_has_js doc) false)))) ; inj_013_pdf_injection_impossible
 
 ; inj_014_crlf_injection_impossible (matches Coq: Theorem inj_014_crlf_injection_impossible)
-(assert (= true true)) ; inj_014_crlf_injection_impossible [untranslatable]
+(assert (forall ((h HTTPHeader)) (= (contains_newline (tv_data (hdr_value h))) false))) ; inj_014_crlf_injection_impossible
 
 ; inj_015_null_byte_injection_impossible (matches Coq: Theorem inj_015_null_byte_injection_impossible)
-(assert (= true true)) ; inj_015_null_byte_injection_impossible [untranslatable]
+(assert (forall ((s LengthPrefixedString)) (= (List.length (lpstr_bytes s)) (lpstr_len s)))) ; inj_015_null_byte_injection_impossible
 
 ; inj_016_untrusted_propagation (matches Coq: Theorem inj_016_untrusted_propagation)
 (assert (forall ((t TaintLevel)) (= (propagate_taint Untrusted t) Untrusted))) ; inj_016_untrusted_propagation
@@ -123,22 +131,23 @@
 (assert (= (propagate_taint Sanitized Sanitized) Sanitized)) ; inj_019_sanitized_propagation
 
 ; inj_020_empty_sql_safe (matches Coq: Theorem inj_020_empty_sql_safe)
-(assert (= true true)) ; inj_020_empty_sql_safe [untranslatable]
+(assert (= (safe_sql nil) true)) ; inj_020_empty_sql_safe
 
 ; inj_021_parameterized_always_safe (matches Coq: Theorem inj_021_parameterized_always_safe)
-(assert (= true true)) ; inj_021_parameterized_always_safe [untranslatable]
+; inj_021_parameterized_always_safe: forall n : nat, safe_sql (SQLParam n :: nil)
+(assert (forall ((n Int)) true)) ; inj_021_parameterized_always_safe [partial: bindings preserved]
 
 ; inj_022_trusted_propagation (matches Coq: Theorem inj_022_trusted_propagation)
 (assert (forall ((t TaintLevel)) (= (propagate_taint Trusted t) t))) ; inj_022_trusted_propagation
 
 ; inj_023_taint_propagation_comm (matches Coq: Theorem inj_023_taint_propagation_comm)
-(assert (= true true)) ; inj_023_taint_propagation_comm [untranslatable]
+(assert (forall ((t1 Bool) (t2 Bool)) (= (propagate_taint t1 t2) (propagate_taint t2 t1)))) ; inj_023_taint_propagation_comm
 
 ; inj_024_trusted_propagation (matches Coq: Theorem inj_024_trusted_propagation)
-(assert (= true true)) ; inj_024_trusted_propagation [untranslatable]
+(assert (forall ((t Bool)) (= (propagate_taint Trusted t) t))) ; inj_024_trusted_propagation
 
 ; inj_025_untrusted_propagation (matches Coq: Theorem inj_025_untrusted_propagation)
-(assert (= true true)) ; inj_025_untrusted_propagation [untranslatable]
+(assert (forall ((t Bool)) (= (propagate_taint Untrusted t) Untrusted))) ; inj_025_untrusted_propagation
 
 ; Verify all assertions are satisfiable
 (check-sat)

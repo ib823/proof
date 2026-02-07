@@ -183,10 +183,10 @@
   true)
 
 ; accessibility_complete (matches Coq: Theorem accessibility_complete)
-(assert (= true true)) ; accessibility_complete [untranslatable]
+(assert (forall ((element UIElement)) (=> (= (accessible_element element) true) (=> (= (visible element) true) (and (= (has_accessibility_label element) true) (= (navigable_by_voiceover element) true)))))) ; accessibility_complete
 
 ; ui_state_valid (matches Coq: Theorem ui_state_valid)
-(assert (= true true)) ; ui_state_valid [untranslatable]
+(assert (forall ((screen Screen)) (forall ((transition Transition)) (= (valid_target_state (apply_transition transition screen)) true)))) ; ui_state_valid
 
 ; loading_to_ready_valid (matches Coq: Theorem loading_to_ready_valid)
 (assert (= (valid_state_transition Loading Ready) true)) ; loading_to_ready_valid
@@ -198,67 +198,67 @@
 (assert (= (valid_state_transition Error Ready) true)) ; error_recovery_valid
 
 ; invalid_transition_preserves_state (matches Coq: Theorem invalid_transition_preserves_state)
-(assert (= true true)) ; invalid_transition_preserves_state [untranslatable]
+(assert (forall ((screen Screen)) (forall ((transition Transition)) (=> (= (trans_valid transition) false) (= (screen_state (apply_transition transition screen)) (screen_state screen)))))) ; invalid_transition_preserves_state
 
 ; button_state_valid_thm (matches Coq: Theorem button_state_valid_thm)
-(assert (= true true)) ; button_state_valid_thm [untranslatable]
+(assert (forall ((b Button)) (=> (= (button_state_valid b) true) (=> (= (btn_enabled b) false) (= (btn_state b) BtnDisabled))))) ; button_state_valid_thm
 
 ; text_field_input_sanitized_thm (matches Coq: Theorem text_field_input_sanitized_thm)
-(assert (= true true)) ; text_field_input_sanitized_thm [untranslatable]
+(assert (forall ((tf TextField)) (=> (= (text_field_input_sanitized tf) true) (= (tf_sanitized tf) true)))) ; text_field_input_sanitized_thm
 
 ; list_view_recycling_correct_thm (matches Coq: Theorem list_view_recycling_correct_thm)
-(assert (= true true)) ; list_view_recycling_correct_thm [untranslatable]
+(assert (forall ((lv ListView)) (=> (= (list_view_recycling_correct lv) true) (<= (lv_visible_items lv) (lv_total_items lv))))) ; list_view_recycling_correct_thm
 
 ; scroll_view_bounds_checked_thm (matches Coq: Theorem scroll_view_bounds_checked_thm)
-(assert (= true true)) ; scroll_view_bounds_checked_thm [untranslatable]
+(assert (forall ((sv ScrollView)) (=> (= (scroll_view_bounds_checked sv) true) (<= (sv_content_offset sv) (sv_content_size sv))))) ; scroll_view_bounds_checked_thm
 
 ; image_view_loading_handled_thm (matches Coq: Theorem image_view_loading_handled_thm)
-(assert (= true true)) ; image_view_loading_handled_thm [untranslatable]
+(assert (forall ((iv ImageView)) (=> (= (image_view_loading_handled iv) true) (= (iv_loading_handled iv) true)))) ; image_view_loading_handled_thm
 
 ; switch_toggle_atomic_thm (matches Coq: Theorem switch_toggle_atomic_thm)
-(assert (= true true)) ; switch_toggle_atomic_thm [untranslatable]
+(assert (forall ((sw SwitchToggle)) (=> (= (switch_toggle_atomic sw) true) (= (sw_atomic sw) true)))) ; switch_toggle_atomic_thm
 
 ; slider_value_bounded_thm (matches Coq: Theorem slider_value_bounded_thm)
-(assert (= true true)) ; slider_value_bounded_thm [untranslatable]
+(assert (forall ((s Slider)) (=> (= (slider_value_bounded s) true) (and (<= (sl_min_value s) (sl_value s)) (<= (sl_value s) (sl_max_value s)))))) ; slider_value_bounded_thm
 
 ; progress_bar_monotonic_thm (matches Coq: Theorem progress_bar_monotonic_thm)
-(assert (= true true)) ; progress_bar_monotonic_thm [untranslatable]
+(assert (forall ((pb ProgressBar)) (=> (= (progress_bar_monotonic pb) true) (<= (pb_previous pb) (pb_current pb))))) ; progress_bar_monotonic_thm
 
 ; tab_bar_selection_exclusive_thm (matches Coq: Theorem tab_bar_selection_exclusive_thm)
-(assert (= true true)) ; tab_bar_selection_exclusive_thm [untranslatable]
+(assert (forall ((tb TabBar)) (=> (= (tab_bar_selection_exclusive tb) true) (= (tb_selection_exclusive tb) true)))) ; tab_bar_selection_exclusive_thm
 
 ; navigation_stack_valid_thm (matches Coq: Theorem navigation_stack_valid_thm)
-(assert (= true true)) ; navigation_stack_valid_thm [untranslatable]
+(assert (forall ((ns NavigationStack)) (=> (= (navigation_stack_valid ns) true) (not (= (ns_stack ns) nil))))) ; navigation_stack_valid_thm
 
 ; alert_dialog_modal_thm (matches Coq: Theorem alert_dialog_modal_thm)
-(assert (= true true)) ; alert_dialog_modal_thm [untranslatable]
+(assert (forall ((ad AlertDialog)) (=> (= (alert_dialog_modal ad) true) (= (ad_modal ad) true)))) ; alert_dialog_modal_thm
 
 ; action_sheet_dismissible_thm (matches Coq: Theorem action_sheet_dismissible_thm)
-(assert (= true true)) ; action_sheet_dismissible_thm [untranslatable]
+(assert (forall ((a ActionSheet)) (=> (= (action_sheet_dismissible a) true) (= (as_dismissible a) true)))) ; action_sheet_dismissible_thm
 
 ; date_picker_range_valid_thm (matches Coq: Theorem date_picker_range_valid_thm)
-(assert (= true true)) ; date_picker_range_valid_thm [untranslatable]
+(assert (forall ((dp DatePicker)) (=> (= (date_picker_range_valid dp) true) (and (<= (dp_min_date dp) (dp_selected dp)) (<= (dp_selected dp) (dp_max_date dp)))))) ; date_picker_range_valid_thm
 
 ; color_picker_gamut_valid_thm (matches Coq: Theorem color_picker_gamut_valid_thm)
-(assert (= true true)) ; color_picker_gamut_valid_thm [untranslatable]
+(assert (forall ((cp ColorPicker)) (=> (= (color_picker_gamut_valid cp) true) (and (<= (cp_red cp) 255) (<= (cp_green cp) 255) (<= (cp_blue cp) 255))))) ; color_picker_gamut_valid_thm
 
 ; search_bar_input_debounced_thm (matches Coq: Theorem search_bar_input_debounced_thm)
-(assert (= true true)) ; search_bar_input_debounced_thm [untranslatable]
+(assert (forall ((sb SearchBar)) (=> (= (search_bar_input_debounced sb) true) (>= (sb_current_ms sb) (+ (sb_last_search_ms sb) (sb_debounce_ms sb)))))) ; search_bar_input_debounced_thm
 
 ; alert_dialog_blocks_input (matches Coq: Theorem alert_dialog_blocks_input)
-(assert (= true true)) ; alert_dialog_blocks_input [untranslatable]
+(assert (forall ((ad AlertDialog)) (=> (= (alert_dialog_modal ad) true) (= (ad_blocking_input ad) true)))) ; alert_dialog_blocks_input
 
 ; progress_bar_within_max (matches Coq: Theorem progress_bar_within_max)
-(assert (= true true)) ; progress_bar_within_max [untranslatable]
+(assert (forall ((pb ProgressBar)) (=> (= (progress_bar_monotonic pb) true) (<= (pb_current pb) (pb_max pb))))) ; progress_bar_within_max
 
 ; tab_bar_index_in_range (matches Coq: Theorem tab_bar_index_in_range)
-(assert (= true true)) ; tab_bar_index_in_range [untranslatable]
+(assert (forall ((tb TabBar)) (=> (= (tab_bar_selection_exclusive tb) true) (< (tb_selected_index tb) (List.length (tb_tabs tb)))))) ; tab_bar_index_in_range
 
 ; action_sheet_has_cancel (matches Coq: Theorem action_sheet_has_cancel)
-(assert (= true true)) ; action_sheet_has_cancel [untranslatable]
+(assert (forall ((a ActionSheet)) (=> (= (action_sheet_dismissible a) true) (= (as_cancel_available a) true)))) ; action_sheet_has_cancel
 
 ; text_field_length_bounded (matches Coq: Theorem text_field_length_bounded)
-(assert (= true true)) ; text_field_length_bounded [untranslatable]
+(assert (forall ((tf TextField)) (=> (= (text_field_input_sanitized tf) true) (<= (List.length (tf_input tf)) (tf_max_length tf))))) ; text_field_length_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

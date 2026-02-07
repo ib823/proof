@@ -68,88 +68,88 @@
   true)
 
 ; hib_req_1 (matches Coq: Theorem hib_req_1)
-(assert (= true true)) ; hib_req_1 [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (sgh_encrypted r) true) (=> (= (sgh_access_controlled r) true) (=> (= (sgh_cybersecurity_adequate r) true) (= (hib_cybersecurity r) true)))))) ; hib_req_1
 
 ; hib_req_2 (matches Coq: Theorem hib_req_2)
-(assert (= true true)) ; hib_req_2 [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (sgh_nehr_shared r) true) (=> (= (sgh_encrypted r) true) (= (nehr_sharing_compliant r) true))))) ; hib_req_2
 
 ; hib_req_3 (matches Coq: Theorem hib_req_3)
-(assert (= true true)) ; hib_req_3 [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (sgh_audit_logged r) true) (= (hib_audit_compliant r) true)))) ; hib_req_3
 
 ; hib_req_4 (matches Coq: Theorem hib_req_4)
-(assert (= true true)) ; hib_req_4 [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (hib_cybersecurity r) true) (=> (= (hib_audit_compliant r) true) (= (sensitive_health_protected r) true))))) ; hib_req_4
 
 ; hib_prohibited_insurance (matches Coq: Theorem hib_prohibited_insurance)
-(assert (= true true)) ; hib_prohibited_insurance [untranslatable]
+(assert (not (= (use_permitted InsuranceUnderwriting) true))) ; hib_prohibited_insurance
 
 ; hib_prohibited_employment (matches Coq: Theorem hib_prohibited_employment)
-(assert (= true true)) ; hib_prohibited_employment [untranslatable]
+(assert (not (= (use_permitted Employment) true))) ; hib_prohibited_employment
 
 ; hib_treatment_allowed (matches Coq: Theorem hib_treatment_allowed)
-(assert (= true true)) ; hib_treatment_allowed [untranslatable]
+(assert (= (use_permitted Treatment) true)) ; hib_treatment_allowed
 
 ; hib_composition (matches Coq: Theorem hib_composition)
-(assert (= true true)) ; hib_composition [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (hib_cybersecurity r) true) (=> (= (hib_audit_compliant r) true) (=> (= (nehr_sharing_compliant r) true) (= (hib_fully_compliant r) true)))))) ; hib_composition
 
 ; sg_provider_coverage (matches Coq: Theorem sg_provider_coverage)
-(assert (= true true)) ; sg_provider_coverage [untranslatable]
+(assert (forall ((p SGHealthcareProvider)) (= (In p all_sg_providers) true))) ; sg_provider_coverage
 
 ; health_category_coverage (matches Coq: Theorem health_category_coverage)
-(assert (= true true)) ; health_category_coverage [untranslatable]
+(assert (forall ((c HealthInfoCategory)) (= (In c all_health_categories) true))) ; health_category_coverage
 
 ; patient_access_right (matches Coq: Theorem patient_access_right)
-(assert (= true true)) ; patient_access_right [untranslatable]
+(assert (forall ((req PatientAccessRequest)) (=> (<= (par_responded_at req) (+ (par_requested_at req) hib_access_deadline)) (=> (= (par_data_provided req) true) (= (patient_access_fulfilled req) true))))) ; patient_access_right
 
 ; patient_access_late_violation (matches Coq: Theorem patient_access_late_violation)
-(assert (= true true)) ; patient_access_late_violation [untranslatable]
+(assert (forall ((req PatientAccessRequest)) (=> (< (+ (par_requested_at req) hib_access_deadline) (par_responded_at req)) (not (<= (par_responded_at req) (+ (par_requested_at req) hib_access_deadline)))))) ; patient_access_late_violation
 
 ; data_correction_logged (matches Coq: Theorem data_correction_logged)
-(assert (= true true)) ; data_correction_logged [untranslatable]
+(assert (forall ((c HealthDataCorrection)) (=> (= (hdc_audit_logged c) true) (=> (not (= (hdc_old_value_hash c) (hdc_new_value_hash c))) (= (correction_properly_logged c) true))))) ; data_correction_logged
 
 ; cross_institutional_exchange (matches Coq: Theorem cross_institutional_exchange)
-(assert (= true true)) ; cross_institutional_exchange [untranslatable]
+(assert (forall ((ex HealthDataExchange)) (=> (= (hde_patient_consent ex) true) (=> (= (hde_encrypted ex) true) (=> (= (hde_purpose_treatment ex) true) (=> (= (hde_audit_logged_exchange ex) true) (= (exchange_authorized ex) true))))))) ; cross_institutional_exchange
 
 ; general_health_not_sensitive (matches Coq: Theorem general_health_not_sensitive)
-(assert (= true true)) ; general_health_not_sensitive [untranslatable]
+(assert (not (= (sg_health_sensitive GeneralHealth) true))) ; general_health_not_sensitive
 
 ; mental_health_is_sensitive (matches Coq: Theorem mental_health_is_sensitive)
-(assert (= true true)) ; mental_health_is_sensitive [untranslatable]
+(assert (= (sg_health_sensitive MentalHealthSG) true)) ; mental_health_is_sensitive
 
 ; hiv_sti_is_sensitive (matches Coq: Theorem hiv_sti_is_sensitive)
-(assert (= true true)) ; hiv_sti_is_sensitive [untranslatable]
+(assert (= (sg_health_sensitive HIV_STI_SG) true)) ; hiv_sti_is_sensitive
 
 ; genetic_info_is_sensitive (matches Coq: Theorem genetic_info_is_sensitive)
-(assert (= true true)) ; genetic_info_is_sensitive [untranslatable]
+(assert (= (sg_health_sensitive GeneticInfo) true)) ; genetic_info_is_sensitive
 
 ; nehr_requires_encryption (matches Coq: Theorem nehr_requires_encryption)
-(assert (= true true)) ; nehr_requires_encryption [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (nehr_sharing_compliant r) true) (= (sgh_encrypted r) true)))) ; nehr_requires_encryption
 
 ; nehr_requires_sharing (matches Coq: Theorem nehr_requires_sharing)
-(assert (= true true)) ; nehr_requires_sharing [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (nehr_sharing_compliant r) true) (= (sgh_nehr_shared r) true)))) ; nehr_requires_sharing
 
 ; use_type_coverage (matches Coq: Theorem use_type_coverage)
-(assert (= true true)) ; use_type_coverage [untranslatable]
+(assert (forall ((u UseType)) (= (In u all_use_types) true))) ; use_type_coverage
 
 ; research_allowed (matches Coq: Theorem research_allowed)
-(assert (= true true)) ; research_allowed [untranslatable]
+(assert (= (use_permitted Research) true)) ; research_allowed
 
 ; public_health_allowed (matches Coq: Theorem public_health_allowed)
-(assert (= true true)) ; public_health_allowed [untranslatable]
+(assert (= (use_permitted PublicHealth) true)) ; public_health_allowed
 
 ; hib_full_implies_cybersecurity (matches Coq: Theorem hib_full_implies_cybersecurity)
-(assert (= true true)) ; hib_full_implies_cybersecurity [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (hib_fully_compliant r) true) (= (hib_cybersecurity r) true)))) ; hib_full_implies_cybersecurity
 
 ; hib_full_implies_audit (matches Coq: Theorem hib_full_implies_audit)
-(assert (= true true)) ; hib_full_implies_audit [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (hib_fully_compliant r) true) (= (hib_audit_compliant r) true)))) ; hib_full_implies_audit
 
 ; hib_full_implies_nehr (matches Coq: Theorem hib_full_implies_nehr)
-(assert (= true true)) ; hib_full_implies_nehr [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (hib_fully_compliant r) true) (= (nehr_sharing_compliant r) true)))) ; hib_full_implies_nehr
 
 ; cybersecurity_eliminates_penalty (matches Coq: Theorem cybersecurity_eliminates_penalty)
-(assert (= true true)) ; cybersecurity_eliminates_penalty [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (hib_cybersecurity r) true) (not (= (hib_penalty_exposure r) true))))) ; cybersecurity_eliminates_penalty
 
 ; public_hospital_must_share (matches Coq: Theorem public_hospital_must_share)
-(assert (= true true)) ; public_hospital_must_share [untranslatable]
+(assert (forall ((r SGHealthRecord)) (=> (= (sgh_provider_type r) PublicHospital) (=> (= (sgh_nehr_shared r) true) (= (public_hospital_nehr_mandatory r) true))))) ; public_hospital_must_share
 
 ; Verify all assertions are satisfiable
 (check-sat)

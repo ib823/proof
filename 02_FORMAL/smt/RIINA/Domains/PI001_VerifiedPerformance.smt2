@@ -64,106 +64,106 @@
 (define-fun puzzle_verify () Bool true)
 
 ; PI_001_01_simd_add_equiv (matches Coq: Theorem PI_001_01_simd_add_equiv)
-(assert (= true true)) ; PI_001_01_simd_add_equiv [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (simd_add a b) (scalar_add a b)))) ; PI_001_01_simd_add_equiv
 
 ; PI_001_02_simd_mul_equiv (matches Coq: Theorem PI_001_02_simd_mul_equiv)
-(assert (= true true)) ; PI_001_02_simd_mul_equiv [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (simd_mul a b) (scalar_mul a b)))) ; PI_001_02_simd_mul_equiv
 
 ; PI_001_03_scalar_add_length (matches Coq: Theorem PI_001_03_scalar_add_length)
-(assert (= true true)) ; PI_001_03_scalar_add_length [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (length a) (length b)) (= (length (scalar_add a b)) (length a))))) ; PI_001_03_scalar_add_length
 
 ; PI_001_04_scalar_add_comm (matches Coq: Theorem PI_001_04_scalar_add_comm)
-(assert (= true true)) ; PI_001_04_scalar_add_comm [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (length a) (length b)) (= (scalar_add a b) (scalar_add b a))))) ; PI_001_04_scalar_add_comm
 
 ; PI_001_05_scalar_add_assoc (matches Coq: Theorem PI_001_05_scalar_add_assoc)
-(assert (= true true)) ; PI_001_05_scalar_add_assoc [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (=> (= (length a) (length b)) (=> (= (length b) (length c)) (= (scalar_add (scalar_add a b) c) (scalar_add a (scalar_add b c))))))) ; PI_001_05_scalar_add_assoc
 
 ; PI_001_06_scalar_mul_length (matches Coq: Theorem PI_001_06_scalar_mul_length)
-(assert (= true true)) ; PI_001_06_scalar_mul_length [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (length a) (length b)) (= (length (scalar_mul a b)) (length a))))) ; PI_001_06_scalar_mul_length
 
 ; PI_001_07_dot_product_zero_left (matches Coq: Theorem PI_001_07_dot_product_zero_left)
-(assert (= true true)) ; PI_001_07_dot_product_zero_left [untranslatable]
+(assert (forall ((b Bool)) (= (dot_product nil b) 0))) ; PI_001_07_dot_product_zero_left
 
 ; PI_001_08_simd_preserves_length (matches Coq: Theorem PI_001_08_simd_preserves_length)
-(assert (= true true)) ; PI_001_08_simd_preserves_length [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (length a) (length b)) (= (length (simd_add a b)) (length a))))) ; PI_001_08_simd_preserves_length
 
 ; PI_002_01_veb_search_root (matches Coq: Theorem PI_002_01_veb_search_root)
-(assert (= true true)) ; PI_002_01_veb_search_root [untranslatable]
+(assert (forall ((v Bool) (l Bool) (r Bool)) (= (veb_search (VEBNode v l r) v) true))) ; PI_002_01_veb_search_root
 
 ; PI_002_02_veb_leaf_search (matches Coq: Theorem PI_002_02_veb_leaf_search)
-(assert (= true true)) ; PI_002_02_veb_leaf_search [untranslatable]
+(assert (forall ((v Bool)) (= (veb_search (VEBLeaf v) v) true))) ; PI_002_02_veb_leaf_search
 
 ; PI_002_03_veb_height_positive (matches Coq: Theorem PI_002_03_veb_height_positive)
-(assert (= true true)) ; PI_002_03_veb_height_positive [untranslatable]
+(assert (forall ((v Bool) (l Bool) (r Bool)) (> (veb_height (VEBNode v l r)) 0))) ; PI_002_03_veb_height_positive
 
 ; PI_002_04_veb_size_positive (matches Coq: Theorem PI_002_04_veb_size_positive)
-(assert (= true true)) ; PI_002_04_veb_size_positive [untranslatable]
+(assert (forall ((t Bool)) (> (veb_size t) 0))) ; PI_002_04_veb_size_positive
 
 ; PI_002_05_veb_inorder_nonempty (matches Coq: Theorem PI_002_05_veb_inorder_nonempty)
-(assert (= true true)) ; PI_002_05_veb_inorder_nonempty [untranslatable]
+(assert (forall ((t Bool)) (not (= (veb_inorder t) nil)))) ; PI_002_05_veb_inorder_nonempty
 
 ; PI_002_06_veb_height_bound (matches Coq: Theorem PI_002_06_veb_height_bound)
-(assert (= true true)) ; PI_002_06_veb_height_bound [untranslatable]
+(assert (forall ((t Bool)) (< (veb_height t) (veb_size t)))) ; PI_002_06_veb_height_bound
 
 ; PI_003_01_msq_empty_dequeue (matches Coq: Theorem PI_003_01_msq_empty_dequeue)
-(assert (= true true)) ; PI_003_01_msq_empty_dequeue [untranslatable]
+(assert (= (msq_dequeue msq_empty) (mk-tuple msq_empty none))) ; PI_003_01_msq_empty_dequeue
 
 ; PI_003_02_msq_enqueue_nonempty (matches Coq: Theorem PI_003_02_msq_enqueue_nonempty)
-(assert (= true true)) ; PI_003_02_msq_enqueue_nonempty [untranslatable]
+(assert (forall ((q Bool) (v Bool)) (not (= (msq_items (msq_enqueue q v)) nil)))) ; PI_003_02_msq_enqueue_nonempty
 
 ; PI_003_03_msq_fifo (matches Coq: Theorem PI_003_03_msq_fifo)
-(assert (= true true)) ; PI_003_03_msq_fifo [untranslatable]
+(assert (forall ((v Bool)) (let ((q (msq_enqueue msq_empty v))) (= (msq_dequeue q) (mk-tuple {| (some v)))))) ; PI_003_03_msq_fifo
 
 ; PI_003_04_msq_enqueue_length (matches Coq: Theorem PI_003_04_msq_enqueue_length)
-(assert (= true true)) ; PI_003_04_msq_enqueue_length [untranslatable]
+(assert (forall ((q Bool) (v Bool)) (= (length (msq_items (msq_enqueue q v))) (S (length (msq_items q)))))) ; PI_003_04_msq_enqueue_length
 
 ; PI_003_05_cas_success (matches Coq: Theorem PI_003_05_cas_success)
-(assert (= true true)) ; PI_003_05_cas_success [untranslatable]
+(assert (forall ((v Bool) (new_val Bool)) (= (cas v v new_val) CASSuccess))) ; PI_003_05_cas_success
 
 ; PI_003_06_cas_failure (matches Coq: Theorem PI_003_06_cas_failure)
-(assert (= true true)) ; PI_003_06_cas_failure [untranslatable]
+(assert (forall ((loc Bool) (expected Bool) (new_val Bool)) (=> (not (= loc expected)) (exists ((v Bool)) (= (cas loc expected new_val) (CASFailure v)))))) ; PI_003_06_cas_failure
 
 ; PI_003_07_linearization_empty (matches Coq: Theorem PI_003_07_linearization_empty)
-(assert (= true true)) ; PI_003_07_linearization_empty [untranslatable]
+(assert (= (lin_ordered nil) true)) ; PI_003_07_linearization_empty
 
 ; PI_004_01_dce_false_branch (matches Coq: Theorem PI_004_01_dce_false_branch)
-(assert (= true true)) ; PI_004_01_dce_false_branch [untranslatable]
+(assert (forall ((t Bool) (f Bool) (env Bool)) (= (opt_eval env (dce (OIf (OConst 0) t f))) (opt_eval env (dce f))))) ; PI_004_01_dce_false_branch
 
 ; PI_004_02_dce_true_branch (matches Coq: Theorem PI_004_02_dce_true_branch)
-(assert (= true true)) ; PI_004_02_dce_true_branch [untranslatable]
+(assert (forall ((n Bool) (t Bool) (f Bool) (env Bool)) (=> (> n 0) (= (opt_eval env (dce (OIf (OConst n) t f))) (opt_eval env (dce t)))))) ; PI_004_02_dce_true_branch
 
 ; PI_004_03_const_fold_add (matches Coq: Theorem PI_004_03_const_fold_add)
-(assert (= true true)) ; PI_004_03_const_fold_add [untranslatable]
+(assert (forall ((a Bool) (b Bool) (env Bool)) (= (opt_eval env (const_fold (OAdd (OConst a) (OConst b)))) (+ a b)))) ; PI_004_03_const_fold_add
 
 ; PI_004_04_const_fold_mul (matches Coq: Theorem PI_004_04_const_fold_mul)
-(assert (= true true)) ; PI_004_04_const_fold_mul [untranslatable]
+(assert (forall ((a Bool) (b Bool) (env Bool)) (= (opt_eval env (const_fold (OMul (OConst a) (OConst b)))) (* a b)))) ; PI_004_04_const_fold_mul
 
 ; PI_004_05_const_preserves (matches Coq: Theorem PI_004_05_const_preserves)
-(assert (= true true)) ; PI_004_05_const_preserves [untranslatable]
+(assert (forall ((n Bool) (env Bool)) (= (opt_eval env (const_fold (OConst n))) (opt_eval env (OConst n))))) ; PI_004_05_const_preserves
 
 ; PI_004_06_var_preserves (matches Coq: Theorem PI_004_06_var_preserves)
-(assert (= true true)) ; PI_004_06_var_preserves [untranslatable]
+(assert (forall ((x Bool) (env Bool)) (= (opt_eval env (const_fold (OVar x))) (opt_eval env (OVar x))))) ; PI_004_06_var_preserves
 
 ; PI_004_07_dce_const_preserves (matches Coq: Theorem PI_004_07_dce_const_preserves)
-(assert (= true true)) ; PI_004_07_dce_const_preserves [untranslatable]
+(assert (forall ((n Bool) (env Bool)) (= (opt_eval env (dce (OConst n))) n))) ; PI_004_07_dce_const_preserves
 
 ; PI_004_08_dce_var_preserves (matches Coq: Theorem PI_004_08_dce_var_preserves)
-(assert (= true true)) ; PI_004_08_dce_var_preserves [untranslatable]
+(assert (forall ((x Bool) (env Bool)) (= (opt_eval env (dce (OVar x))) (env x)))) ; PI_004_08_dce_var_preserves
 
 ; PI_005_01_puzzle_verify_sound (matches Coq: Theorem PI_005_01_puzzle_verify_sound)
-(assert (= true true)) ; PI_005_01_puzzle_verify_sound [untranslatable]
+(assert (forall ((x Bool) (target Bool)) (=> (= (puzzle_valid x target) true) (= (puzzle_verify x target) true)))) ; PI_005_01_puzzle_verify_sound
 
 ; PI_005_02_puzzle_verify_complete (matches Coq: Theorem PI_005_02_puzzle_verify_complete)
-(assert (= true true)) ; PI_005_02_puzzle_verify_complete [untranslatable]
+(assert (forall ((x Bool) (target Bool)) (=> (= (puzzle_verify x target) true) (= (puzzle_valid x target) true)))) ; PI_005_02_puzzle_verify_complete
 
 ; PI_005_03_puzzle_zero_target (matches Coq: Theorem PI_005_03_puzzle_zero_target)
-(assert (= true true)) ; PI_005_03_puzzle_zero_target [untranslatable]
+(assert (forall ((x Bool)) (= (puzzle_valid x 0) false))) ; PI_005_03_puzzle_zero_target
 
 ; PI_005_04_puzzle_deterministic (matches Coq: Theorem PI_005_04_puzzle_deterministic)
-(assert (= true true)) ; PI_005_04_puzzle_deterministic [untranslatable]
+(assert (forall ((x Bool) (t1 Bool) (t2 Bool)) (=> (= t1 t2) (= (puzzle_valid x t1) (puzzle_valid x t2))))) ; PI_005_04_puzzle_deterministic
 
 ; PI_005_05_vec_sum_nil (matches Coq: Theorem PI_005_05_vec_sum_nil)
-(assert (= true true)) ; PI_005_05_vec_sum_nil [untranslatable]
+(assert (= (vec_sum nil) 0)) ; PI_005_05_vec_sum_nil
 
 ; Verify all assertions are satisfiable
 (check-sat)

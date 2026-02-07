@@ -8,61 +8,62 @@
 (set-option :produce-models true)
 
 ; 1 (matches Coq: Lemma 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((x Bool) (e Bool) (Γ Bool) (Σ Bool) (Δ Bool) (T Bool) (ε Bool)) (=> (= (free_in x e) true) (=> (= (has_type Γ Σ Δ e T ε) true) (exists ((T' Bool)) (= (lookup x Γ) (some T'))))))) ; 1
 
 ; store_lookup_update_eq (matches Coq: Lemma store_lookup_update_eq)
-(assert (= true true)) ; store_lookup_update_eq [untranslatable]
+(assert (forall ((st Bool) (l Bool) (v Bool)) (= (store_lookup l (store_update l v st)) (some v)))) ; store_lookup_update_eq
 
 ; store_lookup_update_neq (matches Coq: Lemma store_lookup_update_neq)
-(assert (= true true)) ; store_lookup_update_neq [untranslatable]
+(assert (forall ((st Bool) (l Bool) (l' Bool) (v Bool)) (=> (not (= l l')) (= (store_lookup l (store_update l' v st)) (store_lookup l st))))) ; store_lookup_update_neq
 
 ; store_ty_lookup_update_eq (matches Coq: Lemma store_ty_lookup_update_eq)
-(assert (= true true)) ; store_ty_lookup_update_eq [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (T Bool) (sl Bool)) (= (store_ty_lookup l (store_ty_update l T sl Σ)) (some (mk-tuple T sl))))) ; store_ty_lookup_update_eq
 
 ; store_ty_lookup_update_neq (matches Coq: Lemma store_ty_lookup_update_neq)
-(assert (= true true)) ; store_ty_lookup_update_neq [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (l' Bool) (T Bool) (sl Bool)) (=> (not (= l l')) (= (store_ty_lookup l (store_ty_update l' T sl Σ)) (store_ty_lookup l Σ))))) ; store_ty_lookup_update_neq
 
 ; store_ty_extends_update_fresh (matches Coq: Lemma store_ty_extends_update_fresh)
-(assert (= true true)) ; store_ty_extends_update_fresh [untranslatable]
+(assert (forall ((Σ Bool) (l Bool) (T Bool) (sl Bool)) (=> (= (store_ty_lookup l Σ) none) (= (store_ty_extends Σ (store_ty_update l T sl Σ)) true)))) ; store_ty_extends_update_fresh
 
 ; store_ty_extends_preserves_typing (matches Coq: Lemma store_ty_extends_preserves_typing)
-(assert (= true true)) ; store_ty_extends_preserves_typing [untranslatable]
+(assert (forall ((Γ Bool) (Σ Bool) (Σ' Bool) (Δ Bool) (e Bool) (T Bool) (ε Bool)) (=> (= (store_ty_extends Σ Σ') true) (=> (= (has_type Γ Σ Δ e T ε) true) (= (has_type Γ Σ' Δ e T ε) true))))) ; store_ty_extends_preserves_typing
 
 ; store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
-(assert (= true true)) ; store_ty_extends_refl [untranslatable]
+(assert (forall ((Σ Bool)) (= (store_ty_extends Σ Σ) true))) ; store_ty_extends_refl
 
 ; store_wf_update_existing (matches Coq: Lemma store_wf_update_existing)
-(assert (= true true)) ; store_wf_update_existing [untranslatable]
+(assert (forall ((Σ Bool) (st Bool) (l Bool) (T Bool) (sl Bool) (v Bool)) (=> (= (store_wf Σ st) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (=> (= (value v) true) (=> (= (has_type nil Σ Public v T EffectPure) true) (= (store_wf Σ (store_update l v st)) true))))))) ; store_wf_update_existing
 
 ; store_wf_update_fresh (matches Coq: Lemma store_wf_update_fresh)
-(assert (= true true)) ; store_wf_update_fresh [untranslatable]
+(assert (forall ((Σ Bool) (st Bool) (l Bool) (T Bool) (sl Bool) (v Bool)) (=> (= (store_wf Σ st) true) (=> (= (store_lookup l st) none) (=> (= (store_ty_lookup l Σ) none) (=> (= (value v) true) (=> (= (has_type nil Σ Public v T EffectPure) true) (= (store_wf (store_ty_update l T sl Σ) (store_update l v st)) true)))))))) ; store_wf_update_fresh
 
 ; store_ty_lookup_fresh_none (matches Coq: Lemma store_ty_lookup_fresh_none)
-(assert (= true true)) ; store_ty_lookup_fresh_none [untranslatable]
+(assert (forall ((Σ Bool) (st Bool)) (=> (= (store_wf Σ st) true) (= (store_ty_lookup (fresh_loc st) Σ) none)))) ; store_ty_lookup_fresh_none
 
 ; 2 (matches Coq: Lemma 2)
-(assert (= true true)) ; 2 [untranslatable]
+(assert (forall ((Γ1 Bool) (Γ2 Bool) (Σ Bool) (Δ Bool) (e Bool) (T Bool) (ε Bool)) (=> (= (has_type Γ1 Σ Δ e T ε) true) (=> (forall ((x Bool)) (=> (= (free_in x e) true) (= (lookup x Γ1) (lookup x Γ2)))) (= (has_type Γ2 Σ Δ e T ε) true))))) ; 2
 
 ; 3 (matches Coq: Lemma 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((Σ Bool) (Δ Bool) (v Bool) (T Bool) (ε Bool) (Γ Bool)) (=> (= (has_type nil Σ Δ v T ε) true) (= (has_type Γ Σ Δ v T ε) true)))) ; 3
 
 ; substitution_preserves_typing (matches Coq: Lemma substitution_preserves_typing)
-(assert (= true true)) ; substitution_preserves_typing [untranslatable]
+; substitution_preserves_typing: forall Γ Σ Δ z v e T1 T2 ε2, value v -> has_type nil Σ Δ v T1 EffectPure -> has_type ((z, T1) :: Γ) Σ Δ e T2 ε2 -> has_t
+(assert (forall ((Γ Bool) (Σ Bool) (Δ Bool) (z Bool) (v Bool) (e Bool) (T1 Bool) (T2 Bool) (ε2 Bool)) true)) ; substitution_preserves_typing [partial: bindings preserved]
 
 ; value_has_pure_effect (matches Coq: Lemma value_has_pure_effect)
-(assert (= true true)) ; value_has_pure_effect [untranslatable]
+(assert (forall ((v Bool) (T Bool) (ε Bool) (Σ Bool)) (=> (= (value v) true) (=> (= (has_type nil Σ Public v T ε) true) (= (has_type nil Σ Public v T EffectPure) true))))) ; value_has_pure_effect
 
 ; preservation_helper (matches Coq: Lemma preservation_helper)
-(assert (= true true)) ; preservation_helper [untranslatable]
+(assert (forall ((cfg1 Bool) (cfg2 Bool)) (=> (= (cfg1 step_to cfg2) true) (=> (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool) (T Bool) (ε Bool) (Σ Bool)) (= cfg1 (mk-tuple e st ctx))) (=> (= cfg2 (mk-tuple e' st' ctx')) (=> (= (has_type nil Σ Public e T ε) true) (=> (= (store_wf Σ st) true) (exists ((Σ' Bool) (ε' Bool)) (and (= (store_ty_extends Σ Σ') true) (= (store_wf Σ' st') true) (= (has_type nil Σ' Public e' T ε') true)))))))))) ; preservation_helper
 
 ; preservation (matches Coq: Theorem preservation)
-(assert (= true true)) ; preservation [untranslatable]
+(assert (= preservation_stmt true)) ; preservation
 
 ; store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
-(assert (= true true)) ; store_ty_extends_trans [untranslatable]
+(assert (forall ((Σ1 Bool) (Σ2 Bool) (Σ3 Bool)) (=> (= (store_ty_extends Σ1 Σ2) true) (=> (= (store_ty_extends Σ2 Σ3) true) (= (store_ty_extends Σ1 Σ3) true))))) ; store_ty_extends_trans
 
 ; multi_step_preservation (matches Coq: Theorem multi_step_preservation)
-(assert (= true true)) ; multi_step_preservation [untranslatable]
+(assert (forall ((cfg Bool) (cfg' Bool)) (=> (= (cfg multi_step_to cfg') true) (=> (forall ((e Bool) (e' Bool) (T Bool) (ε Bool) (st Bool) (st' Bool) (ctx Bool) (ctx' Bool) (Σ Bool)) (= cfg (mk-tuple e st ctx))) (=> (= cfg' (mk-tuple e' st' ctx')) (=> (= (has_type nil Σ Public e T ε) true) (=> (= (store_wf Σ st) true) (exists ((Σ' Bool) (ε' Bool)) (and (= (store_ty_extends Σ Σ') true) (= (store_wf Σ' st') true) (= (has_type nil Σ' Public e' T ε') true)))))))))) ; multi_step_preservation
 
 ; Verify all assertions are satisfiable
 (check-sat)

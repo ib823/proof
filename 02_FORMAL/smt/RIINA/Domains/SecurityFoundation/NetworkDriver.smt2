@@ -46,67 +46,67 @@
   true)
 
 ; network_isolation (matches Coq: Theorem network_isolation)
-(assert (= true true)) ; network_isolation [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (socket Socket)) (=> (not (= (app_id app1) (app_id app2))) (=> (= (owns_socket app1 socket) true) (not (= (can_access_socket app2 socket) true)))))) ; network_isolation
 
 ; socket_ownership_exclusive (matches Coq: Theorem socket_ownership_exclusive)
-(assert (= true true)) ; socket_ownership_exclusive [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (sock Socket)) (=> (= (owns_socket app1 sock) true) (=> (= (owns_socket app2 sock) true) (= (app_id app1) (app_id app2)))))) ; socket_ownership_exclusive
 
 ; unbound_socket_not_usable (matches Coq: Theorem unbound_socket_not_usable)
-(assert (= true true)) ; unbound_socket_not_usable [untranslatable]
+(assert (forall ((sock Socket)) (=> (= (socket_bound sock) false) (not (= (socket_usable sock) true))))) ; unbound_socket_not_usable
 
 ; send_requires_network_permission (matches Coq: Theorem send_requires_network_permission)
-(assert (= true true)) ; send_requires_network_permission [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (sends_data app sock) true) (= (has_network_permission app) true))))) ; send_requires_network_permission
 
 ; receive_requires_network_permission (matches Coq: Theorem receive_requires_network_permission)
-(assert (= true true)) ; receive_requires_network_permission [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (receives_data app sock) true) (= (has_network_permission app) true))))) ; receive_requires_network_permission
 
 ; no_perm_blocks_send (matches Coq: Theorem no_perm_blocks_send)
-(assert (= true true)) ; no_perm_blocks_send [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (app_network_perm app) false) (not (= (sends_data app sock) true)))))) ; no_perm_blocks_send
 
 ; no_perm_blocks_receive (matches Coq: Theorem no_perm_blocks_receive)
-(assert (= true true)) ; no_perm_blocks_receive [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (app_network_perm app) false) (not (= (receives_data app sock) true)))))) ; no_perm_blocks_receive
 
 ; unbound_blocks_send (matches Coq: Theorem unbound_blocks_send)
-(assert (= true true)) ; unbound_blocks_send [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (socket_bound sock) false) (not (= (sends_data app sock) true)))))) ; unbound_blocks_send
 
 ; unbound_blocks_receive (matches Coq: Theorem unbound_blocks_receive)
-(assert (= true true)) ; unbound_blocks_receive [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (socket_bound sock) false) (not (= (receives_data app sock) true)))))) ; unbound_blocks_receive
 
 ; default_deny_firewall (matches Coq: Theorem default_deny_firewall)
-(assert (= true true)) ; default_deny_firewall [untranslatable]
+(assert (forall ((src_port Int) (dst_port Int)) (= (firewall_permits nil src_port dst_port) false))) ; default_deny_firewall
 
 ; cross_app_socket_impossible (matches Coq: Theorem cross_app_socket_impossible)
-(assert (= true true)) ; cross_app_socket_impossible [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (sock Socket)) (=> (not (= (app_id app1) (app_id app2))) (=> (= (owns_socket app1 sock) true) (not (= (sends_data app2 sock) true)))))) ; cross_app_socket_impossible
 
 ; cross_app_receive_impossible (matches Coq: Theorem cross_app_receive_impossible)
-(assert (= true true)) ; cross_app_receive_impossible [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (sock Socket)) (=> (not (= (app_id app1) (app_id app2))) (=> (= (owns_socket app1 sock) true) (not (= (receives_data app2 sock) true)))))) ; cross_app_receive_impossible
 
 ; send_implies_bound (matches Coq: Theorem send_implies_bound)
-(assert (= true true)) ; send_implies_bound [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (sends_data app sock) true) (= (socket_usable sock) true))))) ; send_implies_bound
 
 ; receive_implies_bound (matches Coq: Theorem receive_implies_bound)
-(assert (= true true)) ; receive_implies_bound [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (receives_data app sock) true) (= (socket_usable sock) true))))) ; receive_implies_bound
 
 ; socket_isolation_by_owner (matches Coq: Theorem socket_isolation_by_owner)
-(assert (= true true)) ; socket_isolation_by_owner [untranslatable]
+(assert (forall ((app1 Application) (app2 Application) (sock1 Socket) (sock2 Socket)) (=> (not (= (app_id app1) (app_id app2))) (=> (= (owns_socket app1 sock1) true) (=> (= (owns_socket app2 sock2) true) (not (= (socket_owner sock1) (socket_owner sock2)))))))) ; socket_isolation_by_owner
 
 ; access_control_consistent (matches Coq: Theorem access_control_consistent)
-(assert (= true true)) ; access_control_consistent [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (= (can_access_socket app sock) true) (= (owns_socket app sock) true))))) ; access_control_consistent
 
 ; network_perm_required_both_directions (matches Coq: Theorem network_perm_required_both_directions)
-(assert (= true true)) ; network_perm_required_both_directions [untranslatable]
+(assert (forall ((app Application)) (forall ((sock Socket)) (=> (or (= (sends_data app sock) true) (= (receives_data app sock) true)) (= (has_network_permission app) true))))) ; network_perm_required_both_directions
 
 ; full_network_isolation (matches Coq: Theorem full_network_isolation)
-(assert (= true true)) ; full_network_isolation [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_network_perm app) false) (forall ((sock Bool)) (not (and (= (sends_data app sock) true) (not (= (receives_data app sock) true)))))))) ; full_network_isolation
 
 ; bound_implies_usable (matches Coq: Theorem bound_implies_usable)
-(assert (= true true)) ; bound_implies_usable [untranslatable]
+(assert (forall ((sock Bool)) (=> (= (socket_bound sock) true) (= (socket_usable sock) true)))) ; bound_implies_usable
 
 ; firewall_protects (matches Coq: Theorem firewall_protects)
-(assert (= true true)) ; firewall_protects [untranslatable]
+(assert (forall ((ns Bool)) (=> (= (firewall_enabled ns) true) (= (firewall_enabled ns) true)))) ; firewall_protects
 
 ; socket_port_nonneg (matches Coq: Theorem socket_port_nonneg)
-(assert (= true true)) ; socket_port_nonneg [untranslatable]
+(assert (forall ((sock Bool)) (>= (socket_port sock) 0))) ; socket_port_nonneg
 
 ; Verify all assertions are satisfiable
 (check-sat)

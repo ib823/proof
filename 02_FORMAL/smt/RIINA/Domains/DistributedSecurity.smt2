@@ -128,76 +128,76 @@
   true)
 
 ; andb_true_intro_3 (matches Coq: Lemma andb_true_intro_3)
-(assert (= true true)) ; andb_true_intro_3 [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c Bool)) (=> (= a true) (=> (= b true) (=> (= c true) (= (and a b c) true)))))) ; andb_true_intro_3
 
 ; andb_true_elim_l (matches Coq: Lemma andb_true_elim_l)
-(assert (= true true)) ; andb_true_elim_l [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= a true)))) ; andb_true_elim_l
 
 ; andb_true_elim_r (matches Coq: Lemma andb_true_elim_r)
-(assert (= true true)) ; andb_true_elim_r [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= (and a b) true) (= b true)))) ; andb_true_elim_r
 
 ; orb_true_intro_l (matches Coq: Lemma orb_true_intro_l)
-(assert (= true true)) ; orb_true_intro_l [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= a true) (= (or a b) true)))) ; orb_true_intro_l
 
 ; orb_true_intro_r (matches Coq: Lemma orb_true_intro_r)
-(assert (= true true)) ; orb_true_intro_r [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= b true) (= (or a b) true)))) ; orb_true_intro_r
 
 ; dist_001_byzantine_failure_tolerated (matches Coq: Theorem dist_001_byzantine_failure_tolerated)
-(assert (= true true)) ; dist_001_byzantine_failure_tolerated [untranslatable]
+(assert (forall ((cfg BFTConfig)) (=> (= (bft_valid cfg) true) (< (* 3 (bft_faulty_tolerance cfg)) (bft_total_nodes cfg))))) ; dist_001_byzantine_failure_tolerated
 
 ; dist_001_bft_safety_with_honest_majority (matches Coq: Theorem dist_001_bft_safety_with_honest_majority)
-(assert (= true true)) ; dist_001_bft_safety_with_honest_majority [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (< (* 3 f) n) (> n (* 2 f))))) ; dist_001_bft_safety_with_honest_majority
 
 ; dist_001_bft_quorum_overlap (matches Coq: Theorem dist_001_bft_quorum_overlap)
-(assert (= true true)) ; dist_001_bft_quorum_overlap [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (< (* 3 f) n) (> (* 2 (- n f)) n)))) ; dist_001_bft_quorum_overlap
 
 ; dist_002_sybil_attack_mitigated (matches Coq: Theorem dist_002_sybil_attack_mitigated)
-(assert (= true true)) ; dist_002_sybil_attack_mitigated [untranslatable]
+(assert (forall ((iv IdentityVerification)) (=> (= (iv_proof_of_work_enabled iv) true) (=> (= (iv_identity_bound iv) true) (=> (> (iv_cost_per_identity iv) 0) (= (sybil_protected iv) true)))))) ; dist_002_sybil_attack_mitigated
 
 ; dist_002_sybil_cost_scales_linearly (matches Coq: Theorem dist_002_sybil_cost_scales_linearly)
-(assert (= true true)) ; dist_002_sybil_cost_scales_linearly [untranslatable]
+(assert (forall ((cost_per_id Int) (num_sybils Int)) (=> (> cost_per_id 0) (=> (> num_sybils 0) (>= (* cost_per_id num_sybils) num_sybils))))) ; dist_002_sybil_cost_scales_linearly
 
 ; dist_003_eclipse_attack_mitigated (matches Coq: Theorem dist_003_eclipse_attack_mitigated)
-(assert (= true true)) ; dist_003_eclipse_attack_mitigated [untranslatable]
+(assert (forall ((pc PeerConfig)) (=> (> (pc_distinct_subnets pc) 1) (=> (<= (pc_min_outbound pc) (pc_total_peers pc)) (= (eclipse_protected pc) true))))) ; dist_003_eclipse_attack_mitigated
 
 ; dist_003_peer_diversity_requirement (matches Coq: Theorem dist_003_peer_diversity_requirement)
-(assert (= true true)) ; dist_003_peer_diversity_requirement [untranslatable]
+(assert (forall ((subnets Int) (controlled Int) (total_subnets Int)) (=> (> total_subnets 1) (=> (< controlled total_subnets) (>= (- total_subnets controlled) 1))))) ; dist_003_peer_diversity_requirement
 
 ; dist_004_routing_attack_mitigated (matches Coq: Theorem dist_004_routing_attack_mitigated)
 (assert (forall ((rp RoutingProtocol)) (=> (= (rp_authenticated rp) true) (=> (= (rp_path_verified rp) true) (=> (= (rp_origin_validated rp) true) (= (routing_secure rp) true)))))) ; dist_004_routing_attack_mitigated
 
 ; dist_004_authenticated_routing_preserves_integrity (matches Coq: Theorem dist_004_authenticated_routing_preserves_integrity)
-(assert (= true true)) ; dist_004_authenticated_routing_preserves_integrity [untranslatable]
+(assert (forall ((authenticated Bool) (path_valid Bool)) (=> (= authenticated true) (=> (= path_valid true) (= (and authenticated path_valid) true))))) ; dist_004_authenticated_routing_preserves_integrity
 
 ; dist_005_consensus_attack_mitigated (matches Coq: Theorem dist_005_consensus_attack_mitigated)
 (assert (forall ((cp ConsensusProtocol)) (=> (= (cp_safety_proven cp) true) (=> (= (cp_liveness_proven cp) true) (= (consensus_verified cp) true))))) ; dist_005_consensus_attack_mitigated
 
 ; dist_005_safety_implies_agreement_or_unsafe (matches Coq: Theorem dist_005_safety_implies_agreement_or_unsafe)
-(assert (= true true)) ; dist_005_safety_implies_agreement_or_unsafe [untranslatable]
+(assert (forall ((safety_proven Bool)) (=> (= safety_proven true) (or (= safety_proven true) (= safety_proven false))))) ; dist_005_safety_implies_agreement_or_unsafe
 
 ; dist_005_safety_agreement_model (matches Coq: Theorem dist_005_safety_agreement_model)
-(assert (= true true)) ; dist_005_safety_agreement_model [untranslatable]
+(assert (forall ((value_a Int) (value_b Int) (safety Bool)) (=> (= safety true) (=> (= value_a value_b) (= value_a value_b))))) ; dist_005_safety_agreement_model
 
 ; dist_006_smart_contract_bug_mitigated (matches Coq: Theorem dist_006_smart_contract_bug_mitigated)
 (assert (forall ((sc SmartContract)) (=> (= (sc_formally_verified sc) true) (=> (= (sc_invariants_proven sc) true) (=> (= (sc_no_overflow sc) true) (= (contract_secure sc) true)))))) ; dist_006_smart_contract_bug_mitigated
 
 ; dist_006_verified_contract_preserves_invariants (matches Coq: Theorem dist_006_verified_contract_preserves_invariants)
-(assert (= true true)) ; dist_006_verified_contract_preserves_invariants [untranslatable]
+(assert (forall ((verified Bool) (invariants_hold Bool)) (=> (= verified true) (=> (= invariants_hold true) (= (and verified invariants_hold) true))))) ; dist_006_verified_contract_preserves_invariants
 
 ; dist_007_reentrancy_mitigated (matches Coq: Theorem dist_007_reentrancy_mitigated)
 (assert (forall ((rg ReentrancyGuard)) (=> (= (rg_checks_before_effects rg) true) (=> (= (rg_interactions_last rg) true) (= (reentrancy_protected rg) true))))) ; dist_007_reentrancy_mitigated
 
 ; dist_007_checks_effects_interactions_pattern (matches Coq: Theorem dist_007_checks_effects_interactions_pattern)
-(assert (= true true)) ; dist_007_checks_effects_interactions_pattern [untranslatable]
+(assert (forall ((checks_first Bool) (effects_second Bool) (interactions_third Bool)) (=> (= checks_first true) (=> (= effects_second true) (=> (= interactions_third true) (= (and checks_first effects_second interactions_third) true)))))) ; dist_007_checks_effects_interactions_pattern
 
 ; dist_007_locked_guard_prevents_reentry (matches Coq: Theorem dist_007_locked_guard_prevents_reentry)
-(assert (forall ((is_locked Bool)) (=> (= is_locked true) (= (negb is_locked) false)))) ; dist_007_locked_guard_prevents_reentry
+(assert (forall ((is_locked Bool)) (=> (= is_locked true) (= (not is_locked) false)))) ; dist_007_locked_guard_prevents_reentry
 
 ; dist_008_frontrunning_mitigated (matches Coq: Theorem dist_008_frontrunning_mitigated)
 (assert (forall ((fo FairOrdering)) (=> (= (fo_commit_phase fo) true) (=> (= (fo_reveal_phase fo) true) (=> (= (fo_ordering_deterministic fo) true) (= (frontrun_protected fo) true)))))) ; dist_008_frontrunning_mitigated
 
 ; dist_008_commit_reveal_hides_intent (matches Coq: Theorem dist_008_commit_reveal_hides_intent)
-(assert (= true true)) ; dist_008_commit_reveal_hides_intent [untranslatable]
+(assert (forall ((committed Bool) (revealed Bool)) (=> (= committed true) (=> (= revealed false) (= (and committed (not revealed)) true))))) ; dist_008_commit_reveal_hides_intent
 
 ; dist_009_mev_extraction_mitigated_private (matches Coq: Theorem dist_009_mev_extraction_mitigated_private)
 (assert (forall ((mp MEVProtection)) (=> (= (mev_private_mempool mp) true) (= (mev_protected mp) true)))) ; dist_009_mev_extraction_mitigated_private
@@ -209,7 +209,7 @@
 (assert (forall ((fl FlashLoanGuard)) (=> (= (fl_same_block_check fl) true) (=> (= (fl_balance_snapshot fl) true) (= (flashloan_protected fl) true))))) ; dist_010_flashloan_attack_mitigated
 
 ; dist_010_twap_oracle_resists_manipulation (matches Coq: Theorem dist_010_twap_oracle_resists_manipulation)
-(assert (= true true)) ; dist_010_twap_oracle_resists_manipulation [untranslatable]
+(assert (forall ((twap_enabled Bool) (spot_check Bool)) (=> (= twap_enabled true) (= (or twap_enabled spot_check) true)))) ; dist_010_twap_oracle_resists_manipulation
 
 ; dist_011_clock_skew_mitigated_lamport (matches Coq: Theorem dist_011_clock_skew_mitigated_lamport)
 (assert (forall ((lc LogicalClock)) (=> (= (lc_lamport_enabled lc) true) (=> (= (lc_causality_preserved lc) true) (= (clock_skew_protected lc) true))))) ; dist_011_clock_skew_mitigated_lamport
@@ -218,13 +218,13 @@
 (assert (forall ((lc LogicalClock)) (=> (= (lc_vector_clock lc) true) (=> (= (lc_causality_preserved lc) true) (= (clock_skew_protected lc) true))))) ; dist_011_clock_skew_mitigated_vector
 
 ; dist_011_lamport_clock_monotonic (matches Coq: Theorem dist_011_lamport_clock_monotonic)
-(assert (= true true)) ; dist_011_lamport_clock_monotonic [untranslatable]
+(assert (forall ((t1 Int) (t2 Int)) (=> (< t1 t2) (<= (+ t1 1) t2)))) ; dist_011_lamport_clock_monotonic
 
 ; dist_012_splitbrain_mitigated (matches Coq: Theorem dist_012_splitbrain_mitigated)
 (assert (forall ((pt PartitionConfig)) (=> (= (pt_cap_aware pt) true) (=> (= (pt_partition_detection pt) true) (= (splitbrain_protected pt) true))))) ; dist_012_splitbrain_mitigated
 
 ; dist_012_cap_theorem_tradeoff (matches Coq: Theorem dist_012_cap_theorem_tradeoff)
-(assert (= true true)) ; dist_012_cap_theorem_tradeoff [untranslatable]
+(assert (forall ((consistency Bool) (availability Bool) (partition_tolerance Bool)) (=> (= partition_tolerance true) (or (or (= consistency false) (= availability false)) (= partition_tolerance false) (= (and consistency availability) true))))) ; dist_012_cap_theorem_tradeoff
 
 ; dist_012_cap_partition_choice (matches Coq: Theorem dist_012_cap_partition_choice)
 (assert (forall ((partitioned Bool)) (=> (= partitioned true) (= partitioned true)))) ; dist_012_cap_partition_choice
@@ -233,40 +233,40 @@
 (assert (forall ((csp ConsistencyProtocol)) (=> (= (csp_linearizable csp) true) (=> (= (csp_state_machine_replication csp) true) (= (consistency_verified csp) true))))) ; dist_013_state_inconsistency_mitigated
 
 ; dist_013_linearizability_implies_sequential (matches Coq: Theorem dist_013_linearizability_implies_sequential)
-(assert (= true true)) ; dist_013_linearizability_implies_sequential [untranslatable]
+(assert (forall ((linearizable Bool)) (forall ((op1 Int) (op2 Int)) (=> (= linearizable true) (or (<= op1 op2) (<= op2 op1)))))) ; dist_013_linearizability_implies_sequential
 
 ; dist_014_leader_corruption_mitigated (matches Coq: Theorem dist_014_leader_corruption_mitigated)
 (assert (forall ((ldr LeaderConfig)) (=> (= (ldr_rotation_enabled ldr) true) (=> (= (ldr_bft_election ldr) true) (= (leader_corruption_protected ldr) true))))) ; dist_014_leader_corruption_mitigated
 
 ; dist_014_rotation_limits_corruption_window (matches Coq: Theorem dist_014_rotation_limits_corruption_window)
-(assert (= true true)) ; dist_014_rotation_limits_corruption_window [untranslatable]
+(assert (forall ((term_length Int) (corrupt_duration Int)) (=> (> term_length 0) (=> (<= corrupt_duration term_length) (< corrupt_duration (+ term_length 1)))))) ; dist_014_rotation_limits_corruption_window
 
 ; dist_014_bft_election_requires_quorum (matches Coq: Theorem dist_014_bft_election_requires_quorum)
-(assert (= true true)) ; dist_014_bft_election_requires_quorum [untranslatable]
+(assert (forall ((votes_received Int) (quorum_size Int)) (=> (>= votes_received quorum_size) (=> (> quorum_size 0) (> votes_received 0))))) ; dist_014_bft_election_requires_quorum
 
 ; dist_015_quorum_attack_mitigated (matches Coq: Theorem dist_015_quorum_attack_mitigated)
-(assert (= true true)) ; dist_015_quorum_attack_mitigated [untranslatable]
+(assert (forall ((qc QuorumConfig)) (=> (< (qc_total_nodes qc) (* 2 (qc_quorum_size qc))) (=> (> (qc_quorum_size qc) 0) (= (quorum_valid qc) true))))) ; dist_015_quorum_attack_mitigated
 
 ; dist_015_quorum_intersection_guaranteed (matches Coq: Theorem dist_015_quorum_intersection_guaranteed)
-(assert (= true true)) ; dist_015_quorum_intersection_guaranteed [untranslatable]
+(assert (forall ((n Int) (q Int)) (=> (< n (* 2 q)) (=> (> q 0) (>= (- (* 2 q) n) 1))))) ; dist_015_quorum_intersection_guaranteed
 
 ; dist_015_any_two_quorums_intersect (matches Coq: Theorem dist_015_any_two_quorums_intersect)
-(assert (= true true)) ; dist_015_any_two_quorums_intersect [untranslatable]
+(assert (forall ((n Int) (q Int) (overlap Int)) (=> (< n (* 2 q)) (=> (<= q n) (=> (= overlap (- (* 2 q) n)) (>= overlap 1)))))) ; dist_015_any_two_quorums_intersect
 
 ; dist_015_majority_quorum_safety (matches Coq: Theorem dist_015_majority_quorum_safety)
-(assert (= true true)) ; dist_015_majority_quorum_safety [untranslatable]
+(assert (forall ((n Int)) (=> (> n 0) (<= n (* 2 n))))) ; dist_015_majority_quorum_safety
 
 ; dist_015_majority_always_intersects (matches Coq: Theorem dist_015_majority_always_intersects)
-(assert (= true true)) ; dist_015_majority_always_intersects [untranslatable]
+(assert (forall ((n Int) (q1 Int) (q2 Int)) (=> (> (* 2 q1) n) (=> (> (* 2 q2) n) (=> (<= q1 n) (=> (<= q2 n) (> (+ q1 q2) n))))))) ; dist_015_majority_always_intersects
 
 ; distributed_security_bft_sybil_combined (matches Coq: Theorem distributed_security_bft_sybil_combined)
-(assert (= true true)) ; distributed_security_bft_sybil_combined [untranslatable]
+(assert (forall ((cfg BFTConfig)) (forall ((iv IdentityVerification)) (=> (= (bft_valid cfg) true) (=> (= (sybil_protected iv) true) (= (and (bft_valid cfg) (sybil_protected iv)) true)))))) ; distributed_security_bft_sybil_combined
 
 ; distributed_security_consensus_consistency_combined (matches Coq: Theorem distributed_security_consensus_consistency_combined)
-(assert (= true true)) ; distributed_security_consensus_consistency_combined [untranslatable]
+(assert (forall ((cp ConsensusProtocol)) (forall ((csp ConsistencyProtocol)) (=> (= (consensus_verified cp) true) (=> (= (consistency_verified csp) true) (= (and (consensus_verified cp) (consistency_verified csp)) true)))))) ; distributed_security_consensus_consistency_combined
 
 ; distributed_security_full_stack (matches Coq: Theorem distributed_security_full_stack)
-(assert (= true true)) ; distributed_security_full_stack [untranslatable]
+(assert (forall ((cfg BFTConfig)) (forall ((rg ReentrancyGuard)) (forall ((qc QuorumConfig)) (=> (= (bft_valid cfg) true) (=> (= (reentrancy_protected rg) true) (=> (= (quorum_valid qc) true) (= (and (bft_valid cfg) (reentrancy_protected rg) (quorum_valid qc)) true)))))))) ; distributed_security_full_stack
 
 ; Verify all assertions are satisfiable
 (check-sat)

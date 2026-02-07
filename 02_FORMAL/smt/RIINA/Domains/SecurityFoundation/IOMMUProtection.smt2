@@ -51,70 +51,70 @@
 (define-fun kernel_region_size () Int 4096)
 
 ; dma_isolation (matches Coq: Theorem dma_isolation)
-(assert (= true true)) ; dma_isolation [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (not (=> (= (iommu_permits_dma iommu dev addr) true) (not (= (can_dma_access dev addr iommu) true)))))))) ; dma_isolation
 
 ; iommu_config_protected (matches Coq: Theorem iommu_config_protected)
-(assert (= true true)) ; iommu_config_protected [untranslatable]
+(assert (forall ((guest VirtualMachine)) (forall ((cfg IOMMUConfig)) (not (= (can_modify_config guest cfg) true))))) ; iommu_config_protected
 
 ; iommu_config_protected_v2 (matches Coq: Theorem iommu_config_protected_v2)
-(assert (= true true)) ; iommu_config_protected_v2 [untranslatable]
+(assert (forall ((guest VirtualMachine)) (forall ((iommu IOMMU)) (forall ((cfg Bool)) (=> (= (In cfg (iommu_config iommu)) true) (not (= (can_modify_config guest cfg) true))))))) ; iommu_config_protected_v2
 
 ; dma_requires_iommu_enabled (matches Coq: Theorem dma_requires_iommu_enabled)
-(assert (= true true)) ; dma_requires_iommu_enabled [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (=> (= (iommu_enabled iommu) false) (not (= (iommu_permits_dma iommu dev addr) true))))))) ; dma_requires_iommu_enabled
 
 ; unconfigured_device_no_dma (matches Coq: Theorem unconfigured_device_no_dma)
-(assert (= true true)) ; unconfigured_device_no_dma [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (=> (= (find_device_config (dev_id dev) (iommu_configs iommu)) none) (not (= (iommu_permits_dma iommu dev addr) true))))))) ; unconfigured_device_no_dma
 
 ; out_of_range_dma_blocked (matches Coq: Theorem out_of_range_dma_blocked)
-(assert (= true true)) ; out_of_range_dma_blocked [untranslatable]
+(assert (forall ((dev Device)) (forall ((n Int)) (forall ((iommu IOMMU)) (forall ((cfg IOMMUConfig)) (=> (= (find_device_config (dev_id dev) (iommu_configs iommu)) (some cfg)) (=> (= (address_in_range n cfg) false) (not (= (iommu_permits_dma iommu dev (Addr n)) true))))))))) ; out_of_range_dma_blocked
 
 ; iommu_lockdown_effective (matches Coq: Theorem iommu_lockdown_effective)
-(assert (= true true)) ; iommu_lockdown_effective [untranslatable]
+(assert (forall ((iommu IOMMU)) (forall ((guest VirtualMachine)) (=> (= (guest_isolated_from_iommu guest iommu) true) (=> (forall ((cfg Bool)) (= (In cfg (iommu_configs iommu)) true)) (= (config_locked cfg) true)))))) ; iommu_lockdown_effective
 
 ; dma_isolation_enforced (matches Coq: Theorem dma_isolation_enforced)
-(assert (= true true)) ; dma_isolation_enforced [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (=> (= (can_dma_access dev addr iommu) true) (= (iommu_enabled iommu) true)))))) ; dma_isolation_enforced
 
 ; device_address_bounded (matches Coq: Theorem device_address_bounded)
-(assert (= true true)) ; device_address_bounded [untranslatable]
+(assert (forall ((dev Device)) (forall ((n Int)) (forall ((iommu IOMMU)) (forall ((cfg IOMMUConfig)) (=> (= (iommu_permits_dma iommu dev (Addr n)) true) (=> (= (find_device_config (dev_id dev) (iommu_configs iommu)) (some cfg)) (= (address_in_range n cfg) true)))))))) ; device_address_bounded
 
 ; mapping_table_consistent (matches Coq: Theorem mapping_table_consistent)
-(assert (= true true)) ; mapping_table_consistent [untranslatable]
+(assert (forall ((dev DeviceId)) (forall ((configs list IOMMUConfig)) (forall ((cfg1 IOMMUConfig) (cfg2 IOMMUConfig)) (=> (= (find_device_config dev configs) (some cfg1)) (=> (= (find_device_config dev configs) (some cfg2)) (= cfg1 cfg2))))))) ; mapping_table_consistent
 
 ; no_dma_to_kernel (matches Coq: Theorem no_dma_to_kernel)
-(assert (= true true)) ; no_dma_to_kernel [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Int)) (forall ((iommu IOMMU)) (forall ((cfg IOMMUConfig)) (=> (= (find_device_config (dev_id dev) (iommu_configs iommu)) (some cfg)) (=> (>= (config_allowed_base cfg) (+ kernel_region_base kernel_region_size)) (=> (< addr (+ kernel_region_base kernel_region_size)) (= (address_in_range addr cfg) false))))))))) ; no_dma_to_kernel
 
 ; iommu_bypass_impossible (matches Coq: Theorem iommu_bypass_impossible)
-(assert (= true true)) ; iommu_bypass_impossible [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (=> (= (iommu_enabled iommu) true) (=> (= (find_device_config (dev_id dev) (iommu_configs iommu)) none) (not (= (can_dma_access dev addr iommu) true)))))))) ; iommu_bypass_impossible
 
 ; address_range_lower_bound (matches Coq: Theorem address_range_lower_bound)
-(assert (= true true)) ; address_range_lower_bound [untranslatable]
+(assert (forall ((addr Int)) (forall ((cfg IOMMUConfig)) (=> (= (address_in_range addr cfg) true) (<= (config_allowed_base cfg) addr))))) ; address_range_lower_bound
 
 ; address_range_upper_bound (matches Coq: Theorem address_range_upper_bound)
-(assert (= true true)) ; address_range_upper_bound [untranslatable]
+(assert (forall ((addr Int)) (forall ((cfg IOMMUConfig)) (=> (= (address_in_range addr cfg) true) (< addr (+ (config_allowed_base cfg) (config_allowed_size cfg))))))) ; address_range_upper_bound
 
 ; device_identity_verified (matches Coq: Theorem device_identity_verified)
-(assert (= true true)) ; device_identity_verified [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (=> (= (can_dma_access dev addr iommu) true) (exists ((cfg Bool)) (= (find_device_config (dev_id dev) (iommu_configs iommu)) (some cfg)))))))) ; device_identity_verified
 
 ; empty_config_denies_all (matches Coq: Theorem empty_config_denies_all)
-(assert (= true true)) ; empty_config_denies_all [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (let ((iommu (mkIOMMU 0 nil true))) (not (= (can_dma_access dev addr iommu) true)))))) ; empty_config_denies_all
 
 ; disabled_iommu_denies_all (matches Coq: Theorem disabled_iommu_denies_all)
-(assert (= true true)) ; disabled_iommu_denies_all [untranslatable]
+(assert (forall ((dev Device)) (forall ((addr Address)) (forall ((iommu IOMMU)) (=> (= (iommu_enabled iommu) false) (not (= (can_dma_access dev addr iommu) true))))))) ; disabled_iommu_denies_all
 
 ; locked_config_invariant (matches Coq: Theorem locked_config_invariant)
-(assert (= true true)) ; locked_config_invariant [untranslatable]
+(assert (forall ((guest VirtualMachine)) (forall ((iommu IOMMU)) (forall ((cfg IOMMUConfig)) (=> (= (guest_isolated_from_iommu guest iommu) true) (=> (= (In cfg (iommu_configs iommu)) true) (and (= (config_locked cfg) true) (not (= (can_modify_config guest cfg) true))))))))) ; locked_config_invariant
 
 ; zero_size_config_denies (matches Coq: Theorem zero_size_config_denies)
-(assert (= true true)) ; zero_size_config_denies [untranslatable]
+(assert (forall ((addr Int)) (forall ((cfg IOMMUConfig)) (=> (= (config_allowed_size cfg) 0) (= (address_in_range addr cfg) false))))) ; zero_size_config_denies
 
 ; find_device_config_none_not_in (matches Coq: Theorem find_device_config_none_not_in)
-(assert (= true true)) ; find_device_config_none_not_in [untranslatable]
+(assert (forall ((dev DeviceId)) (forall ((configs list)) (=> (= (find_device_config dev configs) none) (=> (forall ((cfg Bool)) (= (In cfg configs) true)) (not (= (config_device cfg) dev))))))) ; find_device_config_none_not_in
 
 ; find_device_config_some_matches (matches Coq: Theorem find_device_config_some_matches)
-(assert (= true true)) ; find_device_config_some_matches [untranslatable]
+(assert (forall ((dev DeviceId)) (forall ((configs list IOMMUConfig)) (forall ((cfg IOMMUConfig)) (=> (= (find_device_config dev configs) (some cfg)) (= (config_device cfg) dev)))))) ; find_device_config_some_matches
 
 ; independent_device_configs (matches Coq: Theorem independent_device_configs)
-(assert (= true true)) ; independent_device_configs [untranslatable]
+(assert (forall ((dev1 Device) (dev2 Device) (iommu IOMMU) (cfg1 IOMMUConfig) (cfg2 IOMMUConfig)) (=> (not (= (dev_id dev1) (dev_id dev2))) (=> (= (find_device_config (dev_id dev1) (iommu_configs iommu)) (some cfg1)) (=> (= (find_device_config (dev_id dev2) (iommu_configs iommu)) (some cfg2)) (not (= (config_device cfg1) (config_device cfg2)))))))) ; independent_device_configs
 
 ; Verify all assertions are satisfiable
 (check-sat)

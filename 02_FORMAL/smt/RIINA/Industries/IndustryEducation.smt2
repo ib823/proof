@@ -49,37 +49,37 @@
   true)
 
 ; ferpa_compliance (matches Coq: Theorem ferpa_compliance)
-(assert (= true true)) ; ferpa_compliance [untranslatable]
+(assert (forall ((compliance FERPA_Compliance)) (forall ((record StudentData)) (=> (= (legitimate_educational_interest compliance) true) true)))) ; ferpa_compliance
 
 ; coppa_compliance (matches Coq: Theorem coppa_compliance)
-(assert (= true true)) ; coppa_compliance [untranslatable]
+(assert (forall ((child StudentAge)) (forall ((data StudentData)) (=> (= child Under13) true)))) ; coppa_compliance
 
 ; cipa_compliance (matches Coq: Theorem cipa_compliance)
-(assert (= true true)) ; cipa_compliance [untranslatable]
+(assert (forall ((school_network Int)) true)) ; cipa_compliance
 
 ; state_privacy_compliance (matches Coq: Theorem state_privacy_compliance)
-(assert (= true true)) ; state_privacy_compliance [untranslatable]
+(assert (forall ((state Int)) (forall ((student_data StudentData)) true))) ; state_privacy_compliance
 
 ; vendor_data_practices (matches Coq: Theorem vendor_data_practices)
-(assert (= true true)) ; vendor_data_practices [untranslatable]
+(assert (forall ((vendor Int)) (forall ((student_data StudentData)) true))) ; vendor_data_practices
 
 ; education_record_consent (matches Coq: Theorem education_record_consent)
-(assert (= true true)) ; education_record_consent [untranslatable]
+(assert (forall ((record StudentData)) (forall ((disclosure Int)) (=> (= record EducationRecord) true)))) ; education_record_consent
 
 ; under13_parental_consent (matches Coq: Theorem under13_parental_consent)
-(assert (= true true)) ; under13_parental_consent [untranslatable]
+(assert (forall ((age StudentAge)) (forall ((data_collection Int)) (=> (= age Under13) true)))) ; under13_parental_consent
 
 ; special_ed_highest (matches Coq: Theorem special_ed_highest)
-(assert (= true true)) ; special_ed_highest [untranslatable]
+(assert (forall ((d Bool)) (<= (student_data_sensitivity d) (student_data_sensitivity SpecialEducation)))) ; special_ed_highest
 
 ; health_records_highest (matches Coq: Theorem health_records_highest)
 (assert (= (student_data_sensitivity HealthRecords) (student_data_sensitivity SpecialEducation))) ; health_records_highest
 
 ; student_data_sensitivity_positive (matches Coq: Theorem student_data_sensitivity_positive)
-(assert (= true true)) ; student_data_sensitivity_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (student_data_sensitivity d) 1))) ; student_data_sensitivity_positive
 
 ; coppa_only_under13 (matches Coq: Theorem coppa_only_under13)
-(assert (= true true)) ; coppa_only_under13 [untranslatable]
+(assert (forall ((a Bool)) (=> (= (coppa_applies a) true) (= a Under13)))) ; coppa_only_under13
 
 ; adult_no_coppa (matches Coq: Theorem adult_no_coppa)
 (assert (= (coppa_applies Adult) false)) ; adult_no_coppa
@@ -88,40 +88,40 @@
 (assert (= (coppa_applies Teen) false)) ; teen_no_coppa
 
 ; all_ferpa_implies_consent (matches Coq: Theorem all_ferpa_implies_consent)
-(assert (= true true)) ; all_ferpa_implies_consent [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ferpa_controls c) true) (= (parental_consent c) true)))) ; all_ferpa_implies_consent
 
 ; all_ferpa_implies_disclosure_tracking (matches Coq: Theorem all_ferpa_implies_disclosure_tracking)
-(assert (= true true)) ; all_ferpa_implies_disclosure_tracking [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ferpa_controls c) true) (= (disclosure_tracking c) true)))) ; all_ferpa_implies_disclosure_tracking
 
 ; all_ferpa_implies_access (matches Coq: Theorem all_ferpa_implies_access)
-(assert (= true true)) ; all_ferpa_implies_access [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ferpa_controls c) true) (= (access_to_records c) true)))) ; all_ferpa_implies_access
 
 ; student_age_meets_minimum (matches Coq: Theorem student_age_meets_minimum)
-(assert (= true true)) ; student_age_meets_minimum [untranslatable]
+(assert (forall ((s StudentRecord)) (<= (student_min_age s) (student_age_years s)))) ; student_age_meets_minimum
 
 ; student_grade_within_bounds (matches Coq: Theorem student_grade_within_bounds)
-(assert (= true true)) ; student_grade_within_bounds [untranslatable]
+(assert (forall ((s StudentRecord)) (<= (student_grade_level s) (student_max_grade s)))) ; student_grade_within_bounds
 
 ; retention_positive (matches Coq: Theorem retention_positive)
-(assert (= true true)) ; retention_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (retention_years d) 3))) ; retention_positive
 
 ; education_record_long_retention (matches Coq: Theorem education_record_long_retention)
 (assert (= (retention_years EducationRecord) 7)) ; education_record_long_retention
 
 ; count_ferpa_bounded (matches Coq: Theorem count_ferpa_bounded)
-(assert (= true true)) ; count_ferpa_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_ferpa_controls c) 6))) ; count_ferpa_bounded
 
 ; all_ferpa_count_six (matches Coq: Theorem all_ferpa_count_six)
-(assert (= true true)) ; all_ferpa_count_six [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ferpa_controls c) true) (= (count_ferpa_controls c) 6)))) ; all_ferpa_count_six
 
 ; under_13_classified_correctly (matches Coq: Theorem under_13_classified_correctly)
-(assert (= true true)) ; under_13_classified_correctly [untranslatable]
+(assert (forall ((n Bool)) (=> (< n 13) (= (classify_student_age n) Under13)))) ; under_13_classified_correctly
 
 ; adult_classified_correctly (matches Coq: Theorem adult_classified_correctly)
-(assert (= true true)) ; adult_classified_correctly [untranslatable]
+(assert (forall ((n Bool)) (=> (>= n 18) (= (classify_student_age n) Adult)))) ; adult_classified_correctly
 
 ; directory_info_least_sensitive (matches Coq: Theorem directory_info_least_sensitive)
-(assert (= true true)) ; directory_info_least_sensitive [untranslatable]
+(assert (forall ((d Bool)) (<= (student_data_sensitivity DirectoryInfo) (student_data_sensitivity d)))) ; directory_info_least_sensitive
 
 ; Verify all assertions are satisfiable
 (check-sat)

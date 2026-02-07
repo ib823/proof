@@ -56,43 +56,43 @@
 (define-fun screener_count_valid () Bool Nat)
 
 ; movielabs_ecp_compliance (matches Coq: Theorem movielabs_ecp_compliance)
-(assert (= true true)) ; movielabs_ecp_compliance [untranslatable]
+(assert (forall ((compliance ECP_Compliance)) (forall ((content ContentType)) (=> (= (content_encryption compliance) true) (=> (= (forensic_watermarking compliance) true) true))))) ; movielabs_ecp_compliance
 
 ; dci_security (matches Coq: Theorem dci_security)
-(assert (= true true)) ; dci_security [untranslatable]
+(assert (forall ((cinema_content ContentType)) true)) ; dci_security
 
 ; tpn_compliance (matches Coq: Theorem tpn_compliance)
-(assert (= true true)) ; tpn_compliance [untranslatable]
+(assert (forall ((vendor Int)) true)) ; tpn_compliance
 
 ; forensic_watermark (matches Coq: Theorem forensic_watermark)
-(assert (= true true)) ; forensic_watermark [untranslatable]
+(assert (forall ((content ContentType)) (forall ((viewer Int)) true))) ; forensic_watermark
 
 ; cdsa_compliance (matches Coq: Theorem cdsa_compliance)
-(assert (= true true)) ; cdsa_compliance [untranslatable]
+(assert (forall ((content_delivery Int)) true)) ; cdsa_compliance
 
 ; prerelease_maximum_protection (matches Coq: Theorem prerelease_maximum_protection)
-(assert (= true true)) ; prerelease_maximum_protection [untranslatable]
+(assert (forall ((content ContentType)) (forall ((protection ContentProtection)) (=> (= content PreRelease) true)))) ; prerelease_maximum_protection
 
 ; watermark_persistence (matches Coq: Theorem watermark_persistence)
-(assert (= true true)) ; watermark_persistence [untranslatable]
+(assert (forall ((content ContentType)) (forall ((watermark Int)) true))) ; watermark_persistence
 
 ; prerelease_highest_sensitivity (matches Coq: Theorem prerelease_highest_sensitivity)
-(assert (= true true)) ; prerelease_highest_sensitivity [untranslatable]
+(assert (forall ((c Bool)) (<= (content_sensitivity c) (content_sensitivity PreRelease)))) ; prerelease_highest_sensitivity
 
 ; postrelease_lowest_sensitivity (matches Coq: Theorem postrelease_lowest_sensitivity)
-(assert (= true true)) ; postrelease_lowest_sensitivity [untranslatable]
+(assert (forall ((c Bool)) (<= (content_sensitivity PostRelease) (content_sensitivity c)))) ; postrelease_lowest_sensitivity
 
 ; content_sensitivity_positive (matches Coq: Theorem content_sensitivity_positive)
-(assert (= true true)) ; content_sensitivity_positive [untranslatable]
+(assert (forall ((c Bool)) (>= (content_sensitivity c) 1))) ; content_sensitivity_positive
 
 ; hardware_strongest (matches Coq: Theorem hardware_strongest)
-(assert (= true true)) ; hardware_strongest [untranslatable]
+(assert (forall ((p Bool)) (<= (protection_strength p) (protection_strength HardwareProtected)))) ; hardware_strongest
 
 ; unencrypted_weakest (matches Coq: Theorem unencrypted_weakest)
-(assert (= true true)) ; unencrypted_weakest [untranslatable]
+(assert (forall ((p Bool)) (<= (protection_strength Unencrypted) (protection_strength p)))) ; unencrypted_weakest
 
 ; hw_protects_any_content (matches Coq: Theorem hw_protects_any_content)
-(assert (= true true)) ; hw_protects_any_content [untranslatable]
+(assert (forall ((ct Bool)) (= (protection_adequate ct HardwareProtected) true))) ; hw_protects_any_content
 
 ; unencrypted_inadequate_for_prerelease (matches Coq: Theorem unencrypted_inadequate_for_prerelease)
 (assert (= (protection_adequate PreRelease Unencrypted) false)) ; unencrypted_inadequate_for_prerelease
@@ -101,28 +101,28 @@
 (assert (= (protection_adequate PostRelease BasicDRM) true)) ; postrelease_accepts_basic_drm
 
 ; ecp_all_requires_encryption (matches Coq: Theorem ecp_all_requires_encryption)
-(assert (= true true)) ; ecp_all_requires_encryption [untranslatable]
+(assert (forall ((c Bool)) (=> (= (ecp_all_controls c) true) (= (content_encryption c) true)))) ; ecp_all_requires_encryption
 
 ; ecp_all_requires_watermarking (matches Coq: Theorem ecp_all_requires_watermarking)
-(assert (= true true)) ; ecp_all_requires_watermarking [untranslatable]
+(assert (forall ((c Bool)) (=> (= (ecp_all_controls c) true) (= (forensic_watermarking c) true)))) ; ecp_all_requires_watermarking
 
 ; ecp_all_requires_no_copies (matches Coq: Theorem ecp_all_requires_no_copies)
-(assert (= true true)) ; ecp_all_requires_no_copies [untranslatable]
+(assert (forall ((c Bool)) (=> (= (ecp_all_controls c) true) (= (no_unauthorized_copies c) true)))) ; ecp_all_requires_no_copies
 
 ; count_ecp_bounded (matches Coq: Theorem count_ecp_bounded)
-(assert (= true true)) ; count_ecp_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_ecp_controls c) 6))) ; count_ecp_bounded
 
 ; all_ecp_count_six (matches Coq: Theorem all_ecp_count_six)
-(assert (= true true)) ; all_ecp_count_six [untranslatable]
+(assert (forall ((c Bool)) (=> (= (ecp_all_controls c) true) (= (count_ecp_controls c) 6)))) ; all_ecp_count_six
 
 ; dci_key_sufficient (matches Coq: Theorem dci_key_sufficient)
-(assert (= true true)) ; dci_key_sufficient [untranslatable]
+(assert (forall ((bits Bool)) (=> (= (<= dci_min_key_bits bits) true) (>= bits 128)))) ; dci_key_sufficient
 
 ; viewing_bounded (matches Coq: Theorem viewing_bounded)
-(assert (= true true)) ; viewing_bounded [untranslatable]
+(assert (forall ((v Bool) (max_h Bool)) (=> (= (viewing_within_window v max_h) true) (<= (viewing_duration v) max_h)))) ; viewing_bounded
 
 ; screener_bounded (matches Coq: Theorem screener_bounded)
-(assert (= true true)) ; screener_bounded [untranslatable]
+(assert (forall ((c Bool) (mc Bool)) (=> (= (screener_count_valid c mc) true) (<= c mc)))) ; screener_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

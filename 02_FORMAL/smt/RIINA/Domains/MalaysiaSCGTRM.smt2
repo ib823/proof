@@ -58,76 +58,76 @@
   true)
 
 ; gtrm_req_1 (matches Coq: Theorem gtrm_req_1)
-(assert (= true true)) ; gtrm_req_1 [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_board_accountability e) true) (= (gtrm_board_accountable e) true)))) ; gtrm_req_1
 
 ; gtrm_req_2 (matches Coq: Theorem gtrm_req_2)
-(assert (= true true)) ; gtrm_req_2 [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_risk_framework e) true) (= (gtrm_risk_framework e) true)))) ; gtrm_req_2
 
 ; gtrm_req_3 (matches Coq: Theorem gtrm_req_3)
-(assert (= true true)) ; gtrm_req_3 [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (cm_pentest_done e) true) (=> (<= t (+ (cm_last_pentest e) (cm_pentest_interval e))) (= (gtrm_pentest_current e t) true)))))) ; gtrm_req_3
 
 ; gtrm_req_4 (matches Coq: Theorem gtrm_req_4)
-(assert (= true true)) ; gtrm_req_4 [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_ai_risk_assessed e) true) (= (gtrm_ai_assessed e) true)))) ; gtrm_req_4
 
 ; gtrm_req_5 (matches Coq: Theorem gtrm_req_5)
-(assert (= true true)) ; gtrm_req_5 [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_third_party_assessed e) true) (=> (= (cm_cloud_risk_assessed e) true) (= (gtrm_vendor_compliant e) true))))) ; gtrm_req_5
 
 ; gtrm_req_6 (matches Coq: Theorem gtrm_req_6)
-(assert (= true true)) ; gtrm_req_6 [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_incident_response_plan e) true) (= (gtrm_incident_ready e) true)))) ; gtrm_req_6
 
 ; gtrm_req_7 (matches Coq: Theorem gtrm_req_7)
-(assert (= true true)) ; gtrm_req_7 [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_data_protection e) true) (= (gtrm_data_protected e) true)))) ; gtrm_req_7
 
 ; gtrm_composition (matches Coq: Theorem gtrm_composition)
-(assert (= true true)) ; gtrm_composition [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_board_accountable e) true) (=> (= (gtrm_risk_framework e) true) (=> (= (gtrm_pentest_current e t) true) (=> (= (gtrm_ai_assessed e) true) (=> (= (gtrm_vendor_compliant e) true) (=> (= (gtrm_incident_ready e) true) (=> (= (gtrm_data_protected e) true) (= (gtrm_fully_compliant e t) true))))))))))) ; gtrm_composition
 
 ; cm_entity_coverage (matches Coq: Theorem cm_entity_coverage)
-(assert (= true true)) ; cm_entity_coverage [untranslatable]
+(assert (forall ((t CMEntityType)) (= (In t all_cm_entity_types) true))) ; cm_entity_coverage
 
 ; pentest_expired (matches Coq: Theorem pentest_expired)
-(assert (= true true)) ; pentest_expired [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (< (+ (cm_last_pentest e) (cm_pentest_interval e)) t) (not (= (gtrm_pentest_current e t) true)))))) ; pentest_expired
 
 ; pentest_recently_done (matches Coq: Theorem pentest_recently_done)
-(assert (= true true)) ; pentest_recently_done [untranslatable]
+(assert (forall ((e CMEntity)) (=> (= (cm_pentest_done e) true) (= (gtrm_pentest_current e (cm_last_pentest e)) true)))) ; pentest_recently_done
 
 ; gtrm_full_implies_board (matches Coq: Theorem gtrm_full_implies_board)
-(assert (= true true)) ; gtrm_full_implies_board [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_board_accountable e) true))))) ; gtrm_full_implies_board
 
 ; gtrm_full_implies_risk (matches Coq: Theorem gtrm_full_implies_risk)
-(assert (= true true)) ; gtrm_full_implies_risk [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_risk_framework e) true))))) ; gtrm_full_implies_risk
 
 ; gtrm_full_implies_pentest (matches Coq: Theorem gtrm_full_implies_pentest)
-(assert (= true true)) ; gtrm_full_implies_pentest [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_pentest_current e t) true))))) ; gtrm_full_implies_pentest
 
 ; gtrm_full_implies_ai (matches Coq: Theorem gtrm_full_implies_ai)
-(assert (= true true)) ; gtrm_full_implies_ai [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_ai_assessed e) true))))) ; gtrm_full_implies_ai
 
 ; gtrm_full_implies_vendor (matches Coq: Theorem gtrm_full_implies_vendor)
-(assert (= true true)) ; gtrm_full_implies_vendor [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_vendor_compliant e) true))))) ; gtrm_full_implies_vendor
 
 ; gtrm_full_implies_incident (matches Coq: Theorem gtrm_full_implies_incident)
-(assert (= true true)) ; gtrm_full_implies_incident [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_incident_ready e) true))))) ; gtrm_full_implies_incident
 
 ; gtrm_full_implies_data (matches Coq: Theorem gtrm_full_implies_data)
-(assert (= true true)) ; gtrm_full_implies_data [untranslatable]
+(assert (forall ((e CMEntity)) (forall ((t Int)) (=> (= (gtrm_fully_compliant e t) true) (= (gtrm_data_protected e) true))))) ; gtrm_full_implies_data
 
 ; sc_incident_reporting (matches Coq: Theorem sc_incident_reporting)
-(assert (= true true)) ; sc_incident_reporting [untranslatable]
+(assert (forall ((inc SCIncident)) (=> (<= (sci_reported_at inc) (+ (sci_detected_at inc) 24)) (= (sc_incident_timely inc) true)))) ; sc_incident_reporting
 
 ; sc_incident_late (matches Coq: Theorem sc_incident_late)
-(assert (= true true)) ; sc_incident_late [untranslatable]
+(assert (forall ((inc SCIncident)) (=> (< (+ (sci_detected_at inc) sc_incident_deadline) (sci_reported_at inc)) (not (= (sc_incident_timely inc) true))))) ; sc_incident_late
 
 ; ai_model_risk_complete (matches Coq: Theorem ai_model_risk_complete)
-(assert (= true true)) ; ai_model_risk_complete [untranslatable]
+(assert (forall ((ar AIModelRisk)) (=> (= (ai_bias_assessed ar) true) (=> (= (ai_explainability_documented ar) true) (=> (= (ai_data_quality_verified ar) true) (=> (= (ai_model_validated ar) true) (=> (= (ai_monitoring_active ar) true) (= (ai_risk_managed ar) true)))))))) ; ai_model_risk_complete
 
 ; ai_not_validated_not_managed (matches Coq: Theorem ai_not_validated_not_managed)
-(assert (= true true)) ; ai_not_validated_not_managed [untranslatable]
+(assert (forall ((ar AIModelRisk)) (=> (= (ai_model_validated ar) false) (not (= (ai_risk_managed ar) true))))) ; ai_not_validated_not_managed
 
 ; cm_cloud_fully_assessed (matches Coq: Theorem cm_cloud_fully_assessed)
-(assert (= true true)) ; cm_cloud_fully_assessed [untranslatable]
+(assert (forall ((cr CMCloudRisk)) (=> (= (cmc_data_residency_compliant cr) true) (=> (= (cmc_encryption_at_rest cr) true) (=> (= (cmc_encryption_in_transit cr) true) (=> (= (cmc_access_controls cr) true) (=> (= (cmc_exit_strategy cr) true) (= (cm_cloud_risk_assessed cr) true)))))))) ; cm_cloud_fully_assessed
 
 ; cm_cloud_missing_exit_strategy (matches Coq: Theorem cm_cloud_missing_exit_strategy)
-(assert (= true true)) ; cm_cloud_missing_exit_strategy [untranslatable]
+(assert (forall ((cr CMCloudRisk)) (=> (= (cmc_exit_strategy cr) false) (not (= (cm_cloud_risk_assessed cr) true))))) ; cm_cloud_missing_exit_strategy
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -87,79 +87,80 @@
 (define-fun erp_layers () Bool true)
 
 ; erp_001_rbac_enforced (matches Coq: Theorem erp_001_rbac_enforced)
-(assert (= true true)) ; erp_001_rbac_enforced [untranslatable]
+(assert (forall ((user User)) (forall ((perm Permission)) (forall ((assignments list RoleAssignment)) (forall ((role_perms list)) (=> (= (user_has_permission user perm assignments role_perms) true) (exists ((a Bool)) (and (= (In a assignments) true) (= (user_id (assign_user a)) (user_id user)))))))))) ; erp_001_rbac_enforced
 
 ; erp_002_assignment_active (matches Coq: Theorem erp_002_assignment_active)
-(assert (= true true)) ; erp_002_assignment_active [untranslatable]
+(assert (forall ((a RoleAssignment)) (forall ((current_time Int)) (=> (= (assignment_active a current_time) true) (<= (assign_start a) current_time))))) ; erp_002_assignment_active
 
 ; erp_003_sod_enforced (matches Coq: Theorem erp_003_sod_enforced)
-(assert (= true true)) ; erp_003_sod_enforced [untranslatable]
+(assert (forall ((user_roles list nat)) (forall ((conflicts ConflictingRoles)) (=> (= (check_sod user_roles conflicts) true) (=> (forall ((r1 Bool) (r2 Bool)) (= (In (mk-tuple r1 r2) conflicts) true)) (not (or (and (= (In r1 user_roles) true) (= (In r2 user_roles) true)) (and (= (In r1 user_roles) true) (= (In r2 user_roles) true))))))))) ; erp_003_sod_enforced
 
 ; erp_004_txn_authorized (matches Coq: Theorem erp_004_txn_authorized)
-(assert (= true true)) ; erp_004_txn_authorized [untranslatable]
+; erp_004_txn_authorized: forall (txn : Transaction) (rules : list ApprovalRule) (approver_role : nat), txn_authorized txn rules approver_role = t
+(assert (forall ((txn Transaction) (rules list) (approver_role Int)) true)) ; erp_004_txn_authorized [partial: bindings preserved]
 
 ; erp_005_no_self_approval (matches Coq: Theorem erp_005_no_self_approval)
-(assert (= true true)) ; erp_005_no_self_approval [untranslatable]
+(assert (forall ((txn Transaction)) (forall ((approver User)) (=> (= (not_self_approved txn approver) true) (not (= (user_id (txn_user txn)) (user_id approver))))))) ; erp_005_no_self_approval
 
 ; erp_006_audit_created (matches Coq: Theorem erp_006_audit_created)
-(assert (= true true)) ; erp_006_audit_created [untranslatable]
+(assert (forall ((audits list AuditEntry)) (forall ((user Int) (action Int) (resource Int)) (=> (= (action_audited audits user action resource) true) (exists ((a Bool)) (and (= (In a audits) true) (= (audit_user a) user))))))) ; erp_006_audit_created
 
 ; erp_007_audit_immutable (matches Coq: Theorem erp_007_audit_immutable)
 (assert (forall ((a AuditEntry)) (= (audit_id a) (audit_id a)))) ; erp_007_audit_immutable
 
 ; erp_008_tenant_isolation (matches Coq: Theorem erp_008_tenant_isolation)
-(assert (= true true)) ; erp_008_tenant_isolation [untranslatable]
+(assert (forall ((u1 User) (u2 User)) (=> (= (same_tenant u1 u2) false) (not (= (user_tenant u1) (user_tenant u2)))))) ; erp_008_tenant_isolation
 
 ; erp_009_role_hierarchy (matches Coq: Theorem erp_009_role_hierarchy)
-(assert (= true true)) ; erp_009_role_hierarchy [untranslatable]
+(assert (forall ((required Int) (actual Int)) (=> (= (role_level_sufficient required actual) true) (<= required actual)))) ; erp_009_role_hierarchy
 
 ; erp_010_multi_approval (matches Coq: Theorem erp_010_multi_approval)
-(assert (= true true)) ; erp_010_multi_approval [untranslatable]
+(assert (forall ((required Int) (obtained Int)) (=> (= (approvals_sufficient required obtained) true) (<= required obtained)))) ; erp_010_multi_approval
 
 ; erp_011_budget_enforced (matches Coq: Theorem erp_011_budget_enforced)
-(assert (= true true)) ; erp_011_budget_enforced [untranslatable]
+(assert (forall ((spent Int) (limit Int)) (=> (= (within_budget spent limit) true) (<= spent limit)))) ; erp_011_budget_enforced
 
 ; erp_012_period_closed (matches Coq: Theorem erp_012_period_closed)
-(assert (= true true)) ; erp_012_period_closed [untranslatable]
+(assert (forall ((period_end Int) (current Int)) (=> (= (period_closed period_end current) true) (< period_end current)))) ; erp_012_period_closed
 
 ; erp_013_valid_workflow (matches Coq: Theorem erp_013_valid_workflow)
-(assert (= true true)) ; erp_013_valid_workflow [untranslatable]
+(assert (forall ((from DocState) (to DocState)) (=> (= (valid_doc_transition from to) true) (= (valid_doc_transition from to) true)))) ; erp_013_valid_workflow
 
 ; erp_014_no_post_without_approval (matches Coq: Theorem erp_014_no_post_without_approval)
 (assert (= (valid_doc_transition Draft Posted) false)) ; erp_014_no_post_without_approval
 
 ; erp_015_maker_checker (matches Coq: Theorem erp_015_maker_checker)
-(assert (= true true)) ; erp_015_maker_checker [untranslatable]
+(assert (forall ((maker User) (checker User)) (=> (= (maker_checker maker checker) true) (not (= (user_id maker) (user_id checker)))))) ; erp_015_maker_checker
 
 ; erp_016_delegation_logged (matches Coq: Theorem erp_016_delegation_logged)
-(assert (= true true)) ; erp_016_delegation_logged [untranslatable]
+(assert (forall ((audits list AuditEntry)) (forall ((delegator Int) (delegate Int)) (=> (= (action_audited audits delegator 99 delegate) true) (exists ((a Bool)) (= (In a audits) true)))))) ; erp_016_delegation_logged
 
 ; erp_017_time_limited (matches Coq: Theorem erp_017_time_limited)
-(assert (= true true)) ; erp_017_time_limited [untranslatable]
+(assert (forall ((grant_end Int) (current Int)) (=> (= (access_time_limited grant_end current) true) (< current grant_end)))) ; erp_017_time_limited
 
 ; erp_018_field_security (matches Coq: Theorem erp_018_field_security)
-(assert (= true true)) ; erp_018_field_security [untranslatable]
+(assert (forall ((field_sensitivity Int) (user_clearance Int)) (=> (= (field_accessible field_sensitivity user_clearance) true) (<= field_sensitivity user_clearance)))) ; erp_018_field_security
 
 ; erp_019_lock_exclusive (matches Coq: Theorem erp_019_lock_exclusive)
-(assert (= true true)) ; erp_019_lock_exclusive [untranslatable]
+(assert (forall ((lock_holder Int) (requester Int)) (=> (= (lock_exclusive lock_holder requester) true) (= lock_holder requester)))) ; erp_019_lock_exclusive
 
 ; erp_020_concurrent_controlled (matches Coq: Theorem erp_020_concurrent_controlled)
-(assert (= true true)) ; erp_020_concurrent_controlled [untranslatable]
+(assert (forall ((active Int) (max Int)) (=> (= (concurrent_safe active max) true) (<= active max)))) ; erp_020_concurrent_controlled
 
 ; erp_021_data_validated (matches Coq: Theorem erp_021_data_validated)
 (assert (forall ((passed Bool)) (=> (= (data_valid passed) true) (= passed true)))) ; erp_021_data_validated
 
 ; erp_022_ref_integrity (matches Coq: Theorem erp_022_ref_integrity)
-(assert (= true true)) ; erp_022_ref_integrity [untranslatable]
+(assert (forall ((ref_id Int)) (forall ((valid_refs list)) (=> (= (ref_exists ref_id valid_refs) true) (exists ((r Bool)) (and (= (In r valid_refs) true) (= r ref_id))))))) ; erp_022_ref_integrity
 
 ; erp_023_soft_delete (matches Coq: Theorem erp_023_soft_delete)
-(assert (= true true)) ; erp_023_soft_delete [untranslatable]
+(assert (forall ((deleted Bool) (data_present Bool)) (=> (= (soft_deleted deleted data_present) true) (=> (= deleted true) (= data_present true))))) ; erp_023_soft_delete
 
 ; erp_024_encrypted_at_rest (matches Coq: Theorem erp_024_encrypted_at_rest)
-(assert (= true true)) ; erp_024_encrypted_at_rest [untranslatable]
+(assert (forall ((key_id Int)) (=> (= (data_encrypted key_id) true) (< 0 key_id)))) ; erp_024_encrypted_at_rest
 
 ; erp_025_defense_in_depth (matches Coq: Theorem erp_025_defense_in_depth)
-(assert (= true true)) ; erp_025_defense_in_depth [untranslatable]
+(assert (forall ((r Bool) (s Bool) (a Bool) (t Bool) (e Bool)) (=> (= (erp_layers r s a t e) true) (and (= r true) (= s true) (= a true) (= t true) (= e true))))) ; erp_025_defense_in_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

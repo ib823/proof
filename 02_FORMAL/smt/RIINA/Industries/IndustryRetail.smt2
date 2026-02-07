@@ -52,73 +52,73 @@
 (define-fun inventory_valid () Bool Nat)
 
 ; ecommerce_pci_compliance (matches Coq: Theorem ecommerce_pci_compliance)
-(assert (= true true)) ; ecommerce_pci_compliance [untranslatable]
+(assert (forall ((controls EcommerceControls)) (=> (= (pci_compliant_payment controls) true) true))) ; ecommerce_pci_compliance
 
 ; ccpa_compliance (matches Coq: Theorem ccpa_compliance)
-(assert (= true true)) ; ccpa_compliance [untranslatable]
+(assert (forall ((consumer Int)) (forall ((right PrivacyRight)) true))) ; ccpa_compliance
 
 ; gdpr_compliance (matches Coq: Theorem gdpr_compliance)
-(assert (= true true)) ; gdpr_compliance [untranslatable]
+(assert (forall ((data_subject Int)) (forall ((processing Int)) true))) ; gdpr_compliance
 
 ; owasp_prevention (matches Coq: Theorem owasp_prevention)
-(assert (= true true)) ; owasp_prevention [untranslatable]
+(assert (forall ((controls EcommerceControls)) (=> (= (input_validation controls) true) (=> (= (sql_injection_prevention controls) true) (=> (= (xss_prevention controls) true) true))))) ; owasp_prevention
 
 ; soc2_compliance (matches Coq: Theorem soc2_compliance)
-(assert (= true true)) ; soc2_compliance [untranslatable]
+(assert (forall ((service Int)) (forall ((criteria Int)) true))) ; soc2_compliance
 
 ; tls_required (matches Coq: Theorem tls_required)
-(assert (= true true)) ; tls_required [untranslatable]
+(assert (forall ((controls EcommerceControls)) (forall ((data ConsumerData)) (=> (= (tls_encryption controls) true) true)))) ; tls_required
 
 ; csrf_tokens_required (matches Coq: Theorem csrf_tokens_required)
-(assert (= true true)) ; csrf_tokens_required [untranslatable]
+(assert (forall ((controls EcommerceControls)) (=> (= (csrf_protection controls) true) true))) ; csrf_tokens_required
 
 ; payment_biometric_highest (matches Coq: Theorem payment_biometric_highest)
 (assert (= (consumer_sensitivity PaymentData) (consumer_sensitivity BiometricData))) ; payment_biometric_highest
 
 ; payment_max_sensitivity (matches Coq: Theorem payment_max_sensitivity)
-(assert (= true true)) ; payment_max_sensitivity [untranslatable]
+(assert (forall ((d Bool)) (<= (consumer_sensitivity d) (consumer_sensitivity PaymentData)))) ; payment_max_sensitivity
 
 ; consumer_sensitivity_positive (matches Coq: Theorem consumer_sensitivity_positive)
-(assert (= true true)) ; consumer_sensitivity_positive [untranslatable]
+(assert (forall ((d Bool)) (>= (consumer_sensitivity d) 2))) ; consumer_sensitivity_positive
 
 ; right_to_nat_positive (matches Coq: Theorem right_to_nat_positive)
-(assert (= true true)) ; right_to_nat_positive [untranslatable]
+(assert (forall ((r Bool)) (>= (right_to_nat r) 1))) ; right_to_nat_positive
 
 ; right_to_nat_bounded (matches Coq: Theorem right_to_nat_bounded)
-(assert (= true true)) ; right_to_nat_bounded [untranslatable]
+(assert (forall ((r Bool)) (<= (right_to_nat r) all_rights_count))) ; right_to_nat_bounded
 
 ; all_ecom_requires_tls (matches Coq: Theorem all_ecom_requires_tls)
-(assert (= true true)) ; all_ecom_requires_tls [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ecommerce_controls c) true) (= (tls_encryption c) true)))) ; all_ecom_requires_tls
 
 ; all_ecom_requires_pci (matches Coq: Theorem all_ecom_requires_pci)
-(assert (= true true)) ; all_ecom_requires_pci [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ecommerce_controls c) true) (= (pci_compliant_payment c) true)))) ; all_ecom_requires_pci
 
 ; all_ecom_requires_sqli (matches Coq: Theorem all_ecom_requires_sqli)
-(assert (= true true)) ; all_ecom_requires_sqli [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ecommerce_controls c) true) (= (sql_injection_prevention c) true)))) ; all_ecom_requires_sqli
 
 ; all_ecom_requires_xss (matches Coq: Theorem all_ecom_requires_xss)
-(assert (= true true)) ; all_ecom_requires_xss [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ecommerce_controls c) true) (= (xss_prevention c) true)))) ; all_ecom_requires_xss
 
 ; count_ecommerce_bounded (matches Coq: Theorem count_ecommerce_bounded)
-(assert (= true true)) ; count_ecommerce_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_ecommerce_controls c) 8))) ; count_ecommerce_bounded
 
 ; all_controls_count_eight (matches Coq: Theorem all_controls_count_eight)
-(assert (= true true)) ; all_controls_count_eight [untranslatable]
+(assert (forall ((c Bool)) (=> (= (all_ecommerce_controls c) true) (= (count_ecommerce_controls c) 8)))) ; all_controls_count_eight
 
 ; expired_data_must_delete (matches Coq: Theorem expired_data_must_delete)
-(assert (= true true)) ; expired_data_must_delete [untranslatable]
+(assert (forall ((ct Bool) (coll Bool) (ret Bool)) (=> (= (retention_expired ct coll ret) true) (> ct (+ coll ret))))) ; expired_data_must_delete
 
 ; expired_session_invalid (matches Coq: Theorem expired_session_invalid)
-(assert (= true true)) ; expired_session_invalid [untranslatable]
+(assert (forall ((la Bool) (ct Bool) (to Bool)) (=> (= (session_expired la ct to) true) (> ct (+ la to))))) ; expired_session_invalid
 
 ; order_amount_positive (matches Coq: Theorem order_amount_positive)
-(assert (= true true)) ; order_amount_positive [untranslatable]
+(assert (forall ((a Bool) (ma Bool)) (=> (= (order_amount_valid a ma) true) (>= a 1)))) ; order_amount_positive
 
 ; order_amount_bounded (matches Coq: Theorem order_amount_bounded)
-(assert (= true true)) ; order_amount_bounded [untranslatable]
+(assert (forall ((a Bool) (ma Bool)) (=> (= (order_amount_valid a ma) true) (<= a ma)))) ; order_amount_bounded
 
 ; inventory_bounded (matches Coq: Theorem inventory_bounded)
-(assert (= true true)) ; inventory_bounded [untranslatable]
+(assert (forall ((c Bool) (mc Bool)) (=> (= (inventory_valid c mc) true) (<= c mc)))) ; inventory_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

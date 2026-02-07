@@ -245,109 +245,109 @@
   true)
 
 ; AJ_001_01_gdpr_data_minimization (matches Coq: Theorem AJ_001_01_gdpr_data_minimization)
-(assert (= true true)) ; AJ_001_01_gdpr_data_minimization [untranslatable]
+(assert (forall ((data Bool) (purpose Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (= (pd_necessary pd) true))) (let ((store (make_compliant_store data purpose))) (= (data_minimization_holds store) true))))) ; AJ_001_01_gdpr_data_minimization
 
 ; AJ_001_02_gdpr_purpose_limitation (matches Coq: Theorem AJ_001_02_gdpr_purpose_limitation)
-(assert (= true true)) ; AJ_001_02_gdpr_purpose_limitation [untranslatable]
+(assert (forall ((data Bool) (purpose Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (= (pd_purpose pd) purpose))) (let ((store (make_compliant_store data purpose))) (= (purpose_limitation_holds store) true))))) ; AJ_001_02_gdpr_purpose_limitation
 
 ; AJ_001_03_gdpr_storage_limitation (matches Coq: Theorem AJ_001_03_gdpr_storage_limitation)
-(assert (= true true)) ; AJ_001_03_gdpr_storage_limitation [untranslatable]
+(assert (forall ((data Bool) (purpose Bool) (now Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (>= (+ (pd_collected pd) (pd_retention pd)) now))) (let ((store (make_compliant_store data purpose))) (= (storage_limitation_holds store now) true))))) ; AJ_001_03_gdpr_storage_limitation
 
 ; AJ_001_04_gdpr_accuracy (matches Coq: Theorem AJ_001_04_gdpr_accuracy)
-(assert (= true true)) ; AJ_001_04_gdpr_accuracy [untranslatable]
+(assert (forall ((data Bool) (purpose Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (= (pd_accurate pd) true))) (let ((store (make_compliant_store data purpose))) (= (accuracy_holds store) true))))) ; AJ_001_04_gdpr_accuracy
 
 ; AJ_001_05_gdpr_integrity (matches Coq: Theorem AJ_001_05_gdpr_integrity)
-(assert (= true true)) ; AJ_001_05_gdpr_integrity [untranslatable]
+(assert (forall ((data Bool) (purpose Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (= (pd_integrity_protected pd) true))) (let ((store (make_compliant_store data purpose))) (= (integrity_holds store) true))))) ; AJ_001_05_gdpr_integrity
 
 ; AJ_001_06_gdpr_access_right (matches Coq: Theorem AJ_001_06_gdpr_access_right)
-(assert (= true true)) ; AJ_001_06_gdpr_access_right [untranslatable]
+(assert (forall ((data Bool) (purpose Bool) (subject Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (=> (= (pd_subject pd) subject) (= (pd_exportable pd) true)))) (let ((store (make_compliant_store data purpose))) (= (access_right_holds store subject) true))))) ; AJ_001_06_gdpr_access_right
 
 ; AJ_001_07_gdpr_erasure_right (matches Coq: Theorem AJ_001_07_gdpr_erasure_right)
-(assert (= true true)) ; AJ_001_07_gdpr_erasure_right [untranslatable]
+(assert (forall ((data Bool) (purpose Bool) (subject Bool)) (let ((store (make_compliant_store data purpose))) (=> (= (mk-tuple (forall pd) In) true) (=> (= (mk-tuple (forall pd) In) true) (= (erasure_right_holds store store' subject) true)))))) ; AJ_001_07_gdpr_erasure_right
 
 ; AJ_001_08_gdpr_portability (matches Coq: Theorem AJ_001_08_gdpr_portability)
-(assert (= true true)) ; AJ_001_08_gdpr_portability [untranslatable]
+(assert (forall ((data Bool) (purpose Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (= (pd_exportable pd) true))) (let ((store (make_compliant_store data purpose))) (= (portability_holds store) true))))) ; AJ_001_08_gdpr_portability
 
 ; AJ_001_09_gdpr_consent_valid (matches Coq: Theorem AJ_001_09_gdpr_consent_valid)
-(assert (= true true)) ; AJ_001_09_gdpr_consent_valid [untranslatable]
+(assert (forall ((data Bool) (purpose Bool)) (=> (forall ((pd Bool)) (=> (= (In pd data) true) (= (pd_consent pd) true))) (let ((store (make_compliant_store data purpose))) (= (consent_valid_holds store) true))))) ; AJ_001_09_gdpr_consent_valid
 
 ; AJ_001_10_hipaa_phi_protected (matches Coq: Theorem AJ_001_10_hipaa_phi_protected)
-(assert (= true true)) ; AJ_001_10_hipaa_phi_protected [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (phi_protected phi) true)))) ; AJ_001_10_hipaa_phi_protected
 
 ; AJ_001_11_hipaa_access_control (matches Coq: Theorem AJ_001_11_hipaa_access_control)
-(assert (= true true)) ; AJ_001_11_hipaa_access_control [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (hipaa_access_control_holds phi) true)))) ; AJ_001_11_hipaa_access_control
 
 ; AJ_001_12_hipaa_audit_controls (matches Coq: Theorem AJ_001_12_hipaa_audit_controls)
-(assert (= true true)) ; AJ_001_12_hipaa_audit_controls [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (hipaa_audit_holds phi) true)))) ; AJ_001_12_hipaa_audit_controls
 
 ; AJ_001_13_hipaa_minimum_necessary (matches Coq: Theorem AJ_001_13_hipaa_minimum_necessary)
-(assert (= true true)) ; AJ_001_13_hipaa_minimum_necessary [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (minimum_necessary_holds phi) true)))) ; AJ_001_13_hipaa_minimum_necessary
 
 ; AJ_001_14_hipaa_encryption (matches Coq: Theorem AJ_001_14_hipaa_encryption)
-(assert (= true true)) ; AJ_001_14_hipaa_encryption [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (hipaa_encryption_holds phi) true)))) ; AJ_001_14_hipaa_encryption
 
 ; AJ_001_15_hipaa_integrity (matches Coq: Theorem AJ_001_15_hipaa_integrity)
-(assert (= true true)) ; AJ_001_15_hipaa_integrity [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (hipaa_integrity_holds phi) true)))) ; AJ_001_15_hipaa_integrity
 
 ; AJ_001_16_hipaa_availability (matches Coq: Theorem AJ_001_16_hipaa_availability)
-(assert (= true true)) ; AJ_001_16_hipaa_availability [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (hipaa_availability_holds phi) true)))) ; AJ_001_16_hipaa_availability
 
 ; AJ_001_17_hipaa_breach_notification (matches Coq: Theorem AJ_001_17_hipaa_breach_notification)
-(assert (= true true)) ; AJ_001_17_hipaa_breach_notification [untranslatable]
+(assert (forall ((patient_id Bool) (data Bool) (created Bool) (accessed_by Bool)) (let ((phi (make_system_phi patient_id data created accessed_by))) (= (breach_notification_holds phi) true)))) ; AJ_001_17_hipaa_breach_notification
 
 ; AJ_001_18_pci_network_segmentation (matches Coq: Theorem AJ_001_18_pci_network_segmentation)
-(assert (= true true)) ; AJ_001_18_pci_network_segmentation [untranslatable]
+(assert (forall ((cde Bool) (non_cde Bool)) (=> (forall ((n1 Bool) (n2 Bool)) (=> (= (In n1 cde) true) (=> (= (In n2 non_cde) true) (not (= n1 n2))))) (let ((net (mkNetwork cde non_cde true))) (= (network_segmented_holds net) true))))) ; AJ_001_18_pci_network_segmentation
 
 ; AJ_001_19_pci_cardholder_protection (matches Coq: Theorem AJ_001_19_pci_cardholder_protection)
-(assert (= true true)) ; AJ_001_19_pci_cardholder_protection [untranslatable]
+(assert (forall ((pan Bool) (expiry Bool) (name Bool)) (let ((chd (make_cde_chd pan expiry name))) (= (chd_protected chd) true)))) ; AJ_001_19_pci_cardholder_protection
 
 ; AJ_001_20_pci_encryption (matches Coq: Theorem AJ_001_20_pci_encryption)
-(assert (= true true)) ; AJ_001_20_pci_encryption [untranslatable]
+(assert (forall ((pan Bool) (expiry Bool) (name Bool)) (let ((chd (make_cde_chd pan expiry name))) (= (pci_encryption_holds chd) true)))) ; AJ_001_20_pci_encryption
 
 ; AJ_001_21_pci_access_restricted (matches Coq: Theorem AJ_001_21_pci_access_restricted)
-(assert (= true true)) ; AJ_001_21_pci_access_restricted [untranslatable]
+(assert (forall ((pan Bool) (expiry Bool) (name Bool) (user_id Bool)) (let ((chd (make_cde_chd pan expiry name))) (let ((user (mkUser user_id true true))) (= (access_restricted_holds chd user) true))))) ; AJ_001_21_pci_access_restricted
 
 ; AJ_001_22_pci_unique_ids (matches Coq: Theorem AJ_001_22_pci_unique_ids)
-(assert (= true true)) ; AJ_001_22_pci_unique_ids [untranslatable]
+(assert (forall ((users Bool)) (=> (forall ((u Bool)) (=> (= (In u users) true) (= (user_unique u) true))) (= (unique_ids_holds users) true)))) ; AJ_001_22_pci_unique_ids
 
 ; AJ_001_23_pci_physical_security (matches Coq: Theorem AJ_001_23_pci_physical_security)
-(assert (= true true)) ; AJ_001_23_pci_physical_security [untranslatable]
+(assert (forall ((location Bool)) (let ((pc (mkPhysical location true true))) (= (physical_security_holds pc) true)))) ; AJ_001_23_pci_physical_security
 
 ; AJ_001_24_pci_logging (matches Coq: Theorem AJ_001_24_pci_logging)
-(assert (= true true)) ; AJ_001_24_pci_logging [untranslatable]
+(assert (forall ((events Bool)) (=> (forall ((e Bool)) (=> (= (In e events) true) (=> (= (event_security_relevant e) true) (= (event_logged e) true)))) (= (logging_holds events) true)))) ; AJ_001_24_pci_logging
 
 ; AJ_001_25_pci_testing (matches Coq: Theorem AJ_001_25_pci_testing)
-(assert (= true true)) ; AJ_001_25_pci_testing [untranslatable]
+(assert (forall ((tests Bool)) (=> (forall ((t Bool)) (=> (= (In t tests) true) (= (test_performed t) true))) (= (testing_holds tests) true)))) ; AJ_001_25_pci_testing
 
 ; AJ_001_26_control_mapping_complete (matches Coq: Theorem AJ_001_26_control_mapping_complete)
-(assert (= true true)) ; AJ_001_26_control_mapping_complete [untranslatable]
+(assert (forall ((reg Bool) (controls Bool) (mappings Bool)) (=> (forall ((ctrl Bool)) (=> (= (In ctrl controls) true) (exists ((m Bool)) (and (= (In m mappings) true) (= (mapping_control m) ctrl))))) (let ((policy (make_compliant_policy reg controls mappings))) (= (control_mapping_complete_holds policy) true))))) ; AJ_001_26_control_mapping_complete
 
 ; AJ_001_27_evidence_chain_valid (matches Coq: Theorem AJ_001_27_evidence_chain_valid)
-(assert (= true true)) ; AJ_001_27_evidence_chain_valid [untranslatable]
+(assert (forall ((ctrl Bool) (items Bool) (ts Bool) (sig Bool)) (let ((ec (make_valid_evidence ctrl items ts sig))) (= (evidence_chain_valid ec) true)))) ; AJ_001_27_evidence_chain_valid
 
 ; AJ_001_28_continuous_monitoring (matches Coq: Theorem AJ_001_28_continuous_monitoring)
-(assert (= true true)) ; AJ_001_28_continuous_monitoring [untranslatable]
+(assert (forall ((reg Bool) (controls Bool) (mappings Bool)) (=> (forall ((ctrl Bool)) (=> (= (In ctrl controls) true) (and (= (control_monitored ctrl) true) (= (control_has_alert ctrl) true)))) (let ((policy (make_compliant_policy reg controls mappings))) (= (continuous_monitoring_holds policy) true))))) ; AJ_001_28_continuous_monitoring
 
 ; AJ_001_29_proof_as_evidence (matches Coq: Theorem AJ_001_29_proof_as_evidence)
-(assert (= true true)) ; AJ_001_29_proof_as_evidence [untranslatable]
+(assert (forall ((id Bool) (desc Bool) (reg Bool)) (let ((ctrl (make_proven_control id desc reg))) (= (proof_as_evidence_holds ctrl) true)))) ; AJ_001_29_proof_as_evidence
 
 ; AJ_001_30_audit_trail_complete (matches Coq: Theorem AJ_001_30_audit_trail_complete)
-(assert (= true true)) ; AJ_001_30_audit_trail_complete [untranslatable]
+(assert (forall ((reg Bool) (controls Bool) (mappings Bool)) (=> (forall ((ctrl Bool)) (=> (= (In ctrl controls) true) (= (control_monitored ctrl) true))) (let ((policy (make_compliant_policy reg controls mappings))) (= (audit_trail_complete_holds policy) true))))) ; AJ_001_30_audit_trail_complete
 
 ; AJ_001_31_compliance_composition (matches Coq: Theorem AJ_001_31_compliance_composition)
-(assert (= true true)) ; AJ_001_31_compliance_composition [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (=> (= (policy_compliant_prop p1) true) (=> (= (policy_compliant_prop p2) true) (= (policy_compliant_prop (compose_policies p1 p2)) true))))) ; AJ_001_31_compliance_composition
 
 ; AJ_001_32_regulation_coverage (matches Coq: Theorem AJ_001_32_regulation_coverage)
-(assert (= true true)) ; AJ_001_32_regulation_coverage [untranslatable]
+(assert (forall ((reg Bool) (controls Bool) (mappings Bool) (reqs Bool)) (=> (forall ((req Bool)) (=> (= (In req reqs) true) (= (In req controls) true))) (let ((policy (make_compliant_policy reg controls mappings))) (= (regulation_coverage_holds policy reqs) true))))) ; AJ_001_32_regulation_coverage
 
 ; AJ_001_33_control_effectiveness (matches Coq: Theorem AJ_001_33_control_effectiveness)
-(assert (= true true)) ; AJ_001_33_control_effectiveness [untranslatable]
+(assert (forall ((id Bool) (desc Bool) (reg Bool)) (let ((ctrl (make_proven_control id desc reg))) (= (control_effectiveness_holds ctrl) true)))) ; AJ_001_33_control_effectiveness
 
 ; AJ_001_34_gap_detection (matches Coq: Theorem AJ_001_34_gap_detection)
-(assert (= true true)) ; AJ_001_34_gap_detection [untranslatable]
+(assert (forall ((policy Bool) (detected Bool)) (=> (forall ((ctrl Bool)) (=> (= (In ctrl (policy_controls policy)) true) (=> (= (control_satisfied ctrl) false) (= (In ctrl detected) true)))) (let ((ga (mkGapAnalysis policy detected true))) (= (gap_detection_holds ga) true))))) ; AJ_001_34_gap_detection
 
 ; AJ_001_35_remediation_tracked (matches Coq: Theorem AJ_001_35_remediation_tracked)
-(assert (= true true)) ; AJ_001_35_remediation_tracked [untranslatable]
+(assert (forall ((rems Bool)) (=> (forall ((r Bool)) (=> (= (In r rems) true) (= (rem_tracked r) true))) (= (remediation_tracked_holds rems) true)))) ; AJ_001_35_remediation_tracked
 
 ; Verify all assertions are satisfiable
 (check-sat)

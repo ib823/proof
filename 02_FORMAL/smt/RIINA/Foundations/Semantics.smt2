@@ -20,43 +20,43 @@
   true)
 
 ; store_lookup_above_max (matches Coq: Lemma store_lookup_above_max)
-(assert (= true true)) ; store_lookup_above_max [untranslatable]
+(assert (forall ((st Bool) (l Bool)) (=> (< (store_max st) l) (= (store_lookup l st) none)))) ; store_lookup_above_max
 
 ; store_lookup_fresh (matches Coq: Lemma store_lookup_fresh)
-(assert (= true true)) ; store_lookup_fresh [untranslatable]
+(assert (forall ((st Bool)) (= (store_lookup (fresh_loc st) st) none))) ; store_lookup_fresh
 
 ; value_not_step (matches Coq: Lemma value_not_step)
-(assert (= true true)) ; value_not_step [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool) (cfg Bool)) (=> (= (value v) true) (not (= ((v, st, ctx) step_to cfg) true))))) ; value_not_step
 
 ; value_does_not_step (matches Coq: Lemma value_does_not_step)
-(assert (= true true)) ; value_does_not_step [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (value v) true) (=> (= ((v, st, ctx) step_to (mk-tuple e' st' ctx')) true) false)))) ; value_does_not_step
 
 ; step_deterministic_cfg (matches Coq: Theorem step_deterministic_cfg)
-(assert (= true true)) ; step_deterministic_cfg [untranslatable]
+(assert (forall ((cfg Bool) (cfg1 Bool) (cfg2 Bool)) (=> (= (step cfg cfg1) true) (=> (= (step cfg cfg2) true) (= cfg1 cfg2))))) ; step_deterministic_cfg
 
 ; step_deterministic (matches Coq: Theorem step_deterministic)
-(assert (= true true)) ; step_deterministic [untranslatable]
+(assert (forall ((t Bool) (st Bool) (ctx Bool) (t1 Bool) (st1 Bool) (ctx1 Bool) (t2 Bool) (st2 Bool) (ctx2 Bool)) (=> (= ((t, st, ctx) step_to (mk-tuple t1 st1 ctx1)) true) (=> (= ((t, st, ctx) step_to (mk-tuple t2 st2 ctx2)) true) (and (= t1 t2) (= st1 st2) (= ctx1 ctx2)))))) ; step_deterministic
 
 ; store_update_lookup_eq (matches Coq: Lemma store_update_lookup_eq)
-(assert (= true true)) ; store_update_lookup_eq [untranslatable]
+(assert (forall ((st Bool) (l Bool) (v Bool)) (= (store_lookup l (store_update l v st)) (some v)))) ; store_update_lookup_eq
 
 ; store_update_lookup_neq (matches Coq: Lemma store_update_lookup_neq)
-(assert (= true true)) ; store_update_lookup_neq [untranslatable]
+(assert (forall ((st Bool) (l Bool) (l' Bool) (v Bool)) (=> (not (= l l')) (= (store_lookup l' (store_update l v st)) (store_lookup l' st))))) ; store_update_lookup_neq
 
 ; store_has_values_empty (matches Coq: Lemma store_has_values_empty)
-(assert (= true true)) ; store_has_values_empty [untranslatable]
+(assert (= (store_has_values nil) true)) ; store_has_values_empty
 
 ; store_update_preserves_values (matches Coq: Lemma store_update_preserves_values)
-(assert (= true true)) ; store_update_preserves_values [untranslatable]
+(assert (forall ((st Bool) (l Bool) (v Bool)) (=> (= (store_has_values st) true) (=> (= (value v) true) (= (store_has_values (store_update l v st)) true))))) ; store_update_preserves_values
 
 ; step_preserves_store_values_aux (matches Coq: Lemma step_preserves_store_values_aux)
-(assert (= true true)) ; step_preserves_store_values_aux [untranslatable]
+(assert (forall ((cfg1 Bool) (cfg2 Bool)) (=> (= (cfg1 step_to cfg2) true) (=> (= (store_has_values (snd (fst cfg1))) true) (= (store_has_values (snd (fst cfg2))) true))))) ; step_preserves_store_values_aux
 
 ; step_preserves_store_values (matches Coq: Lemma step_preserves_store_values)
-(assert (= true true)) ; step_preserves_store_values [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true) (=> (= (store_has_values st) true) (= (store_has_values st') true))))) ; step_preserves_store_values
 
 ; multi_step_preserves_store_values (matches Coq: Lemma multi_step_preserves_store_values)
-(assert (= true true)) ; multi_step_preserves_store_values [untranslatable]
+(assert (forall ((cfg1 Bool) (cfg2 Bool)) (=> (= (multi_step cfg1 cfg2) true) (=> (= (store_has_values (snd (fst cfg1))) true) (= (store_has_values (snd (fst cfg2))) true))))) ; multi_step_preserves_store_values
 
 ; Verify all assertions are satisfiable
 (check-sat)

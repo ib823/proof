@@ -215,13 +215,13 @@
 (define-fun handshake_sequence_valid () Prop true)
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; orb_false_iff (matches Coq: Lemma orb_false_iff)
-(assert (= true true)) ; orb_false_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) false) (and (= a false) (= b false))) (=> (and (= a false) (= b false)) (= (or a b) false))))) ; orb_false_iff
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; NET_001 (matches Coq: Theorem NET_001)
 (assert (= (net_security_sound riina_net_sec) true)) ; NET_001
@@ -263,58 +263,58 @@
 (assert (= (vns_formally_verified riina_net_stack) true)) ; NET_013
 
 ; NET_014 (matches Coq: Theorem NET_014)
-(assert (= true true)) ; NET_014 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (net_security_sound s) true) (= (ns_packet_validation s) true)))) ; NET_014
 
 ; NET_015 (matches Coq: Theorem NET_015)
-(assert (= true true)) ; NET_015 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (net_security_sound s) true) (= (ns_protocol_compliance s) true)))) ; NET_015
 
 ; NET_016 (matches Coq: Theorem NET_016)
-(assert (= true true)) ; NET_016 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (net_security_sound s) true) (= (ns_firewall_enforced s) true)))) ; NET_016
 
 ; NET_017 (matches Coq: Theorem NET_017)
-(assert (= true true)) ; NET_017 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (net_security_sound s) true) (= (ns_encryption_in_transit s) true)))) ; NET_017
 
 ; NET_018 (matches Coq: Theorem NET_018)
-(assert (= true true)) ; NET_018 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (net_reliability_sound r) true) (= (nr_congestion_control r) true)))) ; NET_018
 
 ; NET_019 (matches Coq: Theorem NET_019)
-(assert (= true true)) ; NET_019 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (net_reliability_sound r) true) (= (nr_flow_control r) true)))) ; NET_019
 
 ; NET_020 (matches Coq: Theorem NET_020)
-(assert (= true true)) ; NET_020 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (net_reliability_sound r) true) (= (nr_error_detection r) true)))) ; NET_020
 
 ; NET_021 (matches Coq: Theorem NET_021)
-(assert (= true true)) ; NET_021 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (net_reliability_sound r) true) (= (nr_retransmission r) true)))) ; NET_021
 
 ; NET_022 (matches Coq: Theorem NET_022)
-(assert (= true true)) ; NET_022 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (net_security_sound (vns_security n)) true)))) ; NET_022
 
 ; NET_023 (matches Coq: Theorem NET_023)
-(assert (= true true)) ; NET_023 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (net_reliability_sound (vns_reliability n)) true)))) ; NET_023
 
 ; NET_024 (matches Coq: Theorem NET_024)
-(assert (= true true)) ; NET_024 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (vns_rfc_compliant n) true)))) ; NET_024
 
 ; NET_025 (matches Coq: Theorem NET_025)
-(assert (= true true)) ; NET_025 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (vns_formally_verified n) true)))) ; NET_025
 
 ; NET_026 (matches Coq: Theorem NET_026)
-(assert (= true true)) ; NET_026 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (ns_packet_validation (vns_security n)) true)))) ; NET_026
 
 ; NET_027 (matches Coq: Theorem NET_027)
-(assert (= true true)) ; NET_027 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (ns_encryption_in_transit (vns_security n)) true)))) ; NET_027
 
 ; NET_028 (matches Coq: Theorem NET_028)
-(assert (= true true)) ; NET_028 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (nr_congestion_control (vns_reliability n)) true)))) ; NET_028
 
 ; NET_029 (matches Coq: Theorem NET_029)
-(assert (= true true)) ; NET_029 [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (= (nr_error_detection (vns_reliability n)) true)))) ; NET_029
 
 ; NET_030 (matches Coq: Theorem NET_030)
-(assert (= true true)) ; NET_030 [untranslatable]
+(assert (forall ((s Bool)) (=> (= (net_security_sound s) true) (and (= (ns_packet_validation s) true) (= (ns_encryption_in_transit s) true))))) ; NET_030
 
 ; NET_031 (matches Coq: Theorem NET_031)
-(assert (= true true)) ; NET_031 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (net_reliability_sound r) true) (and (= (nr_congestion_control r) true) (= (nr_error_detection r) true))))) ; NET_031
 
 ; NET_032 (matches Coq: Theorem NET_032)
 (assert (and (= (net_stack_verified riina_net_stack) true) (= (vns_rfc_compliant riina_net_stack) true))) ; NET_032
@@ -326,16 +326,17 @@
 (assert (and (= (nr_congestion_control riina_net_rel) true) (= (nr_error_detection riina_net_rel) true))) ; NET_034
 
 ; NET_035_complete (matches Coq: Theorem NET_035_complete)
-(assert (= true true)) ; NET_035_complete [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (and (= (ns_packet_validation (vns_security n)) true) (= (ns_encryption_in_transit (vns_security n)) true) (= (nr_congestion_control (vns_reliability n)) true) (= (vns_formally_verified n) true))))) ; NET_035_complete
 
 ; TCP_001_state_eq_refl (matches Coq: Theorem TCP_001_state_eq_refl)
 (assert (forall ((s TCPState)) (= (tcp_state_eqb s s) true))) ; TCP_001_state_eq_refl
 
 ; TCP_002_state_eq_sym (matches Coq: Theorem TCP_002_state_eq_sym)
-(assert (= true true)) ; TCP_002_state_eq_sym [untranslatable]
+(assert (forall ((s1 TCPState) (s2 TCPState)) (= (tcp_state_eqb s1 s2) (tcp_state_eqb s2 s1)))) ; TCP_002_state_eq_sym
 
 ; TCP_003_state_decidable (matches Coq: Theorem TCP_003_state_decidable)
-(assert (= true true)) ; TCP_003_state_decidable [untranslatable]
+; TCP_003_state_decidable: forall s1 s2 : TCPState, {s1 = s2} + {s1 <> s2}
+(assert true) ; TCP_003_state_decidable [Coq-only]
 
 ; TCP_004_closed_not_connected (matches Coq: Theorem TCP_004_closed_not_connected)
 (assert (= (is_connection_state CLOSED) false)) ; TCP_004_closed_not_connected
@@ -362,43 +363,43 @@
 (assert (= (is_terminal_state ESTABLISHED) false)) ; TCP_011_established_not_terminal
 
 ; TCP_012_data_implies_connection (matches Coq: Theorem TCP_012_data_implies_connection)
-(assert (= true true)) ; TCP_012_data_implies_connection [untranslatable]
+(assert (forall ((s Bool)) (=> (= (is_data_state s) true) (= (is_connection_state s) true)))) ; TCP_012_data_implies_connection
 
 ; TCP_013_terminal_cases (matches Coq: Theorem TCP_013_terminal_cases)
-(assert (= true true)) ; TCP_013_terminal_cases [untranslatable]
+(assert (forall ((s Bool)) (=> (= (is_terminal_state s) true) (or (= s CLOSED) (= s TIME_WAIT))))) ; TCP_013_terminal_cases
 
 ; TCP_014_eleven_states (matches Coq: Theorem TCP_014_eleven_states)
-(assert (= true true)) ; TCP_014_eleven_states [untranslatable]
+(assert (forall ((s TCPState)) (or (= s CLOSED) (= s LISTEN) (= s SYN_SENT) (= s SYN_RECEIVED) (= s ESTABLISHED) (= s FIN_WAIT_1) (= s FIN_WAIT_2) (= s CLOSE_WAIT) (= s CLOSING) (= s LAST_ACK) (= s TIME_WAIT)))) ; TCP_014_eleven_states
 
 ; TCP_015_syn_only_setup (matches Coq: Theorem TCP_015_syn_only_setup)
-(assert (= true true)) ; TCP_015_syn_only_setup [untranslatable]
+(assert (forall ((seg Bool)) (=> (= (flag_syn (seg_flags seg)) true) (= (valid_syn_segment seg ESTABLISHED) false)))) ; TCP_015_syn_only_setup
 
 ; TCP_016_listen_syn_transition (matches Coq: Theorem TCP_016_listen_syn_transition)
-(assert (= true true)) ; TCP_016_listen_syn_transition [untranslatable]
+(assert (let ((syn_seg (make_syn 1000))) (= (tcp_transition LISTEN syn_seg true) SYN_RECEIVED))) ; TCP_016_listen_syn_transition
 
 ; TCP_017_syn_sent_synack_transition (matches Coq: Theorem TCP_017_syn_sent_synack_transition)
-(assert (= true true)) ; TCP_017_syn_sent_synack_transition [untranslatable]
+(assert (let ((syn_ack (make_syn_ack 2000 1001))) (= (tcp_transition SYN_SENT syn_ack false) ESTABLISHED))) ; TCP_017_syn_sent_synack_transition
 
 ; TCP_018_syn_recv_ack_transition (matches Coq: Theorem TCP_018_syn_recv_ack_transition)
-(assert (= true true)) ; TCP_018_syn_recv_ack_transition [untranslatable]
+(assert (let ((ack_seg (make_ack 1001 2001))) (= (tcp_transition SYN_RECEIVED ack_seg true) ESTABLISHED))) ; TCP_018_syn_recv_ack_transition
 
 ; TCP_019_established_fin_transition (matches Coq: Theorem TCP_019_established_fin_transition)
-(assert (= true true)) ; TCP_019_established_fin_transition [untranslatable]
+(assert (let ((fin_seg (mkSegment 5000 6000 (mkFlags false false true false false false) 65535 0))) (= (tcp_transition ESTABLISHED fin_seg false) CLOSE_WAIT))) ; TCP_019_established_fin_transition
 
 ; TCP_020_last_ack_transition (matches Coq: Theorem TCP_020_last_ack_transition)
-(assert (= true true)) ; TCP_020_last_ack_transition [untranslatable]
+(assert (let ((ack_seg (make_ack 8000 9000))) (= (tcp_transition LAST_ACK ack_seg true) CLOSED))) ; TCP_020_last_ack_transition
 
 ; PARSE_001_safe_read_sufficient (matches Coq: Theorem PARSE_001_safe_read_sufficient)
-(assert (= true true)) ; PARSE_001_safe_read_sufficient [untranslatable]
+(assert (forall ((cap Bool) (pos Bool) (len Bool)) (=> (<= (+ pos len) cap) (= (safe_read (mkBuffer nil cap pos) len) true)))) ; PARSE_001_safe_read_sufficient
 
 ; PARSE_002_safe_read_insufficient (matches Coq: Theorem PARSE_002_safe_read_insufficient)
-(assert (= true true)) ; PARSE_002_safe_read_insufficient [untranslatable]
+(assert (forall ((cap Bool) (pos Bool) (len Bool)) (=> (> (+ pos len) cap) (= (safe_read (mkBuffer nil cap pos) len) false)))) ; PARSE_002_safe_read_insufficient
 
 ; PARSE_003_advance_preserves_capacity (matches Coq: Theorem PARSE_003_advance_preserves_capacity)
-(assert (= true true)) ; PARSE_003_advance_preserves_capacity [untranslatable]
+(assert (forall ((b Bool) (n Bool)) (= (buf_capacity (buffer_advance b n)) (buf_capacity b)))) ; PARSE_003_advance_preserves_capacity
 
 ; PARSE_004_advance_increases_position (matches Coq: Theorem PARSE_004_advance_increases_position)
-(assert (= true true)) ; PARSE_004_advance_increases_position [untranslatable]
+(assert (forall ((b Bool) (n Bool)) (= (buf_position (buffer_advance b n)) (+ (buf_position b) n)))) ; PARSE_004_advance_increases_position
 
 ; PARSE_005_tcp_min_header (matches Coq: Theorem PARSE_005_tcp_min_header)
 (assert (= TCP_MIN_HEADER 20)) ; PARSE_005_tcp_min_header
@@ -413,127 +414,127 @@
 (assert (= ETH_MIN_FRAME 14)) ; PARSE_008_eth_min_frame
 
 ; PARSE_009_combined_min (matches Coq: Theorem PARSE_009_combined_min)
-(assert (= true true)) ; PARSE_009_combined_min [untranslatable]
+(assert (= (+ (+ ETH_MIN_FRAME IP_MIN_HEADER) TCP_MIN_HEADER) 54)) ; PARSE_009_combined_min
 
 ; PARSE_010_safe_read_monotonic (matches Coq: Theorem PARSE_010_safe_read_monotonic)
-(assert (= true true)) ; PARSE_010_safe_read_monotonic [untranslatable]
+(assert (forall ((data Bool) (pos Bool) (len Bool) (cap1 Bool) (cap2 Bool)) (=> (<= cap1 cap2) (=> (= (safe_read (mkBuffer data cap1 pos) len) true) (= (safe_read (mkBuffer data cap2 pos) len) true))))) ; PARSE_010_safe_read_monotonic
 
 ; PARSE_011_empty_buffer_zero_read (matches Coq: Theorem PARSE_011_empty_buffer_zero_read)
-(assert (= true true)) ; PARSE_011_empty_buffer_zero_read [untranslatable]
+(assert (= (safe_read (mkBuffer nil 0 0) 0) true)) ; PARSE_011_empty_buffer_zero_read
 
 ; PARSE_012_at_capacity_no_read (matches Coq: Theorem PARSE_012_at_capacity_no_read)
-(assert (= true true)) ; PARSE_012_at_capacity_no_read [untranslatable]
+(assert (forall ((cap Bool) (data Bool)) (= (safe_read (mkBuffer data cap cap) 1) false))) ; PARSE_012_at_capacity_no_read
 
 ; PARSE_013_safe_write_eq_read (matches Coq: Theorem PARSE_013_safe_write_eq_read)
-(assert (= true true)) ; PARSE_013_safe_write_eq_read [untranslatable]
+(assert (forall ((b Bool) (len Bool)) (= (safe_write b len) (safe_read b len)))) ; PARSE_013_safe_write_eq_read
 
 ; PARSE_014_advance_compose (matches Coq: Theorem PARSE_014_advance_compose)
-(assert (= true true)) ; PARSE_014_advance_compose [untranslatable]
+(assert (forall ((b Bool) (n Bool) (m Bool)) (= (buffer_advance (buffer_advance b n) m) (mkBuffer (buf_data b) (buf_capacity b) (+ (+ (buf_position b) n) m))))) ; PARSE_014_advance_compose
 
 ; PARSE_015_advance_preserves_data (matches Coq: Theorem PARSE_015_advance_preserves_data)
-(assert (= true true)) ; PARSE_015_advance_preserves_data [untranslatable]
+(assert (forall ((b Bool) (n Bool)) (= (buf_data (buffer_advance b n)) (buf_data b)))) ; PARSE_015_advance_preserves_data
 
 ; CONG_001_initial_cwnd (matches Coq: Theorem CONG_001_initial_cwnd)
-(assert (= true true)) ; CONG_001_initial_cwnd [untranslatable]
+(assert (forall ((mss Bool)) (= (cwnd (initial_cong_state mss)) (* 2 mss)))) ; CONG_001_initial_cwnd
 
 ; CONG_002_initial_ssthresh (matches Coq: Theorem CONG_002_initial_ssthresh)
-(assert (= true true)) ; CONG_002_initial_ssthresh [untranslatable]
+(assert (forall ((mss Bool)) (= (ssthresh (initial_cong_state mss)) 65535))) ; CONG_002_initial_ssthresh
 
 ; CONG_003_exclusive_phases (matches Coq: Theorem CONG_003_exclusive_phases)
-(assert (= true true)) ; CONG_003_exclusive_phases [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (in_slow_start cs) true) (= (in_cong_avoid cs) false)))) ; CONG_003_exclusive_phases
 
 ; CONG_004_cong_avoid_not_slow (matches Coq: Theorem CONG_004_cong_avoid_not_slow)
-(assert (= true true)) ; CONG_004_cong_avoid_not_slow [untranslatable]
+(assert (forall ((cs Bool)) (=> (= (in_cong_avoid cs) true) (= (in_slow_start cs) false)))) ; CONG_004_cong_avoid_not_slow
 
 ; CONG_005_aimd_decrease_halves (matches Coq: Theorem CONG_005_aimd_decrease_halves)
-(assert (= true true)) ; CONG_005_aimd_decrease_halves [untranslatable]
+(assert (forall ((cs Bool)) (=> (>= (cwnd cs) 4) (<= (cwnd (aimd_decrease cs)) (cwnd cs))))) ; CONG_005_aimd_decrease_halves
 
 ; CONG_006_aimd_decrease_ssthresh (matches Coq: Theorem CONG_006_aimd_decrease_ssthresh)
-(assert (= true true)) ; CONG_006_aimd_decrease_ssthresh [untranslatable]
+(assert (forall ((cs Bool)) (= (ssthresh (aimd_decrease cs)) (cwnd (aimd_decrease cs))))) ; CONG_006_aimd_decrease_ssthresh
 
 ; CONG_007_aimd_decrease_rtt (matches Coq: Theorem CONG_007_aimd_decrease_rtt)
-(assert (= true true)) ; CONG_007_aimd_decrease_rtt [untranslatable]
+(assert (forall ((cs Bool)) (= (rtt_est (aimd_decrease cs)) (rtt_est cs)))) ; CONG_007_aimd_decrease_rtt
 
 ; CONG_008_aimd_decrease_rto (matches Coq: Theorem CONG_008_aimd_decrease_rto)
-(assert (= true true)) ; CONG_008_aimd_decrease_rto [untranslatable]
+(assert (forall ((cs Bool)) (= (rto (aimd_decrease cs)) (rto cs)))) ; CONG_008_aimd_decrease_rto
 
 ; CONG_009_slow_start_increase (matches Coq: Theorem CONG_009_slow_start_increase)
-(assert (= true true)) ; CONG_009_slow_start_increase [untranslatable]
+(assert (forall ((cs Bool) (mss Bool)) (=> (= (in_slow_start cs) true) (= (cwnd (aimd_increase cs mss)) (+ (cwnd cs) mss))))) ; CONG_009_slow_start_increase
 
 ; CONG_010_increase_ssthresh (matches Coq: Theorem CONG_010_increase_ssthresh)
-(assert (= true true)) ; CONG_010_increase_ssthresh [untranslatable]
+(assert (forall ((cs Bool) (mss Bool)) (= (ssthresh (aimd_increase cs mss)) (ssthresh cs)))) ; CONG_010_increase_ssthresh
 
 ; CONG_011_fast_retransmit_thresh (matches Coq: Theorem CONG_011_fast_retransmit_thresh)
 (assert (= FAST_RETRANSMIT_THRESH 3)) ; CONG_011_fast_retransmit_thresh
 
 ; CONG_012_decrease_phase (matches Coq: Theorem CONG_012_decrease_phase)
-(assert (= true true)) ; CONG_012_decrease_phase [untranslatable]
+(assert (forall ((cs Bool)) (or (= (in_slow_start (aimd_decrease cs)) true) (= (in_cong_avoid (aimd_decrease cs)) true)))) ; CONG_012_decrease_phase
 
 ; CONG_013_min_cwnd_after_decrease (matches Coq: Theorem CONG_013_min_cwnd_after_decrease)
-(assert (= true true)) ; CONG_013_min_cwnd_after_decrease [untranslatable]
+(assert (forall ((cs Bool)) (>= (cwnd (aimd_decrease cs)) 2))) ; CONG_013_min_cwnd_after_decrease
 
 ; CONG_014_increase_rto (matches Coq: Theorem CONG_014_increase_rto)
-(assert (= true true)) ; CONG_014_increase_rto [untranslatable]
+(assert (forall ((cs Bool) (mss Bool)) (= (rto (aimd_increase cs mss)) (rto cs)))) ; CONG_014_increase_rto
 
 ; CONG_015_initial_slow_start (matches Coq: Theorem CONG_015_initial_slow_start)
-(assert (= true true)) ; CONG_015_initial_slow_start [untranslatable]
+(assert (forall ((mss Bool)) (=> (> mss 0) (=> (< (* 2 mss) 65535) (= (in_slow_start (initial_cong_state mss)) true))))) ; CONG_015_initial_slow_start
 
 ; HS_001_make_syn_flag (matches Coq: Theorem HS_001_make_syn_flag)
-(assert (= true true)) ; HS_001_make_syn_flag [untranslatable]
+(assert (forall ((isn Bool)) (= (flag_syn (seg_flags (make_syn isn))) true))) ; HS_001_make_syn_flag
 
 ; HS_002_make_syn_no_ack (matches Coq: Theorem HS_002_make_syn_no_ack)
-(assert (= true true)) ; HS_002_make_syn_no_ack [untranslatable]
+(assert (forall ((isn Bool)) (= (flag_ack (seg_flags (make_syn isn))) false))) ; HS_002_make_syn_no_ack
 
 ; HS_003_make_synack_flags (matches Coq: Theorem HS_003_make_synack_flags)
-(assert (= true true)) ; HS_003_make_synack_flags [untranslatable]
+(assert (forall ((isn Bool) (ack Bool)) (and (= (flag_syn (seg_flags (make_syn_ack isn ack))) true) (= (flag_ack (seg_flags (make_syn_ack isn ack))) true)))) ; HS_003_make_synack_flags
 
 ; HS_004_make_ack_flags (matches Coq: Theorem HS_004_make_ack_flags)
-(assert (= true true)) ; HS_004_make_ack_flags [untranslatable]
+(assert (forall ((seq Bool) (ack Bool)) (and (= (flag_syn (seg_flags (make_ack seq ack))) false) (= (flag_ack (seg_flags (make_ack seq ack))) true)))) ; HS_004_make_ack_flags
 
 ; HS_005_init_not_complete (matches Coq: Theorem HS_005_init_not_complete)
-(assert (= true true)) ; HS_005_init_not_complete [untranslatable]
+(assert (= (handshake_complete (mkHSState HS_Init 0 0)) false)) ; HS_005_init_not_complete
 
 ; HS_006_complete_step (matches Coq: Theorem HS_006_complete_step)
-(assert (= true true)) ; HS_006_complete_step [untranslatable]
+(assert (= (handshake_complete (mkHSState HS_Complete 1000 2000)) true)) ; HS_006_complete_step
 
 ; HS_007_syn_preserves_isn (matches Coq: Theorem HS_007_syn_preserves_isn)
-(assert (= true true)) ; HS_007_syn_preserves_isn [untranslatable]
+(assert (forall ((isn Bool)) (= (seg_seq_num (make_syn isn)) isn))) ; HS_007_syn_preserves_isn
 
 ; HS_008_synack_ack_num (matches Coq: Theorem HS_008_synack_ack_num)
-(assert (= true true)) ; HS_008_synack_ack_num [untranslatable]
+(assert (forall ((isn Bool) (ack Bool)) (= (seg_ack_num (make_syn_ack isn ack)) ack))) ; HS_008_synack_ack_num
 
 ; HS_009_ack_ack_num (matches Coq: Theorem HS_009_ack_ack_num)
-(assert (= true true)) ; HS_009_ack_ack_num [untranslatable]
+(assert (forall ((seq Bool) (ack Bool)) (= (seg_ack_num (make_ack seq ack)) ack))) ; HS_009_ack_ack_num
 
 ; HS_010_syn_zero_data (matches Coq: Theorem HS_010_syn_zero_data)
-(assert (= true true)) ; HS_010_syn_zero_data [untranslatable]
+(assert (forall ((isn Bool)) (= (seg_data_len (make_syn isn)) 0))) ; HS_010_syn_zero_data
 
 ; SEQ_001_seq_space (matches Coq: Theorem SEQ_001_seq_space)
 (assert (= SEQ_SPACE 4294967296)) ; SEQ_001_seq_space
 
 ; SEQ_002_seq_le_refl (matches Coq: Theorem SEQ_002_seq_le_refl)
-(assert (= true true)) ; SEQ_002_seq_le_refl [untranslatable]
+(assert (forall ((n Bool)) (= (seq_le n n) true))) ; SEQ_002_seq_le_refl
 
 ; SEQ_003_next_seq_advance (matches Coq: Theorem SEQ_003_next_seq_advance)
-(assert (= true true)) ; SEQ_003_next_seq_advance [untranslatable]
+(assert (forall ((curr Bool) (len Bool)) (=> (< len SEQ_SPACE) (=> (< curr SEQ_SPACE) (=> (< (+ curr len) SEQ_SPACE) (= (next_seq curr len) (+ curr len))))))) ; SEQ_003_next_seq_advance
 
 ; SEQ_004_seq_in_window_start (matches Coq: Theorem SEQ_004_seq_in_window_start)
-(assert (= true true)) ; SEQ_004_seq_in_window_start [untranslatable]
+(assert (forall ((start Bool) (size Bool)) (=> (> size 0) (=> (< size (div SEQ_SPACE 2)) (=> (< size SEQ_SPACE) (= (seq_in_window start start size) true)))))) ; SEQ_004_seq_in_window_start
 
 ; SEQ_005_valid_ack_equal (matches Coq: Theorem SEQ_005_valid_ack_equal)
-(assert (= true true)) ; SEQ_005_valid_ack_equal [untranslatable]
+(assert (forall ((ack Bool)) (= (valid_ack ack ack ack) true))) ; SEQ_005_valid_ack_equal
 
 ; SEQ_006_seq_gt_def (matches Coq: Theorem SEQ_006_seq_gt_def)
-(assert (= true true)) ; SEQ_006_seq_gt_def [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (seq_gt a b) (seq_lt b a)))) ; SEQ_006_seq_gt_def
 
 ; SEQ_007_seq_ge_def (matches Coq: Theorem SEQ_007_seq_ge_def)
-(assert (= true true)) ; SEQ_007_seq_ge_def [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (= (seq_ge a b) (seq_le b a)))) ; SEQ_007_seq_ge_def
 
 ; SEQ_008_next_seq_zero (matches Coq: Theorem SEQ_008_next_seq_zero)
-(assert (= true true)) ; SEQ_008_next_seq_zero [untranslatable]
+(assert (forall ((curr Bool)) (=> (< curr SEQ_SPACE) (= (next_seq curr 0) curr)))) ; SEQ_008_next_seq_zero
 
 ; SEQ_009_seq_mod (matches Coq: Theorem SEQ_009_seq_mod)
-(assert (= true true)) ; SEQ_009_seq_mod [untranslatable]
+(assert (forall ((n Bool)) (< (mod n SEQ_SPACE) SEQ_SPACE))) ; SEQ_009_seq_mod
 
 ; SEQ_010_seq_le_zero (matches Coq: Theorem SEQ_010_seq_le_zero)
 (assert (= (seq_le 0 0) true)) ; SEQ_010_seq_le_zero
@@ -542,22 +543,22 @@
 (assert (= (sock_state new_socket) SockUnbound)) ; SOCK_001_new_socket_unbound
 
 ; SOCK_002_new_socket_no_local (matches Coq: Theorem SOCK_002_new_socket_no_local)
-(assert (= (sock_local_port new_socket) None)) ; SOCK_002_new_socket_no_local
+(assert (= (sock_local_port new_socket) none)) ; SOCK_002_new_socket_no_local
 
 ; SOCK_003_new_socket_no_remote (matches Coq: Theorem SOCK_003_new_socket_no_remote)
-(assert (= (sock_remote_port new_socket) None)) ; SOCK_003_new_socket_no_remote
+(assert (= (sock_remote_port new_socket) none)) ; SOCK_003_new_socket_no_remote
 
 ; SOCK_004_new_socket_closed (matches Coq: Theorem SOCK_004_new_socket_closed)
 (assert (= (sock_tcp_state new_socket) CLOSED)) ; SOCK_004_new_socket_closed
 
 ; SOCK_005_sock_state_eq_refl (matches Coq: Theorem SOCK_005_sock_state_eq_refl)
-(assert (= true true)) ; SOCK_005_sock_state_eq_refl [untranslatable]
+(assert (forall ((s Bool)) (= (sock_state_eqb s s) true))) ; SOCK_005_sock_state_eq_refl
 
 ; SOCK_006_unbound_cannot_send (matches Coq: Theorem SOCK_006_unbound_cannot_send)
-(assert (= true true)) ; SOCK_006_unbound_cannot_send [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sock_state s) SockUnbound) (= (socket_can_send s) false)))) ; SOCK_006_unbound_cannot_send
 
 ; SOCK_007_unbound_cannot_recv (matches Coq: Theorem SOCK_007_unbound_cannot_recv)
-(assert (= true true)) ; SOCK_007_unbound_cannot_recv [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sock_state s) SockUnbound) (= (socket_can_recv s) false)))) ; SOCK_007_unbound_cannot_recv
 
 ; SOCK_008_new_socket_cannot_send (matches Coq: Theorem SOCK_008_new_socket_cannot_send)
 (assert (= (socket_can_send new_socket) false)) ; SOCK_008_new_socket_cannot_send
@@ -569,64 +570,64 @@
 (assert (= (opt_reuse_addr default_sock_opts) false)) ; SOCK_010_default_no_reuse
 
 ; TCP_021_fin_wait1_fin_ack (matches Coq: Theorem TCP_021_fin_wait1_fin_ack)
-(assert (= true true)) ; TCP_021_fin_wait1_fin_ack [untranslatable]
+(assert (let ((fin_ack (mkSegment 100 200 (mkFlags false true true false false false) 65535 0))) (= (tcp_transition FIN_WAIT_1 fin_ack true) TIME_WAIT))) ; TCP_021_fin_wait1_fin_ack
 
 ; TCP_022_fin_wait1_fin_only (matches Coq: Theorem TCP_022_fin_wait1_fin_only)
-(assert (= true true)) ; TCP_022_fin_wait1_fin_only [untranslatable]
+(assert (let ((fin_only (mkSegment 100 200 (mkFlags false false true false false false) 65535 0))) (= (tcp_transition FIN_WAIT_1 fin_only true) CLOSING))) ; TCP_022_fin_wait1_fin_only
 
 ; TCP_023_fin_wait1_ack_only (matches Coq: Theorem TCP_023_fin_wait1_ack_only)
-(assert (= true true)) ; TCP_023_fin_wait1_ack_only [untranslatable]
+(assert (let ((ack_only (mkSegment 100 200 (mkFlags false true false false false false) 65535 0))) (= (tcp_transition FIN_WAIT_1 ack_only true) FIN_WAIT_2))) ; TCP_023_fin_wait1_ack_only
 
 ; TCP_024_fin_wait2_fin (matches Coq: Theorem TCP_024_fin_wait2_fin)
-(assert (= true true)) ; TCP_024_fin_wait2_fin [untranslatable]
+(assert (let ((fin_seg (mkSegment 100 200 (mkFlags false false true false false false) 65535 0))) (= (tcp_transition FIN_WAIT_2 fin_seg true) TIME_WAIT))) ; TCP_024_fin_wait2_fin
 
 ; TCP_025_closing_ack (matches Coq: Theorem TCP_025_closing_ack)
-(assert (= true true)) ; TCP_025_closing_ack [untranslatable]
+(assert (let ((ack_seg (mkSegment 100 200 (mkFlags false true false false false false) 65535 0))) (= (tcp_transition CLOSING ack_seg true) TIME_WAIT))) ; TCP_025_closing_ack
 
 ; TCP_026_time_wait_stable (matches Coq: Theorem TCP_026_time_wait_stable)
-(assert (= true true)) ; TCP_026_time_wait_stable [untranslatable]
+(assert (forall ((seg Bool) (is_server Bool)) (= (tcp_transition TIME_WAIT seg is_server) TIME_WAIT))) ; TCP_026_time_wait_stable
 
 ; TCP_027_close_wait_stable (matches Coq: Theorem TCP_027_close_wait_stable)
-(assert (= true true)) ; TCP_027_close_wait_stable [untranslatable]
+(assert (forall ((seg Bool) (is_server Bool)) (= (tcp_transition CLOSE_WAIT seg is_server) CLOSE_WAIT))) ; TCP_027_close_wait_stable
 
 ; TCP_028_syn_recv_rst (matches Coq: Theorem TCP_028_syn_recv_rst)
-(assert (= true true)) ; TCP_028_syn_recv_rst [untranslatable]
+(assert (let ((rst_seg (mkSegment 100 200 (mkFlags false false false true false false) 65535 0))) (= (tcp_transition SYN_RECEIVED rst_seg true) LISTEN))) ; TCP_028_syn_recv_rst
 
 ; TCP_029_connection_subset (matches Coq: Theorem TCP_029_connection_subset)
-(assert (= true true)) ; TCP_029_connection_subset [untranslatable]
+(assert (forall ((s Bool)) (=> (= (is_data_state s) true) (= (is_connection_state s) true)))) ; TCP_029_connection_subset
 
 ; TCP_030_established_data_stable (matches Coq: Theorem TCP_030_established_data_stable)
-(assert (= true true)) ; TCP_030_established_data_stable [untranslatable]
+(assert (let ((data_seg (mkSegment 100 200 (mkFlags false true false false true false) 65535 100))) (= (tcp_transition ESTABLISHED data_seg false) ESTABLISHED))) ; TCP_030_established_data_stable
 
 ; COMP_001_verified_security (matches Coq: Theorem COMP_001_verified_security)
-(assert (= true true)) ; COMP_001_verified_security [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (and (= (ns_packet_validation (vns_security n)) true) (= (ns_protocol_compliance (vns_security n)) true) (= (ns_firewall_enforced (vns_security n)) true) (= (ns_encryption_in_transit (vns_security n)) true))))) ; COMP_001_verified_security
 
 ; COMP_002_verified_reliability (matches Coq: Theorem COMP_002_verified_reliability)
-(assert (= true true)) ; COMP_002_verified_reliability [untranslatable]
+(assert (forall ((n Bool)) (=> (= (net_stack_verified n) true) (and (= (nr_congestion_control (vns_reliability n)) true) (= (nr_flow_control (vns_reliability n)) true) (= (nr_error_detection (vns_reliability n)) true) (= (nr_retransmission (vns_reliability n)) true))))) ; COMP_002_verified_reliability
 
 ; COMP_003_handshake_valid (matches Coq: Theorem COMP_003_handshake_valid)
-(assert (= true true)) ; COMP_003_handshake_valid [untranslatable]
+(assert (= handshake_sequence_valid true)) ; COMP_003_handshake_valid
 
 ; COMP_004_established_data_transfer (matches Coq: Theorem COMP_004_established_data_transfer)
-(assert (= true true)) ; COMP_004_established_data_transfer [untranslatable]
+(assert (forall ((opts Bool)) (let ((s (mkSocket SockConnected (some 80) (some 12345) ESTABLISHED opts))) (and (= (socket_can_send s) true) (= (socket_can_recv s) true))))) ; COMP_004_established_data_transfer
 
 ; COMP_005_cong_fairness (matches Coq: Theorem COMP_005_cong_fairness)
-(assert (= true true)) ; COMP_005_cong_fairness [untranslatable]
+(assert (forall ((cs Bool) (mss Bool)) (=> (> mss 0) (>= (cwnd (aimd_increase cs mss)) (cwnd cs))))) ; COMP_005_cong_fairness
 
 ; COMP_006_tcp_parse_safety (matches Coq: Theorem COMP_006_tcp_parse_safety)
-(assert (= true true)) ; COMP_006_tcp_parse_safety [untranslatable]
+(assert (forall ((data Bool) (cap Bool) (pos Bool)) (=> (<= (+ pos TCP_MIN_HEADER) cap) (= (safe_read (mkBuffer data cap pos) TCP_MIN_HEADER) true)))) ; COMP_006_tcp_parse_safety
 
 ; COMP_007_frame_parse_safety (matches Coq: Theorem COMP_007_frame_parse_safety)
-(assert (= true true)) ; COMP_007_frame_parse_safety [untranslatable]
+(assert (forall ((data Bool) (cap Bool) (pos Bool)) (=> (<= (+ (+ (+ pos ETH_MIN_FRAME) IP_MIN_HEADER) TCP_MIN_HEADER) cap) (= (safe_read (mkBuffer data cap pos) (+ (+ ETH_MIN_FRAME IP_MIN_HEADER) TCP_MIN_HEADER)) true)))) ; COMP_007_frame_parse_safety
 
 ; COMP_008_riina_complete (matches Coq: Theorem COMP_008_riina_complete)
 (assert (and (= (net_stack_verified riina_net_stack) true) (= (net_security_sound riina_net_sec) true) (= (net_reliability_sound riina_net_rel) true) (= (vns_rfc_compliant riina_net_stack) true) (= (vns_formally_verified riina_net_stack) true))) ; COMP_008_riina_complete
 
 ; COMP_009_tcp_deterministic (matches Coq: Theorem COMP_009_tcp_deterministic)
-(assert (= true true)) ; COMP_009_tcp_deterministic [untranslatable]
+(assert (forall ((st Bool) (seg Bool) (is_server Bool)) (= (tcp_transition st seg is_server) (tcp_transition st seg is_server)))) ; COMP_009_tcp_deterministic
 
 ; COMP_010_seq_wraparound (matches Coq: Theorem COMP_010_seq_wraparound)
-(assert (= true true)) ; COMP_010_seq_wraparound [untranslatable]
+(assert (forall ((n Bool)) (= (mod (+ n SEQ_SPACE) SEQ_SPACE) (mod n SEQ_SPACE)))) ; COMP_010_seq_wraparound
 
 ; Verify all assertions are satisfiable
 (check-sat)

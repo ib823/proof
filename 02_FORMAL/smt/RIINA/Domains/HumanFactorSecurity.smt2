@@ -146,166 +146,166 @@
 (define-fun example_secure_state () SecurityPolicyState true)
 
 ; bool_eq_true (matches Coq: Lemma bool_eq_true)
-(assert (= true true)) ; bool_eq_true [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= b true) (= b true)) (=> (= b true) (= b true))))) ; bool_eq_true
 
 ; advanced_training_implies_basic (matches Coq: Lemma advanced_training_implies_basic)
-(assert (= true true)) ; advanced_training_implies_basic [untranslatable]
+(assert (forall ((ts Bool)) (=> (or (= ts AdvancedTrained) (= ts CertifiedTrained)) (not (= ts NotTrained))))) ; advanced_training_implies_basic
 
 ; multi_party_is_adequate (matches Coq: Lemma multi_party_is_adequate)
-(assert (= true true)) ; multi_party_is_adequate [untranslatable]
+(assert (forall ((vl Bool)) (=> (= vl MultiPartyVerification) (or (= vl MultiPartyVerification) (= vl DualVerification))))) ; multi_party_is_adequate
 
 ; mantrap_implies_controlled (matches Coq: Lemma mantrap_implies_controlled)
-(assert (= true true)) ; mantrap_implies_controlled [untranslatable]
+(assert (forall ((pal Bool)) (=> (= pal MantrapRequired) (or (= pal BiometricRequired) (= pal MantrapRequired) (= pal EscortRequired))))) ; mantrap_implies_controlled
 
 ; immutable_implies_automated (matches Coq: Lemma immutable_implies_automated)
-(assert (= true true)) ; immutable_implies_automated [untranslatable]
+(assert (forall ((cm Bool)) (=> (= cm ImmutableInfrastructure) (or (= cm AutomatedWithValidation) (= cm ImmutableInfrastructure))))) ; immutable_implies_automated
 
 ; zero_trust_is_strong (matches Coq: Lemma zero_trust_is_strong)
-(assert (= true true)) ; zero_trust_is_strong [untranslatable]
+(assert (forall ((pp Bool)) (=> (= pp ZeroTrustPolicy) (or (= pp EnterprisePolicy) (= pp ZeroTrustPolicy))))) ; zero_trust_is_strong
 
 ; hum_001_phishing_mitigated_by_webauthn (matches Coq: Theorem hum_001_phishing_mitigated_by_webauthn)
-(assert (= true true)) ; hum_001_phishing_mitigated_by_webauthn [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (webauthn_enforced state) true) (=> (= (auth_mechanism state) WebAuthn) (= (threat_mitigated Phishing state) true))))) ; hum_001_phishing_mitigated_by_webauthn
 
 ; hum_001_phishing_control_effective (matches Coq: Theorem hum_001_phishing_control_effective)
-(assert (= true true)) ; hum_001_phishing_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (is_phishing_resistant_auth state) true) (= (control_effective Phishing state) true)))) ; hum_001_phishing_control_effective
 
 ; hum_002_spear_phishing_mitigated (matches Coq: Theorem hum_002_spear_phishing_mitigated)
-(assert (= true true)) ; hum_002_spear_phishing_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (verification_level state) DualVerification) (= (verification_level state) MultiPartyVerification)) (=> (or (= (training_status state) AdvancedTrained) (= (training_status state) CertifiedTrained)) (= (threat_mitigated SpearPhishing state) true))))) ; hum_002_spear_phishing_mitigated
 
 ; hum_002_spear_phishing_control_effective (matches Coq: Theorem hum_002_spear_phishing_control_effective)
-(assert (= true true)) ; hum_002_spear_phishing_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (verification_procedures_adequate state) true) (=> (= (training_effective state) true) (= (control_effective SpearPhishing state) true))))) ; hum_002_spear_phishing_control_effective
 
 ; hum_003_whaling_mitigated (matches Coq: Theorem hum_003_whaling_mitigated)
-(assert (= true true)) ; hum_003_whaling_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (verification_level state) MultiPartyVerification) (=> (= (out_of_band_verification state) true) (= (threat_mitigated Whaling state) true))))) ; hum_003_whaling_mitigated
 
 ; hum_003_whaling_control_effective (matches Coq: Theorem hum_003_whaling_control_effective)
-(assert (= true true)) ; hum_003_whaling_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (executive_verification_enhanced state) true) (= (control_effective Whaling state) true)))) ; hum_003_whaling_control_effective
 
 ; hum_004_vishing_mitigated (matches Coq: Theorem hum_004_vishing_mitigated)
-(assert (= true true)) ; hum_004_vishing_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (callback_verification state) true) (=> (= (out_of_band_verification state) true) (= (threat_mitigated Vishing state) true))))) ; hum_004_vishing_mitigated
 
 ; hum_004_vishing_control_effective (matches Coq: Theorem hum_004_vishing_control_effective)
-(assert (= true true)) ; hum_004_vishing_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (callback_verification_active state) true) (= (control_effective Vishing state) true)))) ; hum_004_vishing_control_effective
 
 ; hum_005_smishing_mitigated (matches Coq: Theorem hum_005_smishing_mitigated)
-(assert (= true true)) ; hum_005_smishing_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (url_filtering_enabled state) true) (=> (or (= (training_status state) AdvancedTrained) (= (training_status state) CertifiedTrained)) (= (threat_mitigated Smishing state) true))))) ; hum_005_smishing_mitigated
 
 ; hum_005_smishing_control_effective (matches Coq: Theorem hum_005_smishing_control_effective)
-(assert (= true true)) ; hum_005_smishing_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (smishing_controls_active state) true) (= (control_effective Smishing state) true)))) ; hum_005_smishing_control_effective
 
 ; hum_006_pretexting_mitigated (matches Coq: Theorem hum_006_pretexting_mitigated)
-(assert (= true true)) ; hum_006_pretexting_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (verification_level state) DualVerification) (= (verification_level state) MultiPartyVerification)) (= (threat_mitigated Pretexting state) true)))) ; hum_006_pretexting_mitigated
 
 ; hum_006_pretexting_control_effective (matches Coq: Theorem hum_006_pretexting_control_effective)
-(assert (= true true)) ; hum_006_pretexting_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (verification_procedures_adequate state) true) (= (control_effective Pretexting state) true)))) ; hum_006_pretexting_control_effective
 
 ; hum_007_baiting_mitigated (matches Coq: Theorem hum_007_baiting_mitigated)
-(assert (= true true)) ; hum_007_baiting_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (device_control_policy state) true) (=> (= (technical_controls_active state) true) (= (threat_mitigated Baiting state) true))))) ; hum_007_baiting_mitigated
 
 ; hum_007_baiting_control_effective (matches Coq: Theorem hum_007_baiting_control_effective)
-(assert (= true true)) ; hum_007_baiting_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (device_control_active state) true) (= (control_effective Baiting state) true)))) ; hum_007_baiting_control_effective
 
 ; hum_008_tailgating_mitigated (matches Coq: Theorem hum_008_tailgating_mitigated)
-(assert (= true true)) ; hum_008_tailgating_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (physical_access_level state) BiometricRequired) (= (physical_access_level state) MantrapRequired) (= (physical_access_level state) EscortRequired)) (= (threat_mitigated Tailgating state) true)))) ; hum_008_tailgating_mitigated
 
 ; hum_008_tailgating_control_effective (matches Coq: Theorem hum_008_tailgating_control_effective)
-(assert (= true true)) ; hum_008_tailgating_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (physical_access_controlled state) true) (= (control_effective Tailgating state) true)))) ; hum_008_tailgating_control_effective
 
 ; hum_009_dumpster_diving_mitigated (matches Coq: Theorem hum_009_dumpster_diving_mitigated)
-(assert (= true true)) ; hum_009_dumpster_diving_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (disposal_method state) CrossCutShredding) (= (disposal_method state) SecureIncineration) (= (disposal_method state) DegaussingAndDestruction)) (= (threat_mitigated DumpsterDiving state) true)))) ; hum_009_dumpster_diving_mitigated
 
 ; hum_009_dumpster_diving_control_effective (matches Coq: Theorem hum_009_dumpster_diving_control_effective)
-(assert (= true true)) ; hum_009_dumpster_diving_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (secure_disposal_implemented state) true) (= (control_effective DumpsterDiving state) true)))) ; hum_009_dumpster_diving_control_effective
 
 ; hum_010_shoulder_surfing_mitigated (matches Coq: Theorem hum_010_shoulder_surfing_mitigated)
-(assert (= true true)) ; hum_010_shoulder_surfing_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (privacy_screens_deployed state) true) (= (threat_mitigated ShoulderSurfing state) true)))) ; hum_010_shoulder_surfing_mitigated
 
 ; hum_010_shoulder_surfing_control_effective (matches Coq: Theorem hum_010_shoulder_surfing_control_effective)
-(assert (= true true)) ; hum_010_shoulder_surfing_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (privacy_protection_active state) true) (= (control_effective ShoulderSurfing state) true)))) ; hum_010_shoulder_surfing_control_effective
 
 ; hum_011_insider_threat_mitigated (matches Coq: Theorem hum_011_insider_threat_mitigated)
-(assert (= true true)) ; hum_011_insider_threat_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (least_privilege_enforced state) true) (=> (= (audit_logging_enabled state) true) (= (threat_mitigated InsiderThreat state) true))))) ; hum_011_insider_threat_mitigated
 
 ; hum_011_insider_threat_control_effective (matches Coq: Theorem hum_011_insider_threat_control_effective)
-(assert (= true true)) ; hum_011_insider_threat_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (insider_threat_controls_active state) true) (= (control_effective InsiderThreat state) true)))) ; hum_011_insider_threat_control_effective
 
 ; hum_012_coercion_mitigated (matches Coq: Theorem hum_012_coercion_mitigated)
-(assert (= true true)) ; hum_012_coercion_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (duress_codes_enabled state) true) (=> (= (plausible_deniability_possible state) true) (= (threat_mitigated Coercion state) true))))) ; hum_012_coercion_mitigated
 
 ; hum_012_coercion_control_effective (matches Coq: Theorem hum_012_coercion_control_effective)
-(assert (= true true)) ; hum_012_coercion_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (coercion_resilience_active state) true) (= (control_effective Coercion state) true)))) ; hum_012_coercion_control_effective
 
 ; hum_013_bribery_mitigated (matches Coq: Theorem hum_013_bribery_mitigated)
-(assert (= true true)) ; hum_013_bribery_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (background_checks_performed state) true) (=> (= (behavioral_monitoring state) true) (= (threat_mitigated Bribery state) true))))) ; hum_013_bribery_mitigated
 
 ; hum_013_bribery_control_effective (matches Coq: Theorem hum_013_bribery_control_effective)
-(assert (= true true)) ; hum_013_bribery_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (bribery_controls_active state) true) (= (control_effective Bribery state) true)))) ; hum_013_bribery_control_effective
 
 ; hum_014_blackmail_mitigated (matches Coq: Theorem hum_014_blackmail_mitigated)
-(assert (= true true)) ; hum_014_blackmail_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (security_culture_established state) true) (=> (or (= (training_status state) AdvancedTrained) (= (training_status state) CertifiedTrained)) (= (threat_mitigated Blackmail state) true))))) ; hum_014_blackmail_mitigated
 
 ; hum_014_blackmail_control_effective (matches Coq: Theorem hum_014_blackmail_control_effective)
-(assert (= true true)) ; hum_014_blackmail_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (security_culture_active state) true) (= (control_effective Blackmail state) true)))) ; hum_014_blackmail_control_effective
 
 ; hum_015_social_engineering_mitigated (matches Coq: Theorem hum_015_social_engineering_mitigated)
-(assert (= true true)) ; hum_015_social_engineering_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (training_status state) AdvancedTrained) (= (training_status state) CertifiedTrained)) (=> (or (= (verification_level state) DualVerification) (= (verification_level state) MultiPartyVerification)) (= (threat_mitigated SocialEngineering state) true))))) ; hum_015_social_engineering_mitigated
 
 ; hum_015_social_engineering_control_effective (matches Coq: Theorem hum_015_social_engineering_control_effective)
-(assert (= true true)) ; hum_015_social_engineering_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (social_engineering_controls_active state) true) (= (control_effective SocialEngineering state) true)))) ; hum_015_social_engineering_control_effective
 
 ; hum_016_credential_sharing_mitigated (matches Coq: Theorem hum_016_credential_sharing_mitigated)
-(assert (= true true)) ; hum_016_credential_sharing_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (mfa_enabled state) true) (=> (= (credential_monitoring state) true) (= (threat_mitigated CredentialSharing state) true))))) ; hum_016_credential_sharing_mitigated
 
 ; hum_016_credential_sharing_control_effective (matches Coq: Theorem hum_016_credential_sharing_control_effective)
-(assert (= true true)) ; hum_016_credential_sharing_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (credential_sharing_controls_active state) true) (= (control_effective CredentialSharing state) true)))) ; hum_016_credential_sharing_control_effective
 
 ; hum_017_weak_passwords_mitigated (matches Coq: Theorem hum_017_weak_passwords_mitigated)
-(assert (= true true)) ; hum_017_weak_passwords_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (password_policy state) EnterprisePolicy) (= (password_policy state) ZeroTrustPolicy)) (= (threat_mitigated WeakPasswords state) true)))) ; hum_017_weak_passwords_mitigated
 
 ; hum_017_weak_passwords_control_effective (matches Coq: Theorem hum_017_weak_passwords_control_effective)
-(assert (= true true)) ; hum_017_weak_passwords_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (password_policy_strong state) true) (= (control_effective WeakPasswords state) true)))) ; hum_017_weak_passwords_control_effective
 
 ; hum_018_password_reuse_mitigated (matches Coq: Theorem hum_018_password_reuse_mitigated)
-(assert (= true true)) ; hum_018_password_reuse_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (unique_passwords_enforced state) true) (=> (= (breach_detection_enabled state) true) (= (threat_mitigated PasswordReuse state) true))))) ; hum_018_password_reuse_mitigated
 
 ; hum_018_password_reuse_control_effective (matches Coq: Theorem hum_018_password_reuse_control_effective)
-(assert (= true true)) ; hum_018_password_reuse_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (unique_passwords_active state) true) (= (control_effective PasswordReuse state) true)))) ; hum_018_password_reuse_control_effective
 
 ; hum_019_unsafe_behavior_mitigated (matches Coq: Theorem hum_019_unsafe_behavior_mitigated)
-(assert (= true true)) ; hum_019_unsafe_behavior_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (training_status state) AdvancedTrained) (= (training_status state) CertifiedTrained)) (=> (= (technical_controls_active state) true) (= (threat_mitigated UnsafeBehavior state) true))))) ; hum_019_unsafe_behavior_mitigated
 
 ; hum_019_unsafe_behavior_control_effective (matches Coq: Theorem hum_019_unsafe_behavior_control_effective)
-(assert (= true true)) ; hum_019_unsafe_behavior_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (unsafe_behavior_controls_active state) true) (= (control_effective UnsafeBehavior state) true)))) ; hum_019_unsafe_behavior_control_effective
 
 ; hum_020_configuration_error_mitigated (matches Coq: Theorem hum_020_configuration_error_mitigated)
-(assert (= true true)) ; hum_020_configuration_error_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (or (= (config_management state) AutomatedWithValidation) (= (config_management state) ImmutableInfrastructure)) (= (threat_mitigated ConfigurationError state) true)))) ; hum_020_configuration_error_mitigated
 
 ; hum_020_configuration_error_control_effective (matches Coq: Theorem hum_020_configuration_error_control_effective)
-(assert (= true true)) ; hum_020_configuration_error_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (automated_config_active state) true) (= (control_effective ConfigurationError state) true)))) ; hum_020_configuration_error_control_effective
 
 ; hum_021_sock_puppet_campaign_mitigated (matches Coq: Theorem hum_021_sock_puppet_campaign_mitigated)
-(assert (= true true)) ; hum_021_sock_puppet_campaign_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (multi_maintainer_required state) true) (=> (or (= (review_process state) MultiMaintainerReview) (= (review_process state) FormalVerificationReview)) (= (threat_mitigated SockPuppetCampaign state) true))))) ; hum_021_sock_puppet_campaign_mitigated
 
 ; hum_021_sock_puppet_campaign_control_effective (matches Coq: Theorem hum_021_sock_puppet_campaign_control_effective)
-(assert (= true true)) ; hum_021_sock_puppet_campaign_control_effective [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (multi_maintainer_review_active state) true) (= (control_effective SockPuppetCampaign state) true)))) ; hum_021_sock_puppet_campaign_control_effective
 
 ; all_human_threats_mitigated (matches Coq: Theorem all_human_threats_mitigated)
-(assert (= true true)) ; all_human_threats_mitigated [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (forall ((threat HumanThreat)) (=> (= (fully_secured_state state) true) (= (threat_mitigated threat state) true))))) ; all_human_threats_mitigated
 
 ; example_state_is_phishing_resistant (matches Coq: Theorem example_state_is_phishing_resistant)
-(assert (= true true)) ; example_state_is_phishing_resistant [untranslatable]
+(assert (= (is_phishing_resistant_auth example_secure_state) true)) ; example_state_is_phishing_resistant
 
 ; example_state_mitigates_phishing (matches Coq: Theorem example_state_mitigates_phishing)
-(assert (= true true)) ; example_state_mitigates_phishing [untranslatable]
+(assert (= (threat_mitigated Phishing example_secure_state) true)) ; example_state_mitigates_phishing
 
 ; training_enhances_defenses (matches Coq: Theorem training_enhances_defenses)
-(assert (= true true)) ; training_enhances_defenses [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (training_effective state) true) (and (=> (= (smishing_controls_active state) true) (= (url_filtering_enabled state) true)) (=> (= (security_culture_active state) true) (= (security_culture_established state) true)) (=> (= (social_engineering_controls_active state) true) (= (verification_procedures_adequate state) true)) (=> (= (unsafe_behavior_controls_active state) true) (= (technical_controls_active state) true)))))) ; training_enhances_defenses
 
 ; verification_provides_layered_defense (matches Coq: Theorem verification_provides_layered_defense)
-(assert (= true true)) ; verification_provides_layered_defense [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (verification_procedures_adequate state) true) (= (threat_mitigated Pretexting state) true)))) ; verification_provides_layered_defense
 
 ; physical_logical_complement (matches Coq: Theorem physical_logical_complement)
-(assert (= true true)) ; physical_logical_complement [untranslatable]
+(assert (forall ((state SecurityPolicyState)) (=> (= (physical_access_controlled state) true) (=> (= (insider_threat_controls_active state) true) (and (= (threat_mitigated Tailgating state) true) (= (threat_mitigated InsiderThreat state) true)))))) ; physical_logical_complement
 
 ; Verify all assertions are satisfiable
 (check-sat)

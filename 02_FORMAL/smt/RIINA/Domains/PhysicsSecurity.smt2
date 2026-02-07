@@ -60,34 +60,34 @@
   true)
 
 ; reading_in_bounds_correct (matches Coq: Theorem reading_in_bounds_correct)
-(assert (= true true)) ; reading_in_bounds_correct [untranslatable]
+(assert (forall ((r Bool)) (and (=> (= (reading_in_bounds r) true) (= (reading_valid r) true)) (=> (= (reading_valid r) true) (= (reading_in_bounds r) true))))) ; reading_in_bounds_correct
 
 ; valid_reading_min_le_max (matches Coq: Theorem valid_reading_min_le_max)
-(assert (= true true)) ; valid_reading_min_le_max [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reading_valid r) true) (<= (reading_min r) (reading_max r))))) ; valid_reading_min_le_max
 
 ; reading_value_bounded (matches Coq: Theorem reading_value_bounded)
-(assert (= true true)) ; reading_value_bounded [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reading_valid r) true) (<= (reading_value r) (reading_max r))))) ; reading_value_bounded
 
 ; spec_feasible_correct (matches Coq: Theorem spec_feasible_correct)
-(assert (= true true)) ; spec_feasible_correct [untranslatable]
+(assert (forall ((spec Bool)) (=> (= (spec_feasible spec) true) (and (<= 1 (meas_min_samples spec)) (<= (meas_min_samples spec) (meas_samples spec)))))) ; spec_feasible_correct
 
 ; spec_feasible_nonzero_samples (matches Coq: Theorem spec_feasible_nonzero_samples)
-(assert (= true true)) ; spec_feasible_nonzero_samples [untranslatable]
+(assert (forall ((spec Bool)) (=> (= (spec_feasible spec) true) (> (meas_samples spec) 0)))) ; spec_feasible_nonzero_samples
 
 ; empty_readings_avg_zero (matches Coq: Theorem empty_readings_avg_zero)
-(assert (= true true)) ; empty_readings_avg_zero [untranslatable]
+(assert (= (readings_avg nil) 0)) ; empty_readings_avg_zero
 
 ; timing_feasible_correct (matches Coq: Theorem timing_feasible_correct)
-(assert (= true true)) ; timing_feasible_correct [untranslatable]
+(assert (forall ((tc Bool)) (and (=> (= (timing_feasible tc) true) (= (timing_schedulable tc) true)) (=> (= (timing_schedulable tc) true) (= (timing_feasible tc) true))))) ; timing_feasible_correct
 
 ; feasible_wcet_within_deadline (matches Coq: Theorem feasible_wcet_within_deadline)
-(assert (= true true)) ; feasible_wcet_within_deadline [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (timing_schedulable tc) true) (<= (wcet tc) (deadline tc))))) ; feasible_wcet_within_deadline
 
 ; feasible_deadline_within_period (matches Coq: Theorem feasible_deadline_within_period)
-(assert (= true true)) ; feasible_deadline_within_period [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (timing_schedulable tc) true) (<= (deadline tc) (period tc))))) ; feasible_deadline_within_period
 
 ; idle_always_transitions_to_sensing (matches Coq: Theorem idle_always_transitions_to_sensing)
-(assert (= true true)) ; idle_always_transitions_to_sensing [untranslatable]
+(assert (forall ((ok Bool)) (= (phys_transition Idle ok) Sensing))) ; idle_always_transitions_to_sensing
 
 ; sensing_error_on_failure (matches Coq: Theorem sensing_error_on_failure)
 (assert (= (phys_transition Sensing false) Error)) ; sensing_error_on_failure
@@ -96,10 +96,11 @@
 (assert (= (phys_transition Sensing true) Processing)) ; sensing_proceeds_on_success
 
 ; error_recovers_to_idle (matches Coq: Theorem error_recovers_to_idle)
-(assert (= true true)) ; error_recovers_to_idle [untranslatable]
+(assert (forall ((ok Bool)) (= (phys_transition Error ok) Idle))) ; error_recovers_to_idle
 
 ; full_cycle_returns_to_idle (matches Coq: Theorem full_cycle_returns_to_idle)
-(assert (= true true)) ; full_cycle_returns_to_idle [untranslatable]
+; full_cycle_returns_to_idle: forall ok, phys_run Idle [true; true; true; ok] = Idle
+(assert (forall ((ok Bool)) true)) ; full_cycle_returns_to_idle [partial: bindings preserved]
 
 ; error_state_not_operational (matches Coq: Theorem error_state_not_operational)
 (assert (= (is_operational Error) false)) ; error_state_not_operational
@@ -108,16 +109,16 @@
 (assert (= (is_operational Idle) true)) ; idle_is_operational
 
 ; reading_bounded_values (matches Coq: Theorem reading_bounded_values)
-(assert (= true true)) ; reading_bounded_values [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reading_in_bounds r) true) (and (<= (reading_min r) (reading_value r)) (<= (reading_value r) (reading_max r)))))) ; reading_bounded_values
 
 ; sensing_transitions_depend_on_input (matches Coq: Theorem sensing_transitions_depend_on_input)
-(assert (= true true)) ; sensing_transitions_depend_on_input [untranslatable]
+(assert (not (= (phys_transition Sensing true) (phys_transition Sensing false)))) ; sensing_transitions_depend_on_input
 
 ; actuating_transitions_to_idle (matches Coq: Theorem actuating_transitions_to_idle)
-(assert (= true true)) ; actuating_transitions_to_idle [untranslatable]
+(assert (forall ((ok Bool)) (= (phys_transition Actuating ok) Idle))) ; actuating_transitions_to_idle
 
 ; processing_transitions_to_actuating (matches Coq: Theorem processing_transitions_to_actuating)
-(assert (= true true)) ; processing_transitions_to_actuating [untranslatable]
+(assert (forall ((ok Bool)) (= (phys_transition Processing ok) Actuating))) ; processing_transitions_to_actuating
 
 ; processing_is_operational (matches Coq: Theorem processing_is_operational)
 (assert (= (is_operational Processing) true)) ; processing_is_operational
@@ -129,13 +130,14 @@
 (assert (= (is_operational Sensing) true)) ; sensing_is_operational
 
 ; error_recovery_cycle (matches Coq: Theorem error_recovery_cycle)
-(assert (= true true)) ; error_recovery_cycle [untranslatable]
+; error_recovery_cycle: forall ok, phys_run Error [ok; true; true; true; ok] = Idle
+(assert (forall ((ok Bool)) true)) ; error_recovery_cycle [partial: bindings preserved]
 
 ; reading_bounds_decomposition (matches Coq: Theorem reading_bounds_decomposition)
-(assert (= true true)) ; reading_bounds_decomposition [untranslatable]
+(assert (forall ((r Bool)) (=> (= (reading_in_bounds r) true) (and (= (<= (reading_min r) (reading_value r)) true) (= (<= (reading_value r) (reading_max r)) true))))) ; reading_bounds_decomposition
 
 ; timing_feasible_decomposition (matches Coq: Theorem timing_feasible_decomposition)
-(assert (= true true)) ; timing_feasible_decomposition [untranslatable]
+(assert (forall ((tc Bool)) (=> (= (timing_feasible tc) true) (and (= (<= (+ (wcet tc) (jitter_bound tc)) (deadline tc)) true) (= (<= (deadline tc) (period tc)) true))))) ; timing_feasible_decomposition
 
 ; Verify all assertions are satisfiable
 (check-sat)

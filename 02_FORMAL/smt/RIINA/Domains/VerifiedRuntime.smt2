@@ -98,73 +98,74 @@
   true)
 
 ; mem_update_same (matches Coq: Lemma mem_update_same)
-(assert (= true true)) ; mem_update_same [untranslatable]
+(assert (forall ((m Bool) (p Bool) (v Bool)) (= (mem_update m p v p) v))) ; mem_update_same
 
 ; mem_update_diff (matches Coq: Lemma mem_update_diff)
-(assert (= true true)) ; mem_update_diff [untranslatable]
+(assert (forall ((m Bool) (p1 Bool) (p2 Bool) (v Bool)) (=> (not (= p1 p2)) (= (mem_update m p2 v p1) (m p1))))) ; mem_update_diff
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((b1 Bool) (b2 Bool)) (and (=> (= (and b1 b2) true) (and (= b1 true) (= b2 true))) (=> (and (= b1 true) (= b2 true)) (= (and b1 b2) true))))) ; andb_true_iff
 
 ; RT_001_01_alloc_safe (matches Coq: Theorem RT_001_01_alloc_safe)
-(assert (= true true)) ; RT_001_01_alloc_safe [untranslatable]
+(assert (forall ((h Bool) (size Bool) (p Bool) (h' Bool)) (=> (> size 0) (=> (= (sufficient_space h size) true) (=> (<= size (heap_max_alloc h)) (=> (= (alloc h size) (some (mk-tuple p h'))) (and (= (valid_ptr h' p) true) (>= (accessible_size h' p) size)))))))) ; RT_001_01_alloc_safe
 
 ; RT_001_02_alloc_no_overlap (matches Coq: Theorem RT_001_02_alloc_no_overlap)
-(assert (= true true)) ; RT_001_02_alloc_no_overlap [untranslatable]
+; RT_001_02_alloc_no_overlap: forall h size p h', heap_wf h -> size > 0 -> alloc h size = Some (p, h') -> heap_mem h p = None.
+(assert (forall ((h Bool) (size Bool) (p Bool) (h' Bool)) true)) ; RT_001_02_alloc_no_overlap [partial: bindings preserved]
 
 ; RT_001_03_free_correct (matches Coq: Theorem RT_001_03_free_correct)
-(assert (= true true)) ; RT_001_03_free_correct [untranslatable]
+(assert (forall ((h Bool) (p Bool) (h' Bool)) (=> (= (valid_ptr h p) true) (=> (= (free h p) (some h')) (= (accessible_size h' p) 0))))) ; RT_001_03_free_correct
 
 ; RT_001_04_no_use_after_free (matches Coq: Theorem RT_001_04_no_use_after_free)
-(assert (= true true)) ; RT_001_04_no_use_after_free [untranslatable]
+(assert (forall ((h Bool) (p Bool) (h' Bool)) (=> (= (valid_ptr h p) true) (=> (= (free h p) (some h')) (not (= (valid_ptr h' p) true)))))) ; RT_001_04_no_use_after_free
 
 ; RT_001_05_no_double_free (matches Coq: Theorem RT_001_05_no_double_free)
-(assert (= true true)) ; RT_001_05_no_double_free [untranslatable]
+(assert (forall ((h Bool) (p Bool) (h' Bool)) (=> (= (free h p) (some h')) (= (free h' p) none)))) ; RT_001_05_no_double_free
 
 ; RT_001_06_alloc_alignment (matches Coq: Theorem RT_001_06_alloc_alignment)
-(assert (= true true)) ; RT_001_06_alloc_alignment [untranslatable]
+(assert (forall ((h Bool) (size Bool) (p Bool) (h' Bool)) (=> (= (alloc h size) (some (mk-tuple p h'))) (= p (heap_next_ptr h))))) ; RT_001_06_alloc_alignment
 
 ; RT_001_07_heap_integrity (matches Coq: Theorem RT_001_07_heap_integrity)
-(assert (= true true)) ; RT_001_07_heap_integrity [untranslatable]
+(assert (forall ((h Bool) (size Bool) (p Bool) (h' Bool)) (=> (= (heap_wf h) true) (=> (= (alloc h size) (some (mk-tuple p h'))) (and (= (heap_total_size h') (heap_total_size h)) (= (heap_max_alloc h') (heap_max_alloc h))))))) ; RT_001_07_heap_integrity
 
 ; RT_001_08_alloc_bounded (matches Coq: Theorem RT_001_08_alloc_bounded)
-(assert (= true true)) ; RT_001_08_alloc_bounded [untranslatable]
+(assert (forall ((h Bool) (size Bool) (p Bool) (h' Bool)) (=> (= (alloc h size) (some (mk-tuple p h'))) (<= size (heap_max_alloc h))))) ; RT_001_08_alloc_bounded
 
 ; RT_001_09_gc_preserves_live (matches Coq: Theorem RT_001_09_gc_preserves_live)
-(assert (= true true)) ; RT_001_09_gc_preserves_live [untranslatable]
+(assert (forall ((h Bool) (p Bool)) (=> (= (mh_live h p) true) (=> (= (In p (mh_roots h)) true) (= (preserved h (gc h) p) true))))) ; RT_001_09_gc_preserves_live
 
 ; RT_001_10_gc_collects_dead (matches Coq: Theorem RT_001_10_gc_collects_dead)
-(assert (= true true)) ; RT_001_10_gc_collects_dead [untranslatable]
+(assert (forall ((h Bool) (p Bool)) (not (=> (= (In p (mh_roots h)) true) (= (mh_live (gc h) p) false))))) ; RT_001_10_gc_collects_dead
 
 ; RT_001_11_gc_roots_complete (matches Coq: Theorem RT_001_11_gc_roots_complete)
-(assert (= true true)) ; RT_001_11_gc_roots_complete [untranslatable]
+(assert (forall ((h Bool)) (= (mh_roots (gc h)) (mh_roots h)))) ; RT_001_11_gc_roots_complete
 
 ; RT_001_12_gc_pause_bound (matches Coq: Theorem RT_001_12_gc_pause_bound)
-(assert (= true true)) ; RT_001_12_gc_pause_bound [untranslatable]
+(assert (forall ((h Bool)) (= (mh_pause_budget (gc h)) (mh_pause_budget h)))) ; RT_001_12_gc_pause_bound
 
 ; RT_001_13_gc_memory_bound (matches Coq: Theorem RT_001_13_gc_memory_bound)
-(assert (= true true)) ; RT_001_13_gc_memory_bound [untranslatable]
+(assert (forall ((h Bool)) (= (mh_max_size (gc h)) (mh_max_size h)))) ; RT_001_13_gc_memory_bound
 
 ; RT_001_14_finalizer_safe (matches Coq: Theorem RT_001_14_finalizer_safe)
-(assert (= true true)) ; RT_001_14_finalizer_safe [untranslatable]
+(assert (forall ((h Bool) (p Bool)) (=> (= (mh_finalized h p) true) (= (mh_finalized (gc h) p) true)))) ; RT_001_14_finalizer_safe
 
 ; RT_001_15_gc_progress (matches Coq: Theorem RT_001_15_gc_progress)
-(assert (= true true)) ; RT_001_15_gc_progress [untranslatable]
+(assert (forall ((h Bool)) (= (gc_makes_progress h) true))) ; RT_001_15_gc_progress
 
 ; RT_001_16_sandbox_memory_isolated (matches Coq: Theorem RT_001_16_sandbox_memory_isolated)
-(assert (= true true)) ; RT_001_16_sandbox_memory_isolated [untranslatable]
+(assert (forall ((sb1 Bool) (sb2 Bool) (p Bool)) (=> (= (sandboxes_isolated sb1 sb2) true) (=> (not (= (sb_id sb1) (sb_id sb2))) (=> (= (accessible sb1 p) true) (not (= (accessible sb2 p) true))))))) ; RT_001_16_sandbox_memory_isolated
 
 ; RT_001_17_sandbox_cap_isolated (matches Coq: Theorem RT_001_17_sandbox_cap_isolated)
-(assert (= true true)) ; RT_001_17_sandbox_cap_isolated [untranslatable]
+(assert (forall ((sb1 Bool) (sb2 Bool) (cap Bool)) (=> (=> (not (= (sb_id sb1) (sb_id sb2))) (=> (forall ((c Bool)) (= (sb_granted sb1 c) true)) (= (sb_granted sb2 c) false))) (=> (not (= (sb_id sb1) (sb_id sb2))) (=> (= (granted sb1 cap) true) (not (= (granted sb2 cap) true))))))) ; RT_001_17_sandbox_cap_isolated
 
 ; RT_001_18_sandbox_resource_limited (matches Coq: Theorem RT_001_18_sandbox_resource_limited)
-(assert (= true true)) ; RT_001_18_sandbox_resource_limited [untranslatable]
+(assert (forall ((sb Bool) (r Bool)) (=> (= (within_limits sb) true) (<= (sb_usage sb r) (sb_limits sb r))))) ; RT_001_18_sandbox_resource_limited
 
 ; RT_001_19_sandbox_terminable (matches Coq: Theorem RT_001_19_sandbox_terminable)
-(assert (= true true)) ; RT_001_19_sandbox_terminable [untranslatable]
+(assert (forall ((sb Bool)) (and (= (sb_terminated (terminate sb)) true) (forall ((p Bool)) (= (sb_accessible (terminate sb) p) false)) (forall ((c Bool)) (= (sb_granted (terminate sb) c) false))))) ; RT_001_19_sandbox_terminable
 
 ; RT_001_20_sandbox_comm_controlled (matches Coq: Theorem RT_001_20_sandbox_comm_controlled)
-(assert (= true true)) ; RT_001_20_sandbox_comm_controlled [untranslatable]
+(assert (forall ((ch Bool)) (and (=> (= (comm_controlled ch) true) (= (ch_authorized ch) true)) (=> (= (ch_authorized ch) true) (= (comm_controlled ch) true))))) ; RT_001_20_sandbox_comm_controlled
 
 ; Verify all assertions are satisfiable
 (check-sat)

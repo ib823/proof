@@ -57,7 +57,7 @@
   (mk-crypto_implementation Crypto_SHA256 true true false))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; CT_001_branch_free (matches Coq: Theorem CT_001_branch_free)
 (assert (= (ct_branch_free riina_ct_config) true)) ; CT_001_branch_free

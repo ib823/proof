@@ -111,49 +111,49 @@
   true)
 
 ; COMPLY_001_01 (matches Coq: Theorem COMPLY_001_01)
-(assert (= true true)) ; COMPLY_001_01 [untranslatable]
+(assert (forall ((phi PHIRecord)) (=> (= (is_hipaa_encrypted (phi_encryption phi)) true) (= (phi_encryption phi) EncryptedAES256)))) ; COMPLY_001_01
 
 ; COMPLY_001_02 (matches Coq: Theorem COMPLY_001_02)
 (assert (forall ((ts TransportSecurity)) (=> (= (is_hipaa_transport ts) true) (= ts TLS13)))) ; COMPLY_001_02
 
 ; COMPLY_001_03 (matches Coq: Theorem COMPLY_001_03)
-(assert (= true true)) ; COMPLY_001_03 [untranslatable]
+(assert (forall ((role Role)) (forall ((cat PHICategory)) (=> (= (can_access role cat) false) (not (= (can_access role cat) true)))))) ; COMPLY_001_03
 
 ; COMPLY_001_04 (matches Coq: Theorem COMPLY_001_04)
-(assert (= true true)) ; COMPLY_001_04 [untranslatable]
+(assert (forall ((log list AuditEntry)) (forall ((user_id Int) (phi_id Int) (timestamp Int) (action Int) (success Bool)) (let ((new_log (access_with_audit log user_id phi_id timestamp action success))) (= (audit_exists_for new_log user_id phi_id) true))))) ; COMPLY_001_04
 
 ; COMPLY_001_05 (matches Coq: Theorem COMPLY_001_05)
-(assert (= true true)) ; COMPLY_001_05 [untranslatable]
+(assert (forall ((role Role)) (forall ((requested list PHICategory)) (forall ((cat PHICategory)) (=> (= (In cat (minimum_necessary_access role requested)) true) (= (can_access role cat) true)))))) ; COMPLY_001_05
 
 ; COMPLY_001_06 (matches Coq: Theorem COMPLY_001_06)
-(assert (= true true)) ; COMPLY_001_06 [untranslatable]
+(assert (forall ((phi PHIRecord)) (and (=> (= (can_disclose phi) true) (= (phi_consent_documented phi) true)) (=> (= (phi_consent_documented phi) true) (= (can_disclose phi) true))))) ; COMPLY_001_06
 
 ; COMPLY_001_07 (matches Coq: Theorem COMPLY_001_07)
-(assert (= true true)) ; COMPLY_001_07 [untranslatable]
+(assert (forall ((b BreachEvent)) (=> (= (breach_detected_timely b) true) (<= (- (breach_detected_time b) (breach_occurred_time b)) breach_detection_limit)))) ; COMPLY_001_07
 
 ; COMPLY_001_08 (matches Coq: Theorem COMPLY_001_08)
-(assert (= true true)) ; COMPLY_001_08 [untranslatable]
+(assert (forall ((role Role)) (forall ((cat PHICategory)) (=> (= (authorized_modification role cat) true) (and (= (can_access role cat) true) (or (= role Physician) (= role Emergency))))))) ; COMPLY_001_08
 
 ; COMPLY_001_09 (matches Coq: Theorem COMPLY_001_09)
-(assert (= true true)) ; COMPLY_001_09 [untranslatable]
+(assert (forall ((d DisposalRecord)) (=> (= (is_secure_disposal d) true) (or (= (disposal_method d) 1) (= (disposal_method d) 2) (and (= (disposal_method d) 0) (>= (disposal_passes d) 3)))))) ; COMPLY_001_09
 
 ; COMPLY_001_10 (matches Coq: Theorem COMPLY_001_10)
-(assert (= true true)) ; COMPLY_001_10 [untranslatable]
+(assert (forall ((auth AuthState)) (=> (= (is_mfa auth) true) (>= (length (auth_factors auth)) 2)))) ; COMPLY_001_10
 
 ; COMPLY_001_11 (matches Coq: Theorem COMPLY_001_11)
-(assert (= true true)) ; COMPLY_001_11 [untranslatable]
+(assert (forall ((current_time Int) (last_activity Int)) (=> (> (- current_time last_activity) session_timeout) (= (session_expired current_time last_activity) true)))) ; COMPLY_001_11
 
 ; COMPLY_001_12 (matches Coq: Theorem COMPLY_001_12)
-(assert (= true true)) ; COMPLY_001_12 [untranslatable]
+(assert (forall ((s Session)) (forall ((current_time Int)) (=> (= (session_is_active s) true) (=> (> (- current_time (session_last_activity s)) session_timeout) (= (session_is_active (check_and_terminate current_time s)) false)))))) ; COMPLY_001_12
 
 ; COMPLY_001_13 (matches Coq: Theorem COMPLY_001_13)
-(assert (= true true)) ; COMPLY_001_13 [untranslatable]
+(assert (forall ((users list) (uid Int) (r1 Role) (r2 Role)) (=> (= (all_unique_ids users) true) (=> (= (In (mk-tuple uid r1) users) true) (=> (= (In (mk-tuple uid r2) users) true) (= r1 r2)))))) ; COMPLY_001_13
 
 ; COMPLY_001_14 (matches Coq: Theorem COMPLY_001_14)
-(assert (= true true)) ; COMPLY_001_14 [untranslatable]
+(assert (forall ((log list AuditEntry)) (forall ((user_id Int) (phi_id Int) (timestamp Int) (cat PHICategory)) (let ((new_log (emergency_access log user_id phi_id timestamp))) (and (= (audit_exists_for new_log user_id phi_id) true) (= (can_access Emergency cat) true)))))) ; COMPLY_001_14
 
 ; COMPLY_001_15 (matches Coq: Theorem COMPLY_001_15)
-(assert (= true true)) ; COMPLY_001_15 [untranslatable]
+(assert (forall ((t Transmission)) (=> (= (transmission_secure t) true) (and (= (trans_security t) TLS13) (= (phi_encryption (trans_phi t)) EncryptedAES256) (= (trans_verified t) true))))) ; COMPLY_001_15
 
 ; Verify all assertions are satisfiable
 (check-sat)

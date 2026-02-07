@@ -142,79 +142,79 @@
   true)
 
 ; wifi_requires_wpa (matches Coq: Theorem wifi_requires_wpa)
-(assert (= true true)) ; wifi_requires_wpa [untranslatable]
+(assert (forall ((c WirelessConnection)) (=> (= (conn_protocol c) WiFi) (=> (= (protocol_secure c) true) (or (= (conn_security c) WPA3) (= (conn_security c) WPA2)))))) ; wifi_requires_wpa
 
 ; secure_protocol_encrypted (matches Coq: Theorem secure_protocol_encrypted)
-(assert (= true true)) ; secure_protocol_encrypted [untranslatable]
+(assert (forall ((c WirelessConnection)) (=> (= (well_formed_wireless c) true) (=> (= (protocol_secure c) true) (= (conn_encrypted c) true))))) ; secure_protocol_encrypted
 
 ; secure_protocol_authenticated (matches Coq: Theorem secure_protocol_authenticated)
-(assert (= true true)) ; secure_protocol_authenticated [untranslatable]
+(assert (forall ((c WirelessConnection)) (=> (= (well_formed_wireless c) true) (=> (= (protocol_secure c) true) (= (conn_authenticated c) true))))) ; secure_protocol_authenticated
 
 ; bluetooth_uses_secure_ble (matches Coq: Theorem bluetooth_uses_secure_ble)
-(assert (= true true)) ; bluetooth_uses_secure_ble [untranslatable]
+(assert (forall ((c WirelessConnection)) (=> (= (conn_protocol c) Bluetooth) (=> (= (protocol_secure c) true) (= (conn_security c) SecureBLE))))) ; bluetooth_uses_secure_ble
 
 ; nfc_uses_secure_nfc (matches Coq: Theorem nfc_uses_secure_nfc)
-(assert (= true true)) ; nfc_uses_secure_nfc [untranslatable]
+(assert (forall ((c WirelessConnection)) (=> (= (conn_protocol c) NFC) (=> (= (protocol_secure c) true) (= (conn_security c) SecureNFC))))) ; nfc_uses_secure_nfc
 
 ; bluetooth_pairing_authenticated (matches Coq: Theorem bluetooth_pairing_authenticated)
-(assert (= true true)) ; bluetooth_pairing_authenticated [untranslatable]
+(assert (forall ((bp BluetoothPairing)) (=> (= (bt_pairing_authenticated bp) true) (= (bt_authenticated bp) true)))) ; bluetooth_pairing_authenticated
 
 ; wifi_connection_encrypted_thm (matches Coq: Theorem wifi_connection_encrypted_thm)
-(assert (= true true)) ; wifi_connection_encrypted_thm [untranslatable]
+(assert (forall ((wc WiFiConnection)) (=> (= (wifi_connection_encrypted wc) true) (= (wifi_encrypted wc) true)))) ; wifi_connection_encrypted_thm
 
 ; nfc_range_limited_thm (matches Coq: Theorem nfc_range_limited_thm)
-(assert (= true true)) ; nfc_range_limited_thm [untranslatable]
+(assert (forall ((tx NFCTransaction)) (=> (= (nfc_range_limited tx) true) (<= (nfc_range_cm tx) 10)))) ; nfc_range_limited_thm
 
 ; uwb_distance_accurate_thm (matches Coq: Theorem uwb_distance_accurate_thm)
-(assert (= true true)) ; uwb_distance_accurate_thm [untranslatable]
+(assert (forall ((ur UWBRanging)) (=> (= (uwb_distance_accurate ur) true) (<= (uwb_error_cm ur) (uwb_max_error_cm ur))))) ; uwb_distance_accurate_thm
 
 ; bluetooth_data_encrypted (matches Coq: Theorem bluetooth_data_encrypted)
-(assert (= true true)) ; bluetooth_data_encrypted [untranslatable]
+(assert (forall ((td BTDataTransfer)) (=> (= (bt_data_is_encrypted td) true) (= (bt_data_encrypted td) true)))) ; bluetooth_data_encrypted
 
 ; wifi_password_not_stored_plaintext (matches Coq: Theorem wifi_password_not_stored_plaintext)
-(assert (= true true)) ; wifi_password_not_stored_plaintext [untranslatable]
+(assert (forall ((wc WiFiConnection)) (=> (= (wifi_password_secure wc) true) (= (wifi_password_stored_plaintext wc) false)))) ; wifi_password_not_stored_plaintext
 
 ; airdrop_permission_required (matches Coq: Theorem airdrop_permission_required)
-(assert (= true true)) ; airdrop_permission_required [untranslatable]
+(assert (forall ((a AirDropSession)) (=> (= (airdrop_permitted a) true) (= (airdrop_permission_granted a) true)))) ; airdrop_permission_required
 
 ; bluetooth_service_discovery_bounded (matches Coq: Theorem bluetooth_service_discovery_bounded)
-(assert (= true true)) ; bluetooth_service_discovery_bounded [untranslatable]
+(assert (forall ((sd BTServiceDiscovery)) (=> (= (bt_discovery_bounded sd) true) (<= (length (bt_services_found sd)) (bt_max_services sd))))) ; bluetooth_service_discovery_bounded
 
 ; wifi_scanning_throttled (matches Coq: Theorem wifi_scanning_throttled)
-(assert (= true true)) ; wifi_scanning_throttled [untranslatable]
+(assert (forall ((ws WiFiScan)) (=> (= (wifi_scan_throttled ws) true) (>= (scan_interval_ms ws) (scan_min_interval_ms ws))))) ; wifi_scanning_throttled
 
 ; nfc_transaction_atomic_thm (matches Coq: Theorem nfc_transaction_atomic_thm)
-(assert (= true true)) ; nfc_transaction_atomic_thm [untranslatable]
+(assert (forall ((tx NFCTransaction)) (=> (= (nfc_transaction_atomic tx) true) (= (nfc_atomic tx) true)))) ; nfc_transaction_atomic_thm
 
 ; uwb_anchor_validated (matches Coq: Theorem uwb_anchor_validated)
-(assert (= true true)) ; uwb_anchor_validated [untranslatable]
+(assert (forall ((a UWBAnchor)) (=> (= (uwb_anchor_is_validated a) true) (= (anchor_validated a) true)))) ; uwb_anchor_validated
 
 ; bluetooth_connection_timeout (matches Coq: Theorem bluetooth_connection_timeout)
-(assert (= true true)) ; bluetooth_connection_timeout [untranslatable]
+(assert (forall ((bc BTConnection)) (=> (= (bt_connection_has_timeout bc) true) (<= (bt_conn_timeout_ms bc) (bt_conn_max_timeout_ms bc))))) ; bluetooth_connection_timeout
 
 ; wifi_roaming_seamless (matches Coq: Theorem wifi_roaming_seamless)
-(assert (= true true)) ; wifi_roaming_seamless [untranslatable]
+(assert (forall ((wr WiFiRoaming)) (=> (= (wifi_roaming_is_seamless wr) true) (= (roaming_seamless wr) true)))) ; wifi_roaming_seamless
 
 ; nfc_emulation_authorized (matches Coq: Theorem nfc_emulation_authorized)
-(assert (= true true)) ; nfc_emulation_authorized [untranslatable]
+(assert (forall ((ne NFCEmulation)) (=> (= (nfc_emulation_is_authorized ne) true) (= (nfc_emu_authorized ne) true)))) ; nfc_emulation_authorized
 
 ; wireless_coexistence_managed (matches Coq: Theorem wireless_coexistence_managed)
-(assert (= true true)) ; wireless_coexistence_managed [untranslatable]
+(assert (forall ((wc WirelessCoexistence)) (=> (= (coexistence_is_managed wc) true) (= (coexistence_managed wc) true)))) ; wireless_coexistence_managed
 
 ; uwb_uses_secure_uwb (matches Coq: Theorem uwb_uses_secure_uwb)
-(assert (= true true)) ; uwb_uses_secure_uwb [untranslatable]
+(assert (forall ((c WirelessConnection)) (=> (= (conn_protocol c) UWB) (=> (= (protocol_secure c) true) (= (conn_security c) SecureUWB))))) ; uwb_uses_secure_uwb
 
 ; airdrop_is_encrypted (matches Coq: Theorem airdrop_is_encrypted)
-(assert (= true true)) ; airdrop_is_encrypted [untranslatable]
+(assert (forall ((a AirDropSession)) (=> (= (airdrop_permitted a) true) (= (airdrop_encrypted a) true)))) ; airdrop_is_encrypted
 
 ; bluetooth_connection_timeout_positive (matches Coq: Theorem bluetooth_connection_timeout_positive)
-(assert (= true true)) ; bluetooth_connection_timeout_positive [untranslatable]
+(assert (forall ((bc BTConnection)) (=> (= (bt_connection_has_timeout bc) true) (> (bt_conn_timeout_ms bc) 0)))) ; bluetooth_connection_timeout_positive
 
 ; wifi_roaming_preserves_encryption (matches Coq: Theorem wifi_roaming_preserves_encryption)
-(assert (= true true)) ; wifi_roaming_preserves_encryption [untranslatable]
+(assert (forall ((wr WiFiRoaming)) (=> (= (wifi_roaming_is_seamless wr) true) (= (roaming_encrypted wr) true)))) ; wifi_roaming_preserves_encryption
 
 ; coexistence_interference_bounded (matches Coq: Theorem coexistence_interference_bounded)
-(assert (= true true)) ; coexistence_interference_bounded [untranslatable]
+(assert (forall ((wc WirelessCoexistence)) (=> (= (coexistence_is_managed wc) true) (<= (interference_level wc) (max_interference wc))))) ; coexistence_interference_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)

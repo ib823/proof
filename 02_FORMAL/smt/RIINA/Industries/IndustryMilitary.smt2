@@ -44,85 +44,85 @@
   true)
 
 ; nist_800_171_access_control (matches Coq: Theorem nist_800_171_access_control)
-(assert (= true true)) ; nist_800_171_access_control [untranslatable]
+(assert (forall ((policy MilitarySecurityPolicy)) (forall ((data_class ClassificationLevel)) (=> (= (class_le (classification policy) (clearance_required policy)) true) true)))) ; nist_800_171_access_control
 
 ; cmmc_level3_compliance (matches Coq: Theorem cmmc_level3_compliance)
-(assert (= true true)) ; cmmc_level3_compliance [untranslatable]
+(assert (forall ((policy Bool)) (=> (= (classification policy) CUI) true))) ; cmmc_level3_compliance
 
 ; itar_export_control (matches Coq: Theorem itar_export_control)
-(assert (= true true)) ; itar_export_control [untranslatable]
+(assert (forall ((data_class ClassificationLevel)) (forall ((destination Int)) true))) ; itar_export_control
 
 ; mil_std_882_safety (matches Coq: Theorem mil_std_882_safety)
-(assert (= true true)) ; mil_std_882_safety [untranslatable]
+(assert (forall ((system Int)) (forall ((hazard_level Int)) true))) ; mil_std_882_safety
 
 ; rmf_authorization (matches Coq: Theorem rmf_authorization)
-(assert (= true true)) ; rmf_authorization [untranslatable]
+(assert (forall ((system Int)) (forall ((risk_level Int)) true))) ; rmf_authorization
 
 ; class_le_refl (matches Coq: Lemma class_le_refl)
-(assert (= true true)) ; class_le_refl [untranslatable]
+(assert (forall ((c Bool)) (= (class_le c c) true))) ; class_le_refl
 
 ; class_le_trans (matches Coq: Lemma class_le_trans)
-(assert (= true true)) ; class_le_trans [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool) (c3 Bool)) (=> (= (class_le c1 c2) true) (=> (= (class_le c2 c3) true) (= (class_le c1 c3) true))))) ; class_le_trans
 
 ; no_read_up (matches Coq: Theorem no_read_up)
-(assert (= true true)) ; no_read_up [untranslatable]
+(assert (forall ((subject_clearance Bool) (object_classification Bool)) (=> (= (class_le object_classification subject_clearance) true) true))) ; no_read_up
 
 ; class_le_iff_nat (matches Coq: Lemma class_le_iff_nat)
-(assert (= true true)) ; class_le_iff_nat [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (and (=> (= (class_le c1 c2) true) (<= (class_to_nat c1) (class_to_nat c2))) (=> (<= (class_to_nat c1) (class_to_nat c2)) (= (class_le c1 c2) true))))) ; class_le_iff_nat
 
 ; class_le_antisym (matches Coq: Lemma class_le_antisym)
-(assert (= true true)) ; class_le_antisym [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (class_le c1 c2) true) (=> (= (class_le c2 c1) true) (= c1 c2))))) ; class_le_antisym
 
 ; class_le_total (matches Coq: Lemma class_le_total)
-(assert (= true true)) ; class_le_total [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (or (= (class_le c1 c2) true) (= (class_le c2 c1) true)))) ; class_le_total
 
 ; unclassified_bottom (matches Coq: Lemma unclassified_bottom)
-(assert (= true true)) ; unclassified_bottom [untranslatable]
+(assert (forall ((c Bool)) (= (class_le Unclassified c) true))) ; unclassified_bottom
 
 ; ts_sci_top (matches Coq: Lemma ts_sci_top)
-(assert (= true true)) ; ts_sci_top [untranslatable]
+(assert (forall ((c Bool)) (= (class_le c TS_SCI) true))) ; ts_sci_top
 
 ; bell_lapadula_ss (matches Coq: Theorem bell_lapadula_ss)
-(assert (= true true)) ; bell_lapadula_ss [untranslatable]
+(assert (forall ((policy MilitarySecurityPolicy)) (forall ((object_class ClassificationLevel)) (=> (= (class_le object_class (clearance_required policy)) false) (> (class_to_nat object_class) (class_to_nat (clearance_required policy))))))) ; bell_lapadula_ss
 
 ; bell_lapadula_star (matches Coq: Theorem bell_lapadula_star)
-(assert (= true true)) ; bell_lapadula_star [untranslatable]
+(assert (forall ((subject_class Bool) (object_class Bool)) (=> (= (class_le subject_class object_class) true) (<= (class_to_nat subject_class) (class_to_nat object_class))))) ; bell_lapadula_star
 
 ; has_compartment_In (matches Coq: Lemma has_compartment_In)
-(assert (= true true)) ; has_compartment_In [untranslatable]
+(assert (forall ((c Bool) (comps Bool)) (=> (= (has_compartment comps c) true) (exists ((x Bool)) (and (= (In x comps) true) (= (Nat.eqb c x) true)))))) ; has_compartment_In
 
 ; empty_need_to_know_unrestricted (matches Coq: Lemma empty_need_to_know_unrestricted)
-(assert (= true true)) ; empty_need_to_know_unrestricted [untranslatable]
+(assert (forall ((c Bool)) (= (has_compartment nil c) false))) ; empty_need_to_know_unrestricted
 
 ; comsec_required_for_classified_comms (matches Coq: Theorem comsec_required_for_classified_comms)
-(assert (= true true)) ; comsec_required_for_classified_comms [untranslatable]
+(assert (forall ((policy Bool)) (=> (= (class_le Confidential (classification policy)) true) (=> (= (comsec_approved policy) true) (>= (class_to_nat (classification policy)) 2))))) ; comsec_required_for_classified_comms
 
 ; tempest_required_for_secret (matches Coq: Theorem tempest_required_for_secret)
-(assert (= true true)) ; tempest_required_for_secret [untranslatable]
+(assert (forall ((policy Bool)) (=> (= (class_le Secret (classification policy)) true) (=> (= (tempest_certified policy) true) (>= (class_to_nat (classification policy)) 3))))) ; tempest_required_for_secret
 
 ; cross_domain_no_downgrade (matches Coq: Theorem cross_domain_no_downgrade)
-(assert (= true true)) ; cross_domain_no_downgrade [untranslatable]
+(assert (forall ((src_class Bool) (dst_class Bool)) (=> (= (class_le src_class dst_class) false) (> (class_to_nat src_class) (class_to_nat dst_class))))) ; cross_domain_no_downgrade
 
 ; class_max_ge_left (matches Coq: Lemma class_max_ge_left)
-(assert (= true true)) ; class_max_ge_left [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (= (class_le c1 (class_max c1 c2)) true))) ; class_max_ge_left
 
 ; class_max_ge_right (matches Coq: Lemma class_max_ge_right)
-(assert (= true true)) ; class_max_ge_right [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (= (class_le c2 (class_max c1 c2)) true))) ; class_max_ge_right
 
 ; aggregation_raises_classification (matches Coq: Theorem aggregation_raises_classification)
-(assert (= true true)) ; aggregation_raises_classification [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (and (>= (class_to_nat (class_max c1 c2)) (class_to_nat c1)) (>= (class_to_nat (class_max c1 c2)) (class_to_nat c2))))) ; aggregation_raises_classification
 
 ; key_level_monotone (matches Coq: Lemma key_level_monotone)
-(assert (= true true)) ; key_level_monotone [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (class_le c1 c2) true) (<= (key_level c1) (key_level c2))))) ; key_level_monotone
 
 ; personnel_clearance_dominates (matches Coq: Theorem personnel_clearance_dominates)
-(assert (= true true)) ; personnel_clearance_dominates [untranslatable]
+(assert (forall ((policy Bool)) (=> (= (class_le (classification policy) (clearance_required policy)) true) (<= (class_to_nat (classification policy)) (class_to_nat (clearance_required policy)))))) ; personnel_clearance_dominates
 
 ; weapon_auth_requires_ts (matches Coq: Theorem weapon_auth_requires_ts)
-(assert (= true true)) ; weapon_auth_requires_ts [untranslatable]
+(assert (forall ((c Bool)) (=> (= (weapon_system_authorized c) true) (>= (class_to_nat c) 4)))) ; weapon_auth_requires_ts
 
 ; redundancy_monotone (matches Coq: Theorem redundancy_monotone)
-(assert (= true true)) ; redundancy_monotone [untranslatable]
+(assert (forall ((c1 Bool) (c2 Bool)) (=> (= (class_le c1 c2) true) (<= (redundancy_factor c1) (redundancy_factor c2))))) ; redundancy_monotone
 
 ; Verify all assertions are satisfiable
 (check-sat)

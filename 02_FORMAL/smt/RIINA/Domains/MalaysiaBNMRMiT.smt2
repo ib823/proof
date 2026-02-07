@@ -65,88 +65,88 @@
   true)
 
 ; rmit_domain_1 (matches Coq: Theorem rmit_domain_1)
-(assert (= true true)) ; rmit_domain_1 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_board_oversight fi) true) (= (governance_compliant fi) true)))) ; rmit_domain_1
 
 ; rmit_domain_2 (matches Coq: Theorem rmit_domain_2)
-(assert (= true true)) ; rmit_domain_2 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_risk_framework fi) true) (= (risk_framework_established fi) true)))) ; rmit_domain_2
 
 ; rmit_domain_3 (matches Coq: Theorem rmit_domain_3)
-(assert (= true true)) ; rmit_domain_3 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (<= (fi_min_cyber_controls fi) (fi_cyber_controls fi)) (= (cyber_controls_adequate fi) true)))) ; rmit_domain_3
 
 ; rmit_domain_4 (matches Coq: Theorem rmit_domain_4)
-(assert (= true true)) ; rmit_domain_4 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_ops_resilience_tested fi) true) (= (ops_resilience_verified fi) true)))) ; rmit_domain_4
 
 ; rmit_domain_5 (matches Coq: Theorem rmit_domain_5)
-(assert (= true true)) ; rmit_domain_5 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_audit_completed fi) true) (= (audit_compliant fi) true)))) ; rmit_domain_5
 
 ; rmit_domain_6_onprem (matches Coq: Theorem rmit_domain_6_onprem)
-(assert (= true true)) ; rmit_domain_6_onprem [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_cloud_model fi) OnPremise) (= (cloud_compliant fi) true)))) ; rmit_domain_6_onprem
 
 ; rmit_domain_6_cloud (matches Coq: Theorem rmit_domain_6_cloud)
-(assert (= true true)) ; rmit_domain_6_cloud [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (not (= (fi_cloud_model fi) OnPremise)) (=> (= (fi_cloud_risk_assessed fi) true) (= (cloud_compliant fi) true))))) ; rmit_domain_6_cloud
 
 ; rmit_domain_7 (matches Coq: Theorem rmit_domain_7)
-(assert (= true true)) ; rmit_domain_7 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_third_party_assessed fi) true) (= (third_party_compliant fi) true)))) ; rmit_domain_7
 
 ; rmit_domain_8 (matches Coq: Theorem rmit_domain_8)
-(assert (= true true)) ; rmit_domain_8 [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_bcp_tested fi) true) (= (bcp_compliant fi) true)))) ; rmit_domain_8
 
 ; rmit_composition (matches Coq: Theorem rmit_composition)
-(assert (= true true)) ; rmit_composition [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (governance_compliant fi) true) (=> (= (risk_framework_established fi) true) (=> (= (cyber_controls_adequate fi) true) (=> (= (ops_resilience_verified fi) true) (=> (= (audit_compliant fi) true) (=> (= (cloud_compliant fi) true) (=> (= (third_party_compliant fi) true) (=> (= (bcp_compliant fi) true) (= (rmit_fully_compliant fi) true))))))))))) ; rmit_composition
 
 ; fi_type_coverage (matches Coq: Theorem fi_type_coverage)
-(assert (= true true)) ; fi_type_coverage [untranslatable]
+(assert (forall ((ft FIType)) (= (In ft all_fi_types) true))) ; fi_type_coverage
 
 ; cyber_controls_strengthened (matches Coq: Theorem cyber_controls_strengthened)
-(assert (= true true)) ; cyber_controls_strengthened [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (forall ((extra Int)) (=> (= (cyber_controls_adequate fi) true) (<= (fi_min_cyber_controls fi) (+ (fi_cyber_controls fi) extra)))))) ; cyber_controls_strengthened
 
 ; cloud_deployment_coverage (matches Coq: Theorem cloud_deployment_coverage)
-(assert (= true true)) ; cloud_deployment_coverage [untranslatable]
+(assert (forall ((cd CloudDeployment)) (= (In cd all_cloud_deployments) true))) ; cloud_deployment_coverage
 
 ; on_premise_always_compliant (matches Coq: Theorem on_premise_always_compliant)
-(assert (= true true)) ; on_premise_always_compliant [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (fi_cloud_model fi) OnPremise) (= (cloud_compliant fi) true)))) ; on_premise_always_compliant
 
 ; rmit_full_implies_governance (matches Coq: Theorem rmit_full_implies_governance)
-(assert (= true true)) ; rmit_full_implies_governance [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (governance_compliant fi) true)))) ; rmit_full_implies_governance
 
 ; rmit_full_implies_risk (matches Coq: Theorem rmit_full_implies_risk)
-(assert (= true true)) ; rmit_full_implies_risk [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (risk_framework_established fi) true)))) ; rmit_full_implies_risk
 
 ; rmit_full_implies_cyber (matches Coq: Theorem rmit_full_implies_cyber)
-(assert (= true true)) ; rmit_full_implies_cyber [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (cyber_controls_adequate fi) true)))) ; rmit_full_implies_cyber
 
 ; rmit_full_implies_ops (matches Coq: Theorem rmit_full_implies_ops)
-(assert (= true true)) ; rmit_full_implies_ops [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (ops_resilience_verified fi) true)))) ; rmit_full_implies_ops
 
 ; rmit_full_implies_audit (matches Coq: Theorem rmit_full_implies_audit)
-(assert (= true true)) ; rmit_full_implies_audit [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (audit_compliant fi) true)))) ; rmit_full_implies_audit
 
 ; rmit_full_implies_cloud (matches Coq: Theorem rmit_full_implies_cloud)
-(assert (= true true)) ; rmit_full_implies_cloud [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (cloud_compliant fi) true)))) ; rmit_full_implies_cloud
 
 ; rmit_full_implies_third_party (matches Coq: Theorem rmit_full_implies_third_party)
-(assert (= true true)) ; rmit_full_implies_third_party [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (third_party_compliant fi) true)))) ; rmit_full_implies_third_party
 
 ; rmit_full_implies_bcp (matches Coq: Theorem rmit_full_implies_bcp)
-(assert (= true true)) ; rmit_full_implies_bcp [untranslatable]
+(assert (forall ((fi FinancialInstitution)) (=> (= (rmit_fully_compliant fi) true) (= (bcp_compliant fi) true)))) ; rmit_full_implies_bcp
 
 ; bnm_incident_reporting (matches Coq: Theorem bnm_incident_reporting)
-(assert (= true true)) ; bnm_incident_reporting [untranslatable]
+(assert (forall ((inc BNMIncident)) (=> (<= (bnm_inc_reported inc) (+ (bnm_inc_detected inc) 6)) (= (bnm_incident_reported_timely inc) true)))) ; bnm_incident_reporting
 
 ; bnm_late_incident_violation (matches Coq: Theorem bnm_late_incident_violation)
-(assert (= true true)) ; bnm_late_incident_violation [untranslatable]
+(assert (forall ((inc BNMIncident)) (=> (< (+ (bnm_inc_detected inc) bnm_incident_deadline) (bnm_inc_reported inc)) (not (= (bnm_incident_reported_timely inc) true))))) ; bnm_late_incident_violation
 
 ; outsourcing_risk_managed (matches Coq: Theorem outsourcing_risk_managed)
-(assert (= true true)) ; outsourcing_risk_managed [untranslatable]
+(assert (forall ((oa OutsourcingArrangement)) (=> (= (oa_risk_assessed oa) true) (=> (=> (= (oa_material oa) true) (= (oa_bnm_notified oa) true)) (=> (= (oa_exit_strategy oa) true) (= (outsourcing_compliant oa) true)))))) ; outsourcing_risk_managed
 
 ; non_material_no_notification (matches Coq: Theorem non_material_no_notification)
-(assert (= true true)) ; non_material_no_notification [untranslatable]
+(assert (forall ((oa OutsourcingArrangement)) (=> (= (oa_material oa) false) (=> (= (oa_risk_assessed oa) true) (=> (= (oa_exit_strategy oa) true) (= (outsourcing_compliant oa) true)))))) ; non_material_no_notification
 
 ; tech_refresh_valid (matches Coq: Theorem tech_refresh_valid)
-(assert (= true true)) ; tech_refresh_valid [untranslatable]
+(assert (forall ((trs TechRefreshStatus)) (forall ((t Int)) (=> (<= t (+ (tr_last_refresh trs) (tr_max_age trs))) (= (tech_refresh_current trs t) true))))) ; tech_refresh_valid
 
 ; tech_refresh_expired (matches Coq: Theorem tech_refresh_expired)
-(assert (= true true)) ; tech_refresh_expired [untranslatable]
+(assert (forall ((trs TechRefreshStatus)) (forall ((t Int)) (=> (< (+ (tr_last_refresh trs) (tr_max_age trs)) t) (not (= (tech_refresh_current trs t) true)))))) ; tech_refresh_expired
 
 ; Verify all assertions are satisfiable
 (check-sat)

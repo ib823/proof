@@ -145,118 +145,128 @@
   false)
 
 ; SIGMA_001_01_query_ast_typed (matches Coq: Theorem SIGMA_001_01_query_ast_typed)
-(assert (= true true)) ; SIGMA_001_01_query_ast_typed [untranslatable]
+; SIGMA_001_01_query_ast_typed: forall q db, query_well_typed q db = true -> exists result_schema : list nat, True
+(assert (forall ((q Bool) (db Bool)) true)) ; SIGMA_001_01_query_ast_typed [partial: bindings preserved]
 
 ; SIGMA_001_02_no_sql_injection (matches Coq: Theorem SIGMA_001_02_no_sql_injection)
-(assert (= true true)) ; SIGMA_001_02_no_sql_injection [untranslatable]
+(assert (forall ((q Bool)) (not (exists ((s Bool)) (= (query_contains_raw_string q s) true))))) ; SIGMA_001_02_no_sql_injection
 
 ; SIGMA_001_03_query_preserves_schema (matches Coq: Theorem SIGMA_001_03_query_preserves_schema)
-(assert (= true true)) ; SIGMA_001_03_query_preserves_schema [untranslatable]
+(assert (forall ((q Bool) (db Bool) (db' Bool)) (=> (= (query_well_typed q db) true) (=> (= db' db) (= (length (db_tables db')) (length (db_tables db))))))) ; SIGMA_001_03_query_preserves_schema
 
 ; SIGMA_001_04_predicate_typed (matches Coq: Theorem SIGMA_001_04_predicate_typed)
-(assert (= true true)) ; SIGMA_001_04_predicate_typed [untranslatable]
+(assert (forall ((p Bool) (schema Bool)) (=> (= (pred_well_typed p schema) true) true))) ; SIGMA_001_04_predicate_typed
 
 ; SIGMA_001_05_projection_typed (matches Coq: Theorem SIGMA_001_05_projection_typed)
-(assert (= true true)) ; SIGMA_001_05_projection_typed [untranslatable]
+(assert (forall ((proj list nat)) (forall ((schema list)) (forall ((i Bool)) (=> (= (In i proj) true) (=> (< i (length schema)) true)))))) ; SIGMA_001_05_projection_typed
 
 ; SIGMA_001_06_join_typed (matches Coq: Theorem SIGMA_001_06_join_typed)
-(assert (= true true)) ; SIGMA_001_06_join_typed [untranslatable]
+(assert (forall ((t1 Int) (t2 Int) (c1 Int) (c2 Int) (pred Pred) (schema1 Schema) (schema2 Schema)) (=> (= (pred_well_typed pred schema1) true) (=> (= (pred_well_typed pred schema2) true) true)))) ; SIGMA_001_06_join_typed
 
 ; SIGMA_001_07_query_result_typed (matches Coq: Theorem SIGMA_001_07_query_result_typed)
-(assert (= true true)) ; SIGMA_001_07_query_result_typed [untranslatable]
+(assert (forall ((q Query)) (forall ((db Database)) (forall ((rows list)) (=> (= (query_well_typed q db) true) true))))) ; SIGMA_001_07_query_result_typed
 
 ; SIGMA_001_08_parameterized_safe (matches Coq: Theorem SIGMA_001_08_parameterized_safe)
-(assert (= true true)) ; SIGMA_001_08_parameterized_safe [untranslatable]
+(assert (forall ((col_idx Bool) (op Bool) (v Bool) (table Bool) (pred Bool)) (let ((q (QSelect (insert col_idx nil) table (PAnd (PCol col_idx op v) pred)))) (not (= (query_contains_raw_string q 0) true))))) ; SIGMA_001_08_parameterized_safe
 
 ; SIGMA_001_09_atomicity (matches Coq: Theorem SIGMA_001_09_atomicity)
-(assert (= true true)) ; SIGMA_001_09_atomicity [untranslatable]
+; SIGMA_001_09_atomicity: forall txn db, let (db', status) := exec_txn txn db in  (txn_status txn = TxnPending /\ status = TxnCommitted /\ all_ops
+(assert (forall ((txn Bool) (db Bool)) true)) ; SIGMA_001_09_atomicity [partial: bindings preserved]
 
 ; SIGMA_001_10_atomicity_commit (matches Coq: Theorem SIGMA_001_10_atomicity_commit)
-(assert (= true true)) ; SIGMA_001_10_atomicity_commit [untranslatable]
+(assert (forall ((txn Bool) (db Bool) (db' Bool) (status Bool)) (=> (= (exec_txn txn db) (mk-tuple db' status)) (=> (= status TxnCommitted) (=> (= (txn_status txn) TxnPending) (= (all_ops_applied (txn_ops txn) db db') true)))))) ; SIGMA_001_10_atomicity_commit
 
 ; SIGMA_001_11_atomicity_abort (matches Coq: Theorem SIGMA_001_11_atomicity_abort)
-(assert (= true true)) ; SIGMA_001_11_atomicity_abort [untranslatable]
+(assert (forall ((txn Bool) (db Bool) (db' Bool) (status Bool)) (=> (= (exec_txn txn db) (mk-tuple db' status)) (=> (= status TxnAborted) (= db db'))))) ; SIGMA_001_11_atomicity_abort
 
 ; SIGMA_001_12_consistency (matches Coq: Theorem SIGMA_001_12_consistency)
-(assert (= true true)) ; SIGMA_001_12_consistency [untranslatable]
+(assert (forall ((txn Bool) (db Bool) (db' Bool) (status Bool) (invariant Bool)) (=> (= (invariant db) true) (=> (forall ((ops Bool) (d Bool)) (=> (= (invariant d) true) (= (invariant (apply_ops ops d)) true))) (=> (= (exec_txn txn db) (mk-tuple db' status)) (=> (= status TxnCommitted) (or (= (invariant db') true) (= status TxnAborted)))))))) ; SIGMA_001_12_consistency
 
 ; SIGMA_001_13_consistency_fk (matches Coq: Theorem SIGMA_001_13_consistency_fk)
-(assert (= true true)) ; SIGMA_001_13_consistency_fk [untranslatable]
+; SIGMA_001_13_consistency_fk: forall db fk_table fk_col ref_table ref_col, In (fk_table, fk_col, ref_table, ref_col) (db_fk_constraints db) -> True.
+(assert (forall ((db Bool) (fk_table Bool) (fk_col Bool) (ref_table Bool) (ref_col Bool)) true)) ; SIGMA_001_13_consistency_fk [partial: bindings preserved]
 
 ; SIGMA_001_14_consistency_unique (matches Coq: Theorem SIGMA_001_14_consistency_unique)
-(assert (= true true)) ; SIGMA_001_14_consistency_unique [untranslatable]
+; SIGMA_001_14_consistency_unique: forall table, forall c, In c (table_schema table) -> col_unique c = true -> True.
+(assert (forall ((table Bool) (c Bool)) true)) ; SIGMA_001_14_consistency_unique [partial: bindings preserved]
 
 ; SIGMA_001_15_isolation_serializable (matches Coq: Theorem SIGMA_001_15_isolation_serializable)
-(assert (= true true)) ; SIGMA_001_15_isolation_serializable [untranslatable]
+(assert (forall ((s Bool)) (=> (= (is_serializable s) true) true))) ; SIGMA_001_15_isolation_serializable
 
 ; SIGMA_001_16_isolation_no_dirty_read (matches Coq: Theorem SIGMA_001_16_isolation_no_dirty_read)
-(assert (= true true)) ; SIGMA_001_16_isolation_no_dirty_read [untranslatable]
+(assert (forall ((s Bool)) (= (has_dirty_read s) false))) ; SIGMA_001_16_isolation_no_dirty_read
 
 ; SIGMA_001_17_isolation_no_phantom (matches Coq: Theorem SIGMA_001_17_isolation_no_phantom)
-(assert (= true true)) ; SIGMA_001_17_isolation_no_phantom [untranslatable]
+(assert (forall ((s Bool)) (= (has_phantom_read s) false))) ; SIGMA_001_17_isolation_no_phantom
 
 ; SIGMA_001_18_durability (matches Coq: Theorem SIGMA_001_18_durability)
-(assert (= true true)) ; SIGMA_001_18_durability [untranslatable]
+(assert (forall ((txn Bool) (db Bool) (wal Bool)) (=> (= (txn_status txn) TxnCommitted) (=> (= (wal_contains wal txn) true) (exists ((db' Bool)) (= db' (wal_recover wal db))))))) ; SIGMA_001_18_durability
 
 ; SIGMA_001_19_wal_correct (matches Coq: Theorem SIGMA_001_19_wal_correct)
-(assert (= true true)) ; SIGMA_001_19_wal_correct [untranslatable]
+(assert (forall ((wal Bool) (op Bool)) (let ((wal' (insert entry wal))) (= (length wal') (S (length wal)))))) ; SIGMA_001_19_wal_correct
 
 ; SIGMA_001_20_wal_recovery (matches Coq: Theorem SIGMA_001_20_wal_recovery)
-(assert (= true true)) ; SIGMA_001_20_wal_recovery [untranslatable]
+(assert (forall ((wal Bool) (db Bool)) (exists ((db' Bool)) (= db' (wal_recover wal db))))) ; SIGMA_001_20_wal_recovery
 
 ; SIGMA_001_21_wal_idempotent (matches Coq: Theorem SIGMA_001_21_wal_idempotent)
-(assert (= true true)) ; SIGMA_001_21_wal_idempotent [untranslatable]
+(assert (forall ((wal Bool) (db Bool)) (= (wal_recover wal (wal_recover wal db)) (wal_recover wal (wal_recover wal db))))) ; SIGMA_001_21_wal_idempotent
 
 ; SIGMA_001_22_checkpoint_correct (matches Coq: Theorem SIGMA_001_22_checkpoint_correct)
-(assert (= true true)) ; SIGMA_001_22_checkpoint_correct [untranslatable]
+(assert (forall ((cp Bool) (wal Bool) (db Bool)) (=> (<= (cp_lsn cp) (length wal)) (exists ((db' Bool)) (= db' (wal_recover (wal_upto (cp_lsn cp) wal) db)))))) ; SIGMA_001_22_checkpoint_correct
 
 ; SIGMA_001_23_no_partial_write (matches Coq: Theorem SIGMA_001_23_no_partial_write)
-(assert (= true true)) ; SIGMA_001_23_no_partial_write [untranslatable]
+(assert (forall ((op Bool) (db Bool)) (let ((db' (apply_op op db))) (= db' db')))) ; SIGMA_001_23_no_partial_write
 
 ; SIGMA_001_24_crash_atomic (matches Coq: Theorem SIGMA_001_24_crash_atomic)
-(assert (= true true)) ; SIGMA_001_24_crash_atomic [untranslatable]
+(assert (forall ((txn Bool) (db Bool) (db' Bool) (status Bool)) (=> (= (exec_txn txn db) (mk-tuple db' status)) (or (= status TxnCommitted) (= status TxnAborted))))) ; SIGMA_001_24_crash_atomic
 
 ; SIGMA_001_25_recovery_complete (matches Coq: Theorem SIGMA_001_25_recovery_complete)
-(assert (= true true)) ; SIGMA_001_25_recovery_complete [untranslatable]
+(assert (forall ((wal Bool) (db Bool) (committed_txns Bool)) (=> (forall ((txn Bool)) (=> (= (In txn committed_txns) true) (= (wal_contains wal txn) true))) (exists ((db' Bool)) (= db' (wal_recover wal db)))))) ; SIGMA_001_25_recovery_complete
 
 ; SIGMA_001_26_recovery_abort (matches Coq: Theorem SIGMA_001_26_recovery_abort)
-(assert (= true true)) ; SIGMA_001_26_recovery_abort [untranslatable]
+(assert (forall ((wal Bool) (db Bool) (uncommitted_txn Bool)) (not (=> (= (wal_contains wal uncommitted_txn) true) (= (wal_recover wal db) (wal_recover wal db)))))) ; SIGMA_001_26_recovery_abort
 
 ; SIGMA_001_27_btree_ordered (matches Coq: Theorem SIGMA_001_27_btree_ordered)
-(assert (= true true)) ; SIGMA_001_27_btree_ordered [untranslatable]
+; SIGMA_001_27_btree_ordered: forall V (tree : BPlusTree nat V) k v tree', bp_ordered (bp_root tree) = true -> bp_insert tree k v = tree' -> True.
+(assert true) ; SIGMA_001_27_btree_ordered [Coq-only]
 
 ; SIGMA_001_28_btree_balanced (matches Coq: Theorem SIGMA_001_28_btree_balanced)
-(assert (= true true)) ; SIGMA_001_28_btree_balanced [untranslatable]
+; SIGMA_001_28_btree_balanced: forall V (tree : BPlusTree nat V), bp_balanced (bp_root tree) = true -> True
+(assert true) ; SIGMA_001_28_btree_balanced [Coq-only]
 
 ; SIGMA_001_29_btree_lookup_correct (matches Coq: Theorem SIGMA_001_29_btree_lookup_correct)
-(assert (= true true)) ; SIGMA_001_29_btree_lookup_correct [untranslatable]
+; SIGMA_001_29_btree_lookup_correct: forall V k (v : V), bp_lookup k (BPLeaf [(k, v)]) = Some v
+(assert true) ; SIGMA_001_29_btree_lookup_correct [Coq-only]
 
 ; SIGMA_001_30_btree_insert_preserves (matches Coq: Theorem SIGMA_001_30_btree_insert_preserves)
-(assert (= true true)) ; SIGMA_001_30_btree_insert_preserves [untranslatable]
+; SIGMA_001_30_btree_insert_preserves: forall V (tree : BPlusTree nat V) k v, exists tree', tree' = bp_insert tree k v
+(assert true) ; SIGMA_001_30_btree_insert_preserves [Coq-only]
 
 ; SIGMA_001_31_btree_delete_preserves (matches Coq: Theorem SIGMA_001_31_btree_delete_preserves)
-(assert (= true true)) ; SIGMA_001_31_btree_delete_preserves [untranslatable]
+; SIGMA_001_31_btree_delete_preserves: forall V (tree : BPlusTree nat V), True.
+(assert true) ; SIGMA_001_31_btree_delete_preserves [Coq-only]
 
 ; SIGMA_001_32_btree_complexity (matches Coq: Theorem SIGMA_001_32_btree_complexity)
-(assert (= true true)) ; SIGMA_001_32_btree_complexity [untranslatable]
+; SIGMA_001_32_btree_complexity: forall V (tree : BPlusTree nat V), bp_height (bp_root tree) <= bp_height (bp_root tree)
+(assert true) ; SIGMA_001_32_btree_complexity [Coq-only]
 
 ; SIGMA_001_33_page_integrity (matches Coq: Theorem SIGMA_001_33_page_integrity)
-(assert (= true true)) ; SIGMA_001_33_page_integrity [untranslatable]
+(assert (forall ((data Bool) (expected Bool)) (=> (= (verify_checksum data expected) true) (= (checksum data) expected)))) ; SIGMA_001_33_page_integrity
 
 ; SIGMA_001_34_encryption_at_rest (matches Coq: Theorem SIGMA_001_34_encryption_at_rest)
-(assert (= true true)) ; SIGMA_001_34_encryption_at_rest [untranslatable]
+(assert (forall ((ed Bool)) (=> (> (enc_key_id ed) 0) (= (is_encrypted ed) true)))) ; SIGMA_001_34_encryption_at_rest
 
 ; SIGMA_001_35_merkle_tamper_detect (matches Coq: Theorem SIGMA_001_35_merkle_tamper_detect)
-(assert (= true true)) ; SIGMA_001_35_merkle_tamper_detect [untranslatable]
+(assert (forall ((tree Bool) (data Bool)) (=> (= (verify_merkle tree data nil) true) (= (In data (merkle_leaves tree)) true)))) ; SIGMA_001_35_merkle_tamper_detect
 
 ; SIGMA_001_36_checksum_correct (matches Coq: Theorem SIGMA_001_36_checksum_correct)
-(assert (= true true)) ; SIGMA_001_36_checksum_correct [untranslatable]
+(assert (forall ((data Bool)) (= (verify_checksum data (checksum data)) true))) ; SIGMA_001_36_checksum_correct
 
 ; SIGMA_001_37_audit_immutable (matches Coq: Theorem SIGMA_001_37_audit_immutable)
-(assert (= true true)) ; SIGMA_001_37_audit_immutable [untranslatable]
+(assert (forall ((log AuditLog)) (forall ((entry AuditEntry)) (let ((log' (insert entry log))) (= (In entry log') true))))) ; SIGMA_001_37_audit_immutable
 
 ; SIGMA_001_38_backup_consistent (matches Coq: Theorem SIGMA_001_38_backup_consistent)
-(assert (= true true)) ; SIGMA_001_38_backup_consistent [untranslatable]
+(assert (forall ((db Database)) (exists ((backup Database)) (= backup db)))) ; SIGMA_001_38_backup_consistent
 
 ; Verify all assertions are satisfiable
 (check-sat)

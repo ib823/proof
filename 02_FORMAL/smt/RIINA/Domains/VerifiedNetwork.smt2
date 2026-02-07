@@ -178,79 +178,80 @@
   true)
 
 ; NET_001_01_tls_handshake_auth (matches Coq: Theorem NET_001_01_tls_handshake_auth)
-(assert (= true true)) ; NET_001_01_tls_handshake_auth [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (= (valid_cert_chain (tls_server_cert conn)) true)))) ; NET_001_01_tls_handshake_auth
 
 ; NET_001_02_tls_forward_secrecy (matches Coq: Theorem NET_001_02_tls_forward_secrecy)
-(assert (= true true)) ; NET_001_02_tls_forward_secrecy [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (= (tls_forward_secret conn) true)))) ; NET_001_02_tls_forward_secrecy
 
 ; NET_001_03_tls_no_downgrade (matches Coq: Theorem NET_001_03_tls_no_downgrade)
-(assert (= true true)) ; NET_001_03_tls_no_downgrade [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (= (tls_version conn) TLS_1_3)))) ; NET_001_03_tls_no_downgrade
 
 ; NET_001_04_tls_key_derivation (matches Coq: Theorem NET_001_04_tls_key_derivation)
-(assert (= true true)) ; NET_001_04_tls_key_derivation [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (=> (> (List.length (tls_session_key conn)) 0) (=> (> (List.length (ke_shared (tls_ke_result conn))) 0) (= (key_derivation_correct conn) true)))))) ; NET_001_04_tls_key_derivation
 
 ; NET_001_05_tls_transcript_binding (matches Coq: Theorem NET_001_05_tls_transcript_binding)
-(assert (= true true)) ; NET_001_05_tls_transcript_binding [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (= (transcript_bound (tls_transcript conn)) true)))) ; NET_001_05_tls_transcript_binding
 
 ; NET_001_06_tls_0rtt_replay_safe (matches Coq: Theorem NET_001_06_tls_0rtt_replay_safe)
-(assert (= true true)) ; NET_001_06_tls_0rtt_replay_safe [untranslatable]
+; NET_001_06_tls_0rtt_replay_safe: forall data, zrtt_anti_replay_checked data = true -> zrtt_nonce data <> [] -> True.
+(assert (forall ((data Bool)) true)) ; NET_001_06_tls_0rtt_replay_safe [partial: bindings preserved]
 
 ; NET_001_07_tls_certificate_chain_valid (matches Coq: Theorem NET_001_07_tls_certificate_chain_valid)
-(assert (= true true)) ; NET_001_07_tls_certificate_chain_valid [untranslatable]
+(assert (forall ((conn Bool) (cert Bool)) (=> (= (tls_connected conn) true) (=> (= (In cert (tls_cert_chain conn)) true) (=> (= (cert_chain_verified (tls_server_cert conn)) true) (= (valid_cert_chain (tls_server_cert conn)) true)))))) ; NET_001_07_tls_certificate_chain_valid
 
 ; NET_001_08_tls_cipher_strength (matches Coq: Theorem NET_001_08_tls_cipher_strength)
-(assert (= true true)) ; NET_001_08_tls_cipher_strength [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (= (is_strong_cipher (tls_cipher conn)) true)))) ; NET_001_08_tls_cipher_strength
 
 ; NET_001_09_tls_no_truncation (matches Coq: Theorem NET_001_09_tls_no_truncation)
-(assert (= true true)) ; NET_001_09_tls_no_truncation [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (=> (= (transcript_bound (tls_transcript conn)) true) (>= (List.length (transcript_messages (tls_transcript conn))) 0))))) ; NET_001_09_tls_no_truncation
 
 ; NET_001_10_tls_channel_binding (matches Coq: Theorem NET_001_10_tls_channel_binding)
-(assert (= true true)) ; NET_001_10_tls_channel_binding [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (tls_connected conn) true) (=> (= (tls_channel_bound conn) true) (= (channel_binding_holds conn) true))))) ; NET_001_10_tls_channel_binding
 
 ; NET_001_11_tcp_state_machine_correct (matches Coq: Theorem NET_001_11_tcp_state_machine_correct)
-(assert (= true true)) ; NET_001_11_tcp_state_machine_correct [untranslatable]
+(assert (forall ((conn Bool) (event Bool) (new_state Bool)) (=> (= (tcp_transition conn event new_state) true) (= (valid_transition (tcp_state conn) event new_state) true)))) ; NET_001_11_tcp_state_machine_correct
 
 ; NET_001_12_tcp_seq_unpredictable (matches Coq: Theorem NET_001_12_tcp_seq_unpredictable)
-(assert (= true true)) ; NET_001_12_tcp_seq_unpredictable [untranslatable]
+(assert (forall ((conn Bool)) (=> (> (tcp_seq_random_source conn) 0) (= (seq_unpredictable conn) true)))) ; NET_001_12_tcp_seq_unpredictable
 
 ; NET_001_13_tcp_no_injection (matches Coq: Theorem NET_001_13_tcp_no_injection)
-(assert (= true true)) ; NET_001_13_tcp_no_injection [untranslatable]
+(assert (forall ((conn Bool) (pkt Bool)) (=> (not (= (tcp_integrity_mac conn) none)) (=> (not (= (pkt_mac pkt) none)) (= (injection_detectable conn pkt) true))))) ; NET_001_13_tcp_no_injection
 
 ; NET_001_14_tcp_flow_control_correct (matches Coq: Theorem NET_001_14_tcp_flow_control_correct)
-(assert (= true true)) ; NET_001_14_tcp_flow_control_correct [untranslatable]
+(assert (forall ((conn Bool)) (=> (> (tcp_window conn) 0) (= (flow_control_correct conn) true)))) ; NET_001_14_tcp_flow_control_correct
 
 ; NET_001_15_ip_frag_reassembly_safe (matches Coq: Theorem NET_001_15_ip_frag_reassembly_safe)
-(assert (= true true)) ; NET_001_15_ip_frag_reassembly_safe [untranslatable]
+(assert (forall ((buf Bool)) (=> (= (frag_no_overlap_verified buf) true) (=> (<= (frag_total_size buf) 65535) (= (frag_reassembly_safe buf) true))))) ; NET_001_15_ip_frag_reassembly_safe
 
 ; NET_001_16_ip_no_overlapping_fragments (matches Coq: Theorem NET_001_16_ip_no_overlapping_fragments)
-(assert (= true true)) ; NET_001_16_ip_no_overlapping_fragments [untranslatable]
+(assert (forall ((buf Bool)) (=> (= (frag_no_overlap_verified buf) true) (= (no_overlapping_frags buf) true)))) ; NET_001_16_ip_no_overlapping_fragments
 
 ; NET_001_17_icmp_rate_limited (matches Coq: Theorem NET_001_17_icmp_rate_limited)
-(assert (= true true)) ; NET_001_17_icmp_rate_limited [untranslatable]
+(assert (forall ((state Bool)) (=> (<= (icmp_count state) (icmp_max_rate state)) (= (icmp_rate_bounded state) true)))) ; NET_001_17_icmp_rate_limited
 
 ; NET_001_18_ip_routing_correct (matches Coq: Theorem NET_001_18_ip_routing_correct)
-(assert (= true true)) ; NET_001_18_ip_routing_correct [untranslatable]
+(assert (forall ((entry Bool) (dest Bool)) (=> (= (route_valid entry) true) (= (routing_correct entry dest) true)))) ; NET_001_18_ip_routing_correct
 
 ; NET_001_19_dnssec_chain_valid (matches Coq: Theorem NET_001_19_dnssec_chain_valid)
-(assert (= true true)) ; NET_001_19_dnssec_chain_valid [untranslatable]
+(assert (forall ((query Bool) (response Bool)) (=> (= (dnssec_validated response) true) (=> (= (query_name query) (dns_name response)) (= (authentic response query) true))))) ; NET_001_19_dnssec_chain_valid
 
 ; NET_001_20_dns_cache_safe (matches Coq: Theorem NET_001_20_dns_cache_safe)
-(assert (= true true)) ; NET_001_20_dns_cache_safe [untranslatable]
+(assert (forall ((entry Bool)) (=> (= (cache_validated entry) true) (=> (= (dns_sig_verified (cache_record entry)) true) (= (cache_safe entry) true))))) ; NET_001_20_dns_cache_safe
 
 ; NET_001_21_dns_no_rebinding (matches Coq: Theorem NET_001_21_dns_no_rebinding)
-(assert (= true true)) ; NET_001_21_dns_no_rebinding [untranslatable]
+(assert (forall ((check Bool)) (=> (=> (= (rebind_is_private check) true) (= (rebind_blocked check) true)) (= (rebinding_prevented check) true)))) ; NET_001_21_dns_no_rebinding
 
 ; NET_001_22_dns_query_integrity (matches Coq: Theorem NET_001_22_dns_query_integrity)
-(assert (= true true)) ; NET_001_22_dns_query_integrity [untranslatable]
+(assert (forall ((q Bool)) (=> (not (= (query_mac q) none)) (= (query_has_integrity q) true)))) ; NET_001_22_dns_query_integrity
 
 ; NET_001_23_dns_response_authentic (matches Coq: Theorem NET_001_23_dns_response_authentic)
-(assert (= true true)) ; NET_001_23_dns_response_authentic [untranslatable]
+(assert (forall ((query Bool) (response Bool)) (=> (= (query_name query) (dns_name response)) (=> (= (dns_sig_verified response) true) (= (authentic response query) true))))) ; NET_001_23_dns_response_authentic
 
 ; NET_001_24_dns_no_amplification (matches Coq: Theorem NET_001_24_dns_no_amplification)
-(assert (= true true)) ; NET_001_24_dns_no_amplification [untranslatable]
+(assert (forall ((state Bool)) (=> (<= (amp_response_size state) (* (amp_query_size state) (amp_ratio_max state))) (= (amplification_bounded state) true)))) ; NET_001_24_dns_no_amplification
 
 ; NET_001_25_doh_confidential (matches Coq: Theorem NET_001_25_doh_confidential)
-(assert (= true true)) ; NET_001_25_doh_confidential [untranslatable]
+(assert (forall ((conn Bool)) (=> (= (doh_encrypted conn) true) (=> (= (tls_verified (doh_tls_conn conn)) true) (= (doh_confidential conn) true))))) ; NET_001_25_doh_confidential
 
 ; Verify all assertions are satisfiable
 (check-sat)

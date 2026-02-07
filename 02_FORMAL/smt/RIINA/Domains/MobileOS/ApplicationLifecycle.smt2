@@ -94,13 +94,13 @@
 (define-fun transition_preserves_id () Prop true)
 
 ; app_state_consistent (matches Coq: Theorem app_state_consistent)
-(assert (= true true)) ; app_state_consistent [untranslatable]
+(assert (forall ((app Application)) (forall ((s AppState)) (=> (= (in_state app s) true) (=> (= (state_invariants_hold app s) true) (and (= (in_state app s) true) (= (state_invariants_hold app s) true))))))) ; app_state_consistent
 
 ; state_restoration_complete (matches Coq: Theorem state_restoration_complete)
-(assert (= true true)) ; state_restoration_complete [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_supports_restoration app) true) (=> (not (= (app_saved_state app) none)) (= (state (restore_state app)) (previous_state app)))))) ; state_restoration_complete
 
 ; save_restore_preserves_state (matches Coq: Theorem save_restore_preserves_state)
-(assert (= true true)) ; save_restore_preserves_state [untranslatable]
+(assert (forall ((app Application)) (= (state (restore_state (save_state app))) (state app)))) ; save_restore_preserves_state
 
 ; not_running_can_launch (matches Coq: Theorem not_running_can_launch)
 (assert (= (valid_lifecycle_transition NotRunning Launching) true)) ; not_running_can_launch
@@ -112,28 +112,28 @@
 (assert (= (valid_lifecycle_transition Background Foreground) true)) ; background_can_foreground
 
 ; save_captures_current_state (matches Coq: Theorem save_captures_current_state)
-(assert (= true true)) ; save_captures_current_state [untranslatable]
+(assert (forall ((app Application)) (= (app_saved_state (save_state app)) (some (app_data app))))) ; save_captures_current_state
 
 ; app_state_transition_valid (matches Coq: Theorem app_state_transition_valid)
-(assert (= true true)) ; app_state_transition_valid [untranslatable]
+(assert (forall ((from AppState) (to AppState)) (=> (= (valid_lifecycle_transition from to) true) (= (valid_lifecycle_transition from to) true)))) ; app_state_transition_valid
 
 ; background_to_foreground_clean (matches Coq: Theorem background_to_foreground_clean)
-(assert (= true true)) ; background_to_foreground_clean [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_state app) Background) (=> (not (= (app_saved_state app) none)) (= (valid_lifecycle_transition Background Foreground) true))))) ; background_to_foreground_clean
 
 ; state_saved_on_background (matches Coq: Theorem state_saved_on_background)
-(assert (= true true)) ; state_saved_on_background [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_state app) Foreground) (= (app_saved_state (save_state app)) (some (app_data app)))))) ; state_saved_on_background
 
 ; state_restored_on_foreground (matches Coq: Theorem state_restored_on_foreground)
-(assert (= true true)) ; state_restored_on_foreground [untranslatable]
+(assert (forall ((app Application)) (forall ((d AppData)) (=> (= (app_saved_state app) (some d)) (= (app_state (restore_state app)) Foreground))))) ; state_restored_on_foreground
 
 ; app_termination_notified (matches Coq: Theorem app_termination_notified)
-(assert (= true true)) ; app_termination_notified [untranslatable]
+(assert (forall ((from AppState)) (=> (= (valid_lifecycle_transition from Terminated) true) (or (= from Foreground) (= from Background) (= from Suspended))))) ; app_termination_notified
 
 ; low_memory_warning_delivered (matches Coq: Theorem low_memory_warning_delivered)
-(assert (= true true)) ; low_memory_warning_delivered [untranslatable]
+(assert (forall ((ea ExtApp)) (=> (= (well_formed_ext_app ea) true) (<= (ext_memory_level ea) 2)))) ; low_memory_warning_delivered
 
 ; background_execution_time_limited (matches Coq: Theorem background_execution_time_limited)
-(assert (= true true)) ; background_execution_time_limited [untranslatable]
+(assert (forall ((ea ExtApp)) (=> (= (well_formed_ext_app ea) true) (=> (= (app_state (ext_app ea)) Background) (<= (ext_bg_time_used ea) 30000))))) ; background_execution_time_limited
 
 ; url_scheme_validated (matches Coq: Theorem url_scheme_validated)
 (assert (forall ((u URLScheme)) (=> (= (url_validated u) true) (= (url_validated u) true)))) ; url_scheme_validated
@@ -145,10 +145,10 @@
 (assert (forall ((ext AppExtension)) (=> (= (ext_sandboxed ext) true) (= (ext_sandboxed ext) true)))) ; app_extension_sandboxed
 
 ; widget_update_throttled (matches Coq: Theorem widget_update_throttled)
-(assert (= true true)) ; widget_update_throttled [untranslatable]
+(assert (forall ((w Widget)) (forall ((current_time Int)) (=> (< (- current_time (widget_last_update w)) (widget_update_interval w)) (< (- current_time (widget_last_update w)) (widget_update_interval w)))))) ; widget_update_throttled
 
 ; share_extension_data_typed (matches Coq: Theorem share_extension_data_typed)
-(assert (= true true)) ; share_extension_data_typed [untranslatable]
+(assert (forall ((ext AppExtension)) (=> (> (length (ext_data_types ext)) 0) (not (= (ext_data_types ext) nil))))) ; share_extension_data_typed
 
 ; app_group_access_controlled (matches Coq: Theorem app_group_access_controlled)
 (assert (forall ((g AppGroup)) (=> (= (group_access_controlled g) true) (= (group_access_controlled g) true)))) ; app_group_access_controlled

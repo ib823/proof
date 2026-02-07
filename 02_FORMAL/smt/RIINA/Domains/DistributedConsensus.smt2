@@ -50,76 +50,78 @@
   true)
 
 ; 1 (matches Coq: Theorem 1)
-(assert (= true true)) ; 1 [untranslatable]
+(assert (forall ((c Bool) (n1 Bool) (n2 Bool)) (=> (= (decided_nodes_agree c) true) (=> (= (In n1 (nodes c)) true) (=> (= (In n2 (nodes c)) true) (=> (= (honest_decided c n1) true) (=> (= (honest_decided c n2) true) (= (node_decision n1) (node_decision n2))))))))) ; 1
 
 ; 2 (matches Coq: Theorem 2)
-(assert (= true true)) ; 2 [untranslatable]
+; 2: Validity --- If all honest nodes propose v, and the protocol decides based on honest proposals, then the decision equals
+(assert true) ; 2 [Coq-only]
 
 ; 3 (matches Coq: Theorem 3)
-(assert (= true true)) ; 3 [untranslatable]
+(assert (forall ((n Int) (a Int) (b Int)) (=> (<= a n) (=> (<= b n) (=> (> (+ a b) n) (>= (+ a (- b n)) 1)))))) ; 3
 
 ; quorum_intersection_size (matches Coq: Theorem quorum_intersection_size)
-(assert (= true true)) ; quorum_intersection_size [untranslatable]
+(assert (forall ((n Int) (q1_size Int) (q2_size Int)) (=> (> (+ q1_size q2_size) n) (=> (<= q1_size n) (=> (<= q2_size n) (>= (+ q1_size (- q2_size n)) 1)))))) ; quorum_intersection_size
 
 ; quorum_intersection (matches Coq: Theorem quorum_intersection)
-(assert (= true true)) ; quorum_intersection [untranslatable]
+(assert (forall ((n Int) (q1s Int) (q2s Int)) (=> (> (* 3 q1s) (* 2 n)) (=> (> (* 3 q2s) (* 2 n)) (=> (<= q1s n) (=> (<= q2s n) (> (+ q1s q2s) n))))))) ; quorum_intersection
 
 ; 4 (matches Coq: Theorem 4)
-(assert (= true true)) ; 4 [untranslatable]
+(assert (forall ((old Bool) (new_ Bool)) (=> (= (round_update old new_) true) (>= (node_round new_) (node_round old))))) ; 4
 
 ; round_monotonicity_transitive (matches Coq: Theorem round_monotonicity_transitive)
-(assert (= true true)) ; round_monotonicity_transitive [untranslatable]
+(assert (forall ((a Bool) (b Bool) (c_ Bool)) (=> (= (node_id a) (node_id b)) (=> (= (node_id b) (node_id c_)) (=> (>= (node_round b) (node_round a)) (=> (>= (node_round c_) (node_round b)) (>= (node_round c_) (node_round a)))))))) ; round_monotonicity_transitive
 
 ; 5 (matches Coq: Theorem 5)
-(assert (= true true)) ; 5 [untranslatable]
+(assert (forall ((c Bool) (v1 Bool) (v2 Bool)) (=> (= (honest_votes_once_per_round c) true) (=> (= (In v1 (votes c)) true) (=> (= (In v2 (votes c)) true) (=> (= (honest c (vote_sender v1)) true) (=> (= (vote_sender v1) (vote_sender v2)) (=> (= (vote_round v1) (vote_round v2)) (= (vote_value v1) (vote_value v2)))))))))) ; 5
 
 ; 6 (matches Coq: Theorem 6)
-(assert (= true true)) ; 6 [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (> n 0) (=> (< (* 3 f) n) (> (* 3 (- n f)) (* 2 n)))))) ; 6
 
 ; honest_majority_in_quorum (matches Coq: Theorem honest_majority_in_quorum)
-(assert (= true true)) ; honest_majority_in_quorum [untranslatable]
+(assert (forall ((n Int) (f Int) (q Int)) (=> (< (* 3 f) n) (=> (> (* 3 q) (* 2 n)) (=> (<= q n) (>= (- q f) 1)))))) ; honest_majority_in_quorum
 
 ; 7 (matches Coq: Theorem 7)
-(assert (= true true)) ; 7 [untranslatable]
+(assert (forall ((c Bool) (m Bool)) (=> (= (messages_from_honest_authentic c) true) (=> (= (In m (messages c)) true) (=> (= (honest c (msg_sender m)) true) (= (msg_authentic m) true)))))) ; 7
 
 ; 8 (matches Coq: Theorem 8)
-(assert (= true true)) ; 8 [untranslatable]
+(assert (forall ((nd_before Bool) (nd_after Bool)) (=> (= (decision_stable nd_before nd_after) true) (=> (= (node_id nd_before) (node_id nd_after)) (=> (= (node_decided nd_before) true) (and (= (node_decided nd_after) true) (= (node_decision nd_after) (node_decision nd_before)))))))) ; 8
 
 ; 9 (matches Coq: Theorem 9)
-(assert (= true true)) ; 9 [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (< (* 3 f) n) (>= n (+ (* 3 f) 1))))) ; 9
 
 ; 10 (matches Coq: Theorem 10)
-(assert (= true true)) ; 10 [untranslatable]
+; 10: Two quorums share an honest node --- Combining quorum intersection with honest majority *) Theorem two_quorums_share_hon
+(assert true) ; 10 [Coq-only]
 
 ; 11 (matches Coq: Theorem 11)
-(assert (= true true)) ; 11 [untranslatable]
+(assert (forall ((n Int)) (=> (< (* 3 1) n) (>= n 4)))) ; 11
 
 ; 12 (matches Coq: Theorem 12)
-(assert (= true true)) ; 12 [untranslatable]
+(assert (forall ((h Bool)) (= (count_honest h nil) 0))) ; 12
 
 ; 13 (matches Coq: Theorem 13)
-(assert (= true true)) ; 13 [untranslatable]
+(assert (forall ((h Bool) (x Bool)) (= (count_honest h (insert x nil)) (if h x then 1 else 0)))) ; 13
 
 ; 14 (matches Coq: Theorem 14)
-(assert (= true true)) ; 14 [untranslatable]
+(assert (forall ((l Bool)) (= (intersect nil l) nil))) ; 14
 
 ; 15 (matches Coq: Theorem 15)
-(assert (= true true)) ; 15 [untranslatable]
+(assert (forall ((x Bool)) (= (mem_nat x (insert x nil)) true))) ; 15
 
 ; 16 (matches Coq: Theorem 16)
-(assert (= true true)) ; 16 [untranslatable]
+(assert (forall ((c Bool)) (=> (> (num_nodes c) 0) (>= (quorum_size c) 1)))) ; 16
 
 ; 17 (matches Coq: Theorem 17)
-(assert (= true true)) ; 17 [untranslatable]
+(assert (forall ((c Bool) (n1 Bool) (n2 Bool)) (=> (= (decided_nodes_agree c) true) (=> (= (In n1 (nodes c)) true) (=> (= (In n2 (nodes c)) true) (=> (= (honest_decided c n1) true) (=> (= (node_decided n2) false) true))))))) ; 17
 
 ; 18 (matches Coq: Theorem 18)
-(assert (= true true)) ; 18 [untranslatable]
+(assert (forall ((nd Bool)) (= (round_update nd nd) true))) ; 18
 
 ; 19 (matches Coq: Theorem 19)
-(assert (= true true)) ; 19 [untranslatable]
+(assert (forall ((n Int)) (=> (> n 0) (< (* 3 0) n)))) ; 19
 
 ; 20 (matches Coq: Theorem 20)
-(assert (= true true)) ; 20 [untranslatable]
+(assert (forall ((n Int) (f Int)) (=> (< (* 3 f) n) (> (- n f) f)))) ; 20
 
 ; Verify all assertions are satisfiable
 (check-sat)

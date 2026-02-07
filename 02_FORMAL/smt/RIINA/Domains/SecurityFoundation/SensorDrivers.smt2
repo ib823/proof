@@ -58,70 +58,71 @@
   true)
 
 ; sensor_access_controlled (matches Coq: Theorem sensor_access_controlled)
-(assert (= true true)) ; sensor_access_controlled [untranslatable]
+(assert (forall ((app Application)) (forall ((sensor Sensor)) (=> (= (reads_sensor app sensor) true) (= (has_sensor_permission app sensor) true))))) ; sensor_access_controlled
 
 ; recording_indicator_mandatory (matches Coq: Theorem recording_indicator_mandatory)
-(assert (= true true)) ; recording_indicator_mandatory [untranslatable]
+(assert (forall ((app Application)) (forall ((st SystemState)) (=> (or (and (= (uses_camera app) true) (= (any_camera_active st) true)) (and (= (uses_microphone app) true) (= (any_mic_active st) true))) (=> (= (indicator_visible st) true) (or (= (camera_indicator st) true) (= (mic_indicator st) true))))))) ; recording_indicator_mandatory
 
 ; no_permission_no_sensor (matches Coq: Theorem no_permission_no_sensor)
-(assert (= true true)) ; no_permission_no_sensor [untranslatable]
+(assert (forall ((app Application)) (forall ((sensor Sensor)) (not (=> (= (has_sensor_permission app sensor) true) (not (= (reads_sensor app sensor) true))))))) ; no_permission_no_sensor
 
 ; camera_requires_camera_perm (matches Coq: Theorem camera_requires_camera_perm)
-(assert (= true true)) ; camera_requires_camera_perm [untranslatable]
+(assert (forall ((app Application)) (forall ((cam Sensor)) (=> (= (sensor_type cam) Camera) (=> (= (reads_sensor app cam) true) (= (app_camera_perm app) true)))))) ; camera_requires_camera_perm
 
 ; gps_requires_location_perm (matches Coq: Theorem gps_requires_location_perm)
-(assert (= true true)) ; gps_requires_location_perm [untranslatable]
+(assert (forall ((app Application)) (forall ((gps Sensor)) (=> (= (sensor_type gps) GPS) (=> (= (reads_sensor app gps) true) (= (app_location_perm app) true)))))) ; gps_requires_location_perm
 
 ; rate_limit_blocks_excess (matches Coq: Theorem rate_limit_blocks_excess)
-(assert (= true true)) ; rate_limit_blocks_excess [untranslatable]
+(assert (forall ((rl SensorRateLimit)) (=> (= (rate_limit_exceeded rl) true) (not (= (rate_limit_ok rl) true))))) ; rate_limit_blocks_excess
 
 ; microphone_requires_mic_perm (matches Coq: Theorem microphone_requires_mic_perm)
-(assert (= true true)) ; microphone_requires_mic_perm [untranslatable]
+(assert (forall ((app Application)) (forall ((mic Sensor)) (=> (= (sensor_type mic) Microphone) (=> (= (reads_sensor app mic) true) (= (app_microphone_perm app) true)))))) ; microphone_requires_mic_perm
 
 ; accelerometer_requires_motion_perm (matches Coq: Theorem accelerometer_requires_motion_perm)
-(assert (= true true)) ; accelerometer_requires_motion_perm [untranslatable]
+(assert (forall ((app Application)) (forall ((accel Sensor)) (=> (= (sensor_type accel) Accelerometer) (=> (= (reads_sensor app accel) true) (= (app_motion_perm app) true)))))) ; accelerometer_requires_motion_perm
 
 ; gyroscope_requires_motion_perm (matches Coq: Theorem gyroscope_requires_motion_perm)
-(assert (= true true)) ; gyroscope_requires_motion_perm [untranslatable]
+(assert (forall ((app Application)) (forall ((gyro Sensor)) (=> (= (sensor_type gyro) Gyroscope) (=> (= (reads_sensor app gyro) true) (= (app_motion_perm app) true)))))) ; gyroscope_requires_motion_perm
 
 ; no_permissions_no_sensors (matches Coq: Theorem no_permissions_no_sensors)
-(assert (= true true)) ; no_permissions_no_sensors [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_camera_perm app) false) (=> (= (app_microphone_perm app) false) (=> (= (app_location_perm app) false) (=> (= (app_motion_perm app) false) (forall ((sensor Bool)) (not (= (reads_sensor app sensor) true))))))))) ; no_permissions_no_sensors
 
 ; indicators_independent (matches Coq: Theorem indicators_independent)
-(assert (= true true)) ; indicators_independent [untranslatable]
+(assert (forall ((st SystemState)) (=> (= (any_camera_active st) true) (=> (= (any_mic_active st) false) (=> (= (indicator_visible st) true) (= (camera_indicator st) true)))))) ; indicators_independent
 
 ; mic_indicator_when_active (matches Coq: Theorem mic_indicator_when_active)
-(assert (= true true)) ; mic_indicator_when_active [untranslatable]
+(assert (forall ((st SystemState)) (=> (= (any_mic_active st) true) (=> (= (indicator_visible st) true) (= (mic_indicator st) true))))) ; mic_indicator_when_active
 
 ; cam_indicator_when_active (matches Coq: Theorem cam_indicator_when_active)
-(assert (= true true)) ; cam_indicator_when_active [untranslatable]
+(assert (forall ((st SystemState)) (=> (= (any_camera_active st) true) (=> (= (indicator_visible st) true) (= (camera_indicator st) true))))) ; cam_indicator_when_active
 
 ; both_sensors_both_indicators (matches Coq: Theorem both_sensors_both_indicators)
-(assert (= true true)) ; both_sensors_both_indicators [untranslatable]
+(assert (forall ((st SystemState)) (=> (= (any_camera_active st) true) (=> (= (any_mic_active st) true) (=> (= (indicator_visible st) true) (and (= (camera_indicator st) true) (= (mic_indicator st) true))))))) ; both_sensors_both_indicators
 
 ; no_active_no_indicator_required (matches Coq: Theorem no_active_no_indicator_required)
-(assert (= true true)) ; no_active_no_indicator_required [untranslatable]
+(assert (forall ((st SystemState)) (=> (= (any_camera_active st) false) (=> (= (any_mic_active st) false) (= (indicator_visible st) true))))) ; no_active_no_indicator_required
 
 ; sensor_perm_type_specific (matches Coq: Theorem sensor_perm_type_specific)
-(assert (= true true)) ; sensor_perm_type_specific [untranslatable]
+(assert (forall ((app Application)) (forall ((s1 Sensor) (s2 Sensor)) (=> (not (= (sensor_type s1) (sensor_type s2))) (=> (= (has_sensor_permission app s1) true) (=> (not (= (has_sensor_permission app s2) true)) (not (= (sensor_type s1) (sensor_type s2))))))))) ; sensor_perm_type_specific
 
 ; camera_perm_not_mic (matches Coq: Theorem camera_perm_not_mic)
-(assert (= true true)) ; camera_perm_not_mic [untranslatable]
+(assert (forall ((app Application)) (forall ((cam Sensor) (mic Sensor)) (=> (= (sensor_type cam) Camera) (=> (= (sensor_type mic) Microphone) (=> (= (app_camera_perm app) true) (=> (= (app_microphone_perm app) false) (and (= (has_sensor_permission app cam) true) (not (= (has_sensor_permission app mic) true)))))))))) ; camera_perm_not_mic
 
 ; motion_perm_covers_both (matches Coq: Theorem motion_perm_covers_both)
-(assert (= true true)) ; motion_perm_covers_both [untranslatable]
+(assert (forall ((app Application)) (forall ((accel Sensor) (gyro Sensor)) (=> (= (sensor_type accel) Accelerometer) (=> (= (sensor_type gyro) Gyroscope) (=> (= (app_motion_perm app) true) (and (= (has_sensor_permission app accel) true) (= (has_sensor_permission app gyro) true)))))))) ; motion_perm_covers_both
 
 ; sensor_reading_valid (matches Coq: Theorem sensor_reading_valid)
-(assert (= true true)) ; sensor_reading_valid [untranslatable]
+; sensor_reading_valid: forall (app : Application) (sensor : Sensor), reads_sensor app sensor -> match sensor_type sensor with | Camera => app_c
+(assert (forall ((app Application) (sensor Sensor)) true)) ; sensor_reading_valid [partial: bindings preserved]
 
 ; bounded_sensor_rate_valid (matches Coq: Theorem bounded_sensor_rate_valid)
-(assert (= true true)) ; bounded_sensor_rate_valid [untranslatable]
+(assert (forall ((bs BoundedSensor)) (<= (bs_current_rate bs) (bs_max_rate bs)))) ; bounded_sensor_rate_valid
 
 ; revoke_all_blocks_all_types (matches Coq: Theorem revoke_all_blocks_all_types)
-(assert (= true true)) ; revoke_all_blocks_all_types [untranslatable]
+(assert (forall ((app Application)) (=> (= (app_camera_perm app) false) (=> (= (app_microphone_perm app) false) (=> (= (app_location_perm app) false) (=> (= (app_motion_perm app) false) (=> (forall ((st SensorType)) (forall ((s Sensor)) (= (sensor_type s) st))) (not (= (has_sensor_permission app s) true))))))))) ; revoke_all_blocks_all_types
 
 ; gps_independent_of_camera (matches Coq: Theorem gps_independent_of_camera)
-(assert (= true true)) ; gps_independent_of_camera [untranslatable]
+(assert (forall ((app Application)) (forall ((gps_sensor Sensor)) (=> (= (sensor_type gps_sensor) GPS) (=> (= (app_camera_perm app) false) (=> (= (app_location_perm app) true) (= (has_sensor_permission app gps_sensor) true))))))) ; gps_independent_of_camera
 
 ; Verify all assertions are satisfiable
 (check-sat)

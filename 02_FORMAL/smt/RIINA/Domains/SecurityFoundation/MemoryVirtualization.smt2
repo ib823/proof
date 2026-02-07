@@ -59,67 +59,67 @@
   true)
 
 ; ept_integrity (matches Coq: Theorem ept_integrity)
-(assert (= true true)) ; ept_integrity [untranslatable]
+(assert (forall ((guest VirtualMachine)) (forall ((ept ExtendedPageTable)) (not (= (guest_can_modify_ept guest ept) true))))) ; ept_integrity
 
 ; vm_creation_authorized (matches Coq: Theorem vm_creation_authorized)
-(assert (= true true)) ; vm_creation_authorized [untranslatable]
+(assert (forall ((creator Process)) (forall ((new_vm VirtualMachine)) (=> (= (creates creator new_vm) true) (= (has_vm_creation_capability creator) true))))) ; vm_creation_authorized
 
 ; translation_deterministic (matches Coq: Theorem translation_deterministic)
-(assert (= true true)) ; translation_deterministic [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int) (hpa1 Int) (hpa2 Int)) (=> (= (translate_gpa ept gpa) (some hpa1)) (=> (= (translate_gpa ept gpa) (some hpa2)) (= hpa1 hpa2)))))) ; translation_deterministic
 
 ; invalid_gpa_no_translation (matches Coq: Theorem invalid_gpa_no_translation)
-(assert (= true true)) ; invalid_gpa_no_translation [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int)) (=> (forall ((entry Bool)) (=> (= (In entry (ept_entries ept)) true) (or (not (= (ept_gpa entry) gpa)) (= (ept_valid entry) false)))) (= (translate_gpa ept gpa) none))))) ; invalid_gpa_no_translation
 
 ; ept_vm_isolation (matches Coq: Theorem ept_vm_isolation)
-(assert (= true true)) ; ept_vm_isolation [untranslatable]
+(assert (forall ((st MemVirtState)) (forall ((vm1 VirtualMachine) (vm2 VirtualMachine) (ept1 ExtendedPageTable) (ept2 ExtendedPageTable)) (=> (not (= (vm_id vm1) (vm_id vm2))) (=> (= (find_ept (vm_id vm1) (all_epts st)) (some ept1)) (=> (= (find_ept (vm_id vm2) (all_epts st)) (some ept2)) (not (= (ept_owner ept1) (ept_owner ept2))))))))) ; ept_vm_isolation
 
 ; no_cap_no_vm_creation (matches Coq: Theorem no_cap_no_vm_creation)
-(assert (= true true)) ; no_cap_no_vm_creation [untranslatable]
+(assert (forall ((p Process)) (=> (= (proc_vm_create_cap p) false) (forall ((vm Bool)) (not (= (creates p vm) true)))))) ; no_cap_no_vm_creation
 
 ; page_table_permission_enforced (matches Coq: Theorem page_table_permission_enforced)
-(assert (= true true)) ; page_table_permission_enforced [untranslatable]
+(assert (forall ((entry EPTEntry)) (forall ((perm Int)) (=> (= (has_permission entry perm) false) (= (Nat.land (ept_permissions entry) perm) 0))))) ; page_table_permission_enforced
 
 ; kernel_pages_non_writable_from_user (matches Coq: Theorem kernel_pages_non_writable_from_user)
-(assert (= true true)) ; kernel_pages_non_writable_from_user [untranslatable]
+(assert (forall ((entry EPTEntry)) (=> (= (has_permission entry perm_write) false) (= (Nat.land (ept_permissions entry) perm_write) 0)))) ; kernel_pages_non_writable_from_user
 
 ; page_fault_handler_safe (matches Coq: Theorem page_fault_handler_safe)
-(assert (= true true)) ; page_fault_handler_safe [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int)) (=> (= (translate_gpa ept gpa) none) (not (= (gpa_in_ept ept gpa) true)))))) ; page_fault_handler_safe
 
 ; copy_on_write_correct (matches Coq: Theorem copy_on_write_correct)
-(assert (= true true)) ; copy_on_write_correct [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int)) (forall ((hpa Int)) (=> (= (translate_gpa ept gpa) (some hpa)) (=> (forall ((hpa' Bool)) (= (translate_gpa ept gpa) (some hpa'))) (= hpa hpa'))))))) ; copy_on_write_correct
 
 ; virtual_address_canonical (matches Coq: Theorem virtual_address_canonical)
-(assert (= true true)) ; virtual_address_canonical [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int)) (=> (not (= (translate_gpa ept gpa) none)) (exists ((hpa Bool)) (= (translate_gpa ept gpa) (some hpa))))))) ; virtual_address_canonical
 
 ; guest_cannot_modify_any_ept (matches Coq: Theorem guest_cannot_modify_any_ept)
-(assert (= true true)) ; guest_cannot_modify_any_ept [untranslatable]
+(assert (forall ((vm VirtualMachine)) (forall ((ept ExtendedPageTable)) (not (= (guest_can_modify_ept vm ept) true))))) ; guest_cannot_modify_any_ept
 
 ; hypervisor_owns_all_epts (matches Coq: Theorem hypervisor_owns_all_epts)
-(assert (= true true)) ; hypervisor_owns_all_epts [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (= (hypervisor_owns_ept ept) true))) ; hypervisor_owns_all_epts
 
 ; find_ept_deterministic (matches Coq: Theorem find_ept_deterministic)
-(assert (= true true)) ; find_ept_deterministic [untranslatable]
+(assert (forall ((vmid VMId)) (forall ((epts list ExtendedPageTable)) (forall ((e1 ExtendedPageTable) (e2 ExtendedPageTable)) (=> (= (find_ept vmid epts) (some e1)) (=> (= (find_ept vmid epts) (some e2)) (= e1 e2))))))) ; find_ept_deterministic
 
 ; no_ept_no_mapping (matches Coq: Theorem no_ept_no_mapping)
-(assert (= true true)) ; no_ept_no_mapping [untranslatable]
+(assert (forall ((st MemVirtState)) (forall ((vm VirtualMachine)) (=> (= (find_ept (vm_id vm) (all_epts st)) none) (=> (forall ((ept Bool)) (= (In ept (all_epts st)) true)) (not (= (ept_owner ept) (vm_id vm)))))))) ; no_ept_no_mapping
 
 ; vm_creation_records_creator (matches Coq: Theorem vm_creation_records_creator)
-(assert (= true true)) ; vm_creation_records_creator [untranslatable]
+(assert (forall ((p Process)) (forall ((vm VirtualMachine)) (=> (= (creates p vm) true) (= (vm_creator vm) (proc_id p)))))) ; vm_creation_records_creator
 
 ; empty_ept_no_translations (matches Coq: Theorem empty_ept_no_translations)
-(assert (= true true)) ; empty_ept_no_translations [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int)) (=> (= (ept_entries ept) nil) (= (translate_gpa ept gpa) none))))) ; empty_ept_no_translations
 
 ; gpa_in_ept_translation_exists (matches Coq: Theorem gpa_in_ept_translation_exists)
-(assert (= true true)) ; gpa_in_ept_translation_exists [untranslatable]
+(assert (forall ((ept ExtendedPageTable)) (forall ((gpa Int)) (=> (= (gpa_in_ept ept gpa) true) (exists ((hpa Bool)) (= (translate_gpa ept gpa) (some hpa))))))) ; gpa_in_ept_translation_exists
 
 ; different_vms_different_epts (matches Coq: Theorem different_vms_different_epts)
-(assert (= true true)) ; different_vms_different_epts [untranslatable]
+(assert (forall ((st MemVirtState)) (forall ((vm1 VirtualMachine) (vm2 VirtualMachine) (ept ExtendedPageTable)) (=> (not (= (vm_id vm1) (vm_id vm2))) (=> (= (find_ept (vm_id vm1) (all_epts st)) (some ept)) (not (= (find_ept (vm_id vm2) (all_epts st)) (some ept)))))))) ; different_vms_different_epts
 
 ; write_protect_enforced (matches Coq: Theorem write_protect_enforced)
-(assert (= true true)) ; write_protect_enforced [untranslatable]
+(assert (forall ((entry EPTEntry)) (=> (= (has_permission entry perm_write) false) (=> (= (has_permission entry perm_exec) false) (and (= (Nat.land (ept_permissions entry) perm_write) 0) (= (Nat.land (ept_permissions entry) perm_exec) 0)))))) ; write_protect_enforced
 
 ; execute_disable_respected (matches Coq: Theorem execute_disable_respected)
-(assert (= true true)) ; execute_disable_respected [untranslatable]
+(assert (forall ((entry EPTEntry)) (=> (= (has_permission entry perm_exec) false) (= (Nat.land (ept_permissions entry) perm_exec) 0)))) ; execute_disable_respected
 
 ; Verify all assertions are satisfiable
 (check-sat)

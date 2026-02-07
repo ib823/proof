@@ -103,67 +103,67 @@
   true)
 
 ; frame_rate_120hz_guaranteed (matches Coq: Theorem frame_rate_120hz_guaranteed)
-(assert (= true true)) ; frame_rate_120hz_guaranteed [untranslatable]
+(assert (forall ((frame Frame)) (=> (= (well_optimized_frame frame) true) (=> (<= (frame_complexity frame) 1000) (<= (frame_render_time frame) frame_budget_120hz))))) ; frame_rate_120hz_guaranteed
 
 ; no_frame_drops (matches Coq: Theorem no_frame_drops)
-(assert (= true true)) ; no_frame_drops [untranslatable]
+(assert (forall ((animation Animation)) (=> (= (well_formed_animation animation) true) (not (= (has_frame_drop animation) true))))) ; no_frame_drops
 
 ; well_formed_renders_all (matches Coq: Theorem well_formed_renders_all)
-(assert (= true true)) ; well_formed_renders_all [untranslatable]
+(assert (forall ((animation Animation)) (=> (= (well_formed_animation animation) true) (= (frames_rendered animation) (length (anim_frames animation)))))) ; well_formed_renders_all
 
 ; render_pipeline_complete (matches Coq: Theorem render_pipeline_complete)
 (assert (= (length render_pipeline) 5)) ; render_pipeline_complete
 
 ; pipeline_starts_geometry (matches Coq: Theorem pipeline_starts_geometry)
-(assert (= (hd_error render_pipeline) (Some Geometry))) ; pipeline_starts_geometry
+(assert (= (hd_error render_pipeline) (some Geometry))) ; pipeline_starts_geometry
 
 ; pipeline_ends_display (matches Coq: Theorem pipeline_ends_display)
 (assert (= (last render_pipeline Geometry) Display)) ; pipeline_ends_display
 
 ; render_pipeline_has_all_stages (matches Coq: Theorem render_pipeline_has_all_stages)
-(assert (= true true)) ; render_pipeline_has_all_stages [untranslatable]
+(assert (and (= (In Geometry render_pipeline) true) (= (In Rasterization render_pipeline) true) (= (In Shading render_pipeline) true) (= (In Compositing render_pipeline) true) (= (In Display render_pipeline) true))) ; render_pipeline_has_all_stages
 
 ; shader_compilation_validated (matches Coq: Theorem shader_compilation_validated)
-(assert (= true true)) ; shader_compilation_validated [untranslatable]
+(assert (forall ((s Shader)) (=> (= (well_formed_shader s) true) (and (= (shader_compiled s) true) (= (shader_validated s) true))))) ; shader_compilation_validated
 
 ; texture_memory_bounded (matches Coq: Theorem texture_memory_bounded)
-(assert (= true true)) ; texture_memory_bounded [untranslatable]
+(assert (forall ((m GPUMemory)) (=> (= (well_formed_gpu_mem m) true) (<= (gpu_texture_bytes m) (gpu_used_bytes m))))) ; texture_memory_bounded
 
 ; draw_call_batched (matches Coq: Theorem draw_call_batched)
-(assert (= true true)) ; draw_call_batched [untranslatable]
+(assert (forall ((b DrawBatch)) (=> (= (well_formed_batch b) true) (<= (batch_merged_calls b) (batch_draw_calls b))))) ; draw_call_batched
 
 ; vsync_synchronized (matches Coq: Theorem vsync_synchronized)
-(assert (= true true)) ; vsync_synchronized [untranslatable]
+(assert (forall ((rt RenderThread)) (=> (= (well_formed_render_thread rt) true) (= (rt_vsync_aligned rt) true)))) ; vsync_synchronized
 
 ; frame_buffer_double_buffered (matches Coq: Theorem frame_buffer_double_buffered)
-(assert (= true true)) ; frame_buffer_double_buffered [untranslatable]
+(assert (forall ((fb FrameBuffer)) (=> (= (well_formed_framebuffer fb) true) (= (fb_double_buffered fb) true)))) ; frame_buffer_double_buffered
 
 ; gpu_memory_tracked (matches Coq: Theorem gpu_memory_tracked)
-(assert (= true true)) ; gpu_memory_tracked [untranslatable]
+(assert (forall ((m GPUMemory)) (=> (= (well_formed_gpu_mem m) true) (<= (gpu_used_bytes m) (gpu_max_bytes m))))) ; gpu_memory_tracked
 
 ; overdraw_minimized (matches Coq: Theorem overdraw_minimized)
-(assert (= true true)) ; overdraw_minimized [untranslatable]
+(assert (forall ((b DrawBatch)) (=> (= (well_formed_batch b) true) (>= (batch_overdraw_ratio b) 100)))) ; overdraw_minimized
 
 ; culling_correct (matches Coq: Theorem culling_correct)
-(assert (= true true)) ; culling_correct [untranslatable]
+(assert (forall ((a Animation)) (=> (= (well_formed_animation a) true) (=> (forall ((f Bool)) (= (In f (anim_frames a)) true)) (= (frame_rendered f) true))))) ; culling_correct
 
 ; z_buffer_precise (matches Coq: Theorem z_buffer_precise)
-(assert (= true true)) ; z_buffer_precise [untranslatable]
+(assert (forall ((zb ZBuffer)) (=> (>= (zbuf_bits zb) 24) (=> (> (zbuf_far zb) (zbuf_near zb)) (>= (zbuf_bits zb) 24))))) ; z_buffer_precise
 
 ; anti_aliasing_applied (matches Coq: Theorem anti_aliasing_applied)
-(assert (= true true)) ; anti_aliasing_applied [untranslatable]
+(assert (forall ((aa AAMethod)) (=> (not (= aa NoAA)) (not (= aa NoAA))))) ; anti_aliasing_applied
 
 ; color_space_correct (matches Coq: Theorem color_space_correct)
-(assert (= true true)) ; color_space_correct [untranslatable]
+(assert (forall ((cs ColorSpace)) (or (= cs SRGB) (= cs LinearRGB) (= cs DisplayP3) (= cs HDR10)))) ; color_space_correct
 
 ; hdr_tone_mapped (matches Coq: Theorem hdr_tone_mapped)
 (assert (forall ((cs ColorSpace)) (=> (= cs HDR10) (= cs HDR10)))) ; hdr_tone_mapped
 
 ; gpu_timeout_handled (matches Coq: Theorem gpu_timeout_handled)
-(assert (= true true)) ; gpu_timeout_handled [untranslatable]
+(assert (forall ((rt RenderThread)) (=> (= (well_formed_render_thread rt) true) (<= (rt_frame_time_us rt) 8333)))) ; gpu_timeout_handled
 
 ; render_thread_priority (matches Coq: Theorem render_thread_priority)
-(assert (= true true)) ; render_thread_priority [untranslatable]
+(assert (forall ((rt RenderThread)) (=> (= (well_formed_render_thread rt) true) (> (rt_priority rt) 0)))) ; render_thread_priority
 
 ; Verify all assertions are satisfiable
 (check-sat)

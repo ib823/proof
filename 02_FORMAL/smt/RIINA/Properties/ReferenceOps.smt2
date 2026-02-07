@@ -8,49 +8,49 @@
 (set-option :produce-models true)
 
 ; step_preserves_ctx_snd (matches Coq: Lemma step_preserves_ctx_snd)
-(assert (= true true)) ; step_preserves_ctx_snd [untranslatable]
+(assert (forall ((cfg1 Bool) (cfg2 Bool)) (=> (= (cfg1 step_to cfg2) true) (= (snd cfg1) (snd cfg2))))) ; step_preserves_ctx_snd
 
 ; step_preserves_ctx (matches Coq: Lemma step_preserves_ctx)
-(assert (= true true)) ; step_preserves_ctx [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= ((e, st, ctx) step_to (mk-tuple e' st' ctx')) true) (= ctx' ctx)))) ; step_preserves_ctx
 
 ; multi_step_preserves_ctx (matches Coq: Lemma multi_step_preserves_ctx)
-(assert (= true true)) ; multi_step_preserves_ctx [untranslatable]
+(assert (forall ((e Bool) (st Bool) (ctx Bool) (e' Bool) (st' Bool) (ctx' Bool)) (=> (= (multi_step (mk-tuple e st ctx) (mk-tuple e' st' ctx')) true) (= ctx' ctx)))) ; multi_step_preserves_ctx
 
 ; value_multi_step_refl (matches Coq: Lemma value_multi_step_refl)
-(assert (= true true)) ; value_multi_step_refl [untranslatable]
+(assert (forall ((v Bool) (st Bool) (ctx Bool) (cfg Bool)) (=> (= (value v) true) (=> (= (multi_step (mk-tuple v st ctx) cfg) true) (= cfg (mk-tuple v st ctx)))))) ; value_multi_step_refl
 
 ; multi_step_ref_inversion (matches Coq: Lemma multi_step_ref_inversion)
-(assert (= true true)) ; multi_step_ref_inversion [untranslatable]
+(assert (forall ((e Bool) (sl Bool) (st Bool) (v Bool) (st' Bool) (ctx Bool)) (=> (= (multi_step (mk-tuple (ERef e sl) st ctx) (mk-tuple v st' ctx)) true) (=> (= (value v) true) (exists ((v_inner Bool) (st_mid Bool) (l Bool)) (and (= (multi_step (mk-tuple e st ctx) (mk-tuple v_inner st_mid ctx)) true) (= (value v_inner) true) (= v (ELoc l)) (= st' (store_update l v_inner st_mid)) (= l (fresh_loc st_mid)))))))) ; multi_step_ref_inversion
 
 ; multi_step_deref_inversion (matches Coq: Lemma multi_step_deref_inversion)
-(assert (= true true)) ; multi_step_deref_inversion [untranslatable]
+(assert (forall ((e Bool) (st Bool) (v Bool) (st' Bool) (ctx Bool)) (=> (= (multi_step (mk-tuple (EDeref e) st ctx) (mk-tuple v st' ctx)) true) (=> (= (value v) true) (=> (= (store_has_values st) true) (exists ((l Bool) (st_mid Bool)) (and (= (multi_step (mk-tuple e st ctx) (mk-tuple (ELoc l) st_mid ctx)) true) (= st' st_mid) (= (store_lookup l st_mid) (some v))))))))) ; multi_step_deref_inversion
 
 ; multi_step_assign_inversion (matches Coq: Lemma multi_step_assign_inversion)
-(assert (= true true)) ; multi_step_assign_inversion [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool) (st Bool) (v Bool) (st' Bool) (ctx Bool)) (=> (= (multi_step (mk-tuple (EAssign e1 e2) st ctx) (mk-tuple v st' ctx)) true) (=> (= (value v) true) (=> (= (store_has_values st) true) (exists ((l Bool) (v_val Bool) (st_mid1 Bool) (st_mid2 Bool)) (and (= (multi_step (mk-tuple e1 st ctx) (mk-tuple (ELoc l) st_mid1 ctx)) true) (= (multi_step (mk-tuple e2 st_mid1 ctx) (mk-tuple v_val st_mid2 ctx)) true) (= (value v_val) true) (= v EUnit) (= st' (store_update l v_val st_mid2))))))))) ; multi_step_assign_inversion
 
 ; ref_same_location (matches Coq: Lemma ref_same_location)
-(assert (= true true)) ; ref_same_location [untranslatable]
+(assert (forall ((Σ Bool) (st1 Bool) (st2 Bool)) (=> (= (store_rel_simple Σ st1 st2) true) (= (fresh_loc st1) (fresh_loc st2))))) ; ref_same_location
 
 ; logical_relation_ref_proven (matches Coq: Lemma logical_relation_ref_proven)
-(assert (= true true)) ; logical_relation_ref_proven [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (v1 Bool) (v2 Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (> n 0) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (store_wf Σ st1) true) (=> (= (val_rel_le n Σ T v1 v2) true) (=> (= (store_rel_simple Σ st1 st2) true) (=> (= (store_rel_le n Σ st1 st2) true) (let ((l (fresh_loc st1))) (let ((Σ' (store_ty_update l T sl Σ))) (let ((st1' (store_update l v1 st1))) (let ((st2' (store_update l v2 st2))) (and (= (multi_step (mk-tuple (ERef v1 sl) st1 ctx) (mk-tuple (ELoc l) st1' ctx)) true) (= (multi_step (mk-tuple (ERef v2 sl) st2 ctx) (mk-tuple (ELoc l) st2' ctx)) true) (= (val_rel_le n Σ' (TRef T sl) (ELoc l) (ELoc l)) true) (= (store_rel_simple Σ' st1' st2') true) (= (store_ty_extends Σ Σ') true))))))))))))))) ; logical_relation_ref_proven
 
 ; exp_rel_le_ref (matches Coq: Lemma exp_rel_le_ref)
-(assert (= true true)) ; exp_rel_le_ref [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (e1 Bool) (e2 Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (= (exp_rel_le n Σ T e1 e2 st1 st2 ctx) true) (=> (= (store_rel_le n Σ st1 st2) true) (= (exp_rel_le n Σ (TRef T sl) (ERef e1 sl) (ERef e2 sl) st1 st2 ctx) true))))) ; exp_rel_le_ref
 
 ; logical_relation_deref_proven (matches Coq: Lemma logical_relation_deref_proven)
-(assert (= true true)) ; logical_relation_deref_proven [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (l Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (= (store_rel_le n Σ st1 st2) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (exists ((v1 Bool) (v2 Bool)) (and (= (store_lookup l st1) (some v1)) (= (store_lookup l st2) (some v2)) (= (multi_step (mk-tuple (EDeref (ELoc l)) st1 ctx) (mk-tuple v1 st1 ctx)) true) (= (multi_step (mk-tuple (EDeref (ELoc l)) st2 ctx) (mk-tuple v2 st2 ctx)) true) (= (val_rel_le n Σ T v1 v2) true))))))) ; logical_relation_deref_proven
 
 ; exp_rel_le_deref (matches Coq: Lemma exp_rel_le_deref)
-(assert (= true true)) ; exp_rel_le_deref [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (e1 Bool) (e2 Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (forall ((k Bool) (v1 Bool) (v2 Bool) (st1' Bool) (st2' Bool)) (=> (<= k n) (=> (= (multi_step (mk-tuple e1 st1 ctx) (mk-tuple v1 st1' ctx)) true) (=> (= (multi_step (mk-tuple e2 st2 ctx) (mk-tuple v2 st2' ctx)) true) (=> (= (value v1) true) (=> (= (value v2) true) (exists ((Σ' Bool) (l Bool)) (and (= (store_ty_extends Σ Σ') true) (= v1 (ELoc l)) (= v2 (ELoc l)) (= (store_ty_lookup l Σ') (some (mk-tuple T sl))) (= (store_rel_le k Σ' st1' st2') true))))))))) (=> (= (store_has_values st1) true) (=> (= (store_has_values st2) true) (= (exp_rel_le n Σ T (EDeref e1) (EDeref e2) st1 st2 ctx) true)))))) ; exp_rel_le_deref
 
 ; logical_relation_assign_proven (matches Coq: Lemma logical_relation_assign_proven)
-(assert (= true true)) ; logical_relation_assign_proven [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (l Bool) (v1 Bool) (v2 Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (= (value v1) true) (=> (= (value v2) true) (=> (= (store_rel_le n Σ st1 st2) true) (=> (= (store_ty_lookup l Σ) (some (mk-tuple T sl))) (=> (= (val_rel_le n Σ T v1 v2) true) (let ((st1' (store_update l v1 st1))) (let ((st2' (store_update l v2 st2))) (and (= (multi_step (mk-tuple (EAssign (ELoc l) v1) st1 ctx) (mk-tuple EUnit st1' ctx)) true) (= (multi_step (mk-tuple (EAssign (ELoc l) v2) st2 ctx) (mk-tuple EUnit st2' ctx)) true) (= (val_rel_le n Σ TUnit EUnit EUnit) true) (= (store_rel_le n Σ st1' st2') true))))))))))) ; logical_relation_assign_proven
 
 ; exp_rel_le_assign (matches Coq: Lemma exp_rel_le_assign)
-(assert (= true true)) ; exp_rel_le_assign [untranslatable]
+(assert (forall ((n Bool) (Σ Bool) (T Bool) (sl Bool) (e1 Bool) (e2 Bool) (e1' Bool) (e2' Bool) (st1 Bool) (st2 Bool) (ctx Bool)) (=> (forall ((k Bool) (v1 Bool) (v2 Bool) (st1' Bool) (st2' Bool)) (=> (<= k n) (=> (= (multi_step (mk-tuple e1 st1 ctx) (mk-tuple v1 st1' ctx)) true) (=> (= (multi_step (mk-tuple e2 st2 ctx) (mk-tuple v2 st2' ctx)) true) (=> (= (value v1) true) (=> (= (value v2) true) (exists ((Σ' Bool) (l Bool)) (and (= (store_ty_extends Σ Σ') true) (= v1 (ELoc l)) (= v2 (ELoc l)) (= (store_ty_lookup l Σ') (some (mk-tuple T sl))) (= (store_rel_le k Σ' st1' st2') true))))))))) (=> (forall ((k Bool) (Σ_start Bool) (st1_start Bool) (st2_start Bool) (v1 Bool) (v2 Bool) (st1' Bool) (st2' Bool)) (=> (<= k n) (=> (= (store_ty_extends Σ Σ_start) true) (=> (= (store_rel_le k Σ_start st1_start st2_start) true) (=> (= (multi_step (mk-tuple e1' st1_start ctx) (mk-tuple v1 st1' ctx)) true) (=> (= (multi_step (mk-tuple e2' st2_start ctx) (mk-tuple v2 st2' ctx)) true) (=> (= (value v1) true) (=> (= (value v2) true) (exists ((Σ' Bool)) (and (= (store_ty_extends Σ_start Σ') true) (= (val_rel_le k Σ' T v1 v2) true) (= (store_rel_le k Σ' st1' st2') true))))))))))) (=> (= (store_has_values st1) true) (=> (= (store_has_values st2) true) (= (exp_rel_le n Σ TUnit (EAssign e1 e1') (EAssign e2 e2') st1 st2 ctx) true))))))) ; exp_rel_le_assign
 
 ; reference_ops_zero_admits (matches Coq: Theorem reference_ops_zero_admits)
-(assert (= true true)) ; reference_ops_zero_admits [untranslatable]
+(assert true) ; reference_ops_zero_admits
 
 ; Verify all assertions are satisfiable
 (check-sat)

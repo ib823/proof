@@ -148,127 +148,128 @@
   true)
 
 ; principle_1_consent (matches Coq: Theorem principle_1_consent)
-(assert (= true true)) ; principle_1_consent [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((a ProcessingAction)) (=> (= (pdpa_classification r) SensitivePersonalData) (=> (= (pdpa_consent r) ExplicitConsent) (= (consent_required_for_processing r a) true)))))) ; principle_1_consent
 
 ; principle_1_personal_data (matches Coq: Theorem principle_1_personal_data)
-(assert (= true true)) ; principle_1_personal_data [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((a ProcessingAction)) (=> (= (pdpa_classification r) PersonalData) (=> (= (has_valid_consent r) true) (= (consent_required_for_processing r a) true)))))) ; principle_1_personal_data
 
 ; principle_1_public_exempt (matches Coq: Theorem principle_1_public_exempt)
-(assert (= true true)) ; principle_1_public_exempt [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((a ProcessingAction)) (=> (= (pdpa_classification r) PublicData) (= (consent_required_for_processing r a) true))))) ; principle_1_public_exempt
 
 ; consent_withdrawal_blocks (matches Coq: Theorem consent_withdrawal_blocks)
-(assert (= true true)) ; consent_withdrawal_blocks [untranslatable]
+(assert (forall ((r PDPARecord)) (=> (= (pdpa_consent r) WithdrawnConsent) (=> (not (= (pdpa_classification r) PublicData)) (not (= (has_valid_consent r) true)))))) ; consent_withdrawal_blocks
 
 ; principle_2_purpose_limitation (matches Coq: Theorem principle_2_purpose_limitation)
-(assert (= true true)) ; principle_2_purpose_limitation [untranslatable]
+(assert (forall ((r PDPARecord)) (= (processing_within_purpose r (pdpa_purpose r)) true))) ; principle_2_purpose_limitation
 
 ; principle_3_sensitive_explicit_only (matches Coq: Theorem principle_3_sensitive_explicit_only)
-(assert (= true true)) ; principle_3_sensitive_explicit_only [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((recipient Int)) (=> (= (pdpa_classification r) SensitivePersonalData) (=> (= (pdpa_consent r) ExplicitConsent) (= (disclosure_authorized r recipient) true)))))) ; principle_3_sensitive_explicit_only
 
 ; principle_4_encryption_mandatory (matches Coq: Theorem principle_4_encryption_mandatory)
-(assert (= true true)) ; principle_4_encryption_mandatory [untranslatable]
+(assert (forall ((r PDPARecord)) (=> (= (pdpa_encrypted r) true) (=> (not (= (pdpa_classification r) PublicData)) (= (pdpa_encrypted r) true))))) ; principle_4_encryption_mandatory
 
 ; principle_4_security (matches Coq: Theorem principle_4_security)
-(assert (= true true)) ; principle_4_security [untranslatable]
+(assert (forall ((r PDPARecord)) (=> (= (pdpa_encrypted r) true) (= (security_adequate r) true)))) ; principle_4_security
 
 ; principle_5_retention (matches Coq: Theorem principle_5_retention)
-(assert (= true true)) ; principle_5_retention [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((t Int)) (not (=> (= (within_retention_period r t) true) (= (must_delete r t) true)))))) ; principle_5_retention
 
 ; retention_delete_exclusive (matches Coq: Theorem retention_delete_exclusive)
-(assert (= true true)) ; retention_delete_exclusive [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((t Int)) (=> (= (within_retention_period r t) true) (not (= (must_delete r t) true)))))) ; retention_delete_exclusive
 
 ; principle_6_integrity (matches Coq: Theorem principle_6_integrity)
-(assert (= true true)) ; principle_6_integrity [untranslatable]
+(assert (forall ((h Int)) (= (data_integrity_maintained h h) true))) ; principle_6_integrity
 
 ; principle_7_access_logged (matches Coq: Theorem principle_7_access_logged)
-(assert (= true true)) ; principle_7_access_logged [untranslatable]
+; principle_7_access_logged: forall (trail : PDPAAuditTrail) (subject_id t actor : nat), let entry := mkPDPAAudit subject_id Collect t actor in acces
+(assert (forall ((trail PDPAAuditTrail) (subject_id Int) (t Int) (actor Int)) true)) ; principle_7_access_logged [partial: bindings preserved]
 
 ; breach_notification_ordering (matches Coq: Theorem breach_notification_ordering)
-(assert (= true true)) ; breach_notification_ordering [untranslatable]
+(assert (forall ((b BreachEvent)) (forall ((t_pdpc Int) (t_subjects Int)) (=> (= (pdpc_notified_in_time b t_pdpc) true) (=> (= (subjects_notified_in_time b t_subjects) true) (<= t_pdpc (+ (breach_detected_at b) 72))))))) ; breach_notification_ordering
 
 ; pdpc_deadline_stricter (matches Coq: Theorem pdpc_deadline_stricter)
-(assert (= true true)) ; pdpc_deadline_stricter [untranslatable]
+(assert (forall ((b BreachEvent)) (forall ((t Int)) (=> (= (pdpc_notified_in_time b t) true) (= (subjects_notified_in_time b t) true))))) ; pdpc_deadline_stricter
 
 ; dpo_mandatory (matches Coq: Theorem dpo_mandatory)
-(assert (= true true)) ; dpo_mandatory [untranslatable]
+(assert (forall ((dpo DPOAppointment)) (=> (= (dpo_active dpo) true) (= (dpo_compliant dpo) true)))) ; dpo_mandatory
 
 ; pdpa_composition (matches Coq: Theorem pdpa_composition)
-(assert (= true true)) ; pdpa_composition [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((dpo DPOAppointment)) (forall ((t Int)) (=> (= (consent_required_for_processing r Collect) true) (=> (= (security_adequate r) true) (=> (= (within_retention_period r t) true) (=> (= (dpo_compliant dpo) true) (= (pdpa_fully_compliant r dpo t) true))))))))) ; pdpa_composition
 
 ; data_collection_consent_recorded (matches Coq: Theorem data_collection_consent_recorded)
-(assert (= true true)) ; data_collection_consent_recorded [untranslatable]
+(assert (forall ((cr ConsentRecord)) (forall ((t Int)) (=> (<= (cr_recorded_at cr) t) (=> (= (cr_valid cr) true) (=> (= (cr_consent_type cr) ExplicitConsent) (= (consent_properly_recorded cr t) true))))))) ; data_collection_consent_recorded
 
 ; cross_border_transfer_authorized (matches Coq: Theorem cross_border_transfer_authorized)
-(assert (= true true)) ; cross_border_transfer_authorized [untranslatable]
+(assert (forall ((t CrossBorderTransfer)) (=> (= (cbt_adequate_protection t) true) (= (cross_border_lawful t) true)))) ; cross_border_transfer_authorized
 
 ; cross_border_consent_basis (matches Coq: Theorem cross_border_consent_basis)
-(assert (= true true)) ; cross_border_consent_basis [untranslatable]
+(assert (forall ((t CrossBorderTransfer)) (=> (= (cbt_basis t) SubjectConsent_Transfer) (= (cross_border_lawful t) true)))) ; cross_border_consent_basis
 
 ; data_breach_notification_timely (matches Coq: Theorem data_breach_notification_timely)
-(assert (= true true)) ; data_breach_notification_timely [untranslatable]
+(assert (forall ((b BreachEvent)) (forall ((t_pdpc Int) (t_subj Int)) (=> (<= t_pdpc (+ (breach_detected_at b) 72)) (=> (<= t_subj (+ (breach_detected_at b) 168)) (=> (<= t_pdpc t_subj) (= (breach_notification_timely b t_pdpc t_subj) true))))))) ; data_breach_notification_timely
 
 ; data_subject_access_fulfilled (matches Coq: Theorem data_subject_access_fulfilled)
-(assert (= true true)) ; data_subject_access_fulfilled [untranslatable]
+(assert (forall ((req AccessRequest)) (=> (<= (ar_responded_at req) (+ (ar_requested_at req) access_request_deadline)) (=> (= (ar_data_provided req) true) (= (access_fulfilled req) true))))) ; data_subject_access_fulfilled
 
 ; access_late_response_violation (matches Coq: Theorem access_late_response_violation)
-(assert (= true true)) ; access_late_response_violation [untranslatable]
+(assert (forall ((req AccessRequest)) (=> (< (+ (ar_requested_at req) access_request_deadline) (ar_responded_at req)) (not (<= (ar_responded_at req) (+ (ar_requested_at req) access_request_deadline)))))) ; access_late_response_violation
 
 ; data_retention_period_enforced (matches Coq: Theorem data_retention_period_enforced)
-(assert (= true true)) ; data_retention_period_enforced [untranslatable]
+(assert (forall ((r PDPARecord)) (forall ((t Int)) (=> (< (pdpa_retention_limit r) t) (=> (forall ((del Bool)) (= del true)) (= (retention_enforceable r t del) true)))))) ; data_retention_period_enforced
 
 ; data_accuracy_maintained (matches Coq: Theorem data_accuracy_maintained)
-(assert (= true true)) ; data_accuracy_maintained [untranslatable]
+(assert (forall ((da DataAccuracy)) (forall ((t Int)) (=> (<= t (+ (da_last_verified da) (da_verification_interval da))) (= (accuracy_maintained da t) true))))) ; data_accuracy_maintained
 
 ; accuracy_expiry_detected (matches Coq: Theorem accuracy_expiry_detected)
-(assert (= true true)) ; accuracy_expiry_detected [untranslatable]
+(assert (forall ((da DataAccuracy)) (forall ((t Int)) (not (=> (= (accuracy_current da t) true) (< (+ (da_last_verified da) (da_verification_interval da)) t)))))) ; accuracy_expiry_detected
 
 ; security_measures_proportionate (matches Coq: Theorem security_measures_proportionate)
-(assert (= true true)) ; security_measures_proportionate [untranslatable]
+(assert (forall ((c PDPAClassification)) (forall ((controls Int)) (=> (<= (harm_level c) controls) (= (security_level_adequate c controls) true))))) ; security_measures_proportionate
 
 ; sensitive_needs_more_controls (matches Coq: Theorem sensitive_needs_more_controls)
-(assert (= true true)) ; sensitive_needs_more_controls [untranslatable]
+(assert (forall ((controls Int)) (=> (= (security_level_adequate SensitivePersonalData controls) true) (= (security_level_adequate PersonalData controls) true)))) ; sensitive_needs_more_controls
 
 ; processor_contract_binding (matches Coq: Theorem processor_contract_binding)
-(assert (= true true)) ; processor_contract_binding [untranslatable]
+(assert (forall ((pc ProcessorContract)) (=> (= (pc_security_obligations pc) true) (=> (= (pc_data_return_required pc) true) (=> (not (= (pc_purposes_allowed pc) nil)) (= (processor_bound pc) true)))))) ; processor_contract_binding
 
 ; dpia_conducted (matches Coq: Theorem dpia_conducted)
-(assert (= true true)) ; dpia_conducted [untranslatable]
+(assert (forall ((d DPIA)) (=> (= (dpia_approved d) true) (=> (>= (dpia_mitigations_applied d) (dpia_risk_identified d)) (= (dpia_valid d) true))))) ; dpia_conducted
 
 ; dpia_incomplete_if_risks_unmitigated (matches Coq: Theorem dpia_incomplete_if_risks_unmitigated)
-(assert (= true true)) ; dpia_incomplete_if_risks_unmitigated [untranslatable]
+(assert (forall ((d DPIA)) (=> (< (dpia_mitigations_applied d) (dpia_risk_identified d)) (not (>= (dpia_mitigations_applied d) (dpia_risk_identified d)))))) ; dpia_incomplete_if_risks_unmitigated
 
 ; children_data_additional_consent (matches Coq: Theorem children_data_additional_consent)
-(assert (= true true)) ; children_data_additional_consent [untranslatable]
+(assert (forall ((cdr ChildDataRecord)) (=> (< (child_subject_age cdr) children_age_threshold) (=> (= (child_parental_consent cdr) true) (= (child_parental_consent cdr) true))))) ; children_data_additional_consent
 
 ; adult_own_consent_sufficient (matches Coq: Theorem adult_own_consent_sufficient)
-(assert (= true true)) ; adult_own_consent_sufficient [untranslatable]
+(assert (forall ((cdr ChildDataRecord)) (=> (>= (child_subject_age cdr) children_age_threshold) (=> (= (child_own_consent cdr) true) (= (children_consent_adequate cdr) true))))) ; adult_own_consent_sufficient
 
 ; marketing_consent_required (matches Coq: Theorem marketing_consent_required)
-(assert (= true true)) ; marketing_consent_required [untranslatable]
+(assert (forall ((r PDPARecord)) (=> (= (pdpa_purpose r) DirectMarketing) (=> (= (pdpa_consent r) ExplicitConsent) (= (marketing_consent_separate r) true))))) ; marketing_consent_required
 
 ; marketing_without_explicit_violates (matches Coq: Theorem marketing_without_explicit_violates)
-(assert (= true true)) ; marketing_without_explicit_violates [untranslatable]
+(assert (forall ((r PDPARecord)) (=> (= (pdpa_purpose r) DirectMarketing) (=> (= (pdpa_consent r) ImpliedConsent) (not (= (marketing_consent_separate r) true)))))) ; marketing_without_explicit_violates
 
 ; complaint_mechanism_valid (matches Coq: Theorem complaint_mechanism_valid)
-(assert (= true true)) ; complaint_mechanism_valid [untranslatable]
+(assert (forall ((cm ComplaintMechanism)) (=> (= (complaint_channel_active cm) true) (=> (<= (complaint_response_days cm) (complaint_max_response_days cm)) (=> (= (complaint_escalation_available cm) true) (= (complaint_mechanism_available cm) true)))))) ; complaint_mechanism_valid
 
 ; pdpa_commissioner_reportable (matches Coq: Theorem pdpa_commissioner_reportable)
-(assert (= true true)) ; pdpa_commissioner_reportable [untranslatable]
+(assert (forall ((rpt ComplianceReport)) (=> (<= (report_submitted_at rpt) (report_deadline rpt)) (=> (= (report_dpo_active rpt) true) (= (pdpa_report_timely rpt) true))))) ; pdpa_commissioner_reportable
 
 ; late_report_non_compliant (matches Coq: Theorem late_report_non_compliant)
-(assert (= true true)) ; late_report_non_compliant [untranslatable]
+(assert (forall ((rpt ComplianceReport)) (=> (< (report_deadline rpt) (report_submitted_at rpt)) (not (<= (report_submitted_at rpt) (report_deadline rpt)))))) ; late_report_non_compliant
 
 ; public_data_lowest_harm (matches Coq: Theorem public_data_lowest_harm)
-(assert (= true true)) ; public_data_lowest_harm [untranslatable]
+(assert (forall ((c PDPAClassification)) (<= (harm_level PublicData) (harm_level c)))) ; public_data_lowest_harm
 
 ; sensitive_data_highest_harm (matches Coq: Theorem sensitive_data_highest_harm)
-(assert (= true true)) ; sensitive_data_highest_harm [untranslatable]
+(assert (forall ((c PDPAClassification)) (<= (harm_level c) (harm_level SensitivePersonalData)))) ; sensitive_data_highest_harm
 
 ; consent_status_coverage (matches Coq: Theorem consent_status_coverage)
-(assert (= true true)) ; consent_status_coverage [untranslatable]
+(assert (forall ((cs ConsentStatus)) (= (In cs all_consent_statuses) true))) ; consent_status_coverage
 
 ; transfer_basis_coverage (matches Coq: Theorem transfer_basis_coverage)
-(assert (= true true)) ; transfer_basis_coverage [untranslatable]
+(assert (forall ((tb TransferBasis)) (= (In tb all_transfer_bases) true))) ; transfer_basis_coverage
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -133,64 +133,64 @@
   true)
 
 ; filesystem_integrity (matches Coq: Theorem filesystem_integrity)
-(assert (= true true)) ; filesystem_integrity [untranslatable]
+(assert (forall ((f File)) (forall ((d Data)) (= (reads (writes f d)) d)))) ; filesystem_integrity
 
 ; write_maintains_integrity (matches Coq: Theorem write_maintains_integrity)
-(assert (= true true)) ; write_maintains_integrity [untranslatable]
+(assert (forall ((f File)) (forall ((d Data)) (= (file_integrity_valid (writes f d)) true)))) ; write_maintains_integrity
 
 ; power_loss_safe (matches Coq: Theorem power_loss_safe)
-(assert (= true true)) ; power_loss_safe [untranslatable]
+(assert (forall ((fs FileSystem)) (forall ((t Time)) (=> (= (consistent fs) true) (=> (= (power_loss_at t) true) (= (consistent (after_recovery fs t)) true)))))) ; power_loss_safe
 
 ; journal_write_preserves_base_consistency (matches Coq: Theorem journal_write_preserves_base_consistency)
-(assert (= true true)) ; journal_write_preserves_base_consistency [untranslatable]
+(assert (forall ((fs FileSystem)) (forall ((fid FileId)) (forall ((d Data)) (=> (= (fs_consistent fs) true) (= (fs_consistent (journaled_write fs fid d)) true)))))) ; journal_write_preserves_base_consistency
 
 ; commit_establishes_consistency (matches Coq: Theorem commit_establishes_consistency)
-(assert (= true true)) ; commit_establishes_consistency [untranslatable]
+(assert (forall ((fs FileSystem)) (= (fs_consistent (commit_journal fs)) true))) ; commit_establishes_consistency
 
 ; file_permissions_enforced (matches Coq: Theorem file_permissions_enforced)
-(assert (= true true)) ; file_permissions_enforced [untranslatable]
+(assert (forall ((f ExtFile)) (forall ((requester Int)) (=> (= (permission_enforced f requester ReadOnly) true) (or (= (efile_owner f) requester) (= (file_perm_allows_read (efile_permission f)) true)))))) ; file_permissions_enforced
 
 ; directory_traversal_prevented (matches Coq: Theorem directory_traversal_prevented)
-(assert (= true true)) ; directory_traversal_prevented [untranslatable]
+(assert (forall ((path list)) (=> (= (no_directory_traversal path) true) (not (= (In 0 path) true))))) ; directory_traversal_prevented
 
 ; symlink_attack_prevented (matches Coq: Theorem symlink_attack_prevented)
-(assert (= true true)) ; symlink_attack_prevented [untranslatable]
+(assert (forall ((f ExtFile)) (=> (= (symlink_safe f) true) (=> (= (efile_type f) SymLink) (= (efile_permission f) ReadOnly))))) ; symlink_attack_prevented
 
 ; file_lock_exclusive_thm (matches Coq: Theorem file_lock_exclusive_thm)
-(assert (= true true)) ; file_lock_exclusive_thm [untranslatable]
+(assert (forall ((f ExtFile)) (=> (= (file_lock_exclusive f) true) (=> (= (efile_locked f) true) (> (efile_lock_owner f) 0))))) ; file_lock_exclusive_thm
 
 ; atomic_rename (matches Coq: Theorem atomic_rename)
-(assert (= true true)) ; atomic_rename [untranslatable]
+(assert (forall ((f ExtFile)) (forall ((new_id FileId)) (=> (= (atomic_rename_prop f new_id) true) (= (efile_data f) (efile_data (mkExtFile new_id (efile_type f) (efile_permission f) (efile_owner f) (efile_data f) (efile_checksum f) (efile_locked f) (efile_lock_owner f) (efile_inode_ref_count f) (efile_access_time f)))))))) ; atomic_rename
 
 ; fsync_durability (matches Coq: Theorem fsync_durability)
-(assert (= true true)) ; fsync_durability [untranslatable]
+(assert (forall ((f File)) (forall ((d Data)) (=> (= (file_integrity_valid (writes f d)) true) (= (file_checksum (writes f d)) (compute_checksum d)))))) ; fsync_durability
 
 ; no_partial_write (matches Coq: Theorem no_partial_write)
-(assert (= true true)) ; no_partial_write [untranslatable]
+(assert (forall ((f File)) (forall ((d Data)) (= (reads (writes f d)) d)))) ; no_partial_write
 
 ; path_canonicalization (matches Coq: Theorem path_canonicalization)
-(assert (= true true)) ; path_canonicalization [untranslatable]
+(assert (forall ((path list)) (=> (= (path_canonical path) true) (not (and (= (In 0 path) true) (> (length path) 0)))))) ; path_canonicalization
 
 ; file_descriptor_bounded (matches Coq: Theorem file_descriptor_bounded)
-(assert (= true true)) ; file_descriptor_bounded [untranslatable]
+(assert (forall ((fd FileDescriptor)) (forall ((max_fd Int)) (=> (= (fd_bounded fd max_fd) true) (< (fd_number fd) max_fd))))) ; file_descriptor_bounded
 
 ; inode_reference_count_correct (matches Coq: Theorem inode_reference_count_correct)
-(assert (= true true)) ; inode_reference_count_correct [untranslatable]
+(assert (forall ((f ExtFile)) (=> (= (ext_file_integrity f) true) (= (efile_checksum f) (compute_checksum (efile_data f)))))) ; inode_reference_count_correct
 
 ; journal_recovery_correct (matches Coq: Theorem journal_recovery_correct)
-(assert (= true true)) ; journal_recovery_correct [untranslatable]
+(assert (forall ((fs FileSystem)) (=> (= (consistent fs) true) (= (consistent (journal_replay fs)) true)))) ; journal_recovery_correct
 
 ; quota_enforced (matches Coq: Theorem quota_enforced)
-(assert (= true true)) ; quota_enforced [untranslatable]
+(assert (forall ((q Quota)) (=> (= (quota_enforced_prop q) true) (<= (quota_used q) (quota_limit q))))) ; quota_enforced
 
 ; temp_file_cleanup (matches Coq: Theorem temp_file_cleanup)
-(assert (= true true)) ; temp_file_cleanup [untranslatable]
+(assert (forall ((f ExtFile)) (=> (= (efile_inode_ref_count f) 0) (not (> (efile_inode_ref_count f) 0))))) ; temp_file_cleanup
 
 ; file_type_validated (matches Coq: Theorem file_type_validated)
-(assert (= true true)) ; file_type_validated [untranslatable]
+(assert (forall ((f ExtFile)) (= (file_type_valid f) true))) ; file_type_validated
 
 ; access_time_updated (matches Coq: Theorem access_time_updated)
-(assert (= true true)) ; access_time_updated [untranslatable]
+(assert (forall ((f ExtFile)) (forall ((new_time Time)) (=> (>= new_time (efile_access_time f)) (>= new_time (efile_access_time f)))))) ; access_time_updated
 
 ; Verify all assertions are satisfiable
 (check-sat)

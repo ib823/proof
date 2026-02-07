@@ -104,67 +104,69 @@
   true)
 
 ; ctl_001_rop_impossible (matches Coq: Theorem ctl_001_rop_impossible)
-(assert (= true true)) ; ctl_001_rop_impossible [untranslatable]
+(assert (forall ((ss ShadowStack)) (forall ((attacker_addr InstrAddr)) (=> (= (valid_return ss attacker_addr) true) (exists ((e Bool)) (and (= (In e ss) true) (= (se_return_addr e) attacker_addr))))))) ; ctl_001_rop_impossible
 
 ; ctl_002_jop_impossible (matches Coq: Theorem ctl_002_jop_impossible)
-(assert (= true true)) ; ctl_002_jop_impossible [untranslatable]
+(assert (forall ((cfg ValidCFG)) (forall ((trace Trace)) (=> (= (valid_trace cfg trace) true) (=> (forall ((b1 Bool) (b2 Bool)) (= (In b1 trace) true)) (=> (= (In b2 trace) true) (=> (exists ((rest Bool)) (= trace (insert b1 (insert b2 rest)))) (exists ((e Bool)) (and (= (edge_in_cfg e cfg) true) (= (edge_src e) b1) (= (edge_dst e) b2)))))))))) ; ctl_002_jop_impossible
 
 ; ctl_003_cop_impossible (matches Coq: Theorem ctl_003_cop_impossible)
-(assert (= true true)) ; ctl_003_cop_impossible [untranslatable]
+(assert (forall ((vt ValidTargets)) (forall ((fp TypedFuncPtr)) (=> (= (valid_indirect_call vt fp) true) (= (In (tfp_addr fp) (vt (tfp_type fp))) true))))) ; ctl_003_cop_impossible
 
 ; ctl_004_ret2libc_impossible (matches Coq: Theorem ctl_004_ret2libc_impossible)
-(assert (= true true)) ; ctl_004_ret2libc_impossible [untranslatable]
+; ctl_004_ret2libc_impossible: forall (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr ->  match ss with | nil => False | e :: _ =
+(assert (forall ((ss ShadowStack) (libc_addr InstrAddr)) true)) ; ctl_004_ret2libc_impossible [partial: bindings preserved]
 
 ; ctl_005_srop_impossible (matches Coq: Theorem ctl_005_srop_impossible)
-(assert (= true true)) ; ctl_005_srop_impossible [untranslatable]
+(assert (forall ((ss ShadowStack)) (forall ((sig_frame_addr InstrAddr)) (=> (= (valid_return ss sig_frame_addr) true) (exists ((e Bool)) (and (= (In e ss) true) (= (se_return_addr e) sig_frame_addr))))))) ; ctl_005_srop_impossible
 
 ; ctl_006_code_injection_impossible (matches Coq: Theorem ctl_006_code_injection_impossible)
-(assert (= true true)) ; ctl_006_code_injection_impossible [untranslatable]
+(assert (forall ((perms list)) (=> (= (w_xor_x perms) true) (not (and (= (has_perm perms Writable) true) (= (has_perm perms Executable) true)))))) ; ctl_006_code_injection_impossible
 
 ; ctl_007_code_reuse_controlled (matches Coq: Theorem ctl_007_code_reuse_controlled)
-(assert (= true true)) ; ctl_007_code_reuse_controlled [untranslatable]
+(assert (forall ((cfg ValidCFG)) (forall ((trace Trace)) (=> (= (valid_trace cfg trace) true) (=> (forall ((b1 Bool) (b2 Bool) (rest Bool)) (= trace (insert b1 (insert b2 rest)))) (exists ((e Bool)) (and (= (edge_in_cfg e cfg) true) (= (edge_src e) b1) (= (edge_dst e) b2)))))))) ; ctl_007_code_reuse_controlled
 
 ; ctl_008_data_only_mitigated (matches Coq: Theorem ctl_008_data_only_mitigated)
-(assert (= true true)) ; ctl_008_data_only_mitigated [untranslatable]
+(assert (forall ((cfg ValidCFG)) (forall ((trace Trace)) (=> (= (valid_trace cfg trace) true) (=> (forall ((b1 Bool) (b2 Bool)) (= (In b1 trace) true)) (=> (exists ((rest Bool)) (= trace (insert b1 (insert b2 rest)))) (exists ((e Bool)) (and (= (edge_in_cfg e cfg) true) (= (edge_src e) b1) (= (edge_dst e) b2))))))))) ; ctl_008_data_only_mitigated
 
 ; ctl_009_cf_bending_impossible (matches Coq: Theorem ctl_009_cf_bending_impossible)
-(assert (= true true)) ; ctl_009_cf_bending_impossible [untranslatable]
+(assert (forall ((cfg ValidCFG)) (forall ((trace Trace)) (=> (= (valid_trace cfg trace) true) (=> (forall ((b1 Bool) (b2 Bool) (rest Bool)) (= trace (insert b1 (insert b2 rest)))) (exists ((e Bool)) (= (edge_in_cfg e cfg) true))))))) ; ctl_009_cf_bending_impossible
 
 ; ctl_010_indirect_call_safe (matches Coq: Theorem ctl_010_indirect_call_safe)
-(assert (= true true)) ; ctl_010_indirect_call_safe [untranslatable]
+(assert (forall ((vt ValidTargets)) (forall ((fp TypedFuncPtr)) (=> (= (valid_indirect_call vt fp) true) (= (In (tfp_addr fp) (vt (tfp_type fp))) true))))) ; ctl_010_indirect_call_safe
 
 ; ctl_011_vtable_hijack_impossible (matches Coq: Theorem ctl_011_vtable_hijack_impossible)
-(assert (= true true)) ; ctl_011_vtable_hijack_impossible [untranslatable]
+(assert (forall ((obj TypedObject)) (=> (= (vtable_type_matches obj) true) (= (vt_type_id (to_vtable obj)) (to_expected_type obj))))) ; ctl_011_vtable_hijack_impossible
 
 ; ctl_012_exception_safe (matches Coq: Theorem ctl_012_exception_safe)
-(assert (= true true)) ; ctl_012_exception_safe [untranslatable]
+(assert (forall ((vhs ValidHandlers)) (forall ((h ExceptionHandler)) (=> (= (handler_registered vhs h) true) (= (In h vhs) true))))) ; ctl_012_exception_safe
 
 ; ctl_013_longjmp_safe (matches Coq: Theorem ctl_013_longjmp_safe)
-(assert (= true true)) ; ctl_013_longjmp_safe [untranslatable]
+(assert (forall ((jb JmpBuf)) (=> (= (longjmp_safe jb) true) (= (jb_valid jb) true)))) ; ctl_013_longjmp_safe
 
 ; ctl_014_got_plt_protected (matches Coq: Theorem ctl_014_got_plt_protected)
-(assert (= true true)) ; ctl_014_got_plt_protected [untranslatable]
+(assert (forall ((rs RelocState)) (=> (= (got_protected rs) true) (not (= (got_writable rs) true))))) ; ctl_014_got_plt_protected
 
 ; ctl_015_thread_hijack_impossible (matches Coq: Theorem ctl_015_thread_hijack_impossible)
-(assert (= true true)) ; ctl_015_thread_hijack_impossible [untranslatable]
+(assert (forall ((tc ThreadContext)) (forall ((attacker Int)) (=> (not (= (tc_owner tc) attacker)) (not (= (thread_accessible tc attacker) true)))))) ; ctl_015_thread_hijack_impossible
 
 ; ctl_016_shadow_push_pop_identity (matches Coq: Theorem ctl_016_shadow_push_pop_identity)
-(assert (= true true)) ; ctl_016_shadow_push_pop_identity [untranslatable]
+(assert (forall ((ss ShadowStack)) (forall ((ret InstrAddr)) (forall ((caller FuncId)) (= (shadow_pop (shadow_push ss ret caller)) (some (mk-tuple (mkShadowEntry ret caller) ss))))))) ; ctl_016_shadow_push_pop_identity
 
 ; ctl_017_valid_return_after_push (matches Coq: Theorem ctl_017_valid_return_after_push)
-(assert (= true true)) ; ctl_017_valid_return_after_push [untranslatable]
+(assert (forall ((ss ShadowStack)) (forall ((ret InstrAddr)) (forall ((caller FuncId)) (= (valid_return (shadow_push ss ret caller) ret) true))))) ; ctl_017_valid_return_after_push
 
 ; ctl_018_wxor_x_empty (matches Coq: Theorem ctl_018_wxor_x_empty)
-(assert (= true true)) ; ctl_018_wxor_x_empty [untranslatable]
+(assert (= (w_xor_x nil) true)) ; ctl_018_wxor_x_empty
 
 ; ctl_019_reloc_state_decidable (matches Coq: Theorem ctl_019_reloc_state_decidable)
-(assert (= true true)) ; ctl_019_reloc_state_decidable [untranslatable]
+(assert (forall ((rs RelocState)) (or (= (got_writable rs) true) (= (got_protected rs) true)))) ; ctl_019_reloc_state_decidable
 
 ; ctl_020_shadow_push_length (matches Coq: Theorem ctl_020_shadow_push_length)
-(assert (= true true)) ; ctl_020_shadow_push_length [untranslatable]
+(assert (forall ((ss ShadowStack)) (forall ((ret InstrAddr)) (forall ((caller FuncId)) (= (length (shadow_push ss ret caller)) (S (length ss))))))) ; ctl_020_shadow_push_length
 
 ; ctl_021_valid_trace_prefix (matches Coq: Theorem ctl_021_valid_trace_prefix)
-(assert (= true true)) ; ctl_021_valid_trace_prefix [untranslatable]
+; ctl_021_valid_trace_prefix: forall (cfg : ValidCFG) (b : BasicBlock) (rest : Trace), valid_trace cfg (b :: rest) -> valid_trace cfg rest
+(assert (forall ((cfg ValidCFG) (b BasicBlock) (rest Trace)) true)) ; ctl_021_valid_trace_prefix [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

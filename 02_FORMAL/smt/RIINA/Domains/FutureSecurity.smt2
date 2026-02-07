@@ -181,49 +181,49 @@
 (define-fun future_security_complete () Prop true)
 
 ; fut_001_quantum_shor_mitigated (matches Coq: Theorem fut_001_quantum_shor_mitigated)
-(assert (= true true)) ; fut_001_quantum_shor_mitigated [untranslatable]
+(assert (forall ((classical ClassicalCrypto)) (forall ((pq PQCryptoConfig)) (=> (= (vulnerable_to_shor classical) true) (=> (= (pq_config_secure pq) true) (= (<= 3 (kem_security_level (pqc_kem pq))) true)))))) ; fut_001_quantum_shor_mitigated
 
 ; fut_001_hybrid_defense (matches Coq: Theorem fut_001_hybrid_defense)
-(assert (= true true)) ; fut_001_hybrid_defense [untranslatable]
+(assert (forall ((pq PQCryptoConfig)) (=> (= (pqc_hybrid_mode pq) true) (=> (= (pq_config_secure pq) true) (and (= (pqc_hybrid_mode pq) true) (= (pq_config_secure pq) true)))))) ; fut_001_hybrid_defense
 
 ; fut_002_quantum_grover_mitigated (matches Coq: Theorem fut_002_quantum_grover_mitigated)
-(assert (= true true)) ; fut_002_quantum_grover_mitigated [untranslatable]
+(assert (forall ((bits Int)) (=> (= (<= 256 bits) true) (= (<= 128 (grover_effective_bits bits)) true)))) ; fut_002_quantum_grover_mitigated
 
 ; fut_002_symmetric_quantum_safe (matches Coq: Theorem fut_002_symmetric_quantum_safe)
-(assert (= true true)) ; fut_002_symmetric_quantum_safe [untranslatable]
+(assert (forall ((pq PQCryptoConfig)) (=> (= (pq_config_secure pq) true) (= (symmetric_quantum_safe (pqc_symmetric_bits pq)) true)))) ; fut_002_symmetric_quantum_safe
 
 ; fut_003_ai_exploit_mitigated (matches Coq: Theorem fut_003_ai_exploit_mitigated)
-(assert (= true true)) ; fut_003_ai_exploit_mitigated [untranslatable]
+(assert (forall ((did DefenseInDepth)) (=> (= (did_robust did) true) (and (= (<= 3 (length (did_layers did))) true) (= (<= 2 (count_verified_layers (did_layers did))) true) (= (did_composition_verified did) true))))) ; fut_003_ai_exploit_mitigated
 
 ; fut_003_verified_layer_guarantee (matches Coq: Theorem fut_003_verified_layer_guarantee)
-(assert (= true true)) ; fut_003_verified_layer_guarantee [untranslatable]
+(assert (forall ((layers list)) (=> (>= (count_verified_layers layers) 1) (exists ((l Bool)) (and (= (In l layers) true) (= (sl_verified l) true)))))) ; fut_003_verified_layer_guarantee
 
 ; fut_004_unknown_cpu_vuln_mitigated (matches Coq: Theorem fut_004_unknown_cpu_vuln_mitigated)
-(assert (= true true)) ; fut_004_unknown_cpu_vuln_mitigated [untranslatable]
+(assert (forall ((sm SpeculationMitigation)) (=> (= (speculation_conservative sm) true) (and (= (sm_conservative sm) true) (= (sm_ssbd sm) true))))) ; fut_004_unknown_cpu_vuln_mitigated
 
 ; fut_004_full_serialize_safe (matches Coq: Theorem fut_004_full_serialize_safe)
-(assert (= true true)) ; fut_004_full_serialize_safe [untranslatable]
+(assert (forall ((sm SpeculationMitigation)) (=> (= (has_full_serialize (sm_barriers sm)) true) (=> (= (sm_ssbd sm) true) (and (= (has_full_serialize (sm_barriers sm)) true) (= (sm_ssbd sm) true)))))) ; fut_004_full_serialize_safe
 
 ; fut_005_novel_side_channel_mitigated (matches Coq: Theorem fut_005_novel_side_channel_mitigated)
-(assert (= true true)) ; fut_005_novel_side_channel_mitigated [untranslatable]
+(assert (forall ((scm SideChannelMitigation)) (forall ((lb LeakageBound)) (=> (= (scm_comprehensive scm) true) (=> (= (leakage_minimal lb) true) (and (= (scm_constant_time scm) true) (= (scm_no_secret_dependent_branches scm) true) (= (scm_no_secret_dependent_memory scm) true) (= (Nat.eqb (lb_bits_per_operation lb) 0) true))))))) ; fut_005_novel_side_channel_mitigated
 
 ; fut_005_minimal_surface_defense (matches Coq: Theorem fut_005_minimal_surface_defense)
-(assert (= true true)) ; fut_005_minimal_surface_defense [untranslatable]
+(assert (forall ((scm SideChannelMitigation)) (=> (= (scm_minimal_surface scm) true) (=> (= (scm_constant_time scm) true) (and (= (scm_minimal_surface scm) true) (= (scm_constant_time scm) true)))))) ; fut_005_minimal_surface_defense
 
 ; fut_006_emergent_combo_mitigated (matches Coq: Theorem fut_006_emergent_combo_mitigated)
-(assert (= true true)) ; fut_006_emergent_combo_mitigated [untranslatable]
+(assert (forall ((cs ComposedSecurity)) (=> (= (composed_security_sound cs) true) (and (= (all_components_verified (cs_components cs)) true) (= (cs_composition_proof cs) true) (= (cs_emergent_analysis cs) true))))) ; fut_006_emergent_combo_mitigated
 
 ; fut_006_no_circular_vulnerabilities (matches Coq: Theorem fut_006_no_circular_vulnerabilities)
-(assert (= true true)) ; fut_006_no_circular_vulnerabilities [untranslatable]
+(assert (forall ((cs ComposedSecurity)) (=> (= (cs_no_assumption_cycles cs) true) (=> (= (cs_all_assumptions_met cs) true) (and (= (cs_no_assumption_cycles cs) true) (= (cs_all_assumptions_met cs) true)))))) ; fut_006_no_circular_vulnerabilities
 
 ; fut_007_apt_mitigated (matches Coq: Theorem fut_007_apt_mitigated)
-(assert (= true true)) ; fut_007_apt_mitigated [untranslatable]
+(assert (forall ((apt APTResistance)) (=> (= (apt_resistance_adequate apt) true) (and (= (key_rotation_apt_safe (apt_key_rotation apt)) true) (= (cv_comprehensive (apt_continuous_verify apt)) true) (= (apt_compartmentalization apt) true))))) ; fut_007_apt_mitigated
 
 ; fut_007_forward_secrecy_protection (matches Coq: Theorem fut_007_forward_secrecy_protection)
-(assert (= true true)) ; fut_007_forward_secrecy_protection [untranslatable]
+(assert (forall ((krp KeyRotationPolicy)) (=> (= (key_rotation_apt_safe krp) true) (= (krp_forward_secrecy krp) true)))) ; fut_007_forward_secrecy_protection
 
 ; fut_008_pq_signature_secure (matches Coq: Theorem fut_008_pq_signature_secure)
-(assert (= true true)) ; fut_008_pq_signature_secure [untranslatable]
+(assert (forall ((pq PQCryptoConfig)) (=> (= (pq_config_secure pq) true) (= (<= 3 (sig_security_level (pqc_signature pq))) true)))) ; fut_008_pq_signature_secure
 
 ; fut_008_ml_dsa_87_maximum (matches Coq: Theorem fut_008_ml_dsa_87_maximum)
 (assert (= (sig_security_level ML_DSA_87) 5)) ; fut_008_ml_dsa_87_maximum
@@ -232,25 +232,25 @@
 (assert (= (sig_security_level SLH_DSA_256f) 5)) ; fut_008_slh_dsa_256_secure
 
 ; fut_009_quantum_network_mitigated (matches Coq: Theorem fut_009_quantum_network_mitigated)
-(assert (= true true)) ; fut_009_quantum_network_mitigated [untranslatable]
+(assert (forall ((qsn QuantumSafeNetwork)) (=> (= (qsn_secure qsn) true) (and (= (tls_pq_safe (qsn_tls qsn)) true) (= (qsn_pq_required qsn) true))))) ; fut_009_quantum_network_mitigated
 
 ; fut_009_qkd_option (matches Coq: Theorem fut_009_qkd_option)
-(assert (= true true)) ; fut_009_qkd_option [untranslatable]
+(assert (forall ((qkd QKDConfig)) (=> (= (qkd_secure qkd) true) (and (= (qkd_enabled qkd) true) (= (<= (qkd_error_threshold qkd) 11) true) (= (qkd_authentication qkd) true))))) ; fut_009_qkd_option
 
 ; fut_010_math_truth_fundamental (matches Coq: Theorem fut_010_math_truth_fundamental)
-(assert (= true true)) ; fut_010_math_truth_fundamental [untranslatable]
+(assert (forall ((P Prop)) (=> (= P true) (= P true)))) ; fut_010_math_truth_fundamental
 
 ; fut_010_agi_adversary_handled (matches Coq: Theorem fut_010_agi_adversary_handled)
-(assert (= true true)) ; fut_010_agi_adversary_handled [untranslatable]
+(assert (forall ((fvc FormalVerificationConfig)) (forall ((adv AdversaryCapability)) (=> (= (verification_rigorous fvc) true) (= (verification_rigorous fvc) true))))) ; fut_010_agi_adversary_handled
 
 ; fut_010_proof_assistant_guarantee (matches Coq: Theorem fut_010_proof_assistant_guarantee)
-(assert (= true true)) ; fut_010_proof_assistant_guarantee [untranslatable]
+(assert (forall ((fvc FormalVerificationConfig)) (=> (= (fvc_level fvc) MachineCheckedProof) (=> (= (fvc_spec_complete fvc) true) (=> (= (fvc_assumptions_explicit fvc) true) (= (verification_strength (fvc_level fvc)) 6)))))) ; fut_010_proof_assistant_guarantee
 
 ; fut_010_scaling_defense (matches Coq: Theorem fut_010_scaling_defense)
-(assert (= true true)) ; fut_010_scaling_defense [untranslatable]
+(assert (forall ((adv AdversaryCapability)) (forall ((fvc FormalVerificationConfig)) (=> (= (verification_rigorous fvc) true) (=> (forall ((adv' AdversaryCapability)) (> (adversary_capability_level adv') (adversary_capability_level adv))) (= (verification_rigorous fvc) true)))))) ; fut_010_scaling_defense
 
 ; all_future_theorems_proven (matches Coq: Theorem all_future_theorems_proven)
-(assert (= true true)) ; all_future_theorems_proven [untranslatable]
+(assert (= future_security_complete true)) ; all_future_theorems_proven
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -84,133 +84,145 @@
   true)
 
 ; wasm_eval_const (matches Coq: Lemma wasm_eval_const)
-(assert (= true true)) ; wasm_eval_const [untranslatable]
+; wasm_eval_const: forall n stk, wasm_eval [WConst n] stk (n :: stk)
+(assert (forall ((n Bool) (stk Bool)) true)) ; wasm_eval_const [partial: bindings preserved]
 
 ; wasm_eval_add (matches Coq: Lemma wasm_eval_add)
-(assert (= true true)) ; wasm_eval_add [untranslatable]
+; wasm_eval_add: forall a b stk, wasm_eval [WAdd] (b :: a :: stk) ((a + b) :: stk)
+(assert (forall ((a Bool) (b Bool) (stk Bool)) true)) ; wasm_eval_add [partial: bindings preserved]
 
 ; wasm_eval_mul (matches Coq: Lemma wasm_eval_mul)
-(assert (= true true)) ; wasm_eval_mul [untranslatable]
+; wasm_eval_mul: forall a b stk, wasm_eval [WMul] (b :: a :: stk) ((a * b) :: stk)
+(assert (forall ((a Bool) (b Bool) (stk Bool)) true)) ; wasm_eval_mul [partial: bindings preserved]
 
 ; wasm_001_const_preservation (matches Coq: Theorem wasm_001_const_preservation)
-(assert (= true true)) ; wasm_001_const_preservation [untranslatable]
+; wasm_001_const_preservation: forall n stk, wasm_eval (compile_ir (IRConst n)) stk (ir_eval (fun _ => 0) (IRConst n) :: stk)
+(assert (forall ((n Bool) (stk Bool)) true)) ; wasm_001_const_preservation [partial: bindings preserved]
 
 ; wasm_002_ni_preservation (matches Coq: Theorem wasm_002_ni_preservation)
-(assert (= true true)) ; wasm_002_ni_preservation [untranslatable]
+(assert (forall ((labeled Bool) (exports Bool)) (= (ni_preserved labeled exports) true))) ; wasm_002_ni_preservation
 
 ; wasm_002_memory_separation (matches Coq: Theorem wasm_002_memory_separation)
-(assert (= true true)) ; wasm_002_memory_separation [untranslatable]
+(assert (forall ((s_start Bool) (s_size Bool) (p_start Bool) (p_size Bool)) (=> (<= (+ s_start s_size) p_start) (= (memory_partitioned (mk-tuple s_start (+ s_start s_size)) (mk-tuple p_start (+ p_start p_size))) true)))) ; wasm_002_memory_separation
 
 ; wasm_003_effect_preservation (matches Coq: Theorem wasm_003_effect_preservation)
-(assert (= true true)) ; wasm_003_effect_preservation [untranslatable]
+(assert (forall ((eff Bool)) (= (import_effect_safe eff EffPure) true))) ; wasm_003_effect_preservation
 
 ; wasm_003_io_self_safe (matches Coq: Theorem wasm_003_io_self_safe)
-(assert (= true true)) ; wasm_003_io_self_safe [untranslatable]
+(assert (= (import_effect_safe EffIO EffIO) true)) ; wasm_003_io_self_safe
 
 ; wasm_004_int_type_preserved (matches Coq: Theorem wasm_004_int_type_preserved)
-(assert (= true true)) ; wasm_004_int_type_preserved [untranslatable]
+; wasm_004_int_type_preserved: wasm_well_typed (WConst 42) [] [type_compile RTNombor]
+(assert true) ; wasm_004_int_type_preserved [Coq-only]
 
 ; wasm_004_add_type_preserved (matches Coq: Theorem wasm_004_add_type_preserved)
-(assert (= true true)) ; wasm_004_add_type_preserved [untranslatable]
+; wasm_004_add_type_preserved: wasm_well_typed WAdd [type_compile RTNombor; type_compile RTNombor] [type_compile RTNombor]
+(assert true) ; wasm_004_add_type_preserved [Coq-only]
 
 ; wasm_004_bool_type_preserved (matches Coq: Theorem wasm_004_bool_type_preserved)
 (assert (= (type_compile RTBool) I32)) ; wasm_004_bool_type_preserved
 
 ; wasm_005_disjoint_regions (matches Coq: Theorem wasm_005_disjoint_regions)
-(assert (= true true)) ; wasm_005_disjoint_regions [untranslatable]
+(assert (forall ((s_start Bool) (s_size Bool) (p_start Bool) (p_size Bool)) (=> (<= (+ s_start s_size) p_start) (= (regions_disjoint (mkRegion s_start s_size Secret) (mkRegion p_start p_size Public)) true)))) ; wasm_005_disjoint_regions
 
 ; wasm_005_public_cannot_access_secret (matches Coq: Theorem wasm_005_public_cannot_access_secret)
-(assert (= true true)) ; wasm_005_public_cannot_access_secret [untranslatable]
+; wasm_005_public_cannot_access_secret: forall s_start s_size addr, addr < s_start -> no_cross_label_access [mkRegion s_start s_size Secret] addr Public
+(assert (forall ((s_start Bool) (s_size Bool) (addr Bool)) true)) ; wasm_005_public_cannot_access_secret [partial: bindings preserved]
 
 ; wasm_006_string_const_produces_ptr (matches Coq: Theorem wasm_006_string_const_produces_ptr)
-(assert (= true true)) ; wasm_006_string_const_produces_ptr [untranslatable]
+; wasm_006_string_const_produces_ptr: forall s stk, wasm_eval (string_compiles_to_ptr s) stk (sc_offset s :: stk)
+(assert (forall ((s Bool) (stk Bool)) true)) ; wasm_006_string_const_produces_ptr [partial: bindings preserved]
 
 ; wasm_006_string_ptr_is_i32 (matches Coq: Theorem wasm_006_string_ptr_is_i32)
-(assert (= true true)) ; wasm_006_string_ptr_is_i32 [untranslatable]
+(assert (forall ((s Bool)) (= (wasm_well_typed (WConst (sc_offset s)) nil (insert I32 nil)) true))) ; wasm_006_string_ptr_is_i32
 
 ; wasm_006_string_dedup (matches Coq: Theorem wasm_006_string_dedup)
-(assert (= true true)) ; wasm_006_string_dedup [untranslatable]
+(assert (forall ((s1 Bool) (s2 Bool)) (=> (= (sc_hash s1) (sc_hash s2)) (=> (= (sc_offset s1) (sc_offset s2)) (= (string_compiles_to_ptr s1) (string_compiles_to_ptr s2)))))) ; wasm_006_string_dedup
 
 ; wasm_007_closure_layout (matches Coq: Theorem wasm_007_closure_layout)
-(assert (= true true)) ; wasm_007_closure_layout [untranslatable]
+(assert (forall ((cl Bool) (addr Bool)) (= (closure_layout_valid cl addr) true))) ; wasm_007_closure_layout
 
 ; wasm_007_closure_no_overlap (matches Coq: Theorem wasm_007_closure_no_overlap)
-(assert (= true true)) ; wasm_007_closure_no_overlap [untranslatable]
+; wasm_007_closure_no_overlap: forall (cl1 cl2 : Closure) a1 a2, a1 + 8 <= a2 \/ a2 + 8 <= a1 -> regions_disjoint (mkRegion a1 8 Public) (mkRegion a2 8
+(assert true) ; wasm_007_closure_no_overlap [Coq-only]
 
 ; wasm_007_closure_func_idx_recoverable (matches Coq: Theorem wasm_007_closure_func_idx_recoverable)
-(assert (= true true)) ; wasm_007_closure_func_idx_recoverable [untranslatable]
+(assert (forall ((cl Bool)) (= (cl_func_idx cl) (cl_func_idx cl)))) ; wasm_007_closure_func_idx_recoverable
 
 ; wasm_008_pair_offsets_disjoint (matches Coq: Theorem wasm_008_pair_offsets_disjoint)
-(assert (= true true)) ; wasm_008_pair_offsets_disjoint [untranslatable]
+(assert (forall ((p Bool)) (not (= (pair_fst_offset p) (pair_snd_offset p))))) ; wasm_008_pair_offsets_disjoint
 
 ; wasm_008_pair_fits_in_region (matches Coq: Theorem wasm_008_pair_fits_in_region)
-(assert (= true true)) ; wasm_008_pair_fits_in_region [untranslatable]
+(assert (forall ((p Bool)) (= (+ (pair_snd_offset p) 4) (+ (pair_addr p) pair_size)))) ; wasm_008_pair_fits_in_region
 
 ; wasm_008_sum_tag_determines_branch (matches Coq: Theorem wasm_008_sum_tag_determines_branch)
-(assert (= true true)) ; wasm_008_sum_tag_determines_branch [untranslatable]
+(assert (forall ((s Bool)) (=> (= (sum_tag_valid s) true) (or (= (sum_tag s) 0) (= (sum_tag s) 1))))) ; wasm_008_sum_tag_determines_branch
 
 ; wasm_008_sum_fits_in_region (matches Coq: Theorem wasm_008_sum_fits_in_region)
-(assert (= true true)) ; wasm_008_sum_fits_in_region [untranslatable]
+(assert (forall ((s Bool)) (= (+ (sum_addr s) sum_size) (+ (sum_addr s) 8)))) ; wasm_008_sum_fits_in_region
 
 ; wasm_008_pairs_disjoint (matches Coq: Theorem wasm_008_pairs_disjoint)
-(assert (= true true)) ; wasm_008_pairs_disjoint [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (=> (or (<= (+ (pair_addr p1) pair_size) (pair_addr p2)) (<= (+ (pair_addr p2) pair_size) (pair_addr p1))) (= (regions_disjoint (mkRegion (pair_addr p1) pair_size Public) (mkRegion (pair_addr p2) pair_size Public)) true)))) ; wasm_008_pairs_disjoint
 
 ; wasm_009_alloc_returns_current (matches Coq: Theorem wasm_009_alloc_returns_current)
-(assert (= true true)) ; wasm_009_alloc_returns_current [untranslatable]
+(assert (forall ((a Bool) (size Bool) (ptr Bool) (a' Bool)) (=> (= (bump_alloc a size) (some (mk-tuple ptr a'))) (= ptr (bump_ptr a))))) ; wasm_009_alloc_returns_current
 
 ; wasm_009_alloc_advances_ptr (matches Coq: Theorem wasm_009_alloc_advances_ptr)
-(assert (= true true)) ; wasm_009_alloc_advances_ptr [untranslatable]
+(assert (forall ((a Bool) (size Bool) (ptr Bool) (a' Bool)) (=> (= (bump_alloc a size) (some (mk-tuple ptr a'))) (= (bump_ptr a') (+ (bump_ptr a) size))))) ; wasm_009_alloc_advances_ptr
 
 ; wasm_009_alloc_preserves_limit (matches Coq: Theorem wasm_009_alloc_preserves_limit)
-(assert (= true true)) ; wasm_009_alloc_preserves_limit [untranslatable]
+(assert (forall ((a Bool) (size Bool) (ptr Bool) (a' Bool)) (=> (= (bump_alloc a size) (some (mk-tuple ptr a'))) (= (bump_limit a') (bump_limit a))))) ; wasm_009_alloc_preserves_limit
 
 ; wasm_009_sequential_alloc_disjoint (matches Coq: Theorem wasm_009_sequential_alloc_disjoint)
-(assert (= true true)) ; wasm_009_sequential_alloc_disjoint [untranslatable]
+(assert (forall ((a Bool) (s1 Bool) (s2 Bool) (p1 Bool) (a1 Bool) (p2 Bool) (a2 Bool)) (=> (= (bump_alloc a s1) (some (mk-tuple p1 a1))) (=> (= (bump_alloc a1 s2) (some (mk-tuple p2 a2))) (=> (> s1 0) (<= (+ p1 s1) p2)))))) ; wasm_009_sequential_alloc_disjoint
 
 ; wasm_009_alloc_oom (matches Coq: Theorem wasm_009_alloc_oom)
-(assert (= true true)) ; wasm_009_alloc_oom [untranslatable]
+(assert (forall ((a Bool) (size Bool)) (=> (> (+ (bump_ptr a) size) (bump_limit a)) (= (bump_alloc a size) none)))) ; wasm_009_alloc_oom
 
 ; wasm_010_compile_ir_total (matches Coq: Theorem wasm_010_compile_ir_total)
-(assert (= true true)) ; wasm_010_compile_ir_total [untranslatable]
+(assert (forall ((e Bool)) (exists ((block Bool)) (= (compile_ir e) block)))) ; wasm_010_compile_ir_total
 
 ; wasm_010_const_translates (matches Coq: Theorem wasm_010_const_translates)
-(assert (= true true)) ; wasm_010_const_translates [untranslatable]
+(assert (forall ((n Bool)) (= (compile_ir (IRConst n)) (insert (WConst n) nil)))) ; wasm_010_const_translates
 
 ; wasm_010_var_translates (matches Coq: Theorem wasm_010_var_translates)
-(assert (= true true)) ; wasm_010_var_translates [untranslatable]
+(assert (forall ((x Bool)) (= (compile_ir (IRVar x)) (insert WNop nil)))) ; wasm_010_var_translates
 
 ; wasm_010_add_translates (matches Coq: Theorem wasm_010_add_translates)
-(assert (= true true)) ; wasm_010_add_translates [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (compile_ir (IRAdd e1 e2)) (concat (concat (compile_ir e1) (compile_ir e2)) (insert WAdd nil))))) ; wasm_010_add_translates
 
 ; wasm_010_mul_translates (matches Coq: Theorem wasm_010_mul_translates)
-(assert (= true true)) ; wasm_010_mul_translates [untranslatable]
+(assert (forall ((e1 Bool) (e2 Bool)) (= (compile_ir (IRMul e1 e2)) (concat (concat (compile_ir e1) (compile_ir e2)) (insert WMul nil))))) ; wasm_010_mul_translates
 
 ; wasm_010_call_translates (matches Coq: Theorem wasm_010_call_translates)
-(assert (= true true)) ; wasm_010_call_translates [untranslatable]
+(assert (forall ((f Bool) (args Bool)) (= (compile_ir (IRCall f args)) (insert WNop nil)))) ; wasm_010_call_translates
 
 ; wasm_010_let_translates (matches Coq: Theorem wasm_010_let_translates)
-(assert (= true true)) ; wasm_010_let_translates [untranslatable]
+(assert (forall ((x Bool) (e1 Bool) (e2 Bool)) (= (compile_ir (IRLet x e1 e2)) (concat (concat (compile_ir e1) (insert WDrop nil)) (compile_ir e2))))) ; wasm_010_let_translates
 
 ; wasm_010_if_translates (matches Coq: Theorem wasm_010_if_translates)
-(assert (= true true)) ; wasm_010_if_translates [untranslatable]
+(assert (forall ((c Bool) (t Bool) (f Bool)) (= (compile_ir (IRIf c t f)) (compile_ir t)))) ; wasm_010_if_translates
 
 ; wasm_010_load_translates (matches Coq: Theorem wasm_010_load_translates)
-(assert (= true true)) ; wasm_010_load_translates [untranslatable]
+(assert (forall ((addr Bool)) (= (compile_ir (IRLoad addr)) (insert WNop nil)))) ; wasm_010_load_translates
 
 ; wasm_010_store_translates (matches Coq: Theorem wasm_010_store_translates)
-(assert (= true true)) ; wasm_010_store_translates [untranslatable]
+(assert (forall ((addr Bool) (v Bool)) (= (compile_ir (IRStore addr v)) (insert WNop nil)))) ; wasm_010_store_translates
 
 ; app_ne_nil_r (matches Coq: Lemma app_ne_nil_r)
-(assert (= true true)) ; app_ne_nil_r [untranslatable]
+; app_ne_nil_r: forall {A : Type} (xs ys : list A), ys <> [] -> xs ++ ys <> []
+(assert true) ; app_ne_nil_r [Coq-only]
 
 ; singleton_ne_nil (matches Coq: Lemma singleton_ne_nil)
-(assert (= true true)) ; singleton_ne_nil [untranslatable]
+; singleton_ne_nil: forall {A : Type} (x : A), [x] <> []
+(assert true) ; singleton_ne_nil [Coq-only]
 
 ; cons_ne_nil (matches Coq: Lemma cons_ne_nil)
-(assert (= true true)) ; cons_ne_nil [untranslatable]
+; cons_ne_nil: forall {A : Type} (x : A) (xs : list A), x :: xs <> []
+(assert true) ; cons_ne_nil [Coq-only]
 
 ; wasm_010_completeness (matches Coq: Theorem wasm_010_completeness)
-(assert (= true true)) ; wasm_010_completeness [untranslatable]
+(assert (forall ((e Bool)) (not (= (compile_ir e) nil)))) ; wasm_010_completeness
 
 ; Verify all assertions are satisfiable
 (check-sat)

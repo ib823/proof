@@ -117,121 +117,127 @@
   true)
 
 ; nth_map_seq (matches Coq: Lemma nth_map_seq)
-(assert (= true true)) ; nth_map_seq [untranslatable]
+(assert (forall ((A Type)) (forall ((f nat -> A)) (forall ((start Int) (len Int) (i Int) (d A)) (=> (< i len) (= (nth i (map f (seq start len)) d) (f (+ start i)))))))) ; nth_map_seq
 
 ; PSI_001_01_poly_eval_zero (matches Coq: Theorem PSI_001_01_poly_eval_zero)
-(assert (= true true)) ; PSI_001_01_poly_eval_zero [untranslatable]
+; PSI_001_01_poly_eval_zero: forall coeffs p, p > 0 -> poly_eval coeffs 0 p = match coeffs with [] => 0 | a :: _ => a mod p end
+(assert (forall ((coeffs Bool) (p Bool)) true)) ; PSI_001_01_poly_eval_zero [partial: bindings preserved]
 
 ; PSI_001_02_generate_shares_length (matches Coq: Theorem PSI_001_02_generate_shares_length)
-(assert (= true true)) ; PSI_001_02_generate_shares_length [untranslatable]
+(assert (forall ((coeffs Bool) (n Bool) (p Bool)) (= (length (generate_shares coeffs n p)) n))) ; PSI_001_02_generate_shares_length
 
 ; PSI_001_03_threshold_monotone (matches Coq: Theorem PSI_001_03_threshold_monotone)
-(assert (= true true)) ; PSI_001_03_threshold_monotone [untranslatable]
+(assert (forall ((shares Bool) (k1 Bool) (k2 Bool)) (=> (<= k1 k2) (=> (= (threshold_met shares k2) true) (= (threshold_met shares k1) true))))) ; PSI_001_03_threshold_monotone
 
 ; PSI_001_04_insufficient_shares (matches Coq: Theorem PSI_001_04_insufficient_shares)
-(assert (= true true)) ; PSI_001_04_insufficient_shares [untranslatable]
+(assert (forall ((shares Bool) (k Bool)) (=> (< (length shares) k) (= (threshold_met shares k) false)))) ; PSI_001_04_insufficient_shares
 
 ; PSI_001_05_share_x_positive (matches Coq: Theorem PSI_001_05_share_x_positive)
-(assert (= true true)) ; PSI_001_05_share_x_positive [untranslatable]
+; PSI_001_05_share_x_positive: forall coeffs n p i, i < n -> share_x (nth i (generate_shares coeffs n p) {| share_x := 0; share_y := 0 |}) > 0
+(assert (forall ((coeffs Bool) (n Bool) (p Bool) (i Bool)) true)) ; PSI_001_05_share_x_positive [partial: bindings preserved]
 
 ; PSI_001_06_shares_distinct_x (matches Coq: Theorem PSI_001_06_shares_distinct_x)
-(assert (= true true)) ; PSI_001_06_shares_distinct_x [untranslatable]
+; PSI_001_06_shares_distinct_x: forall coeffs n p i j, i < n -> j < n -> i <> j -> share_x (nth i (generate_shares coeffs n p) {| share_x := 0; share_y 
+(assert (forall ((coeffs Bool) (n Bool) (p Bool) (i Bool) (j Bool)) true)) ; PSI_001_06_shares_distinct_x [partial: bindings preserved]
 
 ; PSI_001_07_secret_is_constant_term (matches Coq: Theorem PSI_001_07_secret_is_constant_term)
-(assert (= true true)) ; PSI_001_07_secret_is_constant_term [untranslatable]
+; PSI_001_07_secret_is_constant_term: forall a0 rest, secret_from_poly (a0 :: rest) = a0
+(assert (forall ((a0 Bool) (rest Bool)) true)) ; PSI_001_07_secret_is_constant_term [partial: bindings preserved]
 
 ; PSI_001_08_empty_poly_zero_secret (matches Coq: Theorem PSI_001_08_empty_poly_zero_secret)
-(assert (= true true)) ; PSI_001_08_empty_poly_zero_secret [untranslatable]
+(assert (= (secret_from_poly nil) 0)) ; PSI_001_08_empty_poly_zero_secret
 
 ; PSI_002_01_single_approval_insufficient (matches Coq: Theorem PSI_002_01_single_approval_insufficient)
-(assert (= true true)) ; PSI_002_01_single_approval_insufficient [untranslatable]
+(assert (forall ((pol Bool) (party Bool)) (=> (> (tp_n pol) 1) (=> (= (tp_approvals pol) nil) (= (tp_approved (tp_add_approval pol party)) false))))) ; PSI_002_01_single_approval_insufficient
 
 ; PSI_002_02_approval_monotone (matches Coq: Theorem PSI_002_02_approval_monotone)
-(assert (= true true)) ; PSI_002_02_approval_monotone [untranslatable]
+(assert (forall ((pol Bool) (party Bool)) (=> (= (tp_approved pol) true) (= (tp_approved (tp_add_approval pol party)) true)))) ; PSI_002_02_approval_monotone
 
 ; PSI_002_03_duplicate_approval_noop (matches Coq: Theorem PSI_002_03_duplicate_approval_noop)
-(assert (= true true)) ; PSI_002_03_duplicate_approval_noop [untranslatable]
+(assert (forall ((pol Bool) (party Bool)) (=> (= (existsb (Nat.eqb party) (tp_approvals pol)) true) (= (tp_add_approval pol party) pol)))) ; PSI_002_03_duplicate_approval_noop
 
 ; PSI_002_04_valid_policy_n_le_m (matches Coq: Theorem PSI_002_04_valid_policy_n_le_m)
-(assert (= true true)) ; PSI_002_04_valid_policy_n_le_m [untranslatable]
+(assert (forall ((pol Bool)) (=> (= (tp_valid pol) true) (<= (tp_n pol) (tp_m pol))))) ; PSI_002_04_valid_policy_n_le_m
 
 ; PSI_002_05_valid_policy_n_positive (matches Coq: Theorem PSI_002_05_valid_policy_n_positive)
-(assert (= true true)) ; PSI_002_05_valid_policy_n_positive [untranslatable]
+(assert (forall ((pol Bool)) (=> (= (tp_valid pol) true) (>= (tp_n pol) 1)))) ; PSI_002_05_valid_policy_n_positive
 
 ; PSI_002_06_approval_count_increases (matches Coq: Theorem PSI_002_06_approval_count_increases)
-(assert (= true true)) ; PSI_002_06_approval_count_increases [untranslatable]
+(assert (forall ((pol Bool) (party Bool)) (=> (= (existsb (Nat.eqb party) (tp_approvals pol)) false) (= (length (tp_approvals (tp_add_approval pol party))) (S (length (tp_approvals pol))))))) ; PSI_002_06_approval_count_increases
 
 ; PSI_003_01_duress_triggers_alert (matches Coq: Theorem PSI_003_01_duress_triggers_alert)
-(assert (= true true)) ; PSI_003_01_duress_triggers_alert [untranslatable]
+(assert (forall ((code Bool)) (= (dr_silent_alert (handle_auth (DuressAuth code))) true))) ; PSI_003_01_duress_triggers_alert
 
 ; PSI_003_02_duress_provides_fake (matches Coq: Theorem PSI_003_02_duress_provides_fake)
-(assert (= true true)) ; PSI_003_02_duress_provides_fake [untranslatable]
+(assert (forall ((code Bool)) (= (dr_fake_access (handle_auth (DuressAuth code))) true))) ; PSI_003_02_duress_provides_fake
 
 ; PSI_003_03_duress_locks_down (matches Coq: Theorem PSI_003_03_duress_locks_down)
-(assert (= true true)) ; PSI_003_03_duress_locks_down [untranslatable]
+(assert (forall ((code Bool)) (= (dr_real_lockdown (handle_auth (DuressAuth code))) true))) ; PSI_003_03_duress_locks_down
 
 ; PSI_003_04_all_auth_audited (matches Coq: Theorem PSI_003_04_all_auth_audited)
-(assert (= true true)) ; PSI_003_04_all_auth_audited [untranslatable]
+(assert (forall ((mode Bool)) (= (dr_audit_logged (handle_auth mode)) true))) ; PSI_003_04_all_auth_audited
 
 ; PSI_003_05_normal_no_fake (matches Coq: Theorem PSI_003_05_normal_no_fake)
-(assert (= true true)) ; PSI_003_05_normal_no_fake [untranslatable]
+(assert (forall ((key Bool)) (= (dr_fake_access (handle_auth (NormalAuth key))) false))) ; PSI_003_05_normal_no_fake
 
 ; PSI_003_06_normal_no_alert (matches Coq: Theorem PSI_003_06_normal_no_alert)
-(assert (= true true)) ; PSI_003_06_normal_no_alert [untranslatable]
+(assert (forall ((key Bool)) (= (dr_silent_alert (handle_auth (NormalAuth key))) false))) ; PSI_003_06_normal_no_alert
 
 ; PSI_004_01_checkin_resets (matches Coq: Theorem PSI_004_01_checkin_resets)
-(assert (= true true)) ; PSI_004_01_checkin_resets [untranslatable]
+(assert (forall ((dms Bool) (now Bool)) (= (dms_triggered (dms_checkin dms now)) false))) ; PSI_004_01_checkin_resets
 
 ; PSI_004_02_checkin_updates_time (matches Coq: Theorem PSI_004_02_checkin_updates_time)
-(assert (= true true)) ; PSI_004_02_checkin_updates_time [untranslatable]
+(assert (forall ((dms Bool) (now Bool)) (= (dms_last_checkin (dms_checkin dms now)) now))) ; PSI_004_02_checkin_updates_time
 
 ; PSI_004_03_timeout_triggers (matches Coq: Theorem PSI_004_03_timeout_triggers)
-(assert (= true true)) ; PSI_004_03_timeout_triggers [untranslatable]
+(assert (forall ((dms Bool) (now Bool)) (=> (< (+ (dms_timeout dms) (dms_last_checkin dms)) now) (= (dms_triggered (dms_check dms now)) true)))) ; PSI_004_03_timeout_triggers
 
 ; PSI_004_04_no_timeout_no_trigger (matches Coq: Theorem PSI_004_04_no_timeout_no_trigger)
-(assert (= true true)) ; PSI_004_04_no_timeout_no_trigger [untranslatable]
+(assert (forall ((dms Bool) (now Bool)) (=> (<= now (+ (dms_timeout dms) (dms_last_checkin dms))) (=> (= (dms_triggered dms) false) (= (dms_triggered (dms_check dms now)) false))))) ; PSI_004_04_no_timeout_no_trigger
 
 ; PSI_004_05_recovery_action_preserved (matches Coq: Theorem PSI_004_05_recovery_action_preserved)
-(assert (= true true)) ; PSI_004_05_recovery_action_preserved [untranslatable]
+(assert (forall ((dms Bool) (now Bool)) (= (dms_recovery_action (dms_check dms now)) (dms_recovery_action dms)))) ; PSI_004_05_recovery_action_preserved
 
 ; PSI_005_01_budget_enforced (matches Coq: Theorem PSI_005_01_budget_enforced)
-(assert (= true true)) ; PSI_005_01_budget_enforced [untranslatable]
+(assert (forall ((budget Bool) (bytes Bool)) (=> (= (ib_can_query budget bytes) true) (<= (+ (ib_bytes_used budget) bytes) (ib_max_bytes budget))))) ; PSI_005_01_budget_enforced
 
 ; PSI_005_02_budget_query_count (matches Coq: Theorem PSI_005_02_budget_query_count)
-(assert (= true true)) ; PSI_005_02_budget_query_count [untranslatable]
+(assert (forall ((budget Bool) (bytes Bool)) (=> (= (ib_can_query budget bytes) true) (< (ib_queries_used budget) (ib_max_queries budget))))) ; PSI_005_02_budget_query_count
 
 ; PSI_005_03_record_increases_bytes (matches Coq: Theorem PSI_005_03_record_increases_bytes)
-(assert (= true true)) ; PSI_005_03_record_increases_bytes [untranslatable]
+; PSI_005_03_record_increases_bytes: forall budget bytes, (ib_record_query budget bytes).(ib_bytes_used) = budget.(ib_bytes_used) + bytes
+(assert (forall ((budget Bool) (bytes Bool)) true)) ; PSI_005_03_record_increases_bytes [partial: bindings preserved]
 
 ; PSI_005_04_record_increases_queries (matches Coq: Theorem PSI_005_04_record_increases_queries)
-(assert (= true true)) ; PSI_005_04_record_increases_queries [untranslatable]
+; PSI_005_04_record_increases_queries: forall budget bytes, (ib_record_query budget bytes).(ib_queries_used) = S (budget.(ib_queries_used))
+(assert (forall ((budget Bool) (bytes Bool)) true)) ; PSI_005_04_record_increases_queries [partial: bindings preserved]
 
 ; PSI_005_05_audit_append_preserves (matches Coq: Theorem PSI_005_05_audit_append_preserves)
-(assert (= true true)) ; PSI_005_05_audit_append_preserves [untranslatable]
+(assert (forall ((log Bool) (entry Bool)) (= (In entry (audit_log_append log entry)) true))) ; PSI_005_05_audit_append_preserves
 
 ; PSI_006_01_timelock_cancellation_window (matches Coq: Theorem PSI_006_01_timelock_cancellation_window)
-(assert (= true true)) ; PSI_006_01_timelock_cancellation_window [untranslatable]
+(assert (forall ((tl Bool) (now Bool)) (=> (< now (tl_execute_time tl)) (= (tl_can_cancel tl now) true)))) ; PSI_006_01_timelock_cancellation_window
 
 ; PSI_006_02_cancelled_cannot_execute (matches Coq: Theorem PSI_006_02_cancelled_cannot_execute)
-(assert (= true true)) ; PSI_006_02_cancelled_cannot_execute [untranslatable]
+(assert (forall ((tl Bool) (now Bool)) (=> (= (tl_cancelled tl) true) (= (tl_can_execute tl now) false)))) ; PSI_006_02_cancelled_cannot_execute
 
 ; PSI_006_03_cancel_sets_flag (matches Coq: Theorem PSI_006_03_cancel_sets_flag)
-(assert (= true true)) ; PSI_006_03_cancel_sets_flag [untranslatable]
+(assert (forall ((tl Bool)) (= (tl_cancelled (tl_cancel tl)) true))) ; PSI_006_03_cancel_sets_flag
 
 ; PSI_006_04_early_execute_blocked (matches Coq: Theorem PSI_006_04_early_execute_blocked)
-(assert (= true true)) ; PSI_006_04_early_execute_blocked [untranslatable]
+(assert (forall ((tl Bool) (now Bool)) (=> (< now (tl_execute_time tl)) (= (tl_can_execute tl now) false)))) ; PSI_006_04_early_execute_blocked
 
 ; PSI_006_05_cancel_preserves_operation (matches Coq: Theorem PSI_006_05_cancel_preserves_operation)
-(assert (= true true)) ; PSI_006_05_cancel_preserves_operation [untranslatable]
+(assert (forall ((tl Bool)) (= (tl_operation (tl_cancel tl)) (tl_operation tl)))) ; PSI_006_05_cancel_preserves_operation
 
 ; PSI_007_01_different_vendor_independent (matches Coq: Theorem PSI_007_01_different_vendor_independent)
-(assert (= true true)) ; PSI_007_01_different_vendor_independent [untranslatable]
+(assert (forall ((p1 Bool) (p2 Bool)) (=> (not (= (plat_vendor p1) (plat_vendor p2))) (= (platforms_independent p1 p2) true)))) ; PSI_007_01_different_vendor_independent
 
 ; PSI_007_02_nversion_single_agrees (matches Coq: Theorem PSI_007_02_nversion_single_agrees)
-(assert (= true true)) ; PSI_007_02_nversion_single_agrees [untranslatable]
+(assert (forall ((r Bool)) (= (nversion_agree (insert r nil)) true))) ; PSI_007_02_nversion_single_agrees
 
 ; PSI_007_03_nversion_empty_agrees (matches Coq: Theorem PSI_007_03_nversion_empty_agrees)
-(assert (= true true)) ; PSI_007_03_nversion_empty_agrees [untranslatable]
+(assert (= (nversion_agree nil) true)) ; PSI_007_03_nversion_empty_agrees
 
 ; Verify all assertions are satisfiable
 (check-sat)

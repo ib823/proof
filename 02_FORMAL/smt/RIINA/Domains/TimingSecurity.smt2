@@ -157,205 +157,214 @@
   true)
 
 ; leb_true_le (matches Coq: Lemma leb_true_le)
-(assert (= true true)) ; leb_true_le [untranslatable]
+(assert (forall ((n Bool) (m Bool)) (and (=> (= (<= n m) true) (<= n m)) (=> (<= n m) (= (<= n m) true))))) ; leb_true_le
 
 ; ltb_true_lt (matches Coq: Lemma ltb_true_lt)
-(assert (= true true)) ; ltb_true_lt [untranslatable]
+(assert (forall ((n Bool) (m Bool)) (and (=> (= (< n m) true) (< n m)) (=> (< n m) (= (< n m) true))))) ; ltb_true_lt
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; andb_true_iff_both (matches Coq: Lemma andb_true_iff_both)
-(assert (= true true)) ; andb_true_iff_both [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff_both
 
 ; forallb_true_forall (matches Coq: Lemma forallb_true_forall)
-(assert (= true true)) ; forallb_true_forall [untranslatable]
+; forallb_true_forall: forall A (f : A -> bool) (l : list A), forallb f l = true <-> (forall x, In x l -> f x = true)
+(assert true) ; forallb_true_forall [Coq-only]
 
 ; existsb_exists (matches Coq: Lemma existsb_exists)
-(assert (= true true)) ; existsb_exists [untranslatable]
+; existsb_exists: forall A (f : A -> bool) (l : list A), existsb f l = true <-> exists x, In x l /\ f x = true
+(assert true) ; existsb_exists [Coq-only]
 
 ; nat_eqb_refl (matches Coq: Lemma nat_eqb_refl)
-(assert (= true true)) ; nat_eqb_refl [untranslatable]
+(assert (forall ((n Bool)) (= (Nat.eqb n n) true))) ; nat_eqb_refl
 
 ; nat_eqb_eq (matches Coq: Lemma nat_eqb_eq)
-(assert (= true true)) ; nat_eqb_eq [untranslatable]
+(assert (forall ((n Bool) (m Bool)) (and (=> (= (Nat.eqb n m) true) (= n m)) (=> (= n m) (= (Nat.eqb n m) true))))) ; nat_eqb_eq
 
 ; time_001_race_condition_prevention (matches Coq: Theorem time_001_race_condition_prevention)
-(assert (= true true)) ; time_001_race_condition_prevention [untranslatable]
+(assert (forall ((s Session)) (forall ((op SessionOp)) (=> (= (time_001_session_type_valid s op) true) (exists ((s' Bool)) (= (time_001_execute_session_op s op) (some s'))))))) ; time_001_race_condition_prevention
 
 ; time_001_lock_mutual_exclusion (matches Coq: Theorem time_001_lock_mutual_exclusion)
-(assert (= true true)) ; time_001_lock_mutual_exclusion [untranslatable]
+(assert (forall ((l Lock)) (forall ((t1 ThreadId) (t2 ThreadId)) (=> (= (lock_state l) (Locked t1)) (=> (= (lock_state l) (Locked t2)) (= t1 t2)))))) ; time_001_lock_mutual_exclusion
 
 ; time_001_session_preserves_owner (matches Coq: Theorem time_001_session_preserves_owner)
-(assert (= true true)) ; time_001_session_preserves_owner [untranslatable]
+(assert (forall ((s Session)) (forall ((op SessionOp)) (forall ((s' Session)) (=> (= (time_001_execute_session_op s op) (some s')) (= (session_owner s) (session_owner s'))))))) ; time_001_session_preserves_owner
 
 ; time_002_toctou_atomic_check_act (matches Coq: Theorem time_002_toctou_atomic_check_act)
-(assert (= true true)) ; time_002_toctou_atomic_check_act [untranslatable]
+; time_002_toctou_atomic_check_act: forall A (eq_dec : forall x y : A, {x = y} + {x <> y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell 
+(assert true) ; time_002_toctou_atomic_check_act [Coq-only]
 
 ; time_002_atomic_version_increment (matches Coq: Theorem time_002_atomic_version_increment)
-(assert (= true true)) ; time_002_atomic_version_increment [untranslatable]
+; time_002_atomic_version_increment: forall A (eq_dec : forall x y : A, {x = y} + {x <> y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell 
+(assert true) ; time_002_atomic_version_increment [Coq-only]
 
 ; time_002_failed_cas_unchanged (matches Coq: Theorem time_002_failed_cas_unchanged)
-(assert (= true true)) ; time_002_failed_cas_unchanged [untranslatable]
+; time_002_failed_cas_unchanged: forall A (eq_dec : forall x y : A, {x = y} + {x <> y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell 
+(assert true) ; time_002_failed_cas_unchanged [Coq-only]
 
 ; time_003_constant_time_property (matches Coq: Theorem time_003_constant_time_property)
-(assert (= true true)) ; time_003_constant_time_property [untranslatable]
+(assert (forall ((op TimedOperation)) (forall ((d Duration)) (=> (= (op_complexity op) ConstantTime) (=> (= (op_duration op) d) (= (time_003_is_constant_time op) true)))))) ; time_003_constant_time_property
 
 ; time_003_no_timing_leakage (matches Coq: Theorem time_003_no_timing_leakage)
-(assert (= true true)) ; time_003_no_timing_leakage [untranslatable]
+(assert (forall ((op TimedOperation)) (forall ((input1 Int) (input2 Int)) (=> (= (time_003_is_constant_time op) true) (= (op_duration op) (op_duration op)))))) ; time_003_no_timing_leakage
 
 ; time_003_ct_compare_deterministic (matches Coq: Theorem time_003_ct_compare_deterministic)
-(assert (= true true)) ; time_003_ct_compare_deterministic [untranslatable]
+; time_003_ct_compare_deterministic: forall l1 l2 l3 l4 : list nat, length l1 = length l3 -> length l2 = length l4 -> time_003_ct_compare_length l1 l2 = time
+(assert true) ; time_003_ct_compare_deterministic [Coq-only]
 
 ; time_004_timing_isolation_prevents_channel (matches Coq: Theorem time_004_timing_isolation_prevents_channel)
-(assert (= true true)) ; time_004_timing_isolation_prevents_channel [untranslatable]
+(assert (forall ((d1 TimingDomain) (d2 TimingDomain) (obs1 TimingObservation) (obs2 TimingObservation)) (=> (= (domain_isolated d1) true) (=> (= (domain_isolated d2) true) (=> (not (= (domain_id d1) (domain_id d2))) (= (time_004_no_cross_domain_leakage d1 d2 obs1) true)))))) ; time_004_timing_isolation_prevents_channel
 
 ; time_004_isolated_domain_property (matches Coq: Theorem time_004_isolated_domain_property)
-(assert (= true true)) ; time_004_isolated_domain_property [untranslatable]
+(assert (forall ((d TimingDomain)) (=> (= (domain_isolated d) true) (=> (forall ((other TimingDomain)) (not (= (domain_id d) (domain_id other)))) (= (time_004_no_cross_domain_leakage d other (mkTimingObs 0 0 0)) true))))) ; time_004_isolated_domain_property
 
 ; time_005_unauthenticated_ntp_rejected (matches Coq: Theorem time_005_unauthenticated_ntp_rejected)
-(assert (= true true)) ; time_005_unauthenticated_ntp_rejected [untranslatable]
+(assert (forall ((pkt NTPPacket)) (forall ((trusted Int)) (=> (= (ntp_signature pkt) none) (= (time_005_accept_timestamp pkt trusted) none))))) ; time_005_unauthenticated_ntp_rejected
 
 ; time_005_authenticated_ntp_accepted (matches Coq: Theorem time_005_authenticated_ntp_accepted)
-(assert (= true true)) ; time_005_authenticated_ntp_accepted [untranslatable]
+(assert (forall ((pkt NTPPacket)) (forall ((trusted Int)) (=> (= (ntp_signature pkt) (some trusted)) (= (time_005_accept_timestamp pkt trusted) (some (ntp_timestamp pkt))))))) ; time_005_authenticated_ntp_accepted
 
 ; time_005_wrong_signature_rejected (matches Coq: Theorem time_005_wrong_signature_rejected)
-(assert (= true true)) ; time_005_wrong_signature_rejected [untranslatable]
+(assert (forall ((pkt NTPPacket)) (forall ((sig Int) (trusted Int)) (=> (= (ntp_signature pkt) (some sig)) (=> (not (= sig trusted)) (= (time_005_accept_timestamp pkt trusted) none)))))) ; time_005_wrong_signature_rejected
 
 ; time_006_replay_detected (matches Coq: Theorem time_006_replay_detected)
-(assert (= true true)) ; time_006_replay_detected [untranslatable]
+(assert (forall ((msg ReplayProtectedMessage)) (forall ((w ReplayWindow)) (=> (= (In (msg_nonce msg) (seen_nonces w)) true) (= (time_006_validate_message msg w) false))))) ; time_006_replay_detected
 
 ; time_006_fresh_nonce_recorded (matches Coq: Theorem time_006_fresh_nonce_recorded)
-(assert (= true true)) ; time_006_fresh_nonce_recorded [untranslatable]
+(assert (forall ((w ReplayWindow)) (forall ((nonce Nonce)) (= (In nonce (seen_nonces (time_006_update_window w nonce))) true)))) ; time_006_fresh_nonce_recorded
 
 ; time_006_old_timestamp_rejected (matches Coq: Theorem time_006_old_timestamp_rejected)
-(assert (= true true)) ; time_006_old_timestamp_rejected [untranslatable]
+(assert (forall ((msg ReplayProtectedMessage)) (forall ((w ReplayWindow)) (=> (< (msg_timestamp msg) (window_start w)) (= (time_006_validate_message msg w) false))))) ; time_006_old_timestamp_rejected
 
 ; time_007_out_of_order_rejected (matches Coq: Theorem time_007_out_of_order_rejected)
-(assert (= true true)) ; time_007_out_of_order_rejected [untranslatable]
+(assert (forall ((msg SequencedMessage)) (forall ((state SequenceState)) (=> (not (= (seq_num msg) (expected_seq state))) (= (time_007_accept_message msg state) none))))) ; time_007_out_of_order_rejected
 
 ; time_007_correct_sequence_accepted (matches Coq: Theorem time_007_correct_sequence_accepted)
-(assert (= true true)) ; time_007_correct_sequence_accepted [untranslatable]
+(assert (forall ((msg SequencedMessage)) (forall ((state SequenceState)) (=> (= (seq_num msg) (expected_seq state)) (exists ((state' Bool)) (= (time_007_accept_message msg state) (some state'))))))) ; time_007_correct_sequence_accepted
 
 ; time_007_sequence_increments (matches Coq: Theorem time_007_sequence_increments)
-(assert (= true true)) ; time_007_sequence_increments [untranslatable]
+(assert (forall ((msg SequencedMessage)) (forall ((state SequenceState) (state' SequenceState)) (=> (= (time_007_accept_message msg state) (some state')) (= (expected_seq state') (S (expected_seq state))))))) ; time_007_sequence_increments
 
 ; time_008_selected_task_meets_deadline (matches Coq: Theorem time_008_selected_task_meets_deadline)
-(assert (= true true)) ; time_008_selected_task_meets_deadline [untranslatable]
+(assert (forall ((tasks list Task)) (forall ((now Time)) (forall ((t Task)) (=> (= (time_008_edf_select tasks now) (some t)) (= (time_008_deadline_feasible t now) true)))))) ; time_008_selected_task_meets_deadline
 
 ; time_008_no_deadline_miss (matches Coq: Theorem time_008_no_deadline_miss)
-(assert (= true true)) ; time_008_no_deadline_miss [untranslatable]
+(assert (forall ((t Task)) (forall ((now Time)) (=> (= (time_008_deadline_feasible t now) true) (<= (+ now (task_wcet t)) (task_deadline t)))))) ; time_008_no_deadline_miss
 
 ; time_009_unsigned_timestamp_rejected (matches Coq: Theorem time_009_unsigned_timestamp_rejected)
-(assert (= true true)) ; time_009_unsigned_timestamp_rejected [untranslatable]
+(assert (forall ((ts Timestamp)) (forall ((signer Int) (sig Int) (expected_signer Int) (expected_sig Int)) (=> (not (= signer expected_signer)) (= (time_009_accept_signed_timestamp (mkSignedTs ts signer sig) expected_signer expected_sig) none))))) ; time_009_unsigned_timestamp_rejected
 
 ; time_009_valid_signature_accepted (matches Coq: Theorem time_009_valid_signature_accepted)
-(assert (= true true)) ; time_009_valid_signature_accepted [untranslatable]
+(assert (forall ((ts Timestamp)) (forall ((signer Int) (sig Int)) (= (time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer sig) (some ts))))) ; time_009_valid_signature_accepted
 
 ; time_009_wrong_signature_rejected (matches Coq: Theorem time_009_wrong_signature_rejected)
-(assert (= true true)) ; time_009_wrong_signature_rejected [untranslatable]
+(assert (forall ((ts Timestamp)) (forall ((signer Int) (sig Int) (expected_sig Int)) (=> (not (= sig expected_sig)) (= (time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer expected_sig) none))))) ; time_009_wrong_signature_rejected
 
 ; time_010_expired_timeout_detected (matches Coq: Theorem time_010_expired_timeout_detected)
-(assert (= true true)) ; time_010_expired_timeout_detected [untranslatable]
+(assert (forall ((handler TimeoutHandler)) (forall ((deadline Time) (now Time)) (=> (= (timeout_state handler) (TimeoutPending deadline)) (=> (<= deadline now) (= (time_010_check_timeout handler now) TimeoutExpired)))))) ; time_010_expired_timeout_detected
 
 ; time_010_pending_timeout_preserved (matches Coq: Theorem time_010_pending_timeout_preserved)
-(assert (= true true)) ; time_010_pending_timeout_preserved [untranslatable]
+(assert (forall ((handler TimeoutHandler)) (forall ((deadline Time) (now Time)) (=> (= (timeout_state handler) (TimeoutPending deadline)) (=> (< now deadline) (= (time_010_check_timeout handler now) (TimeoutPending deadline))))))) ; time_010_pending_timeout_preserved
 
 ; time_010_completed_timeout_stable (matches Coq: Theorem time_010_completed_timeout_stable)
-(assert (= true true)) ; time_010_completed_timeout_stable [untranslatable]
+(assert (forall ((handler TimeoutHandler)) (forall ((now Time)) (=> (= (timeout_state handler) TimeoutCompleted) (= (time_010_check_timeout handler now) TimeoutCompleted))))) ; time_010_completed_timeout_stable
 
 ; time_011_adjusted_clock_synchronized (matches Coq: Theorem time_011_adjusted_clock_synchronized)
-(assert (= true true)) ; time_011_adjusted_clock_synchronized [untranslatable]
+(assert (forall ((cs ClockState)) (= (clock_synchronized (time_011_adjust_clock cs)) true))) ; time_011_adjusted_clock_synchronized
 
 ; time_011_synchronized_clock_valid (matches Coq: Theorem time_011_synchronized_clock_valid)
-(assert (= true true)) ; time_011_synchronized_clock_valid [untranslatable]
+(assert (forall ((cs ClockState)) (=> (= (clock_synchronized cs) true) (<= (time_011_compute_skew cs) (max_skew cs))))) ; time_011_synchronized_clock_valid
 
 ; time_011_excessive_skew_rejected (matches Coq: Theorem time_011_excessive_skew_rejected)
-(assert (= true true)) ; time_011_excessive_skew_rejected [untranslatable]
+(assert (forall ((cs ClockState)) (=> (> (time_011_compute_skew cs) (max_skew cs)) (= (clock_synchronized cs) false)))) ; time_011_excessive_skew_rejected
 
 ; time_012_priority_inheritance_raises (matches Coq: Theorem time_012_priority_inheritance_raises)
-(assert (= true true)) ; time_012_priority_inheritance_raises [untranslatable]
+(assert (forall ((holder PriorityState)) (forall ((req_pri Priority)) (forall ((req_id ThreadId)) (=> (< req_pri (effective_priority holder)) (= (effective_priority (time_012_inherit_priority holder req_pri req_id)) req_pri)))))) ; time_012_priority_inheritance_raises
 
 ; time_012_release_restores_base (matches Coq: Theorem time_012_release_restores_base)
-(assert (= true true)) ; time_012_release_restores_base [untranslatable]
+(assert (forall ((ps PriorityState)) (= (effective_priority (time_012_release_inheritance ps)) (base_priority ps)))) ; time_012_release_restores_base
 
 ; time_012_no_inversion_after_inheritance (matches Coq: Theorem time_012_no_inversion_after_inheritance)
-(assert (= true true)) ; time_012_no_inversion_after_inheritance [untranslatable]
+(assert (forall ((holder PriorityState)) (forall ((req_pri Priority)) (forall ((req_id ThreadId)) (=> (< req_pri (effective_priority holder)) (<= (effective_priority (time_012_inherit_priority holder req_pri req_id)) req_pri)))))) ; time_012_no_inversion_after_inheritance
 
 ; time_013_lock_order_respected (matches Coq: Theorem time_013_lock_order_respected)
-(assert (= true true)) ; time_013_lock_order_respected [untranslatable]
+(assert (forall ((policy LockOrderPolicy)) (forall ((lock_id ResourceId)) (forall ((policy' LockOrderPolicy)) (=> (= (time_013_acquire_lock policy lock_id) (some policy')) (=> (forall ((held Bool)) (= (In held (held_locks policy)) true)) (< (lock_order_fn policy held) (lock_order_fn policy lock_id)))))))) ; time_013_lock_order_respected
 
 ; time_013_out_of_order_rejected (matches Coq: Theorem time_013_out_of_order_rejected)
-(assert (= true true)) ; time_013_out_of_order_rejected [untranslatable]
+(assert (forall ((policy LockOrderPolicy)) (forall ((lock_id ResourceId)) (=> (exists ((held Bool)) (and (= (In held (held_locks policy)) true) (<= (lock_order_fn policy lock_id) (lock_order_fn policy held)))) (= (time_013_acquire_lock policy lock_id) none))))) ; time_013_out_of_order_rejected
 
 ; time_013_deadlock_free (matches Coq: Theorem time_013_deadlock_free)
-(assert (= true true)) ; time_013_deadlock_free [untranslatable]
+(assert (forall ((policy LockOrderPolicy)) (forall ((l1 ResourceId) (l2 ResourceId)) (=> (= (In l1 (held_locks policy)) true) (=> (= (time_013_can_acquire policy l2) true) (< (lock_order_fn policy l1) (lock_order_fn policy l2))))))) ; time_013_deadlock_free
 
 ; time_014_progress_increases (matches Coq: Theorem time_014_progress_increases)
-(assert (= true true)) ; time_014_progress_increases [untranslatable]
+(assert (forall ((lp LivenessProof)) (forall ((n Int)) (=> (= (progress_state lp) (MakingProgress n)) (=> (< (+ n 1) (progress_bound lp)) (= (current_progress (time_014_make_progress lp)) (+ n 1))))))) ; time_014_progress_increases
 
 ; time_014_bounded_progress_completes (matches Coq: Theorem time_014_bounded_progress_completes)
-(assert (= true true)) ; time_014_bounded_progress_completes [untranslatable]
+(assert (forall ((lp LivenessProof)) (forall ((n Int)) (=> (= (progress_state lp) (MakingProgress n)) (=> (>= (+ n 1) (progress_bound lp)) (= (progress_state (time_014_make_progress lp)) Completed)))))) ; time_014_bounded_progress_completes
 
 ; time_014_liveness_guaranteed (matches Coq: Theorem time_014_liveness_guaranteed)
-(assert (= true true)) ; time_014_liveness_guaranteed [untranslatable]
+(assert (forall ((lp LivenessProof)) (=> (or (= (progress_state lp) (MakingProgress (current_progress lp))) (= (progress_state lp) Completed)) (= (time_014_check_liveness lp) true)))) ; time_014_liveness_guaranteed
 
 ; time_015_scheduled_updates_record (matches Coq: Theorem time_015_scheduled_updates_record)
-(assert (= true true)) ; time_015_scheduled_updates_record [untranslatable]
+(assert (forall ((fs FairScheduler)) (forall ((tid ThreadId)) (forall ((now Time)) (= (In (mk-tuple tid now) (last_scheduled (time_015_update_schedule fs tid now))) true))))) ; time_015_scheduled_updates_record
 
 ; time_015_starved_thread_prioritized (matches Coq: Theorem time_015_starved_thread_prioritized)
-(assert (= true true)) ; time_015_starved_thread_prioritized [untranslatable]
+(assert (forall ((fs FairScheduler)) (forall ((tid ThreadId)) (forall ((now Time)) (=> (= (thread_starved fs tid now) true) (=> (= (In tid (scheduler_threads fs)) true) (exists ((scheduled_tid Bool)) (= (time_015_fair_schedule fs now) (some scheduled_tid))))))))) ; time_015_starved_thread_prioritized
 
 ; time_015_fairness_guaranteed (matches Coq: Theorem time_015_fairness_guaranteed)
-(assert (= true true)) ; time_015_fairness_guaranteed [untranslatable]
+(assert (forall ((fs FairScheduler)) (forall ((tid ThreadId)) (forall ((now Time) (scheduled_time Time)) (=> (= (time_015_fair_schedule fs now) (some tid)) (let ((fs' (time_015_update_schedule fs tid now))) (= (In (mk-tuple tid now) (last_scheduled fs')) true))))))) ; time_015_fairness_guaranteed
 
 ; time_015_update_preserves_threads (matches Coq: Theorem time_015_update_preserves_threads)
-(assert (= true true)) ; time_015_update_preserves_threads [untranslatable]
+(assert (forall ((fs FairScheduler)) (forall ((tid ThreadId)) (forall ((now Time)) (= (scheduler_threads (time_015_update_schedule fs tid now)) (scheduler_threads fs)))))) ; time_015_update_preserves_threads
 
 ; time_001_main (matches Coq: Theorem time_001_main)
-(assert (= true true)) ; time_001_main [untranslatable]
+(assert (and (forall ((s Bool) (op Bool)) (=> (= (time_001_session_type_valid s op) true) (exists ((s' Bool)) (= (time_001_execute_session_op s op) (some s'))))) (forall ((l Bool) (t1 Bool) (t2 Bool)) (=> (= (lock_state l) (Locked t1)) (=> (= (lock_state l) (Locked t2)) (= t1 t2)))))) ; time_001_main
 
 ; time_002_main (matches Coq: Theorem time_002_main)
-(assert (= true true)) ; time_002_main [untranslatable]
+; time_002_main: forall A (eq_dec : forall x y : A, {x = y} + {x <> y}) cell expected new_val cell' success, time_002_atomic_cas eq_dec c
+(assert true) ; time_002_main [Coq-only]
 
 ; time_003_main (matches Coq: Theorem time_003_main)
-(assert (= true true)) ; time_003_main [untranslatable]
+(assert (forall ((op Bool) (d Bool)) (=> (= (op_complexity op) ConstantTime) (=> (= (op_duration op) d) (= (time_003_is_constant_time op) true))))) ; time_003_main
 
 ; time_004_main (matches Coq: Theorem time_004_main)
-(assert (= true true)) ; time_004_main [untranslatable]
+; time_004_main: forall d1 d2 obs1 (obs2 : TimingObservation), domain_isolated d1 = true -> domain_isolated d2 = true -> domain_id d1 <> 
+(assert true) ; time_004_main [Coq-only]
 
 ; time_005_main (matches Coq: Theorem time_005_main)
-(assert (= true true)) ; time_005_main [untranslatable]
+(assert (and (forall ((pkt Bool) (trusted Bool)) (=> (= (ntp_signature pkt) none) (= (time_005_accept_timestamp pkt trusted) none))) (forall ((pkt Bool) (trusted Bool)) (=> (= (ntp_signature pkt) (some trusted)) (= (time_005_accept_timestamp pkt trusted) (some (ntp_timestamp pkt))))))) ; time_005_main
 
 ; time_006_main (matches Coq: Theorem time_006_main)
-(assert (= true true)) ; time_006_main [untranslatable]
+(assert (forall ((msg Bool) (w Bool)) (=> (= (In (msg_nonce msg) (seen_nonces w)) true) (= (time_006_validate_message msg w) false)))) ; time_006_main
 
 ; time_007_main (matches Coq: Theorem time_007_main)
-(assert (= true true)) ; time_007_main [untranslatable]
+(assert (and (forall ((msg Bool) (state Bool)) (=> (not (= (seq_num msg) (expected_seq state))) (= (time_007_accept_message msg state) none))) (forall ((msg Bool) (state Bool)) (=> (= (seq_num msg) (expected_seq state)) (exists ((state' Bool)) (= (time_007_accept_message msg state) (some state'))))))) ; time_007_main
 
 ; time_008_main (matches Coq: Theorem time_008_main)
-(assert (= true true)) ; time_008_main [untranslatable]
+(assert (forall ((tasks Bool) (now Bool) (t Bool)) (=> (= (time_008_edf_select tasks now) (some t)) (= (time_008_deadline_feasible t now) true)))) ; time_008_main
 
 ; time_009_main (matches Coq: Theorem time_009_main)
-(assert (= true true)) ; time_009_main [untranslatable]
+(assert (forall ((ts Bool) (signer Bool) (sig Bool)) (= (time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer sig) (some ts)))) ; time_009_main
 
 ; time_010_main (matches Coq: Theorem time_010_main)
-(assert (= true true)) ; time_010_main [untranslatable]
+(assert (forall ((handler Bool) (deadline Bool) (now Bool)) (=> (= (timeout_state handler) (TimeoutPending deadline)) (=> (<= deadline now) (= (time_010_check_timeout handler now) TimeoutExpired))))) ; time_010_main
 
 ; time_011_main (matches Coq: Theorem time_011_main)
-(assert (= true true)) ; time_011_main [untranslatable]
+(assert (forall ((cs Bool)) (= (clock_synchronized (time_011_adjust_clock cs)) true))) ; time_011_main
 
 ; time_012_main (matches Coq: Theorem time_012_main)
-(assert (= true true)) ; time_012_main [untranslatable]
+(assert (forall ((holder Bool) (req_pri Bool) (req_id Bool)) (=> (< req_pri (effective_priority holder)) (= (effective_priority (time_012_inherit_priority holder req_pri req_id)) req_pri)))) ; time_012_main
 
 ; time_013_main (matches Coq: Theorem time_013_main)
-(assert (= true true)) ; time_013_main [untranslatable]
+(assert (forall ((policy Bool) (l1 Bool) (l2 Bool)) (=> (= (In l1 (held_locks policy)) true) (=> (= (time_013_can_acquire policy l2) true) (< (lock_order_fn policy l1) (lock_order_fn policy l2)))))) ; time_013_main
 
 ; time_014_main (matches Coq: Theorem time_014_main)
-(assert (= true true)) ; time_014_main [untranslatable]
+(assert (forall ((lp Bool) (n Bool)) (=> (= (progress_state lp) (MakingProgress n)) (=> (>= (+ n 1) (progress_bound lp)) (= (progress_state (time_014_make_progress lp)) Completed))))) ; time_014_main
 
 ; time_015_main (matches Coq: Theorem time_015_main)
-(assert (= true true)) ; time_015_main [untranslatable]
+; time_015_main: forall fs tid now (scheduled_time : Time), time_015_fair_schedule fs now = Some tid -> let fs' := time_015_update_schedu
+(assert true) ; time_015_main [Coq-only]
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -8,31 +8,31 @@
 (set-option :produce-models true)
 
 ; canonical_bool (matches Coq: Lemma canonical_bool)
-(assert (= true true)) ; canonical_bool [untranslatable]
+(assert (forall ((v Bool) (ε Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v TBool ε) true) (=> (= (value v) true) (exists ((b Bool)) (= v (EBool b))))))) ; canonical_bool
 
 ; canonical_fn (matches Coq: Lemma canonical_fn)
-(assert (= true true)) ; canonical_fn [untranslatable]
+(assert (forall ((v Bool) (T1 Bool) (T2 Bool) (ε Bool) (ε' Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v (TFn T1 T2 ε) ε') true) (=> (= (value v) true) (exists ((x Bool) (body Bool)) (= v (ELam x T1 body))))))) ; canonical_fn
 
 ; canonical_pair (matches Coq: Lemma canonical_pair)
-(assert (= true true)) ; canonical_pair [untranslatable]
+(assert (forall ((v Bool) (T1 Bool) (T2 Bool) (ε Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v (TProd T1 T2) ε) true) (=> (= (value v) true) (exists ((v1 Bool) (v2 Bool)) (and (= v (EPair v1 v2)) (= (value v1) true) (= (value v2) true))))))) ; canonical_pair
 
 ; canonical_sum (matches Coq: Lemma canonical_sum)
-(assert (= true true)) ; canonical_sum [untranslatable]
+(assert (forall ((v Bool) (T1 Bool) (T2 Bool) (ε Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v (TSum T1 T2) ε) true) (=> (= (value v) true) (or (exists ((v' Bool)) (and (= v (EInl v' T2)) (= (value v') true))) (exists ((v' Bool)) (and (= v (EInr v' T1)) (= (value v') true)))))))) ; canonical_sum
 
 ; canonical_ref (matches Coq: Lemma canonical_ref)
-(assert (= true true)) ; canonical_ref [untranslatable]
+(assert (forall ((v Bool) (T Bool) (l Bool) (ε Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v (TRef T l) ε) true) (=> (= (value v) true) (exists ((l' Bool)) (= v (ELoc l'))))))) ; canonical_ref
 
 ; canonical_secret (matches Coq: Lemma canonical_secret)
-(assert (= true true)) ; canonical_secret [untranslatable]
+(assert (forall ((v Bool) (T Bool) (ε Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v (TSecret T) ε) true) (=> (= (value v) true) (exists ((v' Bool)) (and (= v (EClassify v')) (= (value v') true))))))) ; canonical_secret
 
 ; canonical_proof (matches Coq: Lemma canonical_proof)
-(assert (= true true)) ; canonical_proof [untranslatable]
+(assert (forall ((v Bool) (T Bool) (ε Bool) (Σ Bool)) (=> (= (has_type nil Σ Public v (TProof T) ε) true) (=> (= (value v) true) (exists ((v' Bool)) (and (= v (EProve v')) (= (value v') true))))))) ; canonical_proof
 
 ; lookup_nil_contra (matches Coq: Lemma lookup_nil_contra)
-(assert (= true true)) ; lookup_nil_contra [untranslatable]
+(assert (forall ((x Bool) (T Bool)) (=> (= (lookup x nil) (some T)) false))) ; lookup_nil_contra
 
 ; progress (matches Coq: Theorem progress)
-(assert (= true true)) ; progress [untranslatable]
+(assert (= progress_stmt true)) ; progress
 
 ; Verify all assertions are satisfiable
 (check-sat)

@@ -40,7 +40,7 @@
   (mk-buffer 100 50))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; BOF_001_test_buffer_valid (matches Coq: Theorem BOF_001_test_buffer_valid)
 (assert (= (buffer_valid test_buffer) true)) ; BOF_001_test_buffer_valid
@@ -73,7 +73,7 @@
 (assert (forall ((p OverflowPrevention)) (=> (= (overflow_protected p) true) (= (op_stack_canaries p) true)))) ; BOF_010_stack_canaries
 
 ; BOF_011_valid_implies_bounds (matches Coq: Theorem BOF_011_valid_implies_bounds)
-(assert (= true true)) ; BOF_011_valid_implies_bounds [untranslatable]
+(assert (forall ((b Buffer)) (=> (= (buffer_valid b) true) (= (<= (buf_used b) (buf_size b)) true)))) ; BOF_011_valid_implies_bounds
 
 ; BOF_012_riina_bounds_write (matches Coq: Theorem BOF_012_riina_bounds_write)
 (assert (= (op_bounds_check_write riina_overflow_config) true)) ; BOF_012_riina_bounds_write
@@ -88,22 +88,22 @@
 (assert (forall ((p OverflowPrevention)) (=> (= (overflow_protected p) true) (and (= (op_bounds_check_write p) true) (= (op_bounds_check_read p) true) (= (op_integer_overflow_check p) true) (= (op_stack_canaries p) true))))) ; BOF_015_complete_prevention
 
 ; BOF_016_write_bounded (matches Coq: Theorem BOF_016_write_bounded)
-(assert (= true true)) ; BOF_016_write_bounded [untranslatable]
+(assert (forall ((b Int) (n Int)) (=> (= (buffer_can_write (mkBuffer b 0) n) true) (<= n b)))) ; BOF_016_write_bounded
 
 ; BOF_017_read_start_within (matches Coq: Theorem BOF_017_read_start_within)
-(assert (= true true)) ; BOF_017_read_start_within [untranslatable]
+(assert (forall ((b Bool) (offset Bool) (len Bool)) (=> (= (buffer_can_read b offset len) true) (<= offset (buf_used b))))) ; BOF_017_read_start_within
 
 ; BOF_018_zero_read_safe (matches Coq: Theorem BOF_018_zero_read_safe)
 (assert (forall ((b Buffer)) (= (buffer_can_read b 0 0) true))) ; BOF_018_zero_read_safe
 
 ; BOF_019_full_buffer_no_write (matches Coq: Theorem BOF_019_full_buffer_no_write)
-(assert (= true true)) ; BOF_019_full_buffer_no_write [untranslatable]
+(assert (forall ((sz Int)) (= (buffer_can_write (mkBuffer sz sz) 1) false))) ; BOF_019_full_buffer_no_write
 
 ; BOF_020_null_terminator_check (matches Coq: Theorem BOF_020_null_terminator_check)
 (assert (forall ((p OverflowPrevention)) (=> (= (overflow_protected p) true) (= (op_null_terminator_check p) true)))) ; BOF_020_null_terminator_check
 
 ; BOF_021_valid_after_write (matches Coq: Theorem BOF_021_valid_after_write)
-(assert (= true true)) ; BOF_021_valid_after_write [untranslatable]
+(assert (forall ((b Int) (n Int)) (= (buffer_can_write (mkBuffer (+ b n) b) n) true))) ; BOF_021_valid_after_write
 
 ; Verify all assertions are satisfiable
 (check-sat)

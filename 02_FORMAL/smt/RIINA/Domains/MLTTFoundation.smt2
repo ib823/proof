@@ -21,79 +21,81 @@
   true)
 
 ; cumulativity_level (matches Coq: Lemma cumulativity_level)
-(assert (= true true)) ; cumulativity_level [untranslatable]
+(assert (forall ((A Bool) (l Bool)) (=> (= (has_level A l) true) (= (has_level A (+ l 1)) true)))) ; cumulativity_level
 
 ; TYPE_001_01 (matches Coq: Theorem TYPE_001_01)
-(assert (= true true)) ; TYPE_001_01 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty) (B Ty)) (=> (= (wf_ctx G) true) (=> (= (wf_ty G A) true) (=> (= (wf_ty (ctx_extend G A) B) true) (= (wf_ty G (TPi A B)) true))))))) ; TYPE_001_01
 
 ; TYPE_001_02 (matches Coq: Theorem TYPE_001_02)
-(assert (= true true)) ; TYPE_001_02 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty) (B Ty) (f Term) (a Term)) (=> (= (has_type G f (TPi A B)) true) (=> (= (has_type G a A) true) (= (has_type G (TmApp f a) B) true)))))) ; TYPE_001_02
 
 ; TYPE_001_03 (matches Coq: Theorem TYPE_001_03)
-(assert (= true true)) ; TYPE_001_03 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty) (B Ty) (a Term) (b Term)) (=> (= (wf_ty G (TSigma A B)) true) (=> (= (has_type G a A) true) (=> (= (has_type G b B) true) (= (has_type G (TmPair a b) (TSigma A B)) true))))))) ; TYPE_001_03
 
 ; TYPE_001_04 (matches Coq: Theorem TYPE_001_04)
-(assert (= true true)) ; TYPE_001_04 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty) (B Ty) (p Term)) (=> (= (has_type G p (TSigma A B)) true) (and (= (has_type G (TmFst p) A) true) (= (has_type G (TmSnd p) B) true)))))) ; TYPE_001_04
 
 ; TYPE_001_05 (matches Coq: Theorem TYPE_001_05)
-(assert (= true true)) ; TYPE_001_05 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty)) (forall ((a Term)) (=> (= (wf_ty G A) true) (=> (= (has_type G a A) true) (= (has_type G (TmRefl a) (TId A)) true))))))) ; TYPE_001_05
 
 ; TYPE_001_06 (matches Coq: Theorem TYPE_001_06)
-(assert (= true true)) ; TYPE_001_06 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty)) (forall ((C Ty)) (forall ((d Term) (p Term)) (=> (= (wf_ty G A) true) (=> (= (has_type G d C) true) (=> (= (has_type G p (TId A)) true) (= (has_type G (TmJ A C d p) C) true))))))))) ; TYPE_001_06
 
 ; TYPE_001_07 (matches Coq: Theorem TYPE_001_07)
-(assert (= true true)) ; TYPE_001_07 [untranslatable]
+(assert (forall ((l Bool)) (= (has_level (TUniverse l) (+ l 1)) true))) ; TYPE_001_07
 
 ; TYPE_001_08 (matches Coq: Theorem TYPE_001_08)
-(assert (= true true)) ; TYPE_001_08 [untranslatable]
+(assert (forall ((A Ty)) (forall ((l Level)) (=> (= (has_level A l) true) (= (has_level A (+ l 1)) true))))) ; TYPE_001_08
 
 ; TYPE_001_09 (matches Coq: Theorem TYPE_001_09)
-(assert (= true true)) ; TYPE_001_09 [untranslatable]
+(assert (forall ((G Ctx)) (forall ((A Ty)) (=> (= (wf_ctx G) true) (= (wf_ctx (ctx_extend G A)) true))))) ; TYPE_001_09
 
 ; TYPE_001_10 (matches Coq: Theorem TYPE_001_10)
-(assert (= true true)) ; TYPE_001_10 [untranslatable]
+(assert (forall ((t1 Bool) (t2 Bool) (n Bool) (s Bool)) (=> (= (term_eq t1 t2) true) (= (term_eq (subst n s t1) (subst n s t2)) true)))) ; TYPE_001_10
 
 ; type_uniqueness_eq (matches Coq: Lemma type_uniqueness_eq)
-(assert (= true true)) ; type_uniqueness_eq [untranslatable]
+; type_uniqueness_eq: forall (G : Ctx) t A B, has_type G t A -> has_type G t B -> A = B
+(assert true) ; type_uniqueness_eq [Coq-only]
 
 ; TYPE_001_11 (matches Coq: Theorem TYPE_001_11)
-(assert (= true true)) ; TYPE_001_11 [untranslatable]
+; TYPE_001_11: forall (G : Ctx) t A B, has_type G t A -> has_type G t B -> ty_eq A B
+(assert true) ; TYPE_001_11 [Coq-only]
 
 ; TYPE_001_12 (matches Coq: Theorem TYPE_001_12)
-(assert (= true true)) ; TYPE_001_12 [untranslatable]
+(assert (forall ((A Bool) (t Bool) (a Bool)) (= (comp_eq (TmApp (TmLam A t) a) (subst 0 a t)) true))) ; TYPE_001_12
 
 ; TYPE_001_13 (matches Coq: Theorem TYPE_001_13)
-(assert (= true true)) ; TYPE_001_13 [untranslatable]
+(assert (forall ((A Bool) (f Bool)) (= (comp_eq (TmLam A (TmApp (shift 0 1 f) (TmVar 0))) f) true))) ; TYPE_001_13
 
 ; TYPE_001_14 (matches Coq: Theorem TYPE_001_14)
-(assert (= true true)) ; TYPE_001_14 [untranslatable]
+(assert (forall ((p Bool)) (= (comp_eq (TmPair (TmFst p) (TmSnd p)) p) true))) ; TYPE_001_14
 
 ; red_star_trans (matches Coq: Lemma red_star_trans)
-(assert (= true true)) ; red_star_trans [untranslatable]
+(assert (forall ((t Bool) (u Bool) (v Bool)) (=> (= (reduces_star t u) true) (=> (= (reduces_star u v) true) (= (reduces_star t v) true))))) ; red_star_trans
 
 ; red_star_app (matches Coq: Lemma red_star_app)
-(assert (= true true)) ; red_star_app [untranslatable]
+(assert (forall ((f Bool) (f' Bool) (a Bool) (a' Bool)) (=> (= (reduces_star f f') true) (=> (= (reduces_star a a') true) (= (reduces_star (TmApp f a) (TmApp f' a')) true))))) ; red_star_app
 
 ; red_star_lam (matches Coq: Lemma red_star_lam)
-(assert (= true true)) ; red_star_lam [untranslatable]
+(assert (forall ((A Bool) (body Bool) (body' Bool)) (=> (= (reduces_star body body') true) (= (reduces_star (TmLam A body) (TmLam A body')) true)))) ; red_star_lam
 
 ; red_star_pair (matches Coq: Lemma red_star_pair)
-(assert (= true true)) ; red_star_pair [untranslatable]
+(assert (forall ((a Bool) (a' Bool) (b Bool) (b' Bool)) (=> (= (reduces_star a a') true) (=> (= (reduces_star b b') true) (= (reduces_star (TmPair a b) (TmPair a' b')) true))))) ; red_star_pair
 
 ; red_star_fst (matches Coq: Lemma red_star_fst)
-(assert (= true true)) ; red_star_fst [untranslatable]
+(assert (forall ((p Bool) (p' Bool)) (=> (= (reduces_star p p') true) (= (reduces_star (TmFst p) (TmFst p')) true)))) ; red_star_fst
 
 ; red_star_snd (matches Coq: Lemma red_star_snd)
-(assert (= true true)) ; red_star_snd [untranslatable]
+(assert (forall ((p Bool) (p' Bool)) (=> (= (reduces_star p p') true) (= (reduces_star (TmSnd p) (TmSnd p')) true)))) ; red_star_snd
 
 ; red_star_refl_tm (matches Coq: Lemma red_star_refl_tm)
-(assert (= true true)) ; red_star_refl_tm [untranslatable]
+(assert (forall ((a Bool) (a' Bool)) (=> (= (reduces_star a a') true) (= (reduces_star (TmRefl a) (TmRefl a')) true)))) ; red_star_refl_tm
 
 ; red_star_J (matches Coq: Lemma red_star_J)
-(assert (= true true)) ; red_star_J [untranslatable]
+(assert (forall ((A Bool) (C Bool) (d Bool) (d' Bool) (p Bool) (p' Bool)) (=> (= (reduces_star d d') true) (=> (= (reduces_star p p') true) (= (reduces_star (TmJ A C d p) (TmJ A C d' p')) true))))) ; red_star_J
 
 ; TYPE_001_15 (matches Coq: Theorem TYPE_001_15)
-(assert (= true true)) ; TYPE_001_15 [untranslatable]
+(assert (forall ((t Bool)) (exists ((nf Bool)) (and (= (reduces_star t nf) true) (or (= (normal nf) true) (= (neutral nf) true)))))) ; TYPE_001_15
 
 ; Verify all assertions are satisfiable
 (check-sat)

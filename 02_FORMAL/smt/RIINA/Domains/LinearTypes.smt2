@@ -95,40 +95,40 @@
 (define-fun no_double_consume () Prop true)
 
 ; linearity_eqb_eq (matches Coq: Lemma linearity_eqb_eq)
-(assert (= true true)) ; linearity_eqb_eq [untranslatable]
+(assert (forall ((q1 Bool) (q2 Bool)) (and (=> (= (linearity_eqb q1 q2) true) (= q1 q2)) (=> (= q1 q2) (= (linearity_eqb q1 q2) true))))) ; linearity_eqb_eq
 
 ; get_update_same (matches Coq: Lemma get_update_same)
-(assert (= true true)) ; get_update_same [untranslatable]
+(assert (forall ((x Bool) (ctx Bool) (ty Bool) (q Bool)) (=> (= (lookup x ctx) (some (mk-tuple ty q Zero))) (= (get_usage x (update_usage x ctx)) One)))) ; get_update_same
 
 ; TYPE_002_01 (matches Coq: Theorem TYPE_002_01)
-(assert (= true true)) ; TYPE_002_01 [untranslatable]
+(assert (forall ((ctx Bool) (x Bool) (ty Bool)) (=> (= (lookup x ctx) (some (mk-tuple ty Lin Zero))) (=> (= (linear_typed ctx (LVar x) ty (update_usage x ctx)) true) (= (get_usage x (update_usage x ctx)) One))))) ; TYPE_002_01
 
 ; TYPE_002_02 (matches Coq: Theorem TYPE_002_02)
-(assert (= true true)) ; TYPE_002_02 [untranslatable]
+(assert (forall ((u Bool)) (= (unrestricted_usage_valid u) true))) ; TYPE_002_02
 
 ; TYPE_002_03 (matches Coq: Theorem TYPE_002_03)
-(assert (= true true)) ; TYPE_002_03 [untranslatable]
+(assert (forall ((ctx Bool) (ctx' Bool) (ctx'' Bool) (t1 Bool) (t2 Bool) (ty1 Bool) (ty2 Bool)) (=> (= (linear_typed ctx t1 (LFun Lin ty1 ty2) ctx') true) (=> (= (linear_typed ctx' t2 ty1 ctx'') true) (= (linear_typed ctx (LApp t1 t2) ty2 ctx'') true))))) ; TYPE_002_03
 
 ; TYPE_002_04 (matches Coq: Theorem TYPE_002_04)
-(assert (= true true)) ; TYPE_002_04 [untranslatable]
+(assert (= affine_subsumes_linear true)) ; TYPE_002_04
 
 ; TYPE_002_05 (matches Coq: Theorem TYPE_002_05)
-(assert (= true true)) ; TYPE_002_05 [untranslatable]
+(assert (= relevant_subsumes_linear true)) ; TYPE_002_05
 
 ; usage_add_zero_l (matches Coq: Lemma usage_add_zero_l)
-(assert (= true true)) ; usage_add_zero_l [untranslatable]
+(assert (forall ((u Bool)) (= (usage_add Zero u) u))) ; usage_add_zero_l
 
 ; usage_add_zero_r (matches Coq: Lemma usage_add_zero_r)
-(assert (= true true)) ; usage_add_zero_r [untranslatable]
+(assert (forall ((u Bool)) (= (usage_add u Zero) u))) ; usage_add_zero_r
 
 ; TYPE_002_06 (matches Coq: Theorem TYPE_002_06)
-(assert (= true true)) ; TYPE_002_06 [untranslatable]
+(assert (forall ((ctx1 Bool) (ctx2 Bool)) (let ((ctx (ctx_split_valid ctx1 ctx2))) (forall ((x Bool) (ty Bool) (q Bool) (u1 Bool)) (=> (= (lookup x ctx1) (some (mk-tuple ty q u1))) (exists ((u Bool)) (and (= (lookup x ctx) (some (mk-tuple ty q u))) (= u (usage_add u1 (get_usage x ctx2)))))))))) ; TYPE_002_06
 
 ; TYPE_002_07 (matches Coq: Theorem TYPE_002_07)
-(assert (= true true)) ; TYPE_002_07 [untranslatable]
+(assert (forall ((t Bool) (s Bool) (x Bool)) (= (substitution_preserves_structure t s x) true))) ; TYPE_002_07
 
 ; linear_must_be_used (matches Coq: Lemma linear_must_be_used)
-(assert (= true true)) ; linear_must_be_used [untranslatable]
+(assert (forall ((q Bool)) (=> (= q Lin) (= (usage_compatible q Zero) false)))) ; linear_must_be_used
 
 ; linear_zero_usage_invalid (matches Coq: Lemma linear_zero_usage_invalid)
 (assert (= (usage_compatible Lin Zero) false)) ; linear_zero_usage_invalid
@@ -137,37 +137,37 @@
 (assert (= (usage_compatible Lin Many) false)) ; linear_many_usage_invalid
 
 ; unused_linear_ill_formed (matches Coq: Lemma unused_linear_ill_formed)
-(assert (= true true)) ; unused_linear_ill_formed [untranslatable]
+(assert (forall ((x Bool) (ty Bool) (ctx Bool)) (=> (= (lookup x ctx) none) (=> (= (ctx_well_formed ctx) true) (= (ctx_well_formed (extend ctx x ty Lin)) false))))) ; unused_linear_ill_formed
 
 ; extend_preserves_lookup_none (matches Coq: Lemma extend_preserves_lookup_none)
-(assert (= true true)) ; extend_preserves_lookup_none [untranslatable]
+(assert (forall ((x Bool) (y Bool) (ty Bool) (q Bool) (ctx Bool)) (=> (not (= x y)) (=> (= (lookup x ctx) none) (= (lookup x (extend ctx y ty q)) none))))) ; extend_preserves_lookup_none
 
 ; unit_typing_preserves_ctx (matches Coq: Lemma unit_typing_preserves_ctx)
-(assert (= true true)) ; unit_typing_preserves_ctx [untranslatable]
+(assert (forall ((ctx Bool)) (= (linear_typed ctx LUnitVal LUnit ctx) true))) ; unit_typing_preserves_ctx
 
 ; TYPE_002_08_direct (matches Coq: Theorem TYPE_002_08_direct)
-(assert (= true true)) ; TYPE_002_08_direct [untranslatable]
+(assert (= weakening_violates_linear_semantics true)) ; TYPE_002_08_direct
 
 ; weakening_consequence (matches Coq: Lemma weakening_consequence)
-(assert (= true true)) ; weakening_consequence [untranslatable]
+(assert (forall ((ctx Bool) (x Bool) (ty Bool)) (=> (= (lookup x ctx) none) (= (ctx_well_formed (extend ctx x ty Lin)) false)))) ; weakening_consequence
 
 ; TYPE_002_08 (matches Coq: Theorem TYPE_002_08)
-(assert (= true true)) ; TYPE_002_08 [untranslatable]
+(assert (= weakening_invalid_for_linear true)) ; TYPE_002_08
 
 ; TYPE_002_09 (matches Coq: Theorem TYPE_002_09)
-(assert (= true true)) ; TYPE_002_09 [untranslatable]
+(assert (= contraction_invalid_for_linear true)) ; TYPE_002_09
 
 ; TYPE_002_10 (matches Coq: Theorem TYPE_002_10)
-(assert (= true true)) ; TYPE_002_10 [untranslatable]
+(assert (forall ((ctx Bool) (ctx' Bool) (ctx'' Bool) (t1 Bool) (t2 Bool) (q Bool) (ty1 Bool) (ty2 Bool)) (=> (= (linear_typed ctx t1 ty1 ctx') true) (=> (= (linear_typed ctx' t2 ty2 ctx'') true) (= (linear_typed ctx (LPairVal t1 t2) (LPair q ty1 ty2) ctx'') true))))) ; TYPE_002_10
 
 ; TYPE_002_11 (matches Coq: Theorem TYPE_002_11)
-(assert (= true true)) ; TYPE_002_11 [untranslatable]
+(assert (forall ((ctx Bool) (ctx' Bool) (ctx'' Bool) (t1 Bool) (t2 Bool) (x Bool) (ty1 Bool) (ty2 Bool)) (=> (= (linear_typed ctx t1 ty1 ctx') true) (=> (= (linear_typed (extend ctx' x ty1 Lin) t2 ty2 ctx'') true) (= (linear_typed ctx (LLet t1 t2) ty2 ctx'') true))))) ; TYPE_002_11
 
 ; resource_stays_consumed (matches Coq: Lemma resource_stays_consumed)
-(assert (= true true)) ; resource_stays_consumed [untranslatable]
+(assert (forall ((rm Bool) (x Bool)) (= (resource_state x (consume_resource x rm)) Consumed))) ; resource_stays_consumed
 
 ; TYPE_002_12 (matches Coq: Theorem TYPE_002_12)
-(assert (= true true)) ; TYPE_002_12 [untranslatable]
+(assert (forall ((rm Bool) (x Bool)) (=> (= (resource_state x rm) Consumed) (and (= (resource_state x rm) Consumed) (= (resource_state x (consume_resource x rm)) Consumed))))) ; TYPE_002_12
 
 ; Verify all assertions are satisfiable
 (check-sat)

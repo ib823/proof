@@ -109,70 +109,72 @@
   true)
 
 ; val_match_refl (matches Coq: Lemma val_match_refl)
-(assert (= true true)) ; val_match_refl [untranslatable]
+(assert (forall ((n Bool)) (= (val_match (SVInt n) (TVInt n)) true))) ; val_match_refl
 
 ; val_corresp_match (matches Coq: Lemma val_corresp_match)
-(assert (= true true)) ; val_corresp_match [untranslatable]
+(assert (forall ((sv Bool) (tv Bool)) (=> (= (val_corresp sv tv) true) (= (val_match sv tv) true)))) ; val_corresp_match
 
 ; trace_equiv_refl (matches Coq: Lemma trace_equiv_refl)
-(assert (= true true)) ; trace_equiv_refl [untranslatable]
+(assert (forall ((t Bool)) (= (trace_equiv_prop t t) true))) ; trace_equiv_refl
 
 ; trace_equiv_sym (matches Coq: Lemma trace_equiv_sym)
-(assert (= true true)) ; trace_equiv_sym [untranslatable]
+(assert (forall ((t1 Bool) (t2 Bool)) (=> (= (trace_equiv_prop t1 t2) true) (= (trace_equiv_prop t2 t1) true)))) ; trace_equiv_sym
 
 ; trace_equiv_trans (matches Coq: Lemma trace_equiv_trans)
-(assert (= true true)) ; trace_equiv_trans [untranslatable]
+(assert (forall ((t1 Bool) (t2 Bool) (t3 Bool)) (=> (= (trace_equiv_prop t1 t2) true) (=> (= (trace_equiv_prop t2 t3) true) (= (trace_equiv_prop t1 t3) true))))) ; trace_equiv_trans
 
 ; tgt_steps_trans (matches Coq: Lemma tgt_steps_trans)
-(assert (= true true)) ; tgt_steps_trans [untranslatable]
+(assert (forall ((prog Bool) (s1 Bool) (s2 Bool) (s3 Bool)) (=> (= (tgt_steps prog s1 s2) true) (=> (= (tgt_steps prog s2 s3) true) (= (tgt_steps prog s1 s3) true))))) ; tgt_steps_trans
 
 ; is_const_sound (matches Coq: Lemma is_const_sound)
-(assert (= true true)) ; is_const_sound [untranslatable]
+(assert (forall ((e Bool) (n Bool) (env Bool)) (=> (= (is_const e) (some n)) (= (src_eval env e (SVInt n)) true)))) ; is_const_sound
 
 ; COMPILE_001_01 (matches Coq: Theorem COMPILE_001_01)
-(assert (= true true)) ; COMPILE_001_01 [untranslatable]
+(assert (forall ((env SrcEnv)) (forall ((e SrcExpr)) (forall ((sv SrcVal)) (forall ((prog TgtProgram)) (forall ((ts_init TgtState) (ts_final TgtState) (result_reg Int) (mapping VarMapping)) (=> (= (src_eval env e sv) true) (=> (= (env_corresp env (ts_regs ts_init) mapping) true) (=> (= (tgt_steps prog ts_init ts_final) true) (=> (= (sim_rel env sv ts_final result_reg) true) (exists ((tv Bool)) (and (= (In (mk-tuple result_reg tv) (ts_regs ts_final)) true) (= (val_corresp sv tv) true))))))))))))) ; COMPILE_001_01
 
 ; COMPILE_001_02 (matches Coq: Theorem COMPILE_001_02)
-(assert (= true true)) ; COMPILE_001_02 [untranslatable]
+(assert (forall ((G SrcTypeEnv)) (forall ((e SrcExpr)) (forall ((t SrcType)) (forall ((tt TgtType)) (=> (= (src_has_type G e t) true) (=> (= (type_corresp t tt) true) (and (=> (= t STInt) (= tt TTInt)) (=> (= t STBool) (= tt TTInt)) (=> (= t STUnit) (= tt TTInt)))))))))) ; COMPILE_001_02
 
 ; COMPILE_001_03 (matches Coq: Theorem COMPILE_001_03)
-(assert (= true true)) ; COMPILE_001_03 [untranslatable]
+(assert (forall ((src_trace Trace) (tgt_trace Trace)) (=> (= (trace_equiv_prop src_trace tgt_trace) true) (= (trace_equiv_prop tgt_trace src_trace) true)))) ; COMPILE_001_03
 
 ; COMPILE_001_04 (matches Coq: Theorem COMPILE_001_04)
-(assert (= true true)) ; COMPILE_001_04 [untranslatable]
+(assert (forall ((env SrcEnv)) (forall ((e SrcExpr)) (forall ((sv SrcVal)) (forall ((prog TgtProgram)) (forall ((ts_init TgtState)) (=> (= (src_eval env e sv) true) (=> (exists ((ts_final Bool)) (and (= (tgt_steps prog ts_init ts_final) true) (= (sim_rel env sv ts_final 0) true))) (and (= (src_terminates env e) true) (= (tgt_terminates prog ts_init) true)))))))))) ; COMPILE_001_04
 
 ; COMPILE_001_05 (matches Coq: Theorem COMPILE_001_05)
-(assert (= true true)) ; COMPILE_001_05 [untranslatable]
+(assert (forall ((sv SrcVal)) (forall ((tv TgtVal)) (=> (= (val_corresp sv tv) true) (= (val_match sv tv) true))))) ; COMPILE_001_05
 
 ; COMPILE_001_06 (matches Coq: Theorem COMPILE_001_06)
-(assert (= true true)) ; COMPILE_001_06 [untranslatable]
+(assert (forall ((smem list) (tmem Memory) (addr Int) (sv SrcVal)) (=> (= (mem_corresp smem tmem) true) (=> (= (In (mk-tuple addr sv) smem) true) (exists ((tv Bool)) (and (= (In (mk-tuple addr tv) tmem) true) (= (val_corresp sv tv) true))))))) ; COMPILE_001_06
 
 ; COMPILE_001_07 (matches Coq: Theorem COMPILE_001_07)
-(assert (= true true)) ; COMPILE_001_07 [untranslatable]
+(assert (forall ((abi ABI)) (forall ((args list nat)) (forall ((ret Int)) (=> (= (abi_compliant_call abi args ret) true) (and (<= (length args) (length (abi_arg_regs abi))) (= ret (abi_ret_reg abi)))))))) ; COMPILE_001_07
 
 ; COMPILE_001_08 (matches Coq: Theorem COMPILE_001_08)
-(assert (= true true)) ; COMPILE_001_08 [untranslatable]
+(assert (forall ((env SrcEnv)) (forall ((e SrcExpr)) (forall ((n Int)) (=> (= (is_const e) (some n)) (= (src_eval env e (SVInt n)) true)))))) ; COMPILE_001_08
 
 ; COMPILE_001_09 (matches Coq: Theorem COMPILE_001_09)
-(assert (= true true)) ; COMPILE_001_09 [untranslatable]
+; COMPILE_001_09: forall (x : nat) (e : SrcExpr) (result : nat), var_used x e = false -> is_const e = Some result -> forall env vx, src_ev
+(assert (forall ((x Int) (e SrcExpr) (result Int)) true)) ; COMPILE_001_09 [partial: bindings preserved]
 
 ; COMPILE_001_10 (matches Coq: Theorem COMPILE_001_10)
-(assert (= true true)) ; COMPILE_001_10 [untranslatable]
+; COMPILE_001_10: forall (env : SrcEnv) (f_body : SrcExpr) (arg : SrcExpr) (param : nat) (v : SrcVal) (arg_val : SrcVal), src_eval env arg
+(assert (forall ((env SrcEnv) (f_body SrcExpr) (arg SrcExpr) (param Int) (v SrcVal) (arg_val SrcVal)) true)) ; COMPILE_001_10 [partial: bindings preserved]
 
 ; COMPILE_001_11 (matches Coq: Theorem COMPILE_001_11)
-(assert (= true true)) ; COMPILE_001_11 [untranslatable]
+(assert (forall ((env SrcEnv)) (forall ((body SrcExpr)) (forall ((n Int)) (forall ((v SrcVal)) (=> (forall ((i Bool)) (=> (< i n) (exists ((vi Bool)) (= (src_eval env body vi) true)))) (=> (= (src_eval env (unroll_loop body n) v) true) (or (and (= n 0) (= v (SVInt 0))) (exists ((v_last Bool)) (= (src_eval env body v_last) true)))))))))) ; COMPILE_001_11
 
 ; COMPILE_001_12 (matches Coq: Theorem COMPILE_001_12)
-(assert (= true true)) ; COMPILE_001_12 [untranslatable]
+(assert (forall ((alloc RegAlloc)) (forall ((regs TgtRegs)) (forall ((env SrcEnv)) (forall ((x Int) (r Int) (sv SrcVal)) (=> (= (alloc_valid alloc regs env) true) (=> (= (In (mk-tuple x r) alloc) true) (=> (= (In (mk-tuple x sv) env) true) (exists ((tv Bool)) (and (= (In (mk-tuple r tv) regs) true) (= (val_corresp sv tv) true))))))))))) ; COMPILE_001_12
 
 ; COMPILE_001_13 (matches Coq: Theorem COMPILE_001_13)
-(assert (= true true)) ; COMPILE_001_13 [untranslatable]
+(assert (forall ((ir IRInstr)) (forall ((regs TgtRegs) (regs' TgtRegs)) (=> (= (ir_eval ir regs) (some regs')) (= (mach_eval (select_instr ir) regs) (some regs')))))) ; COMPILE_001_13
 
 ; COMPILE_001_14 (matches Coq: Theorem COMPILE_001_14)
-(assert (= true true)) ; COMPILE_001_14 [untranslatable]
+(assert (forall ((sf StackFrame)) (forall ((abi ABI)) (=> (= (stack_valid sf abi) true) (= (mod (sf_size sf) (abi_stack_align abi)) 0))))) ; COMPILE_001_14
 
 ; COMPILE_001_15 (matches Coq: Theorem COMPILE_001_15)
-(assert (= true true)) ; COMPILE_001_15 [untranslatable]
+(assert (forall ((sp SrcProgram)) (forall ((tp TgtProgram)) (forall ((mapping VarMapping)) (forall ((src_trace Trace) (tgt_trace Trace)) (=> (= (prog_sim sp tp mapping) true) (=> (= (trace_equiv_prop src_trace tgt_trace) true) (and (= (trace_equiv_prop tgt_trace src_trace) true) (forall ((t Bool)) (=> (= (trace_equiv_prop src_trace t) true) (= (trace_equiv_prop t src_trace) true))))))))))) ; COMPILE_001_15
 
 ; Verify all assertions are satisfiable
 (check-sat)

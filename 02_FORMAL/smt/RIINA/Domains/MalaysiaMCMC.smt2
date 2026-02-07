@@ -34,61 +34,61 @@
 (define-fun license_eqb () Bool Nat)
 
 ; s234_encrypted_compliant (matches Coq: Theorem s234_encrypted_compliant)
-(assert (= true true)) ; s234_encrypted_compliant [untranslatable]
+(assert (forall ((enc Bool) (auth Bool)) (=> (= enc true) (= (no_unauthorized_interception enc auth) true)))) ; s234_encrypted_compliant
 
 ; s234_authorized_compliant (matches Coq: Theorem s234_authorized_compliant)
-(assert (= true true)) ; s234_authorized_compliant [untranslatable]
+(assert (forall ((enc Bool) (auth Bool)) (=> (= auth true) (= (no_unauthorized_interception enc auth) true)))) ; s234_authorized_compliant
 
 ; s236_fraud_prevention (matches Coq: Theorem s236_fraud_prevention)
-(assert (= true true)) ; s236_fraud_prevention [untranslatable]
+(assert (forall ((id_v Bool) (tx_s Bool) (audit Bool)) (=> (= id_v true) (=> (= tx_s true) (=> (= audit true) (= (fraud_controls_active id_v tx_s audit) true)))))) ; s236_fraud_prevention
 
 ; mcmc_composition (matches Coq: Theorem mcmc_composition)
-(assert (= true true)) ; mcmc_composition [untranslatable]
+(assert (forall ((c MCMCCompliance)) (=> (= (mcmc_licensed c) true) (=> (= (mcmc_technical_standards_met c) true) (=> (= (mcmc_consumer_code_adopted c) true) (=> (= (mcmc_interception_protected c) true) (=> (= (mcmc_fraud_controls c) true) (= (mcmc_fully_compliant c) true)))))))) ; mcmc_composition
 
 ; mcmc_license_coverage (matches Coq: Theorem mcmc_license_coverage)
-(assert (= true true)) ; mcmc_license_coverage [untranslatable]
+(assert (forall ((l MCMCLicense)) (= (In l all_mcmc_licenses) true))) ; mcmc_license_coverage
 
 ; nfp_highest_level (matches Coq: Theorem nfp_highest_level)
-(assert (= true true)) ; nfp_highest_level [untranslatable]
+(assert (forall ((l Bool)) (<= (license_level l) (license_level NFP)))) ; nfp_highest_level
 
 ; csp_lowest_level (matches Coq: Theorem csp_lowest_level)
-(assert (= true true)) ; csp_lowest_level [untranslatable]
+(assert (forall ((l Bool)) (<= (license_level CSP) (license_level l)))) ; csp_lowest_level
 
 ; license_level_positive (matches Coq: Theorem license_level_positive)
-(assert (= true true)) ; license_level_positive [untranslatable]
+(assert (forall ((l Bool)) (>= (license_level l) 1))) ; license_level_positive
 
 ; mcmc_compliant_licensed (matches Coq: Theorem mcmc_compliant_licensed)
-(assert (= true true)) ; mcmc_compliant_licensed [untranslatable]
+(assert (forall ((c Bool)) (=> (= (mcmc_fully_compliant c) true) (= (mcmc_licensed c) true)))) ; mcmc_compliant_licensed
 
 ; mcmc_compliant_technical (matches Coq: Theorem mcmc_compliant_technical)
-(assert (= true true)) ; mcmc_compliant_technical [untranslatable]
+(assert (forall ((c Bool)) (=> (= (mcmc_fully_compliant c) true) (= (mcmc_technical_standards_met c) true)))) ; mcmc_compliant_technical
 
 ; mcmc_compliant_consumer (matches Coq: Theorem mcmc_compliant_consumer)
-(assert (= true true)) ; mcmc_compliant_consumer [untranslatable]
+(assert (forall ((c Bool)) (=> (= (mcmc_fully_compliant c) true) (= (mcmc_consumer_code_adopted c) true)))) ; mcmc_compliant_consumer
 
 ; mcmc_compliant_interception (matches Coq: Theorem mcmc_compliant_interception)
-(assert (= true true)) ; mcmc_compliant_interception [untranslatable]
+(assert (forall ((c Bool)) (=> (= (mcmc_fully_compliant c) true) (= (mcmc_interception_protected c) true)))) ; mcmc_compliant_interception
 
 ; mcmc_compliant_fraud (matches Coq: Theorem mcmc_compliant_fraud)
-(assert (= true true)) ; mcmc_compliant_fraud [untranslatable]
+(assert (forall ((c Bool)) (=> (= (mcmc_fully_compliant c) true) (= (mcmc_fraud_controls c) true)))) ; mcmc_compliant_fraud
 
 ; count_mcmc_bounded (matches Coq: Theorem count_mcmc_bounded)
-(assert (= true true)) ; count_mcmc_bounded [untranslatable]
+(assert (forall ((c Bool)) (<= (count_mcmc_controls c) 5))) ; count_mcmc_bounded
 
 ; mcmc_compliant_all_five (matches Coq: Theorem mcmc_compliant_all_five)
-(assert (= true true)) ; mcmc_compliant_all_five [untranslatable]
+(assert (forall ((c Bool)) (=> (= (mcmc_fully_compliant c) true) (= (count_mcmc_controls c) 5)))) ; mcmc_compliant_all_five
 
 ; license_eqb_refl (matches Coq: Theorem license_eqb_refl)
-(assert (= true true)) ; license_eqb_refl [untranslatable]
+(assert (forall ((l Bool)) (= (license_eqb l l) true))) ; license_eqb_refl
 
 ; fraud_requires_identity (matches Coq: Theorem fraud_requires_identity)
-(assert (= true true)) ; fraud_requires_identity [untranslatable]
+(assert (forall ((id_v Bool) (tx_s Bool) (audit Bool)) (=> (= (fraud_controls_active id_v tx_s audit) true) (= id_v true)))) ; fraud_requires_identity
 
 ; fraud_requires_signing (matches Coq: Theorem fraud_requires_signing)
-(assert (= true true)) ; fraud_requires_signing [untranslatable]
+(assert (forall ((id_v Bool) (tx_s Bool) (audit Bool)) (=> (= (fraud_controls_active id_v tx_s audit) true) (= tx_s true)))) ; fraud_requires_signing
 
 ; fraud_requires_audit (matches Coq: Theorem fraud_requires_audit)
-(assert (= true true)) ; fraud_requires_audit [untranslatable]
+(assert (forall ((id_v Bool) (tx_s Bool) (audit Bool)) (=> (= (fraud_controls_active id_v tx_s audit) true) (= audit true)))) ; fraud_requires_audit
 
 ; mcmc_license_count (matches Coq: Theorem mcmc_license_count)
 (assert (= (length all_mcmc_licenses) 4)) ; mcmc_license_count

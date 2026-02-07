@@ -36,7 +36,7 @@
   (mk-csrf_request true true true true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; CSRF_001 (matches Coq: Theorem CSRF_001)
 (assert (= (csrf_protected riina_csrf) true)) ; CSRF_001
@@ -54,19 +54,19 @@
 (assert (= (csrf_double_submit riina_csrf) true)) ; CSRF_005
 
 ; CSRF_006 (matches Coq: Theorem CSRF_006)
-(assert (= true true)) ; CSRF_006 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (= (csrf_token_validation c) true)))) ; CSRF_006
 
 ; CSRF_007 (matches Coq: Theorem CSRF_007)
-(assert (= true true)) ; CSRF_007 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (= (csrf_same_site_cookies c) true)))) ; CSRF_007
 
 ; CSRF_008 (matches Coq: Theorem CSRF_008)
-(assert (= true true)) ; CSRF_008 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (= (csrf_origin_check c) true)))) ; CSRF_008
 
 ; CSRF_009 (matches Coq: Theorem CSRF_009)
-(assert (= true true)) ; CSRF_009 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (= (csrf_referer_check c) true)))) ; CSRF_009
 
 ; CSRF_010 (matches Coq: Theorem CSRF_010)
-(assert (= true true)) ; CSRF_010 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (= (csrf_double_submit c) true)))) ; CSRF_010
 
 ; CSRF_011 (matches Coq: Theorem CSRF_011)
 (assert (and (= (csrf_token_validation riina_csrf) true) (= (csrf_same_site_cookies riina_csrf) true))) ; CSRF_011
@@ -78,25 +78,25 @@
 (assert (and (= (csrf_protected riina_csrf) true) (= (csrf_double_submit riina_csrf) true))) ; CSRF_013
 
 ; CSRF_014 (matches Coq: Theorem CSRF_014)
-(assert (= true true)) ; CSRF_014 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_token_validation c) true) (= (csrf_same_site_cookies c) true))))) ; CSRF_014
 
 ; CSRF_015 (matches Coq: Theorem CSRF_015)
-(assert (= true true)) ; CSRF_015 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_origin_check c) true) (= (csrf_referer_check c) true))))) ; CSRF_015
 
 ; CSRF_016 (matches Coq: Theorem CSRF_016)
-(assert (= true true)) ; CSRF_016 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_token_validation c) true) (= (csrf_origin_check c) true))))) ; CSRF_016
 
 ; CSRF_017 (matches Coq: Theorem CSRF_017)
-(assert (= true true)) ; CSRF_017 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_same_site_cookies c) true) (= (csrf_double_submit c) true))))) ; CSRF_017
 
 ; CSRF_018 (matches Coq: Theorem CSRF_018)
 (assert (and (= (csrf_token_validation riina_csrf) true) (= (csrf_origin_check riina_csrf) true) (= (csrf_double_submit riina_csrf) true))) ; CSRF_018
 
 ; CSRF_019 (matches Coq: Theorem CSRF_019)
-(assert (= true true)) ; CSRF_019 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_token_validation c) true) (= (csrf_same_site_cookies c) true) (= (csrf_origin_check c) true))))) ; CSRF_019
 
 ; CSRF_020_complete (matches Coq: Theorem CSRF_020_complete)
-(assert (= true true)) ; CSRF_020_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_token_validation c) true) (= (csrf_same_site_cookies c) true) (= (csrf_origin_check c) true) (= (csrf_double_submit c) true))))) ; CSRF_020_complete
 
 ; CSRF_021_riina_request_safe (matches Coq: Theorem CSRF_021_riina_request_safe)
 (assert (= (csrf_request_safe riina_csrf_request) true)) ; CSRF_021_riina_request_safe
@@ -105,43 +105,43 @@
 (assert (= (csrf_request_fully_validated riina_csrf_request) true)) ; CSRF_022_riina_request_fully_validated
 
 ; CSRF_023_safe_has_token (matches Coq: Theorem CSRF_023_safe_has_token)
-(assert (= true true)) ; CSRF_023_safe_has_token [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_safe r) true) (= (req_has_token r) true)))) ; CSRF_023_safe_has_token
 
 ; CSRF_024_safe_token_matches (matches Coq: Theorem CSRF_024_safe_token_matches)
-(assert (= true true)) ; CSRF_024_safe_token_matches [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_safe r) true) (= (req_token_matches r) true)))) ; CSRF_024_safe_token_matches
 
 ; CSRF_025_safe_same_origin (matches Coq: Theorem CSRF_025_safe_same_origin)
-(assert (= true true)) ; CSRF_025_safe_same_origin [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_safe r) true) (= (req_same_origin r) true)))) ; CSRF_025_safe_same_origin
 
 ; CSRF_026_fully_validated_implies_safe (matches Coq: Theorem CSRF_026_fully_validated_implies_safe)
-(assert (= true true)) ; CSRF_026_fully_validated_implies_safe [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_fully_validated r) true) (= (csrf_request_safe r) true)))) ; CSRF_026_fully_validated_implies_safe
 
 ; CSRF_027_fully_validated_referer (matches Coq: Theorem CSRF_027_fully_validated_referer)
-(assert (= true true)) ; CSRF_027_fully_validated_referer [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_fully_validated r) true) (= (req_valid_referer r) true)))) ; CSRF_027_fully_validated_referer
 
 ; CSRF_028_fully_validated_cookie (matches Coq: Theorem CSRF_028_fully_validated_cookie)
-(assert (= true true)) ; CSRF_028_fully_validated_cookie [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_fully_validated r) true) (= (req_cookie_present r) true)))) ; CSRF_028_fully_validated_cookie
 
 ; CSRF_029_full_implies_token_and_origin (matches Coq: Theorem CSRF_029_full_implies_token_and_origin)
-(assert (= true true)) ; CSRF_029_full_implies_token_and_origin [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_fully_validated r) true) (and (= (req_has_token r) true) (= (req_same_origin r) true))))) ; CSRF_029_full_implies_token_and_origin
 
 ; CSRF_030_config_enables_request_checks (matches Coq: Theorem CSRF_030_config_enables_request_checks)
-(assert (= true true)) ; CSRF_030_config_enables_request_checks [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_protected c) true) (and (= (csrf_token_validation c) true) (= (csrf_referer_check c) true) (= (csrf_double_submit c) true))))) ; CSRF_030_config_enables_request_checks
 
 ; CSRF_031_referer_in_protection (matches Coq: Theorem CSRF_031_referer_in_protection)
 (assert (= (csrf_referer_check riina_csrf) true)) ; CSRF_031_referer_in_protection
 
 ; CSRF_032_complete_request_validation (matches Coq: Theorem CSRF_032_complete_request_validation)
-(assert (= true true)) ; CSRF_032_complete_request_validation [untranslatable]
+(assert (forall ((r Bool)) (=> (= (csrf_request_fully_validated r) true) (and (= (req_has_token r) true) (= (req_token_matches r) true) (= (req_same_origin r) true) (= (req_valid_referer r) true) (= (req_cookie_present r) true))))) ; CSRF_032_complete_request_validation
 
 ; CSRF_033_all_false_not_protected (matches Coq: Theorem CSRF_033_all_false_not_protected)
-(assert (= true true)) ; CSRF_033_all_false_not_protected [untranslatable]
+(assert (= (csrf_protected (mkCSRF false false false false false)) false)) ; CSRF_033_all_false_not_protected
 
 ; CSRF_034_missing_token_breaks (matches Coq: Theorem CSRF_034_missing_token_breaks)
-(assert (= true true)) ; CSRF_034_missing_token_breaks [untranslatable]
+(assert (= (csrf_protected (mkCSRF false true true true true)) false)) ; CSRF_034_missing_token_breaks
 
 ; CSRF_035_protection_reconstruction (matches Coq: Theorem CSRF_035_protection_reconstruction)
-(assert (= true true)) ; CSRF_035_protection_reconstruction [untranslatable]
+(assert (forall ((c Bool)) (=> (= (csrf_token_validation c) true) (=> (= (csrf_same_site_cookies c) true) (=> (= (csrf_origin_check c) true) (=> (= (csrf_referer_check c) true) (=> (= (csrf_double_submit c) true) (= (csrf_protected c) true)))))))) ; CSRF_035_protection_reconstruction
 
 ; Verify all assertions are satisfiable
 (check-sat)

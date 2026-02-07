@@ -54,85 +54,85 @@
   true)
 
 ; kkm_confidentiality (matches Coq: Theorem kkm_confidentiality)
-(assert (= true true)) ; kkm_confidentiality [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (hc_encrypted r) true) (=> (= (hc_access_controlled r) true) (= (patient_confidentiality r) true))))) ; kkm_confidentiality
 
 ; kkm_consent_access (matches Coq: Theorem kkm_consent_access)
-(assert (= true true)) ; kkm_consent_access [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (hc_consent_obtained r) true) (= (emr_access_authorized r false) true)))) ; kkm_consent_access
 
 ; kkm_emergency_access (matches Coq: Theorem kkm_emergency_access)
-(assert (= true true)) ; kkm_emergency_access [untranslatable]
+(assert (forall ((r HealthcareRecord)) (= (emr_access_authorized r true) true))) ; kkm_emergency_access
 
 ; kkm_sensitive_protected (matches Coq: Theorem kkm_sensitive_protected)
-(assert (= true true)) ; kkm_sensitive_protected [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (hc_encrypted r) true) (=> (= (hc_access_controlled r) true) (=> (= (hc_audit_logged r) true) (= (sensitive_protection r) true)))))) ; kkm_sensitive_protected
 
 ; kkm_audit (matches Coq: Theorem kkm_audit)
-(assert (= true true)) ; kkm_audit [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (hc_audit_logged r) true) (= (emr_audit_compliant r) true)))) ; kkm_audit
 
 ; kkm_cross_facility (matches Coq: Theorem kkm_cross_facility)
-(assert (= true true)) ; kkm_cross_facility [untranslatable]
+(assert (forall ((r HealthcareRecord)) (forall ((target Int)) (=> (= (hc_consent_obtained r) true) (=> (= (hc_encrypted r) true) (=> (not (= (hc_facility_id r) target)) (= (cross_facility_authorized r target) true))))))) ; kkm_cross_facility
 
 ; kkm_composition (matches Coq: Theorem kkm_composition)
-(assert (= true true)) ; kkm_composition [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (patient_confidentiality r) true) (=> (= (emr_audit_compliant r) true) (=> (= (hc_consent_obtained r) true) (= (kkm_fully_compliant r) true)))))) ; kkm_composition
 
 ; facility_coverage (matches Coq: Theorem facility_coverage)
-(assert (= true true)) ; facility_coverage [untranslatable]
+(assert (forall ((f FacilityType)) (= (In f all_facility_types) true))) ; facility_coverage
 
 ; emr_classification_coverage (matches Coq: Theorem emr_classification_coverage)
-(assert (= true true)) ; emr_classification_coverage [untranslatable]
+(assert (forall ((c EMRClassification)) (= (In c all_emr_classifications) true))) ; emr_classification_coverage
 
 ; demographics_not_sensitive (matches Coq: Theorem demographics_not_sensitive)
-(assert (= true true)) ; demographics_not_sensitive [untranslatable]
+(assert (not (= (is_sensitive PatientDemographics) true))) ; demographics_not_sensitive
 
 ; clinical_notes_not_sensitive (matches Coq: Theorem clinical_notes_not_sensitive)
-(assert (= true true)) ; clinical_notes_not_sensitive [untranslatable]
+(assert (not (= (is_sensitive ClinicalNotes) true))) ; clinical_notes_not_sensitive
 
 ; mental_health_is_sensitive_kkm (matches Coq: Theorem mental_health_is_sensitive_kkm)
-(assert (= true true)) ; mental_health_is_sensitive_kkm [untranslatable]
+(assert (= (is_sensitive MentalHealth) true)) ; mental_health_is_sensitive_kkm
 
 ; hiv_sti_is_sensitive_kkm (matches Coq: Theorem hiv_sti_is_sensitive_kkm)
-(assert (= true true)) ; hiv_sti_is_sensitive_kkm [untranslatable]
+(assert (= (is_sensitive HIV_STI) true)) ; hiv_sti_is_sensitive_kkm
 
 ; kkm_full_implies_confidentiality (matches Coq: Theorem kkm_full_implies_confidentiality)
-(assert (= true true)) ; kkm_full_implies_confidentiality [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (kkm_fully_compliant r) true) (= (patient_confidentiality r) true)))) ; kkm_full_implies_confidentiality
 
 ; kkm_full_implies_audit (matches Coq: Theorem kkm_full_implies_audit)
-(assert (= true true)) ; kkm_full_implies_audit [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (kkm_fully_compliant r) true) (= (emr_audit_compliant r) true)))) ; kkm_full_implies_audit
 
 ; kkm_full_implies_consent (matches Coq: Theorem kkm_full_implies_consent)
-(assert (= true true)) ; kkm_full_implies_consent [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (kkm_fully_compliant r) true) (= (hc_consent_obtained r) true)))) ; kkm_full_implies_consent
 
 ; confidentiality_implies_encrypted (matches Coq: Theorem confidentiality_implies_encrypted)
-(assert (= true true)) ; confidentiality_implies_encrypted [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (patient_confidentiality r) true) (= (hc_encrypted r) true)))) ; confidentiality_implies_encrypted
 
 ; confidentiality_implies_access_controlled (matches Coq: Theorem confidentiality_implies_access_controlled)
-(assert (= true true)) ; confidentiality_implies_access_controlled [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (patient_confidentiality r) true) (= (hc_access_controlled r) true)))) ; confidentiality_implies_access_controlled
 
 ; emergency_always_authorized (matches Coq: Theorem emergency_always_authorized)
-(assert (= true true)) ; emergency_always_authorized [untranslatable]
+(assert (forall ((r HealthcareRecord)) (= (emr_access_authorized r true) true))) ; emergency_always_authorized
 
 ; non_emergency_requires_consent (matches Coq: Theorem non_emergency_requires_consent)
-(assert (= true true)) ; non_emergency_requires_consent [untranslatable]
+(assert (forall ((r HealthcareRecord)) (=> (= (hc_consent_obtained r) false) (not (= (emr_access_authorized r false) true))))) ; non_emergency_requires_consent
 
 ; this_compliance (matches Coq: Theorem this_compliance)
-(assert (= true true)) ; this_compliance [untranslatable]
+(assert (forall ((tc THISCompliance)) (=> (= (this_network_segmented tc) true) (=> (= (this_data_encrypted tc) true) (=> (= (this_backup_tested tc) true) (=> (= (this_access_logged tc) true) (=> (= (this_staff_trained tc) true) (= (this_security_adequate tc) true)))))))) ; this_compliance
 
 ; this_missing_backup_non_compliant (matches Coq: Theorem this_missing_backup_non_compliant)
-(assert (= true true)) ; this_missing_backup_non_compliant [untranslatable]
+(assert (forall ((tc THISCompliance)) (=> (= (this_backup_tested tc) false) (not (= (this_security_adequate tc) true))))) ; this_missing_backup_non_compliant
 
 ; ccms_full_compliance (matches Coq: Theorem ccms_full_compliance)
-(assert (= true true)) ; ccms_full_compliance [untranslatable]
+(assert (forall ((cc CCMSCompliance)) (=> (= (ccms_patient_data_encrypted cc) true) (=> (= (ccms_prescription_secured cc) true) (=> (= (ccms_audit_trail cc) true) (=> (= (ccms_network_secured cc) true) (= (ccms_compliant cc) true))))))) ; ccms_full_compliance
 
 ; medical_device_sl2 (matches Coq: Theorem medical_device_sl2)
-(assert (= true true)) ; medical_device_sl2 [untranslatable]
+(assert (forall ((md MedicalDeviceSecurity)) (=> (= (md_authenticated md) true) (=> (= (md_data_encrypted md) true) (=> (= (md_firmware_signed md) true) (=> (>= (md_security_level md) 2) (= (md_security_adequate md 2) true))))))) ; medical_device_sl2
 
 ; higher_sl_subsumes (matches Coq: Theorem higher_sl_subsumes)
-(assert (= true true)) ; higher_sl_subsumes [untranslatable]
+(assert (forall ((md MedicalDeviceSecurity)) (forall ((sl1 Int) (sl2 Int)) (=> (<= sl1 sl2) (=> (= (md_security_adequate md sl2) true) (= (md_security_adequate md sl1) true)))))) ; higher_sl_subsumes
 
 ; cross_facility_requires_encryption (matches Coq: Theorem cross_facility_requires_encryption)
-(assert (= true true)) ; cross_facility_requires_encryption [untranslatable]
+(assert (forall ((r HealthcareRecord)) (forall ((target Int)) (=> (= (cross_facility_authorized r target) true) (= (hc_encrypted r) true))))) ; cross_facility_requires_encryption
 
 ; cross_facility_requires_consent (matches Coq: Theorem cross_facility_requires_consent)
-(assert (= true true)) ; cross_facility_requires_consent [untranslatable]
+(assert (forall ((r HealthcareRecord)) (forall ((target Int)) (=> (= (cross_facility_authorized r target) true) (= (hc_consent_obtained r) true))))) ; cross_facility_requires_consent
 
 ; Verify all assertions are satisfiable
 (check-sat)

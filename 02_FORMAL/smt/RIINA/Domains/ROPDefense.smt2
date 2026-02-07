@@ -114,16 +114,16 @@
   (mk-cpi_config true true true true))
 
 ; andb_true_iff (matches Coq: Lemma andb_true_iff)
-(assert (= true true)) ; andb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (and a b) true) (and (= a true) (= b true))) (=> (and (= a true) (= b true)) (= (and a b) true))))) ; andb_true_iff
 
 ; andb_true_intro (matches Coq: Lemma andb_true_intro)
-(assert (= true true)) ; andb_true_intro [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (=> (= a true) (=> (= b true) (= (and a b) true))))) ; andb_true_intro
 
 ; negb_true_iff (matches Coq: Lemma negb_true_iff)
-(assert (= true true)) ; negb_true_iff [untranslatable]
+(assert (forall ((b Bool)) (and (=> (= (not b) true) (= b false)) (=> (= b false) (= (not b) true))))) ; negb_true_iff
 
 ; orb_true_iff (matches Coq: Lemma orb_true_iff)
-(assert (= true true)) ; orb_true_iff [untranslatable]
+(assert (forall ((a Bool) (b Bool)) (and (=> (= (or a b) true) (or (= a true) (= b true))) (=> (or (= a true) (= b true)) (= (or a b) true))))) ; orb_true_iff
 
 ; ROP_001 (matches Coq: Theorem ROP_001)
 (assert (= (cfi_complete riina_cfi) true)) ; ROP_001
@@ -150,43 +150,43 @@
 (assert (= (rop_aslr_compatible riina_rop) true)) ; ROP_008
 
 ; ROP_009 (matches Coq: Theorem ROP_009)
-(assert (= true true)) ; ROP_009 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_shadow_stack c) true)))) ; ROP_009
 
 ; ROP_010 (matches Coq: Theorem ROP_010)
-(assert (= true true)) ; ROP_010 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_indirect_branch_tracking c) true)))) ; ROP_010
 
 ; ROP_011 (matches Coq: Theorem ROP_011)
-(assert (= true true)) ; ROP_011 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_return_address_protection c) true)))) ; ROP_011
 
 ; ROP_012 (matches Coq: Theorem ROP_012)
-(assert (= true true)) ; ROP_012 [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_backward_edge_cfi c) true)))) ; ROP_012
 
 ; ROP_013 (matches Coq: Theorem ROP_013)
-(assert (= true true)) ; ROP_013 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (code_reuse_prevented r) true) (= (cr_gadget_elimination r) true)))) ; ROP_013
 
 ; ROP_014 (matches Coq: Theorem ROP_014)
-(assert (= true true)) ; ROP_014 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (code_reuse_prevented r) true) (= (cr_code_pointer_integrity r) true)))) ; ROP_014
 
 ; ROP_015 (matches Coq: Theorem ROP_015)
-(assert (= true true)) ; ROP_015 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (cfi_complete (rop_cfi r)) true)))) ; ROP_015
 
 ; ROP_016 (matches Coq: Theorem ROP_016)
-(assert (= true true)) ; ROP_016 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (code_reuse_prevented (rop_code_reuse r)) true)))) ; ROP_016
 
 ; ROP_017 (matches Coq: Theorem ROP_017)
-(assert (= true true)) ; ROP_017 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (rop_aslr_compatible r) true)))) ; ROP_017
 
 ; ROP_018 (matches Coq: Theorem ROP_018)
-(assert (= true true)) ; ROP_018 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (rop_dep_compatible r) true)))) ; ROP_018
 
 ; ROP_019 (matches Coq: Theorem ROP_019)
-(assert (= true true)) ; ROP_019 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (cfi_shadow_stack (rop_cfi r)) true)))) ; ROP_019
 
 ; ROP_020 (matches Coq: Theorem ROP_020)
-(assert (= true true)) ; ROP_020 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (cfi_return_address_protection (rop_cfi r)) true)))) ; ROP_020
 
 ; ROP_021 (matches Coq: Theorem ROP_021)
-(assert (= true true)) ; ROP_021 [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (= (cr_gadget_elimination (rop_code_reuse r)) true)))) ; ROP_021
 
 ; ROP_022 (matches Coq: Theorem ROP_022)
 (assert (and (= (cfi_complete riina_cfi) true) (= (code_reuse_prevented riina_cr) true))) ; ROP_022
@@ -198,112 +198,112 @@
 (assert (and (= (rop_defended riina_rop) true) (= (rop_aslr_compatible riina_rop) true))) ; ROP_024
 
 ; ROP_025_complete (matches Coq: Theorem ROP_025_complete)
-(assert (= true true)) ; ROP_025_complete [untranslatable]
+(assert (forall ((r Bool)) (=> (= (rop_defended r) true) (and (= (cfi_shadow_stack (rop_cfi r)) true) (= (cfi_return_address_protection (rop_cfi r)) true) (= (cr_gadget_elimination (rop_code_reuse r)) true) (= (rop_aslr_compatible r) true))))) ; ROP_025_complete
 
 ; ROP_026_shadow_push_preserves (matches Coq: Theorem ROP_026_shadow_push_preserves)
-(assert (= true true)) ; ROP_026_shadow_push_preserves [untranslatable]
+(assert (forall ((ss Bool) (ret Bool) (caller Bool) (fp Bool)) (= (length (shadow_push ss ret caller fp)) (S (length ss))))) ; ROP_026_shadow_push_preserves
 
 ; ROP_027_shadow_pop_decreases (matches Coq: Theorem ROP_027_shadow_pop_decreases)
-(assert (= true true)) ; ROP_027_shadow_pop_decreases [untranslatable]
+(assert (forall ((ss Bool) (e Bool) (rest Bool)) (=> (= (shadow_pop ss) (some (mk-tuple e rest))) (= (length rest) (pred (length ss)))))) ; ROP_027_shadow_pop_decreases
 
 ; ROP_028_shadow_peek_top (matches Coq: Theorem ROP_028_shadow_peek_top)
-(assert (= true true)) ; ROP_028_shadow_peek_top [untranslatable]
+(assert (forall ((ss Bool) (e Bool)) (=> (= (shadow_peek ss) (some e)) (exists ((rest Bool)) (= ss (insert e rest)))))) ; ROP_028_shadow_peek_top
 
 ; ROP_029_valid_return_requires_entry (matches Coq: Theorem ROP_029_valid_return_requires_entry)
-(assert (= true true)) ; ROP_029_valid_return_requires_entry [untranslatable]
+(assert (forall ((ss Bool) (ret_addr Bool)) (=> (= (valid_return ss ret_addr) true) (exists ((e Bool) (rest Bool)) (and (= ss (insert e rest)) (= (se_return_addr e) ret_addr)))))) ; ROP_029_valid_return_requires_entry
 
 ; ROP_030_empty_stack_no_return (matches Coq: Theorem ROP_030_empty_stack_no_return)
-(assert (= true true)) ; ROP_030_empty_stack_no_return [untranslatable]
+(assert (forall ((ret_addr Bool)) (not (= (valid_return nil ret_addr) true)))) ; ROP_030_empty_stack_no_return
 
 ; ROP_031_push_pop_inverse (matches Coq: Theorem ROP_031_push_pop_inverse)
-(assert (= true true)) ; ROP_031_push_pop_inverse [untranslatable]
+(assert (forall ((ss Bool) (ret Bool) (caller Bool) (fp Bool)) (= (shadow_pop (shadow_push ss ret caller fp)) (some (mk-tuple (mkShadowEntry ret caller fp true) ss))))) ; ROP_031_push_pop_inverse
 
 ; ROP_032_pushed_entry_valid (matches Coq: Theorem ROP_032_pushed_entry_valid)
-(assert (= true true)) ; ROP_032_pushed_entry_valid [untranslatable]
+(assert (forall ((ss Bool) (ret Bool) (caller Bool) (fp Bool) (e Bool) (rest Bool)) (=> (= (shadow_pop (shadow_push ss ret caller fp)) (some (mk-tuple e rest))) (= (se_mac_valid e) true)))) ; ROP_032_pushed_entry_valid
 
 ; ROP_033_return_matches_pushed (matches Coq: Theorem ROP_033_return_matches_pushed)
-(assert (= true true)) ; ROP_033_return_matches_pushed [untranslatable]
+(assert (forall ((ss Bool) (ret Bool) (caller Bool) (fp Bool)) (= (return_matches_shadow (shadow_push ss ret caller fp) ret) true))) ; ROP_033_return_matches_pushed
 
 ; ROP_034_return_mismatch_fails (matches Coq: Theorem ROP_034_return_mismatch_fails)
-(assert (= true true)) ; ROP_034_return_mismatch_fails [untranslatable]
+(assert (forall ((ss Bool) (ret Bool) (caller Bool) (fp Bool) (wrong_addr Bool)) (=> (not (= ret wrong_addr)) (= (return_matches_shadow (shadow_push ss ret caller fp) wrong_addr) false)))) ; ROP_034_return_mismatch_fails
 
 ; ROP_035_shadow_stack_depth_bounded (matches Coq: Theorem ROP_035_shadow_stack_depth_bounded)
-(assert (= true true)) ; ROP_035_shadow_stack_depth_bounded [untranslatable]
+(assert (forall ((ss Bool) (n Bool)) (=> (<= (length ss) n) (forall ((ret Bool) (caller Bool) (fp Bool)) (<= (length (shadow_push ss ret caller fp)) (+ n 1)))))) ; ROP_035_shadow_stack_depth_bounded
 
 ; ROP_036_valid_target_in_list (matches Coq: Theorem ROP_036_valid_target_in_list)
-(assert (= true true)) ; ROP_036_valid_target_in_list [untranslatable]
+(assert (forall ((targets Bool) (addr Bool)) (=> (= (indirect_branch_valid targets addr) true) (= (In addr targets) true)))) ; ROP_036_valid_target_in_list
 
 ; ROP_037_empty_targets_no_valid (matches Coq: Theorem ROP_037_empty_targets_no_valid)
-(assert (= true true)) ; ROP_037_empty_targets_no_valid [untranslatable]
+(assert (forall ((addr Bool)) (not (= (indirect_branch_valid nil addr) true)))) ; ROP_037_empty_targets_no_valid
 
 ; ROP_038_singleton_target_exact (matches Coq: Theorem ROP_038_singleton_target_exact)
-(assert (= true true)) ; ROP_038_singleton_target_exact [untranslatable]
+(assert (forall ((addr Bool) (target Bool)) (=> (= (indirect_branch_valid (insert target nil) addr) true) (= addr target)))) ; ROP_038_singleton_target_exact
 
 ; ROP_039_is_valid_target_sound (matches Coq: Theorem ROP_039_is_valid_target_sound)
-(assert (= true true)) ; ROP_039_is_valid_target_sound [untranslatable]
+(assert (forall ((targets Bool) (addr Bool)) (=> (= (is_valid_target targets addr) true) (= (indirect_branch_valid targets addr) true)))) ; ROP_039_is_valid_target_sound
 
 ; ROP_040_is_valid_target_complete (matches Coq: Theorem ROP_040_is_valid_target_complete)
-(assert (= true true)) ; ROP_040_is_valid_target_complete [untranslatable]
+(assert (forall ((targets Bool) (addr Bool)) (=> (= (indirect_branch_valid targets addr) true) (= (is_valid_target targets addr) true)))) ; ROP_040_is_valid_target_complete
 
 ; ROP_041_btb_validated_implies_valid (matches Coq: Theorem ROP_041_btb_validated_implies_valid)
-(assert (= true true)) ; ROP_041_btb_validated_implies_valid [untranslatable]
+(assert (forall ((targets Bool) (e Bool)) (=> (= (btb_entry_valid targets e) true) (= (In (btb_target e) targets) true)))) ; ROP_041_btb_validated_implies_valid
 
 ; ROP_042_unvalidated_btb_unsafe (matches Coq: Theorem ROP_042_unvalidated_btb_unsafe)
-(assert (= true true)) ; ROP_042_unvalidated_btb_unsafe [untranslatable]
+(assert (forall ((e Bool)) (=> (= (btb_validated e) false) (forall ((targets Bool)) (not (and (= (btb_entry_valid targets e) true) (= (btb_validated e) true))))))) ; ROP_042_unvalidated_btb_unsafe
 
 ; ROP_043_target_subset_preserved (matches Coq: Theorem ROP_043_target_subset_preserved)
-(assert (= true true)) ; ROP_043_target_subset_preserved [untranslatable]
+(assert (forall ((targets1 Bool) (targets2 Bool) (addr Bool)) (=> (forall ((x Bool)) (=> (= (In x targets1) true) (= (In x targets2) true))) (=> (= (indirect_branch_valid targets1 addr) true) (= (indirect_branch_valid targets2 addr) true))))) ; ROP_043_target_subset_preserved
 
 ; ROP_044_rop_gadget_blocked (matches Coq: Theorem ROP_044_rop_gadget_blocked)
-(assert (= true true)) ; ROP_044_rop_gadget_blocked [untranslatable]
+(assert (forall ((g Bool)) (=> (= (gadget_type g) GadgetROP) (=> (= (cfi_backward_edge_cfi riina_cfi) true) (=> (= (cfi_shadow_stack riina_cfi) true) (= (gadget_blocked riina_cfi g) true)))))) ; ROP_044_rop_gadget_blocked
 
 ; ROP_045_jop_gadget_blocked (matches Coq: Theorem ROP_045_jop_gadget_blocked)
-(assert (= true true)) ; ROP_045_jop_gadget_blocked [untranslatable]
+(assert (forall ((g Bool)) (=> (= (gadget_type g) GadgetJOP) (=> (= (cfi_forward_edge_cfi riina_cfi) true) (=> (= (cfi_indirect_branch_tracking riina_cfi) true) (= (gadget_blocked riina_cfi g) true)))))) ; ROP_045_jop_gadget_blocked
 
 ; ROP_046_cop_gadget_blocked (matches Coq: Theorem ROP_046_cop_gadget_blocked)
-(assert (= true true)) ; ROP_046_cop_gadget_blocked [untranslatable]
+(assert (forall ((g Bool)) (=> (= (gadget_type g) GadgetCOP) (=> (= (cfi_forward_edge_cfi riina_cfi) true) (= (gadget_blocked riina_cfi g) true))))) ; ROP_046_cop_gadget_blocked
 
 ; ROP_047_srop_gadget_blocked (matches Coq: Theorem ROP_047_srop_gadget_blocked)
-(assert (= true true)) ; ROP_047_srop_gadget_blocked [untranslatable]
+(assert (forall ((g Bool)) (=> (= (gadget_type g) GadgetSROP) (=> (= (cfi_backward_edge_cfi riina_cfi) true) (=> (= (cfi_shadow_stack riina_cfi) true) (= (gadget_blocked riina_cfi g) true)))))) ; ROP_047_srop_gadget_blocked
 
 ; ROP_048_riina_blocks_all_gadgets (matches Coq: Theorem ROP_048_riina_blocks_all_gadgets)
-(assert (= true true)) ; ROP_048_riina_blocks_all_gadgets [untranslatable]
+(assert (forall ((g Bool)) (= (gadget_blocked riina_cfi g) true))) ; ROP_048_riina_blocks_all_gadgets
 
 ; ROP_049_empty_chain_blocked (matches Coq: Theorem ROP_049_empty_chain_blocked)
-(assert (= true true)) ; ROP_049_empty_chain_blocked [untranslatable]
+(assert (forall ((cfi Bool)) (= (chain_blocked cfi nil) true))) ; ROP_049_empty_chain_blocked
 
 ; ROP_050_riina_blocks_all_chains (matches Coq: Theorem ROP_050_riina_blocks_all_chains)
-(assert (= true true)) ; ROP_050_riina_blocks_all_chains [untranslatable]
+(assert (forall ((chain Bool)) (= (chain_blocked riina_cfi chain) true))) ; ROP_050_riina_blocks_all_chains
 
 ; ROP_051_chain_blocked_implies_each_blocked (matches Coq: Theorem ROP_051_chain_blocked_implies_each_blocked)
-(assert (= true true)) ; ROP_051_chain_blocked_implies_each_blocked [untranslatable]
+(assert (forall ((cfi Bool) (chain Bool) (g Bool)) (=> (= (chain_blocked cfi chain) true) (=> (= (In g chain) true) (= (gadget_blocked cfi g) true))))) ; ROP_051_chain_blocked_implies_each_blocked
 
 ; ROP_052_single_unblocked_breaks_chain (matches Coq: Theorem ROP_052_single_unblocked_breaks_chain)
-(assert (= true true)) ; ROP_052_single_unblocked_breaks_chain [untranslatable]
+(assert (forall ((cfi Bool) (chain Bool) (g Bool)) (=> (= (In g chain) true) (=> (= (gadget_blocked cfi g) false) (= (chain_blocked cfi chain) false))))) ; ROP_052_single_unblocked_breaks_chain
 
 ; ROP_053_cpi_complete_riina (matches Coq: Theorem ROP_053_cpi_complete_riina)
 (assert (= (cpi_complete riina_cpi) true)) ; ROP_053_cpi_complete_riina
 
 ; ROP_054_authenticated_ptr_protected (matches Coq: Theorem ROP_054_authenticated_ptr_protected)
-(assert (= true true)) ; ROP_054_authenticated_ptr_protected [untranslatable]
+(assert (forall ((cpi Bool) (cp Bool)) (=> (= (cpi_ptr_authentication cpi) true) (=> (= (cp_authenticated cp) true) (=> (= (cp_bounds_checked cp) true) (= (cp_protected cpi cp) true)))))) ; ROP_054_authenticated_ptr_protected
 
 ; ROP_055_unauthenticated_ptr_unsafe (matches Coq: Theorem ROP_055_unauthenticated_ptr_unsafe)
-(assert (= true true)) ; ROP_055_unauthenticated_ptr_unsafe [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (cp_authenticated cp) false) (=> (= (cpi_ptr_authentication riina_cpi) true) (= (cp_protected riina_cpi cp) false))))) ; ROP_055_unauthenticated_ptr_unsafe
 
 ; ROP_056_bounds_unchecked_unsafe (matches Coq: Theorem ROP_056_bounds_unchecked_unsafe)
-(assert (= true true)) ; ROP_056_bounds_unchecked_unsafe [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (cp_bounds_checked cp) false) (=> (= (cp_authenticated cp) true) (=> (= (cpi_bounds_checking riina_cpi) true) (= (cp_protected riina_cpi cp) false)))))) ; ROP_056_bounds_unchecked_unsafe
 
 ; ROP_057_fully_protected_ptr (matches Coq: Theorem ROP_057_fully_protected_ptr)
-(assert (= true true)) ; ROP_057_fully_protected_ptr [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (cp_authenticated cp) true) (=> (= (cp_bounds_checked cp) true) (= (cp_protected riina_cpi cp) true))))) ; ROP_057_fully_protected_ptr
 
 ; ROP_058_no_auth_requirement_passes (matches Coq: Theorem ROP_058_no_auth_requirement_passes)
-(assert (= true true)) ; ROP_058_no_auth_requirement_passes [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (cpi_ptr_authentication (mkCPI false true true true)) false) (=> (= (cp_bounds_checked cp) true) (= (cp_protected (mkCPI false true true true) cp) true))))) ; ROP_058_no_auth_requirement_passes
 
 ; ROP_059_function_ptr_type (matches Coq: Theorem ROP_059_function_ptr_type)
-(assert (= true true)) ; ROP_059_function_ptr_type [untranslatable]
+(assert (forall ((addr Bool)) (= (cp_type (mkCodePtr CPFunction addr true true)) CPFunction))) ; ROP_059_function_ptr_type
 
 ; ROP_060_return_addr_protected (matches Coq: Theorem ROP_060_return_addr_protected)
-(assert (= true true)) ; ROP_060_return_addr_protected [untranslatable]
+(assert (forall ((addr Bool)) (=> (= (cp_authenticated (mkCodePtr CPReturnAddr addr true true)) true) (=> (= (cp_bounds_checked (mkCodePtr CPReturnAddr addr true true)) true) (= (cp_protected riina_cpi (mkCodePtr CPReturnAddr addr true true)) true))))) ; ROP_060_return_addr_protected
 
 ; ROP_061_forward_edge_enabled (matches Coq: Theorem ROP_061_forward_edge_enabled)
 (assert (= (cfi_forward_edge_cfi riina_cfi) true)) ; ROP_061_forward_edge_enabled
@@ -312,19 +312,19 @@
 (assert (= (cfi_indirect_branch_tracking riina_cfi) true)) ; ROP_062_ibt_enabled
 
 ; ROP_063_forward_edge_complete (matches Coq: Theorem ROP_063_forward_edge_complete)
-(assert (= true true)) ; ROP_063_forward_edge_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_forward_edge_cfi c) true)))) ; ROP_063_forward_edge_complete
 
 ; ROP_064_forward_edge_blocks_jop (matches Coq: Theorem ROP_064_forward_edge_blocks_jop)
-(assert (= true true)) ; ROP_064_forward_edge_blocks_jop [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (=> (= (cfi_forward_edge_cfi c) true) (=> (= (cfi_indirect_branch_tracking c) true) (=> (= (gadget_type g) GadgetJOP) (= (gadget_blocked c g) true)))))) ; ROP_064_forward_edge_blocks_jop
 
 ; ROP_065_forward_edge_blocks_cop (matches Coq: Theorem ROP_065_forward_edge_blocks_cop)
-(assert (= true true)) ; ROP_065_forward_edge_blocks_cop [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (=> (= (cfi_forward_edge_cfi c) true) (=> (= (gadget_type g) GadgetCOP) (= (gadget_blocked c g) true))))) ; ROP_065_forward_edge_blocks_cop
 
 ; ROP_066_indirect_call_requires_ibt (matches Coq: Theorem ROP_066_indirect_call_requires_ibt)
-(assert (= true true)) ; ROP_066_indirect_call_requires_ibt [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_indirect_branch_tracking c) true)))) ; ROP_066_indirect_call_requires_ibt
 
 ; ROP_067_forward_cfi_and_ibt_together (matches Coq: Theorem ROP_067_forward_cfi_and_ibt_together)
-(assert (= true true)) ; ROP_067_forward_cfi_and_ibt_together [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (and (= (cfi_forward_edge_cfi c) true) (= (cfi_indirect_branch_tracking c) true))))) ; ROP_067_forward_cfi_and_ibt_together
 
 ; ROP_068_backward_edge_enabled (matches Coq: Theorem ROP_068_backward_edge_enabled)
 (assert (= (cfi_backward_edge_cfi riina_cfi) true)) ; ROP_068_backward_edge_enabled
@@ -333,22 +333,22 @@
 (assert (= (cfi_shadow_stack riina_cfi) true)) ; ROP_069_shadow_stack_enabled
 
 ; ROP_070_backward_edge_complete (matches Coq: Theorem ROP_070_backward_edge_complete)
-(assert (= true true)) ; ROP_070_backward_edge_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_backward_edge_cfi c) true)))) ; ROP_070_backward_edge_complete
 
 ; ROP_071_backward_edge_blocks_rop (matches Coq: Theorem ROP_071_backward_edge_blocks_rop)
-(assert (= true true)) ; ROP_071_backward_edge_blocks_rop [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (=> (= (cfi_backward_edge_cfi c) true) (=> (= (cfi_shadow_stack c) true) (=> (= (gadget_type g) GadgetROP) (= (gadget_blocked c g) true)))))) ; ROP_071_backward_edge_blocks_rop
 
 ; ROP_072_backward_edge_blocks_srop (matches Coq: Theorem ROP_072_backward_edge_blocks_srop)
-(assert (= true true)) ; ROP_072_backward_edge_blocks_srop [untranslatable]
+(assert (forall ((c Bool) (g Bool)) (=> (= (cfi_backward_edge_cfi c) true) (=> (= (cfi_shadow_stack c) true) (=> (= (gadget_type g) GadgetSROP) (= (gadget_blocked c g) true)))))) ; ROP_072_backward_edge_blocks_srop
 
 ; ROP_073_return_requires_shadow (matches Coq: Theorem ROP_073_return_requires_shadow)
-(assert (= true true)) ; ROP_073_return_requires_shadow [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_shadow_stack c) true)))) ; ROP_073_return_requires_shadow
 
 ; ROP_074_backward_cfi_and_shadow_together (matches Coq: Theorem ROP_074_backward_cfi_and_shadow_together)
-(assert (= true true)) ; ROP_074_backward_cfi_and_shadow_together [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (and (= (cfi_backward_edge_cfi c) true) (= (cfi_shadow_stack c) true))))) ; ROP_074_backward_cfi_and_shadow_together
 
 ; ROP_075_return_address_protection_complete (matches Coq: Theorem ROP_075_return_address_protection_complete)
-(assert (= true true)) ; ROP_075_return_address_protection_complete [untranslatable]
+(assert (forall ((c Bool)) (=> (= (cfi_complete c) true) (= (cfi_return_address_protection c) true)))) ; ROP_075_return_address_protection_complete
 
 ; ROP_076_riina_full_cfi (matches Coq: Theorem ROP_076_riina_full_cfi)
 (assert (and (= (cfi_shadow_stack riina_cfi) true) (= (cfi_indirect_branch_tracking riina_cfi) true) (= (cfi_return_address_protection riina_cfi) true) (= (cfi_forward_edge_cfi riina_cfi) true) (= (cfi_backward_edge_cfi riina_cfi) true))) ; ROP_076_riina_full_cfi
@@ -360,25 +360,25 @@
 (assert (and (= (rop_defended riina_rop) true) (= (rop_aslr_compatible riina_rop) true) (= (rop_dep_compatible riina_rop) true))) ; ROP_078_riina_full_rop_defense
 
 ; ROP_079_all_attack_types_blocked (matches Coq: Theorem ROP_079_all_attack_types_blocked)
-(assert (= true true)) ; ROP_079_all_attack_types_blocked [untranslatable]
+(assert (forall ((g Bool)) (= (gadget_blocked riina_cfi g) true))) ; ROP_079_all_attack_types_blocked
 
 ; ROP_080_complete_defense_equivalence (matches Coq: Theorem ROP_080_complete_defense_equivalence)
-(assert (= true true)) ; ROP_080_complete_defense_equivalence [untranslatable]
+(assert (forall ((r Bool)) (and (=> (= (rop_defended r) true) (and (= (cfi_complete (rop_cfi r)) true) (= (code_reuse_prevented (rop_code_reuse r)) true) (= (rop_aslr_compatible r) true) (= (rop_dep_compatible r) true))) (=> (and (= (cfi_complete (rop_cfi r)) true) (= (code_reuse_prevented (rop_code_reuse r)) true) (= (rop_aslr_compatible r) true) (= (rop_dep_compatible r) true)) (= (rop_defended r) true))))) ; ROP_080_complete_defense_equivalence
 
 ; ROP_081_shadow_stack_prevents_rop (matches Coq: Theorem ROP_081_shadow_stack_prevents_rop)
-(assert (= true true)) ; ROP_081_shadow_stack_prevents_rop [untranslatable]
+(assert (forall ((ss Bool) (ret_addr Bool) (attacker_addr Bool)) (=> (= (valid_return ss ret_addr) true) (=> (not (= attacker_addr ret_addr)) (not (= (valid_return ss attacker_addr) true)))))) ; ROP_081_shadow_stack_prevents_rop
 
 ; ROP_082_ibt_prevents_jop (matches Coq: Theorem ROP_082_ibt_prevents_jop)
-(assert (= true true)) ; ROP_082_ibt_prevents_jop [untranslatable]
+(assert (forall ((targets Bool) (addr Bool)) (=> (= (cfi_indirect_branch_tracking riina_cfi) true) (=> (not (= (In addr targets) true)) (not (= (indirect_branch_valid targets addr) true)))))) ; ROP_082_ibt_prevents_jop
 
 ; ROP_083_cpi_prevents_ptr_hijack (matches Coq: Theorem ROP_083_cpi_prevents_ptr_hijack)
-(assert (= true true)) ; ROP_083_cpi_prevents_ptr_hijack [untranslatable]
+(assert (forall ((cp Bool)) (=> (= (cp_protected riina_cpi cp) true) (= (cp_authenticated cp) true)))) ; ROP_083_cpi_prevents_ptr_hijack
 
 ; ROP_084_defense_in_depth (matches Coq: Theorem ROP_084_defense_in_depth)
 (assert (and (= (cfi_complete riina_cfi) true) (= (code_reuse_prevented riina_cr) true) (= (cpi_complete riina_cpi) true))) ; ROP_084_defense_in_depth
 
 ; ROP_085_riina_rop_immune (matches Coq: Theorem ROP_085_riina_rop_immune)
-(assert (= true true)) ; ROP_085_riina_rop_immune [untranslatable]
+(assert (forall ((chain Bool)) (= (chain_blocked riina_cfi chain) true))) ; ROP_085_riina_rop_immune
 
 ; Verify all assertions are satisfiable
 (check-sat)

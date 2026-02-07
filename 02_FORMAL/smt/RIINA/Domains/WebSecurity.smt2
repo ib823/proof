@@ -83,79 +83,80 @@
 (define-fun authorized () Prop True)
 
 ; web_001_reflected_xss_impossible (matches Coq: Theorem web_001_reflected_xss_impossible)
-(assert (= true true)) ; web_001_reflected_xss_impossible [untranslatable]
+(assert (forall ((content HTMLContent)) (=> (= (xss_safe content) true) true))) ; web_001_reflected_xss_impossible
 
 ; web_002_stored_xss_impossible (matches Coq: Theorem web_002_stored_xss_impossible)
-(assert (= true true)) ; web_002_stored_xss_impossible [untranslatable]
+(assert (forall ((content HTMLContent)) (=> (= (xss_safe content) true) true))) ; web_002_stored_xss_impossible
 
 ; web_003_dom_xss_impossible (matches Coq: Theorem web_003_dom_xss_impossible)
-(assert (= true true)) ; web_003_dom_xss_impossible [untranslatable]
+(assert (forall ((th TrustedHTML)) (=> (= (th_sanitized th) true) true))) ; web_003_dom_xss_impossible
 
 ; web_004_csrf_impossible (matches Coq: Theorem web_004_csrf_impossible)
-(assert (= true true)) ; web_004_csrf_impossible [untranslatable]
+(assert (forall ((req HTTPRequest)) (forall ((expected CSRFToken)) (=> (= (csrf_protected req expected) true) (=> (not (= (req_method req) 0)) (exists ((token Bool)) (and (= (req_csrf_token req) (some token)) (= (csrf_value token) (csrf_value expected))))))))) ; web_004_csrf_impossible
 
 ; web_005_ssrf_impossible (matches Coq: Theorem web_005_ssrf_impossible)
-(assert (= true true)) ; web_005_ssrf_impossible [untranslatable]
+(assert (forall ((url ValidatedURL)) (=> (= (url_is_allowed url) true) true))) ; web_005_ssrf_impossible
 
 ; web_006_clickjacking_impossible (matches Coq: Theorem web_006_clickjacking_impossible)
-(assert (= true true)) ; web_006_clickjacking_impossible [untranslatable]
+(assert (forall ((csp CSP)) (=> (= (csp_frame_ancestors csp) nil) true))) ; web_006_clickjacking_impossible
 
 ; web_007_open_redirect_impossible (matches Coq: Theorem web_007_open_redirect_impossible)
-(assert (= true true)) ; web_007_open_redirect_impossible [untranslatable]
+(assert (forall ((url ValidatedURL)) (=> (= (url_is_allowed url) true) true))) ; web_007_open_redirect_impossible
 
 ; web_008_http_smuggling_impossible (matches Coq: Theorem web_008_http_smuggling_impossible)
-(assert (= true true)) ; web_008_http_smuggling_impossible [untranslatable]
+(assert (forall ((p StrictHTTPParser)) (=> (= (parser_reject_ambiguous p) true) true))) ; web_008_http_smuggling_impossible
 
 ; web_009_cache_poisoning_impossible (matches Coq: Theorem web_009_cache_poisoning_impossible)
-(assert (= true true)) ; web_009_cache_poisoning_impossible [untranslatable]
+(assert (forall ((cc CacheConfig)) (=> (> (length (cache_vary_headers cc)) 0) true))) ; web_009_cache_poisoning_impossible
 
 ; web_010_session_hijacking_mitigated (matches Coq: Theorem web_010_session_hijacking_mitigated)
-(assert (= true true)) ; web_010_session_hijacking_mitigated [untranslatable]
+(assert (forall ((c SecureCookie)) (=> (= (cookie_httponly c) true) (=> (= (cookie_secure c) true) true)))) ; web_010_session_hijacking_mitigated
 
 ; web_011_session_fixation_impossible (matches Coq: Theorem web_011_session_fixation_impossible)
-(assert (= true true)) ; web_011_session_fixation_impossible [untranslatable]
+(assert (forall ((old_id Int) (new_id Int)) (=> (= (regenerate_session old_id new_id) true) (not (= old_id new_id))))) ; web_011_session_fixation_impossible
 
 ; web_012_cookie_attacks_mitigated (matches Coq: Theorem web_012_cookie_attacks_mitigated)
-(assert (= true true)) ; web_012_cookie_attacks_mitigated [untranslatable]
+(assert (forall ((c SecureCookie)) (=> (>= (cookie_samesite c) 1) true))) ; web_012_cookie_attacks_mitigated
 
 ; web_013_path_traversal_impossible (matches Coq: Theorem web_013_path_traversal_impossible)
-(assert (= true true)) ; web_013_path_traversal_impossible [untranslatable]
+(assert (forall ((path list)) (=> (= (is_canonical path) true) true))) ; web_013_path_traversal_impossible
 
 ; web_014_lfi_impossible (matches Coq: Theorem web_014_lfi_impossible)
-(assert (= true true)) ; web_014_lfi_impossible [untranslatable]
+(assert (forall ((path list)) (=> (= (is_canonical path) true) true))) ; web_014_lfi_impossible
 
 ; web_015_rfi_impossible (matches Coq: Theorem web_015_rfi_impossible)
-(assert (= true true)) ; web_015_rfi_impossible [untranslatable]
+(assert true) ; web_015_rfi_impossible
 
 ; web_016_prototype_pollution_impossible (matches Coq: Theorem web_016_prototype_pollution_impossible)
-(assert (= true true)) ; web_016_prototype_pollution_impossible [untranslatable]
+(assert true) ; web_016_prototype_pollution_impossible
 
 ; web_017_deserialization_safe (matches Coq: Theorem web_017_deserialization_safe)
-(assert (= true true)) ; web_017_deserialization_safe [untranslatable]
+(assert (forall ((sd SignedData)) (=> (= (sd_verified sd) true) true))) ; web_017_deserialization_safe
 
 ; web_018_http_response_split_impossible (matches Coq: Theorem web_018_http_response_split_impossible)
-(assert (= true true)) ; web_018_http_response_split_impossible [untranslatable]
+; web_018_http_response_split_impossible: forall (h : list nat), negb (existsb (fun c => Nat.eqb c 10 || Nat.eqb c 13) h) = true ->  True
+(assert (forall ((h list)) true)) ; web_018_http_response_split_impossible [partial: bindings preserved]
 
 ; web_019_parameter_pollution_mitigated (matches Coq: Theorem web_019_parameter_pollution_mitigated)
-(assert (= true true)) ; web_019_parameter_pollution_mitigated [untranslatable]
+(assert (forall ((params list)) (=> (= (NoDup (map fst params)) true) true))) ; web_019_parameter_pollution_mitigated
 
 ; web_020_mass_assignment_impossible (matches Coq: Theorem web_020_mass_assignment_impossible)
-(assert (= true true)) ; web_020_mass_assignment_impossible [untranslatable]
+(assert true) ; web_020_mass_assignment_impossible
 
 ; web_021_idor_mitigated (matches Coq: Theorem web_021_idor_mitigated)
-(assert (= true true)) ; web_021_idor_mitigated [untranslatable]
+(assert (forall ((user Int) (resource Int)) (=> (= (authorized user resource) true) true))) ; web_021_idor_mitigated
 
 ; web_022_verb_tampering_mitigated (matches Coq: Theorem web_022_verb_tampering_mitigated)
-(assert (= true true)) ; web_022_verb_tampering_mitigated [untranslatable]
+(assert (forall ((rc RouteConfig)) (forall ((method Int)) (=> (= (route_strict rc) true) (=> (= (In method (route_methods rc)) true) true))))) ; web_022_verb_tampering_mitigated
 
 ; web_023_host_header_attack_mitigated (matches Coq: Theorem web_023_host_header_attack_mitigated)
-(assert (= true true)) ; web_023_host_header_attack_mitigated [untranslatable]
+(assert (forall ((hc HostConfig)) (forall ((host list)) (=> (= (In host (allowed_hosts hc)) true) true)))) ; web_023_host_header_attack_mitigated
 
 ; web_024_web_cache_deception_mitigated (matches Coq: Theorem web_024_web_cache_deception_mitigated)
-(assert (= true true)) ; web_024_web_cache_deception_mitigated [untranslatable]
+(assert (forall ((cc CacheConfig)) (=> (= (cache_no_transform cc) true) true))) ; web_024_web_cache_deception_mitigated
 
 ; web_025_graphql_attacks_mitigated (matches Coq: Theorem web_025_graphql_attacks_mitigated)
-(assert (= true true)) ; web_025_graphql_attacks_mitigated [untranslatable]
+(assert (forall ((gc GraphQLConfig)) (=> (> (gql_max_depth gc) 0) (=> (> (gql_max_complexity gc) 0) true)))) ; web_025_graphql_attacks_mitigated
 
 ; Verify all assertions are satisfiable
 (check-sat)

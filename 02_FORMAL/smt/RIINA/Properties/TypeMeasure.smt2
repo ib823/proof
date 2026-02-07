@@ -11,91 +11,93 @@
 (define-fun ty_size_lt () Prop true)
 
 ; ty_size_pos (matches Coq: Lemma ty_size_pos)
-(assert (= true true)) ; ty_size_pos [untranslatable]
+(assert (forall ((T Bool)) (> (ty_size T) 0))) ; ty_size_pos
 
 ; ty_size_fn_arg (matches Coq: Lemma ty_size_fn_arg)
-(assert (= true true)) ; ty_size_fn_arg [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool) (eff Bool)) (< (ty_size T1) (ty_size (TFn T1 T2 eff))))) ; ty_size_fn_arg
 
 ; ty_size_fn_res (matches Coq: Lemma ty_size_fn_res)
-(assert (= true true)) ; ty_size_fn_res [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool) (eff Bool)) (< (ty_size T2) (ty_size (TFn T1 T2 eff))))) ; ty_size_fn_res
 
 ; ty_size_prod_left (matches Coq: Lemma ty_size_prod_left)
-(assert (= true true)) ; ty_size_prod_left [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T1) (ty_size (TProd T1 T2))))) ; ty_size_prod_left
 
 ; ty_size_prod_right (matches Coq: Lemma ty_size_prod_right)
-(assert (= true true)) ; ty_size_prod_right [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T2) (ty_size (TProd T1 T2))))) ; ty_size_prod_right
 
 ; ty_size_sum_left (matches Coq: Lemma ty_size_sum_left)
-(assert (= true true)) ; ty_size_sum_left [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T1) (ty_size (TSum T1 T2))))) ; ty_size_sum_left
 
 ; ty_size_sum_right (matches Coq: Lemma ty_size_sum_right)
-(assert (= true true)) ; ty_size_sum_right [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (ty_size T2) (ty_size (TSum T1 T2))))) ; ty_size_sum_right
 
 ; ty_size_ref_content (matches Coq: Lemma ty_size_ref_content)
-(assert (= true true)) ; ty_size_ref_content [untranslatable]
+(assert (forall ((T Bool) (sl Bool)) (< (ty_size T) (ty_size (TRef T sl))))) ; ty_size_ref_content
 
 ; ty_size_secret_content (matches Coq: Lemma ty_size_secret_content)
-(assert (= true true)) ; ty_size_secret_content [untranslatable]
+(assert (forall ((T Bool)) (< (ty_size T) (ty_size (TSecret T))))) ; ty_size_secret_content
 
 ; ty_size_proof_content (matches Coq: Lemma ty_size_proof_content)
-(assert (= true true)) ; ty_size_proof_content [untranslatable]
+(assert (forall ((T Bool)) (< (ty_size T) (ty_size (TProof T))))) ; ty_size_proof_content
 
 ; ty_size_lt_wf (matches Coq: Lemma ty_size_lt_wf)
-(assert (= true true)) ; ty_size_lt_wf [untranslatable]
+(assert (= (well_founded ty_size_lt) true)) ; ty_size_lt_wf
 
 ; ty_size_induction (matches Coq: Lemma ty_size_induction)
-(assert (= true true)) ; ty_size_induction [untranslatable]
+(assert (forall ((P ty)) (=> (forall ((T Bool)) (=> (forall ((T' Bool)) (=> (< (ty_size T') (ty_size T)) (= (P T') true))) (= (P T) true))) (forall ((T Bool)) (= (P T) true))))) ; ty_size_induction
 
 ; first_order_no_fn (matches Coq: Lemma first_order_no_fn)
-(assert (= true true)) ; first_order_no_fn [untranslatable]
+(assert (forall ((T Bool) (T1 Bool) (T2 Bool) (eff Bool)) (=> (= (first_order_type T) true) (not (= T (TFn T1 T2 eff)))))) ; first_order_no_fn
 
 ; first_order_decidable (matches Coq: Lemma first_order_decidable)
-(assert (= true true)) ; first_order_decidable [untranslatable]
+; first_order_decidable: forall T, {first_order_type T = true} + {first_order_type T = false}
+(assert (forall ((T Bool)) true)) ; first_order_decidable [partial: bindings preserved]
 
 ; first_order_prod_inv (matches Coq: Lemma first_order_prod_inv)
-(assert (= true true)) ; first_order_prod_inv [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (=> (= (first_order_type (TProd T1 T2)) true) (and (= (first_order_type T1) true) (= (first_order_type T2) true))))) ; first_order_prod_inv
 
 ; first_order_sum_inv (matches Coq: Lemma first_order_sum_inv)
-(assert (= true true)) ; first_order_sum_inv [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (=> (= (first_order_type (TSum T1 T2)) true) (and (= (first_order_type T1) true) (= (first_order_type T2) true))))) ; first_order_sum_inv
 
 ; first_order_ref_inv (matches Coq: Lemma first_order_ref_inv)
-(assert (= true true)) ; first_order_ref_inv [untranslatable]
+(assert (forall ((T Bool) (sl Bool)) (=> (= (first_order_type (TRef T sl)) true) (= (first_order_type T) true)))) ; first_order_ref_inv
 
 ; first_order_secret_inv (matches Coq: Lemma first_order_secret_inv)
-(assert (= true true)) ; first_order_secret_inv [untranslatable]
+(assert (forall ((T Bool)) (=> (= (first_order_type (TSecret T)) true) (= (first_order_type T) true)))) ; first_order_secret_inv
 
 ; first_order_proof_inv (matches Coq: Lemma first_order_proof_inv)
-(assert (= true true)) ; first_order_proof_inv [untranslatable]
+(assert (forall ((T Bool)) (=> (= (first_order_type (TProof T)) true) (= (first_order_type T) true)))) ; first_order_proof_inv
 
 ; fo_compound_depth_prod (matches Coq: Lemma fo_compound_depth_prod)
-(assert (= true true)) ; fo_compound_depth_prod [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (= (fo_compound_depth (TProd T1 T2)) (+ 1 (Nat.max (fo_compound_depth T1) (fo_compound_depth T2)))))) ; fo_compound_depth_prod
 
 ; fo_compound_depth_sum (matches Coq: Lemma fo_compound_depth_sum)
-(assert (= true true)) ; fo_compound_depth_sum [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (= (fo_compound_depth (TSum T1 T2)) (+ 1 (Nat.max (fo_compound_depth T1) (fo_compound_depth T2)))))) ; fo_compound_depth_sum
 
 ; fo_compound_depth_prod_left (matches Coq: Lemma fo_compound_depth_prod_left)
-(assert (= true true)) ; fo_compound_depth_prod_left [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (fo_compound_depth T1) (fo_compound_depth (TProd T1 T2))))) ; fo_compound_depth_prod_left
 
 ; fo_compound_depth_prod_right (matches Coq: Lemma fo_compound_depth_prod_right)
-(assert (= true true)) ; fo_compound_depth_prod_right [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (fo_compound_depth T2) (fo_compound_depth (TProd T1 T2))))) ; fo_compound_depth_prod_right
 
 ; fo_compound_depth_sum_left (matches Coq: Lemma fo_compound_depth_sum_left)
-(assert (= true true)) ; fo_compound_depth_sum_left [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (fo_compound_depth T1) (fo_compound_depth (TSum T1 T2))))) ; fo_compound_depth_sum_left
 
 ; fo_compound_depth_sum_right (matches Coq: Lemma fo_compound_depth_sum_right)
-(assert (= true true)) ; fo_compound_depth_sum_right [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool)) (< (fo_compound_depth T2) (fo_compound_depth (TSum T1 T2))))) ; fo_compound_depth_sum_right
 
 ; fo_compound_depth_primitive (matches Coq: Lemma fo_compound_depth_primitive)
-(assert (= true true)) ; fo_compound_depth_primitive [untranslatable]
+; fo_compound_depth_primitive: forall T, match T with | TProd _ _ | TSum _ _ => False | _ => True end -> fo_compound_depth T = 0
+(assert (forall ((T Bool)) true)) ; fo_compound_depth_primitive [partial: bindings preserved]
 
 ; ty_depth_fn_arg (matches Coq: Lemma ty_depth_fn_arg)
-(assert (= true true)) ; ty_depth_fn_arg [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool) (eff Bool)) (< (ty_depth T1) (ty_depth (TFn T1 T2 eff))))) ; ty_depth_fn_arg
 
 ; ty_depth_fn_res (matches Coq: Lemma ty_depth_fn_res)
-(assert (= true true)) ; ty_depth_fn_res [untranslatable]
+(assert (forall ((T1 Bool) (T2 Bool) (eff Bool)) (< (ty_depth T2) (ty_depth (TFn T1 T2 eff))))) ; ty_depth_fn_res
 
 ; first_order_base_depth (matches Coq: Lemma first_order_base_depth)
-(assert (= true true)) ; first_order_base_depth [untranslatable]
+(assert (forall ((T Bool)) (=> (= (first_order_type T) true) (>= (ty_depth T) 0)))) ; first_order_base_depth
 
 ; Verify all assertions are satisfiable
 (check-sat)

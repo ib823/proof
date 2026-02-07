@@ -157,79 +157,80 @@
 (define-fun frame_rate_limited () Prop true)
 
 ; object_detection_bounded (matches Coq: Theorem object_detection_bounded)
-(assert (= true true)) ; object_detection_bounded [untranslatable]
+(assert (forall ((result ObjectDetectionResult)) (=> (= (detection_bounded result) true) (<= (length (od_detections result)) 100)))) ; object_detection_bounded
 
 ; detection_latency_bounded (matches Coq: Theorem detection_latency_bounded)
-(assert (= true true)) ; detection_latency_bounded [untranslatable]
+(assert (forall ((result ObjectDetectionResult)) (=> (= (detection_bounded result) true) (<= (od_latency_ms result) 100)))) ; detection_latency_bounded
 
 ; valid_detection_min_confidence (matches Coq: Theorem valid_detection_min_confidence)
-(assert (= true true)) ; valid_detection_min_confidence [untranslatable]
+(assert (forall ((d Detection)) (=> (= (valid_detection d) true) (>= (det_confidence d) 50)))) ; valid_detection_min_confidence
 
 ; cv_stays_on_device (matches Coq: Theorem cv_stays_on_device)
-(assert (= true true)) ; cv_stays_on_device [untranslatable]
+(assert (forall ((result ObjectDetectionResult)) (=> (= (cv_private result) true) (= (od_processed_on_device result) true)))) ; cv_stays_on_device
 
 ; empty_result_bounded (matches Coq: Theorem empty_result_bounded)
-(assert (= true true)) ; empty_result_bounded [untranslatable]
+(assert (forall ((r ObjectDetectionResult)) (=> (= (od_detections r) nil) (=> (<= (od_latency_ms r) 100) (= (detection_bounded r) true))))) ; empty_result_bounded
 
 ; face_detection_privacy_preserving (matches Coq: Theorem face_detection_privacy_preserving)
-(assert (= true true)) ; face_detection_privacy_preserving [untranslatable]
+(assert (forall ((fd FaceDetection)) (=> (= (face_privacy_preserving fd) true) (= (face_data_on_device fd) true)))) ; face_detection_privacy_preserving
 
 ; ocr_accuracy_bounded (matches Coq: Theorem ocr_accuracy_bounded)
-(assert (= true true)) ; ocr_accuracy_bounded [untranslatable]
+(assert (forall ((r OCRResult)) (=> (= (ocr_accuracy_within_bound r) true) (>= (ocr_confidence r) (ocr_accuracy_bound r))))) ; ocr_accuracy_bounded
 
 ; object_detection_confidence_reported (matches Coq: Theorem object_detection_confidence_reported)
-(assert (= true true)) ; object_detection_confidence_reported [untranslatable]
+(assert (forall ((od ObjectDetection)) (=> (= (confidence_properly_reported od) true) (= (obj_confidence_reported od) true)))) ; object_detection_confidence_reported
 
 ; image_classification_deterministic (matches Coq: Theorem image_classification_deterministic)
-(assert (= true true)) ; image_classification_deterministic [untranslatable]
+(assert (forall ((cr ClassificationResult)) (=> (= (classification_deterministic cr) true) (= (class_deterministic cr) true)))) ; image_classification_deterministic
 
 ; barcode_format_validated (matches Coq: Theorem barcode_format_validated)
-(assert (= true true)) ; barcode_format_validated [untranslatable]
+(assert (forall ((br BarcodeResult)) (=> (= (barcode_format_known br) true) (= (barcode_valid br) true)))) ; barcode_format_validated
 
 ; face_data_on_device_preserved (matches Coq: Theorem face_data_on_device_preserved)
-(assert (= true true)) ; face_data_on_device_preserved [untranslatable]
+(assert (forall ((fd FaceDetection)) (=> (= (face_privacy_preserving fd) true) (= (face_anonymized fd) true)))) ; face_data_on_device_preserved
 
 ; photo_analysis_permission_required (matches Coq: Theorem photo_analysis_permission_required)
-(assert (= true true)) ; photo_analysis_permission_required [untranslatable]
+(assert (forall ((pa PhotoAnalysis)) (=> (= (photo_analysis_permitted pa) true) (= (permission_granted pa) true)))) ; photo_analysis_permission_required
 
 ; depth_estimation_bounded (matches Coq: Theorem depth_estimation_bounded)
-(assert (= true true)) ; depth_estimation_bounded [untranslatable]
+(assert (forall ((de DepthEstimate)) (=> (= (depth_within_bounds de) true) (and (<= (depth_min de) (depth_value de)) (<= (depth_value de) (depth_max de)))))) ; depth_estimation_bounded
 
 ; pose_estimation_stable (matches Coq: Theorem pose_estimation_stable)
-(assert (= true true)) ; pose_estimation_stable [untranslatable]
+(assert (forall ((pe PoseEstimate)) (=> (= (pose_is_stable pe) true) (= (pose_stable pe) true)))) ; pose_estimation_stable
 
 ; scene_classification_consistent (matches Coq: Theorem scene_classification_consistent)
-(assert (= true true)) ; scene_classification_consistent [untranslatable]
+(assert (forall ((sc SceneClassification)) (=> (= (scene_is_consistent sc) true) (and (= (scene_consistent sc) true) (>= (scene_confidence sc) 50))))) ; scene_classification_consistent
 
 ; text_recognition_language_supported (matches Coq: Theorem text_recognition_language_supported)
-(assert (= true true)) ; text_recognition_language_supported [untranslatable]
+(assert (forall ((tr TextRecognition)) (=> (= (language_is_supported tr) true) (= (text_language_supported tr) true)))) ; text_recognition_language_supported
 
 ; vision_request_cancellable (matches Coq: Theorem vision_request_cancellable)
-(assert (= true true)) ; vision_request_cancellable [untranslatable]
+(assert (forall ((vr VisionRequest)) (=> (= (request_cancellable vr) true) (=> (= (vr_completed vr) false) (or (= (vr_cancelled vr) true) (= (vr_cancelled vr) false)))))) ; vision_request_cancellable
 
 ; image_similarity_symmetric (matches Coq: Theorem image_similarity_symmetric)
-(assert (= true true)) ; image_similarity_symmetric [untranslatable]
+(assert (forall ((p1 ImagePair) (p2 ImagePair)) (=> (= (similarity_symmetric_pair p1 p2) true) (=> (= (img_a p1) (img_b p2)) (=> (= (img_b p1) (img_a p2)) (= (similarity_score p1) (similarity_score p2))))))) ; image_similarity_symmetric
 
 ; vision_pipeline_ordered (matches Coq: Theorem vision_pipeline_ordered)
-(assert (= true true)) ; vision_pipeline_ordered [untranslatable]
+; vision_pipeline_ordered: forall (s1 s2 : PipelineStage), pipeline_stages_ordered [s1; s2] -> stage_order s1 <= stage_order s2
+(assert (forall ((s1 PipelineStage) (s2 PipelineStage)) true)) ; vision_pipeline_ordered [partial: bindings preserved]
 
 ; frame_analysis_rate_limited (matches Coq: Theorem frame_analysis_rate_limited)
-(assert (= true true)) ; frame_analysis_rate_limited [untranslatable]
+(assert (forall ((f1 FrameAnalysis) (f2 FrameAnalysis)) (=> (= (frame_rate_limited f1 f2) true) (>= (frame_timestamp_ms f2) (+ (frame_timestamp_ms f1) (min_interval_ms f1)))))) ; frame_analysis_rate_limited
 
 ; object_detection_confidence_bounded (matches Coq: Theorem object_detection_confidence_bounded)
-(assert (= true true)) ; object_detection_confidence_bounded [untranslatable]
+(assert (forall ((od ObjectDetection)) (=> (= (confidence_properly_reported od) true) (<= (obj_confidence od) 100)))) ; object_detection_confidence_bounded
 
 ; depth_estimation_lower_bound (matches Coq: Theorem depth_estimation_lower_bound)
-(assert (= true true)) ; depth_estimation_lower_bound [untranslatable]
+(assert (forall ((de DepthEstimate)) (=> (= (depth_within_bounds de) true) (<= (depth_min de) (depth_value de))))) ; depth_estimation_lower_bound
 
 ; pose_estimation_min_frames (matches Coq: Theorem pose_estimation_min_frames)
-(assert (= true true)) ; pose_estimation_min_frames [untranslatable]
+(assert (forall ((pe PoseEstimate)) (=> (= (pose_is_stable pe) true) (>= (pose_frame_count pe) 3)))) ; pose_estimation_min_frames
 
 ; language_in_supported_list (matches Coq: Theorem language_in_supported_list)
-(assert (= true true)) ; language_in_supported_list [untranslatable]
+(assert (forall ((tr TextRecognition)) (=> (= (language_is_supported tr) true) (= (In (text_language tr) (text_supported_languages tr)) true)))) ; language_in_supported_list
 
 ; empty_detections_always_bounded (matches Coq: Theorem empty_detections_always_bounded)
-(assert (= true true)) ; empty_detections_always_bounded [untranslatable]
+(assert (forall ((r ObjectDetectionResult)) (=> (= (od_detections r) nil) (<= (length (od_detections r)) 100)))) ; empty_detections_always_bounded
 
 ; Verify all assertions are satisfiable
 (check-sat)
