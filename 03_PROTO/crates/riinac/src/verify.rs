@@ -341,6 +341,7 @@ fn glob_thy_files(dir: &Path) -> Vec<PathBuf> {
 // ---------------------------------------------------------------------------
 
 /// Count `Qed.` occurrences in active Coq build files.
+/// Matches any line containing "Qed." (aligned with generate-metrics.sh grep).
 fn count_coq_qed(coq_dir: &Path) -> u32 {
     let files = active_coq_files(coq_dir);
     let mut count = 0u32;
@@ -348,7 +349,7 @@ fn count_coq_qed(coq_dir: &Path) -> u32 {
         if let Ok(content) = fs::read_to_string(&path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t == "Qed." || t.ends_with(" Qed.") {
+                if t.contains("Qed.") {
                     count += 1;
                 }
             }
@@ -560,7 +561,7 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     results
 }
 
-/// Compile all Coq proofs by running `make -j4` in the Coq directory.
+/// Compile all Coq proofs by running `make -j2` in the Coq directory.
 fn compile_coq(coq_dir: &Path) -> CheckResult {
     let coqc_path = match detect_coqc() {
         ToolStatus::Found(p) => p,
@@ -581,9 +582,17 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
         .unwrap_or_default();
 
     eprintln!("  coqc found: {}", coqc_path.display());
+
+    // Clean stale .vo files first to avoid spurious failures from prior builds
+    let _ = Command::new("make")
+        .args(["clean"])
+        .current_dir(coq_dir)
+        .output();
+
     let start = Instant::now();
 
-    // Run make -j4 with COQBIN set and coq binaries on PATH
+    // Run make -j2 with COQBIN set and coq binaries on PATH
+    // Use -j2 (not -j4) to avoid race conditions in Makefile dependency graph.
     // The Makefile's Makefile.conf target calls bare `coq_makefile` (not $(COQBIN)coq_makefile),
     // so we must ensure COQBIN is also on PATH.
     let path_env = if !coqbin.is_empty() {
@@ -593,7 +602,7 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
         std::env::var("PATH").unwrap_or_default()
     };
     let result = Command::new("make")
-        .args(["-j4"])
+        .args(["-j2"])
         .env("COQBIN", format!("{coqbin}/"))
         .env("PATH", &path_env)
         .current_dir(coq_dir)

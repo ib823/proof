@@ -726,7 +726,7 @@ Theorem PARSE_012_at_capacity_no_read : forall cap data,
   safe_read (mkBuffer data cap cap) 1 = false.
 Proof.
   intros cap data. unfold safe_read. simpl.
-  destruct cap; reflexivity.
+  apply Nat.leb_nle. lia.
 Qed.
 
 (* PARSE_013: Safe write equivalent to safe read *)
@@ -771,7 +771,7 @@ Theorem CONG_003_exclusive_phases : forall cs,
 Proof.
   intros cs H. unfold in_slow_start, in_cong_avoid in *.
   apply Nat.ltb_lt in H.
-  apply Nat.geb_gt. lia.
+  apply Nat.leb_nle. lia.
 Qed.
 
 (* CONG_004: Congestion avoidance implies not slow start *)
@@ -779,7 +779,7 @@ Theorem CONG_004_cong_avoid_not_slow : forall cs,
   in_cong_avoid cs = true -> in_slow_start cs = false.
 Proof.
   intros cs H. unfold in_slow_start, in_cong_avoid in *.
-  apply Nat.geb_ge in H.
+  apply Nat.leb_le in H.
   apply Nat.ltb_ge. lia.
 Qed.
 
@@ -789,7 +789,7 @@ Theorem CONG_005_aimd_decrease_halves : forall cs,
   cwnd (aimd_decrease cs) <= cwnd cs.
 Proof.
   intros cs H. unfold aimd_decrease. simpl.
-  apply Nat.max_lub_l. lia.
+  apply Nat.max_case_strong; intros; lia.
 Qed.
 
 (* CONG_006: AIMD decrease sets ssthresh to new cwnd *)
@@ -840,7 +840,7 @@ Proof.
   intros cs. unfold aimd_decrease, in_slow_start, in_cong_avoid. simpl.
   destruct (Nat.max (cwnd cs / 2) 2 <? Nat.max (cwnd cs / 2) 2) eqn:E.
   - apply Nat.ltb_lt in E. lia.
-  - right. apply Nat.geb_ge. lia.
+  - right. apply Nat.leb_le. lia.
 Qed.
 
 (* CONG_013: Minimum cwnd after decrease is 2 *)

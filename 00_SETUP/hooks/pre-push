@@ -10,6 +10,12 @@ if [ -f "${HOME}/.cargo/env" ]; then
     source "${HOME}/.cargo/env"
 fi
 
+# Source opam environment if available
+# (needed for Coq compilation via riinac verify --full)
+if command -v opam &> /dev/null; then
+    eval $(opam env --switch=coq820 2>/dev/null) || true
+fi
+
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 echo "================================================================"
