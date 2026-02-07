@@ -301,25 +301,11 @@ if [ -f "$PROGRESS" ]; then
 fi
 
 # --- SECURITY.md ---
+# Note: SECURITY.md uses a simple format (reporting email, scope, disclosure)
+# and does not contain proof metrics — no sed replacements needed.
 SECURITY="$REPO_ROOT/SECURITY.md"
 if [ -f "$SECURITY" ]; then
-    echo "  Processing SECURITY.md..."
-    if [ "$DRY_RUN" -eq 0 ]; then
-        # Replace all stale Qed counts with current
-        sed -i "s/6,193/${QED_COMMA}/g" "$SECURITY"
-        sed -i "s/4,044/${QED_COMMA}/g" "$SECURITY"
-
-        # Replace "249 files" with current active files
-        sed -i -E "s/\b249 files\b/${COQ_FILES_ACTIVE} files/g" "$SECURITY"
-
-        # Replace stale "17 critical theorems" with current triple-prover count
-        sed -i -E "s|17 critical theorems|${TRIPLE_PROVER} critical theorems|g" "$SECURITY"
-
-        echo "    [UPDATED] SECURITY.md"
-    else
-        echo "    [DRY] Would update SECURITY.md"
-    fi
-    CHANGED=$((CHANGED + 1))
+    echo "  Processing SECURITY.md... [no metrics to update]"
 fi
 
 # --- CONTRIBUTING.md ---

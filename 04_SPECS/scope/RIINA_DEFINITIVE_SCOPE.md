@@ -1,6 +1,6 @@
 # RIINA DEFINITIVE SCOPE DOCUMENT
 
-**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 845 Rust tests.
 
 ## Version 1.0.0 — The Single Source of Truth
 
@@ -19,7 +19,7 @@
 ║                                                                                                      ║
 ║  Classification: ULTRA KIASU | ZERO TRUST | INFINITE TIMELINE                                       ║
 ║  Date: 2026-01-19                                                                                    ║
-║  Repository: github.com/ib823/proof                                                                  ║
+║  Repository: github.com/ib823/riina                                                                  ║
 ║                                                                                                      ║
 ║  RIINA: Rigorous Immutable Invariant — Normalized Axiom                                              ║
 ║                                                                                                      ║
@@ -61,7 +61,7 @@
 ║  A formally verified programming language where security properties                                  ║
 ║  are mathematically guaranteed at compile time.                                                     ║
 ║                                                                                                      ║
-║  Single Codebase: github.com/ib823/proof                                                            ║
+║  Single Codebase: github.com/ib823/riina                                                            ║
 ║                                                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -302,23 +302,21 @@ Everything else = Programs TO BE WRITTEN in RIINA (future, separate codebases)
 ## 5.1 Single Authoritative Repository
 
 ```
-Repository: github.com/ib823/proof
+Repository: github.com/ib823/riina
 ─────────────────────────────────
 
 This repository contains EVERYTHING that IS RIINA:
 
-/workspaces/proof/
-├── CLAUDE.md                    ← Master instructions
-├── PROGRESS.md                  ← Current status tracker
-├── SESSION_LOG.md               ← Session continuity
+riina/
+├── README.md                    ← Project overview
+├── CONTRIBUTING.md              ← Contribution guide
+├── CHANGELOG.md                 ← Release history
 │
 ├── 00_SETUP/                    ← Setup scripts
-├── 01_RESEARCH/                 ← Research archive (read-only)
 ├── 02_FORMAL/                   ← Formal proofs (Track A)
 ├── 03_PROTO/                    ← Prototype (Track B)
 ├── 04_SPECS/                    ← Specifications (Track C)
 ├── 05_TOOLING/                  ← Tools (Track F)
-├── 06_COORDINATION/             ← Cross-track coordination
 └── 07_EXAMPLES/                 ← Example .rii files
 ```
 
@@ -566,7 +564,7 @@ This repository contains EVERYTHING that IS RIINA:
 | TERAS-LANG-LEXER-SPEC_v1_0_0.md | Lexer specification | Syntax details |
 | TERAS-LANG-AST_v1_0_0.md | AST specification | AST node definitions |
 | TERAS_DEFINITIVE_PLAN_v1_0_0.md | Execution plan | Research session details |
-| PROGRESS.md | Current status | Live status tracking |
+| CHANGELOG.md | Release history | Public release notes |
 
 ---
 

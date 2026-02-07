@@ -12,7 +12,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 OUTPUT_FILE="$ROOT_DIR/website/public/metrics.json"
 
+# --fast mode: count #[test] annotations statically instead of running cargo test
+FAST_MODE=0
+if [ "${1:-}" = "--fast" ]; then
+    FAST_MODE=1
+fi
+
 echo "=== RIINA Metrics Generator ==="
+if [ "$FAST_MODE" -eq 1 ]; then
+    echo "  (fast mode: static test count)"
+fi
 
 # Get current timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -130,11 +139,17 @@ TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS))
 # Count triple-prover theorems (from MULTIPROVER_VALIDATION.md)
 TRIPLE_PROVER=$(grep -oP '\d+ triple-prover theorems' "$ROOT_DIR/02_FORMAL/MULTIPROVER_VALIDATION.md" 2>/dev/null | grep -oP '^\d+' || echo "86")
 
-# Count Rust tests by running cargo test and summing passed counts
+# Count Rust tests
 if [ -f "${HOME}/.cargo/env" ]; then
     source "${HOME}/.cargo/env"
 fi
-RUST_TESTS=$(cd "$ROOT_DIR/03_PROTO" && cargo test --all 2>&1 | grep -oP '\d+ passed' | awk '{sum += $1} END {print sum+0}' || echo "0")
+if [ "$FAST_MODE" -eq 1 ]; then
+    # Fast: count #[test] annotations statically (< 1s vs ~30s for cargo test)
+    RUST_TESTS=$(grep -r '#\[test\]' "$ROOT_DIR/03_PROTO/crates" --include="*.rs" 2>/dev/null | wc -l)
+else
+    # Full: run cargo test for accurate count
+    RUST_TESTS=$(cd "$ROOT_DIR/03_PROTO" && cargo test --all 2>&1 | grep -oP '\d+ passed' | awk '{sum += $1} END {print sum+0}' || echo "0")
+fi
 
 # Count Rust crates (03_PROTO only — the main language crates)
 RUST_CRATES=$(find "$ROOT_DIR/03_PROTO/crates" -name "Cargo.toml" -type f 2>/dev/null | wc -l)

@@ -69,6 +69,16 @@ INTERNAL_PATHS=(
     "04_SPECS/RIINA_PRIME_DIRECTIVE_GAP_CLOSURE.md"
     "04_SPECS/scope/RIINA_RESEARCH_EXECUTION_MAP.md"
 
+    # --- Strategy/internal planning docs ---
+    "*STRATEGY*.md"
+    "*ATTACK*.md"
+    "*PLAN*.md"
+    "BRIDGE_ANALYSIS_*.md"
+    "*_GAP_CLOSURE*.md"
+    "*PRIME_DIRECTIVE*.md"
+    "AUDIT_REPORT_*.md"
+    "RESEARCH_STATUS_AUDIT.md"
+
     # --- Stray artifacts (screenshots, backups, caches, test files) ---
     "Screenshot_*.jpg"
     "image.png"
@@ -241,13 +251,24 @@ EOF
 
 echo -e "${GREEN}[✓] Committed on public${NC}"
 
-# Step 10: Push public to origin (ib823/proof) and riina (ib823/riina)
+# Step 10: Post-sync verification gate
+if [ -f "$REPO_ROOT/scripts/verify-public.sh" ]; then
+    echo "Running post-sync verification..."
+    if ! bash "$REPO_ROOT/scripts/verify-public.sh"; then
+        echo -e "${RED}ERROR: Public branch verification failed. NOT pushing.${NC}"
+        echo "Fix issues, then re-run sync."
+        git checkout main --quiet
+        exit 1
+    fi
+fi
+
+# Step 11: Push public to origin and riina (ib823/riina)
 # Use --no-verify because main was already fully verified by pre-push hook.
 # Public branch doesn't have the full repo structure (03_PROTO is missing),
 # so pre-push hook would fail trying to run riinac.
 echo "Pushing public..."
 git push origin public --no-verify
-echo -e "${GREEN}[✓] Public branch pushed to origin (ib823/proof)${NC}"
+echo -e "${GREEN}[✓] Public branch pushed to origin${NC}"
 
 # Also push to riina remote (public → main) if configured
 if git remote | grep -q "^riina$"; then

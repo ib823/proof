@@ -1,6 +1,6 @@
 # RIINA Materialization Plan v1.0.0
 
-**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 845 Rust tests.
 
 **Document ID:** `RIINA_MATERIALIZATION_PLAN_v1_0_0`
 **Date:** 2026-01-30
@@ -89,7 +89,7 @@ This document is the **single, complete, self-contained plan** to take RIINA fro
 
 ### 0.3 Assumptions
 
-- You have access to the repository at `/workspaces/proof/`
+- You have access to the repository at `riina/`
 - Rust toolchain is installed (`rustc 1.84.0+`)
 - Rocq/Coq is installed (`coqc 8.21+` / Rocq 9.1) — only needed for Phase 3
 - You can run `cargo build`, `cargo test`, `cargo clippy` in `03_PROTO/`
@@ -99,10 +99,7 @@ This document is the **single, complete, self-contained plan** to take RIINA fro
 
 | Document | Relationship |
 |----------|-------------|
-| `CLAUDE.md` (repo root) | Master instructions for working in this repository. **Read it first.** |
 | `SYNTAX_IMPROVEMENT_SPEC_v2_0_0.md` (same directory) | Predecessor. Fully incorporated into this document (sections 5.2, 5.3, Appendix A-C). |
-| `PROGRESS.md` (repo root) | Live progress tracker. Update it after completing work. |
-| `SESSION_LOG.md` (repo root) | Session continuity log. Update it during work. |
 | `04_SPECS/scope/RIINA_DEFINITIVE_SCOPE.md` | Core language definition. Reference for semantics. |
 | `01_RESEARCH/specs/bahasa/RIINA-BAHASA-MELAYU-SYNTAX_v1_0_0.md` | Bahasa Melayu syntax specification. Reference for keywords. |
 
@@ -212,11 +209,11 @@ Compiled Binary
 ## 2. REPOSITORY STRUCTURE
 
 ```
-/workspaces/proof/
+riina/
 |
-+-- CLAUDE.md                          Master instructions (READ FIRST)
-+-- PROGRESS.md                        Progress tracker
-+-- SESSION_LOG.md                     Session continuity log
++-- README.md                          Project overview
++-- CONTRIBUTING.md                    Contribution guide
++-- CHANGELOG.md                       Release history
 |
 +-- 00_SETUP/                          Setup scripts
 |   +-- scripts/
@@ -2843,7 +2840,7 @@ Phase 6.1 (FFI) --> Phase 6.3 (Community) --> Phase 6.4 (Enterprise)
 ### Gate 1: Lexer + Driver (after 5.1, 5.2)
 
 ```bash
-cd /workspaces/proof/03_PROTO
+cd riina/03_PROTO
 cargo build --all            # Must pass
 cargo test --all             # Must pass (existing + new lexer tests)
 cargo clippy -- -D warnings  # Must pass
@@ -2853,7 +2850,7 @@ cargo run --bin riinac -- check ../07_EXAMPLES/hello_dunia.rii  # Must work
 ### Gate 2: Parser (after 5.3)
 
 ```bash
-cd /workspaces/proof/03_PROTO
+cd riina/03_PROTO
 cargo test --all             # All parser tests pass
 
 # Parse function declarations:
@@ -2896,7 +2893,7 @@ git push origin main
 ### Gate 5: Domain Integration (after 7.3)
 
 ```bash
-cd /workspaces/proof/02_FORMAL/coq
+cd riina/02_FORMAL/coq
 make                                    # Must pass with 216+ files
 wc -l _CoqProject                      # Must show 216+ entries
 grep -rc "Admitted" domains/*.v         # Must be 0 (after 7.4 fixes)
@@ -2905,7 +2902,7 @@ grep -rc "Admitted" domains/*.v         # Must be 0 (after 7.4 fixes)
 ### Gate 6: Rust Evaluator (after 7.6)
 
 ```bash
-cd /workspaces/proof/03_PROTO
+cd riina/03_PROTO
 cargo test --all                        # Must pass
 # Evaluator must handle all 31 step rules
 cargo test -p riina-codegen evaluator   # All evaluator tests pass
@@ -2914,7 +2911,7 @@ cargo test -p riina-codegen evaluator   # All evaluator tests pass
 ### Gate 7: Coq Proofs — Zero Axioms (Track A, after 7.2)
 
 ```bash
-cd /workspaces/proof/02_FORMAL/coq
+cd riina/02_FORMAL/coq
 make                                    # Must pass
 grep -rc "Admitted" **/*.v              # Must be 0
 grep -rc "admit\." **/*.v              # Must be 0
@@ -2924,7 +2921,7 @@ grep -c "Axiom" properties/*.v          # Must be 0 (core axioms eliminated)
 ### Gate 8: Semantic Completeness (after 7.5)
 
 ```bash
-cd /workspaces/proof/02_FORMAL/coq
+cd riina/02_FORMAL/coq
 make                                    # Must pass
 # TLabeled, TTainted, TCapability must have typing + semantic rules
 grep -c "T_Labeled\|T_Tainted\|ST_RequireChecked" foundations/Typing.v foundations/Semantics.v
@@ -3187,7 +3184,7 @@ These were proposed in `SYNTAX_IMPROVEMENT_SPEC_v1_0_0` and rejected. They are l
 | Add `EffConstantTime` / `EffSpecSafe` to `effect` enum | Category error: constant-time and speculation-safety are verification properties, not computational effects. Would break all 17 effect matches across 25+ Coq files. Correct approach: separate analysis pass (section 4.2 of syntax spec). |
 | Change `TFn` to take `effect_row` (list effect) | Would break every `TFn` match in all 222 .v Coq files. The current `effect_join` lattice approach is already sound. |
 | Add `EFor` / `EWhile` / `ELoop` to core `expr` | `ELoop` (infinite loop) directly contradicts `well_typed_SN` (strong normalization theorem). Loops must be bounded or effectful. Parser desugaring is the correct approach. |
-| Add 6 new `expr` constructors + admit downstream | Violates CLAUDE.md: "NO `admit.` — No tactical admits allowed." Every new constructor requires updating `subst`, `free_in`, `step`, `has_type`, `value` across 25+ files. |
+| Add 6 new `expr` constructors + admit downstream | Violates project policy: "NO `admit.` — No tactical admits allowed." Every new constructor requires updating `subst`, `free_in`, `step`, `has_type`, `value` across 25+ files. |
 | Add `TFloat` / `TChar` to Coq `ty` | Would break all `ty` matches across 222 files for no proof benefit. Defer until Phase 2+. |
 | Sync SecurityLevel Rust 2→6 | Already done — Rust already has 6 levels. |
 | Sync Effect Rust 6→17 | Already done — Rust already has 17 effects. |

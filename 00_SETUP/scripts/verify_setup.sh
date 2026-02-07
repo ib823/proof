@@ -7,6 +7,7 @@ echo "╔═══════════════════════�
 echo "║              TERAS Setup Verification                        ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 ERRORS=0
 
 # Check Rust
@@ -43,11 +44,11 @@ fi
 echo ""
 echo "Checking directory structure..."
 DIRS=(
-    "/workspaces/proof/01_RESEARCH"
-    "/workspaces/proof/02_FORMAL/coq"
-    "/workspaces/proof/03_PROTO"
-    "/workspaces/proof/05_TOOLING"
-    "/workspaces/proof/06_COORDINATION"
+    "$REPO_ROOT/01_RESEARCH"
+    "$REPO_ROOT/02_FORMAL/coq"
+    "$REPO_ROOT/03_PROTO"
+    "$REPO_ROOT/05_TOOLING"
+    "$REPO_ROOT/06_COORDINATION"
 )
 
 for dir in "${DIRS[@]}"; do
@@ -63,9 +64,9 @@ done
 echo ""
 echo "Checking key files..."
 FILES=(
-    "/workspaces/proof/CLAUDE.md"
-    "/workspaces/proof/02_FORMAL/coq/_CoqProject"
-    "/workspaces/proof/05_TOOLING/Cargo.toml"
+    "$REPO_ROOT/CLAUDE.md"
+    "$REPO_ROOT/02_FORMAL/coq/_CoqProject"
+    "$REPO_ROOT/05_TOOLING/Cargo.toml"
 )
 
 for file in "${FILES[@]}"; do

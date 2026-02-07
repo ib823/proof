@@ -1,6 +1,6 @@
 # RIINA Certification Output
 
-**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 839 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,928 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,121 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 845 Rust tests.
 
 ## What RIINA Certifies
 
@@ -65,10 +65,10 @@ Anyone can verify a RIINA certificate independently:
 
 ```bash
 # 1. Clone the RIINA repository
-git clone https://github.com/ib823/proof.git
+git clone https://github.com/ib823/riina.git
 
 # 2. Build the Coq proofs from source
-cd proof/02_FORMAL/coq && make
+cd riina/02_FORMAL/coq && make
 
 # 3. Check that no proofs use admits
 grep -r "Admitted\|admit" *.v

@@ -153,8 +153,6 @@ git -C "$REPO_ROOT" commit -m "$(cat <<EOF
 
 Version $NEW_VERSION released.
 See CHANGELOG.md for details.
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 EOF
 )"
 echo -e "${GREEN}[✓] Release commit created${NC}"

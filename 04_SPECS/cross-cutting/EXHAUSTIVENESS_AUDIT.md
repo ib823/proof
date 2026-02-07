@@ -648,14 +648,14 @@ See Appendix A for the complete 460-track enumeration.
 ║                                                                                                      ║
 ║  CODEBASE INTEGRATION PLAN                                                                          ║
 ║                                                                                                      ║
-║  Repository: github.com/ib823/proof                                                                  ║
+║  Repository: github.com/ib823/riina                                                                  ║
 ║                                                                                                      ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                      ║
 ║  STEP 1: Create Documentation Directory Structure                                                   ║
 ║  ═══════════════════════════════════════════════                                                    ║
 ║                                                                                                      ║
-║  /workspaces/proof/                                                                                  ║
+║  riina/                                                                                              ║
 ║  ├── 00_SETUP/                                                                                       ║
 ║  ├── 01_RESEARCH/                                                                                    ║
 ║  │   ├── 00_SCOPE/                           ← NEW: Add scope documents here                        ║
@@ -677,10 +677,10 @@ See Appendix A for the complete 460-track enumeration.
 ║  └── 06_COORDINATION/                                                                                ║
 ║      └── SCOPE/                              ← OR: Add scope documents here                         ║
 ║                                                                                                      ║
-║  STEP 2: Update CLAUDE.md to Reference New Documents                                                ║
+║  STEP 2: Update README.md to Reference New Documents                                                ║
 ║  ═══════════════════════════════════════════════════                                                ║
 ║                                                                                                      ║
-║  Add to CLAUDE.md:                                                                                   ║
+║  Add to README.md:                                                                                   ║
 ║  ```                                                                                                 ║
 ║  ## Scope Documents (AUTHORITATIVE)                                                                  ║
 ║                                                                                                      ║
@@ -692,7 +692,7 @@ See Appendix A for the complete 460-track enumeration.
 ║  All other documents MUST align with these scope definitions.                                       ║
 ║  ```                                                                                                 ║
 ║                                                                                                      ║
-║  STEP 3: Update PROGRESS.md                                                                         ║
+║  STEP 3: Update CHANGELOG.md                                                                        ║
 ║  ════════════════════════════                                                                       ║
 ║                                                                                                      ║
 ║  Add section:                                                                                        ║

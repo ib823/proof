@@ -386,7 +386,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     while IFS= read -r file; do
         # Skip Tier 3
         case "$file" in
-            */01_RESEARCH/*|*/99_ARCHIVE/*|*/_archive_deprecated/*|*/CLAUDE_WEB_PROMPT_*|*/delegation_prompts/*) continue ;;
+            */01_RESEARCH/*|*/99_ARCHIVE/*|*/_archive_deprecated/*|*/CLAUDE_WEB_PROMPT_*|*/CLAUDE_AI_*|*/delegation_prompts/*) continue ;;
         esac
         banner_line=$(grep "^\*\*Audit Update:\*\*" "$file" | head -1)
         if ! echo "$banner_line" | grep -q "Session ${ACTUAL_SESSION}" 2>/dev/null; then

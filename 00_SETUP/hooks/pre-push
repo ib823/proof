@@ -16,7 +16,7 @@ echo "================================================================"
 echo "  RIINA PRE-PUSH VERIFICATION"
 echo "================================================================"
 
-# ── Step 1: Locate riinac ──────────────────────────────────────────
+# ── Step 1: Locate riinac (with staleness check) ──────────────────
 RIINAC=""
 for candidate in \
     "${REPO_ROOT}/03_PROTO/target/release/riinac" \
@@ -27,8 +27,20 @@ for candidate in \
     fi
 done
 
-if [ -z "$RIINAC" ]; then
-    echo "riinac not found — building..."
+# Staleness check: rebuild if any riinac crate source is newer than the binary
+REBUILD_NEEDED=0
+if [ -n "$RIINAC" ]; then
+    NEWEST_SRC=$(find "${REPO_ROOT}/03_PROTO/crates/riinac" -name "*.rs" -newer "$RIINAC" 2>/dev/null | head -1)
+    if [ -n "$NEWEST_SRC" ]; then
+        echo "  riinac binary is stale ($(basename "$NEWEST_SRC") is newer) — rebuilding..."
+        REBUILD_NEEDED=1
+    fi
+fi
+
+if [ -z "$RIINAC" ] || [ "$REBUILD_NEEDED" -eq 1 ]; then
+    if [ -z "$RIINAC" ]; then
+        echo "riinac not found — building..."
+    fi
     (cd "${REPO_ROOT}/03_PROTO" && cargo build --release -p riinac 2>&1) || {
         echo "FAIL: could not build riinac"
         exit 1

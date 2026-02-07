@@ -36,6 +36,7 @@ impl std::error::Error for LexError {}
 
 impl LexError {
     /// Structured error code for AI agent consumption (L0xxx series).
+    #[must_use]
     pub fn error_code(&self) -> &'static str {
         match self {
             LexError::UnexpectedChar(..) => "L0001",
@@ -50,6 +51,7 @@ impl LexError {
     }
 
     /// Human-readable fix hint for AI agents.
+    #[must_use]
     pub fn fix_hint(&self) -> Option<String> {
         Some(match self {
             LexError::UnexpectedChar(c, _) => {
@@ -68,7 +70,7 @@ impl LexError {
                 "Valid escape sequences: \\n, \\t, \\r, \\\\, \\\", \\', \\0".to_string()
             }
             LexError::InvalidNumericLiteral(s, _) => {
-                format!("'{}' is not a valid number. Use integer (42) or float (3.14) syntax", s)
+                format!("'{s}' is not a valid number. Use integer (42) or float (3.14) syntax")
             }
             LexError::EmptyCharLiteral(_) => {
                 "Place a character between the single quotes, e.g. 'a'".to_string()
@@ -80,6 +82,7 @@ impl LexError {
     }
 
     /// Position (byte offset) of the error.
+    #[must_use]
     pub fn position(&self) -> usize {
         match self {
             LexError::UnexpectedChar(_, pos)
@@ -88,8 +91,8 @@ impl LexError {
             | LexError::UnterminatedComment(pos)
             | LexError::InvalidEscapeSequence(pos)
             | LexError::EmptyCharLiteral(pos)
-            | LexError::Unknown(_, pos) => *pos,
-            LexError::InvalidNumericLiteral(_, pos) => *pos,
+            | LexError::Unknown(_, pos)
+            | LexError::InvalidNumericLiteral(_, pos) => *pos,
         }
     }
 }

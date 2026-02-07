@@ -19,6 +19,8 @@ if command -v rustc &> /dev/null; then
     fi
 fi
 
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+
 echo "Installing Rust..."
 
 # Install rustup
@@ -28,8 +30,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
 
 # Install specific version (from rust-toolchain.toml)
-if [ -f "/workspaces/proof/05_TOOLING/rust-toolchain.toml" ]; then
-    cd /workspaces/proof/05_TOOLING
+if [ -f "$REPO_ROOT/05_TOOLING/rust-toolchain.toml" ]; then
+    cd $REPO_ROOT/05_TOOLING
     rustup show
 else
     rustup default stable

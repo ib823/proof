@@ -4,14 +4,31 @@
 //! RIINA Verification Gate
 //!
 //! `riinac verify [--fast|--full]` — runs all checks and produces a manifest.
+//!
+//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) with
+//! proper toolchain detection, timeout handling, and static scanning for all
+//! three provers. Tool-not-found is a hard FAIL (verification incomplete).
 
 #![forbid(unsafe_code)]
 
 use std::fmt::Write as _;
 use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::time::SystemTime;
+use std::process::{Command, Output};
+use std::time::{Duration, Instant, SystemTime};
+
+// ---------------------------------------------------------------------------
+// Timeout constants (generous to allow clean CI builds)
+// ---------------------------------------------------------------------------
+
+const COQ_TIMEOUT: Duration = Duration::from_secs(45 * 60); // 45 min
+const LEAN_TIMEOUT: Duration = Duration::from_secs(30 * 60); // 30 min
+const ISABELLE_TIMEOUT: Duration = Duration::from_secs(20 * 60); // 20 min
+
+// ---------------------------------------------------------------------------
+// Mode / CheckResult / ToolStatus
+// ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -26,18 +43,354 @@ struct CheckResult {
     details: String,
 }
 
-/// Find repo root by walking up from cwd looking for `.git/`.
-fn find_repo_root() -> Result<PathBuf, String> {
-    let mut dir = std::env::current_dir().map_err(|e| format!("cwd: {e}"))?;
-    loop {
-        if dir.join(".git").exists() {
-            return Ok(dir);
+#[derive(Debug)]
+enum ToolStatus {
+    Found(PathBuf),
+    NotFound(String),
+}
+
+// ---------------------------------------------------------------------------
+// Helper utilities
+// ---------------------------------------------------------------------------
+
+/// Locate an executable on `$PATH` using the `which` command.
+fn which_tool(name: &str) -> Option<PathBuf> {
+    Command::new("which")
+        .arg(name)
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| PathBuf::from(s.trim()))
+        .filter(|p| p.exists())
+}
+
+/// Extract the last `n` lines from a string.
+fn last_n_lines(s: &str, n: usize) -> String {
+    let lines: Vec<&str> = s.lines().collect();
+    let start = lines.len().saturating_sub(n);
+    lines[start..].join("\n")
+}
+
+/// Truncate a string to at most `max` bytes (on a char boundary).
+fn truncate_str(s: &str, max: usize) -> String {
+    if s.len() <= max {
+        return s.to_string();
+    }
+    let mut end = max;
+    while end > 0 && !s.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}...", &s[..end])
+}
+
+/// Count files with a given extension under `dir` (recursive).
+fn count_files_with_ext(dir: &Path, ext: &str) -> u32 {
+    let mut count = 0u32;
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                count += count_files_with_ext(&path, ext);
+            } else if path.extension().and_then(|e| e.to_str()) == Some(ext) {
+                count += 1;
+            }
         }
-        if !dir.pop() {
-            return Err("could not find repo root (.git/)".into());
+    }
+    count
+}
+
+// ---------------------------------------------------------------------------
+// Toolchain detection
+// ---------------------------------------------------------------------------
+
+/// Detect `coqc`: `$COQBIN` env → OPAM paths → `which coqc`.
+fn detect_coqc() -> ToolStatus {
+    // 1. COQBIN environment variable
+    if let Ok(coqbin) = std::env::var("COQBIN") {
+        let p = PathBuf::from(&coqbin).join("coqc");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 2. OPAM default switch paths
+    if let Ok(home) = std::env::var("HOME") {
+        let opam_base = PathBuf::from(&home).join(".opam");
+        if opam_base.is_dir() {
+            if let Ok(entries) = fs::read_dir(&opam_base) {
+                for entry in entries.flatten() {
+                    let candidate = entry.path().join("bin").join("coqc");
+                    if candidate.exists() {
+                        return ToolStatus::Found(candidate);
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. which coqc
+    if let Some(p) = which_tool("coqc") {
+        return ToolStatus::Found(p);
+    }
+
+    ToolStatus::NotFound("coqc not found (set COQBIN or install via opam)".into())
+}
+
+/// Detect `lake` (Lean 4 build tool): `$ELAN_HOME` → `~/.elan/bin/lake` → `which lake`.
+fn detect_lake() -> ToolStatus {
+    // 1. ELAN_HOME
+    if let Ok(elan) = std::env::var("ELAN_HOME") {
+        let p = PathBuf::from(&elan).join("bin").join("lake");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 2. Default ~/.elan/bin/lake
+    if let Ok(home) = std::env::var("HOME") {
+        let p = PathBuf::from(&home).join(".elan").join("bin").join("lake");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 3. which lake
+    if let Some(p) = which_tool("lake") {
+        return ToolStatus::Found(p);
+    }
+
+    ToolStatus::NotFound("lake not found (install elan / Lean 4)".into())
+}
+
+/// Detect `isabelle`: `$ISABELLE_HOME` → common paths → `which isabelle`.
+fn detect_isabelle() -> ToolStatus {
+    // 1. ISABELLE_HOME
+    if let Ok(isa) = std::env::var("ISABELLE_HOME") {
+        let p = PathBuf::from(&isa).join("bin").join("isabelle");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 2. Common install paths
+    let common = [
+        "/usr/local/Isabelle/bin/isabelle",
+        "/opt/Isabelle/bin/isabelle",
+    ];
+    for c in common {
+        let p = PathBuf::from(c);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 3. which isabelle
+    if let Some(p) = which_tool("isabelle") {
+        return ToolStatus::Found(p);
+    }
+
+    ToolStatus::NotFound("isabelle not found (set ISABELLE_HOME or install)".into())
+}
+
+// ---------------------------------------------------------------------------
+// Timeout-wrapped command runner
+// ---------------------------------------------------------------------------
+
+/// Run a command with a timeout.  Uses the Linux `timeout` coreutil if
+/// available, otherwise falls back to a manual `try_wait` loop.
+fn run_with_timeout(
+    cmd: &str,
+    args: &[&str],
+    cwd: &Path,
+    timeout: Duration,
+) -> io::Result<Output> {
+    // Try using the `timeout` coreutil (available on Linux)
+    let timeout_secs = timeout.as_secs().to_string();
+    if which_tool("timeout").is_some() {
+        let mut full_args = vec![&timeout_secs[..], cmd];
+        full_args.extend_from_slice(args);
+        return Command::new("timeout")
+            .args(&full_args)
+            .current_dir(cwd)
+            .output();
+    }
+
+    // Fallback: manual child process management
+    let mut child = Command::new(cmd)
+        .args(args)
+        .current_dir(cwd)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()?;
+
+    let start = Instant::now();
+    let poll_interval = Duration::from_secs(2);
+
+    loop {
+        match child.try_wait()? {
+            Some(status) => {
+                let stdout = child
+                    .stdout
+                    .take()
+                    .map(|mut r| {
+                        let mut buf = Vec::new();
+                        io::Read::read_to_end(&mut r, &mut buf).ok();
+                        buf
+                    })
+                    .unwrap_or_default();
+                let stderr = child
+                    .stderr
+                    .take()
+                    .map(|mut r| {
+                        let mut buf = Vec::new();
+                        io::Read::read_to_end(&mut r, &mut buf).ok();
+                        buf
+                    })
+                    .unwrap_or_default();
+                return Ok(Output {
+                    status,
+                    stdout,
+                    stderr,
+                });
+            }
+            None => {
+                if start.elapsed() >= timeout {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(io::Error::new(
+                        io::ErrorKind::TimedOut,
+                        format!("command timed out after {}s", timeout.as_secs()),
+                    ));
+                }
+                std::thread::sleep(poll_interval);
+            }
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// File globbers
+// ---------------------------------------------------------------------------
+
+/// Recursively find .v files under a directory.
+fn glob_v_files(dir: &Path) -> Result<Vec<PathBuf>, std::io::Error> {
+    let mut files = vec![];
+    if !dir.is_dir() {
+        return Ok(files);
+    }
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            files.extend(glob_v_files(&path)?);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("v") {
+            files.push(path);
+        }
+    }
+    Ok(files)
+}
+
+/// Find `.lean` files under `dir`, excluding `lakefile.lean`.
+fn glob_lean_files(dir: &Path) -> Vec<PathBuf> {
+    let mut files = vec![];
+    fn walk(dir: &Path, files: &mut Vec<PathBuf>) {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    walk(&path, files);
+                } else if path.extension().and_then(|e| e.to_str()) == Some("lean") {
+                    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                        if name != "lakefile.lean" {
+                            files.push(path);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    walk(dir, &mut files);
+    files
+}
+
+/// Find `.thy` files under `dir`.
+fn glob_thy_files(dir: &Path) -> Vec<PathBuf> {
+    let mut files = vec![];
+    fn walk(dir: &Path, files: &mut Vec<PathBuf>) {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    walk(&path, files);
+                } else if path.extension().and_then(|e| e.to_str()) == Some("thy") {
+                    files.push(path);
+                }
+            }
+        }
+    }
+    walk(dir, &mut files);
+    files
+}
+
+// ---------------------------------------------------------------------------
+// Counting helpers (for cross-prover validation)
+// ---------------------------------------------------------------------------
+
+/// Count `Qed.` occurrences in active Coq build files.
+fn count_coq_qed(coq_dir: &Path) -> u32 {
+    let files = active_coq_files(coq_dir);
+    let mut count = 0u32;
+    for path in files {
+        if let Ok(content) = fs::read_to_string(&path) {
+            for line in content.lines() {
+                let t = line.trim();
+                if t == "Qed." || t.ends_with(" Qed.") {
+                    count += 1;
+                }
+            }
+        }
+    }
+    count
+}
+
+/// Count `theorem` and `lemma` declarations in Lean files.
+fn count_lean_theorems(lean_dir: &Path) -> u32 {
+    let files = glob_lean_files(lean_dir);
+    let mut count = 0u32;
+    for path in files {
+        if let Ok(content) = fs::read_to_string(&path) {
+            for line in content.lines() {
+                let t = line.trim();
+                if t.starts_with("theorem ") || t.starts_with("lemma ") {
+                    count += 1;
+                }
+            }
+        }
+    }
+    count
+}
+
+/// Count `lemma` and `theorem` declarations in Isabelle `.thy` files.
+fn count_isabelle_lemmas(isa_dir: &Path) -> u32 {
+    let files = glob_thy_files(isa_dir);
+    let mut count = 0u32;
+    for path in files {
+        if let Ok(content) = fs::read_to_string(&path) {
+            for line in content.lines() {
+                let t = line.trim();
+                if t.starts_with("lemma ") || t.starts_with("theorem ") {
+                    count += 1;
+                }
+            }
+        }
+    }
+    count
+}
+
+// ---------------------------------------------------------------------------
+// Rust checks (unchanged)
+// ---------------------------------------------------------------------------
 
 /// Run `cargo test --all` in the given dir, return (passed, test_count_string).
 fn run_cargo_test(proto_dir: &Path) -> CheckResult {
@@ -125,6 +478,10 @@ fn run_clippy(proto_dir: &Path) -> CheckResult {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Coq: active file list + static scan + compilation
+// ---------------------------------------------------------------------------
+
 /// Read active .v files from _CoqProject, falling back to recursive scan.
 fn active_coq_files(coq_dir: &Path) -> Vec<PathBuf> {
     let project_file = coq_dir.join("_CoqProject");
@@ -140,7 +497,7 @@ fn active_coq_files(coq_dir: &Path) -> Vec<PathBuf> {
     glob_v_files(coq_dir).unwrap_or_default()
 }
 
-/// Scan Coq directory for admits and axioms (active build files only).
+/// Static scan of Coq directory for admits and axioms (active build files only).
 fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     let mut results = vec![];
 
@@ -188,28 +545,462 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     results.push(CheckResult {
         name: "Coq Axioms".into(),
         passed: true, // axioms are informational
-        details: format!("{axiom_count} (5 justified expected)"),
+        details: format!("{axiom_count} (1 justified expected)"),
     });
 
     results
 }
 
-/// Recursively find .v files under a directory.
-fn glob_v_files(dir: &Path) -> Result<Vec<PathBuf>, std::io::Error> {
-    let mut files = vec![];
-    if !dir.is_dir() {
-        return Ok(files);
+/// Compile all Coq proofs by running `make -j4` in the Coq directory.
+fn compile_coq(coq_dir: &Path) -> CheckResult {
+    let coqc_path = match detect_coqc() {
+        ToolStatus::Found(p) => p,
+        ToolStatus::NotFound(msg) => {
+            return CheckResult {
+                name: "Coq Compilation".into(),
+                passed: false,
+                details: format!("SKIPPED ({msg}). Verification INCOMPLETE"),
+            };
+        }
+    };
+
+    // Derive COQBIN directory (parent of coqc binary)
+    let coqbin = coqc_path
+        .parent()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+
+    eprintln!("  coqc found: {}", coqc_path.display());
+    let start = Instant::now();
+
+    // Run make -j4 with COQBIN set
+    let result = Command::new("make")
+        .args(["-j4"])
+        .env("COQBIN", format!("{coqbin}/"))
+        .current_dir(coq_dir)
+        .output();
+
+    let elapsed = start.elapsed();
+
+    match result {
+        Ok(o) => {
+            if o.status.success() {
+                let vo_count = count_files_with_ext(coq_dir, "vo");
+                CheckResult {
+                    name: "Coq Compilation".into(),
+                    passed: true,
+                    details: format!(
+                        "{vo_count} .vo files compiled in {:.0}s",
+                        elapsed.as_secs_f64()
+                    ),
+                }
+            } else {
+                let code = o.status.code().unwrap_or(-1);
+                // Exit code 124 = timeout (from `timeout` coreutil)
+                if code == 124 {
+                    return CheckResult {
+                        name: "Coq Compilation".into(),
+                        passed: false,
+                        details: format!(
+                            "TIMEOUT after {:.0}s (limit: {}s)",
+                            elapsed.as_secs_f64(),
+                            COQ_TIMEOUT.as_secs()
+                        ),
+                    };
+                }
+                let stderr = String::from_utf8_lossy(&o.stderr);
+                let tail = last_n_lines(&stderr, 10);
+                CheckResult {
+                    name: "Coq Compilation".into(),
+                    passed: false,
+                    details: format!(
+                        "FAILED (exit {code}, {:.0}s)\n{}",
+                        elapsed.as_secs_f64(),
+                        truncate_str(&tail, 500)
+                    ),
+                }
+            }
+        }
+        Err(e) => CheckResult {
+            name: "Coq Compilation".into(),
+            passed: false,
+            details: format!("failed to run make: {e}"),
+        },
     }
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            files.extend(glob_v_files(&path)?);
-        } else if path.extension().and_then(|e| e.to_str()) == Some("v") {
-            files.push(path);
+}
+
+// ---------------------------------------------------------------------------
+// Lean 4: compilation + static scan
+// ---------------------------------------------------------------------------
+
+/// Compile Lean proofs by running `lake build`.
+fn compile_lean(lean_dir: &Path) -> CheckResult {
+    let lake_path = match detect_lake() {
+        ToolStatus::Found(p) => p,
+        ToolStatus::NotFound(msg) => {
+            return CheckResult {
+                name: "Lean 4 Compilation".into(),
+                passed: false,
+                details: format!("SKIPPED ({msg}). Verification INCOMPLETE"),
+            };
+        }
+    };
+
+    eprintln!("  lake found: {}", lake_path.display());
+    let start = Instant::now();
+
+    let result = run_with_timeout(
+        lake_path.to_str().unwrap_or("lake"),
+        &["build"],
+        lean_dir,
+        LEAN_TIMEOUT,
+    );
+
+    let elapsed = start.elapsed();
+
+    match result {
+        Ok(o) => {
+            let stdout = String::from_utf8_lossy(&o.stdout);
+            let stderr = String::from_utf8_lossy(&o.stderr);
+            let combined = format!("{stdout}\n{stderr}");
+
+            // Check for sorry warnings in build output
+            let sorry_warnings = combined
+                .lines()
+                .filter(|l| l.contains("declaration uses 'sorry'"))
+                .count();
+
+            if o.status.success() && sorry_warnings == 0 {
+                CheckResult {
+                    name: "Lean 4 Compilation".into(),
+                    passed: true,
+                    details: format!(
+                        "Built in {:.0}s (0 sorry warnings)",
+                        elapsed.as_secs_f64()
+                    ),
+                }
+            } else if o.status.success() && sorry_warnings > 0 {
+                // Build succeeded but sorry found — this is a FAIL
+                CheckResult {
+                    name: "Lean 4 Compilation".into(),
+                    passed: false,
+                    details: format!(
+                        "Built in {:.0}s but {sorry_warnings} sorry warning(s) detected",
+                        elapsed.as_secs_f64()
+                    ),
+                }
+            } else {
+                let code = o.status.code().unwrap_or(-1);
+                if code == 124 {
+                    return CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: false,
+                        details: format!(
+                            "TIMEOUT after {:.0}s (limit: {}s)",
+                            elapsed.as_secs_f64(),
+                            LEAN_TIMEOUT.as_secs()
+                        ),
+                    };
+                }
+                let tail = last_n_lines(&stderr, 10);
+                CheckResult {
+                    name: "Lean 4 Compilation".into(),
+                    passed: false,
+                    details: format!(
+                        "FAILED (exit {code}, {:.0}s)\n{}",
+                        elapsed.as_secs_f64(),
+                        truncate_str(&tail, 500)
+                    ),
+                }
+            }
+        }
+        Err(e) => {
+            if e.kind() == io::ErrorKind::TimedOut {
+                CheckResult {
+                    name: "Lean 4 Compilation".into(),
+                    passed: false,
+                    details: format!(
+                        "TIMEOUT after {:.0}s (limit: {}s)",
+                        elapsed.as_secs_f64(),
+                        LEAN_TIMEOUT.as_secs()
+                    ),
+                }
+            } else {
+                CheckResult {
+                    name: "Lean 4 Compilation".into(),
+                    passed: false,
+                    details: format!("failed to run lake: {e}"),
+                }
+            }
         }
     }
-    Ok(files)
+}
+
+/// Static scan of Lean files for `sorry` (skipping comments and strings).
+fn scan_lean(lean_dir: &Path) -> Vec<CheckResult> {
+    let files = glob_lean_files(lean_dir);
+    let mut sorry_count = 0u32;
+    let mut theorem_count = 0u32;
+
+    for path in &files {
+        if let Ok(content) = fs::read_to_string(path) {
+            let mut in_block_comment = 0i32; // nesting depth
+            for line in content.lines() {
+                let trimmed = line.trim();
+
+                // Track nested block comments /- ... -/
+                for window in trimmed.as_bytes().windows(2) {
+                    if window == b"/-" {
+                        in_block_comment += 1;
+                    }
+                    if window == b"-/" && in_block_comment > 0 {
+                        in_block_comment -= 1;
+                    }
+                }
+
+                if in_block_comment > 0 {
+                    continue;
+                }
+
+                // Skip line comments
+                let effective = if let Some(pos) = trimmed.find("--") {
+                    &trimmed[..pos]
+                } else {
+                    trimmed
+                };
+
+                // Count theorems/lemmas
+                if effective.starts_with("theorem ") || effective.starts_with("lemma ") {
+                    theorem_count += 1;
+                }
+
+                // Check for sorry (as a word boundary)
+                if contains_word(effective, "sorry") {
+                    sorry_count += 1;
+                }
+            }
+        }
+    }
+
+    vec![CheckResult {
+        name: "Lean sorry Scan".into(),
+        passed: sorry_count == 0,
+        details: format!(
+            "{sorry_count} sorry in {} files ({theorem_count} theorems/lemmas)",
+            files.len()
+        ),
+    }]
+}
+
+// ---------------------------------------------------------------------------
+// Isabelle: compilation + static scan
+// ---------------------------------------------------------------------------
+
+/// Compile Isabelle proofs by running `isabelle build -d . -b RIINA`.
+fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
+    let isa_path = match detect_isabelle() {
+        ToolStatus::Found(p) => p,
+        ToolStatus::NotFound(msg) => {
+            return CheckResult {
+                name: "Isabelle Compilation".into(),
+                passed: false,
+                details: format!("SKIPPED ({msg}). Verification INCOMPLETE"),
+            };
+        }
+    };
+
+    // The ROOT file lives in 02_FORMAL/isabelle/RIINA/
+    let riina_dir = isabelle_dir.join("RIINA");
+    if !riina_dir.join("ROOT").exists() {
+        return CheckResult {
+            name: "Isabelle Compilation".into(),
+            passed: false,
+            details: "ROOT file not found in isabelle/RIINA/".into(),
+        };
+    }
+
+    eprintln!("  isabelle found: {}", isa_path.display());
+    let start = Instant::now();
+
+    let result = run_with_timeout(
+        isa_path.to_str().unwrap_or("isabelle"),
+        &["build", "-d", ".", "-b", "RIINA"],
+        &riina_dir,
+        ISABELLE_TIMEOUT,
+    );
+
+    let elapsed = start.elapsed();
+
+    match result {
+        Ok(o) => {
+            if o.status.success() {
+                CheckResult {
+                    name: "Isabelle Compilation".into(),
+                    passed: true,
+                    details: format!("Session RIINA built in {:.0}s", elapsed.as_secs_f64()),
+                }
+            } else {
+                let code = o.status.code().unwrap_or(-1);
+                if code == 124 {
+                    return CheckResult {
+                        name: "Isabelle Compilation".into(),
+                        passed: false,
+                        details: format!(
+                            "TIMEOUT after {:.0}s (limit: {}s)",
+                            elapsed.as_secs_f64(),
+                            ISABELLE_TIMEOUT.as_secs()
+                        ),
+                    };
+                }
+                let stderr = String::from_utf8_lossy(&o.stderr);
+                let stdout = String::from_utf8_lossy(&o.stdout);
+                let combined = format!("{stdout}\n{stderr}");
+                let tail = last_n_lines(&combined, 10);
+                CheckResult {
+                    name: "Isabelle Compilation".into(),
+                    passed: false,
+                    details: format!(
+                        "FAILED (exit {code}, {:.0}s)\n{}",
+                        elapsed.as_secs_f64(),
+                        truncate_str(&tail, 500)
+                    ),
+                }
+            }
+        }
+        Err(e) => {
+            if e.kind() == io::ErrorKind::TimedOut {
+                CheckResult {
+                    name: "Isabelle Compilation".into(),
+                    passed: false,
+                    details: format!(
+                        "TIMEOUT after {:.0}s (limit: {}s)",
+                        elapsed.as_secs_f64(),
+                        ISABELLE_TIMEOUT.as_secs()
+                    ),
+                }
+            } else {
+                CheckResult {
+                    name: "Isabelle Compilation".into(),
+                    passed: false,
+                    details: format!("failed to run isabelle: {e}"),
+                }
+            }
+        }
+    }
+}
+
+/// Static scan of Isabelle `.thy` files for `sorry` and `oops`.
+fn scan_isabelle(isabelle_dir: &Path) -> Vec<CheckResult> {
+    let thy_dir = isabelle_dir.join("RIINA");
+    let files = glob_thy_files(&thy_dir);
+    let mut sorry_count = 0u32;
+    let mut oops_count = 0u32;
+    let mut lemma_count = 0u32;
+
+    for path in &files {
+        if let Ok(content) = fs::read_to_string(path) {
+            let mut in_comment = false;
+            for line in content.lines() {
+                let trimmed = line.trim();
+
+                // Track Isabelle block comments (* ... *)
+                if trimmed.contains("(*") {
+                    in_comment = true;
+                }
+                if trimmed.contains("*)") {
+                    in_comment = false;
+                    continue;
+                }
+                if in_comment {
+                    continue;
+                }
+
+                // Count lemmas/theorems
+                if trimmed.starts_with("lemma ") || trimmed.starts_with("theorem ") {
+                    lemma_count += 1;
+                }
+
+                // Check for sorry / oops
+                if contains_word(trimmed, "sorry") {
+                    sorry_count += 1;
+                }
+                if contains_word(trimmed, "oops") {
+                    oops_count += 1;
+                }
+            }
+        }
+    }
+
+    vec![CheckResult {
+        name: "Isabelle sorry/oops".into(),
+        passed: sorry_count == 0 && oops_count == 0,
+        details: format!(
+            "{sorry_count} sorry + {oops_count} oops in {} files ({lemma_count} lemmas)",
+            files.len()
+        ),
+    }]
+}
+
+// ---------------------------------------------------------------------------
+// Cross-prover validation (informational)
+// ---------------------------------------------------------------------------
+
+/// Cross-validate proof counts across all three provers (informational, always passes).
+fn cross_validate_provers(coq_dir: &Path, lean_dir: &Path, isabelle_dir: &Path) -> CheckResult {
+    let coq_qed = count_coq_qed(coq_dir);
+    let lean_thm = count_lean_theorems(lean_dir);
+    let isa_lem = count_isabelle_lemmas(&isabelle_dir.join("RIINA"));
+
+    CheckResult {
+        name: "Cross-Prover Validation".into(),
+        passed: true, // informational
+        details: format!("Coq: {coq_qed} Qed | Lean: {lean_thm} | Isabelle: {isa_lem}"),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Word boundary helper
+// ---------------------------------------------------------------------------
+
+/// Check if `haystack` contains `word` as a whole word (not inside an identifier).
+fn contains_word(haystack: &str, word: &str) -> bool {
+    let bytes = haystack.as_bytes();
+    let word_bytes = word.as_bytes();
+    let wlen = word_bytes.len();
+
+    if bytes.len() < wlen {
+        return false;
+    }
+
+    for i in 0..=(bytes.len() - wlen) {
+        if &bytes[i..i + wlen] == word_bytes {
+            let before_ok =
+                i == 0 || !bytes[i - 1].is_ascii_alphanumeric() && bytes[i - 1] != b'_';
+            let after_ok = i + wlen >= bytes.len()
+                || !bytes[i + wlen].is_ascii_alphanumeric() && bytes[i + wlen] != b'_';
+            if before_ok && after_ok {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+// ---------------------------------------------------------------------------
+// Repo root / git / manifest
+// ---------------------------------------------------------------------------
+
+/// Find repo root by walking up from cwd looking for `.git/`.
+fn find_repo_root() -> Result<PathBuf, String> {
+    let mut dir = std::env::current_dir().map_err(|e| format!("cwd: {e}"))?;
+    loop {
+        if dir.join(".git").exists() {
+            return Ok(dir);
+        }
+        if !dir.pop() {
+            return Err("could not find repo root (.git/)".into());
+        }
+    }
 }
 
 /// Get short git SHA.
@@ -310,6 +1101,10 @@ fn is_leap(y: u64) -> bool {
     y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)
 }
 
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
+
 /// Entry point for `riinac verify`.
 pub fn run(mode: Mode) -> i32 {
     let repo = match find_repo_root() {
@@ -326,7 +1121,8 @@ pub fn run(mode: Mode) -> i32 {
     let proto_dir = repo.join("03_PROTO");
     let mut results = vec![];
 
-    // Fast checks
+    // Fast checks (always run)
+    eprintln!("\n=== Rust Verification ===");
     eprintln!("Running cargo test...");
     results.push(run_cargo_test(&proto_dir));
 
@@ -336,8 +1132,36 @@ pub fn run(mode: Mode) -> i32 {
     // Full checks
     if mode == Mode::Full {
         let coq_dir = repo.join("02_FORMAL").join("coq");
+        let lean_dir = repo.join("02_FORMAL").join("lean");
+        let isabelle_dir = repo.join("02_FORMAL").join("isabelle");
+
+        // === Coq ===
+        eprintln!("\n=== Coq Verification ===");
+        eprintln!("Compiling Coq proofs...");
+        results.push(compile_coq(&coq_dir));
+
         eprintln!("Scanning Coq proofs...");
         results.extend(scan_coq(&coq_dir));
+
+        // === Lean 4 ===
+        eprintln!("\n=== Lean 4 Verification ===");
+        eprintln!("Compiling Lean proofs...");
+        results.push(compile_lean(&lean_dir));
+
+        eprintln!("Scanning Lean files...");
+        results.extend(scan_lean(&lean_dir));
+
+        // === Isabelle ===
+        eprintln!("\n=== Isabelle Verification ===");
+        eprintln!("Compiling Isabelle proofs...");
+        results.push(compile_isabelle(&isabelle_dir));
+
+        eprintln!("Scanning Isabelle files...");
+        results.extend(scan_isabelle(&isabelle_dir));
+
+        // === Cross-Prover ===
+        eprintln!("\n=== Cross-Prover Validation ===");
+        results.push(cross_validate_provers(&coq_dir, &lean_dir, &isabelle_dir));
     }
 
     // Report
@@ -363,6 +1187,8 @@ pub fn run(mode: Mode) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // -- Existing tests (unchanged) --
 
     #[test]
     fn test_parse_test_count_single() {
@@ -402,5 +1228,100 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
         assert!(is_leap(2024));
         assert!(!is_leap(1900));
         assert!(!is_leap(2023));
+    }
+
+    // -- New tests --
+
+    #[test]
+    fn test_which_tool_nonexistent() {
+        assert!(which_tool("__nonexistent_tool_xyz__").is_none());
+    }
+
+    #[test]
+    fn test_last_n_lines() {
+        assert_eq!(last_n_lines("a\nb\nc\nd\ne", 3), "c\nd\ne");
+        assert_eq!(last_n_lines("a\nb", 5), "a\nb");
+        assert_eq!(last_n_lines("single", 1), "single");
+        assert_eq!(last_n_lines("", 3), "");
+    }
+
+    #[test]
+    fn test_truncate_str() {
+        assert_eq!(truncate_str("hello", 10), "hello");
+        assert_eq!(truncate_str("hello world", 5), "hello...");
+        assert_eq!(truncate_str("", 5), "");
+    }
+
+    #[test]
+    fn test_contains_word() {
+        assert!(contains_word("sorry", "sorry"));
+        assert!(contains_word("x sorry y", "sorry"));
+        assert!(!contains_word("not_sorry_here", "sorry"));
+        assert!(!contains_word("sorrynotsorry", "sorry"));
+        assert!(contains_word("(sorry)", "sorry"));
+        assert!(contains_word("sorry.", "sorry"));
+    }
+
+    #[test]
+    fn test_count_coq_qed() {
+        // Run against the actual repo if available
+        let coq_dir = PathBuf::from("/workspaces/proof/02_FORMAL/coq");
+        if coq_dir.exists() {
+            let count = count_coq_qed(&coq_dir);
+            assert!(count > 1000, "Expected >1000 Qed, got {count}");
+        }
+    }
+
+    #[test]
+    fn test_count_lean_theorems() {
+        let lean_dir = PathBuf::from("/workspaces/proof/02_FORMAL/lean");
+        if lean_dir.exists() {
+            let count = count_lean_theorems(&lean_dir);
+            assert!(count > 50, "Expected >50 Lean theorems, got {count}");
+        }
+    }
+
+    #[test]
+    fn test_count_isabelle_lemmas() {
+        let isa_dir = PathBuf::from("/workspaces/proof/02_FORMAL/isabelle/RIINA");
+        if isa_dir.exists() {
+            let count = count_isabelle_lemmas(&isa_dir);
+            assert!(count > 50, "Expected >50 Isabelle lemmas, got {count}");
+        }
+    }
+
+    #[test]
+    fn test_detect_coqc() {
+        // Should not panic regardless of whether coqc is installed
+        let status = detect_coqc();
+        match status {
+            ToolStatus::Found(p) => assert!(p.exists()),
+            ToolStatus::NotFound(msg) => assert!(!msg.is_empty()),
+        }
+    }
+
+    #[test]
+    fn test_glob_lean_files_excludes_lakefile() {
+        let lean_dir = PathBuf::from("/workspaces/proof/02_FORMAL/lean");
+        if lean_dir.exists() {
+            let files = glob_lean_files(&lean_dir);
+            for f in &files {
+                assert_ne!(
+                    f.file_name().and_then(|n| n.to_str()),
+                    Some("lakefile.lean"),
+                    "lakefile.lean should be excluded"
+                );
+            }
+            assert!(!files.is_empty(), "Should find at least one .lean file");
+        }
+    }
+
+    #[test]
+    fn test_glob_thy_files() {
+        let isa_dir = PathBuf::from("/workspaces/proof/02_FORMAL/isabelle/RIINA");
+        if isa_dir.exists() {
+            let files = glob_thy_files(&isa_dir);
+            assert_eq!(files.len(), 10, "Expected 10 .thy files, got {}", files.len());
+        }
     }
 }

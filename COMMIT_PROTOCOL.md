@@ -1,19 +1,8 @@
-# RIINA COMMIT PROTOCOL — MANDATORY FOR ALL CONTRIBUTORS
-
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║  ZERO TRUST COMMIT PROTOCOL                                                  ║
-║                                                                              ║
-║  Trust no one. Trust nothing. Verify everything.                             ║
-║  This protocol is MANDATORY. No exceptions. Ever.                            ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-```
+# RIINA COMMIT PROTOCOL
 
 ## 0. BEFORE ANYTHING ELSE
 
-**Every session, before ANY work:**
+**Every session, before any work:**
 
 ```bash
 # 1. Verify hooks are installed
@@ -29,43 +18,33 @@ bash 00_SETUP/scripts/install_hooks.sh
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 ```
 
-**If hooks are not installed, STOP. Install them first. No exceptions.**
+**If hooks are not installed, stop. Install them first.**
 
 ---
 
-## 1. DOCUMENTATION AUDIT (MANDATORY BEFORE COMMIT)
+## 1. DOCUMENTATION AUDIT (BEFORE COMMIT)
 
-Before ANY commit, you MUST audit ALL documentation files. This is not optional.
+Before any commit, audit all relevant documentation files.
 
-### 1.1 Core Documents to Audit
+### 1.1 Core Documents
 
 | File | What to Check | Update If |
 |------|---------------|-----------|
-| `CLAUDE.md` | Session number, Qed counts, Admitted counts, axiom counts, file counts, test counts | Any metric changed |
-| `PROGRESS.md` | Current session entry, task status, metrics | Any work completed |
-| `SESSION_LOG.md` | Session entry with date, tasks, outcomes | Every session |
 | `README.md` | Hero metrics, comparison table | Metrics changed significantly |
 | `VERSION` | Semver version | Release milestone |
 | `CHANGELOG.md` | Release notes | Any user-facing change |
 | `VERIFICATION_MANIFEST.md` | Auto-generated | Run `riinac verify --full` |
 
-### 1.2 Website Documents to Audit
+### 1.2 Website Documents
 
 | File | What to Check | Update If |
 |------|---------------|-----------|
 | `website/src/RiinaWebsite.jsx` | Hero stats, release data | Metrics changed |
 | `website/public/metrics.json` | Auto-generated | Run `scripts/generate-metrics.sh` |
 
-### 1.3 Coordination Documents
+### 1.3 Audit Script
 
-| File | What to Check |
-|------|---------------|
-| `06_COORDINATION/COORDINATION_LOG.md` | Version, session, audit date |
-| `06_COORDINATION/DECISIONS.md` | Any architectural decisions made |
-
-### 1.4 Audit Script
-
-Run this before EVERY commit:
+Run this before every commit:
 
 ```bash
 bash scripts/audit-docs.sh
@@ -79,9 +58,9 @@ This script will:
 
 ---
 
-## 2. COMMIT CHECKLIST (MANDATORY)
+## 2. COMMIT CHECKLIST
 
-Before running `git commit`, verify ALL of the following:
+Before running `git commit`, verify all of the following:
 
 ```
 [ ] Hooks installed (ls -la .git/hooks/pre-commit .git/hooks/pre-push)
@@ -95,7 +74,7 @@ Before running `git commit`, verify ALL of the following:
 
 ---
 
-## 3. PUSH CHECKLIST (MANDATORY)
+## 3. PUSH CHECKLIST
 
 Before running `git push origin main`:
 
@@ -108,7 +87,7 @@ Before running `git push origin main`:
 
 ---
 
-## 4. PUBLIC SYNC CHECKLIST (MANDATORY)
+## 4. PUBLIC SYNC CHECKLIST
 
 Before running `bash scripts/sync-public.sh`:
 
@@ -120,7 +99,7 @@ Before running `bash scripts/sync-public.sh`:
 
 ---
 
-## 5. WEBSITE DEPLOY CHECKLIST (MANDATORY)
+## 5. WEBSITE DEPLOY CHECKLIST
 
 Before running `npm run deploy` in website/:
 
@@ -128,7 +107,7 @@ Before running `npm run deploy` in website/:
 [ ] Public branch is synced
 [ ] metrics.json regenerated (scripts/generate-metrics.sh)
 [ ] Website builds without errors (npm run build)
-[ ] All hero stats match CLAUDE.md
+[ ] All hero stats match documented metrics
 [ ] Release information is current
 ```
 
@@ -136,13 +115,12 @@ Before running `npm run deploy` in website/:
 
 ## 6. THE CARDINAL RULES
 
-1. **NEVER commit without running the audit**
-2. **NEVER push without verification passing**
-3. **NEVER deploy without syncing public first**
-4. **NEVER trust that hooks are installed — verify**
-5. **NEVER trust that documentation is current — audit**
-6. **NEVER skip steps because "it's a small change"**
-7. **NEVER trust external systems (GitHub, CI, AI) — own verification**
+1. **Never commit without running the audit**
+2. **Never push without verification passing**
+3. **Never deploy without syncing public first**
+4. **Never trust that hooks are installed — verify**
+5. **Never trust that documentation is current — audit**
+6. **Never skip steps because "it's a small change"**
 
 ---
 
@@ -155,60 +133,7 @@ This protocol is enforced by:
 3. **sync-public.sh** — Verifies main is pushed before syncing
 4. **deploy-website.sh** — Builds and deploys only if build succeeds
 
-If ANY hook fails, the operation is BLOCKED. Fix the issue, don't bypass the hook.
-
----
-
-## 8. FOR AI ASSISTANTS (THIS IS YOUR JOB, NOT THE USER'S)
-
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  THE USER DOES NOT RUN THESE COMMANDS. YOU DO.                               ║
-║  IF YOU ASK THE USER TO RUN VERIFICATION, YOU ARE DOING IT WRONG.            ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-```
-
-If you are an AI assistant (Claude, GPT, Cursor, Copilot, or any other):
-
-**Your responsibilities (YOU execute these, not the user):**
-
-1. **READ THIS FILE FIRST** at the start of every session
-2. **RUN** `ls -la .git/hooks/pre-commit .git/hooks/pre-push` to verify hooks
-3. **RUN** `bash 00_SETUP/scripts/install_hooks.sh` if hooks are missing
-4. **RUN** `bash scripts/audit-docs.sh` before ANY commit
-5. **FIX** all discrepancies in documentation YOURSELF
-6. **COMMIT** with proper message format
-7. **PUSH** and let hooks verify
-8. **SYNC** to public with `bash scripts/sync-public.sh`
-9. **DEPLOY** website with `npm run deploy` in website/
-
-**The user's role:**
-- Tell you what work to do
-- Approve/deny your tool executions
-- Grant permissions (tokens) when needed for protected operations
-
-**Your role:**
-- Execute the ENTIRE protocol automatically
-- Verify EVERYTHING yourself
-- Never ask the user to run verification commands
-- Never skip steps
-- Never assume hooks are installed
-
-The user does not trust you. You do not trust the user. You do not trust GitHub.
-You trust ONLY the verification gates encoded in this repository.
-
----
-
-## 9. RECOVERY
-
-If you discover the protocol was not followed:
-
-1. **STOP** all work immediately
-2. **AUDIT** the current state of all documentation
-3. **FIX** any discrepancies
-4. **VERIFY** with `riinac verify --full`
-5. **DOCUMENT** what was missed in SESSION_LOG.md
-6. **COMMIT** the fixes with message: `[RECOVERY] Fix protocol violation: <description>`
+If any hook fails, the operation is blocked. Fix the issue — do not bypass the hook.
 
 ---
 
