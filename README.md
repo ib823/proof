@@ -83,7 +83,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Proven (effect algebra) | None | Monads (no proof) | None |
 | Type safety | Proven (Progress + Preservation) | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proofs ship with compiler | Yes (7,929 Coq + 7925 Lean + 8072 Isabelle) | No | No | Partial |
+| Formal proofs ship with compiler | Yes (7,929 Coq + 7926 Lean + 8072 Isabelle) | No | No | Partial |
 | Triple-prover verification | Yes (Coq + Lean 4 + Isabelle/HOL) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
@@ -392,13 +392,13 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build: Passing. Grade: A.**
-**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,979 total items across 10 provers. 7,929 Coq Qed (compiled) + 15997 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
+**Audit Update:** 2026-02-07 (Session 81: 10-Prover Full Stack) — 82,980 total items across 10 provers. 7,929 Coq Qed (compiled) + 15998 Lean/Isabelle (transpiled, uncompiled) + ~59053 generated stubs (7 provers). 0 Admitted. 1 axiom (policy). 852 Rust tests.
 
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1. Compiler | Lexer, parser, typechecker, codegen, REPL, diagnostics | Done |
 | 2. Standard Library | 88 builtins across 9 modules | Done |
-| 3. Formal Verification | 7,929 Coq Qed + 7925 Lean + 8072 Isabelle = 82,979 total, 0 admits/sorry, 1 axiom | Stable |
+| 3. Formal Verification | 7,929 Coq Qed + 7926 Lean + 8072 Isabelle = 82,980 total, 0 admits/sorry, 1 axiom | Stable |
 | 4. Developer Experience | Formatter, LSP, doc generator, VS Code extension, 120 examples | Done |
 | 5. Ecosystem | CI/CD, package manager, Docker, Nix flake, release system, installer | Done |
 | 6. Adoption | C FFI, 8 demos, community, enterprise, public branch, 15-page website (Why Proof, 15 industries, Releases) | Done |

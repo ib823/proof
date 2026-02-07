@@ -295,4 +295,75 @@ theorem effect_join_pure_l (e : effect) : effect_join .effPure e = e := by
 theorem effect_join_pure_r (e : effect) : effect_join e .effPure = e := by
   cases e <;> simp [effect_join, effect_level, Nat.ble]
 
+-- ============================================================
+-- Value predicate (propositional version, matching Coq value)
+-- ============================================================
+
+/-- Propositional value predicate (matches Coq: Inductive value) -/
+inductive Value : expr → Prop where
+  | VUnit   : Value .eUnit
+  | VBool   : (b : Bool) → Value (.eBool b)
+  | VInt    : (n : Nat) → Value (.eInt n)
+  | VString : (s : String) → Value (.eString s)
+  | VLoc    : (l : loc) → Value (.eLoc l)
+  | VLam    : (x : ident) → (T : ty) → (e : expr) → Value (.eLam x T e)
+  | VPair   : {v1 v2 : expr} → Value v1 → Value v2 → Value (.ePair v1 v2)
+  | VInl    : {v : expr} → (T : ty) → Value v → Value (.eInl v T)
+  | VInr    : {v : expr} → (T : ty) → Value v → Value (.eInr v T)
+  | VClassify : {v : expr} → Value v → Value (.eClassify v)
+  | VProve  : {v : expr} → Value v → Value (.eProve v)
+
+-- ============================================================
+-- Capture-avoiding substitution (matching Coq: Fixpoint subst)
+-- ============================================================
+
+/-- Capture-avoiding substitution: [x := v] e -/
+def substExpr (x : ident) (v : expr) : expr → expr
+  | .eUnit       => .eUnit
+  | .eBool b     => .eBool b
+  | .eInt n      => .eInt n
+  | .eString s   => .eString s
+  | .eLoc l      => .eLoc l
+  | .eVar y      => if x = y then v else .eVar y
+  | .eLam y T body =>
+      if x = y then .eLam y T body
+      else .eLam y T (substExpr x v body)
+  | .eApp e1 e2  => .eApp (substExpr x v e1) (substExpr x v e2)
+  | .ePair e1 e2 => .ePair (substExpr x v e1) (substExpr x v e2)
+  | .eFst e1     => .eFst (substExpr x v e1)
+  | .eSnd e1     => .eSnd (substExpr x v e1)
+  | .eInl e1 T   => .eInl (substExpr x v e1) T
+  | .eInr e1 T   => .eInr (substExpr x v e1) T
+  | .eCase e1 y1 e2 y2 e3 =>
+      .eCase (substExpr x v e1)
+             y1 (if x = y1 then e2 else substExpr x v e2)
+             y2 (if x = y2 then e3 else substExpr x v e3)
+  | .eIf e1 e2 e3 => .eIf (substExpr x v e1) (substExpr x v e2) (substExpr x v e3)
+  | .eLet y e1 e2 =>
+      .eLet y (substExpr x v e1)
+             (if x = y then e2 else substExpr x v e2)
+  | .ePerform eff e1 => .ePerform eff (substExpr x v e1)
+  | .eHandle e1 y h =>
+      .eHandle (substExpr x v e1) y
+               (if x = y then h else substExpr x v h)
+  | .eRef e1 l   => .eRef (substExpr x v e1) l
+  | .eDeref e1   => .eDeref (substExpr x v e1)
+  | .eAssign e1 e2 => .eAssign (substExpr x v e1) (substExpr x v e2)
+  | .eClassify e1 => .eClassify (substExpr x v e1)
+  | .eDeclassify e1 e2 => .eDeclassify (substExpr x v e1) (substExpr x v e2)
+  | .eProve e1   => .eProve (substExpr x v e1)
+  | .eRequire eff e1 => .eRequire eff (substExpr x v e1)
+  | .eGrant eff e1 => .eGrant eff (substExpr x v e1)
+
+/-- Notation-like abbreviation for substitution -/
+notation:20 "[" x " := " v "]" e => substExpr x v e
+
+-- ============================================================
+-- Declassification predicate (matching Coq: declass_ok)
+-- ============================================================
+
+/-- Declassification predicate: e1 and e2 form a valid declassification pair -/
+def declass_ok (e1 e2 : expr) : Prop :=
+  ∃ v, Value v ∧ e1 = .eClassify v ∧ e2 = .eProve (.eClassify v)
+
 end RIINA
