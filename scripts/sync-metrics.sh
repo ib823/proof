@@ -56,6 +56,8 @@ ISABELLE_LEMMAS=$(grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1)
 TOTAL_PROOFS=$(grep -oP '"totalProofsAllProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
 TOTAL_PROOFS_COMMA=$(add_commas "$TOTAL_PROOFS")
 TRIPLE_PROVER=$(grep -oP '"tripleProverTheorems":\s*\K\d+' "$METRICS_FILE" | head -1)
+TOTAL_PROVERS=$(grep -oP '"totalProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
+TOTAL_PROVERS=${TOTAL_PROVERS:-10}
 RUST_TESTS=$(grep -oP '"tests":\s*\K\d+' "$METRICS_FILE" | head -1)
 RUST_CRATES=$(grep -oP '"crates":\s*\K\d+' "$METRICS_FILE" | head -1)
 EXAMPLES=$(grep -oP '"examples":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -65,18 +67,41 @@ LEAN_LINES=$(grep -oP '"lines":\s*\K\d+' "$METRICS_FILE" | head -1)
 ISABELLE_FILES=$(grep -oP '"files":\s*\K\d+' "$METRICS_FILE" | tail -1)
 ISABELLE_LINES=$(grep -oP '"lines":\s*\K\d+' "$METRICS_FILE" | tail -1)
 
+# Parse new prover counts
+FSTAR_LEMMAS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('fstar',{}).get('lemmas',0))" 2>/dev/null || echo "0")
+TLAPLUS_THEOREMS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('tlaplus',{}).get('theorems',0))" 2>/dev/null || echo "0")
+ALLOY_ASSERTIONS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('alloy',{}).get('assertions',0))" 2>/dev/null || echo "0")
+SMT_ASSERTIONS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('smt',{}).get('assertions',0))" 2>/dev/null || echo "0")
+VERUS_PROOFS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('verus',{}).get('proofs',0))" 2>/dev/null || echo "0")
+KANI_HARNESSES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('kani',{}).get('harnesses',0))" 2>/dev/null || echo "0")
+TV_VALIDATIONS=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('tv',{}).get('validations',0))" 2>/dev/null || echo "0")
+FSTAR_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('fstar',{}).get('files',0))" 2>/dev/null || echo "0")
+TLAPLUS_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('tlaplus',{}).get('files',0))" 2>/dev/null || echo "0")
+ALLOY_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('alloy',{}).get('files',0))" 2>/dev/null || echo "0")
+SMT_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('smt',{}).get('files',0))" 2>/dev/null || echo "0")
+VERUS_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('verus',{}).get('files',0))" 2>/dev/null || echo "0")
+KANI_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('kani',{}).get('files',0))" 2>/dev/null || echo "0")
+TV_FILES=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(d.get('tv',{}).get('files',0))" 2>/dev/null || echo "0")
+
 echo "Source: $METRICS_FILE"
 echo "  Coq Qed:       $QED_COMMA"
 echo "  Lean:           $LEAN_THEOREMS theorems"
 echo "  Isabelle:       $ISABELLE_LEMMAS lemmas"
-echo "  Total:          $TOTAL_PROOFS_COMMA"
+echo "  F*:             $FSTAR_LEMMAS lemmas"
+echo "  TLA+:           $TLAPLUS_THEOREMS theorems"
+echo "  Alloy:          $ALLOY_ASSERTIONS assertions"
+echo "  SMT:            $SMT_ASSERTIONS assertions"
+echo "  Verus:          $VERUS_PROOFS proofs"
+echo "  Kani:           $KANI_HARNESSES harnesses"
+echo "  TV:             $TV_VALIDATIONS validations"
+echo "  Total:          $TOTAL_PROOFS_COMMA ($TOTAL_PROVERS provers)"
 echo "  Axioms:         $AXIOMS"
 echo "  Rust tests:     $RUST_TESTS"
 echo "  Session:        $SESSION"
 echo ""
 
 # The canonical audit banner line
-BANNER="**Audit Update:** 2026-02-06 (Session ${SESSION}: Proof Depth 20+ All Files) — ${QED_COMMA} Coq Qed + ${LEAN_THEOREMS} Lean theorems + ${ISABELLE_LEMMAS} Isabelle lemmas = ${TOTAL_PROOFS_COMMA} total proofs. 0 Admitted/sorry across all provers. ${AXIOMS} axiom (policy). ${COQ_FILES_ACTIVE} active .v, ${LEAN_FILES} .lean, ${ISABELLE_FILES} .thy. ${TRIPLE_PROVER} triple-prover theorems. ${RUST_TESTS} Rust tests."
+BANNER="**Audit Update:** 2026-02-07 (Session ${SESSION}: 10-Prover Full Stack) — ${TOTAL_PROOFS_COMMA} total items across ${TOTAL_PROVERS} provers. ${QED_COMMA} Coq Qed + ${LEAN_THEOREMS} Lean + ${ISABELLE_LEMMAS} Isabelle + ${FSTAR_LEMMAS} F* + ${TLAPLUS_THEOREMS} TLA+ + ${ALLOY_ASSERTIONS} Alloy + ${SMT_ASSERTIONS} SMT + ${VERUS_PROOFS} Verus + ${KANI_HARNESSES} Kani + ${TV_VALIDATIONS} TV. 0 Admitted/sorry. ${AXIOMS} axiom (policy). ${RUST_TESTS} Rust tests."
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 
@@ -371,7 +396,7 @@ if [ -f "$INDEX_HTML" ]; then
     echo "  Processing website/index.html..."
     if [ "$DRY_RUN" -eq 0 ]; then
         # Update meta description total proofs
-        sed -i -E "s|[0-9,]+ proofs across 3 independent provers|${TOTAL_PROOFS_COMMA} proofs across 3 independent provers|g" "$INDEX_HTML"
+        sed -i -E "s|[0-9,]+ proofs across [0-9]+ independent provers|${TOTAL_PROOFS_COMMA} proofs across ${TOTAL_PROVERS} independent provers|g" "$INDEX_HTML"
 
         echo "    [UPDATED] website/index.html"
     else

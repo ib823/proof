@@ -284,8 +284,8 @@ METRICS_FILE="$REPO_ROOT/website/public/metrics.json"
 if [ -f "$METRICS_FILE" ]; then
     WEB_QED=$(grep -oP '"qedActive":\s*\K\d+' "$METRICS_FILE" || echo "0")
     WEB_SESSION=$(grep -oP '"session":\s*\K\d+' "$METRICS_FILE" || echo "0")
-    WEB_LEAN=$(grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" || echo "0")
-    WEB_ISABELLE=$(grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" || echo "0")
+    WEB_LEAN=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['theorems'])" 2>/dev/null || grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
+    WEB_ISABELLE=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['lemmas'])" 2>/dev/null || grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
     check_value "Website Lean (metrics.json)" "$ACTUAL_LEAN" "$WEB_LEAN" "metrics.json" || true
