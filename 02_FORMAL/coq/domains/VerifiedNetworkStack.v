@@ -974,7 +974,8 @@ Theorem SEQ_005_valid_ack_equal : forall ack,
   valid_ack ack ack ack = true.
 Proof.
   intros ack. unfold valid_ack.
-  rewrite SEQ_002_seq_le_refl. rewrite SEQ_002_seq_le_refl. reflexivity.
+  assert (H: seq_le ack ack = true) by (apply SEQ_002_seq_le_refl).
+  rewrite H. reflexivity.
 Qed.
 
 (* SEQ_006: seq_gt is complement of seq_le for distinct values *)
@@ -1004,7 +1005,8 @@ Qed.
 Theorem SEQ_009_seq_mod : forall n,
   n mod SEQ_SPACE < SEQ_SPACE.
 Proof.
-  intros n. apply Nat.mod_upper_bound. unfold SEQ_SPACE. lia.
+  intros n. apply Nat.mod_upper_bound.
+  unfold SEQ_SPACE. discriminate.
 Qed.
 
 (* SEQ_010: Sequence comparison handles zero *)
