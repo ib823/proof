@@ -18,10 +18,27 @@
 ║  Core Principle: RIINA must exceed hand-written C performance                                       ║
 ║  Target: "1,000,000× better than second-best"                                                       ║
 ║                                                                                                      ║
-║  Date: 2026-01-19                                                                                    ║
+║  Date: 2026-01-19 (Updated: 2026-02-07)                                                             ║
 ║                                                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
+
+---
+
+## IMPLEMENTATION STATUS (Audit: 2026-02-07)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| Performance targets | SPECIFIED | All 15 industries have latency/WCET targets in this document |
+| Crypto primitives | IMPLEMENTED | `05_TOOLING/crates/riina-core/src/crypto/` (AES, SHA-256, Ed25519, X25519) |
+| Constant-time enforcement | PARTIAL | `ConstantTime<T>` type exists, `TimingSecurity.v` has 67 Qed |
+| WCET verification | NOT STARTED | No WCET analyzer integrated into compiler |
+| Benchmark suite | NOT STARTED | No benchmarks exist to validate targets |
+| Size optimization | NOT STARTED | No size profiling or binary size tracking |
+
+**This document specifies performance targets for RIINA across 15 industries. Cryptographic
+primitives are implemented but not yet benchmarked. WCET analysis is designed but not integrated.
+Performance targets are research-based estimates, not measured values.**
 
 ---
 
@@ -34,7 +51,7 @@
 ║  RIINA PERFORMANCE PHILOSOPHY                                                                       ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                      ║
-║  PRIORITY HIERARCHY (From TERAS Master Architecture):                                               ║
+║  PRIORITY HIERARCHY (From RIINA Master Architecture):                                               ║
 ║  ═══════════════════════════════════════════════════                                                ║
 ║                                                                                                      ║
 ║  Priority 1: CORRECTNESS                                                                            ║
@@ -473,7 +490,7 @@
 ║     • aiT WCET Analyzer (AbsInt)                                                                    ║
 ║     • Bound-T                                                                                       ║
 ║     • OTAWA                                                                                         ║
-║     • Custom TERAS-LANG WCET verifier                                                               ║
+║     • Custom RIINA-LANG WCET verifier                                                               ║
 ║                                                                                                      ║
 ║  2. MEASUREMENT-BASED ANALYSIS                                                                      ║
 ║     • RapiTime (Rapita Systems)                                                                     ║
@@ -487,7 +504,7 @@
 ║                                                                                                      ║
 ║  ─────────────────────────────────────────────────────────────────────────────────────────────────  ║
 ║                                                                                                      ║
-║  TERAS-LANG WCET ANNOTATIONS:                                                                       ║
+║  RIINA-LANG WCET ANNOTATIONS:                                                                       ║
 ║  ═════════════════════════════                                                                      ║
 ║                                                                                                      ║
 ║  ```teras                                                                                           ║
@@ -531,10 +548,84 @@
 ║  • Industry-specific latency/WCET requirements (15 industries)                                      ║
 ║  • Memory constraints for all deployment profiles                                                   ║
 ║  • Size budgets (embedded, device, server)                                                          ║
-║  • WCET analysis methodology and TERAS-LANG annotations                                             ║
+║  • WCET analysis methodology and RIINA-LANG annotations                                             ║
 ║                                                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
+
+---
+
+# PART V: BENCHMARK METHODOLOGY (Added 2026-02-07)
+
+## 5.1 Benchmark Requirements
+
+To validate the performance targets in this document, the following benchmarks are needed:
+
+### Crypto Benchmarks (Priority: HIGH)
+
+| Benchmark | What to Measure | Target Source | Comparison |
+|-----------|----------------|---------------|------------|
+| AES-256-GCM throughput | cycles/byte | Section 1.2 | OpenSSL, BoringSSL |
+| SHA-256 throughput | cycles/byte | Section 1.2 | OpenSSL |
+| Ed25519 sign/verify | µs per operation | Section 1.2 | libsodium |
+| X25519 key exchange | µs per operation | Section 1.2 | libsodium |
+| Constant-time verification | timing variance (ns) | Section 1.2 | dudect methodology |
+
+### Memory Benchmarks (Priority: HIGH)
+
+| Benchmark | What to Measure | Target Source | Method |
+|-----------|----------------|---------------|--------|
+| Secure alloc latency | ns per allocation | Section 1.2 | Microbenchmark |
+| Secure free + zeroing | ns per deallocation | Section 1.2 | Microbenchmark |
+| Peak memory usage | bytes | Section 3 profiles | Valgrind/heaptrack |
+| Binary size | bytes per profile | Section 3 profiles | `size` command |
+
+### Industry-Specific Benchmarks (Priority: MEDIUM)
+
+| Industry | Key Metric | Target | Method |
+|----------|-----------|--------|--------|
+| IND-A Military | WCET (weapon auth) | 25ms max | Static analysis + measurement |
+| IND-B Healthcare | PHI record access | 500ms max | End-to-end test |
+| IND-C Financial | Order validation | 50µs max | Microbenchmark |
+| IND-E Energy | Protection relay | 8ms max | Real-time measurement |
+| IND-I Manufacturing | PLC scan cycle | 20ms max | Hardware-in-loop |
+
+## 5.2 Benchmark Infrastructure
+
+```
+Recommended benchmark infrastructure:
+
+1. MICRO-BENCHMARKS (riina-bench crate, future)
+   - criterion.rs-style statistical benchmarking
+   - Constant-time validation via dudect
+   - Cycle-accurate measurements via rdtsc/cntvct
+
+2. MACRO-BENCHMARKS (riina-perf crate, future)
+   - End-to-end latency measurement
+   - Throughput under load
+   - Memory profiling
+
+3. CI INTEGRATION (future)
+   - Benchmark on every commit
+   - Regression detection (>5% regression = fail)
+   - Historical tracking
+```
+
+## 5.3 Current State
+
+As of 2026-02-07, **no benchmarks exist**. The crypto primitives in `05_TOOLING/crates/riina-core/`
+are implemented and have 152 passing unit tests, but no performance measurements have been taken.
+The performance targets in Parts I-III are based on:
+
+- Published benchmarks of equivalent C/Rust implementations
+- Theoretical analysis of algorithm complexity
+- Industry-standard requirements from certification bodies (DO-178C, IEC 62443, etc.)
+
+**Next steps:**
+1. Create `riina-bench` crate with crypto microbenchmarks
+2. Measure actual performance against targets in Section 1.2
+3. Add constant-time validation using `dudect` methodology
+4. Set up CI-based regression tracking
 
 ---
 

@@ -104,9 +104,9 @@ The 15x15 synergy matrix, 8 shared component clusters, and implementation strate
 The performance targets (crypto latency, memory budgets, WCET bounds) are realistic and well-researched. Deployment environment specifications match industry standards. The TERAS-LANG WCET annotation examples use an older name ("TERAS-LANG" vs "RIINA") but the concept is sound.
 
 **Issues:**
-- Minor: Uses "TERAS-LANG" in WCET annotation examples instead of "RIINA"
+- ~~Minor: Uses "TERAS-LANG" in WCET annotation examples instead of "RIINA"~~ — **FIXED** (2026-02-07)
 - Minor: Claims "exceed hand-written C performance" which is aspirational, not verified
-- No benchmarks exist to validate any targets
+- No benchmarks exist to validate any targets — **benchmark methodology section added** (2026-02-07)
 
 **Severity:** Low — Planning document with reasonable targets. No false implementation claims.
 
@@ -156,11 +156,13 @@ Design patterns (break-the-glass, wire transfer verification, classification ban
 
 ### 3.1 Naming Inconsistency
 
-Several documents use "TERAS-LANG" or "TERAS" as the language name instead of "RIINA":
-- PERFORMANCE_TEMPLATES.md references "TERAS-LANG WCET annotations"
-- Some spec documents reference "TERAS Master Architecture"
+Several documents previously used "TERAS-LANG" or "TERAS" as the language name instead of "RIINA":
+- ~~PERFORMANCE_TEMPLATES.md references "TERAS-LANG WCET annotations"~~ — **FIXED** (2026-02-07)
+- RIINA_ARCHITECTURE_CORRECTED.md and RIINA_DEFINITIVE_SCOPE.md reference "TERAS-OS" — these are
+  **intentional** (product name for a future operating system, not a naming error)
 
-This is a legacy naming issue. The project was apparently renamed from "TERAS" to "RIINA" at some point. The remaining TERAS references should be updated for consistency.
+The naming inconsistency in PERFORMANCE_TEMPLATES.md has been resolved. Remaining "TERAS" references
+are contextual (explaining incorrect old framing or naming legacy products).
 
 ### 3.2 Date Inconsistencies
 
@@ -228,13 +230,15 @@ The research components are **comprehensive and well-structured**. The primary i
 
 The project's strongest characteristic is **honesty** — the RESEARCH_STATUS_AUDIT.md clearly distinguishes between genuine verified work and aspirational catalogs, and the UI_UX_TEMPLATES.md explicitly states that no UI framework exists. This level of transparency is rare in formal verification projects.
 
-### Remaining Gaps
+### Remaining Gaps (Updated 2026-02-07)
 
-1. **3 eliminable axioms** in the logical relation proof (ref, assign, step_0 cases)
+1. **3 eliminable axioms** in the logical relation proof (ref, assign, step_0 cases) — **elimination plan created** in `02_FORMAL/AXIOM_ELIMINATION_PLAN.md`
 2. **Mobile OS and UI/UX Coq files** are stubs (~5-8 Qed each) — not yet deep verification
-3. **No benchmarks** exist to validate performance targets
-4. **Some naming inconsistencies** (TERAS vs RIINA) persist in older documents
+3. **No benchmarks** exist to validate performance targets — **benchmark methodology section added** to PERFORMANCE_TEMPLATES.md
+4. ~~**Some naming inconsistencies** (TERAS vs RIINA) persist in older documents~~ — **FIXED** in PERFORMANCE_TEMPLATES.md; remaining references are intentional
 5. **Industry Coq files** are configuration checks, not deep security proofs
+6. **5 stale cross-references** in RIINA_DEFINITIVE_SCOPE.md Appendix B — **FIXED**, now references actual documents
+7. **Missing file** referenced in scope README (`RIINA_RESEARCH_EXECUTION_MAP.md`) — **documented** as non-existent
 
 ---
 

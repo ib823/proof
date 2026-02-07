@@ -566,15 +566,23 @@ improved — axioms reduced from 18 to 4, Admitted eliminated entirely.
 
 ---
 
-# APPENDIX B: DOCUMENT CROSS-REFERENCES
+# APPENDIX B: DOCUMENT CROSS-REFERENCES (Updated 2026-02-07)
 
 | Document | Purpose | Relationship to This |
 |----------|---------|---------------------|
-| CTSS_v1_0_1.md | Core Type System Specification | Details of type system |
-| TERAS-LANG-LEXER-SPEC_v1_0_0.md | Lexer specification | Syntax details |
-| TERAS-LANG-AST_v1_0_0.md | AST specification | AST node definitions |
-| TERAS_DEFINITIVE_PLAN_v1_0_0.md | Execution plan | Research session details |
-| PROGRESS.md | Current status | Live status tracking |
+| `RESEARCH_STATUS_AUDIT.md` | Honest verification audit | Proof status and tier classification |
+| `02_FORMAL/MULTIPROVER_VALIDATION.md` | Triple-prover tracking | Multi-prover theorem status |
+| `02_FORMAL/AXIOM_ELIMINATION_PLAN.md` | Axiom elimination roadmap | Plan to reduce axioms from 4 to 1 |
+| `04_SPECS/scope/RIINA_ARCHITECTURE_CORRECTED.md` | Corrected architecture | Language vs applications framing |
+| `04_SPECS/language/RIINA_LANGUAGE_REFERENCE_AI.md` | Language reference | Syntax and semantics reference |
+| `04_SPECS/language/SYNTAX_IMPROVEMENT_SPEC_v2_0_0.md` | Syntax improvements | Bahasa Melayu syntax specification |
+| `04_SPECS/cross-cutting/RESEARCH_COMPONENTS_AUDIT_2026_02_07.md` | Research audit | Comprehensive component assessment |
+| `llms-full.txt` | Complete language specification | Machine-readable language spec for LLMs |
+| `CHANGELOG.md` | Version history | Release notes and changes |
+
+Note: Previous cross-references (CTSS_v1_0_1.md, TERAS-LANG-LEXER-SPEC, TERAS-LANG-AST,
+TERAS_DEFINITIVE_PLAN, PROGRESS.md) referenced documents from an earlier project phase that
+no longer exist in the current repository. Updated to reflect current document structure.
 
 ---
 
