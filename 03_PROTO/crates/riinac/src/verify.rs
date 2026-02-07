@@ -573,10 +573,19 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
     eprintln!("  coqc found: {}", coqc_path.display());
     let start = Instant::now();
 
-    // Run make -j4 with COQBIN set
+    // Run make -j4 with COQBIN set and coq binaries on PATH
+    // The Makefile's Makefile.conf target calls bare `coq_makefile` (not $(COQBIN)coq_makefile),
+    // so we must ensure COQBIN is also on PATH.
+    let path_env = if !coqbin.is_empty() {
+        let existing = std::env::var("PATH").unwrap_or_default();
+        format!("{coqbin}:{existing}")
+    } else {
+        std::env::var("PATH").unwrap_or_default()
+    };
     let result = Command::new("make")
         .args(["-j4"])
         .env("COQBIN", format!("{coqbin}/"))
+        .env("PATH", &path_env)
         .current_dir(coq_dir)
         .output();
 
@@ -900,10 +909,27 @@ fn scan_isabelle(isabelle_dir: &Path) -> Vec<CheckResult> {
     for path in &files {
         if let Ok(content) = fs::read_to_string(path) {
             let mut in_comment = false;
+            let mut in_text_block = false;
             for line in content.lines() {
                 let trimmed = line.trim();
 
+                // Track Isabelle text blocks \<open> ... \<close>
+                if trimmed.contains("\\<open>") {
+                    in_text_block = true;
+                }
+                if trimmed.contains("\\<close>") {
+                    in_text_block = false;
+                    continue;
+                }
+                if in_text_block {
+                    continue;
+                }
+
                 // Track Isabelle block comments (* ... *)
+                // Handle single-line comments: (* ... *)
+                if trimmed.contains("(*") && trimmed.contains("*)") {
+                    continue; // entire line is a single-line comment
+                }
                 if trimmed.contains("(*") {
                     in_comment = true;
                 }
@@ -920,7 +946,7 @@ fn scan_isabelle(isabelle_dir: &Path) -> Vec<CheckResult> {
                     lemma_count += 1;
                 }
 
-                // Check for sorry / oops
+                // Check for sorry / oops — must be standalone tactic, not in text
                 if contains_word(trimmed, "sorry") {
                     sorry_count += 1;
                 }
