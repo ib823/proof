@@ -431,7 +431,7 @@ text \<open>
   | has_type_full                | has_type_full                | Def    |
   | effect_safety                | effect_safety                | Proved |
 
-  Total: 7 definitions/theorems ported — ALL PROVED (0 sorry)
+  Total: 7 definitions/theorems ported — ALL PROVED (0 unfinished)
 
   core_effects_within proved by 26-case induction on has_type using
   performs_within_mono and effect_join upper bound lemmas.

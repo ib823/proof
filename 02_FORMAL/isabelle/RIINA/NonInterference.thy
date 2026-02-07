@@ -635,7 +635,7 @@ text \<open>
     The Coq proof is the authoritative source; this axiom bridges the
     gap in the secondary prover.
 
-  Total: 14 definitions + 18 lemmas (17 proved, 1 axiom) — 0 sorry
+  Total: 14 definitions + 18 lemmas (17 proved, 1 axiom) — 0 unfinished
 \<close>
 
 end

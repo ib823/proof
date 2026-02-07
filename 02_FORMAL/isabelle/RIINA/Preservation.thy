@@ -1248,7 +1248,7 @@ text \<open>
   | has_type_shadow                 | has_type_shadow                  | Proved |
   | subst_preserves_typing_closed   | subst_preserves_typing_closed    | Proved |
 
-  Total: 20 lemmas — ALL PROVED (0 sorry)
+  Total: 20 lemmas — ALL PROVED (0 unfinished)
 \<close>
 
 end

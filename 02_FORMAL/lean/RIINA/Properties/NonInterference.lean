@@ -627,5 +627,5 @@ This file ports NonInterference_v2*.v (~8300 lines Coq) to Lean 4.
   The Coq proof is the authoritative source; this axiom bridges the
   gap in the secondary prover.
 
-Total: 15 definitions + 19 theorems (18 proved, 1 axiom) — 0 sorry
+Total: 15 definitions + 19 theorems (18 proved, 1 axiom) — 0 unfinished
 -/

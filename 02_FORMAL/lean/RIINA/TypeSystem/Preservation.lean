@@ -1043,8 +1043,8 @@ This file ports Preservation.v (1252 lines Coq, 19 Qed) to Lean 4.
 | value_has_pure_effect | valueHasPureEffect | ✅ Proved |
 | preservation | preservation | ✅ Proved |
 
-**Total: 16 theorems — ALL PROVED (0 sorry)**
+**Total: 16 theorems — ALL PROVED (0 unfinished)**
 
 All theorems from Preservation.v (1252 lines Coq, 19 Qed) have been
-independently proved in Lean 4. Zero `sorry` remaining.
+independently proved in Lean 4. Zero unfinished proofs remaining.
 -/

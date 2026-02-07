@@ -332,7 +332,7 @@ This file ports EffectSystem.v (325 lines Coq) to Lean 4.
 | has_type_full | HasTypeFull | ✅ Defined |
 | effect_safety | effectSafety | ✅ Proved |
 
-Total: 7 definitions/theorems ported — ALL PROVED (0 sorry)
+Total: 7 definitions/theorems ported — ALL PROVED (0 unfinished)
 
 coreEffectsWithin proved by 26-case induction on HasType using
 performsWithin_mono and effectJoin upper bound lemmas.

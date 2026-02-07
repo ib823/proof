@@ -83,7 +83,7 @@ This file ports TypeSafety.v (91 lines Coq) to Lean 4.
 | type_safety | typeSafety | ✅ Proved |
 | multi_step_safety | multiStepSafety | ✅ Proved |
 
-Total: 2 theorems ported — ALL PROVED (0 sorry)
+Total: 2 theorems ported — ALL PROVED (0 unfinished)
 
 multiStepSafety proved using Preservation theorem (all 20 auxiliary lemmas
 in Preservation.lean are fully proved).

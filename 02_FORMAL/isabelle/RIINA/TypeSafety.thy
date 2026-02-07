@@ -100,7 +100,7 @@ text \<open>
   | type_safety                | type_safety                | Proved   |
   | multi_step_safety          | multi_step_safety          | Proved   |
 
-  Total: 2 lemmas ported — ALL PROVED (0 sorry)
+  Total: 2 lemmas ported — ALL PROVED (0 unfinished)
 
   multi_step_safety proved using Preservation theorem (all 20 auxiliary lemmas
   in Preservation.thy are fully proved).

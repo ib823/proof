@@ -1,6 +1,6 @@
 # RIINA PHASE 2: CASCADE ADMITS - DEFINITIVE PATCH
 
-**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,929 Coq Qed + 91 Lean theorems + 102 Isabelle lemmas = 8,122 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 11 .lean, 10 .thy. 86 triple-prover theorems. 845 Rust tests.
+**Audit Update:** 2026-02-06 (Session 78: Proof Depth 20+ All Files) — 7,929 Coq Qed + 6154 Lean theorems + 6227 Isabelle lemmas = 20,310 total proofs. 0 Admitted/sorry across all provers. 1 axiom (policy). 250 active .v, 178 .lean, 175 .thy. 6149 triple-prover theorems. 845 Rust tests.
 
 **Date:** 2026-01-25  
 **Target:** NonInterference_v2.v - 3 admits → 0
