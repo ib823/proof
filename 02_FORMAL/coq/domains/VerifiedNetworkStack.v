@@ -789,7 +789,8 @@ Theorem CONG_005_aimd_decrease_halves : forall cs,
   cwnd (aimd_decrease cs) <= cwnd cs.
 Proof.
   intros cs H. unfold aimd_decrease. simpl.
-  apply Nat.max_case_strong; intros; lia.
+  pose proof (Nat.div_le_upper_bound (cwnd cs) 2 (cwnd cs) ltac:(lia) ltac:(lia)).
+  apply Nat.max_lub; lia.
 Qed.
 
 (* CONG_006: AIMD decrease sets ssthresh to new cwnd *)
