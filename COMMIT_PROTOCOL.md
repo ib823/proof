@@ -51,6 +51,27 @@ Step 5.  Hard refresh https://ib823.github.io/riina/ and VISUALLY VERIFY
 
 ---
 
+## DEPLOY STRICT CHECKLIST
+
+Every deploy must pass **all 5 checks in order**. If any fails, STOP.
+
+```
+[  ] 1. git status                           — Must show "working tree clean"
+[  ] 2. bash scripts/audit-docs.sh           — Must exit 0 (metrics match docs)
+[  ] 3. bash scripts/sync-public.sh          — Sync main → public → ib823/riina
+[  ] 4. bash scripts/deploy-website.sh       — Build + push dist/ to gh-pages
+[  ] 5. Hard refresh https://ib823.github.io/riina/  — Visual verify (MANDATORY)
+```
+
+**Failure modes:**
+- Step 1 fails → Run COMMIT first (steps 1-5 above)
+- Step 2 fails → Run `bash scripts/generate-metrics.sh --fast && bash scripts/sync-metrics.sh`, then re-run
+- Step 3 fails → Check branch protection / GPG signing on ib823/riina
+- Step 4 fails → Check `npm run build` locally, fix website build errors
+- Step 5 fails → Check GitHub Pages deployment status, wait and retry
+
+---
+
 ## WHAT THE SCRIPTS DO (so you know what's happening)
 
 ### `audit-docs.sh`

@@ -31,7 +31,7 @@
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **1** | 1 | ✅ TARGET REACHED — `logical_relation_declassify` (policy axiom) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **250** | - | ✅ All compile |
+| Files in Build | **252** | - | ✅ All compile |
 | Qed Proofs (Coq) | **7,934** | - | ✅ (active build, 0 Admitted) |
 | Lean 4 Theorems | **7924** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8072** | - | ✅ (0 sorry) |

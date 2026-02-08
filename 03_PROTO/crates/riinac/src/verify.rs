@@ -822,6 +822,82 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
     results
 }
 
+/// Verify every `.v` file on disk (excluding `_archive_deprecated/`) is listed
+/// in `_CoqProject`.  Catches drift where a file exists but the build system
+/// (and therefore `verify.rs`) never sees it.
+fn verify_coqproject_completeness(coq_dir: &Path) -> CheckResult {
+    let project_file = coq_dir.join("_CoqProject");
+    let project_content = match fs::read_to_string(&project_file) {
+        Ok(c) => c,
+        Err(e) => {
+            return CheckResult {
+                name: "_CoqProject Completeness".into(),
+                passed: false,
+                blocking: true,
+                details: format!("cannot read _CoqProject: {e}"),
+            };
+        }
+    };
+
+    // Collect entries from _CoqProject (relative paths ending in .v)
+    let project_entries: std::collections::HashSet<String> = project_content
+        .lines()
+        .map(|l| l.trim().to_string())
+        .filter(|l| l.ends_with(".v") && !l.starts_with('#') && !l.starts_with('-'))
+        .collect();
+
+    // Collect all .v files on disk (excluding _archive_deprecated)
+    let all_v = glob_v_files(coq_dir).unwrap_or_default();
+    let mut missing = Vec::new();
+    for path in &all_v {
+        // Skip _archive_deprecated
+        if path
+            .components()
+            .any(|c| c.as_os_str() == "_archive_deprecated")
+        {
+            continue;
+        }
+        // Convert to relative path from coq_dir
+        if let Ok(rel) = path.strip_prefix(coq_dir) {
+            let rel_str = rel.to_string_lossy().to_string();
+            if !project_entries.contains(&rel_str) {
+                missing.push(rel_str);
+            }
+        }
+    }
+
+    if missing.is_empty() {
+        CheckResult {
+            name: "_CoqProject Completeness".into(),
+            passed: true,
+            blocking: true,
+            details: format!(
+                "all {} .v files listed in _CoqProject",
+                project_entries.len()
+            ),
+        }
+    } else {
+        missing.sort();
+        let listed = missing.iter().take(10).cloned().collect::<Vec<_>>().join(", ");
+        let suffix = if missing.len() > 10 {
+            format!(" (and {} more)", missing.len() - 10)
+        } else {
+            String::new()
+        };
+        CheckResult {
+            name: "_CoqProject Completeness".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "{} .v file(s) not in _CoqProject: {}{}",
+                missing.len(),
+                listed,
+                suffix
+            ),
+        }
+    }
+}
+
 /// Compile all Coq proofs by running `make -j2` in the Coq directory.
 fn compile_coq(coq_dir: &Path) -> CheckResult {
     let coqc_path = match detect_coqc() {
@@ -909,10 +985,9 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
                 CheckResult {
                     name: "Coq Compilation".into(),
                     passed: false,
-                    // Non-blocking: subprocess make may fail due to environment
-                    // differences. Static checks (Qed count, Admitted scan) are
-                    // the authoritative verification.
-                    blocking: false,
+                    // Blocking: Coq 8.20.1 is stable. If compilation fails,
+                    // the push must fail — static scans alone are insufficient.
+                    blocking: true,
                     details: format!(
                         "FAILED (exit {code}, {:.0}s)\n{}",
                         elapsed.as_secs_f64(),
@@ -1410,6 +1485,114 @@ fn cross_validate_provers(
 }
 
 // ---------------------------------------------------------------------------
+// Transpiler staleness check
+// ---------------------------------------------------------------------------
+
+/// Get the most recent modification time of any file with the given extension
+/// under `dir`.  Returns `None` if no files found.
+fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
+    fn walk(dir: &Path, ext: &str, best: &mut Option<SystemTime>) {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    walk(&path, ext, best);
+                } else if path.extension().and_then(|e| e.to_str()) == Some(ext) {
+                    if let Ok(meta) = fs::metadata(&path) {
+                        if let Ok(mt) = meta.modified() {
+                            if best.map_or(true, |b| mt > b) {
+                                *best = Some(mt);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let mut best = None;
+    walk(dir, ext, &mut best);
+    best
+}
+
+/// Check if transpiled prover files are stale relative to Coq source files.
+/// Returns non-blocking warnings for each stale prover.
+fn check_transpiler_staleness(
+    coq_dir: &Path,
+    lean_dir: &Path,
+    isabelle_dir: &Path,
+    fstar_dir: &Path,
+    tlaplus_dir: &Path,
+    alloy_dir: &Path,
+    smt_dir: &Path,
+    verus_dir: &Path,
+    kani_dir: &Path,
+    tv_dir: &Path,
+) -> Vec<CheckResult> {
+    let coq_newest = match newest_mtime(coq_dir, "v") {
+        Some(t) => t,
+        None => return vec![],
+    };
+
+    let provers: &[(&str, &Path, &str, &str)] = &[
+        ("Lean",       lean_dir,     "lean", "python3 scripts/generate-multiprover.py"),
+        ("Isabelle",   isabelle_dir, "thy",  "python3 scripts/generate-multiprover.py"),
+        ("F*",         fstar_dir,    "fst",  "python3 scripts/generate-full-stack.py"),
+        ("TLA+",       tlaplus_dir,  "tla",  "python3 scripts/generate-full-stack.py"),
+        ("Alloy",      alloy_dir,    "als",  "python3 scripts/generate-full-stack.py"),
+        ("SMT",        smt_dir,      "smt2", "python3 scripts/generate-full-stack.py"),
+        ("Verus",      verus_dir,    "rs",   "python3 scripts/generate-full-stack.py"),
+        ("Kani",       kani_dir,     "rs",   "python3 scripts/generate-full-stack.py"),
+        ("TV",         tv_dir,       "smt2", "python3 scripts/generate-full-stack.py"),
+    ];
+
+    let mut results = vec![];
+    let mut stale_names = vec![];
+
+    for (name, dir, ext, cmd) in provers {
+        if !dir.is_dir() {
+            continue;
+        }
+        if let Some(prover_newest) = newest_mtime(dir, ext) {
+            if coq_newest > prover_newest {
+                stale_names.push((*name, *cmd));
+            }
+        } else {
+            // No files at all — also stale
+            stale_names.push((*name, *cmd));
+        }
+    }
+
+    if !stale_names.is_empty() {
+        let names: Vec<&str> = stale_names.iter().map(|(n, _)| *n).collect();
+        let hint = if stale_names.iter().any(|(_, c)| c.contains("multiprover")) {
+            "run `python3 scripts/generate-multiprover.py` and/or `python3 scripts/generate-full-stack.py`"
+        } else {
+            "run `python3 scripts/generate-full-stack.py`"
+        };
+        results.push(CheckResult {
+            name: "Transpiler Staleness".into(),
+            passed: false,
+            blocking: false,
+            details: format!(
+                "{} prover(s) may be stale: {} — {}",
+                stale_names.len(),
+                names.join(", "),
+                hint,
+            ),
+        });
+    } else {
+        results.push(CheckResult {
+            name: "Transpiler Staleness".into(),
+            passed: true,
+            blocking: false,
+            details: "all prover files up-to-date with Coq sources".into(),
+        });
+    }
+
+    results
+}
+
+// ---------------------------------------------------------------------------
 // Word boundary helper
 // ---------------------------------------------------------------------------
 
@@ -1880,6 +2063,10 @@ pub fn run(mode: Mode) -> i32 {
 
         // === Coq ===
         eprintln!("\n=== Coq Verification ===");
+
+        eprintln!("Checking _CoqProject completeness...");
+        results.push(verify_coqproject_completeness(&coq_dir));
+
         eprintln!("Compiling Coq proofs...");
         results.push(compile_coq(&coq_dir));
 
@@ -1940,6 +2127,14 @@ pub fn run(mode: Mode) -> i32 {
         // === Cross-Prover ===
         eprintln!("\n=== Cross-Prover Validation (10 provers) ===");
         results.push(cross_validate_provers(
+            &coq_dir, &lean_dir, &isabelle_dir,
+            &fstar_dir, &tlaplus_dir, &alloy_dir,
+            &smt_dir, &verus_dir, &kani_dir, &tv_dir,
+        ));
+
+        // === Transpiler Staleness ===
+        eprintln!("\n=== Transpiler Staleness Check ===");
+        results.extend(check_transpiler_staleness(
             &coq_dir, &lean_dir, &isabelle_dir,
             &fstar_dir, &tlaplus_dir, &alloy_dir,
             &smt_dir, &verus_dir, &kani_dir, &tv_dir,

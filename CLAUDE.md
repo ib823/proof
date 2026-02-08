@@ -841,7 +841,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 82,983 total proofs: 7,934 Coq + 7924 Lean + 8072 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 250 active .v + 255 .lean + 250 .thy = 272 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 82,983 total proofs: 7,934 Coq + 7924 Lean + 8072 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 252 active .v + 255 .lean + 250 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

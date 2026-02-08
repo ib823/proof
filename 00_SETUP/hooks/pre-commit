@@ -33,6 +33,31 @@ echo "================================================================"
 echo "  RIINA PRE-COMMIT VERIFICATION"
 echo "================================================================"
 
+# ── Step 0a: _CoqProject completeness check ──────────────────────────
+# Every .v file in 02_FORMAL/coq/ (except _archive_deprecated/) must be
+# listed in _CoqProject.  Catches the "AhmedStyleTest.v" class of drift
+# where a file exists on disk but verify.rs (which reads _CoqProject)
+# never sees it.
+COQ_DIR="$REPO_ROOT/02_FORMAL/coq"
+COQ_PROJECT="$COQ_DIR/_CoqProject"
+if [ -f "$COQ_PROJECT" ]; then
+    MISSING=$(comm -23 \
+      <(find "$COQ_DIR" -name "*.v" -type f ! -path "*/_archive_deprecated/*" -printf "%P\n" | sort) \
+      <(grep '\.v$' "$COQ_PROJECT" | grep -v '^#' | sed 's/^[[:space:]]*//' | sort))
+    if [ -n "$MISSING" ]; then
+        echo ""
+        echo "================================================================"
+        echo "  BLOCKED: .v files not listed in _CoqProject"
+        echo ""
+        echo "$MISSING"
+        echo ""
+        echo "  Add these files to 02_FORMAL/coq/_CoqProject or delete them."
+        echo "================================================================"
+        exit 1
+    fi
+    echo "[0a] _CoqProject completeness: OK"
+fi
+
 # ── Step 1: Documentation Audit ───────────────────────────────────────
 # Skip audit for commits that are explicitly documentation updates
 COMMIT_MSG_FILE="${1:-}"

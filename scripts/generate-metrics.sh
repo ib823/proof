@@ -27,14 +27,18 @@ fi
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 DATE_HUMAN=$(date -u +"%B %d, %Y at %H:%M UTC")
 
-# Count Qed proofs (active build) - grep "Qed." not "Qed" to avoid false positives
+# Count Qed proofs (active build) — from _CoqProject only (matches verify.rs)
 QED_ACTIVE=0
 while IFS= read -r f; do
-    count=$(grep -c "Qed\." "$f" 2>/dev/null || true)
+    [[ "$f" =~ ^[[:space:]]*# ]] && continue
+    [[ "$f" != *.v ]] && continue
+    f=$(echo "$f" | sed 's/^[[:space:]]*//')
+    fullpath="$ROOT_DIR/02_FORMAL/coq/$f"
+    count=$(grep -c "Qed\." "$fullpath" 2>/dev/null || true)
     if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
         QED_ACTIVE=$((QED_ACTIVE + count))
     fi
-done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
 
 # Count Qed proofs in deprecated archive
 QED_DEPRECATED=0
@@ -51,25 +55,32 @@ COQ_FILES=$(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f 2>/dev/null | wc 
 # Count active build files (from _CoqProject)
 COQ_ACTIVE_FILES=$(grep -c "\.v$" "$ROOT_DIR/02_FORMAL/coq/_CoqProject" 2>/dev/null || echo "250")
 
-# Count Admitted in active build (should be 0)
+# Count Admitted in active build (should be 0) — from _CoqProject only
 # Only count "Admitted." as standalone tactic (not in comments or strings)
-# Coq's Admitted. tactic always appears at line start (with optional whitespace)
 ADMITTED=0
 while IFS= read -r f; do
-    count=$(grep -cP '^\s*Admitted\.' "$f" 2>/dev/null || true)
+    [[ "$f" =~ ^[[:space:]]*# ]] && continue
+    [[ "$f" != *.v ]] && continue
+    f=$(echo "$f" | sed 's/^[[:space:]]*//')
+    fullpath="$ROOT_DIR/02_FORMAL/coq/$f"
+    count=$(grep -cP '^\s*Admitted\.' "$fullpath" 2>/dev/null || true)
     if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
         ADMITTED=$((ADMITTED + count))
     fi
-done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
 
-# Count axioms dynamically from active build (Axiom declarations, excluding comments)
+# Count axioms dynamically from active build — from _CoqProject only
 AXIOMS=0
 while IFS= read -r f; do
-    count=$(grep -cE "^Axiom " "$f" 2>/dev/null || true)
+    [[ "$f" =~ ^[[:space:]]*# ]] && continue
+    [[ "$f" != *.v ]] && continue
+    f=$(echo "$f" | sed 's/^[[:space:]]*//')
+    fullpath="$ROOT_DIR/02_FORMAL/coq/$f"
+    count=$(grep -cE "^Axiom " "$fullpath" 2>/dev/null || true)
     if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
         AXIOMS=$((AXIOMS + count))
     fi
-done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
 
 # Count Lean 4 theorems (theorem + lemma declarations)
 LEAN_THEOREMS=0
