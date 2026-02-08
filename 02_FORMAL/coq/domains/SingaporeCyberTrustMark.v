@@ -273,7 +273,7 @@ Proof.
   unfold ctm_certified_at_tier.
   unfold governance_meets_tier, protection_meets_tier,
          resilience_meets_tier, assurance_meets_tier,
-         education_meets_tier in *.
+         education_meets_tier, tier_threshold in *.
   repeat split; lia.
 Qed.
 
@@ -286,7 +286,7 @@ Proof.
   unfold ctm_certified_at_tier.
   unfold governance_meets_tier, protection_meets_tier,
          resilience_meets_tier, assurance_meets_tier,
-         education_meets_tier in *.
+         education_meets_tier, tier_threshold in *.
   repeat split; lia.
 Qed.
 
@@ -299,7 +299,7 @@ Proof.
   unfold ctm_certified_at_tier.
   unfold governance_meets_tier, protection_meets_tier,
          resilience_meets_tier, assurance_meets_tier,
-         education_meets_tier in *.
+         education_meets_tier, tier_threshold in *.
   repeat split; lia.
 Qed.
 

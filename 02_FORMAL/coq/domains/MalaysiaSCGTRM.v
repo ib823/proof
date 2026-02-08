@@ -314,7 +314,7 @@ Theorem sc_incident_late :
   ~ sc_incident_timely inc.
 Proof.
   intros inc Hlate Htimely.
-  unfold sc_incident_timely, sc_incident_deadline in Htimely. lia.
+  unfold sc_incident_timely, sc_incident_deadline in *. lia.
 Qed.
 
 (* --- AI/ML Model Risk Governance --- *)
@@ -371,7 +371,7 @@ Record CMCloudRisk := mkCMCloud {
   cmc_exit_strategy : bool;
 }.
 
-Definition cm_cloud_risk_assessed (cr : CMCloudRisk) : Prop :=
+Definition cmc_cloud_risk_assessed (cr : CMCloudRisk) : Prop :=
   cmc_data_residency_compliant cr = true /\
   cmc_encryption_at_rest cr = true /\
   cmc_encryption_in_transit cr = true /\
@@ -385,10 +385,10 @@ Theorem cm_cloud_fully_assessed :
   cmc_encryption_in_transit cr = true ->
   cmc_access_controls cr = true ->
   cmc_exit_strategy cr = true ->
-  cm_cloud_risk_assessed cr.
+  cmc_cloud_risk_assessed cr.
 Proof.
   intros cr H1 H2 H3 H4 H5.
-  unfold cm_cloud_risk_assessed.
+  unfold cmc_cloud_risk_assessed.
   split. exact H1. split. exact H2. split. exact H3.
   split. exact H4. exact H5.
 Qed.
@@ -396,7 +396,7 @@ Qed.
 Theorem cm_cloud_missing_exit_strategy :
   forall (cr : CMCloudRisk),
   cmc_exit_strategy cr = false ->
-  ~ cm_cloud_risk_assessed cr.
+  ~ cmc_cloud_risk_assessed cr.
 Proof.
   intros cr Hf [_ [_ [_ [_ He]]]].
   rewrite Hf in He. discriminate.
