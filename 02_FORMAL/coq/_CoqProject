@@ -46,7 +46,6 @@ properties/NonInterference_v2_LogicalRelation.v
 properties/NonInterference_v2.v
 properties/NonInterference_v2_Monotone.v
 properties/AhmedStyleTest.v
-properties/check_ax.v
 properties/SecurityProperties.v
 properties/Composition.v
 

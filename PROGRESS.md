@@ -31,13 +31,13 @@
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **1** | 1 | ✅ TARGET REACHED — `logical_relation_declassify` (policy axiom) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **252** | - | ✅ All compile |
+| Files in Build | **251** | - | ✅ All compile |
 | Qed Proofs (Coq) | **7,934** | - | ✅ (active build, 0 Admitted) |
 | Lean 4 Theorems | **7924** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8072** | - | ✅ (0 sorry) |
 | Triple-Prover Theorems | **86** | - | ✅ (independent agreement across 3 provers) |
 | Total Proofs (All Provers) | **82,983** | - | ✅ |
-| .v Files (Total) | **285** | - | ✅ |
+| .v Files (Total) | **284** | - | ✅ |
 | .lean Files | **12** | - | ✅ |
 | .thy Files | **10** | - | ✅ |
 | Rust Prototype | ✅ PASSING (839 tests) | PASSING | ✅ GREEN |
