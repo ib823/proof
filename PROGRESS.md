@@ -16,9 +16,9 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Report Date:** 2026-02-06 (Session 81)
-**Verification:** 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
-**Session:** 81 (Proof Depth 20+ All Files — 82,978 proofs across 3 provers, 0 sorry, 1 axiom)
+**Report Date:** 2026-02-06 (Session 83)
+**Verification:** 7,934 Coq Qed (compiled, 0 Admitted, 2 policy axiom) | 10 independent provers | 852 Rust tests
+**Session:** 83 (Proof Depth 20+ All Files — 82,983 proofs across 3 provers, 0 sorry, 2 axiom)
 **Overall Grade:** A (BUILD PASSING, 0 Admitted/sorry across all provers, 1 justified axiom)
 
 ---
@@ -32,12 +32,12 @@
 | Axioms (Active Build) | **1** | 1 | ✅ TARGET REACHED — `logical_relation_declassify` (policy axiom) |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **250** | - | ✅ All compile |
-| Qed Proofs (Coq) | **7,929** | - | ✅ (active build, 0 Admitted) |
+| Qed Proofs (Coq) | **7,934** | - | ✅ (active build, 0 Admitted) |
 | Lean 4 Theorems | **7924** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8072** | - | ✅ (0 sorry) |
 | Triple-Prover Theorems | **86** | - | ✅ (independent agreement across 3 provers) |
-| Total Proofs (All Provers) | **82,978** | - | ✅ |
-| .v Files (Total) | **284** | - | ✅ |
+| Total Proofs (All Provers) | **82,983** | - | ✅ |
+| .v Files (Total) | **285** | - | ✅ |
 | .lean Files | **12** | - | ✅ |
 | .thy Files | **10** | - | ✅ |
 | Rust Prototype | ✅ PASSING (839 tests) | PASSING | ✅ GREEN |

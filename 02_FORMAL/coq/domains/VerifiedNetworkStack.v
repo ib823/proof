@@ -194,7 +194,8 @@ Definition is_terminal_state (s : TCPState) : bool :=
     ============================================================================ *)
 
 (* 32-bit sequence number space (modeled as nat with mod) *)
-Definition SEQ_SPACE : nat := 4294967296. (* 2^32 *)
+(* Defined as S pred to make positivity structurally immediate *)
+Definition SEQ_SPACE : nat := S 4294967295. (* 2^32 *)
 
 (* Sequence number comparison with wraparound *)
 Definition seq_lt (a b : nat) : bool :=
@@ -928,9 +929,19 @@ Proof. intros isn. reflexivity. Qed.
     SECTION 14: SEQUENCE NUMBER HANDLING (SEQ_001 - SEQ_010)
     ============================================================================ *)
 
-(* SEQ_001: SEQ_SPACE is 2^32 *)
-Theorem SEQ_001_seq_space : SEQ_SPACE = 4294967296.
+(* SEQ_001: SEQ_SPACE is 2^32 — defined as S 4294967295 for structural positivity *)
+Theorem SEQ_001_seq_space : SEQ_SPACE = S 4294967295.
 Proof. reflexivity. Qed.
+
+(* Structural positivity — no computation needed *)
+Lemma SEQ_SPACE_neq_0 : SEQ_SPACE <> 0.
+Proof. unfold SEQ_SPACE. discriminate. Qed.
+
+Lemma SEQ_SPACE_pos : SEQ_SPACE > 0.
+Proof. unfold SEQ_SPACE. apply Nat.lt_0_succ. Qed.
+
+(* Make SEQ_SPACE opaque to prevent Coq from trying to compute with 2^32 as Peano nat *)
+Global Opaque SEQ_SPACE.
 
 (* SEQ_002: Sequence number is reflexively <= *)
 Theorem SEQ_002_seq_le_refl : forall n,
@@ -1006,12 +1017,12 @@ Theorem SEQ_009_seq_mod : forall n,
   n mod SEQ_SPACE < SEQ_SPACE.
 Proof.
   intros n. apply Nat.mod_upper_bound.
-  unfold SEQ_SPACE. discriminate.
+  exact SEQ_SPACE_neq_0.
 Qed.
 
 (* SEQ_010: Sequence comparison handles zero *)
 Theorem SEQ_010_seq_le_zero : seq_le 0 0 = true.
-Proof. unfold seq_le. reflexivity. Qed.
+Proof. apply SEQ_002_seq_le_refl. Qed.
 
 (** ============================================================================
     SECTION 15: SOCKET API CORRECTNESS (SOCK_001 - SOCK_010)
@@ -1252,9 +1263,9 @@ Proof.
   intros n.
   rewrite Nat.add_mod. rewrite Nat.mod_same. rewrite Nat.add_0_r.
   rewrite Nat.mod_mod. reflexivity.
-  unfold SEQ_SPACE. lia.
-  unfold SEQ_SPACE. lia.
-  unfold SEQ_SPACE. lia.
+  exact SEQ_SPACE_neq_0.
+  exact SEQ_SPACE_neq_0.
+  exact SEQ_SPACE_neq_0.
 Qed.
 
 (** End of VerifiedNetworkStack.v - 90+ Qed proofs, zero admits, zero axioms *)
