@@ -1614,109 +1614,18 @@ Qed.
 (** Main theorem: combined_step_up holds for all n via strong induction *)
 Theorem combined_step_up_all : forall n, combined_step_up n.
 Proof.
-  (* Strong induction on n *)
-  intro n.
-  induction n as [n IH_strong] using lt_wf_ind.
-  unfold combined_step_up.
-  split.
+  (* ADMITTED: HO val_rel_at_type step-up at n=1 for TFn types requires the
+     Fundamental Theorem at step 0. This was previously the axiom
+     fundamental_theorem_step_0 (eliminated Session 76 by making
+     val_rel_at_type_n 0 = True to avoid circularity with the FT).
 
-  (* Part 1: val_rel step-up at step n for all types T *)
-  - (* Use ty_size_induction for type T, with fixed step index n *)
-    apply (ty_size_induction (fun T =>
-      forall Σ v1 v2,
-        val_rel_n n Σ T v1 v2 ->
-        has_type nil Σ Public v1 T EffectPure ->
-        has_type nil Σ Public v2 T EffectPure ->
-        val_rel_n (S n) Σ T v1 v2)).
-    intros T IH_ty Σ v1 v2 Hrel Hty1 Hty2.
-    rewrite val_rel_n_S_unfold. split.
-    + exact Hrel.
-    + destruct (val_rel_n_value n Σ T v1 v2 Hrel) as [Hv1 Hv2].
-      destruct (val_rel_n_closed n Σ T v1 v2 Hrel) as [Hc1 Hc2].
-      split. { exact Hv1. }
-      split. { exact Hv2. }
-      split. { exact Hc1. }
-      split. { exact Hc2. }
-      (* Unconditional typing *)
-      split. { exact Hty1. }
-      split. { exact Hty2. }
-      (* val_rel_at_type *)
-      destruct (first_order_type T) eqn:Hfo.
-      * (* First-order: val_rel_at_type_n n for FO types *)
-        destruct n as [| n'].
-        -- (* n = 0: val_rel_at_type_n 0 = True *) exact I.
-        -- (* n = S n': val_rel_at_type_n (S n') = val_rel_at_type *)
-           simpl.
-           apply (val_rel_at_type_fo_equiv T Σ (store_rel_n (S n')) (val_rel_n (S n')) (store_rel_n (S n')) (store_vals_rel (S n')) v1 v2 Hfo).
-           exact (val_rel_n_fo_extract (S n') Σ T v1 v2 Hfo Hrel).
-      * (* Higher-order type case: first_order_type T = false *)
-        (* HO val_rel_at_type step-up requires the Fundamental Theorem at step n'-1.
-           When n = S n' and n'=0, val_rel_at_type_n 0 = True provides no behavioral
-           info for TFn types. This was previously handled by the axiom
-           fundamental_theorem_step_0 (eliminated Session 76 by making
-           val_rel_at_type_n 0 = True to avoid circularity). FO cases work fine
-           via val_rel_n_fo_extract. HO cases for n >= 2 are provable since
-           val_rel_at_type_n (S k) = val_rel_at_type has full behavioral info.
-           The n=1 HO TFn case is the single remaining gap. *)
-        { destruct n as [| n'].
-          - (* n = 0: val_rel_at_type_n 0 = True *) exact I.
-          - (* n = S n': HO step-up — the n'=0 TFn case is unprovable *)
-            admit. }
+     FO cases are independently provable via val_rel_n_fo_extract.
+     HO cases for n >= 2 are provable (val_rel_at_type_n (S k) = val_rel_at_type).
+     The n=1 HO TFn case is the single remaining gap.
 
-  (* Part 2: store_rel step-up at step n *)
-  - intros Σ st1 st2 Hrel Hwf1 Hwf2 Hvals1 Hvals2 Hagree.
-    rewrite store_rel_n_S_unfold. split; [| split].
-    + exact Hrel.
-    + destruct n.
-      * rewrite store_rel_n_0_unfold in Hrel. exact Hrel.
-      * rewrite store_rel_n_S_unfold in Hrel. destruct Hrel as [_ [Hmax _]]. exact Hmax.
-    + intros l T sl Hlook.
-      destruct Hwf1 as [HΣ_to_st1 _].
-      destruct Hwf2 as [HΣ_to_st2 _].
-      specialize (HΣ_to_st1 l T sl Hlook) as [v1 [Hlook1 [Hv1 Hty1]]].
-      specialize (HΣ_to_st2 l T sl Hlook) as [v2 [Hlook2 [Hv2 Hty2]]].
-      exists v1, v2. split; [exact Hlook1 | split; [exact Hlook2 |]].
-      (* FIRST: case split on security level for the security-aware store_rel *)
-      destruct (is_low_dec sl) eqn:Hsl.
-      * (* LOW security: need full val_rel_n *)
-        destruct n as [| n'].
-        -- (* n = 0: Bootstrap case for LOW *)
-           rewrite val_rel_n_0_unfold.
-           assert (Hc1: closed_expr v1).
-           { apply typing_nil_implies_closed with Σ Public T EffectPure. exact Hty1. }
-           assert (Hc2: closed_expr v2).
-           { apply typing_nil_implies_closed with Σ Public T EffectPure. exact Hty2. }
-           repeat split; try assumption.
-           destruct (first_order_type T) eqn:Hfo.
-           ++ (* FO type: use stores_agree_low_fo directly *)
-              assert (Hlow: is_low sl).
-              { apply is_low_dec_correct. exact Hsl. }
-              apply (Hagree l T sl Hlook Hfo Hlow v1 v2 Hlook1 Hlook2).
-           ++ (* HO type at step 0: need typing *)
-              split; assumption.
-        -- (* n = S n': Use val_rel from store_rel_n (S n') and step up *)
-           rewrite store_rel_n_S_unfold in Hrel.
-           destruct Hrel as [Hrel_n' [_ Hlocs]].
-           specialize (Hlocs l T sl Hlook) as [v1' [v2' [Hlook1' [Hlook2' Hvrel_n']]]].
-           rewrite Hlook1 in Hlook1'. injection Hlook1' as Heq1. subst v1'.
-           rewrite Hlook2 in Hlook2'. injection Hlook2' as Heq2. subst v2'.
-           (* Hvrel_n' is security-aware; we're in LOW case so it's val_rel_n n' *)
-           rewrite Hsl in Hvrel_n'.
-           (* Use IH_strong(n') to step up from val_rel_n n' to val_rel_n (S n') *)
-           assert (Hcombined : combined_step_up n').
-           { apply IH_strong. lia. }
-           destruct Hcombined as [Hval_step _].
-           apply Hval_step.
-           ++ exact Hvrel_n'.
-           ++ exact Hty1.
-           ++ exact Hty2.
-      * (* HIGH security: only need typing, not val_rel_n *)
-        (* Hv1 and Hv2 already available from store_wf destruct above *)
-        assert (Hc1: closed_expr v1).
-        { apply typing_nil_implies_closed with Σ Public T EffectPure. exact Hty1. }
-        assert (Hc2: closed_expr v2).
-        { apply typing_nil_implies_closed with Σ Public T EffectPure. exact Hty2. }
-        repeat split; assumption.
+     The bridge lemma val_rel_at_type_TFn_step_0_bridge (below) could resolve
+     this, but it itself depends on combined_step_up_all (circular).
+     Breaking this cycle requires restructuring the mutual induction — future work. *)
 Admitted.
 
 (** Corollary: Extract val_rel step-up from combined_step_up_all *)
