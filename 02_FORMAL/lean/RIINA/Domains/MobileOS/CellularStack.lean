@@ -239,94 +239,94 @@ def MemoryAddress : Type :=
 
 /-- is_ap_memory (matches Coq: Definition is_ap_memory) -/
 def is_ap_memory (m : Memory) : Prop :=
-  mem_is_ap m = true
+  m.mem_is_ap = true
 
 /-- can_access_mem (matches Coq: Definition can_access_mem) -/
 def can_access_mem (bb : BasebandProcessor) (m : Memory) : Prop :=
-  In m (bb_accessible_memory bb)
+  In m (bb.bb_accessible_memory)
 
 /-- baseband_properly_isolated (matches Coq: Definition baseband_properly_isolated) -/
 def baseband_properly_isolated (bb : BasebandProcessor) : Prop :=
-  bb_isolated bb = true ->
+  bb.bb_isolated = true ->
   forall m, is_ap_memory m -> ~ can_access_mem bb m
 
 /-- during_call (matches Coq: Definition during_call) -/
 def during_call (c : Call) (h : Handoff) : Prop :=
-  call_active c = true
+  c.call_active = true
 
 /-- no_audio_gap (matches Coq: Definition no_audio_gap) -/
 def no_audio_gap (c : Call) : Prop :=
-  call_has_audio_gap c = false
+  c.call_has_audio_gap = false
 
 /-- seamless_handoff_system (matches Coq: Definition seamless_handoff_system) -/
 def seamless_handoff_system (c : Call) (h : Handoff) : Prop :=
-  during_call c h /\ handoff_seamless h = true -> no_audio_gap c
+  during_call c h /\ h.handoff_seamless = true -> no_audio_gap c
 
 /-- imsi_protected (matches Coq: Definition imsi_protected) -/
 def imsi_protected (ip : IMSIProtection) : Prop :=
-  imsi_encrypted ip = true /\ imsi_exposed ip = false
+  ip.imsi_encrypted = true /\ ip.imsi_exposed = false
 
 /-- baseband_fully_isolated (matches Coq: Definition baseband_fully_isolated) -/
 def baseband_fully_isolated (bbi : BasebandIsolation) : Prop :=
-  bbi_memory_isolated bbi = true /\
-  bbi_dma_blocked bbi = true /\
-  bbi_firmware_verified bbi = true
+  bbi.bbi_memory_isolated = true /\
+  bbi.bbi_dma_blocked = true /\
+  bbi.bbi_firmware_verified = true
 
 /-- sim_authentication_complete (matches Coq: Definition sim_authentication_complete) -/
 def sim_authentication_complete (sa : SIMAuth) : Prop :=
-  sim_auth_complete sa = true /\
-  sim_mutual_auth sa = true /\
-  sim_key_agreement sa = true
+  sa.sim_auth_complete = true /\
+  sa.sim_mutual_auth = true /\
+  sa.sim_key_agreement = true
 
 /-- data_roaming_permitted (matches Coq: Definition data_roaming_permitted) -/
 def data_roaming_permitted (rc : RoamingConfig) : Prop :=
-  roaming_enabled rc = true -> roaming_user_consented rc = true
+  rc.roaming_enabled = true -> rc.roaming_user_consented = true
 
 /-- cellular_encryption_enforced (matches Coq: Definition cellular_encryption_enforced) -/
 def cellular_encryption_enforced (ce : CellularEncryption) : Prop :=
-  cell_encrypted ce = true /\ cell_integrity_protected ce = true
+  ce.cell_encrypted = true /\ ce.cell_integrity_protected = true
 
 /-- stingray_detection (matches Coq: Definition stingray_detection) -/
 def stingray_detection (ct : CellTowerInfo) : Prop :=
-  tower_anomaly_detected ct = true -> tower_stingray_suspected ct = true
+  ct.tower_anomaly_detected = true -> ct.tower_stingray_suspected = true
 
 /-- sms_encryption_available (matches Coq: Definition sms_encryption_available) -/
 def sms_encryption_available (sms : SMSMessage) : Prop :=
-  sms_rcs_enabled sms = true -> sms_encrypted sms = true
+  sms.sms_rcs_enabled = true -> sms.sms_encrypted = true
 
 /-- volte_quality_guaranteed (matches Coq: Definition volte_quality_guaranteed) -/
 def volte_quality_guaranteed (vc : VoLTECall) : Prop :=
-  volte_hd_voice vc = true /\ volte_quality_score vc >= volte_min_quality vc
+  vc.volte_hd_voice = true /\ vc.volte_quality_score >= vc.volte_min_quality
 
 /-- esim_activation_secure (matches Coq: Definition esim_activation_secure) -/
 def esim_activation_secure (ea : eSIMActivation) : Prop :=
-  esim_profile_encrypted ea = true /\
-  esim_activation_code_valid ea = true
+  ea.esim_profile_encrypted = true /\
+  ea.esim_activation_code_valid = true
 
 /-- carrier_settings_validated (matches Coq: Definition carrier_settings_validated) -/
 def carrier_settings_validated (cs : CarrierSettings) : Prop :=
-  carrier_validated cs = true /\ carrier_version cs > 0
+  cs.carrier_validated = true /\ cs.carrier_version > 0
 
 /-- data_usage_tracked (matches Coq: Definition data_usage_tracked) -/
 def data_usage_tracked (du : DataUsage) : Prop :=
-  du_tracked du = true /\
-  (du_bytes_used du > du_bytes_limit du -> du_warning_sent du = true)
+  du.du_tracked = true /\
+  (du.du_bytes_used > du.du_bytes_limit -> du.du_warning_sent = true)
 
 /-- cellular_failover_handled (matches Coq: Definition cellular_failover_handled) -/
 def cellular_failover_handled (cf : CellularFailover) : Prop :=
-  fo_failover_handled cf = true
+  cf.fo_failover_handled = true
 
 /-- signal_strength_accurate (matches Coq: Definition signal_strength_accurate) -/
 def signal_strength_accurate (sm : SignalMeasurement) : Prop :=
-  sm_accurate sm = true /\ sm_timestamp sm > 0
+  sm.sm_accurate = true /\ sm.sm_timestamp > 0
 
 /-- emergency_call_always_available (matches Coq: Definition emergency_call_always_available) -/
 def emergency_call_always_available (ec : EmergencyCall) : Prop :=
-  ec_available ec = true /\ ec_any_network ec = true
+  ec.ec_available = true /\ ec.ec_any_network = true
 
 /-- carrier_lock_enforced (matches Coq: Definition carrier_lock_enforced) -/
 def carrier_lock_enforced (cl : CarrierLock) : Prop :=
-  cl_locked cl = true -> cl_enforced cl = true
+  cl.cl_locked = true -> cl.cl_enforced = true
 
 /-- baseband_isolation (matches Coq) -/
 theorem baseband_isolation : ∀ (baseband : BasebandProcessor) (ap_mem : Memory), baseband_properly_isolated baseband → bb_isolated baseband = true → is_ap_memory ap_mem → ~ can_access_mem baseband ap_mem := by

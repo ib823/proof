@@ -182,7 +182,7 @@ def threshold_met (shares : List Share) (k : Nat) : Bool :=
 
 /-- tp_approved (matches Coq: Definition tp_approved) -/
 def tp_approved (pol : ThresholdPolicy) : Bool :=
-  tp_n pol <=? length (tp_approvals pol)
+  pol.tp_n <=? length (pol.tp_approvals)
 
 /-- tp_add_approval (matches Coq: Definition tp_add_approval) -/
 def tp_add_approval (pol : ThresholdPolicy) (party : Nat) : ThresholdPolicy :=
@@ -190,7 +190,7 @@ def tp_add_approval (pol : ThresholdPolicy) (party : Nat) : ThresholdPolicy :=
 
 /-- tp_valid (matches Coq: Definition tp_valid) -/
 def tp_valid (pol : ThresholdPolicy) : Bool :=
-  (tp_n pol <=? tp_m pol) && (1 <=? tp_n pol)
+  (pol.tp_n <=? pol.tp_m) && (1 <=? pol.tp_n)
 
 /-- handle_auth (matches Coq: Definition handle_auth) -/
 def handle_auth (mode : AuthMode) : DuressResponse :=
@@ -198,19 +198,19 @@ def handle_auth (mode : AuthMode) : DuressResponse :=
 
 /-- dms_check (matches Coq: Definition dms_check) -/
 def dms_check (dms : DeadManSwitch) (now : Nat) : DeadManSwitch :=
-  if dms_timeout dms + dms_last_checkin dms <? now then
-    {| dms_last_checkin := dms_last_checkin dms;
-       dms_timeout := dms_timeout dms;
+  if dms.dms_timeout + dms.dms_last_checkin <? now then
+    {| dms_last_checkin := dms.dms_last_checkin;
+       dms_timeout := dms.dms_timeout;
        dms_triggered := true;
-       dms_recovery_action := dms_recovery_action dms |}
+       dms_recovery_action := dms.dms_recovery_action |}
   else dms
 
 /-- dms_checkin (matches Coq: Definition dms_checkin) -/
 def dms_checkin (dms : DeadManSwitch) (now : Nat) : DeadManSwitch :=
   {| dms_last_checkin := now;
-     dms_timeout := dms_timeout dms;
+     dms_timeout := dms.dms_timeout;
      dms_triggered := false;
-     dms_recovery_action := dms_recovery_action dms |}
+     dms_recovery_action := dms.dms_recovery_action |}
 
 /-- ib_can_query (matches Coq: Definition ib_can_query) -/
 def ib_can_query (budget : InsiderBudget) (bytes : Nat) : Bool :=
@@ -229,28 +229,28 @@ def audit_chain_valid := sorry -- complex match, needs manual translation
 
 /-- platforms_independent (matches Coq: Definition platforms_independent) -/
 def platforms_independent (p1 p2 : Platform) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- nversion_agree (matches Coq: Definition nversion_agree) -/
 def nversion_agree := sorry -- complex match, needs manual translation
 
 /-- tl_can_execute (matches Coq: Definition tl_can_execute) -/
 def tl_can_execute (tl : TimeLock) (now : Nat) : Bool :=
-  (tl_execute_time tl <=? now) && negb (tl_cancelled tl)
+  (tl.tl_execute_time <=? now) && !(tl.tl_cancelled)
 
 /-- tl_can_cancel (matches Coq: Definition tl_can_cancel) -/
 def tl_can_cancel (tl : TimeLock) (now : Nat) : Bool :=
-  now <? tl_execute_time tl
+  now <? tl.tl_execute_time
 
 /-- tl_cancel (matches Coq: Definition tl_cancel) -/
 def tl_cancel (tl : TimeLock) : TimeLock :=
-  {| tl_operation := tl_operation tl;
-     tl_submit_time := tl_submit_time tl;
-     tl_execute_time := tl_execute_time tl;
+  {| tl_operation := tl.tl_operation;
+     tl_submit_time := tl.tl_submit_time;
+     tl_execute_time := tl.tl_execute_time;
      tl_cancelled := true |}
 
 /-- nth_map_seq (matches Coq) -/
-theorem nth_map_seq : ∀ (A : Type) (f : nat → A) (start len i : nat) (d : A), i < len → nth i (map f (seq start len)) d = f (start + i) := by
+theorem nth_map_seq : ∀ (A : Type) (f : Nat → A) (start len i : Nat) (d : A), i < len → nth i (map f (seq start len)) d = f (start + i) := by
   simp_all [Bool.and_eq_true]
 
 /-- ===============================================================================

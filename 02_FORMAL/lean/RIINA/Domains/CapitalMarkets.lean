@@ -119,23 +119,23 @@ def side_eqb := sorry -- complex match, needs manual translation
 
 /-- buy_has_priority (matches Coq: Definition buy_has_priority) -/
 def buy_has_priority (o1 o2 : Order) : Bool :=
-  if order_price o1 <? order_price o2 then false
-  else if order_price o2 <? order_price o1 then true
-  else order_time o1 <=? order_time o2
+  if o1.order_price <? o2.order_price then false
+  else if o2.order_price <? o1.order_price then true
+  else o1.order_time <=? o2.order_time
 
 /-- sell_has_priority (matches Coq: Definition sell_has_priority) -/
 def sell_has_priority (o1 o2 : Order) : Bool :=
-  if order_price o1 <? order_price o2 then true
-  else if order_price o2 <? order_price o1 then false
-  else order_time o1 <=? order_time o2
+  if o1.order_price <? o2.order_price then true
+  else if o2.order_price <? o1.order_price then false
+  else o1.order_time <=? o2.order_time
 
 /-- trade_consideration (matches Coq: Definition trade_consideration) -/
 def trade_consideration (t : Trade) : Nat :=
-  trade_price t * trade_qty t
+  t.trade_price * t.trade_qty
 
 /-- trade_balanced (matches Coq: Definition trade_balanced) -/
 def trade_balanced (t : Trade) : Prop :=
-  trade_consideration t = trade_price t * trade_qty t
+  trade_consideration t = t.trade_price * t.trade_qty
 
 /-- settlement_balanced (matches Coq: Definition settlement_balanced) -/
 def settlement_balanced (s : Settlement) : Bool :=
@@ -143,17 +143,17 @@ def settlement_balanced (s : Settlement) : Bool :=
 
 /-- settlement_complete (matches Coq: Definition settlement_complete) -/
 def settlement_complete (s : Settlement) : Prop :=
-  buyer_paid s = seller_received s /\
-  assets_delivered s > 0 /\
-  settle_final s = true
+  s.buyer_paid = s.seller_received /\
+  s.assets_delivered > 0 /\
+  s.settle_final = true
 
 /-- orders_can_match (matches Coq: Definition orders_can_match) -/
 def orders_can_match (buy sell : Order) : Bool :=
-  order_price sell <=? order_price buy
+  sell.order_price <=? buy.order_price
 
 /-- match_price (matches Coq: Definition match_price) -/
 def match_price (buy sell : Order) : Nat :=
-  order_price sell
+  sell.order_price
 
 /-- match_qty (matches Coq: Definition match_qty) -/
 def match_qty (buy sell : Order) : Nat :=
@@ -161,7 +161,7 @@ def match_qty (buy sell : Order) : Nat :=
 
 /-- ticks_monotonic (matches Coq: Definition ticks_monotonic) -/
 def ticks_monotonic (t1 t2 : MarketDataTick) : Prop :=
-  tick_seq t1 < tick_seq t2
+  t1.tick_seq < t2.tick_seq
 
 /-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ORDER PRIORITY (PRICE-TIME)

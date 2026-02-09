@@ -151,7 +151,7 @@ def box_new (id : Nat) : BoxAlloc := mkBox id true false
 
 /-- well_formed_ctx (matches Coq: Definition well_formed_ctx) -/
 def well_formed_ctx (ctx : OwnCtx) : Prop :=
-  forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true
+  forall b, In b (ctx.oc_borrows) -> borrow_lifetime_valid ctx b = true
 
 /-- no_active_borrows (matches Coq: Definition no_active_borrows) -/
 def no_active_borrows (ctx : OwnCtx) (id : Nat) : Prop :=
@@ -159,13 +159,13 @@ def no_active_borrows (ctx : OwnCtx) (id : Nat) : Prop :=
 
 /-- memory_safe (matches Coq: Definition memory_safe) -/
 def memory_safe (ctx : OwnCtx) : Prop :=
-  (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = true) /\
+  (forall b, In b (ctx.oc_borrows) -> borrow_lifetime_valid ctx b = true) /\
   
-  (forall v, In v (oc_vars ctx) -> ov_state v = Moved -> 
-             count_borrows ctx (ov_id v) = 0) /\
+  (forall v, In v (ctx.oc_vars) -> v.ov_state = Moved -> 
+             count_borrows ctx (v.ov_id) = 0) /\
   
-  (forall v, In v (oc_vars ctx) -> ov_state v = Dropped -> 
-             count_borrows ctx (ov_id v) = 0) /\
+  (forall v, In v (ctx.oc_vars) -> v.ov_state = Dropped -> 
+             count_borrows ctx (v.ov_id) = 0) /\
   
   (forall id, count_mut_borrows ctx id <= 1) /\
   
@@ -181,15 +181,15 @@ theorem find_var_map_moved : ∀ vars from_id v, find_var vars from_id = Some v 
   cases ‹_› <;> simp
 
 /-- MEM_001_01 (matches Coq) -/
-theorem MEM_001_01 : ∀ (ctx : OwnCtx) (from_id to_id : nat) (ctx' : OwnCtx) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v → ov_is_copy v = false → ov_state v = Owned → to_id ≠ from_id → move_var ctx from_id to_id = Some ctx' → ∀ v', find_var (oc_vars ctx') from_id = Some v' → ov_state v' = Moved := by
+theorem MEM_001_01 : ∀ (ctx : OwnCtx) (from_id to_id : Nat) (ctx' : OwnCtx) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v → ov_is_copy v = false → ov_state v = Owned → to_id ≠ from_id → move_var ctx from_id to_id = Some ctx' → ∀ v', find_var (oc_vars ctx') from_id = Some v' → ov_state v' = Moved := by
   simp_all [Bool.and_eq_true]
 
 /-- MEM_001_02 (matches Coq) -/
-theorem MEM_001_02 : ∀ (ctx : OwnCtx) (from_id to_id : nat) (ctx' : OwnCtx) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v → ov_is_copy v = false → ov_state v = Owned → move_var ctx from_id to_id = Some ctx' → ∃ v_new, find_var (oc_vars ctx') to_id = Some v_new ∧ ov_state v_new = Owned := by
+theorem MEM_001_02 : ∀ (ctx : OwnCtx) (from_id to_id : Nat) (ctx' : OwnCtx) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v → ov_is_copy v = false → ov_state v = Owned → move_var ctx from_id to_id = Some ctx' → ∃ v_new, find_var (oc_vars ctx') to_id = Some v_new ∧ ov_state v_new = Owned := by
   simp
 
 /-- MEM_001_03 (matches Coq) -/
-theorem MEM_001_03 : ∀ (ctx : OwnCtx) (id : nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → count_mut_borrows ctx id = 0 → can_shared_borrow ctx id = true := by
+theorem MEM_001_03 : ∀ (ctx : OwnCtx) (id : Nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → count_mut_borrows ctx id = 0 → can_shared_borrow ctx id = true := by
   cases ‹_› <;> simp <;> omega
 
 /-- filter_all_false_empty (matches Coq) -/
@@ -197,7 +197,7 @@ theorem filter_all_false_empty : ∀ {A} (f : A → bool) (l : list A), (∀ x, 
   simp_all [Bool.and_eq_true]
 
 /-- MEM_001_04 (matches Coq) -/
-theorem MEM_001_04 : ∀ (ctx : OwnCtx) (id : nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → can_mut_borrow ctx id = true → count_borrows ctx id = 0 := by
+theorem MEM_001_04 : ∀ (ctx : OwnCtx) (id : Nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → can_mut_borrow ctx id = true → count_borrows ctx id = 0 := by
   cases ‹_› <;> simp
 
 /-- MEM_001_05 (matches Coq) -/
@@ -209,11 +209,11 @@ theorem MEM_001_06 : ∀ (v : OwnedVar), ov_state v = Moved → is_usable v = fa
   rfl
 
 /-- MEM_001_07 (matches Coq) -/
-theorem MEM_001_07 : ∀ (ctx : OwnCtx) (id : nat) (v : OwnedVar) (b : Borrow), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → In b (oc_borrows ctx) → br_source b = id → br_mutable b = false → can_mut_borrow ctx id = false := by
+theorem MEM_001_07 : ∀ (ctx : OwnCtx) (id : Nat) (v : OwnedVar) (b : Borrow), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → In b (oc_borrows ctx) → br_source b = id → br_mutable b = false → can_mut_borrow ctx id = false := by
   cases ‹_› <;> simp
 
 /-- MEM_001_08 (matches Coq) -/
-theorem MEM_001_08 : ∀ (ctx : OwnCtx) (id : nat) (v : OwnedVar) (b : Borrow), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → In b (oc_borrows ctx) → br_source b = id → br_mutable b = true → can_shared_borrow ctx id = false := by
+theorem MEM_001_08 : ∀ (ctx : OwnCtx) (id : Nat) (v : OwnedVar) (b : Borrow), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → In b (oc_borrows ctx) → br_source b = id → br_mutable b = true → can_shared_borrow ctx id = false := by
   cases ‹_› <;> simp
 
 /-- MEM_001_09 (matches Coq) -/
@@ -225,7 +225,7 @@ theorem find_var_map_dropped : ∀ vars id v, find_var vars id = Some v → ov_s
   cases ‹_› <;> simp
 
 /-- MEM_001_10 (matches Coq) -/
-theorem MEM_001_10 : ∀ (ctx ctx' : OwnCtx) (id : nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → drop_var ctx id = Some ctx' → drop_var ctx' id = None := by
+theorem MEM_001_10 : ∀ (ctx ctx' : OwnCtx) (id : Nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v → ov_state v = Owned → drop_var ctx id = Some ctx' → drop_var ctx' id = None := by
   simp
 
 /-- MEM_001_11 (matches Coq) -/
@@ -237,11 +237,11 @@ theorem MEM_001_12 : ∀ (rc : RefCell), rc_state rc = RCMutBorrow → refcell_t
   rfl
 
 /-- MEM_001_13 (matches Coq) -/
-theorem MEM_001_13 : ∀ (ctx : OwnCtx) (from_id to_id : nat) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v → ov_is_copy v = true → move_var ctx from_id to_id = Some ctx := by
+theorem MEM_001_13 : ∀ (ctx : OwnCtx) (from_id to_id : Nat) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v → ov_is_copy v = true → move_var ctx from_id to_id = Some ctx := by
   rfl
 
 /-- MEM_001_14 (matches Coq) -/
-theorem MEM_001_14 : ∀ (id : nat), let b := box_new id in box_allocated b = true ∧ box_dropped b = false ∧ (∃ b', box_drop b = Some b' ∧ box_dropped b' = true) := by
+theorem MEM_001_14 : ∀ (id : Nat), let b := box_new id in box_allocated b = true ∧ box_dropped b = false ∧ (∃ b', box_drop b = Some b' ∧ box_dropped b' = true) := by
   simp
 
 /-- MEM_001_15 (matches Coq) -/

@@ -132,7 +132,7 @@ def hipaa_all_controls : HIPAA_Policy := mkHIPAAPolicy true true true true true
 
 /-- hipaa_security_minimum (matches Coq: Definition hipaa_security_minimum) -/
 def hipaa_security_minimum (p : HIPAA_Policy) : Bool :=
-  access_control p && audit_controls p
+  p.access_control && p.audit_controls
 
 /-- role_level (matches Coq: Definition role_level) -/
 def role_level (role : Nat) : Nat :=
@@ -144,7 +144,7 @@ def access_permitted (role_lvl : Nat) (cat : PHI_Category) : Bool :=
 
 /-- consent_valid (matches Coq: Definition consent_valid) -/
 def consent_valid (c : ConsentRecord) (current_time : Nat) : Bool :=
-  consent_granted c && Nat
+  c.consent_granted && Nat
 
 /-- retention_years (matches Coq: Definition retention_years) -/
 def retention_years (cat : PHI_Category) : Nat :=
@@ -171,7 +171,7 @@ def lab_in_normal_range (value low high : Nat) : Bool :=
 /-- Section B01 - HIPAA Privacy Rule
     Reference: IND_B_HEALTHCARE.md Section 3.1 -/
 /-- hipaa_privacy_rule (matches Coq) -/
-theorem hipaa_privacy_rule : ∀ (phi : PHI_Category) (accessor : nat) (purpose : nat),  True := by
+theorem hipaa_privacy_rule : ∀ (phi : PHI_Category) (accessor : Nat) (purpose : Nat),  True := by
   trivial
 
 /-- Section B02 - HIPAA Security Rule
@@ -183,19 +183,19 @@ theorem hipaa_security_rule : ∀ (policy : HIPAA_Policy), access_control policy
 /-- Section B03 - FDA 21 CFR Part 11
     Reference: IND_B_HEALTHCARE.md Section 3.3 -/
 /-- fda_21_cfr_11 (matches Coq) -/
-theorem fda_21_cfr_11 : ∀ (electronic_record : nat) (signature : nat),  True := by
+theorem fda_21_cfr_11 : ∀ (electronic_record : Nat) (signature : Nat),  True := by
   trivial
 
 /-- Section B04 - HITECH Breach Notification
     Reference: IND_B_HEALTHCARE.md Section 3.4 -/
 /-- hitech_breach_notification (matches Coq) -/
-theorem hitech_breach_notification : ∀ (breach : nat) (affected_individuals : nat),  True := by
+theorem hitech_breach_notification : ∀ (breach : Nat) (affected_individuals : Nat),  True := by
   trivial
 
 /-- Section B05 - HL7 FHIR Security
     Reference: IND_B_HEALTHCARE.md Section 3.5 -/
 /-- hl7_fhir_security (matches Coq) -/
-theorem hl7_fhir_security : ∀ (resource : nat) (access_token : nat),  True := by
+theorem hl7_fhir_security : ∀ (resource : Nat) (access_token : Nat),  True := by
   trivial
 
 /-- PHI must be encrypted in transit -/
@@ -213,19 +213,19 @@ theorem minimum_necessary_access : ∀ phi_requested treatment_required, minimum
 theorem phi_sensitivity_positive : ∀ cat, phi_sensitivity cat ≥ 1 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Psychotherapy, Substance, HIV all have maximum sensitivity -/
+/-- .psychotherapy, .substance, HIV all have maximum sensitivity -/
 /-- max_sensitivity_categories (matches Coq) -/
-theorem max_sensitivity_categories : ∀ cat, cat = Psychotherapy ∨ cat = Substance ∨ cat = HIV_Status → phi_sensitivity cat = 4 := by
+theorem max_sensitivity_categories : ∀ cat, cat = .psychotherapy ∨ cat = .substance ∨ cat = .hIV_Status → phi_sensitivity cat = 4 := by
   cases ‹_› <;> simp
 
-/-- Demographics has minimum sensitivity -/
+/-- .demographics has minimum sensitivity -/
 /-- demographics_minimum (matches Coq) -/
-theorem demographics_minimum : ∀ cat, phi_sensitivity Demographics ≤ phi_sensitivity cat := by
+theorem demographics_minimum : ∀ cat, phi_sensitivity .demographics ≤ phi_sensitivity cat := by
   cases ‹_› <;> simp <;> omega
 
-/-- Genetic data is less sensitive than psychotherapy but more than medical records -/
+/-- .genetic data is less sensitive than psychotherapy but more than medical records -/
 /-- genetic_sensitivity_ordering (matches Coq) -/
-theorem genetic_sensitivity_ordering : phi_sensitivity MedicalRecord < phi_sensitivity Genetic ∧ phi_sensitivity Genetic < phi_sensitivity Psychotherapy := by
+theorem genetic_sensitivity_ordering : phi_sensitivity .medicalRecord < phi_sensitivity .genetic ∧ phi_sensitivity .genetic < phi_sensitivity Psychotherapy := by
   omega
 
 /-- hipaa_all_controls_access (matches Coq) -/
@@ -258,11 +258,11 @@ theorem break_glass_must_be_logged : ∀ evt, bg_logged evt = true → bg_logged
   simp_all [Bool.and_eq_true]
 
 /-- high_role_accesses_demographics (matches Coq) -/
-theorem high_role_accesses_demographics : ∀ r, r ≥ 1 → access_permitted r Demographics = true := by
+theorem high_role_accesses_demographics : ∀ r, r ≥ 1 → access_permitted r .demographics = true := by
   omega
 
 /-- low_role_denied_psychotherapy (matches Coq) -/
-theorem low_role_denied_psychotherapy : access_permitted 2 Psychotherapy = false := by
+theorem low_role_denied_psychotherapy : access_permitted 2 .psychotherapy = false := by
   simp
 
 /-- Sufficient role level grants access -/

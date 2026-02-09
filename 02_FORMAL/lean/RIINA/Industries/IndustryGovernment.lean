@@ -145,8 +145,8 @@ def controls_for_baseline (f : FISMA_Impact) : Nat :=
 
 /-- nist_minimum_controls (matches Coq: Definition nist_minimum_controls) -/
 def nist_minimum_controls (c : NIST_800_53_Controls) : Bool :=
-  ac_access_control c && au_audit c && ia_identification c &&
-  sc_system_comms c && si_system_integrity c
+  c.ac_access_control && c.au_audit && c.ia_identification &&
+  c.sc_system_comms && c.si_system_integrity
 
 /-- fedramp_matches_fisma (matches Coq: Definition fedramp_matches_fisma) -/
 def fedramp_matches_fisma (fed : FedRAMP_Level) (fisma : FISMA_Impact) : Bool :=
@@ -192,13 +192,13 @@ def poam_deadline_days (impact : FISMA_Impact) : Nat :=
 /-- Section G01 - FISMA Compliance
     Reference: IND_G_GOVERNMENT.md Section 3.1 -/
 /-- fisma_compliance (matches Coq) -/
-theorem fisma_compliance : ∀ (system : nat) (impact : FISMA_Impact),  True := by
+theorem fisma_compliance : ∀ (system : Nat) (impact : FISMA_Impact),  True := by
   trivial
 
 /-- Section G02 - FedRAMP Authorization
     Reference: IND_G_GOVERNMENT.md Section 3.2 -/
 /-- fedramp_authorization (matches Coq) -/
-theorem fedramp_authorization : ∀ (cloud_service : nat) (level : FedRAMP_Level),  True := by
+theorem fedramp_authorization : ∀ (cloud_service : Nat) (level : FedRAMP_Level),  True := by
   trivial
 
 /-- Section G03 - NIST 800-53 Controls
@@ -210,23 +210,23 @@ theorem nist_800_53_compliance : ∀ (controls : NIST_800_53_Controls) (impact :
 /-- Section G04 - CJIS Security
     Reference: IND_G_GOVERNMENT.md Section 3.4 -/
 /-- cjis_compliance (matches Coq) -/
-theorem cjis_compliance : ∀ (cji_data : nat) (access : nat),  True := by
+theorem cjis_compliance : ∀ (cji_data : Nat) (access : Nat),  True := by
   trivial
 
 /-- Section G05 - FIPS 140-3 Crypto
     Reference: IND_G_GOVERNMENT.md Section 3.5 -/
 /-- fips_140_3_compliance (matches Coq) -/
-theorem fips_140_3_compliance : ∀ (crypto_module : nat) (level : nat),  True := by
+theorem fips_140_3_compliance : ∀ (crypto_module : Nat) (level : Nat),  True := by
   trivial
 
 /-- High impact requires all 20 control families -/
 /-- high_impact_all_families (matches Coq) -/
-theorem high_impact_all_families : ∀ (controls : NIST_800_53_Controls) (impact : FISMA_Impact), impact = FISMA_High →  True := by
+theorem high_impact_all_families : ∀ (controls : NIST_800_53_Controls) (impact : FISMA_Impact), impact = .fISMA_High →  True := by
   trivial
 
 /-- FIPS cryptography required for federal systems -/
 /-- fips_crypto_required (matches Coq) -/
-theorem fips_crypto_required : ∀ (system : nat),  True := by
+theorem fips_crypto_required : ∀ (system : Nat),  True := by
   trivial
 
 /-- fisma_le_refl (matches Coq) -/
@@ -258,15 +258,15 @@ theorem minimum_requires_integrity : ∀ c, nist_minimum_controls c = true → s
   simp_all [Bool.and_eq_true]
 
 /-- alignment_low (matches Coq) -/
-theorem alignment_low : fedramp_matches_fisma FedRAMP_Low FISMA_Low = true := by
+theorem alignment_low : fedramp_matches_fisma .fedRAMP_Low .fISMA_Low = true := by
   rfl
 
 /-- alignment_moderate (matches Coq) -/
-theorem alignment_moderate : fedramp_matches_fisma FedRAMP_Moderate FISMA_Moderate = true := by
+theorem alignment_moderate : fedramp_matches_fisma .fedRAMP_Moderate .fISMA_Moderate = true := by
   rfl
 
 /-- alignment_high (matches Coq) -/
-theorem alignment_high : fedramp_matches_fisma FedRAMP_High FISMA_High = true := by
+theorem alignment_high : fedramp_matches_fisma .fedRAMP_High .fISMA_High = true := by
   rfl
 
 /-- cjis_key_sufficient (matches Coq) -/
@@ -278,7 +278,7 @@ theorem fips_le_refl : ∀ f, fips_le f f = true := by
   omega
 
 /-- high_requires_fips3 (matches Coq) -/
-theorem high_requires_fips3 : required_fips_level FISMA_High = FIPS_Level_3 := by
+theorem high_requires_fips3 : required_fips_level .fISMA_High = FIPS_Level_3 := by
   rfl
 
 /-- fips_requirement_monotone (matches Coq) -/

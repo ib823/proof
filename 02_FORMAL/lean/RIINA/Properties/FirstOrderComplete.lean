@@ -36,7 +36,7 @@ private theorem andb_true_iff (a b : Bool) :
 def is_base_type (T : ty) : Bool :=
   match T with
   | .tBytes => true
-  | ._ => false
+  | _ => false
 
 /-- store_independent (matches Coq: Definition store_independent) -/
 def store_independent (P : ty -> Prop) : Prop :=
@@ -62,11 +62,11 @@ theorem base_type_size_one : ∀ T, is_base_type T = true → ty_size T = 1 := b
 
 /-- First-order value relations are structurally determined -/
 /-- first_order_value_structure (matches Coq) -/
-theorem first_order_value_structure : ∀ T, first_order_type T = true → match T with  | TUnit => True | TBool => True | TInt => True | TString => True | TBytes => True  | TCapability _ => True | TCapabilityFull _ => True  | TProd T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true | TSum T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true | TList T' => first_order_type T' = true | TOption T' => first_order_type T' = true  | TRef T' _ => first_order_type T' = true  | TSecret T' => first_order_type T' = true | TLabeled T' _ => first_order_type T' = true | TTainted T' _ => first_order_type T' = true | TSanitized T' _ => first_order_type T' = true | TProof T' => first_order_type T' = true  | TConstantTime T' => first_order_type T' = true | TZeroizing T' => first_order_type T' = true  | TFn _ _ _ => False | TChan _ => False | TSecureChan _ _ => False end := by
+theorem first_order_value_structure : ∀ T, first_order_type T = true → match T with  | TUnit => True | TBool => True | TInt => True | TString => True | .tBytes => True  | TCapability _ => True | TCapabilityFull _ => True  | TProd T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true | TSum T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true | TList T' => first_order_type T' = true | TOption T' => first_order_type T' = true  | TRef T' _ => first_order_type T' = true  | TSecret T' => first_order_type T' = true | TLabeled T' _ => first_order_type T' = true | TTainted T' _ => first_order_type T' = true | TSanitized T' _ => first_order_type T' = true | TProof T' => first_order_type T' = true  | TConstantTime T' => first_order_type T' = true | TZeroizing T' => first_order_type T' = true  | TFn _ _ _ => False | TChan _ => False | TSecureChan _ _ => False end := by
   simp_all [Bool.and_eq_true]
 
 /-- first_order_induction_simple (matches Coq) -/
-theorem first_order_induction_simple : ∀ (P : ty → Prop),  P TUnit → P TBool → P TInt → P TString → P TBytes →  (∀ k, P (TCapability k)) → (∀ cap, P (TCapabilityFull cap)) →  (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TProd T1 T2)) → (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TSum T1 T2)) → (∀ T, first_order_type T = true → P (TList T)) → (∀ T, first_order_type T = true → P (TOption T)) → (∀ T sl, first_order_type T = true → P (TRef T sl)) → (∀ T, first_order_type T = true → P (TSecret T)) → (∀ T sl, first_order_type T = true → P (TLabeled T sl)) → (∀ T src, first_order_type T = true → P (TTainted T src)) → (∀ T san, first_order_type T = true → P (TSanitized T san)) → (∀ T, first_order_type T = true → P (TProof T)) → (∀ T, first_order_type T = true → P (TConstantTime T)) → (∀ T, first_order_type T = true → P (TZeroizing T)) → ∀ T, first_order_type T = true → P T := by
+theorem first_order_induction_simple : ∀ (P : ty → Prop),  P TUnit → P TBool → P TInt → P TString → P .tBytes →  (∀ k, P (TCapability k)) → (∀ cap, P (TCapabilityFull cap)) →  (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TProd T1 T2)) → (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TSum T1 T2)) → (∀ T, first_order_type T = true → P (TList T)) → (∀ T, first_order_type T = true → P (TOption T)) → (∀ T sl, first_order_type T = true → P (TRef T sl)) → (∀ T, first_order_type T = true → P (TSecret T)) → (∀ T sl, first_order_type T = true → P (TLabeled T sl)) → (∀ T src, first_order_type T = true → P (TTainted T src)) → (∀ T san, first_order_type T = true → P (TSanitized T san)) → (∀ T, first_order_type T = true → P (TProof T)) → (∀ T, first_order_type T = true → P (TConstantTime T)) → (∀ T, first_order_type T = true → P (TZeroizing T)) → ∀ T, first_order_type T = true → P T := by
   simp_all [Bool.and_eq_true]
 
 /-- ty_eqb_refl (matches Coq) -/

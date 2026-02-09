@@ -79,7 +79,7 @@ inductive RouteStatus where
 
 /-- honest_path (matches Coq: Definition honest_path) -/
 def honest_path (path : Route) (byzantine : ByzantineSet) : Bool :=
-  forallb (fun n => negb (existsb (fun b => Nat
+  forallb (fun n => !(existsb (fun b => Nat
 
 /-- byzantine_tolerant (matches Coq: Definition byzantine_tolerant) -/
 def byzantine_tolerant (network : MeshNetwork) : Bool :=
@@ -135,7 +135,7 @@ def flood_bounded (ttl : Nat) (max_ttl : Nat) : Bool :=
 
 /-- msg_id_unique (matches Coq: Definition msg_id_unique) -/
 def msg_id_unique (msg_id : Nat) (seen : List Nat) : Bool :=
-  negb (existsb (fun s => Nat
+  !(existsb (fun s => Nat
 
 /-- link_quality_ok (matches Coq: Definition link_quality_ok) -/
 def link_quality_ok (quality min_quality : Nat) : Bool :=
@@ -174,11 +174,11 @@ def mesh_layers (bft loop fresh auth : Bool) : Bool :=
   andb bft (andb loop (andb fresh auth))
 
 /-- existsb_In (matches Coq) -/
-theorem existsb_In : ∀ (n : nat) (l : list nat), ∃b (fun b => Nat.eqb n b) l = true → In n l := by
+theorem existsb_In : ∀ (n : Nat) (l : list nat), ∃b (fun b => Nat.eqb n b) l = true → In n l := by
   simp_all [Bool.and_eq_true]
 
 /-- not_existsb_not_In (matches Coq) -/
-theorem not_existsb_not_In : ∀ (n : nat) (l : list nat), ∃b (fun b => Nat.eqb n b) l = false → ~ In n l := by
+theorem not_existsb_not_In : ∀ (n : Nat) (l : list nat), ∃b (fun b => Nat.eqb n b) l = false → ~ In n l := by
   simp_all [Bool.and_eq_true]
 
 /-- NoDup_nodup_equiv (matches Coq) -/
@@ -198,15 +198,15 @@ theorem mesh_003_loop_free : ∀ (route : Route), loop_free route = true → NoD
   simp_all [Bool.and_eq_true]
 
 /-- mesh_004_seq_increasing (matches Coq) -/
-theorem mesh_004_seq_increasing : ∀ (old_seq new_seq : nat), seq_increasing old_seq new_seq = true → old_seq < new_seq := by
+theorem mesh_004_seq_increasing : ∀ (old_seq new_seq : Nat), seq_increasing old_seq new_seq = true → old_seq < new_seq := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_005_route_fresh (matches Coq) -/
-theorem mesh_005_route_fresh : ∀ (entry : RouteEntry) (current max_age : nat), route_fresh entry current max_age = true → current - route_timestamp entry ≤ max_age := by
+theorem mesh_005_route_fresh : ∀ (entry : RouteEntry) (current max_age : Nat), route_fresh entry current max_age = true → current - route_timestamp entry ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_006_multi_path (matches Coq) -/
-theorem mesh_006_multi_path : ∀ (mp : MultiPath) (min_paths : nat), paths_sufficient mp min_paths = true → min_paths ≤ length (mp_paths mp) := by
+theorem mesh_006_multi_path : ∀ (mp : MultiPath) (min_paths : Nat), paths_sufficient mp min_paths = true → min_paths ≤ length (mp_paths mp) := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_007_disjoint (matches Coq) -/
@@ -214,15 +214,15 @@ theorem mesh_007_disjoint : ∀ (mp : MultiPath), mp_disjoint mp = true → mp_d
   intro h; exact h
 
 /-- mesh_008_metric_bounded (matches Coq) -/
-theorem mesh_008_metric_bounded : ∀ (entry : RouteEntry) (max_metric : nat), metric_bounded entry max_metric = true → route_metric entry ≤ max_metric := by
+theorem mesh_008_metric_bounded : ∀ (entry : RouteEntry) (max_metric : Nat), metric_bounded entry max_metric = true → route_metric entry ≤ max_metric := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_009_neighbor_auth (matches Coq) -/
-theorem mesh_009_neighbor_auth : ∀ (neighbor : nat) (trusted : list nat), neighbor_authenticated neighbor trusted = true → ∃ t, In t trusted ∧ t = neighbor := by
+theorem mesh_009_neighbor_auth : ∀ (neighbor : Nat) (trusted : list nat), neighbor_authenticated neighbor trusted = true → ∃ t, In t trusted ∧ t = neighbor := by
   cases ‹_› <;> simp
 
 /-- mesh_010_hop_limit (matches Coq) -/
-theorem mesh_010_hop_limit : ∀ (route : Route) (max_hops : nat), hop_count_ok route max_hops = true → length route ≤ max_hops := by
+theorem mesh_010_hop_limit : ∀ (route : Route) (max_hops : Nat), hop_count_ok route max_hops = true → length route ≤ max_hops := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_011_entry_valid (matches Coq) -/
@@ -230,7 +230,7 @@ theorem mesh_011_entry_valid : ∀ (entry : RouteEntry), entry_valid entry = tru
   simp_all [Bool.and_eq_true]
 
 /-- mesh_012_partition (matches Coq) -/
-theorem mesh_012_partition : ∀ (reachable total threshold : nat), partition_detected reachable total threshold = true → reachable < total * threshold / 100 := by
+theorem mesh_012_partition : ∀ (reachable total threshold : Nat), partition_detected reachable total threshold = true → reachable < total * threshold / 100 := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_013_healing (matches Coq) -/
@@ -238,47 +238,47 @@ theorem mesh_013_healing : ∀ (paths : list Route), healing_path_∃ paths = tr
   simp_all [Bool.and_eq_true]
 
 /-- mesh_014_convergence (matches Coq) -/
-theorem mesh_014_convergence : ∀ (elapsed max_time : nat), converged_in_time elapsed max_time = true → elapsed ≤ max_time := by
+theorem mesh_014_convergence : ∀ (elapsed max_time : Nat), converged_in_time elapsed max_time = true → elapsed ≤ max_time := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_015_flood_bounded (matches Coq) -/
-theorem mesh_015_flood_bounded : ∀ (ttl max_ttl : nat), flood_bounded ttl max_ttl = true → ttl ≤ max_ttl := by
+theorem mesh_015_flood_bounded : ∀ (ttl max_ttl : Nat), flood_bounded ttl max_ttl = true → ttl ≤ max_ttl := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_016_msg_unique (matches Coq) -/
-theorem mesh_016_msg_unique : ∀ (msg_id : nat) (seen : list nat), msg_id_unique msg_id seen = true → ~ In msg_id seen := by
+theorem mesh_016_msg_unique : ∀ (msg_id : Nat) (seen : list nat), msg_id_unique msg_id seen = true → ~ In msg_id seen := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_017_link_quality (matches Coq) -/
-theorem mesh_017_link_quality : ∀ (quality min_quality : nat), link_quality_ok quality min_quality = true → min_quality ≤ quality := by
+theorem mesh_017_link_quality : ∀ (quality min_quality : Nat), link_quality_ok quality min_quality = true → min_quality ≤ quality := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_018_reputation (matches Coq) -/
-theorem mesh_018_reputation : ∀ (rep min_rep : nat), reputation_sufficient rep min_rep = true → min_rep ≤ rep := by
+theorem mesh_018_reputation : ∀ (rep min_rep : Nat), reputation_sufficient rep min_rep = true → min_rep ≤ rep := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_019_secure_channel (matches Coq) -/
-theorem mesh_019_secure_channel : ∀ (encrypted authenticated : bool), channel_secure encrypted authenticated = true → encrypted = true ∧ authenticated = true := by
+theorem mesh_019_secure_channel : ∀ (encrypted authenticated : Bool), channel_secure encrypted authenticated = true → encrypted = true ∧ authenticated = true := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_020_rate_limited (matches Coq) -/
-theorem mesh_020_rate_limited : ∀ (current max_rate : nat), rate_ok current max_rate = true → current ≤ max_rate := by
+theorem mesh_020_rate_limited : ∀ (current max_rate : Nat), rate_ok current max_rate = true → current ≤ max_rate := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_021_geo_diversity (matches Coq) -/
-theorem mesh_021_geo_diversity : ∀ (regions : list nat) (min_regions : nat), geographically_diverse regions min_regions = true → min_regions ≤ length (nodup Nat.eq_dec regions) := by
+theorem mesh_021_geo_diversity : ∀ (regions : list nat) (min_regions : Nat), geographically_diverse regions min_regions = true → min_regions ≤ length (nodup Nat.eq_dec regions) := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_022_store_forward (matches Coq) -/
-theorem mesh_022_store_forward : ∀ (stored_time current timeout : nat), store_timeout_ok stored_time current timeout = true → current - stored_time ≤ timeout := by
+theorem mesh_022_store_forward : ∀ (stored_time current timeout : Nat), store_timeout_ok stored_time current timeout = true → current - stored_time ≤ timeout := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_023_delay_tolerance (matches Coq) -/
-theorem mesh_023_delay_tolerance : ∀ (delay max_delay : nat), delay_acceptable delay max_delay = true → delay ≤ max_delay := by
+theorem mesh_023_delay_tolerance : ∀ (delay max_delay : Nat), delay_acceptable delay max_delay = true → delay ≤ max_delay := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_024_traffic_analysis (matches Coq) -/
-theorem mesh_024_traffic_analysis : ∀ (real cover min_ratio : nat), cover_traffic_ratio real cover min_ratio = true → real * min_ratio ≤ cover := by
+theorem mesh_024_traffic_analysis : ∀ (real cover min_ratio : Nat), cover_traffic_ratio real cover min_ratio = true → real * min_ratio ≤ cover := by
   simp_all [Bool.and_eq_true]
 
 /-- mesh_025_defense_in_depth (matches Coq) -/

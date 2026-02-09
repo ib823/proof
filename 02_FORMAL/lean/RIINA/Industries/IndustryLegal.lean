@@ -125,18 +125,18 @@ def privilege_effective (p : PrivilegeType) : Bool :=
 
 /-- all_legal_controls (matches Coq: Definition all_legal_controls) -/
 def all_legal_controls (c : LegalSecurityControls) : Bool :=
-  privilege_protection c && conflict_screening c &&
-  matter_segregation c && retention_compliance c &&
-  ediscovery_ready c && ethical_walls c
+  c.privilege_protection && c.conflict_screening &&
+  c.matter_segregation && c.retention_compliance &&
+  c.ediscovery_ready && c.ethical_walls
 
 /-- count_legal_controls (matches Coq: Definition count_legal_controls) -/
 def count_legal_controls (c : LegalSecurityControls) : Nat :=
-  (if privilege_protection c then 1 else 0) +
-  (if conflict_screening c then 1 else 0) +
-  (if matter_segregation c then 1 else 0) +
-  (if retention_compliance c then 1 else 0) +
-  (if ediscovery_ready c then 1 else 0) +
-  (if ethical_walls c then 1 else 0)
+  (if c.privilege_protection then 1 else 0) +
+  (if c.conflict_screening then 1 else 0) +
+  (if c.matter_segregation then 1 else 0) +
+  (if c.retention_compliance then 1 else 0) +
+  (if c.ediscovery_ready then 1 else 0) +
+  (if c.ethical_walls then 1 else 0)
 
 /-- legal_retention_years (matches Coq: Definition legal_retention_years) -/
 def legal_retention_years (d : LegalData) : Nat :=
@@ -150,7 +150,7 @@ def legal_retention_years (d : LegalData) : Nat :=
 
 /-- no_conflict (matches Coq: Definition no_conflict) -/
 def no_conflict (party1 party2 : Nat) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- trust_balanced (matches Coq: Definition trust_balanced) -/
 def trust_balanced (balance client_total : Nat) : Bool :=
@@ -169,25 +169,25 @@ theorem privilege_protection_axiom : ∀ (communication : LegalData),  True := b
 /-- Section O02 - ABA Model Rules Compliance
     Reference: IND_O_LEGAL.md Section 3.2 -/
 /-- aba_model_rules (matches Coq) -/
-theorem aba_model_rules : ∀ (firm : nat) (practice : nat),  True := by
+theorem aba_model_rules : ∀ (firm : Nat) (practice : Nat),  True := by
   trivial
 
 /-- Section O03 - Conflict of Interest Screening
     Reference: IND_O_LEGAL.md Section 3.3 -/
 /-- conflict_screening_axiom (matches Coq) -/
-theorem conflict_screening_axiom : ∀ (matter : nat) (client : nat),  True := by
+theorem conflict_screening_axiom : ∀ (matter : Nat) (client : Nat),  True := by
   trivial
 
 /-- Section O04 - E-Discovery Compliance
     Reference: IND_O_LEGAL.md Section 3.4 -/
 /-- ediscovery_compliance (matches Coq) -/
-theorem ediscovery_compliance : ∀ (matter : nat) (documents : nat),  True := by
+theorem ediscovery_compliance : ∀ (matter : Nat) (documents : Nat),  True := by
   trivial
 
 /-- Section O05 - Records Retention
     Reference: IND_O_LEGAL.md Section 3.5 -/
 /-- records_retention (matches Coq) -/
-theorem records_retention : ∀ (record : LegalData) (retention_period : nat),  True := by
+theorem records_retention : ∀ (record : LegalData) (retention_period : Nat),  True := by
   trivial
 
 /-- Privileged communications require encryption -/
@@ -197,7 +197,7 @@ theorem privilege_requires_encryption : ∀ (controls : LegalSecurityControls) (
 
 /-- Ethical walls prevent conflicts -/
 /-- ethical_walls_effective (matches Coq) -/
-theorem ethical_walls_effective : ∀ (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = true →  True := by
+theorem ethical_walls_effective : ∀ (controls : LegalSecurityControls) (matter1 : Nat) (matter2 : Nat), ethical_walls controls = true →  True := by
   trivial
 
 /-- privilege_max_sensitivity (matches Coq) -/
@@ -205,7 +205,7 @@ theorem privilege_max_sensitivity : ∀ d, legal_sensitivity d ≤ legal_sensiti
   cases ‹_› <;> simp <;> omega
 
 /-- trust_equals_privilege_sensitivity (matches Coq) -/
-theorem trust_equals_privilege_sensitivity : legal_sensitivity TrustAccount = legal_sensitivity AttorneyClientPrivilege := by
+theorem trust_equals_privilege_sensitivity : legal_sensitivity .trustAccount = legal_sensitivity AttorneyClientPrivilege := by
   rfl
 
 /-- legal_sensitivity_positive (matches Coq) -/
@@ -217,19 +217,19 @@ theorem absolute_strongest : ∀ p, privilege_strength p ≤ privilege_strength 
   cases ‹_› <;> simp <;> omega
 
 /-- waived_no_protection (matches Coq) -/
-theorem waived_no_protection : privilege_strength Waived = 0 := by
+theorem waived_no_protection : privilege_strength .waived = 0 := by
   rfl
 
 /-- absolute_effective (matches Coq) -/
-theorem absolute_effective : privilege_effective Absolute = true := by
+theorem absolute_effective : privilege_effective .absolute = true := by
   rfl
 
 /-- waived_not_effective (matches Coq) -/
-theorem waived_not_effective : privilege_effective Waived = false := by
+theorem waived_not_effective : privilege_effective .waived = false := by
   rfl
 
 /-- qualified_effective (matches Coq) -/
-theorem qualified_effective : privilege_effective Qualified = true := by
+theorem qualified_effective : privilege_effective .qualified = true := by
   rfl
 
 /-- all_legal_requires_privilege (matches Coq) -/
@@ -265,7 +265,7 @@ theorem privilege_longest_retention : ∀ d, legal_retention_years d ≤ legal_r
   cases ‹_› <;> simp <;> omega
 
 /-- trust_equals_privilege_retention (matches Coq) -/
-theorem trust_equals_privilege_retention : legal_retention_years TrustAccount = legal_retention_years AttorneyClientPrivilege := by
+theorem trust_equals_privilege_retention : legal_retention_years .trustAccount = legal_retention_years AttorneyClientPrivilege := by
   rfl
 
 /-- same_party_conflict (matches Coq) -/

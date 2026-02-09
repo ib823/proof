@@ -161,7 +161,7 @@ def storage_redundant (copies min_copies : Nat) : Bool :=
 
 /-- tamper_detected (matches Coq: Definition tamper_detected) -/
 def tamper_detected (stored_hash computed_hash : Nat) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- audit_layers (matches Coq: Definition audit_layers) -/
 def audit_layers (merkle witness immutable complete : Bool) : Bool :=
@@ -188,11 +188,11 @@ theorem audit_005_consistency_order : ∀ (proof : ConsistencyProof), consistenc
   simp_all [Bool.and_eq_true]
 
 /-- audit_006_witnesses_sufficient (matches Coq) -/
-theorem audit_006_witnesses_sufficient : ∀ (cp : Checkpoint) (min_witnesses : nat), witnesses_sufficient cp min_witnesses = true → min_witnesses ≤ length (cp_witnesses cp) := by
+theorem audit_006_witnesses_sufficient : ∀ (cp : Checkpoint) (min_witnesses : Nat), witnesses_sufficient cp min_witnesses = true → min_witnesses ≤ length (cp_witnesses cp) := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_007_witness_root (matches Coq) -/
-theorem audit_007_witness_root : ∀ (ws : WitnessSignature) (expected : nat), witness_root_matches ws expected = true → witness_root ws = expected := by
+theorem audit_007_witness_root : ∀ (ws : WitnessSignature) (expected : Nat), witness_root_matches ws expected = true → witness_root ws = expected := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_008_timestamp_ordered (matches Coq) -/
@@ -212,7 +212,7 @@ theorem audit_011_resource_logged : ∀ (entry : AuditEntry), resource_logged en
   simp_all [Bool.and_eq_true]
 
 /-- audit_012_hash_binds (matches Coq) -/
-theorem audit_012_hash_binds : ∀ (computed stored : nat), hash_matches computed stored = true → computed = stored := by
+theorem audit_012_hash_binds : ∀ (computed stored : Nat), hash_matches computed stored = true → computed = stored := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_013_log_not_empty (matches Coq) -/
@@ -224,7 +224,7 @@ theorem audit_014_checkpoint_seq : ∀ (cp : Checkpoint) (log : AuditLog), check
   simp_all [Bool.and_eq_true]
 
 /-- audit_015_witness_recent (matches Coq) -/
-theorem audit_015_witness_recent : ∀ (ws : WitnessSignature) (current max_age : nat), witness_recent ws current max_age = true → current - witness_timestamp ws ≤ max_age := by
+theorem audit_015_witness_recent : ∀ (ws : WitnessSignature) (current max_age : Nat), witness_recent ws current max_age = true → current - witness_timestamp ws ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_016_witnesses_diverse (matches Coq) -/
@@ -232,7 +232,7 @@ theorem audit_016_witnesses_diverse : ∀ (sigs : list WitnessSignature), witnes
   intro h; exact h
 
 /-- audit_017_path_bounded (matches Coq) -/
-theorem audit_017_path_bounded : ∀ (path : MerklePath) (max_depth : nat), path_length_ok path max_depth = true → length path ≤ max_depth := by
+theorem audit_017_path_bounded : ∀ (path : MerklePath) (max_depth : Nat), path_length_ok path max_depth = true → length path ≤ max_depth := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_018_root_unique (matches Coq) -/
@@ -244,23 +244,23 @@ theorem audit_019_entry_unique : ∀ (entries : list AuditEntry), entry_ids_uniq
   intro h; exact h
 
 /-- audit_020_signature_valid (matches Coq) -/
-theorem audit_020_signature_valid : ∀ (sig expected : nat), signature_valid sig expected = true → sig = expected := by
+theorem audit_020_signature_valid : ∀ (sig expected : Nat), signature_valid sig expected = true → sig = expected := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_021_retention (matches Coq) -/
-theorem audit_021_retention : ∀ (entry_age max_age : nat), retention_ok entry_age max_age = true → entry_age ≤ max_age := by
+theorem audit_021_retention : ∀ (entry_age max_age : Nat), retention_ok entry_age max_age = true → entry_age ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_022_query_complete (matches Coq) -/
-theorem audit_022_query_complete : ∀ (matching returned : nat), query_complete matching returned = true → matching = returned := by
+theorem audit_022_query_complete : ∀ (matching returned : Nat), query_complete matching returned = true → matching = returned := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_023_storage_redundant (matches Coq) -/
-theorem audit_023_storage_redundant : ∀ (copies min_copies : nat), storage_redundant copies min_copies = true → min_copies ≤ copies := by
+theorem audit_023_storage_redundant : ∀ (copies min_copies : Nat), storage_redundant copies min_copies = true → min_copies ≤ copies := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_024_tamper_detected (matches Coq) -/
-theorem audit_024_tamper_detected : ∀ (stored computed : nat), tamper_detected stored computed = true → stored ≠ computed := by
+theorem audit_024_tamper_detected : ∀ (stored computed : Nat), tamper_detected stored computed = true → stored ≠ computed := by
   simp_all [Bool.and_eq_true]
 
 /-- audit_025_defense_in_depth (matches Coq) -/

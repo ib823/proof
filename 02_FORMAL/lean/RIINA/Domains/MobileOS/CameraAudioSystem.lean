@@ -162,23 +162,23 @@ def SensorData : Type :=
 
 /-- sensor_data (matches Coq: Definition sensor_data) -/
 def sensor_data (s : Scene) : SensorData :=
-  scene_data s
+  s.scene_data
 
 /-- pixel_data (matches Coq: Definition pixel_data) -/
 def pixel_data (p : RawPhoto) : PixelData :=
-  photo_pixels p
+  p.photo_pixels
 
 /-- captures (matches Coq: Definition captures) -/
 def captures (s : Scene) (p : RawPhoto) : Prop :=
-  scene_data s = photo_pixels p
+  s.scene_data = p.photo_pixels
 
 /-- frames_captured (matches Coq: Definition frames_captured) -/
 def frames_captured (v : VideoRecording) : Nat :=
-  length (video_frames v)
+  length (v.video_frames)
 
 /-- expected_frames (matches Coq: Definition expected_frames) -/
 def expected_frames (v : VideoRecording) : Nat :=
-  (video_duration_ms v * video_fps v) / 1000
+  (v.video_duration_ms * v.video_fps) / 1000
 
 /-- well_formed_video (matches Coq: Definition well_formed_video) -/
 def well_formed_video (v : VideoRecording) : Prop :=
@@ -186,7 +186,7 @@ def well_formed_video (v : VideoRecording) : Prop :=
 
 /-- input_to_output_latency (matches Coq: Definition input_to_output_latency) -/
 def input_to_output_latency (s : AudioSample) : Microseconds :=
-  audio_output_time s - audio_input_time s
+  s.audio_output_time - s.audio_input_time
 
 /-- low_latency_audio (matches Coq: Definition low_latency_audio) -/
 def low_latency_audio (s : AudioSample) : Prop :=
@@ -200,25 +200,25 @@ def lossless_capture_system : Prop :=
 
 /-- well_formed_recording (matches Coq: Definition well_formed_recording) -/
 def well_formed_recording (rs : RecordingSession) : Prop :=
-  (rec_state rs = Recording -> indicator_visible (rec_indicator rs) = true) /\
-  (rec_state rs = Recording -> indicator_persistent (rec_indicator rs) = true) /\
-  (rec_background rs = true -> rec_state rs = NotRecording) /\
-  (camera_granted (rec_permission rs) = false -> rec_state rs = NotRecording)
+  (rs.rec_state = Recording -> indicator_visible (rs.rec_indicator) = true) /\
+  (rs.rec_state = Recording -> indicator_persistent (rs.rec_indicator) = true) /\
+  (rs.rec_background = true -> rs.rec_state = NotRecording) /\
+  (camera_granted (rs.rec_permission) = false -> rs.rec_state = NotRecording)
 
 /-- well_formed_audio (matches Coq: Definition well_formed_audio) -/
 def well_formed_audio (ac : AudioConfig) : Prop :=
-  sample_rate ac >= 8000 /\
-  sample_rate ac <= 192000 /\
-  audio_level ac <= 100 /\
-  channels ac >= 1
+  ac.sample_rate >= 8000 /\
+  ac.sample_rate <= 192000 /\
+  ac.audio_level <= 100 /\
+  ac.channels >= 1
 
 /-- well_formed_video_config (matches Coq: Definition well_formed_video_config) -/
 def well_formed_video_config (vc : VideoConfig) : Prop :=
-  video_frame_rate vc >= 1 /\
-  video_frame_rate vc <= 240 /\
-  video_width vc >= 1 /\
-  video_height vc >= 1 /\
-  stabilization_offset vc <= 50
+  vc.video_frame_rate >= 1 /\
+  vc.video_frame_rate <= 240 /\
+  vc.video_width >= 1 /\
+  vc.video_height >= 1 /\
+  vc.stabilization_offset <= 50
 
 /-- raw_capture_lossless (matches Coq) -/
 theorem raw_capture_lossless : ∀ (scene : Scene) (capture : RawPhoto), captures scene capture → sensor_data scene = pixel_data capture := by

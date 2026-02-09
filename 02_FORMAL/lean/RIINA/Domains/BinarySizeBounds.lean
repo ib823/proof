@@ -144,40 +144,40 @@ def riscv32 : ArchParams := mkArch 4 4 4 4 131072 32768
 
 /-- instr_size (matches Coq: Definition instr_size) -/
 def instr_size (arch : ArchParams) (i : Instr) : Size :=
-  arch_max_instr_size arch
+  arch.arch_max_instr_size
 
 /-- func_size (matches Coq: Definition func_size) -/
 def func_size (arch : ArchParams) (f : Function) : Size :=
-  sum_bb_sizes arch (func_blocks f) +
-  arch_call_overhead arch + arch_ret_overhead arch
+  sum_bb_sizes arch (f.func_blocks) +
+  arch.arch_call_overhead + arch.arch_ret_overhead
 
 /-- mod_size (matches Coq: Definition mod_size) -/
 def mod_size (arch : ArchParams) (m : Module) : Size :=
-  sum_func_sizes arch (mod_functions m) + mod_data m
+  sum_func_sizes arch (m.mod_functions) + m.mod_data
 
 /-- prog_size (matches Coq: Definition prog_size) -/
 def prog_size (arch : ArchParams) (p : Program) : Size :=
-  sum_mod_sizes arch (prog_modules p) + prog_startup p
+  sum_mod_sizes arch (p.prog_modules) + p.prog_startup
 
 /-- stack_frame_size (matches Coq: Definition stack_frame_size) -/
 def stack_frame_size (arch : ArchParams) (sf : StackFrame) : Size :=
-  sf_locals sf * arch_word_size arch + sf_saved_regs sf * arch_word_size arch
+  sf.sf_locals * arch.arch_word_size + sf.sf_saved_regs * arch.arch_word_size
 
 /-- inline_expanded_size (matches Coq: Definition inline_expanded_size) -/
 def inline_expanded_size (info : InlineInfo) : Size :=
-  inline_original_size info * inline_call_sites info
+  info.inline_original_size * info.inline_call_sites
 
 /-- unrolled_loop_size (matches Coq: Definition unrolled_loop_size) -/
 def unrolled_loop_size (info : LoopInfo) : Size :=
-  loop_body_size info * loop_unroll_factor info
+  info.loop_body_size * info.loop_unroll_factor
 
 /-- monomorphized_size (matches Coq: Definition monomorphized_size) -/
 def monomorphized_size (info : GenericInfo) : Size :=
-  generic_template_size info * generic_instantiation_count info
+  info.generic_template_size * info.generic_instantiation_count
 
 /-- total_rom_size (matches Coq: Definition total_rom_size) -/
 def total_rom_size (layout : ROMLayout) : Size :=
-  rom_text layout + rom_rodata layout + rom_init_data layout
+  layout.rom_text + layout.rom_rodata + layout.rom_init_data
 
 /-- PERF_002_01 (matches Coq) -/
 theorem PERF_002_01 : ∀ (arch : ArchParams) (i : Instr), instr_size arch i ≤ arch_max_instr_size arch := by
@@ -228,7 +228,7 @@ theorem PERF_002_07 : ∀ (bs : BSSSection) (var_size : Size), In var_size bs �
   cases ‹_› <;> simp <;> omega
 
 /-- PERF_002_08 (matches Coq) -/
-theorem PERF_002_08 : ∀ (arch : ArchParams) (sf : StackFrame) (max_locals max_saved_regs : nat), sf_locals sf ≤ max_locals → sf_saved_regs sf ≤ max_saved_regs → stack_frame_size arch sf ≤ max_locals * arch_word_size arch + max_saved_regs * arch_word_size arch := by
+theorem PERF_002_08 : ∀ (arch : ArchParams) (sf : StackFrame) (max_locals max_saved_regs : Nat), sf_locals sf ≤ max_locals → sf_saved_regs sf ≤ max_saved_regs → stack_frame_size arch sf ≤ max_locals * arch_word_size arch + max_saved_regs * arch_word_size arch := by
   omega
 
 /-- PERF_002_09 (matches Coq) -/

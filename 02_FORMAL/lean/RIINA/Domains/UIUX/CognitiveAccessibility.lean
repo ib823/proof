@@ -134,7 +134,7 @@ def undo_action (a : UserAction) : UserAction :=
 /-- is_destructive (matches Coq: Definition is_destructive) -/
 def is_destructive (a : UserAction) : Bool :=
   match a with
-  | ._ => false
+  | _ => false
 
 /-- error_field_idx (matches Coq: Definition error_field_idx) -/
 def error_field_idx (e : ValidationError) : Nat :=
@@ -228,7 +228,7 @@ theorem context_preserved : ∀ (i : UserInteraction), outcome_context (outcome 
   simp
 
 /-- interaction_type_exhaustive (matches Coq) -/
-theorem interaction_type_exhaustive : ∀ (t : InteractionType), t = ButtonPress ∨ t = MenuOpen ∨ t = NavigationPush ∨ t = NavigationPop ∨ t = ModalPresent ∨ t = ModalDismiss ∨ t = TextInput ∨ t = ListScroll ∨ t = SwipeGesture ∨ t = LongPress := by
+theorem interaction_type_exhaustive : ∀ (t : InteractionType), t = .buttonPress ∨ t = .menuOpen ∨ t = .navigationPush ∨ t = .navigationPop ∨ t = .modalPresent ∨ t = .modalDismiss ∨ t = .textInput ∨ t = .listScroll ∨ t = .swipeGesture ∨ t = LongPress := by
   simp_all [Bool.and_eq_true]
 
 /-- outcome_type_exhaustive (matches Coq) -/
@@ -322,13 +322,13 @@ theorem min_error_idx_nonempty : ∀ (errs : list ValidationError), errs ≠ nil
 
 /-- The minimum is at most the index of the first error. -/
 /-- min_error_idx_le_head (matches Coq) -/
-theorem min_error_idx_le_head : ∀ (e : ValidationError) (rest : list ValidationError) (m : nat), min_error_idx (e :: rest) = Some m → m ≤ error_field_idx e := by
+theorem min_error_idx_le_head : ∀ (e : ValidationError) (rest : list ValidationError) (m : Nat), min_error_idx (e :: rest) = Some m → m ≤ error_field_idx e := by
   cases ‹_› <;> simp <;> omega
 
 /-- Helper: min_error_idx on a non-empty list returns a value that
     is <= the field index of every element. -/
 /-- min_error_idx_le_all (matches Coq) -/
-theorem min_error_idx_le_all : ∀ (errs : list ValidationError) (m : nat), min_error_idx errs = Some m → ∀ e, In e errs → m ≤ error_field_idx e := by
+theorem min_error_idx_le_all : ∀ (errs : list ValidationError) (m : Nat), min_error_idx errs = Some m → ∀ e, In e errs → m ≤ error_field_idx e := by
   cases ‹_› <;> simp <;> omega
 
 /-- Theorem: scroll_to_first_error
@@ -435,17 +435,17 @@ theorem label_to_effect_injective : ∀ l1 l2, label_to_effect l1 = label_to_eff
 /-- Theorem: back_button_goes_back
     Pushing a page and then popping (back) returns to the original stack. -/
 /-- back_button_goes_back (matches Coq) -/
-theorem back_button_goes_back : ∀ (stack : list nat) (page : nat), nav_apply (nav_apply stack (NavPush page)) NavPop = stack := by
+theorem back_button_goes_back : ∀ (stack : list nat) (page : Nat), nav_apply (nav_apply stack (NavPush page)) NavPop = stack := by
   rfl
 
 /-- Lemma: push strictly grows the stack. -/
 /-- nav_push_grows (matches Coq) -/
-theorem nav_push_grows : ∀ (stack : list nat) (page : nat), length (nav_apply stack (NavPush page)) = S (length stack) := by
+theorem nav_push_grows : ∀ (stack : list nat) (page : Nat), length (nav_apply stack (NavPush page)) = S (length stack) := by
   rfl
 
 /-- Lemma: pop on non-empty stack shrinks it. -/
 /-- nav_pop_shrinks (matches Coq) -/
-theorem nav_pop_shrinks : ∀ (p : nat) (stack : list nat), length (nav_apply (p :: stack) NavPop) = length stack := by
+theorem nav_pop_shrinks : ∀ (p : Nat) (stack : list nat), length (nav_apply (p :: stack) NavPop) = length stack := by
   rfl
 
 /-- Theorem: link_destination_visible

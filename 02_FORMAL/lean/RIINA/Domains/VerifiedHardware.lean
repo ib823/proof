@@ -223,11 +223,11 @@ def initial_rtl_state : RTLState :=
 
 /-- rtl_to_arch (matches Coq: Definition rtl_to_arch) -/
 def rtl_to_arch (s : RTLState) : ArchState :=
-  {| regs := rtl_regs s;
-     mem := rtl_mem s;
-     pc := rtl_pc s;
-     security_labels := rtl_security_labels s;
-     isolation_mode := rtl_isolation_mode s |}
+  {| regs := s.rtl_regs;
+     mem := s.rtl_mem;
+     pc := s.rtl_pc;
+     security_labels := s.rtl_security_labels;
+     isolation_mode := s.rtl_isolation_mode |}
 
 /-- rtl_execute_instr (matches Coq: Definition rtl_execute_instr) -/
 def rtl_execute_instr := sorry -- complex match, needs manual translation
@@ -243,11 +243,11 @@ def cycles (instr : Instruction) : Nat :=
 
 /-- public_equiv (matches Coq: Definition public_equiv) -/
 def public_equiv (s1 s2 : ArchState) : Prop :=
-  (forall r, security_labels s1 r = Public -> regs s1 r = regs s2 r) /\
-  (forall r, security_labels s1 r = security_labels s2 r) /\
-  mem s1 = mem s2 /\
-  pc s1 = pc s2 /\
-  isolation_mode s1 = isolation_mode s2
+  (forall r, s1.security_labels r = Public -> s1.regs r = s2.regs r) /\
+  (forall r, s1.security_labels r = s2.security_labels r) /\
+  s1.mem = s2.mem /\
+  s1.pc = s2.pc /\
+  s1.isolation_mode = s2.isolation_mode
 
 /-- rtl_public_equiv (matches Coq: Definition rtl_public_equiv) -/
 def rtl_public_equiv (s1 s2 : RTLState) : Prop :=
@@ -271,19 +271,19 @@ def constant_time_prog (prog : List Instruction) : Prop :=
 
 /-- speculating (matches Coq: Definition speculating) -/
 def speculating (s : RTLState) : Prop :=
-  rtl_speculating s = true
+  s.rtl_speculating = true
 
 /-- scub_blocks_speculation (matches Coq: Definition scub_blocks_speculation) -/
 def scub_blocks_speculation (s : RTLState) : Prop :=
-  rtl_scub_active s = true -> ~speculating s
+  s.rtl_scub_active = true -> ~speculating s
 
 /-- no_spec_mem_access (matches Coq: Definition no_spec_mem_access) -/
 def no_spec_mem_access (s : RTLState) : Prop :=
-  speculating s -> forall addr, rtl_mem s addr = rtl_mem s addr
+  speculating s -> forall addr, s.rtl_mem addr = s.rtl_mem addr
 
 /-- verified (matches Coq: Definition verified) -/
 def verified (s : RTLState) : Prop :=
-  rtl_speculating s = false
+  s.rtl_speculating = false
 
 /-- behavior_in_spec (matches Coq: Definition behavior_in_spec) -/
 def behavior_in_spec (s s' : RTLState) : Prop :=
@@ -313,37 +313,37 @@ def ecc_correct_single (w : ECCWord) : Word :=
 
 /-- ecc_is_double_error (matches Coq: Definition ecc_is_double_error) -/
 def ecc_is_double_error (w : ECCWord) : Bool :=
-  andb (negb (Nat
+  andb (!(Nat
 
 /-- exec_zeroize (matches Coq: Definition exec_zeroize) -/
 def exec_zeroize (s : RTLState) : RTLState :=
   {| rtl_regs := fun _ => 0;
-     rtl_mem := rtl_mem s;
-     rtl_pc := S (rtl_pc s);
+     rtl_mem := s.rtl_mem;
+     rtl_pc := S (s.rtl_pc);
      rtl_pipeline := [];
-     rtl_cycle := rtl_cycle s + 32;
+     rtl_cycle := s.rtl_cycle + 32;
      rtl_security_labels := fun _ => Public;
-     rtl_isolation_mode := rtl_isolation_mode s;
+     rtl_isolation_mode := s.rtl_isolation_mode;
      rtl_speculating := false;
      rtl_scub_active := false;
      rtl_fencesc_active := false |}
 
 /-- create_checkpoint (matches Coq: Definition create_checkpoint) -/
 def create_checkpoint (s : RTLState) : Checkpoint :=
-  {| chk_regs := rtl_regs s;
-     chk_pc := rtl_pc s;
+  {| chk_regs := s.rtl_regs;
+     chk_pc := s.rtl_pc;
      chk_valid := true |}
 
 /-- restore_checkpoint (matches Coq: Definition restore_checkpoint) -/
 def restore_checkpoint (s : RTLState) (chk : Checkpoint) : RTLState :=
-  if chk_valid chk then
-    {| rtl_regs := chk_regs chk;
-       rtl_mem := rtl_mem s;
-       rtl_pc := chk_pc chk;
+  if chk.chk_valid then
+    {| rtl_regs := chk.chk_regs;
+       rtl_mem := s.rtl_mem;
+       rtl_pc := chk.chk_pc;
        rtl_pipeline := [];
-       rtl_cycle := rtl_cycle s;
-       rtl_security_labels := rtl_security_labels s;
-       rtl_isolation_mode := rtl_isolation_mode s;
+       rtl_cycle := s.rtl_cycle;
+       rtl_security_labels := s.rtl_security_labels;
+       rtl_isolation_mode := s.rtl_isolation_mode;
        rtl_speculating := false;
        rtl_scub_active := false;
        rtl_fencesc_active := false |}
@@ -363,7 +363,7 @@ def voltage_in_range (v : Nat) (range : VoltageRange) : Bool :=
 
 /-- voltage_glitch_detected (matches Coq: Definition voltage_glitch_detected) -/
 def voltage_glitch_detected (v : Nat) : Bool :=
-  negb (voltage_in_range v normal_voltage_range)
+  !(voltage_in_range v normal_voltage_range)
 
 /-- FrequencyRange (matches Coq: Definition FrequencyRange) -/
 def FrequencyRange : Type :=
@@ -379,19 +379,19 @@ def frequency_in_range (f : Nat) (range : FrequencyRange) : Bool :=
 
 /-- frequency_manipulation_detected (matches Coq: Definition frequency_manipulation_detected) -/
 def frequency_manipulation_detected (f : Nat) : Bool :=
-  negb (frequency_in_range f normal_frequency_range)
+  !(frequency_in_range f normal_frequency_range)
 
 /-- tamper_detected (matches Coq: Definition tamper_detected) -/
 def tamper_detected (ts : TamperState) : Bool :=
-  negb (andb (andb (tamper_seal_intact ts) (tamper_mesh_intact ts))
-             (andb (tamper_voltage_ok ts) (tamper_frequency_ok ts)))
+  !(andb (andb (ts.tamper_seal_intact) (ts.tamper_mesh_intact))
+             (andb (ts.tamper_voltage_ok) (ts.tamper_frequency_ok)))
 
 /-- update_eq (matches Coq) -/
-theorem update_eq : ∀ {A : Type} (f : nat → A) k v, update f k v k = v := by
+theorem update_eq : ∀ {A : Type} (f : Nat → A) k v, update f k v k = v := by
   rfl
 
 /-- update_neq (matches Coq) -/
-theorem update_neq : ∀ {A : Type} (f : nat → A) k1 k2 v, k1 ≠ k2 → update f k1 v k2 = f k2 := by
+theorem update_neq : ∀ {A : Type} (f : Nat → A) k1 k2 v, k1 ≠ k2 → update f k1 v k2 = f k2 := by
   rfl
 
 /-- isa_rtl_add_equiv (matches Coq) -/
@@ -427,7 +427,7 @@ theorem PHI_001_07_interrupt_correct : ∀ s, rtl_speculating s = false → rtl_
   simp_all [Bool.and_eq_true]
 
 /-- PHI_001_08_instruction_fetch_correct (matches Coq) -/
-theorem PHI_001_08_instruction_fetch_correct : ∀ instr s, instr ≠ IZEROIZE → rtl_pc (rtl_execute_instr instr s) = S (rtl_pc s) ∨ ∃ target, rtl_pc (rtl_execute_instr instr s) = target := by
+theorem PHI_001_08_instruction_fetch_correct : ∀ instr s, instr ≠ .iZEROIZE → rtl_pc (rtl_execute_instr instr s) = S (rtl_pc s) ∨ ∃ target, rtl_pc (rtl_execute_instr instr s) = target := by
   cases ‹_› <;> simp
 
 /-- PHI_001_09_timing_independent (matches Coq) -/
@@ -471,7 +471,7 @@ theorem PHI_001_17_no_speculation : ∀ s, reachable initial_rtl_state s → ~sp
   rfl
 
 /-- PHI_001_18_scub_barrier (matches Coq) -/
-theorem PHI_001_18_scub_barrier : ∀ s, rtl_scub_active (rtl_execute_instr ISCUB s) = true := by
+theorem PHI_001_18_scub_barrier : ∀ s, rtl_scub_active (rtl_execute_instr .iSCUB s) = true := by
   rfl
 
 /-- PHI_001_19_no_spectre_v1 (matches Coq) -/
@@ -495,11 +495,11 @@ theorem PHI_001_22_no_microarch_leakage : ∀ prog s1 s2, rtl_public_equiv s1 s2
   simp_all [Bool.and_eq_true]
 
 /-- PHI_001_23_fence_sc_correct (matches Coq) -/
-theorem PHI_001_23_fence_sc_correct : ∀ s, rtl_fencesc_active (rtl_execute_instr IFENCESC s) = true := by
+theorem PHI_001_23_fence_sc_correct : ∀ s, rtl_fencesc_active (rtl_execute_instr .iFENCESC s) = true := by
   rfl
 
 /-- PHI_001_24_isolation_mode_correct (matches Coq) -/
-theorem PHI_001_24_isolation_mode_correct : ∀ s, rtl_isolation_mode (rtl_execute_instr IISOL s) = true := by
+theorem PHI_001_24_isolation_mode_correct : ∀ s, rtl_isolation_mode (rtl_execute_instr .iISOL s) = true := by
   rfl
 
 /-- PHI_001_25_complete_coverage (matches Coq) -/

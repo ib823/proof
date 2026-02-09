@@ -212,78 +212,78 @@ def bft_valid (cfg : BFTConfig) : Bool :=
 
 /-- sybil_protected (matches Coq: Definition sybil_protected) -/
 def sybil_protected (iv : IdentityVerification) : Bool :=
-  iv_proof_of_work_enabled iv && iv_identity_bound iv && (0 <? iv_cost_per_identity iv)
+  iv.iv_proof_of_work_enabled && iv.iv_identity_bound && (0 <? iv.iv_cost_per_identity)
 
 /-- eclipse_protected (matches Coq: Definition eclipse_protected) -/
 def eclipse_protected (pc : PeerConfig) : Bool :=
-  (1 <? pc_distinct_subnets pc) && (pc_min_outbound pc <=? pc_total_peers pc)
+  (1 <? pc.pc_distinct_subnets) && (pc.pc_min_outbound <=? pc.pc_total_peers)
 
 /-- routing_secure (matches Coq: Definition routing_secure) -/
 def routing_secure (rp : RoutingProtocol) : Bool :=
-  rp_authenticated rp && rp_path_verified rp && rp_origin_validated rp
+  rp.rp_authenticated && rp.rp_path_verified && rp.rp_origin_validated
 
 /-- consensus_verified (matches Coq: Definition consensus_verified) -/
 def consensus_verified (cp : ConsensusProtocol) : Bool :=
-  cp_safety_proven cp && cp_liveness_proven cp
+  cp.cp_safety_proven && cp.cp_liveness_proven
 
 /-- contract_secure (matches Coq: Definition contract_secure) -/
 def contract_secure (sc : SmartContract) : Bool :=
-  sc_formally_verified sc && sc_invariants_proven sc && sc_no_overflow sc
+  sc.sc_formally_verified && sc.sc_invariants_proven && sc.sc_no_overflow
 
 /-- reentrancy_protected (matches Coq: Definition reentrancy_protected) -/
 def reentrancy_protected (rg : ReentrancyGuard) : Bool :=
-  rg_checks_before_effects rg && rg_interactions_last rg
+  rg.rg_checks_before_effects && rg.rg_interactions_last
 
 /-- frontrun_protected (matches Coq: Definition frontrun_protected) -/
 def frontrun_protected (fo : FairOrdering) : Bool :=
-  fo_commit_phase fo && fo_reveal_phase fo && fo_ordering_deterministic fo
+  fo.fo_commit_phase && fo.fo_reveal_phase && fo.fo_ordering_deterministic
 
 /-- mev_protected (matches Coq: Definition mev_protected) -/
 def mev_protected (mp : MEVProtection) : Bool :=
-  mev_private_mempool mp || (mev_fair_sequencing mp && mev_encrypted_transactions mp)
+  mp.mev_private_mempool || (mp.mev_fair_sequencing && mp.mev_encrypted_transactions)
 
 /-- flashloan_protected (matches Coq: Definition flashloan_protected) -/
 def flashloan_protected (fl : FlashLoanGuard) : Bool :=
-  fl_same_block_check fl && fl_balance_snapshot fl
+  fl.fl_same_block_check && fl.fl_balance_snapshot
 
 /-- clock_skew_protected (matches Coq: Definition clock_skew_protected) -/
 def clock_skew_protected (lc : LogicalClock) : Bool :=
-  (lc_lamport_enabled lc || lc_vector_clock lc) && lc_causality_preserved lc
+  (lc.lc_lamport_enabled || lc.lc_vector_clock) && lc.lc_causality_preserved
 
 /-- splitbrain_protected (matches Coq: Definition splitbrain_protected) -/
 def splitbrain_protected (pt : PartitionConfig) : Bool :=
-  pt_cap_aware pt && pt_partition_detection pt
+  pt.pt_cap_aware && pt.pt_partition_detection
 
 /-- consistency_verified (matches Coq: Definition consistency_verified) -/
 def consistency_verified (csp : ConsistencyProtocol) : Bool :=
-  csp_linearizable csp && csp_state_machine_replication csp
+  csp.csp_linearizable && csp.csp_state_machine_replication
 
 /-- leader_corruption_protected (matches Coq: Definition leader_corruption_protected) -/
 def leader_corruption_protected (ldr : LeaderConfig) : Bool :=
-  ldr_rotation_enabled ldr && ldr_bft_election ldr
+  ldr.ldr_rotation_enabled && ldr.ldr_bft_election
 
 /-- quorum_valid (matches Coq: Definition quorum_valid) -/
 def quorum_valid (qc : QuorumConfig) : Bool :=
-  (qc_total_nodes qc <? 2 * qc_quorum_size qc) && (0 <? qc_quorum_size qc)
+  (qc.qc_total_nodes <? 2 * qc.qc_quorum_size) && (0 <? qc.qc_quorum_size)
 
 /-- andb_true_intro_3 (matches Coq) -/
-theorem andb_true_intro_3 : ∀ a b c : bool, a = true → b = true → c = true → a && b && c = true := by
+theorem andb_true_intro_3 : ∀ a b c : Bool, a = true → b = true → c = true → a && b && c = true := by
   rfl
 
 /-- andb_true_elim_l (matches Coq) -/
-theorem andb_true_elim_l : ∀ a b : bool, a && b = true → a = true := by
+theorem andb_true_elim_l : ∀ a b : Bool, a && b = true → a = true := by
   cases ‹_› <;> simp
 
 /-- andb_true_elim_r (matches Coq) -/
-theorem andb_true_elim_r : ∀ a b : bool, a && b = true → b = true := by
+theorem andb_true_elim_r : ∀ a b : Bool, a && b = true → b = true := by
   intro h; exact h
 
 /-- orb_true_intro_l (matches Coq) -/
-theorem orb_true_intro_l : ∀ a b : bool, a = true → a || b = true := by
+theorem orb_true_intro_l : ∀ a b : Bool, a = true → a || b = true := by
   rfl
 
 /-- orb_true_intro_r (matches Coq) -/
-theorem orb_true_intro_r : ∀ a b : bool, b = true → a || b = true := by
+theorem orb_true_intro_r : ∀ a b : Bool, b = true → a || b = true := by
   rfl
 
 /-- dist_001_byzantine_failure_tolerated (matches Coq) -/
@@ -291,11 +291,11 @@ theorem dist_001_byzantine_failure_tolerated : ∀ (cfg : BFTConfig), bft_valid 
   simp_all [Bool.and_eq_true]
 
 /-- dist_001_bft_safety_with_honest_majority (matches Coq) -/
-theorem dist_001_bft_safety_with_honest_majority : ∀ (n f : nat), 3 * f < n → n > 2 * f := by
+theorem dist_001_bft_safety_with_honest_majority : ∀ (n f : Nat), 3 * f < n → n > 2 * f := by
   omega
 
 /-- dist_001_bft_quorum_overlap (matches Coq) -/
-theorem dist_001_bft_quorum_overlap : ∀ (n f : nat), 3 * f < n → 2 * (n - f) > n := by
+theorem dist_001_bft_quorum_overlap : ∀ (n f : Nat), 3 * f < n → 2 * (n - f) > n := by
   omega
 
 /-- dist_002_sybil_attack_mitigated (matches Coq) -/
@@ -303,7 +303,7 @@ theorem dist_002_sybil_attack_mitigated : ∀ (iv : IdentityVerification), iv_pr
   simp
 
 /-- dist_002_sybil_cost_scales_linearly (matches Coq) -/
-theorem dist_002_sybil_cost_scales_linearly : ∀ (cost_per_id num_sybils : nat), cost_per_id > 0 → num_sybils > 0 → cost_per_id * num_sybils ≥ num_sybils := by
+theorem dist_002_sybil_cost_scales_linearly : ∀ (cost_per_id num_sybils : Nat), cost_per_id > 0 → num_sybils > 0 → cost_per_id * num_sybils ≥ num_sybils := by
   cases ‹_› <;> simp <;> omega
 
 /-- dist_003_eclipse_attack_mitigated (matches Coq) -/
@@ -311,7 +311,7 @@ theorem dist_003_eclipse_attack_mitigated : ∀ (pc : PeerConfig), pc_distinct_s
   simp_all [Bool.and_eq_true]
 
 /-- dist_003_peer_diversity_requirement (matches Coq) -/
-theorem dist_003_peer_diversity_requirement : ∀ (subnets controlled total_subnets : nat), total_subnets > 1 → controlled < total_subnets → total_subnets - controlled ≥ 1 := by
+theorem dist_003_peer_diversity_requirement : ∀ (subnets controlled total_subnets : Nat), total_subnets > 1 → controlled < total_subnets → total_subnets - controlled ≥ 1 := by
   omega
 
 /-- dist_004_routing_attack_mitigated (matches Coq) -/
@@ -319,7 +319,7 @@ theorem dist_004_routing_attack_mitigated : ∀ (rp : RoutingProtocol), rp_authe
   rfl
 
 /-- dist_004_authenticated_routing_preserves_integrity (matches Coq) -/
-theorem dist_004_authenticated_routing_preserves_integrity : ∀ (authenticated path_valid : bool), authenticated = true → path_valid = true → authenticated && path_valid = true := by
+theorem dist_004_authenticated_routing_preserves_integrity : ∀ (authenticated path_valid : Bool), authenticated = true → path_valid = true → authenticated && path_valid = true := by
   rfl
 
 /-- dist_005_consensus_attack_mitigated (matches Coq) -/
@@ -327,11 +327,11 @@ theorem dist_005_consensus_attack_mitigated : ∀ (cp : ConsensusProtocol), cp_s
   rfl
 
 /-- dist_005_safety_implies_agreement_or_unsafe (matches Coq) -/
-theorem dist_005_safety_implies_agreement_or_unsafe : ∀ (safety_proven : bool), safety_proven = true → safety_proven = true ∨ safety_proven = false := by
+theorem dist_005_safety_implies_agreement_or_unsafe : ∀ (safety_proven : Bool), safety_proven = true → safety_proven = true ∨ safety_proven = false := by
   intro h; exact h
 
 /-- dist_005_safety_agreement_model (matches Coq) -/
-theorem dist_005_safety_agreement_model : ∀ (value_a value_b : nat) (safety : bool), safety = true → value_a = value_b → value_a = value_b := by
+theorem dist_005_safety_agreement_model : ∀ (value_a value_b : Nat) (safety : Bool), safety = true → value_a = value_b → value_a = value_b := by
   intro h; exact h
 
 /-- dist_006_smart_contract_bug_mitigated (matches Coq) -/
@@ -339,7 +339,7 @@ theorem dist_006_smart_contract_bug_mitigated : ∀ (sc : SmartContract), sc_for
   rfl
 
 /-- dist_006_verified_contract_preserves_invariants (matches Coq) -/
-theorem dist_006_verified_contract_preserves_invariants : ∀ (verified invariants_hold : bool), verified = true → invariants_hold = true → verified && invariants_hold = true := by
+theorem dist_006_verified_contract_preserves_invariants : ∀ (verified invariants_hold : Bool), verified = true → invariants_hold = true → verified && invariants_hold = true := by
   rfl
 
 /-- dist_007_reentrancy_mitigated (matches Coq) -/
@@ -347,11 +347,11 @@ theorem dist_007_reentrancy_mitigated : ∀ (rg : ReentrancyGuard), rg_checks_be
   rfl
 
 /-- dist_007_checks_effects_interactions_pattern (matches Coq) -/
-theorem dist_007_checks_effects_interactions_pattern : ∀ (checks_first effects_second interactions_third : bool), checks_first = true → effects_second = true → interactions_third = true → checks_first && effects_second && interactions_third = true := by
+theorem dist_007_checks_effects_interactions_pattern : ∀ (checks_first effects_second interactions_third : Bool), checks_first = true → effects_second = true → interactions_third = true → checks_first && effects_second && interactions_third = true := by
   rfl
 
 /-- dist_007_locked_guard_prevents_reentry (matches Coq) -/
-theorem dist_007_locked_guard_prevents_reentry : ∀ (is_locked : bool), is_locked = true → negb is_locked = false := by
+theorem dist_007_locked_guard_prevents_reentry : ∀ (is_locked : Bool), is_locked = true → !is_locked = false := by
   rfl
 
 /-- dist_008_frontrunning_mitigated (matches Coq) -/
@@ -359,7 +359,7 @@ theorem dist_008_frontrunning_mitigated : ∀ (fo : FairOrdering), fo_commit_pha
   rfl
 
 /-- dist_008_commit_reveal_hides_intent (matches Coq) -/
-theorem dist_008_commit_reveal_hides_intent : ∀ (committed revealed : bool), committed = true → revealed = false → committed && negb revealed = true := by
+theorem dist_008_commit_reveal_hides_intent : ∀ (committed revealed : Bool), committed = true → revealed = false → committed && !revealed = true := by
   rfl
 
 /-- dist_009_mev_extraction_mitigated_private (matches Coq) -/
@@ -375,7 +375,7 @@ theorem dist_010_flashloan_attack_mitigated : ∀ (fl : FlashLoanGuard), fl_same
   rfl
 
 /-- dist_010_twap_oracle_resists_manipulation (matches Coq) -/
-theorem dist_010_twap_oracle_resists_manipulation : ∀ (twap_enabled spot_check : bool), twap_enabled = true → twap_enabled || spot_check = true := by
+theorem dist_010_twap_oracle_resists_manipulation : ∀ (twap_enabled spot_check : Bool), twap_enabled = true → twap_enabled || spot_check = true := by
   rfl
 
 /-- dist_011_clock_skew_mitigated_lamport (matches Coq) -/
@@ -387,7 +387,7 @@ theorem dist_011_clock_skew_mitigated_vector : ∀ (lc : LogicalClock), lc_vecto
   rfl
 
 /-- dist_011_lamport_clock_monotonic (matches Coq) -/
-theorem dist_011_lamport_clock_monotonic : ∀ (t1 t2 : nat), t1 < t2 → t1 + 1 ≤ t2 := by
+theorem dist_011_lamport_clock_monotonic : ∀ (t1 t2 : Nat), t1 < t2 → t1 + 1 ≤ t2 := by
   omega
 
 /-- dist_012_splitbrain_mitigated (matches Coq) -/
@@ -395,11 +395,11 @@ theorem dist_012_splitbrain_mitigated : ∀ (pt : PartitionConfig), pt_cap_aware
   rfl
 
 /-- dist_012_cap_theorem_tradeoff (matches Coq) -/
-theorem dist_012_cap_theorem_tradeoff : ∀ (consistency availability partition_tolerance : bool), partition_tolerance = true → (consistency = false ∨ availability = false) ∨ partition_tolerance = false ∨ (consistency && availability = true) := by
+theorem dist_012_cap_theorem_tradeoff : ∀ (consistency availability partition_tolerance : Bool), partition_tolerance = true → (consistency = false ∨ availability = false) ∨ partition_tolerance = false ∨ (consistency && availability = true) := by
   rfl
 
 /-- dist_012_cap_partition_choice (matches Coq) -/
-theorem dist_012_cap_partition_choice : ∀ (partitioned : bool), partitioned = true → partitioned = true := by
+theorem dist_012_cap_partition_choice : ∀ (partitioned : Bool), partitioned = true → partitioned = true := by
   intro h; exact h
 
 /-- dist_013_state_inconsistency_mitigated (matches Coq) -/
@@ -407,7 +407,7 @@ theorem dist_013_state_inconsistency_mitigated : ∀ (csp : ConsistencyProtocol)
   rfl
 
 /-- dist_013_linearizability_implies_sequential (matches Coq) -/
-theorem dist_013_linearizability_implies_sequential : ∀ (linearizable : bool) (op1 op2 : nat), linearizable = true → op1 ≤ op2 ∨ op2 ≤ op1 := by
+theorem dist_013_linearizability_implies_sequential : ∀ (linearizable : Bool) (op1 op2 : Nat), linearizable = true → op1 ≤ op2 ∨ op2 ≤ op1 := by
   omega
 
 /-- dist_014_leader_corruption_mitigated (matches Coq) -/
@@ -415,11 +415,11 @@ theorem dist_014_leader_corruption_mitigated : ∀ (ldr : LeaderConfig), ldr_rot
   rfl
 
 /-- dist_014_rotation_limits_corruption_window (matches Coq) -/
-theorem dist_014_rotation_limits_corruption_window : ∀ (term_length corrupt_duration : nat), term_length > 0 → corrupt_duration ≤ term_length → corrupt_duration < term_length + 1 := by
+theorem dist_014_rotation_limits_corruption_window : ∀ (term_length corrupt_duration : Nat), term_length > 0 → corrupt_duration ≤ term_length → corrupt_duration < term_length + 1 := by
   omega
 
 /-- dist_014_bft_election_requires_quorum (matches Coq) -/
-theorem dist_014_bft_election_requires_quorum : ∀ (votes_received quorum_size : nat), votes_received ≥ quorum_size → quorum_size > 0 → votes_received > 0 := by
+theorem dist_014_bft_election_requires_quorum : ∀ (votes_received quorum_size : Nat), votes_received ≥ quorum_size → quorum_size > 0 → votes_received > 0 := by
   omega
 
 /-- dist_015_quorum_attack_mitigated (matches Coq) -/
@@ -427,19 +427,19 @@ theorem dist_015_quorum_attack_mitigated : ∀ (qc : QuorumConfig), qc_total_nod
   simp_all [Bool.and_eq_true]
 
 /-- dist_015_quorum_intersection_guaranteed (matches Coq) -/
-theorem dist_015_quorum_intersection_guaranteed : ∀ (n q : nat), n < 2 * q → q > 0 → 2 * q - n ≥ 1 := by
+theorem dist_015_quorum_intersection_guaranteed : ∀ (n q : Nat), n < 2 * q → q > 0 → 2 * q - n ≥ 1 := by
   omega
 
 /-- dist_015_any_two_quorums_intersect (matches Coq) -/
-theorem dist_015_any_two_quorums_intersect : ∀ (n q overlap : nat), n < 2 * q → q ≤ n → overlap = 2 * q - n → overlap ≥ 1 := by
+theorem dist_015_any_two_quorums_intersect : ∀ (n q overlap : Nat), n < 2 * q → q ≤ n → overlap = 2 * q - n → overlap ≥ 1 := by
   omega
 
 /-- dist_015_majority_quorum_safety (matches Coq) -/
-theorem dist_015_majority_quorum_safety : ∀ (n : nat), n > 0 → n ≤ 2 * n := by
+theorem dist_015_majority_quorum_safety : ∀ (n : Nat), n > 0 → n ≤ 2 * n := by
   omega
 
 /-- dist_015_majority_always_intersects (matches Coq) -/
-theorem dist_015_majority_always_intersects : ∀ (n q1 q2 : nat), 2 * q1 > n → 2 * q2 > n → q1 ≤ n → q2 ≤ n → q1 + q2 > n := by
+theorem dist_015_majority_always_intersects : ∀ (n q1 q2 : Nat), 2 * q1 > n → 2 * q2 > n → q1 ≤ n → q2 ≤ n → q1 + q2 > n := by
   omega
 
 /-- distributed_security_bft_sybil_combined (matches Coq) -/

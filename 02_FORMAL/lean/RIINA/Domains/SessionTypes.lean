@@ -122,16 +122,16 @@ structure ChannelPair where
 def msg_type_eqb := sorry -- complex match, needs manual translation
 
 /-- channel_used (matches Coq: Definition channel_used) -/
-def channel_used (ch : Channel) : Channel := mkChan (chan_id ch) (chan_type ch) false
+def channel_used (ch : Channel) : Channel := mkChan (ch.chan_id) (ch.chan_type) false
 
 /-- is_fresh (matches Coq: Definition is_fresh) -/
 def is_fresh (ch : Channel) : Prop :=
-  chan_linear ch = true
+  ch.chan_linear = true
 
 /-- well_formed_pair (matches Coq: Definition well_formed_pair) -/
 def well_formed_pair (cp : ChannelPair) : Prop :=
-  chan_type (endpoint_a cp) = dual (chan_type (endpoint_b cp)) /\
-  chan_id (endpoint_a cp) = chan_id (endpoint_b cp)
+  chan_type (cp.endpoint_a) = dual (chan_type (cp.endpoint_b)) /\
+  chan_id (cp.endpoint_a) = chan_id (cp.endpoint_b)
 
 /-- is_value (matches Coq: Definition is_value) -/
 def is_value (p : Process) : Prop :=
@@ -309,11 +309,11 @@ theorem ST_036_dual_compose_send : ∀ mt s1 s2, dual (SSend mt s1) = SRecv mt (
   rfl
 
 /-- ST_037_dual_branches (matches Coq) -/
-theorem ST_037_dual_branches : ∀ (l : nat) (s : SessionType), map (fun p : nat * SessionType => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)] := by
+theorem ST_037_dual_branches : ∀ (l : Nat) (s : SessionType), map (fun p : Nat * SessionType => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)] := by
   rfl
 
 /-- ST_038_single_branch_dual (matches Coq) -/
-theorem ST_038_single_branch_dual : ∀ (l : nat) (s : SessionType), dual (SSelect [(l, s)]) = SOffer [(l, dual s)] := by
+theorem ST_038_single_branch_dual : ∀ (l : Nat) (s : SessionType), dual (SSelect [(l, s)]) = SOffer [(l, dual s)] := by
   rfl
 
 /-- ST_039_wt_end_empty (matches Coq) -/

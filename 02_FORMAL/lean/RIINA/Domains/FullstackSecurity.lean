@@ -117,7 +117,7 @@ def post_has_token := sorry -- complex match, needs manual translation
 def url_safe (url_type : ContentType) : Bool :=
   match url_type with
   | .safeUrl => true
-  | ._ => false
+  | _ => false
 
 /-- csp_active (matches Coq: Definition csp_active) -/
 def csp_active (headers : List Nat) (csp_header : Nat) : Prop :=
@@ -160,15 +160,15 @@ def web_layers (xss sqli csrf auth session : Bool) : Bool :=
   andb xss (andb sqli (andb csrf (andb auth session)))
 
 /-- web_001_escaped_safe (matches Coq) -/
-theorem web_001_escaped_safe : ∀ (elem : TemplateElement), elem_type elem = EscapedHtml → is_safe_content (elem_type elem) = true := by
+theorem web_001_escaped_safe : ∀ (elem : TemplateElement), elem_type elem = .escapedHtml → is_safe_content (elem_type elem) = true := by
   rfl
 
 /-- web_002_plaintext_safe (matches Coq) -/
-theorem web_002_plaintext_safe : ∀ (elem : TemplateElement), elem_type elem = PlainText → is_safe_content (elem_type elem) = true := by
+theorem web_002_plaintext_safe : ∀ (elem : TemplateElement), elem_type elem = .plainText → is_safe_content (elem_type elem) = true := by
   rfl
 
 /-- web_003_raw_unsafe (matches Coq) -/
-theorem web_003_raw_unsafe : ∀ (elem : TemplateElement), elem_type elem = RawHtml → is_safe_content (elem_type elem) = false := by
+theorem web_003_raw_unsafe : ∀ (elem : TemplateElement), elem_type elem = .rawHtml → is_safe_content (elem_type elem) = false := by
   rfl
 
 /-- web_004_template_safe (matches Coq) -/
@@ -184,11 +184,11 @@ theorem web_006_no_concat : ∀ (q : ParamQuery), query_parameterized q → List
   simp_all [Bool.and_eq_true]
 
 /-- web_007_csrf_session (matches Coq) -/
-theorem web_007_csrf_session : ∀ (token : CsrfToken) (session current_time : nat), csrf_valid token session current_time = true → csrf_session token = session := by
+theorem web_007_csrf_session : ∀ (token : CsrfToken) (session current_time : Nat), csrf_valid token session current_time = true → csrf_session token = session := by
   simp_all [Bool.and_eq_true]
 
 /-- web_008_csrf_fresh (matches Coq) -/
-theorem web_008_csrf_fresh : ∀ (token : CsrfToken) (session current_time : nat), csrf_valid token session current_time = true → current_time < csrf_expiry token := by
+theorem web_008_csrf_fresh : ∀ (token : CsrfToken) (session current_time : Nat), csrf_valid token session current_time = true → current_time < csrf_expiry token := by
   simp_all [Bool.and_eq_true]
 
 /-- web_009_valid_transition (matches Coq) -/
@@ -204,7 +204,7 @@ theorem web_011_locked_blocked : valid_transition Locked Authenticated = false :
   rfl
 
 /-- web_012_session_token (matches Coq) -/
-theorem web_012_session_token : ∀ (req : SecureRequest) (expected_session : nat), match req_token req with | Some t => csrf_session t = expected_session | None => True end → match req_token req with | Some t => csrf_session t = expected_session | None => True end := by
+theorem web_012_session_token : ∀ (req : SecureRequest) (expected_session : Nat), match req_token req with | Some t => csrf_session t = expected_session | None => True end → match req_token req with | Some t => csrf_session t = expected_session | None => True end := by
   intro h; exact h
 
 /-- web_013_post_token (matches Coq) -/
@@ -212,11 +212,11 @@ theorem web_013_post_token : ∀ (req : SecureRequest), req_method req = 1 → p
   rfl
 
 /-- web_014_url_validated (matches Coq) -/
-theorem web_014_url_validated : ∀ (elem : TemplateElement), elem_type elem = SafeUrl → url_safe (elem_type elem) = true := by
+theorem web_014_url_validated : ∀ (elem : TemplateElement), elem_type elem = .safeUrl → url_safe (elem_type elem) = true := by
   rfl
 
 /-- web_015_csp_present (matches Coq) -/
-theorem web_015_csp_present : ∀ (headers : list nat) (csp_header : nat), csp_active headers csp_header → In csp_header headers := by
+theorem web_015_csp_present : ∀ (headers : list nat) (csp_header : Nat), csp_active headers csp_header → In csp_header headers := by
   intro h; exact h
 
 /-- web_016_cookie_secure (matches Coq) -/
@@ -224,31 +224,31 @@ theorem web_016_cookie_secure : ∀ (c : Cookie), cookie_safe c = true → cooki
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- web_017_input_validated (matches Coq) -/
-theorem web_017_input_validated : ∀ (input_type expected : nat), input_validated input_type expected = true → input_type = expected := by
+theorem web_017_input_validated : ∀ (input_type expected : Nat), input_validated input_type expected = true → input_type = expected := by
   simp_all [Bool.and_eq_true]
 
 /-- web_018_output_encoded (matches Coq) -/
-theorem web_018_output_encoded : ∀ (t : Template), Forall (fun e => elem_type e ≠ RawHtml) t → Forall (fun e => is_safe_content (elem_type e) = true) t := by
+theorem web_018_output_encoded : ∀ (t : Template), Forall (fun e => elem_type e ≠ .rawHtml) t → Forall (fun e => is_safe_content (elem_type e) = true) t := by
   simp_all [Bool.and_eq_true]
 
 /-- web_019_rate_limited (matches Coq) -/
-theorem web_019_rate_limited : ∀ (requests max_requests window : nat), rate_ok requests max_requests window = true → requests ≤ max_requests := by
+theorem web_019_rate_limited : ∀ (requests max_requests window : Nat), rate_ok requests max_requests window = true → requests ≤ max_requests := by
   simp_all [Bool.and_eq_true]
 
 /-- web_020_session_timeout (matches Coq) -/
-theorem web_020_session_timeout : ∀ (last_activity current max_idle : nat), session_active last_activity current max_idle = true → current - last_activity ≤ max_idle := by
+theorem web_020_session_timeout : ∀ (last_activity current max_idle : Nat), session_active last_activity current max_idle = true → current - last_activity ≤ max_idle := by
   simp_all [Bool.and_eq_true]
 
 /-- web_021_password_hashed (matches Coq) -/
-theorem web_021_password_hashed : ∀ (hash_algorithm min_algorithm : nat), password_hashed hash_algorithm min_algorithm = true → min_algorithm ≤ hash_algorithm := by
+theorem web_021_password_hashed : ∀ (hash_algorithm min_algorithm : Nat), password_hashed hash_algorithm min_algorithm = true → min_algorithm ≤ hash_algorithm := by
   simp_all [Bool.and_eq_true]
 
 /-- web_022_https_required (matches Coq) -/
-theorem web_022_https_required : ∀ (scheme : nat), https_enforced scheme = true → scheme = 443 := by
+theorem web_022_https_required : ∀ (scheme : Nat), https_enforced scheme = true → scheme = 443 := by
   simp_all [Bool.and_eq_true]
 
 /-- web_023_error_safe (matches Coq) -/
-theorem web_023_error_safe : ∀ (error_detail_level max_level : nat), error_safe error_detail_level max_level = true → error_detail_level ≤ max_level := by
+theorem web_023_error_safe : ∀ (error_detail_level max_level : Nat), error_safe error_detail_level max_level = true → error_detail_level ≤ max_level := by
   simp_all [Bool.and_eq_true]
 
 /-- web_024_logging_complete (matches Coq) -/

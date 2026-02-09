@@ -295,13 +295,13 @@ def heap_union := sorry -- complex match, needs manual translation
 
 /-- contract_sat (matches Coq: Definition contract_sat) -/
 def contract_sat (c : Contract) (pre_env post_env : Nat -> Nat) : Prop :=
-  eval_pred (precondition c) pre_env = true -> 
-  eval_pred (postcondition c) post_env = true
+  eval_pred (c.precondition) pre_env = true -> 
+  eval_pred (c.postcondition) post_env = true
 
 /-- contract_stronger (matches Coq: Definition contract_stronger) -/
 def contract_stronger (c1 c2 : Contract) : Prop :=
-  pred_implies (precondition c2) (precondition c1) /\
-  pred_implies (postcondition c1) (postcondition c2)
+  pred_implies (c2.precondition) (c1.precondition) /\
+  pred_implies (c1.postcondition) (c2.postcondition)
 
 /-- vc_valid (matches Coq: Definition vc_valid) -/
 def vc_valid (vc : VC) : Prop :=
@@ -313,13 +313,13 @@ def ty_family_wf (ctx : TyCtx) (fam : TyFamily) : Prop :=
 
 /-- liquid_step (matches Coq: Definition liquid_step) -/
 def liquid_step (s : LiquidState) : LiquidState := mkLiquidState 
-    (liquid_constraints s) 
-    (liquid_templates s) 
-    (S (liquid_iteration s))
+    (s.liquid_constraints) 
+    (s.liquid_templates) 
+    (S (s.liquid_iteration))
 
 /-- liquid_measure (matches Coq: Definition liquid_measure) -/
 def liquid_measure (s : LiquidState) : Nat :=
-  length (liquid_templates s) * (S (liquid_iteration s))
+  length (s.liquid_templates) * (S (s.liquid_iteration))
 
 /-- ctx_valid (matches Coq: Definition ctx_valid) -/
 def ctx_valid (ctx : ProofCtx) (assignment : Nat -> Prop) : Prop :=
@@ -357,16 +357,16 @@ def refinement_subtype := sorry -- complex match, needs manual translation
 
 /-- liquid_terminates (matches Coq: Definition liquid_terminates) -/
 def liquid_terminates (s : LiquidState) (bound : Nat) : Prop :=
-  liquid_iteration s <= bound
+  s.liquid_iteration <= bound
 
 /-- precondition_verified (matches Coq: Definition precondition_verified) -/
 def precondition_verified (c : Contract) (env : Nat -> Nat) : Prop :=
-  eval_pred (precondition c) env = true
+  eval_pred (c.precondition) env = true
 
 /-- postcondition_verified (matches Coq: Definition postcondition_verified) -/
 def postcondition_verified (c : Contract) (pre_env post_env : Nat -> Nat) : Prop :=
-  eval_pred (precondition c) pre_env = true ->
-  eval_pred (postcondition c) post_env = true
+  eval_pred (c.precondition) pre_env = true ->
+  eval_pred (c.postcondition) post_env = true
 
 /-- invariant_preserved (matches Coq: Definition invariant_preserved) -/
 def invariant_preserved (inv : Pred) (pre_env post_env : Nat -> Nat) : Prop :=
@@ -393,7 +393,7 @@ def proof_irrelevant (P : Prop) : Prop :=
 
 /-- vc_from_contract (matches Coq: Definition vc_from_contract) -/
 def vc_from_contract (c : Contract) : VC :=
-  VCImpl (precondition c) (VCValid (postcondition c))
+  VCImpl (c.precondition) (VCValid (c.postcondition))
 
 /-- pred_decidable_PTrue (matches Coq) -/
 theorem pred_decidable_PTrue : pred_decidable PTrue := by
@@ -500,7 +500,7 @@ theorem E_001_22 : ∀ ctx t p assignment, proof_typed ctx t p → ctx_valid ctx
   simp_all [Bool.and_eq_true]
 
 /-- bool_proof_irrelevant (matches Coq) -/
-theorem bool_proof_irrelevant : ∀ (b : bool) (p1 p2 : b = true), p1 = p2 := by
+theorem bool_proof_irrelevant : ∀ (b : Bool) (p1 p2 : b = true), p1 = p2 := by
   rfl
 
 /-- E_001_23 (matches Coq) -/

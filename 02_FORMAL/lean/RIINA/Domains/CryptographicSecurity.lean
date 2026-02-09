@@ -296,8 +296,8 @@ structure FullCryptoConfig where
 
 /-- ct_valid (matches Coq: Definition ct_valid) -/
 def ct_valid (op : ConstantTimeOp) : Bool :=
-  ct_no_secret_branch op && ct_no_secret_addr op &&
-  ct_no_variable_time op && ct_is_constant op
+  op.ct_no_secret_branch && op.ct_no_secret_addr &&
+  op.ct_no_variable_time && op.ct_is_constant
 
 /-- riina_ct_op (matches Coq: Definition riina_ct_op) -/
 def riina_ct_op : ConstantTimeOp := mkCTOp
@@ -306,11 +306,11 @@ def riina_ct_op : ConstantTimeOp := mkCTOp
 
 /-- key_secure (matches Coq: Definition key_secure) -/
 def key_secure (k : CryptoKey) : Bool :=
-  (128 <=? key_bits k) && negb (key_extractable k)
+  (128 <=? k.key_bits) && !(k.key_extractable)
 
 /-- key_strong (matches Coq: Definition key_strong) -/
 def key_strong (k : CryptoKey) : Bool :=
-  (256 <=? key_bits k) && key_hardware_bound k && negb (key_extractable k)
+  (256 <=? k.key_bits) && k.key_hardware_bound && !(k.key_extractable)
 
 /-- riina_key (matches Coq: Definition riina_key) -/
 def riina_key : CryptoKey := mkKey
@@ -318,20 +318,20 @@ def riina_key : CryptoKey := mkKey
 
 /-- nonce_fresh (matches Coq: Definition nonce_fresh) -/
 def nonce_fresh (nt : NonceTracker) (n : List Nat) : Bool :=
-  negb (existsb (fun x =>
+  !(existsb (fun x =>
     Nat
 
 /-- nonce_counter_safe (matches Coq: Definition nonce_counter_safe) -/
 def nonce_counter_safe (nt : NonceTracker) : Bool :=
-  nt_counter nt <? nt_max_uses nt
+  nt.nt_counter <? nt.nt_max_uses
 
 /-- aead_secure (matches Coq: Definition aead_secure) -/
 def aead_secure (cfg : AEADConfig) : Bool :=
-  (aead_algorithm cfg <=? 1) &&       
-  (128 <=? aead_key_bits cfg) &&      
-  (96 <=? aead_nonce_bits cfg) &&     
-  (128 <=? aead_tag_bits cfg) &&      
-  aead_constant_time cfg
+  (cfg.aead_algorithm <=? 1) &&       
+  (128 <=? cfg.aead_key_bits) &&      
+  (96 <=? cfg.aead_nonce_bits) &&     
+  (128 <=? cfg.aead_tag_bits) &&      
+  cfg.aead_constant_time
 
 /-- riina_aead (matches Coq: Definition riina_aead) -/
 def riina_aead : AEADConfig := mkAEAD
@@ -339,7 +339,7 @@ def riina_aead : AEADConfig := mkAEAD
 
 /-- hash_secure (matches Coq: Definition hash_secure) -/
 def hash_secure (h : HashConfig) : Bool :=
-  (256 <=? hash_output_bits h) && hash_length_ext_safe h
+  (256 <=? h.hash_output_bits) && h.hash_length_ext_safe
 
 /-- riina_hash (matches Coq: Definition riina_hash) -/
 def riina_hash : HashConfig := mkHashConfig
@@ -347,10 +347,10 @@ def riina_hash : HashConfig := mkHashConfig
 
 /-- rng_secure (matches Coq: Definition rng_secure) -/
 def rng_secure (rng : RNGConfig) : Bool :=
-  rng_hardware_seeded rng &&
-  rng_reseeded_regularly rng &&
-  rng_prediction_resistant rng &&
-  (256 <=? rng_output_bits rng)
+  rng.rng_hardware_seeded &&
+  rng.rng_reseeded_regularly &&
+  rng.rng_prediction_resistant &&
+  (256 <=? rng.rng_output_bits)
 
 /-- riina_rng (matches Coq: Definition riina_rng) -/
 def riina_rng : RNGConfig := mkRNGConfig
@@ -358,9 +358,9 @@ def riina_rng : RNGConfig := mkRNGConfig
 
 /-- proto_secure (matches Coq: Definition proto_secure) -/
 def proto_secure (pc : ProtocolConfig) : Bool :=
-  (3 <=? proto_min_version pc) &&
-  proto_fallback_disabled pc &&
-  proto_forward_secrecy pc
+  (3 <=? pc.proto_min_version) &&
+  pc.proto_fallback_disabled &&
+  pc.proto_forward_secrecy
 
 /-- riina_proto (matches Coq: Definition riina_proto) -/
 def riina_proto : ProtocolConfig := mkProtoConfig
@@ -368,10 +368,10 @@ def riina_proto : ProtocolConfig := mkProtoConfig
 
 /-- pq_secure (matches Coq: Definition pq_secure) -/
 def pq_secure (pq : PQConfig) : Bool :=
-  (pq_kem_algorithm pq <=? 0) &&
-  (pq_sig_algorithm pq <=? 0) &&
-  (3 <=? pq_security_level pq) &&
-  pq_hybrid_mode pq
+  (pq.pq_kem_algorithm <=? 0) &&
+  (pq.pq_sig_algorithm <=? 0) &&
+  (3 <=? pq.pq_security_level) &&
+  pq.pq_hybrid_mode
 
 /-- riina_pq (matches Coq: Definition riina_pq) -/
 def riina_pq : PQConfig := mkPQConfig
@@ -379,7 +379,7 @@ def riina_pq : PQConfig := mkPQConfig
 
 /-- mraead_secure (matches Coq: Definition mraead_secure) -/
 def mraead_secure (mr : MRAEADConfig) : Bool :=
-  mraead_siv_mode mr && aead_secure (mraead_base mr)
+  mr.mraead_siv_mode && aead_secure (mr.mraead_base)
 
 /-- riina_mraead (matches Coq: Definition riina_mraead) -/
 def riina_mraead : MRAEADConfig := mkMRAEAD
@@ -387,7 +387,7 @@ def riina_mraead : MRAEADConfig := mkMRAEAD
 
 /-- cert_secure (matches Coq: Definition cert_secure) -/
 def cert_secure (cc : CertConfig) : Bool :=
-  cert_ct_required cc && cert_revocation_check cc
+  cc.cert_ct_required && cc.cert_revocation_check
 
 /-- riina_cert (matches Coq: Definition riina_cert) -/
 def riina_cert : CertConfig := mkCertConfig
@@ -398,8 +398,8 @@ def encrypt_decrypt_inverse_property (scheme : EncryptionScheme)
   (encrypt : Key -> Nonce -> Plaintext -> Ciphertext * Tag)
   (decrypt : Key -> Nonce -> Ciphertext -> Tag -> option Plaintext) : Prop :=
   forall (k : Key) (n : Nonce) (pt : Plaintext),
-    length k = enc_key_bits scheme / 8 ->
-    length n = enc_nonce_bits scheme / 8 ->
+    length k = scheme.enc_key_bits / 8 ->
+    length n = scheme.enc_nonce_bits / 8 ->
     let (ct, tag) := encrypt k n pt in
     decrypt k n ct tag = Some pt
 
@@ -409,11 +409,11 @@ def riina_enc_scheme : EncryptionScheme := mkEncScheme
 
 /-- kdf_secure (matches Coq: Definition kdf_secure) -/
 def kdf_secure (cfg : KDFConfig) : Bool :=
-  (kdf_algorithm cfg <=? 2) &&           
-  (256 <=? kdf_output_bits cfg) &&       
-  (128 <=? kdf_salt_bits cfg) &&         
-  ((kdf_algorithm cfg =? 0) ||           
-   (100000 <=? kdf_iterations cfg))
+  (cfg.kdf_algorithm <=? 2) &&           
+  (256 <=? cfg.kdf_output_bits) &&       
+  (128 <=? cfg.kdf_salt_bits) &&         
+  ((cfg.kdf_algorithm =? 0) ||           
+   (100000 <=? cfg.kdf_iterations))
 
 /-- riina_kdf (matches Coq: Definition riina_kdf) -/
 def riina_kdf : KDFConfig := mkKDFConfig
@@ -421,16 +421,16 @@ def riina_kdf : KDFConfig := mkKDFConfig
 
 /-- derived_key_valid (matches Coq: Definition derived_key_valid) -/
 def derived_key_valid (dk : DerivedKey) : Bool :=
-  kdf_secure (dk_kdf_config dk) &&
-  (128 <=? length (dk_parent_key dk) * 8) &&
-  (kdf_output_bits (dk_kdf_config dk) <=? length (dk_derived_key dk) * 8)
+  kdf_secure (dk.dk_kdf_config) &&
+  (128 <=? length (dk.dk_parent_key) * 8) &&
+  (kdf_output_bits (dk.dk_kdf_config) <=? length (dk.dk_derived_key) * 8)
 
 /-- mac_secure (matches Coq: Definition mac_secure) -/
 def mac_secure (cfg : MACConfig) : Bool :=
-  (mac_algorithm cfg <=? 2) &&       
-  (128 <=? mac_key_bits cfg) &&      
-  (128 <=? mac_tag_bits cfg) &&      
-  mac_constant_time cfg
+  (cfg.mac_algorithm <=? 2) &&       
+  (128 <=? cfg.mac_key_bits) &&      
+  (128 <=? cfg.mac_tag_bits) &&      
+  cfg.mac_constant_time
 
 /-- riina_mac (matches Coq: Definition riina_mac) -/
 def riina_mac : MACConfig := mkMACConfig
@@ -442,8 +442,8 @@ def tag_compare_ct (expected actual : Tag) : TagVerifyResult :=
 
 /-- counter_nonce_valid (matches Coq: Definition counter_nonce_valid) -/
 def counter_nonce_valid (cn : CounterNonce) : Bool :=
-  (cn_counter cn <? cn_max_value cn) &&
-  (64 <=? length (cn_prefix cn) * 8)
+  (cn.cn_counter <? cn.cn_max_value) &&
+  (64 <=? length (cn.cn_prefix) * 8)
 
 /-- nonce_in_set (matches Coq: Definition nonce_in_set) -/
 def nonce_in_set (n : List Nat) (ns : NonceSet) : Bool :=
@@ -452,18 +452,18 @@ def nonce_in_set (n : List Nat) (ns : NonceSet) : Bool :=
 
 /-- full_crypto_secure (matches Coq: Definition full_crypto_secure) -/
 def full_crypto_secure (fc : FullCryptoConfig) : Bool :=
-  ct_valid (fc_ct_op fc) &&
-  aead_secure (fc_aead fc) &&
-  hash_secure (fc_hash fc) &&
-  rng_secure (fc_rng fc) &&
-  proto_secure (fc_proto fc) &&
-  pq_secure (fc_pq fc) &&
-  key_strong (fc_key fc) &&
-  cert_secure (fc_cert fc) &&
-  mraead_secure (fc_mraead fc) &&
-  kdf_secure (fc_kdf fc) &&
-  mac_secure (fc_mac fc) &&
-  enc_is_authenticated (fc_enc fc)
+  ct_valid (fc.fc_ct_op) &&
+  aead_secure (fc.fc_aead) &&
+  hash_secure (fc.fc_hash) &&
+  rng_secure (fc.fc_rng) &&
+  proto_secure (fc.fc_proto) &&
+  pq_secure (fc.fc_pq) &&
+  key_strong (fc.fc_key) &&
+  cert_secure (fc.fc_cert) &&
+  mraead_secure (fc.fc_mraead) &&
+  kdf_secure (fc.fc_kdf) &&
+  mac_secure (fc.fc_mac) &&
+  enc_is_authenticated (fc.fc_enc)
 
 /-- riina_full_crypto (matches Coq: Definition riina_full_crypto) -/
 def riina_full_crypto : FullCryptoConfig := mkFullCrypto
@@ -475,19 +475,19 @@ def riina_full_crypto : FullCryptoConfig := mkFullCrypto
     SECTION A: BOOLEAN HELPER LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb3_true_iff (matches Coq) -/
-theorem andb3_true_iff : ∀ a b c : bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
+theorem andb3_true_iff : ∀ a b c : Bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- leb_le (matches Coq) -/
-theorem leb_le : ∀ n m : nat, (n <=? m) = true <-> n ≤ m := by
+theorem leb_le : ∀ n m : Nat, (n <=? m) = true <-> n ≤ m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- ---------- CRY-001: Timing Side Channel Mitigated ---------- -/
@@ -712,7 +712,7 @@ theorem riina_complete_crypto_security : ct_valid riina_ct_op = true ∧ aead_se
 
 /-- ENC-001: Authenticated encryption preserves plaintext length -/
 /-- enc_001_length_preservation (matches Coq) -/
-theorem enc_001_length_preservation : ∀ (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = true → pt_len = ct_len →  AEAD doesn't expand plaintext (except tag)  pt_len = ct_len := by
+theorem enc_001_length_preservation : ∀ (scheme : EncryptionScheme) (pt_len ct_len : Nat), enc_is_authenticated scheme = true → pt_len = ct_len →  AEAD doesn't expand plaintext (except tag)  pt_len = ct_len := by
   intro h; exact h
 
 /-- ENC-002: Encryption requires valid key size -/
@@ -807,7 +807,7 @@ theorem nonce_002_increment_changes_nonce : ∀ (cn : CounterNonce), counter_non
 
 /-- NONCE-003: Different counters produce different nonces -/
 /-- nonce_003_different_counters_different_nonces (matches Coq) -/
-theorem nonce_003_different_counters_different_nonces : ∀ (n m : nat), n ≠ m → n ≠ m := by
+theorem nonce_003_different_counters_different_nonces : ∀ (n m : Nat), n ≠ m → n ≠ m := by
   intro h; exact h
 
 /-- Empty set contains no nonces -/

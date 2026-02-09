@@ -61,7 +61,7 @@ theorem lex_lt_wf : well_founded lex_lt := by
   simp_all [Bool.and_eq_true]
 
 /-- lex_induction (matches Coq) -/
-theorem lex_induction : ∀ (P : nat → nat → Prop), (∀ n m, (∀ n' m', lex_lt (n', m') (n, m) → P n' m') → P n m) → ∀ n m, P n m := by
+theorem lex_induction : ∀ (P : Nat → nat → Prop), (∀ n m, (∀ n' m', lex_lt (n', m') (n, m) → P n' m') → P n m) → ∀ n m, P n m := by
   simp_all [Bool.and_eq_true]
 
 /-- lex_lt_left (matches Coq) -/
@@ -79,7 +79,7 @@ theorem step_ty_lt_wf : well_founded step_ty_lt := by
 
 /-- Induction principle for step-type pairs -/
 /-- step_ty_induction (matches Coq) -/
-theorem step_ty_induction : ∀ (P : nat → ty → Prop), (∀ n T, (∀ n' T', step_ty_lt (n', T') (n, T) → P n' T') → P n T) → ∀ n T, P n T := by
+theorem step_ty_induction : ∀ (P : Nat → ty → Prop), (∀ n T, (∀ n' T', step_ty_lt (n', T') (n, T) → P n' T') → P n T) → ∀ n T, P n T := by
   simp_all [Bool.and_eq_true]
 
 /-- Decreasing step index (the primary decrease for TFn) -/

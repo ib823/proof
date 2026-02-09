@@ -165,11 +165,11 @@ def ecc_check (encoded : Nat) : Bool :=
 
 /-- ecc_corrects_single_bit (matches Coq: Definition ecc_corrects_single_bit) -/
 def ecc_corrects_single_bit (data : Nat) : Prop :=
-  forall flip : nat, flip < 8 -> ecc_decode (ecc_encode data) = data
+  forall flip : Nat, flip < 8 -> ecc_decode (ecc_encode data) = data
 
 /-- ecc_detects_multi_bit (matches Coq: Definition ecc_detects_multi_bit) -/
 def ecc_detects_multi_bit (data : Nat) : Prop :=
-  forall flip1 flip2 : nat, flip1 <> flip2 -> 
+  forall flip1 flip2 : Nat, flip1 <> flip2 -> 
     ecc_check (ecc_encode data) = true
 
 /-- variants_independent (matches Coq: Definition variants_independent) -/
@@ -196,22 +196,22 @@ def voting_correct (a b c : ExecutionState) : Prop :=
 
 /-- keys_zeroized (matches Coq: Definition keys_zeroized) -/
 def keys_zeroized (st : SystemState) : Prop :=
-  forall k, In k (ss_keys st) -> k = 0
+  forall k, In k (st.ss_keys) -> k = 0
 
 /-- execution_halted (matches Coq: Definition execution_halted) -/
 def execution_halted (st : SystemState) : Prop :=
-  ss_running st = false
+  st.ss_running = false
 
 /-- audit_logged (matches Coq: Definition audit_logged) -/
 def audit_logged (st : SystemState) (event : Nat) : Prop :=
-  In event (ss_audit_log st)
+  In event (st.ss_audit_log)
 
 /-- panic_state (matches Coq: Definition panic_state) -/
 def panic_state (st : SystemState) : Prop :=
-  ss_panic st = true
+  st.ss_panic = true
 
 /-- trigger_panic (matches Coq: Definition trigger_panic) -/
-def trigger_panic (st : SystemState) (event : Nat) : SystemState := mkSystemState (map (fun _ => 0) (ss_keys st)) false (event :: ss_audit_log st) true
+def trigger_panic (st : SystemState) (event : Nat) : SystemState := mkSystemState (map (fun _ => 0) (st.ss_keys)) false (event :: st.ss_audit_log) true
 
 /-- uses_nmi (matches Coq: Definition uses_nmi) -/
 def uses_nmi (watchdog_config : Nat) : Prop :=
@@ -282,7 +282,7 @@ theorem U_001_11_mem_checksum_correct : ∀ mem start len, checksum_valid mem st
   rfl
 
 /-- U_001_12_mem_redundant_storage (matches Coq) -/
-theorem U_001_12_mem_redundant_storage : ∀ (data : nat) (copies : nat), copies ≥ 3 → copies ≥ 3 := by
+theorem U_001_12_mem_redundant_storage : ∀ (data : Nat) (copies : Nat), copies ≥ 3 → copies ≥ 3 := by
   intro h; exact h
 
 /-- U_001_13_mem_ecc_corrects (matches Coq) -/
@@ -334,7 +334,7 @@ theorem U_001_23_nmr_voting_correct : ∀ a b c, voting_correct a b c := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- U_001_24_nmr_recovery_sound (matches Coq) -/
-theorem U_001_24_nmr_recovery_sound : ∀ (v1 v2 v3 : Variant) (t : nat) (correct : ExecutionState), majority_vote (v1 t) (v2 t) (v3 t) = correct → majority_vote (v1 t) (v2 t) (v3 t) = correct := by
+theorem U_001_24_nmr_recovery_sound : ∀ (v1 v2 v3 : Variant) (t : Nat) (correct : ExecutionState), majority_vote (v1 t) (v2 t) (v3 t) = correct → majority_vote (v1 t) (v2 t) (v3 t) = correct := by
   intro h; exact h
 
 /-- U_001_25_nmr_coverage (matches Coq) -/

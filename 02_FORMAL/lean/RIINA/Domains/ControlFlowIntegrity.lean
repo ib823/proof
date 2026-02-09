@@ -163,7 +163,7 @@ def valid_return (ss : ShadowStack) (ret_addr : InstrAddr) : Prop :=
 
 /-- valid_indirect_call (matches Coq: Definition valid_indirect_call) -/
 def valid_indirect_call (vt : ValidTargets) (fp : TypedFuncPtr) : Prop :=
-  In (tfp_addr fp) (vt (tfp_type fp))
+  In (fp.tfp_addr) (vt (fp.tfp_type))
 
 /-- has_perm (matches Coq: Definition has_perm) -/
 def has_perm (perms : List MemPerm) (p : MemPerm) : Prop :=
@@ -175,7 +175,7 @@ def w_xor_x (perms : List MemPerm) : Prop :=
 
 /-- vtable_type_matches (matches Coq: Definition vtable_type_matches) -/
 def vtable_type_matches (obj : TypedObject) : Prop :=
-  vt_type_id (to_vtable obj) = to_expected_type obj
+  vt_type_id (obj.to_vtable) = obj.to_expected_type
 
 /-- handler_registered (matches Coq: Definition handler_registered) -/
 def handler_registered (vhs : ValidHandlers) (h : ExceptionHandler) : Prop :=
@@ -183,7 +183,7 @@ def handler_registered (vhs : ValidHandlers) (h : ExceptionHandler) : Prop :=
 
 /-- longjmp_safe (matches Coq: Definition longjmp_safe) -/
 def longjmp_safe (jb : JmpBuf) : Prop :=
-  jb_valid jb = true
+  jb.jb_valid = true
 
 /-- got_writable (matches Coq: Definition got_writable) -/
 def got_writable (rs : RelocState) : Prop :=
@@ -195,7 +195,7 @@ def got_protected (rs : RelocState) : Prop :=
 
 /-- thread_accessible (matches Coq: Definition thread_accessible) -/
 def thread_accessible (tc : ThreadContext) (accessor : Nat) : Prop :=
-  tc_owner tc = accessor /\ tc_valid tc = true
+  tc.tc_owner = accessor /\ tc.tc_valid = true
 
 /-- ctl_001_rop_impossible (matches Coq) -/
 theorem ctl_001_rop_impossible : ∀ (ss : ShadowStack) (attacker_addr : InstrAddr),  valid_return ss attacker_addr → ∃ e, In e ss ∧ se_return_addr e = attacker_addr := by
@@ -254,7 +254,7 @@ theorem ctl_014_got_plt_protected : ∀ (rs : RelocState), got_protected rs → 
   simp_all [Bool.and_eq_true]
 
 /-- ctl_015_thread_hijack_impossible (matches Coq) -/
-theorem ctl_015_thread_hijack_impossible : ∀ (tc : ThreadContext) (attacker : nat), tc_owner tc ≠ attacker → ~ thread_accessible tc attacker := by
+theorem ctl_015_thread_hijack_impossible : ∀ (tc : ThreadContext) (attacker : Nat), tc_owner tc ≠ attacker → ~ thread_accessible tc attacker := by
   simp_all [Bool.and_eq_true]
 
 /-- ctl_016_shadow_push_pop_identity (matches Coq) -/

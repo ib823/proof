@@ -325,56 +325,56 @@ structure SecureBootConfig where
 
 /-- rom_is_root_of_trust (matches Coq: Definition rom_is_root_of_trust) -/
 def rom_is_root_of_trust (rom : BootROM) : Bool :=
-  rom_hash_verified rom && rom_fused rom && rom_contains_root_key rom
+  rom.rom_hash_verified && rom.rom_fused && rom.rom_contains_root_key
 
 /-- rom_fully_secure (matches Coq: Definition rom_fully_secure) -/
 def rom_fully_secure (rom : BootROM) : Bool :=
-  rom_is_root_of_trust rom && rom_anti_debug rom
+  rom_is_root_of_trust rom && rom.rom_anti_debug
 
 /-- key_valid_for_verification (matches Coq: Definition key_valid_for_verification) -/
 def key_valid_for_verification (pk : PublicKey) : Bool :=
-  pk_trusted pk && negb (pk_revoked pk) && negb (pk_expired pk)
+  pk.pk_trusted && !(pk.pk_revoked) && !(pk.pk_expired)
 
 /-- signature_valid_with_key (matches Coq: Definition signature_valid_with_key) -/
 def signature_valid_with_key (sig : SigNature) (pk : PublicKey) : Bool :=
-  sig_valid sig &&
+  sig.sig_valid &&
   Nat
 
 /-- bootloader_verified (matches Coq: Definition bootloader_verified) -/
 def bootloader_verified (bl : Bootloader) : Bool :=
-  bl_verified bl && sig_valid (bl_signature bl) && hash_computed (bl_hash bl)
+  bl.bl_verified && sig_valid (bl.bl_signature) && hash_computed (bl.bl_hash)
 
 /-- kernel_verified (matches Coq: Definition kernel_verified) -/
 def kernel_verified (kern : Kernel) : Bool :=
-  kern_verified kern && sig_valid (kern_signature kern) && hash_computed (kern_hash kern)
+  kern.kern_verified && sig_valid (kern.kern_signature) && hash_computed (kern.kern_hash)
 
 /-- initramfs_verified (matches Coq: Definition initramfs_verified) -/
 def initramfs_verified (initrd : Initramfs) : Bool :=
-  initrd_verified initrd && sig_valid (initrd_signature initrd) && hash_computed (initrd_hash initrd)
+  initrd.initrd_verified && sig_valid (initrd.initrd_signature) && hash_computed (initrd.initrd_hash)
 
 /-- chain_of_trust_complete (matches Coq: Definition chain_of_trust_complete) -/
 def chain_of_trust_complete (chain : BootChain) : Bool :=
-  rom_is_root_of_trust (bc_rom chain) &&
-  bootloader_verified (bc_bootloader chain) &&
-  kernel_verified (bc_kernel chain) &&
-  initramfs_verified (bc_initramfs chain)
+  rom_is_root_of_trust (chain.bc_rom) &&
+  bootloader_verified (chain.bc_bootloader) &&
+  kernel_verified (chain.bc_kernel) &&
+  initramfs_verified (chain.bc_initramfs)
 
 /-- tpm_operational (matches Coq: Definition tpm_operational) -/
 def tpm_operational (tpm : TPMState) : Bool :=
-  tpm_enabled tpm && tpm_activated tpm
+  tpm.tpm_enabled && tpm.tpm_activated
 
 /-- pcr_measured (matches Coq: Definition pcr_measured) -/
 def pcr_measured (pcr : PCRValue) : Bool :=
-  pcr_extended pcr
+  pcr.pcr_extended
 
 /-- measurement_valid (matches Coq: Definition measurement_valid) -/
 def measurement_valid (meas : MeasurementEvent) (pcrs : List PCRValue) : Bool :=
-  hash_computed (meas_hash meas) &&
+  hash_computed (meas.meas_hash) &&
   Nat
 
 /-- measured_boot_complete (matches Coq: Definition measured_boot_complete) -/
 def measured_boot_complete (tpm : TPMState) : Bool :=
-  tpm_operational tpm && all_pcrs_extended (tpm_pcrs tpm)
+  tpm_operational tpm && all_pcrs_extended (tpm.tpm_pcrs)
 
 /-- version_above_minimum (matches Coq: Definition version_above_minimum) -/
 def version_above_minimum (version min_version : Nat) : Bool :=
@@ -382,16 +382,16 @@ def version_above_minimum (version min_version : Nat) : Bool :=
 
 /-- bootloader_antirollback_ok (matches Coq: Definition bootloader_antirollback_ok) -/
 def bootloader_antirollback_ok (bl : Bootloader) : Bool :=
-  version_above_minimum (bl_version bl) (bl_min_version bl)
+  version_above_minimum (bl.bl_version) (bl.bl_min_version)
 
 /-- kernel_antirollback_ok (matches Coq: Definition kernel_antirollback_ok) -/
 def kernel_antirollback_ok (kern : Kernel) : Bool :=
-  version_above_minimum (kern_version kern) (kern_min_version kern)
+  version_above_minimum (kern.kern_version) (kern.kern_min_version)
 
 /-- antirollback_protected (matches Coq: Definition antirollback_protected) -/
 def antirollback_protected (chain : BootChain) : Bool :=
-  bootloader_antirollback_ok (bc_bootloader chain) &&
-  kernel_antirollback_ok (bc_kernel chain)
+  bootloader_antirollback_ok (chain.bc_bootloader) &&
+  kernel_antirollback_ok (chain.bc_kernel)
 
 /-- is_root_key (matches Coq: Definition is_root_key) -/
 def is_root_key := sorry -- complex match, needs manual translation
@@ -402,8 +402,8 @@ def key_revoked_in_list (key_id : Nat) (revoked : List Nat) : Bool :=
 
 /-- hierarchy_key_valid (matches Coq: Definition hierarchy_key_valid) -/
 def hierarchy_key_valid (key : HierarchyKey) : Bool :=
-  key_valid_for_verification (hk_public key) &&
-  negb (key_revoked_in_list (hk_id key) (hk_revocation_list key))
+  key_valid_for_verification (key.hk_public) &&
+  !(key_revoked_in_list (key.hk_id) (key.hk_revocation_list))
 
 /-- hash_forbidden (matches Coq: Definition hash_forbidden) -/
 def hash_forbidden (hash : Nat) (forbidden : List Nat) : Bool :=
@@ -415,19 +415,19 @@ def key_forbidden (key_id : Nat) (forbidden : List Nat) : Bool :=
 
 /-- db_allows_signature (matches Coq: Definition db_allows_signature) -/
 def db_allows_signature (db : KeyDatabase) (sig : SigNature) : Bool :=
-  key_in_trusted_db (sig_key_id sig) (db_trusted_keys db) &&
-  negb (key_forbidden (sig_key_id sig) (db_forbidden_keys db))
+  key_in_trusted_db (sig.sig_key_id) (db.db_trusted_keys) &&
+  !(key_forbidden (sig.sig_key_id) (db.db_forbidden_keys))
 
 /-- policy_enforced (matches Coq: Definition policy_enforced) -/
 def policy_enforced (policy : SecureBootPolicy) : Bool :=
-  sbp_enabled policy && sbp_enforcing policy && negb (sbp_allow_unsigned policy)
+  policy.sbp_enabled && policy.sbp_enforcing && !(policy.sbp_allow_unsigned)
 
 /-- secure_boot_complete (matches Coq: Definition secure_boot_complete) -/
 def secure_boot_complete (config : SecureBootConfig) : Bool :=
-  chain_of_trust_complete (sb_chain config) &&
-  measured_boot_complete (sb_tpm config) &&
-  antirollback_protected (sb_chain config) &&
-  policy_enforced (sb_policy config)
+  chain_of_trust_complete (config.sb_chain) &&
+  measured_boot_complete (config.sb_tpm) &&
+  antirollback_protected (config.sb_chain) &&
+  policy_enforced (config.sb_policy)
 
 /-- riina_rom (matches Coq: Definition riina_rom) -/
 def riina_rom : BootROM := mkBootROM true true true true
@@ -472,23 +472,23 @@ def riina_policy : SecureBootPolicy := mkSBPolicy true true false true true
 def riina_secure_boot : SecureBootConfig := mkSecureBoot riina_boot_chain riina_tpm riina_key_db riina_policy
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_true_intro (matches Coq) -/
-theorem andb_true_intro : ∀ a b : bool, a = true → b = true → a && b = true := by
+theorem andb_true_intro : ∀ a b : Bool, a = true → b = true → a && b = true := by
   rfl
 
 /-- andb_true_elim1 (matches Coq) -/
-theorem andb_true_elim1 : ∀ a b : bool, a && b = true → a = true := by
+theorem andb_true_elim1 : ∀ a b : Bool, a && b = true → a = true := by
   simp_all [Bool.and_eq_true]
 
 /-- andb_true_elim2 (matches Coq) -/
-theorem andb_true_elim2 : ∀ a b : bool, a && b = true → b = true := by
+theorem andb_true_elim2 : ∀ a b : Bool, a && b = true → b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
 /-- SB_001_rom_integrity (matches Coq) -/
@@ -680,7 +680,7 @@ theorem SB_047_pcr_sealed : ∀ (pcr : PCRValue), pcr_extended pcr = true → pc
   simp_all [Bool.and_eq_true]
 
 /-- SB_048_locality_access (matches Coq) -/
-theorem SB_048_locality_access : ∀ (tpm : TPMState) (required_locality : nat), tpm_operational tpm = true → Nat.leb required_locality (tpm_locality tpm) = true →  True := by
+theorem SB_048_locality_access : ∀ (tpm : TPMState) (required_locality : Nat), tpm_operational tpm = true → Nat.leb required_locality (tpm_locality tpm) = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_049_measured_boot_tpm (matches Coq) -/
@@ -692,7 +692,7 @@ theorem SB_050_measured_boot_pcrs : ∀ (tpm : TPMState), measured_boot_complete
   simp_all [Bool.and_eq_true]
 
 /-- SB_051_version_no_rollback (matches Coq) -/
-theorem SB_051_version_no_rollback : ∀ (version min_version : nat), version_above_minimum version min_version = true → min_version ≤ version := by
+theorem SB_051_version_no_rollback : ∀ (version min_version : Nat), version_above_minimum version min_version = true → min_version ≤ version := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_052_bootloader_version_ok (matches Coq) -/
@@ -716,19 +716,19 @@ theorem SB_056_construct_antirollback : ∀ (chain : BootChain), bootloader_anti
   rfl
 
 /-- SB_057_min_zero_passes (matches Coq) -/
-theorem SB_057_min_zero_passes : ∀ (version : nat), version_above_minimum version 0 = true := by
+theorem SB_057_min_zero_passes : ∀ (version : Nat), version_above_minimum version 0 = true := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_058_same_version_passes (matches Coq) -/
-theorem SB_058_same_version_passes : ∀ (v : nat), version_above_minimum v v = true := by
+theorem SB_058_same_version_passes : ∀ (v : Nat), version_above_minimum v v = true := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_059_higher_version_passes (matches Coq) -/
-theorem SB_059_higher_version_passes : ∀ (version min_version : nat), min_version < version → version_above_minimum version min_version = true := by
+theorem SB_059_higher_version_passes : ∀ (version min_version : Nat), min_version < version → version_above_minimum version min_version = true := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_060_lower_version_fails (matches Coq) -/
-theorem SB_060_lower_version_fails : ∀ (version min_version : nat), version < min_version → version_above_minimum version min_version = false := by
+theorem SB_060_lower_version_fails : ∀ (version min_version : Nat), version < min_version → version_above_minimum version min_version = false := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_061_root_no_parent (matches Coq) -/
@@ -736,7 +736,7 @@ theorem SB_061_root_no_parent : ∀ (key : HierarchyKey), is_root_key key = true
   rfl
 
 /-- SB_062_nonroot_has_parent (matches Coq) -/
-theorem SB_062_nonroot_has_parent : ∀ (key : HierarchyKey) (parent_id : nat), hk_parent_id key = Some parent_id → is_root_key key = false := by
+theorem SB_062_nonroot_has_parent : ∀ (key : HierarchyKey) (parent_id : Nat), hk_parent_id key = Some parent_id → is_root_key key = false := by
   rfl
 
 /-- SB_063_valid_hierarchy_public (matches Coq) -/
@@ -748,19 +748,19 @@ theorem SB_064_valid_not_self_revoked : ∀ (key : HierarchyKey), hierarchy_key_
   simp_all [Bool.and_eq_true]
 
 /-- SB_065_key_in_db (matches Coq) -/
-theorem SB_065_key_in_db : ∀ (key_id : nat) (key : HierarchyKey) (rest : list HierarchyKey), hk_id key = key_id → key_in_trusted_db key_id (key :: rest) = true := by
+theorem SB_065_key_in_db : ∀ (key_id : Nat) (key : HierarchyKey) (rest : list HierarchyKey), hk_id key = key_id → key_in_trusted_db key_id (key :: rest) = true := by
   rfl
 
 /-- SB_066_key_not_in_empty (matches Coq) -/
-theorem SB_066_key_not_in_empty : ∀ (key_id : nat), key_in_trusted_db key_id [] = false := by
+theorem SB_066_key_not_in_empty : ∀ (key_id : Nat), key_in_trusted_db key_id [] = false := by
   rfl
 
 /-- SB_067_empty_forbidden (matches Coq) -/
-theorem SB_067_empty_forbidden : ∀ (key_id : nat), key_forbidden key_id [] = false := by
+theorem SB_067_empty_forbidden : ∀ (key_id : Nat), key_forbidden key_id [] = false := by
   simp
 
 /-- SB_068_key_is_forbidden (matches Coq) -/
-theorem SB_068_key_is_forbidden : ∀ (key_id : nat) (forbidden : list nat), key_forbidden key_id (key_id :: forbidden) = true := by
+theorem SB_068_key_is_forbidden : ∀ (key_id : Nat) (forbidden : list nat), key_forbidden key_id (key_id :: forbidden) = true := by
   rfl
 
 /-- SB_069_allowed_uses_trusted (matches Coq) -/

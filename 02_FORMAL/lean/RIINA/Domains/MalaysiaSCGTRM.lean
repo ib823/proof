@@ -135,7 +135,7 @@ theorem gtrm_req_2 : ∀ (e : CMEntity), cm_risk_framework e = true → gtrm_ris
   intro h; exact h
 
 /-- gtrm_req_3 (matches Coq) -/
-theorem gtrm_req_3 : ∀ (e : CMEntity) (t : nat), cm_pentest_done e = true → t ≤ cm_last_pentest e + cm_pentest_interval e → gtrm_pentest_current e t := by
+theorem gtrm_req_3 : ∀ (e : CMEntity) (t : Nat), cm_pentest_done e = true → t ≤ cm_last_pentest e + cm_pentest_interval e → gtrm_pentest_current e t := by
   simp_all [Bool.and_eq_true]
 
 /-- gtrm_req_4 (matches Coq) -/
@@ -155,7 +155,7 @@ theorem gtrm_req_7 : ∀ (e : CMEntity), cm_data_protection e = true → gtrm_da
   intro h; exact h
 
 /-- gtrm_composition (matches Coq) -/
-theorem gtrm_composition : ∀ (e : CMEntity) (t : nat), gtrm_board_accountable e → gtrm_risk_framework e → gtrm_pentest_current e t → gtrm_ai_assessed e → gtrm_vendor_compliant e → gtrm_incident_ready e → gtrm_data_protected e → gtrm_fully_compliant e t := by
+theorem gtrm_composition : ∀ (e : CMEntity) (t : Nat), gtrm_board_accountable e → gtrm_risk_framework e → gtrm_pentest_current e t → gtrm_ai_assessed e → gtrm_vendor_compliant e → gtrm_incident_ready e → gtrm_data_protected e → gtrm_fully_compliant e t := by
   omega
 
 /-- cm_entity_coverage (matches Coq) -/
@@ -163,7 +163,7 @@ theorem cm_entity_coverage : ∀ (t : CMEntityType), In t all_cm_entity_types :=
   simp_all [Bool.and_eq_true]
 
 /-- pentest_expired (matches Coq) -/
-theorem pentest_expired : ∀ (e : CMEntity) (t : nat), cm_last_pentest e + cm_pentest_interval e < t → ~ gtrm_pentest_current e t := by
+theorem pentest_expired : ∀ (e : CMEntity) (t : Nat), cm_last_pentest e + cm_pentest_interval e < t → ~ gtrm_pentest_current e t := by
   omega
 
 /-- pentest_recently_done (matches Coq) -/
@@ -171,31 +171,31 @@ theorem pentest_recently_done : ∀ (e : CMEntity), cm_pentest_done e = true →
   omega
 
 /-- gtrm_full_implies_board (matches Coq) -/
-theorem gtrm_full_implies_board : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_board_accountable e := by
+theorem gtrm_full_implies_board : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_board_accountable e := by
   intro h; exact h
 
 /-- gtrm_full_implies_risk (matches Coq) -/
-theorem gtrm_full_implies_risk : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_risk_framework e := by
+theorem gtrm_full_implies_risk : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_risk_framework e := by
   intro h; exact h
 
 /-- gtrm_full_implies_pentest (matches Coq) -/
-theorem gtrm_full_implies_pentest : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_pentest_current e t := by
+theorem gtrm_full_implies_pentest : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_pentest_current e t := by
   intro h; exact h
 
 /-- gtrm_full_implies_ai (matches Coq) -/
-theorem gtrm_full_implies_ai : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_ai_assessed e := by
+theorem gtrm_full_implies_ai : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_ai_assessed e := by
   intro h; exact h
 
 /-- gtrm_full_implies_vendor (matches Coq) -/
-theorem gtrm_full_implies_vendor : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_vendor_compliant e := by
+theorem gtrm_full_implies_vendor : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_vendor_compliant e := by
   intro h; exact h
 
 /-- gtrm_full_implies_incident (matches Coq) -/
-theorem gtrm_full_implies_incident : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_incident_ready e := by
+theorem gtrm_full_implies_incident : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_incident_ready e := by
   intro h; exact h
 
 /-- gtrm_full_implies_data (matches Coq) -/
-theorem gtrm_full_implies_data : ∀ (e : CMEntity) (t : nat), gtrm_fully_compliant e t → gtrm_data_protected e := by
+theorem gtrm_full_implies_data : ∀ (e : CMEntity) (t : Nat), gtrm_fully_compliant e t → gtrm_data_protected e := by
   intro h; exact h
 
 /-- sc_incident_reporting (matches Coq) -/

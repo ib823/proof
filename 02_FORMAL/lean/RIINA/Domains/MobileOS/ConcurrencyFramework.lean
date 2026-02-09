@@ -178,7 +178,7 @@ def respects_lock_order (acquired : List Resource) : Prop :=
     nth_error acquired i = Some r1 ->
     nth_error acquired j = Some r2 ->
     i < j ->
-    resource_order r1 < resource_order r2
+    r1.resource_order < r2.resource_order
 
 /-- can_deadlock (matches Coq: Definition can_deadlock) -/
 def can_deadlock (p : Program) : Prop :=
@@ -190,11 +190,11 @@ def Data : Type :=
 
 /-- owns (matches Coq: Definition owns) -/
 def owns (a : Actor) (d : Data) : Prop :=
-  In d (actor_owned_data a)
+  In d (a.actor_owned_data)
 
 /-- can_access (matches Coq: Definition can_access) -/
 def can_access (a : Actor) (d : Data) : Prop :=
-  In d (actor_owned_data a) \/ In d (actor_mailbox a)
+  In d (a.actor_owned_data) \/ In d (a.actor_mailbox)
 
 /-- has_data_race (matches Coq: Definition has_data_race) -/
 def has_data_race (p : Program) : Prop :=
@@ -202,31 +202,31 @@ def has_data_race (p : Program) : Prop :=
 
 /-- well_formed_pool (matches Coq: Definition well_formed_pool) -/
 def well_formed_pool (tp : ThreadPool) : Prop :=
-  pool_active_count tp <= pool_max_size tp /\
-  pool_size tp <= pool_max_size tp /\
-  pool_max_size tp > 0
+  tp.pool_active_count <= tp.pool_max_size /\
+  tp.pool_size <= tp.pool_max_size /\
+  tp.pool_max_size > 0
 
 /-- well_formed_semaphore (matches Coq: Definition well_formed_semaphore) -/
 def well_formed_semaphore (s : Semaphore) : Prop :=
-  sem_count s <= sem_max_count s /\
-  sem_max_count s > 0
+  s.sem_count <= s.sem_max_count /\
+  s.sem_max_count > 0
 
 /-- well_formed_barrier (matches Coq: Definition well_formed_barrier) -/
 def well_formed_barrier (b : Barrier) : Prop :=
-  barrier_count b <= barrier_total b /\
-  barrier_total b > 0 /\
-  (barrier_released b = true <-> barrier_count b = barrier_total b)
+  b.barrier_count <= b.barrier_total /\
+  b.barrier_total > 0 /\
+  (b.barrier_released = true <-> b.barrier_count = b.barrier_total)
 
 /-- well_formed_future (matches Coq: Definition well_formed_future) -/
 def well_formed_future (f : Future) : Prop :=
-  future_resolve_count f <= 1 /\
-  (future_resolved f = true <-> future_resolve_count f = 1) /\
-  (future_resolved f = true -> future_value f <> None)
+  f.future_resolve_count <= 1 /\
+  (f.future_resolved = true <-> f.future_resolve_count = 1) /\
+  (f.future_resolved = true -> f.future_value <> None)
 
 /-- well_formed_channel (matches Coq: Definition well_formed_channel) -/
 def well_formed_channel (c : Channel) : Prop :=
-  length (chan_buffer c) <= chan_capacity c /\
-  chan_capacity c > 0
+  length (c.chan_buffer) <= c.chan_capacity /\
+  c.chan_capacity > 0
 
 /-- no_deadlock (matches Coq) -/
 theorem no_deadlock : ∀ (program : Program), well_typed program → ~ can_deadlock program := by
@@ -269,7 +269,7 @@ theorem async_task_cancellable : ∀ (t : AsyncTask), task_cancellable t = true 
   intro h; exact h
 
 /-- atomic_operation_linearizable (matches Coq) -/
-theorem atomic_operation_linearizable : ∀ (before after : nat), after = before + 1 → after = before + 1 := by
+theorem atomic_operation_linearizable : ∀ (before after : Nat), after = before + 1 → after = before + 1 := by
   intro h; exact h
 
 /-- lock_ordering_enforced (matches Coq) -/
@@ -289,7 +289,7 @@ theorem future_resolved_once : ∀ (f : Future), well_formed_future f → future
   intro h; exact h
 
 /-- actor_message_ordered (matches Coq) -/
-theorem actor_message_ordered : ∀ (a : ExtActor) (seq1 seq2 : nat) (m1 m2 : nat) (i j : nat), nth_error (ea_mailbox a) i = Some (seq1, m1) → nth_error (ea_mailbox a) j = Some (seq2, m2) → i < j → seq1 ≤ seq2 → seq1 ≤ seq2 := by
+theorem actor_message_ordered : ∀ (a : ExtActor) (seq1 seq2 : Nat) (m1 m2 : Nat) (i j : Nat), nth_error (ea_mailbox a) i = Some (seq1, m1) → nth_error (ea_mailbox a) j = Some (seq2, m2) → i < j → seq1 ≤ seq2 → seq1 ≤ seq2 := by
   intro h; exact h
 
 /-- channel_bounded (matches Coq) -/

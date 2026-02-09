@@ -279,91 +279,91 @@ structure BackdoorDetection where
 
 /-- adversarial_examples_protected (matches Coq: Definition adversarial_examples_protected) -/
 def adversarial_examples_protected (rt : RobustTraining) (iv : InputValidation) : Bool :=
-  andb (rt_adversarial_training rt) (iv_filtered iv)
+  andb (rt.rt_adversarial_training) (iv.iv_filtered)
 
 /-- model_poisoning_protected (matches Coq: Definition model_poisoning_protected) -/
 def model_poisoning_protected (tp : TrainingPipeline) : Bool :=
-  andb (tp_data_verified tp) (tp_source_trusted tp)
+  andb (tp.tp_data_verified) (tp.tp_source_trusted)
 
 /-- data_poisoning_protected (matches Coq: Definition data_poisoning_protected) -/
 def data_poisoning_protected (tp : TrainingPipeline) : Bool :=
-  andb (tp_integrity_checked tp) (andb (tp_data_verified tp) (tp_source_trusted tp))
+  andb (tp.tp_integrity_checked) (andb (tp.tp_data_verified) (tp.tp_source_trusted))
 
 /-- model_extraction_protected (matches Coq: Definition model_extraction_protected) -/
 def model_extraction_protected (ac : AccessControl) (mw : ModelWatermark) : Bool :=
-  andb (andb (ac_rate_limited ac) (ac_authenticated ac)) (mw_embedded mw)
+  andb (andb (ac.ac_rate_limited) (ac.ac_authenticated)) (mw.mw_embedded)
 
 /-- membership_inference_protected (matches Coq: Definition membership_inference_protected) -/
 def membership_inference_protected (dp : DifferentialPrivacy) : Bool :=
-  andb (dp_noise_added dp) (dp_clipping_applied dp)
+  andb (dp.dp_noise_added) (dp.dp_clipping_applied)
 
 /-- strong_dp_protection (matches Coq: Definition strong_dp_protection) -/
 def strong_dp_protection (dp : DifferentialPrivacy) : Prop :=
-  dp_noise_added dp = true /\
-  dp_clipping_applied dp = true /\
-  dp_epsilon dp <= 1 /\
-  dp_delta dp <= 1
+  dp.dp_noise_added = true /\
+  dp.dp_clipping_applied = true /\
+  dp.dp_epsilon <= 1 /\
+  dp.dp_delta <= 1
 
 /-- model_inversion_protected (matches Coq: Definition model_inversion_protected) -/
 def model_inversion_protected (pg : PrivacyGuarantees) (dp : DifferentialPrivacy) : Bool :=
-  andb (pg_output_perturbed pg) (andb (pg_intermediate_hidden pg) (dp_noise_added dp))
+  andb (pg.pg_output_perturbed) (andb (pg.pg_intermediate_hidden) (dp.dp_noise_added))
 
 /-- backdoor_attack_protected (matches Coq: Definition backdoor_attack_protected) -/
 def backdoor_attack_protected (tp : TrainingPipeline) (ds : DetectionSystem) : Bool :=
-  andb (andb (tp_data_verified tp) (tp_reproducible tp)) (ds_enabled ds)
+  andb (andb (tp.tp_data_verified) (tp.tp_reproducible)) (ds.ds_enabled)
 
 /-- prompt_injection_protected (matches Coq: Definition prompt_injection_protected) -/
 def prompt_injection_protected (iv : InputValidation) : Bool :=
-  andb (iv_sanitized iv) (iv_sandboxed iv)
+  andb (iv.iv_sanitized) (iv.iv_sandboxed)
 
 /-- jailbreaking_protected (matches Coq: Definition jailbreaking_protected) -/
 def jailbreaking_protected (st : SafetyTraining) (iv : InputValidation) : Bool :=
-  andb (andb (st_rlhf_applied st) (st_safety_filters st)) (iv_filtered iv)
+  andb (andb (st.st_rlhf_applied) (st.st_safety_filters)) (iv.iv_filtered)
 
 /-- ai_malware_protected (matches Coq: Definition ai_malware_protected) -/
 def ai_malware_protected (did : DefenseInDepth) (ds : DetectionSystem) : Bool :=
-  andb (andb (did_multiple_layers did) (did_diverse_methods did)) (ds_enabled ds)
+  andb (andb (did.did_multiple_layers) (did.did_diverse_methods)) (ds.ds_enabled)
 
 /-- deepfakes_protected (matches Coq: Definition deepfakes_protected) -/
 def deepfakes_protected (ds : DetectionSystem) (pt : ProvenanceTracking) : Bool :=
-  andb (andb (ds_enabled ds) (ds_multi_modal ds)) 
-       (andb (pt_origin_tracked pt) (pt_tamper_evident pt))
+  andb (andb (ds.ds_enabled) (ds.ds_multi_modal)) 
+       (andb (pt.pt_origin_tracked) (pt.pt_tamper_evident))
 
 /-- federated_learning_protected (matches Coq: Definition federated_learning_protected) -/
 def federated_learning_protected (sa : SecureAggregation) (dp : DifferentialPrivacy) : Bool :=
-  andb (andb (sa_encrypted sa) (sa_byzantine_resilient sa)) (dp_noise_added dp)
+  andb (andb (sa.sa_encrypted) (sa.sa_byzantine_resilient)) (dp.dp_noise_added)
 
 /-- gradient_leakage_protected (matches Coq: Definition gradient_leakage_protected) -/
 def gradient_leakage_protected (dp : DifferentialPrivacy) (sa : SecureAggregation) : Bool :=
-  andb (andb (dp_noise_added dp) (dp_clipping_applied dp)) (sa_encrypted sa)
+  andb (andb (dp.dp_noise_added) (dp.dp_clipping_applied)) (sa.sa_encrypted)
 
 /-- gradient_protection_strong (matches Coq: Definition gradient_protection_strong) -/
 def gradient_protection_strong (dp : DifferentialPrivacy) : Prop :=
-  dp_noise_added dp = true /\
-  dp_clipping_applied dp = true /\
-  dp_epsilon dp <= 1
+  dp.dp_noise_added = true /\
+  dp.dp_clipping_applied = true /\
+  dp.dp_epsilon <= 1
 
 /-- evasion_attack_protected (matches Coq: Definition evasion_attack_protected) -/
 def evasion_attack_protected (rt : RobustTraining) (ds : DetectionSystem) : Bool :=
-  andb (andb (rt_adversarial_training rt) (rt_certified_defense rt)) (ds_enabled ds)
+  andb (andb (rt.rt_adversarial_training) (rt.rt_certified_defense)) (ds.ds_enabled)
 
 /-- model_dos_protected (matches Coq: Definition model_dos_protected) -/
 def model_dos_protected (rl : ResourceLimits) (ac : AccessControl) : Bool :=
-  andb (andb (rl_compute_bounded rl) (rl_time_bounded rl)) (ac_rate_limited ac)
+  andb (andb (rl.rl_compute_bounded) (rl.rl_time_bounded)) (ac.ac_rate_limited)
 
 /-- cross_prompt_injection_protected (matches Coq: Definition cross_prompt_injection_protected) -/
 def cross_prompt_injection_protected (ii : InputIsolation) (iv : InputValidation) : Bool :=
-  andb (andb (ii_context_separated ii) (ii_privilege_separated ii)) (iv_sanitized iv)
+  andb (andb (ii.ii_context_separated) (ii.ii_privilege_separated)) (iv.iv_sanitized)
 
 /-- ai_agent_swarms_protected (matches Coq: Definition ai_agent_swarms_protected) -/
 def ai_agent_swarms_protected (av : AgentVerification) (rl : ResourceLimits) : Bool :=
-  andb (andb (av_identity_verified av) (av_capability_bounded av)) 
-       (andb (rl_compute_bounded rl) (rl_time_bounded rl))
+  andb (andb (av.av_identity_verified) (av.av_capability_bounded)) 
+       (andb (rl.rl_compute_bounded) (rl.rl_time_bounded))
 
 /-- mcp_server_exploitation_protected (matches Coq: Definition mcp_server_exploitation_protected) -/
 def mcp_server_exploitation_protected (pv : ProtocolVerification) (ac : AccessControl) : Bool :=
-  andb (andb (pv_schema_validated pv) (pv_auth_required pv)) 
-       (andb (pv_integrity_checked pv) (ac_authenticated ac))
+  andb (andb (pv.pv_schema_validated) (pv.pv_auth_required)) 
+       (andb (pv.pv_integrity_checked) (ac.ac_authenticated))
 
 /-- mitigation_transitive (matches Coq: Definition mitigation_transitive) -/
 def mitigation_transitive (m1 m2 : Bool) : Bool :=
@@ -539,16 +539,16 @@ theorem ai_018_complete_protocol_verification : ∀ (pv : ProtocolVerification),
 
 /-- Composition: Multiple protections strengthen overall security -/
 /-- composition_strengthens_security (matches Coq) -/
-theorem composition_strengthens_security : ∀ (b1 b2 b3 : bool), b1 = true → b2 = true → b3 = true → andb b1 (andb b2 b3) = true := by
+theorem composition_strengthens_security : ∀ (b1 b2 b3 : Bool), b1 = true → b2 = true → b3 = true → andb b1 (andb b2 b3) = true := by
   rfl
 
 /-- mitigation_transitivity (matches Coq) -/
-theorem mitigation_transitivity : ∀ (base enhanced : bool), base = true → implb base enhanced = true → enhanced = true := by
+theorem mitigation_transitivity : ∀ (base enhanced : Bool), base = true → implb base enhanced = true → enhanced = true := by
   intro h; exact h
 
 /-- Defense layers accumulate protection -/
 /-- defense_layer_accumulation (matches Coq) -/
-theorem defense_layer_accumulation : ∀ (layer1 layer2 layer3 layer4 : bool), layer1 = true → layer2 = true → layer3 = true → layer4 = true → all_true [layer1; layer2; layer3; layer4] = true := by
+theorem defense_layer_accumulation : ∀ (layer1 layer2 layer3 layer4 : Bool), layer1 = true → layer2 = true → layer3 = true → layer4 = true → all_true [layer1; layer2; layer3; layer4] = true := by
   rfl
 
 /-- Privacy-Security tradeoff: Both can be achieved simultaneously -/

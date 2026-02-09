@@ -361,19 +361,19 @@ structure ProofSystemType where
 
 /-- zk_secure (matches Coq: Definition zk_secure) -/
 def zk_secure (z : ZKProperties) : Bool :=
-  zk_completeness z && zk_soundness z && zk_zero_knowledge z
+  z.zk_completeness && z.zk_soundness && z.zk_zero_knowledge
 
 /-- snark_secure (matches Coq: Definition snark_secure) -/
 def snark_secure (s : SNARKProperties) : Bool :=
-  snark_succinctness s && snark_non_interactive s && snark_knowledge_sound s
+  s.snark_succinctness && s.snark_non_interactive && s.snark_knowledge_sound
 
 /-- setup_secure (matches Coq: Definition setup_secure) -/
 def setup_secure (t : TrustedSetup) : Bool :=
-  ts_mpc_ceremony t && ts_toxic_waste_destroyed t && ts_verifiable t
+  t.ts_mpc_ceremony && t.ts_toxic_waste_destroyed && t.ts_verifiable
 
 /-- zksnark_secure (matches Coq: Definition zksnark_secure) -/
 def zksnark_secure (c : ZKSNARKConfig) : Bool :=
-  zk_secure (zks_zk c) && snark_secure (zks_snark c) && setup_secure (zks_setup c)
+  zk_secure (c.zks_zk) && snark_secure (c.zks_snark) && setup_secure (c.zks_setup)
 
 /-- riina_zk (matches Coq: Definition riina_zk) -/
 def riina_zk : ZKProperties := mkZKProperties true true true
@@ -389,11 +389,11 @@ def riina_zksnark : ZKSNARKConfig := mkZKSNARK riina_zk riina_snark riina_setup 
 
 /-- ke_secure (matches Coq: Definition ke_secure) -/
 def ke_secure (ke : KnowledgeExtractor) : Bool :=
-  ke_exists ke && ke_polynomial_time ke && (90 <=? ke_extraction_prob ke)
+  ke.ke_exists && ke.ke_polynomial_time && (90 <=? ke.ke_extraction_prob)
 
 /-- wr_valid (matches Coq: Definition wr_valid) -/
 def wr_valid (wr : WitnessRelation) : Bool :=
-  wr_satisfiable wr && (0 <? wr_statement_size wr) && (0 <? wr_witness_size wr)
+  wr.wr_satisfiable && (0 <? wr.wr_statement_size) && (0 <? wr.wr_witness_size)
 
 /-- riina_ke (matches Coq: Definition riina_ke) -/
 def riina_ke : KnowledgeExtractor := mkKnowledgeExtractor
@@ -405,12 +405,12 @@ def riina_wr : WitnessRelation := mkWitnessRelation
 
 /-- sim_secure (matches Coq: Definition sim_secure) -/
 def sim_secure (sim : ZKSimulator) : Bool :=
-  sim_exists sim && sim_polynomial_time sim &&
-  sim_indistinguishable sim && sim_no_witness_needed sim
+  sim.sim_exists && sim.sim_polynomial_time &&
+  sim.sim_indistinguishable && sim.sim_no_witness_needed
 
 /-- di_strong (matches Coq: Definition di_strong) -/
 def di_strong (di : DistIndistinguishability) : Bool :=
-  di_computational di && (di_advantage_bound di <=? 1)
+  di.di_computational && (di.di_advantage_bound <=? 1)
 
 /-- riina_sim (matches Coq: Definition riina_sim) -/
 def riina_sim : ZKSimulator := mkZKSimulator
@@ -422,8 +422,8 @@ def riina_di : DistIndistinguishability := mkDistIndist
 
 /-- completeness_holds (matches Coq: Definition completeness_holds) -/
 def completeness_holds (pv : ProverConfig) (vf : VerifierConfig) : Bool :=
-  pv_honest pv && pv_knows_witness pv && pv_follows_protocol pv &&
-  vf_honest vf && vf_follows_protocol vf && vf_accepts_valid vf
+  pv.pv_honest && pv.pv_knows_witness && pv.pv_follows_protocol &&
+  vf.vf_honest && vf.vf_follows_protocol && vf.vf_accepts_valid
 
 /-- riina_prover (matches Coq: Definition riina_prover) -/
 def riina_prover : ProverConfig := mkProverConfig
@@ -435,13 +435,13 @@ def riina_verifier : VerifierConfig := mkVerifierConfig
 
 /-- ps_succinct (matches Coq: Definition ps_succinct) -/
 def ps_succinct (ps : ProofSize) : Bool :=
-  (ps_proof_bytes ps <=? 512) &&           
-  (ps_verification_ops ps <=? 1000) &&     
-  ps_witness_independent ps
+  (ps.ps_proof_bytes <=? 512) &&           
+  (ps.ps_verification_ops <=? 1000) &&     
+  ps.ps_witness_independent
 
 /-- ac_polylog (matches Coq: Definition ac_polylog) -/
 def ac_polylog (ac : AsymptoticComplexity) : Bool :=
-  (ac_proof_size ac <=? 1) && (ac_verification_time ac <=? 1)
+  (ac.ac_proof_size <=? 1) && (ac.ac_verification_time <=? 1)
 
 /-- riina_proof_size (matches Coq: Definition riina_proof_size) -/
 def riina_proof_size : ProofSize := mkProofSize
@@ -453,16 +453,16 @@ def riina_ac : AsymptoticComplexity := mkAsymptotic
 
 /-- mpc_secure (matches Coq: Definition mpc_secure) -/
 def mpc_secure (mpc : MPCCeremony) : Bool :=
-  (2 <=? mpc_participants mpc) &&
-  (1 <=? mpc_threshold mpc) &&
-  (mpc_threshold mpc <=? mpc_participants mpc) &&
-  mpc_verifiable mpc &&
-  mpc_contributions_published mpc
+  (2 <=? mpc.mpc_participants) &&
+  (1 <=? mpc.mpc_threshold) &&
+  (mpc.mpc_threshold <=? mpc.mpc_participants) &&
+  mpc.mpc_verifiable &&
+  mpc.mpc_contributions_published
 
 /-- tw_secure (matches Coq: Definition tw_secure) -/
 def tw_secure (tw : ToxicWaste) : Bool :=
-  tw_generated_securely tw && tw_never_stored tw &&
-  tw_destroyed_immediately tw && tw_multi_party tw
+  tw.tw_generated_securely && tw.tw_never_stored &&
+  tw.tw_destroyed_immediately && tw.tw_multi_party
 
 /-- riina_mpc (matches Coq: Definition riina_mpc) -/
 def riina_mpc : MPCCeremony := mkMPCCeremony
@@ -474,13 +474,13 @@ def riina_tw : ToxicWaste := mkToxicWaste
 
 /-- g16_secure (matches Coq: Definition g16_secure) -/
 def g16_secure (g : Groth16Config) : Bool :=
-  g16_pairing_friendly g &&
-  (g16_proof_elements g =? 3) &&       
-  (g16_verification_pairings g <=? 4)
+  g.g16_pairing_friendly &&
+  (g.g16_proof_elements =? 3) &&       
+  (g.g16_verification_pairings <=? 4)
 
 /-- g16p_valid (matches Coq: Definition g16p_valid) -/
 def g16p_valid (p : Groth16Proof) : Bool :=
-  g16p_valid_curve_points p && g16p_valid_subgroup p
+  p.g16p_valid_curve_points && p.g16p_valid_subgroup
 
 /-- riina_g16 (matches Coq: Definition riina_g16) -/
 def riina_g16 : Groth16Config := mkGroth16Config
@@ -492,12 +492,12 @@ def riina_g16_proof : Groth16Proof := mkGroth16Proof
 
 /-- plonk_secure (matches Coq: Definition plonk_secure) -/
 def plonk_secure (p : PLONKConfig) : Bool :=
-  plonk_universal_setup p && plonk_polynomial_commitment p &&
-  plonk_arithmetic_gates p
+  p.plonk_universal_setup && p.plonk_polynomial_commitment &&
+  p.plonk_arithmetic_gates
 
 /-- pg_valid (matches Coq: Definition pg_valid) -/
 def pg_valid (g : PLONKGate) : Bool :=
-  (pg_degree g <=? 4) && (2 <=? pg_fan_in g) && (1 <=? pg_fan_out g)
+  (g.pg_degree <=? 4) && (2 <=? g.pg_fan_in) && (1 <=? g.pg_fan_out)
 
 /-- riina_plonk (matches Coq: Definition riina_plonk) -/
 def riina_plonk : PLONKConfig := mkPLONKConfig
@@ -509,12 +509,12 @@ def riina_plonk_gate : PLONKGate := mkPLONKGate
 
 /-- full_zk_secure (matches Coq: Definition full_zk_secure) -/
 def full_zk_secure (f : FullZKSNARKConfig) : Bool :=
-  zksnark_secure (fzk_base f) &&
-  ke_secure (fzk_extractor f) &&
-  sim_secure (fzk_simulator f) &&
-  ps_succinct (fzk_proof_size f) &&
-  mpc_secure (fzk_mpc f) &&
-  tw_secure (fzk_tw f)
+  zksnark_secure (f.fzk_base) &&
+  ke_secure (f.fzk_extractor) &&
+  sim_secure (f.fzk_simulator) &&
+  ps_succinct (f.fzk_proof_size) &&
+  mpc_secure (f.fzk_mpc) &&
+  tw_secure (f.fzk_tw)
 
 /-- riina_full_zk (matches Coq: Definition riina_full_zk) -/
 def riina_full_zk : FullZKSNARKConfig := mkFullZKSNARK
@@ -522,10 +522,10 @@ def riina_full_zk : FullZKSNARKConfig := mkFullZKSNARK
 
 /-- se_secure (matches Coq: Definition se_secure) -/
 def se_secure (se : SoundnessError) : Bool :=
-  (128 <=? se_security_parameter se) &&
-  (se_security_parameter se <=? se_statistical se) &&
-  (se_security_parameter se <=? se_computational se) &&
-  (se_security_parameter se <=? se_knowledge se)
+  (128 <=? se.se_security_parameter) &&
+  (se.se_security_parameter <=? se.se_statistical) &&
+  (se.se_security_parameter <=? se.se_computational) &&
+  (se.se_security_parameter <=? se.se_knowledge)
 
 /-- riina_se (matches Coq: Definition riina_se) -/
 def riina_se : SoundnessError := mkSoundnessError
@@ -533,11 +533,11 @@ def riina_se : SoundnessError := mkSoundnessError
 
 /-- pst_is_snark (matches Coq: Definition pst_is_snark) -/
 def pst_is_snark (pst : ProofSystemType) : Bool :=
-  pst_is_argument pst && pst_knowledge_property pst && pst_succinctness pst
+  pst.pst_is_argument && pst.pst_knowledge_property && pst.pst_succinctness
 
 /-- pst_is_stark (matches Coq: Definition pst_is_stark) -/
 def pst_is_stark (pst : ProofSystemType) : Bool :=
-  pst_is_proof pst && pst_knowledge_property pst && pst_succinctness pst
+  pst.pst_is_proof && pst.pst_knowledge_property && pst.pst_succinctness
 
 /-- riina_pst (matches Coq: Definition riina_pst) -/
 def riina_pst : ProofSystemType := mkProofSystemType
@@ -547,31 +547,31 @@ def riina_pst : ProofSystemType := mkProofSystemType
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb3_true_iff (matches Coq) -/
-theorem andb3_true_iff : ∀ a b c : bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
+theorem andb3_true_iff : ∀ a b c : Bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
   simp_all [Bool.and_eq_true]
 
 /-- andb4_true_iff (matches Coq) -/
-theorem andb4_true_iff : ∀ a b c d : bool, a && b && c && d = true <-> a = true ∧ b = true ∧ c = true ∧ d = true := by
+theorem andb4_true_iff : ∀ a b c d : Bool, a && b && c && d = true <-> a = true ∧ b = true ∧ c = true ∧ d = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- leb_le (matches Coq) -/
-theorem leb_le : ∀ n m : nat, (n <=? m) = true <-> n ≤ m := by
+theorem leb_le : ∀ n m : Nat, (n <=? m) = true <-> n ≤ m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- ltb_lt (matches Coq) -/
-theorem ltb_lt : ∀ n m : nat, (n <? m) = true <-> n < m := by
+theorem ltb_lt : ∀ n m : Nat, (n <? m) = true <-> n < m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
 /-- ============================================================================

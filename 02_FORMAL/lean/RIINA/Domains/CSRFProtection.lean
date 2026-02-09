@@ -86,8 +86,8 @@ structure CSRFRequest where
 
 /-- csrf_protected (matches Coq: Definition csrf_protected) -/
 def csrf_protected (c : CSRFConfig) : Bool :=
-  csrf_token_validation c && csrf_same_site_cookies c && csrf_origin_check c &&
-  csrf_referer_check c && csrf_double_submit c
+  c.csrf_token_validation && c.csrf_same_site_cookies && c.csrf_origin_check &&
+  c.csrf_referer_check && c.csrf_double_submit
 
 /-- riina_csrf (matches Coq: Definition riina_csrf) -/
 def riina_csrf : CSRFConfig := mkCSRF true true true true true
@@ -97,13 +97,13 @@ def csrf_request_safe := sorry -- complex match, needs manual translation
 
 /-- csrf_request_fully_validated (matches Coq: Definition csrf_request_fully_validated) -/
 def csrf_request_fully_validated (r : CSRFRequest) : Bool :=
-  csrf_request_safe r && req_valid_referer r && req_cookie_present r
+  csrf_request_safe r && r.req_valid_referer && r.req_cookie_present
 
 /-- riina_csrf_request (matches Coq: Definition riina_csrf_request) -/
 def riina_csrf_request : CSRFRequest := mkCSRFRequest true true true true true
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- CSRF_001 (matches Coq) -/

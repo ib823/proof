@@ -141,14 +141,14 @@ structure DMAConfig where
 
 /-- hw_wellformed (matches Coq: Definition hw_wellformed) -/
 def hw_wellformed (hw : HWParams) : Prop :=
-  hw_cache_hit hw <= hw_cache_miss hw
+  hw.hw_cache_hit <= hw.hw_cache_miss
 
 /-- default_hw (matches Coq: Definition default_hw) -/
 def default_hw : HWParams := mkHW 1 100 5 10 5
 
 /-- utilization (matches Coq: Definition utilization) -/
 def utilization (t : Task) : Nat :=
-  (task_wcet t * 100) / task_period t
+  (t.task_wcet * 100) / t.task_period
 
 /-- cache_latency (matches Coq: Definition cache_latency) -/
 def cache_latency (hw : HWParams) (cs : CacheState) : Time :=
@@ -163,11 +163,11 @@ def branch_cost (hw : HWParams) (bs : BranchState) : Time :=
   | .branchMispredict => hw_branch_penalty
 
 /-- worst_context (matches Coq: Definition worst_context) -/
-def worst_context (max_iter : Nat) : ExecContext := mkExec CacheMiss BranchMispredict (fun _ => max_iter)
+def worst_context (max_iter : Nat) : ExecContext := mkExec .cacheMiss .branchMispredict (fun _ => max_iter)
 
 /-- pipeline_flush_cost (matches Coq: Definition pipeline_flush_cost) -/
 def pipeline_flush_cost (hw : HWParams) : Time :=
-  hw_pipeline_depth hw
+  hw.hw_pipeline_depth
 
 /-- critical_section (matches Coq: Definition critical_section) -/
 def critical_section (stmts : List Stmt) : Stmt :=
@@ -175,7 +175,7 @@ def critical_section (stmts : List Stmt) : Stmt :=
 
 /-- dma_wcet (matches Coq: Definition dma_wcet) -/
 def dma_wcet (cfg : DMAConfig) (transfer_size : Nat) : Time :=
-  dma_setup cfg + (transfer_size / max 1 (dma_bandwidth cfg)) + 1
+  cfg.dma_setup + (transfer_size / max 1 (cfg.dma_bandwidth)) + 1
 
 /-- abstract_cache_wcet (matches Coq: Definition abstract_cache_wcet) -/
 def abstract_cache_wcet (hw : HWParams) (acs : AbstractCacheState) : Time :=
@@ -206,7 +206,7 @@ def schedulable (tasks : List Task) : Prop :=
 
 /-- response_time_bound (matches Coq: Definition response_time_bound) -/
 def response_time_bound (t : Task) : Time :=
-  task_wcet t
+  t.task_wcet
 
 /-- default_hw_wellformed (matches Coq) -/
 theorem default_hw_wellformed : hw_wellformed default_hw := by
@@ -301,7 +301,7 @@ theorem PERF_001_10_dma_size_scaling : ∀ cfg size1 size2, size1 ≤ size2 → 
   omega
 
 /-- PERF_001_11_cache_abstraction_sound (matches Coq) -/
-theorem PERF_001_11_cache_abstraction_sound : ∀ hw acs cs, hw_wellformed hw → (acs = ACSMayMiss ∨ acs = ACSMustMiss ∨ (acs = ACSMustHit ∧ cs = CacheHit)) → cache_latency hw cs ≤ abstract_cache_wcet hw acs := by
+theorem PERF_001_11_cache_abstraction_sound : ∀ hw acs cs, hw_wellformed hw → (acs = .aCSMayMiss ∨ acs = .aCSMustMiss ∨ (acs = .aCSMustHit ∧ cs = .cacheHit)) → cache_latency hw cs ≤ abstract_cache_wcet hw acs := by
   cases ‹_› <;> simp <;> omega
 
 /-- PERF_001_11_may_analysis_safe (matches Coq) -/

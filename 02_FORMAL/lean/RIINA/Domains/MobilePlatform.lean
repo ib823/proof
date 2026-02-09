@@ -122,7 +122,7 @@ def ipc_allowed (intent : Intent) (target_exported : Bool) (same_app : Bool) : B
 
 /-- key_extractable (matches Coq: Definition key_extractable) -/
 def key_extractable (props : KeyProps) : Bool :=
-  negb (key_hardware_backed props)
+  !(key_hardware_backed props)
 
 /-- auth_recent (matches Coq: Definition auth_recent) -/
 def auth_recent (last_auth current max_age : Nat) : Bool :=
@@ -155,7 +155,7 @@ def explicit_intent := sorry -- complex match, needs manual translation
 
 /-- processes_isolated (matches Coq: Definition processes_isolated) -/
 def processes_isolated (pid1 pid2 : Nat) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- boot_verified (matches Coq: Definition boot_verified) -/
 def boot_verified (stages : List Bool) : Bool :=
@@ -194,7 +194,7 @@ theorem mobile_004_dangerous_consent : ∀ (p : Permission), perm_level p = Dang
   rfl
 
 /-- mobile_005_signature_permission (matches Coq) -/
-theorem mobile_005_signature_permission : ∀ (app : AppId) (required_sig : nat), signature_matches app required_sig = true → app_signature app = required_sig := by
+theorem mobile_005_signature_permission : ∀ (app : AppId) (required_sig : Nat), signature_matches app required_sig = true → app_signature app = required_sig := by
   simp_all [Bool.and_eq_true]
 
 /-- mobile_006_system_permission (matches Coq) -/
@@ -206,7 +206,7 @@ theorem mobile_007_unexported_denied : ∀ (intent : Intent), intent_exported in
   rfl
 
 /-- mobile_008_same_app_ipc (matches Coq) -/
-theorem mobile_008_same_app_ipc : ∀ (intent : Intent) (exported : bool), ipc_allowed intent exported true = true := by
+theorem mobile_008_same_app_ipc : ∀ (intent : Intent) (exported : Bool), ipc_allowed intent exported true = true := by
   rfl
 
 /-- mobile_009_hw_key_protected (matches Coq) -/
@@ -214,7 +214,7 @@ theorem mobile_009_hw_key_protected : ∀ (props : KeyProps), key_hardware_backe
   rfl
 
 /-- mobile_010_auth_required (matches Coq) -/
-theorem mobile_010_auth_required : ∀ (props : KeyProps) (last_auth current : nat), key_requires_auth props = true → auth_recent last_auth current (key_valid_seconds props) = true → current - last_auth ≤ key_valid_seconds props := by
+theorem mobile_010_auth_required : ∀ (props : KeyProps) (last_auth current : Nat), key_requires_auth props = true → auth_recent last_auth current (key_valid_seconds props) = true → current - last_auth ≤ key_valid_seconds props := by
   simp_all [Bool.and_eq_true]
 
 /-- mobile_011_grant_owner (matches Coq) -/
@@ -222,7 +222,7 @@ theorem mobile_011_grant_owner : ∀ (g : PermGrant), app_uid (grant_app g) = ap
   rfl
 
 /-- mobile_012_expired_invalid (matches Coq) -/
-theorem mobile_012_expired_invalid : ∀ (g : PermGrant) (current_time expiry : nat), grant_expiry g = Some expiry → current_time ≥ expiry → grant_valid g current_time = false := by
+theorem mobile_012_expired_invalid : ∀ (g : PermGrant) (current_time expiry : Nat), grant_expiry g = Some expiry → current_time ≥ expiry → grant_valid g current_time = false := by
   omega
 
 /-- mobile_013_network_permission (matches Coq) -/
@@ -242,7 +242,7 @@ theorem mobile_016_microphone_permission : ∀ (grants : list PermGrant) (app : 
   intro h; exact h
 
 /-- mobile_017_intent_filter (matches Coq) -/
-theorem mobile_017_intent_filter : ∀ (intent : Intent) (filter_action : nat), intent_matches intent filter_action = true → intent_action intent = filter_action := by
+theorem mobile_017_intent_filter : ∀ (intent : Intent) (filter_action : Nat), intent_matches intent filter_action = true → intent_action intent = filter_action := by
   simp_all [Bool.and_eq_true]
 
 /-- mobile_018_explicit_target (matches Coq) -/
@@ -250,11 +250,11 @@ theorem mobile_018_explicit_target : ∀ (intent : Intent), explicit_intent inte
   rfl
 
 /-- mobile_019_process_isolation (matches Coq) -/
-theorem mobile_019_process_isolation : ∀ (pid1 pid2 : nat), processes_isolated pid1 pid2 = true → pid1 ≠ pid2 := by
+theorem mobile_019_process_isolation : ∀ (pid1 pid2 : Nat), processes_isolated pid1 pid2 = true → pid1 ≠ pid2 := by
   simp_all [Bool.and_eq_true]
 
 /-- mobile_020_selinux_enforced (matches Coq) -/
-theorem mobile_020_selinux_enforced : ∀ (source target perm : nat) (policy : list (nat * nat * nat)), selinux_allows source target perm policy = true → ∃ rule, In rule policy := by
+theorem mobile_020_selinux_enforced : ∀ (source target perm : Nat) (policy : list (nat * nat * nat)), selinux_allows source target perm policy = true → ∃ rule, In rule policy := by
   simp_all [Bool.and_eq_true]
 
 /-- mobile_021_verified_boot (matches Coq) -/
@@ -262,11 +262,11 @@ theorem mobile_021_verified_boot : ∀ (stages : list bool), boot_verified stage
   cases ‹_› <;> simp
 
 /-- mobile_022_enclave_isolation (matches Coq) -/
-theorem mobile_022_enclave_isolation : ∀ (enclave_mem normal_mem : nat), enclave_isolated enclave_mem normal_mem → enclave_mem ≠ normal_mem := by
+theorem mobile_022_enclave_isolation : ∀ (enclave_mem normal_mem : Nat), enclave_isolated enclave_mem normal_mem → enclave_mem ≠ normal_mem := by
   intro h; exact h
 
 /-- mobile_023_biometric_tee (matches Coq) -/
-theorem mobile_023_biometric_tee : ∀ (storage tee : nat), biometric_in_tee storage tee = true → storage = tee := by
+theorem mobile_023_biometric_tee : ∀ (storage tee : Nat), biometric_in_tee storage tee = true → storage = tee := by
   simp_all [Bool.and_eq_true]
 
 /-- mobile_024_signature_verified (matches Coq) -/

@@ -222,7 +222,7 @@ def pci_compliant_encryption (enc : EncState) (chd : CHDType) : Bool :=
   match chd with
   | .pAN => match
   | .tokenized => true
-  | ._ => false
+  | _ => false
 
 /-- display_compliant (matches Coq: Definition display_compliant) -/
 def display_compliant (disp : PANDisplay) : Bool :=
@@ -267,14 +267,14 @@ def data_past_retention (creation_time current_time max_days : Nat) : Bool :=
 def deletion_secure (ds : DeletionState) : Bool :=
   match ds with
   | .securelyDeleted => true
-  | ._ => false
+  | _ => false
 
 /-- deletion_unrecoverable (matches Coq: Definition deletion_unrecoverable) -/
 def deletion_unrecoverable (ds : DeletionState) : Bool :=
   match ds with
   | .overwritten => true
   | .securelyDeleted => true
-  | ._ => false
+  | _ => false
 
 /-- zone_compliant (matches Coq: Definition zone_compliant) -/
 def zone_compliant (z : NetworkZone) : Bool :=
@@ -377,7 +377,7 @@ theorem COMPLY_002_10_audit_has_hash : ∀ (ts usr act : nat) (chd : CHDType) (s
   simp
 
 /-- COMPLY_002_10_empty_log_valid (matches Coq) -/
-theorem COMPLY_002_10_empty_log_valid : ∀ (h : nat), audit_chain_valid [] h = true := by
+theorem COMPLY_002_10_empty_log_valid : ∀ (h : Nat), audit_chain_valid [] h = true := by
   rfl
 
 /-- COMPLY_002_11_tls12_compliant (matches Coq) -/

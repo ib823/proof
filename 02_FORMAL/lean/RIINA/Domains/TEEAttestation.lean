@@ -306,7 +306,7 @@ structure TrustChain where
 
 /-- enclave_secure (matches Coq: Definition enclave_secure) -/
 def enclave_secure (e : EnclaveProperties) : Bool :=
-  enc_memory_encrypted e && enc_code_integrity e && enc_data_sealing e && enc_isolated_execution e
+  e.enc_memory_encrypted && e.enc_code_integrity && e.enc_data_sealing && e.enc_isolated_execution
 
 /-- quote_measurement_valid (matches Coq: Definition quote_measurement_valid) -/
 def quote_measurement_valid (q : AttestationQuote) (ctx : VerificationContext) : Bool :=
@@ -330,7 +330,7 @@ def quote_fresh (q : AttestationQuote) (ctx : VerificationContext) : Bool :=
 
 /-- verify_quote (matches Coq: Definition verify_quote) -/
 def verify_quote (q : AttestationQuote) (ctx : VerificationContext) : Bool :=
-  aq_signature_valid q &&
+  q.aq_signature_valid &&
   quote_measurement_valid q ctx &&
   quote_signer_valid q ctx &&
   quote_svn_valid q ctx &&
@@ -339,12 +339,12 @@ def verify_quote (q : AttestationQuote) (ctx : VerificationContext) : Bool :=
 
 /-- attestation_secure (matches Coq: Definition attestation_secure) -/
 def attestation_secure (a : AttestationProperties) : Bool :=
-  att_measurement a && att_signature a && att_freshness a && att_binding a
+  a.att_measurement && a.att_signature && a.att_freshness && a.att_binding
 
 /-- tee_secure (matches Coq: Definition tee_secure) -/
 def tee_secure (t : TEEConfig) : Bool :=
-  enclave_secure (tee_enclave t) && attestation_secure (tee_attestation t) &&
-  tee_remote_attestation t && tee_local_attestation t && tee_key_derivation t
+  enclave_secure (t.tee_enclave) && attestation_secure (t.tee_attestation) &&
+  t.tee_remote_attestation && t.tee_local_attestation && t.tee_key_derivation
 
 /-- derive_seal_key_id (matches Coq: Definition derive_seal_key_id) -/
 def derive_seal_key_id := sorry -- complex match, needs manual translation
@@ -358,18 +358,18 @@ def region_contains (r : MemoryRegion) (addr : Nat) : Bool :=
 
 /-- regions_overlap (matches Coq: Definition regions_overlap) -/
 def regions_overlap (r1 r2 : MemoryRegion) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- enclave_memory_protected (matches Coq: Definition enclave_memory_protected) -/
 def enclave_memory_protected := sorry -- complex match, needs manual translation
 
 /-- trust_chain_complete (matches Coq: Definition trust_chain_complete) -/
 def trust_chain_complete (tc : TrustChain) : Bool :=
-  tc_root_key_valid tc && tc_pck_cert_valid tc && tc_tcb_signing_valid tc && tc_qe_report_valid tc
+  tc.tc_root_key_valid && tc.tc_pck_cert_valid && tc.tc_tcb_signing_valid && tc.tc_qe_report_valid
 
 /-- platform_trusted (matches Coq: Definition platform_trusted) -/
 def platform_trusted (pi : PlatformIdentity) (tc : TrustChain) : Bool :=
-  pi_tcb_info_valid pi && trust_chain_complete tc
+  pi.pi_tcb_info_valid && trust_chain_complete tc
 
 /-- riina_enclave (matches Coq: Definition riina_enclave) -/
 def riina_enclave : EnclaveProperties := mkEnclaveProperties true true true true
@@ -408,23 +408,23 @@ def sample_kdp_mrsigner : KeyDerivationParams := mkKeyDerivationParams SP_MRSIGN
     PART 1: FOUNDATIONAL DEFINITIONS AND HELPER LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_false_iff (matches Coq) -/
-theorem andb_false_iff : ∀ a b : bool, a && b = false <-> a = false ∨ b = false := by
+private theorem andb_false_iff : ∀ a b : Bool, a && b = false <-> a = false ∨ b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_false_iff (matches Coq) -/
-theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
+private theorem negb_false_iff : ∀ b : Bool, !b = false <-> b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- ============================================================================

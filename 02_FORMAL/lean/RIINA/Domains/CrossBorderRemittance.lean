@@ -220,7 +220,7 @@ structure RecipientNotification where
 
 /-- valid_country_support (matches Coq: Definition valid_country_support) -/
 def valid_country_support (cs : CountrySupport) : Prop :=
-  sanctioned cs = false -> (can_send cs = true \/ can_receive cs = true)
+  cs.sanctioned = false -> (cs.can_send = true \/ cs.can_receive = true)
 
 /-- compliant_registry (matches Coq: Definition compliant_registry) -/
 def compliant_registry (reg : CountryRegistry) : Prop :=
@@ -233,13 +233,13 @@ def compliant_currency_registry (reg : CurrencyRegistry) : Prop :=
 
 /-- rate_staleness (matches Coq: Definition rate_staleness) -/
 def rate_staleness (q : FXQuote) (current_time : Nat) : Nat :=
-  current_time - quote_timestamp q
+  current_time - q.quote_timestamp
 
 /-- valid_quote (matches Coq: Definition valid_quote) -/
 def valid_quote (q : FXQuote) : Prop :=
-  customer_rate q = mid_market_rate q + spread q /\
-  (guarantee_window q > 0)%nat /\
-  (hedge_ratio_bps q >= 9800)%nat /\ (hedge_ratio_bps q <= 10200)%nat
+  q.customer_rate = q.mid_market_rate + q.spread /\
+  (q.guarantee_window > 0)%nat /\
+  (q.hedge_ratio_bps >= 9800)%nat /\ (q.hedge_ratio_bps <= 10200)%nat
 
 /-- fresh_quote (matches Coq: Definition fresh_quote) -/
 def fresh_quote (q : FXQuote) (current_time : Nat) : Prop :=
@@ -247,7 +247,7 @@ def fresh_quote (q : FXQuote) (current_time : Nat) : Prop :=
 
 /-- rate_lock_valid (matches Coq: Definition rate_lock_valid) -/
 def rate_lock_valid (q : FXQuote) (current_time : Nat) : Prop :=
-  (current_time <= quote_timestamp q + guarantee_window q)%nat
+  (current_time <= q.quote_timestamp + q.guarantee_window)%nat
 
 /-- is_instant_rail (matches Coq: Definition is_instant_rail) -/
 def is_instant_rail (r : PaymentRail) : Bool :=
@@ -264,19 +264,19 @@ def is_instant_rail (r : PaymentRail) : Bool :=
 def is_blockchain_rail (r : PaymentRail) : Bool :=
   match r with
   | .blockchain => true
-  | ._ => false
+  | _ => false
 
 /-- is_mobile_money_rail (matches Coq: Definition is_mobile_money_rail) -/
 def is_mobile_money_rail (r : PaymentRail) : Bool :=
   match r with
   | .mobileMoney => true
-  | ._ => false
+  | _ => false
 
 /-- is_swift_rail (matches Coq: Definition is_swift_rail) -/
 def is_swift_rail (r : PaymentRail) : Bool :=
   match r with
   | .sWIFT => true
-  | ._ => false
+  | _ => false
 
 /-- is_local_rail (matches Coq: Definition is_local_rail) -/
 def is_local_rail (r : PaymentRail) : Bool :=
@@ -285,49 +285,49 @@ def is_local_rail (r : PaymentRail) : Bool :=
   | .sEPA_Instant => true
   | .fasterPayments => true
   | .rTP => true
-  | ._ => false
+  | _ => false
 
 /-- valid_transfer (matches Coq: Definition valid_transfer) -/
 def valid_transfer (t : Transfer) : Prop :=
-  screening_passed t = true /\
-  (is_swift_rail (rail t) = true -> tracking_available t = true) /\
-  (is_instant_rail (rail t) = true -> (settlement_time_sec t <= 60)%nat) /\
-  (is_blockchain_rail (rail t) = true -> is_atomic t = true) /\
-  (is_mobile_money_rail (rail t) = true -> (settlement_time_sec t <= 5)%nat)
+  t.screening_passed = true /\
+  (is_swift_rail (t.rail) = true -> t.tracking_available = true) /\
+  (is_instant_rail (t.rail) = true -> (t.settlement_time_sec <= 60)%nat) /\
+  (is_blockchain_rail (t.rail) = true -> t.is_atomic = true) /\
+  (is_mobile_money_rail (t.rail) = true -> (t.settlement_time_sec <= 5)%nat)
 
 /-- total_cost (matches Coq: Definition total_cost) -/
 def total_cost (t : Transfer) : Z :=
-  stated_fee t + stated_spread t
+  t.stated_fee + t.stated_spread
 
 /-- fully_screened (matches Coq: Definition fully_screened) -/
 def fully_screened (b : Beneficiary) : Prop :=
-  ofac_screened b = true /\ un_screened b = true /\
-  eu_screened b = true /\ local_screened b = true
+  b.ofac_screened = true /\ b.un_screened = true /\
+  b.eu_screened = true /\ b.local_screened = true
 
 /-- transfer_allowed (matches Coq: Definition transfer_allowed) -/
 def transfer_allowed (b : Beneficiary) : Prop :=
-  fully_screened b /\ (screening_time_ms b < 500)%nat
+  fully_screened b /\ (b.screening_time_ms < 500)%nat
 
 /-- travel_rule_compliant (matches Coq: Definition travel_rule_compliant) -/
 def travel_rule_compliant (trd : TravelRuleData) : Prop :=
-  data_transmitted trd = true /\
-  kyc_verified (originator_info trd) = true
+  trd.data_transmitted = true /\
+  kyc_verified (trd.originator_info) = true
 
 /-- str_compliant (matches Coq: Definition str_compliant) -/
 def str_compliant (sa : SuspiciousActivity) : Prop :=
-  str_filed sa = true /\ (filing_timestamp sa <= filing_deadline sa)%nat
+  sa.str_filed = true /\ (sa.filing_timestamp <= sa.filing_deadline)%nat
 
 /-- instant_bank_credit_valid (matches Coq: Definition instant_bank_credit_valid) -/
 def instant_bank_credit_valid (bc : BankCredit) : Prop :=
-  is_instant_rail (credit_rail bc) = true -> (credit_time_sec bc <= 60)%nat
+  is_instant_rail (bc.credit_rail) = true -> (bc.credit_time_sec <= 60)%nat
 
 /-- wallet_credit_valid (matches Coq: Definition wallet_credit_valid) -/
 def wallet_credit_valid (wc : WalletCredit) : Prop :=
-  credit_instant wc = true /\ (credit_latency_ms wc <= 1000)%nat
+  wc.credit_instant = true /\ (wc.credit_latency_ms <= 1000)%nat
 
 /-- secure_pickup_code (matches Coq: Definition secure_pickup_code) -/
 def secure_pickup_code (cp : CashPickup) : Prop :=
-  code_length cp = 16%nat /\ (expiry_days cp <= 30)%nat /\ code_random cp = true
+  cp.code_length = 16%nat /\ (cp.expiry_days <= 30)%nat /\ cp.code_random = true
 
 /-- valid_cash_pickup (matches Coq: Definition valid_cash_pickup) -/
 def valid_cash_pickup (cp : CashPickup) : Prop :=
@@ -335,11 +335,11 @@ def valid_cash_pickup (cp : CashPickup) : Prop :=
 
 /-- iban_validated (matches Coq: Definition iban_validated) -/
 def iban_validated (i : IBAN) : Prop :=
-  checksum_valid i = true /\ format_valid i = true
+  i.checksum_valid = true /\ i.format_valid = true
 
 /-- notification_compliant (matches Coq: Definition notification_compliant) -/
 def notification_compliant (rn : RecipientNotification) : Prop :=
-  notification_sent rn = true /\ channel_used rn = channel_preferred rn
+  rn.notification_sent = true /\ rn.channel_used = rn.channel_preferred
 
 /-- REMIT_001_01_universal_coverage (matches Coq) -/
 theorem REMIT_001_01_universal_coverage : ∀ (reg : CountryRegistry), compliant_registry reg → ∀ c, In c un_member_states → sanctioned (reg c) = true ∨ can_send (reg c) = true ∨ can_receive (reg c) = true := by
@@ -362,7 +362,7 @@ theorem REMIT_001_05_sanctioned_country_blocking : ∀ (corr : Corridor), is_san
   intro h; exact h
 
 /-- REMIT_001_06_rate_freshness (matches Coq) -/
-theorem REMIT_001_06_rate_freshness : ∀ (q : FXQuote) (current_time : nat), fresh_quote q current_time → (rate_staleness q current_time ≤ 1)%nat := by
+theorem REMIT_001_06_rate_freshness : ∀ (q : FXQuote) (current_time : Nat), fresh_quote q current_time → (rate_staleness q current_time ≤ 1)%nat := by
   intro h; exact h
 
 /-- REMIT_001_07_spread_transparency (matches Coq) -/
@@ -370,7 +370,7 @@ theorem REMIT_001_07_spread_transparency : ∀ (q : FXQuote), valid_quote q → 
   intro h; exact h
 
 /-- REMIT_001_08_rate_lock_guarantee (matches Coq) -/
-theorem REMIT_001_08_rate_lock_guarantee : ∀ (q : FXQuote) (current_time : nat), valid_quote q → (current_time ≤ quote_timestamp q + guarantee_window q)%nat → rate_lock_valid q current_time := by
+theorem REMIT_001_08_rate_lock_guarantee : ∀ (q : FXQuote) (current_time : Nat), valid_quote q → (current_time ≤ quote_timestamp q + guarantee_window q)%nat → rate_lock_valid q current_time := by
   intro h; exact h
 
 /-- REMIT_001_09_no_hidden_margin (matches Coq) -/

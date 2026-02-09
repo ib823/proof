@@ -211,11 +211,11 @@ def no_write_during_read (as_ : AccessState) : Prop :=
     as_ t2 l <> Some Exclusive
 
 /-- channel_used (matches Coq: Definition channel_used) -/
-def channel_used (ch : Channel) : Channel := mkChan (chan_id ch) (chan_type ch) false
+def channel_used (ch : Channel) : Channel := mkChan (ch.chan_id) (ch.chan_type) false
 
 /-- is_fresh (matches Coq: Definition is_fresh) -/
 def is_fresh (ch : Channel) : Prop :=
-  chan_linear ch = true
+  ch.chan_linear = true
 
 /-- accesses (matches Coq: Definition accesses) -/
 def accesses (cfg : Config) (t : ThreadId) (l : Loc) : Prop :=
@@ -283,7 +283,7 @@ def respects_order (cfg : Config) (t : ThreadId) : Prop :=
 
 /-- all_respect_order (matches Coq: Definition all_respect_order) -/
 def all_respect_order (cfg : Config) : Prop :=
-  forall tc, In tc cfg -> respects_order cfg (thread_id tc)
+  forall tc, In tc cfg -> respects_order cfg (tc.thread_id)
 
 /-- init_mutex (matches Coq: Definition init_mutex) -/
 def init_mutex : MutexState := mkMutex false None

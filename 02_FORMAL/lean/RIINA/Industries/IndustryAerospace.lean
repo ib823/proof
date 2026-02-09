@@ -114,24 +114,24 @@ def mcdc_required (d : DAL) : Bool :=
   match d with
   | .dAL_A => true
   | .dAL_B => true
-  | ._ => false
+  | _ => false
 
 /-- decision_coverage_required (matches Coq: Definition decision_coverage_required) -/
 def decision_coverage_required (d : DAL) : Bool :=
   match d with
   | .dAL_C => true
-  | ._ => false
+  | _ => false
 
 /-- do178c_all_sections (matches Coq: Definition do178c_all_sections) -/
 def do178c_all_sections (c : DO178C_Compliance) : Bool :=
-  software_plans c && software_development c && verification c &&
-  configuration_management c && quality_assurance c && certification_liaison c
+  c.software_plans && c.software_development && c.verification &&
+  c.configuration_management && c.quality_assurance && c.certification_liaison
 
 /-- formal_methods_applicable (matches Coq: Definition formal_methods_applicable) -/
 def formal_methods_applicable (d : DAL) : Bool :=
   match d with
   | .dAL_B => true
-  | ._ => false
+  | _ => false
 
 /-- dal_max (matches Coq: Definition dal_max) -/
 def dal_max (d1 d2 : DAL) : DAL :=
@@ -146,30 +146,30 @@ theorem do_178c_compliance : ∀ (compliance : DO178C_Compliance), software_plan
 /-- Section D02 - DO-326A Security
     Reference: IND_D_AEROSPACE.md Section 3.2 -/
 /-- do_326a_security (matches Coq) -/
-theorem do_326a_security : ∀ (aircraft_system : nat) (threat_model : nat),  True := by
+theorem do_326a_security : ∀ (aircraft_system : Nat) (threat_model : Nat),  True := by
   trivial
 
 /-- Section D03 - DO-333 Formal Methods
     Reference: IND_D_AEROSPACE.md Section 3.3 -/
 /-- do_333_formal_methods (matches Coq) -/
-theorem do_333_formal_methods : ∀ (specification : nat) (proof : nat),  True := by
+theorem do_333_formal_methods : ∀ (specification : Nat) (proof : Nat),  True := by
   trivial
 
 /-- Section D04 - ARP4754A Development
     Reference: IND_D_AEROSPACE.md Section 3.4 -/
 /-- arp4754a_development (matches Coq) -/
-theorem arp4754a_development : ∀ (system_architecture : nat),  True := by
+theorem arp4754a_development : ∀ (system_architecture : Nat),  True := by
   trivial
 
 /-- Section D05 - DO-254 Hardware
     Reference: IND_D_AEROSPACE.md Section 3.5 -/
 /-- do_254_hardware (matches Coq) -/
-theorem do_254_hardware : ∀ (hardware_design : nat),  True := by
+theorem do_254_hardware : ∀ (hardware_design : Nat),  True := by
   trivial
 
 /-- DAL A requires MC/DC coverage -/
 /-- dal_a_mcdc_required (matches Coq) -/
-theorem dal_a_mcdc_required : ∀ (compliance : DO178C_Compliance), dal_level compliance = DAL_A →  True := by
+theorem dal_a_mcdc_required : ∀ (compliance : DO178C_Compliance), dal_level compliance = .dAL_A →  True := by
   trivial
 
 /-- Higher DAL requires more objectives -/
@@ -202,32 +202,32 @@ theorem dal_le_antisym : ∀ d1 d2, dal_le d1 d2 = true → dal_le d2 d1 = true 
 theorem dal_le_total : ∀ d1 d2, dal_le d1 d2 = true ∨ dal_le d2 d1 = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DAL_E is the bottom -/
+/-- .dAL_E is the bottom -/
 /-- dal_e_bottom (matches Coq) -/
-theorem dal_e_bottom : ∀ d, dal_le DAL_E d = true := by
+theorem dal_e_bottom : ∀ d, dal_le .dAL_E d = true := by
   cases ‹_› <;> simp
 
-/-- DAL_A requires the most objectives (71) -/
+/-- .dAL_A requires the most objectives (71) -/
 /-- dal_a_max_objectives (matches Coq) -/
 theorem dal_a_max_objectives : ∀ d, objectives_for_dal d ≤ objectives_for_dal DAL_A := by
   cases ‹_› <;> simp <;> omega
 
-/-- DAL_E requires zero objectives -/
+/-- .dAL_E requires zero objectives -/
 /-- dal_e_zero_objectives (matches Coq) -/
-theorem dal_e_zero_objectives : objectives_for_dal DAL_E = 0 := by
+theorem dal_e_zero_objectives : objectives_for_dal .dAL_E = 0 := by
   rfl
 
 /-- Objectives strictly decrease from A to E -/
 /-- objectives_strict_ordering (matches Coq) -/
-theorem objectives_strict_ordering : objectives_for_dal DAL_A > objectives_for_dal DAL_B ∧ objectives_for_dal DAL_B > objectives_for_dal DAL_C ∧ objectives_for_dal DAL_C > objectives_for_dal DAL_D ∧ objectives_for_dal DAL_D > objectives_for_dal DAL_E := by
+theorem objectives_strict_ordering : objectives_for_dal .dAL_A > objectives_for_dal .dAL_B ∧ objectives_for_dal .dAL_B > objectives_for_dal .dAL_C ∧ objectives_for_dal .dAL_C > objectives_for_dal .dAL_D ∧ objectives_for_dal .dAL_D > objectives_for_dal DAL_E := by
   omega
 
 /-- mcdc_only_high_dal (matches Coq) -/
-theorem mcdc_only_high_dal : ∀ d, mcdc_required d = true → dal_le DAL_B d = true := by
+theorem mcdc_only_high_dal : ∀ d, mcdc_required d = true → dal_le .dAL_B d = true := by
   cases ‹_› <;> simp
 
 /-- decision_coverage_implies_dal_c_or_above (matches Coq) -/
-theorem decision_coverage_implies_dal_c_or_above : ∀ d, decision_coverage_required d = true → dal_le DAL_C d = true := by
+theorem decision_coverage_implies_dal_c_or_above : ∀ d, decision_coverage_required d = true → dal_le .dAL_C d = true := by
   cases ‹_› <;> simp
 
 /-- do178c_all_requires_plans (matches Coq) -/

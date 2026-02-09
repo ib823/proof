@@ -119,11 +119,11 @@ def cip_mandatory_requirements (impact : CIP_Impact) : Nat :=
 
 /-- nerc_cip_all_controls (matches Coq: Definition nerc_cip_all_controls) -/
 def nerc_cip_all_controls (c : NERC_CIP_Controls) : Bool :=
-  cip_002_identification c && cip_003_management c &&
-  cip_004_personnel c && cip_005_electronic_perimeter c &&
-  cip_006_physical c && cip_007_systems c &&
-  cip_008_incident c && cip_009_recovery c &&
-  cip_010_config c && cip_011_info c && cip_013_supply_chain c
+  c.cip_002_identification && c.cip_003_management &&
+  c.cip_004_personnel && c.cip_005_electronic_perimeter &&
+  c.cip_006_physical && c.cip_007_systems &&
+  c.cip_008_incident && c.cip_009_recovery &&
+  c.cip_010_config && c.cip_011_info && c.cip_013_supply_chain
 
 /-- bes_criticality (matches Coq: Definition bes_criticality) -/
 def bes_criticality (a : BES_Asset) : Nat :=
@@ -165,41 +165,41 @@ def access_log_retention_days (impact : CIP_Impact) : Nat :=
 /-- Section E01 - NERC CIP Compliance
     Reference: IND_E_ENERGY.md Section 3.1 -/
 /-- nerc_cip_compliance (matches Coq) -/
-theorem nerc_cip_compliance : ∀ (controls : NERC_CIP_Controls) (asset : nat), cip_002_identification controls = true →  True := by
+theorem nerc_cip_compliance : ∀ (controls : NERC_CIP_Controls) (asset : Nat), cip_002_identification controls = true →  True := by
   trivial
 
 /-- Section E02 - IEC 62351 Security
     Reference: IND_E_ENERGY.md Section 3.2 -/
 /-- iec_62351_security (matches Coq) -/
-theorem iec_62351_security : ∀ (communication : nat),  True := by
+theorem iec_62351_security : ∀ (communication : Nat),  True := by
   trivial
 
 /-- Section E03 - Nuclear Cyber Security
     Reference: IND_E_ENERGY.md Section 3.3 -/
 /-- nrc_cyber_security (matches Coq) -/
-theorem nrc_cyber_security : ∀ (nuclear_system : nat),  True := by
+theorem nrc_cyber_security : ∀ (nuclear_system : Nat),  True := by
   trivial
 
 /-- Section E04 - OT Security
     Reference: IND_E_ENERGY.md Section 3.4 -/
 /-- ot_security (matches Coq) -/
-theorem ot_security : ∀ (scada_system : nat),  True := by
+theorem ot_security : ∀ (scada_system : Nat),  True := by
   trivial
 
-/-- Section E05 - Substation Security
+/-- Section E05 - .substation Security
     Reference: IND_E_ENERGY.md Section 3.5 -/
 /-- substation_security (matches Coq) -/
-theorem substation_security : ∀ (ied : nat),  True := by
+theorem substation_security : ∀ (ied : Nat),  True := by
   trivial
 
 /-- High impact requires all CIP controls -/
 /-- high_impact_all_controls (matches Coq) -/
-theorem high_impact_all_controls : ∀ (controls : NERC_CIP_Controls) (asset : nat) (impact : CIP_Impact), impact = High_Impact →  True := by
+theorem high_impact_all_controls : ∀ (controls : NERC_CIP_Controls) (asset : Nat) (impact : CIP_Impact), impact = .high_Impact →  True := by
   trivial
 
 /-- Electronic Security Perimeter required for routable protocols -/
 /-- esp_required (matches Coq) -/
-theorem esp_required : ∀ (controls : NERC_CIP_Controls) (asset : nat), cip_005_electronic_perimeter controls = true →  True := by
+theorem esp_required : ∀ (controls : NERC_CIP_Controls) (asset : Nat), cip_005_electronic_perimeter controls = true →  True := by
   trivial
 
 /-- cip_le_refl (matches Coq) -/
@@ -211,7 +211,7 @@ theorem cip_le_trans : ∀ c1 c2 c3, cip_le c1 c2 = true → cip_le c2 c3 = true
   omega
 
 /-- high_impact_all_11 (matches Coq) -/
-theorem high_impact_all_11 : cip_mandatory_requirements High_Impact = 11 := by
+theorem high_impact_all_11 : cip_mandatory_requirements .high_Impact = 11 := by
   rfl
 
 /-- cip_requirements_monotone (matches Coq) -/
@@ -231,11 +231,11 @@ theorem full_cip_requires_supply_chain : ∀ c, nerc_cip_all_controls c = true �
   simp_all [Bool.and_eq_true]
 
 /-- control_center_critical (matches Coq) -/
-theorem control_center_critical : bes_criticality ControlCenter = 5 := by
+theorem control_center_critical : bes_criticality .controlCenter = 5 := by
   rfl
 
 /-- scada_critical (matches Coq) -/
-theorem scada_critical : bes_criticality SCADA_System = 5 := by
+theorem scada_critical : bes_criticality .sCADA_System = 5 := by
   rfl
 
 /-- bes_criticality_positive (matches Coq) -/
@@ -243,7 +243,7 @@ theorem bes_criticality_positive : ∀ a, bes_criticality a ≥ 3 := by
   cases ‹_› <;> simp <;> omega
 
 /-- high_impact_fastest_response (matches Coq) -/
-theorem high_impact_fastest_response : incident_response_hours High_Impact = 1 := by
+theorem high_impact_fastest_response : incident_response_hours .high_Impact = 1 := by
   rfl
 
 /-- response_time_decreasing (matches Coq) -/
@@ -255,7 +255,7 @@ theorem rto_bounded : ∀ impact, rto_hours impact ≤ 72 := by
   cases ‹_› <;> simp <;> omega
 
 /-- high_impact_short_rto (matches Coq) -/
-theorem high_impact_short_rto : rto_hours High_Impact ≤ rto_hours Medium_Impact := by
+theorem high_impact_short_rto : rto_hours .high_Impact ≤ rto_hours Medium_Impact := by
   omega
 
 /-- assessment_more_frequent_high (matches Coq) -/
@@ -263,7 +263,7 @@ theorem assessment_more_frequent_high : ∀ c1 c2, cip_le c1 c2 = true → asses
   cases ‹_› <;> simp <;> omega
 
 /-- high_medium_same_retention (matches Coq) -/
-theorem high_medium_same_retention : access_log_retention_days High_Impact = access_log_retention_days Medium_Impact := by
+theorem high_medium_same_retention : access_log_retention_days .high_Impact = access_log_retention_days Medium_Impact := by
   rfl
 
 end RIINA

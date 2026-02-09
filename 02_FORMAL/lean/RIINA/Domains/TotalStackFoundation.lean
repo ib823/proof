@@ -208,24 +208,24 @@ def property_in_layer (ss : StackState) (l : Layer) (p : SecurityProperty) : Boo
 
 /-- all_interfaces_verified (matches Coq: Definition all_interfaces_verified) -/
 def all_interfaces_verified (ss : StackState) : Bool :=
-  interface_verified ss L0_Physics L1_Silicon &&
-  interface_verified ss L1_Silicon L2_Firmware &&
-  interface_verified ss L2_Firmware L3_Network &&
-  interface_verified ss L3_Network L4_OS &&
-  interface_verified ss L4_OS L5_Runtime &&
-  interface_verified ss L5_Runtime L6_App &&
-  interface_verified ss L6_App L7_UX
+  interface_verified ss .l0_Physics .l1_Silicon &&
+  interface_verified ss .l1_Silicon .l2_Firmware &&
+  interface_verified ss .l2_Firmware .l3_Network &&
+  interface_verified ss .l3_Network .l4_OS &&
+  interface_verified ss .l4_OS .l5_Runtime &&
+  interface_verified ss .l5_Runtime .l6_App &&
+  interface_verified ss .l6_App .l7_UX
 
 /-- has_all_layers (matches Coq: Definition has_all_layers) -/
 def has_all_layers (ss : StackState) : Bool :=
-  layer_in_stack ss L0_Physics &&
-  layer_in_stack ss L1_Silicon &&
-  layer_in_stack ss L2_Firmware &&
-  layer_in_stack ss L3_Network &&
-  layer_in_stack ss L4_OS &&
-  layer_in_stack ss L5_Runtime &&
-  layer_in_stack ss L6_App &&
-  layer_in_stack ss L7_UX
+  layer_in_stack ss .l0_Physics &&
+  layer_in_stack ss .l1_Silicon &&
+  layer_in_stack ss .l2_Firmware &&
+  layer_in_stack ss .l3_Network &&
+  layer_in_stack ss .l4_OS &&
+  layer_in_stack ss .l5_Runtime &&
+  layer_in_stack ss .l6_App &&
+  layer_in_stack ss .l7_UX
 
 /-- make_layer_verif (matches Coq: Definition make_layer_verif) -/
 def make_layer_verif (l : Layer) (props : List SecurityProperty) : LayerVerification := mkLayerVerif l true props
@@ -250,42 +250,42 @@ def layer_compromised (ss : StackState) (l : Layer) : Prop :=
 
 /-- hardware_root_of_trust (matches Coq: Definition hardware_root_of_trust) -/
 def hardware_root_of_trust (ss : StackState) : Prop :=
-  layer_verified_in_stack ss L0_Physics = true /\
-  layer_verified_in_stack ss L1_Silicon = true /\
-  interface_verified ss L0_Physics L1_Silicon = true
+  layer_verified_in_stack ss .l0_Physics = true /\
+  layer_verified_in_stack ss .l1_Silicon = true /\
+  interface_verified ss .l0_Physics .l1_Silicon = true
 
 /-- measured_boot_integrity (matches Coq: Definition measured_boot_integrity) -/
 def measured_boot_integrity (ss : StackState) : Prop :=
-  layer_verified_in_stack ss L2_Firmware = true /\
+  layer_verified_in_stack ss .l2_Firmware = true /\
   attack_blocked ss ATBootCompromise = true
 
 /-- secure_channel (matches Coq: Definition secure_channel) -/
 def secure_channel (ss : StackState) : Prop :=
-  layer_verified_in_stack ss L3_Network = true /\
+  layer_verified_in_stack ss .l3_Network = true /\
   attack_blocked ss ATNetworkAttack = true
 
 /-- capability_delegation_correct (matches Coq: Definition capability_delegation_correct) -/
 def capability_delegation_correct (ss : StackState) : Prop :=
-  layer_verified_in_stack ss L4_OS = true /\
-  layer_verified_in_stack ss L5_Runtime = true /\
-  layer_verified_in_stack ss L6_App = true /\
+  layer_verified_in_stack ss .l4_OS = true /\
+  layer_verified_in_stack ss .l5_Runtime = true /\
+  layer_verified_in_stack ss .l6_App = true /\
   attack_blocked ss ATPrivilegeEscalation = true
 
 /-- end_to_end_encryption (matches Coq: Definition end_to_end_encryption) -/
 def end_to_end_encryption (ss : StackState) : Prop :=
-  layer_verified_in_stack ss L3_Network = true /\
-  layer_verified_in_stack ss L6_App = true /\
+  layer_verified_in_stack ss .l3_Network = true /\
+  layer_verified_in_stack ss .l6_App = true /\
   attack_blocked ss ATDataExfiltration = true
 
 /-- all_critical_layers_verified (matches Coq: Definition all_critical_layers_verified) -/
 def all_critical_layers_verified (ss : StackState) : Prop :=
-  layer_verified_in_stack ss L1_Silicon = true /\
-  layer_verified_in_stack ss L2_Firmware = true /\
-  layer_verified_in_stack ss L3_Network = true /\
-  layer_verified_in_stack ss L4_OS = true /\
-  layer_verified_in_stack ss L5_Runtime = true /\
-  layer_verified_in_stack ss L6_App = true /\
-  layer_verified_in_stack ss L7_UX = true
+  layer_verified_in_stack ss .l1_Silicon = true /\
+  layer_verified_in_stack ss .l2_Firmware = true /\
+  layer_verified_in_stack ss .l3_Network = true /\
+  layer_verified_in_stack ss .l4_OS = true /\
+  layer_verified_in_stack ss .l5_Runtime = true /\
+  layer_verified_in_stack ss .l6_App = true /\
+  layer_verified_in_stack ss .l7_UX = true
 
 /-- layer_eqb_refl (matches Coq) -/
 theorem layer_eqb_refl : ∀ l, layer_eqb l l = true := by
@@ -296,31 +296,31 @@ theorem layer_eqb_eq : ∀ l1 l2, layer_eqb l1 l2 = true <-> l1 = l2 := by
   cases ‹_› <;> simp
 
 /-- layer_adjacent_L0_L1 (matches Coq) -/
-theorem layer_adjacent_L0_L1 : layer_adjacent L0_Physics L1_Silicon = true := by
+theorem layer_adjacent_L0_L1 : layer_adjacent .l0_Physics .l1_Silicon = true := by
   rfl
 
 /-- layer_adjacent_L1_L2 (matches Coq) -/
-theorem layer_adjacent_L1_L2 : layer_adjacent L1_Silicon L2_Firmware = true := by
+theorem layer_adjacent_L1_L2 : layer_adjacent .l1_Silicon .l2_Firmware = true := by
   rfl
 
 /-- layer_adjacent_L2_L3 (matches Coq) -/
-theorem layer_adjacent_L2_L3 : layer_adjacent L2_Firmware L3_Network = true := by
+theorem layer_adjacent_L2_L3 : layer_adjacent .l2_Firmware .l3_Network = true := by
   rfl
 
 /-- layer_adjacent_L3_L4 (matches Coq) -/
-theorem layer_adjacent_L3_L4 : layer_adjacent L3_Network L4_OS = true := by
+theorem layer_adjacent_L3_L4 : layer_adjacent .l3_Network .l4_OS = true := by
   rfl
 
 /-- layer_adjacent_L4_L5 (matches Coq) -/
-theorem layer_adjacent_L4_L5 : layer_adjacent L4_OS L5_Runtime = true := by
+theorem layer_adjacent_L4_L5 : layer_adjacent .l4_OS .l5_Runtime = true := by
   rfl
 
 /-- layer_adjacent_L5_L6 (matches Coq) -/
-theorem layer_adjacent_L5_L6 : layer_adjacent L5_Runtime L6_App = true := by
+theorem layer_adjacent_L5_L6 : layer_adjacent .l5_Runtime .l6_App = true := by
   rfl
 
 /-- layer_adjacent_L6_L7 (matches Coq) -/
-theorem layer_adjacent_L6_L7 : layer_adjacent L6_App L7_UX = true := by
+theorem layer_adjacent_L6_L7 : layer_adjacent .l6_App .l7_UX = true := by
   rfl
 
 /-- sp_eqb_refl (matches Coq) -/
@@ -348,31 +348,31 @@ theorem andb_true_intro_both : ∀ b1 b2, b1 = true → b2 = true → b1 && b2 =
   rfl
 
 /-- TOTAL_001_01_l0_l1_interface_security (matches Coq) -/
-theorem TOTAL_001_01_l0_l1_interface_security : ∀ ss : StackState, interface_verified ss L0_Physics L1_Silicon = true → layer_verified_in_stack ss L0_Physics = true → layer_verified_in_stack ss L1_Silicon = true → layer_adjacent L0_Physics L1_Silicon = true := by
+theorem TOTAL_001_01_l0_l1_interface_security : ∀ ss : StackState, interface_verified ss .l0_Physics .l1_Silicon = true → layer_verified_in_stack ss .l0_Physics = true → layer_verified_in_stack ss .l1_Silicon = true → layer_adjacent .l0_Physics .l1_Silicon = true := by
   rfl
 
 /-- TOTAL_001_02_l1_l2_interface_security (matches Coq) -/
-theorem TOTAL_001_02_l1_l2_interface_security : ∀ ss : StackState, interface_verified ss L1_Silicon L2_Firmware = true → layer_verified_in_stack ss L1_Silicon = true → layer_verified_in_stack ss L2_Firmware = true → layer_adjacent L1_Silicon L2_Firmware = true := by
+theorem TOTAL_001_02_l1_l2_interface_security : ∀ ss : StackState, interface_verified ss .l1_Silicon .l2_Firmware = true → layer_verified_in_stack ss .l1_Silicon = true → layer_verified_in_stack ss .l2_Firmware = true → layer_adjacent .l1_Silicon .l2_Firmware = true := by
   rfl
 
 /-- TOTAL_001_03_l2_l3_interface_security (matches Coq) -/
-theorem TOTAL_001_03_l2_l3_interface_security : ∀ ss : StackState, interface_verified ss L2_Firmware L3_Network = true → layer_verified_in_stack ss L2_Firmware = true → layer_verified_in_stack ss L3_Network = true → layer_adjacent L2_Firmware L3_Network = true := by
+theorem TOTAL_001_03_l2_l3_interface_security : ∀ ss : StackState, interface_verified ss .l2_Firmware .l3_Network = true → layer_verified_in_stack ss .l2_Firmware = true → layer_verified_in_stack ss .l3_Network = true → layer_adjacent .l2_Firmware .l3_Network = true := by
   rfl
 
 /-- TOTAL_001_04_l3_l4_interface_security (matches Coq) -/
-theorem TOTAL_001_04_l3_l4_interface_security : ∀ ss : StackState, interface_verified ss L3_Network L4_OS = true → layer_verified_in_stack ss L3_Network = true → layer_verified_in_stack ss L4_OS = true → layer_adjacent L3_Network L4_OS = true := by
+theorem TOTAL_001_04_l3_l4_interface_security : ∀ ss : StackState, interface_verified ss .l3_Network .l4_OS = true → layer_verified_in_stack ss .l3_Network = true → layer_verified_in_stack ss .l4_OS = true → layer_adjacent .l3_Network .l4_OS = true := by
   rfl
 
 /-- TOTAL_001_05_l4_l5_interface_security (matches Coq) -/
-theorem TOTAL_001_05_l4_l5_interface_security : ∀ ss : StackState, interface_verified ss L4_OS L5_Runtime = true → layer_verified_in_stack ss L4_OS = true → layer_verified_in_stack ss L5_Runtime = true → layer_adjacent L4_OS L5_Runtime = true := by
+theorem TOTAL_001_05_l4_l5_interface_security : ∀ ss : StackState, interface_verified ss .l4_OS .l5_Runtime = true → layer_verified_in_stack ss .l4_OS = true → layer_verified_in_stack ss .l5_Runtime = true → layer_adjacent .l4_OS .l5_Runtime = true := by
   rfl
 
 /-- TOTAL_001_06_l5_l6_interface_security (matches Coq) -/
-theorem TOTAL_001_06_l5_l6_interface_security : ∀ ss : StackState, interface_verified ss L5_Runtime L6_App = true → layer_verified_in_stack ss L5_Runtime = true → layer_verified_in_stack ss L6_App = true → layer_adjacent L5_Runtime L6_App = true := by
+theorem TOTAL_001_06_l5_l6_interface_security : ∀ ss : StackState, interface_verified ss .l5_Runtime .l6_App = true → layer_verified_in_stack ss .l5_Runtime = true → layer_verified_in_stack ss .l6_App = true → layer_adjacent .l5_Runtime .l6_App = true := by
   rfl
 
 /-- TOTAL_001_07_l6_l7_interface_security (matches Coq) -/
-theorem TOTAL_001_07_l6_l7_interface_security : ∀ ss : StackState, interface_verified ss L6_App L7_UX = true → layer_verified_in_stack ss L6_App = true → layer_verified_in_stack ss L7_UX = true → layer_adjacent L6_App L7_UX = true := by
+theorem TOTAL_001_07_l6_l7_interface_security : ∀ ss : StackState, interface_verified ss .l6_App .l7_UX = true → layer_verified_in_stack ss .l6_App = true → layer_verified_in_stack ss .l7_UX = true → layer_adjacent .l6_App .l7_UX = true := by
   rfl
 
 /-- TOTAL_001_08_confidentiality_preserved (matches Coq) -/
@@ -396,27 +396,27 @@ theorem TOTAL_001_12_authorization_preserved : ∀ ss : StackState, all_layers_v
   intro h; exact h
 
 /-- TOTAL_001_13_memory_corruption_impossible (matches Coq) -/
-theorem TOTAL_001_13_memory_corruption_impossible : ∀ ss : StackState, layer_verified_in_stack ss L1_Silicon = true → attack_blocked ss ATMemoryCorruption = true := by
+theorem TOTAL_001_13_memory_corruption_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l1_Silicon = true → attack_blocked ss ATMemoryCorruption = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_14_side_channel_impossible (matches Coq) -/
-theorem TOTAL_001_14_side_channel_impossible : ∀ ss : StackState, layer_verified_in_stack ss L1_Silicon = true → attack_blocked ss ATSideChannel = true := by
+theorem TOTAL_001_14_side_channel_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l1_Silicon = true → attack_blocked ss ATSideChannel = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_15_network_attack_impossible (matches Coq) -/
-theorem TOTAL_001_15_network_attack_impossible : ∀ ss : StackState, layer_verified_in_stack ss L3_Network = true → attack_blocked ss ATNetworkAttack = true := by
+theorem TOTAL_001_15_network_attack_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l3_Network = true → attack_blocked ss ATNetworkAttack = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_16_privilege_escalation_impossible (matches Coq) -/
-theorem TOTAL_001_16_privilege_escalation_impossible : ∀ ss : StackState, layer_verified_in_stack ss L4_OS = true → attack_blocked ss ATPrivilegeEscalation = true := by
+theorem TOTAL_001_16_privilege_escalation_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l4_OS = true → attack_blocked ss ATPrivilegeEscalation = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_17_ui_deception_impossible (matches Coq) -/
-theorem TOTAL_001_17_ui_deception_impossible : ∀ ss : StackState, layer_verified_in_stack ss L7_UX = true → attack_blocked ss ATUIDeception = true := by
+theorem TOTAL_001_17_ui_deception_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l7_UX = true → attack_blocked ss ATUIDeception = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_18_boot_compromise_impossible (matches Coq) -/
-theorem TOTAL_001_18_boot_compromise_impossible : ∀ ss : StackState, layer_verified_in_stack ss L2_Firmware = true → attack_blocked ss ATBootCompromise = true := by
+theorem TOTAL_001_18_boot_compromise_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l2_Firmware = true → attack_blocked ss ATBootCompromise = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_19_adjacent_layers_compose (matches Coq) -/
@@ -440,43 +440,43 @@ theorem TOTAL_001_23_single_layer_compromise_bounded : ∀ ss : StackState, ∀ 
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_24_hardware_root_of_trust (matches Coq) -/
-theorem TOTAL_001_24_hardware_root_of_trust : ∀ ss : StackState, layer_verified_in_stack ss L0_Physics = true → layer_verified_in_stack ss L1_Silicon = true → interface_verified ss L0_Physics L1_Silicon = true → hardware_root_of_trust ss := by
+theorem TOTAL_001_24_hardware_root_of_trust : ∀ ss : StackState, layer_verified_in_stack ss .l0_Physics = true → layer_verified_in_stack ss .l1_Silicon = true → interface_verified ss .l0_Physics .l1_Silicon = true → hardware_root_of_trust ss := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_25_measured_boot_integrity (matches Coq) -/
-theorem TOTAL_001_25_measured_boot_integrity : ∀ ss : StackState, layer_verified_in_stack ss L2_Firmware = true → measured_boot_integrity ss := by
+theorem TOTAL_001_25_measured_boot_integrity : ∀ ss : StackState, layer_verified_in_stack ss .l2_Firmware = true → measured_boot_integrity ss := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_26_secure_channel_establishment (matches Coq) -/
-theorem TOTAL_001_26_secure_channel_establishment : ∀ ss : StackState, layer_verified_in_stack ss L3_Network = true → secure_channel ss := by
+theorem TOTAL_001_26_secure_channel_establishment : ∀ ss : StackState, layer_verified_in_stack ss .l3_Network = true → secure_channel ss := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_27_capability_delegation (matches Coq) -/
-theorem TOTAL_001_27_capability_delegation : ∀ ss : StackState, layer_verified_in_stack ss L4_OS = true → layer_verified_in_stack ss L5_Runtime = true → layer_verified_in_stack ss L6_App = true → capability_delegation_correct ss := by
+theorem TOTAL_001_27_capability_delegation : ∀ ss : StackState, layer_verified_in_stack ss .l4_OS = true → layer_verified_in_stack ss .l5_Runtime = true → layer_verified_in_stack ss .l6_App = true → capability_delegation_correct ss := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_28_end_to_end_encryption (matches Coq) -/
-theorem TOTAL_001_28_end_to_end_encryption : ∀ ss : StackState, layer_verified_in_stack ss L3_Network = true → layer_verified_in_stack ss L6_App = true → end_to_end_encryption ss := by
+theorem TOTAL_001_28_end_to_end_encryption : ∀ ss : StackState, layer_verified_in_stack ss .l3_Network = true → layer_verified_in_stack ss .l6_App = true → end_to_end_encryption ss := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_29_remote_code_execution_impossible (matches Coq) -/
-theorem TOTAL_001_29_remote_code_execution_impossible : ∀ ss : StackState, layer_verified_in_stack ss L4_OS = true → attack_blocked ss ATRemoteCodeExec = true := by
+theorem TOTAL_001_29_remote_code_execution_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l4_OS = true → attack_blocked ss ATRemoteCodeExec = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_30_data_exfiltration_impossible (matches Coq) -/
-theorem TOTAL_001_30_data_exfiltration_impossible : ∀ ss : StackState, layer_verified_in_stack ss L3_Network = true → attack_blocked ss ATDataExfiltration = true := by
+theorem TOTAL_001_30_data_exfiltration_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l3_Network = true → attack_blocked ss ATDataExfiltration = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_31_denial_of_service_bounded (matches Coq) -/
-theorem TOTAL_001_31_denial_of_service_bounded : ∀ ss : StackState, layer_verified_in_stack ss L3_Network = true → attack_blocked ss ATDenialOfService = true := by
+theorem TOTAL_001_31_denial_of_service_bounded : ∀ ss : StackState, layer_verified_in_stack ss .l3_Network = true → attack_blocked ss ATDenialOfService = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_32_malware_execution_impossible (matches Coq) -/
-theorem TOTAL_001_32_malware_execution_impossible : ∀ ss : StackState, layer_verified_in_stack ss L4_OS = true → attack_blocked ss ATMalwareExec = true := by
+theorem TOTAL_001_32_malware_execution_impossible : ∀ ss : StackState, layer_verified_in_stack ss .l4_OS = true → attack_blocked ss ATMalwareExec = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_33_insider_threat_bounded (matches Coq) -/
-theorem TOTAL_001_33_insider_threat_bounded : ∀ ss : StackState, layer_verified_in_stack ss L6_App = true → attack_blocked ss ATInsiderThreat = true := by
+theorem TOTAL_001_33_insider_threat_bounded : ∀ ss : StackState, layer_verified_in_stack ss .l6_App = true → attack_blocked ss ATInsiderThreat = true := by
   simp_all [Bool.and_eq_true]
 
 /-- TOTAL_001_34_all_layer_proofs_compose (matches Coq) -/

@@ -158,7 +158,7 @@ theorem 15 : animation_queue_fifo — first queued animation has lowest priority
   intro h; exact h
 
 /-- animation_queue_fifo_sorted (matches Coq) -/
-theorem animation_queue_fifo_sorted : ∀ (p1 p2 : nat) (rest : list nat), queue_sorted (p1 :: p2 :: rest) → (p1 ≤ p2)%nat := by
+theorem animation_queue_fifo_sorted : ∀ (p1 p2 : Nat) (rest : list nat), queue_sorted (p1 :: p2 :: rest) → (p1 ≤ p2)%nat := by
   intro h; exact h
 
 /-- spring_position_between (matches Coq) -/

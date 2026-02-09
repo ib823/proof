@@ -257,7 +257,7 @@ theorem bridge_007_swift_type_preserved_string : ∀ n, swift_value_tag (SwStrin
   rfl
 
 /-- bridge_007_swift_type_preserved_unit (matches Coq) -/
-theorem bridge_007_swift_type_preserved_unit : swift_value_tag SwVoid = swift_type_of RVUnit := by
+theorem bridge_007_swift_type_preserved_unit : swift_value_tag .swVoid = swift_type_of RVUnit := by
   rfl
 
 /-- bridge_007_marshal_swift_type_safe (matches Coq) -/

@@ -339,41 +339,41 @@ structure MemorySafetyConfig where
 
 /-- uaf_protected (matches Coq: Definition uaf_protected) -/
 def uaf_protected (u : UseAfterFreeGuard) : Bool :=
-  uaf_lifetime_tracking u && uaf_ownership_clear u && uaf_access_check u
+  u.uaf_lifetime_tracking && u.uaf_ownership_clear && u.uaf_access_check
 
 /-- df_protected (matches Coq: Definition df_protected) -/
 def df_protected (d : DoubleFreeGuard) : Bool :=
-  df_state_tracking d && df_single_owner d && df_freed_check d
+  d.df_state_tracking && d.df_single_owner && d.df_freed_check
 
 /-- nd_protected (matches Coq: Definition nd_protected) -/
 def nd_protected (n : NullDerefGuard) : Bool :=
-  nd_null_check n && nd_option_types n && nd_init_required n
+  n.nd_null_check && n.nd_option_types && n.nd_init_required
 
 /-- bounds_protected (matches Coq: Definition bounds_protected) -/
 def bounds_protected (b : BoundsGuard) : Bool :=
-  bg_bounds_check b && bg_fat_pointers b && bg_slice_safety b
+  b.bg_bounds_check && b.bg_fat_pointers && b.bg_slice_safety
 
 /-- stack_protected (matches Coq: Definition stack_protected) -/
 def stack_protected (s : StackGuard) : Bool :=
-  sg_canary_enabled s && sg_return_addr_protected s &&
-  sg_frame_isolation s && sg_shadow_stack s
+  s.sg_canary_enabled && s.sg_return_addr_protected &&
+  s.sg_frame_isolation && s.sg_shadow_stack
 
 /-- heap_protected (matches Coq: Definition heap_protected) -/
 def heap_protected (h : HeapGuard) : Bool :=
-  hg_allocation_tracking h && hg_deallocation_check h &&
-  hg_fragmentation_prevention h && hg_metadata_integrity h
+  h.hg_allocation_tracking && h.hg_deallocation_check &&
+  h.hg_fragmentation_prevention && h.hg_metadata_integrity
 
 /-- isolation_protected (matches Coq: Definition isolation_protected) -/
 def isolation_protected (i : IsolationGuard) : Bool :=
-  ig_domain_separation i && ig_permission_enforcement i &&
-  ig_cross_domain_check i && ig_capability_required i
+  i.ig_domain_separation && i.ig_permission_enforcement &&
+  i.ig_cross_domain_check && i.ig_capability_required
 
 /-- memory_safe (matches Coq: Definition memory_safe) -/
 def memory_safe (m : MemorySafetyConfig) : Bool :=
-  uaf_protected (ms_uaf m) && df_protected (ms_df m) &&
-  nd_protected (ms_nd m) && bounds_protected (ms_bounds m) &&
-  stack_protected (ms_stack m) && heap_protected (ms_heap m) &&
-  isolation_protected (ms_isolation m)
+  uaf_protected (m.ms_uaf) && df_protected (m.ms_df) &&
+  nd_protected (m.ms_nd) && bounds_protected (m.ms_bounds) &&
+  stack_protected (m.ms_stack) && heap_protected (m.ms_heap) &&
+  isolation_protected (m.ms_isolation)
 
 /-- ptr_is_valid (matches Coq: Definition ptr_is_valid) -/
 def ptr_is_valid := sorry -- complex match, needs manual translation
@@ -404,11 +404,11 @@ def region_is_freed := sorry -- complex match, needs manual translation
 
 /-- region_can_access (matches Coq: Definition region_can_access) -/
 def region_can_access (r : MemoryRegion) : Bool :=
-  region_is_allocated r && mr_owned r
+  region_is_allocated r && r.mr_owned
 
 /-- region_can_write (matches Coq: Definition region_can_write) -/
 def region_can_write (r : MemoryRegion) : Bool :=
-  region_is_allocated r && mr_owned r && mr_initialized r
+  region_is_allocated r && r.mr_owned && r.mr_initialized
 
 /-- domain_level (matches Coq: Definition domain_level) -/
 def domain_level (d : SecurityDomain) : Nat :=
@@ -426,95 +426,95 @@ def domain_can_access (from_domain to_domain : SecurityDomain) : Bool :=
 def permission_allows_read (p : AccessPermission) : Bool :=
   match p with
   | .permReadWrite => true
-  | ._ => false
+  | _ => false
 
 /-- permission_allows_write (matches Coq: Definition permission_allows_write) -/
 def permission_allows_write (p : AccessPermission) : Bool :=
   match p with
   | .permReadWrite => true
-  | ._ => false
+  | _ => false
 
 /-- secure_region_can_read (matches Coq: Definition secure_region_can_read) -/
 def secure_region_can_read (r : SecureMemoryRegion) (from : SecurityDomain) : Bool :=
-  region_is_allocated (smr_base r) &&
-  domain_can_access from (smr_domain r) &&
-  permission_allows_read (smr_permission r)
+  region_is_allocated (r.smr_base) &&
+  domain_can_access from (r.smr_domain) &&
+  permission_allows_read (r.smr_permission)
 
 /-- secure_region_can_write (matches Coq: Definition secure_region_can_write) -/
 def secure_region_can_write (r : SecureMemoryRegion) (from : SecurityDomain) : Bool :=
-  region_is_allocated (smr_base r) &&
-  domain_can_access from (smr_domain r) &&
-  permission_allows_write (smr_permission r)
+  region_is_allocated (r.smr_base) &&
+  domain_can_access from (r.smr_domain) &&
+  permission_allows_write (r.smr_permission)
 
 /-- riina_uaf (matches Coq: Definition riina_uaf) -/
-def riina_uaf : UseAfterFreeGuard := mkUAFGuard true true true
+def riina_uaf : UseAfterFreeGuard := UseAfterFreeGuard.mk true true true
 
 /-- riina_df (matches Coq: Definition riina_df) -/
-def riina_df : DoubleFreeGuard := mkDFGuard true true true
+def riina_df : DoubleFreeGuard := DoubleFreeGuard.mk true true true
 
 /-- riina_nd (matches Coq: Definition riina_nd) -/
-def riina_nd : NullDerefGuard := mkNDGuard true true true
+def riina_nd : NullDerefGuard := NullDerefGuard.mk true true true
 
 /-- riina_bounds (matches Coq: Definition riina_bounds) -/
-def riina_bounds : BoundsGuard := mkBoundsGuard true true true
+def riina_bounds : BoundsGuard := BoundsGuard.mk true true true
 
 /-- riina_stack (matches Coq: Definition riina_stack) -/
-def riina_stack : StackGuard := mkStackGuard true true true true
+def riina_stack : StackGuard := StackGuard.mk true true true true
 
 /-- riina_heap (matches Coq: Definition riina_heap) -/
-def riina_heap : HeapGuard := mkHeapGuard true true true true
+def riina_heap : HeapGuard := HeapGuard.mk true true true true
 
 /-- riina_isolation (matches Coq: Definition riina_isolation) -/
-def riina_isolation : IsolationGuard := mkIsolationGuard true true true true
+def riina_isolation : IsolationGuard := IsolationGuard.mk true true true true
 
 /-- riina_mem_safety (matches Coq: Definition riina_mem_safety) -/
-def riina_mem_safety : MemorySafetyConfig := mkMemSafety
+def riina_mem_safety : MemorySafetyConfig := MemorySafetyConfig.mk
   riina_uaf riina_df riina_nd riina_bounds riina_stack riina_heap riina_isolation
 
 /-- valid_pointer (matches Coq: Definition valid_pointer) -/
-def valid_pointer : Pointer := mkPointer Valid 10 100
+def valid_pointer : Pointer := Pointer.mk Valid 10 100
 
 /-- null_pointer (matches Coq: Definition null_pointer) -/
-def null_pointer : Pointer := mkPointer Null 0 0
+def null_pointer : Pointer := Pointer.mk Null 0 0
 
 /-- dangling_pointer (matches Coq: Definition dangling_pointer) -/
-def dangling_pointer : Pointer := mkPointer Dangling 5 50
+def dangling_pointer : Pointer := Pointer.mk Dangling 5 50
 
 /-- oob_pointer (matches Coq: Definition oob_pointer) -/
-def oob_pointer : Pointer := mkPointer OutOfBounds 100 50
+def oob_pointer : Pointer := Pointer.mk OutOfBounds 100 50
 
 /-- allocated_region (matches Coq: Definition allocated_region) -/
-def allocated_region : MemoryRegion := mkMemRegion Allocated 1024 true true
+def allocated_region : MemoryRegion := MemoryRegion.mk Allocated 1024 true true
 
 /-- freed_region (matches Coq: Definition freed_region) -/
-def freed_region : MemoryRegion := mkMemRegion Freed 1024 false false
+def freed_region : MemoryRegion := MemoryRegion.mk Freed 1024 false false
 
 /-- unallocated_region (matches Coq: Definition unallocated_region) -/
-def unallocated_region : MemoryRegion := mkMemRegion Unallocated 0 false false
+def unallocated_region : MemoryRegion := MemoryRegion.mk Unallocated 0 false false
 
 /-- kernel_region (matches Coq: Definition kernel_region) -/
-def kernel_region : SecureMemoryRegion := mkSecureMemRegion allocated_region DomainKernel PermReadWrite false
+def kernel_region : SecureMemoryRegion := SecureMemoryRegion.mk allocated_region .domainKernel .permReadWrite false
 
 /-- user_region (matches Coq: Definition user_region) -/
-def user_region : SecureMemoryRegion := mkSecureMemRegion allocated_region DomainUser PermReadWrite false
+def user_region : SecureMemoryRegion := SecureMemoryRegion.mk allocated_region .domainUser .permReadWrite false
 
 /-- guest_region (matches Coq: Definition guest_region) -/
-def guest_region : SecureMemoryRegion := mkSecureMemRegion allocated_region DomainGuest PermRead false
+def guest_region : SecureMemoryRegion := SecureMemoryRegion.mk allocated_region .domainGuest PermRead false
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_false_iff (matches Coq) -/
-theorem andb_false_iff : ∀ a b : bool, a && b = false <-> a = false ∨ b = false := by
+private theorem andb_false_iff : ∀ a b : Bool, a && b = false <-> a = false ∨ b = false := by
   cases ‹_› <;> simp
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- negb_false_iff (matches Coq) -/
-theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
+private theorem negb_false_iff : ∀ b : Bool, !b = false <-> b = true := by
   cases ‹_› <;> simp
 
 /-- ============================================================================
@@ -919,35 +919,35 @@ theorem MEM_095_complete_isolation : ∀ i, isolation_protected i = true → ig_
     SECTION 14: SECURITY DOMAIN ACCESS THEOREMS (MEM_096 - MEM_105)
     ============================================================================ -/
 /-- MEM_096_kernel_can_access_kernel (matches Coq) -/
-theorem MEM_096_kernel_can_access_kernel : domain_can_access DomainKernel DomainKernel = true := by
+theorem MEM_096_kernel_can_access_kernel : domain_can_access .domainKernel .domainKernel = true := by
   rfl
 
 /-- MEM_097_kernel_can_access_user (matches Coq) -/
-theorem MEM_097_kernel_can_access_user : domain_can_access DomainKernel DomainUser = true := by
+theorem MEM_097_kernel_can_access_user : domain_can_access .domainKernel .domainUser = true := by
   rfl
 
 /-- MEM_098_kernel_can_access_guest (matches Coq) -/
-theorem MEM_098_kernel_can_access_guest : domain_can_access DomainKernel DomainGuest = true := by
+theorem MEM_098_kernel_can_access_guest : domain_can_access .domainKernel .domainGuest = true := by
   rfl
 
 /-- MEM_099_kernel_can_access_untrusted (matches Coq) -/
-theorem MEM_099_kernel_can_access_untrusted : domain_can_access DomainKernel DomainUntrusted = true := by
+theorem MEM_099_kernel_can_access_untrusted : domain_can_access .domainKernel .domainUntrusted = true := by
   rfl
 
 /-- MEM_100_user_cannot_access_kernel (matches Coq) -/
-theorem MEM_100_user_cannot_access_kernel : domain_can_access DomainUser DomainKernel = false := by
+theorem MEM_100_user_cannot_access_kernel : domain_can_access .domainUser .domainKernel = false := by
   rfl
 
 /-- MEM_101_user_can_access_user (matches Coq) -/
-theorem MEM_101_user_can_access_user : domain_can_access DomainUser DomainUser = true := by
+theorem MEM_101_user_can_access_user : domain_can_access .domainUser .domainUser = true := by
   rfl
 
 /-- MEM_102_guest_cannot_access_user (matches Coq) -/
-theorem MEM_102_guest_cannot_access_user : domain_can_access DomainGuest DomainUser = false := by
+theorem MEM_102_guest_cannot_access_user : domain_can_access .domainGuest .domainUser = false := by
   rfl
 
 /-- MEM_103_untrusted_cannot_access_guest (matches Coq) -/
-theorem MEM_103_untrusted_cannot_access_guest : domain_can_access DomainUntrusted DomainGuest = false := by
+theorem MEM_103_untrusted_cannot_access_guest : domain_can_access .domainUntrusted .domainGuest = false := by
   rfl
 
 /-- MEM_104_domain_access_reflexive (matches Coq) -/
@@ -962,31 +962,31 @@ theorem MEM_105_domain_hierarchy_transitive : ∀ d1 d2 d3, domain_can_access d1
     SECTION 15: SECURE REGION ACCESS THEOREMS (MEM_106 - MEM_115)
     ============================================================================ -/
 /-- MEM_106_kernel_read_kernel_region (matches Coq) -/
-theorem MEM_106_kernel_read_kernel_region : secure_region_can_read kernel_region DomainKernel = true := by
+theorem MEM_106_kernel_read_kernel_region : secure_region_can_read kernel_region .domainKernel = true := by
   rfl
 
 /-- MEM_107_user_cannot_read_kernel_region (matches Coq) -/
-theorem MEM_107_user_cannot_read_kernel_region : secure_region_can_read kernel_region DomainUser = false := by
+theorem MEM_107_user_cannot_read_kernel_region : secure_region_can_read kernel_region .domainUser = false := by
   rfl
 
 /-- MEM_108_kernel_read_user_region (matches Coq) -/
-theorem MEM_108_kernel_read_user_region : secure_region_can_read user_region DomainKernel = true := by
+theorem MEM_108_kernel_read_user_region : secure_region_can_read user_region .domainKernel = true := by
   rfl
 
 /-- MEM_109_user_read_user_region (matches Coq) -/
-theorem MEM_109_user_read_user_region : secure_region_can_read user_region DomainUser = true := by
+theorem MEM_109_user_read_user_region : secure_region_can_read user_region .domainUser = true := by
   rfl
 
 /-- MEM_110_guest_read_guest_region (matches Coq) -/
-theorem MEM_110_guest_read_guest_region : secure_region_can_read guest_region DomainGuest = true := by
+theorem MEM_110_guest_read_guest_region : secure_region_can_read guest_region .domainGuest = true := by
   rfl
 
 /-- MEM_111_guest_cannot_write_guest_region (matches Coq) -/
-theorem MEM_111_guest_cannot_write_guest_region : secure_region_can_write guest_region DomainGuest = false := by
+theorem MEM_111_guest_cannot_write_guest_region : secure_region_can_write guest_region .domainGuest = false := by
   rfl
 
 /-- MEM_112_kernel_write_user_region (matches Coq) -/
-theorem MEM_112_kernel_write_user_region : secure_region_can_write user_region DomainKernel = true := by
+theorem MEM_112_kernel_write_user_region : secure_region_can_write user_region .domainKernel = true := by
   rfl
 
 /-- MEM_113_read_requires_allocation (matches Coq) -/
@@ -1037,7 +1037,7 @@ theorem MEM_123_bounds_safety_complete : ∀ b, bounds_protected b = true → bg
   simp_all [Bool.and_eq_true]
 
 /-- MEM_124_ptr_safe_zero_offset (matches Coq) -/
-theorem MEM_124_ptr_safe_zero_offset : ∀ bounds, bounds > 0 → ptr_safe_for_access (mkPointer Valid 0 bounds) = true := by
+theorem MEM_124_ptr_safe_zero_offset : ∀ bounds, bounds > 0 → ptr_safe_for_access (Pointer.mk Valid 0 bounds) = true := by
   cases ‹_› <;> simp
 
 /-- MEM_125_complete_memory_safety_riina (matches Coq) -/

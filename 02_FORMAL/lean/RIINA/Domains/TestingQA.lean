@@ -244,7 +244,7 @@ def test_result_eqb := sorry -- complex match, needs manual translation
 def test_passed (r : TestResult) : Bool :=
   match r with
   | .tRPass => true
-  | ._ => false
+  | _ => false
 
 /-- initial_state (matches Coq: Definition initial_state) -/
 def initial_state : TestState := mkTestState 0 false
@@ -290,11 +290,11 @@ def mutation_score (mutants : List Mutant) : Nat :=
 
 /-- test_detects_mutation (matches Coq: Definition test_detects_mutation) -/
 def test_detects_mutation (orig_f mut_f : Nat -> Nat) (tc : TestCase) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- timing_attack_detected (matches Coq: Definition timing_attack_detected) -/
 def timing_attack_detected (measurements : List TimingMeasurement) (tolerance : Nat) : Bool :=
-  existsb (fun tm => negb (is_constant_time tm tolerance)) measurements
+  existsb (fun tm => !(is_constant_time tm tolerance)) measurements
 
 /-- run_kat (matches Coq: Definition run_kat) -/
 def run_kat (kat : KATTest) (f : Nat -> Nat) : Bool :=
@@ -336,12 +336,12 @@ theorem list_beq_refl : ∀ l, list_beq Nat.eqb l l = true := by
 
 /-- M_001_01: Test determinism - same input produces same result -/
 /-- M_001_01 (matches Coq) -/
-theorem M_001_01 : ∀ (tc : TestCase) (f : nat → nat), run_test tc f = run_test tc f := by
+theorem M_001_01 : ∀ (tc : TestCase) (f : Nat → nat), run_test tc f = run_test tc f := by
   rfl
 
 /-- M_001_02: Test isolation - tests do not affect each other -/
 /-- M_001_02 (matches Coq) -/
-theorem M_001_02 : ∀ (tc1 tc2 : TestCase) (f : nat → nat) (s : TestState), let (r1, s1) := run_isolated tc1 f s in let (r2, _) := run_isolated tc2 f s in s1 = s := by
+theorem M_001_02 : ∀ (tc1 tc2 : TestCase) (f : Nat → nat) (s : TestState), let (r1, s1) := run_isolated tc1 f s in let (r2, _) := run_isolated tc2 f s in s1 = s := by
   rfl
 
 /-- M_001_03 (matches Coq) -/
@@ -350,17 +350,17 @@ theorem M_001_03 : ∀ (e : Expr) (t : SimpleType), HasType e t → IsValue e �
 
 /-- M_001_04: Assertion soundness - assert P passes iff P holds -/
 /-- M_001_04 (matches Coq) -/
-theorem M_001_04 : ∀ (P : bool), (P = true) <-> (if P then TRPass else TRFail "assertion failed") = TRPass := by
+theorem M_001_04 : ∀ (P : Bool), (P = true) <-> (if P then .tRPass else TRFail "assertion failed") = TRPass := by
   rfl
 
 /-- M_001_05: Test fixture setup/teardown correctness -/
 /-- M_001_05 (matches Coq) -/
-theorem M_001_05 : ∀ (fixture : Fixture) (tc : TestCase) (f : nat → nat) (s : TestState), fixture.(fix_setup) = (fun x => x) → fixture.(fix_teardown) = (fun x => x) → fst (run_with_fixture fixture tc f s) = run_test tc f := by
+theorem M_001_05 : ∀ (fixture : Fixture) (tc : TestCase) (f : Nat → nat) (s : TestState), fixture.(fix_setup) = (fun x => x) → fixture.(fix_teardown) = (fun x => x) → fst (run_with_fixture fixture tc f s) = run_test tc f := by
   rfl
 
 /-- M_001_06: Expected panic test correctness -/
 /-- M_001_06 (matches Coq) -/
-theorem M_001_06 : ∀ (f : nat → option nat) (input : nat), expected_panic f input = true <-> f input = None := by
+theorem M_001_06 : ∀ (f : Nat → option nat) (input : Nat), expected_panic f input = true <-> f input = None := by
   rfl
 
 /-- M_001_07: Property holds for all generated inputs (soundness) -/
@@ -370,12 +370,12 @@ theorem M_001_07 : ∀ (prop : Property) (inputs : list nat), check_property pro
 
 /-- M_001_08: Shrinking produces minimal counterexample -/
 /-- M_001_08 (matches Coq) -/
-theorem M_001_08 : ∀ (prop : Property) (n fuel : nat), prop n = false → prop (shrink_loop prop n fuel) = false ∨ (∀ s, In s (shrink_nat (shrink_loop prop n fuel)) → prop s = true) := by
+theorem M_001_08 : ∀ (prop : Property) (n fuel : Nat), prop n = false → prop (shrink_loop prop n fuel) = false ∨ (∀ s, In s (shrink_nat (shrink_loop prop n fuel)) → prop s = true) := by
   simp_all [Bool.and_eq_true]
 
 /-- M_001_09: Generator coverage - all values in domain reachable -/
 /-- M_001_09 (matches Coq) -/
-theorem M_001_09 : ∀ (n : nat), In n (gen_range n) := by
+theorem M_001_09 : ∀ (n : Nat), In n (gen_range n) := by
   rfl
 
 /-- M_001_10: Custom generator well-formedness -/
@@ -385,17 +385,17 @@ theorem M_001_10 : ∀ (gs : GenState), let (v, gs') := gen_nat gs in v ≤ gs.(
 
 /-- M_001_11: Fuzzer explores all reachable code paths (completeness bound) -/
 /-- M_001_11 (matches Coq) -/
-theorem M_001_11 : ∀ (max_depth : nat) (inputs : list nat), (∀ n, n ≤ max_depth → In n inputs) → ∀ p, In p (reachable_paths max_depth) → path_covered p (fuzzer_explores inputs) = true := by
+theorem M_001_11 : ∀ (max_depth : Nat) (inputs : list nat), (∀ n, n ≤ max_depth → In n inputs) → ∀ p, In p (reachable_paths max_depth) → path_covered p (fuzzer_explores inputs) = true := by
   cases ‹_› <;> simp <;> omega
 
 /-- M_001_12: Structured fuzzing preserves input validity -/
 /-- M_001_12 (matches Coq) -/
-theorem M_001_12 : ∀ (min max n : nat), valid_structured_input min max n = true → min ≤ n ∧ n ≤ max := by
+theorem M_001_12 : ∀ (min max n : Nat), valid_structured_input min max n = true → min ≤ n ∧ n ≤ max := by
   simp_all [Bool.and_eq_true]
 
 /-- M_001_13: Differential fuzzing detects discrepancies -/
 /-- M_001_13 (matches Coq) -/
-theorem M_001_13 : ∀ (f1 f2 : nat → nat) (input : nat), differential_test f1 f2 input = false <-> f1 input ≠ f2 input := by
+theorem M_001_13 : ∀ (f1 f2 : Nat → nat) (input : Nat), differential_test f1 f2 input = false <-> f1 input ≠ f2 input := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- M_001_14: Sanitizer integration correctness -/
@@ -405,12 +405,12 @@ theorem M_001_14 : ∀ (sr : SanitizerResult), sanitizer_pass sr = true <-> sr =
 
 /-- M_001_15: Component composition test correctness -/
 /-- M_001_15 (matches Coq) -/
-theorem M_001_15 : ∀ (c1 c2 : Component) (input : nat), compose_components c1 c2 input = c2.(comp_impl) (c1.(comp_impl) input) := by
+theorem M_001_15 : ∀ (c1 c2 : Component) (input : Nat), compose_components c1 c2 input = c2.(comp_impl) (c1.(comp_impl) input) := by
   rfl
 
 /-- M_001_16: API contract verification -/
 /-- M_001_16 (matches Coq) -/
-theorem M_001_16 : ∀ (api : APIContract) (input : nat), api.(api_precondition) input = true → satisfies_contract api input = true → api.(api_postcondition) input (api.(api_impl) input) = true := by
+theorem M_001_16 : ∀ (api : APIContract) (input : Nat), api.(api_precondition) input = true → satisfies_contract api input = true → api.(api_postcondition) input (api.(api_impl) input) = true := by
   intro h; exact h
 
 /-- M_001_17: Security flow integration test soundness -/
@@ -420,12 +420,12 @@ theorem M_001_17 : ∀ (sf : SecurityFlow), sf.(sf_valid) = true → ∃ src sin
 
 /-- M_001_18: Mutation operator preserves syntactic validity -/
 /-- M_001_18 (matches Coq) -/
-theorem M_001_18 : ∀ (m : Mutant) (max_loc : nat), mutation_valid m max_loc = true → m.(mut_location) < max_loc := by
+theorem M_001_18 : ∀ (m : Mutant) (max_loc : Nat), mutation_valid m max_loc = true → m.(mut_location) < max_loc := by
   simp_all [Bool.and_eq_true]
 
 /-- M_001_19: Killed mutation implies test detects fault -/
 /-- M_001_19 (matches Coq) -/
-theorem M_001_19 : ∀ (orig_f mut_f : nat → nat) (tc : TestCase), test_detects_mutation orig_f mut_f tc = true → orig_f tc.(tc_input) ≠ mut_f tc.(tc_input) := by
+theorem M_001_19 : ∀ (orig_f mut_f : Nat → nat) (tc : TestCase), test_detects_mutation orig_f mut_f tc = true → orig_f tc.(tc_input) ≠ mut_f tc.(tc_input) := by
   simp_all [Bool.and_eq_true]
 
 /-- M_001_20: Mutation score lower bound on test effectiveness -/
@@ -435,12 +435,12 @@ theorem M_001_20 : ∀ (mutants : list Mutant), mutation_score mutants ≤ List.
 
 /-- M_001_21: Timing test detects non-constant-time code -/
 /-- M_001_21 (matches Coq) -/
-theorem M_001_21 : ∀ (measurements : list TimingMeasurement) (tolerance : nat), timing_attack_detected measurements tolerance = true → ∃ tm, In tm measurements ∧ is_constant_time tm tolerance = false := by
+theorem M_001_21 : ∀ (measurements : list TimingMeasurement) (tolerance : Nat), timing_attack_detected measurements tolerance = true → ∃ tm, In tm measurements ∧ is_constant_time tm tolerance = false := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- M_001_22: Known Answer Test (KAT) verifies cryptographic correctness -/
 /-- M_001_22 (matches Coq) -/
-theorem M_001_22 : ∀ (kat : KATTest) (f : nat → nat), run_kat kat f = true <-> f kat.(kat_input) = kat.(kat_expected) := by
+theorem M_001_22 : ∀ (kat : KATTest) (f : Nat → nat), run_kat kat f = true <-> f kat.(kat_input) = kat.(kat_expected) := by
   simp_all [Bool.and_eq_true]
 
 /-- M_001_23: Brute force protection test correctness -/
@@ -450,7 +450,7 @@ theorem M_001_23 : ∀ (bfp : BruteForceProtection), check_brute_force bfp = tru
 
 /-- M_001_24: Line coverage soundness - covered line was executed -/
 /-- M_001_24 (matches Coq) -/
-theorem M_001_24 : ∀ (line : nat) (trace : ExecutionTrace), line_covered line trace = true → ∃ ev, In ev trace ∧ ev = TECoverage line := by
+theorem M_001_24 : ∀ (line : Nat) (trace : ExecutionTrace), line_covered line trace = true → ∃ ev, In ev trace ∧ ev = TECoverage line := by
   simp_all [Bool.and_eq_true]
 
 /-- M_001_25: Security property coverage completeness -/

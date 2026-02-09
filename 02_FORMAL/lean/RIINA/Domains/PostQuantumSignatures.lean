@@ -164,26 +164,26 @@ def level_leq := sorry -- complex match, needs manual translation
 
 /-- eufcma_compliant (matches Coq: Definition eufcma_compliant) -/
 def eufcma_compliant (e : EUFCMASecure) : Bool :=
-  eufcma_unforgeable e &&
-  eufcma_strong_unforgeability e &&
-  eufcma_adaptive_security e
+  e.eufcma_unforgeable &&
+  e.eufcma_strong_unforgeability &&
+  e.eufcma_adaptive_security
 
 /-- sig_quantum_resistant (matches Coq: Definition sig_quantum_resistant) -/
 def sig_quantum_resistant (q : SigQuantumResistant) : Bool :=
-  sqr_post_quantum q &&
-  sqr_no_shor_attack q &&
-  sqr_conservative_params q
+  q.sqr_post_quantum &&
+  q.sqr_no_shor_attack &&
+  q.sqr_conservative_params
 
 /-- sig_secure (matches Coq: Definition sig_secure) -/
 def sig_secure (s : SigNatureSecurity) : Bool :=
-  eufcma_compliant (sig_sec_eufcma s) &&
-  sig_quantum_resistant (sig_sec_quantum s)
+  eufcma_compliant (s.sig_sec_eufcma) &&
+  sig_quantum_resistant (s.sig_sec_quantum)
 
 /-- sig_correct (matches Coq: Definition sig_correct) -/
 def sig_correct (si : SigNatureInstance) : Bool :=
-  skp_valid (sig_keypair si) &&
-  sig_valid (sig_signature si) &&
-  sig_verification si
+  skp_valid (si.sig_keypair) &&
+  sig_valid (si.sig_signature) &&
+  si.sig_verification
 
 /-- mk_valid_sig_keypair (matches Coq: Definition mk_valid_sig_keypair) -/
 def mk_valid_sig_keypair : SigningKeyPair := mkSigningKeyPair 1 2 true
@@ -199,7 +199,7 @@ def mk_compliant_sig_qr : SigQuantumResistant := mkSigQR true true true
 
 /-- riina_sig_ml_dsa_87 (matches Coq: Definition riina_sig_ml_dsa_87) -/
 def riina_sig_ml_dsa_87 : SignatureInstance := mkSigInstance
-  ML_DSA_87
+  .mL_DSA_87
   mk_valid_sig_keypair
   42  
   mk_valid_signature
@@ -207,7 +207,7 @@ def riina_sig_ml_dsa_87 : SignatureInstance := mkSigInstance
 
 /-- riina_sig_slh_dsa_256s (matches Coq: Definition riina_sig_slh_dsa_256s) -/
 def riina_sig_slh_dsa_256s : SignatureInstance := mkSigInstance
-  SLH_DSA_256s
+  .sLH_DSA_256s
   mk_valid_sig_keypair
   42
   mk_valid_signature
@@ -223,27 +223,27 @@ def riina_sig_security : SignatureSecurity := mkSigSecurity
     SECTION 4: COMPLIANCE PREDICATES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- PQ_SIG_001: ML-DSA is Lattice-Based -/
 /-- PQ_SIG_001_mldsa_lattice (matches Coq) -/
-theorem PQ_SIG_001_mldsa_lattice : scheme_category ML_DSA_87 = Lattice_Based := by
+theorem PQ_SIG_001_mldsa_lattice : scheme_category .mL_DSA_87 = Lattice_Based := by
   rfl
 
 /-- PQ_SIG_002: SLH-DSA is Hash-Based -/
 /-- PQ_SIG_002_slhdsa_hash (matches Coq) -/
-theorem PQ_SIG_002_slhdsa_hash : scheme_category SLH_DSA_256s = Hash_Based := by
+theorem PQ_SIG_002_slhdsa_hash : scheme_category .sLH_DSA_256s = Hash_Based := by
   rfl
 
 /-- PQ_SIG_003: ML-DSA-87 is Level 5 -/
 /-- PQ_SIG_003_mldsa87_level5 (matches Coq) -/
-theorem PQ_SIG_003_mldsa87_level5 : scheme_security_level ML_DSA_87 = Level5 := by
+theorem PQ_SIG_003_mldsa87_level5 : scheme_security_level .mL_DSA_87 = Level5 := by
   rfl
 
 /-- PQ_SIG_004: SLH-DSA-256s is Level 5 -/
 /-- PQ_SIG_004_slhdsa256_level5 (matches Coq) -/
-theorem PQ_SIG_004_slhdsa256_level5 : scheme_security_level SLH_DSA_256s = Level5 := by
+theorem PQ_SIG_004_slhdsa256_level5 : scheme_security_level .sLH_DSA_256s = Level5 := by
   rfl
 
 /-- PQ_SIG_005: Level Reflexivity -/

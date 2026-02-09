@@ -93,7 +93,7 @@ def entropy_sufficient (key : KeyMetadata) (min_entropy : Nat) : Bool :=
 def is_usable_state (state : KeyState) : Bool :=
   match state with
   | .active => true
-  | ._ => false
+  | _ => false
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
 def valid_transition := sorry -- complex match, needs manual translation
@@ -104,7 +104,7 @@ def key_not_expired (key : KeyMetadata) (current_time : Nat) : Bool :=
 
 /-- rotation_valid (matches Coq: Definition rotation_valid) -/
 def rotation_valid (rot : RotationRecord) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- rotation_after_creation (matches Coq: Definition rotation_after_creation) -/
 def rotation_after_creation (key : KeyMetadata) (rot : RotationRecord) : Bool :=
@@ -179,11 +179,11 @@ def key_layers (entropy state rotation destroy escrow : Bool) : Bool :=
   andb entropy (andb state (andb rotation (andb destroy escrow)))
 
 /-- key_001_entropy_sufficient (matches Coq) -/
-theorem key_001_entropy_sufficient : ∀ (key : KeyMetadata) (min_entropy : nat), entropy_sufficient key min_entropy = true → min_entropy ≤ key_entropy_bits key := by
+theorem key_001_entropy_sufficient : ∀ (key : KeyMetadata) (min_entropy : Nat), entropy_sufficient key min_entropy = true → min_entropy ≤ key_entropy_bits key := by
   simp_all [Bool.and_eq_true]
 
 /-- key_002_active_usable (matches Coq) -/
-theorem key_002_active_usable : ∀ (key : KeyMetadata), key_state key = Active → is_usable_state (key_state key) = true := by
+theorem key_002_active_usable : ∀ (key : KeyMetadata), key_state key = .active → is_usable_state (key_state key) = true := by
   rfl
 
 /-- key_003_valid_transition (matches Coq) -/
@@ -199,7 +199,7 @@ theorem key_005_compromised_unusable : is_usable_state Compromised = false := by
   rfl
 
 /-- key_006_not_expired (matches Coq) -/
-theorem key_006_not_expired : ∀ (key : KeyMetadata) (current_time : nat), key_not_expired key current_time = true → current_time < key_expires key := by
+theorem key_006_not_expired : ∀ (key : KeyMetadata) (current_time : Nat), key_not_expired key current_time = true → current_time < key_expires key := by
   simp_all [Bool.and_eq_true]
 
 /-- key_007_rotation_new (matches Coq) -/
@@ -227,51 +227,51 @@ theorem key_012_destruction_method : ∀ (dest : DestructionRecord), destruction
   simp_all [Bool.and_eq_true]
 
 /-- key_013_symmetric_size (matches Coq) -/
-theorem key_013_symmetric_size : ∀ (bits min_bits : nat), symmetric_key_size_ok bits min_bits = true → min_bits ≤ bits := by
+theorem key_013_symmetric_size : ∀ (bits min_bits : Nat), symmetric_key_size_ok bits min_bits = true → min_bits ≤ bits := by
   simp_all [Bool.and_eq_true]
 
 /-- key_014_asymmetric_size (matches Coq) -/
-theorem key_014_asymmetric_size : ∀ (bits min_bits : nat), asymmetric_key_size_ok bits min_bits = true → min_bits ≤ bits := by
+theorem key_014_asymmetric_size : ∀ (bits min_bits : Nat), asymmetric_key_size_ok bits min_bits = true → min_bits ≤ bits := by
   simp_all [Bool.and_eq_true]
 
 /-- key_015_purpose_bound (matches Coq) -/
-theorem key_015_purpose_bound : ∀ (key_purpose allowed_purpose : nat), purpose_matches key_purpose allowed_purpose = true → key_purpose = allowed_purpose := by
+theorem key_015_purpose_bound : ∀ (key_purpose allowed_purpose : Nat), purpose_matches key_purpose allowed_purpose = true → key_purpose = allowed_purpose := by
   simp_all [Bool.and_eq_true]
 
 /-- key_016_lifetime (matches Coq) -/
-theorem key_016_lifetime : ∀ (created expires max_lifetime : nat), lifetime_ok created expires max_lifetime = true → expires - created ≤ max_lifetime := by
+theorem key_016_lifetime : ∀ (created expires max_lifetime : Nat), lifetime_ok created expires max_lifetime = true → expires - created ≤ max_lifetime := by
   simp_all [Bool.and_eq_true]
 
 /-- key_017_rotation_due (matches Coq) -/
-theorem key_017_rotation_due : ∀ (last_rotation current max_period : nat), rotation_due last_rotation current max_period = true → max_period < current - last_rotation := by
+theorem key_017_rotation_due : ∀ (last_rotation current max_period : Nat), rotation_due last_rotation current max_period = true → max_period < current - last_rotation := by
   simp_all [Bool.and_eq_true]
 
 /-- key_018_derivation_depth (matches Coq) -/
-theorem key_018_derivation_depth : ∀ (depth max_depth : nat), derivation_depth_ok depth max_depth = true → depth ≤ max_depth := by
+theorem key_018_derivation_depth : ∀ (depth max_depth : Nat), derivation_depth_ok depth max_depth = true → depth ≤ max_depth := by
   simp_all [Bool.and_eq_true]
 
 /-- key_019_access_control (matches Coq) -/
-theorem key_019_access_control : ∀ (requester required : nat), access_allowed requester required = true → required ≤ requester := by
+theorem key_019_access_control : ∀ (requester required : Nat), access_allowed requester required = true → required ≤ requester := by
   simp_all [Bool.and_eq_true]
 
 /-- key_020_hsm_storage (matches Coq) -/
-theorem key_020_hsm_storage : ∀ (hsm_flag : bool), hsm_stored hsm_flag = true → hsm_flag = true := by
+theorem key_020_hsm_storage : ∀ (hsm_flag : Bool), hsm_stored hsm_flag = true → hsm_flag = true := by
   intro h; exact h
 
 /-- key_021_audit_complete (matches Coq) -/
-theorem key_021_audit_complete : ∀ (operations logged : nat), audit_complete operations logged = true → operations = logged := by
+theorem key_021_audit_complete : ∀ (operations logged : Nat), audit_complete operations logged = true → operations = logged := by
   simp_all [Bool.and_eq_true]
 
 /-- key_022_backup_encrypted (matches Coq) -/
-theorem key_022_backup_encrypted : ∀ (encryption_key : nat), backup_encrypted encryption_key = true → encryption_key > 0 := by
+theorem key_022_backup_encrypted : ∀ (encryption_key : Nat), backup_encrypted encryption_key = true → encryption_key > 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- key_023_custodian_diversity (matches Coq) -/
-theorem key_023_custodian_diversity : ∀ (custodians : list nat) (min_custodians : nat), custodians_diverse custodians min_custodians = true → min_custodians ≤ length (nodup Nat.eq_dec custodians) := by
+theorem key_023_custodian_diversity : ∀ (custodians : list nat) (min_custodians : Nat), custodians_diverse custodians min_custodians = true → min_custodians ≤ length (nodup Nat.eq_dec custodians) := by
   simp_all [Bool.and_eq_true]
 
 /-- key_024_recovery_tested (matches Coq) -/
-theorem key_024_recovery_tested : ∀ (last_test current max_interval : nat), recovery_tested last_test current max_interval = true → current - last_test ≤ max_interval := by
+theorem key_024_recovery_tested : ∀ (last_test current max_interval : Nat), recovery_tested last_test current max_interval = true → current - last_test ≤ max_interval := by
   simp_all [Bool.and_eq_true]
 
 /-- key_025_defense_in_depth (matches Coq) -/

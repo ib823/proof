@@ -161,8 +161,8 @@ def processing_within_purpose := sorry -- complex match, needs manual translatio
 /-- disclosure_authorized (matches Coq: Definition disclosure_authorized) -/
 def disclosure_authorized (r : PDPARecord) (recipient : Nat) : Prop :=
   has_valid_consent r /\
-  pdpa_classification r <> SensitivePersonalData \/
-  (pdpa_consent r = ExplicitConsent /\ pdpa_classification r = SensitivePersonalData)
+  pdpa_classification r <> .sensitivePersonalData \/
+  (pdpa_consent r = ExplicitConsent /\ pdpa_classification r = .sensitivePersonalData)
 
 /-- security_adequate (matches Coq: Definition security_adequate) -/
 def security_adequate := sorry -- complex match, needs manual translation
@@ -297,19 +297,19 @@ def pdpa_report_timely (rpt : ComplianceReport) : Prop :=
   report_dpo_active rpt = true
 
 /-- principle_1_consent (matches Coq) -/
-theorem principle_1_consent : ∀ (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = SensitivePersonalData → pdpa_consent r = ExplicitConsent → consent_required_for_processing r a := by
+theorem principle_1_consent : ∀ (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = .sensitivePersonalData → pdpa_consent r = ExplicitConsent → consent_required_for_processing r a := by
   intro h; exact h
 
 /-- principle_1_personal_data (matches Coq) -/
-theorem principle_1_personal_data : ∀ (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = PersonalData → has_valid_consent r → consent_required_for_processing r a := by
+theorem principle_1_personal_data : ∀ (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = .personalData → has_valid_consent r → consent_required_for_processing r a := by
   intro h; exact h
 
 /-- principle_1_public_exempt (matches Coq) -/
-theorem principle_1_public_exempt : ∀ (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = PublicData → consent_required_for_processing r a := by
+theorem principle_1_public_exempt : ∀ (r : PDPARecord) (a : ProcessingAction), pdpa_classification r = .publicData → consent_required_for_processing r a := by
   intro h; exact h
 
 /-- consent_withdrawal_blocks (matches Coq) -/
-theorem consent_withdrawal_blocks : ∀ (r : PDPARecord), pdpa_consent r = WithdrawnConsent → pdpa_classification r ≠ PublicData → ~ has_valid_consent r := by
+theorem consent_withdrawal_blocks : ∀ (r : PDPARecord), pdpa_consent r = WithdrawnConsent → pdpa_classification r ≠ .publicData → ~ has_valid_consent r := by
   simp_all [Bool.and_eq_true]
 
 /-- principle_2_purpose_limitation (matches Coq) -/
@@ -317,11 +317,11 @@ theorem principle_2_purpose_limitation : ∀ (r : PDPARecord), processing_within
   rfl
 
 /-- principle_3_sensitive_explicit_only (matches Coq) -/
-theorem principle_3_sensitive_explicit_only : ∀ (r : PDPARecord) (recipient : nat), pdpa_classification r = SensitivePersonalData → pdpa_consent r = ExplicitConsent → disclosure_authorized r recipient := by
+theorem principle_3_sensitive_explicit_only : ∀ (r : PDPARecord) (recipient : Nat), pdpa_classification r = .sensitivePersonalData → pdpa_consent r = ExplicitConsent → disclosure_authorized r recipient := by
   simp_all [Bool.and_eq_true]
 
 /-- principle_4_encryption_mandatory (matches Coq) -/
-theorem principle_4_encryption_mandatory : ∀ (r : PDPARecord), pdpa_encrypted r = true → pdpa_classification r ≠ PublicData → pdpa_encrypted r = true := by
+theorem principle_4_encryption_mandatory : ∀ (r : PDPARecord), pdpa_encrypted r = true → pdpa_classification r ≠ .publicData → pdpa_encrypted r = true := by
   intro h; exact h
 
 /-- principle_4_security (matches Coq) -/
@@ -329,27 +329,27 @@ theorem principle_4_security : ∀ (r : PDPARecord), pdpa_encrypted r = true →
   intro h; exact h
 
 /-- principle_5_retention (matches Coq) -/
-theorem principle_5_retention : ∀ (r : PDPARecord) (t : nat), ~ within_retention_period r t → must_delete r t := by
+theorem principle_5_retention : ∀ (r : PDPARecord) (t : Nat), ~ within_retention_period r t → must_delete r t := by
   simp_all [Bool.and_eq_true]
 
 /-- retention_delete_exclusive (matches Coq) -/
-theorem retention_delete_exclusive : ∀ (r : PDPARecord) (t : nat), within_retention_period r t → ~ must_delete r t := by
+theorem retention_delete_exclusive : ∀ (r : PDPARecord) (t : Nat), within_retention_period r t → ~ must_delete r t := by
   simp_all [Bool.and_eq_true]
 
 /-- principle_6_integrity (matches Coq) -/
-theorem principle_6_integrity : ∀ (h : nat), data_integrity_maintained h h := by
+theorem principle_6_integrity : ∀ (h : Nat), data_integrity_maintained h h := by
   rfl
 
 /-- principle_7_access_logged (matches Coq) -/
-theorem principle_7_access_logged : ∀ (trail : PDPAAuditTrail) (subject_id t actor : nat), let entry := mkPDPAAudit subject_id Collect t actor in access_request_served (entry :: trail) subject_id t := by
+theorem principle_7_access_logged : ∀ (trail : PDPAAuditTrail) (subject_id t actor : Nat), let entry := mkPDPAAudit subject_id Collect t actor in access_request_served (entry :: trail) subject_id t := by
   rfl
 
 /-- breach_notification_ordering (matches Coq) -/
-theorem breach_notification_ordering : ∀ (b : BreachEvent) (t_pdpc t_subjects : nat), pdpc_notified_in_time b t_pdpc → subjects_notified_in_time b t_subjects → t_pdpc ≤ breach_detected_at b + 72 := by
+theorem breach_notification_ordering : ∀ (b : BreachEvent) (t_pdpc t_subjects : Nat), pdpc_notified_in_time b t_pdpc → subjects_notified_in_time b t_subjects → t_pdpc ≤ breach_detected_at b + 72 := by
   intro h; exact h
 
 /-- pdpc_deadline_stricter (matches Coq) -/
-theorem pdpc_deadline_stricter : ∀ (b : BreachEvent) (t : nat), pdpc_notified_in_time b t → subjects_notified_in_time b t := by
+theorem pdpc_deadline_stricter : ∀ (b : BreachEvent) (t : Nat), pdpc_notified_in_time b t → subjects_notified_in_time b t := by
   omega
 
 /-- dpo_mandatory (matches Coq) -/
@@ -357,11 +357,11 @@ theorem dpo_mandatory : ∀ (dpo : DPOAppointment), dpo_active dpo = true → dp
   omega
 
 /-- pdpa_composition (matches Coq) -/
-theorem pdpa_composition : ∀ (r : PDPARecord) (dpo : DPOAppointment) (t : nat), consent_required_for_processing r Collect → security_adequate r → within_retention_period r t → dpo_compliant dpo → pdpa_fully_compliant r dpo t := by
+theorem pdpa_composition : ∀ (r : PDPARecord) (dpo : DPOAppointment) (t : Nat), consent_required_for_processing r Collect → security_adequate r → within_retention_period r t → dpo_compliant dpo → pdpa_fully_compliant r dpo t := by
   omega
 
 /-- data_collection_consent_recorded (matches Coq) -/
-theorem data_collection_consent_recorded : ∀ (cr : ConsentRecord) (t : nat), cr_recorded_at cr ≤ t → cr_valid cr = true → cr_consent_type cr = ExplicitConsent → consent_properly_recorded cr t := by
+theorem data_collection_consent_recorded : ∀ (cr : ConsentRecord) (t : Nat), cr_recorded_at cr ≤ t → cr_valid cr = true → cr_consent_type cr = ExplicitConsent → consent_properly_recorded cr t := by
   intro h; exact h
 
 /-- cross_border_transfer_authorized (matches Coq) -/
@@ -373,7 +373,7 @@ theorem cross_border_consent_basis : ∀ (t : CrossBorderTransfer), cbt_basis t 
   intro h; exact h
 
 /-- data_breach_notification_timely (matches Coq) -/
-theorem data_breach_notification_timely : ∀ (b : BreachEvent) (t_pdpc t_subj : nat), t_pdpc ≤ breach_detected_at b + 72 → t_subj ≤ breach_detected_at b + 168 → t_pdpc ≤ t_subj → breach_notification_timely b t_pdpc t_subj := by
+theorem data_breach_notification_timely : ∀ (b : BreachEvent) (t_pdpc t_subj : Nat), t_pdpc ≤ breach_detected_at b + 72 → t_subj ≤ breach_detected_at b + 168 → t_pdpc ≤ t_subj → breach_notification_timely b t_pdpc t_subj := by
   intro h; exact h
 
 /-- data_subject_access_fulfilled (matches Coq) -/
@@ -385,23 +385,23 @@ theorem access_late_response_violation : ∀ (req : AccessRequest), ar_requested
   simp_all [Bool.and_eq_true]
 
 /-- data_retention_period_enforced (matches Coq) -/
-theorem data_retention_period_enforced : ∀ (r : PDPARecord) (t : nat), pdpa_retention_limit r < t → ∀ (del : bool), del = true → retention_enforceable r t del := by
+theorem data_retention_period_enforced : ∀ (r : PDPARecord) (t : Nat), pdpa_retention_limit r < t → ∀ (del : Bool), del = true → retention_enforceable r t del := by
   simp_all
 
 /-- data_accuracy_maintained (matches Coq) -/
-theorem data_accuracy_maintained : ∀ (da : DataAccuracy) (t : nat), t ≤ da_last_verified da + da_verification_interval da → accuracy_maintained da t := by
+theorem data_accuracy_maintained : ∀ (da : DataAccuracy) (t : Nat), t ≤ da_last_verified da + da_verification_interval da → accuracy_maintained da t := by
   intro h; exact h
 
 /-- accuracy_expiry_detected (matches Coq) -/
-theorem accuracy_expiry_detected : ∀ (da : DataAccuracy) (t : nat), ~ accuracy_current da t → da_last_verified da + da_verification_interval da < t := by
+theorem accuracy_expiry_detected : ∀ (da : DataAccuracy) (t : Nat), ~ accuracy_current da t → da_last_verified da + da_verification_interval da < t := by
   simp_all [Bool.and_eq_true]
 
 /-- security_measures_proportionate (matches Coq) -/
-theorem security_measures_proportionate : ∀ (c : PDPAClassification) (controls : nat), harm_level c ≤ controls → security_level_adequate c controls := by
+theorem security_measures_proportionate : ∀ (c : PDPAClassification) (controls : Nat), harm_level c ≤ controls → security_level_adequate c controls := by
   intro h; exact h
 
 /-- sensitive_needs_more_controls (matches Coq) -/
-theorem sensitive_needs_more_controls : ∀ (controls : nat), security_level_adequate SensitivePersonalData controls → security_level_adequate PersonalData controls := by
+theorem sensitive_needs_more_controls : ∀ (controls : Nat), security_level_adequate .sensitivePersonalData controls → security_level_adequate .personalData controls := by
   simp_all
 
 /-- processor_contract_binding (matches Coq) -/
@@ -445,7 +445,7 @@ theorem late_report_non_compliant : ∀ (rpt : ComplianceReport), report_deadlin
   simp_all [Bool.and_eq_true]
 
 /-- public_data_lowest_harm (matches Coq) -/
-theorem public_data_lowest_harm : ∀ (c : PDPAClassification), harm_level PublicData ≤ harm_level c := by
+theorem public_data_lowest_harm : ∀ (c : PDPAClassification), harm_level .publicData ≤ harm_level c := by
   simp_all [Bool.and_eq_true]
 
 /-- sensitive_data_highest_harm (matches Coq) -/

@@ -178,11 +178,11 @@ def rights_subset (r1 r2 : List Right) : Prop :=
 
 /-- is_revoked (matches Coq: Definition is_revoked) -/
 def is_revoked (s : KernelState) (c : Capability) : Prop :=
-  In (cap_badge c) (revoked_badges s)
+  In (c.cap_badge) (s.revoked_badges)
 
 /-- cap_valid (matches Coq: Definition cap_valid) -/
 def cap_valid (s : KernelState) (c : Capability) : Prop :=
-  ~ is_revoked s c /\ cap_badge c < next_badge s
+  ~ is_revoked s c /\ c.cap_badge < s.next_badge
 
 /-- action_authorized (matches Coq: Definition action_authorized) -/
 def action_authorized (c : Capability) (a : Action) : Prop :=
@@ -194,71 +194,71 @@ def can_invoke (s : KernelState) (p : ProcId) (a : Action) (c : Capability) : Pr
 
 /-- mapped (matches Coq: Definition mapped) -/
 def mapped (ms : MemoryState) (p : ProcId) (vaddr : VAddr) : Prop :=
-  exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = true
+  exists pte, ms.address_spaces p vaddr = Some pte /\ pte.pte_valid = true
 
 /-- shared_readonly (matches Coq: Definition shared_readonly) -/
 def shared_readonly (ms : MemoryState) (p1 p2 : ProcId) (vaddr : VAddr) : Prop :=
   exists pte1 pte2,
-    address_spaces ms p1 vaddr = Some pte1 /\
-    address_spaces ms p2 vaddr = Some pte2 /\
-    pte_paddr pte1 = pte_paddr pte2 /\
-    perm_write (pte_perms pte1) = false /\
-    perm_write (pte_perms pte2) = false
+    ms.address_spaces p1 vaddr = Some pte1 /\
+    ms.address_spaces p2 vaddr = Some pte2 /\
+    pte1.pte_paddr = pte2.pte_paddr /\
+    perm_write (pte1.pte_perms) = false /\
+    perm_write (pte2.pte_perms) = false
 
 /-- is_kernel_memory (matches Coq: Definition is_kernel_memory) -/
 def is_kernel_memory (ms : MemoryState) (paddr : PAddr) : Prop :=
-  kernel_memory ms paddr = true
+  ms.kernel_memory paddr = true
 
 /-- page_table_integrity (matches Coq: Definition page_table_integrity) -/
 def page_table_integrity (ms : MemoryState) : Prop :=
   forall p vaddr pte,
-    address_spaces ms p vaddr = Some pte ->
-    pte_userspace pte = true ->
-    kernel_memory ms (pte_paddr pte) = false
+    ms.address_spaces p vaddr = Some pte ->
+    pte.pte_userspace = true ->
+    ms.kernel_memory (pte.pte_paddr) = false
 
 /-- has_frame_cap (matches Coq: Definition has_frame_cap) -/
 def has_frame_cap (ms : MemoryState) (p : ProcId) (paddr : PAddr) : Prop :=
   exists c slot,
-    cap_lookup (mem_kernel ms) p slot = Some c /\
-    cap_object c = paddr
+    cap_lookup (ms.mem_kernel) p slot = Some c /\
+    c.cap_object = paddr
 
 /-- valid_memory_state (matches Coq: Definition valid_memory_state) -/
 def valid_memory_state (ms : MemoryState) : Prop :=
   page_table_integrity ms /\
   (forall p vaddr pte,
-    address_spaces ms p vaddr = Some pte ->
-    pte_valid pte = true ->
-    has_frame_cap ms p (pte_paddr pte))
+    ms.address_spaces p vaddr = Some pte ->
+    pte.pte_valid = true ->
+    has_frame_cap ms p (pte.pte_paddr))
 
 /-- ipc_waiting (matches Coq: Definition ipc_waiting) -/
 def ipc_waiting (is : IPCState) (p : ProcId) : Prop :=
-  exists ep_id, waiting_on is p = Some ep_id
+  exists ep_id, is.waiting_on p = Some ep_id
 
 /-- valid_ipc_state (matches Coq: Definition valid_ipc_state) -/
 def valid_ipc_state (is : IPCState) : Prop :=
-  valid_memory_state (ipc_mem is) /\
+  valid_memory_state (is.ipc_mem) /\
   (forall ps, ~ ipc_wait_cycle is ps)
 
 /-- valid_state (matches Coq: Definition valid_state) -/
 def valid_state (s : KernelState) : Prop :=
-  forall p, In p (processes s) -> 
+  forall p, In p (s.processes) -> 
     forall slot c, cap_lookup s p slot = Some c -> cap_valid s c
 
 /-- endpoint_protected (matches Coq: Definition endpoint_protected) -/
 def endpoint_protected (is : IPCState) (ep : Endpoint) : Prop :=
   forall p,
-    In p (ep_queue ep) ->
-    holds (mem_kernel (ipc_mem is)) p (ep_cap ep)
+    In p (ep.ep_queue) ->
+    holds (mem_kernel (is.ipc_mem)) p (ep.ep_cap)
 
 /-- msg_caps_valid (matches Coq: Definition msg_caps_valid) -/
 def msg_caps_valid (is : IPCState) (sender : ProcId) (msg : IPCMessage) : Prop :=
-  forall c, In c (msg_caps msg) ->
-    holds (mem_kernel (ipc_mem is)) sender c /\
-    In RGrant (cap_rights c)
+  forall c, In c (msg.msg_caps) ->
+    holds (mem_kernel (is.ipc_mem)) sender c /\
+    In RGrant (c.cap_rights)
 
 /-- transfer_preserves_validity (matches Coq: Definition transfer_preserves_validity) -/
 def transfer_preserves_validity (s s' : KernelState) (c : Capability) : Prop :=
-  next_badge s <= next_badge s' /\
+  s.next_badge <= s.next_badge' /\
   
   (~ is_revoked s c -> ~ is_revoked s' c)
 
@@ -266,55 +266,55 @@ def transfer_preserves_validity (s s' : KernelState) (c : Capability) : Prop :=
 def isolation_invariant (ms : MemoryState) : Prop :=
   forall p1 p2 vaddr pte1 pte2,
     p1 <> p2 ->
-    address_spaces ms p1 vaddr = Some pte1 ->
-    address_spaces ms p2 vaddr = Some pte2 ->
-    pte_valid pte1 = true ->
-    pte_valid pte2 = true ->
+    ms.address_spaces p1 vaddr = Some pte1 ->
+    ms.address_spaces p2 vaddr = Some pte2 ->
+    pte1.pte_valid = true ->
+    pte2.pte_valid = true ->
     
-    pte_paddr pte1 <> pte_paddr pte2 \/
-    (perm_write (pte_perms pte1) = false /\ perm_write (pte_perms pte2) = false)
+    pte1.pte_paddr <> pte2.pte_paddr \/
+    (perm_write (pte1.pte_perms) = false /\ perm_write (pte2.pte_perms) = false)
 
 /-- properly_isolated (matches Coq: Definition properly_isolated) -/
 def properly_isolated (ms : MemoryState) (p1 p2 : ProcId) (vaddr : VAddr) : Prop :=
   ~ mapped ms p2 vaddr \/
   (exists pte1 pte2,
-    address_spaces ms p1 vaddr = Some pte1 /\
-    address_spaces ms p2 vaddr = Some pte2 /\
-    (pte_paddr pte1 <> pte_paddr pte2 \/
-     (perm_write (pte_perms pte1) = false /\ perm_write (pte_perms pte2) = false)))
+    ms.address_spaces p1 vaddr = Some pte1 /\
+    ms.address_spaces p2 vaddr = Some pte2 /\
+    (pte1.pte_paddr <> pte2.pte_paddr \/
+     (perm_write (pte1.pte_perms) = false /\ perm_write (pte2.pte_perms) = false)))
 
 /-- unmapped (matches Coq: Definition unmapped) -/
 def unmapped (ms : MemoryState) (p : ProcId) (vaddr : VAddr) : Prop :=
-  address_spaces ms p vaddr = None \/
-  exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = false
+  ms.address_spaces p vaddr = None \/
+  exists pte, ms.address_spaces p vaddr = Some pte /\ pte.pte_valid = false
 
 /-- allocation_safe (matches Coq: Definition allocation_safe) -/
 def allocation_safe (ms ms' : MemoryState) (paddr : PAddr) : Prop :=
-  frame_owners ms paddr = None ->
-  frame_owners ms' paddr <> None ->
+  ms.frame_owners paddr = None ->
+  ms.frame_owners' paddr <> None ->
   ~ is_kernel_memory ms' paddr
 
 /-- msg_type_safe (matches Coq: Definition msg_type_safe) -/
 def msg_type_safe (msg : IPCMessage) : Prop :=
-  length (msg_data msg) <= 128 /\  
-  length (msg_caps msg) <= 4
+  length (msg.msg_data) <= 128 /\  
+  length (msg.msg_caps) <= 4
 
 /-- no_amplification (matches Coq: Definition no_amplification) -/
 def no_amplification (is : IPCState) (sender : ProcId) (msg : IPCMessage) : Prop :=
-  forall c, In c (msg_caps msg) ->
-    rights_subset (cap_rights c) (cap_rights c)
+  forall c, In c (msg.msg_caps) ->
+    rights_subset (c.cap_rights) (c.cap_rights)
 
 /-- ipc_maintains_isolation (matches Coq: Definition ipc_maintains_isolation) -/
 def ipc_maintains_isolation (is : IPCState) : Prop :=
   forall p1 p2 ep,
-    In ep (endpoints is) ->
-    In p1 (ep_queue ep) ->
-    ~ In p2 (ep_queue ep) ->
-    ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)
+    In ep (is.endpoints) ->
+    In p1 (ep.ep_queue) ->
+    ~ In p2 (ep.ep_queue) ->
+    ~ holds (mem_kernel (is.ipc_mem)) p2 (ep.ep_cap)
 
 /-- notif_no_sensitive_data (matches Coq: Definition notif_no_sensitive_data) -/
 def notif_no_sensitive_data (n : Notification) : Prop :=
-  notif_word n < 2^32
+  n.notif_word < 2^32
 
 /-- OS_001_01_cap_unforgeable (matches Coq) -/
 theorem OS_001_01_cap_unforgeable : ∀ s p c, holds s p c → ∃ slot, cap_lookup s p slot = Some c := by

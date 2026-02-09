@@ -117,20 +117,20 @@ structure Channel where
 
 /-- valid_ptr (matches Coq: Definition valid_ptr) -/
 def valid_ptr (h : Heap) (p : Ptr) : Prop :=
-  exists size, heap_mem h p = Some size
+  exists size, h.heap_mem p = Some size
 
 /-- accessible_size (matches Coq: Definition accessible_size) -/
 def accessible_size := sorry -- complex match, needs manual translation
 
 /-- sufficient_space (matches Coq: Definition sufficient_space) -/
 def sufficient_space (h : Heap) (size : Nat) : Prop :=
-  heap_total_size h - heap_used_size h >= size
+  h.heap_total_size - h.heap_used_size >= size
 
 /-- heap_wf (matches Coq: Definition heap_wf) -/
 def heap_wf (h : Heap) : Prop :=
-  heap_used_size h <= heap_total_size h /\
-  heap_next_ptr h >= heap_used_size h /\
-  heap_mem h (heap_next_ptr h) = None
+  h.heap_used_size <= h.heap_total_size /\
+  h.heap_next_ptr >= h.heap_used_size /\
+  h.heap_mem (h.heap_next_ptr) = None
 
 /-- aligned (matches Coq: Definition aligned) -/
 def aligned (p : Ptr) (a : Alignment) : Prop :=
@@ -143,60 +143,60 @@ def mem_update (m : MemMap) (p : Ptr) (v : option Nat) : MemMap :=
 /-- disjoint_allocs (matches Coq: Definition disjoint_allocs) -/
 def disjoint_allocs (h : Heap) : Prop :=
   forall p1 p2 s1 s2,
-    heap_mem h p1 = Some s1 ->
-    heap_mem h p2 = Some s2 ->
+    h.heap_mem p1 = Some s1 ->
+    h.heap_mem p2 = Some s2 ->
     p1 <> p2 ->
     p1 + s1 <= p2 \/ p2 + s2 <= p1
 
 /-- gc (matches Coq: Definition gc) -/
 def gc (h : ManagedHeap) : ManagedHeap := mkManagedHeap
-    (fun p => mh_live h p && existsb (Nat
+    (fun p => h.mh_live p && existsb (Nat
 
 /-- preserved (matches Coq: Definition preserved) -/
 def preserved (h1 h2 : ManagedHeap) (p : Ptr) : Prop :=
-  mh_live h1 p = true -> mh_live h2 p = true
+  h1.mh_live p = true -> h2.mh_live p = true
 
 /-- roots_complete (matches Coq: Definition roots_complete) -/
 def roots_complete (h : ManagedHeap) : Prop :=
-  forall p, mh_live h p = true -> 
-    (In p (mh_roots h) \/ exists r, In r (mh_roots h) /\ In p (mh_refs h r))
+  forall p, h.mh_live p = true -> 
+    (In p (h.mh_roots) \/ exists r, In r (h.mh_roots) /\ In p (h.mh_refs r))
 
 /-- heap_size (matches Coq: Definition heap_size) -/
 def heap_size (h : ManagedHeap) : Nat :=
-  fold_right (fun p acc => if mh_live h p then mh_size h p + acc else acc) 
-             0 (mh_roots h)
+  fold_right (fun p acc => if h.mh_live p then h.mh_size p + acc else acc) 
+             0 (h.mh_roots)
 
 /-- gc_makes_progress (matches Coq: Definition gc_makes_progress) -/
 def gc_makes_progress (h : ManagedHeap) : Prop :=
-  forall p, mh_live (gc h) p = true -> mh_live h p = true
+  forall p, mh_live (gc h) p = true -> h.mh_live p = true
 
 /-- accessible (matches Coq: Definition accessible) -/
 def accessible (sb : Sandbox) (p : Ptr) : Prop :=
-  sb_accessible sb p = true
+  sb.sb_accessible p = true
 
 /-- granted (matches Coq: Definition granted) -/
 def granted (sb : Sandbox) (cap : Nat) : Prop :=
-  sb_granted sb cap = true
+  sb.sb_granted cap = true
 
 /-- within_limits (matches Coq: Definition within_limits) -/
 def within_limits (sb : Sandbox) : Prop :=
-  forall r, sb_usage sb r <= sb_limits sb r
+  forall r, sb.sb_usage r <= sb.sb_limits r
 
 /-- sandboxes_isolated (matches Coq: Definition sandboxes_isolated) -/
 def sandboxes_isolated (sb1 sb2 : Sandbox) : Prop :=
-  sb_id sb1 <> sb_id sb2 ->
-  forall p, sb_accessible sb1 p = true -> sb_accessible sb2 p = false
+  sb1.sb_id <> sb2.sb_id ->
+  forall p, sb1.sb_accessible p = true -> sb2.sb_accessible p = false
 
 /-- comm_controlled (matches Coq: Definition comm_controlled) -/
 def comm_controlled (ch : Channel) : Prop :=
-  ch_authorized ch = true
+  ch.ch_authorized = true
 
 /-- terminate (matches Coq: Definition terminate) -/
 def terminate (sb : Sandbox) : Sandbox := mkSandbox
-    (sb_id sb)
+    (sb.sb_id)
     (fun _ => false)
     (fun _ => false)
-    (sb_limits sb)
+    (sb.sb_limits)
     (fun _ => 0)
     true
 

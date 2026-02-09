@@ -124,7 +124,7 @@ def ackermann (m n : Nat) : Nat :=
 /-- pure (matches Coq: Definition pure) -/
 def pure (e : expr) : Prop :=
   match e with
-  | ._ => True
+  | _ => True
 
 /-- well_typed (matches Coq: Definition well_typed) -/
 def well_typed (e : expr) : Prop :=
@@ -133,7 +133,7 @@ def well_typed (e : expr) : Prop :=
 /-- is_value (matches Coq: Definition is_value) -/
 def is_value (e : expr) : Prop :=
   match e with
-  | ._ => False
+  | _ => False
 
 /-- check_termination (matches Coq: Definition check_termination) -/
 def check_termination (e : expr) : Bool :=
@@ -150,7 +150,7 @@ def infer_measure (e : expr) : Nat :=
 /-- explicitly_marked (matches Coq: Definition explicitly_marked) -/
 def explicitly_marked (e : expr) : Prop :=
   match e with
-  | ._ => False
+  | _ => False
 
 /-- V_001_01_structural_decrease (matches Coq) -/
 theorem V_001_01_structural_decrease : ∀ e e_rec arg, structural_recursion e → recursive_call e e_rec arg → structurally_smaller arg e := by
@@ -161,7 +161,7 @@ theorem V_001_02_structural_termination : ∀ e, structural_recursion e → term
   simp_all [Bool.and_eq_true]
 
 /-- V_001_03_nat_structural (matches Coq) -/
-theorem V_001_03_nat_structural : ∀ (f : nat → nat) n, ∃ v, (fix go m := match m with 0 => 0 | S m' => f (go m') end) n = v := by
+theorem V_001_03_nat_structural : ∀ (f : Nat → nat) n, ∃ v, (fix go m := match m with 0 => 0 | S m' => f (go m') end) n = v := by
   cases ‹_› <;> simp
 
 /-- V_001_04_list_structural (matches Coq) -/

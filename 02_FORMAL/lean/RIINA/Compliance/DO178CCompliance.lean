@@ -281,7 +281,7 @@ def coverage_required := sorry -- complex match, needs manual translation
 
 /-- trace_complete (matches Coq: Definition trace_complete) -/
 def trace_complete (t : TraceLink) : Bool :=
-  andb (negb (Nat
+  andb (!(Nat
 
 /-- all_traces_complete (matches Coq: Definition all_traces_complete) -/
 def all_traces_complete (traces : List TraceLink) : Bool :=

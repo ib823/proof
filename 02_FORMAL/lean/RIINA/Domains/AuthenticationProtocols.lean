@@ -300,124 +300,124 @@ structure AuthConfig where
 
 /-- pbkdf2_secure (matches Coq: Definition pbkdf2_secure) -/
 def pbkdf2_secure (cfg : PBKDF2Config) : Bool :=
-  (600000 <=? pbkdf2_iterations cfg) &&      
-  (128 <=? pbkdf2_salt_bits cfg) &&          
-  (256 <=? pbkdf2_output_bits cfg) &&        
-  (pbkdf2_hash_alg cfg <=? 1)
+  (600000 <=? cfg.pbkdf2_iterations) &&      
+  (128 <=? cfg.pbkdf2_salt_bits) &&          
+  (256 <=? cfg.pbkdf2_output_bits) &&        
+  (cfg.pbkdf2_hash_alg <=? 1)
 
 /-- riina_pbkdf2 (matches Coq: Definition riina_pbkdf2) -/
 def riina_pbkdf2 : PBKDF2Config := mkPBKDF2 600000 256 256 0
 
 /-- argon2_secure (matches Coq: Definition argon2_secure) -/
 def argon2_secure (cfg : Argon2Config) : Bool :=
-  (3 <=? argon2_time_cost cfg) &&            
-  (65536 <=? argon2_memory_cost cfg) &&      
-  (1 <=? argon2_parallelism cfg) &&          
-  (128 <=? argon2_salt_bits cfg) &&          
-  (256 <=? argon2_output_bits cfg) &&        
-  (argon2_variant cfg =? 2)
+  (3 <=? cfg.argon2_time_cost) &&            
+  (65536 <=? cfg.argon2_memory_cost) &&      
+  (1 <=? cfg.argon2_parallelism) &&          
+  (128 <=? cfg.argon2_salt_bits) &&          
+  (256 <=? cfg.argon2_output_bits) &&        
+  (cfg.argon2_variant =? 2)
 
 /-- riina_argon2 (matches Coq: Definition riina_argon2) -/
 def riina_argon2 : Argon2Config := mkArgon2 4 65536 4 256 256 2
 
 /-- bcrypt_secure (matches Coq: Definition bcrypt_secure) -/
 def bcrypt_secure (cfg : BcryptConfig) : Bool :=
-  (12 <=? bcrypt_cost_factor cfg) &&         
-  (bcrypt_salt_bits cfg =? 128) &&           
-  (bcrypt_output_bits cfg =? 184)
+  (12 <=? cfg.bcrypt_cost_factor) &&         
+  (cfg.bcrypt_salt_bits =? 128) &&           
+  (cfg.bcrypt_output_bits =? 184)
 
 /-- riina_bcrypt (matches Coq: Definition riina_bcrypt) -/
 def riina_bcrypt : BcryptConfig := mkBcrypt 14 128 184
 
 /-- totp_secure (matches Coq: Definition totp_secure) -/
 def totp_secure (cfg : TOTPConfig) : Bool :=
-  (160 <=? totp_secret_bits cfg) &&          
-  (6 <=? totp_digits cfg) &&                 
-  (totp_period cfg =? 30) &&                 
-  (totp_drift_window cfg <=? 1)
+  (160 <=? cfg.totp_secret_bits) &&          
+  (6 <=? cfg.totp_digits) &&                 
+  (cfg.totp_period =? 30) &&                 
+  (cfg.totp_drift_window <=? 1)
 
 /-- riina_totp (matches Coq: Definition riina_totp) -/
 def riina_totp : TOTPConfig := mkTOTP 256 6 30 1 1
 
 /-- webauthn_secure (matches Coq: Definition webauthn_secure) -/
 def webauthn_secure (cfg : WebAuthnConfig) : Bool :=
-  (webauthn_user_verification cfg =? 2) &&   
-  (128 <=? webauthn_challenge_bits cfg) &&   
-  (60000 <=? webauthn_timeout_ms cfg) &&     
-  (webauthn_timeout_ms cfg <=? 300000)
+  (cfg.webauthn_user_verification =? 2) &&   
+  (128 <=? cfg.webauthn_challenge_bits) &&   
+  (60000 <=? cfg.webauthn_timeout_ms) &&     
+  (cfg.webauthn_timeout_ms <=? 300000)
 
 /-- riina_webauthn (matches Coq: Definition riina_webauthn) -/
 def riina_webauthn : WebAuthnConfig := mkWebAuthn 2 2 true 256 120000
 
 /-- session_token_secure (matches Coq: Definition session_token_secure) -/
 def session_token_secure (cfg : SessionTokenConfig) : Bool :=
-  (256 <=? token_entropy_bits cfg) &&        
-  (86400 <=? token_expiry_seconds cfg) &&    
-  (token_expiry_seconds cfg <=? 604800) &&   
-  token_rotation cfg &&                       
-  token_binding cfg &&                        
-  token_secure_flag cfg &&                    
-  token_httponly_flag cfg &&                  
-  (1 <=? token_samesite cfg)
+  (256 <=? cfg.token_entropy_bits) &&        
+  (86400 <=? cfg.token_expiry_seconds) &&    
+  (cfg.token_expiry_seconds <=? 604800) &&   
+  cfg.token_rotation &&                       
+  cfg.token_binding &&                        
+  cfg.token_secure_flag &&                    
+  cfg.token_httponly_flag &&                  
+  (1 <=? cfg.token_samesite)
 
 /-- riina_session_token (matches Coq: Definition riina_session_token) -/
 def riina_session_token : SessionTokenConfig := mkSessionToken 256 86400 true true true true 2
 
 /-- oauth2_secure (matches Coq: Definition oauth2_secure) -/
 def oauth2_secure (cfg : OAuth2Config) : Bool :=
-  oauth2_pkce cfg &&                         
-  oauth2_state_param cfg &&                  
-  (128 <=? oauth2_code_bits cfg) &&          
-  (oauth2_code_expiry cfg <=? 60) &&         
-  oauth2_refresh_rotation cfg
+  cfg.oauth2_pkce &&                         
+  cfg.oauth2_state_param &&                  
+  (128 <=? cfg.oauth2_code_bits) &&          
+  (cfg.oauth2_code_expiry <=? 60) &&         
+  cfg.oauth2_refresh_rotation
 
 /-- riina_oauth2 (matches Coq: Definition riina_oauth2) -/
 def riina_oauth2 : OAuth2Config := mkOAuth2 true true true true 256 30 true
 
 /-- oidc_secure (matches Coq: Definition oidc_secure) -/
 def oidc_secure (cfg : OIDCConfig) : Bool :=
-  oauth2_secure (oidc_base cfg) &&
-  (1 <=? oidc_id_token_alg cfg) &&           
-  (oidc_id_token_expiry cfg <=? 3600) &&     
-  oidc_claims_verified cfg
+  oauth2_secure (cfg.oidc_base) &&
+  (1 <=? cfg.oidc_id_token_alg) &&           
+  (cfg.oidc_id_token_expiry <=? 3600) &&     
+  cfg.oidc_claims_verified
 
 /-- riina_oidc (matches Coq: Definition riina_oidc) -/
 def riina_oidc : OIDCConfig := mkOIDC riina_oauth2 2 300 true true
 
 /-- challenge_secure (matches Coq: Definition challenge_secure) -/
 def challenge_secure (cfg : ChallengeConfig) : Bool :=
-  (128 <=? challenge_bits cfg) &&            
-  (challenge_expiry_ms cfg <=? 300000) &&    
-  challenge_single_use cfg &&                 
-  challenge_bound cfg
+  (128 <=? cfg.challenge_bits) &&            
+  (cfg.challenge_expiry_ms <=? 300000) &&    
+  cfg.challenge_single_use &&                 
+  cfg.challenge_bound
 
 /-- riina_challenge (matches Coq: Definition riina_challenge) -/
 def riina_challenge : ChallengeConfig := mkChallenge 256 60000 true true true
 
 /-- replay_prevention_secure (matches Coq: Definition replay_prevention_secure) -/
 def replay_prevention_secure (cfg : NonceTracker) : Bool :=
-  (128 <=? nonce_size_bits cfg) &&           
-  (1000 <=? nonce_window_size cfg) &&        
-  (nonce_timestamp_bound cfg <=? 300)
+  (128 <=? cfg.nonce_size_bits) &&           
+  (1000 <=? cfg.nonce_window_size) &&        
+  (cfg.nonce_timestamp_bound <=? 300)
 
 /-- riina_nonce_tracker (matches Coq: Definition riina_nonce_tracker) -/
 def riina_nonce_tracker : NonceTracker := mkNonceTracker 256 10000 60 true
 
 /-- password_secure (matches Coq: Definition password_secure) -/
 def password_secure (p : PasswordSecurity) : Bool :=
-  pwd_bcrypt_argon p && pwd_salt_unique p && pwd_min_entropy p && pwd_breach_check p
+  p.pwd_bcrypt_argon && p.pwd_salt_unique && p.pwd_min_entropy && p.pwd_breach_check
 
 /-- mfa_secure (matches Coq: Definition mfa_secure) -/
 def mfa_secure (m : MFASecurity) : Bool :=
-  mfa_totp_support m && mfa_webauthn m && mfa_backup_codes m && mfa_recovery m
+  m.mfa_totp_support && m.mfa_webauthn && m.mfa_backup_codes && m.mfa_recovery
 
 /-- session_secure (matches Coq: Definition session_secure) -/
 def session_secure (s : SessionSecurity) : Bool :=
-  sess_secure_token s && sess_rotation s && sess_timeout s && sess_binding s
+  s.sess_secure_token && s.sess_rotation && s.sess_timeout && s.sess_binding
 
 /-- auth_complete (matches Coq: Definition auth_complete) -/
 def auth_complete (a : AuthConfig) : Bool :=
-  password_secure (auth_pwd a) && mfa_secure (auth_mfa a) && session_secure (auth_session a)
+  password_secure (a.auth_pwd) && mfa_secure (a.auth_mfa) && session_secure (a.auth_session)
 
 /-- riina_pwd (matches Coq: Definition riina_pwd) -/
 def riina_pwd : PasswordSecurity := mkPwdSec true true true true
@@ -435,23 +435,23 @@ def riina_auth : AuthConfig := mkAuth riina_pwd riina_mfa riina_session
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb3_true_iff (matches Coq) -/
-theorem andb3_true_iff : ∀ a b c : bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
+theorem andb3_true_iff : ∀ a b c : Bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- leb_le (matches Coq) -/
-theorem leb_le : ∀ n m : nat, (n <=? m) = true <-> n ≤ m := by
+theorem leb_le : ∀ n m : Nat, (n <=? m) = true <-> n ≤ m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- ltb_lt (matches Coq) -/
-theorem ltb_lt : ∀ n m : nat, (n <? m) = true <-> n < m := by
+theorem ltb_lt : ∀ n m : Nat, (n <? m) = true <-> n < m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- ============================================================================

@@ -101,7 +101,7 @@ def rakkssa_passed (ra : RAKKSSAAssessment) : Prop :=
 def mygovcloud_eligible (s : GovSystem) : Prop :=
   data_sovereign s /\
   security_assessed s /\
-  (gov_classification s <> RahsiaBesar)
+  (gov_classification s <> .rahsiaBesar)
 
 /-- dkict_compliant (matches Coq: Definition dkict_compliant) -/
 def dkict_compliant (d : DKICTCompliance) : Prop :=
@@ -115,15 +115,15 @@ theorem mampu_sovereignty : ∀ (s : GovSystem), gov_data_in_malaysia s = true �
   intro h; exact h
 
 /-- mampu_terbuka (matches Coq) -/
-theorem mampu_terbuka : ∀ (s : GovSystem), gov_classification s = Terbuka → controls_match_classification s := by
+theorem mampu_terbuka : ∀ (s : GovSystem), gov_classification s = .terbuka → controls_match_classification s := by
   intro h; exact h
 
 /-- mampu_rahsia (matches Coq) -/
-theorem mampu_rahsia : ∀ (s : GovSystem), gov_classification s = Rahsia → gov_encrypted s = true → gov_access_controlled s = true → gov_audit_logged s = true → controls_match_classification s := by
+theorem mampu_rahsia : ∀ (s : GovSystem), gov_classification s = .rahsia → gov_encrypted s = true → gov_access_controlled s = true → gov_audit_logged s = true → controls_match_classification s := by
   intro h; exact h
 
 /-- mampu_rahsia_besar (matches Coq) -/
-theorem mampu_rahsia_besar : ∀ (s : GovSystem), gov_classification s = RahsiaBesar → gov_encrypted s = true → gov_access_controlled s = true → gov_audit_logged s = true → gov_isms_certified s = true → controls_match_classification s := by
+theorem mampu_rahsia_besar : ∀ (s : GovSystem), gov_classification s = .rahsiaBesar → gov_encrypted s = true → gov_access_controlled s = true → gov_audit_logged s = true → gov_isms_certified s = true → controls_match_classification s := by
   intro h; exact h
 
 /-- mampu_assessment (matches Coq) -/
@@ -151,39 +151,39 @@ theorem gov_classification_coverage : ∀ (c : GovClassification), In c all_gov_
   simp_all [Bool.and_eq_true]
 
 /-- terbuka_is_level_zero (matches Coq) -/
-theorem terbuka_is_level_zero : classification_level Terbuka = 0 := by
+theorem terbuka_is_level_zero : classification_level .terbuka = 0 := by
   rfl
 
 /-- rahsia_besar_is_level_four (matches Coq) -/
-theorem rahsia_besar_is_level_four : classification_level RahsiaBesar = 4 := by
+theorem rahsia_besar_is_level_four : classification_level .rahsiaBesar = 4 := by
   rfl
 
 /-- classification_level_positive_for_non_terbuka (matches Coq) -/
-theorem classification_level_positive_for_non_terbuka : ∀ (c : GovClassification), c ≠ Terbuka → classification_level c ≥ 1 := by
+theorem classification_level_positive_for_non_terbuka : ∀ (c : GovClassification), c ≠ .terbuka → classification_level c ≥ 1 := by
   cases ‹_› <;> simp <;> omega
 
 /-- mampu_terhad (matches Coq) -/
-theorem mampu_terhad : ∀ (s : GovSystem), gov_classification s = Terhad → gov_access_controlled s = true → controls_match_classification s := by
+theorem mampu_terhad : ∀ (s : GovSystem), gov_classification s = .terhad → gov_access_controlled s = true → controls_match_classification s := by
   intro h; exact h
 
 /-- mampu_sulit (matches Coq) -/
-theorem mampu_sulit : ∀ (s : GovSystem), gov_classification s = Sulit → gov_encrypted s = true → gov_access_controlled s = true → controls_match_classification s := by
+theorem mampu_sulit : ∀ (s : GovSystem), gov_classification s = .sulit → gov_encrypted s = true → gov_access_controlled s = true → controls_match_classification s := by
   simp_all [Bool.and_eq_true]
 
 /-- rahsia_besar_requires_encryption (matches Coq) -/
-theorem rahsia_besar_requires_encryption : ∀ (s : GovSystem), gov_classification s = RahsiaBesar → controls_match_classification s → gov_encrypted s = true := by
+theorem rahsia_besar_requires_encryption : ∀ (s : GovSystem), gov_classification s = .rahsiaBesar → controls_match_classification s → gov_encrypted s = true := by
   intro h; exact h
 
 /-- rahsia_besar_requires_access_control (matches Coq) -/
-theorem rahsia_besar_requires_access_control : ∀ (s : GovSystem), gov_classification s = RahsiaBesar → controls_match_classification s → gov_access_controlled s = true := by
+theorem rahsia_besar_requires_access_control : ∀ (s : GovSystem), gov_classification s = .rahsiaBesar → controls_match_classification s → gov_access_controlled s = true := by
   intro h; exact h
 
 /-- rahsia_besar_requires_audit (matches Coq) -/
-theorem rahsia_besar_requires_audit : ∀ (s : GovSystem), gov_classification s = RahsiaBesar → controls_match_classification s → gov_audit_logged s = true := by
+theorem rahsia_besar_requires_audit : ∀ (s : GovSystem), gov_classification s = .rahsiaBesar → controls_match_classification s → gov_audit_logged s = true := by
   intro h; exact h
 
 /-- rahsia_besar_requires_isms (matches Coq) -/
-theorem rahsia_besar_requires_isms : ∀ (s : GovSystem), gov_classification s = RahsiaBesar → controls_match_classification s → gov_isms_certified s = true := by
+theorem rahsia_besar_requires_isms : ∀ (s : GovSystem), gov_classification s = .rahsiaBesar → controls_match_classification s → gov_isms_certified s = true := by
   intro h; exact h
 
 /-- sovereignty_mandatory_for_all_levels (matches Coq) -/
@@ -203,7 +203,7 @@ theorem rakkssa_score_insufficient : ∀ (ra : RAKKSSAAssessment), rk_score ra <
   omega
 
 /-- mygovcloud_check (matches Coq) -/
-theorem mygovcloud_check : ∀ (s : GovSystem), gov_data_in_malaysia s = true → gov_security_assessed s = true → gov_classification s ≠ RahsiaBesar → mygovcloud_eligible s := by
+theorem mygovcloud_check : ∀ (s : GovSystem), gov_data_in_malaysia s = true → gov_security_assessed s = true → gov_classification s ≠ .rahsiaBesar → mygovcloud_eligible s := by
   intro h; exact h
 
 /-- dkict_full_compliance (matches Coq) -/

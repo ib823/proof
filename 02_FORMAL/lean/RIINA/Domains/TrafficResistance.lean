@@ -116,11 +116,11 @@ def traffic_layers (rate size mixing decoy : Bool) : Bool :=
   andb rate (andb size (andb mixing decoy))
 
 /-- traffic_001_constant_rate_hides (matches Coq) -/
-theorem traffic_001_constant_rate_hides : ∀ (flow : TrafficFlow) (interval : nat), constant_rate flow interval → ∀ i p1 p2, nth_error flow i = Some p1 → nth_error flow (S i) = Some p2 → pkt_time p2 - pkt_time p1 = interval := by
+theorem traffic_001_constant_rate_hides : ∀ (flow : TrafficFlow) (interval : Nat), constant_rate flow interval → ∀ i p1 p2, nth_error flow i = Some p1 → nth_error flow (S i) = Some p2 → pkt_time p2 - pkt_time p1 = interval := by
   simp_all [Bool.and_eq_true]
 
 /-- traffic_002_constant_size_hides (matches Coq) -/
-theorem traffic_002_constant_size_hides : ∀ (flow : TrafficFlow) (size : nat), constant_size flow size → Forall (fun p => pkt_size p = size) flow := by
+theorem traffic_002_constant_size_hides : ∀ (flow : TrafficFlow) (size : Nat), constant_size flow size → Forall (fun p => pkt_size p = size) flow := by
   intro h; exact h
 
 /-- traffic_003_cover_indistinguishable (matches Coq) -/
@@ -148,7 +148,7 @@ theorem traffic_008_multi_hop : ∀ (network : MixNetwork), length network ≥ 3
   intro h; exact h
 
 /-- traffic_009_layer_encryption (matches Coq) -/
-theorem traffic_009_layer_encryption : ∀ (msg : MixMessage) (network_len : nat), msg_layer msg = network_len → msg_layer msg = network_len := by
+theorem traffic_009_layer_encryption : ∀ (msg : MixMessage) (network_len : Nat), msg_layer msg = network_len → msg_layer msg = network_len := by
   intro h; exact h
 
 /-- traffic_010_sender_anonymity (matches Coq) -/
@@ -160,27 +160,27 @@ theorem traffic_011_receiver_anonymity : ∀ (batch : list MixMessage), length b
   intro h; exact h
 
 /-- traffic_012_padding_ratio (matches Coq) -/
-theorem traffic_012_padding_ratio : ∀ (payload_size padded_size : nat), padding_sufficient payload_size padded_size → padded_size ≥ payload_size := by
+theorem traffic_012_padding_ratio : ∀ (payload_size padded_size : Nat), padding_sufficient payload_size padded_size → padded_size ≥ payload_size := by
   intro h; exact h
 
 /-- traffic_013_decoy_rate (matches Coq) -/
-theorem traffic_013_decoy_rate : ∀ (real_count decoy_count min_ratio : nat), decoy_rate_sufficient real_count decoy_count min_ratio → decoy_count ≥ real_count * min_ratio := by
+theorem traffic_013_decoy_rate : ∀ (real_count decoy_count min_ratio : Nat), decoy_rate_sufficient real_count decoy_count min_ratio → decoy_count ≥ real_count * min_ratio := by
   intro h; exact h
 
 /-- traffic_014_jitter_bounded (matches Coq) -/
-theorem traffic_014_jitter_bounded : ∀ (jitter max_jitter : nat), jitter_bounded jitter max_jitter → jitter ≤ max_jitter := by
+theorem traffic_014_jitter_bounded : ∀ (jitter max_jitter : Nat), jitter_bounded jitter max_jitter → jitter ≤ max_jitter := by
   intro h; exact h
 
 /-- traffic_015_no_timing_correlation (matches Coq) -/
-theorem traffic_015_no_timing_correlation : ∀ (t1 t2 bucket : nat), bucket > 0 → timing_independent t1 t2 bucket → t1 / bucket = t2 / bucket := by
+theorem traffic_015_no_timing_correlation : ∀ (t1 t2 bucket : Nat), bucket > 0 → timing_independent t1 t2 bucket → t1 / bucket = t2 / bucket := by
   intro h; exact h
 
 /-- traffic_016_size_quantization (matches Coq) -/
-theorem traffic_016_size_quantization : ∀ (size quantum : nat), quantum > 0 → size_quantized size quantum ≥ size := by
+theorem traffic_016_size_quantization : ∀ (size quantum : Nat), quantum > 0 → size_quantized size quantum ≥ size := by
   omega
 
 /-- traffic_017_flow_correlation (matches Coq) -/
-theorem traffic_017_flow_correlation : ∀ (f1 f2 : TrafficFlow) (size : nat), constant_size f1 size → constant_size f2 size → Forall (fun p => pkt_size p = size) f1 := by
+theorem traffic_017_flow_correlation : ∀ (f1 f2 : TrafficFlow) (size : Nat), constant_size f1 size → constant_size f2 size → Forall (fun p => pkt_size p = size) f1 := by
   intro h; exact h
 
 /-- traffic_018_guard_diversity (matches Coq) -/
@@ -192,23 +192,23 @@ theorem traffic_019_exit_diversity : ∀ (exits : list nat), NoDup exits → len
   intro h; exact h
 
 /-- traffic_020_path_randomness (matches Coq) -/
-theorem traffic_020_path_randomness : ∀ (path : list nat) (possible_paths : nat), path_random path possible_paths → length path ≥ 3 := by
+theorem traffic_020_path_randomness : ∀ (path : list nat) (possible_paths : Nat), path_random path possible_paths → length path ≥ 3 := by
   intro h; exact h
 
 /-- traffic_021_statistical_indist (matches Coq) -/
-theorem traffic_021_statistical_indist : ∀ (dist1 dist2 : list nat) (epsilon : nat), statistically_indistinguishable dist1 dist2 epsilon → length dist1 = length dist2 := by
+theorem traffic_021_statistical_indist : ∀ (dist1 dist2 : list nat) (epsilon : Nat), statistically_indistinguishable dist1 dist2 epsilon → length dist1 = length dist2 := by
   intro h; exact h
 
 /-- traffic_022_session_unlinkability (matches Coq) -/
-theorem traffic_022_session_unlinkability : ∀ (s1 s2 : nat), sessions_unlinkable s1 s2 → s1 ≠ s2 := by
+theorem traffic_022_session_unlinkability : ∀ (s1 s2 : Nat), sessions_unlinkable s1 s2 → s1 ≠ s2 := by
   intro h; exact h
 
 /-- traffic_023_intersection_resistance (matches Coq) -/
-theorem traffic_023_intersection_resistance : ∀ (observations needed : nat), intersection_resistant observations needed → needed > observations := by
+theorem traffic_023_intersection_resistance : ∀ (observations needed : Nat), intersection_resistant observations needed → needed > observations := by
   intro h; exact h
 
 /-- traffic_024_volume_resistance (matches Coq) -/
-theorem traffic_024_volume_resistance : ∀ (flow : TrafficFlow) (size : nat), constant_size flow size → ∀ p, In p flow → pkt_size p = size := by
+theorem traffic_024_volume_resistance : ∀ (flow : TrafficFlow) (size : Nat), constant_size flow size → ∀ p, In p flow → pkt_size p = size := by
   simp_all [Bool.and_eq_true]
 
 /-- traffic_025_defense_in_depth (matches Coq) -/

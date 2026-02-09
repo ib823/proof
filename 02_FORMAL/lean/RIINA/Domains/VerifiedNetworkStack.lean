@@ -338,16 +338,16 @@ structure HandshakeState where
 
 /-- net_security_sound (matches Coq: Definition net_security_sound) -/
 def net_security_sound (s : NetworkSecurity) : Bool :=
-  ns_packet_validation s && ns_protocol_compliance s && ns_firewall_enforced s && ns_encryption_in_transit s
+  s.ns_packet_validation && s.ns_protocol_compliance && s.ns_firewall_enforced && s.ns_encryption_in_transit
 
 /-- net_reliability_sound (matches Coq: Definition net_reliability_sound) -/
 def net_reliability_sound (r : NetworkReliability) : Bool :=
-  nr_congestion_control r && nr_flow_control r && nr_error_detection r && nr_retransmission r
+  r.nr_congestion_control && r.nr_flow_control && r.nr_error_detection && r.nr_retransmission
 
 /-- net_stack_verified (matches Coq: Definition net_stack_verified) -/
 def net_stack_verified (n : VerifiedNetStack) : Bool :=
-  net_security_sound (vns_security n) && net_reliability_sound (vns_reliability n) &&
-  vns_rfc_compliant n && vns_formally_verified n
+  net_security_sound (n.vns_security) && net_reliability_sound (n.vns_reliability) &&
+  n.vns_rfc_compliant && n.vns_formally_verified
 
 /-- riina_net_sec (matches Coq: Definition riina_net_sec) -/
 def riina_net_sec : NetworkSecurity := mkNetSec true true true true
@@ -380,19 +380,19 @@ def tcp_transition (st : TCPState) (seg : TCPSegment) (is_server : Bool) : TCPSt
 def is_connection_state (s : TCPState) : Bool :=
   match s with
   | .lISTEN => false
-  | ._ => true
+  | _ => true
 
 /-- is_data_state (matches Coq: Definition is_data_state) -/
 def is_data_state (s : TCPState) : Bool :=
   match s with
   | .cLOSE_WAIT => true
-  | ._ => false
+  | _ => false
 
 /-- is_terminal_state (matches Coq: Definition is_terminal_state) -/
 def is_terminal_state (s : TCPState) : Bool :=
   match s with
   | .tIME_WAIT => true
-  | ._ => false
+  | _ => false
 
 /-- SEQ_SPACE (matches Coq: Definition SEQ_SPACE) -/
 def SEQ_SPACE : Nat :=
@@ -429,19 +429,19 @@ def valid_ack (ack_num send_una send_nxt : Nat) : Bool :=
 
 /-- buffer_valid (matches Coq: Definition buffer_valid) -/
 def buffer_valid (b : Buffer) : Prop :=
-  buf_position b <= buf_capacity b /\
-  length (buf_data b) = buf_capacity b
+  b.buf_position <= b.buf_capacity /\
+  length (b.buf_data) = b.buf_capacity
 
 /-- safe_read (matches Coq: Definition safe_read) -/
 def safe_read (b : Buffer) (len : Nat) : Bool :=
-  buf_position b + len <=? buf_capacity b
+  b.buf_position + len <=? b.buf_capacity
 
 /-- safe_write (matches Coq: Definition safe_write) -/
 def safe_write (b : Buffer) (len : Nat) : Bool :=
-  buf_position b + len <=? buf_capacity b
+  b.buf_position + len <=? b.buf_capacity
 
 /-- buffer_advance (matches Coq: Definition buffer_advance) -/
-def buffer_advance (b : Buffer) (n : Nat) : Buffer := mkBuffer (buf_data b) (buf_capacity b) (buf_position b + n)
+def buffer_advance (b : Buffer) (n : Nat) : Buffer := mkBuffer (b.buf_data) (b.buf_capacity) (b.buf_position + n)
 
 /-- TCP_MIN_HEADER (matches Coq: Definition TCP_MIN_HEADER) -/
 def TCP_MIN_HEADER : Nat :=
@@ -464,18 +464,18 @@ def initial_cong_state (mss : Nat) : CongestionState := mkCongState (2 * mss) 65
 
 /-- in_slow_start (matches Coq: Definition in_slow_start) -/
 def in_slow_start (cs : CongestionState) : Bool :=
-  cwnd cs <? ssthresh cs
+  cs.cwnd <? cs.ssthresh
 
 /-- in_cong_avoid (matches Coq: Definition in_cong_avoid) -/
 def in_cong_avoid (cs : CongestionState) : Bool :=
-  ssthresh cs <=? cwnd cs
+  cs.ssthresh <=? cs.cwnd
 
 /-- aimd_increase (matches Coq: Definition aimd_increase) -/
 def aimd_increase (cs : CongestionState) (mss : Nat) : CongestionState :=
   if in_slow_start cs then
-    mkCongState (cwnd cs + mss) (ssthresh cs) (rtt_est cs) (rto cs)
+    mkCongState (cs.cwnd + mss) (cs.ssthresh) (cs.rtt_est) (cs.rto)
   else
-    mkCongState (cwnd cs + mss * mss / cwnd cs) (ssthresh cs) (rtt_est cs) (rto cs)
+    mkCongState (cs.cwnd + mss * mss / cs.cwnd) (cs.ssthresh) (cs.rtt_est) (cs.rto)
 
 /-- aimd_decrease (matches Coq: Definition aimd_decrease) -/
 def aimd_decrease (cs : CongestionState) : CongestionState :=
@@ -489,20 +489,20 @@ def FAST_RETRANSMIT_THRESH : Nat :=
 def default_sock_opts : SocketOptions := mkSockOpts false false false 0 0
 
 /-- new_socket (matches Coq: Definition new_socket) -/
-def new_socket : Socket := mkSocket SockUnbound None None CLOSED default_sock_opts
+def new_socket : Socket := mkSocket SockUnbound None None .cLOSED default_sock_opts
 
 /-- sock_state_eqb (matches Coq: Definition sock_state_eqb) -/
 def sock_state_eqb := sorry -- complex match, needs manual translation
 
 /-- socket_can_send (matches Coq: Definition socket_can_send) -/
 def socket_can_send (s : Socket) : Bool :=
-  sock_state_eqb (sock_state s) SockConnected &&
-  is_data_state (sock_tcp_state s)
+  sock_state_eqb (s.sock_state) SockConnected &&
+  is_data_state (s.sock_tcp_state)
 
 /-- socket_can_recv (matches Coq: Definition socket_can_recv) -/
 def socket_can_recv (s : Socket) : Bool :=
-  sock_state_eqb (sock_state s) SockConnected &&
-  is_data_state (sock_tcp_state s)
+  sock_state_eqb (s.sock_state) SockConnected &&
+  is_data_state (s.sock_tcp_state)
 
 /-- make_syn (matches Coq: Definition make_syn) -/
 def make_syn (isn : Nat) : TCPSegment := mkSegment isn 0 (mkFlags true false false false false false) 65535 0
@@ -520,27 +520,27 @@ def handshake_complete := sorry -- complex match, needs manual translation
 def valid_syn_segment (seg : TCPSegment) (s : TCPState) : Bool :=
   match s with
   | .sYN_SENT => true
-  | ._ => false
+  | _ => false
 
 /-- handshake_sequence_valid (matches Coq: Definition handshake_sequence_valid) -/
 def handshake_sequence_valid : Prop :=
-  tcp_transition LISTEN (make_syn 1000) true = SYN_RECEIVED /\
-  tcp_transition SYN_SENT (make_syn_ack 2000 1001) false = ESTABLISHED /\
-  tcp_transition SYN_RECEIVED (make_ack 1001 2001) true = ESTABLISHED
+  tcp_transition .lISTEN (make_syn 1000) true = .sYN_RECEIVED /\
+  tcp_transition .sYN_SENT (make_syn_ack 2000 1001) false = .eSTABLISHED /\
+  tcp_transition .sYN_RECEIVED (make_ack 1001 2001) true = .eSTABLISHED
 
 /-- ============================================================================
     SECTION 1: BASIC NETWORK LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- orb_false_iff (matches Coq) -/
-theorem orb_false_iff : ∀ a b : bool, a || b = false <-> a = false ∧ b = false := by
+theorem orb_false_iff : ∀ a b : Bool, a || b = false <-> a = false ∧ b = false := by
   cases ‹_› <;> simp
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   rfl
 
 /-- ============================================================================
@@ -699,35 +699,35 @@ theorem TCP_003_state_decidable : ∀ s1 s2 : TCPState, {s1 = s2} + {s1 ≠ s2} 
   rfl
 
 /-- TCP_004_closed_not_connected (matches Coq) -/
-theorem TCP_004_closed_not_connected : is_connection_state CLOSED = false := by
+theorem TCP_004_closed_not_connected : is_connection_state .cLOSED = false := by
   rfl
 
 /-- TCP_005_listen_not_connected (matches Coq) -/
-theorem TCP_005_listen_not_connected : is_connection_state LISTEN = false := by
+theorem TCP_005_listen_not_connected : is_connection_state .lISTEN = false := by
   rfl
 
 /-- TCP_006_established_is_connected (matches Coq) -/
-theorem TCP_006_established_is_connected : is_connection_state ESTABLISHED = true := by
+theorem TCP_006_established_is_connected : is_connection_state .eSTABLISHED = true := by
   rfl
 
 /-- TCP_007_established_allows_data (matches Coq) -/
-theorem TCP_007_established_allows_data : is_data_state ESTABLISHED = true := by
+theorem TCP_007_established_allows_data : is_data_state .eSTABLISHED = true := by
   rfl
 
 /-- TCP_008_syn_sent_no_data (matches Coq) -/
-theorem TCP_008_syn_sent_no_data : is_data_state SYN_SENT = false := by
+theorem TCP_008_syn_sent_no_data : is_data_state .sYN_SENT = false := by
   rfl
 
 /-- TCP_009_closed_terminal (matches Coq) -/
-theorem TCP_009_closed_terminal : is_terminal_state CLOSED = true := by
+theorem TCP_009_closed_terminal : is_terminal_state .cLOSED = true := by
   rfl
 
 /-- TCP_010_time_wait_terminal (matches Coq) -/
-theorem TCP_010_time_wait_terminal : is_terminal_state TIME_WAIT = true := by
+theorem TCP_010_time_wait_terminal : is_terminal_state .tIME_WAIT = true := by
   rfl
 
 /-- TCP_011_established_not_terminal (matches Coq) -/
-theorem TCP_011_established_not_terminal : is_terminal_state ESTABLISHED = false := by
+theorem TCP_011_established_not_terminal : is_terminal_state .eSTABLISHED = false := by
   rfl
 
 /-- TCP_012_data_implies_connection (matches Coq) -/
@@ -735,35 +735,35 @@ theorem TCP_012_data_implies_connection : ∀ s, is_data_state s = true → is_c
   rfl
 
 /-- TCP_013_terminal_cases (matches Coq) -/
-theorem TCP_013_terminal_cases : ∀ s, is_terminal_state s = true → s = CLOSED ∨ s = TIME_WAIT := by
+theorem TCP_013_terminal_cases : ∀ s, is_terminal_state s = true → s = .cLOSED ∨ s = TIME_WAIT := by
   simp_all [Bool.and_eq_true]
 
 /-- TCP_014_eleven_states (matches Coq) -/
-theorem TCP_014_eleven_states : ∀ s : TCPState, s = CLOSED ∨ s = LISTEN ∨ s = SYN_SENT ∨ s = SYN_RECEIVED ∨ s = ESTABLISHED ∨ s = FIN_WAIT_1 ∨ s = FIN_WAIT_2 ∨ s = CLOSE_WAIT ∨ s = CLOSING ∨ s = LAST_ACK ∨ s = TIME_WAIT := by
+theorem TCP_014_eleven_states : ∀ s : TCPState, s = .cLOSED ∨ s = .lISTEN ∨ s = .sYN_SENT ∨ s = .sYN_RECEIVED ∨ s = .eSTABLISHED ∨ s = .fIN_WAIT_1 ∨ s = .fIN_WAIT_2 ∨ s = .cLOSE_WAIT ∨ s = .cLOSING ∨ s = .lAST_ACK ∨ s = TIME_WAIT := by
   simp_all [Bool.and_eq_true]
 
 /-- TCP_015_syn_only_setup (matches Coq) -/
-theorem TCP_015_syn_only_setup : ∀ seg, flag_syn (seg_flags seg) = true → valid_syn_segment seg ESTABLISHED = false := by
+theorem TCP_015_syn_only_setup : ∀ seg, flag_syn (seg_flags seg) = true → valid_syn_segment seg .eSTABLISHED = false := by
   rfl
 
 /-- TCP_016_listen_syn_transition (matches Coq) -/
-theorem TCP_016_listen_syn_transition : let syn_seg := make_syn 1000 in tcp_transition LISTEN syn_seg true = SYN_RECEIVED := by
+theorem TCP_016_listen_syn_transition : let syn_seg := make_syn 1000 in tcp_transition .lISTEN syn_seg true = SYN_RECEIVED := by
   rfl
 
 /-- TCP_017_syn_sent_synack_transition (matches Coq) -/
-theorem TCP_017_syn_sent_synack_transition : let syn_ack := make_syn_ack 2000 1001 in tcp_transition SYN_SENT syn_ack false = ESTABLISHED := by
+theorem TCP_017_syn_sent_synack_transition : let syn_ack := make_syn_ack 2000 1001 in tcp_transition .sYN_SENT syn_ack false = ESTABLISHED := by
   rfl
 
 /-- TCP_018_syn_recv_ack_transition (matches Coq) -/
-theorem TCP_018_syn_recv_ack_transition : let ack_seg := make_ack 1001 2001 in tcp_transition SYN_RECEIVED ack_seg true = ESTABLISHED := by
+theorem TCP_018_syn_recv_ack_transition : let ack_seg := make_ack 1001 2001 in tcp_transition .sYN_RECEIVED ack_seg true = ESTABLISHED := by
   rfl
 
 /-- TCP_019_established_fin_transition (matches Coq) -/
-theorem TCP_019_established_fin_transition : let fin_seg := mkSegment 5000 6000 (mkFlags false false true false false false) 65535 0 in tcp_transition ESTABLISHED fin_seg false = CLOSE_WAIT := by
+theorem TCP_019_established_fin_transition : let fin_seg := mkSegment 5000 6000 (mkFlags false false true false false false) 65535 0 in tcp_transition .eSTABLISHED fin_seg false = CLOSE_WAIT := by
   rfl
 
 /-- TCP_020_last_ack_transition (matches Coq) -/
-theorem TCP_020_last_ack_transition : let ack_seg := make_ack 8000 9000 in tcp_transition LAST_ACK ack_seg true = CLOSED := by
+theorem TCP_020_last_ack_transition : let ack_seg := make_ack 8000 9000 in tcp_transition .lAST_ACK ack_seg true = CLOSED := by
   rfl
 
 /-- PARSE_001_safe_read_sufficient (matches Coq) -/
@@ -1007,35 +1007,35 @@ theorem SOCK_010_default_no_reuse : opt_reuse_addr default_sock_opts = false := 
   rfl
 
 /-- TCP_021_fin_wait1_fin_ack (matches Coq) -/
-theorem TCP_021_fin_wait1_fin_ack : let fin_ack := mkSegment 100 200 (mkFlags false true true false false false) 65535 0 in tcp_transition FIN_WAIT_1 fin_ack true = TIME_WAIT := by
+theorem TCP_021_fin_wait1_fin_ack : let fin_ack := mkSegment 100 200 (mkFlags false true true false false false) 65535 0 in tcp_transition .fIN_WAIT_1 fin_ack true = TIME_WAIT := by
   rfl
 
 /-- TCP_022_fin_wait1_fin_only (matches Coq) -/
-theorem TCP_022_fin_wait1_fin_only : let fin_only := mkSegment 100 200 (mkFlags false false true false false false) 65535 0 in tcp_transition FIN_WAIT_1 fin_only true = CLOSING := by
+theorem TCP_022_fin_wait1_fin_only : let fin_only := mkSegment 100 200 (mkFlags false false true false false false) 65535 0 in tcp_transition .fIN_WAIT_1 fin_only true = CLOSING := by
   rfl
 
 /-- TCP_023_fin_wait1_ack_only (matches Coq) -/
-theorem TCP_023_fin_wait1_ack_only : let ack_only := mkSegment 100 200 (mkFlags false true false false false false) 65535 0 in tcp_transition FIN_WAIT_1 ack_only true = FIN_WAIT_2 := by
+theorem TCP_023_fin_wait1_ack_only : let ack_only := mkSegment 100 200 (mkFlags false true false false false false) 65535 0 in tcp_transition .fIN_WAIT_1 ack_only true = FIN_WAIT_2 := by
   rfl
 
 /-- TCP_024_fin_wait2_fin (matches Coq) -/
-theorem TCP_024_fin_wait2_fin : let fin_seg := mkSegment 100 200 (mkFlags false false true false false false) 65535 0 in tcp_transition FIN_WAIT_2 fin_seg true = TIME_WAIT := by
+theorem TCP_024_fin_wait2_fin : let fin_seg := mkSegment 100 200 (mkFlags false false true false false false) 65535 0 in tcp_transition .fIN_WAIT_2 fin_seg true = TIME_WAIT := by
   rfl
 
 /-- TCP_025_closing_ack (matches Coq) -/
-theorem TCP_025_closing_ack : let ack_seg := mkSegment 100 200 (mkFlags false true false false false false) 65535 0 in tcp_transition CLOSING ack_seg true = TIME_WAIT := by
+theorem TCP_025_closing_ack : let ack_seg := mkSegment 100 200 (mkFlags false true false false false false) 65535 0 in tcp_transition .cLOSING ack_seg true = TIME_WAIT := by
   rfl
 
 /-- TCP_026_time_wait_stable (matches Coq) -/
-theorem TCP_026_time_wait_stable : ∀ seg is_server, tcp_transition TIME_WAIT seg is_server = TIME_WAIT := by
+theorem TCP_026_time_wait_stable : ∀ seg is_server, tcp_transition .tIME_WAIT seg is_server = TIME_WAIT := by
   rfl
 
 /-- TCP_027_close_wait_stable (matches Coq) -/
-theorem TCP_027_close_wait_stable : ∀ seg is_server, tcp_transition CLOSE_WAIT seg is_server = CLOSE_WAIT := by
+theorem TCP_027_close_wait_stable : ∀ seg is_server, tcp_transition .cLOSE_WAIT seg is_server = CLOSE_WAIT := by
   rfl
 
 /-- TCP_028_syn_recv_rst (matches Coq) -/
-theorem TCP_028_syn_recv_rst : let rst_seg := mkSegment 100 200 (mkFlags false false false true false false) 65535 0 in tcp_transition SYN_RECEIVED rst_seg true = LISTEN := by
+theorem TCP_028_syn_recv_rst : let rst_seg := mkSegment 100 200 (mkFlags false false false true false false) 65535 0 in tcp_transition .sYN_RECEIVED rst_seg true = LISTEN := by
   rfl
 
 /-- TCP_029_connection_subset (matches Coq) -/
@@ -1043,7 +1043,7 @@ theorem TCP_029_connection_subset : ∀ s, is_data_state s = true → is_connect
   rfl
 
 /-- TCP_030_established_data_stable (matches Coq) -/
-theorem TCP_030_established_data_stable : let data_seg := mkSegment 100 200 (mkFlags false true false false true false) 65535 100 in tcp_transition ESTABLISHED data_seg false = ESTABLISHED := by
+theorem TCP_030_established_data_stable : let data_seg := mkSegment 100 200 (mkFlags false true false false true false) 65535 100 in tcp_transition .eSTABLISHED data_seg false = ESTABLISHED := by
   rfl
 
 /-- COMP_001_verified_security (matches Coq) -/
@@ -1059,7 +1059,7 @@ theorem COMP_003_handshake_valid : handshake_sequence_valid := by
   rfl
 
 /-- COMP_004_established_data_transfer (matches Coq) -/
-theorem COMP_004_established_data_transfer : ∀ opts, let s := mkSocket SockConnected (Some 80) (Some 12345) ESTABLISHED opts in socket_can_send s = true ∧ socket_can_recv s = true := by
+theorem COMP_004_established_data_transfer : ∀ opts, let s := mkSocket SockConnected (Some 80) (Some 12345) .eSTABLISHED opts in socket_can_send s = true ∧ socket_can_recv s = true := by
   rfl
 
 /-- COMP_005_cong_fairness (matches Coq) -/

@@ -159,7 +159,7 @@ def sig_wellformed (sig : EffectSig) : Prop :=
 
 /-- row_minus (matches Coq: Definition row_minus) -/
 def row_minus (r : EffectRow) (handled : EffectRow) : EffectRow :=
-  filter (fun op => negb (in_row op handled)) r
+  filter (fun op => !(in_row op handled)) r
 
 /-- effect_polymorphic_fn (matches Coq: Definition effect_polymorphic_fn) -/
 def effect_polymorphic_fn (f : forall sig, Comp -> Comp) : Prop :=

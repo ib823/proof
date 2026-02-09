@@ -150,7 +150,7 @@ def in_geofence (position fence_min fence_max : Nat) : Bool :=
 
 /-- path_collision_free (matches Coq: Definition path_collision_free) -/
 def path_collision_free (obstacles path_points : List Nat) : Bool :=
-  forallb (fun p => negb (existsb (fun o => Nat
+  forallb (fun p => !(existsb (fun o => Nat
 
 /-- energy_sufficient (matches Coq: Definition energy_sufficient) -/
 def energy_sufficient (current required : Nat) : Bool :=
@@ -170,7 +170,7 @@ def decisions_logged (decisions logged : List Nat) : Bool :=
 
 /-- verified_before_exec (matches Coq: Definition verified_before_exec) -/
 def verified_before_exec (verified executed : Bool) : Bool :=
-  orb (negb executed) verified
+  orb (!executed) verified
 
 /-- autonomy_layers (matches Coq: Definition autonomy_layers) -/
 def autonomy_layers (envelope failsafe override verify : Bool) : Bool :=
@@ -181,27 +181,27 @@ theorem auto_001_velocity_bounded : ∀ (state : SystemState) (env : SafetyEnvel
   simp_all [Bool.and_eq_true]
 
 /-- auto_002_distance_maintained (matches Coq) -/
-theorem auto_002_distance_maintained : ∀ (distance : nat) (env : SafetyEnvelope), distance_safe distance env = true → env_min_distance env ≤ distance := by
+theorem auto_002_distance_maintained : ∀ (distance : Nat) (env : SafetyEnvelope), distance_safe distance env = true → env_min_distance env ≤ distance := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_003_heading_bounded (matches Coq) -/
-theorem auto_003_heading_bounded : ∀ (rate : nat) (env : SafetyEnvelope), heading_rate_ok rate env = true → rate ≤ env_max_heading_rate env := by
+theorem auto_003_heading_bounded : ∀ (rate : Nat) (env : SafetyEnvelope), heading_rate_ok rate env = true → rate ≤ env_max_heading_rate env := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_004_confidence_ok (matches Coq) -/
-theorem auto_004_confidence_ok : ∀ (dec : Decision) (min_conf : nat), confidence_sufficient dec min_conf = true → min_conf ≤ dec_confidence dec := by
+theorem auto_004_confidence_ok : ∀ (dec : Decision) (min_conf : Nat), confidence_sufficient dec min_conf = true → min_conf ≤ dec_confidence dec := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_005_sensor_failsafe (matches Coq) -/
-theorem auto_005_sensor_failsafe : should_failsafe SensorFailure = true := by
+theorem auto_005_sensor_failsafe : should_failsafe .sensorFailure = true := by
   rfl
 
 /-- auto_006_envelope_failsafe (matches Coq) -/
-theorem auto_006_envelope_failsafe : should_failsafe EnvelopeViolation = true := by
+theorem auto_006_envelope_failsafe : should_failsafe .envelopeViolation = true := by
   rfl
 
 /-- auto_007_human_override (matches Coq) -/
-theorem auto_007_human_override : should_failsafe HumanOverride = true := by
+theorem auto_007_human_override : should_failsafe .humanOverride = true := by
   rfl
 
 /-- auto_008_reaction_bounded (matches Coq) -/
@@ -217,7 +217,7 @@ theorem auto_010_safe_hold_valid : valid_failsafe_action SafeHold = true := by
   rfl
 
 /-- auto_011_mode_transition (matches Coq) -/
-theorem auto_011_mode_transition : ∀ (from to : nat), valid_mode_transition from to = true → valid_mode_transition from to = true := by
+theorem auto_011_mode_transition : ∀ (from to : Nat), valid_mode_transition from to = true → valid_mode_transition from to = true := by
   intro h; exact h
 
 /-- auto_012_no_skip_assisted (matches Coq) -/
@@ -225,27 +225,27 @@ theorem auto_012_no_skip_assisted : valid_mode_transition 0 2 = false := by
   rfl
 
 /-- auto_013_decision_fresh (matches Coq) -/
-theorem auto_013_decision_fresh : ∀ (dec : Decision) (current max_age : nat), decision_fresh dec current max_age = true → current - dec_timestamp dec ≤ max_age := by
+theorem auto_013_decision_fresh : ∀ (dec : Decision) (current max_age : Nat), decision_fresh dec current max_age = true → current - dec_timestamp dec ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_014_action_bounded (matches Coq) -/
-theorem auto_014_action_bounded : ∀ (dec : Decision) (max_mag : nat), action_bounded dec max_mag = true → dec_magnitude dec ≤ max_mag := by
+theorem auto_014_action_bounded : ∀ (dec : Decision) (max_mag : Nat), action_bounded dec max_mag = true → dec_magnitude dec ≤ max_mag := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_015_sensor_agreement (matches Coq) -/
-theorem auto_015_sensor_agreement : ∀ (readings : list nat) (tolerance : nat), sensors_agree readings tolerance = true → sensors_agree readings tolerance = true := by
+theorem auto_015_sensor_agreement : ∀ (readings : list nat) (tolerance : Nat), sensors_agree readings tolerance = true → sensors_agree readings tolerance = true := by
   intro h; exact h
 
 /-- auto_016_watchdog_active (matches Coq) -/
-theorem auto_016_watchdog_active : ∀ (last_kick current timeout : nat), watchdog_ok last_kick current timeout = true → current - last_kick < timeout := by
+theorem auto_016_watchdog_active : ∀ (last_kick current timeout : Nat), watchdog_ok last_kick current timeout = true → current - last_kick < timeout := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_017_redundancy (matches Coq) -/
-theorem auto_017_redundancy : ∀ (active min_required : nat), controllers_redundant active min_required = true → min_required ≤ active := by
+theorem auto_017_redundancy : ∀ (active min_required : Nat), controllers_redundant active min_required = true → min_required ≤ active := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_018_geofence_respected (matches Coq) -/
-theorem auto_018_geofence_respected : ∀ (position fence_min fence_max : nat), in_geofence position fence_min fence_max = true → fence_min ≤ position ∧ position ≤ fence_max := by
+theorem auto_018_geofence_respected : ∀ (position fence_min fence_max : Nat), in_geofence position fence_min fence_max = true → fence_min ≤ position ∧ position ≤ fence_max := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_019_collision_free (matches Coq) -/
@@ -253,15 +253,15 @@ theorem auto_019_collision_free : ∀ (obstacles path_points : list nat), path_c
   simp_all [Bool.and_eq_true]
 
 /-- auto_020_energy_ok (matches Coq) -/
-theorem auto_020_energy_ok : ∀ (current required : nat), energy_sufficient current required = true → required ≤ current := by
+theorem auto_020_energy_ok : ∀ (current required : Nat), energy_sufficient current required = true → required ≤ current := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_021_link_quality (matches Coq) -/
-theorem auto_021_link_quality : ∀ (quality min_quality : nat), link_quality_ok quality min_quality = true → min_quality ≤ quality := by
+theorem auto_021_link_quality : ∀ (quality min_quality : Nat), link_quality_ok quality min_quality = true → min_quality ≤ quality := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_022_constraints_met (matches Coq) -/
-theorem auto_022_constraints_met : ∀ (violations : nat), constraints_met violations = true → violations = 0 := by
+theorem auto_022_constraints_met : ∀ (violations : Nat), constraints_met violations = true → violations = 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- auto_023_logging_complete (matches Coq) -/
@@ -269,7 +269,7 @@ theorem auto_023_logging_complete : ∀ (decisions logged : list nat), decisions
   simp_all [Bool.and_eq_true]
 
 /-- auto_024_verify_first (matches Coq) -/
-theorem auto_024_verify_first : ∀ (verified executed : bool), verified_before_exec verified executed = true → executed = true → verified = true := by
+theorem auto_024_verify_first : ∀ (verified executed : Bool), verified_before_exec verified executed = true → executed = true → verified = true := by
   cases ‹_› <;> simp
 
 /-- auto_025_defense_in_depth (matches Coq) -/

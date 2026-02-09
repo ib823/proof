@@ -140,15 +140,15 @@ def init_mutex : MutexState := mkMutex false None
 
 /-- mutex_well_formed (matches Coq: Definition mutex_well_formed) -/
 def mutex_well_formed (m : MutexState) : Prop :=
-  (mutex_locked m = true <-> exists t, mutex_owner m = Some t)
+  (m.mutex_locked = true <-> exists t, m.mutex_owner = Some t)
 
 /-- init_rwlock (matches Coq: Definition init_rwlock) -/
 def init_rwlock : RWLockState := mkRWLock 0 None
 
 /-- rwlock_well_formed (matches Coq: Definition rwlock_well_formed) -/
 def rwlock_well_formed (rw : RWLockState) : Prop :=
-  (rwlock_readers rw > 0 -> rwlock_writer rw = None) /\
-  (rwlock_writer rw <> None -> rwlock_readers rw = 0)
+  (rw.rwlock_readers > 0 -> rw.rwlock_writer = None) /\
+  (rw.rwlock_writer <> None -> rw.rwlock_readers = 0)
 
 /-- mut_borrow_exclusive (matches Coq: Definition mut_borrow_exclusive) -/
 def mut_borrow_exclusive (om : OwnershipMap) (l : Loc) (t : ThreadId) : Prop :=

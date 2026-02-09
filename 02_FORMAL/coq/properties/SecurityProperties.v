@@ -19,11 +19,14 @@ Import ListNotations.
 *)
 
 Theorem security_non_interference : forall x T_in T_out v1 v2 e,
+  (forall Γ Σ Σ_base rho1 rho2,
+      declass_payload_rel_assumption Γ Σ Σ_base rho1 rho2) ->
   val_rel nil T_in v1 v2 ->
   has_type ((x, T_in) :: nil) nil Public e T_out EffectPure ->
   exp_rel nil T_out ([x := v1] e) ([x := v2] e).
 Proof.
-  apply non_interference_stmt.
+  intros x T_in T_out v1 v2 e Hdeclass_payload.
+  apply (non_interference_stmt Hdeclass_payload).
 Qed.
 
 (** End of SecurityProperties.v *)

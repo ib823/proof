@@ -148,9 +148,9 @@ def haccp_frequency (h : FoodSafetyHazard) : Nat :=
 
 /-- all_food_safety_controls (matches Coq: Definition all_food_safety_controls) -/
 def all_food_safety_controls (c : FoodSafetyControls) : Bool :=
-  haccp_plan c && traceability_system c &&
-  supplier_verification c && preventive_controls c &&
-  sanitation_controls c && recall_capability c
+  c.haccp_plan && c.traceability_system &&
+  c.supplier_verification && c.preventive_controls &&
+  c.sanitation_controls && c.recall_capability
 
 /-- risk_score (matches Coq: Definition risk_score) -/
 def risk_score (h : FoodSafetyHazard) : Nat :=
@@ -158,46 +158,46 @@ def risk_score (h : FoodSafetyHazard) : Nat :=
 
 /-- count_food_controls (matches Coq: Definition count_food_controls) -/
 def count_food_controls (c : FoodSafetyControls) : Nat :=
-  (if haccp_plan c then 1 else 0) +
-  (if traceability_system c then 1 else 0) +
-  (if supplier_verification c then 1 else 0) +
-  (if preventive_controls c then 1 else 0) +
-  (if sanitation_controls c then 1 else 0) +
-  (if recall_capability c then 1 else 0)
+  (if c.haccp_plan then 1 else 0) +
+  (if c.traceability_system then 1 else 0) +
+  (if c.supplier_verification then 1 else 0) +
+  (if c.preventive_controls then 1 else 0) +
+  (if c.sanitation_controls then 1 else 0) +
+  (if c.recall_capability then 1 else 0)
 
 /-- Section N01 - FSMA Compliance
     Reference: IND_N_AGRICULTURE.md Section 3.1 -/
 /-- fsma_compliance (matches Coq) -/
-theorem fsma_compliance : ∀ (controls : FoodSafetyControls) (facility : nat), preventive_controls controls = true →  True := by
+theorem fsma_compliance : ∀ (controls : FoodSafetyControls) (facility : Nat), preventive_controls controls = true →  True := by
   trivial
 
 /-- Section N02 - Traceability
     Reference: IND_N_AGRICULTURE.md Section 3.2 -/
 /-- food_traceability (matches Coq) -/
-theorem food_traceability : ∀ (product : nat) (supply_chain : nat),  True := by
+theorem food_traceability : ∀ (product : Nat) (supply_chain : Nat),  True := by
   trivial
 
 /-- Section N03 - Precision Agriculture Security
     Reference: IND_N_AGRICULTURE.md Section 3.3 -/
 /-- precision_ag_security (matches Coq) -/
-theorem precision_ag_security : ∀ (equipment : nat) (data : AgriData),  True := by
+theorem precision_ag_security : ∀ (equipment : Nat) (data : AgriData),  True := by
   trivial
 
 /-- Section N04 - ISO 22000 FSMS
     Reference: IND_N_AGRICULTURE.md Section 3.4 -/
 /-- iso_22000_compliance (matches Coq) -/
-theorem iso_22000_compliance : ∀ (organization : nat),  True := by
+theorem iso_22000_compliance : ∀ (organization : Nat),  True := by
   trivial
 
 /-- Section N05 - Supply Chain Integrity
     Reference: IND_N_AGRICULTURE.md Section 3.5 -/
 /-- supply_chain_integrity (matches Coq) -/
-theorem supply_chain_integrity : ∀ (supplier : nat) (product : nat),  True := by
+theorem supply_chain_integrity : ∀ (supplier : Nat) (product : Nat),  True := by
   trivial
 
 /-- HACCP required for processing facilities -/
 /-- haccp_required (matches Coq) -/
-theorem haccp_required : ∀ (controls : FoodSafetyControls) (facility : nat), haccp_plan controls = true →  True := by
+theorem haccp_required : ∀ (controls : FoodSafetyControls) (facility : Nat), haccp_plan controls = true →  True := by
   trivial
 
 /-- Recall capability required -/
@@ -218,7 +218,7 @@ theorem hazard_severity_bounded : ∀ h, hazard_severity h ≥ 3 ∧ hazard_seve
   cases ‹_› <;> simp <;> omega
 
 /-- biological_radiological_equal (matches Coq) -/
-theorem biological_radiological_equal : hazard_severity Biological = hazard_severity Radiological := by
+theorem biological_radiological_equal : hazard_severity .biological = hazard_severity Radiological := by
   rfl
 
 /-- higher_severity_more_frequent (matches Coq) -/

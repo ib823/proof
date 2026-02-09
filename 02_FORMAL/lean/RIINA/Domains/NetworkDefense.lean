@@ -197,7 +197,7 @@ structure SipHashTable where
 
 /-- valid_solution (matches Coq: Definition valid_solution) -/
 def valid_solution (sol : Solution) : Bool :=
-  let h := sha256 (sol_puzzle sol)
+  let h := sha256 (sol.sol_puzzle)
 
 /-- expected_work (matches Coq: Definition expected_work) -/
 def expected_work (p : Puzzle) : Nat :=
@@ -213,12 +213,12 @@ def puzzle_expired (p : Puzzle) (current_time : Nat) (max_age : Nat) : Bool :=
 
 /-- work_is_sequential (matches Coq: Definition work_is_sequential) -/
 def work_is_sequential (p : Puzzle) : Prop :=
-  forall n_workers : nat, n_workers > 0 ->
+  forall n_workers : Nat, n_workers > .0 ->
     expected_work p / n_workers >= expected_work p / 2
 
 /-- server_state_pre_verify (matches Coq: Definition server_state_pre_verify) -/
 def server_state_pre_verify : Nat :=
-  0
+  .0
 
 /-- server_work (matches Coq: Definition server_work) -/
 def server_work (sol : Solution) : Nat :=
@@ -230,16 +230,16 @@ def client_work (p : Puzzle) : Nat :=
 
 /-- refill (matches Coq: Definition refill) -/
 def refill (tb : TokenBucket) (now : Nat) : TokenBucket :=
-  let elapsed := now - bucket_last_refill tb in
+  let elapsed := now - tb.bucket_last_refill in
   let new_tokens := Nat
 
 /-- requests_allowed (matches Coq: Definition requests_allowed) -/
 def requests_allowed (tb : TokenBucket) (window : Nat) : Nat :=
-  bucket_refill_rate tb * window + bucket_tokens tb
+  tb.bucket_refill_rate * window + tb.bucket_tokens
 
 /-- bucket_valid (matches Coq: Definition bucket_valid) -/
 def bucket_valid (tb : TokenBucket) : Prop :=
-  bucket_tokens tb <= bucket_max tb
+  tb.bucket_tokens <= tb.bucket_max
 
 /-- fair_share (matches Coq: Definition fair_share) -/
 def fair_share (total_rate : Nat) (n_clients : Nat) : Nat :=
@@ -250,12 +250,12 @@ def fair_share (total_rate : Nat) (n_clients : Nat) : Nat :=
 def allocation_fair (buckets : List ClientBucket) (total : Nat) : Prop :=
   forall cb1 cb2,
     In cb1 buckets -> In cb2 buckets ->
-    bucket_refill_rate (cb_bucket cb1) = bucket_refill_rate (cb_bucket cb2)
+    bucket_refill_rate (cb1.cb_bucket) = bucket_refill_rate (cb2.cb_bucket)
 
 /-- no_starvation_prop (matches Coq: Definition no_starvation_prop) -/
 def no_starvation_prop (tb : TokenBucket) (time_bound : Nat) : Prop :=
-  forall now, now >= bucket_last_refill tb + time_bound ->
-    bucket_tokens (refill tb now) > 0 \/ bucket_refill_rate tb = 0
+  forall now, now >= tb.bucket_last_refill + time_bound ->
+    bucket_tokens (refill tb now) > .0 \/ tb.bucket_refill_rate = .0
 
 /-- adaptive_rate (matches Coq: Definition adaptive_rate) -/
 def adaptive_rate (current_load : Nat) (max_capacity : Nat) (base_rate : Nat) : Nat :=
@@ -283,8 +283,8 @@ def cap_valid (cap : NetCapability) (now : Nat) (pubkey : List Nat) : Bool :=
 
 /-- grants_access (matches Coq: Definition grants_access) -/
 def grants_access (cap : NetCapability) (target : Endpoint) (perm : NetPerm) : Bool :=
-  endpoint_eq (cap_target cap) target &&
-  existsb (fun p => netperm_eq p perm) (cap_permissions cap)
+  endpoint_eq (cap.cap_target) target &&
+  existsb (fun p => netperm_eq p perm) (cap.cap_permissions)
 
 /-- cap_revoked (matches Coq: Definition cap_revoked) -/
 def cap_revoked (cap : NetCapability) (revoked : RevocationList) : Bool :=
@@ -321,11 +321,11 @@ def verify_syn_cookie (secret : SynSecret) (conn : Connection) (cookie : Nat) (n
 
 /-- syn_cookie_state_required (matches Coq: Definition syn_cookie_state_required) -/
 def syn_cookie_state_required : Nat :=
-  0
+  .0
 
 /-- syn_cookie_memory_usage (matches Coq: Definition syn_cookie_memory_usage) -/
 def syn_cookie_memory_usage (num_pending : Nat) : Nat :=
-  0
+  .0
 
 /-- siphash (matches Coq: Definition siphash) -/
 def siphash (key : List Nat) (data : List Nat) : Nat :=
@@ -341,8 +341,8 @@ def adaptive_difficulty (base : Nat) (load : Nat) (capacity : Nat) : Nat :=
 
 /-- is_reflection_safe (matches Coq: Definition is_reflection_safe) -/
 def is_reflection_safe (cap : NetCapability) : Bool :=
-  negb (existsb (fun p => netperm_eq p NPSend) (cap_permissions cap)) ||
-  existsb (fun p => netperm_eq p NPReceive) (cap_permissions cap)
+  !(existsb (fun p => netperm_eq p NPSend) (cap.cap_permissions)) ||
+  existsb (fun p => netperm_eq p NPReceive) (cap.cap_permissions)
 
 /-- ===============================================================================
     HELPER LEMMAS
@@ -388,11 +388,11 @@ theorem OMEGA_001_04_puzzle_fresh : ∀ p current_time max_age, puzzle_expired p
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_05_puzzle_difficulty_adaptive (matches Coq) -/
-theorem OMEGA_001_05_puzzle_difficulty_adaptive : ∀ base load capacity, capacity > 0 → load > capacity / 2 → adaptive_difficulty base load capacity > base := by
+theorem OMEGA_001_05_puzzle_difficulty_adaptive : ∀ base load capacity, capacity > .0 → load > capacity / 2 → adaptive_difficulty base load capacity > base := by
   cases ‹_› <;> simp <;> omega
 
 /-- OMEGA_001_06_puzzle_non_parallelizable (matches Coq) -/
-theorem OMEGA_001_06_puzzle_non_parallelizable : ∀ p n_workers, n_workers > 1 → expected_work p > 0 → expected_work p / n_workers < expected_work p := by
+theorem OMEGA_001_06_puzzle_non_parallelizable : ∀ p n_workers, n_workers > 1 → expected_work p > .0 → expected_work p / n_workers < expected_work p := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_07_puzzle_stateless (matches Coq) -/
@@ -404,11 +404,11 @@ theorem pow2_ge_1 : ∀ n, Nat.pow 2 n ≥ 1 := by
   omega
 
 /-- pow2_ge_2 (matches Coq) -/
-theorem pow2_ge_2 : ∀ n, n > 0 → Nat.pow 2 n ≥ 2 := by
+theorem pow2_ge_2 : ∀ n, n > .0 → Nat.pow 2 n ≥ 2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- OMEGA_001_08_puzzle_asymmetric (matches Coq) -/
-theorem OMEGA_001_08_puzzle_asymmetric : ∀ p sol, puzzle_difficulty p > 0 → server_work sol < client_work p := by
+theorem OMEGA_001_08_puzzle_asymmetric : ∀ p sol, puzzle_difficulty p > .0 → server_work sol < client_work p := by
   omega
 
 /-- OMEGA_001_09_token_bucket_correct (matches Coq) -/
@@ -424,7 +424,7 @@ theorem OMEGA_001_11_rate_limit_fair : ∀ buckets total, allocation_fair bucket
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_12_no_starvation (matches Coq) -/
-theorem OMEGA_001_12_no_starvation : ∀ tb, bucket_refill_rate tb > 0 → bucket_max tb > 0 → ∀ now, now ≥ bucket_last_refill tb + 1 → bucket_tokens (refill tb now) > 0 := by
+theorem OMEGA_001_12_no_starvation : ∀ tb, bucket_refill_rate tb > .0 → bucket_max tb > .0 → ∀ now, now ≥ bucket_last_refill tb + 1 → bucket_tokens (refill tb now) > 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_13_burst_bounded (matches Coq) -/
@@ -432,7 +432,7 @@ theorem OMEGA_001_13_burst_bounded : ∀ tb, bucket_valid tb → bucket_tokens t
   intro h; exact h
 
 /-- OMEGA_001_14_rate_adaptive (matches Coq) -/
-theorem OMEGA_001_14_rate_adaptive : ∀ current_load max_capacity base_rate, max_capacity > 0 → current_load > max_capacity / 2 → adaptive_rate current_load max_capacity base_rate ≤ base_rate := by
+theorem OMEGA_001_14_rate_adaptive : ∀ current_load max_capacity base_rate, max_capacity > .0 → current_load > max_capacity / 2 → adaptive_rate current_load max_capacity base_rate ≤ base_rate := by
   cases ‹_› <;> simp <;> omega
 
 /-- OMEGA_001_15_rate_composition (matches Coq) -/
@@ -464,7 +464,7 @@ theorem OMEGA_001_21_cap_delegation_safe : ∀ cap new_perms new_expiry cap', at
   cases ‹_› <;> simp
 
 /-- OMEGA_001_22_cap_no_amplification (matches Coq) -/
-theorem OMEGA_001_22_cap_no_amplification : ∀ request_size response_size, request_size > 0 → amplification_factor request_size response_size ≤ response_size := by
+theorem OMEGA_001_22_cap_no_amplification : ∀ request_size response_size, request_size > .0 → amplification_factor request_size response_size ≤ response_size := by
   cases ‹_› <;> simp <;> omega
 
 /-- OMEGA_001_23_cap_no_reflection (matches Coq) -/
@@ -516,7 +516,7 @@ theorem OMEGA_001_34_xml_parse_bounded : ∀ data depth_limit size_limit result,
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_35_no_algorithmic_dos (matches Coq) -/
-theorem OMEGA_001_35_no_algorithmic_dos : ∀ {A : Type} (input : list nat) (limit : nat) (op : list nat → A) result, bounded_operation input limit op = BROk result → length input ≤ limit := by
+theorem OMEGA_001_35_no_algorithmic_dos : ∀ {A : Type} (input : list nat) (limit : Nat) (op : list nat → A) result, bounded_operation input limit op = BROk result → length input ≤ limit := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

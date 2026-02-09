@@ -222,7 +222,7 @@ def pci_compliant_encryption (enc : EncState) (chd : CHDType) : Bool :=
   match chd with
   | .pAN => match
   | .tokenized => true
-  | ._ => false
+  | _ => false
 
 /-- display_compliant (matches Coq: Definition display_compliant) -/
 def display_compliant (disp : PANDisplay) : Bool :=
@@ -240,9 +240,9 @@ def grant_chd_access := sorry -- complex match, needs manual translation
 
 /-- chd_record_compliant (matches Coq: Definition chd_record_compliant) -/
 def chd_record_compliant (rec : CHDRecord) : Bool :=
-  andb (can_store (chd_type rec))
-       (andb (pci_compliant_encryption (chd_encryption rec) (chd_type rec))
-             (display_compliant (chd_display_format rec)))
+  andb (can_store (rec.chd_type))
+       (andb (pci_compliant_encryption (rec.chd_encryption) (rec.chd_type))
+             (display_compliant (rec.chd_display_format)))
 
 /-- create_audit_entry (matches Coq: Definition create_audit_entry) -/
 def create_audit_entry (ts usr act : Nat) (chd : CHDType) (succ : Bool) (prev_hash : Nat) : PCIAudit := mkPCIAudit ts usr act chd succ (prev_hash + ts + usr + act)
@@ -257,7 +257,7 @@ def tls_compliant (v : TLSVersion) : Bool :=
 
 /-- transmission_compliant (matches Coq: Definition transmission_compliant) -/
 def transmission_compliant (t : Transmission) : Bool :=
-  andb (trans_encrypted t) (tls_compliant (trans_tls_version t))
+  andb (t.trans_encrypted) (tls_compliant (t.trans_tls_version))
 
 /-- data_past_retention (matches Coq: Definition data_past_retention) -/
 def data_past_retention (creation_time current_time max_days : Nat) : Bool :=
@@ -267,73 +267,73 @@ def data_past_retention (creation_time current_time max_days : Nat) : Bool :=
 def deletion_secure (ds : DeletionState) : Bool :=
   match ds with
   | .securelyDeleted => true
-  | ._ => false
+  | _ => false
 
 /-- deletion_unrecoverable (matches Coq: Definition deletion_unrecoverable) -/
 def deletion_unrecoverable (ds : DeletionState) : Bool :=
   match ds with
   | .overwritten => true
   | .securelyDeleted => true
-  | ._ => false
+  | _ => false
 
 /-- zone_compliant (matches Coq: Definition zone_compliant) -/
 def zone_compliant (z : NetworkZone) : Bool :=
-  if zone_is_cde z then
-    andb (zone_isolated z) (zone_firewall_protected z)
+  if z.zone_is_cde then
+    andb (z.zone_isolated) (z.zone_firewall_protected)
   else
     true
 
 /-- system_scope_isolated (matches Coq: Definition system_scope_isolated) -/
 def system_scope_isolated (sys : PCISystem) : Bool :=
-  vault_isolated (pci_vault sys)
+  vault_isolated (sys.pci_vault)
 
 /-- users_unique_ids (matches Coq: Definition users_unique_ids) -/
 def users_unique_ids (users : List User) : Bool :=
-  let ids := map user_id users in
+  let ids := map users.user_id in
   Nat
 
 /-- COMPLY_002_01_pan_masking (matches Coq) -/
-theorem COMPLY_002_01_pan_masking : ∀ (disp : PANDisplay), disp = FullPAN → display_compliant disp = false := by
+theorem COMPLY_002_01_pan_masking : ∀ (disp : PANDisplay), disp = .fullPAN → display_compliant disp = false := by
   rfl
 
 /-- COMPLY_002_01_pan_masking_valid (matches Coq) -/
-theorem COMPLY_002_01_pan_masking_valid : display_compliant MaskedPAN = true ∧ display_compliant TokenizedPAN = true := by
+theorem COMPLY_002_01_pan_masking_valid : display_compliant .maskedPAN = true ∧ display_compliant .tokenizedPAN = true := by
   constructor <;> rfl
 
 /-- COMPLY_002_02_pan_encryption (matches Coq) -/
-theorem COMPLY_002_02_pan_encryption : ∀ (enc : EncState), pci_compliant_encryption enc PAN = true → enc = AES256 ∨ enc = Tokenized := by
+theorem COMPLY_002_02_pan_encryption : ∀ (enc : EncState), pci_compliant_encryption enc .pAN = true → enc = AES256 ∨ enc = Tokenized := by
   cases ‹_› <;> simp
 
 /-- COMPLY_002_02_pan_plain_forbidden (matches Coq) -/
-theorem COMPLY_002_02_pan_plain_forbidden : pci_compliant_encryption Plain PAN = false := by
+theorem COMPLY_002_02_pan_plain_forbidden : pci_compliant_encryption Plain .pAN = false := by
   rfl
 
 /-- COMPLY_002_02_pan_aes128_insufficient (matches Coq) -/
-theorem COMPLY_002_02_pan_aes128_insufficient : pci_compliant_encryption AES128 PAN = false := by
+theorem COMPLY_002_02_pan_aes128_insufficient : pci_compliant_encryption AES128 .pAN = false := by
   rfl
 
 /-- COMPLY_002_03_cvv_never_stored (matches Coq) -/
-theorem COMPLY_002_03_cvv_never_stored : can_store CVV = false := by
+theorem COMPLY_002_03_cvv_never_stored : can_store .cVV = false := by
   rfl
 
 /-- COMPLY_002_03_cvv_no_compliant_encryption (matches Coq) -/
-theorem COMPLY_002_03_cvv_no_compliant_encryption : ∀ (enc : EncState), pci_compliant_encryption enc CVV = false := by
+theorem COMPLY_002_03_cvv_no_compliant_encryption : ∀ (enc : EncState), pci_compliant_encryption enc .cVV = false := by
   cases ‹_› <;> simp
 
 /-- COMPLY_002_04_pin_never_stored (matches Coq) -/
-theorem COMPLY_002_04_pin_never_stored : can_store PIN = false := by
+theorem COMPLY_002_04_pin_never_stored : can_store .pIN = false := by
   rfl
 
 /-- COMPLY_002_04_pin_no_compliant_encryption (matches Coq) -/
-theorem COMPLY_002_04_pin_no_compliant_encryption : ∀ (enc : EncState), pci_compliant_encryption enc PIN = false := by
+theorem COMPLY_002_04_pin_no_compliant_encryption : ∀ (enc : EncState), pci_compliant_encryption enc .pIN = false := by
   cases ‹_› <;> simp
 
 /-- COMPLY_002_05_key_rotation_detection (matches Coq) -/
-theorem COMPLY_002_05_key_rotation_detection : ∀ (k : KeyState) (current_time : nat), key_creation_time k + key_rotation_period k < current_time → key_needs_rotation k current_time = true := by
+theorem COMPLY_002_05_key_rotation_detection : ∀ (k : KeyState) (current_time : Nat), key_creation_time k + key_rotation_period k < current_time → key_needs_rotation k current_time = true := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_002_05_key_no_rotation_needed (matches Coq) -/
-theorem COMPLY_002_05_key_no_rotation_needed : ∀ (k : KeyState) (current_time : nat), current_time ≤ key_creation_time k + key_rotation_period k → key_needs_rotation k current_time = false := by
+theorem COMPLY_002_05_key_no_rotation_needed : ∀ (k : KeyState) (current_time : Nat), current_time ≤ key_creation_time k + key_rotation_period k → key_needs_rotation k current_time = false := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_002_06_access_requires_need_to_know (matches Coq) -/
@@ -361,35 +361,35 @@ theorem COMPLY_002_08_access_granted_implies_mfa : ∀ (u : User), grant_chd_acc
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_002_09_audit_entry_has_timestamp (matches Coq) -/
-theorem COMPLY_002_09_audit_entry_has_timestamp : ∀ (ts usr act : nat) (chd : CHDType) (succ : bool) (prev : nat), pci_timestamp (create_audit_entry ts usr act chd succ prev) = ts := by
+theorem COMPLY_002_09_audit_entry_has_timestamp : ∀ (ts usr act : Nat) (chd : CHDType) (succ : Bool) (prev : Nat), pci_timestamp (create_audit_entry ts usr act chd succ prev) = ts := by
   simp
 
 /-- COMPLY_002_09_audit_entry_has_user (matches Coq) -/
-theorem COMPLY_002_09_audit_entry_has_user : ∀ (ts usr act : nat) (chd : CHDType) (succ : bool) (prev : nat), pci_user (create_audit_entry ts usr act chd succ prev) = usr := by
+theorem COMPLY_002_09_audit_entry_has_user : ∀ (ts usr act : Nat) (chd : CHDType) (succ : Bool) (prev : Nat), pci_user (create_audit_entry ts usr act chd succ prev) = usr := by
   simp
 
 /-- COMPLY_002_09_audit_entry_has_action (matches Coq) -/
-theorem COMPLY_002_09_audit_entry_has_action : ∀ (ts usr act : nat) (chd : CHDType) (succ : bool) (prev : nat), pci_action (create_audit_entry ts usr act chd succ prev) = act := by
+theorem COMPLY_002_09_audit_entry_has_action : ∀ (ts usr act : Nat) (chd : CHDType) (succ : Bool) (prev : Nat), pci_action (create_audit_entry ts usr act chd succ prev) = act := by
   simp
 
 /-- COMPLY_002_10_audit_has_hash (matches Coq) -/
-theorem COMPLY_002_10_audit_has_hash : ∀ (ts usr act : nat) (chd : CHDType) (succ : bool) (prev : nat), pci_hash (create_audit_entry ts usr act chd succ prev) = prev + ts + usr + act := by
+theorem COMPLY_002_10_audit_has_hash : ∀ (ts usr act : Nat) (chd : CHDType) (succ : Bool) (prev : Nat), pci_hash (create_audit_entry ts usr act chd succ prev) = prev + ts + usr + act := by
   simp
 
 /-- COMPLY_002_10_empty_log_valid (matches Coq) -/
-theorem COMPLY_002_10_empty_log_valid : ∀ (h : nat), audit_chain_valid [] h = true := by
+theorem COMPLY_002_10_empty_log_valid : ∀ (h : Nat), audit_chain_valid [] h = true := by
   rfl
 
 /-- COMPLY_002_11_tls12_compliant (matches Coq) -/
-theorem COMPLY_002_11_tls12_compliant : tls_compliant TLS12 = true := by
+theorem COMPLY_002_11_tls12_compliant : tls_compliant .tLS12 = true := by
   rfl
 
 /-- COMPLY_002_11_tls13_compliant (matches Coq) -/
-theorem COMPLY_002_11_tls13_compliant : tls_compliant TLS13 = true := by
+theorem COMPLY_002_11_tls13_compliant : tls_compliant .tLS13 = true := by
   rfl
 
 /-- COMPLY_002_11_old_tls_non_compliant (matches Coq) -/
-theorem COMPLY_002_11_old_tls_non_compliant : tls_compliant TLS10 = false ∧ tls_compliant TLS11 = false := by
+theorem COMPLY_002_11_old_tls_non_compliant : tls_compliant .tLS10 = false ∧ tls_compliant .tLS11 = false := by
   constructor <;> rfl
 
 /-- COMPLY_002_11_transmission_requires_encryption (matches Coq) -/
@@ -397,19 +397,19 @@ theorem COMPLY_002_11_transmission_requires_encryption : ∀ (t : Transmission),
   cases ‹_› <;> simp <;> omega
 
 /-- COMPLY_002_12_token_no_key_no_pan (matches Coq) -/
-theorem COMPLY_002_12_token_no_key_no_pan : ∀ (vault : TokenVault) (token : nat), token_lookup vault token false = None := by
+theorem COMPLY_002_12_token_no_key_no_pan : ∀ (vault : TokenVault) (token : Nat), token_lookup vault token false = None := by
   simp
 
 /-- COMPLY_002_12_tokenization_irreversible_without_key (matches Coq) -/
-theorem COMPLY_002_12_tokenization_irreversible_without_key : ∀ (vault : TokenVault) (token pan : nat), token_lookup vault token false = Some pan → False := by
+theorem COMPLY_002_12_tokenization_irreversible_without_key : ∀ (vault : TokenVault) (token pan : Nat), token_lookup vault token false = Some pan → False := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_002_13_past_retention_detected (matches Coq) -/
-theorem COMPLY_002_13_past_retention_detected : ∀ (creation current max_days : nat), creation + max_days < current → data_past_retention creation current max_days = true := by
+theorem COMPLY_002_13_past_retention_detected : ∀ (creation current max_days : Nat), creation + max_days < current → data_past_retention creation current max_days = true := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_002_13_within_retention_ok (matches Coq) -/
-theorem COMPLY_002_13_within_retention_ok : ∀ (creation current max_days : nat), current ≤ creation + max_days → data_past_retention creation current max_days = false := by
+theorem COMPLY_002_13_within_retention_ok : ∀ (creation current max_days : Nat), current ≤ creation + max_days → data_past_retention creation current max_days = false := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_002_14_secure_deletion_unrecoverable (matches Coq) -/

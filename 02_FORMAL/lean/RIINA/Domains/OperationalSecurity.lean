@@ -91,7 +91,7 @@ def action_audited (entries : List AuditEntry) (action : Nat) : Bool :=
 
 /-- platforms_independent (matches Coq: Definition platforms_independent) -/
 def platforms_independent (p1 p2 : Nat) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- majority_agrees (matches Coq: Definition majority_agrees) -/
 def majority_agrees (results : List Nat) (expected : Nat) : Bool :=
@@ -150,7 +150,7 @@ theorem opsec_005_multiparty_required : ∀ (mpa : MultiPartyAuth) (approvals : 
   intro h; exact h
 
 /-- opsec_006_social_engineering_insufficient (matches Coq) -/
-theorem opsec_006_social_engineering_insufficient : ∀ (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 → compromised < required_approvers mpa →  compromised < required_approvers mpa := by
+theorem opsec_006_social_engineering_insufficient : ∀ (mpa : MultiPartyAuth) (compromised : Nat), required_approvers mpa > 1 → compromised < required_approvers mpa →  compromised < required_approvers mpa := by
   intro h; exact h
 
 /-- opsec_007_insider_bounded (matches Coq) -/
@@ -166,11 +166,11 @@ theorem opsec_009_duress_detection : ∀ (input duress_suffix : list nat), is_du
   intro h; exact h
 
 /-- opsec_010_dead_man_switch (matches Coq) -/
-theorem opsec_010_dead_man_switch : ∀ (last_checkin current_time interval : nat), dead_man_triggered last_checkin current_time interval = true → last_checkin + interval * 2 < current_time := by
+theorem opsec_010_dead_man_switch : ∀ (last_checkin current_time interval : Nat), dead_man_triggered last_checkin current_time interval = true → last_checkin + interval * 2 < current_time := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_011_time_window (matches Coq) -/
-theorem opsec_011_time_window : ∀ (approval_time current_time window : nat), within_time_window approval_time current_time window = true → current_time - approval_time ≤ window := by
+theorem opsec_011_time_window : ∀ (approval_time current_time window : Nat), within_time_window approval_time current_time window = true → current_time - approval_time ≤ window := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_012_role_separation (matches Coq) -/
@@ -178,27 +178,27 @@ theorem opsec_012_role_separation : ∀ (roles : list nat), roles_distinct roles
   intro h; exact h
 
 /-- opsec_013_anomaly_detection (matches Coq) -/
-theorem opsec_013_anomaly_detection : ∀ (score threshold : nat), anomaly_detected score threshold = true → threshold < score := by
+theorem opsec_013_anomaly_detection : ∀ (score threshold : Nat), anomaly_detected score threshold = true → threshold < score := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_014_audit_complete (matches Coq) -/
-theorem opsec_014_audit_complete : ∀ (entries : list AuditEntry) (action : nat), action_audited entries action = true → ∃ e, In e entries ∧ audit_action e = action := by
+theorem opsec_014_audit_complete : ∀ (entries : list AuditEntry) (action : Nat), action_audited entries action = true → ∃ e, In e entries ∧ audit_action e = action := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_015_hardware_diversity (matches Coq) -/
-theorem opsec_015_hardware_diversity : ∀ (p1 p2 : nat), platforms_independent p1 p2 = true → p1 ≠ p2 := by
+theorem opsec_015_hardware_diversity : ∀ (p1 p2 : Nat), platforms_independent p1 p2 = true → p1 ≠ p2 := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_016_nversion_consensus (matches Coq) -/
-theorem opsec_016_nversion_consensus : ∀ (results : list nat) (expected : nat), majority_agrees results expected = true → count_occ Nat.eq_dec results expected > length results / 2 := by
+theorem opsec_016_nversion_consensus : ∀ (results : list nat) (expected : Nat), majority_agrees results expected = true → count_occ Nat.eq_dec results expected > length results / 2 := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_017_time_lock (matches Coq) -/
-theorem opsec_017_time_lock : ∀ (unlock_time current_time : nat), time_lock_expired unlock_time current_time = true → unlock_time ≤ current_time := by
+theorem opsec_017_time_lock : ∀ (unlock_time current_time : Nat), time_lock_expired unlock_time current_time = true → unlock_time ≤ current_time := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_018_cancellation_window (matches Coq) -/
-theorem opsec_018_cancellation_window : ∀ (op_time current_time cancel_window : nat), in_cancellation_window op_time current_time cancel_window = true → current_time < op_time + cancel_window := by
+theorem opsec_018_cancellation_window : ∀ (op_time current_time cancel_window : Nat), in_cancellation_window op_time current_time cancel_window = true → current_time < op_time + cancel_window := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_019_principal_uniqueness (matches Coq) -/
@@ -210,7 +210,7 @@ theorem opsec_020_channel_diversity : ∀ (approvals : list Approval) (channels 
   intro h; exact h
 
 /-- opsec_021_coercion_resistant (matches Coq) -/
-theorem opsec_021_coercion_resistant : ∀ (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme →  compromised < threshold scheme := by
+theorem opsec_021_coercion_resistant : ∀ (scheme : ShamirScheme) (compromised : Nat), compromised < threshold scheme →  compromised < threshold scheme := by
   intro h; exact h
 
 /-- opsec_022_jurisdictional_spread (matches Coq) -/

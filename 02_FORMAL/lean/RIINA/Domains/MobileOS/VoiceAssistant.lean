@@ -221,11 +221,11 @@ def Transcript : Type :=
   list TranscriptWord
 
 /-- recognize (matches Coq: Definition recognize) -/
-def recognize (v : VoiceInput) : RecognitionResult := mkRecognition [] 95 (voice_processed_locally v)
+def recognize (v : VoiceInput) : RecognitionResult := mkRecognition [] 95 (v.voice_processed_locally)
 
 /-- voice_data_private (matches Coq: Definition voice_data_private) -/
 def voice_data_private (v : VoiceInput) : Prop :=
-  voice_processed_locally v = true
+  v.voice_processed_locally = true
 
 /-- accuracy_threshold (matches Coq: Definition accuracy_threshold) -/
 def accuracy_threshold : Nat :=
@@ -233,77 +233,77 @@ def accuracy_threshold : Nat :=
 
 /-- accurate_voice_system (matches Coq: Definition accurate_voice_system) -/
 def accurate_voice_system (r : RecognitionResult) : Prop :=
-  recog_confidence r >= accuracy_threshold
+  r.recog_confidence >= accuracy_threshold
 
 /-- private_voice_system (matches Coq: Definition private_voice_system) -/
 def private_voice_system : Prop :=
   forall (v : VoiceInput),
-    voice_processed_locally v = true ->
+    v.voice_processed_locally = true ->
     recog_processed_on_device (recognize v) = true
 
 /-- voice_data_processed_locally (matches Coq: Definition voice_data_processed_locally) -/
 def voice_data_processed_locally (vp : VoiceProcessing) : Prop :=
-  vp_processed_locally vp = true /\ vp_data_sent_to_server vp = false
+  vp.vp_processed_locally = true /\ vp.vp_data_sent_to_server = false
 
 /-- wake_word_on_device (matches Coq: Definition wake_word_on_device) -/
 def wake_word_on_device (ww : WakeWordDetector) : Prop :=
-  ww_model_on_device ww = true
+  ww.ww_model_on_device = true
 
 /-- not_always_listening (matches Coq: Definition not_always_listening) -/
 def not_always_listening (ww : WakeWordDetector) : Prop :=
-  ww_always_listening ww = false /\ ww_buffer_size_ms ww <= ww_max_buffer_ms ww
+  ww.ww_always_listening = false /\ ww.ww_buffer_size_ms <= ww.ww_max_buffer_ms
 
 /-- audio_deleted_after_processing (matches Coq: Definition audio_deleted_after_processing) -/
 def audio_deleted_after_processing (al : AudioLifecycle) : Prop :=
-  al_processing_complete al = true -> al_audio_deleted al = true
+  al.al_processing_complete = true -> al.al_audio_deleted = true
 
 /-- voice_command_intent_validated (matches Coq: Definition voice_command_intent_validated) -/
 def voice_command_intent_validated (vc : VoiceCommand) : Prop :=
-  vc_intent_validated vc = true /\ vc_intent vc <> UnknownIntent
+  vc.vc_intent_validated = true /\ vc.vc_intent <> UnknownIntent
 
 /-- speech_recognition_language_supported (matches Coq: Definition speech_recognition_language_supported) -/
 def speech_recognition_language_supported (sr : SpeechRecognition) : Prop :=
-  sr_language_supported sr = true /\ In (sr_language sr) (sr_supported_languages sr)
+  sr.sr_language_supported = true /\ In (sr.sr_language) (sr.sr_supported_languages)
 
 /-- voice_feedback_appropriate (matches Coq: Definition voice_feedback_appropriate) -/
 def voice_feedback_appropriate (vf : VoiceFeedback) : Prop :=
-  vf_appropriate vf = true /\ vf_volume_level vf <= vf_max_volume vf
+  vf.vf_appropriate = true /\ vf.vf_volume_level <= vf.vf_max_volume
 
 /-- voice_permission_explicit (matches Coq: Definition voice_permission_explicit) -/
 def voice_permission_explicit (vp : VoicePermission) : Prop :=
-  vperm_explicit vp = true /\
-  vperm_microphone_granted vp = true /\
-  vperm_speech_granted vp = true
+  vp.vperm_explicit = true /\
+  vp.vperm_microphone_granted = true /\
+  vp.vperm_speech_granted = true
 
 /-- conversation_context_bounded (matches Coq: Definition conversation_context_bounded) -/
 def conversation_context_bounded (cc : ConversationContext) : Prop :=
-  cc_context_bounded cc = true /\
-  length (cc_turns cc) <= cc_max_turns cc
+  cc.cc_context_bounded = true /\
+  length (cc.cc_turns) <= cc.cc_max_turns
 
 /-- voice_authentication_secure (matches Coq: Definition voice_authentication_secure) -/
 def voice_authentication_secure := sorry -- complex match, needs manual translation
 
 /-- noise_cancellation_bounded (matches Coq: Definition noise_cancellation_bounded) -/
 def noise_cancellation_bounded (nc : NoiseCancellation) : Prop :=
-  nc_improvement_bounded nc = true /\ nc_output_snr nc >= nc_input_snr nc
+  nc.nc_improvement_bounded = true /\ nc.nc_output_snr >= nc.nc_input_snr
 
 /-- voice_synthesis_quality_bounded (matches Coq: Definition voice_synthesis_quality_bounded) -/
 def voice_synthesis_quality_bounded (vs : VoiceSynthesis) : Prop :=
-  vs_synthesis_complete vs = true /\ vs_quality_score vs >= vs_min_quality vs
+  vs.vs_synthesis_complete = true /\ vs.vs_quality_score >= vs.vs_min_quality
 
 /-- voice_command_undo_available (matches Coq: Definition voice_command_undo_available) -/
 def voice_command_undo_available (vu : VoiceUndo) : Prop :=
-  vu_undoable vu = true /\ vu_undo_window_seconds vu > 0
+  vu.vu_undoable = true /\ vu.vu_undo_window_seconds > 0
 
 /-- accessibility_voice_control_complete (matches Coq: Definition accessibility_voice_control_complete) -/
 def accessibility_voice_control_complete (avc : AccessibilityVoiceControl) : Prop :=
-  avc_enabled avc = true /\
-  avc_all_elements_reachable avc = true /\
-  avc_labels_complete avc = true
+  avc.avc_enabled = true /\
+  avc.avc_all_elements_reachable = true /\
+  avc.avc_labels_complete = true
 
 /-- dictation_privacy_mode (matches Coq: Definition dictation_privacy_mode) -/
 def dictation_privacy_mode (dm : DictationMode) : Prop :=
-  dm_privacy_mode dm = true /\ dm_server_processing dm = false
+  dm.dm_privacy_mode = true /\ dm.dm_server_processing = false
 
 /-- voice_recognition_accurate (matches Coq) -/
 theorem voice_recognition_accurate : ∀ (result : RecognitionResult), accurate_voice_system result → recog_confidence result ≥ 90 := by

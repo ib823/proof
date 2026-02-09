@@ -301,7 +301,7 @@ structure Label where
 
 /-- siphash_collision_resistant (matches Coq: Definition siphash_collision_resistant) -/
 def siphash_collision_resistant (h : SipHashState) : Prop :=
-  forall k1 k2 : nat, k1 <> k2 -> True
+  forall k1 k2 : Nat, k1 <> k2 -> True
 
 /-- is_valid_utf8_byte (matches Coq: Definition is_valid_utf8_byte) -/
 def is_valid_utf8_byte (b : Nat) : Bool :=
@@ -315,7 +315,7 @@ def all_valid_utf8 (bytes : List Nat) : Bool :=
 def string_from_bytes (bytes : List Nat) : RiinaString := mkRiinaString bytes (all_valid_utf8 bytes)
 
 /-- secure_string_drop (matches Coq: Definition secure_string_drop) -/
-def secure_string_drop (ss : SecureString) : SecureString := mkSecureString (map (fun _ => 0) (sstr_data ss)) true (sstr_redacted ss)
+def secure_string_drop (ss : SecureString) : SecureString := mkSecureString (map (fun _ => 0) (ss.sstr_data)) true (ss.sstr_redacted)
 
 /-- cap_eq (matches Coq: Definition cap_eq) -/
 def cap_eq := sorry -- complex match, needs manual translation
@@ -337,34 +337,34 @@ def tls_version_geq := sorry -- complex match, needs manual translation
 
 /-- duration_add (matches Coq: Definition duration_add) -/
 def duration_add (d1 d2 : Duration) : Duration :=
-  let total_nanos := dur_nanos d1 + dur_nanos d2 in
+  let total_nanos := d1.dur_nanos + d2.dur_nanos in
   mkDuration 
-    (dur_secs d1 + dur_secs d2 + total_nanos / NANOS_PER_SEC)
+    (d1.dur_secs + d2.dur_secs + total_nanos / NANOS_PER_SEC)
     (total_nanos mod NANOS_PER_SEC)
 
 /-- instant_elapsed (matches Coq: Definition instant_elapsed) -/
 def instant_elapsed (start finish : Instant) : Nat :=
-  inst_ticks finish - inst_ticks start
+  finish.inst_ticks - start.inst_ticks
 
 /-- verify_timestamp (matches Coq: Definition verify_timestamp) -/
 def verify_timestamp (ts : SecureTimestamp) (expected_sig : Nat) : Bool :=
-  andb (st_signed ts) (Nat
+  andb (ts.st_signed) (Nat
 
 /-- mono_increment (matches Coq: Definition mono_increment) -/
-def mono_increment (c : MonotonicCounter) : MonotonicCounter := mkMonoCounter (S (mc_value c))
+def mono_increment (c : MonotonicCounter) : MonotonicCounter := mkMonoCounter (S (c.mc_value))
 
 /-- mono_read (matches Coq: Definition mono_read) -/
 def mono_read (c : MonotonicCounter) : Nat :=
-  mc_value c
+  c.mc_value
 
 /-- atomic_store (matches Coq: Definition atomic_store) -/
-def atomic_store (a : AtomicNat) (v : Nat) : AtomicNat := mkAtomicNat v (S (atomic_seq a))
+def atomic_store (a : AtomicNat) (v : Nat) : AtomicNat := mkAtomicNat v (S (a.atomic_seq))
 
 /-- condvar_wait (matches Coq: Definition condvar_wait) -/
-def condvar_wait (cv : CondvarState) (thread_id : Nat) : CondvarState := mkCondvarState (cv_waiters cv ++ [thread_id]) false
+def condvar_wait (cv : CondvarState) (thread_id : Nat) : CondvarState := mkCondvarState (cv.cv_waiters ++ [thread_id]) false
 
 /-- aes_key_drop (matches Coq: Definition aes_key_drop) -/
-def aes_key_drop (k : AesKey) : AesKey := mkAesKey (map (fun _ => 0) (aes_key_data k)) true
+def aes_key_drop (k : AesKey) : AesKey := mkAesKey (map (fun _ => 0) (k.aes_key_data)) true
 
 /-- hash_function (matches Coq: Definition hash_function) -/
 def hash_function (data : List Nat) : Nat :=
@@ -378,11 +378,11 @@ def verify_signature (sig : SigNature) (data : List Nat) (public_key : Nat) : Bo
   andb (Nat
 
 /-- crypto_key_drop (matches Coq: Definition crypto_key_drop) -/
-def crypto_key_drop (k : CryptoKey) : CryptoKey := mkCryptoKey (map (fun _ => 0) (ck_data k)) true
+def crypto_key_drop (k : CryptoKey) : CryptoKey := mkCryptoKey (map (fun _ => 0) (k.ck_data)) true
 
 /-- cap_set_union (matches Coq: Definition cap_set_union) -/
 def cap_set_union (s1 s2 : CapabilitySet) : CapabilitySet :=
-  s1 ++ filter (fun c => negb (existsb (cap_eq c) s1)) s2
+  s1 ++ filter (fun c => !(existsb (cap_eq c) s1)) s2
 
 /-- cap_set_inter (matches Coq: Definition cap_set_inter) -/
 def cap_set_inter (s1 s2 : CapabilitySet) : CapabilitySet :=
@@ -401,8 +401,8 @@ def compartments_subset (c1 c2 : List Nat) : Bool :=
 
 /-- flows_to (matches Coq: Definition flows_to) -/
 def flows_to (l1 l2 : Label) : Bool :=
-  andb (level_leq (lab_level l1) (lab_level l2))
-       (compartments_subset (lab_compartments l1) (lab_compartments l2))
+  andb (level_leq (l1.lab_level) (l2.lab_level))
+       (compartments_subset (l1.lab_compartments) (l2.lab_compartments))
 
 /-- level_max (matches Coq: Definition level_max) -/
 def level_max (l1 l2 : SecurityLevel) : SecurityLevel :=
@@ -413,12 +413,12 @@ def level_min (l1 l2 : SecurityLevel) : SecurityLevel :=
   if level_leq l1 l2 then l1 else l2
 
 /-- label_join (matches Coq: Definition label_join) -/
-def label_join (l1 l2 : Label) : Label := mkLabel (level_max (lab_level l1) (lab_level l2))
-          (list_union (lab_compartments l1) (lab_compartments l2))
+def label_join (l1 l2 : Label) : Label := mkLabel (level_max (l1.lab_level) (l2.lab_level))
+          (list_union (l1.lab_compartments) (l2.lab_compartments))
 
 /-- label_meet (matches Coq: Definition label_meet) -/
-def label_meet (l1 l2 : Label) : Label := mkLabel (level_min (lab_level l1) (lab_level l2))
-          (list_inter (lab_compartments l1) (lab_compartments l2))
+def label_meet (l1 l2 : Label) : Label := mkLabel (level_min (l1.lab_level) (l2.lab_level))
+          (list_inter (l1.lab_compartments) (l2.lab_compartments))
 
 /-- P_001_01 (matches Coq) -/
 theorem P_001_01 : ∀ (A B C : Type) (x : A) (f : A → Option B) (g : B → Option C) (m : Option A), option_bind (option_return x) f = f x ∧ option_bind m option_return = m ∧ option_bind (option_bind m f) g = option_bind m (fun y => option_bind (f y) g) := by
@@ -441,7 +441,7 @@ theorem P_001_04 : ∀ (A : Type) (v : Vec A) (x : A), vlen v > 0 → ∃ v', ve
   cases ‹_› <;> simp
 
 /-- P_001_05 (matches Coq) -/
-theorem P_001_05 : ∀ (A : Type) (v : Vec A) (i : nat), vec_in_bounds v i = true <-> i < vlen v := by
+theorem P_001_05 : ∀ (A : Type) (v : Vec A) (i : Nat), vec_in_bounds v i = true <-> i < vlen v := by
   rfl
 
 /-- P_001_06 (matches Coq) -/
@@ -465,7 +465,7 @@ theorem P_001_10 : ∀ (bytes : list nat), all_valid_utf8 bytes = true → str_i
   intro h; exact h
 
 /-- P_001_11 (matches Coq) -/
-theorem P_001_11 : ∀ (s : RiinaString) (start len : nat) (s' : RiinaString), string_slice s start len = Some s' → start ≤ length (str_bytes s) ∧ start + len ≤ length (str_bytes s) := by
+theorem P_001_11 : ∀ (s : RiinaString) (start len : Nat) (s' : RiinaString), string_slice s start len = Some s' → start ≤ length (str_bytes s) ∧ start + len ≤ length (str_bytes s) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- P_001_12 (matches Coq) -/
@@ -485,11 +485,11 @@ theorem P_001_15 : ∀ (wr : WriteResult), write_count wr ≤ write_buffer_size 
   intro h; exact h
 
 /-- P_001_16 (matches Coq) -/
-theorem P_001_16 : ∀ (fh : FileHandle) (buf_size : nat), has_capability (fh_caps fh) CapFileRead = false → file_read fh buf_size = None := by
+theorem P_001_16 : ∀ (fh : FileHandle) (buf_size : Nat), has_capability (fh_caps fh) CapFileRead = false → file_read fh buf_size = None := by
   rfl
 
 /-- P_001_17 (matches Coq) -/
-theorem P_001_17 : ∀ (af : AuditedFile) (buf_size : nat) (rr : ReadResult) (af' : AuditedFile), audited_read af buf_size = Some (rr, af') → length (af_log af') = S (length (af_log af)) := by
+theorem P_001_17 : ∀ (af : AuditedFile) (buf_size : Nat) (rr : ReadResult) (af' : AuditedFile), audited_read af buf_size = Some (rr, af') → length (af_log af') = S (length (af_log af)) := by
   cases ‹_› <;> simp
 
 /-- P_001_18 (matches Coq) -/
@@ -497,7 +497,7 @@ theorem P_001_18 : ∀ (s : TcpStream) (data : list nat) (s' : TcpStream), has_c
   simp
 
 /-- P_001_19 (matches Coq) -/
-theorem P_001_19 : ∀ (s : TcpStream) (n : nat), has_capability (tcp_caps s) CapNetConnect = false → tcp_read s n = None := by
+theorem P_001_19 : ∀ (s : TcpStream) (n : Nat), has_capability (tcp_caps s) CapNetConnect = false → tcp_read s n = None := by
   rfl
 
 /-- P_001_20 (matches Coq) -/
@@ -517,7 +517,7 @@ theorem P_001_23 : ∀ (i1 i2 : Instant), inst_ticks i1 ≤ inst_ticks i2 → in
   omega
 
 /-- P_001_24 (matches Coq) -/
-theorem P_001_24 : ∀ (ts : SecureTimestamp) (expected_sig : nat), verify_timestamp ts expected_sig = true → st_signed ts = true ∧ st_signature ts = expected_sig := by
+theorem P_001_24 : ∀ (ts : SecureTimestamp) (expected_sig : Nat), verify_timestamp ts expected_sig = true → st_signed ts = true ∧ st_signature ts = expected_sig := by
   simp_all [Bool.and_eq_true]
 
 /-- P_001_25 (matches Coq) -/
@@ -525,23 +525,23 @@ theorem P_001_25 : ∀ (c : MonotonicCounter), mc_value (mono_increment c) > mc_
   omega
 
 /-- P_001_26 (matches Coq) -/
-theorem P_001_26 : ∀ (m : MutexState) (t1 t2 : nat) (m' : MutexState), mutex_acquire m t1 = Some m' → mutex_acquire m' t2 = None := by
+theorem P_001_26 : ∀ (m : MutexState) (t1 t2 : Nat) (m' : MutexState), mutex_acquire m t1 = Some m' → mutex_acquire m' t2 = None := by
   cases ‹_› <;> simp
 
 /-- P_001_27 (matches Coq) -/
-theorem P_001_27 : ∀ (rw : RwLockState) (t1 t2 : nat) (rw' : RwLockState), rwlock_write_acquire rw t1 = Some rw' → rwlock_read_acquire rw' t2 = None := by
+theorem P_001_27 : ∀ (rw : RwLockState) (t1 t2 : Nat) (rw' : RwLockState), rwlock_write_acquire rw t1 = Some rw' → rwlock_read_acquire rw' t2 = None := by
   cases ‹_› <;> simp
 
 /-- P_001_28 (matches Coq) -/
-theorem P_001_28 : ∀ (a : AtomicNat) (v : nat), let a' := atomic_store a v in atomic_seq a' > atomic_seq a ∧ atomic_value a' = v := by
+theorem P_001_28 : ∀ (a : AtomicNat) (v : Nat), let a' := atomic_store a v in atomic_seq a' > atomic_seq a ∧ atomic_value a' = v := by
   omega
 
 /-- P_001_29 (matches Coq) -/
-theorem P_001_29 : ∀ (cv : CondvarState) (t : nat), cv_waiters cv = [t] → let (cv', signaled) := condvar_signal cv in signaled = Some t ∧ cv_waiters cv' = [] := by
+theorem P_001_29 : ∀ (cv : CondvarState) (t : Nat), cv_waiters cv = [t] → let (cv', signaled) := condvar_signal cv in signaled = Some t ∧ cv_waiters cv' = [] := by
   simp
 
 /-- P_001_30 (matches Coq) -/
-theorem P_001_30 : ∀ (ro : ResourceOrder) (r1 r2 : nat), ro_acquired ro = [] → r1 < r2 → ∃ ro', acquire_ordered ro r1 = Some ro' ∧ ∃ ro'', acquire_ordered ro' r2 = Some ro'' := by
+theorem P_001_30 : ∀ (ro : ResourceOrder) (r1 r2 : Nat), ro_acquired ro = [] → r1 < r2 → ∃ ro', acquire_ordered ro r1 = Some ro' ∧ ∃ ro'', acquire_ordered ro' r2 = Some ro'' := by
   cases ‹_› <;> simp <;> omega
 
 /-- P_001_31 (matches Coq) -/
@@ -553,7 +553,7 @@ theorem P_001_32 : ∀ (data : list nat), hash_function data = hash_function dat
   rfl
 
 /-- P_001_33 (matches Coq) -/
-theorem P_001_33 : ∀ (data : list nat) (private_key : nat), let sig := sign_data data private_key in let public_key := private_key + 1 in verify_signature sig data public_key = true := by
+theorem P_001_33 : ∀ (data : list nat) (private_key : Nat), let sig := sign_data data private_key in let public_key := private_key + 1 in verify_signature sig data public_key = true := by
   simp
 
 /-- P_001_34 (matches Coq) -/

@@ -1,6 +1,6 @@
 // Lean compiler output
 // Module: RIINA
-// Imports: Init RIINA.Foundations.Syntax RIINA.Foundations.Semantics RIINA.TypeSystem.Typing
+// Imports: Init RIINA.Foundations.Syntax RIINA.Foundations.Semantics RIINA.TypeSystem.Typing RIINA.Domains.All
 #include <lean/lean.h>
 #if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -17,6 +17,7 @@ lean_object* initialize_Init(uint8_t builtin, lean_object*);
 lean_object* initialize_RIINA_Foundations_Syntax(uint8_t builtin, lean_object*);
 lean_object* initialize_RIINA_Foundations_Semantics(uint8_t builtin, lean_object*);
 lean_object* initialize_RIINA_TypeSystem_Typing(uint8_t builtin, lean_object*);
+lean_object* initialize_RIINA_Domains_All(uint8_t builtin, lean_object*);
 static bool _G_initialized = false;
 LEAN_EXPORT lean_object* initialize_RIINA(uint8_t builtin, lean_object* w) {
 lean_object * res;
@@ -32,6 +33,9 @@ res = initialize_RIINA_Foundations_Semantics(builtin, lean_io_mk_world());
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 res = initialize_RIINA_TypeSystem_Typing(builtin, lean_io_mk_world());
+if (lean_io_result_is_error(res)) return res;
+lean_dec_ref(res);
+res = initialize_RIINA_Domains_All(builtin, lean_io_mk_world());
 if (lean_io_result_is_error(res)) return res;
 lean_dec_ref(res);
 return lean_io_result_mk_ok(lean_box(0));

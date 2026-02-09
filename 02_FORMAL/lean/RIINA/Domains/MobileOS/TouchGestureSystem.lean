@@ -115,15 +115,15 @@ def TouchSequence : Type :=
 
 /-- physical_touch (matches Coq: Definition physical_touch) -/
 def physical_touch (t : TouchEvent) : Prop :=
-  touch_is_physical t = true
+  t.touch_is_physical = true
 
 /-- registered (matches Coq: Definition registered) -/
 def registered (t : TouchEvent) : Prop :=
-  touch_registered t = true
+  t.touch_registered = true
 
 /-- display_latency (matches Coq: Definition display_latency) -/
 def display_latency (t : TouchEvent) : Microseconds :=
-  touch_display_latency t
+  t.touch_display_latency
 
 /-- latency_bound (matches Coq: Definition latency_bound) -/
 def latency_bound : Microseconds :=
@@ -141,11 +141,11 @@ def intended_gesture := sorry -- complex match, needs manual translation
 /-- recognized_gesture (matches Coq: Definition recognized_gesture) -/
 def recognized_gesture (seq : TouchSequence) : GestureType :=
   match seq with
-  | ._ => Unknown
+  | _ => Unknown
 
 /-- touch_area (matches Coq: Definition touch_area) -/
 def touch_area (t : TouchEvent) : Nat :=
-  touch_pressure t * 2 + 1
+  t.touch_pressure * 2 + 1
 
 /-- touch_area_minimum (matches Coq: Definition touch_area_minimum) -/
 def touch_area_minimum : Nat :=
@@ -161,11 +161,11 @@ def touch_latency_max : Microseconds :=
 
 /-- is_hover_event (matches Coq: Definition is_hover_event) -/
 def is_hover_event (t : TouchEvent) : Bool :=
-  negb (touch_is_physical t) && (0 <? fst (touch_position t) + snd (touch_position t))
+  !(t.touch_is_physical) && (0 <? fst (t.touch_position) + snd (t.touch_position))
 
 /-- is_stylus_event (matches Coq: Definition is_stylus_event) -/
 def is_stylus_event (t : TouchEvent) : Bool :=
-  (touch_pressure t <? 512) && (0 <? touch_pressure t)
+  (t.touch_pressure <? 512) && (0 <? t.touch_pressure)
 
 /-- edge_margin (matches Coq: Definition edge_margin) -/
 def edge_margin : Nat :=
@@ -173,13 +173,13 @@ def edge_margin : Nat :=
 
 /-- is_edge_touch (matches Coq: Definition is_edge_touch) -/
 def is_edge_touch (t : TouchEvent) (screen_w screen_h : Nat) : Bool :=
-  let (x, y) := touch_position t in
+  let (x, y) := t.touch_position in
   (x <? edge_margin) || (screen_w - edge_margin <? x) ||
   (y <? edge_margin) || (screen_h - edge_margin <? y)
 
 /-- is_accidental_touch (matches Coq: Definition is_accidental_touch) -/
 def is_accidental_touch (t : TouchEvent) : Bool :=
-  (touch_pressure t <? 5) && (touch_display_latency t <? 50)
+  (t.touch_pressure <? 5) && (t.touch_display_latency <? 50)
 
 /-- gesture_priority (matches Coq: Definition gesture_priority) -/
 def gesture_priority (g : GestureType) : Nat :=
@@ -196,16 +196,16 @@ def gesture_priority (g : GestureType) : Nat :=
 /-- touch_cancelled (matches Coq: Definition touch_cancelled) -/
 def touch_cancelled (seq : TouchSequence) : Bool :=
   match seq with
-  | ._ => false
+  | _ => false
 
 /-- multi_touch_count (matches Coq: Definition multi_touch_count) -/
 def multi_touch_count (mt : MultiTouchState) : Nat :=
-  length (active_touches mt)
+  length (mt.active_touches)
 
 /-- well_formed_multi_touch (matches Coq: Definition well_formed_multi_touch) -/
 def well_formed_multi_touch (mt : MultiTouchState) : Prop :=
-  length (active_touches mt) <= max_simultaneous mt /\
-  max_simultaneous mt > 0
+  length (mt.active_touches) <= mt.max_simultaneous /\
+  mt.max_simultaneous > 0
 
 /-- touch_latency_bounded (matches Coq) -/
 theorem touch_latency_bounded : ∀ (touch : TouchEvent), touch_system_correct touch → physical_touch touch → display_latency touch ≤ 10000 := by
@@ -272,7 +272,7 @@ theorem touch_prediction_bounded : ∀ (mt : MultiTouchState), well_formed_multi
   intro h; exact h
 
 /-- edge_touch_distinguished (matches Coq) -/
-theorem edge_touch_distinguished : ∀ (t : TouchEvent) (w h : nat), fst (touch_position t) < edge_margin → is_edge_touch t w h = true := by
+theorem edge_touch_distinguished : ∀ (t : TouchEvent) (w h : Nat), fst (touch_position t) < edge_margin → is_edge_touch t w h = true := by
   cases ‹_› <;> simp
 
 /-- accidental_touch_rejected (matches Coq) -/
@@ -288,7 +288,7 @@ theorem simultaneous_gesture_resolution : ∀ (g1 g2 : GestureType), gesture_pri
   omega
 
 /-- unknown_gesture_lowest_priority (matches Coq) -/
-theorem unknown_gesture_lowest_priority : ∀ (g : GestureType), g ≠ Unknown → gesture_priority g > gesture_priority Unknown := by
+theorem unknown_gesture_lowest_priority : ∀ (g : GestureType), g ≠ .unknown → gesture_priority g > gesture_priority Unknown := by
   cases ‹_› <;> simp <;> omega
 
 end RIINA

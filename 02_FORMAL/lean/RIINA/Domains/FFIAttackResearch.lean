@@ -98,16 +98,16 @@ structure MarshalBuffer where
 
 /-- ffi_call_safe (matches Coq: Definition ffi_call_safe) -/
 def ffi_call_safe (call : FFICallDescriptor) : Bool :=
-  ffi_sandboxed call && ffi_validated call
+  call.ffi_sandboxed && call.ffi_validated
 
 /-- regions_disjoint (matches Coq: Definition regions_disjoint) -/
 def regions_disjoint (r1 r2 : MemRegion) : Prop :=
-  region_base r1 + region_size r1 <= region_base r2 \/
-  region_base r2 + region_size r2 <= region_base r1
+  r1.region_base + r1.region_size <= r2.region_base \/
+  r2.region_base + r2.region_size <= r1.region_base
 
 /-- addr_in_region (matches Coq: Definition addr_in_region) -/
 def addr_in_region (addr size : Nat) (r : MemRegion) : Prop :=
-  region_base r <= addr /\ addr + size <= region_base r + region_size r
+  r.region_base <= addr /\ addr + size <= r.region_base + r.region_size
 
 /-- call_allowed (matches Coq: Definition call_allowed) -/
 def call_allowed (sb : Sandbox) (call_id : Nat) : Bool :=
@@ -115,11 +115,11 @@ def call_allowed (sb : Sandbox) (call_id : Nat) : Bool :=
 
 /-- buf_remaining (matches Coq: Definition buf_remaining) -/
 def buf_remaining (b : MarshalBuffer) : Nat :=
-  buf_capacity b - buf_used b
+  b.buf_capacity - b.buf_used
 
 /-- can_marshal (matches Coq: Definition can_marshal) -/
 def can_marshal (b : MarshalBuffer) (t : FFIType) : Bool :=
-  buf_used b + ffi_type_size t <=? buf_capacity b
+  b.buf_used + ffi_type_size t <=? b.buf_capacity
 
 /-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: FFI CALL VALIDATION

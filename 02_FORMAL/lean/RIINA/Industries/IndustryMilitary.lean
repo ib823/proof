@@ -107,7 +107,7 @@ def key_level (c : ClassificationLevel) : Nat :=
 
 /-- weapon_system_authorized (matches Coq: Definition weapon_system_authorized) -/
 def weapon_system_authorized (clearance : ClassificationLevel) : Bool :=
-  class_le TopSecret clearance
+  class_le .topSecret clearance
 
 /-- redundancy_factor (matches Coq: Definition redundancy_factor) -/
 def redundancy_factor (c : ClassificationLevel) : Nat :=
@@ -128,25 +128,25 @@ theorem nist_800_171_access_control : ∀ (policy : MilitarySecurityPolicy) (dat
 /-- Section A02 - CMMC Level 3 Requirements
     Reference: IND_A_MILITARY.md Section 3.2 -/
 /-- cmmc_level3_compliance (matches Coq) -/
-theorem cmmc_level3_compliance : ∀ policy, classification policy = CUI →  True := by
+theorem cmmc_level3_compliance : ∀ policy, classification policy = .cUI →  True := by
   trivial
 
 /-- Section A03 - ITAR Export Control
     Reference: IND_A_MILITARY.md Section 3.3 -/
 /-- itar_export_control (matches Coq) -/
-theorem itar_export_control : ∀ (data_class : ClassificationLevel) (destination : nat),  True := by
+theorem itar_export_control : ∀ (data_class : ClassificationLevel) (destination : Nat),  True := by
   trivial
 
 /-- Section A04 - MIL-STD-882 Safety
     Reference: IND_A_MILITARY.md Section 3.4 -/
 /-- mil_std_882_safety (matches Coq) -/
-theorem mil_std_882_safety : ∀ (system : nat) (hazard_level : nat),  True := by
+theorem mil_std_882_safety : ∀ (system : Nat) (hazard_level : Nat),  True := by
   trivial
 
 /-- Section A05 - RMF Authorization
     Reference: IND_A_MILITARY.md Section 3.5 -/
 /-- rmf_authorization (matches Coq) -/
-theorem rmf_authorization : ∀ (system : nat) (risk_level : nat),  True := by
+theorem rmf_authorization : ∀ (system : Nat) (risk_level : Nat),  True := by
   trivial
 
 /-- Classification lattice reflexivity -/
@@ -179,14 +179,14 @@ theorem class_le_antisym : ∀ c1 c2, class_le c1 c2 = true → class_le c2 c1 =
 theorem class_le_total : ∀ c1 c2, class_le c1 c2 = true ∨ class_le c2 c1 = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Unclassified is the bottom of the lattice -/
+/-- .unclassified is the bottom of the lattice -/
 /-- unclassified_bottom (matches Coq) -/
-theorem unclassified_bottom : ∀ c, class_le Unclassified c = true := by
+theorem unclassified_bottom : ∀ c, class_le .unclassified c = true := by
   cases ‹_› <;> simp
 
-/-- TS_SCI is the top of the lattice -/
+/-- .tS_SCI is the top of the lattice -/
 /-- ts_sci_top (matches Coq) -/
-theorem ts_sci_top : ∀ c, class_le c TS_SCI = true := by
+theorem ts_sci_top : ∀ c, class_le c .tS_SCI = true := by
   cases ‹_› <;> simp
 
 /-- No entity can read above its clearance (Bell-LaPadula simple security property) -/
@@ -209,12 +209,12 @@ theorem empty_need_to_know_unrestricted : ∀ c, has_compartment nil c = false :
 
 /-- COMSEC: approved communication requires comsec flag -/
 /-- comsec_required_for_classified_comms (matches Coq) -/
-theorem comsec_required_for_classified_comms : ∀ policy, class_le Confidential (classification policy) = true → comsec_approved policy = true → class_to_nat (classification policy) ≥ 2 := by
+theorem comsec_required_for_classified_comms : ∀ policy, class_le .confidential (classification policy) = true → comsec_approved policy = true → class_to_nat (classification policy) ≥ 2 := by
   simp_all [Bool.and_eq_true]
 
-/-- TEMPEST: emanations security required for Secret and above -/
+/-- TEMPEST: emanations security required for .secret and above -/
 /-- tempest_required_for_secret (matches Coq) -/
-theorem tempest_required_for_secret : ∀ policy, class_le Secret (classification policy) = true → tempest_certified policy = true → class_to_nat (classification policy) ≥ 3 := by
+theorem tempest_required_for_secret : ∀ policy, class_le .secret (classification policy) = true → tempest_certified policy = true → class_to_nat (classification policy) ≥ 3 := by
   simp_all [Bool.and_eq_true]
 
 /-- Cross-domain transfer: cannot move data to lower classification -/

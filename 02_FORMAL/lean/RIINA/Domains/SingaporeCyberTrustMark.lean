@@ -178,11 +178,11 @@ theorem ctm_tier_coverage : ∀ (t : CTMTier), In t all_ctm_tiers := by
   simp_all [Bool.and_eq_true]
 
 /-- essential_is_tier_1 (matches Coq) -/
-theorem essential_is_tier_1 : tier_level Essential = 1 := by
+theorem essential_is_tier_1 : tier_level .essential = 1 := by
   rfl
 
 /-- expert_is_tier_4 (matches Coq) -/
-theorem expert_is_tier_4 : tier_level Expert = 4 := by
+theorem expert_is_tier_4 : tier_level .expert = 4 := by
   rfl
 
 /-- tier_level_positive (matches Coq) -/
@@ -194,11 +194,11 @@ theorem tier_level_bounded : ∀ (t : CTMTier), tier_level t ≤ 4 := by
   cases ‹_› <;> simp <;> omega
 
 /-- essential_threshold_30 (matches Coq) -/
-theorem essential_threshold_30 : tier_threshold Essential = 30 := by
+theorem essential_threshold_30 : tier_threshold .essential = 30 := by
   rfl
 
 /-- expert_threshold_90 (matches Coq) -/
-theorem expert_threshold_90 : tier_threshold Expert = 90 := by
+theorem expert_threshold_90 : tier_threshold .expert = 90 := by
   rfl
 
 /-- threshold_positive (matches Coq) -/
@@ -210,15 +210,15 @@ theorem threshold_bounded : ∀ (t : CTMTier), tier_threshold t ≤ 90 := by
   cases ‹_› <;> simp <;> omega
 
 /-- certified_expert_implies_advanced (matches Coq) -/
-theorem certified_expert_implies_advanced : ∀ (a : CTMAssessment), ctm_certified_at_tier a Expert → ctm_certified_at_tier a Advanced := by
+theorem certified_expert_implies_advanced : ∀ (a : CTMAssessment), ctm_certified_at_tier a .expert → ctm_certified_at_tier a Advanced := by
   omega
 
 /-- certified_advanced_implies_intermediate (matches Coq) -/
-theorem certified_advanced_implies_intermediate : ∀ (a : CTMAssessment), ctm_certified_at_tier a Advanced → ctm_certified_at_tier a Intermediate := by
+theorem certified_advanced_implies_intermediate : ∀ (a : CTMAssessment), ctm_certified_at_tier a .advanced → ctm_certified_at_tier a Intermediate := by
   omega
 
 /-- certified_intermediate_implies_essential (matches Coq) -/
-theorem certified_intermediate_implies_essential : ∀ (a : CTMAssessment), ctm_certified_at_tier a Intermediate → ctm_certified_at_tier a Essential := by
+theorem certified_intermediate_implies_essential : ∀ (a : CTMAssessment), ctm_certified_at_tier a .intermediate → ctm_certified_at_tier a Essential := by
   omega
 
 /-- ctm_cloud_check (matches Coq) -/
@@ -246,7 +246,7 @@ theorem cssp_without_ctm_non_compliant : ∀ (e : CSSPEntity), cssp_ctm_certifie
   simp_all [Bool.and_eq_true]
 
 /-- expert_requires_90_all_domains (matches Coq) -/
-theorem expert_requires_90_all_domains : ∀ (a : CTMAssessment), ctm_certified_at_tier a Expert → ctm_governance a ≥ 90 ∧ ctm_protection a ≥ 90 ∧ ctm_resilience a ≥ 90 ∧ ctm_assurance a ≥ 90 ∧ ctm_education a ≥ 90 := by
+theorem expert_requires_90_all_domains : ∀ (a : CTMAssessment), ctm_certified_at_tier a .expert → ctm_governance a ≥ 90 ∧ ctm_protection a ≥ 90 ∧ ctm_resilience a ≥ 90 ∧ ctm_assurance a ≥ 90 ∧ ctm_education a ≥ 90 := by
   omega
 
 end RIINA

@@ -404,11 +404,11 @@ structure ESGCompliantSystem where
 
 /-- emission (matches Coq: Definition emission) -/
 def emission (s : EmissionSource) : Z :=
-  quantity s * emission_factor s
+  s.quantity * s.emission_factor
 
 /-- same_emission (matches Coq: Definition same_emission) -/
 def same_emission (s1 s2 : EmissionSource) : Prop :=
-  emission_hash s1 = emission_hash s2
+  s1.emission_hash = s2.emission_hash
 
 /-- valid_scope3_category (matches Coq: Definition valid_scope3_category) -/
 def valid_scope3_category (n : Nat) : Prop :=
@@ -416,103 +416,103 @@ def valid_scope3_category (n : Nat) : Prop :=
 
 /-- diversion_rate (matches Coq: Definition diversion_rate) -/
 def diversion_rate (w : WasteRecord) : Z :=
-  (waste_diverted w * 100) / waste_generated w
+  (w.waste_diverted * 100) / w.waste_generated
 
 /-- waste_accounting_correct (matches Coq: Definition waste_accounting_correct) -/
 def waste_accounting_correct (w : WasteRecord) : Prop :=
-  waste_generated w = waste_diverted w + waste_landfilled w
+  w.waste_generated = w.waste_diverted + w.waste_landfilled
 
 /-- recycled_content_rate (matches Coq: Definition recycled_content_rate) -/
 def recycled_content_rate (c : CircularEconomyMetric) : Z :=
-  (recycled_input c * 100) / total_input c
+  (c.recycled_input * 100) / c.total_input
 
 /-- pollution_compliant (matches Coq: Definition pollution_compliant) -/
 def pollution_compliant (p : PollutionRecord) : Prop :=
-  emission_level p <= regulatory_limit p /\ permit_valid p = true
+  p.emission_level <= p.regulatory_limit /\ p.permit_valid = true
 
 /-- paid_living_wage (matches Coq: Definition paid_living_wage) -/
 def paid_living_wage (e : Employee) : Prop :=
-  compensation e >= living_wage_threshold e
+  e.compensation >= e.living_wage_threshold
 
 /-- no_forced_labor (matches Coq: Definition no_forced_labor) -/
 def no_forced_labor (e : Employee) : Prop :=
-  voluntary_employment e = true /\
-  no_debt_bondage e = true /\
-  documents_retained e = false
+  e.voluntary_employment = true /\
+  e.no_debt_bondage = true /\
+  e.documents_retained = false
 
 /-- no_child_labor (matches Coq: Definition no_child_labor) -/
 def no_child_labor (e : Employee) : Prop :=
-  (age e >= 18)%nat
+  (e.age >= 18)%nat
 
 /-- incident_properly_handled (matches Coq: Definition incident_properly_handled) -/
 def incident_properly_handled (i : SafetyIncident) : Prop :=
-  recorded i = true /\ investigated i = true /\ corrective_action i = true
+  i.recorded = true /\ i.investigated = true /\ i.corrective_action = true
 
 /-- non_discriminatory (matches Coq: Definition non_discriminatory) -/
 def non_discriminatory (d : EmploymentDecision) : Prop :=
-  merit_based d = true /\ no_protected_class_bias d = true
+  d.merit_based = true /\ d.no_protected_class_bias = true
 
 /-- pay_gap_percentage (matches Coq: Definition pay_gap_percentage) -/
 def pay_gap_percentage (p : PayGapRecord) : Z :=
-  ((male_median p - female_median p) * 100) / male_median p
+  ((p.male_median - p.female_median) * 100) / p.male_median
 
 /-- hrdd_implemented (matches Coq: Definition hrdd_implemented) -/
 def hrdd_implemented (h : HRDDProcess) : Prop :=
-  policy_adopted h = true /\
-  risk_assessment_done h = true /\
-  mitigation_implemented h = true /\
-  monitoring_active h = true
+  h.policy_adopted = true /\
+  h.risk_assessment_done = true /\
+  h.mitigation_implemented = true /\
+  h.monitoring_active = true
 
 /-- supplier_recently_assessed (matches Coq: Definition supplier_recently_assessed) -/
 def supplier_recently_assessed (s : Supplier) (year : Nat) : Prop :=
-  (assessment_date s >= year - 1)%nat
+  (s.assessment_date >= year - 1)%nat
 
 /-- fpic_satisfied (matches Coq: Definition fpic_satisfied) -/
 def fpic_satisfied (c : IndigenousCommunity) : Prop :=
-  fpic_obtained c = true /\ consent_documented c = true
+  c.fpic_obtained = true /\ c.consent_documented = true
 
 /-- grievance_adequate (matches Coq: Definition grievance_adequate) -/
 def grievance_adequate (g : GrievanceMechanism) : Prop :=
-  anonymous_reporting g = true /\ accessible g = true
+  g.anonymous_reporting = true /\ g.accessible = true
 
 /-- stakeholder_engaged (matches Coq: Definition stakeholder_engaged) -/
 def stakeholder_engaged (s : StakeholderEngagement) : Prop :=
-  communities_identified s = true /\
-  consultation_done s = true /\
-  feedback_incorporated s = true
+  s.communities_identified = true /\
+  s.consultation_done = true /\
+  s.feedback_incorporated = true
 
 /-- independent_count (matches Coq: Definition independent_count) -/
 def independent_count (b : Board) : Nat :=
-  length (filter (fun d => is_independent d) (directors b))
+  length (filter (fun d => d.is_independent) (b.directors))
 
 /-- independent_majority (matches Coq: Definition independent_majority) -/
 def independent_majority (b : Board) : Prop :=
-  (independent_count b * 2 > length (directors b))%nat
+  (independent_count b * 2 > length (b.directors))%nat
 
 /-- esg_linked (matches Coq: Definition esg_linked) -/
 def esg_linked (ec : ExecutiveComp) : Prop :=
-  esg_linked_portion ec > 0 /\ esg_metrics_defined ec = true
+  ec.esg_linked_portion > 0 /\ ec.esg_metrics_defined = true
 
 /-- anti_corruption_adequate (matches Coq: Definition anti_corruption_adequate) -/
 def anti_corruption_adequate (a : AntiCorruptionPolicy) : Prop :=
-  fcpa_compliant a = true /\ uk_bribery_compliant a = true /\
-  training_provided a = true /\ controls_implemented a = true
+  a.fcpa_compliant = true /\ a.uk_bribery_compliant = true /\
+  a.training_provided = true /\ a.controls_implemented = true
 
 /-- whistleblower_protected (matches Coq: Definition whistleblower_protected) -/
 def whistleblower_protected (w : WhistleblowerPolicy) : Prop :=
-  no_retaliation_policy w = true /\ protection_enforced w = true
+  w.no_retaliation_policy = true /\ w.protection_enforced = true
 
 /-- coi_managed (matches Coq: Definition coi_managed) -/
 def coi_managed (c : ConflictOfInterest) : Prop :=
-  policy_exists c = true /\ disclosure_required c = true /\ recusal_enforced c = true
+  c.policy_exists = true /\ c.disclosure_required = true /\ c.recusal_enforced = true
 
 /-- rpt_compliant (matches Coq: Definition rpt_compliant) -/
 def rpt_compliant (r : RelatedPartyTransaction) : Prop :=
-  disclosed r = true /\ board_approved r = true
+  r.disclosed = true /\ r.board_approved = true
 
 /-- science_based (matches Coq: Definition science_based) -/
 def science_based (t : ScienceBasedTarget) : Prop :=
-  paris_aligned t = true /\ reduction_percent t >= 42
+  t.paris_aligned = true /\ t.reduction_percent >= 42
 
 /-- ESG_001_01_scope1_completeness (matches Coq) -/
 theorem ESG_001_01_scope1_completeness : ∀ (sys : ESGCompliantSystem) s, In s (sys_emissions sys) → source_type s = Scope1 → owned_or_controlled_flag s = true → is_tracked s = true ∧ is_measured s = true ∧ is_reported s = true := by

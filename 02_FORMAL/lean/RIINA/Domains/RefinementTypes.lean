@@ -131,7 +131,7 @@ theorem TYPE_004_01_refinement_subtyping : ∀ (b : BaseTy) (p q : Pred), pred_i
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_02_refinement_introduction (matches Coq) -/
-theorem TYPE_004_02_refinement_introduction : ∀ (v : nat) (b : BaseTy) (p : Pred), sat_pred v p → inhabits_refinement v b p := by
+theorem TYPE_004_02_refinement_introduction : ∀ (v : Nat) (b : BaseTy) (p : Pred), sat_pred v p → inhabits_refinement v b p := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_03_refinement_elimination (matches Coq) -/
@@ -139,39 +139,39 @@ theorem TYPE_004_03_refinement_elimination : ∀ (b : BaseTy) (p : Pred), refty_
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_04_refinement_conjunction (matches Coq) -/
-theorem TYPE_004_04_refinement_conjunction : ∀ (v : nat) (b : BaseTy) (p q : Pred), sat_pred v (PAnd p q) <-> (sat_pred v p ∧ sat_pred v q) := by
+theorem TYPE_004_04_refinement_conjunction : ∀ (v : Nat) (b : BaseTy) (p q : Pred), sat_pred v (PAnd p q) <-> (sat_pred v p ∧ sat_pred v q) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_05_dependent_function_refinement (matches Coq) -/
-theorem TYPE_004_05_dependent_function_refinement : ∀ (b1 b2 : BaseTy) (p : Pred) (q : nat → Pred), (∀ x, sat_pred x p → ∃ y, sat_pred y (q x)) → ∀ (f : nat → nat) (arg : nat), sat_pred arg p → sat_pred (f arg) (q arg) → ∃ result, sat_pred result (q arg) := by
+theorem TYPE_004_05_dependent_function_refinement : ∀ (b1 b2 : BaseTy) (p : Pred) (q : Nat → Pred), (∀ x, sat_pred x p → ∃ y, sat_pred y (q x)) → ∀ (f : Nat → nat) (arg : Nat), sat_pred arg p → sat_pred (f arg) (q arg) → ∃ result, sat_pred result (q arg) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_06_refinement_substitution (matches Coq) -/
-theorem TYPE_004_06_refinement_substitution : ∀ (x : nat) (v : nat) (env : TyEnv) (e : Expr) (b : BaseTy) (p : Pred), has_type ((x, RRefine b p) :: env) e (RRefine b p) → sat_pred v p → ∀ result, eval ((x, v) :: nil) e = Some result → sat_pred result p → inhabits_refinement result b p := by
+theorem TYPE_004_06_refinement_substitution : ∀ (x : Nat) (v : Nat) (env : TyEnv) (e : Expr) (b : BaseTy) (p : Pred), has_type ((x, RRefine b p) :: env) e (RRefine b p) → sat_pred v p → ∀ result, eval ((x, v) :: nil) e = Some result → sat_pred result p → inhabits_refinement result b p := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_07_smt_decidability (matches Coq) -/
-theorem TYPE_004_07_smt_decidability : ∀ (v : nat) (p : Pred), {sat_pred v p} + {~ sat_pred v p} := by
+theorem TYPE_004_07_smt_decidability : ∀ (v : Nat) (p : Pred), {sat_pred v p} + {~ sat_pred v p} := by
   intro h; exact h
 
 /-- TYPE_004_08_bounds_checking (matches Coq) -/
-theorem TYPE_004_08_bounds_checking : ∀ (len : nat) (idx : nat), sat_pred idx (bounds_pred len) → idx < len := by
+theorem TYPE_004_08_bounds_checking : ∀ (len : Nat) (idx : Nat), sat_pred idx (bounds_pred len) → idx < len := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_09_non_null_refinement (matches Coq) -/
-theorem TYPE_004_09_non_null_refinement : ∀ (p : nat), sat_pred p non_null_pred → is_non_null p := by
+theorem TYPE_004_09_non_null_refinement : ∀ (p : Nat), sat_pred p non_null_pred → is_non_null p := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_10_array_bounds_safety (matches Coq) -/
-theorem TYPE_004_10_array_bounds_safety : ∀ (arr : Array) (i : nat), sat_pred i (array_index_pred arr) → i < length (arr_data arr) := by
+theorem TYPE_004_10_array_bounds_safety : ∀ (arr : Array) (i : Nat), sat_pred i (array_index_pred arr) → i < length (arr_data arr) := by
   cases ‹_› <;> simp <;> omega
 
 /-- TYPE_004_11_positive_refinement (matches Coq) -/
-theorem TYPE_004_11_positive_refinement : ∀ (x y : nat), sat_pred x positive_pred → sat_pred y positive_pred → sat_pred (x * y) positive_pred := by
+theorem TYPE_004_11_positive_refinement : ∀ (x y : Nat), sat_pred x positive_pred → sat_pred y positive_pred → sat_pred (x * y) positive_pred := by
   cases ‹_› <;> simp <;> omega
 
 /-- TYPE_004_12_refinement_preservation (matches Coq) -/
-theorem TYPE_004_12_refinement_preservation : ∀ (e e' : Expr) (b : BaseTy) (p : Pred) (n : nat), step_clean e e' → e' = EVal n → sat_pred n p → has_type nil e' (RRefine b p) := by
+theorem TYPE_004_12_refinement_preservation : ∀ (e e' : Expr) (b : BaseTy) (p : Pred) (n : Nat), step_clean e e' → e' = EVal n → sat_pred n p → has_type nil e' (RRefine b p) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_004_13_pred_true_satisfied (matches Coq) -/

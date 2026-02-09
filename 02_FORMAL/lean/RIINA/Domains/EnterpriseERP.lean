@@ -87,18 +87,18 @@ def assignment_active (a : RoleAssignment) (current_time : Nat) : Bool :=
 
 /-- check_sod (matches Coq: Definition check_sod) -/
 def check_sod (user_roles : List Nat) (conflicts : ConflictingRoles) : Bool :=
-  negb (existsb (fun conflict =>
+  !(existsb (fun conflict =>
     andb (existsb (fun r => Nat
 
 /-- txn_authorized (matches Coq: Definition txn_authorized) -/
 def txn_authorized (txn : Transaction) (rules : List ApprovalRule)
                           (approver_role : Nat) : Bool :=
   forallb (fun rule =>
-    orb (negb (Nat
+    orb (!(Nat
 
 /-- not_self_approved (matches Coq: Definition not_self_approved) -/
 def not_self_approved (txn : Transaction) (approver : User) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- action_audited (matches Coq: Definition action_audited) -/
 def action_audited (audits : List AuditEntry) (user action resource : Nat) : Bool :=
@@ -130,7 +130,7 @@ def valid_doc_transition := sorry -- complex match, needs manual translation
 
 /-- maker_checker (matches Coq: Definition maker_checker) -/
 def maker_checker (maker checker : User) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- access_time_limited (matches Coq: Definition access_time_limited) -/
 def access_time_limited (grant_end current : Nat) : Bool :=
@@ -173,7 +173,7 @@ theorem erp_001_rbac_enforced : ∀ (user : User) (perm : Permission) (assignmen
   simp_all [Bool.and_eq_true]
 
 /-- erp_002_assignment_active (matches Coq) -/
-theorem erp_002_assignment_active : ∀ (a : RoleAssignment) (current_time : nat), assignment_active a current_time = true → assign_start a ≤ current_time := by
+theorem erp_002_assignment_active : ∀ (a : RoleAssignment) (current_time : Nat), assignment_active a current_time = true → assign_start a ≤ current_time := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_003_sod_enforced (matches Coq) -/
@@ -181,7 +181,7 @@ theorem erp_003_sod_enforced : ∀ (user_roles : list nat) (conflicts : Conflict
   simp_all [Bool.and_eq_true]
 
 /-- erp_004_txn_authorized (matches Coq) -/
-theorem erp_004_txn_authorized : ∀ (txn : Transaction) (rules : list ApprovalRule) (approver_role : nat), txn_authorized txn rules approver_role = true → Forall (fun rule => txn_type txn ≠ approval_txn_type rule ∨ txn_amount txn < approval_threshold rule ∨ (txn_approved txn = true ∧ approver_role = approval_role rule)) rules := by
+theorem erp_004_txn_authorized : ∀ (txn : Transaction) (rules : list ApprovalRule) (approver_role : Nat), txn_authorized txn rules approver_role = true → Forall (fun rule => txn_type txn ≠ approval_txn_type rule ∨ txn_amount txn < approval_threshold rule ∨ (txn_approved txn = true ∧ approver_role = approval_role rule)) rules := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_005_no_self_approval (matches Coq) -/
@@ -189,7 +189,7 @@ theorem erp_005_no_self_approval : ∀ (txn : Transaction) (approver : User), no
   simp_all [Bool.and_eq_true]
 
 /-- erp_006_audit_created (matches Coq) -/
-theorem erp_006_audit_created : ∀ (audits : list AuditEntry) (user action resource : nat), action_audited audits user action resource = true → ∃ a, In a audits ∧ audit_user a = user := by
+theorem erp_006_audit_created : ∀ (audits : list AuditEntry) (user action resource : Nat), action_audited audits user action resource = true → ∃ a, In a audits ∧ audit_user a = user := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_007_audit_immutable (matches Coq) -/
@@ -201,19 +201,19 @@ theorem erp_008_tenant_isolation : ∀ (u1 u2 : User), same_tenant u1 u2 = false
   simp_all [Bool.and_eq_true]
 
 /-- erp_009_role_hierarchy (matches Coq) -/
-theorem erp_009_role_hierarchy : ∀ (required actual : nat), role_level_sufficient required actual = true → required ≤ actual := by
+theorem erp_009_role_hierarchy : ∀ (required actual : Nat), role_level_sufficient required actual = true → required ≤ actual := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_010_multi_approval (matches Coq) -/
-theorem erp_010_multi_approval : ∀ (required obtained : nat), approvals_sufficient required obtained = true → required ≤ obtained := by
+theorem erp_010_multi_approval : ∀ (required obtained : Nat), approvals_sufficient required obtained = true → required ≤ obtained := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_011_budget_enforced (matches Coq) -/
-theorem erp_011_budget_enforced : ∀ (spent limit : nat), within_budget spent limit = true → spent ≤ limit := by
+theorem erp_011_budget_enforced : ∀ (spent limit : Nat), within_budget spent limit = true → spent ≤ limit := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_012_period_closed (matches Coq) -/
-theorem erp_012_period_closed : ∀ (period_end current : nat), period_closed period_end current = true → period_end < current := by
+theorem erp_012_period_closed : ∀ (period_end current : Nat), period_closed period_end current = true → period_end < current := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_013_valid_workflow (matches Coq) -/
@@ -229,39 +229,39 @@ theorem erp_015_maker_checker : ∀ (maker checker : User), maker_checker maker 
   simp_all [Bool.and_eq_true]
 
 /-- erp_016_delegation_logged (matches Coq) -/
-theorem erp_016_delegation_logged : ∀ (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = true →  ∃ a, In a audits := by
+theorem erp_016_delegation_logged : ∀ (audits : list AuditEntry) (delegator delegate : Nat), action_audited audits delegator 99 delegate = true →  ∃ a, In a audits := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_017_time_limited (matches Coq) -/
-theorem erp_017_time_limited : ∀ (grant_end current : nat), access_time_limited grant_end current = true → current < grant_end := by
+theorem erp_017_time_limited : ∀ (grant_end current : Nat), access_time_limited grant_end current = true → current < grant_end := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_018_field_security (matches Coq) -/
-theorem erp_018_field_security : ∀ (field_sensitivity user_clearance : nat), field_accessible field_sensitivity user_clearance = true → field_sensitivity ≤ user_clearance := by
+theorem erp_018_field_security : ∀ (field_sensitivity user_clearance : Nat), field_accessible field_sensitivity user_clearance = true → field_sensitivity ≤ user_clearance := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_019_lock_exclusive (matches Coq) -/
-theorem erp_019_lock_exclusive : ∀ (lock_holder requester : nat), lock_exclusive lock_holder requester = true → lock_holder = requester := by
+theorem erp_019_lock_exclusive : ∀ (lock_holder requester : Nat), lock_exclusive lock_holder requester = true → lock_holder = requester := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_020_concurrent_controlled (matches Coq) -/
-theorem erp_020_concurrent_controlled : ∀ (active max : nat), concurrent_safe active max = true → active ≤ max := by
+theorem erp_020_concurrent_controlled : ∀ (active max : Nat), concurrent_safe active max = true → active ≤ max := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_021_data_validated (matches Coq) -/
-theorem erp_021_data_validated : ∀ (passed : bool), data_valid passed = true → passed = true := by
+theorem erp_021_data_validated : ∀ (passed : Bool), data_valid passed = true → passed = true := by
   intro h; exact h
 
 /-- erp_022_ref_integrity (matches Coq) -/
-theorem erp_022_ref_integrity : ∀ (ref_id : nat) (valid_refs : list nat), ref_∃ ref_id valid_refs = true → ∃ r, In r valid_refs ∧ r = ref_id := by
+theorem erp_022_ref_integrity : ∀ (ref_id : Nat) (valid_refs : list nat), ref_∃ ref_id valid_refs = true → ∃ r, In r valid_refs ∧ r = ref_id := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_023_soft_delete (matches Coq) -/
-theorem erp_023_soft_delete : ∀ (deleted data_present : bool), soft_deleted deleted data_present → deleted = true → data_present = true := by
+theorem erp_023_soft_delete : ∀ (deleted data_present : Bool), soft_deleted deleted data_present → deleted = true → data_present = true := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_024_encrypted_at_rest (matches Coq) -/
-theorem erp_024_encrypted_at_rest : ∀ (key_id : nat), data_encrypted key_id = true → 0 < key_id := by
+theorem erp_024_encrypted_at_rest : ∀ (key_id : Nat), data_encrypted key_id = true → 0 < key_id := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_025_defense_in_depth (matches Coq) -/

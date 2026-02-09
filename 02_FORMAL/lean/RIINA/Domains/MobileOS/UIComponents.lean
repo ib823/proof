@@ -252,27 +252,27 @@ structure SearchBar where
 
 /-- visible (matches Coq: Definition visible) -/
 def visible (e : UIElement) : Prop :=
-  element_visible e = true
+  e.element_visible = true
 
 /-- has_accessibility_label (matches Coq: Definition has_accessibility_label) -/
 def has_accessibility_label := sorry -- complex match, needs manual translation
 
 /-- navigable_by_voiceover (matches Coq: Definition navigable_by_voiceover) -/
 def navigable_by_voiceover (e : UIElement) : Prop :=
-  element_voiceover_navigable e = true
+  e.element_voiceover_navigable = true
 
 /-- valid_state_transition (matches Coq: Definition valid_state_transition) -/
 def valid_state_transition := sorry -- complex match, needs manual translation
 
 /-- valid_source_state (matches Coq: Definition valid_source_state) -/
 def valid_source_state (t : Transition) : Prop :=
-  trans_valid t = true /\
-  valid_state_transition (trans_from t) (trans_to t) = true
+  t.trans_valid = true /\
+  valid_state_transition (t.trans_from) (t.trans_to) = true
 
 /-- apply_transition (matches Coq: Definition apply_transition) -/
 def apply_transition (t : Transition) (s : Screen) : Screen :=
-  if trans_valid t && valid_state_transition (screen_state s) (trans_to t) then
-    mkScreen (screen_id s) (trans_to t) (screen_elements s)
+  if t.trans_valid && valid_state_transition (s.screen_state) (t.trans_to) then
+    mkScreen (s.screen_id) (t.trans_to) (s.screen_elements)
   else
     s
 
@@ -289,74 +289,74 @@ def well_formed_accessible_ui (elements : List UIElement) : Prop :=
 
 /-- button_state_valid (matches Coq: Definition button_state_valid) -/
 def button_state_valid (b : Button) : Prop :=
-  (btn_enabled b = false -> btn_state b = BtnDisabled) /\
-  (btn_enabled b = true -> btn_state b <> BtnDisabled)
+  (b.btn_enabled = false -> b.btn_state = BtnDisabled) /\
+  (b.btn_enabled = true -> b.btn_state <> BtnDisabled)
 
 /-- text_field_input_sanitized (matches Coq: Definition text_field_input_sanitized) -/
 def text_field_input_sanitized (tf : TextField) : Prop :=
-  tf_sanitized tf = true /\ List
+  tf.tf_sanitized = true /\ List
 
 /-- list_view_recycling_correct (matches Coq: Definition list_view_recycling_correct) -/
 def list_view_recycling_correct (lv : ListView) : Prop :=
-  lv_recycling_correct lv = true /\
-  lv_visible_items lv <= lv_total_items lv
+  lv.lv_recycling_correct = true /\
+  lv.lv_visible_items <= lv.lv_total_items
 
 /-- scroll_view_bounds_checked (matches Coq: Definition scroll_view_bounds_checked) -/
 def scroll_view_bounds_checked (sv : ScrollView) : Prop :=
-  sv_bounds_checked sv = true /\
-  sv_content_offset sv <= sv_content_size sv
+  sv.sv_bounds_checked = true /\
+  sv.sv_content_offset <= sv.sv_content_size
 
 /-- image_view_loading_handled (matches Coq: Definition image_view_loading_handled) -/
 def image_view_loading_handled (iv : ImageView) : Prop :=
-  iv_loading_handled iv = true /\
-  (iv_load_state iv = ImgLoading -> iv_placeholder_shown iv = true)
+  iv.iv_loading_handled = true /\
+  (iv.iv_load_state = ImgLoading -> iv.iv_placeholder_shown = true)
 
 /-- switch_toggle_atomic (matches Coq: Definition switch_toggle_atomic) -/
 def switch_toggle_atomic (sw : SwitchToggle) : Prop :=
-  sw_atomic sw = true /\
-  (sw_transitioning sw = false -> (sw_on sw = true \/ sw_on sw = false))
+  sw.sw_atomic = true /\
+  (sw.sw_transitioning = false -> (sw.sw_on = true \/ sw.sw_on = false))
 
 /-- slider_value_bounded (matches Coq: Definition slider_value_bounded) -/
 def slider_value_bounded (s : Slider) : Prop :=
-  sl_min_value s <= sl_value s /\ sl_value s <= sl_max_value s
+  s.sl_min_value <= s.sl_value /\ s.sl_value <= s.sl_max_value
 
 /-- progress_bar_monotonic (matches Coq: Definition progress_bar_monotonic) -/
 def progress_bar_monotonic (pb : ProgressBar) : Prop :=
-  pb_monotonic pb = true /\
-  pb_previous pb <= pb_current pb /\
-  pb_current pb <= pb_max pb
+  pb.pb_monotonic = true /\
+  pb.pb_previous <= pb.pb_current /\
+  pb.pb_current <= pb.pb_max
 
 /-- tab_bar_selection_exclusive (matches Coq: Definition tab_bar_selection_exclusive) -/
 def tab_bar_selection_exclusive (tb : TabBar) : Prop :=
-  tb_selection_exclusive tb = true /\
-  tb_selected_index tb < List
+  tb.tb_selection_exclusive = true /\
+  tb.tb_selected_index < List
 
 /-- navigation_stack_valid (matches Coq: Definition navigation_stack_valid) -/
 def navigation_stack_valid (ns : NavigationStack) : Prop :=
-  ns_stack_valid ns = true /\ ns_stack ns <> []
+  ns.ns_stack_valid = true /\ ns.ns_stack <> []
 
 /-- alert_dialog_modal (matches Coq: Definition alert_dialog_modal) -/
 def alert_dialog_modal (ad : AlertDialog) : Prop :=
-  ad_modal ad = true /\ ad_blocking_input ad = true
+  ad.ad_modal = true /\ ad.ad_blocking_input = true
 
 /-- action_sheet_dismissible (matches Coq: Definition action_sheet_dismissible) -/
 def action_sheet_dismissible (a : ActionSheet) : Prop :=
-  as_dismissible a = true /\ as_cancel_available a = true
+  a.as_dismissible = true /\ a.as_cancel_available = true
 
 /-- date_picker_range_valid (matches Coq: Definition date_picker_range_valid) -/
 def date_picker_range_valid (dp : DatePicker) : Prop :=
-  dp_range_valid dp = true /\
-  dp_min_date dp <= dp_selected dp /\
-  dp_selected dp <= dp_max_date dp
+  dp.dp_range_valid = true /\
+  dp.dp_min_date <= dp.dp_selected /\
+  dp.dp_selected <= dp.dp_max_date
 
 /-- color_picker_gamut_valid (matches Coq: Definition color_picker_gamut_valid) -/
 def color_picker_gamut_valid (cp : ColorPicker) : Prop :=
-  cp_gamut_valid cp = true /\
-  cp_red cp <= 255 /\ cp_green cp <= 255 /\ cp_blue cp <= 255
+  cp.cp_gamut_valid = true /\
+  cp.cp_red <= 255 /\ cp.cp_green <= 255 /\ cp.cp_blue <= 255
 
 /-- search_bar_input_debounced (matches Coq: Definition search_bar_input_debounced) -/
 def search_bar_input_debounced (sb : SearchBar) : Prop :=
-  sb_current_ms sb >= sb_last_search_ms sb + sb_debounce_ms sb
+  sb.sb_current_ms >= sb.sb_last_search_ms + sb.sb_debounce_ms
 
 /-- accessibility_complete (matches Coq) -/
 theorem accessibility_complete : ∀ (element : UIElement), accessible_element element → visible element → has_accessibility_label element ∧ navigable_by_voiceover element := by

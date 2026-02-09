@@ -119,7 +119,7 @@ theorem 8 : crossfade_opacity_sum_one — opacities always sum to 1  Theorem cro
   intro h; exact h
 
 /-- 9 (matches Coq) -/
-theorem 9 : staggered_timing_ordered — later children have ≥ delay  Theorem staggered_timing_ordered : ∀ (base_delay per_child : R) (i j : nat), per_child ≥ 0 → (i ≤ j)%nat → base_delay + INR i * per_child ≤ base_delay + INR j * per_child := by
+theorem 9 : staggered_timing_ordered — later children have ≥ delay  Theorem staggered_timing_ordered : ∀ (base_delay per_child : R) (i j : Nat), per_child ≥ 0 → (i ≤ j)%nat → base_delay + INR i * per_child ≤ base_delay + INR j * per_child := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/
@@ -131,7 +131,7 @@ theorem 11 : no_z_fighting — distinct elements have distinct z-indices  Theore
   intro h; exact h
 
 /-- z_index_assignable (matches Coq) -/
-theorem z_index_assignable : ∀ (n : nat), ∃ (f : nat → nat), ∀ (i j : nat), (i < n)%nat → (j < n)%nat → i ≠ j → f i ≠ f j := by
+theorem z_index_assignable : ∀ (n : Nat), ∃ (f : Nat → nat), ∀ (i j : Nat), (i < n)%nat → (j < n)%nat → i ≠ j → f i ≠ f j := by
   intro h; exact h
 
 /-- 12 (matches Coq) -/

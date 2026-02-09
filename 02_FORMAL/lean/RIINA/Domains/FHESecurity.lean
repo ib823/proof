@@ -349,20 +349,20 @@ structure RLWEConfig where
 
 /-- ops_fully_homomorphic (matches Coq: Definition ops_fully_homomorphic) -/
 def ops_fully_homomorphic (o : HomomorphicOps) : Bool :=
-  ho_addition o && ho_multiplication o && ho_arbitrary_depth o
+  o.ho_addition && o.ho_multiplication && o.ho_arbitrary_depth
 
 /-- fhe_security_complete (matches Coq: Definition fhe_security_complete) -/
 def fhe_security_complete (s : FHESecurityProps) : Bool :=
-  fhe_ind_cpa s && fhe_circular_secure s && fhe_semantic_secure s
+  s.fhe_ind_cpa && s.fhe_circular_secure && s.fhe_semantic_secure
 
 /-- noise_managed (matches Coq: Definition noise_managed) -/
 def noise_managed (n : NoiseManagement) : Bool :=
-  nm_bootstrapping n && nm_modulus_switching n && nm_noise_bounded n
+  n.nm_bootstrapping && n.nm_modulus_switching && n.nm_noise_bounded
 
 /-- fhe_fully_secure (matches Coq: Definition fhe_fully_secure) -/
 def fhe_fully_secure (f : FHEConfig) : Bool :=
-  ops_fully_homomorphic (fhe_ops f) && fhe_security_complete (fhe_security f) &&
-  noise_managed (fhe_noise f) && fhe_lattice_based f && fhe_post_quantum f
+  ops_fully_homomorphic (f.fhe_ops) && fhe_security_complete (f.fhe_security) &&
+  noise_managed (f.fhe_noise) && f.fhe_lattice_based && f.fhe_post_quantum
 
 /-- riina_fhe_ops (matches Coq: Definition riina_fhe_ops) -/
 def riina_fhe_ops : HomomorphicOps := mkHomomorphicOps true true true
@@ -386,125 +386,125 @@ def riina_advantage : Nat :=
 
 /-- indcpa_secure (matches Coq: Definition indcpa_secure) -/
 def indcpa_secure (g : INDCPAGame) : Bool :=
-  (128 <=? icpa_key_size g) &&
-  icpa_encryption_oracle g &&
-  (negligible_threshold <=? icpa_distinguisher_adv g)
+  (128 <=? g.icpa_key_size) &&
+  g.icpa_encryption_oracle &&
+  (negligible_threshold <=? g.icpa_distinguisher_adv)
 
 /-- riina_indcpa (matches Coq: Definition riina_indcpa) -/
 def riina_indcpa : INDCPAGame := mkINDCPAGame 256 true true riina_advantage
 
 /-- semantic_secure (matches Coq: Definition semantic_secure) -/
 def semantic_secure (ss : SemanticSecurity) : Bool :=
-  ss_indistinguishable ss && ss_randomized ss &&
-  (ss_message_space ss <? ss_ciphertext_space ss)
+  ss.ss_indistinguishable && ss.ss_randomized &&
+  (ss.ss_message_space <? ss.ss_ciphertext_space)
 
 /-- riina_semantic (matches Coq: Definition riina_semantic) -/
 def riina_semantic : SemanticSecurity := mkSemanticSecurity 256 512 true true
 
 /-- hom_add_correct (matches Coq: Definition hom_add_correct) -/
 def hom_add_correct (ha : HomAddition) : Bool :=
-  ha_preserves_structure ha &&
-  (ha_plaintext_modulus ha <? ha_ciphertext_modulus ha)
+  ha.ha_preserves_structure &&
+  (ha.ha_plaintext_modulus <? ha.ha_ciphertext_modulus)
 
 /-- riina_hom_add (matches Coq: Definition riina_hom_add) -/
 def riina_hom_add : HomAddition := mkHomAddition 256 1024 true
 
 /-- hom_mult_correct (matches Coq: Definition hom_mult_correct) -/
 def hom_mult_correct (hm : HomMultiplication) : Bool :=
-  hm_relinearization hm && hm_key_switching hm &&
-  (hm_plaintext_modulus hm <? hm_ciphertext_modulus hm)
+  hm.hm_relinearization && hm.hm_key_switching &&
+  (hm.hm_plaintext_modulus <? hm.hm_ciphertext_modulus)
 
 /-- riina_hom_mult (matches Coq: Definition riina_hom_mult) -/
 def riina_hom_mult : HomMultiplication := mkHomMultiplication 256 1024 true true
 
 /-- hom_ops_valid (matches Coq: Definition hom_ops_valid) -/
 def hom_ops_valid (ho : HomOperations) : Bool :=
-  hom_add_correct (hops_addition ho) &&
-  hom_mult_correct (hops_multiplication ho) &&
-  hops_composition ho
+  hom_add_correct (ho.hops_addition) &&
+  hom_mult_correct (ho.hops_multiplication) &&
+  ho.hops_composition
 
 /-- riina_hom_ops (matches Coq: Definition riina_hom_ops) -/
 def riina_hom_ops : HomOperations := mkHomOperations riina_hom_add riina_hom_mult true
 
 /-- noise_after_additions (matches Coq: Definition noise_after_additions) -/
 def noise_after_additions (nm : NoiseModel) (n : Nat) : Nat :=
-  noise_initial nm + n * noise_add_growth nm
+  nm.noise_initial + n * nm.noise_add_growth
 
 /-- noise_after_multiplications (matches Coq: Definition noise_after_multiplications) -/
 def noise_after_multiplications (nm : NoiseModel) (n : Nat) : Nat :=
-  noise_initial nm * (noise_mult_growth nm ^ n)
+  nm.noise_initial * (nm.noise_mult_growth ^ n)
 
 /-- noise_safe (matches Coq: Definition noise_safe) -/
 def noise_safe (nm : NoiseModel) (current : Nat) : Bool :=
-  current <? noise_threshold nm
+  current <? nm.noise_threshold
 
 /-- riina_noise_model (matches Coq: Definition riina_noise_model) -/
 def riina_noise_model : NoiseModel := mkNoiseModel 10 2 2 100000
 
 /-- noise_bound_valid (matches Coq: Definition noise_bound_valid) -/
 def noise_bound_valid (nm : NoiseModel) (nb : NoiseBound) : Bool :=
-  noise_safe nm (noise_after_additions nm (nb_max_additions nb)) &&
-  noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb))
+  noise_safe nm (noise_after_additions nm (nb.nb_max_additions)) &&
+  noise_safe nm (noise_after_multiplications nm (nb.nb_max_multiplications))
 
 /-- riina_noise_bound (matches Coq: Definition riina_noise_bound) -/
 def riina_noise_bound : NoiseBound := mkNoiseBound 100 8 65536
 
 /-- bootstrapping_correct (matches Coq: Definition bootstrapping_correct) -/
 def bootstrapping_correct (bc : BootstrappingConfig) : Bool :=
-  bs_reduces_noise bc && bs_preserves_message bc && bs_polynomial_time bc &&
-  (bs_noise_output bc <? bs_noise_input_max bc)
+  bc.bs_reduces_noise && bc.bs_preserves_message && bc.bs_polynomial_time &&
+  (bc.bs_noise_output <? bc.bs_noise_input_max)
 
 /-- riina_bootstrap (matches Coq: Definition riina_bootstrap) -/
 def riina_bootstrap : BootstrappingConfig := mkBootstrappingConfig true true true 10 1000
 
 /-- unlimited_fhe_valid (matches Coq: Definition unlimited_fhe_valid) -/
 def unlimited_fhe_valid (u : UnlimitedFHE) : Bool :=
-  bootstrapping_correct (ufhe_bootstrap_config u) &&
-  (bs_noise_output (ufhe_bootstrap_config u) <=? noise_initial (ufhe_noise_model u))
+  bootstrapping_correct (u.ufhe_bootstrap_config) &&
+  (bs_noise_output (u.ufhe_bootstrap_config) <=? noise_initial (u.ufhe_noise_model))
 
 /-- riina_unlimited (matches Coq: Definition riina_unlimited) -/
 def riina_unlimited : UnlimitedFHE := mkUnlimitedFHE riina_bootstrap riina_noise_model 10
 
 /-- keygen_secure (matches Coq: Definition keygen_secure) -/
 def keygen_secure (kg : KeyGenParams) : Bool :=
-  (128 <=? kg_security_parameter kg) &&
-  (1024 <=? kg_polynomial_degree kg) &&
-  (0 <? kg_error_distribution kg) &&
-  (32 <=? kg_modulus_bits kg)
+  (128 <=? kg.kg_security_parameter) &&
+  (1024 <=? kg.kg_polynomial_degree) &&
+  (0 <? kg.kg_error_distribution) &&
+  (32 <=? kg.kg_modulus_bits)
 
 /-- riina_keygen (matches Coq: Definition riina_keygen) -/
 def riina_keygen : KeyGenParams := mkKeyGenParams 256 2048 8 128
 
 /-- keypair_valid (matches Coq: Definition keypair_valid) -/
 def keypair_valid (kp : FHEKeyPair) : Bool :=
-  keygen_secure (kp_params kp) &&
-  (0 <? kp_public kp) &&
-  (0 <? kp_secret kp)
+  keygen_secure (kp.kp_params) &&
+  (0 <? kp.kp_public) &&
+  (0 <? kp.kp_secret)
 
 /-- riina_keypair (matches Coq: Definition riina_keypair) -/
 def riina_keypair : FHEKeyPair := mkFHEKeyPair 12345 67890 11111 riina_keygen
 
 /-- ciphertext_valid (matches Coq: Definition ciphertext_valid) -/
 def ciphertext_valid (ct : FHECiphertext) (nm : NoiseModel) : Bool :=
-  ct_valid_encryption ct &&
-  noise_safe nm (ct_noise_estimate ct) &&
-  (0 <? ct_level ct)
+  ct.ct_valid_encryption &&
+  noise_safe nm (ct.ct_noise_estimate) &&
+  (0 <? ct.ct_level)
 
 /-- riina_ciphertext (matches Coq: Definition riina_ciphertext) -/
 def riina_ciphertext : FHECiphertext := mkFHECiphertext 1000 2000 50 10 true
 
 /-- op_preserves_validity (matches Coq: Definition op_preserves_validity) -/
 def op_preserves_validity (cao : CiphertextAfterOp) (nm : NoiseModel) : Bool :=
-  ciphertext_valid (cao_original cao) nm &&
-  ciphertext_valid (cao_result cao) nm
+  ciphertext_valid (cao.cao_original) nm &&
+  ciphertext_valid (cao.cao_result) nm
 
 /-- complete_fhe_secure (matches Coq: Definition complete_fhe_secure) -/
 def complete_fhe_secure (sys : CompleteFHESystem) : Bool :=
-  fhe_fully_secure (cfhe_config sys) &&
-  keygen_secure (cfhe_keygen sys) &&
-  indcpa_secure (cfhe_indcpa sys) &&
-  bootstrapping_correct (cfhe_bootstrap sys) &&
-  hom_ops_valid (cfhe_operations sys)
+  fhe_fully_secure (sys.cfhe_config) &&
+  keygen_secure (sys.cfhe_keygen) &&
+  indcpa_secure (sys.cfhe_indcpa) &&
+  bootstrapping_correct (sys.cfhe_bootstrap) &&
+  hom_ops_valid (sys.cfhe_operations)
 
 /-- riina_complete_fhe (matches Coq: Definition riina_complete_fhe) -/
 def riina_complete_fhe : CompleteFHESystem := mkCompleteFHESystem
@@ -512,25 +512,25 @@ def riina_complete_fhe : CompleteFHESystem := mkCompleteFHESystem
 
 /-- circular_secure (matches Coq: Definition circular_secure) -/
 def circular_secure (cs : CircularSecurity) : Bool :=
-  cs_key_encryption_safe cs && cs_kDM_secure cs
+  cs.cs_key_encryption_safe && cs.cs_kDM_secure
 
 /-- riina_circular (matches Coq: Definition riina_circular) -/
 def riina_circular : CircularSecurity := mkCircularSecurity true true true
 
 /-- lwe_secure (matches Coq: Definition lwe_secure) -/
 def lwe_secure (lwe : LWEHardness) : Bool :=
-  (512 <=? lwe_dimension lwe) &&
-  (1024 <=? lwe_modulus lwe) &&
-  lwe_assumed_hard lwe
+  (512 <=? lwe.lwe_dimension) &&
+  (1024 <=? lwe.lwe_modulus) &&
+  lwe.lwe_assumed_hard
 
 /-- riina_lwe (matches Coq: Definition riina_lwe) -/
 def riina_lwe : LWEHardness := mkLWEHardness 1024 2048 8 true
 
 /-- rlwe_secure (matches Coq: Definition rlwe_secure) -/
 def rlwe_secure (r : RLWEConfig) : Bool :=
-  (1024 <=? rlwe_ring_degree r) &&
-  (32768 <=? rlwe_modulus r) &&
-  rlwe_ntt_compatible r
+  (1024 <=? r.rlwe_ring_degree) &&
+  (32768 <=? r.rlwe_modulus) &&
+  r.rlwe_ntt_compatible
 
 /-- riina_rlwe (matches Coq: Definition riina_rlwe) -/
 def riina_rlwe : RLWEConfig := mkRLWEConfig 2048 32769 8 true
@@ -539,31 +539,31 @@ def riina_rlwe : RLWEConfig := mkRLWEConfig 2048 32769 8 true
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb3_true_iff (matches Coq) -/
-theorem andb3_true_iff : ∀ a b c : bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
+theorem andb3_true_iff : ∀ a b c : Bool, a && b && c = true <-> a = true ∧ b = true ∧ c = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- leb_le (matches Coq) -/
-theorem leb_le : ∀ n m : nat, (n <=? m) = true <-> n ≤ m := by
+theorem leb_le : ∀ n m : Nat, (n <=? m) = true <-> n ≤ m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- ltb_lt (matches Coq) -/
-theorem ltb_lt : ∀ n m : nat, (n <? m) = true <-> n < m := by
+theorem ltb_lt : ∀ n m : Nat, (n <? m) = true <-> n < m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- mult_le_compat (matches Coq) -/
-theorem mult_le_compat : ∀ a b c d : nat, a ≤ b → c ≤ d → a * c ≤ b * d := by
+theorem mult_le_compat : ∀ a b c d : Nat, a ≤ b → c ≤ d → a * c ≤ b * d := by
   simp_all [Bool.and_eq_true]
 
 /-- add_le_compat (matches Coq) -/
-theorem add_le_compat : ∀ a b c d : nat, a ≤ b → c ≤ d → a + c ≤ b + d := by
+theorem add_le_compat : ∀ a b c d : Nat, a ≤ b → c ≤ d → a + c ≤ b + d := by
   simp_all [Bool.and_eq_true]
 
 /-- Basic FHE configuration theorems -/

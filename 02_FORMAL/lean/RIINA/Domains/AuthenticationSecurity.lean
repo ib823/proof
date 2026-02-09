@@ -197,7 +197,7 @@ def token_bound := sorry -- complex match, needs manual translation
 
 /-- nonce_fresh (matches Coq: Definition nonce_fresh) -/
 def nonce_fresh (ns : NonceStore) (n : Nat) : Bool :=
-  negb (existsb (Nat
+  !(existsb (Nat
 
 /-- auth_001_credential_stuffing_mitigated (matches Coq) -/
 theorem auth_001_credential_stuffing_mitigated : ∀ (rl : RateLimiter), rl_attempts rl ≥ rl_max_attempts rl → is_rate_limited rl = true := by
@@ -208,7 +208,7 @@ theorem auth_002_password_spraying_mitigated : ∀ (rl : RateLimiter), is_rate_l
   simp_all [Bool.and_eq_true]
 
 /-- auth_003_brute_force_mitigated (matches Coq) -/
-theorem auth_003_brute_force_mitigated : ∀ (rl : RateLimiter) (n : nat), n ≥ rl_max_attempts rl → is_rate_limited (mkRateLimiter n (rl_window_start rl) (rl_max_attempts rl) (rl_lockout_duration rl)) = true := by
+theorem auth_003_brute_force_mitigated : ∀ (rl : RateLimiter) (n : Nat), n ≥ rl_max_attempts rl → is_rate_limited (mkRateLimiter n (rl_window_start rl) (rl_max_attempts rl) (rl_lockout_duration rl)) = true := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_004_pass_the_hash_mitigated (matches Coq) -/
@@ -216,7 +216,7 @@ theorem auth_004_pass_the_hash_mitigated : ∀ (t : AuthTicket),  length (at_sig
   simp_all [Bool.and_eq_true]
 
 /-- auth_005_pass_the_ticket_mitigated (matches Coq) -/
-theorem auth_005_pass_the_ticket_mitigated : ∀ (t : SessionToken) (now : nat), token_valid t now = true → now < st_expires t := by
+theorem auth_005_pass_the_ticket_mitigated : ∀ (t : SessionToken) (now : Nat), token_valid t now = true → now < st_expires t := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_006_kerberoasting_mitigated (matches Coq) -/
@@ -236,7 +236,7 @@ theorem auth_009_credential_theft_mitigated : ∀ (cred : list nat), Forall (fun
   simp_all [Bool.and_eq_true]
 
 /-- auth_010_session_fixation_mitigated (matches Coq) -/
-theorem auth_010_session_fixation_mitigated : ∀ (old_id new_id : nat), old_id ≠ new_id → old_id ≠ new_id := by
+theorem auth_010_session_fixation_mitigated : ∀ (old_id new_id : Nat), old_id ≠ new_id → old_id ≠ new_id := by
   intro h; exact h
 
 /-- auth_011_auth_bypass_mitigated (matches Coq) -/
@@ -268,11 +268,11 @@ theorem auth_017_biometric_spoof_mitigated : ∀ (ba : BiometricAuth), bio_liven
   simp_all [Bool.and_eq_true]
 
 /-- auth_018_token_theft_mitigated (matches Coq) -/
-theorem auth_018_token_theft_mitigated : ∀ (t : SessionToken) (ip ua : nat), token_bound t ip ua = true →  True := by
+theorem auth_018_token_theft_mitigated : ∀ (t : SessionToken) (ip ua : Nat), token_bound t ip ua = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_019_replay_mitigated (matches Coq) -/
-theorem auth_019_replay_mitigated : ∀ (ns : NonceStore) (n : nat), nonce_fresh ns n = true → ~ In n (ns_seen ns) := by
+theorem auth_019_replay_mitigated : ∀ (ns : NonceStore) (n : Nat), nonce_fresh ns n = true → ~ In n (ns_seen ns) := by
   simp_all [Bool.and_eq_true]
 
 /-- auth_020_phishing_mitigated (matches Coq) -/

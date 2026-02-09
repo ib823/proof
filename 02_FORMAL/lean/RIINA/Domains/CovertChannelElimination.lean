@@ -156,32 +156,32 @@ def can_flow (l1 l2 : IFCLabel) : Bool :=
 
 /-- can_flow_full (matches Coq: Definition can_flow_full) -/
 def can_flow_full (l1 l2 : IFCLabel) : Bool :=
-  can_flow l1 l2 && subset_list (label_compartments l1) (label_compartments l2)
+  can_flow l1 l2 && subset_list (l1.label_compartments) (l2.label_compartments)
 
 /-- is_constant_time (matches Coq: Definition is_constant_time) -/
 def is_constant_time (tc : TimingChannel) : Prop :=
-  forall x y : nat, tc_execution_time tc x = tc_execution_time tc y
+  forall x y : Nat, tc.tc_execution_time x = tc.tc_execution_time y
 
 /-- is_padded_traffic (matches Coq: Definition is_padded_traffic) -/
 def is_padded_traffic (nt : NetworkTraffic) : Prop :=
-  nt_total_size nt = nt_payload_size nt + nt_padding_size nt
+  nt.nt_total_size = nt.nt_payload_size + nt.nt_padding_size
 
 /-- protocol_verified (matches Coq: Definition protocol_verified) -/
 def protocol_verified (pm : ProtocolMessage) (verify : Nat -> Nat -> Nat -> Bool) : Prop :=
-  verify (pm_header pm) (pm_payload pm) (pm_signature pm) = true
+  verify (pm.pm_header) (pm.pm_payload) (pm.pm_signature) = true
 
 /-- domains_isolated (matches Coq: Definition domains_isolated) -/
 def domains_isolated (d1 d2 : IsolationDomain) : Prop :=
-  forall r : nat, ~(In r (id_resources d1) /\ In r (id_resources d2))
+  forall r : Nat, ~(In r (d1.id_resources) /\ In r (d2.id_resources))
 
 /-- partitions_disjoint (matches Coq: Definition partitions_disjoint) -/
 def partitions_disjoint (p1 p2 : Partition) : Prop :=
-  part_start p1 + part_size p1 <= part_start p2 \/
-  part_start p2 + part_size p2 <= part_start p1
+  p1.part_start + p1.part_size <= p2.part_start \/
+  p2.part_start + p2.part_size <= p1.part_start
 
 /-- containers_isolated (matches Coq: Definition containers_isolated) -/
 def containers_isolated (c1 c2 : Container) : Prop :=
-  cont_namespace c1 <> cont_namespace c2
+  c1.cont_namespace <> c2.cont_namespace
 
 /-- can_flow_reflexive (matches Coq) -/
 theorem can_flow_reflexive : ∀ l : IFCLabel, can_flow l l = true := by
@@ -200,7 +200,7 @@ theorem low_can_flow_to_high : can_flow low_label high_label = true := by
   simp
 
 /-- disjoint_no_shared_resource (matches Coq) -/
-theorem disjoint_no_shared_resource : ∀ p1 p2 : Partition, partitions_disjoint p1 p2 → ∀ addr : nat, (part_start p1 ≤ addr < part_start p1 + part_size p1) → ~(part_start p2 ≤ addr < part_start p2 + part_size p2) := by
+theorem disjoint_no_shared_resource : ∀ p1 p2 : Partition, partitions_disjoint p1 p2 → ∀ addr : Nat, (part_start p1 ≤ addr < part_start p1 + part_size p1) → ~(part_start p2 ≤ addr < part_start p2 + part_size p2) := by
   cases ‹_› <;> simp <;> omega
 
 /-- COV-001: Storage Channel Eliminated via Information Flow Control
@@ -216,7 +216,7 @@ theorem cov_001_storage_channel_eliminated : ∀ (sc : StorageChannel), can_flow
     If all operations execute in constant time regardless of input,
     no timing information can leak secret data. -/
 /-- cov_002_timing_channel_eliminated (matches Coq) -/
-theorem cov_002_timing_channel_eliminated : ∀ (tc : TimingChannel), is_constant_time tc → ∀ (secret1 secret2 : nat), tc_execution_time tc secret1 = tc_execution_time tc secret2 := by
+theorem cov_002_timing_channel_eliminated : ∀ (tc : TimingChannel), is_constant_time tc → ∀ (secret1 secret2 : Nat), tc_execution_time tc secret1 = tc_execution_time tc secret2 := by
   simp_all [Bool.and_eq_true]
 
 /-- COV-003: Network Covert Channel Bounded via Traffic Padding
@@ -224,7 +224,7 @@ theorem cov_002_timing_channel_eliminated : ∀ (tc : TimingChannel), is_constan
     If all network packets are padded to a fixed size,
     packet size cannot leak payload information. -/
 /-- cov_003_network_covert_channel_bounded (matches Coq) -/
-theorem cov_003_network_covert_channel_bounded : ∀ (fixed_size : nat) (nt1 nt2 : NetworkTraffic), is_padded_traffic nt1 → is_padded_traffic nt2 → nt_total_size nt1 = fixed_size → nt_total_size nt2 = fixed_size → nt_total_size nt1 = nt_total_size nt2 := by
+theorem cov_003_network_covert_channel_bounded : ∀ (fixed_size : Nat) (nt1 nt2 : NetworkTraffic), is_padded_traffic nt1 → is_padded_traffic nt2 → nt_total_size nt1 = fixed_size → nt_total_size nt2 = fixed_size → nt_total_size nt1 = nt_total_size nt2 := by
   rfl
 
 /-- COV-004: Steganography Channel Eliminated via Content Filtering
@@ -232,7 +232,7 @@ theorem cov_003_network_covert_channel_bounded : ∀ (fixed_size : nat) (nt1 nt2
     If content passes through a filter that only allows specific patterns,
     steganographic content is eliminated. -/
 /-- cov_004_steganography_channel_eliminated (matches Coq) -/
-theorem cov_004_steganography_channel_eliminated : ∀ (cf : ContentFilter) (content : nat), cf_check cf content = false → ∀ (output : nat → option nat), (∀ c, cf_check cf c = false → output c = None) → output content = None := by
+theorem cov_004_steganography_channel_eliminated : ∀ (cf : ContentFilter) (content : Nat), cf_check cf content = false → ∀ (output : Nat → option nat), (∀ c, cf_check cf c = false → output c = None) → output content = None := by
   simp_all [Bool.and_eq_true]
 
 /-- COV-005: Subliminal Channel Eliminated via Protocol Verification
@@ -240,7 +240,7 @@ theorem cov_004_steganography_channel_eliminated : ∀ (cf : ContentFilter) (con
     If protocol messages must be verified and only verified messages
     are processed, subliminal channels in invalid messages are eliminated. -/
 /-- cov_005_subliminal_channel_eliminated (matches Coq) -/
-theorem cov_005_subliminal_channel_eliminated : ∀ (pm : ProtocolMessage) (verify : nat → nat → nat → bool), verify (pm_header pm) (pm_payload pm) (pm_signature pm) = false → ∀ (process : ProtocolMessage → (nat → nat → nat → bool) → option nat), (∀ pm' v, v (pm_header pm') (pm_payload pm') (pm_signature pm') = false → process pm' v = None) → process pm verify = None := by
+theorem cov_005_subliminal_channel_eliminated : ∀ (pm : ProtocolMessage) (verify : Nat → nat → nat → bool), verify (pm_header pm) (pm_payload pm) (pm_signature pm) = false → ∀ (process : ProtocolMessage → (nat → nat → nat → bool) → option nat), (∀ pm' v, v (pm_header pm') (pm_payload pm') (pm_signature pm') = false → process pm' v = None) → process pm verify = None := by
   simp_all [Bool.and_eq_true]
 
 /-- COV-006: Acoustic Channel Eliminated via Domain Isolation
@@ -248,7 +248,7 @@ theorem cov_005_subliminal_channel_eliminated : ∀ (pm : ProtocolMessage) (veri
     If two domains are acoustically isolated (share no acoustic resources),
     no acoustic covert channel exists between them. -/
 /-- cov_006_acoustic_channel_eliminated (matches Coq) -/
-theorem cov_006_acoustic_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (acoustic_resource : nat), In acoustic_resource (id_resources d1) → ~In acoustic_resource (id_resources d2) := by
+theorem cov_006_acoustic_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (acoustic_resource : Nat), In acoustic_resource (id_resources d1) → ~In acoustic_resource (id_resources d2) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- COV-007: Thermal Channel Eliminated via Domain Isolation
@@ -256,7 +256,7 @@ theorem cov_006_acoustic_channel_eliminated : ∀ (d1 d2 : IsolationDomain), dom
     If two domains share no thermal resources (heat sinks, sensors),
     no thermal covert channel exists between them. -/
 /-- cov_007_thermal_channel_eliminated (matches Coq) -/
-theorem cov_007_thermal_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (thermal_resource : nat), In thermal_resource (id_resources d1) → ~In thermal_resource (id_resources d2) := by
+theorem cov_007_thermal_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (thermal_resource : Nat), In thermal_resource (id_resources d1) → ~In thermal_resource (id_resources d2) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- COV-008: Power Channel Eliminated via Domain Isolation
@@ -264,7 +264,7 @@ theorem cov_007_thermal_channel_eliminated : ∀ (d1 d2 : IsolationDomain), doma
     If two domains share no power resources,
     no power-based covert channel exists between them. -/
 /-- cov_008_power_channel_eliminated (matches Coq) -/
-theorem cov_008_power_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (power_resource : nat), In power_resource (id_resources d1) → ~In power_resource (id_resources d2) := by
+theorem cov_008_power_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (power_resource : Nat), In power_resource (id_resources d1) → ~In power_resource (id_resources d2) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- COV-009: Cache Channel Eliminated via Cache Partitioning
@@ -272,7 +272,7 @@ theorem cov_008_power_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domain
     If cache is partitioned with non-overlapping regions per security domain,
     no cache-based covert channel exists between partitions. -/
 /-- cov_009_cache_channel_eliminated (matches Coq) -/
-theorem cov_009_cache_channel_eliminated : ∀ (p1 p2 : Partition), partitions_disjoint p1 p2 → can_flow (part_label p1) (part_label p2) = false → ∀ (cache_line : nat), (part_start p1 ≤ cache_line < part_start p1 + part_size p1) → ~(part_start p2 ≤ cache_line < part_start p2 + part_size p2) := by
+theorem cov_009_cache_channel_eliminated : ∀ (p1 p2 : Partition), partitions_disjoint p1 p2 → can_flow (part_label p1) (part_label p2) = false → ∀ (cache_line : Nat), (part_start p1 ≤ cache_line < part_start p1 + part_size p1) → ~(part_start p2 ≤ cache_line < part_start p2 + part_size p2) := by
   simp_all [Bool.and_eq_true]
 
 /-- COV-010: Memory Channel Eliminated via Memory Partitioning
@@ -280,7 +280,7 @@ theorem cov_009_cache_channel_eliminated : ∀ (p1 p2 : Partition), partitions_d
     If memory is partitioned with non-overlapping regions per security domain,
     no memory-based covert channel exists between partitions. -/
 /-- cov_010_memory_channel_eliminated (matches Coq) -/
-theorem cov_010_memory_channel_eliminated : ∀ (p1 p2 : Partition), partitions_disjoint p1 p2 → can_flow (part_label p1) (part_label p2) = false → ∀ (mem_addr : nat), (part_start p1 ≤ mem_addr < part_start p1 + part_size p1) → ~(part_start p2 ≤ mem_addr < part_start p2 + part_size p2) := by
+theorem cov_010_memory_channel_eliminated : ∀ (p1 p2 : Partition), partitions_disjoint p1 p2 → can_flow (part_label p1) (part_label p2) = false → ∀ (mem_addr : Nat), (part_start p1 ≤ mem_addr < part_start p1 + part_size p1) → ~(part_start p2 ≤ mem_addr < part_start p2 + part_size p2) := by
   simp_all [Bool.and_eq_true]
 
 /-- COV-011: File System Channel Eliminated via FS Isolation
@@ -288,7 +288,7 @@ theorem cov_010_memory_channel_eliminated : ∀ (p1 p2 : Partition), partitions_
     If file systems are isolated between domains (no shared paths),
     no file system covert channel exists. -/
 /-- cov_011_filesystem_channel_eliminated (matches Coq) -/
-theorem cov_011_filesystem_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (fs_path : nat), In fs_path (id_resources d1) → ~In fs_path (id_resources d2) := by
+theorem cov_011_filesystem_channel_eliminated : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → ∀ (fs_path : Nat), In fs_path (id_resources d1) → ~In fs_path (id_resources d2) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- COV-012: Process Channel Eliminated via Container Isolation
@@ -320,12 +320,12 @@ theorem cov_014_hardware_channel_eliminated : ∀ (hi : HardwareIsolation), hi_i
     If electromagnetic shielding is certified and provides sufficient attenuation,
     EM-based covert channels are eliminated. -/
 /-- cov_015_electromagnetic_channel_eliminated (matches Coq) -/
-theorem cov_015_electromagnetic_channel_eliminated : ∀ (ems : EMShielding) (min_attenuation : nat), ems_certified ems = true → ems_attenuation_db ems ≥ min_attenuation → ∀ (em_leak : EMShielding → nat → bool), (∀ ems' min_att, ems_certified ems' = true → ems_attenuation_db ems' ≥ min_att → em_leak ems' min_att = false) → em_leak ems min_attenuation = false := by
+theorem cov_015_electromagnetic_channel_eliminated : ∀ (ems : EMShielding) (min_attenuation : Nat), ems_certified ems = true → ems_attenuation_db ems ≥ min_attenuation → ∀ (em_leak : EMShielding → nat → bool), (∀ ems' min_att, ems_certified ems' = true → ems_attenuation_db ems' ≥ min_att → em_leak ems' min_att = false) → em_leak ems min_attenuation = false := by
   simp_all [Bool.and_eq_true]
 
 /-- Theorem: Complete isolation implies no information flow -/
 /-- complete_isolation_no_flow (matches Coq) -/
-theorem complete_isolation_no_flow : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → can_flow (id_label d1) (id_label d2) = false → ∀ resource : nat, In resource (id_resources d1) → ~In resource (id_resources d2) := by
+theorem complete_isolation_no_flow : ∀ (d1 d2 : IsolationDomain), domains_isolated d1 d2 → can_flow (id_label d1) (id_label d2) = false → ∀ resource : Nat, In resource (id_resources d1) → ~In resource (id_resources d2) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- Theorem: Information flow control is a partial order -/

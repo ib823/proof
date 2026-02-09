@@ -258,7 +258,7 @@ theorem hash_eq_implies_eq : ∀ h1 h2 : Hash, hash_eq h1 h2 = true → h1 = h2 
   cases ‹_› <;> simp
 
 /-- bool_impl (matches Coq) -/
-theorem bool_impl : ∀ a b : bool, a = true → (a = true → b = true) → b = true := by
+theorem bool_impl : ∀ a b : Bool, a = true → (a = true → b = true) → b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- sup_001_dependency_compromise_mitigated (matches Coq) -/

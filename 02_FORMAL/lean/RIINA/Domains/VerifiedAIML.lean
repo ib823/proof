@@ -213,7 +213,7 @@ theorem DOMAIN_002_09_numerical_stability : ∀ (x bound : Z), numerically_stabl
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_002_10_model_integrity (matches Coq) -/
-theorem DOMAIN_002_10_model_integrity : ∀ (m : Model) (expected_hash : nat), model_integrity m expected_hash = true → model_hash m = expected_hash := by
+theorem DOMAIN_002_10_model_integrity : ∀ (m : Model) (expected_hash : Nat), model_integrity m expected_hash = true → model_hash m = expected_hash := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_002_11_input_validation (matches Coq) -/

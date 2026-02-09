@@ -1,0 +1,42 @@
+{
+  "active_file_count": 255,
+  "active_coq_file_count": 250,
+  "active_lean_file_count": 5,
+  "active_proof_decl_count": 7981,
+  "remaining_total": 540,
+  "remaining_bucket_counts": {
+    "active": 2,
+    "archive": 309,
+    "inactive_nonarchive": 229
+  },
+  "remaining_active_count": 2,
+  "remaining_active_type_counts": {
+    "Axiom": 2
+  },
+  "remaining_inactive_count": 538,
+  "remaining_inactive_type_counts": {
+    "admit tactic": 138,
+    "Admitted": 98,
+    "Axiom": 73,
+    "sorry": 227,
+    "axiom": 2
+  },
+  "remaining_active": [
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2.v",
+      "language": "coq",
+      "type": "Axiom",
+      "name": "val_rel_n_step_up",
+      "line": 1535,
+      "bucket": "active"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "language": "coq",
+      "type": "Axiom",
+      "name": "logical_relation_declassify",
+      "line": 1149,
+      "bucket": "active"
+    }
+  ]
+}

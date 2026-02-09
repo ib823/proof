@@ -93,15 +93,15 @@ structure ExtNetworkState where
 
 /-- owns_socket (matches Coq: Definition owns_socket) -/
 def owns_socket (app : Application) (sock : Socket) : Prop :=
-  socket_owner sock = app_id app
+  sock.socket_owner = app.app_id
 
 /-- socket_usable (matches Coq: Definition socket_usable) -/
 def socket_usable (sock : Socket) : Prop :=
-  socket_bound sock = true
+  sock.socket_bound = true
 
 /-- has_network_permission (matches Coq: Definition has_network_permission) -/
 def has_network_permission (app : Application) : Prop :=
-  app_network_perm app = true
+  app.app_network_perm = true
 
 /-- Theorem: An application cannot access another application's sockets. -/
 /-- network_isolation (matches Coq) -/
@@ -149,7 +149,7 @@ theorem unbound_blocks_receive : ∀ (app : Application) (sock : Socket), socket
 
 /-- Default deny firewall: empty rules block all -/
 /-- default_deny_firewall (matches Coq) -/
-theorem default_deny_firewall : ∀ (src_port dst_port : nat), firewall_permits [] src_port dst_port = false := by
+theorem default_deny_firewall : ∀ (src_port dst_port : Nat), firewall_permits [] src_port dst_port = false := by
   rfl
 
 /-- Cross-app socket access is impossible -/

@@ -264,7 +264,7 @@ def has_security_issue (code : ToolAST) (issue : SecurityIssue) : Prop :=
 /-- security_diagnostic_correct (matches Coq: Definition security_diagnostic_correct) -/
 def security_diagnostic_correct (code : ToolAST) (diag : Diagnostic) : Prop :=
   match diag with
-  | ._ => True
+  | _ => True
 
 /-- format_ast (matches Coq: Definition format_ast) -/
 def format_ast (ast : ToolAST) : ToolAST :=
@@ -281,7 +281,7 @@ def formatter_preserves_semantics (ast : ToolAST) : Prop :=
 /-- has_security_annotation (matches Coq: Definition has_security_annotation) -/
 def has_security_annotation (ast : ToolAST) : Bool :=
   match ast with
-  | ._ => false
+  | _ => false
 
 /-- annotation_visible_after_format (matches Coq: Definition annotation_visible_after_format) -/
 def annotation_visible_after_format (ast : ToolAST) : Prop :=
@@ -310,7 +310,7 @@ def build_deterministic (src : ToolAST) (config : BuildConfig) : Prop :=
 
 /-- module_changed (matches Coq: Definition module_changed) -/
 def module_changed (m : Module) (old_hash : Nat) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- hardening_applied (matches Coq: Definition hardening_applied) -/
 def hardening_applied (config : BuildConfig) (binary : Binary) : Prop :=
@@ -369,7 +369,7 @@ theorem N_001_05 : ∀ (env : TypeEnv) (name : string) (ty : TypeInfo), type_loo
   intro h; exact h
 
 /-- N_001_06 (matches Coq) -/
-theorem N_001_06 : ∀ (code : ToolAST) (diag : Diagnostic) (line col : nat) (msg : string), diag = DiagSecurityWarning line col msg → (∃ issue, has_security_issue code issue) → security_diagnostic_correct code diag := by
+theorem N_001_06 : ∀ (code : ToolAST) (diag : Diagnostic) (line col : Nat) (msg : string), diag = DiagSecurityWarning line col msg → (∃ issue, has_security_issue code issue) → security_diagnostic_correct code diag := by
   intro h; exact h
 
 /-- N_001_07 (matches Coq) -/

@@ -287,12 +287,12 @@ def pattern_covers_input := sorry -- complex match, needs manual translation
 
 /-- macro_well_formed (matches Coq: Definition macro_well_formed) -/
 def macro_well_formed (m : MacroDef) : Bool :=
-  macro_templates_wf m && 
-  forallb tokens_well_formed (macro_templates m)
+  m.macro_templates_wf && 
+  forallb tokens_well_formed (m.macro_templates)
 
 /-- is_name_captured (matches Coq: Definition is_name_captured) -/
 def is_name_captured (ctx : HygienicContext) (name : string) (use_scope : ScopeId) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- impl_satisfies_bound (matches Coq: Definition impl_satisfies_bound) -/
 def impl_satisfies_bound (impl : ImplBlock) (bound : TraitBound) : Bool :=
@@ -314,12 +314,12 @@ def secure_sandbox : SandboxState := mkSandbox false false false false
 
 /-- sandbox_isolated (matches Coq: Definition sandbox_isolated) -/
 def sandbox_isolated (s : SandboxState) : Bool :=
-  negb (sb_can_read_fs s) && negb (sb_can_write_fs s) &&
-  negb (sb_can_network s) && negb (sb_can_exec s)
+  !(s.sb_can_read_fs) && !(s.sb_can_write_fs) &&
+  !(s.sb_can_network) && !(s.sb_can_exec)
 
 /-- resolve_crate_path (matches Coq: Definition resolve_crate_path) -/
 def resolve_crate_path (ctx : ExpansionContext) : CratePath :=
-  [ctx_crate ctx]
+  [ctx.ctx_crate]
 
 /-- attr_preserves_structure (matches Coq: Definition attr_preserves_structure) -/
 def attr_preserves_structure := sorry -- complex match, needs manual translation
@@ -336,11 +336,11 @@ theorem K_001_01 : ∀ (m : MacroDef) (input output : TokenStream), tokens_well_
   rfl
 
 /-- K_001_02 (matches Coq) -/
-theorem K_001_02 : ∀ (m : MacroDef) (input : TokenStream) (fuel : nat), fuel > 0 → ∃ output, expand_macro_fuel fuel m input = Some output := by
+theorem K_001_02 : ∀ (m : MacroDef) (input : TokenStream) (fuel : Nat), fuel > 0 → ∃ output, expand_macro_fuel fuel m input = Some output := by
   cases ‹_› <;> simp
 
 /-- K_001_03 (matches Coq) -/
-theorem K_001_03 : ∀ (m : MacroDef) (input : TokenStream) (fuel : nat), fuel > 0 → expand_macro_fuel fuel m input ≠ None := by
+theorem K_001_03 : ∀ (m : MacroDef) (input : TokenStream) (fuel : Nat), fuel > 0 → expand_macro_fuel fuel m input ≠ None := by
   simp_all [Bool.and_eq_true]
 
 /-- K_001_04 (matches Coq) -/
@@ -352,7 +352,7 @@ theorem K_001_05 : ∀ (ft : FragmentType) (input output : TokenStream), tokens_
   cases ‹_› <;> simp
 
 /-- K_001_06 (matches Coq) -/
-theorem K_001_06 : ∀ (count : nat) (template : TokenStream), List.length (expand_repetition count template) = count := by
+theorem K_001_06 : ∀ (count : Nat) (template : TokenStream), List.length (expand_repetition count template) = count := by
   simp_all [Bool.and_eq_true]
 
 /-- K_001_07 (matches Coq) -/
@@ -388,7 +388,7 @@ theorem K_001_14 : ∀ (span : SourceSpan), span_start span ≤ span_end span �
   omega
 
 /-- eval_const_fuel_sufficient (matches Coq) -/
-theorem eval_const_fuel_sufficient : ∀ (e : ConstExpr) (fuel : nat), fuel > const_expr_size e → ∃ n, eval_const_fuel fuel e = Some n := by
+theorem eval_const_fuel_sufficient : ∀ (e : ConstExpr) (fuel : Nat), fuel > const_expr_size e → ∃ n, eval_const_fuel fuel e = Some n := by
   cases ‹_› <;> simp <;> omega
 
 /-- K_001_15 (matches Coq) -/
@@ -400,11 +400,11 @@ theorem K_001_16 : ∀ (cg : ConstGeneric), cg_type cg = FTExpr ∨ cg_type cg =
   rfl
 
 /-- K_001_17 (matches Coq) -/
-theorem K_001_17 : ∀ (sa : StaticAssert) (fuel : nat) (n : nat), eval_const_fuel fuel (sa_condition sa) = Some n → eval_static_assert fuel sa = negb (Nat.eqb n 0) := by
+theorem K_001_17 : ∀ (sa : StaticAssert) (fuel : Nat) (n : Nat), eval_const_fuel fuel (sa_condition sa) = Some n → eval_static_assert fuel sa = !(Nat.eqb n 0) := by
   rfl
 
 /-- K_001_18 (matches Coq) -/
-theorem K_001_18 : ∀ (sc : SecurityCheck) (fuel : nat), eval_const_fuel fuel (sc_condition sc) = Some 0 → sc_severity sc ≥ 2 → eval_const_fuel fuel (sc_condition sc) ≠ Some 1 := by
+theorem K_001_18 : ∀ (sc : SecurityCheck) (fuel : Nat), eval_const_fuel fuel (sc_condition sc) = Some 0 → sc_severity sc ≥ 2 → eval_const_fuel fuel (sc_condition sc) ≠ Some 1 := by
   simp_all [Bool.and_eq_true]
 
 /-- K_001_19 (matches Coq) -/

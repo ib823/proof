@@ -149,19 +149,19 @@ def logs_match_at (log1 log2 : List LogEntry) (idx : Nat) : Prop :=
   forall e1 e2,
     log_entry_at log1 idx = Some e1 ->
     log_entry_at log2 idx = Some e2 ->
-    entry_term e1 = entry_term e2 ->
-    entry_command e1 = entry_command e2
+    e1.entry_term = e2.entry_term ->
+    e1.entry_command = e2.entry_command
 
 /-- entry_committed (matches Coq: Definition entry_committed) -/
 def entry_committed := sorry -- complex match, needs manual translation
 
 /-- bft_quorum (matches Coq: Definition bft_quorum) -/
 def bft_quorum (state : BFTState) : Nat :=
-  2 * bft_f state + 1
+  2 * state.bft_f + 1
 
 /-- bft_valid (matches Coq: Definition bft_valid) -/
 def bft_valid (state : BFTState) : Bool :=
-  3 * bft_f state <? bft_n state
+  3 * state.bft_f <? state.bft_n
 
 /-- gc_increment (matches Coq: Definition gc_increment) -/
 def gc_increment (gc : GCounter) (node : Nat) : GCounter :=
@@ -189,12 +189,12 @@ def gs_member (s : GSet) (v : Nat) : Bool :=
 
 /-- ring_add_node (matches Coq: Definition ring_add_node) -/
 def ring_add_node (ring : HashRing) (pos : Nat) (node : NodeId) : HashRing :=
-  {| ring_nodes := (pos, node) :: ring_nodes ring;
-     ring_size := ring_size ring |}
+  {| ring_nodes := (pos, node) :: ring.ring_nodes;
+     ring_size := ring.ring_size |}
 
 /-- ring_remove_node (matches Coq: Definition ring_remove_node) -/
 def ring_remove_node (ring : HashRing) (node : NodeId) : HashRing :=
-  {| ring_nodes := filter (fun p => negb (Nat
+  {| ring_nodes := filter (fun p => !(Nat
 
 /-- DELTA_001_01_quorum_intersection (matches Coq) -/
 theorem DELTA_001_01_quorum_intersection : ∀ n q1 q2, is_quorum q1 n = true → is_quorum q2 n = true → q1 + q2 > n := by

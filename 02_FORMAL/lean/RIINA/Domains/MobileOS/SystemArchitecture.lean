@@ -168,23 +168,23 @@ structure SchedulerState where
 
 /-- verified_boot (matches Coq: Definition verified_boot) -/
 def verified_boot (d : Device) : Prop :=
-  boot_verified d = true /\ secure_boot_chain d = true
+  d.boot_verified = true /\ d.secure_boot_chain = true
 
 /-- boot_time (matches Coq: Definition boot_time) -/
 def boot_time (d : Device) : Nat :=
-  boot_time_ms d
+  d.boot_time_ms
 
 /-- boots_successfully (matches Coq: Definition boots_successfully) -/
 def boots_successfully (d : Device) : Prop :=
-  device_state d = Running
+  d.device_state = Running
 
 /-- update_succeeds (matches Coq: Definition update_succeeds) -/
 def update_succeeds (upd : SystemUpdate) : Prop :=
-  update_signature_valid upd = true /\ update_integrity_verified upd = true
+  upd.update_signature_valid = true /\ upd.update_integrity_verified = true
 
 /-- system_unchanged (matches Coq: Definition system_unchanged) -/
 def system_unchanged (sys : System) (new_sys : System) : Prop :=
-  system_version sys = system_version new_sys
+  sys.system_version = new_sys.system_version
 
 /-- always (matches Coq: Definition always) -/
 def always (P : Device -> Prop) (d : Device) : Prop :=
@@ -196,7 +196,7 @@ def eventually (P : Device -> Prop) (d : Device) : Prop :=
 
 /-- well_formed_device (matches Coq: Definition well_formed_device) -/
 def well_formed_device (d : Device) : Prop :=
-  verified_boot d -> boot_time_ms d <= 5000
+  verified_boot d -> d.boot_time_ms <= 5000
 
 /-- valid_boot_device (matches Coq: Definition valid_boot_device) -/
 def valid_boot_device (d : Device) : Prop :=
@@ -204,8 +204,8 @@ def valid_boot_device (d : Device) : Prop :=
 
 /-- memory_disjoint (matches Coq: Definition memory_disjoint) -/
 def memory_disjoint (p1 p2 : Process) : Prop :=
-  let (start1, size1) := process_memory_region p1 in
-  let (start2, size2) := process_memory_region p2 in
+  let (start1, size1) := p1.process_memory_region in
+  let (start2, size2) := p2.process_memory_region in
   start1 + size1 <= start2 \/ start2 + size2 <= start1
 
 /-- well_isolated_processes (matches Coq: Definition well_isolated_processes) -/
@@ -226,30 +226,30 @@ def privilege_geq (p1 p2 : PrivilegeLevel) : Prop :=
 
 /-- syscall_authorized (matches Coq: Definition syscall_authorized) -/
 def syscall_authorized (sc : Syscall) : Prop :=
-  privilege_geq (syscall_caller_privilege sc) (syscall_required_privilege sc) /\
-  syscall_validated sc = true
+  privilege_geq (sc.syscall_caller_privilege) (sc.syscall_required_privilege) /\
+  sc.syscall_validated = true
 
 /-- pid_in_table (matches Coq: Definition pid_in_table) -/
 def pid_in_table (pid : Nat) (pt : ProcessTable) : Prop :=
-  exists p, In p pt /\ ext_pid p = pid
+  exists p, In p pt /\ p.ext_pid = pid
 
 /-- all_pids_unique (matches Coq: Definition all_pids_unique) -/
 def all_pids_unique (pt : ProcessTable) : Prop :=
   forall p1 p2, In p1 pt -> In p2 pt ->
-    ext_pid p1 = ext_pid p2 -> p1 = p2
+    p1.ext_pid = p2.ext_pid -> p1 = p2
 
 /-- all_alive (matches Coq: Definition all_alive) -/
 def all_alive (pt : ProcessTable) : Prop :=
-  forall p, In p pt -> ext_alive p = true
+  forall p, In p pt -> p.ext_alive = true
 
 /-- init_process_present (matches Coq: Definition init_process_present) -/
 def init_process_present (pt : ProcessTable) : Prop :=
-  exists p, In p pt /\ ext_pid p = 1 /\ ext_alive p = true
+  exists p, In p pt /\ p.ext_pid = 1 /\ p.ext_alive = true
 
 /-- ext_mem_disjoint (matches Coq: Definition ext_mem_disjoint) -/
 def ext_mem_disjoint (p1 p2 : ExtProcess) : Prop :=
-  ext_mem_start p1 + ext_mem_size p1 <= ext_mem_start p2 \/
-  ext_mem_start p2 + ext_mem_size p2 <= ext_mem_start p1
+  p1.ext_mem_start + p1.ext_mem_size <= p2.ext_mem_start \/
+  p2.ext_mem_start + p2.ext_mem_size <= p1.ext_mem_start
 
 /-- kernel_mem_boundary (matches Coq: Definition kernel_mem_boundary) -/
 def kernel_mem_boundary : Nat :=
@@ -257,7 +257,7 @@ def kernel_mem_boundary : Nat :=
 
 /-- in_user_space (matches Coq: Definition in_user_space) -/
 def in_user_space (p : ExtProcess) : Prop :=
-  ext_mem_start p >= kernel_mem_boundary
+  p.ext_mem_start >= kernel_mem_boundary
 
 /-- in_kernel_space (matches Coq: Definition in_kernel_space) -/
 def in_kernel_space (addr : Nat) : Prop :=
@@ -265,11 +265,11 @@ def in_kernel_space (addr : Nat) : Prop :=
 
 /-- resource_within_limit (matches Coq: Definition resource_within_limit) -/
 def resource_within_limit (p : ExtProcess) : Prop :=
-  ext_resource_used p <= ext_resource_limit p
+  p.ext_resource_used <= p.ext_resource_limit
 
 /-- process_cleanly_terminated (matches Coq: Definition process_cleanly_terminated) -/
 def process_cleanly_terminated (p : ExtProcess) : Prop :=
-  ext_alive p = false /\ ext_resource_used p = 0
+  p.ext_alive = false /\ p.ext_resource_used = 0
 
 /-- boot_time_bounded (matches Coq) -/
 theorem boot_time_bounded : ∀ (device : Device), well_formed_device device → verified_boot device → boot_time device ≤ 5000 := by
@@ -300,7 +300,7 @@ theorem syscall_validation_complete : ∀ (sc : Syscall), syscall_authorized sc 
   intro h; exact h
 
 /-- privilege_escalation_impossible (matches Coq) -/
-theorem privilege_escalation_impossible : ∀ (sc : Syscall), syscall_caller_privilege sc = UserMode → syscall_required_privilege sc = KernelMode → ~ syscall_authorized sc := by
+theorem privilege_escalation_impossible : ∀ (sc : Syscall), syscall_caller_privilege sc = .userMode → syscall_required_privilege sc = .kernelMode → ~ syscall_authorized sc := by
   omega
 
 /-- kernel_memory_protected (matches Coq) -/
@@ -336,7 +336,7 @@ theorem pid_uniqueness : ∀ (pt : ProcessTable), all_pids_unique pt → ∀ p1 
   simp_all [Bool.and_eq_true]
 
 /-- scheduler_fairness (matches Coq) -/
-theorem scheduler_fairness : ∀ (sched : SchedulerState) (pid : nat), In pid (sched_ready_queue sched) → sched_time_slice sched > 0 → ∃ ts, ts > 0 ∧ ts = sched_time_slice sched := by
+theorem scheduler_fairness : ∀ (sched : SchedulerState) (pid : Nat), In pid (sched_ready_queue sched) → sched_time_slice sched > 0 → ∃ ts, ts > 0 ∧ ts = sched_time_slice sched := by
   intro h; exact h
 
 /-- context_switch_atomic (matches Coq) -/
@@ -344,19 +344,19 @@ theorem context_switch_atomic : ∀ (sched : SchedulerState), sched_context_save
   intro h; exact h
 
 /-- signal_delivery_guaranteed (matches Coq) -/
-theorem signal_delivery_guaranteed : ∀ (pt : ProcessTable) (target_pid : nat), pid_in_table target_pid pt → (∀ p, In p pt → ext_pid p = target_pid → ext_alive p = true) → ∃ p, In p pt ∧ ext_pid p = target_pid ∧ ext_alive p = true := by
+theorem signal_delivery_guaranteed : ∀ (pt : ProcessTable) (target_pid : Nat), pid_in_table target_pid pt → (∀ p, In p pt → ext_pid p = target_pid → ext_alive p = true) → ∃ p, In p pt ∧ ext_pid p = target_pid ∧ ext_alive p = true := by
   simp_all [Bool.and_eq_true]
 
 /-- supervisor_cannot_kernel (matches Coq) -/
-theorem supervisor_cannot_kernel : ∀ (sc : Syscall), syscall_caller_privilege sc = SupervisorMode → syscall_required_privilege sc = KernelMode → ~ syscall_authorized sc := by
+theorem supervisor_cannot_kernel : ∀ (sc : Syscall), syscall_caller_privilege sc = .supervisorMode → syscall_required_privilege sc = .kernelMode → ~ syscall_authorized sc := by
   omega
 
 /-- user_kernel_memory_separation (matches Coq) -/
-theorem user_kernel_memory_separation : ∀ (p : ExtProcess) (kaddr : nat), in_user_space p → in_kernel_space kaddr → ~ (ext_mem_start p ≤ kaddr ∧ kaddr < ext_mem_start p + ext_mem_size p) := by
+theorem user_kernel_memory_separation : ∀ (p : ExtProcess) (kaddr : Nat), in_user_space p → in_kernel_space kaddr → ~ (ext_mem_start p ≤ kaddr ∧ kaddr < ext_mem_start p + ext_mem_size p) := by
   omega
 
 /-- resource_usage_bounded (matches Coq) -/
-theorem resource_usage_bounded : ∀ (p : ExtProcess) (extra : nat), resource_within_limit p → ext_resource_used p + extra ≤ ext_resource_limit p → ext_resource_used p + extra ≤ ext_resource_limit p := by
+theorem resource_usage_bounded : ∀ (p : ExtProcess) (extra : Nat), resource_within_limit p → ext_resource_used p + extra ≤ ext_resource_limit p → ext_resource_used p + extra ≤ ext_resource_limit p := by
   intro h; exact h
 
 end RIINA

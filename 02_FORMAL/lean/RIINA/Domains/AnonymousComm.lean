@@ -122,11 +122,11 @@ def anon_layers (encryption routing timing cover : Bool) : Bool :=
   andb encryption (andb routing (andb timing cover))
 
 /-- anon_001_sender_anonymity (matches Coq) -/
-theorem anon_001_sender_anonymity : ∀ (sender_set : AnonymitySet) (k : nat), k_anonymous sender_set k → length sender_set ≥ k := by
+theorem anon_001_sender_anonymity : ∀ (sender_set : AnonymitySet) (k : Nat), k_anonymous sender_set k → length sender_set ≥ k := by
   intro h; exact h
 
 /-- anon_002_receiver_anonymity (matches Coq) -/
-theorem anon_002_receiver_anonymity : ∀ (receiver_set : AnonymitySet) (k : nat), k_anonymous receiver_set k → length receiver_set ≥ k := by
+theorem anon_002_receiver_anonymity : ∀ (receiver_set : AnonymitySet) (k : Nat), k_anonymous receiver_set k → length receiver_set ≥ k := by
   intro h; exact h
 
 /-- anon_003_layers_match_path (matches Coq) -/
@@ -138,7 +138,7 @@ theorem anon_004_min_path_length : ∀ (circuit : Circuit), length (circuit_path
   intro h; exact h
 
 /-- anon_005_entry_guard (matches Coq) -/
-theorem anon_005_entry_guard : ∀ (circuits : list Circuit) (guard : nat), entry_guard_fixed circuits guard → Forall (fun c => hd_error (circuit_path c) = Some guard) circuits := by
+theorem anon_005_entry_guard : ∀ (circuits : list Circuit) (guard : Nat), entry_guard_fixed circuits guard → Forall (fun c => hd_error (circuit_path c) = Some guard) circuits := by
   intro h; exact h
 
 /-- anon_006_exit_diversity (matches Coq) -/
@@ -146,7 +146,7 @@ theorem anon_006_exit_diversity : ∀ (circuits : list Circuit), exit_diverse ci
   intro h; exact h
 
 /-- anon_007_layer_order (matches Coq) -/
-theorem anon_007_layer_order : ∀ (msg : OnionMessage) (n : nat), n < length (onion_layers msg) → n < length (onion_layers msg) := by
+theorem anon_007_layer_order : ∀ (msg : OnionMessage) (n : Nat), n < length (onion_layers msg) → n < length (onion_layers msg) := by
   intro h; exact h
 
 /-- anon_008_unique_keys (matches Coq) -/
@@ -158,19 +158,19 @@ theorem anon_009_nonce_unique : ∀ (messages : list OnionMessage), nonces_uniqu
   intro h; exact h
 
 /-- anon_010_unlinkability (matches Coq) -/
-theorem anon_010_unlinkability : ∀ (sender receiver : nat) (obs : Observation), unlinkable sender receiver obs → unlinkable sender receiver obs := by
+theorem anon_010_unlinkability : ∀ (sender receiver : Nat) (obs : Observation), unlinkable sender receiver obs → unlinkable sender receiver obs := by
   intro h; exact h
 
 /-- anon_011_no_sender_in_obs (matches Coq) -/
-theorem anon_011_no_sender_in_obs : ∀ (obs : Observation) (sender : nat), obs_entry_node obs ≠ sender → obs_entry_node obs ≠ sender := by
+theorem anon_011_no_sender_in_obs : ∀ (obs : Observation) (sender : Nat), obs_entry_node obs ≠ sender → obs_entry_node obs ≠ sender := by
   intro h; exact h
 
 /-- anon_012_no_receiver_in_obs (matches Coq) -/
-theorem anon_012_no_receiver_in_obs : ∀ (obs : Observation) (receiver : nat), obs_exit_node obs ≠ receiver → obs_exit_node obs ≠ receiver := by
+theorem anon_012_no_receiver_in_obs : ∀ (obs : Observation) (receiver : Nat), obs_exit_node obs ≠ receiver → obs_exit_node obs ≠ receiver := by
   intro h; exact h
 
 /-- anon_013_compromise_bounded (matches Coq) -/
-theorem anon_013_compromise_bounded : ∀ (adv : Adversary) (max_compromise : nat), length (adv_compromised_nodes adv) < max_compromise → length (adv_compromised_nodes adv) < max_compromise := by
+theorem anon_013_compromise_bounded : ∀ (adv : Adversary) (max_compromise : Nat), length (adv_compromised_nodes adv) < max_compromise → length (adv_compromised_nodes adv) < max_compromise := by
   intro h; exact h
 
 /-- anon_014_path_safe (matches Coq) -/
@@ -178,35 +178,35 @@ theorem anon_014_path_safe : ∀ (path compromised : list nat), path_avoids path
   intro h; exact h
 
 /-- anon_015_pseudonym_rotation (matches Coq) -/
-theorem anon_015_pseudonym_rotation : ∀ (old_pseudo new_pseudo : nat), pseudonyms_rotated old_pseudo new_pseudo → old_pseudo ≠ new_pseudo := by
+theorem anon_015_pseudonym_rotation : ∀ (old_pseudo new_pseudo : Nat), pseudonyms_rotated old_pseudo new_pseudo → old_pseudo ≠ new_pseudo := by
   intro h; exact h
 
 /-- anon_016_circuit_lifetime (matches Coq) -/
-theorem anon_016_circuit_lifetime : ∀ (created current max_age : nat), circuit_fresh created current max_age → current - created ≤ max_age := by
+theorem anon_016_circuit_lifetime : ∀ (created current max_age : Nat), circuit_fresh created current max_age → current - created ≤ max_age := by
   intro h; exact h
 
 /-- anon_017_constant_traffic (matches Coq) -/
-theorem anon_017_constant_traffic : ∀ (intervals : list nat) (target : nat), constant_traffic intervals target → Forall (fun i => i = target) intervals := by
+theorem anon_017_constant_traffic : ∀ (intervals : list nat) (target : Nat), constant_traffic intervals target → Forall (fun i => i = target) intervals := by
   intro h; exact h
 
 /-- anon_018_uniform_size (matches Coq) -/
-theorem anon_018_uniform_size : ∀ (sizes : list nat) (target : nat), sizes_uniform sizes target → Forall (fun s => s = target) sizes := by
+theorem anon_018_uniform_size : ∀ (sizes : list nat) (target : Nat), sizes_uniform sizes target → Forall (fun s => s = target) sizes := by
   intro h; exact h
 
 /-- anon_019_forward_secrecy (matches Coq) -/
-theorem anon_019_forward_secrecy : ∀ (session_key long_term_key : nat), forward_secret session_key long_term_key → session_key ≠ long_term_key := by
+theorem anon_019_forward_secrecy : ∀ (session_key long_term_key : Nat), forward_secret session_key long_term_key → session_key ≠ long_term_key := by
   intro h; exact h
 
 /-- anon_020_intersection_resistance (matches Coq) -/
-theorem anon_020_intersection_resistance : ∀ (observations required : nat), intersection_resistant observations required → required > observations := by
+theorem anon_020_intersection_resistance : ∀ (observations required : Nat), intersection_resistant observations required → required > observations := by
   intro h; exact h
 
 /-- anon_021_rendezvous_hidden (matches Coq) -/
-theorem anon_021_rendezvous_hidden : ∀ (rp_id : nat) (observer_known : list nat), ~ In rp_id observer_known → ~ In rp_id observer_known := by
+theorem anon_021_rendezvous_hidden : ∀ (rp_id : Nat) (observer_known : list nat), ~ In rp_id observer_known → ~ In rp_id observer_known := by
   intro h; exact h
 
 /-- anon_022_bidirectional (matches Coq) -/
-theorem anon_022_bidirectional : ∀ (sender receiver : nat) (sender_set receiver_set : AnonymitySet), k_anonymous sender_set 2 → k_anonymous receiver_set 2 → length sender_set ≥ 2 ∧ length receiver_set ≥ 2 := by
+theorem anon_022_bidirectional : ∀ (sender receiver : Nat) (sender_set receiver_set : AnonymitySet), k_anonymous sender_set 2 → k_anonymous receiver_set 2 → length sender_set ≥ 2 ∧ length receiver_set ≥ 2 := by
   intro h; exact h
 
 /-- anon_023_no_spof (matches Coq) -/
@@ -214,7 +214,7 @@ theorem anon_023_no_spof : ∀ (path : list nat), length path ≥ 3 → length p
   intro h; exact h
 
 /-- anon_024_replay_prevention (matches Coq) -/
-theorem anon_024_replay_prevention : ∀ (seen : list nat) (nonce : nat), ~ In nonce seen → ~ In nonce seen := by
+theorem anon_024_replay_prevention : ∀ (seen : list nat) (nonce : Nat), ~ In nonce seen → ~ In nonce seen := by
   intro h; exact h
 
 /-- anon_025_defense_in_depth (matches Coq) -/

@@ -311,73 +311,73 @@ def label_leq := sorry -- complex match, needs manual translation
 
 /-- valid_security_context (matches Coq: Definition valid_security_context) -/
 def valid_security_context (ctx : SecurityContext) : Bool :=
-  label_leq (ctx_current_label ctx) (ctx_clearance ctx)
+  label_leq (ctx.ctx_current_label) (ctx.ctx_clearance)
 
 /-- adv_compliant (matches Coq: Definition adv_compliant) -/
 def adv_compliant (adv : DevelopmentAssurance) : Bool :=
-  adv_arc_complete adv &&
-  adv_arc_modular adv &&
-  adv_arc_non_bypassable adv &&
-  adv_arc_tamper_proof adv &&
-  adv_arc_domain_sep adv &&
-  adv_fsp_complete adv &&
-  adv_fsp_accurate adv &&
-  adv_imp_complete adv &&
-  adv_imp_verified adv &&  
-  adv_int_modular adv &&
-  adv_int_layered adv &&
-  adv_int_minimal adv &&
-  adv_tds_semiformal adv &&
-  adv_tds_formal adv
+  adv.adv_arc_complete &&
+  adv.adv_arc_modular &&
+  adv.adv_arc_non_bypassable &&
+  adv.adv_arc_tamper_proof &&
+  adv.adv_arc_domain_sep &&
+  adv.adv_fsp_complete &&
+  adv.adv_fsp_accurate &&
+  adv.adv_imp_complete &&
+  adv.adv_imp_verified &&  
+  adv.adv_int_modular &&
+  adv.adv_int_layered &&
+  adv.adv_int_minimal &&
+  adv.adv_tds_semiformal &&
+  adv.adv_tds_formal
 
 /-- agd_compliant (matches Coq: Definition agd_compliant) -/
 def agd_compliant (agd : GuidanceAssurance) : Bool :=
-  agd_ope_complete agd && agd_pre_complete agd
+  agd.agd_ope_complete && agd.agd_pre_complete
 
 /-- alc_compliant (matches Coq: Definition alc_compliant) -/
 def alc_compliant (alc : LifecycleAssurance) : Bool :=
-  alc_cmc_automated alc &&
-  alc_cmc_coverage alc &&
-  alc_cms_tracking alc &&
-  alc_del_secure alc &&
-  alc_dvs_sufficient alc &&
-  alc_flaw_systematic alc &&
-  alc_lcd_defined alc &&
-  alc_tat_compliance alc
+  alc.alc_cmc_automated &&
+  alc.alc_cmc_coverage &&
+  alc.alc_cms_tracking &&
+  alc.alc_del_secure &&
+  alc.alc_dvs_sufficient &&
+  alc.alc_flaw_systematic &&
+  alc.alc_lcd_defined &&
+  alc.alc_tat_compliance
 
 /-- ase_compliant (matches Coq: Definition ase_compliant) -/
 def ase_compliant (ase : SecurityTargetAssurance) : Bool :=
-  ase_ccl_conformant ase &&
-  ase_ecd_complete ase &&
-  ase_int_complete ase &&
-  ase_obj_complete ase &&
-  ase_req_complete ase &&
-  ase_spd_complete ase &&
-  ase_tss_complete ase
+  ase.ase_ccl_conformant &&
+  ase.ase_ecd_complete &&
+  ase.ase_int_complete &&
+  ase.ase_obj_complete &&
+  ase.ase_req_complete &&
+  ase.ase_spd_complete &&
+  ase.ase_tss_complete
 
 /-- ate_compliant (matches Coq: Definition ate_compliant) -/
 def ate_compliant (ate : TestAssurance) : Bool :=
-  ate_cov_complete ate &&
-  ate_dpt_sufficient ate &&
-  ate_fun_complete ate &&
-  ate_ind_performed ate
+  ate.ate_cov_complete &&
+  ate.ate_dpt_sufficient &&
+  ate.ate_fun_complete &&
+  ate.ate_ind_performed
 
 /-- ava_compliant (matches Coq: Definition ava_compliant) -/
 def ava_compliant (ava : VulnerabilityAssurance) : Bool :=
-  ava_van_basic ava &&
-  ava_van_focused ava &&
-  ava_van_methodical ava &&
-  ava_van_advanced ava &&
-  ava_van_high_attack ava
+  ava.ava_van_basic &&
+  ava.ava_van_focused &&
+  ava.ava_van_methodical &&
+  ava.ava_van_advanced &&
+  ava.ava_van_high_attack
 
 /-- eal7_compliant (matches Coq: Definition eal7_compliant) -/
 def eal7_compliant (pkg : EAL7Package) : Bool :=
-  adv_compliant (eal7_adv pkg) &&
-  agd_compliant (eal7_agd pkg) &&
-  alc_compliant (eal7_alc pkg) &&
-  ase_compliant (eal7_ase pkg) &&
-  ate_compliant (eal7_ate pkg) &&
-  ava_compliant (eal7_ava pkg)
+  adv_compliant (pkg.eal7_adv) &&
+  agd_compliant (pkg.eal7_agd) &&
+  alc_compliant (pkg.eal7_alc) &&
+  ase_compliant (pkg.eal7_ase) &&
+  ate_compliant (pkg.eal7_ate) &&
+  ava_compliant (pkg.eal7_ava)
 
 /-- no_write_down (matches Coq: Definition no_write_down) -/
 def no_write_down (src_label dst_label : SecurityLabel) : Bool :=
@@ -422,27 +422,27 @@ def mk_compliant_eal7 : EAL7Package := mkEAL7
 /-- has_audit (matches Coq: Definition has_audit) -/
 def has_audit (classes : List SecurityClass) : Bool :=
   match c with
-  | ._ => false
+  | _ => false
 
 /-- has_crypto_key_mgmt (matches Coq: Definition has_crypto_key_mgmt) -/
 def has_crypto_key_mgmt (classes : List SecurityClass) : Bool :=
   match c with
-  | ._ => false
+  | _ => false
 
 /-- has_ifc (matches Coq: Definition has_ifc) -/
 def has_ifc (classes : List SecurityClass) : Bool :=
   match c with
-  | ._ => false
+  | _ => false
 
 /-- has_domain_sep (matches Coq: Definition has_domain_sep) -/
 def has_domain_sep (classes : List SecurityClass) : Bool :=
   match c with
-  | ._ => false
+  | _ => false
 
 /-- has_authentication (matches Coq: Definition has_authentication) -/
 def has_authentication (classes : List SecurityClass) : Bool :=
   match c with
-  | ._ => false
+  | _ => false
 
 /-- riina_spm (matches Coq: Definition riina_spm) -/
 def riina_spm : SecurityPolicyModel := mkSPM
@@ -515,7 +515,7 @@ theorem CC_011_compliant_adv_valid : adv_compliant mk_compliant_adv = true := by
 
 /-- Helper to extract boolean conjunction components -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- CC_012: Architecture Completeness Required for EAL7 -/
@@ -590,7 +590,7 @@ theorem CC_025_eal7_implies_high_attack_resistance : ∀ pkg : EAL7Package, eal7
 
 /-- Helper for existsb proofs -/
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
 /-- CC_026: Audit Generation Verifiable -/

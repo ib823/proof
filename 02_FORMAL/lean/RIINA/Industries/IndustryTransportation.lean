@@ -149,9 +149,9 @@ def asil_sum (a1 a2 : ASIL) : Nat :=
 
 /-- iso26262_full (matches Coq: Definition iso26262_full) -/
 def iso26262_full (c : ISO26262_Compliance) : Bool :=
-  hazard_analysis c && system_design c && hardware_design c &&
-  software_design c && production c && supporting_processes c &&
-  asil_decomposition c && cybersecurity_interface c
+  c.hazard_analysis && c.system_design && c.hardware_design &&
+  c.software_design && c.production && c.supporting_processes &&
+  c.asil_decomposition && c.cybersecurity_interface
 
 /-- tolerable_hazard_rate_per_hour (matches Coq: Definition tolerable_hazard_rate_per_hour) -/
 def tolerable_hazard_rate_per_hour (s : SIL) : Nat :=
@@ -179,25 +179,25 @@ theorem iso_26262_compliance : ∀ (compliance : ISO26262_Compliance) (asil : AS
 /-- Section H02 - ISO/SAE 21434 Cybersecurity
     Reference: IND_H_TRANSPORTATION.md Section 3.2 -/
 /-- iso_21434_cybersecurity (matches Coq) -/
-theorem iso_21434_cybersecurity : ∀ (vehicle : nat) (system : nat),  True := by
+theorem iso_21434_cybersecurity : ∀ (vehicle : Nat) (system : Nat),  True := by
   trivial
 
 /-- Section H03 - UNECE R155
     Reference: IND_H_TRANSPORTATION.md Section 3.3 -/
 /-- unece_r155_compliance (matches Coq) -/
-theorem unece_r155_compliance : ∀ (vehicle_type : nat),  True := by
+theorem unece_r155_compliance : ∀ (vehicle_type : Nat),  True := by
   trivial
 
 /-- Section H04 - EN 50128 Railway Software
     Reference: IND_H_TRANSPORTATION.md Section 3.4 -/
 /-- en_50128_compliance (matches Coq) -/
-theorem en_50128_compliance : ∀ (railway_software : nat) (sil : SIL),  True := by
+theorem en_50128_compliance : ∀ (railway_software : Nat) (sil : SIL),  True := by
   trivial
 
 /-- Section H05 - Maritime Cyber
     Reference: IND_H_TRANSPORTATION.md Section 3.5 -/
 /-- imo_maritime_cyber (matches Coq) -/
-theorem imo_maritime_cyber : ∀ (vessel : nat),  True := by
+theorem imo_maritime_cyber : ∀ (vessel : Nat),  True := by
   trivial
 
 /-- ASIL D requires highest rigor -/
@@ -227,7 +227,7 @@ theorem sil_le_refl : ∀ s, sil_le s s = true := by
   omega
 
 /-- asil_d_full_coverage (matches Coq) -/
-theorem asil_d_full_coverage : asil_test_coverage_pct ASIL_D = 100 := by
+theorem asil_d_full_coverage : asil_test_coverage_pct .aSIL_D = 100 := by
   rfl
 
 /-- asil_coverage_monotone (matches Coq) -/
@@ -255,7 +255,7 @@ theorem full_requires_cyber_interface : ∀ c, iso26262_full c = true → cybers
   simp_all [Bool.and_eq_true]
 
 /-- sil4_zero_tolerable_hazard (matches Coq) -/
-theorem sil4_zero_tolerable_hazard : tolerable_hazard_rate_per_hour SIL_4 = 0 := by
+theorem sil4_zero_tolerable_hazard : tolerable_hazard_rate_per_hour .sIL_4 = 0 := by
   rfl
 
 /-- hazard_rate_decreasing (matches Coq) -/

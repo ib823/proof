@@ -96,7 +96,7 @@ structure BootChainState where
   deriving DecidableEq, Repr
 
 /-- initial_boot_state (matches Coq: Definition initial_boot_state) -/
-def initial_boot_state : BootChainState := mkBootChainState [HardwareRoot] HardwareRoot [] [] false
+def initial_boot_state : BootChainState := mkBootChainState [.hardwareRoot] .hardwareRoot [] [] false
 
 /-- previous_stage (matches Coq: Definition previous_stage) -/
 def previous_stage (stage : BootStageId) : BootStageId :=
@@ -109,7 +109,7 @@ def previous_stage (stage : BootStageId) : BootStageId :=
 
 /-- stage_verified (matches Coq: Definition stage_verified) -/
 def stage_verified (st : BootChainState) (stage : BootStageId) : Bool :=
-  existsb (fun s => if stage_eq_dec s stage then true else false) (verified_stages st)
+  existsb (fun s => if stage_eq_dec s stage then true else false) (st.verified_stages)
 
 /-- verify_image (matches Coq: Definition verify_image) -/
 def verify_image := sorry -- complex match, needs manual translation
@@ -122,10 +122,10 @@ def boot_stage := sorry -- complex match, needs manual translation
 
 /-- complete_boot (matches Coq: Definition complete_boot) -/
 def complete_boot (st : BootChainState) : BootChainState := mkBootChainState
-    (verified_stages st)
-    (current_stage st)
-    (expected_hashes st)
-    (minimum_versions st)
+    (st.verified_stages)
+    (st.current_stage)
+    (st.expected_hashes)
+    (st.minimum_versions)
     true
 
 /-- stage_boots (matches Coq: Definition stage_boots) -/
@@ -157,7 +157,7 @@ theorem failed_verification_no_boot : ∀ (st : BootChainState) (img : BootImage
   rfl
 
 /-- hardware_root_verified (matches Coq) -/
-theorem hardware_root_verified : stage_verified initial_boot_state HardwareRoot = true := by
+theorem hardware_root_verified : stage_verified initial_boot_state .hardwareRoot = true := by
   cases ‹_› <;> simp
 
 /-- boot_requires_verification (matches Coq) -/
@@ -173,14 +173,14 @@ theorem verification_preserves_previous : ∀ (st : BootChainState) (img : BootI
 theorem each_stage_verifies_next : ∀ (st : BootChainState) (img : BootImage), boot_stage st img ≠ st → can_boot st img := by
   rfl
 
-/-- Root of trust is immutable: initial state always has HardwareRoot -/
+/-- Root of trust is immutable: initial state always has .hardwareRoot -/
 /-- root_of_trust_immutable (matches Coq) -/
-theorem root_of_trust_immutable : In HardwareRoot (verified_stages initial_boot_state) := by
+theorem root_of_trust_immutable : In .hardwareRoot (verified_stages initial_boot_state) := by
   simp
 
 /-- Firmware rollback prevented: version check rejects old images when hash matches -/
 /-- firmware_rollback_prevented (matches Coq) -/
-theorem firmware_rollback_prevented : ∀ (st : BootChainState) (img : BootImage) (expected : nat) (min_ver : nat), get_expected_hash st (image_stage img) = Some expected → image_hash img = expected → get_minimum_version st (image_stage img) = Some min_ver → image_version img < min_ver → verify_image st img = VersionRollback := by
+theorem firmware_rollback_prevented : ∀ (st : BootChainState) (img : BootImage) (expected : Nat) (min_ver : Nat), get_expected_hash st (image_stage img) = Some expected → image_hash img = expected → get_minimum_version st (image_stage img) = Some min_ver → image_version img < min_ver → verify_image st img = VersionRollback := by
   cases ‹_› <;> simp <;> omega
 
 /-- Boot log is tamper proof: verified_stages only grows -/
@@ -190,12 +190,12 @@ theorem boot_log_only_grows : ∀ (st : BootChainState) (img : BootImage) (s : B
 
 /-- Secure boot key protected: hash mismatch detected -/
 /-- hash_mismatch_detected (matches Coq) -/
-theorem hash_mismatch_detected : ∀ (st : BootChainState) (img : BootImage) (expected : nat), get_expected_hash st (image_stage img) = Some expected → image_hash img ≠ expected → verify_image st img = HashMismatch := by
+theorem hash_mismatch_detected : ∀ (st : BootChainState) (img : BootImage) (expected : Nat), get_expected_hash st (image_stage img) = Some expected → image_hash img ≠ expected → verify_image st img = HashMismatch := by
   rfl
 
 /-- Recovery mode authenticated: hash match required -/
 /-- recovery_mode_requires_hash (matches Coq) -/
-theorem recovery_mode_requires_hash : ∀ (st : BootChainState) (img : BootImage) (expected : nat), get_expected_hash st (image_stage img) = Some expected → can_boot st img → image_hash img = expected := by
+theorem recovery_mode_requires_hash : ∀ (st : BootChainState) (img : BootImage) (expected : Nat), get_expected_hash st (image_stage img) = Some expected → can_boot st img → image_hash img = expected := by
   simp_all [Bool.and_eq_true]
 
 /-- Boot time is bounded: boot_stage is deterministic -/
@@ -205,34 +205,34 @@ theorem boot_stage_deterministic : ∀ (st : BootChainState) (img : BootImage), 
 
 /-- Config table validated: versions are checked when hash matches -/
 /-- config_table_validated (matches Coq) -/
-theorem config_table_validated : ∀ (st : BootChainState) (img : BootImage) (expected : nat) (min_ver : nat), get_expected_hash st (image_stage img) = Some expected → get_minimum_version st (image_stage img) = Some min_ver → can_boot st img → min_ver ≤ image_version img := by
+theorem config_table_validated : ∀ (st : BootChainState) (img : BootImage) (expected : Nat) (min_ver : Nat), get_expected_hash st (image_stage img) = Some expected → get_minimum_version st (image_stage img) = Some min_ver → can_boot st img → min_ver ≤ image_version img := by
   simp_all [Bool.and_eq_true]
 
-/-- Kernel signature checked: correct hash passes verification -/
+/-- .kernel signature checked: correct hash passes verification -/
 /-- kernel_signature_checked (matches Coq) -/
 theorem kernel_signature_checked : ∀ (st : BootChainState) (img : BootImage), get_expected_hash st (image_stage img) = Some (image_hash img) → get_minimum_version st (image_stage img) = None → verify_image st img = Verified := by
   rfl
 
 /-- Boot stage order is preserved by previous_stage function -/
 /-- bootloader_follows_root (matches Coq) -/
-theorem bootloader_follows_root : previous_stage Bootloader = HardwareRoot := by
+theorem bootloader_follows_root : previous_stage .bootloader = HardwareRoot := by
   rfl
 
 /-- second_stage_follows_bootloader (matches Coq) -/
-theorem second_stage_follows_bootloader : previous_stage SecondStage = Bootloader := by
+theorem second_stage_follows_bootloader : previous_stage .secondStage = Bootloader := by
   rfl
 
 /-- kernel_follows_second_stage (matches Coq) -/
-theorem kernel_follows_second_stage : previous_stage Kernel = SecondStage := by
+theorem kernel_follows_second_stage : previous_stage .kernel = SecondStage := by
   rfl
 
 /-- initramfs_follows_kernel (matches Coq) -/
-theorem initramfs_follows_kernel : previous_stage InitRamFS = Kernel := by
+theorem initramfs_follows_kernel : previous_stage .initRamFS = Kernel := by
   rfl
 
 /-- Hardware root is self-referential -/
 /-- hardware_root_self_previous (matches Coq) -/
-theorem hardware_root_self_previous : previous_stage HardwareRoot = HardwareRoot := by
+theorem hardware_root_self_previous : previous_stage .hardwareRoot = HardwareRoot := by
   rfl
 
 /-- Complete boot sets success flag -/

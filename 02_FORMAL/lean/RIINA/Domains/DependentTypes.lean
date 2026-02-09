@@ -67,55 +67,55 @@ inductive DTerm where
   deriving DecidableEq, Repr
 
 /-- TYPE_005_01 (matches Coq) -/
-theorem TYPE_005_01 : ∀ (ctx : DCtx) (A : DTy 0) (B : nat → DTy 0), WfTy ctx A → (∀ n, WfTy (A :: ctx) (B n)) → WfTy ctx (DPi 0 A B) := by
+theorem TYPE_005_01 : ∀ (ctx : DCtx) (A : DTy 0) (B : Nat → DTy 0), WfTy ctx A → (∀ n, WfTy (A :: ctx) (B n)) → WfTy ctx (DPi 0 A B) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_02 (matches Coq) -/
-theorem TYPE_005_02 : ∀ (ctx : DCtx) (A : DTy 0) (B : nat → DTy 0) (b : DTerm), WfTy ctx A → (∀ n, HasType (A :: ctx) b (B n)) → HasType ctx (DLam A b) (DPi 0 A B) := by
+theorem TYPE_005_02 : ∀ (ctx : DCtx) (A : DTy 0) (B : Nat → DTy 0) (b : DTerm), WfTy ctx A → (∀ n, HasType (A :: ctx) b (B n)) → HasType ctx (DLam A b) (DPi 0 A B) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_03 (matches Coq) -/
-theorem TYPE_005_03 : ∀ (ctx : DCtx) (f a : DTerm) (A : DTy 0) (B : nat → DTy 0) (v : nat), HasType ctx f (DPi 0 A B) → HasType ctx a A → HasType ctx (DApp f a) (B v) := by
+theorem TYPE_005_03 : ∀ (ctx : DCtx) (f a : DTerm) (A : DTy 0) (B : Nat → DTy 0) (v : Nat), HasType ctx f (DPi 0 A B) → HasType ctx a A → HasType ctx (DApp f a) (B v) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_04 (matches Coq) -/
-theorem TYPE_005_04 : ∀ (ctx : DCtx) (A : DTy 0) (B : nat → DTy 0), WfTy ctx A → (∀ n, WfTy (A :: ctx) (B n)) → WfTy ctx (DSigma 0 A B) := by
+theorem TYPE_005_04 : ∀ (ctx : DCtx) (A : DTy 0) (B : Nat → DTy 0), WfTy ctx A → (∀ n, WfTy (A :: ctx) (B n)) → WfTy ctx (DSigma 0 A B) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_05 (matches Coq) -/
-theorem TYPE_005_05 : ∀ (ctx : DCtx) (a b : DTerm) (A : DTy 0) (B : nat → DTy 0) (v : nat), HasType ctx a A → HasType ctx b (B v) → WfTy ctx (DSigma 0 A B) → HasType ctx (DPair a b) (DSigma 0 A B) := by
+theorem TYPE_005_05 : ∀ (ctx : DCtx) (a b : DTerm) (A : DTy 0) (B : Nat → DTy 0) (v : Nat), HasType ctx a A → HasType ctx b (B v) → WfTy ctx (DSigma 0 A B) → HasType ctx (DPair a b) (DSigma 0 A B) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_06 (matches Coq) -/
-theorem TYPE_005_06 : ∀ (ctx : DCtx) (p : DTerm) (A : DTy 0) (B : nat → DTy 0), HasType ctx p (DSigma 0 A B) → HasType ctx (DFst p) A ∧ ∀ v, HasType ctx (DSnd p) (B v) := by
+theorem TYPE_005_06 : ∀ (ctx : DCtx) (p : DTerm) (A : DTy 0) (B : Nat → DTy 0), HasType ctx p (DSigma 0 A B) → HasType ctx (DFst p) A ∧ ∀ v, HasType ctx (DSnd p) (B v) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_07 (matches Coq) -/
-theorem TYPE_005_07 : ∀ (ctx : DCtx) (A : DTy 0) (n : nat), WfTy ctx A → WfTy ctx (DVec 0 A n) := by
+theorem TYPE_005_07 : ∀ (ctx : DCtx) (A : DTy 0) (n : Nat), WfTy ctx A → WfTy ctx (DVec 0 A n) := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_08 (matches Coq) -/
-theorem TYPE_005_08 : ∀ (ctx : DCtx) (h t : DTerm) (A : DTy 0) (n : nat), HasType ctx h A → HasType ctx t (DVec 0 A n) → HasType ctx (DCons h t) (DVec 0 A (S n)) := by
+theorem TYPE_005_08 : ∀ (ctx : DCtx) (h t : DTerm) (A : DTy 0) (n : Nat), HasType ctx h A → HasType ctx t (DVec 0 A n) → HasType ctx (DCons h t) (DVec 0 A (S n)) := by
   simp_all [Bool.and_eq_true]
 
 /-- vec_cons_length_semantic (matches Coq) -/
-theorem vec_cons_length_semantic : ∀ (A : Type) (n : nat) (h : A) (t : Vec A n), Vector.cons A h n t = Vector.cons A h n t ∧ ∃ (v : Vec A (S n)), v = Vector.cons A h n t := by
+theorem vec_cons_length_semantic : ∀ (A : Type) (n : Nat) (h : A) (t : Vec A n), Vector.cons A h n t = Vector.cons A h n t ∧ ∃ (v : Vec A (S n)), v = Vector.cons A h n t := by
   rfl
 
 /-- TYPE_005_09 (matches Coq) -/
-theorem TYPE_005_09 : ∀ (ctx : DCtx) (v : DTerm) (A : DTy 0) (n : nat), HasType ctx v (DVec 0 A (S n)) → HasType ctx (DHead v) A := by
+theorem TYPE_005_09 : ∀ (ctx : DCtx) (v : DTerm) (A : DTy 0) (n : Nat), HasType ctx v (DVec 0 A (S n)) → HasType ctx (DHead v) A := by
   simp_all [Bool.and_eq_true]
 
 /-- vec_head_nonempty_semantic (matches Coq) -/
-theorem vec_head_nonempty_semantic : ∀ (A : Type) (n : nat) (v : Vec A (S n)), ∃ (h : A), Vector.hd v = h := by
+theorem vec_head_nonempty_semantic : ∀ (A : Type) (n : Nat) (v : Vec A (S n)), ∃ (h : A), Vector.hd v = h := by
   rfl
 
 /-- TYPE_005_10 (matches Coq) -/
-theorem TYPE_005_10 : ∀ (P : nat_motive) (base : P 0) (step : ∀ n, P n → P (S n)) (m : nat), ∃ (result : P m), result = nat_rect_dep P base step m := by
+theorem TYPE_005_10 : ∀ (P : nat_motive) (base : P 0) (step : ∀ n, P n → P (S n)) (m : Nat), ∃ (result : P m), result = nat_rect_dep P base step m := by
   rfl
 
 /-- vec_dep_pattern_match (matches Coq) -/
-theorem vec_dep_pattern_match : ∀ (A : Type) (P : ∀ n, Vec A n → Type) (base : P 0 (Vector.nil A)) (step : ∀ h n t, P n t → P (S n) (Vector.cons A h n t)) (n : nat) (v : Vec A n), ∃ (result : P n v), result = Vector.t_rect A P base (fun h n t IH => step h n t IH) n v := by
+theorem vec_dep_pattern_match : ∀ (A : Type) (P : ∀ n, Vec A n → Type) (base : P 0 (Vector.nil A)) (step : ∀ h n t, P n t → P (S n) (Vector.cons A h n t)) (n : Nat) (v : Vec A n), ∃ (result : P n v), result = Vector.t_rect A P base (fun h n t IH => step h n t IH) n v := by
   rfl
 
 /-- TYPE_005_11 (matches Coq) -/
@@ -155,11 +155,11 @@ theorem TYPE_005_13 : ∀ (A : Type) (R : A → A → Prop) (P : A → Type), we
   simp_all [Bool.and_eq_true]
 
 /-- nat_dep_ind (matches Coq) -/
-theorem nat_dep_ind : ∀ (P : nat → Type), P 0 → (∀ n, P n → P (S n)) → ∀ n, P n := by
+theorem nat_dep_ind : ∀ (P : Nat → Type), P 0 → (∀ n, P n → P (S n)) → ∀ n, P n := by
   simp_all [Bool.and_eq_true]
 
 /-- strong_ind (matches Coq) -/
-theorem strong_ind : ∀ (P : nat → Prop), (∀ n, (∀ m, m < n → P m) → P n) → ∀ n, P n := by
+theorem strong_ind : ∀ (P : Nat → Prop), (∀ n, (∀ m, m < n → P m) → P n) → ∀ n, P n := by
   simp_all [Bool.and_eq_true]
 
 /-- TYPE_005_14 (matches Coq) -/
@@ -167,11 +167,11 @@ theorem TYPE_005_14 : ∀ (A : Type), (∀ x y : A, {x = y} + {x ≠ y}) → ∀
   simp_all [Bool.and_eq_true]
 
 /-- dec_eq_nat (matches Coq) -/
-theorem dec_eq_nat : ∀ (x y : nat), Dec (x = y) := by
+theorem dec_eq_nat : ∀ (x y : Nat), Dec (x = y) := by
   simp_all [Bool.and_eq_true]
 
 /-- dec_eq_bool (matches Coq) -/
-theorem dec_eq_bool : ∀ (x y : bool), Dec (x = y) := by
+theorem dec_eq_bool : ∀ (x y : Bool), Dec (x = y) := by
   rfl
 
 /-- dec_eq_prod (matches Coq) -/
@@ -191,7 +191,7 @@ theorem dec_to_bool : ∀ (P : Prop), Dec P → {P} + {~P} := by
   intro h; exact h
 
 /-- nat_eq_reflect (matches Coq) -/
-theorem nat_eq_reflect : ∀ (x y : nat), Nat.eqb x y = true <-> x = y := by
+theorem nat_eq_reflect : ∀ (x y : Nat), Nat.eqb x y = true <-> x = y := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- uip_dec (matches Coq) -/

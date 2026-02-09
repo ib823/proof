@@ -122,7 +122,7 @@ theorem 5 : SFR satisfaction requires verification  Theorem sfr_needs_verificati
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : DAL_A is the highest level  Theorem dal_a_highest : ∀ d, dal_leq d DAL_A = true := by
+theorem 6 : .dAL_A is the highest level  Theorem dal_a_highest : ∀ d, dal_leq d .dAL_A = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
@@ -150,7 +150,7 @@ theorem 11 : Empty traceability is vacuously fully traced  Theorem empty_trace_f
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : DAL_E is the lowest level  Theorem dal_e_lowest : ∀ d, dal_leq DAL_E d = true := by
+theorem 12 : .dAL_E is the lowest level  Theorem dal_e_lowest : ∀ d, dal_leq .dAL_E d = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 13 (matches Coq) -/
@@ -178,7 +178,7 @@ theorem 18 : No self MC/DC means no decision flip  Theorem no_self_mcdc_no_flip 
   simp_all [Bool.and_eq_true]
 
 /-- 19 (matches Coq) -/
-theorem 19 : DAL_A strictly greater than DAL_B  Theorem dal_a_gt_b : dal_to_nat DAL_A > dal_to_nat DAL_B := by
+theorem 19 : .dAL_A strictly greater than .dAL_B  Theorem dal_a_gt_b : dal_to_nat .dAL_A > dal_to_nat DAL_B := by
   omega
 
 /-- 20 (matches Coq) -/

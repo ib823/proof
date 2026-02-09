@@ -82,11 +82,11 @@ def buffer_can_read (b : Buffer) (offset len : Nat) : Bool :=
 
 /-- overflow_protected (matches Coq: Definition overflow_protected) -/
 def overflow_protected (p : OverflowPrevention) : Bool :=
-  op_bounds_check_write p &&
-  op_bounds_check_read p &&
-  op_null_terminator_check p &&
-  op_integer_overflow_check p &&
-  op_stack_canaries p
+  p.op_bounds_check_write &&
+  p.op_bounds_check_read &&
+  p.op_null_terminator_check &&
+  p.op_integer_overflow_check &&
+  p.op_stack_canaries
 
 /-- riina_overflow_config (matches Coq: Definition riina_overflow_config) -/
 def riina_overflow_config : OverflowPrevention := mkOverflowPrev
@@ -96,7 +96,7 @@ def riina_overflow_config : OverflowPrevention := mkOverflowPrev
 def test_buffer : Buffer := mkBuffer 100 50
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- BOF_001: Test Buffer Valid -/
@@ -176,7 +176,7 @@ theorem BOF_015_complete_prevention : ∀ p : OverflowPrevention, overflow_prote
 
 /-- BOF_016: Write Cannot Exceed Buffer Size -/
 /-- BOF_016_write_bounded (matches Coq) -/
-theorem BOF_016_write_bounded : ∀ b n : nat, buffer_can_write (mkBuffer b 0) n = true → n ≤ b := by
+theorem BOF_016_write_bounded : ∀ b n : Nat, buffer_can_write (mkBuffer b 0) n = true → n ≤ b := by
   omega
 
 /-- BOF_017: Read Start Within Used -/
@@ -191,7 +191,7 @@ theorem BOF_018_zero_read_safe : ∀ b : Buffer, buffer_can_read b 0 0 = true :=
 
 /-- BOF_019: Full Buffer Cannot Write More -/
 /-- BOF_019_full_buffer_no_write (matches Coq) -/
-theorem BOF_019_full_buffer_no_write : ∀ sz : nat, buffer_can_write (mkBuffer sz sz) 1 = false := by
+theorem BOF_019_full_buffer_no_write : ∀ sz : Nat, buffer_can_write (mkBuffer sz sz) 1 = false := by
   omega
 
 /-- BOF_020: Null Terminator Check Required -/
@@ -201,7 +201,7 @@ theorem BOF_020_null_terminator_check : ∀ p : OverflowPrevention, overflow_pro
 
 /-- BOF_021: Valid Buffer After Write -/
 /-- BOF_021_valid_after_write (matches Coq) -/
-theorem BOF_021_valid_after_write : ∀ b n : nat, buffer_can_write (mkBuffer (b + n) b) n = true := by
+theorem BOF_021_valid_after_write : ∀ b n : Nat, buffer_can_write (mkBuffer (b + n) b) n = true := by
   omega
 
 end RIINA

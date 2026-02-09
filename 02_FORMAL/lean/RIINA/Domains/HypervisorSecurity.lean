@@ -265,36 +265,36 @@ structure HypervisorConfig where
 
 /-- vm_fully_isolated (matches Coq: Definition vm_fully_isolated) -/
 def vm_fully_isolated (v : VMIsolation) : Bool :=
-  vmi_memory_isolated v && vmi_cpu_isolated v &&
-  vmi_io_isolated v && vmi_interrupt_isolated v
+  v.vmi_memory_isolated && v.vmi_cpu_isolated &&
+  v.vmi_io_isolated && v.vmi_interrupt_isolated
 
 /-- side_channel_mitigated (matches Coq: Definition side_channel_mitigated) -/
 def side_channel_mitigated (s : SideChannelMitigation) : Bool :=
-  scm_flush_l1d s && scm_ibrs_enabled s && scm_ibpb_enabled s &&
-  scm_stibp_enabled s && scm_ssbd_enabled s && scm_mds_clear s
+  s.scm_flush_l1d && s.scm_ibrs_enabled && s.scm_ibpb_enabled &&
+  s.scm_stibp_enabled && s.scm_ssbd_enabled && s.scm_mds_clear
 
 /-- mem_virt_secure (matches Coq: Definition mem_virt_secure) -/
 def mem_virt_secure (m : MemVirtConfig) : Bool :=
-  mv_ept_enabled m && mv_vpid_enabled m && mv_accessed_dirty m
+  m.mv_ept_enabled && m.mv_vpid_enabled && m.mv_accessed_dirty
 
 /-- int_virt_secure (matches Coq: Definition int_virt_secure) -/
 def int_virt_secure (i : InterruptVirtConfig) : Bool :=
-  iv_apic_virtualization i && iv_interrupt_exit i && iv_nmi_exiting i
+  i.iv_apic_virtualization && i.iv_interrupt_exit && i.iv_nmi_exiting
 
 /-- world_switch_secure (matches Coq: Definition world_switch_secure) -/
 def world_switch_secure (w : WorldSwitchConfig) : Bool :=
-  ws_smc_filtering w && ws_ns_bit_control w && ws_secure_monitor w
+  w.ws_smc_filtering && w.ws_ns_bit_control && w.ws_secure_monitor
 
 /-- hv_secure (matches Coq: Definition hv_secure) -/
 def hv_secure (h : HypervisorConfig) : Bool :=
-  vm_fully_isolated (hv_isolation h) && hv_secure_boot h && hv_attestation h &&
-  hv_memory_encryption h && hv_nested_paging h && hv_iommu_enabled h &&
-  side_channel_mitigated (hv_side_channel h)
+  vm_fully_isolated (h.hv_isolation) && h.hv_secure_boot && h.hv_attestation &&
+  h.hv_memory_encryption && h.hv_nested_paging && h.hv_iommu_enabled &&
+  side_channel_mitigated (h.hv_side_channel)
 
 /-- hv_fully_secure (matches Coq: Definition hv_fully_secure) -/
 def hv_fully_secure (h : HypervisorConfig) : Bool :=
-  hv_secure h && mem_virt_secure (hv_mem_virt h) &&
-  int_virt_secure (hv_int_virt h) && world_switch_secure (hv_world_switch h)
+  hv_secure h && mem_virt_secure (h.hv_mem_virt) &&
+  int_virt_secure (h.hv_int_virt) && world_switch_secure (h.hv_world_switch)
 
 /-- riina_vm_isolation (matches Coq: Definition riina_vm_isolation) -/
 def riina_vm_isolation : VMIsolation := mkVMIsolation true true true true
@@ -319,19 +319,19 @@ def riina_hypervisor : HypervisorConfig := mkHypervisor riina_vm_isolation true 
     SECTION 1: CORE DEFINITIONS AND HELPERS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_true_intro (matches Coq) -/
-theorem andb_true_intro : ∀ a b : bool, a = true → b = true → a && b = true := by
+theorem andb_true_intro : ∀ a b : Bool, a = true → b = true → a && b = true := by
   rfl
 
 /-- andb_true_elim_l (matches Coq) -/
-theorem andb_true_elim_l : ∀ a b : bool, a && b = true → a = true := by
+theorem andb_true_elim_l : ∀ a b : Bool, a && b = true → a = true := by
   simp_all [Bool.and_eq_true]
 
 /-- andb_true_elim_r (matches Coq) -/
-theorem andb_true_elim_r : ∀ a b : bool, a && b = true → b = true := by
+theorem andb_true_elim_r : ∀ a b : Bool, a && b = true → b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- ============================================================================

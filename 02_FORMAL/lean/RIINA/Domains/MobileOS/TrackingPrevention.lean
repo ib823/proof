@@ -243,107 +243,107 @@ structure TrackingReport where
 
 /-- consent_scope_invariant (matches Coq: Definition consent_scope_invariant) -/
 def consent_scope_invariant (user : User) : Prop :=
-  (consent_scope user <> []) <-> (tracking_consent_given user = true)
+  (user.consent_scope <> []) <-> (user.tracking_consent_given = true)
 
 /-- explicit_consent (matches Coq: Definition explicit_consent) -/
 def explicit_consent (user : User) (app : Application) : Prop :=
-  tracking_consent_given user = true /\
-  In (app_id app) (consent_scope user)
+  user.tracking_consent_given = true /\
+  In (app.app_id) (user.consent_scope)
 
 /-- tracks (matches Coq: Definition tracks) -/
 def tracks (app : Application) (user : User) : Prop :=
-  tracking_enabled app = true /\
+  app.tracking_enabled = true /\
   explicit_consent user app
 
 /-- privacy_state_well_formed (matches Coq: Definition privacy_state_well_formed) -/
 def privacy_state_well_formed (ps : PrivacyState) : Prop :=
-  tracking_transparency_enabled ps = true /\
+  ps.tracking_transparency_enabled = true /\
   forall aid uid,
-    In (aid, uid) (approved_tracking ps) ->
-    In (aid, uid) (app_tracking_requests ps)
+    In (aid, uid) (ps.approved_tracking) ->
+    In (aid, uid) (ps.app_tracking_requests)
 
 /-- tracking_requested (matches Coq: Definition tracking_requested) -/
 def tracking_requested (ps : PrivacyState) (app : Application) (user : User) : Prop :=
-  In (app_id app, user_id user) (app_tracking_requests ps)
+  In (app.app_id, user.user_id) (ps.app_tracking_requests)
 
 /-- tracking_approved (matches Coq: Definition tracking_approved) -/
 def tracking_approved (ps : PrivacyState) (app : Application) (user : User) : Prop :=
-  In (app_id app, user_id user) (approved_tracking ps)
+  In (app.app_id, user.user_id) (ps.approved_tracking)
 
 /-- tracking_allowed (matches Coq: Definition tracking_allowed) -/
 def tracking_allowed (ps : PrivacyState) (app : Application) (user : User) : Bool :=
-  tracking_transparency_enabled ps &&
-  in_pair_list (app_id app) (user_id user) (approved_tracking ps)
+  ps.tracking_transparency_enabled &&
+  in_pair_list (app.app_id) (user.user_id) (ps.approved_tracking)
 
 /-- tracking_event_well_formed (matches Coq: Definition tracking_event_well_formed) -/
 def tracking_event_well_formed (event : TrackingEvent) : Prop :=
-  tracking_consent_given (tracked_user event) = false ->
-  tracking_data event = []
+  tracking_consent_given (event.tracked_user) = false ->
+  event.tracking_data = []
 
 /-- cross_site_tracking_blocked (matches Coq: Definition cross_site_tracking_blocked) -/
 def cross_site_tracking_blocked (csr : CrossSiteRequest) : Prop :=
-  csr_source_domain csr <> csr_target_domain csr ->
-  csr_has_tracking_params csr = true ->
-  csr_blocked csr = true
+  csr.csr_source_domain <> csr.csr_target_domain ->
+  csr.csr_has_tracking_params = true ->
+  csr.csr_blocked = true
 
 /-- fingerprinting_prevented (matches Coq: Definition fingerprinting_prevented) -/
 def fingerprinting_prevented (fa : FingerprintAttempt) : Prop :=
-  fp_entropy_bits fa > fp_max_allowed_bits fa ->
-  fp_prevented fa = true
+  fa.fp_entropy_bits > fa.fp_max_allowed_bits ->
+  fa.fp_prevented = true
 
 /-- third_party_cookies_blocked (matches Coq: Definition third_party_cookies_blocked) -/
 def third_party_cookies_blocked (cr : CookieRequest) : Prop :=
-  cookie_is_third_party cr = true -> cookie_blocked cr = true
+  cr.cookie_is_third_party = true -> cr.cookie_blocked = true
 
 /-- tracking_pixel_detected (matches Coq: Definition tracking_pixel_detected) -/
 def tracking_pixel_detected (rl : ResourceLoad) : Prop :=
-  res_is_tracking_pixel rl = true -> res_detected rl = true
+  rl.res_is_tracking_pixel = true -> rl.res_detected = true
 
 /-- advertising_id_resettable (matches Coq: Definition advertising_id_resettable) -/
 def advertising_id_resettable (aid : AdvertisingId) : Prop :=
-  ad_id_resettable aid = true
+  aid.ad_id_resettable = true
 
 /-- app_tracking_permission_required (matches Coq: Definition app_tracking_permission_required) -/
 def app_tracking_permission_required (atr : AppTrackingRequest) : Prop :=
-  atr_permission_granted atr = true -> atr_permission_asked atr = true
+  atr.atr_permission_granted = true -> atr.atr_permission_asked = true
 
 /-- link_decoration_stripped (matches Coq: Definition link_decoration_stripped) -/
 def link_decoration_stripped (ld : LinkDecoration) : Prop :=
-  ld_tracking_params ld <> [] -> ld_stripped ld = true
+  ld.ld_tracking_params <> [] -> ld.ld_stripped = true
 
 /-- bounce_tracking_prevented (matches Coq: Definition bounce_tracking_prevented) -/
 def bounce_tracking_prevented (bt : BounceTracking) : Prop :=
-  bt_bounce_detected bt = true -> bt_prevented bt = true
+  bt.bt_bounce_detected = true -> bt.bt_prevented = true
 
 /-- cname_cloaking_detected (matches Coq: Definition cname_cloaking_detected) -/
 def cname_cloaking_detected (cr : CNAMERecord) : Prop :=
-  cname_is_tracker cr = true -> cname_detected cr = true
+  cr.cname_is_tracker = true -> cr.cname_detected = true
 
 /-- storage_access_partitioned (matches Coq: Definition storage_access_partitioned) -/
 def storage_access_partitioned (sa : StorageAccess) : Prop :=
-  sa_origin sa <> sa_top_level_origin sa -> sa_partitioned sa = true
+  sa.sa_origin <> sa.sa_top_level_origin -> sa.sa_partitioned = true
 
 /-- referrer_policy_strict (matches Coq: Definition referrer_policy_strict) -/
 def referrer_policy_strict (rc : ReferrerConfig) : Prop :=
-  ref_is_strict rc = true /\
-  (ref_policy rc = NoReferrer \/ ref_policy rc = StrictOrigin)
+  rc.ref_is_strict = true /\
+  (rc.ref_policy = NoReferrer \/ rc.ref_policy = StrictOrigin)
 
 /-- ip_address_masked (matches Coq: Definition ip_address_masked) -/
 def ip_address_masked (nr : NetworkRequest) : Prop :=
-  nr_ip_masked nr = true \/ nr_uses_relay nr = true
+  nr.nr_ip_masked = true \/ nr.nr_uses_relay = true
 
 /-- device_graph_prevented (matches Coq: Definition device_graph_prevented) -/
 def device_graph_prevented (dg : DeviceGraphAttempt) : Prop :=
-  length (dg_identifiers_collected dg) > dg_max_identifiers dg ->
-  dg_prevented dg = true
+  length (dg.dg_identifiers_collected) > dg.dg_max_identifiers ->
+  dg.dg_prevented = true
 
 /-- tracker_list_updated (matches Coq: Definition tracker_list_updated) -/
 def tracker_list_updated (tl : TrackerList) : Prop :=
-  tl_last_updated tl > 0 /\ tl_entries tl <> []
+  tl.tl_last_updated > 0 /\ tl.tl_entries <> []
 
 /-- tracking_report_available (matches Coq: Definition tracking_report_available) -/
 def tracking_report_available (tr : TrackingReport) : Prop :=
-  tr_report_available tr = true
+  tr.tr_report_available = true
 
 /-- no_tracking_without_consent (matches Coq) -/
 theorem no_tracking_without_consent : ∀ (app : Application) (user : User), tracks app user → explicit_consent user app := by

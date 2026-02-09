@@ -177,7 +177,7 @@ theorem update_001_version_newer : ∀ (update : UpdatePackage) (sys : SystemSta
   intro h; exact h
 
 /-- update_002_sig_count (matches Coq) -/
-theorem update_002_sig_count : ∀ (update : UpdatePackage) (threshold : nat), signatures_sufficient update threshold = true → threshold ≤ length (update_signatures update) := by
+theorem update_002_sig_count : ∀ (update : UpdatePackage) (threshold : Nat), signatures_sufficient update threshold = true → threshold ≤ length (update_signatures update) := by
   simp_all [Bool.and_eq_true]
 
 /-- update_003_key_trusted (matches Coq) -/
@@ -193,11 +193,11 @@ theorem update_005_min_version : ∀ (update : UpdatePackage) (sys : SystemState
   intro h; exact h
 
 /-- update_006_hash_valid (matches Coq) -/
-theorem update_006_hash_valid : ∀ (computed stored : nat), hash_valid computed stored = true → computed = stored := by
+theorem update_006_hash_valid : ∀ (computed stored : Nat), hash_valid computed stored = true → computed = stored := by
   simp_all [Bool.and_eq_true]
 
 /-- update_007_atomic (matches Coq) -/
-theorem update_007_atomic : ∀ (started finished : bool), atomic_complete started finished = true → started = true → finished = true := by
+theorem update_007_atomic : ∀ (started finished : Bool), atomic_complete started finished = true → started = true → finished = true := by
   intro h; exact h
 
 /-- update_008_backup_exists (matches Coq) -/
@@ -213,11 +213,11 @@ theorem update_010_recovery_restores : ∀ (backup : Backup), backup_version bac
   rfl
 
 /-- update_011_threshold (matches Coq) -/
-theorem update_011_threshold : ∀ (valid_sigs threshold : nat), threshold_met valid_sigs threshold = true → threshold ≤ valid_sigs := by
+theorem update_011_threshold : ∀ (valid_sigs threshold : Nat), threshold_met valid_sigs threshold = true → threshold ≤ valid_sigs := by
   simp_all [Bool.and_eq_true]
 
 /-- update_012_sig_fresh (matches Coq) -/
-theorem update_012_sig_fresh : ∀ (sig : UpdateSignature) (current max_age : nat), sig_fresh sig current max_age = true → current - sig_timestamp sig ≤ max_age := by
+theorem update_012_sig_fresh : ∀ (sig : UpdateSignature) (current max_age : Nat), sig_fresh sig current max_age = true → current - sig_timestamp sig ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- update_013_different_keys (matches Coq) -/
@@ -225,47 +225,47 @@ theorem update_013_different_keys : ∀ (sigs : list UpdateSignature), keys_diff
   intro h; exact h
 
 /-- update_014_size_bounded (matches Coq) -/
-theorem update_014_size_bounded : ∀ (size max_size : nat), size_bounded size max_size = true → size ≤ max_size := by
+theorem update_014_size_bounded : ∀ (size max_size : Nat), size_bounded size max_size = true → size ≤ max_size := by
   simp_all [Bool.and_eq_true]
 
 /-- update_015_compatible (matches Coq) -/
-theorem update_015_compatible : ∀ (update_req sys_has : nat), compatible update_req sys_has = true → update_req ≤ sys_has := by
+theorem update_015_compatible : ∀ (update_req sys_has : Nat), compatible update_req sys_has = true → update_req ≤ sys_has := by
   simp_all [Bool.and_eq_true]
 
 /-- update_016_changelog (matches Coq) -/
-theorem update_016_changelog : ∀ (changelog_size : nat), changelog_present changelog_size = true → changelog_size > 0 := by
+theorem update_016_changelog : ∀ (changelog_size : Nat), changelog_present changelog_size = true → changelog_size > 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- update_017_not_expired (matches Coq) -/
-theorem update_017_not_expired : ∀ (current expiry : nat), not_expired current expiry = true → current < expiry := by
+theorem update_017_not_expired : ∀ (current expiry : Nat), not_expired current expiry = true → current < expiry := by
   simp_all [Bool.and_eq_true]
 
 /-- update_018_download_valid (matches Coq) -/
-theorem update_018_download_valid : ∀ (received expected : nat), download_valid received expected = true → received = expected := by
+theorem update_018_download_valid : ∀ (received expected : Nat), download_valid received expected = true → received = expected := by
   simp_all [Bool.and_eq_true]
 
 /-- update_019_secure_channel (matches Coq) -/
-theorem update_019_secure_channel : ∀ (tls_version min_version : nat), channel_secure tls_version min_version = true → min_version ≤ tls_version := by
+theorem update_019_secure_channel : ∀ (tls_version min_version : Nat), channel_secure tls_version min_version = true → min_version ≤ tls_version := by
   simp_all [Bool.and_eq_true]
 
 /-- update_020_rollout_pct (matches Coq) -/
-theorem update_020_rollout_pct : ∀ (percentage max_pct : nat), rollout_percentage_ok percentage max_pct = true → percentage ≤ max_pct := by
+theorem update_020_rollout_pct : ∀ (percentage max_pct : Nat), rollout_percentage_ok percentage max_pct = true → percentage ≤ max_pct := by
   simp_all [Bool.and_eq_true]
 
 /-- update_021_reboot (matches Coq) -/
-theorem update_021_reboot : ∀ (required handled : bool), reboot_handled required handled = true → required = true → handled = true := by
+theorem update_021_reboot : ∀ (required handled : Bool), reboot_handled required handled = true → required = true → handled = true := by
   intro h; exact h
 
 /-- update_022_post_verify (matches Coq) -/
-theorem update_022_post_verify : ∀ (passed : bool), post_verify_ok passed = true → passed = true := by
+theorem update_022_post_verify : ∀ (passed : Bool), post_verify_ok passed = true → passed = true := by
   intro h; exact h
 
 /-- update_023_audit (matches Coq) -/
-theorem update_023_audit : ∀ (event_count log_count : nat), audit_logged event_count log_count = true → event_count ≤ log_count := by
+theorem update_023_audit : ∀ (event_count log_count : Nat), audit_logged event_count log_count = true → event_count ≤ log_count := by
   simp_all [Bool.and_eq_true]
 
 /-- update_024_notification (matches Coq) -/
-theorem update_024_notification : ∀ (should_notify did_notify : bool), notification_sent should_notify did_notify = true → should_notify = true → did_notify = true := by
+theorem update_024_notification : ∀ (should_notify did_notify : Bool), notification_sent should_notify did_notify = true → should_notify = true → did_notify = true := by
   intro h; exact h
 
 /-- update_025_defense_in_depth (matches Coq) -/

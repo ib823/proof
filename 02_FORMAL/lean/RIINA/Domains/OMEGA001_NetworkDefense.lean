@@ -111,16 +111,16 @@ structure Connection where
 
 /-- tb_refill (matches Coq: Definition tb_refill) -/
 def tb_refill (tb : TokenBucket) (now : Nat) : TokenBucket :=
-  let elapsed := now - tb_last_refill tb in
+  let elapsed := now - tb.tb_last_refill in
   let new_tokens := Nat
 
 /-- tb_available (matches Coq: Definition tb_available) -/
 def tb_available (tb : TokenBucket) : Nat :=
-  tb_tokens tb
+  tb.tb_tokens
 
 /-- cap_valid (matches Coq: Definition cap_valid) -/
 def cap_valid (cap : NetCapability) (now : Nat) : Bool :=
-  now <? cap_expiry cap
+  now <? cap.cap_expiry
 
 /-- cap_permits (matches Coq: Definition cap_permits) -/
 def cap_permits (cap : NetCapability) (port : Nat) : Bool :=
@@ -136,8 +136,8 @@ def hmac_compute (key : Nat) (data : Nat) : Nat :=
 
 /-- syn_cookie_generate (matches Coq: Definition syn_cookie_generate) -/
 def syn_cookie_generate (secret : Nat) (cookie : SynCookie) : Nat :=
-  hmac_compute secret (sc_client_ip cookie + sc_client_port cookie +
-                       sc_server_port cookie + sc_timestamp cookie)
+  hmac_compute secret (cookie.sc_client_ip + cookie.sc_client_port +
+                       cookie.sc_server_port + cookie.sc_timestamp)
 
 /-- syn_cookie_verify (matches Coq: Definition syn_cookie_verify) -/
 def syn_cookie_verify (secret : Nat) (cookie : SynCookie) (mac : Nat) : Bool :=

@@ -411,20 +411,20 @@ def point_in_rect (p : Point) (r : Rect) : Bool :=
 
 /-- is_visible (matches Coq: Definition is_visible) -/
 def is_visible (e : UIElement) : Bool :=
-  andb (elem_visible e) (Nat
+  andb (e.elem_visible) (Nat
 
 /-- is_interactive (matches Coq: Definition is_interactive) -/
 def is_interactive (e : UIElement) : Bool :=
-  elem_interactive e
+  e.elem_interactive
 
 /-- element_well_formed (matches Coq: Definition element_well_formed) -/
 def element_well_formed (e : UIElement) : Prop :=
-  elem_interactive e = true -> 
-  (elem_visible e = true /\ elem_opacity e >= MIN_VISIBLE_OPACITY)
+  e.elem_interactive = true -> 
+  (e.elem_visible = true /\ e.elem_opacity >= MIN_VISIBLE_OPACITY)
 
 /-- verified_ui_state (matches Coq: Definition verified_ui_state) -/
 def verified_ui_state (ui : UIState) : Prop :=
-  Forall element_well_formed (ui_elements ui)
+  Forall element_well_formed (ui.ui_elements)
 
 /-- origin_eq (matches Coq: Definition origin_eq) -/
 def origin_eq (o1 o2 : Origin) : Bool :=
@@ -439,7 +439,7 @@ def frame_policy_allows (policy : FramePolicy) (parent : Origin) : Bool :=
 
 /-- frame_well_formed (matches Coq: Definition frame_well_formed) -/
 def frame_well_formed (frame : FrameState) : Prop :=
-  frame_policy frame = FrameDeny -> frame_parent_origin frame = None
+  frame.frame_policy = .frameDeny -> frame.frame_parent_origin = None
 
 /-- char_is_dangerous (matches Coq: Definition char_is_dangerous) -/
 def char_is_dangerous (c : Nat) : Bool :=
@@ -452,30 +452,30 @@ def char_is_sql_meta (c : Nat) : Bool :=
 /-- contains_script_tag (matches Coq: Definition contains_script_tag) -/
 def contains_script_tag (input : List Nat) : Bool :=
   match input with
-  | ._ => false
+  | _ => false
 
 /-- sanitize_input (matches Coq: Definition sanitize_input) -/
 def sanitize_input (field : InputField) : InputField :=
-  let cleaned := sanitize_chars (input_allowed field) (field_data field) in
-  let truncated := truncate (input_max_length field) cleaned in
-  mkInputField truncated (input_max_length field) (input_allowed field) true
+  let cleaned := sanitize_chars (field.input_allowed) (field.field_data) in
+  let truncated := truncate (field.input_max_length) cleaned in
+  mkInputField truncated (field.input_max_length) (field.input_allowed) true
 
 /-- input_is_safe (matches Coq: Definition input_is_safe) -/
 def input_is_safe (field : InputField) : Prop :=
-  Forall (fun c => input_allowed field c = true) (field_data field) /\
-  len (field_data field) <= input_max_length field
+  Forall (fun c => field.input_allowed c = true) (field.field_data) /\
+  len (field.field_data) <= field.input_max_length
 
 /-- focus_next (matches Coq: Definition focus_next) -/
 def focus_next := sorry -- complex match, needs manual translation
 
 /-- focus_valid (matches Coq: Definition focus_valid) -/
 def focus_valid (fs : FocusState) : Prop :=
-  tab_order fs <> [] ->
-  focused_element fs < len (tab_order fs)
+  fs.tab_order <> [] ->
+  fs.focused_element < len (fs.tab_order)
 
 /-- luminance (matches Coq: Definition luminance) -/
 def luminance (c : Color) : Nat :=
-  color_lum c
+  c.color_lum
 
 /-- luminance_max (matches Coq: Definition luminance_max) -/
 def luminance_max (c1 c2 : Color) : Nat :=
@@ -635,7 +635,7 @@ theorem UX_001_15_equal_option_presentation : ∀ dialog o1 o2, In o1 (dialog_op
   simp_all [Bool.and_eq_true]
 
 /-- firstn_length_le (matches Coq) -/
-theorem firstn_length_le : ∀ {A : Type} (n : nat) (l : list A), len (firstn n l) ≤ n := by
+theorem firstn_length_le : ∀ {A : Type} (n : Nat) (l : list A), len (firstn n l) ≤ n := by
   cases ‹_› <;> simp <;> omega
 
 /-- filter_all_true (matches Coq) -/
@@ -643,7 +643,7 @@ theorem filter_all_true : ∀ {A : Type} (f : A → bool) (l : list A), Forall (
   intro h; exact h
 
 /-- firstn_forall (matches Coq) -/
-theorem firstn_forall : ∀ {A : Type} (P : A → Prop) (n : nat) (l : list A), Forall P l → Forall P (firstn n l) := by
+theorem firstn_forall : ∀ {A : Type} (P : A → Prop) (n : Nat) (l : list A), Forall P l → Forall P (firstn n l) := by
   simp_all [Bool.and_eq_true]
 
 /-- filter_length_le (matches Coq) -/
@@ -651,7 +651,7 @@ theorem filter_length_le : ∀ {A : Type} (f : A → bool) (l : list A), len (fi
   cases ‹_› <;> simp <;> omega
 
 /-- firstn_length_le2 (matches Coq) -/
-theorem firstn_length_le2 : ∀ {A : Type} (n : nat) (l : list A), len (firstn n l) ≤ len l := by
+theorem firstn_length_le2 : ∀ {A : Type} (n : Nat) (l : list A), len (firstn n l) ≤ len l := by
   cases ‹_› <;> simp <;> omega
 
 /-- UX_002_01: Input Length Bounded
@@ -679,7 +679,7 @@ theorem filter_id_forall : ∀ {A : Type} (f : A → bool) (l : list A), Forall 
   rfl
 
 /-- firstn_all_le (matches Coq) -/
-theorem firstn_all_le : ∀ {A : Type} (n : nat) (l : list A), len l ≤ n → firstn n l = l := by
+theorem firstn_all_le : ∀ {A : Type} (n : Nat) (l : list A), len l ≤ n → firstn n l = l := by
   cases ‹_› <;> simp <;> omega
 
 /-- UX_002_04: Input Sanitization Idempotent
@@ -837,13 +837,13 @@ theorem UX_006_01_error_always_visible : ∀ ved, err_visible (ve_display ved) =
 /-- UX_006_02: Error Persists Until Acknowledged
     Critical errors do not auto-dismiss. -/
 /-- UX_006_02_error_persists_until_acknowledged (matches Coq) -/
-theorem UX_006_02_error_persists_until_acknowledged : ∀ ved, err_severity (ve_display ved) = SevCritical → err_auto_dismiss (ve_display ved) = false := by
+theorem UX_006_02_error_persists_until_acknowledged : ∀ ved, err_severity (ve_display ved) = .sevCritical → err_auto_dismiss (ve_display ved) = false := by
   simp_all [Bool.and_eq_true]
 
 /-- UX_006_03: Error Message Matches Severity
     Critical errors use the danger display style. -/
 /-- UX_006_03_error_message_matches_severity (matches Coq) -/
-theorem UX_006_03_error_message_matches_severity : ∀ ved, err_severity (ve_display ved) = SevCritical → err_display_style (ve_display ved) = StyleDanger := by
+theorem UX_006_03_error_message_matches_severity : ∀ ved, err_severity (ve_display ved) = .sevCritical → err_display_style (ve_display ved) = StyleDanger := by
   cases ‹_› <;> simp
 
 /-- UX_006_04: No Silent Failure
@@ -869,7 +869,7 @@ theorem UX_006_06_error_message_honest : ∀ ved, err_message (ve_display ved) =
 /-- UX_006_07: Warning Style for Errors
     Errors (non-critical) use the warning display style. -/
 /-- UX_006_07_warning_style_for_errors (matches Coq) -/
-theorem UX_006_07_warning_style_for_errors : ∀ ved, err_severity (ve_display ved) = SevError → err_display_style (ve_display ved) = StyleWarning := by
+theorem UX_006_07_warning_style_for_errors : ∀ ved, err_severity (ve_display ved) = .sevError → err_display_style (ve_display ved) = StyleWarning := by
   cases ‹_› <;> simp
 
 /-- UX_006_08: Severity Level Monotonic
@@ -881,7 +881,7 @@ theorem UX_006_08_severity_level_monotonic : ∀ s, severity_level s ≤ severit
 /-- UX_006_09: Info Style Normal
     Info-level errors use normal display style. -/
 /-- UX_006_09_info_style_normal (matches Coq) -/
-theorem UX_006_09_info_style_normal : ∀ ved, err_severity (ve_display ved) = SevInfo → err_display_style (ve_display ved) = StyleNormal := by
+theorem UX_006_09_info_style_normal : ∀ ved, err_severity (ve_display ved) = .sevInfo → err_display_style (ve_display ved) = StyleNormal := by
   cases ‹_› <;> simp
 
 /-- UX_007_01: Sanitized Input in Verified UI

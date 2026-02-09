@@ -84,17 +84,17 @@ structure SpectreDefenseConfig where
 
 /-- all_variants_protected (matches Coq: Definition all_variants_protected) -/
 def all_variants_protected (c : SpectreDefenseConfig) : Bool :=
-  sdc_v1_protected c &&
-  sdc_v2_protected c &&
-  sdc_v4_protected c &&
-  sdc_rsb_protected c &&
-  sdc_bhb_protected c
+  c.sdc_v1_protected &&
+  c.sdc_v2_protected &&
+  c.sdc_v4_protected &&
+  c.sdc_rsb_protected &&
+  c.sdc_bhb_protected
 
 /-- defense_mechanisms_enabled (matches Coq: Definition defense_mechanisms_enabled) -/
 def defense_mechanisms_enabled (c : SpectreDefenseConfig) : Bool :=
-  sdc_serialization_enabled c &&
-  sdc_array_masking_enabled c &&
-  sdc_retpoline_enabled c
+  c.sdc_serialization_enabled &&
+  c.sdc_array_masking_enabled &&
+  c.sdc_retpoline_enabled
 
 /-- fully_protected (matches Coq: Definition fully_protected) -/
 def fully_protected (c : SpectreDefenseConfig) : Bool :=
@@ -106,7 +106,7 @@ def riina_spectre_config : SpectreDefenseConfig := mkSpectreConfig
 
 /-- Helper lemma -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- SPECTRE_001: RIINA Protects Against All Variants -/

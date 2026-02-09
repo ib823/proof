@@ -41,8 +41,8 @@ namespace RIINA
 
 /-- negligible (matches Coq: Definition negligible) -/
 def negligible (f : Nat -> Q) : Prop :=
-  forall c : nat, (0 < c)%nat ->
-    exists N : nat, forall n : nat, (n > N)%nat ->
+  forall c : Nat, (0 < c)%nat ->
+    exists N : Nat, forall n : Nat, (n > N)%nat ->
       Qabs (f n) < 1 # Pos
 
 /-- comp_indist (matches Coq: Definition comp_indist) -/
@@ -70,7 +70,7 @@ theorem Qplus_lt_compat2 : ∀ a b c d : Q, a < b → c < d → a + c < b + d :=
 
 /-- Auxiliary: 2/n^(S c) <= 1/n^c for n > 2 -/
 /-- two_over_nSc_le_one_over_nc (matches Coq) -/
-theorem two_over_nSc_le_one_over_nc : ∀ n c : nat, (n > 2)%nat → (0 < c)%nat → (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) ≤ 1 # Pos.of_nat (n ^ c) := by
+theorem two_over_nSc_le_one_over_nc : ∀ n c : Nat, (n > 2)%nat → (0 < c)%nat → (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) ≤ 1 # Pos.of_nat (n ^ c) := by
   omega
 
 /-- 3 (matches Coq) -/

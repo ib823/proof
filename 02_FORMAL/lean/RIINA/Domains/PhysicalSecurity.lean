@@ -162,11 +162,11 @@ structure DeviceState where
 
 /-- semantic_equivalent (matches Coq: Definition semantic_equivalent) -/
 def semantic_equivalent (rtl : RTLModule) (nl : NetList) : Prop :=
-  forall inputs, rtl_behavior rtl inputs = nl_behavior nl inputs
+  forall inputs, rtl.rtl_behavior inputs = nl.nl_behavior inputs
 
 /-- timing_met (matches Coq: Definition timing_met) -/
 def timing_met (nl : NetList) (clk : ClockPeriod) : Prop :=
-  forall path, In path (extract_paths nl) -> path_delay path <= clk
+  forall path, In path (extract_paths nl) -> path.path_delay <= clk
 
 /-- no_hardware_trojans (matches Coq: Definition no_hardware_trojans) -/
 def no_hardware_trojans (rtl : RTLModule) : Prop :=
@@ -178,7 +178,7 @@ def constant_time_hw (op : Operation) : Prop :=
 
 /-- deterministic_design (matches Coq: Definition deterministic_design) -/
 def deterministic_design (rtl : RTLModule) : Prop :=
-  forall inputs, rtl_behavior rtl inputs = rtl_behavior rtl inputs
+  forall inputs, rtl.rtl_behavior inputs = rtl.rtl_behavior inputs
 
 /-- structurally_equivalent (matches Coq: Definition structurally_equivalent) -/
 def structurally_equivalent (c : Chip) (g : GoldenSample) : Prop :=
@@ -187,7 +187,7 @@ def structurally_equivalent (c : Chip) (g : GoldenSample) : Prop :=
 /-- is_genuine (matches Coq: Definition is_genuine) -/
 def is_genuine (c : Chip) (g : GoldenSample) : Prop :=
   structurally_equivalent c g /\
-  forall challenge, chip_puf c challenge = golden_puf g challenge
+  forall challenge, c.chip_puf challenge = g.golden_puf challenge
 
 /-- V_MIN (matches Coq: Definition V_MIN) -/
 def V_MIN : Voltage :=
@@ -207,29 +207,29 @@ def T_MAX : Temperature :=
 
 /-- voltage_ok (matches Coq: Definition voltage_ok) -/
 def voltage_ok (d : DeviceState) : Prop :=
-  V_MIN <= dev_voltage d /\ dev_voltage d <= V_MAX
+  V_MIN <= d.dev_voltage /\ d.dev_voltage <= V_MAX
 
 /-- temp_ok (matches Coq: Definition temp_ok) -/
 def temp_ok (d : DeviceState) : Prop :=
-  T_MIN <= dev_temperature d /\ dev_temperature d <= T_MAX
+  T_MIN <= d.dev_temperature /\ d.dev_temperature <= T_MAX
 
 /-- tamper_detected (matches Coq: Definition tamper_detected) -/
 def tamper_detected (d : DeviceState) : Prop :=
-  dev_mesh_intact d = false \/
+  d.dev_mesh_intact = false \/
   ~ voltage_ok d \/
   ~ temp_ok d
 
 /-- keys_zeroized (matches Coq: Definition keys_zeroized) -/
 def keys_zeroized (d : DeviceState) : Prop :=
-  dev_keys_valid d = false
+  d.dev_keys_valid = false
 
 /-- voltage_glitch (matches Coq: Definition voltage_glitch) -/
 def voltage_glitch (d : DeviceState) : Prop :=
-  dev_voltage d < V_MIN \/ dev_voltage d > V_MAX
+  d.dev_voltage < V_MIN \/ d.dev_voltage > V_MAX
 
 /-- temp_violation (matches Coq: Definition temp_violation) -/
 def temp_violation (d : DeviceState) : Prop :=
-  dev_temperature d < T_MIN \/ dev_temperature d > T_MAX
+  d.dev_temperature < T_MIN \/ d.dev_temperature > T_MAX
 
 /-- power_independent (matches Coq: Definition power_independent) -/
 def power_independent (op : Operation) : Prop :=

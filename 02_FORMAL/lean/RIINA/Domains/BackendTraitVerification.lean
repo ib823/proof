@@ -103,31 +103,31 @@ theorem backend_001_dispatch_deterministic : ∀ t bk1 bk2, dispatch t = bk1 →
   intro h; exact h
 
 /-- backend_001_native_is_c (matches Coq) -/
-theorem backend_001_native_is_c : dispatch TNative = BKC := by
+theorem backend_001_native_is_c : dispatch .tNative = BKC := by
   rfl
 
 /-- backend_001_wasm32_is_wasm (matches Coq) -/
-theorem backend_001_wasm32_is_wasm : dispatch TWasm32 = BKWasm := by
+theorem backend_001_wasm32_is_wasm : dispatch .tWasm32 = BKWasm := by
   rfl
 
 /-- backend_001_wasm64_is_wasm (matches Coq) -/
-theorem backend_001_wasm64_is_wasm : dispatch TWasm64 = BKWasm := by
+theorem backend_001_wasm64_is_wasm : dispatch .tWasm64 = BKWasm := by
   rfl
 
 /-- backend_002_c_preserves_ni (matches Coq) -/
-theorem backend_002_c_preserves_ni : preserves BKC NonInterference = true := by
+theorem backend_002_c_preserves_ni : preserves .bKC NonInterference = true := by
   rfl
 
 /-- backend_002_c_preserves_effects (matches Coq) -/
-theorem backend_002_c_preserves_effects : preserves BKC EffectSafety = true := by
+theorem backend_002_c_preserves_effects : preserves .bKC EffectSafety = true := by
   rfl
 
 /-- backend_002_c_preserves_types (matches Coq) -/
-theorem backend_002_c_preserves_types : preserves BKC TypeSafety = true := by
+theorem backend_002_c_preserves_types : preserves .bKC TypeSafety = true := by
   rfl
 
 /-- backend_002_c_format (matches Coq) -/
-theorem backend_002_c_format : backend_format (dispatch TNative) = FmtC := by
+theorem backend_002_c_format : backend_format (dispatch .tNative) = FmtC := by
   rfl
 
 /-- backend_003_all_preserve_ni (matches Coq) -/
@@ -151,15 +151,15 @@ theorem backend_004_format_total : ∀ t, ∃ fmt, backend_format (dispatch t) =
   rfl
 
 /-- backend_004_wasm_produces_wasm (matches Coq) -/
-theorem backend_004_wasm_produces_wasm : ∀ t, dispatch t = BKWasm → backend_format (dispatch t) = FmtWasm := by
+theorem backend_004_wasm_produces_wasm : ∀ t, dispatch t = .bKWasm → backend_format (dispatch t) = FmtWasm := by
   rfl
 
 /-- backend_004_mobile_produces_bridge (matches Coq) -/
-theorem backend_004_mobile_produces_bridge : ∀ t, dispatch t = BKMobile → backend_format (dispatch t) = FmtCWithBridge := by
+theorem backend_004_mobile_produces_bridge : ∀ t, dispatch t = .bKMobile → backend_format (dispatch t) = FmtCWithBridge := by
   rfl
 
 /-- backend_004_native_produces_c (matches Coq) -/
-theorem backend_004_native_produces_c : backend_format (dispatch TNative) = FmtC := by
+theorem backend_004_native_produces_c : backend_format (dispatch .tNative) = FmtC := by
   rfl
 
 /-- backend_004_format_consistent (matches Coq) -/
@@ -167,15 +167,15 @@ theorem backend_004_format_consistent : ∀ t1 t2, dispatch t1 = dispatch t2 →
   rfl
 
 /-- backend_wasm32_format (matches Coq) -/
-theorem backend_wasm32_format : backend_format (dispatch TWasm32) = FmtWasm := by
+theorem backend_wasm32_format : backend_format (dispatch .tWasm32) = FmtWasm := by
   rfl
 
 /-- backend_wasm64_format (matches Coq) -/
-theorem backend_wasm64_format : backend_format (dispatch TWasm64) = FmtWasm := by
+theorem backend_wasm64_format : backend_format (dispatch .tWasm64) = FmtWasm := by
   rfl
 
 /-- backend_android_format (matches Coq) -/
-theorem backend_android_format : backend_format (dispatch TAndroidArm64) = FmtCWithBridge := by
+theorem backend_android_format : backend_format (dispatch .tAndroidArm64) = FmtCWithBridge := by
   rfl
 
 end RIINA

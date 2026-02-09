@@ -172,7 +172,7 @@ theorem jurisdiction_preorder : ∀ j : jurisdiction, jurisdiction_leq j j ∧ (
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Compliance composition — compliant legs compose   Definition compliant_op (agreements : Agreements) (from to : jurisdiction) (cls : nat) : Prop := from = to ∨ authorized agreements from to cls. Theorem compliance_composition : ∀ (agreements : Agreements) (j1 j2 j3 : jurisdiction) (cls : nat), compliant_op agreements j1 j2 cls → compliant_op agreements j2 j3 cls → compliant_op agreements j1 j2 cls ∧ compliant_op agreements j2 j3 cls := by
+theorem 4 : Compliance composition — compliant legs compose   Definition compliant_op (agreements : Agreements) (from to : jurisdiction) (cls : Nat) : Prop := from = to ∨ authorized agreements from to cls. Theorem compliance_composition : ∀ (agreements : Agreements) (j1 j2 j3 : jurisdiction) (cls : Nat), compliant_op agreements j1 j2 cls → compliant_op agreements j2 j3 cls → compliant_op agreements j1 j2 cls ∧ compliant_op agreements j2 j3 cls := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
@@ -180,39 +180,39 @@ theorem 5 : Data sovereignty — local data cannot leave without    Theorem data
   cases ‹_› <;> simp <;> omega
 
 /-- 6 (matches Coq) -/
-theorem 6 : Authorization is downward-closed (transitive across   classification levels)   Theorem authorization_downward_closed : ∀ (agreements : Agreements) (from to : jurisdiction) (cls cls' : nat), authorized agreements from to cls → cls' ≤ cls → authorized agreements from to cls' := by
+theorem 6 : Authorization is downward-closed (transitive across   classification levels)   Theorem authorization_downward_closed : ∀ (agreements : Agreements) (from to : jurisdiction) (cls cls' : Nat), authorized agreements from to cls → cls' ≤ cls → authorized agreements from to cls' := by
   simp_all
 
 /-- 7 (matches Coq) -/
-theorem 7 : Audit trail completeness — every transfer is logged   Definition log_transfer (trail : AuditTrail) (did from to : nat) : AuditTrail := mkTransfer did from to :: trail. Theorem audit_trail_completeness : ∀ (trail : AuditTrail) (did from to : nat), transfer_logged (log_transfer trail did from to) did from to := by
+theorem 7 : Audit trail completeness — every transfer is logged   Definition log_transfer (trail : AuditTrail) (did from to : Nat) : AuditTrail := mkTransfer did from to :: trail. Theorem audit_trail_completeness : ∀ (trail : AuditTrail) (did from to : Nat), transfer_logged (log_transfer trail did from to) did from to := by
   simp
 
 /-- audit_trail_preservation (matches Coq) -/
-theorem audit_trail_preservation : ∀ (trail : AuditTrail) (did from to did' from' to' : nat), transfer_logged trail did from to → transfer_logged (log_transfer trail did' from' to') did from to := by
+theorem audit_trail_preservation : ∀ (trail : AuditTrail) (did from to did' from' to' : Nat), transfer_logged trail did from to → transfer_logged (log_transfer trail did' from' to') did from to := by
   intro h; exact h
 
 /-- 8 (matches Coq) -/
-theorem 8 : Policy monotonicity — stricter policies subsume    Definition policy_allows (threshold : nat) (cls : nat) : Prop := cls ≤ threshold. Theorem policy_monotonicity : ∀ (strict weak : nat) (cls : nat), policy_stricter strict weak → policy_allows strict cls → policy_allows weak cls := by
+theorem 8 : Policy monotonicity — stricter policies subsume    Definition policy_allows (threshold : Nat) (cls : Nat) : Prop := cls ≤ threshold. Theorem policy_monotonicity : ∀ (strict weak : Nat) (cls : Nat), policy_stricter strict weak → policy_allows strict cls → policy_allows weak cls := by
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : Same-jurisdiction transfers are always compliant   Theorem same_jurisdiction_compliant : ∀ (agreements : Agreements) (j : jurisdiction) (cls : nat), compliant_op agreements j j cls := by
+theorem 9 : Same-jurisdiction transfers are always compliant   Theorem same_jurisdiction_compliant : ∀ (agreements : Agreements) (j : jurisdiction) (cls : Nat), compliant_op agreements j j cls := by
   omega
 
 /-- 10 (matches Coq) -/
-theorem 10 : Audit trail length grows with each transfer   Theorem audit_trail_grows : ∀ (trail : AuditTrail) (did from to : nat), length (log_transfer trail did from to) = S (length trail) := by
+theorem 10 : Audit trail length grows with each transfer   Theorem audit_trail_grows : ∀ (trail : AuditTrail) (did from to : Nat), length (log_transfer trail did from to) = S (length trail) := by
   simp
 
 /-- local_only_blocks_cross_border (matches Coq) -/
-theorem local_only_blocks_cross_border : ∀ (from to : jurisdiction), from ≠ to → ~ localization_permits_transfer LocalOnly from to := by
+theorem local_only_blocks_cross_border : ∀ (from to : jurisdiction), from ≠ to → ~ localization_permits_transfer .localOnly from to := by
   simp_all [Bool.and_eq_true]
 
 /-- regional_allows_intra_asean (matches Coq) -/
-theorem regional_allows_intra_asean : ∀ (from to : jurisdiction), from ≤ 9 → to ≤ 9 → localization_permits_transfer RegionalASEAN from to := by
+theorem regional_allows_intra_asean : ∀ (from to : jurisdiction), from ≤ 9 → to ≤ 9 → localization_permits_transfer .regionalASEAN from to := by
   simp_all [Bool.and_eq_true]
 
 /-- global_allows_all (matches Coq) -/
-theorem global_allows_all : ∀ (from to : jurisdiction), localization_permits_transfer GlobalAllowed from to := by
+theorem global_allows_all : ∀ (from to : jurisdiction), localization_permits_transfer .globalAllowed from to := by
   intro h; exact h
 
 /-- adequacy_list_membership (matches Coq) -/
@@ -224,19 +224,19 @@ theorem asean_data_flow_compliant : ∀ (flow : CBDataFlow), (adp_consent_requir
   omega
 
 /-- breach_notification_timeliness (matches Coq) -/
-theorem breach_notification_timeliness : ∀ (policy : ASEANDataPolicy) (det notif : nat), notif ≤ det + adp_breach_notification_hours policy → breach_notification_compliant policy det notif := by
+theorem breach_notification_timeliness : ∀ (policy : ASEANDataPolicy) (det notif : Nat), notif ≤ det + adp_breach_notification_hours policy → breach_notification_compliant policy det notif := by
   omega
 
 /-- stricter_deadline_satisfies_weaker (matches Coq) -/
-theorem stricter_deadline_satisfies_weaker : ∀ (p1 p2 : ASEANDataPolicy) (det notif : nat), adp_breach_notification_hours p1 ≤ adp_breach_notification_hours p2 → breach_notification_compliant p1 det notif → breach_notification_compliant p2 det notif := by
+theorem stricter_deadline_satisfies_weaker : ∀ (p1 p2 : ASEANDataPolicy) (det notif : Nat), adp_breach_notification_hours p1 ≤ adp_breach_notification_hours p2 → breach_notification_compliant p1 det notif → breach_notification_compliant p2 det notif := by
   omega
 
 /-- mcc_compliance (matches Coq) -/
-theorem mcc_compliance : ∀ (mcc : ModelContractualClause) (min : nat), mcc_data_protection_standard mcc ≥ min → mcc_audit_rights mcc = true → mcc_termination_clause mcc = true → mcc_adequate mcc min := by
+theorem mcc_compliance : ∀ (mcc : ModelContractualClause) (min : Nat), mcc_data_protection_standard mcc ≥ min → mcc_audit_rights mcc = true → mcc_termination_clause mcc = true → mcc_adequate mcc min := by
   intro h; exact h
 
 /-- higher_standard_subsumes (matches Coq) -/
-theorem higher_standard_subsumes : ∀ (mcc : ModelContractualClause) (s1 s2 : nat), s1 ≤ s2 → mcc_adequate mcc s2 → mcc_adequate mcc s1 := by
+theorem higher_standard_subsumes : ∀ (mcc : ModelContractualClause) (s1 s2 : Nat), s1 ≤ s2 → mcc_adequate mcc s2 → mcc_adequate mcc s1 := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- mutual_recognition_symmetric (matches Coq) -/
@@ -248,11 +248,11 @@ theorem classification_bounded : ∀ (d : DataItem), data_classification d ≤ 3
   intro h; exact h
 
 /-- audit_trail_monotonic (matches Coq) -/
-theorem audit_trail_monotonic : ∀ (trail : AuditTrail) (did from to : nat) (e : TransferEntry), In e trail → In e (log_transfer trail did from to) := by
+theorem audit_trail_monotonic : ∀ (trail : AuditTrail) (did from to : Nat) (e : TransferEntry), In e trail → In e (log_transfer trail did from to) := by
   intro h; exact h
 
 /-- two_transfers_logged (matches Coq) -/
-theorem two_transfers_logged : ∀ (trail : AuditTrail) (d1 f1 t1 d2 f2 t2 : nat), let trail1 := log_transfer trail d1 f1 t1 in let trail2 := log_transfer trail1 d2 f2 t2 in transfer_logged trail2 d1 f1 t1 ∧ transfer_logged trail2 d2 f2 t2 := by
+theorem two_transfers_logged : ∀ (trail : AuditTrail) (d1 f1 t1 d2 f2 t2 : Nat), let trail1 := log_transfer trail d1 f1 t1 in let trail2 := log_transfer trail1 d2 f2 t2 in transfer_logged trail2 d1 f1 t1 ∧ transfer_logged trail2 d2 f2 t2 := by
   simp
 
 /-- localization_coverage (matches Coq) -/
@@ -264,7 +264,7 @@ theorem dpo_appointed_when_required : ∀ (policy : ASEANDataPolicy), adp_dpo_re
   rfl
 
 /-- dpo_not_required_always_met (matches Coq) -/
-theorem dpo_not_required_always_met : ∀ (policy : ASEANDataPolicy) (appointed : bool), adp_dpo_required policy = false → dpo_requirement_met policy appointed := by
+theorem dpo_not_required_always_met : ∀ (policy : ASEANDataPolicy) (appointed : Bool), adp_dpo_required policy = false → dpo_requirement_met policy appointed := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

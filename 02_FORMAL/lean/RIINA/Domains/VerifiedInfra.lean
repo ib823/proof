@@ -261,11 +261,11 @@ structure RotationState where
 
 /-- healthy (matches Coq: Definition healthy) -/
 def healthy (b : Backend) : Prop :=
-  backend_healthy b = true
+  b.backend_healthy = true
 
 /-- has_capacity (matches Coq: Definition has_capacity) -/
 def has_capacity (b : Backend) : Prop :=
-  backend_current_load b < backend_capacity b
+  b.backend_current_load < b.backend_capacity
 
 /-- valid_target (matches Coq: Definition valid_target) -/
 def valid_target (b : Backend) : Prop :=
@@ -273,19 +273,19 @@ def valid_target (b : Backend) : Prop :=
 
 /-- routes_to (matches Coq: Definition routes_to) -/
 def routes_to (lb : LBState) (req : HTTPRequest) (b : Backend) : Prop :=
-  In b (lb_backends lb) /\ valid_target b /\
-  req_method req <> EmptyString /\ req_path req <> EmptyString
+  In b (lb.lb_backends) /\ valid_target b /\
+  req.req_method <> EmptyString /\ req.req_path <> EmptyString
 
 /-- session_affinity_maintained (matches Coq: Definition session_affinity_maintained) -/
 def session_affinity_maintained (lb : LBState) (s : Nat) (b : Backend) : Prop :=
-  lb_session_map lb s = Some (backend_id b) ->
-  In b (lb_backends lb) ->
+  lb.lb_session_map s = Some (b.backend_id) ->
+  In b (lb.lb_backends) ->
   healthy b ->
   routes_to lb (mkRequest "GET" "/" [] [] (Some s)) b
 
 /-- well_formed_request (matches Coq: Definition well_formed_request) -/
 def well_formed_request (req : HTTPRequest) : Prop :=
-  req_method req <> EmptyString /\ req_path req <> EmptyString
+  req.req_method <> EmptyString /\ req.req_path <> EmptyString
 
 /-- routes_request (matches Coq: Definition routes_request) -/
 def routes_request (lb : LBState) (req : HTTPRequest) : Prop :=
@@ -294,8 +294,8 @@ def routes_request (lb : LBState) (req : HTTPRequest) : Prop :=
 
 /-- health_check_correct_for (matches Coq: Definition health_check_correct_for) -/
 def health_check_correct_for (b : Backend) (hc : HealthCheckResult) : Prop :=
-  hc_backend_id hc = backend_id b ->
-  (hc_is_healthy hc = true <-> healthy b)
+  hc.hc_backend_id = b.backend_id ->
+  (hc.hc_is_healthy = true <-> healthy b)
 
 /-- load_ratio (matches Coq: Definition load_ratio) -/
 def load_ratio (b : Backend) : Nat :=
@@ -325,23 +325,23 @@ def state_after (db : DBState) (txn : Transaction) : DBState :=
 
 /-- survives (matches Coq: Definition survives) -/
 def survives (dtxn : DurableTransaction) : Prop :=
-  dtxn_committed dtxn = true -> dtxn_persisted dtxn = true
+  dtxn.dtxn_committed = true -> dtxn.dtxn_persisted = true
 
 /-- access_audited (matches Coq: Definition access_audited) -/
 def access_audited (log : AuditLog) (subj : Nat) (obj : Key) : Prop :=
-  exists e, In e log /\ audit_subject e = subj /\ audit_object e = obj
+  exists e, In e log /\ e.audit_subject = subj /\ e.audit_object = obj
 
 /-- sent (matches Coq: Definition sent) -/
 def sent (q : QueueState) (m : Message) : Prop :=
-  In m (q_messages q) \/ exists c, In (m, c) (q_delivered q)
+  In m (q.q_messages) \/ exists c, In (m, c) (q.q_delivered)
 
 /-- delivered (matches Coq: Definition delivered) -/
 def delivered (q : QueueState) (m : Message) (c : Consumer) : Prop :=
-  In (m, c) (q_delivered q)
+  In (m, c) (q.q_delivered)
 
 /-- acknowledged (matches Coq: Definition acknowledged) -/
 def acknowledged (q : QueueState) (m : Message) (c : Consumer) : Prop :=
-  In (msg_id m, c) (q_acked q)
+  In (m.msg_id, c) (q.q_acked)
 
 /-- eventually (matches Coq: Definition eventually) -/
 def eventually (P : Prop) : Prop :=
@@ -354,9 +354,9 @@ def delivered_count (q : QueueState) (m : Message) (c : Consumer) : Nat :=
 /-- preserves_order (matches Coq: Definition preserves_order) -/
 def preserves_order (q : QueueState) : Prop :=
   forall m1 m2 c,
-    In (m1, c) (q_delivered q) ->
-    In (m2, c) (q_delivered q) ->
-    msg_id m1 < msg_id m2 ->
+    In (m1, c) (q.q_delivered) ->
+    In (m2, c) (q.q_delivered) ->
+    m1.msg_id < m2.msg_id ->
     True
 
 /-- goes_to_dlq (matches Coq: Definition goes_to_dlq) -/
@@ -374,14 +374,14 @@ def backpressure_applied (q : QueueState) (max : Nat) : Prop :=
 
 /-- in_log (matches Coq: Definition in_log) -/
 def in_log (l : Log) (e : LogEntry) (t : Nat) : Prop :=
-  In e l /\ log_timestamp e <= t
+  In e l /\ e.log_timestamp <= t
 
 /-- hash_chain_link_valid (matches Coq: Definition hash_chain_link_valid) -/
 def hash_chain_link_valid (e1 e2 : LogEntry) : Prop :=
-  log_hash e2 = log_prev_hash e1
+  e2.log_hash = e1.log_prev_hash
 
 /-- aol_append (matches Coq: Definition aol_append) -/
-def aol_append (l : AppendOnlyLog) (e : LogEntry) : AppendOnlyLog := mkAOLog (e :: aol_entries l) (S (aol_write_count l))
+def aol_append (l : AppendOnlyLog) (e : LogEntry) : AppendOnlyLog := mkAOLog (e :: l.aol_entries) (S (l.aol_write_count))
 
 /-- safe_log_entry (matches Coq: Definition safe_log_entry) -/
 def safe_log_entry (level : Nat) (msg : string) (ts : Nat) : LogEntry := mkLog ts level msg true 0 0
@@ -392,7 +392,7 @@ def tamper_detected (l : Log) : Prop :=
 
 /-- has_access (matches Coq: Definition has_access) -/
 def has_access (ss : SecretsStore) (svc : Service) (sec : Secret) : Prop :=
-  access_policy ss svc (secret_id sec) = true
+  ss.access_policy svc (sec.secret_id) = true
 
 /-- can_read (matches Coq: Definition can_read) -/
 def can_read (ss : SecretsStore) (svc : Service) (sec : Secret) : Prop :=
@@ -402,20 +402,20 @@ def can_read (ss : SecretsStore) (svc : Service) (sec : Secret) : Prop :=
 def secrets_isolated (ss : SecretsStore) : Prop :=
   forall svc sec,
     has_access ss svc sec ->
-    secret_owner sec = svc
+    sec.secret_owner = svc
 
 /-- rotation_available (matches Coq: Definition rotation_available) -/
 def rotation_available (rs : RotationState) : Prop :=
-  rot_current_time rs < rot_grace_period rs ->
-  (rot_old_key rs <> [] \/ rot_new_key rs <> [])
+  rs.rot_current_time < rs.rot_grace_period ->
+  (rs.rot_old_key <> [] \/ rs.rot_new_key <> [])
 
 /-- secret_expired (matches Coq: Definition secret_expired) -/
 def secret_expired (sec : Secret) (current_time : Nat) : Prop :=
-  current_time > secret_created sec + secret_ttl sec
+  current_time > sec.secret_created + sec.secret_ttl
 
 /-- secret_access_audited (matches Coq: Definition secret_access_audited) -/
 def secret_access_audited (ss : SecretsStore) (svc : Service) (sec : Secret) (ts : Nat) : Prop :=
-  In (svc, secret_id sec, ts) (access_log ss)
+  In (svc, sec.secret_id, ts) (ss.access_log)
 
 /-- INF_001_01_lb_routes_correctly (matches Coq) -/
 theorem INF_001_01_lb_routes_correctly : ∀ lb req b, routes_to lb req b → healthy b ∧ has_capacity b := by

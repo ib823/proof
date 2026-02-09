@@ -183,17 +183,17 @@ def hoare_triple (P : assertion) (c : cmd) (Q : assertion) : Prop :=
 def init_alloc (start size : Nat) : AllocState := mkAlloc (fun _ => []) (fun _ => None) start size
 
 /-- alloc (matches Coq: Definition alloc) -/
-def alloc (st : AllocState) (sz : Nat) (new_loc : Loc) : AllocState := mkAlloc (free_lists st) 
+def alloc (st : AllocState) (sz : Nat) (new_loc : Loc) : AllocState := mkAlloc (st.free_lists) 
           (fun l => if Nat
 
 /-- free (matches Coq: Definition free) -/
-def free (st : AllocState) (l : Loc) : AllocState := mkAlloc (free_lists st)
+def free (st : AllocState) (l : Loc) : AllocState := mkAlloc (st.free_lists)
           (fun l' => if Nat
 
 /-- alloc_invariant (matches Coq: Definition alloc_invariant) -/
 def alloc_invariant (st : AllocState) : Prop :=
-  forall l sz, allocated st l = Some sz ->
-    l >= heap_start st /\ l + sz <= heap_start st + total_heap_size st
+  forall l sz, st.allocated l = Some sz ->
+    l >= st.heap_start /\ l + sz <= st.heap_start + st.total_heap_size
 
 /-- block_size (matches Coq: Definition block_size) -/
 def block_size (sc : SizeClass) : Nat :=
@@ -221,15 +221,15 @@ def end_borrow (om : OwnershipMap) (l : Loc) : OwnershipMap :=
 
 /-- region_contains (matches Coq: Definition region_contains) -/
 def region_contains (r : Region) (l : Loc) : Prop :=
-  In l (region_locs r)
+  In l (r.region_locs)
 
 /-- kill_region (matches Coq: Definition kill_region) -/
-def kill_region (r : Region) : Region := mkRegion (region_id r) (region_locs r) false
+def kill_region (r : Region) : Region := mkRegion (r.region_id) (r.region_locs) false
 
 /-- bounds_ok (matches Coq: Definition bounds_ok) -/
 def bounds_ok (st : AllocState) (l : Loc) (idx : Nat) : Prop :=
   exists base sz,
-    allocated st base = Some sz /\
+    st.allocated base = Some sz /\
     l = base + idx /\
     idx < sz
 

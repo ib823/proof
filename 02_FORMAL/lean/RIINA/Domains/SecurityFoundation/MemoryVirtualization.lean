@@ -103,11 +103,11 @@ def hypervisor_owns_ept (ept : ExtendedPageTable) : Prop :=
 
 /-- has_vm_creation_capability (matches Coq: Definition has_vm_creation_capability) -/
 def has_vm_creation_capability (p : Process) : Prop :=
-  proc_vm_create_cap p = true
+  p.proc_vm_create_cap = true
 
 /-- gpa_in_ept (matches Coq: Definition gpa_in_ept) -/
 def gpa_in_ept (ept : ExtendedPageTable) (gpa : Nat) : Prop :=
-  exists entry, In entry (ept_entries ept) /\ ept_gpa entry = gpa /\ ept_valid entry = true
+  exists entry, In entry (ept.ept_entries) /\ entry.ept_gpa = gpa /\ entry.ept_valid = true
 
 /-- perm_read (matches Coq: Definition perm_read) -/
 def perm_read : Nat :=
@@ -123,7 +123,7 @@ def perm_exec : Nat :=
 
 /-- has_permission (matches Coq: Definition has_permission) -/
 def has_permission (entry : EPTEntry) (perm : Nat) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- Theorem: Guest VMs cannot modify their own Extended Page Tables.
     EPT modification is hypervisor-only operation. -/
@@ -138,12 +138,12 @@ theorem vm_creation_authorized : ∀ (creator : Process) (new_vm : VirtualMachin
 
 /-- Translation preserves isolation -/
 /-- translation_deterministic (matches Coq) -/
-theorem translation_deterministic : ∀ (ept : ExtendedPageTable) (gpa hpa1 hpa2 : nat), translate_gpa ept gpa = Some hpa1 → translate_gpa ept gpa = Some hpa2 → hpa1 = hpa2 := by
+theorem translation_deterministic : ∀ (ept : ExtendedPageTable) (gpa hpa1 hpa2 : Nat), translate_gpa ept gpa = Some hpa1 → translate_gpa ept gpa = Some hpa2 → hpa1 = hpa2 := by
   intro h; exact h
 
 /-- Invalid GPA translation fails -/
 /-- invalid_gpa_no_translation (matches Coq) -/
-theorem invalid_gpa_no_translation : ∀ (ept : ExtendedPageTable) (gpa : nat), (∀ entry, In entry (ept_entries ept) → ept_gpa entry ≠ gpa ∨ ept_valid entry = false) → translate_gpa ept gpa = None := by
+theorem invalid_gpa_no_translation : ∀ (ept : ExtendedPageTable) (gpa : Nat), (∀ entry, In entry (ept_entries ept) → ept_gpa entry ≠ gpa ∨ ept_valid entry = false) → translate_gpa ept gpa = None := by
   rfl
 
 /-- EPT isolation between VMs -/
@@ -158,7 +158,7 @@ theorem no_cap_no_vm_creation : ∀ (p : Process), proc_vm_create_cap p = false 
 
 /-- Page table permission enforced: access requires permission bit -/
 /-- page_table_permission_enforced (matches Coq) -/
-theorem page_table_permission_enforced : ∀ (entry : EPTEntry) (perm : nat), has_permission entry perm = false → Nat.land (ept_permissions entry) perm = 0 := by
+theorem page_table_permission_enforced : ∀ (entry : EPTEntry) (perm : Nat), has_permission entry perm = false → Nat.land (ept_permissions entry) perm = 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- Kernel pages non-writable from user: EPT entries with write=0 block writes -/
@@ -168,17 +168,17 @@ theorem kernel_pages_non_writable_from_user : ∀ (entry : EPTEntry), has_permis
 
 /-- Page fault handler is safe: invalid EPT entry yields no translation -/
 /-- page_fault_handler_safe (matches Coq) -/
-theorem page_fault_handler_safe : ∀ (ept : ExtendedPageTable) (gpa : nat), translate_gpa ept gpa = None → ~ gpa_in_ept ept gpa := by
+theorem page_fault_handler_safe : ∀ (ept : ExtendedPageTable) (gpa : Nat), translate_gpa ept gpa = None → ~ gpa_in_ept ept gpa := by
   simp_all [Bool.and_eq_true]
 
 /-- Copy-on-write is correct: translated address is deterministic -/
 /-- copy_on_write_correct (matches Coq) -/
-theorem copy_on_write_correct : ∀ (ept : ExtendedPageTable) (gpa : nat) (hpa : nat), translate_gpa ept gpa = Some hpa → ∀ hpa', translate_gpa ept gpa = Some hpa' → hpa = hpa' := by
+theorem copy_on_write_correct : ∀ (ept : ExtendedPageTable) (gpa : Nat) (hpa : Nat), translate_gpa ept gpa = Some hpa → ∀ hpa', translate_gpa ept gpa = Some hpa' → hpa = hpa' := by
   intro h; exact h
 
 /-- Virtual address canonical: entries have consistent GPA-HPA mapping -/
 /-- virtual_address_canonical (matches Coq) -/
-theorem virtual_address_canonical : ∀ (ept : ExtendedPageTable) (gpa : nat), translate_gpa ept gpa ≠ None → ∃ hpa, translate_gpa ept gpa = Some hpa := by
+theorem virtual_address_canonical : ∀ (ept : ExtendedPageTable) (gpa : Nat), translate_gpa ept gpa ≠ None → ∃ hpa, translate_gpa ept gpa = Some hpa := by
   rfl
 
 /-- EPT guest modification structurally impossible for any VM -/
@@ -208,12 +208,12 @@ theorem vm_creation_records_creator : ∀ (p : Process) (vm : VirtualMachine), c
 
 /-- EPT empty means no valid translations -/
 /-- empty_ept_no_translations (matches Coq) -/
-theorem empty_ept_no_translations : ∀ (ept : ExtendedPageTable) (gpa : nat), ept_entries ept = [] → translate_gpa ept gpa = None := by
+theorem empty_ept_no_translations : ∀ (ept : ExtendedPageTable) (gpa : Nat), ept_entries ept = [] → translate_gpa ept gpa = None := by
   simp
 
 /-- GPA in EPT implies translation succeeds -/
 /-- gpa_in_ept_translation_exists (matches Coq) -/
-theorem gpa_in_ept_translation_exists : ∀ (ept : ExtendedPageTable) (gpa : nat), gpa_in_ept ept gpa → ∃ hpa, translate_gpa ept gpa = Some hpa := by
+theorem gpa_in_ept_translation_exists : ∀ (ept : ExtendedPageTable) (gpa : Nat), gpa_in_ept ept gpa → ∃ hpa, translate_gpa ept gpa = Some hpa := by
   cases ‹_› <;> simp
 
 /-- Two VMs with different IDs get different EPTs -/

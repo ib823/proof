@@ -281,19 +281,19 @@ def mem_bounds_check (mc : MemCapability) (addr : Nat) : Bool :=
 
 /-- mem_has_perm (matches Coq: Definition mem_has_perm) -/
 def mem_has_perm (mc : MemCapability) (p : Permission) : Bool :=
-  andb (mem_valid mc) (perm_in p (mem_perms mc))
+  andb (mc.mem_valid) (perm_in p (mc.mem_perms))
 
 /-- mem_can_read (matches Coq: Definition mem_can_read) -/
 def mem_can_read (mc : MemCapability) (addr : Nat) : Bool :=
-  andb (mem_bounds_check mc addr) (mem_has_perm mc Read)
+  andb (mem_bounds_check mc addr) (mem_has_perm mc .read)
 
 /-- mem_can_write (matches Coq: Definition mem_can_write) -/
 def mem_can_write (mc : MemCapability) (addr : Nat) : Bool :=
-  andb (mem_bounds_check mc addr) (mem_has_perm mc Write)
+  andb (mem_bounds_check mc addr) (mem_has_perm mc .write)
 
 /-- mem_can_execute (matches Coq: Definition mem_can_execute) -/
 def mem_can_execute (mc : MemCapability) (addr : Nat) : Bool :=
-  andb (mem_bounds_check mc addr) (mem_has_perm mc Execute)
+  andb (mem_bounds_check mc addr) (mem_has_perm mc .execute)
 
 /-- perms_subset (matches Coq: Definition perms_subset) -/
 def perms_subset (ps1 ps2 : PermSet) : Bool :=
@@ -306,10 +306,10 @@ def derive_mem_cap (parent child : MemCapability) : Bool :=
 
 /-- is_revoked (matches Coq: Definition is_revoked) -/
 def is_revoked (rt : RevocationTable) (cap_id : Nat) : Bool :=
-  is_revoked_aux (rev_entries rt) cap_id
+  is_revoked_aux (rt.rev_entries) cap_id
 
 /-- revoke_capability (matches Coq: Definition revoke_capability) -/
-def revoke_capability (rt : RevocationTable) (cap_id : Nat) : RevocationTable := mkRevTable ((cap_id, true) :: rev_entries rt)
+def revoke_capability (rt : RevocationTable) (cap_id : Nat) : RevocationTable := mkRevTable ((cap_id, true) :: rt.rev_entries)
 
 /-- has_capability (matches Coq: Definition has_capability) -/
 def has_capability (p : Principal) (cap_id : Nat) : Bool :=
@@ -317,26 +317,26 @@ def has_capability (p : Principal) (cap_id : Nat) : Bool :=
 
 /-- confinement_enforced (matches Coq: Definition confinement_enforced) -/
 def confinement_enforced (cp : ConfinementPolicy) : Bool :=
-  andb (conf_no_ambient cp) (andb (conf_explicit_only cp) (conf_no_escalation cp))
+  andb (cp.conf_no_ambient) (andb (cp.conf_explicit_only) (cp.conf_no_escalation))
 
 /-- can_redelegate (matches Coq: Definition can_redelegate) -/
 def can_redelegate := sorry -- complex match, needs manual translation
 
 /-- capability_sound (matches Coq: Definition capability_sound) -/
 def capability_sound (c : Capability) : Bool :=
-  cap_unforgeable c && cap_transferable c && cap_revocable c && cap_attenuatable c
+  c.cap_unforgeable && c.cap_transferable && c.cap_revocable && c.cap_attenuatable
 
 /-- ocap_sound (matches Coq: Definition ocap_sound) -/
 def ocap_sound (o : ObjectCapability) : Bool :=
-  ocap_no_ambient_authority o && ocap_explicit_grant o && ocap_encapsulation o && ocap_connectivity o
+  o.ocap_no_ambient_authority && o.ocap_explicit_grant && o.ocap_encapsulation && o.ocap_connectivity
 
 /-- least_privilege_enforced (matches Coq: Definition least_privilege_enforced) -/
 def least_privilege_enforced (l : LeastPrivilege) : Bool :=
-  lp_minimal_permissions l && lp_time_limited l && lp_scope_limited l
+  l.lp_minimal_permissions && l.lp_time_limited && l.lp_scope_limited
 
 /-- capability_secure (matches Coq: Definition capability_secure) -/
 def capability_secure (c : CapabilityConfig) : Bool :=
-  capability_sound (cc_cap c) && ocap_sound (cc_ocap c) && least_privilege_enforced (cc_lp c)
+  capability_sound (c.cc_cap) && ocap_sound (c.cc_ocap) && least_privilege_enforced (c.cc_lp)
 
 /-- riina_cap (matches Coq: Definition riina_cap) -/
 def riina_cap : Capability := mkCapability true true true true
@@ -354,7 +354,7 @@ def riina_cap_config : CapabilityConfig := mkCapConfig riina_cap riina_ocap riin
 def riina_confinement : ConfinementPolicy := mkConfinement true true true
 
 /-- riina_mem_cap (matches Coq: Definition riina_mem_cap) -/
-def riina_mem_cap : MemCapability := mkMemCap 0 1024 [Read; Write] false true
+def riina_mem_cap : MemCapability := mkMemCap 0 1024 [.read; .write] false true
 
 /-- empty_rev_table (matches Coq: Definition empty_rev_table) -/
 def empty_rev_table : RevocationTable := mkRevTable []
@@ -366,23 +366,23 @@ def riina_delegation : Delegation := mkDelegation 0 1 100 DelegRestricted true
     SECTION 1: BASIC LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_false_iff (matches Coq) -/
-theorem andb_false_iff : ∀ a b : bool, a && b = false <-> a = false ∨ b = false := by
+private theorem andb_false_iff : ∀ a b : Bool, a && b = false <-> a = false ∨ b = false := by
   cases ‹_› <;> simp
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- negb_false_iff (matches Coq) -/
-theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
+private theorem negb_false_iff : ∀ b : Bool, !b = false <-> b = true := by
   cases ‹_› <;> simp
 
 /-- ============================================================================
@@ -542,7 +542,7 @@ theorem CAP_038_unforgeable_mem_cap : mem_valid riina_mem_cap = true := by
   rfl
 
 /-- CAP_039_sealed_cap_unforgeable (matches Coq) -/
-theorem CAP_039_sealed_cap_unforgeable : ∀ mc, mem_sealed mc = true → negb (mem_sealed mc) = false := by
+theorem CAP_039_sealed_cap_unforgeable : ∀ mc, mem_sealed mc = true → !(mem_sealed mc) = false := by
   rfl
 
 /-- CAP_040_valid_cap_required (matches Coq) -/
@@ -599,11 +599,11 @@ theorem CAP_049_perm_leq_reflexive : ∀ p, perm_leq p p = true := by
   simp_all [Bool.and_eq_true]
 
 /-- CAP_050_read_leq_write (matches Coq) -/
-theorem CAP_050_read_leq_write : perm_leq Read Write = true := by
+theorem CAP_050_read_leq_write : perm_leq .read .write = true := by
   rfl
 
 /-- CAP_051_write_leq_execute (matches Coq) -/
-theorem CAP_051_write_leq_execute : perm_leq Write Execute = true := by
+theorem CAP_051_write_leq_execute : perm_leq .write .execute = true := by
   rfl
 
 /-- CAP_052_perm_leq_transitive (matches Coq) -/
@@ -647,7 +647,7 @@ theorem CAP_061_revocable_implies_can_revoke : ∀ c, capability_sound c = true 
   simp_all [Bool.and_eq_true]
 
 /-- CAP_062_revoked_mem_cap_invalid (matches Coq) -/
-theorem CAP_062_revoked_mem_cap_invalid : ∀ mc, mem_valid mc = false → mem_has_perm mc Read = false := by
+theorem CAP_062_revoked_mem_cap_invalid : ∀ mc, mem_valid mc = false → mem_has_perm mc .read = false := by
   simp
 
 /-- CAP_063_revoked_cannot_read (matches Coq) -/
@@ -793,7 +793,7 @@ theorem CAP_096_sealed_cannot_derive : ∀ mc child, mem_sealed mc = true → de
   simp_all [Bool.and_eq_true]
 
 /-- CAP_097_empty_perms_no_access (matches Coq) -/
-theorem CAP_097_empty_perms_no_access : ∀ base len, mem_has_perm (mkMemCap base len [] false true) Read = false := by
+theorem CAP_097_empty_perms_no_access : ∀ base len, mem_has_perm (mkMemCap base len [] false true) .read = false := by
   simp
 
 /-- CAP_098_mem_cap_complete (matches Coq) -/

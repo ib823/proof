@@ -152,47 +152,47 @@ def asil_leq := sorry -- complex match, needs manual translation
 
 /-- hara_compliant (matches Coq: Definition hara_compliant) -/
 def hara_compliant (h : HARA) : Bool :=
-  hara_hazards_identified h &&
-  hara_severity_classified h &&
-  hara_exposure_assessed h &&
-  hara_controllability_assessed h &&
-  hara_asil_determined h &&
-  hara_safety_goals_defined h
+  h.hara_hazards_identified &&
+  h.hara_severity_classified &&
+  h.hara_exposure_assessed &&
+  h.hara_controllability_assessed &&
+  h.hara_asil_determined &&
+  h.hara_safety_goals_defined
 
 /-- safety_concept_compliant (matches Coq: Definition safety_concept_compliant) -/
 def safety_concept_compliant (s : SafetyConcept) : Bool :=
-  fsc_safety_requirements s &&
-  fsc_allocation_to_elements s &&
-  fsc_fault_tolerant_mechanisms s &&
-  fsc_safety_mechanisms s
+  s.fsc_safety_requirements &&
+  s.fsc_allocation_to_elements &&
+  s.fsc_fault_tolerant_mechanisms &&
+  s.fsc_safety_mechanisms
 
 /-- sw_dev_compliant (matches Coq: Definition sw_dev_compliant) -/
 def sw_dev_compliant (d : SoftwareDevelopment) : Bool :=
-  sw_safety_requirements d &&
-  sw_architecture_design d &&
-  sw_unit_design d &&
-  sw_unit_implementation d &&
-  sw_unit_verification d &&
-  sw_integration_verification d &&
-  sw_safety_validation d
+  d.sw_safety_requirements &&
+  d.sw_architecture_design &&
+  d.sw_unit_design &&
+  d.sw_unit_implementation &&
+  d.sw_unit_verification &&
+  d.sw_integration_verification &&
+  d.sw_safety_validation
 
 /-- verif_methods_compliant (matches Coq: Definition verif_methods_compliant) -/
 def verif_methods_compliant (v : VerificationMethods) : Bool :=
-  vm_requirements_inspection v &&
-  vm_walkthrough v &&
-  vm_formal_verification v &&
-  vm_control_flow_analysis v &&
-  vm_data_flow_analysis v &&
-  vm_static_analysis v &&
-  vm_semantic_analysis v
+  v.vm_requirements_inspection &&
+  v.vm_walkthrough &&
+  v.vm_formal_verification &&
+  v.vm_control_flow_analysis &&
+  v.vm_data_flow_analysis &&
+  v.vm_static_analysis &&
+  v.vm_semantic_analysis
 
 /-- testing_compliant (matches Coq: Definition testing_compliant) -/
 def testing_compliant (t : TestingRequirements) : Bool :=
-  test_requirements_based t &&
-  test_fault_injection t &&
-  test_back_to_back t &&
-  test_structural_coverage t &&
-  test_mc_dc_coverage t
+  t.test_requirements_based &&
+  t.test_fault_injection &&
+  t.test_back_to_back &&
+  t.test_structural_coverage &&
+  t.test_mc_dc_coverage
 
 /-- asil_d_compliant (matches Coq: Definition asil_d_compliant) -/
 def asil_d_compliant := sorry -- complex match, needs manual translation
@@ -225,7 +225,7 @@ def riina_iso26262 : ISO26262Compliance := mkISO26262
     SECTION 3: COMPLIANCE PREDICATES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- ISO_001: ASIL Reflexivity -/

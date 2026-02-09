@@ -180,13 +180,13 @@ def can_access := sorry -- complex match, needs manual translation
 def is_hipaa_encrypted (enc : EncryptionState) : Bool :=
   match enc with
   | .encryptedAES256 => true
-  | ._ => false
+  | _ => false
 
 /-- is_hipaa_transport (matches Coq: Definition is_hipaa_transport) -/
 def is_hipaa_transport (ts : TransportSecurity) : Bool :=
   match ts with
   | .tLS13 => true
-  | ._ => false
+  | _ => false
 
 /-- session_timeout (matches Coq: Definition session_timeout) -/
 def session_timeout : Nat :=
@@ -217,29 +217,29 @@ def audit_exists_for (log : List AuditEntry) (user_id phi_id : Nat) : Bool :=
 
 /-- can_disclose (matches Coq: Definition can_disclose) -/
 def can_disclose (phi : PHIRecord) : Bool :=
-  phi_consent_documented phi
+  phi.phi_consent_documented
 
 /-- authorized_modification (matches Coq: Definition authorized_modification) -/
 def authorized_modification (role : Role) (cat : PHICategory) : Bool :=
   match role with
   | .physician => true
   | .emergency => true
-  | ._ => false
+  | _ => false
 
 /-- terminate_session (matches Coq: Definition terminate_session) -/
-def terminate_session (s : Session) : Session := mkSession (session_user_id s) (session_start_time s) (session_last_activity s) false
+def terminate_session (s : Session) : Session := mkSession (s.session_user_id) (s.session_start_time) (s.session_last_activity) false
 
 /-- check_and_terminate (matches Coq: Definition check_and_terminate) -/
 def check_and_terminate (current_time : Nat) (s : Session) : Session :=
-  if session_expired current_time (session_last_activity s)
+  if session_expired current_time (s.session_last_activity)
   then terminate_session s
   else s
 
 /-- transmission_secure (matches Coq: Definition transmission_secure) -/
 def transmission_secure (t : Transmission) : Bool :=
-  andb (is_hipaa_transport (trans_security t))
-       (andb (is_hipaa_encrypted (phi_encryption (trans_phi t)))
-             (trans_verified t))
+  andb (is_hipaa_transport (t.trans_security))
+       (andb (is_hipaa_encrypted (phi_encryption (t.trans_phi)))
+             (t.trans_verified))
 
 /-- COMPLY_001_01 (matches Coq) -/
 theorem COMPLY_001_01 : ∀ (phi : PHIRecord), is_hipaa_encrypted (phi_encryption phi) = true → phi_encryption phi = EncryptedAES256 := by
@@ -254,7 +254,7 @@ theorem COMPLY_001_03 : ∀ (role : Role) (cat : PHICategory), can_access role c
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_001_04 (matches Coq) -/
-theorem COMPLY_001_04 : ∀ (log : list AuditEntry) (user_id phi_id timestamp action : nat) (success : bool), let new_log := access_with_audit log user_id phi_id timestamp action success in audit_∃_for new_log user_id phi_id = true := by
+theorem COMPLY_001_04 : ∀ (log : list AuditEntry) (user_id phi_id timestamp action : Nat) (success : Bool), let new_log := access_with_audit log user_id phi_id timestamp action success in audit_∃_for new_log user_id phi_id = true := by
   simp
 
 /-- COMPLY_001_05 (matches Coq) -/
@@ -270,7 +270,7 @@ theorem COMPLY_001_07 : ∀ (b : BreachEvent), breach_detected_timely b = true �
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_001_08 (matches Coq) -/
-theorem COMPLY_001_08 : ∀ (role : Role) (cat : PHICategory), authorized_modification role cat = true → can_access role cat = true ∧ (role = Physician ∨ role = Emergency) := by
+theorem COMPLY_001_08 : ∀ (role : Role) (cat : PHICategory), authorized_modification role cat = true → can_access role cat = true ∧ (role = .physician ∨ role = .emergency) := by
   cases ‹_› <;> simp
 
 /-- COMPLY_001_09 (matches Coq) -/
@@ -282,27 +282,27 @@ theorem COMPLY_001_10 : ∀ (auth : AuthState), is_mfa auth = true → length (a
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_001_11 (matches Coq) -/
-theorem COMPLY_001_11 : ∀ (current_time last_activity : nat), current_time - last_activity > session_timeout → session_expired current_time last_activity = true := by
+theorem COMPLY_001_11 : ∀ (current_time last_activity : Nat), current_time - last_activity > session_timeout → session_expired current_time last_activity = true := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_001_12 (matches Coq) -/
-theorem COMPLY_001_12 : ∀ (s : Session) (current_time : nat), session_is_active s = true → current_time - session_last_activity s > session_timeout → session_is_active (check_and_terminate current_time s) = false := by
+theorem COMPLY_001_12 : ∀ (s : Session) (current_time : Nat), session_is_active s = true → current_time - session_last_activity s > session_timeout → session_is_active (check_and_terminate current_time s) = false := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_001_13 (matches Coq) -/
-theorem COMPLY_001_13 : ∀ (users : list (nat * Role)) (uid : nat) (r1 r2 : Role), all_unique_ids users = true → In (uid, r1) users → In (uid, r2) users → r1 = r2 := by
+theorem COMPLY_001_13 : ∀ (users : list (nat * Role)) (uid : Nat) (r1 r2 : Role), all_unique_ids users = true → In (uid, r1) users → In (uid, r2) users → r1 = r2 := by
   cases ‹_› <;> simp
 
 /-- COMPLY_001_14 (matches Coq) -/
-theorem COMPLY_001_14 : ∀ (log : list AuditEntry) (user_id phi_id timestamp : nat) (cat : PHICategory), let new_log := emergency_access log user_id phi_id timestamp in audit_∃_for new_log user_id phi_id = true ∧ can_access Emergency cat = true := by
+theorem COMPLY_001_14 : ∀ (log : list AuditEntry) (user_id phi_id timestamp : Nat) (cat : PHICategory), let new_log := emergency_access log user_id phi_id timestamp in audit_∃_for new_log user_id phi_id = true ∧ can_access .emergency cat = true := by
   cases ‹_› <;> simp
 
 /-- COMPLY_001_15 (matches Coq) -/
-theorem COMPLY_001_15 : ∀ (t : Transmission), transmission_secure t = true → trans_security t = TLS13 ∧ phi_encryption (trans_phi t) = EncryptedAES256 ∧ trans_verified t = true := by
+theorem COMPLY_001_15 : ∀ (t : Transmission), transmission_secure t = true → trans_security t = .tLS13 ∧ phi_encryption (trans_phi t) = .encryptedAES256 ∧ trans_verified t = true := by
   simp_all [Bool.and_eq_true]
 
 /-- COMPLY_001_16 (matches Coq) -/
-theorem COMPLY_001_16 : ∀ (cat : PHICategory), can_access Physician cat = true := by
+theorem COMPLY_001_16 : ∀ (cat : PHICategory), can_access .physician cat = true := by
   rfl
 
 /-- COMPLY_001_17 (matches Coq) -/
@@ -310,7 +310,7 @@ theorem COMPLY_001_17 : can_access Patient Billing = false ∧ can_access Patien
   constructor <;> rfl
 
 /-- COMPLY_001_18 (matches Coq) -/
-theorem COMPLY_001_18 : ∀ (log : list AuditEntry) (user_id phi_id timestamp action : nat) (success : bool), let new_log := access_with_audit log user_id phi_id timestamp action success in length new_log = S (length log) := by
+theorem COMPLY_001_18 : ∀ (log : list AuditEntry) (user_id phi_id timestamp action : Nat) (success : Bool), let new_log := access_with_audit log user_id phi_id timestamp action success in length new_log = S (length log) := by
   simp
 
 /-- COMPLY_001_19 (matches Coq) -/

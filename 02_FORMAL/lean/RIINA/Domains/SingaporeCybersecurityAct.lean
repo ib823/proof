@@ -148,7 +148,7 @@ theorem cii_obligation_1 : ∀ (e : CIIOwnerEntity), cii_risk_assessed e = true 
   intro h; exact h
 
 /-- cii_obligation_2 (matches Coq) -/
-theorem cii_obligation_2 : ∀ (e : CIIOwnerEntity) (t : nat), cii_audit_completed e = true → t ≤ cii_last_audit e + 365 → cii_audit_current e t := by
+theorem cii_obligation_2 : ∀ (e : CIIOwnerEntity) (t : Nat), cii_audit_completed e = true → t ≤ cii_last_audit e + 365 → cii_audit_current e t := by
   simp_all [Bool.and_eq_true]
 
 /-- cii_obligation_3 (matches Coq) -/
@@ -156,7 +156,7 @@ theorem cii_obligation_3 : ∀ (i : SGCyberIncident), sg_incident_reported_at i 
   intro h; exact h
 
 /-- sg_stricter_than_my (matches Coq) -/
-theorem sg_stricter_than_my : ∀ (detected_at reported_at : nat), reported_at ≤ detected_at + 2 → reported_at ≤ detected_at + 6 := by
+theorem sg_stricter_than_my : ∀ (detected_at reported_at : Nat), reported_at ≤ detected_at + 2 → reported_at ≤ detected_at + 6 := by
   simp_all [Bool.and_eq_true]
 
 /-- cii_obligation_4 (matches Coq) -/
@@ -172,7 +172,7 @@ theorem cssp_obligation : ∀ (e : CIIOwnerEntity), cii_cssp_licensed e = true �
   intro h; exact h
 
 /-- sg_cybersecurity_composition (matches Coq) -/
-theorem sg_cybersecurity_composition : ∀ (e : CIIOwnerEntity) (t : nat), cii_risk_current e → cii_audit_current e t → cii_controls_adequate e → cii_incident_response_plan e = true → sg_cybersecurity_act_compliant e t := by
+theorem sg_cybersecurity_composition : ∀ (e : CIIOwnerEntity) (t : Nat), cii_risk_current e → cii_audit_current e t → cii_controls_adequate e → cii_incident_response_plan e = true → sg_cybersecurity_act_compliant e t := by
   omega
 
 /-- cii_sector_coverage (matches Coq) -/
@@ -188,11 +188,11 @@ theorem stcc_compliance : ∀ (e : CIIOwnerEntity), cii_classification e = STCC 
   simp_all [Bool.and_eq_true]
 
 /-- cii_owner_strictest (matches Coq) -/
-theorem cii_owner_strictest : ∀ (e : CIIOwnerEntity) (t : nat), cii_owner_obligations e t → cii_risk_current e := by
+theorem cii_owner_strictest : ∀ (e : CIIOwnerEntity) (t : Nat), cii_owner_obligations e t → cii_risk_current e := by
   intro h; exact h
 
 /-- cii_owner_implies_esci_risk (matches Coq) -/
-theorem cii_owner_implies_esci_risk : ∀ (e : CIIOwnerEntity) (t : nat), cii_owner_obligations e t → cii_risk_assessed e = true ∧ cii_incident_response_plan e = true := by
+theorem cii_owner_implies_esci_risk : ∀ (e : CIIOwnerEntity) (t : Nat), cii_owner_obligations e t → cii_risk_assessed e = true ∧ cii_incident_response_plan e = true := by
   simp_all [Bool.and_eq_true]
 
 /-- significant_incident_must_notify (matches Coq) -/
@@ -200,7 +200,7 @@ theorem significant_incident_must_notify : ∀ (i : SGCyberIncident), sg_inciden
   intro h; exact h
 
 /-- two_hour_deadline_tight (matches Coq) -/
-theorem two_hour_deadline_tight : ∀ (detected : nat), detected + 2 < detected + 6 := by
+theorem two_hour_deadline_tight : ∀ (detected : Nat), detected + 2 < detected + 6 := by
   omega
 
 /-- sg_2h_stricter_than_my_6h (matches Coq) -/
@@ -216,23 +216,23 @@ theorem audit_schedule_valid : ∀ (sched : AuditSchedule), as_next_audit sched 
   intro h; exact h
 
 /-- more_controls_still_adequate (matches Coq) -/
-theorem more_controls_still_adequate : ∀ (e : CIIOwnerEntity) (extra : nat), cii_controls_adequate e → cii_min_controls e ≤ cii_security_controls e + extra := by
+theorem more_controls_still_adequate : ∀ (e : CIIOwnerEntity) (extra : Nat), cii_controls_adequate e → cii_min_controls e ≤ cii_security_controls e + extra := by
   simp_all [Bool.and_eq_true]
 
 /-- sg_cyber_full_implies_risk (matches Coq) -/
-theorem sg_cyber_full_implies_risk : ∀ (e : CIIOwnerEntity) (t : nat), sg_cybersecurity_act_compliant e t → cii_risk_current e := by
+theorem sg_cyber_full_implies_risk : ∀ (e : CIIOwnerEntity) (t : Nat), sg_cybersecurity_act_compliant e t → cii_risk_current e := by
   intro h; exact h
 
 /-- sg_cyber_full_implies_audit (matches Coq) -/
-theorem sg_cyber_full_implies_audit : ∀ (e : CIIOwnerEntity) (t : nat), sg_cybersecurity_act_compliant e t → cii_audit_current e t := by
+theorem sg_cyber_full_implies_audit : ∀ (e : CIIOwnerEntity) (t : Nat), sg_cybersecurity_act_compliant e t → cii_audit_current e t := by
   intro h; exact h
 
 /-- sg_cyber_full_implies_controls (matches Coq) -/
-theorem sg_cyber_full_implies_controls : ∀ (e : CIIOwnerEntity) (t : nat), sg_cybersecurity_act_compliant e t → cii_controls_adequate e := by
+theorem sg_cyber_full_implies_controls : ∀ (e : CIIOwnerEntity) (t : Nat), sg_cybersecurity_act_compliant e t → cii_controls_adequate e := by
   intro h; exact h
 
 /-- sg_cyber_full_implies_irp (matches Coq) -/
-theorem sg_cyber_full_implies_irp : ∀ (e : CIIOwnerEntity) (t : nat), sg_cybersecurity_act_compliant e t → cii_incident_response_plan e = true := by
+theorem sg_cyber_full_implies_irp : ∀ (e : CIIOwnerEntity) (t : Nat), sg_cybersecurity_act_compliant e t → cii_incident_response_plan e = true := by
   intro h; exact h
 
 /-- cssp_expired_non_compliant (matches Coq) -/
@@ -244,7 +244,7 @@ theorem regular_entity_no_cii_obligation : ∀ (e : CIIOwnerEntity), cii_classif
   intro h; exact h
 
 /-- compliance_eliminates_penalty (matches Coq) -/
-theorem compliance_eliminates_penalty : ∀ (e : CIIOwnerEntity) (t : nat), sg_cybersecurity_act_compliant e t → ~ penalty_exposure_∃ e t := by
+theorem compliance_eliminates_penalty : ∀ (e : CIIOwnerEntity) (t : Nat), sg_cybersecurity_act_compliant e t → ~ penalty_exposure_∃ e t := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

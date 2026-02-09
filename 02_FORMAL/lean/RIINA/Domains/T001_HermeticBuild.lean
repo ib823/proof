@@ -131,8 +131,8 @@ def hex0_semantics (input : List Nat) : Binary :=
 
 /-- is_hermetic (matches Coq: Definition is_hermetic) -/
 def is_hermetic (env : BuildEnv) : Prop :=
-  env_network env = false /\
-  env_clock env = 0 /\
+  env.env_network = false /\
+  env.env_clock = 0 /\
   List
 
 /-- hermetic_build (matches Coq: Definition hermetic_build) -/
@@ -140,7 +140,7 @@ def hermetic_build (b : Build) : Prop :=
   forall env1 env2 src,
     is_hermetic env1 ->
     is_hermetic env2 ->
-    env_inputs env1 = env_inputs env2 ->
+    env1.env_inputs = env2.env_inputs ->
     b env1 src = b env2 src
 
 /-- sha256 (matches Coq: Definition sha256) -/
@@ -160,20 +160,20 @@ def compile (binary : Binary) (src : SourceCode) : Binary :=
 /-- functionally_equivalent (matches Coq: Definition functionally_equivalent) -/
 def functionally_equivalent (c1 c2 : Compiler) : Prop :=
   forall src,
-    compile (compiler_binary c1) src = compile (compiler_binary c2) src
+    compile (c1.compiler_binary) src = compile (c2.compiler_binary) src
 
 /-- valid_ddc (matches Coq: Definition valid_ddc) -/
 def valid_ddc (ddc : DDCResult) : Prop :=
-  functionally_equivalent (compiler_a ddc) (compiler_aprime ddc) /\
-  equivalent ddc = true
+  functionally_equivalent (ddc.compiler_a) (ddc.compiler_aprime) /\
+  ddc.equivalent = true
 
 /-- has_trojan (matches Coq: Definition has_trojan) -/
 def has_trojan (c : Compiler) : Prop :=
-  exists src, compile (compiler_binary c) src <> source_semantics src
+  exists src, compile (c.compiler_binary) src <> source_semantics src
 
 /-- stage_valid (matches Coq: Definition stage_valid) -/
 def stage_valid (s : Stage) : Prop :=
-  stage_hash s = sha256 (stage_binary s)
+  s.stage_hash = sha256 (s.stage_binary)
 
 /-- chain_valid (matches Coq: Definition chain_valid) -/
 def chain_valid (chain : BootstrapChain) : Prop :=
@@ -181,11 +181,11 @@ def chain_valid (chain : BootstrapChain) : Prop :=
 
 /-- stage_deterministic (matches Coq: Definition stage_deterministic) -/
 def stage_deterministic (s : Stage) : Prop :=
-  forall input, compile (stage_binary s) input = compile (stage_binary s) input
+  forall input, compile (s.stage_binary) input = compile (s.stage_binary) input
 
 /-- stage_terminates (matches Coq: Definition stage_terminates) -/
 def stage_terminates (s : Stage) : Prop :=
-  forall input, exists output, compile (stage_binary s) input = output
+  forall input, exists output, compile (s.stage_binary) input = output
 
 /-- T_001_01_hex0_auditable (matches Coq) -/
 theorem T_001_01_hex0_auditable : ∀ h : Hex0, valid_hex0 h → is_auditable h := by

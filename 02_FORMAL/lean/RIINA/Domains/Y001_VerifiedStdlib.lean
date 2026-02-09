@@ -122,11 +122,11 @@ def is_utf8_start_4 (b : Nat) : Bool :=
 
 /-- utf8_len_bytes (matches Coq: Definition utf8_len_bytes) -/
 def utf8_len_bytes (s : Utf8String) : Nat :=
-  length (utf8_bytes s)
+  length (s.utf8_bytes)
 
 /-- utf8_len_chars (matches Coq: Definition utf8_len_chars) -/
 def utf8_len_chars (s : Utf8String) : Nat :=
-  utf8_char_count (utf8_bytes s)
+  utf8_char_count (s.utf8_bytes)
 
 /-- bigint_add (matches Coq: Definition bigint_add) -/
 def bigint_add (a b : BigInt) : BigInt :=
@@ -173,7 +173,7 @@ theorem Y_001_10_vec_pop_correct : ∀ (A : Type) (v : Vec A) (x : A), vec_pop v
   simp_all [Bool.and_eq_true]
 
 /-- Y_001_11_vec_get_bounds (matches Coq) -/
-theorem Y_001_11_vec_get_bounds : ∀ (A : Type) (v : Vec A) (i : nat), i ≥ vec_length v → vec_get v i = None := by
+theorem Y_001_11_vec_get_bounds : ∀ (A : Type) (v : Vec A) (i : Nat), i ≥ vec_length v → vec_get v i = None := by
   simp_all [Bool.and_eq_true]
 
 /-- Y_001_12_vec_len_accurate (matches Coq) -/
@@ -225,11 +225,11 @@ theorem Y_001_22_string_len_chars : ∀ (s : Utf8String), utf8_len_chars s = utf
   rfl
 
 /-- Y_001_23_string_slice_valid (matches Coq) -/
-theorem Y_001_23_string_slice_valid : ∀ (s : Utf8String) (start len : nat), is_valid_utf8 (utf8_bytes s) = true → True.  := by
+theorem Y_001_23_string_slice_valid : ∀ (s : Utf8String) (start len : Nat), is_valid_utf8 (utf8_bytes s) = true → True.  := by
   intro h; exact h
 
 /-- Y_001_24_format_bounded (matches Coq) -/
-theorem Y_001_24_format_bounded : ∀ (fmt : list nat) (max_output : nat), length fmt ≤ max_output → True.  := by
+theorem Y_001_24_format_bounded : ∀ (fmt : list nat) (max_output : Nat), length fmt ≤ max_output → True.  := by
   intro h; exact h
 
 /-- Y_001_25_no_format_string_attack (matches Coq) -/

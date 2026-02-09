@@ -165,20 +165,20 @@ def min_tls_version : ProtocolVersion :=
 
 /-- vpn_secure (matches Coq: Definition vpn_secure) -/
 def vpn_secure (v : VPNConnection) : Prop :=
-  vpn_encrypted v = true /\
-  vpn_authenticated v = true /\
-  vpn_tunnel_established v = true /\
-  vpn_protocol_version v >= min_tls_version
+  v.vpn_encrypted = true /\
+  v.vpn_authenticated = true /\
+  v.vpn_tunnel_established = true /\
+  v.vpn_protocol_version >= min_tls_version
 
 /-- valid_negotiation (matches Coq: Definition valid_negotiation) -/
 def valid_negotiation (n : ConnectionNegotiation) : Prop :=
-  neg_selected_version n = min (neg_client_max_version n) (neg_server_max_version n) /\
-  neg_selected_version n >= min_tls_version
+  n.neg_selected_version = min (n.neg_client_max_version) (n.neg_server_max_version) /\
+  n.neg_selected_version >= min_tls_version
 
 /-- downgrade_attack (matches Coq: Definition downgrade_attack) -/
 def downgrade_attack (n : ConnectionNegotiation) : Prop :=
-  neg_selected_version n < neg_client_max_version n /\
-  neg_selected_version n < neg_server_max_version n
+  n.neg_selected_version < n.neg_client_max_version /\
+  n.neg_selected_version < n.neg_server_max_version
 
 /-- secure_negotiation (matches Coq: Definition secure_negotiation) -/
 def secure_negotiation (n : ConnectionNegotiation) : Prop :=
@@ -186,68 +186,68 @@ def secure_negotiation (n : ConnectionNegotiation) : Prop :=
 
 /-- packet_inspected_prop (matches Coq: Definition packet_inspected_prop) -/
 def packet_inspected_prop (p : Packet) : Prop :=
-  pkt_inspected p = true
+  p.pkt_inspected = true
 
 /-- malicious_blocked (matches Coq: Definition malicious_blocked) -/
 def malicious_blocked (p : Packet) : Prop :=
-  pkt_malicious p = true -> pkt_inspected p = true
+  p.pkt_malicious = true -> p.pkt_inspected = true
 
 /-- rate_limit_enforced (matches Coq: Definition rate_limit_enforced) -/
 def rate_limit_enforced (rl : RateLimiter) : Prop :=
-  rl_current_count rl <= rl_max_requests rl
+  rl.rl_current_count <= rl.rl_max_requests
 
 /-- ddos_mitigated (matches Coq: Definition ddos_mitigated) -/
 def ddos_mitigated (rl : RateLimiter) : Prop :=
-  rl_current_count rl > rl_max_requests rl -> False
+  rl.rl_current_count > rl.rl_max_requests -> False
 
 /-- mitm_detected (matches Coq: Definition mitm_detected) -/
 def mitm_detected (p1 p2 : Packet) : Prop :=
-  pkt_src_ip p1 = pkt_src_ip p2 ->
-  pkt_payload_hash p1 <> pkt_payload_hash p2 ->
+  p1.pkt_src_ip = p2.pkt_src_ip ->
+  p1.pkt_payload_hash <> p2.pkt_payload_hash ->
   True
 
 /-- replay_prevented (matches Coq: Definition replay_prevented) -/
 def replay_prevented (p1 p2 : Packet) : Prop :=
-  pkt_sequence p1 = pkt_sequence p2 ->
-  pkt_timestamp p1 = pkt_timestamp p2 ->
-  pkt_id p1 = pkt_id p2
+  p1.pkt_sequence = p2.pkt_sequence ->
+  p1.pkt_timestamp = p2.pkt_timestamp ->
+  p1.pkt_id = p2.pkt_id
 
 /-- session_valid_prop (matches Coq: Definition session_valid_prop) -/
 def session_valid_prop (s : Session) : Prop :=
-  session_valid s = true /\ session_token s > 0
+  s.session_valid = true /\ s.session_token > 0
 
 /-- session_hijack_prevented (matches Coq: Definition session_hijack_prevented) -/
 def session_hijack_prevented (s : Session) (claimed_ip : Nat) : Prop :=
-  session_valid s = true ->
-  session_ip s = claimed_ip
+  s.session_valid = true ->
+  s.session_ip = claimed_ip
 
 /-- ssl_version_minimum_prop (matches Coq: Definition ssl_version_minimum_prop) -/
 def ssl_version_minimum_prop (cfg : SSLConfig) : Prop :=
-  ssl_min_version cfg >= min_tls_version
+  cfg.ssl_min_version >= min_tls_version
 
 /-- cipher_strong (matches Coq: Definition cipher_strong) -/
 def cipher_strong (cfg : SSLConfig) : Prop :=
-  ssl_cipher_strength cfg >= 128
+  cfg.ssl_cipher_strength >= 128
 
 /-- revocation_checked (matches Coq: Definition revocation_checked) -/
 def revocation_checked (cfg : SSLConfig) : Prop :=
-  ssl_revocation_checked cfg = true
+  cfg.ssl_revocation_checked = true
 
 /-- connection_limit (matches Coq: Definition connection_limit) -/
 def connection_limit (ct : ConnectionTracker) : Prop :=
-  ct_connection_count ct <= ct_max_per_ip ct
+  ct.ct_connection_count <= ct.ct_max_per_ip
 
 /-- port_scan_limited (matches Coq: Definition port_scan_limited) -/
 def port_scan_limited (psd : PortScanDetector) : Prop :=
-  psd_ports_probed psd > psd_threshold psd -> psd_blocked psd = true
+  psd.psd_ports_probed > psd.psd_threshold -> psd.psd_blocked = true
 
 /-- ssl_stripping_prevented (matches Coq: Definition ssl_stripping_prevented) -/
 def ssl_stripping_prevented (cfg : SSLConfig) : Prop :=
-  ssl_min_version cfg >= min_tls_version /\ ssl_compression_disabled cfg = true
+  cfg.ssl_min_version >= min_tls_version /\ cfg.ssl_compression_disabled = true
 
 /-- dns_poisoning_detected (matches Coq: Definition dns_poisoning_detected) -/
 def dns_poisoning_detected (q1 q2 : ConnectionNegotiation) : Prop :=
-  neg_selected_version q1 <> neg_selected_version q2 ->
+  q1.neg_selected_version <> q2.neg_selected_version ->
   True
 
 /-- vpn_verified (matches Coq) -/
@@ -295,7 +295,7 @@ theorem replay_attack_prevented : ∀ (p1 p2 : Packet), replay_prevented p1 p2 �
   simp_all [Bool.and_eq_true]
 
 /-- session_hijacking_prevented (matches Coq) -/
-theorem session_hijacking_prevented : ∀ (s : Session) (claimed_ip : nat), session_hijack_prevented s claimed_ip → session_valid s = true → session_ip s = claimed_ip := by
+theorem session_hijacking_prevented : ∀ (s : Session) (claimed_ip : Nat), session_hijack_prevented s claimed_ip → session_valid s = true → session_ip s = claimed_ip := by
   simp_all [Bool.and_eq_true]
 
 /-- ssl_stripping_prevented_thm (matches Coq) -/

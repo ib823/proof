@@ -96,7 +96,7 @@ They can be compared structurally without needing step-indexing.
 
 /-- Check if a type is first-order (no functions or channels)
     (matches Coq: Fixpoint first_order_type) -/
-def firstOrderType : Ty → Bool
+def firstOrderType : Ty → .bool
   | .unit | .bool | .int | .string | .bytes => true
   | .fn _ _ _ => false
   | .prod T1 T2 => firstOrderType T1 && firstOrderType T2
@@ -231,7 +231,7 @@ Environments (substitutions) are related if they map each variable to related va
 -/
 
 /-- Substitution as a function from identifiers to expressions -/
-abbrev Subst := Ident → Option Expr
+abbrev Subst := Ident → .option Expr
 
 /-- Apply substitution to expression -/
 def applySubst (ρ : Subst) : Expr → Expr
@@ -479,7 +479,7 @@ theorem closedExpr_unit : closedExpr .unit := by
   intro x hfree
   cases hfree
 
-theorem closedExpr_bool (b : Bool) : closedExpr (.bool b) := by
+theorem closedExpr_bool (b : .bool) : closedExpr (.bool b) := by
   intro x hfree
   cases hfree
 
@@ -487,11 +487,11 @@ theorem closedExpr_int (n : Nat) : closedExpr (.int n) := by
   intro x hfree
   cases hfree
 
-theorem closedExpr_string (s : String) : closedExpr (.string s) := by
+theorem closedExpr_string (s : .string) : closedExpr (.string s) := by
   intro x hfree
   cases hfree
 
-theorem closedExpr_loc (l : Loc) : closedExpr (.loc l) := by
+theorem closedExpr_loc (l : .loc) : closedExpr (.loc l) := by
   intro x hfree
   cases hfree
 
@@ -531,7 +531,7 @@ theorem valRel_unit (Σ : StoreTy) :
       constructor; intro x hfree; cases hfree
       intro x hfree; cases hfree
 
-theorem valRel_bool (Σ : StoreTy) (b : Bool) :
+theorem valRel_bool (Σ : StoreTy) (b : .bool) :
     valRel Σ .bool (.bool b) (.bool b) := by
   intro n
   induction n with

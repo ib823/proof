@@ -252,7 +252,7 @@ def webauthn_is_phishing_resistant (auth : AuthMechanism) : Prop :=
 
 /-- is_phishing_resistant_auth (matches Coq: Definition is_phishing_resistant_auth) -/
 def is_phishing_resistant_auth (state : SecurityPolicyState) : Prop :=
-  webauthn_enforced state = true /\ auth_mechanism state = WebAuthn
+  state.webauthn_enforced = true /\ state.auth_mechanism = WebAuthn
 
 /-- verification_procedures_adequate (matches Coq: Definition verification_procedures_adequate) -/
 def verification_procedures_adequate := sorry -- complex match, needs manual translation
@@ -262,20 +262,20 @@ def training_effective := sorry -- complex match, needs manual translation
 
 /-- executive_verification_enhanced (matches Coq: Definition executive_verification_enhanced) -/
 def executive_verification_enhanced (state : SecurityPolicyState) : Prop :=
-  verification_level state = MultiPartyVerification /\
-  out_of_band_verification state = true
+  state.verification_level = MultiPartyVerification /\
+  state.out_of_band_verification = true
 
 /-- callback_verification_active (matches Coq: Definition callback_verification_active) -/
 def callback_verification_active (state : SecurityPolicyState) : Prop :=
-  callback_verification state = true /\ out_of_band_verification state = true
+  state.callback_verification = true /\ state.out_of_band_verification = true
 
 /-- smishing_controls_active (matches Coq: Definition smishing_controls_active) -/
 def smishing_controls_active (state : SecurityPolicyState) : Prop :=
-  url_filtering_enabled state = true /\ training_effective state
+  state.url_filtering_enabled = true /\ training_effective state
 
 /-- device_control_active (matches Coq: Definition device_control_active) -/
 def device_control_active (state : SecurityPolicyState) : Prop :=
-  device_control_policy state = true /\ technical_controls_active state = true
+  state.device_control_policy = true /\ state.technical_controls_active = true
 
 /-- physical_access_controlled (matches Coq: Definition physical_access_controlled) -/
 def physical_access_controlled := sorry -- complex match, needs manual translation
@@ -285,23 +285,23 @@ def secure_disposal_implemented := sorry -- complex match, needs manual translat
 
 /-- privacy_protection_active (matches Coq: Definition privacy_protection_active) -/
 def privacy_protection_active (state : SecurityPolicyState) : Prop :=
-  privacy_screens_deployed state = true
+  state.privacy_screens_deployed = true
 
 /-- insider_threat_controls_active (matches Coq: Definition insider_threat_controls_active) -/
 def insider_threat_controls_active (state : SecurityPolicyState) : Prop :=
-  least_privilege_enforced state = true /\ audit_logging_enabled state = true
+  state.least_privilege_enforced = true /\ state.audit_logging_enabled = true
 
 /-- coercion_resilience_active (matches Coq: Definition coercion_resilience_active) -/
 def coercion_resilience_active (state : SecurityPolicyState) : Prop :=
-  duress_codes_enabled state = true /\ plausible_deniability_possible state = true
+  state.duress_codes_enabled = true /\ state.plausible_deniability_possible = true
 
 /-- bribery_controls_active (matches Coq: Definition bribery_controls_active) -/
 def bribery_controls_active (state : SecurityPolicyState) : Prop :=
-  background_checks_performed state = true /\ behavioral_monitoring state = true
+  state.background_checks_performed = true /\ state.behavioral_monitoring = true
 
 /-- security_culture_active (matches Coq: Definition security_culture_active) -/
 def security_culture_active (state : SecurityPolicyState) : Prop :=
-  security_culture_established state = true /\ training_effective state
+  state.security_culture_established = true /\ training_effective state
 
 /-- social_engineering_controls_active (matches Coq: Definition social_engineering_controls_active) -/
 def social_engineering_controls_active (state : SecurityPolicyState) : Prop :=
@@ -309,18 +309,18 @@ def social_engineering_controls_active (state : SecurityPolicyState) : Prop :=
 
 /-- credential_sharing_controls_active (matches Coq: Definition credential_sharing_controls_active) -/
 def credential_sharing_controls_active (state : SecurityPolicyState) : Prop :=
-  mfa_enabled state = true /\ credential_monitoring state = true
+  state.mfa_enabled = true /\ state.credential_monitoring = true
 
 /-- password_policy_strong (matches Coq: Definition password_policy_strong) -/
 def password_policy_strong := sorry -- complex match, needs manual translation
 
 /-- unique_passwords_active (matches Coq: Definition unique_passwords_active) -/
 def unique_passwords_active (state : SecurityPolicyState) : Prop :=
-  unique_passwords_enforced state = true /\ breach_detection_enabled state = true
+  state.unique_passwords_enforced = true /\ state.breach_detection_enabled = true
 
 /-- unsafe_behavior_controls_active (matches Coq: Definition unsafe_behavior_controls_active) -/
 def unsafe_behavior_controls_active (state : SecurityPolicyState) : Prop :=
-  training_effective state /\ technical_controls_active state = true
+  training_effective state /\ state.technical_controls_active = true
 
 /-- automated_config_active (matches Coq: Definition automated_config_active) -/
 def automated_config_active := sorry -- complex match, needs manual translation
@@ -400,7 +400,7 @@ def example_secure_state : SecurityPolicyState := mkSecurityPolicy
     MultiMaintainerReview true
 
 /-- bool_eq_true (matches Coq) -/
-theorem bool_eq_true : ∀ b : bool, b = true <-> b = true := by
+theorem bool_eq_true : ∀ b : Bool, b = true <-> b = true := by
   intro h; exact h
 
 /-- advanced_training_implies_basic (matches Coq) -/
@@ -424,171 +424,171 @@ theorem zero_trust_is_strong : ∀ pp, pp = ZeroTrustPolicy → pp = EnterpriseP
   intro h; exact h
 
 /-- hum_001_phishing_mitigated_by_webauthn (matches Coq) -/
-theorem hum_001_phishing_mitigated_by_webauthn : ∀ (state : SecurityPolicyState), webauthn_enforced state = true → auth_mechanism state = WebAuthn → threat_mitigated Phishing state := by
+theorem hum_001_phishing_mitigated_by_webauthn : ∀ (state : SecurityPolicyState), webauthn_enforced state = true → auth_mechanism state = WebAuthn → threat_mitigated .phishing state := by
   intro h; exact h
 
 /-- hum_001_phishing_control_effective (matches Coq) -/
-theorem hum_001_phishing_control_effective : ∀ (state : SecurityPolicyState), is_phishing_resistant_auth state → control_effective Phishing state := by
+theorem hum_001_phishing_control_effective : ∀ (state : SecurityPolicyState), is_phishing_resistant_auth state → control_effective .phishing state := by
   rfl
 
 /-- hum_002_spear_phishing_mitigated (matches Coq) -/
-theorem hum_002_spear_phishing_mitigated : ∀ (state : SecurityPolicyState), (verification_level state = DualVerification ∨ verification_level state = MultiPartyVerification) → (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → threat_mitigated SpearPhishing state := by
+theorem hum_002_spear_phishing_mitigated : ∀ (state : SecurityPolicyState), (verification_level state = DualVerification ∨ verification_level state = MultiPartyVerification) → (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → threat_mitigated .spearPhishing state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_002_spear_phishing_control_effective (matches Coq) -/
-theorem hum_002_spear_phishing_control_effective : ∀ (state : SecurityPolicyState), verification_procedures_adequate state → training_effective state → control_effective SpearPhishing state := by
+theorem hum_002_spear_phishing_control_effective : ∀ (state : SecurityPolicyState), verification_procedures_adequate state → training_effective state → control_effective .spearPhishing state := by
   rfl
 
 /-- hum_003_whaling_mitigated (matches Coq) -/
-theorem hum_003_whaling_mitigated : ∀ (state : SecurityPolicyState), verification_level state = MultiPartyVerification → out_of_band_verification state = true → threat_mitigated Whaling state := by
+theorem hum_003_whaling_mitigated : ∀ (state : SecurityPolicyState), verification_level state = MultiPartyVerification → out_of_band_verification state = true → threat_mitigated .whaling state := by
   intro h; exact h
 
 /-- hum_003_whaling_control_effective (matches Coq) -/
-theorem hum_003_whaling_control_effective : ∀ (state : SecurityPolicyState), executive_verification_enhanced state → control_effective Whaling state := by
+theorem hum_003_whaling_control_effective : ∀ (state : SecurityPolicyState), executive_verification_enhanced state → control_effective .whaling state := by
   rfl
 
 /-- hum_004_vishing_mitigated (matches Coq) -/
-theorem hum_004_vishing_mitigated : ∀ (state : SecurityPolicyState), callback_verification state = true → out_of_band_verification state = true → threat_mitigated Vishing state := by
+theorem hum_004_vishing_mitigated : ∀ (state : SecurityPolicyState), callback_verification state = true → out_of_band_verification state = true → threat_mitigated .vishing state := by
   intro h; exact h
 
 /-- hum_004_vishing_control_effective (matches Coq) -/
-theorem hum_004_vishing_control_effective : ∀ (state : SecurityPolicyState), callback_verification_active state → control_effective Vishing state := by
+theorem hum_004_vishing_control_effective : ∀ (state : SecurityPolicyState), callback_verification_active state → control_effective .vishing state := by
   rfl
 
 /-- hum_005_smishing_mitigated (matches Coq) -/
-theorem hum_005_smishing_mitigated : ∀ (state : SecurityPolicyState), url_filtering_enabled state = true → (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → threat_mitigated Smishing state := by
+theorem hum_005_smishing_mitigated : ∀ (state : SecurityPolicyState), url_filtering_enabled state = true → (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → threat_mitigated .smishing state := by
   intro h; exact h
 
 /-- hum_005_smishing_control_effective (matches Coq) -/
-theorem hum_005_smishing_control_effective : ∀ (state : SecurityPolicyState), smishing_controls_active state → control_effective Smishing state := by
+theorem hum_005_smishing_control_effective : ∀ (state : SecurityPolicyState), smishing_controls_active state → control_effective .smishing state := by
   rfl
 
 /-- hum_006_pretexting_mitigated (matches Coq) -/
-theorem hum_006_pretexting_mitigated : ∀ (state : SecurityPolicyState), (verification_level state = DualVerification ∨ verification_level state = MultiPartyVerification) → threat_mitigated Pretexting state := by
+theorem hum_006_pretexting_mitigated : ∀ (state : SecurityPolicyState), (verification_level state = DualVerification ∨ verification_level state = MultiPartyVerification) → threat_mitigated .pretexting state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_006_pretexting_control_effective (matches Coq) -/
-theorem hum_006_pretexting_control_effective : ∀ (state : SecurityPolicyState), verification_procedures_adequate state → control_effective Pretexting state := by
+theorem hum_006_pretexting_control_effective : ∀ (state : SecurityPolicyState), verification_procedures_adequate state → control_effective .pretexting state := by
   rfl
 
 /-- hum_007_baiting_mitigated (matches Coq) -/
-theorem hum_007_baiting_mitigated : ∀ (state : SecurityPolicyState), device_control_policy state = true → technical_controls_active state = true → threat_mitigated Baiting state := by
+theorem hum_007_baiting_mitigated : ∀ (state : SecurityPolicyState), device_control_policy state = true → technical_controls_active state = true → threat_mitigated .baiting state := by
   intro h; exact h
 
 /-- hum_007_baiting_control_effective (matches Coq) -/
-theorem hum_007_baiting_control_effective : ∀ (state : SecurityPolicyState), device_control_active state → control_effective Baiting state := by
+theorem hum_007_baiting_control_effective : ∀ (state : SecurityPolicyState), device_control_active state → control_effective .baiting state := by
   rfl
 
 /-- hum_008_tailgating_mitigated (matches Coq) -/
-theorem hum_008_tailgating_mitigated : ∀ (state : SecurityPolicyState), (physical_access_level state = BiometricRequired ∨ physical_access_level state = MantrapRequired ∨ physical_access_level state = EscortRequired) → threat_mitigated Tailgating state := by
+theorem hum_008_tailgating_mitigated : ∀ (state : SecurityPolicyState), (physical_access_level state = BiometricRequired ∨ physical_access_level state = MantrapRequired ∨ physical_access_level state = EscortRequired) → threat_mitigated .tailgating state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_008_tailgating_control_effective (matches Coq) -/
-theorem hum_008_tailgating_control_effective : ∀ (state : SecurityPolicyState), physical_access_controlled state → control_effective Tailgating state := by
+theorem hum_008_tailgating_control_effective : ∀ (state : SecurityPolicyState), physical_access_controlled state → control_effective .tailgating state := by
   rfl
 
 /-- hum_009_dumpster_diving_mitigated (matches Coq) -/
-theorem hum_009_dumpster_diving_mitigated : ∀ (state : SecurityPolicyState), (disposal_method state = CrossCutShredding ∨ disposal_method state = SecureIncineration ∨ disposal_method state = DegaussingAndDestruction) → threat_mitigated DumpsterDiving state := by
+theorem hum_009_dumpster_diving_mitigated : ∀ (state : SecurityPolicyState), (disposal_method state = CrossCutShredding ∨ disposal_method state = SecureIncineration ∨ disposal_method state = DegaussingAndDestruction) → threat_mitigated .dumpsterDiving state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_009_dumpster_diving_control_effective (matches Coq) -/
-theorem hum_009_dumpster_diving_control_effective : ∀ (state : SecurityPolicyState), secure_disposal_implemented state → control_effective DumpsterDiving state := by
+theorem hum_009_dumpster_diving_control_effective : ∀ (state : SecurityPolicyState), secure_disposal_implemented state → control_effective .dumpsterDiving state := by
   rfl
 
 /-- hum_010_shoulder_surfing_mitigated (matches Coq) -/
-theorem hum_010_shoulder_surfing_mitigated : ∀ (state : SecurityPolicyState), privacy_screens_deployed state = true → threat_mitigated ShoulderSurfing state := by
+theorem hum_010_shoulder_surfing_mitigated : ∀ (state : SecurityPolicyState), privacy_screens_deployed state = true → threat_mitigated .shoulderSurfing state := by
   intro h; exact h
 
 /-- hum_010_shoulder_surfing_control_effective (matches Coq) -/
-theorem hum_010_shoulder_surfing_control_effective : ∀ (state : SecurityPolicyState), privacy_protection_active state → control_effective ShoulderSurfing state := by
+theorem hum_010_shoulder_surfing_control_effective : ∀ (state : SecurityPolicyState), privacy_protection_active state → control_effective .shoulderSurfing state := by
   rfl
 
 /-- hum_011_insider_threat_mitigated (matches Coq) -/
-theorem hum_011_insider_threat_mitigated : ∀ (state : SecurityPolicyState), least_privilege_enforced state = true → audit_logging_enabled state = true → threat_mitigated InsiderThreat state := by
+theorem hum_011_insider_threat_mitigated : ∀ (state : SecurityPolicyState), least_privilege_enforced state = true → audit_logging_enabled state = true → threat_mitigated .insiderThreat state := by
   intro h; exact h
 
 /-- hum_011_insider_threat_control_effective (matches Coq) -/
-theorem hum_011_insider_threat_control_effective : ∀ (state : SecurityPolicyState), insider_threat_controls_active state → control_effective InsiderThreat state := by
+theorem hum_011_insider_threat_control_effective : ∀ (state : SecurityPolicyState), insider_threat_controls_active state → control_effective .insiderThreat state := by
   rfl
 
 /-- hum_012_coercion_mitigated (matches Coq) -/
-theorem hum_012_coercion_mitigated : ∀ (state : SecurityPolicyState), duress_codes_enabled state = true → plausible_deniability_possible state = true → threat_mitigated Coercion state := by
+theorem hum_012_coercion_mitigated : ∀ (state : SecurityPolicyState), duress_codes_enabled state = true → plausible_deniability_possible state = true → threat_mitigated .coercion state := by
   intro h; exact h
 
 /-- hum_012_coercion_control_effective (matches Coq) -/
-theorem hum_012_coercion_control_effective : ∀ (state : SecurityPolicyState), coercion_resilience_active state → control_effective Coercion state := by
+theorem hum_012_coercion_control_effective : ∀ (state : SecurityPolicyState), coercion_resilience_active state → control_effective .coercion state := by
   rfl
 
 /-- hum_013_bribery_mitigated (matches Coq) -/
-theorem hum_013_bribery_mitigated : ∀ (state : SecurityPolicyState), background_checks_performed state = true → behavioral_monitoring state = true → threat_mitigated Bribery state := by
+theorem hum_013_bribery_mitigated : ∀ (state : SecurityPolicyState), background_checks_performed state = true → behavioral_monitoring state = true → threat_mitigated .bribery state := by
   intro h; exact h
 
 /-- hum_013_bribery_control_effective (matches Coq) -/
-theorem hum_013_bribery_control_effective : ∀ (state : SecurityPolicyState), bribery_controls_active state → control_effective Bribery state := by
+theorem hum_013_bribery_control_effective : ∀ (state : SecurityPolicyState), bribery_controls_active state → control_effective .bribery state := by
   rfl
 
 /-- hum_014_blackmail_mitigated (matches Coq) -/
-theorem hum_014_blackmail_mitigated : ∀ (state : SecurityPolicyState), security_culture_established state = true → (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → threat_mitigated Blackmail state := by
+theorem hum_014_blackmail_mitigated : ∀ (state : SecurityPolicyState), security_culture_established state = true → (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → threat_mitigated .blackmail state := by
   intro h; exact h
 
 /-- hum_014_blackmail_control_effective (matches Coq) -/
-theorem hum_014_blackmail_control_effective : ∀ (state : SecurityPolicyState), security_culture_active state → control_effective Blackmail state := by
+theorem hum_014_blackmail_control_effective : ∀ (state : SecurityPolicyState), security_culture_active state → control_effective .blackmail state := by
   rfl
 
 /-- hum_015_social_engineering_mitigated (matches Coq) -/
-theorem hum_015_social_engineering_mitigated : ∀ (state : SecurityPolicyState), (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → (verification_level state = DualVerification ∨ verification_level state = MultiPartyVerification) → threat_mitigated SocialEngineering state := by
+theorem hum_015_social_engineering_mitigated : ∀ (state : SecurityPolicyState), (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → (verification_level state = DualVerification ∨ verification_level state = MultiPartyVerification) → threat_mitigated .socialEngineering state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_015_social_engineering_control_effective (matches Coq) -/
-theorem hum_015_social_engineering_control_effective : ∀ (state : SecurityPolicyState), social_engineering_controls_active state → control_effective SocialEngineering state := by
+theorem hum_015_social_engineering_control_effective : ∀ (state : SecurityPolicyState), social_engineering_controls_active state → control_effective .socialEngineering state := by
   rfl
 
 /-- hum_016_credential_sharing_mitigated (matches Coq) -/
-theorem hum_016_credential_sharing_mitigated : ∀ (state : SecurityPolicyState), mfa_enabled state = true → credential_monitoring state = true → threat_mitigated CredentialSharing state := by
+theorem hum_016_credential_sharing_mitigated : ∀ (state : SecurityPolicyState), mfa_enabled state = true → credential_monitoring state = true → threat_mitigated .credentialSharing state := by
   intro h; exact h
 
 /-- hum_016_credential_sharing_control_effective (matches Coq) -/
-theorem hum_016_credential_sharing_control_effective : ∀ (state : SecurityPolicyState), credential_sharing_controls_active state → control_effective CredentialSharing state := by
+theorem hum_016_credential_sharing_control_effective : ∀ (state : SecurityPolicyState), credential_sharing_controls_active state → control_effective .credentialSharing state := by
   rfl
 
 /-- hum_017_weak_passwords_mitigated (matches Coq) -/
-theorem hum_017_weak_passwords_mitigated : ∀ (state : SecurityPolicyState), (password_policy state = EnterprisePolicy ∨ password_policy state = ZeroTrustPolicy) → threat_mitigated WeakPasswords state := by
+theorem hum_017_weak_passwords_mitigated : ∀ (state : SecurityPolicyState), (password_policy state = EnterprisePolicy ∨ password_policy state = ZeroTrustPolicy) → threat_mitigated .weakPasswords state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_017_weak_passwords_control_effective (matches Coq) -/
-theorem hum_017_weak_passwords_control_effective : ∀ (state : SecurityPolicyState), password_policy_strong state → control_effective WeakPasswords state := by
+theorem hum_017_weak_passwords_control_effective : ∀ (state : SecurityPolicyState), password_policy_strong state → control_effective .weakPasswords state := by
   rfl
 
 /-- hum_018_password_reuse_mitigated (matches Coq) -/
-theorem hum_018_password_reuse_mitigated : ∀ (state : SecurityPolicyState), unique_passwords_enforced state = true → breach_detection_enabled state = true → threat_mitigated PasswordReuse state := by
+theorem hum_018_password_reuse_mitigated : ∀ (state : SecurityPolicyState), unique_passwords_enforced state = true → breach_detection_enabled state = true → threat_mitigated .passwordReuse state := by
   intro h; exact h
 
 /-- hum_018_password_reuse_control_effective (matches Coq) -/
-theorem hum_018_password_reuse_control_effective : ∀ (state : SecurityPolicyState), unique_passwords_active state → control_effective PasswordReuse state := by
+theorem hum_018_password_reuse_control_effective : ∀ (state : SecurityPolicyState), unique_passwords_active state → control_effective .passwordReuse state := by
   rfl
 
 /-- hum_019_unsafe_behavior_mitigated (matches Coq) -/
-theorem hum_019_unsafe_behavior_mitigated : ∀ (state : SecurityPolicyState), (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → technical_controls_active state = true → threat_mitigated UnsafeBehavior state := by
+theorem hum_019_unsafe_behavior_mitigated : ∀ (state : SecurityPolicyState), (training_status state = AdvancedTrained ∨ training_status state = CertifiedTrained) → technical_controls_active state = true → threat_mitigated .unsafeBehavior state := by
   intro h; exact h
 
 /-- hum_019_unsafe_behavior_control_effective (matches Coq) -/
-theorem hum_019_unsafe_behavior_control_effective : ∀ (state : SecurityPolicyState), unsafe_behavior_controls_active state → control_effective UnsafeBehavior state := by
+theorem hum_019_unsafe_behavior_control_effective : ∀ (state : SecurityPolicyState), unsafe_behavior_controls_active state → control_effective .unsafeBehavior state := by
   rfl
 
 /-- hum_020_configuration_error_mitigated (matches Coq) -/
-theorem hum_020_configuration_error_mitigated : ∀ (state : SecurityPolicyState), (config_management state = AutomatedWithValidation ∨ config_management state = ImmutableInfrastructure) → threat_mitigated ConfigurationError state := by
+theorem hum_020_configuration_error_mitigated : ∀ (state : SecurityPolicyState), (config_management state = AutomatedWithValidation ∨ config_management state = ImmutableInfrastructure) → threat_mitigated .configurationError state := by
   simp_all [Bool.and_eq_true]
 
 /-- hum_020_configuration_error_control_effective (matches Coq) -/
-theorem hum_020_configuration_error_control_effective : ∀ (state : SecurityPolicyState), automated_config_active state → control_effective ConfigurationError state := by
+theorem hum_020_configuration_error_control_effective : ∀ (state : SecurityPolicyState), automated_config_active state → control_effective .configurationError state := by
   rfl
 
 /-- hum_021_sock_puppet_campaign_mitigated (matches Coq) -/
-theorem hum_021_sock_puppet_campaign_mitigated : ∀ (state : SecurityPolicyState), multi_maintainer_required state = true → (review_process state = MultiMaintainerReview ∨ review_process state = FormalVerificationReview) → threat_mitigated SockPuppetCampaign state := by
+theorem hum_021_sock_puppet_campaign_mitigated : ∀ (state : SecurityPolicyState), multi_maintainer_required state = true → (review_process state = MultiMaintainerReview ∨ review_process state = FormalVerificationReview) → threat_mitigated .sockPuppetCampaign state := by
   intro h; exact h
 
 /-- hum_021_sock_puppet_campaign_control_effective (matches Coq) -/
-theorem hum_021_sock_puppet_campaign_control_effective : ∀ (state : SecurityPolicyState), multi_maintainer_review_active state → control_effective SockPuppetCampaign state := by
+theorem hum_021_sock_puppet_campaign_control_effective : ∀ (state : SecurityPolicyState), multi_maintainer_review_active state → control_effective .sockPuppetCampaign state := by
   rfl
 
 /-- all_human_threats_mitigated (matches Coq) -/
@@ -600,7 +600,7 @@ theorem example_state_is_phishing_resistant : is_phishing_resistant_auth example
   simp
 
 /-- example_state_mitigates_phishing (matches Coq) -/
-theorem example_state_mitigates_phishing : threat_mitigated Phishing example_secure_state := by
+theorem example_state_mitigates_phishing : threat_mitigated .phishing example_secure_state := by
   simp_all [Bool.and_eq_true]
 
 /-- training_enhances_defenses (matches Coq) -/
@@ -608,11 +608,11 @@ theorem training_enhances_defenses : ∀ (state : SecurityPolicyState), training
   intro h; exact h
 
 /-- verification_provides_layered_defense (matches Coq) -/
-theorem verification_provides_layered_defense : ∀ (state : SecurityPolicyState), verification_procedures_adequate state → threat_mitigated Pretexting state := by
+theorem verification_provides_layered_defense : ∀ (state : SecurityPolicyState), verification_procedures_adequate state → threat_mitigated .pretexting state := by
   intro h; exact h
 
 /-- physical_logical_complement (matches Coq) -/
-theorem physical_logical_complement : ∀ (state : SecurityPolicyState), physical_access_controlled state → insider_threat_controls_active state → threat_mitigated Tailgating state ∧ threat_mitigated InsiderThreat state := by
+theorem physical_logical_complement : ∀ (state : SecurityPolicyState), physical_access_controlled state → insider_threat_controls_active state → threat_mitigated .tailgating state ∧ threat_mitigated .insiderThreat state := by
   intro h; exact h
 
 end RIINA

@@ -137,7 +137,7 @@ structure CriticalData where
 
 /-- flip_bit (matches Coq: Definition flip_bit) -/
 def flip_bit (b : Bit) : Bit :=
-  negb b
+  !b
 
 /-- majority_vote (matches Coq: Definition majority_vote) -/
 def majority_vote (a b c : Bool) : Bool :=
@@ -152,7 +152,7 @@ def tmr_errors (t : TMR Nat) : Nat :=
 
 /-- ecc_syndrome (matches Coq: Definition ecc_syndrome) -/
 def ecc_syndrome (e : ECCWord) : Nat :=
-  fold_left (fun (acc : nat) (b : bool) => acc + (if b then 1 else 0)) (ecc_parity e) 0
+  fold_left (fun (acc : Nat) (b : Bool) => acc + (if b then 1 else 0)) (e.ecc_parity) 0
 
 /-- watchdog_expired (matches Coq: Definition watchdog_expired) -/
 def watchdog_expired (wd : Watchdog) (current_time : Nat) : Bool :=
@@ -197,11 +197,11 @@ def seu_response (seu_detected : Bool) (current_mode : SystemMode) : SystemMode 
   if seu_detected then SafeMode else current_mode
 
 /-- DOMAIN_001_01 (matches Coq) -/
-theorem DOMAIN_001_01 : ∀ (v : nat), let t := mkTMR v v v in tmr_read t = Some v := by
+theorem DOMAIN_001_01 : ∀ (v : Nat), let t := mkTMR v v v in tmr_read t = Some v := by
   simp
 
 /-- DOMAIN_001_02 (matches Coq) -/
-theorem DOMAIN_001_02 : ∀ (a b c : nat), a = b ∨ b = c ∨ a = c → ∃ v, majority_vote_nat a b c = Some v ∧ (v = a ∨ v = b ∨ v = c) := by
+theorem DOMAIN_001_02 : ∀ (a b c : Nat), a = b ∨ b = c ∨ a = c → ∃ v, majority_vote_nat a b c = Some v ∧ (v = a ∨ v = b ∨ v = c) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_03 (matches Coq) -/
@@ -213,31 +213,31 @@ theorem DOMAIN_001_04 : ∀ (w : Word), hamming_distance w w = 0 := by
   rfl
 
 /-- DOMAIN_001_05 (matches Coq) -/
-theorem DOMAIN_001_05 : ∀ (wd : Watchdog) (current_time : nat), current_time > wd_last_kick wd + wd_timeout wd → watchdog_expired wd current_time = true := by
+theorem DOMAIN_001_05 : ∀ (wd : Watchdog) (current_time : Nat), current_time > wd_last_kick wd + wd_timeout wd → watchdog_expired wd current_time = true := by
   omega
 
 /-- DOMAIN_001_06 (matches Coq) -/
-theorem DOMAIN_001_06 : ∀ (state timestamp : nat), let cp := mkCP state timestamp true in restore_checkpoint cp = Some state := by
+theorem DOMAIN_001_06 : ∀ (state timestamp : Nat), let cp := mkCP state timestamp true in restore_checkpoint cp = Some state := by
   simp
 
 /-- DOMAIN_001_07 (matches Coq) -/
-theorem DOMAIN_001_07 : ∀ (v : nat), let t := store_critical v in tmr_copy1 t = v ∧ tmr_copy2 t = v ∧ tmr_copy3 t = v := by
+theorem DOMAIN_001_07 : ∀ (v : Nat), let t := store_critical v in tmr_copy1 t = v ∧ tmr_copy2 t = v ∧ tmr_copy3 t = v := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_08 (matches Coq) -/
-theorem DOMAIN_001_08 : ∀ (cfs : CFSignature) (addr : nat), In addr (cfs_expected_next cfs) → cf_valid cfs addr = true := by
+theorem DOMAIN_001_08 : ∀ (cfs : CFSignature) (addr : Nat), In addr (cfs_expected_next cfs) → cf_valid cfs addr = true := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_09 (matches Coq) -/
-theorem DOMAIN_001_09 : ∀ (canary data : nat), let sf := mkSF canary data canary in canary_valid sf = true := by
+theorem DOMAIN_001_09 : ∀ (canary data : Nat), let sf := mkSF canary data canary in canary_valid sf = true := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_09_corrupted (matches Coq) -/
-theorem DOMAIN_001_09_corrupted : ∀ (canary data expected : nat), canary ≠ expected → let sf := mkSF canary data expected in canary_valid sf = false := by
+theorem DOMAIN_001_09_corrupted : ∀ (canary data expected : Nat), canary ≠ expected → let sf := mkSF canary data expected in canary_valid sf = false := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_10 (matches Coq) -/
-theorem DOMAIN_001_10 : ∀ (addr found corrected : nat), corrected ≤ found → let ss := mkScrub addr found corrected in scrub_effective ss = true := by
+theorem DOMAIN_001_10 : ∀ (addr found corrected : Nat), corrected ≤ found → let ss := mkScrub addr found corrected in scrub_effective ss = true := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_11 (matches Coq) -/
@@ -245,7 +245,7 @@ theorem DOMAIN_001_11 : ∀ (current_mode : SystemMode), seu_response true curre
   rfl
 
 /-- DOMAIN_001_12 (matches Coq) -/
-theorem DOMAIN_001_12 : ∀ (v : nat) (threshold : nat), threshold ≤ 3 → let nvr := mkNVR [v; v; v] threshold in nvr_consensus nvr = Some v := by
+theorem DOMAIN_001_12 : ∀ (v : Nat) (threshold : Nat), threshold ≤ 3 → let nvr := mkNVR [v; v; v] threshold in nvr_consensus nvr = Some v := by
   cases ‹_› <;> simp <;> omega
 
 /-- DOMAIN_001_13 (matches Coq) -/
@@ -253,23 +253,23 @@ theorem DOMAIN_001_13 : ∀ (p_actual p_threshold : Probability), prob_num p_act
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_14 (matches Coq) -/
-theorem DOMAIN_001_14 : ∀ (mttr requirement : nat), mttr ≤ requirement → let rm := mkRM mttr requirement in recovery_within_bound rm = true := by
+theorem DOMAIN_001_14 : ∀ (mttr requirement : Nat), mttr ≤ requirement → let rm := mkRM mttr requirement in recovery_within_bound rm = true := by
   simp_all [Bool.and_eq_true]
 
 /-- DOMAIN_001_15 (matches Coq) -/
-theorem DOMAIN_001_15 : ∀ (v : nat), let cd := mkCD v v v 0 in cd_recover cd = v := by
+theorem DOMAIN_001_15 : ∀ (v : Nat), let cd := mkCD v v v 0 in cd_recover cd = v := by
   simp
 
 /-- DOMAIN_001_15_single_corruption (matches Coq) -/
-theorem DOMAIN_001_15_single_corruption : ∀ (v corrupted : nat), let cd := mkCD corrupted v v 0 in cd_recover cd = v := by
+theorem DOMAIN_001_15_single_corruption : ∀ (v corrupted : Nat), let cd := mkCD corrupted v v 0 in cd_recover cd = v := by
   cases ‹_› <;> simp
 
 /-- DOMAIN_001_16 (matches Coq) -/
-theorem DOMAIN_001_16 : ∀ (b : bool), majority_vote b b b = b := by
+theorem DOMAIN_001_16 : ∀ (b : Bool), majority_vote b b b = b := by
   cases ‹_› <;> simp
 
 /-- DOMAIN_001_17 (matches Coq) -/
-theorem DOMAIN_001_17 : ∀ (v : nat) (chk : nat), cd_consistent (mkCD v v v chk) = true := by
+theorem DOMAIN_001_17 : ∀ (v : Nat) (chk : Nat), cd_consistent (mkCD v v v chk) = true := by
   cases ‹_› <;> simp
 
 /-- DOMAIN_001_18 (matches Coq) -/

@@ -219,68 +219,68 @@ def mk_compliant_fm : FormalMethods := mkFM
 
 /-- planning_compliant (matches Coq: Definition planning_compliant) -/
 def planning_compliant (p : PlanningObjectives) : Bool :=
-  plan_standards_defined p &&
-  plan_lifecycle_defined p &&
-  plan_dev_environment_defined p &&
-  plan_additional_considerations p
+  p.plan_standards_defined &&
+  p.plan_lifecycle_defined &&
+  p.plan_dev_environment_defined &&
+  p.plan_additional_considerations
 
 /-- development_compliant (matches Coq: Definition development_compliant) -/
 def development_compliant (d : DevelopmentProcess) : Bool :=
-  dev_requirements_complete d &&
-  dev_requirements_accurate d &&
-  dev_requirements_verifiable d &&
-  dev_requirements_conformant d &&
-  dev_requirements_traceable d &&
-  dev_design_complete d &&
-  dev_design_accurate d &&
-  dev_design_consistent d &&
-  dev_design_verifiable d &&
-  dev_design_conformant d &&
-  dev_code_complete d &&
-  dev_code_accurate d &&
-  dev_code_consistent d &&
-  dev_code_verifiable d &&
-  dev_code_conformant d &&
-  dev_code_traceable d
+  d.dev_requirements_complete &&
+  d.dev_requirements_accurate &&
+  d.dev_requirements_verifiable &&
+  d.dev_requirements_conformant &&
+  d.dev_requirements_traceable &&
+  d.dev_design_complete &&
+  d.dev_design_accurate &&
+  d.dev_design_consistent &&
+  d.dev_design_verifiable &&
+  d.dev_design_conformant &&
+  d.dev_code_complete &&
+  d.dev_code_accurate &&
+  d.dev_code_consistent &&
+  d.dev_code_verifiable &&
+  d.dev_code_conformant &&
+  d.dev_code_traceable
 
 /-- verification_compliant (matches Coq: Definition verification_compliant) -/
 def verification_compliant (v : VerificationProcess) : Bool :=
-  verif_requirements_reviewed v &&
-  verif_design_reviewed v &&
-  verif_code_reviewed v &&
-  verif_integration_tested v &&
-  verif_hw_sw_integration_tested v &&
-  verif_coverage_analysis_done v &&
-  verif_structural_coverage v &&
-  verif_mc_dc_coverage v
+  v.verif_requirements_reviewed &&
+  v.verif_design_reviewed &&
+  v.verif_code_reviewed &&
+  v.verif_integration_tested &&
+  v.verif_hw_sw_integration_tested &&
+  v.verif_coverage_analysis_done &&
+  v.verif_structural_coverage &&
+  v.verif_mc_dc_coverage
 
 /-- cm_compliant (matches Coq: Definition cm_compliant) -/
 def cm_compliant (c : ConfigurationManagement) : Bool :=
-  cm_identification c &&
-  cm_baselines c &&
-  cm_traceability c &&
-  cm_problem_reporting c &&
-  cm_change_control c &&
-  cm_change_review c &&
-  cm_status_accounting c &&
-  cm_archive_retrieval c &&
-  cm_release c
+  c.cm_identification &&
+  c.cm_baselines &&
+  c.cm_traceability &&
+  c.cm_problem_reporting &&
+  c.cm_change_control &&
+  c.cm_change_review &&
+  c.cm_status_accounting &&
+  c.cm_archive_retrieval &&
+  c.cm_release
 
 /-- qa_compliant (matches Coq: Definition qa_compliant) -/
 def qa_compliant (q : QualityAssurance) : Bool :=
-  qa_compliance_assured q &&
-  qa_audits_performed q &&
-  qa_records_maintained q &&
-  qa_independence q
+  q.qa_compliance_assured &&
+  q.qa_audits_performed &&
+  q.qa_records_maintained &&
+  q.qa_independence
 
 /-- fm_compliant (matches Coq: Definition fm_compliant) -/
 def fm_compliant (f : FormalMethods) : Bool :=
-  fm_specification_formal f &&
-  fm_design_formal f &&
-  fm_code_formal f &&
-  fm_verification_formal f &&
-  fm_soundness_justified f &&
-  fm_completeness_assessed f
+  f.fm_specification_formal &&
+  f.fm_design_formal &&
+  f.fm_code_formal &&
+  f.fm_verification_formal &&
+  f.fm_soundness_justified &&
+  f.fm_completeness_assessed
 
 /-- do178c_level_a_compliant (matches Coq: Definition do178c_level_a_compliant) -/
 def do178c_level_a_compliant := sorry -- complex match, needs manual translation
@@ -299,7 +299,7 @@ def riina_do178c : DO178CCompliance := mkDO178C
     SECTION 6: HELPER LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- DO178_001: DAL Reflexivity -/

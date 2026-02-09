@@ -65,7 +65,7 @@ def response_time (tap : SingleTapEvent) : R :=
 def requires_coordination (gt : GestureType) : Bool :=
   match gt with
   | .rotate => true
-  | ._ => false
+  | _ => false
 
 /-- classify_touch (matches Coq: Definition classify_touch) -/
 def classify_touch (tc : Nat) (dur : R) : TouchClassification :=
@@ -112,11 +112,11 @@ theorem 6 : rotation_angle_bounded — rotation within [-pi, pi]  Theorem rotati
   intro h; exact h
 
 /-- 7 (matches Coq) -/
-theorem 7 : gesture_recognizer_total — every touch sequence gets classified  Theorem gesture_recognizer_total : ∀ (tc : nat) (dur : R), ∃ (cls : TouchClassification), classify_touch tc dur = cls := by
+theorem 7 : gesture_recognizer_total — every touch sequence gets classified  Theorem gesture_recognizer_total : ∀ (tc : Nat) (dur : R), ∃ (cls : TouchClassification), classify_touch tc dur = cls := by
   rfl
 
 /-- gesture_recognizer_always_classifies (matches Coq) -/
-theorem gesture_recognizer_always_classifies : ∀ (tc : nat) (dur : R), classify_touch tc dur ≠ UnclassifiedTouch := by
+theorem gesture_recognizer_always_classifies : ∀ (tc : Nat) (dur : R), classify_touch tc dur ≠ UnclassifiedTouch := by
   simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
@@ -124,11 +124,11 @@ theorem 8 : no_ghost_touches — unrecognized sequences don't trigger actions  T
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : multi_touch_sorted — touch points processed in order  Fixpoint is_sorted (l : list nat) : Prop := match l with | [] => True | [_] => True | x :: ((y :: _) as rest) => (x ≤ y)%nat ∧ is_sorted rest end. Theorem multi_touch_sorted_head : ∀ (x y : nat) (rest : list nat), is_sorted (x :: y :: rest) → (x ≤ y)%nat := by
+theorem 9 : multi_touch_sorted — touch points processed in order  Fixpoint is_sorted (l : list nat) : Prop := match l with | [] => True | [_] => True | x :: ((y :: _) as rest) => (x ≤ y)%nat ∧ is_sorted rest end. Theorem multi_touch_sorted_head : ∀ (x y : Nat) (rest : list nat), is_sorted (x :: y :: rest) → (x ≤ y)%nat := by
   intro h; exact h
 
 /-- multi_touch_sorted_tail (matches Coq) -/
-theorem multi_touch_sorted_tail : ∀ (x : nat) (rest : list nat), is_sorted (x :: rest) → is_sorted rest := by
+theorem multi_touch_sorted_tail : ∀ (x : Nat) (rest : list nat), is_sorted (x :: rest) → is_sorted rest := by
   intro h; exact h
 
 /-- 10 (matches Coq) -/

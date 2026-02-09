@@ -147,31 +147,31 @@ structure SmartContractSecurity where
 
 /-- reentrancy_protected (matches Coq: Definition reentrancy_protected) -/
 def reentrancy_protected (r : ReentrancyGuard) : Bool :=
-  rg_mutex_lock r && rg_cei_pattern r && rg_pull_over_push r
+  r.rg_mutex_lock && r.rg_cei_pattern && r.rg_pull_over_push
 
 /-- integer_safe (matches Coq: Definition integer_safe) -/
 def integer_safe (i : IntegerSafety) : Bool :=
-  is_overflow_check i && is_underflow_check i && is_safe_math i
+  i.is_overflow_check && i.is_underflow_check && i.is_safe_math
 
 /-- access_controlled (matches Coq: Definition access_controlled) -/
 def access_controlled (a : AccessControlPolicy) : Bool :=
-  ac_owner_only a && ac_role_based a && ac_no_tx_origin a && ac_multi_sig a
+  a.ac_owner_only && a.ac_role_based && a.ac_no_tx_origin && a.ac_multi_sig
 
 /-- delegate_safe (matches Coq: Definition delegate_safe) -/
 def delegate_safe (d : DelegateCallSafety) : Bool :=
-  dc_storage_collision_check d && dc_initialization_check d && dc_selector_clashing_check d
+  d.dc_storage_collision_check && d.dc_initialization_check && d.dc_selector_clashing_check
 
 /-- flash_defended (matches Coq: Definition flash_defended) -/
 def flash_defended (f : FlashLoanDefense) : Bool :=
-  fl_oracle_checks f && fl_time_weighted_price f && fl_multiple_oracles f
+  f.fl_oracle_checks && f.fl_time_weighted_price && f.fl_multiple_oracles
 
 /-- fully_secure_contract (matches Coq: Definition fully_secure_contract) -/
 def fully_secure_contract (s : SmartContractSecurity) : Bool :=
-  reentrancy_protected (sc_reentrancy s) &&
-  integer_safe (sc_integer s) &&
-  access_controlled (sc_access s) &&
-  delegate_safe (sc_delegate s) &&
-  flash_defended (sc_flash s)
+  reentrancy_protected (s.sc_reentrancy) &&
+  integer_safe (s.sc_integer) &&
+  access_controlled (s.sc_access) &&
+  delegate_safe (s.sc_delegate) &&
+  flash_defended (s.sc_flash)
 
 /-- riina_reentrancy (matches Coq: Definition riina_reentrancy) -/
 def riina_reentrancy : ReentrancyGuard := mkReentrancyGuard true true true
@@ -196,7 +196,7 @@ def riina_contract_security : SmartContractSecurity := mkSCSecurity
     SECTION 3: COMPLIANCE PREDICATES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- SC_001: RIINA Reentrancy Protected -/

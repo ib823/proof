@@ -94,7 +94,7 @@ def tgt_label_of_prog (p : tgt_prog) : label :=
 /-- is_constant_time (matches Coq: Definition is_constant_time) -/
 def is_constant_time (prog : tgt_prog) : Prop :=
   match instr with
-  | ._ => True
+  | _ => True
 
 /-- label_eqb_refl (matches Coq) -/
 theorem label_eqb_refl : ∀ l, label_eqb l l = true := by

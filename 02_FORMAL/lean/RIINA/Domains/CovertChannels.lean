@@ -188,27 +188,27 @@ def low_equiv (s1 s2 : State) : Bool :=
 
 /-- constant_time (matches Coq: Definition constant_time) -/
 def constant_time (s1 s2 : State) (t1 t2 : Trace) : Prop :=
-  low_equiv s1 s2 = true -> trace_time t1 = trace_time t2
+  low_equiv s1 s2 = true -> t1.trace_time = t2.trace_time
 
 /-- constant_memory_pattern (matches Coq: Definition constant_memory_pattern) -/
 def constant_memory_pattern (s1 s2 : State) (t1 t2 : Trace) : Prop :=
-  low_equiv s1 s2 = true -> trace_mem_accesses t1 = trace_mem_accesses t2
+  low_equiv s1 s2 = true -> t1.trace_mem_accesses = t2.trace_mem_accesses
 
 /-- constant_cache (matches Coq: Definition constant_cache) -/
 def constant_cache (s1 s2 : State) (t1 t2 : Trace) : Prop :=
-  low_equiv s1 s2 = true -> trace_cache_pattern t1 = trace_cache_pattern t2
+  low_equiv s1 s2 = true -> t1.trace_cache_pattern = t2.trace_cache_pattern
 
 /-- constant_termination (matches Coq: Definition constant_termination) -/
 def constant_termination (s1 s2 : State) (t1 t2 : Trace) : Prop :=
-  low_equiv s1 s2 = true -> trace_terminated t1 = trace_terminated t2
+  low_equiv s1 s2 = true -> t1.trace_terminated = t2.trace_terminated
 
 /-- constant_exception (matches Coq: Definition constant_exception) -/
 def constant_exception (s1 s2 : State) (t1 t2 : Trace) : Prop :=
-  low_equiv s1 s2 = true -> trace_exception t1 = trace_exception t2
+  low_equiv s1 s2 = true -> t1.trace_exception = t2.trace_exception
 
 /-- constant_output (matches Coq: Definition constant_output) -/
 def constant_output (s1 s2 : State) (t1 t2 : Trace) : Prop :=
-  low_equiv s1 s2 = true -> trace_output t1 = trace_output t2
+  low_equiv s1 s2 = true -> t1.trace_output = t2.trace_output
 
 /-- channel_bandwidth (matches Coq: Definition channel_bandwidth) -/
 def channel_bandwidth (observations : List Observation) (secret_bits : Nat) : Nat :=
@@ -227,14 +227,14 @@ def memory_zeroed := sorry -- complex match, needs manual translation
 
 /-- partitions_disjoint (matches Coq: Definition partitions_disjoint) -/
 def partitions_disjoint (p1 p2 : Partition) : Bool :=
-  forallb (fun a => negb (existsb (Nat
+  forallb (fun a => !(existsb (Nat
 
 /-- secure_execute (matches Coq: Definition secure_execute) -/
 def secure_execute (s : State) : Trace := mkTrace
-    (state_public s)           
-    [state_public s]           
+    (s.state_public)           
+    [s.state_public]           
     [true]                     
-    (state_public s)           
+    (s.state_public)           
     true                       
     None
 
@@ -286,8 +286,8 @@ def secure_branch (s : State) : BranchTrace := mkBranchTrace [true; true; false]
 /-- storage_no_leak (matches Coq: Definition storage_no_leak) -/
 def storage_no_leak (s1 s2 : State) (st1 st2 : StorageState) : Prop :=
   low_equiv s1 s2 = true -> 
-  storage_level st1 = Public ->
-  storage_level st2 = Public ->
+  st1.storage_level = Public ->
+  st2.storage_level = Public ->
   st1 = st2
 
 /-- secure_storage (matches Coq: Definition secure_storage) -/
@@ -332,7 +332,7 @@ theorem SEC_002_07 : ∀ s1 s2 : State, let e1 := secure_em s1 in let e2 := secu
   rfl
 
 /-- SEC_002_08 (matches Coq) -/
-theorem SEC_002_08 : ∀ (obs : list Observation) (secret_bits : nat), channel_bandwidth obs secret_bits ≤ bandwidth_threshold → channel_bandwidth obs secret_bits ≤ 1 := by
+theorem SEC_002_08 : ∀ (obs : list Observation) (secret_bits : Nat), channel_bandwidth obs secret_bits ≤ bandwidth_threshold → channel_bandwidth obs secret_bits ≤ 1 := by
   intro h; exact h
 
 /-- SEC_002_09 (matches Coq) -/
@@ -356,7 +356,7 @@ theorem SEC_002_13 : ∀ s1 s2 : State, let n1 := secure_network s1 in let n2 :=
   rfl
 
 /-- SEC_002_14 (matches Coq) -/
-theorem SEC_002_14 : ∀ addr : nat, addr < length zeroed_memory → memory_zeroed addr zeroed_memory = true := by
+theorem SEC_002_14 : ∀ addr : Nat, addr < length zeroed_memory → memory_zeroed addr zeroed_memory = true := by
   cases ‹_› <;> simp <;> omega
 
 /-- SEC_002_15 (matches Coq) -/

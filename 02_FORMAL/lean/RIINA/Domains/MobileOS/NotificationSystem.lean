@@ -146,21 +146,21 @@ def Time : Type :=
 
 /-- sent (matches Coq: Definition sent) -/
 def sent (n : Notification) : Prop :=
-  notif_state n = Pending \/ 
-  notif_state n = Delivered \/ 
-  notif_state n = Read
+  n.notif_state = Pending \/ 
+  n.notif_state = Delivered \/ 
+  n.notif_state = Read
 
 /-- delivered (matches Coq: Definition delivered) -/
 def delivered (n : Notification) : Prop :=
-  notif_state n = Delivered \/ notif_state n = Read
+  n.notif_state = Delivered \/ n.notif_state = Read
 
 /-- expired (matches Coq: Definition expired) -/
 def expired (n : Notification) : Prop :=
-  notif_state n = Expired
+  n.notif_state = Expired
 
 /-- eventually_state (matches Coq: Definition eventually_state) -/
 def eventually_state (n : Notification) (target : NotificationState) : Prop :=
-  notif_state n = target
+  n.notif_state = target
 
 /-- eventually_delivered_or_expired (matches Coq: Definition eventually_delivered_or_expired) -/
 def eventually_delivered_or_expired (n : Notification) : Prop :=
@@ -172,7 +172,7 @@ def passes_focus_filter (n : Notification) (mode : FocusMode) : Bool :=
   | .allNotifications => true
   | .priorityOnly => match
   | .high => true
-  | ._ => false
+  | _ => false
 
 /-- notification_system_correct (matches Coq: Definition notification_system_correct) -/
 def notification_system_correct (n : Notification) : Prop :=
@@ -192,21 +192,21 @@ def notification_permission_granted (granted : Bool) : Prop :=
 
 /-- well_formed_notification (matches Coq: Definition well_formed_notification) -/
 def well_formed_notification (en : ExtNotification) : Prop :=
-  ext_content_sanitized en = true /\
-  ext_sound_volume en <= 100 /\
-  (ext_is_silent en = true -> ext_sound_volume en = 0) /\
-  (ext_delivery_confirmed en = true ->
-    notif_state (ext_notif en) = Delivered \/ notif_state (ext_notif en) = Read)
+  en.ext_content_sanitized = true /\
+  en.ext_sound_volume <= 100 /\
+  (en.ext_is_silent = true -> en.ext_sound_volume = 0) /\
+  (en.ext_delivery_confirmed = true ->
+    notif_state (en.ext_notif) = Delivered \/ notif_state (en.ext_notif) = Read)
 
 /-- well_formed_group (matches Coq: Definition well_formed_group) -/
 def well_formed_group (g : NotificationGroup) : Prop :=
-  length (group_notifications g) >= 2 ->
-  group_summary g <> None
+  length (g.group_notifications) >= 2 ->
+  g.group_summary <> None
 
 /-- well_formed_history (matches Coq: Definition well_formed_history) -/
 def well_formed_history (h : NotifHistory) : Prop :=
-  length (history_notifications h) <= history_max_size h /\
-  history_max_size h > 0
+  length (h.history_notifications) <= h.history_max_size /\
+  h.history_max_size > 0
 
 /-- notification_delivery_guaranteed (matches Coq) -/
 theorem notification_delivery_guaranteed : ∀ (notification : Notification), notification_system_correct notification → sent notification → eventually_delivered_or_expired notification := by
@@ -217,7 +217,7 @@ theorem delivered_implies_sent : ∀ (n : Notification), delivered n → sent n 
   intro h; exact h
 
 /-- critical_passes_priority_filter (matches Coq) -/
-theorem critical_passes_priority_filter : ∀ (n : Notification), notif_priority n = Critical → passes_focus_filter n PriorityOnly = true := by
+theorem critical_passes_priority_filter : ∀ (n : Notification), notif_priority n = Critical → passes_focus_filter n .priorityOnly = true := by
   rfl
 
 /-- critical_passes_critical_filter (matches Coq) -/
@@ -229,11 +229,11 @@ theorem dnd_blocks_all : ∀ (n : Notification), passes_focus_filter n DoNotDist
   rfl
 
 /-- all_mode_passes_all (matches Coq) -/
-theorem all_mode_passes_all : ∀ (n : Notification), passes_focus_filter n AllNotifications = true := by
+theorem all_mode_passes_all : ∀ (n : Notification), passes_focus_filter n .allNotifications = true := by
   rfl
 
 /-- notification_permission_explicit (matches Coq) -/
-theorem notification_permission_explicit : ∀ (granted : bool), granted = false → ~ notification_permission_granted granted := by
+theorem notification_permission_explicit : ∀ (granted : Bool), granted = false → ~ notification_permission_granted granted := by
   simp_all [Bool.and_eq_true]
 
 /-- notification_content_sanitized (matches Coq) -/
@@ -241,7 +241,7 @@ theorem notification_content_sanitized : ∀ (en : ExtNotification), well_formed
   intro h; exact h
 
 /-- no_notification_spam (matches Coq) -/
-theorem no_notification_spam : ∀ (count : nat), count ≤ spam_threshold → is_spam count = false := by
+theorem no_notification_spam : ∀ (count : Nat), count ≤ spam_threshold → is_spam count = false := by
   simp_all [Bool.and_eq_true]
 
 /-- notification_priority_respected (matches Coq) -/
@@ -265,11 +265,11 @@ theorem notification_sound_bounded : ∀ (en : ExtNotification), well_formed_not
   intro h; exact h
 
 /-- notification_badge_accurate (matches Coq) -/
-theorem notification_badge_accurate : ∀ (en : ExtNotification) (expected_count : nat), ext_badge_count en = expected_count → ext_badge_count en = expected_count := by
+theorem notification_badge_accurate : ∀ (en : ExtNotification) (expected_count : Nat), ext_badge_count en = expected_count → ext_badge_count en = expected_count := by
   intro h; exact h
 
 /-- notification_expiry_enforced (matches Coq) -/
-theorem notification_expiry_enforced : ∀ (en : ExtNotification) (current_time : nat), current_time > ext_expiry_time en → ext_expiry_time en < current_time := by
+theorem notification_expiry_enforced : ∀ (en : ExtNotification) (current_time : Nat), current_time > ext_expiry_time en → ext_expiry_time en < current_time := by
   omega
 
 /-- notification_channel_configurable (matches Coq) -/
@@ -293,7 +293,7 @@ theorem notification_dismiss_tracked : ∀ (h : NotifHistory), history_dismiss_t
   intro h; exact h
 
 /-- high_priority_passes_filter (matches Coq) -/
-theorem high_priority_passes_filter : ∀ (n : Notification), notif_priority n = High → passes_focus_filter n PriorityOnly = true := by
+theorem high_priority_passes_filter : ∀ (n : Notification), notif_priority n = .high → passes_focus_filter n .priorityOnly = true := by
   rfl
 
 end RIINA

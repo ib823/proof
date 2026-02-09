@@ -241,7 +241,7 @@ def indirect_branch_valid (targets : ValidTargets) (addr : InstrAddr) : Prop :=
 
 /-- btb_entry_valid (matches Coq: Definition btb_entry_valid) -/
 def btb_entry_valid (targets : ValidTargets) (e : BTBEntry) : Prop :=
-  btb_validated e = true /\ In (btb_target e) targets
+  e.btb_validated = true /\ In (e.btb_target) targets
 
 /-- gadget_blocked (matches Coq: Definition gadget_blocked) -/
 def gadget_blocked := sorry -- complex match, needs manual translation
@@ -252,26 +252,26 @@ def chain_blocked (cfi : CFIConfig) (chain : GadgetChain) : Bool :=
 
 /-- cp_protected (matches Coq: Definition cp_protected) -/
 def cp_protected (cpi : CPIConfig) (cp : CodePointer) : Bool :=
-  (negb (cpi_ptr_authentication cpi) || cp_authenticated cp) &&
-  (negb (cpi_bounds_checking cpi) || cp_bounds_checked cp)
+  (!(cpi.cpi_ptr_authentication) || cp.cp_authenticated) &&
+  (!(cpi.cpi_bounds_checking) || cp.cp_bounds_checked)
 
 /-- cfi_complete (matches Coq: Definition cfi_complete) -/
 def cfi_complete (c : CFIConfig) : Bool :=
-  cfi_shadow_stack c && cfi_indirect_branch_tracking c && cfi_return_address_protection c &&
-  cfi_forward_edge_cfi c && cfi_backward_edge_cfi c
+  c.cfi_shadow_stack && c.cfi_indirect_branch_tracking && c.cfi_return_address_protection &&
+  c.cfi_forward_edge_cfi && c.cfi_backward_edge_cfi
 
 /-- code_reuse_prevented (matches Coq: Definition code_reuse_prevented) -/
 def code_reuse_prevented (r : CodeReuse) : Bool :=
-  cr_gadget_elimination r && cr_instruction_alignment r && cr_code_pointer_integrity r
+  r.cr_gadget_elimination && r.cr_instruction_alignment && r.cr_code_pointer_integrity
 
 /-- rop_defended (matches Coq: Definition rop_defended) -/
 def rop_defended (r : ROPDefenseConfig) : Bool :=
-  cfi_complete (rop_cfi r) && code_reuse_prevented (rop_code_reuse r) &&
-  rop_aslr_compatible r && rop_dep_compatible r
+  cfi_complete (r.rop_cfi) && code_reuse_prevented (r.rop_code_reuse) &&
+  r.rop_aslr_compatible && r.rop_dep_compatible
 
 /-- cpi_complete (matches Coq: Definition cpi_complete) -/
 def cpi_complete (c : CPIConfig) : Bool :=
-  cpi_ptr_authentication c && cpi_bounds_checking c && cpi_type_checking c && cpi_isolation c
+  c.cpi_ptr_authentication && c.cpi_bounds_checking && c.cpi_type_checking && c.cpi_isolation
 
 /-- riina_cfi (matches Coq: Definition riina_cfi) -/
 def riina_cfi : CFIConfig := mkCFI true true true true true
@@ -289,19 +289,19 @@ def riina_cpi : CPIConfig := mkCPI true true true true
     SECTION 1: BASIC LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_true_intro (matches Coq) -/
-theorem andb_true_intro : ∀ a b : bool, a = true → b = true → a && b = true := by
+theorem andb_true_intro : ∀ a b : Bool, a = true → b = true → a && b = true := by
   rfl
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
 /-- ============================================================================

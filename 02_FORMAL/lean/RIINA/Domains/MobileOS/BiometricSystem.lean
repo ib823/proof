@@ -126,19 +126,19 @@ structure BiometricConfig where
 
 /-- authentic (matches Coq: Definition authentic) -/
 def authentic (a : BiometricAttempt) : Prop :=
-  attempt_authentic a = true
+  a.attempt_authentic = true
 
 /-- is_spoof (matches Coq: Definition is_spoof) -/
 def is_spoof (a : BiometricAttempt) : Prop :=
-  attempt_is_spoof a = true
+  a.attempt_is_spoof = true
 
 /-- accepted (matches Coq: Definition accepted) -/
 def accepted (a : BiometricAttempt) : Prop :=
-  attempt_accepted a = true
+  a.attempt_accepted = true
 
 /-- rejected (matches Coq: Definition rejected) -/
 def rejected (a : BiometricAttempt) : Prop :=
-  attempt_rejected a = true
+  a.attempt_rejected = true
 
 /-- match_threshold (matches Coq: Definition match_threshold) -/
 def match_threshold : Nat :=
@@ -153,7 +153,7 @@ def secure_biometric_system := sorry -- complex match, needs manual translation
 
 /-- false_acceptance_probability (matches Coq: Definition false_acceptance_probability) -/
 def false_acceptance_probability (a : BiometricAttempt) : Nat :=
-  if attempt_accepted a && negb (attempt_authentic a) then
+  if a.attempt_accepted && !(a.attempt_authentic) then
     1  
   else
     0
@@ -164,7 +164,7 @@ def well_formed_attempt (a : BiometricAttempt) : Prop :=
 
 /-- biometric_data_never_exported (matches Coq: Definition biometric_data_never_exported) -/
 def biometric_data_never_exported (t : BiometricTemplate) : Prop :=
-  tmpl_exportable t = false
+  t.tmpl_exportable = false
 
 /-- far_bounded (matches Coq: Definition far_bounded) -/
 def far_bounded (cfg : BiometricConfig) (attempt : BiometricAttempt) : Prop :=
@@ -174,59 +174,59 @@ def far_bounded (cfg : BiometricConfig) (attempt : BiometricAttempt) : Prop :=
 
 /-- frr_bounded (matches Coq: Definition frr_bounded) -/
 def frr_bounded (cfg : BiometricConfig) : Prop :=
-  bio_cfg_frr_threshold cfg <= 5
+  cfg.bio_cfg_frr_threshold <= 5
 
 /-- template_encrypted (matches Coq: Definition template_encrypted) -/
 def template_encrypted (t : BiometricTemplate) : Prop :=
-  tmpl_encrypted t = true
+  t.tmpl_encrypted = true
 
 /-- liveness_active (matches Coq: Definition liveness_active) -/
 def liveness_active (cfg : BiometricConfig) : Prop :=
-  bio_cfg_liveness_required cfg = true
+  cfg.bio_cfg_liveness_required = true
 
 /-- fallback_available (matches Coq: Definition fallback_available) -/
 def fallback_available (s : BiometricSession) : Prop :=
-  bio_session_fallback_available s = true
+  s.bio_session_fallback_available = true
 
 /-- enrollment_requires_auth_prop (matches Coq: Definition enrollment_requires_auth_prop) -/
 def enrollment_requires_auth_prop (e : BiometricEnrollment) : Prop :=
-  enroll_auth_verified e = true
+  e.enroll_auth_verified = true
 
 /-- timeout_enforced (matches Coq: Definition timeout_enforced) -/
 def timeout_enforced (s : BiometricSession) : Prop :=
-  bio_session_timeout_ms s > 0 /\ bio_session_timeout_ms s <= 30000
+  s.bio_session_timeout_ms > 0 /\ s.bio_session_timeout_ms <= 30000
 
 /-- anti_spoofing_active_prop (matches Coq: Definition anti_spoofing_active_prop) -/
 def anti_spoofing_active_prop (cfg : BiometricConfig) : Prop :=
-  bio_cfg_anti_spoofing cfg = true
+  cfg.bio_cfg_anti_spoofing = true
 
 /-- on_device_only (matches Coq: Definition on_device_only) -/
 def on_device_only (t : BiometricTemplate) : Prop :=
-  tmpl_on_device t = true /\ tmpl_exportable t = false
+  t.tmpl_on_device = true /\ t.tmpl_exportable = false
 
 /-- multi_factor_supported_prop (matches Coq: Definition multi_factor_supported_prop) -/
 def multi_factor_supported_prop (s : BiometricSession) : Prop :=
-  bio_session_multi_factor s = true
+  s.bio_session_multi_factor = true
 
 /-- biometric_revocable (matches Coq: Definition biometric_revocable) -/
 def biometric_revocable (t : BiometricTemplate) : Prop :=
-  tmpl_version t > 0
+  t.tmpl_version > 0
 
 /-- presentation_attack_detected_prop (matches Coq: Definition presentation_attack_detected_prop) -/
 def presentation_attack_detected_prop (attempt : BiometricAttempt) (cfg : BiometricConfig) : Prop :=
-  bio_cfg_anti_spoofing cfg = true ->
+  cfg.bio_cfg_anti_spoofing = true ->
   is_spoof attempt ->
   rejected attempt
 
 /-- template_update_secure (matches Coq: Definition template_update_secure) -/
 def template_update_secure (old_t new_t : BiometricTemplate) : Prop :=
-  tmpl_type old_t = tmpl_type new_t /\
-  tmpl_version new_t > tmpl_version old_t /\
-  tmpl_encrypted new_t = true
+  old_t.tmpl_type = new_t.tmpl_type /\
+  new_t.tmpl_version > old_t.tmpl_version /\
+  new_t.tmpl_encrypted = true
 
 /-- biometric_not_sole_factor_prop (matches Coq: Definition biometric_not_sole_factor_prop) -/
 def biometric_not_sole_factor_prop (s : BiometricSession) : Prop :=
-  bio_session_multi_factor s = true \/ bio_session_fallback_available s = true
+  s.bio_session_multi_factor = true \/ s.bio_session_fallback_available = true
 
 /-- biometric_false_acceptance_bounded (matches Coq) -/
 theorem biometric_false_acceptance_bounded : ∀ (attempt : BiometricAttempt), secure_biometric_system attempt → ~ authentic attempt → ~ accepted attempt := by

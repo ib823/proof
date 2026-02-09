@@ -114,15 +114,15 @@ structure CryptoImplementation where
 
 /-- ct_branch_free (matches Coq: Definition ct_branch_free) -/
 def ct_branch_free (c : ConstantTimeConfig) : Bool :=
-  ct_no_secret_branches c && ct_branchless_compare c
+  c.ct_no_secret_branches && c.ct_branchless_compare
 
 /-- ct_memory_safe (matches Coq: Definition ct_memory_safe) -/
 def ct_memory_safe (c : ConstantTimeConfig) : Bool :=
-  ct_no_secret_addresses c && ct_masked_memory c && ct_no_cache_timing c
+  c.ct_no_secret_addresses && c.ct_masked_memory && c.ct_no_cache_timing
 
 /-- ct_operation_safe (matches Coq: Definition ct_operation_safe) -/
 def ct_operation_safe (c : ConstantTimeConfig) : Bool :=
-  ct_no_variable_time_ops c && ct_constant_loops c
+  c.ct_no_variable_time_ops && c.ct_constant_loops
 
 /-- fully_constant_time (matches Coq: Definition fully_constant_time) -/
 def fully_constant_time (c : ConstantTimeConfig) : Bool :=
@@ -130,7 +130,7 @@ def fully_constant_time (c : ConstantTimeConfig) : Bool :=
 
 /-- crypto_safe (matches Coq: Definition crypto_safe) -/
 def crypto_safe (impl : CryptoImplementation) : Bool :=
-  ci_constant_time impl && ci_no_table_lookups impl
+  impl.ci_constant_time && impl.ci_no_table_lookups
 
 /-- riina_ct_config (matches Coq: Definition riina_ct_config) -/
 def riina_ct_config : ConstantTimeConfig := mkCTConfig
@@ -145,7 +145,7 @@ def riina_sha256 : CryptoImplementation := mkCryptoImpl
   Crypto_SHA256 true true false
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- CT_001: RIINA Branch Free -/

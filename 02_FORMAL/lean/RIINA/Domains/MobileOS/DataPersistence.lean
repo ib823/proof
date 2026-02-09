@@ -187,8 +187,8 @@ def record_field_count (r : Record) : Nat :=
 
 /-- all_fields_present (matches Coq: Definition all_fields_present) -/
 def all_fields_present (old_schema new_schema : Schema) (r : Record) : Prop :=
-  forall fn, In fn (schema_fields old_schema) ->
-    In fn (schema_fields new_schema) \/
+  forall fn, In fn (old_schema.schema_fields) ->
+    In fn (new_schema.schema_fields) \/
     exists fv, In (fn, fv) r
 
 /-- migrate_record (matches Coq: Definition migrate_record) -/
@@ -197,90 +197,90 @@ def migrate_record (old_s new_s : Schema) (r : Record) : Record :=
 
 /-- migrates (matches Coq: Definition migrates) -/
 def migrates (db : Database) (old_s new_s : Schema) : Prop :=
-  db_schema db = old_s /\
-  schema_version new_s > schema_version old_s
+  db.db_schema = old_s /\
+  new_s.schema_version > old_s.schema_version
 
 /-- no_data_loss (matches Coq: Definition no_data_loss) -/
 def no_data_loss (db : Database) : Prop :=
-  forall r, In r (db_records db) ->
+  forall r, In r (db.db_records) ->
     record_field_count r > 0
 
 /-- migration_preserves_data (matches Coq: Definition migration_preserves_data) -/
 def migration_preserves_data (old_s new_s : Schema) (r : Record) : Prop :=
   forall fn fv, In (fn, fv) r ->
-    In fn (schema_fields new_s) ->
+    In fn (new_s.schema_fields) ->
     In (fn, fv) (migrate_record old_s new_s r)
 
 /-- sync_correct (matches Coq: Definition sync_correct) -/
 def sync_correct (s : SyncState) : Prop :=
-  local_version s = remote_version s /\
-  conflicts s = []
+  s.local_version = s.remote_version /\
+  s.conflicts = []
 
 /-- data_encrypted_at_rest_prop (matches Coq: Definition data_encrypted_at_rest_prop) -/
 def data_encrypted_at_rest_prop (s : EncryptedStore) : Prop :=
-  store_encrypted s = true
+  s.store_encrypted = true
 
 /-- backup_encrypted_prop (matches Coq: Definition backup_encrypted_prop) -/
 def backup_encrypted_prop (b : Backup) : Prop :=
-  backup_encrypted b = true
+  b.backup_encrypted = true
 
 /-- migration_atomic_prop (matches Coq: Definition migration_atomic_prop) -/
 def migration_atomic_prop (m : Migration) : Prop :=
-  mig_atomic m = true ->
-  length (mig_records_before m) = length (mig_records_after m)
+  m.mig_atomic = true ->
+  length (m.mig_records_before) = length (m.mig_records_after)
 
 /-- schema_version_tracked_prop (matches Coq: Definition schema_version_tracked_prop) -/
 def schema_version_tracked_prop (m : Migration) : Prop :=
-  mig_to_version m > mig_from_version m
+  m.mig_to_version > m.mig_from_version
 
 /-- corruption_detected_prop (matches Coq: Definition corruption_detected_prop) -/
 def corruption_detected_prop (s : EncryptedStore) (expected : Nat) : Prop :=
-  store_checksum s <> expected -> True
+  s.store_checksum <> expected -> True
 
 /-- data_integrity_verified_prop (matches Coq: Definition data_integrity_verified_prop) -/
 def data_integrity_verified_prop (s : EncryptedStore) : Prop :=
-  store_checksum s = fold_left plus (map (fun r => length r) (store_records s)) 0
+  s.store_checksum = fold_left plus (map (fun r => length r) (s.store_records)) 0
 
 /-- transaction_acid (matches Coq: Definition transaction_acid) -/
 def transaction_acid (txn : Transaction) : Prop :=
-  (txn_committed txn = true -> txn_rolled_back txn = false) /\
-  (txn_rolled_back txn = true -> txn_committed txn = false)
+  (txn.txn_committed = true -> txn.txn_rolled_back = false) /\
+  (txn.txn_rolled_back = true -> txn.txn_committed = false)
 
 /-- concurrent_access_safe_prop (matches Coq: Definition concurrent_access_safe_prop) -/
 def concurrent_access_safe_prop (txn1 txn2 : Transaction) : Prop :=
-  txn_id txn1 <> txn_id txn2 ->
-  ~ (txn_committed txn1 = true /\ txn_rolled_back txn1 = true)
+  txn1.txn_id <> txn2.txn_id ->
+  ~ (txn1.txn_committed = true /\ txn1.txn_rolled_back = true)
 
 /-- data_deletion_complete_prop (matches Coq: Definition data_deletion_complete_prop) -/
 def data_deletion_complete_prop (s : EncryptedStore) : Prop :=
-  store_records s = [] -> store_checksum s = 0
+  s.store_records = [] -> s.store_checksum = 0
 
 /-- index_consistent_prop (matches Coq: Definition index_consistent_prop) -/
 def index_consistent_prop (idx : IndexEntry) (records : List Record) : Prop :=
-  idx_valid idx = true ->
-  idx_record_id idx < length records
+  idx.idx_valid = true ->
+  idx.idx_record_id < length records
 
 /-- cache_invalidation_correct (matches Coq: Definition cache_invalidation_correct) -/
 def cache_invalidation_correct (c : CacheEntry) (current_time : Nat) : Prop :=
-  cache_valid c = true ->
-  cache_timestamp c <= current_time
+  c.cache_valid = true ->
+  c.cache_timestamp <= current_time
 
 /-- serialization_safe_prop (matches Coq: Definition serialization_safe_prop) -/
 def serialization_safe_prop (sd : SerializedData) : Prop :=
-  ser_validated sd = true ->
-  ser_checksum sd > 0
+  sd.ser_validated = true ->
+  sd.ser_checksum > 0
 
 /-- deserialization_validated_prop (matches Coq: Definition deserialization_validated_prop) -/
 def deserialization_validated_prop (sd : SerializedData) : Prop :=
-  ser_validated sd = true
+  sd.ser_validated = true
 
 /-- storage_quota_respected (matches Coq: Definition storage_quota_respected) -/
 def storage_quota_respected (sq : StorageQuota) : Prop :=
-  sq_used_bytes sq <= sq_limit_bytes sq
+  sq.sq_used_bytes <= sq.sq_limit_bytes
 
 /-- data_export_sanitized (matches Coq: Definition data_export_sanitized) -/
 def data_export_sanitized (de : DataExport) : Prop :=
-  export_sanitized de = true /\ export_encrypted de = true
+  de.export_sanitized = true /\ de.export_encrypted = true
 
 /-- migration_lossless (matches Coq) -/
 theorem migration_lossless : ∀ (data : Database) (schema1 schema2 : Schema), migrates data schema1 schema2 → (∀ fn, In fn (schema_fields schema1) → In fn (schema_fields schema2)) → no_data_loss data → no_data_loss data := by
@@ -319,7 +319,7 @@ theorem schema_version_tracked : ∀ (m : Migration), schema_version_tracked_pro
   intro h; exact h
 
 /-- corruption_detected (matches Coq) -/
-theorem corruption_detected : ∀ (s : EncryptedStore) (expected : nat), store_checksum s ≠ expected → corruption_detected_prop s expected := by
+theorem corruption_detected : ∀ (s : EncryptedStore) (expected : Nat), store_checksum s ≠ expected → corruption_detected_prop s expected := by
   intro h; exact h
 
 /-- data_integrity_verified (matches Coq) -/
@@ -343,7 +343,7 @@ theorem index_consistent : ∀ (idx : IndexEntry) (records : list Record), index
   simp_all [Bool.and_eq_true]
 
 /-- cache_invalidation_correct_thm (matches Coq) -/
-theorem cache_invalidation_correct_thm : ∀ (c : CacheEntry) (current_time : nat), cache_invalidation_correct c current_time → cache_valid c = true → cache_timestamp c ≤ current_time := by
+theorem cache_invalidation_correct_thm : ∀ (c : CacheEntry) (current_time : Nat), cache_invalidation_correct c current_time → cache_valid c = true → cache_timestamp c ≤ current_time := by
   simp_all [Bool.and_eq_true]
 
 /-- serialization_safe (matches Coq) -/

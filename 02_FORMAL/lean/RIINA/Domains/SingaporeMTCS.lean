@@ -171,11 +171,11 @@ theorem mtcs_l3_implies_l1 : ∀ (s : CloudService), mtcs_l3_compliant s → mtc
   simp_all [Bool.and_eq_true]
 
 /-- im8_official (matches Coq) -/
-theorem im8_official : ∀ (s : GovTechSystem), gt_classification s = IM8_Official → im8_controls_adequate s := by
+theorem im8_official : ∀ (s : GovTechSystem), gt_classification s = .iM8_Official → im8_controls_adequate s := by
   intro h; exact h
 
 /-- im8_secret (matches Coq) -/
-theorem im8_secret : ∀ (s : GovTechSystem), gt_classification s = IM8_Secret → gt_encrypted s = true → gt_access_controlled_gt s = true → gt_audit_logged_gt s = true → im8_controls_adequate s := by
+theorem im8_secret : ∀ (s : GovTechSystem), gt_classification s = .iM8_Secret → gt_encrypted s = true → gt_access_controlled_gt s = true → gt_audit_logged_gt s = true → im8_controls_adequate s := by
   intro h; exact h
 
 /-- im8_assessment (matches Coq) -/
@@ -231,35 +231,35 @@ theorem im8_level_bounded : ∀ (c : IM8Classification), im8_level c ≤ 3 := by
   cases ‹_› <;> simp <;> omega
 
 /-- im8_official_lowest (matches Coq) -/
-theorem im8_official_lowest : ∀ (c : IM8Classification), im8_level IM8_Official ≤ im8_level c := by
+theorem im8_official_lowest : ∀ (c : IM8Classification), im8_level .iM8_Official ≤ im8_level c := by
   cases ‹_› <;> simp <;> omega
 
 /-- im8_confidential (matches Coq) -/
-theorem im8_confidential : ∀ (s : GovTechSystem), gt_classification s = IM8_Confidential → gt_encrypted s = true → gt_access_controlled_gt s = true → im8_controls_adequate s := by
+theorem im8_confidential : ∀ (s : GovTechSystem), gt_classification s = .iM8_Confidential → gt_encrypted s = true → gt_access_controlled_gt s = true → im8_controls_adequate s := by
   simp_all [Bool.and_eq_true]
 
 /-- im8_restricted (matches Coq) -/
-theorem im8_restricted : ∀ (s : GovTechSystem), gt_classification s = IM8_Restricted → gt_access_controlled_gt s = true → im8_controls_adequate s := by
+theorem im8_restricted : ∀ (s : GovTechSystem), gt_classification s = .iM8_Restricted → gt_access_controlled_gt s = true → im8_controls_adequate s := by
   intro h; exact h
 
 /-- im8_secret_requires_encryption (matches Coq) -/
-theorem im8_secret_requires_encryption : ∀ (s : GovTechSystem), gt_classification s = IM8_Secret → im8_controls_adequate s → gt_encrypted s = true := by
+theorem im8_secret_requires_encryption : ∀ (s : GovTechSystem), gt_classification s = .iM8_Secret → im8_controls_adequate s → gt_encrypted s = true := by
   intro h; exact h
 
 /-- im8_secret_requires_access_control (matches Coq) -/
-theorem im8_secret_requires_access_control : ∀ (s : GovTechSystem), gt_classification s = IM8_Secret → im8_controls_adequate s → gt_access_controlled_gt s = true := by
+theorem im8_secret_requires_access_control : ∀ (s : GovTechSystem), gt_classification s = .iM8_Secret → im8_controls_adequate s → gt_access_controlled_gt s = true := by
   intro h; exact h
 
 /-- im8_secret_requires_audit (matches Coq) -/
-theorem im8_secret_requires_audit : ∀ (s : GovTechSystem), gt_classification s = IM8_Secret → im8_controls_adequate s → gt_audit_logged_gt s = true := by
+theorem im8_secret_requires_audit : ∀ (s : GovTechSystem), gt_classification s = .iM8_Secret → im8_controls_adequate s → gt_audit_logged_gt s = true := by
   intro h; exact h
 
 /-- gcc_required_for_restricted (matches Coq) -/
-theorem gcc_required_for_restricted : ∀ (s : GovTechSystem), gt_classification s = IM8_Restricted → gt_on_gcc s = true → gcc_required s := by
+theorem gcc_required_for_restricted : ∀ (s : GovTechSystem), gt_classification s = .iM8_Restricted → gt_on_gcc s = true → gcc_required s := by
   intro h; exact h
 
 /-- im8_secret_maps_to_mtcs3 (matches Coq) -/
-theorem im8_secret_maps_to_mtcs3 : im8_to_mtcs_level IM8_Secret = MTCS_Level3 := by
+theorem im8_secret_maps_to_mtcs3 : im8_to_mtcs_level .iM8_Secret = MTCS_Level3 := by
   rfl
 
 /-- im8_to_mtcs_monotonic (matches Coq) -/

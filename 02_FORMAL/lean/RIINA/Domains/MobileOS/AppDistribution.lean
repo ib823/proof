@@ -263,104 +263,104 @@ def passes_security_checks := sorry -- complex match, needs manual translation
 
 /-- no_malware (matches Coq: Definition no_malware) -/
 def no_malware (app : StoreApplication) : Prop :=
-  passes_security_checks (scan_result app) /\
-  review_approved app = true
+  passes_security_checks (app.scan_result) /\
+  app.review_approved = true
 
 /-- in_store (matches Coq: Definition in_store) -/
 def in_store (app : StoreApplication) : Prop :=
-  in_riina_store app = true
+  app.in_riina_store = true
 
 /-- store_well_formed (matches Coq: Definition store_well_formed) -/
 def store_well_formed (apps : List StoreApplication) : Prop :=
   forall app, In app apps ->
-    in_riina_store app = true ->
+    app.in_riina_store = true ->
     no_malware app
 
 /-- update_atomic (matches Coq: Definition update_atomic) -/
 def update_atomic (inst_before inst_after : Installation) (upd : AppUpdate) : Prop :=
-  (install_state inst_after = Installed /\ 
-   installed_version inst_after = new_version upd) \/
-  (install_state inst_after = install_state inst_before /\
-   installed_version inst_after = installed_version inst_before)
+  (inst_after.install_state = Installed /\ 
+   inst_after.installed_version = upd.new_version) \/
+  (inst_after.install_state = inst_before.install_state /\
+   inst_after.installed_version = inst_before.installed_version)
 
 /-- rollback_possible (matches Coq: Definition rollback_possible) -/
 def rollback_possible (inst : Installation) : Prop :=
-  rollback_available inst = true /\
-  install_state inst = Installed
+  inst.rollback_available = true /\
+  inst.install_state = Installed
 
 /-- version_increases (matches Coq: Definition version_increases) -/
 def version_increases (upd : AppUpdate) : Prop :=
-  new_version upd > old_version upd
+  upd.new_version > upd.old_version
 
 /-- scan_passed (matches Coq: Definition scan_passed) -/
 def scan_passed := sorry -- complex match, needs manual translation
 
 /-- app_is_safe (matches Coq: Definition app_is_safe) -/
 def app_is_safe (app : StoreApplication) : Bool :=
-  scan_passed (scan_result app) && review_approved app
+  scan_passed (app.scan_result) && app.review_approved
 
 /-- app_signature_verified (matches Coq: Definition app_signature_verified) -/
 def app_signature_verified (s : AppSigNature) : Prop :=
-  sig_verified s = true /\ sig_timestamp s > 0
+  s.sig_verified = true /\ s.sig_timestamp > 0
 
 /-- code_integrity_checked (matches Coq: Definition code_integrity_checked) -/
 def code_integrity_checked (ci : CodeIntegrity) : Prop :=
-  ci_integrity_valid ci = true /\ ci_hash_original ci = ci_hash_current ci
+  ci.ci_integrity_valid = true /\ ci.ci_hash_original = ci.ci_hash_current
 
 /-- entitlements_validated (matches Coq: Definition entitlements_validated) -/
 def entitlements_validated (es : EntitlementSet) : Prop :=
-  ent_validated es = true /\
-  length (ent_granted es) <= length (ent_requested es)
+  es.ent_validated = true /\
+  length (es.ent_granted) <= length (es.ent_requested)
 
 /-- provisioning_profile_valid (matches Coq: Definition provisioning_profile_valid) -/
 def provisioning_profile_valid (pp : ProvisioningProfile) : Prop :=
-  pp_valid pp = true /\ pp_current_date pp <= pp_expiry_date pp
+  pp.pp_valid = true /\ pp.pp_current_date <= pp.pp_expiry_date
 
 /-- app_review_required (matches Coq: Definition app_review_required) -/
 def app_review_required (ar : AppReview) : Prop :=
-  ar_passed ar = true -> ar_reviewed ar = true
+  ar.ar_passed = true -> ar.ar_reviewed = true
 
 /-- binary_size_reported (matches Coq: Definition binary_size_reported) -/
 def binary_size_reported (br : BinaryReport) : Prop :=
-  br_size_reported br = true /\ br_size_bytes br = br_reported_size br
+  br.br_size_reported = true /\ br.br_size_bytes = br.br_reported_size
 
 /-- app_version_monotonic (matches Coq: Definition app_version_monotonic) -/
 def app_version_monotonic (vh : AppVersionHistory) : Prop :=
-  vh_monotonic vh = true /\ list_monotonic (vh_versions vh)
+  vh.vh_monotonic = true /\ list_monotonic (vh.vh_versions)
 
 /-- minimum_os_version_enforced (matches Coq: Definition minimum_os_version_enforced) -/
 def minimum_os_version_enforced (req : OSRequirement) : Prop :=
-  os_req_enforced req = true ->
-  os_current_version req >= os_req_min_version req
+  req.os_req_enforced = true ->
+  req.os_current_version >= req.os_req_min_version
 
 /-- deprecated_api_flagged (matches Coq: Definition deprecated_api_flagged) -/
 def deprecated_api_flagged (au : APIUsage) : Prop :=
-  api_deprecated au = true -> api_flagged au = true
+  au.api_deprecated = true -> au.api_flagged = true
 
 /-- privacy_manifest_required (matches Coq: Definition privacy_manifest_required) -/
 def privacy_manifest_required (pm : PrivacyManifest) : Prop :=
-  pm_manifest_present pm = true /\ pm_data_types pm <> []
+  pm.pm_manifest_present = true /\ pm.pm_data_types <> []
 
 /-- data_collection_declared (matches Coq: Definition data_collection_declared) -/
 def data_collection_declared (dd : DataDeclaration) : Prop :=
-  dd_declared dd = true /\
-  length (dd_collected_types dd) <= length (dd_declared_types dd)
+  dd.dd_declared = true /\
+  length (dd.dd_collected_types) <= length (dd.dd_declared_types)
 
 /-- app_clip_size_bounded (matches Coq: Definition app_clip_size_bounded) -/
 def app_clip_size_bounded (ac : AppClip) : Prop :=
-  ac_size_mb ac <= ac_max_size_mb ac
+  ac.ac_size_mb <= ac.ac_max_size_mb
 
 /-- testflight_expiry_enforced (matches Coq: Definition testflight_expiry_enforced) -/
 def testflight_expiry_enforced (tf : TestFlightBuild) : Prop :=
-  tf_enforced tf = true /\ tf_expiry_days tf <= tf_max_days tf
+  tf.tf_enforced = true /\ tf.tf_expiry_days <= tf.tf_max_days
 
 /-- enterprise_certificate_validated (matches Coq: Definition enterprise_certificate_validated) -/
 def enterprise_certificate_validated (ec : EnterpriseCert) : Prop :=
-  ec_valid ec = true /\ ec_revoked ec = false
+  ec.ec_valid = true /\ ec.ec_revoked = false
 
 /-- notarization_required (matches Coq: Definition notarization_required) -/
 def notarization_required (ns : NotarizationStatus) : Prop :=
-  ns_notarized ns = true /\ ns_ticket_stapled ns = true
+  ns.ns_notarized = true /\ ns.ns_ticket_stapled = true
 
 /-- store_malware_free (matches Coq) -/
 theorem store_malware_free : ∀ (app : StoreApplication), in_store app → store_well_formed [app] → no_malware app := by

@@ -339,33 +339,33 @@ def in_group (ctx : AccessContext) (ino : Inode) : Bool :=
 
 /-- get_permission (matches Coq: Definition get_permission) -/
 def get_permission (ctx : AccessContext) (ino : Inode) : Permission :=
-  if is_owner ctx ino then inode_perm_owner ino
-  else if in_group ctx ino then inode_perm_group ino
-  else inode_perm_other ino
+  if is_owner ctx ino then ino.inode_perm_owner
+  else if in_group ctx ino then ino.inode_perm_group
+  else ino.inode_perm_other
 
 /-- can_read (matches Coq: Definition can_read) -/
 def can_read (ctx : AccessContext) (ino : Inode) : Bool :=
-  ctx_is_root ctx || perm_read (get_permission ctx ino)
+  ctx.ctx_is_root || perm_read (get_permission ctx ino)
 
 /-- can_write (matches Coq: Definition can_write) -/
 def can_write (ctx : AccessContext) (ino : Inode) : Bool :=
-  ctx_is_root ctx || perm_write (get_permission ctx ino)
+  ctx.ctx_is_root || perm_write (get_permission ctx ino)
 
 /-- can_execute (matches Coq: Definition can_execute) -/
 def can_execute (ctx : AccessContext) (ino : Inode) : Bool :=
-  ctx_is_root ctx || perm_execute (get_permission ctx ino)
+  ctx.ctx_is_root || perm_execute (get_permission ctx ino)
 
 /-- txn_complete (matches Coq: Definition txn_complete) -/
 def txn_complete := sorry -- complex match, needs manual translation
 
 /-- journal_consistent (matches Coq: Definition journal_consistent) -/
 def journal_consistent (j : Journal) : Bool :=
-  forallb txn_complete (journal_transactions j) &&
+  forallb txn_complete (j.journal_transactions) &&
   Nat
 
 /-- dir_no_self_cycle (matches Coq: Definition dir_no_self_cycle) -/
 def dir_no_self_cycle (d : Directory) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- dir_has_parent_link (matches Coq: Definition dir_has_parent_link) -/
 def dir_has_parent_link (d : Directory) : Bool :=
@@ -404,7 +404,7 @@ def recovery_complete := sorry -- complex match, needs manual translation
 
 /-- crash_safe (matches Coq: Definition crash_safe) -/
 def crash_safe (cs : CrashState) : Bool :=
-  journal_consistent (cs_journal cs)
+  journal_consistent (cs.cs_journal)
 
 /-- op_is_atomic (matches Coq: Definition op_is_atomic) -/
 def op_is_atomic := sorry -- complex match, needs manual translation
@@ -414,18 +414,18 @@ def op_is_journaled := sorry -- complex match, needs manual translation
 
 /-- fs_integrity_sound (matches Coq: Definition fs_integrity_sound) -/
 def fs_integrity_sound (i : FSIntegrity) : Bool :=
-  fsi_crash_consistent i && fsi_atomic_writes i &&
-  fsi_journaling i && fsi_checksum_verified i
+  i.fsi_crash_consistent && i.fsi_atomic_writes &&
+  i.fsi_journaling && i.fsi_checksum_verified
 
 /-- fs_security_sound (matches Coq: Definition fs_security_sound) -/
 def fs_security_sound (s : FSSecurity) : Bool :=
-  fss_access_control s && fss_encryption_at_rest s &&
-  fss_secure_delete s && fss_quota_enforcement s
+  s.fss_access_control && s.fss_encryption_at_rest &&
+  s.fss_secure_delete && s.fss_quota_enforcement
 
 /-- fs_fully_verified (matches Coq: Definition fs_fully_verified) -/
 def fs_fully_verified (f : VerifiedFS) : Bool :=
-  fs_integrity_sound (vfs_integrity f) && fs_security_sound (vfs_security f) &&
-  vfs_posix_compliant f && vfs_verified_implementation f
+  fs_integrity_sound (f.vfs_integrity) && fs_security_sound (f.vfs_security) &&
+  f.vfs_posix_compliant && f.vfs_verified_implementation
 
 /-- riina_fs_integrity (matches Coq: Definition riina_fs_integrity) -/
 def riina_fs_integrity : FSIntegrity := mkFSIntegrity true true true true
@@ -440,19 +440,19 @@ def riina_vfs : VerifiedFS := mkVerifiedFS riina_fs_integrity riina_fs_security 
     SECTION 1: BASIC BOOLEAN INFRASTRUCTURE
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_false_iff (matches Coq) -/
-theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
+private theorem negb_false_iff : ∀ b : Bool, !b = false <-> b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- ============================================================================

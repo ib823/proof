@@ -355,13 +355,13 @@ structure ShariahTransaction where
 
 /-- kyc_complete (matches Coq: Definition kyc_complete) -/
 def kyc_complete (c : Customer) : Prop :=
-  kyc_verified c = true /\ address_verified c = true /\
-  risk_assessed c = true /\ pep_screened c = true /\
-  sanctions_screened c = true
+  c.kyc_verified = true /\ c.address_verified = true /\
+  c.risk_assessed = true /\ c.pep_screened = true /\
+  c.sanctions_screened = true
 
 /-- total_ownership (matches Coq: Definition total_ownership) -/
 def total_ownership (owners : List BeneficialOwner) : Z :=
-  fold_left (fun acc o => acc + ownership_percentage o) owners 0
+  fold_left (fun acc o => acc + o.ownership_percentage) owners 0
 
 /-- complete_ownership (matches Coq: Definition complete_ownership) -/
 def complete_ownership (owners : List BeneficialOwner) : Prop :=
@@ -369,31 +369,31 @@ def complete_ownership (owners : List BeneficialOwner) : Prop :=
 
 /-- all_parties_screened (matches Coq: Definition all_parties_screened) -/
 def all_parties_screened (parties : List TransactionParty) : Prop :=
-  forall p, In p parties -> party_screened p = true
+  forall p, In p parties -> p.party_screened = true
 
 /-- well_formed_savings (matches Coq: Definition well_formed_savings) -/
 def well_formed_savings (a : Account) : Prop :=
-  account_type a = Savings -> balance a >= 0
+  a.account_type = Savings -> a.balance >= 0
 
 /-- should_be_dormant (matches Coq: Definition should_be_dormant) -/
 def should_be_dormant (a : Account) : Prop :=
-  (last_activity_days a > dormancy_threshold a)%nat
+  (a.last_activity_days > a.dormancy_threshold)%nat
 
 /-- dormancy_consistent (matches Coq: Definition dormancy_consistent) -/
 def dormancy_consistent (a : Account) : Prop :=
-  should_be_dormant a -> is_dormant a = true
+  should_be_dormant a -> a.is_dormant = true
 
 /-- debits (matches Coq: Definition debits) -/
 def debits (entries : List JournalEntry) : Z :=
-  fold_left (fun acc e => acc + debit_amount e) entries 0
+  fold_left (fun acc e => acc + e.debit_amount) entries 0
 
 /-- credits (matches Coq: Definition credits) -/
 def credits (entries : List JournalEntry) : Z :=
-  fold_left (fun acc e => acc + credit_amount e) entries 0
+  fold_left (fun acc e => acc + e.credit_amount) entries 0
 
 /-- valid_entry (matches Coq: Definition valid_entry) -/
 def valid_entry (e : JournalEntry) : Prop :=
-  debit_amount e = credit_amount e /\ debit_amount e > 0
+  e.debit_amount = e.credit_amount /\ e.debit_amount > 0
 
 /-- valid_entries (matches Coq: Definition valid_entries) -/
 def valid_entries (entries : List JournalEntry) : Prop :=
@@ -401,101 +401,101 @@ def valid_entries (entries : List JournalEntry) : Prop :=
 
 /-- interest_formula (matches Coq: Definition interest_formula) -/
 def interest_formula (ic : InterestCalculation) : Z :=
-  (ic_principal ic * ic_rate_bps ic * ic_days ic) / (ic_year_days ic * 10000)
+  (ic.ic_principal * ic.ic_rate_bps * ic.ic_days) / (ic.ic_year_days * 10000)
 
 /-- precise_interest (matches Coq: Definition precise_interest) -/
 def precise_interest (ic : InterestCalculation) : Prop :=
-  ic_year_days ic > 0 /\
-  ic_calculated_interest ic = interest_formula ic
+  ic.ic_year_days > 0 /\
+  ic.ic_calculated_interest = interest_formula ic
 
 /-- early_withdrawal (matches Coq: Definition early_withdrawal) -/
 def early_withdrawal (td : TermDepositContract) : Prop :=
-  (td_withdrawal_day td < td_maturity_days td)%nat
+  (td.td_withdrawal_day < td.td_maturity_days)%nat
 
 /-- penalty_enforced (matches Coq: Definition penalty_enforced) -/
 def penalty_enforced (td : TermDepositContract) : Prop :=
-  early_withdrawal td -> td_penalty_applied td = true
+  early_withdrawal td -> td.td_penalty_applied = true
 
 /-- within_eligibility (matches Coq: Definition within_eligibility) -/
 def within_eligibility (l : Loan) : Prop :=
-  approved_amount l <= eligibility_limit l
+  l.approved_amount <= l.eligibility_limit
 
 /-- sufficient_collateral (matches Coq: Definition sufficient_collateral) -/
 def sufficient_collateral (l : Loan) : Prop :=
-  is_secured l = true ->
-  collateral_value l * 10000 >= principal l * required_coverage l
+  l.is_secured = true ->
+  l.collateral_value * 10000 >= l.principal * l.required_coverage
 
 /-- installment_total (matches Coq: Definition installment_total) -/
 def installment_total (i : Installment) : Z :=
-  inst_principal i + inst_interest i
+  i.inst_principal + i.inst_interest
 
 /-- sum_installment_principals (matches Coq: Definition sum_installment_principals) -/
 def sum_installment_principals (installments : List Installment) : Z :=
-  fold_left (fun acc i => acc + inst_principal i) installments 0
+  fold_left (fun acc i => acc + i.inst_principal) installments 0
 
 /-- sum_installment_interest (matches Coq: Definition sum_installment_interest) -/
 def sum_installment_interest (installments : List Installment) : Z :=
-  fold_left (fun acc i => acc + inst_interest i) installments 0
+  fold_left (fun acc i => acc + i.inst_interest) installments 0
 
 /-- amortization_correct (matches Coq: Definition amortization_correct) -/
 def amortization_correct (sched : AmortizationSchedule) : Prop :=
-  sum_installment_principals (amort_installments sched) = amort_principal sched /\
-  sum_installment_interest (amort_installments sched) = amort_total_interest sched
+  sum_installment_principals (sched.amort_installments) = sched.amort_principal /\
+  sum_installment_interest (sched.amort_installments) = sched.amort_total_interest
 
 /-- covenant_monitoring_correct (matches Coq: Definition covenant_monitoring_correct) -/
 def covenant_monitoring_correct (cov : Covenant) : Prop :=
-  covenant_breached cov = true -> event_of_default cov = true
+  cov.covenant_breached = true -> cov.event_of_default = true
 
 /-- within_facility_limit (matches Coq: Definition within_facility_limit) -/
 def within_facility_limit (cf : CreditFacility) : Prop :=
-  total_drawdown cf + current_drawdown_request cf <= facility_limit cf
+  cf.total_drawdown + cf.current_drawdown_request <= cf.facility_limit
 
 /-- payment_within_sla (matches Coq: Definition payment_within_sla) -/
 def payment_within_sla (p : Payment) : Prop :=
-  status p = Completed -> (processing_time_ms p <= sla_limit_ms p)%nat
+  p.status = Completed -> (p.processing_time_ms <= p.sla_limit_ms)%nat
 
 /-- payment_irrevocable (matches Coq: Definition payment_irrevocable) -/
 def payment_irrevocable (p : Payment) : Prop :=
-  status p = Completed -> True
+  p.status = Completed -> True
 
 /-- nostro_balanced (matches Coq: Definition nostro_balanced) -/
 def nostro_balanced (n : NostroAccount) : Prop :=
-  is_reconciled n = true -> internal_balance n = external_balance n
+  n.is_reconciled = true -> n.internal_balance = n.external_balance
 
 /-- swift_validation_enforced (matches Coq: Definition swift_validation_enforced) -/
 def swift_validation_enforced (msg : SwiftMessage) : Prop :=
-  (sender_bic msg > 0)%nat /\ (receiver_bic msg > 0)%nat -> is_schema_valid msg = true
+  (msg.sender_bic > 0)%nat /\ (msg.receiver_bic > 0)%nat -> msg.is_schema_valid = true
 
 /-- spot_t_plus_2 (matches Coq: Definition spot_t_plus_2) -/
 def spot_t_plus_2 (trade : FxSpotTrade) : Prop :=
-  settlement_date trade = (trade_date trade + 2)%nat
+  trade.settlement_date = (trade.trade_date + 2)%nat
 
 /-- spot_settlement_correct (matches Coq: Definition spot_settlement_correct) -/
 def spot_settlement_correct (trade : FxSpotTrade) : Prop :=
-  spot_t_plus_2 trade /\ fx_settled trade = true
+  spot_t_plus_2 trade /\ trade.fx_settled = true
 
 /-- repo_haircut_applied (matches Coq: Definition repo_haircut_applied) -/
 def repo_haircut_applied (repo : RepoTransaction) : Prop :=
-  repo_cash_amount repo = 
-    collateral_market_value repo * (10000 - haircut_bps repo) / 10000
+  repo.repo_cash_amount = 
+    repo.collateral_market_value * (10000 - repo.haircut_bps) / 10000
 
 /-- bond_accrued_formula (matches Coq: Definition bond_accrued_formula) -/
 def bond_accrued_formula (bp : BondPosition) : Z :=
-  (face_value bp * coupon_rate_bps bp * days_since_coupon bp) / 
-  (coupon_period_days bp * 10000)
+  (bp.face_value * bp.coupon_rate_bps * bp.days_since_coupon) / 
+  (bp.coupon_period_days * 10000)
 
 /-- accrued_interest_correct (matches Coq: Definition accrued_interest_correct) -/
 def accrued_interest_correct (bp : BondPosition) : Prop :=
-  coupon_period_days bp > 0 ->
-  calculated_accrued bp = bond_accrued_formula bp
+  bp.coupon_period_days > 0 ->
+  bp.calculated_accrued = bond_accrued_formula bp
 
 /-- irs_npv_formula (matches Coq: Definition irs_npv_formula) -/
 def irs_npv_formula (irs : InterestRateSwap) : Z :=
-  fixed_leg_pv irs - float_leg_pv irs
+  irs.fixed_leg_pv - irs.float_leg_pv
 
 /-- irs_valuation_correct (matches Coq: Definition irs_valuation_correct) -/
 def irs_valuation_correct (irs : InterestRateSwap) : Prop :=
-  calculated_npv irs = irs_npv_formula irs
+  irs.calculated_npv = irs_npv_formula irs
 
 /-- mtm_beyond_threshold (matches Coq: Definition mtm_beyond_threshold) -/
 def mtm_beyond_threshold (cp : CollateralPosition) : Prop :=
@@ -503,42 +503,42 @@ def mtm_beyond_threshold (cp : CollateralPosition) : Prop :=
 
 /-- collateral_call_correct (matches Coq: Definition collateral_call_correct) -/
 def collateral_call_correct (cp : CollateralPosition) : Prop :=
-  mtm_beyond_threshold cp -> margin_call_triggered cp = true
+  mtm_beyond_threshold cp -> cp.margin_call_triggered = true
 
 /-- murabaha_selling_price (matches Coq: Definition murabaha_selling_price) -/
 def murabaha_selling_price (m : Murabaha) : Z :=
-  murabaha_cost m + murabaha_profit m
+  m.murabaha_cost + m.murabaha_profit
 
 /-- during_tenure (matches Coq: Definition during_tenure) -/
 def during_tenure (ij : Ijarah) : Prop :=
-  (current_month ij <= lease_tenure_months ij)%nat
+  (ij.current_month <= ij.lease_tenure_months)%nat
 
 /-- bank_retains_ownership (matches Coq: Definition bank_retains_ownership) -/
 def bank_retains_ownership (ij : Ijarah) : Prop :=
-  during_tenure ij -> bank_owns_asset ij = true
+  during_tenure ij -> ij.bank_owns_asset = true
 
 /-- partner_profit_share (matches Coq: Definition partner_profit_share) -/
 def partner_profit_share (p : MusharakahPartner) (m : Musharakah) : Z :=
-  (total_profit m * profit_ratio_bps p) / 10000
+  (m.total_profit * p.profit_ratio_bps) / 10000
 
 /-- partner_loss_share (matches Coq: Definition partner_loss_share) -/
 def partner_loss_share (p : MusharakahPartner) (m : Musharakah) : Z :=
-  (total_loss m * capital_contribution p) / total_capital m
+  (m.total_loss * p.capital_contribution) / m.total_capital
 
 /-- profit_by_ratio_loss_by_capital (matches Coq: Definition profit_by_ratio_loss_by_capital) -/
 def profit_by_ratio_loss_by_capital (p : MusharakahPartner) (m : Musharakah) 
   (actual_profit_share actual_loss_share : Z) : Prop :=
-  total_capital m > 0 ->
+  m.total_capital > 0 ->
   actual_profit_share = partner_profit_share p m /\
   actual_loss_share = partner_loss_share p m
 
 /-- sukuk_backed_by_assets (matches Coq: Definition sukuk_backed_by_assets) -/
 def sukuk_backed_by_assets (s : Sukuk) : Prop :=
-  is_asset_backed s = true -> underlying_asset_value s >= sukuk_value s
+  s.is_asset_backed = true -> s.underlying_asset_value >= s.sukuk_value
 
 /-- no_riba (matches Coq: Definition no_riba) -/
 def no_riba (st : ShariahTransaction) : Prop :=
-  shariah_compliant st = true -> txn_type st <> InterestBased
+  st.shariah_compliant = true -> st.txn_type <> InterestBased
 
 /-- BANK_001_01_customer_identity_uniqueness (matches Coq) -/
 theorem BANK_001_01_customer_identity_uniqueness : ∀ (customers : list Customer) (c1 c2 : Customer), unique_customer_ids customers → In c1 customers → In c2 customers → customer_id c1 = customer_id c2 → c1 = c2 := by

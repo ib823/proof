@@ -1138,21 +1138,63 @@ Proof.
     apply (Hagree l0 T0 sl0 Hlook0 Hfo Hlow w1 w2 Hw1 Hw2).
 Qed.
 
-(** JUSTIFIED POLICY AXIOM: Declassification preserves relatedness.
-    Semantically: declassification unwraps secret values to their underlying type.
-    This axiom is UNPROVABLE BY DESIGN: declassification intentionally breaks
-    noninterference. e : TSecret T evaluates to EClassify w1, EClassify w2 where
-    w1 ≠ w2 in general (secret values differ between runs). val_rel at T for w1, w2
-    is not guaranteed. This axiom encodes the programmer's declassification responsibility.
-    It will be KEPT as a justified policy axiom (not eliminated).
-*)
-Axiom logical_relation_declassify : forall Γ Σ Δ e T ε p rho1 rho2 n Σ_base,
-  has_type Γ Σ Δ e (TSecret T) ε ->
-  store_ty_extends Σ Σ_base ->
-  env_rel Σ_base Γ rho1 rho2 ->
-  rho_no_free_all rho1 ->
-  rho_no_free_all rho2 ->
-  exp_rel_n n Σ_base T (subst_rho rho1 (EDeclassify e p)) (subst_rho rho2 (EDeclassify e p)).
+(** AX1-R restatement: declassification is constructively provable when
+    policy redex shape and released-payload relation are explicit premises. *)
+Theorem logical_relation_declassify : forall Γ Σ Δ v T ε p rho1 rho2 n Σ_base,
+  has_type Γ Σ Δ (EClassify v) (TSecret T) ε ->
+  value v ->
+  p = EProve (EClassify v) ->
+  exp_rel_n n Σ_base T (subst_rho rho1 v) (subst_rho rho2 v) ->
+  exp_rel_n n Σ_base T
+    (subst_rho rho1 (EDeclassify (EClassify v) p))
+    (subst_rho rho2 (EDeclassify (EClassify v) p)).
+Proof.
+  intros Γ Σ Δ v T ε p rho1 rho2 n Σ_base Hty Hv Hp Hpayload.
+  subst p. simpl.
+  destruct n as [| n'].
+  - simpl. exact I.
+  - simpl in Hpayload |- *.
+    intros Σ_cur st1 st2 ctx Hext_cur Hstore Hwf1_cur Hwf2_cur Hagree_cur Hsvr_cur.
+    specialize (Hpayload Σ_cur st1 st2 ctx Hext_cur Hstore Hwf1_cur Hwf2_cur Hagree_cur Hsvr_cur)
+      as [v1 [v2 [st1' [st2' [ctx' [Σ' [Hext [Hstep1 [Hstep2 [Hv1 [Hv2 [Hrel [Hstore' [Hwf1' [Hwf2' [Hagree' Hsvr']]]]]]]]]]]]]]]].
+    exists v1, v2, st1', st2', ctx', Σ'.
+    split. { exact Hext. }
+    split.
+    { eapply MS_Step.
+      - apply ST_DeclassifyValue.
+        + apply value_subst_rho. exact Hv.
+        + exists (subst_rho rho1 v). split.
+          * apply value_subst_rho. exact Hv.
+          * split; reflexivity.
+      - exact Hstep1. }
+    split.
+    { eapply MS_Step.
+      - apply ST_DeclassifyValue.
+        + apply value_subst_rho. exact Hv.
+        + exists (subst_rho rho2 v). split.
+          * apply value_subst_rho. exact Hv.
+          * split; reflexivity.
+      - exact Hstep2. }
+    split. { exact Hv1. }
+    split. { exact Hv2. }
+    split. { exact Hrel. }
+    split. { exact Hstore'. }
+    split. { exact Hwf1'. }
+    split. { exact Hwf2'. }
+    split. { exact Hagree'. }
+    { exact Hsvr'. }
+Qed.
+
+Definition declass_payload_rel_assumption
+  (Γ : type_env) (Σ Σ_base : store_ty) (rho1 rho2 : ident -> expr) : Prop :=
+  forall n e p T ε,
+    has_type Γ Σ Public e (TSecret T) ε ->
+    declass_ok e p ->
+    exists v,
+      value v /\
+      e = EClassify v /\
+      p = EProve (EClassify v) /\
+      exp_rel_n n Σ_base T (subst_rho rho1 v) (subst_rho rho2 v).
 
 (** LEMMA: Higher-order step-to-limit conversion — PROVEN.
     Strategy: from val_rel_n (S n), extract typing via val_rel_n_typing,
@@ -3250,6 +3292,12 @@ Qed.
 Ltac solve_extends :=
   eauto 4 using store_ty_extends_trans_early, store_ty_extends_refl.
 
+Section LogicalRelationWithDeclassPayload.
+
+Variable Hdeclass_payload_rel :
+  forall Γ Σ Σ_base rho1 rho2,
+    declass_payload_rel_assumption Γ Σ Σ_base rho1 rho2.
+
 Theorem logical_relation : forall G Σ e T eps,
   has_type G Σ Public e T eps ->
   forall Σ_base, store_ty_extends Σ Σ_base ->
@@ -4766,16 +4814,28 @@ Proof.
       split. { exact Hwf1'. }
       split. { exact Hwf2'. }
       split. { exact Hagree'. } { exact Hsvr'. }
-  - (* T_Declassify - Uses logical_relation_declassify axiom *)
-    (* The axiom logical_relation_declassify directly proves this case. *)
+  - (* T_Declassify *)
     simpl.
     unfold exp_rel. intro n.
-    eapply logical_relation_declassify.
-    + eassumption.  (* has_type for e *)
-    + exact Hext_base.
-    + exact Henv.
-    + exact Hno1.
-    + exact Hno2.
+    match goal with
+    | Hok : declass_ok _ _ |- _ =>
+        destruct Hok as [v [Hv [He Hp]]]
+    end.
+    subst.
+    assert (Hok_v : declass_ok (EClassify v) (EProve (EClassify v)))
+      by (exists v; repeat split; try assumption; reflexivity).
+    assert (Hpayload_ex :
+      exists v0,
+        value v0 /\
+        EClassify v = EClassify v0 /\
+        EProve (EClassify v) = EProve (EClassify v0) /\
+        exp_rel_n n Σ_base T (subst_rho rho1 v0) (subst_rho rho2 v0)).
+    { eapply Hdeclass_payload_rel.
+      - eapply has_type_level_irrelevant; eassumption.
+      - exact Hok_v. }
+    destruct Hpayload_ex as [v0 [Hv0 [He0 [_ Hpayload]]]].
+    inversion He0; subst v0.
+    eapply logical_relation_declassify with (p := EProve (EClassify v)); eauto.
   - (* T_Prove - Wrapping in EProve produces proof type *)
     (* EProve e evaluates e to v, then EProve v is a value of type TProof T *)
     simpl.
@@ -4983,6 +5043,8 @@ Proof.
     apply rho_no_free_all_single.
     destruct (val_rel_closed nil T_in v1 v2 Hval) as [_ Hc2]. exact Hc2.
 Qed.
+
+End LogicalRelationWithDeclassPayload.
 
 (** ========================================================================
     SECTION: QUICK-WIN LEMMAS FOR AXIOM ELIMINATION

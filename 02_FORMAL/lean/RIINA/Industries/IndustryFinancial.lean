@@ -135,22 +135,22 @@ structure WireTransfer where
 def pci_cardholder_data (d : FinancialData) : Bool :=
   match d with
   | .pIN => true
-  | ._ => false
+  | _ => false
 
 /-- pci_compliant (matches Coq: Definition pci_compliant) -/
 def pci_compliant (controls : PCI_DSS_Controls) : Bool :=
-  firewall_config controls &&
-  no_default_passwords controls &&
-  protect_stored_data controls &&
-  encrypt_transmission controls &&
-  antivirus controls &&
-  secure_systems controls &&
-  restrict_access controls &&
-  unique_ids controls &&
-  physical_access controls &&
-  track_access controls &&
-  test_security controls &&
-  security_policy controls
+  controls.firewall_config &&
+  controls.no_default_passwords &&
+  controls.protect_stored_data &&
+  controls.encrypt_transmission &&
+  controls.antivirus &&
+  controls.secure_systems &&
+  controls.restrict_access &&
+  controls.unique_ids &&
+  controls.physical_access &&
+  controls.track_access &&
+  controls.test_security &&
+  controls.security_policy
 
 /-- tx_final (matches Coq: Definition tx_final) -/
 def tx_final (s : TxStatus) : Bool :=
@@ -166,8 +166,8 @@ def audit_log_monotone (old_len new_len : Nat) : Bool :=
 
 /-- kyc_complete (matches Coq: Definition kyc_complete) -/
 def kyc_complete (k : KYC_Record) : Bool :=
-  identity_verified k && address_verified k && dob_verified k &&
-  sanctions_checked k && pep_screened k
+  k.identity_verified && k.address_verified && k.dob_verified &&
+  k.sanctions_checked && k.pep_screened
 
 /-- aml_risk_acceptable (matches Coq: Definition aml_risk_acceptable) -/
 def aml_risk_acceptable (score threshold : Nat) : Bool :=
@@ -183,11 +183,11 @@ def fraud_score_valid (score : Nat) : Bool :=
 
 /-- wire_authorized (matches Coq: Definition wire_authorized) -/
 def wire_authorized (w : WireTransfer) : Bool :=
-  wire_auth1 w && wire_auth2 w
+  w.wire_auth1 && w.wire_auth2
 
 /-- account_active (matches Coq: Definition account_active) -/
 def account_active (frozen : Bool) : Bool :=
-  negb frozen
+  !frozen
 
 /-- capital_adequate (matches Coq: Definition capital_adequate) -/
 def capital_adequate (reserves liabilities min_pct : Nat) : Bool :=
@@ -202,35 +202,35 @@ theorem pci_dss_compliance : ∀ (controls : PCI_DSS_Controls), pci_compliant co
 /-- Section C02 - SWIFT CSP
     Reference: IND_C_FINANCIAL.md Section 3.2 -/
 /-- swift_csp_compliance (matches Coq) -/
-theorem swift_csp_compliance : ∀ (transaction : nat), True := by
+theorem swift_csp_compliance : ∀ (transaction : Nat), True := by
   trivial
 
 /-- Section C03 - SOX Section 404
     Reference: IND_C_FINANCIAL.md Section 3.3 -/
 /-- sox_404_compliance (matches Coq) -/
-theorem sox_404_compliance : ∀ (internal_controls : bool) (audit_trail : bool), True := by
+theorem sox_404_compliance : ∀ (internal_controls : Bool) (audit_trail : Bool), True := by
   trivial
 
 /-- Section C04 - GLBA Safeguards Rule
     Reference: IND_C_FINANCIAL.md Section 3.4 -/
 /-- glba_safeguards (matches Coq) -/
-theorem glba_safeguards : ∀ (npi : FinancialData) (protection : bool), True := by
+theorem glba_safeguards : ∀ (npi : FinancialData) (protection : Bool), True := by
   trivial
 
 /-- Section C05 - DORA Requirements
     Reference: IND_C_FINANCIAL.md Section 3.5 -/
 /-- dora_resilience (matches Coq) -/
-theorem dora_resilience : ∀ (system : nat) (incident : nat), True := by
+theorem dora_resilience : ∀ (system : Nat) (incident : Nat), True := by
   trivial
 
 /-- CVV must never be stored post-authorization -/
 /-- cvv_not_stored (matches Coq) -/
-theorem cvv_not_stored : ∀ (d : FinancialData) (storage : bool), d = CVV →  True := by
+theorem cvv_not_stored : ∀ (d : FinancialData) (storage : Bool), d = CVV →  True := by
   trivial
 
 /-- PAN must be masked when displayed -/
 /-- pan_masking (matches Coq) -/
-theorem pan_masking : ∀ (pan : FinancialData) (display_format : nat),  True := by
+theorem pan_masking : ∀ (pan : FinancialData) (display_format : Nat),  True := by
   trivial
 
 /-- Strong cryptography for cardholder data -/
@@ -253,9 +253,9 @@ theorem pan_is_cardholder : pci_cardholder_data PAN = true := by
 theorem cvv_is_cardholder : pci_cardholder_data CVV = true := by
   rfl
 
-/-- PIN is always cardholder data -/
+/-- .pIN is always cardholder data -/
 /-- pin_is_cardholder (matches Coq) -/
-theorem pin_is_cardholder : pci_cardholder_data PIN = true := by
+theorem pin_is_cardholder : pci_cardholder_data .pIN = true := by
   rfl
 
 /-- AccountNumber, RoutingNumber, SSN, NPI are not PCI cardholder data -/

@@ -227,85 +227,85 @@ def AppState : Type :=
 
 /-- state (matches Coq: Definition state) -/
 def state (app : Application) (dev : Device) : AppState :=
-  app_state app
+  app.app_state
 
 /-- handoff (matches Coq: Definition handoff) -/
 def handoff (app : Application) (d1 d2 : Device) : Prop :=
-  app_supports_handoff app = true /\
-  dev_authenticated d1 = true /\
-  dev_authenticated d2 = true /\
-  dev_paired d1 = true /\
-  dev_paired d2 = true
+  app.app_supports_handoff = true /\
+  d1.dev_authenticated = true /\
+  d2.dev_authenticated = true /\
+  d1.dev_paired = true /\
+  d2.dev_paired = true
 
 /-- complete_handoff (matches Coq: Definition complete_handoff) -/
 def complete_handoff (h : Handoff) : Prop :=
-  handoff_complete h = true /\
-  handoff_encrypted h = true
+  h.handoff_complete = true /\
+  h.handoff_encrypted = true
 
 /-- handoff_preserves_state (matches Coq: Definition handoff_preserves_state) -/
 def handoff_preserves_state (h : Handoff) : Prop :=
   complete_handoff h ->
-  state (handoff_app h) (handoff_to h) = state (handoff_app h) (handoff_from h)
+  state (h.handoff_app) (h.handoff_to) = state (h.handoff_app) (h.handoff_from)
 
 /-- handoff_data_encrypted (matches Coq: Definition handoff_data_encrypted) -/
 def handoff_data_encrypted (hd : HandoffData) : Prop :=
-  hd_encrypted hd = true /\ hd_integrity_checked hd = true
+  hd.hd_encrypted = true /\ hd.hd_integrity_checked = true
 
 /-- clipboard_sync_is_encrypted (matches Coq: Definition clipboard_sync_is_encrypted) -/
 def clipboard_sync_is_encrypted (cs : ClipboardSync) : Prop :=
-  cb_encrypted cs = true
+  cs.cb_encrypted = true
 
 /-- clipboard_has_expiry (matches Coq: Definition clipboard_has_expiry) -/
 def clipboard_has_expiry (cs : ClipboardSync) : Prop :=
-  cb_expiry_seconds cs <= cb_max_expiry_seconds cs /\ cb_expiry_seconds cs > 0
+  cs.cb_expiry_seconds <= cs.cb_max_expiry_seconds /\ cs.cb_expiry_seconds > 0
 
 /-- device_trust_verified (matches Coq: Definition device_trust_verified) -/
 def device_trust_verified (dt : DeviceTrust) : Prop :=
-  dt_verified dt = true /\ dt_trust_score dt >= dt_trust_threshold dt
+  dt.dt_verified = true /\ dt.dt_trust_score >= dt.dt_trust_threshold
 
 /-- proximity_required (matches Coq: Definition proximity_required) -/
 def proximity_required (pc : ProximityCheck) : Prop :=
-  pc_within_range pc = true /\ pc_distance_m pc <= pc_max_distance_m pc
+  pc.pc_within_range = true /\ pc.pc_distance_m <= pc.pc_max_distance_m
 
 /-- continuity_permission_explicit (matches Coq: Definition continuity_permission_explicit) -/
 def continuity_permission_explicit (cp : ContinuityPermission) : Prop :=
-  cp_explicit_grant cp = true /\ cp_revocable cp = true
+  cp.cp_explicit_grant = true /\ cp.cp_revocable = true
 
 /-- universal_link_validated (matches Coq: Definition universal_link_validated) -/
 def universal_link_validated (ul : UniversalLink) : Prop :=
-  ul_validated ul = true /\ ul_domain_verified ul = true
+  ul.ul_validated = true /\ ul.ul_domain_verified = true
 
 /-- device_pairing_authenticated (matches Coq: Definition device_pairing_authenticated) -/
 def device_pairing_authenticated (dp : DevicePairing) : Prop :=
-  dp_authenticated dp = true /\ dp_encryption_key_exchanged dp = true
+  dp.dp_authenticated = true /\ dp.dp_encryption_key_exchanged = true
 
 /-- sync_conflict_resolved (matches Coq: Definition sync_conflict_resolved) -/
 def sync_conflict_resolved (sc : SyncConflict) : Prop :=
-  sc_resolved sc = true
+  sc.sc_resolved = true
 
 /-- continuity_fallback_available (matches Coq: Definition continuity_fallback_available) -/
 def continuity_fallback_available (cf : ContinuityFallback) : Prop :=
-  cf_fallback_available cf = true /\ cf_primary_method cf <> cf_fallback_method cf
+  cf.cf_fallback_available = true /\ cf.cf_primary_method <> cf.cf_fallback_method
 
 /-- shared_keychain_access_controlled (matches Coq: Definition shared_keychain_access_controlled) -/
 def shared_keychain_access_controlled (sk : SharedKeychain) : Prop :=
-  sk_access_controlled sk = true /\ sk_access_group sk <> []
+  sk.sk_access_controlled = true /\ sk.sk_access_group <> []
 
 /-- nearby_interaction_consented (matches Coq: Definition nearby_interaction_consented) -/
 def nearby_interaction_consented (ni : NearbyInteraction) : Prop :=
-  ni_consent_given ni = true
+  ni.ni_consent_given = true
 
 /-- device_discovery_limited (matches Coq: Definition device_discovery_limited) -/
 def device_discovery_limited (dd : DeviceDiscovery) : Prop :=
-  length (dd_devices_found dd) <= dd_max_devices dd
+  length (dd.dd_devices_found) <= dd.dd_max_devices
 
 /-- relay_traffic_encrypted (matches Coq: Definition relay_traffic_encrypted) -/
 def relay_traffic_encrypted (rt : RelayTraffic) : Prop :=
-  rt_encrypted rt = true
+  rt.rt_encrypted = true
 
 /-- session_within_timeout (matches Coq: Definition session_within_timeout) -/
 def session_within_timeout (cs : ContinuitySession) : Prop :=
-  cs_active cs = true -> cs_elapsed_seconds cs <= cs_timeout_seconds cs
+  cs.cs_active = true -> cs.cs_elapsed_seconds <= cs.cs_timeout_seconds
 
 /-- cross_device_handoff_complete (matches Coq) -/
 theorem cross_device_handoff_complete : ∀ (app : Application) (device1 device2 : Device), handoff app device1 device2 → state app device2 = state app device1 := by

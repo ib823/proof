@@ -132,13 +132,13 @@ def msq_empty : MSQueue :=
 
 /-- msq_enqueue (matches Coq: Definition msq_enqueue) -/
 def msq_enqueue (q : MSQueue) (v : Nat) : MSQueue :=
-  {| msq_items := msq_items q ++ [v];
-     msq_head := msq_head q;
-     msq_tail := S (msq_tail q) |}
+  {| msq_items := q.msq_items ++ [v];
+     msq_head := q.msq_head;
+     msq_tail := S (q.msq_tail) |}
 
 /-- lin_ordered (matches Coq: Definition lin_ordered) -/
 def lin_ordered (points : List LinPoint) : Bool :=
-  sorted (map lp_time points)
+  sorted (map points.lp_time)
 
 /-- hash_nat (matches Coq: Definition hash_nat) -/
 def hash_nat (n : Nat) : Nat :=

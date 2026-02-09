@@ -91,23 +91,23 @@ structure DisplayState where
 
 /-- owns_buffer (matches Coq: Definition owns_buffer) -/
 def owns_buffer (app : Application) (fb : FrameBuffer) : Prop :=
-  fb_owner fb = app_id app
+  fb.fb_owner = app.app_id
 
 /-- has_screen_capture_permission (matches Coq: Definition has_screen_capture_permission) -/
 def has_screen_capture_permission (app : Application) : Prop :=
-  app_screen_capture_perm app = true
+  app.app_screen_capture_perm = true
 
 /-- has_overlay_permission (matches Coq: Definition has_overlay_permission) -/
 def has_overlay_permission (app : Application) : Prop :=
-  app_overlay_perm app = true
+  app.app_overlay_perm = true
 
 /-- valid_framebuffer (matches Coq: Definition valid_framebuffer) -/
 def valid_framebuffer (fb : FrameBuffer) : Prop :=
-  fb_width fb > 0 /\ fb_height fb > 0
+  fb.fb_width > 0 /\ fb.fb_height > 0
 
 /-- pixel_count (matches Coq: Definition pixel_count) -/
 def pixel_count (fb : FrameBuffer) : Nat :=
-  fb_width fb * fb_height fb
+  fb.fb_width * fb.fb_height
 
 /-- Theorem: An application cannot read another application's frame buffer
     without explicit permission. -/

@@ -274,88 +274,88 @@ structure ContainerConfig where
 
 /-- ns_fully_isolated (matches Coq: Definition ns_fully_isolated) -/
 def ns_fully_isolated (n : NamespaceIsolation) : Bool :=
-  ns_pid_isolated n && ns_net_isolated n && ns_mount_isolated n &&
-  ns_user_isolated n && ns_uts_isolated n && ns_ipc_isolated n &&
-  ns_cgroup_isolated n && ns_time_isolated n
+  n.ns_pid_isolated && n.ns_net_isolated && n.ns_mount_isolated &&
+  n.ns_user_isolated && n.ns_uts_isolated && n.ns_ipc_isolated &&
+  n.ns_cgroup_isolated && n.ns_time_isolated
 
 /-- ns_minimally_isolated (matches Coq: Definition ns_minimally_isolated) -/
 def ns_minimally_isolated (n : NamespaceIsolation) : Bool :=
-  ns_pid_isolated n && ns_net_isolated n && ns_mount_isolated n && ns_user_isolated n
+  n.ns_pid_isolated && n.ns_net_isolated && n.ns_mount_isolated && n.ns_user_isolated
 
 /-- ns_network_safe (matches Coq: Definition ns_network_safe) -/
 def ns_network_safe (n : NamespaceIsolation) : Bool :=
-  ns_net_isolated n && ns_uts_isolated n
+  n.ns_net_isolated && n.ns_uts_isolated
 
 /-- ns_process_safe (matches Coq: Definition ns_process_safe) -/
 def ns_process_safe (n : NamespaceIsolation) : Bool :=
-  ns_pid_isolated n && ns_ipc_isolated n && ns_cgroup_isolated n
+  n.ns_pid_isolated && n.ns_ipc_isolated && n.ns_cgroup_isolated
 
 /-- cgroup_cpu_safe (matches Coq: Definition cgroup_cpu_safe) -/
 def cgroup_cpu_safe (c : CgroupLimits) : Bool :=
-  cg_cpu_limited c
+  c.cg_cpu_limited
 
 /-- cgroup_memory_safe (matches Coq: Definition cgroup_memory_safe) -/
 def cgroup_memory_safe (c : CgroupLimits) : Bool :=
-  cg_memory_limited c && cg_swap_disabled c
+  c.cg_memory_limited && c.cg_swap_disabled
 
 /-- cgroup_pids_safe (matches Coq: Definition cgroup_pids_safe) -/
 def cgroup_pids_safe (c : CgroupLimits) : Bool :=
-  cg_pids_limited c
+  c.cg_pids_limited
 
 /-- cgroup_io_safe (matches Coq: Definition cgroup_io_safe) -/
 def cgroup_io_safe (c : CgroupLimits) : Bool :=
-  cg_io_limited c
+  c.cg_io_limited
 
 /-- cgroup_fully_limited (matches Coq: Definition cgroup_fully_limited) -/
 def cgroup_fully_limited (c : CgroupLimits) : Bool :=
-  cg_cpu_limited c && cg_memory_limited c && cg_swap_disabled c &&
-  cg_pids_limited c && cg_io_limited c
+  c.cg_cpu_limited && c.cg_memory_limited && c.cg_swap_disabled &&
+  c.cg_pids_limited && c.cg_io_limited
 
 /-- seccomp_enforced (matches Coq: Definition seccomp_enforced) -/
 def seccomp_enforced (s : SeccompConfig) : Bool :=
-  sc_syscall_filter s && sc_default_deny s && sc_audit_logging s
+  s.sc_syscall_filter && s.sc_default_deny && s.sc_audit_logging
 
 /-- seccomp_minimal_safe (matches Coq: Definition seccomp_minimal_safe) -/
 def seccomp_minimal_safe (s : SeccompConfig) : Bool :=
-  sc_syscall_filter s && sc_block_privileged s && sc_block_debug s
+  s.sc_syscall_filter && s.sc_block_privileged && s.sc_block_debug
 
 /-- seccomp_escape_protected (matches Coq: Definition seccomp_escape_protected) -/
 def seccomp_escape_protected (s : SeccompConfig) : Bool :=
-  sc_block_privileged s && sc_block_module s && sc_block_namespace s
+  s.sc_block_privileged && s.sc_block_module && s.sc_block_namespace
 
 /-- seccomp_fully_hardened (matches Coq: Definition seccomp_fully_hardened) -/
 def seccomp_fully_hardened (s : SeccompConfig) : Bool :=
-  seccomp_enforced s && seccomp_escape_protected s && sc_block_debug s
+  seccomp_enforced s && seccomp_escape_protected s && s.sc_block_debug
 
 /-- caps_dangerous_dropped (matches Coq: Definition caps_dangerous_dropped) -/
 def caps_dangerous_dropped (c : Capabilities) : Bool :=
-  negb (cap_sys_admin c) && negb (cap_sys_ptrace c) &&
-  negb (cap_sys_module c) && negb (cap_sys_rawio c)
+  !(c.cap_sys_admin) && !(c.cap_sys_ptrace) &&
+  !(c.cap_sys_module) && !(c.cap_sys_rawio)
 
 /-- caps_minimal (matches Coq: Definition caps_minimal) -/
 def caps_minimal (c : Capabilities) : Bool :=
-  caps_dangerous_dropped c && negb (cap_net_raw c) &&
-  negb (cap_dac_override c) && negb (cap_mknod c)
+  caps_dangerous_dropped c && !(c.cap_net_raw) &&
+  !(c.cap_dac_override) && !(c.cap_mknod)
 
 /-- caps_rootless_safe (matches Coq: Definition caps_rootless_safe) -/
 def caps_rootless_safe (c : Capabilities) : Bool :=
-  caps_minimal c && negb (cap_setuid c) && negb (cap_setgid c) && negb (cap_chown c)
+  caps_minimal c && !(c.cap_setuid) && !(c.cap_setgid) && !(c.cap_chown)
 
 /-- caps_network_minimal (matches Coq: Definition caps_network_minimal) -/
 def caps_network_minimal (c : Capabilities) : Bool :=
-  negb (cap_net_raw c) && cap_net_bind c
+  !(c.cap_net_raw) && c.cap_net_bind
 
 /-- image_authenticity_verified (matches Coq: Definition image_authenticity_verified) -/
 def image_authenticity_verified (i : ImageIntegrity) : Bool :=
-  img_signed i && img_signature_valid i && img_hash_verified i
+  i.img_signed && i.img_signature_valid && i.img_hash_verified
 
 /-- image_provenance_verified (matches Coq: Definition image_provenance_verified) -/
 def image_provenance_verified (i : ImageIntegrity) : Bool :=
-  img_trusted_registry i && img_sbom_present i && img_base_verified i
+  i.img_trusted_registry && i.img_sbom_present && i.img_base_verified
 
 /-- image_security_verified (matches Coq: Definition image_security_verified) -/
 def image_security_verified (i : ImageIntegrity) : Bool :=
-  img_vuln_scanned i && img_no_critical_vulns i
+  i.img_vuln_scanned && i.img_no_critical_vulns
 
 /-- image_fully_verified (matches Coq: Definition image_fully_verified) -/
 def image_fully_verified (i : ImageIntegrity) : Bool :=
@@ -363,50 +363,50 @@ def image_fully_verified (i : ImageIntegrity) : Bool :=
 
 /-- escape_basic_protected (matches Coq: Definition escape_basic_protected) -/
 def escape_basic_protected (e : EscapePrevention) : Bool :=
-  esc_no_privileged e && esc_no_host_pid e && esc_no_host_net e && esc_no_host_ipc e
+  e.esc_no_privileged && e.esc_no_host_pid && e.esc_no_host_net && e.esc_no_host_ipc
 
 /-- escape_filesystem_protected (matches Coq: Definition escape_filesystem_protected) -/
 def escape_filesystem_protected (e : EscapePrevention) : Bool :=
-  esc_readonly_rootfs e && esc_no_new_privs e
+  e.esc_readonly_rootfs && e.esc_no_new_privs
 
 /-- escape_mac_protected (matches Coq: Definition escape_mac_protected) -/
 def escape_mac_protected (e : EscapePrevention) : Bool :=
-  esc_apparmor_enabled e || esc_selinux_enabled e
+  e.esc_apparmor_enabled || e.esc_selinux_enabled
 
 /-- escape_fully_protected (matches Coq: Definition escape_fully_protected) -/
 def escape_fully_protected (e : EscapePrevention) : Bool :=
   escape_basic_protected e && escape_filesystem_protected e &&
-  esc_seccomp_enabled e && esc_drop_all_caps e
+  e.esc_seccomp_enabled && e.esc_drop_all_caps
 
 /-- container_isolated (matches Coq: Definition container_isolated) -/
 def container_isolated (c : ContainerConfig) : Bool :=
-  ns_fully_isolated (cont_ns c)
+  ns_fully_isolated (c.cont_ns)
 
 /-- container_resource_safe (matches Coq: Definition container_resource_safe) -/
 def container_resource_safe (c : ContainerConfig) : Bool :=
-  cgroup_fully_limited (cont_cgroup c)
+  cgroup_fully_limited (c.cont_cgroup)
 
 /-- container_syscall_safe (matches Coq: Definition container_syscall_safe) -/
 def container_syscall_safe (c : ContainerConfig) : Bool :=
-  seccomp_fully_hardened (cont_seccomp c)
+  seccomp_fully_hardened (c.cont_seccomp)
 
 /-- container_capability_safe (matches Coq: Definition container_capability_safe) -/
 def container_capability_safe (c : ContainerConfig) : Bool :=
-  caps_rootless_safe (cont_caps c)
+  caps_rootless_safe (c.cont_caps)
 
 /-- container_image_safe (matches Coq: Definition container_image_safe) -/
 def container_image_safe (c : ContainerConfig) : Bool :=
-  image_fully_verified (cont_image c)
+  image_fully_verified (c.cont_image)
 
 /-- container_escape_safe (matches Coq: Definition container_escape_safe) -/
 def container_escape_safe (c : ContainerConfig) : Bool :=
-  escape_fully_protected (cont_escape c)
+  escape_fully_protected (c.cont_escape)
 
 /-- container_fully_secure (matches Coq: Definition container_fully_secure) -/
 def container_fully_secure (c : ContainerConfig) : Bool :=
   container_isolated c && container_resource_safe c &&
   container_syscall_safe c && container_capability_safe c &&
-  container_image_safe c && container_escape_safe c && cont_rootless c
+  container_image_safe c && container_escape_safe c && c.cont_rootless
 
 /-- riina_ns (matches Coq: Definition riina_ns) -/
 def riina_ns : NamespaceIsolation := mkNS true true true true true true true true
@@ -433,19 +433,19 @@ def riina_container : ContainerConfig := mkContainer riina_ns riina_cgroup riina
     SECTION 1: CORE BOOLEAN LEMMAS
     ============================================================================ -/
 /-- andb_true_intro (matches Coq) -/
-theorem andb_true_intro : ∀ a b : bool, a = true → b = true → a && b = true := by
+theorem andb_true_intro : ∀ a b : Bool, a = true → b = true → a && b = true := by
   rfl
 
 /-- andb_true_elim1 (matches Coq) -/
-theorem andb_true_elim1 : ∀ a b : bool, a && b = true → a = true := by
+theorem andb_true_elim1 : ∀ a b : Bool, a && b = true → a = true := by
   cases ‹_› <;> simp
 
 /-- andb_true_elim2 (matches Coq) -/
-theorem andb_true_elim2 : ∀ a b : bool, a && b = true → b = true := by
+theorem andb_true_elim2 : ∀ a b : Bool, a && b = true → b = true := by
   intro h; exact h
 
 /-- andb7_true (matches Coq) -/
-theorem andb7_true : ∀ a b c d e f g : bool, a && b && c && d && e && f && g = true → a = true ∧ b = true ∧ c = true ∧ d = true ∧ e = true ∧ f = true ∧ g = true := by
+theorem andb7_true : ∀ a b c d e f g : Bool, a && b && c && d && e && f && g = true → a = true ∧ b = true ∧ c = true ∧ d = true ∧ e = true ∧ f = true ∧ g = true := by
   simp_all [Bool.and_eq_true]
 
 /-- ============================================================================

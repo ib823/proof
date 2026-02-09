@@ -137,7 +137,7 @@ structure LengthPrefixedString where
 def propagate_taint := sorry -- complex match, needs manual translation
 
 /-- tainted_concat (matches Coq: Definition tainted_concat) -/
-def tainted_concat (v1 v2 : TaintedValue) : TaintedValue := mkTainted (tv_data v1 ++ tv_data v2) (propagate_taint (tv_taint v1) (tv_taint v2))
+def tainted_concat (v1 v2 : TaintedValue) : TaintedValue := mkTainted (v1.tv_data ++ v2.tv_data) (propagate_taint (v1.tv_taint) (v2.tv_taint))
 
 /-- secure_xml_config (matches Coq: Definition secure_xml_config) -/
 def secure_xml_config : XMLParserConfig := mkXMLConfig false false
@@ -148,7 +148,7 @@ def contains_newline (data : List Nat) : Bool :=
 
 /-- secure_pdf (matches Coq: Definition secure_pdf) -/
 def secure_pdf (doc : PDFDocument) : Prop :=
-  pdf_has_js doc = false
+  doc.pdf_has_js = false
 
 /-- inj_001_sql_injection_impossible (matches Coq) -/
 theorem inj_001_sql_injection_impossible : ∀ (q : SQLQuery), safe_sql q → ∀ part, In part q → match part with | SQLLiteral tv => tv_taint tv ≠ Untrusted | _ => True end := by
@@ -235,7 +235,7 @@ theorem inj_020_empty_sql_safe : safe_sql nil := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_021_parameterized_always_safe (matches Coq) -/
-theorem inj_021_parameterized_always_safe : ∀ n : nat, safe_sql (SQLParam n :: nil) := by
+theorem inj_021_parameterized_always_safe : ∀ n : Nat, safe_sql (SQLParam n :: nil) := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_022_trusted_propagation (matches Coq) -/

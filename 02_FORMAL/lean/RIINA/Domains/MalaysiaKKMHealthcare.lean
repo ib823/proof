@@ -150,7 +150,7 @@ theorem kkm_audit : ∀ (r : HealthcareRecord), hc_audit_logged r = true → emr
   omega
 
 /-- kkm_cross_facility (matches Coq) -/
-theorem kkm_cross_facility : ∀ (r : HealthcareRecord) (target : nat), hc_consent_obtained r = true → hc_encrypted r = true → hc_facility_id r ≠ target → cross_facility_authorized r target := by
+theorem kkm_cross_facility : ∀ (r : HealthcareRecord) (target : Nat), hc_consent_obtained r = true → hc_encrypted r = true → hc_facility_id r ≠ target → cross_facility_authorized r target := by
   intro h; exact h
 
 /-- kkm_composition (matches Coq) -/
@@ -226,15 +226,15 @@ theorem medical_device_sl2 : ∀ (md : MedicalDeviceSecurity), md_authenticated 
   intro h; exact h
 
 /-- higher_sl_subsumes (matches Coq) -/
-theorem higher_sl_subsumes : ∀ (md : MedicalDeviceSecurity) (sl1 sl2 : nat), sl1 ≤ sl2 → md_security_adequate md sl2 → md_security_adequate md sl1 := by
+theorem higher_sl_subsumes : ∀ (md : MedicalDeviceSecurity) (sl1 sl2 : Nat), sl1 ≤ sl2 → md_security_adequate md sl2 → md_security_adequate md sl1 := by
   omega
 
 /-- cross_facility_requires_encryption (matches Coq) -/
-theorem cross_facility_requires_encryption : ∀ (r : HealthcareRecord) (target : nat), cross_facility_authorized r target → hc_encrypted r = true := by
+theorem cross_facility_requires_encryption : ∀ (r : HealthcareRecord) (target : Nat), cross_facility_authorized r target → hc_encrypted r = true := by
   intro h; exact h
 
 /-- cross_facility_requires_consent (matches Coq) -/
-theorem cross_facility_requires_consent : ∀ (r : HealthcareRecord) (target : nat), cross_facility_authorized r target → hc_consent_obtained r = true := by
+theorem cross_facility_requires_consent : ∀ (r : HealthcareRecord) (target : Nat), cross_facility_authorized r target → hc_consent_obtained r = true := by
   intro h; exact h
 
 end RIINA

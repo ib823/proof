@@ -263,7 +263,7 @@ theorem 8 : All Interactive Elements Keyboard Accessible ----  Theorem all_inter
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : No Keyboard Trap ----   Theorem no_keyboard_trap : ∀ (sys : RIINA_KeyboardSystem) (eid : nat), In eid (kb_tab_index_list (rk_state sys)) → length (kb_tab_index_list (rk_state sys)) ≥ 2 := by
+theorem 9 : No Keyboard Trap ----   Theorem no_keyboard_trap : ∀ (sys : RIINA_KeyboardSystem) (eid : Nat), In eid (kb_tab_index_list (rk_state sys)) → length (kb_tab_index_list (rk_state sys)) ≥ 2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/

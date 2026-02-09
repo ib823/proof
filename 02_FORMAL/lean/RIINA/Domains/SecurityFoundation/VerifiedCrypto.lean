@@ -89,15 +89,15 @@ structure CryptoContext where
 
 /-- key_in_plaintext (matches Coq: Definition key_in_plaintext) -/
 def key_in_plaintext (key : CryptoKey) (mem : Memory) : Prop :=
-  key_wrapped key = false /\ mem_protected mem = false
+  key.key_wrapped = false /\ mem.mem_protected = false
 
 /-- key_protected (matches Coq: Definition key_protected) -/
 def key_protected (key : CryptoKey) (mem : Memory) : Prop :=
-  key_wrapped key = true \/ mem_protected mem = true
+  key.key_wrapped = true \/ mem.mem_protected = true
 
 /-- secure_key_storage (matches Coq: Definition secure_key_storage) -/
 def secure_key_storage (key : CryptoKey) (mem : Memory) : Prop :=
-  key_wrapped key = true /\ mem_protected mem = true
+  key.key_wrapped = true /\ mem.mem_protected = true
 
 /-- execution_time (matches Coq: Definition execution_time) -/
 def execution_time (ctx : CryptoContext) (op : CryptoOp) (input : Data) : Nat :=
@@ -115,15 +115,15 @@ def execute_crypto (ctx : CryptoContext) (op : CryptoOp) (input : Data) : Nat :=
 
 /-- key_strength_sufficient (matches Coq: Definition key_strength_sufficient) -/
 def key_strength_sufficient (key : CryptoKey) : Prop :=
-  key_bits key >= 128
+  key.key_bits >= 128
 
 /-- key_is_strong (matches Coq: Definition key_is_strong) -/
 def key_is_strong (key : CryptoKey) : Prop :=
-  key_bits key >= 256
+  key.key_bits >= 256
 
 /-- derived_key_independent (matches Coq: Definition derived_key_independent) -/
 def derived_key_independent (parent child : CryptoKey) : Prop :=
-  key_id parent <> key_id child
+  parent.key_id <> child.key_id
 
 /-- Theorem: Key material is never exposed in plaintext in unprotected memory. -/
 /-- key_never_plaintext (matches Coq) -/
@@ -172,22 +172,22 @@ theorem strong_key_sufficient : ∀ (key : CryptoKey), key_is_strong key → key
 
 /-- Encryption and decryption take equal time -/
 /-- encrypt_decrypt_equal_time (matches Coq) -/
-theorem encrypt_decrypt_equal_time : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx Encrypt input = execution_time ctx Decrypt input := by
+theorem encrypt_decrypt_equal_time : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx .encrypt input = execution_time ctx .decrypt input := by
   rfl
 
-/-- Sign and verify take equal time -/
+/-- .sign and verify take equal time -/
 /-- sign_verify_equal_time (matches Coq) -/
-theorem sign_verify_equal_time : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx Sign input = execution_time ctx Verify input := by
+theorem sign_verify_equal_time : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx .sign input = execution_time ctx .verify input := by
   rfl
 
-/-- Hash is the fastest operation -/
+/-- .hash is the fastest operation -/
 /-- hash_fastest_operation (matches Coq) -/
-theorem hash_fastest_operation : ∀ (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = true → execution_time ctx Hash input ≤ execution_time ctx op input := by
+theorem hash_fastest_operation : ∀ (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = true → execution_time ctx .hash input ≤ execution_time ctx op input := by
   cases ‹_› <;> simp <;> omega
 
 /-- Key derivation is the slowest operation -/
 /-- key_derive_slowest (matches Coq) -/
-theorem key_derive_slowest : ∀ (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = true → execution_time ctx op input ≤ execution_time ctx KeyDerive input := by
+theorem key_derive_slowest : ∀ (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = true → execution_time ctx op input ≤ execution_time ctx .keyDerive input := by
   cases ‹_› <;> simp <;> omega
 
 /-- Secure key storage is stronger than key protected -/
@@ -222,7 +222,7 @@ theorem operation_time_positive : ∀ (ctx : CryptoContext) (op : CryptoOp) (inp
 
 /-- Different operations may have different times -/
 /-- encrypt_faster_than_sign (matches Coq) -/
-theorem encrypt_faster_than_sign : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx Encrypt input < execution_time ctx Sign input := by
+theorem encrypt_faster_than_sign : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx .encrypt input < execution_time ctx .sign input := by
   omega
 
 /-- Execution is deterministic -/

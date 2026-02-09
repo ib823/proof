@@ -121,7 +121,7 @@ def has_carried_dependency (l : Loop) : Bool :=
 
 /-- vectorizable (matches Coq: Definition vectorizable) -/
 def vectorizable (l : Loop) : Bool :=
-  negb (has_carried_dependency l)
+  !(has_carried_dependency l)
 
 /-- indices_in_bounds (matches Coq: Definition indices_in_bounds) -/
 def indices_in_bounds (indices : List Nat) (bound : Nat) : Bool :=
@@ -161,7 +161,7 @@ theorem PERF_003_04_simd_shuffle_correctness : ∀ (v : SIMDVec) (perm : Vector.
   rfl
 
 /-- PERF_003_05_simd_alignment_requirement (matches Coq) -/
-theorem PERF_003_05_simd_alignment_requirement : ∀ (mem : list nat) (addr : nat), (∃ v, aligned_load mem addr = MemOK v) <-> (is_aligned addr VWidth = true ∧ Nat.leb (addr + VWidth) (length mem) = true) := by
+theorem PERF_003_05_simd_alignment_requirement : ∀ (mem : list nat) (addr : Nat), (∃ v, aligned_load mem addr = MemOK v) <-> (is_aligned addr VWidth = true ∧ Nat.leb (addr + VWidth) (length mem) = true) := by
   rfl
 
 /-- PERF_003_06_simd_lane_independence (matches Coq) -/
@@ -169,15 +169,15 @@ theorem PERF_003_06_simd_lane_independence : ∀ (a b : SIMDVec) (i : Fin.t VWid
   rfl
 
 /-- PERF_003_07_simd_reduce_equivalence (matches Coq) -/
-theorem PERF_003_07_simd_reduce_equivalence : ∀ (v : SIMDVec) (init : nat), simd_reduce Nat.add init v = List.fold_left Nat.add (Vector.to_list v) init := by
+theorem PERF_003_07_simd_reduce_equivalence : ∀ (v : SIMDVec) (init : Nat), simd_reduce Nat.add init v = List.fold_left Nat.add (Vector.to_list v) init := by
   rfl
 
 /-- PERF_003_08_simd_broadcast_correctness (matches Coq) -/
-theorem PERF_003_08_simd_broadcast_correctness : ∀ (x : nat) (i : Fin.t VWidth), Vector.nth (simd_broadcast x) i = x := by
+theorem PERF_003_08_simd_broadcast_correctness : ∀ (x : Nat) (i : Fin.t VWidth), Vector.nth (simd_broadcast x) i = x := by
   simp_all [Bool.and_eq_true]
 
 /-- fold_and_all_true (matches Coq) -/
-theorem fold_and_all_true : ∀ {n} (v : Vector.t nat n) (f : nat → bool), (∀ i, f (Vector.nth v i) = true) → Vector.fold_left (fun acc x => acc && f x) true v = true := by
+theorem fold_and_all_true : ∀ {n} (v : Vector.t nat n) (f : Nat → bool), (∀ i, f (Vector.nth v i) = true) → Vector.fold_left (fun acc x => acc && f x) true v = true := by
   rfl
 
 /-- PERF_003_09_simd_gather_safety (matches Coq) -/
@@ -193,7 +193,7 @@ theorem PERF_003_11_vectorization_legality : ∀ (l : Loop), vectorizable l = tr
   simp_all [Bool.and_eq_true]
 
 /-- to_list_map2 (matches Coq) -/
-theorem to_list_map2 : ∀ {A B C : Type} {n : nat} (f : A → B → C) (v1 : Vector.t A n) (v2 : Vector.t B n), Vector.to_list (Vector.map2 f v1 v2) = List.map (fun p => f (fst p) (snd p)) (combine (Vector.to_list v1) (Vector.to_list v2)) := by
+theorem to_list_map2 : ∀ {A B C : Type} {n : Nat} (f : A → B → C) (v1 : Vector.t A n) (v2 : Vector.t B n), Vector.to_list (Vector.map2 f v1 v2) = List.map (fun p => f (fst p) (snd p)) (combine (Vector.to_list v1) (Vector.to_list v2)) := by
   rfl
 
 /-- PERF_003_12_simd_semantic_preservation (matches Coq) -/
@@ -209,7 +209,7 @@ theorem PERF_003_14_simd_cmp_lane_independence : ∀ (a b : SIMDVec) (i : Fin.t 
   rfl
 
 /-- PERF_003_15_broadcast_add_equiv (matches Coq) -/
-theorem PERF_003_15_broadcast_add_equiv : ∀ (v : SIMDVec) (x : nat) (i : Fin.t VWidth), Vector.nth (simd_add v (simd_broadcast x)) i = scalar_add (Vector.nth v i) x := by
+theorem PERF_003_15_broadcast_add_equiv : ∀ (v : SIMDVec) (x : Nat) (i : Fin.t VWidth), Vector.nth (simd_add v (simd_broadcast x)) i = scalar_add (Vector.nth v i) x := by
   rfl
 
 /-- PERF_003_16_identity_shuffle (matches Coq) -/
@@ -229,7 +229,7 @@ theorem PERF_003_19_all_false_mask_preserves_old : ∀ (old new_val : SIMDVec) (
   simp
 
 /-- PERF_003_20_zero_aligned (matches Coq) -/
-theorem PERF_003_20_zero_aligned : ∀ alignment : nat, alignment > 0 → is_aligned 0 alignment = true := by
+theorem PERF_003_20_zero_aligned : ∀ alignment : Nat, alignment > 0 → is_aligned 0 alignment = true := by
   omega
 
 end RIINA

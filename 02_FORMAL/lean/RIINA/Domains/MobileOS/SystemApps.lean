@@ -154,37 +154,37 @@ structure AppUpdate where
 
 /-- system_app_correct (matches Coq: Definition system_app_correct) -/
 def system_app_correct (app : SystemApp) : Prop :=
-  is_verified app = true /\
-  has_sandbox app = true /\
-  permissions_minimal app = true
+  app.is_verified = true /\
+  app.has_sandbox = true /\
+  app.permissions_minimal = true
 
 /-- data_secure (matches Coq: Definition data_secure) -/
 def data_secure (app : SystemApp) : Prop :=
-  data_encrypted app = true /\
-  has_sandbox app = true
+  app.data_encrypted = true /\
+  app.has_sandbox = true
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
 def valid_transition (trans : StateTransition) : Prop :=
-  state_valid (from_state trans) = true /\
-  state_valid (to_state trans) = true
+  state_valid (trans.from_state) = true /\
+  state_valid (trans.to_state) = true
 
 /-- state_preserved (matches Coq: Definition state_preserved) -/
 def state_preserved (trans : StateTransition) : Prop :=
-  state_data (from_state trans) = state_data (to_state trans) \/
-  state_valid (to_state trans) = true
+  state_data (trans.from_state) = state_data (trans.to_state) \/
+  state_valid (trans.to_state) = true
 
 /-- sync_lossless (matches Coq: Definition sync_lossless) -/
 def sync_lossless (sync : SyncOperation) : Prop :=
-  sync_successful sync = true ->
-  state_valid (merged_state sync) = true
+  sync.sync_successful = true ->
+  state_valid (sync.merged_state) = true
 
 /-- response_timely (matches Coq: Definition response_timely) -/
 def response_timely (resp : AppResponse) : Prop :=
-  response_time_us resp <= 100000
+  resp.response_time_us <= 100000
 
 /-- app_responds_correctly (matches Coq: Definition app_responds_correctly) -/
 def app_responds_correctly (resp : AppResponse) : Prop :=
-  response_correct resp = true
+  resp.response_correct = true
 
 /-- wellformed_system_app (matches Coq: Definition wellformed_system_app) -/
 def wellformed_system_app (app : SystemApp) : Prop :=
@@ -192,48 +192,48 @@ def wellformed_system_app (app : SystemApp) : Prop :=
 
 /-- check_app_security (matches Coq: Definition check_app_security) -/
 def check_app_security (app : SystemApp) : Bool :=
-  is_verified app && has_sandbox app && permissions_minimal app && data_encrypted app
+  app.is_verified && app.has_sandbox && app.permissions_minimal && app.data_encrypted
 
 /-- transition_preserves_validity (matches Coq: Definition transition_preserves_validity) -/
 def transition_preserves_validity (trans : StateTransition) : Bool :=
-  state_valid (from_state trans) && state_valid (to_state trans)
+  state_valid (trans.from_state) && state_valid (trans.to_state)
 
 /-- app_sandbox_holds (matches Coq: Definition app_sandbox_holds) -/
 def app_sandbox_holds (app : SystemApp) (perm : AppPermission) : Prop :=
-  has_sandbox app = true /\
-  perm_app_id perm = sys_app_id app /\
-  perm_granted_explicitly perm = true
+  app.has_sandbox = true /\
+  perm.perm_app_id = app.sys_app_id /\
+  perm.perm_granted_explicitly = true
 
 /-- no_cross_app_access (matches Coq: Definition no_cross_app_access) -/
 def no_cross_app_access (app1 app2 : SystemApp) : Prop :=
-  sys_app_id app1 <> sys_app_id app2 ->
-  has_sandbox app1 = true /\ has_sandbox app2 = true
+  app1.sys_app_id <> app2.sys_app_id ->
+  app1.has_sandbox = true /\ app2.has_sandbox = true
 
 /-- app_permission_runtime_check (matches Coq: Definition app_permission_runtime_check) -/
 def app_permission_runtime_check (perm : AppPermission) : Prop :=
-  perm_granted_explicitly perm = true
+  perm.perm_granted_explicitly = true
 
 /-- background_app_is_limited (matches Coq: Definition background_app_is_limited) -/
 def background_app_is_limited (lc : AppLifecycle) : Prop :=
-  lc_background lc = true -> lc_background_limited lc = true
+  lc.lc_background = true -> lc.lc_background_limited = true
 
 /-- foreground_has_priority (matches Coq: Definition foreground_has_priority) -/
 def foreground_has_priority (lc : AppLifecycle) : Prop :=
-  lc_foreground lc = true -> lc_background lc = false
+  lc.lc_foreground = true -> lc.lc_background = false
 
 /-- install_is_verified (matches Coq: Definition install_is_verified) -/
 def install_is_verified (lc : AppLifecycle) : Prop :=
-  lc_installed lc = true -> lc_install_verified lc = true
+  lc.lc_installed = true -> lc.lc_install_verified = true
 
 /-- update_is_atomic (matches Coq: Definition update_is_atomic) -/
 def update_is_atomic (upd : AppUpdate) : Prop :=
-  upd_applied upd = true ->
-  upd_signature_valid upd = true /\
-  upd_new_version upd > upd_old_version upd
+  upd.upd_applied = true ->
+  upd.upd_signature_valid = true /\
+  upd.upd_new_version > upd.upd_old_version
 
 /-- uninstall_is_complete (matches Coq: Definition uninstall_is_complete) -/
 def uninstall_is_complete (lc : AppLifecycle) : Prop :=
-  lc_installed lc = false -> lc_data_on_disk lc = false
+  lc.lc_installed = false -> lc.lc_data_on_disk = false
 
 /-- system_apps_verified_correct (matches Coq) -/
 theorem system_apps_verified_correct : ∀ (app : SystemApp), wellformed_system_app app → system_app_correct app := by

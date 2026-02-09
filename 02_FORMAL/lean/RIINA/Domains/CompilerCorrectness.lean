@@ -207,24 +207,24 @@ structure CompilerConfig where
 
 /-- parsing_correct (matches Coq: Definition parsing_correct) -/
 def parsing_correct (p : ParsingPhase) : Bool :=
-  pp_syntax_correct p && pp_ast_well_formed p && pp_error_recovery p
+  p.pp_syntax_correct && p.pp_ast_well_formed && p.pp_error_recovery
 
 /-- typecheck_sound (matches Coq: Definition typecheck_sound) -/
 def typecheck_sound (t : TypeCheckPhase) : Bool :=
-  tc_type_soundness t && tc_inference_complete t && tc_constraint_solving t
+  t.tc_type_soundness && t.tc_inference_complete && t.tc_constraint_solving
 
 /-- optimization_safe (matches Coq: Definition optimization_safe) -/
 def optimization_safe (o : OptimizationPhase) : Bool :=
-  op_semantics_preserved o && op_termination_preserved o && op_memory_safety_preserved o
+  o.op_semantics_preserved && o.op_termination_preserved && o.op_memory_safety_preserved
 
 /-- codegen_correct (matches Coq: Definition codegen_correct) -/
 def codegen_correct (c : CodeGenPhase) : Bool :=
-  cg_instruction_correct c && cg_register_allocation c && cg_calling_convention c && cg_stack_layout c
+  c.cg_instruction_correct && c.cg_register_allocation && c.cg_calling_convention && c.cg_stack_layout
 
 /-- compiler_verified (matches Coq: Definition compiler_verified) -/
 def compiler_verified (c : CompilerConfig) : Bool :=
-  parsing_correct (cc_parsing c) && typecheck_sound (cc_typecheck c) &&
-  optimization_safe (cc_optimization c) && codegen_correct (cc_codegen c)
+  parsing_correct (c.cc_parsing) && typecheck_sound (c.cc_typecheck) &&
+  optimization_safe (c.cc_optimization) && codegen_correct (c.cc_codegen)
 
 /-- riina_parsing (matches Coq: Definition riina_parsing) -/
 def riina_parsing : ParsingPhase := mkParsing true true true
@@ -253,7 +253,7 @@ def src_ir_equiv (e_src : src_expr) (e_ir : ir_expr) : Prop :=
     SECTION 2: COMPLIANCE PREDICATES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- ============================================================================
@@ -399,7 +399,7 @@ theorem ir_multi_preservation : ∀ e e' T, ir_has_type e T → e ==>* e' → ir
 theorem ir_pair_value_not_step : ∀ v1 v2 e, ir_value v1 → ir_value v2 → ~ (IR_Pair v1 v2 ==> e) := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper: bool doesn't step -/
+/-- Helper: Bool doesn't step -/
 /-- ir_bool_not_step (matches Coq) -/
 theorem ir_bool_not_step : ∀ b e, ~ (IR_Bool b ==> e) := by
   simp_all [Bool.and_eq_true]

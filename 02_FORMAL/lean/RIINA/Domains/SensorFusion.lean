@@ -133,7 +133,7 @@ def quorum_reached (agreeing total required_pct : Nat) : Bool :=
 
 /-- reading_not_replayed (matches Coq: Definition reading_not_replayed) -/
 def reading_not_replayed (reading : Reading) (seen_timestamps : List Nat) : Bool :=
-  negb (existsb (fun t => Nat
+  !(existsb (fun t => Nat
 
 /-- calibration_current (matches Coq: Definition calibration_current) -/
 def calibration_current (last_cal current max_age : Nat) : Bool :=
@@ -168,11 +168,11 @@ def sensor_layers (auth fresh bft anomaly : Bool) : Bool :=
   andb auth (andb fresh (andb bft anomaly))
 
 /-- sensor_001_byzantine_threshold (matches Coq) -/
-theorem sensor_001_byzantine_threshold : ∀ (n f : nat), byzantine_tolerant n f = true → 3 * f + 1 ≤ n := by
+theorem sensor_001_byzantine_threshold : ∀ (n f : Nat), byzantine_tolerant n f = true → 3 * f + 1 ≤ n := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_002_honest_majority (matches Coq) -/
-theorem sensor_002_honest_majority : ∀ (n f : nat), n ≥ 3 * f + 1 → n - f ≥ 2 * f + 1 := by
+theorem sensor_002_honest_majority : ∀ (n f : Nat), n ≥ 3 * f + 1 → n - f ≥ 2 * f + 1 := by
   omega
 
 /-- sensor_003_authenticated (matches Coq) -/
@@ -180,11 +180,11 @@ theorem sensor_003_authenticated : ∀ (reading : Reading) (valid_sigs : list na
   simp_all [Bool.and_eq_true]
 
 /-- sensor_004_freshness (matches Coq) -/
-theorem sensor_004_freshness : ∀ (reading : Reading) (current_time max_age : nat), reading_fresh reading current_time max_age = true → current_time - reading_timestamp reading ≤ max_age := by
+theorem sensor_004_freshness : ∀ (reading : Reading) (current_time max_age : Nat), reading_fresh reading current_time max_age = true → current_time - reading_timestamp reading ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_005_trust_threshold (matches Coq) -/
-theorem sensor_005_trust_threshold : ∀ (sensor : Sensor) (min_trust : nat), trust_sufficient sensor min_trust = true → min_trust ≤ sensor_trust sensor := by
+theorem sensor_005_trust_threshold : ∀ (sensor : Sensor) (min_trust : Nat), trust_sufficient sensor min_trust = true → min_trust ≤ sensor_trust sensor := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_006_cross_validation (matches Coq) -/
@@ -192,19 +192,19 @@ theorem sensor_006_cross_validation : ∀ (cv : CrossValidation), cross_valid cv
   simp_all [Bool.and_eq_true]
 
 /-- sensor_007_anomaly_detected (matches Coq) -/
-theorem sensor_007_anomaly_detected : ∀ (value expected threshold : nat), threshold * 2 < abs_diff value expected → detect_anomaly value expected threshold = Anomalous := by
+theorem sensor_007_anomaly_detected : ∀ (value expected threshold : Nat), threshold * 2 < abs_diff value expected → detect_anomaly value expected threshold = Anomalous := by
   rfl
 
 /-- sensor_008_normal_accepted (matches Coq) -/
-theorem sensor_008_normal_accepted : ∀ (value expected threshold : nat), abs_diff value expected ≤ threshold → detect_anomaly value expected threshold = Normal := by
+theorem sensor_008_normal_accepted : ∀ (value expected threshold : Nat), abs_diff value expected ≤ threshold → detect_anomaly value expected threshold = Normal := by
   cases ‹_› <;> simp <;> omega
 
 /-- sensor_009_min_sources (matches Coq) -/
-theorem sensor_009_min_sources : ∀ (result : FusedResult) (min_sources : nat), fusion_sources_ok result min_sources = true → min_sources ≤ length (fused_sources result) := by
+theorem sensor_009_min_sources : ∀ (result : FusedResult) (min_sources : Nat), fusion_sources_ok result min_sources = true → min_sources ≤ length (fused_sources result) := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_010_confidence_bounded (matches Coq) -/
-theorem sensor_010_confidence_bounded : ∀ (result : FusedResult) (max_conf : nat), confidence_bounded result max_conf = true → fused_confidence result ≤ max_conf := by
+theorem sensor_010_confidence_bounded : ∀ (result : FusedResult) (max_conf : Nat), confidence_bounded result max_conf = true → fused_confidence result ≤ max_conf := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_011_temporal_consistent (matches Coq) -/
@@ -212,19 +212,19 @@ theorem sensor_011_temporal_consistent : ∀ (readings : list Reading), temporal
   intro h; exact h
 
 /-- sensor_012_diversity (matches Coq) -/
-theorem sensor_012_diversity : ∀ (readings : list Reading) (sensors : list Sensor) (min_types : nat), sensor_types_diverse readings sensors ≥ min_types → sensor_types_diverse readings sensors ≥ min_types := by
+theorem sensor_012_diversity : ∀ (readings : list Reading) (sensors : list Sensor) (min_types : Nat), sensor_types_diverse readings sensors ≥ min_types → sensor_types_diverse readings sensors ≥ min_types := by
   intro h; exact h
 
 /-- sensor_013_weight_bounded (matches Coq) -/
-theorem sensor_013_weight_bounded : ∀ (weight max_weight : nat), weight_valid weight max_weight = true → weight ≤ max_weight := by
+theorem sensor_013_weight_bounded : ∀ (weight max_weight : Nat), weight_valid weight max_weight = true → weight ≤ max_weight := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_014_outlier_rejected (matches Coq) -/
-theorem sensor_014_outlier_rejected : ∀ (value median threshold : nat), is_outlier value median threshold = true → threshold < abs_diff value median := by
+theorem sensor_014_outlier_rejected : ∀ (value median threshold : Nat), is_outlier value median threshold = true → threshold < abs_diff value median := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_015_quorum (matches Coq) -/
-theorem sensor_015_quorum : ∀ (agreeing total required_pct : nat), quorum_reached agreeing total required_pct = true → total * required_pct / 100 ≤ agreeing := by
+theorem sensor_015_quorum : ∀ (agreeing total required_pct : Nat), quorum_reached agreeing total required_pct = true → total * required_pct / 100 ≤ agreeing := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_016_no_replay (matches Coq) -/
@@ -232,23 +232,23 @@ theorem sensor_016_no_replay : ∀ (reading : Reading) (seen : list nat), readin
   simp_all [Bool.and_eq_true]
 
 /-- sensor_017_calibration_valid (matches Coq) -/
-theorem sensor_017_calibration_valid : ∀ (last_cal current max_age : nat), calibration_current last_cal current max_age = true → current - last_cal ≤ max_age := by
+theorem sensor_017_calibration_valid : ∀ (last_cal current max_age : Nat), calibration_current last_cal current max_age = true → current - last_cal ≤ max_age := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_018_range_valid (matches Coq) -/
-theorem sensor_018_range_valid : ∀ (value min_val max_val : nat), in_valid_range value min_val max_val = true → min_val ≤ value ∧ value ≤ max_val := by
+theorem sensor_018_range_valid : ∀ (value min_val max_val : Nat), in_valid_range value min_val max_val = true → min_val ≤ value ∧ value ≤ max_val := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_019_rate_bounded (matches Coq) -/
-theorem sensor_019_rate_bounded : ∀ (prev current max_delta : nat), rate_of_change_ok prev current max_delta = true → abs_diff prev current ≤ max_delta := by
+theorem sensor_019_rate_bounded : ∀ (prev current max_delta : Nat), rate_of_change_ok prev current max_delta = true → abs_diff prev current ≤ max_delta := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_020_redundancy (matches Coq) -/
-theorem sensor_020_redundancy : ∀ (active min_redundancy : nat), redundancy_sufficient active min_redundancy = true → min_redundancy ≤ active := by
+theorem sensor_020_redundancy : ∀ (active min_redundancy : Nat), redundancy_sufficient active min_redundancy = true → min_redundancy ≤ active := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_021_health_ok (matches Coq) -/
-theorem sensor_021_health_ok : ∀ (error_rate max_error : nat), sensor_healthy error_rate max_error = true → error_rate ≤ max_error := by
+theorem sensor_021_health_ok : ∀ (error_rate max_error : Nat), sensor_healthy error_rate max_error = true → error_rate ≤ max_error := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_022_deterministic (matches Coq) -/
@@ -256,7 +256,7 @@ theorem sensor_022_deterministic : ∀ (readings : list Reading) (f : list Readi
   rfl
 
 /-- sensor_023_secure_channel (matches Coq) -/
-theorem sensor_023_secure_channel : ∀ (encryption auth : bool), channel_secure encryption auth = true → encryption = true ∧ auth = true := by
+theorem sensor_023_secure_channel : ∀ (encryption auth : Bool), channel_secure encryption auth = true → encryption = true ∧ auth = true := by
   simp_all [Bool.and_eq_true]
 
 /-- sensor_024_audit_complete (matches Coq) -/

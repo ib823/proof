@@ -124,20 +124,20 @@ def right_to_nat (r : PrivacyRight) : Nat :=
 
 /-- all_ecommerce_controls (matches Coq: Definition all_ecommerce_controls) -/
 def all_ecommerce_controls (c : EcommerceControls) : Bool :=
-  tls_encryption c && secure_authentication c && input_validation c &&
-  csrf_protection c && sql_injection_prevention c && xss_prevention c &&
-  secure_session c && pci_compliant_payment c
+  c.tls_encryption && c.secure_authentication && c.input_validation &&
+  c.csrf_protection && c.sql_injection_prevention && c.xss_prevention &&
+  c.secure_session && c.pci_compliant_payment
 
 /-- count_ecommerce_controls (matches Coq: Definition count_ecommerce_controls) -/
 def count_ecommerce_controls (c : EcommerceControls) : Nat :=
-  (if tls_encryption c then 1 else 0) +
-  (if secure_authentication c then 1 else 0) +
-  (if input_validation c then 1 else 0) +
-  (if csrf_protection c then 1 else 0) +
-  (if sql_injection_prevention c then 1 else 0) +
-  (if xss_prevention c then 1 else 0) +
-  (if secure_session c then 1 else 0) +
-  (if pci_compliant_payment c then 1 else 0)
+  (if c.tls_encryption then 1 else 0) +
+  (if c.secure_authentication then 1 else 0) +
+  (if c.input_validation then 1 else 0) +
+  (if c.csrf_protection then 1 else 0) +
+  (if c.sql_injection_prevention then 1 else 0) +
+  (if c.xss_prevention then 1 else 0) +
+  (if c.secure_session then 1 else 0) +
+  (if c.pci_compliant_payment then 1 else 0)
 
 /-- retention_expired (matches Coq: Definition retention_expired) -/
 def retention_expired (current_time collection_time retention_days : Nat) : Bool :=
@@ -164,13 +164,13 @@ theorem ecommerce_pci_compliance : ∀ (controls : EcommerceControls), pci_compl
 /-- Section J02 - CCPA Consumer Rights
     Reference: IND_J_RETAIL.md Section 3.2 -/
 /-- ccpa_compliance (matches Coq) -/
-theorem ccpa_compliance : ∀ (consumer : nat) (right : PrivacyRight),  True := by
+theorem ccpa_compliance : ∀ (consumer : Nat) (right : PrivacyRight),  True := by
   trivial
 
 /-- Section J03 - GDPR Compliance
     Reference: IND_J_RETAIL.md Section 3.3 -/
 /-- gdpr_compliance (matches Coq) -/
-theorem gdpr_compliance : ∀ (data_subject : nat) (processing : nat),  True := by
+theorem gdpr_compliance : ∀ (data_subject : Nat) (processing : Nat),  True := by
   trivial
 
 /-- Section J04 - OWASP Top 10 Prevention
@@ -182,7 +182,7 @@ theorem owasp_prevention : ∀ (controls : EcommerceControls), input_validation 
 /-- Section J05 - SOC 2 Trust Principles
     Reference: IND_J_RETAIL.md Section 3.5 -/
 /-- soc2_compliance (matches Coq) -/
-theorem soc2_compliance : ∀ (service : nat) (criteria : nat),  True := by
+theorem soc2_compliance : ∀ (service : Nat) (criteria : Nat),  True := by
   trivial
 
 /-- TLS required for all customer data -/
@@ -196,7 +196,7 @@ theorem csrf_tokens_required : ∀ (controls : EcommerceControls), csrf_protecti
   trivial
 
 /-- payment_biometric_highest (matches Coq) -/
-theorem payment_biometric_highest : consumer_sensitivity PaymentData = consumer_sensitivity BiometricData := by
+theorem payment_biometric_highest : consumer_sensitivity .paymentData = consumer_sensitivity BiometricData := by
   rfl
 
 /-- payment_max_sensitivity (matches Coq) -/

@@ -168,9 +168,9 @@ def safe_failure_fraction_pct (s : IEC61508_SIL) : Nat :=
 
 /-- iec62443_full_compliance (matches Coq: Definition iec62443_full_compliance) -/
 def iec62443_full_compliance (c : IEC62443_Compliance) : Bool :=
-  part_2_1_policies c && part_2_4_service_providers c &&
-  part_3_2_zones_conduits c && part_3_3_system_requirements c &&
-  part_4_1_secure_development c && part_4_2_component_requirements c
+  c.part_2_1_policies && c.part_2_4_service_providers &&
+  c.part_3_2_zones_conduits && c.part_3_3_system_requirements &&
+  c.part_4_1_secure_development && c.part_4_2_component_requirements
 
 /-- testing_coverage_pct (matches Coq: Definition testing_coverage_pct) -/
 def testing_coverage_pct (sl : SecurityLevel) : Nat :=
@@ -185,7 +185,7 @@ def testing_coverage_pct (sl : SecurityLevel) : Nat :=
 def ot_isolated (purdue : PurdueLevel) : Bool :=
   match purdue with
   | .level_2_Supervisory => true
-  | ._ => false
+  | _ => false
 
 /-- patch_window_days (matches Coq: Definition patch_window_days) -/
 def patch_window_days (sl : SecurityLevel) : Nat :=
@@ -205,30 +205,30 @@ theorem iec_62443_compliance : ∀ (compliance : IEC62443_Compliance), part_3_3_
 /-- Section I02 - IEC 61508 Safety
     Reference: IND_I_MANUFACTURING.md Section 3.2 -/
 /-- iec_61508_safety (matches Coq) -/
-theorem iec_61508_safety : ∀ (system : nat) (sil : IEC61508_SIL),  True := by
+theorem iec_61508_safety : ∀ (system : Nat) (sil : IEC61508_SIL),  True := by
   trivial
 
 /-- Section I03 - Zone and Conduit Model
     Reference: IND_I_MANUFACTURING.md Section 3.3 -/
 /-- zone_conduit_security (matches Coq) -/
-theorem zone_conduit_security : ∀ (zone : PurdueLevel) (conduit : nat),  True := by
+theorem zone_conduit_security : ∀ (zone : PurdueLevel) (conduit : Nat),  True := by
   trivial
 
 /-- Section I04 - Secure Development
     Reference: IND_I_MANUFACTURING.md Section 3.4 -/
 /-- secure_development_lifecycle (matches Coq) -/
-theorem secure_development_lifecycle : ∀ (product : nat),  True := by
+theorem secure_development_lifecycle : ∀ (product : Nat),  True := by
   trivial
 
 /-- Section I05 - NIST 800-82 ICS
     Reference: IND_I_MANUFACTURING.md Section 3.5 -/
 /-- nist_800_82_compliance (matches Coq) -/
-theorem nist_800_82_compliance : ∀ (ics : nat),  True := by
+theorem nist_800_82_compliance : ∀ (ics : Nat),  True := by
   trivial
 
 /-- SL-4 protects against state-level threats -/
 /-- sl4_state_level_protection (matches Coq) -/
-theorem sl4_state_level_protection : ∀ (compliance : IEC62443_Compliance), target_security_level compliance = SL_4 →  True := by
+theorem sl4_state_level_protection : ∀ (compliance : IEC62443_Compliance), target_security_level compliance = .sL_4 →  True := by
   trivial
 
 /-- Zone boundaries enforced -/
@@ -281,7 +281,7 @@ theorem full_compliance_requires_secure_dev : ∀ c, iec62443_full_compliance c 
   cases ‹_› <;> simp <;> omega
 
 /-- sl4_full_coverage (matches Coq) -/
-theorem sl4_full_coverage : testing_coverage_pct SL_4 = 100 := by
+theorem sl4_full_coverage : testing_coverage_pct .sL_4 = 100 := by
   rfl
 
 /-- testing_coverage_monotone (matches Coq) -/
@@ -289,15 +289,15 @@ theorem testing_coverage_monotone : ∀ s1 s2, sl_le s1 s2 = true → testing_co
   cases ‹_› <;> simp <;> omega
 
 /-- process_level_isolated (matches Coq) -/
-theorem process_level_isolated : ot_isolated Level_0_Process = true := by
+theorem process_level_isolated : ot_isolated .level_0_Process = true := by
   rfl
 
 /-- control_level_isolated (matches Coq) -/
-theorem control_level_isolated : ot_isolated Level_1_Control = true := by
+theorem control_level_isolated : ot_isolated .level_1_Control = true := by
   rfl
 
 /-- business_level_not_ot (matches Coq) -/
-theorem business_level_not_ot : ot_isolated Level_4_Business = false := by
+theorem business_level_not_ot : ot_isolated .level_4_Business = false := by
   rfl
 
 /-- patch_window_decreasing (matches Coq) -/

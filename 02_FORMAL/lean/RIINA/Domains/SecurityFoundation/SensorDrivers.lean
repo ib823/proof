@@ -108,24 +108,24 @@ def has_sensor_permission := sorry -- complex match, needs manual translation
 
 /-- uses_camera (matches Coq: Definition uses_camera) -/
 def uses_camera (app : Application) : Prop :=
-  app_camera_perm app = true
+  app.app_camera_perm = true
 
 /-- uses_microphone (matches Coq: Definition uses_microphone) -/
 def uses_microphone (app : Application) : Prop :=
-  app_microphone_perm app = true
+  app.app_microphone_perm = true
 
 /-- indicator_visible (matches Coq: Definition indicator_visible) -/
 def indicator_visible (st : SystemState) : Prop :=
-  (any_camera_active st = true -> camera_indicator st = true) /\
-  (any_mic_active st = true -> mic_indicator st = true)
+  (st.any_camera_active = true -> st.camera_indicator = true) /\
+  (st.any_mic_active = true -> st.mic_indicator = true)
 
 /-- rate_limit_ok (matches Coq: Definition rate_limit_ok) -/
 def rate_limit_ok (rl : SensorRateLimit) : Prop :=
-  rate_current_reads rl <= rate_max_reads_per_sec rl
+  rl.rate_current_reads <= rl.rate_max_reads_per_sec
 
 /-- rate_limit_exceeded (matches Coq: Definition rate_limit_exceeded) -/
 def rate_limit_exceeded (rl : SensorRateLimit) : Prop :=
-  rate_current_reads rl > rate_max_reads_per_sec rl
+  rl.rate_current_reads > rl.rate_max_reads_per_sec
 
 /-- Theorem: Sensor access requires appropriate permission. -/
 /-- sensor_access_controlled (matches Coq) -/

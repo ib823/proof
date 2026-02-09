@@ -153,7 +153,7 @@ theorem plat_005_add_independent : ∀ (p1 p2 : Platform) a b, a + b = a + b := 
   rfl
 
 /-- plat_005_bool_independent (matches Coq) -/
-theorem plat_005_bool_independent : ∀ (p1 p2 : Platform) b, negb b = negb b := by
+theorem plat_005_bool_independent : ∀ (p1 p2 : Platform) b, !b = !b := by
   rfl
 
 /-- plat_006_dom_only_wasm (matches Coq) -/

@@ -149,20 +149,20 @@ def safe_temp : Temperature :=
 
 /-- thermally_safe (matches Coq: Definition thermally_safe) -/
 def thermally_safe (ts : ThermalState) : Prop :=
-  cpu_temp ts <= critical_temp /\
-  gpu_temp ts <= critical_temp /\
-  battery_temp ts <= critical_temp
+  ts.cpu_temp <= critical_temp /\
+  ts.gpu_temp <= critical_temp /\
+  ts.battery_temp <= critical_temp
 
 /-- should_throttle (matches Coq: Definition should_throttle) -/
 def should_throttle (ts : ThermalState) : Bool :=
-  (throttle_temp <=? cpu_temp ts) ||
-  (throttle_temp <=? gpu_temp ts) ||
-  (throttle_temp <=? battery_temp ts)
+  (throttle_temp <=? ts.cpu_temp) ||
+  (throttle_temp <=? ts.gpu_temp) ||
+  (throttle_temp <=? ts.battery_temp)
 
 /-- apply_throttling (matches Coq: Definition apply_throttling) -/
 def apply_throttling (ts : ThermalState) : ThermalState :=
   if should_throttle ts then
-    mkThermal (cpu_temp ts) (gpu_temp ts) (battery_temp ts) true
+    mkThermal (ts.cpu_temp) (ts.gpu_temp) (ts.battery_temp) true
   else
     ts
 
@@ -186,26 +186,26 @@ def background_power_limit : Nat :=
 
 /-- well_formed_battery (matches Coq: Definition well_formed_battery) -/
 def well_formed_battery (b : BatteryInfo) : Prop :=
-  bat_level b <= 100 /\
-  bat_health b <= 100 /\
-  bat_temperature b <= battery_safe_temp /\
-  bat_charge_rate b <= charge_rate_max
+  b.bat_level <= 100 /\
+  b.bat_health <= 100 /\
+  b.bat_temperature <= battery_safe_temp /\
+  b.bat_charge_rate <= charge_rate_max
 
 /-- well_formed_cpu (matches Coq: Definition well_formed_cpu) -/
 def well_formed_cpu (c : CpuState) : Prop :=
-  cpu_min_frequency_mhz c <= cpu_frequency_mhz c /\
-  cpu_frequency_mhz c <= cpu_max_frequency_mhz c /\
-  cpu_min_frequency_mhz c > 0
+  c.cpu_min_frequency_mhz <= c.cpu_frequency_mhz /\
+  c.cpu_frequency_mhz <= c.cpu_max_frequency_mhz /\
+  c.cpu_min_frequency_mhz > 0
 
 /-- well_formed_wake_lock (matches Coq: Definition well_formed_wake_lock) -/
 def well_formed_wake_lock (w : WakeLock) : Prop :=
-  wake_lock_timeout w > 0 /\
-  (wake_lock_active w = true -> wake_lock_elapsed w <= wake_lock_timeout w)
+  w.wake_lock_timeout > 0 /\
+  (w.wake_lock_active = true -> w.wake_lock_elapsed <= w.wake_lock_timeout)
 
 /-- well_formed_app_power (matches Coq: Definition well_formed_app_power) -/
 def well_formed_app_power (a : AppPowerBudget) : Prop :=
-  app_power_actual_mw a <= app_power_budget_mw a /\
-  (app_is_background a = true -> app_power_budget_mw a <= background_power_limit)
+  a.app_power_actual_mw <= a.app_power_budget_mw /\
+  (a.app_is_background = true -> a.app_power_budget_mw <= background_power_limit)
 
 /-- thermal_bounds_enforced (matches Coq) -/
 theorem thermal_bounds_enforced : ∀ (ts : ThermalState), thermally_safe ts → cpu_temp ts ≤ critical_temp := by

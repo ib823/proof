@@ -75,35 +75,35 @@ structure GCResult where
 
 /-- exists_in_heap (matches Coq: Definition exists_in_heap) -/
 def exists_in_heap (st : HeapState) (oid : ObjectId) : Prop :=
-  obj_in_list oid (live_objects st) = true
+  obj_in_list oid (st.live_objects) = true
 
 /-- exists_obj (matches Coq: Definition exists_obj) -/
 def exists_obj (st : HeapState) (obj : Object) : Prop :=
-  In obj (live_objects st)
+  In obj (st.live_objects)
 
 /-- after_gc_exists (matches Coq: Definition after_gc_exists) -/
 def after_gc_exists (result : GCResult) (obj : Object) : Prop :=
-  exists_obj (gc_post_state result) obj
+  exists_obj (result.gc_post_state) obj
 
 /-- after_gc_not_exists (matches Coq: Definition after_gc_not_exists) -/
 def after_gc_not_exists (result : GCResult) (obj : Object) : Prop :=
-  ~ exists_obj (gc_post_state result) obj
+  ~ exists_obj (result.gc_post_state) obj
 
 /-- valid_gc (matches Coq: Definition valid_gc) -/
 def valid_gc (result : GCResult) : Prop :=
-  (forall oid, reachable (gc_pre_state result) oid ->
-    exists_in_heap (gc_post_state result) oid) /\
+  (forall oid, reachable (result.gc_pre_state) oid ->
+    exists_in_heap (result.gc_post_state) oid) /\
   
-  (forall obj, exists_obj (gc_post_state result) obj ->
-    reachable (gc_pre_state result) (obj_id obj))
+  (forall obj, exists_obj (result.gc_post_state) obj ->
+    reachable (result.gc_pre_state) (obj.obj_id))
 
 /-- total_heap_size (matches Coq: Definition total_heap_size) -/
 def total_heap_size (st : HeapState) : Nat :=
-  fold_left (fun acc obj => acc + obj_size obj) (live_objects st) 0
+  fold_left (fun acc obj => acc + obj.obj_size) (st.live_objects) 0
 
 /-- heap_utilization (matches Coq: Definition heap_utilization) -/
 def heap_utilization (st : HeapState) : Nat :=
-  length (live_objects st)
+  length (st.live_objects)
 
 /-- Theorem: Reachable objects are preserved after garbage collection. -/
 /-- gc_preserves_live_objects (matches Coq) -/

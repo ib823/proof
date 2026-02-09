@@ -125,9 +125,9 @@ def coppa_applies (age : StudentAge) : Bool :=
 
 /-- all_ferpa_controls (matches Coq: Definition all_ferpa_controls) -/
 def all_ferpa_controls (c : FERPA_Compliance) : Bool :=
-  legitimate_educational_interest c && parental_consent c &&
-  annual_notification c && access_to_records c &&
-  amendment_process c && disclosure_tracking c
+  c.legitimate_educational_interest && c.parental_consent &&
+  c.annual_notification && c.access_to_records &&
+  c.amendment_process && c.disclosure_tracking
 
 /-- retention_years (matches Coq: Definition retention_years) -/
 def retention_years (d : StudentData) : Nat :=
@@ -141,12 +141,12 @@ def retention_years (d : StudentData) : Nat :=
 
 /-- count_ferpa_controls (matches Coq: Definition count_ferpa_controls) -/
 def count_ferpa_controls (c : FERPA_Compliance) : Nat :=
-  (if legitimate_educational_interest c then 1 else 0) +
-  (if parental_consent c then 1 else 0) +
-  (if annual_notification c then 1 else 0) +
-  (if access_to_records c then 1 else 0) +
-  (if amendment_process c then 1 else 0) +
-  (if disclosure_tracking c then 1 else 0)
+  (if c.legitimate_educational_interest then 1 else 0) +
+  (if c.parental_consent then 1 else 0) +
+  (if c.annual_notification then 1 else 0) +
+  (if c.access_to_records then 1 else 0) +
+  (if c.amendment_process then 1 else 0) +
+  (if c.disclosure_tracking then 1 else 0)
 
 /-- classify_student_age (matches Coq: Definition classify_student_age) -/
 def classify_student_age (years : Nat) : StudentAge :=
@@ -161,35 +161,35 @@ theorem ferpa_compliance : ∀ (compliance : FERPA_Compliance) (record : Student
 /-- Section L02 - COPPA for Under-13
     Reference: IND_L_EDUCATION.md Section 3.2 -/
 /-- coppa_compliance (matches Coq) -/
-theorem coppa_compliance : ∀ (child : StudentAge) (data : StudentData), child = Under13 →  True := by
+theorem coppa_compliance : ∀ (child : StudentAge) (data : StudentData), child = .under13 →  True := by
   trivial
 
 /-- Section L03 - CIPA Filtering
     Reference: IND_L_EDUCATION.md Section 3.3 -/
 /-- cipa_compliance (matches Coq) -/
-theorem cipa_compliance : ∀ (school_network : nat),  True := by
+theorem cipa_compliance : ∀ (school_network : Nat),  True := by
   trivial
 
 /-- Section L04 - State Privacy Laws
     Reference: IND_L_EDUCATION.md Section 3.4 -/
 /-- state_privacy_compliance (matches Coq) -/
-theorem state_privacy_compliance : ∀ (state : nat) (student_data : StudentData),  True := by
+theorem state_privacy_compliance : ∀ (state : Nat) (student_data : StudentData),  True := by
   trivial
 
 /-- Section L05 - Vendor Data Practices
     Reference: IND_L_EDUCATION.md Section 3.5 -/
 /-- vendor_data_practices (matches Coq) -/
-theorem vendor_data_practices : ∀ (vendor : nat) (student_data : StudentData),  True := by
+theorem vendor_data_practices : ∀ (vendor : Nat) (student_data : StudentData),  True := by
   trivial
 
 /-- Education records require consent for disclosure -/
 /-- education_record_consent (matches Coq) -/
-theorem education_record_consent : ∀ (record : StudentData) (disclosure : nat), record = EducationRecord →  True := by
+theorem education_record_consent : ∀ (record : StudentData) (disclosure : Nat), record = .educationRecord →  True := by
   trivial
 
 /-- Under-13 requires verifiable parental consent -/
 /-- under13_parental_consent (matches Coq) -/
-theorem under13_parental_consent : ∀ (age : StudentAge) (data_collection : nat), age = Under13 →  True := by
+theorem under13_parental_consent : ∀ (age : StudentAge) (data_collection : Nat), age = .under13 →  True := by
   trivial
 
 /-- special_ed_highest (matches Coq) -/
@@ -197,7 +197,7 @@ theorem special_ed_highest : ∀ d, student_data_sensitivity d ≤ student_data_
   cases ‹_› <;> simp <;> omega
 
 /-- health_records_highest (matches Coq) -/
-theorem health_records_highest : student_data_sensitivity HealthRecords = student_data_sensitivity SpecialEducation := by
+theorem health_records_highest : student_data_sensitivity .healthRecords = student_data_sensitivity SpecialEducation := by
   rfl
 
 /-- student_data_sensitivity_positive (matches Coq) -/
@@ -209,11 +209,11 @@ theorem coppa_only_under13 : ∀ a, coppa_applies a = true → a = Under13 := by
   cases ‹_› <;> simp
 
 /-- adult_no_coppa (matches Coq) -/
-theorem adult_no_coppa : coppa_applies Adult = false := by
+theorem adult_no_coppa : coppa_applies .adult = false := by
   rfl
 
 /-- teen_no_coppa (matches Coq) -/
-theorem teen_no_coppa : coppa_applies Teen = false := by
+theorem teen_no_coppa : coppa_applies .teen = false := by
   rfl
 
 /-- all_ferpa_implies_consent (matches Coq) -/
@@ -241,7 +241,7 @@ theorem retention_positive : ∀ d, retention_years d ≥ 3 := by
   cases ‹_› <;> simp <;> omega
 
 /-- education_record_long_retention (matches Coq) -/
-theorem education_record_long_retention : retention_years EducationRecord = 7 := by
+theorem education_record_long_retention : retention_years .educationRecord = 7 := by
   rfl
 
 /-- count_ferpa_bounded (matches Coq) -/
@@ -262,7 +262,7 @@ theorem adult_classified_correctly : ∀ n, n ≥ 18 → classify_student_age n 
 
 /-- Directory info is least sensitive -/
 /-- directory_info_least_sensitive (matches Coq) -/
-theorem directory_info_least_sensitive : ∀ d, student_data_sensitivity DirectoryInfo ≤ student_data_sensitivity d := by
+theorem directory_info_least_sensitive : ∀ d, student_data_sensitivity .directoryInfo ≤ student_data_sensitivity d := by
   cases ‹_› <;> simp <;> omega
 
 end RIINA

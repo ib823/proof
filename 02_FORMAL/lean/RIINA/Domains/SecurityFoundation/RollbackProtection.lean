@@ -104,22 +104,22 @@ def version_allowed := sorry -- complex match, needs manual translation
 
 /-- can_boot_version (matches Coq: Definition can_boot_version) -/
 def can_boot_version (st : RollbackState) (comp : VersionedComponent) : Bool :=
-  version_allowed st (comp_id comp) (comp_version comp)
+  version_allowed st (comp.comp_id) (comp.comp_version)
 
 /-- update_min_version (matches Coq: Definition update_min_version) -/
 def update_min_version (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : Bool) : RollbackState := mkRollbackState
     (mkMinVersion comp ver hw :: 
-     filter (fun mv => negb (if comp_id_eq_dec (min_comp_id mv) comp then true else false))
-            (minimum_versions st))
-    (current_versions st)
-    (anti_rollback_enabled st)
+     filter (fun mv => !(if comp_id_eq_dec (mv.min_comp_id) comp then true else false))
+            (st.minimum_versions))
+    (st.current_versions)
+    (st.anti_rollback_enabled)
 
 /-- record_current_version (matches Coq: Definition record_current_version) -/
 def record_current_version (st : RollbackState) (comp : VersionedComponent) : RollbackState := mkRollbackState
-    (minimum_versions st)
-    (comp :: filter (fun vc => negb (if comp_id_eq_dec (comp_id vc) (comp_id comp) then true else false))
-                    (current_versions st))
-    (anti_rollback_enabled st)
+    (st.minimum_versions)
+    (comp :: filter (fun vc => !(if comp_id_eq_dec (vc.comp_id) (comp.comp_id) then true else false))
+                    (st.current_versions))
+    (st.anti_rollback_enabled)
 
 /-- advance_min_to_current (matches Coq: Definition advance_min_to_current) -/
 def advance_min_to_current := sorry -- complex match, needs manual translation
@@ -133,7 +133,7 @@ def can_boot_prop (st : RollbackState) (comp : VersionedComponent) : Prop :=
 
 /-- rollback_enforced (matches Coq: Definition rollback_enforced) -/
 def rollback_enforced (st : RollbackState) : Prop :=
-  anti_rollback_enabled st = true
+  st.anti_rollback_enabled = true
 
 /-- rollback_protection (matches Coq) -/
 theorem rollback_protection : ∀ (st : RollbackState) (comp : ComponentId) (old_ver : Version), rollback_enforced st → is_rollback st comp old_ver → version_allowed st comp old_ver = false := by
@@ -171,7 +171,7 @@ theorem same_version_always_allowed : ∀ (st : RollbackState) (comp : Component
 
 /-- Update stores new minimum correctly -/
 /-- update_stores_new_min (matches Coq) -/
-theorem update_stores_new_min : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : bool), get_min_version (update_min_version st comp ver hw) comp = Some ver := by
+theorem update_stores_new_min : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : Bool), get_min_version (update_min_version st comp ver hw) comp = Some ver := by
   cases ‹_› <;> simp
 
 /-- Record current version preserves anti-rollback setting -/
@@ -186,7 +186,7 @@ theorem record_preserves_minimums : ∀ (st : RollbackState) (comp : VersionedCo
 
 /-- Update minimum preserves anti-rollback setting -/
 /-- update_preserves_anti_rollback (matches Coq) -/
-theorem update_preserves_anti_rollback : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : bool), anti_rollback_enabled (update_min_version st comp ver hw) = anti_rollback_enabled st := by
+theorem update_preserves_anti_rollback : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : Bool), anti_rollback_enabled (update_min_version st comp ver hw) = anti_rollback_enabled st := by
   simp
 
 /-- Advance minimum preserves anti-rollback setting -/
@@ -231,7 +231,7 @@ theorem advance_missing_current_identity : ∀ (st : RollbackState) (comp : Comp
 
 /-- Different component minimums are independent -/
 /-- independent_component_minimums (matches Coq) -/
-theorem independent_component_minimums : ∀ (st : RollbackState) (comp1 comp2 : ComponentId) (ver : Version) (hw : bool), comp1 ≠ comp2 → get_min_version st comp2 = None → let st' := update_min_version st comp1 ver hw in get_min_version st' comp2 = None := by
+theorem independent_component_minimums : ∀ (st : RollbackState) (comp1 comp2 : ComponentId) (ver : Version) (hw : Bool), comp1 ≠ comp2 → get_min_version st comp2 = None → let st' := update_min_version st comp1 ver hw in get_min_version st' comp2 = None := by
   cases ‹_› <;> simp
 
 end RIINA

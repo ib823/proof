@@ -125,7 +125,7 @@ def power_increase_bounded (current max_power : Nat) : Bool :=
 
 /-- avoids_jammed (matches Coq: Definition avoids_jammed) -/
 def avoids_jammed (new_channel jammed_channels : List Nat) (channel : Nat) : Bool :=
-  negb (existsb (fun j => Nat
+  !(existsb (fun j => Nat
 
 /-- rate_above_minimum (matches Coq: Definition rate_above_minimum) -/
 def rate_above_minimum (current min_rate : Nat) : Bool :=
@@ -184,15 +184,15 @@ def antijam_layers (hopping spread detect adapt : Bool) : Bool :=
   andb hopping (andb spread (andb detect adapt))
 
 /-- jam_001_sequence_length (matches Coq) -/
-theorem jam_001_sequence_length : ∀ (pattern : HoppingPattern) (min_length : nat), sequence_length_ok pattern min_length = true → min_length ≤ length (hop_sequence pattern) := by
+theorem jam_001_sequence_length : ∀ (pattern : HoppingPattern) (min_length : Nat), sequence_length_ok pattern min_length = true → min_length ≤ length (hop_sequence pattern) := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_002_dwell_bounded (matches Coq) -/
-theorem jam_002_dwell_bounded : ∀ (pattern : HoppingPattern) (max_dwell : nat), dwell_time_bounded pattern max_dwell = true → hop_dwell_time pattern ≤ max_dwell := by
+theorem jam_002_dwell_bounded : ∀ (pattern : HoppingPattern) (max_dwell : Nat), dwell_time_bounded pattern max_dwell = true → hop_dwell_time pattern ≤ max_dwell := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_003_processing_gain (matches Coq) -/
-theorem jam_003_processing_gain : ∀ (ss : SpreadSpectrum) (min_gain : nat), processing_gain_sufficient ss min_gain = true → min_gain ≤ spread_factor ss := by
+theorem jam_003_processing_gain : ∀ (ss : SpreadSpectrum) (min_gain : Nat), processing_gain_sufficient ss min_gain = true → min_gain ≤ spread_factor ss := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_004_code_length (matches Coq) -/
@@ -200,75 +200,75 @@ theorem jam_004_code_length : ∀ (ss : SpreadSpectrum), length (spread_code ss)
   intro h; exact h
 
 /-- jam_005_jammer_overcome (matches Coq) -/
-theorem jam_005_jammer_overcome : ∀ (jammer_power spread_gain signal_power : nat), jammer_overcome jammer_power spread_gain signal_power = true → jammer_power < signal_power + spread_gain := by
+theorem jam_005_jammer_overcome : ∀ (jammer_power spread_gain signal_power : Nat), jammer_overcome jammer_power spread_gain signal_power = true → jammer_power < signal_power + spread_gain := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_006_channel_diversity (matches Coq) -/
-theorem jam_006_channel_diversity : ∀ (pattern : HoppingPattern) (min_channels : nat), channels_diverse pattern min_channels → length (nodup Nat.eq_dec (hop_sequence pattern)) ≥ min_channels := by
+theorem jam_006_channel_diversity : ∀ (pattern : HoppingPattern) (min_channels : Nat), channels_diverse pattern min_channels → length (nodup Nat.eq_dec (hop_sequence pattern)) ≥ min_channels := by
   intro h; exact h
 
 /-- jam_007_detection_threshold (matches Coq) -/
-theorem jam_007_detection_threshold : ∀ (snr threshold : nat), snr < threshold / 2 → detect_jamming snr threshold = ConfirmedJamming := by
+theorem jam_007_detection_threshold : ∀ (snr threshold : Nat), snr < threshold / 2 → detect_jamming snr threshold = ConfirmedJamming := by
   rfl
 
 /-- jam_008_no_false_positive (matches Coq) -/
-theorem jam_008_no_false_positive : ∀ (snr threshold : nat), snr ≥ threshold → detect_jamming snr threshold = NoJamming := by
+theorem jam_008_no_false_positive : ∀ (snr threshold : Nat), snr ≥ threshold → detect_jamming snr threshold = NoJamming := by
   cases ‹_› <;> simp <;> omega
 
 /-- jam_009_adaptation_improves (matches Coq) -/
-theorem jam_009_adaptation_improves : ∀ (before after : nat) (action : AdaptAction), adaptation_applied before after action → after ≥ before := by
+theorem jam_009_adaptation_improves : ∀ (before after : Nat) (action : AdaptAction), adaptation_applied before after action → after ≥ before := by
   intro h; exact h
 
 /-- jam_010_power_bounded (matches Coq) -/
-theorem jam_010_power_bounded : ∀ (current max_power : nat), power_increase_bounded current max_power = true → current ≤ max_power := by
+theorem jam_010_power_bounded : ∀ (current max_power : Nat), power_increase_bounded current max_power = true → current ≤ max_power := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_011_avoids_jammed (matches Coq) -/
-theorem jam_011_avoids_jammed : ∀ (channel : nat) (jammed_channels : list nat), avoids_jammed [] jammed_channels channel = true → ~ In channel jammed_channels ∨ In channel jammed_channels := by
+theorem jam_011_avoids_jammed : ∀ (channel : Nat) (jammed_channels : list nat), avoids_jammed [] jammed_channels channel = true → ~ In channel jammed_channels ∨ In channel jammed_channels := by
   intro h; exact h
 
 /-- jam_012_rate_minimum (matches Coq) -/
-theorem jam_012_rate_minimum : ∀ (current min_rate : nat), rate_above_minimum current min_rate = true → min_rate ≤ current := by
+theorem jam_012_rate_minimum : ∀ (current min_rate : Nat), rate_above_minimum current min_rate = true → min_rate ≤ current := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_013_fec_gain (matches Coq) -/
-theorem jam_013_fec_gain : ∀ (redundancy min_gain : nat), fec_gain_sufficient redundancy min_gain = true → min_gain ≤ redundancy := by
+theorem jam_013_fec_gain : ∀ (redundancy min_gain : Nat), fec_gain_sufficient redundancy min_gain = true → min_gain ≤ redundancy := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_014_switch_latency (matches Coq) -/
-theorem jam_014_switch_latency : ∀ (latency max_latency : nat), switch_latency_ok latency max_latency = true → latency ≤ max_latency := by
+theorem jam_014_switch_latency : ∀ (latency max_latency : Nat), switch_latency_ok latency max_latency = true → latency ≤ max_latency := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_015_synchronized (matches Coq) -/
-theorem jam_015_synchronized : ∀ (sender receiver : nat), hops_synchronized sender receiver = true → sender = receiver := by
+theorem jam_015_synchronized : ∀ (sender receiver : Nat), hops_synchronized sender receiver = true → sender = receiver := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_016_key_required (matches Coq) -/
-theorem jam_016_key_required : ∀ (provided expected : nat), key_valid provided expected = true → provided = expected := by
+theorem jam_016_key_required : ∀ (provided expected : Nat), key_valid provided expected = true → provided = expected := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_017_sweep_detected (matches Coq) -/
-theorem jam_017_sweep_detected : ∀ (affected : list nat) (threshold : nat), sweep_jammer_pattern affected threshold = true → threshold ≤ length affected := by
+theorem jam_017_sweep_detected : ∀ (affected : list nat) (threshold : Nat), sweep_jammer_pattern affected threshold = true → threshold ≤ length affected := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_018_reactive_mitigation (matches Coq) -/
-theorem jam_018_reactive_mitigation : ∀ (silence min_silence : nat), silence_period_ok silence min_silence = true → min_silence ≤ silence := by
+theorem jam_018_reactive_mitigation : ∀ (silence min_silence : Nat), silence_period_ok silence min_silence = true → min_silence ≤ silence := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_019_adaptation_speed (matches Coq) -/
-theorem jam_019_adaptation_speed : ∀ (adapt_time max_time : nat), adaptation_fast_enough adapt_time max_time = true → adapt_time ≤ max_time := by
+theorem jam_019_adaptation_speed : ∀ (adapt_time max_time : Nat), adaptation_fast_enough adapt_time max_time = true → adapt_time ≤ max_time := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_020_quality_acceptable (matches Coq) -/
-theorem jam_020_quality_acceptable : ∀ (snr min_snr : nat), quality_acceptable snr min_snr = true → min_snr ≤ snr := by
+theorem jam_020_quality_acceptable : ∀ (snr min_snr : Nat), quality_acceptable snr min_snr = true → min_snr ≤ snr := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_021_graceful_degradation (matches Coq) -/
-theorem jam_021_graceful_degradation : ∀ (service_level min_level : nat), degradation_graceful service_level min_level = true → min_level ≤ service_level := by
+theorem jam_021_graceful_degradation : ∀ (service_level min_level : Nat), degradation_graceful service_level min_level = true → min_level ≤ service_level := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_022_fallback_available (matches Coq) -/
-theorem jam_022_fallback_available : ∀ (bands : list nat) (min_bands : nat), fallback_bands_available bands min_bands = true → min_bands ≤ length bands := by
+theorem jam_022_fallback_available : ∀ (bands : list nat) (min_bands : Nat), fallback_bands_available bands min_bands = true → min_bands ≤ length bands := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_023_interference_localized (matches Coq) -/
@@ -276,7 +276,7 @@ theorem jam_023_interference_localized : ∀ (sources : list nat), interference_
   intro h; exact h
 
 /-- jam_024_redundant_paths (matches Coq) -/
-theorem jam_024_redundant_paths : ∀ (paths min_paths : nat), paths_redundant paths min_paths = true → min_paths ≤ paths := by
+theorem jam_024_redundant_paths : ∀ (paths min_paths : Nat), paths_redundant paths min_paths = true → min_paths ≤ paths := by
   simp_all [Bool.and_eq_true]
 
 /-- jam_025_defense_in_depth (matches Coq) -/

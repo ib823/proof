@@ -114,15 +114,15 @@ theorem 2 : Validity --- If all honest nodes propose v, and the protocol decides
   simp_all [Bool.and_eq_true]
 
 /-- 3 (matches Coq) -/
-theorem 3 : Quorum Intersection --- Two quorums each of size > 2n/3 must overlap. We prove this for abstract sizes: if |Q1| + |Q2| > total, they intersect.  Lemma pigeonhole_overlap : ∀ (n a b : nat), a ≤ n → b ≤ n → a + b > n → a + b - n ≥ 1 := by
+theorem 3 : Quorum Intersection --- Two quorums each of size > 2n/3 must overlap. We prove this for abstract sizes: if |Q1| + |Q2| > total, they intersect.  Lemma pigeonhole_overlap : ∀ (n a b : Nat), a ≤ n → b ≤ n → a + b > n → a + b - n ≥ 1 := by
   omega
 
 /-- quorum_intersection_size (matches Coq) -/
-theorem quorum_intersection_size : ∀ (n q1_size q2_size : nat), q1_size + q2_size > n → q1_size ≤ n → q2_size ≤ n → q1_size + q2_size - n ≥ 1 := by
+theorem quorum_intersection_size : ∀ (n q1_size q2_size : Nat), q1_size + q2_size > n → q1_size ≤ n → q2_size ≤ n → q1_size + q2_size - n ≥ 1 := by
   omega
 
 /-- quorum_intersection (matches Coq) -/
-theorem quorum_intersection : ∀ (n q1s q2s : nat), 3 * q1s > 2 * n → 3 * q2s > 2 * n → q1s ≤ n → q2s ≤ n → q1s + q2s > n := by
+theorem quorum_intersection : ∀ (n q1s q2s : Nat), 3 * q1s > 2 * n → 3 * q2s > 2 * n → q1s ≤ n → q2s ≤ n → q1s + q2s > n := by
   omega
 
 /-- 4 (matches Coq) -/
@@ -138,11 +138,11 @@ theorem 5 : Vote Uniqueness ---  Theorem vote_uniqueness : ∀ c v1 v2, honest_v
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : Quorum Sufficiency --- When f < n/3, honest nodes (n - f) form a quorum (> 2n/3).  Theorem quorum_sufficiency : ∀ n f : nat, n > 0 → 3 * f < n → 3 * (n - f) > 2 * n := by
+theorem 6 : Quorum Sufficiency --- When f < n/3, honest nodes (n - f) form a quorum (> 2n/3).  Theorem quorum_sufficiency : ∀ n f : Nat, n > 0 → 3 * f < n → 3 * (n - f) > 2 * n := by
   omega
 
 /-- honest_majority_in_quorum (matches Coq) -/
-theorem honest_majority_in_quorum : ∀ n f q : nat, 3 * f < n → 3 * q > 2 * n → q ≤ n → q - f ≥ 1 := by
+theorem honest_majority_in_quorum : ∀ n f q : Nat, 3 * f < n → 3 * q > 2 * n → q ≤ n → q - f ≥ 1 := by
   omega
 
 /-- 7 (matches Coq) -/
@@ -154,15 +154,15 @@ theorem 8 : Decision Stability ---  Theorem decision_stability : ∀ nd_before n
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : BFT threshold arithmetic --- The classical n ≥ 3f+1 bound  Theorem bft_threshold : ∀ n f : nat, 3 * f < n → n ≥ 3 * f + 1 := by
+theorem 9 : BFT threshold arithmetic --- The classical n ≥ 3f+1 bound  Theorem bft_threshold : ∀ n f : Nat, 3 * f < n → n ≥ 3 * f + 1 := by
   omega
 
 /-- 10 (matches Coq) -/
-theorem 10 : Two quorums share an honest node --- Combining quorum intersection with honest majority  Theorem two_quorums_share_honest : ∀ n f q1 q2 : nat, 3 * f < n → 3 * q1 > 2 * n → 3 * q2 > 2 * n → q1 ≤ n → q2 ≤ n →  q1 + q2 - n ≥ 1 ∧  q1 + q2 - n > f := by
+theorem 10 : Two quorums share an honest node --- Combining quorum intersection with honest majority  Theorem two_quorums_share_honest : ∀ n f q1 q2 : Nat, 3 * f < n → 3 * q1 > 2 * n → 3 * q2 > 2 * n → q1 ≤ n → q2 ≤ n →  q1 + q2 - n ≥ 1 ∧  q1 + q2 - n > f := by
   omega
 
 /-- 11 (matches Coq) -/
-theorem 11 : BFT requires at least 4 nodes for f=1 ---  Theorem bft_min_nodes_f1 : ∀ n : nat, 3 * 1 < n → n ≥ 4 := by
+theorem 11 : BFT requires at least 4 nodes for f=1 ---  Theorem bft_min_nodes_f1 : ∀ n : Nat, 3 * 1 < n → n ≥ 4 := by
   omega
 
 /-- 12 (matches Coq) -/
@@ -194,11 +194,11 @@ theorem 18 : Round update is reflexive ---  Theorem round_update_refl : ∀ nd, 
   omega
 
 /-- 19 (matches Coq) -/
-theorem 19 : BFT for f=0 any positive n works ---  Theorem bft_f0 : ∀ n : nat, n > 0 → 3 * 0 < n := by
+theorem 19 : BFT for f=0 any positive n works ---  Theorem bft_f0 : ∀ n : Nat, n > 0 → 3 * 0 < n := by
   omega
 
 /-- 20 (matches Coq) -/
-theorem 20 : Honest majority in total ---  Theorem honest_majority_total : ∀ n f : nat, 3 * f < n → n - f > f := by
+theorem 20 : Honest majority in total ---  Theorem honest_majority_total : ∀ n f : Nat, 3 * f < n → n - f > f := by
   omega
 
 end RIINA

@@ -427,19 +427,19 @@ theorem J_001_03 : ∀ (root : list (string * Module)) (name : string) (m : Modu
   rfl
 
 /-- J_001_04 (matches Coq) -/
-theorem J_001_04 : ∀ (caller : Visibility), vis_accessible caller VPrivate = false := by
+theorem J_001_04 : ∀ (caller : Visibility), vis_accessible caller .vPrivate = false := by
   rfl
 
 /-- J_001_05 (matches Coq) -/
-theorem J_001_05 : ∀ (caller : Visibility), vis_accessible caller VPublic = true := by
+theorem J_001_05 : ∀ (caller : Visibility), vis_accessible caller .vPublic = true := by
   rfl
 
 /-- J_001_06 (matches Coq) -/
-theorem J_001_06 : ∀ (in_same_crate : bool), crate_accessible in_same_crate VCrate = in_same_crate := by
+theorem J_001_06 : ∀ (in_same_crate : Bool), crate_accessible in_same_crate .vCrate = in_same_crate := by
   rfl
 
 /-- J_001_07 (matches Coq) -/
-theorem J_001_07 : ∀ (caller_level callee_level : nat), vis_accessible (VSecurityLevel caller_level) (VSecurityLevel callee_level) = Nat.leb callee_level caller_level := by
+theorem J_001_07 : ∀ (caller_level callee_level : Nat), vis_accessible (VSecurityLevel caller_level) (VSecurityLevel callee_level) = Nat.leb callee_level caller_level := by
   rfl
 
 /-- J_001_08 (matches Coq) -/
@@ -455,7 +455,7 @@ theorem J_001_10 : ∀ (m : Module) (name : string), In name (get_public_items m
   simp_all [Bool.and_eq_true]
 
 /-- J_001_11 (matches Coq) -/
-theorem J_001_11 : ∀ (scope : CapabilityScope) (name : string) (req_level : nat), capability_allows_import scope name req_level = true → In name scope.(scope_allowed) ∧ scope.(scope_cap).(cap_level) ≥ req_level := by
+theorem J_001_11 : ∀ (scope : CapabilityScope) (name : string) (req_level : Nat), capability_allows_import scope name req_level = true → In name scope.(scope_allowed) ∧ scope.(scope_cap).(cap_level) ≥ req_level := by
   simp_all [Bool.and_eq_true]
 
 /-- J_001_12 (matches Coq) -/
@@ -479,7 +479,7 @@ theorem J_001_16 : ∀ (m : Module) (iface : InterfaceFile), interface_sound m i
   simp_all [Bool.and_eq_true]
 
 /-- J_001_17 (matches Coq) -/
-theorem J_001_17 : ∀ (old_cu new_cu : CompilationUnit) (recompiled : bool), incremental_correct old_cu new_cu recompiled → cu_unchanged old_cu new_cu = true → recompiled = false := by
+theorem J_001_17 : ∀ (old_cu new_cu : CompilationUnit) (recompiled : Bool), incremental_correct old_cu new_cu recompiled → cu_unchanged old_cu new_cu = true → recompiled = false := by
   simp_all [Bool.and_eq_true]
 
 /-- J_001_18 (matches Coq) -/
@@ -495,7 +495,7 @@ theorem find_exists : ∀ {A : Type} (f : A → bool) (l : list A) (x : A), In x
   cases ‹_› <;> simp
 
 /-- J_001_20 (matches Coq) -/
-theorem J_001_20 : ∀ (pkgs : list Package) (name : string) (fuel : nat), fuel > 0 → (∃ p, In p pkgs ∧ String.eqb p.(pkg_name) name = true) → ∃ result, resolve_deps_fuel fuel pkgs name = Some result := by
+theorem J_001_20 : ∀ (pkgs : list Package) (name : string) (fuel : Nat), fuel > 0 → (∃ p, In p pkgs ∧ String.eqb p.(pkg_name) name = true) → ∃ result, resolve_deps_fuel fuel pkgs name = Some result := by
   simp_all [Bool.and_eq_true]
 
 /-- J_001_21 (matches Coq) -/

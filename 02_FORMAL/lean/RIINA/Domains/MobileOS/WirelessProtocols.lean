@@ -202,7 +202,7 @@ structure WirelessCoexistence where
 
 /-- secure_connection (matches Coq: Definition secure_connection) -/
 def secure_connection (c : WirelessConnection) : Prop :=
-  conn_encrypted c = true /\ conn_authenticated c = true
+  c.conn_encrypted = true /\ c.conn_authenticated = true
 
 /-- protocol_secure (matches Coq: Definition protocol_secure) -/
 def protocol_secure := sorry -- complex match, needs manual translation
@@ -213,63 +213,63 @@ def well_formed_wireless (c : WirelessConnection) : Prop :=
 
 /-- bt_pairing_authenticated (matches Coq: Definition bt_pairing_authenticated) -/
 def bt_pairing_authenticated (bp : BluetoothPairing) : Prop :=
-  bt_authenticated bp = true /\ bt_pairing_method bp > 0
+  bp.bt_authenticated = true /\ bp.bt_pairing_method > 0
 
 /-- wifi_connection_encrypted (matches Coq: Definition wifi_connection_encrypted) -/
 def wifi_connection_encrypted (wc : WiFiConnection) : Prop :=
-  wifi_encrypted wc = true /\ (wifi_security wc = WPA3 \/ wifi_security wc = WPA2)
+  wc.wifi_encrypted = true /\ (wc.wifi_security = WPA3 \/ wc.wifi_security = WPA2)
 
 /-- nfc_range_limited (matches Coq: Definition nfc_range_limited) -/
 def nfc_range_limited (tx : NFCTransaction) : Prop :=
-  nfc_range_cm tx <= nfc_max_range_cm tx /\ nfc_max_range_cm tx <= 10
+  tx.nfc_range_cm <= tx.nfc_max_range_cm /\ tx.nfc_max_range_cm <= 10
 
 /-- uwb_distance_accurate (matches Coq: Definition uwb_distance_accurate) -/
 def uwb_distance_accurate (ur : UWBRanging) : Prop :=
-  uwb_error_cm ur <= uwb_max_error_cm ur
+  ur.uwb_error_cm <= ur.uwb_max_error_cm
 
 /-- bt_data_is_encrypted (matches Coq: Definition bt_data_is_encrypted) -/
 def bt_data_is_encrypted (td : BTDataTransfer) : Prop :=
-  bt_data_encrypted td = true
+  td.bt_data_encrypted = true
 
 /-- wifi_password_secure (matches Coq: Definition wifi_password_secure) -/
 def wifi_password_secure (wc : WiFiConnection) : Prop :=
-  wifi_password_stored_plaintext wc = false
+  wc.wifi_password_stored_plaintext = false
 
 /-- airdrop_permitted (matches Coq: Definition airdrop_permitted) -/
 def airdrop_permitted (a : AirDropSession) : Prop :=
-  airdrop_permission_granted a = true /\ airdrop_encrypted a = true
+  a.airdrop_permission_granted = true /\ a.airdrop_encrypted = true
 
 /-- bt_discovery_bounded (matches Coq: Definition bt_discovery_bounded) -/
 def bt_discovery_bounded (sd : BTServiceDiscovery) : Prop :=
-  length (bt_services_found sd) <= bt_max_services sd
+  length (sd.bt_services_found) <= sd.bt_max_services
 
 /-- wifi_scan_throttled (matches Coq: Definition wifi_scan_throttled) -/
 def wifi_scan_throttled (ws : WiFiScan) : Prop :=
-  scan_interval_ms ws >= scan_min_interval_ms ws
+  ws.scan_interval_ms >= ws.scan_min_interval_ms
 
 /-- nfc_transaction_atomic (matches Coq: Definition nfc_transaction_atomic) -/
 def nfc_transaction_atomic (tx : NFCTransaction) : Prop :=
-  nfc_atomic tx = true
+  tx.nfc_atomic = true
 
 /-- uwb_anchor_is_validated (matches Coq: Definition uwb_anchor_is_validated) -/
 def uwb_anchor_is_validated (a : UWBAnchor) : Prop :=
-  anchor_validated a = true /\ anchor_certificate a > 0
+  a.anchor_validated = true /\ a.anchor_certificate > 0
 
 /-- bt_connection_has_timeout (matches Coq: Definition bt_connection_has_timeout) -/
 def bt_connection_has_timeout (bc : BTConnection) : Prop :=
-  bt_conn_timeout_ms bc <= bt_conn_max_timeout_ms bc /\ bt_conn_timeout_ms bc > 0
+  bc.bt_conn_timeout_ms <= bc.bt_conn_max_timeout_ms /\ bc.bt_conn_timeout_ms > 0
 
 /-- wifi_roaming_is_seamless (matches Coq: Definition wifi_roaming_is_seamless) -/
 def wifi_roaming_is_seamless (wr : WiFiRoaming) : Prop :=
-  roaming_seamless wr = true /\ roaming_encrypted wr = true
+  wr.roaming_seamless = true /\ wr.roaming_encrypted = true
 
 /-- nfc_emulation_is_authorized (matches Coq: Definition nfc_emulation_is_authorized) -/
 def nfc_emulation_is_authorized (ne : NFCEmulation) : Prop :=
-  nfc_emu_authorized ne = true /\ nfc_emu_secure_element ne = true
+  ne.nfc_emu_authorized = true /\ ne.nfc_emu_secure_element = true
 
 /-- coexistence_is_managed (matches Coq: Definition coexistence_is_managed) -/
 def coexistence_is_managed (wc : WirelessCoexistence) : Prop :=
-  coexistence_managed wc = true /\ interference_level wc <= max_interference wc
+  wc.coexistence_managed = true /\ wc.interference_level <= wc.max_interference
 
 /-- wifi_requires_wpa (matches Coq) -/
 theorem wifi_requires_wpa : ∀ (c : WirelessConnection), conn_protocol c = WiFi → protocol_secure c → conn_security c = WPA3 ∨ conn_security c = WPA2 := by

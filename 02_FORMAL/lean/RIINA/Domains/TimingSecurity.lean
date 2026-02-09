@@ -184,7 +184,7 @@ def valid_session_transition := sorry -- complex match, needs manual translation
 
 /-- timing_leakage (matches Coq: Definition timing_leakage) -/
 def timing_leakage (obs1 obs2 : TimingObservation) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- ntp_authenticated (matches Coq: Definition ntp_authenticated) -/
 def ntp_authenticated := sorry -- complex match, needs manual translation
@@ -195,7 +195,7 @@ def in_replay_window (ts : Timestamp) (w : ReplayWindow) : Bool :=
 
 /-- nonce_fresh (matches Coq: Definition nonce_fresh) -/
 def nonce_fresh (n : Nonce) (w : ReplayWindow) : Bool :=
-  negb (existsb (Nat
+  !(existsb (Nat
 
 /-- verify_timestamp_signature (matches Coq: Definition verify_timestamp_signature) -/
 def verify_timestamp_signature (sts : SignedTimestamp) (expected_signer : Nat) : Bool :=
@@ -306,7 +306,7 @@ def time_013_can_acquire (policy : LockOrderPolicy) (lock_id : ResourceId) : Boo
 
 /-- time_013_release_lock (matches Coq: Definition time_013_release_lock) -/
 def time_013_release_lock (policy : LockOrderPolicy) (lock_id : ResourceId) : LockOrderPolicy := mkLockOrderPolicy (lock_order_fn policy) 
-    (filter (fun x => negb (Nat
+    (filter (fun x => !(Nat
 
 /-- time_014_make_progress (matches Coq: Definition time_014_make_progress) -/
 def time_014_make_progress := sorry -- complex match, needs manual translation
@@ -317,7 +317,7 @@ def time_014_check_liveness (lp : LivenessProof) : Bool :=
 
 /-- time_015_update_schedule (matches Coq: Definition time_015_update_schedule) -/
 def time_015_update_schedule (fs : FairScheduler) (tid : ThreadId) (now : Time) : FairScheduler :=
-  let new_scheduled := (tid, now) :: filter (fun p => negb (Nat
+  let new_scheduled := (tid, now) :: filter (fun p => !(Nat
 
 /-- leb_true_le (matches Coq) -/
 theorem leb_true_le : ∀ n m, (n <=? m) = true <-> n ≤ m := by
@@ -328,7 +328,7 @@ theorem ltb_true_lt : ∀ n m, (n <? m) = true <-> n < m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- andb_true_iff_both (matches Coq) -/
@@ -364,15 +364,15 @@ theorem time_001_session_preserves_owner : ∀ (s : Session) (op : SessionOp) (s
   cases ‹_› <;> simp
 
 /-- time_002_toctou_atomic_check_act (matches Coq) -/
-theorem time_002_toctou_atomic_check_act : ∀ A (eq_dec : ∀ x y : A, {x = y} + {x ≠ y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell A) (success : bool), time_002_atomic_cas eq_dec cell expected new_val = (cell', success) → success = true → cell_value cell = expected ∧ cell_value cell' = new_val := by
+theorem time_002_toctou_atomic_check_act : ∀ A (eq_dec : ∀ x y : A, {x = y} + {x ≠ y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell A) (success : Bool), time_002_atomic_cas eq_dec cell expected new_val = (cell', success) → success = true → cell_value cell = expected ∧ cell_value cell' = new_val := by
   intro h; exact h
 
 /-- time_002_atomic_version_increment (matches Coq) -/
-theorem time_002_atomic_version_increment : ∀ A (eq_dec : ∀ x y : A, {x = y} + {x ≠ y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell A) (success : bool), time_002_atomic_cas eq_dec cell expected new_val = (cell', success) → success = true → cell_version cell' = S (cell_version cell) := by
+theorem time_002_atomic_version_increment : ∀ A (eq_dec : ∀ x y : A, {x = y} + {x ≠ y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell A) (success : Bool), time_002_atomic_cas eq_dec cell expected new_val = (cell', success) → success = true → cell_version cell' = S (cell_version cell) := by
   rfl
 
 /-- time_002_failed_cas_unchanged (matches Coq) -/
-theorem time_002_failed_cas_unchanged : ∀ A (eq_dec : ∀ x y : A, {x = y} + {x ≠ y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell A) (success : bool), time_002_atomic_cas eq_dec cell expected new_val = (cell', success) → success = false → cell' = cell := by
+theorem time_002_failed_cas_unchanged : ∀ A (eq_dec : ∀ x y : A, {x = y} + {x ≠ y}) (cell : AtomicCell A) (expected new_val : A) (cell' : AtomicCell A) (success : Bool), time_002_atomic_cas eq_dec cell expected new_val = (cell', success) → success = false → cell' = cell := by
   rfl
 
 /-- time_003_constant_time_property (matches Coq) -/
@@ -380,7 +380,7 @@ theorem time_003_constant_time_property : ∀ (op : TimedOperation) (d : Duratio
   intro h; exact h
 
 /-- time_003_no_timing_leakage (matches Coq) -/
-theorem time_003_no_timing_leakage : ∀ (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op →  op_duration op = op_duration op := by
+theorem time_003_no_timing_leakage : ∀ (op : TimedOperation) (input1 input2 : Nat), time_003_is_constant_time op →  op_duration op = op_duration op := by
   rfl
 
 /-- time_003_ct_compare_deterministic (matches Coq) -/
@@ -396,15 +396,15 @@ theorem time_004_isolated_domain_property : ∀ (d : TimingDomain), domain_isola
   intro h; exact h
 
 /-- time_005_unauthenticated_ntp_rejected (matches Coq) -/
-theorem time_005_unauthenticated_ntp_rejected : ∀ (pkt : NTPPacket) (trusted : nat), ntp_signature pkt = None → time_005_accept_timestamp pkt trusted = None := by
+theorem time_005_unauthenticated_ntp_rejected : ∀ (pkt : NTPPacket) (trusted : Nat), ntp_signature pkt = None → time_005_accept_timestamp pkt trusted = None := by
   rfl
 
 /-- time_005_authenticated_ntp_accepted (matches Coq) -/
-theorem time_005_authenticated_ntp_accepted : ∀ (pkt : NTPPacket) (trusted : nat), ntp_signature pkt = Some trusted → time_005_accept_timestamp pkt trusted = Some (ntp_timestamp pkt) := by
+theorem time_005_authenticated_ntp_accepted : ∀ (pkt : NTPPacket) (trusted : Nat), ntp_signature pkt = Some trusted → time_005_accept_timestamp pkt trusted = Some (ntp_timestamp pkt) := by
   rfl
 
 /-- time_005_wrong_signature_rejected (matches Coq) -/
-theorem time_005_wrong_signature_rejected : ∀ (pkt : NTPPacket) (sig trusted : nat), ntp_signature pkt = Some sig → sig ≠ trusted → time_005_accept_timestamp pkt trusted = None := by
+theorem time_005_wrong_signature_rejected : ∀ (pkt : NTPPacket) (sig trusted : Nat), ntp_signature pkt = Some sig → sig ≠ trusted → time_005_accept_timestamp pkt trusted = None := by
   rfl
 
 /-- time_006_replay_detected (matches Coq) -/
@@ -440,15 +440,15 @@ theorem time_008_no_deadline_miss : ∀ (t : Task) (now : Time), time_008_deadli
   simp_all [Bool.and_eq_true]
 
 /-- time_009_unsigned_timestamp_rejected (matches Coq) -/
-theorem time_009_unsigned_timestamp_rejected : ∀ (ts : Timestamp) (signer sig expected_signer expected_sig : nat), signer ≠ expected_signer → time_009_accept_signed_timestamp (mkSignedTs ts signer sig) expected_signer expected_sig = None := by
+theorem time_009_unsigned_timestamp_rejected : ∀ (ts : Timestamp) (signer sig expected_signer expected_sig : Nat), signer ≠ expected_signer → time_009_accept_signed_timestamp (mkSignedTs ts signer sig) expected_signer expected_sig = None := by
   cases ‹_› <;> simp
 
 /-- time_009_valid_signature_accepted (matches Coq) -/
-theorem time_009_valid_signature_accepted : ∀ (ts : Timestamp) (signer sig : nat), time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer sig = Some ts := by
+theorem time_009_valid_signature_accepted : ∀ (ts : Timestamp) (signer sig : Nat), time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer sig = Some ts := by
   simp
 
 /-- time_009_wrong_signature_rejected (matches Coq) -/
-theorem time_009_wrong_signature_rejected : ∀ (ts : Timestamp) (signer sig expected_sig : nat), sig ≠ expected_sig → time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer expected_sig = None := by
+theorem time_009_wrong_signature_rejected : ∀ (ts : Timestamp) (signer sig expected_sig : Nat), sig ≠ expected_sig → time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer expected_sig = None := by
   cases ‹_› <;> simp
 
 /-- time_010_expired_timeout_detected (matches Coq) -/
@@ -500,11 +500,11 @@ theorem time_013_deadlock_free : ∀ (policy : LockOrderPolicy) (l1 l2 : Resourc
   simp_all [Bool.and_eq_true]
 
 /-- time_014_progress_increases (matches Coq) -/
-theorem time_014_progress_increases : ∀ (lp : LivenessProof) (n : nat), progress_state lp = MakingProgress n → S n < progress_bound lp → current_progress (time_014_make_progress lp) = S n := by
+theorem time_014_progress_increases : ∀ (lp : LivenessProof) (n : Nat), progress_state lp = MakingProgress n → S n < progress_bound lp → current_progress (time_014_make_progress lp) = S n := by
   cases ‹_› <;> simp <;> omega
 
 /-- time_014_bounded_progress_completes (matches Coq) -/
-theorem time_014_bounded_progress_completes : ∀ (lp : LivenessProof) (n : nat), progress_state lp = MakingProgress n → S n ≥ progress_bound lp → progress_state (time_014_make_progress lp) = Completed := by
+theorem time_014_bounded_progress_completes : ∀ (lp : LivenessProof) (n : Nat), progress_state lp = MakingProgress n → S n ≥ progress_bound lp → progress_state (time_014_make_progress lp) = Completed := by
   cases ‹_› <;> simp <;> omega
 
 /-- time_014_liveness_guaranteed (matches Coq) -/

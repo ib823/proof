@@ -140,28 +140,28 @@ def level_leq := sorry -- complex match, needs manual translation
 
 /-- kem_correct (matches Coq: Definition kem_correct) -/
 def kem_correct (k : KEMInstance) : Bool :=
-  kp_valid (kem_keypair k) &&
-  enc_valid (kem_encaps_result k) &&
-  kem_decaps_valid k &&
+  kp_valid (k.kem_keypair) &&
+  enc_valid (k.kem_encaps_result) &&
+  k.kem_decaps_valid &&
   Nat
 
 /-- indcca_compliant (matches Coq: Definition indcca_compliant) -/
 def indcca_compliant (s : INDCCASecure) : Bool :=
-  indcca_ciphertext_indistinguishable s &&
-  indcca_key_indistinguishable s &&
-  indcca_decaps_consistent s
+  s.indcca_ciphertext_indistinguishable &&
+  s.indcca_key_indistinguishable &&
+  s.indcca_decaps_consistent
 
 /-- quantum_resistant (matches Coq: Definition quantum_resistant) -/
 def quantum_resistant (q : QuantumResistant) : Bool :=
-  qr_lattice_based q &&
-  qr_lwe_hardness q &&
-  qr_module_lwe q &&
-  qr_no_known_quantum_attack q
+  q.qr_lattice_based &&
+  q.qr_lwe_hardness &&
+  q.qr_module_lwe &&
+  q.qr_no_known_quantum_attack
 
 /-- kem_secure (matches Coq: Definition kem_secure) -/
 def kem_secure (s : KEMSecurity) : Bool :=
-  indcca_compliant (kem_sec_indcca s) &&
-  quantum_resistant (kem_sec_quantum s)
+  indcca_compliant (s.kem_sec_indcca) &&
+  quantum_resistant (s.kem_sec_quantum)
 
 /-- mk_valid_keypair (matches Coq: Definition mk_valid_keypair) -/
 def mk_valid_keypair : KeyPair := mkKeyPair 1 2 true
@@ -177,7 +177,7 @@ def mk_compliant_qr : QuantumResistant := mkQR true true true true
 
 /-- riina_kem_1024 (matches Coq: Definition riina_kem_1024) -/
 def riina_kem_1024 : KEMInstance := mkKEM
-  ML_KEM_1024
+  .mL_KEM_1024
   mk_valid_keypair
   mk_valid_encaps
   42  
@@ -193,7 +193,7 @@ def riina_kem_security : KEMSecurity := mkKEMSecurity
     SECTION 4: COMPLIANCE PREDICATES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- PQ_KEM_001: Level Reflexivity -/
@@ -218,22 +218,22 @@ theorem PQ_KEM_004_level5_maximum : ∀ l : SecurityLevel, level_leq l Level5 = 
 
 /-- PQ_KEM_005: ML-KEM-512 is Level 1 -/
 /-- PQ_KEM_005_mlkem512_level1 (matches Coq) -/
-theorem PQ_KEM_005_mlkem512_level1 : param_security_level ML_KEM_512 = Level1 := by
+theorem PQ_KEM_005_mlkem512_level1 : param_security_level .mL_KEM_512 = Level1 := by
   rfl
 
 /-- PQ_KEM_006: ML-KEM-768 is Level 3 -/
 /-- PQ_KEM_006_mlkem768_level3 (matches Coq) -/
-theorem PQ_KEM_006_mlkem768_level3 : param_security_level ML_KEM_768 = Level3 := by
+theorem PQ_KEM_006_mlkem768_level3 : param_security_level .mL_KEM_768 = Level3 := by
   rfl
 
 /-- PQ_KEM_007: ML-KEM-1024 is Level 5 -/
 /-- PQ_KEM_007_mlkem1024_level5 (matches Coq) -/
-theorem PQ_KEM_007_mlkem1024_level5 : param_security_level ML_KEM_1024 = Level5 := by
+theorem PQ_KEM_007_mlkem1024_level5 : param_security_level .mL_KEM_1024 = Level5 := by
   rfl
 
 /-- PQ_KEM_008: Higher parameters provide higher security -/
 /-- PQ_KEM_008_params_ordered (matches Coq) -/
-theorem PQ_KEM_008_params_ordered : level_leq (param_security_level ML_KEM_512) (param_security_level ML_KEM_1024) = true := by
+theorem PQ_KEM_008_params_ordered : level_leq (param_security_level .mL_KEM_512) (param_security_level .mL_KEM_1024) = true := by
   rfl
 
 /-- PQ_KEM_009: Compliant IND-CCA Valid -/

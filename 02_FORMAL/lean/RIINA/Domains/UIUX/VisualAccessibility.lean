@@ -263,7 +263,7 @@ theorem text_scales_to_200_percent : ∀ (rtp : RIINA_TextProperties), not_trunc
   omega
 
 /-- no_text_truncation (matches Coq) -/
-theorem no_text_truncation : ∀ (rtp : RIINA_TextProperties) (scale_pct : nat), scale_pct ≥ 100 → scale_pct ≤ 200 → not_truncated (riina_tp rtp) scale_pct := by
+theorem no_text_truncation : ∀ (rtp : RIINA_TextProperties) (scale_pct : Nat), scale_pct ≥ 100 → scale_pct ≤ 200 → not_truncated (riina_tp rtp) scale_pct := by
   simp_all [Bool.and_eq_true]
 
 /-- line_height_proportional (matches Coq) -/
@@ -271,7 +271,7 @@ theorem line_height_proportional : ∀ (rtp : RIINA_TextProperties), line_height
   intro h; exact h
 
 /-- container_expands_with_text (matches Coq) -/
-theorem container_expands_with_text : ∀ (rtp : RIINA_TextProperties) (scale_pct : nat), scale_pct ≥ 100 → scale_pct ≤ 200 → scaled_container_height (riina_tp rtp) scale_pct ≥ scaled_font_size (riina_tp rtp) scale_pct := by
+theorem container_expands_with_text : ∀ (rtp : RIINA_TextProperties) (scale_pct : Nat), scale_pct ≥ 100 → scale_pct ≤ 200 → scaled_container_height (riina_tp rtp) scale_pct ≥ scaled_font_size (riina_tp rtp) scale_pct := by
   simp_all [Bool.and_eq_true]
 
 /-- text_reflow (matches Coq) -/

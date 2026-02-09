@@ -190,8 +190,8 @@ def TensorData : Type :=
   list nat
 
 /-- compute_inference (matches Coq: Definition compute_inference) -/
-def compute_inference (m : MLModel) (input : Tensor) : Tensor := mkTensor (tensor_shape input) 
-           (map (fun x => x + model_version m) (tensor_data input))
+def compute_inference (m : MLModel) (input : Tensor) : Tensor := mkTensor (input.tensor_shape) 
+           (map (fun x => x + m.model_version) (input.tensor_data))
 
 /-- infer (matches Coq: Definition infer) -/
 def infer (m : MLModel) (input : Tensor) : Tensor :=
@@ -212,61 +212,61 @@ def private_ml_system : Prop :=
 
 /-- input_shape_valid (matches Coq: Definition input_shape_valid) -/
 def input_shape_valid (input : Tensor) (expected_shape : List Nat) : Prop :=
-  tensor_shape input = expected_shape
+  input.tensor_shape = expected_shape
 
 /-- output_bounded (matches Coq: Definition output_bounded) -/
 def output_bounded (output : Tensor) (bound : Nat) : Prop :=
-  all_below bound (tensor_data output)
+  all_below bound (output.tensor_data)
 
 /-- latency_within_bound (matches Coq: Definition latency_within_bound) -/
 def latency_within_bound (r : InferenceRequest) : Prop :=
-  req_latency_ms r <= req_max_latency_ms r
+  r.req_latency_ms <= r.req_max_latency_ms
 
 /-- model_fits_memory (matches Coq: Definition model_fits_memory) -/
 def model_fits_memory (b : MemoryBudget) : Prop :=
-  model_size_bytes b <= budget_max_bytes b
+  b.model_size_bytes <= b.budget_max_bytes
 
 /-- update_atomic (matches Coq: Definition update_atomic) -/
 def update_atomic (u : ModelUpdate) : Prop :=
-  update_state u = UpdateComplete \/ update_state u = UpdateFailed
+  u.update_state = UpdateComplete \/ u.update_state = UpdateFailed
 
 /-- within_privacy_budget (matches Coq: Definition within_privacy_budget) -/
 def within_privacy_budget (pb : PrivacyBudget) : Prop :=
-  epsilon pb <= max_epsilon pb /\ delta pb <= max_delta pb
+  pb.epsilon <= pb.max_epsilon /\ pb.delta <= pb.max_delta
 
 /-- version_tracked (matches Coq: Definition version_tracked) -/
 def version_tracked (m : MLModel) : Prop :=
-  model_version m > 0
+  m.model_version > 0
 
 /-- confidence_calibrated (matches Coq: Definition confidence_calibrated) -/
 def confidence_calibrated (p : Prediction) : Prop :=
-  pred_calibrated p = true /\ pred_confidence p <= 100
+  p.pred_calibrated = true /\ p.pred_confidence <= 100
 
 /-- model_not_exportable (matches Coq: Definition model_not_exportable) -/
 def model_not_exportable (mp : ModelPolicy) : Prop :=
-  policy_exportable mp = false /\ policy_on_device_only mp = true
+  mp.policy_exportable = false /\ mp.policy_on_device_only = true
 
 /-- data_anonymized (matches Coq: Definition data_anonymized) -/
 def data_anonymized (td : TrainingData) : Prop :=
-  td_anonymized td = true /\ td_pii_removed td = true
+  td.td_anonymized = true /\ td.td_pii_removed = true
 
 /-- adversarial_detected (matches Coq: Definition adversarial_detected) -/
 def adversarial_detected (ia : InputAnalysis) : Prop :=
-  ia_perturbation_score ia > ia_threshold ia /\ ia_flagged ia = true
+  ia.ia_perturbation_score > ia.ia_threshold /\ ia.ia_flagged = true
 
 /-- fallback_ready (matches Coq: Definition fallback_ready) -/
 def fallback_ready (mf : ModelWithFallback) : Prop :=
-  primary_available mf = false -> model_version (fallback_model mf) > 0
+  mf.primary_available = false -> model_version (mf.fallback_model) > 0
 
 /-- batch_ordered (matches Coq: Definition batch_ordered) -/
 def batch_ordered (br : BatchRequest) : Prop :=
-  is_sorted (batch_sequence br) /\
-  length (batch_inputs br) = length (batch_sequence br)
+  is_sorted (br.batch_sequence) /\
+  length (br.batch_inputs) = length (br.batch_sequence)
 
 /-- quantization_bounded (matches Coq: Definition quantization_bounded) -/
 def quantization_bounded (qm : QuantizedModel) : Prop :=
-  pointwise_error_bounded (qm_original_weights qm) (qm_quantized_weights qm) (qm_max_error qm) /\
-  length (qm_original_weights qm) = length (qm_quantized_weights qm)
+  pointwise_error_bounded (qm.qm_original_weights) (qm.qm_quantized_weights) (qm.qm_max_error) /\
+  length (qm.qm_original_weights) = length (qm.qm_quantized_weights)
 
 /-- ml_inference_deterministic (matches Coq) -/
 theorem ml_inference_deterministic : ∀ (model : MLModel) (input : Tensor), infer model input = infer model input := by
@@ -285,7 +285,7 @@ theorem inference_preserves_shape : ∀ (model : MLModel) (input : Tensor), tens
   simp
 
 /-- different_model_version_matters (matches Coq) -/
-theorem different_model_version_matters : ∀ (m1 m2 : MLModel) (input : Tensor) (h : nat) (t : list nat), tensor_data input = h :: t → model_version m1 ≠ model_version m2 → tensor_data (infer m1 input) ≠ tensor_data (infer m2 input) := by
+theorem different_model_version_matters : ∀ (m1 m2 : MLModel) (input : Tensor) (h : Nat) (t : list nat), tensor_data input = h :: t → model_version m1 ≠ model_version m2 → tensor_data (infer m1 input) ≠ tensor_data (infer m2 input) := by
   simp_all [Bool.and_eq_true]
 
 /-- model_input_validated (matches Coq) -/
@@ -293,7 +293,7 @@ theorem model_input_validated : ∀ (input : Tensor) (expected : list nat), inpu
   intro h; exact h
 
 /-- model_output_bounded (matches Coq) -/
-theorem model_output_bounded : ∀ (output : Tensor) (bound : nat), output_bounded output bound → all_below bound (tensor_data output) := by
+theorem model_output_bounded : ∀ (output : Tensor) (bound : Nat), output_bounded output bound → all_below bound (tensor_data output) := by
   intro h; exact h
 
 /-- inference_latency_bounded (matches Coq) -/

@@ -195,7 +195,7 @@ theorem val_rel_at_type_n_S : ∀ n Σ sp vl sl svp T v1 v2, val_rel_at_type_n (
 /-- Unfolding lemmas for val_rel_n - needed because simpl doesn't work well
     on mutual fixpoints with abstract arguments -/
 /-- val_rel_n_0_unfold (matches Coq) -/
-theorem val_rel_n_0_unfold : ∀ Σ T v1 v2, val_rel_n 0 Σ T v1 v2 = (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure ∧ (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)) := by
+theorem val_rel_n_0_unfold : ∀ Σ T v1 v2, val_rel_n .0 Σ T v1 v2 = (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure ∧ (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)) := by
   rfl
 
 /-- val_rel_n_S_unfold (matches Coq) -/
@@ -209,7 +209,7 @@ theorem val_rel_n_SS_unfold : ∀ n Σ T v1 v2, val_rel_n (S (S n)) Σ T v1 v2 =
   rfl
 
 /-- store_rel_n_0_unfold (matches Coq) -/
-theorem store_rel_n_0_unfold : ∀ Σ st1 st2, store_rel_n 0 Σ st1 st2 = (store_max st1 = store_max st2) := by
+theorem store_rel_n_0_unfold : ∀ Σ st1 st2, store_rel_n .0 Σ st1 st2 = (store_max st1 = store_max st2) := by
   rfl
 
 /-- store_rel_n_S_unfold (matches Coq) -/
@@ -228,14 +228,14 @@ theorem store_rel_n_S_unfold : ∀ n Σ st1 st2, store_rel_n (S n) Σ st1 st2 = 
 theorem val_rel_at_type_fo_equiv : ∀ T Σ sp vl sl svp v1 v2, first_order_type T = true → val_rel_at_type Σ sp vl sl svp T v1 v2 <-> val_rel_at_type_fo T v1 v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Downward closure: val_rel_n n implies val_rel_n 0 (base case).
+/-- Downward closure: val_rel_n n implies val_rel_n .0 (base case).
     This follows directly from the definition where S-case includes the predecessor. -/
 /-- val_rel_n_to_0 (matches Coq) -/
-theorem val_rel_n_to_0 : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → val_rel_n 0 Σ T v1 v2 := by
+theorem val_rel_n_to_0 : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → val_rel_n .0 Σ T v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_n_step_up_fo (matches Coq) -/
-theorem val_rel_n_step_up_fo : ∀ T n Σ v1 v2, first_order_type T = true → val_rel_n 0 Σ T v1 v2 → val_rel_n n Σ T v1 v2 := by
+theorem val_rel_n_step_up_fo : ∀ T n Σ v1 v2, first_order_type T = true → val_rel_n .0 Σ T v1 v2 → val_rel_n n Σ T v1 v2 := by
   simp_all
 
 /-- CRITICAL: Downward monotonicity for first-order types.
@@ -303,37 +303,37 @@ theorem pair_typing_pure_inv : ∀ Γ Σ Δ e1 e2 T1 T2, has_type Γ Σ Δ (EPai
 
 /-- FORMER AXIOM 1: exp_rel_step1_fst - NOW PROVEN -/
 /-- exp_rel_step1_fst (matches Coq) -/
-theorem exp_rel_step1_fst : ∀ Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n 0 Σ' (TProd T1 T2) v v' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ a1 a2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EFst v, st1, ctx) -->* (a1, st1', ctx') ∧ (EFst v', st2, ctx) -->* (a2, st2', ctx') ∧ value a1 ∧ value a2 ∧ val_rel_n 0 Σ'' T1 a1 a2 ∧ store_rel_n 0 Σ'' st1' st2' := by
+theorem exp_rel_step1_fst : ∀ Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 Σ' (TProd T1 T2) v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ a1 a2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EFst v, st1, ctx) -->* (a1, st1', ctx') ∧ (EFst v', st2, ctx) -->* (a2, st2', ctx') ∧ value a1 ∧ value a2 ∧ val_rel_n .0 Σ'' T1 a1 a2 ∧ store_rel_n .0 Σ'' st1' st2' := by
   cases ‹_› <;> simp
 
 /-- FORMER AXIOM 2: exp_rel_step1_snd - NOW PROVEN -/
 /-- exp_rel_step1_snd (matches Coq) -/
-theorem exp_rel_step1_snd : ∀ Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n 0 Σ' (TProd T1 T2) v v' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ b1 b2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ESnd v, st1, ctx) -->* (b1, st1', ctx') ∧ (ESnd v', st2, ctx) -->* (b2, st2', ctx') ∧ value b1 ∧ value b2 ∧ val_rel_n 0 Σ'' T2 b1 b2 ∧ store_rel_n 0 Σ'' st1' st2' := by
+theorem exp_rel_step1_snd : ∀ Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 Σ' (TProd T1 T2) v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ b1 b2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ESnd v, st1, ctx) -->* (b1, st1', ctx') ∧ (ESnd v', st2, ctx) -->* (b2, st2', ctx') ∧ value b1 ∧ value b2 ∧ val_rel_n .0 Σ'' T2 b1 b2 ∧ store_rel_n .0 Σ'' st1' st2' := by
   cases ‹_› <;> simp
 
 /-- FORMER AXIOM 3: exp_rel_step1_if - NOW PROVEN - THE BIG WIN! -/
 /-- exp_rel_step1_if (matches Coq) -/
-theorem exp_rel_step1_if : ∀ Σ (v v' e2 e2' e3 e3' : expr) st1 st2 ctx Σ', val_rel_n 0 Σ' TBool v v' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') ∧ (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_if : ∀ Σ (v v' e2 e2' e3 e3' : expr) st1 st2 ctx Σ', val_rel_n .0 Σ' TBool v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') ∧ (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- FORMER AXIOM 4: exp_rel_step1_case - NOW PROVEN - THE BIG WIN! -/
 /-- exp_rel_step1_case (matches Coq) -/
-theorem exp_rel_step1_case : ∀ Σ T1 T2 (v v' : expr) x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n 0 Σ' (TSum T1 T2) v v' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_case : ∀ Σ T1 T2 (v v' : expr) x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 Σ' (TSum T1 T2) v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') := by
   simp_all [Bool.and_eq_true]
 
 /-- FORMER AXIOM 5: exp_rel_step1_let - NOW PROVEN -/
 /-- exp_rel_step1_let (matches Coq) -/
-theorem exp_rel_step1_let : ∀ Σ T v v' x e2 e2' st1 st2 ctx Σ', val_rel_n 0 Σ' T v v' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_let : ∀ Σ T v v' x e2 e2' st1 st2 ctx Σ', val_rel_n .0 Σ' T v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') := by
   simp_all [Bool.and_eq_true]
 
 /-- FORMER AXIOM 6: exp_rel_step1_handle - NOW PROVEN -/
 /-- exp_rel_step1_handle (matches Coq) -/
-theorem exp_rel_step1_handle : ∀ Σ T v v' x h h' st1 st2 ctx Σ', val_rel_n 0 Σ' T v v' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EHandle v x h, st1, ctx) -->* (r1, st1', ctx') ∧ (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_handle : ∀ Σ T v v' x h h' st1 st2 ctx Σ', val_rel_n .0 Σ' T v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EHandle v x h, st1, ctx) -->* (r1, st1', ctx') ∧ (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx') := by
   simp_all [Bool.and_eq_true]
 
 /-- exp_rel_step1_app - Needs typing to get lambda structure -/
 /-- exp_rel_step1_app (matches Coq) -/
-theorem exp_rel_step1_app : ∀ Σ T1 T2 ε f f' a a' st1 st2 ctx Σ', val_rel_n 0 Σ' (TFn T1 T2 ε) f f' → val_rel_n 0 Σ' T1 a a' → store_rel_n 0 Σ' st1 st2 → store_ty_extends Σ Σ' →  has_type nil Σ' Public f (TFn T1 T2 ε) EffectPure → has_type nil Σ' Public f' (TFn T1 T2 ε) EffectPure → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_app : ∀ Σ T1 T2 ε f f' a a' st1 st2 ctx Σ', val_rel_n .0 Σ' (TFn T1 T2 ε) f f' → val_rel_n .0 Σ' T1 a a' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' →  has_type nil Σ' Public f (TFn T1 T2 ε) EffectPure → has_type nil Σ' Public f' (TFn T1 T2 ε) EffectPure → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx') := by
   simp_all [Bool.and_eq_true]
 
 /-- Extract just the store_wf part from preservation -/
@@ -380,12 +380,12 @@ theorem val_rel_at_type_step_up_with_IH : ∀ T n' Σ v1 v2,  (∀ T' Σ' v1' v2
 theorem combined_step_up_val_wrap : ∀ n, combined_step_up n → (∀ T' Σ' v1' v2', val_rel_n n Σ' T' v1' v2' → (first_order_type T' = false → has_type nil Σ' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil Σ' Public v2' T' EffectPure) → val_rel_n (S n) Σ' T' v1' v2') := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper: store_rel step-up for n > 0 using val_rel step-up from IH -/
+/-- Helper: store_rel step-up for n > .0 using val_rel step-up from IH -/
 /-- store_rel_n_step_up_from_IH (matches Coq) -/
 theorem store_rel_n_step_up_from_IH : ∀ n' Σ st1 st2,  (∀ T Σ' v1 v2, val_rel_n n' Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S n') Σ' T v1 v2) → store_rel_n (S n') Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S n')) Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper: store_rel step-up from n to S n when n > 0, using val_rel step-up -/
+/-- Helper: store_rel step-up from n to S n when n > .0, using val_rel step-up -/
 /-- store_rel_n_step_up_with_val_IH (matches Coq) -/
 theorem store_rel_n_step_up_with_val_IH : ∀ m Σ st1 st2,  (∀ T Σ' v1 v2, val_rel_n m Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S m) Σ' T v1 v2) → store_rel_n (S m) Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S m)) Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
@@ -409,7 +409,7 @@ theorem val_rel_n_step_up : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → has_typ
 /-- store_rel_n_step_up - Follows from val_rel_n_step_up
     Requires store_wf to establish value relations for store locations
 
-    REVISED: The n=0 case for FO types at LOW security levels requires
+    REVISED: The n=.0 case for FO types at LOW security levels requires
     stores_agree_low_fo precondition. For HIGH security, we rely on
     the type having a trivial val_rel (TSecret, TLabeled, etc.).
 
@@ -428,20 +428,20 @@ theorem store_vals_rel_mono : ∀ m n Σ st1 st2, m ≤ n → store_vals_rel n �
 theorem store_vals_rel_step_up : ∀ n Σ st1 st2, store_vals_rel n Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_vals_rel (S n) Σ st1 st2 := by
   simp_all [Bool.and_eq_true]
 
-/-- QUICK-WIN 1: exp_rel_n at step 0 is trivially true
-    This follows from the definition: exp_rel_n 0 = True.
+/-- QUICK-WIN 1: exp_rel_n at step .0 is trivially true
+    This follows from the definition: exp_rel_n .0 = True.
     Proves: Axiom exp_rel_n_base from LogicalRelationAssign_PROOF.v -/
 /-- exp_rel_n_base (matches Coq) -/
-theorem exp_rel_n_base : ∀ Σ T e1 e2, exp_rel_n 0 Σ T e1 e2 := by
+theorem exp_rel_n_base : ∀ Σ T e1 e2, exp_rel_n .0 Σ T e1 e2 := by
   intro h; exact h
 
-/-- Helper: val_rel_n 0 for TUnit with EUnit -/
+/-- Helper: val_rel_n .0 for TUnit with EUnit -/
 /-- val_rel_n_0_unit (matches Coq) -/
-theorem val_rel_n_0_unit : ∀ Σ, val_rel_n 0 Σ TUnit EUnit EUnit := by
+theorem val_rel_n_0_unit : ∀ Σ, val_rel_n .0 Σ TUnit EUnit EUnit := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- val_rel_n_unit (matches Coq) -/
-theorem val_rel_n_unit : ∀ n Σ, n > 0 → val_rel_n n Σ TUnit EUnit EUnit := by
+theorem val_rel_n_unit : ∀ n Σ, n > .0 → val_rel_n n Σ TUnit EUnit EUnit := by
   cases ‹_› <;> simp <;> omega
 
 /-- QUICK-WIN 3: exp_rel_n for EUnit at TUnit (all n)
@@ -451,7 +451,7 @@ theorem val_rel_n_unit : ∀ n Σ, n > 0 → val_rel_n n Σ TUnit EUnit EUnit :=
 theorem exp_rel_n_unit : ∀ n Σ, exp_rel_n n Σ TUnit EUnit EUnit := by
   cases ‹_› <;> simp <;> omega
 
-/-- Bridge lemma: well_typed TFn applications at step 0 produce related results.
+/-- Bridge lemma: well_typed TFn applications at step .0 produce related results.
     This captures what we need from the fundamental theorem for the TFn case.
 
     STATUS: Depends on well_typed_SN from ReducibilityFull.v
@@ -460,9 +460,9 @@ theorem exp_rel_n_unit : ∀ n Σ, exp_rel_n n Σ TUnit EUnit EUnit := by
     2. Beta reduction: EApp (ELam x T body) arg --> [x := arg] body
     3. Apply well_typed_SN to show applications terminate in values
     4. Apply preservation to get typing for result values
-    5. Build val_rel_n 0 from typing (HO) or structure (FO) -/
+    5. Build val_rel_n .0 from typing (HO) or structure (FO) -/
 /-- val_rel_at_type_TFn_step_0_bridge (matches Coq) -/
-theorem val_rel_at_type_TFn_step_0_bridge : ∀ Σ T1 T2 eff v1 v2, has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure → has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ Σ', store_ty_extends Σ Σ' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n 0 Σ' T1 x y → ∀ st1 st2 ctx, store_rel_n 0 Σ' st1 st2 → store_wf Σ' st1 → store_wf Σ' st2 → stores_agree_low_fo Σ' st1 st2 → store_vals_rel 0 Σ' st1 st2 → ∃ v1' v2' st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp v1 x, st1, ctx) -->* (v1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -->* (v2', st2', ctx') ∧ val_rel_n 0 Σ'' T2 v1' v2' ∧ store_rel_n 0 Σ'' st1' st2' ∧ store_wf Σ'' st1' ∧ store_wf Σ'' st2' ∧ stores_agree_low_fo Σ'' st1' st2' := by
+theorem val_rel_at_type_TFn_step_0_bridge : ∀ Σ T1 T2 eff v1 v2, has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure → has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ Σ', store_ty_extends Σ Σ' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n .0 Σ' T1 x y → ∀ st1 st2 ctx, store_rel_n .0 Σ' st1 st2 → store_wf Σ' st1 → store_wf Σ' st2 → stores_agree_low_fo Σ' st1 st2 → store_vals_rel .0 Σ' st1 st2 → ∃ v1' v2' st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp v1 x, st1, ctx) -->* (v1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -->* (v2', st2', ctx') ∧ val_rel_n .0 Σ'' T2 v1' v2' ∧ store_rel_n .0 Σ'' st1' st2' ∧ store_wf Σ'' st1' ∧ store_wf Σ'' st2' ∧ stores_agree_low_fo Σ'' st1' st2' := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

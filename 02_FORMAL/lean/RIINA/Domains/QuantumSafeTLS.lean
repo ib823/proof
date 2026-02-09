@@ -349,7 +349,7 @@ def kem_security_level (k : KEMScheme) : SecurityLevel :=
 
 /-- ml_kem_1024_params (matches Coq: Definition ml_kem_1024_params) -/
 def ml_kem_1024_params : KEMParameters := mkKEMParams
-  ML_KEM_1024
+  .mL_KEM_1024
   1568  
   3168  
   1568  
@@ -357,8 +357,8 @@ def ml_kem_1024_params : KEMParameters := mkKEMParams
 
 /-- kem_fully_secure (matches Coq: Definition kem_fully_secure) -/
 def kem_fully_secure (k : KEMSecurityProperties) : Bool :=
-  kem_sec_indcca2 k && kem_sec_module_lwe k &&
-  kem_sec_nist_approved k && kem_sec_constant_time k
+  k.kem_sec_indcca2 && k.kem_sec_module_lwe &&
+  k.kem_sec_nist_approved && k.kem_sec_constant_time
 
 /-- ecdh_security_level (matches Coq: Definition ecdh_security_level) -/
 def ecdh_security_level (c : ECDHCurve) : SecurityLevel :=
@@ -373,15 +373,15 @@ def x25519_params : ECDHParameters := mkECDHParams
 
 /-- hybrid_security_level (matches Coq: Definition hybrid_security_level) -/
 def hybrid_security_level (h : HybridKEXConfig) : SecurityLevel :=
-  level_min (kem_security_level (hybrid_kem h)) (ecdh_security_level (hybrid_ecdh h))
+  level_min (kem_security_level (h.hybrid_kem)) (ecdh_security_level (h.hybrid_ecdh))
 
 /-- hybrid_kex_secure (matches Coq: Definition hybrid_kex_secure) -/
 def hybrid_kex_secure (h : HybridKEX) : Bool :=
-  hkex_classical h && hkex_post_quantum h && hkex_combined h
+  h.hkex_classical && h.hkex_post_quantum && h.hkex_combined
 
 /-- hybrid_config_valid (matches Coq: Definition hybrid_config_valid) -/
 def hybrid_config_valid (h : HybridKEXConfig) : Bool :=
-  hybrid_combiner h && hybrid_label h
+  h.hybrid_combiner && h.hybrid_label
 
 /-- sig_security_level (matches Coq: Definition sig_security_level) -/
 def sig_security_level (s : SigNatureScheme) : SecurityLevel :=
@@ -399,53 +399,53 @@ def sig_is_post_quantum (s : SigNatureScheme) : Bool :=
 
 /-- sig_fully_secure (matches Coq: Definition sig_fully_secure) -/
 def sig_fully_secure (s : SigNatureSecurityProps) : Bool :=
-  sig_euf_cma s && sig_strong_euf s && sig_nist_approved s
+  s.sig_euf_cma && s.sig_strong_euf && s.sig_nist_approved
 
 /-- pq_auth_secure (matches Coq: Definition pq_auth_secure) -/
 def pq_auth_secure (p : PQAuthentication) : Bool :=
-  pqa_classical_sig p && pqa_pq_sig p && pqa_certificate_chain p
+  p.pqa_classical_sig && p.pqa_pq_sig && p.pqa_certificate_chain
 
 /-- handshake_secure (matches Coq: Definition handshake_secure) -/
 def handshake_secure (t : TLSHandshake) : Bool :=
-  ths_forward_secrecy t && ths_downgrade_protection t &&
-  ths_replay_protection t && ths_key_confirmation t
+  t.ths_forward_secrecy && t.ths_downgrade_protection &&
+  t.ths_replay_protection && t.ths_key_confirmation
 
 /-- tls13_extensions_valid (matches Coq: Definition tls13_extensions_valid) -/
 def tls13_extensions_valid (e : TLS13Extensions) : Bool :=
-  ext_supported_versions e && ext_key_share e && ext_signature_algorithms e
+  e.ext_supported_versions && e.ext_key_share && e.ext_signature_algorithms
 
 /-- record_secure (matches Coq: Definition record_secure) -/
 def record_secure (r : TLSRecord) : Bool :=
-  rec_aead r && rec_sequence_numbers r && rec_padding r
+  r.rec_aead && r.rec_sequence_numbers && r.rec_padding
 
 /-- aead_secure (matches Coq: Definition aead_secure) -/
 def aead_secure (a : AEADProperties) : Bool :=
-  aead_confidentiality a && aead_integrity a &&
-  aead_authenticity a && aead_nonce_unique a
+  a.aead_confidentiality && a.aead_integrity &&
+  a.aead_authenticity && a.aead_nonce_unique
 
 /-- forward_secrecy_complete (matches Coq: Definition forward_secrecy_complete) -/
 def forward_secrecy_complete (f : ForwardSecrecyConfig) : Bool :=
-  fs_ephemeral_keys f && fs_key_deletion f &&
-  fs_no_static_dh f && fs_pfs_per_session f
+  f.fs_ephemeral_keys && f.fs_key_deletion &&
+  f.fs_no_static_dh && f.fs_pfs_per_session
 
 /-- algorithm_agility_valid (matches Coq: Definition algorithm_agility_valid) -/
 def algorithm_agility_valid (a : AlgorithmAgility) : Bool :=
-  agility_negotiation a && agility_fallback a &&
-  agility_versioning a && agility_extension a
+  a.agility_negotiation && a.agility_fallback &&
+  a.agility_versioning && a.agility_extension
 
 /-- qstls_fully_secure (matches Coq: Definition qstls_fully_secure) -/
 def qstls_fully_secure (q : QuantumSafeTLSConfig) : Bool :=
-  hybrid_kex_secure (qstls_kex q) && pq_auth_secure (qstls_auth q) &&
-  handshake_secure (qstls_handshake q) && record_secure (qstls_record q) &&
-  qstls_version_13 q
+  hybrid_kex_secure (q.qstls_kex) && pq_auth_secure (q.qstls_auth) &&
+  handshake_secure (q.qstls_handshake) && record_secure (q.qstls_record) &&
+  q.qstls_version_13
 
 /-- qstls_full_secure (matches Coq: Definition qstls_full_secure) -/
 def qstls_full_secure (q : QuantumSafeTLSFull) : Bool :=
-  hybrid_config_valid (qstls_hybrid_config q) &&
-  sig_is_post_quantum (qstls_sig_scheme q) &&
-  forward_secrecy_complete (qstls_fs_config q) &&
-  algorithm_agility_valid (qstls_agility q) &&
-  tls13_extensions_valid (qstls_extensions q)
+  hybrid_config_valid (q.qstls_hybrid_config) &&
+  sig_is_post_quantum (q.qstls_sig_scheme) &&
+  forward_secrecy_complete (q.qstls_fs_config) &&
+  algorithm_agility_valid (q.qstls_agility) &&
+  tls13_extensions_valid (q.qstls_extensions)
 
 /-- riina_kex (matches Coq: Definition riina_kex) -/
 def riina_kex : HybridKEX := mkHybridKEX true true true
@@ -464,7 +464,7 @@ def riina_qstls : QuantumSafeTLSConfig := mkQSTLS riina_kex riina_auth riina_hs 
 
 /-- riina_hybrid_config (matches Coq: Definition riina_hybrid_config) -/
 def riina_hybrid_config : HybridKEXConfig := mkHybridKEXConfig
-  ML_KEM_1024 X25519 true true
+  .mL_KEM_1024 X25519 true true
 
 /-- riina_fs_config (matches Coq: Definition riina_fs_config) -/
 def riina_fs_config : ForwardSecrecyConfig := mkFSConfig
@@ -485,7 +485,7 @@ def riina_hs_config : TLSHandshakeConfig := mkTLSHSConfig
 /-- riina_qstls_full (matches Coq: Definition riina_qstls_full) -/
 def riina_qstls_full : QuantumSafeTLSFull := mkQSTLSFull
   riina_hybrid_config
-  ML_DSA_87
+  .mL_DSA_87
   riina_hs_config
   riina_fs_config
   riina_agility
@@ -507,19 +507,19 @@ def riina_aead : AEADProperties := mkAEADProps
     SECTION 1: BASIC LEMMAS
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
 /-- negb_false_iff (matches Coq) -/
-theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
+private theorem negb_false_iff : ∀ b : Bool, !b = false <-> b = true := by
   cases ‹_› <;> simp
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   cases ‹_› <;> simp
 
 /-- ============================================================================
@@ -616,15 +616,15 @@ theorem QSTLS_021 : ∀ p, pq_auth_secure p = true → pqa_certificate_chain p =
   simp_all [Bool.and_eq_true]
 
 /-- QSTLS_022 (matches Coq) -/
-theorem QSTLS_022 : sig_is_post_quantum ML_DSA_87 = true := by
+theorem QSTLS_022 : sig_is_post_quantum .mL_DSA_87 = true := by
   rfl
 
 /-- QSTLS_023 (matches Coq) -/
-theorem QSTLS_023 : sig_is_post_quantum SLH_DSA_256 = true := by
+theorem QSTLS_023 : sig_is_post_quantum .sLH_DSA_256 = true := by
   rfl
 
 /-- QSTLS_024 (matches Coq) -/
-theorem QSTLS_024 : sig_security_level ML_DSA_87 = Level5 := by
+theorem QSTLS_024 : sig_security_level .mL_DSA_87 = Level5 := by
   rfl
 
 /-- ============================================================================
@@ -759,7 +759,7 @@ theorem QSTLS_053 : ∀ k, kem_fully_secure k = true → kem_sec_constant_time k
   simp_all [Bool.and_eq_true]
 
 /-- QSTLS_054 (matches Coq) -/
-theorem QSTLS_054 : kem_security_level ML_KEM_1024 = Level5 := by
+theorem QSTLS_054 : kem_security_level .mL_KEM_1024 = Level5 := by
   rfl
 
 /-- ============================================================================

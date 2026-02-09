@@ -155,7 +155,7 @@ theorem invalid_mismatch_rejected : ∀ ctx p1 p2 a a' b, check ctx p1 = Some (F
   rfl
 
 /-- 8 (matches Coq) -/
-theorem 8 : Weakening — valid proof in Γ is valid in Γ,A    We prove weakening for the derives relation (semantic level).  Lemma nth_error_insert : ∀ (ctx : context) (n pos : nat) (a : formula), pos ≤ n → nth_error ctx n = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n) := by
+theorem 8 : Weakening — valid proof in Γ is valid in Γ,A    We prove weakening for the derives relation (semantic level).  Lemma nth_error_insert : ∀ (ctx : context) (n pos : Nat) (a : formula), pos ≤ n → nth_error ctx n = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n) := by
   cases ‹_› <;> simp <;> omega
 
 /-- weakening_derives (matches Coq) -/

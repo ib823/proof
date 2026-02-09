@@ -120,19 +120,19 @@ def dsa_fully_compliant (c : Certificate) (s : DigitalSigNature) (t : Nat)
   private_key_protected key_enc key_hsm
 
 /-- cert_validity (matches Coq) -/
-theorem cert_validity : ∀ (c : Certificate) (t : nat), cert_status c = CertActive → t ≤ cert_expiry c → cert_ca_licensed c = CALicensed → cert_valid c t := by
+theorem cert_validity : ∀ (c : Certificate) (t : Nat), cert_status c = CertActive → t ≤ cert_expiry c → cert_ca_licensed c = CALicensed → cert_valid c t := by
   intro h; exact h
 
 /-- suspended_invalid (matches Coq) -/
-theorem suspended_invalid : ∀ (c : Certificate) (t : nat), cert_status c = CertSuspended → ~ cert_valid c t := by
+theorem suspended_invalid : ∀ (c : Certificate) (t : Nat), cert_status c = CertSuspended → ~ cert_valid c t := by
   simp_all [Bool.and_eq_true]
 
 /-- revoked_invalid (matches Coq) -/
-theorem revoked_invalid : ∀ (c : Certificate) (t : nat), cert_status c = CertRevoked → ~ cert_valid c t := by
+theorem revoked_invalid : ∀ (c : Certificate) (t : Nat), cert_status c = CertRevoked → ~ cert_valid c t := by
   simp_all [Bool.and_eq_true]
 
 /-- expired_invalid (matches Coq) -/
-theorem expired_invalid : ∀ (c : Certificate) (t : nat), cert_expiry c < t → ~ cert_valid c t := by
+theorem expired_invalid : ∀ (c : Certificate) (t : Nat), cert_expiry c < t → ~ cert_valid c t := by
   simp_all [Bool.and_eq_true]
 
 /-- licensed_ca_presumption (matches Coq) -/
@@ -144,7 +144,7 @@ theorem unlicensed_no_presumption : ∀ (c : Certificate), cert_ca_licensed c = 
   simp_all [Bool.and_eq_true]
 
 /-- signature_verification (matches Coq) -/
-theorem signature_verification : ∀ (s : DigitalSignature) (c : Certificate) (t : nat), sig_verified s = true → sig_cert_id s = cert_id c → cert_valid c t → signature_legally_valid s c t := by
+theorem signature_verification : ∀ (s : DigitalSignature) (c : Certificate) (t : Nat), sig_verified s = true → sig_cert_id s = cert_id c → cert_valid c t → signature_legally_valid s c t := by
   intro h; exact h
 
 /-- key_strength_2048 (matches Coq) -/
@@ -152,11 +152,11 @@ theorem key_strength_2048 : ∀ (c : Certificate), 2048 ≤ cert_key_length c �
   intro h; exact h
 
 /-- subscriber_duty_encrypted (matches Coq) -/
-theorem subscriber_duty_encrypted : ∀ (enc hsm : bool), enc = true → private_key_protected enc hsm := by
+theorem subscriber_duty_encrypted : ∀ (enc hsm : Bool), enc = true → private_key_protected enc hsm := by
   intro h; exact h
 
 /-- subscriber_duty_hsm (matches Coq) -/
-theorem subscriber_duty_hsm : ∀ (enc hsm : bool), hsm = true → private_key_protected enc hsm := by
+theorem subscriber_duty_hsm : ∀ (enc hsm : Bool), hsm = true → private_key_protected enc hsm := by
   intro h; exact h
 
 /-- active_not_terminated (matches Coq) -/
@@ -168,23 +168,23 @@ theorem suspended_not_active : ∀ (c : Certificate), cert_status c = CertSuspen
   simp_all [Bool.and_eq_true]
 
 /-- cert_validity_window (matches Coq) -/
-theorem cert_validity_window : ∀ (c : Certificate) (t : nat), cert_valid c t → cert_issued_at c ≤ t ∨ True := by
+theorem cert_validity_window : ∀ (c : Certificate) (t : Nat), cert_valid c t → cert_issued_at c ≤ t ∨ True := by
   intro h; exact h
 
 /-- cert_valid_implies_not_expired (matches Coq) -/
-theorem cert_valid_implies_not_expired : ∀ (c : Certificate) (t : nat), cert_valid c t → t ≤ cert_expiry c := by
+theorem cert_valid_implies_not_expired : ∀ (c : Certificate) (t : Nat), cert_valid c t → t ≤ cert_expiry c := by
   intro h; exact h
 
 /-- cert_valid_implies_active (matches Coq) -/
-theorem cert_valid_implies_active : ∀ (c : Certificate) (t : nat), cert_valid c t → cert_status c = CertActive := by
+theorem cert_valid_implies_active : ∀ (c : Certificate) (t : Nat), cert_valid c t → cert_status c = CertActive := by
   intro h; exact h
 
 /-- cert_valid_implies_licensed (matches Coq) -/
-theorem cert_valid_implies_licensed : ∀ (c : Certificate) (t : nat), cert_valid c t → cert_ca_licensed c = CALicensed := by
+theorem cert_valid_implies_licensed : ∀ (c : Certificate) (t : Nat), cert_valid c t → cert_ca_licensed c = CALicensed := by
   intro h; exact h
 
 /-- key_strength_downward (matches Coq) -/
-theorem key_strength_downward : ∀ (c : Certificate) (bits1 bits2 : nat), bits1 ≤ bits2 → key_strength_adequate c bits2 → key_strength_adequate c bits1 := by
+theorem key_strength_downward : ∀ (c : Certificate) (bits1 bits2 : Nat), bits1 ≤ bits2 → key_strength_adequate c bits2 → key_strength_adequate c bits1 := by
   simp_all [Bool.and_eq_true]
 
 /-- key_strength_4096_implies_2048 (matches Coq) -/
@@ -204,7 +204,7 @@ theorem revoked_cert_on_crl : ∀ (crl : list CRLEntry) (entry : CRLEntry), In e
   intro h; exact h
 
 /-- crl_addition_preserves (matches Coq) -/
-theorem crl_addition_preserves : ∀ (crl : list CRLEntry) (new_entry : CRLEntry) (cid : nat), cert_on_crl crl cid → cert_on_crl (new_entry :: crl) cid := by
+theorem crl_addition_preserves : ∀ (crl : list CRLEntry) (new_entry : CRLEntry) (cid : Nat), cert_on_crl crl cid → cert_on_crl (new_entry :: crl) cid := by
   intro h; exact h
 
 /-- signature_timestamp_in_cert_validity (matches Coq) -/
@@ -212,7 +212,7 @@ theorem signature_timestamp_in_cert_validity : ∀ (s : DigitalSignature) (c : C
   intro h; exact h
 
 /-- dsa_composition (matches Coq) -/
-theorem dsa_composition : ∀ (c : Certificate) (s : DigitalSignature) (t : nat) (key_enc key_hsm : bool), cert_valid c t → signature_legally_valid s c t → key_strength_adequate c 2048 → private_key_protected key_enc key_hsm → dsa_fully_compliant c s t key_enc key_hsm := by
+theorem dsa_composition : ∀ (c : Certificate) (s : DigitalSignature) (t : Nat) (key_enc key_hsm : Bool), cert_valid c t → signature_legally_valid s c t → key_strength_adequate c 2048 → private_key_protected key_enc key_hsm → dsa_fully_compliant c s t key_enc key_hsm := by
   omega
 
 /-- cert_status_coverage (matches Coq) -/

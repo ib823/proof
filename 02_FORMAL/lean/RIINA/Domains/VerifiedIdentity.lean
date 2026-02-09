@@ -280,8 +280,8 @@ def is_used (s : TokenUsedSet) (jti : Nat) : Bool :=
 
 /-- verify_token_binding (matches Coq: Definition verify_token_binding) -/
 def verify_token_binding (token : BoundToken) (binding : ChannelBinding) : Bool :=
-  list_eq (binding_tls_exporter (token_binding token))
-          (binding_tls_exporter binding)
+  list_eq (binding_tls_exporter (token.token_binding))
+          (binding.binding_tls_exporter)
 
 /-- verify_token_expiry (matches Coq: Definition verify_token_expiry) -/
 def verify_token_expiry (token : BoundToken) (now : Timestamp) : Bool :=
@@ -289,7 +289,7 @@ def verify_token_expiry (token : BoundToken) (now : Timestamp) : Bool :=
 
 /-- verify_token_not_replayed (matches Coq: Definition verify_token_not_replayed) -/
 def verify_token_not_replayed (token : BoundToken) (used : TokenUsedSet) : Bool :=
-  negb (is_used used (claim_jti (token_claims token)))
+  !(is_used used (claim_jti (token.token_claims)))
 
 /-- verify_token (matches Coq: Definition verify_token) -/
 def verify_token (token : BoundToken) (binding : ChannelBinding) 
@@ -336,14 +336,14 @@ def fido2_counter_valid (cred : FIDO2Credential) (assertion : FIDO2Assertion) : 
 
 /-- fido2_user_verified (matches Coq: Definition fido2_user_verified) -/
 def fido2_user_verified (cred : FIDO2Credential) (assertion : FIDO2Assertion) : Bool :=
-  (negb (fido2_user_verification cred)) || (assertion_user_verified assertion)
+  (!(cred.fido2_user_verification)) || (assertion.assertion_user_verified)
 
 /-- verify_fido2 (matches Coq: Definition verify_fido2) -/
 def verify_fido2 := sorry -- complex match, needs manual translation
 
 /-- valid_credential (matches Coq: Definition valid_credential) -/
 def valid_credential (store : CredentialStore) (p : Principal) (c : Credential) : Prop :=
-  In c (store (principal_id p))
+  In c (store (p.principal_id))
 
 /-- credential_matches (matches Coq: Definition credential_matches) -/
 def credential_matches := sorry -- complex match, needs manual translation
@@ -365,7 +365,7 @@ def rate_limit_update (state : RateLimitState) (now : Timestamp) : RateLimitStat
 
 /-- has_key (matches Coq: Definition has_key) -/
 def has_key (adv : Adversary) (key : List Nat) : Prop :=
-  In key (adv_known_keys adv)
+  In key (adv.adv_known_keys)
 
 /-- factor_strength (matches Coq: Definition factor_strength) -/
 def factor_strength (f : Factor) : Nat :=
@@ -382,7 +382,7 @@ def mfa_combine (f1 f2 : Factor) : MFAConfig :=
 
 /-- mfa_strength (matches Coq: Definition mfa_strength) -/
 def mfa_strength (config : MFAConfig) : Nat :=
-  sum_factor_strengths (mfa_factors config)
+  sum_factor_strengths (config.mfa_factors)
 
 /-- mfa_secure (matches Coq: Definition mfa_secure) -/
 def mfa_secure (config : MFAConfig) : Bool :=

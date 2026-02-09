@@ -174,13 +174,13 @@ def can_access := sorry -- complex match, needs manual translation
 def is_hipaa_encrypted (enc : EncryptionState) : Bool :=
   match enc with
   | .encryptedAES256 => true
-  | ._ => false
+  | _ => false
 
 /-- is_hipaa_transport (matches Coq: Definition is_hipaa_transport) -/
 def is_hipaa_transport (ts : TransportSecurity) : Bool :=
   match ts with
   | .tLS13 => true
-  | ._ => false
+  | _ => false
 
 /-- session_timeout (matches Coq: Definition session_timeout) -/
 def session_timeout : Nat :=
@@ -218,7 +218,7 @@ def authorized_modification (role : Role) (cat : PHICategory) : Bool :=
   match role with
   | .physician => true
   | .emergency => true
-  | ._ => false
+  | _ => false
 
 /-- terminate_session (matches Coq: Definition terminate_session) -/
 def terminate_session (s : Session) : Session := mkSession (session_user_id s) (session_start_time s) (session_last_activity s) false

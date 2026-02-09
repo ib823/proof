@@ -1,0 +1,7125 @@
+{
+  "remaining_count": 890,
+  "remaining": [
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1535,
+      "name": "val_rel_n_step_up",
+      "scope": "active"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1149,
+      "name": "logical_relation_declassify",
+      "scope": "active"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 133,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 134,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 180,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 184,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 284,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 294,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 306,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 307,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 468,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 473,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 478,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 479,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 534,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ApplicationComplete.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 540,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 66,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 87,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 109,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 129,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 153,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 176,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 283,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 362,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 414,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 431,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 454,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 469,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 493,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 509,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 526,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 424,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 426,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 465,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 467,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 497,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 498,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 523,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 524,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 542,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 543,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 559,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 560,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 584,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 585,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 589,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 591,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 603,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 604,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 632,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 633,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 664,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 666,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 667,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 686,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 687,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 703,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 704,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 722,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 723,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 739,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 740,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 752,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 753,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 766,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 767,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 791,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 792,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 797,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 799,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 812,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 813,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 832,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 833,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 837,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 839,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 855,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 856,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 868,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 869,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 926,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1052,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1071,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1075,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1102,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1116,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 143,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 144,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 167,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 168,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 189,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 190,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 229,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/KripkeMutual.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 230,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 208,
+      "name": "T_Loc",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 212,
+      "name": "T_Assign",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 348,
+      "name": "val_rel_n_unit",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 353,
+      "name": "val_rel_n_ref",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 359,
+      "name": "val_rel_n_ref_same_loc",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 365,
+      "name": "exp_rel_n_unfold",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 378,
+      "name": "exp_rel_n_unit",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 382,
+      "name": "exp_rel_n_base",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 386,
+      "name": "exp_rel_n_assign",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 392,
+      "name": "val_rel_n_step_down",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 397,
+      "name": "exp_rel_n_step_down",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 402,
+      "name": "store_rel_n_step_down",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 408,
+      "name": "store_update_preserves_rel",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 431,
+      "name": "fundamental_theorem",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 197,
+      "name": "T_Loc",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 201,
+      "name": "T_Assign",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 530,
+      "name": "exp_rel_n_unfold",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 542,
+      "name": "exp_rel_n_unit",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 545,
+      "name": "exp_rel_n_base",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 548,
+      "name": "exp_rel_n_assign",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationAssign_PROOF_FIXED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 565,
+      "name": "fundamental_theorem",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 142,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 154,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 163,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 221,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 222,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 402,
+      "name": "step_deterministic",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 409,
+      "name": "fundamental_lemma",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 418,
+      "name": "subst_declassify",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 423,
+      "name": "lc_declassify",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 429,
+      "name": "value_is_lc",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 435,
+      "name": "val_rel_n_monotone",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 442,
+      "name": "val_rel_n_base",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 449,
+      "name": "multi_ctx_declassify",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 455,
+      "name": "ST_Declassify_Ctx",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 461,
+      "name": "declassify_ctx_preserves_rel",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 115,
+      "name": "subst_rho_declassify_dist",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 119,
+      "name": "fundamental_lemma",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 127,
+      "name": "val_rel_secret_unwrap",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 139,
+      "name": "exp_rel_n_unfold",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 156,
+      "name": "declassify_eval",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 162,
+      "name": "lc_declassify",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 166,
+      "name": "exp_rel_n_mono",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 172,
+      "name": "val_rel_n_mono",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 269,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 271,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 275,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 276,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 332,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 335,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 348,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_PROOF_REFINED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 349,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_v2.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 178,
+      "name": "declassify_value_related",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 232,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 233,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 253,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeclassify_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 254,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 123,
+      "name": "has_type",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 323,
+      "name": "store_contains_values",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 326,
+      "name": "store_rel_same_domain",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 332,
+      "name": "store_well_typed",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 340,
+      "name": "fundamental_lemma",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 347,
+      "name": "fundamental_ref_produces_typed_loc",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationDeref_PROOF_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 360,
+      "name": "deref_eval_structure",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationRef_PROOF.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 132,
+      "name": "store_ty_fresh_loc_none",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationRef_PROOF.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 439,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/LogicalRelationRef_PROOF.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 440,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 111,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 112,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 139,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 146,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 788,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 845,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 991,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 992,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 993,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 994,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 995,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 996,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 997,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 998,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 999,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1000,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1116,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1117,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1268,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1269,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MasterTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 2132,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/MultiStepInversion.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 568,
+      "name": "store_contains_values",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 265,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 266,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 319,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 342,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 343,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 367,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceKripke.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 368,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 921,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 922,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1033,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1038,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1041,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1281,
+      "name": "val_rel_n_to_val_rel",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1306,
+      "name": "exp_rel_step1_fst",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1318,
+      "name": "exp_rel_step1_snd",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1330,
+      "name": "exp_rel_step1_case",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1342,
+      "name": "exp_rel_step1_if",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1354,
+      "name": "exp_rel_step1_let",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1366,
+      "name": "exp_rel_step1_handle",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1378,
+      "name": "exp_rel_step1_app",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1398,
+      "name": "tapp_step0_complete",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1561,
+      "name": "val_rel_n_step_up",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1567,
+      "name": "store_rel_n_step_up",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1577,
+      "name": "val_rel_n_lam_cumulative",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 1586,
+      "name": "val_rel_at_type_to_val_rel_ho",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 2118,
+      "name": "logical_relation_ref",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 2128,
+      "name": "logical_relation_deref",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 2138,
+      "name": "logical_relation_assign",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 2151,
+      "name": "logical_relation_declassify",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 3828,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 3829,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceLegacy.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 4883,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 187,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 222,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 260,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 261,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 283,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 286,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 420,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 455,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 470,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterferenceZero.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 471,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 375,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 376,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 387,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 388,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 397,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 398,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 413,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 414,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 423,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 424,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 433,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/NonInterference_v2_DEFINITIVE_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 434,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/Phase3_Infrastructure_Helpers_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 45,
+      "name": "store_ty_extends_has_type",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/Phase3_Infrastructure_Helpers_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 77,
+      "name": "value_typing_from_val_rel_FO",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/Phase3_Infrastructure_Helpers_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 153,
+      "name": "FO_noninterference_pure",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/Phase3_Infrastructure_Helpers_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 174,
+      "name": "pure_eval_preserves_store",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ReducibilityFull_FINAL.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 658,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ReducibilityFull_FINAL.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 659,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ReducibilityFull_FINAL.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 689,
+      "name": "store_wf_initial",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ReducibilityFull_FINAL.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1028,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/ReducibilityFull_FINAL.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1170,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 105,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 106,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 115,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 116,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 149,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 150,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 162,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 163,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 173,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/RelationBridge.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 174,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 270,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 271,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 301,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 309,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 324,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 325,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 388,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StepUpFromSN.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 396,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 647,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 653,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 667,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 675,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 678,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 679,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 680,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 681,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 682,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 683,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 684,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 685,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 686,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 687,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 688,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 689,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 690,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 691,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 692,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 693,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 694,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 695,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 729,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 732,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 734,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 736,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 741,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 745,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 749,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 750,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 799,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 807,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/StrongNormalization_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 808,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 309,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 310,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 384,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 385,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 394,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 395,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 437,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 438,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/TypedConversion.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 540,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/store_rel_weaken_dropin.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 102,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/store_rel_weaken_dropin.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 116,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/store_rel_weaken_dropin.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 118,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/store_rel_weaken_proof.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 72,
+      "name": "val_rel_n_fo_sigma_independent",
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/coq/properties/_archive_deprecated/store_rel_weaken_proof.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 99,
+      "name": "val_rel_n_weaken_general",
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/ReducibilityFull.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 43,
+      "name": "pure_step_deterministic",
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 119,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 314,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 316,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 318,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 320,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 322,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 326,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 342,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 345,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 346,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 347,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 371,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 374,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 392,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 393,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 562,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/axiom_proofs_refined.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 563,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 421,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 423,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 462,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 464,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 494,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 495,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 520,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 521,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 539,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 540,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 556,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 557,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 581,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 582,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 586,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 588,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 600,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 601,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 629,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 630,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 661,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 663,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 664,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 683,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 684,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 700,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 701,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 719,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 720,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 736,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 737,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 749,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 750,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 763,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 764,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 788,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 789,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 794,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 796,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 809,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 810,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 829,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 830,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 834,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 836,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 852,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 853,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 865,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 866,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 923,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1049,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1068,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1072,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1099,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/FundamentalTheorem.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1113,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1111,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1180,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1181,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1361,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1366,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1379,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1462,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/NonInterference_v2_fixed.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1477,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreTypingLemmas.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 199,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreTypingLemmas.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 208,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 197,
+      "name": "has_type_store_extends",
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 397,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 487,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 570,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 571,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 626,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 647,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 698,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "06_COORDINATION/archive/session38_work/StoreWFPreservation.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 714,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 676,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 696,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 812,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 839,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 880,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 215,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 217,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 218,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 261,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/claude_web_session46_outputs/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 262,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 497,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 611,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 619,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 627,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 639,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 646,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationAssign_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 647,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 305,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 310,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 413,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 414,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 478,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 644,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 649,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 659,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 664,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 669,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 674,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/phase4_standalone_proofs/LogicalRelationDeref_PROOF_COMPLETE.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 675,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1050,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1052,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1089,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1189,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1190,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1245,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1250,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1251,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1252,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1253,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1265,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 1322,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/NonInterference_v2_claude_web_prompt7.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1327,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 676,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 696,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 812,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 839,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt3_Declassification.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 880,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 215,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 217,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 218,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 261,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/root_cleanup_session47/Prompt5_SN_Final.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 262,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 129,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 146,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 161,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 162,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 223,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 225,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 258,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 259,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 262,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 265,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 266,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 269,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 270,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 271,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 328,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 329,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 376,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 382,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 432,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 446,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 448,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 449,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 450,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/NonInterference_v2_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 451,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 296,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 305,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 431,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 442,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 444,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 450,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 455,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 464,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 526,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 527,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 571,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 589,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_FIXED.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 593,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PATCH.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 181,
+      "name": "store_wf_global",
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PATCH.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 200,
+      "name": "lambda_body_SN",
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PATCH.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 259,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PATCH.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 394,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 488,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 489,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 535,
+      "name": "store_wf_global",
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 601,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 611,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 649,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 665,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 693,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 719,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 743,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "99_ARCHIVE/superseded_patches/ReducibilityFull_PROVEN.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 776,
+      "name": null,
+      "scope": "archive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Compliance/DO178CCompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 280,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Compliance/DO178CCompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 407,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Compliance/HIPAACompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 171,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Compliance/HIPAACompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 198,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Compliance/PCIDSSCompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 239,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/AlgebraicEffects.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 116,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/AuthenticationSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 196,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/BackendComposition.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 68,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CSRFProtection.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 96,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CapabilitySecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 323,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CapitalMarkets.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 118,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CommonCriteriaEAL7.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 310,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CovertChannels.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 180,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CovertChannels.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 183,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CovertChannels.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 226,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CrossLayerSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 74,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CrossLayerSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 77,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/CrossLayerSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 80,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/DELTA001_VerifiedDistribution.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 156,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/DO178CCompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 192,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/DO178CCompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 286,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/DigitalWallet.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 346,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/DigitalWallet.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 349,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/EnterpriseERP.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 129,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FormalVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 294,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FormalVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 337,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FormalVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 356,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FormalVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 383,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FullstackSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 90,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FullstackSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 114,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FutureSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 332,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/FutureSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 395,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HIPAACompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 177,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HIPAACompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 204,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HealthcareIS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 499,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HealthcareIS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 511,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HealthcareIS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 514,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HealthcareIS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 541,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HealthcareIS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 556,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 258,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 261,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 281,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 284,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 315,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 326,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/HumanFactorSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 329,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ISO26262Compliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 151,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ISO26262Compliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 198,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/InjectionPrevention.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 137,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/IrisSeparationLogic.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 86,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/KeyLifecycle.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 99,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/LinearTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 116,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/LinearTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 119,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/LinearTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 122,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/LinearTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 125,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/LinearTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 178,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MalaysiaBNMRMiT.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 101,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MalaysiaMAMPU.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 79,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MalaysiaMAMPU.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 90,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MalaysiaPDPA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 152,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MalaysiaPDPA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 159,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MalaysiaPDPA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 168,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MemorySafety.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 379,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MemorySafety.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 382,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MemorySafety.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 385,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MemorySafety.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 400,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MemorySafety.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 403,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MetadataPrivacy.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 90,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Metaprogramming.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 279,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Metaprogramming.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 286,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Metaprogramming.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 302,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Metaprogramming.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 325,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Metaprogramming.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 328,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileBridgeVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 126,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/AnimationSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 174,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/AnimationSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 212,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/AppDistribution.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 262,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/AppDistribution.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 296,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/ApplicationLifecycle.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 153,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/ApplicationLifecycle.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 164,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/ApplicationLifecycle.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 171,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/BiometricSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 152,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/ConcurrencyFramework.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 169,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/FileSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 248,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/NetworkingStack.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 209,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/PowerManagement.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 170,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/PowerManagement.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 173,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/TouchGestureSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 139,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/UIComponents.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 258,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/UIComponents.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 265,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/UIComponents.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 280,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/VoiceAssistant.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 284,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobileOS/WirelessProtocols.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 208,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobilePlatform.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 109,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobilePlatform.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 132,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MobilePlatform.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 154,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ModuleSystems.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 252,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ModuleSystems.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 255,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ModuleSystems.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 381,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MultiProverValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 99,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MultiProverValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 102,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/MultiProverValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 105,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/NetworkDefense.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 274,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/OwnershipTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 124,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/OwnershipTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 127,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/OwnershipTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 130,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/OwnershipTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 141,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/OwnershipTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 144,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/OwnershipTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 147,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PCIDSSCompliance.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 239,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PSI001_OperationalSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 228,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PSI001_OperationalSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 235,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PhysicsSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 121,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PlatformStdlibVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 81,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PostQuantumKEM.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 139,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/PostQuantumSignatures.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 163,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/QuantitativeDeclassification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 61,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/QuantitativeDeclassification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 64,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/QuantumSafeTLS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 333,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/QuantumTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 80,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/QuantumTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 83,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ROPDefense.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 227,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ROPDefense.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 247,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/RadiationHardening.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 170,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/RadiationHardening.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 189,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/S001_HardwareContracts.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 132,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/S001_HardwareContracts.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 148,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/S001_HardwareContracts.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 192,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/S001_HardwareContracts.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 195,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SIGMA001_VerifiedStorage.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 277,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SIGMA001_VerifiedStorage.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 280,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecureBootVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 397,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/BootVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 115,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/BootVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 118,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/BootVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 121,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/RollbackProtection.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 103,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/RollbackProtection.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 125,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/RollbackProtection.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 128,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SecurityFoundation/SensorDrivers.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 107,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SessionTypes.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 122,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SingaporeMTCS.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 113,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SingaporePDPA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 172,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SingaporePDPA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 175,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SingaporePDPA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 292,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SpeculativeExecution.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 82,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SpeculativeExecution.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 85,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/SpeculativeExecution.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 88,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/StandardLibrary.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 321,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/StandardLibrary.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 336,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/StandardLibrary.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 396,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TEEAttestation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 350,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TEEAttestation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 353,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TEEAttestation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 364,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TestingQA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 241,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TestingQA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 256,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TestingQA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 308,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TestingQA.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 311,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 183,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 190,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 217,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 220,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 223,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 226,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 251,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 274,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TimingSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 312,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ToolingIDE.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 237,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ToolingIDE.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 296,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/ToolingIDE.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 330,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TotalStackFoundation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 158,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TotalStackFoundation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 177,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TotalStackFoundation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 180,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TotalStackFoundation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 187,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TranslationValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 201,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TranslationValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 204,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TranslationValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 207,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/TranslationValidation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 217,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/AnimationEngine.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 58,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/CognitiveAccessibility.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 156,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/CognitiveAccessibility.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 171,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/MotorAccessibility.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 89,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/MotorAccessibility.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 96,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/VisualAccessibility.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 85,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/UIUX/VisualAccessibility.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 100,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/V001_TerminationGuarantees.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 115,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/V001_TerminationGuarantees.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 118,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedAIML.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 173,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedAutonomy.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 126,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedAutonomy.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 137,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedFileSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 359,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedFileSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 403,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedFileSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 410,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedFileSystem.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 413,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedHardware.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 233,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedIdentity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 342,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedIdentity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 349,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedIdentity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 352,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedIsolation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 316,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedIsolation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 323,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedIsolation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 336,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetwork.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 336,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetwork.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 343,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetwork.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 367,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetwork.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 384,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetworkStack.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 362,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetworkStack.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 495,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedNetworkStack.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 517,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedProtocols.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 342,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedProtocols.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 419,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedRuntime.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 123,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedUI.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 469,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/VerifiedUI.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 524,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/W001_VerifiedMemory.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 160,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/WasmBackendVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 146,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/WasmBackendVerification.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 166,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/WebSecurity.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 172,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/XSSPrevention.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 381,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Z001_DeclassificationPolicy.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 163,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Z001_DeclassificationPolicy.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 166,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Domains/Z001_DeclassificationPolicy.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 169,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Industries/IndustryAerospace.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 92,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Industries/IndustryHealthcare.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 128,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Industries/IndustryManufacturing.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 159,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Industries/IndustryMilitary.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 84,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Properties/CumulativeRelation.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 64,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Properties/MaximumAxiomElimination.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 123,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Properties/MaximumAxiomElimination.lean",
+      "language": "lean",
+      "type": "sorry",
+      "line": 161,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Properties/NonInterference.lean",
+      "language": "lean",
+      "type": "axiom",
+      "line": 55,
+      "name": "observer",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "02_FORMAL/lean/RIINA/Properties/NonInterference.lean",
+      "language": "lean",
+      "type": "axiom",
+      "line": 428,
+      "name": "logicalRelation",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 174,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 185,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 191,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 192,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 242,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 243,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 293,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 302,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 338,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 339,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 349,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 350,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 356,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 359,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 360,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 361,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 393,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 397,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 399,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 401,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 408,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 409,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 410,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 411,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 473,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 474,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 476,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 482,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 483,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 496,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 503,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 511,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 516,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 524,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 588,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 639,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 640,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output/combined_step_up_corrected.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 643,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 56,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 60,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 63,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 65,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 71,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 128,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 129,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 268,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 269,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 284,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 285,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 338,
+      "name": "free_in_pair_1",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/NonInterference_Aux.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 341,
+      "name": "free_in_pair_2",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 508,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 509,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 523,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 524,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 579,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 584,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/claude_ai_web_output_v3/admit_replacements_v2.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 585,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 311,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 314,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 320,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 323,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 354,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 355,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 361,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 364,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 365,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/delegation_prompts/Output/files30_extracted/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 368,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 756,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 757,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/AxiomEliminationVerified.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 768,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/KripkeMonotonicity.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 308,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/KripkeMonotonicity.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 383,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 487,
+      "name": "label_flows_refl",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 491,
+      "name": "label_flows_trans",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 496,
+      "name": "label_flows_antisym",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 501,
+      "name": "label_join_comm",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 505,
+      "name": "label_join_assoc",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 509,
+      "name": "label_meet_comm",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 537,
+      "name": "declassify_requires_endorsement",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 542,
+      "name": "endorsement_valid",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 547,
+      "name": "endorsement_not_forgeable",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 552,
+      "name": "declassify_requires_auth",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 571,
+      "name": "declassify_audit_logged",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 577,
+      "name": "declassify_context_valid",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/LogicalRelationCore_SAMPLE.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 582,
+      "name": "robust_declassification",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 531,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 532,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 533,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 563,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 574,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 577,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 578,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 579,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 655,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 663,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 664,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 701,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 702,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 729,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 730,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 760,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 779,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 801,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 804,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 892,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 895,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 898,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 901,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 904,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 907,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 910,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 913,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 916,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 919,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 922,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 925,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 926,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 959,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 960,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/MasterTheorem (1).v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 1032,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/ReferenceOps.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 93,
+      "name": "store_max_spec_above",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/ReferenceOps.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 97,
+      "name": "store_max_spec_below",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/ReferenceOps.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 293,
+      "name": "store_max_after_alloc",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/ReferenceOps.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 297,
+      "name": "store_max_update_preserve",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/ReferenceOps.v",
+      "language": "coq",
+      "type": "Axiom",
+      "line": 338,
+      "name": "val_rel_n_mono",
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 392,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 395,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 398,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 399,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 453,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 457,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 460,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 465,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 513,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 517,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 520,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 525,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 613,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 616,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 684,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 688,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 758,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "06_COORDINATION/prompts/exp_rel_step1.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 761,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 311,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 314,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 320,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 323,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 354,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 355,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 361,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 364,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "admit tactic",
+      "line": 365,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    },
+    {
+      "file": "claude_ai_output/COMPLETE_ANALYSIS_13_ADMITS.v",
+      "language": "coq",
+      "type": "Admitted",
+      "line": 368,
+      "name": null,
+      "scope": "inactive_nonarchive"
+    }
+  ]
+}

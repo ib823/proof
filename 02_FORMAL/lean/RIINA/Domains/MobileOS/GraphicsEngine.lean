@@ -171,57 +171,57 @@ def frame_budget_120hz : Microseconds :=
 
 /-- meets_frame_budget (matches Coq: Definition meets_frame_budget) -/
 def meets_frame_budget (f : Frame) : Prop :=
-  frame_render_time f <= frame_budget_120hz
+  f.frame_render_time <= frame_budget_120hz
 
 /-- well_optimized_frame (matches Coq: Definition well_optimized_frame) -/
 def well_optimized_frame (f : Frame) : Prop :=
-  frame_complexity f <= 1000 -> frame_render_time f <= frame_budget_120hz
+  f.frame_complexity <= 1000 -> f.frame_render_time <= frame_budget_120hz
 
 /-- frames_rendered (matches Coq: Definition frames_rendered) -/
 def frames_rendered (a : Animation) : Nat :=
-  length (filter (fun f => frame_rendered f) (anim_frames a))
+  length (filter (fun f => f.frame_rendered) (a.anim_frames))
 
 /-- frames_expected (matches Coq: Definition frames_expected) -/
 def frames_expected (a : Animation) : Nat :=
-  (anim_duration a * anim_fps a) / 1000
+  (a.anim_duration * a.anim_fps) / 1000
 
 /-- well_formed_animation (matches Coq: Definition well_formed_animation) -/
 def well_formed_animation (a : Animation) : Prop :=
-  forall f, In f (anim_frames a) -> 
-    frame_rendered f = true /\
+  forall f, In f (a.anim_frames) -> 
+    f.frame_rendered = true /\
     meets_frame_budget f
 
 /-- has_frame_drop (matches Coq: Definition has_frame_drop) -/
 def has_frame_drop (a : Animation) : Prop :=
-  exists f, In f (anim_frames a) /\ frame_rendered f = false
+  exists f, In f (a.anim_frames) /\ f.frame_rendered = false
 
 /-- well_formed_gpu_mem (matches Coq: Definition well_formed_gpu_mem) -/
 def well_formed_gpu_mem (m : GPUMemory) : Prop :=
-  gpu_used_bytes m <= gpu_max_bytes m /\
-  gpu_texture_bytes m + gpu_buffer_bytes m <= gpu_used_bytes m /\
-  gpu_max_bytes m > 0
+  m.gpu_used_bytes <= m.gpu_max_bytes /\
+  m.gpu_texture_bytes + m.gpu_buffer_bytes <= m.gpu_used_bytes /\
+  m.gpu_max_bytes > 0
 
 /-- well_formed_shader (matches Coq: Definition well_formed_shader) -/
 def well_formed_shader (s : Shader) : Prop :=
-  shader_compiled s = true /\ shader_validated s = true
+  s.shader_compiled = true /\ s.shader_validated = true
 
 /-- well_formed_framebuffer (matches Coq: Definition well_formed_framebuffer) -/
 def well_formed_framebuffer (fb : FrameBuffer) : Prop :=
-  fb_width fb > 0 /\
-  fb_height fb > 0 /\
-  fb_double_buffered fb = true /\
-  fb_front fb <> fb_back fb
+  fb.fb_width > 0 /\
+  fb.fb_height > 0 /\
+  fb.fb_double_buffered = true /\
+  fb.fb_front <> fb.fb_back
 
 /-- well_formed_batch (matches Coq: Definition well_formed_batch) -/
 def well_formed_batch (b : DrawBatch) : Prop :=
-  batch_merged_calls b <= batch_draw_calls b /\
-  batch_overdraw_ratio b >= 100
+  b.batch_merged_calls <= b.batch_draw_calls /\
+  b.batch_overdraw_ratio >= 100
 
 /-- well_formed_render_thread (matches Coq: Definition well_formed_render_thread) -/
 def well_formed_render_thread (rt : RenderThread) : Prop :=
-  rt_priority rt > 0 /\
-  rt_vsync_aligned rt = true /\
-  rt_frame_time_us rt <= frame_budget_120hz
+  rt.rt_priority > 0 /\
+  rt.rt_vsync_aligned = true /\
+  rt.rt_frame_time_us <= frame_budget_120hz
 
 /-- frame_rate_120hz_guaranteed (matches Coq) -/
 theorem frame_rate_120hz_guaranteed : ∀ (frame : Frame), well_optimized_frame frame → frame_complexity frame ≤ 1000 → frame_render_time frame ≤ frame_budget_120hz := by

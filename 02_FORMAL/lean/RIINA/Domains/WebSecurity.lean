@@ -177,7 +177,7 @@ def regenerate_session (old_id new_id : Nat) : Prop :=
 
 /-- is_canonical (matches Coq: Definition is_canonical) -/
 def is_canonical (path : List Nat) : Bool :=
-  negb (existsb (fun c => Nat
+  !(existsb (fun c => Nat
 
 /-- authorized (matches Coq: Definition authorized) -/
 def authorized (user resource : Nat) : Prop :=
@@ -224,7 +224,7 @@ theorem web_010_session_hijacking_mitigated : ∀ (c : SecureCookie), cookie_htt
   simp_all [Bool.and_eq_true]
 
 /-- web_011_session_fixation_impossible (matches Coq) -/
-theorem web_011_session_fixation_impossible : ∀ (old_id new_id : nat), regenerate_session old_id new_id → old_id ≠ new_id := by
+theorem web_011_session_fixation_impossible : ∀ (old_id new_id : Nat), regenerate_session old_id new_id → old_id ≠ new_id := by
   intro h; exact h
 
 /-- web_012_cookie_attacks_mitigated (matches Coq) -/
@@ -252,7 +252,7 @@ theorem web_017_deserialization_safe : ∀ (sd : SignedData), sd_verified sd = t
   simp_all [Bool.and_eq_true]
 
 /-- web_018_http_response_split_impossible (matches Coq) -/
-theorem web_018_http_response_split_impossible : ∀ (h : list nat), negb (∃b (fun c => Nat.eqb c 10 || Nat.eqb c 13) h) = true →  True := by
+theorem web_018_http_response_split_impossible : ∀ (h : list nat), !(∃b (fun c => Nat.eqb c 10 || Nat.eqb c 13) h) = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_019_parameter_pollution_mitigated (matches Coq) -/
@@ -264,11 +264,11 @@ theorem web_020_mass_assignment_impossible :  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_021_idor_mitigated (matches Coq) -/
-theorem web_021_idor_mitigated : ∀ (user resource : nat), authorized user resource →  True := by
+theorem web_021_idor_mitigated : ∀ (user resource : Nat), authorized user resource →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_022_verb_tampering_mitigated (matches Coq) -/
-theorem web_022_verb_tampering_mitigated : ∀ (rc : RouteConfig) (method : nat), route_strict rc = true → In method (route_methods rc) →  True := by
+theorem web_022_verb_tampering_mitigated : ∀ (rc : RouteConfig) (method : Nat), route_strict rc = true → In method (route_methods rc) →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- web_023_host_header_attack_mitigated (matches Coq) -/

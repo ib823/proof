@@ -163,31 +163,31 @@ def decompress_data (d : PageData) : PageData :=
   d
 
 /-- compress (matches Coq: Definition compress) -/
-def compress (p : MemoryPage) : MemoryPage := mkPage (page_id p) (compress_data (page_contents p)) true (page_owner p)
+def compress (p : MemoryPage) : MemoryPage := mkPage (p.page_id) (compress_data (p.page_contents)) true (p.page_owner)
 
 /-- decompress (matches Coq: Definition decompress) -/
-def decompress (p : MemoryPage) : MemoryPage := mkPage (page_id p) (decompress_data (page_contents p)) false (page_owner p)
+def decompress (p : MemoryPage) : MemoryPage := mkPage (p.page_id) (decompress_data (p.page_contents)) false (p.page_owner)
 
 /-- well_behaved_app (matches Coq: Definition well_behaved_app) -/
 def well_behaved_app (app : Application) : Prop :=
-  app_well_behaved app = true /\
-  app_current_memory app <= app_memory_limit app
+  app.app_well_behaved = true /\
+  app.app_current_memory <= app.app_memory_limit
 
 /-- system_out_of_memory (matches Coq: Definition system_out_of_memory) -/
 def system_out_of_memory : SystemEvent :=
-  SystemOutOfMemory
+  .systemOutOfMemory
 
 /-- can_cause (matches Coq: Definition can_cause) -/
 def can_cause (app : Application) (event : SystemEvent) : Prop :=
   match event with
   | .systemOutOfMemory => app_current_memory
-  | ._ => False
+  | _ => False
 
 /-- pages_isolated (matches Coq: Definition pages_isolated) -/
 def pages_isolated (pages : List MemoryPage) : Prop :=
   forall p1 p2, In p1 pages -> In p2 pages ->
-    page_owner p1 <> page_owner p2 ->
-    page_id p1 <> page_id p2
+    p1.page_owner <> p2.page_owner ->
+    p1.page_id <> p2.page_id
 
 /-- VirtualPage (matches Coq: Definition VirtualPage) -/
 def VirtualPage : Type :=
@@ -195,20 +195,20 @@ def VirtualPage : Type :=
 
 /-- block_allocated (matches Coq: Definition block_allocated) -/
 def block_allocated (b : MemoryBlock) : Prop :=
-  block_state b = Allocated
+  b.block_state = Allocated
 
 /-- block_freed (matches Coq: Definition block_freed) -/
 def block_freed (b : MemoryBlock) : Prop :=
-  block_state b = Freed
+  b.block_state = Freed
 
 /-- allocation_bounded (matches Coq: Definition allocation_bounded) -/
 def allocation_bounded (h : Heap) : Prop :=
-  heap_used_size h <= heap_total_size h
+  h.heap_used_size <= h.heap_total_size
 
 /-- no_double_free_prop (matches Coq: Definition no_double_free_prop) -/
 def no_double_free_prop (blocks : List MemoryBlock) (bid : Nat) : Prop :=
-  forall b, In b blocks -> block_id b = bid -> block_state b <> Freed ->
-    block_state b = Allocated
+  forall b, In b blocks -> b.block_id = bid -> b.block_state <> Freed ->
+    b.block_state = Allocated
 
 /-- no_use_after_free_prop (matches Coq: Definition no_use_after_free_prop) -/
 def no_use_after_free_prop (b : MemoryBlock) : Prop :=
@@ -216,44 +216,44 @@ def no_use_after_free_prop (b : MemoryBlock) : Prop :=
 
 /-- heap_fragmentation_bounded_prop (matches Coq: Definition heap_fragmentation_bounded_prop) -/
 def heap_fragmentation_bounded_prop (h : Heap) (max_frag : Nat) : Prop :=
-  heap_fragmentation_ratio h <= max_frag
+  h.heap_fragmentation_ratio <= max_frag
 
 /-- stack_within_bounds (matches Coq: Definition stack_within_bounds) -/
 def stack_within_bounds (s : Stack) : Prop :=
-  stack_current_depth s <= stack_max_depth s
+  s.stack_current_depth <= s.stack_max_depth
 
 /-- page_aligned (matches Coq: Definition page_aligned) -/
 def page_aligned (vm : VirtualMapping) : Prop :=
-  vmap_page_size vm > 0 /\
+  vm.vmap_page_size > 0 /\
   Nat
 
 /-- mappings_non_overlapping (matches Coq: Definition mappings_non_overlapping) -/
 def mappings_non_overlapping (vm1 vm2 : VirtualMapping) : Prop :=
-  vmap_virtual_page vm1 + vmap_page_size vm1 <= vmap_virtual_page vm2 \/
-  vmap_virtual_page vm2 + vmap_page_size vm2 <= vmap_virtual_page vm1
+  vm1.vmap_virtual_page + vm1.vmap_page_size <= vm2.vmap_virtual_page \/
+  vm2.vmap_virtual_page + vm2.vmap_page_size <= vm1.vmap_virtual_page
 
 /-- block_zeroed_on_free (matches Coq: Definition block_zeroed_on_free) -/
 def block_zeroed_on_free (b : MemoryBlock) : Prop :=
-  block_freed b -> block_zeroed b = true
+  block_freed b -> b.block_zeroed = true
 
 /-- memory_pressure_handled_prop (matches Coq: Definition memory_pressure_handled_prop) -/
 def memory_pressure_handled_prop (h : Heap) : Prop :=
-  heap_used_size h > (heap_total_size h * 90) / 100 ->
-  heap_fragmentation_ratio h <= 50
+  h.heap_used_size > (h.heap_total_size * 90) / 100 ->
+  h.heap_fragmentation_ratio <= 50
 
 /-- oom_graceful (matches Coq: Definition oom_graceful) -/
 def oom_graceful (h : Heap) (request : Nat) : Prop :=
-  heap_used_size h + request > heap_total_size h ->
-  heap_used_size h <= heap_total_size h
+  h.heap_used_size + request > h.heap_total_size ->
+  h.heap_used_size <= h.heap_total_size
 
 /-- shared_memory_sync (matches Coq: Definition shared_memory_sync) -/
 def shared_memory_sync (b1 b2 : MemoryBlock) : Prop :=
-  block_id b1 = block_id b2 ->
-  block_start b1 = block_start b2 /\ block_size b1 = block_size b2
+  b1.block_id = b2.block_id ->
+  b1.block_start = b2.block_start /\ b1.block_size = b2.block_size
 
 /-- dma_buffer_protected_prop (matches Coq: Definition dma_buffer_protected_prop) -/
 def dma_buffer_protected_prop (b : MemoryBlock) : Prop :=
-  block_allocated b -> block_owner b > 0
+  block_allocated b -> b.block_owner > 0
 
 /-- memory_compression_lossless (matches Coq) -/
 theorem memory_compression_lossless : ∀ (page : MemoryPage), page_contents (decompress (compress page)) = page_contents page := by
@@ -304,7 +304,7 @@ theorem stack_overflow_prevented : ∀ (s : Stack), stack_within_bounds s → st
   intro h; exact h
 
 /-- heap_fragmentation_bounded (matches Coq) -/
-theorem heap_fragmentation_bounded : ∀ (h : Heap) (max_frag : nat), heap_fragmentation_bounded_prop h max_frag → heap_fragmentation_ratio h ≤ max_frag := by
+theorem heap_fragmentation_bounded : ∀ (h : Heap) (max_frag : Nat), heap_fragmentation_bounded_prop h max_frag → heap_fragmentation_ratio h ≤ max_frag := by
   intro h; exact h
 
 /-- memory_pressure_handled (matches Coq) -/
@@ -312,7 +312,7 @@ theorem memory_pressure_handled : ∀ (h : Heap), memory_pressure_handled_prop h
   simp_all [Bool.and_eq_true]
 
 /-- oom_graceful_recovery (matches Coq) -/
-theorem oom_graceful_recovery : ∀ (h : Heap) (request : nat), oom_graceful h request → heap_used_size h + request > heap_total_size h → heap_used_size h ≤ heap_total_size h := by
+theorem oom_graceful_recovery : ∀ (h : Heap) (request : Nat), oom_graceful h request → heap_used_size h + request > heap_total_size h → heap_used_size h ≤ heap_total_size h := by
   simp_all [Bool.and_eq_true]
 
 /-- virtual_memory_page_aligned (matches Coq) -/

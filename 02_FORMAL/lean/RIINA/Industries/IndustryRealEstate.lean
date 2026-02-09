@@ -124,7 +124,7 @@ def system_criticality (s : BuildingSystem) : Nat :=
 def is_safety_critical (s : BuildingSystem) : Bool :=
   match s with
   | .elevator => true
-  | ._ => false
+  | _ => false
 
 /-- all_building_controls (matches Coq: Definition all_building_controls) -/
 def all_building_controls (c : SmartBuildingControls) : Bool :=
@@ -162,7 +162,7 @@ theorem smart_building_security : ∀ (controls : SmartBuildingControls) (buildi
 /-- Section M02 - BACnet Security
     Reference: IND_M_REALESTATE.md Section 3.2 -/
 /-- bacnet_security (matches Coq) -/
-theorem bacnet_security : ∀ (bas_network : nat),  True := by
+theorem bacnet_security : ∀ (bas_network : Nat),  True := by
   trivial
 
 /-- Section M03 - Access Control Systems
@@ -174,13 +174,13 @@ theorem access_control_security : ∀ (credential : PropertyData) (access_point 
 /-- Section M04 - Transaction Data Protection
     Reference: IND_M_REALESTATE.md Section 3.4 -/
 /-- transaction_protection (matches Coq) -/
-theorem transaction_protection : ∀ (transaction : nat),  True := by
+theorem transaction_protection : ∀ (transaction : Nat),  True := by
   trivial
 
 /-- Section M05 - IoT Device Security
     Reference: IND_M_REALESTATE.md Section 3.5 -/
 /-- iot_device_security (matches Coq) -/
-theorem iot_device_security : ∀ (device : nat),  True := by
+theorem iot_device_security : ∀ (device : Nat),  True := by
   trivial
 
 /-- Building systems require network segmentation -/

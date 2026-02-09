@@ -139,17 +139,17 @@ def domain_criticality (d : TelecomDomain) : Nat :=
 def is_auth_function (nf : NetworkFunction) : Bool :=
   match nf with
   | .aUSF => true
-  | ._ => false
+  | _ => false
 
 /-- security_5g_all (matches Coq: Definition security_5g_all) -/
 def security_5g_all (s : Security_5G) : Bool :=
-  primary_authentication s && nas_security s && as_security s &&
-  user_plane_integrity s && service_based_security s &&
-  network_slicing_isolation s
+  s.primary_authentication && s.nas_security && s.as_security &&
+  s.user_plane_integrity && s.service_based_security &&
+  s.network_slicing_isolation
 
 /-- slices_isolated (matches Coq: Definition slices_isolated) -/
 def slices_isolated (s1 s2 : NetworkSlice) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- latency_acceptable (matches Coq: Definition latency_acceptable) -/
 def latency_acceptable (s : NetworkSlice) (max_latency : Nat) : Bool :=
@@ -159,7 +159,7 @@ def latency_acceptable (s : NetworkSlice) (max_latency : Nat) : Bool :=
 def supi_concealed (encrypted : Bool) (domain : TelecomDomain) : Bool :=
   match domain with
   | .rAN => encrypted
-  | ._ => true
+  | _ => true
 
 /-- key_derivation_depth (matches Coq: Definition key_derivation_depth) -/
 def key_derivation_depth (domain : TelecomDomain) : Nat :=
@@ -176,7 +176,7 @@ def roaming_security_level (home_sec visited_sec : Nat) : Nat :=
 
 /-- li_valid (matches Coq: Definition li_valid) -/
 def li_valid (li : LawfulIntercept) : Bool :=
-  li_authorized li && li_logged li
+  li.li_authorized && li.li_logged
 
 /-- Section F01 - 5G Security Architecture
     Reference: IND_F_TELECOM.md Section 3.1 -/
@@ -187,19 +187,19 @@ theorem security_5g_compliance : ∀ (sec : Security_5G), primary_authentication
 /-- Section F02 - GSMA Security
     Reference: IND_F_TELECOM.md Section 3.2 -/
 /-- gsma_security (matches Coq) -/
-theorem gsma_security : ∀ (sim_card : nat) (network : nat),  True := by
+theorem gsma_security : ∀ (sim_card : Nat) (network : Nat),  True := by
   trivial
 
 /-- Section F03 - Network Slicing Security
     Reference: IND_F_TELECOM.md Section 3.3 -/
 /-- slice_isolation (matches Coq) -/
-theorem slice_isolation : ∀ (slice1 : nat) (slice2 : nat),  True := by
+theorem slice_isolation : ∀ (slice1 : Nat) (slice2 : Nat),  True := by
   trivial
 
 /-- Section F04 - SS7/Diameter Security
     Reference: IND_F_TELECOM.md Section 3.4 -/
 /-- signaling_security (matches Coq) -/
-theorem signaling_security : ∀ (message : nat),  True := by
+theorem signaling_security : ∀ (message : Nat),  True := by
   trivial
 
 /-- Section F05 - NFV Security
@@ -227,7 +227,7 @@ theorem domain_criticality_positive : ∀ d, domain_criticality d ≥ 2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- ausf_is_auth (matches Coq) -/
-theorem ausf_is_auth : is_auth_function AUSF = true := by
+theorem ausf_is_auth : is_auth_function .aUSF = true := by
   rfl
 
 /-- amf_not_auth (matches Coq) -/
@@ -255,15 +255,15 @@ theorem latency_bounded : ∀ s max_l, latency_acceptable s max_l = true → sli
   simp_all [Bool.and_eq_true]
 
 /-- supi_always_concealed_in_core (matches Coq) -/
-theorem supi_always_concealed_in_core : ∀ enc, supi_concealed enc Core = true := by
+theorem supi_always_concealed_in_core : ∀ enc, supi_concealed enc .core = true := by
   rfl
 
 /-- supi_concealed_ran_requires_encryption (matches Coq) -/
-theorem supi_concealed_ran_requires_encryption : supi_concealed false RAN = false := by
+theorem supi_concealed_ran_requires_encryption : supi_concealed false .rAN = false := by
   rfl
 
 /-- supi_concealed_ran_with_encryption (matches Coq) -/
-theorem supi_concealed_ran_with_encryption : supi_concealed true RAN = true := by
+theorem supi_concealed_ran_with_encryption : supi_concealed true .rAN = true := by
   rfl
 
 /-- ran_deepest_key_hierarchy (matches Coq) -/

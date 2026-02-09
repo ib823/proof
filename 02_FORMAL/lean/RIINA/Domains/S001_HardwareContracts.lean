@@ -133,7 +133,7 @@ def isa_step := sorry -- complex match, needs manual translation
 
 /-- low_equiv (matches Coq: Definition low_equiv) -/
 def low_equiv (l : Addr -> Bool) (ms1 ms2 : MicroarchState) : Prop :=
-  forall a, l a = true -> mem (arch ms1) a = mem (arch ms2) a
+  forall a, l a = true -> mem (ms1.arch) a = mem (ms2.arch) a
 
 /-- constant_time (matches Coq: Definition constant_time) -/
 def constant_time (prog : MicroarchState -> MicroarchState)
@@ -148,8 +148,8 @@ def constant_time (prog : MicroarchState -> MicroarchState)
 def spec_accesses := sorry -- complex match, needs manual translation
 
 /-- scub_barrier (matches Coq: Definition scub_barrier) -/
-def scub_barrier (ms : MicroarchState) : MicroarchState := mkMicroarchState (arch ms) (cache ms) (branch_predictor ms)
-                   NotSpeculating (S (cycle_count ms))
+def scub_barrier (ms : MicroarchState) : MicroarchState := mkMicroarchState (ms.arch) (ms.cache) (ms.branch_predictor)
+                   NotSpeculating (S (ms.cycle_count))
 
 /-- speculation_safe (matches Coq: Definition speculation_safe) -/
 def speculation_safe (prog : MicroarchState -> MicroarchState)
@@ -185,7 +185,7 @@ def power_independent (prog : MicroarchState -> MicroarchState)
 def well_typed (prog : MicroarchState -> MicroarchState)
                       (ctx : TypingContext) : Prop :=
   forall ms1 ms2,
-    (forall a, ctx a = Public -> mem (arch ms1) a = mem (arch ms2) a) ->
+    (forall a, ctx a = Public -> mem (ms1.arch) a = mem (ms2.arch) a) ->
     pc (arch (prog ms1)) = pc (arch (prog ms2))
 
 /-- misprediction (matches Coq: Definition misprediction) -/

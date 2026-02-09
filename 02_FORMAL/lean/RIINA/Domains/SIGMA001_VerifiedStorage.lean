@@ -239,15 +239,15 @@ def all_ops_applied (ops : List TxnOp) (db1 db2 : Database) : Prop :=
 
 /-- wal_contains (matches Coq: Definition wal_contains) -/
 def wal_contains (wal : WAL) (txn : Transaction) : Prop :=
-  exists entry, In entry wal /\ wal_txn_id entry = txn_id txn
+  exists entry, In entry wal /\ entry.wal_txn_id = txn.txn_id
 
 /-- wal_upto (matches Coq: Definition wal_upto) -/
 def wal_upto (lsn : Nat) (wal : WAL) : WAL :=
-  filter (fun e => wal_lsn e <=? lsn) wal
+  filter (fun e => e.wal_lsn <=? lsn) wal
 
 /-- wal_recover (matches Coq: Definition wal_recover) -/
 def wal_recover (wal : WAL) (db : Database) : Database :=
-  fold_left (fun d e => apply_op (wal_op e) d) wal db
+  fold_left (fun d e => apply_op (e.wal_op) d) wal db
 
 /-- checksum (matches Coq: Definition checksum) -/
 def checksum (data : List Nat) : Nat :=
@@ -259,7 +259,7 @@ def verify_checksum (data : List Nat) (expected : Nat) : Bool :=
 
 /-- is_encrypted (matches Coq: Definition is_encrypted) -/
 def is_encrypted (ed : EncryptedData) : Bool :=
-  negb (Nat
+  !(Nat
 
 /-- compute_merkle_root (matches Coq: Definition compute_merkle_root) -/
 def compute_merkle_root (leaves : List Nat) : Nat :=
@@ -323,7 +323,7 @@ theorem SIGMA_001_05_projection_typed : ∀ (proj : list nat) (schema : list nat
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_06_join_typed (matches Coq) -/
-theorem SIGMA_001_06_join_typed : ∀ (t1 t2 c1 c2 : nat) (pred : Pred) (schema1 schema2 : Schema), pred_well_typed pred schema1 = true → pred_well_typed pred schema2 = true → True := by
+theorem SIGMA_001_06_join_typed : ∀ (t1 t2 c1 c2 : Nat) (pred : Pred) (schema1 schema2 : Schema), pred_well_typed pred schema1 = true → pred_well_typed pred schema2 = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_07_query_result_typed (matches Coq) -/

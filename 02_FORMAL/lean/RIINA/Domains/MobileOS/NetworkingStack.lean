@@ -186,16 +186,16 @@ def current_time : Time :=
 
 /-- valid_chain (matches Coq: Definition valid_chain) -/
 def valid_chain (c : Certificate) : Prop :=
-  cert_chain_valid c = true
+  c.cert_chain_valid = true
 
 /-- not_expired (matches Coq: Definition not_expired) -/
 def not_expired (c : Certificate) : Prop :=
-  cert_not_before c <= current_time /\
-  current_time <= cert_not_after c
+  c.cert_not_before <= current_time /\
+  current_time <= c.cert_not_after
 
 /-- not_revoked (matches Coq: Definition not_revoked) -/
 def not_revoked (c : Certificate) : Prop :=
-  cert_revoked c = false
+  c.cert_revoked = false
 
 /-- acceptable_cert (matches Coq: Definition acceptable_cert) -/
 def acceptable_cert (c : Certificate) : Prop :=
@@ -210,7 +210,7 @@ def encrypted := sorry -- complex match, needs manual translation
 
 /-- transmitted (matches Coq: Definition transmitted) -/
 def transmitted (p : Packet) : Prop :=
-  packet_transmitted p = true
+  p.packet_transmitted = true
 
 /-- secure_stack (matches Coq: Definition secure_stack) -/
 def secure_stack : Prop :=
@@ -218,12 +218,12 @@ def secure_stack : Prop :=
 
 /-- secure_connection (matches Coq: Definition secure_connection) -/
 def secure_connection (c : Connection) : Prop :=
-  acceptable_cert (conn_cert c) /\
-  conn_tls_version c >= 13
+  acceptable_cert (c.conn_cert) /\
+  c.conn_tls_version >= 13
 
 /-- tls_required (matches Coq: Definition tls_required) -/
 def tls_required (conn : HTTPConnection) : Prop :=
-  http_tls_version conn >= 13
+  conn.http_tls_version >= 13
 
 /-- cert_validation_complete_prop (matches Coq: Definition cert_validation_complete_prop) -/
 def cert_validation_complete_prop (cert : Certificate) : Prop :=
@@ -231,49 +231,49 @@ def cert_validation_complete_prop (cert : Certificate) : Prop :=
 
 /-- dns_validated_prop (matches Coq: Definition dns_validated_prop) -/
 def dns_validated_prop (q : DNSQuery) : Prop :=
-  dns_validated q = true /\ dns_dnssec_verified q = true
+  q.dns_validated = true /\ q.dns_dnssec_verified = true
 
 /-- no_plaintext_password (matches Coq: Definition no_plaintext_password) -/
 def no_plaintext_password (conn : HTTPConnection) : Prop :=
-  http_tls_version conn >= 12
+  conn.http_tls_version >= 12
 
 /-- connection_timeout_enforced_prop (matches Coq: Definition connection_timeout_enforced_prop) -/
 def connection_timeout_enforced_prop (sock : Socket) : Prop :=
-  socket_timeout_ms sock > 0 /\ socket_timeout_ms sock <= 30000
+  sock.socket_timeout_ms > 0 /\ sock.socket_timeout_ms <= 30000
 
 /-- socket_cleanup_prop (matches Coq: Definition socket_cleanup_prop) -/
 def socket_cleanup_prop (sock : Socket) : Prop :=
-  socket_closed sock = true ->
-  socket_connected sock = false
+  sock.socket_closed = true ->
+  sock.socket_connected = false
 
 /-- firewall_applied (matches Coq: Definition firewall_applied) -/
 def firewall_applied (rules : List FirewallRule) (src dst port : Nat) : Prop :=
-  exists r, In r rules /\ fw_src_ip r = src /\ fw_dst_ip r = dst /\ fw_port r = port
+  exists r, In r rules /\ r.fw_src_ip = src /\ r.fw_dst_ip = dst /\ r.fw_port = port
 
 /-- vpn_traffic_encrypted_prop (matches Coq: Definition vpn_traffic_encrypted_prop) -/
 def vpn_traffic_encrypted_prop (t : VPNTunnel) : Prop :=
-  tunnel_active t = true -> tunnel_encrypted t = true
+  t.tunnel_active = true -> t.tunnel_encrypted = true
 
 /-- hsts_enforced (matches Coq: Definition hsts_enforced) -/
 def hsts_enforced (conn : HTTPConnection) : Prop :=
-  http_strict_transport conn = true -> http_tls_version conn >= 13
+  conn.http_strict_transport = true -> conn.http_tls_version >= 13
 
 /-- cors_enforced (matches Coq: Definition cors_enforced) -/
 def cors_enforced (conn : HTTPConnection) : Prop :=
-  http_cors_allowed conn = true
+  conn.http_cors_allowed = true
 
 /-- ws_origin_valid (matches Coq: Definition ws_origin_valid) -/
 def ws_origin_valid (ws : WebSocketConn) : Prop :=
-  ws_origin_validated ws = true /\ ws_encrypted ws = true
+  ws.ws_origin_validated = true /\ ws.ws_encrypted = true
 
 /-- cert_pinning_holds (matches Coq: Definition cert_pinning_holds) -/
 def cert_pinning_holds (pin : CertPin) : Prop :=
-  pin_enforced pin = true -> pin_public_key_hash pin > 0
+  pin.pin_enforced = true -> pin.pin_public_key_hash > 0
 
 /-- network_change_notified_prop (matches Coq: Definition network_change_notified_prop) -/
 def network_change_notified_prop (old_conn new_conn : Connection) : Prop :=
-  conn_id old_conn <> conn_id new_conn ->
-  acceptable_cert (conn_cert new_conn)
+  old_conn.conn_id <> new_conn.conn_id ->
+  acceptable_cert (new_conn.conn_cert)
 
 /-- network_all_encrypted (matches Coq) -/
 theorem network_all_encrypted : ∀ (packet : Packet), secure_stack → transmitted packet → encrypted packet := by
@@ -332,7 +332,7 @@ theorem no_ip_spoofing : ∀ (q : DNSQuery), dns_validated_prop q → dns_dnssec
   intro h; exact h
 
 /-- firewall_rules_applied (matches Coq) -/
-theorem firewall_rules_applied : ∀ (rules : list FirewallRule) (src dst port : nat), firewall_applied rules src dst port → ∃ r, In r rules ∧ fw_src_ip r = src ∧ fw_dst_ip r = dst := by
+theorem firewall_rules_applied : ∀ (rules : list FirewallRule) (src dst port : Nat), firewall_applied rules src dst port → ∃ r, In r rules ∧ fw_src_ip r = src ∧ fw_dst_ip r = dst := by
   intro h; exact h
 
 /-- vpn_traffic_encrypted (matches Coq) -/

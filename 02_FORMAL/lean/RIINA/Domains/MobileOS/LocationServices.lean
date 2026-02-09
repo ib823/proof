@@ -128,7 +128,7 @@ def gps_available : Prop :=
 
 /-- error (matches Coq: Definition error) -/
 def error (l : Location) : Meters :=
-  loc_accuracy l
+  l.loc_accuracy
 
 /-- distance (matches Coq: Definition distance) -/
 def distance (c1 c2 : CoordiNate) : Nat :=
@@ -138,15 +138,15 @@ def distance (c1 c2 : CoordiNate) : Nat :=
 
 /-- inside (matches Coq: Definition inside) -/
 def inside (fence : Geofence) (pos : Position) : Prop :=
-  distance (fence_center fence) (pos_coordinate pos) <= fence_radius fence
+  distance (fence.fence_center) (pos.pos_coordinate) <= fence.fence_radius
 
 /-- triggered (matches Coq: Definition triggered) -/
 def triggered (fence : Geofence) : Prop :=
-  fence_triggered fence = true
+  fence.fence_triggered = true
 
 /-- accurate_location_service (matches Coq: Definition accurate_location_service) -/
 def accurate_location_service (l : Location) : Prop :=
-  loc_source l = 0 ->  
+  l.loc_source = 0 ->  
   error l <= 5
 
 /-- accurate_geofence_system (matches Coq: Definition accurate_geofence_system) -/
@@ -159,15 +159,15 @@ def valid_coordinate (c : CoordiNate) : Prop :=
 
 /-- cache_expired (matches Coq: Definition cache_expired) -/
 def cache_expired (config : LocationConfig) (current_time entry_time : Nat) : Bool :=
-  loc_cache_ttl config <? (current_time - entry_time)
+  config.loc_cache_ttl <? (current_time - entry_time)
 
 /-- well_formed_location_config (matches Coq: Definition well_formed_location_config) -/
 def well_formed_location_config (config : LocationConfig) : Prop :=
-  (loc_permission config = PermWhenInUse -> loc_background_enabled config = false) /\
-  (loc_permission config = PermNone -> loc_background_enabled config = false) /\
-  loc_cache_ttl config > 0 /\
-  loc_update_interval config > 0 /\
-  loc_significant_change_meters config > 0
+  (config.loc_permission = PermWhenInUse -> config.loc_background_enabled = false) /\
+  (config.loc_permission = PermNone -> config.loc_background_enabled = false) /\
+  config.loc_cache_ttl > 0 /\
+  config.loc_update_interval > 0 /\
+  config.loc_significant_change_meters > 0
 
 /-- location_accuracy_bounded (matches Coq) -/
 theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 →  error location ≤ 5 := by
@@ -218,7 +218,7 @@ theorem no_location_tracking_without_consent : ∀ (config : LocationConfig), lo
   simp_all [Bool.and_eq_true]
 
 /-- location_cache_expiry (matches Coq) -/
-theorem location_cache_expiry : ∀ (config : LocationConfig) (current entry : nat), loc_cache_ttl config < current - entry → cache_expired config current entry = true := by
+theorem location_cache_expiry : ∀ (config : LocationConfig) (current entry : Nat), loc_cache_ttl config < current - entry → cache_expired config current entry = true := by
   simp_all [Bool.and_eq_true]
 
 /-- altitude_accuracy_bounded (matches Coq) -/

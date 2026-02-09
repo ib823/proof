@@ -153,7 +153,7 @@ structure PrivacyBudget where
 
 /-- acts_for (matches Coq: Definition acts_for) -/
 def acts_for (p1 p2 : Principal) : Prop :=
-  principal_eqb p1 p2 = true \/ exists authority : nat, authority > 0
+  principal_eqb p1 p2 = true \/ exists authority : Nat, authority > 0
 
 /-- principal_leq (matches Coq: Definition principal_leq) -/
 def principal_leq (p1 p2 : Principal) : Prop :=
@@ -170,13 +170,13 @@ def level_meet := sorry -- complex match, needs manual translation
 
 /-- valid_policy (matches Coq: Definition valid_policy) -/
 def valid_policy (p : DeclassPolicy) : Prop :=
-  level_leq (target_level p) (source_level p) = true /\
-  budget p > 0 /\
-  policy_active p = true
+  level_leq (p.target_level) (p.source_level) = true /\
+  p.budget > 0 /\
+  p.policy_active = true
 
 /-- wellformed_budget (matches Coq: Definition wellformed_budget) -/
 def wellformed_budget (bs : BudgetState) : Prop :=
-  total_leaked bs <= budget_total_limit bs
+  bs.total_leaked <= bs.budget_total_limit
 
 /-- low_equiv (matches Coq: Definition low_equiv) -/
 def low_equiv (s1 s2 : State) (public : Nat -> Bool) : Prop :=
@@ -188,17 +188,17 @@ def robust (e : Expr) (public : Nat -> Bool) : Prop :=
 
 /-- valid_declass (matches Coq: Definition valid_declass) -/
 def valid_declass (de : DeclassExpr) (public : Nat -> Bool) : Prop :=
-  robust (declass_guard de) public /\ valid_policy (declass_policy de)
+  robust (de.declass_guard) public /\ valid_policy (de.declass_policy)
 
 /-- can_declassify (matches Coq: Definition can_declassify) -/
 def can_declassify (de : DeclassExpr) (p : Principal) : Prop :=
-  acts_for p (authorized_principal (declass_policy de)) /\
-  valid_policy (declass_policy de)
+  acts_for p (authorized_principal (de.declass_policy)) /\
+  valid_policy (de.declass_policy)
 
 /-- logged_declass (matches Coq: Definition logged_declass) -/
 def logged_declass (de : DeclassExpr) (log log' : AuditLog) : Prop :=
   exists entry, log' = entry :: log /\
-  audit_policy_id entry = policy_id (declass_policy de)
+  entry.audit_policy_id = policy_id (de.declass_policy)
 
 /-- neighbors (matches Coq: Definition neighbors) -/
 def neighbors (db1 db2 : Database) : Prop :=
@@ -213,24 +213,24 @@ def sensitivity_bounded (q : Query) (delta : Nat) : Prop :=
 
 /-- guard_satisfied (matches Coq: Definition guard_satisfied) -/
 def guard_satisfied (de : DeclassExpr) (s : State) : Bool :=
-  guard_fn (declass_policy de) (declass_guard de s)
+  guard_fn (de.declass_policy) (de.declass_guard s)
 
 /-- apply_transform (matches Coq: Definition apply_transform) -/
 def apply_transform (de : DeclassExpr) (s : State) : Nat :=
-  transform (declass_policy de) (declass_value de s)
+  transform (de.declass_policy) (de.declass_value s)
 
 /-- revoke_policy (matches Coq: Definition revoke_policy) -/
 def revoke_policy (p : DeclassPolicy) : DeclassPolicy :=
   {|
-  policy_id := policy_id p;
-  authorized_principal := authorized_principal p;
-  source_level := source_level p;
-  target_level := target_level p;
-  source_type := source_type p;
-  target_type := target_type p;
-  guard_fn := guard_fn p;
-  transform := transform p;
-  budget := budget p;
+  policy_id := p.policy_id;
+  authorized_principal := p.authorized_principal;
+  source_level := p.source_level;
+  target_level := p.target_level;
+  source_type := p.source_type;
+  target_type := p.target_type;
+  guard_fn := p.guard_fn;
+  transform := p.transform;
+  budget := p.budget;
   policy_active := false
 |}
 

@@ -194,7 +194,7 @@ def sg_must_dispose (r : SGDataRecord) (current_time : Nat) : Prop :=
 def sg_transfer_lawful (adequacy : TransferAdequacy) : Prop :=
   match adequacy with
   | .noSafeguards => False
-  | ._ => True
+  | _ => True
 
 /-- sg_breach_notifiable (matches Coq: Definition sg_breach_notifiable) -/
 def sg_breach_notifiable (b : SGBreachEvent) : Prop :=
@@ -344,7 +344,7 @@ theorem obligation_6_anonymized : ∀ (r : SGDataRecord), sg_anonymized r = true
   intro h; exact h
 
 /-- obligation_7_retention (matches Coq) -/
-theorem obligation_7_retention : ∀ (r : SGDataRecord) (t : nat), ~ sg_within_retention r t → sg_must_dispose r t := by
+theorem obligation_7_retention : ∀ (r : SGDataRecord) (t : Nat), ~ sg_within_retention r t → sg_must_dispose r t := by
   simp_all [Bool.and_eq_true]
 
 /-- obligation_8_adequate (matches Coq) -/
@@ -356,19 +356,19 @@ theorem obligation_8_contractual : ∀ (a : TransferAdequacy), a = ContractualSa
   intro h; exact h
 
 /-- obligation_8_no_safeguards_blocked (matches Coq) -/
-theorem obligation_8_no_safeguards_blocked : ∀ (a : TransferAdequacy), a = NoSafeguards → ~ sg_transfer_lawful a := by
+theorem obligation_8_no_safeguards_blocked : ∀ (a : TransferAdequacy), a = .noSafeguards → ~ sg_transfer_lawful a := by
   intro h; exact h
 
 /-- obligation_9_notification (matches Coq) -/
-theorem obligation_9_notification : ∀ (b : SGBreachEvent) (t : nat), sg_breach_notifiable b → t ≤ sg_breach_detected_at b + 72 → sg_pdpc_notified_in_time b t := by
+theorem obligation_9_notification : ∀ (b : SGBreachEvent) (t : Nat), sg_breach_notifiable b → t ≤ sg_breach_detected_at b + 72 → sg_pdpc_notified_in_time b t := by
   intro h; exact h
 
 /-- sg_pdpa_composition (matches Coq) -/
-theorem sg_pdpa_composition : ∀ (r : SGDataRecord) (transfer : TransferAdequacy) (t : nat), sg_consent_for_category r → sg_protection_adequate r → sg_within_retention r t → sg_transfer_lawful transfer → sg_pdpa_fully_compliant r transfer t := by
+theorem sg_pdpa_composition : ∀ (r : SGDataRecord) (transfer : TransferAdequacy) (t : Nat), sg_consent_for_category r → sg_protection_adequate r → sg_within_retention r t → sg_transfer_lawful transfer → sg_pdpa_fully_compliant r transfer t := by
   omega
 
 /-- purpose_limitation_enforced (matches Coq) -/
-theorem purpose_limitation_enforced : ∀ (r : SGDataRecord) (actual : nat), sg_purpose_id r ≠ actual → sg_purpose_violation r actual := by
+theorem purpose_limitation_enforced : ∀ (r : SGDataRecord) (actual : Nat), sg_purpose_id r ≠ actual → sg_purpose_violation r actual := by
   intro h; exact h
 
 /-- purpose_match_no_violation (matches Coq) -/
@@ -388,7 +388,7 @@ theorem correction_within_deadline : ∀ (req : SGAccessCorrectionRequest), sgac
   intro h; exact h
 
 /-- transfer_limitation_satisfied (matches Coq) -/
-theorem transfer_limitation_satisfied : ∀ (a : TransferAdequacy), a ≠ NoSafeguards → sg_transfer_lawful a := by
+theorem transfer_limitation_satisfied : ∀ (a : TransferAdequacy), a ≠ .noSafeguards → sg_transfer_lawful a := by
   intro h; exact h
 
 /-- data_protection_officer_appointed (matches Coq) -/
@@ -396,15 +396,15 @@ theorem data_protection_officer_appointed : ∀ (dpo : SGDataProtectionOfficer),
   simp_all [Bool.and_eq_true]
 
 /-- do_not_call_registry_checked (matches Coq) -/
-theorem do_not_call_registry_checked : ∀ (status : DNCStatus), status = DNCRegistered → dnc_checked status false := by
+theorem do_not_call_registry_checked : ∀ (status : DNCStatus), status = .dNCRegistered → dnc_checked status false := by
   rfl
 
 /-- dnc_not_registered_allows (matches Coq) -/
-theorem dnc_not_registered_allows : ∀ (sent : bool), dnc_checked DNCNotRegistered sent := by
+theorem dnc_not_registered_allows : ∀ (sent : Bool), dnc_checked .dNCNotRegistered sent := by
   intro h; exact h
 
 /-- breach_notification_72_hours (matches Coq) -/
-theorem breach_notification_72_hours : ∀ (b : SGBreachEvent) (t : nat), sg_breach_notifiable b → t ≤ sg_breach_detected_at b + 72 → sg_pdpc_notified_in_time b t := by
+theorem breach_notification_72_hours : ∀ (b : SGBreachEvent) (t : Nat), sg_breach_notifiable b → t ≤ sg_breach_detected_at b + 72 → sg_pdpc_notified_in_time b t := by
   intro h; exact h
 
 /-- breach_not_notifiable_threshold (matches Coq) -/
@@ -420,7 +420,7 @@ theorem deemed_consent_notification_valid : ∀ (r : SGDataRecord), sg_consent r
   intro h; exact h
 
 /-- business_improvement_exception (matches Coq) -/
-theorem business_improvement_exception : ∀ (proportionate safeguards : bool), proportionate = true → safeguards = true → business_improvement_applicable SGBusinessImprovement proportionate safeguards := by
+theorem business_improvement_exception : ∀ (proportionate safeguards : Bool), proportionate = true → safeguards = true → business_improvement_applicable SGBusinessImprovement proportionate safeguards := by
   simp_all [Bool.and_eq_true]
 
 /-- accountability_complete (matches Coq) -/
@@ -444,15 +444,15 @@ theorem transfer_adequacy_coverage : ∀ (ta : TransferAdequacy), In ta all_tran
   simp_all [Bool.and_eq_true]
 
 /-- notification_purposes_nonempty (matches Coq) -/
-theorem notification_purposes_nonempty : ∀ (n : SGNotificationRecord) (p : nat) (ps : list nat), sgn_purposes_notified n = p :: ps → length (sgn_purposes_notified n) > 0 := by
+theorem notification_purposes_nonempty : ∀ (n : SGNotificationRecord) (p : Nat) (ps : list nat), sgn_purposes_notified n = p :: ps → length (sgn_purposes_notified n) > 0 := by
   omega
 
 /-- notification_first_purpose_notified (matches Coq) -/
-theorem notification_first_purpose_notified : ∀ (n : SGNotificationRecord) (p : nat) (ps : list nat), sgn_purposes_notified n = p :: ps → sg_notified_purposes n p := by
+theorem notification_first_purpose_notified : ∀ (n : SGNotificationRecord) (p : Nat) (ps : list nat), sgn_purposes_notified n = p :: ps → sg_notified_purposes n p := by
   simp
 
 /-- access_deadline_monotone (matches Coq) -/
-theorem access_deadline_monotone : ∀ (req : SGAccessCorrectionRequest) (t1 t2 : nat), t1 ≤ t2 → sgacr_responded_at req ≤ sgacr_requested_at req + t1 → sgacr_responded_at req ≤ sgacr_requested_at req + t2 := by
+theorem access_deadline_monotone : ∀ (req : SGAccessCorrectionRequest) (t1 t2 : Nat), t1 ≤ t2 → sgacr_responded_at req ≤ sgacr_requested_at req + t1 → sgacr_responded_at req ≤ sgacr_requested_at req + t2 := by
   omega
 
 /-- access_request_immediate_response (matches Coq) -/
@@ -460,23 +460,23 @@ theorem access_request_immediate_response : ∀ (req : SGAccessCorrectionRequest
   omega
 
 /-- accuracy_within_interval (matches Coq) -/
-theorem accuracy_within_interval : ∀ (acc : SGAccuracyRecord) (t : nat), t ≤ sgacc_last_verified acc + sgacc_verification_interval acc → sgacc_source_reliable acc = true → accuracy_maintained acc t := by
+theorem accuracy_within_interval : ∀ (acc : SGAccuracyRecord) (t : Nat), t ≤ sgacc_last_verified acc + sgacc_verification_interval acc → sgacc_source_reliable acc = true → accuracy_maintained acc t := by
   simp_all [Bool.and_eq_true]
 
 /-- accuracy_stale_requires_reverification (matches Coq) -/
-theorem accuracy_stale_requires_reverification : ∀ (acc : SGAccuracyRecord) (t : nat), sgacc_last_verified acc + sgacc_verification_interval acc < t → ~ (accuracy_maintained acc t) := by
+theorem accuracy_stale_requires_reverification : ∀ (acc : SGAccuracyRecord) (t : Nat), sgacc_last_verified acc + sgacc_verification_interval acc < t → ~ (accuracy_maintained acc t) := by
   omega
 
 /-- dnc_registered_blocks_all_marketing_types (matches Coq) -/
-theorem dnc_registered_blocks_all_marketing_types : ∀ (dnc : SGDNCRecord), sg_dnc_status dnc = DNCRegistered → sg_dnc_compliant_marketing dnc false := by
+theorem dnc_registered_blocks_all_marketing_types : ∀ (dnc : SGDNCRecord), sg_dnc_status dnc = .dNCRegistered → sg_dnc_compliant_marketing dnc false := by
   omega
 
 /-- dnc_exempt_allows_marketing (matches Coq) -/
-theorem dnc_exempt_allows_marketing : ∀ (dnc : SGDNCRecord) (sent : bool), sg_dnc_status dnc = DNCExempt → sg_dnc_compliant_marketing dnc sent := by
+theorem dnc_exempt_allows_marketing : ∀ (dnc : SGDNCRecord) (sent : Bool), sg_dnc_status dnc = .dNCExempt → sg_dnc_compliant_marketing dnc sent := by
   omega
 
 /-- dnc_status_decidable (matches Coq) -/
-theorem dnc_status_decidable : ∀ (s : DNCStatus), s = DNCRegistered ∨ s = DNCNotRegistered ∨ s = DNCExempt := by
+theorem dnc_status_decidable : ∀ (s : DNCStatus), s = .dNCRegistered ∨ s = .dNCNotRegistered ∨ s = DNCExempt := by
   rfl
 
 /-- portability_obligation_met (matches Coq) -/
@@ -520,11 +520,11 @@ theorem public_data_no_consent_needed : ∀ (r : SGDataRecord), sg_category r = 
   intro h; exact h
 
 /-- retention_within_implies_not_dispose (matches Coq) -/
-theorem retention_within_implies_not_dispose : ∀ (r : SGDataRecord) (t : nat), sg_within_retention r t → ~ sg_must_dispose r t := by
+theorem retention_within_implies_not_dispose : ∀ (r : SGDataRecord) (t : Nat), sg_within_retention r t → ~ sg_must_dispose r t := by
   omega
 
 /-- retention_dispose_exclusive (matches Coq) -/
-theorem retention_dispose_exclusive : ∀ (r : SGDataRecord) (t : nat), sg_within_retention r t ∨ sg_must_dispose r t := by
+theorem retention_dispose_exclusive : ∀ (r : SGDataRecord) (t : Nat), sg_within_retention r t ∨ sg_must_dispose r t := by
   intro h; exact h
 
 /-- retention_at_limit_valid (matches Coq) -/
@@ -532,7 +532,7 @@ theorem retention_at_limit_valid : ∀ (r : SGDataRecord), sg_within_retention r
   omega
 
 /-- retention_past_limit_dispose (matches Coq) -/
-theorem retention_past_limit_dispose : ∀ (r : SGDataRecord) (t : nat), t > sg_retention_limit r → sg_must_dispose r t := by
+theorem retention_past_limit_dispose : ∀ (r : SGDataRecord) (t : Nat), t > sg_retention_limit r → sg_must_dispose r t := by
   omega
 
 /-- cross_border_composition (matches Coq) -/
@@ -568,7 +568,7 @@ theorem dpo_not_trained_not_qualified : ∀ (dpo : SGDataProtectionOfficer), sg_
   simp_all [Bool.and_eq_true]
 
 /-- enterprise_compliance_composition (matches Coq) -/
-theorem enterprise_compliance_composition : ∀ (r : SGDataRecord) (transfer : TransferAdequacy) (t : nat) (acct : SGAccountabilityRecord) (dpo : SGDataProtectionOfficer), sg_pdpa_fully_compliant r transfer t → accountability_documented acct → sg_dpo_appointed dpo → sg_pdpa_enterprise_compliant r transfer t acct dpo := by
+theorem enterprise_compliance_composition : ∀ (r : SGDataRecord) (transfer : TransferAdequacy) (t : Nat) (acct : SGAccountabilityRecord) (dpo : SGDataProtectionOfficer), sg_pdpa_fully_compliant r transfer t → accountability_documented acct → sg_dpo_appointed dpo → sg_pdpa_enterprise_compliant r transfer t acct dpo := by
   omega
 
 /-- processing_basis_coverage (matches Coq) -/

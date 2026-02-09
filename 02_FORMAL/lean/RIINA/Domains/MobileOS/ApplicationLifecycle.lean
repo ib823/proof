@@ -134,20 +134,20 @@ def AppData : Type :=
 
 /-- in_state (matches Coq: Definition in_state) -/
 def in_state (app : Application) (state : AppState) : Prop :=
-  app_state app = state
+  app.app_state = state
 
 /-- terminated (matches Coq: Definition terminated) -/
 def terminated (app : Application) : Prop :=
-  app_state app = Terminated
+  app.app_state = Terminated
 
 /-- relaunched (matches Coq: Definition relaunched) -/
 def relaunched (app : Application) : Prop :=
-  app_state app = Foreground /\ 
-  app_saved_state app <> None
+  app.app_state = .foreground /\ 
+  app.app_saved_state <> None
 
 /-- state (matches Coq: Definition state) -/
 def state (app : Application) : AppData :=
-  app_data app
+  app.app_data
 
 /-- previous_state (matches Coq: Definition previous_state) -/
 def previous_state := sorry -- complex match, needs manual translation
@@ -164,16 +164,16 @@ def state_invariants_hold (app : Application) (s : AppState) : Prop :=
 def valid_lifecycle_transition := sorry -- complex match, needs manual translation
 
 /-- save_state (matches Coq: Definition save_state) -/
-def save_state (app : Application) : Application := mkApp (app_id app) (app_state app) (app_data app) 
-        (Some (app_data app)) (app_supports_restoration app)
+def save_state (app : Application) : Application := mkApp (app.app_id) (app.app_state) (app.app_data) 
+        (Some (app.app_data)) (app.app_supports_restoration)
 
 /-- restore_state (matches Coq: Definition restore_state) -/
 def restore_state := sorry -- complex match, needs manual translation
 
 /-- well_formed_restorable (matches Coq: Definition well_formed_restorable) -/
 def well_formed_restorable (app : Application) : Prop :=
-  app_supports_restoration app = true ->
-  app_saved_state app <> None ->
+  app.app_supports_restoration = true ->
+  app.app_saved_state <> None ->
   app_data (restore_state app) = previous_state app
 
 /-- bg_time_limit (matches Coq: Definition bg_time_limit) -/
@@ -186,13 +186,13 @@ def LowMemoryLevel : Type :=
 
 /-- well_formed_ext_app (matches Coq: Definition well_formed_ext_app) -/
 def well_formed_ext_app (ea : ExtApp) : Prop :=
-  (app_state (ext_app ea) = Background -> ext_bg_time_used ea <= bg_time_limit) /\
-  ext_memory_level ea <= 2 /\
-  (ext_activation_count ea > 0 -> app_state (ext_app ea) <> NotRunning)
+  (app_state (ea.ext_app) = .background -> ea.ext_bg_time_used <= bg_time_limit) /\
+  ea.ext_memory_level <= 2 /\
+  (ea.ext_activation_count > 0 -> app_state (ea.ext_app) <> .notRunning)
 
 /-- transition_preserves_id (matches Coq: Definition transition_preserves_id) -/
 def transition_preserves_id (app_before app_after : Application) : Prop :=
-  app_id app_before = app_id app_after
+  app_before.app_id = app_after.app_id
 
 /-- app_state_consistent (matches Coq) -/
 theorem app_state_consistent : ∀ (app : Application) (s : AppState), in_state app s → state_invariants_hold app s → in_state app s ∧ state_invariants_hold app s := by
@@ -207,15 +207,15 @@ theorem save_restore_preserves_state : ∀ (app : Application), state (restore_s
   simp
 
 /-- not_running_can_launch (matches Coq) -/
-theorem not_running_can_launch : valid_lifecycle_transition NotRunning Launching = true := by
+theorem not_running_can_launch : valid_lifecycle_transition .notRunning .launching = true := by
   rfl
 
 /-- foreground_can_background (matches Coq) -/
-theorem foreground_can_background : valid_lifecycle_transition Foreground Background = true := by
+theorem foreground_can_background : valid_lifecycle_transition .foreground .background = true := by
   rfl
 
 /-- background_can_foreground (matches Coq) -/
-theorem background_can_foreground : valid_lifecycle_transition Background Foreground = true := by
+theorem background_can_foreground : valid_lifecycle_transition .background .foreground = true := by
   rfl
 
 /-- save_captures_current_state (matches Coq) -/
@@ -227,11 +227,11 @@ theorem app_state_transition_valid : ∀ (from to : AppState), valid_lifecycle_t
   intro h; exact h
 
 /-- background_to_foreground_clean (matches Coq) -/
-theorem background_to_foreground_clean : ∀ (app : Application), app_state app = Background → app_saved_state app ≠ None → valid_lifecycle_transition Background Foreground = true := by
+theorem background_to_foreground_clean : ∀ (app : Application), app_state app = .background → app_saved_state app ≠ None → valid_lifecycle_transition .background .foreground = true := by
   rfl
 
 /-- state_saved_on_background (matches Coq) -/
-theorem state_saved_on_background : ∀ (app : Application), app_state app = Foreground → app_saved_state (save_state app) = Some (app_data app) := by
+theorem state_saved_on_background : ∀ (app : Application), app_state app = .foreground → app_saved_state (save_state app) = Some (app_data app) := by
   simp
 
 /-- state_restored_on_foreground (matches Coq) -/
@@ -239,7 +239,7 @@ theorem state_restored_on_foreground : ∀ (app : Application) (d : AppData), ap
   simp
 
 /-- app_termination_notified (matches Coq) -/
-theorem app_termination_notified : ∀ (from : AppState), valid_lifecycle_transition from Terminated = true → from = Foreground ∨ from = Background ∨ from = Suspended := by
+theorem app_termination_notified : ∀ (from : AppState), valid_lifecycle_transition from Terminated = true → from = .foreground ∨ from = .background ∨ from = Suspended := by
   cases ‹_› <;> simp
 
 /-- low_memory_warning_delivered (matches Coq) -/
@@ -247,7 +247,7 @@ theorem low_memory_warning_delivered : ∀ (ea : ExtApp), well_formed_ext_app ea
   intro h; exact h
 
 /-- background_execution_time_limited (matches Coq) -/
-theorem background_execution_time_limited : ∀ (ea : ExtApp), well_formed_ext_app ea → app_state (ext_app ea) = Background → ext_bg_time_used ea ≤ 30000 := by
+theorem background_execution_time_limited : ∀ (ea : ExtApp), well_formed_ext_app ea → app_state (ext_app ea) = .background → ext_bg_time_used ea ≤ 30000 := by
   simp_all [Bool.and_eq_true]
 
 /-- url_scheme_validated (matches Coq) -/
@@ -263,7 +263,7 @@ theorem app_extension_sandboxed : ∀ (ext : AppExtension), ext_sandboxed ext = 
   intro h; exact h
 
 /-- widget_update_throttled (matches Coq) -/
-theorem widget_update_throttled : ∀ (w : Widget) (current_time : nat), current_time - widget_last_update w < widget_update_interval w → current_time - widget_last_update w < widget_update_interval w := by
+theorem widget_update_throttled : ∀ (w : Widget) (current_time : Nat), current_time - widget_last_update w < widget_update_interval w → current_time - widget_last_update w < widget_update_interval w := by
   intro h; exact h
 
 /-- share_extension_data_typed (matches Coq) -/
@@ -275,11 +275,11 @@ theorem app_group_access_controlled : ∀ (g : AppGroup), group_access_controlle
   intro h; exact h
 
 /-- scene_lifecycle_managed (matches Coq) -/
-theorem scene_lifecycle_managed : ∀ (s : AppScene), scene_active s = true → scene_state s = Foreground → scene_active s = true ∧ scene_state s = Foreground := by
+theorem scene_lifecycle_managed : ∀ (s : AppScene), scene_active s = true → scene_state s = .foreground → scene_active s = true ∧ scene_state s = Foreground := by
   simp_all [Bool.and_eq_true]
 
 /-- app_activation_idempotent (matches Coq) -/
-theorem app_activation_idempotent : ∀ (app : Application), app_state app = Foreground → app_state app = Foreground → app_state app = Foreground := by
+theorem app_activation_idempotent : ∀ (app : Application), app_state app = .foreground → app_state app = .foreground → app_state app = Foreground := by
   intro h; exact h
 
 end RIINA

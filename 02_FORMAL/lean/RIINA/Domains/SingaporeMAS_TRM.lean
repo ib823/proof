@@ -151,11 +151,11 @@ theorem mas_cyber_hygiene : ∀ (e : MASRegulatedEntity), mas_mfa_enabled e = tr
   omega
 
 /-- critical_patch_14_days (matches Coq) -/
-theorem critical_patch_14_days : ∀ (d a : nat), a ≤ d + 14 → patch_applied_in_time PatchCritical d a := by
+theorem critical_patch_14_days : ∀ (d a : Nat), a ≤ d + 14 → patch_applied_in_time .patchCritical d a := by
   intro h; exact h
 
 /-- critical_strictest (matches Coq) -/
-theorem critical_strictest : ∀ (d a : nat), patch_applied_in_time PatchCritical d a → patch_applied_in_time PatchHigh d a := by
+theorem critical_strictest : ∀ (d a : Nat), patch_applied_in_time .patchCritical d a → patch_applied_in_time .patchHigh d a := by
   omega
 
 /-- trm_governance_proof (matches Coq) -/
@@ -193,7 +193,7 @@ theorem ch_requires_pam : ∀ e, cyber_hygiene_compliant e → mas_privileged_ac
 
 /-- Patch deadline ordering -/
 /-- patch_critical_strictest (matches Coq) -/
-theorem patch_critical_strictest : ∀ p, patch_deadline PatchCritical ≤ patch_deadline p := by
+theorem patch_critical_strictest : ∀ p, patch_deadline .patchCritical ≤ patch_deadline p := by
   cases ‹_› <;> simp <;> omega
 
 /-- patch_low_most_lenient (matches Coq) -/
@@ -206,7 +206,7 @@ theorem patch_deadline_positive : ∀ p, patch_deadline p ≥ 14 := by
 
 /-- Patch subsumption: if applied in time for critical, then in time for any -/
 /-- patch_critical_subsumes_all (matches Coq) -/
-theorem patch_critical_subsumes_all : ∀ d a p, patch_applied_in_time PatchCritical d a → patch_applied_in_time p d a := by
+theorem patch_critical_subsumes_all : ∀ d a p, patch_applied_in_time .patchCritical d a → patch_applied_in_time p d a := by
   cases ‹_› <;> simp <;> omega
 
 /-- Full compliance decomposition -/

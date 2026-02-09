@@ -264,17 +264,17 @@ structure Remediation where
 /-- is_gap (matches Coq: Definition is_gap) -/
 def is_gap (s : ControlStatus) : Bool :=
   match s with
-  | ._ => false
+  | _ => false
 
 /-- is_partial (matches Coq: Definition is_partial) -/
 def is_partial (s : ControlStatus) : Bool :=
   match s with
-  | ._ => false
+  | _ => false
 
 /-- is_proven (matches Coq: Definition is_proven) -/
 def is_proven (s : ControlStatus) : Bool :=
   match s with
-  | ._ => false
+  | _ => false
 
 /-- data_minimization_holds (matches Coq: Definition data_minimization_holds) -/
 def data_minimization_holds (store : DataStore) : Prop :=
@@ -462,7 +462,7 @@ theorem AJ_001_06_gdpr_access_right : ∀ data purpose subject, (∀ pd, In pd d
   omega
 
 /-- AJ_001_07_gdpr_erasure_right (matches Coq) -/
-theorem AJ_001_07_gdpr_erasure_right : ∀ data purpose subject, let store := make_compliant_store data purpose in let store' := make_compliant_store (filter (fun pd => negb (Nat.eqb pd.(pd_subject) subject)) data) purpose in (∀ pd, In pd data → pd.(pd_subject) = subject → ~ In pd (filter (fun pd => negb (Nat.eqb pd.(pd_subject) subject)) data)) → (∀ pd, In pd data → pd.(pd_subject) ≠ subject → In pd (filter (fun pd => negb (Nat.eqb pd.(pd_subject) subject)) data)) → erasure_right_holds store store' subject := by
+theorem AJ_001_07_gdpr_erasure_right : ∀ data purpose subject, let store := make_compliant_store data purpose in let store' := make_compliant_store (filter (fun pd => !(Nat.eqb pd.(pd_subject) subject)) data) purpose in (∀ pd, In pd data → pd.(pd_subject) = subject → ~ In pd (filter (fun pd => !(Nat.eqb pd.(pd_subject) subject)) data)) → (∀ pd, In pd data → pd.(pd_subject) ≠ subject → In pd (filter (fun pd => !(Nat.eqb pd.(pd_subject) subject)) data)) → erasure_right_holds store store' subject := by
   omega
 
 /-- AJ_001_08_gdpr_portability (matches Coq) -/

@@ -159,49 +159,49 @@ structure TimingTest where
 
 /-- strong_encryption (matches Coq: Definition strong_encryption) -/
 def strong_encryption (key : EncryptionKey) : Prop :=
-  key_bits key >= 256 /\
-  (key_algorithm key = 0 \/ key_algorithm key = 1)
+  key.key_bits >= 256 /\
+  (key.key_algorithm = 0 \/ key.key_algorithm = 1)
 
 /-- e2e_encrypted (matches Coq: Definition e2e_encrypted) -/
 def e2e_encrypted (msg : EncryptedMessage) : Prop :=
-  is_e2e msg = true /\
-  strong_encryption (encryption_key_used msg) /\
-  key_stored_in_se (encryption_key_used msg) = true
+  msg.is_e2e = true /\
+  strong_encryption (msg.encryption_key_used) /\
+  key_stored_in_se (msg.encryption_key_used) = true
 
 /-- securely_managed (matches Coq: Definition securely_managed) -/
 def securely_managed (key : EncryptionKey) : Prop :=
-  key_is_private key = true ->
-  key_stored_in_se key = true
+  key.key_is_private = true ->
+  key.key_stored_in_se = true
 
 /-- provides_confidentiality (matches Coq: Definition provides_confidentiality) -/
 def provides_confidentiality (ch : SecureChannel) : Prop :=
-  channel_encrypted ch = true /\
-  strong_encryption (sender_key ch) /\
-  strong_encryption (receiver_key ch)
+  ch.channel_encrypted = true /\
+  strong_encryption (ch.sender_key) /\
+  strong_encryption (ch.receiver_key)
 
 /-- provides_integrity (matches Coq: Definition provides_integrity) -/
 def provides_integrity (ch : SecureChannel) : Prop :=
-  channel_authenticated ch = true
+  ch.channel_authenticated = true
 
 /-- full_e2e_security (matches Coq: Definition full_e2e_security) -/
 def full_e2e_security (ch : SecureChannel) : Prop :=
   provides_confidentiality ch /\
   provides_integrity ch /\
-  forward_secrecy ch = true
+  ch.forward_secrecy = true
 
 /-- correct_decryption (matches Coq: Definition correct_decryption) -/
 def correct_decryption (enc : EncryptedMessage) (dec : DecryptedMessage) : Prop :=
-  msg_id enc = dec_msg_id dec /\
-  integrity_verified dec = true /\
-  key_id (encryption_key_used enc) = key_id (decryption_key dec)
+  enc.msg_id = dec.dec_msg_id /\
+  dec.integrity_verified = true /\
+  key_id (enc.encryption_key_used) = key_id (dec.decryption_key)
 
 /-- key_bits_sufficient (matches Coq: Definition key_bits_sufficient) -/
 def key_bits_sufficient (key : EncryptionKey) : Bool :=
-  256 <=? key_bits key
+  256 <=? key.key_bits
 
 /-- is_aes_or_chacha (matches Coq: Definition is_aes_or_chacha) -/
 def is_aes_or_chacha (key : EncryptionKey) : Bool :=
-  (key_algorithm key =? 0) || (key_algorithm key =? 1)
+  (key.key_algorithm =? 0) || (key.key_algorithm =? 1)
 
 /-- is_strong_key (matches Coq: Definition is_strong_key) -/
 def is_strong_key (key : EncryptionKey) : Bool :=
@@ -213,63 +213,63 @@ def encryption_decryption_inverse_prop (key : Nat) (plaintext : List Nat) : Prop
 
 /-- key_length_sufficient_prop (matches Coq: Definition key_length_sufficient_prop) -/
 def key_length_sufficient_prop (key : EncryptionKey) : Prop :=
-  key_bits key >= 128
+  key.key_bits >= 128
 
 /-- iv_never_reused (matches Coq: Definition iv_never_reused) -/
 def iv_never_reused (tracker : IVTracker) : Prop :=
-  iv_unique tracker = true /\
-  ~ In (iv_current tracker) (iv_used_list tracker)
+  tracker.iv_unique = true /\
+  ~ In (tracker.iv_current) (tracker.iv_used_list)
 
 /-- aead_verified (matches Coq: Definition aead_verified) -/
 def aead_verified (op : EncryptionOperation) : Prop :=
-  enc_op_aead_verified op = true
+  op.enc_op_aead_verified = true
 
 /-- key_derivation_deterministic_prop (matches Coq: Definition key_derivation_deterministic_prop) -/
 def key_derivation_deterministic_prop (kd1 kd2 : KeyDerivation) : Prop :=
-  derivation_salt kd1 = derivation_salt kd2 ->
-  derivation_iterations kd1 = derivation_iterations kd2 ->
-  key_id (master_key kd1) = key_id (master_key kd2) ->
-  key_id (derived_key kd1) = key_id (derived_key kd2)
+  kd1.derivation_salt = kd2.derivation_salt ->
+  kd1.derivation_iterations = kd2.derivation_iterations ->
+  key_id (kd1.master_key) = key_id (kd2.master_key) ->
+  key_id (kd1.derived_key) = key_id (kd2.derived_key)
 
 /-- password_hash_one_way (matches Coq: Definition password_hash_one_way) -/
 def password_hash_one_way (h : PasswordHash) : Prop :=
-  pwd_hash_value h > 0 /\ pwd_iterations h >= 10000
+  h.pwd_hash_value > 0 /\ h.pwd_iterations >= 10000
 
 /-- salt_unique (matches Coq: Definition salt_unique) -/
 def salt_unique (h1 h2 : PasswordHash) : Prop :=
-  pwd_salt h1 <> pwd_salt h2
+  h1.pwd_salt <> h2.pwd_salt
 
 /-- key_rotation_seamless (matches Coq: Definition key_rotation_seamless) -/
 def key_rotation_seamless (kr : KeyRotation) : Prop :=
-  kr_rotation_complete kr = true ->
-  kr_old_key_destroyed kr = true
+  kr.kr_rotation_complete = true ->
+  kr.kr_old_key_destroyed = true
 
 /-- encrypted_data_indistinguishable (matches Coq: Definition encrypted_data_indistinguishable) -/
 def encrypted_data_indistinguishable (op1 op2 : EncryptionOperation) : Prop :=
-  enc_op_key op1 = enc_op_key op2 ->
-  length (enc_op_ciphertext op1) = length (enc_op_ciphertext op2) ->
-  length (enc_op_plaintext op1) = length (enc_op_plaintext op2)
+  op1.enc_op_key = op2.enc_op_key ->
+  length (op1.enc_op_ciphertext) = length (op2.enc_op_ciphertext) ->
+  length (op1.enc_op_plaintext) = length (op2.enc_op_plaintext)
 
 /-- padding_oracle_prevented (matches Coq: Definition padding_oracle_prevented) -/
 def padding_oracle_prevented (op : EncryptionOperation) : Prop :=
-  enc_op_aead_verified op = true
+  op.enc_op_aead_verified = true
 
 /-- timing_attack_prevented (matches Coq: Definition timing_attack_prevented) -/
 def timing_attack_prevented (tt : TimingTest) : Prop :=
-  tt_constant_time tt = true
+  tt.tt_constant_time = true
 
 /-- key_zeroization_complete (matches Coq: Definition key_zeroization_complete) -/
 def key_zeroization_complete (kr : KeyRotation) : Prop :=
-  kr_old_key_destroyed kr = true ->
-  key_bits (kr_old_key kr) >= 0
+  kr.kr_old_key_destroyed = true ->
+  key_bits (kr.kr_old_key) >= 0
 
 /-- hardware_key_storage_prop (matches Coq: Definition hardware_key_storage_prop) -/
 def hardware_key_storage_prop (key : EncryptionKey) : Prop :=
-  key_is_private key = true -> key_stored_in_se key = true
+  key.key_is_private = true -> key.key_stored_in_se = true
 
 /-- encryption_algorithm_approved (matches Coq: Definition encryption_algorithm_approved) -/
 def encryption_algorithm_approved (key : EncryptionKey) : Prop :=
-  key_algorithm key = 0 \/ key_algorithm key = 1
+  key.key_algorithm = 0 \/ key.key_algorithm = 1
 
 /-- e2e_encryption_verified (matches Coq) -/
 theorem e2e_encryption_verified : ∀ (msg : EncryptedMessage), e2e_encrypted msg → strong_encryption (encryption_key_used msg) := by
@@ -300,7 +300,7 @@ theorem key_derivation_preserves_strength : ∀ (kd : KeyDerivation), strong_enc
   simp_all [Bool.and_eq_true]
 
 /-- encryption_decryption_inverse (matches Coq) -/
-theorem encryption_decryption_inverse : ∀ (key : nat) (plaintext : list nat), (∀ x, In x plaintext → x ≥ key) → decrypt_data key (encrypt_data key plaintext) = plaintext := by
+theorem encryption_decryption_inverse : ∀ (key : Nat) (plaintext : list nat), (∀ x, In x plaintext → x ≥ key) → decrypt_data key (encrypt_data key plaintext) = plaintext := by
   omega
 
 /-- key_generation_random (matches Coq) -/

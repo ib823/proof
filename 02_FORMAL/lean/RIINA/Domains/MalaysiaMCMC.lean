@@ -89,15 +89,15 @@ def license_eqb (a b : MCMCLicense) : Bool :=
   Nat
 
 /-- s234_encrypted_compliant (matches Coq) -/
-theorem s234_encrypted_compliant : ∀ (enc auth : bool), enc = true → no_unauthorized_interception enc auth := by
+theorem s234_encrypted_compliant : ∀ (enc auth : Bool), enc = true → no_unauthorized_interception enc auth := by
   intro h; exact h
 
 /-- s234_authorized_compliant (matches Coq) -/
-theorem s234_authorized_compliant : ∀ (enc auth : bool), auth = true → no_unauthorized_interception enc auth := by
+theorem s234_authorized_compliant : ∀ (enc auth : Bool), auth = true → no_unauthorized_interception enc auth := by
   intro h; exact h
 
 /-- s236_fraud_prevention (matches Coq) -/
-theorem s236_fraud_prevention : ∀ (id_v tx_s audit : bool), id_v = true → tx_s = true → audit = true → fraud_controls_active id_v tx_s audit := by
+theorem s236_fraud_prevention : ∀ (id_v tx_s audit : Bool), id_v = true → tx_s = true → audit = true → fraud_controls_active id_v tx_s audit := by
   intro h; exact h
 
 /-- mcmc_composition (matches Coq) -/
@@ -113,7 +113,7 @@ theorem nfp_highest_level : ∀ l, license_level l ≤ license_level NFP := by
   cases ‹_› <;> simp <;> omega
 
 /-- csp_lowest_level (matches Coq) -/
-theorem csp_lowest_level : ∀ l, license_level CSP ≤ license_level l := by
+theorem csp_lowest_level : ∀ l, license_level .cSP ≤ license_level l := by
   cases ‹_› <;> simp <;> omega
 
 /-- license_level_positive (matches Coq) -/

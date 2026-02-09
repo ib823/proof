@@ -148,21 +148,21 @@ def compute_checksum (d : Data) : Nat :=
 
 /-- file_integrity_valid (matches Coq: Definition file_integrity_valid) -/
 def file_integrity_valid (f : File) : Prop :=
-  file_checksum f = compute_checksum (file_data f)
+  f.file_checksum = compute_checksum (f.file_data)
 
 /-- writes (matches Coq: Definition writes) -/
-def writes (f : File) (d : Data) : File := mkFile (file_id f) d (compute_checksum d) true
+def writes (f : File) (d : Data) : File := mkFile (f.file_id) d (compute_checksum d) true
 
 /-- reads (matches Coq: Definition reads) -/
 def reads (f : File) : Data :=
-  file_data f
+  f.file_data
 
 /-- power_loss_at (matches Coq: Definition power_loss_at) -/
 def power_loss_at (t : Time) : Prop :=
   True
 
 /-- journal_replay (matches Coq: Definition journal_replay) -/
-def journal_replay (fs : FileSystem) : FileSystem := mkFS (fs_files fs) [] true (fs_last_checkpoint fs)
+def journal_replay (fs : FileSystem) : FileSystem := mkFS (fs.fs_files) [] true (fs.fs_last_checkpoint)
 
 /-- after_recovery (matches Coq: Definition after_recovery) -/
 def after_recovery (fs : FileSystem) (t : Time) : FileSystem :=
@@ -170,21 +170,21 @@ def after_recovery (fs : FileSystem) (t : Time) : FileSystem :=
 
 /-- consistent (matches Coq: Definition consistent) -/
 def consistent (fs : FileSystem) : Prop :=
-  fs_consistent fs = true /\
-  forall f, In f (fs_files fs) -> file_integrity_valid f
+  fs.fs_consistent = true /\
+  forall f, In f (fs.fs_files) -> file_integrity_valid f
 
 /-- journaled_write (matches Coq: Definition journaled_write) -/
 def journaled_write (fs : FileSystem) (fid : FileId) (d : Data) : FileSystem :=
-  let new_journal := (fid, d) :: fs_journal fs in
-  mkFS (fs_files fs) new_journal (fs_consistent fs) (fs_last_checkpoint fs)
+  let new_journal := (fid, d) :: fs.fs_journal in
+  mkFS (fs.fs_files) new_journal (fs.fs_consistent) (fs.fs_last_checkpoint)
 
 /-- commit_journal (matches Coq: Definition commit_journal) -/
 def commit_journal (fs : FileSystem) : FileSystem :=
   let new_files := fold_left 
     (fun files entry => find_and_update files (fst entry) (snd entry))
-    (fs_journal fs)
-    (fs_files fs) in
-  mkFS new_files [] true (fs_last_checkpoint fs)
+    (fs.fs_journal)
+    (fs.fs_files) in
+  mkFS new_files [] true (fs.fs_last_checkpoint)
 
 /-- file_perm_allows_read (matches Coq: Definition file_perm_allows_read) -/
 def file_perm_allows_read (p : FilePermission) : Bool :=
@@ -198,12 +198,12 @@ def file_perm_allows_read (p : FilePermission) : Bool :=
 def file_perm_allows_write (p : FilePermission) : Bool :=
   match p with
   | .readWrite => true
-  | ._ => false
+  | _ => false
 
 /-- permission_enforced (matches Coq: Definition permission_enforced) -/
 def permission_enforced (f : ExtFile) (requester : Nat) (mode : FilePermission) : Prop :=
-  efile_owner f = requester \/
-  (mode = ReadOnly /\ file_perm_allows_read (efile_permission f) = true)
+  f.efile_owner = requester \/
+  (mode = .readOnly /\ file_perm_allows_read (f.efile_permission) = true)
 
 /-- no_directory_traversal (matches Coq: Definition no_directory_traversal) -/
 def no_directory_traversal (path : List Nat) : Prop :=
@@ -211,34 +211,34 @@ def no_directory_traversal (path : List Nat) : Prop :=
 
 /-- symlink_safe (matches Coq: Definition symlink_safe) -/
 def symlink_safe (f : ExtFile) : Prop :=
-  efile_type f = SymLink -> efile_permission f = ReadOnly
+  f.efile_type = SymLink -> f.efile_permission = .readOnly
 
 /-- file_lock_exclusive (matches Coq: Definition file_lock_exclusive) -/
 def file_lock_exclusive (f : ExtFile) : Prop :=
-  efile_locked f = true ->
-  efile_lock_owner f > 0
+  f.efile_locked = true ->
+  f.efile_lock_owner > 0
 
 /-- atomic_rename_prop (matches Coq: Definition atomic_rename_prop) -/
 def atomic_rename_prop (f : ExtFile) (new_id : FileId) : Prop :=
-  efile_data f = efile_data (mkExtFile new_id (efile_type f) (efile_permission f)
-    (efile_owner f) (efile_data f) (efile_checksum f) (efile_locked f)
-    (efile_lock_owner f) (efile_inode_ref_count f) (efile_access_time f))
+  f.efile_data = efile_data (mkExtFile new_id (f.efile_type) (f.efile_permission)
+    (f.efile_owner) (f.efile_data) (f.efile_checksum) (f.efile_locked)
+    (f.efile_lock_owner) (f.efile_inode_ref_count) (f.efile_access_time))
 
 /-- fd_bounded (matches Coq: Definition fd_bounded) -/
 def fd_bounded (fd : FileDescriptor) (max_fd : Nat) : Prop :=
-  fd_number fd < max_fd
+  fd.fd_number < max_fd
 
 /-- inode_ref_positive (matches Coq: Definition inode_ref_positive) -/
 def inode_ref_positive (f : ExtFile) : Prop :=
-  efile_inode_ref_count f > 0 -> efile_permission f <> NoAccess
+  f.efile_inode_ref_count > 0 -> f.efile_permission <> .noAccess
 
 /-- quota_enforced_prop (matches Coq: Definition quota_enforced_prop) -/
 def quota_enforced_prop (q : Quota) : Prop :=
-  quota_used q <= quota_limit q
+  q.quota_used <= q.quota_limit
 
 /-- ext_file_integrity (matches Coq: Definition ext_file_integrity) -/
 def ext_file_integrity (f : ExtFile) : Prop :=
-  efile_checksum f = compute_checksum (efile_data f)
+  f.efile_checksum = compute_checksum (f.efile_data)
 
 /-- path_canonical (matches Coq: Definition path_canonical) -/
 def path_canonical (path : List Nat) : Prop :=
@@ -268,7 +268,7 @@ theorem commit_establishes_consistency : ∀ (fs : FileSystem), fs_consistent (c
   simp
 
 /-- file_permissions_enforced (matches Coq) -/
-theorem file_permissions_enforced : ∀ (f : ExtFile) (requester : nat), permission_enforced f requester ReadOnly → efile_owner f = requester ∨ file_perm_allows_read (efile_permission f) = true := by
+theorem file_permissions_enforced : ∀ (f : ExtFile) (requester : Nat), permission_enforced f requester .readOnly → efile_owner f = requester ∨ file_perm_allows_read (efile_permission f) = true := by
   intro h; exact h
 
 /-- directory_traversal_prevented (matches Coq) -/
@@ -300,7 +300,7 @@ theorem path_canonicalization : ∀ (path : list nat), path_canonical path → ~
   intro h; exact h
 
 /-- file_descriptor_bounded (matches Coq) -/
-theorem file_descriptor_bounded : ∀ (fd : FileDescriptor) (max_fd : nat), fd_bounded fd max_fd → fd_number fd < max_fd := by
+theorem file_descriptor_bounded : ∀ (fd : FileDescriptor) (max_fd : Nat), fd_bounded fd max_fd → fd_number fd < max_fd := by
   intro h; exact h
 
 /-- inode_reference_count_correct (matches Coq) -/

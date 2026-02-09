@@ -234,79 +234,79 @@ def Confidence : Type :=
 
 /-- valid_detection (matches Coq: Definition valid_detection) -/
 def valid_detection (d : Detection) : Prop :=
-  det_valid d = true /\ det_confidence d >= 50
+  d.det_valid = true /\ d.det_confidence >= 50
 
 /-- accurate_detection (matches Coq: Definition accurate_detection) -/
 def accurate_detection (d : Detection) (ground_truth : BoundingBox) : Prop :=
-  let box := det_box d in
+  let box := d.det_box in
   
-  (max (bbox_x box) (bbox_x ground_truth) - min (bbox_x box) (bbox_x ground_truth)) <= 
-    (bbox_w box + bbox_w ground_truth) / 2 /\
-  (max (bbox_y box) (bbox_y ground_truth) - min (bbox_y box) (bbox_y ground_truth)) <= 
-    (bbox_h box + bbox_h ground_truth) / 2
+  (max (box.bbox_x) (ground_truth.bbox_x) - min (box.bbox_x) (ground_truth.bbox_x)) <= 
+    (box.bbox_w + ground_truth.bbox_w) / 2 /\
+  (max (box.bbox_y) (ground_truth.bbox_y) - min (box.bbox_y) (ground_truth.bbox_y)) <= 
+    (box.bbox_h + ground_truth.bbox_h) / 2
 
 /-- detection_bounded (matches Coq: Definition detection_bounded) -/
 def detection_bounded (r : ObjectDetectionResult) : Prop :=
-  length (od_detections r) <= 100 /\  
-  od_latency_ms r <= 100
+  length (r.od_detections) <= 100 /\  
+  r.od_latency_ms <= 100
 
 /-- cv_private (matches Coq: Definition cv_private) -/
 def cv_private (r : ObjectDetectionResult) : Prop :=
-  od_processed_on_device r = true
+  r.od_processed_on_device = true
 
 /-- face_privacy_preserving (matches Coq: Definition face_privacy_preserving) -/
 def face_privacy_preserving (fd : FaceDetection) : Prop :=
-  face_data_on_device fd = true /\ face_anonymized fd = true
+  fd.face_data_on_device = true /\ fd.face_anonymized = true
 
 /-- ocr_accuracy_within_bound (matches Coq: Definition ocr_accuracy_within_bound) -/
 def ocr_accuracy_within_bound (r : OCRResult) : Prop :=
-  ocr_confidence r >= ocr_accuracy_bound r
+  r.ocr_confidence >= r.ocr_accuracy_bound
 
 /-- confidence_properly_reported (matches Coq: Definition confidence_properly_reported) -/
 def confidence_properly_reported (od : ObjectDetection) : Prop :=
-  obj_confidence_reported od = true /\ obj_confidence od <= 100
+  od.obj_confidence_reported = true /\ od.obj_confidence <= 100
 
 /-- classification_deterministic (matches Coq: Definition classification_deterministic) -/
 def classification_deterministic (cr : ClassificationResult) : Prop :=
-  class_deterministic cr = true
+  cr.class_deterministic = true
 
 /-- barcode_format_known (matches Coq: Definition barcode_format_known) -/
 def barcode_format_known (br : BarcodeResult) : Prop :=
-  barcode_format br <> UnknownFormat /\ barcode_valid br = true
+  br.barcode_format <> UnknownFormat /\ br.barcode_valid = true
 
 /-- photo_analysis_permitted (matches Coq: Definition photo_analysis_permitted) -/
 def photo_analysis_permitted (pa : PhotoAnalysis) : Prop :=
-  permission_granted pa = true
+  pa.permission_granted = true
 
 /-- depth_within_bounds (matches Coq: Definition depth_within_bounds) -/
 def depth_within_bounds (de : DepthEstimate) : Prop :=
-  depth_min de <= depth_value de /\ depth_value de <= depth_max de
+  de.depth_min <= de.depth_value /\ de.depth_value <= de.depth_max
 
 /-- pose_is_stable (matches Coq: Definition pose_is_stable) -/
 def pose_is_stable (pe : PoseEstimate) : Prop :=
-  pose_stable pe = true /\ pose_frame_count pe >= 3
+  pe.pose_stable = true /\ pe.pose_frame_count >= 3
 
 /-- scene_is_consistent (matches Coq: Definition scene_is_consistent) -/
 def scene_is_consistent (sc : SceneClassification) : Prop :=
-  scene_consistent sc = true /\ scene_confidence sc >= 50
+  sc.scene_consistent = true /\ sc.scene_confidence >= 50
 
 /-- language_is_supported (matches Coq: Definition language_is_supported) -/
 def language_is_supported (tr : TextRecognition) : Prop :=
-  text_language_supported tr = true /\ In (text_language tr) (text_supported_languages tr)
+  tr.text_language_supported = true /\ In (tr.text_language) (tr.text_supported_languages)
 
 /-- request_cancellable (matches Coq: Definition request_cancellable) -/
 def request_cancellable (vr : VisionRequest) : Prop :=
-  vr_completed vr = false -> vr_cancelled vr = true \/ vr_cancelled vr = false
+  vr.vr_completed = false -> vr.vr_cancelled = true \/ vr.vr_cancelled = false
 
 /-- similarity_symmetric_pair (matches Coq: Definition similarity_symmetric_pair) -/
 def similarity_symmetric_pair (p1 p2 : ImagePair) : Prop :=
-  img_a p1 = img_b p2 ->
-  img_b p1 = img_a p2 ->
-  similarity_score p1 = similarity_score p2
+  p1.img_a = p2.img_b ->
+  p1.img_b = p2.img_a ->
+  p1.similarity_score = p2.similarity_score
 
 /-- frame_rate_limited (matches Coq: Definition frame_rate_limited) -/
 def frame_rate_limited (f1 f2 : FrameAnalysis) : Prop :=
-  frame_timestamp_ms f2 >= frame_timestamp_ms f1 + min_interval_ms f1
+  f2.frame_timestamp_ms >= f1.frame_timestamp_ms + f1.min_interval_ms
 
 /-- object_detection_bounded (matches Coq) -/
 theorem object_detection_bounded : ∀ (result : ObjectDetectionResult), detection_bounded result → length (od_detections result) ≤ 100 := by

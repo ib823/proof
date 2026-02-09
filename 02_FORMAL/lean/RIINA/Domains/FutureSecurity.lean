@@ -341,9 +341,9 @@ def did_robust (did : DefenseInDepth) : Bool :=
 
 /-- speculation_conservative (matches Coq: Definition speculation_conservative) -/
 def speculation_conservative (sm : SpeculationMitigation) : Bool :=
-  sm_conservative sm &&
-  (has_full_serialize (sm_barriers sm) || (sm_retpoline sm && sm_ibrs sm)) &&
-  sm_ssbd sm
+  sm.sm_conservative &&
+  (has_full_serialize (sm.sm_barriers) || (sm.sm_retpoline && sm.sm_ibrs)) &&
+  sm.sm_ssbd
 
 /-- leakage_minimal (matches Coq: Definition leakage_minimal) -/
 def leakage_minimal (lb : LeakageBound) : Bool :=
@@ -351,18 +351,18 @@ def leakage_minimal (lb : LeakageBound) : Bool :=
 
 /-- scm_comprehensive (matches Coq: Definition scm_comprehensive) -/
 def scm_comprehensive (scm : SideChannelMitigation) : Bool :=
-  scm_constant_time scm &&
-  scm_no_secret_dependent_branches scm &&
-  scm_no_secret_dependent_memory scm &&
-  scm_minimal_surface scm
+  scm.scm_constant_time &&
+  scm.scm_no_secret_dependent_branches &&
+  scm.scm_no_secret_dependent_memory &&
+  scm.scm_minimal_surface
 
 /-- composed_security_sound (matches Coq: Definition composed_security_sound) -/
 def composed_security_sound (cs : ComposedSecurity) : Bool :=
-  all_components_verified (cs_components cs) &&
-  cs_composition_proof cs &&
-  cs_no_assumption_cycles cs &&
-  cs_all_assumptions_met cs &&
-  cs_emergent_analysis cs
+  all_components_verified (cs.cs_components) &&
+  cs.cs_composition_proof &&
+  cs.cs_no_assumption_cycles &&
+  cs.cs_all_assumptions_met &&
+  cs.cs_emergent_analysis
 
 /-- key_rotation_apt_safe (matches Coq: Definition key_rotation_apt_safe) -/
 def key_rotation_apt_safe (krp : KeyRotationPolicy) : Bool :=
@@ -370,17 +370,17 @@ def key_rotation_apt_safe (krp : KeyRotationPolicy) : Bool :=
 
 /-- cv_comprehensive (matches Coq: Definition cv_comprehensive) -/
 def cv_comprehensive (cv : ContinuousVerification) : Bool :=
-  cv_runtime_checks cv &&
-  cv_periodic_attestation cv &&
+  cv.cv_runtime_checks &&
+  cv.cv_periodic_attestation &&
   Nat
 
 /-- apt_resistance_adequate (matches Coq: Definition apt_resistance_adequate) -/
 def apt_resistance_adequate (apt : APTResistance) : Bool :=
-  key_rotation_apt_safe (apt_key_rotation apt) &&
-  cv_comprehensive (apt_continuous_verify apt) &&
-  apt_compartmentalization apt &&
-  apt_least_privilege apt &&
-  apt_audit_logging apt
+  key_rotation_apt_safe (apt.apt_key_rotation) &&
+  cv_comprehensive (apt.apt_continuous_verify) &&
+  apt.apt_compartmentalization &&
+  apt.apt_least_privilege &&
+  apt.apt_audit_logging
 
 /-- tls_pq_safe (matches Coq: Definition tls_pq_safe) -/
 def tls_pq_safe (tls : TLSConfig) : Bool :=
@@ -388,7 +388,7 @@ def tls_pq_safe (tls : TLSConfig) : Bool :=
 
 /-- qkd_secure (matches Coq: Definition qkd_secure) -/
 def qkd_secure (qkd : QKDConfig) : Bool :=
-  qkd_enabled qkd &&
+  qkd.qkd_enabled &&
   Nat
 
 /-- qsn_secure (matches Coq: Definition qsn_secure) -/
@@ -419,10 +419,10 @@ def adversary_capability_level (a : AdversaryCapability) : Nat :=
 
 /-- proof_adversary_independent (matches Coq: Definition proof_adversary_independent) -/
 def proof_adversary_independent (mp : MathematicalProof) : Prop :=
-  mp_machine_checked mp = true ->
+  mp.mp_machine_checked = true ->
   forall (adv : AdversaryCapability), 
     
-    mp_proof_exists mp = true
+    mp.mp_proof_exists = true
 
 /-- future_security_complete (matches Coq: Definition future_security_complete) -/
 def future_security_complete : Prop :=
@@ -438,7 +438,7 @@ theorem fut_001_hybrid_defense : ∀ (pq : PQCryptoConfig), pqc_hybrid_mode pq =
   simp_all [Bool.and_eq_true]
 
 /-- fut_002_quantum_grover_mitigated (matches Coq) -/
-theorem fut_002_quantum_grover_mitigated : ∀ (bits : nat), Nat.leb 256 bits = true →  Nat.leb 128 (grover_effective_bits bits) = true := by
+theorem fut_002_quantum_grover_mitigated : ∀ (bits : Nat), Nat.leb 256 bits = true →  Nat.leb 128 (grover_effective_bits bits) = true := by
   simp_all [Bool.and_eq_true]
 
 /-- fut_002_symmetric_quantum_safe (matches Coq) -/
@@ -490,11 +490,11 @@ theorem fut_008_pq_signature_secure : ∀ (pq : PQCryptoConfig), pq_config_secur
   simp_all [Bool.and_eq_true]
 
 /-- fut_008_ml_dsa_87_maximum (matches Coq) -/
-theorem fut_008_ml_dsa_87_maximum : sig_security_level ML_DSA_87 = 5 := by
+theorem fut_008_ml_dsa_87_maximum : sig_security_level .mL_DSA_87 = 5 := by
   rfl
 
 /-- fut_008_slh_dsa_256_secure (matches Coq) -/
-theorem fut_008_slh_dsa_256_secure : sig_security_level SLH_DSA_256f = 5 := by
+theorem fut_008_slh_dsa_256_secure : sig_security_level .sLH_DSA_256f = 5 := by
   rfl
 
 /-- fut_009_quantum_network_mitigated (matches Coq) -/
@@ -514,7 +514,7 @@ theorem fut_010_agi_adversary_handled : ∀ (fvc : FormalVerificationConfig) (ad
   intro h; exact h
 
 /-- fut_010_proof_assistant_guarantee (matches Coq) -/
-theorem fut_010_proof_assistant_guarantee : ∀ (fvc : FormalVerificationConfig), fvc_level fvc = MachineCheckedProof → fvc_spec_complete fvc = true → fvc_assumptions_explicit fvc = true →   verification_strength (fvc_level fvc) = 6 := by
+theorem fut_010_proof_assistant_guarantee : ∀ (fvc : FormalVerificationConfig), fvc_level fvc = .machineCheckedProof → fvc_spec_complete fvc = true → fvc_assumptions_explicit fvc = true →   verification_strength (fvc_level fvc) = 6 := by
   rfl
 
 /-- fut_010_scaling_defense (matches Coq) -/

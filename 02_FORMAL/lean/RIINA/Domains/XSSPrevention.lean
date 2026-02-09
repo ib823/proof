@@ -323,44 +323,44 @@ structure DOMBasedXSSScenario where
 
 /-- output_safe (matches Coq: Definition output_safe) -/
 def output_safe (o : OutputEncoding) : Bool :=
-  oe_html_escape o && oe_js_escape o && oe_url_encode o && oe_css_escape o
+  o.oe_html_escape && o.oe_js_escape && o.oe_url_encode && o.oe_css_escape
 
 /-- csp_enforced (matches Coq: Definition csp_enforced) -/
 def csp_enforced (c : ContentSecurityPolicy) : Bool :=
-  csp_script_src c && csp_style_src c && csp_default_src c && csp_nonce_support c
+  c.csp_script_src && c.csp_style_src && c.csp_default_src && c.csp_nonce_support
 
 /-- csp_maximum (matches Coq: Definition csp_maximum) -/
 def csp_maximum (c : ContentSecurityPolicy) : Bool :=
-  csp_script_src c && csp_style_src c && csp_default_src c &&
-  csp_nonce_support c && csp_strict_dynamic c &&
-  csp_frame_ancestors c && csp_report_uri c
+  c.csp_script_src && c.csp_style_src && c.csp_default_src &&
+  c.csp_nonce_support && c.csp_strict_dynamic &&
+  c.csp_frame_ancestors && c.csp_report_uri
 
 /-- dom_sanitizer_complete (matches Coq: Definition dom_sanitizer_complete) -/
 def dom_sanitizer_complete (d : DOMSanitizer) : Bool :=
-  dom_remove_scripts d && dom_remove_event_handlers d &&
-  dom_sanitize_urls d && dom_allowlist_tags d && dom_allowlist_attrs d
+  d.dom_remove_scripts && d.dom_remove_event_handlers &&
+  d.dom_sanitize_urls && d.dom_allowlist_tags && d.dom_allowlist_attrs
 
 /-- input_validation_complete (matches Coq: Definition input_validation_complete) -/
 def input_validation_complete (i : InputValidator) : Bool :=
-  (0 <? iv_max_length i) && iv_encoding_validation i &&
-  iv_strip_null_bytes i && iv_normalize_unicode i
+  (0 <? i.iv_max_length) && i.iv_encoding_validation &&
+  i.iv_strip_null_bytes && i.iv_normalize_unicode
 
 /-- xss_protected (matches Coq: Definition xss_protected) -/
 def xss_protected (x : XSSConfig) : Bool :=
-  output_safe (xss_output x) && csp_enforced (xss_csp x) && xss_dom_sanitization x
+  output_safe (x.xss_output) && csp_enforced (x.xss_csp) && x.xss_dom_sanitization
 
 /-- xss_maximum_protection (matches Coq: Definition xss_maximum_protection) -/
 def xss_maximum_protection (x : XSSConfig) : Bool :=
-  output_safe (xss_output x) && csp_maximum (xss_csp x) &&
-  dom_sanitizer_complete (xss_dom x) &&
-  input_validation_complete (xss_input x)
+  output_safe (x.xss_output) && csp_maximum (x.xss_csp) &&
+  dom_sanitizer_complete (x.xss_dom) &&
+  input_validation_complete (x.xss_input)
 
 /-- taint_safe (matches Coq: Definition taint_safe) -/
 def taint_safe (t : TaintLevel) : Bool :=
   match t with
   | .taintSanitized => true
   | .taintTrusted => true
-  | ._ => false
+  | _ => false
 
 /-- riina_output (matches Coq: Definition riina_output) -/
 def riina_output : OutputEncoding := mkOutputEnc true true true true
@@ -382,22 +382,22 @@ def propagate_taint := sorry -- complex match, needs manual translation
 
 /-- reflected_xss_safe (matches Coq: Definition reflected_xss_safe) -/
 def reflected_xss_safe (r : ReflectedXSSScenario) : Bool :=
-  rx_sanitization_applied r && rx_output_encoded r
+  r.rx_sanitization_applied && r.rx_output_encoded
 
 /-- riina_reflected (matches Coq: Definition riina_reflected) -/
 def riina_reflected : ReflectedXSSScenario := mkReflected TaintUntrusted true true
 
 /-- stored_xss_safe (matches Coq: Definition stored_xss_safe) -/
 def stored_xss_safe (s : StoredXSSScenario) : Bool :=
-  sx_input_validated s && sx_storage_sanitized s &&
-  sx_retrieval_encoded s && sx_output_context_aware s
+  s.sx_input_validated && s.sx_storage_sanitized &&
+  s.sx_retrieval_encoded && s.sx_output_context_aware
 
 /-- riina_stored (matches Coq: Definition riina_stored) -/
 def riina_stored : StoredXSSScenario := mkStored true true true true
 
 /-- dom_xss_safe (matches Coq: Definition dom_xss_safe) -/
 def dom_xss_safe (d : DOMBasedXSSScenario) : Bool :=
-  dx_source_sanitized d && dx_sink_safe d && dx_trusted_types d && dx_no_eval d
+  d.dx_source_sanitized && d.dx_sink_safe && d.dx_trusted_types && d.dx_no_eval
 
 /-- riina_dom_based (matches Coq: Definition riina_dom_based) -/
 def riina_dom_based : DOMBasedXSSScenario := mkDOMBased true true true true
@@ -412,7 +412,7 @@ def is_js_dangerous (c : Nat) : Bool :=
 
 /-- needs_url_encoding (matches Coq: Definition needs_url_encoding) -/
 def needs_url_encoding (c : Nat) : Bool :=
-  negb (
+  !(
     (48 <=? c) && (c <=? 57) ||
     (65 <=? c) && (c <=? 90) ||
     (97 <=? c) && (c <=? 122) ||
@@ -427,19 +427,19 @@ def is_css_dangerous (c : Nat) : Bool :=
   Nat
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- andb_false_iff (matches Coq) -/
-theorem andb_false_iff : ∀ a b : bool, a && b = false <-> a = false ∨ b = false := by
+private theorem andb_false_iff : ∀ a b : Bool, a && b = false <-> a = false ∨ b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- forallb_true (matches Coq) -/
@@ -747,11 +747,11 @@ theorem XSS_075 : ∀ i, input_validation_complete i = true → iv_encoding_vali
   simp_all [Bool.and_eq_true]
 
 /-- XSS_076 (matches Coq) -/
-theorem XSS_076 : taint_safe TaintSanitized = true := by
+theorem XSS_076 : taint_safe .taintSanitized = true := by
   rfl
 
 /-- XSS_077 (matches Coq) -/
-theorem XSS_077 : taint_safe TaintTrusted = true := by
+theorem XSS_077 : taint_safe .taintTrusted = true := by
   rfl
 
 /-- XSS_078 (matches Coq) -/
@@ -763,7 +763,7 @@ theorem XSS_079 : taint_safe TaintValidated = false := by
   rfl
 
 /-- XSS_080 (matches Coq) -/
-theorem XSS_080 : ∀ t, taint_safe t = true → t = TaintSanitized ∨ t = TaintTrusted := by
+theorem XSS_080 : ∀ t, taint_safe t = true → t = .taintSanitized ∨ t = TaintTrusted := by
   simp_all [Bool.and_eq_true]
 
 /-- XSS_081 (matches Coq) -/
@@ -771,11 +771,11 @@ theorem XSS_081 : ∀ t, taint_safe t = false → t = TaintUntrusted ∨ t = Tai
   simp_all [Bool.and_eq_true]
 
 /-- XSS_082 (matches Coq) -/
-theorem XSS_082 : propagate_taint TaintTrusted TaintTrusted = TaintTrusted := by
+theorem XSS_082 : propagate_taint .taintTrusted .taintTrusted = TaintTrusted := by
   rfl
 
 /-- XSS_083 (matches Coq) -/
-theorem XSS_083 : propagate_taint TaintSanitized TaintSanitized = TaintSanitized := by
+theorem XSS_083 : propagate_taint .taintSanitized .taintSanitized = TaintSanitized := by
   rfl
 
 /-- XSS_084 (matches Coq) -/

@@ -1,0 +1,32 @@
+AX1-R build checks
+
+[narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo
+status: pass
+log: /tmp/ax1r_check_logical_relation.log
+
+[narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2.vo
+status: pass
+log: /tmp/ax1r_check_noninterference_v2.log
+
+[narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/Declassification.vo
+status: pass
+log: /tmp/ax1r_check_declassification.log
+
+[narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/SecurityProperties.vo
+status: pass
+log: /tmp/ax1r_check_security_properties.log
+
+[full build]
+cmd: make -C 02_FORMAL/coq -j2
+status: fail
+log: /tmp/ax1r_full_build.log
+
+AX1-related failures:
+- none observed before build stops
+
+pre-existing unrelated baseline failures:
+- 02_FORMAL/coq/effects/EffectGate.v:97 (still present)

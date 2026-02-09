@@ -313,15 +313,15 @@ def is_strong_cipher (cs : CipherSuite) : Bool :=
 
 /-- tls_connected (matches Coq: Definition tls_connected) -/
 def tls_connected (conn : TLSConnection) : Prop :=
-  tls_verified conn = true /\ 
-  tls_version conn = TLS_1_3 /\
-  transcript_bound (tls_transcript conn) = true /\
-  tls_forward_secret conn = true /\
-  cert_chain_verified (tls_server_cert conn) = true
+  conn.tls_verified = true /\ 
+  conn.tls_version = TLS_1_3 /\
+  transcript_bound (conn.tls_transcript) = true /\
+  conn.tls_forward_secret = true /\
+  cert_chain_verified (conn.tls_server_cert) = true
 
 /-- valid_cert_chain (matches Coq: Definition valid_cert_chain) -/
 def valid_cert_chain (cert : Certificate) : Prop :=
-  cert_chain_verified cert = true
+  cert.cert_chain_verified = true
 
 /-- key_derivation_correct (matches Coq: Definition key_derivation_correct) -/
 def key_derivation_correct (conn : TLSConnection) : Prop :=
@@ -329,68 +329,68 @@ def key_derivation_correct (conn : TLSConnection) : Prop :=
 
 /-- channel_binding_holds (matches Coq: Definition channel_binding_holds) -/
 def channel_binding_holds (conn : TLSConnection) : Prop :=
-  tls_channel_bound conn = true /\
-  transcript_bound (tls_transcript conn) = true
+  conn.tls_channel_bound = true /\
+  transcript_bound (conn.tls_transcript) = true
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
 def valid_transition := sorry -- complex match, needs manual translation
 
 /-- seq_unpredictable (matches Coq: Definition seq_unpredictable) -/
 def seq_unpredictable (conn : TCPConnection) : Prop :=
-  tcp_seq_random_source conn > 0
+  conn.tcp_seq_random_source > 0
 
 /-- injection_detectable (matches Coq: Definition injection_detectable) -/
 def injection_detectable := sorry -- complex match, needs manual translation
 
 /-- flow_control_correct (matches Coq: Definition flow_control_correct) -/
 def flow_control_correct (conn : TCPConnection) : Prop :=
-  tcp_window conn > 0
+  conn.tcp_window > 0
 
 /-- frag_reassembly_safe (matches Coq: Definition frag_reassembly_safe) -/
 def frag_reassembly_safe (buf : FragmentBuffer) : Prop :=
-  frag_no_overlap_verified buf = true /\
-  frag_total_size buf <= 65535
+  buf.frag_no_overlap_verified = true /\
+  buf.frag_total_size <= 65535
 
 /-- no_overlapping_frags (matches Coq: Definition no_overlapping_frags) -/
 def no_overlapping_frags (buf : FragmentBuffer) : Prop :=
-  frag_no_overlap_verified buf = true
+  buf.frag_no_overlap_verified = true
 
 /-- icmp_rate_bounded (matches Coq: Definition icmp_rate_bounded) -/
 def icmp_rate_bounded (state : ICMPState) : Prop :=
-  icmp_count state <= icmp_max_rate state
+  state.icmp_count <= state.icmp_max_rate
 
 /-- routing_correct (matches Coq: Definition routing_correct) -/
 def routing_correct (entry : RouteEntry) (dest : Nat) : Prop :=
-  route_valid entry = true
+  entry.route_valid = true
 
 /-- dnssec_validated (matches Coq: Definition dnssec_validated) -/
 def dnssec_validated := sorry -- complex match, needs manual translation
 
 /-- authentic (matches Coq: Definition authentic) -/
 def authentic (response : DNSRecord) (query : DNSQuery) : Prop :=
-  query_name query = dns_name response /\
-  dns_sig_verified response = true
+  query.query_name = response.dns_name /\
+  response.dns_sig_verified = true
 
 /-- cache_safe (matches Coq: Definition cache_safe) -/
 def cache_safe (entry : DNSCacheEntry) : Prop :=
-  cache_validated entry = true /\
-  dns_sig_verified (cache_record entry) = true
+  entry.cache_validated = true /\
+  dns_sig_verified (entry.cache_record) = true
 
 /-- rebinding_prevented (matches Coq: Definition rebinding_prevented) -/
 def rebinding_prevented (check : DNSRebindingCheck) : Prop :=
-  rebind_is_private check = true -> rebind_blocked check = true
+  check.rebind_is_private = true -> check.rebind_blocked = true
 
 /-- query_has_integrity (matches Coq: Definition query_has_integrity) -/
 def query_has_integrity := sorry -- complex match, needs manual translation
 
 /-- amplification_bounded (matches Coq: Definition amplification_bounded) -/
 def amplification_bounded (state : DNSAmplificationState) : Prop :=
-  amp_response_size state <= amp_query_size state * amp_ratio_max state
+  state.amp_response_size <= state.amp_query_size * state.amp_ratio_max
 
 /-- doh_confidential (matches Coq: Definition doh_confidential) -/
 def doh_confidential (conn : DoHConnection) : Prop :=
-  doh_encrypted conn = true /\
-  tls_verified (doh_tls_conn conn) = true
+  conn.doh_encrypted = true /\
+  tls_verified (conn.doh_tls_conn) = true
 
 /-- NET_001_01_tls_handshake_auth (matches Coq) -/
 theorem NET_001_01_tls_handshake_auth : ∀ conn, tls_connected conn → valid_cert_chain (tls_server_cert conn) := by

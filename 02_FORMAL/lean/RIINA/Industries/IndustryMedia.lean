@@ -172,7 +172,7 @@ theorem dci_security : ∀ (cinema_content : ContentType),  True := by
 /-- Section K03 - TPN Assessment
     Reference: IND_K_MEDIA.md Section 3.3 -/
 /-- tpn_compliance (matches Coq) -/
-theorem tpn_compliance : ∀ (vendor : nat),  True := by
+theorem tpn_compliance : ∀ (vendor : Nat),  True := by
   trivial
 
 /-- Section K04 - Forensic Watermarking
@@ -184,7 +184,7 @@ theorem forensic_watermark : ∀ (content : ContentType) (viewer : nat),  True :
 /-- Section K05 - CDSA Compliance
     Reference: IND_K_MEDIA.md Section 3.5 -/
 /-- cdsa_compliance (matches Coq) -/
-theorem cdsa_compliance : ∀ (content_delivery : nat),  True := by
+theorem cdsa_compliance : ∀ (content_delivery : Nat),  True := by
   trivial
 
 /-- Pre-release content requires highest protection -/

@@ -235,38 +235,38 @@ structure ExtendedSTARKSecurity where
 
 /-- stark_props_secure (matches Coq: Definition stark_props_secure) -/
 def stark_props_secure (s : STARKProperties) : Bool :=
-  stark_transparent s && stark_scalable s && stark_post_quantum s
+  s.stark_transparent && s.stark_scalable && s.stark_post_quantum
 
 /-- air_secure (matches Coq: Definition air_secure) -/
 def air_secure (a : AIRProperties) : Bool :=
-  air_algebraic a && air_low_degree a && air_fri_verified a
+  a.air_algebraic && a.air_low_degree && a.air_fri_verified
 
 /-- fri_secure (matches Coq: Definition fri_secure) -/
 def fri_secure (f : FRIProperties) : Bool :=
-  fri_soundness f && fri_query_bound f &&
-  fri_commitment_binding f && fri_interactive_to_non f
+  f.fri_soundness && f.fri_query_bound &&
+  f.fri_commitment_binding && f.fri_interactive_to_non
 
 /-- stark_fully_secure (matches Coq: Definition stark_fully_secure) -/
 def stark_fully_secure (s : STARKSecurity) : Bool :=
-  starks_completeness s && starks_soundness s && starks_zero_knowledge s &&
-  stark_props_secure (starks_stark s) && air_secure (starks_air s)
+  s.starks_completeness && s.starks_soundness && s.starks_zero_knowledge &&
+  stark_props_secure (s.starks_stark) && air_secure (s.starks_air)
 
 /-- extended_secure (matches Coq: Definition extended_secure) -/
 def extended_secure (e : ExtendedSTARKSecurity) : Bool :=
-  stark_fully_secure (ext_base e) && fri_secure (ext_fri e) &&
-  ext_simulation_secure e && ext_extraction_secure e && ext_quantum_resistant e
+  stark_fully_secure (e.ext_base) && fri_secure (e.ext_fri) &&
+  e.ext_simulation_secure && e.ext_extraction_secure && e.ext_quantum_resistant
 
 /-- prover_honest (matches Coq: Definition prover_honest) -/
 def prover_honest (p : ProverState) : Bool :=
-  prover_committed p && prover_fri_complete p
+  p.prover_committed && p.prover_fri_complete
 
 /-- verifier_honest (matches Coq: Definition verifier_honest) -/
 def verifier_honest (v : VerifierState) : Bool :=
-  verifier_accepting v
+  v.verifier_accepting
 
 /-- simulation_valid (matches Coq: Definition simulation_valid) -/
 def simulation_valid (s : SimulatorState) : Bool :=
-  sim_rewinding s && sim_indistinguishable s
+  s.sim_rewinding && s.sim_indistinguishable
 
 /-- riina_stark_props (matches Coq: Definition riina_stark_props) -/
 def riina_stark_props : STARKProperties := mkSTARKProperties true true true
@@ -294,7 +294,7 @@ def valid_simulator : SimulatorState := mkSimulatorState [1;2;3;4;5] true true
 
 /-- computational_soundness (matches Coq: Definition computational_soundness) -/
 def computational_soundness (s : STARKSecurity) (f : FRIProperties) : Bool :=
-  starks_soundness s && fri_soundness f && fri_commitment_binding f
+  s.starks_soundness && f.fri_soundness && f.fri_commitment_binding
 
 /-- amplified_soundness (matches Coq: Definition amplified_soundness) -/
 def amplified_soundness (base_sound : Bool) (rounds : Nat) : Bool :=
@@ -302,11 +302,11 @@ def amplified_soundness (base_sound : Bool) (rounds : Nat) : Bool :=
 
 /-- simulation_based_zk (matches Coq: Definition simulation_based_zk) -/
 def simulation_based_zk (s : STARKSecurity) (sim : SimulatorState) : Bool :=
-  starks_zero_knowledge s && sim_indistinguishable sim
+  s.starks_zero_knowledge && sim.sim_indistinguishable
 
 /-- perfect_zk (matches Coq: Definition perfect_zk) -/
 def perfect_zk (s : STARKSecurity) (sim : SimulatorState) : Bool :=
-  starks_zero_knowledge s && sim_indistinguishable sim && sim_rewinding sim
+  s.starks_zero_knowledge && sim.sim_indistinguishable && sim.sim_rewinding
 
 /-- zk_with_soundness (matches Coq: Definition zk_with_soundness) -/
 def zk_with_soundness (s : STARKSecurity) (f : FRIProperties) (sim : SimulatorState) : Bool :=
@@ -314,36 +314,36 @@ def zk_with_soundness (s : STARKSecurity) (f : FRIProperties) (sim : SimulatorSt
 
 /-- interaction_complete (matches Coq: Definition interaction_complete) -/
 def interaction_complete (p : ProverState) (v : VerifierState) (s : STARKSecurity) : Bool :=
-  prover_honest p && starks_completeness s && verifier_accepting v
+  prover_honest p && s.starks_completeness && v.verifier_accepting
 
 /-- fri_complete (matches Coq: Definition fri_complete) -/
 def fri_complete (p : ProverState) (f : FRIProperties) : Bool :=
-  prover_fri_complete p && fri_soundness f
+  p.prover_fri_complete && f.fri_soundness
 
 /-- post_quantum_secure (matches Coq: Definition post_quantum_secure) -/
 def post_quantum_secure (s : STARKProperties) (e : ExtendedSTARKSecurity) : Bool :=
-  stark_post_quantum s && ext_quantum_resistant e
+  s.stark_post_quantum && e.ext_quantum_resistant
 
 /-- hash_based_security (matches Coq: Definition hash_based_security) -/
 def hash_based_security (s : STARKProperties) (f : FRIProperties) : Bool :=
-  stark_post_quantum s && fri_commitment_binding f
+  s.stark_post_quantum && f.fri_commitment_binding
 
 /-- fully_transparent (matches Coq: Definition fully_transparent) -/
 def fully_transparent (s : STARKProperties) (f : FRIProperties) : Bool :=
-  stark_transparent s && fri_interactive_to_non f
+  s.stark_transparent && f.fri_interactive_to_non
 
 /-- publicly_verifiable (matches Coq: Definition publicly_verifiable) -/
 def publicly_verifiable (s : STARKSecurity) (f : FRIProperties) : Bool :=
-  stark_transparent (starks_stark s) && fri_interactive_to_non f &&
-  starks_soundness s
+  stark_transparent (s.starks_stark) && f.fri_interactive_to_non &&
+  s.starks_soundness
 
 /-- extraction_secure (matches Coq: Definition extraction_secure) -/
 def extraction_secure (e : ExtendedSTARKSecurity) (f : FRIProperties) : Bool :=
-  ext_extraction_secure e && fri_soundness f && fri_query_bound f
+  e.ext_extraction_secure && f.fri_soundness && f.fri_query_bound
 
 /-- air_stark_connection (matches Coq: Definition air_stark_connection) -/
 def air_stark_connection (a : AIRProperties) (s : STARKSecurity) : Bool :=
-  air_secure a && air_fri_verified a
+  air_secure a && a.air_fri_verified
 
 /-- modular_stark (matches Coq: Definition modular_stark) -/
 def modular_stark (s : STARKSecurity) (f : FRIProperties) (sim : SimulatorState) : Bool :=
@@ -358,23 +358,23 @@ def full_stark_security (s : STARKSecurity) (f : FRIProperties)
     SECTION 1: BOOLEAN UTILITIES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- orb_true_iff (matches Coq) -/
-theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
+theorem orb_true_iff : ∀ a b : Bool, a || b = true <-> a = true ∨ b = true := by
   simp_all [Bool.and_eq_true]
 
 /-- negb_true_iff (matches Coq) -/
-theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
+private theorem negb_true_iff : ∀ b : Bool, !b = true <-> b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- bool_dec (matches Coq) -/
-theorem bool_dec : ∀ b : bool, b = true ∨ b = false := by
+theorem bool_dec : ∀ b : Bool, b = true ∨ b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- andb_false_iff (matches Coq) -/
-theorem andb_false_iff : ∀ a b : bool, a && b = false <-> a = false ∨ b = false := by
+private theorem andb_false_iff : ∀ a b : Bool, a && b = false <-> a = false ∨ b = false := by
   simp_all [Bool.and_eq_true]
 
 /-- ============================================================================

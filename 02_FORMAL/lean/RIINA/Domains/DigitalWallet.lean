@@ -350,11 +350,11 @@ def sum_debits := sorry -- complex match, needs manual translation
 
 /-- invalidated (matches Coq: Definition invalidated) -/
 def invalidated (qr : QRCode) : Prop :=
-  qr_used qr = true
+  qr.qr_used = true
 
 /-- virtual_accounts_total (matches Coq: Definition virtual_accounts_total) -/
 def virtual_accounts_total (vas : List VirtualAccount) : Z :=
-  fold_left (fun acc va => acc + va_balance va) vas 0
+  fold_left (fun acc va => acc + va.va_balance) vas 0
 
 /-- session_expired (matches Coq: Definition session_expired) -/
 def session_expired (s : Session) (current_time : Nat) : Bool :=
@@ -362,7 +362,7 @@ def session_expired (s : Session) (current_time : Nat) : Bool :=
 
 /-- session_valid (matches Coq: Definition session_valid) -/
 def session_valid (s : Session) (current_time : Nat) : Prop :=
-  (current_time <= last_activity_time s + inactivity_timeout s)%nat
+  (current_time <= s.last_activity_time + s.inactivity_timeout)%nat
 
 /-- otp_valid (matches Coq: Definition otp_valid) -/
 def otp_valid (o : OTP) (current_time : Nat) : Bool :=
@@ -378,19 +378,19 @@ def velocity_exceeded (vc : VelocityCheck) : Bool :=
 
 /-- p2p_settlement_time (matches Coq: Definition p2p_settlement_time) -/
 def p2p_settlement_time (p : P2PTransfer) : Nat :=
-  p2p_completed_time p - p2p_initiated_time p
+  p.p2p_completed_time - p.p2p_initiated_time
 
 /-- qr_payment_time (matches Coq: Definition qr_payment_time) -/
 def qr_payment_time (qrp : QRPayment) : Nat :=
-  qrp_completed_time qrp - qrp_initiated_time qrp
+  qrp.qrp_completed_time - qrp.qrp_initiated_time
 
 /-- valid_merchant_settlement (matches Coq: Definition valid_merchant_settlement) -/
 def valid_merchant_settlement (mp : MerchantPayment) : Prop :=
-  mp_net_amount mp = mp_gross_amount mp - (mp_gross_amount mp * mp_mdr_rate mp / 100)
+  mp.mp_net_amount = mp.mp_gross_amount - (mp.mp_gross_amount * mp.mp_mdr_rate / 100)
 
 /-- bank_transfer_reconciled (matches Coq: Definition bank_transfer_reconciled) -/
 def bank_transfer_reconciled (bt : BankTransfer) : Prop :=
-  bt_reconciled bt = true -> bt_wallet_credit bt = bt_bank_debit bt
+  bt.bt_reconciled = true -> bt.bt_wallet_credit = bt.bt_bank_debit
 
 /-- agent_float_sufficient (matches Coq: Definition agent_float_sufficient) -/
 def agent_float_sufficient (af : AgentFloat) : Bool :=
@@ -415,11 +415,11 @@ def has_two_factors (ac : AuthContext) : Bool :=
 /-- wallets_unique (matches Coq: Definition wallets_unique) -/
 def wallets_unique (wallets : List Wallet) : Prop :=
   forall w1 w2, In w1 wallets -> In w2 wallets -> 
-    wallet_id w1 = wallet_id w2 -> w1 = w2
+    w1.wallet_id = w2.wallet_id -> w1 = w2
 
 /-- valid_wallet (matches Coq: Definition valid_wallet) -/
 def valid_wallet (w : Wallet) (txns : List Transaction) : Prop :=
-  balance w = sum_credits txns - sum_debits txns
+  w.balance = sum_credits txns - sum_debits txns
 
 /-- dormancy_threshold (matches Coq: Definition dormancy_threshold) -/
 def dormancy_threshold : Nat :=
@@ -431,7 +431,7 @@ def should_be_dormant (w : Wallet) (current_day : Nat) : Bool :=
 
 /-- can_withdraw (matches Coq: Definition can_withdraw) -/
 def can_withdraw (w : Wallet) (amount : Z) : Prop :=
-  amount <= balance w /\ amount > 0
+  amount <= w.balance /\ amount > 0
 
 /-- virtual_accounts_within_parent (matches Coq: Definition virtual_accounts_within_parent) -/
 def virtual_accounts_within_parent (vas : List VirtualAccount) (parent_balance : Z) : Prop :=
@@ -447,24 +447,24 @@ def qr_payment_fast (qrp : QRPayment) : Prop :=
 
 /-- refund_is_instant (matches Coq: Definition refund_is_instant) -/
 def refund_is_instant (r : Refund) : Prop :=
-  ref_instant r = true
+  r.ref_instant = true
 
 /-- chargeback_processed (matches Coq: Definition chargeback_processed) -/
 def chargeback_processed (cb : CardChargeback) : Prop :=
-  cb_processed cb = true -> cb_wallet_debit cb = cb_original_credit cb
+  cb.cb_processed = true -> cb.cb_wallet_debit = cb.cb_original_credit
 
 /-- crypto_rate_is_locked (matches Coq: Definition crypto_rate_is_locked) -/
 def crypto_rate_is_locked (ctu : CryptoTopUp) : Prop :=
-  ctu_rate_locked ctu = true ->
-  ctu_fiat_credit ctu = ctu_crypto_amount ctu * ctu_rate_at_confirmation ctu
+  ctu.ctu_rate_locked = true ->
+  ctu.ctu_fiat_credit = ctu.ctu_crypto_amount * ctu.ctu_rate_at_confirmation
 
 /-- stablecoin_instant (matches Coq: Definition stablecoin_instant) -/
 def stablecoin_instant (stu : StablecoinTopUp) : Prop :=
-  stu_confirmed stu = true -> stu_credited stu = true
+  stu.stu_confirmed = true -> stu.stu_credited = true
 
 /-- bank_ownership_verified_before_approval (matches Coq: Definition bank_ownership_verified_before_approval) -/
 def bank_ownership_verified_before_approval (bw : BankWithdrawal) : Prop :=
-  bw_approved bw = true -> bw_ownership_verified bw = true
+  bw.bw_approved = true -> bw.bw_ownership_verified = true
 
 /-- cardless_atm_otp_validity_minutes (matches Coq: Definition cardless_atm_otp_validity_minutes) -/
 def cardless_atm_otp_validity_minutes : Nat :=
@@ -472,28 +472,28 @@ def cardless_atm_otp_validity_minutes : Nat :=
 
 /-- cardless_otp_valid (matches Coq: Definition cardless_otp_valid) -/
 def cardless_otp_valid (catm : CardlessATM) (current_time : Nat) : Prop :=
-  otp_validity_minutes (catm_otp catm) = cardless_atm_otp_validity_minutes /\
-  otp_valid (catm_otp catm) current_time = true
+  otp_validity_minutes (catm.catm_otp) = cardless_atm_otp_validity_minutes /\
+  otp_valid (catm.catm_otp) current_time = true
 
 /-- agent_withdrawal_approved_with_cash (matches Coq: Definition agent_withdrawal_approved_with_cash) -/
 def agent_withdrawal_approved_with_cash (aw : AgentWithdrawal) : Prop :=
-  aw_approved aw = true -> agent_has_cash aw = true
+  aw.aw_approved = true -> agent_has_cash aw = true
 
 /-- sensitive_op_requires_2fa (matches Coq: Definition sensitive_op_requires_2fa) -/
 def sensitive_op_requires_2fa (ac : AuthContext) : Prop :=
-  ac_sensitive_op ac = true -> has_two_factors ac = true
+  ac.ac_sensitive_op = true -> has_two_factors ac = true
 
 /-- velocity_triggers_review (matches Coq: Definition velocity_triggers_review) -/
 def velocity_triggers_review (vc : VelocityCheck) : Prop :=
-  velocity_exceeded vc = true -> (vc_threshold vc < vc_txn_count vc)%nat
+  velocity_exceeded vc = true -> (vc.vc_threshold < vc.vc_txn_count)%nat
 
 /-- fraud_score_blocks_transaction (matches Coq: Definition fraud_score_blocks_transaction) -/
 def fraud_score_blocks_transaction (fs : FraudScore) : Prop :=
-  fraud_score_high fs = true -> (fs_threshold fs <= fs_score fs)%nat
+  fraud_score_high fs = true -> (fs.fs_threshold <= fs.fs_score)%nat
 
 /-- device_biometric_bound (matches Coq: Definition device_biometric_bound) -/
 def device_biometric_bound (d : Device) (wallet : WalletId) (bio_hash : Nat) : Prop :=
-  device_wallet d = wallet /\ biometric_hash d = bio_hash
+  d.device_wallet = wallet /\ d.biometric_hash = bio_hash
 
 /-- WALLET_001_01_account_uniqueness (matches Coq) -/
 theorem WALLET_001_01_account_uniqueness : ∀ wallets w1 w2, wallets_unique wallets → In w1 wallets → In w2 wallets → wallet_id w1 = wallet_id w2 → w1 = w2 := by

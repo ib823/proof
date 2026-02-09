@@ -107,15 +107,15 @@ structure TimingConstraint where
 
 /-- reading_in_bounds (matches Coq: Definition reading_in_bounds) -/
 def reading_in_bounds (r : SensorReading) : Bool :=
-  (reading_min r <=? reading_value r) && (reading_value r <=? reading_max r)
+  (r.reading_min <=? r.reading_value) && (r.reading_value <=? r.reading_max)
 
 /-- reading_valid (matches Coq: Definition reading_valid) -/
 def reading_valid (r : SensorReading) : Prop :=
-  reading_min r <= reading_value r /\ reading_value r <= reading_max r
+  r.reading_min <= r.reading_value /\ r.reading_value <= r.reading_max
 
 /-- spec_feasible (matches Coq: Definition spec_feasible) -/
 def spec_feasible (spec : MeasurementSpec) : Bool :=
-  (1 <=? meas_min_samples spec) && (meas_min_samples spec <=? meas_samples spec)
+  (1 <=? spec.meas_min_samples) && (spec.meas_min_samples <=? spec.meas_samples)
 
 /-- readings_avg (matches Coq: Definition readings_avg) -/
 def readings_avg := sorry -- complex match, needs manual translation
@@ -126,11 +126,11 @@ def all_within_tolerance (vals : List Nat) (ref tol : Nat) : Bool :=
 
 /-- timing_feasible (matches Coq: Definition timing_feasible) -/
 def timing_feasible (tc : TimingConstraint) : Bool :=
-  (wcet tc + jitter_bound tc <=? deadline tc) && (deadline tc <=? period tc)
+  (tc.wcet + tc.jitter_bound <=? tc.deadline) && (tc.deadline <=? tc.period)
 
 /-- timing_schedulable (matches Coq: Definition timing_schedulable) -/
 def timing_schedulable (tc : TimingConstraint) : Prop :=
-  wcet tc + jitter_bound tc <= deadline tc /\ deadline tc <= period tc
+  tc.wcet + tc.jitter_bound <= tc.deadline /\ tc.deadline <= tc.period
 
 /-- phys_transition (matches Coq: Definition phys_transition) -/
 def phys_transition (s : PhysState) (sensor_ok : Bool) : PhysState :=
@@ -145,7 +145,7 @@ def phys_transition (s : PhysState) (sensor_ok : Bool) : PhysState :=
 def is_operational (s : PhysState) : Bool :=
   match s with
   | .error => false
-  | ._ => true
+  | _ => true
 
 /-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: SENSOR READING VALIDATION
@@ -196,31 +196,31 @@ theorem feasible_deadline_within_period : ∀ tc, timing_schedulable tc → dead
     THEOREMS: PHYSICAL STATE MACHINE CORRECTNESS
     ═══════════════════════════════════════════════════════════════════════════ -/
 /-- idle_always_transitions_to_sensing (matches Coq) -/
-theorem idle_always_transitions_to_sensing : ∀ ok, phys_transition Idle ok = Sensing := by
+theorem idle_always_transitions_to_sensing : ∀ ok, phys_transition .idle ok = Sensing := by
   rfl
 
 /-- sensing_error_on_failure (matches Coq) -/
-theorem sensing_error_on_failure : phys_transition Sensing false = Error := by
+theorem sensing_error_on_failure : phys_transition .sensing false = Error := by
   rfl
 
 /-- sensing_proceeds_on_success (matches Coq) -/
-theorem sensing_proceeds_on_success : phys_transition Sensing true = Processing := by
+theorem sensing_proceeds_on_success : phys_transition .sensing true = Processing := by
   rfl
 
 /-- error_recovers_to_idle (matches Coq) -/
-theorem error_recovers_to_idle : ∀ ok, phys_transition Error ok = Idle := by
+theorem error_recovers_to_idle : ∀ ok, phys_transition .error ok = Idle := by
   rfl
 
 /-- full_cycle_returns_to_idle (matches Coq) -/
-theorem full_cycle_returns_to_idle : ∀ ok, phys_run Idle [true; true; true; ok] = Idle := by
+theorem full_cycle_returns_to_idle : ∀ ok, phys_run .idle [true; true; true; ok] = Idle := by
   cases ‹_› <;> simp
 
 /-- error_state_not_operational (matches Coq) -/
-theorem error_state_not_operational : is_operational Error = false := by
+theorem error_state_not_operational : is_operational .error = false := by
   rfl
 
 /-- idle_is_operational (matches Coq) -/
-theorem idle_is_operational : is_operational Idle = true := by
+theorem idle_is_operational : is_operational .idle = true := by
   rfl
 
 /-- reading_bounded_values (matches Coq) -/
@@ -228,34 +228,34 @@ theorem reading_bounded_values : ∀ r, reading_in_bounds r = true → reading_m
   simp_all [Bool.and_eq_true]
 
 /-- sensing_transitions_depend_on_input (matches Coq) -/
-theorem sensing_transitions_depend_on_input : phys_transition Sensing true ≠ phys_transition Sensing false := by
+theorem sensing_transitions_depend_on_input : phys_transition .sensing true ≠ phys_transition .sensing false := by
   simp_all [Bool.and_eq_true]
 
 /-- actuating_transitions_to_idle (matches Coq) -/
-theorem actuating_transitions_to_idle : ∀ ok, phys_transition Actuating ok = Idle := by
+theorem actuating_transitions_to_idle : ∀ ok, phys_transition .actuating ok = Idle := by
   rfl
 
 /-- processing_transitions_to_actuating (matches Coq) -/
-theorem processing_transitions_to_actuating : ∀ ok, phys_transition Processing ok = Actuating := by
+theorem processing_transitions_to_actuating : ∀ ok, phys_transition .processing ok = Actuating := by
   rfl
 
 /-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ADDITIONAL PROPERTIES
     ═══════════════════════════════════════════════════════════════════════════ -/
 /-- processing_is_operational (matches Coq) -/
-theorem processing_is_operational : is_operational Processing = true := by
+theorem processing_is_operational : is_operational .processing = true := by
   rfl
 
 /-- actuating_is_operational (matches Coq) -/
-theorem actuating_is_operational : is_operational Actuating = true := by
+theorem actuating_is_operational : is_operational .actuating = true := by
   rfl
 
 /-- sensing_is_operational (matches Coq) -/
-theorem sensing_is_operational : is_operational Sensing = true := by
+theorem sensing_is_operational : is_operational .sensing = true := by
   rfl
 
 /-- error_recovery_cycle (matches Coq) -/
-theorem error_recovery_cycle : ∀ ok, phys_run Error [ok; true; true; true; ok] = Idle := by
+theorem error_recovery_cycle : ∀ ok, phys_run .error [ok; true; true; true; ok] = Idle := by
   cases ‹_› <;> simp
 
 /-- reading_bounds_decomposition (matches Coq) -/

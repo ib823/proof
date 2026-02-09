@@ -96,8 +96,8 @@ structure IOMMU where
 
 /-- address_in_range (matches Coq: Definition address_in_range) -/
 def address_in_range (addr : Nat) (cfg : IOMMUConfig) : Bool :=
-  andb (config_allowed_base cfg <=? addr)
-       (addr <? config_allowed_base cfg + config_allowed_size cfg)
+  andb (cfg.config_allowed_base <=? addr)
+       (addr <? cfg.config_allowed_base + cfg.config_allowed_size)
 
 /-- iommu_permits_dma (matches Coq: Definition iommu_permits_dma) -/
 def iommu_permits_dma (iommu : IOMMU) (dev : Device) (addr : Address) : Prop :=
@@ -106,8 +106,8 @@ def iommu_permits_dma (iommu : IOMMU) (dev : Device) (addr : Address) : Prop :=
 /-- guest_isolated_from_iommu (matches Coq: Definition guest_isolated_from_iommu) -/
 def guest_isolated_from_iommu (vm : VirtualMachine) (iommu : IOMMU) : Prop :=
   forall cfg,
-    In cfg (iommu_configs iommu) ->
-    config_locked cfg = true
+    In cfg (iommu.iommu_configs) ->
+    cfg.config_locked = true
 
 /-- kernel_region_base (matches Coq: Definition kernel_region_base) -/
 def kernel_region_base : Nat :=
@@ -145,7 +145,7 @@ theorem unconfigured_device_no_dma : ∀ (dev : Device) (addr : Address) (iommu 
 
 /-- Out of range DMA blocked -/
 /-- out_of_range_dma_blocked (matches Coq) -/
-theorem out_of_range_dma_blocked : ∀ (dev : Device) (n : nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → address_in_range n cfg = false → ~ iommu_permits_dma iommu dev (Addr n) := by
+theorem out_of_range_dma_blocked : ∀ (dev : Device) (n : Nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → address_in_range n cfg = false → ~ iommu_permits_dma iommu dev (Addr n) := by
   simp_all [Bool.and_eq_true]
 
 /-- IOMMU lockdown preserves security -/
@@ -160,7 +160,7 @@ theorem dma_isolation_enforced : ∀ (dev : Device) (addr : Address) (iommu : IO
 
 /-- Device address is bounded by config range -/
 /-- device_address_bounded (matches Coq) -/
-theorem device_address_bounded : ∀ (dev : Device) (n : nat) (iommu : IOMMU) (cfg : IOMMUConfig), iommu_permits_dma iommu dev (Addr n) → find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → address_in_range n cfg = true := by
+theorem device_address_bounded : ∀ (dev : Device) (n : Nat) (iommu : IOMMU) (cfg : IOMMUConfig), iommu_permits_dma iommu dev (Addr n) → find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → address_in_range n cfg = true := by
   intro h; exact h
 
 /-- Mapping table is consistent: find returns consistent configs -/
@@ -169,7 +169,7 @@ theorem mapping_table_consistent : ∀ (dev : DeviceId) (configs : list IOMMUCon
   intro h; exact h
 
 /-- no_dma_to_kernel (matches Coq) -/
-theorem no_dma_to_kernel : ∀ (dev : Device) (addr : nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → config_allowed_base cfg ≥ kernel_region_base + kernel_region_size → addr < kernel_region_base + kernel_region_size → address_in_range addr cfg = false := by
+theorem no_dma_to_kernel : ∀ (dev : Device) (addr : Nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → config_allowed_base cfg ≥ kernel_region_base + kernel_region_size → addr < kernel_region_base + kernel_region_size → address_in_range addr cfg = false := by
   omega
 
 /-- IOMMU bypass impossible when enabled and device has no config -/
@@ -179,12 +179,12 @@ theorem iommu_bypass_impossible : ∀ (dev : Device) (addr : Address) (iommu : I
 
 /-- Address range checking: lower bound verified -/
 /-- address_range_lower_bound (matches Coq) -/
-theorem address_range_lower_bound : ∀ (addr : nat) (cfg : IOMMUConfig), address_in_range addr cfg = true → config_allowed_base cfg ≤ addr := by
+theorem address_range_lower_bound : ∀ (addr : Nat) (cfg : IOMMUConfig), address_in_range addr cfg = true → config_allowed_base cfg ≤ addr := by
   simp_all [Bool.and_eq_true]
 
 /-- Address range checking: upper bound verified -/
 /-- address_range_upper_bound (matches Coq) -/
-theorem address_range_upper_bound : ∀ (addr : nat) (cfg : IOMMUConfig), address_in_range addr cfg = true → addr < config_allowed_base cfg + config_allowed_size cfg := by
+theorem address_range_upper_bound : ∀ (addr : Nat) (cfg : IOMMUConfig), address_in_range addr cfg = true → addr < config_allowed_base cfg + config_allowed_size cfg := by
   simp_all [Bool.and_eq_true]
 
 /-- Device identity verified: DMA access implies device is configured -/
@@ -209,7 +209,7 @@ theorem locked_config_invariant : ∀ (guest : VirtualMachine) (iommu : IOMMU) (
 
 /-- Zero-size config denies all addresses -/
 /-- zero_size_config_denies (matches Coq) -/
-theorem zero_size_config_denies : ∀ (addr : nat) (cfg : IOMMUConfig), config_allowed_size cfg = 0 → address_in_range addr cfg = false := by
+theorem zero_size_config_denies : ∀ (addr : Nat) (cfg : IOMMUConfig), config_allowed_size cfg = 0 → address_in_range addr cfg = false := by
   cases ‹_› <;> simp <;> omega
 
 /-- Find device config: not found means not in list -/

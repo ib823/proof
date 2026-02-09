@@ -121,11 +121,11 @@ theorem hw_001_spectre_v1_mitigated : ∀ (sb : SpeculationBarrier), sb_lfence s
   simp_all [Bool.and_eq_true]
 
 /-- hw_002_spectre_v2_mitigated (matches Coq) -/
-theorem hw_002_spectre_v2_mitigated : ∀ (retpoline_enabled : bool) (ibrs_enabled : bool), retpoline_enabled = true ∨ ibrs_enabled = true →  True := by
+theorem hw_002_spectre_v2_mitigated : ∀ (retpoline_enabled : Bool) (ibrs_enabled : Bool), retpoline_enabled = true ∨ ibrs_enabled = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_003_spectre_v4_mitigated (matches Coq) -/
-theorem hw_003_spectre_v4_mitigated : ∀ (ssbd_enabled : bool), ssbd_enabled = true →  True := by
+theorem hw_003_spectre_v4_mitigated : ∀ (ssbd_enabled : Bool), ssbd_enabled = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_004_meltdown_mitigated (matches Coq) -/
@@ -133,19 +133,19 @@ theorem hw_004_meltdown_mitigated : ∀ (mp : MemoryProtection), mp_kpti_enabled
   simp_all [Bool.and_eq_true]
 
 /-- hw_005_foreshadow_mitigated (matches Coq) -/
-theorem hw_005_foreshadow_mitigated : ∀ (mp : MemoryProtection) (l1_flush_on_vmentry : bool), mp_kpti_enabled mp = true → l1_flush_on_vmentry = true →  True := by
+theorem hw_005_foreshadow_mitigated : ∀ (mp : MemoryProtection) (l1_flush_on_vmentry : Bool), mp_kpti_enabled mp = true → l1_flush_on_vmentry = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_006_zombieload_mitigated (matches Coq) -/
-theorem hw_006_zombieload_mitigated : ∀ (microcode_updated : bool) (verw_clearing : bool), microcode_updated = true → verw_clearing = true →  True := by
+theorem hw_006_zombieload_mitigated : ∀ (microcode_updated : Bool) (verw_clearing : Bool), microcode_updated = true → verw_clearing = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_007_ridl_mitigated (matches Coq) -/
-theorem hw_007_ridl_mitigated : ∀ (mds_mitigation : bool), mds_mitigation = true →  True := by
+theorem hw_007_ridl_mitigated : ∀ (mds_mitigation : Bool), mds_mitigation = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_008_fallout_mitigated (matches Coq) -/
-theorem hw_008_fallout_mitigated : ∀ (store_buffer_cleared : bool), store_buffer_cleared = true →  True := by
+theorem hw_008_fallout_mitigated : ∀ (store_buffer_cleared : Bool), store_buffer_cleared = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_009_lvi_mitigated (matches Coq) -/
@@ -153,7 +153,7 @@ theorem hw_009_lvi_mitigated : ∀ (sb : SpeculationBarrier), sb_lfence sb = tru
   simp_all [Bool.and_eq_true]
 
 /-- hw_010_cacheout_mitigated (matches Coq) -/
-theorem hw_010_cacheout_mitigated : ∀ (microcode_updated : bool) (tsx_disabled : bool), microcode_updated = true →  True := by
+theorem hw_010_cacheout_mitigated : ∀ (microcode_updated : Bool) (tsx_disabled : Bool), microcode_updated = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_011_platypus_mitigated (matches Coq) -/
@@ -165,27 +165,27 @@ theorem hw_012_hertzbleed_mitigated : ∀ (tp : TimingProtection), tp_constant_t
   simp_all [Bool.and_eq_true]
 
 /-- hw_013_pacman_mitigated (matches Coq) -/
-theorem hw_013_pacman_mitigated : ∀ (pac_enabled : bool) (cfi_enabled : bool) (sb : SpeculationBarrier), pac_enabled = true → cfi_enabled = true → sb_csdb sb = true →  True := by
+theorem hw_013_pacman_mitigated : ∀ (pac_enabled : Bool) (cfi_enabled : Bool) (sb : SpeculationBarrier), pac_enabled = true → cfi_enabled = true → sb_csdb sb = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_014_augury_mitigated (matches Coq) -/
-theorem hw_014_augury_mitigated : ∀ (dmp_disabled : bool) (constant_time_access : bool), dmp_disabled = true ∨ constant_time_access = true →  True := by
+theorem hw_014_augury_mitigated : ∀ (dmp_disabled : Bool) (constant_time_access : Bool), dmp_disabled = true ∨ constant_time_access = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_015_retbleed_mitigated (matches Coq) -/
-theorem hw_015_retbleed_mitigated : ∀ (ibpb_on_switch : bool), ibpb_on_switch = true →  True := by
+theorem hw_015_retbleed_mitigated : ∀ (ibpb_on_switch : Bool), ibpb_on_switch = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_016_aepic_leak_mitigated (matches Coq) -/
-theorem hw_016_aepic_leak_mitigated : ∀ (microcode_updated : bool), microcode_updated = true →  True := by
+theorem hw_016_aepic_leak_mitigated : ∀ (microcode_updated : Bool), microcode_updated = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_017_cachewarp_mitigated (matches Coq) -/
-theorem hw_017_cachewarp_mitigated : ∀ (sev_firmware_updated : bool), sev_firmware_updated = true →  True := by
+theorem hw_017_cachewarp_mitigated : ∀ (sev_firmware_updated : Bool), sev_firmware_updated = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_018_gofetch_mitigated (matches Coq) -/
-theorem hw_018_gofetch_mitigated : ∀ (dmp_disabled : bool) (tp : TimingProtection), dmp_disabled = true ∨ tp_constant_time tp = true →  True := by
+theorem hw_018_gofetch_mitigated : ∀ (dmp_disabled : Bool) (tp : TimingProtection), dmp_disabled = true ∨ tp_constant_time tp = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_019_rowhammer_mitigated (matches Coq) -/
@@ -197,19 +197,19 @@ theorem hw_020_rambleed_mitigated : ∀ (ecc : ECCMemory), ecc_enabled ecc = tru
   simp_all [Bool.and_eq_true]
 
 /-- hw_021_throwhammer_mitigated (matches Coq) -/
-theorem hw_021_throwhammer_mitigated : ∀ (rdma_rate_limited : bool) (ecc : ECCMemory), rdma_rate_limited = true → ecc_enabled ecc = true →  True := by
+theorem hw_021_throwhammer_mitigated : ∀ (rdma_rate_limited : Bool) (ecc : ECCMemory), rdma_rate_limited = true → ecc_enabled ecc = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_022_glitch_mitigated (matches Coq) -/
-theorem hw_022_glitch_mitigated : ∀ (gpu_mem_isolated : bool), gpu_mem_isolated = true →  True := by
+theorem hw_022_glitch_mitigated : ∀ (gpu_mem_isolated : Bool), gpu_mem_isolated = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_023_drammer_mitigated (matches Coq) -/
-theorem hw_023_drammer_mitigated : ∀ (ecc : ECCMemory) (ion_hardened : bool), ecc_enabled ecc = true → ion_hardened = true →  True := by
+theorem hw_023_drammer_mitigated : ∀ (ecc : ECCMemory) (ion_hardened : Bool), ecc_enabled ecc = true → ion_hardened = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_024_fault_injection_mitigated (matches Coq) -/
-theorem hw_024_fault_injection_mitigated : ∀ (fault_detection : bool) (redundant_computation : bool), fault_detection = true → redundant_computation = true →  True := by
+theorem hw_024_fault_injection_mitigated : ∀ (fault_detection : Bool) (redundant_computation : Bool), fault_detection = true → redundant_computation = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_025_cold_boot_mitigated (matches Coq) -/
@@ -237,11 +237,11 @@ theorem hw_030_firmware_attack_mitigated : ∀ (fw : FirmwareState), fw_signed f
   simp_all [Bool.and_eq_true]
 
 /-- hw_031_spyhammer_mitigated (matches Coq) -/
-theorem hw_031_spyhammer_mitigated : ∀ (thermal_isolation : bool) (thermal_throttling : bool), thermal_isolation = true →  True := by
+theorem hw_031_spyhammer_mitigated : ∀ (thermal_isolation : Bool) (thermal_throttling : Bool), thermal_isolation = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_032_ddr5_rowhammer_mitigated (matches Coq) -/
-theorem hw_032_ddr5_rowhammer_mitigated : ∀ (ecc : ECCMemory) (on_die_ecc : bool), ecc_enabled ecc = true → ecc_trr_enabled ecc = true → on_die_ecc = true →  True := by
+theorem hw_032_ddr5_rowhammer_mitigated : ∀ (ecc : ECCMemory) (on_die_ecc : Bool), ecc_enabled ecc = true → ecc_trr_enabled ecc = true → on_die_ecc = true →  True := by
   simp_all [Bool.and_eq_true]
 
 /-- hw_033_post_barrier_spectre_mitigated (matches Coq) -/
@@ -249,7 +249,7 @@ theorem hw_033_post_barrier_spectre_mitigated : ∀ (sb : SpeculationBarrier), s
   simp_all [Bool.and_eq_true]
 
 /-- hw_034_gofetch_dmp_mitigated (matches Coq) -/
-theorem hw_034_gofetch_dmp_mitigated : ∀ (dmp_disabled : bool) (tp : TimingProtection), dmp_disabled = true → tp_constant_time tp = true →  True := by
+theorem hw_034_gofetch_dmp_mitigated : ∀ (dmp_disabled : Bool) (tp : TimingProtection), dmp_disabled = true → tp_constant_time tp = true →  True := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

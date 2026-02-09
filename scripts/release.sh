@@ -69,6 +69,14 @@ if git -C "$REPO_ROOT" tag -l "$TAG" | grep -q "$TAG"; then
 fi
 echo -e "${GREEN}[✓] Tag $TAG is available${NC}"
 
+if [ -f "$REPO_ROOT/scripts/security-gates.sh" ]; then
+    echo "Running strict security gates..."
+    bash "$REPO_ROOT/scripts/security-gates.sh" --range origin/main..HEAD || {
+        echo -e "${RED}ERROR: strict security gates failed${NC}"; exit 1;
+    }
+    echo -e "${GREEN}[✓] strict security gates pass${NC}"
+fi
+
 # Run tests
 echo ""
 echo "Running Rust tests (03_PROTO)..."
@@ -235,9 +243,10 @@ fi
 
 echo ""
 if [ -f "$REPO_ROOT/scripts/deploy-website.sh" ]; then
-    bash "$REPO_ROOT/scripts/deploy-website.sh" \
-        && echo -e "${GREEN}[✓] Website deployed${NC}" \
-        || echo -e "${YELLOW}    Website deployment failed (non-blocking)${NC}"
+    bash "$REPO_ROOT/scripts/deploy-website.sh" || {
+        echo -e "${RED}ERROR: Website deployment failed${NC}"; exit 1;
+    }
+    echo -e "${GREEN}[✓] Website deployed${NC}"
 else
     echo -e "${YELLOW}    deploy-website.sh not found, skipping${NC}"
 fi

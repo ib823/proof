@@ -142,27 +142,27 @@ theorem meta_003_size_no_leak : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm1
   intro h; exact h
 
 /-- meta_004_timing_bucketed (matches Coq) -/
-theorem meta_004_timing_bucketed : ∀ (t : nat) (bucket : TimingBucket), bucket_interval bucket > 0 → in_bucket t bucket = true → ∃ n, t ≥ n * bucket_interval bucket ∧ t < (n + 1) * bucket_interval bucket := by
+theorem meta_004_timing_bucketed : ∀ (t : Nat) (bucket : TimingBucket), bucket_interval bucket > 0 → in_bucket t bucket = true → ∃ n, t ≥ n * bucket_interval bucket ∧ t < (n + 1) * bucket_interval bucket := by
   simp_all [Bool.and_eq_true]
 
 /-- meta_005_jitter_bounded (matches Coq) -/
-theorem meta_005_jitter_bounded : ∀ (base jitter max_jitter : nat), jittered_time base jitter max_jitter → jitter ≤ max_jitter := by
+theorem meta_005_jitter_bounded : ∀ (base jitter max_jitter : Nat), jittered_time base jitter max_jitter → jitter ≤ max_jitter := by
   intro h; exact h
 
 /-- meta_006_k_anonymity (matches Coq) -/
-theorem meta_006_k_anonymity : ∀ (set : AnonymitySet) (k : nat), k_anonymous set k → length set ≥ k := by
+theorem meta_006_k_anonymity : ∀ (set : AnonymitySet) (k : Nat), k_anonymous set k → length set ≥ k := by
   intro h; exact h
 
 /-- meta_007_set_preserved (matches Coq) -/
-theorem meta_007_set_preserved : ∀ (set : AnonymitySet) (elem : nat), In elem set → length set ≥ 1 := by
+theorem meta_007_set_preserved : ∀ (set : AnonymitySet) (elem : Nat), In elem set → length set ≥ 1 := by
   cases ‹_› <;> simp <;> omega
 
 /-- meta_008_sender_anonymity (matches Coq) -/
-theorem meta_008_sender_anonymity : ∀ (sender_set : AnonymitySet) (k : nat) (actual_sender : nat), k_anonymous sender_set k → In actual_sender sender_set → length sender_set ≥ k := by
+theorem meta_008_sender_anonymity : ∀ (sender_set : AnonymitySet) (k : Nat) (actual_sender : Nat), k_anonymous sender_set k → In actual_sender sender_set → length sender_set ≥ k := by
   intro h; exact h
 
 /-- meta_009_receiver_anonymity (matches Coq) -/
-theorem meta_009_receiver_anonymity : ∀ (receiver_set : AnonymitySet) (k : nat) (actual_receiver : nat), k_anonymous receiver_set k → In actual_receiver receiver_set → length receiver_set ≥ k := by
+theorem meta_009_receiver_anonymity : ∀ (receiver_set : AnonymitySet) (k : Nat) (actual_receiver : Nat), k_anonymous receiver_set k → In actual_receiver receiver_set → length receiver_set ≥ k := by
   intro h; exact h
 
 /-- meta_010_relationship_unlinkable (matches Coq) -/
@@ -186,11 +186,11 @@ theorem meta_014_public_preserved : ∀ (f : MetadataField) (threshold : Sensiti
   rfl
 
 /-- meta_015_constant_rate (matches Coq) -/
-theorem meta_015_constant_rate : ∀ (intervals : list nat) (target : nat), traffic_constant_rate intervals target → Forall (fun i => i = target) intervals := by
+theorem meta_015_constant_rate : ∀ (intervals : list nat) (target : Nat), traffic_constant_rate intervals target → Forall (fun i => i = target) intervals := by
   intro h; exact h
 
 /-- meta_016_cover_traffic (matches Coq) -/
-theorem meta_016_cover_traffic : ∀ (real cover total : nat), cover_traffic_ratio real cover total → total > real := by
+theorem meta_016_cover_traffic : ∀ (real cover total : Nat), cover_traffic_ratio real cover total → total > real := by
   cases ‹_› <;> simp <;> omega
 
 /-- meta_017_minimization (matches Coq) -/
@@ -198,31 +198,31 @@ theorem meta_017_minimization : ∀ (fields : list MetadataField) (required : li
   intro h; exact h
 
 /-- meta_018_no_correlation (matches Coq) -/
-theorem meta_018_no_correlation : ∀ (id1 id2 : nat), identifiers_independent id1 id2 → id1 ≠ id2 := by
+theorem meta_018_no_correlation : ∀ (id1 id2 : Nat), identifiers_independent id1 id2 → id1 ≠ id2 := by
   intro h; exact h
 
 /-- meta_019_uniform_frequency (matches Coq) -/
-theorem meta_019_uniform_frequency : ∀ (frequencies : list nat) (target epsilon : nat), uniform_frequency frequencies target epsilon → Forall (fun f => f ≥ target - epsilon ∧ f ≤ target + epsilon) frequencies := by
+theorem meta_019_uniform_frequency : ∀ (frequencies : list nat) (target epsilon : Nat), uniform_frequency frequencies target epsilon → Forall (fun f => f ≥ target - epsilon ∧ f ≤ target + epsilon) frequencies := by
   intro h; exact h
 
 /-- meta_020_aggregation_limited (matches Coq) -/
-theorem meta_020_aggregation_limited : ∀ (window_size current_data max_data : nat), aggregation_window window_size current_data max_data → current_data ≤ max_data := by
+theorem meta_020_aggregation_limited : ∀ (window_size current_data max_data : Nat), aggregation_window window_size current_data max_data → current_data ≤ max_data := by
   intro h; exact h
 
 /-- meta_021_path_length (matches Coq) -/
-theorem meta_021_path_length : ∀ (paths : list nat) (target : nat), path_length_uniform paths target → Forall (fun p => p = target) paths := by
+theorem meta_021_path_length : ∀ (paths : list nat) (target : Nat), path_length_uniform paths target → Forall (fun p => p = target) paths := by
   intro h; exact h
 
 /-- meta_022_hop_count_hidden (matches Coq) -/
-theorem meta_022_hop_count_hidden : ∀ (actual_hops displayed_hops : nat), actual_hops ≠ displayed_hops → actual_hops ≠ displayed_hops := by
+theorem meta_022_hop_count_hidden : ∀ (actual_hops displayed_hops : Nat), actual_hops ≠ displayed_hops → actual_hops ≠ displayed_hops := by
   intro h; exact h
 
 /-- meta_023_fingerprint_resistance (matches Coq) -/
-theorem meta_023_fingerprint_resistance : ∀ (entropy_bits min_entropy : nat), fingerprint_entropy entropy_bits min_entropy → entropy_bits ≥ min_entropy := by
+theorem meta_023_fingerprint_resistance : ∀ (entropy_bits min_entropy : Nat), fingerprint_entropy entropy_bits min_entropy → entropy_bits ≥ min_entropy := by
   intro h; exact h
 
 /-- meta_024_session_isolation (matches Coq) -/
-theorem meta_024_session_isolation : ∀ (s1 s2 : nat), sessions_isolated s1 s2 → s1 ≠ s2 := by
+theorem meta_024_session_isolation : ∀ (s1 s2 : Nat), sessions_isolated s1 s2 → s1 ≠ s2 := by
   intro h; exact h
 
 /-- meta_025_defense_in_depth (matches Coq) -/

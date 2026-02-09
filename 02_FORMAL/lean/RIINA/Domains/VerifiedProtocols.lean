@@ -259,8 +259,8 @@ def x25519 (priv : PrivateKey) (pub : PublicKey) : SharedSecret :=
 
 /-- x25519_commutes (matches Coq: Definition x25519_commutes) -/
 def x25519_commutes (kp1 kp2 : KeyPair) : Prop :=
-  x25519 (kp_private kp1) (kp_public kp2) = 
-  x25519 (kp_private kp2) (kp_public kp1)
+  x25519 (kp1.kp_private) (kp2.kp_public) = 
+  x25519 (kp2.kp_private) (kp1.kp_public)
 
 /-- aead_correct (matches Coq: Definition aead_correct) -/
 def aead_correct (key : SymmetricKey) (nonce : Nonce)
@@ -284,25 +284,25 @@ def tls13_handshake_complete (session : TLS13Session) : Prop :=
 
 /-- session_established_before (matches Coq: Definition session_established_before) -/
 def session_established_before (session : TLS13Session) (time : Timestamp) : Prop :=
-  session_established_time session < time
+  session.session_established_time < time
 
 /-- noise_pattern_initiator_static (matches Coq: Definition noise_pattern_initiator_static) -/
 def noise_pattern_initiator_static (p : NoisePattern) : Bool :=
   match p with
   | .iX => true
-  | ._ => false
+  | _ => false
 
 /-- noise_pattern_responder_static (matches Coq: Definition noise_pattern_responder_static) -/
 def noise_pattern_responder_static (p : NoisePattern) : Bool :=
   match p with
   | .iX => true
-  | ._ => false
+  | _ => false
 
 /-- noise_pattern_identity_hiding_initiator (matches Coq: Definition noise_pattern_identity_hiding_initiator) -/
 def noise_pattern_identity_hiding_initiator (p : NoisePattern) : Bool :=
   match p with
   | .iX => true
-  | ._ => false
+  | _ => false
 
 /-- init_noise_state (matches Coq: Definition init_noise_state) -/
 def init_noise_state (pattern : NoisePattern) (is_init : Bool) 
@@ -319,24 +319,24 @@ def init_noise_state (pattern : NoisePattern) (is_init : Bool)
 
 /-- noise_mix_key (matches Coq: Definition noise_mix_key) -/
 def noise_mix_key (st : NoiseSymmetricState) (input_key : List Nat) : NoiseSymmetricState :=
-  let new_ck := hkdf (noise_ck st) input_key [] 32 in
-  let new_k := hkdf (noise_ck st) input_key [1] 32 in
+  let new_ck := hkdf (st.noise_ck) input_key [] 32 in
+  let new_k := hkdf (st.noise_ck) input_key [1] 32 in
   {| noise_ck := new_ck;
-     noise_h := noise_h st;
+     noise_h := st.noise_h;
      noise_k := Some new_k;
      noise_n := 0 |}
 
 /-- noise_mix_hash (matches Coq: Definition noise_mix_hash) -/
 def noise_mix_hash (st : NoiseSymmetricState) (data : List Nat) : NoiseSymmetricState :=
-  {| noise_ck := noise_ck st;
-     noise_h := hkdf [] (noise_h st ++ data) [] 32;
-     noise_k := noise_k st;
-     noise_n := noise_n st |}
+  {| noise_ck := st.noise_ck;
+     noise_h := hkdf [] (st.noise_h ++ data) [] 32;
+     noise_k := st.noise_k;
+     noise_n := st.noise_n |}
 
 /-- noise_handshake_complete (matches Coq: Definition noise_handshake_complete) -/
 def noise_handshake_complete (st : NoiseHandshakeState) : Prop :=
-  hs_complete st = true /\
-  (exists k, noise_k (hs_symmetric st) = Some k)
+  st.hs_complete = true /\
+  (exists k, noise_k (st.hs_symmetric) = Some k)
 
 /-- x3dh_initiator (matches Coq: Definition x3dh_initiator) -/
 def x3dh_initiator := sorry -- complex match, needs manual translation
@@ -344,18 +344,18 @@ def x3dh_initiator := sorry -- complex match, needs manual translation
 /-- signal_dh_ratchet (matches Coq: Definition signal_dh_ratchet) -/
 def signal_dh_ratchet (st : SignalState) (new_pair : KeyPair) 
                              (remote : PublicKey) : SignalState :=
-  let dh_out := x25519 (kp_private new_pair) remote in
-  let (new_root, new_send) := (hkdf (signal_root_key st) dh_out [] 32,
-                                hkdf (signal_root_key st) dh_out [1] 32) in
+  let dh_out := x25519 (new_pair.kp_private) remote in
+  let (new_root, new_send) := (hkdf (st.signal_root_key) dh_out [] 32,
+                                hkdf (st.signal_root_key) dh_out [1] 32) in
   {| signal_dh_pair := new_pair;
      signal_dh_remote := Some remote;
      signal_root_key := new_root;
      signal_send_chain := new_send;
-     signal_recv_chain := signal_recv_chain st;
+     signal_recv_chain := st.signal_recv_chain;
      signal_send_n := 0;
-     signal_recv_n := signal_recv_n st;
-     signal_skipped := signal_skipped st;
-     signal_prev_send_n := signal_send_n st |}
+     signal_recv_n := st.signal_recv_n;
+     signal_skipped := st.signal_skipped;
+     signal_prev_send_n := st.signal_send_n |}
 
 /-- confidentiality (matches Coq: Definition confidentiality) -/
 def confidentiality (session_key : SymmetricKey) : Prop :=
@@ -375,12 +375,12 @@ def authentication (peer : PublicKey) (claimed : PublicKey) : Prop :=
 def forward_secrecy (session : TLS13Session) (long_term_key : PrivateKey)
                            (compromise_time : Timestamp) : Prop :=
   session_established_before session compromise_time ->
-  strong_confidentiality (session_client_key session)
+  strong_confidentiality (session.session_client_key)
 
 /-- implements (matches Coq: Definition implements) -/
 def implements (impl : ProtocolImpl) (spec : ProtocolSpec) : Prop :=
-  impl_name impl = spec_name spec /\
-  impl_version impl = spec_version spec
+  impl.impl_name = spec.spec_name /\
+  impl.impl_version = spec.spec_version
 
 /-- valid_trace (matches Coq: Definition valid_trace) -/
 def valid_trace (impl : ProtocolImpl) (trace : Trace) : Prop :=
@@ -392,8 +392,8 @@ def satisfies_spec (trace : Trace) (spec : ProtocolSpec) : Prop :=
 
 /-- authenticated (matches Coq: Definition authenticated) -/
 def authenticated (session : TLS13Session) (peer_cert : List Nat) : Prop :=
-  session_authenticated session = true /\
-  session_peer_cert session = peer_cert
+  session.session_authenticated = true /\
+  session.session_peer_cert = peer_cert
 
 /-- in_path (matches Coq: Definition in_path) -/
 def in_path (mitm : Adversary) (session : TLS13Session) : Prop :=
@@ -413,7 +413,7 @@ def prevents_reflection (local_id : Nat) (remote_id : Nat) : Prop :=
 
 /-- constant_time_op (matches Coq: Definition constant_time_op) -/
 def constant_time_op (op : Nat -> Nat -> Bool) : Prop :=
-  forall (a b c d : nat), True
+  forall (a b c d : Nat), True
 
 /-- all_theorems_proven (matches Coq: Definition all_theorems_proven) -/
 def all_theorems_proven := sorry -- complex match, needs manual translation
@@ -499,7 +499,7 @@ theorem AH_001_19_noise_key_confirmation : ∀ st msg st', noise_step st msg st'
   simp
 
 /-- AH_001_20_noise_identity_hiding (matches Coq) -/
-theorem AH_001_20_noise_identity_hiding : ∀ pattern, noise_pattern_identity_hiding_initiator pattern = true → (pattern = XN ∨ pattern = XK ∨ pattern = XX ∨ pattern = IX) := by
+theorem AH_001_20_noise_identity_hiding : ∀ pattern, noise_pattern_identity_hiding_initiator pattern = true → (pattern = XN ∨ pattern = XK ∨ pattern = XX ∨ pattern = .iX) := by
   cases ‹_› <;> simp
 
 /-- AH_001_21_noise_payload_encrypt (matches Coq) -/
@@ -559,7 +559,7 @@ theorem AH_001_34_randomness_fresh : ∀ nonce used_nonces, fresh_nonce nonce us
   intro h; exact h
 
 /-- AH_001_35_timing_resistant (matches Coq) -/
-theorem AH_001_35_timing_resistant : ∀ (op : nat → nat → bool), constant_time_op op := by
+theorem AH_001_35_timing_resistant : ∀ (op : Nat → nat → bool), constant_time_op op := by
   intro h; exact h
 
 /-- verification_complete (matches Coq) -/

@@ -164,11 +164,11 @@ def second_derivative_continuous (positions : List Position) : Prop :=
 
 /-- well_formed_spring (matches Coq: Definition well_formed_spring) -/
 def well_formed_spring (sa : SpringAnimation) : Prop :=
-  spring_stiffness (spring_params sa) > 0 /\
-  spring_mass (spring_params sa) > 0 /\
-  length (spring_positions sa) = spring_duration sa + 1 /\
-  length (spring_velocities sa) = spring_duration sa + 1 /\
-  positions_smooth (spring_positions sa)
+  spring_stiffness (sa.spring_params) > 0 /\
+  spring_mass (sa.spring_params) > 0 /\
+  length (sa.spring_positions) = sa.spring_duration + 1 /\
+  length (sa.spring_velocities) = sa.spring_duration + 1 /\
+  positions_smooth (sa.spring_positions)
 
 /-- reaches_target (matches Coq: Definition reaches_target) -/
 def reaches_target := sorry -- complex match, needs manual translation
@@ -183,30 +183,30 @@ def frame_budget_120hz : Nat :=
 
 /-- meets_frame_budget (matches Coq: Definition meets_frame_budget) -/
 def meets_frame_budget (f : Frame) : Prop :=
-  frame_render_time f <= frame_budget_120hz
+  f.frame_render_time <= frame_budget_120hz
 
 /-- well_formed_anim_control (matches Coq: Definition well_formed_anim_control) -/
 def well_formed_anim_control (ac : AnimationControl) : Prop :=
-  anim_speed ac > 0 /\
-  anim_speed ac <= 1000 /\
-  (anim_autoreverses ac = true -> anim_repeat_count ac > 0) /\
-  anim_current_repeat ac <= anim_repeat_count ac /\
-  anim_fill_mode ac <= 3
+  ac.anim_speed > 0 /\
+  ac.anim_speed <= 1000 /\
+  (ac.anim_autoreverses = true -> ac.anim_repeat_count > 0) /\
+  ac.anim_current_repeat <= ac.anim_repeat_count /\
+  ac.anim_fill_mode <= 3
 
 /-- well_formed_anim_group (matches Coq: Definition well_formed_anim_group) -/
 def well_formed_anim_group (ag : AnimationGroup) : Prop :=
-  ag_synchronized ag = true /\
-  ag_duration ag > 0 /\
-  length (ag_animations ag) > 0
+  ag.ag_synchronized = true /\
+  ag.ag_duration > 0 /\
+  length (ag.ag_animations) > 0
 
 /-- well_formed_layer_anim (matches Coq: Definition well_formed_layer_anim) -/
 def well_formed_layer_anim (la : LayerAnimation) : Prop :=
-  la_gpu_accelerated la = true
+  la.la_gpu_accelerated = true
 
 /-- keyframe_in_range (matches Coq: Definition keyframe_in_range) -/
 def keyframe_in_range (kf : Keyframe) (from to : Nat) : Prop :=
-  (from <= to -> from <= kf_value kf /\ kf_value kf <= to) /\
-  (to <= from -> to <= kf_value kf /\ kf_value kf <= from)
+  (from <= to -> from <= kf.kf_value /\ kf.kf_value <= to) /\
+  (to <= from -> to <= kf.kf_value /\ kf.kf_value <= from)
 
 /-- spring_converges (matches Coq: Definition spring_converges) -/
 def spring_converges := sorry -- complex match, needs manual translation
@@ -232,7 +232,7 @@ theorem position_velocity_match : ∀ (spring : SpringAnimation), well_formed_sp
   rfl
 
 /-- nth_error_Some_length (matches Coq) -/
-theorem nth_error_Some_length : ∀ {A : Type} (l : list A) (n : nat), n < length l → ∃ a, nth_error l n = Some a := by
+theorem nth_error_Some_length : ∀ {A : Type} (l : list A) (n : Nat), n < length l → ∃ a, nth_error l n = Some a := by
   cases ‹_› <;> simp
 
 /-- animation_frame_budget_met (matches Coq) -/
@@ -260,7 +260,7 @@ theorem animation_timing_precise : ∀ (ag : AnimationGroup), well_formed_anim_g
   intro h; exact h
 
 /-- keyframe_values_interpolated (matches Coq) -/
-theorem keyframe_values_interpolated : ∀ (kf : Keyframe) (from to : nat), from ≤ to → keyframe_in_range kf from to → from ≤ kf_value kf ∧ kf_value kf ≤ to := by
+theorem keyframe_values_interpolated : ∀ (kf : Keyframe) (from to : Nat), from ≤ to → keyframe_in_range kf from to → from ≤ kf_value kf ∧ kf_value kf ≤ to := by
   simp_all [Bool.and_eq_true]
 
 /-- spring_animation_converges (matches Coq) -/

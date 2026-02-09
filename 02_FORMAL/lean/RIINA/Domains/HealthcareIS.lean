@@ -428,84 +428,84 @@ structure DataExport where
 
 /-- encounter_complete (matches Coq: Definition encounter_complete) -/
 def encounter_complete (e : Encounter) : Prop :=
-  chief_complaint e = true /\ history e = true /\
-  exam e = true /\ assessment e = true /\ plan e = true
+  e.chief_complaint = true /\ e.history = true /\
+  e.exam = true /\ e.assessment = true /\ e.plan = true
 
 /-- finalized (matches Coq: Definition finalized) -/
 def finalized (e : Encounter) : Prop :=
-  is_finalized e = true /\ encounter_complete e
+  e.is_finalized = true /\ encounter_complete e
 
 /-- valid_amendment (matches Coq: Definition valid_amendment) -/
 def valid_amendment (a : Amendment) : Prop :=
-  marked_as_amendment a = true /\ 
-  linked_to_original a = true /\
-  amend_timestamp a > 0
+  a.marked_as_amendment = true /\ 
+  a.linked_to_original = true /\
+  a.amend_timestamp > 0
 
 /-- allergy_complete (matches Coq: Definition allergy_complete) -/
 def allergy_complete (a : Allergy) : Prop :=
-  allergen_documented a = true /\
-  reaction_documented a = true /\
-  severity_documented a = true /\
-  allergen a > 0 /\
-  reaction_type a > 0
+  a.allergen_documented = true /\
+  a.reaction_documented = true /\
+  a.severity_documented = true /\
+  a.allergen > 0 /\
+  a.reaction_type > 0
 
 /-- interaction_detected (matches Coq: Definition interaction_detected) -/
 def interaction_detected (dai : DrugAllergyInteraction) : Prop :=
-  patient_has_allergy dai = true /\ alert_triggered dai = true
+  dai.patient_has_allergy = true /\ dai.alert_triggered = true
 
 /-- problem_coded (matches Coq: Definition problem_coded) -/
 def problem_coded (p : Problem) : Prop :=
-  snomed_assigned p = true /\ problem_snomed p > 0
+  p.snomed_assigned = true /\ p.problem_snomed > 0
 
 /-- five_rights_verified (matches Coq: Definition five_rights_verified) -/
 def five_rights_verified (a : Administration) : Prop :=
-  right_patient a = true /\ right_drug a = true /\
-  right_dose a = true /\ right_route a = true /\
-  right_time a = true
+  a.right_patient = true /\ a.right_drug = true /\
+  a.right_dose = true /\ a.right_route = true /\
+  a.right_time = true
 
 /-- administration_allowed (matches Coq: Definition administration_allowed) -/
 def administration_allowed (a : Administration) : Prop :=
-  five_rights_verified a /\ barcode_verified a = true
+  five_rights_verified a /\ a.barcode_verified = true
 
 /-- interaction_alerted (matches Coq: Definition interaction_alerted) -/
 def interaction_alerted (di : DrugInteraction) : Prop :=
-  interaction_alert_shown di = true
+  di.interaction_alert_shown = true
 
 /-- dose_in_range (matches Coq: Definition dose_in_range) -/
 def dose_in_range (dc : DoseCheck) : Prop :=
-  check_dose dc >= min_safe_dose dc /\
-  check_dose dc <= max_safe_dose dc /\
-  within_range dc = true
+  dc.check_dose >= dc.min_safe_dose /\
+  dc.check_dose <= dc.max_safe_dose /\
+  dc.within_range = true
 
 /-- high_alert_safe (matches Coq: Definition high_alert_safe) -/
 def high_alert_safe (ham : HighAlertMed) : Prop :=
-  is_high_alert ham = true ->
-  double_check_required ham = true /\
-  double_check_performed ham = true
+  ham.is_high_alert = true ->
+  ham.double_check_required = true /\
+  ham.double_check_performed = true
 
 /-- order_complete_check (matches Coq: Definition order_complete_check) -/
 def order_complete_check (o : Order) : Prop :=
-  has_all_fields o = true /\
-  ord_drug o > 0 /\
-  ord_dose o > 0 /\
-  ord_route o > 0 /\
-  ord_frequency o > 0
+  o.has_all_fields = true /\
+  o.ord_drug > 0 /\
+  o.ord_dose > 0 /\
+  o.ord_route > 0 /\
+  o.ord_frequency > 0
 
 /-- order_signed (matches Coq: Definition order_signed) -/
 def order_signed (o : Order) : Prop :=
-  has_signature o = true /\ signature_valid o = true
+  o.has_signature = true /\ o.signature_valid = true
 
 /-- verbal_order_valid (matches Coq: Definition verbal_order_valid) -/
 def verbal_order_valid := sorry -- complex match, needs manual translation
 
 /-- duplicate_handled (matches Coq: Definition duplicate_handled) -/
 def duplicate_handled (doc : DuplicateOrderCheck) : Prop :=
-  is_duplicate doc = true ->
-  warning_shown doc = true /\ override_required doc = true
+  doc.is_duplicate = true ->
+  doc.warning_shown = true /\ doc.override_required = true
 
 /-- contraindication_blocked (matches Coq: Definition contraindication_blocked) -/
 def contraindication_blocked (c : Contraindication) : Prop :=
-  contra_detected c = true -> hard_stop_triggered c = true
+  c.contra_detected = true -> c.hard_stop_triggered = true
 
 /-- specimen_tracked (matches Coq: Definition specimen_tracked) -/
 def specimen_tracked := sorry -- complex match, needs manual translation
@@ -515,64 +515,64 @@ def critical_notified := sorry -- complex match, needs manual translation
 
 /-- result_validated (matches Coq: Definition result_validated) -/
 def result_validated (r : LabResult) : Prop :=
-  validated r = true \/ needs_review r = true
+  r.validated = true \/ r.needs_review = true
 
 /-- delta_flagged (matches Coq: Definition delta_flagged) -/
 def delta_flagged (dc : DeltaCheck) : Prop :=
-  exceeds_threshold dc = true -> flagged dc = true
+  dc.exceeds_threshold = true -> dc.flagged = true
 
 /-- range_adjusted (matches Coq: Definition range_adjusted) -/
 def range_adjusted (rr : ReferenceRange) : Prop :=
-  age_adjusted rr = true /\ sex_adjusted rr = true
+  rr.age_adjusted = true /\ rr.sex_adjusted = true
 
 /-- phi_access_valid (matches Coq: Definition phi_access_valid) -/
 def phi_access_valid (pa : PHIAccess) : Prop :=
-  role_based pa = true /\ minimum_necessary pa = true
+  pa.role_based = true /\ pa.minimum_necessary = true
 
 /-- phi_accessed (matches Coq: Definition phi_accessed) -/
 def phi_accessed (pa : PHIAccess) : Prop :=
-  access_timestamp pa > 0 /\ logged pa = true
+  pa.access_timestamp > 0 /\ pa.logged = true
 
 /-- audit_complete (matches Coq: Definition audit_complete) -/
 def audit_complete (ae : AuditEntry) : Prop :=
-  reviewable ae = true /\ audit_timestamp ae > 0
+  ae.reviewable = true /\ ae.audit_timestamp > 0
 
 /-- breach_notified (matches Coq: Definition breach_notified) -/
 def breach_notified := sorry -- complex match, needs manual translation
 
 /-- consent_valid (matches Coq: Definition consent_valid) -/
 def consent_valid (c : Consent) : Prop :=
-  explicit_consent c = true /\ 
-  consent_timestamp c > 0 /\
-  processing_allowed c = true
+  c.explicit_consent = true /\ 
+  c.consent_timestamp > 0 /\
+  c.processing_allowed = true
 
 /-- data_portable (matches Coq: Definition data_portable) -/
 def data_portable (de : DataExport) : Prop :=
-  machine_readable de = true /\
-  export_format de > 0 /\
-  export_complete de = true
+  de.machine_readable = true /\
+  de.export_format > 0 /\
+  de.export_complete = true
 
 /-- high_confidence_match (matches Coq: Definition high_confidence_match) -/
 def high_confidence_match := sorry -- complex match, needs manual translation
 
 /-- similar_patients (matches Coq: Definition similar_patients) -/
 def similar_patients (dc : DuplicateCandidate) : Prop :=
-  similarity_score dc >= 800
+  dc.similarity_score >= 800
 
 /-- properly_flagged (matches Coq: Definition properly_flagged) -/
 def properly_flagged (dc : DuplicateCandidate) : Prop :=
-  similar_patients dc -> flagged_for_review dc = true
+  similar_patients dc -> dc.flagged_for_review = true
 
 /-- merge_preserves_records (matches Coq: Definition merge_preserves_records) -/
 def merge_preserves_records (m : MergeOperation) : Prop :=
-  merge_complete m = true ->
-  length (target_records_after m) = 
-  length (source_records m) + length (target_records_before m)
+  m.merge_complete = true ->
+  length (m.target_records_after) = 
+  length (m.source_records) + length (m.target_records_before)
 
 /-- note_immutable (matches Coq: Definition note_immutable) -/
 def note_immutable (n : ClinicalNote) : Prop :=
-  is_signed n = true -> 
-  forall n', note_id n' = note_id n -> note_content_hash n' = note_content_hash n
+  n.is_signed = true -> 
+  forall n', n.note_id' = n.note_id -> n.note_content_hash' = n.note_content_hash
 
 /-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_01: Patient Identity Uniqueness

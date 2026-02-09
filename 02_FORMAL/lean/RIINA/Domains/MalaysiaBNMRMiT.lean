@@ -182,7 +182,7 @@ theorem fi_type_coverage : ∀ (ft : FIType), In ft all_fi_types := by
   simp_all [Bool.and_eq_true]
 
 /-- cyber_controls_strengthened (matches Coq) -/
-theorem cyber_controls_strengthened : ∀ (fi : FinancialInstitution) (extra : nat), cyber_controls_adequate fi → fi_min_cyber_controls fi ≤ fi_cyber_controls fi + extra := by
+theorem cyber_controls_strengthened : ∀ (fi : FinancialInstitution) (extra : Nat), cyber_controls_adequate fi → fi_min_cyber_controls fi ≤ fi_cyber_controls fi + extra := by
   simp_all [Bool.and_eq_true]
 
 /-- cloud_deployment_coverage (matches Coq) -/
@@ -242,11 +242,11 @@ theorem non_material_no_notification : ∀ (oa : OutsourcingArrangement), oa_mat
   omega
 
 /-- tech_refresh_valid (matches Coq) -/
-theorem tech_refresh_valid : ∀ (trs : TechRefreshStatus) (t : nat), t ≤ tr_last_refresh trs + tr_max_age trs → tech_refresh_current trs t := by
+theorem tech_refresh_valid : ∀ (trs : TechRefreshStatus) (t : Nat), t ≤ tr_last_refresh trs + tr_max_age trs → tech_refresh_current trs t := by
   intro h; exact h
 
 /-- tech_refresh_expired (matches Coq) -/
-theorem tech_refresh_expired : ∀ (trs : TechRefreshStatus) (t : nat), tr_last_refresh trs + tr_max_age trs < t → ~ tech_refresh_current trs t := by
+theorem tech_refresh_expired : ∀ (trs : TechRefreshStatus) (t : Nat), tr_last_refresh trs + tr_max_age trs < t → ~ tech_refresh_current trs t := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

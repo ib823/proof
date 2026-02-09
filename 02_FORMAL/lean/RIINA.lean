@@ -1,6 +1,7 @@
 import RIINA.Foundations.Syntax
 import RIINA.Foundations.Semantics
 import RIINA.TypeSystem.Typing
+import RIINA.Domains.All
 
 /-!
 # RIINA Formal Proofs - Main Library

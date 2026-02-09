@@ -1,0 +1,49 @@
+AX1 build/check log
+
+[baseline narrow target]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo
+status: pass
+log: /tmp/ax1_narrow_target.log
+
+[strategy 1 patched narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo
+status: fail
+failure: 02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v:4787
+log: /tmp/ax1_strategy1.log
+
+[strategy 2 patched narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo
+status: fail
+failure: 02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v:4805
+log: /tmp/ax1_strategy2.log
+
+[strategy 3 patched narrow check]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo
+status: fail
+failure: 02_FORMAL/coq/properties/NonInterference_v2_LogicalRelation.v:1166
+log: /tmp/ax1_strategy3.log
+
+[restore check]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2_LogicalRelation.vo
+status: pass
+log: /tmp/ax1_restore_check.log
+
+[cone sanity checks after restore]
+cmd: make -C 02_FORMAL/coq -j2 properties/NonInterference_v2.vo
+status: pass
+log: /tmp/ax1_check_nonint_v2.log
+
+cmd: make -C 02_FORMAL/coq -j2 properties/Declassification.vo
+status: pass
+log: /tmp/ax1_check_declassification.log
+
+cmd: make -C 02_FORMAL/coq -j2 properties/SecurityProperties.vo
+status: pass
+log: /tmp/ax1_check_securityprops.log
+
+[full build at end]
+cmd: make -C 02_FORMAL/coq -j2
+status: fail
+AX1-related failures: none after restore (target file compiles in narrow checks)
+pre-existing unrelated failure: 02_FORMAL/coq/effects/EffectGate.v:97 (EGrant typing unification)
+log: /tmp/ax1_full_build.log

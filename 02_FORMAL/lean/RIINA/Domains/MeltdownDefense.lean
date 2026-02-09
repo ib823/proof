@@ -90,15 +90,15 @@ structure MeltdownDefenseConfig where
 
 /-- all_meltdown_protected (matches Coq: Definition all_meltdown_protected) -/
 def all_meltdown_protected (c : MeltdownDefenseConfig) : Bool :=
-  mdc_us_protected c &&
-  mdc_p_protected c &&
-  mdc_rw_protected c &&
-  mdc_pk_protected c &&
-  mdc_br_protected c
+  c.mdc_us_protected &&
+  c.mdc_p_protected &&
+  c.mdc_rw_protected &&
+  c.mdc_pk_protected &&
+  c.mdc_br_protected
 
 /-- meltdown_mitigations_enabled (matches Coq: Definition meltdown_mitigations_enabled) -/
 def meltdown_mitigations_enabled (c : MeltdownDefenseConfig) : Bool :=
-  mdc_kpti_enabled c && mdc_l1tf_mitigated c
+  c.mdc_kpti_enabled && c.mdc_l1tf_mitigated
 
 /-- meltdown_fully_protected (matches Coq: Definition meltdown_fully_protected) -/
 def meltdown_fully_protected (c : MeltdownDefenseConfig) : Bool :=
@@ -109,7 +109,7 @@ def riina_meltdown_config : MeltdownDefenseConfig := mkMeltdownConfig
   true true true true true true true
 
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
+theorem andb_true_iff : ∀ a b : Bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
 /-- MELTDOWN_001: All Variants Protected -/

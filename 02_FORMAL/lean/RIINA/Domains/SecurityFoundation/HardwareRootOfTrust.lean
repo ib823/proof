@@ -114,10 +114,10 @@ def initial_hw_state (hsm : HSMType) : HWRootState := mkHWRootState
 /-- in_trust_chain (matches Coq: Definition in_trust_chain) -/
 def in_trust_chain (st : HWRootState) (comp : BootComponentId) : Bool :=
   existsb (fun entry => 
-    if boot_comp_eq_dec (entry_component entry) comp then
-      entry_trusted entry
+    if boot_comp_eq_dec (entry.entry_component) comp then
+      entry.entry_trusted
     else false
-  ) (trust_chain st)
+  ) (st.trust_chain)
 
 /-- verified_from_hw_root (matches Coq: Definition verified_from_hw_root) -/
 def verified_from_hw_root (st : HWRootState) (comp : BootComponentId) : Bool :=
@@ -127,23 +127,23 @@ def verified_from_hw_root (st : HWRootState) (comp : BootComponentId) : Bool :=
 def extend_trust_chain (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat) : HWRootState :=
   if in_trust_chain st verifier then
     mkHWRootState
-      (hsm_type st)
-      (root_key_present st)
-      (attestation_key_present st)
-      (mkTrustEntry comp verifier measurement true :: trust_chain st)
-      (pcr_values st)
-      (hardware_initialized st)
+      (st.hsm_type)
+      (st.root_key_present)
+      (st.attestation_key_present)
+      (mkTrustEntry comp verifier measurement true :: st.trust_chain)
+      (st.pcr_values)
+      (st.hardware_initialized)
   else
     st
 
 /-- record_pcr (matches Coq: Definition record_pcr) -/
 def record_pcr (st : HWRootState) (comp : BootComponentId) (value : Nat) (algo : Nat) : HWRootState := mkHWRootState
-    (hsm_type st)
-    (root_key_present st)
-    (attestation_key_present st)
-    (trust_chain st)
-    (mkMeasurement comp value algo :: pcr_values st)
-    (hardware_initialized st)
+    (st.hsm_type)
+    (st.root_key_present)
+    (st.attestation_key_present)
+    (st.trust_chain)
+    (mkMeasurement comp value algo :: st.pcr_values)
+    (st.hardware_initialized)
 
 /-- component_trusted (matches Coq: Definition component_trusted) -/
 def component_trusted (st : HWRootState) (comp : BootComponentId) : Prop :=
@@ -155,22 +155,22 @@ def hw_root_verified (st : HWRootState) (comp : BootComponentId) : Prop :=
 
 /-- root_key_protected (matches Coq: Definition root_key_protected) -/
 def root_key_protected (st : HWRootState) : Prop :=
-  root_key_present st = true /\ hardware_initialized st = true
+  st.root_key_present = true /\ st.hardware_initialized = true
 
 /-- root_of_trust_hardware (matches Coq) -/
 theorem root_of_trust_hardware : ∀ (hsm : HSMType), let st := initial_hw_state hsm in hw_root_verified st hw_root_component := by
   rfl
 
 /-- trust_extension_preserves_root (matches Coq) -/
-theorem trust_extension_preserves_root : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), hw_root_verified st hw_root_component → let st' := extend_trust_chain st verifier comp measurement in hw_root_verified st' hw_root_component := by
+theorem trust_extension_preserves_root : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), hw_root_verified st hw_root_component → let st' := extend_trust_chain st verifier comp measurement in hw_root_verified st' hw_root_component := by
   intro h; exact h
 
 /-- extended_component_trusted (matches Coq) -/
-theorem extended_component_trusted : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), in_trust_chain st verifier = true → let st' := extend_trust_chain st verifier comp measurement in component_trusted st' comp := by
+theorem extended_component_trusted : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), in_trust_chain st verifier = true → let st' := extend_trust_chain st verifier comp measurement in component_trusted st' comp := by
   cases ‹_› <;> simp
 
 /-- untrusted_cannot_extend (matches Coq) -/
-theorem untrusted_cannot_extend : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), in_trust_chain st verifier = false → extend_trust_chain st verifier comp measurement = st := by
+theorem untrusted_cannot_extend : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), in_trust_chain st verifier = false → extend_trust_chain st verifier comp measurement = st := by
   rfl
 
 /-- root_key_is_protected (matches Coq) -/
@@ -178,7 +178,7 @@ theorem root_key_is_protected : ∀ (hsm : HSMType), let st := initial_hw_state 
   rfl
 
 /-- pcr_record_preserved (matches Coq) -/
-theorem pcr_record_preserved : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : nat), let st' := record_pcr st comp value algo in In (mkMeasurement comp value algo) (pcr_values st') := by
+theorem pcr_record_preserved : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : Nat), let st' := record_pcr st comp value algo in In (mkMeasurement comp value algo) (pcr_values st') := by
   simp
 
 /-- Hardware root is always in initial trust chain -/
@@ -198,61 +198,61 @@ theorem hardware_initialized_initial : ∀ (hsm : HSMType), hardware_initialized
 
 /-- Trust extension preserves attestation key -/
 /-- trust_extension_preserves_attestation (matches Coq) -/
-theorem trust_extension_preserves_attestation : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), attestation_key_present st = true → attestation_key_present (extend_trust_chain st verifier comp measurement) = true := by
+theorem trust_extension_preserves_attestation : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), attestation_key_present st = true → attestation_key_present (extend_trust_chain st verifier comp measurement) = true := by
   intro h; exact h
 
 /-- Trust extension preserves root key -/
 /-- trust_extension_preserves_root_key (matches Coq) -/
-theorem trust_extension_preserves_root_key : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), root_key_present st = true → root_key_present (extend_trust_chain st verifier comp measurement) = true := by
+theorem trust_extension_preserves_root_key : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), root_key_present st = true → root_key_present (extend_trust_chain st verifier comp measurement) = true := by
   intro h; exact h
 
 /-- Trust extension preserves hardware initialization -/
 /-- trust_extension_preserves_init (matches Coq) -/
-theorem trust_extension_preserves_init : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), hardware_initialized st = true → hardware_initialized (extend_trust_chain st verifier comp measurement) = true := by
+theorem trust_extension_preserves_init : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), hardware_initialized st = true → hardware_initialized (extend_trust_chain st verifier comp measurement) = true := by
   intro h; exact h
 
 /-- PCR recording preserves trust chain -/
 /-- pcr_preserves_trust_chain (matches Coq) -/
-theorem pcr_preserves_trust_chain : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : nat), trust_chain (record_pcr st comp value algo) = trust_chain st := by
+theorem pcr_preserves_trust_chain : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : Nat), trust_chain (record_pcr st comp value algo) = trust_chain st := by
   simp
 
 /-- PCR recording preserves root key -/
 /-- pcr_preserves_root_key (matches Coq) -/
-theorem pcr_preserves_root_key : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : nat), root_key_present (record_pcr st comp value algo) = root_key_present st := by
+theorem pcr_preserves_root_key : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : Nat), root_key_present (record_pcr st comp value algo) = root_key_present st := by
   simp
 
 /-- PCR values grow monotonically -/
 /-- pcr_values_grow (matches Coq) -/
-theorem pcr_values_grow : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : nat) (m : Measurement), In m (pcr_values st) → In m (pcr_values (record_pcr st comp value algo)) := by
+theorem pcr_values_grow : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : Nat) (m : Measurement), In m (pcr_values st) → In m (pcr_values (record_pcr st comp value algo)) := by
   intro h; exact h
 
 /-- Trust chain grows on extension with trusted verifier -/
 /-- trust_chain_grows (matches Coq) -/
-theorem trust_chain_grows : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat) (entry : TrustChainEntry), in_trust_chain st verifier = true → In entry (trust_chain st) → In entry (trust_chain (extend_trust_chain st verifier comp measurement)) := by
+theorem trust_chain_grows : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat) (entry : TrustChainEntry), in_trust_chain st verifier = true → In entry (trust_chain st) → In entry (trust_chain (extend_trust_chain st verifier comp measurement)) := by
   intro h; exact h
 
 /-- Extended trust chain has new component -/
 /-- extended_chain_has_component (matches Coq) -/
-theorem extended_chain_has_component : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), in_trust_chain st verifier = true → In (mkTrustEntry comp verifier measurement true) (trust_chain (extend_trust_chain st verifier comp measurement)) := by
+theorem extended_chain_has_component : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), in_trust_chain st verifier = true → In (mkTrustEntry comp verifier measurement true) (trust_chain (extend_trust_chain st verifier comp measurement)) := by
   simp
 
 /-- HSM type is preserved by all operations -/
 /-- hsm_type_invariant_extend (matches Coq) -/
-theorem hsm_type_invariant_extend : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), hsm_type (extend_trust_chain st verifier comp measurement) = hsm_type st := by
+theorem hsm_type_invariant_extend : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), hsm_type (extend_trust_chain st verifier comp measurement) = hsm_type st := by
   cases ‹_› <;> simp
 
 /-- hsm_type_invariant_pcr (matches Coq) -/
-theorem hsm_type_invariant_pcr : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : nat), hsm_type (record_pcr st comp value algo) = hsm_type st := by
+theorem hsm_type_invariant_pcr : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : Nat), hsm_type (record_pcr st comp value algo) = hsm_type st := by
   simp
 
 /-- Root key protection preserved by extension -/
 /-- root_key_protection_preserved (matches Coq) -/
-theorem root_key_protection_preserved : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : nat), root_key_protected st → root_key_protected (extend_trust_chain st verifier comp measurement) := by
+theorem root_key_protection_preserved : ∀ (st : HWRootState) (verifier comp : BootComponentId) (measurement : Nat), root_key_protected st → root_key_protected (extend_trust_chain st verifier comp measurement) := by
   simp_all [Bool.and_eq_true]
 
 /-- Root key protection preserved by PCR recording -/
 /-- root_key_protection_preserved_pcr (matches Coq) -/
-theorem root_key_protection_preserved_pcr : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : nat), root_key_protected st → root_key_protected (record_pcr st comp value algo) := by
+theorem root_key_protection_preserved_pcr : ∀ (st : HWRootState) (comp : BootComponentId) (value algo : Nat), root_key_protected st → root_key_protected (record_pcr st comp value algo) := by
   simp_all [Bool.and_eq_true]
 
 end RIINA
