@@ -94,7 +94,7 @@ Theorem grant_effect_transparent : forall G S D eff e T ε,
   has_type G S D e T ε ->
   has_type G S D (EGrant eff e) T ε.
 Proof.
-  intros. apply T_Grant. assumption.
+  intros. constructor. assumption.
 Qed.
 
 Corollary grant_effect_iff : forall G S D eff e T ε,
@@ -195,7 +195,7 @@ Proof.
   inversion Hty; subst.
   (* From T_Perform: effect is effect_join ε eff'
      For this to be EffPure, both ε and eff' must be EffPure *)
-  assert (Hjoin : effect_join ε eff' = EffectPure) by reflexivity.
+  assert (Hjoin : effect_join ε eff' = EffectPure) by assumption.
   unfold EffectPure in Hjoin.
   unfold effect_join in Hjoin.
   destruct (effect_level ε <? effect_level eff') eqn:Hlt.
@@ -381,10 +381,9 @@ Theorem require_effect_additive : forall G S D eff e T ε,
 Proof.
   intros G S D eff e T ε Hty.
   inversion Hty; subst.
-  exists eff_e. split.
-  - assumption.
-  - (* effect_leq eff_e (effect_join eff_e eff) *)
-    apply effect_join_ub_l.
+  eexists. split.
+  - eassumption.
+  - apply effect_join_ub_l.
 Qed.
 
 (** ** Section 12: Effect Join Properties for Programs
