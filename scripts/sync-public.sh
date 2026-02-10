@@ -158,6 +158,18 @@ if [ "$LOCAL_HEAD" != "$REMOTE_HEAD" ]; then
 fi
 echo -e "${GREEN}[✓] main is pushed and validated${NC}"
 
+# Step 3b: Enforce public quality gates on main before sync
+if [ -f "$REPO_ROOT/scripts/public-quality-gates.sh" ]; then
+    echo "Running public quality gates on main..."
+    if ! bash "$REPO_ROOT/scripts/public-quality-gates.sh"; then
+        echo -e "${RED}ERROR: Public quality gates failed on main. Fix before sync.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${RED}ERROR: scripts/public-quality-gates.sh missing on main${NC}"
+    exit 1
+fi
+
 # Step 4: Determine commit(s) to sync
 if [ $# -ge 1 ]; then
     COMMIT_ARG="$1"
