@@ -29,7 +29,7 @@ const RiinaWebsite = () => {
       date: '2026-02-10',
       highlights: [
         'Production-active proofs: 7,740 Coq Qed, 0 Admitted, 0 active axioms',
-        '10-prover metrics published: 82,968 total artifacts across Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
+        '10-prover metrics published: 82,965 total artifacts across Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
         'Public quality gates added (artifact hygiene, doc drift checks, metrics alignment, version/tag alignment)',
         'Repository transparency: AXIOMS.md and PROOF_STATUS.md generated and enforced',
       ],

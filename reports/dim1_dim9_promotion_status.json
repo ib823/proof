@@ -1,24 +1,47 @@
 {
-  "generated_utc": "2026-02-10T14:49:41Z",
+  "generated_utc": "2026-02-10T15:25:45Z",
   "scope": "dim1_dim9_promotion_readiness",
-  "strict_tools": 0,
+  "strict_tools": 1,
   "tools": {
     "lake": true,
     "isabelle": false,
+    "docker": true,
     "java": true,
-    "tla2tools_jar": false,
-    "alloy_jar": false
+    "tla2tools_jar": true,
+    "alloy_jar": true,
+    "tla2tools_path": "/workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar",
+    "alloy_path": "/workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
   },
   "dimension_1": {
-    "status": "FAIL",
-    "promotion_ready": false,
-    "detail": "coq_core=1 coq_thm=30 lean_core=1 lean_build=0 lean_mode=lake_core_build_failed lean_actionable_sorry=0 isa_core=1 isa_thm=30 isa_build=0 isa_mode=missing_isabelle lean_tail=./././RIINA/TypeSystem/Preservation.lean:115:29: error: unexpected token 'end'; expected ':=', 'where' or '|' error: external command `/home/codespace/.elan/toolchains/leanprover--lean4---v4.5.0/bin/lean` exited with code 1 error: > LEAN_PATH=./.lake/build/lib LD_LIBRARY_PATH=./.lake/build/lib /home/codespace/.elan/toolchains/leanprover--lean4---v4.5.0/bin/lean -DautoImplicit=false ./././RIINA/TypeSystem/TypeSafety.lean -R ././. -o ./.lake/build/lib/RIINA/TypeSystem/TypeSafety.olean -i ./.lake/build/lib/RIINA/TypeSystem/TypeSafety.ilean -c ./.lake/build/ir/RIINA/TypeSystem/TypeSafety.c error: stdout: ./././RIINA/TypeSystem/TypeSafety.lean:24:9: error: missing end of character literal ./././RIINA/TypeSystem/TypeSafety.lean:28:36: error: unexpected token 'Σ'; expected ',' ./././RIINA/TypeSystem/TypeSafety.lean:32:69: error: unexpected token '/--'; expected 'abbrev', 'add_decl_doc', 'axiom', 'builtin_initialize', 'class', 'declare_simp_like_tactic', 'declare_syntax_cat', 'def', 'elab', 'elab_rules', 'example', 'inductive', 'infix', 'infixl', 'infixr', 'initialize', 'instance', 'macro', 'macro_rules', 'notation', 'opaque', 'postfix', 'prefix', 'structure', 'syntax', 'theorem' or 'unif_hint' ./././RIINA/TypeSystem/TypeSafety.lean:34:54: error: unexpected token 'Σ'; expected ',' error: external command `/home/codespace/.elan/toolchains/leanprover--lean4---v4.5.0/bin/lean` exited with code 1 [0/3] Building RIINA.TypeSystem.Progress [0/3] Building RIINA.TypeSystem.Preservation [0/3] Building RIINA.TypeSystem.TypeSafety "
+    "status": "PASS",
+    "promotion_ready": true,
+    "checks": {
+      "coq_core": true,
+      "coq_theorem_count": 30,
+      "lean_core": true,
+      "lean_build": true,
+      "lean_actionable_sorry": 0,
+      "isabelle_core": true,
+      "isabelle_theorem_count": 27,
+      "isabelle_build": true
+    },
+    "detail": "coq_core=1 coq_thm=30 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=0 isa_core=1 isa_thm=27 isa_build=1 isa_mode=docker_core_build"
   },
   "dimension_9": {
     "status": "PASS",
-    "promotion_ready": false,
-    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=0 tla_mode=static_only alloy_exec=0 alloy_mode=static_only"
+    "promotion_ready": true,
+    "checks": {
+      "files": true,
+      "coq_theorem_count": 184,
+      "tla_theorem_count": 184,
+      "alloy_assert_count": 368,
+      "tla_static": true,
+      "alloy_static": true,
+      "tla_exec": true,
+      "alloy_exec": true
+    },
+    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=1 tla_mode=sany_parse alloy_exec=1 alloy_mode=jar_commands"
   },
-  "overall_foundation": "FAIL",
-  "overall_promotion_ready": false
+  "overall_foundation": "PASS",
+  "overall_promotion_ready": true
 }
