@@ -396,6 +396,24 @@ fi
 # compilation evidence is integrated into this generator.
 LEAN_COMPILED=false
 ISABELLE_COMPILED=false
+DIM_PROMO_REPORT="$ROOT_DIR/reports/dim1_dim9_promotion_status.json"
+
+if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
+    if jq -e '.strict_tools == 1
+        and .dimension_1.status == "PASS"
+        and .dimension_1.checks.lean_build == true
+        and .dimension_1.checks.lean_actionable_sorry == 0' \
+        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
+        LEAN_COMPILED=true
+    fi
+
+    if jq -e '.strict_tools == 1
+        and .dimension_1.promotion_ready == true
+        and .dimension_1.checks.isabelle_build == true' \
+        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
+        ISABELLE_COMPILED=true
+    fi
+fi
 
 CLAIM_COQ="generated"
 [ "$COQ_COMPILED" = true ] && CLAIM_COQ="mechanized"
@@ -410,6 +428,22 @@ CLAIM_SMT="generated"
 CLAIM_VERUS="generated"
 CLAIM_KANI="generated"
 CLAIM_TV="generated"
+
+if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
+    if jq -e '.strict_tools == 1
+        and .dimension_9.promotion_ready == true
+        and .dimension_9.checks.tla_exec == true' \
+        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
+        CLAIM_TLAPLUS="compiled"
+    fi
+
+    if jq -e '.strict_tools == 1
+        and .dimension_9.promotion_ready == true
+        and .dimension_9.checks.alloy_exec == true' \
+        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
+        CLAIM_ALLOY="compiled"
+    fi
+fi
 
 INDEPENDENTLY_AUDITED=false
 OVERALL_CLAIM="$CLAIM_COQ"

@@ -1200,7 +1200,7 @@ fn scan_lean(lean_dir: &Path) -> Vec<CheckResult> {
 // Isabelle: compilation + static scan
 // ---------------------------------------------------------------------------
 
-/// Compile Isabelle proofs by running `isabelle build -d . -b RIINA`.
+/// Compile Isabelle core TypeSystem proofs using an isolated session.
 fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
     // The ROOT file lives in 02_FORMAL/isabelle/RIINA/
     let riina_dir = isabelle_dir.join("RIINA");
@@ -1244,7 +1244,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                         passed: true,
                         blocking: true,
                         details: format!(
-                            "Session RIINA built in {:.0}s ({source})",
+                            "Session RIINA_CORE built in {:.0}s ({source})",
                             elapsed.as_secs_f64()
                         ),
                     }
@@ -1302,30 +1302,99 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
         }
     }
 
-    match detect_isabelle() {
+    fn prepare_isabelle_core_dir(riina_dir: &Path) -> io::Result<PathBuf> {
+        let repo_root = riina_dir
+            .parent() // .../isabelle
+            .and_then(|p| p.parent()) // .../02_FORMAL
+            .and_then(|p| p.parent()) // repo root
+            .unwrap_or(riina_dir);
+
+        let ts = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis();
+        let core_dir = repo_root.join(format!(
+            ".isabelle-core-verify-{}-{}",
+            std::process::id(),
+            ts
+        ));
+        fs::create_dir_all(&core_dir)?;
+
+        let progress_src = riina_dir.join("TypeSystem/Progress.thy");
+        let preservation_src = riina_dir.join("TypeSystem/Preservation.thy");
+        let typesafety_src = riina_dir.join("TypeSystem/TypeSafety.thy");
+
+        if !progress_src.exists() || !preservation_src.exists() || !typesafety_src.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "missing Isabelle TypeSystem core files",
+            ));
+        }
+
+        fs::copy(&progress_src, core_dir.join("Progress.thy"))?;
+        fs::copy(&preservation_src, core_dir.join("Preservation.thy"))?;
+        fs::copy(&typesafety_src, core_dir.join("TypeSafety.thy"))?;
+        fs::write(
+            core_dir.join("ROOT"),
+            "session RIINA_CORE = HOL +\n  theories\n    Progress\n    Preservation\n    TypeSafety\n",
+        )?;
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            fs::set_permissions(&core_dir, fs::Permissions::from_mode(0o755))?;
+            for file in ["Progress.thy", "Preservation.thy", "TypeSafety.thy", "ROOT"] {
+                fs::set_permissions(core_dir.join(file), fs::Permissions::from_mode(0o644))?;
+            }
+        }
+
+        Ok(core_dir)
+    }
+
+    let core_dir = match prepare_isabelle_core_dir(&riina_dir) {
+        Ok(p) => p,
+        Err(e) => {
+            return CheckResult {
+                name: "Isabelle Compilation".into(),
+                passed: false,
+                blocking: true,
+                details: format!("failed to prepare core Isabelle session: {e}"),
+            };
+        }
+    };
+
+    let result = match detect_isabelle() {
         ToolStatus::Found(isa_path) => {
             eprintln!("  isabelle found: {}", isa_path.display());
             run_isabelle_build(
                 isa_path.to_str().unwrap_or("isabelle"),
-                &["build", "-d", ".", "-b", "RIINA"],
-                &riina_dir,
-                "local",
+                &[
+                    "build",
+                    "-d",
+                    core_dir.to_str().unwrap_or("."),
+                    "-b",
+                    "RIINA_CORE",
+                ],
+                &core_dir,
+                "local_core",
             )
         }
         ToolStatus::NotFound(msg) => {
             // Fallback: run Isabelle via Docker when local toolchain is absent.
             if which_tool("docker").is_none() {
-                return CheckResult {
+                let out = CheckResult {
                     name: "Isabelle Compilation".into(),
                     passed: false,
                     blocking: false,
                     details: format!("SKIPPED ({msg}; docker not found). Verification INCOMPLETE"),
                 };
+                let _ = fs::remove_dir_all(&core_dir);
+                return out;
             }
 
             let image = std::env::var("RIINA_ISABELLE_DOCKER_IMAGE")
                 .unwrap_or_else(|_| "makarius/isabelle".to_string());
-            let mount = format!("{}:/work", riina_dir.display());
+            let mount = format!("{}:/work", core_dir.display());
             let docker_args = vec![
                 "run".to_string(),
                 "--rm".to_string(),
@@ -1336,16 +1405,19 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                 "-d".to_string(),
                 "/work".to_string(),
                 "-b".to_string(),
-                "RIINA".to_string(),
+                "RIINA_CORE".to_string(),
             ];
             let arg_refs: Vec<&str> = docker_args.iter().map(|s| s.as_str()).collect();
             eprintln!(
                 "  isabelle not found locally; attempting docker image {}",
                 image
             );
-            run_isabelle_build("docker", &arg_refs, &riina_dir, "docker")
+            run_isabelle_build("docker", &arg_refs, &core_dir, "docker_core")
         }
-    }
+    };
+
+    let _ = fs::remove_dir_all(&core_dir);
+    result
 }
 
 /// Static scan of Isabelle `.thy` files for `sorry` and `oops`.
