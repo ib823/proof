@@ -91,8 +91,27 @@ count_examples() {
     find "$REPO_ROOT/07_EXAMPLES" -name "*.rii" -type f 2>/dev/null | wc -l
 }
 
-get_session_from_log() {
-    grep -oP "Session \K\d+" "$REPO_ROOT/SESSION_LOG.md" 2>/dev/null | head -1 || echo "0"
+get_max_session_from_file() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        echo "0"
+        return
+    fi
+    local value
+    value=$(grep -oP "Session \K\d+" "$file" 2>/dev/null | sort -n | tail -1 || true)
+    echo "${value:-0}"
+}
+
+get_actual_session() {
+    local session_log
+    local session_claude
+    session_log="$(get_max_session_from_file "$REPO_ROOT/SESSION_LOG.md")"
+    session_claude="$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md")"
+    if [ "$session_log" -gt "$session_claude" ]; then
+        echo "$session_log"
+    else
+        echo "$session_claude"
+    fi
 }
 
 check_value() {
@@ -165,7 +184,7 @@ ACTUAL_ISABELLE=$(count_isabelle_lemmas)
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
 ACTUAL_EXAMPLES=$(count_examples)
-ACTUAL_SESSION=$(get_session_from_log)
+ACTUAL_SESSION=$(get_actual_session)
 # Locale-independent thousands separator
 add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>$/,&/;ta'; }
 ACTUAL_QED_COMMA=$(add_commas "$ACTUAL_QED")
@@ -191,7 +210,7 @@ fi
 
 if [ -f "$REPO_ROOT/CLAUDE.md" ]; then
     DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/CLAUDE.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
-    DOC_SESSION=$(grep -oP 'Session \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
+    DOC_SESSION=$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md")
     DOC_LEAN=$(grep -oP 'Lean 4 Theorems[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
     DOC_ISABELLE=$(grep -oP 'Isabelle/HOL Lemmas[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
 

@@ -154,6 +154,11 @@ run_audit_pipeline() {
 
   run_step "RIINAC VERIFY --FULL" "$riinac" verify --full
   run_step "SECURITY GATES" bash "$REPO_ROOT/scripts/security-gates.sh"
+  if [ -f "$REPO_ROOT/scripts/check-easier-gaps.sh" ]; then
+    run_step "EASIER GAP CLOSURE (1,2,9,12)" bash "$REPO_ROOT/scripts/check-easier-gaps.sh"
+  else
+    echo -e "${YELLOW}Skipping easier-gap closure check: scripts/check-easier-gaps.sh not found${NC}"
+  fi
 
   if [ "$SKIP_DEEP" -eq 0 ]; then
     if [ -f "$REPO_ROOT/05_TOOLING/scripts/verify.sh" ]; then

@@ -480,7 +480,7 @@ for dir in "${TIER2_DIRS[@]}"; do
             else
                 SKIPPED=$((SKIPPED + 1))
             fi
-        done < <(grep -rl "^\*\*Audit Update:\*\*" "$dir" 2>/dev/null || true)
+        done < <(grep -rlE "^\*\*(Audit Update|Verification):\*\*" "$dir" 2>/dev/null || true)
     fi
 done
 
