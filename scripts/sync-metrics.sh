@@ -111,7 +111,7 @@ STUB_TOTAL=$((FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTION
 LEAN_ISA_TOTAL=$((LEAN_THEOREMS + ISABELLE_LEMMAS))
 
 # The canonical verification banner line — clean, professional
-BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} policy axiom) | ${TOTAL_PROVERS} independent provers | ${RUST_TESTS} Rust tests"
+BANNER="**Verification:** ${QED_COMMA} Coq Qed (compiled, 0 Admitted, ${AXIOMS} active axioms) | ${TOTAL_PROVERS} independent provers | ${RUST_TESTS} Rust tests"
 
 # ── Helper: sed-replace in file ───────────────────────────────────────
 

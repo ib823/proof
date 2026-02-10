@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 policy axiom) | 10 independent provers | 852 Rust tests
+**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 852 Rust tests
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -839,7 +839,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 82,968 total proofs: 7,740 Coq + 7900 Lean + 8072 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 245 active .v + 255 .lean + 251 .thy = 272 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 82,968 total proofs: 7,740 Coq + 7900 Lean + 8072 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 244 active .v + 255 .lean + 251 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

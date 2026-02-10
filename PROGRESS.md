@@ -17,9 +17,9 @@
 ```
 
 **Report Date:** 2026-02-06 (Session 83)
-**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 policy axiom) | 10 independent provers | 852 Rust tests
+**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 852 Rust tests
 **Session:** 83 (Proof Depth 20+ All Files — 82,968 proofs across 3 provers, 0 sorry, 0 axiom)
-**Overall Grade:** A (BUILD PASSING, 0 Admitted/sorry across all provers, 1 justified axiom)
+**Overall Grade:** A (BUILD PASSING, 0 Admitted/sorry across all provers, 0 active axioms)
 
 ---
 
@@ -29,20 +29,20 @@
 |--------|---------|--------|--------|
 | `admit.` (Active Build) | **0** | 0 | ✅ ZERO |
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
-| Axioms (Active Build) | **1** | 1 | ✅ TARGET REACHED — `logical_relation_declassify` (policy axiom) |
+| Axioms (Active Build) | **0** | 0 | ✅ ZERO |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **245** | - | ✅ All compile |
+| Files in Build | **244** | - | ✅ All compile |
 | Qed Proofs (Coq) | **7,740** | - | ✅ (active build, 0 Admitted) |
 | Lean 4 Theorems | **7900** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8072** | - | ✅ (0 sorry) |
 | Triple-Prover Theorems | **86** | - | ✅ (independent agreement across 3 provers) |
 | Total Proofs (All Provers) | **82,968** | - | ✅ |
 | .v Files (Total) | **284** | - | ✅ |
-| .lean Files | **12** | - | ✅ |
-| .thy Files | **10** | - | ✅ |
-| Rust Prototype | ✅ PASSING (839 tests) | PASSING | ✅ GREEN |
+| .lean Files | **255** | - | ✅ |
+| .thy Files | **260** | - | ✅ |
+| Rust Prototype | ✅ PASSING (852 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
-| Example .rii Files | **120** | 100+ | ✅ (+5 demos, +3 showcase, +compiler scaffolds) |
+| Example .rii Files | **130** | 100+ | ✅ (+5 demos, +3 showcase, +compiler scaffolds) |
 | Prover | **Coq 8.20.1** | - | ✅ Migrated from Rocq 9.1 |
 
 **SESSION 77 KEY ACTIONS (Triple-Prover Complete — 0 sorry across all provers):**
