@@ -162,6 +162,13 @@ ensure_clean_worktree() {
 run_audit_pipeline() {
   local riinac=""
 
+  if [ -f "$REPO_ROOT/scripts/check-dim1-dim9-promotion.sh" ]; then
+    run_step "DIM1/DIM9 PROMOTION READINESS (STRICT)" \
+      bash "$REPO_ROOT/scripts/check-dim1-dim9-promotion.sh" --strict-tools
+  else
+    echo -e "${YELLOW}Skipping dim1/dim9 promotion check: scripts/check-dim1-dim9-promotion.sh not found${NC}"
+  fi
+
   run_step "METRICS GENERATION" bash "$REPO_ROOT/scripts/generate-metrics.sh" --fast
 
   if [ "$SYNC_MODE" = "dry" ]; then
@@ -193,11 +200,6 @@ run_audit_pipeline() {
     run_step "HEAVY GAP FOUNDATION (5,6,7,8,10,11,13)" bash "$REPO_ROOT/scripts/check-heavy-gaps.sh"
   else
     echo -e "${YELLOW}Skipping heavy-gap foundation check: scripts/check-heavy-gaps.sh not found${NC}"
-  fi
-  if [ -f "$REPO_ROOT/scripts/check-dim1-dim9-promotion.sh" ]; then
-    run_step "DIM1/DIM9 PROMOTION READINESS" bash "$REPO_ROOT/scripts/check-dim1-dim9-promotion.sh"
-  else
-    echo -e "${YELLOW}Skipping dim1/dim9 promotion check: scripts/check-dim1-dim9-promotion.sh not found${NC}"
   fi
   if [ -f "$REPO_ROOT/scripts/public-quality-gates.sh" ]; then
     run_step "PUBLIC QUALITY GATES" bash "$REPO_ROOT/scripts/public-quality-gates.sh"

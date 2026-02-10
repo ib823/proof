@@ -22,8 +22,31 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 REPORT_PATH="$REPO_ROOT/reports/dim1_dim9_promotion_status.json"
 
 STRICT_TOOLS=0
-if [ "${1:-}" = "--strict-tools" ]; then
-  STRICT_TOOLS=1
+PROVISION_TOOLS="${RIINA_PROVISION_FORMAL_TOOLS:-0}"
+AUTO_PROVISION_ON_STRICT="${RIINA_AUTO_PROVISION_FORMAL_TOOLS_ON_STRICT:-1}"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --strict-tools)
+      STRICT_TOOLS=1
+      ;;
+    --provision-tools)
+      PROVISION_TOOLS=1
+      ;;
+    --no-provision-tools)
+      PROVISION_TOOLS=0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      echo "Usage: bash scripts/check-dim1-dim9-promotion.sh [--strict-tools] [--provision-tools|--no-provision-tools]" >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if [ "$STRICT_TOOLS" -eq 1 ] && [ "$AUTO_PROVISION_ON_STRICT" = "1" ]; then
+  PROVISION_TOOLS=1
 fi
 
 RED='\033[0;31m'
@@ -59,6 +82,7 @@ echo "================================================================"
 echo "  RIINA DIM1/DIM9 PROMOTION READINESS"
 echo "================================================================"
 echo "strict-tools: $STRICT_TOOLS"
+echo "provision-tools: $PROVISION_TOOLS"
 
 mkdir -p "$REPO_ROOT/reports"
 
@@ -71,6 +95,8 @@ HAS_DOCKER=0
 HAS_JAVA=0
 HAS_TLA2TOOLS_JAR=0
 HAS_ALLOY_JAR=0
+PROVISION_ATTEMPTED=0
+PROVISION_SUCCEEDED=0
 
 command -v lake >/dev/null 2>&1 && HAS_LAKE=1
 command -v isabelle >/dev/null 2>&1 && HAS_ISABELLE=1
@@ -86,6 +112,24 @@ fi
 
 [ -n "${TLA2TOOLS_JAR:-}" ] && [ -f "${TLA2TOOLS_JAR:-}" ] && HAS_TLA2TOOLS_JAR=1
 [ -n "${ALLOY_JAR:-}" ] && [ -f "${ALLOY_JAR:-}" ] && HAS_ALLOY_JAR=1
+
+if [ "$PROVISION_TOOLS" = "1" ] \
+  && [ "$HAS_JAVA" -eq 1 ] \
+  && { [ "$HAS_TLA2TOOLS_JAR" -eq 0 ] || [ "$HAS_ALLOY_JAR" -eq 0 ]; }; then
+  PROVISION_ATTEMPTED=1
+  if [ -x "$REPO_ROOT/scripts/provision-formal-tools.sh" ] \
+    && bash "$REPO_ROOT/scripts/provision-formal-tools.sh" >/dev/null 2>&1; then
+    PROVISION_SUCCEEDED=1
+    [ -z "${TLA2TOOLS_JAR:-}" ] && [ -f "$FORMAL_TOOLS_DIR/tla2tools.jar" ] \
+      && TLA2TOOLS_JAR="$FORMAL_TOOLS_DIR/tla2tools.jar"
+    if [ -z "${ALLOY_JAR:-}" ]; then
+      default_alloy_jar="$FORMAL_TOOLS_DIR/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+      [ -f "$default_alloy_jar" ] && ALLOY_JAR="$default_alloy_jar"
+    fi
+    [ -n "${TLA2TOOLS_JAR:-}" ] && [ -f "${TLA2TOOLS_JAR:-}" ] && HAS_TLA2TOOLS_JAR=1
+    [ -n "${ALLOY_JAR:-}" ] && [ -f "${ALLOY_JAR:-}" ] && HAS_ALLOY_JAR=1
+  fi
+fi
 
 # ---------------------------------------------------------------------------
 # Dimension 1: Type-system soundness promotion foundation
@@ -323,8 +367,14 @@ echo "Overall promotion readiness      : $OVERALL_PROMOTION_READY"
 cat > "$REPORT_PATH" <<EOF_JSON
 {
   "generated_utc": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "repo_head": "$(git rev-parse HEAD)",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": $STRICT_TOOLS,
+  "provision": {
+    "requested": $([ "$PROVISION_TOOLS" = "1" ] && echo "true" || echo "false"),
+    "attempted": $([ "$PROVISION_ATTEMPTED" -eq 1 ] && echo "true" || echo "false"),
+    "succeeded": $([ "$PROVISION_SUCCEEDED" -eq 1 ] && echo "true" || echo "false")
+  },
   "tools": {
     "lake": $([ "$HAS_LAKE" -eq 1 ] && echo "true" || echo "false"),
     "isabelle": $([ "$HAS_ISABELLE" -eq 1 ] && echo "true" || echo "false"),

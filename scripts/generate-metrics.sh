@@ -397,9 +397,30 @@ fi
 LEAN_COMPILED=false
 ISABELLE_COMPILED=false
 DIM_PROMO_REPORT="$ROOT_DIR/reports/dim1_dim9_promotion_status.json"
+DIM_PROMO_FRESH=false
+DIM_PROMO_TLA_PATH=""
+DIM_PROMO_ALLOY_PATH=""
+DIM_PROMO_TLA_PATH_OK=false
+DIM_PROMO_ALLOY_PATH_OK=false
+
+CURRENT_HEAD="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || echo "")"
 
 if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
-    if jq -e '.strict_tools == 1
+    report_head="$(jq -r '.repo_head // ""' "$DIM_PROMO_REPORT" 2>/dev/null || echo "")"
+    if [ -n "$CURRENT_HEAD" ] && [ "$report_head" = "$CURRENT_HEAD" ]; then
+        DIM_PROMO_FRESH=true
+    fi
+
+    DIM_PROMO_TLA_PATH="$(jq -r '.tools.tla2tools_path // ""' "$DIM_PROMO_REPORT" 2>/dev/null || echo "")"
+    DIM_PROMO_ALLOY_PATH="$(jq -r '.tools.alloy_path // ""' "$DIM_PROMO_REPORT" 2>/dev/null || echo "")"
+    if [ -n "$DIM_PROMO_TLA_PATH" ] && [ -f "$DIM_PROMO_TLA_PATH" ]; then
+        DIM_PROMO_TLA_PATH_OK=true
+    fi
+    if [ -n "$DIM_PROMO_ALLOY_PATH" ] && [ -f "$DIM_PROMO_ALLOY_PATH" ]; then
+        DIM_PROMO_ALLOY_PATH_OK=true
+    fi
+
+    if [ "$DIM_PROMO_FRESH" = true ] && jq -e '.strict_tools == 1
         and .dimension_1.status == "PASS"
         and .dimension_1.checks.lean_build == true
         and .dimension_1.checks.lean_actionable_sorry == 0' \
@@ -407,7 +428,7 @@ if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
         LEAN_COMPILED=true
     fi
 
-    if jq -e '.strict_tools == 1
+    if [ "$DIM_PROMO_FRESH" = true ] && jq -e '.strict_tools == 1
         and .dimension_1.promotion_ready == true
         and .dimension_1.checks.isabelle_build == true' \
         "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
@@ -430,14 +451,14 @@ CLAIM_KANI="generated"
 CLAIM_TV="generated"
 
 if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
-    if jq -e '.strict_tools == 1
+    if [ "$DIM_PROMO_FRESH" = true ] && [ "$DIM_PROMO_TLA_PATH_OK" = true ] && jq -e '.strict_tools == 1
         and .dimension_9.promotion_ready == true
         and .dimension_9.checks.tla_exec == true' \
         "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
         CLAIM_TLAPLUS="compiled"
     fi
 
-    if jq -e '.strict_tools == 1
+    if [ "$DIM_PROMO_FRESH" = true ] && [ "$DIM_PROMO_ALLOY_PATH_OK" = true ] && jq -e '.strict_tools == 1
         and .dimension_9.promotion_ready == true
         and .dimension_9.checks.alloy_exec == true' \
         "$DIM_PROMO_REPORT" >/dev/null 2>&1; then

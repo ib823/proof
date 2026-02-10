@@ -39,6 +39,7 @@ axiom_audit_report.txt
 .keepalive_timestamp
 integrity_reports/
 .riina_manifest*
+05_TOOLING/tools/formal/
 
 # Node
 **/node_modules/
