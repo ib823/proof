@@ -45,12 +45,6 @@ file_exists_and_listed() {
   [ -f "$COQ_DIR/$rel" ] && listed_in_project "$rel"
 }
 
-token_in_file() {
-  local token="$1"
-  local file="$2"
-  [ -f "$file" ] && grep -Eq "(^|[^[:alnum:]_])${token}([^[:alnum:]_]|$)" "$file"
-}
-
 echo ""
 echo "================================================================"
 echo "  RIINA MEDIUM GAP CLOSURE CHECK (1,2,3,4,9,12)"
