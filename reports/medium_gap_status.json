@@ -1,9 +1,9 @@
 {
-  "generated_utc": "2026-02-10T14:06:59Z",
+  "generated_utc": "2026-02-10T22:43:00Z",
   "scope": "medium_items_1_2_3_4_9_12",
   "item_1_type_system_soundness": {
     "status": "PASS",
-    "detail": "coq=1 lean=1 isa=1 coq_thm=30 lean_thm=30 isa_thm=30"
+    "detail": "coq=1 lean=1 isa=1 coq_thm=30 lean_thm=30 isa_thm=27"
   },
   "item_2_non_interference_hygiene": {
     "status": "PASS",
