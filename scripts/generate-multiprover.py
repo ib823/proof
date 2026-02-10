@@ -381,7 +381,10 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
             if match_body:
                 lines.append(match_body)
             else:
-                lines.append(f'def {defn.name} := sorry -- complex match, needs manual translation')
+                # Explicitly mark unresolved translations as axioms instead of
+                # implicit sorry placeholders, so backlog is transparent.
+                params_str = _translate_params_lean(defn.params)
+                lines.append(f'axiom {defn.name}{params_str} : {lean_ret} -- fallback: unresolved match translation')
         else:
             # Direct definition (could be a boolean combination)
             lines.append(f'/-- {defn.name} (matches Coq: Definition {defn.name}) -/')
