@@ -144,7 +144,7 @@ restore_deploy_generated_state() {
     "$REPO_ROOT/VERIFICATION_MANIFEST.md"
   )
 
-  git restore -- "${paths[@]}" >/dev/null 2>&1 || true
+  git restore --staged --worktree -- "${paths[@]}" >/dev/null 2>&1 || true
 }
 
 ensure_clean_worktree() {
