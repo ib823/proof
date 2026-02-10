@@ -320,12 +320,45 @@ TRIPLE_PROVER=$((FOUNDATION_TRIPLE + DOMAIN_TRIPLE))
 if [ -f "${HOME}/.cargo/env" ]; then
     source "${HOME}/.cargo/env"
 fi
+RUST_TESTS_SOURCE="full_cargo_test"
+RUST_TESTS_ESTIMATED=0
+RUST_TESTS_VERIFIED=0
 if [ "$FAST_MODE" -eq 1 ]; then
     # Fast: count #[test] annotations statically (< 1s vs ~30s for cargo test)
-    RUST_TESTS=$(grep -r '#\[test\]' "$ROOT_DIR/03_PROTO/crates" --include="*.rs" 2>/dev/null | wc -l)
+    RUST_TESTS_ESTIMATED=$(grep -r '#\[test\]' "$ROOT_DIR/03_PROTO/crates" --include="*.rs" 2>/dev/null | wc -l)
+    RUST_TESTS="$RUST_TESTS_ESTIMATED"
+    RUST_TESTS_SOURCE="static_scan"
+
+    # Preserve last verified test count when available so fast mode does not
+    # regress published metrics to a static approximation.
+    PREV_METRICS="$ROOT_DIR/website/public/metrics.json"
+    if [ -f "$PREV_METRICS" ] && command -v python3 >/dev/null 2>&1; then
+        PREV_VERIFIED=$(python3 - <<'PY' "$PREV_METRICS"
+import json, sys
+try:
+    with open(sys.argv[1], "r", encoding="utf-8") as f:
+        data = json.load(f)
+    rust = data.get("rust", {})
+    val = rust.get("testsVerified", rust.get("tests", 0))
+    print(int(val) if isinstance(val, int) or (isinstance(val, str) and val.isdigit()) else 0)
+except Exception:
+    print(0)
+PY
+)
+        if [[ "$PREV_VERIFIED" =~ ^[0-9]+$ ]] && [ "$PREV_VERIFIED" -gt 0 ]; then
+            RUST_TESTS="$PREV_VERIFIED"
+            RUST_TESTS_VERIFIED="$PREV_VERIFIED"
+            RUST_TESTS_SOURCE="cached_verified"
+        fi
+    fi
 else
     # Full: run cargo test for accurate count
     RUST_TESTS=$(cd "$ROOT_DIR/03_PROTO" && cargo test --all 2>&1 | grep -oP '\d+ passed' | awk '{sum += $1} END {print sum+0}' || echo "0")
+    RUST_TESTS_VERIFIED="$RUST_TESTS"
+fi
+
+if [ "$RUST_TESTS_VERIFIED" -le 0 ] 2>/dev/null; then
+    RUST_TESTS_VERIFIED="$RUST_TESTS"
 fi
 
 # Count Rust crates (03_PROTO only — the main language crates)
@@ -516,6 +549,9 @@ cat > "$OUTPUT_FILE" << EOF
   },
   "rust": {
     "tests": ${RUST_TESTS:-0},
+    "testsVerified": ${RUST_TESTS_VERIFIED:-0},
+    "testsEstimated": ${RUST_TESTS_ESTIMATED:-0},
+    "testsSource": "$RUST_TESTS_SOURCE",
     "crates": $RUST_CRATES
   },
   "examples": $EXAMPLE_FILES,
@@ -556,6 +592,7 @@ echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
 echo "  Claim levels: overall=$OVERALL_CLAIM coq=$CLAIM_COQ lean=$CLAIM_LEAN isabelle=$CLAIM_ISABELLE"
 echo "                fstar=$CLAIM_FSTAR tlaplus=$CLAIM_TLAPLUS alloy=$CLAIM_ALLOY smt=$CLAIM_SMT"
 echo "                verus=$CLAIM_VERUS kani=$CLAIM_KANI tv=$CLAIM_TV"
+echo "  Rust tests source: $RUST_TESTS_SOURCE (tests=$RUST_TESTS, verified=$RUST_TESTS_VERIFIED, estimated=$RUST_TESTS_ESTIMATED)"
 echo "  Quality tiers:"
 echo "    Core Coq:   $COQ_TIER1_CORE (foundations/type_system/effects/properties/termination)"
 echo "    Domain Coq: $COQ_TIER2_DOMAIN (domains/Industries/compliance)"
