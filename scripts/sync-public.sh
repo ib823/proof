@@ -135,16 +135,16 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
 fi
 echo -e "${GREEN}[✓] On main branch${NC}"
 
-# Step 2: Verify working tree is clean (tolerate auto-generated VERIFICATION_MANIFEST.md)
-DIRTY_FILES=$(git diff --name-only HEAD | grep -v "^VERIFICATION_MANIFEST.md$" || true)
+# Step 2: Verify working tree is clean (tolerate auto-generated verification reports)
+DIRTY_FILES=$(git diff --name-only HEAD | grep -Ev "^(VERIFICATION_MANIFEST.md|reports/public_quality_status.json|reports/easier_gap_status.json)$" || true)
 if [ -n "$DIRTY_FILES" ]; then
     echo -e "${RED}ERROR: Uncommitted changes on main. Commit or stash first.${NC}"
     echo "$DIRTY_FILES"
     exit 1
 fi
-# Restore the manifest if it was auto-modified by pre-push hook
-git reset HEAD VERIFICATION_MANIFEST.md 2>/dev/null || true
-git checkout -- VERIFICATION_MANIFEST.md 2>/dev/null || true
+# Restore auto-generated files if modified by hooks/gates
+git reset HEAD VERIFICATION_MANIFEST.md reports/public_quality_status.json reports/easier_gap_status.json 2>/dev/null || true
+git checkout -- VERIFICATION_MANIFEST.md reports/public_quality_status.json reports/easier_gap_status.json 2>/dev/null || true
 echo -e "${GREEN}[✓] Working tree clean${NC}"
 
 # Step 3: Verify main has been pushed (commits are validated by pre-push hook)
@@ -165,6 +165,9 @@ if [ -f "$REPO_ROOT/scripts/public-quality-gates.sh" ]; then
         echo -e "${RED}ERROR: Public quality gates failed on main. Fix before sync.${NC}"
         exit 1
     fi
+    # public-quality-gates writes reports/public_quality_status.json; keep tree clean
+    git reset HEAD reports/public_quality_status.json 2>/dev/null || true
+    git checkout -- reports/public_quality_status.json 2>/dev/null || true
 else
     echo -e "${RED}ERROR: scripts/public-quality-gates.sh missing on main${NC}"
     exit 1
