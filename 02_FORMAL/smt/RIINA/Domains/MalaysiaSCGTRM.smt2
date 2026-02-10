@@ -53,8 +53,8 @@
 (define-fun ai_risk_managed ((ar AIModelRisk)) Prop
   true)
 
-; cm_cloud_risk_assessed (matches Coq: Definition cm_cloud_risk_assessed)
-(define-fun cm_cloud_risk_assessed ((cr CMCloudRisk)) Prop
+; cmc_cloud_risk_assessed (matches Coq: Definition cmc_cloud_risk_assessed)
+(define-fun cmc_cloud_risk_assessed ((cr CMCloudRisk)) Prop
   true)
 
 ; gtrm_req_1 (matches Coq: Theorem gtrm_req_1)
@@ -124,10 +124,10 @@
 (assert (forall ((ar AIModelRisk)) (=> (= (ai_model_validated ar) false) (not (= (ai_risk_managed ar) true))))) ; ai_not_validated_not_managed
 
 ; cm_cloud_fully_assessed (matches Coq: Theorem cm_cloud_fully_assessed)
-(assert (forall ((cr CMCloudRisk)) (=> (= (cmc_data_residency_compliant cr) true) (=> (= (cmc_encryption_at_rest cr) true) (=> (= (cmc_encryption_in_transit cr) true) (=> (= (cmc_access_controls cr) true) (=> (= (cmc_exit_strategy cr) true) (= (cm_cloud_risk_assessed cr) true)))))))) ; cm_cloud_fully_assessed
+(assert (forall ((cr CMCloudRisk)) (=> (= (cmc_data_residency_compliant cr) true) (=> (= (cmc_encryption_at_rest cr) true) (=> (= (cmc_encryption_in_transit cr) true) (=> (= (cmc_access_controls cr) true) (=> (= (cmc_exit_strategy cr) true) (= (cmc_cloud_risk_assessed cr) true)))))))) ; cm_cloud_fully_assessed
 
 ; cm_cloud_missing_exit_strategy (matches Coq: Theorem cm_cloud_missing_exit_strategy)
-(assert (forall ((cr CMCloudRisk)) (=> (= (cmc_exit_strategy cr) false) (not (= (cm_cloud_risk_assessed cr) true))))) ; cm_cloud_missing_exit_strategy
+(assert (forall ((cr CMCloudRisk)) (=> (= (cmc_exit_strategy cr) false) (not (= (cmc_cloud_risk_assessed cr) true))))) ; cm_cloud_missing_exit_strategy
 
 ; Verify all assertions are satisfiable
 (check-sat)

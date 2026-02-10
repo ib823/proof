@@ -1,6 +1,6 @@
 # DELEGATION TASKS FOR CLAUDE AI (WEB)
 
-**Verification:** 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
+**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 policy axiom) | 10 independent provers | 852 Rust tests
 
 ## TASK 1: exp_rel_step1_fst
 

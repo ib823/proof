@@ -1,6 +1,6 @@
 # RIINA Bridge Analysis Conclusion
 
-**Verification:** 7,929 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
+**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 policy axiom) | 10 independent provers | 852 Rust tests
 
 ## Worker: WORKER_ζ (Zeta)
 ## Date: 2026-01-17
