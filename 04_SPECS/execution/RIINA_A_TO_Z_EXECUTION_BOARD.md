@@ -10,12 +10,16 @@ Scope: strict execution tracker from current mechanized Coq core to full multi-l
 - Claim levels: `overall=mechanized`, `coq=mechanized`, `lean/isabelle/fstar/tlaplus/alloy/smt/verus/kani/tv=generated`
 - Independent external audit: `false`
 - Easier-gap checks (items 1/2/9/12): `PASS`
+- Medium-gap checks (items 1/2/3/4/9/12): `PASS`
+- Heavy-gap foundation checks (items 5/6/7/8/10/11/13): `PASS`
 - Public quality gates: `PASS`
 
 Sources:
 - `PROOF_STATUS.md`
 - `website/public/metrics.json`
 - `reports/easier_gap_status.json`
+- `reports/medium_gap_status.json`
+- `reports/heavy_gap_status.json`
 - `reports/public_quality_status.json`
 
 ## Claim-Level Rules (non-negotiable)
@@ -80,4 +84,3 @@ Sources:
 2. Before every deploy: follow `COMMIT_PROTOCOL.md` without skipping steps.
 3. Weekly: refresh this board's completion values from L0 outputs only.
 4. Monthly: publish a delta report listing completed exits and newly opened risks.
-

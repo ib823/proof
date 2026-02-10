@@ -1,0 +1,29 @@
+{
+  "generated_utc": "2026-02-10T14:06:59Z",
+  "scope": "medium_items_1_2_3_4_9_12",
+  "item_1_type_system_soundness": {
+    "status": "PASS",
+    "detail": "coq=1 lean=1 isa=1 coq_thm=30 lean_thm=30 isa_thm=30"
+  },
+  "item_2_non_interference_hygiene": {
+    "status": "PASS",
+    "detail": "ni_listed=0 explicit_step_up=0 active_axioms=0 metrics_assumptions=0"
+  },
+  "item_3_effect_soundness_foundation": {
+    "status": "PASS",
+    "detail": "files=1 tokens=1 compiler_signal=1"
+  },
+  "item_4_linear_soundness_foundation": {
+    "status": "PASS",
+    "detail": "files=1 tokens=1 compiler_signal=0"
+  },
+  "item_9_protocol_foundation": {
+    "status": "PASS",
+    "detail": "exists=1 coq_thm=184 tla_thm=184 alloy_assert=368"
+  },
+  "item_12_trust_chain_foundation": {
+    "status": "PASS",
+    "detail": "files=1 signed_policy=1 bootstrap_cmd=1 coq_thm=65"
+  },
+  "overall": "PASS"
+}
