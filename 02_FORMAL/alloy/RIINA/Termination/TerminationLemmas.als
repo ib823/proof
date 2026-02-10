@@ -6,6 +6,9 @@ module riina/domains/termination_lemmas
 
 open util/boolean
 
+abstract sig store_ty {}
+abstract sig ty {}
+
 // val_rel_0 (matches Coq: Definition val_rel_0)
 pred val_rel_0[Σ: store_ty, T: ty] {
   some Σ

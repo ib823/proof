@@ -6,6 +6,9 @@ module riina/domains/data_persistence
 
 open util/boolean
 
+abstract sig Record {}
+abstract sig list {}
+
 // Schema (matches Coq: Record Schema)
 sig Schema {
   schema_version: one Int,
@@ -81,7 +84,7 @@ sig StorageQuota {
 
 // SerializedData (matches Coq: Record SerializedData)
 sig SerializedData {
-  ser_format: one Int // 0=JSON, 1=Protobuf, 2=CBOR,
+  ser_format: one Int, // 0=JSON, 1=Protobuf, 2=CBOR
   ser_data: one list,
   ser_checksum: one Int,
   ser_validated: one Bool
@@ -167,7 +170,7 @@ pred schema_version_tracked_prop[m: Migration] {
 }
 
 // corruption_detected_prop (matches Coq: Definition corruption_detected_prop)
-pred corruption_detected_prop[s: EncryptedStore, expected: nat] {
+pred corruption_detected_prop[s: EncryptedStore, expected: Int] {
   some s
 }
 
@@ -195,7 +198,7 @@ pred index_consistent_prop[idx: IndexEntry] {
 }
 
 // cache_invalidation_correct (matches Coq: Definition cache_invalidation_correct)
-pred cache_invalidation_correct[c: CacheEntry, current_time: nat] {
+pred cache_invalidation_correct[c: CacheEntry, current_time: Int] {
   some c
 }
 

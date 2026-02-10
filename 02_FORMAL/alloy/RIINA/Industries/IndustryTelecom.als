@@ -27,13 +27,15 @@ one sig SubscriberData extends TelecomEffect {}
 one sig NetworkConfig extends TelecomEffect {}
 one sig BillingRecord extends TelecomEffect {}
 
+abstract sig NetworkFunction {}
+
 // Security_5G (matches Coq: Record Security_5G)
 sig Security_5G {
-  primary_authentication: one Bool // 5G-AKA or EAP-AKA',
-  nas_security: one Bool // NAS signaling protection,
-  as_security: one Bool // AS layer protection,
-  user_plane_integrity: one Bool // UP integrity - optional in 4G,
-  service_based_security: one Bool // Service-based architecture security,
+  primary_authentication: one Bool, // 5G-AKA or EAP-AKA'
+  nas_security: one Bool, // NAS signaling protection
+  as_security: one Bool, // AS layer protection
+  user_plane_integrity: one Bool, // UP integrity - optional in 4G
+  service_based_security: one Bool, // Service-based architecture security
   network_slicing_isolation: one Bool // Slice isolation
 }
 
@@ -78,12 +80,12 @@ pred security_5g_all[s: Security_5G] {
 pred slices_isolated {}
 
 // latency_acceptable (matches Coq: Definition latency_acceptable)
-pred latency_acceptable[s: NetworkSlice, max_latency: nat] {
+pred latency_acceptable[s: NetworkSlice, max_latency: Int] {
   some s
 }
 
 // supi_concealed (matches Coq: Definition supi_concealed)
-pred supi_concealed[encrypted: bool, domain: TelecomDomain] {
+pred supi_concealed[encrypted: Bool, domain: TelecomDomain] {
   some encrypted
 }
 

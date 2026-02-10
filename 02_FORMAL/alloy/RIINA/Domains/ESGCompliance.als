@@ -21,12 +21,27 @@ one sig Seawater extends WaterSource {}
 one sig Municipal extends WaterSource {}
 one sig Rainwater extends WaterSource {}
 
+abstract sig anti_corruption_adequate {}
+abstract sig coi_managed {}
+abstract sig externally_verified {}
+abstract sig forall {}
+abstract sig gri_compliant {}
+abstract sig grievance_adequate {}
+abstract sig hrdd_implemented {}
+abstract sig independent_majority {}
+abstract sig list {}
+abstract sig methodology_documented {}
+abstract sig sasb_aligned {}
+abstract sig science_based {}
+abstract sig tcfd_aligned {}
+abstract sig whistleblower_protected {}
+
 // EmissionSource (matches Coq: Record EmissionSource)
 sig EmissionSource {
   source_id: one Int,
   source_type: one EmissionScope,
-  quantity: one Z // In tonnes CO2e, scaled by 10^6,
-  emission_factor: one Z,
+  quantity: one Int, // In tonnes CO2e, scaled by 10^6
+  emission_factor: one Int,
   is_tracked: one Bool,
   is_measured: one Bool,
   is_reported: one Bool,
@@ -38,7 +53,7 @@ sig EmissionSource {
 sig WaterWithdrawal {
   withdrawal_id: one Int,
   water_source: one WaterSource,
-  volume: one Z // In cubic meters,
+  volume: one Int, // In cubic meters
   quality: one Int,
   source_documented: one Bool
 }
@@ -46,9 +61,9 @@ sig WaterWithdrawal {
 // WasteRecord (matches Coq: Record WasteRecord)
 sig WasteRecord {
   waste_id: one Int,
-  waste_generated: one Z,
-  waste_diverted: one Z,
-  waste_landfilled: one Z,
+  waste_generated: one Int,
+  waste_diverted: one Int,
+  waste_landfilled: one Int,
   waste_documented: one Bool
 }
 
@@ -63,23 +78,23 @@ sig BiodiversityAssessment {
 // CircularEconomyMetric (matches Coq: Record CircularEconomyMetric)
 sig CircularEconomyMetric {
   circular_id: one Int,
-  recycled_input: one Z,
-  total_input: one Z,
+  recycled_input: one Int,
+  total_input: one Int,
   measurement_verified: one Bool
 }
 
 // PollutionRecord (matches Coq: Record PollutionRecord)
 sig PollutionRecord {
   pollution_id: one Int,
-  emission_level: one Z,
-  regulatory_limit: one Z,
+  emission_level: one Int,
+  regulatory_limit: one Int,
   permit_valid: one Bool
 }
 
 // RenewableEnergyCertificate (matches Coq: Record RenewableEnergyCertificate)
 sig RenewableEnergyCertificate {
   rec_id: one Int,
-  energy_amount: one Z,
+  energy_amount: one Int,
   certificate_valid: one Bool,
   unique_claim: one Bool
 }
@@ -87,8 +102,8 @@ sig RenewableEnergyCertificate {
 // Employee (matches Coq: Record Employee)
 sig Employee {
   employee_id: one Int,
-  compensation: one Z,
-  living_wage_threshold: one Z,
+  compensation: one Int,
+  living_wage_threshold: one Int,
   age: one Int,
   voluntary_employment: one Bool,
   no_debt_bondage: one Bool,
@@ -117,8 +132,8 @@ sig EmploymentDecision {
 // PayGapRecord (matches Coq: Record PayGapRecord)
 sig PayGapRecord {
   paygap_id: one Int,
-  male_median: one Z,
-  female_median: one Z,
+  male_median: one Int,
+  female_median: one Int,
   gap_calculated: one Bool,
   gap_disclosed: one Bool
 }
@@ -136,7 +151,7 @@ sig HRDDProcess {
 sig Supplier {
   supplier_id: one Int,
   risk_assessed: one Bool,
-  assessment_date: one Int // Year,
+  assessment_date: one Int, // Year
   current_year: one Int,
   high_risk: one Bool
 }
@@ -181,8 +196,8 @@ sig Board {
 // ExecutiveComp (matches Coq: Record ExecutiveComp)
 sig ExecutiveComp {
   exec_id: one Int,
-  total_comp: one Z,
-  esg_linked_portion: one Z,
+  total_comp: one Int,
+  esg_linked_portion: one Int,
   esg_metrics_defined: one Bool
 }
 
@@ -234,7 +249,7 @@ sig ScienceBasedTarget {
   sbt_id: one Int,
   target_year: one Int,
   base_year: one Int,
-  reduction_percent: one Z,
+  reduction_percent: one Int,
   validated: one Bool,
   paris_aligned: one Bool
 }
@@ -264,7 +279,7 @@ sig ESGCompliantSystem {
   sys_coi: one ConflictOfInterest,
   sys_rpt: one list,
   sys_disclosure: one Disclosure,
-  sys_sbt: one ScienceBasedTarget // Compliance predicates - the system enforces these,
+  sys_sbt: one ScienceBasedTarget, // Compliance predicates - the system enforces these
   emissions_complete: one forall,
   scope2_tracked: one forall,
   emissions_unique: one forall,
@@ -310,7 +325,7 @@ pred emission[s: EmissionSource] {
 pred same_emission {}
 
 // valid_scope3_category (matches Coq: Definition valid_scope3_category)
-pred valid_scope3_category[n: nat] {
+pred valid_scope3_category[n: Int] {
   some n
 }
 
@@ -370,7 +385,7 @@ pred hrdd_implemented[h: HRDDProcess] {
 }
 
 // supplier_recently_assessed (matches Coq: Definition supplier_recently_assessed)
-pred supplier_recently_assessed[s: Supplier, year: nat] {
+pred supplier_recently_assessed[s: Supplier, year: Int] {
   some s
 }
 

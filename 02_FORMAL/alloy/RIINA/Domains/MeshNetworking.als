@@ -13,6 +13,12 @@ one sig StaleRoute extends RouteStatus {}
 one sig LoopDetected extends RouteStatus {}
 one sig PartitionDetected extends RouteStatus {}
 
+abstract sig ByzantineSet {}
+abstract sig MeshNetwork {}
+abstract sig MultiPath {}
+abstract sig Route {}
+abstract sig RouteEntry {}
+
 // honest_path (matches Coq: Definition honest_path)
 pred honest_path[path: Route, byzantine: ByzantineSet] {
   some path
@@ -37,22 +43,22 @@ pred route_fresh[entry: RouteEntry] {
 }
 
 // paths_sufficient (matches Coq: Definition paths_sufficient)
-pred paths_sufficient[mp: MultiPath, min_paths: nat] {
+pred paths_sufficient[mp: MultiPath, min_paths: Int] {
   some mp
 }
 
 // metric_bounded (matches Coq: Definition metric_bounded)
-pred metric_bounded[entry: RouteEntry, max_metric: nat] {
+pred metric_bounded[entry: RouteEntry, max_metric: Int] {
   some entry
 }
 
 // neighbor_authenticated (matches Coq: Definition neighbor_authenticated)
-pred neighbor_authenticated[neighbor: nat] {
+pred neighbor_authenticated[neighbor: Int] {
   some neighbor
 }
 
 // hop_count_ok (matches Coq: Definition hop_count_ok)
-pred hop_count_ok[route: Route, max_hops: nat] {
+pred hop_count_ok[route: Route, max_hops: Int] {
   some route
 }
 
@@ -71,12 +77,12 @@ pred healing_path_exists {}
 pred converged_in_time {}
 
 // flood_bounded (matches Coq: Definition flood_bounded)
-pred flood_bounded[ttl: nat, max_ttl: nat] {
+pred flood_bounded[ttl: Int, max_ttl: Int] {
   some ttl
 }
 
 // msg_id_unique (matches Coq: Definition msg_id_unique)
-pred msg_id_unique[msg_id: nat] {
+pred msg_id_unique[msg_id: Int] {
   some msg_id
 }
 
@@ -93,7 +99,7 @@ pred channel_secure {}
 pred rate_ok {}
 
 // geographically_diverse (matches Coq: Definition geographically_diverse)
-pred geographically_diverse[min_regions: nat] {
+pred geographically_diverse[min_regions: Int] {
   some min_regions
 }
 

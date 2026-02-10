@@ -42,6 +42,16 @@ abstract sig ProbeAttempt {}
 one sig NoProbe extends ProbeAttempt {}
 one sig ProbeDetected extends ProbeAttempt {}
 
+abstract sig Challenge {}
+abstract sig ChipId {}
+abstract sig ClockPeriod {}
+abstract sig Operation {}
+abstract sig Signal {}
+abstract sig Temperature {}
+abstract sig Voltage {}
+abstract sig XRayImage {}
+abstract sig list {}
+
 // Gate (matches Coq: Record Gate)
 sig Gate {
   gate_type: one GateType,

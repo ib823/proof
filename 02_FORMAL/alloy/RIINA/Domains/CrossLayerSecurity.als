@@ -27,6 +27,8 @@ one sig TBrz extends tgt_instr {}
 one sig TJmp extends tgt_instr {}
 one sig THalt extends tgt_instr {}
 
+abstract sig tgt_prog {}
+
 // label_eqb (matches Coq: Definition label_eqb)
 pred label_eqb {}
 

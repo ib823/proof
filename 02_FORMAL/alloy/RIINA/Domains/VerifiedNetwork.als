@@ -64,6 +64,16 @@ one sig RRSIG extends DNSRecordType {}
 one sig DNSKEY extends DNSRecordType {}
 one sig DS extends DNSRecordType {}
 
+abstract sig CertChain {}
+abstract sig Hash {}
+abstract sig Key {}
+abstract sig Nonce {}
+abstract sig SessionID {}
+abstract sig Signature {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+
 // KEResult (matches Coq: Record KEResult)
 sig KEResult {
   ke_shared: one Key,
@@ -125,7 +135,7 @@ sig TCPConnection {
   tcp_seq: one Int,
   tcp_ack: one Int,
   tcp_window: one Int,
-  tcp_seq_random_source: one Int // entropy source marker,
+  tcp_seq_random_source: one Int, // entropy source marker
   tcp_integrity_mac: one option
 }
 
@@ -280,7 +290,7 @@ pred icmp_rate_bounded[state: ICMPState] {
 }
 
 // routing_correct (matches Coq: Definition routing_correct)
-pred routing_correct[entry: RouteEntry, dest: nat] {
+pred routing_correct[entry: RouteEntry, dest: Int] {
   some entry
 }
 

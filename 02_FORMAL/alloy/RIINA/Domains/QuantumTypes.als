@@ -21,6 +21,8 @@ one sig IGate2 extends instr {} // two-qubit gate
 one sig IMeasure extends instr {} // measure and consume qubit
 one sig ISeq extends instr {}
 
+abstract sig program {}
+
 // well_typed (matches Coq: Definition well_typed)
 pred well_typed[p: program] {
   some p

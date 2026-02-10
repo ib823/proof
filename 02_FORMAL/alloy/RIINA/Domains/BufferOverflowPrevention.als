@@ -27,7 +27,7 @@ pred buffer_valid[b: Buffer] {
 }
 
 // buffer_can_write (matches Coq: Definition buffer_can_write)
-pred buffer_can_write[b: Buffer, n: nat] {
+pred buffer_can_write[b: Buffer, n: Int] {
   some b
 }
 

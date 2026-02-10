@@ -16,6 +16,11 @@ one sig Blockchain extends PaymentRail {}
 one sig MobileMoney extends PaymentRail {}
 one sig LocalACH extends PaymentRail {}
 
+abstract sig CountryCode {}
+abstract sig CountryRegistry {}
+abstract sig CurrencyCode {}
+abstract sig CurrencyRegistry {}
+
 // Corridor (matches Coq: Record Corridor)
 sig Corridor {
   send_country: one CountryCode,
@@ -23,7 +28,7 @@ sig Corridor {
   send_currency: one CurrencyCode,
   receive_currency: one CurrencyCode,
   is_enabled: one Bool,
-  availability_pct: one Int // In basis points: 9999 = 99.99%,
+  availability_pct: one Int, // In basis points: 9999 = 99.99%
   fees_disclosed: one Bool,
   is_sanctioned: one Bool
 }
@@ -46,9 +51,9 @@ sig CurrencySupport {
 // FXQuote (matches Coq: Record FXQuote)
 sig FXQuote {
   quote_id: one Int,
-  mid_market_rate: one Z,
-  spread: one Z,
-  customer_rate: one Z,
+  mid_market_rate: one Int,
+  spread: one Int,
+  customer_rate: one Int,
   quote_timestamp: one Int,
   guarantee_window: one Int,
   hedge_ratio_bps: one Int // In basis points: 10000 = 100%
@@ -58,10 +63,10 @@ sig FXQuote {
 sig Transfer {
   transfer_id: one Int,
   rail: one PaymentRail,
-  send_amount: one Z,
-  receive_amount: one Z,
-  stated_fee: one Z,
-  stated_spread: one Z,
+  send_amount: one Int,
+  receive_amount: one Int,
+  stated_fee: one Int,
+  stated_spread: one Int,
   screening_passed: one Bool,
   tracking_available: one Bool,
   settlement_time_sec: one Int,
@@ -159,7 +164,7 @@ pred compliant_currency_registry[reg: CurrencyRegistry] {
 }
 
 // rate_staleness (matches Coq: Definition rate_staleness)
-pred rate_staleness[q: FXQuote, current_time: nat] {
+pred rate_staleness[q: FXQuote, current_time: Int] {
   some q
 }
 
@@ -169,12 +174,12 @@ pred valid_quote[q: FXQuote] {
 }
 
 // fresh_quote (matches Coq: Definition fresh_quote)
-pred fresh_quote[q: FXQuote, current_time: nat] {
+pred fresh_quote[q: FXQuote, current_time: Int] {
   some q
 }
 
 // rate_lock_valid (matches Coq: Definition rate_lock_valid)
-pred rate_lock_valid[q: FXQuote, current_time: nat] {
+pred rate_lock_valid[q: FXQuote, current_time: Int] {
   some q
 }
 

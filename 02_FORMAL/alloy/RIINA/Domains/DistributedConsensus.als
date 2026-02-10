@@ -6,6 +6,9 @@ module riina/domains/distributed_consensus
 
 open util/boolean
 
+abstract sig Config {}
+abstract sig Node {}
+
 // bft_assumption (matches Coq: Definition bft_assumption)
 pred bft_assumption[c: Config] {
   some c
@@ -22,7 +25,7 @@ pred is_quorum[c: Config] {
 }
 
 // all_honest_propose (matches Coq: Definition all_honest_propose)
-pred all_honest_propose[c: Config, v: nat] {
+pred all_honest_propose[c: Config, v: Int] {
   some c
 }
 
@@ -53,7 +56,7 @@ pred round_update {}
 pred decision_stable {}
 
 // mem_nat (matches Coq: Definition mem_nat)
-pred mem_nat[x: nat] {
+pred mem_nat[x: Int] {
   some x
 }
 

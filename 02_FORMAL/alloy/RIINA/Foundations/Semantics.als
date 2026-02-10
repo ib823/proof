@@ -6,6 +6,10 @@ module riina/domains/semantics
 
 open util/boolean
 
+abstract sig effect {}
+abstract sig effect_ctx {}
+abstract sig store {}
+
 // fresh_loc (matches Coq: Definition fresh_loc)
 pred fresh_loc[st: store] {
   some st

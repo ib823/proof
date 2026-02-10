@@ -46,6 +46,9 @@ abstract sig EvalCtx {}
 one sig EHole extends EvalCtx {}
 one sig EBind extends EvalCtx {}
 
+abstract sig EffectRow {}
+abstract sig EffectSig {}
+
 // OpSig (matches Coq: Record OpSig)
 sig OpSig {
   opInputTy: one BaseTy,

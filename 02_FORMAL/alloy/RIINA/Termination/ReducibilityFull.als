@@ -6,6 +6,12 @@ module riina/domains/reducibility_full
 
 open util/boolean
 
+abstract sig config {}
+abstract sig expr {}
+abstract sig ident {}
+abstract sig subst_rho {}
+abstract sig ty {}
+
 // step_inv (matches Coq: Definition step_inv)
 pred step_inv {}
 

@@ -45,6 +45,12 @@ one sig LPower extends Leakage {}
 one sig LCacheAccess extends Leakage {}
 one sig LBranchOutcome extends Leakage {}
 
+abstract sig FrequencyRange {}
+abstract sig RegId {}
+abstract sig VoltageRange {}
+abstract sig Word {}
+abstract sig list {}
+
 // ArchState (matches Coq: Record ArchState)
 sig ArchState {
   regs: one RegId,
@@ -70,8 +76,8 @@ sig RTLState {
   rtl_cycle: one Int,
   rtl_security_labels: one RegId,
   rtl_isolation_mode: one Bool,
-  rtl_speculating: one Bool // Always false for in-order,
-  rtl_scub_active: one Bool // SCUB barrier active,
+  rtl_speculating: one Bool, // Always false for in-order
+  rtl_scub_active: one Bool, // SCUB barrier active
   rtl_fencesc_active: one Bool // Side-channel fence active
 }
 
@@ -171,7 +177,7 @@ pred has_payload_logic[s: RTLState] {
 }
 
 // inject_single_error (matches Coq: Definition inject_single_error)
-pred inject_single_error[w: ECCWord, bit: nat] {
+pred inject_single_error[w: ECCWord, bit: Int] {
   some w
 }
 
@@ -207,12 +213,12 @@ pred VoltageRange {}
 pred normal_voltage_range {}
 
 // voltage_in_range (matches Coq: Definition voltage_in_range)
-pred voltage_in_range[v: nat, range: VoltageRange] {
+pred voltage_in_range[v: Int, range: VoltageRange] {
   some v
 }
 
 // voltage_glitch_detected (matches Coq: Definition voltage_glitch_detected)
-pred voltage_glitch_detected[v: nat] {
+pred voltage_glitch_detected[v: Int] {
   some v
 }
 
@@ -223,12 +229,12 @@ pred FrequencyRange {}
 pred normal_frequency_range {}
 
 // frequency_in_range (matches Coq: Definition frequency_in_range)
-pred frequency_in_range[f: nat, range: FrequencyRange] {
+pred frequency_in_range[f: Int, range: FrequencyRange] {
   some f
 }
 
 // frequency_manipulation_detected (matches Coq: Definition frequency_manipulation_detected)
-pred frequency_manipulation_detected[f: nat] {
+pred frequency_manipulation_detected[f: Int] {
   some f
 }
 

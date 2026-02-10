@@ -14,6 +14,8 @@ one sig Installed extends InstallState {}
 one sig Updating extends InstallState {}
 one sig Failed extends InstallState {}
 
+abstract sig list {}
+
 // AppPackage (matches Coq: Record AppPackage)
 sig AppPackage {
   package_id: one Int,

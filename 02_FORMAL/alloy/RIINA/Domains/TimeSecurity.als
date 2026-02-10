@@ -12,8 +12,13 @@ one sig AtomicRead extends AtomicOp {}
 one sig AtomicWrite extends AtomicOp {}
 one sig CompareAndSwap extends AtomicOp {}
 
+abstract sig AuthTimestamp {}
+abstract sig Capability {}
+abstract sig ProtectedMessage {}
+abstract sig ReplayWindow {}
+
 // nonce_unique (matches Coq: Definition nonce_unique)
-pred nonce_unique[nonce: nat] {
+pred nonce_unique[nonce: Int] {
   some nonce
 }
 
@@ -33,12 +38,12 @@ pred timestamp_fresh[ts: AuthTimestamp] {
 }
 
 // capability_valid (matches Coq: Definition capability_valid)
-pred capability_valid[cap: Capability, current_time: nat] {
+pred capability_valid[cap: Capability, current_time: Int] {
   some cap
 }
 
 // owner_matches (matches Coq: Definition owner_matches)
-pred owner_matches[cap: Capability, requester: nat] {
+pred owner_matches[cap: Capability, requester: Int] {
   some cap
 }
 

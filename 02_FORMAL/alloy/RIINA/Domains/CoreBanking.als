@@ -25,6 +25,9 @@ one sig ProfitSharing extends TransactionType {}
 one sig AssetBacked extends TransactionType {}
 one sig ServiceFee extends TransactionType {}
 
+abstract sig CustomerId {}
+abstract sig list {}
+
 // Customer (matches Coq: Record Customer)
 sig Customer {
   customer_id: one CustomerId,
@@ -41,7 +44,7 @@ sig Customer {
 // BeneficialOwner (matches Coq: Record BeneficialOwner)
 sig BeneficialOwner {
   bo_id: one Int,
-  ownership_percentage: one Z
+  ownership_percentage: one Int
 }
 
 // TransactionParty (matches Coq: Record TransactionParty)
@@ -54,7 +57,7 @@ sig TransactionParty {
 sig Account {
   account_id: one Int,
   account_type: one AccountType,
-  balance: one Z,
+  balance: one Int,
   owner: one CustomerId,
   is_dormant: one Bool,
   last_activity_days: one Int,
@@ -65,23 +68,23 @@ sig Account {
 sig JournalEntry {
   debit_account: one Int,
   credit_account: one Int,
-  debit_amount: one Z,
-  credit_amount: one Z,
+  debit_amount: one Int,
+  credit_amount: one Int,
   timestamp: one Int
 }
 
 // InterestCalculation (matches Coq: Record InterestCalculation)
 sig InterestCalculation {
-  ic_principal: one Z,
-  ic_rate_bps: one Z // Rate in basis points,
-  ic_days: one Z,
-  ic_year_days: one Z // 360 or 365,
-  ic_calculated_interest: one Z
+  ic_principal: one Int,
+  ic_rate_bps: one Int, // Rate in basis points
+  ic_days: one Int,
+  ic_year_days: one Int, // 360 or 365
+  ic_calculated_interest: one Int
 }
 
 // TermDepositContract (matches Coq: Record TermDepositContract)
 sig TermDepositContract {
-  td_principal: one Z,
+  td_principal: one Int,
   td_maturity_days: one Int,
   td_withdrawal_day: one Int,
   td_penalty_applied: one Bool
@@ -91,47 +94,47 @@ sig TermDepositContract {
 sig Loan {
   loan_id: one Int,
   borrower: one CustomerId,
-  principal: one Z,
-  approved_amount: one Z,
-  eligibility_limit: one Z,
-  collateral_value: one Z,
-  required_coverage: one Z // In basis points, e.g., 12000 = 120%,
-  ltv_ratio: one Z,
+  principal: one Int,
+  approved_amount: one Int,
+  eligibility_limit: one Int,
+  collateral_value: one Int,
+  required_coverage: one Int, // In basis points, e.g., 12000 = 120%
+  ltv_ratio: one Int,
   is_secured: one Bool
 }
 
 // Installment (matches Coq: Record Installment)
 sig Installment {
-  inst_principal: one Z,
-  inst_interest: one Z
+  inst_principal: one Int,
+  inst_interest: one Int
 }
 
 // AmortizationSchedule (matches Coq: Record AmortizationSchedule)
 sig AmortizationSchedule {
-  amort_principal: one Z,
-  amort_total_interest: one Z,
+  amort_principal: one Int,
+  amort_total_interest: one Int,
   amort_installments: one list
 }
 
 // Covenant (matches Coq: Record Covenant)
 sig Covenant {
-  covenant_threshold: one Z,
-  covenant_actual: one Z,
+  covenant_threshold: one Int,
+  covenant_actual: one Int,
   covenant_breached: one Bool,
   event_of_default: one Bool
 }
 
 // CreditFacility (matches Coq: Record CreditFacility)
 sig CreditFacility {
-  facility_limit: one Z,
-  total_drawdown: one Z,
-  current_drawdown_request: one Z
+  facility_limit: one Int,
+  total_drawdown: one Int,
+  current_drawdown_request: one Int
 }
 
 // Payment (matches Coq: Record Payment)
 sig Payment {
   payment_id: one Int,
-  payment_amount: one Z,
+  payment_amount: one Int,
   status: one PaymentStatus,
   idempotency_key: one Int,
   processing_time_ms: one Int,
@@ -140,8 +143,8 @@ sig Payment {
 
 // NostroAccount (matches Coq: Record NostroAccount)
 sig NostroAccount {
-  internal_balance: one Z,
-  external_balance: one Z,
+  internal_balance: one Int,
+  external_balance: one Int,
   is_reconciled: one Bool
 }
 
@@ -162,39 +165,39 @@ sig FxSpotTrade {
 
 // RepoTransaction (matches Coq: Record RepoTransaction)
 sig RepoTransaction {
-  collateral_market_value: one Z,
-  haircut_bps: one Z // Basis points,
-  repo_cash_amount: one Z
+  collateral_market_value: one Int,
+  haircut_bps: one Int, // Basis points
+  repo_cash_amount: one Int
 }
 
 // BondPosition (matches Coq: Record BondPosition)
 sig BondPosition {
-  face_value: one Z,
-  coupon_rate_bps: one Z,
-  days_since_coupon: one Z,
-  coupon_period_days: one Z,
-  calculated_accrued: one Z
+  face_value: one Int,
+  coupon_rate_bps: one Int,
+  days_since_coupon: one Int,
+  coupon_period_days: one Int,
+  calculated_accrued: one Int
 }
 
 // InterestRateSwap (matches Coq: Record InterestRateSwap)
 sig InterestRateSwap {
-  fixed_leg_pv: one Z,
-  float_leg_pv: one Z,
-  calculated_npv: one Z
+  fixed_leg_pv: one Int,
+  float_leg_pv: one Int,
+  calculated_npv: one Int
 }
 
 // CollateralPosition (matches Coq: Record CollateralPosition)
 sig CollateralPosition {
-  initial_margin: one Z,
-  current_mtm: one Z,
-  threshold: one Z,
+  initial_margin: one Int,
+  current_mtm: one Int,
+  threshold: one Int,
   margin_call_triggered: one Bool
 }
 
 // Murabaha (matches Coq: Record Murabaha)
 sig Murabaha {
-  murabaha_cost: one Z,
-  murabaha_profit: one Z,
+  murabaha_cost: one Int,
+  murabaha_profit: one Int,
   profit_disclosed: one Bool
 }
 
@@ -209,23 +212,23 @@ sig Ijarah {
 // MusharakahPartner (matches Coq: Record MusharakahPartner)
 sig MusharakahPartner {
   partner_id: one Int,
-  capital_contribution: one Z,
-  profit_ratio_bps: one Z
+  capital_contribution: one Int,
+  profit_ratio_bps: one Int
 }
 
 // Musharakah (matches Coq: Record Musharakah)
 sig Musharakah {
   partners: one list,
-  total_profit: one Z,
-  total_loss: one Z,
-  total_capital: one Z
+  total_profit: one Int,
+  total_loss: one Int,
+  total_capital: one Int
 }
 
 // Sukuk (matches Coq: Record Sukuk)
 sig Sukuk {
   sukuk_id: one Int,
-  sukuk_value: one Z,
-  underlying_asset_value: one Z,
+  sukuk_value: one Int,
+  underlying_asset_value: one Int,
   is_asset_backed: one Bool
 }
 

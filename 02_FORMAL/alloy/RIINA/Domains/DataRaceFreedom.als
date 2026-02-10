@@ -15,6 +15,12 @@ one sig MutBorrowed extends AccessMode {} // Mutably borrowed
 one sig SharedBorrowed extends AccessMode {} // Shared borrowed by list
 one sig Moved extends AccessMode {}
 
+abstract sig AccessState {}
+abstract sig Loc {}
+abstract sig OwnershipMap {}
+abstract sig ThreadId {}
+abstract sig option {}
+
 // MutexState (matches Coq: Record MutexState)
 sig MutexState {
   mutex_locked: one Bool,

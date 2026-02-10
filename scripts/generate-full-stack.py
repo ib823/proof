@@ -321,6 +321,15 @@ def generate_tlaplus_file(parsed: CoqFile, coq_path: str) -> str:
 # ALLOY GENERATOR (Layer 8: Structural models, capability/policy)
 # ===================================================================
 
+def _alloy_type(t):
+    return {
+        'bool': 'Bool',
+        'nat': 'Int',
+        'N': 'Int',
+        'Z': 'Int',
+        'positive': 'Int',
+    }.get(t, t)
+
 def generate_alloy_file(parsed: CoqFile, coq_path: str) -> str:
     lines = []
     mod = parsed.filename.replace('.v', '')
@@ -344,16 +353,36 @@ def generate_alloy_file(parsed: CoqFile, coq_path: str) -> str:
             lines.append(f'one sig {cname} extends {ind.name} {{}}{cmt}')
         lines.append('')
 
+    # Unknown Coq type names become placeholder signatures so generated Alloy
+    # files are parseable by CLI checks.
+    known_types = {'Bool', 'Int'}
+    known_types.update(ind.name for ind in parsed.inductives)
+    known_types.update(rec.name for rec in parsed.records)
+    placeholder_types = set()
+    for rec in parsed.records:
+        for _, ftype, _ in rec.fields:
+            at = _alloy_type(ftype)
+            if at not in known_types and re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', at):
+                placeholder_types.add(at)
+    for defn in parsed.definitions:
+        for _, ptype in _extract_param_types(defn.params):
+            at = _alloy_type(ptype)
+            if at not in known_types and re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', at):
+                placeholder_types.add(at)
+    if placeholder_types:
+        for tname in sorted(placeholder_types):
+            lines.append(f'abstract sig {tname} {{}}')
+        lines.append('')
+
     # Records as sigs with fields
     for rec in parsed.records:
         lines.append(f'// {rec.name} (matches Coq: Record {rec.name})')
         lines.append(f'sig {rec.name} {{')
-        field_lines = []
-        for fname, ftype, fcomment in rec.fields:
-            alloy_type = 'Bool' if ftype == 'bool' else 'Int' if ftype == 'nat' else ftype
+        for i, (fname, ftype, fcomment) in enumerate(rec.fields):
+            alloy_type = _alloy_type(ftype)
+            sep = ',' if i < len(rec.fields) - 1 else ''
             cmt = f' // {fcomment}' if fcomment else ''
-            field_lines.append(f'  {fname}: one {alloy_type}{cmt}')
-        lines.append(',\n'.join(field_lines))
+            lines.append(f'  {fname}: one {alloy_type}{sep}{cmt}')
         lines.append(f'}}')
         lines.append('')
 
@@ -361,7 +390,7 @@ def generate_alloy_file(parsed: CoqFile, coq_path: str) -> str:
     for defn in parsed.definitions:
         pts = _extract_param_types(defn.params)
         if pts:
-            params_str = ', '.join(f'{n}: {t}' for n, t in pts)
+            params_str = ', '.join(f'{n}: {_alloy_type(t)}' for n, t in pts)
             lines.append(f'// {defn.name} (matches Coq: Definition {defn.name})')
             lines.append(f'pred {defn.name}[{params_str}] {{')
             lines.append(f'  some {pts[0][0]}')

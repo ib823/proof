@@ -11,6 +11,14 @@ abstract sig MerkleNode {}
 one sig Leaf extends MerkleNode {}
 one sig Branch extends MerkleNode {}
 
+abstract sig AuditEntry {}
+abstract sig AuditLog {}
+abstract sig Checkpoint {}
+abstract sig ConsistencyProof {}
+abstract sig InclusionProof {}
+abstract sig MerklePath {}
+abstract sig WitnessSignature {}
+
 // log_append_only (matches Coq: Definition log_append_only)
 pred log_append_only {}
 
@@ -28,12 +36,12 @@ pred consistency_size_order[proof: ConsistencyProof] {
 }
 
 // witnesses_sufficient (matches Coq: Definition witnesses_sufficient)
-pred witnesses_sufficient[cp: Checkpoint, min_witnesses: nat] {
+pred witnesses_sufficient[cp: Checkpoint, min_witnesses: Int] {
   some cp
 }
 
 // witness_root_matches (matches Coq: Definition witness_root_matches)
-pred witness_root_matches[ws: WitnessSignature, expected: nat] {
+pred witness_root_matches[ws: WitnessSignature, expected: Int] {
   some ws
 }
 
@@ -77,7 +85,7 @@ pred witness_recent[ws: WitnessSignature] {
 pred witnesses_diverse {}
 
 // path_length_ok (matches Coq: Definition path_length_ok)
-pred path_length_ok[path: MerklePath, max_depth: nat] {
+pred path_length_ok[path: MerklePath, max_depth: Int] {
   some path
 }
 

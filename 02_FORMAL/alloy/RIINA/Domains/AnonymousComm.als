@@ -6,18 +6,22 @@ module riina/domains/anonymous_comm
 
 open util/boolean
 
+abstract sig AnonymitySet {}
+abstract sig Circuit {}
+abstract sig Observation {}
+
 // unlinkable (matches Coq: Definition unlinkable)
 pred unlinkable[obs: Observation] {
   some obs
 }
 
 // k_anonymous (matches Coq: Definition k_anonymous)
-pred k_anonymous[set: AnonymitySet, k: nat] {
+pred k_anonymous[set: AnonymitySet, k: Int] {
   some set
 }
 
 // entry_guard_fixed (matches Coq: Definition entry_guard_fixed)
-pred entry_guard_fixed[guard: nat] {
+pred entry_guard_fixed[guard: Int] {
   some guard
 }
 
@@ -42,12 +46,12 @@ pred pseudonyms_rotated {}
 pred circuit_fresh {}
 
 // constant_traffic (matches Coq: Definition constant_traffic)
-pred constant_traffic[target: nat] {
+pred constant_traffic[target: Int] {
   some target
 }
 
 // sizes_uniform (matches Coq: Definition sizes_uniform)
-pred sizes_uniform[target: nat] {
+pred sizes_uniform[target: Int] {
   some target
 }
 
@@ -58,12 +62,12 @@ pred forward_secret {}
 pred intersection_resistant {}
 
 // rendezvous_hidden (matches Coq: Definition rendezvous_hidden)
-pred rendezvous_hidden[rp_id: nat] {
+pred rendezvous_hidden[rp_id: Int] {
   some rp_id
 }
 
 // replay_prevented (matches Coq: Definition replay_prevented)
-pred replay_prevented[nonce: nat] {
+pred replay_prevented[nonce: Int] {
   some nonce
 }
 

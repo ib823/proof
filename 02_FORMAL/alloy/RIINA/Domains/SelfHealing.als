@@ -29,16 +29,21 @@ one sig Isolate extends RecoveryAction {}
 one sig Failover extends RecoveryAction {}
 one sig Rebuild extends RecoveryAction {}
 
+abstract sig CapabilityLevel {}
+abstract sig Checkpoint {}
+abstract sig Fault {}
+abstract sig RecoveryPlan {}
+
 // detection_complete (matches Coq: Definition detection_complete)
 pred detection_complete {}
 
 // severity_bounded (matches Coq: Definition severity_bounded)
-pred severity_bounded[fault: Fault, max_sev: nat] {
+pred severity_bounded[fault: Fault, max_sev: Int] {
   some fault
 }
 
 // timeout_ok (matches Coq: Definition timeout_ok)
-pred timeout_ok[plan: RecoveryPlan, max_timeout: nat] {
+pred timeout_ok[plan: RecoveryPlan, max_timeout: Int] {
   some plan
 }
 
@@ -64,7 +69,7 @@ pred capability_bounded[cap: CapabilityLevel] {
 }
 
 // component_isolated (matches Coq: Definition component_isolated)
-pred component_isolated[component: nat] {
+pred component_isolated[component: Int] {
   some component
 }
 
@@ -75,7 +80,7 @@ pred failover_available {}
 pred recovery_complete {}
 
 // recurrence_prevented (matches Coq: Definition recurrence_prevented)
-pred recurrence_prevented[fault_id: nat, window: nat] {
+pred recurrence_prevented[fault_id: Int, window: Int] {
   some fault_id
 }
 

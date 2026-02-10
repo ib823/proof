@@ -21,6 +21,12 @@ one sig CPReturnAddr extends CodePtrType {} // Return address
 one sig CPExceptionHandler extends CodePtrType {} // Exception handler
 one sig CPSignalHandler extends CodePtrType {}
 
+abstract sig FuncId {}
+abstract sig GadgetChain {}
+abstract sig InstrAddr {}
+abstract sig ShadowStack {}
+abstract sig ValidTargets {}
+
 // CFIConfig (matches Coq: Record CFIConfig)
 sig CFIConfig {
   cfi_shadow_stack: one Bool,
@@ -86,7 +92,7 @@ sig CPIConfig {
 }
 
 // shadow_push (matches Coq: Definition shadow_push)
-pred shadow_push[ss: ShadowStack, ret: InstrAddr, caller: FuncId, fp: nat] {
+pred shadow_push[ss: ShadowStack, ret: InstrAddr, caller: FuncId, fp: Int] {
   some ss
 }
 

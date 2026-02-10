@@ -6,6 +6,11 @@ module riina/domains/cumulative_relation
 
 open util/boolean
 
+abstract sig effect_ctx {}
+abstract sig expr {}
+abstract sig store_ty {}
+abstract sig ty {}
+
 // closed_expr (matches Coq: Definition closed_expr)
 pred closed_expr[e: expr] {
   some e
@@ -22,12 +27,12 @@ pred val_rel_struct[Σ: store_ty, T: ty] {
 }
 
 // store_rel_le (matches Coq: Definition store_rel_le)
-pred store_rel_le[n: nat, Σ: store_ty] {
+pred store_rel_le[n: Int, Σ: store_ty] {
   some n
 }
 
 // exp_rel_le (matches Coq: Definition exp_rel_le)
-pred exp_rel_le[n: nat, Σ: store_ty, T: ty, ctx: effect_ctx] {
+pred exp_rel_le[n: Int, Σ: store_ty, T: ty, ctx: effect_ctx] {
   some n
 }
 

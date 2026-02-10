@@ -13,7 +13,7 @@ pred shape_eq {}
 pred dp_compose {}
 
 // lipschitz_bound (matches Coq: Definition lipschitz_bound)
-pred lipschitz_bound[k: nat] {
+pred lipschitz_bound[k: Int] {
   some k
 }
 

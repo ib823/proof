@@ -13,13 +13,15 @@ one sig NSP extends MCMCLicense {} // Network Service Provider
 one sig ASP extends MCMCLicense {} // Application Service Provider
 one sig CSP extends MCMCLicense {}
 
+abstract sig MCMCCompliance {}
+
 // no_unauthorized_interception (matches Coq: Definition no_unauthorized_interception)
-pred no_unauthorized_interception[communications_encrypted: bool, access_authorized: bool] {
+pred no_unauthorized_interception[communications_encrypted: Bool, access_authorized: Bool] {
   some communications_encrypted
 }
 
 // fraud_controls_active (matches Coq: Definition fraud_controls_active)
-pred fraud_controls_active[identity_verified: bool, transaction_signed: bool, audit_logged: bool] {
+pred fraud_controls_active[identity_verified: Bool, transaction_signed: Bool, audit_logged: Bool] {
   some identity_verified
 }
 

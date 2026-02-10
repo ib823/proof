@@ -11,6 +11,10 @@ abstract sig TagVerifyResult {}
 one sig TagValid extends TagVerifyResult {} // Tag matches
 one sig TagInvalid extends TagVerifyResult {} // Tag doesn't match
 
+abstract sig Key {}
+abstract sig NonceSet {}
+abstract sig list {}
+
 // ConstantTimeOp (matches Coq: Record ConstantTimeOp)
 sig ConstantTimeOp {
   ct_operation: one Int,
@@ -23,7 +27,7 @@ sig ConstantTimeOp {
 // CryptoKey (matches Coq: Record CryptoKey)
 sig CryptoKey {
   key_bits: one Int,
-  key_algorithm: one Int // 0=AES, 1=ChaCha, 2=ML-KEM,
+  key_algorithm: one Int, // 0=AES, 1=ChaCha, 2=ML-KEM
   key_usage: one list,
   key_extractable: one Bool,
   key_hardware_bound: one Bool
@@ -38,7 +42,7 @@ sig NonceTracker {
 
 // AEADConfig (matches Coq: Record AEADConfig)
 sig AEADConfig {
-  aead_algorithm: one Int // 0=AES-GCM, 1=ChaCha20-Poly1305,
+  aead_algorithm: one Int, // 0=AES-GCM, 1=ChaCha20-Poly1305
   aead_key_bits: one Int,
   aead_nonce_bits: one Int,
   aead_tag_bits: one Int,
@@ -47,7 +51,7 @@ sig AEADConfig {
 
 // HashConfig (matches Coq: Record HashConfig)
 sig HashConfig {
-  hash_algorithm: one Int // 0=SHA-256, 1=SHA-3, 2=BLAKE3,
+  hash_algorithm: one Int, // 0=SHA-256, 1=SHA-3, 2=BLAKE3
   hash_output_bits: one Int,
   hash_length_ext_safe: one Bool
 }
@@ -62,7 +66,7 @@ sig RNGConfig {
 
 // ProtocolConfig (matches Coq: Record ProtocolConfig)
 sig ProtocolConfig {
-  proto_min_version: one Int // 3=TLS1.2, 4=TLS1.3,
+  proto_min_version: one Int, // 3=TLS1.2, 4=TLS1.3
   proto_allowed_ciphers: one list,
   proto_fallback_disabled: one Bool,
   proto_forward_secrecy: one Bool
@@ -70,22 +74,22 @@ sig ProtocolConfig {
 
 // PQConfig (matches Coq: Record PQConfig)
 sig PQConfig {
-  pq_kem_algorithm: one Int // 0=ML-KEM,
-  pq_sig_algorithm: one Int // 0=ML-DSA,
-  pq_security_level: one Int // 1=128, 3=192, 5=256,
+  pq_kem_algorithm: one Int, // 0=ML-KEM
+  pq_sig_algorithm: one Int, // 0=ML-DSA
+  pq_security_level: one Int, // 1=128, 3=192, 5=256
   pq_hybrid_mode: one Bool // Combined with classical
 }
 
 // MRAEADConfig (matches Coq: Record MRAEADConfig)
 sig MRAEADConfig {
-  mraead_siv_mode: one Bool // Synthetic IV mode,
+  mraead_siv_mode: one Bool, // Synthetic IV mode
   mraead_deterministic: one Bool,
   mraead_base: one AEADConfig
 }
 
 // CertConfig (matches Coq: Record CertConfig)
 sig CertConfig {
-  cert_ct_required: one Bool // Certificate Transparency,
+  cert_ct_required: one Bool, // Certificate Transparency
   cert_pinning: one Bool,
   cert_revocation_check: one Bool,
   cert_ocsp_stapling: one Bool
@@ -102,10 +106,10 @@ sig EncryptionScheme {
 
 // KDFConfig (matches Coq: Record KDFConfig)
 sig KDFConfig {
-  kdf_algorithm: one Int // 0=HKDF, 1=PBKDF2, 2=Argon2,
+  kdf_algorithm: one Int, // 0=HKDF, 1=PBKDF2, 2=Argon2
   kdf_output_bits: one Int,
   kdf_salt_bits: one Int,
-  kdf_iterations: one Int // For PBKDF2/Argon2,
+  kdf_iterations: one Int, // For PBKDF2/Argon2
   kdf_memory_cost: one Int // For Argon2
 }
 
@@ -114,13 +118,13 @@ sig DerivedKey {
   dk_parent_key: one Key,
   dk_derived_key: one Key,
   dk_context: one list,
-  dk_purpose: one Int // 0=encryption, 1=authentication, 2=signing,
+  dk_purpose: one Int, // 0=encryption, 1=authentication, 2=signing
   dk_kdf_config: one KDFConfig
 }
 
 // MACConfig (matches Coq: Record MACConfig)
 sig MACConfig {
-  mac_algorithm: one Int // 0=HMAC-SHA256, 1=HMAC-SHA3, 2=Poly1305,
+  mac_algorithm: one Int, // 0=HMAC-SHA256, 1=HMAC-SHA3, 2=Poly1305
   mac_key_bits: one Int,
   mac_tag_bits: one Int,
   mac_constant_time: one Bool
@@ -129,7 +133,7 @@ sig MACConfig {
 // CounterNonce (matches Coq: Record CounterNonce)
 sig CounterNonce {
   cn_prefix: one list,
-  cn_counter: one Int // Monotonic counter,
+  cn_counter: one Int, // Monotonic counter
   cn_max_value: one Int // Maximum counter value
 }
 

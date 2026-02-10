@@ -55,6 +55,31 @@ one sig ActionDismiss extends RecoveryAction {}
 one sig ActionNavigate extends RecoveryAction {}
 one sig ActionContact extends RecoveryAction {}
 
+abstract sig Forall {}
+abstract sig Opacity {}
+abstract sig TLS {}
+abstract sig ZIndex {}
+abstract sig all {}
+abstract sig browser_displayed_url {}
+abstract sig browser_tls_verified {}
+abstract sig critical {}
+abstract sig display {}
+abstract sig displayed {}
+abstract sig displayed_total {}
+abstract sig err_display_style {}
+abstract sig err_message {}
+abstract sig err_severity {}
+abstract sig err_visible {}
+abstract sig focus_modal_active {}
+abstract sig focus_valid {}
+abstract sig font {}
+abstract sig forall {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+abstract sig tab_loaded_origin {}
+abstract sig touch {}
+
 // Point (matches Coq: Record Point)
 sig Point {
   px: one Int,
@@ -96,7 +121,7 @@ sig Origin {
 sig TabState {
   tab_id: one Int,
   tab_loaded_origin: one Origin,
-  tab_content_origin: one Origin // INVARIANT: content origin matches loaded origin,
+  tab_content_origin: one Origin, // INVARIANT: content origin matches loaded origin
   tab_origin_match: one tab_loaded_origin
 }
 
@@ -134,7 +159,7 @@ sig ConsentRecord {
 sig DialogOption {
   opt_label: one string,
   opt_is_cancel: one Bool,
-  opt_visual_weight: one Int // 1-10 scale,
+  opt_visual_weight: one Int, // 1-10 scale
   opt_uses_neutral_language: one Bool // Verified at construction
 }
 
@@ -175,16 +200,16 @@ sig LayoutInput {
 // InputField (matches Coq: Record InputField)
 sig InputField {
   field_data: one list,
-  input_max_length: one Int // Maximum allowed length,
+  input_max_length: one Int, // Maximum allowed length
   input_allowed: one Int,
   input_sanitized: one Bool // Whether sanitization has been applied
 }
 
 // FocusState (matches Coq: Record FocusState)
 sig FocusState {
-  focused_element: one Int // Index into tab_order,
+  focused_element: one Int, // Index into tab_order
   tab_order: one list,
-  focus_modal_active: one Bool // Whether a modal is open,
+  focus_modal_active: one Bool, // Whether a modal is open
   focus_modal_elements: one list
 }
 
@@ -239,18 +264,18 @@ sig ResponsiveLayout {
 
 // ErrorDisplay (matches Coq: Record ErrorDisplay)
 sig ErrorDisplay {
-  err_message: one string // The displayed message,
-  err_actual_error: one string // The actual underlying error,
+  err_message: one string, // The displayed message
+  err_actual_error: one string, // The actual underlying error
   err_severity: one ErrorSeverity,
   err_visible: one Bool,
-  err_auto_dismiss: one Bool // Whether it auto-dismisses,
+  err_auto_dismiss: one Bool, // Whether it auto-dismisses
   err_display_style: one DisplayStyle,
   err_recovery: one RecoveryAction
 }
 
 // VerifiedErrorDisplay (matches Coq: Record VerifiedErrorDisplay)
 sig VerifiedErrorDisplay {
-  ve_display: one ErrorDisplay // INVARIANT: errors are always visible,
+  ve_display: one ErrorDisplay, // INVARIANT: errors are always visible
   ve_always_visible: one err_visible,
   INVARIANT: one critical,
   ve_critical_persistent: one err_severity,
@@ -302,12 +327,12 @@ pred frame_well_formed[frame: FrameState] {
 }
 
 // char_is_dangerous (matches Coq: Definition char_is_dangerous)
-pred char_is_dangerous[c: nat] {
+pred char_is_dangerous[c: Int] {
   some c
 }
 
 // char_is_sql_meta (matches Coq: Definition char_is_sql_meta)
-pred char_is_sql_meta[c: nat] {
+pred char_is_sql_meta[c: Int] {
   some c
 }
 
@@ -349,7 +374,7 @@ pred luminance_min {}
 pred contrast_offset {}
 
 // contrast_meets_ratio (matches Coq: Definition contrast_meets_ratio)
-pred contrast_meets_ratio[ratio: nat] {
+pred contrast_meets_ratio[ratio: Int] {
   some ratio
 }
 
@@ -378,7 +403,7 @@ pred desktop_min {}
 pred breakpoint_eq {}
 
 // classify_breakpoint (matches Coq: Definition classify_breakpoint)
-pred classify_breakpoint[width: nat] {
+pred classify_breakpoint[width: Int] {
   some width
 }
 

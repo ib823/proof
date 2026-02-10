@@ -23,6 +23,8 @@ one sig PatchHigh extends PatchCriticality {} // ≤30 days
 one sig PatchMedium extends PatchCriticality {} // ≤60 days
 one sig PatchLow extends PatchCriticality {}
 
+abstract sig MASRegulatedEntity {}
+
 // patch_deadline (matches Coq: Definition patch_deadline)
 pred patch_deadline[p: PatchCriticality] {
   some p

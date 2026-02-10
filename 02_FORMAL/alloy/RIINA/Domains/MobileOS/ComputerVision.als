@@ -14,6 +14,11 @@ one sig Code128 extends BarcodeFormat {}
 one sig DataMatrix extends BarcodeFormat {}
 one sig UnknownFormat extends BarcodeFormat {}
 
+abstract sig ClassLabel {}
+abstract sig Confidence {}
+abstract sig Image {}
+abstract sig list {}
+
 // BoundingBox (matches Coq: Record BoundingBox)
 sig BoundingBox {
   bbox_x: one Int,
@@ -48,7 +53,7 @@ sig FaceDetection {
 // OCRResult (matches Coq: Record OCRResult)
 sig OCRResult {
   ocr_text: one list,
-  ocr_confidence: one Int // 0-100,
+  ocr_confidence: one Int, // 0-100
   ocr_language: one Int,
   ocr_accuracy_bound: one Int
 }
@@ -85,7 +90,7 @@ sig PhotoAnalysis {
 
 // DepthEstimate (matches Coq: Record DepthEstimate)
 sig DepthEstimate {
-  depth_value: one Int // in mm,
+  depth_value: one Int, // in mm
   depth_min: one Int,
   depth_max: one Int,
   depth_confidence: one Int

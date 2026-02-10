@@ -28,13 +28,17 @@ one sig PriorityOnly extends FocusMode {}
 one sig CriticalOnly extends FocusMode {}
 one sig DoNotDisturb extends FocusMode {}
 
+abstract sig Time {}
+abstract sig list {}
+abstract sig option {}
+
 // Notification (matches Coq: Record Notification)
 sig Notification {
   notif_id: one Int,
   notif_priority: one Priority,
   notif_state: one NotificationState,
   notif_created_at: one Time,
-  notif_ttl: one Time // Time to live,
+  notif_ttl: one Time, // Time to live
   notif_delivered_at: one option
 }
 
@@ -43,7 +47,7 @@ sig NotificationChannel {
   channel_id: one Int,
   channel_enabled: one Bool,
   channel_priority: one Priority,
-  channel_sound_volume: one Int // 0-100,
+  channel_sound_volume: one Int, // 0-100
   channel_vibration: one Bool,
   channel_badge: one Bool
 }
@@ -74,7 +78,7 @@ sig NotifHistory {
 sig ExtNotification {
   ext_notif: one Notification,
   ext_content_sanitized: one Bool,
-  ext_sound_volume: one Int // 0-100,
+  ext_sound_volume: one Int, // 0-100
   ext_badge_count: one Int,
   ext_expiry_time: one Int,
   ext_delivery_confirmed: one Bool,
@@ -124,12 +128,12 @@ pred notification_system_correct[n: Notification] {
 pred spam_threshold {}
 
 // is_spam (matches Coq: Definition is_spam)
-pred is_spam[count_per_minute: nat] {
+pred is_spam[count_per_minute: Int] {
   some count_per_minute
 }
 
 // notification_permission_granted (matches Coq: Definition notification_permission_granted)
-pred notification_permission_granted[granted: bool] {
+pred notification_permission_granted[granted: Bool] {
   some granted
 }
 

@@ -21,6 +21,14 @@ one sig ReadOnly extends Protection {}
 one sig ReadWrite extends Protection {}
 one sig NoAccess extends Protection {}
 
+abstract sig Addr {}
+abstract sig CFG {}
+abstract sig Checksum {}
+abstract sig Memory {}
+abstract sig MemoryProtection {}
+abstract sig ShadowStack {}
+abstract sig list {}
+
 // SystemState (matches Coq: Record SystemState)
 sig SystemState {
   ss_keys: one list,
@@ -80,27 +88,27 @@ pred protected_readonly[prot: MemoryProtection, addr: Addr] {
 }
 
 // ecc_encode (matches Coq: Definition ecc_encode)
-pred ecc_encode[data: nat] {
+pred ecc_encode[data: Int] {
   some data
 }
 
 // ecc_decode (matches Coq: Definition ecc_decode)
-pred ecc_decode[encoded: nat] {
+pred ecc_decode[encoded: Int] {
   some encoded
 }
 
 // ecc_check (matches Coq: Definition ecc_check)
-pred ecc_check[encoded: nat] {
+pred ecc_check[encoded: Int] {
   some encoded
 }
 
 // ecc_corrects_single_bit (matches Coq: Definition ecc_corrects_single_bit)
-pred ecc_corrects_single_bit[data: nat] {
+pred ecc_corrects_single_bit[data: Int] {
   some data
 }
 
 // ecc_detects_multi_bit (matches Coq: Definition ecc_detects_multi_bit)
-pred ecc_detects_multi_bit[data: nat] {
+pred ecc_detects_multi_bit[data: Int] {
   some data
 }
 
@@ -108,12 +116,12 @@ pred ecc_detects_multi_bit[data: nat] {
 pred variants_independent {}
 
 // states_synchronized (matches Coq: Definition states_synchronized)
-pred states_synchronized[t: nat] {
+pred states_synchronized[t: Int] {
   some t
 }
 
 // divergence_detected (matches Coq: Definition divergence_detected)
-pred divergence_detected[t: nat] {
+pred divergence_detected[t: Int] {
   some t
 }
 
@@ -134,7 +142,7 @@ pred execution_halted[st: SystemState] {
 }
 
 // audit_logged (matches Coq: Definition audit_logged)
-pred audit_logged[st: SystemState, event: nat] {
+pred audit_logged[st: SystemState, event: Int] {
   some st
 }
 
@@ -144,12 +152,12 @@ pred panic_state[st: SystemState] {
 }
 
 // trigger_panic (matches Coq: Definition trigger_panic)
-pred trigger_panic[st: SystemState, event: nat] {
+pred trigger_panic[st: SystemState, event: Int] {
   some st
 }
 
 // uses_nmi (matches Coq: Definition uses_nmi)
-pred uses_nmi[watchdog_config: nat] {
+pred uses_nmi[watchdog_config: Int] {
   some watchdog_config
 }
 
@@ -162,12 +170,12 @@ pred verify_monitor_integrity[mem: Memory] {
 }
 
 // unprivileged_app (matches Coq: Definition unprivileged_app)
-pred unprivileged_app[app_id: nat] {
+pred unprivileged_app[app_id: Int] {
   some app_id
 }
 
 // complete_mediation (matches Coq: Definition complete_mediation)
-pred complete_mediation[op: nat, monitored: bool] {
+pred complete_mediation[op: Int, monitored: Bool] {
   some op
 }
 

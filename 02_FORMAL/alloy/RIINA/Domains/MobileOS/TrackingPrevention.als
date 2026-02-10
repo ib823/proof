@@ -13,6 +13,8 @@ one sig StrictOrigin extends ReferrerPolicy {}
 one sig SameOrigin extends ReferrerPolicy {}
 one sig FullURL extends ReferrerPolicy {}
 
+abstract sig list {}
+
 // User (matches Coq: Record User)
 sig User {
   user_id: one Int,
@@ -33,7 +35,7 @@ sig Application {
 sig TrackingEvent {
   tracking_app: one Application,
   tracked_user: one User,
-  tracking_type: one Int // 0=none, 1=analytics, 2=advertising, 3=cross-app,
+  tracking_type: one Int, // 0=none, 1=analytics, 2=advertising, 3=cross-app
   tracking_data: one list
 }
 

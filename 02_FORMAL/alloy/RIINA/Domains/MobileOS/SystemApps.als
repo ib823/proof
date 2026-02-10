@@ -14,6 +14,8 @@ one sig Media extends AppCategory {} // Photos, Music, Camera
 one sig Utility extends AppCategory {} // Settings, Calculator, Clock
 one sig Security extends AppCategory {}
 
+abstract sig list {}
+
 // SystemApp (matches Coq: Record SystemApp)
 sig SystemApp {
   sys_app_id: one Int,
@@ -52,7 +54,7 @@ sig SyncOperation {
 // AppResponse (matches Coq: Record AppResponse)
 sig AppResponse {
   response_app_id: one Int,
-  response_time_us: one Int // microseconds,
+  response_time_us: one Int, // microseconds
   response_correct: one Bool
 }
 

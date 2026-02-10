@@ -14,6 +14,9 @@ one sig App extends AppId {}
 abstract sig FrameBufferId {}
 one sig FBId extends FrameBufferId {}
 
+abstract sig list {}
+abstract sig option {}
+
 // Application (matches Coq: Record Application)
 sig Application {
   app_id: one AppId,

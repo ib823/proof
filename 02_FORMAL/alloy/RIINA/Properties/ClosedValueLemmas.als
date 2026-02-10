@@ -6,6 +6,8 @@ module riina/domains/closed_value_lemmas
 
 open util/boolean
 
+abstract sig expr {}
+
 // closed_expr_cv (matches Coq: Definition closed_expr_cv)
 pred closed_expr_cv[e: expr] {
   some e

@@ -12,6 +12,11 @@ one sig Plaintext extends EncryptionState {}
 one sig TLSEncrypted extends EncryptionState {}
 one sig E2EEncrypted extends EncryptionState {}
 
+abstract sig PublicKey {}
+abstract sig Signature {}
+abstract sig Time {}
+abstract sig list {}
+
 // Certificate (matches Coq: Record Certificate)
 sig Certificate {
   cert_subject: one Int,
@@ -43,7 +48,7 @@ sig Connection {
 // DNSQuery (matches Coq: Record DNSQuery)
 sig DNSQuery {
   dns_query_id: one Int,
-  dns_domain: one Int // hashed domain name,
+  dns_domain: one Int, // hashed domain name
   dns_resolved_ip: one Int,
   dns_validated: one Bool,
   dns_dnssec_verified: one Bool

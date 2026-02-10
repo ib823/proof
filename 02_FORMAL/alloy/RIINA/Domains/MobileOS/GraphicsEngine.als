@@ -29,6 +29,9 @@ one sig MSAA4x extends AAMethod {}
 one sig FXAA extends AAMethod {}
 one sig TAA extends AAMethod {}
 
+abstract sig Microseconds {}
+abstract sig list {}
+
 // Frame (matches Coq: Record Frame)
 sig Frame {
   frame_id: one Int,
@@ -82,8 +85,8 @@ sig DrawBatch {
 sig FrameBuffer {
   fb_width: one Int,
   fb_height: one Int,
-  fb_front: one Int // front buffer id,
-  fb_back: one Int // back buffer id,
+  fb_front: one Int, // front buffer id
+  fb_back: one Int, // back buffer id
   fb_double_buffered: one Bool
 }
 
@@ -97,7 +100,7 @@ sig RenderThread {
 
 // ZBuffer (matches Coq: Record ZBuffer)
 sig ZBuffer {
-  zbuf_bits: one Int // 16, 24, or 32,
+  zbuf_bits: one Int, // 16, 24, or 32
   zbuf_near: one Int,
   zbuf_far: one Int
 }

@@ -15,6 +15,8 @@ one sig Verify extends CryptoOp {}
 one sig Hash extends CryptoOp {}
 one sig KeyDerive extends CryptoOp {}
 
+abstract sig list {}
+
 // CryptoKey (matches Coq: Record CryptoKey)
 sig CryptoKey {
   key_id: one Int,

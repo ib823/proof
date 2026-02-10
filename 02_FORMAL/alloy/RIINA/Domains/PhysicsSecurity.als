@@ -24,25 +24,25 @@ one sig Error extends PhysState {}
 // SensorReading (matches Coq: Record SensorReading)
 sig SensorReading {
   sensor_kind: one SensorKind,
-  reading_value: one Int // scaled integer value,
-  reading_min: one Int // valid minimum,
-  reading_max: one Int // valid maximum,
-  timestamp: one Int // monotonic timestamp,
+  reading_value: one Int, // scaled integer value
+  reading_min: one Int, // valid minimum
+  reading_max: one Int, // valid maximum
+  timestamp: one Int, // monotonic timestamp
   sensor_id: one Int
 }
 
 // MeasurementSpec (matches Coq: Record MeasurementSpec)
 sig MeasurementSpec {
-  meas_tolerance: one Int // maximum allowed deviation,
-  meas_samples: one Int // number of samples for averaging,
+  meas_tolerance: one Int, // maximum allowed deviation
+  meas_samples: one Int, // number of samples for averaging
   meas_min_samples: one Int // minimum required samples
 }
 
 // TimingConstraint (matches Coq: Record TimingConstraint)
 sig TimingConstraint {
-  deadline: one Int // max allowed time,
-  wcet: one Int // worst-case execution time,
-  period: one Int // task period,
+  deadline: one Int, // max allowed time
+  wcet: one Int, // worst-case execution time
+  period: one Int, // task period
   jitter_bound: one Int // max jitter
 }
 
@@ -78,7 +78,7 @@ pred timing_schedulable[tc: TimingConstraint] {
 }
 
 // phys_transition (matches Coq: Definition phys_transition)
-pred phys_transition[s: PhysState, sensor_ok: bool] {
+pred phys_transition[s: PhysState, sensor_ok: Bool] {
   some s
 }
 

@@ -21,6 +21,10 @@ one sig ObsOutput extends Observation {}
 one sig ObsTermination extends Observation {}
 one sig ObsException extends Observation {}
 
+abstract sig forall {}
+abstract sig list {}
+abstract sig option {}
+
 // State (matches Coq: Record State)
 sig State {
   state_public: one Int,
@@ -122,7 +126,7 @@ pred constant_exception {}
 pred constant_output {}
 
 // channel_bandwidth (matches Coq: Definition channel_bandwidth)
-pred channel_bandwidth[secret_bits: nat] {
+pred channel_bandwidth[secret_bits: Int] {
   some secret_bits
 }
 
@@ -133,7 +137,7 @@ pred bandwidth_threshold {}
 pred constant_resources {}
 
 // memory_zeroed (matches Coq: Definition memory_zeroed)
-pred memory_zeroed[addr: nat] {
+pred memory_zeroed[addr: Int] {
   some addr
 }
 

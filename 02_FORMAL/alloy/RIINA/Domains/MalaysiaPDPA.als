@@ -50,6 +50,20 @@ one sig VitalInterests_Transfer extends TransferBasis {}
 one sig PublicRegister extends TransferBasis {}
 one sig MinisterialExemption extends TransferBasis {}
 
+abstract sig AccessRequest {}
+abstract sig BreachEvent {}
+abstract sig ChildDataRecord {}
+abstract sig ComplaintMechanism {}
+abstract sig ComplianceReport {}
+abstract sig ConsentRecord {}
+abstract sig CrossBorderTransfer {}
+abstract sig DPIA {}
+abstract sig DPOAppointment {}
+abstract sig DataAccuracy {}
+abstract sig PDPAAuditTrail {}
+abstract sig PDPARecord {}
+abstract sig ProcessorContract {}
+
 // has_valid_consent (matches Coq: Definition has_valid_consent)
 pred has_valid_consent[r: PDPARecord] {
   some r
@@ -71,7 +85,7 @@ pred processing_within_purpose[r: PDPARecord, actual_purpose: Purpose] {
 }
 
 // disclosure_authorized (matches Coq: Definition disclosure_authorized)
-pred disclosure_authorized[r: PDPARecord, recipient: nat] {
+pred disclosure_authorized[r: PDPARecord, recipient: Int] {
   some r
 }
 
@@ -81,32 +95,32 @@ pred security_adequate[r: PDPARecord] {
 }
 
 // within_retention_period (matches Coq: Definition within_retention_period)
-pred within_retention_period[r: PDPARecord, current_time: nat] {
+pred within_retention_period[r: PDPARecord, current_time: Int] {
   some r
 }
 
 // must_delete (matches Coq: Definition must_delete)
-pred must_delete[r: PDPARecord, current_time: nat] {
+pred must_delete[r: PDPARecord, current_time: Int] {
   some r
 }
 
 // data_integrity_maintained (matches Coq: Definition data_integrity_maintained)
-pred data_integrity_maintained[original_hash: nat, current_hash: nat] {
+pred data_integrity_maintained[original_hash: Int, current_hash: Int] {
   some original_hash
 }
 
 // access_request_served (matches Coq: Definition access_request_served)
-pred access_request_served[trail: PDPAAuditTrail, subject_id: nat, t: nat] {
+pred access_request_served[trail: PDPAAuditTrail, subject_id: Int, t: Int] {
   some trail
 }
 
 // pdpc_notified_in_time (matches Coq: Definition pdpc_notified_in_time)
-pred pdpc_notified_in_time[b: BreachEvent, notification_time: nat] {
+pred pdpc_notified_in_time[b: BreachEvent, notification_time: Int] {
   some b
 }
 
 // subjects_notified_in_time (matches Coq: Definition subjects_notified_in_time)
-pred subjects_notified_in_time[b: BreachEvent, notification_time: nat] {
+pred subjects_notified_in_time[b: BreachEvent, notification_time: Int] {
   some b
 }
 
@@ -116,12 +130,12 @@ pred dpo_compliant[dpo: DPOAppointment] {
 }
 
 // pdpa_fully_compliant (matches Coq: Definition pdpa_fully_compliant)
-pred pdpa_fully_compliant[r: PDPARecord, dpo: DPOAppointment, current_time: nat] {
+pred pdpa_fully_compliant[r: PDPARecord, dpo: DPOAppointment, current_time: Int] {
   some r
 }
 
 // consent_properly_recorded (matches Coq: Definition consent_properly_recorded)
-pred consent_properly_recorded[cr: ConsentRecord, collection_time: nat] {
+pred consent_properly_recorded[cr: ConsentRecord, collection_time: Int] {
   some cr
 }
 
@@ -144,17 +158,17 @@ pred access_fulfilled[req: AccessRequest] {
 }
 
 // retention_enforceable (matches Coq: Definition retention_enforceable)
-pred retention_enforceable[r: PDPARecord, current_time: nat, deletion_performed: bool] {
+pred retention_enforceable[r: PDPARecord, current_time: Int, deletion_performed: Bool] {
   some r
 }
 
 // accuracy_current (matches Coq: Definition accuracy_current)
-pred accuracy_current[da: DataAccuracy, current_time: nat] {
+pred accuracy_current[da: DataAccuracy, current_time: Int] {
   some da
 }
 
 // accuracy_maintained (matches Coq: Definition accuracy_maintained)
-pred accuracy_maintained[da: DataAccuracy, current_time: nat] {
+pred accuracy_maintained[da: DataAccuracy, current_time: Int] {
   some da
 }
 
@@ -164,7 +178,7 @@ pred harm_level[c: PDPAClassification] {
 }
 
 // security_level_adequate (matches Coq: Definition security_level_adequate)
-pred security_level_adequate[c: PDPAClassification, controls: nat] {
+pred security_level_adequate[c: PDPAClassification, controls: Int] {
   some c
 }
 

@@ -32,6 +32,17 @@ abstract sig ProcessOutcome {}
 one sig POSuccess extends ProcessOutcome {}
 one sig POFailure extends ProcessOutcome {}
 
+abstract sig AuditLog {}
+abstract sig Consumer {}
+abstract sig DBState {}
+abstract sig Key {}
+abstract sig Log {}
+abstract sig Prop {}
+abstract sig Service {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+
 // Backend (matches Coq: Record Backend)
 sig Backend {
   backend_id: one Int,
@@ -182,7 +193,7 @@ pred routes_to[lb: LBState, req: HTTPRequest, b: Backend] {
 }
 
 // session_affinity_maintained (matches Coq: Definition session_affinity_maintained)
-pred session_affinity_maintained[lb: LBState, s: nat, b: Backend] {
+pred session_affinity_maintained[lb: LBState, s: Int, b: Backend] {
   some lb
 }
 
@@ -207,7 +218,7 @@ pred load_ratio[b: Backend] {
 }
 
 // fair_distribution (matches Coq: Definition fair_distribution)
-pred fair_distribution[threshold: nat] {
+pred fair_distribution[threshold: Int] {
   some threshold
 }
 
@@ -232,7 +243,7 @@ pred survives[dtxn: DurableTransaction] {
 }
 
 // access_audited (matches Coq: Definition access_audited)
-pred access_audited[log: AuditLog, subj: nat, obj: Key] {
+pred access_audited[log: AuditLog, subj: Int, obj: Key] {
   some log
 }
 
@@ -272,17 +283,17 @@ pred goes_to_dlq[q: QueueState, m: Message, outcome: ProcessOutcome] {
 }
 
 // queue_has_capacity (matches Coq: Definition queue_has_capacity)
-pred queue_has_capacity[q: QueueState, max: nat] {
+pred queue_has_capacity[q: QueueState, max: Int] {
   some q
 }
 
 // backpressure_applied (matches Coq: Definition backpressure_applied)
-pred backpressure_applied[q: QueueState, max: nat] {
+pred backpressure_applied[q: QueueState, max: Int] {
   some q
 }
 
 // in_log (matches Coq: Definition in_log)
-pred in_log[l: Log, e: LogEntry, t: nat] {
+pred in_log[l: Log, e: LogEntry, t: Int] {
   some l
 }
 
@@ -295,7 +306,7 @@ pred aol_append[l: AppendOnlyLog, e: LogEntry] {
 }
 
 // safe_log_entry (matches Coq: Definition safe_log_entry)
-pred safe_log_entry[level: nat, msg: string, ts: nat] {
+pred safe_log_entry[level: Int, msg: string, ts: Int] {
   some level
 }
 
@@ -325,12 +336,12 @@ pred rotation_available[rs: RotationState] {
 }
 
 // secret_expired (matches Coq: Definition secret_expired)
-pred secret_expired[sec: Secret, current_time: nat] {
+pred secret_expired[sec: Secret, current_time: Int] {
   some sec
 }
 
 // secret_access_audited (matches Coq: Definition secret_access_audited)
-pred secret_access_audited[ss: SecretsStore, svc: Service, sec: Secret, ts: nat] {
+pred secret_access_audited[ss: SecretsStore, svc: Service, sec: Secret, ts: Int] {
   some ss
 }
 

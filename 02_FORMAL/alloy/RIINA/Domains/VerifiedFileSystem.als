@@ -41,6 +41,10 @@ one sig OpSuccess extends FileOp {}
 one sig OpFailure extends FileOp {}
 one sig OpPartial extends FileOp {}
 
+abstract sig OpResult {}
+abstract sig list {}
+abstract sig option {}
+
 // FSIntegrity (matches Coq: Record FSIntegrity)
 sig FSIntegrity {
   fsi_crash_consistent: one Bool,
@@ -113,7 +117,7 @@ sig Journal {
 
 // DirEntry (matches Coq: Record DirEntry)
 sig DirEntry {
-  de_name: one Int // hash of name for simplicity,
+  de_name: one Int, // hash of name for simplicity
   de_inode: one Int,
   de_is_dir: one Bool
 }
@@ -225,7 +229,7 @@ pred quota_enforced[q: Quota] {
 }
 
 // can_allocate_bytes (matches Coq: Definition can_allocate_bytes)
-pred can_allocate_bytes[q: Quota, n: nat] {
+pred can_allocate_bytes[q: Quota, n: Int] {
   some q
 }
 

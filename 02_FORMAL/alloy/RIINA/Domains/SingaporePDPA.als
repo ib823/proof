@@ -48,6 +48,17 @@ one sig PDPCFinancialPenalty extends PDPCDirection {}
 one sig PDPCDirectionToStopCollection extends PDPCDirection {}
 one sig PDPCDirectionToDestroy extends PDPCDirection {}
 
+abstract sig PDPCEnforcementAction {}
+abstract sig SGAccessCorrectionRequest {}
+abstract sig SGAccountabilityRecord {}
+abstract sig SGAccuracyRecord {}
+abstract sig SGBreachEvent {}
+abstract sig SGDNCRecord {}
+abstract sig SGDataProtectionOfficer {}
+abstract sig SGDataRecord {}
+abstract sig SGNotificationRecord {}
+abstract sig SGPortabilityRequest {}
+
 // sg_has_consent (matches Coq: Definition sg_has_consent)
 pred sg_has_consent[r: SGDataRecord] {
   some r
@@ -59,7 +70,7 @@ pred sg_consent_for_category[r: SGDataRecord] {
 }
 
 // sg_purpose_limited (matches Coq: Definition sg_purpose_limited)
-pred sg_purpose_limited[r: SGDataRecord, processing_purpose: nat] {
+pred sg_purpose_limited[r: SGDataRecord, processing_purpose: Int] {
   some r
 }
 
@@ -69,12 +80,12 @@ pred sg_protection_adequate[r: SGDataRecord] {
 }
 
 // sg_within_retention (matches Coq: Definition sg_within_retention)
-pred sg_within_retention[r: SGDataRecord, current_time: nat] {
+pred sg_within_retention[r: SGDataRecord, current_time: Int] {
   some r
 }
 
 // sg_must_dispose (matches Coq: Definition sg_must_dispose)
-pred sg_must_dispose[r: SGDataRecord, current_time: nat] {
+pred sg_must_dispose[r: SGDataRecord, current_time: Int] {
   some r
 }
 
@@ -89,17 +100,17 @@ pred sg_breach_notifiable[b: SGBreachEvent] {
 }
 
 // sg_pdpc_notified_in_time (matches Coq: Definition sg_pdpc_notified_in_time)
-pred sg_pdpc_notified_in_time[b: SGBreachEvent, t: nat] {
+pred sg_pdpc_notified_in_time[b: SGBreachEvent, t: Int] {
   some b
 }
 
 // sg_pdpa_fully_compliant (matches Coq: Definition sg_pdpa_fully_compliant)
-pred sg_pdpa_fully_compliant[r: SGDataRecord, transfer: TransferAdequacy, current_time: nat] {
+pred sg_pdpa_fully_compliant[r: SGDataRecord, transfer: TransferAdequacy, current_time: Int] {
   some r
 }
 
 // sg_purpose_violation (matches Coq: Definition sg_purpose_violation)
-pred sg_purpose_violation[r: SGDataRecord, actual: nat] {
+pred sg_purpose_violation[r: SGDataRecord, actual: Int] {
   some r
 }
 
@@ -122,12 +133,12 @@ pred sg_dpo_appointed[dpo: SGDataProtectionOfficer] {
 }
 
 // dnc_checked (matches Coq: Definition dnc_checked)
-pred dnc_checked[status: DNCStatus, marketing_sent: bool] {
+pred dnc_checked[status: DNCStatus, marketing_sent: Bool] {
   some status
 }
 
 // business_improvement_applicable (matches Coq: Definition business_improvement_applicable)
-pred business_improvement_applicable[basis: SGProcessingBasis, proportionate: bool, safeguards: bool] {
+pred business_improvement_applicable[basis: SGProcessingBasis, proportionate: Bool, safeguards: Bool] {
   some basis
 }
 
@@ -142,17 +153,17 @@ pred sg_data_anonymized_excluded[r: SGDataRecord] {
 }
 
 // sg_notified_purposes (matches Coq: Definition sg_notified_purposes)
-pred sg_notified_purposes[n: SGNotificationRecord, pid: nat] {
+pred sg_notified_purposes[n: SGNotificationRecord, pid: Int] {
   some n
 }
 
 // accuracy_maintained (matches Coq: Definition accuracy_maintained)
-pred accuracy_maintained[acc: SGAccuracyRecord, current_time: nat] {
+pred accuracy_maintained[acc: SGAccuracyRecord, current_time: Int] {
   some acc
 }
 
 // sg_dnc_compliant_marketing (matches Coq: Definition sg_dnc_compliant_marketing)
-pred sg_dnc_compliant_marketing[dnc: SGDNCRecord, sent: bool] {
+pred sg_dnc_compliant_marketing[dnc: SGDNCRecord, sent: Bool] {
   some dnc
 }
 
@@ -190,12 +201,12 @@ pred sg_dpo_fully_qualified[dpo: SGDataProtectionOfficer] {
 }
 
 // sg_pdpa_enterprise_compliant (matches Coq: Definition sg_pdpa_enterprise_compliant)
-pred sg_pdpa_enterprise_compliant[r: SGDataRecord, transfer: TransferAdequacy, current_time: nat, acct: SGAccountabilityRecord, dpo: SGDataProtectionOfficer] {
+pred sg_pdpa_enterprise_compliant[r: SGDataRecord, transfer: TransferAdequacy, current_time: Int, acct: SGAccountabilityRecord, dpo: SGDataProtectionOfficer] {
   some r
 }
 
 // sg_processing_halted_on_withdrawal (matches Coq: Definition sg_processing_halted_on_withdrawal)
-pred sg_processing_halted_on_withdrawal[r: SGDataRecord, processing_active: bool] {
+pred sg_processing_halted_on_withdrawal[r: SGDataRecord, processing_active: Bool] {
   some r
 }
 

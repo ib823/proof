@@ -28,6 +28,9 @@ one sig ImgLoading extends ImageLoadState {}
 one sig ImgLoaded extends ImageLoadState {}
 one sig ImgFailed extends ImageLoadState {}
 
+abstract sig list {}
+abstract sig option {}
+
 // UIElement (matches Coq: Record UIElement)
 sig UIElement {
   element_id: one Int,

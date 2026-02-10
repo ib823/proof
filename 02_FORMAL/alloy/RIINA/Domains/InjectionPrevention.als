@@ -43,6 +43,10 @@ one sig RExprVar extends RIINAExpr {}
 one sig RExprAdd extends RIINAExpr {}
 one sig RExprCall extends RIINAExpr {}
 
+abstract sig List {}
+abstract sig contains_newline {}
+abstract sig list {}
+
 // TaintedValue (matches Coq: Record TaintedValue)
 sig TaintedValue {
   tv_data: one list,

@@ -13,6 +13,9 @@ one sig UpdateInProgress extends ModelUpdateState {}
 one sig UpdateComplete extends ModelUpdateState {}
 one sig UpdateFailed extends ModelUpdateState {}
 
+abstract sig TensorData {}
+abstract sig list {}
+
 // Tensor (matches Coq: Record Tensor)
 sig Tensor {
   tensor_shape: one list,
@@ -58,8 +61,8 @@ sig ModelUpdate {
 
 // PrivacyBudget (matches Coq: Record PrivacyBudget)
 sig PrivacyBudget {
-  epsilon: one Int // scaled by 1000,
-  delta: one Int // scaled by 1000000,
+  epsilon: one Int, // scaled by 1000
+  delta: one Int, // scaled by 1000000
   max_epsilon: one Int,
   max_delta: one Int
 }
@@ -67,7 +70,7 @@ sig PrivacyBudget {
 // Prediction (matches Coq: Record Prediction)
 sig Prediction {
   pred_class: one Int,
-  pred_confidence: one Int // 0-100,
+  pred_confidence: one Int, // 0-100
   pred_calibrated: one Bool
 }
 
@@ -88,7 +91,7 @@ sig TrainingData {
 // InputAnalysis (matches Coq: Record InputAnalysis)
 sig InputAnalysis {
   ia_input: one Tensor,
-  ia_perturbation_score: one Int // 0-100,
+  ia_perturbation_score: one Int, // 0-100
   ia_threshold: one Int,
   ia_flagged: one Bool
 }
@@ -146,7 +149,7 @@ pred input_shape_valid[input: Tensor] {
 }
 
 // output_bounded (matches Coq: Definition output_bounded)
-pred output_bounded[output: Tensor, bound: nat] {
+pred output_bounded[output: Tensor, bound: Int] {
   some output
 }
 

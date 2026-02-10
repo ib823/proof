@@ -13,6 +13,9 @@ one sig Intermediate extends CTMTier {}
 one sig Advanced extends CTMTier {}
 one sig Expert extends CTMTier {}
 
+abstract sig CSSPEntity {}
+abstract sig CTMAssessment {}
+
 // tier_level (matches Coq: Definition tier_level)
 pred tier_level[t: CTMTier] {
   some t
@@ -74,7 +77,7 @@ pred ctm_2025_extensions_compliant[a: CTMAssessment] {
 }
 
 // all_domains_above (matches Coq: Definition all_domains_above)
-pred all_domains_above[a: CTMAssessment, min: nat] {
+pred all_domains_above[a: CTMAssessment, min: Int] {
   some a
 }
 

@@ -14,8 +14,11 @@ one sig Confidential extends Sensitivity {}
 one sig Secret extends Sensitivity {}
 one sig TopSecret extends Sensitivity {}
 
+abstract sig AnonymitySet {}
+abstract sig TimingBucket {}
+
 // k_anonymous (matches Coq: Definition k_anonymous)
-pred k_anonymous[set: AnonymitySet, k: nat] {
+pred k_anonymous[set: AnonymitySet, k: Int] {
   some set
 }
 
@@ -23,7 +26,7 @@ pred k_anonymous[set: AnonymitySet, k: nat] {
 pred unlinkable {}
 
 // in_bucket (matches Coq: Definition in_bucket)
-pred in_bucket[timestamp: nat, bucket: TimingBucket] {
+pred in_bucket[timestamp: Int, bucket: TimingBucket] {
   some timestamp
 }
 
@@ -34,7 +37,7 @@ pred jittered_time {}
 pred sensitivity_leq {}
 
 // traffic_constant_rate (matches Coq: Definition traffic_constant_rate)
-pred traffic_constant_rate[target: nat] {
+pred traffic_constant_rate[target: Int] {
   some target
 }
 
@@ -48,7 +51,7 @@ pred minimal_metadata {}
 pred identifiers_independent {}
 
 // uniform_frequency (matches Coq: Definition uniform_frequency)
-pred uniform_frequency[target: nat, epsilon: nat] {
+pred uniform_frequency[target: Int, epsilon: Int] {
   some target
 }
 
@@ -56,7 +59,7 @@ pred uniform_frequency[target: nat, epsilon: nat] {
 pred aggregation_window {}
 
 // path_length_uniform (matches Coq: Definition path_length_uniform)
-pred path_length_uniform[target: nat] {
+pred path_length_uniform[target: Int] {
   some target
 }
 

@@ -14,6 +14,10 @@ one sig Sulit extends GovClassification {} // Confidential
 one sig Rahsia extends GovClassification {} // Secret
 one sig RahsiaBesar extends GovClassification {}
 
+abstract sig DKICTCompliance {}
+abstract sig GovSystem {}
+abstract sig RAKKSSAAssessment {}
+
 // classification_level (matches Coq: Definition classification_level)
 pred classification_level[c: GovClassification] {
   some c

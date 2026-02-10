@@ -42,6 +42,8 @@ one sig Password extends AuthFactor {}
 one sig Token extends AuthFactor {}
 one sig Biometric extends AuthFactor {}
 
+abstract sig list {}
+
 // AuthState (matches Coq: Record AuthState)
 sig AuthState {
   auth_factors: one list,
@@ -53,7 +55,7 @@ sig AuthState {
 sig PHIRecord {
   phi_category: one PHICategory,
   phi_patient_id: one Int,
-  phi_data: one Int // Abstract data,
+  phi_data: one Int, // Abstract data
   phi_encryption: one EncryptionState,
   phi_consent_documented: one Bool
 }
@@ -62,7 +64,7 @@ sig PHIRecord {
 sig AuditEntry {
   audit_timestamp: one Int,
   audit_user_id: one Int,
-  audit_action: one Int // 0=read, 1=write, 2=delete, 3=emergency,
+  audit_action: one Int, // 0=read, 1=write, 2=delete, 3=emergency
   audit_phi_id: one Int,
   audit_success: one Bool
 }
@@ -70,8 +72,8 @@ sig AuditEntry {
 // DisposalRecord (matches Coq: Record DisposalRecord)
 sig DisposalRecord {
   disposal_phi_id: one Int,
-  disposal_method: one Int // 0=overwrite, 1=crypto_erase, 2=physical,
-  disposal_passes: one Int // Number of overwrite passes,
+  disposal_method: one Int, // 0=overwrite, 1=crypto_erase, 2=physical
+  disposal_passes: one Int, // Number of overwrite passes
   disposal_verified: one Bool
 }
 
@@ -167,7 +169,7 @@ pred terminate_session[s: Session] {
 }
 
 // check_and_terminate (matches Coq: Definition check_and_terminate)
-pred check_and_terminate[current_time: nat, s: Session] {
+pred check_and_terminate[current_time: Int, s: Session] {
   some current_time
 }
 

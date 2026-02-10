@@ -25,10 +25,10 @@ one sig ClinicalDecision extends HealthcareEffect {}
 
 // HIPAA_Policy (matches Coq: Record HIPAA_Policy)
 sig HIPAA_Policy {
-  access_control: one Bool // 164.312(a)(1),
-  audit_controls: one Bool // 164.312(b),
-  integrity_controls: one Bool // 164.312(c)(1),
-  transmission_security: one Bool // 164.312(e)(1),
+  access_control: one Bool, // 164.312(a)(1)
+  audit_controls: one Bool, // 164.312(b)
+  integrity_controls: one Bool, // 164.312(c)(1)
+  transmission_security: one Bool, // 164.312(e)(1)
   encryption_at_rest: one Bool // Addressable
 }
 
@@ -67,17 +67,17 @@ pred hipaa_security_minimum[p: HIPAA_Policy] {
 }
 
 // role_level (matches Coq: Definition role_level)
-pred role_level[role: nat] {
+pred role_level[role: Int] {
   some role
 }
 
 // access_permitted (matches Coq: Definition access_permitted)
-pred access_permitted[role_lvl: nat, cat: PHI_Category] {
+pred access_permitted[role_lvl: Int, cat: PHI_Category] {
   some role_lvl
 }
 
 // consent_valid (matches Coq: Definition consent_valid)
-pred consent_valid[c: ConsentRecord, current_time: nat] {
+pred consent_valid[c: ConsentRecord, current_time: Int] {
   some c
 }
 
@@ -87,7 +87,7 @@ pred retention_years[cat: PHI_Category] {
 }
 
 // deidentified_sensitivity (matches Coq: Definition deidentified_sensitivity)
-pred deidentified_sensitivity[is_deidentified: bool, cat: PHI_Category] {
+pred deidentified_sensitivity[is_deidentified: Bool, cat: PHI_Category] {
   some is_deidentified
 }
 

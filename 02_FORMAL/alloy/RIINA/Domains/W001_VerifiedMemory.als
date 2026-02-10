@@ -36,6 +36,13 @@ one sig TInt extends MemType {}
 one sig TPtr extends MemType {}
 one sig TArray extends MemType {}
 
+abstract sig Heap {}
+abstract sig Loc {}
+abstract sig OwnershipMap {}
+abstract sig SizeClass {}
+abstract sig Val {}
+abstract sig list {}
+
 // AllocState (matches Coq: Record AllocState)
 sig AllocState {
   free_lists: one SizeClass,
@@ -93,7 +100,7 @@ pred hoare_triple[P: assertion, c: cmd, Q: assertion] {
 pred init_alloc {}
 
 // alloc (matches Coq: Definition alloc)
-pred alloc[st: AllocState, sz: nat, new_loc: Loc] {
+pred alloc[st: AllocState, sz: Int, new_loc: Loc] {
   some st
 }
 
@@ -121,12 +128,12 @@ pred transfer_ownership[om: OwnershipMap, l: Loc] {
 }
 
 // borrow (matches Coq: Definition borrow)
-pred borrow[om: OwnershipMap, l: Loc, lifetime: nat] {
+pred borrow[om: OwnershipMap, l: Loc, lifetime: Int] {
   some om
 }
 
 // shared_borrow (matches Coq: Definition shared_borrow)
-pred shared_borrow[om: OwnershipMap, l: Loc, lifetime: nat] {
+pred shared_borrow[om: OwnershipMap, l: Loc, lifetime: Int] {
   some om
 }
 
@@ -146,12 +153,12 @@ pred kill_region[r: Region] {
 }
 
 // bounds_ok (matches Coq: Definition bounds_ok)
-pred bounds_ok[st: AllocState, l: Loc, idx: nat] {
+pred bounds_ok[st: AllocState, l: Loc, idx: Int] {
   some st
 }
 
 // aligned (matches Coq: Definition aligned)
-pred aligned[l: Loc, align: nat] {
+pred aligned[l: Loc, align: Int] {
   some l
 }
 

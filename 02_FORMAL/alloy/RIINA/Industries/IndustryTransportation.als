@@ -27,15 +27,17 @@ one sig NavigationSystem extends TransportationEffect {}
 one sig V2X_Communication extends TransportationEffect {}
 one sig DiagnosticAccess extends TransportationEffect {}
 
+abstract sig SIL {}
+
 // ISO26262_Compliance (matches Coq: Record ISO26262_Compliance)
 sig ISO26262_Compliance {
-  hazard_analysis: one Bool // Part 3,
-  system_design: one Bool // Part 4,
-  hardware_design: one Bool // Part 5,
-  software_design: one Bool // Part 6,
-  production: one Bool // Part 7,
-  supporting_processes: one Bool // Part 8,
-  asil_decomposition: one Bool // Part 9,
+  hazard_analysis: one Bool, // Part 3
+  system_design: one Bool, // Part 4
+  hardware_design: one Bool, // Part 5
+  software_design: one Bool, // Part 6
+  production: one Bool, // Part 7
+  supporting_processes: one Bool, // Part 8
+  asil_decomposition: one Bool, // Part 9
   cybersecurity_interface: one Bool // Part 2 - updated 2018
 }
 
@@ -79,7 +81,7 @@ pred tolerable_hazard_rate_per_hour[s: SIL] {
 }
 
 // v2x_auth_timeout_ms (matches Coq: Definition v2x_auth_timeout_ms)
-pred v2x_auth_timeout_ms[safety_critical: bool] {
+pred v2x_auth_timeout_ms[safety_critical: Bool] {
   some safety_critical
 }
 

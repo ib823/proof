@@ -12,6 +12,9 @@ one sig NormalAuth extends AuthMode {} // normal password/key
 one sig DuressAuth extends AuthMode {} // duress code
 one sig EmergencyAuth extends AuthMode {}
 
+abstract sig AuditLog {}
+abstract sig list {}
+
 // Share (matches Coq: Record Share)
 sig Share {
   share_x: one Int,
@@ -20,8 +23,8 @@ sig Share {
 
 // ThresholdPolicy (matches Coq: Record ThresholdPolicy)
 sig ThresholdPolicy {
-  tp_n: one Int // required approvals,
-  tp_m: one Int // total authorized parties,
+  tp_n: one Int, // required approvals
+  tp_m: one Int, // total authorized parties
   tp_approvals: one list
 }
 
@@ -43,8 +46,8 @@ sig DeadManSwitch {
 
 // InsiderBudget (matches Coq: Record InsiderBudget)
 sig InsiderBudget {
-  ib_max_bytes: one Int // max data export per window,
-  ib_max_queries: one Int // max queries per window,
+  ib_max_bytes: one Int, // max data export per window
+  ib_max_queries: one Int, // max queries per window
   ib_bytes_used: one Int,
   ib_queries_used: one Int,
   ib_window_start: one Int
@@ -70,7 +73,7 @@ sig Platform {
 sig TimeLock {
   tl_operation: one Int,
   tl_submit_time: one Int,
-  tl_execute_time: one Int // earliest execution,
+  tl_execute_time: one Int, // earliest execution
   tl_cancelled: one Bool
 }
 
@@ -87,7 +90,7 @@ pred field_sub {}
 pred secret_from_poly {}
 
 // threshold_met (matches Coq: Definition threshold_met)
-pred threshold_met[k: nat] {
+pred threshold_met[k: Int] {
   some k
 }
 
@@ -97,7 +100,7 @@ pred tp_approved[pol: ThresholdPolicy] {
 }
 
 // tp_add_approval (matches Coq: Definition tp_add_approval)
-pred tp_add_approval[pol: ThresholdPolicy, party: nat] {
+pred tp_add_approval[pol: ThresholdPolicy, party: Int] {
   some pol
 }
 
@@ -112,22 +115,22 @@ pred handle_auth[mode: AuthMode] {
 }
 
 // dms_check (matches Coq: Definition dms_check)
-pred dms_check[dms: DeadManSwitch, now: nat] {
+pred dms_check[dms: DeadManSwitch, now: Int] {
   some dms
 }
 
 // dms_checkin (matches Coq: Definition dms_checkin)
-pred dms_checkin[dms: DeadManSwitch, now: nat] {
+pred dms_checkin[dms: DeadManSwitch, now: Int] {
   some dms
 }
 
 // ib_can_query (matches Coq: Definition ib_can_query)
-pred ib_can_query[budget: InsiderBudget, bytes: nat] {
+pred ib_can_query[budget: InsiderBudget, bytes: Int] {
   some budget
 }
 
 // ib_record_query (matches Coq: Definition ib_record_query)
-pred ib_record_query[budget: InsiderBudget, bytes: nat] {
+pred ib_record_query[budget: InsiderBudget, bytes: Int] {
   some budget
 }
 
@@ -148,12 +151,12 @@ pred platforms_independent {}
 pred nversion_agree {}
 
 // tl_can_execute (matches Coq: Definition tl_can_execute)
-pred tl_can_execute[tl: TimeLock, now: nat] {
+pred tl_can_execute[tl: TimeLock, now: Int] {
   some tl
 }
 
 // tl_can_cancel (matches Coq: Definition tl_can_cancel)
-pred tl_can_cancel[tl: TimeLock, now: nat] {
+pred tl_can_cancel[tl: TimeLock, now: Int] {
   some tl
 }
 

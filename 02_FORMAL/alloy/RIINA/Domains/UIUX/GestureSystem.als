@@ -6,6 +6,12 @@ module riina/domains/gesture_system
 
 open util/boolean
 
+abstract sig Gesture {}
+abstract sig GestureType {}
+abstract sig R {}
+abstract sig SingleTapEvent {}
+abstract sig TouchSequence {}
+
 // recognized (matches Coq: Definition recognized)
 pred recognized[ts: TouchSequence, g: Gesture] {
   some ts
@@ -30,7 +36,7 @@ pred requires_coordination[gt: GestureType] {
 }
 
 // classify_touch (matches Coq: Definition classify_touch)
-pred classify_touch[tc: nat, dur: R] {
+pred classify_touch[tc: Int, dur: R] {
   some tc
 }
 

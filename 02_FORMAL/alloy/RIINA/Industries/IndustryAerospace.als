@@ -24,12 +24,12 @@ one sig Telemetry extends AerospaceEffect {}
 
 // DO178C_Compliance (matches Coq: Record DO178C_Compliance)
 sig DO178C_Compliance {
-  software_plans: one Bool // Section 4,
-  software_development: one Bool // Section 5,
-  verification: one Bool // Section 6,
-  configuration_management: one Bool // Section 7,
-  quality_assurance: one Bool // Section 8,
-  certification_liaison: one Bool // Section 9,
+  software_plans: one Bool, // Section 4
+  software_development: one Bool, // Section 5
+  verification: one Bool, // Section 6
+  configuration_management: one Bool, // Section 7
+  quality_assurance: one Bool, // Section 8
+  certification_liaison: one Bool, // Section 9
   dal_level: one DAL
 }
 

@@ -33,12 +33,14 @@ one sig ACSMustHit extends AbstractCacheState {} // Definitely in cache
 one sig ACSMayMiss extends AbstractCacheState {} // Might not be in cache
 one sig ACSMustMiss extends AbstractCacheState {}
 
+abstract sig Time {}
+
 // HWParams (matches Coq: Record HWParams)
 sig HWParams {
-  hw_cache_hit: one Time // L1 cache hit latency,
-  hw_cache_miss: one Time // Cache miss latency,
-  hw_call_overhead: one Time // Function call overhead,
-  hw_branch_penalty: one Time // Branch misprediction cost,
+  hw_cache_hit: one Time, // L1 cache hit latency
+  hw_cache_miss: one Time, // Cache miss latency
+  hw_call_overhead: one Time, // Function call overhead
+  hw_branch_penalty: one Time, // Branch misprediction cost
   hw_pipeline_depth: one Int // Pipeline stages
 }
 
@@ -58,7 +60,7 @@ sig ExecContext {
 
 // DMAConfig (matches Coq: Record DMAConfig)
 sig DMAConfig {
-  dma_bandwidth: one Int // bytes per cycle, must be > 0,
+  dma_bandwidth: one Int, // bytes per cycle, must be > 0
   dma_setup: one Time // DMA setup overhead
 }
 
@@ -86,7 +88,7 @@ pred branch_cost[hw: HWParams, bs: BranchState] {
 }
 
 // worst_context (matches Coq: Definition worst_context)
-pred worst_context[max_iter: nat] {
+pred worst_context[max_iter: Int] {
   some max_iter
 }
 
@@ -99,7 +101,7 @@ pred pipeline_flush_cost[hw: HWParams] {
 pred critical_section {}
 
 // dma_wcet (matches Coq: Definition dma_wcet)
-pred dma_wcet[cfg: DMAConfig, transfer_size: nat] {
+pred dma_wcet[cfg: DMAConfig, transfer_size: Int] {
   some cfg
 }
 

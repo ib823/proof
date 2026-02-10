@@ -12,6 +12,10 @@ one sig PermNone extends LocationPermission {}
 one sig PermWhenInUse extends LocationPermission {}
 one sig PermAlways extends LocationPermission {}
 
+abstract sig Coordinate {}
+abstract sig Meters {}
+abstract sig list {}
+
 // Location (matches Coq: Record Location)
 sig Location {
   loc_coordinate: one Coordinate,
@@ -37,10 +41,10 @@ sig Geofence {
 // LocationConfig (matches Coq: Record LocationConfig)
 sig LocationConfig {
   loc_permission: one LocationPermission,
-  loc_precision_full: one Bool // true = full, false = approximate,
+  loc_precision_full: one Bool, // true = full, false = approximate
   loc_background_enabled: one Bool,
-  loc_cache_ttl: one Int // seconds,
-  loc_update_interval: one Int // milliseconds,
+  loc_cache_ttl: one Int, // seconds
+  loc_update_interval: one Int, // milliseconds
   loc_significant_change_meters: one Int,
   loc_mock_detection: one Bool
 }
@@ -55,10 +59,10 @@ sig LocationHistory {
 // ExtendedLocation (matches Coq: Record ExtendedLocation)
 sig ExtendedLocation {
   ext_location: one Location,
-  ext_altitude: one Int // meters above sea level,
-  ext_altitude_accuracy: one Int // meters,
-  ext_heading: one Int // degrees 0-359,
-  ext_heading_accuracy: one Int // degrees,
+  ext_altitude: one Int, // meters above sea level
+  ext_altitude_accuracy: one Int, // meters
+  ext_heading: one Int, // degrees 0-359
+  ext_heading_accuracy: one Int, // degrees
   ext_speed: one Int // meters per second
 }
 

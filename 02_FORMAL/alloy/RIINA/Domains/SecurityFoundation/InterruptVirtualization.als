@@ -20,6 +20,8 @@ one sig DeviceSource extends InterruptSource {}
 one sig TimerSource extends InterruptSource {}
 one sig IPISource extends InterruptSource {}
 
+abstract sig list {}
+
 // VirtualMachine (matches Coq: Record VirtualMachine)
 sig VirtualMachine {
   vm_id: one VMId,
@@ -47,7 +49,7 @@ sig InterruptController {
 }
 
 // vm_owns_irq (matches Coq: Definition vm_owns_irq)
-pred vm_owns_irq[st: InterruptState, vm: VirtualMachine, irq: nat] {
+pred vm_owns_irq[st: InterruptState, vm: VirtualMachine, irq: Int] {
   some st
 }
 
@@ -67,7 +69,7 @@ pred can_inject[st: InterruptState, vm1: VirtualMachine, irq: Interrupt, vm2: Vi
 }
 
 // irq_deliverable (matches Coq: Definition irq_deliverable)
-pred irq_deliverable[ctrl: InterruptController, irq: nat] {
+pred irq_deliverable[ctrl: InterruptController, irq: Int] {
   some ctrl
 }
 

@@ -14,6 +14,8 @@ one sig App extends AppId {}
 abstract sig SocketId {}
 one sig SockId extends SocketId {}
 
+abstract sig list {}
+
 // Application (matches Coq: Record Application)
 sig Application {
   app_id: one AppId,

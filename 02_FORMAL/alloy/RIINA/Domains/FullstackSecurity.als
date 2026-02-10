@@ -28,6 +28,12 @@ one sig PendingMFA extends AuthState {}
 one sig Authenticated extends AuthState {}
 one sig Locked extends AuthState {}
 
+abstract sig Cookie {}
+abstract sig CsrfToken {}
+abstract sig ParamQuery {}
+abstract sig SecureRequest {}
+abstract sig Template {}
+
 // valid_transition (matches Coq: Definition valid_transition)
 pred valid_transition {}
 
@@ -47,7 +53,7 @@ pred query_parameterized[q: ParamQuery] {
 }
 
 // csrf_valid (matches Coq: Definition csrf_valid)
-pred csrf_valid[token: CsrfToken, session: nat, current_time: nat] {
+pred csrf_valid[token: CsrfToken, session: Int, current_time: Int] {
   some token
 }
 
@@ -62,7 +68,7 @@ pred url_safe[url_type: ContentType] {
 }
 
 // csp_active (matches Coq: Definition csp_active)
-pred csp_active[csp_header: nat] {
+pred csp_active[csp_header: Int] {
   some csp_header
 }
 
@@ -84,7 +90,7 @@ pred session_active {}
 pred password_hashed {}
 
 // https_enforced (matches Coq: Definition https_enforced)
-pred https_enforced[scheme: nat] {
+pred https_enforced[scheme: Int] {
   some scheme
 }
 

@@ -8,22 +8,22 @@ open util/boolean
 
 // HomomorphicOps (matches Coq: Record HomomorphicOps)
 sig HomomorphicOps {
-  ho_addition: one Bool // Supports homomorphic addition,
-  ho_multiplication: one Bool // Supports homomorphic multiplication,
+  ho_addition: one Bool, // Supports homomorphic addition
+  ho_multiplication: one Bool, // Supports homomorphic multiplication
   ho_arbitrary_depth: one Bool // Unlimited circuit depth
 }
 
 // FHESecurityProps (matches Coq: Record FHESecurityProps)
 sig FHESecurityProps {
-  fhe_ind_cpa: one Bool // IND-CPA secure,
-  fhe_circular_secure: one Bool // Circular security,
+  fhe_ind_cpa: one Bool, // IND-CPA secure
+  fhe_circular_secure: one Bool, // Circular security
   fhe_semantic_secure: one Bool // Semantic security
 }
 
 // NoiseManagement (matches Coq: Record NoiseManagement)
 sig NoiseManagement {
-  nm_bootstrapping: one Bool // Noise reduction via bootstrapping,
-  nm_modulus_switching: one Bool // Modulus switching,
+  nm_bootstrapping: one Bool, // Noise reduction via bootstrapping
+  nm_modulus_switching: one Bool, // Modulus switching
   nm_noise_bounded: one Bool // Noise growth bounded
 }
 
@@ -38,32 +38,32 @@ sig FHEConfig {
 
 // INDCPAGame (matches Coq: Record INDCPAGame)
 sig INDCPAGame {
-  icpa_key_size: one Int // Security parameter,
-  icpa_challenge_bit: one Bool // Hidden challenge bit,
-  icpa_encryption_oracle: one Bool // Has encryption oracle,
+  icpa_key_size: one Int, // Security parameter
+  icpa_challenge_bit: one Bool, // Hidden challenge bit
+  icpa_encryption_oracle: one Bool, // Has encryption oracle
   icpa_distinguisher_adv: one Int // Distinguisher advantage (as 1/n)
 }
 
 // SemanticSecurity (matches Coq: Record SemanticSecurity)
 sig SemanticSecurity {
-  ss_message_space: one Int // Size of message space,
-  ss_ciphertext_space: one Int // Size of ciphertext space,
-  ss_indistinguishable: one Bool // Ciphertexts indistinguishable,
+  ss_message_space: one Int, // Size of message space
+  ss_ciphertext_space: one Int, // Size of ciphertext space
+  ss_indistinguishable: one Bool, // Ciphertexts indistinguishable
   ss_randomized: one Bool // Encryption is randomized
 }
 
 // HomAddition (matches Coq: Record HomAddition)
 sig HomAddition {
-  ha_plaintext_modulus: one Int // Plaintext modulus t,
-  ha_ciphertext_modulus: one Int // Ciphertext modulus q,
+  ha_plaintext_modulus: one Int, // Plaintext modulus t
+  ha_ciphertext_modulus: one Int, // Ciphertext modulus q
   ha_preserves_structure: one Bool // Addition structure preserved
 }
 
 // HomMultiplication (matches Coq: Record HomMultiplication)
 sig HomMultiplication {
-  hm_plaintext_modulus: one Int // Plaintext modulus,
-  hm_ciphertext_modulus: one Int // Ciphertext modulus,
-  hm_relinearization: one Bool // Supports relinearization,
+  hm_plaintext_modulus: one Int, // Plaintext modulus
+  hm_ciphertext_modulus: one Int, // Ciphertext modulus
+  hm_relinearization: one Bool, // Supports relinearization
   hm_key_switching: one Bool // Supports key switching
 }
 
@@ -76,25 +76,25 @@ sig HomOperations {
 
 // NoiseModel (matches Coq: Record NoiseModel)
 sig NoiseModel {
-  noise_initial: one Int // Initial noise after encryption,
-  noise_add_growth: one Int // Noise growth per addition,
-  noise_mult_growth: one Int // Noise growth factor per multiplication,
+  noise_initial: one Int, // Initial noise after encryption
+  noise_add_growth: one Int, // Noise growth per addition
+  noise_mult_growth: one Int, // Noise growth factor per multiplication
   noise_threshold: one Int // Maximum noise before decryption fails
 }
 
 // NoiseBound (matches Coq: Record NoiseBound)
 sig NoiseBound {
-  nb_max_additions: one Int // Max additions before noise overflow,
-  nb_max_multiplications: one Int // Max multiplications before noise overflow,
+  nb_max_additions: one Int, // Max additions before noise overflow
+  nb_max_multiplications: one Int, // Max multiplications before noise overflow
   nb_modulus: one Int // Ciphertext modulus
 }
 
 // BootstrappingConfig (matches Coq: Record BootstrappingConfig)
 sig BootstrappingConfig {
-  bs_reduces_noise: one Bool // Reduces ciphertext noise,
-  bs_preserves_message: one Bool // Preserves encrypted message,
-  bs_polynomial_time: one Bool // Runs in polynomial time,
-  bs_noise_output: one Int // Output noise level,
+  bs_reduces_noise: one Bool, // Reduces ciphertext noise
+  bs_preserves_message: one Bool, // Preserves encrypted message
+  bs_polynomial_time: one Bool, // Runs in polynomial time
+  bs_noise_output: one Int, // Output noise level
   bs_noise_input_max: one Int // Maximum input noise
 }
 
@@ -107,26 +107,26 @@ sig UnlimitedFHE {
 
 // KeyGenParams (matches Coq: Record KeyGenParams)
 sig KeyGenParams {
-  kg_security_parameter: one Int // Lambda - security parameter,
-  kg_polynomial_degree: one Int // n - ring polynomial degree,
-  kg_error_distribution: one Int // Discrete Gaussian width,
+  kg_security_parameter: one Int, // Lambda - security parameter
+  kg_polynomial_degree: one Int, // n - ring polynomial degree
+  kg_error_distribution: one Int, // Discrete Gaussian width
   kg_modulus_bits: one Int // log q - modulus bit length
 }
 
 // FHEKeyPair (matches Coq: Record FHEKeyPair)
 sig FHEKeyPair {
-  kp_public: one Int // Public key representation,
-  kp_secret: one Int // Secret key representation,
-  kp_evaluation: one Int // Evaluation key for homomorphic ops,
+  kp_public: one Int, // Public key representation
+  kp_secret: one Int, // Secret key representation
+  kp_evaluation: one Int, // Evaluation key for homomorphic ops
   kp_params: one KeyGenParams
 }
 
 // FHECiphertext (matches Coq: Record FHECiphertext)
 sig FHECiphertext {
-  ct_polynomial_0: one Int // First polynomial component,
-  ct_polynomial_1: one Int // Second polynomial component,
-  ct_noise_estimate: one Int // Estimated noise level,
-  ct_level: one Int // Current level for leveled FHE,
+  ct_polynomial_0: one Int, // First polynomial component
+  ct_polynomial_1: one Int, // Second polynomial component
+  ct_noise_estimate: one Int, // Estimated noise level
+  ct_level: one Int, // Current level for leveled FHE
   ct_valid_encryption: one Bool // Is valid encryption
 }
 
@@ -149,24 +149,24 @@ sig CompleteFHESystem {
 
 // CircularSecurity (matches Coq: Record CircularSecurity)
 sig CircularSecurity {
-  cs_key_encryption_safe: one Bool // Safe to encrypt own key,
-  cs_kDM_secure: one Bool // Key-dependent message secure,
+  cs_key_encryption_safe: one Bool, // Safe to encrypt own key
+  cs_kDM_secure: one Bool, // Key-dependent message secure
   cs_multi_key: one Bool // Multi-key secure
 }
 
 // LWEHardness (matches Coq: Record LWEHardness)
 sig LWEHardness {
-  lwe_dimension: one Int // n - dimension,
-  lwe_modulus: one Int // q - modulus,
-  lwe_error_rate: one Int // Error parameter,
+  lwe_dimension: one Int, // n - dimension
+  lwe_modulus: one Int, // q - modulus
+  lwe_error_rate: one Int, // Error parameter
   lwe_assumed_hard: one Bool // Hardness assumption
 }
 
 // RLWEConfig (matches Coq: Record RLWEConfig)
 sig RLWEConfig {
-  rlwe_ring_degree: one Int // Polynomial ring degree,
-  rlwe_modulus: one Int // Coefficient modulus,
-  rlwe_error_width: one Int // Error distribution width,
+  rlwe_ring_degree: one Int, // Polynomial ring degree
+  rlwe_modulus: one Int, // Coefficient modulus
+  rlwe_error_width: one Int, // Error distribution width
   rlwe_ntt_compatible: one Bool // NTT-friendly parameters
 }
 
@@ -249,17 +249,17 @@ pred hom_ops_valid[ho: HomOperations] {
 pred riina_hom_ops {}
 
 // noise_after_additions (matches Coq: Definition noise_after_additions)
-pred noise_after_additions[nm: NoiseModel, n: nat] {
+pred noise_after_additions[nm: NoiseModel, n: Int] {
   some nm
 }
 
 // noise_after_multiplications (matches Coq: Definition noise_after_multiplications)
-pred noise_after_multiplications[nm: NoiseModel, n: nat] {
+pred noise_after_multiplications[nm: NoiseModel, n: Int] {
   some nm
 }
 
 // noise_safe (matches Coq: Definition noise_safe)
-pred noise_safe[nm: NoiseModel, current: nat] {
+pred noise_safe[nm: NoiseModel, current: Int] {
   some nm
 }
 

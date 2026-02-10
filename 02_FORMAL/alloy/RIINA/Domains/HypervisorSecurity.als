@@ -16,6 +16,11 @@ one sig PL_User extends PrivilegeLevel {}
 one sig SecureWorld extends PrivilegeLevel {} // TEE / TrustZone Secure
 one sig NormalWorld extends PrivilegeLevel {}
 
+abstract sig GPA {}
+abstract sig PAddr {}
+abstract sig SecurityWorld {}
+abstract sig VMID {}
+
 // VMIsolation (matches Coq: Record VMIsolation)
 sig VMIsolation {
   vmi_memory_isolated: one Bool,
@@ -47,7 +52,7 @@ sig VMCSState {
   vmcs_exception_bitmap: one Int,
   vmcs_io_bitmap_enabled: one Bool,
   vmcs_msr_bitmap_enabled: one Bool,
-  vmcs_vpid: one Int // Virtual Processor ID,
+  vmcs_vpid: one Int, // Virtual Processor ID
   vmcs_eptp: one Int // EPT Pointer
 }
 
@@ -74,42 +79,42 @@ sig VMState {
 
 // SideChannelMitigation (matches Coq: Record SideChannelMitigation)
 sig SideChannelMitigation {
-  scm_flush_l1d: one Bool // Flush L1D cache on VM entry,
-  scm_ibrs_enabled: one Bool // Indirect Branch Restricted Speculation,
-  scm_ibpb_enabled: one Bool // Indirect Branch Prediction Barrier,
-  scm_stibp_enabled: one Bool // Single Thread Indirect Branch Predictor,
-  scm_ssbd_enabled: one Bool // Speculative Store Bypass Disable,
-  scm_mds_clear: one Bool // MDS buffer clear,
-  scm_taa_mitigation: one Bool // TSX Async Abort mitigation,
+  scm_flush_l1d: one Bool, // Flush L1D cache on VM entry
+  scm_ibrs_enabled: one Bool, // Indirect Branch Restricted Speculation
+  scm_ibpb_enabled: one Bool, // Indirect Branch Prediction Barrier
+  scm_stibp_enabled: one Bool, // Single Thread Indirect Branch Predictor
+  scm_ssbd_enabled: one Bool, // Speculative Store Bypass Disable
+  scm_mds_clear: one Bool, // MDS buffer clear
+  scm_taa_mitigation: one Bool, // TSX Async Abort mitigation
   scm_srbds_mitigation: one Bool // Special Register Buffer Data Sampling
 }
 
 // MemVirtConfig (matches Coq: Record MemVirtConfig)
 sig MemVirtConfig {
-  mv_ept_enabled: one Bool // Extended Page Tables,
-  mv_vpid_enabled: one Bool // Virtual Processor ID,
-  mv_shadow_paging: one Bool // Shadow page tables (if no EPT),
-  mv_memory_type_range: one Bool // MTRR virtualization,
-  mv_page_modification_log: one Bool // Page modification logging,
+  mv_ept_enabled: one Bool, // Extended Page Tables
+  mv_vpid_enabled: one Bool, // Virtual Processor ID
+  mv_shadow_paging: one Bool, // Shadow page tables (if no EPT)
+  mv_memory_type_range: one Bool, // MTRR virtualization
+  mv_page_modification_log: one Bool, // Page modification logging
   mv_accessed_dirty: one Bool // A/D bits in EPT
 }
 
 // InterruptVirtConfig (matches Coq: Record InterruptVirtConfig)
 sig InterruptVirtConfig {
-  iv_apic_virtualization: one Bool // Virtual APIC,
-  iv_posted_interrupts: one Bool // Posted Interrupts,
-  iv_interrupt_exit: one Bool // VM exit on external interrupt,
-  iv_nmi_exiting: one Bool // NMI causes VM exit,
-  iv_virtual_nmi: one Bool // Virtual NMI blocking,
+  iv_apic_virtualization: one Bool, // Virtual APIC
+  iv_posted_interrupts: one Bool, // Posted Interrupts
+  iv_interrupt_exit: one Bool, // VM exit on external interrupt
+  iv_nmi_exiting: one Bool, // NMI causes VM exit
+  iv_virtual_nmi: one Bool, // Virtual NMI blocking
   iv_ple_enabled: one Bool // Pause Loop Exiting
 }
 
 // WorldSwitchConfig (matches Coq: Record WorldSwitchConfig)
 sig WorldSwitchConfig {
-  ws_smc_filtering: one Bool // SMC instruction filtering,
-  ws_ns_bit_control: one Bool // Non-Secure bit control,
-  ws_secure_monitor: one Bool // Secure Monitor Call handler,
-  ws_tzasc_enabled: one Bool // TrustZone Address Space Controller,
+  ws_smc_filtering: one Bool, // SMC instruction filtering
+  ws_ns_bit_control: one Bool, // Non-Secure bit control
+  ws_secure_monitor: one Bool, // Secure Monitor Call handler
+  ws_tzasc_enabled: one Bool, // TrustZone Address Space Controller
   ws_tzpc_enabled: one Bool // TrustZone Protection Controller
 }
 

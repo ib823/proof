@@ -19,6 +19,11 @@ one sig EaseOut extends AnimationType {}
 one sig EaseInOut extends AnimationType {}
 one sig CustomCubic extends AnimationType {}
 
+abstract sig Position {}
+abstract sig Time {}
+abstract sig TimingFunction {}
+abstract sig list {}
+
 // SpringParams (matches Coq: Record SpringParams)
 sig SpringParams {
   spring_stiffness: one Int,
@@ -39,12 +44,12 @@ sig SpringAnimation {
 // AnimationControl (matches Coq: Record AnimationControl)
 sig AnimationControl {
   anim_type: one AnimationType,
-  anim_speed: one Int // 100 = normal, 200 = 2x, 50 = 0.5x,
+  anim_speed: one Int, // 100 = normal, 200 = 2x, 50 = 0.5x
   anim_reversed: one Bool,
   anim_autoreverses: one Bool,
-  anim_repeat_count: one Int // 0 = infinite,
+  anim_repeat_count: one Int, // 0 = infinite
   anim_current_repeat: one Int,
-  anim_fill_mode: one Int // 0=removed, 1=forwards, 2=backwards, 3=both,
+  anim_fill_mode: one Int, // 0=removed, 1=forwards, 2=backwards, 3=both
   anim_delegate_notified: one Bool,
   anim_removed_cleanly: one Bool
 }
@@ -58,7 +63,7 @@ sig AnimationGroup {
 
 // LayerAnimation (matches Coq: Record LayerAnimation)
 sig LayerAnimation {
-  la_property: one Int // which property is animated,
+  la_property: one Int, // which property is animated
   la_gpu_accelerated: one Bool,
   la_from_value: one Int,
   la_to_value: one Int,
@@ -67,7 +72,7 @@ sig LayerAnimation {
 
 // Keyframe (matches Coq: Record Keyframe)
 sig Keyframe {
-  kf_time: one Int // 0-100 percentage of duration,
+  kf_time: one Int, // 0-100 percentage of duration
   kf_value: one Int,
   kf_timing: one TimingFunction
 }

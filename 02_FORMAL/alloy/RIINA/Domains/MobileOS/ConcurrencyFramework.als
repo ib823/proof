@@ -20,6 +20,13 @@ one sig TaskCompleted extends TaskState {}
 one sig TaskCancelled extends TaskState {}
 one sig TaskFailed extends TaskState {}
 
+abstract sig ActorId {}
+abstract sig Data {}
+abstract sig Program {}
+abstract sig ResourceId {}
+abstract sig list {}
+abstract sig option {}
+
 // TypedExpr (matches Coq: Record TypedExpr)
 sig TypedExpr {
   expr_id: one Int,

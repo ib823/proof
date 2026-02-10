@@ -22,6 +22,8 @@ one sig SecureBLE extends SecurityLevel {}
 one sig SecureNFC extends SecurityLevel {}
 one sig SecureUWB extends SecurityLevel {}
 
+abstract sig list {}
+
 // WirelessConnection (matches Coq: Record WirelessConnection)
 sig WirelessConnection {
   conn_protocol: one WirelessProtocol,
@@ -33,7 +35,7 @@ sig WirelessConnection {
 // BluetoothPairing (matches Coq: Record BluetoothPairing)
 sig BluetoothPairing {
   bt_device_id: one Int,
-  bt_pairing_method: one Int // 0=none, 1=pin, 2=oob, 3=numeric_comparison,
+  bt_pairing_method: one Int, // 0=none, 1=pin, 2=oob, 3=numeric_comparison
   bt_authenticated: one Bool,
   bt_bonded: one Bool
 }

@@ -6,6 +6,10 @@ module riina/domains/reducibility
 
 open util/boolean
 
+abstract sig effect_ctx {}
+abstract sig expr {}
+abstract sig store {}
+
 // strongly_normalizing (matches Coq: Definition strongly_normalizing)
 pred strongly_normalizing[e: expr, st: store, ctx: effect_ctx] {
   some e

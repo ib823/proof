@@ -65,6 +65,13 @@ one sig ReadCommitted extends IsolationLevel {}
 one sig RepeatableRead extends IsolationLevel {}
 one sig Serializable extends IsolationLevel {}
 
+abstract sig AuditLog {}
+abstract sig Row {}
+abstract sig Schedule {}
+abstract sig Schema {}
+abstract sig WAL {}
+abstract sig list {}
+
 // Column (matches Coq: Record Column)
 sig Column {
   col_name: one Int,
@@ -133,7 +140,7 @@ pred value_type[v: Value] {
 }
 
 // query_contains_raw_string (matches Coq: Definition query_contains_raw_string)
-pred query_contains_raw_string[q: Query, s: nat] {
+pred query_contains_raw_string[q: Query, s: Int] {
   some q
 }
 
@@ -151,7 +158,7 @@ pred wal_contains[wal: WAL, txn: Transaction] {
 }
 
 // wal_upto (matches Coq: Definition wal_upto)
-pred wal_upto[lsn: nat, wal: WAL] {
+pred wal_upto[lsn: Int, wal: WAL] {
   some lsn
 }
 
@@ -164,7 +171,7 @@ pred wal_recover[wal: WAL, db: Database] {
 pred checksum {}
 
 // verify_checksum (matches Coq: Definition verify_checksum)
-pred verify_checksum[expected: nat] {
+pred verify_checksum[expected: Int] {
   some expected
 }
 
@@ -177,7 +184,7 @@ pred is_encrypted[ed: EncryptedData] {
 pred compute_merkle_root {}
 
 // verify_merkle (matches Coq: Definition verify_merkle)
-pred verify_merkle[tree: MerkleTree, data: nat] {
+pred verify_merkle[tree: MerkleTree, data: Int] {
   some tree
 }
 

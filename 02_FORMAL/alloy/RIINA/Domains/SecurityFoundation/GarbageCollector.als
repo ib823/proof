@@ -10,6 +10,9 @@ open util/boolean
 abstract sig ObjectId {}
 one sig ObjId extends ObjectId {}
 
+abstract sig Prop {}
+abstract sig list {}
+
 // Object (matches Coq: Record Object)
 sig Object {
   obj_id: one ObjectId,

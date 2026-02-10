@@ -90,6 +90,11 @@ one sig RV_Pair extends RiinaValue {}
 one sig RV_Inl extends RiinaValue {}
 one sig RV_Inr extends RiinaValue {}
 
+abstract sig Type {}
+abstract sig list {}
+abstract sig spm_objects {}
+abstract sig spm_subjects {}
+
 // SecurityPolicyModel (matches Coq: Record SecurityPolicyModel)
 sig SecurityPolicyModel {
   spm_subjects: one Type,
@@ -111,65 +116,65 @@ sig TOEConfiguration {
 
 // DevelopmentAssurance (matches Coq: Record DevelopmentAssurance)
 sig DevelopmentAssurance {
-  adv_arc_complete: one Bool // Security architecture complete,
-  adv_arc_modular: one Bool // Architecture is modular,
-  adv_arc_non_bypassable: one Bool // TSF non-bypassable,
-  adv_arc_tamper_proof: one Bool // TSF tamper-proof,
-  adv_arc_domain_sep: one Bool // Domain separation enforced,
-  adv_fsp_complete: one Bool // Functional spec complete,
-  adv_fsp_accurate: one Bool // Functional spec accurate,
-  adv_imp_complete: one Bool // Implementation complete,
-  adv_imp_verified: one Bool // Implementation formally verified,
-  adv_int_modular: one Bool // TSF internals modular,
-  adv_int_layered: one Bool // TSF properly layered,
-  adv_int_minimal: one Bool // TSF minimal complexity,
-  adv_tds_semiformal: one Bool // Design semiformal,
+  adv_arc_complete: one Bool, // Security architecture complete
+  adv_arc_modular: one Bool, // Architecture is modular
+  adv_arc_non_bypassable: one Bool, // TSF non-bypassable
+  adv_arc_tamper_proof: one Bool, // TSF tamper-proof
+  adv_arc_domain_sep: one Bool, // Domain separation enforced
+  adv_fsp_complete: one Bool, // Functional spec complete
+  adv_fsp_accurate: one Bool, // Functional spec accurate
+  adv_imp_complete: one Bool, // Implementation complete
+  adv_imp_verified: one Bool, // Implementation formally verified
+  adv_int_modular: one Bool, // TSF internals modular
+  adv_int_layered: one Bool, // TSF properly layered
+  adv_int_minimal: one Bool, // TSF minimal complexity
+  adv_tds_semiformal: one Bool, // Design semiformal
   adv_tds_formal: one Bool // Design formal
 }
 
 // GuidanceAssurance (matches Coq: Record GuidanceAssurance)
 sig GuidanceAssurance {
-  agd_ope_complete: one Bool // Operational guidance complete,
+  agd_ope_complete: one Bool, // Operational guidance complete
   agd_pre_complete: one Bool // Preparative guidance complete
 }
 
 // LifecycleAssurance (matches Coq: Record LifecycleAssurance)
 sig LifecycleAssurance {
-  alc_cmc_automated: one Bool // CM automated,
-  alc_cmc_coverage: one Bool // CM covers all items,
-  alc_cms_tracking: one Bool // CMS provides tracking,
-  alc_del_secure: one Bool // Delivery procedures secure,
-  alc_dvs_sufficient: one Bool // Development security sufficient,
-  alc_flaw_systematic: one Bool // Flaw remediation systematic,
-  alc_lcd_defined: one Bool // Life-cycle model defined,
+  alc_cmc_automated: one Bool, // CM automated
+  alc_cmc_coverage: one Bool, // CM covers all items
+  alc_cms_tracking: one Bool, // CMS provides tracking
+  alc_del_secure: one Bool, // Delivery procedures secure
+  alc_dvs_sufficient: one Bool, // Development security sufficient
+  alc_flaw_systematic: one Bool, // Flaw remediation systematic
+  alc_lcd_defined: one Bool, // Life-cycle model defined
   alc_tat_compliance: one Bool // Tools & techniques adequate
 }
 
 // SecurityTargetAssurance (matches Coq: Record SecurityTargetAssurance)
 sig SecurityTargetAssurance {
-  ase_ccl_conformant: one Bool // Conformance claims valid,
-  ase_ecd_complete: one Bool // Extended component definitions complete,
-  ase_int_complete: one Bool // ST introduction complete,
-  ase_obj_complete: one Bool // Security objectives complete,
-  ase_req_complete: one Bool // Security requirements complete,
-  ase_spd_complete: one Bool // Security problem definition complete,
+  ase_ccl_conformant: one Bool, // Conformance claims valid
+  ase_ecd_complete: one Bool, // Extended component definitions complete
+  ase_int_complete: one Bool, // ST introduction complete
+  ase_obj_complete: one Bool, // Security objectives complete
+  ase_req_complete: one Bool, // Security requirements complete
+  ase_spd_complete: one Bool, // Security problem definition complete
   ase_tss_complete: one Bool // TOE summary specification complete
 }
 
 // TestAssurance (matches Coq: Record TestAssurance)
 sig TestAssurance {
-  ate_cov_complete: one Bool // Test coverage complete,
-  ate_dpt_sufficient: one Bool // Depth of testing sufficient,
-  ate_fun_complete: one Bool // Functional tests complete,
+  ate_cov_complete: one Bool, // Test coverage complete
+  ate_dpt_sufficient: one Bool, // Depth of testing sufficient
+  ate_fun_complete: one Bool, // Functional tests complete
   ate_ind_performed: one Bool // Independent testing performed
 }
 
 // VulnerabilityAssurance (matches Coq: Record VulnerabilityAssurance)
 sig VulnerabilityAssurance {
-  ava_van_basic: one Bool // Basic vulnerability analysis,
-  ava_van_focused: one Bool // Focused vulnerability analysis,
-  ava_van_methodical: one Bool // Methodical vulnerability analysis,
-  ava_van_advanced: one Bool // Advanced vulnerability analysis - EAL7,
+  ava_van_basic: one Bool, // Basic vulnerability analysis
+  ava_van_focused: one Bool, // Focused vulnerability analysis
+  ava_van_methodical: one Bool, // Methodical vulnerability analysis
+  ava_van_advanced: one Bool, // Advanced vulnerability analysis - EAL7
   ava_van_high_attack: one Bool // Resistant to high attack potential
 }
 

@@ -27,6 +27,8 @@ one sig StreamingDelivery extends MediaEffect {}
 one sig RenderOperation extends MediaEffect {}
 one sig RightsManagement extends MediaEffect {}
 
+abstract sig ContentProtection {}
+
 // ECP_Compliance (matches Coq: Record ECP_Compliance)
 sig ECP_Compliance {
   content_encryption: one Bool,
@@ -79,7 +81,7 @@ pred viewing_duration[v: ViewingSession] {
 }
 
 // viewing_within_window (matches Coq: Definition viewing_within_window)
-pred viewing_within_window[v: ViewingSession, max_hours: nat] {
+pred viewing_within_window[v: ViewingSession, max_hours: Int] {
   some v
 }
 

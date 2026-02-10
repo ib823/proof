@@ -6,6 +6,14 @@ module riina/domains/t001__hermetic_build
 
 open util/boolean
 
+abstract sig Binary {}
+abstract sig BootstrapChain {}
+abstract sig Build {}
+abstract sig Hash {}
+abstract sig Hex0 {}
+abstract sig SourceCode {}
+abstract sig list {}
+
 // Stage (matches Coq: Record Stage)
 sig Stage {
   stage_id: one Int,

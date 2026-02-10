@@ -47,6 +47,16 @@ one sig PassiveAdversary extends Adversary {}
 one sig ActiveAdversary extends Adversary {}
 one sig CompromisedKeyAdversary extends Adversary {}
 
+abstract sig Nonce {}
+abstract sig PrivateKey {}
+abstract sig PublicKey {}
+abstract sig SharedSecret {}
+abstract sig SymmetricKey {}
+abstract sig Timestamp {}
+abstract sig Trace {}
+abstract sig list {}
+abstract sig option {}
+
 // KeyPair (matches Coq: Record KeyPair)
 sig KeyPair {
   kp_private: one PrivateKey,
@@ -197,7 +207,7 @@ pred noise_pattern_identity_hiding_initiator[p: NoisePattern] {
 }
 
 // init_noise_state (matches Coq: Definition init_noise_state)
-pred init_noise_state[pattern: NoisePattern, is_init: bool] {
+pred init_noise_state[pattern: NoisePattern, is_init: Bool] {
   some pattern
 }
 
@@ -282,7 +292,7 @@ pred prevents_replay[incoming: Nonce] {
 }
 
 // prevents_reflection (matches Coq: Definition prevents_reflection)
-pred prevents_reflection[local_id: nat, remote_id: nat] {
+pred prevents_reflection[local_id: Int, remote_id: Int] {
   some local_id
 }
 

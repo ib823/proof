@@ -42,7 +42,7 @@ one sig SingleProver extends confidence {}
 one sig DualProver extends confidence {}
 
 // validate_atomic (matches Coq: Definition validate_atomic)
-pred validate_atomic[c: certificate, n: nat] {
+pred validate_atomic[c: certificate, n: Int] {
   some c
 }
 

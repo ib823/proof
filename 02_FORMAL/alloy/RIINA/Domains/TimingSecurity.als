@@ -48,6 +48,30 @@ one sig MakingProgress extends ProgressState {} // progress counter
 one sig Blocked extends ProgressState {}
 one sig Completed extends ProgressState {}
 
+abstract sig ClockState {}
+abstract sig FairScheduler {}
+abstract sig LivenessProof {}
+abstract sig Lock {}
+abstract sig LockOrderPolicy {}
+abstract sig NTPPacket {}
+abstract sig Nonce {}
+abstract sig Priority {}
+abstract sig PriorityState {}
+abstract sig ReplayProtectedMessage {}
+abstract sig ReplayWindow {}
+abstract sig ResourceId {}
+abstract sig SequenceState {}
+abstract sig SequencedMessage {}
+abstract sig Session {}
+abstract sig SignedTimestamp {}
+abstract sig Task {}
+abstract sig ThreadId {}
+abstract sig Time {}
+abstract sig TimedOperation {}
+abstract sig TimeoutHandler {}
+abstract sig Timestamp {}
+abstract sig TimingObservation {}
+
 // valid_session_transition (matches Coq: Definition valid_session_transition)
 pred valid_session_transition {}
 
@@ -70,7 +94,7 @@ pred nonce_fresh[n: Nonce, w: ReplayWindow] {
 }
 
 // verify_timestamp_signature (matches Coq: Definition verify_timestamp_signature)
-pred verify_timestamp_signature[sts: SignedTimestamp, expected_signer: nat] {
+pred verify_timestamp_signature[sts: SignedTimestamp, expected_signer: Int] {
   some sts
 }
 
@@ -121,7 +145,7 @@ pred time_004_no_cross_domain_leakage[obs: TimingObservation] {
 }
 
 // time_005_nts_verify (matches Coq: Definition time_005_nts_verify)
-pred time_005_nts_verify[pkt: NTPPacket, trusted_source: nat] {
+pred time_005_nts_verify[pkt: NTPPacket, trusted_source: Int] {
   some pkt
 }
 
@@ -146,7 +170,7 @@ pred time_008_deadline_feasible[t: Task, now: Time] {
 }
 
 // time_009_verify_signed_timestamp (matches Coq: Definition time_009_verify_signed_timestamp)
-pred time_009_verify_signed_timestamp[sts: SignedTimestamp, expected_signer: nat, expected_sig: nat] {
+pred time_009_verify_signed_timestamp[sts: SignedTimestamp, expected_signer: Int, expected_sig: Int] {
   some sts
 }
 

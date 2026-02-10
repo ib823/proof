@@ -27,6 +27,11 @@ one sig Medium extends RiskLevel {}
 one sig High extends RiskLevel {}
 one sig Critical extends RiskLevel {}
 
+abstract sig CEOLiability {}
+abstract sig CSSPLicense {}
+abstract sig CyberIncident {}
+abstract sig NCIIEntity {}
+
 // risk_level_nat (matches Coq: Definition risk_level_nat)
 pred risk_level_nat[r: RiskLevel] {
   some r
@@ -38,7 +43,7 @@ pred risk_assessment_current[e: NCIIEntity] {
 }
 
 // audit_current (matches Coq: Definition audit_current)
-pred audit_current[e: NCIIEntity, current_time: nat] {
+pred audit_current[e: NCIIEntity, current_time: Int] {
   some e
 }
 
@@ -58,12 +63,12 @@ pred controls_sufficient[e: NCIIEntity] {
 }
 
 // cssp_valid (matches Coq: Definition cssp_valid)
-pred cssp_valid[l: CSSPLicense, current_time: nat] {
+pred cssp_valid[l: CSSPLicense, current_time: Int] {
   some l
 }
 
 // act854_compliant (matches Coq: Definition act854_compliant)
-pred act854_compliant[e: NCIIEntity, l: CSSPLicense, t: nat] {
+pred act854_compliant[e: NCIIEntity, l: CSSPLicense, t: Int] {
   some e
 }
 

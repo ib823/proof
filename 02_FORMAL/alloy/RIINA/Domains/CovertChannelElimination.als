@@ -6,6 +6,8 @@ module riina/domains/covert_channel_elimination
 
 open util/boolean
 
+abstract sig list {}
+
 // IFCLabel (matches Coq: Record IFCLabel)
 sig IFCLabel {
   label_level: one Int,

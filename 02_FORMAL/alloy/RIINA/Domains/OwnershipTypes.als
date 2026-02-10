@@ -20,19 +20,22 @@ one sig RCUnborrowed extends RefCellState {}
 one sig RCSharedBorrow extends RefCellState {} // count of shared borrows
 one sig RCMutBorrow extends RefCellState {}
 
+abstract sig Lifetime {}
+abstract sig list {}
+
 // OwnedVar (matches Coq: Record OwnedVar)
 sig OwnedVar {
   ov_id: one Int,
   ov_state: one OwnState,
-  ov_lifetime: one Lifetime // Scope lifetime,
+  ov_lifetime: one Lifetime, // Scope lifetime
   ov_is_copy: one Bool // Copy type?
 }
 
 // Borrow (matches Coq: Record Borrow)
 sig Borrow {
-  br_source: one Int // Source variable ID,
-  br_target: one Int // Borrow variable ID,
-  br_mutable: one Bool // Mutable borrow?,
+  br_source: one Int, // Source variable ID
+  br_target: one Int, // Borrow variable ID
+  br_mutable: one Bool, // Mutable borrow?
   br_lifetime: one Lifetime // Borrow lifetime
 }
 
@@ -66,22 +69,22 @@ pred is_usable[v: OwnedVar] {
 }
 
 // can_mut_borrow (matches Coq: Definition can_mut_borrow)
-pred can_mut_borrow[ctx: OwnCtx, id: nat] {
+pred can_mut_borrow[ctx: OwnCtx, id: Int] {
   some ctx
 }
 
 // can_shared_borrow (matches Coq: Definition can_shared_borrow)
-pred can_shared_borrow[ctx: OwnCtx, id: nat] {
+pred can_shared_borrow[ctx: OwnCtx, id: Int] {
   some ctx
 }
 
 // count_borrows (matches Coq: Definition count_borrows)
-pred count_borrows[ctx: OwnCtx, id: nat] {
+pred count_borrows[ctx: OwnCtx, id: Int] {
   some ctx
 }
 
 // count_mut_borrows (matches Coq: Definition count_mut_borrows)
-pred count_mut_borrows[ctx: OwnCtx, id: nat] {
+pred count_mut_borrows[ctx: OwnCtx, id: Int] {
   some ctx
 }
 
@@ -101,7 +104,7 @@ pred is_dropped[v: OwnedVar] {
 }
 
 // box_new (matches Coq: Definition box_new)
-pred box_new[id: nat] {
+pred box_new[id: Int] {
   some id
 }
 
@@ -111,7 +114,7 @@ pred well_formed_ctx[ctx: OwnCtx] {
 }
 
 // no_active_borrows (matches Coq: Definition no_active_borrows)
-pred no_active_borrows[ctx: OwnCtx, id: nat] {
+pred no_active_borrows[ctx: OwnCtx, id: Int] {
   some ctx
 }
 

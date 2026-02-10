@@ -20,13 +20,16 @@ one sig IBranch extends Instr {}
 one sig ICall extends Instr {}
 one sig IRet extends Instr {}
 
+abstract sig Size {}
+abstract sig list {}
+
 // ArchParams (matches Coq: Record ArchParams)
 sig ArchParams {
-  arch_word_size: one Size // 4 for 32-bit, 8 for 64-bit,
-  arch_max_instr_size: one Size // Max instruction bytes,
-  arch_call_overhead: one Size // Call instruction size,
-  arch_ret_overhead: one Size // Return instruction size,
-  arch_flash_size: one Size // Total flash available,
+  arch_word_size: one Size, // 4 for 32-bit, 8 for 64-bit
+  arch_max_instr_size: one Size, // Max instruction bytes
+  arch_call_overhead: one Size, // Call instruction size
+  arch_ret_overhead: one Size, // Return instruction size
+  arch_flash_size: one Size, // Total flash available
   arch_ram_size: one Size // Total RAM available
 }
 
@@ -39,7 +42,7 @@ sig Function {
 // Module (matches Coq: Record Module)
 sig Module {
   mod_functions: one list,
-  mod_data: one Size // Initialized data,
+  mod_data: one Size, // Initialized data
   mod_bss: one Size // Zero-initialized data
 }
 
@@ -75,8 +78,8 @@ sig GenericInfo {
 
 // ROMLayout (matches Coq: Record ROMLayout)
 sig ROMLayout {
-  rom_text: one Size // Code section,
-  rom_rodata: one Size // Read-only data,
+  rom_text: one Size, // Code section
+  rom_rodata: one Size, // Read-only data
   rom_init_data: one Size // Initialized data
 }
 

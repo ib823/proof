@@ -19,22 +19,22 @@ one sig SC_Namespace extends SyscallCategory {}
 
 // NamespaceIsolation (matches Coq: Record NamespaceIsolation)
 sig NamespaceIsolation {
-  ns_pid_isolated: one Bool // Process ID namespace,
-  ns_net_isolated: one Bool // Network namespace,
-  ns_mount_isolated: one Bool // Mount namespace,
-  ns_user_isolated: one Bool // User namespace,
-  ns_uts_isolated: one Bool // UTS namespace (hostname),
-  ns_ipc_isolated: one Bool // IPC namespace,
-  ns_cgroup_isolated: one Bool // Cgroup namespace,
+  ns_pid_isolated: one Bool, // Process ID namespace
+  ns_net_isolated: one Bool, // Network namespace
+  ns_mount_isolated: one Bool, // Mount namespace
+  ns_user_isolated: one Bool, // User namespace
+  ns_uts_isolated: one Bool, // UTS namespace (hostname)
+  ns_ipc_isolated: one Bool, // IPC namespace
+  ns_cgroup_isolated: one Bool, // Cgroup namespace
   ns_time_isolated: one Bool // Time namespace
 }
 
 // CgroupLimits (matches Coq: Record CgroupLimits)
 sig CgroupLimits {
-  cg_cpu_limited: one Bool // CPU quota enforced,
-  cg_memory_limited: one Bool // Memory limit enforced,
-  cg_swap_disabled: one Bool // Swap disabled,
-  cg_pids_limited: one Bool // PID limit enforced,
+  cg_cpu_limited: one Bool, // CPU quota enforced
+  cg_memory_limited: one Bool, // Memory limit enforced
+  cg_swap_disabled: one Bool, // Swap disabled
+  cg_pids_limited: one Bool, // PID limit enforced
   cg_io_limited: one Bool // I/O limits enforced
 }
 

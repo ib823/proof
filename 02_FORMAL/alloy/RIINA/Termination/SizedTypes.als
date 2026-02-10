@@ -11,6 +11,10 @@ abstract sig sized_ty {}
 one sig STBase extends sized_ty {} // Base type with implicit size
 one sig STSized extends sized_ty {} // Type with explicit size bound
 
+abstract sig effect_ctx {}
+abstract sig expr {}
+abstract sig store {}
+
 // sized_ty_base (matches Coq: Definition sized_ty_base)
 pred sized_ty_base[st: sized_ty] {
   some st

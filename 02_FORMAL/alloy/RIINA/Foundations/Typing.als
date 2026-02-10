@@ -6,6 +6,9 @@ module riina/domains/typing
 
 open util/boolean
 
+abstract sig store {}
+abstract sig store_ty {}
+
 // store_wf (matches Coq: Definition store_wf)
 pred store_wf[Σ: store_ty, st: store] {
   some Σ

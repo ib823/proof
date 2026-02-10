@@ -13,6 +13,13 @@ one sig ResCPU extends Resource {}
 one sig ResNetwork extends Resource {}
 one sig ResFileSystem extends Resource {}
 
+abstract sig Alignment {}
+abstract sig MemMap {}
+abstract sig Ptr {}
+abstract sig Refs {}
+abstract sig Roots {}
+abstract sig SandboxId {}
+
 // Heap (matches Coq: Record Heap)
 sig Heap {
   heap_mem: one MemMap,
@@ -26,7 +33,7 @@ sig Heap {
 sig ManagedHeap {
   mh_live: one Ptr,
   mh_roots: one Roots,
-  mh_refs: one Refs // References from each object,
+  mh_refs: one Refs, // References from each object
   mh_size: one Ptr,
   mh_finalizer: one Ptr,
   mh_finalized: one Ptr,
@@ -62,7 +69,7 @@ pred accessible_size[h: Heap, p: Ptr] {
 }
 
 // sufficient_space (matches Coq: Definition sufficient_space)
-pred sufficient_space[h: Heap, size: nat] {
+pred sufficient_space[h: Heap, size: Int] {
   some h
 }
 
@@ -117,7 +124,7 @@ pred accessible[sb: Sandbox, p: Ptr] {
 }
 
 // granted (matches Coq: Definition granted)
-pred granted[sb: Sandbox, cap: nat] {
+pred granted[sb: Sandbox, cap: Int] {
   some sb
 }
 

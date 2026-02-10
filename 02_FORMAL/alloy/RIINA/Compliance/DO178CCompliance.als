@@ -26,10 +26,12 @@ one sig CEStatement extends CodeElement {} // Statement with ID
 one sig CEDecision extends CodeElement {} // Decision point
 one sig CECondition extends CodeElement {} // Individual condition
 
+abstract sig list {}
+
 // Requirement (matches Coq: Record Requirement)
 sig Requirement {
   req_id: one Int,
-  req_derived: one Bool // Derived requirement?,
+  req_derived: one Bool, // Derived requirement?
   req_safety_related: one Bool
 }
 

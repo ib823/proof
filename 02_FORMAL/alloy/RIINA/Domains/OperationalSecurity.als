@@ -6,6 +6,9 @@ module riina/domains/operational_security
 
 open util/boolean
 
+abstract sig InsiderBudget {}
+abstract sig ShareSet {}
+
 // budget_ok (matches Coq: Definition budget_ok)
 pred budget_ok[b: InsiderBudget] {
   some b
@@ -27,7 +30,7 @@ pred roles_distinct {}
 pred anomaly_detected {}
 
 // action_audited (matches Coq: Definition action_audited)
-pred action_audited[action: nat] {
+pred action_audited[action: Int] {
   some action
 }
 
@@ -35,7 +38,7 @@ pred action_audited[action: nat] {
 pred platforms_independent {}
 
 // majority_agrees (matches Coq: Definition majority_agrees)
-pred majority_agrees[expected: nat] {
+pred majority_agrees[expected: Int] {
   some expected
 }
 

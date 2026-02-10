@@ -57,11 +57,18 @@ one sig EffIO extends RiinaEffect {}
 one sig EffNet extends RiinaEffect {}
 one sig EffFS extends RiinaEffect {}
 
+abstract sig Closure {}
+abstract sig DataSegment {}
+abstract sig PairLayout {}
+abstract sig SecLabel {}
+abstract sig StringConst {}
+abstract sig SumLayout {}
+
 // sec_le (matches Coq: Definition sec_le)
 pred sec_le {}
 
 // export_is_public (matches Coq: Definition export_is_public)
-pred export_is_public[export_func: nat] {
+pred export_is_public[export_func: Int] {
   some export_func
 }
 
@@ -83,7 +90,7 @@ pred import_effect_safe[declared: RiinaEffect, import_effect: RiinaEffect] {
 pred regions_disjoint {}
 
 // no_cross_label_access (matches Coq: Definition no_cross_label_access)
-pred no_cross_label_access[addr: nat, label: SecLabel] {
+pred no_cross_label_access[addr: Int, label: SecLabel] {
   some addr
 }
 
@@ -98,12 +105,12 @@ pred string_compiles_to_ptr[s: StringConst] {
 }
 
 // closure_layout_valid (matches Coq: Definition closure_layout_valid)
-pred closure_layout_valid[cl: Closure, addr: nat] {
+pred closure_layout_valid[cl: Closure, addr: Int] {
   some cl
 }
 
 // compile_closure_alloc (matches Coq: Definition compile_closure_alloc)
-pred compile_closure_alloc[cl: Closure, addr: nat] {
+pred compile_closure_alloc[cl: Closure, addr: Int] {
   some cl
 }
 

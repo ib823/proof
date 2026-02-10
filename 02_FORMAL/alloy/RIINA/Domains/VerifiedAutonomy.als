@@ -27,23 +27,28 @@ one sig Verified extends VerifyResult {}
 one sig Rejected extends VerifyResult {}
 one sig NeedsReview extends VerifyResult {}
 
+abstract sig Decision {}
+abstract sig ReactionTime {}
+abstract sig SafetyEnvelope {}
+abstract sig SystemState {}
+
 // velocity_in_envelope (matches Coq: Definition velocity_in_envelope)
 pred velocity_in_envelope[state: SystemState, env: SafetyEnvelope] {
   some state
 }
 
 // distance_safe (matches Coq: Definition distance_safe)
-pred distance_safe[current_distance: nat, env: SafetyEnvelope] {
+pred distance_safe[current_distance: Int, env: SafetyEnvelope] {
   some current_distance
 }
 
 // heading_rate_ok (matches Coq: Definition heading_rate_ok)
-pred heading_rate_ok[rate: nat, env: SafetyEnvelope] {
+pred heading_rate_ok[rate: Int, env: SafetyEnvelope] {
   some rate
 }
 
 // confidence_sufficient (matches Coq: Definition confidence_sufficient)
-pred confidence_sufficient[dec: Decision, min_conf: nat] {
+pred confidence_sufficient[dec: Decision, min_conf: Int] {
   some dec
 }
 
@@ -71,12 +76,12 @@ pred decision_fresh[dec: Decision] {
 }
 
 // action_bounded (matches Coq: Definition action_bounded)
-pred action_bounded[dec: Decision, max_mag: nat] {
+pred action_bounded[dec: Decision, max_mag: Int] {
   some dec
 }
 
 // sensors_agree (matches Coq: Definition sensors_agree)
-pred sensors_agree[tolerance: nat] {
+pred sensors_agree[tolerance: Int] {
   some tolerance
 }
 
@@ -99,7 +104,7 @@ pred energy_sufficient {}
 pred link_quality_ok {}
 
 // constraints_met (matches Coq: Definition constraints_met)
-pred constraints_met[violations: nat] {
+pred constraints_met[violations: Int] {
   some violations
 }
 

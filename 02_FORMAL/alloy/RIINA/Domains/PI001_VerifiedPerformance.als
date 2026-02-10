@@ -24,6 +24,8 @@ one sig OAdd extends OptExpr {}
 one sig OMul extends OptExpr {}
 one sig OIf extends OptExpr {}
 
+abstract sig list {}
+
 // MSQueue (matches Coq: Record MSQueue)
 sig MSQueue {
   msq_items: one list,
@@ -33,8 +35,8 @@ sig MSQueue {
 
 // LinPoint (matches Coq: Record LinPoint)
 sig LinPoint {
-  lp_op: one Int // operation ID,
-  lp_time: one Int // linearization time,
+  lp_op: one Int, // operation ID
+  lp_time: one Int, // linearization time
   lp_result: one Int // result
 }
 
@@ -62,7 +64,7 @@ pred cas {}
 pred msq_empty {}
 
 // msq_enqueue (matches Coq: Definition msq_enqueue)
-pred msq_enqueue[q: MSQueue, v: nat] {
+pred msq_enqueue[q: MSQueue, v: Int] {
   some q
 }
 
@@ -70,7 +72,7 @@ pred msq_enqueue[q: MSQueue, v: nat] {
 pred lin_ordered {}
 
 // hash_nat (matches Coq: Definition hash_nat)
-pred hash_nat[n: nat] {
+pred hash_nat[n: Int] {
   some n
 }
 

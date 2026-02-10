@@ -12,6 +12,11 @@ one sig Normal extends AnomalyResult {}
 one sig Suspicious extends AnomalyResult {}
 one sig Anomalous extends AnomalyResult {}
 
+abstract sig CrossValidation {}
+abstract sig FusedResult {}
+abstract sig Reading {}
+abstract sig Sensor {}
+
 // byzantine_tolerant (matches Coq: Definition byzantine_tolerant)
 pred byzantine_tolerant {}
 
@@ -26,7 +31,7 @@ pred reading_fresh[reading: Reading] {
 }
 
 // trust_sufficient (matches Coq: Definition trust_sufficient)
-pred trust_sufficient[sensor: Sensor, min_trust: nat] {
+pred trust_sufficient[sensor: Sensor, min_trust: Int] {
   some sensor
 }
 
@@ -42,12 +47,12 @@ pred abs_diff {}
 pred detect_anomaly {}
 
 // fusion_sources_ok (matches Coq: Definition fusion_sources_ok)
-pred fusion_sources_ok[result: FusedResult, min_sources: nat] {
+pred fusion_sources_ok[result: FusedResult, min_sources: Int] {
   some result
 }
 
 // confidence_bounded (matches Coq: Definition confidence_bounded)
-pred confidence_bounded[result: FusedResult, max_conf: nat] {
+pred confidence_bounded[result: FusedResult, max_conf: Int] {
   some result
 }
 

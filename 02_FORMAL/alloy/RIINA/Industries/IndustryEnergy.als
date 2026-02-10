@@ -25,18 +25,20 @@ one sig PowerGeneration extends EnergyEffect {}
 one sig LoadBalancing extends EnergyEffect {}
 one sig NuclearSafety extends EnergyEffect {}
 
+abstract sig BES_Asset {}
+
 // NERC_CIP_Controls (matches Coq: Record NERC_CIP_Controls)
 sig NERC_CIP_Controls {
-  cip_002_identification: one Bool // BES Cyber System Categorization,
-  cip_003_management: one Bool // Security Management Controls,
-  cip_004_personnel: one Bool // Personnel & Training,
-  cip_005_electronic_perimeter: one Bool // Electronic Security Perimeter,
-  cip_006_physical: one Bool // Physical Security,
-  cip_007_systems: one Bool // System Security Management,
-  cip_008_incident: one Bool // Incident Reporting,
-  cip_009_recovery: one Bool // Recovery Plans,
-  cip_010_config: one Bool // Configuration Management,
-  cip_011_info: one Bool // Information Protection,
+  cip_002_identification: one Bool, // BES Cyber System Categorization
+  cip_003_management: one Bool, // Security Management Controls
+  cip_004_personnel: one Bool, // Personnel & Training
+  cip_005_electronic_perimeter: one Bool, // Electronic Security Perimeter
+  cip_006_physical: one Bool, // Physical Security
+  cip_007_systems: one Bool, // System Security Management
+  cip_008_incident: one Bool, // Incident Reporting
+  cip_009_recovery: one Bool, // Recovery Plans
+  cip_010_config: one Bool, // Configuration Management
+  cip_011_info: one Bool, // Information Protection
   cip_013_supply_chain: one Bool // Supply Chain Risk Management
 }
 

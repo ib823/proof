@@ -14,6 +14,10 @@ one sig SendMessage extends VoiceIntent {}
 one sig SearchWeb extends VoiceIntent {}
 one sig UnknownIntent extends VoiceIntent {}
 
+abstract sig AudioSample {}
+abstract sig Transcript {}
+abstract sig list {}
+
 // VoiceInput (matches Coq: Record VoiceInput)
 sig VoiceInput {
   voice_id: one Int,
@@ -25,7 +29,7 @@ sig VoiceInput {
 // RecognitionResult (matches Coq: Record RecognitionResult)
 sig RecognitionResult {
   recog_transcript: one Transcript,
-  recog_confidence: one Int // 0-100,
+  recog_confidence: one Int, // 0-100
   recog_processed_on_device: one Bool
 }
 
@@ -69,7 +73,7 @@ sig SpeechRecognition {
 
 // VoiceFeedback (matches Coq: Record VoiceFeedback)
 sig VoiceFeedback {
-  vf_response_type: one Int // 0=audio, 1=visual, 2=haptic,
+  vf_response_type: one Int, // 0=audio, 1=visual, 2=haptic
   vf_appropriate: one Bool,
   vf_volume_level: one Int,
   vf_max_volume: one Int
@@ -100,14 +104,14 @@ sig VoiceAuth {
 
 // NoiseCancellation (matches Coq: Record NoiseCancellation)
 sig NoiseCancellation {
-  nc_input_snr: one Int // signal-to-noise ratio, scaled,
+  nc_input_snr: one Int, // signal-to-noise ratio, scaled
   nc_output_snr: one Int,
   nc_improvement_bounded: one Bool
 }
 
 // VoiceSynthesis (matches Coq: Record VoiceSynthesis)
 sig VoiceSynthesis {
-  vs_quality_score: one Int // 0-100,
+  vs_quality_score: one Int, // 0-100
   vs_min_quality: one Int,
   vs_synthesis_complete: one Bool
 }

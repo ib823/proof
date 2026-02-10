@@ -148,6 +148,14 @@ one sig CmdSeq extends Cmd {}
 one sig CmdIf extends Cmd {}
 one sig CmdWhile extends Cmd {}
 
+abstract sig Abstraction {}
+abstract sig ProofCtx {}
+abstract sig Prop {}
+abstract sig Transition {}
+abstract sig TyCtx {}
+abstract sig TyFamily {}
+abstract sig list {}
+
 // Contract (matches Coq: Record Contract)
 sig Contract {
   precondition: one Pred,
@@ -248,7 +256,7 @@ pred refinement_wf[rt: RefinementTy] {
 pred refinement_subtype {}
 
 // liquid_terminates (matches Coq: Definition liquid_terminates)
-pred liquid_terminates[s: LiquidState, bound: nat] {
+pred liquid_terminates[s: LiquidState, bound: Int] {
   some s
 }
 

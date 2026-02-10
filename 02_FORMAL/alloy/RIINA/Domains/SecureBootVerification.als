@@ -14,69 +14,72 @@ one sig KeyExchangeKey extends KeyUsage {} // Key exchange key (KEK)
 one sig DatabaseKey extends KeyUsage {} // Signature database key (db)
 one sig ForbiddenKey extends KeyUsage {}
 
+abstract sig list {}
+abstract sig option {}
+
 // HashValue (matches Coq: Record HashValue)
 sig HashValue {
-  hash_algorithm: one Int // 0=SHA256, 1=SHA384, 2=SHA512,
-  hash_length: one Int // Length in bits,
+  hash_algorithm: one Int, // 0=SHA256, 1=SHA384, 2=SHA512
+  hash_length: one Int, // Length in bits
   hash_computed: one Bool // Hash was computed correctly
 }
 
 // Signature (matches Coq: Record Signature)
 sig Signature {
-  sig_algorithm: one Int // 0=RSA-2048, 1=RSA-4096, 2=ECDSA-P256, 3=ECDSA-P384,
-  sig_key_id: one Int // Reference to signing key,
-  sig_valid: one Bool // Signature verified successfully,
+  sig_algorithm: one Int, // 0=RSA-2048, 1=RSA-4096, 2=ECDSA-P256, 3=ECDSA-P384
+  sig_key_id: one Int, // Reference to signing key
+  sig_valid: one Bool, // Signature verified successfully
   sig_timestamp: one Int // When signature was created
 }
 
 // PublicKey (matches Coq: Record PublicKey)
 sig PublicKey {
-  pk_id: one Int // Key identifier,
-  pk_algorithm: one Int // Algorithm (same as signature),
-  pk_revoked: one Bool // Key has been revoked,
-  pk_expired: one Bool // Key has expired,
+  pk_id: one Int, // Key identifier
+  pk_algorithm: one Int, // Algorithm (same as signature)
+  pk_revoked: one Bool, // Key has been revoked
+  pk_expired: one Bool, // Key has expired
   pk_trusted: one Bool // Key is in trusted keystore
 }
 
 // BootROM (matches Coq: Record BootROM)
 sig BootROM {
-  rom_hash_verified: one Bool // ROM integrity verified via fuses,
-  rom_fused: one Bool // ROM is fuse-protected (immutable),
-  rom_contains_root_key: one Bool // Contains hash of root public key,
+  rom_hash_verified: one Bool, // ROM integrity verified via fuses
+  rom_fused: one Bool, // ROM is fuse-protected (immutable)
+  rom_contains_root_key: one Bool, // Contains hash of root public key
   rom_anti_debug: one Bool // Debug interfaces disabled/secured
 }
 
 // Bootloader (matches Coq: Record Bootloader)
 sig Bootloader {
-  bl_signature: one Signature // Digital signature,
-  bl_version: one Int // Version number,
-  bl_min_version: one Int // Anti-rollback minimum version,
-  bl_hash: one HashValue // Measured hash,
+  bl_signature: one Signature, // Digital signature
+  bl_version: one Int, // Version number
+  bl_min_version: one Int, // Anti-rollback minimum version
+  bl_hash: one HashValue, // Measured hash
   bl_verified: one Bool // Signature verification passed
 }
 
 // Kernel (matches Coq: Record Kernel)
 sig Kernel {
-  kern_signature: one Signature // Digital signature,
-  kern_version: one Int // Version number,
-  kern_min_version: one Int // Anti-rollback minimum version,
-  kern_hash: one HashValue // Measured hash,
-  kern_verified: one Bool // Signature verification passed,
+  kern_signature: one Signature, // Digital signature
+  kern_version: one Int, // Version number
+  kern_min_version: one Int, // Anti-rollback minimum version
+  kern_hash: one HashValue, // Measured hash
+  kern_verified: one Bool, // Signature verification passed
   kern_secure_boot_enforced: one Bool // Secure boot policy enforced
 }
 
 // Initramfs (matches Coq: Record Initramfs)
 sig Initramfs {
-  initrd_signature: one Signature // Digital signature,
-  initrd_hash: one HashValue // Measured hash,
+  initrd_signature: one Signature, // Digital signature
+  initrd_hash: one HashValue, // Measured hash
   initrd_verified: one Bool // Signature verification passed
 }
 
 // AppModule (matches Coq: Record AppModule)
 sig AppModule {
-  app_signature: one Signature // Digital signature,
-  app_hash: one HashValue // Measured hash,
-  app_verified: one Bool // Signature verification passed,
+  app_signature: one Signature, // Digital signature
+  app_hash: one HashValue, // Measured hash
+  app_verified: one Bool, // Signature verification passed
   app_allowed_by_policy: one Bool // Allowed by security policy
 }
 
@@ -90,34 +93,34 @@ sig BootChain {
 
 // PCRValue (matches Coq: Record PCRValue)
 sig PCRValue {
-  pcr_index: one Int // PCR index (0-23 typical),
-  pcr_value: one Int // Current PCR value (abstract),
-  pcr_extended: one Bool // PCR has been extended,
+  pcr_index: one Int, // PCR index (0-23 typical)
+  pcr_value: one Int, // Current PCR value (abstract)
+  pcr_extended: one Bool, // PCR has been extended
   pcr_locked: one Bool // PCR is locked for this boot
 }
 
 // TPMState (matches Coq: Record TPMState)
 sig TPMState {
-  tpm_enabled: one Bool // TPM is enabled,
-  tpm_activated: one Bool // TPM is activated,
-  tpm_owned: one Bool // TPM has an owner,
+  tpm_enabled: one Bool, // TPM is enabled
+  tpm_activated: one Bool, // TPM is activated
+  tpm_owned: one Bool, // TPM has an owner
   tpm_pcrs: one list,
   tpm_locality: one Int // Current locality (0-4)
 }
 
 // MeasurementEvent (matches Coq: Record MeasurementEvent)
 sig MeasurementEvent {
-  meas_pcr_index: one Int // Which PCR was extended,
-  meas_event_type: one Int // Type of measurement,
-  meas_hash: one HashValue // Hash that was extended,
+  meas_pcr_index: one Int, // Which PCR was extended
+  meas_event_type: one Int, // Type of measurement
+  meas_hash: one HashValue, // Hash that was extended
   meas_description: one Int // Event description code
 }
 
 // AttestationQuote (matches Coq: Record AttestationQuote)
 sig AttestationQuote {
-  quote_pcr_mask: one Int // Bitmask of PCRs included,
-  quote_nonce: one Int // Challenge nonce,
-  quote_signature: one Signature // TPM signature over quote,
+  quote_pcr_mask: one Int, // Bitmask of PCRs included
+  quote_nonce: one Int, // Challenge nonce
+  quote_signature: one Signature, // TPM signature over quote
   quote_valid: one Bool // Quote verified successfully
 }
 
@@ -139,10 +142,10 @@ sig KeyDatabase {
 
 // SecureBootPolicy (matches Coq: Record SecureBootPolicy)
 sig SecureBootPolicy {
-  sbp_enabled: one Bool // Secure boot is enabled,
-  sbp_enforcing: one Bool // Enforcing mode (vs audit),
-  sbp_allow_unsigned: one Bool // Allow unsigned code (should be false),
-  sbp_require_tpm: one Bool // Require TPM measurements,
+  sbp_enabled: one Bool, // Secure boot is enabled
+  sbp_enforcing: one Bool, // Enforcing mode (vs audit)
+  sbp_allow_unsigned: one Bool, // Allow unsigned code (should be false)
+  sbp_require_tpm: one Bool, // Require TPM measurements
   sbp_remote_attestation: one Bool // Enable remote attestation
 }
 
@@ -238,7 +241,7 @@ pred is_root_key[key: HierarchyKey] {
 }
 
 // key_revoked_in_list (matches Coq: Definition key_revoked_in_list)
-pred key_revoked_in_list[key_id: nat] {
+pred key_revoked_in_list[key_id: Int] {
   some key_id
 }
 
@@ -248,12 +251,12 @@ pred hierarchy_key_valid[key: HierarchyKey] {
 }
 
 // hash_forbidden (matches Coq: Definition hash_forbidden)
-pred hash_forbidden[hash: nat] {
+pred hash_forbidden[hash: Int] {
   some hash
 }
 
 // key_forbidden (matches Coq: Definition key_forbidden)
-pred key_forbidden[key_id: nat] {
+pred key_forbidden[key_id: Int] {
   some key_id
 }
 

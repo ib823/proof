@@ -25,6 +25,11 @@ one sig ML_DSA_65 extends SignatureScheme {}
 one sig SLH_DSA_128s extends SignatureScheme {}
 one sig SLH_DSA_192s extends SignatureScheme {}
 
+abstract sig Message {}
+abstract sig PublicKey {}
+abstract sig SecretKey {}
+abstract sig Signature {}
+
 // SigningKeyPair (matches Coq: Record SigningKeyPair)
 sig SigningKeyPair {
   skp_public: one PublicKey,

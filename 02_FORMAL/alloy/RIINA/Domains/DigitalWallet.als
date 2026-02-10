@@ -30,10 +30,13 @@ one sig Biometric extends AuthFactor {}
 one sig OTPFactor extends AuthFactor {}
 one sig HardwareToken extends AuthFactor {}
 
+abstract sig WalletId {}
+abstract sig list {}
+
 // Wallet (matches Coq: Record Wallet)
 sig Wallet {
   wallet_id: one WalletId,
-  balance: one Z,
+  balance: one Int,
   tier: one WalletTier,
   is_dormant: one Bool,
   last_activity: one Int
@@ -43,7 +46,7 @@ sig Wallet {
 sig Transaction {
   txn_id: one Int,
   txn_type: one TransactionType,
-  txn_amount: one Z,
+  txn_amount: one Int,
   txn_wallet: one WalletId,
   txn_timestamp: one Int
 }
@@ -53,14 +56,14 @@ sig QRCode {
   qr_id: one Int,
   qr_type: one QRType,
   qr_used: one Bool,
-  qr_amount: one Z
+  qr_amount: one Int
 }
 
 // VirtualAccount (matches Coq: Record VirtualAccount)
 sig VirtualAccount {
   va_id: one Int,
   va_parent_wallet: one WalletId,
-  va_balance: one Z,
+  va_balance: one Int,
   va_purpose: one Int
 }
 
@@ -107,7 +110,7 @@ sig P2PTransfer {
   p2p_id: one Int,
   p2p_from: one WalletId,
   p2p_to: one WalletId,
-  p2p_amount: one Z,
+  p2p_amount: one Int,
   p2p_initiated_time: one Int,
   p2p_completed_time: one Int
 }
@@ -124,55 +127,55 @@ sig QRPayment {
 // MerchantPayment (matches Coq: Record MerchantPayment)
 sig MerchantPayment {
   mp_id: one Int,
-  mp_gross_amount: one Z,
-  mp_mdr_rate: one Z,
-  mp_net_amount: one Z
+  mp_gross_amount: one Int,
+  mp_mdr_rate: one Int,
+  mp_net_amount: one Int
 }
 
 // Refund (matches Coq: Record Refund)
 sig Refund {
   ref_id: one Int,
   ref_wallet: one WalletId,
-  ref_amount: one Z,
+  ref_amount: one Int,
   ref_instant: one Bool
 }
 
 // BankTransfer (matches Coq: Record BankTransfer)
 sig BankTransfer {
   bt_id: one Int,
-  bt_bank_debit: one Z,
-  bt_wallet_credit: one Z,
+  bt_bank_debit: one Int,
+  bt_wallet_credit: one Int,
   bt_reconciled: one Bool
 }
 
 // CardChargeback (matches Coq: Record CardChargeback)
 sig CardChargeback {
   cb_id: one Int,
-  cb_original_credit: one Z,
-  cb_wallet_debit: one Z,
+  cb_original_credit: one Int,
+  cb_wallet_debit: one Int,
   cb_processed: one Bool
 }
 
 // AgentFloat (matches Coq: Record AgentFloat)
 sig AgentFloat {
   af_agent_id: one Int,
-  af_float_balance: one Z,
-  af_pending_deposits: one Z
+  af_float_balance: one Int,
+  af_pending_deposits: one Int
 }
 
 // CryptoTopUp (matches Coq: Record CryptoTopUp)
 sig CryptoTopUp {
   ctu_id: one Int,
-  ctu_crypto_amount: one Z,
-  ctu_rate_at_confirmation: one Z,
-  ctu_fiat_credit: one Z,
+  ctu_crypto_amount: one Int,
+  ctu_rate_at_confirmation: one Int,
+  ctu_fiat_credit: one Int,
   ctu_rate_locked: one Bool
 }
 
 // StablecoinTopUp (matches Coq: Record StablecoinTopUp)
 sig StablecoinTopUp {
   stu_id: one Int,
-  stu_amount: one Z,
+  stu_amount: one Int,
   stu_confirmed: one Bool,
   stu_credited: one Bool
 }
@@ -181,9 +184,9 @@ sig StablecoinTopUp {
 sig WithdrawalRequest {
   wr_id: one Int,
   wr_wallet: one WalletId,
-  wr_amount: one Z,
-  wr_daily_total: one Z,
-  wr_wallet_balance: one Z,
+  wr_amount: one Int,
+  wr_daily_total: one Int,
+  wr_wallet_balance: one Int,
   wr_tier: one WalletTier
 }
 
@@ -201,7 +204,7 @@ sig CardlessATM {
   catm_id: one Int,
   catm_wallet: one WalletId,
   catm_otp: one OTP,
-  catm_amount: one Z
+  catm_amount: one Int
 }
 
 // AgentWithdrawal (matches Coq: Record AgentWithdrawal)
@@ -209,8 +212,8 @@ sig AgentWithdrawal {
   aw_id: one Int,
   aw_agent_id: one Int,
   aw_wallet: one WalletId,
-  aw_amount: one Z,
-  aw_agent_cash: one Z,
+  aw_amount: one Int,
+  aw_agent_cash: one Int,
   aw_approved: one Bool
 }
 
@@ -245,17 +248,17 @@ pred invalidated[qr: QRCode] {
 pred virtual_accounts_total {}
 
 // session_expired (matches Coq: Definition session_expired)
-pred session_expired[s: Session, current_time: nat] {
+pred session_expired[s: Session, current_time: Int] {
   some s
 }
 
 // session_valid (matches Coq: Definition session_valid)
-pred session_valid[s: Session, current_time: nat] {
+pred session_valid[s: Session, current_time: Int] {
   some s
 }
 
 // otp_valid (matches Coq: Definition otp_valid)
-pred otp_valid[o: OTP, current_time: nat] {
+pred otp_valid[o: OTP, current_time: Int] {
   some o
 }
 
@@ -326,17 +329,17 @@ pred valid_wallet[w: Wallet] {
 pred dormancy_threshold {}
 
 // should_be_dormant (matches Coq: Definition should_be_dormant)
-pred should_be_dormant[w: Wallet, current_day: nat] {
+pred should_be_dormant[w: Wallet, current_day: Int] {
   some w
 }
 
 // can_withdraw (matches Coq: Definition can_withdraw)
-pred can_withdraw[w: Wallet, amount: Z] {
+pred can_withdraw[w: Wallet, amount: Int] {
   some w
 }
 
 // virtual_accounts_within_parent (matches Coq: Definition virtual_accounts_within_parent)
-pred virtual_accounts_within_parent[parent_balance: Z] {
+pred virtual_accounts_within_parent[parent_balance: Int] {
   some parent_balance
 }
 
@@ -379,7 +382,7 @@ pred bank_ownership_verified_before_approval[bw: BankWithdrawal] {
 pred cardless_atm_otp_validity_minutes {}
 
 // cardless_otp_valid (matches Coq: Definition cardless_otp_valid)
-pred cardless_otp_valid[catm: CardlessATM, current_time: nat] {
+pred cardless_otp_valid[catm: CardlessATM, current_time: Int] {
   some catm
 }
 
@@ -404,7 +407,7 @@ pred fraud_score_blocks_transaction[fs: FraudScore] {
 }
 
 // device_biometric_bound (matches Coq: Definition device_biometric_bound)
-pred device_biometric_bound[d: Device, wallet: WalletId, bio_hash: nat] {
+pred device_biometric_bound[d: Device, wallet: WalletId, bio_hash: Int] {
   some d
 }
 

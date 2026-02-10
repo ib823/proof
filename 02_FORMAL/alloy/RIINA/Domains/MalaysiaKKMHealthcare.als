@@ -23,13 +23,18 @@ one sig Prescriptions extends EMRClassification {}
 one sig MentalHealth extends EMRClassification {} // Higher protection
 one sig HIV_STI extends EMRClassification {}
 
+abstract sig CCMSCompliance {}
+abstract sig HealthcareRecord {}
+abstract sig MedicalDeviceSecurity {}
+abstract sig THISCompliance {}
+
 // patient_confidentiality (matches Coq: Definition patient_confidentiality)
 pred patient_confidentiality[r: HealthcareRecord] {
   some r
 }
 
 // emr_access_authorized (matches Coq: Definition emr_access_authorized)
-pred emr_access_authorized[r: HealthcareRecord, is_emergency: bool] {
+pred emr_access_authorized[r: HealthcareRecord, is_emergency: Bool] {
   some r
 }
 
@@ -49,7 +54,7 @@ pred emr_audit_compliant[r: HealthcareRecord] {
 }
 
 // cross_facility_authorized (matches Coq: Definition cross_facility_authorized)
-pred cross_facility_authorized[r: HealthcareRecord, target_facility: nat] {
+pred cross_facility_authorized[r: HealthcareRecord, target_facility: Int] {
   some r
 }
 
@@ -69,7 +74,7 @@ pred ccms_compliant[cc: CCMSCompliance] {
 }
 
 // md_security_adequate (matches Coq: Definition md_security_adequate)
-pred md_security_adequate[md: MedicalDeviceSecurity, min_sl: nat] {
+pred md_security_adequate[md: MedicalDeviceSecurity, min_sl: Int] {
   some md
 }
 

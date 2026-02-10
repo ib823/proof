@@ -29,6 +29,9 @@ one sig ParentPortal extends EducationEffect {}
 one sig LearningAnalytics extends EducationEffect {}
 one sig AssessmentData extends EducationEffect {}
 
+abstract sig student_grade_level {}
+abstract sig student_min_age {}
+
 // FERPA_Compliance (matches Coq: Record FERPA_Compliance)
 sig FERPA_Compliance {
   legitimate_educational_interest: one Bool,
@@ -76,7 +79,7 @@ pred count_ferpa_controls[c: FERPA_Compliance] {
 }
 
 // classify_student_age (matches Coq: Definition classify_student_age)
-pred classify_student_age[years: nat] {
+pred classify_student_age[years: Int] {
   some years
 }
 

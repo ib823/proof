@@ -19,6 +19,9 @@ one sig IM8_Restricted extends IM8Classification {}
 one sig IM8_Confidential extends IM8Classification {}
 one sig IM8_Secret extends IM8Classification {}
 
+abstract sig CloudService {}
+abstract sig GovTechSystem {}
+
 // mtcs_level_nat (matches Coq: Definition mtcs_level_nat)
 pred mtcs_level_nat[l: MTCSLevel] {
   some l

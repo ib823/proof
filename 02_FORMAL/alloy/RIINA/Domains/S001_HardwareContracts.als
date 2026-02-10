@@ -41,6 +41,14 @@ abstract sig SecLabel {}
 one sig Public extends SecLabel {}
 one sig Secret extends SecLabel {}
 
+abstract sig AccessCount {}
+abstract sig Addr {}
+abstract sig BranchHistory {}
+abstract sig Cache {}
+abstract sig Memory {}
+abstract sig RegFile {}
+abstract sig TypingContext {}
+
 // ArchState (matches Coq: Record ArchState)
 sig ArchState {
   regs: one RegFile,

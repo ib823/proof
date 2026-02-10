@@ -27,18 +27,21 @@ one sig ReduceRate extends AdaptAction {}
 one sig EnableFEC extends AdaptAction {}
 one sig SwitchMode extends AdaptAction {}
 
+abstract sig HoppingPattern {}
+abstract sig SpreadSpectrum {}
+
 // sequence_length_ok (matches Coq: Definition sequence_length_ok)
-pred sequence_length_ok[pattern: HoppingPattern, min_length: nat] {
+pred sequence_length_ok[pattern: HoppingPattern, min_length: Int] {
   some pattern
 }
 
 // dwell_time_bounded (matches Coq: Definition dwell_time_bounded)
-pred dwell_time_bounded[pattern: HoppingPattern, max_dwell: nat] {
+pred dwell_time_bounded[pattern: HoppingPattern, max_dwell: Int] {
   some pattern
 }
 
 // processing_gain_sufficient (matches Coq: Definition processing_gain_sufficient)
-pred processing_gain_sufficient[ss: SpreadSpectrum, min_gain: nat] {
+pred processing_gain_sufficient[ss: SpreadSpectrum, min_gain: Int] {
   some ss
 }
 
@@ -46,7 +49,7 @@ pred processing_gain_sufficient[ss: SpreadSpectrum, min_gain: nat] {
 pred jammer_overcome {}
 
 // channels_diverse (matches Coq: Definition channels_diverse)
-pred channels_diverse[pattern: HoppingPattern, min_channels: nat] {
+pred channels_diverse[pattern: HoppingPattern, min_channels: Int] {
   some pattern
 }
 
@@ -62,7 +65,7 @@ pred adaptation_applied[action: AdaptAction] {
 pred power_increase_bounded {}
 
 // avoids_jammed (matches Coq: Definition avoids_jammed)
-pred avoids_jammed[channel: nat] {
+pred avoids_jammed[channel: Int] {
   some channel
 }
 
@@ -82,7 +85,7 @@ pred hops_synchronized {}
 pred key_valid {}
 
 // sweep_jammer_pattern (matches Coq: Definition sweep_jammer_pattern)
-pred sweep_jammer_pattern[threshold: nat] {
+pred sweep_jammer_pattern[threshold: Int] {
   some threshold
 }
 
@@ -99,7 +102,7 @@ pred quality_acceptable {}
 pred degradation_graceful {}
 
 // fallback_bands_available (matches Coq: Definition fallback_bands_available)
-pred fallback_bands_available[min_bands: nat] {
+pred fallback_bands_available[min_bands: Int] {
   some min_bands
 }
 

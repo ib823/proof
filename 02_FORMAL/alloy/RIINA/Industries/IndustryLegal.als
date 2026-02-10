@@ -26,6 +26,8 @@ one sig ConflictCheck extends LegalEffect {}
 one sig TrustAccountIO extends LegalEffect {}
 one sig CourtFiling extends LegalEffect {}
 
+abstract sig PrivilegeType {}
+
 // LegalSecurityControls (matches Coq: Record LegalSecurityControls)
 sig LegalSecurityControls {
   privilege_protection: one Bool,

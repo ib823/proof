@@ -18,6 +18,8 @@ one sig GPS extends SensorType {}
 one sig Accelerometer extends SensorType {}
 one sig Gyroscope extends SensorType {}
 
+abstract sig bs_current_rate {}
+
 // Sensor (matches Coq: Record Sensor)
 sig Sensor {
   sensor_type: one SensorType,

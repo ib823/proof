@@ -8,21 +8,21 @@ open util/boolean
 
 // ZKProperties (matches Coq: Record ZKProperties)
 sig ZKProperties {
-  zk_completeness: one Bool // Honest prover convinces verifier,
-  zk_soundness: one Bool // Cheating prover cannot convince,
+  zk_completeness: one Bool, // Honest prover convinces verifier
+  zk_soundness: one Bool, // Cheating prover cannot convince
   zk_zero_knowledge: one Bool // Verifier learns nothing beyond validity
 }
 
 // SNARKProperties (matches Coq: Record SNARKProperties)
 sig SNARKProperties {
-  snark_succinctness: one Bool // Short proofs,
-  snark_non_interactive: one Bool // Single message,
+  snark_succinctness: one Bool, // Short proofs
+  snark_non_interactive: one Bool, // Single message
   snark_knowledge_sound: one Bool // Extractor exists
 }
 
 // TrustedSetup (matches Coq: Record TrustedSetup)
 sig TrustedSetup {
-  ts_mpc_ceremony: one Bool // Multi-party computation,
+  ts_mpc_ceremony: one Bool, // Multi-party computation
   ts_toxic_waste_destroyed: one Bool,
   ts_verifiable: one Bool
 }
@@ -37,121 +37,121 @@ sig ZKSNARKConfig {
 
 // KnowledgeExtractor (matches Coq: Record KnowledgeExtractor)
 sig KnowledgeExtractor {
-  ke_exists: one Bool // Extractor algorithm exists,
-  ke_polynomial_time: one Bool // Extractor runs in polynomial time,
-  ke_extraction_prob: one Int // Probability of successful extraction in %,
-  ke_rewinding_allowed: one Bool // Extractor may use rewinding,
+  ke_exists: one Bool, // Extractor algorithm exists
+  ke_polynomial_time: one Bool, // Extractor runs in polynomial time
+  ke_extraction_prob: one Int, // Probability of successful extraction in %
+  ke_rewinding_allowed: one Bool, // Extractor may use rewinding
   ke_auxiliary_input: one Bool // Handles auxiliary input
 }
 
 // WitnessRelation (matches Coq: Record WitnessRelation)
 sig WitnessRelation {
-  wr_statement_size: one Int // Size of public statement,
-  wr_witness_size: one Int // Size of private witness,
-  wr_verification_time: one Int // Time to verify relation,
+  wr_statement_size: one Int, // Size of public statement
+  wr_witness_size: one Int, // Size of private witness
+  wr_verification_time: one Int, // Time to verify relation
   wr_satisfiable: one Bool // Relation is satisfiable
 }
 
 // ZKSimulator (matches Coq: Record ZKSimulator)
 sig ZKSimulator {
-  sim_exists: one Bool // Simulator exists,
-  sim_polynomial_time: one Bool // Runs in polynomial time,
-  sim_indistinguishable: one Bool // Output indistinguishable from real proofs,
-  sim_no_witness_needed: one Bool // Works without knowing witness,
+  sim_exists: one Bool, // Simulator exists
+  sim_polynomial_time: one Bool, // Runs in polynomial time
+  sim_indistinguishable: one Bool, // Output indistinguishable from real proofs
+  sim_no_witness_needed: one Bool, // Works without knowing witness
   sim_programmable_ro: one Bool // Can program random oracle
 }
 
 // DistIndistinguishability (matches Coq: Record DistIndistinguishability)
 sig DistIndistinguishability {
-  di_computational: one Bool // Computationally indistinguishable,
-  di_statistical: one Bool // Statistically indistinguishable,
-  di_perfect: one Bool // Perfectly indistinguishable,
+  di_computational: one Bool, // Computationally indistinguishable
+  di_statistical: one Bool, // Statistically indistinguishable
+  di_perfect: one Bool, // Perfectly indistinguishable
   di_advantage_bound: one Int // Upper bound on distinguishing advantage
 }
 
 // ProverConfig (matches Coq: Record ProverConfig)
 sig ProverConfig {
-  pv_honest: one Bool // Prover is honest,
-  pv_knows_witness: one Bool // Prover knows valid witness,
-  pv_follows_protocol: one Bool // Prover follows protocol,
-  pv_polynomial_time: one Bool // Prover is efficient,
+  pv_honest: one Bool, // Prover is honest
+  pv_knows_witness: one Bool, // Prover knows valid witness
+  pv_follows_protocol: one Bool, // Prover follows protocol
+  pv_polynomial_time: one Bool, // Prover is efficient
   pv_randomness_fresh: one Bool // Uses fresh randomness
 }
 
 // VerifierConfig (matches Coq: Record VerifierConfig)
 sig VerifierConfig {
-  vf_honest: one Bool // Verifier is honest,
-  vf_follows_protocol: one Bool // Verifier follows protocol,
-  vf_polynomial_time: one Bool // Verifier is efficient,
+  vf_honest: one Bool, // Verifier is honest
+  vf_follows_protocol: one Bool, // Verifier follows protocol
+  vf_polynomial_time: one Bool, // Verifier is efficient
   vf_accepts_valid: one Bool // Accepts valid proofs
 }
 
 // ProofSize (matches Coq: Record ProofSize)
 sig ProofSize {
-  ps_proof_bytes: one Int // Proof size in bytes,
-  ps_verification_ops: one Int // Verification operations,
-  ps_statement_dependent: one Bool // Size depends on statement?,
+  ps_proof_bytes: one Int, // Proof size in bytes
+  ps_verification_ops: one Int, // Verification operations
+  ps_statement_dependent: one Bool, // Size depends on statement?
   ps_witness_independent: one Bool // Size independent of witness?
 }
 
 // AsymptoticComplexity (matches Coq: Record AsymptoticComplexity)
 sig AsymptoticComplexity {
-  ac_proof_size: one Int // O(1) = 0, O(log n) = 1, O(n) = 2,
-  ac_verification_time: one Int // Complexity class,
-  ac_prover_time: one Int // Prover complexity,
+  ac_proof_size: one Int, // O(1) = 0, O(log n) = 1, O(n) = 2
+  ac_verification_time: one Int, // Complexity class
+  ac_prover_time: one Int, // Prover complexity
   ac_setup_time: one Int // Setup complexity
 }
 
 // MPCCeremony (matches Coq: Record MPCCeremony)
 sig MPCCeremony {
-  mpc_participants: one Int // Number of participants,
-  mpc_threshold: one Int // Threshold for security,
-  mpc_verifiable: one Bool // Ceremony is verifiable,
-  mpc_contributions_published: one Bool // All contributions public,
+  mpc_participants: one Int, // Number of participants
+  mpc_threshold: one Int, // Threshold for security
+  mpc_verifiable: one Bool, // Ceremony is verifiable
+  mpc_contributions_published: one Bool, // All contributions public
   mpc_random_beacon: one Bool // Uses random beacon
 }
 
 // ToxicWaste (matches Coq: Record ToxicWaste)
 sig ToxicWaste {
-  tw_generated_securely: one Bool // Generated with proper randomness,
-  tw_never_stored: one Bool // Never stored persistently,
-  tw_destroyed_immediately: one Bool // Destroyed after use,
-  tw_verified_destruction: one Bool // Destruction was verified,
+  tw_generated_securely: one Bool, // Generated with proper randomness
+  tw_never_stored: one Bool, // Never stored persistently
+  tw_destroyed_immediately: one Bool, // Destroyed after use
+  tw_verified_destruction: one Bool, // Destruction was verified
   tw_multi_party: one Bool // Split across parties
 }
 
 // Groth16Config (matches Coq: Record Groth16Config)
 sig Groth16Config {
-  g16_pairing_friendly: one Bool // Uses pairing-friendly curve,
-  g16_proof_elements: one Int // Number of group elements in proof,
-  g16_verification_pairings: one Int // Number of pairing operations,
-  g16_trusted_setup: one Bool // Requires trusted setup,
+  g16_pairing_friendly: one Bool, // Uses pairing-friendly curve
+  g16_proof_elements: one Int, // Number of group elements in proof
+  g16_verification_pairings: one Int, // Number of pairing operations
+  g16_trusted_setup: one Bool, // Requires trusted setup
   g16_circuit_specific: one Bool // Setup is circuit-specific
 }
 
 // Groth16Proof (matches Coq: Record Groth16Proof)
 sig Groth16Proof {
-  g16p_element_a: one Int // Group element A,
-  g16p_element_b: one Int // Group element B,
-  g16p_element_c: one Int // Group element C,
-  g16p_valid_curve_points: one Bool // Points are on curve,
+  g16p_element_a: one Int, // Group element A
+  g16p_element_b: one Int, // Group element B
+  g16p_element_c: one Int, // Group element C
+  g16p_valid_curve_points: one Bool, // Points are on curve
   g16p_valid_subgroup: one Bool // Points in correct subgroup
 }
 
 // PLONKConfig (matches Coq: Record PLONKConfig)
 sig PLONKConfig {
-  plonk_universal_setup: one Bool // Universal/updatable setup,
-  plonk_polynomial_commitment: one Bool // Uses polynomial commitments,
-  plonk_arithmetic_gates: one Bool // Supports arithmetic gates,
-  plonk_custom_gates: one Bool // Supports custom gates,
+  plonk_universal_setup: one Bool, // Universal/updatable setup
+  plonk_polynomial_commitment: one Bool, // Uses polynomial commitments
+  plonk_arithmetic_gates: one Bool, // Supports arithmetic gates
+  plonk_custom_gates: one Bool, // Supports custom gates
   plonk_lookup_tables: one Bool // Supports lookup arguments
 }
 
 // PLONKGate (matches Coq: Record PLONKGate)
 sig PLONKGate {
-  pg_degree: one Int // Gate degree,
-  pg_fan_in: one Int // Number of inputs,
-  pg_fan_out: one Int // Number of outputs,
+  pg_degree: one Int, // Gate degree
+  pg_fan_in: one Int, // Number of inputs
+  pg_fan_out: one Int, // Number of outputs
   pg_is_arithmetic: one Bool // Is arithmetic gate
 }
 
@@ -167,17 +167,17 @@ sig FullZKSNARKConfig {
 
 // SoundnessError (matches Coq: Record SoundnessError)
 sig SoundnessError {
-  se_statistical: one Int // Statistical soundness error (neg exponent),
-  se_computational: one Int // Computational soundness error (neg exponent),
-  se_knowledge: one Int // Knowledge error (neg exponent),
+  se_statistical: one Int, // Statistical soundness error (neg exponent)
+  se_computational: one Int, // Computational soundness error (neg exponent)
+  se_knowledge: one Int, // Knowledge error (neg exponent)
   se_security_parameter: one Int // Security parameter lambda
 }
 
 // ProofSystemType (matches Coq: Record ProofSystemType)
 sig ProofSystemType {
-  pst_is_argument: one Bool // Argument (computational soundness),
-  pst_is_proof: one Bool // Proof (statistical soundness),
-  pst_knowledge_property: one Bool // Has knowledge property,
+  pst_is_argument: one Bool, // Argument (computational soundness)
+  pst_is_proof: one Bool, // Proof (statistical soundness)
+  pst_knowledge_property: one Bool, // Has knowledge property
   pst_succinctness: one Bool // Is succinct
 }
 

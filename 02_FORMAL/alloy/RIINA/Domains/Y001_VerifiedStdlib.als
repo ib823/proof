@@ -21,6 +21,10 @@ one sig JsonString extends JsonValue {}
 one sig JsonArray extends JsonValue {}
 one sig JsonObject extends JsonValue {}
 
+abstract sig is_valid_utf8 {}
+abstract sig list {}
+abstract sig read_actual {}
+
 // Utf8String (matches Coq: Record Utf8String)
 sig Utf8String {
   utf8_bytes: one list,
@@ -36,27 +40,27 @@ sig BoundedRead {
 }
 
 // is_utf8_continuation (matches Coq: Definition is_utf8_continuation)
-pred is_utf8_continuation[b: nat] {
+pred is_utf8_continuation[b: Int] {
   some b
 }
 
 // is_utf8_start_1 (matches Coq: Definition is_utf8_start_1)
-pred is_utf8_start_1[b: nat] {
+pred is_utf8_start_1[b: Int] {
   some b
 }
 
 // is_utf8_start_2 (matches Coq: Definition is_utf8_start_2)
-pred is_utf8_start_2[b: nat] {
+pred is_utf8_start_2[b: Int] {
   some b
 }
 
 // is_utf8_start_3 (matches Coq: Definition is_utf8_start_3)
-pred is_utf8_start_3[b: nat] {
+pred is_utf8_start_3[b: Int] {
   some b
 }
 
 // is_utf8_start_4 (matches Coq: Definition is_utf8_start_4)
-pred is_utf8_start_4[b: nat] {
+pred is_utf8_start_4[b: Int] {
   some b
 }
 

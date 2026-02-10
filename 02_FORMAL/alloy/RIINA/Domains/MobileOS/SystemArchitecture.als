@@ -27,6 +27,10 @@ one sig KernelMode extends PrivilegeLevel {}
 one sig SupervisorMode extends PrivilegeLevel {}
 one sig UserMode extends PrivilegeLevel {}
 
+abstract sig ProcessTable {}
+abstract sig list {}
+abstract sig option {}
+
 // Device (matches Coq: Record Device)
 sig Device {
   device_id: one Int,
@@ -161,7 +165,7 @@ pred syscall_authorized[sc: Syscall] {
 }
 
 // pid_in_table (matches Coq: Definition pid_in_table)
-pred pid_in_table[pid: nat, pt: ProcessTable] {
+pred pid_in_table[pid: Int, pt: ProcessTable] {
   some pid
 }
 
@@ -192,7 +196,7 @@ pred in_user_space[p: ExtProcess] {
 }
 
 // in_kernel_space (matches Coq: Definition in_kernel_space)
-pred in_kernel_space[addr: nat] {
+pred in_kernel_space[addr: Int] {
   some addr
 }
 

@@ -22,6 +22,13 @@ one sig Implemented extends ControlStatus {} // Implemented, tested
 one sig Partial extends ControlStatus {} // Partially implemented
 one sig Gap extends ControlStatus {}
 
+abstract sig CDE {}
+abstract sig DataSubjectId {}
+abstract sig NonCDE {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+
 // PersonalData (matches Coq: Record PersonalData)
 sig PersonalData {
   pd_subject: one DataSubjectId,
@@ -31,9 +38,9 @@ sig PersonalData {
   pd_consent: one Bool,
   pd_collected: one Int,
   pd_retention: one Int,
-  pd_necessary: one Bool // Is this data necessary for purpose,
-  pd_accurate: one Bool // Is this data accurate,
-  pd_integrity_protected: one Bool // Is integrity protected,
+  pd_necessary: one Bool, // Is this data necessary for purpose
+  pd_accurate: one Bool, // Is this data accurate
+  pd_integrity_protected: one Bool, // Is integrity protected
   pd_exportable: one Bool // Can be exported to subject
 }
 
@@ -41,7 +48,7 @@ sig PersonalData {
 sig DataStore {
   store_data: one list,
   store_purpose: one string,
-  store_compliant: one Bool // Is store GDPR compliant,
+  store_compliant: one Bool, // Is store GDPR compliant
   store_encrypted: one Bool // Is store encrypted
 }
 
@@ -64,7 +71,7 @@ sig CardholderData {
   chd_pan: one list,
   chd_pan_encrypted: one Bool,
   chd_expiry: one Int,
-  chd_cvv_stored: one Bool // Must be false post-auth,
+  chd_cvv_stored: one Bool, // Must be false post-auth
   chd_cardholder_name: one string,
   chd_in_cde: one Bool // In cardholder data environment
 }
@@ -179,7 +186,7 @@ pred purpose_limitation_holds[store: DataStore] {
 }
 
 // storage_limitation_holds (matches Coq: Definition storage_limitation_holds)
-pred storage_limitation_holds[store: DataStore, now: nat] {
+pred storage_limitation_holds[store: DataStore, now: Int] {
   some store
 }
 
@@ -344,12 +351,12 @@ pred make_compliant_store[purpose: string] {
 }
 
 // make_system_phi (matches Coq: Definition make_system_phi)
-pred make_system_phi[patient_id: nat, created: nat] {
+pred make_system_phi[patient_id: Int, created: Int] {
   some patient_id
 }
 
 // make_cde_chd (matches Coq: Definition make_cde_chd)
-pred make_cde_chd[expiry: nat, name: string] {
+pred make_cde_chd[expiry: Int, name: string] {
   some expiry
 }
 

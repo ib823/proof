@@ -6,6 +6,17 @@ module riina/domains/visual_accessibility
 
 open util/boolean
 
+abstract sig AccessibilityNode {}
+abstract sig AccessibilityTree {}
+abstract sig Animation {}
+abstract sig DynamicTypeSize {}
+abstract sig LiveRegion {}
+abstract sig MotionElement {}
+abstract sig Text {}
+abstract sig TextProperties {}
+abstract sig UIElement {}
+abstract sig UISignal {}
+
 // visible (matches Coq: Definition visible)
 pred visible[elem: UIElement] {
   some elem
@@ -60,22 +71,22 @@ pred has_noncolor_alternative[sig: UISignal] {
 }
 
 // scaled_font_size (matches Coq: Definition scaled_font_size)
-pred scaled_font_size[tp: TextProperties, scale_pct: nat] {
+pred scaled_font_size[tp: TextProperties, scale_pct: Int] {
   some tp
 }
 
 // scaled_line_height (matches Coq: Definition scaled_line_height)
-pred scaled_line_height[tp: TextProperties, scale_pct: nat] {
+pred scaled_line_height[tp: TextProperties, scale_pct: Int] {
   some tp
 }
 
 // scaled_container_height (matches Coq: Definition scaled_container_height)
-pred scaled_container_height[tp: TextProperties, scale_pct: nat] {
+pred scaled_container_height[tp: TextProperties, scale_pct: Int] {
   some tp
 }
 
 // not_truncated (matches Coq: Definition not_truncated)
-pred not_truncated[tp: TextProperties, scale_pct: nat] {
+pred not_truncated[tp: TextProperties, scale_pct: Int] {
   some tp
 }
 

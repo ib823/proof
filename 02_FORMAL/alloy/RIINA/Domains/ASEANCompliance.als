@@ -12,13 +12,22 @@ one sig LocalOnly extends DataLocalization {} // Must stay in jurisdiction
 one sig RegionalASEAN extends DataLocalization {} // Can move within ASEAN
 one sig GlobalAllowed extends DataLocalization {}
 
+abstract sig ASEANDataPolicy {}
+abstract sig Agreements {}
+abstract sig AuditTrail {}
+abstract sig Authorization {}
+abstract sig CBDataFlow {}
+abstract sig DataItem {}
+abstract sig ModelContractualClause {}
+abstract sig jurisdiction {}
+
 // auth_covers (matches Coq: Definition auth_covers)
-pred auth_covers[a: Authorization, cls: nat] {
+pred auth_covers[a: Authorization, cls: Int] {
   some a
 }
 
 // authorized (matches Coq: Definition authorized)
-pred authorized[agreements: Agreements, cls: nat] {
+pred authorized[agreements: Agreements, cls: Int] {
   some agreements
 }
 
@@ -44,7 +53,7 @@ pred well_formed_transfer[agreements: Agreements, trail: AuditTrail, d: DataItem
 }
 
 // compliant_op (matches Coq: Definition compliant_op)
-pred compliant_op[agreements: Agreements, cls: nat] {
+pred compliant_op[agreements: Agreements, cls: Int] {
   some agreements
 }
 
@@ -54,7 +63,7 @@ pred log_transfer[trail: AuditTrail] {
 }
 
 // policy_allows (matches Coq: Definition policy_allows)
-pred policy_allows[threshold: nat, cls: nat] {
+pred policy_allows[threshold: Int, cls: Int] {
   some threshold
 }
 
@@ -79,7 +88,7 @@ pred breach_notification_compliant[policy: ASEANDataPolicy] {
 }
 
 // mcc_adequate (matches Coq: Definition mcc_adequate)
-pred mcc_adequate[mcc: ModelContractualClause, min_standard: nat] {
+pred mcc_adequate[mcc: ModelContractualClause, min_standard: Int] {
   some mcc
 }
 
@@ -89,7 +98,7 @@ pred mutual_recognition[agreements: Agreements] {
 }
 
 // dpo_requirement_met (matches Coq: Definition dpo_requirement_met)
-pred dpo_requirement_met[policy: ASEANDataPolicy, dpo_appointed: bool] {
+pred dpo_requirement_met[policy: ASEANDataPolicy, dpo_appointed: Bool] {
   some policy
 }
 

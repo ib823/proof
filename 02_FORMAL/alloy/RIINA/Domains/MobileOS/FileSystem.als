@@ -20,6 +20,11 @@ one sig Directory extends FileType {}
 one sig SymLink extends FileType {}
 one sig Socket extends FileType {}
 
+abstract sig Data {}
+abstract sig FileId {}
+abstract sig Time {}
+abstract sig list {}
+
 // File (matches Coq: Record File)
 sig File {
   file_id: one FileId,
@@ -135,7 +140,7 @@ pred file_perm_allows_write[p: FilePermission] {
 }
 
 // permission_enforced (matches Coq: Definition permission_enforced)
-pred permission_enforced[f: ExtFile, requester: nat, mode: FilePermission] {
+pred permission_enforced[f: ExtFile, requester: Int, mode: FilePermission] {
   some f
 }
 
@@ -158,7 +163,7 @@ pred atomic_rename_prop[f: ExtFile, new_id: FileId] {
 }
 
 // fd_bounded (matches Coq: Definition fd_bounded)
-pred fd_bounded[fd: FileDescriptor, max_fd: nat] {
+pred fd_bounded[fd: FileDescriptor, max_fd: Int] {
   some fd
 }
 

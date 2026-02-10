@@ -40,6 +40,8 @@ one sig ATDenialOfService extends AttackType {}
 one sig ATMalwareExec extends AttackType {}
 one sig ATInsiderThreat extends AttackType {}
 
+abstract sig list {}
+
 // LayerVerification (matches Coq: Record LayerVerification)
 sig LayerVerification {
   lv_layer: one Layer,

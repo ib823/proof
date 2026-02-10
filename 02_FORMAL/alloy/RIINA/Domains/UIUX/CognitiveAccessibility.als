@@ -6,6 +6,18 @@ module riina/domains/cognitive_accessibility
 
 open util/boolean
 
+abstract sig ButtonLabel {}
+abstract sig FixSuggestion {}
+abstract sig FormState {}
+abstract sig InformationDensity {}
+abstract sig InteractionType {}
+abstract sig UIEvent {}
+abstract sig UIState {}
+abstract sig UITransition {}
+abstract sig UserAction {}
+abstract sig UserInteraction {}
+abstract sig ValidationError {}
+
 // expected_outcome_type (matches Coq: Definition expected_outcome_type)
 pred expected_outcome_type[it: InteractionType] {
   some it
@@ -25,7 +37,7 @@ pred outcome[i: UserInteraction] {
 pred outcome_eq {}
 
 // density_acceptable (matches Coq: Definition density_acceptable)
-pred density_acceptable[id: InformationDensity, threshold: nat] {
+pred density_acceptable[id: InformationDensity, threshold: Int] {
   some id
 }
 

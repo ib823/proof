@@ -29,6 +29,13 @@ one sig IpcAllowed extends IpcResult {}
 one sig IpcDenied extends IpcResult {}
 one sig IpcPendingUser extends IpcResult {}
 
+abstract sig AppId {}
+abstract sig Intent {}
+abstract sig KeyProps {}
+abstract sig PermGrant {}
+abstract sig Permission {}
+abstract sig Sandbox {}
+
 // uids_unique (matches Coq: Definition uids_unique)
 pred uids_unique {}
 
@@ -46,7 +53,7 @@ pred requires_user_consent[p: Permission] {
 }
 
 // signature_matches (matches Coq: Definition signature_matches)
-pred signature_matches[app: AppId, required_sig: nat] {
+pred signature_matches[app: AppId, required_sig: Int] {
   some app
 }
 
@@ -56,7 +63,7 @@ pred is_system_app[app: AppId] {
 }
 
 // ipc_allowed (matches Coq: Definition ipc_allowed)
-pred ipc_allowed[intent: Intent, target_exported: bool, same_app: bool] {
+pred ipc_allowed[intent: Intent, target_exported: Bool, same_app: Bool] {
   some intent
 }
 
@@ -69,7 +76,7 @@ pred key_extractable[props: KeyProps] {
 pred auth_recent {}
 
 // grant_valid (matches Coq: Definition grant_valid)
-pred grant_valid[g: PermGrant, current_time: nat] {
+pred grant_valid[g: PermGrant, current_time: Int] {
   some g
 }
 
@@ -89,7 +96,7 @@ pred has_camera_permission[app: AppId] {
 }
 
 // intent_matches (matches Coq: Definition intent_matches)
-pred intent_matches[intent: Intent, filter_action: nat] {
+pred intent_matches[intent: Intent, filter_action: Int] {
   some intent
 }
 
@@ -108,7 +115,7 @@ pred boot_verified {}
 pred enclave_isolated {}
 
 // biometric_in_tee (matches Coq: Definition biometric_in_tee)
-pred biometric_in_tee[storage_location: nat, tee_location: nat] {
+pred biometric_in_tee[storage_location: Int, tee_location: Int] {
   some storage_location
 }
 

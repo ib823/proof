@@ -27,9 +27,15 @@ one sig ActWrite extends Action {}
 one sig ActGrant extends Action {}
 one sig ActRevoke extends Action {}
 
+abstract sig PAddr {}
+abstract sig ProcId {}
+abstract sig RevocationDomain {}
+abstract sig VAddr {}
+abstract sig list {}
+
 // Capability (matches Coq: Record Capability)
 sig Capability {
-  cap_object: one Int // Object reference,
+  cap_object: one Int, // Object reference
   cap_rights: one list,
   cap_badge: one Int // Unforgeable badge
 }

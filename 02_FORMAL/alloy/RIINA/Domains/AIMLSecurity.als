@@ -41,128 +41,128 @@ one sig Low extends SecurityLevel {}
 
 // DifferentialPrivacy (matches Coq: Record DifferentialPrivacy)
 sig DifferentialPrivacy {
-  dp_epsilon: one Int // Privacy budget - lower is more private,
-  dp_delta: one Int // Failure probability bound,
-  dp_noise_added: one Bool // Whether noise has been added to outputs,
+  dp_epsilon: one Int, // Privacy budget - lower is more private
+  dp_delta: one Int, // Failure probability bound
+  dp_noise_added: one Bool, // Whether noise has been added to outputs
   dp_clipping_applied: one Bool // Whether gradient clipping was applied
 }
 
 // InputValidation (matches Coq: Record InputValidation)
 sig InputValidation {
-  iv_max_length: one Int // Maximum allowed input length,
-  iv_sanitized: one Bool // Whether special characters are escaped,
-  iv_sandboxed: one Bool // Whether execution is sandboxed,
+  iv_max_length: one Int, // Maximum allowed input length
+  iv_sanitized: one Bool, // Whether special characters are escaped
+  iv_sandboxed: one Bool, // Whether execution is sandboxed
   iv_filtered: one Bool // Whether malicious patterns are filtered
 }
 
 // AccessControl (matches Coq: Record AccessControl)
 sig AccessControl {
-  ac_authenticated: one Bool // User is authenticated,
-  ac_authorized: one Bool // User has proper permissions,
-  ac_rate_limited: one Bool // Query rate limiting enabled,
+  ac_authenticated: one Bool, // User is authenticated
+  ac_authorized: one Bool, // User has proper permissions
+  ac_rate_limited: one Bool, // Query rate limiting enabled
   ac_logged: one Bool // All accesses are logged
 }
 
 // ModelWatermark (matches Coq: Record ModelWatermark)
 sig ModelWatermark {
-  mw_embedded: one Bool // Watermark embedded in model,
-  mw_verifiable: one Bool // Watermark can be verified,
+  mw_embedded: one Bool, // Watermark embedded in model
+  mw_verifiable: one Bool, // Watermark can be verified
   mw_robust: one Bool // Watermark survives fine-tuning
 }
 
 // TrainingPipeline (matches Coq: Record TrainingPipeline)
 sig TrainingPipeline {
-  tp_data_verified: one Bool // Training data has been verified,
-  tp_source_trusted: one Bool // Data sources are trusted,
-  tp_integrity_checked: one Bool // Data integrity verified via hashes,
+  tp_data_verified: one Bool, // Training data has been verified
+  tp_source_trusted: one Bool, // Data sources are trusted
+  tp_integrity_checked: one Bool, // Data integrity verified via hashes
   tp_reproducible: one Bool // Training is reproducible
 }
 
 // RobustTraining (matches Coq: Record RobustTraining)
 sig RobustTraining {
-  rt_adversarial_training: one Bool // Model trained on adversarial examples,
-  rt_certified_defense: one Bool // Certified robustness guarantees,
-  rt_ensemble_used: one Bool // Ensemble of models used,
+  rt_adversarial_training: one Bool, // Model trained on adversarial examples
+  rt_certified_defense: one Bool, // Certified robustness guarantees
+  rt_ensemble_used: one Bool, // Ensemble of models used
   rt_input_preprocessing: one Bool // Input preprocessing applied
 }
 
 // PrivacyGuarantees (matches Coq: Record PrivacyGuarantees)
 sig PrivacyGuarantees {
-  pg_output_perturbed: one Bool // Outputs are perturbed,
-  pg_intermediate_hidden: one Bool // Intermediate values hidden,
-  pg_access_controlled: one Bool // Access is controlled,
+  pg_output_perturbed: one Bool, // Outputs are perturbed
+  pg_intermediate_hidden: one Bool, // Intermediate values hidden
+  pg_access_controlled: one Bool, // Access is controlled
   pg_aggregation_only: one Bool // Only aggregated outputs released
 }
 
 // DetectionSystem (matches Coq: Record DetectionSystem)
 sig DetectionSystem {
-  ds_enabled: one Bool // Detection is enabled,
-  ds_multi_modal: one Bool // Uses multiple detection methods,
-  ds_threshold_set: one Bool // Detection threshold configured,
+  ds_enabled: one Bool, // Detection is enabled
+  ds_multi_modal: one Bool, // Uses multiple detection methods
+  ds_threshold_set: one Bool, // Detection threshold configured
   ds_alerts_enabled: one Bool // Alerts are enabled on detection
 }
 
 // ProvenanceTracking (matches Coq: Record ProvenanceTracking)
 sig ProvenanceTracking {
-  pt_origin_tracked: one Bool // Content origin is tracked,
-  pt_chain_verified: one Bool // Chain of custody verified,
-  pt_metadata_preserved: one Bool // Metadata is preserved,
+  pt_origin_tracked: one Bool, // Content origin is tracked
+  pt_chain_verified: one Bool, // Chain of custody verified
+  pt_metadata_preserved: one Bool, // Metadata is preserved
   pt_tamper_evident: one Bool // Tampering is detectable
 }
 
 // SecureAggregation (matches Coq: Record SecureAggregation)
 sig SecureAggregation {
-  sa_encrypted: one Bool // Updates are encrypted,
-  sa_masked: one Bool // Individual updates masked,
-  sa_threshold_scheme: one Bool // Threshold cryptography used,
+  sa_encrypted: one Bool, // Updates are encrypted
+  sa_masked: one Bool, // Individual updates masked
+  sa_threshold_scheme: one Bool, // Threshold cryptography used
   sa_byzantine_resilient: one Bool // Tolerates malicious participants
 }
 
 // ResourceLimits (matches Coq: Record ResourceLimits)
 sig ResourceLimits {
-  rl_compute_bounded: one Bool // Computation is bounded,
-  rl_memory_bounded: one Bool // Memory usage bounded,
-  rl_time_bounded: one Bool // Query time bounded,
+  rl_compute_bounded: one Bool, // Computation is bounded
+  rl_memory_bounded: one Bool, // Memory usage bounded
+  rl_time_bounded: one Bool, // Query time bounded
   rl_batch_limited: one Bool // Batch size limited
 }
 
 // SafetyTraining (matches Coq: Record SafetyTraining)
 sig SafetyTraining {
-  st_rlhf_applied: one Bool // RLHF training applied,
-  st_red_teamed: one Bool // Model has been red-teamed,
-  st_safety_filters: one Bool // Safety filters enabled,
+  st_rlhf_applied: one Bool, // RLHF training applied
+  st_red_teamed: one Bool, // Model has been red-teamed
+  st_safety_filters: one Bool, // Safety filters enabled
   st_refusal_trained: one Bool // Model trained to refuse harmful requests
 }
 
 // DefenseInDepth (matches Coq: Record DefenseInDepth)
 sig DefenseInDepth {
-  did_multiple_layers: one Bool // Multiple defense layers,
-  did_diverse_methods: one Bool // Diverse detection methods,
-  did_fail_safe: one Bool // Fails safely on uncertainty,
+  did_multiple_layers: one Bool, // Multiple defense layers
+  did_diverse_methods: one Bool, // Diverse detection methods
+  did_fail_safe: one Bool, // Fails safely on uncertainty
   did_monitoring: one Bool // Continuous monitoring
 }
 
 // InputIsolation (matches Coq: Record InputIsolation)
 sig InputIsolation {
-  ii_context_separated: one Bool // User/system context separated,
-  ii_privilege_separated: one Bool // Privilege levels separated,
-  ii_output_filtered: one Bool // Outputs are filtered,
+  ii_context_separated: one Bool, // User/system context separated
+  ii_privilege_separated: one Bool, // Privilege levels separated
+  ii_output_filtered: one Bool, // Outputs are filtered
   ii_injection_markers: one Bool // Injection attempts marked
 }
 
 // AgentVerification (matches Coq: Record AgentVerification)
 sig AgentVerification {
-  av_identity_verified: one Bool // Agent identity verified,
-  av_capability_bounded: one Bool // Agent capabilities bounded,
-  av_communication_secure: one Bool // Inter-agent comm secure,
+  av_identity_verified: one Bool, // Agent identity verified
+  av_capability_bounded: one Bool, // Agent capabilities bounded
+  av_communication_secure: one Bool, // Inter-agent comm secure
   av_consensus_required: one Bool // Consensus for critical actions
 }
 
 // ProtocolVerification (matches Coq: Record ProtocolVerification)
 sig ProtocolVerification {
-  pv_schema_validated: one Bool // Message schema validated,
-  pv_auth_required: one Bool // Authentication required,
-  pv_integrity_checked: one Bool // Message integrity checked,
+  pv_schema_validated: one Bool, // Message schema validated
+  pv_auth_required: one Bool, // Authentication required
+  pv_integrity_checked: one Bool, // Message integrity checked
   pv_replay_protected: one Bool // Replay attacks prevented
 }
 

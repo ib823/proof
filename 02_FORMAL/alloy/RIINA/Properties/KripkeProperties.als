@@ -6,8 +6,11 @@ module riina/domains/kripke_properties
 
 open util/boolean
 
+abstract sig store_ty {}
+abstract sig ty {}
+
 // val_rel_at (matches Coq: Definition val_rel_at)
-pred val_rel_at[n: nat, Σ: store_ty, T: ty] {
+pred val_rel_at[n: Int, Σ: store_ty, T: ty] {
   some n
 }
 

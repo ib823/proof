@@ -6,6 +6,9 @@ module riina/domains/transitions
 
 open util/boolean
 
+abstract sig R {}
+abstract sig SharedElementTransition {}
+
 // lerp_position (matches Coq: Definition lerp_position)
 pred lerp_position[t: R] {
   some t

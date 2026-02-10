@@ -35,14 +35,16 @@ one sig MES_Transaction extends ManufacturingEffect {}
 one sig SafetyFunction extends ManufacturingEffect {}
 one sig ProcessControl extends ManufacturingEffect {}
 
+abstract sig IEC61508_SIL {}
+
 // IEC62443_Compliance (matches Coq: Record IEC62443_Compliance)
 sig IEC62443_Compliance {
-  part_2_1_policies: one Bool // IACS Security Management System,
-  part_2_4_service_providers: one Bool // Security requirements for service providers,
-  part_3_2_zones_conduits: one Bool // Security risk assessment,
-  part_3_3_system_requirements: one Bool // System security requirements,
-  part_4_1_secure_development: one Bool // Secure product development,
-  part_4_2_component_requirements: one Bool // Technical security requirements,
+  part_2_1_policies: one Bool, // IACS Security Management System
+  part_2_4_service_providers: one Bool, // Security requirements for service providers
+  part_3_2_zones_conduits: one Bool, // Security risk assessment
+  part_3_3_system_requirements: one Bool, // System security requirements
+  part_4_1_secure_development: one Bool, // Secure product development
+  part_4_2_component_requirements: one Bool, // Technical security requirements
   target_security_level: one SecurityLevel
 }
 

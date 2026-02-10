@@ -17,9 +17,11 @@ one sig FFI_Array extends FFIType {}
 one sig FFI_Struct extends FFIType {}
 one sig FFI_Void extends FFIType {}
 
+abstract sig list {}
+
 // FFICallDescriptor (matches Coq: Record FFICallDescriptor)
 sig FFICallDescriptor {
-  ffi_name: one Int // function id,
+  ffi_name: one Int, // function id
   ffi_params: one list,
   ffi_return: one FFIType,
   ffi_sandboxed: one Bool,
@@ -61,7 +63,7 @@ pred addr_in_region[r: MemRegion] {
 }
 
 // call_allowed (matches Coq: Definition call_allowed)
-pred call_allowed[sb: Sandbox, call_id: nat] {
+pred call_allowed[sb: Sandbox, call_id: Int] {
   some sb
 }
 

@@ -51,6 +51,15 @@ one sig AOStore extends AtomicOp {}
 one sig AOCompareExchange extends AtomicOp {}
 one sig AOFetchAdd extends AtomicOp {}
 
+abstract sig AccessState {}
+abstract sig Config {}
+abstract sig Loc {}
+abstract sig LockId {}
+abstract sig Resource {}
+abstract sig ThreadId {}
+abstract sig list {}
+abstract sig option {}
+
 // Channel (matches Coq: Record Channel)
 sig Channel {
   chan_id: one Int,

@@ -6,6 +6,9 @@ module riina/domains/authentication_security
 
 open util/boolean
 
+abstract sig list {}
+abstract sig option {}
+
 // RateLimiter (matches Coq: Record RateLimiter)
 sig RateLimiter {
   rl_attempts: one Int,
@@ -65,7 +68,7 @@ sig AuthTicket {
 
 // ServiceKey (matches Coq: Record ServiceKey)
 sig ServiceKey {
-  sk_algorithm: one Int // Must be >= 2 for AES,
+  sk_algorithm: one Int, // Must be >= 2 for AES
   sk_key: one list
 }
 
@@ -98,7 +101,7 @@ sig OAuthState {
 // JWTConfig (matches Coq: Record JWTConfig)
 sig JWTConfig {
   jwt_alg_none_disabled: one Bool,
-  jwt_alg_symmetric_disabled: one Bool // When using asymmetric,
+  jwt_alg_symmetric_disabled: one Bool, // When using asymmetric
   jwt_exp_required: one Bool
 }
 
@@ -139,7 +142,7 @@ pred mfa_complete[s: MFAState] {
 }
 
 // token_valid (matches Coq: Definition token_valid)
-pred token_valid[t: SessionToken, now: nat] {
+pred token_valid[t: SessionToken, now: Int] {
   some t
 }
 
@@ -149,7 +152,7 @@ pred token_bound[t: SessionToken] {
 }
 
 // nonce_fresh (matches Coq: Definition nonce_fresh)
-pred nonce_fresh[ns: NonceStore, n: nat] {
+pred nonce_fresh[ns: NonceStore, n: Int] {
   some ns
 }
 

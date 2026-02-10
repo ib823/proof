@@ -17,6 +17,8 @@ one sig VNat extends Value {}
 one sig VBool extends Value {}
 one sig VUnit extends Value {}
 
+abstract sig Backend {}
+
 // label_le (matches Coq: Definition label_le)
 pred label_le {}
 

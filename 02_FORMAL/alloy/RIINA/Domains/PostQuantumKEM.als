@@ -13,6 +13,12 @@ one sig Level3 extends SecurityLevel {} // ~AES-192 equivalent
 one sig ML_KEM_512 extends SecurityLevel {} // Level 1
 one sig ML_KEM_768 extends SecurityLevel {} // Level 3
 
+abstract sig Ciphertext {}
+abstract sig KEMParameterSet {}
+abstract sig PublicKey {}
+abstract sig SecretKey {}
+abstract sig SharedSecret {}
+
 // KeyPair (matches Coq: Record KeyPair)
 sig KeyPair {
   kp_public: one PublicKey,

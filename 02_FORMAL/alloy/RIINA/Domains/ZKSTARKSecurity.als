@@ -6,35 +6,37 @@ module riina/domains/zkstark_security
 
 open util/boolean
 
+abstract sig list {}
+
 // STARKProperties (matches Coq: Record STARKProperties)
 sig STARKProperties {
-  stark_transparent: one Bool // No trusted setup,
-  stark_scalable: one Bool // Polylogarithmic verification,
+  stark_transparent: one Bool, // No trusted setup
+  stark_scalable: one Bool, // Polylogarithmic verification
   stark_post_quantum: one Bool // Based on hash functions
 }
 
 // AIRProperties (matches Coq: Record AIRProperties)
 sig AIRProperties {
-  air_algebraic: one Bool // Algebraic Intermediate Representation,
-  air_low_degree: one Bool // Low-degree extension,
+  air_algebraic: one Bool, // Algebraic Intermediate Representation
+  air_low_degree: one Bool, // Low-degree extension
   air_fri_verified: one Bool // FRI protocol verified
 }
 
 // FRIProperties (matches Coq: Record FRIProperties)
 sig FRIProperties {
-  fri_soundness: one Bool // FRI soundness guarantee,
-  fri_query_bound: one Bool // Bounded query complexity,
-  fri_commitment_binding: one Bool // Merkle commitment binding,
-  fri_interactive_to_non: one Bool // Fiat-Shamir transform valid,
-  fri_round_complexity: one Int // Number of FRI rounds,
+  fri_soundness: one Bool, // FRI soundness guarantee
+  fri_query_bound: one Bool, // Bounded query complexity
+  fri_commitment_binding: one Bool, // Merkle commitment binding
+  fri_interactive_to_non: one Bool, // Fiat-Shamir transform valid
+  fri_round_complexity: one Int, // Number of FRI rounds
   fri_proximity_param: one Int // Proximity parameter
 }
 
 // ProverState (matches Coq: Record ProverState)
 sig ProverState {
-  prover_witness: one Int // Private witness,
-  prover_randomness: one Int // Randomness for ZK,
-  prover_committed: one Bool // Has committed to trace,
+  prover_witness: one Int, // Private witness
+  prover_randomness: one Int, // Randomness for ZK
+  prover_committed: one Bool, // Has committed to trace
   prover_fri_complete: one Bool // FRI rounds complete
 }
 
@@ -48,7 +50,7 @@ sig VerifierState {
 // SimulatorState (matches Coq: Record SimulatorState)
 sig SimulatorState {
   sim_transcript: one list,
-  sim_rewinding: one Bool // Can rewind verifier,
+  sim_rewinding: one Bool, // Can rewind verifier
   sim_indistinguishable: one Bool // Output indistinguishable
 }
 
@@ -65,8 +67,8 @@ sig STARKSecurity {
 sig ExtendedSTARKSecurity {
   ext_base: one STARKSecurity,
   ext_fri: one FRIProperties,
-  ext_simulation_secure: one Bool // Simulation-based ZK,
-  ext_extraction_secure: one Bool // Knowledge extraction,
+  ext_simulation_secure: one Bool, // Simulation-based ZK
+  ext_extraction_secure: one Bool, // Knowledge extraction
   ext_quantum_resistant: one Bool // Post-quantum security
 }
 
@@ -140,7 +142,7 @@ pred computational_soundness[s: STARKSecurity, f: FRIProperties] {
 }
 
 // amplified_soundness (matches Coq: Definition amplified_soundness)
-pred amplified_soundness[base_sound: bool, rounds: nat] {
+pred amplified_soundness[base_sound: Bool, rounds: Int] {
   some base_sound
 }
 

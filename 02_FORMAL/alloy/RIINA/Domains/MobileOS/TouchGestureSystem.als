@@ -17,6 +17,11 @@ one sig Rotate extends GestureType {}
 one sig Pan extends GestureType {}
 one sig Unknown extends GestureType {}
 
+abstract sig Coordinate {}
+abstract sig Microseconds {}
+abstract sig TouchSequence {}
+abstract sig list {}
+
 // TouchEvent (matches Coq: Record TouchEvent)
 sig TouchEvent {
   touch_id: one Int,

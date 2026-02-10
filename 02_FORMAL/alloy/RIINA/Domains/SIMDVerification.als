@@ -11,6 +11,10 @@ abstract sig MemResult {}
 one sig MemOK extends MemResult {}
 one sig MemUB extends MemResult {}
 
+abstract sig SIMDMask {}
+abstract sig SIMDVec {}
+abstract sig list {}
+
 // Loop (matches Coq: Record Loop)
 sig Loop {
   loop_iterations: one Int,
@@ -37,17 +41,17 @@ pred simd_mul {}
 pred simd_cmp {}
 
 // simd_broadcast (matches Coq: Definition simd_broadcast)
-pred simd_broadcast[x: nat] {
+pred simd_broadcast[x: Int] {
   some x
 }
 
 // simd_reduce (matches Coq: Definition simd_reduce)
-pred simd_reduce[init: nat, v: SIMDVec] {
+pred simd_reduce[init: Int, v: SIMDVec] {
   some init
 }
 
 // is_aligned (matches Coq: Definition is_aligned)
-pred is_aligned[addr: nat, alignment: nat] {
+pred is_aligned[addr: Int, alignment: Int] {
   some addr
 }
 
@@ -72,7 +76,7 @@ pred vectorizable[l: Loop] {
 }
 
 // indices_in_bounds (matches Coq: Definition indices_in_bounds)
-pred indices_in_bounds[bound: nat] {
+pred indices_in_bounds[bound: Int] {
   some bound
 }
 
@@ -80,7 +84,7 @@ pred indices_in_bounds[bound: nat] {
 pred list_to_simd {}
 
 // aligned_load (matches Coq: Definition aligned_load)
-pred aligned_load[addr: nat] {
+pred aligned_load[addr: Int] {
   some addr
 }
 

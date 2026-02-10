@@ -28,6 +28,17 @@ one sig NSIPC extends NamespaceType {}
 one sig NSUTS extends NamespaceType {}
 one sig NSCgroup extends NamespaceType {}
 
+abstract sig Action {}
+abstract sig Addr {}
+abstract sig CapId {}
+abstract sig DomainId {}
+abstract sig GPA {}
+abstract sig HPA {}
+abstract sig Measurement {}
+abstract sig Resource {}
+abstract sig list {}
+abstract sig option {}
+
 // MemoryRegion (matches Coq: Record MemoryRegion)
 sig MemoryRegion {
   region_base: one Addr,
@@ -88,7 +99,7 @@ sig ContainerConfig {
   cfg_namespaces: one list,
   cfg_cgroups: one CgroupLimit,
   cfg_seccomp: one SeccompFilter,
-  cfg_rootfs: one Int // root filesystem ID,
+  cfg_rootfs: one Int, // root filesystem ID
   cfg_network_isolated: one Bool
 }
 
@@ -145,7 +156,7 @@ sig AttestationReport {
 // SealingKey (matches Coq: Record SealingKey)
 sig SealingKey {
   seal_enclave_id: one Int,
-  seal_key_policy: one Int // 0 = MRENCLAVE, 1 = MRSIGNER,
+  seal_key_policy: one Int, // 0 = MRENCLAVE, 1 = MRSIGNER
   seal_key_value: one Int
 }
 
@@ -313,7 +324,7 @@ pred cgroup_limits_enforced[c: ContainerState] {
 }
 
 // seccomp_blocks_syscall (matches Coq: Definition seccomp_blocks_syscall)
-pred seccomp_blocks_syscall[c: ContainerState, syscall: nat] {
+pred seccomp_blocks_syscall[c: ContainerState, syscall: Int] {
   some c
 }
 
@@ -379,7 +390,7 @@ pred sealing_binds_to_enclave[enc: EnclaveState] {
 }
 
 // external_cannot_read_enclave (matches Coq: Definition external_cannot_read_enclave)
-pred external_cannot_read_enclave[p: EnclavePlatform, enc: EnclaveState, external_id: nat] {
+pred external_cannot_read_enclave[p: EnclavePlatform, enc: EnclaveState, external_id: Int] {
   some p
 }
 

@@ -18,8 +18,8 @@ sig BiometricAttempt {
   attempt_type: one BiometricType,
   attempt_authentic: one Bool,
   attempt_is_spoof: one Bool,
-  attempt_match_score: one Int // 0-1000000 for precision,
-  attempt_liveness_score: one Int // 0-100,
+  attempt_match_score: one Int, // 0-1000000 for precision
+  attempt_liveness_score: one Int, // 0-100
   attempt_accepted: one Bool,
   attempt_rejected: one Bool
 }
@@ -59,7 +59,7 @@ sig BiometricConfig {
   bio_cfg_lockout_ms: one Int,
   bio_cfg_anti_spoofing: one Bool,
   bio_cfg_liveness_required: one Bool,
-  bio_cfg_far_threshold: one Int // false acceptance rate threshold,
+  bio_cfg_far_threshold: one Int, // false acceptance rate threshold
   bio_cfg_frr_threshold: one Int // false rejection rate threshold
 }
 

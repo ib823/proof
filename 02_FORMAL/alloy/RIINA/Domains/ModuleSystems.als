@@ -25,6 +25,11 @@ one sig Uninitialized extends InitState {}
 one sig Initializing extends InitState {}
 one sig Initialized extends InitState {}
 
+abstract sig ModulePath {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+
 // Module (matches Coq: Record Module)
 sig Module {
   mod_path: one ModulePath,
@@ -199,7 +204,7 @@ pred same_crate[c: Crate] {
 }
 
 // crate_accessible (matches Coq: Definition crate_accessible)
-pred crate_accessible[caller_in_crate: bool, vis: Visibility] {
+pred crate_accessible[caller_in_crate: Bool, vis: Visibility] {
   some caller_in_crate
 }
 
@@ -209,7 +214,7 @@ pred valid_reexport[r: ReExport] {
 }
 
 // capability_allows_import (matches Coq: Definition capability_allows_import)
-pred capability_allows_import[scope: CapabilityScope, name: string, required_level: nat] {
+pred capability_allows_import[scope: CapabilityScope, name: string, required_level: Int] {
   some scope
 }
 
@@ -240,7 +245,7 @@ pred interface_sound[m: Module, iface: InterfaceFile] {
 pred cu_unchanged {}
 
 // incremental_correct (matches Coq: Definition incremental_correct)
-pred incremental_correct[recompiled: bool] {
+pred incremental_correct[recompiled: Bool] {
   some recompiled
 }
 

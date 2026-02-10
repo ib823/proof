@@ -6,6 +6,11 @@ module riina/domains/motor_accessibility
 
 open util/boolean
 
+abstract sig KeyboardState {}
+abstract sig TimedAction {}
+abstract sig TouchTarget {}
+abstract sig UserAction {}
+
 // switch_command_for_action (matches Coq: Definition switch_command_for_action)
 pred switch_command_for_action[a: UserAction] {
   some a
@@ -75,12 +80,12 @@ pred nesting_resolved[t: TouchTarget] {
 }
 
 // keyboard_reachable (matches Coq: Definition keyboard_reachable)
-pred keyboard_reachable[ks: KeyboardState, eid: nat] {
+pred keyboard_reachable[ks: KeyboardState, eid: Int] {
   some ks
 }
 
 // can_tab_away (matches Coq: Definition can_tab_away)
-pred can_tab_away[ks: KeyboardState, eid: nat] {
+pred can_tab_away[ks: KeyboardState, eid: Int] {
   some ks
 }
 

@@ -12,6 +12,9 @@ one sig HTMLText extends HTMLContent {}
 one sig HTMLEscaped extends HTMLContent {} // Auto-escaped
 one sig HTMLElement extends HTMLContent {}
 
+abstract sig list {}
+abstract sig option {}
+
 // CSP (matches Coq: Record CSP)
 sig CSP {
   csp_script_src: one list,

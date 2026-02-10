@@ -13,11 +13,14 @@ one sig ConnEstablished extends ConnState {}
 one sig ConnClosing extends ConnState {}
 one sig ConnClosed extends ConnState {}
 
+abstract sig ConnTable {}
+abstract sig list {}
+
 // TokenBucket (matches Coq: Record TokenBucket)
 sig TokenBucket {
   tb_tokens: one Int,
   tb_capacity: one Int,
-  tb_refill_rate: one Int // tokens per tick,
+  tb_refill_rate: one Int, // tokens per tick
   tb_last_refill: one Int // tick count
 }
 
@@ -50,7 +53,7 @@ sig Connection {
 }
 
 // tb_refill (matches Coq: Definition tb_refill)
-pred tb_refill[tb: TokenBucket, now: nat] {
+pred tb_refill[tb: TokenBucket, now: Int] {
   some tb
 }
 
@@ -60,12 +63,12 @@ pred tb_available[tb: TokenBucket] {
 }
 
 // cap_valid (matches Coq: Definition cap_valid)
-pred cap_valid[cap: NetCapability, now: nat] {
+pred cap_valid[cap: NetCapability, now: Int] {
   some cap
 }
 
 // cap_permits (matches Coq: Definition cap_permits)
-pred cap_permits[cap: NetCapability, port: nat] {
+pred cap_permits[cap: NetCapability, port: Int] {
   some cap
 }
 
@@ -73,17 +76,17 @@ pred cap_permits[cap: NetCapability, port: nat] {
 pred cap_is_subset {}
 
 // hmac_compute (matches Coq: Definition hmac_compute)
-pred hmac_compute[key: nat, data: nat] {
+pred hmac_compute[key: Int, data: Int] {
   some key
 }
 
 // syn_cookie_generate (matches Coq: Definition syn_cookie_generate)
-pred syn_cookie_generate[secret: nat, cookie: SynCookie] {
+pred syn_cookie_generate[secret: Int, cookie: SynCookie] {
   some secret
 }
 
 // syn_cookie_verify (matches Coq: Definition syn_cookie_verify)
-pred syn_cookie_verify[secret: nat, cookie: SynCookie, mac: nat] {
+pred syn_cookie_verify[secret: Int, cookie: SynCookie, mac: Int] {
   some secret
 }
 
@@ -97,7 +100,7 @@ pred pow_valid {}
 pred pow_verify {}
 
 // conn_count_by_src (matches Coq: Definition conn_count_by_src)
-pred conn_count_by_src[table: ConnTable, src: nat] {
+pred conn_count_by_src[table: ConnTable, src: Int] {
   some table
 }
 
@@ -105,7 +108,7 @@ pred conn_count_by_src[table: ConnTable, src: nat] {
 pred conn_limit_per_src {}
 
 // conn_allowed (matches Coq: Definition conn_allowed)
-pred conn_allowed[table: ConnTable, src: nat] {
+pred conn_allowed[table: ConnTable, src: Int] {
   some table
 }
 

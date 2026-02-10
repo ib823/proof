@@ -45,6 +45,8 @@ one sig Src_Inl extends src_expr {}
 one sig Src_Inr extends src_expr {}
 one sig Src_If extends src_expr {}
 
+abstract sig ir_expr {}
+
 // ParsingPhase (matches Coq: Record ParsingPhase)
 sig ParsingPhase {
   pp_syntax_correct: one Bool,

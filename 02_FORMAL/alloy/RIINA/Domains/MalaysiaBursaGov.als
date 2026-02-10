@@ -13,6 +13,9 @@ one sig ClearingParticipant extends ParticipantType {}
 one sig Depository extends ParticipantType {}
 one sig AuthorisedDepositoryAgent extends ParticipantType {}
 
+abstract sig MarketParticipant {}
+abstract sig TradingSystem {}
+
 // it_governance_established (matches Coq: Definition it_governance_established)
 pred it_governance_established[p: MarketParticipant] {
   some p

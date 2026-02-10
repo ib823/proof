@@ -18,6 +18,8 @@ one sig VM extends VMId {}
 abstract sig Address {}
 one sig Addr extends Address {}
 
+abstract sig list {}
+
 // Device (matches Coq: Record Device)
 sig Device {
   dev_id: one DeviceId,
@@ -48,7 +50,7 @@ sig IOMMU {
 }
 
 // address_in_range (matches Coq: Definition address_in_range)
-pred address_in_range[addr: nat, cfg: IOMMUConfig] {
+pred address_in_range[addr: Int, cfg: IOMMUConfig] {
   some addr
 }
 

@@ -22,6 +22,9 @@ one sig PConjIntro extends proof_term {}
 one sig PConjElimL extends proof_term {}
 one sig PConjElimR extends proof_term {}
 
+abstract sig context {}
+abstract sig valuation {}
+
 // valid (matches Coq: Definition valid)
 pred valid[f: formula] {
   some f

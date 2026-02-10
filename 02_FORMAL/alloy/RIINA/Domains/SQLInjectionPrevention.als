@@ -18,6 +18,8 @@ one sig SQL_Update extends TaintLevel {}
 one sig SQL_Delete extends TaintLevel {}
 one sig SQL_Execute extends TaintLevel {}
 
+abstract sig QueryMethod {}
+
 // SQLSecurityConfig (matches Coq: Record SQLSecurityConfig)
 sig SQLSecurityConfig {
   sql_parameterized_only: one Bool,

@@ -15,6 +15,11 @@ one sig Background extends AppState {}
 one sig Suspended extends AppState {}
 one sig Terminated extends AppState {}
 
+abstract sig AppData {}
+abstract sig LowMemoryLevel {}
+abstract sig list {}
+abstract sig option {}
+
 // Application (matches Coq: Record Application)
 sig Application {
   app_id: one Int,
@@ -26,9 +31,9 @@ sig Application {
 
 // URLScheme (matches Coq: Record URLScheme)
 sig URLScheme {
-  url_scheme: one Int // hash of scheme,
-  url_host: one Int // hash of host,
-  url_path: one Int // hash of path,
+  url_scheme: one Int, // hash of scheme
+  url_host: one Int, // hash of host
+  url_path: one Int, // hash of path
   url_validated: one Bool,
   url_sanitized: one Bool
 }
@@ -66,7 +71,7 @@ sig AppScene {
 // ExtApp (matches Coq: Record ExtApp)
 sig ExtApp {
   ext_app: one Application,
-  ext_bg_time_used: one Int // milliseconds,
+  ext_bg_time_used: one Int, // milliseconds
   ext_memory_level: one LowMemoryLevel,
   ext_scenes: one list,
   ext_activation_count: one Int

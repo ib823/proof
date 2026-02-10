@@ -44,26 +44,28 @@ one sig ELam extends Expr {}
 one sig EPlus extends Expr {}
 one sig EMult extends Expr {}
 
+abstract sig Array {}
+
 // pred_implies (matches Coq: Definition pred_implies)
 pred pred_implies {}
 
 // inhabits_refinement (matches Coq: Definition inhabits_refinement)
-pred inhabits_refinement[v: nat, b: BaseTy, p: Pred] {
+pred inhabits_refinement[v: Int, b: BaseTy, p: Pred] {
   some v
 }
 
 // is_null (matches Coq: Definition is_null)
-pred is_null[p: nat] {
+pred is_null[p: Int] {
   some p
 }
 
 // is_non_null (matches Coq: Definition is_non_null)
-pred is_non_null[p: nat] {
+pred is_non_null[p: Int] {
   some p
 }
 
 // bounds_pred (matches Coq: Definition bounds_pred)
-pred bounds_pred[len: nat] {
+pred bounds_pred[len: Int] {
   some len
 }
 

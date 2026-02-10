@@ -82,6 +82,14 @@ one sig MAdd extends MachInstr {}
 one sig MMul extends MachInstr {}
 one sig MLoadImm extends MachInstr {}
 
+abstract sig Memory {}
+abstract sig RegAlloc {}
+abstract sig SrcEnv {}
+abstract sig TgtProgram {}
+abstract sig TgtRegs {}
+abstract sig VarMapping {}
+abstract sig list {}
+
 // SrcProgram (matches Coq: Record SrcProgram)
 sig SrcProgram {
   sp_funcs: one list,
@@ -113,7 +121,7 @@ sig CompResult {
 // ABI (matches Coq: Record ABI)
 sig ABI {
   abi_arg_regs: one list,
-  abi_ret_reg: one Int // Register for return value,
+  abi_ret_reg: one Int, // Register for return value
   abi_callee_save: one list,
   abi_caller_save: one list,
   abi_stack_align: one Int // Stack alignment requirement
@@ -146,7 +154,7 @@ pred type_corresp[st: SrcType, tt: TgtType] {
 }
 
 // simulates (matches Coq: Definition simulates)
-pred simulates[se: SrcEnv, sv: SrcVal, ts: TgtState, result_reg: nat] {
+pred simulates[se: SrcEnv, sv: SrcVal, ts: TgtState, result_reg: Int] {
   some se
 }
 
@@ -161,7 +169,7 @@ pred tgt_terminates[prog: TgtProgram, s: TgtState] {
 }
 
 // abi_compliant_call (matches Coq: Definition abi_compliant_call)
-pred abi_compliant_call[abi: ABI, ret: nat] {
+pred abi_compliant_call[abi: ABI, ret: Int] {
   some abi
 }
 

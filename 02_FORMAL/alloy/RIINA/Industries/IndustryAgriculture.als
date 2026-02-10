@@ -28,9 +28,13 @@ one sig ProcessingOperation extends AgricultureEffect {}
 one sig TraceabilityRecord extends AgricultureEffect {}
 one sig QualityTestResult extends AgricultureEffect {}
 
+abstract sig FoodSafetyHazard {}
+abstract sig farm_min_area {}
+abstract sig trace_timestamp {}
+
 // FoodSafetyControls (matches Coq: Record FoodSafetyControls)
 sig FoodSafetyControls {
-  haccp_plan: one Bool // Hazard Analysis Critical Control Points,
+  haccp_plan: one Bool, // Hazard Analysis Critical Control Points
   traceability_system: one Bool,
   supplier_verification: one Bool,
   preventive_controls: one Bool,

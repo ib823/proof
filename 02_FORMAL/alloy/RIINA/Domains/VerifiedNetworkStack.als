@@ -38,6 +38,9 @@ one sig HS_SynAckRecv extends HandshakeStep {}
 one sig HS_Complete extends HandshakeStep {}
 one sig HS_Failed extends HandshakeStep {}
 
+abstract sig list {}
+abstract sig option {}
+
 // NetworkSecurity (matches Coq: Record NetworkSecurity)
 sig NetworkSecurity {
   ns_packet_validation: one Bool,
@@ -90,9 +93,9 @@ sig Buffer {
 
 // CongestionState (matches Coq: Record CongestionState)
 sig CongestionState {
-  cwnd: one Int // Congestion window,
-  ssthresh: one Int // Slow start threshold,
-  rtt_est: one Int // RTT estimate in ms,
+  cwnd: one Int, // Congestion window
+  ssthresh: one Int, // Slow start threshold
+  rtt_est: one Int, // RTT estimate in ms
   rto: one Int // Retransmission timeout
 }
 
@@ -149,7 +152,7 @@ pred riina_net_stack {}
 pred tcp_state_eqb {}
 
 // tcp_transition (matches Coq: Definition tcp_transition)
-pred tcp_transition[st: TCPState, seg: TCPSegment, is_server: bool] {
+pred tcp_transition[st: TCPState, seg: TCPSegment, is_server: Bool] {
   some st
 }
 
@@ -198,17 +201,17 @@ pred buffer_valid[b: Buffer] {
 }
 
 // safe_read (matches Coq: Definition safe_read)
-pred safe_read[b: Buffer, len: nat] {
+pred safe_read[b: Buffer, len: Int] {
   some b
 }
 
 // safe_write (matches Coq: Definition safe_write)
-pred safe_write[b: Buffer, len: nat] {
+pred safe_write[b: Buffer, len: Int] {
   some b
 }
 
 // buffer_advance (matches Coq: Definition buffer_advance)
-pred buffer_advance[b: Buffer, n: nat] {
+pred buffer_advance[b: Buffer, n: Int] {
   some b
 }
 
@@ -225,7 +228,7 @@ pred IP_MIN_HEADER {}
 pred ETH_MIN_FRAME {}
 
 // initial_cong_state (matches Coq: Definition initial_cong_state)
-pred initial_cong_state[mss: nat] {
+pred initial_cong_state[mss: Int] {
   some mss
 }
 
@@ -240,7 +243,7 @@ pred in_cong_avoid[cs: CongestionState] {
 }
 
 // aimd_increase (matches Coq: Definition aimd_increase)
-pred aimd_increase[cs: CongestionState, mss: nat] {
+pred aimd_increase[cs: CongestionState, mss: Int] {
   some cs
 }
 
@@ -272,7 +275,7 @@ pred socket_can_recv[s: Socket] {
 }
 
 // make_syn (matches Coq: Definition make_syn)
-pred make_syn[isn: nat] {
+pred make_syn[isn: Int] {
   some isn
 }
 

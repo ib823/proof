@@ -6,6 +6,10 @@ module riina/domains/certification_evidence
 
 open util/boolean
 
+abstract sig dal_level {}
+abstract sig sfr {}
+abstract sig traceability {}
+
 // mcdc_pair (matches Coq: Definition mcdc_pair)
 pred mcdc_pair {}
 

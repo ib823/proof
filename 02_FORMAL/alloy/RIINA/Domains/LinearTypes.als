@@ -46,6 +46,10 @@ abstract sig ResourceState {}
 one sig Available extends ResourceState {}
 one sig Consumed extends ResourceState {}
 
+abstract sig LCtx {}
+abstract sig ResourceMap {}
+abstract sig Var {}
+
 // linearity_eqb (matches Coq: Definition linearity_eqb)
 pred linearity_eqb {}
 

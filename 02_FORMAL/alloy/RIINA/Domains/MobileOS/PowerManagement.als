@@ -14,6 +14,9 @@ one sig LowPower extends PowerState {}
 one sig CriticalPower extends PowerState {}
 one sig Suspended extends PowerState {}
 
+abstract sig PowerLevel {}
+abstract sig Temperature {}
+
 // ThermalState (matches Coq: Record ThermalState)
 sig ThermalState {
   cpu_temp: one Temperature,
@@ -32,33 +35,33 @@ sig PowerManager {
 
 // BatteryInfo (matches Coq: Record BatteryInfo)
 sig BatteryInfo {
-  bat_level: one Int // 0-100 percentage,
-  bat_health: one Int // 0-100 percentage,
-  bat_temperature: one Int // centidegrees,
+  bat_level: one Int, // 0-100 percentage
+  bat_health: one Int, // 0-100 percentage
+  bat_temperature: one Int, // centidegrees
   bat_is_charging: one Bool,
-  bat_charge_rate: one Int // milliwatts,
+  bat_charge_rate: one Int, // milliwatts
   bat_discharge_rate: one Int // milliwatts
 }
 
 // AppPowerBudget (matches Coq: Record AppPowerBudget)
 sig AppPowerBudget {
   app_power_id: one Int,
-  app_power_budget_mw: one Int // milliwatts,
-  app_power_actual_mw: one Int // actual usage,
+  app_power_budget_mw: one Int, // milliwatts
+  app_power_actual_mw: one Int, // actual usage
   app_is_background: one Bool
 }
 
 // WakeLock (matches Coq: Record WakeLock)
 sig WakeLock {
   wake_lock_id: one Int,
-  wake_lock_timeout: one Int // milliseconds,
-  wake_lock_elapsed: one Int // milliseconds,
+  wake_lock_timeout: one Int, // milliseconds
+  wake_lock_elapsed: one Int, // milliseconds
   wake_lock_active: one Bool
 }
 
 // DisplayState (matches Coq: Record DisplayState)
 sig DisplayState {
-  display_brightness: one Int // 0-100,
+  display_brightness: one Int, // 0-100
   display_adaptive: one Bool,
   display_on: one Bool
 }

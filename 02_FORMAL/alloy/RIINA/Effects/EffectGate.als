@@ -6,6 +6,9 @@ module riina/domains/effect_gate
 
 open util/boolean
 
+abstract sig effect {}
+abstract sig expr {}
+
 // is_gate (matches Coq: Definition is_gate)
 pred is_gate[eff: effect, e_gate: expr] {
   some eff

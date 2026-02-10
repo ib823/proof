@@ -18,6 +18,10 @@ one sig Allocated extends AllocState {}
 one sig Freed extends AllocState {}
 one sig Uninitialized_mem extends AllocState {}
 
+abstract sig PageData {}
+abstract sig VirtualPage {}
+abstract sig list {}
+
 // MemoryPage (matches Coq: Record MemoryPage)
 sig MemoryPage {
   page_id: one Int,
@@ -78,7 +82,7 @@ sig Stack {
 sig VirtualMapping {
   vmap_virtual_page: one VirtualPage,
   vmap_physical_page: one Int,
-  vmap_page_size: one Int // must be power of 2, e.g. 4096,
+  vmap_page_size: one Int, // must be power of 2, e.g. 4096
   vmap_readable: one Bool,
   vmap_writable: one Bool
 }
@@ -141,7 +145,7 @@ pred allocation_bounded[h: Heap] {
 }
 
 // no_double_free_prop (matches Coq: Definition no_double_free_prop)
-pred no_double_free_prop[bid: nat] {
+pred no_double_free_prop[bid: Int] {
   some bid
 }
 
@@ -151,7 +155,7 @@ pred no_use_after_free_prop[b: MemoryBlock] {
 }
 
 // heap_fragmentation_bounded_prop (matches Coq: Definition heap_fragmentation_bounded_prop)
-pred heap_fragmentation_bounded_prop[h: Heap, max_frag: nat] {
+pred heap_fragmentation_bounded_prop[h: Heap, max_frag: Int] {
   some h
 }
 
@@ -179,7 +183,7 @@ pred memory_pressure_handled_prop[h: Heap] {
 }
 
 // oom_graceful (matches Coq: Definition oom_graceful)
-pred oom_graceful[h: Heap, request: nat] {
+pred oom_graceful[h: Heap, request: Int] {
   some h
 }
 

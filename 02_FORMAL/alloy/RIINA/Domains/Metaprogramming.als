@@ -80,6 +80,15 @@ abstract sig RepetitionResult {}
 one sig RRSuccess extends RepetitionResult {}
 one sig RRMismatch extends RepetitionResult {}
 
+abstract sig AuditTrail {}
+abstract sig ExpansionTrace {}
+abstract sig Pattern {}
+abstract sig ScopeId {}
+abstract sig TokenStream {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+
 // ScopedName (matches Coq: Record ScopedName)
 sig ScopedName {
   sn_name: one string,
@@ -247,7 +256,7 @@ pred resolve_crate_path[ctx: ExpansionContext] {
 pred attr_preserves_structure {}
 
 // eval_static_assert (matches Coq: Definition eval_static_assert)
-pred eval_static_assert[fuel: nat, sa: StaticAssert] {
+pred eval_static_assert[fuel: Int, sa: StaticAssert] {
   some fuel
 }
 

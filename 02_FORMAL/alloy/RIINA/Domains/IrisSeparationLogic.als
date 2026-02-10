@@ -21,6 +21,9 @@ one sig FPointsTo extends fprop {}
 one sig FStar extends fprop {}
 one sig FPure extends fprop {}
 
+abstract sig loc {}
+abstract sig val {}
+
 // disjoint (matches Coq: Definition disjoint)
 pred disjoint {}
 

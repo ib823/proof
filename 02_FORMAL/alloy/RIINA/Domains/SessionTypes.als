@@ -31,6 +31,10 @@ one sig PClose extends Process {} // close channel
 one sig PEnd extends Process {} // terminated process
 one sig PPar extends Process {}
 
+abstract sig Config {}
+abstract sig Resource {}
+abstract sig ThreadId {}
+
 // Channel (matches Coq: Record Channel)
 sig Channel {
   chan_id: one Int,

@@ -12,6 +12,11 @@ one sig NotRecording extends RecordingState {}
 one sig Recording extends RecordingState {}
 one sig Paused extends RecordingState {}
 
+abstract sig Microseconds {}
+abstract sig PixelData {}
+abstract sig SensorData {}
+abstract sig list {}
+
 // Scene (matches Coq: Record Scene)
 sig Scene {
   scene_id: one Int,
@@ -53,15 +58,15 @@ sig CameraPermission {
 // AccessIndicator (matches Coq: Record AccessIndicator)
 sig AccessIndicator {
   indicator_visible: one Bool,
-  indicator_persistent: one Bool // stays on while access continues,
+  indicator_persistent: one Bool, // stays on while access continues
   indicator_type: one Int // 0 = camera, 1 = microphone, 2 = both
 }
 
 // AudioConfig (matches Coq: Record AudioConfig)
 sig AudioConfig {
-  sample_rate: one Int // Hz - 8000, 22050, 44100, 48000,
-  bit_depth: one Int // 8, 16, 24, 32,
-  channels: one Int // 1 = mono, 2 = stereo,
+  sample_rate: one Int, // Hz - 8000, 22050, 44100, 48000
+  bit_depth: one Int, // 8, 16, 24, 32
+  channels: one Int, // 1 = mono, 2 = stereo
   audio_level: one Int // 0-100 normalized
 }
 
@@ -69,7 +74,7 @@ sig AudioConfig {
 sig VideoConfig {
   video_width: one Int,
   video_height: one Int,
-  video_frame_rate: one Int // fps,
+  video_frame_rate: one Int, // fps
   stabilization_offset: one Int // pixels max offset
 }
 

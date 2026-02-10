@@ -72,10 +72,17 @@ one sig LVStyle extends LintViolation {}
 one sig LVCorrectness extends LintViolation {}
 one sig LVSecurity extends LintViolation {}
 
+abstract sig DepGraph {}
+abstract sig TypeEnv {}
+abstract sig VulnDB {}
+abstract sig list {}
+abstract sig option {}
+abstract sig string {}
+
 // LintRule (matches Coq: Record LintRule)
 sig LintRule {
   lr_name: one string,
-  lr_category: one string // "security", "style", "correctness",
+  lr_category: one string, // "security", "style", "correctness"
   lr_severity: one Int // 1=info, 2=warning, 3=error
 }
 
@@ -231,7 +238,7 @@ pred build_deterministic[src: ToolAST, config: BuildConfig] {
 }
 
 // module_changed (matches Coq: Definition module_changed)
-pred module_changed[m: Module, old_hash: nat] {
+pred module_changed[m: Module, old_hash: Int] {
   some m
 }
 

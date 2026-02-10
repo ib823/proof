@@ -6,6 +6,18 @@ module riina/domains/supply_chain_security
 
 open util/boolean
 
+abstract sig CertificateId {}
+abstract sig Hash {}
+abstract sig IsolationLevel {}
+abstract sig KeyId {}
+abstract sig Namespace {}
+abstract sig NetworkSegment {}
+abstract sig PackageName {}
+abstract sig Signature {}
+abstract sig UserId {}
+abstract sig Version {}
+abstract sig list {}
+
 // SignedArtifact (matches Coq: Record SignedArtifact)
 sig SignedArtifact {
   sa_content_hash: one Hash,

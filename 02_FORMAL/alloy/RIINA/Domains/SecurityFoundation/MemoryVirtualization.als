@@ -14,6 +14,8 @@ one sig VM extends VMId {}
 abstract sig ProcessId {}
 one sig ProcId extends ProcessId {}
 
+abstract sig list {}
+
 // Process (matches Coq: Record Process)
 sig Process {
   proc_id: one ProcessId,
@@ -30,9 +32,9 @@ sig VirtualMachine {
 
 // EPTEntry (matches Coq: Record EPTEntry)
 sig EPTEntry {
-  ept_gpa: one Int // Guest Physical Address,
-  ept_hpa: one Int // Host Physical Address,
-  ept_permissions: one Int // read=1, write=2, exec=4,
+  ept_gpa: one Int, // Guest Physical Address
+  ept_hpa: one Int, // Host Physical Address
+  ept_permissions: one Int, // read=1, write=2, exec=4
   ept_valid: one Bool
 }
 
@@ -61,7 +63,7 @@ pred has_vm_creation_capability[p: Process] {
 }
 
 // gpa_in_ept (matches Coq: Definition gpa_in_ept)
-pred gpa_in_ept[ept: ExtendedPageTable, gpa: nat] {
+pred gpa_in_ept[ept: ExtendedPageTable, gpa: Int] {
   some ept
 }
 
@@ -75,7 +77,7 @@ pred perm_write {}
 pred perm_exec {}
 
 // has_permission (matches Coq: Definition has_permission)
-pred has_permission[entry: EPTEntry, perm: nat] {
+pred has_permission[entry: EPTEntry, perm: Int] {
   some entry
 }
 

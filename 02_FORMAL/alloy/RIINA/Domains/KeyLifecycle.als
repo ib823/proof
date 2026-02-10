@@ -23,8 +23,13 @@ one sig AsymmetricPublic extends KeyType {}
 one sig SigningKey extends KeyType {}
 one sig EncryptionKey extends KeyType {}
 
+abstract sig DestructionRecord {}
+abstract sig EscrowShare {}
+abstract sig KeyMetadata {}
+abstract sig RotationRecord {}
+
 // entropy_sufficient (matches Coq: Definition entropy_sufficient)
-pred entropy_sufficient[key: KeyMetadata, min_entropy: nat] {
+pred entropy_sufficient[key: KeyMetadata, min_entropy: Int] {
   some key
 }
 
@@ -37,7 +42,7 @@ pred is_usable_state[state: KeyState] {
 pred valid_transition {}
 
 // key_not_expired (matches Coq: Definition key_not_expired)
-pred key_not_expired[key: KeyMetadata, current_time: nat] {
+pred key_not_expired[key: KeyMetadata, current_time: Int] {
   some key
 }
 
@@ -93,7 +98,7 @@ pred derivation_depth_ok {}
 pred access_allowed {}
 
 // hsm_stored (matches Coq: Definition hsm_stored)
-pred hsm_stored[hsm_flag: bool] {
+pred hsm_stored[hsm_flag: Bool] {
   some hsm_flag
 }
 
@@ -101,12 +106,12 @@ pred hsm_stored[hsm_flag: bool] {
 pred audit_complete {}
 
 // backup_encrypted (matches Coq: Definition backup_encrypted)
-pred backup_encrypted[encryption_key: nat] {
+pred backup_encrypted[encryption_key: Int] {
   some encryption_key
 }
 
 // custodians_diverse (matches Coq: Definition custodians_diverse)
-pred custodians_diverse[min_custodians: nat] {
+pred custodians_diverse[min_custodians: Int] {
   some min_custodians
 }
 

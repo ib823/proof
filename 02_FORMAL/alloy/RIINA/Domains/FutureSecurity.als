@@ -61,12 +61,17 @@ one sig NationState extends AdversaryCapability {}
 one sig QuantumCapable extends AdversaryCapability {}
 one sig AGILevel extends AdversaryCapability {}
 
+abstract sig PQ_Signature {}
+abstract sig Prop {}
+abstract sig list {}
+abstract sig option {}
+
 // PQCryptoConfig (matches Coq: Record PQCryptoConfig)
 sig PQCryptoConfig {
   pqc_kem: one PQ_KEM,
   pqc_signature: one PQ_Signature,
   pqc_symmetric_bits: one Int,
-  pqc_hybrid_mode: one Bool // Classical + PQ for defense in depth,
+  pqc_hybrid_mode: one Bool, // Classical + PQ for defense in depth
   pqc_classical_kem: one option,
   pqc_classical_sig: one option
 }
@@ -83,7 +88,7 @@ sig ClassicalCrypto {
 sig SecurityLayer {
   sl_type: one SecurityLayerType,
   sl_verified: one Bool,
-  sl_independent: one Bool // Independent of other layers,
+  sl_independent: one Bool, // Independent of other layers
   sl_coverage: one Int // 0-100 coverage percentage
 }
 
@@ -98,9 +103,9 @@ sig DefenseInDepth {
 sig SpeculationMitigation {
   sm_barriers: one list,
   sm_retpoline: one Bool,
-  sm_ibrs: one Bool // Indirect Branch Restricted Speculation,
-  sm_stibp: one Bool // Single Thread Indirect Branch Predictors,
-  sm_ssbd: one Bool // Speculative Store Bypass Disable,
+  sm_ibrs: one Bool, // Indirect Branch Restricted Speculation
+  sm_stibp: one Bool, // Single Thread Indirect Branch Predictors
+  sm_ssbd: one Bool, // Speculative Store Bypass Disable
   sm_conservative: one Bool // Apply barriers even where not proven necessary
 }
 
@@ -132,9 +137,9 @@ sig SecurityComponent {
 // ComposedSecurity (matches Coq: Record ComposedSecurity)
 sig ComposedSecurity {
   cs_components: one list,
-  cs_composition_proof: one Bool // Composition formally verified,
-  cs_no_assumption_cycles: one Bool // No circular dependencies,
-  cs_all_assumptions_met: one Bool // All component assumptions satisfied,
+  cs_composition_proof: one Bool, // Composition formally verified
+  cs_no_assumption_cycles: one Bool, // No circular dependencies
+  cs_all_assumptions_met: one Bool, // All component assumptions satisfied
   cs_emergent_analysis: one Bool // Analyzed for emergent behaviors
 }
 
@@ -169,7 +174,7 @@ sig APTResistance {
 
 // TLSConfig (matches Coq: Record TLSConfig)
 sig TLSConfig {
-  tls_version: one Int // 12 = TLS 1.2, 13 = TLS 1.3,
+  tls_version: one Int, // 12 = TLS 1.2, 13 = TLS 1.3
   tls_pq_kem: one option,
   tls_pq_sig: one option,
   tls_classical_kex: one option,
@@ -179,9 +184,9 @@ sig TLSConfig {
 // QKDConfig (matches Coq: Record QKDConfig)
 sig QKDConfig {
   qkd_enabled: one Bool,
-  qkd_protocol: one Int // 0=BB84, 1=E91, 2=BBM92,
-  qkd_detector_efficiency: one Int // Percentage,
-  qkd_error_threshold: one Int // Percentage - abort if exceeded,
+  qkd_protocol: one Int, // 0=BB84, 1=E91, 2=BBM92
+  qkd_detector_efficiency: one Int, // Percentage
+  qkd_error_threshold: one Int, // Percentage - abort if exceeded
   qkd_authentication: one Bool // Classical authentication of QKD
 }
 
@@ -196,7 +201,7 @@ sig QuantumSafeNetwork {
 // FormalVerificationConfig (matches Coq: Record FormalVerificationConfig)
 sig FormalVerificationConfig {
   fvc_level: one VerificationLevel,
-  fvc_proof_assistant: one Int // 0=Coq, 1=Isabelle, 2=Lean, 3=F*,
+  fvc_proof_assistant: one Int, // 0=Coq, 1=Isabelle, 2=Lean, 3=F*
   fvc_spec_complete: one Bool,
   fvc_assumptions_explicit: one Bool,
   fvc_trusted_base_minimal: one Bool,
@@ -206,8 +211,8 @@ sig FormalVerificationConfig {
 // MathematicalProof (matches Coq: Record MathematicalProof)
 sig MathematicalProof {
   mp_statement: one Prop,
-  mp_proof_exists: one Bool // Proof has been constructed,
-  mp_machine_checked: one Bool // Verified by proof assistant,
+  mp_proof_exists: one Bool, // Proof has been constructed
+  mp_machine_checked: one Bool, // Verified by proof assistant
   mp_assumptions: one list
 }
 
@@ -222,7 +227,7 @@ pred sig_security_level[sig: PQ_Signature] {
 }
 
 // symmetric_quantum_safe (matches Coq: Definition symmetric_quantum_safe)
-pred symmetric_quantum_safe[bits: nat] {
+pred symmetric_quantum_safe[bits: Int] {
   some bits
 }
 
@@ -237,7 +242,7 @@ pred vulnerable_to_shor[cc: ClassicalCrypto] {
 }
 
 // grover_effective_bits (matches Coq: Definition grover_effective_bits)
-pred grover_effective_bits[bits: nat] {
+pred grover_effective_bits[bits: Int] {
   some bits
 }
 

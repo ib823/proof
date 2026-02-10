@@ -27,6 +27,11 @@ one sig RSeq extends SimpleRegex {}
 one sig RAlt extends SimpleRegex {}
 one sig RStar extends SimpleRegex {}
 
+abstract sig ClientId {}
+abstract sig RevocationList {}
+abstract sig SynSecret {}
+abstract sig list {}
+
 // Puzzle (matches Coq: Record Puzzle)
 sig Puzzle {
   puzzle_challenge: one list,
@@ -108,7 +113,7 @@ pred verification_cost[sol: Solution] {
 }
 
 // puzzle_expired (matches Coq: Definition puzzle_expired)
-pred puzzle_expired[p: Puzzle, current_time: nat, max_age: nat] {
+pred puzzle_expired[p: Puzzle, current_time: Int, max_age: Int] {
   some p
 }
 
@@ -131,12 +136,12 @@ pred client_work[p: Puzzle] {
 }
 
 // refill (matches Coq: Definition refill)
-pred refill[tb: TokenBucket, now: nat] {
+pred refill[tb: TokenBucket, now: Int] {
   some tb
 }
 
 // requests_allowed (matches Coq: Definition requests_allowed)
-pred requests_allowed[tb: TokenBucket, window: nat] {
+pred requests_allowed[tb: TokenBucket, window: Int] {
   some tb
 }
 
@@ -146,22 +151,22 @@ pred bucket_valid[tb: TokenBucket] {
 }
 
 // fair_share (matches Coq: Definition fair_share)
-pred fair_share[total_rate: nat, n_clients: nat] {
+pred fair_share[total_rate: Int, n_clients: Int] {
   some total_rate
 }
 
 // allocation_fair (matches Coq: Definition allocation_fair)
-pred allocation_fair[total: nat] {
+pred allocation_fair[total: Int] {
   some total
 }
 
 // no_starvation_prop (matches Coq: Definition no_starvation_prop)
-pred no_starvation_prop[tb: TokenBucket, time_bound: nat] {
+pred no_starvation_prop[tb: TokenBucket, time_bound: Int] {
   some tb
 }
 
 // adaptive_rate (matches Coq: Definition adaptive_rate)
-pred adaptive_rate[current_load: nat, max_capacity: nat, base_rate: nat] {
+pred adaptive_rate[current_load: Int, max_capacity: Int, base_rate: Int] {
   some current_load
 }
 
@@ -180,7 +185,7 @@ pred verify_signature[cap: NetCapability] {
 }
 
 // cap_valid (matches Coq: Definition cap_valid)
-pred cap_valid[cap: NetCapability, now: nat] {
+pred cap_valid[cap: NetCapability, now: Int] {
   some cap
 }
 
@@ -214,12 +219,12 @@ pred safe_amplification {}
 pred hash_to_nat {}
 
 // syn_cookie (matches Coq: Definition syn_cookie)
-pred syn_cookie[secret: SynSecret, conn: Connection, time: nat] {
+pred syn_cookie[secret: SynSecret, conn: Connection, time: Int] {
   some secret
 }
 
 // verify_syn_cookie (matches Coq: Definition verify_syn_cookie)
-pred verify_syn_cookie[secret: SynSecret, conn: Connection, cookie: nat, now: nat] {
+pred verify_syn_cookie[secret: SynSecret, conn: Connection, cookie: Int, now: Int] {
   some secret
 }
 
@@ -227,7 +232,7 @@ pred verify_syn_cookie[secret: SynSecret, conn: Connection, cookie: nat, now: na
 pred syn_cookie_state_required {}
 
 // syn_cookie_memory_usage (matches Coq: Definition syn_cookie_memory_usage)
-pred syn_cookie_memory_usage[num_pending: nat] {
+pred syn_cookie_memory_usage[num_pending: Int] {
   some num_pending
 }
 
@@ -240,7 +245,7 @@ pred max_bucket_size[ht: SipHashTable] {
 }
 
 // adaptive_difficulty (matches Coq: Definition adaptive_difficulty)
-pred adaptive_difficulty[base: nat, load: nat, capacity: nat] {
+pred adaptive_difficulty[base: Int, load: Int, capacity: Int] {
   some base
 }
 

@@ -24,6 +24,9 @@ one sig PermRead extends SecurityDomain {} // Read only
 one sig PermWrite extends SecurityDomain {} // Write only
 one sig PermReadWrite extends SecurityDomain {} // Read and write
 
+abstract sig AccessPermission {}
+abstract sig PointerValidity {}
+
 // MemoryRegion (matches Coq: Record MemoryRegion)
 sig MemoryRegion {
   mr_alloc_state: one AllocState,
@@ -176,7 +179,7 @@ pred ptr_safe_for_access[p: Pointer] {
 }
 
 // ptr_safe_for_access_range (matches Coq: Definition ptr_safe_for_access_range)
-pred ptr_safe_for_access_range[p: Pointer, len: nat] {
+pred ptr_safe_for_access_range[p: Pointer, len: Int] {
   some p
 }
 

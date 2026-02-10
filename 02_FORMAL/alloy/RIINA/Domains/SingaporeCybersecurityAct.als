@@ -27,13 +27,17 @@ one sig ESCI extends EntityClassification {} // Entity of Special Cybersecurity 
 one sig STCC extends EntityClassification {} // System of Temporary Cybersecurity Concern
 one sig RegularEntity extends EntityClassification {}
 
+abstract sig AuditSchedule {}
+abstract sig CIIOwnerEntity {}
+abstract sig SGCyberIncident {}
+
 // cii_risk_current (matches Coq: Definition cii_risk_current)
 pred cii_risk_current[e: CIIOwnerEntity] {
   some e
 }
 
 // cii_audit_current (matches Coq: Definition cii_audit_current)
-pred cii_audit_current[e: CIIOwnerEntity, t: nat] {
+pred cii_audit_current[e: CIIOwnerEntity, t: Int] {
   some e
 }
 
@@ -58,7 +62,7 @@ pred cssp_licensed_sg[e: CIIOwnerEntity] {
 }
 
 // sg_cybersecurity_act_compliant (matches Coq: Definition sg_cybersecurity_act_compliant)
-pred sg_cybersecurity_act_compliant[e: CIIOwnerEntity, t: nat] {
+pred sg_cybersecurity_act_compliant[e: CIIOwnerEntity, t: Int] {
   some e
 }
 
@@ -68,7 +72,7 @@ pred stcc_obligations_met[e: CIIOwnerEntity] {
 }
 
 // cii_owner_obligations (matches Coq: Definition cii_owner_obligations)
-pred cii_owner_obligations[e: CIIOwnerEntity, t: nat] {
+pred cii_owner_obligations[e: CIIOwnerEntity, t: Int] {
   some e
 }
 
@@ -88,7 +92,7 @@ pred regular_entity_exempt[e: CIIOwnerEntity] {
 }
 
 // penalty_exposure_exists (matches Coq: Definition penalty_exposure_exists)
-pred penalty_exposure_exists[e: CIIOwnerEntity, t: nat] {
+pred penalty_exposure_exists[e: CIIOwnerEntity, t: Int] {
   some e
 }
 

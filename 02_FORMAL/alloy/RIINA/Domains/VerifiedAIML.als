@@ -13,17 +13,19 @@ one sig ReLU extends Layer {}
 one sig Softmax extends Layer {}
 one sig Sigmoid extends Layer {}
 
+abstract sig list {}
+
 // FixedPoint (matches Coq: Record FixedPoint)
 sig FixedPoint {
-  fp_int: one Z,
-  fp_frac: one Int // Fractional part, scaled by 10000,
+  fp_int: one Int,
+  fp_frac: one Int, // Fractional part, scaled by 10000
   fp_scale: one Int // Scale factor
 }
 
 // InputBounds (matches Coq: Record InputBounds)
 sig InputBounds {
-  ib_min: one Z,
-  ib_max: one Z
+  ib_min: one Int,
+  ib_max: one Int
 }
 
 // Model (matches Coq: Record Model)
@@ -34,26 +36,26 @@ sig Model {
 
 // ActionSpace (matches Coq: Record ActionSpace)
 sig ActionSpace {
-  action_min: one Z,
-  action_max: one Z,
-  action_rate_limit: one Z // Max change per step
+  action_min: one Int,
+  action_max: one Int,
+  action_rate_limit: one Int // Max change per step
 }
 
 // rval_add (matches Coq: Definition rval_add)
 pred rval_add {}
 
 // relu (matches Coq: Definition relu)
-pred relu[x: Z] {
+pred relu[x: Int] {
   some x
 }
 
 // sigmoid_approx (matches Coq: Definition sigmoid_approx)
-pred sigmoid_approx[x: Z] {
+pred sigmoid_approx[x: Int] {
   some x
 }
 
 // softmax_valid (matches Coq: Definition softmax_valid)
-pred softmax_valid[scale: Z] {
+pred softmax_valid[scale: Int] {
   some scale
 }
 
@@ -61,27 +63,27 @@ pred softmax_valid[scale: Z] {
 pred lipschitz_bound {}
 
 // within_epsilon (matches Coq: Definition within_epsilon)
-pred within_epsilon[epsilon: Z] {
+pred within_epsilon[epsilon: Int] {
   some epsilon
 }
 
 // input_valid (matches Coq: Definition input_valid)
-pred input_valid[x: Z, bounds: InputBounds] {
+pred input_valid[x: Int, bounds: InputBounds] {
   some x
 }
 
 // model_integrity (matches Coq: Definition model_integrity)
-pred model_integrity[m: Model, expected_hash: nat] {
+pred model_integrity[m: Model, expected_hash: Int] {
   some m
 }
 
 // confidence_calibrated (matches Coq: Definition confidence_calibrated)
-pred confidence_calibrated[confidence: Z, accuracy: Z, tolerance: Z] {
+pred confidence_calibrated[confidence: Int, accuracy: Int, tolerance: Int] {
   some confidence
 }
 
 // demographic_parity (matches Coq: Definition demographic_parity)
-pred demographic_parity[threshold: Z] {
+pred demographic_parity[threshold: Int] {
   some threshold
 }
 
@@ -91,32 +93,32 @@ pred action_safe[space: ActionSpace] {
 }
 
 // output_bounded (matches Coq: Definition output_bounded)
-pred output_bounded[output: Z] {
+pred output_bounded[output: Int] {
   some output
 }
 
 // classify (matches Coq: Definition classify)
-pred classify[x: Z, threshold: Z] {
+pred classify[x: Int, threshold: Int] {
   some x
 }
 
 // inference (matches Coq: Definition inference)
-pred inference[model: Model, input: Z] {
+pred inference[model: Model, input: Int] {
   some model
 }
 
 // numerically_stable (matches Coq: Definition numerically_stable)
-pred numerically_stable[x: Z, bound: Z] {
+pred numerically_stable[x: Int, bound: Int] {
   some x
 }
 
 // explanation_faithful (matches Coq: Definition explanation_faithful)
-pred explanation_faithful[tolerance: Z] {
+pred explanation_faithful[tolerance: Int] {
   some tolerance
 }
 
 // gradient_step (matches Coq: Definition gradient_step)
-pred gradient_step[loss: Z, learning_rate: Z, gradient: Z] {
+pred gradient_step[loss: Int, learning_rate: Int, gradient: Int] {
   some loss
 }
 
@@ -124,7 +126,7 @@ pred gradient_step[loss: Z, learning_rate: Z, gradient: Z] {
 pred mat_mul_elem {}
 
 // lipschitz_output (matches Coq: Definition lipschitz_output)
-pred lipschitz_output[input: Z, weight: Z] {
+pred lipschitz_output[input: Int, weight: Int] {
   some input
 }
 

@@ -6,6 +6,9 @@ module riina/domains/animation_engine
 
 open util/boolean
 
+abstract sig BezierCurve {}
+abstract sig R {}
+
 // spring_position_at_time (matches Coq: Definition spring_position_at_time)
 pred spring_position_at_time {}
 

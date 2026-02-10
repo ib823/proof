@@ -22,6 +22,11 @@ one sig PrivateCloud extends CloudDeployment {}
 one sig PublicCloud extends CloudDeployment {}
 one sig HybridCloud extends CloudDeployment {}
 
+abstract sig BNMIncident {}
+abstract sig FinancialInstitution {}
+abstract sig OutsourcingArrangement {}
+abstract sig TechRefreshStatus {}
+
 // governance_compliant (matches Coq: Definition governance_compliant)
 pred governance_compliant[fi: FinancialInstitution] {
   some fi
@@ -81,7 +86,7 @@ pred outsourcing_compliant[oa: OutsourcingArrangement] {
 }
 
 // tech_refresh_current (matches Coq: Definition tech_refresh_current)
-pred tech_refresh_current[trs: TechRefreshStatus, current_time: nat] {
+pred tech_refresh_current[trs: TechRefreshStatus, current_time: Int] {
   some trs
 }
 

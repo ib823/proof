@@ -30,6 +30,12 @@ one sig Confidential extends SecurityLevel {}
 one sig Secret extends SecurityLevel {}
 one sig TopSecret extends SecurityLevel {}
 
+abstract sig CapabilitySet {}
+abstract sig list {}
+abstract sig option {}
+abstract sig read_count {}
+abstract sig write_count {}
+
 // SipHashState (matches Coq: Record SipHashState)
 sig SipHashState {
   siphash_key: one Int
@@ -70,7 +76,7 @@ sig FileHandle {
 
 // AuditEntry (matches Coq: Record AuditEntry)
 sig AuditEntry {
-  ae_operation: one Int // 0 = read, 1 = write,
+  ae_operation: one Int, // 0 = read, 1 = write
   ae_file_id: one Int,
   ae_size: one Int
 }
@@ -188,7 +194,7 @@ pred siphash_collision_resistant[h: SipHashState] {
 }
 
 // is_valid_utf8_byte (matches Coq: Definition is_valid_utf8_byte)
-pred is_valid_utf8_byte[b: nat] {
+pred is_valid_utf8_byte[b: Int] {
   some b
 }
 
@@ -226,7 +232,7 @@ pred duration_add {}
 pred instant_elapsed {}
 
 // verify_timestamp (matches Coq: Definition verify_timestamp)
-pred verify_timestamp[ts: SecureTimestamp, expected_sig: nat] {
+pred verify_timestamp[ts: SecureTimestamp, expected_sig: Int] {
   some ts
 }
 
@@ -241,12 +247,12 @@ pred mono_read[c: MonotonicCounter] {
 }
 
 // atomic_store (matches Coq: Definition atomic_store)
-pred atomic_store[a: AtomicNat, v: nat] {
+pred atomic_store[a: AtomicNat, v: Int] {
   some a
 }
 
 // condvar_wait (matches Coq: Definition condvar_wait)
-pred condvar_wait[cv: CondvarState, thread_id: nat] {
+pred condvar_wait[cv: CondvarState, thread_id: Int] {
   some cv
 }
 
@@ -259,12 +265,12 @@ pred aes_key_drop[k: AesKey] {
 pred hash_function {}
 
 // sign_data (matches Coq: Definition sign_data)
-pred sign_data[private_key: nat] {
+pred sign_data[private_key: Int] {
   some private_key
 }
 
 // verify_signature (matches Coq: Definition verify_signature)
-pred verify_signature[sig: Signature, public_key: nat] {
+pred verify_signature[sig: Signature, public_key: Int] {
   some sig
 }
 

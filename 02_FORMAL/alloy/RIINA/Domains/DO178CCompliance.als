@@ -18,6 +18,8 @@ abstract sig FormalMethodCategory {}
 one sig FM_TheoremProving extends FormalMethodCategory {} // Interactive theorem provers like Coq
 one sig FM_ModelChecking extends FormalMethodCategory {} // Exhaustive state space exploration
 
+abstract sig option {}
+
 // PlanningObjectives (matches Coq: Record PlanningObjectives)
 sig PlanningObjectives {
   plan_standards_defined: one Bool,

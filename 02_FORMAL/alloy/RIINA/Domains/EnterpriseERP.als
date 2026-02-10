@@ -14,13 +14,18 @@ one sig Approved extends DocState {}
 one sig Rejected extends DocState {}
 one sig Posted extends DocState {}
 
+abstract sig ConflictingRoles {}
+abstract sig RoleAssignment {}
+abstract sig Transaction {}
+abstract sig User {}
+
 // sod_satisfied (matches Coq: Definition sod_satisfied)
 pred sod_satisfied[conflicts: ConflictingRoles] {
   some conflicts
 }
 
 // assignment_active (matches Coq: Definition assignment_active)
-pred assignment_active[a: RoleAssignment, current_time: nat] {
+pred assignment_active[a: RoleAssignment, current_time: Int] {
   some a
 }
 
@@ -30,7 +35,7 @@ pred check_sod[conflicts: ConflictingRoles] {
 }
 
 // txn_authorized (matches Coq: Definition txn_authorized)
-pred txn_authorized[txn: Transaction, approver_role: nat] {
+pred txn_authorized[txn: Transaction, approver_role: Int] {
   some txn
 }
 
@@ -73,27 +78,27 @@ pred field_accessible {}
 pred lock_exclusive {}
 
 // concurrent_safe (matches Coq: Definition concurrent_safe)
-pred concurrent_safe[active_locks: nat, max_locks: nat] {
+pred concurrent_safe[active_locks: Int, max_locks: Int] {
   some active_locks
 }
 
 // data_valid (matches Coq: Definition data_valid)
-pred data_valid[validation_passed: bool] {
+pred data_valid[validation_passed: Bool] {
   some validation_passed
 }
 
 // ref_exists (matches Coq: Definition ref_exists)
-pred ref_exists[ref_id: nat] {
+pred ref_exists[ref_id: Int] {
   some ref_id
 }
 
 // soft_deleted (matches Coq: Definition soft_deleted)
-pred soft_deleted[deleted_flag: bool, actual_data_present: bool] {
+pred soft_deleted[deleted_flag: Bool, actual_data_present: Bool] {
   some deleted_flag
 }
 
 // data_encrypted (matches Coq: Definition data_encrypted)
-pred data_encrypted[encryption_key_id: nat] {
+pred data_encrypted[encryption_key_id: Int] {
   some encryption_key_id
 }
 

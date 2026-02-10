@@ -34,17 +34,17 @@ one sig TxRolledBack extends TxStatus {}
 
 // PCI_DSS_Controls (matches Coq: Record PCI_DSS_Controls)
 sig PCI_DSS_Controls {
-  firewall_config: one Bool // Req 1,
-  no_default_passwords: one Bool // Req 2,
-  protect_stored_data: one Bool // Req 3,
-  encrypt_transmission: one Bool // Req 4,
-  antivirus: one Bool // Req 5,
-  secure_systems: one Bool // Req 6,
-  restrict_access: one Bool // Req 7,
-  unique_ids: one Bool // Req 8,
-  physical_access: one Bool // Req 9,
-  track_access: one Bool // Req 10,
-  test_security: one Bool // Req 11,
+  firewall_config: one Bool, // Req 1
+  no_default_passwords: one Bool, // Req 2
+  protect_stored_data: one Bool, // Req 3
+  encrypt_transmission: one Bool, // Req 4
+  antivirus: one Bool, // Req 5
+  secure_systems: one Bool, // Req 6
+  restrict_access: one Bool, // Req 7
+  unique_ids: one Bool, // Req 8
+  physical_access: one Bool, // Req 9
+  track_access: one Bool, // Req 10
+  test_security: one Bool, // Req 11
   security_policy: one Bool // Req 12
 }
 
@@ -81,7 +81,7 @@ pred tx_final[s: TxStatus] {
 }
 
 // balance_valid (matches Coq: Definition balance_valid)
-pred balance_valid[balance: nat] {
+pred balance_valid[balance: Int] {
   some balance
 }
 
@@ -100,7 +100,7 @@ pred aml_risk_acceptable {}
 pred convert_and_back {}
 
 // fraud_score_valid (matches Coq: Definition fraud_score_valid)
-pred fraud_score_valid[score: nat] {
+pred fraud_score_valid[score: Int] {
   some score
 }
 
@@ -110,7 +110,7 @@ pred wire_authorized[w: WireTransfer] {
 }
 
 // account_active (matches Coq: Definition account_active)
-pred account_active[frozen: bool] {
+pred account_active[frozen: Bool] {
   some frozen
 }
 

@@ -6,6 +6,8 @@ module riina/domains/network_security
 
 open util/boolean
 
+abstract sig ProtocolVersion {}
+
 // VPNConnection (matches Coq: Record VPNConnection)
 sig VPNConnection {
   vpn_id: one Int,
@@ -56,7 +58,7 @@ sig Session {
 // SSLConfig (matches Coq: Record SSLConfig)
 sig SSLConfig {
   ssl_min_version: one ProtocolVersion,
-  ssl_cipher_strength: one Int // bits,
+  ssl_cipher_strength: one Int, // bits
   ssl_revocation_checked: one Bool,
   ssl_compression_disabled: one Bool
 }
@@ -146,7 +148,7 @@ pred session_valid_prop[s: Session] {
 }
 
 // session_hijack_prevented (matches Coq: Definition session_hijack_prevented)
-pred session_hijack_prevented[s: Session, claimed_ip: nat] {
+pred session_hijack_prevented[s: Session, claimed_ip: Int] {
   some s
 }
 

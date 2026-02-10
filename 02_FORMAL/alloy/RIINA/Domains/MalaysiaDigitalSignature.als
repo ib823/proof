@@ -18,8 +18,12 @@ abstract sig CALicenseStatus {}
 one sig CALicensed extends CALicenseStatus {}
 one sig CAUnlicensed extends CALicenseStatus {}
 
+abstract sig Certificate {}
+abstract sig DigitalSignature {}
+abstract sig RelyingPartyCheck {}
+
 // cert_valid (matches Coq: Definition cert_valid)
-pred cert_valid[c: Certificate, current_time: nat] {
+pred cert_valid[c: Certificate, current_time: Int] {
   some c
 }
 
@@ -29,17 +33,17 @@ pred presumed_secure[c: Certificate] {
 }
 
 // signature_legally_valid (matches Coq: Definition signature_legally_valid)
-pred signature_legally_valid[s: DigitalSignature, c: Certificate, t: nat] {
+pred signature_legally_valid[s: DigitalSignature, c: Certificate, t: Int] {
   some s
 }
 
 // key_strength_adequate (matches Coq: Definition key_strength_adequate)
-pred key_strength_adequate[c: Certificate, min_bits: nat] {
+pred key_strength_adequate[c: Certificate, min_bits: Int] {
   some c
 }
 
 // private_key_protected (matches Coq: Definition private_key_protected)
-pred private_key_protected[key_encrypted: bool, key_on_hsm: bool] {
+pred private_key_protected[key_encrypted: Bool, key_on_hsm: Bool] {
   some key_encrypted
 }
 
@@ -59,12 +63,12 @@ pred relying_party_diligent[rpc: RelyingPartyCheck] {
 }
 
 // cert_on_crl (matches Coq: Definition cert_on_crl)
-pred cert_on_crl[cert_id: nat] {
+pred cert_on_crl[cert_id: Int] {
   some cert_id
 }
 
 // dsa_fully_compliant (matches Coq: Definition dsa_fully_compliant)
-pred dsa_fully_compliant[c: Certificate, s: DigitalSignature, t: nat, key_enc: bool, key_hsm: bool] {
+pred dsa_fully_compliant[c: Certificate, s: DigitalSignature, t: Int, key_enc: Bool, key_hsm: Bool] {
   some c
 }
 

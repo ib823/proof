@@ -46,7 +46,7 @@ sig SoftwareDevelopment {
 sig VerificationMethods {
   vm_requirements_inspection: one Bool,
   vm_walkthrough: one Bool,
-  vm_formal_verification: one Bool // Highly recommended for ASIL D,
+  vm_formal_verification: one Bool, // Highly recommended for ASIL D
   vm_control_flow_analysis: one Bool,
   vm_data_flow_analysis: one Bool,
   vm_static_analysis: one Bool,

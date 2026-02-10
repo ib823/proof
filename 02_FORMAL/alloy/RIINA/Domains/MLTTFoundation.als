@@ -26,6 +26,8 @@ one sig TmSnd extends Term {} // Second projection
 one sig TmRefl extends Term {} // Reflexivity proof: refl(a)
 one sig TmJ extends Term {} // J-eliminator with type annotations
 
+abstract sig Ctx {}
+
 // empty_ctx (matches Coq: Definition empty_ctx)
 pred empty_ctx {}
 

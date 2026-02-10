@@ -8,59 +8,59 @@ open util/boolean
 
 // SpeculationBarrier (matches Coq: Record SpeculationBarrier)
 sig SpeculationBarrier {
-  sb_lfence: one Bool // x86 load fence,
-  sb_csdb: one Bool // ARM speculation barrier,
+  sb_lfence: one Bool, // x86 load fence
+  sb_csdb: one Bool, // ARM speculation barrier
   sb_after_branch: one Bool // Barrier placed after conditional branch
 }
 
 // MemoryProtection (matches Coq: Record MemoryProtection)
 sig MemoryProtection {
-  mp_kpti_enabled: one Bool // Kernel page table isolation,
-  mp_smap_enabled: one Bool // Supervisor mode access prevention,
-  mp_smep_enabled: one Bool // Supervisor mode execution prevention,
+  mp_kpti_enabled: one Bool, // Kernel page table isolation
+  mp_smap_enabled: one Bool, // Supervisor mode access prevention
+  mp_smep_enabled: one Bool, // Supervisor mode execution prevention
   mp_mem_encryption: one Bool // Memory encryption (AMD SEV/Intel TME)
 }
 
 // FirmwareState (matches Coq: Record FirmwareState)
 sig FirmwareState {
-  fw_signed: one Bool // Firmware is cryptographically signed,
-  fw_verified: one Bool // Signature has been verified,
-  fw_version: one Int // Current firmware version,
+  fw_signed: one Bool, // Firmware is cryptographically signed
+  fw_verified: one Bool, // Signature has been verified
+  fw_version: one Int, // Current firmware version
   fw_min_version: one Int // Minimum required version
 }
 
 // IOMMUConfig (matches Coq: Record IOMMUConfig)
 sig IOMMUConfig {
-  iommu_enabled: one Bool // IOMMU is active,
-  iommu_strict: one Bool // Strict mode - no legacy bypass,
+  iommu_enabled: one Bool, // IOMMU is active
+  iommu_strict: one Bool, // Strict mode - no legacy bypass
   iommu_no_bypass: one Bool // No DMA bypass allowed
 }
 
 // MeasuredBoot (matches Coq: Record MeasuredBoot)
 sig MeasuredBoot {
-  mb_pcr_extended: one Bool // PCR registers extended with measurements,
-  mb_sealed_to_pcr: one Bool // Secrets sealed to PCR values,
+  mb_pcr_extended: one Bool, // PCR registers extended with measurements
+  mb_sealed_to_pcr: one Bool, // Secrets sealed to PCR values
   mb_attestation_available: one Bool // Remote attestation capability
 }
 
 // ECCMemory (matches Coq: Record ECCMemory)
 sig ECCMemory {
-  ecc_enabled: one Bool // Error-correcting code enabled,
-  ecc_scrubbing: one Bool // Memory scrubbing active,
+  ecc_enabled: one Bool, // Error-correcting code enabled
+  ecc_scrubbing: one Bool, // Memory scrubbing active
   ecc_trr_enabled: one Bool // Target row refresh for Rowhammer mitigation
 }
 
 // CacheConfig (matches Coq: Record CacheConfig)
 sig CacheConfig {
-  cache_partitioned: one Bool // Cache partitioning enabled,
-  cache_way_isolation: one Bool // Way isolation for security domains,
+  cache_partitioned: one Bool, // Cache partitioning enabled
+  cache_way_isolation: one Bool, // Way isolation for security domains
   cache_flush_on_switch: one Bool // Flush cache on context switch
 }
 
 // TimingProtection (matches Coq: Record TimingProtection)
 sig TimingProtection {
-  tp_constant_time: one Bool // Constant-time operations enforced,
-  tp_fixed_frequency: one Bool // CPU frequency locked,
+  tp_constant_time: one Bool, // Constant-time operations enforced
+  tp_fixed_frequency: one Bool, // CPU frequency locked
   tp_no_rapl: one Bool // RAPL interface disabled for unprivileged
 }
 

@@ -19,6 +19,13 @@ one sig Prepare extends BFTPhase {}
 one sig Commit extends BFTPhase {}
 one sig Reply extends BFTPhase {}
 
+abstract sig GCounter {}
+abstract sig GSet {}
+abstract sig NodeId {}
+abstract sig Term {}
+abstract sig list {}
+abstract sig option {}
+
 // LogEntry (matches Coq: Record LogEntry)
 sig LogEntry {
   entry_term: one Term,
@@ -53,8 +60,8 @@ sig BFTMessage {
 
 // BFTState (matches Coq: Record BFTState)
 sig BFTState {
-  bft_n: one Int // total nodes,
-  bft_f: one Int // max faulty,
+  bft_n: one Int, // total nodes
+  bft_f: one Int, // max faulty
   bft_correct: one list,
   bft_faulty: one list
 }
@@ -66,7 +73,7 @@ sig HashRing {
 }
 
 // is_quorum (matches Coq: Definition is_quorum)
-pred is_quorum[votes: nat, total: nat] {
+pred is_quorum[votes: Int, total: Int] {
   some votes
 }
 
@@ -81,12 +88,12 @@ pred count_votes[candidate: NodeId, term: Term] {
 }
 
 // logs_match_at (matches Coq: Definition logs_match_at)
-pred logs_match_at[idx: nat] {
+pred logs_match_at[idx: Int] {
   some idx
 }
 
 // entry_committed (matches Coq: Definition entry_committed)
-pred entry_committed[cluster: RaftCluster, idx: nat] {
+pred entry_committed[cluster: RaftCluster, idx: Int] {
   some cluster
 }
 
@@ -101,7 +108,7 @@ pred bft_valid[state: BFTState] {
 }
 
 // gc_increment (matches Coq: Definition gc_increment)
-pred gc_increment[gc: GCounter, node: nat] {
+pred gc_increment[gc: GCounter, node: Int] {
   some gc
 }
 
@@ -114,7 +121,7 @@ pred gc_value[gc: GCounter] {
 pred gc_merge {}
 
 // gs_add (matches Coq: Definition gs_add)
-pred gs_add[s: GSet, v: nat] {
+pred gs_add[s: GSet, v: Int] {
   some s
 }
 
@@ -122,12 +129,12 @@ pred gs_add[s: GSet, v: nat] {
 pred gs_merge {}
 
 // gs_member (matches Coq: Definition gs_member)
-pred gs_member[s: GSet, v: nat] {
+pred gs_member[s: GSet, v: Int] {
   some s
 }
 
 // ring_add_node (matches Coq: Definition ring_add_node)
-pred ring_add_node[ring: HashRing, pos: nat, node: NodeId] {
+pred ring_add_node[ring: HashRing, pos: Int, node: NodeId] {
   some ring
 }
 

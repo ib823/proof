@@ -6,6 +6,10 @@ module riina/domains/sn__closure
 
 open util/boolean
 
+abstract sig config {}
+abstract sig expr {}
+abstract sig store {}
+
 // step_inv (matches Coq: Definition step_inv)
 pred step_inv {}
 

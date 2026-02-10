@@ -23,26 +23,26 @@ sig PasswordSecurity {
 
 // PBKDF2Config (matches Coq: Record PBKDF2Config)
 sig PBKDF2Config {
-  pbkdf2_iterations: one Int // Number of iterations,
-  pbkdf2_salt_bits: one Int // Salt size in bits,
-  pbkdf2_output_bits: one Int // Derived key size in bits,
+  pbkdf2_iterations: one Int, // Number of iterations
+  pbkdf2_salt_bits: one Int, // Salt size in bits
+  pbkdf2_output_bits: one Int, // Derived key size in bits
   pbkdf2_hash_alg: one Int // 0=SHA-256, 1=SHA-512
 }
 
 // Argon2Config (matches Coq: Record Argon2Config)
 sig Argon2Config {
-  argon2_time_cost: one Int // Time cost parameter,
-  argon2_memory_cost: one Int // Memory cost in KiB,
-  argon2_parallelism: one Int // Degree of parallelism,
-  argon2_salt_bits: one Int // Salt size in bits,
-  argon2_output_bits: one Int // Derived key size in bits,
+  argon2_time_cost: one Int, // Time cost parameter
+  argon2_memory_cost: one Int, // Memory cost in KiB
+  argon2_parallelism: one Int, // Degree of parallelism
+  argon2_salt_bits: one Int, // Salt size in bits
+  argon2_output_bits: one Int, // Derived key size in bits
   argon2_variant: one Int // 0=Argon2d, 1=Argon2i, 2=Argon2id
 }
 
 // BcryptConfig (matches Coq: Record BcryptConfig)
 sig BcryptConfig {
-  bcrypt_cost_factor: one Int // Cost factor (2^n iterations),
-  bcrypt_salt_bits: one Int // Salt size - always 128 for bcrypt,
+  bcrypt_cost_factor: one Int, // Cost factor (2^n iterations)
+  bcrypt_salt_bits: one Int, // Salt size - always 128 for bcrypt
   bcrypt_output_bits: one Int // Output size - always 184 for bcrypt
 }
 
@@ -56,19 +56,19 @@ sig MFASecurity {
 
 // TOTPConfig (matches Coq: Record TOTPConfig)
 sig TOTPConfig {
-  totp_secret_bits: one Int // Shared secret size,
-  totp_digits: one Int // Number of digits in code,
-  totp_period: one Int // Time step in seconds,
-  totp_hash_alg: one Int // 0=SHA-1, 1=SHA-256, 2=SHA-512,
+  totp_secret_bits: one Int, // Shared secret size
+  totp_digits: one Int, // Number of digits in code
+  totp_period: one Int, // Time step in seconds
+  totp_hash_alg: one Int, // 0=SHA-1, 1=SHA-256, 2=SHA-512
   totp_drift_window: one Int // Allowed clock drift windows
 }
 
 // WebAuthnConfig (matches Coq: Record WebAuthnConfig)
 sig WebAuthnConfig {
-  webauthn_attestation: one Int // 0=none, 1=indirect, 2=direct,
-  webauthn_user_verification: one Int // 0=discouraged, 1=preferred, 2=required,
-  webauthn_resident_key: one Bool // Resident key (discoverable) required,
-  webauthn_challenge_bits: one Int // Challenge size in bits,
+  webauthn_attestation: one Int, // 0=none, 1=indirect, 2=direct
+  webauthn_user_verification: one Int, // 0=discouraged, 1=preferred, 2=required
+  webauthn_resident_key: one Bool, // Resident key (discoverable) required
+  webauthn_challenge_bits: one Int, // Challenge size in bits
   webauthn_timeout_ms: one Int // Timeout in milliseconds
 }
 
@@ -82,49 +82,49 @@ sig SessionSecurity {
 
 // SessionTokenConfig (matches Coq: Record SessionTokenConfig)
 sig SessionTokenConfig {
-  token_entropy_bits: one Int // Token entropy in bits,
-  token_expiry_seconds: one Int // Token expiry time,
-  token_rotation: one Bool // Token rotation on use,
-  token_binding: one Bool // Bound to client fingerprint,
-  token_secure_flag: one Bool // Secure cookie flag,
-  token_httponly_flag: one Bool // HttpOnly flag,
+  token_entropy_bits: one Int, // Token entropy in bits
+  token_expiry_seconds: one Int, // Token expiry time
+  token_rotation: one Bool, // Token rotation on use
+  token_binding: one Bool, // Bound to client fingerprint
+  token_secure_flag: one Bool, // Secure cookie flag
+  token_httponly_flag: one Bool, // HttpOnly flag
   token_samesite: one Int // 0=None, 1=Lax, 2=Strict
 }
 
 // OAuth2Config (matches Coq: Record OAuth2Config)
 sig OAuth2Config {
-  oauth2_pkce: one Bool // PKCE required,
-  oauth2_state_param: one Bool // State parameter required,
-  oauth2_nonce_param: one Bool // Nonce parameter (for OIDC),
-  oauth2_token_binding: one Bool // Token binding,
-  oauth2_code_bits: one Int // Authorization code entropy,
-  oauth2_code_expiry: one Int // Code expiry in seconds,
+  oauth2_pkce: one Bool, // PKCE required
+  oauth2_state_param: one Bool, // State parameter required
+  oauth2_nonce_param: one Bool, // Nonce parameter (for OIDC)
+  oauth2_token_binding: one Bool, // Token binding
+  oauth2_code_bits: one Int, // Authorization code entropy
+  oauth2_code_expiry: one Int, // Code expiry in seconds
   oauth2_refresh_rotation: one Bool // Refresh token rotation
 }
 
 // OIDCConfig (matches Coq: Record OIDCConfig)
 sig OIDCConfig {
-  oidc_base: one OAuth2Config // OAuth 2.0 base config,
-  oidc_id_token_alg: one Int // 0=RS256, 1=ES256, 2=EdDSA,
-  oidc_id_token_expiry: one Int // ID token expiry in seconds,
-  oidc_userinfo_signed: one Bool // UserInfo endpoint signed,
+  oidc_base: one OAuth2Config, // OAuth 2.0 base config
+  oidc_id_token_alg: one Int, // 0=RS256, 1=ES256, 2=EdDSA
+  oidc_id_token_expiry: one Int, // ID token expiry in seconds
+  oidc_userinfo_signed: one Bool, // UserInfo endpoint signed
   oidc_claims_verified: one Bool // Claims verified at server
 }
 
 // ChallengeConfig (matches Coq: Record ChallengeConfig)
 sig ChallengeConfig {
-  challenge_bits: one Int // Challenge entropy in bits,
-  challenge_expiry_ms: one Int // Challenge expiry in milliseconds,
-  challenge_single_use: one Bool // Single-use challenge,
-  challenge_bound: one Bool // Bound to session,
+  challenge_bits: one Int, // Challenge entropy in bits
+  challenge_expiry_ms: one Int, // Challenge expiry in milliseconds
+  challenge_single_use: one Bool, // Single-use challenge
+  challenge_bound: one Bool, // Bound to session
   challenge_signed: one Bool // Server signature on challenge
 }
 
 // NonceTracker (matches Coq: Record NonceTracker)
 sig NonceTracker {
-  nonce_size_bits: one Int // Nonce size in bits,
-  nonce_window_size: one Int // Size of tracking window,
-  nonce_timestamp_bound: one Int // Max age in seconds,
+  nonce_size_bits: one Int, // Nonce size in bits
+  nonce_window_size: one Int, // Size of tracking window
+  nonce_timestamp_bound: one Int, // Max age in seconds
   nonce_counter_mode: one Bool // Counter-based nonces
 }
 

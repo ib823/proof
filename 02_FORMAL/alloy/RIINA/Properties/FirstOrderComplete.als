@@ -6,6 +6,8 @@ module riina/domains/first_order_complete
 
 open util/boolean
 
+abstract sig ty {}
+
 // is_base_type (matches Coq: Definition is_base_type)
 pred is_base_type[T: ty] {
   some T

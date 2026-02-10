@@ -10,6 +10,8 @@ open util/boolean
 abstract sig ComponentId {}
 one sig CompId extends ComponentId {}
 
+abstract sig list {}
+
 // Version (matches Coq: Record Version)
 sig Version {
   major: one Int,
@@ -59,7 +61,7 @@ pred can_boot_version[st: RollbackState, comp: VersionedComponent] {
 }
 
 // update_min_version (matches Coq: Definition update_min_version)
-pred update_min_version[st: RollbackState, comp: ComponentId, ver: Version, hw: bool] {
+pred update_min_version[st: RollbackState, comp: ComponentId, ver: Version, hw: Bool] {
   some st
 }
 

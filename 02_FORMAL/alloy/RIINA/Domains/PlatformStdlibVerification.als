@@ -38,6 +38,10 @@ abstract sig PlatLabel {}
 one sig PLPublic extends PlatLabel {}
 one sig PLSecret extends PlatLabel {}
 
+abstract sig Capability {}
+abstract sig IOOp {}
+abstract sig PlatFunc {}
+
 // platform_has_cap (matches Coq: Definition platform_has_cap)
 pred platform_has_cap[p: Platform, c: Capability] {
   some p

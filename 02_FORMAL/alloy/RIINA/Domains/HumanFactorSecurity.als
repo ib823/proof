@@ -98,35 +98,37 @@ one sig PeerReview extends ReviewProcess {}
 one sig MultiMaintainerReview extends ReviewProcess {}
 one sig FormalVerificationReview extends ReviewProcess {}
 
+abstract sig ConfigManagement {}
+
 // SecurityPolicyState (matches Coq: Record SecurityPolicyState)
 sig SecurityPolicyState {
   auth_mechanism: one AuthMechanism,
   mfa_enabled: one Bool,
-  webauthn_enforced: one Bool // Training and awareness,
+  webauthn_enforced: one Bool, // Training and awareness
   training_status: one TrainingStatus,
   phishing_training_complete: one Bool,
-  social_engineering_awareness: one Bool // Verification procedures,
+  social_engineering_awareness: one Bool, // Verification procedures
   verification_level: one VerificationLevel,
   callback_verification: one Bool,
-  out_of_band_verification: one Bool // Physical security,
+  out_of_band_verification: one Bool, // Physical security
   physical_access_level: one PhysicalAccessLevel,
-  privacy_screens_deployed: one Bool // Data handling,
+  privacy_screens_deployed: one Bool, // Data handling
   disposal_method: one DisposalMethod,
   device_control_policy: one Bool,
-  url_filtering_enabled: one Bool // Access control,
+  url_filtering_enabled: one Bool, // Access control
   least_privilege_enforced: one Bool,
   audit_logging_enabled: one Bool,
-  credential_monitoring: one Bool // Resilience controls,
+  credential_monitoring: one Bool, // Resilience controls
   duress_codes_enabled: one Bool,
-  plausible_deniability_possible: one Bool // Personnel security,
+  plausible_deniability_possible: one Bool, // Personnel security
   background_checks_performed: one Bool,
   behavioral_monitoring: one Bool,
-  security_culture_established: one Bool // Password controls,
+  security_culture_established: one Bool, // Password controls
   password_policy: one PasswordPolicy,
   unique_passwords_enforced: one Bool,
-  breach_detection_enabled: one Bool // Technical controls,
+  breach_detection_enabled: one Bool, // Technical controls
   technical_controls_active: one Bool,
-  config_management: one ConfigManagement // Review process,
+  config_management: one ConfigManagement, // Review process
   review_process: one ReviewProcess,
   multi_maintainer_required: one Bool
 }
@@ -247,7 +249,7 @@ pred threat_mitigated[threat: HumanThreat, state: SecurityPolicyState] {
 }
 
 // attack_success_rate (matches Coq: Definition attack_success_rate)
-pred attack_success_rate[threat: HumanThreat, mitigated: bool] {
+pred attack_success_rate[threat: HumanThreat, mitigated: Bool] {
   some threat
 }
 

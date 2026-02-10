@@ -13,6 +13,9 @@ one sig Gen3G extends CellularGeneration {}
 one sig Gen4G extends CellularGeneration {}
 one sig Gen5G extends CellularGeneration {}
 
+abstract sig MemoryAddress {}
+abstract sig list {}
+
 // Memory (matches Coq: Record Memory)
 sig Memory {
   mem_start: one MemoryAddress,
@@ -136,8 +139,8 @@ sig CellularFailover {
 
 // SignalMeasurement (matches Coq: Record SignalMeasurement)
 sig SignalMeasurement {
-  sm_rssi: one Int // received signal strength indicator,
-  sm_rsrp: one Int // reference signal received power,
+  sm_rssi: one Int, // received signal strength indicator
+  sm_rsrp: one Int, // reference signal received power
   sm_accurate: one Bool,
   sm_timestamp: one Int
 }

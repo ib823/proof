@@ -12,9 +12,13 @@ one sig NormalMode extends SystemMode {}
 one sig SafeMode extends SystemMode {}
 one sig RecoveryMode extends SystemMode {}
 
+abstract sig Bit {}
+abstract sig Word {}
+abstract sig list {}
+
 // ECCWord (matches Coq: Record ECCWord)
 sig ECCWord {
-  ecc_data: one Word // Data bits,
+  ecc_data: one Word, // Data bits
   ecc_parity: one Word // Parity bits
 }
 
@@ -27,7 +31,7 @@ sig Watchdog {
 
 // Checkpoint (matches Coq: Record Checkpoint)
 sig Checkpoint {
-  cp_state: one Int // Abstract system state,
+  cp_state: one Int, // Abstract system state
   cp_timestamp: one Int,
   cp_valid: one Bool
 }
@@ -66,7 +70,7 @@ sig Probability {
 
 // RecoveryMetrics (matches Coq: Record RecoveryMetrics)
 sig RecoveryMetrics {
-  rm_mttr: one Int // Mean Time To Recovery,
+  rm_mttr: one Int, // Mean Time To Recovery
   rm_requirement: one Int // Mission requirement
 }
 
@@ -95,12 +99,12 @@ pred ecc_syndrome[e: ECCWord] {
 }
 
 // watchdog_expired (matches Coq: Definition watchdog_expired)
-pred watchdog_expired[wd: Watchdog, current_time: nat] {
+pred watchdog_expired[wd: Watchdog, current_time: Int] {
   some wd
 }
 
 // cf_valid (matches Coq: Definition cf_valid)
-pred cf_valid[cfs: CFSignature, actual_next: nat] {
+pred cf_valid[cfs: CFSignature, actual_next: Int] {
   some cfs
 }
 
@@ -113,7 +117,7 @@ pred canary_valid[sf: StackFrame] {
 pred mode_eqb {}
 
 // count_agreements (matches Coq: Definition count_agreements)
-pred count_agreements[value: nat] {
+pred count_agreements[value: Int] {
   some value
 }
 
@@ -141,7 +145,7 @@ pred scrub_effective[ss: ScrubState] {
 }
 
 // seu_response (matches Coq: Definition seu_response)
-pred seu_response[seu_detected: bool, current_mode: SystemMode] {
+pred seu_response[seu_detected: Bool, current_mode: SystemMode] {
   some seu_detected
 }
 

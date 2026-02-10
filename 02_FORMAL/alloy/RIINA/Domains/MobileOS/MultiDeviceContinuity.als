@@ -12,6 +12,10 @@ one sig LatestWins extends ConflictResolution {}
 one sig MergeAll extends ConflictResolution {}
 one sig UserChoice extends ConflictResolution {}
 
+abstract sig AppState {}
+abstract sig DeviceId {}
+abstract sig list {}
+
 // Device (matches Coq: Record Device)
 sig Device {
   dev_id: one DeviceId,

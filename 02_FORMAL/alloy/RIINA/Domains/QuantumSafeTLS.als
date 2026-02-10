@@ -54,17 +54,17 @@ one sig TLS_CHACHA20_POLY1305_SHA256 extends CipherSuite {}
 // KEMParameters (matches Coq: Record KEMParameters)
 sig KEMParameters {
   kem_scheme: one KEMScheme,
-  kem_pk_size: one Int // Public key size in bytes,
-  kem_sk_size: one Int // Secret key size in bytes,
-  kem_ct_size: one Int // Ciphertext size in bytes,
+  kem_pk_size: one Int, // Public key size in bytes
+  kem_sk_size: one Int, // Secret key size in bytes
+  kem_ct_size: one Int, // Ciphertext size in bytes
   kem_ss_size: one Int // Shared secret size in bytes
 }
 
 // KEMSecurityProperties (matches Coq: Record KEMSecurityProperties)
 sig KEMSecurityProperties {
-  kem_sec_indcca2: one Bool // IND-CCA2 secure,
-  kem_sec_module_lwe: one Bool // Based on Module-LWE,
-  kem_sec_nist_approved: one Bool // NIST standardized,
+  kem_sec_indcca2: one Bool, // IND-CCA2 secure
+  kem_sec_module_lwe: one Bool, // Based on Module-LWE
+  kem_sec_nist_approved: one Bool, // NIST standardized
   kem_sec_constant_time: one Bool // Constant-time implementation
 }
 
@@ -78,8 +78,8 @@ sig ECDHParameters {
 
 // HybridKEX (matches Coq: Record HybridKEX)
 sig HybridKEX {
-  hkex_classical: one Bool // Classical ECDH component,
-  hkex_post_quantum: one Bool // ML-KEM component,
+  hkex_classical: one Bool, // Classical ECDH component
+  hkex_post_quantum: one Bool, // ML-KEM component
   hkex_combined: one Bool // Both combined securely (e.g., via HKDF)
 }
 
@@ -87,21 +87,21 @@ sig HybridKEX {
 sig HybridKEXConfig {
   hybrid_kem: one KEMScheme,
   hybrid_ecdh: one ECDHCurve,
-  hybrid_combiner: one Bool // HKDF or similar,
+  hybrid_combiner: one Bool, // HKDF or similar
   hybrid_label: one Bool // Domain separation label
 }
 
 // PQAuthentication (matches Coq: Record PQAuthentication)
 sig PQAuthentication {
-  pqa_classical_sig: one Bool // ECDSA/Ed25519 backup,
-  pqa_pq_sig: one Bool // ML-DSA/SLH-DSA primary,
+  pqa_classical_sig: one Bool, // ECDSA/Ed25519 backup
+  pqa_pq_sig: one Bool, // ML-DSA/SLH-DSA primary
   pqa_certificate_chain: one Bool
 }
 
 // SignatureSecurityProps (matches Coq: Record SignatureSecurityProps)
 sig SignatureSecurityProps {
-  sig_euf_cma: one Bool // Existential unforgeability,
-  sig_strong_euf: one Bool // Strong unforgeability,
+  sig_euf_cma: one Bool, // Existential unforgeability
+  sig_strong_euf: one Bool, // Strong unforgeability
   sig_nist_approved: one Bool,
   sig_deterministic: one Bool // Deterministic signing
 }
@@ -118,8 +118,8 @@ sig TLSHandshake {
 sig TLSHandshakeConfig {
   ths_version: one TLSVersion,
   ths_ciphersuite: one CipherSuite,
-  ths_early_data: one Bool // 0-RTT support,
-  ths_psk_mode: one Bool // Pre-shared key mode,
+  ths_early_data: one Bool, // 0-RTT support
+  ths_psk_mode: one Bool, // Pre-shared key mode
   ths_client_auth: one Bool // Mutual authentication
 }
 
@@ -133,7 +133,7 @@ sig TLS13Extensions {
 
 // TLSRecord (matches Coq: Record TLSRecord)
 sig TLSRecord {
-  rec_aead: one Bool // Authenticated encryption,
+  rec_aead: one Bool, // Authenticated encryption
   rec_sequence_numbers: one Bool,
   rec_padding: one Bool
 }
@@ -148,17 +148,17 @@ sig AEADProperties {
 
 // ForwardSecrecyConfig (matches Coq: Record ForwardSecrecyConfig)
 sig ForwardSecrecyConfig {
-  fs_ephemeral_keys: one Bool // Ephemeral key exchange,
-  fs_key_deletion: one Bool // Session keys deleted after use,
-  fs_no_static_dh: one Bool // No static DH for key exchange,
+  fs_ephemeral_keys: one Bool, // Ephemeral key exchange
+  fs_key_deletion: one Bool, // Session keys deleted after use
+  fs_no_static_dh: one Bool, // No static DH for key exchange
   fs_pfs_per_session: one Bool // PFS for each session
 }
 
 // AlgorithmAgility (matches Coq: Record AlgorithmAgility)
 sig AlgorithmAgility {
-  agility_negotiation: one Bool // Algorithm negotiation support,
-  agility_fallback: one Bool // Graceful fallback,
-  agility_versioning: one Bool // Version negotiation,
+  agility_negotiation: one Bool, // Algorithm negotiation support
+  agility_fallback: one Bool, // Graceful fallback
+  agility_versioning: one Bool, // Version negotiation
   agility_extension: one Bool // Extensible via extensions
 }
 

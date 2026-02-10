@@ -53,6 +53,12 @@ abstract sig SanitizerResult {}
 one sig SRClean extends SanitizerResult {}
 one sig SRViolation extends SanitizerResult {}
 
+abstract sig CodePath {}
+abstract sig ExecutionTrace {}
+abstract sig Property {}
+abstract sig list {}
+abstract sig string {}
+
 // TestCase (matches Coq: Record TestCase)
 sig TestCase {
   tc_name: one string,
@@ -135,7 +141,7 @@ sig BruteForceProtection {
 }
 
 // is_constant_time (matches Coq: Definition is_constant_time)
-pred is_constant_time[tm: TimingMeasurement, tolerance: nat] {
+pred is_constant_time[tm: TimingMeasurement, tolerance: Int] {
   some tm
 }
 
@@ -159,7 +165,7 @@ pred initial_state {}
 pred id_fixture {}
 
 // expected_panic (matches Coq: Definition expected_panic)
-pred expected_panic[input: nat] {
+pred expected_panic[input: Int] {
   some input
 }
 
@@ -174,12 +180,12 @@ pred path_covered[p: CodePath] {
 }
 
 // valid_structured_input (matches Coq: Definition valid_structured_input)
-pred valid_structured_input[n: nat] {
+pred valid_structured_input[n: Int] {
   some n
 }
 
 // differential_test (matches Coq: Definition differential_test)
-pred differential_test[input: nat] {
+pred differential_test[input: Int] {
   some input
 }
 
@@ -189,12 +195,12 @@ pred sanitizer_pass[sr: SanitizerResult] {
 }
 
 // satisfies_contract (matches Coq: Definition satisfies_contract)
-pred satisfies_contract[api: APIContract, input: nat] {
+pred satisfies_contract[api: APIContract, input: Int] {
   some api
 }
 
 // mutation_valid (matches Coq: Definition mutation_valid)
-pred mutation_valid[m: Mutant, max_loc: nat] {
+pred mutation_valid[m: Mutant, max_loc: Int] {
   some m
 }
 
@@ -207,7 +213,7 @@ pred test_detects_mutation[tc: TestCase] {
 }
 
 // timing_attack_detected (matches Coq: Definition timing_attack_detected)
-pred timing_attack_detected[tolerance: nat] {
+pred timing_attack_detected[tolerance: Int] {
   some tolerance
 }
 
@@ -222,7 +228,7 @@ pred check_brute_force[bfp: BruteForceProtection] {
 }
 
 // line_covered (matches Coq: Definition line_covered)
-pred line_covered[line: nat, trace: ExecutionTrace] {
+pred line_covered[line: Int, trace: ExecutionTrace] {
   some line
 }
 

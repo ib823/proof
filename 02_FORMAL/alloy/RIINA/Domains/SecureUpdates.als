@@ -13,6 +13,11 @@ one sig UpdateFailed extends UpdateResult {}
 one sig RollbackPrevented extends UpdateResult {}
 one sig SignatureInvalid extends UpdateResult {}
 
+abstract sig Backup {}
+abstract sig SystemState {}
+abstract sig UpdatePackage {}
+abstract sig UpdateSignature {}
+
 // version_gt (matches Coq: Definition version_gt)
 pred version_gt {}
 
@@ -20,7 +25,7 @@ pred version_gt {}
 pred version_gte {}
 
 // signatures_sufficient (matches Coq: Definition signatures_sufficient)
-pred signatures_sufficient[update: UpdatePackage, threshold: nat] {
+pred signatures_sufficient[update: UpdatePackage, threshold: Int] {
   some update
 }
 
@@ -66,7 +71,7 @@ pred size_bounded {}
 pred compatible {}
 
 // changelog_present (matches Coq: Definition changelog_present)
-pred changelog_present[changelog_size: nat] {
+pred changelog_present[changelog_size: Int] {
   some changelog_size
 }
 
@@ -86,7 +91,7 @@ pred rollout_percentage_ok {}
 pred reboot_handled {}
 
 // post_verify_ok (matches Coq: Definition post_verify_ok)
-pred post_verify_ok[verification_passed: bool] {
+pred post_verify_ok[verification_passed: Bool] {
   some verification_passed
 }
 

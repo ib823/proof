@@ -22,12 +22,14 @@ one sig SecureComms extends MilitaryEffect {}
 one sig WeaponSystem extends MilitaryEffect {}
 one sig IntelligenceOp extends MilitaryEffect {}
 
+abstract sig list {}
+
 // MilitarySecurityPolicy (matches Coq: Record MilitarySecurityPolicy)
 sig MilitarySecurityPolicy {
   classification: one ClassificationLevel,
   need_to_know: one list,
   clearance_required: one ClassificationLevel,
-  comsec_approved: one Bool // Communications Security,
+  comsec_approved: one Bool, // Communications Security
   tempest_certified: one Bool // TEMPEST emanations security
 }
 
@@ -40,7 +42,7 @@ pred class_to_nat[c: ClassificationLevel] {
 }
 
 // has_compartment (matches Coq: Definition has_compartment)
-pred has_compartment[c: nat] {
+pred has_compartment[c: Int] {
   some c
 }
 

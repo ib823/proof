@@ -21,6 +21,8 @@ one sig SigningKey extends HSMType {}
 abstract sig BootComponentId {}
 one sig BootComp extends BootComponentId {}
 
+abstract sig list {}
+
 // Measurement (matches Coq: Record Measurement)
 sig Measurement {
   measured_component: one BootComponentId,
@@ -65,12 +67,12 @@ pred verified_from_hw_root[st: HWRootState, comp: BootComponentId] {
 }
 
 // extend_trust_chain (matches Coq: Definition extend_trust_chain)
-pred extend_trust_chain[st: HWRootState, measurement: nat] {
+pred extend_trust_chain[st: HWRootState, measurement: Int] {
   some st
 }
 
 // record_pcr (matches Coq: Definition record_pcr)
-pred record_pcr[st: HWRootState, comp: BootComponentId, value: nat, algo: nat] {
+pred record_pcr[st: HWRootState, comp: BootComponentId, value: Int, algo: Int] {
   some st
 }
 

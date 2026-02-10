@@ -34,6 +34,11 @@ one sig Nurse extends Role {}
 one sig AdminStaff extends Role {}
 one sig PatientRole extends Role {}
 
+abstract sig MRN {}
+abstract sig forall {}
+abstract sig list {}
+abstract sig option {}
+
 // Patient (matches Coq: Record Patient)
 sig Patient {
   mrn: one MRN,
@@ -44,7 +49,7 @@ sig Patient {
 
 // PatientMatch (matches Coq: Record PatientMatch)
 sig PatientMatch {
-  match_score: one Int // 0-1000, 999 = 99.9%,
+  match_score: one Int, // 0-1000, 999 = 99.9%
   matched_patient: one MRN
 }
 
@@ -313,7 +318,7 @@ sig DataExport {
   export_id: one Int,
   export_patient: one MRN,
   machine_readable: one Bool,
-  export_format: one Int // 1 = JSON, 2 = XML, 3 = FHIR,
+  export_format: one Int, // 1 = JSON, 2 = XML, 3 = FHIR
   export_complete: one Bool
 }
 

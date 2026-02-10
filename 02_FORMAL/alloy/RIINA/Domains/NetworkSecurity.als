@@ -10,7 +10,7 @@ open util/boolean
 sig TLSConfig {
   tls_enabled: one Bool,
   certificate_pinning_enabled: one Bool,
-  min_tls_version: one Int // 12 = TLS 1.2, 13 = TLS 1.3,
+  min_tls_version: one Int, // 12 = TLS 1.2, 13 = TLS 1.3
   strong_cipher_suites: one Bool
 }
 
@@ -188,7 +188,7 @@ sig DHCPSecurityConfig {
 sig NTPClientConfig {
   multiple_time_sources: one Bool,
   min_time_sources: one Int,
-  nts_enabled: one Bool // Network Time Security,
+  nts_enabled: one Bool, // Network Time Security
   authenticated_ntp: one Bool
 }
 
@@ -196,7 +196,7 @@ sig NTPClientConfig {
 sig TCPSecurityConfig {
   tcp_encryption_enabled: one Bool,
   tcp_md5_auth: one Bool,
-  tcp_ao_enabled: one Bool // TCP-AO authentication,
+  tcp_ao_enabled: one Bool, // TCP-AO authentication
   randomized_isn: one Bool
 }
 

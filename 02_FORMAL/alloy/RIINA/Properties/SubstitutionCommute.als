@@ -6,6 +6,10 @@ module riina/domains/substitution_commute
 
 open util/boolean
 
+abstract sig expr {}
+abstract sig ident {}
+abstract sig subst_rho_sc {}
+
 // id_rho_sc (matches Coq: Definition id_rho_sc)
 pred id_rho_sc {}
 

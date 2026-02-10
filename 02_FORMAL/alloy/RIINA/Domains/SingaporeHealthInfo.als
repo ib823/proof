@@ -31,6 +31,11 @@ one sig PublicHealth extends UseType {}
 one sig InsuranceUnderwriting extends UseType {} // PROHIBITED
 one sig Employment extends UseType {}
 
+abstract sig HealthDataCorrection {}
+abstract sig HealthDataExchange {}
+abstract sig PatientAccessRequest {}
+abstract sig SGHealthRecord {}
+
 // hib_cybersecurity (matches Coq: Definition hib_cybersecurity)
 pred hib_cybersecurity[r: SGHealthRecord] {
   some r

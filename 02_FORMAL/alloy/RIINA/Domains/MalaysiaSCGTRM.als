@@ -15,6 +15,11 @@ one sig ClearingHouse extends CMEntityType {}
 one sig Depository extends CMEntityType {}
 one sig CreditRatingAgency extends CMEntityType {}
 
+abstract sig AIModelRisk {}
+abstract sig CMCloudRisk {}
+abstract sig CMEntity {}
+abstract sig SCIncident {}
+
 // gtrm_board_accountable (matches Coq: Definition gtrm_board_accountable)
 pred gtrm_board_accountable[e: CMEntity] {
   some e
@@ -26,7 +31,7 @@ pred gtrm_risk_framework[e: CMEntity] {
 }
 
 // gtrm_pentest_current (matches Coq: Definition gtrm_pentest_current)
-pred gtrm_pentest_current[e: CMEntity, current_time: nat] {
+pred gtrm_pentest_current[e: CMEntity, current_time: Int] {
   some e
 }
 
@@ -51,7 +56,7 @@ pred gtrm_data_protected[e: CMEntity] {
 }
 
 // gtrm_fully_compliant (matches Coq: Definition gtrm_fully_compliant)
-pred gtrm_fully_compliant[e: CMEntity, t: nat] {
+pred gtrm_fully_compliant[e: CMEntity, t: Int] {
   some e
 }
 

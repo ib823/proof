@@ -6,13 +6,15 @@ module riina/domains/traffic_resistance
 
 open util/boolean
 
+abstract sig TrafficFlow {}
+
 // constant_rate (matches Coq: Definition constant_rate)
-pred constant_rate[flow: TrafficFlow, interval: nat] {
+pred constant_rate[flow: TrafficFlow, interval: Int] {
   some flow
 }
 
 // constant_size (matches Coq: Definition constant_size)
-pred constant_size[flow: TrafficFlow, size: nat] {
+pred constant_size[flow: TrafficFlow, size: Int] {
   some flow
 }
 
@@ -38,12 +40,12 @@ pred size_quantized {}
 pred guard_diverse {}
 
 // path_random (matches Coq: Definition path_random)
-pred path_random[possible_paths: nat] {
+pred path_random[possible_paths: Int] {
   some possible_paths
 }
 
 // statistically_indistinguishable (matches Coq: Definition statistically_indistinguishable)
-pred statistically_indistinguishable[epsilon: nat] {
+pred statistically_indistinguishable[epsilon: Int] {
   some epsilon
 }
 

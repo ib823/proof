@@ -41,6 +41,9 @@ one sig EAssign extends expr {}
 one sig EIf extends expr {}
 one sig ELet extends expr {}
 
+abstract sig store {}
+abstract sig store_typing {}
+
 // label_leq (matches Coq: Definition label_leq)
 pred label_leq {}
 
@@ -51,12 +54,12 @@ pred store_empty {}
 pred store_ty_empty {}
 
 // store_update (matches Coq: Definition store_update)
-pred store_update[σ: store, l: nat, v: expr] {
+pred store_update[σ: store, l: Int, v: expr] {
   some σ
 }
 
 // store_ty_update (matches Coq: Definition store_ty_update)
-pred store_ty_update[Σ: store_typing, l: nat, T: ty, lab: sec_label] {
+pred store_ty_update[Σ: store_typing, l: Int, T: ty, lab: sec_label] {
   some Σ
 }
 
@@ -64,12 +67,12 @@ pred store_ty_update[Σ: store_typing, l: nat, T: ty, lab: sec_label] {
 pred store_ty_extends {}
 
 // store_rel_n (matches Coq: Definition store_rel_n)
-pred store_rel_n[n: nat, Σ: store_typing] {
+pred store_rel_n[n: Int, Σ: store_typing] {
   some n
 }
 
 // exp_rel_n (matches Coq: Definition exp_rel_n)
-pred exp_rel_n[n: nat, Σ: store_typing, T: ty] {
+pred exp_rel_n[n: Int, Σ: store_typing, T: ty] {
   some n
 }
 

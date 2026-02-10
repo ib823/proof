@@ -25,6 +25,17 @@ one sig FactorTOTP extends Factor {}
 one sig FactorFIDO2 extends Factor {}
 one sig FactorBiometric extends Factor {}
 
+abstract sig AuthLogStore {}
+abstract sig BreachDB {}
+abstract sig CredentialStore {}
+abstract sig PrincipalId {}
+abstract sig RevokedSet {}
+abstract sig SessionStore {}
+abstract sig Timestamp {}
+abstract sig TokenUsedSet {}
+abstract sig list {}
+abstract sig string {}
+
 // Principal (matches Coq: Record Principal)
 sig Principal {
   principal_id: one PrincipalId,
@@ -154,12 +165,12 @@ pred hash_collision_resistant[params: Argon2Params] {
 pred empty_used_set {}
 
 // mark_used (matches Coq: Definition mark_used)
-pred mark_used[s: TokenUsedSet, jti: nat] {
+pred mark_used[s: TokenUsedSet, jti: Int] {
   some s
 }
 
 // is_used (matches Coq: Definition is_used)
-pred is_used[s: TokenUsedSet, jti: nat] {
+pred is_used[s: TokenUsedSet, jti: Int] {
   some s
 }
 
@@ -187,12 +198,12 @@ pred verify_token[token: BoundToken, binding: ChannelBinding, now: Timestamp, us
 pred empty_revoked {}
 
 // revoke_token (matches Coq: Definition revoke_token)
-pred revoke_token[r: RevokedSet, jti: nat] {
+pred revoke_token[r: RevokedSet, jti: Int] {
   some r
 }
 
 // is_revoked (matches Coq: Definition is_revoked)
-pred is_revoked[r: RevokedSet, jti: nat] {
+pred is_revoked[r: RevokedSet, jti: Int] {
   some r
 }
 
@@ -246,7 +257,7 @@ pred authenticate[store: CredentialStore, p: Principal, c: Credential] {
 }
 
 // log_auth_attempt (matches Coq: Definition log_auth_attempt)
-pred log_auth_attempt[logs: AuthLogStore, pid: PrincipalId, ts: Timestamp, success: bool] {
+pred log_auth_attempt[logs: AuthLogStore, pid: PrincipalId, ts: Timestamp, success: Bool] {
   some logs
 }
 

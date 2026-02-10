@@ -52,6 +52,13 @@ abstract sig BridgeSecLabel {}
 one sig BPublic extends BridgeSecLabel {}
 one sig BSecret extends BridgeSecLabel {}
 
+abstract sig BridgeCall {}
+abstract sig CString {}
+abstract sig Callback {}
+abstract sig CapToken {}
+abstract sig JNIString {}
+abstract sig SwiftValue {}
+
 // cap_allows (matches Coq: Definition cap_allows)
 pred cap_allows[cap: CapToken, eff: BridgeEffect] {
   some cap

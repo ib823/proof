@@ -48,10 +48,12 @@ one sig MarkedForDeletion extends DeletionState {}
 one sig Overwritten extends DeletionState {} // Data overwritten with random
 one sig SecurelyDeleted extends DeletionState {} // Multiple overwrites, verified
 
+abstract sig list {}
+
 // CHDRecord (matches Coq: Record CHDRecord)
 sig CHDRecord {
   chd_type: one CHDType,
-  chd_value: one Int // Abstract value,
+  chd_value: one Int, // Abstract value
   chd_encryption: one EncState,
   chd_display_format: one PANDisplay
 }
@@ -60,7 +62,7 @@ sig CHDRecord {
 sig KeyState {
   key_id: one Int,
   key_creation_time: one Int,
-  key_rotation_period: one Int // Typically 1 year,
+  key_rotation_period: one Int, // Typically 1 year
   key_protected: one Bool // Stored in HSM or equivalent
 }
 
@@ -77,7 +79,7 @@ sig PCIAudit {
 // TokenVault (matches Coq: Record TokenVault)
 sig TokenVault {
   vault_tokens: one list,
-  vault_key: one KeyState // Key protecting the vault,
+  vault_key: one KeyState, // Key protecting the vault
   vault_isolated: one Bool // Network segmented
 }
 
@@ -113,7 +115,7 @@ sig RetentionPolicy {
 // NetworkZone (matches Coq: Record NetworkZone)
 sig NetworkZone {
   zone_id: one Int,
-  zone_is_cde: one Bool // Cardholder Data Environment,
+  zone_is_cde: one Bool, // Cardholder Data Environment
   zone_isolated: one Bool,
   zone_firewall_protected: one Bool
 }
@@ -134,7 +136,7 @@ pred display_compliant[disp: PANDisplay] {
 }
 
 // key_needs_rotation (matches Coq: Definition key_needs_rotation)
-pred key_needs_rotation[k: KeyState, current_time: nat] {
+pred key_needs_rotation[k: KeyState, current_time: Int] {
   some k
 }
 
@@ -149,7 +151,7 @@ pred chd_record_compliant[rec: CHDRecord] {
 }
 
 // create_audit_entry (matches Coq: Definition create_audit_entry)
-pred create_audit_entry[chd: CHDType, succ: bool, prev_hash: nat] {
+pred create_audit_entry[chd: CHDType, succ: Bool, prev_hash: Int] {
   some chd
 }
 

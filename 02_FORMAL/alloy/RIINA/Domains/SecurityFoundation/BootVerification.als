@@ -21,6 +21,8 @@ one sig HashMismatch extends VerificationResult {}
 one sig SignatureInvalid extends VerificationResult {}
 one sig VersionRollback extends VerificationResult {}
 
+abstract sig list {}
+
 // BootImage (matches Coq: Record BootImage)
 sig BootImage {
   image_stage: one BootStageId,

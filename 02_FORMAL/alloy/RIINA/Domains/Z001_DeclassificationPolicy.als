@@ -27,6 +27,12 @@ one sig PAssign extends Program {}
 one sig PDeclass extends Program {}
 one sig PSeq extends Program {}
 
+abstract sig Database {}
+abstract sig Expr {}
+abstract sig Query {}
+abstract sig State {}
+abstract sig Ty {}
+
 // DeclassPolicy (matches Coq: Record DeclassPolicy)
 sig DeclassPolicy {
   policy_id: one Int,
@@ -126,7 +132,7 @@ pred logged_declass[de: DeclassExpr] {
 pred neighbors {}
 
 // sensitivity_bounded (matches Coq: Definition sensitivity_bounded)
-pred sensitivity_bounded[q: Query, delta: nat] {
+pred sensitivity_bounded[q: Query, delta: Int] {
   some q
 }
 
@@ -149,12 +155,12 @@ pred revoke_policy[p: DeclassPolicy] {
 pred dp_well_defined {}
 
 // laplace_mechanism (matches Coq: Definition laplace_mechanism)
-pred laplace_mechanism[q: Query, db: Database, seed: nat] {
+pred laplace_mechanism[q: Query, db: Database, seed: Int] {
   some q
 }
 
 // gaussian_mechanism (matches Coq: Definition gaussian_mechanism)
-pred gaussian_mechanism[q: Query, db: Database, seed: nat] {
+pred gaussian_mechanism[q: Query, db: Database, seed: Int] {
   some q
 }
 

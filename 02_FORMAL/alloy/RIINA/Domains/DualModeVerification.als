@@ -12,6 +12,9 @@ one sig EConst extends expr {}
 one sig EPlus extends expr {}
 one sig EIf extends expr {}
 
+abstract sig RefinedType {}
+abstract sig forall {}
+
 // RefinementPred (matches Coq: Record RefinementPred)
 sig RefinementPred {
   full_pred: one Int,
@@ -20,12 +23,12 @@ sig RefinementPred {
 }
 
 // lightweight_check (matches Coq: Definition lightweight_check)
-pred lightweight_check[rt: RefinedType, v: nat] {
+pred lightweight_check[rt: RefinedType, v: Int] {
   some rt
 }
 
 // full_check (matches Coq: Definition full_check)
-pred full_check[rt: RefinedType, v: nat] {
+pred full_check[rt: RefinedType, v: Int] {
   some rt
 }
 

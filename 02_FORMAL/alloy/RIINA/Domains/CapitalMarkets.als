@@ -11,12 +11,14 @@ abstract sig Side {}
 one sig Buy extends Side {}
 one sig Sell extends Side {}
 
+abstract sig list {}
+
 // Order (matches Coq: Record Order)
 sig Order {
   order_id: one Int,
   order_side: one Side,
-  order_price: one Int // price in basis points,
-  order_qty: one Int // quantity,
+  order_price: one Int, // price in basis points
+  order_qty: one Int, // quantity
   order_time: one Int // arrival timestamp for priority
 }
 

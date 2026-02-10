@@ -25,6 +25,15 @@ abstract sig RelocState {}
 one sig PreReloc extends RelocState {} // Can be written during loading
 one sig PostReloc extends RelocState {}
 
+abstract sig FuncId {}
+abstract sig InstrAddr {}
+abstract sig ShadowStack {}
+abstract sig ValidCFG {}
+abstract sig ValidHandlers {}
+abstract sig ValidTargets {}
+abstract sig just {}
+abstract sig list {}
+
 // BasicBlock (matches Coq: Record BasicBlock)
 sig BasicBlock {
   bb_id: one Int,
@@ -73,7 +82,7 @@ sig TypedObject {
 
 // ExceptionHandler (matches Coq: Record ExceptionHandler)
 sig ExceptionHandler {
-  eh_type: one Int // Exception type handled,
+  eh_type: one Int, // Exception type handled
   eh_addr: one InstrAddr // Handler address
 }
 
@@ -87,7 +96,7 @@ sig JmpBuf {
 // ThreadContext (matches Coq: Record ThreadContext)
 sig ThreadContext {
   tc_id: one Int,
-  tc_owner: one Int // Owning process/capability,
+  tc_owner: one Int, // Owning process/capability
   tc_valid: one Bool
 }
 
@@ -145,7 +154,7 @@ pred got_protected[rs: RelocState] {
 }
 
 // thread_accessible (matches Coq: Definition thread_accessible)
-pred thread_accessible[tc: ThreadContext, accessor: nat] {
+pred thread_accessible[tc: ThreadContext, accessor: Int] {
   some tc
 }
 

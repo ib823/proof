@@ -6,11 +6,13 @@ module riina/domains/encryption_system
 
 open util/boolean
 
+abstract sig list {}
+
 // EncryptionKey (matches Coq: Record EncryptionKey)
 sig EncryptionKey {
   key_id: one Int,
-  key_bits: one Int // Key size: 128, 256, etc.,
-  key_algorithm: one Int // 0=AES, 1=ChaCha20, 2=RSA,
+  key_bits: one Int, // Key size: 128, 256, etc.
+  key_algorithm: one Int, // 0=AES, 1=ChaCha20, 2=RSA
   key_is_private: one Bool,
   key_stored_in_se: one Bool // Stored in Secure Enclave
 }
@@ -142,7 +144,7 @@ pred is_strong_key[key: EncryptionKey] {
 }
 
 // encryption_decryption_inverse_prop (matches Coq: Definition encryption_decryption_inverse_prop)
-pred encryption_decryption_inverse_prop[key: nat] {
+pred encryption_decryption_inverse_prop[key: Int] {
   some key
 }
 
