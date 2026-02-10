@@ -18,6 +18,10 @@
 **/_CoqProject.bak
 **/_CoqProject.backup
 
+# Lean build artifacts
+02_FORMAL/lean/.lake/
+02_FORMAL/lean/.cache/
+
 # Archives & binaries
 *.zip
 *.tar.gz

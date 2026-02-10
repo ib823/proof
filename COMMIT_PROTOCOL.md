@@ -15,6 +15,9 @@ If any step fails, STOP. Fix it. Restart from step 1.
   - `website/public/metrics.json`
   - `reports/public_quality_status.json`
   - `reports/easier_gap_status.json`
+  - `reports/medium_gap_status.json`
+  - `reports/heavy_gap_status.json`
+  - `reports/dim1_dim9_promotion_status.json`
 
 If descriptive roadmaps conflict with these live sources, live sources win.
 
@@ -101,6 +104,13 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 2. Verifies commit signatures (SSH signing)
 3. Scans for accidentally committed secrets
 4. Scans for trojan source attacks (Unicode tricks)
+
+### `check-dim1-dim9-promotion.sh`
+1. Validates Dim 1 core across Coq/Lean/Isabelle files
+2. Runs real Lean core compilation (`lake build` of Progress/Preservation/TypeSafety)
+3. Validates Dim 9 protocol core across Coq/TLA+/Alloy
+4. Reports foundation pass and promotion readiness separately
+5. `--strict-tools` mode fails unless executable tool-lane checks are available and passing
 
 ### `sync-public.sh`
 1. Verifies you're on main and it's pushed

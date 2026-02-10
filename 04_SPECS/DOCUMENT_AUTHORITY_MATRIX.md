@@ -21,6 +21,9 @@ Purpose: define which documents are allowed to drive execution decisions.
 | `website/public/metrics.json` | Public claim levels and lane quality flags | `bash scripts/generate-metrics.sh` |
 | `reports/public_quality_status.json` | Public quality gate output | `bash scripts/public-quality-gates.sh` |
 | `reports/easier_gap_status.json` | Easier-gap closure status (items 1/2/9/12) | `bash scripts/check-easier-gaps.sh` |
+| `reports/medium_gap_status.json` | Medium-gap closure status (items 1/2/3/4/9/12) | `bash scripts/check-medium-gaps.sh` |
+| `reports/heavy_gap_status.json` | Heavy-gap foundation status (items 5/6/7/8/10/11/13) | `bash scripts/check-heavy-gaps.sh` |
+| `reports/dim1_dim9_promotion_status.json` | Dim1/Dim9 promotion-readiness status | `bash scripts/check-dim1-dim9-promotion.sh` |
 
 ## L1: Operational Sources
 
@@ -61,5 +64,7 @@ If two documents conflict:
 1. `03_PROTO/target/release/riinac verify --full` passes.
 2. `bash scripts/public-quality-gates.sh` passes.
 3. `bash scripts/check-easier-gaps.sh` passes.
-4. `bash scripts/update-proof-ledger.sh --check` passes.
-
+4. `bash scripts/check-medium-gaps.sh` passes.
+5. `bash scripts/check-heavy-gaps.sh` passes.
+6. `bash scripts/check-dim1-dim9-promotion.sh` passes.
+7. `bash scripts/update-proof-ledger.sh --check` passes.
