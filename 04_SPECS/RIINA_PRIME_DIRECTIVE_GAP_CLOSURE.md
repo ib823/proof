@@ -9,6 +9,16 @@ THE ABSOLUTE PRIME DIRECTIVES: THE ARCHITECTURE OF PERFECTION
 Applied to RIINA with PARANOID-ABSOLUTE verification
 ```
 
+## EXECUTION NOTE (2026-02-10)
+
+This document remains a strategic gap taxonomy reference.
+For live execution ordering, completion state, and pending work, use:
+
+- `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`
+- `04_SPECS/DOCUMENT_AUTHORITY_MATRIX.md`
+- `PROOF_STATUS.md`
+- `website/public/metrics.json`
+
 ---
 
 ## EXECUTIVE SUMMARY

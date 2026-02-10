@@ -199,6 +199,11 @@ case "$MODE" in
     run_audit_pipeline
     run_step "SYNC PUBLIC" bash "$REPO_ROOT/scripts/sync-public.sh"
     run_step "DEPLOY WEBSITE" bash "$REPO_ROOT/scripts/deploy-website.sh"
+    if [ -f "$REPO_ROOT/scripts/verify-riina-deploy.sh" ]; then
+      run_step "VERIFY /riina END-STATE" bash "$REPO_ROOT/scripts/verify-riina-deploy.sh"
+    else
+      echo -e "${YELLOW}Skipping /riina deploy verification: script not found${NC}"
+    fi
     ;;
   release)
     run_audit_pipeline

@@ -6,6 +6,18 @@ There are exactly TWO instructions a human gives: **"commit"** and **"deploy"**.
 Each has a fixed sequence of steps. Every step must pass before the next runs.
 If any step fails, STOP. Fix it. Restart from step 1.
 
+## EXECUTION SOURCE OF TRUTH
+
+- Canonical execution board: `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`
+- Authority rules: `04_SPECS/DOCUMENT_AUTHORITY_MATRIX.md`
+- Live state inputs:
+  - `PROOF_STATUS.md`
+  - `website/public/metrics.json`
+  - `reports/public_quality_status.json`
+  - `reports/easier_gap_status.json`
+
+If descriptive roadmaps conflict with these live sources, live sources win.
+
 ---
 
 ## INSTRUCTION: "COMMIT"
@@ -44,7 +56,8 @@ Step 3.  bash scripts/sync-public.sh         — Cherry-pick main → public,
                                                 push public to origin AND ib823/riina
 Step 4.  bash scripts/deploy-website.sh      — Build website (npm run build),
                                                 push dist/ to gh-pages on ib823/riina
-Step 5.  Hard refresh https://ib823.github.io/riina/ and VISUALLY VERIFY
+Step 5.  bash scripts/verify-riina-deploy.sh — Verify /riina main + gh-pages + live endpoints
+         Hard refresh https://ib823.github.io/riina/ and VISUALLY VERIFY
 ```
 
 **That's it. 5 steps. The website is live after step 4. Step 5 confirms it.**
@@ -53,14 +66,15 @@ Step 5.  Hard refresh https://ib823.github.io/riina/ and VISUALLY VERIFY
 
 ## DEPLOY STRICT CHECKLIST
 
-Every deploy must pass **all 5 checks in order**. If any fails, STOP.
+Every deploy must pass **all 6 checks in order**. If any fails, STOP.
 
 ```
 [  ] 1. git status                           — Must show "working tree clean"
 [  ] 2. bash scripts/audit-docs.sh           — Must exit 0 (metrics match docs)
 [  ] 3. bash scripts/sync-public.sh          — Sync main → public → ib823/riina
 [  ] 4. bash scripts/deploy-website.sh       — Build + push dist/ to gh-pages
-[  ] 5. Hard refresh https://ib823.github.io/riina/  — Visual verify (MANDATORY)
+[  ] 5. bash scripts/verify-riina-deploy.sh  — Verify /riina + live endpoints
+[  ] 6. Hard refresh https://ib823.github.io/riina/  — Visual verify (MANDATORY)
 ```
 
 **Failure modes:**
@@ -68,7 +82,8 @@ Every deploy must pass **all 5 checks in order**. If any fails, STOP.
 - Step 2 fails → Run `bash scripts/generate-metrics.sh --fast && bash scripts/sync-metrics.sh`, then re-run
 - Step 3 fails → Check branch protection / GPG signing on ib823/riina
 - Step 4 fails → Check `npm run build` locally, fix website build errors
-- Step 5 fails → Check GitHub Pages deployment status, wait and retry
+- Step 5 fails → Check `riina` remote, branch parity (`riina/main` vs `origin/public`), and live endpoint reachability
+- Step 6 fails → Check GitHub Pages deployment status, wait and retry
 
 ---
 
@@ -102,6 +117,15 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 4. Copies install.sh into dist/
 5. Creates temp git repo in dist/, force-pushes to gh-pages on ib823/riina
 6. GitHub Pages serves gh-pages → https://ib823.github.io/riina/
+
+### `verify-riina-deploy.sh`
+1. Fetches `riina/main` and `riina/gh-pages`
+2. Verifies `riina/main` matches `origin/public` (when available)
+3. Verifies live endpoints return 200:
+   - `https://ib823.github.io/riina/`
+   - `https://ib823.github.io/riina/metrics.json`
+   - `https://ib823.github.io/riina/install.sh`
+4. Validates `metrics.json` shape and claim-level keys
 
 ---
 

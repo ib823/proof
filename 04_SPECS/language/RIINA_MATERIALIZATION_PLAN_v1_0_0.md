@@ -8,6 +8,16 @@
 **Incorporates:** `SYNTAX_IMPROVEMENT_SPEC_v2_0_0` (fully included herein)
 **Scope:** Complete plan from current prototype to production-ready language
 
+## EXECUTION NOTE (2026-02-10)
+
+This plan remains the program-level roadmap.
+For strict, live A-to-Z execution tracking and completion status, use:
+
+- `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`
+- `04_SPECS/DOCUMENT_AUTHORITY_MATRIX.md`
+- `PROOF_STATUS.md`
+- `website/public/metrics.json`
+
 ---
 
 ## TABLE OF CONTENTS

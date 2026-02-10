@@ -20,6 +20,16 @@
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
+## EXECUTION NOTE (2026-02-10)
+
+This document is a mapping reference, not the operational execution board.
+Use these for live execution decisions:
+
+- `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`
+- `04_SPECS/DOCUMENT_AUTHORITY_MATRIX.md`
+- `PROOF_STATUS.md`
+- `website/public/metrics.json`
+
 ---
 
 # TABLE OF CONTENTS

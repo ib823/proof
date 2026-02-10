@@ -90,6 +90,7 @@ INTERNAL_PATHS=(
     "scripts/sync-public.sh"
     "scripts/verify-public.sh"
     "scripts/sync-metrics.sh"
+    "scripts/verify-riina-deploy.sh"
 
     # --- IDE/editor config ---
     ".cursor/"

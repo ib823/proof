@@ -1,5 +1,11 @@
 # RIINA DOMINANCE STRATEGY ASSESSMENT
 
+> HISTORICAL NOTICE (2026-02-10)
+> This file is retained for historical context only.
+> It contains stale counts and superseded claim framing.
+> Do not use it for current execution or public claim decisions.
+> Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`, `PROOF_STATUS.md`, and `website/public/metrics.json`.
+
 **Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
 
 ## Executive Summary

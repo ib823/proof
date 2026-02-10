@@ -1,12 +1,18 @@
 # RIINA ATTACK-TO-PROOF TRACEABILITY INDEX
 
+> HISTORICAL NOTICE (2026-02-10)
+> This file is retained for historical coordination context.
+> It may contain stale axiom and theorem counts.
+> Do not use it as the live execution source of truth.
+> Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`, `PROOF_STATUS.md`, and `website/public/metrics.json`.
+
 **Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 852 Rust tests
 
 ```
 Version: 1.0.0
 Date: 2026-01-31
 Classification: COORDINATION
-Status: AUTHORITATIVE
+Status: HISTORICAL REFERENCE (superseded for live execution on 2026-02-10)
 Purpose: Map every threat from MASTER_THREAT_MODEL.md to its Coq proof status
 Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
 ```

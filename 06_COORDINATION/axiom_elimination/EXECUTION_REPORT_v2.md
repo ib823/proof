@@ -1,5 +1,10 @@
 # RIINA AXIOM ELIMINATION - EXECUTION REPORT v2
 
+> HISTORICAL NOTICE (2026-02-10)
+> This is an intermediate execution report preserved for traceability.
+> It includes stale "remaining admits" state and is not operational truth.
+> Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md` and `PROOF_STATUS.md` for live status.
+
 **Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 852 Rust tests
 
 **Date:** 2026-01-25
