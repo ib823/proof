@@ -120,7 +120,8 @@ if [ -d "$ROOT_DIR/02_FORMAL/lean" ]; then
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             LEAN_THEOREMS=$((LEAN_THEOREMS + count))
         fi
-        sorry_count=$(grep -cP '^\s*sorry\b' "$f" 2>/dev/null || true)
+        # Count token-level sorry usage (captures "by sorry", ":= sorry", etc.).
+        sorry_count=$(grep -oP '\bsorry\b' "$f" 2>/dev/null | wc -l | tr -d ' ')
         if [ -n "$sorry_count" ] && [ "$sorry_count" -gt 0 ] 2>/dev/null; then
             LEAN_SORRY=$((LEAN_SORRY + sorry_count))
         fi
@@ -140,7 +141,8 @@ if [ -d "$ROOT_DIR/02_FORMAL/isabelle" ]; then
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             ISABELLE_LEMMAS=$((ISABELLE_LEMMAS + count))
         fi
-        sorry_count=$(grep -cP '^\s*sorry\b' "$f" 2>/dev/null || true)
+        # Count token-level sorry/oops usage across the file.
+        sorry_count=$(grep -oP '\b(sorry|oops)\b' "$f" 2>/dev/null | wc -l | tr -d ' ')
         if [ -n "$sorry_count" ] && [ "$sorry_count" -gt 0 ] 2>/dev/null; then
             ISABELLE_SORRY=$((ISABELLE_SORRY + sorry_count))
         fi
@@ -347,6 +349,54 @@ SESSION_FROM_LOG=$(grep -oP "Session \K\d+" "$ROOT_DIR/SESSION_LOG.md" 2>/dev/nu
 SESSION_FROM_CLAUDE=$(grep -oP "Session \K\d+" "$ROOT_DIR/CLAUDE.md" 2>/dev/null | sort -n | tail -1 || echo "0")
 SESSION=$((SESSION_FROM_LOG > SESSION_FROM_CLAUDE ? SESSION_FROM_LOG : SESSION_FROM_CLAUDE))
 
+# Conservative claim-level classification for public messaging:
+#   generated -> present in source or generated artifacts
+#   compiled -> tool/lane compilation evidence available
+#   mechanized -> machine-checked with active-build zero-gap policy
+#   independently_audited -> external independent audit published
+COQ_COMPILED=true
+if [ "$QED_ACTIVE" -eq 0 ] || [ "$ADMITTED" -ne 0 ] || [ "$AXIOMS" -ne 0 ] || [ "$ASSUMPTIONS" -ne 0 ]; then
+    COQ_COMPILED=false
+fi
+
+# Keep non-Coq compile flags strict: only set true when lane-specific
+# compilation evidence is integrated into this generator.
+LEAN_COMPILED=false
+ISABELLE_COMPILED=false
+
+CLAIM_COQ="generated"
+[ "$COQ_COMPILED" = true ] && CLAIM_COQ="mechanized"
+CLAIM_LEAN="generated"
+[ "$LEAN_COMPILED" = true ] && CLAIM_LEAN="compiled"
+CLAIM_ISABELLE="generated"
+[ "$ISABELLE_COMPILED" = true ] && CLAIM_ISABELLE="compiled"
+CLAIM_FSTAR="generated"
+CLAIM_TLAPLUS="generated"
+CLAIM_ALLOY="generated"
+CLAIM_SMT="generated"
+CLAIM_VERUS="generated"
+CLAIM_KANI="generated"
+CLAIM_TV="generated"
+
+INDEPENDENTLY_AUDITED=false
+OVERALL_CLAIM="$CLAIM_COQ"
+[ "$INDEPENDENTLY_AUDITED" = true ] && OVERALL_CLAIM="independently_audited"
+
+MULTIPROVER_STATUS="IN_PROGRESS"
+[ "$OVERALL_CLAIM" = "mechanized" ] && MULTIPROVER_STATUS="ACTIVE_COQ_MECHANIZED"
+if [ "$CLAIM_LEAN" != "generated" ] \
+  && [ "$CLAIM_ISABELLE" != "generated" ] \
+  && [ "$CLAIM_FSTAR" != "generated" ] \
+  && [ "$CLAIM_TLAPLUS" != "generated" ] \
+  && [ "$CLAIM_ALLOY" != "generated" ] \
+  && [ "$CLAIM_SMT" != "generated" ] \
+  && [ "$CLAIM_VERUS" != "generated" ] \
+  && [ "$CLAIM_KANI" != "generated" ] \
+  && [ "$CLAIM_TV" != "generated" ]; then
+    MULTIPROVER_STATUS="MULTI_LANE_COMPILED"
+fi
+[ "$INDEPENDENTLY_AUDITED" = true ] && MULTIPROVER_STATUS="INDEPENDENTLY_AUDITED"
+
 # Generate JSON
 cat > "$OUTPUT_FILE" << EOF
 {
@@ -430,24 +480,39 @@ cat > "$OUTPUT_FILE" << EOF
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": $((LEAN_SORRY + ISABELLE_SORRY)),
-    "status": "ALL COMPLETE"
+    "status": "$MULTIPROVER_STATUS"
   },
   "quality": {
-    "coqCompiled": true,
-    "leanCompiled": false,
-    "isabelleCompiled": false,
-    "fstarStatus": "stub",
-    "tlaplusStatus": "stub",
-    "alloyStatus": "stub",
-    "smtStatus": "stub",
-    "verusStatus": "stub",
-    "kaniStatus": "stub",
-    "tvStatus": "stub",
+    "coqCompiled": $COQ_COMPILED,
+    "leanCompiled": $LEAN_COMPILED,
+    "isabelleCompiled": $ISABELLE_COMPILED,
+    "fstarStatus": "$CLAIM_FSTAR",
+    "tlaplusStatus": "$CLAIM_TLAPLUS",
+    "alloyStatus": "$CLAIM_ALLOY",
+    "smtStatus": "$CLAIM_SMT",
+    "verusStatus": "$CLAIM_VERUS",
+    "kaniStatus": "$CLAIM_KANI",
+    "tvStatus": "$CLAIM_TV",
     "coqTiers": {
       "core": $COQ_TIER1_CORE,
       "domain": $COQ_TIER2_DOMAIN,
       "domainTrivial": $COQ_TRIVIAL
     }
+  },
+  "claimLevels": {
+    "legend": ["generated", "compiled", "mechanized", "independently_audited"],
+    "overall": "$OVERALL_CLAIM",
+    "independentlyAudited": $INDEPENDENTLY_AUDITED,
+    "coq": "$CLAIM_COQ",
+    "lean": "$CLAIM_LEAN",
+    "isabelle": "$CLAIM_ISABELLE",
+    "fstar": "$CLAIM_FSTAR",
+    "tlaplus": "$CLAIM_TLAPLUS",
+    "alloy": "$CLAIM_ALLOY",
+    "smt": "$CLAIM_SMT",
+    "verus": "$CLAIM_VERUS",
+    "kani": "$CLAIM_KANI",
+    "tv": "$CLAIM_TV"
   },
   "rust": {
     "tests": ${RUST_TESTS:-0},
@@ -460,12 +525,12 @@ cat > "$OUTPUT_FILE" << EOF
     "threats": "1231+"
   },
   "milestones": [
-    { "date": "2026-02-07", "event": "10-prover full stack verification (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV)" },
-    { "date": "2026-02-07", "event": "Lean 4 compilation: Syntax + Semantics + Typing (0 sorry)" },
-    { "date": "2026-02-07", "event": "SMT real assertions: 1,187 verified (Z3 sat)" },
+    { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
+    { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
     { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },
-    { "date": "2026-02-06", "event": "Triple-prover 100% complete (0 sorry across all provers)" },
-    { "date": "2026-02-10", "event": "Axiom token elimination: 4 → 0 (explicit assumptions remain)" },
+    { "date": "2026-02-06", "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)" },
+    { "date": "2026-02-10", "event": "Axiom token elimination: 4 → 0 (active-build explicit assumptions now 0)" },
     { "date": "2026-02-01", "event": "Phase 7 complete: Platform Universality" }
   ]
 }
@@ -488,6 +553,9 @@ echo "  Verus:        $VERUS_PROOFS proofs, $VERUS_FILES files"
 echo "  Kani:         $KANI_HARNESSES harnesses, $KANI_FILES files"
 echo "  TV:           $TV_VALIDATIONS validations, $TV_FILES files"
 echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
+echo "  Claim levels: overall=$OVERALL_CLAIM coq=$CLAIM_COQ lean=$CLAIM_LEAN isabelle=$CLAIM_ISABELLE"
+echo "                fstar=$CLAIM_FSTAR tlaplus=$CLAIM_TLAPLUS alloy=$CLAIM_ALLOY smt=$CLAIM_SMT"
+echo "                verus=$CLAIM_VERUS kani=$CLAIM_KANI tv=$CLAIM_TV"
 echo "  Quality tiers:"
 echo "    Core Coq:   $COQ_TIER1_CORE (foundations/type_system/effects/properties/termination)"
 echo "    Domain Coq: $COQ_TIER2_DOMAIN (domains/Industries/compliance)"
