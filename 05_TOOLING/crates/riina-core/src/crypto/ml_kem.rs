@@ -26,7 +26,7 @@
 //!
 //! # Implementation Notes
 //!
-//! - Number Theoretic Transform (NTT) over Z_q[X]/(X^256 + 1) where q = 3329
+//! - Number Theoretic Transform (NTT) over `Z_q[X]/(X^256 + 1)` where q = 3329
 //! - NTT uses ζ = 17 as primitive 512th root of unity mod q
 //! - Barrett reduction for efficient modular arithmetic
 //! - Centered binomial distribution sampling using PRF
@@ -35,7 +35,7 @@
 //!
 //! # References
 //!
-//! - FIPS 203: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf
+//! - FIPS 203: <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf>
 
 use crate::crypto::keccak::{Sha3_256, Sha3_512, Shake128, Shake256};
 use crate::crypto::{CryptoError, CryptoResult, Kem};
@@ -89,7 +89,7 @@ pub const SHARED_SECRET_SIZE: usize = 32;
 /// Zetas in Montgomery domain (R = 2^16)
 ///
 /// These are derived from the Kyber reference implementation.
-/// zetas[i] = ζ^(BitRev_7(i)) * 2^16 mod q in signed representation [-q/2, q/2)
+/// `zetas[i] = ζ^(BitRev_7(i)) * 2^16 mod q` in signed representation `[-q/2, q/2)`
 /// Converted to signed i16 for use with Montgomery arithmetic.
 ///
 /// Source: pq-crystals/kyber reference implementation
@@ -184,7 +184,7 @@ fn fqmul(a: i16, b: i16) -> i16 {
 // Polynomial Type
 // =============================================================================
 
-/// Polynomial in Z_q[X]/(X^256 + 1)
+/// Polynomial in `Z_q[X]/(X^256 + 1)`
 ///
 /// Coefficients are stored in [0, q) in standard representation,
 /// or in Montgomery form when in NTT domain.
@@ -294,7 +294,7 @@ impl Poly {
     /// in the NTT domain.
     ///
     /// The NTT representation uses pairs of coefficients representing
-    /// elements in Z_q[X]/(X^2 - zeta) for different zeta values.
+    /// elements in `Z_q[X]/(X^2 - zeta)` for different zeta values.
     ///
     /// Algorithm 11 from FIPS 203
     pub fn pointwise_mul(&mut self, a: &Poly, b: &Poly) {
@@ -576,7 +576,7 @@ impl PolyVec {
         }
     }
 
-    /// Inner product: result = sum_i(a[i] * b[i]) in NTT domain
+    /// Inner product: `result = sum_i(a[i] * b[i])` in NTT domain
     pub fn pointwise_acc(&self, other: &PolyVec) -> Poly {
         let mut result = Poly::zero();
         let mut temp = Poly::zero();

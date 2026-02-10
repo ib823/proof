@@ -14,6 +14,17 @@
 //! - Cross-cutting: Coverage, mutation testing, fuzzing
 
 #![forbid(unsafe_code)]
+#![allow(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    unused_variables,
+    dead_code,
+    unused_comparisons
+)]
 // Lints configured at workspace level in Cargo.toml
 
 #[allow(unused_imports)]

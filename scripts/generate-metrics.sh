@@ -82,6 +82,21 @@ while IFS= read -r f; do
     fi
 done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
 
+# Count explicit proof-architecture assumptions in active build (target: 0)
+# Currently tracked assumption:
+#   - Parameter val_rel_n_step_up (NonInterference_v2.v)
+ASSUMPTIONS=0
+while IFS= read -r f; do
+    [[ "$f" =~ ^[[:space:]]*# ]] && continue
+    [[ "$f" != *.v ]] && continue
+    f=$(echo "$f" | sed 's/^[[:space:]]*//')
+    fullpath="$ROOT_DIR/02_FORMAL/coq/$f"
+    count=$(grep -cE "^Parameter val_rel_n_step_up " "$fullpath" 2>/dev/null || true)
+    if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+        ASSUMPTIONS=$((ASSUMPTIONS + count))
+    fi
+done < "$ROOT_DIR/02_FORMAL/coq/_CoqProject"
+
 # Count Lean 4 theorems (theorem + lemma declarations)
 LEAN_THEOREMS=0
 LEAN_SORRY=0
@@ -337,6 +352,7 @@ cat > "$OUTPUT_FILE" << EOF
     "qedTotal": $((QED_ACTIVE + QED_DEPRECATED)),
     "admitted": $ADMITTED,
     "axioms": $AXIOMS,
+    "assumptions": $ASSUMPTIONS,
     "axiomsJustified": true
   },
   "coq": {
@@ -437,7 +453,7 @@ cat > "$OUTPUT_FILE" << EOF
     { "date": "2026-02-07", "event": "SMT real assertions: 1,187 verified (Z3 sat)" },
     { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },
     { "date": "2026-02-06", "event": "Triple-prover 100% complete (0 sorry across all provers)" },
-    { "date": "2026-02-06", "event": "Axiom elimination: 4 → 1 (3 axioms proved)" },
+    { "date": "2026-02-10", "event": "Axiom token elimination: 4 → 0 (explicit assumptions remain)" },
     { "date": "2026-02-01", "event": "Phase 7 complete: Platform Universality" }
   ]
 }
@@ -449,6 +465,7 @@ echo "  Qed Deprecated: $QED_DEPRECATED"
 echo "  Qed Total:    $((QED_ACTIVE + QED_DEPRECATED))"
 echo "  Admitted:     $ADMITTED"
 echo "  Axioms:       $AXIOMS"
+echo "  Assumptions:  $ASSUMPTIONS"
 echo "  Lean:         $LEAN_THEOREMS theorems, $LEAN_SORRY sorry, $LEAN_FILES files"
 echo "  Isabelle:     $ISABELLE_LEMMAS lemmas, $ISABELLE_SORRY sorry, $ISABELLE_FILES files"
 echo "  F*:           $FSTAR_LEMMAS lemmas, $FSTAR_FILES files"

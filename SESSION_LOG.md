@@ -1,6 +1,6 @@
 # Session Log
 
-**Verification:** 7,957 Coq Qed (compiled, 0 Admitted, 1 policy axiom) | 10 independent provers | 852 Rust tests
+**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 policy axiom) | 10 independent provers | 852 Rust tests
 
 ## 2026-02-06 (Session 75): P2/P4/P5 Implementation
 

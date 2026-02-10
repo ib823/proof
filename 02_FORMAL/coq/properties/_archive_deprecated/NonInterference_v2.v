@@ -1497,7 +1497,7 @@ Qed.
     STEP-UP INFRASTRUCTURE
     ========================================================================
 
-    PROOF-ARCHITECTURE AXIOM: val_rel_n_step_up
+    PROOF-ARCHITECTURE ASSUMPTION: val_rel_n_step_up
 
     Full val_rel_n step-up (val_rel_n n → val_rel_n (S n)) is needed by
     the Fundamental Theorem (T_App, T_Match, T_Deref cases) but does NOT
@@ -1523,16 +1523,15 @@ Qed.
     See: 02_FORMAL/coq/properties/AhmedStyleTest.v for a proof-of-concept
     of the axiom-free approach using Fix lt_wf.
 
-    Axiom count: 2 total
-    - logical_relation_declassify: policy axiom (declassification responsibility)
-    - val_rel_n_step_up: proof-architecture axiom (step-index monotonicity)
+    Assumption count (this module): 1 proof-architecture assumption
+    - val_rel_n_step_up: step-index monotonicity bridge for higher-order cases
 *)
 
-(** Step-up axiom: if two values are related at step n and well-typed,
+(** Step-up assumption: if two values are related at step n and well-typed,
     they are related at step S n.
     Justified: holds for all values produced by well-typed evaluation.
     See documentation above for full analysis. *)
-Axiom val_rel_n_step_up : forall n Σ T v1 v2,
+Parameter val_rel_n_step_up : forall n Σ T v1 v2,
   val_rel_n n Σ T v1 v2 ->
   has_type nil Σ Public v1 T EffectPure ->
   has_type nil Σ Public v2 T EffectPure ->

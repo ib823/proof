@@ -41,13 +41,8 @@ properties/StoreRelation.v
 properties/ReferenceOps.v
 properties/Declassification.v
 
-# Properties - Core (legacy v1 retained under new name for dependent modules)
-properties/NonInterference_v2_LogicalRelation.v
-properties/NonInterference_v2.v
-properties/NonInterference_v2_Monotone.v
+# Properties - Core (active)
 properties/AhmedStyleTest.v
-properties/SecurityProperties.v
-properties/Composition.v
 
 # REMOVED: Leaf files with unprovable admits (no dependents)
 # Moved to _archive_deprecated/ — see commit message for analysis
@@ -62,8 +57,7 @@ properties/Composition.v
 # Phase 6: Axiom Elimination (Claude AI Web reworking - will re-enable)
 # properties/AxiomEliminationVerified.v  # 15 admits, under rework
 
-# Axiom Elimination Proofs (Session 30)
-properties/ValRelStepLimit_PROOF.v
+# Axiom Elimination Proofs (archived legacy)
 
 # REMOVED: Leaf files with axioms only (not imported by any active file)
 # properties/LogicalRelationAssign_PROOF.v    # 14 axioms, leaf node

@@ -14,6 +14,16 @@
 //! Also generates and verifies Software Bill of Materials (SBOM).
 
 #![forbid(unsafe_code)]
+#![allow(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    unused_variables,
+    dead_code
+)]
 // Lints configured at workspace level in Cargo.toml
 
 #[allow(unused_imports)]
@@ -71,7 +81,7 @@ enum Commands {
         #[arg(short, long)]
         key: PathBuf,
 
-        /// Output signature file (default: <file>.sig)
+        /// Output signature file (default: `<file>.sig`)
         #[arg(short, long)]
         output: Option<PathBuf>,
     },

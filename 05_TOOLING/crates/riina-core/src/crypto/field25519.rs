@@ -28,7 +28,7 @@
 //! # References
 //!
 //! - RFC 7748: Elliptic Curves for Security
-//! - DJB's Curve25519 paper: https://cr.yp.to/ecdh.html
+//! - DJB's Curve25519 paper: <https://cr.yp.to/ecdh.html>
 //! - Adam Langley's curve25519-donna
 
 use core::ops::{Add, Mul, Sub};
@@ -36,11 +36,11 @@ use core::ops::{Add, Mul, Sub};
 /// A field element in GF(2^255-19), represented in radix 2^51.
 ///
 /// Internally stored as 5 limbs, each up to 51 bits:
-/// - limbs[0]: bits 0..51
-/// - limbs[1]: bits 51..102
-/// - limbs[2]: bits 102..153
-/// - limbs[3]: bits 153..204
-/// - limbs[4]: bits 204..255
+/// - `limbs[0]`: bits 0..51
+/// - `limbs[1]`: bits 51..102
+/// - `limbs[2]`: bits 102..153
+/// - `limbs[3]`: bits 153..204
+/// - `limbs[4]`: bits 204..255
 ///
 /// # Invariants
 ///

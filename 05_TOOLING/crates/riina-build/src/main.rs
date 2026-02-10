@@ -63,7 +63,7 @@ struct Cli {
     #[arg(short, long, global = true, default_value = "debug")]
     profile: Profile,
 
-    /// Project root (default: current directory or RIINA_ROOT)
+    /// Project root (default: current directory or `RIINA_ROOT`)
     #[arg(long, global = true)]
     root: Option<PathBuf>,
 }
@@ -144,19 +144,19 @@ enum Profile {
 }
 
 impl Profile {
-    fn as_str(self) -> &'static str {
+    const fn as_str(self) -> &'static str {
         match self {
-            Profile::Debug => "debug",
-            Profile::Release => "release",
-            Profile::Bench => "bench",
+            Self::Debug => "debug",
+            Self::Release => "release",
+            Self::Bench => "bench",
         }
     }
 
     fn cargo_args(self) -> Vec<&'static str> {
         match self {
-            Profile::Debug => vec![],
-            Profile::Release => vec!["--release"],
-            Profile::Bench => vec!["--profile", "bench"],
+            Self::Debug => vec![],
+            Self::Release => vec!["--release"],
+            Self::Bench => vec!["--profile", "bench"],
         }
     }
 }
@@ -211,7 +211,11 @@ impl BuildContext {
     }
 
     fn log(&self, msg: &str) {
-        println!("[riina-build] {msg}");
+        if self.verbose {
+            println!("[riina-build][verbose] {msg}");
+        } else {
+            println!("[riina-build] {msg}");
+        }
     }
 
     fn log_verbose(&self, msg: &str) {
@@ -246,20 +250,20 @@ enum BuildError {
 impl std::fmt::Display for BuildError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            BuildError::NotRiinaProject(path) => {
+            Self::NotRiinaProject(path) => {
                 write!(f, "Not a RIINA project: {}", path.display())
             }
-            BuildError::CommandFailed { command, exit_code } => {
+            Self::CommandFailed { command, exit_code } => {
                 write!(f, "Command '{command}' failed with exit code {exit_code}")
             }
-            BuildError::CommandNotFound(cmd) => {
+            Self::CommandNotFound(cmd) => {
                 write!(f, "Command not found: {cmd}")
             }
-            BuildError::IoError(e) => write!(f, "I/O error: {e}"),
-            BuildError::VerificationFailed(msg) => {
+            Self::IoError(e) => write!(f, "I/O error: {e}"),
+            Self::VerificationFailed(msg) => {
                 write!(f, "Verification failed: {msg}")
             }
-            BuildError::InvalidConfiguration(msg) => {
+            Self::InvalidConfiguration(msg) => {
                 write!(f, "Invalid configuration: {msg}")
             }
         }
@@ -268,7 +272,7 @@ impl std::fmt::Display for BuildError {
 
 impl From<io::Error> for BuildError {
     fn from(e: io::Error) -> Self {
-        BuildError::IoError(e)
+        Self::IoError(e)
     }
 }
 
@@ -359,11 +363,10 @@ fn build_ada(ctx: &BuildContext, project: Option<&str>, proof_level: u8) -> Resu
     }
 
     // Find GPR file
-    let gpr_file = if let Some(proj) = project {
-        ada_dir.join(format!("{proj}.gpr"))
-    } else {
-        ada_dir.join("riina.gpr")
-    };
+    let gpr_file = project.map_or_else(
+        || ada_dir.join("riina.gpr"),
+        |proj| ada_dir.join(format!("{proj}.gpr")),
+    );
 
     if !gpr_file.exists() {
         ctx.log(&format!(
@@ -465,6 +468,12 @@ fn build_hdl(ctx: &BuildContext, target: Option<&str>) -> Result<(), BuildError>
     if !hdl_dir.exists() {
         ctx.log("No HDL directory found, skipping");
         return Ok(());
+    }
+
+    if matches!(target, Some(t) if t.trim().is_empty()) {
+        return Err(BuildError::InvalidConfiguration(
+            "HDL target must not be empty".to_string(),
+        ));
     }
 
     // TODO: Integrate with actual HDL toolchain

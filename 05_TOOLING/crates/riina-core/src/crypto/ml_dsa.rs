@@ -21,7 +21,7 @@
 //! # Status: IMPLEMENTATION COMPLETE
 //!
 //! Full ML-DSA-65 (FIPS 204) implementation including:
-//! - Number Theoretic Transform (NTT) over Zq[X]/(X^256 + 1)
+//! - Number Theoretic Transform (NTT) over `Zq[X]/(X^256 + 1)`
 //! - Polynomial arithmetic in the NTT domain
 //! - Rejection uniform sampling and eta-bounded sampling
 //! - HighBits/LowBits decomposition with Power2Round
@@ -149,7 +149,7 @@ pub const SIGNATURE_SIZE: usize = 3309;
 // Polynomial Type
 // =============================================================================
 
-/// Polynomial in Zq[X]/(X^256 + 1) for ML-DSA
+/// Polynomial in `Zq[X]/(X^256 + 1)` for ML-DSA
 #[derive(Clone)]
 struct Poly {
     coeffs: [i32; params::N],
@@ -402,7 +402,7 @@ impl PolyMatKL {
         }
     }
 
-    /// Matrix * vector (in NTT domain): result_k = sum_j(mat[k][j] * v[j])
+    /// Matrix * vector (in NTT domain): `result_k = sum_j(mat[k][j] * v[j])`
     fn mul_vec_ntt(&self, v: &PolyVecL) -> PolyVecK {
         let mut result = PolyVecK::zero();
         for i in 0..params::K {
@@ -497,12 +497,10 @@ fn use_hint(hint: i32, r: i32) -> i32 {
         } else {
             r1 + 1
         }
+    } else if r1 == 0 {
+        m - 1
     } else {
-        if r1 == 0 {
-            m - 1
-        } else {
-            r1 - 1
-        }
+        r1 - 1
     }
 }
 

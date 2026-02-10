@@ -32,7 +32,7 @@
  * | val_rel              | val_rel                | OK     |
  * | exp_rel              | exp_rel                | OK     |
  * | env_rel              | env_rel                | OK     |
- * | logical_relation     | logical_relation       | Axiom  |
+ * | logical_relation     | logical_relation       | Assumed |
  * | non_interference_stmt| non_interference_stmt  | Proved |
  *)
 
@@ -457,14 +457,10 @@ text \<open>
   - Triple-prover agreement on theorem STATEMENT verified
 \<close>
 
-(* Fundamental theorem (logical relation)
+(* Fundamental theorem dependency (logical relation)
    (matches Coq: Theorem logical_relation)
-   AXIOM: Justified by Coq proof (~4,600 lines) + 1 policy axiom *)
-axiomatization where
-  logical_relation:
-    "has_type \<Gamma> \<Sigma> LPublic e T \<epsilon> \<Longrightarrow>
-     env_rel \<Sigma> \<Gamma> \<rho>1 \<rho>2 \<Longrightarrow>
-     exp_rel \<Sigma> T (apply_subst \<rho>1 e) (apply_subst \<rho>2 e)"
+   This theory does not postulate it globally as an axiom; instead it is an
+   explicit assumption at theorem use sites. *)
 
 
 section \<open>Non-Interference Statement\<close>
@@ -481,7 +477,12 @@ definition single_subst :: "ident \<Rightarrow> expr \<Rightarrow> subst" where
    (matches Coq: Theorem non_interference_stmt)
    PROVED from logical_relation axiom + bridge lemma *)
 theorem non_interference_stmt:
-  assumes hval: "val_rel [] T_in v1 v2"
+  assumes hlogical:
+      "\<And>\<Gamma> \<Sigma> e T \<epsilon> \<rho>1 \<rho>2.
+         has_type \<Gamma> \<Sigma> LPublic e T \<epsilon> \<Longrightarrow>
+         env_rel \<Sigma> \<Gamma> \<rho>1 \<rho>2 \<Longrightarrow>
+         exp_rel \<Sigma> T (apply_subst \<rho>1 e) (apply_subst \<rho>2 e)"
+    and hval: "val_rel [] T_in v1 v2"
     and hty: "has_type [(x, T_in)] [] LPublic e T_out EffPure"
   shows "exp_rel [] T_out (subst x v1 e) (subst x v2 e)"
 proof -
@@ -504,7 +505,7 @@ proof -
   qed
 
   (* Apply the fundamental theorem *)
-  from logical_relation[OF hty henv]
+  from hlogical[OF hty henv]
   have "exp_rel [] T_out (apply_subst \<rho>1 e) (apply_subst \<rho>2 e)" .
 
   (* Bridge: apply_subst (single_subst x v) e = subst x v e *)
@@ -625,16 +626,16 @@ text \<open>
   | value_multi_step_refl    | value_multi_step_refl       | Proved  |
   | val_rel_implies_exp_rel  | val_rel_implies_exp_rel     | Proved  |
   | apply_subst_single_subst | apply_subst_single_subst    | Proved  |
-  | logical_relation         | logical_relation            | Axiom*  |
+  | logical_relation         | logical_relation            | Assumed |
   | non_interference_stmt    | non_interference_stmt       | Proved  |
 
-  * logical_relation is axiomatized, justified by the complete Coq proof
-    in NonInterference_v2_LogicalRelation.v (~4,600 lines, modulo the
+  * logical_relation is carried as an explicit theorem assumption,
+    justified by the complete Coq proof in
+    NonInterference_v2_LogicalRelation.v (~4,600 lines, modulo the
     policy axiom logical_relation_declassify for declassification).
-    The Coq proof is the authoritative source; this axiom bridges the
-    gap in the secondary prover.
+    The Coq proof remains the authoritative source.
 
-  Total: 14 definitions + 18 lemmas (17 proved, 1 axiom) — 0 unfinished
+  Total: 14 definitions + 18 lemmas (17 proved, 1 assumption) — 0 unfinished
 \<close>
 
 end

@@ -769,6 +769,7 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
 
     let mut admit_count = 0u32;
     let mut axiom_count = 0u32;
+    let mut explicit_step_up_assumption_count = 0u32;
 
     {
         let entries = active_coq_files(coq_dir);
@@ -797,6 +798,9 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
                     if trimmed.starts_with("Axiom ") {
                         axiom_count += 1;
                     }
+                    if trimmed.starts_with("Parameter val_rel_n_step_up ") {
+                        explicit_step_up_assumption_count += 1;
+                    }
                 }
             }
         }
@@ -816,7 +820,16 @@ fn scan_coq(coq_dir: &Path) -> Vec<CheckResult> {
         name: "Coq Axioms".into(),
         passed: true, // axioms are informational
         blocking: true,
-        details: format!("{axiom_count} (1 justified expected)"),
+        details: format!("{axiom_count} (informational; explicit assumptions tracked separately)"),
+    });
+
+    results.push(CheckResult {
+        name: "Coq Explicit Step-Up Assumption".into(),
+        passed: explicit_step_up_assumption_count == 0,
+        blocking: true,
+        details: format!(
+            "{explicit_step_up_assumption_count} (target: 0; Parameter val_rel_n_step_up)"
+        ),
     });
 
     results

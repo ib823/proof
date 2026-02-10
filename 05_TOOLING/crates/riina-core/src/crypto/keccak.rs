@@ -2,7 +2,7 @@
 
 //! Keccak and SHAKE Implementation (FIPS 202)
 //!
-//! This module implements the Keccak-f[1600] permutation and the SHAKE128/SHAKE256
+//! This module implements the `Keccak-f[1600]` permutation and the SHAKE128/SHAKE256
 //! extendable-output functions (XOFs) as specified in FIPS 202.
 //!
 //! # FIPS 202 Compliance
@@ -27,8 +27,8 @@
 //!
 //! # References
 //!
-//! - FIPS 202: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
-//! - Keccak Reference: https://keccak.team/keccak_specs_summary.html
+//! - FIPS 202: <https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf>
+//! - Keccak Reference: <https://keccak.team/keccak_specs_summary.html>
 
 use crate::zeroize::Zeroize;
 
@@ -36,12 +36,12 @@ use crate::zeroize::Zeroize;
 // Keccak-f[1600] Constants (FIPS 202, Section 3.2)
 // =============================================================================
 
-/// Number of rounds for Keccak-f[1600]
+/// Number of rounds for `Keccak-f[1600]`
 /// nr = 12 + 2*l where l = log2(64) = 6, so nr = 12 + 12 = 24
 const KECCAK_ROUNDS: usize = 24;
 
 /// Round constants for the ι (iota) step
-/// RC[i] for i = 0..23, computed as per FIPS 202 Algorithm 5
+/// `RC[i]` for `i = 0..23`, computed as per FIPS 202 Algorithm 5
 /// Each constant is a 64-bit value with bits set at positions 2^j - 1 for j = 0..6
 const RC: [u64; 24] = [
     0x0000000000000001,
@@ -71,8 +71,8 @@ const RC: [u64; 24] = [
 ];
 
 /// Rotation offsets for the ρ (rho) step
-/// r[x,y] for the lane at position (x,y), computed per FIPS 202 Section 3.2.2
-/// Indexed as ROTATION_OFFSETS[x + 5*y]
+/// `r[x,y]` for the lane at position `(x,y)`, computed per FIPS 202 Section 3.2.2
+/// Indexed as `ROTATION_OFFSETS[x + 5*y]`
 const ROTATION_OFFSETS: [u32; 25] = [
     //  x=0   x=1   x=2   x=3   x=4
     0, 1, 62, 28, 27, // y=0
@@ -83,11 +83,11 @@ const ROTATION_OFFSETS: [u32; 25] = [
 ];
 
 /// π (pi) step permutation indices
-/// Maps position i to position π(i) where B[y, (2x+3y) mod 5] = A[x,y]
-/// PI_LANE[j] gives the source lane index for destination lane j
+/// Maps position `i` to position `π(i)` where `B[y, (2x+3y) mod 5] = A[x,y]`
+/// `PI_LANE[j]` gives the source lane index for destination lane `j`
 ///
 /// Computed from: input (x,y) → output (y, (2x+3y) mod 5)
-/// With linear indexing: input[x + 5*y] → output[y + 5*((2x+3y) mod 5)]
+/// With linear indexing: `input[x + 5*y] → output[y + 5*((2x+3y) mod 5)]`
 ///
 /// For each output position j, find which input position i maps to it:
 /// j=0←i=0, j=1←i=6, j=2←i=12, j=3←i=18, j=4←i=24,
@@ -169,7 +169,7 @@ impl KeccakState {
         }
     }
 
-    /// Apply the Keccak-f[1600] permutation
+    /// Apply the `Keccak-f[1600]` permutation
     ///
     /// This is the core of Keccak, applying 24 rounds of:
     /// θ (theta) → ρ (rho) → π (pi) → χ (chi) → ι (iota)
@@ -179,7 +179,7 @@ impl KeccakState {
         }
     }
 
-    /// Apply a single round of Keccak-f[1600]
+    /// Apply a single round of `Keccak-f[1600]`
     #[inline]
     fn round(&mut self, round_idx: usize) {
         // θ (theta) step - Column parity mixing
@@ -200,9 +200,9 @@ impl KeccakState {
 
     /// θ (theta) step: Column parity diffusion
     ///
-    /// C[x] = A[x,0] ⊕ A[x,1] ⊕ A[x,2] ⊕ A[x,3] ⊕ A[x,4]
-    /// D[x] = C[x-1] ⊕ rot(C[x+1], 1)
-    /// A'[x,y] = A[x,y] ⊕ D[x]
+    /// `C[x] = A[x,0] ⊕ A[x,1] ⊕ A[x,2] ⊕ A[x,3] ⊕ A[x,4]`
+    /// `D[x] = C[x-1] ⊕ rot(C[x+1], 1)`
+    /// `A'[x,y] = A[x,y] ⊕ D[x]`
     #[inline]
     fn theta(&mut self) {
         // Compute column parities C[x] for x = 0..4
@@ -231,8 +231,8 @@ impl KeccakState {
 
     /// ρ (rho) step: Bit rotation within lanes
     ///
-    /// A'[x,y] = rot(A[x,y], r[x,y])
-    /// where r[x,y] are fixed rotation offsets per FIPS 202
+    /// `A'[x,y] = rot(A[x,y], r[x,y])`
+    /// where `r[x,y]` are fixed rotation offsets per FIPS 202
     #[inline]
     fn rho(&mut self) {
         for i in 0..25 {
@@ -242,8 +242,8 @@ impl KeccakState {
 
     /// π (pi) step: Lane permutation
     ///
-    /// A'[y, 2x+3y mod 5] = A[x,y]
-    /// Equivalently: A'[π(x,y)] = A[x,y]
+    /// `A'[y, 2x+3y mod 5] = A[x,y]`
+    /// Equivalently: `A'[π(x,y)] = A[x,y]`
     #[inline]
     fn pi(&mut self) {
         let mut temp = [0u64; 25];
@@ -255,7 +255,7 @@ impl KeccakState {
 
     /// χ (chi) step: Non-linear row mixing
     ///
-    /// A'[x,y] = A[x,y] ⊕ ((¬A[x+1,y]) ∧ A[x+2,y])
+    /// `A'[x,y] = A[x,y] ⊕ ((¬A[x+1,y]) ∧ A[x+2,y])`
     ///
     /// This is the only non-linear step in Keccak.
     #[inline]
@@ -281,7 +281,7 @@ impl KeccakState {
 
     /// ι (iota) step: Round constant addition
     ///
-    /// A'[0,0] = A[0,0] ⊕ RC[round]
+    /// `A'[0,0] = A[0,0] ⊕ RC[round]`
     #[inline]
     fn iota(&mut self, round_idx: usize) {
         self.lanes[0] ^= RC[round_idx];
