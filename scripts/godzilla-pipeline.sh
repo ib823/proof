@@ -159,6 +159,11 @@ run_audit_pipeline() {
   else
     echo -e "${YELLOW}Skipping easier-gap closure check: scripts/check-easier-gaps.sh not found${NC}"
   fi
+  if [ -f "$REPO_ROOT/scripts/public-quality-gates.sh" ]; then
+    run_step "PUBLIC QUALITY GATES" bash "$REPO_ROOT/scripts/public-quality-gates.sh"
+  else
+    echo -e "${YELLOW}Skipping public quality gates: scripts/public-quality-gates.sh not found${NC}"
+  fi
 
   if [ "$SKIP_DEEP" -eq 0 ]; then
     if [ -f "$REPO_ROOT/05_TOOLING/scripts/verify.sh" ]; then

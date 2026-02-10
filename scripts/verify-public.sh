@@ -27,7 +27,7 @@ echo "================================================================"
 echo ""
 
 # ── 1. No private repo URL references ────────────────────────────────
-echo "[1/8] Checking for ib823/proof references..."
+echo "[1/9] Checking for ib823/proof references..."
 if grep -ri 'ib823/proof' "$REPO_ROOT" \
     --include='*.md' --include='*.toml' --include='*.json' \
     --include='*.nix' --include='*.sh' --include='*.txt' \
@@ -39,7 +39,7 @@ else
 fi
 
 # ── 2. No internal files ─────────────────────────────────────────────
-echo "[2/8] Checking for internal files..."
+echo "[2/9] Checking for internal files..."
 for f in CLAUDE.md PROGRESS.md SESSION_LOG.md VERIFICATION_MANIFEST.md \
          REPO_PROTECTION_GUIDE.md axiom_audit_report.txt; do
     if [ -f "$REPO_ROOT/$f" ]; then
@@ -49,7 +49,7 @@ for f in CLAUDE.md PROGRESS.md SESSION_LOG.md VERIFICATION_MANIFEST.md \
 done
 
 # ── 3. No internal directories ───────────────────────────────────────
-echo "[3/8] Checking for internal directories..."
+echo "[3/9] Checking for internal directories..."
 for d in 01_RESEARCH 06_COORDINATION 99_ARCHIVE claude_ai_output dist 04_SPECS/business; do
     if [ -d "$REPO_ROOT/$d" ]; then
         echo -e "${RED}FAIL: $d/ exists on public branch${NC}"
@@ -58,7 +58,7 @@ for d in 01_RESEARCH 06_COORDINATION 99_ARCHIVE claude_ai_output dist 04_SPECS/b
 done
 
 # ── 4. No Co-Authored-By in scripts ──────────────────────────────────
-echo "[4/8] Checking for Co-Authored-By in scripts..."
+echo "[4/9] Checking for Co-Authored-By in scripts..."
 if grep -ri 'Co-Authored-By.*anthropic' "$REPO_ROOT/scripts/" 2>/dev/null | grep -v 'verify-public.sh'; then
     echo -e "${RED}FAIL: Co-Authored-By in scripts${NC}"
     FAIL=1
@@ -67,7 +67,7 @@ else
 fi
 
 # ── 5. License consistency ────────────────────────────────────────────
-echo "[5/8] Checking license consistency..."
+echo "[5/9] Checking license consistency..."
 LICENSE_FAIL=0
 for f in riina-vscode/package.json website/package.json; do
     if [ -f "$REPO_ROOT/$f" ] && ! grep -q '"Proprietary"' "$REPO_ROOT/$f"; then
@@ -88,7 +88,7 @@ if [ $LICENSE_FAIL -eq 0 ]; then
 fi
 
 # ── 6. Governance files exist ─────────────────────────────────────────
-echo "[6/8] Checking governance files..."
+echo "[6/9] Checking governance files..."
 GOV_FAIL=0
 for f in SECURITY.md CODE_OF_CONDUCT.md CONTRIBUTING.md LICENSE; do
     if [ ! -f "$REPO_ROOT/$f" ]; then
@@ -102,7 +102,7 @@ if [ $GOV_FAIL -eq 0 ]; then
 fi
 
 # ── 7. No /workspaces/proof hardcoded paths ───────────────────────────
-echo "[7/8] Checking for /workspaces/proof paths..."
+echo "[7/9] Checking for /workspaces/proof paths..."
 if grep -r '/workspaces/proof' "$REPO_ROOT" \
     --include='*.sh' --include='*.md' --include='*.toml' \
     --include='*.json' --include='*.nix' --include='*.txt' \
@@ -114,7 +114,7 @@ else
 fi
 
 # ── 8. No backup/strategy files ──────────────────────────────────────
-echo "[8/8] Checking for stray internal documents..."
+echo "[8/9] Checking for stray internal documents..."
 STRAY=$(find "$REPO_ROOT" -type f \( \
     -name "*.bak" -o -name "*.backup" -o \
     -name "CLAUDE_*.md" -o -name "DELEGATION_TASKS.md" -o \
@@ -128,6 +128,18 @@ if [ -n "$STRAY" ]; then
     FAIL=1
 else
     echo -e "${GREEN}[OK] No stray internal documents${NC}"
+fi
+
+# ── 9. Public quality gates ───────────────────────────────────────────
+echo "[9/9] Running public quality gates..."
+if [ -f "$REPO_ROOT/scripts/public-quality-gates.sh" ]; then
+    if ! bash "$REPO_ROOT/scripts/public-quality-gates.sh"; then
+        echo -e "${RED}FAIL: public-quality-gates.sh reported failures${NC}"
+        FAIL=1
+    fi
+else
+    echo -e "${RED}FAIL: scripts/public-quality-gates.sh missing${NC}"
+    FAIL=1
 fi
 
 # ── Result ────────────────────────────────────────────────────────────
