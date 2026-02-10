@@ -7,12 +7,12 @@ Scope: strict execution tracker from current mechanized Coq core to full multi-l
 ## Live Baseline (must match L0 sources)
 
 - Active Coq build: `7740 Qed`, `0 Admitted`, `0 active axioms`, `0 active assumptions`
-- Claim levels: `overall=mechanized`, `coq=mechanized`, `lean/isabelle/fstar/tlaplus/alloy/smt/verus/kani/tv=generated`
+- Claim levels: `overall=mechanized`, `coq=mechanized`, `lean/isabelle/tlaplus/alloy=compiled`, `fstar/smt/verus/kani/tv=generated`
 - Independent external audit: `false`
 - Easier-gap checks (items 1/2/9/12): `PASS`
 - Medium-gap checks (items 1/2/3/4/9/12): `PASS`
 - Heavy-gap foundation checks (items 5/6/7/8/10/11/13): `PASS`
-- Dim1/Dim9 promotion-readiness check: `dimension_1=FAIL`, `dimension_9=PASS`, `promotion_ready=false`
+- Dim1/Dim9 promotion-readiness check: `dimension_1=PASS`, `dimension_9=PASS`, `promotion_ready=true`
 - Public quality gates: `PASS`
 
 Sources:
@@ -35,7 +35,7 @@ Sources:
 
 | Dim | Dimension | Completion | Current Status | Key Pending Activities | Exit Criteria |
 |-----|-----------|------------|----------------|------------------------|---------------|
-| 1 | Type system soundness | 75% | Coq mechanized, cross-lane generated | compile Lean/Isabelle core type-safety corpus; publish parity check reports; enforce parity drift gate | Coq+Lean+Isabelle core theorems compiled and parity report published |
+| 1 | Type system soundness | 82% | Coq mechanized, Lean/Isabelle core compilation passing | publish parity check reports; enforce parity drift gate beyond core files; extend cross-lane obligations beyond type-safety core | Coq+Lean+Isabelle core theorems compiled and parity report published |
 | 2 | Non-interference | 65% | Active Coq path strong, cross-lane generated | complete NI obligations for effects/linearity/session interactions; compile cross-lane NI core; add compile-path preservation evidence | NI core compiled in at least 2 independent lanes and preservation checks published |
 | 3 | Effect soundness | 60% | Coq theorems present, implementation binding partial | close remaining composition obligations; bind proofs to compiler effect checker invariants; add regression obligations for unauthorized effects | proof-to-implementation effect invariants enforced in verification gate |
 | 4 | Linear type soundness | 55% | Coq domain proofs present, not implementation-closed | close linearity obligations against implementation semantics; bind to runtime/resource model; add rejection regressions | no linearity gap between spec and compiler/runtime checks |
@@ -43,10 +43,10 @@ Sources:
 | 6 | Zeroization completeness | 30% | model proofs present, binary preservation open | formalize erase semantics end-to-end; prove no optimizer removal; add binary-level zeroization checks | verified erase behavior survives compilation and runtime execution |
 | 7 | Compiler correctness (source->target) | 15% | translation-validation lane generated | define source/IR/target correspondence; implement per-target validation artifacts; publish per-target reports | native/WASM/eBPF/SGX scope has concrete correctness evidence in repository |
 | 8 | Crypto primitive correctness | 10% | F* lane generated | replace generated corpus with real F* proofs; extract/integrate verified primitives; publish equivalence/perf/security evidence | cryptographic primitives have real verified corpus and integration proof evidence |
-| 9 | Protocol correctness | 45% | foundation present (easier-gap pass), full closure open | promote TLA+/Alloy from generated to executable checks; prove session-type linkage in Coq; publish model-check artifacts | protocol properties checked + linked to language/runtime enforcement |
+| 9 | Protocol correctness | 58% | foundation and executable TLA+/Alloy checks passing; full closure open | prove session-type linkage in Coq to runtime enforcement; publish full model-check artifact pack; add protocol-runtime conformance gate | protocol properties checked + linked to language/runtime enforcement |
 | 10 | Implementation correctness | 10% | Verus/Kani lanes generated | verify critical compiler modules in Verus; add Kani bounded checks for edge paths; bind implementation to formal spec clauses | implementation-correctness obligations executable and passing on production code |
 | 11 | Protocol <-> implementation binding | 10% | open | define protocol trace schema; add conformance checker; gate deploy on zero conformance violations | protocol model and runtime traces are checked and policy-enforced |
-| 12 | Compilation-chain integrity | 40% | foundation present (easier-gap pass), operationalization open | implement DDC in deploy protocol (non-CI path); produce reproducible build attestations and signed hashes; maintain transparency log | trusting-trust controls are executable and auditable per release |
+| 12 | Compilation-chain integrity | 45% | foundation present (easier-gap pass), deploy protocol hardened, operationalization open | implement DDC in deploy protocol (non-CI path); produce reproducible build attestations and signed hashes; maintain transparency log | trusting-trust controls are executable and auditable per release |
 | 13 | Hardware model assumptions | 25% | foundation models present, trust-boundary closure open | publish architecture trust boundary model; add litmus tests for memory/timing assumptions; fail-closed policy for unsupported behavior | hardware assumptions are explicit, tested, and release-gated |
 
 ## Strict A-to-Z Execution Sequence

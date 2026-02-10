@@ -30,6 +30,7 @@ Purpose: define which documents are allowed to drive execution decisions.
 | File | Role |
 |------|------|
 | `COMMIT_PROTOCOL.md` | Commit/deploy runbook and gate order |
+| `DEPLOY_PROTOCOL.md` | Deterministic deploy sequence and strict publish gates |
 | `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md` | Canonical execution plan, completion state, pending activities |
 
 ## L2: Design References
@@ -66,5 +67,5 @@ If two documents conflict:
 3. `bash scripts/check-easier-gaps.sh` passes.
 4. `bash scripts/check-medium-gaps.sh` passes.
 5. `bash scripts/check-heavy-gaps.sh` passes.
-6. `bash scripts/check-dim1-dim9-promotion.sh` passes.
+6. `bash scripts/check-dim1-dim9-promotion.sh --strict-tools` passes.
 7. `bash scripts/update-proof-ledger.sh --check` passes.

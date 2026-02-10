@@ -111,6 +111,13 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 3. Validates Dim 9 protocol core across Coq/TLA+/Alloy
 4. Reports foundation pass and promotion readiness separately
 5. `--strict-tools` mode fails unless executable tool-lane checks are available and passing
+6. In strict mode, missing TLA+/Alloy jars are auto-provisioned via `scripts/provision-formal-tools.sh` (unless `--no-provision-tools` is passed)
+
+### `provision-formal-tools.sh`
+1. Downloads pinned `tla2tools.jar` and Alloy distribution jar
+2. Verifies SHA-256 checksums before install
+3. Installs into `05_TOOLING/tools/formal/`
+4. Runs smoke checks against RIINA protocol models
 
 ### `sync-public.sh`
 1. Verifies you're on main and it's pushed
@@ -121,12 +128,13 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 6. Switches back to main
 
 ### `deploy-website.sh`
-1. Builds WASM binary
-2. Regenerates metrics.json from live codebase
-3. Runs `npm run build` (Vite production build)
-4. Copies install.sh into dist/
-5. Creates temp git repo in dist/, force-pushes to gh-pages on ib823/riina
-6. GitHub Pages serves gh-pages → https://ib823.github.io/riina/
+1. Runs strict Dim1/Dim9 promotion gate (`--strict-tools`)
+2. Builds WASM binary
+3. Regenerates metrics.json from live codebase
+4. Runs `npm run build` (Vite production build)
+5. Copies install.sh into dist/
+6. Creates temp git repo in dist/, force-pushes to gh-pages on ib823/riina
+7. GitHub Pages serves gh-pages → https://ib823.github.io/riina/
 
 ### `verify-riina-deploy.sh`
 1. Fetches `riina/main` and `riina/gh-pages`
