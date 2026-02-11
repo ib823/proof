@@ -23,6 +23,8 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 REPORT_PATH="$REPO_ROOT/reports/heavy_closure_status.json"
 FOUNDATION_REPORT="$REPO_ROOT/reports/heavy_gap_status.json"
+REPO_HEAD="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
+REPO_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
 
 STRICT=0
 if [ "${1:-}" = "--strict" ]; then
@@ -498,6 +500,8 @@ echo "Overall closure-ready                : $([ "$OVERALL_READY" -eq 1 ] && ech
 cat > "$REPORT_PATH" <<EOF_JSON
 {
   "generated_utc": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "repo_head": "$(escape_json "$REPO_HEAD")",
+  "repo_branch": "$(escape_json "$REPO_BRANCH")",
   "scope": "heavy_dims_5_6_7_8_10_11_13_closure",
   "strict_mode": $STRICT,
   "foundation_run_ok": $(bool_json "$FOUNDATION_RUN_OK"),

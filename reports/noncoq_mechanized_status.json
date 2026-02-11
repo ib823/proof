@@ -1,0 +1,86 @@
+{
+  "generated_utc": "2026-02-11T12:12:01Z",
+  "repo_head": "f707e127d31781d1d60df3656f72a14d38761b40",
+  "repo_branch": "main",
+  "scope": "noncoq_lane_mechanization_readiness",
+  "tools": {
+    "lake": true,
+    "isabelle": false,
+    "docker": true,
+    "java": true,
+    "z3": true,
+    "fstar": true,
+    "verus": true,
+    "kani": true,
+    "tla2tools_jar": true,
+    "alloy_jar": true,
+    "tla2tools_path": "/workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar",
+    "alloy_path": "/workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+  },
+  "lanes": {
+    "lean": {
+      "full_build_ok": true,
+      "files": 254,
+      "sorry": 227,
+      "mechanized_ready": false,
+      "pending": "require full-lane lake build and zero sorry across 02_FORMAL/lean/RIINA"
+    },
+    "isabelle": {
+      "full_build_ok": false,
+      "build_mode": "docker_full_build_failed",
+      "files": 260,
+      "sorry": 0,
+      "mechanized_ready": false,
+      "pending": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus"
+    },
+    "fstar": {
+      "full_exec_ok": false,
+      "files": 252,
+      "generated_files": 56,
+      "mechanized_ready": false,
+      "pending": "require full Active+Domains F* compilation with zero generated placeholders"
+    },
+    "tlaplus": {
+      "full_exec_ok": false,
+      "files": 251,
+      "mechanized_ready": false,
+      "pending": "require full-lane executable SANY checks across TLA corpus"
+    },
+    "alloy": {
+      "full_exec_ok": false,
+      "files": 251,
+      "mechanized_ready": false,
+      "pending": "require full-lane executable command checks across Alloy corpus"
+    },
+    "smt": {
+      "full_exec_ok": false,
+      "files": 251,
+      "generated_files": 251,
+      "mechanized_ready": false,
+      "pending": "require full-lane Z3 checks and zero generated placeholders"
+    },
+    "verus": {
+      "full_exec_ok": false,
+      "files": 252,
+      "generated_files": 56,
+      "mechanized_ready": false,
+      "pending": "require full-lane Verus checks and zero generated placeholders"
+    },
+    "kani": {
+      "full_exec_ok": false,
+      "files": 252,
+      "generated_files": 56,
+      "harness_files": 251,
+      "mechanized_ready": false,
+      "pending": "require full-lane Kani checks and zero generated placeholders"
+    },
+    "tv": {
+      "full_exec_ok": true,
+      "files": 251,
+      "generated_files": 251,
+      "mechanized_ready": false,
+      "pending": "require full-lane TV checks and zero generated placeholders"
+    }
+  },
+  "overall_noncoq_mechanized": false
+}

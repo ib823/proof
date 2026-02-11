@@ -402,6 +402,27 @@ DIM_PROMO_TLA_PATH=""
 DIM_PROMO_ALLOY_PATH=""
 DIM_PROMO_TLA_PATH_OK=false
 DIM_PROMO_ALLOY_PATH_OK=false
+HEAVY_CLOSURE_REPORT="$ROOT_DIR/reports/heavy_closure_status.json"
+HEAVY_CLOSURE_FRESH=false
+HEAVY_Z3_EXEC=false
+HEAVY_FSTAR_EXEC=false
+HEAVY_VERUS_EXEC=false
+HEAVY_KANI_EXEC=false
+HEAVY_TV_EXEC=false
+DIM14_REPORT="$ROOT_DIR/reports/dim14_runtime_status.json"
+DIM14_FRESH=false
+CLAIM_DIM14="generated"
+NONCOQ_MECH_REPORT="$ROOT_DIR/reports/noncoq_mechanized_status.json"
+NONCOQ_MECH_FRESH=false
+LEAN_MECHANIZED_READY=false
+ISABELLE_MECHANIZED_READY=false
+FSTAR_MECHANIZED_READY=false
+TLAPLUS_MECHANIZED_READY=false
+ALLOY_MECHANIZED_READY=false
+SMT_MECHANIZED_READY=false
+VERUS_MECHANIZED_READY=false
+KANI_MECHANIZED_READY=false
+TV_MECHANIZED_READY=false
 
 CURRENT_HEAD="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || echo "")"
 
@@ -436,6 +457,97 @@ if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
     fi
 fi
 
+if [ -f "$HEAVY_CLOSURE_REPORT" ] && command -v jq >/dev/null 2>&1; then
+    heavy_head="$(jq -r '.repo_head // ""' "$HEAVY_CLOSURE_REPORT" 2>/dev/null || echo "")"
+    if [ -n "$CURRENT_HEAD" ] && [ "$heavy_head" = "$CURRENT_HEAD" ]; then
+        HEAVY_CLOSURE_FRESH=true
+    fi
+
+    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
+        and .tools.z3 == true
+        and .dimension_5_constant_time.executable_gate == true
+        and .dimension_6_zeroization.executable_gate == true
+        and .dimension_7_compiler_correctness.executable_gate == true
+        and .dimension_11_protocol_impl_binding.executable_gate == true
+        and .dimension_13_hardware_assumptions.executable_gate == true' \
+        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
+        HEAVY_Z3_EXEC=true
+    fi
+
+    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
+        and .dimension_8_crypto_correctness.executable_gate == true
+        and .dimension_8_crypto_correctness.fstar_active_exec == true' \
+        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
+        HEAVY_FSTAR_EXEC=true
+    fi
+
+    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
+        and .dimension_10_implementation_correctness.executable_gate == true
+        and .dimension_10_implementation_correctness.verus_active_exec == true' \
+        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
+        HEAVY_VERUS_EXEC=true
+    fi
+
+    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
+        and .dimension_10_implementation_correctness.executable_gate == true
+        and .dimension_10_implementation_correctness.kani_active_exec == true' \
+        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
+        HEAVY_KANI_EXEC=true
+    fi
+
+    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
+        and .dimension_7_compiler_correctness.executable_gate == true' \
+        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
+        HEAVY_TV_EXEC=true
+    fi
+fi
+
+if [ -f "$DIM14_REPORT" ] && command -v jq >/dev/null 2>&1; then
+    dim14_head="$(jq -r '.repo_head // ""' "$DIM14_REPORT" 2>/dev/null || echo "")"
+    if [ -n "$CURRENT_HEAD" ] && [ "$dim14_head" = "$CURRENT_HEAD" ]; then
+        DIM14_FRESH=true
+    fi
+    if [ "$DIM14_FRESH" = true ] && jq -e '.overall == "PASS"' "$DIM14_REPORT" >/dev/null 2>&1; then
+        CLAIM_DIM14="compiled"
+    fi
+fi
+
+if [ -f "$NONCOQ_MECH_REPORT" ] && command -v jq >/dev/null 2>&1; then
+    noncoq_head="$(jq -r '.repo_head // ""' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "")"
+    if [ -n "$CURRENT_HEAD" ] && [ "$noncoq_head" = "$CURRENT_HEAD" ]; then
+        NONCOQ_MECH_FRESH=true
+    fi
+    if [ "$NONCOQ_MECH_FRESH" = true ]; then
+        if jq -e '.lanes.lean.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            LEAN_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.isabelle.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            ISABELLE_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.fstar.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            FSTAR_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.tlaplus.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            TLAPLUS_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.alloy.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            ALLOY_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.smt.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            SMT_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.verus.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            VERUS_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.kani.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            KANI_MECHANIZED_READY=true
+        fi
+        if jq -e '.lanes.tv.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
+            TV_MECHANIZED_READY=true
+        fi
+    fi
+fi
+
 CLAIM_COQ="generated"
 [ "$COQ_COMPILED" = true ] && CLAIM_COQ="mechanized"
 CLAIM_LEAN="generated"
@@ -466,6 +578,40 @@ if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
     fi
 fi
 
+[ "$HEAVY_FSTAR_EXEC" = true ] && CLAIM_FSTAR="compiled"
+[ "$HEAVY_Z3_EXEC" = true ] && CLAIM_SMT="compiled"
+[ "$HEAVY_VERUS_EXEC" = true ] && CLAIM_VERUS="compiled"
+[ "$HEAVY_KANI_EXEC" = true ] && CLAIM_KANI="compiled"
+[ "$HEAVY_TV_EXEC" = true ] && CLAIM_TV="compiled"
+
+if [ "$CLAIM_LEAN" = "compiled" ] && [ "$LEAN_MECHANIZED_READY" = true ]; then
+    CLAIM_LEAN="mechanized"
+fi
+if [ "$CLAIM_ISABELLE" = "compiled" ] && [ "$ISABELLE_MECHANIZED_READY" = true ]; then
+    CLAIM_ISABELLE="mechanized"
+fi
+if [ "$CLAIM_FSTAR" = "compiled" ] && [ "$FSTAR_MECHANIZED_READY" = true ]; then
+    CLAIM_FSTAR="mechanized"
+fi
+if [ "$CLAIM_TLAPLUS" = "compiled" ] && [ "$TLAPLUS_MECHANIZED_READY" = true ]; then
+    CLAIM_TLAPLUS="mechanized"
+fi
+if [ "$CLAIM_ALLOY" = "compiled" ] && [ "$ALLOY_MECHANIZED_READY" = true ]; then
+    CLAIM_ALLOY="mechanized"
+fi
+if [ "$CLAIM_SMT" = "compiled" ] && [ "$SMT_MECHANIZED_READY" = true ]; then
+    CLAIM_SMT="mechanized"
+fi
+if [ "$CLAIM_VERUS" = "compiled" ] && [ "$VERUS_MECHANIZED_READY" = true ]; then
+    CLAIM_VERUS="mechanized"
+fi
+if [ "$CLAIM_KANI" = "compiled" ] && [ "$KANI_MECHANIZED_READY" = true ]; then
+    CLAIM_KANI="mechanized"
+fi
+if [ "$CLAIM_TV" = "compiled" ] && [ "$TV_MECHANIZED_READY" = true ]; then
+    CLAIM_TV="mechanized"
+fi
+
 INDEPENDENTLY_AUDITED=false
 OVERALL_CLAIM="$CLAIM_COQ"
 [ "$INDEPENDENTLY_AUDITED" = true ] && OVERALL_CLAIM="independently_audited"
@@ -482,6 +628,17 @@ if [ "$CLAIM_LEAN" != "generated" ] \
   && [ "$CLAIM_KANI" != "generated" ] \
   && [ "$CLAIM_TV" != "generated" ]; then
     MULTIPROVER_STATUS="MULTI_LANE_COMPILED"
+fi
+if [ "$CLAIM_LEAN" = "mechanized" ] \
+  && [ "$CLAIM_ISABELLE" = "mechanized" ] \
+  && [ "$CLAIM_FSTAR" = "mechanized" ] \
+  && [ "$CLAIM_TLAPLUS" = "mechanized" ] \
+  && [ "$CLAIM_ALLOY" = "mechanized" ] \
+  && [ "$CLAIM_SMT" = "mechanized" ] \
+  && [ "$CLAIM_VERUS" = "mechanized" ] \
+  && [ "$CLAIM_KANI" = "mechanized" ] \
+  && [ "$CLAIM_TV" = "mechanized" ]; then
+    MULTIPROVER_STATUS="MULTI_LANE_MECHANIZED"
 fi
 [ "$INDEPENDENTLY_AUDITED" = true ] && MULTIPROVER_STATUS="INDEPENDENTLY_AUDITED"
 
@@ -581,6 +738,7 @@ cat > "$OUTPUT_FILE" << EOF
     "verusStatus": "$CLAIM_VERUS",
     "kaniStatus": "$CLAIM_KANI",
     "tvStatus": "$CLAIM_TV",
+    "runtimeProofStatus": "$CLAIM_DIM14",
     "coqTiers": {
       "core": $COQ_TIER1_CORE,
       "domain": $COQ_TIER2_DOMAIN,
@@ -600,7 +758,8 @@ cat > "$OUTPUT_FILE" << EOF
     "smt": "$CLAIM_SMT",
     "verus": "$CLAIM_VERUS",
     "kani": "$CLAIM_KANI",
-    "tv": "$CLAIM_TV"
+    "tv": "$CLAIM_TV",
+    "runtimeProofArchitecture": "$CLAIM_DIM14"
   },
   "rust": {
     "tests": ${RUST_TESTS:-0},
@@ -646,7 +805,7 @@ echo "  TV:           $TV_VALIDATIONS validations, $TV_FILES files"
 echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
 echo "  Claim levels: overall=$OVERALL_CLAIM coq=$CLAIM_COQ lean=$CLAIM_LEAN isabelle=$CLAIM_ISABELLE"
 echo "                fstar=$CLAIM_FSTAR tlaplus=$CLAIM_TLAPLUS alloy=$CLAIM_ALLOY smt=$CLAIM_SMT"
-echo "                verus=$CLAIM_VERUS kani=$CLAIM_KANI tv=$CLAIM_TV"
+echo "                verus=$CLAIM_VERUS kani=$CLAIM_KANI tv=$CLAIM_TV dim14=$CLAIM_DIM14"
 echo "  Rust tests source: $RUST_TESTS_SOURCE (tests=$RUST_TESTS, verified=$RUST_TESTS_VERIFIED, estimated=$RUST_TESTS_ESTIMATED)"
 echo "  Quality tiers:"
 echo "    Core Coq:   $COQ_TIER1_CORE (foundations/type_system/effects/properties/termination)"
