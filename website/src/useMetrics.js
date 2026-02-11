@@ -33,6 +33,7 @@ const DEFAULTS = {
     verusStatus: 'generated',
     kaniStatus: 'generated',
     tvStatus: 'generated',
+    runtimeProofStatus: 'generated',
     coqTiers: { core: 0, domain: 0, domainTrivial: 0 },
   },
   claimLevels: {
@@ -49,6 +50,7 @@ const DEFAULTS = {
     verus: 'generated',
     kani: 'generated',
     tv: 'generated',
+    runtimeProofArchitecture: 'generated',
   },
   rust: { tests: 0, crates: 0 },
   examples: 0,

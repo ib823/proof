@@ -18,6 +18,9 @@ const RiinaWebsite = () => {
     return 'generated';
   };
   const laneClaim = (lane) => claimLevelLabel(claimLevels[lane] || 'generated');
+  const runtimeClaim = claimLevelLabel(
+    claimLevels.runtimeProofArchitecture || metrics.quality?.runtimeProofStatus || 'generated'
+  );
 
   useEffect(() => { window.scrollTo(0, 0); }, [currentPage]);
 
@@ -29,8 +32,10 @@ const RiinaWebsite = () => {
       date: '2026-02-10',
       highlights: [
         'Production-active proofs: 7,740 Coq Qed, 0 Admitted, 0 active axioms',
-        '10-prover metrics published: 82,965 total artifacts across Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
+        '10-prover metrics published: 63,401 total artifacts across Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
         'Public quality gates added (artifact hygiene, doc drift checks, metrics alignment, version/tag alignment)',
+        'Strict non-Coq mechanization gate added with repo-head freshness checks for claim elevation',
+        'Dimension 14 runtime proof foundation implemented (capabilities, effect gate, proof bundle chain, runtime verifier CLI)',
         'Repository transparency: AXIOMS.md and PROOF_STATUS.md generated and enforced',
       ],
     },
@@ -261,7 +266,8 @@ const RiinaWebsite = () => {
           <p className="triple-prover__desc">
             Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical
             foundations. Current overall claim level: {claimLevelLabel(claimLevels.overall)}. Active mechanized guarantees are from
-            the Coq production build; other lanes are published with explicit claim levels.
+            the Coq production build; other lanes are published with explicit claim levels. Runtime proof architecture (Dimension 14)
+            claim level: {runtimeClaim}.
           </p>
           <div className="triple-prover__grid">
             {[
@@ -283,6 +289,16 @@ const RiinaWebsite = () => {
                 <div className="triple-prover__role">Claim level: {p.level}</div>
               </div>
             ))}
+          </div>
+          <div className="card" style={{marginTop:16}}>
+            <div style={{fontSize:12,color:'var(--text-muted)',fontFamily:'var(--font-mono)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>
+              Runtime Proof Architecture (Dimension 14)
+            </div>
+            <div style={{fontSize:14,color:'var(--text-secondary)',lineHeight:1.8}}>
+              Current claim level: {runtimeClaim}. Executable foundation is implemented for capability-bound effect gates, runtime
+              proof-bundle chaining, constant-time oracle primitives, and local verifier self-checks. Hardware-rooted attestation and
+              full external verifier ecosystem remain roadmap work.
+            </div>
           </div>
         </div>
       </section>
@@ -590,6 +606,18 @@ riinac build hello.rii    # Compile to native binary`}</pre>
                   </div>
                 ))}
 
+                <h2 style={{fontSize:20,fontWeight:500,marginBottom:16,marginTop:40}}>Proof Tooling Commands</h2>
+                {[
+                  ['bash scripts/check-noncoq-mechanized.sh', 'Strict non-Coq mechanization readiness check (repo-head fresh)'],
+                  ['bash scripts/check-dim14-runtime.sh', 'Dimension 14 runtime proof executable gate'],
+                  ['cargo run --manifest-path 05_TOOLING/Cargo.toml -p runtime-proof-verify -- --self-check', 'Runtime proof verifier self-check'],
+                ].map(([cmd, desc], i) => (
+                  <div key={i} className="cli-row">
+                    <code>{cmd}</code>
+                    <span>{desc}</span>
+                  </div>
+                ))}
+
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16,marginTop:40}}>Targets</h2>
                 {[
                   ['Native (C)', 'Any platform with a C compiler'],
@@ -755,6 +783,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { num: '02', title: 'Effects Track Side Effects', desc: 'Every function declares its effects: kesan Baca + Kripto. The compiler tracks what your code can do. Security-critical code is restricted to specific effects.' },
             { num: '03', title: 'The Compiler Proves Security', desc: 'When you compile, the compiler proves: no information leakage (non-interference), effects are tracked (effect safety), timing-sensitive code runs in constant time, and secrets are zeroed.' },
             { num: '04', title: 'Verification Evidence', desc: `Formal proof artifacts ship with the compiler (${metrics.coq.filesActive} active Coq files, ${metrics.lean.files} Lean files, ${metrics.isabelle.files} Isabelle files). Current overall claim level is ${claimLevelLabel(claimLevels.overall)} with deploy gates enforcing active-build hygiene (0 Admitted, 0 active axioms, 0 active assumptions).` },
+            { num: '05', title: 'Runtime Proof Foundation', desc: `Dimension 14 runtime lane is currently ${runtimeClaim}: capability-bound effect gates, runtime proof-bundle chaining, constant-time oracle primitives, and runtime verifier self-check are executable in 05_TOOLING.` },
           ].map((step, i) => (
             <div key={i} className="pipeline-step">
               <div className="pipeline-step__num">{step.num}</div>
@@ -774,6 +803,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             {fmt(metrics.multiProver.tripleProverTheorems)} mapped obligations across {metrics.multiProver.totalProvers} verification lanes.
             Multi-prover status: {metrics.multiProver.status}. Overall claim level: {claimLevelLabel(claimLevels.overall)}.
             Lean compiled: {String(metrics.quality?.leanCompiled || false)}. Isabelle compiled: {String(metrics.quality?.isabelleCompiled || false)}.
+            Runtime proof architecture: {runtimeClaim}.
             Independent external audit published: {String(claimLevels.independentlyAudited || false)}.
           </p>
           {[
@@ -808,7 +838,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { id: 'R', name: 'Certified Compilation', desc: 'Translation validation' },
             { id: 'S', name: 'Hardware Contracts', desc: 'CPU side-channel models' },
             { id: 'T', name: 'Hermetic Bootstrap', desc: 'Binary bootstrap from hex0' },
-            { id: 'U', name: 'Runtime Guardian', desc: 'Verified micro-hypervisor' },
+            { id: 'U', name: 'Runtime Guardian', desc: 'Runtime proof foundation implemented; hardware attestation stack in progress' },
             { id: 'V', name: 'Termination Guarantees', desc: 'Sized types, strong normalization' },
             { id: 'W', name: 'Verified Memory', desc: 'Separation logic, verified allocator' },
             { id: 'X', name: 'Concurrency Model', desc: 'Session types, data-race freedom' },
