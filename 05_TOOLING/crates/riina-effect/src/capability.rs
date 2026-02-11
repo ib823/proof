@@ -229,8 +229,13 @@ mod tests {
     #[test]
     fn issue_and_verify_roundtrip() {
         let mut issuer = demo_issuer();
-        let token_result =
-            issuer.issue("svc:payments", EffectKind::Crypto, b"context:v1", 1_700_000_000, 600);
+        let token_result = issuer.issue(
+            "svc:payments",
+            EffectKind::Crypto,
+            b"context:v1",
+            1_700_000_000,
+            600,
+        );
         assert!(token_result.is_ok());
         let token = match token_result {
             Ok(token) => token,
@@ -257,7 +262,13 @@ mod tests {
             Err(_) => return,
         };
 
-        let verify = issuer.verify(&token, "svc:payments", EffectKind::Crypto, b"context:v1", 102);
+        let verify = issuer.verify(
+            &token,
+            "svc:payments",
+            EffectKind::Crypto,
+            b"context:v1",
+            102,
+        );
         assert_eq!(verify, Err(CapabilityError::Expired));
     }
 
@@ -272,12 +283,23 @@ mod tests {
             Err(_) => return,
         };
 
-        let wrong_subject =
-            issuer.verify(&token, "svc:billing", EffectKind::Crypto, b"context:v1", 110);
+        let wrong_subject = issuer.verify(
+            &token,
+            "svc:billing",
+            EffectKind::Crypto,
+            b"context:v1",
+            110,
+        );
         assert_eq!(wrong_subject, Err(CapabilityError::SubjectMismatch));
 
         token.nonce = token.nonce.wrapping_add(1);
-        let tampered = issuer.verify(&token, "svc:payments", EffectKind::Crypto, b"context:v1", 110);
+        let tampered = issuer.verify(
+            &token,
+            "svc:payments",
+            EffectKind::Crypto,
+            b"context:v1",
+            110,
+        );
         assert_eq!(tampered, Err(CapabilityError::InvalidAttestation));
     }
 }

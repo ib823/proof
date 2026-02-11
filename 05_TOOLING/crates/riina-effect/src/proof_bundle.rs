@@ -96,7 +96,8 @@ impl RuntimeProofBundle {
         kind: RuntimeEventKind,
         payload: &[u8],
     ) -> Result<&RuntimeEvent, ProofBundleError> {
-        let sequence = u64::try_from(self.events.len()).map_err(|_| ProofBundleError::SequenceOverflow)?;
+        let sequence =
+            u64::try_from(self.events.len()).map_err(|_| ProofBundleError::SequenceOverflow)?;
         let payload_hash = Sha256::hash(payload);
         let previous_hash = self.chain_head;
         let event_hash = compute_event_hash(
@@ -221,6 +222,9 @@ mod tests {
         } else {
             return;
         }
-        assert_eq!(bundle.verify_chain(), Err(ProofBundleError::InvalidEventHash));
+        assert_eq!(
+            bundle.verify_chain(),
+            Err(ProofBundleError::InvalidEventHash)
+        );
     }
 }

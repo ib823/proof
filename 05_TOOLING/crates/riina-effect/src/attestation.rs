@@ -82,12 +82,7 @@ impl SoftwareAttestationProvider {
         }
     }
 
-    fn quote_input(
-        &self,
-        measurement: [u8; 32],
-        nonce: [u8; 32],
-        timestamp_unix: u64,
-    ) -> [u8; 32] {
+    fn quote_input(&self, measurement: [u8; 32], nonce: [u8; 32], timestamp_unix: u64) -> [u8; 32] {
         let mut input = Vec::with_capacity(1 + 32 + 32 + 32 + 8 + 32);
         input.push(AttestationKind::SoftwareSha256.as_u8());
         input.extend_from_slice(&self.provider_id);
@@ -124,8 +119,11 @@ impl AttestationProvider for SoftwareAttestationProvider {
         if !evidence.measurement.ct_eq(&expected_measurement) {
             return false;
         }
-        let expected_quote =
-            self.quote_input(evidence.measurement, evidence.nonce, evidence.timestamp_unix);
+        let expected_quote = self.quote_input(
+            evidence.measurement,
+            evidence.nonce,
+            evidence.timestamp_unix,
+        );
         evidence.quote.ct_eq(&expected_quote)
     }
 }

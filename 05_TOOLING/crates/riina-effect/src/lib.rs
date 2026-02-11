@@ -2,6 +2,8 @@
 
 //! RIINA Effect System Runtime
 #![forbid(unsafe_code)]
+/// Runtime attestation evidence primitives.
+pub mod attestation;
 /// Capability primitives for effect-gated execution.
 pub mod capability;
 /// Constant-time oracle primitives for runtime leakage detection.
@@ -10,13 +12,15 @@ pub mod ct_oracle;
 pub mod effect_gate;
 /// Proof-carrying metadata structures for effect validation.
 pub mod proof_bundle;
-/// Runtime attestation evidence primitives.
-pub mod attestation;
 
-pub use attestation::{AttestationEvidence, AttestationKind, AttestationProvider, SoftwareAttestationProvider};
+pub use attestation::{
+    AttestationEvidence, AttestationKind, AttestationProvider, SoftwareAttestationProvider,
+};
 pub use capability::{CapabilityIssuer, CapabilityToken, EffectKind};
 pub use ct_oracle::{CtOracle, CtOracleConfig, CtVerdict, SampleClass, TimingObservation};
-pub use effect_gate::{EffectDecision, EffectGate, EffectPolicy, EffectRequest, GateDenyReason, GateVerdict};
+pub use effect_gate::{
+    EffectDecision, EffectGate, EffectPolicy, EffectRequest, GateDenyReason, GateVerdict,
+};
 pub use proof_bundle::{ProofBundleError, RuntimeEvent, RuntimeEventKind, RuntimeProofBundle};
 
 #[cfg(test)]

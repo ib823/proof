@@ -117,7 +117,11 @@ impl EffectGate {
 
     /// Authorize or deny an effect request.
     #[must_use]
-    pub fn authorize(&self, request: &EffectRequest<'_>, token: &CapabilityToken) -> EffectDecision {
+    pub fn authorize(
+        &self,
+        request: &EffectRequest<'_>,
+        token: &CapabilityToken,
+    ) -> EffectDecision {
         let obligation_hash = Sha256::hash(request.proof_obligation.as_bytes());
         let capability_ok = self
             .issuer
@@ -224,9 +228,13 @@ mod tests {
     #[test]
     fn authorize_denies_policy_mismatch() {
         let mut gate = setup_gate();
-        let token_result = gate
-            .issuer
-            .issue("svc:payments", EffectKind::FileWrite, b"flow:checkout", 100, 600);
+        let token_result = gate.issuer.issue(
+            "svc:payments",
+            EffectKind::FileWrite,
+            b"flow:checkout",
+            100,
+            600,
+        );
         assert!(token_result.is_ok());
         let token = match token_result {
             Ok(token) => token,
@@ -248,9 +256,13 @@ mod tests {
     #[test]
     fn authorize_denies_invalid_capability() {
         let mut gate = setup_gate();
-        let token_result = gate
-            .issuer
-            .issue("svc:payments", EffectKind::Crypto, b"flow:checkout", 100, 600);
+        let token_result = gate.issuer.issue(
+            "svc:payments",
+            EffectKind::Crypto,
+            b"flow:checkout",
+            100,
+            600,
+        );
         assert!(token_result.is_ok());
         let token = match token_result {
             Ok(token) => token,
@@ -266,6 +278,9 @@ mod tests {
         };
         let decision = gate.authorize(&req, &token);
         assert_eq!(decision.verdict, GateVerdict::Denied);
-        assert_eq!(decision.deny_reason, Some(GateDenyReason::CapabilityInvalid));
+        assert_eq!(
+            decision.deny_reason,
+            Some(GateDenyReason::CapabilityInvalid)
+        );
     }
 }
