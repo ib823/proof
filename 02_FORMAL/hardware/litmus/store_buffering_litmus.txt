@@ -1,0 +1,20 @@
+Test: StoreBuffering
+Model: x86-TSO baseline
+
+Initial:
+  x = 0
+  y = 0
+
+Thread 0:
+  x := 1
+  r0 := y
+
+Thread 1:
+  y := 1
+  r1 := x
+
+Forbidden outcome under SC:
+  r0 = 0 /\ r1 = 0
+
+TSO note:
+  Outcome is possible without fences due to store buffering.

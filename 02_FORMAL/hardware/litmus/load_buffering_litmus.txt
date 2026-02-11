@@ -1,0 +1,21 @@
+Test: LoadBuffering
+Model: weak-memory stress case
+
+Initial:
+  x = 0
+  y = 0
+
+Thread 0:
+  r0 := x
+  y := 1
+
+Thread 1:
+  r1 := y
+  x := 1
+
+Interesting outcome:
+  r0 = 0 /\ r1 = 0
+
+Interpretation:
+  Demonstrates reordering sensitivity and highlights assumptions that require
+  explicit model boundaries when mapping formal proofs to hardware behavior.

@@ -285,29 +285,57 @@ D8_EXEC=0
 D8_READY=0
 
 FSTAR_DOMAIN_FILES="$(find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains" -type f -name "*.fst" 2>/dev/null | wc -l | tr -d ' ')"
-FSTAR_GENERATED_FILES="$(grep -RIl "^(\* Auto-generated from" "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains"/*.fst 2>/dev/null | wc -l | tr -d ' ')"
+FSTAR_DOMAIN_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/" "$REPO_ROOT/02_FORMAL/fstar/RIINA/Domains" --include="*.fst" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+FSTAR_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" -type f -name "*.fst" 2>/dev/null | wc -l | tr -d ' ')"
+FSTAR_ACTIVE_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/" "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" --include="*.fst" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+FSTAR_ACTIVE_EXEC=0
+
+FSTAR_BIN=""
+if tool_exists fstar.exe; then
+  FSTAR_BIN="$(command -v fstar.exe)"
+elif tool_exists fstar; then
+  FSTAR_BIN="$(command -v fstar)"
+fi
+
+if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_ACTIVE_FILES" -gt 0 ] \
+  && file_exists "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"; then
+  if run_quiet 900 "$FSTAR_BIN" \
+    --cache_checked_modules \
+    --cache_dir /tmp/riina-fstar-active-cache \
+    --include "$REPO_ROOT/02_FORMAL/fstar" \
+    "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"; then
+    FSTAR_ACTIVE_EXEC=1
+  fi
+fi
 
 if file_exists "$REPO_ROOT/02_FORMAL/coq/domains/CryptographicSecurity.v" \
+  && [ "$FSTAR_ACTIVE_FILES" -gt 0 ] \
   && [ "$FSTAR_DOMAIN_FILES" -gt 0 ] \
   && file_exists "$REPO_ROOT/02_FORMAL/tv/RIINA/Domains/CryptographicSecurity.tv.smt2"; then
   D8_ARTIFACT=1
 fi
 
 if [ "$CRYPTO_TESTS_OK" -eq 1 ] \
+  && [ "$FSTAR_ACTIVE_EXEC" -eq 1 ] \
   && [ "$HAS_Z3" -eq 1 ] \
   && all_z3_pass "$REPO_ROOT/02_FORMAL/tv/RIINA/Domains/CryptographicSecurity.tv.smt2"; then
   D8_EXEC=1
 fi
 
-# Strict closure requires non-generated F* corpus plus executable toolchain.
+# Strict closure requires:
+# - executable active lane (real F* run),
+# - active lane free from generated files,
+# - and migration of generated domain corpus to real obligations.
 if [ "$F8" = "PASS" ] && [ "$D8_ARTIFACT" -eq 1 ] && [ "$D8_EXEC" -eq 1 ] \
-  && [ "$HAS_FSTAR" -eq 1 ] && [ "$FSTAR_GENERATED_FILES" -eq 0 ]; then
+  && [ "$HAS_FSTAR" -eq 1 ] \
+  && [ "$FSTAR_ACTIVE_GENERATED_FILES" -eq 0 ] \
+  && [ "$FSTAR_DOMAIN_GENERATED_FILES" -eq 0 ]; then
   D8_READY=1
 fi
 
 D8_PENDING="none"
 if [ "$D8_READY" -eq 0 ]; then
-  D8_PENDING="replace generated F* corpus with real proofs and run F* toolchain as mandatory executable gate"
+  D8_PENDING="active F* lane is executable; migrate generated domain corpus to real F* obligations and keep executable lane mandatory"
 fi
 
 # ---------------------------------------------------------------------------
@@ -319,24 +347,50 @@ D10_READY=0
 
 VERUS_DOMAIN_FILES="$(find "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
 KANI_DOMAIN_FILES="$(find "$REPO_ROOT/02_FORMAL/kani/RIINA/Domains" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
+VERUS_DOMAIN_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/verus/RIINA/Domains" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+KANI_DOMAIN_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/kani/RIINA/Domains" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+VERUS_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/verus/RIINA/Active" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
+KANI_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/kani/RIINA/Active" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
+VERUS_ACTIVE_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/verus/RIINA/Active" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+KANI_ACTIVE_GENERATED_FILES="$( (grep -RIl "^// Auto-generated from" "$REPO_ROOT/02_FORMAL/kani/RIINA/Active" --include="*.rs" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+VERUS_ACTIVE_EXEC=0
+KANI_ACTIVE_EXEC=0
 RIINAC_SRC_FILES="$(find "$REPO_ROOT/03_PROTO/crates/riinac/src" -type f -name "*.rs" 2>/dev/null | wc -l | tr -d ' ')"
 
-if [ "$VERUS_DOMAIN_FILES" -gt 0 ] && [ "$KANI_DOMAIN_FILES" -gt 0 ] && [ "$RIINAC_SRC_FILES" -gt 0 ]; then
+if [ "$HAS_VERUS" -eq 1 ] && [ "$VERUS_ACTIVE_FILES" -gt 0 ] \
+  && file_exists "$REPO_ROOT/02_FORMAL/verus/RIINA/Active/riinac_verify_mode.rs"; then
+  if run_quiet 900 verus "$REPO_ROOT/02_FORMAL/verus/RIINA/Active/riinac_verify_mode.rs"; then
+    VERUS_ACTIVE_EXEC=1
+  fi
+fi
+
+if [ "$HAS_KANI" -eq 1 ] && [ "$KANI_ACTIVE_FILES" -gt 0 ] \
+  && file_exists "$REPO_ROOT/02_FORMAL/kani/RIINA/Active/riinac_verify_mode.rs"; then
+  if run_quiet 900 kani "$REPO_ROOT/02_FORMAL/kani/RIINA/Active/riinac_verify_mode.rs"; then
+    KANI_ACTIVE_EXEC=1
+  fi
+fi
+
+if [ "$VERUS_DOMAIN_FILES" -gt 0 ] && [ "$KANI_DOMAIN_FILES" -gt 0 ] \
+  && [ "$VERUS_ACTIVE_FILES" -gt 0 ] && [ "$KANI_ACTIVE_FILES" -gt 0 ] \
+  && [ "$RIINAC_SRC_FILES" -gt 0 ]; then
   D10_ARTIFACT=1
 fi
 
-if [ "$RIINAC_FAST_OK" -eq 1 ]; then
+if [ "$RIINAC_FAST_OK" -eq 1 ] && [ "$VERUS_ACTIVE_EXEC" -eq 1 ] && [ "$KANI_ACTIVE_EXEC" -eq 1 ]; then
   D10_EXEC=1
 fi
 
 if [ "$F10" = "PASS" ] && [ "$D10_ARTIFACT" -eq 1 ] && [ "$D10_EXEC" -eq 1 ] \
-  && [ "$HAS_VERUS" -eq 1 ] && [ "$HAS_KANI" -eq 1 ]; then
+  && [ "$HAS_VERUS" -eq 1 ] && [ "$HAS_KANI" -eq 1 ] \
+  && [ "$VERUS_ACTIVE_GENERATED_FILES" -eq 0 ] && [ "$KANI_ACTIVE_GENERATED_FILES" -eq 0 ] \
+  && [ "$VERUS_DOMAIN_GENERATED_FILES" -eq 0 ] && [ "$KANI_DOMAIN_GENERATED_FILES" -eq 0 ]; then
   D10_READY=1
 fi
 
 D10_PENDING="none"
 if [ "$D10_READY" -eq 0 ]; then
-  D10_PENDING="run Verus and Kani on production compiler modules and bind results to spec clauses"
+  D10_PENDING="active Verus/Kani lane is executable; migrate generated domain corpus to real obligations bound to production compiler modules"
 fi
 
 # ---------------------------------------------------------------------------
@@ -488,8 +542,11 @@ cat > "$REPORT_PATH" <<EOF_JSON
     "artifact_gate": $(bool_json "$D8_ARTIFACT"),
     "executable_gate": $(bool_json "$D8_EXEC"),
     "closure_ready": $(bool_json "$D8_READY"),
+    "fstar_active_exec": $(bool_json "$FSTAR_ACTIVE_EXEC"),
+    "fstar_active_files": $FSTAR_ACTIVE_FILES,
+    "fstar_active_generated_files": $FSTAR_ACTIVE_GENERATED_FILES,
     "fstar_domain_files": $FSTAR_DOMAIN_FILES,
-    "fstar_generated_files": $FSTAR_GENERATED_FILES,
+    "fstar_domain_generated_files": $FSTAR_DOMAIN_GENERATED_FILES,
     "pending": "$(escape_json "$D8_PENDING")"
   },
   "dimension_10_implementation_correctness": {
@@ -497,8 +554,16 @@ cat > "$REPORT_PATH" <<EOF_JSON
     "artifact_gate": $(bool_json "$D10_ARTIFACT"),
     "executable_gate": $(bool_json "$D10_EXEC"),
     "closure_ready": $(bool_json "$D10_READY"),
+    "verus_active_exec": $(bool_json "$VERUS_ACTIVE_EXEC"),
+    "kani_active_exec": $(bool_json "$KANI_ACTIVE_EXEC"),
+    "verus_active_files": $VERUS_ACTIVE_FILES,
+    "kani_active_files": $KANI_ACTIVE_FILES,
+    "verus_active_generated_files": $VERUS_ACTIVE_GENERATED_FILES,
+    "kani_active_generated_files": $KANI_ACTIVE_GENERATED_FILES,
     "verus_domain_files": $VERUS_DOMAIN_FILES,
     "kani_domain_files": $KANI_DOMAIN_FILES,
+    "verus_domain_generated_files": $VERUS_DOMAIN_GENERATED_FILES,
+    "kani_domain_generated_files": $KANI_DOMAIN_GENERATED_FILES,
     "riinac_src_files": $RIINAC_SRC_FILES,
     "pending": "$(escape_json "$D10_PENDING")"
   },

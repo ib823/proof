@@ -33,6 +33,7 @@ dist/
 .claude/
 .vscode/
 .idea/
+.isabelle-core*/
 
 # Build artifacts
 axiom_audit_report.txt
