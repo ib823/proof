@@ -165,9 +165,27 @@ fn detect_lake() -> ToolStatus {
     ToolStatus::NotFound("lake not found (install elan / Lean 4)".into())
 }
 
-/// Detect `isabelle`: `$ISABELLE_HOME` → common paths → `which isabelle`.
+/// Detect pinned local `isabelle` toolchain:
+/// `RIINA_ISABELLE_BIN` → `RIINA_ISABELLE_HOME` → `ISABELLE_HOME`
+/// → repo-local `05_TOOLING/tools/isabelle/current/bin/isabelle`.
 fn detect_isabelle() -> ToolStatus {
-    // 1. ISABELLE_HOME
+    // 1. Explicit binary override
+    if let Ok(bin) = std::env::var("RIINA_ISABELLE_BIN") {
+        let p = PathBuf::from(bin);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 2. RIINA_ISABELLE_HOME
+    if let Ok(isa) = std::env::var("RIINA_ISABELLE_HOME") {
+        let p = PathBuf::from(&isa).join("bin").join("isabelle");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 3. ISABELLE_HOME
     if let Ok(isa) = std::env::var("ISABELLE_HOME") {
         let p = PathBuf::from(&isa).join("bin").join("isabelle");
         if p.exists() {
@@ -175,24 +193,28 @@ fn detect_isabelle() -> ToolStatus {
         }
     }
 
-    // 2. Common install paths
-    let common = [
-        "/usr/local/Isabelle/bin/isabelle",
-        "/opt/Isabelle/bin/isabelle",
-    ];
-    for c in common {
-        let p = PathBuf::from(c);
-        if p.exists() {
-            return ToolStatus::Found(p);
+    // 4. Search upward from current directory for pinned repo-local install.
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("isabelle")
+                .join("current")
+                .join("bin")
+                .join("isabelle");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
         }
     }
 
-    // 3. which isabelle
-    if let Some(p) = which_tool("isabelle") {
-        return ToolStatus::Found(p);
-    }
-
-    ToolStatus::NotFound("isabelle not found (set ISABELLE_HOME or install)".into())
+    ToolStatus::NotFound(
+        "pinned local Isabelle not found (run: bash scripts/provision-isabelle.sh)".into(),
+    )
 }
 
 // ---------------------------------------------------------------------------
@@ -1213,24 +1235,6 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
         };
     }
 
-    // Claim-aware gating: if public metrics declare Isabelle lane as generated
-    // (not compiled), skip compilation check as informational.
-    if let Some(repo_root) = isabelle_dir.parent().and_then(|p| p.parent()) {
-        let metrics_path = repo_root.join("website/public/metrics.json");
-        if let Ok(metrics) = fs::read_to_string(metrics_path) {
-            if metrics.contains("\"isabelleCompiled\": false") {
-                return CheckResult {
-                    name: "Isabelle Compilation".into(),
-                    passed: true,
-                    blocking: false,
-                    details:
-                        "skipped (isabelleCompiled=false; lane is generated/non-compiled by policy)"
-                            .into(),
-                };
-            }
-        }
-    }
-
     fn run_isabelle_build(cmd: &str, args: &[&str], cwd: &Path, source: &str) -> CheckResult {
         let start = Instant::now();
         let result = run_with_timeout(cmd, args, cwd, ISABELLE_TIMEOUT);
@@ -1379,41 +1383,12 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
                 "local_core",
             )
         }
-        ToolStatus::NotFound(msg) => {
-            // Fallback: run Isabelle via Docker when local toolchain is absent.
-            if which_tool("docker").is_none() {
-                let out = CheckResult {
-                    name: "Isabelle Compilation".into(),
-                    passed: false,
-                    blocking: false,
-                    details: format!("SKIPPED ({msg}; docker not found). Verification INCOMPLETE"),
-                };
-                let _ = fs::remove_dir_all(&core_dir);
-                return out;
-            }
-
-            let image = std::env::var("RIINA_ISABELLE_DOCKER_IMAGE")
-                .unwrap_or_else(|_| "makarius/isabelle".to_string());
-            let mount = format!("{}:/work", core_dir.display());
-            let docker_args = vec![
-                "run".to_string(),
-                "--rm".to_string(),
-                "-v".to_string(),
-                mount,
-                image.clone(),
-                "build".to_string(),
-                "-d".to_string(),
-                "/work".to_string(),
-                "-b".to_string(),
-                "RIINA_CORE".to_string(),
-            ];
-            let arg_refs: Vec<&str> = docker_args.iter().map(|s| s.as_str()).collect();
-            eprintln!(
-                "  isabelle not found locally; attempting docker image {}",
-                image
-            );
-            run_isabelle_build("docker", &arg_refs, &core_dir, "docker_core")
-        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "Isabelle Compilation".into(),
+            passed: false,
+            blocking: true,
+            details: format!("{msg}"),
+        },
     };
 
     let _ = fs::remove_dir_all(&core_dir);

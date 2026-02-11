@@ -41,6 +41,7 @@ axiom_audit_report.txt
 integrity_reports/
 .riina_manifest*
 05_TOOLING/tools/formal/
+05_TOOLING/tools/isabelle/
 
 # Node
 **/node_modules/

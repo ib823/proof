@@ -62,6 +62,15 @@ ISA_DIR="$REPO_ROOT/02_FORMAL/isabelle/RIINA"
 TLA_DIR="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Domains"
 ALLOY_DIR="$REPO_ROOT/02_FORMAL/alloy/RIINA/Domains"
 FORMAL_TOOLS_DIR="$REPO_ROOT/05_TOOLING/tools/formal"
+ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
+
+if [ -f "$ISABELLE_HELPER" ]; then
+  # shellcheck disable=SC1090
+  source "$ISABELLE_HELPER"
+else
+  echo "ERROR: missing Isabelle helper: $ISABELLE_HELPER" >&2
+  exit 1
+fi
 
 escape_json() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
@@ -99,9 +108,17 @@ PROVISION_ATTEMPTED=0
 PROVISION_SUCCEEDED=0
 
 command -v lake >/dev/null 2>&1 && HAS_LAKE=1
-command -v isabelle >/dev/null 2>&1 && HAS_ISABELLE=1
-command -v docker >/dev/null 2>&1 && HAS_DOCKER=1
 command -v java >/dev/null 2>&1 && HAS_JAVA=1
+
+ISABELLE_BIN=""
+ISABELLE_LOCAL_ERROR=""
+if ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
+  HAS_ISABELLE=1
+  riina_export_local_isabelle_env "$ISABELLE_BIN"
+else
+  ISABELLE_LOCAL_ERROR="$ISABELLE_BIN"
+  ISABELLE_BIN=""
+fi
 
 if [ -z "${TLA2TOOLS_JAR:-}" ] && [ -f "$FORMAL_TOOLS_DIR/tla2tools.jar" ]; then
   TLA2TOOLS_JAR="$FORMAL_TOOLS_DIR/tla2tools.jar"
@@ -201,8 +218,8 @@ done
 isa_type_theorems="$(grep -Eh '^(theorem|lemma) ' "${isa_type_files[@]}" 2>/dev/null | wc -l | tr -d ' ')"
 
 isabelle_build_ok=0
-isabelle_build_mode="missing_isabelle"
-if [ "$HAS_ISABELLE" -eq 1 ] || [ "$HAS_DOCKER" -eq 1 ]; then
+isabelle_build_mode="missing_local_isabelle"
+if [ "$HAS_ISABELLE" -eq 1 ]; then
   isa_tmp="$(mktemp)"
   isa_core_tmp="$(mktemp -d "$REPO_ROOT/.isabelle-core.XXXXXX")"
 
@@ -219,25 +236,11 @@ EOF_ROOT
   chmod 755 "$isa_core_tmp"
   chmod 644 "$isa_core_tmp"/Progress.thy "$isa_core_tmp"/Preservation.thy "$isa_core_tmp"/TypeSafety.thy "$isa_core_tmp"/ROOT
 
-  if [ "$HAS_ISABELLE" -eq 1 ]; then
-    if run_with_timeout 900 isabelle build -d "$isa_core_tmp" -b RIINA_CORE >"$isa_tmp" 2>&1; then
-      isabelle_build_ok=1
-      isabelle_build_mode="isabelle_core_build"
-    else
-      isabelle_build_mode="isabelle_core_build_failed"
-    fi
-  elif [ "$HAS_DOCKER" -eq 1 ]; then
-    ISABELLE_DOCKER_IMAGE="${RIINA_ISABELLE_DOCKER_IMAGE:-makarius/isabelle}"
-    if run_with_timeout 900 \
-      docker run --rm \
-        -v "$isa_core_tmp:/work" \
-        "$ISABELLE_DOCKER_IMAGE" \
-        build -d /work -b RIINA_CORE >"$isa_tmp" 2>&1; then
-      isabelle_build_ok=1
-      isabelle_build_mode="docker_core_build"
-    else
-      isabelle_build_mode="docker_core_build_failed"
-    fi
+  if run_with_timeout 900 "$ISABELLE_BIN" build -d "$isa_core_tmp" -b RIINA_CORE >"$isa_tmp" 2>&1; then
+    isabelle_build_ok=1
+    isabelle_build_mode="isabelle_core_build_local"
+  else
+    isabelle_build_mode="isabelle_core_build_local_failed"
   fi
 
   rm -f "$isa_tmp"
@@ -255,6 +258,9 @@ if [ "$DIM1_STATUS" = "PASS" ] && [ "$isabelle_build_ok" -eq 1 ]; then
 fi
 
 DIM1_DETAIL="coq_core=$coq_type_ok coq_thm=$coq_type_theorems lean_core=$lean_type_ok lean_build=$lean_build_ok lean_mode=$lean_build_mode lean_actionable_sorry=$lean_actionable_sorry isa_core=$isa_type_ok isa_thm=$isa_type_theorems isa_build=$isabelle_build_ok isa_mode=$isabelle_build_mode"
+if [ -n "$ISABELLE_LOCAL_ERROR" ]; then
+  DIM1_DETAIL="$DIM1_DETAIL isa_local_error=$ISABELLE_LOCAL_ERROR"
+fi
 if [ -n "$lean_build_tail" ]; then
   DIM1_DETAIL="$DIM1_DETAIL lean_tail=$lean_build_tail"
 fi
@@ -363,6 +369,9 @@ echo "Dimension 1 (type-system core)   : $DIM1_STATUS (promotion_ready=$DIM1_PRO
 echo "Dimension 9 (protocol core)      : $DIM9_STATUS (promotion_ready=$DIM9_PROMOTION_READY)"
 echo "Overall foundation               : $OVERALL_FOUNDATION"
 echo "Overall promotion readiness      : $OVERALL_PROMOTION_READY"
+if [ -n "$ISABELLE_LOCAL_ERROR" ]; then
+  echo -e "${YELLOW}Local Isabelle enforcement: $ISABELLE_LOCAL_ERROR${NC}"
+fi
 
 cat > "$REPORT_PATH" <<EOF_JSON
 {
@@ -378,7 +387,9 @@ cat > "$REPORT_PATH" <<EOF_JSON
   "tools": {
     "lake": $([ "$HAS_LAKE" -eq 1 ] && echo "true" || echo "false"),
     "isabelle": $([ "$HAS_ISABELLE" -eq 1 ] && echo "true" || echo "false"),
-    "docker": $([ "$HAS_DOCKER" -eq 1 ] && echo "true" || echo "false"),
+    "docker": false,
+    "isabelle_bin": "$(escape_json "${ISABELLE_BIN:-}")",
+    "isabelle_local_error": "$(escape_json "${ISABELLE_LOCAL_ERROR:-}")",
     "java": $([ "$HAS_JAVA" -eq 1 ] && echo "true" || echo "false"),
     "tla2tools_jar": $([ "$HAS_TLA2TOOLS_JAR" -eq 1 ] && echo "true" || echo "false"),
     "alloy_jar": $([ "$HAS_ALLOY_JAR" -eq 1 ] && echo "true" || echo "false"),
@@ -421,6 +432,11 @@ cat > "$REPORT_PATH" <<EOF_JSON
 EOF_JSON
 
 echo "Report: $REPORT_PATH"
+
+if [ "$STRICT_TOOLS" -eq 1 ] && [ -n "$ISABELLE_LOCAL_ERROR" ]; then
+  echo -e "${RED}Strict tool mode requires pinned local Isabelle; run bash scripts/provision-isabelle.sh.${NC}"
+  exit 1
+fi
 
 if [ "$STRICT_TOOLS" -eq 1 ] && [ "$OVERALL_PROMOTION_READY" != "true" ]; then
   echo -e "${RED}Strict tool mode requested and promotion readiness is not complete.${NC}"

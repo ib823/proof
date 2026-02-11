@@ -110,9 +110,10 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 1. Validates Dim 1 core across Coq/Lean/Isabelle files
 2. Runs real Lean core compilation (`lake build` of Progress/Preservation/TypeSafety)
 3. Validates Dim 9 protocol core across Coq/TLA+/Alloy
-4. Reports foundation pass and promotion readiness separately
-5. `--strict-tools` mode fails unless executable tool-lane checks are available and passing
-6. In strict mode, missing TLA+/Alloy jars are auto-provisioned via `scripts/provision-formal-tools.sh` (unless `--no-provision-tools` is passed)
+4. Enforces pinned local Isabelle (path + checksum + version) with no Docker fallback
+5. Reports foundation pass and promotion readiness separately
+6. `--strict-tools` mode fails unless executable tool-lane checks are available and passing
+7. In strict mode, missing TLA+/Alloy jars are auto-provisioned via `scripts/provision-formal-tools.sh` (unless `--no-provision-tools` is passed)
 
 ### `check-heavy-closure.sh`
 1. Tracks executable closure progress for dims `5/6/7/8/10/11/13`
@@ -135,13 +136,14 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 6. Switches back to main
 
 ### `deploy-website.sh`
-1. Runs strict Dim1/Dim9 promotion gate (`--strict-tools`)
-2. Builds WASM binary
-3. Regenerates metrics.json from live codebase
-4. Runs `npm run build` (Vite production build)
-5. Copies install.sh into dist/
-6. Creates temp git repo in dist/, force-pushes to gh-pages on ib823/riina
-7. GitHub Pages serves gh-pages → https://ib823.github.io/riina/
+1. Verifies pinned local Isabelle (`scripts/provision-isabelle.sh` policy)
+2. Runs strict Dim1/Dim9 promotion gate (`--strict-tools`)
+3. Builds WASM binary
+4. Regenerates metrics.json from live codebase
+5. Runs `npm run build` (Vite production build)
+6. Copies install.sh into dist/
+7. Creates temp git repo in dist/, force-pushes to gh-pages on ib823/riina
+8. GitHub Pages serves gh-pages → https://ib823.github.io/riina/
 
 ### `verify-riina-deploy.sh`
 1. Fetches `riina/main` and `riina/gh-pages`

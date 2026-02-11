@@ -33,6 +33,15 @@ VERUS_DIR="$REPO_ROOT/02_FORMAL/verus/RIINA"
 KANI_DIR="$REPO_ROOT/02_FORMAL/kani/RIINA"
 TV_DIR="$REPO_ROOT/02_FORMAL/tv/RIINA"
 FORMAL_TOOLS_DIR="$REPO_ROOT/05_TOOLING/tools/formal"
+ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
+
+if [ -f "$ISABELLE_HELPER" ]; then
+  # shellcheck disable=SC1090
+  source "$ISABELLE_HELPER"
+else
+  echo "ERROR: missing Isabelle helper: $ISABELLE_HELPER" >&2
+  exit 1
+fi
 
 escape_json() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
@@ -108,8 +117,6 @@ HAS_VERUS=0
 HAS_KANI=0
 
 tool_exists lake && HAS_LAKE=1
-tool_exists isabelle && HAS_ISABELLE=1
-tool_exists docker && HAS_DOCKER=1
 tool_exists java && HAS_JAVA=1
 tool_exists z3 && HAS_Z3=1
 tool_exists fstar.exe && HAS_FSTAR=1
@@ -118,6 +125,16 @@ if [ "$HAS_FSTAR" -eq 0 ] && tool_exists fstar; then
 fi
 tool_exists verus && HAS_VERUS=1
 tool_exists kani && HAS_KANI=1
+
+ISABELLE_BIN=""
+ISABELLE_LOCAL_ERROR=""
+if ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
+  HAS_ISABELLE=1
+  riina_export_local_isabelle_env "$ISABELLE_BIN"
+else
+  ISABELLE_LOCAL_ERROR="$ISABELLE_BIN"
+  ISABELLE_BIN=""
+fi
 
 TLA2TOOLS_JAR="${TLA2TOOLS_JAR:-}"
 ALLOY_JAR="${ALLOY_JAR:-}"
@@ -158,22 +175,15 @@ fi
 ISABELLE_FILES="$(count_files "$ISA_DIR" "*.thy")"
 ISABELLE_SORRY="$( (grep -RIn '\bsorry\b' "$ISA_DIR" --include="*.thy" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 ISABELLE_BUILD_OK=0
-ISABELLE_BUILD_MODE="missing_tooling"
+ISABELLE_BUILD_MODE="missing_local_isabelle"
 if [ "$ISABELLE_FILES" -gt 0 ]; then
   if [ "$HAS_ISABELLE" -eq 1 ]; then
-    if run_with_timeout 7200 isabelle build -d "$ISA_DIR" -b -o document=false RIINA RIINA_Domains >/dev/null 2>&1; then
+    if run_with_timeout 7200 "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA >/dev/null 2>&1 \
+      && run_with_timeout 7200 "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA_Domains >/dev/null 2>&1; then
       ISABELLE_BUILD_OK=1
-      ISABELLE_BUILD_MODE="isabelle_full_build"
+      ISABELLE_BUILD_MODE="isabelle_full_build_local"
     else
-      ISABELLE_BUILD_MODE="isabelle_full_build_failed"
-    fi
-  elif [ "$HAS_DOCKER" -eq 1 ]; then
-    ISABELLE_DOCKER_IMAGE="${RIINA_ISABELLE_DOCKER_IMAGE:-makarius/isabelle}"
-    if run_with_timeout 7200 docker run --rm -v "$ISA_DIR:/work" "$ISABELLE_DOCKER_IMAGE" build -d /work -b -o document=false RIINA RIINA_Domains >/dev/null 2>&1; then
-      ISABELLE_BUILD_OK=1
-      ISABELLE_BUILD_MODE="docker_full_build"
-    else
-      ISABELLE_BUILD_MODE="docker_full_build_failed"
+      ISABELLE_BUILD_MODE="isabelle_full_build_local_failed"
     fi
   fi
 fi
@@ -184,6 +194,9 @@ fi
 ISABELLE_PENDING="none"
 if [ "$ISABELLE_MECHANIZED" -ne 1 ]; then
   ISABELLE_PENDING="require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus"
+fi
+if [ -n "$ISABELLE_LOCAL_ERROR" ]; then
+  ISABELLE_PENDING="$ISABELLE_PENDING (local Isabelle enforcement: $ISABELLE_LOCAL_ERROR)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -387,6 +400,9 @@ echo "Verus mechanized     : $VERUS_MECHANIZED (exec=$VERUS_FULL_EXEC generated=
 echo "Kani mechanized      : $KANI_MECHANIZED (exec=$KANI_FULL_EXEC generated=$KANI_GENERATED_FILES harness_files=$KANI_HARNESS_FILES)"
 echo "TV mechanized        : $TV_MECHANIZED (exec=$TV_FULL_EXEC generated=$TV_GENERATED_FILES files=$TV_FILES)"
 echo "Overall non-Coq mech : $([ "$OVERALL_NONCOQ_MECHANIZED" -eq 1 ] && echo true || echo false)"
+if [ -n "$ISABELLE_LOCAL_ERROR" ]; then
+  echo "Isabelle local policy: $ISABELLE_LOCAL_ERROR"
+fi
 
 cat > "$REPORT_PATH" <<EOF_JSON
 {
@@ -397,7 +413,9 @@ cat > "$REPORT_PATH" <<EOF_JSON
   "tools": {
     "lake": $(bool_json "$HAS_LAKE"),
     "isabelle": $(bool_json "$HAS_ISABELLE"),
-    "docker": $(bool_json "$HAS_DOCKER"),
+    "docker": false,
+    "isabelle_bin": "$(escape_json "${ISABELLE_BIN:-}")",
+    "isabelle_local_error": "$(escape_json "${ISABELLE_LOCAL_ERROR:-}")",
     "java": $(bool_json "$HAS_JAVA"),
     "z3": $(bool_json "$HAS_Z3"),
     "fstar": $(bool_json "$HAS_FSTAR"),

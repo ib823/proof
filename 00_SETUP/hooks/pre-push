@@ -17,10 +17,27 @@ if command -v opam &> /dev/null; then
 fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
+ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
 
 echo "================================================================"
 echo "  RIINA PRE-PUSH VERIFICATION"
 echo "================================================================"
+
+if [ ! -f "$ISABELLE_HELPER" ]; then
+    echo "FAIL: missing Isabelle helper ($ISABELLE_HELPER)"
+    exit 1
+fi
+# shellcheck disable=SC1090
+source "$ISABELLE_HELPER"
+
+if ! ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
+    echo "FAIL: local Isabelle policy failed"
+    echo "$ISABELLE_BIN"
+    echo "Run: bash scripts/provision-isabelle.sh"
+    exit 1
+fi
+riina_export_local_isabelle_env "$ISABELLE_BIN"
+echo "Local Isabelle verified: $ISABELLE_BIN"
 
 # ── Step 1: Locate riinac (with staleness check) ──────────────────
 RIINAC=""
