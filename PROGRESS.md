@@ -18,7 +18,7 @@
 
 **Report Date:** 2026-02-06 (Session 83)
 **Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 856 Rust tests
-**Session:** 83 (Proof Depth 20+ All Files — 82,965 proofs across 3 provers, 0 sorry, 0 axiom)
+**Session:** 83 (Proof Depth 20+ All Files — 63,401 proofs across 3 provers, 0 sorry, 0 axiom)
 **Overall Grade:** A (BUILD PASSING, 0 Admitted/sorry across all provers, 0 active axioms)
 
 ---
@@ -36,7 +36,7 @@
 | Lean 4 Theorems | **7900** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8069** | - | ✅ (0 sorry) |
 | Triple-Prover Theorems | **86** | - | ✅ (independent agreement across 3 provers) |
-| Total Proofs (All Provers) | **82,965** | - | ✅ |
+| Total Proofs (All Provers) | **63,401** | - | ✅ |
 | .v Files (Total) | **284** | - | ✅ |
 | .lean Files | **255** | - | ✅ |
 | .thy Files | **260** | - | ✅ |

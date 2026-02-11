@@ -104,7 +104,7 @@ RIINA is the world's **first formally verified programming language** with:
 | **Qed Proofs (Coq)** | 7,740 | Active build (0 Admitted) |
 | **Lean 4 Theorems** | 7900 | 255 files, 0 sorry |
 | **Isabelle/HOL Lemmas** | 8069 | 251 files, 0 sorry |
-| **Total Proofs (All Provers)** | 82,965 | Coq + Lean + Isabelle |
+| **Total Proofs (All Provers)** | 63,401 | Coq + Lean + Isabelle |
 | **Multi-Prover Theorems** | 86 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
@@ -839,7 +839,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 82,965 total proofs: 7,740 Coq + 7900 Lean + 8069 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 244 active .v + 255 .lean + 251 .thy = 272 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 63,401 total proofs: 7,740 Coq + 7900 Lean + 8069 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 244 active .v + 255 .lean + 251 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

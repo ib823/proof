@@ -398,7 +398,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 |-------|-------------|--------|
 | 1. Compiler | Lexer, parser, typechecker, codegen, REPL, diagnostics | Done |
 | 2. Standard Library | 88 builtins across 9 modules | Done |
-| 3. Formal Verification | 7,740 Coq Qed + 7900 Lean + 8069 Isabelle = 82,965 total (10 provers), 0 admits/sorry, 0 active axioms | Stable |
+| 3. Formal Verification | 7,740 Coq Qed + 7900 Lean + 8069 Isabelle = 63,401 total (10 provers), 0 admits/sorry, 0 active axioms | Stable |
 | 4. Developer Experience | Formatter, LSP, doc generator, VS Code extension, 130 examples | Done |
 | 5. Ecosystem | CI/CD, package manager, Docker, Nix flake, release system, installer | Done |
 | 6. Adoption | C FFI, 8 demos, community, enterprise, public branch, 15-page website (Why Proof, 15 industries, Releases) | Done |
