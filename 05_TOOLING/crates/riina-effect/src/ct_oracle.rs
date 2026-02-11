@@ -12,6 +12,7 @@ pub enum SampleClass {
 }
 
 impl SampleClass {
+    /// Stable wire encoding used in proof-chain payloads.
     #[must_use]
     pub const fn as_u8(self) -> u8 {
         match self {
@@ -65,9 +66,15 @@ pub enum CtVerdict {
     /// Not enough samples yet.
     InsufficientData,
     /// No statistically significant difference at current threshold.
-    Stable { t_score: f64 },
+    Stable {
+        /// Welch t-score for current sample populations.
+        t_score: f64,
+    },
     /// Potential timing leakage detected.
-    PotentialLeakage { t_score: f64 },
+    PotentialLeakage {
+        /// Welch t-score for current sample populations.
+        t_score: f64,
+    },
 }
 
 /// Streaming timing oracle with Welch t-test evaluation.
@@ -81,7 +88,7 @@ pub struct CtOracle {
 impl CtOracle {
     /// Construct a new oracle.
     #[must_use]
-    pub fn new(cfg: CtOracleConfig) -> Self {
+    pub const fn new(cfg: CtOracleConfig) -> Self {
         Self {
             cfg,
             secret_samples: Vec::new(),
@@ -99,6 +106,7 @@ impl CtOracle {
 
     /// Evaluate current verdict using Welch t-test.
     #[must_use]
+    #[allow(clippy::cast_precision_loss)]
     pub fn evaluate(&self) -> CtVerdict {
         if self.secret_samples.len() < self.cfg.min_samples_per_class
             || self.public_samples.len() < self.cfg.min_samples_per_class
@@ -125,6 +133,7 @@ impl CtOracle {
     }
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn mean_and_sample_variance(samples: &[u64]) -> (f64, f64) {
     let n = samples.len();
     if n == 0 {
@@ -175,10 +184,8 @@ mod tests {
                 duration_ns: 100 + (i % 2),
             });
         }
-        match oracle.evaluate() {
-            CtVerdict::Stable { .. } => {}
-            other => panic!("unexpected verdict: {:?}", other),
-        }
+        let verdict = oracle.evaluate();
+        assert!(matches!(verdict, CtVerdict::Stable { .. }));
     }
 
     #[test]
@@ -197,9 +204,7 @@ mod tests {
                 duration_ns: 160 + (i % 3),
             });
         }
-        match oracle.evaluate() {
-            CtVerdict::PotentialLeakage { .. } => {}
-            other => panic!("unexpected verdict: {:?}", other),
-        }
+        let verdict = oracle.evaluate();
+        assert!(matches!(verdict, CtVerdict::PotentialLeakage { .. }));
     }
 }

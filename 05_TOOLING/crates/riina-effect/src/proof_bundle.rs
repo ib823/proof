@@ -24,6 +24,7 @@ pub enum RuntimeEventKind {
 }
 
 impl RuntimeEventKind {
+    /// Stable wire encoding used in event-hash computation.
     #[must_use]
     pub const fn as_u8(self) -> u8 {
         match self {
@@ -120,10 +121,7 @@ impl RuntimeProofBundle {
         });
         self.chain_head = event_hash;
 
-        match self.events.last() {
-            Some(last) => Ok(last),
-            None => Err(ProofBundleError::SequenceOverflow),
-        }
+        self.events.last().ok_or(ProofBundleError::SequenceOverflow)
     }
 
     /// Verify the entire chain from genesis to head.

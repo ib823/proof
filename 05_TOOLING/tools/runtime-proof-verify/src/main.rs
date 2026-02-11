@@ -182,7 +182,7 @@ fn to_hex(bytes: &[u8]) -> String {
     out
 }
 
-fn nibble_to_hex(nibble: u8) -> char {
+const fn nibble_to_hex(nibble: u8) -> char {
     match nibble {
         0..=9 => (b'0' + nibble) as char,
         10..=15 => (b'a' + (nibble - 10)) as char,

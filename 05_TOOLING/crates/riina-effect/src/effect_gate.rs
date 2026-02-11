@@ -97,7 +97,7 @@ pub struct EffectGate {
 impl EffectGate {
     /// Create an empty gate.
     #[must_use]
-    pub fn new(issuer: CapabilityIssuer) -> Self {
+    pub const fn new(issuer: CapabilityIssuer) -> Self {
         Self {
             issuer,
             policies: Vec::new(),
@@ -208,10 +208,7 @@ mod tests {
             600,
         );
         assert!(token_result.is_ok());
-        let token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(token) = token_result else { return };
 
         let req = EffectRequest {
             subject: "svc:payments",
@@ -236,10 +233,7 @@ mod tests {
             600,
         );
         assert!(token_result.is_ok());
-        let token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(token) = token_result else { return };
 
         let req = EffectRequest {
             subject: "svc:payments",
@@ -264,10 +258,7 @@ mod tests {
             600,
         );
         assert!(token_result.is_ok());
-        let token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(token) = token_result else { return };
 
         let req = EffectRequest {
             subject: "svc:payments",

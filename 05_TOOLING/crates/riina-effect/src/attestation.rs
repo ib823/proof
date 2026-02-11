@@ -14,6 +14,7 @@ pub enum AttestationKind {
 }
 
 impl AttestationKind {
+    /// Stable wire encoding used in runtime evidence payloads.
     #[must_use]
     pub const fn as_u8(self) -> u8 {
         match self {

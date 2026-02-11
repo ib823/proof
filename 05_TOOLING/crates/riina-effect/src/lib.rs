@@ -38,10 +38,7 @@ mod tests {
             600,
         );
         assert!(token_result.is_ok());
-        let token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(token) = token_result else { return };
 
         let mut gate = EffectGate::new(issuer);
         gate.add_policy(EffectPolicy {
@@ -91,10 +88,7 @@ mod tests {
             });
         }
         let ct_verdict = oracle.evaluate();
-        match ct_verdict {
-            CtVerdict::Stable { .. } => {}
-            other => panic!("unexpected ct verdict: {:?}", other),
-        }
+        assert!(matches!(ct_verdict, CtVerdict::Stable { .. }));
 
         let mut bundle = RuntimeProofBundle::new(b"riina.program.runtime");
         let append_attest = bundle.append_event(

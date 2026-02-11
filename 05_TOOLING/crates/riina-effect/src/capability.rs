@@ -237,10 +237,7 @@ mod tests {
             600,
         );
         assert!(token_result.is_ok());
-        let token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(token) = token_result else { return };
 
         let verify = issuer.verify(
             &token,
@@ -257,10 +254,7 @@ mod tests {
         let mut issuer = demo_issuer();
         let token_result = issuer.issue("svc:payments", EffectKind::Crypto, b"context:v1", 100, 1);
         assert!(token_result.is_ok());
-        let token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(token) = token_result else { return };
 
         let verify = issuer.verify(
             &token,
@@ -278,10 +272,7 @@ mod tests {
         let token_result =
             issuer.issue("svc:payments", EffectKind::Crypto, b"context:v1", 100, 100);
         assert!(token_result.is_ok());
-        let mut token = match token_result {
-            Ok(token) => token,
-            Err(_) => return,
-        };
+        let Ok(mut token) = token_result else { return };
 
         let wrong_subject = issuer.verify(
             &token,
