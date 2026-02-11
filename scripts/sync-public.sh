@@ -82,6 +82,9 @@ INTERNAL_PATHS=(
     # --- Internal workflow docs ---
     "COMMIT_PROTOCOL.md"
 
+    # --- Local toolchain installs (must never be published) ---
+    "05_TOOLING/tools/isabelle/"
+
     # --- Internal audit/gap analysis docs ---
     "04_SPECS/cross-cutting/EXHAUSTIVENESS_AUDIT.md"
     "04_SPECS/cross-cutting/RESEARCH_COMPONENTS_AUDIT_*.md"
