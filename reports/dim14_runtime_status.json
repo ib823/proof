@@ -1,0 +1,18 @@
+{
+  "generated_utc": "2026-02-11T12:06:37Z",
+  "repo_head": "f707e127d31781d1d60df3656f72a14d38761b40",
+  "repo_branch": "main",
+  "scope": "dimension_14_runtime_proof_architecture",
+  "checks": {
+    "capability_impl": true,
+    "attestation_impl": true,
+    "ct_oracle_impl": true,
+    "effect_gate_impl": true,
+    "proof_bundle_impl": true,
+    "cargo_check_riina_effect": true,
+    "cargo_test_riina_effect": true,
+    "runtime_proof_verify_self_check": true,
+    "runtime_proof_verify_tests": true
+  },
+  "overall": "PASS"
+}

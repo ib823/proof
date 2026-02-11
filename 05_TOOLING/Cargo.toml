@@ -22,6 +22,7 @@ members = [
     "tools/hash-chain",
     "tools/build-manifest",
     "tools/artifact-sign",
+    "tools/runtime-proof-verify",
 ]
 
 # Exclude test crates from main build
