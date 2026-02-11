@@ -33,14 +33,17 @@ bash scripts/generate-metrics.sh --fast
 bash scripts/sync-metrics.sh
 bash scripts/audit-docs.sh
 
-# 5) Public claim integrity gate
+# 5) Heavy closure tracking gate (strict only when promoting independent-audit claims)
+bash scripts/check-heavy-closure.sh
+
+# 6) Public claim integrity gate
 bash scripts/public-quality-gates.sh
 
-# 6) Full verifier
+# 7) Full verifier
 03_PROTO/target/release/riinac verify --full
 bash 05_TOOLING/scripts/verify.sh 4
 
-# 7) Sync + deploy
+# 8) Sync + deploy
 bash scripts/sync-public.sh
 bash scripts/deploy-website.sh
 bash scripts/verify-riina-deploy.sh

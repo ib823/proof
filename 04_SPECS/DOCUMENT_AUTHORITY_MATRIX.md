@@ -23,6 +23,7 @@ Purpose: define which documents are allowed to drive execution decisions.
 | `reports/easier_gap_status.json` | Easier-gap closure status (items 1/2/9/12) | `bash scripts/check-easier-gaps.sh` |
 | `reports/medium_gap_status.json` | Medium-gap closure status (items 1/2/3/4/9/12) | `bash scripts/check-medium-gaps.sh` |
 | `reports/heavy_gap_status.json` | Heavy-gap foundation status (items 5/6/7/8/10/11/13) | `bash scripts/check-heavy-gaps.sh` |
+| `reports/heavy_closure_status.json` | Heavy-gap executable closure tracker (items 5/6/7/8/10/11/13) | `bash scripts/check-heavy-closure.sh` |
 | `reports/dim1_dim9_promotion_status.json` | Dim1/Dim9 promotion-readiness status | `bash scripts/check-dim1-dim9-promotion.sh` |
 
 ## L1: Operational Sources
@@ -67,5 +68,6 @@ If two documents conflict:
 3. `bash scripts/check-easier-gaps.sh` passes.
 4. `bash scripts/check-medium-gaps.sh` passes.
 5. `bash scripts/check-heavy-gaps.sh` passes.
-6. `bash scripts/check-dim1-dim9-promotion.sh --strict-tools` passes.
-7. `bash scripts/update-proof-ledger.sh --check` passes.
+6. `bash scripts/check-heavy-closure.sh` runs and report is current (use `--strict` only for promotion to independent-audit-grade claims).
+7. `bash scripts/check-dim1-dim9-promotion.sh --strict-tools` passes.
+8. `bash scripts/update-proof-ledger.sh --check` passes.

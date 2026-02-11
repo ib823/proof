@@ -12,6 +12,8 @@ Scope: strict execution tracker from current mechanized Coq core to full multi-l
 - Easier-gap checks (items 1/2/9/12): `PASS`
 - Medium-gap checks (items 1/2/3/4/9/12): `PASS`
 - Heavy-gap foundation checks (items 5/6/7/8/10/11/13): `PASS`
+- Heavy-gap executable closure tracker (items 5/6/7/8/10/11/13): `started` (see `reports/heavy_closure_status.json`)
+- Heavy-gap closure-ready snapshot: `D5=ready`, `D6=ready`, `D7=ready`, `D11=ready`, `D8/D10/D13=pending`
 - Dim1/Dim9 promotion-readiness check: `dimension_1=PASS`, `dimension_9=PASS`, `promotion_ready=true`
 - Public quality gates: `PASS`
 
@@ -21,6 +23,7 @@ Sources:
 - `reports/easier_gap_status.json`
 - `reports/medium_gap_status.json`
 - `reports/heavy_gap_status.json`
+- `reports/heavy_closure_status.json`
 - `reports/dim1_dim9_promotion_status.json`
 - `reports/public_quality_status.json`
 

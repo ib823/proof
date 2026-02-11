@@ -17,6 +17,7 @@ If any step fails, STOP. Fix it. Restart from step 1.
   - `reports/easier_gap_status.json`
   - `reports/medium_gap_status.json`
   - `reports/heavy_gap_status.json`
+  - `reports/heavy_closure_status.json`
   - `reports/dim1_dim9_promotion_status.json`
 
 If descriptive roadmaps conflict with these live sources, live sources win.
@@ -112,6 +113,12 @@ Reads metrics.json (the single source of truth) and checks that every markdown d
 4. Reports foundation pass and promotion readiness separately
 5. `--strict-tools` mode fails unless executable tool-lane checks are available and passing
 6. In strict mode, missing TLA+/Alloy jars are auto-provisioned via `scripts/provision-formal-tools.sh` (unless `--no-provision-tools` is passed)
+
+### `check-heavy-closure.sh`
+1. Tracks executable closure progress for dims `5/6/7/8/10/11/13`
+2. Reuses heavy foundation report and adds concrete executable gates (cargo/Z3/strict protocol lane checks)
+3. Emits `reports/heavy_closure_status.json` with `closure_ready` per dimension and pending blockers
+4. `--strict` mode fails unless every tracked heavy dimension is closure-ready
 
 ### `provision-formal-tools.sh`
 1. Downloads pinned `tla2tools.jar` and Alloy distribution jar
