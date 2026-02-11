@@ -1,10 +1,10 @@
 {
-  "generated": "2026-02-10T22:39:12Z",
-  "generatedHuman": "February 10, 2026 at 22:39 UTC",
+  "generated": "2026-02-11T10:41:51Z",
+  "generatedHuman": "February 11, 2026 at 10:41 UTC",
   "version": "0.2.0",
   "session": 83,
   "git": {
-    "commit": "cdf08c5",
+    "commit": "62f29d0",
     "branch": "main"
   },
   "proofs": {
@@ -39,8 +39,8 @@
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": 7928,
-    "files": 251,
+    "lemmas": 1158,
+    "files": 252,
     "prover": "F*"
   },
   "tlaplus": {
@@ -59,13 +59,13 @@
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
-    "proofs": 7928,
-    "files": 251,
+    "proofs": 1531,
+    "files": 252,
     "prover": "Verus"
   },
   "kani": {
-    "harnesses": 7928,
-    "files": 251,
+    "harnesses": 1531,
+    "files": 252,
     "prover": "Kani"
   },
   "tv": {
@@ -75,7 +75,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 7205,
-    "totalProofsAllProvers": 82965,
+    "totalProofsAllProvers": 63401,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 227,
@@ -116,8 +116,8 @@
   "rust": {
     "tests": 856,
     "testsVerified": 856,
-    "testsEstimated": 852,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 15
   },
   "examples": 130,
