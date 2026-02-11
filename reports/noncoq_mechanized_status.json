@@ -1,12 +1,14 @@
 {
-  "generated_utc": "2026-02-11T12:53:10Z",
-  "repo_head": "9b5561e1371fcf421983f1e9da49d698c81c73b1",
+  "generated_utc": "2026-02-11T21:55:59Z",
+  "repo_head": "19d69ff2811c6113e0271e0f277e1e98fbb7ed01",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
     "lake": true,
-    "isabelle": false,
-    "docker": true,
+    "isabelle": true,
+    "docker": false,
+    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
+    "isabelle_local_error": "",
     "java": true,
     "z3": true,
     "fstar": true,
@@ -27,7 +29,7 @@
     },
     "isabelle": {
       "full_build_ok": false,
-      "build_mode": "docker_full_build_failed",
+      "build_mode": "isabelle_full_build_local_failed",
       "files": 260,
       "sorry": 0,
       "mechanized_ready": false,

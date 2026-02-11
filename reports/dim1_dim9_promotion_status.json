@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-02-11T12:06:29Z",
-  "repo_head": "f707e127d31781d1d60df3656f72a14d38761b40",
+  "generated_utc": "2026-02-11T21:51:19Z",
+  "repo_head": "19d69ff2811c6113e0271e0f277e1e98fbb7ed01",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 1,
   "provision": {
@@ -10,8 +10,10 @@
   },
   "tools": {
     "lake": true,
-    "isabelle": false,
-    "docker": true,
+    "isabelle": true,
+    "docker": false,
+    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
+    "isabelle_local_error": "",
     "java": true,
     "tla2tools_jar": true,
     "alloy_jar": true,
@@ -31,7 +33,7 @@
       "isabelle_theorem_count": 27,
       "isabelle_build": true
     },
-    "detail": "coq_core=1 coq_thm=30 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=0 isa_core=1 isa_thm=27 isa_build=1 isa_mode=docker_core_build"
+    "detail": "coq_core=1 coq_thm=30 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=0 isa_core=1 isa_thm=27 isa_build=1 isa_mode=isabelle_core_build_local"
   },
   "dimension_9": {
     "status": "PASS",
