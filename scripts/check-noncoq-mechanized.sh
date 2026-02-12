@@ -34,6 +34,7 @@ KANI_DIR="$REPO_ROOT/02_FORMAL/kani/RIINA"
 TV_DIR="$REPO_ROOT/02_FORMAL/tv/RIINA"
 FORMAL_TOOLS_DIR="$REPO_ROOT/05_TOOLING/tools/formal"
 ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
+ISABELLE_BUILD_TIMEOUT_SEC="${RIINA_ISABELLE_BUILD_TIMEOUT_SEC:-14400}"
 
 if [ -f "$ISABELLE_HELPER" ]; then
   # shellcheck disable=SC1090
@@ -42,6 +43,13 @@ else
   echo "ERROR: missing Isabelle helper: $ISABELLE_HELPER" >&2
   exit 1
 fi
+
+case "$ISABELLE_BUILD_TIMEOUT_SEC" in
+  ''|*[!0-9]*)
+    echo "ERROR: RIINA_ISABELLE_BUILD_TIMEOUT_SEC must be an integer number of seconds (got '$ISABELLE_BUILD_TIMEOUT_SEC')" >&2
+    exit 1
+    ;;
+esac
 
 escape_json() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
@@ -179,8 +187,8 @@ ISABELLE_BUILD_OK=0
 ISABELLE_BUILD_MODE="missing_local_isabelle"
 if [ "$ISABELLE_FILES" -gt 0 ]; then
   if [ "$HAS_ISABELLE" -eq 1 ]; then
-    if run_with_timeout 7200 "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA >/dev/null 2>&1 \
-      && run_with_timeout 7200 "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA_Domains >/dev/null 2>&1; then
+    if run_with_timeout "$ISABELLE_BUILD_TIMEOUT_SEC" "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA >/dev/null 2>&1 \
+      && run_with_timeout "$ISABELLE_BUILD_TIMEOUT_SEC" "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA_Domains >/dev/null 2>&1; then
       ISABELLE_BUILD_OK=1
       ISABELLE_BUILD_MODE="isabelle_full_build_local"
     else

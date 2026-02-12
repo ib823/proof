@@ -1,0 +1,323 @@
+{
+  "generated_at_utc": "2026-02-12T13:42:00Z",
+  "repo": {
+    "path": "/workspaces/proof",
+    "head_short": "b7591b60",
+    "head_full": "b7591b60eac23cdb7b149b10ab51c2fc7e65dd8a",
+    "working_tree": {
+      "total_changed_entries": 1672,
+      "modified": 1614,
+      "deleted": 52,
+      "untracked": 6
+    }
+  },
+  "last_task_status": {
+    "task_when_interrupted": "Refreshing verification status (medium/heavy/dim14) and waiting for full Isabelle/non-Coq mechanization run to finish.",
+    "percent_complete": 85,
+    "what_completed": [
+      "reports/medium_gap_status.json refreshed on current HEAD",
+      "reports/heavy_closure_status.json refreshed on current HEAD",
+      "reports/dim14_runtime_status.json refreshed on current HEAD"
+    ],
+    "blocking_issue": "Long-running full Isabelle lane in scripts/check-noncoq-mechanized.sh; run was explicitly stopped per user request before noncoq_mechanized_status refresh completed on current HEAD.",
+    "running_tasks_now": []
+  },
+  "uncommitted_changes_breakdown": {
+    "summary": {
+      "scale": "very_large_dirty_tree",
+      "largest_buckets": {
+        "02_FORMAL/verus": 252,
+        "02_FORMAL/kani": 252,
+        "02_FORMAL/fstar": 252,
+        "02_FORMAL/tv": 251,
+        "02_FORMAL/smt": 251,
+        "02_FORMAL/alloy": 238,
+        "02_FORMAL/tlaplus": 153
+      }
+    },
+    "ready_to_commit": [
+      "reports/medium_gap_status.json",
+      "reports/heavy_closure_status.json",
+      "reports/dim14_runtime_status.json"
+    ],
+    "work_in_progress": [
+      "scripts/check-noncoq-mechanized.sh",
+      "scripts/generate-full-stack.py",
+      "reports/dim1_dim9_promotion_status.json",
+      "reports/heavy_gap_status.json",
+      "VERIFICATION_MANIFEST.md",
+      "02_FORMAL/alloy/RIINA/**/*.als",
+      "02_FORMAL/fstar/RIINA/**/*.fst",
+      "02_FORMAL/kani/RIINA/**/*.rs",
+      "02_FORMAL/smt/RIINA/**/*.smt2",
+      "02_FORMAL/tlaplus/RIINA/**/*.tla",
+      "02_FORMAL/tv/RIINA/**/*.tv.smt2",
+      "02_FORMAL/verus/RIINA/**/*.rs",
+      "02_FORMAL/lean/**/*.lean",
+      "02_FORMAL/isabelle/**/*.thy"
+    ],
+    "should_discard": [
+      "ASSESSMENT_2026_02_12.md",
+      "CODEX_EXIT_INTERVIEW_PROMPT.txt",
+      "CODEX_INVESTIGATION_2026_02_12.md",
+      "INDEPENDENT_AUDIT_2026_02_12.md",
+      "RIINA_COMPLETION_ROADMAP_v2.md"
+    ],
+    "needs_manual_review_before_any_commit": [
+      "scripts/check-noncoq-mechanized.sh",
+      "scripts/generate-full-stack.py",
+      "VERIFICATION_MANIFEST.md",
+      "DEPLOYMENT_WORKFLOW_2026_02_12.md"
+    ],
+    "important_note": "Most modified files were pre-existing/generated-corpus churn, not small surgical edits. Do not batch-commit blindly."
+  },
+  "critical_discoveries": {
+    "top_3_blocking_issues": [
+      {
+        "id": "B1",
+        "issue": "Non-Coq mechanization is still false.",
+        "evidence": "website/public/metrics.json -> quality.nonCoqMechanization.overallMechanized=false; multiple lanes remain generated placeholders."
+      },
+      {
+        "id": "B2",
+        "issue": "Heavy closure still blocked in D7/D8/D10.",
+        "evidence": "reports/heavy_closure_status.json (fresh) -> D7 executable_gate=false, D8 executable_gate=false, D10 executable_gate=false."
+      },
+      {
+        "id": "B3",
+        "issue": "Repo currently has huge generated-lane churn (1672 entries), creating high commit risk and review opacity.",
+        "evidence": "git status --short summary."
+      }
+    ],
+    "axioms_provable_vs_unprovable": {
+      "provable_currently": [
+        "Active Coq build: 0 direct Axiom directives, 0 direct Admitted directives (anchored directive scan).",
+        "Lean: 0 sorry, 0 axiom."
+      ],
+      "not_currently_proven": [
+        "32 active Coq Parameter directives in domain models (external assumptions / model boundaries).",
+        "Archived Coq corpus retains legacy assumptions: 87 Axiom directives and 99 Admitted directives under deprecated/archive scope.",
+        "Generated lanes (F*/SMT/TLA+/Alloy/Verus/Kani/TV) contain mostly syntactic/generated obligations, not equivalent to full mechanized closure."
+      ],
+      "why": "Core proofs are strong, but cross-lane/domain assumptions and generated placeholders still represent trust boundaries rather than end-to-end machine-checked closure."
+    },
+    "effectgate_v97_error": {
+      "reported_error_source": "Historical reports (e.g., reports/AX1_build_checks.txt, reports/AX2_STRICT_build_checks.txt) describe baseline failure: '02_FORMAL/coq/effects/EffectGate.v:97 (EGrant typing unification)'.",
+      "current_repro_status": "NOT reproducible now.",
+      "current_check": "make -C 02_FORMAL/coq -B -j2 effects/EffectGate.vo exits 0; line 97 currently is 'intros. constructor. assumption.'",
+      "assessment": "Likely stale baseline from older file state or dependency-state mismatch at that time."
+    },
+    "hidden_dependencies_or_conflicts": [
+      "Pinned local Isabelle is a hard dependency for strict hooks/deploy gates (scripts/isabelle-local.sh + scripts/provision-isabelle.sh).",
+      "Hooks auto-regenerate metrics/docs in some paths, which can silently dirty the tree.",
+      "Generated-corpus scripts can touch hundreds of files quickly, creating merge and audit friction.",
+      "reports/noncoq_mechanized_status.json freshness can lag HEAD if full Isabelle run is interrupted."
+    ]
+  },
+  "quality_gate_status": {
+    "dimension_status": {
+      "1": {
+        "state": "PARTIAL",
+        "detail": "Foundation pass in medium gates, but not full cross-lane mechanized closure."
+      },
+      "2": {
+        "state": "FOUNDATION_PASS",
+        "detail": "Medium gate pass."
+      },
+      "3": {
+        "state": "FOUNDATION_PASS",
+        "detail": "Medium gate pass."
+      },
+      "4": {
+        "state": "FOUNDATION_PASS",
+        "detail": "Medium gate pass."
+      },
+      "5": {
+        "state": "CLOSURE_READY",
+        "detail": "Heavy closure report pass."
+      },
+      "6": {
+        "state": "CLOSURE_READY",
+        "detail": "Heavy closure report pass."
+      },
+      "7": {
+        "state": "BLOCKED",
+        "detail": "Per-target compiler-correctness evidence/executable closure incomplete."
+      },
+      "8": {
+        "state": "BLOCKED",
+        "detail": "Fresh heavy closure run marks executable/artifact gates false."
+      },
+      "9": {
+        "state": "PARTIAL",
+        "detail": "Foundation-level promotion checks have passed; not full independent-grade closure."
+      },
+      "10": {
+        "state": "BLOCKED",
+        "detail": "Implementation correctness lane executable/artifact gates false in fresh heavy closure run."
+      },
+      "11": {
+        "state": "CLOSURE_READY",
+        "detail": "Heavy closure report pass."
+      },
+      "12": {
+        "state": "FOUNDATION_PASS",
+        "detail": "Medium gate pass."
+      },
+      "13": {
+        "state": "CLOSURE_READY",
+        "detail": "Heavy closure report pass."
+      },
+      "14": {
+        "state": "RUNTIME_FOUNDATION_PASS",
+        "detail": "scripts/check-dim14-runtime.sh passes; not full end-state RPA ecosystem closure."
+      }
+    },
+    "actual_axiom_count": {
+      "coq_axiom_directives_total_repo": 87,
+      "coq_axiom_directives_active_scope": 0,
+      "coq_parameter_directives_active_scope": 32
+    },
+    "actual_sorry_admit_count": {
+      "coq_admitted_total_repo": 99,
+      "coq_admitted_active_scope": 0,
+      "lean_sorry": 0,
+      "lean_axiom": 0,
+      "isabelle_sorry": 0,
+      "fstar_admit_tokens": 0,
+      "aggregate_sorry_or_admit_all_provers": 99,
+      "note": "Aggregate count is dominated by archived/deprecated Coq files."
+    }
+  },
+  "recommendations_for_next_steps": {
+    "priority_1_task": {
+      "task": "Stabilize and reduce tree churn before any commit: isolate generated-corpus changes from report-only changes; then rerun noncoq mechanization on a clean scope.",
+      "why": "Current 1672-entry dirty tree makes correctness and rollback unsafe."
+    },
+    "parallelizable_tasks": [
+      {
+        "task": "Lane-specific placeholder replacement plans (F*, SMT, Verus, Kani, TV)",
+        "workers": 5,
+        "estimate_hours_each": "12-30"
+      },
+      {
+        "task": "Dimension evidence-pack drafting for D7 targets (native/WASM/eBPF/SGX)",
+        "workers": 2,
+        "estimate_hours_each": "20-60"
+      },
+      {
+        "task": "Public claim hygiene and docs consistency validation",
+        "workers": 1,
+        "estimate_hours": "4-8"
+      }
+    ],
+    "must_be_sequential": [
+      "Finalize core assumptions/trust-boundary policy before promoting claim levels.",
+      "Run strict mechanization gates after lane repairs, then regenerate metrics and docs.",
+      "Commit -> push main -> sync-public -> deploy-website -> verify-riina-deploy (in order)."
+    ],
+    "estimated_effort_hours_major_remaining": [
+      {
+        "task": "D7 compiler correctness closure",
+        "estimate_hours": "120-220"
+      },
+      {
+        "task": "D8 crypto correctness closure to non-generated executable lane",
+        "estimate_hours": "80-160"
+      },
+      {
+        "task": "D10 implementation correctness closure (Verus/Kani on production modules)",
+        "estimate_hours": "100-200"
+      },
+      {
+        "task": "Non-Coq lane mechanization elevation (Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV)",
+        "estimate_hours": "140-280"
+      },
+      {
+        "task": "Final independent-audit evidence packaging",
+        "estimate_hours": "30-60"
+      }
+    ]
+  },
+  "git_commit_strategy": {
+    "recommended_commit_groups": [
+      {
+        "name": "reports_refresh_only",
+        "files": [
+          "reports/medium_gap_status.json",
+          "reports/heavy_closure_status.json",
+          "reports/dim14_runtime_status.json"
+        ],
+        "message": "chore(reports): refresh medium/heavy/dim14 status on b7591b60"
+      },
+      {
+        "name": "script_logic_changes",
+        "files": [
+          "scripts/check-noncoq-mechanized.sh",
+          "scripts/generate-full-stack.py"
+        ],
+        "message": "tooling: refine noncoq mechanization and full-stack generation gates",
+        "review_required": true
+      },
+      {
+        "name": "docs_strategy_notes_optional",
+        "files": [
+          "DEPLOYMENT_WORKFLOW_2026_02_12.md",
+          "VERIFICATION_MANIFEST.md"
+        ],
+        "message": "docs: update deployment workflow and verification manifest",
+        "review_required": true
+      }
+    ],
+    "recommended_discard_via_checkout": [
+      "ASSESSMENT_2026_02_12.md",
+      "CODEX_EXIT_INTERVIEW_PROMPT.txt",
+      "CODEX_INVESTIGATION_2026_02_12.md",
+      "INDEPENDENT_AUDIT_2026_02_12.md",
+      "RIINA_COMPLETION_ROADMAP_v2.md"
+    ],
+    "manual_review_before_commit": [
+      "All generated lane diffs under 02_FORMAL/{alloy,fstar,kani,smt,tlaplus,tv,verus}",
+      "Any deletions in 02_FORMAL/**/Active/* and Properties/*",
+      "scripts/check-noncoq-mechanized.sh",
+      "scripts/generate-full-stack.py"
+    ],
+    "do_not_do": [
+      "Do not commit all 1672 changed entries in one commit.",
+      "Do not promote claim levels before noncoq_mechanized_status is freshly regenerated on current HEAD."
+    ]
+  },
+  "known_risks": {
+    "what_could_break_if_committed_now": [
+      "Public claim integrity can regress due stale/non-fresh mechanization evidence.",
+      "Generated placeholder churn can accidentally delete/replace active files.",
+      "Deploy can fail strict gates if local Isabelle/tool lane checks are not fresh."
+    ],
+    "fragile_dependencies": [
+      "Pinned local Isabelle toolchain and manifest checksum",
+      "Java + TLA2Tools/Alloy jars for strict Dim1/Dim9 and protocol lanes",
+      "riinac verify --full expectations tied to generated corpus structure"
+    ],
+    "currently_failing_tests_or_checks": [
+      {
+        "check": "cargo test --workspace (03_PROTO)",
+        "status": "FAIL",
+        "detail": "805 passed, 1 failed: verify::tests::test_count_fstar_lemmas (expected >100 F* lemmas, got 0)."
+      },
+      {
+        "check": "heavy closure overall executable",
+        "status": "FAIL",
+        "detail": "D7/D8/D10 blocked in reports/heavy_closure_status.json."
+      },
+      {
+        "check": "noncoq mechanized overall",
+        "status": "FAIL",
+        "detail": "overall_noncoq_mechanized=false."
+      }
+    ],
+    "data_loss_risks": [
+      "Using broad checkout/clean commands without backup can destroy intended generated-lane edits.",
+      "Because tree is huge and mixed (WIP + generated + docs), accidental staging is highly likely unless committing by explicit file lists."
+    ]
+  }
+}
