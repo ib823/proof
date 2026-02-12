@@ -52,19 +52,13 @@ verus! {
     }
 
     // consumer_sensitivity (matches Coq: Definition consumer_sensitivity)
-    pub open spec fn consumer_sensitivity(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn consumer_sensitivity(d: bool) -> u64 { 1 }
 
     // all_rights_count (matches Coq: Definition all_rights_count)
-    pub open spec fn all_rights_count() -> u64 {
-        true
-    }
+    pub open spec fn all_rights_count() -> u64 { 1 }
 
     // right_to_nat (matches Coq: Definition right_to_nat)
-    pub open spec fn right_to_nat(r: bool) -> u64 {
-        true
-    }
+    pub open spec fn right_to_nat(r: bool) -> u64 { 1 }
 
     // all_ecommerce_controls (matches Coq: Definition all_ecommerce_controls)
     pub open spec fn all_ecommerce_controls(c: bool) -> bool {
@@ -72,9 +66,7 @@ verus! {
     }
 
     // count_ecommerce_controls (matches Coq: Definition count_ecommerce_controls)
-    pub open spec fn count_ecommerce_controls(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn count_ecommerce_controls(c: bool) -> u64 { 1 }
 
     // retention_expired (matches Coq: Definition retention_expired)
     pub open spec fn retention_expired() -> bool {

@@ -9,7 +9,7 @@
 #![allow(unused)]
 
 // store_wf (matches Coq: Definition store_wf)
-pub fn store_wf(_Σ: bool, _st: bool) -> bool { true }
+pub fn store_wf(_Sigma: bool, _st: bool) -> bool { true }
 
 // store_ty_extends (matches Coq: Definition store_ty_extends)
 pub fn store_ty_extends() -> bool { true }

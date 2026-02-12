@@ -53,14 +53,10 @@ verus! {
     }
 
     // content_sensitivity (matches Coq: Definition content_sensitivity)
-    pub open spec fn content_sensitivity(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn content_sensitivity(c: bool) -> u64 { 1 }
 
     // protection_strength (matches Coq: Definition protection_strength)
-    pub open spec fn protection_strength(p: bool) -> u64 {
-        true
-    }
+    pub open spec fn protection_strength(p: bool) -> u64 { 1 }
 
     // protection_adequate (matches Coq: Definition protection_adequate)
     pub open spec fn protection_adequate(ct: bool, cp: bool) -> bool {
@@ -73,19 +69,13 @@ verus! {
     }
 
     // count_ecp_controls (matches Coq: Definition count_ecp_controls)
-    pub open spec fn count_ecp_controls(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn count_ecp_controls(c: bool) -> u64 { 1 }
 
     // dci_min_key_bits (matches Coq: Definition dci_min_key_bits)
-    pub open spec fn dci_min_key_bits() -> u64 {
-        true
-    }
+    pub open spec fn dci_min_key_bits() -> u64 { 1 }
 
     // viewing_duration (matches Coq: Definition viewing_duration)
-    pub open spec fn viewing_duration(v: bool) -> u64 {
-        true
-    }
+    pub open spec fn viewing_duration(v: bool) -> u64 { 1 }
 
     // viewing_within_window (matches Coq: Definition viewing_within_window)
     pub open spec fn viewing_within_window(v: bool, max_hours: u64) -> bool {

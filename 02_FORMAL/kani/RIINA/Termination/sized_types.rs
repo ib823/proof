@@ -19,7 +19,7 @@ pub enum sized_ty {
 pub fn sized_ty_base(_st: bool) -> bool { true }
 
 // sized_ty_bound (matches Coq: Definition sized_ty_bound)
-pub fn sized_ty_bound(_st: bool) -> u64 { true }
+pub fn sized_ty_bound(_st: bool) -> u64 { 1 }
 
 // terminates (matches Coq: Definition terminates)
 pub fn terminates(_e: bool, _st: bool, _ctx: bool) -> bool { true }

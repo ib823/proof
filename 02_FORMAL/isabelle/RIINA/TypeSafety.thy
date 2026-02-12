@@ -24,13 +24,13 @@ begin
 
 section \<open>Stuck Configuration\<close>
 
-text \<open>A configuration is stuck if it's not a value and can't step
+text \<open>A configuration is stuck if it's not a is_value and can't step
       (matches Coq: Definition stuck)\<close>
 
 definition stuck :: "config \<Rightarrow> bool" where
   "stuck cfg \<equiv>
      let (e, st, ctx) = cfg in
-     \<not> value e \<and> \<not> (\<exists>cfg'. cfg \<longrightarrow> cfg')"
+     \<not> is_value e \<and> \<not> (\<exists>cfg'. cfg \<longrightarrow> cfg')"
 
 
 section \<open>Type Safety Theorem\<close>
@@ -44,7 +44,7 @@ theorem type_safety:
   shows "\<not> stuck (e, st, ctx)"
 proof -
   from progress[unfolded progress_stmt_def, rule_format, OF assms]
-  have "value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))" .
+  have "is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))" .
   then show ?thesis
     unfolding stuck_def by auto
 qed

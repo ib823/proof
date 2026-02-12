@@ -16,12 +16,12 @@ verus! {
     }
 
     // env_rel_n (matches Coq: Definition env_rel_n)
-    pub open spec fn env_rel_n(n: u64, Σ: bool, G: bool) -> bool {
+    pub open spec fn env_rel_n(n: u64, Sigma: bool, G: bool) -> bool {
         true
     }
 
     // env_rel (matches Coq: Definition env_rel)
-    pub open spec fn env_rel(Σ: bool, G: bool) -> bool {
+    pub open spec fn env_rel(Sigma: bool, G: bool) -> bool {
         true
     }
 
@@ -36,7 +36,7 @@ verus! {
     }
 
     // env_typed (matches Coq: Definition env_typed)
-    pub open spec fn env_typed(Σ: bool, Γ: bool) -> bool {
+    pub open spec fn env_typed(Sigma: bool, Gamma: bool) -> bool {
         true
     }
 

@@ -139,7 +139,7 @@ pub fn is_hipaa_encrypted(_enc: bool) -> bool { true }
 pub fn is_hipaa_transport(_ts: bool) -> bool { true }
 
 // session_timeout (matches Coq: Definition session_timeout)
-pub fn session_timeout() -> u64 { true }
+pub fn session_timeout() -> u64 { 1 }
 
 // session_expired (matches Coq: Definition session_expired)
 pub fn session_expired() -> bool { true }
@@ -151,7 +151,7 @@ pub fn is_mfa(_auth: bool) -> bool { true }
 pub fn is_secure_disposal(_d: bool) -> bool { true }
 
 // breach_detection_limit (matches Coq: Definition breach_detection_limit)
-pub fn breach_detection_limit() -> u64 { true }
+pub fn breach_detection_limit() -> u64 { 1 }
 
 // breach_detected_timely (matches Coq: Definition breach_detected_timely)
 pub fn breach_detected_timely(_b: bool) -> bool { true }

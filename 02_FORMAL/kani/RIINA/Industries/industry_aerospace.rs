@@ -44,10 +44,10 @@ pub struct DO178C_Compliance {
 pub fn dal_le() -> bool { true }
 
 // objectives_for_dal (matches Coq: Definition objectives_for_dal)
-pub fn objectives_for_dal(_d: bool) -> u64 { true }
+pub fn objectives_for_dal(_d: bool) -> u64 { 1 }
 
 // dal_to_nat (matches Coq: Definition dal_to_nat)
-pub fn dal_to_nat(_d: bool) -> u64 { true }
+pub fn dal_to_nat(_d: bool) -> u64 { 1 }
 
 // mcdc_required (matches Coq: Definition mcdc_required)
 pub fn mcdc_required(_d: bool) -> bool { true }

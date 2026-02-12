@@ -12,7 +12,7 @@ use vstd::prelude::*;
 verus! {
 
     // store_wf (matches Coq: Definition store_wf)
-    pub open spec fn store_wf(Σ: bool, st: bool) -> bool {
+    pub open spec fn store_wf(Sigma: bool, st: bool) -> bool {
         true
     }
 

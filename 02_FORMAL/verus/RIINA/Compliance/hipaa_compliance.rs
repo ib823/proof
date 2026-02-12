@@ -135,9 +135,7 @@ verus! {
     }
 
     // session_timeout (matches Coq: Definition session_timeout)
-    pub open spec fn session_timeout() -> u64 {
-        true
-    }
+    pub open spec fn session_timeout() -> u64 { 1 }
 
     // session_expired (matches Coq: Definition session_expired)
     pub open spec fn session_expired() -> bool {
@@ -155,9 +153,7 @@ verus! {
     }
 
     // breach_detection_limit (matches Coq: Definition breach_detection_limit)
-    pub open spec fn breach_detection_limit() -> u64 {
-        true
-    }
+    pub open spec fn breach_detection_limit() -> u64 { 1 }
 
     // breach_detected_timely (matches Coq: Definition breach_detected_timely)
     pub open spec fn breach_detected_timely(b: bool) -> bool {

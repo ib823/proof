@@ -12,16 +12,16 @@
 pub fn closed_expr(_e: bool) -> bool { true }
 
 // store_rel_simple (matches Coq: Definition store_rel_simple)
-pub fn store_rel_simple(_Σ: bool) -> bool { true }
+pub fn store_rel_simple(_Sigma: bool) -> bool { true }
 
 // val_rel_struct (matches Coq: Definition val_rel_struct)
-pub fn val_rel_struct(_Σ: bool, _T: bool) -> bool { true }
+pub fn val_rel_struct(_Sigma: bool, _T: bool) -> bool { true }
 
 // store_rel_le (matches Coq: Definition store_rel_le)
-pub fn store_rel_le(_n: u64, _Σ: bool) -> bool { true }
+pub fn store_rel_le(_n: u64, _Sigma: bool) -> bool { true }
 
 // exp_rel_le (matches Coq: Definition exp_rel_le)
-pub fn exp_rel_le(_n: u64, _Σ: bool, _T: bool, _ctx: bool) -> bool { true }
+pub fn exp_rel_le(_n: u64, _Sigma: bool, _T: bool, _ctx: bool) -> bool { true }
 
 #[cfg(kani)]
 mod verification {

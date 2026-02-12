@@ -62,14 +62,10 @@ verus! {
     }
 
     // domain_to_nat (matches Coq: Definition domain_to_nat)
-    pub open spec fn domain_to_nat(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn domain_to_nat(d: bool) -> u64 { 1 }
 
     // domain_criticality (matches Coq: Definition domain_criticality)
-    pub open spec fn domain_criticality(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn domain_criticality(d: bool) -> u64 { 1 }
 
     // is_auth_function (matches Coq: Definition is_auth_function)
     pub open spec fn is_auth_function(nf: bool) -> bool {
@@ -97,14 +93,10 @@ verus! {
     }
 
     // key_derivation_depth (matches Coq: Definition key_derivation_depth)
-    pub open spec fn key_derivation_depth(domain: bool) -> u64 {
-        true
-    }
+    pub open spec fn key_derivation_depth(domain: bool) -> u64 { 1 }
 
     // roaming_security_level (matches Coq: Definition roaming_security_level)
-    pub open spec fn roaming_security_level() -> u64 {
-        true
-    }
+    pub open spec fn roaming_security_level() -> u64 { 1 }
 
     // li_valid (matches Coq: Definition li_valid)
     pub open spec fn li_valid(li: bool) -> bool {

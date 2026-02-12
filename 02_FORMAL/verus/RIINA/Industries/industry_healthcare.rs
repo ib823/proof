@@ -58,9 +58,7 @@ verus! {
     }
 
     // phi_sensitivity (matches Coq: Definition phi_sensitivity)
-    pub open spec fn phi_sensitivity(cat: bool) -> u64 {
-        true
-    }
+    pub open spec fn phi_sensitivity(cat: bool) -> u64 { 1 }
 
     // minimum_necessary (matches Coq: Definition minimum_necessary)
     pub open spec fn minimum_necessary() -> bool {
@@ -78,9 +76,7 @@ verus! {
     }
 
     // role_level (matches Coq: Definition role_level)
-    pub open spec fn role_level(role: u64) -> u64 {
-        true
-    }
+    pub open spec fn role_level(role: u64) -> u64 { 1 }
 
     // access_permitted (matches Coq: Definition access_permitted)
     pub open spec fn access_permitted(role_lvl: u64, cat: bool) -> bool {
@@ -93,14 +89,10 @@ verus! {
     }
 
     // retention_years (matches Coq: Definition retention_years)
-    pub open spec fn retention_years(cat: bool) -> u64 {
-        true
-    }
+    pub open spec fn retention_years(cat: bool) -> u64 { 1 }
 
     // deidentified_sensitivity (matches Coq: Definition deidentified_sensitivity)
-    pub open spec fn deidentified_sensitivity(is_deidentified: bool, cat: bool) -> u64 {
-        true
-    }
+    pub open spec fn deidentified_sensitivity(is_deidentified: bool, cat: bool) -> u64 { 1 }
 
     // dose_in_range (matches Coq: Definition dose_in_range)
     pub open spec fn dose_in_range() -> bool {

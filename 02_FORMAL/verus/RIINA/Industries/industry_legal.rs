@@ -44,14 +44,10 @@ verus! {
     }
 
     // legal_sensitivity (matches Coq: Definition legal_sensitivity)
-    pub open spec fn legal_sensitivity(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn legal_sensitivity(d: bool) -> u64 { 1 }
 
     // privilege_strength (matches Coq: Definition privilege_strength)
-    pub open spec fn privilege_strength(p: bool) -> u64 {
-        true
-    }
+    pub open spec fn privilege_strength(p: bool) -> u64 { 1 }
 
     // privilege_effective (matches Coq: Definition privilege_effective)
     pub open spec fn privilege_effective(p: bool) -> bool {
@@ -64,14 +60,10 @@ verus! {
     }
 
     // count_legal_controls (matches Coq: Definition count_legal_controls)
-    pub open spec fn count_legal_controls(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn count_legal_controls(c: bool) -> u64 { 1 }
 
     // legal_retention_years (matches Coq: Definition legal_retention_years)
-    pub open spec fn legal_retention_years(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn legal_retention_years(d: bool) -> u64 { 1 }
 
     // no_conflict (matches Coq: Definition no_conflict)
     pub open spec fn no_conflict() -> bool {

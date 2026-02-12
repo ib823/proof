@@ -11,10 +11,10 @@
 pub fn closed_except(_x: bool, _e: bool) -> bool { true }
 
 // env_rel_n (matches Coq: Definition env_rel_n)
-pub fn env_rel_n(_n: u64, _Σ: bool, _G: bool) -> bool { true }
+pub fn env_rel_n(_n: u64, _Sigma: bool, _G: bool) -> bool { true }
 
 // env_rel (matches Coq: Definition env_rel)
-pub fn env_rel(_Σ: bool, _G: bool) -> bool { true }
+pub fn env_rel(_Sigma: bool, _G: bool) -> bool { true }
 
 // rho_closed_on (matches Coq: Definition rho_closed_on)
 pub fn rho_closed_on(_G: bool) -> bool { true }
@@ -23,7 +23,7 @@ pub fn rho_closed_on(_G: bool) -> bool { true }
 pub fn rho_no_free_all() -> bool { true }
 
 // env_typed (matches Coq: Definition env_typed)
-pub fn env_typed(_Σ: bool, _Γ: bool) -> bool { true }
+pub fn env_typed(_Sigma: bool, _Gamma: bool) -> bool { true }
 
 // fundamental_at_step (matches Coq: Definition fundamental_at_step)
 pub fn fundamental_at_step(_n: u64) -> bool { true }

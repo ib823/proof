@@ -32,12 +32,12 @@ verus! {
     }
 
     // extend_rho (matches Coq: Definition extend_rho)
-    pub open spec fn extend_rho(ρ: bool, x: bool, v: bool) -> bool {
+    pub open spec fn extend_rho(_: bool, x: bool, v: bool) -> bool {
         true
     }
 
     // closed_rho (matches Coq: Definition closed_rho)
-    pub open spec fn closed_rho(ρ: bool) -> bool {
+    pub open spec fn closed_rho(_: bool) -> bool {
         true
     }
 

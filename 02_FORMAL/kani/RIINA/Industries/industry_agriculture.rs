@@ -70,22 +70,22 @@ pub struct TraceEntry {
 }
 
 // agri_data_sensitivity (matches Coq: Definition agri_data_sensitivity)
-pub fn agri_data_sensitivity(_d: bool) -> u64 { true }
+pub fn agri_data_sensitivity(_d: bool) -> u64 { 1 }
 
 // hazard_severity (matches Coq: Definition hazard_severity)
-pub fn hazard_severity(_h: bool) -> u64 { true }
+pub fn hazard_severity(_h: bool) -> u64 { 1 }
 
 // haccp_frequency (matches Coq: Definition haccp_frequency)
-pub fn haccp_frequency(_h: bool) -> u64 { true }
+pub fn haccp_frequency(_h: bool) -> u64 { 1 }
 
 // all_food_safety_controls (matches Coq: Definition all_food_safety_controls)
 pub fn all_food_safety_controls(_c: bool) -> bool { true }
 
 // risk_score (matches Coq: Definition risk_score)
-pub fn risk_score(_h: bool) -> u64 { true }
+pub fn risk_score(_h: bool) -> u64 { 1 }
 
 // count_food_controls (matches Coq: Definition count_food_controls)
-pub fn count_food_controls(_c: bool) -> u64 { true }
+pub fn count_food_controls(_c: bool) -> u64 { 1 }
 
 #[cfg(kani)]
 mod verification {

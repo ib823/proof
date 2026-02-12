@@ -65,12 +65,12 @@ verus! {
     }
 
     // store_update (matches Coq: Definition store_update)
-    pub open spec fn store_update(σ: bool, l: u64, v: bool) -> bool {
+    pub open spec fn store_update(_: bool, l: u64, v: bool) -> bool {
         true
     }
 
     // store_ty_update (matches Coq: Definition store_ty_update)
-    pub open spec fn store_ty_update(Σ: bool, l: u64, T: bool, lab: bool) -> bool {
+    pub open spec fn store_ty_update(Sigma: bool, l: u64, T: bool, lab: bool) -> bool {
         true
     }
 
@@ -80,12 +80,12 @@ verus! {
     }
 
     // store_rel_n (matches Coq: Definition store_rel_n)
-    pub open spec fn store_rel_n(n: u64, Σ: bool) -> bool {
+    pub open spec fn store_rel_n(n: u64, Sigma: bool) -> bool {
         true
     }
 
     // exp_rel_n (matches Coq: Definition exp_rel_n)
-    pub open spec fn exp_rel_n(n: u64, Σ: bool, T: bool) -> bool {
+    pub open spec fn exp_rel_n(n: u64, Sigma: bool, T: bool) -> bool {
         true
     }
 

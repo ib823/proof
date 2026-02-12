@@ -201,7 +201,7 @@ definition rho_no_free_all :: "bool" where
 (* env_typed (matches Coq: Definition env_typed) *)
 definition env_typed :: "store_ty \<Rightarrow> type_env \<Rightarrow> bool" where
   "env_typed Σ Γ \<equiv> forall x T, lookup x Γ = Some T ->
-    value (rho x) /\ has_type nil Σ Public (rho x) T EffectPure"
+    is_value (rho x) /\ has_type nil Σ Public (rho x) T EffectPure"
 
 (* fundamental_at_step (matches Coq: Definition fundamental_at_step) *)
 definition fundamental_at_step :: "nat \<Rightarrow> bool" where
@@ -253,11 +253,11 @@ lemma val_rel_closed_right_n: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> v
   by auto
 
 (* val_rel_value_left_n (matches Coq) *)
-lemma val_rel_value_left_n: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> value v1"
+lemma val_rel_value_left_n: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v1"
   by auto
 
 (* val_rel_value_right_n (matches Coq) *)
-lemma val_rel_value_right_n: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> value v2"
+lemma val_rel_value_right_n: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v2"
   by auto
 
 (* val_rel_closed_left (matches Coq) *)
@@ -269,11 +269,11 @@ lemma val_rel_closed_right: "\<forall> Σ T v1 v2, val_rel Σ T v1 v2 \<longrigh
   by simp
 
 (* val_rel_value_left (matches Coq) *)
-lemma val_rel_value_left: "\<forall> Σ T v1 v2, val_rel Σ T v1 v2 \<longrightarrow> value v1"
+lemma val_rel_value_left: "\<forall> Σ T v1 v2, val_rel Σ T v1 v2 \<longrightarrow> is_value v1"
   by simp
 
 (* val_rel_value_right (matches Coq) *)
-lemma val_rel_value_right: "\<forall> Σ T v1 v2, val_rel Σ T v1 v2 \<longrightarrow> value v2"
+lemma val_rel_value_right: "\<forall> Σ T v1 v2, val_rel Σ T v1 v2 \<longrightarrow> is_value v2"
   by simp
 
 (* free_in_subst_rho (matches Coq) *)
@@ -291,7 +291,7 @@ lemma env_rel_mono_store: "\<forall> Σ Σ' G rho1 rho2, store_ty_extends Σ Σ'
   by auto
 
 (* env_typed_lookup (matches Coq) *)
-lemma env_typed_lookup: "\<forall> Σ Γ rho x T, env_typed Σ Γ rho \<longrightarrow> lookup x Γ = Some T \<longrightarrow> value (rho x) \<and> has_type nil Σ Public (rho x) T EffectPure"
+lemma env_typed_lookup: "\<forall> Σ Γ rho x T, env_typed Σ Γ rho \<longrightarrow> lookup x Γ = Some T \<longrightarrow> is_value (rho x) \<and> has_type nil Σ Public (rho x) T EffectPure"
   by auto
 
 (* Typing in empty context implies closed. *)
@@ -304,14 +304,14 @@ lemma env_typed_closed: "\<forall> Σ Γ rho x T, env_typed Σ Γ rho \<longrigh
   by auto
 
 (* env_typed_extend (matches Coq) *)
-lemma env_typed_extend: "\<forall> Σ Γ rho x T v, env_typed Σ Γ rho \<longrightarrow> value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> env_typed Σ ((x, T) :: Γ) (rho_extend rho x v)"
+lemma env_typed_extend: "\<forall> Σ Γ rho x T v, env_typed Σ Γ rho \<longrightarrow> is_value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> env_typed Σ ((x, T) :: Γ) (rho_extend rho x v)"
   by auto
 
 (* Lemma: substitution preserves values.
-    Values remain values after substitution because the value constructors
+    Values remain values after substitution because the is_value constructors
     only care about syntactic structure, not about free variables. *)
 (* value_subst_rho (matches Coq) *)
-lemma value_subst_rho: "\<forall> rho v, value v \<longrightarrow> value (subst_rho rho v)"
+lemma value_subst_rho: "\<forall> rho v, is_value v \<longrightarrow> is_value (subst_rho rho v)"
   by auto
 
 (* Lemma: declass_ok is preserved by subst_rho.
@@ -322,7 +322,7 @@ lemma declass_ok_subst_rho: "\<forall> rho e1 e2, declass_ok e1 e2 \<longrightar
 
 (* The correct formulation: substitution reduces the typing context. *)
 (* subst_rho_typing_general (matches Coq) *)
-lemma subst_rho_typing_general: "\<forall> Γ Γ' Σ Δ e T ε rho, has_type Γ Σ Δ e T ε \<longrightarrow> (* For variables in Γ but not Γ', rho provides typed values *) (\<forall> x Tx, lookup x Γ = Some Tx \<longrightarrow> lookup x Γ' = None \<longrightarrow> value (rho x) \<and> has_type nil Σ Δ (rho x) Tx EffectPure) \<longrightarrow> (* For variables in both Γ and Γ', rho is identity *) (\<forall> x, lookup x Γ' \<noteq> None \<longrightarrow> rho x = EVar x) \<longrightarrow> (* Γ' is a suffix/subset of Γ with same types *) (\<forall> x Tx, lookup x Γ' = Some Tx \<longrightarrow> lookup x Γ = Some Tx) \<longrightarrow> has_type Γ' Σ Δ (subst_rho rho e) T ε"
+lemma subst_rho_typing_general: "\<forall> Γ Γ' Σ Δ e T ε rho, has_type Γ Σ Δ e T ε \<longrightarrow> (* For variables in Γ but not Γ', rho provides typed values *) (\<forall> x Tx, lookup x Γ = Some Tx \<longrightarrow> lookup x Γ' = None \<longrightarrow> is_value (rho x) \<and> has_type nil Σ Δ (rho x) Tx EffectPure) \<longrightarrow> (* For variables in both Γ and Γ', rho is identity *) (\<forall> x, lookup x Γ' \<noteq> None \<longrightarrow> rho x = EVar x) \<longrightarrow> (* Γ' is a suffix/subset of Γ with same types *) (\<forall> x Tx, lookup x Γ' = Some Tx \<longrightarrow> lookup x Γ = Some Tx) \<longrightarrow> has_type Γ' Σ Δ (subst_rho rho e) T ε"
   by (cases rule: ‹_›.cases; simp)
 
 (* Corollary: Full substitution to empty context.
@@ -352,7 +352,7 @@ lemma val_rel_at_type_store_weaken: "\<forall> T Σ Σ' sr vr sr2 svr v1 v2, sto
 lemma val_rel_n_store_weaken: "\<forall> n Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n n Σ' T v1 v2"
   by auto
 
-(* Helper: closed_expr for closed value constructors — needed early for val_rel_n lemmas *)
+(* Helper: closed_expr for closed is_value constructors — needed early for val_rel_n lemmas *)
 (* closed_expr_unit_early (matches Coq) *)
 lemma closed_expr_unit_early: "closed_expr EUnit"
   by auto
@@ -388,7 +388,7 @@ lemma store_max_update_eq: "\<forall> st1 st2 l v1 v2, store_max st1 = store_max
     to both stores with related values, the extended relation holds.
     Uses val_rel_n_store_weaken for existing locations. *)
 (* store_rel_n_alloc_fresh (matches Coq) *)
-lemma store_rel_n_alloc_fresh: "\<forall> n Σ st1 st2 loc T l v1 v2, store_rel_n n Σ st1 st2 \<longrightarrow> store_ty_lookup loc Σ = None \<longrightarrow> store_lookup loc st1 = None \<longrightarrow> store_lookup loc st2 = None \<longrightarrow> val_rel_n n (store_ty_update loc T l Σ) T v1 v2 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil (store_ty_update loc T l Σ) Public v1 T EffectPure \<longrightarrow> has_type nil (store_ty_update loc T l Σ) Public v2 T EffectPure \<longrightarrow> store_rel_n n (store_ty_update loc T l Σ) (store_update loc v1 st1) (store_update loc v2 st2)"
+lemma store_rel_n_alloc_fresh: "\<forall> n Σ st1 st2 loc T l v1 v2, store_rel_n n Σ st1 st2 \<longrightarrow> store_ty_lookup loc Σ = None \<longrightarrow> store_lookup loc st1 = None \<longrightarrow> store_lookup loc st2 = None \<longrightarrow> val_rel_n n (store_ty_update loc T l Σ) T v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil (store_ty_update loc T l Σ) Public v1 T EffectPure \<longrightarrow> has_type nil (store_ty_update loc T l Σ) Public v2 T EffectPure \<longrightarrow> store_rel_n n (store_ty_update loc T l Σ) (store_update loc v1 st1) (store_update loc v2 st2)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Helper: store_vals_rel extended with a fresh location. *)
@@ -412,7 +412,7 @@ lemma stores_agree_low_fo_alloc_fresh: "\<forall> Σ st1 st2 loc T l v1 v2, stor
     Unlike store_rel_n_alloc_fresh which adds a NEW location,
     this updates an EXISTING location (store_ty doesn't change). *)
 (* store_rel_n_update_existing (matches Coq) *)
-lemma store_rel_n_update_existing: "\<forall> n Σ st1 st2 loc T l v1 v2, store_rel_n n Σ st1 st2 \<longrightarrow> store_ty_lookup loc Σ = Some (T, l) \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> store_rel_n n Σ (store_update loc v1 st1) (store_update loc v2 st2)"
+lemma store_rel_n_update_existing: "\<forall> n Σ st1 st2 loc T l v1 v2, store_rel_n n Σ st1 st2 \<longrightarrow> store_ty_lookup loc Σ = Some (T, l) \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> store_rel_n n Σ (store_update loc v1 st1) (store_update loc v2 st2)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Helper: store_vals_rel preserved by updating an existing location. *)
@@ -430,14 +430,14 @@ lemma stores_agree_low_fo_update_existing: "\<forall> Σ st1 st2 loc T l v1 v2, 
     then for any target step m, either step down (val_rel_n_mono) or
     step up (val_rel_n_step_up) to reach m. *)
 (* val_rel_n_to_val_rel (matches Coq) *)
-lemma val_rel_n_to_val_rel: "\<forall> Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel: "\<forall> Σ T v1 v2, is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
   by (cases rule: ‹_›.cases; simp)
 
 (* Helper: convert val_rel_n at ANY step (including 0) to val_rel.
     For step 0, we step up once using typing from val_rel_n_typing,
     then apply val_rel_n_to_val_rel. *)
 (* val_rel_n_to_val_rel_any (matches Coq) *)
-lemma val_rel_n_to_val_rel_any: "\<forall> Σ T v1 v2 n, value v1 \<longrightarrow> value v2 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel_any: "\<forall> Σ T v1 v2 n, is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel Σ T v1 v2"
   by auto
 
 (* Lemma: env_rel implies closed expressions for mapped variables.
@@ -577,7 +577,7 @@ lemma multi_step_app1: "\<forall> e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -->* 
   by auto
 
 (* multi_step_app2 (matches Coq) *)
-lemma multi_step_app2: "\<forall> v1 e2 e2' st st' ctx ctx', value v1 \<longrightarrow> (e2, st, ctx) -->* (e2', st', ctx') \<longrightarrow> (EApp v1 e2, st, ctx) -->* (EApp v1 e2', st', ctx')"
+lemma multi_step_app2: "\<forall> v1 e2 e2' st st' ctx ctx', is_value v1 \<longrightarrow> (e2, st, ctx) -->* (e2', st', ctx') \<longrightarrow> (EApp v1 e2, st, ctx) -->* (EApp v1 e2', st', ctx')"
   by auto
 
 (* multi_step_pair1 (matches Coq) *)
@@ -585,7 +585,7 @@ lemma multi_step_pair1: "\<forall> e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -->*
   by auto
 
 (* multi_step_pair2 (matches Coq) *)
-lemma multi_step_pair2: "\<forall> v1 e2 e2' st st' ctx ctx', value v1 \<longrightarrow> (e2, st, ctx) -->* (e2', st', ctx') \<longrightarrow> (EPair v1 e2, st, ctx) -->* (EPair v1 e2', st', ctx')"
+lemma multi_step_pair2: "\<forall> v1 e2 e2' st st' ctx ctx', is_value v1 \<longrightarrow> (e2, st, ctx) -->* (e2', st', ctx') \<longrightarrow> (EPair v1 e2, st, ctx) -->* (EPair v1 e2', st', ctx')"
   by auto
 
 (* multi_step_fst (matches Coq) *)
@@ -653,7 +653,7 @@ lemma multi_step_assign1: "\<forall> e1 e1' e2 st st' ctx ctx', (e1, st, ctx) --
   by auto
 
 (* multi_step_assign2 (matches Coq) *)
-lemma multi_step_assign2: "\<forall> v1 e2 e2' st st' ctx ctx', value v1 \<longrightarrow> (e2, st, ctx) -->* (e2', st', ctx') \<longrightarrow> (EAssign v1 e2, st, ctx) -->* (EAssign v1 e2', st', ctx')"
+lemma multi_step_assign2: "\<forall> v1 e2 e2' st st' ctx ctx', is_value v1 \<longrightarrow> (e2, st, ctx) -->* (e2', st', ctx') \<longrightarrow> (EAssign v1 e2, st, ctx) -->* (EAssign v1 e2', st', ctx')"
   by auto
 
 (* exp_rel_of_val_rel (matches Coq) *)
@@ -672,15 +672,15 @@ lemma exp_rel_of_val_rel_n: "\<forall> n Σ T v1 v2, val_rel Σ T v1 v2 \<longri
     These extract the first/second component relation from a product relation,
     preserving the step index (key benefit of the new structure). *)
 (* value_pair_inv (matches Coq) *)
-lemma value_pair_inv: "\<forall> x y, value (EPair x y) \<longrightarrow> value x \<and> value y"
+lemma value_pair_inv: "\<forall> x y, is_value (EPair x y) \<longrightarrow> is_value x \<and> is_value y"
   by auto
 
 (* value_inl_inv (matches Coq) *)
-lemma value_inl_inv: "\<forall> v T, value (EInl v T) \<longrightarrow> value v"
+lemma value_inl_inv: "\<forall> v T, is_value (EInl v T) \<longrightarrow> is_value v"
   by auto
 
 (* value_inr_inv (matches Coq) *)
-lemma value_inr_inv: "\<forall> v T, value (EInr v T) \<longrightarrow> value v"
+lemma value_inr_inv: "\<forall> v T, is_value (EInr v T) \<longrightarrow> is_value v"
   by auto
 
 (* closed_expr_inl_inv (matches Coq) *)
@@ -693,27 +693,27 @@ lemma closed_expr_inr_inv: "\<forall> v T, closed_expr (EInr v T) \<longrightarr
 
 (* Helper to extract val_rel_at_type from val_rel_n for products.
     Note: With the cumulative structure, we get val_rel_at_type directly,
-    and can combine with value/closed properties separately if needed. *)
+    and can combine with is_value/closed properties separately if needed. *)
 (* val_rel_n_prod_decompose (matches Coq) *)
-lemma val_rel_n_prod_decompose: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ (TProd T1 T2) v1 v2 \<longrightarrow> \<exists> a1 b1 a2 b2, v1 = EPair a1 b1 \<and> v2 = EPair a2 b2 \<and> value a1 \<and> value b1 \<and> value a2 \<and> value b2 \<and> closed_expr a1 \<and> closed_expr b1 \<and> closed_expr a2 \<and> closed_expr b2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T1 a1 a2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T2 b1 b2"
+lemma val_rel_n_prod_decompose: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ (TProd T1 T2) v1 v2 \<longrightarrow> \<exists> a1 b1 a2 b2, v1 = EPair a1 b1 \<and> v2 = EPair a2 b2 \<and> is_value a1 \<and> is_value b1 \<and> is_value a2 \<and> is_value b2 \<and> closed_expr a1 \<and> closed_expr b1 \<and> closed_expr a2 \<and> closed_expr b2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T1 a1 a2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T2 b1 b2"
   by (cases rule: ‹_›.cases; simp)
 
 (* For first-order types, we can construct val_rel_n from val_rel_at_type.
     This is a general building lemma for first-order types. *)
 (* val_rel_n_of_first_order (matches Coq) *)
-lemma val_rel_n_of_first_order: "\<forall> n Σ T v1 v2, first_order_type T = True \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> (\<forall> sp vl sl svp, val_rel_at_type Σ sp vl sl svp T v1 v2) \<longrightarrow> val_rel_n n Σ T v1 v2"
+lemma val_rel_n_of_first_order: "\<forall> n Σ T v1 v2, first_order_type T = True \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> (\<forall> sp vl sl svp, val_rel_at_type Σ sp vl sl svp T v1 v2) \<longrightarrow> val_rel_n n Σ T v1 v2"
   by auto
 
 (* LEMMA: For first-order types, convert val_rel_n to val_rel. *)
 (* val_rel_n_to_val_rel_fo (matches Coq) *)
-lemma val_rel_n_to_val_rel_fo: "\<forall> Σ T v1 v2, first_order_type T = True \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel_fo: "\<forall> Σ T v1 v2, first_order_type T = True \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> (\<exists> n, val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
   by simp
 
 (* For first-order types, convert val_rel_at_type to val_rel.
 
-    REVOLUTIONARY CHANGE: Instead of axiomatizing value/closed extraction
+    REVOLUTIONARY CHANGE: Instead of axiomatizing is_value/closed extraction
     from val_rel_at_type (which doesn't hold for TBytes/TSecret), we take
-    value and closed_expr as explicit premises. This allows callers who
+    is_value and closed_expr as explicit premises. This allows callers who
     already have these properties (from the strengthened TFn definition)
     to use this lemma without needing unsound axioms.
 
@@ -723,7 +723,7 @@ lemma val_rel_n_to_val_rel_fo: "\<forall> Σ T v1 v2, first_order_type T = True 
     - val_rel_at_type_closed_left
     - val_rel_at_type_closed_right *)
 (* val_rel_at_type_to_val_rel_fo (matches Coq) *)
-lemma val_rel_at_type_to_val_rel_fo: "\<forall> Σ sp vl sl svp T v1 v2, first_order_type T = True \<longrightarrow> val_rel_at_type Σ sp vl sl svp T v1 v2 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_at_type_to_val_rel_fo: "\<forall> Σ sp vl sl svp T v1 v2, first_order_type T = True \<longrightarrow> val_rel_at_type Σ sp vl sl svp T v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel Σ T v1 v2"
   by auto
 
 (* has_type_pair_inv (matches Coq) *)
@@ -794,7 +794,7 @@ lemma val_rel_n_sum_inr: "\<forall> n Σ T1 T2 v1 v2, val_rel_n n Σ T2 v1 v2 \<
 
 (* Decompose val_rel_n at TSum to get the sum structure *)
 (* val_rel_n_sum_decompose (matches Coq) *)
-lemma val_rel_n_sum_decompose: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ (TSum T1 T2) v1 v2 \<longrightarrow> (\<exists> a1 a2, v1 = EInl a1 T2 \<and> v2 = EInl a2 T2 \<and> value a1 \<and> value a2 \<and> closed_expr a1 \<and> closed_expr a2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T1 a1 a2) \<or> (\<exists> b1 b2, v1 = EInr b1 T1 \<and> v2 = EInr b2 T1 \<and> value b1 \<and> value b2 \<and> closed_expr b1 \<and> closed_expr b2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T2 b1 b2)"
+lemma val_rel_n_sum_decompose: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ (TSum T1 T2) v1 v2 \<longrightarrow> (\<exists> a1 a2, v1 = EInl a1 T2 \<and> v2 = EInl a2 T2 \<and> is_value a1 \<and> is_value a2 \<and> closed_expr a1 \<and> closed_expr a2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T1 a1 a2) \<or> (\<exists> b1 b2, v1 = EInr b1 T1 \<and> v2 = EInr b2 T1 \<and> is_value b1 \<and> is_value b2 \<and> closed_expr b1 \<and> closed_expr b2 \<and> val_rel_at_type Σ (store_rel_n (n-1)) (val_rel_n (n-1)) (store_rel_n (n-1)) (store_vals_rel (n-1)) T2 b1 b2)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Extract val_rel_n for Inl component from sum relation (general version) *)
@@ -809,14 +809,14 @@ lemma val_rel_n_from_sum_inr: "\<forall> n Σ T1 T2 b1 b2, n > 0 \<longrightarro
 
 (* Extract val_rel_at_type from product decomposition (for any type) *)
 (* val_rel_n_prod_fst_at (matches Coq) *)
-lemma val_rel_n_prod_fst_at: "\<forall> n Σ T1 T2 v1 v2 v1' v2', val_rel_n (S n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> value v1 \<and> value v1' \<and> closed_expr v1 \<and> closed_expr v1' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T1 v1 v1'"
+lemma val_rel_n_prod_fst_at: "\<forall> n Σ T1 T2 v1 v2 v1' v2', val_rel_n (S n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> is_value v1 \<and> is_value v1' \<and> closed_expr v1 \<and> closed_expr v1' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T1 v1 v1'"
   by auto
 
 (* val_rel_n_prod_snd_at (matches Coq) *)
-lemma val_rel_n_prod_snd_at: "\<forall> n Σ T1 T2 v1 v2 v1' v2', val_rel_n (S n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> value v2 \<and> value v2' \<and> closed_expr v2 \<and> closed_expr v2' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T2 v2 v2'"
+lemma val_rel_n_prod_snd_at: "\<forall> n Σ T1 T2 v1 v2 v1' v2', val_rel_n (S n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> is_value v2 \<and> is_value v2' \<and> closed_expr v2 \<and> closed_expr v2' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T2 v2 v2'"
   by auto
 
-(* Helper: closed_expr for closed value constructors *)
+(* Helper: closed_expr for closed is_value constructors *)
 (* closed_expr_unit (matches Coq) *)
 lemma closed_expr_unit: "closed_expr EUnit"
   by auto
@@ -837,7 +837,7 @@ lemma closed_expr_string: "\<forall> s, closed_expr (EString s)"
 lemma closed_expr_loc: "\<forall> l, closed_expr (ELoc l)"
   by auto
 
-(* Helper: val_rel for first-order value types using val_rel_n_of_first_order *)
+(* Helper: val_rel for first-order is_value types using val_rel_n_of_first_order *)
 (* val_rel_unit (matches Coq) *)
 lemma val_rel_unit: "\<forall> Σ, val_rel Σ TUnit EUnit EUnit"
   by auto
@@ -857,12 +857,12 @@ lemma val_rel_int: "\<forall> Σ i, val_rel Σ TInt (EInt i) (EInt i)"
 
 (* Build val_rel_n for TSecret type (val_rel_at_type is True) *)
 (* val_rel_n_classify (matches Coq) *)
-lemma val_rel_n_classify: "\<forall> n Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n n Σ (TSecret T) (EClassify v1) (EClassify v2)"
+lemma val_rel_n_classify: "\<forall> n Σ T v1 v2, is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n n Σ (TSecret T) (EClassify v1) (EClassify v2)"
   by auto
 
 (* Build val_rel_n for TProof type (val_rel_at_type is True) *)
 (* val_rel_n_prove (matches Coq) *)
-lemma val_rel_n_prove: "\<forall> n Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n n Σ (TProof T) (EProve v1) (EProve v2)"
+lemma val_rel_n_prove: "\<forall> n Σ T v1 v2, is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n n Σ (TProof T) (EProve v1) (EProve v2)"
   by auto
 
 (* val_rel_string (matches Coq) *)

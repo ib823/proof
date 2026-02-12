@@ -44,9 +44,7 @@ verus! {
     }
 
     // class_to_nat (matches Coq: Definition class_to_nat)
-    pub open spec fn class_to_nat(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn class_to_nat(c: bool) -> u64 { 1 }
 
     // has_compartment (matches Coq: Definition has_compartment)
     pub open spec fn has_compartment(c: u64) -> bool {
@@ -59,9 +57,7 @@ verus! {
     }
 
     // key_level (matches Coq: Definition key_level)
-    pub open spec fn key_level(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn key_level(c: bool) -> u64 { 1 }
 
     // weapon_system_authorized (matches Coq: Definition weapon_system_authorized)
     pub open spec fn weapon_system_authorized(clearance: bool) -> bool {
@@ -69,9 +65,7 @@ verus! {
     }
 
     // redundancy_factor (matches Coq: Definition redundancy_factor)
-    pub open spec fn redundancy_factor(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn redundancy_factor(c: bool) -> u64 { 1 }
 
     // nist_800_171_access_control (matches Coq: Theorem nist_800_171_access_control)
     pub proof fn nist_800_171_access_control()

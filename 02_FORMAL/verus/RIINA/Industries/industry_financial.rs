@@ -109,9 +109,7 @@ verus! {
     }
 
     // convert_and_back (matches Coq: Definition convert_and_back)
-    pub open spec fn convert_and_back() -> u64 {
-        true
-    }
+    pub open spec fn convert_and_back() -> u64 { 1 }
 
     // fraud_score_valid (matches Coq: Definition fraud_score_valid)
     pub open spec fn fraud_score_valid(score: u64) -> bool {

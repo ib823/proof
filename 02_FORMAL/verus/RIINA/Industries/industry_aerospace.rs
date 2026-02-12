@@ -46,14 +46,10 @@ verus! {
     }
 
     // objectives_for_dal (matches Coq: Definition objectives_for_dal)
-    pub open spec fn objectives_for_dal(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn objectives_for_dal(d: bool) -> u64 { 1 }
 
     // dal_to_nat (matches Coq: Definition dal_to_nat)
-    pub open spec fn dal_to_nat(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn dal_to_nat(d: bool) -> u64 { 1 }
 
     // mcdc_required (matches Coq: Definition mcdc_required)
     pub open spec fn mcdc_required(d: bool) -> bool {

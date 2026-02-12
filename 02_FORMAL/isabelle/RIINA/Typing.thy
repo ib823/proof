@@ -223,9 +223,9 @@ text \<open>Well-typed store: every typed location has a well-typed VALUE in the
 definition store_wf :: "store_ty \<Rightarrow> store \<Rightarrow> bool" where
   "store_wf \<Sigma> st \<equiv>
      (\<forall>l T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<longrightarrow>
-        (\<exists>v. store_lookup l st = Some v \<and> value v \<and> has_type [] \<Sigma> LPublic v T EffPure)) \<and>
+        (\<exists>v. store_lookup l st = Some v \<and> is_value v \<and> has_type [] \<Sigma> LPublic v T EffPure)) \<and>
      (\<forall>l v. store_lookup l st = Some v \<longrightarrow>
-        (\<exists>T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<and> value v \<and> has_type [] \<Sigma> LPublic v T EffPure))"
+        (\<exists>T sl. store_ty_lookup l \<Sigma> = Some (T, sl) \<and> is_value v \<and> has_type [] \<Sigma> LPublic v T EffPure))"
 
 
 section \<open>Type Uniqueness\<close>
@@ -441,64 +441,64 @@ qed
 section \<open>Canonical Forms\<close>
 
 text \<open>
-  Canonical forms lemmas: if a value has a certain type, it must have
+  Canonical forms lemmas: if a is_value has a certain type, it must have
   a specific syntactic form. Essential for proving progress.
   (matches Coq: canonical_forms_* lemmas)
 \<close>
 
-text \<open>Unit type: only EUnit is a value of type TUnit (matches Coq: canonical_forms_unit)\<close>
+text \<open>Unit type: only EUnit is a is_value of type TUnit (matches Coq: canonical_forms_unit)\<close>
 
 lemma canonical_forms_unit:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TUnit \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TUnit \<epsilon>"
   shows "v = EUnit"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Bool type: only EBool b is a value of type TBool (matches Coq: canonical_forms_bool)\<close>
+text \<open>Bool type: only EBool b is a is_value of type TBool (matches Coq: canonical_forms_bool)\<close>
 
 lemma canonical_forms_bool:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TBool \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TBool \<epsilon>"
   shows "\<exists>b. v = EBool b"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Int type: only EInt n is a value of type TInt (matches Coq: canonical_forms_int)\<close>
+text \<open>Int type: only EInt n is a is_value of type TInt (matches Coq: canonical_forms_int)\<close>
 
 lemma canonical_forms_int:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TInt \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TInt \<epsilon>"
   shows "\<exists>n. v = EInt n"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>String type: only EString s is a value of type TString (matches Coq: canonical_forms_string)\<close>
+text \<open>String type: only EString s is a is_value of type TString (matches Coq: canonical_forms_string)\<close>
 
 lemma canonical_forms_string:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TString \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v TString \<epsilon>"
   shows "\<exists>s. v = EString s"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Function type: only ELam is a value of function type (matches Coq: canonical_forms_fn)\<close>
+text \<open>Function type: only ELam is a is_value of function type (matches Coq: canonical_forms_fn)\<close>
 
 lemma canonical_forms_fn:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TFn T1 T2 \<epsilon>_fn) \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TFn T1 T2 \<epsilon>_fn) \<epsilon>"
   shows "\<exists>x body. v = ELam x T1 body"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Product type: only EPair is a value of product type (matches Coq: canonical_forms_prod)\<close>
+text \<open>Product type: only EPair is a is_value of product type (matches Coq: canonical_forms_prod)\<close>
 
 lemma canonical_forms_prod:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProd T1 T2) \<epsilon>"
-  shows "\<exists>v1 v2. v = EPair v1 v2 \<and> value v1 \<and> value v2"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProd T1 T2) \<epsilon>"
+  shows "\<exists>v1 v2. v = EPair v1 v2 \<and> is_value v1 \<and> is_value v2"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VPair v1 v2)
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
 
-text \<open>Sum type: only EInl or EInr is a value of sum type (matches Coq: canonical_forms_sum)\<close>
+text \<open>Sum type: only EInl or EInr is a is_value of sum type (matches Coq: canonical_forms_sum)\<close>
 
 lemma canonical_forms_sum:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSum T1 T2) \<epsilon>"
-  shows "(\<exists>v'. v = EInl v' T2 \<and> value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> value v')"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSum T1 T2) \<epsilon>"
+  shows "(\<exists>v'. v = EInl v' T2 \<and> is_value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> is_value v')"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VInl v0 T)
   then show ?thesis using assms by (auto elim: has_type.cases)
 next
@@ -506,31 +506,31 @@ next
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
 
-text \<open>Reference type: only ELoc is a value of reference type (matches Coq: canonical_forms_ref)\<close>
+text \<open>Reference type: only ELoc is a is_value of reference type (matches Coq: canonical_forms_ref)\<close>
 
 lemma canonical_forms_ref:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TRef T sl) \<epsilon>"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TRef T sl) \<epsilon>"
   shows "\<exists>l. v = ELoc l"
-  using assms by (cases v rule: value.cases; auto elim: has_type.cases)
+  using assms by (cases v rule: is_value.cases; auto elim: has_type.cases)
 
-text \<open>Secret type: only EClassify is a value of secret type (matches Coq: canonical_forms_secret)\<close>
+text \<open>Secret type: only EClassify is a is_value of secret type (matches Coq: canonical_forms_secret)\<close>
 
 lemma canonical_forms_secret:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSecret T) \<epsilon>"
-  shows "\<exists>v'. v = EClassify v' \<and> value v'"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TSecret T) \<epsilon>"
+  shows "\<exists>v'. v = EClassify v' \<and> is_value v'"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VClassify v0)
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)
 
-text \<open>Proof type: only EProve is a value of proof type (matches Coq: canonical_forms_proof)\<close>
+text \<open>Proof type: only EProve is a is_value of proof type (matches Coq: canonical_forms_proof)\<close>
 
 lemma canonical_forms_proof:
-  assumes "value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProof T) \<epsilon>"
-  shows "\<exists>v'. v = EProve v' \<and> value v'"
+  assumes "is_value v" and "has_type \<Gamma> \<Sigma> \<Delta> v (TProof T) \<epsilon>"
+  shows "\<exists>v'. v = EProve v' \<and> is_value v'"
   using assms
-proof (cases v rule: value.cases)
+proof (cases v rule: is_value.cases)
   case (VProve v0)
   then show ?thesis using assms by (auto elim: has_type.cases)
 qed (auto elim: has_type.cases)

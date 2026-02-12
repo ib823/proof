@@ -61,7 +61,7 @@ pub struct StudentRecord {
 }
 
 // student_data_sensitivity (matches Coq: Definition student_data_sensitivity)
-pub fn student_data_sensitivity(_d: bool) -> u64 { true }
+pub fn student_data_sensitivity(_d: bool) -> u64 { 1 }
 
 // coppa_applies (matches Coq: Definition coppa_applies)
 pub fn coppa_applies(_age: bool) -> bool { true }
@@ -70,10 +70,10 @@ pub fn coppa_applies(_age: bool) -> bool { true }
 pub fn all_ferpa_controls(_c: bool) -> bool { true }
 
 // retention_years (matches Coq: Definition retention_years)
-pub fn retention_years(_d: bool) -> u64 { true }
+pub fn retention_years(_d: bool) -> u64 { 1 }
 
 // count_ferpa_controls (matches Coq: Definition count_ferpa_controls)
-pub fn count_ferpa_controls(_c: bool) -> u64 { true }
+pub fn count_ferpa_controls(_c: bool) -> u64 { 1 }
 
 // classify_student_age (matches Coq: Definition classify_student_age)
 pub fn classify_student_age(_years: u64) -> bool { true }

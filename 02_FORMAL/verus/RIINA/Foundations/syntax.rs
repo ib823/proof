@@ -26,18 +26,18 @@ verus! {
         EffPure, // No observable effect
         EffRead, // Memory/state read
         EffWrite, // Memory/state write
-        EffFileSystem, // File system access *)
-  (* Network effects
+        EffFileSystem, // File system access 
+  //  Network effects
         EffNetwork, // Network I/O
-        EffNetSecure, // Secure network (TLS) *)
-  (* Crypto effects
+        EffNetSecure, // Secure network (TLS) 
+  //  Crypto effects
         EffCrypto, // Cryptographic operations
-        EffRandom, // Random number generation *)
-  (* System effects
+        EffRandom, // Random number generation 
+  //  System effects
         EffSystem, // System calls
         EffTime, // Time/clock access
-        EffProcess, // Process management *)
-  (* RIINA product effects - D40 integration
+        EffProcess, // Process management 
+  //  RIINA product effects - D40 integration
         EffPanel, // Panel UI operations
         EffZirah, // Zirah API operations
         EffBenteng, // Benteng auth operations
@@ -55,13 +55,13 @@ verus! {
     // taint_source (matches Coq: Inductive taint_source)
     pub enum taint_source {
         TaintNetworkExternal, // External network input
-        TaintNetworkInternal, // Internal network input *)
-  (* User input sources
+        TaintNetworkInternal, // Internal network input 
+  //  User input sources
         TaintUserInput, // Direct user input
         TaintFileSystem, // File system data
         TaintDatabase, // Database query results
-        TaintEnvironment, // Environment variables *)
-  (* RIINA product sources
+        TaintEnvironment, // Environment variables 
+  //  RIINA product sources
         TaintGapuraRequest, // Gapura API request
         TaintZirahEvent, // Zirah event data
         TaintZirahEndpoint, // Zirah endpoint data
@@ -75,31 +75,31 @@ verus! {
         SanHtmlEscape, // HTML entity escaping
         SanUrlEncode, // URL encoding
         SanJsEscape, // JavaScript string escaping
-        SanCssEscape, // CSS escaping *)
-  (* SQL sanitizers
+        SanCssEscape, // CSS escaping 
+  //  SQL sanitizers
         SanSqlEscape, // SQL string escaping
-        SanSqlParam, // Parameterized query *)
-  (* Injection prevention
+        SanSqlParam, // Parameterized query 
+  //  Injection prevention
         SanXssFilter, // XSS filtering
         SanPathTraversal, // Path traversal check
         SanCommandEscape, // Command injection prevention
         SanLdapEscape, // LDAP injection prevention
-        SanXmlEscape, // XML escaping *)
-  (* Validation sanitizers
+        SanXmlEscape, // XML escaping 
+  //  Validation sanitizers
         SanJsonValidation, // JSON structure validation
         SanXmlValidation, // XML schema validation
         SanEmailValidation, // Email format validation
-        SanPhoneValidation, // Phone format validation *)
-  (* Bound sanitizers
+        SanPhoneValidation, // Phone format validation 
+  //  Bound sanitizers
         SanLengthBound, // Maximum length check
         SanRangeBound, // Numeric range check
         SanRegexMatch, // Regex pattern match
-        SanWhitelist, // Whitelist check *)
-  (* Crypto sanitizers
+        SanWhitelist, // Whitelist check 
+  //  Crypto sanitizers
         SanHashVerify, // Hash verification
         SanSignatureVerify, // Signature verification
-        SanMacVerify, // MAC verification *)
-  (* RIINA product sanitizers
+        SanMacVerify, // MAC verification 
+  //  RIINA product sanitizers
         SanGapuraAuth, // Gapura authentication check
         SanZirahSession, // Zirah session validation
         SanBentengBiometric, // Benteng biometric verification
@@ -115,19 +115,19 @@ verus! {
         CapFileRead, // Read file
         CapFileWrite, // Write file
         CapFileExecute, // Execute file
-        CapFileDelete, // Delete file *)
-  (* Network capabilities
+        CapFileDelete, // Delete file 
+  //  Network capabilities
         CapNetConnect, // Outbound connection
         CapNetListen, // Listen for connections
-        CapNetBind, // Bind to port *)
-  (* Process capabilities
+        CapNetBind, // Bind to port 
+  //  Process capabilities
         CapProcSpawn, // Spawn process
-        CapProcSignal, // Send signal *)
-  (* System capabilities
+        CapProcSignal, // Send signal 
+  //  System capabilities
         CapSysTime, // Access system time
         CapSysRandom, // Access random
-        CapSysEnv, // Access environment *)
-  (* RIINA product capabilities
+        CapSysEnv, // Access environment 
+  //  RIINA product capabilities
         CapRootProduct, // Root product capability
         CapProductAccess,
         CapBasic,
@@ -143,36 +143,36 @@ verus! {
         TInt,
         TString,
         TBytes, // Function types
-        TFn, // T1 -[ε]-> T2 *)
-  (* Compound types
-        TProd, // T1 × T2
+        TFn, // T1 -[eps]-> T2 
+  //  Compound types
+        TProd, // T1 x T2
         TSum, // T1 + T2
         TList, // List[T]
-        TOption, // Option[T] *)
-  (* Reference types
-        TRef, // Ref[T]@l *)
-  (* Security types - D42 integration
+        TOption, // Option[T] 
+  //  Reference types
+        TRef, // Ref[T]@l 
+  //  Security types - D42 integration
         TSecret, // Secret[T] - classified data
         TLabeled, // Labeled[T, l] - security label
         TTainted, // Tainted[T, src] - tainted data
         TSanitized, // Sanitized[T, san] - sanitized data
-        TProof, // Proof[T] - declassification proof *)
-  (* Capability types - D42-J integration
+        TProof, // Proof[T] - declassification proof 
+  //  Capability types - D42-J integration
         TCapability, // Cap[kind]
-        TCapabilityFull, // Full capability with constraints *)
-  (* Session types - D42-F integration
+        TCapabilityFull, // Full capability with constraints 
+  //  Session types - D42-F integration
         TChan, // Chan[S] - channel with session
-        TSecureChan, // SecureChan[S, l] *)
-  (* Constant-time types - for crypto
-        TConstantTime, // ConstantTime[T] *)
-  (* Zeroizing types - secure memory
+        TSecureChan, // SecureChan[S, l] 
+  //  Constant-time types - for crypto
+        TConstantTime, // ConstantTime[T] 
+  //  Zeroizing types - secure memory
         TZeroizing,
         SessEnd, // Session end
         SessSend, // !T.S - send T then continue
         SessRecv, // ?T.S - receive T then continue
-        SessSelect, // S1 ⊕ S2 - internal choice
+        SessSelect, // S1 oplus S2 - internal choice
         SessBranch, // S1 & S2 - external choice
-        SessRec, // μX.S - recursive session
+        SessRec, // _X.S - recursive session
         SessVar,
     }
 
@@ -184,44 +184,42 @@ verus! {
         EString,
         ELoc,
         EVar, // Functions
-        ELam, // λx:T. e
-        EApp, // e1 e2 *)
+        ELam, // lamx:T. e
+        EApp, // e1 e2 
   
-  (* Products
+  //  Products
         EPair, // (e1, e2)
         EFst, // fst e
-        ESnd, // snd e *)
+        ESnd, // snd e 
   
-  (* Sums
+  //  Sums
         EInl, // inl e : T
         EInr, // inr e : T
         ECase,
         EIf, // if e1 then e2 else e3
-        ELet, // let x = e1 in e2 *)
+        ELet, // let x = e1 in e2 
   
-  (* Effects
-        EPerform, // perform ε e
-        EHandle, // handle e with x => h *)
+  //  Effects
+        EPerform, // perform eps e
+        EHandle, // handle e with x => h 
   
-  (* References
+  //  References
         ERef, // ref e @ l
         EDeref, // !e
-        EAssign, // e1 := e2 *)
+        EAssign, // e1 := e2 
   
-  (* Security
+  //  Security
         EClassify, // classify e
         EDeclassify, // declassify e with proof
-        EProve, // prove e *)
+        EProve, // prove e 
   
-  (* Capabilities
-        ERequire, // require ε in e
+  //  Capabilities
+        ERequire, // require eps in e
         EGrant,
     }
 
     // sec_level_num (matches Coq: Definition sec_level_num)
-    pub open spec fn sec_level_num(l: bool) -> u64 {
-        true
-    }
+    pub open spec fn sec_level_num(l: bool) -> u64 { 1 }
 
     // sec_leq (matches Coq: Definition sec_leq)
     pub open spec fn sec_leq() -> bool {
@@ -249,9 +247,7 @@ verus! {
     }
 
     // effect_level (matches Coq: Definition effect_level)
-    pub open spec fn effect_level(e: bool) -> u64 {
-        true
-    }
+    pub open spec fn effect_level(e: bool) -> u64 { 1 }
 
     // effect_join (matches Coq: Definition effect_join)
     pub open spec fn effect_join() -> bool {

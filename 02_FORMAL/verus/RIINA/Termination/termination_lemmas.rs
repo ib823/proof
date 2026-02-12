@@ -12,12 +12,12 @@ use vstd::prelude::*;
 verus! {
 
     // val_rel_0 (matches Coq: Definition val_rel_0)
-    pub open spec fn val_rel_0(Σ: bool, T: bool) -> bool {
+    pub open spec fn val_rel_0(Sigma: bool, T: bool) -> bool {
         true
     }
 
     // store_rel_0 (matches Coq: Definition store_rel_0)
-    pub open spec fn store_rel_0(Σ: bool) -> bool {
+    pub open spec fn store_rel_0(Sigma: bool) -> bool {
         true
     }
 

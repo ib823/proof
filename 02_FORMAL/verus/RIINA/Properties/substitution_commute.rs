@@ -17,7 +17,7 @@ verus! {
     }
 
     // extend_rho_sc (matches Coq: Definition extend_rho_sc)
-    pub open spec fn extend_rho_sc(ρ: bool, x: bool, v: bool) -> bool {
+    pub open spec fn extend_rho_sc(_: bool, x: bool, v: bool) -> bool {
         true
     }
 
@@ -27,7 +27,7 @@ verus! {
     }
 
     // closed_rho_sc (matches Coq: Definition closed_rho_sc)
-    pub open spec fn closed_rho_sc(ρ: bool) -> bool {
+    pub open spec fn closed_rho_sc(_: bool) -> bool {
         true
     }
 

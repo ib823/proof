@@ -12,7 +12,7 @@ use vstd::prelude::*;
 verus! {
 
     // val_rel_at (matches Coq: Definition val_rel_at)
-    pub open spec fn val_rel_at(n: u64, Σ: bool, T: bool) -> bool {
+    pub open spec fn val_rel_at(n: u64, Sigma: bool, T: bool) -> bool {
         true
     }
 

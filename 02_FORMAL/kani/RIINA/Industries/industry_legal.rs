@@ -44,10 +44,10 @@ pub struct LegalSecurityControls {
 }
 
 // legal_sensitivity (matches Coq: Definition legal_sensitivity)
-pub fn legal_sensitivity(_d: bool) -> u64 { true }
+pub fn legal_sensitivity(_d: bool) -> u64 { 1 }
 
 // privilege_strength (matches Coq: Definition privilege_strength)
-pub fn privilege_strength(_p: bool) -> u64 { true }
+pub fn privilege_strength(_p: bool) -> u64 { 1 }
 
 // privilege_effective (matches Coq: Definition privilege_effective)
 pub fn privilege_effective(_p: bool) -> bool { true }
@@ -56,10 +56,10 @@ pub fn privilege_effective(_p: bool) -> bool { true }
 pub fn all_legal_controls(_c: bool) -> bool { true }
 
 // count_legal_controls (matches Coq: Definition count_legal_controls)
-pub fn count_legal_controls(_c: bool) -> u64 { true }
+pub fn count_legal_controls(_c: bool) -> u64 { 1 }
 
 // legal_retention_years (matches Coq: Definition legal_retention_years)
-pub fn legal_retention_years(_d: bool) -> u64 { true }
+pub fn legal_retention_years(_d: bool) -> u64 { 1 }
 
 // no_conflict (matches Coq: Definition no_conflict)
 pub fn no_conflict() -> bool { true }

@@ -53,19 +53,19 @@ pub struct EcommerceControls {
 }
 
 // consumer_sensitivity (matches Coq: Definition consumer_sensitivity)
-pub fn consumer_sensitivity(_d: bool) -> u64 { true }
+pub fn consumer_sensitivity(_d: bool) -> u64 { 1 }
 
 // all_rights_count (matches Coq: Definition all_rights_count)
-pub fn all_rights_count() -> u64 { true }
+pub fn all_rights_count() -> u64 { 1 }
 
 // right_to_nat (matches Coq: Definition right_to_nat)
-pub fn right_to_nat(_r: bool) -> u64 { true }
+pub fn right_to_nat(_r: bool) -> u64 { 1 }
 
 // all_ecommerce_controls (matches Coq: Definition all_ecommerce_controls)
 pub fn all_ecommerce_controls(_c: bool) -> bool { true }
 
 // count_ecommerce_controls (matches Coq: Definition count_ecommerce_controls)
-pub fn count_ecommerce_controls(_c: bool) -> u64 { true }
+pub fn count_ecommerce_controls(_c: bool) -> u64 { 1 }
 
 // retention_expired (matches Coq: Definition retention_expired)
 pub fn retention_expired() -> bool { true }

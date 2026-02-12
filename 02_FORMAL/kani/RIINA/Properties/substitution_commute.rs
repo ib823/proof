@@ -12,13 +12,13 @@
 pub fn id_rho_sc() -> bool { true }
 
 // extend_rho_sc (matches Coq: Definition extend_rho_sc)
-pub fn extend_rho_sc(_ρ: bool, _x: bool, _v: bool) -> bool { true }
+pub fn extend_rho_sc(__: bool, _x: bool, _v: bool) -> bool { true }
 
 // closed_expr_sc (matches Coq: Definition closed_expr_sc)
 pub fn closed_expr_sc(_e: bool) -> bool { true }
 
 // closed_rho_sc (matches Coq: Definition closed_rho_sc)
-pub fn closed_rho_sc(_ρ: bool) -> bool { true }
+pub fn closed_rho_sc(__: bool) -> bool { true }
 
 #[cfg(kani)]
 mod verification {

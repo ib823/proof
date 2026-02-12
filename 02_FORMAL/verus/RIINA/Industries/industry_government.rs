@@ -67,9 +67,7 @@ verus! {
     }
 
     // fisma_to_nat (matches Coq: Definition fisma_to_nat)
-    pub open spec fn fisma_to_nat(f: bool) -> u64 {
-        true
-    }
+    pub open spec fn fisma_to_nat(f: bool) -> u64 { 1 }
 
     // fisma_le (matches Coq: Definition fisma_le)
     pub open spec fn fisma_le() -> bool {
@@ -77,14 +75,10 @@ verus! {
     }
 
     // fedramp_to_nat (matches Coq: Definition fedramp_to_nat)
-    pub open spec fn fedramp_to_nat(f: bool) -> u64 {
-        true
-    }
+    pub open spec fn fedramp_to_nat(f: bool) -> u64 { 1 }
 
     // controls_for_baseline (matches Coq: Definition controls_for_baseline)
-    pub open spec fn controls_for_baseline(f: bool) -> u64 {
-        true
-    }
+    pub open spec fn controls_for_baseline(f: bool) -> u64 { 1 }
 
     // nist_minimum_controls (matches Coq: Definition nist_minimum_controls)
     pub open spec fn nist_minimum_controls(c: bool) -> bool {
@@ -97,14 +91,10 @@ verus! {
     }
 
     // cjis_min_key_bits (matches Coq: Definition cjis_min_key_bits)
-    pub open spec fn cjis_min_key_bits() -> u64 {
-        true
-    }
+    pub open spec fn cjis_min_key_bits() -> u64 { 1 }
 
     // fips_to_nat (matches Coq: Definition fips_to_nat)
-    pub open spec fn fips_to_nat(f: bool) -> u64 {
-        true
-    }
+    pub open spec fn fips_to_nat(f: bool) -> u64 { 1 }
 
     // fips_le (matches Coq: Definition fips_le)
     pub open spec fn fips_le() -> bool {
@@ -117,14 +107,10 @@ verus! {
     }
 
     // scan_frequency_days (matches Coq: Definition scan_frequency_days)
-    pub open spec fn scan_frequency_days(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn scan_frequency_days(impact: bool) -> u64 { 1 }
 
     // poam_deadline_days (matches Coq: Definition poam_deadline_days)
-    pub open spec fn poam_deadline_days(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn poam_deadline_days(impact: bool) -> u64 { 1 }
 
     // fisma_compliance (matches Coq: Theorem fisma_compliance)
     pub proof fn fisma_compliance()

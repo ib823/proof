@@ -17,25 +17,25 @@ pub fn is_low_dec(_l: bool) -> bool { true }
 pub fn closed_expr(_e: bool) -> bool { true }
 
 // stores_agree_low_fo (matches Coq: Definition stores_agree_low_fo)
-pub fn stores_agree_low_fo(_Σ: bool) -> bool { true }
+pub fn stores_agree_low_fo(_Sigma: bool) -> bool { true }
 
 // val_rel_at_type_n (matches Coq: Definition val_rel_at_type_n)
-pub fn val_rel_at_type_n(_n: u64, _Σ: bool, _T: bool) -> bool { true }
+pub fn val_rel_at_type_n(_n: u64, _Sigma: bool, _T: bool) -> bool { true }
 
 // store_vals_rel (matches Coq: Definition store_vals_rel)
-pub fn store_vals_rel(_n: u64, _Σ: bool) -> bool { true }
+pub fn store_vals_rel(_n: u64, _Sigma: bool) -> bool { true }
 
 // combined_step_up (matches Coq: Definition combined_step_up)
 pub fn combined_step_up(_n: u64) -> bool { true }
 
 // val_rel (matches Coq: Definition val_rel)
-pub fn val_rel(_Σ: bool, _T: bool) -> bool { true }
+pub fn val_rel(_Sigma: bool, _T: bool) -> bool { true }
 
 // store_rel (matches Coq: Definition store_rel)
-pub fn store_rel(_Σ: bool) -> bool { true }
+pub fn store_rel(_Sigma: bool) -> bool { true }
 
 // exp_rel (matches Coq: Definition exp_rel)
-pub fn exp_rel(_Σ: bool, _T: bool) -> bool { true }
+pub fn exp_rel(_Sigma: bool, _T: bool) -> bool { true }
 
 #[cfg(kani)]
 mod verification {

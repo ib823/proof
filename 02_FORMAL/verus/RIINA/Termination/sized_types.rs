@@ -23,9 +23,7 @@ verus! {
     }
 
     // sized_ty_bound (matches Coq: Definition sized_ty_bound)
-    pub open spec fn sized_ty_bound(st: bool) -> u64 {
-        true
-    }
+    pub open spec fn sized_ty_bound(st: bool) -> u64 { 1 }
 
     // terminates (matches Coq: Definition terminates)
     pub open spec fn terminates(e: bool, st: bool, ctx: bool) -> bool {

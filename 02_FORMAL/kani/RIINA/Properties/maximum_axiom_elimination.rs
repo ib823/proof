@@ -59,19 +59,19 @@ pub fn store_empty() -> bool { true }
 pub fn store_ty_empty() -> bool { true }
 
 // store_update (matches Coq: Definition store_update)
-pub fn store_update(_σ: bool, _l: u64, _v: bool) -> bool { true }
+pub fn store_update(__: bool, _l: u64, _v: bool) -> bool { true }
 
 // store_ty_update (matches Coq: Definition store_ty_update)
-pub fn store_ty_update(_Σ: bool, _l: u64, _T: bool, _lab: bool) -> bool { true }
+pub fn store_ty_update(_Sigma: bool, _l: u64, _T: bool, _lab: bool) -> bool { true }
 
 // store_ty_extends (matches Coq: Definition store_ty_extends)
 pub fn store_ty_extends() -> bool { true }
 
 // store_rel_n (matches Coq: Definition store_rel_n)
-pub fn store_rel_n(_n: u64, _Σ: bool) -> bool { true }
+pub fn store_rel_n(_n: u64, _Sigma: bool) -> bool { true }
 
 // exp_rel_n (matches Coq: Definition exp_rel_n)
-pub fn exp_rel_n(_n: u64, _Σ: bool, _T: bool) -> bool { true }
+pub fn exp_rel_n(_n: u64, _Sigma: bool, _T: bool) -> bool { true }
 
 // label_join (matches Coq: Definition label_join)
 pub fn label_join() -> bool { true }

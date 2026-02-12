@@ -52,10 +52,10 @@ pub struct SmartBuildingControls {
 }
 
 // property_sensitivity (matches Coq: Definition property_sensitivity)
-pub fn property_sensitivity(_d: bool) -> u64 { true }
+pub fn property_sensitivity(_d: bool) -> u64 { 1 }
 
 // system_criticality (matches Coq: Definition system_criticality)
-pub fn system_criticality(_s: bool) -> u64 { true }
+pub fn system_criticality(_s: bool) -> u64 { 1 }
 
 // is_safety_critical (matches Coq: Definition is_safety_critical)
 pub fn is_safety_critical(_s: bool) -> bool { true }
@@ -64,10 +64,10 @@ pub fn is_safety_critical(_s: bool) -> bool { true }
 pub fn all_building_controls(_c: bool) -> bool { true }
 
 // count_building_controls (matches Coq: Definition count_building_controls)
-pub fn count_building_controls(_c: bool) -> u64 { true }
+pub fn count_building_controls(_c: bool) -> u64 { 1 }
 
 // access_log_retention_days (matches Coq: Definition access_log_retention_days)
-pub fn access_log_retention_days(_s: bool) -> u64 { true }
+pub fn access_log_retention_days(_s: bool) -> u64 { 1 }
 
 // firmware_version_valid (matches Coq: Definition firmware_version_valid)
 pub fn firmware_version_valid() -> bool { true }

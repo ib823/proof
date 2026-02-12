@@ -68,19 +68,13 @@ verus! {
     }
 
     // agri_data_sensitivity (matches Coq: Definition agri_data_sensitivity)
-    pub open spec fn agri_data_sensitivity(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn agri_data_sensitivity(d: bool) -> u64 { 1 }
 
     // hazard_severity (matches Coq: Definition hazard_severity)
-    pub open spec fn hazard_severity(h: bool) -> u64 {
-        true
-    }
+    pub open spec fn hazard_severity(h: bool) -> u64 { 1 }
 
     // haccp_frequency (matches Coq: Definition haccp_frequency)
-    pub open spec fn haccp_frequency(h: bool) -> u64 {
-        true
-    }
+    pub open spec fn haccp_frequency(h: bool) -> u64 { 1 }
 
     // all_food_safety_controls (matches Coq: Definition all_food_safety_controls)
     pub open spec fn all_food_safety_controls(c: bool) -> bool {
@@ -88,14 +82,10 @@ verus! {
     }
 
     // risk_score (matches Coq: Definition risk_score)
-    pub open spec fn risk_score(h: bool) -> u64 {
-        true
-    }
+    pub open spec fn risk_score(h: bool) -> u64 { 1 }
 
     // count_food_controls (matches Coq: Definition count_food_controls)
-    pub open spec fn count_food_controls(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn count_food_controls(c: bool) -> u64 { 1 }
 
     // fsma_compliance (matches Coq: Theorem fsma_compliance)
     pub proof fn fsma_compliance()

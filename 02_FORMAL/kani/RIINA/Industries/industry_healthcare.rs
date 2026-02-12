@@ -60,7 +60,7 @@ pub struct ConsentRecord {
 }
 
 // phi_sensitivity (matches Coq: Definition phi_sensitivity)
-pub fn phi_sensitivity(_cat: bool) -> u64 { true }
+pub fn phi_sensitivity(_cat: bool) -> u64 { 1 }
 
 // minimum_necessary (matches Coq: Definition minimum_necessary)
 pub fn minimum_necessary() -> bool { true }
@@ -72,7 +72,7 @@ pub fn hipaa_all_controls() -> bool { true }
 pub fn hipaa_security_minimum(_p: bool) -> bool { true }
 
 // role_level (matches Coq: Definition role_level)
-pub fn role_level(_role: u64) -> u64 { true }
+pub fn role_level(_role: u64) -> u64 { 1 }
 
 // access_permitted (matches Coq: Definition access_permitted)
 pub fn access_permitted(_role_lvl: u64, _cat: bool) -> bool { true }
@@ -81,10 +81,10 @@ pub fn access_permitted(_role_lvl: u64, _cat: bool) -> bool { true }
 pub fn consent_valid(_c: bool, _current_time: u64) -> bool { true }
 
 // retention_years (matches Coq: Definition retention_years)
-pub fn retention_years(_cat: bool) -> u64 { true }
+pub fn retention_years(_cat: bool) -> u64 { 1 }
 
 // deidentified_sensitivity (matches Coq: Definition deidentified_sensitivity)
-pub fn deidentified_sensitivity(_is_deidentified: bool, _cat: bool) -> u64 { true }
+pub fn deidentified_sensitivity(_is_deidentified: bool, _cat: bool) -> u64 { 1 }
 
 // dose_in_range (matches Coq: Definition dose_in_range)
 pub fn dose_in_range() -> bool { true }

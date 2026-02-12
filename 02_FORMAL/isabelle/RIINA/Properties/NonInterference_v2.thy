@@ -159,9 +159,9 @@ lemma typing_nil_implies_closed: "\<forall> Σ Δ e T ε, has_type nil Σ Δ e T
 
 (* val_rel_at_type_fo is reflexive for well-typed values.
     This is used when v1 = v2 (from stores_agree_low_fo).
-    Requires typing to ensure the value matches the type structure. *)
+    Requires typing to ensure the is_value matches the type structure. *)
 (* val_rel_at_type_fo_refl (matches Coq) *)
-lemma val_rel_at_type_fo_refl: "\<forall> T Σ v, first_order_type T = True \<longrightarrow> value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> val_rel_at_type_fo T v v"
+lemma val_rel_at_type_fo_refl: "\<forall> T Σ v, first_order_type T = True \<longrightarrow> is_value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> val_rel_at_type_fo T v v"
   by (cases rule: ‹_›.cases; simp)
 
 (* For trivial FO types, any two well-typed values are related.
@@ -176,7 +176,7 @@ lemma val_rel_at_type_fo_refl: "\<forall> T Σ v, first_order_type T = True \<lo
     1. Remove TSum from fo_type_has_trivial_rel (TSum requires matching constructors)
     2. Weaken val_rel_at_type_fo for TSum to return True when components are trivial *)
 (* val_rel_at_type_fo_trivial (matches Coq) *)
-lemma val_rel_at_type_fo_trivial: "\<forall> T Σ v1 v2, first_order_type T = True \<longrightarrow> fo_type_has_trivial_rel T = True \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_at_type_fo T v1 v2"
+lemma val_rel_at_type_fo_trivial: "\<forall> T Σ v1 v2, first_order_type T = True \<longrightarrow> fo_type_has_trivial_rel T = True \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_at_type_fo T v1 v2"
   by (cases rule: ‹_›.cases; simp)
 
 (* Unfold lemma for val_rel_at_type_n at successor step.
@@ -188,17 +188,17 @@ lemma val_rel_at_type_n_S: "\<forall> n Σ sp vl sl svp T v1 v2, val_rel_at_type
 (* Unfolding lemmas for val_rel_n - needed because simpl doesn't work well
     on mutual fixpoints with abstract arguments *)
 (* val_rel_n_0_unfold (matches Coq) *)
-lemma val_rel_n_0_unfold: "\<forall> Σ T v1 v2, val_rel_n 0 Σ T v1 v2 = (value v1 \<and> value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> (if first_order_type T then val_rel_at_type_fo T v1 v2 else True))"
+lemma val_rel_n_0_unfold: "\<forall> Σ T v1 v2, val_rel_n 0 Σ T v1 v2 = (is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> (if first_order_type T then val_rel_at_type_fo T v1 v2 else True))"
   by simp
 
 (* val_rel_n_S_unfold (matches Coq) *)
-lemma val_rel_n_S_unfold: "\<forall> n Σ T v1 v2, val_rel_n (S n) Σ T v1 v2 = (val_rel_n n Σ T v1 v2 \<and> value v1 \<and> value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type_n n Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2)"
+lemma val_rel_n_S_unfold: "\<forall> n Σ T v1 v2, val_rel_n (S n) Σ T v1 v2 = (val_rel_n n Σ T v1 v2 \<and> is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type_n n Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2)"
   by simp
 
 (* Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
     This recovers the old val_rel_n_S_unfold form at step >= 2. *)
 (* val_rel_n_SS_unfold (matches Coq) *)
-lemma val_rel_n_SS_unfold: "\<forall> n Σ T v1 v2, val_rel_n (S (S n)) Σ T v1 v2 = (val_rel_n (S n) Σ T v1 v2 \<and> value v1 \<and> value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type Σ (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2)"
+lemma val_rel_n_SS_unfold: "\<forall> n Σ T v1 v2, val_rel_n (S (S n)) Σ T v1 v2 = (val_rel_n (S n) Σ T v1 v2 \<and> is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type Σ (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2)"
   by simp
 
 (* store_rel_n_0_unfold (matches Coq) *)
@@ -206,7 +206,7 @@ lemma store_rel_n_0_unfold: "\<forall> Σ st1 st2, store_rel_n 0 Σ st1 st2 = (s
   by simp
 
 (* store_rel_n_S_unfold (matches Coq) *)
-lemma store_rel_n_S_unfold: "\<forall> n Σ st1 st2, store_rel_n (S n) Σ st1 st2 = (store_rel_n n Σ st1 st2 \<and> store_max st1 = store_max st2 \<and> (\<forall> l T sl, store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v1 v2, store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> (if is_low_dec sl then val_rel_n n Σ T v1 v2 else (value v1 \<and> value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure))))"
+lemma store_rel_n_S_unfold: "\<forall> n Σ st1 st2, store_rel_n (S n) Σ st1 st2 = (store_rel_n n Σ st1 st2 \<and> store_max st1 = store_max st2 \<and> (\<forall> l T sl, store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v1 v2, store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> (if is_low_dec sl then val_rel_n n Σ T v1 v2 else (is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure))))"
   by simp
 
 (* ========================================================================
@@ -249,9 +249,9 @@ lemma val_rel_n_mono_fo: "\<forall> m n Σ T v1 v2, first_order_type T = True \<
 lemma val_rel_n_fo_equiv: "\<forall> m n Σ T v1 v2, first_order_type T = True \<longrightarrow> val_rel_n m Σ T v1 v2 \<longrightarrow> val_rel_n n Σ T v1 v2"
   by (cases rule: ‹_›.cases; simp)
 
-(* Extract value property from val_rel_n *)
+(* Extract is_value property from val_rel_n *)
 (* val_rel_n_value (matches Coq) *)
-lemma val_rel_n_value: "\<forall> n Σ T v1 v2, val_rel_n n Σ T v1 v2 \<longrightarrow> value v1 \<and> value v2"
+lemma val_rel_n_value: "\<forall> n Σ T v1 v2, val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v1 \<and> is_value v2"
   by auto
 
 (* Extract closed property from val_rel_n *)
@@ -266,7 +266,7 @@ lemma val_rel_n_typing: "\<forall> n Σ T v1 v2, val_rel_n n Σ T v1 v2 \<longri
 
 (* Extract pair structure from val_rel_n for TProd - FIRST-ORDER TYPES ONLY *)
 (* val_rel_n_prod_structure (matches Coq) *)
-lemma val_rel_n_prod_structure: "\<forall> n Σ T1 T2 v1 v2, first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n n Σ (TProd T1 T2) v1 v2 \<longrightarrow> \<exists> a1 b1 a2 b2, v1 = EPair a1 b1 \<and> v2 = EPair a2 b2 \<and> value a1 \<and> value b1 \<and> value a2 \<and> value b2"
+lemma val_rel_n_prod_structure: "\<forall> n Σ T1 T2 v1 v2, first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n n Σ (TProd T1 T2) v1 v2 \<longrightarrow> \<exists> a1 b1 a2 b2, v1 = EPair a1 b1 \<and> v2 = EPair a2 b2 \<and> is_value a1 \<and> is_value b1 \<and> is_value a2 \<and> is_value b2"
   by auto
 
 (* Extract boolean structure from val_rel_n for TBool *)
@@ -276,7 +276,7 @@ lemma val_rel_n_bool_structure: "\<forall> n Σ v1 v2, val_rel_n n Σ TBool v1 v
 
 (* Extract sum structure from val_rel_n for TSum - FIRST-ORDER TYPES ONLY *)
 (* val_rel_n_sum_structure (matches Coq) *)
-lemma val_rel_n_sum_structure: "\<forall> n Σ T1 T2 v1 v2, first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n n Σ (TSum T1 T2) v1 v2 \<longrightarrow> (\<exists> a1 a2, v1 = EInl a1 T2 \<and> v2 = EInl a2 T2 \<and> value a1 \<and> value a2) \<or> (\<exists> b1 b2, v1 = EInr b1 T1 \<and> v2 = EInr b2 T1 \<and> value b1 \<and> value b2)"
+lemma val_rel_n_sum_structure: "\<forall> n Σ T1 T2 v1 v2, first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n n Σ (TSum T1 T2) v1 v2 \<longrightarrow> (\<exists> a1 a2, v1 = EInl a1 T2 \<and> v2 = EInl a2 T2 \<and> is_value a1 \<and> is_value a2) \<or> (\<exists> b1 b2, v1 = EInr b1 T1 \<and> v2 = EInr b2 T1 \<and> is_value b1 \<and> is_value b2)"
   by auto
 
 (* Downward monotonicity for val_rel_n *)
@@ -296,12 +296,12 @@ lemma pair_typing_pure_inv: "\<forall> Γ Σ Δ e1 e2 T1 T2, has_type Γ Σ Δ (
 
 (* FORMER AXIOM 1: exp_rel_step1_fst - NOW PROVEN *)
 (* exp_rel_step1_fst (matches Coq) *)
-lemma exp_rel_step1_fst: "\<forall> Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n 0 Σ' (TProd T1 T2) v v' \<longrightarrow> store_rel_n 0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists> a1 a2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' \<and> (EFst v, st1, ctx) -->* (a1, st1', ctx') \<and> (EFst v', st2, ctx) -->* (a2, st2', ctx') \<and> value a1 \<and> value a2 \<and> val_rel_n 0 Σ'' T1 a1 a2 \<and> store_rel_n 0 Σ'' st1' st2'"
+lemma exp_rel_step1_fst: "\<forall> Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n 0 Σ' (TProd T1 T2) v v' \<longrightarrow> store_rel_n 0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists> a1 a2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' \<and> (EFst v, st1, ctx) -->* (a1, st1', ctx') \<and> (EFst v', st2, ctx) -->* (a2, st2', ctx') \<and> is_value a1 \<and> is_value a2 \<and> val_rel_n 0 Σ'' T1 a1 a2 \<and> store_rel_n 0 Σ'' st1' st2'"
   by (cases rule: ‹_›.cases; simp)
 
 (* FORMER AXIOM 2: exp_rel_step1_snd - NOW PROVEN *)
 (* exp_rel_step1_snd (matches Coq) *)
-lemma exp_rel_step1_snd: "\<forall> Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n 0 Σ' (TProd T1 T2) v v' \<longrightarrow> store_rel_n 0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists> b1 b2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' \<and> (ESnd v, st1, ctx) -->* (b1, st1', ctx') \<and> (ESnd v', st2, ctx) -->* (b2, st2', ctx') \<and> value b1 \<and> value b2 \<and> val_rel_n 0 Σ'' T2 b1 b2 \<and> store_rel_n 0 Σ'' st1' st2'"
+lemma exp_rel_step1_snd: "\<forall> Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> val_rel_n 0 Σ' (TProd T1 T2) v v' \<longrightarrow> store_rel_n 0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists> b1 b2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' \<and> (ESnd v, st1, ctx) -->* (b1, st1', ctx') \<and> (ESnd v', st2, ctx) -->* (b2, st2', ctx') \<and> is_value b1 \<and> is_value b2 \<and> val_rel_n 0 Σ'' T2 b1 b2 \<and> store_rel_n 0 Σ'' st1' st2'"
   by (cases rule: ‹_›.cases; simp)
 
 (* FORMER AXIOM 3: exp_rel_step1_if - NOW PROVEN - THE BIG WIN! *)
@@ -400,7 +400,7 @@ lemma val_rel_n_step_up: "\<forall> n Σ T v1 v2, val_rel_n n Σ T v1 v2 \<longr
   by auto
 
 (* store_rel_n_step_up - Follows from val_rel_n_step_up
-    Requires store_wf to establish value relations for store locations
+    Requires store_wf to establish is_value relations for store locations
 
     REVISED: The n=0 case for FO types at LOW security levels requires
     stores_agree_low_fo precondition. For HIGH security, we rely on
@@ -438,7 +438,7 @@ lemma val_rel_n_unit: "\<forall> n Σ, n > 0 \<longrightarrow> val_rel_n n Σ TU
   by (cases rule: ‹_›.cases; simp)
 
 (* QUICK-WIN 3: exp_rel_n for EUnit at TUnit (all n)
-    EUnit is already a value, so it terminates to itself immediately.
+    EUnit is already a is_value, so it terminates to itself immediately.
     Proves: Axiom exp_rel_n_unit from LogicalRelationAssign_PROOF.v *)
 (* exp_rel_n_unit (matches Coq) *)
 lemma exp_rel_n_unit: "\<forall> n Σ, exp_rel_n n Σ TUnit EUnit EUnit"
@@ -455,7 +455,7 @@ lemma exp_rel_n_unit: "\<forall> n Σ, exp_rel_n n Σ TUnit EUnit EUnit"
     4. Apply preservation to get typing for result values
     5. Build val_rel_n 0 from typing (HO) or structure (FO) *)
 (* val_rel_at_type_TFn_step_0_bridge (matches Coq) *)
-lemma val_rel_at_type_TFn_step_0_bridge: "\<forall> Σ T1 T2 eff v1 v2, has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure \<longrightarrow> has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> \<forall> Σ', store_ty_extends Σ Σ' \<longrightarrow> \<forall> x y, value x \<longrightarrow> value y \<longrightarrow> closed_expr x \<longrightarrow> closed_expr y \<longrightarrow> val_rel_n 0 Σ' T1 x y \<longrightarrow> \<forall> st1 st2 ctx, store_rel_n 0 Σ' st1 st2 \<longrightarrow> store_wf Σ' st1 \<longrightarrow> store_wf Σ' st2 \<longrightarrow> stores_agree_low_fo Σ' st1 st2 \<longrightarrow> store_vals_rel 0 Σ' st1 st2 \<longrightarrow> \<exists> v1' v2' st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' \<and> (EApp v1 x, st1, ctx) -->* (v1', st1', ctx') \<and> (EApp v2 y, st2, ctx) -->* (v2', st2', ctx') \<and> val_rel_n 0 Σ'' T2 v1' v2' \<and> store_rel_n 0 Σ'' st1' st2' \<and> store_wf Σ'' st1' \<and> store_wf Σ'' st2' \<and> stores_agree_low_fo Σ'' st1' st2'"
+lemma val_rel_at_type_TFn_step_0_bridge: "\<forall> Σ T1 T2 eff v1 v2, has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure \<longrightarrow> has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> \<forall> Σ', store_ty_extends Σ Σ' \<longrightarrow> \<forall> x y, is_value x \<longrightarrow> is_value y \<longrightarrow> closed_expr x \<longrightarrow> closed_expr y \<longrightarrow> val_rel_n 0 Σ' T1 x y \<longrightarrow> \<forall> st1 st2 ctx, store_rel_n 0 Σ' st1 st2 \<longrightarrow> store_wf Σ' st1 \<longrightarrow> store_wf Σ' st2 \<longrightarrow> stores_agree_low_fo Σ' st1 st2 \<longrightarrow> store_vals_rel 0 Σ' st1 st2 \<longrightarrow> \<exists> v1' v2' st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' \<and> (EApp v1 x, st1, ctx) -->* (v1', st1', ctx') \<and> (EApp v2 y, st2, ctx) -->* (v2', st2', ctx') \<and> val_rel_n 0 Σ'' T2 v1' v2' \<and> store_rel_n 0 Σ'' st1' st2' \<and> store_wf Σ'' st1' \<and> store_wf Σ'' st2' \<and> stores_agree_low_fo Σ'' st1' st2'"
   by auto
 
 end

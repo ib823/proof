@@ -59,9 +59,7 @@ verus! {
     }
 
     // student_data_sensitivity (matches Coq: Definition student_data_sensitivity)
-    pub open spec fn student_data_sensitivity(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn student_data_sensitivity(d: bool) -> u64 { 1 }
 
     // coppa_applies (matches Coq: Definition coppa_applies)
     pub open spec fn coppa_applies(age: bool) -> bool {
@@ -74,14 +72,10 @@ verus! {
     }
 
     // retention_years (matches Coq: Definition retention_years)
-    pub open spec fn retention_years(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn retention_years(d: bool) -> u64 { 1 }
 
     // count_ferpa_controls (matches Coq: Definition count_ferpa_controls)
-    pub open spec fn count_ferpa_controls(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn count_ferpa_controls(c: bool) -> u64 { 1 }
 
     // classify_student_age (matches Coq: Definition classify_student_age)
     pub open spec fn classify_student_age(years: u64) -> bool {

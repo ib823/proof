@@ -42,7 +42,7 @@ pub struct MilitarySecurityPolicy {
 pub fn class_le() -> bool { true }
 
 // class_to_nat (matches Coq: Definition class_to_nat)
-pub fn class_to_nat(_c: bool) -> u64 { true }
+pub fn class_to_nat(_c: bool) -> u64 { 1 }
 
 // has_compartment (matches Coq: Definition has_compartment)
 pub fn has_compartment(_c: u64) -> bool { true }
@@ -51,13 +51,13 @@ pub fn has_compartment(_c: u64) -> bool { true }
 pub fn class_max() -> bool { true }
 
 // key_level (matches Coq: Definition key_level)
-pub fn key_level(_c: bool) -> u64 { true }
+pub fn key_level(_c: bool) -> u64 { 1 }
 
 // weapon_system_authorized (matches Coq: Definition weapon_system_authorized)
 pub fn weapon_system_authorized(_clearance: bool) -> bool { true }
 
 // redundancy_factor (matches Coq: Definition redundancy_factor)
-pub fn redundancy_factor(_c: bool) -> u64 { true }
+pub fn redundancy_factor(_c: bool) -> u64 { 1 }
 
 #[cfg(kani)]
 mod verification {

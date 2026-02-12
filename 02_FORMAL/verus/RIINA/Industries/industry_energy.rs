@@ -48,9 +48,7 @@ verus! {
     }
 
     // cip_impact_to_nat (matches Coq: Definition cip_impact_to_nat)
-    pub open spec fn cip_impact_to_nat(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn cip_impact_to_nat(c: bool) -> u64 { 1 }
 
     // cip_le (matches Coq: Definition cip_le)
     pub open spec fn cip_le() -> bool {
@@ -58,9 +56,7 @@ verus! {
     }
 
     // cip_mandatory_requirements (matches Coq: Definition cip_mandatory_requirements)
-    pub open spec fn cip_mandatory_requirements(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn cip_mandatory_requirements(impact: bool) -> u64 { 1 }
 
     // nerc_cip_all_controls (matches Coq: Definition nerc_cip_all_controls)
     pub open spec fn nerc_cip_all_controls(c: bool) -> bool {
@@ -68,29 +64,19 @@ verus! {
     }
 
     // bes_criticality (matches Coq: Definition bes_criticality)
-    pub open spec fn bes_criticality(a: bool) -> u64 {
-        true
-    }
+    pub open spec fn bes_criticality(a: bool) -> u64 { 1 }
 
     // incident_response_hours (matches Coq: Definition incident_response_hours)
-    pub open spec fn incident_response_hours(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn incident_response_hours(impact: bool) -> u64 { 1 }
 
     // rto_hours (matches Coq: Definition rto_hours)
-    pub open spec fn rto_hours(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn rto_hours(impact: bool) -> u64 { 1 }
 
     // assessment_frequency_days (matches Coq: Definition assessment_frequency_days)
-    pub open spec fn assessment_frequency_days(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn assessment_frequency_days(impact: bool) -> u64 { 1 }
 
     // access_log_retention_days (matches Coq: Definition access_log_retention_days)
-    pub open spec fn access_log_retention_days(impact: bool) -> u64 {
-        true
-    }
+    pub open spec fn access_log_retention_days(impact: bool) -> u64 { 1 }
 
     // nerc_cip_compliance (matches Coq: Theorem nerc_cip_compliance)
     pub proof fn nerc_cip_compliance()

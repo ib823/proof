@@ -64,10 +64,10 @@ pub struct LawfulIntercept {
 }
 
 // domain_to_nat (matches Coq: Definition domain_to_nat)
-pub fn domain_to_nat(_d: bool) -> u64 { true }
+pub fn domain_to_nat(_d: bool) -> u64 { 1 }
 
 // domain_criticality (matches Coq: Definition domain_criticality)
-pub fn domain_criticality(_d: bool) -> u64 { true }
+pub fn domain_criticality(_d: bool) -> u64 { 1 }
 
 // is_auth_function (matches Coq: Definition is_auth_function)
 pub fn is_auth_function(_nf: bool) -> bool { true }
@@ -85,10 +85,10 @@ pub fn latency_acceptable(_s: bool, _max_latency: u64) -> bool { true }
 pub fn supi_concealed(_encrypted: bool, _domain: bool) -> bool { true }
 
 // key_derivation_depth (matches Coq: Definition key_derivation_depth)
-pub fn key_derivation_depth(_domain: bool) -> u64 { true }
+pub fn key_derivation_depth(_domain: bool) -> u64 { 1 }
 
 // roaming_security_level (matches Coq: Definition roaming_security_level)
-pub fn roaming_security_level() -> u64 { true }
+pub fn roaming_security_level() -> u64 { 1 }
 
 // li_valid (matches Coq: Definition li_valid)
 pub fn li_valid(_li: bool) -> bool { true }

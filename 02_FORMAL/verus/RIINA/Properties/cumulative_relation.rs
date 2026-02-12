@@ -17,22 +17,22 @@ verus! {
     }
 
     // store_rel_simple (matches Coq: Definition store_rel_simple)
-    pub open spec fn store_rel_simple(Σ: bool) -> bool {
+    pub open spec fn store_rel_simple(Sigma: bool) -> bool {
         true
     }
 
     // val_rel_struct (matches Coq: Definition val_rel_struct)
-    pub open spec fn val_rel_struct(Σ: bool, T: bool) -> bool {
+    pub open spec fn val_rel_struct(Sigma: bool, T: bool) -> bool {
         true
     }
 
     // store_rel_le (matches Coq: Definition store_rel_le)
-    pub open spec fn store_rel_le(n: u64, Σ: bool) -> bool {
+    pub open spec fn store_rel_le(n: u64, Sigma: bool) -> bool {
         true
     }
 
     // exp_rel_le (matches Coq: Definition exp_rel_le)
-    pub open spec fn exp_rel_le(n: u64, Σ: bool, T: bool, ctx: bool) -> bool {
+    pub open spec fn exp_rel_le(n: u64, Sigma: bool, T: bool, ctx: bool) -> bool {
         true
     }
 

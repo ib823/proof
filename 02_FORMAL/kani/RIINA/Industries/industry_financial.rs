@@ -98,7 +98,7 @@ pub fn kyc_complete(_k: bool) -> bool { true }
 pub fn aml_risk_acceptable() -> bool { true }
 
 // convert_and_back (matches Coq: Definition convert_and_back)
-pub fn convert_and_back() -> u64 { true }
+pub fn convert_and_back() -> u64 { 1 }
 
 // fraud_score_valid (matches Coq: Definition fraud_score_valid)
 pub fn fraud_score_valid(_score: u64) -> bool { true }

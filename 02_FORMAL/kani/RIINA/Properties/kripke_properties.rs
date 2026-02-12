@@ -9,7 +9,7 @@
 #![allow(unused)]
 
 // val_rel_at (matches Coq: Definition val_rel_at)
-pub fn val_rel_at(_n: u64, _Σ: bool, _T: bool) -> bool { true }
+pub fn val_rel_at(_n: u64, _Sigma: bool, _T: bool) -> bool { true }
 
 #[cfg(kani)]
 mod verification {

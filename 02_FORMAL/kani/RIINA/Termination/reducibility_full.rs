@@ -21,10 +21,10 @@ pub fn SN_expr(_e: bool) -> bool { true }
 pub fn id_rho() -> bool { true }
 
 // extend_rho (matches Coq: Definition extend_rho)
-pub fn extend_rho(_ρ: bool, _x: bool, _v: bool) -> bool { true }
+pub fn extend_rho(__: bool, _x: bool, _v: bool) -> bool { true }
 
 // closed_rho (matches Coq: Definition closed_rho)
-pub fn closed_rho(_ρ: bool) -> bool { true }
+pub fn closed_rho(__: bool) -> bool { true }
 
 // Reducible (matches Coq: Definition Reducible)
 pub fn Reducible(_T: bool, _e: bool) -> bool { true }

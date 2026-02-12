@@ -9,10 +9,10 @@
 #![allow(unused)]
 
 // val_rel_0 (matches Coq: Definition val_rel_0)
-pub fn val_rel_0(_Σ: bool, _T: bool) -> bool { true }
+pub fn val_rel_0(_Sigma: bool, _T: bool) -> bool { true }
 
 // store_rel_0 (matches Coq: Definition store_rel_0)
-pub fn store_rel_0(_Σ: bool) -> bool { true }
+pub fn store_rel_0(_Sigma: bool) -> bool { true }
 
 #[cfg(kani)]
 mod verification {

@@ -26,17 +26,17 @@ verus! {
     }
 
     // stores_agree_low_fo (matches Coq: Definition stores_agree_low_fo)
-    pub open spec fn stores_agree_low_fo(Σ: bool) -> bool {
+    pub open spec fn stores_agree_low_fo(Sigma: bool) -> bool {
         true
     }
 
     // val_rel_at_type_n (matches Coq: Definition val_rel_at_type_n)
-    pub open spec fn val_rel_at_type_n(n: u64, Σ: bool, T: bool) -> bool {
+    pub open spec fn val_rel_at_type_n(n: u64, Sigma: bool, T: bool) -> bool {
         true
     }
 
     // store_vals_rel (matches Coq: Definition store_vals_rel)
-    pub open spec fn store_vals_rel(n: u64, Σ: bool) -> bool {
+    pub open spec fn store_vals_rel(n: u64, Sigma: bool) -> bool {
         true
     }
 
@@ -46,17 +46,17 @@ verus! {
     }
 
     // val_rel (matches Coq: Definition val_rel)
-    pub open spec fn val_rel(Σ: bool, T: bool) -> bool {
+    pub open spec fn val_rel(Sigma: bool, T: bool) -> bool {
         true
     }
 
     // store_rel (matches Coq: Definition store_rel)
-    pub open spec fn store_rel(Σ: bool) -> bool {
+    pub open spec fn store_rel(Sigma: bool) -> bool {
         true
     }
 
     // exp_rel (matches Coq: Definition exp_rel)
-    pub open spec fn exp_rel(Σ: bool, T: bool) -> bool {
+    pub open spec fn exp_rel(Sigma: bool, T: bool) -> bool {
         true
     }
 

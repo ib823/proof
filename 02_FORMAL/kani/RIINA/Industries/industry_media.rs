@@ -54,10 +54,10 @@ pub struct ViewingSession {
 }
 
 // content_sensitivity (matches Coq: Definition content_sensitivity)
-pub fn content_sensitivity(_c: bool) -> u64 { true }
+pub fn content_sensitivity(_c: bool) -> u64 { 1 }
 
 // protection_strength (matches Coq: Definition protection_strength)
-pub fn protection_strength(_p: bool) -> u64 { true }
+pub fn protection_strength(_p: bool) -> u64 { 1 }
 
 // protection_adequate (matches Coq: Definition protection_adequate)
 pub fn protection_adequate(_ct: bool, _cp: bool) -> bool { true }
@@ -66,13 +66,13 @@ pub fn protection_adequate(_ct: bool, _cp: bool) -> bool { true }
 pub fn ecp_all_controls(_c: bool) -> bool { true }
 
 // count_ecp_controls (matches Coq: Definition count_ecp_controls)
-pub fn count_ecp_controls(_c: bool) -> u64 { true }
+pub fn count_ecp_controls(_c: bool) -> u64 { 1 }
 
 // dci_min_key_bits (matches Coq: Definition dci_min_key_bits)
-pub fn dci_min_key_bits() -> u64 { true }
+pub fn dci_min_key_bits() -> u64 { 1 }
 
 // viewing_duration (matches Coq: Definition viewing_duration)
-pub fn viewing_duration(_v: bool) -> u64 { true }
+pub fn viewing_duration(_v: bool) -> u64 { 1 }
 
 // viewing_within_window (matches Coq: Definition viewing_within_window)
 pub fn viewing_within_window(_v: bool, _max_hours: u64) -> bool { true }

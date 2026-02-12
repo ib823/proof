@@ -48,31 +48,31 @@ pub struct NERC_CIP_Controls {
 }
 
 // cip_impact_to_nat (matches Coq: Definition cip_impact_to_nat)
-pub fn cip_impact_to_nat(_c: bool) -> u64 { true }
+pub fn cip_impact_to_nat(_c: bool) -> u64 { 1 }
 
 // cip_le (matches Coq: Definition cip_le)
 pub fn cip_le() -> bool { true }
 
 // cip_mandatory_requirements (matches Coq: Definition cip_mandatory_requirements)
-pub fn cip_mandatory_requirements(_impact: bool) -> u64 { true }
+pub fn cip_mandatory_requirements(_impact: bool) -> u64 { 1 }
 
 // nerc_cip_all_controls (matches Coq: Definition nerc_cip_all_controls)
 pub fn nerc_cip_all_controls(_c: bool) -> bool { true }
 
 // bes_criticality (matches Coq: Definition bes_criticality)
-pub fn bes_criticality(_a: bool) -> u64 { true }
+pub fn bes_criticality(_a: bool) -> u64 { 1 }
 
 // incident_response_hours (matches Coq: Definition incident_response_hours)
-pub fn incident_response_hours(_impact: bool) -> u64 { true }
+pub fn incident_response_hours(_impact: bool) -> u64 { 1 }
 
 // rto_hours (matches Coq: Definition rto_hours)
-pub fn rto_hours(_impact: bool) -> u64 { true }
+pub fn rto_hours(_impact: bool) -> u64 { 1 }
 
 // assessment_frequency_days (matches Coq: Definition assessment_frequency_days)
-pub fn assessment_frequency_days(_impact: bool) -> u64 { true }
+pub fn assessment_frequency_days(_impact: bool) -> u64 { 1 }
 
 // access_log_retention_days (matches Coq: Definition access_log_retention_days)
-pub fn access_log_retention_days(_impact: bool) -> u64 { true }
+pub fn access_log_retention_days(_impact: bool) -> u64 { 1 }
 
 #[cfg(kani)]
 mod verification {

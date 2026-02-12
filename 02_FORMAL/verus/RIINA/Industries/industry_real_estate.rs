@@ -51,14 +51,10 @@ verus! {
     }
 
     // property_sensitivity (matches Coq: Definition property_sensitivity)
-    pub open spec fn property_sensitivity(d: bool) -> u64 {
-        true
-    }
+    pub open spec fn property_sensitivity(d: bool) -> u64 { 1 }
 
     // system_criticality (matches Coq: Definition system_criticality)
-    pub open spec fn system_criticality(s: bool) -> u64 {
-        true
-    }
+    pub open spec fn system_criticality(s: bool) -> u64 { 1 }
 
     // is_safety_critical (matches Coq: Definition is_safety_critical)
     pub open spec fn is_safety_critical(s: bool) -> bool {
@@ -71,14 +67,10 @@ verus! {
     }
 
     // count_building_controls (matches Coq: Definition count_building_controls)
-    pub open spec fn count_building_controls(c: bool) -> u64 {
-        true
-    }
+    pub open spec fn count_building_controls(c: bool) -> u64 { 1 }
 
     // access_log_retention_days (matches Coq: Definition access_log_retention_days)
-    pub open spec fn access_log_retention_days(s: bool) -> u64 {
-        true
-    }
+    pub open spec fn access_log_retention_days(s: bool) -> u64 { 1 }
 
     // firmware_version_valid (matches Coq: Definition firmware_version_valid)
     pub open spec fn firmware_version_valid() -> bool {

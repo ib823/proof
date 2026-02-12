@@ -35,7 +35,7 @@
  * | session_type       | session_type           | OK     |
  * | session_dual       | session_dual           | OK     |
  * | expr               | expr                   | OK     |
- * | value              | value                  | OK     |
+ * | is_value              | is_value                  | OK     |
  * | wf_ty              | wf_ty                  | OK     |
  * | wf_session         | wf_session             | OK     |
  * | subst              | subst                  | OK     |
@@ -421,21 +421,21 @@ section \<open>Values\<close>
 
 text \<open>
   Syntactic values for operational semantics.
-  (matches Coq: Inductive value, 11 constructors)
+  (matches Coq: Inductive is_value, 11 constructors)
 \<close>
 
-inductive value :: "expr \<Rightarrow> bool" where
-  VUnit:   "value EUnit"
-| VBool:   "value (EBool b)"
-| VInt:    "value (EInt n)"
-| VString: "value (EString s)"
-| VLoc:    "value (ELoc l)"
-| VLam:    "value (ELam x T e)"
-| VPair:   "value v1 \<Longrightarrow> value v2 \<Longrightarrow> value (EPair v1 v2)"
-| VInl:    "value v \<Longrightarrow> value (EInl v T)"
-| VInr:    "value v \<Longrightarrow> value (EInr v T)"
-| VClassify: "value v \<Longrightarrow> value (EClassify v)"
-| VProve:  "value v \<Longrightarrow> value (EProve v)"
+inductive is_value :: "expr \<Rightarrow> bool" where
+  VUnit:   "is_value EUnit"
+| VBool:   "is_value (EBool b)"
+| VInt:    "is_value (EInt n)"
+| VString: "is_value (EString s)"
+| VLoc:    "is_value (ELoc l)"
+| VLam:    "is_value (ELam x T e)"
+| VPair:   "is_value v1 \<Longrightarrow> is_value v2 \<Longrightarrow> is_value (EPair v1 v2)"
+| VInl:    "is_value v \<Longrightarrow> is_value (EInl v T)"
+| VInr:    "is_value v \<Longrightarrow> is_value (EInr v T)"
+| VClassify: "is_value v \<Longrightarrow> is_value (EClassify v)"
+| VProve:  "is_value v \<Longrightarrow> is_value (EProve v)"
 
 
 section \<open>Well-Formedness\<close>
@@ -530,35 +530,35 @@ text \<open>
 \<close>
 
 definition declass_ok :: "expr \<Rightarrow> expr \<Rightarrow> bool" where
-  "declass_ok e1 e2 \<equiv> \<exists>v. value v \<and> e1 = EClassify v \<and> e2 = EProve (EClassify v)"
+  "declass_ok e1 e2 \<equiv> \<exists>v. is_value v \<and> e1 = EClassify v \<and> e2 = EProve (EClassify v)"
 
 text \<open>
   Value preserved under substitution (matches Coq: value_subst)
 \<close>
 
-lemma value_subst: "value v1 \<Longrightarrow> value v2 \<Longrightarrow> value (subst x v2 v1)"
-proof (induction v1 rule: value.induct)
-  case VUnit thus ?case by (simp add: value.VUnit)
+lemma value_subst: "is_value v1 \<Longrightarrow> is_value v2 \<Longrightarrow> is_value (subst x v2 v1)"
+proof (induction v1 rule: is_value.induct)
+  case VUnit thus ?case by (simp add: is_value.VUnit)
 next
-  case (VBool b) thus ?case by (simp add: value.VBool)
+  case (VBool b) thus ?case by (simp add: is_value.VBool)
 next
-  case (VInt n) thus ?case by (simp add: value.VInt)
+  case (VInt n) thus ?case by (simp add: is_value.VInt)
 next
-  case (VString s) thus ?case by (simp add: value.VString)
+  case (VString s) thus ?case by (simp add: is_value.VString)
 next
-  case (VLoc l) thus ?case by (simp add: value.VLoc)
+  case (VLoc l) thus ?case by (simp add: is_value.VLoc)
 next
-  case (VLam x' T e) thus ?case by (cases "x = x'") (simp_all add: value.VLam)
+  case (VLam x' T e) thus ?case by (cases "x = x'") (simp_all add: is_value.VLam)
 next
-  case (VPair v1 v2) thus ?case by (simp add: value.VPair)
+  case (VPair v1 v2) thus ?case by (simp add: is_value.VPair)
 next
-  case (VInl v T) thus ?case by (simp add: value.VInl)
+  case (VInl v T) thus ?case by (simp add: is_value.VInl)
 next
-  case (VInr v T) thus ?case by (simp add: value.VInr)
+  case (VInr v T) thus ?case by (simp add: is_value.VInr)
 next
-  case (VClassify v) thus ?case by (simp add: value.VClassify)
+  case (VClassify v) thus ?case by (simp add: is_value.VClassify)
 next
-  case (VProve v) thus ?case by (simp add: value.VProve)
+  case (VProve v) thus ?case by (simp add: is_value.VProve)
 qed
 
 text \<open>
@@ -566,17 +566,17 @@ text \<open>
 \<close>
 
 lemma declass_ok_subst:
-  assumes "value v" and "declass_ok e1 e2"
+  assumes "is_value v" and "declass_ok e1 e2"
   shows "declass_ok (subst x v e1) (subst x v e2)"
 proof -
   from assms(2) obtain v0 where
-    "value v0" "e1 = EClassify v0" "e2 = EProve (EClassify v0)"
+    "is_value v0" "e1 = EClassify v0" "e2 = EProve (EClassify v0)"
     unfolding declass_ok_def by auto
   hence "subst x v e1 = EClassify (subst x v v0)"
     and "subst x v e2 = EProve (EClassify (subst x v v0))"
     by simp_all
-  moreover have "value (subst x v v0)"
-    using value_subst \<open>value v0\<close> assms(1) by blast
+  moreover have "is_value (subst x v v0)"
+    using value_subst \<open>is_value v0\<close> assms(1) by blast
   ultimately show ?thesis
     unfolding declass_ok_def by blast
 qed
@@ -586,7 +586,7 @@ text \<open>
 \<close>
 
 lemma value_not_stuck:
-  assumes "value e"
+  assumes "is_value e"
   shows "e = EUnit \<or>
          (\<exists>b. e = EBool b) \<or>
          (\<exists>n. e = EInt n) \<or>
@@ -598,7 +598,7 @@ lemma value_not_stuck:
          (\<exists>l. e = ELoc l) \<or>
          (\<exists>v. e = EClassify v) \<or>
          (\<exists>v. e = EProve v)"
-  using assms by (cases e rule: value.cases) auto
+  using assms by (cases e rule: is_value.cases) auto
 
 
 section \<open>Verification Summary\<close>
