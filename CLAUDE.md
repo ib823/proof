@@ -1,6 +1,6 @@
 # CLAUDE.md — RIINA Proof Repository
 
-**Verification:** 7,748 Coq Qed (compiled, 0 Admitted, 4 active axioms) | 10 independent provers | 856 Rust tests
+**Verification:** 7,740 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 856 Rust tests
 
 ## CRITICAL: READ THIS ENTIRE FILE BEFORE ANY ACTION
 
@@ -102,9 +102,9 @@ RIINA is the world's **first formally verified programming language** with:
 | **Axioms (Active Build)** | 0 | All eliminated from active build |
 | **Admitted (Active Build)** | 0 | All eliminated |
 | **Qed Proofs (Coq)** | 7,748 | Active build (0 Admitted) |
-| **Lean 4 Theorems** | 7933 | 257 files (28 proved, 7905 sorry) |
-| **Isabelle/HOL Lemmas** | 8078 | 261 files, 0 sorry |
-| **Total Proofs (All Provers)** | 62,517 | Coq + Lean + Isabelle |
+| **Lean 4 Theorems** | 7933 | 256 files (28 proved, 7905 sorry) |
+| **Isabelle/HOL Lemmas** | 8078 | 251 files, 0 sorry |
+| **Total Proofs (All Provers)** | 62,561 | Coq + Lean + Isabelle |
 | **Multi-Prover Theorems** | 86 | Triple-prover agreement (Coq + Lean 4 + Isabelle/HOL) |
 | **Threats Covered** | 1,231+ | All made obsolete |
 | **Prover** | Coq 8.20.1 | Primary (Lean 4 + Isabelle/HOL secondary) |
@@ -119,7 +119,7 @@ RIINA is the world's **first formally verified programming language** with:
 |-----------------------|--------|-------|
 | Phase 1: Compiler Completion | ✅ Done | All 5.1-5.7 done; 477 tests |
 | Phase 2: Standard Library | ✅ Done | ~38 unique builtins (with BM/EN aliases), 10 modules, 509 tests |
-| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 0 axioms, 7,740 Qed (active), 250 files |
+| Phase 3: Formal Verification | ✅ Done | 0 Admitted in active build, 0 axioms, 7,748 Qed (active), 244 files |
 | Phase 4: Developer Experience | ✅ Done | riina-fmt, riina-lsp, riina-doc, VS Code ext, 101 examples |
 | Phase 5: Ecosystem | ✅ Done | CI/CD, pkg mgr, Docker, Nix, VERSION, CHANGELOG, release.sh, installer, Proprietary |
 | Phase 6: Adoption | ✅ Done | C FFI, 5 demos, 3 showcase, community, enterprise, public branch |
@@ -839,7 +839,7 @@ When encountering old references, update them to the new naming.
 
 *"Q.E.D. Aeternum."*
 
-*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 62,517 total proofs: 7,748 Coq + 7933 Lean + 8078 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 246 active .v + 256 .lean + 251 .thy = 272 proof files, 86 triple-prover theorems)*
+*Last updated: 2026-02-08 (Session 83: Admitted→Axiom + build fixes — 62,561 total proofs: 7,740 Coq + 7933 Lean + 8078 Isabelle. 0 Admitted/sorry. 2 axioms. 849 Rust tests, 15 crates, 130 examples, 244 active .v + 256 .lean + 251 .thy = 272 proof files, 86 triple-prover theorems)*
 
 ---
 

@@ -160,9 +160,14 @@ def _parse_inductives(text):
             part = part.strip()
             if not part:
                 continue
-            cm = re.match(r'(\w+)\s*(?::.*?)?(?:\(\*\s*(.*?)\s*\*\))?\s*$', part, re.DOTALL)
+            # Match: ConstructorName : params -> ... -> result_type (* comment *)
+            # Or:    ConstructorName (* comment *)
+            cm = re.match(r'(\w+)\s*(?::\s*([^(]*))?(?:\(\*\s*(.*?)\s*\*\))?\s*$', part, re.DOTALL)
             if cm:
-                constructors.append((cm.group(1), (cm.group(2) or '').strip()))
+                cname = cm.group(1)
+                params = (cm.group(2) or '').strip()
+                comment = (cm.group(3) or '').strip()
+                constructors.append((cname, params, comment))
         if constructors:
             results.append(CoqInductive(name=name, constructors=constructors, type_params='Type'))
     return results
@@ -178,8 +183,11 @@ def _parse_records(text):
 
 def _parse_definitions(text):
     results = []
-    for m in re.finditer(r'Definition\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(\w+)\s*:=\s*(.*?)\.',
-                         text, re.DOTALL):
+    # Match Definition until a period at the end of a line (not in the middle like Nat.ltb)
+    # Pattern: Definition NAME PARAMS : TYPE := BODY.
+    # where BODY can contain dots (Nat.ltb) but must end with .\n or .EOF or .(* comment
+    pattern = r'Definition\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(\w+)\s*:=\s*(.*?)\.(?=\s*$|\s*\(\*|\s*Definition|\s*Lemma|\s*Theorem|\s*Inductive|\s*Record|\s*Fixpoint)'
+    for m in re.finditer(pattern, text, re.DOTALL | re.MULTILINE):
         body = m.group(4).strip()
         results.append(CoqDefinition(
             name=m.group(1), params=m.group(2).strip(),
@@ -204,10 +212,28 @@ def _to_snake_case(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 def _extract_param_types(params):
-    return [
-        (m.group(1), m.group(2).strip())
-        for m in re.finditer(r"\(([A-Za-z_][A-Za-z0-9_']*)\s*:\s*([^)]+)\)", params)
-    ]
+    """
+    Extract parameter names and types from Coq parameter list.
+
+    Handles both:
+    - (x : T) → [(x, T)]
+    - (x y z : T) → [(x, T), (y, T), (z, T)]
+    - (x : T1) (y : T2) → [(x, T1), (y, T2)]
+    """
+    results = []
+    # Match each (NAMES : TYPE) group
+    for m in re.finditer(r"\(([^)]+)\)", params):
+        group_content = m.group(1).strip()
+        # Split on colon to get names and type
+        if ':' in group_content:
+            names_part, type_part = group_content.rsplit(':', 1)
+            # Extract all names (space-separated)
+            names = re.findall(r"[A-Za-z_][A-Za-z0-9_']*", names_part)
+            type_clean = type_part.strip()
+            # Add each name with the same type
+            for name in names:
+                results.append((name, type_clean))
+    return results
 
 
 def _dedupe_idents(names, prefix='id'):
@@ -246,7 +272,8 @@ def _fstar_type(t, known_types=None):
     t = t.strip()
     if t.startswith('list '):
         inner = _fstar_type(t[len('list '):].strip(), known_types)
-        return f'list {inner}'
+        # F* requires parentheses for type application in constructor parameters
+        return f'(list {inner})'
     # Keep generated files parseable/compilable for lane-wide checks.
     mapping = {
         'bool': 'bool',
@@ -311,6 +338,372 @@ def _fstar_module_from_coq_path(coq_path: str, mod: str) -> str:
 def _fstar_type_ident(name: str) -> str:
     return _to_snake_case(_sanitize_ident(name, 'ty')).lower()
 
+
+# ===================================================================
+# Coq → F* Body Translation
+# ===================================================================
+
+def _translate_coq_operators(expr: str) -> str:
+    """Translate common Coq operators to F* equivalents."""
+    # Preserve string literals
+    parts = []
+    current = []
+    in_string = False
+    i = 0
+    while i < len(expr):
+        if expr[i] == '"' and (i == 0 or expr[i-1] != '\\'):
+            in_string = not in_string
+        if not in_string and expr[i:i+2] in ['(*', '*)']:
+            # Skip comments (already stripped, but be safe)
+            if expr[i:i+2] == '(*':
+                depth = 1
+                i += 2
+                while i < len(expr) and depth > 0:
+                    if expr[i:i+2] == '(*':
+                        depth += 1
+                        i += 2
+                    elif expr[i:i+2] == '*)':
+                        depth -= 1
+                        i += 2
+                    else:
+                        i += 1
+                continue
+        current.append(expr[i])
+        i += 1
+
+    expr = ''.join(current)
+
+    # Operator mappings (order matters - longer patterns first!)
+    replacements = [
+        # Boolean operators
+        (r'\btrue\b', 'true'),
+        (r'\bfalse\b', 'false'),
+
+        # Comparison operators - MUST handle Nat.leb BEFORE leb
+        (r'Nat\.leb\s+\(([^)]+)\)\s+\(([^)]+)\)', r'(\1) <= (\2)'),  # Nat.leb (x) (y) → (x) <= (y)
+        (r'Nat\.leb\s+(\w+)\s+(\w+)', r'\1 <= \2'),  # Nat.leb x y → x <= y
+        (r'Nat\.ltb\s+\(([^)]+)\)\s+\(([^)]+)\)', r'(\1) < (\2)'),
+        (r'Nat\.ltb\s+(\w+)\s+(\w+)', r'\1 < \2'),
+        (r'String\.eqb\s+(\w+)\s+(\w+)', r'\1 = \2'),
+
+        # Symbolic comparison operators
+        (r'<=\?', '<='),
+        (r'<\?', '<'),
+        (r'>=\?', '>='),
+        (r'>\?', '>'),
+        (r'=\?', '='),
+
+        # List operators
+        (r'\+\+', '@'),  # List append: ++ → @
+        (r'::', '::'),   # Cons: keep as-is
+
+        # Arithmetic
+        (r'\bS\s+(\w+)', r'((\1) + 1)'),  # S n → (n + 1)
+
+        # Logic
+        (r'<>', '<>'),  # Not equal: keep as-is
+        (r'/\\', '&&'),  # And
+        (r'\\/', '||'),  # Or
+        (r'~\s*(\w+)', r'not \1'),   # Negation
+    ]
+
+    result = expr
+    for pattern, replacement in replacements:
+        if callable(replacement):
+            result = re.sub(pattern, replacement, result)
+        else:
+            result = re.sub(pattern, replacement, result)
+
+    return result
+
+
+def _translate_coq_match_to_fstar(body: str, indent: int = 2, ret_type: str = None) -> str:
+    """
+    Translate Coq match expression to F*.
+
+    Coq:  match e with | C1 => e1 | C2 => e2 end
+    F*:   match e with | C1 -> e1 | C2 -> e2 | _ -> default
+
+    Adds wildcard pattern for exhaustiveness if not already present.
+    """
+    # Simple regex-based translation for match
+    # Pattern: match EXPR with | PATTERN => EXPR | ... end
+
+    # Use non-greedy match for scrutinee, greedy for cases until 'end'
+    match_pattern = r'match\s+(.*?)\s+with\s+(.*?)\s+end'
+
+    def replace_match(m):
+        scrutinee = m.group(1).strip()
+        cases_text = m.group(2).strip()
+
+        # Translate scrutinee
+        scrutinee_fstar = _translate_coq_operators(scrutinee)
+
+        # Parse cases: | Pattern => Expr
+        cases = []
+        has_wildcard = False
+        for case in re.split(r'\|', cases_text):
+            case = case.strip()
+            if not case:
+                continue
+
+            # Split on =>
+            if '=>' in case:
+                pattern, expr = case.split('=>', 1)
+                pattern = pattern.strip()
+                expr = expr.strip()
+
+                # Check if this case is a wildcard
+                if pattern == '_':
+                    has_wildcard = True
+
+                # Recursively translate expr (may contain nested match)
+                expr_fstar = _translate_coq_operators(expr)
+                if 'match' in expr_fstar:
+                    expr_fstar = _translate_coq_match_to_fstar(expr_fstar, indent + 2, ret_type)
+
+                cases.append(f'| {pattern} -> {expr_fstar}')
+
+        # Add wildcard pattern if not present (for exhaustiveness)
+        if not has_wildcard and ret_type:
+            # Generate default value based on return type
+            default_val = _get_default_for_match(ret_type)
+            cases.append(f'| _ -> {default_val}')
+
+        # Build F* match
+        indent_str = ' ' * indent
+        cases_joined = f'\n{indent_str}'.join(cases)
+        return f'match {scrutinee_fstar} with\n{indent_str}{cases_joined}'
+
+    result = re.sub(match_pattern, replace_match, body, flags=re.DOTALL)
+    return result
+
+
+def _get_default_for_match(ret_type: str) -> str:
+    """
+    Generate a safe default value for wildcard match patterns.
+
+    For match expressions, we want values that:
+    1. Type-check correctly
+    2. Are semantically neutral/safe
+    3. Don't break F* compilation
+    """
+    ret_type = ret_type.strip()
+
+    # Boolean types
+    if ret_type == 'bool':
+        return 'false'
+
+    # Numeric types
+    if ret_type in ('nat', 'int', 'N', 'Z'):
+        return '0'
+
+    # String types
+    if ret_type == 'string':
+        return '""'
+
+    # List types
+    if ret_type.startswith('(list ') or ret_type.startswith('list '):
+        return '[]'
+
+    # Option types
+    if ret_type.startswith('option ') or ret_type.startswith('(option '):
+        return 'None'
+
+    # Known type constructors that are simple enums
+    # For these, we return the first constructor (already computed elsewhere)
+    # But for match defaults, we use a common safe value
+
+    # For unknown/complex types, use a generic approach:
+    # Try to use the first value we can think of
+    # In the worst case, F* will error and we'll know to handle it specially
+
+    # Common RIINA types we know about:
+    if ret_type in ('security_level', 'ty_security_level'):
+        return 'LPublic'
+    if ret_type in ('effect', 'ty_effect'):
+        return 'EffPure'
+    if ret_type in ('effect_category', 'ty_effect_category'):
+        return 'CatPure'
+    if ret_type in ('taint_source', 'ty_taint_source'):
+        return 'TaintUserInput'
+    if ret_type in ('capability_kind', 'ty_capability_kind'):
+        return 'CapFileRead'
+    if ret_type == 'ty':
+        return 'TUnit'
+    if ret_type == 'expr':
+        return 'EUnit'
+
+    # For truly unknown types, use a placeholder comment
+    # F* will error, but at least it's syntactically valid
+    return '(* TODO: default value for ' + ret_type + ' *) admit()'
+
+
+def _translate_coq_if_to_fstar(body: str) -> str:
+    """
+    Translate Coq if-then-else to F*.
+
+    Coq:  if e1 then e2 else e3
+    F*:   if e1 then e2 else e3  (same syntax!)
+    """
+    # F* and Coq have identical if-then-else syntax, just translate operators
+    return body
+
+
+def _translate_record_field_access(body: str, record_info: dict) -> str:
+    """
+    Translate Coq record field access to F* dot notation.
+
+    Coq: field_name record_var
+    F*:  record_var.f_field_name
+
+    Example: ct_no_secret_branches c → c.f_ct_no_secret_branches
+    """
+    field_to_record = record_info.get('field_to_record', {})
+    if not field_to_record:
+        return body
+
+    # Pattern: field_name followed by identifier (not another field access)
+    # Must be whole words, not part of larger identifiers
+    result = body
+    for field_name in field_to_record.keys():
+        # Match: field_name SPACE identifier
+        # Replace with: identifier.f_field_name
+        pattern = rf'\b{re.escape(field_name)}\s+(\w+)\b'
+
+        def replace_field_access(match):
+            record_var = match.group(1)
+            # Don't replace if record_var is also a field name (nested access)
+            if record_var in field_to_record:
+                return match.group(0)  # Keep as-is, will be handled in next iteration
+            return f'{record_var}.f_{field_name}'
+
+        result = re.sub(pattern, replace_field_access, result)
+
+    return result
+
+
+def _translate_record_construction(body: str, record_info: dict) -> str:
+    """
+    Translate Coq record constructor to F* record literal.
+
+    Coq: mkCtor v1 v2 v3
+    F*:  {f_field1=v1; f_field2=v2; f_field3=v3}
+
+    Example: mkCTConfig true true true → {f_ct_no_secret_branches=true; ...}
+    """
+    constructor_to_record = record_info.get('constructor_to_record', {})
+    record_fields = record_info.get('record_fields', {})
+
+    if not constructor_to_record:
+        return body
+
+    result = body
+    for constructor, record_name in constructor_to_record.items():
+        fields = record_fields.get(record_name, [])
+        if not fields:
+            continue
+
+        # Pattern: mkConstructor val1 val2 val3 ...
+        # Capture constructor and following tokens
+        pattern = rf'\b{re.escape(constructor)}\s+(.*?)(?=\s*(?:in|then|else|with|end|&&|\|\||$))'
+
+        def replace_constructor(match):
+            values_str = match.group(1).strip()
+            # Split by whitespace, handling parentheses
+            values = []
+            depth = 0
+            current = []
+            for token in re.findall(r'\S+', values_str):
+                current.append(token)
+                depth += token.count('(') - token.count(')')
+                if depth == 0:
+                    values.append(' '.join(current))
+                    current = []
+            if current:  # Leftover tokens
+                values.append(' '.join(current))
+
+            # Match values to fields
+            if len(values) != len(fields):
+                # Mismatch - keep original
+                return match.group(0)
+
+            # Build record literal
+            field_assigns = [f'f_{field[0]}={val}' for field, val in zip(fields, values)]
+            return '{' + '; '.join(field_assigns) + '}'
+
+        result = re.sub(pattern, replace_constructor, result, flags=re.MULTILINE)
+
+    return result
+
+
+def _translate_coq_body_to_fstar(body: str, ret_type: str, param_names: list = None, record_info: dict = None) -> str:
+    """
+    Main translation function: Coq definition body → F* expression.
+
+    Handles:
+    - match expressions
+    - if-then-else
+    - operators (::, ++, <>, Nat.leb, etc.)
+    - record field access (field_name record → record.f_field_name)
+    - record construction (mkCtor v1 v2 → {f_f1=v1; f_f2=v2})
+    - function applications
+    - literals
+
+    Args:
+        body: Coq body text
+        ret_type: Return type for wildcard defaults
+        param_names: List of parameter names for renaming
+        record_info: Dict with 'field_to_record', 'constructor_to_record', 'record_fields'
+    """
+    if not body or body.strip() in ['', '.']:
+        # Empty body - use default
+        return None
+
+    # Normalize whitespace
+    body = re.sub(r'\s+', ' ', body.strip())
+
+    # Check if it's a simple literal
+    if body.isdigit():
+        return body
+    if body in ['true', 'false']:
+        return body
+    if body.startswith('"') and body.endswith('"'):
+        return body
+
+    # Check if it's a simple constructor
+    if re.match(r'^[A-Z][A-Za-z0-9_]*$', body):
+        return body
+
+    # Translate operators first
+    result = _translate_coq_operators(body)
+
+    # Translate record constructors (before match, because match might use them)
+    if record_info and 'constructor_to_record' in record_info:
+        result = _translate_record_construction(result, record_info)
+
+    # Translate record field access (after operators, before match)
+    if record_info and 'field_to_record' in record_info:
+        result = _translate_record_field_access(result, record_info)
+
+    # Translate match expressions (pass ret_type for wildcard defaults)
+    if 'match' in result:
+        result = _translate_coq_match_to_fstar(result, indent=2, ret_type=ret_type)
+
+    # Translate if-then-else (syntax is same, operators already translated)
+    # No change needed
+
+    # Handle parameter renaming (Coq uses x, F* might use p_x)
+    if param_names:
+        for original_name in param_names:
+            # F* params are named p_{name} in our generator
+            fstar_param = f'p_{_sanitize_ident(original_name, "p").lower()}'
+            # Replace only whole words
+            result = re.sub(rf'\b{re.escape(original_name)}\b', fstar_param, result)
+
+    return result
+
+
 def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
     lines = []
     mod = parsed.filename.replace('.v', '')
@@ -323,7 +716,10 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
     for ind in parsed.inductives:
         tname = _fstar_type_ident(ind.name)
         if ind.constructors:
-            fstar_type_defaults[tname] = _sanitize_ident(ind.constructors[0][0], 'C')
+            # Handle both 2-tuple and 3-tuple constructor formats
+            first_cons = ind.constructors[0]
+            first_cons_name = first_cons[0] if isinstance(first_cons, tuple) else first_cons
+            fstar_type_defaults[tname] = _sanitize_ident(first_cons_name, 'C')
 
     def default_for_type(ft: str) -> str:
         if ft == 'bool':
@@ -345,9 +741,40 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
     for ind in parsed.inductives:
         lines.append(f'(* {ind.name} (matches Coq) *)')
         lines.append(f'type {_fstar_type_ident(ind.name)} =')
-        for cname, comment in ind.constructors:
-            cmt = f'  (* {comment} *)' if comment else ''
-            lines.append(f'  | {cname}{cmt}')
+        for item in ind.constructors:
+            # Handle both 2-tuple (old format) and 3-tuple (new format)
+            if len(item) == 2:
+                cname, comment = item
+                params = ''
+            else:
+                cname, params, comment = item
+
+            # Translate constructor parameters
+            if params:
+                # Parse Coq params: "ty -> ty -> effect -> ty" → "(ty * ty * effect)"
+                # Remove "-> result_type" (last type after last arrow)
+                param_parts = params.split('->')
+                if param_parts:
+                    # Take all but the last (which is the result type)
+                    param_types = param_parts[:-1] if len(param_parts) > 1 else []
+                    if param_types:
+                        translated_params = [_fstar_type(p.strip(), known_types) for p in param_types]
+                        # F* requires tuple syntax for multiple params: (t1 * t2 * ...)
+                        if len(translated_params) > 1:
+                            fstar_params = '(' + ' * '.join(translated_params) + ')'
+                        else:
+                            fstar_params = translated_params[0]
+                        cmt = f'  (* {comment} *)' if comment else ''
+                        lines.append(f'  | {cname} of {fstar_params}{cmt}')
+                    else:
+                        cmt = f'  (* {comment} *)' if comment else ''
+                        lines.append(f'  | {cname}{cmt}')
+                else:
+                    cmt = f'  (* {comment} *)' if comment else ''
+                    lines.append(f'  | {cname}{cmt}')
+            else:
+                cmt = f'  (* {comment} *)' if comment else ''
+                lines.append(f'  | {cname}{cmt}')
         lines.append('')
 
     # Records
@@ -371,25 +798,57 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
         else:
             fstar_type_defaults[rec_name] = '{ }'
 
+    # Build record information for field access translation
+    record_info = {
+        'field_to_record': {},
+        'constructor_to_record': {},
+        'record_fields': {}
+    }
+    for rec in parsed.records:
+        rec_name = rec.name
+        record_info['constructor_to_record'][rec.constructor] = rec_name
+        record_info['record_fields'][rec_name] = rec.fields
+        for fname, ftype, _ in rec.fields:
+            # Map field name to record type
+            record_info['field_to_record'][fname] = rec_name
+
     # Definitions
     for defn in parsed.definitions:
         pts = _extract_param_types(defn.params)
         params_str = ' '.join(f'(p_{_sanitize_ident(n, "p").lower()}: {_fstar_type(t, known_types)})' for n, t in pts) if pts else ''
         ret = _fstar_type(defn.ret_type, known_types)
-        default = default_for_type(ret)
-        safe_name = f'defn_{_sanitize_ident(defn.name, "defn").lower()}'
-        if defn.is_match:
-            lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
-            if pts:
-                lines.append(f'let {safe_name} {params_str} : Tot {ret} = {default}')
-            else:
-                lines.append(f'let {safe_name} : {ret} = {default}')
+
+        # NEW: Try to translate Coq body to F*
+        param_names = [n for n, _ in pts]
+
+        # Skip body translation for Prop types (logical specifications, not executable)
+        if defn.ret_type == 'Prop':
+            body_expr = default_for_type(ret)
         else:
-            lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
-            if pts:
-                lines.append(f'let {safe_name} {params_str} : Tot {ret} = {default}')
+            translated_body = _translate_coq_body_to_fstar(defn.body, ret, param_names, record_info)
+            # Use translated body if available, otherwise fall back to default
+            if translated_body:
+                body_expr = translated_body
             else:
-                lines.append(f'let {safe_name} : {ret} = {default}')
+                body_expr = default_for_type(ret)
+
+        # Use original name (not defn_ prefix) for better readability
+        safe_name = _sanitize_ident(defn.name, 'defn').lower()
+
+        lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
+        if pts:
+            lines.append(f'let {safe_name} {params_str} : Tot {ret} =')
+            # Handle multi-line bodies (e.g., match expressions)
+            if '\n' in body_expr:
+                lines.append(f'  {body_expr}')
+            else:
+                lines.append(f'  {body_expr}')
+        else:
+            if '\n' in body_expr:
+                lines.append(f'let {safe_name} : {ret} =')
+                lines.append(f'  {body_expr}')
+            else:
+                lines.append(f'let {safe_name} : {ret} = {body_expr}')
         lines.append('')
 
     # Theorems

@@ -1710,4 +1710,294 @@ mod formalized_tests {
             Err(e) => panic!("Expected safe DOM-based XSS prevention, got error: {:?}", e),
         }
     }
+
+    // ════════════════════════════════════════════════════════════════════
+    // TASK #5: CSRF Protection Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_csrf_token_generation() {
+        // csrf_generate returns a cryptographic token
+        let ctx = register_builtin_types(&Context::new());
+
+        let gen_token = Expr::App(
+            Box::new(Expr::Var("csrf_generate".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let (token_ty, eff) = type_check(&ctx, &gen_token).unwrap();
+        assert_eq!(token_ty, Ty::String);
+        assert_eq!(eff, Effect::Random);  // Cryptographic randomness
+    }
+
+    #[test]
+    fn test_csrf_get_no_token_required() {
+        // GET is a safe method, no CSRF token required
+        let ctx = register_builtin_types(&Context::new());
+
+        // http_get("https://example.com")
+        let get_request = Expr::App(
+            Box::new(Expr::Var("http_get".to_string())),
+            Box::new(Expr::String("https://example.com".to_string()))
+        );
+
+        match type_check(&ctx, &get_request) {
+            Ok((ty, eff)) => {
+                assert_eq!(ty, Ty::Any);
+                assert_eq!(eff, Effect::Network);
+            }
+            Err(e) => panic!("Expected GET to succeed without token, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_csrf_post_requires_token() {
+        // POST is state-changing, requires CSRF token
+        let ctx = register_builtin_types(&Context::new());
+
+        // Generate token
+        let token = Expr::App(
+            Box::new(Expr::Var("csrf_generate".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // http_post("url", (data, token))
+        let post_with_token = Expr::App(
+            Box::new(Expr::Var("http_post".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com".to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::Unit),  // Request body
+                    Box::new(token)
+                ))
+            ))
+        );
+
+        match type_check(&ctx, &post_with_token) {
+            Ok((ty, eff)) => {
+                assert_eq!(ty, Ty::Any);
+                // csrf_generate (Random, level 9) + http_post (Network, level 6) → Random
+                assert_eq!(eff, Effect::Random);
+            }
+            Err(e) => panic!("Expected POST with token to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_csrf_post_without_token_fails() {
+        // POST without token should fail type check
+        let ctx = register_builtin_types(&Context::new());
+
+        // http_post expects (String, (Any, String))
+        // Providing just (String, Any) should fail
+        let post_without_token = Expr::App(
+            Box::new(Expr::Var("http_post".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com".to_string())),
+                Box::new(Expr::Unit)  // Missing nested (body, token) pair
+            ))
+        );
+
+        match type_check(&ctx, &post_without_token) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                // Expected: (String, (Any, String))
+                // Found: (String, Unit)
+                match expected {
+                    Ty::Prod(_, right) => {
+                        // Right side should be (Any, String)
+                        match *right {
+                            Ty::Prod(_, token_ty) => {
+                                assert_eq!(*token_ty, Ty::String);
+                            }
+                            _ => panic!("Expected nested product type for POST"),
+                        }
+                    }
+                    _ => panic!("Expected product type for POST"),
+                }
+            }
+            other => panic!("Expected TypeMismatch for POST without token, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_csrf_put_requires_token() {
+        // PUT is state-changing, requires CSRF token
+        let ctx = register_builtin_types(&Context::new());
+
+        let token = Expr::App(
+            Box::new(Expr::Var("csrf_generate".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let put_with_token = Expr::App(
+            Box::new(Expr::Var("http_put".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com/resource".to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::Unit),  // Request body
+                    Box::new(token)
+                ))
+            ))
+        );
+
+        match type_check(&ctx, &put_with_token) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected PUT with token to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_csrf_delete_requires_token() {
+        // DELETE is state-changing, requires CSRF token
+        let ctx = register_builtin_types(&Context::new());
+
+        let token = Expr::App(
+            Box::new(Expr::Var("csrf_generate".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // http_delete expects (String, String) = (URL, token)
+        let delete_with_token = Expr::App(
+            Box::new(Expr::Var("http_delete".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com/resource".to_string())),
+                Box::new(token)
+            ))
+        );
+
+        match type_check(&ctx, &delete_with_token) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected DELETE with token to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_csrf_origin_check() {
+        // csrf_check_origin validates same-origin policy
+        let ctx = register_builtin_types(&Context::new());
+
+        // csrf_check_origin(request_origin, expected_origin)
+        let origin_check = Expr::App(
+            Box::new(Expr::Var("csrf_check_origin".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com".to_string())),
+                Box::new(Expr::String("https://example.com".to_string()))
+            ))
+        );
+
+        let (check_ty, _) = type_check(&ctx, &origin_check).unwrap();
+        assert_eq!(check_ty, Ty::Bool);
+    }
+
+    #[test]
+    fn test_csrf_referer_check() {
+        // csrf_check_referer validates referer header
+        let ctx = register_builtin_types(&Context::new());
+
+        let referer_check = Expr::App(
+            Box::new(Expr::Var("csrf_check_referer".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com/page".to_string())),
+                Box::new(Expr::String("https://example.com".to_string()))
+            ))
+        );
+
+        let (check_ty, _) = type_check(&ctx, &referer_check).unwrap();
+        assert_eq!(check_ty, Ty::Bool);
+    }
+
+    #[test]
+    fn test_csrf_double_submit_validation() {
+        // Double-submit pattern: validate token from request against session token
+        let ctx = register_builtin_types(&Context::new());
+
+        // Generate session token
+        let session_token = Expr::App(
+            Box::new(Expr::Var("csrf_generate".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // Simulate request token (in real app, extracted from request)
+        let request_token = Expr::String("request_token_value".to_string());
+
+        // csrf_validate(request_token, session_token)
+        let validate = Expr::App(
+            Box::new(Expr::Var("csrf_validate".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(request_token),
+                Box::new(session_token)
+            ))
+        );
+
+        let (valid_ty, _) = type_check(&ctx, &validate).unwrap();
+        assert_eq!(valid_ty, Ty::Bool);
+    }
+
+    #[test]
+    fn test_csrf_full_protection_flow() {
+        // Complete CSRF protection flow:
+        // 1. Generate token
+        // 2. Validate origin
+        // 3. Validate token
+        // 4. Make state-changing request
+        let ctx = register_builtin_types(&Context::new());
+
+        // 1. Generate CSRF token
+        let token = Expr::App(
+            Box::new(Expr::Var("csrf_generate".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // 2. Check origin (returns Bool)
+        let origin_check = Expr::App(
+            Box::new(Expr::Var("csrf_check_origin".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com".to_string())),
+                Box::new(Expr::String("https://example.com".to_string()))
+            ))
+        );
+
+        // Origin check should return Bool
+        let (origin_ty, _) = type_check(&ctx, &origin_check).unwrap();
+        assert_eq!(origin_ty, Ty::Bool);
+
+        // 3. Make POST with token
+        let post_request = Expr::App(
+            Box::new(Expr::Var("http_post".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://example.com/api".to_string())),
+                Box::new(Expr::Pair(
+                    Box::new(Expr::String("data".to_string())),
+                    Box::new(token)
+                ))
+            ))
+        );
+
+        match type_check(&ctx, &post_request) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected full CSRF protection flow to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_csrf_attack_scenario_prevented() {
+        // Attacker tries to make state-changing request without token
+        let ctx = register_builtin_types(&Context::new());
+
+        // Attacker's malicious POST (no token)
+        let malicious_post = Expr::App(
+            Box::new(Expr::Var("http_post".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("https://victim.com/transfer".to_string())),
+                Box::new(Expr::String("amount=1000".to_string()))  // Wrong type: should be (Any, String)
+            ))
+        );
+
+        match type_check(&ctx, &malicious_post) {
+            Err(TypeError::TypeMismatch { .. }) => {
+                // Good! CSRF attack prevented by type system
+            }
+            other => panic!("Expected CSRF attack to be prevented, got {:?}", other),
+        }
+    }
 }
