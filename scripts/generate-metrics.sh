@@ -27,6 +27,10 @@ fi
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 DATE_HUMAN=$(date -u +"%B %d, %Y at %H:%M UTC")
 
+escape_json() {
+    printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
 # Count Qed proofs (active build) — from _CoqProject only (matches verify.rs)
 QED_ACTIVE=0
 while IFS= read -r f; do
@@ -392,28 +396,17 @@ if [ "$QED_ACTIVE" -eq 0 ] || [ "$ADMITTED" -ne 0 ] || [ "$AXIOMS" -ne 0 ] || [ 
     COQ_COMPILED=false
 fi
 
-# Keep non-Coq compile flags strict: only set true when lane-specific
-# compilation evidence is integrated into this generator.
+# Keep non-Coq claim levels fully tied to lane report evidence.
 LEAN_COMPILED=false
 ISABELLE_COMPILED=false
-DIM_PROMO_REPORT="$ROOT_DIR/reports/dim1_dim9_promotion_status.json"
-DIM_PROMO_FRESH=false
-DIM_PROMO_TLA_PATH=""
-DIM_PROMO_ALLOY_PATH=""
-DIM_PROMO_TLA_PATH_OK=false
-DIM_PROMO_ALLOY_PATH_OK=false
-HEAVY_CLOSURE_REPORT="$ROOT_DIR/reports/heavy_closure_status.json"
-HEAVY_CLOSURE_FRESH=false
-HEAVY_Z3_EXEC=false
-HEAVY_FSTAR_EXEC=false
-HEAVY_VERUS_EXEC=false
-HEAVY_KANI_EXEC=false
-HEAVY_TV_EXEC=false
-DIM14_REPORT="$ROOT_DIR/reports/dim14_runtime_status.json"
-DIM14_FRESH=false
-CLAIM_DIM14="generated"
-NONCOQ_MECH_REPORT="$ROOT_DIR/reports/noncoq_mechanized_status.json"
-NONCOQ_MECH_FRESH=false
+FSTAR_COMPILED=false
+TLAPLUS_COMPILED=false
+ALLOY_COMPILED=false
+SMT_COMPILED=false
+VERUS_COMPILED=false
+KANI_COMPILED=false
+TV_COMPILED=false
+
 LEAN_MECHANIZED_READY=false
 ISABELLE_MECHANIZED_READY=false
 FSTAR_MECHANIZED_READY=false
@@ -424,83 +417,35 @@ VERUS_MECHANIZED_READY=false
 KANI_MECHANIZED_READY=false
 TV_MECHANIZED_READY=false
 
+NONCOQ_MECH_REPORT="$ROOT_DIR/reports/noncoq_mechanized_status.json"
+NONCOQ_MECH_FRESH=false
+NONCOQ_MECH_OVERALL=false
+NONCOQ_MECH_SOURCE="missing_or_stale"
+
+LEAN_PENDING_REASON="noncoq_report_missing_or_stale"
+ISABELLE_PENDING_REASON="noncoq_report_missing_or_stale"
+FSTAR_PENDING_REASON="noncoq_report_missing_or_stale"
+TLAPLUS_PENDING_REASON="noncoq_report_missing_or_stale"
+ALLOY_PENDING_REASON="noncoq_report_missing_or_stale"
+SMT_PENDING_REASON="noncoq_report_missing_or_stale"
+VERUS_PENDING_REASON="noncoq_report_missing_or_stale"
+KANI_PENDING_REASON="noncoq_report_missing_or_stale"
+TV_PENDING_REASON="noncoq_report_missing_or_stale"
+
+LEAN_SORRY_BACKLOG="$LEAN_SORRY"
+LEAN_AXIOMS_BACKLOG="$LEAN_AXIOMS"
+ISABELLE_SORRY_BACKLOG="$ISABELLE_SORRY"
+FSTAR_GENERATED_BACKLOG=0
+SMT_GENERATED_BACKLOG=0
+VERUS_GENERATED_BACKLOG=0
+KANI_GENERATED_BACKLOG=0
+TV_GENERATED_BACKLOG=0
+
+DIM14_REPORT="$ROOT_DIR/reports/dim14_runtime_status.json"
+DIM14_FRESH=false
+CLAIM_DIM14="generated"
+
 CURRENT_HEAD="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || echo "")"
-
-if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
-    report_head="$(jq -r '.repo_head // ""' "$DIM_PROMO_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$CURRENT_HEAD" ] && [ "$report_head" = "$CURRENT_HEAD" ]; then
-        DIM_PROMO_FRESH=true
-    fi
-
-    DIM_PROMO_TLA_PATH="$(jq -r '.tools.tla2tools_path // ""' "$DIM_PROMO_REPORT" 2>/dev/null || echo "")"
-    DIM_PROMO_ALLOY_PATH="$(jq -r '.tools.alloy_path // ""' "$DIM_PROMO_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$DIM_PROMO_TLA_PATH" ] && [ -f "$DIM_PROMO_TLA_PATH" ]; then
-        DIM_PROMO_TLA_PATH_OK=true
-    fi
-    if [ -n "$DIM_PROMO_ALLOY_PATH" ] && [ -f "$DIM_PROMO_ALLOY_PATH" ]; then
-        DIM_PROMO_ALLOY_PATH_OK=true
-    fi
-
-    if [ "$DIM_PROMO_FRESH" = true ] && jq -e '.strict_tools == 1
-        and .dimension_1.status == "PASS"
-        and .dimension_1.checks.lean_build == true
-        and .dimension_1.checks.lean_actionable_sorry == 0' \
-        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
-        LEAN_COMPILED=true
-    fi
-
-    if [ "$DIM_PROMO_FRESH" = true ] && jq -e '.strict_tools == 1
-        and .dimension_1.promotion_ready == true
-        and .dimension_1.checks.isabelle_build == true' \
-        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
-        ISABELLE_COMPILED=true
-    fi
-fi
-
-if [ -f "$HEAVY_CLOSURE_REPORT" ] && command -v jq >/dev/null 2>&1; then
-    heavy_head="$(jq -r '.repo_head // ""' "$HEAVY_CLOSURE_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$CURRENT_HEAD" ] && [ "$heavy_head" = "$CURRENT_HEAD" ]; then
-        HEAVY_CLOSURE_FRESH=true
-    fi
-
-    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
-        and .tools.z3 == true
-        and .dimension_5_constant_time.executable_gate == true
-        and .dimension_6_zeroization.executable_gate == true
-        and .dimension_7_compiler_correctness.executable_gate == true
-        and .dimension_11_protocol_impl_binding.executable_gate == true
-        and .dimension_13_hardware_assumptions.executable_gate == true' \
-        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
-        HEAVY_Z3_EXEC=true
-    fi
-
-    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
-        and .dimension_8_crypto_correctness.executable_gate == true
-        and .dimension_8_crypto_correctness.fstar_active_exec == true' \
-        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
-        HEAVY_FSTAR_EXEC=true
-    fi
-
-    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
-        and .dimension_10_implementation_correctness.executable_gate == true
-        and .dimension_10_implementation_correctness.verus_active_exec == true' \
-        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
-        HEAVY_VERUS_EXEC=true
-    fi
-
-    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
-        and .dimension_10_implementation_correctness.executable_gate == true
-        and .dimension_10_implementation_correctness.kani_active_exec == true' \
-        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
-        HEAVY_KANI_EXEC=true
-    fi
-
-    if [ "$HEAVY_CLOSURE_FRESH" = true ] && jq -e '.overall_executable == "PASS"
-        and .dimension_7_compiler_correctness.executable_gate == true' \
-        "$HEAVY_CLOSURE_REPORT" >/dev/null 2>&1; then
-        HEAVY_TV_EXEC=true
-    fi
-fi
 
 if [ -f "$DIM14_REPORT" ] && command -v jq >/dev/null 2>&1; then
     dim14_head="$(jq -r '.repo_head // ""' "$DIM14_REPORT" 2>/dev/null || echo "")"
@@ -517,129 +462,107 @@ if [ -f "$NONCOQ_MECH_REPORT" ] && command -v jq >/dev/null 2>&1; then
     if [ -n "$CURRENT_HEAD" ] && [ "$noncoq_head" = "$CURRENT_HEAD" ]; then
         NONCOQ_MECH_FRESH=true
     fi
-    if [ "$NONCOQ_MECH_FRESH" = true ]; then
-        if jq -e '.lanes.lean.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            LEAN_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.isabelle.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            ISABELLE_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.fstar.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            FSTAR_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.tlaplus.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            TLAPLUS_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.alloy.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            ALLOY_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.smt.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            SMT_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.verus.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            VERUS_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.kani.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            KANI_MECHANIZED_READY=true
-        fi
-        if jq -e '.lanes.tv.mechanized_ready == true' "$NONCOQ_MECH_REPORT" >/dev/null 2>&1; then
-            TV_MECHANIZED_READY=true
-        fi
-    fi
+fi
+
+if [ "$NONCOQ_MECH_FRESH" = true ]; then
+    NONCOQ_MECH_SOURCE="strict_report"
+    NONCOQ_MECH_OVERALL="$(jq -r '.overall_noncoq_mechanized // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+
+    LEAN_COMPILED="$(jq -r '.lanes.lean.full_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    ISABELLE_COMPILED="$(jq -r '.lanes.isabelle.full_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    FSTAR_COMPILED="$(jq -r '.lanes.fstar.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    TLAPLUS_COMPILED="$(jq -r '.lanes.tlaplus.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    ALLOY_COMPILED="$(jq -r '.lanes.alloy.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    SMT_COMPILED="$(jq -r '.lanes.smt.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    VERUS_COMPILED="$(jq -r '.lanes.verus.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    KANI_COMPILED="$(jq -r '.lanes.kani.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    TV_COMPILED="$(jq -r '.lanes.tv.full_exec_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+
+    LEAN_MECHANIZED_READY="$(jq -r '.lanes.lean.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    ISABELLE_MECHANIZED_READY="$(jq -r '.lanes.isabelle.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    FSTAR_MECHANIZED_READY="$(jq -r '.lanes.fstar.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    TLAPLUS_MECHANIZED_READY="$(jq -r '.lanes.tlaplus.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    ALLOY_MECHANIZED_READY="$(jq -r '.lanes.alloy.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    SMT_MECHANIZED_READY="$(jq -r '.lanes.smt.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    VERUS_MECHANIZED_READY="$(jq -r '.lanes.verus.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    KANI_MECHANIZED_READY="$(jq -r '.lanes.kani.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    TV_MECHANIZED_READY="$(jq -r '.lanes.tv.mechanized_ready // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+
+    LEAN_PENDING_REASON="$(jq -r '.lanes.lean.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    ISABELLE_PENDING_REASON="$(jq -r '.lanes.isabelle.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    FSTAR_PENDING_REASON="$(jq -r '.lanes.fstar.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    TLAPLUS_PENDING_REASON="$(jq -r '.lanes.tlaplus.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    ALLOY_PENDING_REASON="$(jq -r '.lanes.alloy.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    SMT_PENDING_REASON="$(jq -r '.lanes.smt.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    VERUS_PENDING_REASON="$(jq -r '.lanes.verus.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    KANI_PENDING_REASON="$(jq -r '.lanes.kani.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+    TV_PENDING_REASON="$(jq -r '.lanes.tv.pending // "none"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "none")"
+
+    LEAN_SORRY_BACKLOG="$(jq -r '.lanes.lean.sorry // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    LEAN_AXIOMS_BACKLOG="$(jq -r '.lanes.lean.axioms // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    ISABELLE_SORRY_BACKLOG="$(jq -r '.lanes.isabelle.sorry // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    FSTAR_GENERATED_BACKLOG="$(jq -r '.lanes.fstar.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    SMT_GENERATED_BACKLOG="$(jq -r '.lanes.smt.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    VERUS_GENERATED_BACKLOG="$(jq -r '.lanes.verus.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    KANI_GENERATED_BACKLOG="$(jq -r '.lanes.kani.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    TV_GENERATED_BACKLOG="$(jq -r '.lanes.tv.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
 fi
 
 CLAIM_COQ="generated"
 [ "$COQ_COMPILED" = true ] && CLAIM_COQ="mechanized"
-CLAIM_LEAN="generated"
-[ "$LEAN_COMPILED" = true ] && CLAIM_LEAN="compiled"
-CLAIM_ISABELLE="generated"
-[ "$ISABELLE_COMPILED" = true ] && CLAIM_ISABELLE="compiled"
-CLAIM_FSTAR="generated"
-CLAIM_TLAPLUS="generated"
-CLAIM_ALLOY="generated"
-CLAIM_SMT="generated"
-CLAIM_VERUS="generated"
-CLAIM_KANI="generated"
-CLAIM_TV="generated"
 
-if [ -f "$DIM_PROMO_REPORT" ] && command -v jq >/dev/null 2>&1; then
-    if [ "$DIM_PROMO_FRESH" = true ] && [ "$DIM_PROMO_TLA_PATH_OK" = true ] && jq -e '.strict_tools == 1
-        and .dimension_9.promotion_ready == true
-        and .dimension_9.checks.tla_exec == true' \
-        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
-        CLAIM_TLAPLUS="compiled"
-    fi
+CLAIM_LEAN="generated"; [ "$LEAN_COMPILED" = true ] && CLAIM_LEAN="compiled"
+CLAIM_ISABELLE="generated"; [ "$ISABELLE_COMPILED" = true ] && CLAIM_ISABELLE="compiled"
+CLAIM_FSTAR="generated"; [ "$FSTAR_COMPILED" = true ] && CLAIM_FSTAR="compiled"
+CLAIM_TLAPLUS="generated"; [ "$TLAPLUS_COMPILED" = true ] && CLAIM_TLAPLUS="compiled"
+CLAIM_ALLOY="generated"; [ "$ALLOY_COMPILED" = true ] && CLAIM_ALLOY="compiled"
+CLAIM_SMT="generated"; [ "$SMT_COMPILED" = true ] && CLAIM_SMT="compiled"
+CLAIM_VERUS="generated"; [ "$VERUS_COMPILED" = true ] && CLAIM_VERUS="compiled"
+CLAIM_KANI="generated"; [ "$KANI_COMPILED" = true ] && CLAIM_KANI="compiled"
+CLAIM_TV="generated"; [ "$TV_COMPILED" = true ] && CLAIM_TV="compiled"
 
-    if [ "$DIM_PROMO_FRESH" = true ] && [ "$DIM_PROMO_ALLOY_PATH_OK" = true ] && jq -e '.strict_tools == 1
-        and .dimension_9.promotion_ready == true
-        and .dimension_9.checks.alloy_exec == true' \
-        "$DIM_PROMO_REPORT" >/dev/null 2>&1; then
-        CLAIM_ALLOY="compiled"
-    fi
-fi
+[ "$CLAIM_LEAN" = "compiled" ] && [ "$LEAN_MECHANIZED_READY" = true ] && CLAIM_LEAN="mechanized"
+[ "$CLAIM_ISABELLE" = "compiled" ] && [ "$ISABELLE_MECHANIZED_READY" = true ] && CLAIM_ISABELLE="mechanized"
+[ "$CLAIM_FSTAR" = "compiled" ] && [ "$FSTAR_MECHANIZED_READY" = true ] && CLAIM_FSTAR="mechanized"
+[ "$CLAIM_TLAPLUS" = "compiled" ] && [ "$TLAPLUS_MECHANIZED_READY" = true ] && CLAIM_TLAPLUS="mechanized"
+[ "$CLAIM_ALLOY" = "compiled" ] && [ "$ALLOY_MECHANIZED_READY" = true ] && CLAIM_ALLOY="mechanized"
+[ "$CLAIM_SMT" = "compiled" ] && [ "$SMT_MECHANIZED_READY" = true ] && CLAIM_SMT="mechanized"
+[ "$CLAIM_VERUS" = "compiled" ] && [ "$VERUS_MECHANIZED_READY" = true ] && CLAIM_VERUS="mechanized"
+[ "$CLAIM_KANI" = "compiled" ] && [ "$KANI_MECHANIZED_READY" = true ] && CLAIM_KANI="mechanized"
+[ "$CLAIM_TV" = "compiled" ] && [ "$TV_MECHANIZED_READY" = true ] && CLAIM_TV="mechanized"
 
-[ "$HEAVY_FSTAR_EXEC" = true ] && CLAIM_FSTAR="compiled"
-[ "$HEAVY_Z3_EXEC" = true ] && CLAIM_SMT="compiled"
-[ "$HEAVY_VERUS_EXEC" = true ] && CLAIM_VERUS="compiled"
-[ "$HEAVY_KANI_EXEC" = true ] && CLAIM_KANI="compiled"
-[ "$HEAVY_TV_EXEC" = true ] && CLAIM_TV="compiled"
+ALL_NONCOQ_COMPILED=true
+for level in "$CLAIM_LEAN" "$CLAIM_ISABELLE" "$CLAIM_FSTAR" "$CLAIM_TLAPLUS" "$CLAIM_ALLOY" "$CLAIM_SMT" "$CLAIM_VERUS" "$CLAIM_KANI" "$CLAIM_TV"; do
+  if [ "$level" = "generated" ]; then
+    ALL_NONCOQ_COMPILED=false
+    break
+  fi
+done
 
-if [ "$CLAIM_LEAN" = "compiled" ] && [ "$LEAN_MECHANIZED_READY" = true ]; then
-    CLAIM_LEAN="mechanized"
-fi
-if [ "$CLAIM_ISABELLE" = "compiled" ] && [ "$ISABELLE_MECHANIZED_READY" = true ]; then
-    CLAIM_ISABELLE="mechanized"
-fi
-if [ "$CLAIM_FSTAR" = "compiled" ] && [ "$FSTAR_MECHANIZED_READY" = true ]; then
-    CLAIM_FSTAR="mechanized"
-fi
-if [ "$CLAIM_TLAPLUS" = "compiled" ] && [ "$TLAPLUS_MECHANIZED_READY" = true ]; then
-    CLAIM_TLAPLUS="mechanized"
-fi
-if [ "$CLAIM_ALLOY" = "compiled" ] && [ "$ALLOY_MECHANIZED_READY" = true ]; then
-    CLAIM_ALLOY="mechanized"
-fi
-if [ "$CLAIM_SMT" = "compiled" ] && [ "$SMT_MECHANIZED_READY" = true ]; then
-    CLAIM_SMT="mechanized"
-fi
-if [ "$CLAIM_VERUS" = "compiled" ] && [ "$VERUS_MECHANIZED_READY" = true ]; then
-    CLAIM_VERUS="mechanized"
-fi
-if [ "$CLAIM_KANI" = "compiled" ] && [ "$KANI_MECHANIZED_READY" = true ]; then
-    CLAIM_KANI="mechanized"
-fi
-if [ "$CLAIM_TV" = "compiled" ] && [ "$TV_MECHANIZED_READY" = true ]; then
-    CLAIM_TV="mechanized"
-fi
+ALL_NONCOQ_MECHANIZED=true
+for level in "$CLAIM_LEAN" "$CLAIM_ISABELLE" "$CLAIM_FSTAR" "$CLAIM_TLAPLUS" "$CLAIM_ALLOY" "$CLAIM_SMT" "$CLAIM_VERUS" "$CLAIM_KANI" "$CLAIM_TV"; do
+  if [ "$level" != "mechanized" ] && [ "$level" != "independently_audited" ]; then
+    ALL_NONCOQ_MECHANIZED=false
+    break
+  fi
+done
 
 INDEPENDENTLY_AUDITED=false
-OVERALL_CLAIM="$CLAIM_COQ"
-[ "$INDEPENDENTLY_AUDITED" = true ] && OVERALL_CLAIM="independently_audited"
+OVERALL_CLAIM="generated"
+if [ "$INDEPENDENTLY_AUDITED" = true ]; then
+  OVERALL_CLAIM="independently_audited"
+elif [ "$CLAIM_COQ" = "mechanized" ] && [ "$ALL_NONCOQ_MECHANIZED" = true ] \
+  && { [ "$CLAIM_DIM14" = "mechanized" ] || [ "$CLAIM_DIM14" = "independently_audited" ]; }; then
+  OVERALL_CLAIM="mechanized"
+elif [ "$CLAIM_COQ" = "mechanized" ] && [ "$ALL_NONCOQ_COMPILED" = true ] \
+  && [ "$CLAIM_DIM14" != "generated" ]; then
+  OVERALL_CLAIM="compiled"
+fi
 
 MULTIPROVER_STATUS="IN_PROGRESS"
-[ "$OVERALL_CLAIM" = "mechanized" ] && MULTIPROVER_STATUS="ACTIVE_COQ_MECHANIZED"
-if [ "$CLAIM_LEAN" != "generated" ] \
-  && [ "$CLAIM_ISABELLE" != "generated" ] \
-  && [ "$CLAIM_FSTAR" != "generated" ] \
-  && [ "$CLAIM_TLAPLUS" != "generated" ] \
-  && [ "$CLAIM_ALLOY" != "generated" ] \
-  && [ "$CLAIM_SMT" != "generated" ] \
-  && [ "$CLAIM_VERUS" != "generated" ] \
-  && [ "$CLAIM_KANI" != "generated" ] \
-  && [ "$CLAIM_TV" != "generated" ]; then
-    MULTIPROVER_STATUS="MULTI_LANE_COMPILED"
-fi
-if [ "$CLAIM_LEAN" = "mechanized" ] \
-  && [ "$CLAIM_ISABELLE" = "mechanized" ] \
-  && [ "$CLAIM_FSTAR" = "mechanized" ] \
-  && [ "$CLAIM_TLAPLUS" = "mechanized" ] \
-  && [ "$CLAIM_ALLOY" = "mechanized" ] \
-  && [ "$CLAIM_SMT" = "mechanized" ] \
-  && [ "$CLAIM_VERUS" = "mechanized" ] \
-  && [ "$CLAIM_KANI" = "mechanized" ] \
-  && [ "$CLAIM_TV" = "mechanized" ]; then
-    MULTIPROVER_STATUS="MULTI_LANE_MECHANIZED"
-fi
+[ "$CLAIM_COQ" = "mechanized" ] && MULTIPROVER_STATUS="ACTIVE_COQ_MECHANIZED"
+[ "$ALL_NONCOQ_COMPILED" = true ] && [ "$CLAIM_COQ" = "mechanized" ] && MULTIPROVER_STATUS="MULTI_LANE_COMPILED"
+[ "$ALL_NONCOQ_MECHANIZED" = true ] && [ "$CLAIM_COQ" = "mechanized" ] && MULTIPROVER_STATUS="MULTI_LANE_MECHANIZED"
 [ "$INDEPENDENTLY_AUDITED" = true ] && MULTIPROVER_STATUS="INDEPENDENTLY_AUDITED"
 
 # Generate JSON
@@ -739,6 +662,32 @@ cat > "$OUTPUT_FILE" << EOF
     "kaniStatus": "$CLAIM_KANI",
     "tvStatus": "$CLAIM_TV",
     "runtimeProofStatus": "$CLAIM_DIM14",
+    "nonCoqMechanization": {
+      "reportFresh": $NONCOQ_MECH_FRESH,
+      "overallMechanized": $NONCOQ_MECH_OVERALL,
+      "source": "$NONCOQ_MECH_SOURCE",
+      "pending": {
+        "lean": "$(escape_json "$LEAN_PENDING_REASON")",
+        "isabelle": "$(escape_json "$ISABELLE_PENDING_REASON")",
+        "fstar": "$(escape_json "$FSTAR_PENDING_REASON")",
+        "tlaplus": "$(escape_json "$TLAPLUS_PENDING_REASON")",
+        "alloy": "$(escape_json "$ALLOY_PENDING_REASON")",
+        "smt": "$(escape_json "$SMT_PENDING_REASON")",
+        "verus": "$(escape_json "$VERUS_PENDING_REASON")",
+        "kani": "$(escape_json "$KANI_PENDING_REASON")",
+        "tv": "$(escape_json "$TV_PENDING_REASON")"
+      },
+      "backlog": {
+        "leanSorry": $LEAN_SORRY_BACKLOG,
+        "leanAxioms": $LEAN_AXIOMS_BACKLOG,
+        "isabelleSorry": $ISABELLE_SORRY_BACKLOG,
+        "fstarGeneratedFiles": $FSTAR_GENERATED_BACKLOG,
+        "smtGeneratedFiles": $SMT_GENERATED_BACKLOG,
+        "verusGeneratedFiles": $VERUS_GENERATED_BACKLOG,
+        "kaniGeneratedFiles": $KANI_GENERATED_BACKLOG,
+        "tvGeneratedFiles": $TV_GENERATED_BACKLOG
+      }
+    },
     "coqTiers": {
       "core": $COQ_TIER1_CORE,
       "domain": $COQ_TIER2_DOMAIN,

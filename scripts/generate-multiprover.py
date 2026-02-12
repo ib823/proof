@@ -196,20 +196,62 @@ def _parse_records(text: str) -> list:
 
 
 def _parse_definitions(text: str) -> list:
-    """Extract Definition and Fixpoint declarations."""
+    """Extract Definition and Fixpoint declarations.
+
+    This parser is line/section aware so qualified names like `Nat.eqb`
+    inside bodies do not truncate at the first `.`.
+    """
     results = []
-    # Pattern: Definition name (params) : type := body.
-    pattern = r'Definition\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(\w+)\s*:=\s*(.*?)\.'
-    for m in re.finditer(pattern, text, re.DOTALL):
-        name = m.group(1)
-        params = m.group(2).strip()
-        ret_type = m.group(3)
-        body = m.group(4).strip()
-        is_match = 'match' in body
-        results.append(CoqDefinition(
-            name=name, params=params, ret_type=ret_type,
-            body=body, is_match=is_match
-        ))
+
+    start_pat = re.compile(r'(?m)^(Definition|Fixpoint)\s+(\w+)\b')
+    boundary_pat = re.compile(
+        r'(?m)^(?:Definition|Fixpoint|Theorem|Lemma|Record|Inductive|Arguments|Require|Import|Section|End|Set|Unset|Notation)\b'
+    )
+
+    starts = list(start_pat.finditer(text))
+    if not starts:
+        return results
+
+    boundaries = [m.start() for m in boundary_pat.finditer(text)] + [len(text)]
+
+    for m in starts:
+        start = m.start()
+        end = len(text)
+        for b in boundaries:
+            if b > start:
+                end = b
+                break
+
+        block = text[start:end].strip()
+        if not block:
+            continue
+
+        # Definition/Fixpoint Name (params) : ret := body.
+        header = re.match(
+            r'^(Definition|Fixpoint)\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(.*?)\s*:=\s*(.*)$',
+            block,
+            re.DOTALL,
+        )
+        if not header:
+            continue
+
+        name = header.group(2)
+        params = header.group(3).strip()
+        ret_type = header.group(4).strip()
+        body = header.group(5).strip()
+        body = re.sub(r'\.\s*$', '', body, flags=re.DOTALL)
+
+        is_match = bool(re.search(r'\bmatch\b', body))
+        results.append(
+            CoqDefinition(
+                name=name,
+                params=params,
+                ret_type=ret_type,
+                body=body,
+                is_match=is_match,
+            )
+        )
+
     return results
 
 
@@ -282,11 +324,21 @@ def classify_proof(proof: str) -> str:
 def coq_type_to_lean(t: str) -> str:
     """Convert Coq type names to Lean 4 equivalents."""
     mapping = {
-        'bool': 'Bool', 'nat': 'Nat', 'Prop': 'Prop',
-        'Type': 'Type', 'list': 'List', 'string': 'String',
-        'true': 'true', 'false': 'false',
+        'bool': 'Bool',
+        'nat': 'Nat',
+        'Prop': 'Prop',
+        'Type': 'Type',
+        'list': 'List',
+        'string': 'String',
+        'option': 'Option',
+        'true': 'true',
+        'false': 'false',
     }
-    return mapping.get(t, t)
+    out = t
+    for coq_t, lean_t in mapping.items():
+        out = re.sub(rf'\b{coq_t}\b', lean_t, out)
+    out = out.replace('->', '→')
+    return out.strip()
 
 
 def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
@@ -332,6 +384,29 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append('namespace RIINA')
     lines.append('')
 
+    # Coq boolean/list compatibility shims for generated corpus.
+    lines.append('/-- Coq compatibility shim: boolean negation -/')
+    lines.append('@[inline] def negb (b : Bool) : Bool := !b')
+    lines.append('/-- Coq compatibility shim: boolean conjunction -/')
+    lines.append('@[inline] def andb (a b : Bool) : Bool := a && b')
+    lines.append('/-- Coq compatibility shim: boolean disjunction -/')
+    lines.append('@[inline] def orb (a b : Bool) : Bool := a || b')
+    lines.append('/-- Coq compatibility shim: list universal predicate -/')
+    lines.append('@[inline] def forallb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.all f')
+    lines.append('/-- Coq compatibility shim: list existential predicate -/')
+    lines.append('@[inline] def existsb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.any f')
+    lines.append('/-- Coq compatibility shim: list length alias -/')
+    lines.append('@[inline] def length {α : Type} (xs : List α) : Nat := xs.length')
+    lines.append('/-- Coq compatibility shim: list head option -/')
+    lines.append('@[inline] def hd_error {α : Type} (xs : List α) : Option α := xs.head?')
+    lines.append('/-- Coq compatibility shim: list find option -/')
+    lines.append('@[inline] def find {α : Type} (p : α → Bool) (xs : List α) : Option α := xs.find? p')
+    lines.append('/-- Coq compatibility shim: pair first projection -/')
+    lines.append('@[inline] def fst {α β : Type} (p : α × β) : α := p.1')
+    lines.append('/-- Coq compatibility shim: pair second projection -/')
+    lines.append('@[inline] def snd {α β : Type} (p : α × β) : β := p.2')
+    lines.append('')
+
     # Helper lemma (included if andb_true_iff is used)
     has_andb = any('andb_true_iff' in t.proof for t in parsed.theorems)
     if has_andb:
@@ -348,7 +423,8 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
         lines.append(f'/-- {ind.name} (matches Coq: Inductive {ind.name}) -/')
         lines.append(f'inductive {ind.name} where')
         for cname, ctype in ind.constructors:
-            lean_cname = cname[0].lower() + cname[1:] if cname[0].isupper() else cname
+            # Preserve constructor names to keep direct Coq term references valid.
+            lean_cname = cname
             if ctype and ctype != ind.name:
                 # Translate Coq type signature to Lean
                 lean_type = ctype.replace(' -> ', ' → ')
@@ -369,6 +445,8 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
             cmt = f'  -- {fcomment}' if fcomment else ''
             lines.append(f'  {fname} : {lean_type}{cmt}')
         lines.append(f'  deriving DecidableEq, Repr')
+        lines.append(f'/-- Coq constructor alias for {rec.name}. -/')
+        lines.append(f'abbrev {rec.constructor} := {rec.name}.mk')
         lines.append('')
 
     # Definitions
@@ -419,12 +497,12 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
 
 def _translate_match_to_lean(defn: CoqDefinition) -> str:
     """Translate a Coq match-based Definition to Lean 4."""
-    # Extract the match variable and cases
-    m = re.search(r'match\s+(\w+)\s+with(.*?)end', defn.body, re.DOTALL)
+    # Extract `match <expr> with ... end`
+    m = re.search(r'match\s+(.+?)\s+with(.*?)end', defn.body, re.DOTALL)
     if not m:
         return None
 
-    match_var = m.group(1)
+    match_expr = m.group(1).strip()
     cases_text = m.group(2)
 
     # Parse params
@@ -432,15 +510,20 @@ def _translate_match_to_lean(defn: CoqDefinition) -> str:
     lean_ret = coq_type_to_lean(defn.ret_type)
 
     result_lines = [f'def {defn.name}{params_str} : {lean_ret} :=']
-    result_lines.append(f'  match {match_var} with')
+    result_lines.append(f'  match {match_expr} with')
 
-    # Parse cases: | Constructor => value
-    for cm in re.finditer(r'\|\s*(\w+)\s*=>\s*(\w+)', cases_text):
-        cname = cm.group(1)
-        value = cm.group(2)
-        lean_cname = '.' + (cname[0].lower() + cname[1:] if cname[0].isupper() else cname)
-        lean_value = coq_type_to_lean(value)
-        result_lines.append(f'  | {lean_cname} => {lean_value}')
+    # Parse cases in a line-oriented way: | pattern => expr
+    for cm in re.finditer(r'\|\s*(.*?)\s*=>\s*(.*?)(?=(?:\n\s*\|)|\Z)', cases_text, re.DOTALL):
+        pat = cm.group(1).strip()
+        rhs = cm.group(2).strip()
+        rhs = rhs.rstrip('.').strip()
+        if not pat or not rhs:
+            continue
+        rhs = rhs.replace('&&', '&&').replace('||', '||').replace('->', '→')
+        result_lines.append(f'  | {pat} => {rhs}')
+
+    if len(result_lines) == 2:
+        return None
 
     return '\n'.join(result_lines)
 
@@ -450,7 +533,13 @@ def _translate_params_lean(params: str) -> str:
     if not params:
         return ''
     # Convert (x : T) to (x : T)
-    result = params.replace('bool', 'Bool').replace('nat', 'Nat').replace('list', 'List')
+    result = (
+        params.replace('bool', 'Bool')
+        .replace('nat', 'Nat')
+        .replace('list', 'List')
+        .replace('option', 'Option')
+        .replace('->', '→')
+    )
     return ' ' + result
 
 
@@ -460,15 +549,20 @@ def _translate_def_body_lean(defn: CoqDefinition) -> str:
     lean_ret = coq_type_to_lean(defn.ret_type)
     body = defn.body.strip()
 
-    # Translate boolean operators
-    body = body.replace('&&', '&&')  # same in Lean
+    # Basic operator/type token normalization
+    body = body.replace('&&', '&&')
     body = body.replace('||', '||')
+    body = body.replace('->', '→')
+    body = re.sub(r'\bbool\b', 'Bool', body)
+    body = re.sub(r'\bnat\b', 'Nat', body)
+    body = re.sub(r'\blist\b', 'List', body)
+    body = re.sub(r'\boption\b', 'Option', body)
 
     # Handle record constructor calls: mkName true true true ...
     m = re.match(r'mk\w+\s+(.*)', body)
     if m:
         # Record literal
-        return f'def {defn.name}{params_str} : {defn.ret_type} := {body}'
+        return f'def {defn.name}{params_str} : {lean_ret} := {body}'
 
     return f'def {defn.name}{params_str} : {lean_ret} :=\n  {body}'
 

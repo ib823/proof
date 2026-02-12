@@ -154,6 +154,7 @@ HAS_ALLOY_JAR=0
 # ---------------------------------------------------------------------------
 LEAN_FILES="$(count_files "$LEAN_DIR/RIINA" "*.lean")"
 LEAN_SORRY="$( (grep -RIn '\bsorry\b' "$LEAN_DIR/RIINA" --include="*.lean" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+LEAN_AXIOMS="$( (grep -RIn '^[[:space:]]*axiom\b' "$LEAN_DIR/RIINA" --include="*.lean" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 LEAN_BUILD_OK=0
 if [ "$HAS_LAKE" -eq 1 ] && [ "$LEAN_FILES" -gt 0 ]; then
   if (cd "$LEAN_DIR" && run_with_timeout 3600 lake build) >/dev/null 2>&1; then
@@ -161,12 +162,12 @@ if [ "$HAS_LAKE" -eq 1 ] && [ "$LEAN_FILES" -gt 0 ]; then
   fi
 fi
 LEAN_MECHANIZED=0
-if [ "$LEAN_BUILD_OK" -eq 1 ] && [ "$LEAN_SORRY" -eq 0 ] && [ "$LEAN_FILES" -gt 0 ]; then
+if [ "$LEAN_BUILD_OK" -eq 1 ] && [ "$LEAN_SORRY" -eq 0 ] && [ "$LEAN_AXIOMS" -eq 0 ] && [ "$LEAN_FILES" -gt 0 ]; then
   LEAN_MECHANIZED=1
 fi
 LEAN_PENDING="none"
 if [ "$LEAN_MECHANIZED" -ne 1 ]; then
-  LEAN_PENDING="require full-lane lake build and zero sorry across 02_FORMAL/lean/RIINA"
+  LEAN_PENDING="require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
 fi
 
 # ---------------------------------------------------------------------------
@@ -316,7 +317,7 @@ if [ "$HAS_VERUS" -eq 1 ] && [ "$VERUS_FILES" -gt 0 ]; then
   VERUS_FULL_EXEC=1
   mapfile -t VERUS_LIST < <(find "$VERUS_DIR" -type f -name "*.rs" | sort)
   for f in "${VERUS_LIST[@]}"; do
-    if ! run_with_timeout 180 verus "$f" >/dev/null 2>&1; then
+    if ! run_with_timeout 180 verus --crate-type=lib "$f" >/dev/null 2>&1; then
       VERUS_FULL_EXEC=0
       break
     fi
@@ -390,7 +391,7 @@ for lane in "$LEAN_MECHANIZED" "$ISABELLE_MECHANIZED" "$FSTAR_MECHANIZED" "$TLA_
   fi
 done
 
-echo "Lean mechanized      : $LEAN_MECHANIZED (build=$LEAN_BUILD_OK sorry=$LEAN_SORRY files=$LEAN_FILES)"
+echo "Lean mechanized      : $LEAN_MECHANIZED (build=$LEAN_BUILD_OK sorry=$LEAN_SORRY axioms=$LEAN_AXIOMS files=$LEAN_FILES)"
 echo "Isabelle mechanized  : $ISABELLE_MECHANIZED (build=$ISABELLE_BUILD_OK mode=$ISABELLE_BUILD_MODE sorry=$ISABELLE_SORRY files=$ISABELLE_FILES)"
 echo "F* mechanized        : $FSTAR_MECHANIZED (exec=$FSTAR_FULL_EXEC generated=$FSTAR_GENERATED_FILES files=$FSTAR_FILES)"
 echo "TLA+ mechanized      : $TLA_MECHANIZED (exec=$TLA_FULL_EXEC files=$TLA_FILES)"
@@ -431,6 +432,7 @@ cat > "$REPORT_PATH" <<EOF_JSON
       "full_build_ok": $(bool_json "$LEAN_BUILD_OK"),
       "files": $LEAN_FILES,
       "sorry": $LEAN_SORRY,
+      "axioms": $LEAN_AXIOMS,
       "mechanized_ready": $(bool_json "$LEAN_MECHANIZED"),
       "pending": "$(escape_json "$LEAN_PENDING")"
     },
