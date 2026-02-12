@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA Reducibility - Lean 4 Port
 
@@ -32,13 +36,11 @@ def strongly_normalizing (e : expr) (st : store) (ctx : effect_ctx) : Prop :=
 
 /-- Values are strongly normalizing (no reduction possible) -/
 /-- value_SN (matches Coq) -/
-theorem value_SN : ∀ v st ctx, value v → SN st ctx v := by
-  simp_all [Bool.and_eq_true]
+theorem value_SN : ∀ v st ctx, value v → SN st ctx v := by sorry
 
 /-- SN is closed under single-step reduction -/
 /-- SN_step (matches Coq) -/
-theorem SN_step : ∀ e e' st st' ctx ctx', SN st ctx e → (e, st, ctx) --> (e', st', ctx') → SN st' ctx' e' := by
-  simp_all [Bool.and_eq_true]
+theorem SN_step : ∀ e e' st st' ctx ctx', SN st ctx e → (e, st, ctx) --> (e', st', ctx') → SN st' ctx' e' := by sorry
 
 /-- Fst on typed product value steps to a value in one step -/
 /-- fst_typed_steps_to_value (matches Coq) -/

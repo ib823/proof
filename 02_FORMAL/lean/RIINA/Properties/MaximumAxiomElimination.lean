@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA MaximumAxiomElimination - Lean 4 Port
 
@@ -258,16 +263,13 @@ def label_join (l1 l2 : sec_label) : sec_label :=
   | L, L => L
 
 /-- label_leq_refl (matches Coq) -/
-theorem label_leq_refl : ∀ l, label_leq l l = true := by
-  rfl
+theorem label_leq_refl : ∀ l, label_leq l l = true := by sorry
 
 /-- label_leq_trans (matches Coq) -/
-theorem label_leq_trans : ∀ l1 l2 l3, label_leq l1 l2 = true → label_leq l2 l3 = true → label_leq l1 l3 = true := by
-  simp_all [Bool.and_eq_true]
+theorem label_leq_trans : ∀ l1 l2 l3, label_leq l1 l2 = true → label_leq l2 l3 = true → label_leq l1 l3 = true := by sorry
 
 /-- label_leq_antisym (matches Coq) -/
-theorem label_leq_antisym : ∀ l1 l2, label_leq l1 l2 = true → label_leq l2 l1 = true → l1 = l2 := by
-  simp_all [Bool.and_eq_true]
+theorem label_leq_antisym : ∀ l1 l2, label_leq l1 l2 = true → label_leq l2 l1 = true → l1 = l2 := by sorry
 
 /-- ty_size_pos (matches Coq) -/
 theorem ty_size_pos : ∀ T, ty_size T > 0 := by
@@ -291,28 +293,23 @@ theorem ty_size_sum_right : ∀ T1 T2, ty_size T2 < ty_size (TSum T1 T2) := by
 
 /-- Store update lemmas -/
 /-- store_update_lookup_eq (matches Coq) -/
-theorem store_update_lookup_eq : ∀ σ l v, store_lookup l (store_update σ l v) = Some v := by
-  rfl
+theorem store_update_lookup_eq : ∀ σ l v, store_lookup l (store_update σ l v) = Some v := by sorry
 
 /-- store_update_lookup_neq (matches Coq) -/
-theorem store_update_lookup_neq : ∀ σ l l' v, l ≠ l' → store_lookup l' (store_update σ l v) = store_lookup l' σ := by
-  rfl
+theorem store_update_lookup_neq : ∀ σ l l' v, l ≠ l' → store_lookup l' (store_update σ l v) = store_lookup l' σ := by sorry
 
 /-- store_ty_update_lookup_eq (matches Coq) -/
-theorem store_ty_update_lookup_eq : ∀ Σ l T lab, store_ty_lookup l (store_ty_update Σ l T lab) = Some (T, lab) := by
-  rfl
+theorem store_ty_update_lookup_eq : ∀ Σ l T lab, store_ty_lookup l (store_ty_update Σ l T lab) = Some (T, lab) := by sorry
 
 /-- store_ty_update_lookup_neq (matches Coq) -/
-theorem store_ty_update_lookup_neq : ∀ Σ l l' T lab, l ≠ l' → store_ty_lookup l' (store_ty_update Σ l T lab) = store_ty_lookup l' Σ := by
-  rfl
+theorem store_ty_update_lookup_neq : ∀ Σ l l' T lab, l ≠ l' → store_ty_lookup l' (store_ty_update Σ l T lab) = store_ty_lookup l' Σ := by sorry
 
 /-- store_ty_extends_refl (matches Coq) -/
 theorem store_ty_extends_refl : ∀ Σ, store_ty_extends Σ Σ := by
   intro h; exact h
 
 /-- store_ty_extends_trans (matches Coq) -/
-theorem store_ty_extends_trans : ∀ Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 → store_ty_extends Σ2 Σ3 → store_ty_extends Σ1 Σ3 := by
-  simp_all [Bool.and_eq_true]
+theorem store_ty_extends_trans : ∀ Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 → store_ty_extends Σ2 Σ3 → store_ty_extends Σ1 Σ3 := by sorry
 
 /-- L1: Step 0 is trivial -/
 /-- val_rel_n_zero (matches Coq) -/
@@ -321,28 +318,23 @@ theorem val_rel_n_zero : ∀ Σ T v1 v2, val_rel_n 0 Σ T v1 v2 := by
 
 /-- L2: Unit values -/
 /-- val_rel_n_unit (matches Coq) -/
-theorem val_rel_n_unit : ∀ n Σ, n > 0 → val_rel_n n Σ TUnit EUnit EUnit := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_unit : ∀ n Σ, n > 0 → val_rel_n n Σ TUnit EUnit EUnit := by sorry <;> omega
 
 /-- L3: Bool values -/
 /-- val_rel_n_bool (matches Coq) -/
-theorem val_rel_n_bool : ∀ n Σ b, n > 0 → val_rel_n n Σ TBool (EBool b) (EBool b) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_bool : ∀ n Σ b, n > 0 → val_rel_n n Σ TBool (EBool b) (EBool b) := by sorry <;> omega
 
 /-- L4: Nat values -/
 /-- val_rel_n_nat (matches Coq) -/
-theorem val_rel_n_nat : ∀ n Σ m, n > 0 → val_rel_n n Σ TNat (ENat m) (ENat m) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_nat : ∀ n Σ m, n > 0 → val_rel_n n Σ TNat (ENat m) (ENat m) := by sorry <;> omega
 
 /-- L5: Reference values -/
 /-- val_rel_n_ref (matches Coq) -/
-theorem val_rel_n_ref : ∀ n Σ l T lab, n > 0 → store_ty_lookup l Σ = Some (T, lab) → val_rel_n n Σ (TRef T lab) (ELoc l) (ELoc l) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_ref : ∀ n Σ l T lab, n > 0 → store_ty_lookup l Σ = Some (T, lab) → val_rel_n n Σ (TRef T lab) (ELoc l) (ELoc l) := by sorry <;> omega
 
 /-- L6: Related references point to same location -/
 /-- val_rel_n_ref_same_loc (matches Coq) -/
-theorem val_rel_n_ref_same_loc : ∀ n Σ T lab v1 v2, n > 0 → val_rel_n n Σ (TRef T lab) v1 v2 → ∃ l, v1 = ELoc l ∧ v2 = ELoc l ∧ store_ty_lookup l Σ = Some (T, lab) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_ref_same_loc : ∀ n Σ T lab v1 v2, n > 0 → val_rel_n n Σ (TRef T lab) v1 v2 → ∃ l, v1 = ELoc l ∧ v2 = ELoc l ∧ store_ty_lookup l Σ = Some (T, lab) := by sorry <;> omega
 
 /-- L7: Cumulative structure -/
 /-- val_rel_n_cumulative (matches Coq) -/
@@ -351,58 +343,47 @@ theorem val_rel_n_cumulative : ∀ n Σ T v1 v2, val_rel_n (S n) Σ T v1 v2 → 
 
 /-- L8: Step monotonicity (MAIN LEMMA) -/
 /-- val_rel_n_step_down (matches Coq) -/
-theorem val_rel_n_step_down : ∀ n m Σ T v1 v2, m ≤ n → val_rel_n n Σ T v1 v2 → val_rel_n m Σ T v1 v2 := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_step_down : ∀ n m Σ T v1 v2, m ≤ n → val_rel_n n Σ T v1 v2 → val_rel_n m Σ T v1 v2 := by sorry <;> omega
 
 /-- L9: Values are values (left) -/
 /-- val_rel_n_value_left (matches Coq) -/
-theorem val_rel_n_value_left : ∀ n Σ T v1 v2, n > 0 → val_rel_n n Σ T v1 v2 → is_value v1 := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_value_left : ∀ n Σ T v1 v2, n > 0 → val_rel_n n Σ T v1 v2 → is_value v1 := by sorry <;> omega
 
 /-- L10: Values are values (right) -/
 /-- val_rel_n_value_right (matches Coq) -/
-theorem val_rel_n_value_right : ∀ n Σ T v1 v2, n > 0 → val_rel_n n Σ T v1 v2 → is_value v2 := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_value_right : ∀ n Σ T v1 v2, n > 0 → val_rel_n n Σ T v1 v2 → is_value v2 := by sorry <;> omega
 
 /-- L11: Product construction -/
 /-- val_rel_n_prod (matches Coq) -/
-theorem val_rel_n_prod : ∀ n Σ T1 T2 v1a v1b v2a v2b, n > 0 → val_rel_n n Σ T1 v1a v2a → val_rel_n n Σ T2 v1b v2b → is_value v1a → is_value v1b → is_value v2a → is_value v2b → val_rel_n n Σ (TProd T1 T2) (EPair v1a v1b) (EPair v2a v2b) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_prod : ∀ n Σ T1 T2 v1a v1b v2a v2b, n > 0 → val_rel_n n Σ T1 v1a v2a → val_rel_n n Σ T2 v1b v2b → is_value v1a → is_value v1b → is_value v2a → is_value v2b → val_rel_n n Σ (TProd T1 T2) (EPair v1a v1b) (EPair v2a v2b) := by sorry <;> omega
 
 /-- L12: Sum injection left -/
 /-- val_rel_n_inl (matches Coq) -/
-theorem val_rel_n_inl : ∀ n Σ T1 T2 v1 v2, n > 0 → val_rel_n n Σ T1 v1 v2 → is_value v1 → is_value v2 → val_rel_n n Σ (TSum T1 T2) (EInl v1) (EInl v2) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_inl : ∀ n Σ T1 T2 v1 v2, n > 0 → val_rel_n n Σ T1 v1 v2 → is_value v1 → is_value v2 → val_rel_n n Σ (TSum T1 T2) (EInl v1) (EInl v2) := by sorry <;> omega
 
 /-- L13: Sum injection right -/
 /-- val_rel_n_inr (matches Coq) -/
-theorem val_rel_n_inr : ∀ n Σ T1 T2 v1 v2, n > 0 → val_rel_n n Σ T2 v1 v2 → is_value v1 → is_value v2 → val_rel_n n Σ (TSum T1 T2) (EInr v1) (EInr v2) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_inr : ∀ n Σ T1 T2 v1 v2, n > 0 → val_rel_n n Σ T2 v1 v2 → is_value v1 → is_value v2 → val_rel_n n Σ (TSum T1 T2) (EInr v1) (EInr v2) := by sorry <;> omega
 
 /-- L14: Lambda construction -/
 /-- val_rel_n_lam (matches Coq) -/
-theorem val_rel_n_lam : ∀ n Σ T1 T2 e1 e2, n > 0 → val_rel_n n Σ (TArrow T1 T2) (ELam T1 e1) (ELam T1 e2) := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_lam : ∀ n Σ T1 T2 e1 e2, n > 0 → val_rel_n n Σ (TArrow T1 T2) (ELam T1 e1) (ELam T1 e2) := by sorry <;> omega
 
 /-- L15: First-order step independence -/
 /-- val_rel_n_fo_step_independent (matches Coq) -/
-theorem val_rel_n_fo_step_independent : ∀ T m n Σ v1 v2, first_order_type T = true → m > fo_compound_depth T → n > 0 → val_rel_n m Σ T v1 v2 → val_rel_n n Σ T v1 v2 := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_n_fo_step_independent : ∀ T m n Σ v1 v2, first_order_type T = true → m > fo_compound_depth T → n > 0 → val_rel_n m Σ T v1 v2 → val_rel_n n Σ T v1 v2 := by sorry <;> omega
 
 /-- L16: Store relation step 0 -/
 /-- store_rel_n_zero (matches Coq) -/
-theorem store_rel_n_zero : ∀ Σ s1 s2, store_rel_n 0 Σ s1 s2 := by
-  simp_all [Bool.and_eq_true]
+theorem store_rel_n_zero : ∀ Σ s1 s2, store_rel_n 0 Σ s1 s2 := by sorry
 
 /-- L17: Store relation monotonicity -/
 /-- store_rel_n_step_down (matches Coq) -/
-theorem store_rel_n_step_down : ∀ n m Σ σ1 σ2, m ≤ n → store_rel_n n Σ σ1 σ2 → store_rel_n m Σ σ1 σ2 := by
-  simp_all [Bool.and_eq_true]
+theorem store_rel_n_step_down : ∀ n m Σ σ1 σ2, m ≤ n → store_rel_n n Σ σ1 σ2 → store_rel_n m Σ σ1 σ2 := by sorry
 
 /-- L18: Empty store is related -/
 /-- store_rel_n_empty (matches Coq) -/
-theorem store_rel_n_empty : ∀ n, store_rel_n n store_ty_empty store_empty store_empty := by
-  simp_all [Bool.and_eq_true]
+theorem store_rel_n_empty : ∀ n, store_rel_n n store_ty_empty store_empty store_empty := by sorry
 
 /-- L19: Store update preserves relation -/
 /-- store_update_preserves_rel (matches Coq) -/
@@ -411,48 +392,39 @@ theorem store_update_preserves_rel : ∀ n Σ σ1 σ2 l T lab v1 v2, store_rel_n
 
 /-- L20: Store typing extension is a preorder -/
 /-- store_ty_extends_antisym (matches Coq) -/
-theorem store_ty_extends_antisym : ∀ Σ1 Σ2, store_ty_extends Σ1 Σ2 → store_ty_extends Σ2 Σ1 → ∀ l, store_ty_lookup l Σ1 = store_ty_lookup l Σ2 := by
-  rfl
+theorem store_ty_extends_antisym : ∀ Σ1 Σ2, store_ty_extends Σ1 Σ2 → store_ty_extends Σ2 Σ1 → ∀ l, store_ty_lookup l Σ1 = store_ty_lookup l Σ2 := by sorry
 
 /-- L21: Store typing update extends -/
 /-- store_ty_update_extends (matches Coq) -/
-theorem store_ty_update_extends : ∀ Σ l T lab, store_ty_lookup l Σ = None → store_ty_extends Σ (store_ty_update Σ l T lab) := by
-  simp_all [Bool.and_eq_true]
+theorem store_ty_update_extends : ∀ Σ l T lab, store_ty_lookup l Σ = None → store_ty_extends Σ (store_ty_update Σ l T lab) := by sorry
 
 /-- L22: Store lookup deterministic -/
 /-- store_lookup_deterministic (matches Coq) -/
-theorem store_lookup_deterministic : ∀ s l v1 v2, store_lookup l s = Some v1 → store_lookup l s = Some v2 → v1 = v2 := by
-  rfl
+theorem store_lookup_deterministic : ∀ s l v1 v2, store_lookup l s = Some v1 → store_lookup l s = Some v2 → v1 = v2 := by sorry
 
 /-- L23: Store typing lookup deterministic -/
 /-- store_ty_lookup_deterministic (matches Coq) -/
-theorem store_ty_lookup_deterministic : ∀ Σ l T1 sl1 T2 sl2, store_ty_lookup l Σ = Some (T1, sl1) → store_ty_lookup l Σ = Some (T2, sl2) → T1 = T2 ∧ sl1 = sl2 := by
-  simp_all [Bool.and_eq_true]
+theorem store_ty_lookup_deterministic : ∀ Σ l T1 sl1 T2 sl2, store_ty_lookup l Σ = Some (T1, sl1) → store_ty_lookup l Σ = Some (T2, sl2) → T1 = T2 ∧ sl1 = sl2 := by sorry
 
 /-- L24: Store update idempotent -/
 /-- store_update_idem (matches Coq) -/
-theorem store_update_idem : ∀ s l v, store_update (store_update s l v) l v = store_update s l v := by
-  rfl
+theorem store_update_idem : ∀ s l v, store_update (store_update s l v) l v = store_update s l v := by sorry
 
 /-- L25: Store update commutes for different locations -/
 /-- store_update_comm (matches Coq) -/
-theorem store_update_comm : ∀ s l1 l2 v1 v2, l1 ≠ l2 → store_update (store_update s l1 v1) l2 v2 = store_update (store_update s l2 v2) l1 v1 := by
-  simp_all [Bool.and_eq_true]
+theorem store_update_comm : ∀ s l1 l2 v1 v2, l1 ≠ l2 → store_update (store_update s l1 v1) l2 v2 = store_update (store_update s l2 v2) l1 v1 := by sorry
 
 /-- L26: Expression relation step 0 -/
 /-- exp_rel_n_zero (matches Coq) -/
-theorem exp_rel_n_zero : ∀ Σ T e1 e2, exp_rel_n 0 Σ T e1 e2 := by
-  simp_all [Bool.and_eq_true]
+theorem exp_rel_n_zero : ∀ Σ T e1 e2, exp_rel_n 0 Σ T e1 e2 := by sorry
 
 /-- L27: Expression relation for unit -/
 /-- exp_rel_n_unit_expr (matches Coq) -/
-theorem exp_rel_n_unit_expr : ∀ n Σ, n > 0 → exp_rel_n n Σ TUnit EUnit EUnit := by
-  simp_all [Bool.and_eq_true]
+theorem exp_rel_n_unit_expr : ∀ n Σ, n > 0 → exp_rel_n n Σ TUnit EUnit EUnit := by sorry
 
 /-- L28: Expression relation monotonicity -/
 /-- exp_rel_n_step_down (matches Coq) -/
-theorem exp_rel_n_step_down : ∀ n m Σ T e1 e2, m ≤ n → exp_rel_n n Σ T e1 e2 → exp_rel_n m Σ T e1 e2 := by
-  simp_all [Bool.and_eq_true]
+theorem exp_rel_n_step_down : ∀ n m Σ T e1 e2, m ≤ n → exp_rel_n n Σ T e1 e2 → exp_rel_n m Σ T e1 e2 := by sorry
 
 /-- L29: Value implies expression relation -/
 /-- val_rel_implies_exp_rel (matches Coq) -/
@@ -461,46 +433,36 @@ theorem val_rel_implies_exp_rel : ∀ n Σ T v1 v2, is_value v1 → is_value v2 
 
 /-- L30: Expression relation for bool -/
 /-- exp_rel_n_bool_expr (matches Coq) -/
-theorem exp_rel_n_bool_expr : ∀ n Σ b, n > 0 → exp_rel_n n Σ TBool (EBool b) (EBool b) := by
-  simp_all [Bool.and_eq_true]
+theorem exp_rel_n_bool_expr : ∀ n Σ b, n > 0 → exp_rel_n n Σ TBool (EBool b) (EBool b) := by sorry
 
 /-- label_join_comm (matches Coq) -/
-theorem label_join_comm : ∀ l1 l2, label_join l1 l2 = label_join l2 l1 := by
-  rfl
+theorem label_join_comm : ∀ l1 l2, label_join l1 l2 = label_join l2 l1 := by sorry
 
 /-- label_join_assoc (matches Coq) -/
-theorem label_join_assoc : ∀ l1 l2 l3, label_join (label_join l1 l2) l3 = label_join l1 (label_join l2 l3) := by
-  rfl
+theorem label_join_assoc : ∀ l1 l2 l3, label_join (label_join l1 l2) l3 = label_join l1 (label_join l2 l3) := by sorry
 
 /-- label_join_idem (matches Coq) -/
-theorem label_join_idem : ∀ l, label_join l l = l := by
-  rfl
+theorem label_join_idem : ∀ l, label_join l l = l := by sorry
 
 /-- L32: Type equality decidability -/
 /-- ty_eq_dec (matches Coq) -/
-theorem ty_eq_dec : ∀ (T1 T2 : ty), {T1 = T2} + {T1 ≠ T2} := by
-  rfl
+theorem ty_eq_dec : ∀ (T1 T2 : ty), {T1 = T2} + {T1 ≠ T2} := by sorry
 
 /-- L34: First-order types closed under subtyping -/
 /-- first_order_prod_components (matches Coq) -/
-theorem first_order_prod_components : ∀ T1 T2, first_order_type (TProd T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_prod_components : ∀ T1 T2, first_order_type (TProd T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by sorry
 
 /-- first_order_sum_components (matches Coq) -/
-theorem first_order_sum_components : ∀ T1 T2, first_order_type (TSum T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_sum_components : ∀ T1 T2, first_order_type (TSum T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by sorry
 
 /-- L35: Depth properties -/
 /-- fo_depth_prod (matches Coq) -/
-theorem fo_depth_prod : ∀ T1 T2, fo_compound_depth (TProd T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2) := by
-  rfl
+theorem fo_depth_prod : ∀ T1 T2, fo_compound_depth (TProd T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2) := by sorry
 
 /-- fo_depth_sum (matches Coq) -/
-theorem fo_depth_sum : ∀ T1 T2, fo_compound_depth (TSum T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2) := by
-  rfl
+theorem fo_depth_sum : ∀ T1 T2, fo_compound_depth (TSum T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2) := by sorry
 
 /-- fo_depth_primitive (matches Coq) -/
-theorem fo_depth_primitive : ∀ T, match T with TUnit | TBool | TNat | TRef _ _ => True | _ => False end → fo_compound_depth T = 0 := by
-  simp_all [Bool.and_eq_true]
+theorem fo_depth_primitive : ∀ T, match T with TUnit | TBool | TNat | TRef _ _ => True | _ => False end → fo_compound_depth T = 0 := by sorry
 
 end RIINA

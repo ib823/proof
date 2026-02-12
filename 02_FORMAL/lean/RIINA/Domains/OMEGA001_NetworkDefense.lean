@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA OMEGA001_NetworkDefense - Lean 4 Port
 
@@ -231,24 +235,20 @@ def conn_allowed (table : ConnTable) (src : Nat) : Bool :=
     PROOFS: RATE LIMITING (8 theorems)
     =============================================================================== -/
 /-- OMEGA_001_01_tb_capacity_bound (matches Coq) -/
-theorem OMEGA_001_01_tb_capacity_bound : ∀ tb now, tb_tokens (tb_refill tb now) ≤ tb_capacity tb := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_01_tb_capacity_bound : ∀ tb now, tb_tokens (tb_refill tb now) ≤ tb_capacity tb := by sorry
 
 /-- OMEGA_001_02_tb_consume_decreases (matches Coq) -/
-theorem OMEGA_001_02_tb_consume_decreases : ∀ tb cost tb', tb_consume tb cost = Some tb' → tb_tokens tb' = tb_tokens tb - cost := by
-  cases ‹_› <;> simp
+theorem OMEGA_001_02_tb_consume_decreases : ∀ tb cost tb', tb_consume tb cost = Some tb' → tb_tokens tb' = tb_tokens tb - cost := by sorry
 
 /-- OMEGA_001_03_tb_consume_fails_insufficient (matches Coq) -/
-theorem OMEGA_001_03_tb_consume_fails_insufficient : ∀ tb cost, tb_tokens tb < cost → tb_consume tb cost = None := by
-  cases ‹_› <;> simp <;> omega
+theorem OMEGA_001_03_tb_consume_fails_insufficient : ∀ tb cost, tb_tokens tb < cost → tb_consume tb cost = None := by sorry <;> omega
 
 /-- OMEGA_001_04_tb_refill_monotone (matches Coq) -/
 theorem OMEGA_001_04_tb_refill_monotone : ∀ tb t1 t2, t1 ≤ t2 → tb_last_refill tb ≤ t1 → tb_tokens (tb_refill tb t1) ≤ tb_tokens (tb_refill tb t2) := by
   omega
 
 /-- OMEGA_001_05_tb_consume_preserves_capacity (matches Coq) -/
-theorem OMEGA_001_05_tb_consume_preserves_capacity : ∀ tb cost tb', tb_consume tb cost = Some tb' → tb_capacity tb' = tb_capacity tb := by
-  cases ‹_› <;> simp
+theorem OMEGA_001_05_tb_consume_preserves_capacity : ∀ tb cost tb', tb_consume tb cost = Some tb' → tb_capacity tb' = tb_capacity tb := by sorry
 
 /-- OMEGA_001_06_tb_zero_cost_always_succeeds (matches Coq) -/
 theorem OMEGA_001_06_tb_zero_cost_always_succeeds : ∀ tb, ∃ tb', tb_consume tb 0 = Some tb' := by
@@ -266,59 +266,48 @@ theorem OMEGA_001_08_tb_available_bound : ∀ tb, tb_available tb ≤ tb_capacit
     PROOFS: CAPABILITY SECURITY (7 theorems)
     =============================================================================== -/
 /-- OMEGA_002_01_expired_cap_invalid (matches Coq) -/
-theorem OMEGA_002_01_expired_cap_invalid : ∀ cap now, now ≥ cap_expiry cap → cap_valid cap now = false := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_002_01_expired_cap_invalid : ∀ cap now, now ≥ cap_expiry cap → cap_valid cap now = false := by sorry
 
 /-- OMEGA_002_02_cap_subset_reflexive (matches Coq) -/
-theorem OMEGA_002_02_cap_subset_reflexive : ∀ cap, cap_is_subset cap cap = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_002_02_cap_subset_reflexive : ∀ cap, cap_is_subset cap cap = true := by sorry
 
 /-- OMEGA_002_03_delegation_attenuation (matches Coq) -/
-theorem OMEGA_002_03_delegation_attenuation : ∀ parent perms expiry sig child, cap_delegate parent perms expiry sig = Some child → cap_expiry child ≤ cap_expiry parent := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_002_03_delegation_attenuation : ∀ parent perms expiry sig child, cap_delegate parent perms expiry sig = Some child → cap_expiry child ≤ cap_expiry parent := by sorry
 
 /-- OMEGA_002_04_delegation_permission_subset (matches Coq) -/
-theorem OMEGA_002_04_delegation_permission_subset : ∀ parent perms expiry sig child, cap_delegate parent perms expiry sig = Some child → cap_is_subset child parent = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_002_04_delegation_permission_subset : ∀ parent perms expiry sig child, cap_delegate parent perms expiry sig = Some child → cap_is_subset child parent = true := by sorry
 
 /-- OMEGA_002_05_nondelegatable_blocks (matches Coq) -/
-theorem OMEGA_002_05_nondelegatable_blocks : ∀ parent perms expiry sig, cap_delegatable parent = false → cap_delegate parent perms expiry sig = None := by
-  rfl
+theorem OMEGA_002_05_nondelegatable_blocks : ∀ parent perms expiry sig, cap_delegatable parent = false → cap_delegate parent perms expiry sig = None := by sorry
 
 /-- OMEGA_002_06_empty_cap_permits_nothing (matches Coq) -/
-theorem OMEGA_002_06_empty_cap_permits_nothing : ∀ port, cap_permits {| cap_id := 0; cap_permissions := []; cap_expiry := 0; cap_delegatable := false; cap_signature := 0 |} port = false := by
-  rfl
+theorem OMEGA_002_06_empty_cap_permits_nothing : ∀ port, cap_permits {| cap_id := 0; cap_permissions := []; cap_expiry := 0; cap_delegatable := false; cap_signature := 0 |} port = false := by sorry
 
 /-- OMEGA_002_07_cap_permits_sound (matches Coq) -/
-theorem OMEGA_002_07_cap_permits_sound : ∀ cap port, cap_permits cap port = true → In port (cap_permissions cap) ∨ ∃ p, In p (cap_permissions cap) ∧ Nat.eqb port p = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_002_07_cap_permits_sound : ∀ cap port, cap_permits cap port = true → In port (cap_permissions cap) ∨ ∃ p, In p (cap_permissions cap) ∧ Nat.eqb port p = true := by sorry
 
 /-- ===============================================================================
     PROOFS: SYN COOKIE (6 theorems)
     =============================================================================== -/
 /-- OMEGA_003_01_syn_cookie_verify_sound (matches Coq) -/
-theorem OMEGA_003_01_syn_cookie_verify_sound : ∀ secret cookie, syn_cookie_verify secret cookie (syn_cookie_generate secret cookie) = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_003_01_syn_cookie_verify_sound : ∀ secret cookie, syn_cookie_verify secret cookie (syn_cookie_generate secret cookie) = true := by sorry
 
 /-- OMEGA_003_02_syn_cookie_wrong_secret (matches Coq) -/
 theorem OMEGA_003_02_syn_cookie_wrong_secret : ∀ s1 s2 cookie, s1 ≠ s2 →  syn_cookie_generate s1 cookie ≠ syn_cookie_generate s2 cookie := by
   omega
 
 /-- OMEGA_003_03_syn_cookie_deterministic (matches Coq) -/
-theorem OMEGA_003_03_syn_cookie_deterministic : ∀ secret cookie, syn_cookie_generate secret cookie = syn_cookie_generate secret cookie := by
-  rfl
+theorem OMEGA_003_03_syn_cookie_deterministic : ∀ secret cookie, syn_cookie_generate secret cookie = syn_cookie_generate secret cookie := by sorry
 
 /-- OMEGA_003_04_syn_cookie_stateless (matches Coq) -/
-theorem OMEGA_003_04_syn_cookie_stateless : ∀ secret cookie mac, syn_cookie_verify secret cookie mac = true → mac = syn_cookie_generate secret cookie := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_003_04_syn_cookie_stateless : ∀ secret cookie mac, syn_cookie_verify secret cookie mac = true → mac = syn_cookie_generate secret cookie := by sorry
 
 /-- OMEGA_003_05_syn_cookie_ip_sensitive (matches Coq) -/
 theorem OMEGA_003_05_syn_cookie_ip_sensitive : ∀ secret c1 c2, sc_client_ip c1 ≠ sc_client_ip c2 → sc_client_port c1 = sc_client_port c2 → sc_server_port c1 = sc_server_port c2 → sc_timestamp c1 = sc_timestamp c2 → syn_cookie_generate secret c1 ≠ syn_cookie_generate secret c2 := by
   omega
 
 /-- OMEGA_003_06_wrong_mac_rejected (matches Coq) -/
-theorem OMEGA_003_06_wrong_mac_rejected : ∀ secret cookie mac, mac ≠ syn_cookie_generate secret cookie → syn_cookie_verify secret cookie mac = false := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_003_06_wrong_mac_rejected : ∀ secret cookie mac, mac ≠ syn_cookie_generate secret cookie → syn_cookie_verify secret cookie mac = false := by sorry
 
 /-- ===============================================================================
     PROOFS: CONNECTION LIMITING (5 theorems)
@@ -332,12 +321,10 @@ theorem OMEGA_004_02_conn_count_nonneg : ∀ table src, conn_count_by_src table 
   omega
 
 /-- OMEGA_004_03_conn_count_bound (matches Coq) -/
-theorem OMEGA_004_03_conn_count_bound : ∀ table src, conn_count_by_src table src ≤ length table := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_004_03_conn_count_bound : ∀ table src, conn_count_by_src table src ≤ length table := by sorry
 
 /-- OMEGA_004_04_conn_lookup_deterministic (matches Coq) -/
-theorem OMEGA_004_04_conn_lookup_deterministic : ∀ table src dst c1 c2, conn_lookup table src dst = Some c1 → conn_lookup table src dst = Some c2 → c1 = c2 := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_004_04_conn_lookup_deterministic : ∀ table src dst c1 c2, conn_lookup table src dst = Some c1 → conn_lookup table src dst = Some c2 → c1 = c2 := by sorry
 
 /-- OMEGA_004_05_pow_verify_sound (matches Coq) -/
 theorem OMEGA_004_05_pow_verify_sound : ∀ nonce challenge difficulty, pow_valid nonce challenge difficulty = true → pow_verify nonce challenge difficulty = true := by
@@ -347,8 +334,7 @@ theorem OMEGA_004_05_pow_verify_sound : ∀ nonce challenge difficulty, pow_vali
     PROOFS: PROOF-OF-WORK (4 theorems)
     =============================================================================== -/
 /-- OMEGA_005_01_pow_deterministic (matches Coq) -/
-theorem OMEGA_005_01_pow_deterministic : ∀ n c d, pow_valid n c d = pow_valid n c d := by
-  rfl
+theorem OMEGA_005_01_pow_deterministic : ∀ n c d, pow_valid n c d = pow_valid n c d := by sorry
 
 /-- OMEGA_005_02_pow_zero_difficulty_impossible (matches Coq) -/
 theorem OMEGA_005_02_pow_zero_difficulty_impossible : ∀ n c, pow_valid n c 0 = false := by

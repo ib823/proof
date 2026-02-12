@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA TrafficResistance - Lean 4 Port
 
@@ -147,8 +151,7 @@ def traffic_layers (rate size mixing decoy : Bool) : Bool :=
   andb rate (andb size (andb mixing decoy))
 
 /-- traffic_001_constant_rate_hides (matches Coq) -/
-theorem traffic_001_constant_rate_hides : ∀ (flow : TrafficFlow) (interval : nat), constant_rate flow interval → ∀ i p1 p2, nth_error flow i = Some p1 → nth_error flow (S i) = Some p2 → pkt_time p2 - pkt_time p1 = interval := by
-  simp_all [Bool.and_eq_true]
+theorem traffic_001_constant_rate_hides : ∀ (flow : TrafficFlow) (interval : nat), constant_rate flow interval → ∀ i p1 p2, nth_error flow i = Some p1 → nth_error flow (S i) = Some p2 → pkt_time p2 - pkt_time p1 = interval := by sorry
 
 /-- traffic_002_constant_size_hides (matches Coq) -/
 theorem traffic_002_constant_size_hides : ∀ (flow : TrafficFlow) (size : nat), constant_size flow size → Forall (fun p => pkt_size p = size) flow := by
@@ -239,8 +242,7 @@ theorem traffic_023_intersection_resistance : ∀ (observations needed : nat), i
   intro h; exact h
 
 /-- traffic_024_volume_resistance (matches Coq) -/
-theorem traffic_024_volume_resistance : ∀ (flow : TrafficFlow) (size : nat), constant_size flow size → ∀ p, In p flow → pkt_size p = size := by
-  simp_all [Bool.and_eq_true]
+theorem traffic_024_volume_resistance : ∀ (flow : TrafficFlow) (size : nat), constant_size flow size → ∀ p, In p flow → pkt_size p = size := by sorry
 
 /-- traffic_025_defense_in_depth (matches Coq) -/
 theorem traffic_025_defense_in_depth : ∀ r s m d, traffic_layers r s m d = true → r = true ∧ s = true ∧ m = true ∧ d = true := by

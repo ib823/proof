@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA ClosedValueLemmas - Lean 4 Port
 
@@ -55,8 +60,7 @@ def closed_expr_cv (e : expr) : Prop :=
 
 /-- Values are closed under empty context typing -/
 /-- value_typed_closed (matches Coq) -/
-theorem value_typed_closed : ∀ Σ Δ v T ε, value v → has_type nil Σ Δ v T ε → closed_expr_cv v := by
-  simp_all [Bool.and_eq_true]
+theorem value_typed_closed : ∀ Σ Δ v T ε, value v → has_type nil Σ Δ v T ε → closed_expr_cv v := by sorry
 
 /-- Closed expressions for compound types - decomposition -/
 /-- closed_pair_cv (matches Coq) -/

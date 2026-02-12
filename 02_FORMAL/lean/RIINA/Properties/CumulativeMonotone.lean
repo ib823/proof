@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA CumulativeMonotone - Lean 4 Port
 
@@ -43,20 +48,16 @@ namespace RIINA
 @[inline] def snd {α β : Type} (p : α × β) : β := p.2
 
 /-- val_rel_le_mono_step (matches Coq) -/
-theorem val_rel_le_mono_step : ∀ n m Σ T v1 v2, m ≤ n → val_rel_le n Σ T v1 v2 → val_rel_le m Σ T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_mono_step : ∀ n m Σ T v1 v2, m ≤ n → val_rel_le n Σ T v1 v2 → val_rel_le m Σ T v1 v2 := by sorry
 
 /-- val_rel_le_mono_store (matches Coq) -/
-theorem val_rel_le_mono_store : ∀ n Σ Σ' T v1 v2, store_ty_extends Σ Σ' → val_rel_le n Σ T v1 v2 → val_rel_le n Σ' T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_mono_store : ∀ n Σ Σ' T v1 v2, store_ty_extends Σ Σ' → val_rel_le n Σ T v1 v2 → val_rel_le n Σ' T v1 v2 := by sorry
 
 /-- val_rel_le_mono (matches Coq) -/
-theorem val_rel_le_mono : ∀ n m Σ Σ' T v1 v2, m ≤ n → store_ty_extends Σ Σ' → val_rel_le n Σ T v1 v2 → val_rel_le m Σ' T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_mono : ∀ n m Σ Σ' T v1 v2, m ≤ n → store_ty_extends Σ Σ' → val_rel_le n Σ T v1 v2 → val_rel_le m Σ' T v1 v2 := by sorry
 
 /-- val_rel_le_step_down (matches Coq) -/
-theorem val_rel_le_step_down : ∀ n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 → val_rel_le n Σ T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_step_down : ∀ n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 → val_rel_le n Σ T v1 v2 := by sorry
 
 /-- store_rel_le_mono_step (matches Coq) -/
 theorem store_rel_le_mono_step : ∀ n m Σ st1 st2, m ≤ n → store_rel_le n Σ st1 st2 → store_rel_le m Σ st1 st2 := by

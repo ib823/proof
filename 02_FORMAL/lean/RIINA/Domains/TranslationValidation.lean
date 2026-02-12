@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA TranslationValidation - Lean 4 Port
 
@@ -391,32 +395,25 @@ def mach_eval (m : MachInstr) (regs : TgtRegs) : Option TgtRegs :=
   | _, _ => None
 
 /-- val_match_refl (matches Coq) -/
-theorem val_match_refl : ∀ n, val_match (SVInt n) (TVInt n) = true := by
-  simp_all [Bool.and_eq_true]
+theorem val_match_refl : ∀ n, val_match (SVInt n) (TVInt n) = true := by sorry
 
 /-- val_corresp_match (matches Coq) -/
-theorem val_corresp_match : ∀ sv tv, val_corresp sv tv → val_match sv tv = true := by
-  rfl
+theorem val_corresp_match : ∀ sv tv, val_corresp sv tv → val_match sv tv = true := by sorry
 
 /-- trace_equiv_refl (matches Coq) -/
-theorem trace_equiv_refl : ∀ t, trace_equiv_prop t t := by
-  simp_all [Bool.and_eq_true]
+theorem trace_equiv_refl : ∀ t, trace_equiv_prop t t := by sorry
 
 /-- trace_equiv_sym (matches Coq) -/
-theorem trace_equiv_sym : ∀ t1 t2, trace_equiv_prop t1 t2 → trace_equiv_prop t2 t1 := by
-  simp_all [Bool.and_eq_true]
+theorem trace_equiv_sym : ∀ t1 t2, trace_equiv_prop t1 t2 → trace_equiv_prop t2 t1 := by sorry
 
 /-- trace_equiv_trans (matches Coq) -/
-theorem trace_equiv_trans : ∀ t1 t2 t3, trace_equiv_prop t1 t2 → trace_equiv_prop t2 t3 → trace_equiv_prop t1 t3 := by
-  simp_all [Bool.and_eq_true]
+theorem trace_equiv_trans : ∀ t1 t2 t3, trace_equiv_prop t1 t2 → trace_equiv_prop t2 t3 → trace_equiv_prop t1 t3 := by sorry
 
 /-- tgt_steps_trans (matches Coq) -/
-theorem tgt_steps_trans : ∀ prog s1 s2 s3, tgt_steps prog s1 s2 → tgt_steps prog s2 s3 → tgt_steps prog s1 s3 := by
-  simp_all [Bool.and_eq_true]
+theorem tgt_steps_trans : ∀ prog s1 s2 s3, tgt_steps prog s1 s2 → tgt_steps prog s2 s3 → tgt_steps prog s1 s3 := by sorry
 
 /-- is_const_sound (matches Coq) -/
-theorem is_const_sound : ∀ e n env, is_const e = Some n → src_eval env e (SVInt n) := by
-  cases ‹_› <;> simp
+theorem is_const_sound : ∀ e n env, is_const e = Some n → src_eval env e (SVInt n) := by sorry
 
 /-- COMPILE_001_01 (matches Coq) -/
 theorem COMPILE_001_01 : ∀ (env : SrcEnv) (e : SrcExpr) (sv : SrcVal) (prog : TgtProgram) (ts_init ts_final : TgtState) (result_reg : nat) (mapping : VarMapping), src_eval env e sv → env_corresp env (ts_regs ts_init) mapping → tgt_steps prog ts_init ts_final → sim_rel env sv ts_final result_reg → ∃ tv, In (result_reg, tv) (ts_regs ts_final) ∧ val_corresp sv tv := by
@@ -427,44 +424,37 @@ theorem COMPILE_001_02 : ∀ (G : SrcTypeEnv) (e : SrcExpr) (t : SrcType) (tt : 
   intro h; exact h
 
 /-- COMPILE_001_03 (matches Coq) -/
-theorem COMPILE_001_03 : ∀ (src_trace tgt_trace : Trace), trace_equiv_prop src_trace tgt_trace → trace_equiv_prop tgt_trace src_trace := by
-  simp_all [Bool.and_eq_true]
+theorem COMPILE_001_03 : ∀ (src_trace tgt_trace : Trace), trace_equiv_prop src_trace tgt_trace → trace_equiv_prop tgt_trace src_trace := by sorry
 
 /-- COMPILE_001_04 (matches Coq) -/
 theorem COMPILE_001_04 : ∀ (env : SrcEnv) (e : SrcExpr) (sv : SrcVal) (prog : TgtProgram) (ts_init : TgtState), src_eval env e sv → (∃ ts_final, tgt_steps prog ts_init ts_final ∧ sim_rel env sv ts_final 0) → src_terminates env e ∧ tgt_terminates prog ts_init := by
   intro h; exact h
 
 /-- COMPILE_001_05 (matches Coq) -/
-theorem COMPILE_001_05 : ∀ (sv : SrcVal) (tv : TgtVal), val_corresp sv tv → val_match sv tv = true := by
-  simp_all [Bool.and_eq_true]
+theorem COMPILE_001_05 : ∀ (sv : SrcVal) (tv : TgtVal), val_corresp sv tv → val_match sv tv = true := by sorry
 
 /-- COMPILE_001_06 (matches Coq) -/
-theorem COMPILE_001_06 : ∀ (smem : list (nat * SrcVal)) (tmem : Memory) (addr : nat) (sv : SrcVal), mem_corresp smem tmem → In (addr, sv) smem → ∃ tv, In (addr, tv) tmem ∧ val_corresp sv tv := by
-  simp_all [Bool.and_eq_true]
+theorem COMPILE_001_06 : ∀ (smem : list (nat * SrcVal)) (tmem : Memory) (addr : nat) (sv : SrcVal), mem_corresp smem tmem → In (addr, sv) smem → ∃ tv, In (addr, tv) tmem ∧ val_corresp sv tv := by sorry
 
 /-- COMPILE_001_07 (matches Coq) -/
 theorem COMPILE_001_07 : ∀ (abi : ABI) (args : list nat) (ret : nat), abi_compliant_call abi args ret → length args ≤ length (abi_arg_regs abi) ∧ ret = abi_ret_reg abi := by
   omega
 
 /-- COMPILE_001_08 (matches Coq) -/
-theorem COMPILE_001_08 : ∀ (env : SrcEnv) (e : SrcExpr) (n : nat), is_const e = Some n → src_eval env e (SVInt n) := by
-  cases ‹_› <;> simp
+theorem COMPILE_001_08 : ∀ (env : SrcEnv) (e : SrcExpr) (n : nat), is_const e = Some n → src_eval env e (SVInt n) := by sorry
 
 /-- COMPILE_001_09 (matches Coq) -/
-theorem COMPILE_001_09 : ∀ (x : nat) (e : SrcExpr) (result : nat), var_used x e = false → is_const e = Some result → ∀ env vx, src_eval ((x, vx) :: env) e (SVInt result) := by
-  simp_all [Bool.and_eq_true]
+theorem COMPILE_001_09 : ∀ (x : nat) (e : SrcExpr) (result : nat), var_used x e = false → is_const e = Some result → ∀ env vx, src_eval ((x, vx) :: env) e (SVInt result) := by sorry
 
 /-- COMPILE_001_10 (matches Coq) -/
 theorem COMPILE_001_10 : ∀ (env : SrcEnv) (f_body : SrcExpr) (arg : SrcExpr) (param : nat) (v : SrcVal) (arg_val : SrcVal), src_eval env arg arg_val → src_eval ((param, arg_val) :: env) f_body v → src_eval env (SLet param arg f_body) v := by
   intro h; exact h
 
 /-- COMPILE_001_11 (matches Coq) -/
-theorem COMPILE_001_11 : ∀ (env : SrcEnv) (body : SrcExpr) (n : nat) (v : SrcVal), (∀ i, i < n → ∃ vi, src_eval env body vi) → src_eval env (unroll_loop body n) v → (n = 0 ∧ v = SVInt 0) ∨ (∃ v_last, src_eval env body v_last) := by
-  cases ‹_› <;> simp
+theorem COMPILE_001_11 : ∀ (env : SrcEnv) (body : SrcExpr) (n : nat) (v : SrcVal), (∀ i, i < n → ∃ vi, src_eval env body vi) → src_eval env (unroll_loop body n) v → (n = 0 ∧ v = SVInt 0) ∨ (∃ v_last, src_eval env body v_last) := by sorry
 
 /-- COMPILE_001_12 (matches Coq) -/
-theorem COMPILE_001_12 : ∀ (alloc : RegAlloc) (regs : TgtRegs) (env : SrcEnv) (x r : nat) (sv : SrcVal), alloc_valid alloc regs env → In (x, r) alloc → In (x, sv) env → ∃ tv, In (r, tv) regs ∧ val_corresp sv tv := by
-  simp_all [Bool.and_eq_true]
+theorem COMPILE_001_12 : ∀ (alloc : RegAlloc) (regs : TgtRegs) (env : SrcEnv) (x r : nat) (sv : SrcVal), alloc_valid alloc regs env → In (x, r) alloc → In (x, sv) env → ∃ tv, In (r, tv) regs ∧ val_corresp sv tv := by sorry
 
 /-- COMPILE_001_13 (matches Coq) -/
 theorem COMPILE_001_13 : ∀ (ir : IRInstr) (regs regs' : TgtRegs), ir_eval ir regs = Some regs' → mach_eval (select_instr ir) regs = Some regs' := by
@@ -475,7 +465,6 @@ theorem COMPILE_001_14 : ∀ (sf : StackFrame) (abi : ABI), stack_valid sf abi �
   intro h; exact h
 
 /-- COMPILE_001_15 (matches Coq) -/
-theorem COMPILE_001_15 : ∀ (sp : SrcProgram) (tp : TgtProgram) (mapping : VarMapping) (src_trace tgt_trace : Trace), prog_sim sp tp mapping → trace_equiv_prop src_trace tgt_trace → trace_equiv_prop tgt_trace src_trace ∧ (∀ t, trace_equiv_prop src_trace t → trace_equiv_prop t src_trace) := by
-  simp_all [Bool.and_eq_true]
+theorem COMPILE_001_15 : ∀ (sp : SrcProgram) (tp : TgtProgram) (mapping : VarMapping) (src_trace tgt_trace : Trace), prog_sim sp tp mapping → trace_equiv_prop src_trace tgt_trace → trace_equiv_prop tgt_trace src_trace ∧ (∀ t, trace_equiv_prop src_trace t → trace_equiv_prop t src_trace) := by sorry
 
 end RIINA

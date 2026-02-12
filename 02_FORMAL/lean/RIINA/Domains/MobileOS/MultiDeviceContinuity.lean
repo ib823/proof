@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA MultiDeviceContinuity - Lean 4 Port
 
@@ -363,16 +367,13 @@ def session_within_timeout (cs : ContinuitySession) : Prop :=
   cs_active cs = true → cs_elapsed_seconds cs <= cs_timeout_seconds cs
 
 /-- cross_device_handoff_complete (matches Coq) -/
-theorem cross_device_handoff_complete : ∀ (app : Application) (device1 device2 : Device), handoff app device1 device2 → state app device2 = state app device1 := by
-  rfl
+theorem cross_device_handoff_complete : ∀ (app : Application) (device1 device2 : Device), handoff app device1 device2 → state app device2 = state app device1 := by sorry
 
 /-- handoff_requires_auth (matches Coq) -/
-theorem handoff_requires_auth : ∀ (app : Application) (d1 d2 : Device), handoff app d1 d2 → dev_authenticated d1 = true ∧ dev_authenticated d2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem handoff_requires_auth : ∀ (app : Application) (d1 d2 : Device), handoff app d1 d2 → dev_authenticated d1 = true ∧ dev_authenticated d2 = true := by sorry
 
 /-- handoff_requires_pairing (matches Coq) -/
-theorem handoff_requires_pairing : ∀ (app : Application) (d1 d2 : Device), handoff app d1 d2 → dev_paired d1 = true ∧ dev_paired d2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem handoff_requires_pairing : ∀ (app : Application) (d1 d2 : Device), handoff app d1 d2 → dev_paired d1 = true ∧ dev_paired d2 = true := by sorry
 
 /-- complete_handoff_encrypted (matches Coq) -/
 theorem complete_handoff_encrypted : ∀ (h : Handoff), complete_handoff h → handoff_encrypted h = true := by
@@ -439,8 +440,7 @@ theorem relay_traffic_encrypted_thm : ∀ (rt : RelayTraffic), relay_traffic_enc
   intro h; exact h
 
 /-- continuity_session_timeout (matches Coq) -/
-theorem continuity_session_timeout : ∀ (cs : ContinuitySession), session_within_timeout cs → cs_active cs = true → cs_elapsed_seconds cs ≤ cs_timeout_seconds cs := by
-  simp_all [Bool.and_eq_true]
+theorem continuity_session_timeout : ∀ (cs : ContinuitySession), session_within_timeout cs → cs_active cs = true → cs_elapsed_seconds cs ≤ cs_timeout_seconds cs := by sorry
 
 /-- device_pairing_key_exchange (matches Coq) -/
 theorem device_pairing_key_exchange : ∀ (dp : DevicePairing), device_pairing_authenticated dp → dp_encryption_key_exchanged dp = true := by

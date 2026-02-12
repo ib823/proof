@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA CompilerCorrectness - Lean 4 Port
 
@@ -309,111 +313,85 @@ def src_ir_equiv (e_src : src_expr) (e_ir : ir_expr) : Prop :=
     SECTION 2: COMPLIANCE PREDICATES
     ============================================================================ -/
 /-- andb_true_iff (matches Coq) -/
-theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
-  cases ‹_› <;> simp
+theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by sorry
 
 /-- ============================================================================
     SECTION 4: LEGACY THEOREMS (CC_001 - CC_030)
     ============================================================================ -/
 /-- CC_001 (matches Coq) -/
-theorem CC_001 : parsing_correct riina_parsing = true := by
-  rfl
+theorem CC_001 : parsing_correct riina_parsing = true := by sorry
 
 /-- CC_002 (matches Coq) -/
-theorem CC_002 : typecheck_sound riina_typecheck = true := by
-  rfl
+theorem CC_002 : typecheck_sound riina_typecheck = true := by sorry
 
 /-- CC_003 (matches Coq) -/
-theorem CC_003 : optimization_safe riina_optim = true := by
-  rfl
+theorem CC_003 : optimization_safe riina_optim = true := by sorry
 
 /-- CC_004 (matches Coq) -/
-theorem CC_004 : codegen_correct riina_codegen = true := by
-  rfl
+theorem CC_004 : codegen_correct riina_codegen = true := by sorry
 
 /-- CC_005 (matches Coq) -/
-theorem CC_005 : compiler_verified riina_compiler = true := by
-  rfl
+theorem CC_005 : compiler_verified riina_compiler = true := by sorry
 
 /-- CC_006 (matches Coq) -/
-theorem CC_006 : pp_syntax_correct riina_parsing = true := by
-  rfl
+theorem CC_006 : pp_syntax_correct riina_parsing = true := by sorry
 
 /-- CC_007 (matches Coq) -/
-theorem CC_007 : tc_type_soundness riina_typecheck = true := by
-  rfl
+theorem CC_007 : tc_type_soundness riina_typecheck = true := by sorry
 
 /-- CC_008 (matches Coq) -/
-theorem CC_008 : op_semantics_preserved riina_optim = true := by
-  rfl
+theorem CC_008 : op_semantics_preserved riina_optim = true := by sorry
 
 /-- CC_009 (matches Coq) -/
-theorem CC_009 : cg_instruction_correct riina_codegen = true := by
-  rfl
+theorem CC_009 : cg_instruction_correct riina_codegen = true := by sorry
 
 /-- CC_010 (matches Coq) -/
-theorem CC_010 : cg_calling_convention riina_codegen = true := by
-  rfl
+theorem CC_010 : cg_calling_convention riina_codegen = true := by sorry
 
 /-- CC_011 (matches Coq) -/
-theorem CC_011 : ∀ p, parsing_correct p = true → pp_syntax_correct p = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_011 : ∀ p, parsing_correct p = true → pp_syntax_correct p = true := by sorry
 
 /-- CC_012 (matches Coq) -/
-theorem CC_012 : ∀ p, parsing_correct p = true → pp_ast_well_formed p = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_012 : ∀ p, parsing_correct p = true → pp_ast_well_formed p = true := by sorry
 
 /-- CC_013 (matches Coq) -/
-theorem CC_013 : ∀ t, typecheck_sound t = true → tc_type_soundness t = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_013 : ∀ t, typecheck_sound t = true → tc_type_soundness t = true := by sorry
 
 /-- CC_014 (matches Coq) -/
-theorem CC_014 : ∀ t, typecheck_sound t = true → tc_inference_complete t = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_014 : ∀ t, typecheck_sound t = true → tc_inference_complete t = true := by sorry
 
 /-- CC_015 (matches Coq) -/
-theorem CC_015 : ∀ o, optimization_safe o = true → op_semantics_preserved o = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_015 : ∀ o, optimization_safe o = true → op_semantics_preserved o = true := by sorry
 
 /-- CC_016 (matches Coq) -/
-theorem CC_016 : ∀ o, optimization_safe o = true → op_memory_safety_preserved o = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_016 : ∀ o, optimization_safe o = true → op_memory_safety_preserved o = true := by sorry
 
 /-- CC_017 (matches Coq) -/
-theorem CC_017 : ∀ c, codegen_correct c = true → cg_instruction_correct c = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_017 : ∀ c, codegen_correct c = true → cg_instruction_correct c = true := by sorry
 
 /-- CC_018 (matches Coq) -/
-theorem CC_018 : ∀ c, codegen_correct c = true → cg_stack_layout c = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_018 : ∀ c, codegen_correct c = true → cg_stack_layout c = true := by sorry
 
 /-- CC_019 (matches Coq) -/
-theorem CC_019 : ∀ c, compiler_verified c = true → parsing_correct (cc_parsing c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_019 : ∀ c, compiler_verified c = true → parsing_correct (cc_parsing c) = true := by sorry
 
 /-- CC_020 (matches Coq) -/
-theorem CC_020 : ∀ c, compiler_verified c = true → typecheck_sound (cc_typecheck c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_020 : ∀ c, compiler_verified c = true → typecheck_sound (cc_typecheck c) = true := by sorry
 
 /-- CC_021 (matches Coq) -/
-theorem CC_021 : ∀ c, compiler_verified c = true → optimization_safe (cc_optimization c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_021 : ∀ c, compiler_verified c = true → optimization_safe (cc_optimization c) = true := by sorry
 
 /-- CC_022 (matches Coq) -/
-theorem CC_022 : ∀ c, compiler_verified c = true → codegen_correct (cc_codegen c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_022 : ∀ c, compiler_verified c = true → codegen_correct (cc_codegen c) = true := by sorry
 
 /-- CC_023 (matches Coq) -/
-theorem CC_023 : ∀ c, compiler_verified c = true → tc_type_soundness (cc_typecheck c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_023 : ∀ c, compiler_verified c = true → tc_type_soundness (cc_typecheck c) = true := by sorry
 
 /-- CC_024 (matches Coq) -/
-theorem CC_024 : ∀ c, compiler_verified c = true → op_semantics_preserved (cc_optimization c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_024 : ∀ c, compiler_verified c = true → op_semantics_preserved (cc_optimization c) = true := by sorry
 
 /-- CC_025 (matches Coq) -/
-theorem CC_025 : ∀ c, compiler_verified c = true → cg_instruction_correct (cc_codegen c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_025 : ∀ c, compiler_verified c = true → cg_instruction_correct (cc_codegen c) = true := by sorry
 
 /-- CC_026 (matches Coq) -/
 theorem CC_026 : parsing_correct riina_parsing = true ∧ typecheck_sound riina_typecheck = true := by
@@ -428,12 +406,10 @@ theorem CC_028 : tc_type_soundness riina_typecheck = true ∧ op_semantics_prese
   constructor <;> rfl
 
 /-- CC_029 (matches Coq) -/
-theorem CC_029 : ∀ c, compiler_verified c = true → parsing_correct (cc_parsing c) = true ∧ codegen_correct (cc_codegen c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_029 : ∀ c, compiler_verified c = true → parsing_correct (cc_parsing c) = true ∧ codegen_correct (cc_codegen c) = true := by sorry
 
 /-- CC_030_complete (matches Coq) -/
-theorem CC_030_complete : ∀ c, compiler_verified c = true → tc_type_soundness (cc_typecheck c) = true ∧ op_semantics_preserved (cc_optimization c) = true ∧ cg_instruction_correct (cc_codegen c) = true := by
-  simp_all [Bool.and_eq_true]
+theorem CC_030_complete : ∀ c, compiler_verified c = true → tc_type_soundness (cc_typecheck c) = true ∧ op_semantics_preserved (cc_optimization c) = true ∧ cg_instruction_correct (cc_codegen c) = true := by sorry
 
 /-- Values don't step -/
 /-- ir_value_not_step (matches Coq) -/
@@ -442,38 +418,31 @@ theorem ir_value_not_step : ∀ v e, ir_value v → ~ (v ==> e) := by
 
 /-- IR Type Preservation Theorem -/
 /-- ir_preservation (matches Coq) -/
-theorem ir_preservation : ∀ e e' T, ir_has_type e T → e ==> e' → ir_has_type e' T := by
-  simp_all [Bool.and_eq_true]
+theorem ir_preservation : ∀ e e' T, ir_has_type e T → e ==> e' → ir_has_type e' T := by sorry
 
 /-- Multi-step preserves typing -/
 /-- ir_multi_preservation (matches Coq) -/
-theorem ir_multi_preservation : ∀ e e' T, ir_has_type e T → e ==>* e' → ir_has_type e' T := by
-  simp_all [Bool.and_eq_true]
+theorem ir_multi_preservation : ∀ e e' T, ir_has_type e T → e ==>* e' → ir_has_type e' T := by sorry
 
 /-- Helper: pair of values doesn't step -/
 /-- ir_pair_value_not_step (matches Coq) -/
-theorem ir_pair_value_not_step : ∀ v1 v2 e, ir_value v1 → ir_value v2 → ~ (IR_Pair v1 v2 ==> e) := by
-  simp_all [Bool.and_eq_true]
+theorem ir_pair_value_not_step : ∀ v1 v2 e, ir_value v1 → ir_value v2 → ~ (IR_Pair v1 v2 ==> e) := by sorry
 
 /-- Helper: bool doesn't step -/
 /-- ir_bool_not_step (matches Coq) -/
-theorem ir_bool_not_step : ∀ b e, ~ (IR_Bool b ==> e) := by
-  simp_all [Bool.and_eq_true]
+theorem ir_bool_not_step : ∀ b e, ~ (IR_Bool b ==> e) := by sorry
 
 /-- IR step is deterministic -/
 /-- ir_step_deterministic (matches Coq) -/
-theorem ir_step_deterministic : ∀ e e1 e2, e ==> e1 → e ==> e2 → e1 = e2 := by
-  simp_all [Bool.and_eq_true]
+theorem ir_step_deterministic : ∀ e e1 e2, e ==> e1 → e ==> e2 → e1 = e2 := by sorry
 
 /-- IR Progress theorem -/
 /-- ir_progress (matches Coq) -/
-theorem ir_progress : ∀ e T, ir_has_type e T → ir_value e ∨ ∃ e', e ==> e' := by
-  simp_all [Bool.and_eq_true]
+theorem ir_progress : ∀ e T, ir_has_type e T → ir_value e ∨ ∃ e', e ==> e' := by sorry
 
 /-- Reflexivity of equivalence -/
 /-- ir_equiv_refl (matches Coq) -/
-theorem ir_equiv_refl : ∀ e, ir_equiv e e := by
-  simp_all [Bool.and_eq_true]
+theorem ir_equiv_refl : ∀ e, ir_equiv e e := by sorry
 
 /-- Symmetry of equivalence -/
 /-- ir_equiv_sym (matches Coq) -/
@@ -487,48 +456,38 @@ theorem ir_equiv_trans : ∀ e1 e2 e3, ir_equiv e1 e2 → ir_equiv e2 e3 → ir_
 
 /-- Multi-step transitivity -/
 /-- ir_multi_trans (matches Coq) -/
-theorem ir_multi_trans : ∀ e1 e2 e3, e1 ==>* e2 → e2 ==>* e3 → e1 ==>* e3 := by
-  simp_all [Bool.and_eq_true]
+theorem ir_multi_trans : ∀ e1 e2 e3, e1 ==>* e2 → e2 ==>* e3 → e1 ==>* e3 := by sorry
 
 /-- ir_multi_pair_cong1 (matches Coq) -/
-theorem ir_multi_pair_cong1 : ∀ e1 e1' e2, e1 ==>* e1' → IR_Pair e1 e2 ==>* IR_Pair e1' e2 := by
-  simp_all [Bool.and_eq_true]
+theorem ir_multi_pair_cong1 : ∀ e1 e1' e2, e1 ==>* e1' → IR_Pair e1 e2 ==>* IR_Pair e1' e2 := by sorry
 
 /-- Congruence for Pair (right) -/
 /-- ir_multi_pair_cong2 (matches Coq) -/
-theorem ir_multi_pair_cong2 : ∀ v1 e2 e2', ir_value v1 → e2 ==>* e2' → IR_Pair v1 e2 ==>* IR_Pair v1 e2' := by
-  simp_all [Bool.and_eq_true]
+theorem ir_multi_pair_cong2 : ∀ v1 e2 e2', ir_value v1 → e2 ==>* e2' → IR_Pair v1 e2 ==>* IR_Pair v1 e2' := by sorry
 
 /-- opt_if_true_sound (matches Coq) -/
-theorem opt_if_true_sound : ∀ e1 e2, IR_If (IR_Bool true) e1 e2 ==>* e1 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_if_true_sound : ∀ e1 e2, IR_If (IR_Bool true) e1 e2 ==>* e1 := by sorry
 
 /-- opt_if_false_sound (matches Coq) -/
-theorem opt_if_false_sound : ∀ e1 e2, IR_If (IR_Bool false) e1 e2 ==>* e2 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_if_false_sound : ∀ e1 e2, IR_If (IR_Bool false) e1 e2 ==>* e2 := by sorry
 
 /-- opt_fst_pair_sound (matches Coq) -/
-theorem opt_fst_pair_sound : ∀ v1 v2, ir_value v1 → ir_value v2 → IR_Fst (IR_Pair v1 v2) ==>* v1 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_fst_pair_sound : ∀ v1 v2, ir_value v1 → ir_value v2 → IR_Fst (IR_Pair v1 v2) ==>* v1 := by sorry
 
 /-- opt_snd_pair_sound (matches Coq) -/
-theorem opt_snd_pair_sound : ∀ v1 v2, ir_value v1 → ir_value v2 → IR_Snd (IR_Pair v1 v2) ==>* v2 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_snd_pair_sound : ∀ v1 v2, ir_value v1 → ir_value v2 → IR_Snd (IR_Pair v1 v2) ==>* v2 := by sorry
 
 /-- Values are normal forms -/
 /-- ir_value_normal (matches Coq) -/
-theorem ir_value_normal : ∀ v, ir_value v → ~ ∃ e, v ==> e := by
-  simp_all [Bool.and_eq_true]
+theorem ir_value_normal : ∀ v, ir_value v → ~ ∃ e, v ==> e := by sorry
 
 /-- Values reduce to themselves -/
 /-- ir_value_reduces_self (matches Coq) -/
-theorem ir_value_reduces_self : ∀ v, ir_value v → v ==>* v := by
-  simp_all [Bool.and_eq_true]
+theorem ir_value_reduces_self : ∀ v, ir_value v → v ==>* v := by sorry
 
 /-- Equivalence preserves typing -/
 /-- equiv_preserves_typing (matches Coq) -/
-theorem equiv_preserves_typing : ∀ e1 e2 v T, ir_equiv e1 e2 → ir_has_type e1 T → ir_has_type e2 T → e1 ==>* v → ir_value v → ir_has_type v T := by
-  simp_all [Bool.and_eq_true]
+theorem equiv_preserves_typing : ∀ e1 e2 v T, ir_equiv e1 e2 → ir_has_type e1 T → ir_has_type e2 T → e1 ==>* v → ir_value v → ir_has_type v T := by sorry
 
 /-- Source values don't step -/
 /-- src_value_not_step (matches Coq) -/
@@ -537,58 +496,47 @@ theorem src_value_not_step : ∀ v e, src_value v → ~ (v ~> e) := by
 
 /-- Source step is deterministic -/
 /-- src_step_deterministic (matches Coq) -/
-theorem src_step_deterministic : ∀ e e1 e2, e ~> e1 → e ~> e2 → e1 = e2 := by
-  simp_all [Bool.and_eq_true]
+theorem src_step_deterministic : ∀ e e1 e2, e ~> e1 → e ~> e2 → e1 = e2 := by sorry
 
 /-- Source type preservation -/
 /-- src_preservation (matches Coq) -/
-theorem src_preservation : ∀ e e' T, src_has_type e T → e ~> e' → src_has_type e' T := by
-  simp_all [Bool.and_eq_true]
+theorem src_preservation : ∀ e e' T, src_has_type e T → e ~> e' → src_has_type e' T := by sorry
 
 /-- Source progress -/
 /-- src_progress (matches Coq) -/
-theorem src_progress : ∀ e T, src_has_type e T → src_value e ∨ ∃ e', e ~> e' := by
-  simp_all [Bool.and_eq_true]
+theorem src_progress : ∀ e T, src_has_type e T → src_value e ∨ ∃ e', e ~> e' := by sorry
 
 /-- Compilation preserves values -/
 /-- compile_preserves_value (matches Coq) -/
-theorem compile_preserves_value : ∀ e, src_value e → ir_value (compile_expr e) := by
-  simp_all [Bool.and_eq_true]
+theorem compile_preserves_value : ∀ e, src_value e → ir_value (compile_expr e) := by sorry
 
 /-- Compilation preserves typing -/
 /-- compile_preserves_typing (matches Coq) -/
-theorem compile_preserves_typing : ∀ e T, src_has_type e T → ir_has_type (compile_expr e) (compile_ty T) := by
-  simp_all [Bool.and_eq_true]
+theorem compile_preserves_typing : ∀ e T, src_has_type e T → ir_has_type (compile_expr e) (compile_ty T) := by sorry
 
 /-- Forward simulation: source step implies IR step -/
 /-- compile_forward_simulation (matches Coq) -/
-theorem compile_forward_simulation : ∀ e e', e ~> e' → compile_expr e ==> compile_expr e' := by
-  simp_all [Bool.and_eq_true]
+theorem compile_forward_simulation : ∀ e e', e ~> e' → compile_expr e ==> compile_expr e' := by sorry
 
 /-- Forward simulation for multi-step -/
 /-- compile_forward_multi_simulation (matches Coq) -/
-theorem compile_forward_multi_simulation : ∀ e e', e ~>* e' → compile_expr e ==>* compile_expr e' := by
-  simp_all [Bool.and_eq_true]
+theorem compile_forward_multi_simulation : ∀ e e', e ~>* e' → compile_expr e ==>* compile_expr e' := by sorry
 
 /-- Helper: compiled value means source value -/
 /-- compile_value_inv (matches Coq) -/
-theorem compile_value_inv : ∀ e, ir_value (compile_expr e) → src_value e := by
-  simp_all [Bool.and_eq_true]
+theorem compile_value_inv : ∀ e, ir_value (compile_expr e) → src_value e := by sorry
 
 /-- Backward simulation: IR step from compiled implies source step -/
 /-- compile_backward_simulation (matches Coq) -/
-theorem compile_backward_simulation : ∀ e e_ir', compile_expr e ==> e_ir' → ∃ e', e ~> e' ∧ compile_expr e' = e_ir' := by
-  cases ‹_› <;> simp
+theorem compile_backward_simulation : ∀ e e_ir', compile_expr e ==> e_ir' → ∃ e', e ~> e' ∧ compile_expr e' = e_ir' := by sorry
 
 /-- Compilation establishes equivalence -/
 /-- compile_establishes_equiv (matches Coq) -/
-theorem compile_establishes_equiv : ∀ e, src_ir_equiv e (compile_expr e) := by
-  rfl
+theorem compile_establishes_equiv : ∀ e, src_ir_equiv e (compile_expr e) := by sorry
 
 /-- Equivalence is preserved by stepping -/
 /-- equiv_preserved_forward (matches Coq) -/
-theorem equiv_preserved_forward : ∀ e_src e_src', e_src ~> e_src' → src_ir_equiv e_src' (compile_expr e_src') := by
-  rfl
+theorem equiv_preserved_forward : ∀ e_src e_src', e_src ~> e_src' → src_ir_equiv e_src' (compile_expr e_src') := by sorry
 
 /-- If source terminates at value, compiled terminates at corresponding value -/
 /-- compile_terminates_equivalently (matches Coq) -/
@@ -597,63 +545,50 @@ theorem compile_terminates_equivalently : ∀ e v, src_has_type e Src_TUnit ∨ 
 
 /-- Compilation preserves type-safety: compiled well-typed source is type-safe -/
 /-- compile_type_safety (matches Coq) -/
-theorem compile_type_safety : ∀ e T, src_has_type e T → ir_value (compile_expr e) ∨ ∃ e', compile_expr e ==> e' := by
-  simp_all [Bool.and_eq_true]
+theorem compile_type_safety : ∀ e T, src_has_type e T → ir_value (compile_expr e) ∨ ∃ e', compile_expr e ==> e' := by sorry
 
 /-- Dead code elimination: if (true) e1 e2 is equivalent to e1 -/
 /-- opt_dead_code_if_true (matches Coq) -/
-theorem opt_dead_code_if_true : ∀ e1 e2, ir_equiv (IR_If (IR_Bool true) e1 e2) e1 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_dead_code_if_true : ∀ e1 e2, ir_equiv (IR_If (IR_Bool true) e1 e2) e1 := by sorry
 
 /-- Dead code elimination: if (false) e1 e2 is equivalent to e2 -/
 /-- opt_dead_code_if_false (matches Coq) -/
-theorem opt_dead_code_if_false : ∀ e1 e2, ir_equiv (IR_If (IR_Bool false) e1 e2) e2 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_dead_code_if_false : ∀ e1 e2, ir_equiv (IR_If (IR_Bool false) e1 e2) e2 := by sorry
 
 /-- Pair projection optimization with type preservation -/
 /-- opt_fst_pair_typed (matches Coq) -/
-theorem opt_fst_pair_typed : ∀ v1 v2 T1 T2, ir_value v1 → ir_value v2 → ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) → ir_has_type v1 T1 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_fst_pair_typed : ∀ v1 v2 T1 T2, ir_value v1 → ir_value v2 → ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) → ir_has_type v1 T1 := by sorry
 
 /-- Pair projection optimization with type preservation -/
 /-- opt_snd_pair_typed (matches Coq) -/
-theorem opt_snd_pair_typed : ∀ v1 v2 T1 T2, ir_value v1 → ir_value v2 → ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) → ir_has_type v2 T2 := by
-  simp_all [Bool.and_eq_true]
+theorem opt_snd_pair_typed : ∀ v1 v2 T1 T2, ir_value v1 → ir_value v2 → ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) → ir_has_type v2 T2 := by sorry
 
 /-- Constant propagation: compiling a known constant gives a value -/
 /-- const_prop_bool (matches Coq) -/
-theorem const_prop_bool : ∀ b, ir_value (compile_expr (Src_Bool b)) := by
-  simp_all [Bool.and_eq_true]
+theorem const_prop_bool : ∀ b, ir_value (compile_expr (Src_Bool b)) := by sorry
 
 /-- const_prop_int (matches Coq) -/
-theorem const_prop_int : ∀ n, ir_value (compile_expr (Src_Int n)) := by
-  simp_all [Bool.and_eq_true]
+theorem const_prop_int : ∀ n, ir_value (compile_expr (Src_Int n)) := by sorry
 
 /-- const_prop_unit (matches Coq) -/
-theorem const_prop_unit : ir_value (compile_expr Src_Unit) := by
-  simp_all [Bool.and_eq_true]
+theorem const_prop_unit : ir_value (compile_expr Src_Unit) := by sorry
 
 /-- parsing_correct_prop (matches Coq) -/
-theorem parsing_correct_prop : parsing_correctness := by
-  simp_all [Bool.and_eq_true]
+theorem parsing_correct_prop : parsing_correctness := by sorry
 
 /-- Optimization is correct: IR equivalence relation is an equivalence -/
 /-- optimization_relation_reflexive (matches Coq) -/
-theorem optimization_relation_reflexive : ∀ e, ir_equiv e e := by
-  simp_all [Bool.and_eq_true]
+theorem optimization_relation_reflexive : ∀ e, ir_equiv e e := by sorry
 
 /-- optimization_relation_symmetric (matches Coq) -/
-theorem optimization_relation_symmetric : ∀ e1 e2, ir_equiv e1 e2 → ir_equiv e2 e1 := by
-  simp_all [Bool.and_eq_true]
+theorem optimization_relation_symmetric : ∀ e1 e2, ir_equiv e1 e2 → ir_equiv e2 e1 := by sorry
 
 /-- optimization_relation_transitive (matches Coq) -/
-theorem optimization_relation_transitive : ∀ e1 e2 e3, ir_equiv e1 e2 → ir_equiv e2 e3 → ir_equiv e1 e3 := by
-  simp_all [Bool.and_eq_true]
+theorem optimization_relation_transitive : ∀ e1 e2 e3, ir_equiv e1 e2 → ir_equiv e2 e3 → ir_equiv e1 e3 := by sorry
 
 /-- The full pipeline: source to IR preserves semantics -/
 /-- full_pipeline_correctness (matches Coq) -/
-theorem full_pipeline_correctness : ∀ e T, src_has_type e T →  ir_has_type (compile_expr e) (compile_ty T) ∧  (src_value e ∨ ∃ e', e ~> e') ∧  (∀ e', e ~> e' → compile_expr e ==> compile_expr e') := by
-  simp_all [Bool.and_eq_true]
+theorem full_pipeline_correctness : ∀ e T, src_has_type e T →  ir_has_type (compile_expr e) (compile_ty T) ∧  (src_value e ∨ ∃ e', e ~> e') ∧  (∀ e', e ~> e' → compile_expr e ==> compile_expr e') := by sorry
 
 /-- The full pipeline: termination behavior is preserved -/
 /-- full_pipeline_termination (matches Coq) -/

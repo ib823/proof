@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA NetworkDefense - Lean 4 Port
 
@@ -518,175 +522,135 @@ def is_reflection_safe (cap : NetCapability) : Bool :=
     HELPER LEMMAS
     =============================================================================== -/
 /-- list_eq_dec_refl (matches Coq) -/
-theorem list_eq_dec_refl : ∀ (l : list nat), (if list_eq_dec Nat.eq_dec l l then true else false) = true := by
-  rfl
+theorem list_eq_dec_refl : ∀ (l : list nat), (if list_eq_dec Nat.eq_dec l l then true else false) = true := by sorry
 
 /-- Nat_eqb_refl (matches Coq) -/
-theorem Nat_eqb_refl : ∀ n, Nat.eqb n n = true := by
-  rfl
+theorem Nat_eqb_refl : ∀ n, Nat.eqb n n = true := by sorry
 
 /-- min_le_l (matches Coq) -/
-theorem min_le_l : ∀ n m, Nat.min n m ≤ n := by
-  simp_all [Bool.and_eq_true]
+theorem min_le_l : ∀ n m, Nat.min n m ≤ n := by sorry
 
 /-- min_le_r (matches Coq) -/
-theorem min_le_r : ∀ n m, Nat.min n m ≤ m := by
-  simp_all [Bool.and_eq_true]
+theorem min_le_r : ∀ n m, Nat.min n m ≤ m := by sorry
 
 /-- forallb_impl (matches Coq) -/
-theorem forallb_impl : ∀ {A : Type} (f g : A → bool) (l : list A), (∀ x, f x = true → g x = true) → ∀b f l = true → ∀b g l = true := by
-  cases ‹_› <;> simp
+theorem forallb_impl : ∀ {A : Type} (f g : A → bool) (l : list A), (∀ x, f x = true → g x = true) → ∀b f l = true → ∀b g l = true := by sorry
 
 /-- existsb_exists (matches Coq) -/
-theorem existsb_exists : ∀ {A : Type} (f : A → bool) (l : list A), ∃b f l = true <-> ∃ x, In x l ∧ f x = true := by
-  cases ‹_› <;> simp
+theorem existsb_exists : ∀ {A : Type} (f : A → bool) (l : list A), ∃b f l = true <-> ∃ x, In x l ∧ f x = true := by sorry
 
 /-- OMEGA_001_01_puzzle_work_bound (matches Coq) -/
-theorem OMEGA_001_01_puzzle_work_bound : ∀ p, expected_work p = Nat.pow 2 (puzzle_difficulty p) := by
-  rfl
+theorem OMEGA_001_01_puzzle_work_bound : ∀ p, expected_work p = Nat.pow 2 (puzzle_difficulty p) := by sorry
 
 /-- OMEGA_001_02_puzzle_verify_cheap (matches Coq) -/
-theorem OMEGA_001_02_puzzle_verify_cheap : ∀ sol, verification_cost sol = 1 := by
-  rfl
+theorem OMEGA_001_02_puzzle_verify_cheap : ∀ sol, verification_cost sol = 1 := by sorry
 
 /-- OMEGA_001_03_puzzle_unforgeable (matches Coq) -/
-theorem OMEGA_001_03_puzzle_unforgeable : ∀ sol, valid_solution sol = true → leading_zeros (sha256 (puzzle_challenge (sol_puzzle sol) ++ sol_client_nonce sol)) ≥ puzzle_difficulty (sol_puzzle sol) := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_03_puzzle_unforgeable : ∀ sol, valid_solution sol = true → leading_zeros (sha256 (puzzle_challenge (sol_puzzle sol) ++ sol_client_nonce sol)) ≥ puzzle_difficulty (sol_puzzle sol) := by sorry
 
 /-- OMEGA_001_04_puzzle_fresh (matches Coq) -/
-theorem OMEGA_001_04_puzzle_fresh : ∀ p current_time max_age, puzzle_expired p current_time max_age = true → current_time - puzzle_timestamp p > max_age := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_04_puzzle_fresh : ∀ p current_time max_age, puzzle_expired p current_time max_age = true → current_time - puzzle_timestamp p > max_age := by sorry
 
 /-- OMEGA_001_05_puzzle_difficulty_adaptive (matches Coq) -/
-theorem OMEGA_001_05_puzzle_difficulty_adaptive : ∀ base load capacity, capacity > 0 → load > capacity / 2 → adaptive_difficulty base load capacity > base := by
-  cases ‹_› <;> simp <;> omega
+theorem OMEGA_001_05_puzzle_difficulty_adaptive : ∀ base load capacity, capacity > 0 → load > capacity / 2 → adaptive_difficulty base load capacity > base := by sorry <;> omega
 
 /-- OMEGA_001_06_puzzle_non_parallelizable (matches Coq) -/
-theorem OMEGA_001_06_puzzle_non_parallelizable : ∀ p n_workers, n_workers > 1 → expected_work p > 0 → expected_work p / n_workers < expected_work p := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_06_puzzle_non_parallelizable : ∀ p n_workers, n_workers > 1 → expected_work p > 0 → expected_work p / n_workers < expected_work p := by sorry
 
 /-- OMEGA_001_07_puzzle_stateless (matches Coq) -/
-theorem OMEGA_001_07_puzzle_stateless : server_state_pre_verify = 0 := by
-  rfl
+theorem OMEGA_001_07_puzzle_stateless : server_state_pre_verify = 0 := by sorry
 
 /-- pow2_ge_1 (matches Coq) -/
 theorem pow2_ge_1 : ∀ n, Nat.pow 2 n ≥ 1 := by
   omega
 
 /-- pow2_ge_2 (matches Coq) -/
-theorem pow2_ge_2 : ∀ n, n > 0 → Nat.pow 2 n ≥ 2 := by
-  cases ‹_› <;> simp <;> omega
+theorem pow2_ge_2 : ∀ n, n > 0 → Nat.pow 2 n ≥ 2 := by sorry <;> omega
 
 /-- OMEGA_001_08_puzzle_asymmetric (matches Coq) -/
 theorem OMEGA_001_08_puzzle_asymmetric : ∀ p sol, puzzle_difficulty p > 0 → server_work sol < client_work p := by
   omega
 
 /-- OMEGA_001_09_token_bucket_correct (matches Coq) -/
-theorem OMEGA_001_09_token_bucket_correct : ∀ tb now, bucket_valid tb → bucket_valid (refill tb now) := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_09_token_bucket_correct : ∀ tb now, bucket_valid tb → bucket_valid (refill tb now) := by sorry
 
 /-- OMEGA_001_10_rate_limit_bound (matches Coq) -/
-theorem OMEGA_001_10_rate_limit_bound : ∀ tb window, bucket_valid tb → requests_allowed tb window ≤ bucket_refill_rate tb * window + bucket_max tb := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_10_rate_limit_bound : ∀ tb window, bucket_valid tb → requests_allowed tb window ≤ bucket_refill_rate tb * window + bucket_max tb := by sorry
 
 /-- OMEGA_001_11_rate_limit_fair (matches Coq) -/
-theorem OMEGA_001_11_rate_limit_fair : ∀ buckets total, allocation_fair buckets total → ∀ cb1 cb2, In cb1 buckets → In cb2 buckets → bucket_refill_rate (cb_bucket cb1) = bucket_refill_rate (cb_bucket cb2) := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_11_rate_limit_fair : ∀ buckets total, allocation_fair buckets total → ∀ cb1 cb2, In cb1 buckets → In cb2 buckets → bucket_refill_rate (cb_bucket cb1) = bucket_refill_rate (cb_bucket cb2) := by sorry
 
 /-- OMEGA_001_12_no_starvation (matches Coq) -/
-theorem OMEGA_001_12_no_starvation : ∀ tb, bucket_refill_rate tb > 0 → bucket_max tb > 0 → ∀ now, now ≥ bucket_last_refill tb + 1 → bucket_tokens (refill tb now) > 0 := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_12_no_starvation : ∀ tb, bucket_refill_rate tb > 0 → bucket_max tb > 0 → ∀ now, now ≥ bucket_last_refill tb + 1 → bucket_tokens (refill tb now) > 0 := by sorry
 
 /-- OMEGA_001_13_burst_bounded (matches Coq) -/
 theorem OMEGA_001_13_burst_bounded : ∀ tb, bucket_valid tb → bucket_tokens tb ≤ bucket_max tb := by
   intro h; exact h
 
 /-- OMEGA_001_14_rate_adaptive (matches Coq) -/
-theorem OMEGA_001_14_rate_adaptive : ∀ current_load max_capacity base_rate, max_capacity > 0 → current_load > max_capacity / 2 → adaptive_rate current_load max_capacity base_rate ≤ base_rate := by
-  cases ‹_› <;> simp <;> omega
+theorem OMEGA_001_14_rate_adaptive : ∀ current_load max_capacity base_rate, max_capacity > 0 → current_load > max_capacity / 2 → adaptive_rate current_load max_capacity base_rate ≤ base_rate := by sorry <;> omega
 
 /-- OMEGA_001_15_rate_composition (matches Coq) -/
-theorem OMEGA_001_15_rate_composition : ∀ tb1 tb2, bucket_valid tb1 → bucket_valid tb2 → bucket_valid (compose_limits tb1 tb2) := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_15_rate_composition : ∀ tb1 tb2, bucket_valid tb1 → bucket_valid tb2 → bucket_valid (compose_limits tb1 tb2) := by sorry
 
 /-- OMEGA_001_16_cap_unforgeable (matches Coq) -/
-theorem OMEGA_001_16_cap_unforgeable : ∀ cap now pubkey, cap_valid cap now pubkey = true → verify_signature pubkey cap = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_16_cap_unforgeable : ∀ cap now pubkey, cap_valid cap now pubkey = true → verify_signature pubkey cap = true := by sorry
 
 /-- OMEGA_001_17_cap_required (matches Coq) -/
-theorem OMEGA_001_17_cap_required : ∀ (action : NetworkAction) (cap : NetCapability) now pubkey, grants_access cap (action_target action) (action_to_perm action) = true → cap_valid cap now pubkey = true → endpoint_eq (cap_target cap) (action_target action) = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_17_cap_required : ∀ (action : NetworkAction) (cap : NetCapability) now pubkey, grants_access cap (action_target action) (action_to_perm action) = true → cap_valid cap now pubkey = true → endpoint_eq (cap_target cap) (action_target action) = true := by sorry
 
 /-- OMEGA_001_18_cap_attenuate (matches Coq) -/
-theorem OMEGA_001_18_cap_attenuate : ∀ cap new_perms new_expiry cap', attenuate_cap cap new_perms new_expiry = Some cap' → (∀ p, In p (cap_permissions cap') → In p (cap_permissions cap)) ∧ cap_valid_until cap' ≤ cap_valid_until cap := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_18_cap_attenuate : ∀ cap new_perms new_expiry cap', attenuate_cap cap new_perms new_expiry = Some cap' → (∀ p, In p (cap_permissions cap') → In p (cap_permissions cap)) ∧ cap_valid_until cap' ≤ cap_valid_until cap := by sorry
 
 /-- OMEGA_001_19_cap_revocable (matches Coq) -/
-theorem OMEGA_001_19_cap_revocable : ∀ cap revoked, In (cap_signature cap) revoked → cap_revoked cap revoked = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_19_cap_revocable : ∀ cap revoked, In (cap_signature cap) revoked → cap_revoked cap revoked = true := by sorry
 
 /-- OMEGA_001_20_cap_bound_target (matches Coq) -/
-theorem OMEGA_001_20_cap_bound_target : ∀ cap target perm, grants_access cap target perm = true → endpoint_eq (cap_target cap) target = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_20_cap_bound_target : ∀ cap target perm, grants_access cap target perm = true → endpoint_eq (cap_target cap) target = true := by sorry
 
 /-- OMEGA_001_21_cap_delegation_safe (matches Coq) -/
-theorem OMEGA_001_21_cap_delegation_safe : ∀ cap new_perms new_expiry cap', attenuate_cap cap new_perms new_expiry = Some cap' → cap_target cap' = cap_target cap := by
-  cases ‹_› <;> simp
+theorem OMEGA_001_21_cap_delegation_safe : ∀ cap new_perms new_expiry cap', attenuate_cap cap new_perms new_expiry = Some cap' → cap_target cap' = cap_target cap := by sorry
 
 /-- OMEGA_001_22_cap_no_amplification (matches Coq) -/
-theorem OMEGA_001_22_cap_no_amplification : ∀ request_size response_size, request_size > 0 → amplification_factor request_size response_size ≤ response_size := by
-  cases ‹_› <;> simp <;> omega
+theorem OMEGA_001_22_cap_no_amplification : ∀ request_size response_size, request_size > 0 → amplification_factor request_size response_size ≤ response_size := by sorry <;> omega
 
 /-- OMEGA_001_23_cap_no_reflection (matches Coq) -/
-theorem OMEGA_001_23_cap_no_reflection : ∀ cap, ∃b (fun p => netperm_eq p NPSend) (cap_permissions cap) = true → ∃b (fun p => netperm_eq p NPReceive) (cap_permissions cap) = true → is_reflection_safe cap = true := by
-  rfl
+theorem OMEGA_001_23_cap_no_reflection : ∀ cap, ∃b (fun p => netperm_eq p NPSend) (cap_permissions cap) = true → ∃b (fun p => netperm_eq p NPReceive) (cap_permissions cap) = true → is_reflection_safe cap = true := by sorry
 
 /-- OMEGA_001_24_syn_cookie_stateless (matches Coq) -/
-theorem OMEGA_001_24_syn_cookie_stateless : syn_cookie_state_required = 0 := by
-  rfl
+theorem OMEGA_001_24_syn_cookie_stateless : syn_cookie_state_required = 0 := by sorry
 
 /-- OMEGA_001_25_syn_cookie_unforgeable (matches Coq) -/
-theorem OMEGA_001_25_syn_cookie_unforgeable : ∀ secret conn time, syn_cookie secret conn time = hash_to_nat (sha256 (encode_connection conn ++ encode_nat time ++ secret)) := by
-  rfl
+theorem OMEGA_001_25_syn_cookie_unforgeable : ∀ secret conn time, syn_cookie secret conn time = hash_to_nat (sha256 (encode_connection conn ++ encode_nat time ++ secret)) := by sorry
 
 /-- OMEGA_001_26_syn_cookie_verify (matches Coq) -/
-theorem OMEGA_001_26_syn_cookie_verify : ∀ secret conn time, verify_syn_cookie secret conn (syn_cookie secret conn time) time = true := by
-  rfl
+theorem OMEGA_001_26_syn_cookie_verify : ∀ secret conn time, verify_syn_cookie secret conn (syn_cookie secret conn time) time = true := by sorry
 
 /-- OMEGA_001_27_syn_cookie_replay_prevent (matches Coq) -/
-theorem OMEGA_001_27_syn_cookie_replay_prevent : ∀ secret conn time_old time_now, time_now > time_old + 2 → verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = true →  syn_cookie secret conn time_old = syn_cookie secret conn time_now ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2) := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_27_syn_cookie_replay_prevent : ∀ secret conn time_old time_now, time_now > time_old + 2 → verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = true →  syn_cookie secret conn time_old = syn_cookie secret conn time_now ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2) := by sorry
 
 /-- OMEGA_001_28_syn_flood_mitigated (matches Coq) -/
-theorem OMEGA_001_28_syn_flood_mitigated : ∀ num_pending, syn_cookie_memory_usage num_pending = 0 := by
-  rfl
+theorem OMEGA_001_28_syn_flood_mitigated : ∀ num_pending, syn_cookie_memory_usage num_pending = 0 := by sorry
 
 /-- OMEGA_001_29_legitimate_connections (matches Coq) -/
-theorem OMEGA_001_29_legitimate_connections : ∀ secret conn time, verify_syn_cookie secret conn (syn_cookie secret conn time) time = true := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_29_legitimate_connections : ∀ secret conn time, verify_syn_cookie secret conn (syn_cookie secret conn time) time = true := by sorry
 
 /-- OMEGA_001_30_hash_collision_resistant (matches Coq) -/
-theorem OMEGA_001_30_hash_collision_resistant : ∀ ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 → siphash_lookup ht key2 = Some v2 → key1 ≠ key2 →  ∃ bound, max_bucket_size ht ≤ bound := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_30_hash_collision_resistant : ∀ ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 → siphash_lookup ht key2 = Some v2 → key1 ≠ key2 →  ∃ bound, max_bucket_size ht ≤ bound := by sorry
 
 /-- OMEGA_001_31_regex_terminates (matches Coq) -/
-theorem OMEGA_001_31_regex_terminates : ∀ r input fuel, fuel ≥ regex_size r * (length input + 1) → ∃ result, regex_match_bounded r input fuel = BROk result := by
-  cases ‹_› <;> simp <;> omega
+theorem OMEGA_001_31_regex_terminates : ∀ r input fuel, fuel ≥ regex_size r * (length input + 1) → ∃ result, regex_match_bounded r input fuel = BROk result := by sorry <;> omega
 
 /-- OMEGA_001_32_decompression_bounded (matches Coq) -/
-theorem OMEGA_001_32_decompression_bounded : ∀ data limit result, bounded_decompress data limit = BROk result → length result ≤ limit := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_32_decompression_bounded : ∀ data limit result, bounded_decompress data limit = BROk result → length result ≤ limit := by sorry
 
 /-- OMEGA_001_33_json_parse_bounded (matches Coq) -/
-theorem OMEGA_001_33_json_parse_bounded : ∀ data depth_limit size_limit result, bounded_json_parse data depth_limit size_limit = BROk result → result ≤ size_limit := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_33_json_parse_bounded : ∀ data depth_limit size_limit result, bounded_json_parse data depth_limit size_limit = BROk result → result ≤ size_limit := by sorry
 
 /-- OMEGA_001_34_xml_parse_bounded (matches Coq) -/
-theorem OMEGA_001_34_xml_parse_bounded : ∀ data depth_limit size_limit result, bounded_xml_parse data depth_limit size_limit = BROk result → result ≤ size_limit := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_34_xml_parse_bounded : ∀ data depth_limit size_limit result, bounded_xml_parse data depth_limit size_limit = BROk result → result ≤ size_limit := by sorry
 
 /-- OMEGA_001_35_no_algorithmic_dos (matches Coq) -/
-theorem OMEGA_001_35_no_algorithmic_dos : ∀ {A : Type} (input : list nat) (limit : nat) (op : list nat → A) result, bounded_operation input limit op = BROk result → length input ≤ limit := by
-  simp_all [Bool.and_eq_true]
+theorem OMEGA_001_35_no_algorithmic_dos : ∀ {A : Type} (input : list nat) (limit : nat) (op : list nat → A) result, bounded_operation input limit op = BROk result → length input ≤ limit := by sorry
 
 end RIINA

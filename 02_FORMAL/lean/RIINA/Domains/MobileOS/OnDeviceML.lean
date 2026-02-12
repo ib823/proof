@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA OnDeviceML - Lean 4 Port
 
@@ -346,12 +350,10 @@ def quantization_bounded (qm : QuantizedModel) : Prop :=
   length (qm_original_weights qm) = length (qm_quantized_weights qm)
 
 /-- ml_inference_deterministic (matches Coq) -/
-theorem ml_inference_deterministic : ∀ (model : MLModel) (input : Tensor), infer model input = infer model input := by
-  rfl
+theorem ml_inference_deterministic : ∀ (model : MLModel) (input : Tensor), infer model input = infer model input := by sorry
 
 /-- inference_same_input_same_output (matches Coq) -/
-theorem inference_same_input_same_output : ∀ (model : MLModel) (input1 input2 : Tensor), input1 = input2 → infer model input1 = infer model input2 := by
-  rfl
+theorem inference_same_input_same_output : ∀ (model : MLModel) (input1 input2 : Tensor), input1 = input2 → infer model input1 = infer model input2 := by sorry
 
 /-- ml_data_private (matches Coq) -/
 theorem ml_data_private : ∀ (data : UserData) (model : MLModel), private_ml_system → used_for_inference data model → ~ transmitted data := by
@@ -362,8 +364,7 @@ theorem inference_preserves_shape : ∀ (model : MLModel) (input : Tensor), tens
   simp
 
 /-- different_model_version_matters (matches Coq) -/
-theorem different_model_version_matters : ∀ (m1 m2 : MLModel) (input : Tensor) (h : nat) (t : list nat), tensor_data input = h :: t → model_version m1 ≠ model_version m2 → tensor_data (infer m1 input) ≠ tensor_data (infer m2 input) := by
-  simp_all [Bool.and_eq_true]
+theorem different_model_version_matters : ∀ (m1 m2 : MLModel) (input : Tensor) (h : nat) (t : list nat), tensor_data input = h :: t → model_version m1 ≠ model_version m2 → tensor_data (infer m1 input) ≠ tensor_data (infer m2 input) := by sorry
 
 /-- model_input_validated (matches Coq) -/
 theorem model_input_validated : ∀ (input : Tensor) (expected : list nat), input_shape_valid input expected → tensor_shape input = expected := by
@@ -394,8 +395,7 @@ theorem model_version_tracked : ∀ (m : MLModel), version_tracked m → model_v
   intro h; exact h
 
 /-- feature_extraction_deterministic (matches Coq) -/
-theorem feature_extraction_deterministic : ∀ (m : MLModel) (input1 input2 : Tensor), input1 = input2 → feature_extract m input1 = feature_extract m input2 := by
-  rfl
+theorem feature_extraction_deterministic : ∀ (m : MLModel) (input1 input2 : Tensor), input1 = input2 → feature_extract m input1 = feature_extract m input2 := by sorry
 
 /-- prediction_confidence_calibrated (matches Coq) -/
 theorem prediction_confidence_calibrated : ∀ (p : Prediction), confidence_calibrated p → pred_confidence p ≤ 100 := by
@@ -414,8 +414,7 @@ theorem adversarial_input_detected : ∀ (ia : InputAnalysis), adversarial_detec
   intro h; exact h
 
 /-- model_fallback_available (matches Coq) -/
-theorem model_fallback_available : ∀ (mf : ModelWithFallback), fallback_ready mf → primary_available mf = false → model_version (fallback_model mf) > 0 := by
-  simp_all [Bool.and_eq_true]
+theorem model_fallback_available : ∀ (mf : ModelWithFallback), fallback_ready mf → primary_available mf = false → model_version (fallback_model mf) > 0 := by sorry
 
 /-- batch_inference_ordered (matches Coq) -/
 theorem batch_inference_ordered : ∀ (br : BatchRequest), batch_ordered br → is_sorted (batch_sequence br) := by

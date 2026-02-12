@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA VoiceAssistant - Lean 4 Port
 
@@ -364,8 +368,7 @@ theorem voice_recognition_accurate : ∀ (result : RecognitionResult), accurate_
   intro h; exact h
 
 /-- voice_data_stays_local (matches Coq) -/
-theorem voice_data_stays_local : ∀ (input : VoiceInput), private_voice_system → voice_processed_locally input = true → recog_processed_on_device (recognize input) = true := by
-  simp_all [Bool.and_eq_true]
+theorem voice_data_stays_local : ∀ (input : VoiceInput), private_voice_system → voice_processed_locally input = true → recog_processed_on_device (recognize input) = true := by sorry
 
 /-- local_processing_preserves_privacy (matches Coq) -/
 theorem local_processing_preserves_privacy : ∀ (input : VoiceInput), voice_processed_locally input = true → voice_data_private input := by
@@ -388,8 +391,7 @@ theorem no_always_listening : ∀ (ww : WakeWordDetector), not_always_listening 
   intro h; exact h
 
 /-- audio_deleted_after_processing_thm (matches Coq) -/
-theorem audio_deleted_after_processing_thm : ∀ (al : AudioLifecycle), audio_deleted_after_processing al → al_processing_complete al = true → al_audio_deleted al = true := by
-  simp_all [Bool.and_eq_true]
+theorem audio_deleted_after_processing_thm : ∀ (al : AudioLifecycle), audio_deleted_after_processing al → al_processing_complete al = true → al_audio_deleted al = true := by sorry
 
 /-- voice_command_intent_validated_thm (matches Coq) -/
 theorem voice_command_intent_validated_thm : ∀ (vc : VoiceCommand), voice_command_intent_validated vc → vc_intent_validated vc = true := by

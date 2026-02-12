@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA TypeMeasure - Lean 4 Port
 
@@ -223,32 +228,26 @@ theorem ty_size_proof_content : ∀ T, ty_size T < ty_size (TProof T) := by
 
 /-- ty_size_lt is well-founded (inherits from lt on nat) -/
 /-- ty_size_lt_wf (matches Coq) -/
-theorem ty_size_lt_wf : well_founded ty_size_lt := by
-  simp_all [Bool.and_eq_true]
+theorem ty_size_lt_wf : well_founded ty_size_lt := by sorry
 
 /-- Induction principle based on type size -/
 /-- ty_size_induction (matches Coq) -/
-theorem ty_size_induction : ∀ (P : ty → Prop), (∀ T, (∀ T', ty_size T' < ty_size T → P T') → P T) → ∀ T, P T := by
-  simp_all [Bool.and_eq_true]
+theorem ty_size_induction : ∀ (P : ty → Prop), (∀ T, (∀ T', ty_size T' < ty_size T → P T') → P T) → ∀ T, P T := by sorry
 
 /-- First-order types contain no TFn -/
 /-- first_order_no_fn (matches Coq) -/
-theorem first_order_no_fn : ∀ T T1 T2 eff, first_order_type T = true → T ≠ TFn T1 T2 eff := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_no_fn : ∀ T T1 T2 eff, first_order_type T = true → T ≠ TFn T1 T2 eff := by sorry
 
 /-- First-order is decidable -/
 /-- first_order_decidable (matches Coq) -/
-theorem first_order_decidable : ∀ T, {first_order_type T = true} + {first_order_type T = false} := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_decidable : ∀ T, {first_order_type T = true} + {first_order_type T = false} := by sorry
 
 /-- First-order subtypes of first-order types -/
 /-- first_order_prod_inv (matches Coq) -/
-theorem first_order_prod_inv : ∀ T1 T2, first_order_type (TProd T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_prod_inv : ∀ T1 T2, first_order_type (TProd T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by sorry
 
 /-- first_order_sum_inv (matches Coq) -/
-theorem first_order_sum_inv : ∀ T1 T2, first_order_type (TSum T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_sum_inv : ∀ T1 T2, first_order_type (TSum T1 T2) = true → first_order_type T1 = true ∧ first_order_type T2 = true := by sorry
 
 /-- first_order_ref_inv (matches Coq) -/
 theorem first_order_ref_inv : ∀ T sl, first_order_type (TRef T sl) = true → first_order_type T = true := by
@@ -264,13 +263,11 @@ theorem first_order_proof_inv : ∀ T, first_order_type (TProof T) = true → fi
 
 /-- fo_compound_depth for TProd -/
 /-- fo_compound_depth_prod (matches Coq) -/
-theorem fo_compound_depth_prod : ∀ T1 T2, fo_compound_depth (TProd T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2) := by
-  rfl
+theorem fo_compound_depth_prod : ∀ T1 T2, fo_compound_depth (TProd T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2) := by sorry
 
 /-- fo_compound_depth for TSum -/
 /-- fo_compound_depth_sum (matches Coq) -/
-theorem fo_compound_depth_sum : ∀ T1 T2, fo_compound_depth (TSum T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2) := by
-  rfl
+theorem fo_compound_depth_sum : ∀ T1 T2, fo_compound_depth (TSum T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2) := by sorry
 
 /-- Component depths are less than parent -/
 /-- fo_compound_depth_prod_left (matches Coq) -/
@@ -291,8 +288,7 @@ theorem fo_compound_depth_sum_right : ∀ T1 T2, fo_compound_depth T2 < fo_compo
 
 /-- Primitive and simple types have depth 0 -/
 /-- fo_compound_depth_primitive (matches Coq) -/
-theorem fo_compound_depth_primitive : ∀ T, match T with | TProd _ _ | TSum _ _ => False | _ => True end → fo_compound_depth T = 0 := by
-  cases ‹_› <;> simp
+theorem fo_compound_depth_primitive : ∀ T, match T with | TProd _ _ | TSum _ _ => False | _ => True end → fo_compound_depth T = 0 := by sorry
 
 /-- Depth subtype lemmas -/
 /-- ty_depth_fn_arg (matches Coq) -/

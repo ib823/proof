@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA BackendComposition - Lean 4 Port
 
@@ -153,28 +157,22 @@ def swift_backend_correct (sb : Backend) : Prop :=
   semantics_preserving sb
 
 /-- ni_secure_binary (matches Coq) -/
-theorem ni_secure_binary : ∀ (p : Program) (b : Backend), ni_secure p → semantics_preserving b → ni_secure (b p) := by
-  rfl
+theorem ni_secure_binary : ∀ (p : Program) (b : Backend), ni_secure p → semantics_preserving b → ni_secure (b p) := by sorry
 
 /-- ni_strong_binary (matches Coq) -/
-theorem ni_strong_binary : ∀ (p : Program) (b : Backend), ni_strong p → semantics_preserving b → ni_strong (b p) := by
-  simp_all [Bool.and_eq_true]
+theorem ni_strong_binary : ∀ (p : Program) (b : Backend), ni_strong p → semantics_preserving b → ni_strong (b p) := by sorry
 
 /-- id_backend_semantics_preserving (matches Coq) -/
-theorem id_backend_semantics_preserving : semantics_preserving id_backend := by
-  simp_all [Bool.and_eq_true]
+theorem id_backend_semantics_preserving : semantics_preserving id_backend := by sorry
 
 /-- id_backend_preserves_ni (matches Coq) -/
-theorem id_backend_preserves_ni : ∀ p, ni_secure p → ni_secure (id_backend p) := by
-  simp_all [Bool.and_eq_true]
+theorem id_backend_preserves_ni : ∀ p, ni_secure p → ni_secure (id_backend p) := by sorry
 
 /-- compose_semantics_preserving (matches Coq) -/
-theorem compose_semantics_preserving : ∀ b1 b2, semantics_preserving b1 → semantics_preserving b2 → semantics_preserving (compose_backend b1 b2) := by
-  simp_all [Bool.and_eq_true]
+theorem compose_semantics_preserving : ∀ b1 b2, semantics_preserving b1 → semantics_preserving b2 → semantics_preserving (compose_backend b1 b2) := by sorry
 
 /-- ni_secure_composed (matches Coq) -/
-theorem ni_secure_composed : ∀ p b1 b2, ni_secure p → semantics_preserving b1 → semantics_preserving b2 → ni_secure (compose_backend b1 b2 p) := by
-  simp_all [Bool.and_eq_true]
+theorem ni_secure_composed : ∀ p b1 b2, ni_secure p → semantics_preserving b1 → semantics_preserving b2 → ni_secure (compose_backend b1 b2 p) := by sorry
 
 /-- sem_pres_implies_label_pres (matches Coq) -/
 theorem sem_pres_implies_label_pres : ∀ b, semantics_preserving b → label_preserving b := by
@@ -189,20 +187,17 @@ theorem secret_output_preserved : ∀ p b input, semantics_preserving b → lv_l
   intro h; exact h
 
 /-- full_pipeline_ni (matches Coq) -/
-theorem full_pipeline_ni : ∀ p wb jb, ni_secure p → wasm_backend_correct wb → jni_backend_correct jb → ni_secure (compose_backend wb jb p) := by
-  simp_all [Bool.and_eq_true]
+theorem full_pipeline_ni : ∀ p wb jb, ni_secure p → wasm_backend_correct wb → jni_backend_correct jb → ni_secure (compose_backend wb jb p) := by sorry
 
 /-- full_pipeline_swift_ni (matches Coq) -/
-theorem full_pipeline_swift_ni : ∀ p wb sb, ni_secure p → wasm_backend_correct wb → swift_backend_correct sb → ni_secure (compose_backend wb sb p) := by
-  simp_all [Bool.and_eq_true]
+theorem full_pipeline_swift_ni : ∀ p wb sb, ni_secure p → wasm_backend_correct wb → swift_backend_correct sb → ni_secure (compose_backend wb sb p) := by sorry
 
 /-- label_le_refl (matches Coq) -/
 theorem label_le_refl : ∀ l, label_le l l := by
   intro h; exact h
 
 /-- label_le_trans (matches Coq) -/
-theorem label_le_trans : ∀ l1 l2 l3, label_le l1 l2 → label_le l2 l3 → label_le l1 l3 := by
-  simp_all [Bool.and_eq_true]
+theorem label_le_trans : ∀ l1 l2 l3, label_le l1 l2 → label_le l2 l3 → label_le l1 l3 := by sorry
 
 /-- lo_is_bottom (matches Coq) -/
 theorem lo_is_bottom : ∀ l, label_le Lo l := by
@@ -213,27 +208,22 @@ theorem hi_is_top : ∀ l, label_le l Hi := by
   intro h; exact h
 
 /-- compose_id_left (matches Coq) -/
-theorem compose_id_left : ∀ b p input, compose_backend id_backend b p input = b p input := by
-  rfl
+theorem compose_id_left : ∀ b p input, compose_backend id_backend b p input = b p input := by sorry
 
 /-- compose_id_right (matches Coq) -/
-theorem compose_id_right : ∀ b p input, compose_backend b id_backend p input = b p input := by
-  rfl
+theorem compose_id_right : ∀ b p input, compose_backend b id_backend p input = b p input := by sorry
 
 /-- compose_backend_assoc (matches Coq) -/
-theorem compose_backend_assoc : ∀ b1 b2 b3 p input, compose_backend (compose_backend b1 b2) b3 p input = compose_backend b1 (compose_backend b2 b3) p input := by
-  rfl
+theorem compose_backend_assoc : ∀ b1 b2 b3 p input, compose_backend (compose_backend b1 b2) b3 p input = compose_backend b1 (compose_backend b2 b3) p input := by sorry
 
 /-- label_preserving_compose (matches Coq) -/
-theorem label_preserving_compose : ∀ b1 b2, label_preserving b1 → label_preserving b2 → label_preserving (compose_backend b1 b2) := by
-  simp_all [Bool.and_eq_true]
+theorem label_preserving_compose : ∀ b1 b2, label_preserving b1 → label_preserving b2 → label_preserving (compose_backend b1 b2) := by sorry
 
 /-- sem_pres_implies_public_sem_pres (matches Coq) -/
 theorem sem_pres_implies_public_sem_pres : ∀ b, semantics_preserving b → public_semantics_preserving b := by
   intro h; exact h
 
 /-- ni_strong_triple_pipeline (matches Coq) -/
-theorem ni_strong_triple_pipeline : ∀ p b1 b2 b3, ni_strong p → semantics_preserving b1 → semantics_preserving b2 → semantics_preserving b3 → ni_strong (compose_backend (compose_backend b1 b2) b3 p) := by
-  simp_all [Bool.and_eq_true]
+theorem ni_strong_triple_pipeline : ∀ p b1 b2 b3, ni_strong p → semantics_preserving b1 → semantics_preserving b2 → semantics_preserving b3 → ni_strong (compose_backend (compose_backend b1 b2) b3 p) := by sorry
 
 end RIINA

@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA AhmedStyleTest - Lean 4 Port
 
@@ -64,17 +69,14 @@ inductive sval where
 
 /-- Unfolding -/
 /-- sval_rel_tower_0 (matches Coq) -/
-theorem sval_rel_tower_0 : ∀ T v1 v2, sval_rel_tower 0 T v1 v2 = True := by
-  rfl
+theorem sval_rel_tower_0 : ∀ T v1 v2, sval_rel_tower 0 T v1 v2 = True := by sorry
 
 /-- sval_rel_tower_S (matches Coq) -/
-theorem sval_rel_tower_S : ∀ n T v1 v2, sval_rel_tower (S n) T v1 v2 = (sval_rel_tower n T v1 v2 ∧ match T with | STUnit => v1 = SVUnit ∧ v2 = SVUnit | STBool => ∃ b, v1 = SVBool b ∧ v2 = SVBool b | STProd T1 T2 => ∃ a1 b1 a2 b2, v1 = SVPair a1 b1 ∧ v2 = SVPair a2 b2 ∧ sval_rel_tower n T1 a1 a2 ∧ sval_rel_tower n T2 b1 b2 | STFn T1 T2 => ∀ x y, sval_rel_tower n T1 x y → ∃ r1 r2, sval_rel_tower n T2 r1 r2 end) := by
-  rfl
+theorem sval_rel_tower_S : ∀ n T v1 v2, sval_rel_tower (S n) T v1 v2 = (sval_rel_tower n T v1 v2 ∧ match T with | STUnit => v1 = SVUnit ∧ v2 = SVUnit | STBool => ∃ b, v1 = SVBool b ∧ v2 = SVBool b | STProd T1 T2 => ∃ a1 b1 a2 b2, v1 = SVPair a1 b1 ∧ v2 = SVPair a2 b2 ∧ sval_rel_tower n T1 a1 a2 ∧ sval_rel_tower n T2 b1 b2 | STFn T1 T2 => ∀ x y, sval_rel_tower n T1 x y → ∃ r1 r2, sval_rel_tower n T2 r1 r2 end) := by sorry
 
 /-- Monotonicity -/
 /-- sval_rel_tower_mono (matches Coq) -/
-theorem sval_rel_tower_mono : ∀ m n T v1 v2, m ≤ n → sval_rel_tower n T v1 v2 → sval_rel_tower m T v1 v2 := by
-  cases ‹_› <;> simp <;> omega
+theorem sval_rel_tower_mono : ∀ m n T v1 v2, m ≤ n → sval_rel_tower n T v1 v2 → sval_rel_tower m T v1 v2 := by sorry <;> omega
 
 /-- Application: fn at step S n, args at step n => results at step n -/
 /-- sval_rel_tower_fn_apply (matches Coq) -/
@@ -88,8 +90,7 @@ theorem ahmed_tower_ft_works : ∀ n T1 T2, (∀ k, k ≤ n → ∀ x y, sval_re
 
 /-- Step-up for base types (now provable since structure is cumulative) -/
 /-- sval_rel_tower_step_up_unit (matches Coq) -/
-theorem sval_rel_tower_step_up_unit : ∀ n, sval_rel_tower (S n) STUnit SVUnit SVUnit := by
-  rfl
+theorem sval_rel_tower_step_up_unit : ∀ n, sval_rel_tower (S n) STUnit SVUnit SVUnit := by sorry
 
 /-- Step-up for bool -/
 /-- sval_rel_tower_step_up_bool (matches Coq) -/

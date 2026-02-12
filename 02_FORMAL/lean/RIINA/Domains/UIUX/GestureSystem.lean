@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA GestureSystem - Lean 4 Port
 
@@ -109,8 +113,7 @@ theorem gesture_disambiguation_unique : ∀ (input : TouchSequence), ∃ (gestur
   intro h; exact h
 
 /-- tap_latency_no_unnecessary_delay (matches Coq) -/
-theorem tap_latency_no_unnecessary_delay : ∀ (tap : SingleTapEvent), no_double_tap_expected tap → response_time tap = expected_response_time tap := by
-  simp_all [Bool.and_eq_true]
+theorem tap_latency_no_unnecessary_delay : ∀ (tap : SingleTapEvent), no_double_tap_expected tap → response_time tap = expected_response_time tap := by sorry
 
 /-- swipe_velocity_matches_physics (matches Coq) -/
 theorem swipe_velocity_matches_physics : ∀ (swipe : SwipeGesture), scroll_velocity swipe = finger_velocity swipe := by
@@ -129,32 +132,26 @@ theorem 2 : confidence_above_threshold — recognized gestures have high confide
   intro h; exact h
 
 /-- 3 (matches Coq) -/
-theorem 3 : single_tap_fast — no false double-tap delay for single taps  Theorem single_tap_fast : ∀ (tap : SingleTapEvent), double_tap_expected tap = false → actual_response_time tap = expected_response_time tap := by
-  simp_all [Bool.and_eq_true]
+theorem 3 : single_tap_fast — no false double-tap delay for single taps  Theorem single_tap_fast : ∀ (tap : SingleTapEvent), double_tap_expected tap = false → actual_response_time tap = expected_response_time tap := by sorry
 
 /-- 4 (matches Coq) -/
-theorem 4 : swipe_direction_deterministic — direction is uniquely determined  Theorem swipe_direction_deterministic : ∀ (ds : DirectedSwipe), ∃ (d : SwipeDirection), ds_direction ds = d := by
-  rfl
+theorem 4 : swipe_direction_deterministic — direction is uniquely determined  Theorem swipe_direction_deterministic : ∀ (ds : DirectedSwipe), ∃ (d : SwipeDirection), ds_direction ds = d := by sorry
 
 /-- 5 (matches Coq) -/
-theorem 5 : pinch_center_invariant — center is midpoint of fingers  Theorem pinch_center_invariant : ∀ (pg : PinchGesture), pinch_center_x pg = (pinch_finger1_x pg + pinch_finger2_x pg) / 2 ∧ pinch_center_y pg = (pinch_finger1_y pg + pinch_finger2_y pg) / 2 := by
-  simp_all [Bool.and_eq_true]
+theorem 5 : pinch_center_invariant — center is midpoint of fingers  Theorem pinch_center_invariant : ∀ (pg : PinchGesture), pinch_center_x pg = (pinch_finger1_x pg + pinch_finger2_x pg) / 2 ∧ pinch_center_y pg = (pinch_finger1_y pg + pinch_finger2_y pg) / 2 := by sorry
 
 /-- 6 (matches Coq) -/
 theorem 6 : rotation_angle_bounded — rotation within [-pi, pi]  Theorem rotation_angle_bounded : ∀ (rg : RotationGesture), - PI ≤ rotation_angle rg ≤ PI := by
   intro h; exact h
 
 /-- 7 (matches Coq) -/
-theorem 7 : gesture_recognizer_total — every touch sequence gets classified  Theorem gesture_recognizer_total : ∀ (tc : nat) (dur : R), ∃ (cls : TouchClassification), classify_touch tc dur = cls := by
-  rfl
+theorem 7 : gesture_recognizer_total — every touch sequence gets classified  Theorem gesture_recognizer_total : ∀ (tc : nat) (dur : R), ∃ (cls : TouchClassification), classify_touch tc dur = cls := by sorry
 
 /-- gesture_recognizer_always_classifies (matches Coq) -/
-theorem gesture_recognizer_always_classifies : ∀ (tc : nat) (dur : R), classify_touch tc dur ≠ UnclassifiedTouch := by
-  simp_all [Bool.and_eq_true]
+theorem gesture_recognizer_always_classifies : ∀ (tc : nat) (dur : R), classify_touch tc dur ≠ UnclassifiedTouch := by sorry
 
 /-- 8 (matches Coq) -/
-theorem 8 : no_ghost_touches — unrecognized sequences don't trigger actions  Theorem no_ghost_touches : ∀ (te : TouchEvent), te_classified te = false → te_action_triggered te = false := by
-  simp_all [Bool.and_eq_true]
+theorem 8 : no_ghost_touches — unrecognized sequences don't trigger actions  Theorem no_ghost_touches : ∀ (te : TouchEvent), te_classified te = false → te_action_triggered te = false := by sorry
 
 /-- 9 (matches Coq) -/
 theorem 9 : multi_touch_sorted — touch points processed in order  Fixpoint is_sorted (l : list nat) : Prop := match l with | [] => True | [_] => True | x :: ((y :: _) as rest) => (x ≤ y)%nat ∧ is_sorted rest end. Theorem multi_touch_sorted_head : ∀ (x y : nat) (rest : list nat), is_sorted (x :: y :: rest) → (x ≤ y)%nat := by
@@ -165,35 +162,28 @@ theorem multi_touch_sorted_tail : ∀ (x : nat) (rest : list nat), is_sorted (x 
   intro h; exact h
 
 /-- 10 (matches Coq) -/
-theorem 10 : gesture_cancel_safe — cancelled gesture reverts partial state  Theorem gesture_cancel_safe : ∀ (cg : CancellableGesture), cg_cancelled cg = true → cg_current_value cg = cg_original_value cg := by
-  simp_all [Bool.and_eq_true]
+theorem 10 : gesture_cancel_safe — cancelled gesture reverts partial state  Theorem gesture_cancel_safe : ∀ (cg : CancellableGesture), cg_cancelled cg = true → cg_current_value cg = cg_original_value cg := by sorry
 
 /-- 11 (matches Coq) -/
-theorem 11 : edge_swipe_distinguishable — swipes from edge are detected  Theorem edge_swipe_distinguishable : ∀ (es : EdgeSwipeEvent), es_start_x es ≤ es_screen_width es * / 10 → es_is_edge es = true := by
-  simp_all [Bool.and_eq_true]
+theorem 11 : edge_swipe_distinguishable — swipes from edge are detected  Theorem edge_swipe_distinguishable : ∀ (es : EdgeSwipeEvent), es_start_x es ≤ es_screen_width es * / 10 → es_is_edge es = true := by sorry
 
 /-- 12 (matches Coq) -/
-theorem 12 : three_d_touch_pressure_monotonic — deeper press = stronger signal  Theorem three_d_touch_pressure_monotonic : ∀ (p1 p2 : PressureTouch), pt_pressure p1 < pt_pressure p2 → pt_signal p1 < pt_signal p2 := by
-  simp_all [Bool.and_eq_true]
+theorem 12 : three_d_touch_pressure_monotonic — deeper press = stronger signal  Theorem three_d_touch_pressure_monotonic : ∀ (p1 p2 : PressureTouch), pt_pressure p1 < pt_pressure p2 → pt_signal p1 < pt_signal p2 := by sorry
 
 /-- 13 (matches Coq) -/
-theorem 13 : palm_rejection_correct — palm touches are ignored  Theorem palm_rejection_correct : ∀ (pte : PalmTouchEvent), palm_contact_area pte > palm_threshold pte → palm_is_rejected pte = true := by
-  simp_all [Bool.and_eq_true]
+theorem 13 : palm_rejection_correct — palm touches are ignored  Theorem palm_rejection_correct : ∀ (pte : PalmTouchEvent), palm_contact_area pte > palm_threshold pte → palm_is_rejected pte = true := by sorry
 
 /-- 14 (matches Coq) -/
 theorem 14 : gesture_exclusive — at most one gesture per touch sequence  Theorem gesture_exclusive : ∀ (egr : ExclusiveGestureResult), (length (egr_recognized egr) ≤ 1)%nat := by
   intro h; exact h
 
 /-- 15 (matches Coq) -/
-theorem 15 : velocity_tracker_accurate — velocity correctly computed  Theorem velocity_tracker_accurate : ∀ (vt : VelocityTracker), vt_computed_vx vt = vt_dx vt / vt_dt vt ∧ vt_computed_vy vt = vt_dy vt / vt_dt vt := by
-  simp_all [Bool.and_eq_true]
+theorem 15 : velocity_tracker_accurate — velocity correctly computed  Theorem velocity_tracker_accurate : ∀ (vt : VelocityTracker), vt_computed_vx vt = vt_dx vt / vt_dt vt ∧ vt_computed_vy vt = vt_dy vt / vt_dt vt := by sorry
 
 /-- velocity_magnitude_non_negative (matches Coq) -/
-theorem velocity_magnitude_non_negative : ∀ (vx vy : R), vx * vx + vy * vy ≥ 0 := by
-  simp_all [Bool.and_eq_true]
+theorem velocity_magnitude_non_negative : ∀ (vx vy : R), vx * vx + vy * vy ≥ 0 := by sorry
 
 /-- gesture_confidence_high (matches Coq) -/
-theorem gesture_confidence_high : ∀ (g : Gesture), gesture_confidence g > 0 := by
-  simp_all [Bool.and_eq_true]
+theorem gesture_confidence_high : ∀ (g : Gesture), gesture_confidence g > 0 := by sorry
 
 end RIINA

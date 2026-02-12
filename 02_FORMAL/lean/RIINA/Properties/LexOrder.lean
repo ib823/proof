@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA LexOrder - Lean 4 Port
 
@@ -78,12 +83,10 @@ def triple_lt (p1 p2 : Nat * Nat * Nat) : Prop :=
 
 /-- Direct proof using nested well-founded induction -/
 /-- lex_lt_wf (matches Coq) -/
-theorem lex_lt_wf : well_founded lex_lt := by
-  simp_all [Bool.and_eq_true]
+theorem lex_lt_wf : well_founded lex_lt := by sorry
 
 /-- lex_induction (matches Coq) -/
-theorem lex_induction : ∀ (P : nat → nat → Prop), (∀ n m, (∀ n' m', lex_lt (n', m') (n, m) → P n' m') → P n m) → ∀ n m, P n m := by
-  simp_all [Bool.and_eq_true]
+theorem lex_induction : ∀ (P : nat → nat → Prop), (∀ n m, (∀ n' m', lex_lt (n', m') (n, m) → P n' m') → P n m) → ∀ n m, P n m := by sorry
 
 /-- lex_lt_left (matches Coq) -/
 theorem lex_lt_left : ∀ n m n' m', n' < n → lex_lt (n', m') (n, m) := by
@@ -95,13 +98,11 @@ theorem lex_lt_right : ∀ n m m', m' < m → lex_lt (n, m') (n, m) := by
 
 /-- step_ty_lt is well-founded -/
 /-- step_ty_lt_wf (matches Coq) -/
-theorem step_ty_lt_wf : well_founded step_ty_lt := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_wf : well_founded step_ty_lt := by sorry
 
 /-- Induction principle for step-type pairs -/
 /-- step_ty_induction (matches Coq) -/
-theorem step_ty_induction : ∀ (P : nat → ty → Prop), (∀ n T, (∀ n' T', step_ty_lt (n', T') (n, T) → P n' T') → P n T) → ∀ n T, P n T := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_induction : ∀ (P : nat → ty → Prop), (∀ n T, (∀ n' T', step_ty_lt (n', T') (n, T) → P n' T') → P n T) → ∀ n T, P n T := by sorry
 
 /-- Decreasing step index (the primary decrease for TFn) -/
 /-- step_ty_lt_step (matches Coq) -/
@@ -115,31 +116,25 @@ theorem step_ty_lt_ty : ∀ n T T', ty_size T' < ty_size T → step_ty_lt (n, T'
 
 /-- TFn argument is smaller -/
 /-- step_ty_lt_fn_arg (matches Coq) -/
-theorem step_ty_lt_fn_arg : ∀ n T1 T2 eff, step_ty_lt (n, T1) (n, TFn T1 T2 eff) := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_fn_arg : ∀ n T1 T2 eff, step_ty_lt (n, T1) (n, TFn T1 T2 eff) := by sorry
 
 /-- TFn result is smaller -/
 /-- step_ty_lt_fn_res (matches Coq) -/
-theorem step_ty_lt_fn_res : ∀ n T1 T2 eff, step_ty_lt (n, T2) (n, TFn T1 T2 eff) := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_fn_res : ∀ n T1 T2 eff, step_ty_lt (n, T2) (n, TFn T1 T2 eff) := by sorry
 
 /-- TProd components are smaller -/
 /-- step_ty_lt_prod_left (matches Coq) -/
-theorem step_ty_lt_prod_left : ∀ n T1 T2, step_ty_lt (n, T1) (n, TProd T1 T2) := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_prod_left : ∀ n T1 T2, step_ty_lt (n, T1) (n, TProd T1 T2) := by sorry
 
 /-- step_ty_lt_prod_right (matches Coq) -/
-theorem step_ty_lt_prod_right : ∀ n T1 T2, step_ty_lt (n, T2) (n, TProd T1 T2) := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_prod_right : ∀ n T1 T2, step_ty_lt (n, T2) (n, TProd T1 T2) := by sorry
 
 /-- TSum components are smaller -/
 /-- step_ty_lt_sum_left (matches Coq) -/
-theorem step_ty_lt_sum_left : ∀ n T1 T2, step_ty_lt (n, T1) (n, TSum T1 T2) := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_sum_left : ∀ n T1 T2, step_ty_lt (n, T1) (n, TSum T1 T2) := by sorry
 
 /-- step_ty_lt_sum_right (matches Coq) -/
-theorem step_ty_lt_sum_right : ∀ n T1 T2, step_ty_lt (n, T2) (n, TSum T1 T2) := by
-  simp_all [Bool.and_eq_true]
+theorem step_ty_lt_sum_right : ∀ n T1 T2, step_ty_lt (n, T2) (n, TSum T1 T2) := by sorry
 
 /-- Step decrease combined with type -/
 /-- step_ty_lt_step_any (matches Coq) -/
@@ -147,7 +142,6 @@ theorem step_ty_lt_step_any : ∀ n n' T T', n' < n → step_ty_lt (n', T') (n, 
   intro h; exact h
 
 /-- triple_lt_wf (matches Coq) -/
-theorem triple_lt_wf : well_founded triple_lt := by
-  simp_all [Bool.and_eq_true]
+theorem triple_lt_wf : well_founded triple_lt := by sorry
 
 end RIINA

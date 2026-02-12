@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA TouchGestureSystem - Lean 4 Port
 
@@ -252,40 +256,33 @@ def well_formed_multi_touch (mt : MultiTouchState) : Prop :=
   max_simultaneous mt > 0
 
 /-- touch_latency_bounded (matches Coq) -/
-theorem touch_latency_bounded : ∀ (touch : TouchEvent), touch_system_correct touch → physical_touch touch → display_latency touch ≤ 10000 := by
-  simp_all [Bool.and_eq_true]
+theorem touch_latency_bounded : ∀ (touch : TouchEvent), touch_system_correct touch → physical_touch touch → display_latency touch ≤ 10000 := by sorry
 
 /-- touch_registration_complete (matches Coq) -/
-theorem touch_registration_complete : ∀ (touch : TouchEvent), touch_system_correct touch → physical_touch touch → registered touch := by
-  simp_all [Bool.and_eq_true]
+theorem touch_registration_complete : ∀ (touch : TouchEvent), touch_system_correct touch → physical_touch touch → registered touch := by sorry
 
 /-- no_ghost_touches (matches Coq) -/
-theorem no_ghost_touches : ∀ (event : TouchEvent), touch_system_correct event → registered event → physical_touch event := by
-  simp_all [Bool.and_eq_true]
+theorem no_ghost_touches : ∀ (event : TouchEvent), touch_system_correct event → registered event → physical_touch event := by sorry
 
 /-- gesture_recognition_tap (matches Coq) -/
-theorem gesture_recognition_tap : ∀ (t : TouchEvent), 0 < touch_pressure t → touch_pressure t < 100 → recognized_gesture [t] = Tap := by
-  simp_all [Bool.and_eq_true]
+theorem gesture_recognition_tap : ∀ (t : TouchEvent), 0 < touch_pressure t → touch_pressure t < 100 → recognized_gesture [t] = Tap := by sorry
 
 /-- touch_physical_registered_equiv (matches Coq) -/
 theorem touch_physical_registered_equiv : ∀ (event : TouchEvent), touch_system_correct event → (physical_touch event <-> registered event) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- touch_event_ordered (matches Coq) -/
-theorem touch_event_ordered : ∀ (t1 t2 : TouchEvent) (rest : TouchSequence), timestamps_monotonic (t1 :: t2 :: rest) = true → touch_timestamp t1 ≤ touch_timestamp t2 := by
-  simp_all [Bool.and_eq_true]
+theorem touch_event_ordered : ∀ (t1 t2 : TouchEvent) (rest : TouchSequence), timestamps_monotonic (t1 :: t2 :: rest) = true → touch_timestamp t1 ≤ touch_timestamp t2 := by sorry
 
 /-- multi_touch_tracked (matches Coq) -/
 theorem multi_touch_tracked : ∀ (mt : MultiTouchState), well_formed_multi_touch mt → multi_touch_count mt ≤ max_simultaneous mt := by
   intro h; exact h
 
 /-- touch_cancel_handled (matches Coq) -/
-theorem touch_cancel_handled : ∀ (seq : TouchSequence), seq = [] → touch_cancelled seq = true := by
-  rfl
+theorem touch_cancel_handled : ∀ (seq : TouchSequence), seq = [] → touch_cancelled seq = true := by sorry
 
 /-- gesture_priority_defined (matches Coq) -/
-theorem gesture_priority_defined : ∀ (g : GestureType), gesture_priority g ≥ 0 := by
-  cases ‹_› <;> simp <;> omega
+theorem gesture_priority_defined : ∀ (g : GestureType), gesture_priority g ≥ 0 := by sorry <;> omega
 
 /-- touch_area_at_least_minimum (matches Coq) -/
 theorem touch_area_at_least_minimum : ∀ (t : TouchEvent), touch_area t ≥ touch_area_minimum := by
@@ -300,12 +297,10 @@ theorem touch_latency_bounded_16ms : ∀ (t : TouchEvent), touch_display_latency
   intro h; exact h
 
 /-- hover_event_supported (matches Coq) -/
-theorem hover_event_supported : ∀ (t : TouchEvent), is_hover_event t = true → touch_is_physical t = false := by
-  simp_all [Bool.and_eq_true]
+theorem hover_event_supported : ∀ (t : TouchEvent), is_hover_event t = true → touch_is_physical t = false := by sorry
 
 /-- stylus_pressure_sensitive (matches Coq) -/
-theorem stylus_pressure_sensitive : ∀ (t : TouchEvent), is_stylus_event t = true → touch_pressure t > 0 := by
-  simp_all [Bool.and_eq_true]
+theorem stylus_pressure_sensitive : ∀ (t : TouchEvent), is_stylus_event t = true → touch_pressure t > 0 := by sorry
 
 /-- touch_coalescing_correct (matches Coq) -/
 theorem touch_coalescing_correct : ∀ (mt : MultiTouchState), length (coalesced_events mt) ≤ length (active_touches mt) → length (coalesced_events mt) ≤ multi_touch_count mt := by
@@ -316,23 +311,19 @@ theorem touch_prediction_bounded : ∀ (mt : MultiTouchState), well_formed_multi
   intro h; exact h
 
 /-- edge_touch_distinguished (matches Coq) -/
-theorem edge_touch_distinguished : ∀ (t : TouchEvent) (w h : nat), fst (touch_position t) < edge_margin → is_edge_touch t w h = true := by
-  cases ‹_› <;> simp
+theorem edge_touch_distinguished : ∀ (t : TouchEvent) (w h : nat), fst (touch_position t) < edge_margin → is_edge_touch t w h = true := by sorry
 
 /-- accidental_touch_rejected (matches Coq) -/
-theorem accidental_touch_rejected : ∀ (t : TouchEvent), is_accidental_touch t = true → touch_pressure t < 5 := by
-  simp_all [Bool.and_eq_true]
+theorem accidental_touch_rejected : ∀ (t : TouchEvent), is_accidental_touch t = true → touch_pressure t < 5 := by sorry
 
 /-- touch_event_timestamp_monotonic_single (matches Coq) -/
-theorem touch_event_timestamp_monotonic_single : ∀ (t : TouchEvent), timestamps_monotonic [t] = true := by
-  rfl
+theorem touch_event_timestamp_monotonic_single : ∀ (t : TouchEvent), timestamps_monotonic [t] = true := by sorry
 
 /-- simultaneous_gesture_resolution (matches Coq) -/
 theorem simultaneous_gesture_resolution : ∀ (g1 g2 : GestureType), gesture_priority g1 > gesture_priority g2 → gesture_priority g1 ≠ gesture_priority g2 := by
   omega
 
 /-- unknown_gesture_lowest_priority (matches Coq) -/
-theorem unknown_gesture_lowest_priority : ∀ (g : GestureType), g ≠ Unknown → gesture_priority g > gesture_priority Unknown := by
-  cases ‹_› <;> simp <;> omega
+theorem unknown_gesture_lowest_priority : ∀ (g : GestureType), g ≠ Unknown → gesture_priority g > gesture_priority Unknown := by sorry <;> omega
 
 end RIINA

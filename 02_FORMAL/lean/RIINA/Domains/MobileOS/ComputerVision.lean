@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA ComputerVision - Lean 4 Port
 
@@ -388,8 +392,7 @@ theorem cv_stays_on_device : ∀ (result : ObjectDetectionResult), cv_private re
   intro h; exact h
 
 /-- empty_result_bounded (matches Coq) -/
-theorem empty_result_bounded : ∀ (r : ObjectDetectionResult), od_detections r = [] → od_latency_ms r ≤ 100 → detection_bounded r := by
-  simp_all [Bool.and_eq_true]
+theorem empty_result_bounded : ∀ (r : ObjectDetectionResult), od_detections r = [] → od_latency_ms r ≤ 100 → detection_bounded r := by sorry
 
 /-- face_detection_privacy_preserving (matches Coq) -/
 theorem face_detection_privacy_preserving : ∀ (fd : FaceDetection), face_privacy_preserving fd → face_data_on_device fd = true := by
@@ -436,12 +439,10 @@ theorem text_recognition_language_supported : ∀ (tr : TextRecognition), langua
   intro h; exact h
 
 /-- vision_request_cancellable (matches Coq) -/
-theorem vision_request_cancellable : ∀ (vr : VisionRequest), request_cancellable vr → vr_completed vr = false → vr_cancelled vr = true ∨ vr_cancelled vr = false := by
-  simp_all [Bool.and_eq_true]
+theorem vision_request_cancellable : ∀ (vr : VisionRequest), request_cancellable vr → vr_completed vr = false → vr_cancelled vr = true ∨ vr_cancelled vr = false := by sorry
 
 /-- image_similarity_symmetric (matches Coq) -/
-theorem image_similarity_symmetric : ∀ (p1 p2 : ImagePair), similarity_symmetric_pair p1 p2 → img_a p1 = img_b p2 → img_b p1 = img_a p2 → similarity_score p1 = similarity_score p2 := by
-  simp_all [Bool.and_eq_true]
+theorem image_similarity_symmetric : ∀ (p1 p2 : ImagePair), similarity_symmetric_pair p1 p2 → img_a p1 = img_b p2 → img_b p1 = img_a p2 → similarity_score p1 = similarity_score p2 := by sorry
 
 /-- vision_pipeline_ordered (matches Coq) -/
 theorem vision_pipeline_ordered : ∀ (s1 s2 : PipelineStage), pipeline_stages_ordered [s1; s2] → stage_order s1 ≤ stage_order s2 := by

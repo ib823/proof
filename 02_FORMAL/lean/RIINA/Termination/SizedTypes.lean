@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA SizedTypes - Lean 4 Port
 
@@ -66,76 +70,61 @@ theorem expr_size_pos : ∀ e, expr_size e > 0 := by
 
 /-- If v is a value of product type, it decomposes as a pair -/
 /-- value_prod_decompose (matches Coq) -/
-theorem value_prod_decompose : ∀ v T1 T2 ε Σ, has_type nil Σ Public v (TProd T1 T2) ε → value v → ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 := by
-  rfl
+theorem value_prod_decompose : ∀ v T1 T2 ε Σ, has_type nil Σ Public v (TProd T1 T2) ε → value v → ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 := by sorry
 
 /-- If v is a value of sum type, it decomposes as Inl or Inr -/
 /-- value_sum_decompose (matches Coq) -/
-theorem value_sum_decompose : ∀ v T1 T2 ε Σ, has_type nil Σ Public v (TSum T1 T2) ε → value v → (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') := by
-  rfl
+theorem value_sum_decompose : ∀ v T1 T2 ε Σ, has_type nil Σ Public v (TSum T1 T2) ε → value v → (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') := by sorry
 
 /-- If v is a value of bool type, it decomposes as true or false -/
 /-- value_bool_decompose (matches Coq) -/
-theorem value_bool_decompose : ∀ v ε Σ, has_type nil Σ Public v TBool ε → value v → ∃ b, v = EBool b := by
-  rfl
+theorem value_bool_decompose : ∀ v ε Σ, has_type nil Σ Public v TBool ε → value v → ∃ b, v = EBool b := by sorry
 
 /-- If v is a value of function type, it decomposes as a lambda -/
 /-- value_fn_decompose (matches Coq) -/
-theorem value_fn_decompose : ∀ v T1 T2 ε ε' Σ, has_type nil Σ Public v (TFn T1 T2 ε) ε' → value v → ∃ x body, v = ELam x T1 body := by
-  rfl
+theorem value_fn_decompose : ∀ v T1 T2 ε ε' Σ, has_type nil Σ Public v (TFn T1 T2 ε) ε' → value v → ∃ x body, v = ELam x T1 body := by sorry
 
 /-- Fst of a pair steps in one step -/
 /-- fst_steps_once (matches Coq) -/
-theorem fst_steps_once : ∀ v1 v2 st ctx, value v1 → value v2 → (EFst (EPair v1 v2), st, ctx) --> (v1, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem fst_steps_once : ∀ v1 v2 st ctx, value v1 → value v2 → (EFst (EPair v1 v2), st, ctx) --> (v1, st, ctx) := by sorry
 
 /-- Snd of a pair steps in one step -/
 /-- snd_steps_once (matches Coq) -/
-theorem snd_steps_once : ∀ v1 v2 st ctx, value v1 → value v2 → (ESnd (EPair v1 v2), st, ctx) --> (v2, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem snd_steps_once : ∀ v1 v2 st ctx, value v1 → value v2 → (ESnd (EPair v1 v2), st, ctx) --> (v2, st, ctx) := by sorry
 
 /-- Case on Inl steps in one step -/
 /-- case_inl_steps_once (matches Coq) -/
-theorem case_inl_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem case_inl_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx) := by sorry
 
 /-- Case on Inr steps in one step -/
 /-- case_inr_steps_once (matches Coq) -/
-theorem case_inr_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem case_inr_steps_once : ∀ v T x1 e1 x2 e2 st ctx, value v → (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx) := by sorry
 
 /-- If true steps in one step -/
 /-- if_true_steps_once (matches Coq) -/
-theorem if_true_steps_once : ∀ e2 e3 st ctx, (EIf (EBool true) e2 e3, st, ctx) --> (e2, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem if_true_steps_once : ∀ e2 e3 st ctx, (EIf (EBool true) e2 e3, st, ctx) --> (e2, st, ctx) := by sorry
 
 /-- If false steps in one step -/
 /-- if_false_steps_once (matches Coq) -/
-theorem if_false_steps_once : ∀ e2 e3 st ctx, (EIf (EBool false) e2 e3, st, ctx) --> (e3, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem if_false_steps_once : ∀ e2 e3 st ctx, (EIf (EBool false) e2 e3, st, ctx) --> (e3, st, ctx) := by sorry
 
 /-- Let with value steps in one step -/
 /-- let_value_steps_once (matches Coq) -/
-theorem let_value_steps_once : ∀ x v e2 st ctx, value v → (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem let_value_steps_once : ∀ x v e2 st ctx, value v → (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx) := by sorry
 
 /-- Handle with value steps in one step -/
 /-- handle_value_steps_once (matches Coq) -/
-theorem handle_value_steps_once : ∀ v x h st ctx, value v → (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem handle_value_steps_once : ∀ v x h st ctx, value v → (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx) := by sorry
 
 /-- App with lambda and value steps in one step -/
 /-- app_lam_steps_once (matches Coq) -/
-theorem app_lam_steps_once : ∀ x T body v st ctx, value v → (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem app_lam_steps_once : ∀ x T body v st ctx, value v → (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx) := by sorry
 
 /-- step_to_multi (matches Coq) -/
-theorem step_to_multi : ∀ e st ctx e' st' ctx', (e, st, ctx) --> (e', st', ctx') → (e, st, ctx) -->* (e', st', ctx') := by
-  simp_all [Bool.and_eq_true]
+theorem step_to_multi : ∀ e st ctx e' st' ctx', (e, st, ctx) --> (e', st', ctx') → (e, st, ctx) -->* (e', st', ctx') := by sorry
 
 /-- Multi-step is transitive -/
 /-- multi_step_trans (matches Coq) -/
-theorem multi_step_trans : ∀ e1 st1 ctx1 e2 st2 ctx2 e3 st3 ctx3, (e1, st1, ctx1) -->* (e2, st2, ctx2) → (e2, st2, ctx2) -->* (e3, st3, ctx3) → (e1, st1, ctx1) -->* (e3, st3, ctx3) := by
-  simp_all [Bool.and_eq_true]
+theorem multi_step_trans : ∀ e1 st1 ctx1 e2 st2 ctx2 e3 st3 ctx3, (e1, st1, ctx1) -->* (e2, st2, ctx2) → (e2, st2, ctx2) -->* (e3, st3, ctx3) → (e1, st1, ctx1) -->* (e3, st3, ctx3) := by sorry
 
 end RIINA

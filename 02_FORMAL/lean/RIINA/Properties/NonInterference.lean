@@ -4,6 +4,11 @@ import RIINA.Foundations.Syntax
 import RIINA.Foundations.Semantics
 import RIINA.TypeSystem.Typing
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA Non-Interference - Lean 4 Port
 

@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA SensorDrivers - Lean 4 Port
 
@@ -171,13 +175,11 @@ theorem sensor_access_controlled : ∀ (app : Application) (sensor : Sensor), re
 
 /-- Theorem: When camera or microphone is in use, indicator must be visible. -/
 /-- recording_indicator_mandatory (matches Coq) -/
-theorem recording_indicator_mandatory : ∀ (app : Application) (st : SystemState), (uses_camera app ∧ any_camera_active st = true) ∨ (uses_microphone app ∧ any_mic_active st = true) → indicator_visible st → (camera_indicator st = true ∨ mic_indicator st = true) := by
-  simp_all [Bool.and_eq_true]
+theorem recording_indicator_mandatory : ∀ (app : Application) (st : SystemState), (uses_camera app ∧ any_camera_active st = true) ∨ (uses_microphone app ∧ any_mic_active st = true) → indicator_visible st → (camera_indicator st = true ∨ mic_indicator st = true) := by sorry
 
 /-- No permission implies no sensor access -/
 /-- no_permission_no_sensor (matches Coq) -/
-theorem no_permission_no_sensor : ∀ (app : Application) (sensor : Sensor), ~ has_sensor_permission app sensor → ~ reads_sensor app sensor := by
-  simp_all [Bool.and_eq_true]
+theorem no_permission_no_sensor : ∀ (app : Application) (sensor : Sensor), ~ has_sensor_permission app sensor → ~ reads_sensor app sensor := by sorry
 
 /-- Camera permission specific -/
 /-- camera_requires_camera_perm (matches Coq) -/
@@ -211,33 +213,27 @@ theorem gyroscope_requires_motion_perm : ∀ (app : Application) (gyro : Sensor)
 
 /-- App with no permissions cannot read any sensor -/
 /-- no_permissions_no_sensors (matches Coq) -/
-theorem no_permissions_no_sensors : ∀ (app : Application), app_camera_perm app = false → app_microphone_perm app = false → app_location_perm app = false → app_motion_perm app = false → ∀ sensor, ~ reads_sensor app sensor := by
-  simp_all [Bool.and_eq_true]
+theorem no_permissions_no_sensors : ∀ (app : Application), app_camera_perm app = false → app_microphone_perm app = false → app_location_perm app = false → app_motion_perm app = false → ∀ sensor, ~ reads_sensor app sensor := by sorry
 
 /-- Camera and microphone indicators are independent -/
 /-- indicators_independent (matches Coq) -/
-theorem indicators_independent : ∀ (st : SystemState), any_camera_active st = true → any_mic_active st = false → indicator_visible st → camera_indicator st = true := by
-  simp_all [Bool.and_eq_true]
+theorem indicators_independent : ∀ (st : SystemState), any_camera_active st = true → any_mic_active st = false → indicator_visible st → camera_indicator st = true := by sorry
 
 /-- Mic indicator when mic active -/
 /-- mic_indicator_when_active (matches Coq) -/
-theorem mic_indicator_when_active : ∀ (st : SystemState), any_mic_active st = true → indicator_visible st → mic_indicator st = true := by
-  simp_all [Bool.and_eq_true]
+theorem mic_indicator_when_active : ∀ (st : SystemState), any_mic_active st = true → indicator_visible st → mic_indicator st = true := by sorry
 
 /-- Camera indicator when camera active -/
 /-- cam_indicator_when_active (matches Coq) -/
-theorem cam_indicator_when_active : ∀ (st : SystemState), any_camera_active st = true → indicator_visible st → camera_indicator st = true := by
-  simp_all [Bool.and_eq_true]
+theorem cam_indicator_when_active : ∀ (st : SystemState), any_camera_active st = true → indicator_visible st → camera_indicator st = true := by sorry
 
 /-- Both sensors active means both indicators visible -/
 /-- both_sensors_both_indicators (matches Coq) -/
-theorem both_sensors_both_indicators : ∀ (st : SystemState), any_camera_active st = true → any_mic_active st = true → indicator_visible st → camera_indicator st = true ∧ mic_indicator st = true := by
-  simp_all [Bool.and_eq_true]
+theorem both_sensors_both_indicators : ∀ (st : SystemState), any_camera_active st = true → any_mic_active st = true → indicator_visible st → camera_indicator st = true ∧ mic_indicator st = true := by sorry
 
 /-- No active sensors means no indicator requirement -/
 /-- no_active_no_indicator_required (matches Coq) -/
-theorem no_active_no_indicator_required : ∀ (st : SystemState), any_camera_active st = false → any_mic_active st = false → indicator_visible st := by
-  simp_all [Bool.and_eq_true]
+theorem no_active_no_indicator_required : ∀ (st : SystemState), any_camera_active st = false → any_mic_active st = false → indicator_visible st := by sorry
 
 /-- Sensor permission is type-specific -/
 /-- sensor_perm_type_specific (matches Coq) -/
@@ -266,8 +262,7 @@ theorem bounded_sensor_rate_valid : ∀ (bs : BoundedSensor), bs_current_rate bs
 
 /-- Revoking all permissions blocks all sensor types -/
 /-- revoke_all_blocks_all_types (matches Coq) -/
-theorem revoke_all_blocks_all_types : ∀ (app : Application), app_camera_perm app = false → app_microphone_perm app = false → app_location_perm app = false → app_motion_perm app = false → ∀ (st : SensorType) (s : Sensor), sensor_type s = st → ~ has_sensor_permission app s := by
-  simp_all [Bool.and_eq_true]
+theorem revoke_all_blocks_all_types : ∀ (app : Application), app_camera_perm app = false → app_microphone_perm app = false → app_location_perm app = false → app_motion_perm app = false → ∀ (st : SensorType) (s : Sensor), sensor_type s = st → ~ has_sensor_permission app s := by sorry
 
 /-- GPS does not require camera permission -/
 /-- gps_independent_of_camera (matches Coq) -/

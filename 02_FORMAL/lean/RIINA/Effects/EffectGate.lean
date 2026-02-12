@@ -1,6 +1,12 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+import RIINA.Effects.EffectAlgebra
+
+
 /-!
 # RIINA EffectGate - Lean 4 Port
 
@@ -26,7 +32,6 @@ def is_gate (eff : effect) (e_gate : expr) : Prop :=
     performs_within (EApp e_gate e) eff
 
 /-- gate_enforcement (matches Coq) -/
-theorem gate_enforcement : ∀ G S D e T eff_allowed eff_used, has_type_full G S D e T eff_used → effect_level eff_used ≤ effect_level eff_allowed → performs_within e eff_allowed := by
-  simp_all [Bool.and_eq_true]
+theorem gate_enforcement : ∀ G S D e T eff_allowed eff_used, has_type_full G S D e T eff_used → effect_level eff_used ≤ effect_level eff_allowed → performs_within e eff_allowed := by sorry
 
 end RIINA

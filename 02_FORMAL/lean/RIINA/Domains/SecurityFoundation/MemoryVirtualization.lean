@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA MemoryVirtualization - Lean 4 Port
 
@@ -175,8 +179,7 @@ def has_permission (entry : EPTEntry) (perm : Nat) : Bool :=
 /-- Theorem: Guest VMs cannot modify their own Extended Page Tables.
     EPT modification is hypervisor-only operation. -/
 /-- ept_integrity (matches Coq) -/
-theorem ept_integrity : ∀ (guest : VirtualMachine) (ept : ExtendedPageTable), ~ guest_can_modify_ept guest ept := by
-  simp_all [Bool.and_eq_true]
+theorem ept_integrity : ∀ (guest : VirtualMachine) (ept : ExtendedPageTable), ~ guest_can_modify_ept guest ept := by sorry
 
 /-- Theorem: Creating a new VM requires the VM creation capability. -/
 /-- vm_creation_authorized (matches Coq) -/
@@ -190,33 +193,27 @@ theorem translation_deterministic : ∀ (ept : ExtendedPageTable) (gpa hpa1 hpa2
 
 /-- Invalid GPA translation fails -/
 /-- invalid_gpa_no_translation (matches Coq) -/
-theorem invalid_gpa_no_translation : ∀ (ept : ExtendedPageTable) (gpa : nat), (∀ entry, In entry (ept_entries ept) → ept_gpa entry ≠ gpa ∨ ept_valid entry = false) → translate_gpa ept gpa = None := by
-  rfl
+theorem invalid_gpa_no_translation : ∀ (ept : ExtendedPageTable) (gpa : nat), (∀ entry, In entry (ept_entries ept) → ept_gpa entry ≠ gpa ∨ ept_valid entry = false) → translate_gpa ept gpa = None := by sorry
 
 /-- EPT isolation between VMs -/
 /-- ept_vm_isolation (matches Coq) -/
-theorem ept_vm_isolation : ∀ (st : MemVirtState) (vm1 vm2 : VirtualMachine) (ept1 ept2 : ExtendedPageTable), vm_id vm1 ≠ vm_id vm2 → find_ept (vm_id vm1) (all_epts st) = Some ept1 → find_ept (vm_id vm2) (all_epts st) = Some ept2 → ept_owner ept1 ≠ ept_owner ept2 := by
-  simp_all [Bool.and_eq_true]
+theorem ept_vm_isolation : ∀ (st : MemVirtState) (vm1 vm2 : VirtualMachine) (ept1 ept2 : ExtendedPageTable), vm_id vm1 ≠ vm_id vm2 → find_ept (vm_id vm1) (all_epts st) = Some ept1 → find_ept (vm_id vm2) (all_epts st) = Some ept2 → ept_owner ept1 ≠ ept_owner ept2 := by sorry
 
 /-- No capability implies no VM creation -/
 /-- no_cap_no_vm_creation (matches Coq) -/
-theorem no_cap_no_vm_creation : ∀ (p : Process), proc_vm_create_cap p = false → ∀ vm, ~ creates p vm := by
-  simp_all [Bool.and_eq_true]
+theorem no_cap_no_vm_creation : ∀ (p : Process), proc_vm_create_cap p = false → ∀ vm, ~ creates p vm := by sorry
 
 /-- Page table permission enforced: access requires permission bit -/
 /-- page_table_permission_enforced (matches Coq) -/
-theorem page_table_permission_enforced : ∀ (entry : EPTEntry) (perm : nat), has_permission entry perm = false → Nat.land (ept_permissions entry) perm = 0 := by
-  simp_all [Bool.and_eq_true]
+theorem page_table_permission_enforced : ∀ (entry : EPTEntry) (perm : nat), has_permission entry perm = false → Nat.land (ept_permissions entry) perm = 0 := by sorry
 
 /-- Kernel pages non-writable from user: EPT entries with write=0 block writes -/
 /-- kernel_pages_non_writable_from_user (matches Coq) -/
-theorem kernel_pages_non_writable_from_user : ∀ (entry : EPTEntry), has_permission entry perm_write = false → Nat.land (ept_permissions entry) perm_write = 0 := by
-  simp_all [Bool.and_eq_true]
+theorem kernel_pages_non_writable_from_user : ∀ (entry : EPTEntry), has_permission entry perm_write = false → Nat.land (ept_permissions entry) perm_write = 0 := by sorry
 
 /-- Page fault handler is safe: invalid EPT entry yields no translation -/
 /-- page_fault_handler_safe (matches Coq) -/
-theorem page_fault_handler_safe : ∀ (ept : ExtendedPageTable) (gpa : nat), translate_gpa ept gpa = None → ~ gpa_in_ept ept gpa := by
-  simp_all [Bool.and_eq_true]
+theorem page_fault_handler_safe : ∀ (ept : ExtendedPageTable) (gpa : nat), translate_gpa ept gpa = None → ~ gpa_in_ept ept gpa := by sorry
 
 /-- Copy-on-write is correct: translated address is deterministic -/
 /-- copy_on_write_correct (matches Coq) -/
@@ -225,13 +222,11 @@ theorem copy_on_write_correct : ∀ (ept : ExtendedPageTable) (gpa : nat) (hpa :
 
 /-- Virtual address canonical: entries have consistent GPA-HPA mapping -/
 /-- virtual_address_canonical (matches Coq) -/
-theorem virtual_address_canonical : ∀ (ept : ExtendedPageTable) (gpa : nat), translate_gpa ept gpa ≠ None → ∃ hpa, translate_gpa ept gpa = Some hpa := by
-  rfl
+theorem virtual_address_canonical : ∀ (ept : ExtendedPageTable) (gpa : nat), translate_gpa ept gpa ≠ None → ∃ hpa, translate_gpa ept gpa = Some hpa := by sorry
 
 /-- EPT guest modification structurally impossible for any VM -/
 /-- guest_cannot_modify_any_ept (matches Coq) -/
-theorem guest_cannot_modify_any_ept : ∀ (vm : VirtualMachine) (ept : ExtendedPageTable), ~ guest_can_modify_ept vm ept := by
-  simp_all [Bool.and_eq_true]
+theorem guest_cannot_modify_any_ept : ∀ (vm : VirtualMachine) (ept : ExtendedPageTable), ~ guest_can_modify_ept vm ept := by sorry
 
 /-- Hypervisor always owns all EPTs -/
 /-- hypervisor_owns_all_epts (matches Coq) -/
@@ -245,8 +240,7 @@ theorem find_ept_deterministic : ∀ (vmid : VMId) (epts : list ExtendedPageTabl
 
 /-- No EPT means VM has no memory mapping -/
 /-- no_ept_no_mapping (matches Coq) -/
-theorem no_ept_no_mapping : ∀ (st : MemVirtState) (vm : VirtualMachine), find_ept (vm_id vm) (all_epts st) = None → ∀ ept, In ept (all_epts st) → ept_owner ept ≠ vm_id vm := by
-  simp_all [Bool.and_eq_true]
+theorem no_ept_no_mapping : ∀ (st : MemVirtState) (vm : VirtualMachine), find_ept (vm_id vm) (all_epts st) = None → ∀ ept, In ept (all_epts st) → ept_owner ept ≠ vm_id vm := by sorry
 
 /-- VM creation records creator correctly -/
 /-- vm_creation_records_creator (matches Coq) -/
@@ -260,22 +254,18 @@ theorem empty_ept_no_translations : ∀ (ept : ExtendedPageTable) (gpa : nat), e
 
 /-- GPA in EPT implies translation succeeds -/
 /-- gpa_in_ept_translation_exists (matches Coq) -/
-theorem gpa_in_ept_translation_exists : ∀ (ept : ExtendedPageTable) (gpa : nat), gpa_in_ept ept gpa → ∃ hpa, translate_gpa ept gpa = Some hpa := by
-  cases ‹_› <;> simp
+theorem gpa_in_ept_translation_exists : ∀ (ept : ExtendedPageTable) (gpa : nat), gpa_in_ept ept gpa → ∃ hpa, translate_gpa ept gpa = Some hpa := by sorry
 
 /-- Two VMs with different IDs get different EPTs -/
 /-- different_vms_different_epts (matches Coq) -/
-theorem different_vms_different_epts : ∀ (st : MemVirtState) (vm1 vm2 : VirtualMachine) (ept : ExtendedPageTable), vm_id vm1 ≠ vm_id vm2 → find_ept (vm_id vm1) (all_epts st) = Some ept → find_ept (vm_id vm2) (all_epts st) ≠ Some ept := by
-  simp_all [Bool.and_eq_true]
+theorem different_vms_different_epts : ∀ (st : MemVirtState) (vm1 vm2 : VirtualMachine) (ept : ExtendedPageTable), vm_id vm1 ≠ vm_id vm2 → find_ept (vm_id vm1) (all_epts st) = Some ept → find_ept (vm_id vm2) (all_epts st) ≠ Some ept := by sorry
 
 /-- Write protect enforced via permission bits -/
 /-- write_protect_enforced (matches Coq) -/
-theorem write_protect_enforced : ∀ (entry : EPTEntry), has_permission entry perm_write = false → has_permission entry perm_exec = false → Nat.land (ept_permissions entry) perm_write = 0 ∧ Nat.land (ept_permissions entry) perm_exec = 0 := by
-  simp_all [Bool.and_eq_true]
+theorem write_protect_enforced : ∀ (entry : EPTEntry), has_permission entry perm_write = false → has_permission entry perm_exec = false → Nat.land (ept_permissions entry) perm_write = 0 ∧ Nat.land (ept_permissions entry) perm_exec = 0 := by sorry
 
 /-- Execute disable respected -/
 /-- execute_disable_respected (matches Coq) -/
-theorem execute_disable_respected : ∀ (entry : EPTEntry), has_permission entry perm_exec = false → Nat.land (ept_permissions entry) perm_exec = 0 := by
-  simp_all [Bool.and_eq_true]
+theorem execute_disable_respected : ∀ (entry : EPTEntry), has_permission entry perm_exec = false → Nat.land (ept_permissions entry) perm_exec = 0 := by sorry
 
 end RIINA

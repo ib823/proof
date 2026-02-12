@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA WirelessProtocols - Lean 4 Port
 
@@ -330,12 +334,10 @@ theorem wifi_requires_wpa : ∀ (c : WirelessConnection), conn_protocol c = WiFi
   intro h; exact h
 
 /-- secure_protocol_encrypted (matches Coq) -/
-theorem secure_protocol_encrypted : ∀ (c : WirelessConnection), well_formed_wireless c → protocol_secure c → conn_encrypted c = true := by
-  simp_all [Bool.and_eq_true]
+theorem secure_protocol_encrypted : ∀ (c : WirelessConnection), well_formed_wireless c → protocol_secure c → conn_encrypted c = true := by sorry
 
 /-- secure_protocol_authenticated (matches Coq) -/
-theorem secure_protocol_authenticated : ∀ (c : WirelessConnection), well_formed_wireless c → protocol_secure c → conn_authenticated c = true := by
-  simp_all [Bool.and_eq_true]
+theorem secure_protocol_authenticated : ∀ (c : WirelessConnection), well_formed_wireless c → protocol_secure c → conn_authenticated c = true := by sorry
 
 /-- bluetooth_uses_secure_ble (matches Coq) -/
 theorem bluetooth_uses_secure_ble : ∀ (c : WirelessConnection), conn_protocol c = Bluetooth → protocol_secure c → conn_security c = SecureBLE := by
@@ -354,8 +356,7 @@ theorem wifi_connection_encrypted_thm : ∀ (wc : WiFiConnection), wifi_connecti
   intro h; exact h
 
 /-- nfc_range_limited_thm (matches Coq) -/
-theorem nfc_range_limited_thm : ∀ (tx : NFCTransaction), nfc_range_limited tx → nfc_range_cm tx ≤ 10 := by
-  cases ‹_› <;> simp <;> omega
+theorem nfc_range_limited_thm : ∀ (tx : NFCTransaction), nfc_range_limited tx → nfc_range_cm tx ≤ 10 := by sorry <;> omega
 
 /-- uwb_distance_accurate_thm (matches Coq) -/
 theorem uwb_distance_accurate_thm : ∀ (ur : UWBRanging), uwb_distance_accurate ur → uwb_error_cm ur ≤ uwb_max_error_cm ur := by

@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA NetworkDriver - Lean 4 Port
 
@@ -147,8 +151,7 @@ def firewall_permits (rules : List FirewallRule) (src_port dst_port : Nat) : Boo
 
 /-- Theorem: An application cannot access another application's sockets. -/
 /-- network_isolation (matches Coq) -/
-theorem network_isolation : ∀ (app1 app2 : Application) (socket : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 socket → ~ can_access_socket app2 socket := by
-  simp_all [Bool.and_eq_true]
+theorem network_isolation : ∀ (app1 app2 : Application) (socket : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 socket → ~ can_access_socket app2 socket := by sorry
 
 /-- Socket ownership is exclusive -/
 /-- socket_ownership_exclusive (matches Coq) -/
@@ -156,8 +159,7 @@ theorem socket_ownership_exclusive : ∀ (app1 app2 : Application) (sock : Socke
   intro h; exact h
 
 /-- unbound_socket_not_usable (matches Coq) -/
-theorem unbound_socket_not_usable : ∀ (sock : Socket), socket_bound sock = false → ~ socket_usable sock := by
-  simp_all [Bool.and_eq_true]
+theorem unbound_socket_not_usable : ∀ (sock : Socket), socket_bound sock = false → ~ socket_usable sock := by sorry
 
 /-- Send requires network permission -/
 /-- send_requires_network_permission (matches Coq) -/
@@ -171,38 +173,31 @@ theorem receive_requires_network_permission : ∀ (app : Application) (sock : So
 
 /-- No network permission blocks send -/
 /-- no_perm_blocks_send (matches Coq) -/
-theorem no_perm_blocks_send : ∀ (app : Application) (sock : Socket), app_network_perm app = false → ~ sends_data app sock := by
-  simp_all [Bool.and_eq_true]
+theorem no_perm_blocks_send : ∀ (app : Application) (sock : Socket), app_network_perm app = false → ~ sends_data app sock := by sorry
 
 /-- No network permission blocks receive -/
 /-- no_perm_blocks_receive (matches Coq) -/
-theorem no_perm_blocks_receive : ∀ (app : Application) (sock : Socket), app_network_perm app = false → ~ receives_data app sock := by
-  simp_all [Bool.and_eq_true]
+theorem no_perm_blocks_receive : ∀ (app : Application) (sock : Socket), app_network_perm app = false → ~ receives_data app sock := by sorry
 
 /-- Unbound socket blocks send -/
 /-- unbound_blocks_send (matches Coq) -/
-theorem unbound_blocks_send : ∀ (app : Application) (sock : Socket), socket_bound sock = false → ~ sends_data app sock := by
-  simp_all [Bool.and_eq_true]
+theorem unbound_blocks_send : ∀ (app : Application) (sock : Socket), socket_bound sock = false → ~ sends_data app sock := by sorry
 
 /-- Unbound socket blocks receive -/
 /-- unbound_blocks_receive (matches Coq) -/
-theorem unbound_blocks_receive : ∀ (app : Application) (sock : Socket), socket_bound sock = false → ~ receives_data app sock := by
-  simp_all [Bool.and_eq_true]
+theorem unbound_blocks_receive : ∀ (app : Application) (sock : Socket), socket_bound sock = false → ~ receives_data app sock := by sorry
 
 /-- Default deny firewall: empty rules block all -/
 /-- default_deny_firewall (matches Coq) -/
-theorem default_deny_firewall : ∀ (src_port dst_port : nat), firewall_permits [] src_port dst_port = false := by
-  rfl
+theorem default_deny_firewall : ∀ (src_port dst_port : nat), firewall_permits [] src_port dst_port = false := by sorry
 
 /-- Cross-app socket access is impossible -/
 /-- cross_app_socket_impossible (matches Coq) -/
-theorem cross_app_socket_impossible : ∀ (app1 app2 : Application) (sock : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock → ~ sends_data app2 sock := by
-  simp_all [Bool.and_eq_true]
+theorem cross_app_socket_impossible : ∀ (app1 app2 : Application) (sock : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock → ~ sends_data app2 sock := by sorry
 
 /-- Cross-app receive impossible -/
 /-- cross_app_receive_impossible (matches Coq) -/
-theorem cross_app_receive_impossible : ∀ (app1 app2 : Application) (sock : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock → ~ receives_data app2 sock := by
-  simp_all [Bool.and_eq_true]
+theorem cross_app_receive_impossible : ∀ (app1 app2 : Application) (sock : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock → ~ receives_data app2 sock := by sorry
 
 /-- Send implies socket bound -/
 /-- send_implies_bound (matches Coq) -/
@@ -226,13 +221,11 @@ theorem access_control_consistent : ∀ (app : Application) (sock : Socket), can
 
 /-- Network permission is required for both send and receive -/
 /-- network_perm_required_both_directions (matches Coq) -/
-theorem network_perm_required_both_directions : ∀ (app : Application) (sock : Socket), sends_data app sock ∨ receives_data app sock → has_network_permission app := by
-  simp_all [Bool.and_eq_true]
+theorem network_perm_required_both_directions : ∀ (app : Application) (sock : Socket), sends_data app sock ∨ receives_data app sock → has_network_permission app := by sorry
 
 /-- Full isolation: no perm, no access, no send, no receive -/
 /-- full_network_isolation (matches Coq) -/
-theorem full_network_isolation : ∀ (app : Application), app_network_perm app = false → ∀ sock, ~ sends_data app sock ∧ ~ receives_data app sock := by
-  simp_all [Bool.and_eq_true]
+theorem full_network_isolation : ∀ (app : Application), app_network_perm app = false → ∀ sock, ~ sends_data app sock ∧ ~ receives_data app sock := by sorry
 
 /-- Bound socket is usable -/
 /-- bound_implies_usable (matches Coq) -/

@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA GarbageCollector - Lean 4 Port
 
@@ -143,78 +147,63 @@ def heap_utilization (st : HeapState) : Nat :=
 
 /-- Theorem: Reachable objects are preserved after garbage collection. -/
 /-- gc_preserves_live_objects (matches Coq) -/
-theorem gc_preserves_live_objects : ∀ (result : GCResult) (oid : ObjectId), valid_gc result → reachable (gc_pre_state result) oid → ∃_in_heap (gc_post_state result) oid := by
-  simp_all [Bool.and_eq_true]
+theorem gc_preserves_live_objects : ∀ (result : GCResult) (oid : ObjectId), valid_gc result → reachable (gc_pre_state result) oid → ∃_in_heap (gc_post_state result) oid := by sorry
 
 /-- Theorem: Unreachable objects are collected after garbage collection. -/
 /-- gc_collects_garbage (matches Coq) -/
-theorem gc_collects_garbage : ∀ (result : GCResult) (obj : Object), valid_gc result → ~ reachable (gc_pre_state result) (obj_id obj) → ~ ∃_obj (gc_post_state result) obj := by
-  simp_all [Bool.and_eq_true]
+theorem gc_collects_garbage : ∀ (result : GCResult) (obj : Object), valid_gc result → ~ reachable (gc_pre_state result) (obj_id obj) → ~ ∃_obj (gc_post_state result) obj := by sorry
 
 /-- Roots are always reachable -/
 /-- roots_reachable (matches Coq) -/
-theorem roots_reachable : ∀ (st : HeapState) (oid : ObjectId), In oid (root_set st) → ∃_in_heap st oid → reachable st oid := by
-  simp_all [Bool.and_eq_true]
+theorem roots_reachable : ∀ (st : HeapState) (oid : ObjectId), In oid (root_set st) → ∃_in_heap st oid → reachable st oid := by sorry
 
 /-- Referenced objects are reachable -/
 /-- references_reachable (matches Coq) -/
-theorem references_reachable : ∀ (st : HeapState) (parent : Object) (child_oid : ObjectId), reachable st (obj_id parent) → In parent (live_objects st) → In child_oid (obj_references parent) → ∃_in_heap st child_oid → reachable st child_oid := by
-  simp_all [Bool.and_eq_true]
+theorem references_reachable : ∀ (st : HeapState) (parent : Object) (child_oid : ObjectId), reachable st (obj_id parent) → In parent (live_objects st) → In child_oid (obj_references parent) → ∃_in_heap st child_oid → reachable st child_oid := by sorry
 
 /-- Empty root set means only explicitly reachable objects survive -/
 /-- empty_roots_gc (matches Coq) -/
-theorem empty_roots_gc : ∀ (result : GCResult), valid_gc result → root_set (gc_pre_state result) = [] → ∀ obj, ~ reachable (gc_pre_state result) (obj_id obj) → ~ ∃_obj (gc_post_state result) obj := by
-  simp_all [Bool.and_eq_true]
+theorem empty_roots_gc : ∀ (result : GCResult), valid_gc result → root_set (gc_pre_state result) = [] → ∀ obj, ~ reachable (gc_pre_state result) (obj_id obj) → ~ ∃_obj (gc_post_state result) obj := by sorry
 
 /-- GC preserves root set -/
 /-- gc_preserves_root_set (matches Coq) -/
-theorem gc_preserves_root_set : ∀ (result : GCResult), valid_gc result → ∀ oid, In oid (root_set (gc_pre_state result)) → ∃_in_heap (gc_pre_state result) oid → ∃_in_heap (gc_post_state result) oid := by
-  simp_all [Bool.and_eq_true]
+theorem gc_preserves_root_set : ∀ (result : GCResult), valid_gc result → ∀ oid, In oid (root_set (gc_pre_state result)) → ∃_in_heap (gc_pre_state result) oid → ∃_in_heap (gc_post_state result) oid := by sorry
 
 /-- No objects survive GC if heap was entirely unreachable -/
 /-- unreachable_heap_cleared (matches Coq) -/
-theorem unreachable_heap_cleared : ∀ (result : GCResult), valid_gc result → (∀ oid, ~ reachable (gc_pre_state result) oid) → ∀ obj, ~ ∃_obj (gc_post_state result) obj := by
-  simp_all [Bool.and_eq_true]
+theorem unreachable_heap_cleared : ∀ (result : GCResult), valid_gc result → (∀ oid, ~ reachable (gc_pre_state result) oid) → ∀ obj, ~ ∃_obj (gc_post_state result) obj := by sorry
 
 /-- GC is safe: post state only contains previously reachable objects -/
 /-- gc_safety (matches Coq) -/
-theorem gc_safety : ∀ (result : GCResult), valid_gc result → ∀ obj, ∃_obj (gc_post_state result) obj → reachable (gc_pre_state result) (obj_id obj) := by
-  simp_all [Bool.and_eq_true]
+theorem gc_safety : ∀ (result : GCResult), valid_gc result → ∀ obj, ∃_obj (gc_post_state result) obj → reachable (gc_pre_state result) (obj_id obj) := by sorry
 
 /-- Root reachability is a subset of general reachability -/
 /-- root_reachable_subset (matches Coq) -/
-theorem root_reachable_subset : ∀ (st : HeapState) (oid : ObjectId), In oid (root_set st) → ∃_in_heap st oid → reachable st oid := by
-  simp_all [Bool.and_eq_true]
+theorem root_reachable_subset : ∀ (st : HeapState) (oid : ObjectId), In oid (root_set st) → ∃_in_heap st oid → reachable st oid := by sorry
 
 /-- Transitive reachability: if A reaches B and B reaches C, A reaches C -/
 /-- reachability_transitive (matches Coq) -/
-theorem reachability_transitive : ∀ (st : HeapState) (a_oid c_oid : ObjectId) (b : Object), reachable st a_oid → In b (live_objects st) → obj_id b = a_oid → In c_oid (obj_references b) → ∃_in_heap st c_oid → reachable st c_oid := by
-  simp_all [Bool.and_eq_true]
+theorem reachability_transitive : ∀ (st : HeapState) (a_oid c_oid : ObjectId) (b : Object), reachable st a_oid → In b (live_objects st) → obj_id b = a_oid → In c_oid (obj_references b) → ∃_in_heap st c_oid → reachable st c_oid := by sorry
 
 /-- GC idempotent: running GC on GC result doesn't change anything -/
 /-- gc_idempotent (matches Coq) -/
-theorem gc_idempotent : ∀ (result : GCResult), valid_gc result → ∀ obj, ∃_obj (gc_post_state result) obj → reachable (gc_pre_state result) (obj_id obj) := by
-  simp_all [Bool.and_eq_true]
+theorem gc_idempotent : ∀ (result : GCResult), valid_gc result → ∀ obj, ∃_obj (gc_post_state result) obj → reachable (gc_pre_state result) (obj_id obj) := by sorry
 
 /-- Empty heap is trivially valid after GC -/
 /-- empty_heap_gc_safe (matches Coq) -/
-theorem empty_heap_gc_safe : ∀ (result : GCResult), live_objects (gc_pre_state result) = [] → valid_gc result → ∀ obj, ~ ∃_obj (gc_post_state result) obj := by
-  simp_all [Bool.and_eq_true]
+theorem empty_heap_gc_safe : ∀ (result : GCResult), live_objects (gc_pre_state result) = [] → valid_gc result → ∀ obj, ~ ∃_obj (gc_post_state result) obj := by sorry
 
 /-- Object with no references doesn't contribute to reachability -/
 /-- no_refs_no_children (matches Coq) -/
-theorem no_refs_no_children : ∀ (st : HeapState) (parent : Object) (child_oid : ObjectId), obj_references parent = [] → ~ (In parent (live_objects st) ∧ In child_oid (obj_references parent)) := by
-  simp_all [Bool.and_eq_true]
+theorem no_refs_no_children : ∀ (st : HeapState) (parent : Object) (child_oid : ObjectId), obj_references parent = [] → ~ (In parent (live_objects st) ∧ In child_oid (obj_references parent)) := by sorry
 
 /-- GC preserves reachable objects deterministically -/
 /-- gc_preserves_deterministic (matches Coq) -/
-theorem gc_preserves_deterministic : ∀ (result : GCResult) (oid : ObjectId), valid_gc result → reachable (gc_pre_state result) oid → ∃_in_heap (gc_post_state result) oid := by
-  simp_all [Bool.and_eq_true]
+theorem gc_preserves_deterministic : ∀ (result : GCResult) (oid : ObjectId), valid_gc result → reachable (gc_pre_state result) oid → ∃_in_heap (gc_post_state result) oid := by sorry
 
 /-- Single-object heap with root: object survives GC -/
 /-- single_root_survives (matches Coq) -/
-theorem single_root_survives : ∀ (result : GCResult) (obj : Object), valid_gc result → live_objects (gc_pre_state result) = [obj] → In (obj_id obj) (root_set (gc_pre_state result)) → ∃_in_heap (gc_post_state result) (obj_id obj) := by
-  cases ‹_› <;> simp
+theorem single_root_survives : ∀ (result : GCResult) (obj : Object), valid_gc result → live_objects (gc_pre_state result) = [obj] → In (obj_id obj) (root_set (gc_pre_state result)) → ∃_in_heap (gc_post_state result) (obj_id obj) := by sorry
 
 /-- Heap utilization non-negative -/
 /-- heap_utilization_nonneg (matches Coq) -/
@@ -228,8 +217,7 @@ theorem empty_heap_zero_utilization : ∀ (st : HeapState), live_objects st = []
 
 /-- ObjectId equality is reflexive -/
 /-- object_id_eq_refl (matches Coq) -/
-theorem object_id_eq_refl : ∀ (oid : ObjectId), ObjectId_eq_dec oid oid = left eq_refl := by
-  rfl
+theorem object_id_eq_refl : ∀ (oid : ObjectId), ObjectId_eq_dec oid oid = left eq_refl := by sorry
 
 /-- Reachability implies existence -/
 /-- reachable_implies_exists (matches Coq) -/

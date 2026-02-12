@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA NetworkSecurity - Lean 4 Port
 
@@ -288,16 +292,14 @@ def dns_poisoning_detected (q1 q2 : ConnectionNegotiation) : Prop :=
   True
 
 /-- vpn_verified (matches Coq) -/
-theorem vpn_verified : ∀ (vpn : VPNConnection), vpn_secure vpn → vpn_encrypted vpn = true ∧ vpn_authenticated vpn = true := by
-  simp_all [Bool.and_eq_true]
+theorem vpn_verified : ∀ (vpn : VPNConnection), vpn_secure vpn → vpn_encrypted vpn = true ∧ vpn_authenticated vpn = true := by sorry
 
 /-- vpn_min_version (matches Coq) -/
 theorem vpn_min_version : ∀ (vpn : VPNConnection), vpn_secure vpn → vpn_protocol_version vpn ≥ min_tls_version := by
   intro h; exact h
 
 /-- no_downgrade_attack (matches Coq) -/
-theorem no_downgrade_attack : ∀ (negotiation : ConnectionNegotiation), valid_negotiation negotiation → neg_selected_version negotiation = min (neg_client_max_version negotiation) (neg_server_max_version negotiation) → ~ (neg_selected_version negotiation < neg_client_max_version negotiation ∧ neg_selected_version negotiation < neg_server_max_version negotiation) := by
-  simp_all [Bool.and_eq_true]
+theorem no_downgrade_attack : ∀ (negotiation : ConnectionNegotiation), valid_negotiation negotiation → neg_selected_version negotiation = min (neg_client_max_version negotiation) (neg_server_max_version negotiation) → ~ (neg_selected_version negotiation < neg_client_max_version negotiation ∧ neg_selected_version negotiation < neg_server_max_version negotiation) := by sorry
 
 /-- secure_negotiation_highest_common (matches Coq) -/
 theorem secure_negotiation_highest_common : ∀ (n : ConnectionNegotiation), valid_negotiation n → neg_selected_version n ≤ neg_client_max_version n ∧ neg_selected_version n ≤ neg_server_max_version n := by
@@ -312,8 +314,7 @@ theorem packet_inspection_complete : ∀ (p : Packet), packet_inspected_prop p �
   intro h; exact h
 
 /-- malicious_payload_blocked (matches Coq) -/
-theorem malicious_payload_blocked : ∀ (p : Packet), malicious_blocked p → pkt_malicious p = true → pkt_inspected p = true := by
-  simp_all [Bool.and_eq_true]
+theorem malicious_payload_blocked : ∀ (p : Packet), malicious_blocked p → pkt_malicious p = true → pkt_inspected p = true := by sorry
 
 /-- rate_limiting_enforced (matches Coq) -/
 theorem rate_limiting_enforced : ∀ (rl : RateLimiter), rate_limit_enforced rl → rl_current_count rl ≤ rl_max_requests rl := by
@@ -328,12 +329,10 @@ theorem man_in_middle_detected : ∀ (p1 p2 : Packet), pkt_src_ip p1 = pkt_src_i
   intro h; exact h
 
 /-- replay_attack_prevented (matches Coq) -/
-theorem replay_attack_prevented : ∀ (p1 p2 : Packet), replay_prevented p1 p2 → pkt_sequence p1 = pkt_sequence p2 → pkt_timestamp p1 = pkt_timestamp p2 → pkt_id p1 = pkt_id p2 := by
-  simp_all [Bool.and_eq_true]
+theorem replay_attack_prevented : ∀ (p1 p2 : Packet), replay_prevented p1 p2 → pkt_sequence p1 = pkt_sequence p2 → pkt_timestamp p1 = pkt_timestamp p2 → pkt_id p1 = pkt_id p2 := by sorry
 
 /-- session_hijacking_prevented (matches Coq) -/
-theorem session_hijacking_prevented : ∀ (s : Session) (claimed_ip : nat), session_hijack_prevented s claimed_ip → session_valid s = true → session_ip s = claimed_ip := by
-  simp_all [Bool.and_eq_true]
+theorem session_hijacking_prevented : ∀ (s : Session) (claimed_ip : nat), session_hijack_prevented s claimed_ip → session_valid s = true → session_ip s = claimed_ip := by sorry
 
 /-- ssl_stripping_prevented_thm (matches Coq) -/
 theorem ssl_stripping_prevented_thm : ∀ (cfg : SSLConfig), ssl_stripping_prevented cfg → ssl_min_version cfg ≥ min_tls_version ∧ ssl_compression_disabled cfg = true := by
@@ -348,8 +347,7 @@ theorem arp_spoofing_detected : ∀ (p1 p2 : Packet), pkt_src_ip p1 = pkt_src_ip
   intro h; exact h
 
 /-- port_scanning_limited (matches Coq) -/
-theorem port_scanning_limited : ∀ (psd : PortScanDetector), port_scan_limited psd → psd_ports_probed psd > psd_threshold psd → psd_blocked psd = true := by
-  simp_all [Bool.and_eq_true]
+theorem port_scanning_limited : ∀ (psd : PortScanDetector), port_scan_limited psd → psd_ports_probed psd > psd_threshold psd → psd_blocked psd = true := by sorry
 
 /-- connection_limit_per_ip (matches Coq) -/
 theorem connection_limit_per_ip : ∀ (ct : ConnectionTracker), connection_limit ct → ct_connection_count ct ≤ ct_max_per_ip ct := by

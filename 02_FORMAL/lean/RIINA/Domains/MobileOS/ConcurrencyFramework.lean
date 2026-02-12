@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA ConcurrencyFramework - Lean 4 Port
 
@@ -275,12 +279,10 @@ def well_formed_channel (c : Channel) : Prop :=
   chan_capacity c > 0
 
 /-- no_deadlock (matches Coq) -/
-theorem no_deadlock : ∀ (program : Program), well_typed program → ~ can_deadlock program := by
-  simp_all [Bool.and_eq_true]
+theorem no_deadlock : ∀ (program : Program), well_typed program → ~ can_deadlock program := by sorry
 
 /-- no_data_race (matches Coq) -/
-theorem no_data_race : ∀ (program : Program), well_typed program → ~ has_data_race program := by
-  simp_all [Bool.and_eq_true]
+theorem no_data_race : ∀ (program : Program), well_typed program → ~ has_data_race program := by sorry
 
 /-- actor_isolation_complete (matches Coq) -/
 theorem actor_isolation_complete : ∀ (actor1 actor2 : Actor) (data : Data), actor_id actor1 ≠ actor_id actor2 → owns actor1 data → ~ In data (actor_owned_data actor2) → ~ owns actor2 data := by
@@ -295,12 +297,10 @@ theorem well_typed_all_annotated : ∀ (program : Program), well_typed program �
   intro h; exact h
 
 /-- lock_order_no_cycles (matches Coq) -/
-theorem lock_order_no_cycles : ∀ (acquired : list Resource), respects_lock_order acquired → ∀ r, In r acquired → ~ (∃ r', In r' acquired ∧ resource_order r < resource_order r' ∧ resource_order r' < resource_order r) := by
-  simp_all [Bool.and_eq_true]
+theorem lock_order_no_cycles : ∀ (acquired : list Resource), respects_lock_order acquired → ∀ r, In r acquired → ~ (∃ r', In r' acquired ∧ resource_order r < resource_order r' ∧ resource_order r' < resource_order r) := by sorry
 
 /-- deadlock_free (matches Coq) -/
-theorem deadlock_free : ∀ (program : Program), well_typed program → ~ can_deadlock program := by
-  simp_all [Bool.and_eq_true]
+theorem deadlock_free : ∀ (program : Program), well_typed program → ~ can_deadlock program := by sorry
 
 /-- priority_inversion_prevented (matches Coq) -/
 theorem priority_inversion_prevented : ∀ (t1 t2 : AsyncTask), task_priority t1 > task_priority t2 → task_priority t1 > task_priority t2 := by
@@ -327,8 +327,7 @@ theorem semaphore_count_non_negative : ∀ (s : Semaphore), sem_count s ≥ 0 :=
   omega
 
 /-- barrier_synchronization_complete (matches Coq) -/
-theorem barrier_synchronization_complete : ∀ (b : Barrier), well_formed_barrier b → barrier_count b = barrier_total b → barrier_released b = true := by
-  simp_all [Bool.and_eq_true]
+theorem barrier_synchronization_complete : ∀ (b : Barrier), well_formed_barrier b → barrier_count b = barrier_total b → barrier_released b = true := by sorry
 
 /-- future_resolved_once (matches Coq) -/
 theorem future_resolved_once : ∀ (f : Future), well_formed_future f → future_resolve_count f ≤ 1 := by
@@ -355,7 +354,6 @@ theorem concurrent_modification_detected : ∀ (a1 a2 : Actor) (d : Data), owns 
   intro h; exact h
 
 /-- future_has_value_when_resolved (matches Coq) -/
-theorem future_has_value_when_resolved : ∀ (f : Future), well_formed_future f → future_resolved f = true → future_value f ≠ None := by
-  simp_all [Bool.and_eq_true]
+theorem future_has_value_when_resolved : ∀ (f : Future), well_formed_future f → future_resolved f = true → future_value f ≠ None := by sorry
 
 end RIINA

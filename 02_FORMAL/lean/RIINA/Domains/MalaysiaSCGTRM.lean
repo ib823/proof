@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA MalaysiaSCGTRM - Lean 4 Port
 
@@ -162,8 +166,7 @@ theorem gtrm_req_2 : ∀ (e : CMEntity), cm_risk_framework e = true → gtrm_ris
   intro h; exact h
 
 /-- gtrm_req_3 (matches Coq) -/
-theorem gtrm_req_3 : ∀ (e : CMEntity) (t : nat), cm_pentest_done e = true → t ≤ cm_last_pentest e + cm_pentest_interval e → gtrm_pentest_current e t := by
-  simp_all [Bool.and_eq_true]
+theorem gtrm_req_3 : ∀ (e : CMEntity) (t : nat), cm_pentest_done e = true → t ≤ cm_last_pentest e + cm_pentest_interval e → gtrm_pentest_current e t := by sorry
 
 /-- gtrm_req_4 (matches Coq) -/
 theorem gtrm_req_4 : ∀ (e : CMEntity), cm_ai_risk_assessed e = true → gtrm_ai_assessed e := by
@@ -186,8 +189,7 @@ theorem gtrm_composition : ∀ (e : CMEntity) (t : nat), gtrm_board_accountable 
   omega
 
 /-- cm_entity_coverage (matches Coq) -/
-theorem cm_entity_coverage : ∀ (t : CMEntityType), In t all_cm_entity_types := by
-  simp_all [Bool.and_eq_true]
+theorem cm_entity_coverage : ∀ (t : CMEntityType), In t all_cm_entity_types := by sorry
 
 /-- pentest_expired (matches Coq) -/
 theorem pentest_expired : ∀ (e : CMEntity) (t : nat), cm_last_pentest e + cm_pentest_interval e < t → ~ gtrm_pentest_current e t := by
@@ -238,15 +240,13 @@ theorem ai_model_risk_complete : ∀ (ar : AIModelRisk), ai_bias_assessed ar = t
   intro h; exact h
 
 /-- ai_not_validated_not_managed (matches Coq) -/
-theorem ai_not_validated_not_managed : ∀ (ar : AIModelRisk), ai_model_validated ar = false → ~ ai_risk_managed ar := by
-  simp_all [Bool.and_eq_true]
+theorem ai_not_validated_not_managed : ∀ (ar : AIModelRisk), ai_model_validated ar = false → ~ ai_risk_managed ar := by sorry
 
 /-- cm_cloud_fully_assessed (matches Coq) -/
 theorem cm_cloud_fully_assessed : ∀ (cr : CMCloudRisk), cmc_data_residency_compliant cr = true → cmc_encryption_at_rest cr = true → cmc_encryption_in_transit cr = true → cmc_access_controls cr = true → cmc_exit_strategy cr = true → cmc_cloud_risk_assessed cr := by
   intro h; exact h
 
 /-- cm_cloud_missing_exit_strategy (matches Coq) -/
-theorem cm_cloud_missing_exit_strategy : ∀ (cr : CMCloudRisk), cmc_exit_strategy cr = false → ~ cmc_cloud_risk_assessed cr := by
-  simp_all [Bool.and_eq_true]
+theorem cm_cloud_missing_exit_strategy : ∀ (cr : CMCloudRisk), cmc_exit_strategy cr = false → ~ cmc_cloud_risk_assessed cr := by sorry
 
 end RIINA

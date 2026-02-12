@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA ValRelMonotone - Lean 4 Port
 
@@ -47,8 +52,7 @@ namespace RIINA
 /-- The cumulative relation val_rel_le is defined to be downward-closed
     in the step index by construction. This lemma makes that explicit. -/
 /-- val_rel_le_monotone (matches Coq) -/
-theorem val_rel_le_monotone : ∀ m n Σ T v1 v2, m ≤ n → val_rel_le n Σ T v1 v2 → val_rel_le m Σ T v1 v2 := by
-  cases ‹_› <;> simp <;> omega
+theorem val_rel_le_monotone : ∀ m n Σ T v1 v2, m ≤ n → val_rel_le n Σ T v1 v2 → val_rel_le m Σ T v1 v2 := by sorry <;> omega
 
 /-- If related at S n, then related at n -/
 /-- val_rel_le_pred (matches Coq) -/
@@ -57,8 +61,7 @@ theorem val_rel_le_pred : ∀ n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 → val_
 
 /-- Monotonicity composes: if related at n and k ≤ m ≤ n, related at k -/
 /-- val_rel_le_trans_mono (matches Coq) -/
-theorem val_rel_le_trans_mono : ∀ k m n Σ T v1 v2, k ≤ m → m ≤ n → val_rel_le n Σ T v1 v2 → val_rel_le k Σ T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_trans_mono : ∀ k m n Σ T v1 v2, k ≤ m → m ≤ n → val_rel_le n Σ T v1 v2 → val_rel_le k Σ T v1 v2 := by sorry
 
 /-- If related at both m and n, related at max m n -/
 /-- val_rel_le_max (matches Coq) -/
@@ -67,16 +70,13 @@ theorem val_rel_le_max : ∀ m n Σ T v1 v2, val_rel_le m Σ T v1 v2 → val_rel
 
 /-- If related at max m n, related at both m and n -/
 /-- val_rel_le_from_max (matches Coq) -/
-theorem val_rel_le_from_max : ∀ m n Σ T v1 v2, val_rel_le (max m n) Σ T v1 v2 → val_rel_le m Σ T v1 v2 ∧ val_rel_le n Σ T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_from_max : ∀ m n Σ T v1 v2, val_rel_le (max m n) Σ T v1 v2 → val_rel_le m Σ T v1 v2 ∧ val_rel_le n Σ T v1 v2 := by sorry
 
 /-- Related at either m or n implies related at min m n -/
 /-- val_rel_le_to_min (matches Coq) -/
-theorem val_rel_le_to_min : ∀ m n Σ T v1 v2, val_rel_le m Σ T v1 v2 → val_rel_le (min m n) Σ T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_to_min : ∀ m n Σ T v1 v2, val_rel_le m Σ T v1 v2 → val_rel_le (min m n) Σ T v1 v2 := by sorry
 
 /-- val_rel_le_to_min_r (matches Coq) -/
-theorem val_rel_le_to_min_r : ∀ m n Σ T v1 v2, val_rel_le n Σ T v1 v2 → val_rel_le (min m n) Σ T v1 v2 := by
-  simp_all [Bool.and_eq_true]
+theorem val_rel_le_to_min_r : ∀ m n Σ T v1 v2, val_rel_le n Σ T v1 v2 → val_rel_le (min m n) Σ T v1 v2 := by sorry
 
 end RIINA

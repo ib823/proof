@@ -1,3 +1,7 @@
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
 /-\! # RIINA Industry Proofs - Lean 4 Port

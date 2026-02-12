@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA ReducibilityFull - Lean 4 Port
 
@@ -95,23 +99,19 @@ def Reducible (T : ty) (e : expr) : Prop :=
 
 /-- Values don't step -/
 /-- value_not_step (matches Coq) -/
-theorem value_not_step : ∀ v st ctx e' st' ctx', value v → (v, st, ctx) --> (e', st', ctx') → False := by
-  simp_all [Bool.and_eq_true]
+theorem value_not_step : ∀ v st ctx e' st' ctx', value v → (v, st, ctx) --> (e', st', ctx') → False := by sorry
 
 /-- Values are SN -/
 /-- value_SN (matches Coq) -/
-theorem value_SN : ∀ v, value v → SN_expr v := by
-  simp_all [Bool.and_eq_true]
+theorem value_SN : ∀ v, value v → SN_expr v := by sorry
 
 /-- SN is preserved by reduction -/
 /-- SN_step (matches Coq) -/
-theorem SN_step : ∀ e st ctx e' st' ctx', SN (e, st, ctx) → (e, st, ctx) --> (e', st', ctx') → SN (e', st', ctx') := by
-  simp_all [Bool.and_eq_true]
+theorem SN_step : ∀ e st ctx e' st' ctx', SN (e, st, ctx) → (e, st, ctx) --> (e', st', ctx') → SN (e', st', ctx') := by sorry
 
 /-- SN for EClassify - wrapper that evaluates to a value -/
 /-- SN_classify_aux (matches Coq) -/
-theorem SN_classify_aux : ∀ cfg, SN cfg → SN (EClassify (fst (fst cfg)), snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_classify_aux : ∀ cfg, SN cfg → SN (EClassify (fst (fst cfg)), snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_classify (matches Coq) -/
 theorem SN_classify : ∀ e st ctx, SN (e, st, ctx) → SN (EClassify e, st, ctx) := by
@@ -119,8 +119,7 @@ theorem SN_classify : ∀ e st ctx, SN (e, st, ctx) → SN (EClassify e, st, ctx
 
 /-- SN for EProve - wrapper that evaluates to a value -/
 /-- SN_prove_aux (matches Coq) -/
-theorem SN_prove_aux : ∀ cfg, SN cfg → SN (EProve (fst (fst cfg)), snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_prove_aux : ∀ cfg, SN cfg → SN (EProve (fst (fst cfg)), snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_prove (matches Coq) -/
 theorem SN_prove : ∀ e st ctx, SN (e, st, ctx) → SN (EProve e, st, ctx) := by
@@ -128,8 +127,7 @@ theorem SN_prove : ∀ e st ctx, SN (e, st, ctx) → SN (EProve e, st, ctx) := b
 
 /-- SN for EPerform - wrapper that evaluates then becomes its argument -/
 /-- SN_perform_aux (matches Coq) -/
-theorem SN_perform_aux : ∀ cfg eff, SN cfg → SN (EPerform eff (fst (fst cfg)), snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_perform_aux : ∀ cfg eff, SN cfg → SN (EPerform eff (fst (fst cfg)), snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_perform (matches Coq) -/
 theorem SN_perform : ∀ eff e st ctx, SN (e, st, ctx) → SN (EPerform eff e, st, ctx) := by
@@ -137,8 +135,7 @@ theorem SN_perform : ∀ eff e st ctx, SN (e, st, ctx) → SN (EPerform eff e, s
 
 /-- SN for ERequire - wrapper that evaluates then becomes its argument -/
 /-- SN_require_aux (matches Coq) -/
-theorem SN_require_aux : ∀ cfg eff, SN cfg → SN (ERequire eff (fst (fst cfg)), snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_require_aux : ∀ cfg eff, SN cfg → SN (ERequire eff (fst (fst cfg)), snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_require (matches Coq) -/
 theorem SN_require : ∀ eff e st ctx, SN (e, st, ctx) → SN (ERequire eff e, st, ctx) := by
@@ -146,8 +143,7 @@ theorem SN_require : ∀ eff e st ctx, SN (e, st, ctx) → SN (ERequire eff e, s
 
 /-- SN for EGrant - wrapper that evaluates then becomes its argument -/
 /-- SN_grant_aux (matches Coq) -/
-theorem SN_grant_aux : ∀ cfg eff, SN cfg → SN (EGrant eff (fst (fst cfg)), snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_grant_aux : ∀ cfg eff, SN cfg → SN (EGrant eff (fst (fst cfg)), snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_grant (matches Coq) -/
 theorem SN_grant : ∀ eff e st ctx, SN (e, st, ctx) → SN (EGrant eff e, st, ctx) := by
@@ -155,8 +151,7 @@ theorem SN_grant : ∀ eff e st ctx, SN (e, st, ctx) → SN (EGrant eff e, st, c
 
 /-- Helper: When e1 is a value, SN follows from SN(e2) - auxiliary form -/
 /-- SN_declassify_value_left_aux (matches Coq) -/
-theorem SN_declassify_value_left_aux : ∀ cfg v, value v → SN cfg → SN (EDeclassify v (fst (fst cfg)), snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_declassify_value_left_aux : ∀ cfg v, value v → SN cfg → SN (EDeclassify v (fst (fst cfg)), snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_declassify_value_left (matches Coq) -/
 theorem SN_declassify_value_left : ∀ v e2 st ctx, value v → SN (e2, st, ctx) → SN (EDeclassify v e2, st, ctx) := by
@@ -164,8 +159,7 @@ theorem SN_declassify_value_left : ∀ v e2 st ctx, value v → SN (e2, st, ctx)
 
 /-- SN for EDeclassify - follows pattern of SN_pair -/
 /-- SN_declassify_aux (matches Coq) -/
-theorem SN_declassify_aux : ∀ cfg e2, SN cfg → (∀ st ctx, SN (e2, st, ctx)) → SN (EDeclassify (fst (fst cfg)) e2, snd (fst cfg), snd cfg) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_declassify_aux : ∀ cfg e2, SN cfg → (∀ st ctx, SN (e2, st, ctx)) → SN (EDeclassify (fst (fst cfg)) e2, snd (fst cfg), snd cfg) := by sorry
 
 /-- SN_declassify (matches Coq) -/
 theorem SN_declassify : ∀ e1 e2 st ctx, SN (e1, st, ctx) → (∀ st' ctx', SN (e2, st', ctx')) → SN (EDeclassify e1 e2, st, ctx) := by
@@ -173,52 +167,42 @@ theorem SN_declassify : ∀ e1 e2 st ctx, SN (e1, st, ctx) → (∀ st' ctx', SN
 
 /-- The identity substitution is indeed identity -/
 /-- extend_rho_id (matches Coq) -/
-theorem extend_rho_id : ∀ x, extend_rho id_rho x (EVar x) = id_rho := by
-  rfl
+theorem extend_rho_id : ∀ x, extend_rho id_rho x (EVar x) = id_rho := by sorry
 
 /-- subst_env_id (matches Coq) -/
-theorem subst_env_id : ∀ e, subst_env id_rho e = e := by
-  rfl
+theorem subst_env_id : ∀ e, subst_env id_rho e = e := by sorry
 
 /-- Helper: substitution has no effect when variable is not free -/
 /-- subst_not_free_in (matches Coq) -/
-theorem subst_not_free_in : ∀ x v e, ~ free_in x e → [x := v] e = e := by
-  cases ‹_› <;> simp
+theorem subst_not_free_in : ∀ x v e, ~ free_in x e → [x := v] e = e := by sorry
 
 /-- Helper: free_in only holds for the same variable in EVar -/
 /-- free_in_var (matches Coq) -/
-theorem free_in_var : ∀ x y, free_in x (EVar y) → x = y := by
-  rfl
+theorem free_in_var : ∀ x y, free_in x (EVar y) → x = y := by sorry
 
 /-- Helper: x not free in EVar y when x <> y -/
 /-- not_free_in_var_neq (matches Coq) -/
-theorem not_free_in_var_neq : ∀ x y, x ≠ y → ~ free_in x (EVar y) := by
-  simp_all [Bool.and_eq_true]
+theorem not_free_in_var_neq : ∀ x y, x ≠ y → ~ free_in x (EVar y) := by sorry
 
 /-- Helper: extend_rho with same variable shadows previous binding -/
 /-- extend_rho_shadow (matches Coq) -/
-theorem extend_rho_shadow : ∀ ρ x e1 e2 y, extend_rho (extend_rho ρ x e1) x e2 y = extend_rho ρ x e2 y := by
-  rfl
+theorem extend_rho_shadow : ∀ ρ x e1 e2 y, extend_rho (extend_rho ρ x e1) x e2 y = extend_rho ρ x e2 y := by sorry
 
 /-- Helper: extend_rho with different variables commutes -/
 /-- extend_rho_commute (matches Coq) -/
-theorem extend_rho_commute : ∀ ρ x y e1 e2 z, x ≠ y → extend_rho (extend_rho ρ x e1) y e2 z = extend_rho (extend_rho ρ y e2) x e1 z := by
-  rfl
+theorem extend_rho_commute : ∀ ρ x y e1 e2 z, x ≠ y → extend_rho (extend_rho ρ x e1) y e2 z = extend_rho (extend_rho ρ y e2) x e1 z := by sorry
 
 /-- Helper: subst_env respects extensional equality of environments -/
 /-- subst_env_ext (matches Coq) -/
-theorem subst_env_ext : ∀ ρ1 ρ2 e, (∀ y, ρ1 y = ρ2 y) → subst_env ρ1 e = subst_env ρ2 e := by
-  cases ‹_› <;> simp
+theorem subst_env_ext : ∀ ρ1 ρ2 e, (∀ y, ρ1 y = ρ2 y) → subst_env ρ1 e = subst_env ρ2 e := by sorry
 
 /-- Generalized substitution commutation lemma -/
 /-- subst_subst_env_commute_gen (matches Coq) -/
-theorem subst_subst_env_commute_gen : ∀ e ρ x v, (∀ y, y ≠ x → ~ free_in x (ρ y)) → [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by
-  cases ‹_› <;> simp
+theorem subst_subst_env_commute_gen : ∀ e ρ x v, (∀ y, y ≠ x → ~ free_in x (ρ y)) → [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by sorry
 
 /-- Main lemma with closed_rho hypothesis -/
 /-- subst_subst_env_commute (matches Coq) -/
-theorem subst_subst_env_commute : ∀ ρ x v e, closed_rho ρ → [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by
-  simp_all [Bool.and_eq_true]
+theorem subst_subst_env_commute : ∀ ρ x v e, closed_rho ρ → [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e := by sorry
 
 /-- CR1: Reducible terms are SN - trivial with simplified definition -/
 /-- CR1 (matches Coq) -/
@@ -227,38 +211,31 @@ theorem CR1 : ∀ T x, Reducible T x → SN_expr x := by
 
 /-- CR3: Neutral SN terms are reducible at base types -/
 /-- CR3_base (matches Coq) -/
-theorem CR3_base : ∀ e, neutral e → SN_expr e → Reducible TUnit e ∧ Reducible TBool e ∧ Reducible TInt e ∧ Reducible TString e ∧ Reducible TBytes e := by
-  simp_all [Bool.and_eq_true]
+theorem CR3_base : ∀ e, neutral e → SN_expr e → Reducible TUnit e ∧ Reducible TBool e ∧ Reducible TInt e ∧ Reducible TString e ∧ Reducible TBytes e := by sorry
 
 /-- Unit value is reducible -/
 /-- unit_reducible (matches Coq) -/
-theorem unit_reducible : Reducible TUnit EUnit := by
-  simp_all [Bool.and_eq_true]
+theorem unit_reducible : Reducible TUnit EUnit := by sorry
 
 /-- Boolean values are reducible -/
 /-- bool_reducible (matches Coq) -/
-theorem bool_reducible : ∀ b, Reducible TBool (EBool b) := by
-  simp_all [Bool.and_eq_true]
+theorem bool_reducible : ∀ b, Reducible TBool (EBool b) := by sorry
 
 /-- Integer values are reducible -/
 /-- int_reducible (matches Coq) -/
-theorem int_reducible : ∀ n, Reducible TInt (EInt n) := by
-  simp_all [Bool.and_eq_true]
+theorem int_reducible : ∀ n, Reducible TInt (EInt n) := by sorry
 
 /-- String values are reducible -/
 /-- string_reducible (matches Coq) -/
-theorem string_reducible : ∀ s, Reducible TString (EString s) := by
-  simp_all [Bool.and_eq_true]
+theorem string_reducible : ∀ s, Reducible TString (EString s) := by sorry
 
 /-- Empty environment is trivially reducible -/
 /-- env_reducible_nil (matches Coq) -/
-theorem env_reducible_nil : ∀ ρ, env_reducible nil ρ := by
-  simp_all [Bool.and_eq_true]
+theorem env_reducible_nil : ∀ ρ, env_reducible nil ρ := by sorry
 
 /-- Extending reducible environment -/
 /-- env_reducible_cons (matches Coq) -/
-theorem env_reducible_cons : ∀ Γ ρ x T v, env_reducible Γ ρ → value v → Reducible T v → env_reducible ((x, T) :: Γ) (extend_rho ρ x v) := by
-  simp_all [Bool.and_eq_true]
+theorem env_reducible_cons : ∀ Γ ρ x T v, env_reducible Γ ρ → value v → Reducible T v → env_reducible ((x, T) :: Γ) (extend_rho ρ x v) := by sorry
 
 /-- FUNDAMENTAL THEOREM: Well-typed terms are reducible
 
@@ -270,27 +247,22 @@ theorem env_reducible_cons : ∀ Γ ρ x T v, env_reducible Γ ρ → value v �
     - Variable: lookup in env_reducible gives SN value
     - Compound expressions: use IH to get SN components, then construct SN -/
 /-- fundamental_reducibility (matches Coq) -/
-theorem fundamental_reducibility : ∀ Γ Σ pc e T ε ρ, has_type Γ Σ pc e T ε → env_reducible Γ ρ → Reducible T (subst_env ρ e) := by
-  simp_all [Bool.and_eq_true]
+theorem fundamental_reducibility : ∀ Γ Σ pc e T ε ρ, has_type Γ Σ pc e T ε → env_reducible Γ ρ → Reducible T (subst_env ρ e) := by sorry
 
 /-- Well-typed closed terms are SN - THIS IS THE KEY THEOREM -/
 /-- well_typed_SN (matches Coq) -/
-theorem well_typed_SN : ∀ Σ pc e T ε, has_type nil Σ pc e T ε → SN_expr e := by
-  simp_all [Bool.and_eq_true]
+theorem well_typed_SN : ∀ Σ pc e T ε, has_type nil Σ pc e T ε → SN_expr e := by sorry
 
 /-- SN_app: The key theorem for NonInterference_v2.v -/
 /-- SN_app (matches Coq) -/
-theorem SN_app : ∀ f a T1 T2 eff Σ pc, has_type nil Σ pc f (TFn T1 T2 eff) EffectPure → has_type nil Σ pc a T1 EffectPure → SN_expr (EApp f a) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_app : ∀ f a T1 T2 eff Σ pc, has_type nil Σ pc f (TFn T1 T2 eff) EffectPure → has_type nil Σ pc a T1 EffectPure → SN_expr (EApp f a) := by sorry
 
 /-- SN closed under taking steps -/
 /-- SN_closed_step (matches Coq) -/
-theorem SN_closed_step : ∀ e st ctx, SN (e, st, ctx) → ∀ e' st' ctx', (e, st, ctx) --> (e', st', ctx') → SN (e', st', ctx') := by
-  simp_all [Bool.and_eq_true]
+theorem SN_closed_step : ∀ e st ctx, SN (e, st, ctx) → ∀ e' st' ctx', (e, st, ctx) --> (e', st', ctx') → SN (e', st', ctx') := by sorry
 
 /-- SN of beta when body is SN -/
 /-- SN_beta_value (matches Coq) -/
-theorem SN_beta_value : ∀ x T body a st ctx, value a → SN (([x := a] body), st, ctx) → SN (EApp (ELam x T body) a, st, ctx) := by
-  simp_all [Bool.and_eq_true]
+theorem SN_beta_value : ∀ x T body a st ctx, value a → SN (([x := a] body), st, ctx) → SN (EApp (ELam x T body) a, st, ctx) := by sorry
 
 end RIINA

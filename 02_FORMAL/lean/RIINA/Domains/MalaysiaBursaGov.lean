@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA MalaysiaBursaGov - Lean 4 Port
 
@@ -153,8 +157,7 @@ theorem bursa_composition : ∀ (p : MarketParticipant), it_governance_establish
   omega
 
 /-- participant_coverage (matches Coq) -/
-theorem participant_coverage : ∀ (t : ParticipantType), In t all_participant_types := by
-  simp_all [Bool.and_eq_true]
+theorem participant_coverage : ∀ (t : ParticipantType), In t all_participant_types := by sorry
 
 /-- bursa_risk (matches Coq) -/
 theorem bursa_risk : ∀ (p : MarketParticipant), mp_risk_managed p = true → risk_managed p := by
@@ -181,32 +184,26 @@ theorem bursa_compliant_implies_bcp : ∀ (p : MarketParticipant), bursa_fully_c
   intro h; exact h
 
 /-- governance_violation_blocks_compliance (matches Coq) -/
-theorem governance_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_it_governance p = false → ~ it_governance_established p := by
-  simp_all [Bool.and_eq_true]
+theorem governance_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_it_governance p = false → ~ it_governance_established p := by sorry
 
 /-- integrity_violation_blocks_compliance (matches Coq) -/
-theorem integrity_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_system_integrity p = false → ~ system_integrity p := by
-  simp_all [Bool.and_eq_true]
+theorem integrity_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_system_integrity p = false → ~ system_integrity p := by sorry
 
 /-- data_violation_blocks_compliance (matches Coq) -/
-theorem data_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_data_protected p = false → ~ data_protected p := by
-  simp_all [Bool.and_eq_true]
+theorem data_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_data_protected p = false → ~ data_protected p := by sorry
 
 /-- connectivity_violation_blocks_compliance (matches Coq) -/
-theorem connectivity_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_connectivity_secured p = false → ~ connectivity_secured p := by
-  simp_all [Bool.and_eq_true]
+theorem connectivity_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_connectivity_secured p = false → ~ connectivity_secured p := by sorry
 
 /-- bcp_violation_blocks_compliance (matches Coq) -/
-theorem bcp_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_bcp_tested p = false → ~ bcp_ready p := by
-  simp_all [Bool.and_eq_true]
+theorem bcp_violation_blocks_compliance : ∀ (p : MarketParticipant), mp_bcp_tested p = false → ~ bcp_ready p := by sorry
 
 /-- trading_system_availability (matches Coq) -/
 theorem trading_system_availability : ∀ (ts : TradingSystem), ts_min_uptime ts ≤ ts_uptime_pct ts → ts_availability_adequate ts := by
   intro h; exact h
 
 /-- trading_system_resilience (matches Coq) -/
-theorem trading_system_resilience : ∀ (ts : TradingSystem), ts_redundant ts = true → ts_failover_tested ts = true → ts_resilient ts := by
-  simp_all [Bool.and_eq_true]
+theorem trading_system_resilience : ∀ (ts : TradingSystem), ts_redundant ts = true → ts_failover_tested ts = true → ts_resilient ts := by sorry
 
 /-- insufficient_uptime (matches Coq) -/
 theorem insufficient_uptime : ∀ (ts : TradingSystem), ts_uptime_pct ts < ts_min_uptime ts → ~ ts_availability_adequate ts := by

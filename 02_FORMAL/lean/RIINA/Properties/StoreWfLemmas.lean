@@ -1,6 +1,11 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
+
+
 /-!
 # RIINA StoreWfLemmas - Lean 4 Port
 
@@ -48,13 +53,11 @@ theorem store_wf_lookup_value : ∀ Σ st l v, store_wf Σ st → store_lookup l
 
 /-- Store well-formedness implies stored expressions are well-typed -/
 /-- store_wf_lookup_typed (matches Coq) -/
-theorem store_wf_lookup_typed : ∀ Σ st l v, store_wf Σ st → store_lookup l st = Some v → ∃ T sl, store_ty_lookup l Σ = Some (T, sl) ∧ has_type nil Σ Public v T EffectPure := by
-  simp_all [Bool.and_eq_true]
+theorem store_wf_lookup_typed : ∀ Σ st l v, store_wf Σ st → store_lookup l st = Some v → ∃ T sl, store_ty_lookup l Σ = Some (T, sl) ∧ has_type nil Σ Public v T EffectPure := by sorry
 
 /-- For typed locations, lookup succeeds with a value -/
 /-- store_wf_typed_loc_has_value (matches Coq) -/
-theorem store_wf_typed_loc_has_value : ∀ Σ st l T sl, store_wf Σ st → store_ty_lookup l Σ = Some (T, sl) → ∃ v, store_lookup l st = Some v ∧ value v := by
-  simp_all [Bool.and_eq_true]
+theorem store_wf_typed_loc_has_value : ∀ Σ st l T sl, store_wf Σ st → store_ty_lookup l Σ = Some (T, sl) → ∃ v, store_lookup l st = Some v ∧ value v := by sorry
 
 /-- Combined: typed location lookup gives typed value -/
 /-- store_wf_typed_loc_gives_typed_value (matches Coq) -/

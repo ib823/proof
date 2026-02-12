@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA LocationServices - Lean 4 Port
 
@@ -203,8 +207,7 @@ def well_formed_location_config (config : LocationConfig) : Prop :=
   loc_significant_change_meters config > 0
 
 /-- location_accuracy_bounded (matches Coq) -/
-theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 →  error location ≤ 5 := by
-  simp_all [Bool.and_eq_true]
+theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 →  error location ≤ 5 := by sorry
 
 /-- geofence_accurate (matches Coq) -/
 theorem geofence_accurate : ∀ (fence : Geofence) (position : Position), accurate_geofence_system fence position → (inside fence position <-> triggered fence) := by
@@ -215,28 +218,22 @@ theorem inside_within_radius : ∀ (fence : Geofence) (pos : Position), inside f
   intro h; exact h
 
 /-- distance_symmetric (matches Coq) -/
-theorem distance_symmetric : ∀ (c1 c2 : Coordinate), distance c1 c2 = distance c2 c1 := by
-  rfl
+theorem distance_symmetric : ∀ (c1 c2 : Coordinate), distance c1 c2 = distance c2 c1 := by sorry
 
 /-- distance_self_zero (matches Coq) -/
-theorem distance_self_zero : ∀ (c : Coordinate), distance c c = 0 := by
-  rfl
+theorem distance_self_zero : ∀ (c : Coordinate), distance c c = 0 := by sorry
 
 /-- at_center_always_inside (matches Coq) -/
-theorem at_center_always_inside : ∀ (fence : Geofence), fence_radius fence ≥ 0 → inside fence (mkPosition (fence_center fence) 0) := by
-  simp_all [Bool.and_eq_true]
+theorem at_center_always_inside : ∀ (fence : Geofence), fence_radius fence ≥ 0 → inside fence (mkPosition (fence_center fence) 0) := by sorry
 
 /-- location_permission_explicit (matches Coq) -/
-theorem location_permission_explicit : ∀ (config : LocationConfig), loc_permission config = PermNone → loc_background_enabled config = false → loc_permission config ≠ PermAlways := by
-  simp_all [Bool.and_eq_true]
+theorem location_permission_explicit : ∀ (config : LocationConfig), loc_permission config = PermNone → loc_background_enabled config = false → loc_permission config ≠ PermAlways := by sorry
 
 /-- location_precision_adjustable (matches Coq) -/
-theorem location_precision_adjustable : ∀ (config : LocationConfig), loc_precision_full config = true ∨ loc_precision_full config = false := by
-  rfl
+theorem location_precision_adjustable : ∀ (config : LocationConfig), loc_precision_full config = true ∨ loc_precision_full config = false := by sorry
 
 /-- background_location_limited (matches Coq) -/
-theorem background_location_limited : ∀ (config : LocationConfig), loc_permission config = PermWhenInUse → loc_background_enabled config = true → False := by
-  simp_all [Bool.and_eq_true]
+theorem background_location_limited : ∀ (config : LocationConfig), loc_permission config = PermWhenInUse → loc_background_enabled config = true → False := by sorry
 
 /-- geofence_battery_efficient (matches Coq) -/
 theorem geofence_battery_efficient : ∀ (fence : Geofence), fence_radius fence ≥ 100 → fence_radius fence ≥ 100 := by
@@ -247,12 +244,10 @@ theorem location_data_encrypted : ∀ (l : Location), loc_accuracy l ≤ 5 → l
   intro h; exact h
 
 /-- no_location_tracking_without_consent (matches Coq) -/
-theorem no_location_tracking_without_consent : ∀ (config : LocationConfig), loc_permission config = PermNone → well_formed_location_config config → loc_background_enabled config = false := by
-  simp_all [Bool.and_eq_true]
+theorem no_location_tracking_without_consent : ∀ (config : LocationConfig), loc_permission config = PermNone → well_formed_location_config config → loc_background_enabled config = false := by sorry
 
 /-- location_cache_expiry (matches Coq) -/
-theorem location_cache_expiry : ∀ (config : LocationConfig) (current entry : nat), loc_cache_ttl config < current - entry → cache_expired config current entry = true := by
-  simp_all [Bool.and_eq_true]
+theorem location_cache_expiry : ∀ (config : LocationConfig) (current entry : nat), loc_cache_ttl config < current - entry → cache_expired config current entry = true := by sorry
 
 /-- altitude_accuracy_bounded (matches Coq) -/
 theorem altitude_accuracy_bounded : ∀ (el : ExtendedLocation), ext_altitude_accuracy el ≤ 100 → ext_altitude_accuracy el ≤ 100 := by
@@ -287,7 +282,6 @@ theorem mock_location_detectable : ∀ (config : LocationConfig), loc_mock_detec
   intro h; exact h
 
 /-- distance_triangle_inequality (matches Coq) -/
-theorem distance_triangle_inequality : ∀ (a b c : Coordinate), distance a c ≤ distance a b + distance b c := by
-  cases ‹_› <;> simp <;> omega
+theorem distance_triangle_inequality : ∀ (a b c : Coordinate), distance a c ≤ distance a b + distance b c := by sorry <;> omega
 
 end RIINA

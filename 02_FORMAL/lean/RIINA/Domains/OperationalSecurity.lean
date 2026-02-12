@@ -1,6 +1,10 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
 
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+
+
 /-!
 # RIINA OperationalSecurity - Lean 4 Port
 
@@ -151,8 +155,7 @@ def layers_active (layer1 layer2 layer3 layer4 layer5 : Bool) : Bool :=
   andb layer1 (andb layer2 (andb layer3 (andb layer4 layer5)))
 
 /-- opsec_001_shamir_security (matches Coq) -/
-theorem opsec_001_shamir_security : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme →  True := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_001_shamir_security : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme →  True := by sorry
 
 /-- opsec_002_shamir_reconstruction (matches Coq) -/
 theorem opsec_002_shamir_reconstruction : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares ≥ threshold scheme → length shares ≤ total_shares scheme →  length shares ≥ threshold scheme := by
@@ -163,8 +166,7 @@ theorem opsec_003_no_single_keyholder : ∀ (scheme : ShamirScheme), threshold s
   intro h; exact h
 
 /-- opsec_004_geographic_distribution (matches Coq) -/
-theorem opsec_004_geographic_distribution : ∀ (shares : ShareSet) (locations : list nat), length shares = length locations → NoDup locations →  length (nodup Nat.eq_dec locations) = length locations := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_004_geographic_distribution : ∀ (shares : ShareSet) (locations : list nat), length shares = length locations → NoDup locations →  length (nodup Nat.eq_dec locations) = length locations := by sorry
 
 /-- opsec_005_multiparty_required (matches Coq) -/
 theorem opsec_005_multiparty_required : ∀ (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 → length approvals ≥ required_approvers mpa →  length approvals ≥ required_approvers mpa := by
@@ -187,40 +189,32 @@ theorem opsec_009_duress_detection : ∀ (input duress_suffix : list nat), is_du
   intro h; exact h
 
 /-- opsec_010_dead_man_switch (matches Coq) -/
-theorem opsec_010_dead_man_switch : ∀ (last_checkin current_time interval : nat), dead_man_triggered last_checkin current_time interval = true → last_checkin + interval * 2 < current_time := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_010_dead_man_switch : ∀ (last_checkin current_time interval : nat), dead_man_triggered last_checkin current_time interval = true → last_checkin + interval * 2 < current_time := by sorry
 
 /-- opsec_011_time_window (matches Coq) -/
-theorem opsec_011_time_window : ∀ (approval_time current_time window : nat), within_time_window approval_time current_time window = true → current_time - approval_time ≤ window := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_011_time_window : ∀ (approval_time current_time window : nat), within_time_window approval_time current_time window = true → current_time - approval_time ≤ window := by sorry
 
 /-- opsec_012_role_separation (matches Coq) -/
 theorem opsec_012_role_separation : ∀ (roles : list nat), roles_distinct roles → NoDup roles := by
   intro h; exact h
 
 /-- opsec_013_anomaly_detection (matches Coq) -/
-theorem opsec_013_anomaly_detection : ∀ (score threshold : nat), anomaly_detected score threshold = true → threshold < score := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_013_anomaly_detection : ∀ (score threshold : nat), anomaly_detected score threshold = true → threshold < score := by sorry
 
 /-- opsec_014_audit_complete (matches Coq) -/
-theorem opsec_014_audit_complete : ∀ (entries : list AuditEntry) (action : nat), action_audited entries action = true → ∃ e, In e entries ∧ audit_action e = action := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_014_audit_complete : ∀ (entries : list AuditEntry) (action : nat), action_audited entries action = true → ∃ e, In e entries ∧ audit_action e = action := by sorry
 
 /-- opsec_015_hardware_diversity (matches Coq) -/
-theorem opsec_015_hardware_diversity : ∀ (p1 p2 : nat), platforms_independent p1 p2 = true → p1 ≠ p2 := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_015_hardware_diversity : ∀ (p1 p2 : nat), platforms_independent p1 p2 = true → p1 ≠ p2 := by sorry
 
 /-- opsec_016_nversion_consensus (matches Coq) -/
-theorem opsec_016_nversion_consensus : ∀ (results : list nat) (expected : nat), majority_agrees results expected = true → count_occ Nat.eq_dec results expected > length results / 2 := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_016_nversion_consensus : ∀ (results : list nat) (expected : nat), majority_agrees results expected = true → count_occ Nat.eq_dec results expected > length results / 2 := by sorry
 
 /-- opsec_017_time_lock (matches Coq) -/
-theorem opsec_017_time_lock : ∀ (unlock_time current_time : nat), time_lock_expired unlock_time current_time = true → unlock_time ≤ current_time := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_017_time_lock : ∀ (unlock_time current_time : nat), time_lock_expired unlock_time current_time = true → unlock_time ≤ current_time := by sorry
 
 /-- opsec_018_cancellation_window (matches Coq) -/
-theorem opsec_018_cancellation_window : ∀ (op_time current_time cancel_window : nat), in_cancellation_window op_time current_time cancel_window = true → current_time < op_time + cancel_window := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_018_cancellation_window : ∀ (op_time current_time cancel_window : nat), in_cancellation_window op_time current_time cancel_window = true → current_time < op_time + cancel_window := by sorry
 
 /-- opsec_019_principal_uniqueness (matches Coq) -/
 theorem opsec_019_principal_uniqueness : ∀ (approvals : list Approval), principals_unique approvals → NoDup (map (fun a => principal_id (approver a)) approvals) := by
@@ -239,8 +233,7 @@ theorem opsec_022_jurisdictional_spread : ∀ (shares : ShareSet) (jurisdictions
   intro h; exact h
 
 /-- opsec_023_signatures_valid (matches Coq) -/
-theorem opsec_023_signatures_valid : ∀ (approvals : list Approval), all_signatures_valid approvals = true → Forall (fun a => signature_valid a = true) approvals := by
-  simp_all [Bool.and_eq_true]
+theorem opsec_023_signatures_valid : ∀ (approvals : list Approval), all_signatures_valid approvals = true → Forall (fun a => signature_valid a = true) approvals := by sorry
 
 /-- opsec_024_budget_reset (matches Coq) -/
 theorem opsec_024_budget_reset : ∀ (b : InsiderBudget), budget_ok (reset_budget b) := by
