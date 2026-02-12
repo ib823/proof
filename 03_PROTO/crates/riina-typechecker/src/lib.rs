@@ -34,6 +34,20 @@ pub enum TypeError {
     InvalidDeclassification { message: String },
     /// Location not found in store typing
     LocationNotFound(Location),
+    /// Tainted data flowing to sensitive sink without sanitization
+    /// Matches Coq SQLInjectionPrevention.v:92 (taint_safe predicate)
+    TaintViolation {
+        taint_source: riina_types::TaintSource,
+        required_sanitizer: riina_types::Sanitizer,
+        context: &'static str,
+    },
+    /// Wrong sanitizer used for sensitive sink
+    /// Matches Coq XSSPrevention.v:74 (context-specific encoding)
+    SanitizerMismatch {
+        expected: riina_types::Sanitizer,
+        found: riina_types::Sanitizer,
+        context: &'static str,
+    },
 }
 
 impl std::fmt::Display for TypeError {
@@ -63,6 +77,14 @@ impl std::fmt::Display for TypeError {
             }
             TypeError::LocationNotFound(loc) => {
                 write!(f, "Location not found in store: {}", loc)
+            }
+            TypeError::TaintViolation { taint_source, required_sanitizer, context } => {
+                write!(f, "Taint violation in {}: {:?} data requires {:?} sanitization before use",
+                    context, taint_source, required_sanitizer)
+            }
+            TypeError::SanitizerMismatch { expected, found, context } => {
+                write!(f, "Sanitizer mismatch in {}: expected {:?}, found {:?}",
+                    context, expected, found)
             }
         }
     }
@@ -127,6 +149,18 @@ impl TypeError {
             TypeError::ExpectedProof(_) => {
                 "Expected a Bukti<T> proof type. Use bukti(expr) to create one".to_string()
             }
+            TypeError::TaintViolation { taint_source, required_sanitizer, .. } => {
+                format!(
+                    "Sanitize the {:?} input with {:?} first. Example: biar bersih = sanitize_sql(input);",
+                    taint_source, required_sanitizer
+                )
+            }
+            TypeError::SanitizerMismatch { expected, .. } => {
+                format!(
+                    "Use the correct sanitizer for this context: {:?}",
+                    expected
+                )
+            }
         })
     }
 
@@ -147,6 +181,8 @@ impl TypeError {
             TypeError::SecurityViolation { .. } => "S0001",
             TypeError::InvalidDeclassification { .. } => "S0002",
             TypeError::LocationNotFound(_) => "T0010",
+            TypeError::TaintViolation { .. } => "TAINT001",
+            TypeError::SanitizerMismatch { .. } => "TAINT002",
         }
     }
 
@@ -167,6 +203,12 @@ impl TypeError {
             TypeError::InvalidDeclassification { .. } => Some("T_Declassify (Typing.v:196) — declass_ok predicate"),
             TypeError::ExpectedRef(_) => Some("T_Deref (Typing.v:178) — operand must be TRef"),
             TypeError::ExpectedSecret(_) => Some("T_Classify (Typing.v:192) — operand must be TSecret"),
+            TypeError::TaintViolation { .. } => {
+                Some("SQLInjectionPrevention.v:92 — taint_safe predicate")
+            }
+            TypeError::SanitizerMismatch { .. } => {
+                Some("XSSPrevention.v:74 — context-specific encoding required")
+            }
             _ => None,
         }
     }
@@ -481,15 +523,275 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     c = c.extend("nombor_ke_teks".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure));
     c = c.extend("int_to_string".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure));
 
+    // ── DOMAIN SECURITY: Taint Sources (return tainted data) ──
+
+    // User input → Tainted<String, UserInput>
+    c = c.extend("read_line".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Unit),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Effect::System
+        ));
+    c = c.extend("baca_baris".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Unit),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Effect::System
+        ));
+
+    // HTTP request body → Tainted<String, NetworkExternal>
+    c = c.extend("http_body".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Any),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::NetworkExternal)),
+            Effect::Network
+        ));
+    c = c.extend("badan_http".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Any),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::NetworkExternal)),
+            Effect::Network
+        ));
+
+    // ── DOMAIN SECURITY: Sanitizers (Tainted → Sanitized) ──
+
+    // SQL sanitizer
+    c = c.extend("sanitize_sql".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_sql".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
+            Effect::Pure
+        ));
+
+    // HTML sanitizer
+    c = c.extend("sanitize_html".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_html".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
+            Effect::Pure
+        ));
+
+    // JavaScript sanitizer
+    c = c.extend("sanitize_js".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_js".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
+            Effect::Pure
+        ));
+
+    // Command sanitizer
+    c = c.extend("sanitize_command".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_perintah".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
+            Effect::Pure
+        ));
+
+    // LDAP sanitizer
+    c = c.extend("sanitize_ldap".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_ldap".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
+            Effect::Pure
+        ));
+
+    // ── DOMAIN SECURITY: Sensitive Sinks (require Sanitized) ──
+
+    // SQL execution — REQUIRES Sanitized<String, SqlParam>
+    c = c.extend("sql_execute".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
+            Box::new(Ty::Any),  // Query results
+            Effect::System
+        ));
+    c = c.extend("sql_laksana".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
+            Box::new(Ty::Any),
+            Effect::System
+        ));
+
+    // HTML rendering — REQUIRES Sanitized<String, HtmlEscape>
+    c = c.extend("html_render".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
+            Box::new(Ty::String),
+            Effect::Pure
+        ));
+    c = c.extend("html_papar".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
+            Box::new(Ty::String),
+            Effect::Pure
+        ));
+
+    // JavaScript eval — REQUIRES Sanitized<String, JsEscape>
+    c = c.extend("js_eval".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
+            Box::new(Ty::Any),
+            Effect::System
+        ));
+    c = c.extend("js_nilai".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
+            Box::new(Ty::Any),
+            Effect::System
+        ));
+
+    // Shell command execution — REQUIRES Sanitized<String, CommandEscape>
+    c = c.extend("shell_exec".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
+            Box::new(Ty::Int),  // Exit code
+            Effect::System
+        ));
+    c = c.extend("shell_laksana".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
+            Box::new(Ty::Int),
+            Effect::System
+        ));
+
+    // LDAP search — REQUIRES Sanitized<String, LdapEscape>
+    c = c.extend("ldap_search".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
+            Box::new(Ty::Any),  // Search results
+            Effect::System
+        ));
+    c = c.extend("ldap_cari".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
+            Box::new(Ty::Any),
+            Effect::System
+        ));
+
     c
 }
 
-/// Check if two types are compatible, considering Ty::Any as a wildcard.
+/// Check if two types are compatible, considering:
+/// - Ty::Any as a wildcard
+/// - Tainted cannot flow to Sanitized (taint violation)
+/// - Sanitized must match exact sanitizer (sanitizer mismatch)
+/// - Sanitized can flow to plain type (safe subtyping)
 pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
+    // Wildcard — Any matches anything
     if *expected == Ty::Any || *found == Ty::Any {
         return true;
     }
-    expected == found
+
+    // Exact match
+    if expected == found {
+        return true;
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // DOMAIN SECURITY: Taint Checking
+    // ════════════════════════════════════════════════════════════════════
+
+    // REJECT: Tainted → Sanitized (TAINT VIOLATION)
+    // User input cannot flow to sensitive sink without sanitization
+    match (expected, found) {
+        (Ty::Sanitized(_, _), Ty::Tainted(_, _)) => {
+            return false;  // Will trigger TypeError::TypeMismatch → needs better error
+        }
+        _ => {}
+    }
+
+    // SANITIZER EXACT MATCH: Sanitized<T, S1> requires Sanitized<T, S2> where S1 == S2
+    // SQL sink requires SqlParam sanitizer, not HtmlEscape
+    match (expected, found) {
+        (Ty::Sanitized(inner1, san1), Ty::Sanitized(inner2, san2)) => {
+            return san1 == san2 && types_compatible(inner1, inner2);
+        }
+        _ => {}
+    }
+
+    // SAFE SUBTYPING: Sanitized → Plain Type
+    // Sanitized data can be used as plain string (sanitization removes taint)
+    match (expected, found) {
+        (Ty::String, Ty::Sanitized(inner, _)) if **inner == Ty::String => {
+            return true;
+        }
+        (Ty::Int, Ty::Sanitized(inner, _)) if **inner == Ty::Int => {
+            return true;
+        }
+        _ => {}
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Structural Recursion
+    // ════════════════════════════════════════════════════════════════════
+
+    match (expected, found) {
+        // Function types: contravariant in argument, covariant in return
+        (Ty::Fn(a1, r1, e1), Ty::Fn(a2, r2, e2)) => {
+            types_compatible(a1, a2) && types_compatible(r1, r2) && e1 == e2
+        }
+
+        // Product types: covariant in both components
+        (Ty::Prod(l1, r1), Ty::Prod(l2, r2)) => {
+            types_compatible(l1, l2) && types_compatible(r1, r2)
+        }
+
+        // Sum types: covariant in both branches
+        (Ty::Sum(l1, r1), Ty::Sum(l2, r2)) => {
+            types_compatible(l1, l2) && types_compatible(r1, r2)
+        }
+
+        // List types: covariant in element
+        (Ty::List(t1), Ty::List(t2)) => types_compatible(t1, t2),
+
+        // Option types: covariant in element
+        (Ty::Option(t1), Ty::Option(t2)) => types_compatible(t1, t2),
+
+        // Reference types: covariant in inner type, must match security level
+        (Ty::Ref(t1, sl1), Ty::Ref(t2, sl2)) => {
+            sl1 == sl2 && types_compatible(t1, t2)
+        }
+
+        // Secret types: covariant in inner type
+        (Ty::Secret(t1), Ty::Secret(t2)) => types_compatible(t1, t2),
+
+        // Labeled types: covariant in inner type, must match security level
+        (Ty::Labeled(t1, sl1), Ty::Labeled(t2, sl2)) => {
+            sl1 == sl2 && types_compatible(t1, t2)
+        }
+
+        // No match
+        _ => false,
+    }
 }
 
 // ============================================================================

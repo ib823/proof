@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::{Context, type_check, TypeError};
+    use crate::{Context, type_check, TypeError, register_builtin_types, types_compatible};
     use riina_types::{BinOp, Expr, Ty, Effect, SecurityLevel};
 
     // ── Literals ──
@@ -753,7 +753,7 @@ mod tests {
 
 #[cfg(test)]
 mod formalized_tests {
-    use crate::{TypingContext, type_check_full, TypeError};
+    use crate::{TypingContext, type_check_full, TypeError, Context, type_check, register_builtin_types, types_compatible};
     use riina_types::{Expr, Ty, Effect, SecurityLevel, StoreTy, Location};
 
     // ── Basic value typing with new context ──
@@ -988,6 +988,273 @@ mod formalized_tests {
                 assert_eq!(context, "dereference");
             }
             other => panic!("Expected SecurityViolation, got {:?}", other),
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // DOMAIN SECURITY: Taint Checking Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_taint_type_compatibility_rejects_tainted_to_sanitized() {
+        // Tainted cannot flow to Sanitized (taint violation)
+        let tainted = Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput);
+        let sanitized = Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam);
+
+        assert!(!types_compatible(&sanitized, &tainted));
+    }
+
+    #[test]
+    fn test_taint_type_compatibility_sanitized_to_plain() {
+        // Sanitized CAN flow to plain type (safe subtyping)
+        let sanitized = Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape);
+        let plain = Ty::String;
+
+        assert!(types_compatible(&plain, &sanitized));
+    }
+
+    #[test]
+    fn test_taint_sanitizer_exact_match() {
+        // Sanitized<String, SqlParam> matches Sanitized<String, SqlParam>
+        let san1 = Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam);
+        let san2 = Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam);
+
+        assert!(types_compatible(&san1, &san2));
+    }
+
+    #[test]
+    fn test_taint_sanitizer_mismatch_rejected() {
+        // Sanitized<String, HtmlEscape> does NOT match Sanitized<String, SqlParam>
+        let html = Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape);
+        let sql = Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam);
+
+        assert!(!types_compatible(&sql, &html));
+        assert!(!types_compatible(&html, &sql));
+    }
+
+    #[test]
+    fn test_sql_injection_prevented() {
+        // read_line() returns Tainted<String, UserInput>
+        // sql_execute requires Sanitized<String, SqlParam>
+        // Passing tainted to sql_execute should fail type-check
+
+        let ctx = register_builtin_types(&Context::new());
+
+        // read_line() : () -> Tainted<String, UserInput>
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let (read_ty, _) = type_check(&ctx, &read_call).unwrap();
+        assert_eq!(
+            read_ty,
+            Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+        );
+
+        // sql_execute(read_line()) should FAIL — tainted input to sensitive sink
+        let unsafe_sql = Expr::App(
+            Box::new(Expr::Var("sql_execute".to_string())),
+            Box::new(read_call.clone())
+        );
+
+        // This should fail type-check because:
+        // - sql_execute expects Sanitized<String, SqlParam>
+        // - read_line() returns Tainted<String, UserInput>
+        // - Tainted cannot flow to Sanitized
+        match type_check(&ctx, &unsafe_sql) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                // Expected: Sanitized<String, SqlParam>
+                // Found: Tainted<String, UserInput>
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected TypeMismatch for SQL injection, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_sql_injection_safe_with_sanitization() {
+        // sanitize_sql(read_line()) : Sanitized<String, SqlParam>
+        // sql_execute requires Sanitized<String, SqlParam>
+        // This should type-check successfully
+
+        let ctx = register_builtin_types(&Context::new());
+
+        // read_line()
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // sanitize_sql(read_line())
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_sql".to_string())),
+            Box::new(read_call)
+        );
+
+        let (san_ty, _) = type_check(&ctx, &sanitized).unwrap();
+        assert_eq!(
+            san_ty,
+            Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
+        );
+
+        // sql_execute(sanitize_sql(read_line())) — should succeed
+        let safe_sql = Expr::App(
+            Box::new(Expr::Var("sql_execute".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_sql) {
+            Ok((ty, _)) => {
+                // sql_execute returns Any (query results)
+                assert_eq!(ty, Ty::Any);
+            }
+            Err(e) => panic!("Expected safe SQL to type-check, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xss_prevention() {
+        // html_render requires Sanitized<String, HtmlEscape>
+        // Passing unsanitized tainted data should fail
+
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // html_render(read_line()) — should FAIL
+        let unsafe_html = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(read_call.clone())
+        );
+
+        match type_check(&ctx, &unsafe_html) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected TypeMismatch for XSS, got {:?}", other),
+        }
+
+        // sanitize_html(read_line()); html_render(...) — should succeed
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(read_call)
+        );
+
+        let safe_html = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_html) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::String),
+            Err(e) => panic!("Expected safe HTML to type-check, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_command_injection_prevented() {
+        // shell_exec requires Sanitized<String, CommandEscape>
+
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // shell_exec(read_line()) — should FAIL
+        let unsafe_shell = Expr::App(
+            Box::new(Expr::Var("shell_exec".to_string())),
+            Box::new(read_call.clone())
+        );
+
+        match type_check(&ctx, &unsafe_shell) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected TypeMismatch for command injection, got {:?}", other),
+        }
+
+        // sanitize_command(read_line()); shell_exec(...) — should succeed
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_command".to_string())),
+            Box::new(read_call)
+        );
+
+        let safe_shell = Expr::App(
+            Box::new(Expr::Var("shell_exec".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_shell) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Int),  // Exit code
+            Err(e) => panic!("Expected safe shell to type-check, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_sanitizer_mismatch() {
+        // Sanitizing with wrong sanitizer should fail
+        // sanitize_html(input) produces Sanitized<String, HtmlEscape>
+        // sql_execute requires Sanitized<String, SqlParam>
+        // These don't match
+
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // sanitize_html(read_line())
+        let html_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(read_call)
+        );
+
+        // sql_execute(sanitize_html(...)) — wrong sanitizer!
+        let wrong_sanitizer = Expr::App(
+            Box::new(Expr::Var("sql_execute".to_string())),
+            Box::new(html_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_sanitizer) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                );
+            }
+            other => panic!("Expected TypeMismatch for wrong sanitizer, got {:?}", other),
         }
     }
 }
