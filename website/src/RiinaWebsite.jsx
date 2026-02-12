@@ -21,6 +21,8 @@ const RiinaWebsite = () => {
   const runtimeClaim = claimLevelLabel(
     claimLevels.runtimeProofArchitecture || metrics.quality?.runtimeProofStatus || 'generated'
   );
+  const nonCoqMechanization = metrics.quality?.nonCoqMechanization || {};
+  const nonCoqBacklog = nonCoqMechanization.backlog || {};
 
   useEffect(() => { window.scrollTo(0, 0); }, [currentPage]);
 
@@ -298,6 +300,16 @@ const RiinaWebsite = () => {
               Current claim level: {runtimeClaim}. Executable foundation is implemented for capability-bound effect gates, runtime
               proof-bundle chaining, constant-time oracle primitives, and local verifier self-checks. Hardware-rooted attestation and
               full external verifier ecosystem remain roadmap work.
+            </div>
+          </div>
+          <div className="card" style={{marginTop:12}}>
+            <div style={{fontSize:12,color:'var(--text-muted)',fontFamily:'var(--font-mono)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>
+              Non-Coq Mechanization Backlog
+            </div>
+            <div style={{fontSize:14,color:'var(--text-secondary)',lineHeight:1.8}}>
+              Fresh strict report: {nonCoqMechanization.reportFresh ? 'yes' : 'no'}. Overall non-Coq mechanized:
+              {' '}{nonCoqMechanization.overallMechanized ? 'yes' : 'no'}.
+              {' '}Current blockers include Lean `sorry` ({fmt(nonCoqBacklog.leanSorry || 0)}), Lean axioms ({fmt(nonCoqBacklog.leanAxioms || 0)}), Isabelle `sorry` ({fmt(nonCoqBacklog.isabelleSorry || 0)}), and generated placeholders in F*/SMT/Verus/Kani/TV.
             </div>
           </div>
         </div>

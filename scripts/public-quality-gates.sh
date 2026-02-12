@@ -326,22 +326,30 @@ mismatch_count = 0
 
 for lane in ("coq", "lean", "isabelle", "fstar", "tlaplus", "alloy", "smt", "verus", "kani", "tv"):
     claim = norm(cl.get(lane, "generated"))
-    max_level = quality_max.get(lane, "generated")
-    if rank[claim] > rank[max_level]:
-        mismatch_count += 1
-    if lane != "coq":
-        if not report_fresh and rank[claim] > rank["generated"]:
+    if lane == "coq":
+        max_level = quality_max.get("coq", "generated")
+        if rank[claim] > rank[max_level]:
             mismatch_count += 1
-        elif report_fresh and rank[claim] > rank[report_max.get(lane, "generated")]:
-            mismatch_count += 1
+    else:
+        if report_fresh:
+            if rank[claim] > rank[report_max.get(lane, "generated")]:
+                mismatch_count += 1
+        else:
+            # Without a fresh non-Coq report, non-Coq claims must stay generated.
+            if rank[claim] > rank["generated"]:
+                mismatch_count += 1
 
 claim_runtime = norm(cl.get("runtimeProofArchitecture", "generated"))
 if rank[claim_runtime] > rank[runtime_max]:
     mismatch_count += 1
 
 noncoq_lanes = ("lean", "isabelle", "fstar", "tlaplus", "alloy", "smt", "verus", "kani", "tv")
-all_noncoq_compiled = all(rank[quality_max[l]] >= rank["compiled"] for l in noncoq_lanes)
-all_noncoq_mechanized = all(rank[quality_max[l]] >= rank["mechanized"] for l in noncoq_lanes)
+if report_fresh:
+    all_noncoq_compiled = all(rank[report_max[l]] >= rank["compiled"] for l in noncoq_lanes)
+    all_noncoq_mechanized = all(rank[report_max[l]] >= rank["mechanized"] for l in noncoq_lanes)
+else:
+    all_noncoq_compiled = False
+    all_noncoq_mechanized = False
 coq_mechanized = rank[quality_max["coq"]] >= rank["mechanized"]
 runtime_compiled = rank[runtime_max] >= rank["compiled"]
 runtime_mechanized = rank[runtime_max] >= rank["mechanized"]

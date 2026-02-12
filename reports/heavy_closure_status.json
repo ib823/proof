@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-02-11T21:51:23Z",
-  "repo_head": "19d69ff2811c6113e0271e0f277e1e98fbb7ed01",
+  "generated_utc": "2026-02-12T00:10:22Z",
+  "repo_head": "1518c8b9bccffc0b352213fbed2adf574fb628f3",
   "repo_branch": "main",
   "scope": "heavy_dims_5_6_7_8_10_11_13_closure",
   "strict_mode": 0,
@@ -17,7 +17,7 @@
     "zeroize_tests": true,
     "secret_zeroize_test": true,
     "crypto_tests": true,
-    "riinac_verify_fast": true,
+    "riinac_verify_fast": false,
     "strict_dim1_dim9": true
   },
   "dimension_5_constant_time": {
@@ -37,9 +37,9 @@
   "dimension_7_compiler_correctness": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
-    "pending": "none"
+    "executable_gate": false,
+    "closure_ready": false,
+    "pending": "publish per-target correctness evidence packs (native/WASM/eBPF/SGX scope) with reproducible reports"
   },
   "dimension_8_crypto_correctness": {
     "foundation": "PASS",
@@ -56,9 +56,9 @@
   "dimension_10_implementation_correctness": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
-    "verus_active_exec": true,
+    "executable_gate": false,
+    "closure_ready": false,
+    "verus_active_exec": false,
     "kani_active_exec": true,
     "verus_active_files": 1,
     "kani_active_files": 1,
@@ -69,7 +69,7 @@
     "verus_domain_generated_files": 0,
     "kani_domain_generated_files": 0,
     "riinac_src_files": 5,
-    "pending": "none"
+    "pending": "active Verus/Kani lane is executable; migrate generated domain corpus to real obligations bound to production compiler modules"
   },
   "dimension_11_protocol_impl_binding": {
     "foundation": "PASS",
@@ -87,6 +87,6 @@
     "litmus_files": 3,
     "pending": "none"
   },
-  "overall_executable": "PASS",
-  "overall_closure_ready": true
+  "overall_executable": "FAIL",
+  "overall_closure_ready": false
 }
