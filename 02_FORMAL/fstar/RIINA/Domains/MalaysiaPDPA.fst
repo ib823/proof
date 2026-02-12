@@ -176,165 +176,124 @@ let pdpa_report_timely (p_rpt: nat) : Tot bool =
   (0 = 0)
 
 (* principle_1_consent (matches Coq: Theorem principle_1_consent) *)
-let principle_1_consent_obligation () : Tot bool = (0 = 0)
-let principle_1_consent_lemma () : Lemma (requires True) (ensures (principle_1_consent_obligation () == principle_1_consent_obligation ())) = ()
+let principle_1_consent (p_r: nat) (p_a: processing_action) : Lemma (requires (pdpa_classification p_r == SensitivePersonalData /\ pdpa_consent p_r == ExplicitConsent) (ensures (consent_required_for_processing p_r p_a == true))) = admit ()
 
 (* principle_1_personal_data (matches Coq: Theorem principle_1_personal_data) *)
-let principle_1_personal_data_obligation () : Tot bool = (0 = 0)
-let principle_1_personal_data_lemma () : Lemma (requires True) (ensures (principle_1_personal_data_obligation () == principle_1_personal_data_obligation ())) = ()
+let principle_1_personal_data (p_r: nat) (p_a: processing_action) : Lemma (requires (pdpa_classification p_r == PersonalData /\ has_valid_consent p_r == true) (ensures (consent_required_for_processing p_r p_a == true))) = admit ()
 
 (* principle_1_public_exempt (matches Coq: Theorem principle_1_public_exempt) *)
-let principle_1_public_exempt_obligation () : Tot bool = (0 = 0)
-let principle_1_public_exempt_lemma () : Lemma (requires True) (ensures (principle_1_public_exempt_obligation () == principle_1_public_exempt_obligation ())) = ()
+let principle_1_public_exempt (p_r: nat) (p_a: processing_action) : Lemma (requires (pdpa_classification p_r == PublicData) (ensures (consent_required_for_processing p_r p_a == true))) = admit ()
 
 (* consent_withdrawal_blocks (matches Coq: Theorem consent_withdrawal_blocks) *)
-let consent_withdrawal_blocks_obligation () : Tot bool = (0 = 0)
-let consent_withdrawal_blocks_lemma () : Lemma (requires True) (ensures (consent_withdrawal_blocks_obligation () == consent_withdrawal_blocks_obligation ())) = ()
+let consent_withdrawal_blocks (p_r: nat) : Lemma (requires (pdpa_consent p_r == WithdrawnConsent /\ ~(pdpa_classification p_r == PublicData)) (ensures (~(has_valid_consent p_r == true)))) = admit ()
 
 (* principle_2_purpose_limitation (matches Coq: Theorem principle_2_purpose_limitation) *)
-let principle_2_purpose_limitation_obligation () : Tot bool = (0 = 0)
-let principle_2_purpose_limitation_lemma () : Lemma (requires True) (ensures (principle_2_purpose_limitation_obligation () == principle_2_purpose_limitation_obligation ())) = ()
+let principle_2_purpose_limitation (p_r: nat) : Lemma (processing_within_purpose p_r (pdpa_purpose p_r) == true) = admit ()
 
 (* principle_3_sensitive_explicit_only (matches Coq: Theorem principle_3_sensitive_explicit_only) *)
-let principle_3_sensitive_explicit_only_obligation () : Tot bool = (0 = 0)
-let principle_3_sensitive_explicit_only_lemma () : Lemma (requires True) (ensures (principle_3_sensitive_explicit_only_obligation () == principle_3_sensitive_explicit_only_obligation ())) = ()
+let principle_3_sensitive_explicit_only (p_r: nat) (p_recipient: nat) : Lemma (requires (pdpa_classification p_r == SensitivePersonalData /\ pdpa_consent p_r == ExplicitConsent) (ensures (disclosure_authorized p_r p_recipient == true))) = admit ()
 
 (* principle_4_encryption_mandatory (matches Coq: Theorem principle_4_encryption_mandatory) *)
-let principle_4_encryption_mandatory_obligation () : Tot bool = (0 = 0)
-let principle_4_encryption_mandatory_lemma () : Lemma (requires True) (ensures (principle_4_encryption_mandatory_obligation () == principle_4_encryption_mandatory_obligation ())) = ()
+let principle_4_encryption_mandatory (p_r: nat) : Lemma (requires (pdpa_encrypted p_r == true /\ ~(pdpa_classification p_r == PublicData)) (ensures (pdpa_encrypted p_r == true))) = admit ()
 
 (* principle_4_security (matches Coq: Theorem principle_4_security) *)
-let principle_4_security_obligation () : Tot bool = (0 = 0)
-let principle_4_security_lemma () : Lemma (requires True) (ensures (principle_4_security_obligation () == principle_4_security_obligation ())) = ()
+let principle_4_security (p_r: nat) : Lemma (requires (pdpa_encrypted p_r == true) (ensures (security_adequate p_r == true))) = admit ()
 
 (* principle_5_retention (matches Coq: Theorem principle_5_retention) *)
-let principle_5_retention_obligation () : Tot bool = (0 = 0)
-let principle_5_retention_lemma () : Lemma (requires True) (ensures (principle_5_retention_obligation () == principle_5_retention_obligation ())) = ()
+let principle_5_retention (p_r: nat) (p_t: nat) : Lemma (requires (~(within_retention_period p_r p_t == true)) (ensures (must_delete p_r p_t == true))) = admit ()
 
 (* retention_delete_exclusive (matches Coq: Theorem retention_delete_exclusive) *)
-let retention_delete_exclusive_obligation () : Tot bool = (0 = 0)
-let retention_delete_exclusive_lemma () : Lemma (requires True) (ensures (retention_delete_exclusive_obligation () == retention_delete_exclusive_obligation ())) = ()
+let retention_delete_exclusive (p_r: nat) (p_t: nat) : Lemma (requires (within_retention_period p_r p_t == true) (ensures (~(must_delete p_r p_t == true)))) = admit ()
 
 (* principle_6_integrity (matches Coq: Theorem principle_6_integrity) *)
-let principle_6_integrity_obligation () : Tot bool = (0 = 0)
-let principle_6_integrity_lemma () : Lemma (requires True) (ensures (principle_6_integrity_obligation () == principle_6_integrity_obligation ())) = ()
+let principle_6_integrity (p_h: nat) : Lemma (data_integrity_maintained p_h p_h == true) = admit ()
 
 (* principle_7_access_logged (matches Coq: Theorem principle_7_access_logged) *)
-let principle_7_access_logged_obligation () : Tot bool = (0 = 0)
-let principle_7_access_logged_lemma () : Lemma (requires True) (ensures (principle_7_access_logged_obligation () == principle_7_access_logged_obligation ())) = ()
+let principle_7_access_logged (p_trail: nat) (p_subject_id: nat) (p_t: nat) (p_actor: nat) : Lemma (fn_let entry : == mkpdpaaudit p_subject_id Collect p_t p_actor id_in access_request_served (entry :: p_trail) p_subject_id p_t) = admit ()
 
 (* breach_notification_ordering (matches Coq: Theorem breach_notification_ordering) *)
-let breach_notification_ordering_obligation () : Tot bool = (0 = 0)
-let breach_notification_ordering_lemma () : Lemma (requires True) (ensures (breach_notification_ordering_obligation () == breach_notification_ordering_obligation ())) = ()
+let breach_notification_ordering (p_b: nat) (p_t_pdpc: nat) (p_t_subjects: nat) : Lemma (requires (pdpc_notified_in_time p_b p_t_pdpc == true /\ subjects_notified_in_time p_b p_t_subjects == true) (ensures (p_t_pdpc <= breach_detected_at p_b + 72))) = admit ()
 
 (* pdpc_deadline_stricter (matches Coq: Theorem pdpc_deadline_stricter) *)
-let pdpc_deadline_stricter_obligation () : Tot bool = (0 = 0)
-let pdpc_deadline_stricter_lemma () : Lemma (requires True) (ensures (pdpc_deadline_stricter_obligation () == pdpc_deadline_stricter_obligation ())) = ()
+let pdpc_deadline_stricter (p_b: nat) (p_t: nat) : Lemma (requires (pdpc_notified_in_time p_b p_t == true) (ensures (subjects_notified_in_time p_b p_t == true))) = admit ()
 
 (* dpo_mandatory (matches Coq: Theorem dpo_mandatory) *)
-let dpo_mandatory_obligation () : Tot bool = (0 = 0)
-let dpo_mandatory_lemma () : Lemma (requires True) (ensures (dpo_mandatory_obligation () == dpo_mandatory_obligation ())) = ()
+let dpo_mandatory (p_dpo: nat) : Lemma (requires (dpo_active p_dpo == true) (ensures (dpo_compliant p_dpo == true))) = admit ()
 
 (* pdpa_composition (matches Coq: Theorem pdpa_composition) *)
-let pdpa_composition_obligation () : Tot bool = (0 = 0)
-let pdpa_composition_lemma () : Lemma (requires True) (ensures (pdpa_composition_obligation () == pdpa_composition_obligation ())) = ()
+let pdpa_composition (p_r: nat) (p_dpo: nat) (p_t: nat) : Lemma (requires (consent_required_for_processing p_r Collect == true /\ security_adequate p_r == true /\ within_retention_period p_r p_t == true /\ dpo_compliant p_dpo == true) (ensures (pdpa_fully_compliant p_r p_dpo p_t == true))) = admit ()
 
 (* data_collection_consent_recorded (matches Coq: Theorem data_collection_consent_recorded) *)
-let data_collection_consent_recorded_obligation () : Tot bool = (0 = 0)
-let data_collection_consent_recorded_lemma () : Lemma (requires True) (ensures (data_collection_consent_recorded_obligation () == data_collection_consent_recorded_obligation ())) = ()
+let data_collection_consent_recorded (p_cr: nat) (p_t: nat) : Lemma (requires (cr_recorded_at p_cr <= p_t /\ cr_valid p_cr == true /\ cr_consent_type p_cr == ExplicitConsent) (ensures (consent_properly_recorded p_cr p_t == true))) = admit ()
 
 (* cross_border_transfer_authorized (matches Coq: Theorem cross_border_transfer_authorized) *)
-let cross_border_transfer_authorized_obligation () : Tot bool = (0 = 0)
-let cross_border_transfer_authorized_lemma () : Lemma (requires True) (ensures (cross_border_transfer_authorized_obligation () == cross_border_transfer_authorized_obligation ())) = ()
+let cross_border_transfer_authorized (p_t: nat) : Lemma (requires (cbt_adequate_protection p_t == true) (ensures (cross_border_lawful p_t == true))) = admit ()
 
 (* cross_border_consent_basis (matches Coq: Theorem cross_border_consent_basis) *)
-let cross_border_consent_basis_obligation () : Tot bool = (0 = 0)
-let cross_border_consent_basis_lemma () : Lemma (requires True) (ensures (cross_border_consent_basis_obligation () == cross_border_consent_basis_obligation ())) = ()
+let cross_border_consent_basis (p_t: nat) : Lemma (requires (cbt_basis p_t == SubjectConsent_Transfer) (ensures (cross_border_lawful p_t == true))) = admit ()
 
 (* data_breach_notification_timely (matches Coq: Theorem data_breach_notification_timely) *)
-let data_breach_notification_timely_obligation () : Tot bool = (0 = 0)
-let data_breach_notification_timely_lemma () : Lemma (requires True) (ensures (data_breach_notification_timely_obligation () == data_breach_notification_timely_obligation ())) = ()
+let data_breach_notification_timely (p_b: nat) (p_t_pdpc: nat) (p_t_subj: nat) : Lemma (requires (p_t_pdpc <= breach_detected_at p_b + 72 /\ p_t_subj <= breach_detected_at p_b + 168 /\ p_t_pdpc <= p_t_subj) (ensures (breach_notification_timely p_b p_t_pdpc p_t_subj == true))) = admit ()
 
 (* data_subject_access_fulfilled (matches Coq: Theorem data_subject_access_fulfilled) *)
-let data_subject_access_fulfilled_obligation () : Tot bool = (0 = 0)
-let data_subject_access_fulfilled_lemma () : Lemma (requires True) (ensures (data_subject_access_fulfilled_obligation () == data_subject_access_fulfilled_obligation ())) = ()
+let data_subject_access_fulfilled (p_req: nat) : Lemma (requires (ar_responded_at p_req <= ar_requested_at p_req + access_request_deadline /\ ar_data_provided p_req == true) (ensures (access_fulfilled p_req == true))) = admit ()
 
 (* access_late_response_violation (matches Coq: Theorem access_late_response_violation) *)
-let access_late_response_violation_obligation () : Tot bool = (0 = 0)
-let access_late_response_violation_lemma () : Lemma (requires True) (ensures (access_late_response_violation_obligation () == access_late_response_violation_obligation ())) = ()
+let access_late_response_violation (p_req: nat) : Lemma (requires (ar_requested_at p_req + access_request_deadline < ar_responded_at p_req) (ensures (~((ar_responded_at p_req <= ar_requested_at p_req + access_request_deadline))))) = admit ()
 
 (* data_retention_period_enforced (matches Coq: Theorem data_retention_period_enforced) *)
-let data_retention_period_enforced_obligation () : Tot bool = (0 = 0)
-let data_retention_period_enforced_lemma () : Lemma (requires True) (ensures (data_retention_period_enforced_obligation () == data_retention_period_enforced_obligation ())) = ()
+let data_retention_period_enforced (p_r: nat) (p_t: nat) : Lemma (requires (pdpa_retention_limit p_r < p_t /\ forall (del : bool), del == true) (ensures (retention_enforceable p_r p_t del == true))) = admit ()
 
 (* data_accuracy_maintained (matches Coq: Theorem data_accuracy_maintained) *)
-let data_accuracy_maintained_obligation () : Tot bool = (0 = 0)
-let data_accuracy_maintained_lemma () : Lemma (requires True) (ensures (data_accuracy_maintained_obligation () == data_accuracy_maintained_obligation ())) = ()
+let data_accuracy_maintained (p_da: nat) (p_t: nat) : Lemma (requires (p_t <= da_last_verified p_da + da_verification_interval p_da) (ensures (accuracy_maintained p_da p_t == true))) = admit ()
 
 (* accuracy_expiry_detected (matches Coq: Theorem accuracy_expiry_detected) *)
-let accuracy_expiry_detected_obligation () : Tot bool = (0 = 0)
-let accuracy_expiry_detected_lemma () : Lemma (requires True) (ensures (accuracy_expiry_detected_obligation () == accuracy_expiry_detected_obligation ())) = ()
+let accuracy_expiry_detected (p_da: nat) (p_t: nat) : Lemma (requires (~(accuracy_current p_da p_t == true)) (ensures (da_last_verified p_da + da_verification_interval p_da < p_t))) = admit ()
 
 (* security_measures_proportionate (matches Coq: Theorem security_measures_proportionate) *)
-let security_measures_proportionate_obligation () : Tot bool = (0 = 0)
-let security_measures_proportionate_lemma () : Lemma (requires True) (ensures (security_measures_proportionate_obligation () == security_measures_proportionate_obligation ())) = ()
+let security_measures_proportionate (p_c: pdpa_classification) (p_controls: nat) : Lemma (requires (harm_level p_c <= p_controls) (ensures (security_level_adequate p_c p_controls == true))) = admit ()
 
 (* sensitive_needs_more_controls (matches Coq: Theorem sensitive_needs_more_controls) *)
-let sensitive_needs_more_controls_obligation () : Tot bool = (0 = 0)
-let sensitive_needs_more_controls_lemma () : Lemma (requires True) (ensures (sensitive_needs_more_controls_obligation () == sensitive_needs_more_controls_obligation ())) = ()
+let sensitive_needs_more_controls (p_controls: nat) : Lemma (requires (security_level_adequate SensitivePersonalData p_controls == true) (ensures (security_level_adequate PersonalData p_controls == true))) = admit ()
 
 (* processor_contract_binding (matches Coq: Theorem processor_contract_binding) *)
-let processor_contract_binding_obligation () : Tot bool = (0 = 0)
-let processor_contract_binding_lemma () : Lemma (requires True) (ensures (processor_contract_binding_obligation () == processor_contract_binding_obligation ())) = ()
+let processor_contract_binding (p_pc: nat) : Lemma (requires (pc_security_obligations p_pc == true /\ pc_data_return_required p_pc == true /\ ~(pc_purposes_allowed p_pc == nil)) (ensures (processor_bound p_pc == true))) = admit ()
 
 (* dpia_conducted (matches Coq: Theorem dpia_conducted) *)
-let dpia_conducted_obligation () : Tot bool = (0 = 0)
-let dpia_conducted_lemma () : Lemma (requires True) (ensures (dpia_conducted_obligation () == dpia_conducted_obligation ())) = ()
+let dpia_conducted (p_d: nat) : Lemma (requires (dpia_approved p_d == true /\ dpia_mitigations_applied p_d >= dpia_risk_identified p_d) (ensures (dpia_valid p_d == true))) = admit ()
 
 (* dpia_incomplete_if_risks_unmitigated (matches Coq: Theorem dpia_incomplete_if_risks_unmitigated) *)
-let dpia_incomplete_if_risks_unmitigated_obligation () : Tot bool = (0 = 0)
-let dpia_incomplete_if_risks_unmitigated_lemma () : Lemma (requires True) (ensures (dpia_incomplete_if_risks_unmitigated_obligation () == dpia_incomplete_if_risks_unmitigated_obligation ())) = ()
+let dpia_incomplete_if_risks_unmitigated (p_d: nat) : Lemma (requires (dpia_mitigations_applied p_d < dpia_risk_identified p_d) (ensures (~((dpia_mitigations_applied p_d >= dpia_risk_identified p_d))))) = admit ()
 
 (* children_data_additional_consent (matches Coq: Theorem children_data_additional_consent) *)
-let children_data_additional_consent_obligation () : Tot bool = (0 = 0)
-let children_data_additional_consent_lemma () : Lemma (requires True) (ensures (children_data_additional_consent_obligation () == children_data_additional_consent_obligation ())) = ()
+let children_data_additional_consent (p_cdr: nat) : Lemma (requires (child_subject_age p_cdr < children_age_threshold /\ child_parental_consent p_cdr == true) (ensures (child_parental_consent p_cdr == true))) = admit ()
 
 (* adult_own_consent_sufficient (matches Coq: Theorem adult_own_consent_sufficient) *)
-let adult_own_consent_sufficient_obligation () : Tot bool = (0 = 0)
-let adult_own_consent_sufficient_lemma () : Lemma (requires True) (ensures (adult_own_consent_sufficient_obligation () == adult_own_consent_sufficient_obligation ())) = ()
+let adult_own_consent_sufficient (p_cdr: nat) : Lemma (requires (child_subject_age p_cdr >= children_age_threshold /\ child_own_consent p_cdr == true) (ensures (children_consent_adequate p_cdr == true))) = admit ()
 
 (* marketing_consent_required (matches Coq: Theorem marketing_consent_required) *)
-let marketing_consent_required_obligation () : Tot bool = (0 = 0)
-let marketing_consent_required_lemma () : Lemma (requires True) (ensures (marketing_consent_required_obligation () == marketing_consent_required_obligation ())) = ()
+let marketing_consent_required (p_r: nat) : Lemma (requires (pdpa_purpose p_r == DirectMarketing /\ pdpa_consent p_r == ExplicitConsent) (ensures (marketing_consent_separate p_r == true))) = admit ()
 
 (* marketing_without_explicit_violates (matches Coq: Theorem marketing_without_explicit_violates) *)
-let marketing_without_explicit_violates_obligation () : Tot bool = (0 = 0)
-let marketing_without_explicit_violates_lemma () : Lemma (requires True) (ensures (marketing_without_explicit_violates_obligation () == marketing_without_explicit_violates_obligation ())) = ()
+let marketing_without_explicit_violates (p_r: nat) : Lemma (requires (pdpa_purpose p_r == DirectMarketing /\ pdpa_consent p_r == ImpliedConsent) (ensures (~(marketing_consent_separate p_r == true)))) = admit ()
 
 (* complaint_mechanism_valid (matches Coq: Theorem complaint_mechanism_valid) *)
-let complaint_mechanism_valid_obligation () : Tot bool = (0 = 0)
-let complaint_mechanism_valid_lemma () : Lemma (requires True) (ensures (complaint_mechanism_valid_obligation () == complaint_mechanism_valid_obligation ())) = ()
+let complaint_mechanism_valid (p_cm: nat) : Lemma (requires (complaint_channel_active p_cm == true /\ complaint_response_days p_cm <= complaint_max_response_days p_cm /\ complaint_escalation_available p_cm == true) (ensures (complaint_mechanism_available p_cm == true))) = admit ()
 
 (* pdpa_commissioner_reportable (matches Coq: Theorem pdpa_commissioner_reportable) *)
-let pdpa_commissioner_reportable_obligation () : Tot bool = (0 = 0)
-let pdpa_commissioner_reportable_lemma () : Lemma (requires True) (ensures (pdpa_commissioner_reportable_obligation () == pdpa_commissioner_reportable_obligation ())) = ()
+let pdpa_commissioner_reportable (p_rpt: nat) : Lemma (requires (report_submitted_at p_rpt <= report_deadline p_rpt /\ report_dpo_active p_rpt == true) (ensures (pdpa_report_timely p_rpt == true))) = admit ()
 
 (* late_report_non_compliant (matches Coq: Theorem late_report_non_compliant) *)
-let late_report_non_compliant_obligation () : Tot bool = (0 = 0)
-let late_report_non_compliant_lemma () : Lemma (requires True) (ensures (late_report_non_compliant_obligation () == late_report_non_compliant_obligation ())) = ()
+let late_report_non_compliant (p_rpt: nat) : Lemma (requires (report_deadline p_rpt < report_submitted_at p_rpt) (ensures (~((report_submitted_at p_rpt <= report_deadline p_rpt))))) = admit ()
 
 (* public_data_lowest_harm (matches Coq: Theorem public_data_lowest_harm) *)
-let public_data_lowest_harm_obligation () : Tot bool = (0 = 0)
-let public_data_lowest_harm_lemma () : Lemma (requires True) (ensures (public_data_lowest_harm_obligation () == public_data_lowest_harm_obligation ())) = ()
+let public_data_lowest_harm (p_c: pdpa_classification) : Lemma (harm_level PublicData <= harm_level p_c) = admit ()
 
 (* sensitive_data_highest_harm (matches Coq: Theorem sensitive_data_highest_harm) *)
-let sensitive_data_highest_harm_obligation () : Tot bool = (0 = 0)
-let sensitive_data_highest_harm_lemma () : Lemma (requires True) (ensures (sensitive_data_highest_harm_obligation () == sensitive_data_highest_harm_obligation ())) = ()
+let sensitive_data_highest_harm (p_c: pdpa_classification) : Lemma (harm_level p_c <= harm_level SensitivePersonalData) = admit ()
 
 (* consent_status_coverage (matches Coq: Theorem consent_status_coverage) *)
-let consent_status_coverage_obligation () : Tot bool = (0 = 0)
-let consent_status_coverage_lemma () : Lemma (requires True) (ensures (consent_status_coverage_obligation () == consent_status_coverage_obligation ())) = ()
+let consent_status_coverage (p_cs: consent_status) : Lemma (In p_cs all_consent_statuses == true) = admit ()
 
 (* transfer_basis_coverage (matches Coq: Theorem transfer_basis_coverage) *)
-let transfer_basis_coverage_obligation () : Tot bool = (0 = 0)
-let transfer_basis_coverage_lemma () : Lemma (requires True) (ensures (transfer_basis_coverage_obligation () == transfer_basis_coverage_obligation ())) = ()
+let transfer_basis_coverage (p_tb: transfer_basis) : Lemma (In p_tb all_transfer_bases == true) = admit ()

@@ -146,81 +146,61 @@ let seu_response (p_seu_detected: bool) (p_current_mode: system_mode) : Tot syst
   if p_seu_detected then SafeMode else p_current_mode
 
 (* DOMAIN_001_01 (matches Coq: Theorem DOMAIN_001_01) *)
-let domain_001_01_obligation () : Tot bool = (0 = 0)
-let domain_001_01_lemma () : Lemma (requires True) (ensures (domain_001_01_obligation () == domain_001_01_obligation ())) = ()
+let domain_001_01 (p_v: nat) : Lemma (fn_let t : == mktmr p_v p_v p_v id_in tmr_read t = Some p_v) = admit ()
 
 (* DOMAIN_001_02 (matches Coq: Theorem DOMAIN_001_02) *)
-let domain_001_02_obligation () : Tot bool = (0 = 0)
-let domain_001_02_lemma () : Lemma (requires True) (ensures (domain_001_02_obligation () == domain_001_02_obligation ())) = ()
+let domain_001_02 (p_a: nat) (p_b: nat) (p_c: nat) : Lemma (requires (p_a == p_b \/ p_b == p_c \/ p_a == p_c) (ensures (exists v_ majority_vote_nat p_a p_b p_c == Some v /\ (v == p_a \/ v == p_b \/ v == p_c)))) = admit ()
 
 (* DOMAIN_001_03 (matches Coq: Theorem DOMAIN_001_03) *)
-let domain_001_03_obligation () : Tot bool = (0 = 0)
-let domain_001_03_lemma () : Lemma (requires True) (ensures (domain_001_03_obligation () == domain_001_03_obligation ())) = ()
+let domain_001_03 (p_data: nat) : Lemma (fn_let ecc_clean : == mkecc p_data [false; false_ false_ id_in ecc_syndrome ecc_clean = 0) = admit ()
 
 (* DOMAIN_001_04 (matches Coq: Theorem DOMAIN_001_04) *)
-let domain_001_04_obligation () : Tot bool = (0 = 0)
-let domain_001_04_lemma () : Lemma (requires True) (ensures (domain_001_04_obligation () == domain_001_04_obligation ())) = ()
+let domain_001_04 (p_w: nat) : Lemma (hamming_distance p_w p_w == 0) = admit ()
 
 (* DOMAIN_001_05 (matches Coq: Theorem DOMAIN_001_05) *)
-let domain_001_05_obligation () : Tot bool = (0 = 0)
-let domain_001_05_lemma () : Lemma (requires True) (ensures (domain_001_05_obligation () == domain_001_05_obligation ())) = ()
+let domain_001_05 (p_wd: watchdog) (p_current_time: nat) : Lemma (requires (p_current_time > wd_last_kick p_wd + wd_timeout p_wd) (ensures (watchdog_expired p_wd p_current_time == true))) = admit ()
 
 (* DOMAIN_001_06 (matches Coq: Theorem DOMAIN_001_06) *)
-let domain_001_06_obligation () : Tot bool = (0 = 0)
-let domain_001_06_lemma () : Lemma (requires True) (ensures (domain_001_06_obligation () == domain_001_06_obligation ())) = ()
+let domain_001_06 (p_state: nat) (p_timestamp: nat) : Lemma (fn_let cp : == mkcp p_state p_timestamp true id_in restore_checkpoint cp = Some p_state) = admit ()
 
 (* DOMAIN_001_07 (matches Coq: Theorem DOMAIN_001_07) *)
-let domain_001_07_obligation () : Tot bool = (0 = 0)
-let domain_001_07_lemma () : Lemma (requires True) (ensures (domain_001_07_obligation () == domain_001_07_obligation ())) = ()
+let domain_001_07 (p_v: nat) : Lemma (fn_let t : == store_critical p_v id_in tmr_copy1 t = p_v /\ tmr_copy2 t == p_v /\ tmr_copy3 t == p_v) = admit ()
 
 (* DOMAIN_001_08 (matches Coq: Theorem DOMAIN_001_08) *)
-let domain_001_08_obligation () : Tot bool = (0 = 0)
-let domain_001_08_lemma () : Lemma (requires True) (ensures (domain_001_08_obligation () == domain_001_08_obligation ())) = ()
+let domain_001_08 (p_cfs: cf_signature) (p_addr: nat) : Lemma (requires (In p_addr (p_cfs.f_cfs_expected_next) == true) (ensures (cf_valid p_cfs p_addr == true))) = admit ()
 
 (* DOMAIN_001_09 (matches Coq: Theorem DOMAIN_001_09) *)
-let domain_001_09_obligation () : Tot bool = (0 = 0)
-let domain_001_09_lemma () : Lemma (requires True) (ensures (domain_001_09_obligation () == domain_001_09_obligation ())) = ()
+let domain_001_09 (p_canary: nat) (p_data: nat) : Lemma (fn_let sf : == mksf p_canary p_data p_canary id_in canary_valid sf = true) = admit ()
 
 (* DOMAIN_001_09_corrupted (matches Coq: Theorem DOMAIN_001_09_corrupted) *)
-let domain_001_09_corrupted_obligation () : Tot bool = (0 = 0)
-let domain_001_09_corrupted_lemma () : Lemma (requires True) (ensures (domain_001_09_corrupted_obligation () == domain_001_09_corrupted_obligation ())) = ()
+let domain_001_09_corrupted (p_canary: nat) (p_data: nat) (p_expected: nat) : Lemma (requires (~(p_canary == p_expected)) (ensures (fn_let sf : == mksf p_canary p_data p_expected id_in canary_valid sf = false))) = admit ()
 
 (* DOMAIN_001_10 (matches Coq: Theorem DOMAIN_001_10) *)
-let domain_001_10_obligation () : Tot bool = (0 = 0)
-let domain_001_10_lemma () : Lemma (requires True) (ensures (domain_001_10_obligation () == domain_001_10_obligation ())) = ()
+let domain_001_10 (p_addr: nat) (p_found: nat) (p_corrected: nat) : Lemma (requires (p_corrected <= p_found) (ensures (fn_let ss : == mkscrub p_addr p_found p_corrected id_in scrub_effective ss = true))) = admit ()
 
 (* DOMAIN_001_11 (matches Coq: Theorem DOMAIN_001_11) *)
-let domain_001_11_obligation () : Tot bool = (0 = 0)
-let domain_001_11_lemma () : Lemma (requires True) (ensures (domain_001_11_obligation () == domain_001_11_obligation ())) = ()
+let domain_001_11 (p_current_mode: system_mode) : Lemma (seu_response true p_current_mode == SafeMode) = admit ()
 
 (* DOMAIN_001_12 (matches Coq: Theorem DOMAIN_001_12) *)
-let domain_001_12_obligation () : Tot bool = (0 = 0)
-let domain_001_12_lemma () : Lemma (requires True) (ensures (domain_001_12_obligation () == domain_001_12_obligation ())) = ()
+let domain_001_12 (p_v: nat) (p_threshold: nat) : Lemma (requires (p_threshold <= 3) (ensures (fn_let nvr : == mknvr [p_v; v_ v_ p_threshold id_in nvr_consensus nvr = Some p_v))) = admit ()
 
 (* DOMAIN_001_13 (matches Coq: Theorem DOMAIN_001_13) *)
-let domain_001_13_obligation () : Tot bool = (0 = 0)
-let domain_001_13_lemma () : Lemma (requires True) (ensures (domain_001_13_obligation () == domain_001_13_obligation ())) = ()
+let domain_001_13 (p_p_actual: probability) (p_p_threshold: probability) : Lemma (requires (prob_num p_p_actual * prob_denom p_p_threshold < prob_num p_p_threshold * prob_denom p_p_actual) (ensures (prob_lt p_p_actual p_p_threshold == true))) = admit ()
 
 (* DOMAIN_001_14 (matches Coq: Theorem DOMAIN_001_14) *)
-let domain_001_14_obligation () : Tot bool = (0 = 0)
-let domain_001_14_lemma () : Lemma (requires True) (ensures (domain_001_14_obligation () == domain_001_14_obligation ())) = ()
+let domain_001_14 (p_mttr: nat) (p_requirement: nat) : Lemma (requires (p_mttr <= p_requirement) (ensures (fn_let rm : == mkrm p_mttr p_requirement id_in recovery_within_bound rm = true))) = admit ()
 
 (* DOMAIN_001_15 (matches Coq: Theorem DOMAIN_001_15) *)
-let domain_001_15_obligation () : Tot bool = (0 = 0)
-let domain_001_15_lemma () : Lemma (requires True) (ensures (domain_001_15_obligation () == domain_001_15_obligation ())) = ()
+let domain_001_15 (p_v: nat) : Lemma (fn_let cd : == mkcd p_v p_v p_v 0 id_in cd_recover cd = p_v) = admit ()
 
 (* DOMAIN_001_15_single_corruption (matches Coq: Theorem DOMAIN_001_15_single_corruption) *)
-let domain_001_15_single_corruption_obligation () : Tot bool = (0 = 0)
-let domain_001_15_single_corruption_lemma () : Lemma (requires True) (ensures (domain_001_15_single_corruption_obligation () == domain_001_15_single_corruption_obligation ())) = ()
+let domain_001_15_single_corruption (p_v: nat) (p_corrupted: nat) : Lemma (fn_let cd : == mkcd p_corrupted p_v p_v 0 id_in cd_recover cd = p_v) = admit ()
 
 (* DOMAIN_001_16 (matches Coq: Theorem DOMAIN_001_16) *)
-let domain_001_16_obligation () : Tot bool = (0 = 0)
-let domain_001_16_lemma () : Lemma (requires True) (ensures (domain_001_16_obligation () == domain_001_16_obligation ())) = ()
+let domain_001_16 (p_b: bool) : Lemma (majority_vote p_b p_b p_b == p_b) = admit ()
 
 (* DOMAIN_001_17 (matches Coq: Theorem DOMAIN_001_17) *)
-let domain_001_17_obligation () : Tot bool = (0 = 0)
-let domain_001_17_lemma () : Lemma (requires True) (ensures (domain_001_17_obligation () == domain_001_17_obligation ())) = ()
+let domain_001_17 (p_v: nat) (p_chk: nat) : Lemma (cd_consistent (mkcd p_v p_v p_v p_chk) == true) = admit ()
 
 (* DOMAIN_001_18 (matches Coq: Theorem DOMAIN_001_18) *)
-let domain_001_18_obligation () : Tot bool = (0 = 0)
-let domain_001_18_lemma () : Lemma (requires True) (ensures (domain_001_18_obligation () == domain_001_18_obligation ())) = ()
+let domain_001_18 (p_b: nat) : Lemma (flip_bit (flip_bit p_b) == p_b) = admit ()

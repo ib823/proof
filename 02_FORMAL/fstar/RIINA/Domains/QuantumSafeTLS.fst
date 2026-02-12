@@ -332,277 +332,208 @@ let riina_sig_security : signature_security_props = {f_sig_euf_cma=true; f_sig_s
 let riina_aead : aead_properties = {f_aead_confidentiality=true; f_aead_integrity=true; f_aead_authenticity=true; f_aead_nonce_unique=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = (0 = 0)
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a || p_b == fn_true <) (ensures (p_a == true \/ p_b == true))) = admit ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff_obligation () : Tot bool = (0 = 0)
-let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
+let negb_false_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_false <) (ensures (p_b == true))) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = (0 = 0)
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
 
 (* QSTLS_001 (matches Coq: Theorem QSTLS_001) *)
-let qstls_001_obligation () : Tot bool = (0 = 0)
-let qstls_001_lemma () : Lemma (requires True) (ensures (qstls_001_obligation () == qstls_001_obligation ())) = ()
+let qstls_001 () : Lemma (hybrid_kex_secure riina_kex == true) = admit ()
 
 (* QSTLS_002 (matches Coq: Theorem QSTLS_002) *)
-let qstls_002_obligation () : Tot bool = (0 = 0)
-let qstls_002_lemma () : Lemma (requires True) (ensures (qstls_002_obligation () == qstls_002_obligation ())) = ()
+let qstls_002 () : Lemma (pq_auth_secure riina_auth == true) = admit ()
 
 (* QSTLS_003 (matches Coq: Theorem QSTLS_003) *)
-let qstls_003_obligation () : Tot bool = (0 = 0)
-let qstls_003_lemma () : Lemma (requires True) (ensures (qstls_003_obligation () == qstls_003_obligation ())) = ()
+let qstls_003 () : Lemma (handshake_secure riina_hs == true) = admit ()
 
 (* QSTLS_004 (matches Coq: Theorem QSTLS_004) *)
-let qstls_004_obligation () : Tot bool = (0 = 0)
-let qstls_004_lemma () : Lemma (requires True) (ensures (qstls_004_obligation () == qstls_004_obligation ())) = ()
+let qstls_004 () : Lemma (record_secure riina_rec == true) = admit ()
 
 (* QSTLS_005 (matches Coq: Theorem QSTLS_005) *)
-let qstls_005_obligation () : Tot bool = (0 = 0)
-let qstls_005_lemma () : Lemma (requires True) (ensures (qstls_005_obligation () == qstls_005_obligation ())) = ()
+let qstls_005 () : Lemma (qstls_fully_secure riina_qstls == true) = admit ()
 
 (* QSTLS_006 (matches Coq: Theorem QSTLS_006) *)
-let qstls_006_obligation () : Tot bool = (0 = 0)
-let qstls_006_lemma () : Lemma (requires True) (ensures (qstls_006_obligation () == qstls_006_obligation ())) = ()
+let qstls_006 () : Lemma (riina_kex.f_hkex_post_quantum == true) = admit ()
 
 (* QSTLS_007 (matches Coq: Theorem QSTLS_007) *)
-let qstls_007_obligation () : Tot bool = (0 = 0)
-let qstls_007_lemma () : Lemma (requires True) (ensures (qstls_007_obligation () == qstls_007_obligation ())) = ()
+let qstls_007 () : Lemma (riina_kex.f_hkex_combined == true) = admit ()
 
 (* QSTLS_008 (matches Coq: Theorem QSTLS_008) *)
-let qstls_008_obligation () : Tot bool = (0 = 0)
-let qstls_008_lemma () : Lemma (requires True) (ensures (qstls_008_obligation () == qstls_008_obligation ())) = ()
+let qstls_008 () : Lemma (riina_auth.f_pqa_pq_sig == true) = admit ()
 
 (* QSTLS_009 (matches Coq: Theorem QSTLS_009) *)
-let qstls_009_obligation () : Tot bool = (0 = 0)
-let qstls_009_lemma () : Lemma (requires True) (ensures (qstls_009_obligation () == qstls_009_obligation ())) = ()
+let qstls_009 () : Lemma (riina_hs.f_ths_forward_secrecy == true) = admit ()
 
 (* QSTLS_010 (matches Coq: Theorem QSTLS_010) *)
-let qstls_010_obligation () : Tot bool = (0 = 0)
-let qstls_010_lemma () : Lemma (requires True) (ensures (qstls_010_obligation () == qstls_010_obligation ())) = ()
+let qstls_010 () : Lemma (riina_hs.f_ths_downgrade_protection == true) = admit ()
 
 (* QSTLS_011 (matches Coq: Theorem QSTLS_011) *)
-let qstls_011_obligation () : Tot bool = (0 = 0)
-let qstls_011_lemma () : Lemma (requires True) (ensures (qstls_011_obligation () == qstls_011_obligation ())) = ()
+let qstls_011 () : Lemma (riina_rec.f_rec_aead == true) = admit ()
 
 (* QSTLS_012 (matches Coq: Theorem QSTLS_012) *)
-let qstls_012_obligation () : Tot bool = (0 = 0)
-let qstls_012_lemma () : Lemma (requires True) (ensures (qstls_012_obligation () == qstls_012_obligation ())) = ()
+let qstls_012 () : Lemma (riina_qstls.f_qstls_version_13 == true) = admit ()
 
 (* QSTLS_013 (matches Coq: Theorem QSTLS_013) *)
-let qstls_013_obligation () : Tot bool = (0 = 0)
-let qstls_013_lemma () : Lemma (requires True) (ensures (qstls_013_obligation () == qstls_013_obligation ())) = ()
+let qstls_013 (p_h: _) : Lemma (requires (hybrid_kex_secure p_h == true) (ensures (p_h.f_hkex_post_quantum == true))) = admit ()
 
 (* QSTLS_014 (matches Coq: Theorem QSTLS_014) *)
-let qstls_014_obligation () : Tot bool = (0 = 0)
-let qstls_014_lemma () : Lemma (requires True) (ensures (qstls_014_obligation () == qstls_014_obligation ())) = ()
+let qstls_014 (p_h: _) : Lemma (requires (hybrid_kex_secure p_h == true) (ensures (p_h.f_hkex_combined == true))) = admit ()
 
 (* QSTLS_015 (matches Coq: Theorem QSTLS_015) *)
-let qstls_015_obligation () : Tot bool = (0 = 0)
-let qstls_015_lemma () : Lemma (requires True) (ensures (qstls_015_obligation () == qstls_015_obligation ())) = ()
+let qstls_015 (p_h: _) : Lemma (requires (hybrid_kex_secure p_h == true) (ensures (p_h.f_hkex_classical == true))) = admit ()
 
 (* QSTLS_016 (matches Coq: Theorem QSTLS_016) *)
-let qstls_016_obligation () : Tot bool = (0 = 0)
-let qstls_016_lemma () : Lemma (requires True) (ensures (qstls_016_obligation () == qstls_016_obligation ())) = ()
+let qstls_016 (p_c: _) : Lemma (requires (hybrid_config_valid p_c == true) (ensures (p_c.f_hybrid_combiner == true))) = admit ()
 
 (* QSTLS_017 (matches Coq: Theorem QSTLS_017) *)
-let qstls_017_obligation () : Tot bool = (0 = 0)
-let qstls_017_lemma () : Lemma (requires True) (ensures (qstls_017_obligation () == qstls_017_obligation ())) = ()
+let qstls_017 (p_c: _) : Lemma (requires (hybrid_config_valid p_c == true) (ensures (p_c.f_hybrid_label == true))) = admit ()
 
 (* QSTLS_018 (matches Coq: Theorem QSTLS_018) *)
-let qstls_018_obligation () : Tot bool = (0 = 0)
-let qstls_018_lemma () : Lemma (requires True) (ensures (qstls_018_obligation () == qstls_018_obligation ())) = ()
+let qstls_018 () : Lemma (hybrid_config_valid riina_hybrid_config == true) = admit ()
 
 (* QSTLS_019 (matches Coq: Theorem QSTLS_019) *)
-let qstls_019_obligation () : Tot bool = (0 = 0)
-let qstls_019_lemma () : Lemma (requires True) (ensures (qstls_019_obligation () == qstls_019_obligation ())) = ()
+let qstls_019 (p_p: _) : Lemma (requires (pq_auth_secure p_p == true) (ensures (p_p.f_pqa_pq_sig == true))) = admit ()
 
 (* QSTLS_020 (matches Coq: Theorem QSTLS_020) *)
-let qstls_020_obligation () : Tot bool = (0 = 0)
-let qstls_020_lemma () : Lemma (requires True) (ensures (qstls_020_obligation () == qstls_020_obligation ())) = ()
+let qstls_020 (p_p: _) : Lemma (requires (pq_auth_secure p_p == true) (ensures (p_p.f_pqa_classical_sig == true))) = admit ()
 
 (* QSTLS_021 (matches Coq: Theorem QSTLS_021) *)
-let qstls_021_obligation () : Tot bool = (0 = 0)
-let qstls_021_lemma () : Lemma (requires True) (ensures (qstls_021_obligation () == qstls_021_obligation ())) = ()
+let qstls_021 (p_p: _) : Lemma (requires (pq_auth_secure p_p == true) (ensures (p_p.f_pqa_certificate_chain == true))) = admit ()
 
 (* QSTLS_022 (matches Coq: Theorem QSTLS_022) *)
-let qstls_022_obligation () : Tot bool = (0 = 0)
-let qstls_022_lemma () : Lemma (requires True) (ensures (qstls_022_obligation () == qstls_022_obligation ())) = ()
+let qstls_022 () : Lemma (sig_is_post_quantum ML_DSA_87 == true) = admit ()
 
 (* QSTLS_023 (matches Coq: Theorem QSTLS_023) *)
-let qstls_023_obligation () : Tot bool = (0 = 0)
-let qstls_023_lemma () : Lemma (requires True) (ensures (qstls_023_obligation () == qstls_023_obligation ())) = ()
+let qstls_023 () : Lemma (sig_is_post_quantum SLH_DSA_256 == true) = admit ()
 
 (* QSTLS_024 (matches Coq: Theorem QSTLS_024) *)
-let qstls_024_obligation () : Tot bool = (0 = 0)
-let qstls_024_lemma () : Lemma (requires True) (ensures (qstls_024_obligation () == qstls_024_obligation ())) = ()
+let qstls_024 () : Lemma (sig_security_level ML_DSA_87 == Level5) = admit ()
 
 (* QSTLS_025 (matches Coq: Theorem QSTLS_025) *)
-let qstls_025_obligation () : Tot bool = (0 = 0)
-let qstls_025_lemma () : Lemma (requires True) (ensures (qstls_025_obligation () == qstls_025_obligation ())) = ()
+let qstls_025 (p_t: _) : Lemma (requires (handshake_secure p_t == true) (ensures (p_t.f_ths_forward_secrecy == true))) = admit ()
 
 (* QSTLS_026 (matches Coq: Theorem QSTLS_026) *)
-let qstls_026_obligation () : Tot bool = (0 = 0)
-let qstls_026_lemma () : Lemma (requires True) (ensures (qstls_026_obligation () == qstls_026_obligation ())) = ()
+let qstls_026 (p_t: _) : Lemma (requires (handshake_secure p_t == true) (ensures (p_t.f_ths_downgrade_protection == true))) = admit ()
 
 (* QSTLS_027 (matches Coq: Theorem QSTLS_027) *)
-let qstls_027_obligation () : Tot bool = (0 = 0)
-let qstls_027_lemma () : Lemma (requires True) (ensures (qstls_027_obligation () == qstls_027_obligation ())) = ()
+let qstls_027 (p_t: _) : Lemma (requires (handshake_secure p_t == true) (ensures (p_t.f_ths_replay_protection == true))) = admit ()
 
 (* QSTLS_028 (matches Coq: Theorem QSTLS_028) *)
-let qstls_028_obligation () : Tot bool = (0 = 0)
-let qstls_028_lemma () : Lemma (requires True) (ensures (qstls_028_obligation () == qstls_028_obligation ())) = ()
+let qstls_028 (p_t: _) : Lemma (requires (handshake_secure p_t == true) (ensures (p_t.f_ths_key_confirmation == true))) = admit ()
 
 (* QSTLS_029 (matches Coq: Theorem QSTLS_029) *)
-let qstls_029_obligation () : Tot bool = (0 = 0)
-let qstls_029_lemma () : Lemma (requires True) (ensures (qstls_029_obligation () == qstls_029_obligation ())) = ()
+let qstls_029 (p_r: _) : Lemma (requires (record_secure p_r == true) (ensures (p_r.f_rec_aead == true))) = admit ()
 
 (* QSTLS_030 (matches Coq: Theorem QSTLS_030) *)
-let qstls_030_obligation () : Tot bool = (0 = 0)
-let qstls_030_lemma () : Lemma (requires True) (ensures (qstls_030_obligation () == qstls_030_obligation ())) = ()
+let qstls_030 (p_r: _) : Lemma (requires (record_secure p_r == true) (ensures (p_r.f_rec_sequence_numbers == true))) = admit ()
 
 (* QSTLS_031 (matches Coq: Theorem QSTLS_031) *)
-let qstls_031_obligation () : Tot bool = (0 = 0)
-let qstls_031_lemma () : Lemma (requires True) (ensures (qstls_031_obligation () == qstls_031_obligation ())) = ()
+let qstls_031 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures (hybrid_kex_secure (p_q.f_qstls_kex) == true))) = admit ()
 
 (* QSTLS_032 (matches Coq: Theorem QSTLS_032) *)
-let qstls_032_obligation () : Tot bool = (0 = 0)
-let qstls_032_lemma () : Lemma (requires True) (ensures (qstls_032_obligation () == qstls_032_obligation ())) = ()
+let qstls_032 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures (pq_auth_secure (p_q.f_qstls_auth) == true))) = admit ()
 
 (* QSTLS_033 (matches Coq: Theorem QSTLS_033) *)
-let qstls_033_obligation () : Tot bool = (0 = 0)
-let qstls_033_lemma () : Lemma (requires True) (ensures (qstls_033_obligation () == qstls_033_obligation ())) = ()
+let qstls_033 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures (handshake_secure (p_q.f_qstls_handshake) == true))) = admit ()
 
 (* QSTLS_034 (matches Coq: Theorem QSTLS_034) *)
-let qstls_034_obligation () : Tot bool = (0 = 0)
-let qstls_034_lemma () : Lemma (requires True) (ensures (qstls_034_obligation () == qstls_034_obligation ())) = ()
+let qstls_034 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures (record_secure (p_q.f_qstls_record) == true))) = admit ()
 
 (* QSTLS_035 (matches Coq: Theorem QSTLS_035) *)
-let qstls_035_obligation () : Tot bool = (0 = 0)
-let qstls_035_lemma () : Lemma (requires True) (ensures (qstls_035_obligation () == qstls_035_obligation ())) = ()
+let qstls_035 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures (p_q.f_qstls_version_13 == true))) = admit ()
 
 (* QSTLS_036 (matches Coq: Theorem QSTLS_036) *)
-let qstls_036_obligation () : Tot bool = (0 = 0)
-let qstls_036_lemma () : Lemma (requires True) (ensures (qstls_036_obligation () == qstls_036_obligation ())) = ()
+let qstls_036 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures ((p_q.f_qstls_kex).f_hkex_post_quantum == true))) = admit ()
 
 (* QSTLS_037 (matches Coq: Theorem QSTLS_037) *)
-let qstls_037_obligation () : Tot bool = (0 = 0)
-let qstls_037_lemma () : Lemma (requires True) (ensures (qstls_037_obligation () == qstls_037_obligation ())) = ()
+let qstls_037 () : Lemma (forward_secrecy_complete riina_fs_config == true) = admit ()
 
 (* QSTLS_038 (matches Coq: Theorem QSTLS_038) *)
-let qstls_038_obligation () : Tot bool = (0 = 0)
-let qstls_038_lemma () : Lemma (requires True) (ensures (qstls_038_obligation () == qstls_038_obligation ())) = ()
+let qstls_038 (p_f: _) : Lemma (requires (forward_secrecy_complete p_f == true) (ensures (p_f.f_fs_ephemeral_keys == true))) = admit ()
 
 (* QSTLS_039 (matches Coq: Theorem QSTLS_039) *)
-let qstls_039_obligation () : Tot bool = (0 = 0)
-let qstls_039_lemma () : Lemma (requires True) (ensures (qstls_039_obligation () == qstls_039_obligation ())) = ()
+let qstls_039 (p_f: _) : Lemma (requires (forward_secrecy_complete p_f == true) (ensures (p_f.f_fs_key_deletion == true))) = admit ()
 
 (* QSTLS_040 (matches Coq: Theorem QSTLS_040) *)
-let qstls_040_obligation () : Tot bool = (0 = 0)
-let qstls_040_lemma () : Lemma (requires True) (ensures (qstls_040_obligation () == qstls_040_obligation ())) = ()
+let qstls_040 (p_f: _) : Lemma (requires (forward_secrecy_complete p_f == true) (ensures (p_f.f_fs_no_static_dh == true))) = admit ()
 
 (* QSTLS_041 (matches Coq: Theorem QSTLS_041) *)
-let qstls_041_obligation () : Tot bool = (0 = 0)
-let qstls_041_lemma () : Lemma (requires True) (ensures (qstls_041_obligation () == qstls_041_obligation ())) = ()
+let qstls_041 (p_f: _) : Lemma (requires (forward_secrecy_complete p_f == true) (ensures (p_f.f_fs_pfs_per_session == true))) = admit ()
 
 (* QSTLS_042 (matches Coq: Theorem QSTLS_042) *)
-let qstls_042_obligation () : Tot bool = (0 = 0)
-let qstls_042_lemma () : Lemma (requires True) (ensures (qstls_042_obligation () == qstls_042_obligation ())) = ()
+let qstls_042 (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures ((p_q.f_qstls_handshake).f_ths_forward_secrecy == true))) = admit ()
 
 (* QSTLS_043 (matches Coq: Theorem QSTLS_043) *)
-let qstls_043_obligation () : Tot bool = (0 = 0)
-let qstls_043_lemma () : Lemma (requires True) (ensures (qstls_043_obligation () == qstls_043_obligation ())) = ()
+let qstls_043 () : Lemma (algorithm_agility_valid riina_agility == true) = admit ()
 
 (* QSTLS_044 (matches Coq: Theorem QSTLS_044) *)
-let qstls_044_obligation () : Tot bool = (0 = 0)
-let qstls_044_lemma () : Lemma (requires True) (ensures (qstls_044_obligation () == qstls_044_obligation ())) = ()
+let qstls_044 (p_a: _) : Lemma (requires (algorithm_agility_valid p_a == true) (ensures (p_a.f_agility_negotiation == true))) = admit ()
 
 (* QSTLS_045 (matches Coq: Theorem QSTLS_045) *)
-let qstls_045_obligation () : Tot bool = (0 = 0)
-let qstls_045_lemma () : Lemma (requires True) (ensures (qstls_045_obligation () == qstls_045_obligation ())) = ()
+let qstls_045 (p_a: _) : Lemma (requires (algorithm_agility_valid p_a == true) (ensures (p_a.f_agility_fallback == true))) = admit ()
 
 (* QSTLS_046 (matches Coq: Theorem QSTLS_046) *)
-let qstls_046_obligation () : Tot bool = (0 = 0)
-let qstls_046_lemma () : Lemma (requires True) (ensures (qstls_046_obligation () == qstls_046_obligation ())) = ()
+let qstls_046 (p_a: _) : Lemma (requires (algorithm_agility_valid p_a == true) (ensures (p_a.f_agility_versioning == true))) = admit ()
 
 (* QSTLS_047 (matches Coq: Theorem QSTLS_047) *)
-let qstls_047_obligation () : Tot bool = (0 = 0)
-let qstls_047_lemma () : Lemma (requires True) (ensures (qstls_047_obligation () == qstls_047_obligation ())) = ()
+let qstls_047 (p_a: _) : Lemma (requires (algorithm_agility_valid p_a == true) (ensures (p_a.f_agility_extension == true))) = admit ()
 
 (* QSTLS_048 (matches Coq: Theorem QSTLS_048) *)
-let qstls_048_obligation () : Tot bool = (0 = 0)
-let qstls_048_lemma () : Lemma (requires True) (ensures (qstls_048_obligation () == qstls_048_obligation ())) = ()
+let qstls_048 () : Lemma (tls13_extensions_valid riina_extensions == true) = admit ()
 
 (* QSTLS_049 (matches Coq: Theorem QSTLS_049) *)
-let qstls_049_obligation () : Tot bool = (0 = 0)
-let qstls_049_lemma () : Lemma (requires True) (ensures (qstls_049_obligation () == qstls_049_obligation ())) = ()
+let qstls_049 () : Lemma (kem_fully_secure riina_kem_security == true) = admit ()
 
 (* QSTLS_050 (matches Coq: Theorem QSTLS_050) *)
-let qstls_050_obligation () : Tot bool = (0 = 0)
-let qstls_050_lemma () : Lemma (requires True) (ensures (qstls_050_obligation () == qstls_050_obligation ())) = ()
+let qstls_050 (p_k: _) : Lemma (requires (kem_fully_secure p_k == true) (ensures (p_k.f_kem_sec_indcca2 == true))) = admit ()
 
 (* QSTLS_051 (matches Coq: Theorem QSTLS_051) *)
-let qstls_051_obligation () : Tot bool = (0 = 0)
-let qstls_051_lemma () : Lemma (requires True) (ensures (qstls_051_obligation () == qstls_051_obligation ())) = ()
+let qstls_051 (p_k: _) : Lemma (requires (kem_fully_secure p_k == true) (ensures (p_k.f_kem_sec_module_lwe == true))) = admit ()
 
 (* QSTLS_052 (matches Coq: Theorem QSTLS_052) *)
-let qstls_052_obligation () : Tot bool = (0 = 0)
-let qstls_052_lemma () : Lemma (requires True) (ensures (qstls_052_obligation () == qstls_052_obligation ())) = ()
+let qstls_052 (p_k: _) : Lemma (requires (kem_fully_secure p_k == true) (ensures (p_k.f_kem_sec_nist_approved == true))) = admit ()
 
 (* QSTLS_053 (matches Coq: Theorem QSTLS_053) *)
-let qstls_053_obligation () : Tot bool = (0 = 0)
-let qstls_053_lemma () : Lemma (requires True) (ensures (qstls_053_obligation () == qstls_053_obligation ())) = ()
+let qstls_053 (p_k: _) : Lemma (requires (kem_fully_secure p_k == true) (ensures (p_k.f_kem_sec_constant_time == true))) = admit ()
 
 (* QSTLS_054 (matches Coq: Theorem QSTLS_054) *)
-let qstls_054_obligation () : Tot bool = (0 = 0)
-let qstls_054_lemma () : Lemma (requires True) (ensures (qstls_054_obligation () == qstls_054_obligation ())) = ()
+let qstls_054 () : Lemma (kem_security_level ML_KEM_1024 == Level5) = admit ()
 
 (* QSTLS_055 (matches Coq: Theorem QSTLS_055) *)
-let qstls_055_obligation () : Tot bool = (0 = 0)
-let qstls_055_lemma () : Lemma (requires True) (ensures (qstls_055_obligation () == qstls_055_obligation ())) = ()
+let qstls_055 () : Lemma (sig_fully_secure riina_sig_security == true) = admit ()
 
 (* QSTLS_056 (matches Coq: Theorem QSTLS_056) *)
-let qstls_056_obligation () : Tot bool = (0 = 0)
-let qstls_056_lemma () : Lemma (requires True) (ensures (qstls_056_obligation () == qstls_056_obligation ())) = ()
+let qstls_056 (p_s: _) : Lemma (requires (sig_fully_secure p_s == true) (ensures (p_s.f_sig_euf_cma == true))) = admit ()
 
 (* QSTLS_057 (matches Coq: Theorem QSTLS_057) *)
-let qstls_057_obligation () : Tot bool = (0 = 0)
-let qstls_057_lemma () : Lemma (requires True) (ensures (qstls_057_obligation () == qstls_057_obligation ())) = ()
+let qstls_057 (p_s: _) : Lemma (requires (sig_fully_secure p_s == true) (ensures (p_s.f_sig_strong_euf == true))) = admit ()
 
 (* QSTLS_058 (matches Coq: Theorem QSTLS_058) *)
-let qstls_058_obligation () : Tot bool = (0 = 0)
-let qstls_058_lemma () : Lemma (requires True) (ensures (qstls_058_obligation () == qstls_058_obligation ())) = ()
+let qstls_058 (p_s: _) : Lemma (requires (sig_fully_secure p_s == true) (ensures (p_s.f_sig_nist_approved == true))) = admit ()
 
 (* QSTLS_059 (matches Coq: Theorem QSTLS_059) *)
-let qstls_059_obligation () : Tot bool = (0 = 0)
-let qstls_059_lemma () : Lemma (requires True) (ensures (qstls_059_obligation () == qstls_059_obligation ())) = ()
+let qstls_059 () : Lemma (sig_is_post_quantum (riina_qstls_full.f_qstls_sig_scheme) == true) = admit ()
 
 (* QSTLS_060 (matches Coq: Theorem QSTLS_060) *)
-let qstls_060_obligation () : Tot bool = (0 = 0)
-let qstls_060_lemma () : Lemma (requires True) (ensures (qstls_060_obligation () == qstls_060_obligation ())) = ()
+let qstls_060 () : Lemma (sig_security_level (riina_qstls_full.f_qstls_sig_scheme) == Level5) = admit ()
 
 (* QSTLS_061 (matches Coq: Theorem QSTLS_061) *)
-let qstls_061_obligation () : Tot bool = (0 = 0)
-let qstls_061_lemma () : Lemma (requires True) (ensures (qstls_061_obligation () == qstls_061_obligation ())) = ()
+let qstls_061 () : Lemma (qstls_full_secure riina_qstls_full == true) = admit ()
 
 (* QSTLS_062 (matches Coq: Theorem QSTLS_062) *)
-let qstls_062_obligation () : Tot bool = (0 = 0)
-let qstls_062_lemma () : Lemma (requires True) (ensures (qstls_062_obligation () == qstls_062_obligation ())) = ()
+let qstls_062 () : Lemma (aead_secure riina_aead == true) = admit ()
 
 (* QSTLS_063_complete (matches Coq: Theorem QSTLS_063_complete) *)
-let qstls_063_complete_obligation () : Tot bool = (0 = 0)
-let qstls_063_complete_lemma () : Lemma (requires True) (ensures (qstls_063_complete_obligation () == qstls_063_complete_obligation ())) = ()
+let qstls_063_complete (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures ((p_q.f_qstls_kex).f_hkex_post_quantum == true /\ (p_q.f_qstls_auth).f_pqa_pq_sig == true /\ (p_q.f_qstls_handshake).f_ths_forward_secrecy == true /\ (p_q.f_qstls_record).f_rec_aead == true /\ p_q.f_qstls_version_13 == true))) = admit ()
 
 (* QSTLS_064_hybrid_security (matches Coq: Theorem QSTLS_064_hybrid_security) *)
-let qstls_064_hybrid_security_obligation () : Tot bool = (0 = 0)
-let qstls_064_hybrid_security_lemma () : Lemma (requires True) (ensures (qstls_064_hybrid_security_obligation () == qstls_064_hybrid_security_obligation ())) = ()
+let qstls_064_hybrid_security (p_q: _) : Lemma (requires (qstls_fully_secure p_q == true) (ensures ((p_q.f_qstls_kex).f_hkex_classical == true /\ (p_q.f_qstls_kex).f_hkex_post_quantum == true /\ (p_q.f_qstls_kex).f_hkex_combined == true))) = admit ()
 
 (* QSTLS_065_full_chain (matches Coq: Theorem QSTLS_065_full_chain) *)
-let qstls_065_full_chain_obligation () : Tot bool = (0 = 0)
-let qstls_065_full_chain_lemma () : Lemma (requires True) (ensures (qstls_065_full_chain_obligation () == qstls_065_full_chain_obligation ())) = ()
+let qstls_065_full_chain () : Lemma (qstls_fully_secure riina_qstls == true /\ qstls_full_secure riina_qstls_full == true /\ forward_secrecy_complete riina_fs_config == true /\ algorithm_agility_valid riina_agility == true /\ kem_fully_secure riina_kem_security == true /\ sig_fully_secure riina_sig_security == true) = admit ()

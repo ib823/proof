@@ -140,8 +140,7 @@ let patch_window_days (p_sl: security_level) : Tot nat =
   | _ -> 0
 
 (* iec_62443_compliance (matches Coq: Theorem iec_62443_compliance) *)
-let iec_62443_compliance_obligation () : Tot bool = (0 = 0)
-let iec_62443_compliance_lemma () : Lemma (requires True) (ensures (iec_62443_compliance_obligation () == iec_62443_compliance_obligation ())) = ()
+let iec_62443_compliance (p_compliance: iec62443__compliance) : Lemma (p_compliance.f_part_3_3_system_requirements == true) = admit ()
 
 (* iec_61508_safety (matches Coq: Theorem iec_61508_safety) *)
 let iec_61508_safety_obligation () : Tot bool = (0 = 0)
@@ -160,77 +159,59 @@ let nist_800_82_compliance_obligation () : Tot bool = (0 = 0)
 let nist_800_82_compliance_lemma () : Lemma (requires True) (ensures (nist_800_82_compliance_obligation () == nist_800_82_compliance_obligation ())) = ()
 
 (* sl4_state_level_protection (matches Coq: Theorem sl4_state_level_protection) *)
-let sl4_state_level_protection_obligation () : Tot bool = (0 = 0)
-let sl4_state_level_protection_lemma () : Lemma (requires True) (ensures (sl4_state_level_protection_obligation () == sl4_state_level_protection_obligation ())) = ()
+let sl4_state_level_protection (p_compliance: iec62443__compliance) : Lemma (p_compliance.f_target_security_level == SL_4) = admit ()
 
 (* zone_boundary_enforcement (matches Coq: Theorem zone_boundary_enforcement) *)
 let zone_boundary_enforcement_obligation () : Tot bool = (0 = 0)
 let zone_boundary_enforcement_lemma () : Lemma (requires True) (ensures (zone_boundary_enforcement_obligation () == zone_boundary_enforcement_obligation ())) = ()
 
 (* sl_le_refl (matches Coq: Lemma sl_le_refl) *)
-let sl_le_refl_obligation () : Tot bool = (0 = 0)
-let sl_le_refl_lemma () : Lemma (requires True) (ensures (sl_le_refl_obligation () == sl_le_refl_obligation ())) = ()
+let sl_le_refl (p_s: _) : Lemma (sl_le p_s p_s == true) = admit ()
 
 (* sl_le_trans (matches Coq: Lemma sl_le_trans) *)
-let sl_le_trans_obligation () : Tot bool = (0 = 0)
-let sl_le_trans_lemma () : Lemma (requires True) (ensures (sl_le_trans_obligation () == sl_le_trans_obligation ())) = ()
+let sl_le_trans (p_s1: _) (p_s2: _) (p_s3: _) : Lemma (requires (sl_le p_s1 p_s2 == true /\ sl_le p_s2 p_s3 == true) (ensures (sl_le p_s1 p_s3 == true))) = admit ()
 
 (* sl_le_antisym (matches Coq: Lemma sl_le_antisym) *)
-let sl_le_antisym_obligation () : Tot bool = (0 = 0)
-let sl_le_antisym_lemma () : Lemma (requires True) (ensures (sl_le_antisym_obligation () == sl_le_antisym_obligation ())) = ()
+let sl_le_antisym (p_s1: _) (p_s2: _) : Lemma (requires (sl_le p_s1 p_s2 == true /\ sl_le p_s2 p_s1 == true) (ensures (p_s1 == p_s2))) = admit ()
 
 (* sil_le_refl (matches Coq: Lemma sil_le_refl) *)
-let sil_le_refl_obligation () : Tot bool = (0 = 0)
-let sil_le_refl_lemma () : Lemma (requires True) (ensures (sil_le_refl_obligation () == sil_le_refl_obligation ())) = ()
+let sil_le_refl (p_s: _) : Lemma (sil_le p_s p_s == true) = admit ()
 
 (* sil_positive (matches Coq: Lemma sil_positive) *)
-let sil_positive_obligation () : Tot bool = (0 = 0)
-let sil_positive_lemma () : Lemma (requires True) (ensures (sil_positive_obligation () == sil_positive_obligation ())) = ()
+let sil_positive (p_s: _) : Lemma (sil_to_nat p_s >= 1) = admit ()
 
 (* purdue_le_refl (matches Coq: Lemma purdue_le_refl) *)
-let purdue_le_refl_obligation () : Tot bool = (0 = 0)
-let purdue_le_refl_lemma () : Lemma (requires True) (ensures (purdue_le_refl_obligation () == purdue_le_refl_obligation ())) = ()
+let purdue_le_refl (p_p: _) : Lemma (purdue_le p_p p_p == true) = admit ()
 
 (* same_level_adjacent (matches Coq: Theorem same_level_adjacent) *)
-let same_level_adjacent_obligation () : Tot bool = (0 = 0)
-let same_level_adjacent_lemma () : Lemma (requires True) (ensures (same_level_adjacent_obligation () == same_level_adjacent_obligation ())) = ()
+let same_level_adjacent (p_p: _) : Lemma (purdue_adjacent p_p p_p == true) = admit ()
 
 (* sff_minimum_60 (matches Coq: Theorem sff_minimum_60) *)
-let sff_minimum_60_obligation () : Tot bool = (0 = 0)
-let sff_minimum_60_lemma () : Lemma (requires True) (ensures (sff_minimum_60_obligation () == sff_minimum_60_obligation ())) = ()
+let sff_minimum_60 (p_s: _) : Lemma (safe_failure_fraction_pct p_s >= 60) = admit ()
 
 (* higher_sil_higher_sff (matches Coq: Theorem higher_sil_higher_sff) *)
-let higher_sil_higher_sff_obligation () : Tot bool = (0 = 0)
-let higher_sil_higher_sff_lemma () : Lemma (requires True) (ensures (higher_sil_higher_sff_obligation () == higher_sil_higher_sff_obligation ())) = ()
+let higher_sil_higher_sff (p_s1: _) (p_s2: _) : Lemma (requires (sil_le p_s1 p_s2 == true) (ensures (safe_failure_fraction_pct p_s1 <= safe_failure_fraction_pct p_s2))) = admit ()
 
 (* full_compliance_requires_zones (matches Coq: Theorem full_compliance_requires_zones) *)
-let full_compliance_requires_zones_obligation () : Tot bool = (0 = 0)
-let full_compliance_requires_zones_lemma () : Lemma (requires True) (ensures (full_compliance_requires_zones_obligation () == full_compliance_requires_zones_obligation ())) = ()
+let full_compliance_requires_zones (p_c: _) : Lemma (requires (iec62443_full_compliance p_c == true) (ensures (p_c.f_part_3_2_zones_conduits == true))) = admit ()
 
 (* full_compliance_requires_secure_dev (matches Coq: Theorem full_compliance_requires_secure_dev) *)
-let full_compliance_requires_secure_dev_obligation () : Tot bool = (0 = 0)
-let full_compliance_requires_secure_dev_lemma () : Lemma (requires True) (ensures (full_compliance_requires_secure_dev_obligation () == full_compliance_requires_secure_dev_obligation ())) = ()
+let full_compliance_requires_secure_dev (p_c: _) : Lemma (requires (iec62443_full_compliance p_c == true) (ensures (p_c.f_part_4_1_secure_development == true))) = admit ()
 
 (* sl4_full_coverage (matches Coq: Theorem sl4_full_coverage) *)
-let sl4_full_coverage_obligation () : Tot bool = (0 = 0)
-let sl4_full_coverage_lemma () : Lemma (requires True) (ensures (sl4_full_coverage_obligation () == sl4_full_coverage_obligation ())) = ()
+let sl4_full_coverage () : Lemma (testing_coverage_pct SL_4 == 100) = admit ()
 
 (* testing_coverage_monotone (matches Coq: Theorem testing_coverage_monotone) *)
-let testing_coverage_monotone_obligation () : Tot bool = (0 = 0)
-let testing_coverage_monotone_lemma () : Lemma (requires True) (ensures (testing_coverage_monotone_obligation () == testing_coverage_monotone_obligation ())) = ()
+let testing_coverage_monotone (p_s1: _) (p_s2: _) : Lemma (requires (sl_le p_s1 p_s2 == true) (ensures (testing_coverage_pct p_s1 <= testing_coverage_pct p_s2))) = admit ()
 
 (* process_level_isolated (matches Coq: Theorem process_level_isolated) *)
-let process_level_isolated_obligation () : Tot bool = (0 = 0)
-let process_level_isolated_lemma () : Lemma (requires True) (ensures (process_level_isolated_obligation () == process_level_isolated_obligation ())) = ()
+let process_level_isolated () : Lemma (ot_isolated Level_0_Process == true) = admit ()
 
 (* control_level_isolated (matches Coq: Theorem control_level_isolated) *)
-let control_level_isolated_obligation () : Tot bool = (0 = 0)
-let control_level_isolated_lemma () : Lemma (requires True) (ensures (control_level_isolated_obligation () == control_level_isolated_obligation ())) = ()
+let control_level_isolated () : Lemma (ot_isolated Level_1_Control == true) = admit ()
 
 (* business_level_not_ot (matches Coq: Theorem business_level_not_ot) *)
-let business_level_not_ot_obligation () : Tot bool = (0 = 0)
-let business_level_not_ot_lemma () : Lemma (requires True) (ensures (business_level_not_ot_obligation () == business_level_not_ot_obligation ())) = ()
+let business_level_not_ot () : Lemma (ot_isolated Level_4_Business == false) = admit ()
 
 (* patch_window_decreasing (matches Coq: Theorem patch_window_decreasing) *)
-let patch_window_decreasing_obligation () : Tot bool = (0 = 0)
-let patch_window_decreasing_lemma () : Lemma (requires True) (ensures (patch_window_decreasing_obligation () == patch_window_decreasing_obligation ())) = ()
+let patch_window_decreasing (p_s1: _) (p_s2: _) : Lemma (requires (sl_le p_s1 p_s2 == true) (ensures (patch_window_days p_s2 <= patch_window_days p_s1))) = admit ()

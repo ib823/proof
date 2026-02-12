@@ -127,101 +127,76 @@ let key_layers (p_entropy: bool) (p_state: bool) (p_rotation: bool) (p_destroy: 
   andb p_entropy (andb p_state (andb p_rotation (andb p_destroy p_escrow)))
 
 (* key_001_entropy_sufficient (matches Coq: Theorem key_001_entropy_sufficient) *)
-let key_001_entropy_sufficient_obligation () : Tot bool = (0 = 0)
-let key_001_entropy_sufficient_lemma () : Lemma (requires True) (ensures (key_001_entropy_sufficient_obligation () == key_001_entropy_sufficient_obligation ())) = ()
+let key_001_entropy_sufficient (p_key: nat) (p_min_entropy: nat) : Lemma (requires (entropy_sufficient p_key p_min_entropy == true) (ensures (p_min_entropy <= key_entropy_bits p_key))) = admit ()
 
 (* key_002_active_usable (matches Coq: Theorem key_002_active_usable) *)
-let key_002_active_usable_obligation () : Tot bool = (0 = 0)
-let key_002_active_usable_lemma () : Lemma (requires True) (ensures (key_002_active_usable_obligation () == key_002_active_usable_obligation ())) = ()
+let key_002_active_usable (p_key: nat) : Lemma (requires (key_state p_key == Active) (ensures (is_usable_state (key_state p_key) == true))) = admit ()
 
 (* key_003_valid_transition (matches Coq: Theorem key_003_valid_transition) *)
-let key_003_valid_transition_obligation () : Tot bool = (0 = 0)
-let key_003_valid_transition_lemma () : Lemma (requires True) (ensures (key_003_valid_transition_obligation () == key_003_valid_transition_obligation ())) = ()
+let key_003_valid_transition (p_from: key_state) (p_to: key_state) : Lemma (requires (valid_transition p_from p_to == true) (ensures (valid_transition p_from p_to == true))) = admit ()
 
 (* key_004_destroyed_unusable (matches Coq: Theorem key_004_destroyed_unusable) *)
-let key_004_destroyed_unusable_obligation () : Tot bool = (0 = 0)
-let key_004_destroyed_unusable_lemma () : Lemma (requires True) (ensures (key_004_destroyed_unusable_obligation () == key_004_destroyed_unusable_obligation ())) = ()
+let key_004_destroyed_unusable () : Lemma (is_usable_state Destroyed == false) = admit ()
 
 (* key_005_compromised_unusable (matches Coq: Theorem key_005_compromised_unusable) *)
-let key_005_compromised_unusable_obligation () : Tot bool = (0 = 0)
-let key_005_compromised_unusable_lemma () : Lemma (requires True) (ensures (key_005_compromised_unusable_obligation () == key_005_compromised_unusable_obligation ())) = ()
+let key_005_compromised_unusable () : Lemma (is_usable_state Compromised == false) = admit ()
 
 (* key_006_not_expired (matches Coq: Theorem key_006_not_expired) *)
-let key_006_not_expired_obligation () : Tot bool = (0 = 0)
-let key_006_not_expired_lemma () : Lemma (requires True) (ensures (key_006_not_expired_obligation () == key_006_not_expired_obligation ())) = ()
+let key_006_not_expired (p_key: nat) (p_current_time: nat) : Lemma (requires (key_not_expired p_key p_current_time == true) (ensures (p_current_time < key_expires p_key))) = admit ()
 
 (* key_007_rotation_new (matches Coq: Theorem key_007_rotation_new) *)
-let key_007_rotation_new_obligation () : Tot bool = (0 = 0)
-let key_007_rotation_new_lemma () : Lemma (requires True) (ensures (key_007_rotation_new_obligation () == key_007_rotation_new_obligation ())) = ()
+let key_007_rotation_new (p_rot: nat) : Lemma (requires (rotation_valid p_rot == true) (ensures (~(rot_old_key p_rot == rot_new_key p_rot)))) = admit ()
 
 (* key_008_rotation_timing (matches Coq: Theorem key_008_rotation_timing) *)
-let key_008_rotation_timing_obligation () : Tot bool = (0 = 0)
-let key_008_rotation_timing_lemma () : Lemma (requires True) (ensures (key_008_rotation_timing_obligation () == key_008_rotation_timing_obligation ())) = ()
+let key_008_rotation_timing (p_key: nat) (p_rot: nat) : Lemma (requires (rotation_after_creation p_key p_rot == true) (ensures (key_created p_key < rot_timestamp p_rot))) = admit ()
 
 (* key_009_destruction_verified (matches Coq: Theorem key_009_destruction_verified) *)
-let key_009_destruction_verified_obligation () : Tot bool = (0 = 0)
-let key_009_destruction_verified_lemma () : Lemma (requires True) (ensures (key_009_destruction_verified_obligation () == key_009_destruction_verified_obligation ())) = ()
+let key_009_destruction_verified (p_dest: nat) : Lemma (requires (destruction_verified p_dest == true) (ensures (dest_verified p_dest == true))) = admit ()
 
 (* key_010_escrow_threshold (matches Coq: Theorem key_010_escrow_threshold) *)
-let key_010_escrow_threshold_obligation () : Tot bool = (0 = 0)
-let key_010_escrow_threshold_lemma () : Lemma (requires True) (ensures (key_010_escrow_threshold_obligation () == key_010_escrow_threshold_obligation ())) = ()
+let key_010_escrow_threshold (p_share: nat) : Lemma (requires (escrow_threshold_valid p_share == true) (ensures (1 <= escrow_threshold p_share /\ escrow_threshold p_share <= escrow_total p_share))) = admit ()
 
 (* key_011_escrow_share_index (matches Coq: Theorem key_011_escrow_share_index) *)
-let key_011_escrow_share_index_obligation () : Tot bool = (0 = 0)
-let key_011_escrow_share_index_lemma () : Lemma (requires True) (ensures (key_011_escrow_share_index_obligation () == key_011_escrow_share_index_obligation ())) = ()
+let key_011_escrow_share_index (p_share: nat) : Lemma (requires (escrow_share_index_valid p_share == true) (ensures (escrow_share_index p_share < escrow_total p_share))) = admit ()
 
 (* key_012_destruction_method (matches Coq: Theorem key_012_destruction_method) *)
-let key_012_destruction_method_obligation () : Tot bool = (0 = 0)
-let key_012_destruction_method_lemma () : Lemma (requires True) (ensures (key_012_destruction_method_obligation () == key_012_destruction_method_obligation ())) = ()
+let key_012_destruction_method (p_dest: nat) : Lemma (requires (destruction_method_valid p_dest == true) (ensures (dest_method p_dest <= 2))) = admit ()
 
 (* key_013_symmetric_size (matches Coq: Theorem key_013_symmetric_size) *)
-let key_013_symmetric_size_obligation () : Tot bool = (0 = 0)
-let key_013_symmetric_size_lemma () : Lemma (requires True) (ensures (key_013_symmetric_size_obligation () == key_013_symmetric_size_obligation ())) = ()
+let key_013_symmetric_size (p_bits: nat) (p_min_bits: nat) : Lemma (requires (symmetric_key_size_ok p_bits p_min_bits == true) (ensures (p_min_bits <= p_bits))) = admit ()
 
 (* key_014_asymmetric_size (matches Coq: Theorem key_014_asymmetric_size) *)
-let key_014_asymmetric_size_obligation () : Tot bool = (0 = 0)
-let key_014_asymmetric_size_lemma () : Lemma (requires True) (ensures (key_014_asymmetric_size_obligation () == key_014_asymmetric_size_obligation ())) = ()
+let key_014_asymmetric_size (p_bits: nat) (p_min_bits: nat) : Lemma (requires (asymmetric_key_size_ok p_bits p_min_bits == true) (ensures (p_min_bits <= p_bits))) = admit ()
 
 (* key_015_purpose_bound (matches Coq: Theorem key_015_purpose_bound) *)
-let key_015_purpose_bound_obligation () : Tot bool = (0 = 0)
-let key_015_purpose_bound_lemma () : Lemma (requires True) (ensures (key_015_purpose_bound_obligation () == key_015_purpose_bound_obligation ())) = ()
+let key_015_purpose_bound (p_key_purpose: nat) (p_allowed_purpose: nat) : Lemma (requires (purpose_matches p_key_purpose p_allowed_purpose == true) (ensures (p_key_purpose == p_allowed_purpose))) = admit ()
 
 (* key_016_lifetime (matches Coq: Theorem key_016_lifetime) *)
-let key_016_lifetime_obligation () : Tot bool = (0 = 0)
-let key_016_lifetime_lemma () : Lemma (requires True) (ensures (key_016_lifetime_obligation () == key_016_lifetime_obligation ())) = ()
+let key_016_lifetime (p_created: nat) (p_expires: nat) (p_max_lifetime: nat) : Lemma (requires (lifetime_ok p_created p_expires p_max_lifetime == true) (ensures (p_expires - p_created <= p_max_lifetime))) = admit ()
 
 (* key_017_rotation_due (matches Coq: Theorem key_017_rotation_due) *)
-let key_017_rotation_due_obligation () : Tot bool = (0 = 0)
-let key_017_rotation_due_lemma () : Lemma (requires True) (ensures (key_017_rotation_due_obligation () == key_017_rotation_due_obligation ())) = ()
+let key_017_rotation_due (p_last_rotation: nat) (p_current: nat) (p_max_period: nat) : Lemma (requires (rotation_due p_last_rotation p_current p_max_period == true) (ensures (p_max_period < p_current - p_last_rotation))) = admit ()
 
 (* key_018_derivation_depth (matches Coq: Theorem key_018_derivation_depth) *)
-let key_018_derivation_depth_obligation () : Tot bool = (0 = 0)
-let key_018_derivation_depth_lemma () : Lemma (requires True) (ensures (key_018_derivation_depth_obligation () == key_018_derivation_depth_obligation ())) = ()
+let key_018_derivation_depth (p_depth: nat) (p_max_depth: nat) : Lemma (requires (derivation_depth_ok p_depth p_max_depth == true) (ensures (p_depth <= p_max_depth))) = admit ()
 
 (* key_019_access_control (matches Coq: Theorem key_019_access_control) *)
-let key_019_access_control_obligation () : Tot bool = (0 = 0)
-let key_019_access_control_lemma () : Lemma (requires True) (ensures (key_019_access_control_obligation () == key_019_access_control_obligation ())) = ()
+let key_019_access_control (p_requester: nat) (p_required: nat) : Lemma (requires (access_allowed p_requester p_required == true) (ensures (p_required <= p_requester))) = admit ()
 
 (* key_020_hsm_storage (matches Coq: Theorem key_020_hsm_storage) *)
-let key_020_hsm_storage_obligation () : Tot bool = (0 = 0)
-let key_020_hsm_storage_lemma () : Lemma (requires True) (ensures (key_020_hsm_storage_obligation () == key_020_hsm_storage_obligation ())) = ()
+let key_020_hsm_storage (p_hsm_flag: bool) : Lemma (requires (hsm_stored p_hsm_flag == true) (ensures (p_hsm_flag == true))) = admit ()
 
 (* key_021_audit_complete (matches Coq: Theorem key_021_audit_complete) *)
-let key_021_audit_complete_obligation () : Tot bool = (0 = 0)
-let key_021_audit_complete_lemma () : Lemma (requires True) (ensures (key_021_audit_complete_obligation () == key_021_audit_complete_obligation ())) = ()
+let key_021_audit_complete (p_operations: nat) (p_logged: nat) : Lemma (requires (audit_complete p_operations p_logged == true) (ensures (p_operations == p_logged))) = admit ()
 
 (* key_022_backup_encrypted (matches Coq: Theorem key_022_backup_encrypted) *)
-let key_022_backup_encrypted_obligation () : Tot bool = (0 = 0)
-let key_022_backup_encrypted_lemma () : Lemma (requires True) (ensures (key_022_backup_encrypted_obligation () == key_022_backup_encrypted_obligation ())) = ()
+let key_022_backup_encrypted (p_encryption_key: nat) : Lemma (requires (backup_encrypted p_encryption_key == true) (ensures (p_encryption_key > 0))) = admit ()
 
 (* key_023_custodian_diversity (matches Coq: Theorem key_023_custodian_diversity) *)
-let key_023_custodian_diversity_obligation () : Tot bool = (0 = 0)
-let key_023_custodian_diversity_lemma () : Lemma (requires True) (ensures (key_023_custodian_diversity_obligation () == key_023_custodian_diversity_obligation ())) = ()
+let key_023_custodian_diversity (p_custodians: (list nat)) (p_min_custodians: nat) : Lemma (requires (custodians_diverse p_custodians p_min_custodians == true) (ensures (p_min_custodians <= length (nodup Nat.eq_dec p_custodians)))) = admit ()
 
 (* key_024_recovery_tested (matches Coq: Theorem key_024_recovery_tested) *)
-let key_024_recovery_tested_obligation () : Tot bool = (0 = 0)
-let key_024_recovery_tested_lemma () : Lemma (requires True) (ensures (key_024_recovery_tested_obligation () == key_024_recovery_tested_obligation ())) = ()
+let key_024_recovery_tested (p_last_test: nat) (p_current: nat) (p_max_interval: nat) : Lemma (requires (recovery_tested p_last_test p_current p_max_interval == true) (ensures (p_current - p_last_test <= p_max_interval))) = admit ()
 
 (* key_025_defense_in_depth (matches Coq: Theorem key_025_defense_in_depth) *)
-let key_025_defense_in_depth_obligation () : Tot bool = (0 = 0)
-let key_025_defense_in_depth_lemma () : Lemma (requires True) (ensures (key_025_defense_in_depth_obligation () == key_025_defense_in_depth_obligation ())) = ()
+let key_025_defense_in_depth (p_e: _) (p_s: _) (p_r: _) (p_d: _) (p_es: _) : Lemma (requires (key_layers p_e p_s p_r p_d p_es == true) (ensures (p_e == true /\ p_s == true /\ p_r == true /\ p_d == true /\ p_es == true))) = admit ()

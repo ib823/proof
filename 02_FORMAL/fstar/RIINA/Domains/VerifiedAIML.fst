@@ -121,101 +121,76 @@ let lipschitz_output (p_input: int) (p_weight: int) : Tot int =
   p_input * p_weight
 
 (* DOMAIN_002_01_output_bounded (matches Coq: Theorem DOMAIN_002_01_output_bounded) *)
-let domain_002_01_output_bounded_obligation () : Tot bool = (0 = 0)
-let domain_002_01_output_bounded_lemma () : Lemma (requires True) (ensures (domain_002_01_output_bounded_obligation () == domain_002_01_output_bounded_obligation ())) = ()
+let domain_002_01_output_bounded (p_output: int) (p_min: int) (p_max: int) : Lemma (requires (output_bounded p_output p_min p_max == true) (ensures (p_min <= p_output /\ p_output <= p_max))) = admit ()
 
 (* DOMAIN_002_02_lipschitz_continuity (matches Coq: Theorem DOMAIN_002_02_lipschitz_continuity) *)
-let domain_002_02_lipschitz_continuity_obligation () : Tot bool = (0 = 0)
-let domain_002_02_lipschitz_continuity_lemma () : Lemma (requires True) (ensures (domain_002_02_lipschitz_continuity_obligation () == domain_002_02_lipschitz_continuity_obligation ())) = ()
+let domain_002_02_lipschitz_continuity (p_x1: int) (p_x2: int) (p_weight: int) : Lemma (requires (p_weight >= 0) (ensures (Z.abs (lipschitz_output p_x1 p_weight - lipschitz_output p_x2 p_weight) <= p_weight * Z.abs (p_x1 - p_x2)))) = admit ()
 
 (* DOMAIN_002_03_adversarial_robustness (matches Coq: Theorem DOMAIN_002_03_adversarial_robustness) *)
-let domain_002_03_adversarial_robustness_obligation () : Tot bool = (0 = 0)
-let domain_002_03_adversarial_robustness_lemma () : Lemma (requires True) (ensures (domain_002_03_adversarial_robustness_obligation () == domain_002_03_adversarial_robustness_obligation ())) = ()
+let domain_002_03_adversarial_robustness (p_x1: int) (p_x2: int) (p_threshold: int) (p_epsilon: int) : Lemma (requires (within_epsilon p_x1 p_x2 p_epsilon == true /\ p_x1 >= p_threshold + p_epsilon + 1 /\ p_x2 >= p_threshold + 1) (ensures (classify p_x1 p_threshold == classify p_x2 p_threshold))) = admit ()
 
 (* DOMAIN_002_04_softmax_normalization (matches Coq: Theorem DOMAIN_002_04_softmax_normalization) *)
-let domain_002_04_softmax_normalization_obligation () : Tot bool = (0 = 0)
-let domain_002_04_softmax_normalization_lemma () : Lemma (requires True) (ensures (domain_002_04_softmax_normalization_obligation () == domain_002_04_softmax_normalization_obligation ())) = ()
+let domain_002_04_softmax_normalization (p_outputs: (list int)) (p_scale: int) : Lemma (requires (softmax_valid p_outputs p_scale == true) (ensures (fold_left Z.add p_outputs 0 == p_scale))) = admit ()
 
 (* DOMAIN_002_05_relu_monotonicity (matches Coq: Theorem DOMAIN_002_05_relu_monotonicity) *)
-let domain_002_05_relu_monotonicity_obligation () : Tot bool = (0 = 0)
-let domain_002_05_relu_monotonicity_lemma () : Lemma (requires True) (ensures (domain_002_05_relu_monotonicity_obligation () == domain_002_05_relu_monotonicity_obligation ())) = ()
+let domain_002_05_relu_monotonicity (p_x: int) (p_y: int) : Lemma (requires (p_x <= p_y) (ensures (relu p_x <= relu p_y))) = admit ()
 
 (* DOMAIN_002_06_matrix_associativity (matches Coq: Theorem DOMAIN_002_06_matrix_associativity) *)
-let domain_002_06_matrix_associativity_obligation () : Tot bool = (0 = 0)
-let domain_002_06_matrix_associativity_lemma () : Lemma (requires True) (ensures (domain_002_06_matrix_associativity_obligation () == domain_002_06_matrix_associativity_obligation ())) = ()
+let domain_002_06_matrix_associativity (p_a: int) (p_b: int) (p_c: int) : Lemma ((p_a * p_b) * p_c == p_a * (p_b * p_c)) = admit ()
 
 (* DOMAIN_002_07_gradient_descent_convergence (matches Coq: Theorem DOMAIN_002_07_gradient_descent_convergence) *)
-let domain_002_07_gradient_descent_convergence_obligation () : Tot bool = (0 = 0)
-let domain_002_07_gradient_descent_convergence_lemma () : Lemma (requires True) (ensures (domain_002_07_gradient_descent_convergence_obligation () == domain_002_07_gradient_descent_convergence_obligation ())) = ()
+let domain_002_07_gradient_descent_convergence (p_loss: int) (p_learning_rate: int) (p_gradient: int) : Lemma (requires (p_learning_rate > 0 /\ p_gradient > 0) (ensures (gradient_step p_loss p_learning_rate p_gradient < p_loss))) = admit ()
 
 (* DOMAIN_002_08_inference_determinism (matches Coq: Theorem DOMAIN_002_08_inference_determinism) *)
-let domain_002_08_inference_determinism_obligation () : Tot bool = (0 = 0)
-let domain_002_08_inference_determinism_lemma () : Lemma (requires True) (ensures (domain_002_08_inference_determinism_obligation () == domain_002_08_inference_determinism_obligation ())) = ()
+let domain_002_08_inference_determinism (p_model: model) (p_input: int) : Lemma (inference p_model p_input == inference p_model p_input) = admit ()
 
 (* DOMAIN_002_09_numerical_stability (matches Coq: Theorem DOMAIN_002_09_numerical_stability) *)
-let domain_002_09_numerical_stability_obligation () : Tot bool = (0 = 0)
-let domain_002_09_numerical_stability_lemma () : Lemma (requires True) (ensures (domain_002_09_numerical_stability_obligation () == domain_002_09_numerical_stability_obligation ())) = ()
+let domain_002_09_numerical_stability (p_x: int) (p_bound: int) : Lemma (requires (numerically_stable p_x p_bound == true) (ensures (Z.abs p_x <= p_bound))) = admit ()
 
 (* DOMAIN_002_10_model_integrity (matches Coq: Theorem DOMAIN_002_10_model_integrity) *)
-let domain_002_10_model_integrity_obligation () : Tot bool = (0 = 0)
-let domain_002_10_model_integrity_lemma () : Lemma (requires True) (ensures (domain_002_10_model_integrity_obligation () == domain_002_10_model_integrity_obligation ())) = ()
+let domain_002_10_model_integrity (p_m: model) (p_expected_hash: nat) : Lemma (requires (model_integrity p_m p_expected_hash == true) (ensures (p_m.f_model_hash == p_expected_hash))) = admit ()
 
 (* DOMAIN_002_11_input_validation (matches Coq: Theorem DOMAIN_002_11_input_validation) *)
-let domain_002_11_input_validation_obligation () : Tot bool = (0 = 0)
-let domain_002_11_input_validation_lemma () : Lemma (requires True) (ensures (domain_002_11_input_validation_obligation () == domain_002_11_input_validation_obligation ())) = ()
+let domain_002_11_input_validation (p_x: int) (p_bounds: input_bounds) : Lemma (requires (input_valid p_x p_bounds == true) (ensures (p_bounds.f_ib_min <= p_x /\ p_x <= p_bounds.f_ib_max))) = admit ()
 
 (* DOMAIN_002_12_confidence_calibration (matches Coq: Theorem DOMAIN_002_12_confidence_calibration) *)
-let domain_002_12_confidence_calibration_obligation () : Tot bool = (0 = 0)
-let domain_002_12_confidence_calibration_lemma () : Lemma (requires True) (ensures (domain_002_12_confidence_calibration_obligation () == domain_002_12_confidence_calibration_obligation ())) = ()
+let domain_002_12_confidence_calibration (p_confidence: int) (p_accuracy: int) (p_tolerance: int) : Lemma (requires (confidence_calibrated p_confidence p_accuracy p_tolerance == true) (ensures (Z.abs (p_confidence - p_accuracy) <= p_tolerance))) = admit ()
 
 (* DOMAIN_002_13_fairness_constraint (matches Coq: Theorem DOMAIN_002_13_fairness_constraint) *)
-let domain_002_13_fairness_constraint_obligation () : Tot bool = (0 = 0)
-let domain_002_13_fairness_constraint_lemma () : Lemma (requires True) (ensures (domain_002_13_fairness_constraint_obligation () == domain_002_13_fairness_constraint_obligation ())) = ()
+let domain_002_13_fairness_constraint (p_group_a_rate: int) (p_group_b_rate: int) (p_threshold: int) : Lemma (requires (demographic_parity p_group_a_rate p_group_b_rate p_threshold == true) (ensures (Z.abs (p_group_a_rate - p_group_b_rate) <= p_threshold))) = admit ()
 
 (* DOMAIN_002_14_explanation_faithfulness (matches Coq: Theorem DOMAIN_002_14_explanation_faithfulness) *)
-let domain_002_14_explanation_faithfulness_obligation () : Tot bool = (0 = 0)
-let domain_002_14_explanation_faithfulness_lemma () : Lemma (requires True) (ensures (domain_002_14_explanation_faithfulness_obligation () == domain_002_14_explanation_faithfulness_obligation ())) = ()
+let domain_002_14_explanation_faithfulness (p_importance: int) (p_actual_contribution: int) (p_tolerance: int) : Lemma (requires (explanation_faithful p_importance p_actual_contribution p_tolerance == true) (ensures (Z.abs (p_importance - p_actual_contribution) <= p_tolerance))) = admit ()
 
 (* DOMAIN_002_15_safe_action_space (matches Coq: Theorem DOMAIN_002_15_safe_action_space) *)
-let domain_002_15_safe_action_space_obligation () : Tot bool = (0 = 0)
-let domain_002_15_safe_action_space_lemma () : Lemma (requires True) (ensures (domain_002_15_safe_action_space_obligation () == domain_002_15_safe_action_space_obligation ())) = ()
+let domain_002_15_safe_action_space (p_action: int) (p_prev_action: int) (p_space: action_space) : Lemma (requires (action_safe p_action p_prev_action p_space == true) (ensures (p_space.f_action_min <= p_action /\ p_action <= p_space.f_action_max /\ Z.abs (p_action - p_prev_action) <= p_space.f_action_rate_limit))) = admit ()
 
 (* relu_non_negative (matches Coq: Theorem relu_non_negative) *)
-let relu_non_negative_obligation () : Tot bool = (0 = 0)
-let relu_non_negative_lemma () : Lemma (requires True) (ensures (relu_non_negative_obligation () == relu_non_negative_obligation ())) = ()
+let relu_non_negative (p_x: _) : Lemma (0 <= relu p_x) = admit ()
 
 (* relu_idempotent (matches Coq: Theorem relu_idempotent) *)
-let relu_idempotent_obligation () : Tot bool = (0 = 0)
-let relu_idempotent_lemma () : Lemma (requires True) (ensures (relu_idempotent_obligation () == relu_idempotent_obligation ())) = ()
+let relu_idempotent (p_x: _) : Lemma (relu (relu p_x) == relu p_x) = admit ()
 
 (* relu_preserves_positive (matches Coq: Theorem relu_preserves_positive) *)
-let relu_preserves_positive_obligation () : Tot bool = (0 = 0)
-let relu_preserves_positive_lemma () : Lemma (requires True) (ensures (relu_preserves_positive_obligation () == relu_preserves_positive_obligation ())) = ()
+let relu_preserves_positive (p_x: _) : Lemma (requires (p_x >= 0) (ensures (relu p_x == p_x))) = admit ()
 
 (* relu_kills_negative (matches Coq: Theorem relu_kills_negative) *)
-let relu_kills_negative_obligation () : Tot bool = (0 = 0)
-let relu_kills_negative_lemma () : Lemma (requires True) (ensures (relu_kills_negative_obligation () == relu_kills_negative_obligation ())) = ()
+let relu_kills_negative (p_x: _) : Lemma (requires (p_x <= 0) (ensures (relu p_x == 0))) = admit ()
 
 (* classify_binary (matches Coq: Theorem classify_binary) *)
-let classify_binary_obligation () : Tot bool = (0 = 0)
-let classify_binary_lemma () : Lemma (requires True) (ensures (classify_binary_obligation () == classify_binary_obligation ())) = ()
+let classify_binary (p_x: _) (p_threshold: _) : Lemma (classify p_x p_threshold == 0 \/ classify p_x p_threshold == 1) = admit ()
 
 (* classify_above_threshold (matches Coq: Theorem classify_above_threshold) *)
-let classify_above_threshold_obligation () : Tot bool = (0 = 0)
-let classify_above_threshold_lemma () : Lemma (requires True) (ensures (classify_above_threshold_obligation () == classify_above_threshold_obligation ())) = ()
+let classify_above_threshold (p_x: _) (p_threshold: _) : Lemma (requires (p_threshold <= p_x) (ensures (classify p_x p_threshold == 1))) = admit ()
 
 (* classify_below_threshold (matches Coq: Theorem classify_below_threshold) *)
-let classify_below_threshold_obligation () : Tot bool = (0 = 0)
-let classify_below_threshold_lemma () : Lemma (requires True) (ensures (classify_below_threshold_obligation () == classify_below_threshold_obligation ())) = ()
+let classify_below_threshold (p_x: _) (p_threshold: _) : Lemma (requires (p_x < p_threshold) (ensures (classify p_x p_threshold == 0))) = admit ()
 
 (* inference_deterministic (matches Coq: Theorem inference_deterministic) *)
-let inference_deterministic_obligation () : Tot bool = (0 = 0)
-let inference_deterministic_lemma () : Lemma (requires True) (ensures (inference_deterministic_obligation () == inference_deterministic_obligation ())) = ()
+let inference_deterministic (p_m: _) (p_x: _) (p_y: _) : Lemma (requires (p_x == p_y) (ensures (inference p_m p_x == inference p_m p_y))) = admit ()
 
 (* gradient_step_decreases (matches Coq: Theorem gradient_step_decreases) *)
-let gradient_step_decreases_obligation () : Tot bool = (0 = 0)
-let gradient_step_decreases_lemma () : Lemma (requires True) (ensures (gradient_step_decreases_obligation () == gradient_step_decreases_obligation ())) = ()
+let gradient_step_decreases (p_loss: _) (p_lr: _) (p_grad: _) : Lemma (requires (p_lr > 0 /\ p_grad > 0) (ensures (gradient_step p_loss p_lr p_grad < p_loss))) = admit ()
 
 (* within_epsilon_symmetric (matches Coq: Theorem within_epsilon_symmetric) *)
-let within_epsilon_symmetric_obligation () : Tot bool = (0 = 0)
-let within_epsilon_symmetric_lemma () : Lemma (requires True) (ensures (within_epsilon_symmetric_obligation () == within_epsilon_symmetric_obligation ())) = ()
+let within_epsilon_symmetric (p_x1: _) (p_x2: _) (p_epsilon: _) : Lemma (requires (within_epsilon p_x1 p_x2 p_epsilon == true) (ensures (within_epsilon p_x2 p_x1 p_epsilon == true))) = admit ()

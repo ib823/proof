@@ -116,101 +116,76 @@ let web_layers (p_xss: bool) (p_sqli: bool) (p_csrf: bool) (p_auth: bool) (p_ses
   andb p_xss (andb p_sqli (andb p_csrf (andb p_auth p_session)))
 
 (* web_001_escaped_safe (matches Coq: Theorem web_001_escaped_safe) *)
-let web_001_escaped_safe_obligation () : Tot bool = (0 = 0)
-let web_001_escaped_safe_lemma () : Lemma (requires True) (ensures (web_001_escaped_safe_obligation () == web_001_escaped_safe_obligation ())) = ()
+let web_001_escaped_safe (p_elem: nat) : Lemma (requires (elem_type p_elem == EscapedHtml) (ensures (is_safe_content (elem_type p_elem) == true))) = admit ()
 
 (* web_002_plaintext_safe (matches Coq: Theorem web_002_plaintext_safe) *)
-let web_002_plaintext_safe_obligation () : Tot bool = (0 = 0)
-let web_002_plaintext_safe_lemma () : Lemma (requires True) (ensures (web_002_plaintext_safe_obligation () == web_002_plaintext_safe_obligation ())) = ()
+let web_002_plaintext_safe (p_elem: nat) : Lemma (requires (elem_type p_elem == PlainText) (ensures (is_safe_content (elem_type p_elem) == true))) = admit ()
 
 (* web_003_raw_unsafe (matches Coq: Theorem web_003_raw_unsafe) *)
-let web_003_raw_unsafe_obligation () : Tot bool = (0 = 0)
-let web_003_raw_unsafe_lemma () : Lemma (requires True) (ensures (web_003_raw_unsafe_obligation () == web_003_raw_unsafe_obligation ())) = ()
+let web_003_raw_unsafe (p_elem: nat) : Lemma (requires (elem_type p_elem == RawHtml) (ensures (is_safe_content (elem_type p_elem) == false))) = admit ()
 
 (* web_004_template_safe (matches Coq: Theorem web_004_template_safe) *)
-let web_004_template_safe_obligation () : Tot bool = (0 = 0)
-let web_004_template_safe_lemma () : Lemma (requires True) (ensures (web_004_template_safe_obligation () == web_004_template_safe_obligation ())) = ()
+let web_004_template_safe (p_t: nat) : Lemma (requires (template_safe p_t == true) (ensures (Forall (fn_fun e => is_safe_content (elem_type e) = true) p_t == true))) = admit ()
 
 (* web_005_param_query_safe (matches Coq: Theorem web_005_param_query_safe) *)
-let web_005_param_query_safe_obligation () : Tot bool = (0 = 0)
-let web_005_param_query_safe_lemma () : Lemma (requires True) (ensures (web_005_param_query_safe_obligation () == web_005_param_query_safe_obligation ())) = ()
+let web_005_param_query_safe (p_q: nat) : Lemma (requires (List.length (query_params p_q) == List.length (query_bound p_q)) (ensures (List.length (query_params p_q) == List.length (query_bound p_q)))) = admit ()
 
 (* web_006_no_concat (matches Coq: Theorem web_006_no_concat) *)
-let web_006_no_concat_obligation () : Tot bool = (0 = 0)
-let web_006_no_concat_lemma () : Lemma (requires True) (ensures (web_006_no_concat_obligation () == web_006_no_concat_obligation ())) = ()
+let web_006_no_concat (p_q: nat) : Lemma (requires (query_parameterized p_q == true /\ List.length (query_params p_q) > 0) (ensures (List.length (query_bound p_q) > 0))) = admit ()
 
 (* web_007_csrf_session (matches Coq: Theorem web_007_csrf_session) *)
-let web_007_csrf_session_obligation () : Tot bool = (0 = 0)
-let web_007_csrf_session_lemma () : Lemma (requires True) (ensures (web_007_csrf_session_obligation () == web_007_csrf_session_obligation ())) = ()
+let web_007_csrf_session (p_token: nat) (p_session: nat) (p_current_time: nat) : Lemma (requires (csrf_valid p_token p_session p_current_time == true) (ensures (csrf_session p_token == p_session))) = admit ()
 
 (* web_008_csrf_fresh (matches Coq: Theorem web_008_csrf_fresh) *)
-let web_008_csrf_fresh_obligation () : Tot bool = (0 = 0)
-let web_008_csrf_fresh_lemma () : Lemma (requires True) (ensures (web_008_csrf_fresh_obligation () == web_008_csrf_fresh_obligation ())) = ()
+let web_008_csrf_fresh (p_token: nat) (p_session: nat) (p_current_time: nat) : Lemma (requires (csrf_valid p_token p_session p_current_time == true) (ensures (p_current_time < csrf_expiry p_token))) = admit ()
 
 (* web_009_valid_transition (matches Coq: Theorem web_009_valid_transition) *)
-let web_009_valid_transition_obligation () : Tot bool = (0 = 0)
-let web_009_valid_transition_lemma () : Lemma (requires True) (ensures (web_009_valid_transition_obligation () == web_009_valid_transition_obligation ())) = ()
+let web_009_valid_transition (p_from: auth_state) (p_to: auth_state) : Lemma (requires (valid_transition p_from p_to == true) (ensures (valid_transition p_from p_to == true))) = admit ()
 
 (* web_010_no_skip_mfa (matches Coq: Theorem web_010_no_skip_mfa) *)
-let web_010_no_skip_mfa_obligation () : Tot bool = (0 = 0)
-let web_010_no_skip_mfa_lemma () : Lemma (requires True) (ensures (web_010_no_skip_mfa_obligation () == web_010_no_skip_mfa_obligation ())) = ()
+let web_010_no_skip_mfa () : Lemma (valid_transition Unauthenticated Authenticated == false) = admit ()
 
 (* web_011_locked_blocked (matches Coq: Theorem web_011_locked_blocked) *)
-let web_011_locked_blocked_obligation () : Tot bool = (0 = 0)
-let web_011_locked_blocked_lemma () : Lemma (requires True) (ensures (web_011_locked_blocked_obligation () == web_011_locked_blocked_obligation ())) = ()
+let web_011_locked_blocked () : Lemma (valid_transition Locked Authenticated == false) = admit ()
 
 (* web_012_session_token (matches Coq: Theorem web_012_session_token) *)
-let web_012_session_token_obligation () : Tot bool = (0 = 0)
-let web_012_session_token_lemma () : Lemma (requires True) (ensures (web_012_session_token_obligation () == web_012_session_token_obligation ())) = ()
+let web_012_session_token (p_req: nat) (p_expected_session: nat) : Lemma (requires (fn_match req_token p_req id_with | Some t => csrf_session t == p_expected_session | None => True end) (ensures (fn_match req_token p_req id_with | Some t => csrf_session t == p_expected_session | None => True end))) = admit ()
 
 (* web_013_post_token (matches Coq: Theorem web_013_post_token) *)
-let web_013_post_token_obligation () : Tot bool = (0 = 0)
-let web_013_post_token_lemma () : Lemma (requires True) (ensures (web_013_post_token_obligation () == web_013_post_token_obligation ())) = ()
+let web_013_post_token (p_req: nat) : Lemma (requires (req_method p_req == 1 /\ post_has_token p_req == true) (ensures (exists t_ req_token p_req == Some t))) = admit ()
 
 (* web_014_url_validated (matches Coq: Theorem web_014_url_validated) *)
-let web_014_url_validated_obligation () : Tot bool = (0 = 0)
-let web_014_url_validated_lemma () : Lemma (requires True) (ensures (web_014_url_validated_obligation () == web_014_url_validated_obligation ())) = ()
+let web_014_url_validated (p_elem: nat) : Lemma (requires (elem_type p_elem == SafeUrl) (ensures (url_safe (elem_type p_elem) == true))) = admit ()
 
 (* web_015_csp_present (matches Coq: Theorem web_015_csp_present) *)
-let web_015_csp_present_obligation () : Tot bool = (0 = 0)
-let web_015_csp_present_lemma () : Lemma (requires True) (ensures (web_015_csp_present_obligation () == web_015_csp_present_obligation ())) = ()
+let web_015_csp_present (p_headers: (list nat)) (p_csp_header: nat) : Lemma (requires (csp_active p_headers p_csp_header == true) (ensures (In p_csp_header p_headers == true))) = admit ()
 
 (* web_016_cookie_secure (matches Coq: Theorem web_016_cookie_secure) *)
-let web_016_cookie_secure_obligation () : Tot bool = (0 = 0)
-let web_016_cookie_secure_lemma () : Lemma (requires True) (ensures (web_016_cookie_secure_obligation () == web_016_cookie_secure_obligation ())) = ()
+let web_016_cookie_secure (p_c: nat) : Lemma (requires (cookie_safe p_c == true) (ensures (cookie_secure p_c == true /\ cookie_httponly p_c == true /\ cookie_samesite p_c == true))) = admit ()
 
 (* web_017_input_validated (matches Coq: Theorem web_017_input_validated) *)
-let web_017_input_validated_obligation () : Tot bool = (0 = 0)
-let web_017_input_validated_lemma () : Lemma (requires True) (ensures (web_017_input_validated_obligation () == web_017_input_validated_obligation ())) = ()
+let web_017_input_validated (p_input_type: nat) (p_expected: nat) : Lemma (requires (input_validated p_input_type p_expected == true) (ensures (p_input_type == p_expected))) = admit ()
 
 (* web_018_output_encoded (matches Coq: Theorem web_018_output_encoded) *)
-let web_018_output_encoded_obligation () : Tot bool = (0 = 0)
-let web_018_output_encoded_lemma () : Lemma (requires True) (ensures (web_018_output_encoded_obligation () == web_018_output_encoded_obligation ())) = ()
+let web_018_output_encoded (p_t: nat) : Lemma (requires (Forall (fn_fun e => elem_type e <> RawHtml) p_t == true) (ensures (Forall (fn_fun e => is_safe_content (elem_type e) = true) p_t == true))) = admit ()
 
 (* web_019_rate_limited (matches Coq: Theorem web_019_rate_limited) *)
-let web_019_rate_limited_obligation () : Tot bool = (0 = 0)
-let web_019_rate_limited_lemma () : Lemma (requires True) (ensures (web_019_rate_limited_obligation () == web_019_rate_limited_obligation ())) = ()
+let web_019_rate_limited (p_requests: nat) (p_max_requests: nat) (p_window: nat) : Lemma (requires (rate_ok p_requests p_max_requests p_window == true) (ensures (p_requests <= p_max_requests))) = admit ()
 
 (* web_020_session_timeout (matches Coq: Theorem web_020_session_timeout) *)
-let web_020_session_timeout_obligation () : Tot bool = (0 = 0)
-let web_020_session_timeout_lemma () : Lemma (requires True) (ensures (web_020_session_timeout_obligation () == web_020_session_timeout_obligation ())) = ()
+let web_020_session_timeout (p_last_activity: nat) (p_current: nat) (p_max_idle: nat) : Lemma (requires (session_active p_last_activity p_current p_max_idle == true) (ensures (p_current - p_last_activity <= p_max_idle))) = admit ()
 
 (* web_021_password_hashed (matches Coq: Theorem web_021_password_hashed) *)
-let web_021_password_hashed_obligation () : Tot bool = (0 = 0)
-let web_021_password_hashed_lemma () : Lemma (requires True) (ensures (web_021_password_hashed_obligation () == web_021_password_hashed_obligation ())) = ()
+let web_021_password_hashed (p_hash_algorithm: nat) (p_min_algorithm: nat) : Lemma (requires (password_hashed p_hash_algorithm p_min_algorithm == true) (ensures (p_min_algorithm <= p_hash_algorithm))) = admit ()
 
 (* web_022_https_required (matches Coq: Theorem web_022_https_required) *)
-let web_022_https_required_obligation () : Tot bool = (0 = 0)
-let web_022_https_required_lemma () : Lemma (requires True) (ensures (web_022_https_required_obligation () == web_022_https_required_obligation ())) = ()
+let web_022_https_required (p_scheme: nat) : Lemma (requires (https_enforced p_scheme == true) (ensures (p_scheme == 443))) = admit ()
 
 (* web_023_error_safe (matches Coq: Theorem web_023_error_safe) *)
-let web_023_error_safe_obligation () : Tot bool = (0 = 0)
-let web_023_error_safe_lemma () : Lemma (requires True) (ensures (web_023_error_safe_obligation () == web_023_error_safe_obligation ())) = ()
+let web_023_error_safe (p_error_detail_level: nat) (p_max_level: nat) : Lemma (requires (error_safe p_error_detail_level p_max_level == true) (ensures (p_error_detail_level <= p_max_level))) = admit ()
 
 (* web_024_logging_complete (matches Coq: Theorem web_024_logging_complete) *)
-let web_024_logging_complete_obligation () : Tot bool = (0 = 0)
-let web_024_logging_complete_lemma () : Lemma (requires True) (ensures (web_024_logging_complete_obligation () == web_024_logging_complete_obligation ())) = ()
+let web_024_logging_complete (p_events: (list nat)) (p_logged: (list nat)) : Lemma (requires (event_logged p_events p_logged == true) (ensures (incl p_events p_logged == true))) = admit ()
 
 (* web_025_defense_in_depth (matches Coq: Theorem web_025_defense_in_depth) *)
-let web_025_defense_in_depth_obligation () : Tot bool = (0 = 0)
-let web_025_defense_in_depth_lemma () : Lemma (requires True) (ensures (web_025_defense_in_depth_obligation () == web_025_defense_in_depth_obligation ())) = ()
+let web_025_defense_in_depth (p_x: _) (p_s: _) (p_c: _) (p_a: _) (p_se: _) : Lemma (requires (web_layers p_x p_s p_c p_a p_se == true) (ensures (p_x == true /\ p_s == true /\ p_c == true /\ p_a == true /\ p_se == true))) = admit ()

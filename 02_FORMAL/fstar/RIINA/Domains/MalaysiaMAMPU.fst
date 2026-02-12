@@ -56,109 +56,82 @@ let dkict_compliant (p_d: nat) : Tot bool =
   (0 = 0)
 
 (* mampu_sovereignty (matches Coq: Theorem mampu_sovereignty) *)
-let mampu_sovereignty_obligation () : Tot bool = (0 = 0)
-let mampu_sovereignty_lemma () : Lemma (requires True) (ensures (mampu_sovereignty_obligation () == mampu_sovereignty_obligation ())) = ()
+let mampu_sovereignty (p_s: nat) : Lemma (requires (gov_data_in_malaysia p_s == true) (ensures (data_sovereign p_s == true))) = admit ()
 
 (* mampu_terbuka (matches Coq: Theorem mampu_terbuka) *)
-let mampu_terbuka_obligation () : Tot bool = (0 = 0)
-let mampu_terbuka_lemma () : Lemma (requires True) (ensures (mampu_terbuka_obligation () == mampu_terbuka_obligation ())) = ()
+let mampu_terbuka (p_s: nat) : Lemma (requires (gov_classification p_s == Terbuka) (ensures (controls_match_classification p_s == true))) = admit ()
 
 (* mampu_rahsia (matches Coq: Theorem mampu_rahsia) *)
-let mampu_rahsia_obligation () : Tot bool = (0 = 0)
-let mampu_rahsia_lemma () : Lemma (requires True) (ensures (mampu_rahsia_obligation () == mampu_rahsia_obligation ())) = ()
+let mampu_rahsia (p_s: nat) : Lemma (requires (gov_classification p_s == Rahsia /\ gov_encrypted p_s == true /\ gov_access_controlled p_s == true /\ gov_audit_logged p_s == true) (ensures (controls_match_classification p_s == true))) = admit ()
 
 (* mampu_rahsia_besar (matches Coq: Theorem mampu_rahsia_besar) *)
-let mampu_rahsia_besar_obligation () : Tot bool = (0 = 0)
-let mampu_rahsia_besar_lemma () : Lemma (requires True) (ensures (mampu_rahsia_besar_obligation () == mampu_rahsia_besar_obligation ())) = ()
+let mampu_rahsia_besar (p_s: nat) : Lemma (requires (gov_classification p_s == RahsiaBesar /\ gov_encrypted p_s == true /\ gov_access_controlled p_s == true /\ gov_audit_logged p_s == true /\ gov_isms_certified p_s == true) (ensures (controls_match_classification p_s == true))) = admit ()
 
 (* mampu_assessment (matches Coq: Theorem mampu_assessment) *)
-let mampu_assessment_obligation () : Tot bool = (0 = 0)
-let mampu_assessment_lemma () : Lemma (requires True) (ensures (mampu_assessment_obligation () == mampu_assessment_obligation ())) = ()
+let mampu_assessment (p_s: nat) : Lemma (requires (gov_security_assessed p_s == true) (ensures (security_assessed p_s == true))) = admit ()
 
 (* mampu_isms (matches Coq: Theorem mampu_isms) *)
-let mampu_isms_obligation () : Tot bool = (0 = 0)
-let mampu_isms_lemma () : Lemma (requires True) (ensures (mampu_isms_obligation () == mampu_isms_obligation ())) = ()
+let mampu_isms (p_s: nat) : Lemma (requires (gov_isms_certified p_s == true) (ensures (isms_compliant p_s == true))) = admit ()
 
 (* classification_ordering (matches Coq: Theorem classification_ordering) *)
-let classification_ordering_obligation () : Tot bool = (0 = 0)
-let classification_ordering_lemma () : Lemma (requires True) (ensures (classification_ordering_obligation () == classification_ordering_obligation ())) = ()
+let classification_ordering (p_c1: gov_classification) (p_c2: gov_classification) : Lemma (classification_level p_c1 <= classification_level p_c2 \/ classification_level p_c2 <= classification_level p_c1) = admit ()
 
 (* rahsia_besar_highest (matches Coq: Theorem rahsia_besar_highest) *)
-let rahsia_besar_highest_obligation () : Tot bool = (0 = 0)
-let rahsia_besar_highest_lemma () : Lemma (requires True) (ensures (rahsia_besar_highest_obligation () == rahsia_besar_highest_obligation ())) = ()
+let rahsia_besar_highest (p_c: gov_classification) : Lemma (classification_level p_c <= classification_level RahsiaBesar) = admit ()
 
 (* mampu_composition (matches Coq: Theorem mampu_composition) *)
-let mampu_composition_obligation () : Tot bool = (0 = 0)
-let mampu_composition_lemma () : Lemma (requires True) (ensures (mampu_composition_obligation () == mampu_composition_obligation ())) = ()
+let mampu_composition (p_s: nat) : Lemma (requires (data_sovereign p_s == true /\ controls_match_classification p_s == true /\ security_assessed p_s == true) (ensures (mampu_fully_compliant p_s == true))) = admit ()
 
 (* gov_classification_coverage (matches Coq: Theorem gov_classification_coverage) *)
-let gov_classification_coverage_obligation () : Tot bool = (0 = 0)
-let gov_classification_coverage_lemma () : Lemma (requires True) (ensures (gov_classification_coverage_obligation () == gov_classification_coverage_obligation ())) = ()
+let gov_classification_coverage (p_c: gov_classification) : Lemma (In p_c all_gov_classifications == true) = admit ()
 
 (* terbuka_is_level_zero (matches Coq: Theorem terbuka_is_level_zero) *)
-let terbuka_is_level_zero_obligation () : Tot bool = (0 = 0)
-let terbuka_is_level_zero_lemma () : Lemma (requires True) (ensures (terbuka_is_level_zero_obligation () == terbuka_is_level_zero_obligation ())) = ()
+let terbuka_is_level_zero () : Lemma (classification_level Terbuka == 0) = admit ()
 
 (* rahsia_besar_is_level_four (matches Coq: Theorem rahsia_besar_is_level_four) *)
-let rahsia_besar_is_level_four_obligation () : Tot bool = (0 = 0)
-let rahsia_besar_is_level_four_lemma () : Lemma (requires True) (ensures (rahsia_besar_is_level_four_obligation () == rahsia_besar_is_level_four_obligation ())) = ()
+let rahsia_besar_is_level_four () : Lemma (classification_level RahsiaBesar == 4) = admit ()
 
 (* classification_level_positive_for_non_terbuka (matches Coq: Theorem classification_level_positive_for_non_terbuka) *)
-let classification_level_positive_for_non_terbuka_obligation () : Tot bool = (0 = 0)
-let classification_level_positive_for_non_terbuka_lemma () : Lemma (requires True) (ensures (classification_level_positive_for_non_terbuka_obligation () == classification_level_positive_for_non_terbuka_obligation ())) = ()
+let classification_level_positive_for_non_terbuka (p_c: gov_classification) : Lemma (requires (~(p_c == Terbuka)) (ensures (classification_level p_c >= 1))) = admit ()
 
 (* mampu_terhad (matches Coq: Theorem mampu_terhad) *)
-let mampu_terhad_obligation () : Tot bool = (0 = 0)
-let mampu_terhad_lemma () : Lemma (requires True) (ensures (mampu_terhad_obligation () == mampu_terhad_obligation ())) = ()
+let mampu_terhad (p_s: nat) : Lemma (requires (gov_classification p_s == Terhad /\ gov_access_controlled p_s == true) (ensures (controls_match_classification p_s == true))) = admit ()
 
 (* mampu_sulit (matches Coq: Theorem mampu_sulit) *)
-let mampu_sulit_obligation () : Tot bool = (0 = 0)
-let mampu_sulit_lemma () : Lemma (requires True) (ensures (mampu_sulit_obligation () == mampu_sulit_obligation ())) = ()
+let mampu_sulit (p_s: nat) : Lemma (requires (gov_classification p_s == Sulit /\ gov_encrypted p_s == true /\ gov_access_controlled p_s == true) (ensures (controls_match_classification p_s == true))) = admit ()
 
 (* rahsia_besar_requires_encryption (matches Coq: Theorem rahsia_besar_requires_encryption) *)
-let rahsia_besar_requires_encryption_obligation () : Tot bool = (0 = 0)
-let rahsia_besar_requires_encryption_lemma () : Lemma (requires True) (ensures (rahsia_besar_requires_encryption_obligation () == rahsia_besar_requires_encryption_obligation ())) = ()
+let rahsia_besar_requires_encryption (p_s: nat) : Lemma (requires (gov_classification p_s == RahsiaBesar /\ controls_match_classification p_s == true) (ensures (gov_encrypted p_s == true))) = admit ()
 
 (* rahsia_besar_requires_access_control (matches Coq: Theorem rahsia_besar_requires_access_control) *)
-let rahsia_besar_requires_access_control_obligation () : Tot bool = (0 = 0)
-let rahsia_besar_requires_access_control_lemma () : Lemma (requires True) (ensures (rahsia_besar_requires_access_control_obligation () == rahsia_besar_requires_access_control_obligation ())) = ()
+let rahsia_besar_requires_access_control (p_s: nat) : Lemma (requires (gov_classification p_s == RahsiaBesar /\ controls_match_classification p_s == true) (ensures (gov_access_controlled p_s == true))) = admit ()
 
 (* rahsia_besar_requires_audit (matches Coq: Theorem rahsia_besar_requires_audit) *)
-let rahsia_besar_requires_audit_obligation () : Tot bool = (0 = 0)
-let rahsia_besar_requires_audit_lemma () : Lemma (requires True) (ensures (rahsia_besar_requires_audit_obligation () == rahsia_besar_requires_audit_obligation ())) = ()
+let rahsia_besar_requires_audit (p_s: nat) : Lemma (requires (gov_classification p_s == RahsiaBesar /\ controls_match_classification p_s == true) (ensures (gov_audit_logged p_s == true))) = admit ()
 
 (* rahsia_besar_requires_isms (matches Coq: Theorem rahsia_besar_requires_isms) *)
-let rahsia_besar_requires_isms_obligation () : Tot bool = (0 = 0)
-let rahsia_besar_requires_isms_lemma () : Lemma (requires True) (ensures (rahsia_besar_requires_isms_obligation () == rahsia_besar_requires_isms_obligation ())) = ()
+let rahsia_besar_requires_isms (p_s: nat) : Lemma (requires (gov_classification p_s == RahsiaBesar /\ controls_match_classification p_s == true) (ensures (gov_isms_certified p_s == true))) = admit ()
 
 (* sovereignty_mandatory_for_all_levels (matches Coq: Theorem sovereignty_mandatory_for_all_levels) *)
-let sovereignty_mandatory_for_all_levels_obligation () : Tot bool = (0 = 0)
-let sovereignty_mandatory_for_all_levels_lemma () : Lemma (requires True) (ensures (sovereignty_mandatory_for_all_levels_obligation () == sovereignty_mandatory_for_all_levels_obligation ())) = ()
+let sovereignty_mandatory_for_all_levels (p_s: nat) : Lemma (requires (mampu_fully_compliant p_s == true) (ensures (data_sovereign p_s == true))) = admit ()
 
 (* sovereignty_violation_blocks_compliance (matches Coq: Theorem sovereignty_violation_blocks_compliance) *)
-let sovereignty_violation_blocks_compliance_obligation () : Tot bool = (0 = 0)
-let sovereignty_violation_blocks_compliance_lemma () : Lemma (requires True) (ensures (sovereignty_violation_blocks_compliance_obligation () == sovereignty_violation_blocks_compliance_obligation ())) = ()
+let sovereignty_violation_blocks_compliance (p_s: nat) : Lemma (requires (gov_data_in_malaysia p_s == false) (ensures (~(data_sovereign p_s == true)))) = admit ()
 
 (* rakkssa_assessment_complete (matches Coq: Theorem rakkssa_assessment_complete) *)
-let rakkssa_assessment_complete_obligation () : Tot bool = (0 = 0)
-let rakkssa_assessment_complete_lemma () : Lemma (requires True) (ensures (rakkssa_assessment_complete_obligation () == rakkssa_assessment_complete_obligation ())) = ()
+let rakkssa_assessment_complete (p_ra: nat) : Lemma (requires (rk_vulnerability_scan p_ra == true /\ rk_penetration_test p_ra == true /\ rk_risk_assessment p_ra == true /\ rk_compliance_check p_ra == true /\ rk_score p_ra >= rk_min_score p_ra) (ensures (rakkssa_passed p_ra == true))) = admit ()
 
 (* rakkssa_score_insufficient (matches Coq: Theorem rakkssa_score_insufficient) *)
-let rakkssa_score_insufficient_obligation () : Tot bool = (0 = 0)
-let rakkssa_score_insufficient_lemma () : Lemma (requires True) (ensures (rakkssa_score_insufficient_obligation () == rakkssa_score_insufficient_obligation ())) = ()
+let rakkssa_score_insufficient (p_ra: nat) : Lemma (requires (rk_score p_ra < rk_min_score p_ra) (ensures (~((rk_score p_ra >= rk_min_score p_ra))))) = admit ()
 
 (* mygovcloud_check (matches Coq: Theorem mygovcloud_check) *)
-let mygovcloud_check_obligation () : Tot bool = (0 = 0)
-let mygovcloud_check_lemma () : Lemma (requires True) (ensures (mygovcloud_check_obligation () == mygovcloud_check_obligation ())) = ()
+let mygovcloud_check (p_s: nat) : Lemma (requires (gov_data_in_malaysia p_s == true /\ gov_security_assessed p_s == true /\ ~(gov_classification p_s == RahsiaBesar)) (ensures (mygovcloud_eligible p_s == true))) = admit ()
 
 (* dkict_full_compliance (matches Coq: Theorem dkict_full_compliance) *)
-let dkict_full_compliance_obligation () : Tot bool = (0 = 0)
-let dkict_full_compliance_lemma () : Lemma (requires True) (ensures (dkict_full_compliance_obligation () == dkict_full_compliance_obligation ())) = ()
+let dkict_full_compliance (p_d: nat) : Lemma (requires (dkict_password_policy p_d == true /\ dkict_access_review p_d == true /\ dkict_incident_response p_d == true /\ dkict_backup_tested p_d == true) (ensures (dkict_compliant p_d == true))) = admit ()
 
 (* mampu_full_implies_sovereign (matches Coq: Theorem mampu_full_implies_sovereign) *)
-let mampu_full_implies_sovereign_obligation () : Tot bool = (0 = 0)
-let mampu_full_implies_sovereign_lemma () : Lemma (requires True) (ensures (mampu_full_implies_sovereign_obligation () == mampu_full_implies_sovereign_obligation ())) = ()
+let mampu_full_implies_sovereign (p_s: nat) : Lemma (requires (mampu_fully_compliant p_s == true) (ensures (gov_data_in_malaysia p_s == true))) = admit ()
 
 (* mampu_full_implies_assessed (matches Coq: Theorem mampu_full_implies_assessed) *)
-let mampu_full_implies_assessed_obligation () : Tot bool = (0 = 0)
-let mampu_full_implies_assessed_lemma () : Lemma (requires True) (ensures (mampu_full_implies_assessed_obligation () == mampu_full_implies_assessed_obligation ())) = ()
+let mampu_full_implies_assessed (p_s: nat) : Lemma (requires (mampu_fully_compliant p_s == true) (ensures (gov_security_assessed p_s == true))) = admit ()

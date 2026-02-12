@@ -155,101 +155,76 @@ let use_after_consume_impossible (p_rm: nat) (p_x: nat) : Tot bool =
 let no_double_consume : bool = (0 = 0)
 
 (* linearity_eqb_eq (matches Coq: Lemma linearity_eqb_eq) *)
-let linearity_eqb_eq_obligation () : Tot bool = (0 = 0)
-let linearity_eqb_eq_lemma () : Lemma (requires True) (ensures (linearity_eqb_eq_obligation () == linearity_eqb_eq_obligation ())) = ()
+let linearity_eqb_eq (p_q1: _) (p_q2: _) : Lemma (requires (linearity_eqb p_q1 p_q2 == fn_true <) (ensures (p_q1 == p_q2))) = admit ()
 
 (* get_update_same (matches Coq: Lemma get_update_same) *)
-let get_update_same_obligation () : Tot bool = (0 = 0)
-let get_update_same_lemma () : Lemma (requires True) (ensures (get_update_same_obligation () == get_update_same_obligation ())) = ()
+let get_update_same (p_x: _) (p_ctx: _) (p_ty: _) (p_q: _) : Lemma (requires (lookup p_x p_ctx == Some (ty_ q_ Zero)) (ensures (get_usage p_x (update_usage p_x p_ctx) == One))) = admit ()
 
 (* TYPE_002_01 (matches Coq: Theorem TYPE_002_01) *)
-let type_002_01_obligation () : Tot bool = (0 = 0)
-let type_002_01_lemma () : Lemma (requires True) (ensures (type_002_01_obligation () == type_002_01_obligation ())) = ()
+let type_002_01 (p_ctx: _) (p_x: _) (p_ty: _) : Lemma (requires (lookup p_x p_ctx == Some (ty_ Lin, Zero) /\ linear_typed p_ctx (LVar p_x) p_ty (update_usage p_x p_ctx) == true) (ensures (get_usage p_x (update_usage p_x p_ctx) == One))) = admit ()
 
 (* TYPE_002_02 (matches Coq: Theorem TYPE_002_02) *)
-let type_002_02_obligation () : Tot bool = (0 = 0)
-let type_002_02_lemma () : Lemma (requires True) (ensures (type_002_02_obligation () == type_002_02_obligation ())) = ()
+let type_002_02 (p_u: _) : Lemma (unrestricted_usage_valid p_u == true) = admit ()
 
 (* TYPE_002_03 (matches Coq: Theorem TYPE_002_03) *)
-let type_002_03_obligation () : Tot bool = (0 = 0)
-let type_002_03_lemma () : Lemma (requires True) (ensures (type_002_03_obligation () == type_002_03_obligation ())) = ()
+let type_002_03 (p_ctx: _) (p_ctx_: _) (p_ctx__: _) (p_t1: _) (p_t2: _) (p_ty1: _) (p_ty2: _) : Lemma (requires (linear_typed p_ctx p_t1 (LFun Lin p_ty1 p_ty2) ctx_ == true /\ linear_typed ctx_ p_t2 p_ty1 ctx__ == true) (ensures (linear_typed p_ctx (LApp p_t1 p_t2) p_ty2 ctx__ == true))) = admit ()
 
 (* TYPE_002_04 (matches Coq: Theorem TYPE_002_04) *)
-let type_002_04_obligation () : Tot bool = (0 = 0)
-let type_002_04_lemma () : Lemma (requires True) (ensures (type_002_04_obligation () == type_002_04_obligation ())) = ()
+let type_002_04 () : Lemma (affine_subsumes_linear == true) = admit ()
 
 (* TYPE_002_05 (matches Coq: Theorem TYPE_002_05) *)
-let type_002_05_obligation () : Tot bool = (0 = 0)
-let type_002_05_lemma () : Lemma (requires True) (ensures (type_002_05_obligation () == type_002_05_obligation ())) = ()
+let type_002_05 () : Lemma (relevant_subsumes_linear == true) = admit ()
 
 (* usage_add_zero_l (matches Coq: Lemma usage_add_zero_l) *)
-let usage_add_zero_l_obligation () : Tot bool = (0 = 0)
-let usage_add_zero_l_lemma () : Lemma (requires True) (ensures (usage_add_zero_l_obligation () == usage_add_zero_l_obligation ())) = ()
+let usage_add_zero_l (p_u: _) : Lemma (usage_add Zero p_u == p_u) = admit ()
 
 (* usage_add_zero_r (matches Coq: Lemma usage_add_zero_r) *)
-let usage_add_zero_r_obligation () : Tot bool = (0 = 0)
-let usage_add_zero_r_lemma () : Lemma (requires True) (ensures (usage_add_zero_r_obligation () == usage_add_zero_r_obligation ())) = ()
+let usage_add_zero_r (p_u: _) : Lemma (usage_add p_u Zero == p_u) = admit ()
 
 (* TYPE_002_06 (matches Coq: Theorem TYPE_002_06) *)
-let type_002_06_obligation () : Tot bool = (0 = 0)
-let type_002_06_lemma () : Lemma (requires True) (ensures (type_002_06_obligation () == type_002_06_obligation ())) = ()
+let type_002_06 (p_ctx1: _) (p_ctx2: _) : Lemma (requires (fn_let ctx : == ctx_split_valid p_ctx1 p_ctx2 id_in forall x ty q u1_ lookup x p_ctx1 = Some (ty_ q_ u1)) (ensures (exists u_ lookup x ctx == Some (ty_ q_ u) /\ u == usage_add u1 (get_usage x p_ctx2)))) = admit ()
 
 (* TYPE_002_07 (matches Coq: Theorem TYPE_002_07) *)
-let type_002_07_obligation () : Tot bool = (0 = 0)
-let type_002_07_lemma () : Lemma (requires True) (ensures (type_002_07_obligation () == type_002_07_obligation ())) = ()
+let type_002_07 (p_t: _) (p_s: _) (p_x: _) : Lemma (substitution_preserves_structure p_t p_s p_x == true) = admit ()
 
 (* linear_must_be_used (matches Coq: Lemma linear_must_be_used) *)
-let linear_must_be_used_obligation () : Tot bool = (0 = 0)
-let linear_must_be_used_lemma () : Lemma (requires True) (ensures (linear_must_be_used_obligation () == linear_must_be_used_obligation ())) = ()
+let linear_must_be_used (p_q: _) : Lemma (requires (p_q == Lin) (ensures (usage_compatible p_q Zero == false))) = admit ()
 
 (* linear_zero_usage_invalid (matches Coq: Lemma linear_zero_usage_invalid) *)
-let linear_zero_usage_invalid_obligation () : Tot bool = (0 = 0)
-let linear_zero_usage_invalid_lemma () : Lemma (requires True) (ensures (linear_zero_usage_invalid_obligation () == linear_zero_usage_invalid_obligation ())) = ()
+let linear_zero_usage_invalid () : Lemma (usage_compatible Lin Zero == false) = admit ()
 
 (* linear_many_usage_invalid (matches Coq: Lemma linear_many_usage_invalid) *)
-let linear_many_usage_invalid_obligation () : Tot bool = (0 = 0)
-let linear_many_usage_invalid_lemma () : Lemma (requires True) (ensures (linear_many_usage_invalid_obligation () == linear_many_usage_invalid_obligation ())) = ()
+let linear_many_usage_invalid () : Lemma (usage_compatible Lin Many == false) = admit ()
 
 (* unused_linear_ill_formed (matches Coq: Lemma unused_linear_ill_formed) *)
-let unused_linear_ill_formed_obligation () : Tot bool = (0 = 0)
-let unused_linear_ill_formed_lemma () : Lemma (requires True) (ensures (unused_linear_ill_formed_obligation () == unused_linear_ill_formed_obligation ())) = ()
+let unused_linear_ill_formed (p_x: _) (p_ty: _) (p_ctx: _) : Lemma (requires (lookup p_x p_ctx == None /\ ctx_well_formed p_ctx == true) (ensures (ctx_well_formed (extend p_ctx p_x p_ty Lin) == false))) = admit ()
 
 (* extend_preserves_lookup_none (matches Coq: Lemma extend_preserves_lookup_none) *)
-let extend_preserves_lookup_none_obligation () : Tot bool = (0 = 0)
-let extend_preserves_lookup_none_lemma () : Lemma (requires True) (ensures (extend_preserves_lookup_none_obligation () == extend_preserves_lookup_none_obligation ())) = ()
+let extend_preserves_lookup_none (p_x: _) (p_y: _) (p_ty: _) (p_q: _) (p_ctx: _) : Lemma (requires (~(p_x == p_y) /\ lookup p_x p_ctx == None) (ensures (lookup p_x (extend p_ctx p_y p_ty p_q) == None))) = admit ()
 
 (* unit_typing_preserves_ctx (matches Coq: Lemma unit_typing_preserves_ctx) *)
-let unit_typing_preserves_ctx_obligation () : Tot bool = (0 = 0)
-let unit_typing_preserves_ctx_lemma () : Lemma (requires True) (ensures (unit_typing_preserves_ctx_obligation () == unit_typing_preserves_ctx_obligation ())) = ()
+let unit_typing_preserves_ctx (p_ctx: _) : Lemma (linear_typed p_ctx LUnitVal LUnit p_ctx == true) = admit ()
 
 (* TYPE_002_08_direct (matches Coq: Theorem TYPE_002_08_direct) *)
-let type_002_08_direct_obligation () : Tot bool = (0 = 0)
-let type_002_08_direct_lemma () : Lemma (requires True) (ensures (type_002_08_direct_obligation () == type_002_08_direct_obligation ())) = ()
+let type_002_08_direct () : Lemma (weakening_violates_linear_semantics == true) = admit ()
 
 (* weakening_consequence (matches Coq: Lemma weakening_consequence) *)
-let weakening_consequence_obligation () : Tot bool = (0 = 0)
-let weakening_consequence_lemma () : Lemma (requires True) (ensures (weakening_consequence_obligation () == weakening_consequence_obligation ())) = ()
+let weakening_consequence (p_ctx: _) (p_x: _) (p_ty: _) : Lemma (requires (lookup p_x p_ctx == None) (ensures (ctx_well_formed (extend p_ctx p_x p_ty Lin) == false))) = admit ()
 
 (* TYPE_002_08 (matches Coq: Theorem TYPE_002_08) *)
-let type_002_08_obligation () : Tot bool = (0 = 0)
-let type_002_08_lemma () : Lemma (requires True) (ensures (type_002_08_obligation () == type_002_08_obligation ())) = ()
+let type_002_08 () : Lemma (weakening_invalid_for_linear == true) = admit ()
 
 (* TYPE_002_09 (matches Coq: Theorem TYPE_002_09) *)
-let type_002_09_obligation () : Tot bool = (0 = 0)
-let type_002_09_lemma () : Lemma (requires True) (ensures (type_002_09_obligation () == type_002_09_obligation ())) = ()
+let type_002_09 () : Lemma (contraction_invalid_for_linear == true) = admit ()
 
 (* TYPE_002_10 (matches Coq: Theorem TYPE_002_10) *)
-let type_002_10_obligation () : Tot bool = (0 = 0)
-let type_002_10_lemma () : Lemma (requires True) (ensures (type_002_10_obligation () == type_002_10_obligation ())) = ()
+let type_002_10 (p_ctx: _) (p_ctx_: _) (p_ctx__: _) (p_t1: _) (p_t2: _) (p_q: _) (p_ty1: _) (p_ty2: _) : Lemma (requires (linear_typed p_ctx p_t1 p_ty1 ctx_ == true /\ linear_typed ctx_ p_t2 p_ty2 ctx__ == true) (ensures (linear_typed p_ctx (LPairVal p_t1 p_t2) (LPair p_q p_ty1 p_ty2) ctx__ == true))) = admit ()
 
 (* TYPE_002_11 (matches Coq: Theorem TYPE_002_11) *)
-let type_002_11_obligation () : Tot bool = (0 = 0)
-let type_002_11_lemma () : Lemma (requires True) (ensures (type_002_11_obligation () == type_002_11_obligation ())) = ()
+let type_002_11 (p_ctx: _) (p_ctx_: _) (p_ctx__: _) (p_t1: _) (p_t2: _) (p_x: _) (p_ty1: _) (p_ty2: _) : Lemma (requires (linear_typed p_ctx p_t1 p_ty1 ctx_ == true /\ linear_typed (extend ctx_ p_x p_ty1 Lin) p_t2 p_ty2 ctx__ == true) (ensures (linear_typed p_ctx (LLet p_t1 p_t2) p_ty2 ctx__ == true))) = admit ()
 
 (* resource_stays_consumed (matches Coq: Lemma resource_stays_consumed) *)
-let resource_stays_consumed_obligation () : Tot bool = (0 = 0)
-let resource_stays_consumed_lemma () : Lemma (requires True) (ensures (resource_stays_consumed_obligation () == resource_stays_consumed_obligation ())) = ()
+let resource_stays_consumed (p_rm: _) (p_x: _) : Lemma (resource_state p_x (consume_resource p_x p_rm) == Consumed) = admit ()
 
 (* TYPE_002_12 (matches Coq: Theorem TYPE_002_12) *)
-let type_002_12_obligation () : Tot bool = (0 = 0)
-let type_002_12_lemma () : Lemma (requires True) (ensures (type_002_12_obligation () == type_002_12_obligation ())) = ()
+let type_002_12 (p_rm: _) (p_x: _) : Lemma (requires (resource_state p_x p_rm == Consumed) (ensures (resource_state p_x p_rm == Consumed /\ resource_state p_x (consume_resource p_x p_rm) == Consumed))) = admit ()

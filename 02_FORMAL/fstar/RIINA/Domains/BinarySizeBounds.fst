@@ -125,81 +125,61 @@ let total_rom_size (p_layout: rom_layout) : Tot nat =
   p_layout.f_rom_text + p_layout.f_rom_rodata + p_layout.f_rom_init_data
 
 (* PERF_002_01 (matches Coq: Theorem PERF_002_01) *)
-let perf_002_01_obligation () : Tot bool = (0 = 0)
-let perf_002_01_lemma () : Lemma (requires True) (ensures (perf_002_01_obligation () == perf_002_01_obligation ())) = ()
+let perf_002_01 (p_arch: arch_params) (p_i: instr) : Lemma (instr_size p_arch p_i <= p_arch.f_arch_max_instr_size) = admit ()
 
 (* PERF_002_02 (matches Coq: Theorem PERF_002_02) *)
-let perf_002_02_obligation () : Tot bool = (0 = 0)
-let perf_002_02_lemma () : Lemma (requires True) (ensures (perf_002_02_obligation () == perf_002_02_obligation ())) = ()
+let perf_002_02 (p_arch: arch_params) (p_bb: nat) : Lemma (bb_size p_arch p_bb == length p_bb * arch_max_instr_size p_arch) = admit ()
 
 (* sum_bb_sizes_app (matches Coq: Lemma sum_bb_sizes_app) *)
-let sum_bb_sizes_app_obligation () : Tot bool = (0 = 0)
-let sum_bb_sizes_app_lemma () : Lemma (requires True) (ensures (sum_bb_sizes_app_obligation () == sum_bb_sizes_app_obligation ())) = ()
+let sum_bb_sizes_app (p_arch: _) (p_bbs1: _) (p_bbs2: _) : Lemma (sum_bb_sizes p_arch (p_bbs1 ++ p_bbs2) == sum_bb_sizes p_arch p_bbs1 + sum_bb_sizes p_arch p_bbs2) = admit ()
 
 (* PERF_002_03 (matches Coq: Theorem PERF_002_03) *)
-let perf_002_03_obligation () : Tot bool = (0 = 0)
-let perf_002_03_lemma () : Lemma (requires True) (ensures (perf_002_03_obligation () == perf_002_03_obligation ())) = ()
+let perf_002_03 (p_arch: arch_params) (p_f: ty__function) : Lemma (func_size p_arch p_f == sum_bb_sizes p_arch (p_f.f_func_blocks) + arch_call_overhead p_arch + arch_ret_overhead p_arch) = admit ()
 
 (* sum_func_sizes_app (matches Coq: Lemma sum_func_sizes_app) *)
-let sum_func_sizes_app_obligation () : Tot bool = (0 = 0)
-let sum_func_sizes_app_lemma () : Lemma (requires True) (ensures (sum_func_sizes_app_obligation () == sum_func_sizes_app_obligation ())) = ()
+let sum_func_sizes_app (p_arch: _) (p_funcs1: _) (p_funcs2: _) : Lemma (sum_func_sizes p_arch (p_funcs1 ++ p_funcs2) == sum_func_sizes p_arch p_funcs1 + sum_func_sizes p_arch p_funcs2) = admit ()
 
 (* PERF_002_04 (matches Coq: Theorem PERF_002_04) *)
-let perf_002_04_obligation () : Tot bool = (0 = 0)
-let perf_002_04_lemma () : Lemma (requires True) (ensures (perf_002_04_obligation () == perf_002_04_obligation ())) = ()
+let perf_002_04 (p_arch: arch_params) (p_m: ty__module) : Lemma (mod_size p_arch p_m == sum_func_sizes p_arch (p_m.f_mod_functions) + mod_data p_m) = admit ()
 
 (* sum_mod_sizes_app (matches Coq: Lemma sum_mod_sizes_app) *)
-let sum_mod_sizes_app_obligation () : Tot bool = (0 = 0)
-let sum_mod_sizes_app_lemma () : Lemma (requires True) (ensures (sum_mod_sizes_app_obligation () == sum_mod_sizes_app_obligation ())) = ()
+let sum_mod_sizes_app (p_arch: _) (p_mods1: _) (p_mods2: _) : Lemma (sum_mod_sizes p_arch (p_mods1 ++ p_mods2) == sum_mod_sizes p_arch p_mods1 + sum_mod_sizes p_arch p_mods2) = admit ()
 
 (* PERF_002_05 (matches Coq: Theorem PERF_002_05) *)
-let perf_002_05_obligation () : Tot bool = (0 = 0)
-let perf_002_05_lemma () : Lemma (requires True) (ensures (perf_002_05_obligation () == perf_002_05_obligation ())) = ()
+let perf_002_05 (p_arch: arch_params) (p_p: program) : Lemma (prog_size p_arch p_p == sum_mod_sizes p_arch (p_p.f_prog_modules) + prog_startup p_p) = admit ()
 
 (* data_section_size_app (matches Coq: Lemma data_section_size_app) *)
-let data_section_size_app_obligation () : Tot bool = (0 = 0)
-let data_section_size_app_lemma () : Lemma (requires True) (ensures (data_section_size_app_obligation () == data_section_size_app_obligation ())) = ()
+let data_section_size_app (p_ds1: _) (p_ds2: _) : Lemma (data_section_size (p_ds1 ++ p_ds2) == data_section_size p_ds1 + data_section_size p_ds2) = admit ()
 
 (* PERF_002_06 (matches Coq: Theorem PERF_002_06) *)
-let perf_002_06_obligation () : Tot bool = (0 = 0)
-let perf_002_06_lemma () : Lemma (requires True) (ensures (perf_002_06_obligation () == perf_002_06_obligation ())) = ()
+let perf_002_06 (p_ds: nat) (p_var_size: nat) : Lemma (requires (In p_var_size p_ds == true) (ensures (p_var_size <= data_section_size p_ds))) = admit ()
 
 (* bss_section_size_app (matches Coq: Lemma bss_section_size_app) *)
-let bss_section_size_app_obligation () : Tot bool = (0 = 0)
-let bss_section_size_app_lemma () : Lemma (requires True) (ensures (bss_section_size_app_obligation () == bss_section_size_app_obligation ())) = ()
+let bss_section_size_app (p_bs1: _) (p_bs2: _) : Lemma (bss_section_size (p_bs1 ++ p_bs2) == bss_section_size p_bs1 + bss_section_size p_bs2) = admit ()
 
 (* PERF_002_07 (matches Coq: Theorem PERF_002_07) *)
-let perf_002_07_obligation () : Tot bool = (0 = 0)
-let perf_002_07_lemma () : Lemma (requires True) (ensures (perf_002_07_obligation () == perf_002_07_obligation ())) = ()
+let perf_002_07 (p_bs: nat) (p_var_size: nat) : Lemma (requires (In p_var_size p_bs == true) (ensures (p_var_size <= bss_section_size p_bs))) = admit ()
 
 (* PERF_002_08 (matches Coq: Theorem PERF_002_08) *)
-let perf_002_08_obligation () : Tot bool = (0 = 0)
-let perf_002_08_lemma () : Lemma (requires True) (ensures (perf_002_08_obligation () == perf_002_08_obligation ())) = ()
+let perf_002_08 (p_arch: arch_params) (p_sf: stack_frame) (p_max_locals: nat) (p_max_saved_regs: nat) : Lemma (requires (p_sf.f_sf_locals <= p_max_locals /\ p_sf.f_sf_saved_regs <= p_max_saved_regs) (ensures (stack_frame_size p_arch p_sf <= p_max_locals * arch_word_size p_arch + p_max_saved_regs * arch_word_size p_arch))) = admit ()
 
 (* PERF_002_09 (matches Coq: Theorem PERF_002_09) *)
-let perf_002_09_obligation () : Tot bool = (0 = 0)
-let perf_002_09_lemma () : Lemma (requires True) (ensures (perf_002_09_obligation () == perf_002_09_obligation ())) = ()
+let perf_002_09 (p_info: inline_info) (p_call_overhead: nat) : Lemma (requires (p_info.f_inline_call_sites >= 1) (ensures (inline_expanded_size p_info == inline_original_size p_info * inline_call_sites p_info))) = admit ()
 
 (* PERF_002_10 (matches Coq: Theorem PERF_002_10) *)
-let perf_002_10_obligation () : Tot bool = (0 = 0)
-let perf_002_10_lemma () : Lemma (requires True) (ensures (perf_002_10_obligation () == perf_002_10_obligation ())) = ()
+let perf_002_10 (p_info: loop_info) : Lemma (unrolled_loop_size p_info == loop_body_size p_info * loop_unroll_factor p_info) = admit ()
 
 (* PERF_002_11 (matches Coq: Theorem PERF_002_11) *)
-let perf_002_11_obligation () : Tot bool = (0 = 0)
-let perf_002_11_lemma () : Lemma (requires True) (ensures (perf_002_11_obligation () == perf_002_11_obligation ())) = ()
+let perf_002_11 (p_info: generic_info) : Lemma (monomorphized_size p_info == generic_template_size p_info * generic_instantiation_count p_info) = admit ()
 
 (* PERF_002_12 (matches Coq: Theorem PERF_002_12) *)
-let perf_002_12_obligation () : Tot bool = (0 = 0)
-let perf_002_12_lemma () : Lemma (requires True) (ensures (perf_002_12_obligation () == perf_002_12_obligation ())) = ()
+let perf_002_12 (p_arch: arch_params) (p_layout: rom_layout) : Lemma (requires (total_rom_size p_layout <= p_arch.f_arch_flash_size) (ensures (p_layout.f_rom_text <= p_arch.f_arch_flash_size /\ p_layout.f_rom_rodata <= p_arch.f_arch_flash_size /\ p_layout.f_rom_init_data <= p_arch.f_arch_flash_size))) = admit ()
 
 (* PERF_002_13 (matches Coq: Theorem PERF_002_13) *)
-let perf_002_13_obligation () : Tot bool = (0 = 0)
-let perf_002_13_lemma () : Lemma (requires True) (ensures (perf_002_13_obligation () == perf_002_13_obligation ())) = ()
+let perf_002_13 (p_arch: arch_params) : Lemma (bb_size p_arch [] == 0) = admit ()
 
 (* PERF_002_14 (matches Coq: Theorem PERF_002_14) *)
-let perf_002_14_obligation () : Tot bool = (0 = 0)
-let perf_002_14_lemma () : Lemma (requires True) (ensures (perf_002_14_obligation () == perf_002_14_obligation ())) = ()
+let perf_002_14 (p_arch: arch_params) (p_data: nat) (p_bss: nat) : Lemma (fn_let m : == mkmod [] p_data p_bss id_in mod_size p_arch m = p_data) = admit ()
 
 (* PERF_002_15 (matches Coq: Theorem PERF_002_15) *)
-let perf_002_15_obligation () : Tot bool = (0 = 0)
-let perf_002_15_lemma () : Lemma (requires True) (ensures (perf_002_15_obligation () == perf_002_15_obligation ())) = ()
+let perf_002_15 (p_t: nat) (p_r: nat) (p_d: nat) : Lemma (fn_let layout : == mkromlayout p_t p_r p_d id_in total_rom_size layout = p_t + p_r + p_d) = admit ()

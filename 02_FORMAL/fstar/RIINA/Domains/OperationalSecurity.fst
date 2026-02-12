@@ -74,101 +74,76 @@ let layers_active (p_layer1: bool) (p_layer2: bool) (p_layer3: bool) (p_layer4: 
   andb p_layer1 (andb p_layer2 (andb p_layer3 (andb p_layer4 p_layer5)))
 
 (* opsec_001_shamir_security (matches Coq: Theorem opsec_001_shamir_security) *)
-let opsec_001_shamir_security_obligation () : Tot bool = (0 = 0)
-let opsec_001_shamir_security_lemma () : Lemma (requires True) (ensures (opsec_001_shamir_security_obligation () == opsec_001_shamir_security_obligation ())) = ()
+let opsec_001_shamir_security (p_scheme: nat) (p_shares: nat) : Lemma (length p_shares < threshold p_scheme) = admit ()
 
 (* opsec_002_shamir_reconstruction (matches Coq: Theorem opsec_002_shamir_reconstruction) *)
-let opsec_002_shamir_reconstruction_obligation () : Tot bool = (0 = 0)
-let opsec_002_shamir_reconstruction_lemma () : Lemma (requires True) (ensures (opsec_002_shamir_reconstruction_obligation () == opsec_002_shamir_reconstruction_obligation ())) = ()
+let opsec_002_shamir_reconstruction (p_scheme: nat) (p_shares: nat) : Lemma (requires (length p_shares >= threshold p_scheme /\ length p_shares <= total_shares p_scheme) (ensures (length p_shares >= threshold p_scheme))) = admit ()
 
 (* opsec_003_no_single_keyholder (matches Coq: Theorem opsec_003_no_single_keyholder) *)
-let opsec_003_no_single_keyholder_obligation () : Tot bool = (0 = 0)
-let opsec_003_no_single_keyholder_lemma () : Lemma (requires True) (ensures (opsec_003_no_single_keyholder_obligation () == opsec_003_no_single_keyholder_obligation ())) = ()
+let opsec_003_no_single_keyholder (p_scheme: nat) : Lemma (requires (threshold p_scheme > 1) (ensures (1 < threshold p_scheme))) = admit ()
 
 (* opsec_004_geographic_distribution (matches Coq: Theorem opsec_004_geographic_distribution) *)
-let opsec_004_geographic_distribution_obligation () : Tot bool = (0 = 0)
-let opsec_004_geographic_distribution_lemma () : Lemma (requires True) (ensures (opsec_004_geographic_distribution_obligation () == opsec_004_geographic_distribution_obligation ())) = ()
+let opsec_004_geographic_distribution (p_shares: nat) (p_locations: (list nat)) : Lemma (requires (length p_shares == length p_locations /\ NoDup p_locations == true) (ensures (length (nodup Nat.eq_dec p_locations) == length p_locations))) = admit ()
 
 (* opsec_005_multiparty_required (matches Coq: Theorem opsec_005_multiparty_required) *)
-let opsec_005_multiparty_required_obligation () : Tot bool = (0 = 0)
-let opsec_005_multiparty_required_lemma () : Lemma (requires True) (ensures (opsec_005_multiparty_required_obligation () == opsec_005_multiparty_required_obligation ())) = ()
+let opsec_005_multiparty_required (p_mpa: nat) (p_approvals: (list nat)) : Lemma (requires (required_approvers p_mpa > 1 /\ length p_approvals >= required_approvers p_mpa) (ensures (length p_approvals >= required_approvers p_mpa))) = admit ()
 
 (* opsec_006_social_engineering_insufficient (matches Coq: Theorem opsec_006_social_engineering_insufficient) *)
-let opsec_006_social_engineering_insufficient_obligation () : Tot bool = (0 = 0)
-let opsec_006_social_engineering_insufficient_lemma () : Lemma (requires True) (ensures (opsec_006_social_engineering_insufficient_obligation () == opsec_006_social_engineering_insufficient_obligation ())) = ()
+let opsec_006_social_engineering_insufficient (p_mpa: nat) (p_compromised: nat) : Lemma (requires (required_approvers p_mpa > 1 /\ p_compromised < required_approvers p_mpa) (ensures (p_compromised < required_approvers p_mpa))) = admit ()
 
 (* opsec_007_insider_bounded (matches Coq: Theorem opsec_007_insider_bounded) *)
-let opsec_007_insider_bounded_obligation () : Tot bool = (0 = 0)
-let opsec_007_insider_bounded_lemma () : Lemma (requires True) (ensures (opsec_007_insider_bounded_obligation () == opsec_007_insider_bounded_obligation ())) = ()
+let opsec_007_insider_bounded (p_budget: nat) : Lemma (requires (budget_ok p_budget == true) (ensures (queries_used p_budget <= query_limit p_budget))) = admit ()
 
 (* opsec_008_export_limit (matches Coq: Theorem opsec_008_export_limit) *)
-let opsec_008_export_limit_obligation () : Tot bool = (0 = 0)
-let opsec_008_export_limit_lemma () : Lemma (requires True) (ensures (opsec_008_export_limit_obligation () == opsec_008_export_limit_obligation ())) = ()
+let opsec_008_export_limit (p_budget: nat) : Lemma (requires (budget_ok p_budget == true) (ensures (exports_used p_budget <= export_limit p_budget))) = admit ()
 
 (* opsec_009_duress_detection (matches Coq: Theorem opsec_009_duress_detection) *)
-let opsec_009_duress_detection_obligation () : Tot bool = (0 = 0)
-let opsec_009_duress_detection_lemma () : Lemma (requires True) (ensures (opsec_009_duress_detection_obligation () == opsec_009_duress_detection_obligation ())) = ()
+let opsec_009_duress_detection (p_input: (list nat)) (p_duress_suffix: (list nat)) : Lemma (requires (is_duress p_input p_duress_suffix == true) (ensures (is_duress p_input p_duress_suffix == true))) = admit ()
 
 (* opsec_010_dead_man_switch (matches Coq: Theorem opsec_010_dead_man_switch) *)
-let opsec_010_dead_man_switch_obligation () : Tot bool = (0 = 0)
-let opsec_010_dead_man_switch_lemma () : Lemma (requires True) (ensures (opsec_010_dead_man_switch_obligation () == opsec_010_dead_man_switch_obligation ())) = ()
+let opsec_010_dead_man_switch (p_last_checkin: nat) (p_current_time: nat) (p_interval: nat) : Lemma (requires (dead_man_triggered p_last_checkin p_current_time p_interval == true) (ensures (p_last_checkin + p_interval * 2 < p_current_time))) = admit ()
 
 (* opsec_011_time_window (matches Coq: Theorem opsec_011_time_window) *)
-let opsec_011_time_window_obligation () : Tot bool = (0 = 0)
-let opsec_011_time_window_lemma () : Lemma (requires True) (ensures (opsec_011_time_window_obligation () == opsec_011_time_window_obligation ())) = ()
+let opsec_011_time_window (p_approval_time: nat) (p_current_time: nat) (p_window: nat) : Lemma (requires (within_time_window p_approval_time p_current_time p_window == true) (ensures (p_current_time - p_approval_time <= p_window))) = admit ()
 
 (* opsec_012_role_separation (matches Coq: Theorem opsec_012_role_separation) *)
-let opsec_012_role_separation_obligation () : Tot bool = (0 = 0)
-let opsec_012_role_separation_lemma () : Lemma (requires True) (ensures (opsec_012_role_separation_obligation () == opsec_012_role_separation_obligation ())) = ()
+let opsec_012_role_separation (p_roles: (list nat)) : Lemma (requires (roles_distinct p_roles == true) (ensures (NoDup p_roles == true))) = admit ()
 
 (* opsec_013_anomaly_detection (matches Coq: Theorem opsec_013_anomaly_detection) *)
-let opsec_013_anomaly_detection_obligation () : Tot bool = (0 = 0)
-let opsec_013_anomaly_detection_lemma () : Lemma (requires True) (ensures (opsec_013_anomaly_detection_obligation () == opsec_013_anomaly_detection_obligation ())) = ()
+let opsec_013_anomaly_detection (p_score: nat) (p_threshold: nat) : Lemma (requires (anomaly_detected p_score p_threshold == true) (ensures (p_threshold < p_score))) = admit ()
 
 (* opsec_014_audit_complete (matches Coq: Theorem opsec_014_audit_complete) *)
-let opsec_014_audit_complete_obligation () : Tot bool = (0 = 0)
-let opsec_014_audit_complete_lemma () : Lemma (requires True) (ensures (opsec_014_audit_complete_obligation () == opsec_014_audit_complete_obligation ())) = ()
+let opsec_014_audit_complete (p_entries: (list nat)) (p_action: nat) : Lemma (requires (action_audited p_entries p_action == true) (ensures ((exists p_e. In p_e p_entries == true) /\ audit_action e == p_action))) = admit ()
 
 (* opsec_015_hardware_diversity (matches Coq: Theorem opsec_015_hardware_diversity) *)
-let opsec_015_hardware_diversity_obligation () : Tot bool = (0 = 0)
-let opsec_015_hardware_diversity_lemma () : Lemma (requires True) (ensures (opsec_015_hardware_diversity_obligation () == opsec_015_hardware_diversity_obligation ())) = ()
+let opsec_015_hardware_diversity (p_p1: nat) (p_p2: nat) : Lemma (requires (platforms_independent p_p1 p_p2 == true) (ensures (~(p_p1 == p_p2)))) = admit ()
 
 (* opsec_016_nversion_consensus (matches Coq: Theorem opsec_016_nversion_consensus) *)
-let opsec_016_nversion_consensus_obligation () : Tot bool = (0 = 0)
-let opsec_016_nversion_consensus_lemma () : Lemma (requires True) (ensures (opsec_016_nversion_consensus_obligation () == opsec_016_nversion_consensus_obligation ())) = ()
+let opsec_016_nversion_consensus (p_results: (list nat)) (p_expected: nat) : Lemma (requires (majority_agrees p_results p_expected == true) (ensures (count_occ Nat.eq_dec p_results p_expected > length p_results / 2))) = admit ()
 
 (* opsec_017_time_lock (matches Coq: Theorem opsec_017_time_lock) *)
-let opsec_017_time_lock_obligation () : Tot bool = (0 = 0)
-let opsec_017_time_lock_lemma () : Lemma (requires True) (ensures (opsec_017_time_lock_obligation () == opsec_017_time_lock_obligation ())) = ()
+let opsec_017_time_lock (p_unlock_time: nat) (p_current_time: nat) : Lemma (requires (time_lock_expired p_unlock_time p_current_time == true) (ensures (p_unlock_time <= p_current_time))) = admit ()
 
 (* opsec_018_cancellation_window (matches Coq: Theorem opsec_018_cancellation_window) *)
-let opsec_018_cancellation_window_obligation () : Tot bool = (0 = 0)
-let opsec_018_cancellation_window_lemma () : Lemma (requires True) (ensures (opsec_018_cancellation_window_obligation () == opsec_018_cancellation_window_obligation ())) = ()
+let opsec_018_cancellation_window (p_op_time: nat) (p_current_time: nat) (p_cancel_window: nat) : Lemma (requires (in_cancellation_window p_op_time p_current_time p_cancel_window == true) (ensures (p_current_time < p_op_time + p_cancel_window))) = admit ()
 
 (* opsec_019_principal_uniqueness (matches Coq: Theorem opsec_019_principal_uniqueness) *)
-let opsec_019_principal_uniqueness_obligation () : Tot bool = (0 = 0)
-let opsec_019_principal_uniqueness_lemma () : Lemma (requires True) (ensures (opsec_019_principal_uniqueness_obligation () == opsec_019_principal_uniqueness_obligation ())) = ()
+let opsec_019_principal_uniqueness (p_approvals: (list nat)) : Lemma (requires (principals_unique p_approvals == true) (ensures (NoDup (map (fn_fun a => principal_id (approver a)) p_approvals) == true))) = admit ()
 
 (* opsec_020_channel_diversity (matches Coq: Theorem opsec_020_channel_diversity) *)
-let opsec_020_channel_diversity_obligation () : Tot bool = (0 = 0)
-let opsec_020_channel_diversity_lemma () : Lemma (requires True) (ensures (opsec_020_channel_diversity_obligation () == opsec_020_channel_diversity_obligation ())) = ()
+let opsec_020_channel_diversity (p_approvals: (list nat)) (p_channels: (list nat)) : Lemma (requires (p_channels == map (fn_fun a => principal_channel (approver a)) p_approvals /\ length (nodup Nat.eq_dec p_channels) > 1) (ensures (channels_diverse p_approvals == true))) = admit ()
 
 (* opsec_021_coercion_resistant (matches Coq: Theorem opsec_021_coercion_resistant) *)
-let opsec_021_coercion_resistant_obligation () : Tot bool = (0 = 0)
-let opsec_021_coercion_resistant_lemma () : Lemma (requires True) (ensures (opsec_021_coercion_resistant_obligation () == opsec_021_coercion_resistant_obligation ())) = ()
+let opsec_021_coercion_resistant (p_scheme: nat) (p_compromised: nat) : Lemma (requires (p_compromised < threshold p_scheme) (ensures (p_compromised < threshold p_scheme))) = admit ()
 
 (* opsec_022_jurisdictional_spread (matches Coq: Theorem opsec_022_jurisdictional_spread) *)
-let opsec_022_jurisdictional_spread_obligation () : Tot bool = (0 = 0)
-let opsec_022_jurisdictional_spread_lemma () : Lemma (requires True) (ensures (opsec_022_jurisdictional_spread_obligation () == opsec_022_jurisdictional_spread_obligation ())) = ()
+let opsec_022_jurisdictional_spread (p_shares: nat) (p_jurisdictions: (list nat)) : Lemma (requires (jurisdictions_spread p_shares p_jurisdictions == true) (ensures (length (nodup Nat.eq_dec p_jurisdictions) >= 3))) = admit ()
 
 (* opsec_023_signatures_valid (matches Coq: Theorem opsec_023_signatures_valid) *)
-let opsec_023_signatures_valid_obligation () : Tot bool = (0 = 0)
-let opsec_023_signatures_valid_lemma () : Lemma (requires True) (ensures (opsec_023_signatures_valid_obligation () == opsec_023_signatures_valid_obligation ())) = ()
+let opsec_023_signatures_valid (p_approvals: (list nat)) : Lemma (requires (all_signatures_valid p_approvals == true) (ensures (Forall (fn_fun a => signature_valid a = true) p_approvals == true))) = admit ()
 
 (* opsec_024_budget_reset (matches Coq: Theorem opsec_024_budget_reset) *)
-let opsec_024_budget_reset_obligation () : Tot bool = (0 = 0)
-let opsec_024_budget_reset_lemma () : Lemma (requires True) (ensures (opsec_024_budget_reset_obligation () == opsec_024_budget_reset_obligation ())) = ()
+let opsec_024_budget_reset (p_b: nat) : Lemma (budget_ok (reset_budget p_b) == true) = admit ()
 
 (* opsec_025_defense_in_depth (matches Coq: Theorem opsec_025_defense_in_depth) *)
-let opsec_025_defense_in_depth_obligation () : Tot bool = (0 = 0)
-let opsec_025_defense_in_depth_lemma () : Lemma (requires True) (ensures (opsec_025_defense_in_depth_obligation () == opsec_025_defense_in_depth_obligation ())) = ()
+let opsec_025_defense_in_depth (p_l1: _) (p_l2: _) (p_l3: _) (p_l4: _) (p_l5: _) : Lemma (requires (layers_active p_l1 p_l2 p_l3 p_l4 p_l5 == true) (ensures (p_l1 == true /\ p_l2 == true /\ p_l3 == true /\ p_l4 == true /\ p_l5 == true))) = admit ()

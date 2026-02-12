@@ -72,81 +72,61 @@ let io_ni_safe (p_op: nat) : Tot bool =
   (0 = 0)
 
 (* plat_001_universal_console (matches Coq: Theorem plat_001_universal_console) *)
-let plat_001_universal_console_obligation () : Tot bool = (0 = 0)
-let plat_001_universal_console_lemma () : Lemma (requires True) (ensures (plat_001_universal_console_obligation () == plat_001_universal_console_obligation ())) = ()
+let plat_001_universal_console (p_p: _) : Lemma (platform_has_cap p_p CapConsole == true) = admit ()
 
 (* plat_001_universal_timer (matches Coq: Theorem plat_001_universal_timer) *)
-let plat_001_universal_timer_obligation () : Tot bool = (0 = 0)
-let plat_001_universal_timer_lemma () : Lemma (requires True) (ensures (plat_001_universal_timer_obligation () == plat_001_universal_timer_obligation ())) = ()
+let plat_001_universal_timer (p_p: _) : Lemma (platform_has_cap p_p CapTimer == true) = admit ()
 
 (* plat_001_mobile_sensor (matches Coq: Theorem plat_001_mobile_sensor) *)
-let plat_001_mobile_sensor_obligation () : Tot bool = (0 = 0)
-let plat_001_mobile_sensor_lemma () : Lemma (requires True) (ensures (plat_001_mobile_sensor_obligation () == plat_001_mobile_sensor_obligation ())) = ()
+let plat_001_mobile_sensor (p_p: _) : Lemma (requires (p_p == PAndroid \/ p_p == PIos) (ensures (platform_has_cap p_p CapSensor == true))) = admit ()
 
 (* plat_001_mobile_camera (matches Coq: Theorem plat_001_mobile_camera) *)
-let plat_001_mobile_camera_obligation () : Tot bool = (0 = 0)
-let plat_001_mobile_camera_lemma () : Lemma (requires True) (ensures (plat_001_mobile_camera_obligation () == plat_001_mobile_camera_obligation ())) = ()
+let plat_001_mobile_camera (p_p: _) : Lemma (requires (p_p == PAndroid \/ p_p == PIos) (ensures (platform_has_cap p_p CapCamera == true))) = admit ()
 
 (* plat_001_universal_network (matches Coq: Theorem plat_001_universal_network) *)
-let plat_001_universal_network_obligation () : Tot bool = (0 = 0)
-let plat_001_universal_network_lemma () : Lemma (requires True) (ensures (plat_001_universal_network_obligation () == plat_001_universal_network_obligation ())) = ()
+let plat_001_universal_network (p_p: _) : Lemma (platform_has_cap p_p CapNetwork == true) = admit ()
 
 (* plat_002_wasm_no_filesystem (matches Coq: Theorem plat_002_wasm_no_filesystem) *)
-let plat_002_wasm_no_filesystem_obligation () : Tot bool = (0 = 0)
-let plat_002_wasm_no_filesystem_lemma () : Lemma (requires True) (ensures (plat_002_wasm_no_filesystem_obligation () == plat_002_wasm_no_filesystem_obligation ())) = ()
+let plat_002_wasm_no_filesystem () : Lemma (platform_has_cap PWasm32 CapFileSystem == false) = admit ()
 
 (* plat_002_wasm_no_sensor (matches Coq: Theorem plat_002_wasm_no_sensor) *)
-let plat_002_wasm_no_sensor_obligation () : Tot bool = (0 = 0)
-let plat_002_wasm_no_sensor_lemma () : Lemma (requires True) (ensures (plat_002_wasm_no_sensor_obligation () == plat_002_wasm_no_sensor_obligation ())) = ()
+let plat_002_wasm_no_sensor () : Lemma (platform_has_cap PWasm32 CapSensor == false) = admit ()
 
 (* plat_002_wasm_no_camera (matches Coq: Theorem plat_002_wasm_no_camera) *)
-let plat_002_wasm_no_camera_obligation () : Tot bool = (0 = 0)
-let plat_002_wasm_no_camera_lemma () : Lemma (requires True) (ensures (plat_002_wasm_no_camera_obligation () == plat_002_wasm_no_camera_obligation ())) = ()
+let plat_002_wasm_no_camera () : Lemma (platform_has_cap PWasm32 CapCamera == false) = admit ()
 
 (* plat_002_native_no_dom (matches Coq: Theorem plat_002_native_no_dom) *)
-let plat_002_native_no_dom_obligation () : Tot bool = (0 = 0)
-let plat_002_native_no_dom_lemma () : Lemma (requires True) (ensures (plat_002_native_no_dom_obligation () == plat_002_native_no_dom_obligation ())) = ()
+let plat_002_native_no_dom () : Lemma (platform_has_cap PNative CapDOM == false) = admit ()
 
 (* plat_002_native_no_sensor (matches Coq: Theorem plat_002_native_no_sensor) *)
-let plat_002_native_no_sensor_obligation () : Tot bool = (0 = 0)
-let plat_002_native_no_sensor_lemma () : Lemma (requires True) (ensures (plat_002_native_no_sensor_obligation () == plat_002_native_no_sensor_obligation ())) = ()
+let plat_002_native_no_sensor () : Lemma (platform_has_cap PNative CapSensor == false) = admit ()
 
 (* plat_003_pure_compiles_everywhere (matches Coq: Theorem plat_003_pure_compiles_everywhere) *)
-let plat_003_pure_compiles_everywhere_obligation () : Tot bool = (0 = 0)
-let plat_003_pure_compiles_everywhere_lemma () : Lemma (requires True) (ensures (plat_003_pure_compiles_everywhere_obligation () == plat_003_pure_compiles_everywhere_obligation ())) = ()
+let plat_003_pure_compiles_everywhere (p_p: _) (p_name: _) : Lemma (can_compile p_p (mkpfunc p_name PEPure []) == true) = admit ()
 
 (* plat_003_net_compiles_everywhere (matches Coq: Theorem plat_003_net_compiles_everywhere) *)
-let plat_003_net_compiles_everywhere_obligation () : Tot bool = (0 = 0)
-let plat_003_net_compiles_everywhere_lemma () : Lemma (requires True) (ensures (plat_003_net_compiles_everywhere_obligation () == plat_003_net_compiles_everywhere_obligation ())) = ()
+let plat_003_net_compiles_everywhere (p_p: _) (p_name: _) : Lemma (can_compile p_p (mkpfunc p_name PENet [CapNetwork]) == true) = admit ()
 
 (* plat_004_public_input_safe (matches Coq: Theorem plat_004_public_input_safe) *)
-let plat_004_public_input_safe_obligation () : Tot bool = (0 = 0)
-let plat_004_public_input_safe_lemma () : Lemma (requires True) (ensures (plat_004_public_input_safe_obligation () == plat_004_public_input_safe_obligation ())) = ()
+let plat_004_public_input_safe (p_cap: _) (p_out_label: _) : Lemma (io_ni_safe (mkio p_cap PLPublic p_out_label) == true) = admit ()
 
 (* plat_004_secret_preserved (matches Coq: Theorem plat_004_secret_preserved) *)
-let plat_004_secret_preserved_obligation () : Tot bool = (0 = 0)
-let plat_004_secret_preserved_lemma () : Lemma (requires True) (ensures (plat_004_secret_preserved_obligation () == plat_004_secret_preserved_obligation ())) = ()
+let plat_004_secret_preserved (p_cap: _) : Lemma (io_ni_safe (mkio p_cap PLSecret PLSecret) == true) = admit ()
 
 (* plat_005_pure_platform_independent (matches Coq: Theorem plat_005_pure_platform_independent) *)
-let plat_005_pure_platform_independent_obligation () : Tot bool = (0 = 0)
-let plat_005_pure_platform_independent_lemma () : Lemma (requires True) (ensures (plat_005_pure_platform_independent_obligation () == plat_005_pure_platform_independent_obligation ())) = ()
+let plat_005_pure_platform_independent (p_p1: platform) (p_p2: platform) (p_e: _) : Lemma (pure_eval p_e == pure_eval p_e) = admit ()
 
 (* plat_005_add_independent (matches Coq: Theorem plat_005_add_independent) *)
-let plat_005_add_independent_obligation () : Tot bool = (0 = 0)
-let plat_005_add_independent_lemma () : Lemma (requires True) (ensures (plat_005_add_independent_obligation () == plat_005_add_independent_obligation ())) = ()
+let plat_005_add_independent (p_p1: platform) (p_p2: platform) (p_a: _) (p_b: _) : Lemma (p_a + p_b == p_a + p_b) = admit ()
 
 (* plat_005_bool_independent (matches Coq: Theorem plat_005_bool_independent) *)
-let plat_005_bool_independent_obligation () : Tot bool = (0 = 0)
-let plat_005_bool_independent_lemma () : Lemma (requires True) (ensures (plat_005_bool_independent_obligation () == plat_005_bool_independent_obligation ())) = ()
+let plat_005_bool_independent (p_p1: platform) (p_p2: platform) (p_b: _) : Lemma (negb p_b == negb p_b) = admit ()
 
 (* plat_006_dom_only_wasm (matches Coq: Theorem plat_006_dom_only_wasm) *)
-let plat_006_dom_only_wasm_obligation () : Tot bool = (0 = 0)
-let plat_006_dom_only_wasm_lemma () : Lemma (requires True) (ensures (plat_006_dom_only_wasm_obligation () == plat_006_dom_only_wasm_obligation ())) = ()
+let plat_006_dom_only_wasm (p_p: _) : Lemma (requires (platform_has_cap p_p CapDOM == true) (ensures (p_p == PWasm32))) = admit ()
 
 (* plat_006_push_mobile_only (matches Coq: Theorem plat_006_push_mobile_only) *)
-let plat_006_push_mobile_only_obligation () : Tot bool = (0 = 0)
-let plat_006_push_mobile_only_lemma () : Lemma (requires True) (ensures (plat_006_push_mobile_only_obligation () == plat_006_push_mobile_only_obligation ())) = ()
+let plat_006_push_mobile_only (p_p: _) : Lemma (requires (platform_has_cap p_p CapPushNotif == true) (ensures (p_p == PAndroid \/ p_p == PIos))) = admit ()
 
 (* plat_006_console_timer_universal (matches Coq: Theorem plat_006_console_timer_universal) *)
-let plat_006_console_timer_universal_obligation () : Tot bool = (0 = 0)
-let plat_006_console_timer_universal_lemma () : Lemma (requires True) (ensures (plat_006_console_timer_universal_obligation () == plat_006_console_timer_universal_obligation ())) = ()
+let plat_006_console_timer_universal (p_p: _) (p_name: _) : Lemma (can_compile p_p (mkpfunc p_name PEIO [CapConsole; CapTimer]) == true) = admit ()

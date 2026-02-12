@@ -43,89 +43,67 @@ let riina_overflow_config : overflow_prevention = {f_op_bounds_check_write=true;
 let test_buffer : buffer = {f_buf_size=100; f_buf_used=50}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* BOF_001_test_buffer_valid (matches Coq: Theorem BOF_001_test_buffer_valid) *)
-let bof_001_test_buffer_valid_obligation () : Tot bool = (0 = 0)
-let bof_001_test_buffer_valid_lemma () : Lemma (requires True) (ensures (bof_001_test_buffer_valid_obligation () == bof_001_test_buffer_valid_obligation ())) = ()
+let bof_001_test_buffer_valid () : Lemma (buffer_valid test_buffer == true) = admit ()
 
 (* BOF_002_can_write_bounds (matches Coq: Theorem BOF_002_can_write_bounds) *)
-let bof_002_can_write_bounds_obligation () : Tot bool = (0 = 0)
-let bof_002_can_write_bounds_lemma () : Lemma (requires True) (ensures (bof_002_can_write_bounds_obligation () == bof_002_can_write_bounds_obligation ())) = ()
+let bof_002_can_write_bounds () : Lemma (buffer_can_write test_buffer 50 == true) = admit ()
 
 (* BOF_003_cannot_write_beyond (matches Coq: Theorem BOF_003_cannot_write_beyond) *)
-let bof_003_cannot_write_beyond_obligation () : Tot bool = (0 = 0)
-let bof_003_cannot_write_beyond_lemma () : Lemma (requires True) (ensures (bof_003_cannot_write_beyond_obligation () == bof_003_cannot_write_beyond_obligation ())) = ()
+let bof_003_cannot_write_beyond () : Lemma (buffer_can_write test_buffer 51 == false) = admit ()
 
 (* BOF_004_can_read_used (matches Coq: Theorem BOF_004_can_read_used) *)
-let bof_004_can_read_used_obligation () : Tot bool = (0 = 0)
-let bof_004_can_read_used_lemma () : Lemma (requires True) (ensures (bof_004_can_read_used_obligation () == bof_004_can_read_used_obligation ())) = ()
+let bof_004_can_read_used () : Lemma (buffer_can_read test_buffer 0 50 == true) = admit ()
 
 (* BOF_005_cannot_read_beyond (matches Coq: Theorem BOF_005_cannot_read_beyond) *)
-let bof_005_cannot_read_beyond_obligation () : Tot bool = (0 = 0)
-let bof_005_cannot_read_beyond_lemma () : Lemma (requires True) (ensures (bof_005_cannot_read_beyond_obligation () == bof_005_cannot_read_beyond_obligation ())) = ()
+let bof_005_cannot_read_beyond () : Lemma (buffer_can_read test_buffer 0 51 == false) = admit ()
 
 (* BOF_006_riina_protected (matches Coq: Theorem BOF_006_riina_protected) *)
-let bof_006_riina_protected_obligation () : Tot bool = (0 = 0)
-let bof_006_riina_protected_lemma () : Lemma (requires True) (ensures (bof_006_riina_protected_obligation () == bof_006_riina_protected_obligation ())) = ()
+let bof_006_riina_protected () : Lemma (overflow_protected riina_overflow_config == true) = admit ()
 
 (* BOF_007_bounds_check_write (matches Coq: Theorem BOF_007_bounds_check_write) *)
-let bof_007_bounds_check_write_obligation () : Tot bool = (0 = 0)
-let bof_007_bounds_check_write_lemma () : Lemma (requires True) (ensures (bof_007_bounds_check_write_obligation () == bof_007_bounds_check_write_obligation ())) = ()
+let bof_007_bounds_check_write (p_p: _) (p_overflowprevention: _) : Lemma (requires (overflow_protected p_p == true) (ensures (p_p.f_op_bounds_check_write == true))) = admit ()
 
 (* BOF_008_bounds_check_read (matches Coq: Theorem BOF_008_bounds_check_read) *)
-let bof_008_bounds_check_read_obligation () : Tot bool = (0 = 0)
-let bof_008_bounds_check_read_lemma () : Lemma (requires True) (ensures (bof_008_bounds_check_read_obligation () == bof_008_bounds_check_read_obligation ())) = ()
+let bof_008_bounds_check_read (p_p: _) (p_overflowprevention: _) : Lemma (requires (overflow_protected p_p == true) (ensures (p_p.f_op_bounds_check_read == true))) = admit ()
 
 (* BOF_009_integer_overflow (matches Coq: Theorem BOF_009_integer_overflow) *)
-let bof_009_integer_overflow_obligation () : Tot bool = (0 = 0)
-let bof_009_integer_overflow_lemma () : Lemma (requires True) (ensures (bof_009_integer_overflow_obligation () == bof_009_integer_overflow_obligation ())) = ()
+let bof_009_integer_overflow (p_p: _) (p_overflowprevention: _) : Lemma (requires (overflow_protected p_p == true) (ensures (p_p.f_op_integer_overflow_check == true))) = admit ()
 
 (* BOF_010_stack_canaries (matches Coq: Theorem BOF_010_stack_canaries) *)
-let bof_010_stack_canaries_obligation () : Tot bool = (0 = 0)
-let bof_010_stack_canaries_lemma () : Lemma (requires True) (ensures (bof_010_stack_canaries_obligation () == bof_010_stack_canaries_obligation ())) = ()
+let bof_010_stack_canaries (p_p: _) (p_overflowprevention: _) : Lemma (requires (overflow_protected p_p == true) (ensures (p_p.f_op_stack_canaries == true))) = admit ()
 
 (* BOF_011_valid_implies_bounds (matches Coq: Theorem BOF_011_valid_implies_bounds) *)
-let bof_011_valid_implies_bounds_obligation () : Tot bool = (0 = 0)
-let bof_011_valid_implies_bounds_lemma () : Lemma (requires True) (ensures (bof_011_valid_implies_bounds_obligation () == bof_011_valid_implies_bounds_obligation ())) = ()
+let bof_011_valid_implies_bounds (p_b: _) (p_buffer: _) : Lemma (requires (buffer_valid p_b == true) (ensures ((buf_used p_b) (p_b.f_buf_size) == true))) = admit ()
 
 (* BOF_012_riina_bounds_write (matches Coq: Theorem BOF_012_riina_bounds_write) *)
-let bof_012_riina_bounds_write_obligation () : Tot bool = (0 = 0)
-let bof_012_riina_bounds_write_lemma () : Lemma (requires True) (ensures (bof_012_riina_bounds_write_obligation () == bof_012_riina_bounds_write_obligation ())) = ()
+let bof_012_riina_bounds_write () : Lemma (riina_overflow_config.f_op_bounds_check_write == true) = admit ()
 
 (* BOF_013_riina_canaries (matches Coq: Theorem BOF_013_riina_canaries) *)
-let bof_013_riina_canaries_obligation () : Tot bool = (0 = 0)
-let bof_013_riina_canaries_lemma () : Lemma (requires True) (ensures (bof_013_riina_canaries_obligation () == bof_013_riina_canaries_obligation ())) = ()
+let bof_013_riina_canaries () : Lemma (riina_overflow_config.f_op_stack_canaries == true) = admit ()
 
 (* BOF_014_zero_write_safe (matches Coq: Theorem BOF_014_zero_write_safe) *)
-let bof_014_zero_write_safe_obligation () : Tot bool = (0 = 0)
-let bof_014_zero_write_safe_lemma () : Lemma (requires True) (ensures (bof_014_zero_write_safe_obligation () == bof_014_zero_write_safe_obligation ())) = ()
+let bof_014_zero_write_safe (p_b: _) (p_buffer: _) : Lemma (requires (buffer_valid p_b == true) (ensures (buffer_can_write p_b 0 == true))) = admit ()
 
 (* BOF_015_complete_prevention (matches Coq: Theorem BOF_015_complete_prevention) *)
-let bof_015_complete_prevention_obligation () : Tot bool = (0 = 0)
-let bof_015_complete_prevention_lemma () : Lemma (requires True) (ensures (bof_015_complete_prevention_obligation () == bof_015_complete_prevention_obligation ())) = ()
+let bof_015_complete_prevention (p_p: _) (p_overflowprevention: _) : Lemma (requires (overflow_protected p_p == true) (ensures (p_p.f_op_bounds_check_write == true /\ p_p.f_op_bounds_check_read == true /\ p_p.f_op_integer_overflow_check == true /\ p_p.f_op_stack_canaries == true))) = admit ()
 
 (* BOF_016_write_bounded (matches Coq: Theorem BOF_016_write_bounded) *)
-let bof_016_write_bounded_obligation () : Tot bool = (0 = 0)
-let bof_016_write_bounded_lemma () : Lemma (requires True) (ensures (bof_016_write_bounded_obligation () == bof_016_write_bounded_obligation ())) = ()
+let bof_016_write_bounded (p_b: _) (p_n: _) (p_nat: _) : Lemma (requires (buffer_can_write (mkbuffer p_b 0) p_n == true) (ensures (p_n <= p_b))) = admit ()
 
 (* BOF_017_read_start_within (matches Coq: Theorem BOF_017_read_start_within) *)
-let bof_017_read_start_within_obligation () : Tot bool = (0 = 0)
-let bof_017_read_start_within_lemma () : Lemma (requires True) (ensures (bof_017_read_start_within_obligation () == bof_017_read_start_within_obligation ())) = ()
+let bof_017_read_start_within (p_b: _) (p_offset: _) (p_len: _) : Lemma (requires (buffer_can_read p_b p_offset p_len == true) (ensures (p_offset <= p_b.f_buf_used))) = admit ()
 
 (* BOF_018_zero_read_safe (matches Coq: Theorem BOF_018_zero_read_safe) *)
-let bof_018_zero_read_safe_obligation () : Tot bool = (0 = 0)
-let bof_018_zero_read_safe_lemma () : Lemma (requires True) (ensures (bof_018_zero_read_safe_obligation () == bof_018_zero_read_safe_obligation ())) = ()
+let bof_018_zero_read_safe (p_b: _) (p_buffer: _) : Lemma (buffer_can_read p_b 0 0 == true) = admit ()
 
 (* BOF_019_full_buffer_no_write (matches Coq: Theorem BOF_019_full_buffer_no_write) *)
-let bof_019_full_buffer_no_write_obligation () : Tot bool = (0 = 0)
-let bof_019_full_buffer_no_write_lemma () : Lemma (requires True) (ensures (bof_019_full_buffer_no_write_obligation () == bof_019_full_buffer_no_write_obligation ())) = ()
+let bof_019_full_buffer_no_write (p_sz: _) (p_nat: _) : Lemma (buffer_can_write (mkbuffer p_sz p_sz) 1 == false) = admit ()
 
 (* BOF_020_null_terminator_check (matches Coq: Theorem BOF_020_null_terminator_check) *)
-let bof_020_null_terminator_check_obligation () : Tot bool = (0 = 0)
-let bof_020_null_terminator_check_lemma () : Lemma (requires True) (ensures (bof_020_null_terminator_check_obligation () == bof_020_null_terminator_check_obligation ())) = ()
+let bof_020_null_terminator_check (p_p: _) (p_overflowprevention: _) : Lemma (requires (overflow_protected p_p == true) (ensures (p_p.f_op_null_terminator_check == true))) = admit ()
 
 (* BOF_021_valid_after_write (matches Coq: Theorem BOF_021_valid_after_write) *)
-let bof_021_valid_after_write_obligation () : Tot bool = (0 = 0)
-let bof_021_valid_after_write_lemma () : Lemma (requires True) (ensures (bof_021_valid_after_write_obligation () == bof_021_valid_after_write_obligation ())) = ()
+let bof_021_valid_after_write (p_b: _) (p_n: _) (p_nat: _) : Lemma (buffer_can_write (mkbuffer (p_b + p_n) p_b) p_n == true) = admit ()

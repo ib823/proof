@@ -113,113 +113,85 @@ let stage_terminates (p_s: stage) : Tot bool =
   (0 = 0)
 
 (* T_001_01_hex0_auditable (matches Coq: Theorem T_001_01_hex0_auditable) *)
-let t_001_01_hex0_auditable_obligation () : Tot bool = (0 = 0)
-let t_001_01_hex0_auditable_lemma () : Lemma (requires True) (ensures (t_001_01_hex0_auditable_obligation () == t_001_01_hex0_auditable_obligation ())) = ()
+let t_001_01_hex0_auditable (p_h: _) (p_hex0: _) : Lemma (requires (valid_hex0 p_h == true) (ensures (is_auditable p_h == true))) = admit ()
 
 (* T_001_02_hex0_correct (matches Coq: Theorem T_001_02_hex0_correct) *)
-let t_001_02_hex0_correct_obligation () : Tot bool = (0 = 0)
-let t_001_02_hex0_correct_lemma () : Lemma (requires True) (ensures (t_001_02_hex0_correct_obligation () == t_001_02_hex0_correct_obligation ())) = ()
+let t_001_02_hex0_correct (p_input: _) (p_list: _) (p_nat: _) : Lemma (hex0_semantics p_input == p_input) = admit ()
 
 (* T_001_03_stage_preserves_semantics (matches Coq: Theorem T_001_03_stage_preserves_semantics) *)
-let t_001_03_stage_preserves_semantics_obligation () : Tot bool = (0 = 0)
-let t_001_03_stage_preserves_semantics_lemma () : Lemma (requires True) (ensures (t_001_03_stage_preserves_semantics_obligation () == t_001_03_stage_preserves_semantics_obligation ())) = ()
+let t_001_03_stage_preserves_semantics (p_compiler: _) (p_src: _) (p_out: _) : Lemma (requires (p_out == source_semantics p_src) (ensures (preserves_semantics p_compiler p_src p_out == true))) = admit ()
 
 (* T_001_04_bootstrap_chain_valid (matches Coq: Theorem T_001_04_bootstrap_chain_valid) *)
-let t_001_04_bootstrap_chain_valid_obligation () : Tot bool = (0 = 0)
-let t_001_04_bootstrap_chain_valid_lemma () : Lemma (requires True) (ensures (t_001_04_bootstrap_chain_valid_obligation () == t_001_04_bootstrap_chain_valid_obligation ())) = ()
+let t_001_04_bootstrap_chain_valid (p_chain: _) : Lemma (requires ((forall s_ In s p_chain -> stage_hash s == sha256 (s.f_stage_binary))) (ensures (chain_valid p_chain == true))) = admit ()
 
 (* T_001_05_stage_deterministic (matches Coq: Theorem T_001_05_stage_deterministic) *)
-let t_001_05_stage_deterministic_obligation () : Tot bool = (0 = 0)
-let t_001_05_stage_deterministic_lemma () : Lemma (requires True) (ensures (t_001_05_stage_deterministic_obligation () == t_001_05_stage_deterministic_obligation ())) = ()
+let t_001_05_stage_deterministic (p_s: _) (p_input: _) : Lemma (compile (p_s.f_stage_binary) p_input == compile (p_s.f_stage_binary) p_input) = admit ()
 
 (* T_001_06_stage_terminates (matches Coq: Theorem T_001_06_stage_terminates) *)
-let t_001_06_stage_terminates_obligation () : Tot bool = (0 = 0)
-let t_001_06_stage_terminates_lemma () : Lemma (requires True) (ensures (t_001_06_stage_terminates_obligation () == t_001_06_stage_terminates_obligation ())) = ()
+let t_001_06_stage_terminates (p_s: _) : Lemma (stage_terminates p_s == true) = admit ()
 
 (* T_001_07_self_hosting_valid (matches Coq: Theorem T_001_07_self_hosting_valid) *)
-let t_001_07_self_hosting_valid_obligation () : Tot bool = (0 = 0)
-let t_001_07_self_hosting_valid_lemma () : Lemma (requires True) (ensures (t_001_07_self_hosting_valid_obligation () == t_001_07_self_hosting_valid_obligation ())) = ()
+let t_001_07_self_hosting_valid (p_c: _) : Lemma (compile (p_c.f_compiler_binary) (p_c.f_compiler_source) == compile (p_c.f_compiler_binary) (p_c.f_compiler_source)) = admit ()
 
 (* T_001_08_bootstrap_idempotent (matches Coq: Theorem T_001_08_bootstrap_idempotent) *)
-let t_001_08_bootstrap_idempotent_obligation () : Tot bool = (0 = 0)
-let t_001_08_bootstrap_idempotent_lemma () : Lemma (requires True) (ensures (t_001_08_bootstrap_idempotent_obligation () == t_001_08_bootstrap_idempotent_obligation ())) = ()
+let t_001_08_bootstrap_idempotent (p_b: _) (p_env: _) (p_src: _) : Lemma (requires (hermetic_build p_b == true /\ is_hermetic p_env == true) (ensures (p_b p_env p_src == p_b p_env p_src))) = admit ()
 
 (* T_001_09_no_network_access (matches Coq: Theorem T_001_09_no_network_access) *)
-let t_001_09_no_network_access_obligation () : Tot bool = (0 = 0)
-let t_001_09_no_network_access_lemma () : Lemma (requires True) (ensures (t_001_09_no_network_access_obligation () == t_001_09_no_network_access_obligation ())) = ()
+let t_001_09_no_network_access (p_env: _) : Lemma (requires (is_hermetic p_env == true) (ensures (p_env.f_env_network == false))) = admit ()
 
 (* T_001_10_filesystem_readonly (matches Coq: Theorem T_001_10_filesystem_readonly) *)
-let t_001_10_filesystem_readonly_obligation () : Tot bool = (0 = 0)
-let t_001_10_filesystem_readonly_lemma () : Lemma (requires True) (ensures (t_001_10_filesystem_readonly_obligation () == t_001_10_filesystem_readonly_obligation ())) = ()
+let t_001_10_filesystem_readonly (p_env: _) : Lemma (requires (is_hermetic p_env == true) (ensures (List.length (p_env.f_env_filesystem) > 0))) = admit ()
 
 (* T_001_11_clock_fixed (matches Coq: Theorem T_001_11_clock_fixed) *)
-let t_001_11_clock_fixed_obligation () : Tot bool = (0 = 0)
-let t_001_11_clock_fixed_lemma () : Lemma (requires True) (ensures (t_001_11_clock_fixed_obligation () == t_001_11_clock_fixed_obligation ())) = ()
+let t_001_11_clock_fixed (p_env: _) : Lemma (requires (is_hermetic p_env == true) (ensures (p_env.f_env_clock == 0))) = admit ()
 
 (* T_001_12_randomness_deterministic (matches Coq: Theorem T_001_12_randomness_deterministic) *)
-let t_001_12_randomness_deterministic_obligation () : Tot bool = (0 = 0)
-let t_001_12_randomness_deterministic_lemma () : Lemma (requires True) (ensures (t_001_12_randomness_deterministic_obligation () == t_001_12_randomness_deterministic_obligation ())) = ()
+let t_001_12_randomness_deterministic (p_env1: _) (p_env2: _) : Lemma (requires (p_env1.f_env_random_seed == p_env2.f_env_random_seed) (ensures (p_env1.f_env_random_seed == p_env2.f_env_random_seed))) = admit ()
 
 (* T_001_13_environment_clean (matches Coq: Theorem T_001_13_environment_clean) *)
-let t_001_13_environment_clean_obligation () : Tot bool = (0 = 0)
-let t_001_13_environment_clean_lemma () : Lemma (requires True) (ensures (t_001_13_environment_clean_obligation () == t_001_13_environment_clean_obligation ())) = ()
+let t_001_13_environment_clean (p_env: _) : Lemma (requires (is_hermetic p_env == true) (ensures (p_env.f_env_network == false /\ p_env.f_env_clock == 0))) = admit ()
 
 (* T_001_14_inputs_whitelisted (matches Coq: Theorem T_001_14_inputs_whitelisted) *)
-let t_001_14_inputs_whitelisted_obligation () : Tot bool = (0 = 0)
-let t_001_14_inputs_whitelisted_lemma () : Lemma (requires True) (ensures (t_001_14_inputs_whitelisted_obligation () == t_001_14_inputs_whitelisted_obligation ())) = ()
+let t_001_14_inputs_whitelisted (p_env: _) (p_h: _) : Lemma (requires (In p_h (p_env.f_env_inputs) == true) (ensures (In p_h (p_env.f_env_inputs) == true))) = admit ()
 
 (* T_001_15_hermetic_composition (matches Coq: Theorem T_001_15_hermetic_composition) *)
-let t_001_15_hermetic_composition_obligation () : Tot bool = (0 = 0)
-let t_001_15_hermetic_composition_lemma () : Lemma (requires True) (ensures (t_001_15_hermetic_composition_obligation () == t_001_15_hermetic_composition_obligation ())) = ()
+let t_001_15_hermetic_composition (p_b1: _) (p_b2: _) : Lemma (requires (hermetic_build p_b1 == true /\ hermetic_build p_b2 == true) (ensures (hermetic_build (fn_fun env src => p_b2 env (p_b1 env src)) == true))) = admit ()
 
 (* T_001_16_bit_reproducible (matches Coq: Theorem T_001_16_bit_reproducible) *)
-let t_001_16_bit_reproducible_obligation () : Tot bool = (0 = 0)
-let t_001_16_bit_reproducible_lemma () : Lemma (requires True) (ensures (t_001_16_bit_reproducible_obligation () == t_001_16_bit_reproducible_obligation ())) = ()
+let t_001_16_bit_reproducible (p_b: _) (p_env1: _) (p_env2: _) (p_src: _) : Lemma (requires (hermetic_build p_b == true /\ is_hermetic p_env1 == true /\ is_hermetic p_env2 == true /\ p_env1.f_env_inputs == p_env2.f_env_inputs) (ensures (p_b p_env1 p_src == p_b p_env2 p_src))) = admit ()
 
 (* T_001_17_hash_deterministic (matches Coq: Theorem T_001_17_hash_deterministic) *)
-let t_001_17_hash_deterministic_obligation () : Tot bool = (0 = 0)
-let t_001_17_hash_deterministic_lemma () : Lemma (requires True) (ensures (t_001_17_hash_deterministic_obligation () == t_001_17_hash_deterministic_obligation ())) = ()
+let t_001_17_hash_deterministic (p_b: _) (p_env: _) (p_src: _) : Lemma (requires (hermetic_build p_b == true /\ is_hermetic p_env == true) (ensures (sha256 (p_b p_env p_src) == sha256 (p_b p_env p_src)))) = admit ()
 
 (* T_001_18_diverse_double_compile (matches Coq: Theorem T_001_18_diverse_double_compile) *)
-let t_001_18_diverse_double_compile_obligation () : Tot bool = (0 = 0)
-let t_001_18_diverse_double_compile_lemma () : Lemma (requires True) (ensures (t_001_18_diverse_double_compile_obligation () == t_001_18_diverse_double_compile_obligation ())) = ()
+let t_001_18_diverse_double_compile (p_ddc: _) : Lemma (requires (valid_ddc p_ddc == true) (ensures (functionally_equivalent (p_ddc.f_compiler_a) (p_ddc.f_compiler_aprime) == true))) = admit ()
 
 (* T_001_19_cross_compile_equivalent (matches Coq: Theorem T_001_19_cross_compile_equivalent) *)
-let t_001_19_cross_compile_equivalent_obligation () : Tot bool = (0 = 0)
-let t_001_19_cross_compile_equivalent_lemma () : Lemma (requires True) (ensures (t_001_19_cross_compile_equivalent_obligation () == t_001_19_cross_compile_equivalent_obligation ())) = ()
+let t_001_19_cross_compile_equivalent (p_c1: _) (p_c2: _) (p_src: _) : Lemma (requires (functionally_equivalent p_c1 p_c2 == true) (ensures (compile (p_c1.f_compiler_binary) p_src == compile (p_c2.f_compiler_binary) p_src))) = admit ()
 
 (* T_001_20_source_hash_verified (matches Coq: Theorem T_001_20_source_hash_verified) *)
-let t_001_20_source_hash_verified_obligation () : Tot bool = (0 = 0)
-let t_001_20_source_hash_verified_lemma () : Lemma (requires True) (ensures (t_001_20_source_hash_verified_obligation () == t_001_20_source_hash_verified_obligation ())) = ()
+let t_001_20_source_hash_verified (p_s: _) : Lemma (requires (stage_valid p_s == true) (ensures (p_s.f_stage_hash == sha256 (p_s.f_stage_binary)))) = admit ()
 
 (* T_001_21_reproducibility_composition (matches Coq: Theorem T_001_21_reproducibility_composition) *)
-let t_001_21_reproducibility_composition_obligation () : Tot bool = (0 = 0)
-let t_001_21_reproducibility_composition_lemma () : Lemma (requires True) (ensures (t_001_21_reproducibility_composition_obligation () == t_001_21_reproducibility_composition_obligation ())) = ()
+let t_001_21_reproducibility_composition (p_b1: _) (p_b2: _) : Lemma (requires (hermetic_build p_b1 == true /\ hermetic_build p_b2 == true /\ forall env1 env2 src_ is_hermetic env1 == true /\ is_hermetic env2 == true /\ env1.f_env_inputs == env2.f_env_inputs) (ensures (p_b2 env1 (p_b1 env1 src) == p_b2 env2 (p_b1 env2 src)))) = admit ()
 
 (* T_001_22_ddc_setup (matches Coq: Theorem T_001_22_ddc_setup) *)
-let t_001_22_ddc_setup_obligation () : Tot bool = (0 = 0)
-let t_001_22_ddc_setup_lemma () : Lemma (requires True) (ensures (t_001_22_ddc_setup_obligation () == t_001_22_ddc_setup_obligation ())) = ()
+let t_001_22_ddc_setup (p_ddc: _) : Lemma (~((p_ddc.f_compiler_a).f_compiler_chain == (p_ddc.f_compiler_b).f_compiler_chain) \/ (p_ddc.f_compiler_a).f_compiler_chain == (p_ddc.f_compiler_b).f_compiler_chain) = admit ()
 
 (* T_001_23_ddc_stage_a (matches Coq: Theorem T_001_23_ddc_stage_a) *)
-let t_001_23_ddc_stage_a_obligation () : Tot bool = (0 = 0)
-let t_001_23_ddc_stage_a_lemma () : Lemma (requires True) (ensures (t_001_23_ddc_stage_a_obligation () == t_001_23_ddc_stage_a_obligation ())) = ()
+let t_001_23_ddc_stage_a (p_ddc: _) : Lemma (exists chain_ compiler_chain (p_ddc.f_compiler_a) == chain) = admit ()
 
 (* T_001_24_ddc_stage_b (matches Coq: Theorem T_001_24_ddc_stage_b) *)
-let t_001_24_ddc_stage_b_obligation () : Tot bool = (0 = 0)
-let t_001_24_ddc_stage_b_lemma () : Lemma (requires True) (ensures (t_001_24_ddc_stage_b_obligation () == t_001_24_ddc_stage_b_obligation ())) = ()
+let t_001_24_ddc_stage_b (p_ddc: _) : Lemma (exists chain_ compiler_chain (p_ddc.f_compiler_b) == chain) = admit ()
 
 (* T_001_25_ddc_stage_aprime (matches Coq: Theorem T_001_25_ddc_stage_aprime) *)
-let t_001_25_ddc_stage_aprime_obligation () : Tot bool = (0 = 0)
-let t_001_25_ddc_stage_aprime_lemma () : Lemma (requires True) (ensures (t_001_25_ddc_stage_aprime_obligation () == t_001_25_ddc_stage_aprime_obligation ())) = ()
+let t_001_25_ddc_stage_aprime (p_ddc: _) : Lemma (requires (valid_ddc p_ddc == true) (ensures (compile ((p_ddc.f_compiler_a).f_compiler_binary) ((p_ddc.f_compiler_b).f_compiler_source) == compile ((p_ddc.f_compiler_a).f_compiler_binary) ((p_ddc.f_compiler_b).f_compiler_source)))) = admit ()
 
 (* T_001_26_ddc_equivalence (matches Coq: Theorem T_001_26_ddc_equivalence) *)
-let t_001_26_ddc_equivalence_obligation () : Tot bool = (0 = 0)
-let t_001_26_ddc_equivalence_lemma () : Lemma (requires True) (ensures (t_001_26_ddc_equivalence_obligation () == t_001_26_ddc_equivalence_obligation ())) = ()
+let t_001_26_ddc_equivalence (p_ddc: _) : Lemma (requires (valid_ddc p_ddc == true) (ensures (functionally_equivalent (p_ddc.f_compiler_a) (p_ddc.f_compiler_aprime) == true))) = admit ()
 
 (* T_001_27_ddc_trojan_detected (matches Coq: Theorem T_001_27_ddc_trojan_detected) *)
-let t_001_27_ddc_trojan_detected_obligation () : Tot bool = (0 = 0)
-let t_001_27_ddc_trojan_detected_lemma () : Lemma (requires True) (ensures (t_001_27_ddc_trojan_detected_obligation () == t_001_27_ddc_trojan_detected_obligation ())) = ()
+let t_001_27_ddc_trojan_detected (p_ddc: _) : Lemma (requires (valid_ddc p_ddc == true /\ has_trojan (p_ddc.f_compiler_a) == true) (ensures (~(functionally_equivalent (p_ddc.f_compiler_a) (p_ddc.f_compiler_aprime) == true) \/ functionally_equivalent (p_ddc.f_compiler_a) (p_ddc.f_compiler_aprime) == true))) = admit ()
 
 (* T_001_28_ddc_confidence (matches Coq: Theorem T_001_28_ddc_confidence) *)
-let t_001_28_ddc_confidence_obligation () : Tot bool = (0 = 0)
-let t_001_28_ddc_confidence_lemma () : Lemma (requires True) (ensures (t_001_28_ddc_confidence_obligation () == t_001_28_ddc_confidence_obligation ())) = ()
+let t_001_28_ddc_confidence (p_ddc: _) : Lemma (requires (valid_ddc p_ddc == true) (ensures (p_ddc.f_equivalent == true))) = admit ()

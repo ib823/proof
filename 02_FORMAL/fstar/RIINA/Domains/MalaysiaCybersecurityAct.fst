@@ -72,113 +72,85 @@ let sector_critical (p_s: ncii_sector) : Tot bool =
   (0 = 0)
 
 (* obligation_1_risk_assessment (matches Coq: Theorem obligation_1_risk_assessment) *)
-let obligation_1_risk_assessment_obligation () : Tot bool = (0 = 0)
-let obligation_1_risk_assessment_lemma () : Lemma (requires True) (ensures (obligation_1_risk_assessment_obligation () == obligation_1_risk_assessment_obligation ())) = ()
+let obligation_1_risk_assessment (p_e: nat) : Lemma (requires (ncii_risk_assessed p_e == true) (ensures (risk_assessment_current p_e == true))) = admit ()
 
 (* obligation_2_audit (matches Coq: Theorem obligation_2_audit) *)
-let obligation_2_audit_obligation () : Tot bool = (0 = 0)
-let obligation_2_audit_lemma () : Lemma (requires True) (ensures (obligation_2_audit_obligation () == obligation_2_audit_obligation ())) = ()
+let obligation_2_audit (p_e: nat) (p_t: nat) : Lemma (requires (p_t <= ncii_last_audit p_e + ncii_audit_interval p_e) (ensures (audit_current p_e p_t == true))) = admit ()
 
 (* audit_expiry (matches Coq: Theorem audit_expiry) *)
-let audit_expiry_obligation () : Tot bool = (0 = 0)
-let audit_expiry_lemma () : Lemma (requires True) (ensures (audit_expiry_obligation () == audit_expiry_obligation ())) = ()
+let audit_expiry (p_e: nat) (p_t: nat) : Lemma (requires (~(audit_current p_e p_t == true)) (ensures (ncii_last_audit p_e + ncii_audit_interval p_e < p_t))) = admit ()
 
 (* obligation_3_reporting (matches Coq: Theorem obligation_3_reporting) *)
-let obligation_3_reporting_obligation () : Tot bool = (0 = 0)
-let obligation_3_reporting_lemma () : Lemma (requires True) (ensures (obligation_3_reporting_obligation () == obligation_3_reporting_obligation ())) = ()
+let obligation_3_reporting (p_i: nat) : Lemma (requires (incident_reported_at p_i <= incident_detected_at p_i + 6) (ensures (incident_reported_promptly p_i == true))) = admit ()
 
 (* severity_ordering (matches Coq: Theorem severity_ordering) *)
-let severity_ordering_obligation () : Tot bool = (0 = 0)
-let severity_ordering_lemma () : Lemma (requires True) (ensures (severity_ordering_obligation () == severity_ordering_obligation ())) = ()
+let severity_ordering (p_s1: risk_level) (p_s2: risk_level) : Lemma (risk_level_nat Critical >= risk_level_nat p_s1) = admit ()
 
 (* obligation_4_controls (matches Coq: Theorem obligation_4_controls) *)
-let obligation_4_controls_obligation () : Tot bool = (0 = 0)
-let obligation_4_controls_lemma () : Lemma (requires True) (ensures (obligation_4_controls_obligation () == obligation_4_controls_obligation ())) = ()
+let obligation_4_controls (p_e: nat) : Lemma (requires (ncii_min_controls p_e <= ncii_security_controls p_e) (ensures (controls_sufficient p_e == true))) = admit ()
 
 (* obligation_5_cssp (matches Coq: Theorem obligation_5_cssp) *)
-let obligation_5_cssp_obligation () : Tot bool = (0 = 0)
-let obligation_5_cssp_lemma () : Lemma (requires True) (ensures (obligation_5_cssp_obligation () == obligation_5_cssp_obligation ())) = ()
+let obligation_5_cssp (p_l: nat) (p_t: nat) : Lemma (requires (cssp_licensed p_l == true /\ p_t <= cssp_license_expiry p_l) (ensures (cssp_valid p_l p_t == true))) = admit ()
 
 (* act854_composition (matches Coq: Theorem act854_composition) *)
-let act854_composition_obligation () : Tot bool = (0 = 0)
-let act854_composition_lemma () : Lemma (requires True) (ensures (act854_composition_obligation () == act854_composition_obligation ())) = ()
+let act854_composition (p_e: nat) (p_l: nat) (p_t: nat) : Lemma (requires (risk_assessment_current p_e == true /\ audit_current p_e p_t == true /\ controls_sufficient p_e == true /\ cssp_valid p_l p_t == true) (ensures (act854_compliant p_e p_l p_t == true))) = admit ()
 
 (* ncii_sector_coverage (matches Coq: Theorem ncii_sector_coverage) *)
-let ncii_sector_coverage_obligation () : Tot bool = (0 = 0)
-let ncii_sector_coverage_lemma () : Lemma (requires True) (ensures (ncii_sector_coverage_obligation () == ncii_sector_coverage_obligation ())) = ()
+let ncii_sector_coverage (p_s: ncii_sector) : Lemma (In p_s all_ncii_sectors == true) = admit ()
 
 (* critical_is_highest_risk (matches Coq: Theorem critical_is_highest_risk) *)
-let critical_is_highest_risk_obligation () : Tot bool = (0 = 0)
-let critical_is_highest_risk_lemma () : Lemma (requires True) (ensures (critical_is_highest_risk_obligation () == critical_is_highest_risk_obligation ())) = ()
+let critical_is_highest_risk (p_r: risk_level) : Lemma (risk_level_nat p_r <= risk_level_nat Critical) = admit ()
 
 (* low_is_lowest_risk (matches Coq: Theorem low_is_lowest_risk) *)
-let low_is_lowest_risk_obligation () : Tot bool = (0 = 0)
-let low_is_lowest_risk_lemma () : Lemma (requires True) (ensures (low_is_lowest_risk_obligation () == low_is_lowest_risk_obligation ())) = ()
+let low_is_lowest_risk (p_r: risk_level) : Lemma (risk_level_nat Low <= risk_level_nat p_r) = admit ()
 
 (* risk_level_bounded (matches Coq: Theorem risk_level_bounded) *)
-let risk_level_bounded_obligation () : Tot bool = (0 = 0)
-let risk_level_bounded_lemma () : Lemma (requires True) (ensures (risk_level_bounded_obligation () == risk_level_bounded_obligation ())) = ()
+let risk_level_bounded (p_r: risk_level) : Lemma (risk_level_nat p_r <= 3) = admit ()
 
 (* risk_level_coverage (matches Coq: Theorem risk_level_coverage) *)
-let risk_level_coverage_obligation () : Tot bool = (0 = 0)
-let risk_level_coverage_lemma () : Lemma (requires True) (ensures (risk_level_coverage_obligation () == risk_level_coverage_obligation ())) = ()
+let risk_level_coverage (p_r: risk_level) : Lemma (In p_r all_risk_levels == true) = admit ()
 
 (* audit_current_expiry_exclusive (matches Coq: Theorem audit_current_expiry_exclusive) *)
-let audit_current_expiry_exclusive_obligation () : Tot bool = (0 = 0)
-let audit_current_expiry_exclusive_lemma () : Lemma (requires True) (ensures (audit_current_expiry_exclusive_obligation () == audit_current_expiry_exclusive_obligation ())) = ()
+let audit_current_expiry_exclusive (p_e: nat) (p_t: nat) : Lemma (audit_current p_e p_t == true \/ ~(audit_current p_e p_t == true)) = admit ()
 
 (* more_controls_still_sufficient (matches Coq: Theorem more_controls_still_sufficient) *)
-let more_controls_still_sufficient_obligation () : Tot bool = (0 = 0)
-let more_controls_still_sufficient_lemma () : Lemma (requires True) (ensures (more_controls_still_sufficient_obligation () == more_controls_still_sufficient_obligation ())) = ()
+let more_controls_still_sufficient (p_e: nat) (p_extra: nat) : Lemma (requires (controls_sufficient p_e == true) (ensures (ncii_min_controls p_e <= ncii_security_controls p_e + p_extra))) = admit ()
 
 (* act854_implies_risk_assessed (matches Coq: Theorem act854_implies_risk_assessed) *)
-let act854_implies_risk_assessed_obligation () : Tot bool = (0 = 0)
-let act854_implies_risk_assessed_lemma () : Lemma (requires True) (ensures (act854_implies_risk_assessed_obligation () == act854_implies_risk_assessed_obligation ())) = ()
+let act854_implies_risk_assessed (p_e: nat) (p_l: nat) (p_t: nat) : Lemma (requires (act854_compliant p_e p_l p_t == true) (ensures (risk_assessment_current p_e == true))) = admit ()
 
 (* act854_implies_audit_current (matches Coq: Theorem act854_implies_audit_current) *)
-let act854_implies_audit_current_obligation () : Tot bool = (0 = 0)
-let act854_implies_audit_current_lemma () : Lemma (requires True) (ensures (act854_implies_audit_current_obligation () == act854_implies_audit_current_obligation ())) = ()
+let act854_implies_audit_current (p_e: nat) (p_l: nat) (p_t: nat) : Lemma (requires (act854_compliant p_e p_l p_t == true) (ensures (audit_current p_e p_t == true))) = admit ()
 
 (* act854_implies_controls (matches Coq: Theorem act854_implies_controls) *)
-let act854_implies_controls_obligation () : Tot bool = (0 = 0)
-let act854_implies_controls_lemma () : Lemma (requires True) (ensures (act854_implies_controls_obligation () == act854_implies_controls_obligation ())) = ()
+let act854_implies_controls (p_e: nat) (p_l: nat) (p_t: nat) : Lemma (requires (act854_compliant p_e p_l p_t == true) (ensures (controls_sufficient p_e == true))) = admit ()
 
 (* act854_implies_cssp_valid (matches Coq: Theorem act854_implies_cssp_valid) *)
-let act854_implies_cssp_valid_obligation () : Tot bool = (0 = 0)
-let act854_implies_cssp_valid_lemma () : Lemma (requires True) (ensures (act854_implies_cssp_valid_obligation () == act854_implies_cssp_valid_obligation ())) = ()
+let act854_implies_cssp_valid (p_e: nat) (p_l: nat) (p_t: nat) : Lemma (requires (act854_compliant p_e p_l p_t == true) (ensures (cssp_valid p_l p_t == true))) = admit ()
 
 (* cssp_expired (matches Coq: Theorem cssp_expired) *)
-let cssp_expired_obligation () : Tot bool = (0 = 0)
-let cssp_expired_lemma () : Lemma (requires True) (ensures (cssp_expired_obligation () == cssp_expired_obligation ())) = ()
+let cssp_expired (p_l: nat) (p_t: nat) : Lemma (requires (cssp_license_expiry p_l < p_t) (ensures (~(cssp_valid p_l p_t == true)))) = admit ()
 
 (* cssp_unlicensed_invalid (matches Coq: Theorem cssp_unlicensed_invalid) *)
-let cssp_unlicensed_invalid_obligation () : Tot bool = (0 = 0)
-let cssp_unlicensed_invalid_lemma () : Lemma (requires True) (ensures (cssp_unlicensed_invalid_obligation () == cssp_unlicensed_invalid_obligation ())) = ()
+let cssp_unlicensed_invalid (p_l: nat) (p_t: nat) : Lemma (requires (cssp_licensed p_l == false) (ensures (~(cssp_valid p_l p_t == true)))) = admit ()
 
 (* ceo_liable_when_negligent (matches Coq: Theorem ceo_liable_when_negligent) *)
-let ceo_liable_when_negligent_obligation () : Tot bool = (0 = 0)
-let ceo_liable_when_negligent_lemma () : Lemma (requires True) (ensures (ceo_liable_when_negligent_obligation () == ceo_liable_when_negligent_obligation ())) = ()
+let ceo_liable_when_negligent (p_cl: nat) : Lemma (requires (ceo_compliant p_cl == false /\ ceo_due_diligence p_cl == false /\ ceo_personally_liable p_cl == true) (ensures (ceo_liability_applies p_cl == true))) = admit ()
 
 (* ceo_due_diligence_defense (matches Coq: Theorem ceo_due_diligence_defense) *)
-let ceo_due_diligence_defense_obligation () : Tot bool = (0 = 0)
-let ceo_due_diligence_defense_lemma () : Lemma (requires True) (ensures (ceo_due_diligence_defense_obligation () == ceo_due_diligence_defense_obligation ())) = ()
+let ceo_due_diligence_defense (p_cl: nat) : Lemma (requires (ceo_due_diligence p_cl == true) (ensures (~((ceo_due_diligence p_cl == false))))) = admit ()
 
 (* incident_6h_stricter_than_24h (matches Coq: Theorem incident_6h_stricter_than_24h) *)
-let incident_6h_stricter_than_24h_obligation () : Tot bool = (0 = 0)
-let incident_6h_stricter_than_24h_lemma () : Lemma (requires True) (ensures (incident_6h_stricter_than_24h_obligation () == incident_6h_stricter_than_24h_obligation ())) = ()
+let incident_6h_stricter_than_24h (p_i: nat) : Lemma (requires (incident_reported_promptly p_i == true) (ensures (incident_reported_at p_i <= incident_detected_at p_i + 24))) = admit ()
 
 (* immediate_report_always_timely (matches Coq: Theorem immediate_report_always_timely) *)
-let immediate_report_always_timely_obligation () : Tot bool = (0 = 0)
-let immediate_report_always_timely_lemma () : Lemma (requires True) (ensures (immediate_report_always_timely_obligation () == immediate_report_always_timely_obligation ())) = ()
+let immediate_report_always_timely (p_i: nat) : Lemma (requires (incident_reported_at p_i == incident_detected_at p_i) (ensures (incident_reported_promptly p_i == true))) = admit ()
 
 (* banking_is_critical (matches Coq: Theorem banking_is_critical) *)
-let banking_is_critical_obligation () : Tot bool = (0 = 0)
-let banking_is_critical_lemma () : Lemma (requires True) (ensures (banking_is_critical_obligation () == banking_is_critical_obligation ())) = ()
+let banking_is_critical () : Lemma (sector_critical BankingFinance == true) = admit ()
 
 (* defense_is_critical (matches Coq: Theorem defense_is_critical) *)
-let defense_is_critical_obligation () : Tot bool = (0 = 0)
-let defense_is_critical_lemma () : Lemma (requires True) (ensures (defense_is_critical_obligation () == defense_is_critical_obligation ())) = ()
+let defense_is_critical () : Lemma (sector_critical Defense == true) = admit ()
 
 (* telecom_not_critical (matches Coq: Theorem telecom_not_critical) *)
-let telecom_not_critical_obligation () : Tot bool = (0 = 0)
-let telecom_not_critical_lemma () : Lemma (requires True) (ensures (telecom_not_critical_obligation () == telecom_not_critical_obligation ())) = ()
+let telecom_not_critical () : Lemma (~(sector_critical Telecom == true)) = admit ()

@@ -201,101 +201,76 @@ let coexistence_is_managed (p_wc: wireless_coexistence) : Tot bool =
   (0 = 0)
 
 (* wifi_requires_wpa (matches Coq: Theorem wifi_requires_wpa) *)
-let wifi_requires_wpa_obligation () : Tot bool = (0 = 0)
-let wifi_requires_wpa_lemma () : Lemma (requires True) (ensures (wifi_requires_wpa_obligation () == wifi_requires_wpa_obligation ())) = ()
+let wifi_requires_wpa (p_c: wireless_connection) : Lemma (requires (p_c.f_conn_protocol == WiFi /\ protocol_secure p_c == true) (ensures (p_c.f_conn_security == WPA3 \/ p_c.f_conn_security == WPA2))) = admit ()
 
 (* secure_protocol_encrypted (matches Coq: Theorem secure_protocol_encrypted) *)
-let secure_protocol_encrypted_obligation () : Tot bool = (0 = 0)
-let secure_protocol_encrypted_lemma () : Lemma (requires True) (ensures (secure_protocol_encrypted_obligation () == secure_protocol_encrypted_obligation ())) = ()
+let secure_protocol_encrypted (p_c: wireless_connection) : Lemma (requires (well_formed_wireless p_c == true /\ protocol_secure p_c == true) (ensures (p_c.f_conn_encrypted == true))) = admit ()
 
 (* secure_protocol_authenticated (matches Coq: Theorem secure_protocol_authenticated) *)
-let secure_protocol_authenticated_obligation () : Tot bool = (0 = 0)
-let secure_protocol_authenticated_lemma () : Lemma (requires True) (ensures (secure_protocol_authenticated_obligation () == secure_protocol_authenticated_obligation ())) = ()
+let secure_protocol_authenticated (p_c: wireless_connection) : Lemma (requires (well_formed_wireless p_c == true /\ protocol_secure p_c == true) (ensures (p_c.f_conn_authenticated == true))) = admit ()
 
 (* bluetooth_uses_secure_ble (matches Coq: Theorem bluetooth_uses_secure_ble) *)
-let bluetooth_uses_secure_ble_obligation () : Tot bool = (0 = 0)
-let bluetooth_uses_secure_ble_lemma () : Lemma (requires True) (ensures (bluetooth_uses_secure_ble_obligation () == bluetooth_uses_secure_ble_obligation ())) = ()
+let bluetooth_uses_secure_ble (p_c: wireless_connection) : Lemma (requires (p_c.f_conn_protocol == Bluetooth /\ protocol_secure p_c == true) (ensures (p_c.f_conn_security == SecureBLE))) = admit ()
 
 (* nfc_uses_secure_nfc (matches Coq: Theorem nfc_uses_secure_nfc) *)
-let nfc_uses_secure_nfc_obligation () : Tot bool = (0 = 0)
-let nfc_uses_secure_nfc_lemma () : Lemma (requires True) (ensures (nfc_uses_secure_nfc_obligation () == nfc_uses_secure_nfc_obligation ())) = ()
+let nfc_uses_secure_nfc (p_c: wireless_connection) : Lemma (requires (p_c.f_conn_protocol == NFC /\ protocol_secure p_c == true) (ensures (p_c.f_conn_security == SecureNFC))) = admit ()
 
 (* bluetooth_pairing_authenticated (matches Coq: Theorem bluetooth_pairing_authenticated) *)
-let bluetooth_pairing_authenticated_obligation () : Tot bool = (0 = 0)
-let bluetooth_pairing_authenticated_lemma () : Lemma (requires True) (ensures (bluetooth_pairing_authenticated_obligation () == bluetooth_pairing_authenticated_obligation ())) = ()
+let bluetooth_pairing_authenticated (p_bp: bluetooth_pairing) : Lemma (requires (bt_pairing_authenticated p_bp == true) (ensures (p_bp.f_bt_authenticated == true))) = admit ()
 
 (* wifi_connection_encrypted_thm (matches Coq: Theorem wifi_connection_encrypted_thm) *)
-let wifi_connection_encrypted_thm_obligation () : Tot bool = (0 = 0)
-let wifi_connection_encrypted_thm_lemma () : Lemma (requires True) (ensures (wifi_connection_encrypted_thm_obligation () == wifi_connection_encrypted_thm_obligation ())) = ()
+let wifi_connection_encrypted_thm (p_wc: wi_fi_connection) : Lemma (requires (wifi_connection_encrypted p_wc == true) (ensures (p_wc.f_wifi_encrypted == true))) = admit ()
 
 (* nfc_range_limited_thm (matches Coq: Theorem nfc_range_limited_thm) *)
-let nfc_range_limited_thm_obligation () : Tot bool = (0 = 0)
-let nfc_range_limited_thm_lemma () : Lemma (requires True) (ensures (nfc_range_limited_thm_obligation () == nfc_range_limited_thm_obligation ())) = ()
+let nfc_range_limited_thm (p_tx: nfc_transaction) : Lemma (requires (nfc_range_limited p_tx == true) (ensures (p_tx.f_nfc_range_cm <= 10))) = admit ()
 
 (* uwb_distance_accurate_thm (matches Coq: Theorem uwb_distance_accurate_thm) *)
-let uwb_distance_accurate_thm_obligation () : Tot bool = (0 = 0)
-let uwb_distance_accurate_thm_lemma () : Lemma (requires True) (ensures (uwb_distance_accurate_thm_obligation () == uwb_distance_accurate_thm_obligation ())) = ()
+let uwb_distance_accurate_thm (p_ur: uwb_ranging) : Lemma (requires (uwb_distance_accurate p_ur == true) (ensures (p_ur.f_uwb_error_cm <= p_ur.f_uwb_max_error_cm))) = admit ()
 
 (* bluetooth_data_encrypted (matches Coq: Theorem bluetooth_data_encrypted) *)
-let bluetooth_data_encrypted_obligation () : Tot bool = (0 = 0)
-let bluetooth_data_encrypted_lemma () : Lemma (requires True) (ensures (bluetooth_data_encrypted_obligation () == bluetooth_data_encrypted_obligation ())) = ()
+let bluetooth_data_encrypted (p_td: bt_data_transfer) : Lemma (requires (bt_data_is_encrypted p_td == true) (ensures (p_td.f_bt_data_encrypted == true))) = admit ()
 
 (* wifi_password_not_stored_plaintext (matches Coq: Theorem wifi_password_not_stored_plaintext) *)
-let wifi_password_not_stored_plaintext_obligation () : Tot bool = (0 = 0)
-let wifi_password_not_stored_plaintext_lemma () : Lemma (requires True) (ensures (wifi_password_not_stored_plaintext_obligation () == wifi_password_not_stored_plaintext_obligation ())) = ()
+let wifi_password_not_stored_plaintext (p_wc: wi_fi_connection) : Lemma (requires (wifi_password_secure p_wc == true) (ensures (p_wc.f_wifi_password_stored_plaintext == false))) = admit ()
 
 (* airdrop_permission_required (matches Coq: Theorem airdrop_permission_required) *)
-let airdrop_permission_required_obligation () : Tot bool = (0 = 0)
-let airdrop_permission_required_lemma () : Lemma (requires True) (ensures (airdrop_permission_required_obligation () == airdrop_permission_required_obligation ())) = ()
+let airdrop_permission_required (p_a: air_drop_session) : Lemma (requires (airdrop_permitted p_a == true) (ensures (p_a.f_airdrop_permission_granted == true))) = admit ()
 
 (* bluetooth_service_discovery_bounded (matches Coq: Theorem bluetooth_service_discovery_bounded) *)
-let bluetooth_service_discovery_bounded_obligation () : Tot bool = (0 = 0)
-let bluetooth_service_discovery_bounded_lemma () : Lemma (requires True) (ensures (bluetooth_service_discovery_bounded_obligation () == bluetooth_service_discovery_bounded_obligation ())) = ()
+let bluetooth_service_discovery_bounded (p_sd: bt_service_discovery) : Lemma (requires (bt_discovery_bounded p_sd == true) (ensures (length (p_sd.f_bt_services_found) <= p_sd.f_bt_max_services))) = admit ()
 
 (* wifi_scanning_throttled (matches Coq: Theorem wifi_scanning_throttled) *)
-let wifi_scanning_throttled_obligation () : Tot bool = (0 = 0)
-let wifi_scanning_throttled_lemma () : Lemma (requires True) (ensures (wifi_scanning_throttled_obligation () == wifi_scanning_throttled_obligation ())) = ()
+let wifi_scanning_throttled (p_ws: wi_fi_scan) : Lemma (requires (wifi_scan_throttled p_ws == true) (ensures (p_ws.f_scan_interval_ms >= p_ws.f_scan_min_interval_ms))) = admit ()
 
 (* nfc_transaction_atomic_thm (matches Coq: Theorem nfc_transaction_atomic_thm) *)
-let nfc_transaction_atomic_thm_obligation () : Tot bool = (0 = 0)
-let nfc_transaction_atomic_thm_lemma () : Lemma (requires True) (ensures (nfc_transaction_atomic_thm_obligation () == nfc_transaction_atomic_thm_obligation ())) = ()
+let nfc_transaction_atomic_thm (p_tx: nfc_transaction) : Lemma (requires (nfc_transaction_atomic p_tx == true) (ensures (p_tx.f_nfc_atomic == true))) = admit ()
 
 (* uwb_anchor_validated (matches Coq: Theorem uwb_anchor_validated) *)
-let uwb_anchor_validated_obligation () : Tot bool = (0 = 0)
-let uwb_anchor_validated_lemma () : Lemma (requires True) (ensures (uwb_anchor_validated_obligation () == uwb_anchor_validated_obligation ())) = ()
+let uwb_anchor_validated (p_a: uwb_anchor) : Lemma (requires (uwb_anchor_is_validated p_a == true) (ensures (p_a.f_anchor_validated == true))) = admit ()
 
 (* bluetooth_connection_timeout (matches Coq: Theorem bluetooth_connection_timeout) *)
-let bluetooth_connection_timeout_obligation () : Tot bool = (0 = 0)
-let bluetooth_connection_timeout_lemma () : Lemma (requires True) (ensures (bluetooth_connection_timeout_obligation () == bluetooth_connection_timeout_obligation ())) = ()
+let bluetooth_connection_timeout (p_bc: bt_connection) : Lemma (requires (bt_connection_has_timeout p_bc == true) (ensures (p_bc.f_bt_conn_timeout_ms <= p_bc.f_bt_conn_max_timeout_ms))) = admit ()
 
 (* wifi_roaming_seamless (matches Coq: Theorem wifi_roaming_seamless) *)
-let wifi_roaming_seamless_obligation () : Tot bool = (0 = 0)
-let wifi_roaming_seamless_lemma () : Lemma (requires True) (ensures (wifi_roaming_seamless_obligation () == wifi_roaming_seamless_obligation ())) = ()
+let wifi_roaming_seamless (p_wr: wi_fi_roaming) : Lemma (requires (wifi_roaming_is_seamless p_wr == true) (ensures (p_wr.f_roaming_seamless == true))) = admit ()
 
 (* nfc_emulation_authorized (matches Coq: Theorem nfc_emulation_authorized) *)
-let nfc_emulation_authorized_obligation () : Tot bool = (0 = 0)
-let nfc_emulation_authorized_lemma () : Lemma (requires True) (ensures (nfc_emulation_authorized_obligation () == nfc_emulation_authorized_obligation ())) = ()
+let nfc_emulation_authorized (p_ne: nfc_emulation) : Lemma (requires (nfc_emulation_is_authorized p_ne == true) (ensures (p_ne.f_nfc_emu_authorized == true))) = admit ()
 
 (* wireless_coexistence_managed (matches Coq: Theorem wireless_coexistence_managed) *)
-let wireless_coexistence_managed_obligation () : Tot bool = (0 = 0)
-let wireless_coexistence_managed_lemma () : Lemma (requires True) (ensures (wireless_coexistence_managed_obligation () == wireless_coexistence_managed_obligation ())) = ()
+let wireless_coexistence_managed (p_wc: wireless_coexistence) : Lemma (requires (coexistence_is_managed p_wc == true) (ensures (p_wc.f_coexistence_managed == true))) = admit ()
 
 (* uwb_uses_secure_uwb (matches Coq: Theorem uwb_uses_secure_uwb) *)
-let uwb_uses_secure_uwb_obligation () : Tot bool = (0 = 0)
-let uwb_uses_secure_uwb_lemma () : Lemma (requires True) (ensures (uwb_uses_secure_uwb_obligation () == uwb_uses_secure_uwb_obligation ())) = ()
+let uwb_uses_secure_uwb (p_c: wireless_connection) : Lemma (requires (p_c.f_conn_protocol == UWB /\ protocol_secure p_c == true) (ensures (p_c.f_conn_security == SecureUWB))) = admit ()
 
 (* airdrop_is_encrypted (matches Coq: Theorem airdrop_is_encrypted) *)
-let airdrop_is_encrypted_obligation () : Tot bool = (0 = 0)
-let airdrop_is_encrypted_lemma () : Lemma (requires True) (ensures (airdrop_is_encrypted_obligation () == airdrop_is_encrypted_obligation ())) = ()
+let airdrop_is_encrypted (p_a: air_drop_session) : Lemma (requires (airdrop_permitted p_a == true) (ensures (p_a.f_airdrop_encrypted == true))) = admit ()
 
 (* bluetooth_connection_timeout_positive (matches Coq: Theorem bluetooth_connection_timeout_positive) *)
-let bluetooth_connection_timeout_positive_obligation () : Tot bool = (0 = 0)
-let bluetooth_connection_timeout_positive_lemma () : Lemma (requires True) (ensures (bluetooth_connection_timeout_positive_obligation () == bluetooth_connection_timeout_positive_obligation ())) = ()
+let bluetooth_connection_timeout_positive (p_bc: bt_connection) : Lemma (requires (bt_connection_has_timeout p_bc == true) (ensures (p_bc.f_bt_conn_timeout_ms > 0))) = admit ()
 
 (* wifi_roaming_preserves_encryption (matches Coq: Theorem wifi_roaming_preserves_encryption) *)
-let wifi_roaming_preserves_encryption_obligation () : Tot bool = (0 = 0)
-let wifi_roaming_preserves_encryption_lemma () : Lemma (requires True) (ensures (wifi_roaming_preserves_encryption_obligation () == wifi_roaming_preserves_encryption_obligation ())) = ()
+let wifi_roaming_preserves_encryption (p_wr: wi_fi_roaming) : Lemma (requires (wifi_roaming_is_seamless p_wr == true) (ensures (p_wr.f_roaming_encrypted == true))) = admit ()
 
 (* coexistence_interference_bounded (matches Coq: Theorem coexistence_interference_bounded) *)
-let coexistence_interference_bounded_obligation () : Tot bool = (0 = 0)
-let coexistence_interference_bounded_lemma () : Lemma (requires True) (ensures (coexistence_interference_bounded_obligation () == coexistence_interference_bounded_obligation ())) = ()
+let coexistence_interference_bounded (p_wc: wireless_coexistence) : Lemma (requires (coexistence_is_managed p_wc == true) (ensures (p_wc.f_interference_level <= p_wc.f_max_interference))) = admit ()

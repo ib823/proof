@@ -263,21 +263,16 @@ let declass_ok (p_e1: expr) (p_e2: expr) : Tot bool =
   (0 = 0)
 
 (* effect_join_pure_l (matches Coq: Lemma effect_join_pure_l) *)
-let effect_join_pure_l_obligation () : Tot bool = (0 = 0)
-let effect_join_pure_l_lemma () : Lemma (requires True) (ensures (effect_join_pure_l_obligation () == effect_join_pure_l_obligation ())) = ()
+let effect_join_pure_l (p_e: _) : Lemma (effect_join EffPure p_e == p_e) = admit ()
 
 (* effect_join_pure_r (matches Coq: Lemma effect_join_pure_r) *)
-let effect_join_pure_r_obligation () : Tot bool = (0 = 0)
-let effect_join_pure_r_lemma () : Lemma (requires True) (ensures (effect_join_pure_r_obligation () == effect_join_pure_r_obligation ())) = ()
+let effect_join_pure_r (p_e: _) : Lemma (effect_join p_e EffPure == p_e) = admit ()
 
 (* value_subst (matches Coq: Lemma value_subst) *)
-let value_subst_obligation () : Tot bool = (0 = 0)
-let value_subst_lemma () : Lemma (requires True) (ensures (value_subst_obligation () == value_subst_obligation ())) = ()
+let value_subst (p_x: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true) (ensures (value ([p_x := v2_ p_v1) == true))) = admit ()
 
 (* declass_ok_subst (matches Coq: Lemma declass_ok_subst) *)
-let declass_ok_subst_obligation () : Tot bool = (0 = 0)
-let declass_ok_subst_lemma () : Lemma (requires True) (ensures (declass_ok_subst_obligation () == declass_ok_subst_obligation ())) = ()
+let declass_ok_subst (p_x: _) (p_v: _) (p_e1: _) (p_e2: _) : Lemma (requires (value p_v == true /\ declass_ok p_e1 p_e2 == true) (ensures (declass_ok ([p_x := v_ p_e1) ([p_x := v_ p_e2) == true))) = admit ()
 
 (* value_not_stuck (matches Coq: Lemma value_not_stuck) *)
-let value_not_stuck_obligation () : Tot bool = (0 = 0)
-let value_not_stuck_lemma () : Lemma (requires True) (ensures (value_not_stuck_obligation () == value_not_stuck_obligation ())) = ()
+let value_not_stuck (p_e: _) : Lemma (requires (value p_e == true) (ensures (p_e == EUnit \/ (exists b_ p_e == EBool b) \/ (exists n_ p_e == EInt n) \/ (exists s_ p_e == EString s) \/ (exists x T body_ p_e == ELam x T body) \/ (exists v1 v2_ p_e == EPair v1 v2) \/ (exists v T, p_e == EInl v T) \/ (exists v T, p_e == EInr v T) \/ (exists l_ p_e == ELoc l) \/ (exists v_ p_e == EClassify v) \/ (exists v_ p_e == EProve v)))) = admit ()

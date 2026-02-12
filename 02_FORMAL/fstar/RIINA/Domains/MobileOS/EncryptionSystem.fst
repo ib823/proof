@@ -187,89 +187,67 @@ let encryption_algorithm_approved (p_key: encryption_key) : Tot bool =
   (0 = 0)
 
 (* e2e_encryption_verified (matches Coq: Theorem e2e_encryption_verified) *)
-let e2e_encryption_verified_obligation () : Tot bool = (0 = 0)
-let e2e_encryption_verified_lemma () : Lemma (requires True) (ensures (e2e_encryption_verified_obligation () == e2e_encryption_verified_obligation ())) = ()
+let e2e_encryption_verified (p_msg: encrypted_message) : Lemma (requires (e2e_encrypted p_msg == true) (ensures (strong_encryption (p_msg.f_encryption_key_used) == true))) = admit ()
 
 (* private_keys_in_secure_enclave (matches Coq: Theorem private_keys_in_secure_enclave) *)
-let private_keys_in_secure_enclave_obligation () : Tot bool = (0 = 0)
-let private_keys_in_secure_enclave_lemma () : Lemma (requires True) (ensures (private_keys_in_secure_enclave_obligation () == private_keys_in_secure_enclave_obligation ())) = ()
+let private_keys_in_secure_enclave (p_key: encryption_key) : Lemma (requires (securely_managed p_key == true /\ p_key.f_key_is_private == true) (ensures (p_key.f_key_stored_in_se == true))) = admit ()
 
 (* e2e_channel_provides_security (matches Coq: Theorem e2e_channel_provides_security) *)
-let e2e_channel_provides_security_obligation () : Tot bool = (0 = 0)
-let e2e_channel_provides_security_lemma () : Lemma (requires True) (ensures (e2e_channel_provides_security_obligation () == e2e_channel_provides_security_obligation ())) = ()
+let e2e_channel_provides_security (p_ch: secure_channel) : Lemma (requires (full_e2e_security p_ch == true) (ensures (provides_confidentiality p_ch == true /\ provides_integrity p_ch == true))) = admit ()
 
 (* forward_secrecy_maintained (matches Coq: Theorem forward_secrecy_maintained) *)
-let forward_secrecy_maintained_obligation () : Tot bool = (0 = 0)
-let forward_secrecy_maintained_lemma () : Lemma (requires True) (ensures (forward_secrecy_maintained_obligation () == forward_secrecy_maintained_obligation ())) = ()
+let forward_secrecy_maintained (p_ch: secure_channel) : Lemma (requires (full_e2e_security p_ch == true) (ensures (p_ch.f_forward_secrecy == true))) = admit ()
 
 (* strong_encryption_minimum_bits (matches Coq: Theorem strong_encryption_minimum_bits) *)
-let strong_encryption_minimum_bits_obligation () : Tot bool = (0 = 0)
-let strong_encryption_minimum_bits_lemma () : Lemma (requires True) (ensures (strong_encryption_minimum_bits_obligation () == strong_encryption_minimum_bits_obligation ())) = ()
+let strong_encryption_minimum_bits (p_key: encryption_key) : Lemma (requires (strong_encryption p_key == true) (ensures (p_key.f_key_bits >= 256))) = admit ()
 
 (* decryption_verifies_integrity (matches Coq: Theorem decryption_verifies_integrity) *)
-let decryption_verifies_integrity_obligation () : Tot bool = (0 = 0)
-let decryption_verifies_integrity_lemma () : Lemma (requires True) (ensures (decryption_verifies_integrity_obligation () == decryption_verifies_integrity_obligation ())) = ()
+let decryption_verifies_integrity (p_enc: encrypted_message) (p_dec: decrypted_message) : Lemma (requires (correct_decryption p_enc p_dec == true) (ensures (p_dec.f_integrity_verified == true))) = admit ()
 
 (* key_derivation_preserves_strength (matches Coq: Theorem key_derivation_preserves_strength) *)
-let key_derivation_preserves_strength_obligation () : Tot bool = (0 = 0)
-let key_derivation_preserves_strength_lemma () : Lemma (requires True) (ensures (key_derivation_preserves_strength_obligation () == key_derivation_preserves_strength_obligation ())) = ()
+let key_derivation_preserves_strength (p_kd: key_derivation) : Lemma (requires (strong_encryption (p_kd.f_master_key) == true /\ (p_kd.f_derived_key).f_key_bits >= (p_kd.f_master_key).f_key_bits /\ (p_kd.f_derived_key).f_key_algorithm == (p_kd.f_master_key).f_key_algorithm) (ensures (strong_encryption (p_kd.f_derived_key) == true))) = admit ()
 
 (* encryption_decryption_inverse (matches Coq: Theorem encryption_decryption_inverse) *)
-let encryption_decryption_inverse_obligation () : Tot bool = (0 = 0)
-let encryption_decryption_inverse_lemma () : Lemma (requires True) (ensures (encryption_decryption_inverse_obligation () == encryption_decryption_inverse_obligation ())) = ()
+let encryption_decryption_inverse (p_key: nat) (p_plaintext: (list nat)) : Lemma (requires ((forall x_ In x p_plaintext -> x >= p_key)) (ensures (decrypt_data p_key (encrypt_data p_key p_plaintext) == p_plaintext))) = admit ()
 
 (* key_generation_random (matches Coq: Theorem key_generation_random) *)
-let key_generation_random_obligation () : Tot bool = (0 = 0)
-let key_generation_random_lemma () : Lemma (requires True) (ensures (key_generation_random_obligation () == key_generation_random_obligation ())) = ()
+let key_generation_random (p_k1: encryption_key) (p_k2: encryption_key) : Lemma (requires (~(p_k1.f_key_id == p_k2.f_key_id)) (ensures (~(p_k1 == p_k2)))) = admit ()
 
 (* key_length_sufficient (matches Coq: Theorem key_length_sufficient) *)
-let key_length_sufficient_obligation () : Tot bool = (0 = 0)
-let key_length_sufficient_lemma () : Lemma (requires True) (ensures (key_length_sufficient_obligation () == key_length_sufficient_obligation ())) = ()
+let key_length_sufficient (p_key: encryption_key) : Lemma (requires (strong_encryption p_key == true) (ensures (p_key.f_key_bits >= 256))) = admit ()
 
 (* iv_never_reused_thm (matches Coq: Theorem iv_never_reused_thm) *)
-let iv_never_reused_thm_obligation () : Tot bool = (0 = 0)
-let iv_never_reused_thm_lemma () : Lemma (requires True) (ensures (iv_never_reused_thm_obligation () == iv_never_reused_thm_obligation ())) = ()
+let iv_never_reused_thm (p_tracker: iv_tracker) : Lemma (requires (iv_never_reused p_tracker == true) (ensures (~(In (p_tracker.f_iv_current) (p_tracker.f_iv_used_list) == true)))) = admit ()
 
 (* aead_authentication_verified (matches Coq: Theorem aead_authentication_verified) *)
-let aead_authentication_verified_obligation () : Tot bool = (0 = 0)
-let aead_authentication_verified_lemma () : Lemma (requires True) (ensures (aead_authentication_verified_obligation () == aead_authentication_verified_obligation ())) = ()
+let aead_authentication_verified (p_op: encryption_operation) : Lemma (requires (aead_verified p_op == true) (ensures (p_op.f_enc_op_aead_verified == true))) = admit ()
 
 (* key_derivation_deterministic (matches Coq: Theorem key_derivation_deterministic) *)
-let key_derivation_deterministic_obligation () : Tot bool = (0 = 0)
-let key_derivation_deterministic_lemma () : Lemma (requires True) (ensures (key_derivation_deterministic_obligation () == key_derivation_deterministic_obligation ())) = ()
+let key_derivation_deterministic (p_kd1: key_derivation) (p_kd2: key_derivation) : Lemma (requires (key_derivation_deterministic_prop p_kd1 p_kd2 == true /\ p_kd1.f_derivation_salt == p_kd2.f_derivation_salt /\ p_kd1.f_derivation_iterations == p_kd2.f_derivation_iterations /\ (p_kd1.f_master_key).f_key_id == (p_kd2.f_master_key).f_key_id) (ensures ((p_kd1.f_derived_key).f_key_id == (p_kd2.f_derived_key).f_key_id))) = admit ()
 
 (* password_hash_one_way_thm (matches Coq: Theorem password_hash_one_way_thm) *)
-let password_hash_one_way_thm_obligation () : Tot bool = (0 = 0)
-let password_hash_one_way_thm_lemma () : Lemma (requires True) (ensures (password_hash_one_way_thm_obligation () == password_hash_one_way_thm_obligation ())) = ()
+let password_hash_one_way_thm (p_h: password_hash) : Lemma (requires (password_hash_one_way p_h == true) (ensures (p_h.f_pwd_hash_value > 0 /\ p_h.f_pwd_iterations >= 10000))) = admit ()
 
 (* salt_unique_per_password (matches Coq: Theorem salt_unique_per_password) *)
-let salt_unique_per_password_obligation () : Tot bool = (0 = 0)
-let salt_unique_per_password_lemma () : Lemma (requires True) (ensures (salt_unique_per_password_obligation () == salt_unique_per_password_obligation ())) = ()
+let salt_unique_per_password (p_h1: password_hash) (p_h2: password_hash) : Lemma (requires (salt_unique p_h1 p_h2 == true) (ensures (~(p_h1.f_pwd_salt == p_h2.f_pwd_salt)))) = admit ()
 
 (* key_rotation_seamless_thm (matches Coq: Theorem key_rotation_seamless_thm) *)
-let key_rotation_seamless_thm_obligation () : Tot bool = (0 = 0)
-let key_rotation_seamless_thm_lemma () : Lemma (requires True) (ensures (key_rotation_seamless_thm_obligation () == key_rotation_seamless_thm_obligation ())) = ()
+let key_rotation_seamless_thm (p_kr: key_rotation) : Lemma (requires (key_rotation_seamless p_kr == true /\ p_kr.f_kr_rotation_complete == true) (ensures (p_kr.f_kr_old_key_destroyed == true))) = admit ()
 
 (* encrypted_data_indistinguishable_thm (matches Coq: Theorem encrypted_data_indistinguishable_thm) *)
-let encrypted_data_indistinguishable_thm_obligation () : Tot bool = (0 = 0)
-let encrypted_data_indistinguishable_thm_lemma () : Lemma (requires True) (ensures (encrypted_data_indistinguishable_thm_obligation () == encrypted_data_indistinguishable_thm_obligation ())) = ()
+let encrypted_data_indistinguishable_thm (p_op1: encryption_operation) (p_op2: encryption_operation) : Lemma (requires (encrypted_data_indistinguishable p_op1 p_op2 == true /\ p_op1.f_enc_op_key == p_op2.f_enc_op_key /\ length (p_op1.f_enc_op_ciphertext) == length (p_op2.f_enc_op_ciphertext)) (ensures (length (p_op1.f_enc_op_plaintext) == length (p_op2.f_enc_op_plaintext)))) = admit ()
 
 (* padding_oracle_prevented_thm (matches Coq: Theorem padding_oracle_prevented_thm) *)
-let padding_oracle_prevented_thm_obligation () : Tot bool = (0 = 0)
-let padding_oracle_prevented_thm_lemma () : Lemma (requires True) (ensures (padding_oracle_prevented_thm_obligation () == padding_oracle_prevented_thm_obligation ())) = ()
+let padding_oracle_prevented_thm (p_op: encryption_operation) : Lemma (requires (padding_oracle_prevented p_op == true) (ensures (p_op.f_enc_op_aead_verified == true))) = admit ()
 
 (* timing_attack_prevented_thm (matches Coq: Theorem timing_attack_prevented_thm) *)
-let timing_attack_prevented_thm_obligation () : Tot bool = (0 = 0)
-let timing_attack_prevented_thm_lemma () : Lemma (requires True) (ensures (timing_attack_prevented_thm_obligation () == timing_attack_prevented_thm_obligation ())) = ()
+let timing_attack_prevented_thm (p_tt: timing_test) : Lemma (requires (timing_attack_prevented p_tt == true) (ensures (p_tt.f_tt_constant_time == true))) = admit ()
 
 (* key_zeroization_complete_thm (matches Coq: Theorem key_zeroization_complete_thm) *)
-let key_zeroization_complete_thm_obligation () : Tot bool = (0 = 0)
-let key_zeroization_complete_thm_lemma () : Lemma (requires True) (ensures (key_zeroization_complete_thm_obligation () == key_zeroization_complete_thm_obligation ())) = ()
+let key_zeroization_complete_thm (p_kr: key_rotation) : Lemma (requires (key_zeroization_complete p_kr == true /\ p_kr.f_kr_old_key_destroyed == true) (ensures ((p_kr.f_kr_old_key).f_key_bits >= 0))) = admit ()
 
 (* hardware_key_storage (matches Coq: Theorem hardware_key_storage) *)
-let hardware_key_storage_obligation () : Tot bool = (0 = 0)
-let hardware_key_storage_lemma () : Lemma (requires True) (ensures (hardware_key_storage_obligation () == hardware_key_storage_obligation ())) = ()
+let hardware_key_storage (p_key: encryption_key) : Lemma (requires (hardware_key_storage_prop p_key == true /\ p_key.f_key_is_private == true) (ensures (p_key.f_key_stored_in_se == true))) = admit ()
 
 (* encryption_algorithm_approved_thm (matches Coq: Theorem encryption_algorithm_approved_thm) *)
-let encryption_algorithm_approved_thm_obligation () : Tot bool = (0 = 0)
-let encryption_algorithm_approved_thm_lemma () : Lemma (requires True) (ensures (encryption_algorithm_approved_thm_obligation () == encryption_algorithm_approved_thm_obligation ())) = ()
+let encryption_algorithm_approved_thm (p_key: encryption_key) : Lemma (requires (encryption_algorithm_approved p_key == true) (ensures (p_key.f_key_algorithm == 0 \/ p_key.f_key_algorithm == 1))) = admit ()

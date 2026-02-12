@@ -26,57 +26,43 @@ let exp_rel_le (p_n: nat) (p_t: nat) (p_e1: nat) (p_e2: nat) (p_st1: nat) (p_st2
   (0 = 0)
 
 (* val_rel_le_0_unfold (matches Coq: Lemma val_rel_le_0_unfold) *)
-let val_rel_le_0_unfold_obligation () : Tot bool = (0 = 0)
-let val_rel_le_0_unfold_lemma () : Lemma (requires True) (ensures (val_rel_le_0_unfold_obligation () == val_rel_le_0_unfold_obligation ())) = ()
+let val_rel_le_0_unfold (p_t: _) (p_v1: _) (p_v2: _) : Lemma (val_rel_le 0 Σ p_t p_v1 p_v2 == True) = admit ()
 
 (* val_rel_le_S_unfold (matches Coq: Lemma val_rel_le_S_unfold) *)
-let val_rel_le_s_unfold_obligation () : Tot bool = (0 = 0)
-let val_rel_le_s_unfold_lemma () : Lemma (requires True) (ensures (val_rel_le_s_unfold_obligation () == val_rel_le_s_unfold_obligation ())) = ()
+let val_rel_le_s_unfold (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (val_rel_le ((p_n + 1)) Σ p_t p_v1 p_v2 == (val_rel_le p_n Σ p_t p_v1 p_v2 /\ val_rel_struct (val_rel_le p_n) Σ p_t p_v1 p_v2)) = admit ()
 
 (* val_rel_le_at_zero (matches Coq: Lemma val_rel_le_at_zero) *)
-let val_rel_le_at_zero_obligation () : Tot bool = (0 = 0)
-let val_rel_le_at_zero_lemma () : Lemma (requires True) (ensures (val_rel_le_at_zero_obligation () == val_rel_le_at_zero_obligation ())) = ()
+let val_rel_le_at_zero (p_t: _) (p_v1: _) (p_v2: _) : Lemma (val_rel_le 0 Σ p_t p_v1 p_v2 == true) = admit ()
 
 (* val_rel_le_cumulative (matches Coq: Lemma val_rel_le_cumulative) *)
-let val_rel_le_cumulative_obligation () : Tot bool = (0 = 0)
-let val_rel_le_cumulative_lemma () : Lemma (requires True) (ensures (val_rel_le_cumulative_obligation () == val_rel_le_cumulative_obligation ())) = ()
+let val_rel_le_cumulative (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le ((p_n + 1)) Σ p_t p_v1 p_v2 == true) (ensures (val_rel_le p_n Σ p_t p_v1 p_v2 == true))) = admit ()
 
 (* val_rel_le_value_left (matches Coq: Lemma val_rel_le_value_left) *)
-let val_rel_le_value_left_obligation () : Tot bool = (0 = 0)
-let val_rel_le_value_left_lemma () : Lemma (requires True) (ensures (val_rel_le_value_left_obligation () == val_rel_le_value_left_obligation ())) = ()
+let val_rel_le_value_left (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n Σ p_t p_v1 p_v2 == true) (ensures (value p_v1 == true))) = admit ()
 
 (* val_rel_le_value_right (matches Coq: Lemma val_rel_le_value_right) *)
-let val_rel_le_value_right_obligation () : Tot bool = (0 = 0)
-let val_rel_le_value_right_lemma () : Lemma (requires True) (ensures (val_rel_le_value_right_obligation () == val_rel_le_value_right_obligation ())) = ()
+let val_rel_le_value_right (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n Σ p_t p_v1 p_v2 == true) (ensures (value p_v2 == true))) = admit ()
 
 (* val_rel_le_closed_left (matches Coq: Lemma val_rel_le_closed_left) *)
-let val_rel_le_closed_left_obligation () : Tot bool = (0 = 0)
-let val_rel_le_closed_left_lemma () : Lemma (requires True) (ensures (val_rel_le_closed_left_obligation () == val_rel_le_closed_left_obligation ())) = ()
+let val_rel_le_closed_left (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n Σ p_t p_v1 p_v2 == true) (ensures (closed_expr p_v1 == true))) = admit ()
 
 (* val_rel_le_closed_right (matches Coq: Lemma val_rel_le_closed_right) *)
-let val_rel_le_closed_right_obligation () : Tot bool = (0 = 0)
-let val_rel_le_closed_right_lemma () : Lemma (requires True) (ensures (val_rel_le_closed_right_obligation () == val_rel_le_closed_right_obligation ())) = ()
+let val_rel_le_closed_right (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n Σ p_t p_v1 p_v2 == true) (ensures (closed_expr p_v2 == true))) = admit ()
 
 (* val_rel_le_mono_step_fo (matches Coq: Lemma val_rel_le_mono_step_fo) *)
-let val_rel_le_mono_step_fo_obligation () : Tot bool = (0 = 0)
-let val_rel_le_mono_step_fo_lemma () : Lemma (requires True) (ensures (val_rel_le_mono_step_fo_obligation () == val_rel_le_mono_step_fo_obligation ())) = ()
+let val_rel_le_mono_step_fo (p_n: _) (p_m: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (first_order_type p_t == true /\ p_m <= p_n /\ val_rel_le p_n Σ p_t p_v1 p_v2 == true) (ensures (val_rel_le p_m Σ p_t p_v1 p_v2 == true))) = admit ()
 
 (* val_rel_le_extract_fo (matches Coq: Lemma val_rel_le_extract_fo) *)
-let val_rel_le_extract_fo_obligation () : Tot bool = (0 = 0)
-let val_rel_le_extract_fo_lemma () : Lemma (requires True) (ensures (val_rel_le_extract_fo_obligation () == val_rel_le_extract_fo_obligation ())) = ()
+let val_rel_le_extract_fo (p_t: _) (p_m: _) (p_v1: _) (p_v2: _) : Lemma (requires (first_order_type p_t == true /\ p_m > fo_compound_depth p_t /\ val_rel_le p_m Σ p_t p_v1 p_v2 == true) (ensures (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true /\ val_rel_at_type_fo p_t p_v1 p_v2 == true))) = admit ()
 
 (* val_rel_le_construct_fo (matches Coq: Lemma val_rel_le_construct_fo) *)
-let val_rel_le_construct_fo_obligation () : Tot bool = (0 = 0)
-let val_rel_le_construct_fo_lemma () : Lemma (requires True) (ensures (val_rel_le_construct_fo_obligation () == val_rel_le_construct_fo_obligation ())) = ()
+let val_rel_le_construct_fo (p_t: _) (p_n: _) (p_v1: _) (p_v2: _) : Lemma (requires (first_order_type p_t == true /\ p_n > 0 /\ value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true /\ val_rel_at_type_fo p_t p_v1 p_v2 == true) (ensures (val_rel_le p_n Σ p_t p_v1 p_v2 == true))) = admit ()
 
 (* val_rel_le_fo_step_independent (matches Coq: Lemma val_rel_le_fo_step_independent) *)
-let val_rel_le_fo_step_independent_obligation () : Tot bool = (0 = 0)
-let val_rel_le_fo_step_independent_lemma () : Lemma (requires True) (ensures (val_rel_le_fo_step_independent_obligation () == val_rel_le_fo_step_independent_obligation ())) = ()
+let val_rel_le_fo_step_independent (p_m: _) (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (first_order_type p_t == true /\ p_m > fo_compound_depth p_t /\ p_n > 0 /\ val_rel_le p_m Σ p_t p_v1 p_v2 == true) (ensures (val_rel_le p_n Σ p_t p_v1 p_v2 == true))) = admit ()
 
 (* store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans) *)
-let store_ty_extends_trans_obligation () : Tot bool = (0 = 0)
-let store_ty_extends_trans_lemma () : Lemma (requires True) (ensures (store_ty_extends_trans_obligation () == store_ty_extends_trans_obligation ())) = ()
+let store_ty_extends_trans () : Lemma (requires (store_ty_extends Σ1 Σ2 == true /\ store_ty_extends Σ2 Σ3 == true) (ensures (store_ty_extends Σ1 Σ3 == true))) = admit ()
 
 (* store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl) *)
-let store_ty_extends_refl_obligation () : Tot bool = (0 = 0)
-let store_ty_extends_refl_lemma () : Lemma (requires True) (ensures (store_ty_extends_refl_obligation () == store_ty_extends_refl_obligation ())) = ()
+let store_ty_extends_refl () : Lemma (store_ty_extends Σ Σ == true) = admit ()

@@ -445,121 +445,91 @@ let note_immutable (p_n: clinical_note) : Tot bool =
   (0 = 0)
 
 (* HIS_001_01_patient_identity_uniqueness (matches Coq: Theorem HIS_001_01_patient_identity_uniqueness) *)
-let his_001_01_patient_identity_uniqueness_obligation () : Tot bool = (0 = 0)
-let his_001_01_patient_identity_uniqueness_lemma () : Lemma (requires True) (ensures (his_001_01_patient_identity_uniqueness_obligation () == his_001_01_patient_identity_uniqueness_obligation ())) = ()
+let his_001_01_patient_identity_uniqueness (p_reg: patient_registry) (p_p1: _) (p_p2: _) : Lemma (requires (In p_p1 (p_reg.f_patients) == true /\ In p_p2 (p_reg.f_patients) == true /\ p_p1.f_mrn == p_p2.f_mrn) (ensures (p_p1 == p_p2))) = admit ()
 
 (* HIS_001_02_patient_matching_accuracy (matches Coq: Theorem HIS_001_02_patient_matching_accuracy) *)
-let his_001_02_patient_matching_accuracy_obligation () : Tot bool = (0 = 0)
-let his_001_02_patient_matching_accuracy_lemma () : Lemma (requires True) (ensures (his_001_02_patient_matching_accuracy_obligation () == his_001_02_patient_matching_accuracy_obligation ())) = ()
+let his_001_02_patient_matching_accuracy (p_pm: _) : Lemma (requires (p_pm.f_match_score >= 999) (ensures (high_confidence_match p_pm == true))) = admit ()
 
 (* HIS_001_03_duplicate_detection (matches Coq: Theorem HIS_001_03_duplicate_detection) *)
-let his_001_03_duplicate_detection_obligation () : Tot bool = (0 = 0)
-let his_001_03_duplicate_detection_lemma () : Lemma (requires True) (ensures (his_001_03_duplicate_detection_obligation () == his_001_03_duplicate_detection_obligation ())) = ()
+let his_001_03_duplicate_detection (p_dc: _) : Lemma (requires (p_dc.f_similarity_score >= 800 /\ p_dc.f_flagged_for_review == true) (ensures (properly_flagged p_dc == true))) = admit ()
 
 (* HIS_001_04_patient_merge_integrity (matches Coq: Theorem HIS_001_04_patient_merge_integrity) *)
-let his_001_04_patient_merge_integrity_obligation () : Tot bool = (0 = 0)
-let his_001_04_patient_merge_integrity_lemma () : Lemma (requires True) (ensures (his_001_04_patient_merge_integrity_obligation () == his_001_04_patient_merge_integrity_obligation ())) = ()
+let his_001_04_patient_merge_integrity (p_m: _) : Lemma (requires (p_m.f_merge_complete == true /\ length (p_m.f_target_records_after) == length (p_m.f_source_records) + length (p_m.f_target_records_before)) (ensures (merge_preserves_records p_m == true))) = admit ()
 
 (* HIS_001_05_amendment_tracking (matches Coq: Theorem HIS_001_05_amendment_tracking) *)
-let his_001_05_amendment_tracking_obligation () : Tot bool = (0 = 0)
-let his_001_05_amendment_tracking_lemma () : Lemma (requires True) (ensures (his_001_05_amendment_tracking_obligation () == his_001_05_amendment_tracking_obligation ())) = ()
+let his_001_05_amendment_tracking (p_a: _) : Lemma (requires (valid_amendment p_a == true) (ensures (p_a.f_linked_to_original == true /\ p_a.f_amend_timestamp > 0))) = admit ()
 
 (* HIS_001_06_encounter_completeness (matches Coq: Theorem HIS_001_06_encounter_completeness) *)
-let his_001_06_encounter_completeness_obligation () : Tot bool = (0 = 0)
-let his_001_06_encounter_completeness_lemma () : Lemma (requires True) (ensures (his_001_06_encounter_completeness_obligation () == his_001_06_encounter_completeness_obligation ())) = ()
+let his_001_06_encounter_completeness (p_e: _) : Lemma (requires (finalized p_e == true) (ensures (encounter_complete p_e == true))) = admit ()
 
 (* HIS_001_07_documentation_immutability (matches Coq: Theorem HIS_001_07_documentation_immutability) *)
-let his_001_07_documentation_immutability_obligation () : Tot bool = (0 = 0)
-let his_001_07_documentation_immutability_lemma () : Lemma (requires True) (ensures (his_001_07_documentation_immutability_obligation () == his_001_07_documentation_immutability_obligation ())) = ()
+let his_001_07_documentation_immutability (p_n: _) : Lemma (requires (p_n.f_is_signed == true) (ensures (p_n.f_note_content_hash == p_n.f_note_content_hash))) = admit ()
 
 (* HIS_001_08_allergy_documentation (matches Coq: Theorem HIS_001_08_allergy_documentation) *)
-let his_001_08_allergy_documentation_obligation () : Tot bool = (0 = 0)
-let his_001_08_allergy_documentation_lemma () : Lemma (requires True) (ensures (his_001_08_allergy_documentation_obligation () == his_001_08_allergy_documentation_obligation ())) = ()
+let his_001_08_allergy_documentation (p_a: _) : Lemma (requires (allergy_complete p_a == true) (ensures (p_a.f_allergen_documented == true /\ p_a.f_reaction_documented == true /\ p_a.f_severity_documented == true))) = admit ()
 
 (* HIS_001_09_drug_allergy_alert (matches Coq: Theorem HIS_001_09_drug_allergy_alert) *)
-let his_001_09_drug_allergy_alert_obligation () : Tot bool = (0 = 0)
-let his_001_09_drug_allergy_alert_lemma () : Lemma (requires True) (ensures (his_001_09_drug_allergy_alert_obligation () == his_001_09_drug_allergy_alert_obligation ())) = ()
+let his_001_09_drug_allergy_alert (p_dai: _) : Lemma (requires (interaction_detected p_dai == true) (ensures (p_dai.f_alert_triggered == true))) = admit ()
 
 (* HIS_001_10_problem_list_coded (matches Coq: Theorem HIS_001_10_problem_list_coded) *)
-let his_001_10_problem_list_coded_obligation () : Tot bool = (0 = 0)
-let his_001_10_problem_list_coded_lemma () : Lemma (requires True) (ensures (his_001_10_problem_list_coded_obligation () == his_001_10_problem_list_coded_obligation ())) = ()
+let his_001_10_problem_list_coded (p_p: _) : Lemma (requires (problem_coded p_p == true) (ensures (p_p.f_snomed_assigned == true /\ p_p.f_problem_snomed > 0))) = admit ()
 
 (* HIS_001_11_five_rights_verification (matches Coq: Theorem HIS_001_11_five_rights_verification) *)
-let his_001_11_five_rights_verification_obligation () : Tot bool = (0 = 0)
-let his_001_11_five_rights_verification_lemma () : Lemma (requires True) (ensures (his_001_11_five_rights_verification_obligation () == his_001_11_five_rights_verification_obligation ())) = ()
+let his_001_11_five_rights_verification (p_a: _) : Lemma (requires (administration_allowed p_a == true) (ensures (five_rights_verified p_a == true))) = admit ()
 
 (* HIS_001_12_drug_interaction_checking (matches Coq: Theorem HIS_001_12_drug_interaction_checking) *)
-let his_001_12_drug_interaction_checking_obligation () : Tot bool = (0 = 0)
-let his_001_12_drug_interaction_checking_lemma () : Lemma (requires True) (ensures (his_001_12_drug_interaction_checking_obligation () == his_001_12_drug_interaction_checking_obligation ())) = ()
+let his_001_12_drug_interaction_checking (p_di: _) : Lemma (requires (interaction_alerted p_di == true) (ensures (p_di.f_interaction_alert_shown == true))) = admit ()
 
 (* HIS_001_13_dose_range_checking (matches Coq: Theorem HIS_001_13_dose_range_checking) *)
-let his_001_13_dose_range_checking_obligation () : Tot bool = (0 = 0)
-let his_001_13_dose_range_checking_lemma () : Lemma (requires True) (ensures (his_001_13_dose_range_checking_obligation () == his_001_13_dose_range_checking_obligation ())) = ()
+let his_001_13_dose_range_checking (p_dc: _) : Lemma (requires (dose_in_range p_dc == true) (ensures (p_dc.f_check_dose >= p_dc.f_min_safe_dose /\ p_dc.f_check_dose <= p_dc.f_max_safe_dose))) = admit ()
 
 (* HIS_001_14_high_alert_safeguards (matches Coq: Theorem HIS_001_14_high_alert_safeguards) *)
-let his_001_14_high_alert_safeguards_obligation () : Tot bool = (0 = 0)
-let his_001_14_high_alert_safeguards_lemma () : Lemma (requires True) (ensures (his_001_14_high_alert_safeguards_obligation () == his_001_14_high_alert_safeguards_obligation ())) = ()
+let his_001_14_high_alert_safeguards (p_ham: _) : Lemma (requires (high_alert_safe p_ham == true /\ p_ham.f_is_high_alert == true) (ensures (p_ham.f_double_check_required == true /\ p_ham.f_double_check_performed == true))) = admit ()
 
 (* HIS_001_15_barcode_verification (matches Coq: Theorem HIS_001_15_barcode_verification) *)
-let his_001_15_barcode_verification_obligation () : Tot bool = (0 = 0)
-let his_001_15_barcode_verification_lemma () : Lemma (requires True) (ensures (his_001_15_barcode_verification_obligation () == his_001_15_barcode_verification_obligation ())) = ()
+let his_001_15_barcode_verification (p_a: _) : Lemma (requires (administration_allowed p_a == true) (ensures (p_a.f_barcode_verified == true))) = admit ()
 
 (* HIS_001_16_order_completeness (matches Coq: Theorem HIS_001_16_order_completeness) *)
-let his_001_16_order_completeness_obligation () : Tot bool = (0 = 0)
-let his_001_16_order_completeness_lemma () : Lemma (requires True) (ensures (his_001_16_order_completeness_obligation () == his_001_16_order_completeness_obligation ())) = ()
+let his_001_16_order_completeness (p_o: _) : Lemma (requires (order_complete_check p_o == true) (ensures (p_o.f_has_all_fields == true /\ p_o.f_ord_drug > 0 /\ p_o.f_ord_dose > 0))) = admit ()
 
 (* HIS_001_17_order_signature (matches Coq: Theorem HIS_001_17_order_signature) *)
-let his_001_17_order_signature_obligation () : Tot bool = (0 = 0)
-let his_001_17_order_signature_lemma () : Lemma (requires True) (ensures (his_001_17_order_signature_obligation () == his_001_17_order_signature_obligation ())) = ()
+let his_001_17_order_signature (p_o: _) : Lemma (requires (order_signed p_o == true) (ensures (p_o.f_has_signature == true /\ p_o.f_signature_valid == true))) = admit ()
 
 (* HIS_001_18_verbal_order_auth (matches Coq: Theorem HIS_001_18_verbal_order_auth) *)
-let his_001_18_verbal_order_auth_obligation () : Tot bool = (0 = 0)
-let his_001_18_verbal_order_auth_lemma () : Lemma (requires True) (ensures (his_001_18_verbal_order_auth_obligation () == his_001_18_verbal_order_auth_obligation ())) = ()
+let his_001_18_verbal_order_auth (p_vo: _) : Lemma (requires (verbal_order_valid p_vo == true) (ensures (p_vo.f_authenticated_within_24h == true))) = admit ()
 
 (* HIS_001_19_duplicate_order_prevention (matches Coq: Theorem HIS_001_19_duplicate_order_prevention) *)
-let his_001_19_duplicate_order_prevention_obligation () : Tot bool = (0 = 0)
-let his_001_19_duplicate_order_prevention_lemma () : Lemma (requires True) (ensures (his_001_19_duplicate_order_prevention_obligation () == his_001_19_duplicate_order_prevention_obligation ())) = ()
+let his_001_19_duplicate_order_prevention (p_doc: _) : Lemma (requires (duplicate_handled p_doc == true /\ p_doc.f_is_duplicate == true) (ensures (p_doc.f_warning_shown == true /\ p_doc.f_override_required == true))) = admit ()
 
 (* HIS_001_20_contraindication_alert (matches Coq: Theorem HIS_001_20_contraindication_alert) *)
-let his_001_20_contraindication_alert_obligation () : Tot bool = (0 = 0)
-let his_001_20_contraindication_alert_lemma () : Lemma (requires True) (ensures (his_001_20_contraindication_alert_obligation () == his_001_20_contraindication_alert_obligation ())) = ()
+let his_001_20_contraindication_alert (p_c: _) : Lemma (requires (contraindication_blocked p_c == true /\ p_c.f_contra_detected == true) (ensures (p_c.f_hard_stop_triggered == true))) = admit ()
 
 (* HIS_001_21_specimen_tracking (matches Coq: Theorem HIS_001_21_specimen_tracking) *)
-let his_001_21_specimen_tracking_obligation () : Tot bool = (0 = 0)
-let his_001_21_specimen_tracking_lemma () : Lemma (requires True) (ensures (his_001_21_specimen_tracking_obligation () == his_001_21_specimen_tracking_obligation ())) = ()
+let his_001_21_specimen_tracking (p_s: _) : Lemma (requires (specimen_tracked p_s == true) (ensures (p_s.f_fully_tracked == true /\ p_s.f_collection_time > 0))) = admit ()
 
 (* HIS_001_22_critical_value_notification (matches Coq: Theorem HIS_001_22_critical_value_notification) *)
-let his_001_22_critical_value_notification_obligation () : Tot bool = (0 = 0)
-let his_001_22_critical_value_notification_lemma () : Lemma (requires True) (ensures (his_001_22_critical_value_notification_obligation () == his_001_22_critical_value_notification_obligation ())) = ()
+let his_001_22_critical_value_notification (p_r: _) : Lemma (requires (critical_notified p_r == true /\ p_r.f_is_critical == true) (ensures (p_r.f_notified_within_30min == true))) = admit ()
 
 (* HIS_001_23_result_validation (matches Coq: Theorem HIS_001_23_result_validation) *)
-let his_001_23_result_validation_obligation () : Tot bool = (0 = 0)
-let his_001_23_result_validation_lemma () : Lemma (requires True) (ensures (his_001_23_result_validation_obligation () == his_001_23_result_validation_obligation ())) = ()
+let his_001_23_result_validation (p_r: _) : Lemma (requires (result_validated p_r == true) (ensures (p_r.f_validated == true \/ p_r.f_needs_review == true))) = admit ()
 
 (* HIS_001_24_delta_check (matches Coq: Theorem HIS_001_24_delta_check) *)
-let his_001_24_delta_check_obligation () : Tot bool = (0 = 0)
-let his_001_24_delta_check_lemma () : Lemma (requires True) (ensures (his_001_24_delta_check_obligation () == his_001_24_delta_check_obligation ())) = ()
+let his_001_24_delta_check (p_dc: _) : Lemma (requires (delta_flagged p_dc == true /\ p_dc.f_exceeds_threshold == true) (ensures (p_dc.f_flagged == true))) = admit ()
 
 (* HIS_001_25_reference_range_adjusted (matches Coq: Theorem HIS_001_25_reference_range_adjusted) *)
-let his_001_25_reference_range_adjusted_obligation () : Tot bool = (0 = 0)
-let his_001_25_reference_range_adjusted_lemma () : Lemma (requires True) (ensures (his_001_25_reference_range_adjusted_obligation () == his_001_25_reference_range_adjusted_obligation ())) = ()
+let his_001_25_reference_range_adjusted (p_rr: _) : Lemma (requires (range_adjusted p_rr == true) (ensures (p_rr.f_age_adjusted == true /\ p_rr.f_sex_adjusted == true))) = admit ()
 
 (* HIS_001_26_phi_access_control (matches Coq: Theorem HIS_001_26_phi_access_control) *)
-let his_001_26_phi_access_control_obligation () : Tot bool = (0 = 0)
-let his_001_26_phi_access_control_lemma () : Lemma (requires True) (ensures (his_001_26_phi_access_control_obligation () == his_001_26_phi_access_control_obligation ())) = ()
+let his_001_26_phi_access_control (p_pa: _) : Lemma (requires (phi_access_valid p_pa == true) (ensures (p_pa.f_role_based == true /\ p_pa.f_minimum_necessary == true))) = admit ()
 
 (* HIS_001_27_audit_trail_complete (matches Coq: Theorem HIS_001_27_audit_trail_complete) *)
-let his_001_27_audit_trail_complete_obligation () : Tot bool = (0 = 0)
-let his_001_27_audit_trail_complete_lemma () : Lemma (requires True) (ensures (his_001_27_audit_trail_complete_obligation () == his_001_27_audit_trail_complete_obligation ())) = ()
+let his_001_27_audit_trail_complete (p_pa: _) : Lemma (requires (phi_accessed p_pa == true) (ensures (p_pa.f_logged == true))) = admit ()
 
 (* HIS_001_28_breach_notification (matches Coq: Theorem HIS_001_28_breach_notification) *)
-let his_001_28_breach_notification_obligation () : Tot bool = (0 = 0)
-let his_001_28_breach_notification_lemma () : Lemma (requires True) (ensures (his_001_28_breach_notification_obligation () == his_001_28_breach_notification_obligation ())) = ()
+let his_001_28_breach_notification (p_b: _) : Lemma (requires (breach_notified p_b == true) (ensures (p_b.f_notified_within_60days == true))) = admit ()
 
 (* HIS_001_29_consent_required (matches Coq: Theorem HIS_001_29_consent_required) *)
-let his_001_29_consent_required_obligation () : Tot bool = (0 = 0)
-let his_001_29_consent_required_lemma () : Lemma (requires True) (ensures (his_001_29_consent_required_obligation () == his_001_29_consent_required_obligation ())) = ()
+let his_001_29_consent_required (p_c: _) : Lemma (requires (consent_valid p_c == true) (ensures (p_c.f_explicit_consent == true /\ p_c.f_processing_allowed == true))) = admit ()
 
 (* HIS_001_30_data_portability (matches Coq: Theorem HIS_001_30_data_portability) *)
-let his_001_30_data_portability_obligation () : Tot bool = (0 = 0)
-let his_001_30_data_portability_lemma () : Lemma (requires True) (ensures (his_001_30_data_portability_obligation () == his_001_30_data_portability_obligation ())) = ()
+let his_001_30_data_portability (p_de: _) : Lemma (requires (data_portable p_de == true) (ensures (p_de.f_machine_readable == true /\ p_de.f_export_complete == true))) = admit ()

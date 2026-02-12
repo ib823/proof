@@ -154,153 +154,115 @@ let w_001_02_sep_comm_obligation () : Tot bool = (0 = 0)
 let w_001_02_sep_comm_lemma () : Lemma (requires True) (ensures (w_001_02_sep_comm_obligation () == w_001_02_sep_comm_obligation ())) = ()
 
 (* W_001_03_sep_assoc (matches Coq: Theorem W_001_03_sep_assoc) *)
-let w_001_03_sep_assoc_obligation () : Tot bool = (0 = 0)
-let w_001_03_sep_assoc_lemma () : Lemma (requires True) (ensures (w_001_03_sep_assoc_obligation () == w_001_03_sep_assoc_obligation ())) = ()
+let w_001_03_sep_assoc (p_a1: _) (p_a2: _) (p_a3: _) (p_h1: _) (p_h2: _) (p_h3: _) : Lemma (requires (heap_disjoint p_h1 p_h2 == true /\ heap_disjoint (heap_union p_h1 p_h2) p_h3 == true /\ satisfies p_h1 p_a1 == true /\ satisfies p_h2 p_a2 == true /\ satisfies p_h3 p_a3 == true) (ensures (exists h__ h_ == heap_union p_h1 (heap_union p_h2 p_h3) /\ heap_disjoint p_h1 (heap_union p_h2 p_h3) == true))) = admit ()
 
 (* W_001_04_sep_frame (matches Coq: Theorem W_001_04_sep_frame) *)
-let w_001_04_sep_frame_obligation () : Tot bool = (0 = 0)
-let w_001_04_sep_frame_lemma () : Lemma (requires True) (ensures (w_001_04_sep_frame_obligation () == w_001_04_sep_frame_obligation ())) = ()
+let w_001_04_sep_frame (p_p: _) (p_q: _) (p_r: _) (p_h: _) : Lemma (requires (satisfies p_h (ASep p_p p_r) == true /\ (forall h1_ satisfies h1 p_p -> satisfies h1 p_q == true)) (ensures (satisfies p_h (ASep p_q p_r) == true))) = admit ()
 
 (* W_001_05_points_to_exclusive (matches Coq: Theorem W_001_05_points_to_exclusive) *)
-let w_001_05_points_to_exclusive_obligation () : Tot bool = (0 = 0)
-let w_001_05_points_to_exclusive_lemma () : Lemma (requires True) (ensures (w_001_05_points_to_exclusive_obligation () == w_001_05_points_to_exclusive_obligation ())) = ()
+let w_001_05_points_to_exclusive (p_l: _) (p_v1: _) (p_v2: _) (p_h: _) : Lemma (requires (satisfies p_h (ASep (APointsTo p_l p_v1) (APointsTo p_l p_v2)) == true) (ensures (False))) = admit ()
 
 (* W_001_06_points_to_deterministic (matches Coq: Theorem W_001_06_points_to_deterministic) *)
-let w_001_06_points_to_deterministic_obligation () : Tot bool = (0 = 0)
-let w_001_06_points_to_deterministic_lemma () : Lemma (requires True) (ensures (w_001_06_points_to_deterministic_obligation () == w_001_06_points_to_deterministic_obligation ())) = ()
+let w_001_06_points_to_deterministic (p_l: _) (p_v1: _) (p_v2: _) (p_h: _) : Lemma (requires (satisfies p_h (APointsTo p_l p_v1) == true /\ satisfies p_h (APointsTo p_l p_v2) == true) (ensures (p_v1 == p_v2))) = admit ()
 
 (* W_001_07_sep_disjoint (matches Coq: Theorem W_001_07_sep_disjoint) *)
-let w_001_07_sep_disjoint_obligation () : Tot bool = (0 = 0)
-let w_001_07_sep_disjoint_lemma () : Lemma (requires True) (ensures (w_001_07_sep_disjoint_obligation () == w_001_07_sep_disjoint_obligation ())) = ()
+let w_001_07_sep_disjoint (p_a1: _) (p_a2: _) (p_h: _) : Lemma (requires (satisfies p_h (ASep p_a1 p_a2) == true) (ensures (exists h1 h2_ heap_disjoint h1 h2 == true /\ satisfies h1 p_a1 == true /\ satisfies h2 p_a2 == true))) = admit ()
 
 (* W_001_08_precise_unique (matches Coq: Theorem W_001_08_precise_unique) *)
-let w_001_08_precise_unique_obligation () : Tot bool = (0 = 0)
-let w_001_08_precise_unique_lemma () : Lemma (requires True) (ensures (w_001_08_precise_unique_obligation () == w_001_08_precise_unique_obligation ())) = ()
+let w_001_08_precise_unique (p_a: _) : Lemma (requires (precise p_a == true /\ forall h h1 h2_ heap_subset h1 h == true /\ heap_subset h2 h == true /\ satisfies h1 p_a == true /\ satisfies h2 p_a == true) (ensures (h1 == h2))) = admit ()
 
 (* W_001_09_sep_monotonic (matches Coq: Theorem W_001_09_sep_monotonic) *)
-let w_001_09_sep_monotonic_obligation () : Tot bool = (0 = 0)
-let w_001_09_sep_monotonic_lemma () : Lemma (requires True) (ensures (w_001_09_sep_monotonic_obligation () == w_001_09_sep_monotonic_obligation ())) = ()
+let w_001_09_sep_monotonic (p_a1: _) (p_h: _) (p_h_: _) : Lemma (requires (satisfies p_h p_a1 == true /\ heap_disjoint p_h h_ == true) (ensures (satisfies p_h p_a1 == true))) = admit ()
 
 (* W_001_10_hoare_triple_sound (matches Coq: Theorem W_001_10_hoare_triple_sound) *)
-let w_001_10_hoare_triple_sound_obligation () : Tot bool = (0 = 0)
-let w_001_10_hoare_triple_sound_lemma () : Lemma (requires True) (ensures (w_001_10_hoare_triple_sound_obligation () == w_001_10_hoare_triple_sound_obligation ())) = ()
+let w_001_10_hoare_triple_sound (p_p: _) (p_c: _) (p_q: _) : Lemma (requires (hoare_triple p_p p_c p_q == true /\ forall h h__ satisfies h p_p == true /\ exec p_c h h_ == true) (ensures (satisfies h_ p_q == true))) = admit ()
 
 (* W_001_11_alloc_fresh (matches Coq: Theorem W_001_11_alloc_fresh) *)
-let w_001_11_alloc_fresh_obligation () : Tot bool = (0 = 0)
-let w_001_11_alloc_fresh_lemma () : Lemma (requires True) (ensures (w_001_11_alloc_fresh_obligation () == w_001_11_alloc_fresh_obligation ())) = ()
+let w_001_11_alloc_fresh (p_st: _) (p_sz: _) (p_new_loc: _) : Lemma (requires (allocated p_st p_new_loc == None) (ensures (allocated (alloc p_st p_sz p_new_loc) p_new_loc == Some p_sz))) = admit ()
 
 (* W_001_12_alloc_disjoint (matches Coq: Theorem W_001_12_alloc_disjoint) *)
-let w_001_12_alloc_disjoint_obligation () : Tot bool = (0 = 0)
-let w_001_12_alloc_disjoint_lemma () : Lemma (requires True) (ensures (w_001_12_alloc_disjoint_obligation () == w_001_12_alloc_disjoint_obligation ())) = ()
+let w_001_12_alloc_disjoint (p_st: _) (p_sz1: _) (p_sz2: _) (p_l1: _) (p_l2: _) : Lemma (requires (~(p_l1 == p_l2) /\ allocated p_st p_l1 == None /\ allocated p_st p_l2 == None) (ensures (fn_let st1 : == alloc p_st p_sz1 p_l1 id_in id_let st2 := alloc st1 p_sz2 p_l2 id_in allocated st2 p_l1 = Some p_sz1 /\ allocated st2 p_l2 == Some p_sz2))) = admit ()
 
 (* W_001_13_alloc_sized (matches Coq: Theorem W_001_13_alloc_sized) *)
-let w_001_13_alloc_sized_obligation () : Tot bool = (0 = 0)
-let w_001_13_alloc_sized_lemma () : Lemma (requires True) (ensures (w_001_13_alloc_sized_obligation () == w_001_13_alloc_sized_obligation ())) = ()
+let w_001_13_alloc_sized (p_st: _) (p_sz: _) (p_new_loc: _) : Lemma (requires (allocated p_st p_new_loc == None) (ensures (allocated (alloc p_st p_sz p_new_loc) p_new_loc == Some p_sz))) = admit ()
 
 (* W_001_14_free_reclaims (matches Coq: Theorem W_001_14_free_reclaims) *)
-let w_001_14_free_reclaims_obligation () : Tot bool = (0 = 0)
-let w_001_14_free_reclaims_lemma () : Lemma (requires True) (ensures (w_001_14_free_reclaims_obligation () == w_001_14_free_reclaims_obligation ())) = ()
+let w_001_14_free_reclaims (p_st: _) (p_l: _) : Lemma (allocated (free p_st p_l) p_l == None) = admit ()
 
 (* W_001_15_free_idempotent (matches Coq: Theorem W_001_15_free_idempotent) *)
-let w_001_15_free_idempotent_obligation () : Tot bool = (0 = 0)
-let w_001_15_free_idempotent_lemma () : Lemma (requires True) (ensures (w_001_15_free_idempotent_obligation () == w_001_15_free_idempotent_obligation ())) = ()
+let w_001_15_free_idempotent (p_st: _) (p_l: _) : Lemma (free (free p_st p_l) p_l == free p_st p_l) = admit ()
 
 (* W_001_16_no_use_after_free (matches Coq: Theorem W_001_16_no_use_after_free) *)
-let w_001_16_no_use_after_free_obligation () : Tot bool = (0 = 0)
-let w_001_16_no_use_after_free_lemma () : Lemma (requires True) (ensures (w_001_16_no_use_after_free_obligation () == w_001_16_no_use_after_free_obligation ())) = ()
+let w_001_16_no_use_after_free (p_st: _) (p_l: _) : Lemma (allocated (free p_st p_l) p_l == None) = admit ()
 
 (* W_001_17_no_double_free (matches Coq: Theorem W_001_17_no_double_free) *)
-let w_001_17_no_double_free_obligation () : Tot bool = (0 = 0)
-let w_001_17_no_double_free_lemma () : Lemma (requires True) (ensures (w_001_17_no_double_free_obligation () == w_001_17_no_double_free_obligation ())) = ()
+let w_001_17_no_double_free (p_st: _) (p_l: _) : Lemma (requires (allocated p_st p_l == None) (ensures (allocated (free p_st p_l) p_l == None))) = admit ()
 
 (* W_001_18_allocator_invariant (matches Coq: Theorem W_001_18_allocator_invariant) *)
-let w_001_18_allocator_invariant_obligation () : Tot bool = (0 = 0)
-let w_001_18_allocator_invariant_lemma () : Lemma (requires True) (ensures (w_001_18_allocator_invariant_obligation () == w_001_18_allocator_invariant_obligation ())) = ()
+let w_001_18_allocator_invariant (p_st: _) (p_sz: _) (p_new_loc: _) : Lemma (requires (alloc_invariant p_st == true /\ p_new_loc >= p_st.f_heap_start /\ p_new_loc + p_sz <= heap_start p_st + total_heap_size p_st /\ allocated p_st p_new_loc == None) (ensures (alloc_invariant (alloc p_st p_sz p_new_loc) == true))) = admit ()
 
 (* W_001_19_buddy_split_correct (matches Coq: Theorem W_001_19_buddy_split_correct) *)
-let w_001_19_buddy_split_correct_obligation () : Tot bool = (0 = 0)
-let w_001_19_buddy_split_correct_lemma () : Lemma (requires True) (ensures (w_001_19_buddy_split_correct_obligation () == w_001_19_buddy_split_correct_obligation ())) = ()
+let w_001_19_buddy_split_correct (p_sc: _) (p_l: _) : Lemma (requires (p_sc > 0) (ensures (fn_let (l1_ l2) : == buddy_split p_sc p_l id_in l1 = p_l /\ l2 == p_l + block_size (p_sc - 1)))) = admit ()
 
 (* W_001_20_buddy_merge_correct (matches Coq: Theorem W_001_20_buddy_merge_correct) *)
-let w_001_20_buddy_merge_correct_obligation () : Tot bool = (0 = 0)
-let w_001_20_buddy_merge_correct_lemma () : Lemma (requires True) (ensures (w_001_20_buddy_merge_correct_obligation () == w_001_20_buddy_merge_correct_obligation ())) = ()
+let w_001_20_buddy_merge_correct (p_l1: _) (p_l2: _) (p_sc: _) : Lemma (requires (p_l2 == p_l1 + block_size p_sc) (ensures (buddy_merge p_l1 p_l2 p_sc == Some p_l1))) = admit ()
 
 (* W_001_21_bounds_checked (matches Coq: Theorem W_001_21_bounds_checked) *)
-let w_001_21_bounds_checked_obligation () : Tot bool = (0 = 0)
-let w_001_21_bounds_checked_lemma () : Lemma (requires True) (ensures (w_001_21_bounds_checked_obligation () == w_001_21_bounds_checked_obligation ())) = ()
+let w_001_21_bounds_checked (p_st: _) (p_base: _) (p_sz: _) (p_idx: _) : Lemma (requires (allocated p_st p_base == Some p_sz /\ p_idx < p_sz) (ensures (bounds_ok p_st (p_base + p_idx) p_idx == true))) = admit ()
 
 (* W_001_22_no_buffer_overflow (matches Coq: Theorem W_001_22_no_buffer_overflow) *)
-let w_001_22_no_buffer_overflow_obligation () : Tot bool = (0 = 0)
-let w_001_22_no_buffer_overflow_lemma () : Lemma (requires True) (ensures (w_001_22_no_buffer_overflow_obligation () == w_001_22_no_buffer_overflow_obligation ())) = ()
+let w_001_22_no_buffer_overflow (p_st: _) (p_base: _) (p_sz: _) (p_idx: _) : Lemma (requires (allocated p_st p_base == Some p_sz /\ p_idx >= p_sz) (ensures (~((allocated p_st p_base == Some p_sz /\ p_base + p_idx == p_base + p_idx /\ p_idx < p_sz))))) = admit ()
 
 (* W_001_23_no_buffer_underflow (matches Coq: Theorem W_001_23_no_buffer_underflow) *)
-let w_001_23_no_buffer_underflow_obligation () : Tot bool = (0 = 0)
-let w_001_23_no_buffer_underflow_lemma () : Lemma (requires True) (ensures (w_001_23_no_buffer_underflow_obligation () == w_001_23_no_buffer_underflow_obligation ())) = ()
+let w_001_23_no_buffer_underflow (p_st: _) (p_base: _) (p_sz: _) (p_addr: _) : Lemma (requires (allocated p_st p_base == Some p_sz /\ p_addr < p_base) (ensures (~((exists offset_ p_addr == p_base + offset /\ offset < p_sz))))) = admit ()
 
 (* W_001_24_no_null_deref (matches Coq: Theorem W_001_24_no_null_deref) *)
-let w_001_24_no_null_deref_obligation () : Tot bool = (0 = 0)
-let w_001_24_no_null_deref_lemma () : Lemma (requires True) (ensures (w_001_24_no_null_deref_obligation () == w_001_24_no_null_deref_obligation ())) = ()
+let w_001_24_no_null_deref (p_st: _) (p_base: _) (p_sz: _) : Lemma (requires (allocated p_st p_base == Some p_sz /\ p_base > 0) (ensures (~((0 == p_base + 0))))) = admit ()
 
 (* W_001_25_no_wild_pointer (matches Coq: Theorem W_001_25_no_wild_pointer) *)
-let w_001_25_no_wild_pointer_obligation () : Tot bool = (0 = 0)
-let w_001_25_no_wild_pointer_lemma () : Lemma (requires True) (ensures (w_001_25_no_wild_pointer_obligation () == w_001_25_no_wild_pointer_obligation ())) = ()
+let w_001_25_no_wild_pointer (p_st: _) (p_l: _) (p_idx: _) : Lemma (requires ((forall base sz_ allocated p_st base == Some sz -> p_l <> base + p_idx)) (ensures (~(bounds_ok p_st p_l p_idx == true)))) = admit ()
 
 (* W_001_26_type_safe_access (matches Coq: Theorem W_001_26_type_safe_access) *)
-let w_001_26_type_safe_access_obligation () : Tot bool = (0 = 0)
-let w_001_26_type_safe_access_lemma () : Lemma (requires True) (ensures (w_001_26_type_safe_access_obligation () == w_001_26_type_safe_access_obligation ())) = ()
+let w_001_26_type_safe_access (p_tm: nat) (p_l: _) (p_t: _) : Lemma (requires (p_tm p_l == Some p_t) (ensures (exists t__ p_tm p_l == Some t_))) = admit ()
 
 (* W_001_27_alignment_correct (matches Coq: Theorem W_001_27_alignment_correct) *)
-let w_001_27_alignment_correct_obligation () : Tot bool = (0 = 0)
-let w_001_27_alignment_correct_lemma () : Lemma (requires True) (ensures (w_001_27_alignment_correct_obligation () == w_001_27_alignment_correct_obligation ())) = ()
+let w_001_27_alignment_correct (p_l: _) (p_align: _) : Lemma (requires (p_align > 0) (ensures (aligned (p_l * p_align) p_align == true))) = admit ()
 
 (* W_001_28_initialization_complete (matches Coq: Theorem W_001_28_initialization_complete) *)
-let w_001_28_initialization_complete_obligation () : Tot bool = (0 = 0)
-let w_001_28_initialization_complete_lemma () : Lemma (requires True) (ensures (w_001_28_initialization_complete_obligation () == w_001_28_initialization_complete_obligation ())) = ()
+let w_001_28_initialization_complete (p_h: nat) (p_l: _) (p_v: _) : Lemma (requires (p_h p_l == Some p_v) (ensures (exists v__ p_h p_l == Some v_))) = admit ()
 
 (* W_001_29_lifetime_respected (matches Coq: Theorem W_001_29_lifetime_respected) *)
-let w_001_29_lifetime_respected_obligation () : Tot bool = (0 = 0)
-let w_001_29_lifetime_respected_lemma () : Lemma (requires True) (ensures (w_001_29_lifetime_respected_obligation () == w_001_29_lifetime_respected_obligation ())) = ()
+let w_001_29_lifetime_respected (p_st: _) (p_l: _) (p_sz: _) : Lemma (requires (allocated p_st p_l == Some p_sz) (ensures (allocated (free p_st p_l) p_l == None))) = admit ()
 
 (* W_001_30_no_memory_leak (matches Coq: Theorem W_001_30_no_memory_leak) *)
-let w_001_30_no_memory_leak_obligation () : Tot bool = (0 = 0)
-let w_001_30_no_memory_leak_lemma () : Lemma (requires True) (ensures (w_001_30_no_memory_leak_obligation () == w_001_30_no_memory_leak_obligation ())) = ()
+let w_001_30_no_memory_leak (p_st: _) (p_l: _) (p_sz: _) : Lemma (requires (allocated p_st p_l == Some p_sz) (ensures (exists st__ st_ == free p_st p_l /\ allocated st_ p_l == None))) = admit ()
 
 (* W_001_31_ownership_unique (matches Coq: Theorem W_001_31_ownership_unique) *)
-let w_001_31_ownership_unique_obligation () : Tot bool = (0 = 0)
-let w_001_31_ownership_unique_lemma () : Lemma (requires True) (ensures (w_001_31_ownership_unique_obligation () == w_001_31_ownership_unique_obligation ())) = ()
+let w_001_31_ownership_unique (p_om: nat) (p_l: _) : Lemma (requires (p_om p_l == Owned /\ ~(forall l__ l_ == p_l) /\ p_om p_l == Owned) (ensures (p_om l_ == p_om l_))) = admit ()
 
 (* W_001_32_borrow_temporal (matches Coq: Theorem W_001_32_borrow_temporal) *)
-let w_001_32_borrow_temporal_obligation () : Tot bool = (0 = 0)
-let w_001_32_borrow_temporal_lemma () : Lemma (requires True) (ensures (w_001_32_borrow_temporal_obligation () == w_001_32_borrow_temporal_obligation ())) = ()
+let w_001_32_borrow_temporal (p_om: _) (p_l: _) (p_lifetime: _) : Lemma (requires (p_om p_l == Owned) (ensures ((borrow p_om p_l p_lifetime) p_l == Borrowed p_lifetime))) = admit ()
 
 (* W_001_33_borrow_no_write (matches Coq: Theorem W_001_33_borrow_no_write) *)
-let w_001_33_borrow_no_write_obligation () : Tot bool = (0 = 0)
-let w_001_33_borrow_no_write_lemma () : Lemma (requires True) (ensures (w_001_33_borrow_no_write_obligation () == w_001_33_borrow_no_write_obligation ())) = ()
+let w_001_33_borrow_no_write (p_om: _) (p_l: _) (p_lifetime: _) : Lemma (requires ((shared_borrow p_om p_l p_lifetime) p_l == SharedBorrow p_lifetime) (ensures (~((shared_borrow p_om p_l p_lifetime) p_l == Owned)))) = admit ()
 
 (* W_001_34_mutable_exclusive (matches Coq: Theorem W_001_34_mutable_exclusive) *)
-let w_001_34_mutable_exclusive_obligation () : Tot bool = (0 = 0)
-let w_001_34_mutable_exclusive_lemma () : Lemma (requires True) (ensures (w_001_34_mutable_exclusive_obligation () == w_001_34_mutable_exclusive_obligation ())) = ()
+let w_001_34_mutable_exclusive (p_om: _) (p_l: _) (p_lifetime: _) : Lemma (requires ((borrow p_om p_l p_lifetime) p_l == Borrowed p_lifetime) (ensures (~((borrow p_om p_l p_lifetime) p_l == SharedBorrow p_lifetime)))) = admit ()
 
 (* W_001_35_region_isolated (matches Coq: Theorem W_001_35_region_isolated) *)
-let w_001_35_region_isolated_obligation () : Tot bool = (0 = 0)
-let w_001_35_region_isolated_lemma () : Lemma (requires True) (ensures (w_001_35_region_isolated_obligation () == w_001_35_region_isolated_obligation ())) = ()
+let w_001_35_region_isolated (p_r1: _) (p_r2: _) : Lemma (requires (~(p_r1.f_region_id == p_r2.f_region_id) /\ forall l_ region_contains p_r1 l == true /\ region_contains p_r2 l == true) (ensures (False))) = admit ()
 
 (* W_001_36_region_bulk_free (matches Coq: Theorem W_001_36_region_bulk_free) *)
-let w_001_36_region_bulk_free_obligation () : Tot bool = (0 = 0)
-let w_001_36_region_bulk_free_lemma () : Lemma (requires True) (ensures (w_001_36_region_bulk_free_obligation () == w_001_36_region_bulk_free_obligation ())) = ()
+let w_001_36_region_bulk_free (p_r: _) : Lemma (requires (p_r.f_region_alive == true) (ensures ((kill_region p_r).f_region_alive == false))) = admit ()
 
 (* W_001_37_region_deterministic (matches Coq: Theorem W_001_37_region_deterministic) *)
-let w_001_37_region_deterministic_obligation () : Tot bool = (0 = 0)
-let w_001_37_region_deterministic_lemma () : Lemma (requires True) (ensures (w_001_37_region_deterministic_obligation () == w_001_37_region_deterministic_obligation ())) = ()
+let w_001_37_region_deterministic (p_r: _) : Lemma (kill_region p_r == kill_region p_r) = admit ()
 
 (* W_001_38_ownership_transfer (matches Coq: Theorem W_001_38_ownership_transfer) *)
-let w_001_38_ownership_transfer_obligation () : Tot bool = (0 = 0)
-let w_001_38_ownership_transfer_lemma () : Lemma (requires True) (ensures (w_001_38_ownership_transfer_obligation () == w_001_38_ownership_transfer_obligation ())) = ()
+let w_001_38_ownership_transfer (p_om: _) (p_l: _) : Lemma (requires (p_om p_l == Owned) (ensures ((transfer_ownership p_om p_l) p_l == Moved))) = admit ()
 
 (* W_001_39_ownership_split (matches Coq: Theorem W_001_39_ownership_split) *)
-let w_001_39_ownership_split_obligation () : Tot bool = (0 = 0)
-let w_001_39_ownership_split_lemma () : Lemma (requires True) (ensures (w_001_39_ownership_split_obligation () == w_001_39_ownership_split_obligation ())) = ()
+let w_001_39_ownership_split (p_om: _) (p_l1: _) (p_l2: _) (p_lifetime: _) : Lemma (requires (~(p_l1 == p_l2) /\ p_om p_l1 == Owned /\ p_om p_l2 == Owned) (ensures ((shared_borrow (shared_borrow p_om p_l1 p_lifetime) p_l2 p_lifetime) p_l1 == SharedBorrow p_lifetime /\ (shared_borrow (shared_borrow p_om p_l1 p_lifetime) p_l2 p_lifetime) p_l2 == SharedBorrow p_lifetime))) = admit ()
 
 (* W_001_40_ownership_join (matches Coq: Theorem W_001_40_ownership_join) *)
-let w_001_40_ownership_join_obligation () : Tot bool = (0 = 0)
-let w_001_40_ownership_join_lemma () : Lemma (requires True) (ensures (w_001_40_ownership_join_obligation () == w_001_40_ownership_join_obligation ())) = ()
+let w_001_40_ownership_join (p_om: _) (p_l: _) (p_lifetime: _) : Lemma (requires ((borrow p_om p_l p_lifetime) p_l == Borrowed p_lifetime) (ensures ((end_borrow (borrow p_om p_l p_lifetime) p_l) p_l == Owned))) = admit ()

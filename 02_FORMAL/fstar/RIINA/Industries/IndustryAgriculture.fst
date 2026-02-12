@@ -106,8 +106,7 @@ let count_food_controls (p_c: food_safety_controls) : Tot nat =
   (if p_c.f_haccp_plan then 1 else 0) + (if p_c.f_traceability_system then 1 else 0) + (if p_c.f_supplier_verification then 1 else 0) + (if p_c.f_preventive_controls then 1 else 0) + (if p_c.f_sanitation_controls then 1 else 0) + (if p_c.f_recall_capability then 1 else 0)
 
 (* fsma_compliance (matches Coq: Theorem fsma_compliance) *)
-let fsma_compliance_obligation () : Tot bool = (0 = 0)
-let fsma_compliance_lemma () : Lemma (requires True) (ensures (fsma_compliance_obligation () == fsma_compliance_obligation ())) = ()
+let fsma_compliance (p_controls: food_safety_controls) (p_facility: nat) : Lemma (p_controls.f_preventive_controls == true) = admit ()
 
 (* food_traceability (matches Coq: Theorem food_traceability) *)
 let food_traceability_obligation () : Tot bool = (0 = 0)
@@ -126,73 +125,55 @@ let supply_chain_integrity_obligation () : Tot bool = (0 = 0)
 let supply_chain_integrity_lemma () : Lemma (requires True) (ensures (supply_chain_integrity_obligation () == supply_chain_integrity_obligation ())) = ()
 
 (* haccp_required (matches Coq: Theorem haccp_required) *)
-let haccp_required_obligation () : Tot bool = (0 = 0)
-let haccp_required_lemma () : Lemma (requires True) (ensures (haccp_required_obligation () == haccp_required_obligation ())) = ()
+let haccp_required (p_controls: food_safety_controls) (p_facility: nat) : Lemma (p_controls.f_haccp_plan == true) = admit ()
 
 (* recall_capability_required (matches Coq: Theorem recall_capability_required) *)
-let recall_capability_required_obligation () : Tot bool = (0 = 0)
-let recall_capability_required_lemma () : Lemma (requires True) (ensures (recall_capability_required_obligation () == recall_capability_required_obligation ())) = ()
+let recall_capability_required (p_controls: food_safety_controls) : Lemma (p_controls.f_recall_capability == true /\ p_controls.f_traceability_system == true) = admit ()
 
 (* chemical_usage_highest_sensitivity (matches Coq: Theorem chemical_usage_highest_sensitivity) *)
-let chemical_usage_highest_sensitivity_obligation () : Tot bool = (0 = 0)
-let chemical_usage_highest_sensitivity_lemma () : Lemma (requires True) (ensures (chemical_usage_highest_sensitivity_obligation () == chemical_usage_highest_sensitivity_obligation ())) = ()
+let chemical_usage_highest_sensitivity (p_d: _) : Lemma (agri_data_sensitivity p_d <= agri_data_sensitivity ChemicalUsage) = admit ()
 
 (* agri_data_sensitivity_positive (matches Coq: Theorem agri_data_sensitivity_positive) *)
-let agri_data_sensitivity_positive_obligation () : Tot bool = (0 = 0)
-let agri_data_sensitivity_positive_lemma () : Lemma (requires True) (ensures (agri_data_sensitivity_positive_obligation () == agri_data_sensitivity_positive_obligation ())) = ()
+let agri_data_sensitivity_positive (p_d: _) : Lemma (agri_data_sensitivity p_d >= 1) = admit ()
 
 (* hazard_severity_bounded (matches Coq: Theorem hazard_severity_bounded) *)
-let hazard_severity_bounded_obligation () : Tot bool = (0 = 0)
-let hazard_severity_bounded_lemma () : Lemma (requires True) (ensures (hazard_severity_bounded_obligation () == hazard_severity_bounded_obligation ())) = ()
+let hazard_severity_bounded (p_h: _) : Lemma (hazard_severity p_h >= 3 /\ hazard_severity p_h <= 5) = admit ()
 
 (* biological_radiological_equal (matches Coq: Theorem biological_radiological_equal) *)
-let biological_radiological_equal_obligation () : Tot bool = (0 = 0)
-let biological_radiological_equal_lemma () : Lemma (requires True) (ensures (biological_radiological_equal_obligation () == biological_radiological_equal_obligation ())) = ()
+let biological_radiological_equal () : Lemma (hazard_severity Biological == hazard_severity Radiological) = admit ()
 
 (* higher_severity_more_frequent (matches Coq: Theorem higher_severity_more_frequent) *)
-let higher_severity_more_frequent_obligation () : Tot bool = (0 = 0)
-let higher_severity_more_frequent_lemma () : Lemma (requires True) (ensures (higher_severity_more_frequent_obligation () == higher_severity_more_frequent_obligation ())) = ()
+let higher_severity_more_frequent (p_h: _) : Lemma (requires (hazard_severity p_h >= 5) (ensures (haccp_frequency p_h <= 1))) = admit ()
 
 (* haccp_frequency_positive (matches Coq: Theorem haccp_frequency_positive) *)
-let haccp_frequency_positive_obligation () : Tot bool = (0 = 0)
-let haccp_frequency_positive_lemma () : Lemma (requires True) (ensures (haccp_frequency_positive_obligation () == haccp_frequency_positive_obligation ())) = ()
+let haccp_frequency_positive (p_h: _) : Lemma (haccp_frequency p_h >= 1) = admit ()
 
 (* all_controls_implies_haccp (matches Coq: Theorem all_controls_implies_haccp) *)
-let all_controls_implies_haccp_obligation () : Tot bool = (0 = 0)
-let all_controls_implies_haccp_lemma () : Lemma (requires True) (ensures (all_controls_implies_haccp_obligation () == all_controls_implies_haccp_obligation ())) = ()
+let all_controls_implies_haccp (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (p_c.f_haccp_plan == true))) = admit ()
 
 (* all_controls_implies_recall (matches Coq: Theorem all_controls_implies_recall) *)
-let all_controls_implies_recall_obligation () : Tot bool = (0 = 0)
-let all_controls_implies_recall_lemma () : Lemma (requires True) (ensures (all_controls_implies_recall_obligation () == all_controls_implies_recall_obligation ())) = ()
+let all_controls_implies_recall (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (p_c.f_recall_capability == true))) = admit ()
 
 (* all_controls_implies_traceability (matches Coq: Theorem all_controls_implies_traceability) *)
-let all_controls_implies_traceability_obligation () : Tot bool = (0 = 0)
-let all_controls_implies_traceability_lemma () : Lemma (requires True) (ensures (all_controls_implies_traceability_obligation () == all_controls_implies_traceability_obligation ())) = ()
+let all_controls_implies_traceability (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (p_c.f_traceability_system == true))) = admit ()
 
 (* farm_area_meets_minimum (matches Coq: Theorem farm_area_meets_minimum) *)
-let farm_area_meets_minimum_obligation () : Tot bool = (0 = 0)
-let farm_area_meets_minimum_lemma () : Lemma (requires True) (ensures (farm_area_meets_minimum_obligation () == farm_area_meets_minimum_obligation ())) = ()
+let farm_area_meets_minimum (p_f: _) (p_certifiedfarm: _) : Lemma (p_f.f_farm_min_area <= p_f.f_farm_area_hectares) = admit ()
 
 (* traceability_dates_valid (matches Coq: Theorem traceability_dates_valid) *)
-let traceability_dates_valid_obligation () : Tot bool = (0 = 0)
-let traceability_dates_valid_lemma () : Lemma (requires True) (ensures (traceability_dates_valid_obligation () == traceability_dates_valid_obligation ())) = ()
+let traceability_dates_valid (p_t: _) (p_traceentry: _) : Lemma (p_t.f_trace_timestamp <= p_t.f_trace_expiry) = admit ()
 
 (* agri_effect_eq_refl (matches Coq: Theorem agri_effect_eq_refl) *)
-let agri_effect_eq_refl_obligation () : Tot bool = (0 = 0)
-let agri_effect_eq_refl_lemma () : Lemma (requires True) (ensures (agri_effect_eq_refl_obligation () == agri_effect_eq_refl_obligation ())) = ()
+let agri_effect_eq_refl (p_e: _) : Lemma (requires (agri_effect_eq_dec p_e p_e == left eq_refl) (ensures (p_e == p_e))) = admit ()
 
 (* risk_score_positive (matches Coq: Theorem risk_score_positive) *)
-let risk_score_positive_obligation () : Tot bool = (0 = 0)
-let risk_score_positive_lemma () : Lemma (requires True) (ensures (risk_score_positive_obligation () == risk_score_positive_obligation ())) = ()
+let risk_score_positive (p_h: _) : Lemma (risk_score p_h >= 1) = admit ()
 
 (* risk_score_bounded (matches Coq: Theorem risk_score_bounded) *)
-let risk_score_bounded_obligation () : Tot bool = (0 = 0)
-let risk_score_bounded_lemma () : Lemma (requires True) (ensures (risk_score_bounded_obligation () == risk_score_bounded_obligation ())) = ()
+let risk_score_bounded (p_h: _) : Lemma (risk_score p_h <= 25) = admit ()
 
 (* count_controls_bounded (matches Coq: Theorem count_controls_bounded) *)
-let count_controls_bounded_obligation () : Tot bool = (0 = 0)
-let count_controls_bounded_lemma () : Lemma (requires True) (ensures (count_controls_bounded_obligation () == count_controls_bounded_obligation ())) = ()
+let count_controls_bounded (p_c: _) : Lemma (count_food_controls p_c <= 6) = admit ()
 
 (* all_controls_count_six (matches Coq: Theorem all_controls_count_six) *)
-let all_controls_count_six_obligation () : Tot bool = (0 = 0)
-let all_controls_count_six_lemma () : Lemma (requires True) (ensures (all_controls_count_six_obligation () == all_controls_count_six_obligation ())) = ()
+let all_controls_count_six (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (count_food_controls p_c == 6))) = admit ()

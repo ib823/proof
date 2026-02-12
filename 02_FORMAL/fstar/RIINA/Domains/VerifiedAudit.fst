@@ -103,101 +103,76 @@ let audit_layers (p_merkle: bool) (p_witness: bool) (p_immutable: bool) (p_compl
   andb p_merkle (andb p_witness (andb p_immutable p_complete))
 
 (* audit_001_entry_hashed (matches Coq: Theorem audit_001_entry_hashed) *)
-let audit_001_entry_hashed_obligation () : Tot bool = (0 = 0)
-let audit_001_entry_hashed_lemma () : Lemma (requires True) (ensures (audit_001_entry_hashed_obligation () == audit_001_entry_hashed_obligation ())) = ()
+let audit_001_entry_hashed (p_entry: nat) : Lemma (entry_hash p_entry == entry_hash p_entry) = admit ()
 
 (* audit_002_append_only (matches Coq: Theorem audit_002_append_only) *)
-let audit_002_append_only_obligation () : Tot bool = (0 = 0)
-let audit_002_append_only_lemma () : Lemma (requires True) (ensures (audit_002_append_only_obligation () == audit_002_append_only_obligation ())) = ()
+let audit_002_append_only (p_old_log: nat) (p_new_log: nat) : Lemma (requires (log_append_only p_old_log p_new_log == true) (ensures (log_sequence p_old_log <= log_sequence p_new_log))) = admit ()
 
 (* audit_003_sequence_monotonic (matches Coq: Theorem audit_003_sequence_monotonic) *)
-let audit_003_sequence_monotonic_obligation () : Tot bool = (0 = 0)
-let audit_003_sequence_monotonic_lemma () : Lemma (requires True) (ensures (audit_003_sequence_monotonic_obligation () == audit_003_sequence_monotonic_obligation ())) = ()
+let audit_003_sequence_monotonic (p_entries: (list nat)) : Lemma (requires (sequence_monotonic p_entries == true) (ensures (sequence_monotonic p_entries == true))) = admit ()
 
 (* audit_004_inclusion_valid (matches Coq: Theorem audit_004_inclusion_valid) *)
-let audit_004_inclusion_valid_obligation () : Tot bool = (0 = 0)
-let audit_004_inclusion_valid_lemma () : Lemma (requires True) (ensures (audit_004_inclusion_valid_obligation () == audit_004_inclusion_valid_obligation ())) = ()
+let audit_004_inclusion_valid (p_proof: nat) : Lemma (requires (verify_inclusion p_proof == true) (ensures (length (incl_path p_proof) > 0))) = admit ()
 
 (* audit_005_consistency_order (matches Coq: Theorem audit_005_consistency_order) *)
-let audit_005_consistency_order_obligation () : Tot bool = (0 = 0)
-let audit_005_consistency_order_lemma () : Lemma (requires True) (ensures (audit_005_consistency_order_obligation () == audit_005_consistency_order_obligation ())) = ()
+let audit_005_consistency_order (p_proof: nat) : Lemma (requires (consistency_size_order p_proof == true) (ensures (cons_old_size p_proof <= cons_new_size p_proof))) = admit ()
 
 (* audit_006_witnesses_sufficient (matches Coq: Theorem audit_006_witnesses_sufficient) *)
-let audit_006_witnesses_sufficient_obligation () : Tot bool = (0 = 0)
-let audit_006_witnesses_sufficient_lemma () : Lemma (requires True) (ensures (audit_006_witnesses_sufficient_obligation () == audit_006_witnesses_sufficient_obligation ())) = ()
+let audit_006_witnesses_sufficient (p_cp: nat) (p_min_witnesses: nat) : Lemma (requires (witnesses_sufficient p_cp p_min_witnesses == true) (ensures (p_min_witnesses <= length (cp_witnesses p_cp)))) = admit ()
 
 (* audit_007_witness_root (matches Coq: Theorem audit_007_witness_root) *)
-let audit_007_witness_root_obligation () : Tot bool = (0 = 0)
-let audit_007_witness_root_lemma () : Lemma (requires True) (ensures (audit_007_witness_root_obligation () == audit_007_witness_root_obligation ())) = ()
+let audit_007_witness_root (p_ws: nat) (p_expected: nat) : Lemma (requires (witness_root_matches p_ws p_expected == true) (ensures (witness_root p_ws == p_expected))) = admit ()
 
 (* audit_008_timestamp_ordered (matches Coq: Theorem audit_008_timestamp_ordered) *)
-let audit_008_timestamp_ordered_obligation () : Tot bool = (0 = 0)
-let audit_008_timestamp_ordered_lemma () : Lemma (requires True) (ensures (audit_008_timestamp_ordered_obligation () == audit_008_timestamp_ordered_obligation ())) = ()
+let audit_008_timestamp_ordered (p_e1: nat) (p_e2: nat) : Lemma (requires (timestamp_ordered p_e1 p_e2 == true) (ensures (entry_timestamp p_e1 <= entry_timestamp p_e2))) = admit ()
 
 (* audit_009_principal_logged (matches Coq: Theorem audit_009_principal_logged) *)
-let audit_009_principal_logged_obligation () : Tot bool = (0 = 0)
-let audit_009_principal_logged_lemma () : Lemma (requires True) (ensures (audit_009_principal_logged_obligation () == audit_009_principal_logged_obligation ())) = ()
+let audit_009_principal_logged (p_entry: nat) : Lemma (requires (principal_logged p_entry == true) (ensures (entry_principal p_entry > 0))) = admit ()
 
 (* audit_010_action_logged (matches Coq: Theorem audit_010_action_logged) *)
-let audit_010_action_logged_obligation () : Tot bool = (0 = 0)
-let audit_010_action_logged_lemma () : Lemma (requires True) (ensures (audit_010_action_logged_obligation () == audit_010_action_logged_obligation ())) = ()
+let audit_010_action_logged (p_entry: nat) : Lemma (requires (action_logged p_entry == true) (ensures (entry_action p_entry > 0))) = admit ()
 
 (* audit_011_resource_logged (matches Coq: Theorem audit_011_resource_logged) *)
-let audit_011_resource_logged_obligation () : Tot bool = (0 = 0)
-let audit_011_resource_logged_lemma () : Lemma (requires True) (ensures (audit_011_resource_logged_obligation () == audit_011_resource_logged_obligation ())) = ()
+let audit_011_resource_logged (p_entry: nat) : Lemma (requires (resource_logged p_entry == true) (ensures (entry_resource p_entry > 0))) = admit ()
 
 (* audit_012_hash_binds (matches Coq: Theorem audit_012_hash_binds) *)
-let audit_012_hash_binds_obligation () : Tot bool = (0 = 0)
-let audit_012_hash_binds_lemma () : Lemma (requires True) (ensures (audit_012_hash_binds_obligation () == audit_012_hash_binds_obligation ())) = ()
+let audit_012_hash_binds (p_computed: nat) (p_stored: nat) : Lemma (requires (hash_matches p_computed p_stored == true) (ensures (p_computed == p_stored))) = admit ()
 
 (* audit_013_log_not_empty (matches Coq: Theorem audit_013_log_not_empty) *)
-let audit_013_log_not_empty_obligation () : Tot bool = (0 = 0)
-let audit_013_log_not_empty_lemma () : Lemma (requires True) (ensures (audit_013_log_not_empty_obligation () == audit_013_log_not_empty_obligation ())) = ()
+let audit_013_log_not_empty (p_log: nat) : Lemma (requires (log_not_empty p_log == true) (ensures (length (log_entries p_log) > 0))) = admit ()
 
 (* audit_014_checkpoint_seq (matches Coq: Theorem audit_014_checkpoint_seq) *)
-let audit_014_checkpoint_seq_obligation () : Tot bool = (0 = 0)
-let audit_014_checkpoint_seq_lemma () : Lemma (requires True) (ensures (audit_014_checkpoint_seq_obligation () == audit_014_checkpoint_seq_obligation ())) = ()
+let audit_014_checkpoint_seq (p_cp: nat) (p_log: nat) : Lemma (requires (checkpoint_seq_valid p_cp p_log == true) (ensures (cp_sequence p_cp <= log_sequence p_log))) = admit ()
 
 (* audit_015_witness_recent (matches Coq: Theorem audit_015_witness_recent) *)
-let audit_015_witness_recent_obligation () : Tot bool = (0 = 0)
-let audit_015_witness_recent_lemma () : Lemma (requires True) (ensures (audit_015_witness_recent_obligation () == audit_015_witness_recent_obligation ())) = ()
+let audit_015_witness_recent (p_ws: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (witness_recent p_ws p_current p_max_age == true) (ensures (p_current - witness_timestamp p_ws <= p_max_age))) = admit ()
 
 (* audit_016_witnesses_diverse (matches Coq: Theorem audit_016_witnesses_diverse) *)
-let audit_016_witnesses_diverse_obligation () : Tot bool = (0 = 0)
-let audit_016_witnesses_diverse_lemma () : Lemma (requires True) (ensures (audit_016_witnesses_diverse_obligation () == audit_016_witnesses_diverse_obligation ())) = ()
+let audit_016_witnesses_diverse (p_sigs: (list nat)) : Lemma (requires (witnesses_diverse p_sigs == true) (ensures (NoDup (map witness_id p_sigs) == true))) = admit ()
 
 (* audit_017_path_bounded (matches Coq: Theorem audit_017_path_bounded) *)
-let audit_017_path_bounded_obligation () : Tot bool = (0 = 0)
-let audit_017_path_bounded_lemma () : Lemma (requires True) (ensures (audit_017_path_bounded_obligation () == audit_017_path_bounded_obligation ())) = ()
+let audit_017_path_bounded (p_path: nat) (p_max_depth: nat) : Lemma (requires (path_length_ok p_path p_max_depth == true) (ensures (length p_path <= p_max_depth))) = admit ()
 
 (* audit_018_root_unique (matches Coq: Theorem audit_018_root_unique) *)
-let audit_018_root_unique_obligation () : Tot bool = (0 = 0)
-let audit_018_root_unique_lemma () : Lemma (requires True) (ensures (audit_018_root_unique_obligation () == audit_018_root_unique_obligation ())) = ()
+let audit_018_root_unique (p_log: nat) : Lemma (log_root_hash p_log == log_root_hash p_log) = admit ()
 
 (* audit_019_entry_unique (matches Coq: Theorem audit_019_entry_unique) *)
-let audit_019_entry_unique_obligation () : Tot bool = (0 = 0)
-let audit_019_entry_unique_lemma () : Lemma (requires True) (ensures (audit_019_entry_unique_obligation () == audit_019_entry_unique_obligation ())) = ()
+let audit_019_entry_unique (p_entries: (list nat)) : Lemma (requires (entry_ids_unique p_entries == true) (ensures (NoDup (map entry_id p_entries) == true))) = admit ()
 
 (* audit_020_signature_valid (matches Coq: Theorem audit_020_signature_valid) *)
-let audit_020_signature_valid_obligation () : Tot bool = (0 = 0)
-let audit_020_signature_valid_lemma () : Lemma (requires True) (ensures (audit_020_signature_valid_obligation () == audit_020_signature_valid_obligation ())) = ()
+let audit_020_signature_valid (p_p_sig: nat) (p_expected: nat) : Lemma (requires (signature_valid id_sig p_expected == true) (ensures (id_sig == p_expected))) = admit ()
 
 (* audit_021_retention (matches Coq: Theorem audit_021_retention) *)
-let audit_021_retention_obligation () : Tot bool = (0 = 0)
-let audit_021_retention_lemma () : Lemma (requires True) (ensures (audit_021_retention_obligation () == audit_021_retention_obligation ())) = ()
+let audit_021_retention (p_entry_age: nat) (p_max_age: nat) : Lemma (requires (retention_ok p_entry_age p_max_age == true) (ensures (p_entry_age <= p_max_age))) = admit ()
 
 (* audit_022_query_complete (matches Coq: Theorem audit_022_query_complete) *)
-let audit_022_query_complete_obligation () : Tot bool = (0 = 0)
-let audit_022_query_complete_lemma () : Lemma (requires True) (ensures (audit_022_query_complete_obligation () == audit_022_query_complete_obligation ())) = ()
+let audit_022_query_complete (p_matching: nat) (p_returned: nat) : Lemma (requires (query_complete p_matching p_returned == true) (ensures (p_matching == p_returned))) = admit ()
 
 (* audit_023_storage_redundant (matches Coq: Theorem audit_023_storage_redundant) *)
-let audit_023_storage_redundant_obligation () : Tot bool = (0 = 0)
-let audit_023_storage_redundant_lemma () : Lemma (requires True) (ensures (audit_023_storage_redundant_obligation () == audit_023_storage_redundant_obligation ())) = ()
+let audit_023_storage_redundant (p_copies: nat) (p_min_copies: nat) : Lemma (requires (storage_redundant p_copies p_min_copies == true) (ensures (p_min_copies <= p_copies))) = admit ()
 
 (* audit_024_tamper_detected (matches Coq: Theorem audit_024_tamper_detected) *)
-let audit_024_tamper_detected_obligation () : Tot bool = (0 = 0)
-let audit_024_tamper_detected_lemma () : Lemma (requires True) (ensures (audit_024_tamper_detected_obligation () == audit_024_tamper_detected_obligation ())) = ()
+let audit_024_tamper_detected (p_stored: nat) (p_computed: nat) : Lemma (requires (tamper_detected p_stored p_computed == true) (ensures (~(p_stored == p_computed)))) = admit ()
 
 (* audit_025_defense_in_depth (matches Coq: Theorem audit_025_defense_in_depth) *)
-let audit_025_defense_in_depth_obligation () : Tot bool = (0 = 0)
-let audit_025_defense_in_depth_lemma () : Lemma (requires True) (ensures (audit_025_defense_in_depth_obligation () == audit_025_defense_in_depth_obligation ())) = ()
+let audit_025_defense_in_depth (p_m: _) (p_w: _) (p_i: _) (p_c: _) : Lemma (requires (audit_layers p_m p_w p_i p_c == true) (ensures (p_m == true /\ p_w == true /\ p_i == true /\ p_c == true))) = admit ()

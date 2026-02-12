@@ -233,409 +233,307 @@ let riina_session : session_security = {f_sess_secure_token=true; f_sess_rotatio
 let riina_auth : auth_config = mkAuth riina_pwd riina_mfa riina_session
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff_obligation () : Tot bool = (0 = 0)
-let andb3_true_iff_lemma () : Lemma (requires True) (ensures (andb3_true_iff_obligation () == andb3_true_iff_obligation ())) = ()
+let andb3_true_iff (p_a: _) (p_b: _) (p_c: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c == fn_true <) (ensures (p_a == true /\ p_b == true /\ p_c == true))) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = (0 = 0)
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le_obligation () : Tot bool = (0 = 0)
-let leb_le_lemma () : Lemma (requires True) (ensures (leb_le_obligation () == leb_le_obligation ())) = ()
+let leb_le (p_n: _) (p_m: _) (p_nat: _) : Lemma (requires ((p_n <=? p_m) == fn_true <) (ensures (p_n <= p_m))) = admit ()
 
 (* ltb_lt (matches Coq: Lemma ltb_lt) *)
-let ltb_lt_obligation () : Tot bool = (0 = 0)
-let ltb_lt_lemma () : Lemma (requires True) (ensures (ltb_lt_obligation () == ltb_lt_obligation ())) = ()
+let ltb_lt (p_n: _) (p_m: _) (p_nat: _) : Lemma (requires ((p_n <? p_m) == fn_true <) (ensures (p_n < p_m))) = admit ()
 
 (* AUTH_001 (matches Coq: Theorem AUTH_001) *)
-let auth_001_obligation () : Tot bool = (0 = 0)
-let auth_001_lemma () : Lemma (requires True) (ensures (auth_001_obligation () == auth_001_obligation ())) = ()
+let auth_001 () : Lemma (password_secure riina_pwd == true) = admit ()
 
 (* AUTH_002 (matches Coq: Theorem AUTH_002) *)
-let auth_002_obligation () : Tot bool = (0 = 0)
-let auth_002_lemma () : Lemma (requires True) (ensures (auth_002_obligation () == auth_002_obligation ())) = ()
+let auth_002 () : Lemma (mfa_secure riina_mfa == true) = admit ()
 
 (* AUTH_003 (matches Coq: Theorem AUTH_003) *)
-let auth_003_obligation () : Tot bool = (0 = 0)
-let auth_003_lemma () : Lemma (requires True) (ensures (auth_003_obligation () == auth_003_obligation ())) = ()
+let auth_003 () : Lemma (session_secure riina_session == true) = admit ()
 
 (* AUTH_004 (matches Coq: Theorem AUTH_004) *)
-let auth_004_obligation () : Tot bool = (0 = 0)
-let auth_004_lemma () : Lemma (requires True) (ensures (auth_004_obligation () == auth_004_obligation ())) = ()
+let auth_004 () : Lemma (auth_complete riina_auth == true) = admit ()
 
 (* AUTH_005 (matches Coq: Theorem AUTH_005) *)
-let auth_005_obligation () : Tot bool = (0 = 0)
-let auth_005_lemma () : Lemma (requires True) (ensures (auth_005_obligation () == auth_005_obligation ())) = ()
+let auth_005 () : Lemma (riina_pwd.f_pwd_bcrypt_argon == true) = admit ()
 
 (* AUTH_006 (matches Coq: Theorem AUTH_006) *)
-let auth_006_obligation () : Tot bool = (0 = 0)
-let auth_006_lemma () : Lemma (requires True) (ensures (auth_006_obligation () == auth_006_obligation ())) = ()
+let auth_006 () : Lemma (riina_mfa.f_mfa_webauthn == true) = admit ()
 
 (* AUTH_007 (matches Coq: Theorem AUTH_007) *)
-let auth_007_obligation () : Tot bool = (0 = 0)
-let auth_007_lemma () : Lemma (requires True) (ensures (auth_007_obligation () == auth_007_obligation ())) = ()
+let auth_007 () : Lemma (riina_session.f_sess_secure_token == true) = admit ()
 
 (* AUTH_008 (matches Coq: Theorem AUTH_008) *)
-let auth_008_obligation () : Tot bool = (0 = 0)
-let auth_008_lemma () : Lemma (requires True) (ensures (auth_008_obligation () == auth_008_obligation ())) = ()
+let auth_008 (p_p: _) : Lemma (requires (password_secure p_p == true) (ensures (p_p.f_pwd_bcrypt_argon == true))) = admit ()
 
 (* AUTH_009 (matches Coq: Theorem AUTH_009) *)
-let auth_009_obligation () : Tot bool = (0 = 0)
-let auth_009_lemma () : Lemma (requires True) (ensures (auth_009_obligation () == auth_009_obligation ())) = ()
+let auth_009 (p_p: _) : Lemma (requires (password_secure p_p == true) (ensures (p_p.f_pwd_salt_unique == true))) = admit ()
 
 (* AUTH_010 (matches Coq: Theorem AUTH_010) *)
-let auth_010_obligation () : Tot bool = (0 = 0)
-let auth_010_lemma () : Lemma (requires True) (ensures (auth_010_obligation () == auth_010_obligation ())) = ()
+let auth_010 (p_m: _) : Lemma (requires (mfa_secure p_m == true) (ensures (p_m.f_mfa_webauthn == true))) = admit ()
 
 (* AUTH_011 (matches Coq: Theorem AUTH_011) *)
-let auth_011_obligation () : Tot bool = (0 = 0)
-let auth_011_lemma () : Lemma (requires True) (ensures (auth_011_obligation () == auth_011_obligation ())) = ()
+let auth_011 (p_s: _) : Lemma (requires (session_secure p_s == true) (ensures (p_s.f_sess_secure_token == true))) = admit ()
 
 (* AUTH_012 (matches Coq: Theorem AUTH_012) *)
-let auth_012_obligation () : Tot bool = (0 = 0)
-let auth_012_lemma () : Lemma (requires True) (ensures (auth_012_obligation () == auth_012_obligation ())) = ()
+let auth_012 (p_s: _) : Lemma (requires (session_secure p_s == true) (ensures (p_s.f_sess_rotation == true))) = admit ()
 
 (* AUTH_013 (matches Coq: Theorem AUTH_013) *)
-let auth_013_obligation () : Tot bool = (0 = 0)
-let auth_013_lemma () : Lemma (requires True) (ensures (auth_013_obligation () == auth_013_obligation ())) = ()
+let auth_013 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures (password_secure (p_a.f_auth_pwd) == true))) = admit ()
 
 (* AUTH_014 (matches Coq: Theorem AUTH_014) *)
-let auth_014_obligation () : Tot bool = (0 = 0)
-let auth_014_lemma () : Lemma (requires True) (ensures (auth_014_obligation () == auth_014_obligation ())) = ()
+let auth_014 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures (mfa_secure (p_a.f_auth_mfa) == true))) = admit ()
 
 (* AUTH_015 (matches Coq: Theorem AUTH_015) *)
-let auth_015_obligation () : Tot bool = (0 = 0)
-let auth_015_lemma () : Lemma (requires True) (ensures (auth_015_obligation () == auth_015_obligation ())) = ()
+let auth_015 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures (session_secure (p_a.f_auth_session) == true))) = admit ()
 
 (* AUTH_016 (matches Coq: Theorem AUTH_016) *)
-let auth_016_obligation () : Tot bool = (0 = 0)
-let auth_016_lemma () : Lemma (requires True) (ensures (auth_016_obligation () == auth_016_obligation ())) = ()
+let auth_016 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures ((p_a.f_auth_pwd).f_pwd_bcrypt_argon == true))) = admit ()
 
 (* AUTH_017 (matches Coq: Theorem AUTH_017) *)
-let auth_017_obligation () : Tot bool = (0 = 0)
-let auth_017_lemma () : Lemma (requires True) (ensures (auth_017_obligation () == auth_017_obligation ())) = ()
+let auth_017 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures ((p_a.f_auth_mfa).f_mfa_webauthn == true))) = admit ()
 
 (* AUTH_018 (matches Coq: Theorem AUTH_018) *)
-let auth_018_obligation () : Tot bool = (0 = 0)
-let auth_018_lemma () : Lemma (requires True) (ensures (auth_018_obligation () == auth_018_obligation ())) = ()
+let auth_018 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures ((p_a.f_auth_session).f_sess_secure_token == true))) = admit ()
 
 (* AUTH_019 (matches Coq: Theorem AUTH_019) *)
-let auth_019_obligation () : Tot bool = (0 = 0)
-let auth_019_lemma () : Lemma (requires True) (ensures (auth_019_obligation () == auth_019_obligation ())) = ()
+let auth_019 () : Lemma (password_secure riina_pwd == true /\ mfa_secure riina_mfa == true) = admit ()
 
 (* AUTH_020 (matches Coq: Theorem AUTH_020) *)
-let auth_020_obligation () : Tot bool = (0 = 0)
-let auth_020_lemma () : Lemma (requires True) (ensures (auth_020_obligation () == auth_020_obligation ())) = ()
+let auth_020 () : Lemma (riina_pwd.f_pwd_bcrypt_argon == true /\ riina_mfa.f_mfa_webauthn == true) = admit ()
 
 (* AUTH_021 (matches Coq: Theorem AUTH_021) *)
-let auth_021_obligation () : Tot bool = (0 = 0)
-let auth_021_lemma () : Lemma (requires True) (ensures (auth_021_obligation () == auth_021_obligation ())) = ()
+let auth_021 () : Lemma (riina_session.f_sess_secure_token == true /\ riina_session.f_sess_rotation == true) = admit ()
 
 (* AUTH_022 (matches Coq: Theorem AUTH_022) *)
-let auth_022_obligation () : Tot bool = (0 = 0)
-let auth_022_lemma () : Lemma (requires True) (ensures (auth_022_obligation () == auth_022_obligation ())) = ()
+let auth_022 (p_p: _) : Lemma (requires (password_secure p_p == true) (ensures (p_p.f_pwd_bcrypt_argon == true /\ p_p.f_pwd_salt_unique == true))) = admit ()
 
 (* AUTH_023 (matches Coq: Theorem AUTH_023) *)
-let auth_023_obligation () : Tot bool = (0 = 0)
-let auth_023_lemma () : Lemma (requires True) (ensures (auth_023_obligation () == auth_023_obligation ())) = ()
+let auth_023 (p_s: _) : Lemma (requires (session_secure p_s == true) (ensures (p_s.f_sess_secure_token == true /\ p_s.f_sess_rotation == true))) = admit ()
 
 (* AUTH_024 (matches Coq: Theorem AUTH_024) *)
-let auth_024_obligation () : Tot bool = (0 = 0)
-let auth_024_lemma () : Lemma (requires True) (ensures (auth_024_obligation () == auth_024_obligation ())) = ()
+let auth_024 (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures (password_secure (p_a.f_auth_pwd) == true /\ mfa_secure (p_a.f_auth_mfa) == true))) = admit ()
 
 (* AUTH_025_complete (matches Coq: Theorem AUTH_025_complete) *)
-let auth_025_complete_obligation () : Tot bool = (0 = 0)
-let auth_025_complete_lemma () : Lemma (requires True) (ensures (auth_025_complete_obligation () == auth_025_complete_obligation ())) = ()
+let auth_025_complete (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures ((p_a.f_auth_pwd).f_pwd_bcrypt_argon == true /\ (p_a.f_auth_mfa).f_mfa_webauthn == true /\ (p_a.f_auth_session).f_sess_secure_token == true))) = admit ()
 
 (* PBKDF2_001_riina_secure (matches Coq: Theorem PBKDF2_001_riina_secure) *)
-let pbkdf2_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let pbkdf2_001_riina_secure_lemma () : Lemma (requires True) (ensures (pbkdf2_001_riina_secure_obligation () == pbkdf2_001_riina_secure_obligation ())) = ()
+let pbkdf2_001_riina_secure () : Lemma (pbkdf2_secure riina_pbkdf2 == true) = admit ()
 
 (* PBKDF2_002_sufficient_iterations (matches Coq: Theorem PBKDF2_002_sufficient_iterations) *)
-let pbkdf2_002_sufficient_iterations_obligation () : Tot bool = (0 = 0)
-let pbkdf2_002_sufficient_iterations_lemma () : Lemma (requires True) (ensures (pbkdf2_002_sufficient_iterations_obligation () == pbkdf2_002_sufficient_iterations_obligation ())) = ()
+let pbkdf2_002_sufficient_iterations (p_cfg: _) : Lemma (requires (pbkdf2_secure p_cfg == true) (ensures ((600000 <=? pbkdf2_iterations p_cfg) == true))) = admit ()
 
 (* PBKDF2_003_sufficient_salt (matches Coq: Theorem PBKDF2_003_sufficient_salt) *)
-let pbkdf2_003_sufficient_salt_obligation () : Tot bool = (0 = 0)
-let pbkdf2_003_sufficient_salt_lemma () : Lemma (requires True) (ensures (pbkdf2_003_sufficient_salt_obligation () == pbkdf2_003_sufficient_salt_obligation ())) = ()
+let pbkdf2_003_sufficient_salt (p_cfg: _) : Lemma (requires (pbkdf2_secure p_cfg == true) (ensures ((128 <=? pbkdf2_salt_bits p_cfg) == true))) = admit ()
 
 (* PBKDF2_004_sufficient_output (matches Coq: Theorem PBKDF2_004_sufficient_output) *)
-let pbkdf2_004_sufficient_output_obligation () : Tot bool = (0 = 0)
-let pbkdf2_004_sufficient_output_lemma () : Lemma (requires True) (ensures (pbkdf2_004_sufficient_output_obligation () == pbkdf2_004_sufficient_output_obligation ())) = ()
+let pbkdf2_004_sufficient_output (p_cfg: _) : Lemma (requires (pbkdf2_secure p_cfg == true) (ensures ((256 <=? pbkdf2_output_bits p_cfg) == true))) = admit ()
 
 (* PBKDF2_005_approved_algorithm (matches Coq: Theorem PBKDF2_005_approved_algorithm) *)
-let pbkdf2_005_approved_algorithm_obligation () : Tot bool = (0 = 0)
-let pbkdf2_005_approved_algorithm_lemma () : Lemma (requires True) (ensures (pbkdf2_005_approved_algorithm_obligation () == pbkdf2_005_approved_algorithm_obligation ())) = ()
+let pbkdf2_005_approved_algorithm (p_cfg: _) : Lemma (requires (pbkdf2_secure p_cfg == true) (ensures ((pbkdf2_hash_alg p_cfg <=? 1) == true))) = admit ()
 
 (* PBKDF2_006_work_factor (matches Coq: Theorem PBKDF2_006_work_factor) *)
-let pbkdf2_006_work_factor_obligation () : Tot bool = (0 = 0)
-let pbkdf2_006_work_factor_lemma () : Lemma (requires True) (ensures (pbkdf2_006_work_factor_obligation () == pbkdf2_006_work_factor_obligation ())) = ()
+let pbkdf2_006_work_factor (p_cfg: _) : Lemma (requires (pbkdf2_secure p_cfg == true) (ensures (p_cfg.f_pbkdf2_iterations >= 600000))) = admit ()
 
 (* ARGON2_001_riina_secure (matches Coq: Theorem ARGON2_001_riina_secure) *)
-let argon2_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let argon2_001_riina_secure_lemma () : Lemma (requires True) (ensures (argon2_001_riina_secure_obligation () == argon2_001_riina_secure_obligation ())) = ()
+let argon2_001_riina_secure () : Lemma (argon2_secure riina_argon2 == true) = admit ()
 
 (* ARGON2_002_sufficient_time (matches Coq: Theorem ARGON2_002_sufficient_time) *)
-let argon2_002_sufficient_time_obligation () : Tot bool = (0 = 0)
-let argon2_002_sufficient_time_lemma () : Lemma (requires True) (ensures (argon2_002_sufficient_time_obligation () == argon2_002_sufficient_time_obligation ())) = ()
+let argon2_002_sufficient_time (p_cfg: _) : Lemma (requires (argon2_secure p_cfg == true) (ensures ((3 <=? argon2_time_cost p_cfg) == true))) = admit ()
 
 (* ARGON2_003_sufficient_memory (matches Coq: Theorem ARGON2_003_sufficient_memory) *)
-let argon2_003_sufficient_memory_obligation () : Tot bool = (0 = 0)
-let argon2_003_sufficient_memory_lemma () : Lemma (requires True) (ensures (argon2_003_sufficient_memory_obligation () == argon2_003_sufficient_memory_obligation ())) = ()
+let argon2_003_sufficient_memory (p_cfg: _) : Lemma (requires (argon2_secure p_cfg == true) (ensures ((65536 <=? argon2_memory_cost p_cfg) == true))) = admit ()
 
 (* ARGON2_004_argon2id_variant (matches Coq: Theorem ARGON2_004_argon2id_variant) *)
-let argon2_004_argon2id_variant_obligation () : Tot bool = (0 = 0)
-let argon2_004_argon2id_variant_lemma () : Lemma (requires True) (ensures (argon2_004_argon2id_variant_obligation () == argon2_004_argon2id_variant_obligation ())) = ()
+let argon2_004_argon2id_variant (p_cfg: _) : Lemma (requires (argon2_secure p_cfg == true) (ensures ((argon2_variant p_cfg =? 2) == true))) = admit ()
 
 (* ARGON2_005_memory_hardness (matches Coq: Theorem ARGON2_005_memory_hardness) *)
-let argon2_005_memory_hardness_obligation () : Tot bool = (0 = 0)
-let argon2_005_memory_hardness_lemma () : Lemma (requires True) (ensures (argon2_005_memory_hardness_obligation () == argon2_005_memory_hardness_obligation ())) = ()
+let argon2_005_memory_hardness (p_cfg: _) : Lemma (requires (argon2_secure p_cfg == true) (ensures (p_cfg.f_argon2_memory_cost >= 65536))) = admit ()
 
 (* ARGON2_006_parallelism (matches Coq: Theorem ARGON2_006_parallelism) *)
-let argon2_006_parallelism_obligation () : Tot bool = (0 = 0)
-let argon2_006_parallelism_lemma () : Lemma (requires True) (ensures (argon2_006_parallelism_obligation () == argon2_006_parallelism_obligation ())) = ()
+let argon2_006_parallelism (p_cfg: _) : Lemma (requires (argon2_secure p_cfg == true) (ensures (p_cfg.f_argon2_parallelism >= 1))) = admit ()
 
 (* BCRYPT_001_riina_secure (matches Coq: Theorem BCRYPT_001_riina_secure) *)
-let bcrypt_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let bcrypt_001_riina_secure_lemma () : Lemma (requires True) (ensures (bcrypt_001_riina_secure_obligation () == bcrypt_001_riina_secure_obligation ())) = ()
+let bcrypt_001_riina_secure () : Lemma (bcrypt_secure riina_bcrypt == true) = admit ()
 
 (* BCRYPT_002_sufficient_cost (matches Coq: Theorem BCRYPT_002_sufficient_cost) *)
-let bcrypt_002_sufficient_cost_obligation () : Tot bool = (0 = 0)
-let bcrypt_002_sufficient_cost_lemma () : Lemma (requires True) (ensures (bcrypt_002_sufficient_cost_obligation () == bcrypt_002_sufficient_cost_obligation ())) = ()
+let bcrypt_002_sufficient_cost (p_cfg: _) : Lemma (requires (bcrypt_secure p_cfg == true) (ensures ((12 <=? bcrypt_cost_factor p_cfg) == true))) = admit ()
 
 (* BCRYPT_003_fixed_salt (matches Coq: Theorem BCRYPT_003_fixed_salt) *)
-let bcrypt_003_fixed_salt_obligation () : Tot bool = (0 = 0)
-let bcrypt_003_fixed_salt_lemma () : Lemma (requires True) (ensures (bcrypt_003_fixed_salt_obligation () == bcrypt_003_fixed_salt_obligation ())) = ()
+let bcrypt_003_fixed_salt (p_cfg: _) : Lemma (requires (bcrypt_secure p_cfg == true) (ensures ((bcrypt_salt_bits p_cfg =? 128) == true))) = admit ()
 
 (* BCRYPT_004_fixed_output (matches Coq: Theorem BCRYPT_004_fixed_output) *)
-let bcrypt_004_fixed_output_obligation () : Tot bool = (0 = 0)
-let bcrypt_004_fixed_output_lemma () : Lemma (requires True) (ensures (bcrypt_004_fixed_output_obligation () == bcrypt_004_fixed_output_obligation ())) = ()
+let bcrypt_004_fixed_output (p_cfg: _) : Lemma (requires (bcrypt_secure p_cfg == true) (ensures ((bcrypt_output_bits p_cfg =? 184) == true))) = admit ()
 
 (* BCRYPT_005_exponential_work (matches Coq: Theorem BCRYPT_005_exponential_work) *)
-let bcrypt_005_exponential_work_obligation () : Tot bool = (0 = 0)
-let bcrypt_005_exponential_work_lemma () : Lemma (requires True) (ensures (bcrypt_005_exponential_work_obligation () == bcrypt_005_exponential_work_obligation ())) = ()
+let bcrypt_005_exponential_work (p_cfg: _) : Lemma (requires (bcrypt_secure p_cfg == true) (ensures (p_cfg.f_bcrypt_cost_factor >= 12))) = admit ()
 
 (* TOTP_001_riina_secure (matches Coq: Theorem TOTP_001_riina_secure) *)
-let totp_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let totp_001_riina_secure_lemma () : Lemma (requires True) (ensures (totp_001_riina_secure_obligation () == totp_001_riina_secure_obligation ())) = ()
+let totp_001_riina_secure () : Lemma (totp_secure riina_totp == true) = admit ()
 
 (* TOTP_002_sufficient_secret (matches Coq: Theorem TOTP_002_sufficient_secret) *)
-let totp_002_sufficient_secret_obligation () : Tot bool = (0 = 0)
-let totp_002_sufficient_secret_lemma () : Lemma (requires True) (ensures (totp_002_sufficient_secret_obligation () == totp_002_sufficient_secret_obligation ())) = ()
+let totp_002_sufficient_secret (p_cfg: _) : Lemma (requires (totp_secure p_cfg == true) (ensures ((160 <=? totp_secret_bits p_cfg) == true))) = admit ()
 
 (* TOTP_003_sufficient_digits (matches Coq: Theorem TOTP_003_sufficient_digits) *)
-let totp_003_sufficient_digits_obligation () : Tot bool = (0 = 0)
-let totp_003_sufficient_digits_lemma () : Lemma (requires True) (ensures (totp_003_sufficient_digits_obligation () == totp_003_sufficient_digits_obligation ())) = ()
+let totp_003_sufficient_digits (p_cfg: _) : Lemma (requires (totp_secure p_cfg == true) (ensures ((6 <=? totp_digits p_cfg) == true))) = admit ()
 
 (* TOTP_004_standard_period (matches Coq: Theorem TOTP_004_standard_period) *)
-let totp_004_standard_period_obligation () : Tot bool = (0 = 0)
-let totp_004_standard_period_lemma () : Lemma (requires True) (ensures (totp_004_standard_period_obligation () == totp_004_standard_period_obligation ())) = ()
+let totp_004_standard_period (p_cfg: _) : Lemma (requires (totp_secure p_cfg == true) (ensures ((totp_period p_cfg =? 30) == true))) = admit ()
 
 (* TOTP_005_limited_drift (matches Coq: Theorem TOTP_005_limited_drift) *)
-let totp_005_limited_drift_obligation () : Tot bool = (0 = 0)
-let totp_005_limited_drift_lemma () : Lemma (requires True) (ensures (totp_005_limited_drift_obligation () == totp_005_limited_drift_obligation ())) = ()
+let totp_005_limited_drift (p_cfg: _) : Lemma (requires (totp_secure p_cfg == true) (ensures ((totp_drift_window p_cfg <=? 1) == true))) = admit ()
 
 (* TOTP_006_brute_force_resistant (matches Coq: Theorem TOTP_006_brute_force_resistant) *)
-let totp_006_brute_force_resistant_obligation () : Tot bool = (0 = 0)
-let totp_006_brute_force_resistant_lemma () : Lemma (requires True) (ensures (totp_006_brute_force_resistant_obligation () == totp_006_brute_force_resistant_obligation ())) = ()
+let totp_006_brute_force_resistant (p_cfg: _) : Lemma (requires (totp_secure p_cfg == true) (ensures (p_cfg.f_totp_secret_bits >= 160))) = admit ()
 
 (* WEBAUTHN_001_riina_secure (matches Coq: Theorem WEBAUTHN_001_riina_secure) *)
-let webauthn_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let webauthn_001_riina_secure_lemma () : Lemma (requires True) (ensures (webauthn_001_riina_secure_obligation () == webauthn_001_riina_secure_obligation ())) = ()
+let webauthn_001_riina_secure () : Lemma (webauthn_secure riina_webauthn == true) = admit ()
 
 (* WEBAUTHN_002_user_verification (matches Coq: Theorem WEBAUTHN_002_user_verification) *)
-let webauthn_002_user_verification_obligation () : Tot bool = (0 = 0)
-let webauthn_002_user_verification_lemma () : Lemma (requires True) (ensures (webauthn_002_user_verification_obligation () == webauthn_002_user_verification_obligation ())) = ()
+let webauthn_002_user_verification (p_cfg: _) : Lemma (requires (webauthn_secure p_cfg == true) (ensures ((webauthn_user_verification p_cfg =? 2) == true))) = admit ()
 
 (* WEBAUTHN_003_challenge_entropy (matches Coq: Theorem WEBAUTHN_003_challenge_entropy) *)
-let webauthn_003_challenge_entropy_obligation () : Tot bool = (0 = 0)
-let webauthn_003_challenge_entropy_lemma () : Lemma (requires True) (ensures (webauthn_003_challenge_entropy_obligation () == webauthn_003_challenge_entropy_obligation ())) = ()
+let webauthn_003_challenge_entropy (p_cfg: _) : Lemma (requires (webauthn_secure p_cfg == true) (ensures ((128 <=? webauthn_challenge_bits p_cfg) == true))) = admit ()
 
 (* WEBAUTHN_004_timeout_range (matches Coq: Theorem WEBAUTHN_004_timeout_range) *)
-let webauthn_004_timeout_range_obligation () : Tot bool = (0 = 0)
-let webauthn_004_timeout_range_lemma () : Lemma (requires True) (ensures (webauthn_004_timeout_range_obligation () == webauthn_004_timeout_range_obligation ())) = ()
+let webauthn_004_timeout_range (p_cfg: _) : Lemma (requires (webauthn_secure p_cfg == true) (ensures ((60000 <=? webauthn_timeout_ms p_cfg) == true /\ (webauthn_timeout_ms p_cfg <=? 300000) == true))) = admit ()
 
 (* WEBAUTHN_005_impersonation_prevention (matches Coq: Theorem WEBAUTHN_005_impersonation_prevention) *)
-let webauthn_005_impersonation_prevention_obligation () : Tot bool = (0 = 0)
-let webauthn_005_impersonation_prevention_lemma () : Lemma (requires True) (ensures (webauthn_005_impersonation_prevention_obligation () == webauthn_005_impersonation_prevention_obligation ())) = ()
+let webauthn_005_impersonation_prevention (p_cfg: _) : Lemma (requires (webauthn_secure p_cfg == true) (ensures (p_cfg.f_webauthn_user_verification == 2))) = admit ()
 
 (* SESSION_001_riina_secure (matches Coq: Theorem SESSION_001_riina_secure) *)
-let session_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let session_001_riina_secure_lemma () : Lemma (requires True) (ensures (session_001_riina_secure_obligation () == session_001_riina_secure_obligation ())) = ()
+let session_001_riina_secure () : Lemma (session_token_secure riina_session_token == true) = admit ()
 
 (* SESSION_002_sufficient_entropy (matches Coq: Theorem SESSION_002_sufficient_entropy) *)
-let session_002_sufficient_entropy_obligation () : Tot bool = (0 = 0)
-let session_002_sufficient_entropy_lemma () : Lemma (requires True) (ensures (session_002_sufficient_entropy_obligation () == session_002_sufficient_entropy_obligation ())) = ()
+let session_002_sufficient_entropy (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures ((256 <=? token_entropy_bits p_cfg) == true))) = admit ()
 
 (* SESSION_003_rotation_enabled (matches Coq: Theorem SESSION_003_rotation_enabled) *)
-let session_003_rotation_enabled_obligation () : Tot bool = (0 = 0)
-let session_003_rotation_enabled_lemma () : Lemma (requires True) (ensures (session_003_rotation_enabled_obligation () == session_003_rotation_enabled_obligation ())) = ()
+let session_003_rotation_enabled (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures (p_cfg.f_token_rotation == true))) = admit ()
 
 (* SESSION_004_binding_enabled (matches Coq: Theorem SESSION_004_binding_enabled) *)
-let session_004_binding_enabled_obligation () : Tot bool = (0 = 0)
-let session_004_binding_enabled_lemma () : Lemma (requires True) (ensures (session_004_binding_enabled_obligation () == session_004_binding_enabled_obligation ())) = ()
+let session_004_binding_enabled (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures (p_cfg.f_token_binding == true))) = admit ()
 
 (* SESSION_005_secure_flag (matches Coq: Theorem SESSION_005_secure_flag) *)
-let session_005_secure_flag_obligation () : Tot bool = (0 = 0)
-let session_005_secure_flag_lemma () : Lemma (requires True) (ensures (session_005_secure_flag_obligation () == session_005_secure_flag_obligation ())) = ()
+let session_005_secure_flag (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures (p_cfg.f_token_secure_flag == true))) = admit ()
 
 (* SESSION_006_httponly_flag (matches Coq: Theorem SESSION_006_httponly_flag) *)
-let session_006_httponly_flag_obligation () : Tot bool = (0 = 0)
-let session_006_httponly_flag_lemma () : Lemma (requires True) (ensures (session_006_httponly_flag_obligation () == session_006_httponly_flag_obligation ())) = ()
+let session_006_httponly_flag (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures (p_cfg.f_token_httponly_flag == true))) = admit ()
 
 (* SESSION_007_samesite_protection (matches Coq: Theorem SESSION_007_samesite_protection) *)
-let session_007_samesite_protection_obligation () : Tot bool = (0 = 0)
-let session_007_samesite_protection_lemma () : Lemma (requires True) (ensures (session_007_samesite_protection_obligation () == session_007_samesite_protection_obligation ())) = ()
+let session_007_samesite_protection (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures ((1 <=? token_samesite p_cfg) == true))) = admit ()
 
 (* SESSION_008_guessing_resistant (matches Coq: Theorem SESSION_008_guessing_resistant) *)
-let session_008_guessing_resistant_obligation () : Tot bool = (0 = 0)
-let session_008_guessing_resistant_lemma () : Lemma (requires True) (ensures (session_008_guessing_resistant_obligation () == session_008_guessing_resistant_obligation ())) = ()
+let session_008_guessing_resistant (p_cfg: _) : Lemma (requires (session_token_secure p_cfg == true) (ensures (p_cfg.f_token_entropy_bits >= 256))) = admit ()
 
 (* OAUTH2_001_riina_secure (matches Coq: Theorem OAUTH2_001_riina_secure) *)
-let oauth2_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let oauth2_001_riina_secure_lemma () : Lemma (requires True) (ensures (oauth2_001_riina_secure_obligation () == oauth2_001_riina_secure_obligation ())) = ()
+let oauth2_001_riina_secure () : Lemma (oauth2_secure riina_oauth2 == true) = admit ()
 
 (* OAUTH2_002_pkce_required (matches Coq: Theorem OAUTH2_002_pkce_required) *)
-let oauth2_002_pkce_required_obligation () : Tot bool = (0 = 0)
-let oauth2_002_pkce_required_lemma () : Lemma (requires True) (ensures (oauth2_002_pkce_required_obligation () == oauth2_002_pkce_required_obligation ())) = ()
+let oauth2_002_pkce_required (p_cfg: _) : Lemma (requires (oauth2_secure p_cfg == true) (ensures (p_cfg.f_oauth2_pkce == true))) = admit ()
 
 (* OAUTH2_003_state_required (matches Coq: Theorem OAUTH2_003_state_required) *)
-let oauth2_003_state_required_obligation () : Tot bool = (0 = 0)
-let oauth2_003_state_required_lemma () : Lemma (requires True) (ensures (oauth2_003_state_required_obligation () == oauth2_003_state_required_obligation ())) = ()
+let oauth2_003_state_required (p_cfg: _) : Lemma (requires (oauth2_secure p_cfg == true) (ensures (p_cfg.f_oauth2_state_param == true))) = admit ()
 
 (* OAUTH2_004_code_entropy (matches Coq: Theorem OAUTH2_004_code_entropy) *)
-let oauth2_004_code_entropy_obligation () : Tot bool = (0 = 0)
-let oauth2_004_code_entropy_lemma () : Lemma (requires True) (ensures (oauth2_004_code_entropy_obligation () == oauth2_004_code_entropy_obligation ())) = ()
+let oauth2_004_code_entropy (p_cfg: _) : Lemma (requires (oauth2_secure p_cfg == true) (ensures ((128 <=? oauth2_code_bits p_cfg) == true))) = admit ()
 
 (* OAUTH2_005_short_code_expiry (matches Coq: Theorem OAUTH2_005_short_code_expiry) *)
-let oauth2_005_short_code_expiry_obligation () : Tot bool = (0 = 0)
-let oauth2_005_short_code_expiry_lemma () : Lemma (requires True) (ensures (oauth2_005_short_code_expiry_obligation () == oauth2_005_short_code_expiry_obligation ())) = ()
+let oauth2_005_short_code_expiry (p_cfg: _) : Lemma (requires (oauth2_secure p_cfg == true) (ensures ((oauth2_code_expiry p_cfg <=? 60) == true))) = admit ()
 
 (* OAUTH2_006_refresh_rotation (matches Coq: Theorem OAUTH2_006_refresh_rotation) *)
-let oauth2_006_refresh_rotation_obligation () : Tot bool = (0 = 0)
-let oauth2_006_refresh_rotation_lemma () : Lemma (requires True) (ensures (oauth2_006_refresh_rotation_obligation () == oauth2_006_refresh_rotation_obligation ())) = ()
+let oauth2_006_refresh_rotation (p_cfg: _) : Lemma (requires (oauth2_secure p_cfg == true) (ensures (p_cfg.f_oauth2_refresh_rotation == true))) = admit ()
 
 (* OAUTH2_007_code_interception_prevention (matches Coq: Theorem OAUTH2_007_code_interception_prevention) *)
-let oauth2_007_code_interception_prevention_obligation () : Tot bool = (0 = 0)
-let oauth2_007_code_interception_prevention_lemma () : Lemma (requires True) (ensures (oauth2_007_code_interception_prevention_obligation () == oauth2_007_code_interception_prevention_obligation ())) = ()
+let oauth2_007_code_interception_prevention (p_cfg: _) : Lemma (requires (oauth2_secure p_cfg == true) (ensures (p_cfg.f_oauth2_pkce == true /\ (128 <=? oauth2_code_bits p_cfg) == true))) = admit ()
 
 (* OIDC_001_riina_secure (matches Coq: Theorem OIDC_001_riina_secure) *)
-let oidc_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let oidc_001_riina_secure_lemma () : Lemma (requires True) (ensures (oidc_001_riina_secure_obligation () == oidc_001_riina_secure_obligation ())) = ()
+let oidc_001_riina_secure () : Lemma (oidc_secure riina_oidc == true) = admit ()
 
 (* OIDC_002_secure_base (matches Coq: Theorem OIDC_002_secure_base) *)
-let oidc_002_secure_base_obligation () : Tot bool = (0 = 0)
-let oidc_002_secure_base_lemma () : Lemma (requires True) (ensures (oidc_002_secure_base_obligation () == oidc_002_secure_base_obligation ())) = ()
+let oidc_002_secure_base (p_cfg: _) : Lemma (requires (oidc_secure p_cfg == true) (ensures (oauth2_secure (p_cfg.f_oidc_base) == true))) = admit ()
 
 (* OIDC_003_strong_signing (matches Coq: Theorem OIDC_003_strong_signing) *)
-let oidc_003_strong_signing_obligation () : Tot bool = (0 = 0)
-let oidc_003_strong_signing_lemma () : Lemma (requires True) (ensures (oidc_003_strong_signing_obligation () == oidc_003_strong_signing_obligation ())) = ()
+let oidc_003_strong_signing (p_cfg: _) : Lemma (requires (oidc_secure p_cfg == true) (ensures ((1 <=? oidc_id_token_alg p_cfg) == true))) = admit ()
 
 (* OIDC_004_short_id_expiry (matches Coq: Theorem OIDC_004_short_id_expiry) *)
-let oidc_004_short_id_expiry_obligation () : Tot bool = (0 = 0)
-let oidc_004_short_id_expiry_lemma () : Lemma (requires True) (ensures (oidc_004_short_id_expiry_obligation () == oidc_004_short_id_expiry_obligation ())) = ()
+let oidc_004_short_id_expiry (p_cfg: _) : Lemma (requires (oidc_secure p_cfg == true) (ensures ((oidc_id_token_expiry p_cfg <=? 3600) == true))) = admit ()
 
 (* OIDC_005_claims_verified (matches Coq: Theorem OIDC_005_claims_verified) *)
-let oidc_005_claims_verified_obligation () : Tot bool = (0 = 0)
-let oidc_005_claims_verified_lemma () : Lemma (requires True) (ensures (oidc_005_claims_verified_obligation () == oidc_005_claims_verified_obligation ())) = ()
+let oidc_005_claims_verified (p_cfg: _) : Lemma (requires (oidc_secure p_cfg == true) (ensures (p_cfg.f_oidc_claims_verified == true))) = admit ()
 
 (* OIDC_006_inherits_pkce (matches Coq: Theorem OIDC_006_inherits_pkce) *)
-let oidc_006_inherits_pkce_obligation () : Tot bool = (0 = 0)
-let oidc_006_inherits_pkce_lemma () : Lemma (requires True) (ensures (oidc_006_inherits_pkce_obligation () == oidc_006_inherits_pkce_obligation ())) = ()
+let oidc_006_inherits_pkce (p_cfg: _) : Lemma (requires (oidc_secure p_cfg == true) (ensures ((p_cfg.f_oidc_base).f_oauth2_pkce == true))) = admit ()
 
 (* CHALLENGE_001_riina_secure (matches Coq: Theorem CHALLENGE_001_riina_secure) *)
-let challenge_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let challenge_001_riina_secure_lemma () : Lemma (requires True) (ensures (challenge_001_riina_secure_obligation () == challenge_001_riina_secure_obligation ())) = ()
+let challenge_001_riina_secure () : Lemma (challenge_secure riina_challenge == true) = admit ()
 
 (* CHALLENGE_002_sufficient_entropy (matches Coq: Theorem CHALLENGE_002_sufficient_entropy) *)
-let challenge_002_sufficient_entropy_obligation () : Tot bool = (0 = 0)
-let challenge_002_sufficient_entropy_lemma () : Lemma (requires True) (ensures (challenge_002_sufficient_entropy_obligation () == challenge_002_sufficient_entropy_obligation ())) = ()
+let challenge_002_sufficient_entropy (p_cfg: _) : Lemma (requires (challenge_secure p_cfg == true) (ensures ((128 <=? challenge_bits p_cfg) == true))) = admit ()
 
 (* CHALLENGE_003_short_expiry (matches Coq: Theorem CHALLENGE_003_short_expiry) *)
-let challenge_003_short_expiry_obligation () : Tot bool = (0 = 0)
-let challenge_003_short_expiry_lemma () : Lemma (requires True) (ensures (challenge_003_short_expiry_obligation () == challenge_003_short_expiry_obligation ())) = ()
+let challenge_003_short_expiry (p_cfg: _) : Lemma (requires (challenge_secure p_cfg == true) (ensures ((challenge_expiry_ms p_cfg <=? 300000) == true))) = admit ()
 
 (* CHALLENGE_004_single_use (matches Coq: Theorem CHALLENGE_004_single_use) *)
-let challenge_004_single_use_obligation () : Tot bool = (0 = 0)
-let challenge_004_single_use_lemma () : Lemma (requires True) (ensures (challenge_004_single_use_obligation () == challenge_004_single_use_obligation ())) = ()
+let challenge_004_single_use (p_cfg: _) : Lemma (requires (challenge_secure p_cfg == true) (ensures (p_cfg.f_challenge_single_use == true))) = admit ()
 
 (* CHALLENGE_005_session_bound (matches Coq: Theorem CHALLENGE_005_session_bound) *)
-let challenge_005_session_bound_obligation () : Tot bool = (0 = 0)
-let challenge_005_session_bound_lemma () : Lemma (requires True) (ensures (challenge_005_session_bound_obligation () == challenge_005_session_bound_obligation ())) = ()
+let challenge_005_session_bound (p_cfg: _) : Lemma (requires (challenge_secure p_cfg == true) (ensures (p_cfg.f_challenge_bound == true))) = admit ()
 
 (* CHALLENGE_006_guessing_resistant (matches Coq: Theorem CHALLENGE_006_guessing_resistant) *)
-let challenge_006_guessing_resistant_obligation () : Tot bool = (0 = 0)
-let challenge_006_guessing_resistant_lemma () : Lemma (requires True) (ensures (challenge_006_guessing_resistant_obligation () == challenge_006_guessing_resistant_obligation ())) = ()
+let challenge_006_guessing_resistant (p_cfg: _) : Lemma (requires (challenge_secure p_cfg == true) (ensures (p_cfg.f_challenge_bits >= 128))) = admit ()
 
 (* CHALLENGE_007_replay_prevention (matches Coq: Theorem CHALLENGE_007_replay_prevention) *)
-let challenge_007_replay_prevention_obligation () : Tot bool = (0 = 0)
-let challenge_007_replay_prevention_lemma () : Lemma (requires True) (ensures (challenge_007_replay_prevention_obligation () == challenge_007_replay_prevention_obligation ())) = ()
+let challenge_007_replay_prevention (p_cfg: _) : Lemma (requires (challenge_secure p_cfg == true) (ensures (p_cfg.f_challenge_single_use == true /\ p_cfg.f_challenge_bound == true))) = admit ()
 
 (* REPLAY_001_riina_secure (matches Coq: Theorem REPLAY_001_riina_secure) *)
-let replay_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let replay_001_riina_secure_lemma () : Lemma (requires True) (ensures (replay_001_riina_secure_obligation () == replay_001_riina_secure_obligation ())) = ()
+let replay_001_riina_secure () : Lemma (replay_prevention_secure riina_nonce_tracker == true) = admit ()
 
 (* REPLAY_002_sufficient_nonce (matches Coq: Theorem REPLAY_002_sufficient_nonce) *)
-let replay_002_sufficient_nonce_obligation () : Tot bool = (0 = 0)
-let replay_002_sufficient_nonce_lemma () : Lemma (requires True) (ensures (replay_002_sufficient_nonce_obligation () == replay_002_sufficient_nonce_obligation ())) = ()
+let replay_002_sufficient_nonce (p_cfg: _) : Lemma (requires (replay_prevention_secure p_cfg == true) (ensures ((128 <=? nonce_size_bits p_cfg) == true))) = admit ()
 
 (* REPLAY_003_sufficient_window (matches Coq: Theorem REPLAY_003_sufficient_window) *)
-let replay_003_sufficient_window_obligation () : Tot bool = (0 = 0)
-let replay_003_sufficient_window_lemma () : Lemma (requires True) (ensures (replay_003_sufficient_window_obligation () == replay_003_sufficient_window_obligation ())) = ()
+let replay_003_sufficient_window (p_cfg: _) : Lemma (requires (replay_prevention_secure p_cfg == true) (ensures ((1000 <=? nonce_window_size p_cfg) == true))) = admit ()
 
 (* REPLAY_004_bounded_timestamp (matches Coq: Theorem REPLAY_004_bounded_timestamp) *)
-let replay_004_bounded_timestamp_obligation () : Tot bool = (0 = 0)
-let replay_004_bounded_timestamp_lemma () : Lemma (requires True) (ensures (replay_004_bounded_timestamp_obligation () == replay_004_bounded_timestamp_obligation ())) = ()
+let replay_004_bounded_timestamp (p_cfg: _) : Lemma (requires (replay_prevention_secure p_cfg == true) (ensures ((nonce_timestamp_bound p_cfg <=? 300) == true))) = admit ()
 
 (* REPLAY_005_window_prevents_replay (matches Coq: Theorem REPLAY_005_window_prevents_replay) *)
-let replay_005_window_prevents_replay_obligation () : Tot bool = (0 = 0)
-let replay_005_window_prevents_replay_lemma () : Lemma (requires True) (ensures (replay_005_window_prevents_replay_obligation () == replay_005_window_prevents_replay_obligation ())) = ()
+let replay_005_window_prevents_replay (p_cfg: _) : Lemma (requires (replay_prevention_secure p_cfg == true) (ensures (p_cfg.f_nonce_window_size >= 1000))) = admit ()
 
 (* REPLAY_006_limited_attack_window (matches Coq: Theorem REPLAY_006_limited_attack_window) *)
-let replay_006_limited_attack_window_obligation () : Tot bool = (0 = 0)
-let replay_006_limited_attack_window_lemma () : Lemma (requires True) (ensures (replay_006_limited_attack_window_obligation () == replay_006_limited_attack_window_obligation ())) = ()
+let replay_006_limited_attack_window (p_cfg: _) : Lemma (requires (replay_prevention_secure p_cfg == true) (ensures (p_cfg.f_nonce_timestamp_bound <= 300))) = admit ()
 
 (* COMPOSITE_001_password_hashing_secure (matches Coq: Theorem COMPOSITE_001_password_hashing_secure) *)
-let composite_001_password_hashing_secure_obligation () : Tot bool = (0 = 0)
-let composite_001_password_hashing_secure_lemma () : Lemma (requires True) (ensures (composite_001_password_hashing_secure_obligation () == composite_001_password_hashing_secure_obligation ())) = ()
+let composite_001_password_hashing_secure () : Lemma (pbkdf2_secure riina_pbkdf2 == true /\ argon2_secure riina_argon2 == true /\ bcrypt_secure riina_bcrypt == true) = admit ()
 
 (* COMPOSITE_002_mfa_complete (matches Coq: Theorem COMPOSITE_002_mfa_complete) *)
-let composite_002_mfa_complete_obligation () : Tot bool = (0 = 0)
-let composite_002_mfa_complete_lemma () : Lemma (requires True) (ensures (composite_002_mfa_complete_obligation () == composite_002_mfa_complete_obligation ())) = ()
+let composite_002_mfa_complete () : Lemma (totp_secure riina_totp == true /\ webauthn_secure riina_webauthn == true) = admit ()
 
 (* COMPOSITE_003_session_complete (matches Coq: Theorem COMPOSITE_003_session_complete) *)
-let composite_003_session_complete_obligation () : Tot bool = (0 = 0)
-let composite_003_session_complete_lemma () : Lemma (requires True) (ensures (composite_003_session_complete_obligation () == composite_003_session_complete_obligation ())) = ()
+let composite_003_session_complete () : Lemma (session_token_secure riina_session_token == true /\ oauth2_secure riina_oauth2 == true /\ oidc_secure riina_oidc == true) = admit ()
 
 (* COMPOSITE_004_challenge_complete (matches Coq: Theorem COMPOSITE_004_challenge_complete) *)
-let composite_004_challenge_complete_obligation () : Tot bool = (0 = 0)
-let composite_004_challenge_complete_lemma () : Lemma (requires True) (ensures (composite_004_challenge_complete_obligation () == composite_004_challenge_complete_obligation ())) = ()
+let composite_004_challenge_complete () : Lemma (challenge_secure riina_challenge == true /\ replay_prevention_secure riina_nonce_tracker == true) = admit ()
 
 (* COMPOSITE_005_riina_auth_complete (matches Coq: Theorem COMPOSITE_005_riina_auth_complete) *)
-let composite_005_riina_auth_complete_obligation () : Tot bool = (0 = 0)
-let composite_005_riina_auth_complete_lemma () : Lemma (requires True) (ensures (composite_005_riina_auth_complete_obligation () == composite_005_riina_auth_complete_obligation ())) = ()
+let composite_005_riina_auth_complete () : Lemma (auth_complete riina_auth == true /\ pbkdf2_secure riina_pbkdf2 == true /\ argon2_secure riina_argon2 == true /\ bcrypt_secure riina_bcrypt == true /\ totp_secure riina_totp == true /\ webauthn_secure riina_webauthn == true /\ session_token_secure riina_session_token == true /\ oauth2_secure riina_oauth2 == true /\ oidc_secure riina_oidc == true /\ challenge_secure riina_challenge == true /\ replay_prevention_secure riina_nonce_tracker == true) = admit ()
 
 (* COMPOSITE_006_auth_implies_all (matches Coq: Theorem COMPOSITE_006_auth_implies_all) *)
-let composite_006_auth_implies_all_obligation () : Tot bool = (0 = 0)
-let composite_006_auth_implies_all_lemma () : Lemma (requires True) (ensures (composite_006_auth_implies_all_obligation () == composite_006_auth_implies_all_obligation ())) = ()
+let composite_006_auth_implies_all (p_a: _) : Lemma (requires (auth_complete p_a == true) (ensures ((p_a.f_auth_pwd).f_pwd_bcrypt_argon == true /\ (p_a.f_auth_pwd).f_pwd_salt_unique == true /\ (p_a.f_auth_mfa).f_mfa_totp_support == true /\ (p_a.f_auth_mfa).f_mfa_webauthn == true /\ (p_a.f_auth_session).f_sess_secure_token == true /\ (p_a.f_auth_session).f_sess_rotation == true))) = admit ()
 
 (* TOKEN_001_valid_not_expired (matches Coq: Theorem TOKEN_001_valid_not_expired) *)
-let token_001_valid_not_expired_obligation () : Tot bool = (0 = 0)
-let token_001_valid_not_expired_lemma () : Lemma (requires True) (ensures (token_001_valid_not_expired_obligation () == token_001_valid_not_expired_obligation ())) = ()
+let token_001_valid_not_expired () : Lemma (~(TokenValid == TokenExpired)) = admit ()
 
 (* TOKEN_002_valid_not_invalid (matches Coq: Theorem TOKEN_002_valid_not_invalid) *)
-let token_002_valid_not_invalid_obligation () : Tot bool = (0 = 0)
-let token_002_valid_not_invalid_lemma () : Lemma (requires True) (ensures (token_002_valid_not_invalid_obligation () == token_002_valid_not_invalid_obligation ())) = ()
+let token_002_valid_not_invalid () : Lemma (~(TokenValid == TokenInvalid)) = admit ()
 
 (* TOKEN_003_valid_not_revoked (matches Coq: Theorem TOKEN_003_valid_not_revoked) *)
-let token_003_valid_not_revoked_obligation () : Tot bool = (0 = 0)
-let token_003_valid_not_revoked_lemma () : Lemma (requires True) (ensures (token_003_valid_not_revoked_obligation () == token_003_valid_not_revoked_obligation ())) = ()
+let token_003_valid_not_revoked () : Lemma (~(TokenValid == TokenRevoked)) = admit ()
 
 (* TOKEN_004_expired_not_valid (matches Coq: Theorem TOKEN_004_expired_not_valid) *)
-let token_004_expired_not_valid_obligation () : Tot bool = (0 = 0)
-let token_004_expired_not_valid_lemma () : Lemma (requires True) (ensures (token_004_expired_not_valid_obligation () == token_004_expired_not_valid_obligation ())) = ()
+let token_004_expired_not_valid () : Lemma (~(TokenExpired == TokenValid)) = admit ()

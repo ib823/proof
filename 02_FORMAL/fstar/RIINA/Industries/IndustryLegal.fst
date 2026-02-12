@@ -116,93 +116,70 @@ let records_retention_obligation () : Tot bool = (0 = 0)
 let records_retention_lemma () : Lemma (requires True) (ensures (records_retention_obligation () == records_retention_obligation ())) = ()
 
 (* privilege_requires_encryption (matches Coq: Theorem privilege_requires_encryption) *)
-let privilege_requires_encryption_obligation () : Tot bool = (0 = 0)
-let privilege_requires_encryption_lemma () : Lemma (requires True) (ensures (privilege_requires_encryption_obligation () == privilege_requires_encryption_obligation ())) = ()
+let privilege_requires_encryption (p_controls: legal_security_controls) (p_comm: legal_data) : Lemma (p_controls.f_privilege_protection == true) = admit ()
 
 (* ethical_walls_effective (matches Coq: Theorem ethical_walls_effective) *)
-let ethical_walls_effective_obligation () : Tot bool = (0 = 0)
-let ethical_walls_effective_lemma () : Lemma (requires True) (ensures (ethical_walls_effective_obligation () == ethical_walls_effective_obligation ())) = ()
+let ethical_walls_effective (p_controls: legal_security_controls) (p_matter1: nat) (p_matter2: nat) : Lemma (p_controls.f_ethical_walls == true) = admit ()
 
 (* privilege_max_sensitivity (matches Coq: Theorem privilege_max_sensitivity) *)
-let privilege_max_sensitivity_obligation () : Tot bool = (0 = 0)
-let privilege_max_sensitivity_lemma () : Lemma (requires True) (ensures (privilege_max_sensitivity_obligation () == privilege_max_sensitivity_obligation ())) = ()
+let privilege_max_sensitivity (p_d: _) : Lemma (legal_sensitivity p_d <= legal_sensitivity AttorneyClientPrivilege) = admit ()
 
 (* trust_equals_privilege_sensitivity (matches Coq: Theorem trust_equals_privilege_sensitivity) *)
-let trust_equals_privilege_sensitivity_obligation () : Tot bool = (0 = 0)
-let trust_equals_privilege_sensitivity_lemma () : Lemma (requires True) (ensures (trust_equals_privilege_sensitivity_obligation () == trust_equals_privilege_sensitivity_obligation ())) = ()
+let trust_equals_privilege_sensitivity () : Lemma (legal_sensitivity TrustAccount == legal_sensitivity AttorneyClientPrivilege) = admit ()
 
 (* legal_sensitivity_positive (matches Coq: Theorem legal_sensitivity_positive) *)
-let legal_sensitivity_positive_obligation () : Tot bool = (0 = 0)
-let legal_sensitivity_positive_lemma () : Lemma (requires True) (ensures (legal_sensitivity_positive_obligation () == legal_sensitivity_positive_obligation ())) = ()
+let legal_sensitivity_positive (p_d: _) : Lemma (legal_sensitivity p_d >= 2) = admit ()
 
 (* absolute_strongest (matches Coq: Theorem absolute_strongest) *)
-let absolute_strongest_obligation () : Tot bool = (0 = 0)
-let absolute_strongest_lemma () : Lemma (requires True) (ensures (absolute_strongest_obligation () == absolute_strongest_obligation ())) = ()
+let absolute_strongest (p_p: _) : Lemma (privilege_strength p_p <= privilege_strength Absolute) = admit ()
 
 (* waived_no_protection (matches Coq: Theorem waived_no_protection) *)
-let waived_no_protection_obligation () : Tot bool = (0 = 0)
-let waived_no_protection_lemma () : Lemma (requires True) (ensures (waived_no_protection_obligation () == waived_no_protection_obligation ())) = ()
+let waived_no_protection () : Lemma (privilege_strength Waived == 0) = admit ()
 
 (* absolute_effective (matches Coq: Theorem absolute_effective) *)
-let absolute_effective_obligation () : Tot bool = (0 = 0)
-let absolute_effective_lemma () : Lemma (requires True) (ensures (absolute_effective_obligation () == absolute_effective_obligation ())) = ()
+let absolute_effective () : Lemma (privilege_effective Absolute == true) = admit ()
 
 (* waived_not_effective (matches Coq: Theorem waived_not_effective) *)
-let waived_not_effective_obligation () : Tot bool = (0 = 0)
-let waived_not_effective_lemma () : Lemma (requires True) (ensures (waived_not_effective_obligation () == waived_not_effective_obligation ())) = ()
+let waived_not_effective () : Lemma (privilege_effective Waived == false) = admit ()
 
 (* qualified_effective (matches Coq: Theorem qualified_effective) *)
-let qualified_effective_obligation () : Tot bool = (0 = 0)
-let qualified_effective_lemma () : Lemma (requires True) (ensures (qualified_effective_obligation () == qualified_effective_obligation ())) = ()
+let qualified_effective () : Lemma (privilege_effective Qualified == true) = admit ()
 
 (* all_legal_requires_privilege (matches Coq: Theorem all_legal_requires_privilege) *)
-let all_legal_requires_privilege_obligation () : Tot bool = (0 = 0)
-let all_legal_requires_privilege_lemma () : Lemma (requires True) (ensures (all_legal_requires_privilege_obligation () == all_legal_requires_privilege_obligation ())) = ()
+let all_legal_requires_privilege (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_privilege_protection == true))) = admit ()
 
 (* all_legal_requires_conflict_screening (matches Coq: Theorem all_legal_requires_conflict_screening) *)
-let all_legal_requires_conflict_screening_obligation () : Tot bool = (0 = 0)
-let all_legal_requires_conflict_screening_lemma () : Lemma (requires True) (ensures (all_legal_requires_conflict_screening_obligation () == all_legal_requires_conflict_screening_obligation ())) = ()
+let all_legal_requires_conflict_screening (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_conflict_screening == true))) = admit ()
 
 (* all_legal_requires_ethical_walls (matches Coq: Theorem all_legal_requires_ethical_walls) *)
-let all_legal_requires_ethical_walls_obligation () : Tot bool = (0 = 0)
-let all_legal_requires_ethical_walls_lemma () : Lemma (requires True) (ensures (all_legal_requires_ethical_walls_obligation () == all_legal_requires_ethical_walls_obligation ())) = ()
+let all_legal_requires_ethical_walls (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_ethical_walls == true))) = admit ()
 
 (* all_legal_requires_retention (matches Coq: Theorem all_legal_requires_retention) *)
-let all_legal_requires_retention_obligation () : Tot bool = (0 = 0)
-let all_legal_requires_retention_lemma () : Lemma (requires True) (ensures (all_legal_requires_retention_obligation () == all_legal_requires_retention_obligation ())) = ()
+let all_legal_requires_retention (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_retention_compliance == true))) = admit ()
 
 (* count_legal_bounded (matches Coq: Theorem count_legal_bounded) *)
-let count_legal_bounded_obligation () : Tot bool = (0 = 0)
-let count_legal_bounded_lemma () : Lemma (requires True) (ensures (count_legal_bounded_obligation () == count_legal_bounded_obligation ())) = ()
+let count_legal_bounded (p_c: _) : Lemma (count_legal_controls p_c <= 6) = admit ()
 
 (* all_controls_count_six (matches Coq: Theorem all_controls_count_six) *)
-let all_controls_count_six_obligation () : Tot bool = (0 = 0)
-let all_controls_count_six_lemma () : Lemma (requires True) (ensures (all_controls_count_six_obligation () == all_controls_count_six_obligation ())) = ()
+let all_controls_count_six (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (count_legal_controls p_c == 6))) = admit ()
 
 (* retention_minimum_3 (matches Coq: Theorem retention_minimum_3) *)
-let retention_minimum_3_obligation () : Tot bool = (0 = 0)
-let retention_minimum_3_lemma () : Lemma (requires True) (ensures (retention_minimum_3_obligation () == retention_minimum_3_obligation ())) = ()
+let retention_minimum_3 (p_d: _) : Lemma (legal_retention_years p_d >= 3) = admit ()
 
 (* privilege_longest_retention (matches Coq: Theorem privilege_longest_retention) *)
-let privilege_longest_retention_obligation () : Tot bool = (0 = 0)
-let privilege_longest_retention_lemma () : Lemma (requires True) (ensures (privilege_longest_retention_obligation () == privilege_longest_retention_obligation ())) = ()
+let privilege_longest_retention (p_d: _) : Lemma (legal_retention_years p_d <= legal_retention_years AttorneyClientPrivilege) = admit ()
 
 (* trust_equals_privilege_retention (matches Coq: Theorem trust_equals_privilege_retention) *)
-let trust_equals_privilege_retention_obligation () : Tot bool = (0 = 0)
-let trust_equals_privilege_retention_lemma () : Lemma (requires True) (ensures (trust_equals_privilege_retention_obligation () == trust_equals_privilege_retention_obligation ())) = ()
+let trust_equals_privilege_retention () : Lemma (legal_retention_years TrustAccount == legal_retention_years AttorneyClientPrivilege) = admit ()
 
 (* same_party_conflict (matches Coq: Theorem same_party_conflict) *)
-let same_party_conflict_obligation () : Tot bool = (0 = 0)
-let same_party_conflict_lemma () : Lemma (requires True) (ensures (same_party_conflict_obligation () == same_party_conflict_obligation ())) = ()
+let same_party_conflict (p_p: _) : Lemma (no_conflict p_p p_p == false) = admit ()
 
 (* different_parties_no_conflict (matches Coq: Theorem different_parties_no_conflict) *)
-let different_parties_no_conflict_obligation () : Tot bool = (0 = 0)
-let different_parties_no_conflict_lemma () : Lemma (requires True) (ensures (different_parties_no_conflict_obligation () == different_parties_no_conflict_obligation ())) = ()
+let different_parties_no_conflict (p_p1: _) (p_p2: _) : Lemma (requires (~(p_p1 == p_p2)) (ensures (no_conflict p_p1 p_p2 == true))) = admit ()
 
 (* trust_balance_correct (matches Coq: Theorem trust_balance_correct) *)
-let trust_balance_correct_obligation () : Tot bool = (0 = 0)
-let trust_balance_correct_lemma () : Lemma (requires True) (ensures (trust_balance_correct_obligation () == trust_balance_correct_obligation ())) = ()
+let trust_balance_correct (p_b: _) (p_ct: _) : Lemma (requires (trust_balanced p_b p_ct == true) (ensures (p_b == p_ct))) = admit ()
 
 (* hold_bounds (matches Coq: Theorem hold_bounds) *)
-let hold_bounds_obligation () : Tot bool = (0 = 0)
-let hold_bounds_lemma () : Lemma (requires True) (ensures (hold_bounds_obligation () == hold_bounds_obligation ())) = ()
+let hold_bounds (p_hs: _) (p_ct: _) (p_he: _) : Lemma (requires (litigation_hold_active p_hs p_ct p_he == true) (ensures (p_hs <= p_ct /\ p_ct <= p_he))) = admit ()

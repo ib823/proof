@@ -84,169 +84,127 @@ let functional_without_animation (p_me: nat) : Tot bool =
   (0 = 0)
 
 (* voiceover_complete_coverage (matches Coq: Theorem voiceover_complete_coverage) *)
-let voiceover_complete_coverage_obligation () : Tot bool = (0 = 0)
-let voiceover_complete_coverage_lemma () : Lemma (requires True) (ensures (voiceover_complete_coverage_obligation () == voiceover_complete_coverage_obligation ())) = ()
+let voiceover_complete_coverage (p_re: nat) : Lemma (requires (visible (riina_element p_re) == true) (ensures (voiceover_accessible (riina_element p_re) == true))) = admit ()
 
 (* dynamic_type_universal (matches Coq: Theorem dynamic_type_universal) *)
-let dynamic_type_universal_obligation () : Tot bool = (0 = 0)
-let dynamic_type_universal_lemma () : Lemma (requires True) (ensures (dynamic_type_universal_obligation () == dynamic_type_universal_obligation ())) = ()
+let dynamic_type_universal (p_rt: nat) : Lemma (readable (riina_text p_rt) (current_size p_rt) == true) = admit ()
 
 (* reduce_motion_complete (matches Coq: Theorem reduce_motion_complete) *)
-let reduce_motion_complete_obligation () : Tot bool = (0 = 0)
-let reduce_motion_complete_lemma () : Lemma (requires True) (ensures (reduce_motion_complete_obligation () == reduce_motion_complete_obligation ())) = ()
+let reduce_motion_complete (p_ra: nat) : Lemma (requires (reduce_motion_enabled == true /\ is_essential (riina_animation p_ra) == false) (ensures (~(plays (riina_animation p_ra) == true)))) = admit ()
 
 (* visible_decidable (matches Coq: Lemma visible_decidable) *)
-let visible_decidable_obligation () : Tot bool = (0 = 0)
-let visible_decidable_lemma () : Lemma (requires True) (ensures (visible_decidable_obligation () == visible_decidable_obligation ())) = ()
+let visible_decidable (p_elem: nat) : Lemma ({visible elem_ + {~ visible elem_ == true) = admit ()
 
 (* voiceover_accessible_decidable (matches Coq: Lemma voiceover_accessible_decidable) *)
-let voiceover_accessible_decidable_obligation () : Tot bool = (0 = 0)
-let voiceover_accessible_decidable_lemma () : Lemma (requires True) (ensures (voiceover_accessible_decidable_obligation () == voiceover_accessible_decidable_obligation ())) = ()
+let voiceover_accessible_decidable (p_elem: nat) : Lemma ({voiceover_accessible elem_ + {~ voiceover_accessible elem_ == true) = admit ()
 
 (* dynamic_type_size_decidable (matches Coq: Lemma dynamic_type_size_decidable) *)
-let dynamic_type_size_decidable_obligation () : Tot bool = (0 = 0)
-let dynamic_type_size_decidable_lemma () : Lemma (requires True) (ensures (dynamic_type_size_decidable_obligation () == dynamic_type_size_decidable_obligation ())) = ()
+let dynamic_type_size_decidable (p_s1: nat) (p_s2: nat) : Lemma ({p_s1 == s2_ + {p_s1 <> s2_) = admit ()
 
 (* readable_at_current_size (matches Coq: Lemma readable_at_current_size) *)
-let readable_at_current_size_obligation () : Tot bool = (0 = 0)
-let readable_at_current_size_lemma () : Lemma (requires True) (ensures (readable_at_current_size_obligation () == readable_at_current_size_obligation ())) = ()
+let readable_at_current_size (p_text: nat) : Lemma (readable p_text (text_size p_text) == true) = admit ()
 
 (* essential_animations_can_play (matches Coq: Lemma essential_animations_can_play) *)
-let essential_animations_can_play_obligation () : Tot bool = (0 = 0)
-let essential_animations_can_play_lemma () : Lemma (requires True) (ensures (essential_animations_can_play_obligation () == essential_animations_can_play_obligation ())) = ()
+let essential_animations_can_play (p_anim: nat) : Lemma (requires (is_essential p_anim == true) (ensures (~((is_essential p_anim == false))))) = admit ()
 
 (* plays_implies_active (matches Coq: Lemma plays_implies_active) *)
-let plays_implies_active_obligation () : Tot bool = (0 = 0)
-let plays_implies_active_lemma () : Lemma (requires True) (ensures (plays_implies_active_obligation () == plays_implies_active_obligation ())) = ()
+let plays_implies_active (p_anim: nat) : Lemma (requires (plays p_anim == true) (ensures (animation_active p_anim == true))) = admit ()
 
 (* plays_implies_nonessential (matches Coq: Lemma plays_implies_nonessential) *)
-let plays_implies_nonessential_obligation () : Tot bool = (0 = 0)
-let plays_implies_nonessential_lemma () : Lemma (requires True) (ensures (plays_implies_nonessential_obligation () == plays_implies_nonessential_obligation ())) = ()
+let plays_implies_nonessential (p_anim: nat) : Lemma (requires (plays p_anim == true) (ensures (is_essential p_anim == false))) = admit ()
 
 (* all_visible_elements_in_tree (matches Coq: Theorem all_visible_elements_in_tree) *)
-let all_visible_elements_in_tree_obligation () : Tot bool = (0 = 0)
-let all_visible_elements_in_tree_lemma () : Lemma (requires True) (ensures (all_visible_elements_in_tree_obligation () == all_visible_elements_in_tree_obligation ())) = ()
+let all_visible_elements_in_tree (p_v: nat) (p_elem: nat) : Lemma (requires (In p_elem (view_elements p_v) == true /\ is_visible p_elem == true) (ensures (element_has_node (view_tree p_v) p_elem == true))) = admit ()
 
 (* no_orphan_nodes (matches Coq: Theorem no_orphan_nodes) *)
-let no_orphan_nodes_obligation () : Tot bool = (0 = 0)
-let no_orphan_nodes_lemma () : Lemma (requires True) (ensures (no_orphan_nodes_obligation () == no_orphan_nodes_obligation ())) = ()
+let no_orphan_nodes (p_v: nat) (p_n: nat) : Lemma (requires (In p_n (view_tree p_v) == true) (ensures (node_parent p_n == None \/ (exists pid_ node_parent p_n == Some pid /\ id_in_tree (view_tree p_v) pid == true)))) = admit ()
 
 (* role_always_set (matches Coq: Theorem role_always_set) *)
-let role_always_set_obligation () : Tot bool = (0 = 0)
-let role_always_set_lemma () : Lemma (requires True) (ensures (role_always_set_obligation () == role_always_set_obligation ())) = ()
+let role_always_set (p_v: nat) (p_n: nat) : Lemma (requires (In p_n (view_tree p_v) == true /\ node_interactive p_n == true) (ensures (~(node_role p_n == RoleStatic)))) = admit ()
 
 (* label_always_nonempty (matches Coq: Theorem label_always_nonempty) *)
-let label_always_nonempty_obligation () : Tot bool = (0 = 0)
-let label_always_nonempty_lemma () : Lemma (requires True) (ensures (label_always_nonempty_obligation () == label_always_nonempty_obligation ())) = ()
+let label_always_nonempty (p_v: nat) (p_n: nat) : Lemma (requires (In p_n (view_tree p_v) == true /\ node_interactive p_n == true) (ensures (~(node_label p_n == 0)))) = admit ()
 
 (* collect_ids_complete (matches Coq: Lemma collect_ids_complete) *)
-let collect_ids_complete_obligation () : Tot bool = (0 = 0)
-let collect_ids_complete_lemma () : Lemma (requires True) (ensures (collect_ids_complete_obligation () == collect_ids_complete_obligation ())) = ()
+let collect_ids_complete (p_tree: nat) (p_n: nat) : Lemma (requires (In p_n p_tree == true) (ensures (In (node_id p_n) (collect_ids p_tree) == true))) = admit ()
 
 (* tree_traversal_complete (matches Coq: Theorem tree_traversal_complete) *)
-let tree_traversal_complete_obligation () : Tot bool = (0 = 0)
-let tree_traversal_complete_lemma () : Lemma (requires True) (ensures (tree_traversal_complete_obligation () == tree_traversal_complete_obligation ())) = ()
+let tree_traversal_complete (p_v: nat) (p_n: nat) : Lemma (requires (In p_n (view_tree p_v) == true) (ensures (In (node_id p_n) (collect_ids (view_tree p_v)) == true))) = admit ()
 
 (* focus_order_from_interactive (matches Coq: Lemma focus_order_from_interactive) *)
-let focus_order_from_interactive_obligation () : Tot bool = (0 = 0)
-let focus_order_from_interactive_lemma () : Lemma (requires True) (ensures (focus_order_from_interactive_obligation () == focus_order_from_interactive_obligation ())) = ()
+let focus_order_from_interactive (p_tree: nat) : Lemma (focus_order p_tree == map node_id (interactive_nodes p_tree)) = admit ()
 
 (* focus_order_matches_tree (matches Coq: Theorem focus_order_matches_tree) *)
-let focus_order_matches_tree_obligation () : Tot bool = (0 = 0)
-let focus_order_matches_tree_lemma () : Lemma (requires True) (ensures (focus_order_matches_tree_obligation () == focus_order_matches_tree_obligation ())) = ()
+let focus_order_matches_tree (p_v: nat) (p_n: nat) : Lemma (requires (In p_n (view_tree p_v) == true /\ node_interactive p_n == true) (ensures (In (node_id p_n) (focus_order (view_tree p_v)) == true))) = admit ()
 
 (* live_regions_announced (matches Coq: Theorem live_regions_announced) *)
-let live_regions_announced_obligation () : Tot bool = (0 = 0)
-let live_regions_announced_lemma () : Lemma (requires True) (ensures (live_regions_announced_obligation () == live_regions_announced_obligation ())) = ()
+let live_regions_announced (p_rlr: nat) : Lemma (requires (region_content_changed (riina_live_region p_rlr) == true) (ensures (~(region_politeness (riina_live_region p_rlr) == Off)))) = admit ()
 
 (* information_not_color_only (matches Coq: Theorem information_not_color_only) *)
-let information_not_color_only_obligation () : Tot bool = (0 = 0)
-let information_not_color_only_lemma () : Lemma (requires True) (ensures (information_not_color_only_obligation () == information_not_color_only_obligation ())) = ()
+let information_not_color_only (p_rs: nat) : Lemma (requires (color_signal (riina_signal p_rs) == true) (ensures (has_noncolor_alternative (riina_signal p_rs) == true))) = admit ()
 
 (* link_not_color_only (matches Coq: Theorem link_not_color_only) *)
-let link_not_color_only_obligation () : Tot bool = (0 = 0)
-let link_not_color_only_lemma () : Lemma (requires True) (ensures (link_not_color_only_obligation () == link_not_color_only_obligation ())) = ()
+let link_not_color_only (p_cs: nat) : Lemma (requires (ctx_context p_cs == CtxLink) (ensures (underline_signal (riina_signal (ctx_signal p_cs)) == true))) = admit ()
 
 (* error_not_color_only (matches Coq: Theorem error_not_color_only) *)
-let error_not_color_only_obligation () : Tot bool = (0 = 0)
-let error_not_color_only_lemma () : Lemma (requires True) (ensures (error_not_color_only_obligation () == error_not_color_only_obligation ())) = ()
+let error_not_color_only (p_cs: nat) : Lemma (requires (ctx_context p_cs == CtxError) (ensures (shape_signal (riina_signal (ctx_signal p_cs)) == true /\ text_signal (riina_signal (ctx_signal p_cs)) == true))) = admit ()
 
 (* success_not_color_only (matches Coq: Theorem success_not_color_only) *)
-let success_not_color_only_obligation () : Tot bool = (0 = 0)
-let success_not_color_only_lemma () : Lemma (requires True) (ensures (success_not_color_only_obligation () == success_not_color_only_obligation ())) = ()
+let success_not_color_only (p_cs: nat) : Lemma (requires (ctx_context p_cs == CtxSuccess) (ensures (text_signal (riina_signal (ctx_signal p_cs)) == true))) = admit ()
 
 (* chart_patterns_available (matches Coq: Theorem chart_patterns_available) *)
-let chart_patterns_available_obligation () : Tot bool = (0 = 0)
-let chart_patterns_available_lemma () : Lemma (requires True) (ensures (chart_patterns_available_obligation () == chart_patterns_available_obligation ())) = ()
+let chart_patterns_available (p_cs: nat) : Lemma (requires (ctx_context p_cs == CtxChart) (ensures (pattern_signal (riina_signal (ctx_signal p_cs)) == true))) = admit ()
 
 (* status_indicators_labeled (matches Coq: Theorem status_indicators_labeled) *)
-let status_indicators_labeled_obligation () : Tot bool = (0 = 0)
-let status_indicators_labeled_lemma () : Lemma (requires True) (ensures (status_indicators_labeled_obligation () == status_indicators_labeled_obligation ())) = ()
+let status_indicators_labeled (p_cs: nat) : Lemma (requires (ctx_context p_cs == CtxStatus) (ensures (text_signal (riina_signal (ctx_signal p_cs)) == true))) = admit ()
 
 (* text_scales_to_200_percent (matches Coq: Theorem text_scales_to_200_percent) *)
-let text_scales_to_200_percent_obligation () : Tot bool = (0 = 0)
-let text_scales_to_200_percent_lemma () : Lemma (requires True) (ensures (text_scales_to_200_percent_obligation () == text_scales_to_200_percent_obligation ())) = ()
+let text_scales_to_200_percent (p_rtp: nat) : Lemma (not_truncated (riina_tp p_rtp) 200 == true) = admit ()
 
 (* no_text_truncation (matches Coq: Theorem no_text_truncation) *)
-let no_text_truncation_obligation () : Tot bool = (0 = 0)
-let no_text_truncation_lemma () : Lemma (requires True) (ensures (no_text_truncation_obligation () == no_text_truncation_obligation ())) = ()
+let no_text_truncation (p_rtp: nat) (p_scale_pct: nat) : Lemma (requires (p_scale_pct >= 100 /\ p_scale_pct <= 200) (ensures (not_truncated (riina_tp p_rtp) p_scale_pct == true))) = admit ()
 
 (* line_height_proportional (matches Coq: Theorem line_height_proportional) *)
-let line_height_proportional_obligation () : Tot bool = (0 = 0)
-let line_height_proportional_lemma () : Lemma (requires True) (ensures (line_height_proportional_obligation () == line_height_proportional_obligation ())) = ()
+let line_height_proportional (p_rtp: nat) : Lemma (line_height (riina_tp p_rtp) * 2 >= font_size (riina_tp p_rtp) * 3) = admit ()
 
 (* container_expands_with_text (matches Coq: Theorem container_expands_with_text) *)
-let container_expands_with_text_obligation () : Tot bool = (0 = 0)
-let container_expands_with_text_lemma () : Lemma (requires True) (ensures (container_expands_with_text_obligation () == container_expands_with_text_obligation ())) = ()
+let container_expands_with_text (p_rtp: nat) (p_scale_pct: nat) : Lemma (requires (p_scale_pct >= 100 /\ p_scale_pct <= 200) (ensures (scaled_container_height (riina_tp p_rtp) p_scale_pct >= scaled_font_size (riina_tp p_rtp) p_scale_pct))) = admit ()
 
 (* text_reflow (matches Coq: Theorem text_reflow) *)
-let text_reflow_obligation () : Tot bool = (0 = 0)
-let text_reflow_lemma () : Lemma (requires True) (ensures (text_reflow_obligation () == text_reflow_obligation ())) = ()
+let text_reflow (p_rtp: nat) : Lemma (reflows (riina_tp p_rtp) == true) = admit ()
 
 (* minimum_font_size (matches Coq: Theorem minimum_font_size) *)
-let minimum_font_size_obligation () : Tot bool = (0 = 0)
-let minimum_font_size_lemma () : Lemma (requires True) (ensures (minimum_font_size_obligation () == minimum_font_size_obligation ())) = ()
+let minimum_font_size (p_rtp: nat) : Lemma (font_size (riina_tp p_rtp) >= 12) = admit ()
 
 (* parallax_disableable (matches Coq: Theorem parallax_disableable) *)
-let parallax_disableable_obligation () : Tot bool = (0 = 0)
-let parallax_disableable_lemma () : Lemma (requires True) (ensures (parallax_disableable_obligation () == parallax_disableable_obligation ())) = ()
+let parallax_disableable (p_rme: nat) : Lemma (requires (motion_type (riina_motion p_rme) == Parallax) (ensures (respects_reduce_motion (riina_motion p_rme) == true))) = admit ()
 
 (* auto_play_disableable (matches Coq: Theorem auto_play_disableable) *)
-let auto_play_disableable_obligation () : Tot bool = (0 = 0)
-let auto_play_disableable_lemma () : Lemma (requires True) (ensures (auto_play_disableable_obligation () == auto_play_disableable_obligation ())) = ()
+let auto_play_disableable (p_rme: nat) : Lemma (requires (motion_type (riina_motion p_rme) == AutoPlay) (ensures (user_controllable (riina_motion p_rme) == true))) = admit ()
 
 (* flash_rate_safe (matches Coq: Theorem flash_rate_safe) *)
-let flash_rate_safe_obligation () : Tot bool = (0 = 0)
-let flash_rate_safe_lemma () : Lemma (requires True) (ensures (flash_rate_safe_obligation () == flash_rate_safe_obligation ())) = ()
+let flash_rate_safe (p_rme: nat) : Lemma (safe_flash_rate (riina_motion p_rme) == true) = admit ()
 
 (* carousel_controllable (matches Coq: Theorem carousel_controllable) *)
-let carousel_controllable_obligation () : Tot bool = (0 = 0)
-let carousel_controllable_lemma () : Lemma (requires True) (ensures (carousel_controllable_obligation () == carousel_controllable_obligation ())) = ()
+let carousel_controllable (p_rme: nat) : Lemma (requires (motion_type (riina_motion p_rme) == Carousel) (ensures (user_controllable (riina_motion p_rme) == true))) = admit ()
 
 (* video_controllable (matches Coq: Theorem video_controllable) *)
-let video_controllable_obligation () : Tot bool = (0 = 0)
-let video_controllable_lemma () : Lemma (requires True) (ensures (video_controllable_obligation () == video_controllable_obligation ())) = ()
+let video_controllable (p_rme: nat) : Lemma (requires (motion_type (riina_motion p_rme) == VideoContent) (ensures (user_controllable (riina_motion p_rme) == true))) = admit ()
 
 (* animation_not_required (matches Coq: Theorem animation_not_required) *)
-let animation_not_required_obligation () : Tot bool = (0 = 0)
-let animation_not_required_lemma () : Lemma (requires True) (ensures (animation_not_required_obligation () == animation_not_required_obligation ())) = ()
+let animation_not_required (p_rme: nat) : Lemma (functional_without_animation (riina_motion p_rme) == true) = admit ()
 
 (* color_independence_implies_screen_reader_friendly (matches Coq: Theorem color_independence_implies_screen_reader_friendly) *)
-let color_independence_implies_screen_reader_friendly_obligation () : Tot bool = (0 = 0)
-let color_independence_implies_screen_reader_friendly_lemma () : Lemma (requires True) (ensures (color_independence_implies_screen_reader_friendly_obligation () == color_independence_implies_screen_reader_friendly_obligation ())) = ()
+let color_independence_implies_screen_reader_friendly (p_rs: nat) : Lemma (requires (text_signal (riina_signal p_rs) == true) (ensures (has_noncolor_alternative (riina_signal p_rs) == true))) = admit ()
 
 (* error_signals_doubly_redundant (matches Coq: Theorem error_signals_doubly_redundant) *)
-let error_signals_doubly_redundant_obligation () : Tot bool = (0 = 0)
-let error_signals_doubly_redundant_lemma () : Lemma (requires True) (ensures (error_signals_doubly_redundant_obligation () == error_signals_doubly_redundant_obligation ())) = ()
+let error_signals_doubly_redundant (p_cs: nat) : Lemma (requires (ctx_context p_cs == CtxError) (ensures (shape_signal (riina_signal (ctx_signal p_cs)) == true /\ text_signal (riina_signal (ctx_signal p_cs)) == true))) = admit ()
 
 (* scaled_text_still_reflows (matches Coq: Theorem scaled_text_still_reflows) *)
-let scaled_text_still_reflows_obligation () : Tot bool = (0 = 0)
-let scaled_text_still_reflows_lemma () : Lemma (requires True) (ensures (scaled_text_still_reflows_obligation () == scaled_text_still_reflows_obligation ())) = ()
+let scaled_text_still_reflows (p_rtp: nat) : Lemma (reflows (riina_tp p_rtp) == true) = admit ()
 
 (* motion_safe_and_controllable (matches Coq: Theorem motion_safe_and_controllable) *)
-let motion_safe_and_controllable_obligation () : Tot bool = (0 = 0)
-let motion_safe_and_controllable_lemma () : Lemma (requires True) (ensures (motion_safe_and_controllable_obligation () == motion_safe_and_controllable_obligation ())) = ()
+let motion_safe_and_controllable (p_rme: nat) : Lemma (requires (motion_type (riina_motion p_rme) == Carousel) (ensures (safe_flash_rate (riina_motion p_rme) == true /\ user_controllable (riina_motion p_rme) == true))) = admit ()
 
 (* interactive_nodes_fully_accessible (matches Coq: Theorem interactive_nodes_fully_accessible) *)
-let interactive_nodes_fully_accessible_obligation () : Tot bool = (0 = 0)
-let interactive_nodes_fully_accessible_lemma () : Lemma (requires True) (ensures (interactive_nodes_fully_accessible_obligation () == interactive_nodes_fully_accessible_obligation ())) = ()
+let interactive_nodes_fully_accessible (p_v: nat) (p_n: nat) : Lemma (requires (In p_n (view_tree p_v) == true /\ node_interactive p_n == true) (ensures (~(node_role p_n == RoleStatic) /\ ~(node_label p_n == 0)))) = admit ()

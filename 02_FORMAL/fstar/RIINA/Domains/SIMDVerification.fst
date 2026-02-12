@@ -88,89 +88,68 @@ let all_true_mask : nat = Vector.const true VWidth
 let all_false_mask : nat = Vector.const false VWidth
 
 (* PERF_003_01_simd_add_equivalence (matches Coq: Theorem PERF_003_01_simd_add_equivalence) *)
-let perf_003_01_simd_add_equivalence_obligation () : Tot bool = (0 = 0)
-let perf_003_01_simd_add_equivalence_lemma () : Lemma (requires True) (ensures (perf_003_01_simd_add_equivalence_obligation () == perf_003_01_simd_add_equivalence_obligation ())) = ()
+let perf_003_01_simd_add_equivalence (p_a: nat) (p_b: nat) : Lemma (simd_add p_a p_b == Vector.map2 Nat.add p_a p_b) = admit ()
 
 (* PERF_003_02_simd_mul_equivalence (matches Coq: Theorem PERF_003_02_simd_mul_equivalence) *)
-let perf_003_02_simd_mul_equivalence_obligation () : Tot bool = (0 = 0)
-let perf_003_02_simd_mul_equivalence_lemma () : Lemma (requires True) (ensures (perf_003_02_simd_mul_equivalence_obligation () == perf_003_02_simd_mul_equivalence_obligation ())) = ()
+let perf_003_02_simd_mul_equivalence (p_a: nat) (p_b: nat) : Lemma (simd_mul p_a p_b == Vector.map2 Nat.mul p_a p_b) = admit ()
 
 (* PERF_003_03_simd_cmp_equivalence (matches Coq: Theorem PERF_003_03_simd_cmp_equivalence) *)
-let perf_003_03_simd_cmp_equivalence_obligation () : Tot bool = (0 = 0)
-let perf_003_03_simd_cmp_equivalence_lemma () : Lemma (requires True) (ensures (perf_003_03_simd_cmp_equivalence_obligation () == perf_003_03_simd_cmp_equivalence_obligation ())) = ()
+let perf_003_03_simd_cmp_equivalence (p_a: nat) (p_b: nat) : Lemma (simd_cmp p_a p_b == Vector.map2 Nat.leb p_a p_b) = admit ()
 
 (* PERF_003_04_simd_shuffle_correctness (matches Coq: Theorem PERF_003_04_simd_shuffle_correctness) *)
-let perf_003_04_simd_shuffle_correctness_obligation () : Tot bool = (0 = 0)
-let perf_003_04_simd_shuffle_correctness_lemma () : Lemma (requires True) (ensures (perf_003_04_simd_shuffle_correctness_obligation () == perf_003_04_simd_shuffle_correctness_obligation ())) = ()
+let perf_003_04_simd_shuffle_correctness (p_v: nat) (p_perm: nat) (p_i: nat) : Lemma (Vector.nth (simd_shuffle p_v p_perm) p_i == Vector.nth p_v (Vector.nth p_perm p_i)) = admit ()
 
 (* PERF_003_05_simd_alignment_requirement (matches Coq: Theorem PERF_003_05_simd_alignment_requirement) *)
 let perf_003_05_simd_alignment_requirement_obligation () : Tot bool = (0 = 0)
 let perf_003_05_simd_alignment_requirement_lemma () : Lemma (requires True) (ensures (perf_003_05_simd_alignment_requirement_obligation () == perf_003_05_simd_alignment_requirement_obligation ())) = ()
 
 (* PERF_003_06_simd_lane_independence (matches Coq: Theorem PERF_003_06_simd_lane_independence) *)
-let perf_003_06_simd_lane_independence_obligation () : Tot bool = (0 = 0)
-let perf_003_06_simd_lane_independence_lemma () : Lemma (requires True) (ensures (perf_003_06_simd_lane_independence_obligation () == perf_003_06_simd_lane_independence_obligation ())) = ()
+let perf_003_06_simd_lane_independence (p_a: nat) (p_b: nat) (p_i: nat) : Lemma (Vector.nth (simd_add p_a p_b) p_i == scalar_add (Vector.nth p_a p_i) (Vector.nth p_b p_i)) = admit ()
 
 (* PERF_003_07_simd_reduce_equivalence (matches Coq: Theorem PERF_003_07_simd_reduce_equivalence) *)
-let perf_003_07_simd_reduce_equivalence_obligation () : Tot bool = (0 = 0)
-let perf_003_07_simd_reduce_equivalence_lemma () : Lemma (requires True) (ensures (perf_003_07_simd_reduce_equivalence_obligation () == perf_003_07_simd_reduce_equivalence_obligation ())) = ()
+let perf_003_07_simd_reduce_equivalence (p_v: nat) (p_init: nat) : Lemma (simd_reduce Nat.add p_init p_v == List.fold_left Nat.add (Vector.to_list p_v) p_init) = admit ()
 
 (* PERF_003_08_simd_broadcast_correctness (matches Coq: Theorem PERF_003_08_simd_broadcast_correctness) *)
-let perf_003_08_simd_broadcast_correctness_obligation () : Tot bool = (0 = 0)
-let perf_003_08_simd_broadcast_correctness_lemma () : Lemma (requires True) (ensures (perf_003_08_simd_broadcast_correctness_obligation () == perf_003_08_simd_broadcast_correctness_obligation ())) = ()
+let perf_003_08_simd_broadcast_correctness (p_x: nat) (p_i: nat) : Lemma (Vector.nth (simd_broadcast p_x) p_i == p_x) = admit ()
 
 (* fold_and_all_true (matches Coq: Lemma fold_and_all_true) *)
-let fold_and_all_true_obligation () : Tot bool = (0 = 0)
-let fold_and_all_true_lemma () : Lemma (requires True) (ensures (fold_and_all_true_obligation () == fold_and_all_true_obligation ())) = ()
+let fold_and_all_true (p_v: nat) (p_f: nat) : Lemma (requires ((forall i_ p_f (Vector.nth p_v i) == true)) (ensures (Vector.fold_left (fn_fun acc x => acc && p_f x) true p_v == true))) = admit ()
 
 (* PERF_003_09_simd_gather_safety (matches Coq: Theorem PERF_003_09_simd_gather_safety) *)
-let perf_003_09_simd_gather_safety_obligation () : Tot bool = (0 = 0)
-let perf_003_09_simd_gather_safety_lemma () : Lemma (requires True) (ensures (perf_003_09_simd_gather_safety_obligation () == perf_003_09_simd_gather_safety_obligation ())) = ()
+let perf_003_09_simd_gather_safety (p_mem: (list nat)) (p_indices: nat) : Lemma (requires ((forall i : Fin.t VWidth, Vector.nth p_indices i < length p_mem)) (ensures (exists result_ gather p_mem p_indices == Some result))) = admit ()
 
 (* PERF_003_10_simd_masking_correctness (matches Coq: Theorem PERF_003_10_simd_masking_correctness) *)
-let perf_003_10_simd_masking_correctness_obligation () : Tot bool = (0 = 0)
-let perf_003_10_simd_masking_correctness_lemma () : Lemma (requires True) (ensures (perf_003_10_simd_masking_correctness_obligation () == perf_003_10_simd_masking_correctness_obligation ())) = ()
+let perf_003_10_simd_masking_correctness (p_mask: nat) (p_a: nat) (p_b: nat) (p_old: nat) (p_i: nat) : Lemma (Vector.nth (simd_masked_add p_mask p_a p_b p_old) p_i == fn_if Vector.nth p_mask p_i id_then Vector.nth (simd_add p_a p_b) p_i id_else Vector.nth p_old p_i) = admit ()
 
 (* PERF_003_11_vectorization_legality (matches Coq: Theorem PERF_003_11_vectorization_legality) *)
-let perf_003_11_vectorization_legality_obligation () : Tot bool = (0 = 0)
-let perf_003_11_vectorization_legality_lemma () : Lemma (requires True) (ensures (perf_003_11_vectorization_legality_obligation () == perf_003_11_vectorization_legality_obligation ())) = ()
+let perf_003_11_vectorization_legality (p_l: loop) : Lemma (requires (vectorizable p_l == fn_true <) (ensures (has_carried_dependency p_l == false))) = admit ()
 
 (* to_list_map2 (matches Coq: Lemma to_list_map2) *)
-let to_list_map2_obligation () : Tot bool = (0 = 0)
-let to_list_map2_lemma () : Lemma (requires True) (ensures (to_list_map2_obligation () == to_list_map2_obligation ())) = ()
+let to_list_map2 (p_f: nat) (p_v1: nat) (p_v2: nat) : Lemma (Vector.to_list (Vector.map2 p_f p_v1 p_v2) == List.map (fn_fun p => p_f (fst p) (snd p)) (combine (Vector.to_list p_v1) (Vector.to_list p_v2))) = admit ()
 
 (* PERF_003_12_simd_semantic_preservation (matches Coq: Theorem PERF_003_12_simd_semantic_preservation) *)
-let perf_003_12_simd_semantic_preservation_obligation () : Tot bool = (0 = 0)
-let perf_003_12_simd_semantic_preservation_lemma () : Lemma (requires True) (ensures (perf_003_12_simd_semantic_preservation_obligation () == perf_003_12_simd_semantic_preservation_obligation ())) = ()
+let perf_003_12_simd_semantic_preservation (p_a: nat) (p_b: nat) : Lemma (Vector.to_list (simd_add p_a p_b) == scalar_exec_add (Vector.to_list p_a) (Vector.to_list p_b)) = admit ()
 
 (* PERF_003_13_simd_mul_lane_independence (matches Coq: Theorem PERF_003_13_simd_mul_lane_independence) *)
-let perf_003_13_simd_mul_lane_independence_obligation () : Tot bool = (0 = 0)
-let perf_003_13_simd_mul_lane_independence_lemma () : Lemma (requires True) (ensures (perf_003_13_simd_mul_lane_independence_obligation () == perf_003_13_simd_mul_lane_independence_obligation ())) = ()
+let perf_003_13_simd_mul_lane_independence (p_a: nat) (p_b: nat) (p_i: nat) : Lemma (Vector.nth (simd_mul p_a p_b) p_i == scalar_mul (Vector.nth p_a p_i) (Vector.nth p_b p_i)) = admit ()
 
 (* PERF_003_14_simd_cmp_lane_independence (matches Coq: Theorem PERF_003_14_simd_cmp_lane_independence) *)
-let perf_003_14_simd_cmp_lane_independence_obligation () : Tot bool = (0 = 0)
-let perf_003_14_simd_cmp_lane_independence_lemma () : Lemma (requires True) (ensures (perf_003_14_simd_cmp_lane_independence_obligation () == perf_003_14_simd_cmp_lane_independence_obligation ())) = ()
+let perf_003_14_simd_cmp_lane_independence (p_a: nat) (p_b: nat) (p_i: nat) : Lemma (Vector.nth (simd_cmp p_a p_b) p_i == scalar_cmp (Vector.nth p_a p_i) (Vector.nth p_b p_i)) = admit ()
 
 (* PERF_003_15_broadcast_add_equiv (matches Coq: Theorem PERF_003_15_broadcast_add_equiv) *)
-let perf_003_15_broadcast_add_equiv_obligation () : Tot bool = (0 = 0)
-let perf_003_15_broadcast_add_equiv_lemma () : Lemma (requires True) (ensures (perf_003_15_broadcast_add_equiv_obligation () == perf_003_15_broadcast_add_equiv_obligation ())) = ()
+let perf_003_15_broadcast_add_equiv (p_v: nat) (p_x: nat) (p_i: nat) : Lemma (Vector.nth (simd_add p_v (simd_broadcast p_x)) p_i == scalar_add (Vector.nth p_v p_i) p_x) = admit ()
 
 (* PERF_003_16_identity_shuffle (matches Coq: Theorem PERF_003_16_identity_shuffle) *)
-let perf_003_16_identity_shuffle_obligation () : Tot bool = (0 = 0)
-let perf_003_16_identity_shuffle_lemma () : Lemma (requires True) (ensures (perf_003_16_identity_shuffle_obligation () == perf_003_16_identity_shuffle_obligation ())) = ()
+let perf_003_16_identity_shuffle (p_v: nat) (p_perm: nat) : Lemma (requires ((forall i : Fin.t VWidth, Vector.nth p_perm i == i)) (ensures (simd_shuffle p_v p_perm == p_v))) = admit ()
 
 (* PERF_003_17_simd_add_commutative (matches Coq: Theorem PERF_003_17_simd_add_commutative) *)
-let perf_003_17_simd_add_commutative_obligation () : Tot bool = (0 = 0)
-let perf_003_17_simd_add_commutative_lemma () : Lemma (requires True) (ensures (perf_003_17_simd_add_commutative_obligation () == perf_003_17_simd_add_commutative_obligation ())) = ()
+let perf_003_17_simd_add_commutative (p_a: nat) (p_b: nat) (p_i: nat) : Lemma (Vector.nth (simd_add p_a p_b) p_i == Vector.nth (simd_add p_b p_a) p_i) = admit ()
 
 (* PERF_003_18_all_true_mask_selects_new (matches Coq: Theorem PERF_003_18_all_true_mask_selects_new) *)
-let perf_003_18_all_true_mask_selects_new_obligation () : Tot bool = (0 = 0)
-let perf_003_18_all_true_mask_selects_new_lemma () : Lemma (requires True) (ensures (perf_003_18_all_true_mask_selects_new_obligation () == perf_003_18_all_true_mask_selects_new_obligation ())) = ()
+let perf_003_18_all_true_mask_selects_new (p_old: nat) (p_new_val: nat) (p_i: nat) : Lemma (Vector.nth (simd_select all_true_mask p_old p_new_val) p_i == Vector.nth p_new_val p_i) = admit ()
 
 (* PERF_003_19_all_false_mask_preserves_old (matches Coq: Theorem PERF_003_19_all_false_mask_preserves_old) *)
-let perf_003_19_all_false_mask_preserves_old_obligation () : Tot bool = (0 = 0)
-let perf_003_19_all_false_mask_preserves_old_lemma () : Lemma (requires True) (ensures (perf_003_19_all_false_mask_preserves_old_obligation () == perf_003_19_all_false_mask_preserves_old_obligation ())) = ()
+let perf_003_19_all_false_mask_preserves_old (p_old: nat) (p_new_val: nat) (p_i: nat) : Lemma (Vector.nth (simd_select all_false_mask p_old p_new_val) p_i == Vector.nth p_old p_i) = admit ()
 
 (* PERF_003_20_zero_aligned (matches Coq: Theorem PERF_003_20_zero_aligned) *)
-let perf_003_20_zero_aligned_obligation () : Tot bool = (0 = 0)
-let perf_003_20_zero_aligned_lemma () : Lemma (requires True) (ensures (perf_003_20_zero_aligned_obligation () == perf_003_20_zero_aligned_obligation ())) = ()
+let perf_003_20_zero_aligned (p_alignment: _) (p_nat: _) : Lemma (requires (p_alignment > 0) (ensures (is_aligned 0 p_alignment == true))) = admit ()

@@ -80,85 +80,64 @@ let count_mas_controls (p_e: nat) : Tot nat =
   (if mas_mfa_enabled p_e then 1 else 0) + (if mas_patching_current p_e then 1 else 0) + (if mas_network_secured p_e then 1 else 0) + (if mas_antimalware p_e then 1 else 0) + (if mas_privileged_access_managed p_e then 1 else 0) + (if mas_board_oversight p_e then 1 else 0) + (if mas_risk_assessment_done p_e then 1 else 0) + (if mas_pen_test_done p_e then 1 else 0) + (if mas_incident_response_plan p_e then 1 else 0) + (if mas_bcp_tested p_e then 1 else 0)
 
 (* mas_cyber_hygiene (matches Coq: Theorem mas_cyber_hygiene) *)
-let mas_cyber_hygiene_obligation () : Tot bool = (0 = 0)
-let mas_cyber_hygiene_lemma () : Lemma (requires True) (ensures (mas_cyber_hygiene_obligation () == mas_cyber_hygiene_obligation ())) = ()
+let mas_cyber_hygiene (p_e: nat) : Lemma (requires (mas_mfa_enabled p_e == true /\ mas_patching_current p_e == true /\ mas_network_secured p_e == true /\ mas_antimalware p_e == true /\ mas_privileged_access_managed p_e == true) (ensures (cyber_hygiene_compliant p_e == true))) = admit ()
 
 (* critical_patch_14_days (matches Coq: Theorem critical_patch_14_days) *)
-let critical_patch_14_days_obligation () : Tot bool = (0 = 0)
-let critical_patch_14_days_lemma () : Lemma (requires True) (ensures (critical_patch_14_days_obligation () == critical_patch_14_days_obligation ())) = ()
+let critical_patch_14_days (p_d: nat) (p_a: nat) : Lemma (requires (p_a <= p_d + 14) (ensures (patch_applied_in_time PatchCritical p_d p_a == true))) = admit ()
 
 (* critical_strictest (matches Coq: Theorem critical_strictest) *)
-let critical_strictest_obligation () : Tot bool = (0 = 0)
-let critical_strictest_lemma () : Lemma (requires True) (ensures (critical_strictest_obligation () == critical_strictest_obligation ())) = ()
+let critical_strictest (p_d: nat) (p_a: nat) : Lemma (requires (patch_applied_in_time PatchCritical p_d p_a == true) (ensures (patch_applied_in_time PatchHigh p_d p_a == true))) = admit ()
 
 (* trm_governance_proof (matches Coq: Theorem trm_governance_proof) *)
-let trm_governance_proof_obligation () : Tot bool = (0 = 0)
-let trm_governance_proof_lemma () : Lemma (requires True) (ensures (trm_governance_proof_obligation () == trm_governance_proof_obligation ())) = ()
+let trm_governance_proof (p_e: nat) : Lemma (requires (mas_board_oversight p_e == true /\ mas_risk_assessment_done p_e == true) (ensures (trm_governance p_e == true))) = admit ()
 
 (* mas_composition (matches Coq: Theorem mas_composition) *)
-let mas_composition_obligation () : Tot bool = (0 = 0)
-let mas_composition_lemma () : Lemma (requires True) (ensures (mas_composition_obligation () == mas_composition_obligation ())) = ()
+let mas_composition (p_e: nat) : Lemma (requires (cyber_hygiene_compliant p_e == true /\ trm_governance p_e == true /\ trm_security_testing p_e == true /\ trm_resilience p_e == true) (ensures (mas_fully_compliant p_e == true))) = admit ()
 
 (* mas_license_coverage (matches Coq: Theorem mas_license_coverage) *)
-let mas_license_coverage_obligation () : Tot bool = (0 = 0)
-let mas_license_coverage_lemma () : Lemma (requires True) (ensures (mas_license_coverage_obligation () == mas_license_coverage_obligation ())) = ()
+let mas_license_coverage (p_l: mas_license_type) : Lemma (In p_l all_mas_license_types == true) = admit ()
 
 (* ch_requires_mfa (matches Coq: Theorem ch_requires_mfa) *)
-let ch_requires_mfa_obligation () : Tot bool = (0 = 0)
-let ch_requires_mfa_lemma () : Lemma (requires True) (ensures (ch_requires_mfa_obligation () == ch_requires_mfa_obligation ())) = ()
+let ch_requires_mfa (p_e: _) : Lemma (requires (cyber_hygiene_compliant p_e == true) (ensures (mas_mfa_enabled p_e == true))) = admit ()
 
 (* ch_requires_patching (matches Coq: Theorem ch_requires_patching) *)
-let ch_requires_patching_obligation () : Tot bool = (0 = 0)
-let ch_requires_patching_lemma () : Lemma (requires True) (ensures (ch_requires_patching_obligation () == ch_requires_patching_obligation ())) = ()
+let ch_requires_patching (p_e: _) : Lemma (requires (cyber_hygiene_compliant p_e == true) (ensures (mas_patching_current p_e == true))) = admit ()
 
 (* ch_requires_network (matches Coq: Theorem ch_requires_network) *)
-let ch_requires_network_obligation () : Tot bool = (0 = 0)
-let ch_requires_network_lemma () : Lemma (requires True) (ensures (ch_requires_network_obligation () == ch_requires_network_obligation ())) = ()
+let ch_requires_network (p_e: _) : Lemma (requires (cyber_hygiene_compliant p_e == true) (ensures (mas_network_secured p_e == true))) = admit ()
 
 (* ch_requires_antimalware (matches Coq: Theorem ch_requires_antimalware) *)
-let ch_requires_antimalware_obligation () : Tot bool = (0 = 0)
-let ch_requires_antimalware_lemma () : Lemma (requires True) (ensures (ch_requires_antimalware_obligation () == ch_requires_antimalware_obligation ())) = ()
+let ch_requires_antimalware (p_e: _) : Lemma (requires (cyber_hygiene_compliant p_e == true) (ensures (mas_antimalware p_e == true))) = admit ()
 
 (* ch_requires_pam (matches Coq: Theorem ch_requires_pam) *)
-let ch_requires_pam_obligation () : Tot bool = (0 = 0)
-let ch_requires_pam_lemma () : Lemma (requires True) (ensures (ch_requires_pam_obligation () == ch_requires_pam_obligation ())) = ()
+let ch_requires_pam (p_e: _) : Lemma (requires (cyber_hygiene_compliant p_e == true) (ensures (mas_privileged_access_managed p_e == true))) = admit ()
 
 (* patch_critical_strictest (matches Coq: Theorem patch_critical_strictest) *)
-let patch_critical_strictest_obligation () : Tot bool = (0 = 0)
-let patch_critical_strictest_lemma () : Lemma (requires True) (ensures (patch_critical_strictest_obligation () == patch_critical_strictest_obligation ())) = ()
+let patch_critical_strictest (p_p: _) : Lemma (patch_deadline PatchCritical <= patch_deadline p_p) = admit ()
 
 (* patch_low_most_lenient (matches Coq: Theorem patch_low_most_lenient) *)
-let patch_low_most_lenient_obligation () : Tot bool = (0 = 0)
-let patch_low_most_lenient_lemma () : Lemma (requires True) (ensures (patch_low_most_lenient_obligation () == patch_low_most_lenient_obligation ())) = ()
+let patch_low_most_lenient (p_p: _) : Lemma (patch_deadline p_p <= patch_deadline PatchLow) = admit ()
 
 (* patch_deadline_positive (matches Coq: Theorem patch_deadline_positive) *)
-let patch_deadline_positive_obligation () : Tot bool = (0 = 0)
-let patch_deadline_positive_lemma () : Lemma (requires True) (ensures (patch_deadline_positive_obligation () == patch_deadline_positive_obligation ())) = ()
+let patch_deadline_positive (p_p: _) : Lemma (patch_deadline p_p >= 14) = admit ()
 
 (* patch_critical_subsumes_all (matches Coq: Theorem patch_critical_subsumes_all) *)
-let patch_critical_subsumes_all_obligation () : Tot bool = (0 = 0)
-let patch_critical_subsumes_all_lemma () : Lemma (requires True) (ensures (patch_critical_subsumes_all_obligation () == patch_critical_subsumes_all_obligation ())) = ()
+let patch_critical_subsumes_all (p_d: _) (p_a: _) (p_p: _) : Lemma (requires (patch_applied_in_time PatchCritical p_d p_a == true) (ensures (patch_applied_in_time p_p p_d p_a == true))) = admit ()
 
 (* mas_full_requires_hygiene (matches Coq: Theorem mas_full_requires_hygiene) *)
-let mas_full_requires_hygiene_obligation () : Tot bool = (0 = 0)
-let mas_full_requires_hygiene_lemma () : Lemma (requires True) (ensures (mas_full_requires_hygiene_obligation () == mas_full_requires_hygiene_obligation ())) = ()
+let mas_full_requires_hygiene (p_e: _) : Lemma (requires (mas_fully_compliant p_e == true) (ensures (cyber_hygiene_compliant p_e == true))) = admit ()
 
 (* mas_full_requires_governance (matches Coq: Theorem mas_full_requires_governance) *)
-let mas_full_requires_governance_obligation () : Tot bool = (0 = 0)
-let mas_full_requires_governance_lemma () : Lemma (requires True) (ensures (mas_full_requires_governance_obligation () == mas_full_requires_governance_obligation ())) = ()
+let mas_full_requires_governance (p_e: _) : Lemma (requires (mas_fully_compliant p_e == true) (ensures (trm_governance p_e == true))) = admit ()
 
 (* mas_full_requires_testing (matches Coq: Theorem mas_full_requires_testing) *)
-let mas_full_requires_testing_obligation () : Tot bool = (0 = 0)
-let mas_full_requires_testing_lemma () : Lemma (requires True) (ensures (mas_full_requires_testing_obligation () == mas_full_requires_testing_obligation ())) = ()
+let mas_full_requires_testing (p_e: _) : Lemma (requires (mas_fully_compliant p_e == true) (ensures (trm_security_testing p_e == true))) = admit ()
 
 (* mas_full_requires_resilience (matches Coq: Theorem mas_full_requires_resilience) *)
-let mas_full_requires_resilience_obligation () : Tot bool = (0 = 0)
-let mas_full_requires_resilience_lemma () : Lemma (requires True) (ensures (mas_full_requires_resilience_obligation () == mas_full_requires_resilience_obligation ())) = ()
+let mas_full_requires_resilience (p_e: _) : Lemma (requires (mas_fully_compliant p_e == true) (ensures (trm_resilience p_e == true))) = admit ()
 
 (* count_mas_bounded (matches Coq: Theorem count_mas_bounded) *)
-let count_mas_bounded_obligation () : Tot bool = (0 = 0)
-let count_mas_bounded_lemma () : Lemma (requires True) (ensures (count_mas_bounded_obligation () == count_mas_bounded_obligation ())) = ()
+let count_mas_bounded (p_e: _) : Lemma (count_mas_controls p_e <= 10) = admit ()
 
 (* mas_seven_licenses (matches Coq: Theorem mas_seven_licenses) *)
-let mas_seven_licenses_obligation () : Tot bool = (0 = 0)
-let mas_seven_licenses_lemma () : Lemma (requires True) (ensures (mas_seven_licenses_obligation () == mas_seven_licenses_obligation ())) = ()
+let mas_seven_licenses () : Lemma (length all_mas_license_types == 7) = admit ()

@@ -340,181 +340,136 @@ let label_meet (p_l1: label) (p_l2: label) : Tot label =
   mkLabel (level_min (p_l1.f_lab_level) (p_l2.f_lab_level)) (list_inter (p_l1.f_lab_compartments) (p_l2.f_lab_compartments))
 
 (* P_001_01 (matches Coq: Theorem P_001_01) *)
-let p_001_01_obligation () : Tot bool = (0 = 0)
-let p_001_01_lemma () : Lemma (requires True) (ensures (p_001_01_obligation () == p_001_01_obligation ())) = ()
+let p_001_01 (p_a: Type0) (p_b: Type0) (p_c: Type0) (p_x: nat) (p_f: nat) (p_g: nat) (p_m: nat) : Lemma (option_bind (option_return p_x) p_f == p_f p_x /\ option_bind p_m option_return == p_m /\ option_bind (option_bind p_m p_f) p_g == option_bind p_m (fn_fun y => option_bind (p_f y) p_g)) = admit ()
 
 (* P_001_02 (matches Coq: Theorem P_001_02) *)
-let p_001_02_obligation () : Tot bool = (0 = 0)
-let p_001_02_lemma () : Lemma (requires True) (ensures (p_001_02_obligation () == p_001_02_obligation ())) = ()
+let p_001_02 (p_t: Type0) (p_u: Type0) (p_v: Type0) (p_e: Type0) (p_x: nat) (p_f: nat) (p_g: nat) (p_m: nat) : Lemma (result_bind (result_return p_x) p_f == p_f p_x /\ result_bind p_m result_return == p_m /\ result_bind (result_bind p_m p_f) p_g == result_bind p_m (fn_fun y => result_bind (p_f y) p_g)) = admit ()
 
 (* P_001_03 (matches Coq: Theorem P_001_03) *)
-let p_001_03_obligation () : Tot bool = (0 = 0)
-let p_001_03_lemma () : Lemma (requires True) (ensures (p_001_03_obligation () == p_001_03_obligation ())) = ()
+let p_001_03 (p_a: Type0) (p_b: Type0) (p_e: Type0) (p_e: nat) : Lemma ((forall (h : p_a -> Option p_b), option_bind (@None p_a) h == @None p_b) /\ (forall (h : p_a -> Result p_b p_e), result_bind (@Err p_a p_e p_e) h == @Err p_b p_e p_e)) = admit ()
 
 (* rev_app_single (matches Coq: Lemma rev_app_single) *)
-let rev_app_single_obligation () : Tot bool = (0 = 0)
-let rev_app_single_lemma () : Lemma (requires True) (ensures (rev_app_single_obligation () == rev_app_single_obligation ())) = ()
+let rev_app_single (p_l: (list nat)) (p_x: nat) : Lemma (rev (p_l ++ [p_x]) == p_x :: rev p_l) = admit ()
 
 (* P_001_04 (matches Coq: Theorem P_001_04) *)
-let p_001_04_obligation () : Tot bool = (0 = 0)
-let p_001_04_lemma () : Lemma (requires True) (ensures (p_001_04_obligation () == p_001_04_obligation ())) = ()
+let p_001_04 (p_a: Type0) (p_v: nat) (p_x: nat) : Lemma (requires (vlen p_v > 0) (ensures (exists v__ vec_pop (vec_push p_v p_x) == Some (x_ v_) /\ vdata v_ == vdata p_v /\ vlen v_ == vlen p_v))) = admit ()
 
 (* P_001_05 (matches Coq: Theorem P_001_05) *)
-let p_001_05_obligation () : Tot bool = (0 = 0)
-let p_001_05_lemma () : Lemma (requires True) (ensures (p_001_05_obligation () == p_001_05_obligation ())) = ()
+let p_001_05 (p_a: Type0) (p_v: nat) (p_i: nat) : Lemma (requires (vec_in_bounds p_v p_i == fn_true <) (ensures (p_i < vlen p_v))) = admit ()
 
 (* P_001_06 (matches Coq: Theorem P_001_06) *)
-let p_001_06_obligation () : Tot bool = (0 = 0)
-let p_001_06_lemma () : Lemma (requires True) (ensures (p_001_06_obligation () == p_001_06_obligation ())) = ()
+let p_001_06 (p_k: Type0) (p_v: Type0) (p_eq: nat) (p_m: nat) (p_k: nat) (p_v: nat) : Lemma (requires ((forall k__ p_eq p_k k_ == fn_true <-> p_k = k_)) (ensures (hashmap_get p_eq (hashmap_insert p_eq p_m p_k p_v) p_k == Some p_v))) = admit ()
 
 (* P_001_07 (matches Coq: Theorem P_001_07) *)
-let p_001_07_obligation () : Tot bool = (0 = 0)
-let p_001_07_lemma () : Lemma (requires True) (ensures (p_001_07_obligation () == p_001_07_obligation ())) = ()
+let p_001_07 (p_h: sip_hash_state) : Lemma (siphash_collision_resistant p_h == true) = admit ()
 
 (* P_001_08 (matches Coq: Theorem P_001_08) *)
-let p_001_08_obligation () : Tot bool = (0 = 0)
-let p_001_08_lemma () : Lemma (requires True) (ensures (p_001_08_obligation () == p_001_08_obligation ())) = ()
+let p_001_08 (p_k: Type0) (p_v: Type0) (p_lt: nat) (p_t: nat) (p_k: nat) (p_v: nat) : Lemma (requires ((forall a b_ p_lt a b == true \/ a == b \/ p_lt b a == true) /\ btree_ordered p_lt p_t == true) (ensures (btree_ordered p_lt (btree_insert p_lt p_t p_k p_v) == true))) = admit ()
 
 (* P_001_09 (matches Coq: Theorem P_001_09) *)
-let p_001_09_obligation () : Tot bool = (0 = 0)
-let p_001_09_lemma () : Lemma (requires True) (ensures (p_001_09_obligation () == p_001_09_obligation ())) = ()
+let p_001_09 (p_a: Type0) (p_zero: nat) (p_sv: nat) : Lemma (requires (fn_let dropped : == secure_vec_drop p_zero p_sv id_in svec_zeroized dropped = true /\ forall x_ In x (svec_data dropped) == true) (ensures (x == p_zero))) = admit ()
 
 (* P_001_10 (matches Coq: Theorem P_001_10) *)
-let p_001_10_obligation () : Tot bool = (0 = 0)
-let p_001_10_lemma () : Lemma (requires True) (ensures (p_001_10_obligation () == p_001_10_obligation ())) = ()
+let p_001_10 (p_bytes: (list nat)) : Lemma (requires (all_valid_utf8 p_bytes == true) (ensures ((string_from_bytes p_bytes).f_str_is_utf8 == true))) = admit ()
 
 (* P_001_11 (matches Coq: Theorem P_001_11) *)
-let p_001_11_obligation () : Tot bool = (0 = 0)
-let p_001_11_lemma () : Lemma (requires True) (ensures (p_001_11_obligation () == p_001_11_obligation ())) = ()
+let p_001_11 (p_s: riina_string) (p_start: nat) (p_len: nat) (p_s_: riina_string) : Lemma (requires (string_slice p_s p_start p_len == Some s_) (ensures (p_start <= length (p_s.f_str_bytes) /\ p_start + p_len <= length (p_s.f_str_bytes)))) = admit ()
 
 (* P_001_12 (matches Coq: Theorem P_001_12) *)
-let p_001_12_obligation () : Tot bool = (0 = 0)
-let p_001_12_lemma () : Lemma (requires True) (ensures (p_001_12_obligation () == p_001_12_obligation ())) = ()
+let p_001_12 (p_ss: secure_string) : Lemma (requires (fn_let dropped : == secure_string_drop p_ss id_in sstr_zeroized dropped = true /\ forall x_ In x (dropped.f_sstr_data) == true) (ensures (x == 0))) = admit ()
 
 (* P_001_13 (matches Coq: Theorem P_001_13) *)
-let p_001_13_obligation () : Tot bool = (0 = 0)
-let p_001_13_lemma () : Lemma (requires True) (ensures (p_001_13_obligation () == p_001_13_obligation ())) = ()
+let p_001_13 (p_ss: secure_string) : Lemma (requires (p_ss.f_sstr_redacted == true) (ensures (secure_string_debug p_ss == [42; 42; 42]))) = admit ()
 
 (* P_001_14 (matches Coq: Theorem P_001_14) *)
-let p_001_14_obligation () : Tot bool = (0 = 0)
-let p_001_14_lemma () : Lemma (requires True) (ensures (p_001_14_obligation () == p_001_14_obligation ())) = ()
+let p_001_14 (p_rr: read_result) : Lemma (p_rr.f_read_count <= p_rr.f_read_buffer_size) = admit ()
 
 (* P_001_15 (matches Coq: Theorem P_001_15) *)
-let p_001_15_obligation () : Tot bool = (0 = 0)
-let p_001_15_lemma () : Lemma (requires True) (ensures (p_001_15_obligation () == p_001_15_obligation ())) = ()
+let p_001_15 (p_wr: write_result) : Lemma (p_wr.f_write_count <= p_wr.f_write_buffer_size) = admit ()
 
 (* P_001_16 (matches Coq: Theorem P_001_16) *)
-let p_001_16_obligation () : Tot bool = (0 = 0)
-let p_001_16_lemma () : Lemma (requires True) (ensures (p_001_16_obligation () == p_001_16_obligation ())) = ()
+let p_001_16 (p_fh: file_handle) (p_buf_size: nat) : Lemma (requires (has_capability (p_fh.f_fh_caps) CapFileRead == false) (ensures (file_read p_fh p_buf_size == None))) = admit ()
 
 (* P_001_17 (matches Coq: Theorem P_001_17) *)
-let p_001_17_obligation () : Tot bool = (0 = 0)
-let p_001_17_lemma () : Lemma (requires True) (ensures (p_001_17_obligation () == p_001_17_obligation ())) = ()
+let p_001_17 (p_af: audited_file) (p_buf_size: nat) (p_rr: read_result) (p_af_: audited_file) : Lemma (requires (audited_read p_af p_buf_size == Some (rr_ af_)) (ensures (length (af_.f_af_log) == ((length (p_af.f_af_log)) + 1)))) = admit ()
 
 (* P_001_18 (matches Coq: Theorem P_001_18) *)
-let p_001_18_obligation () : Tot bool = (0 = 0)
-let p_001_18_lemma () : Lemma (requires True) (ensures (p_001_18_obligation () == p_001_18_obligation ())) = ()
+let p_001_18 (p_s: tcp_stream) (p_data: (list nat)) (p_s_: tcp_stream) : Lemma (requires (has_capability (p_s.f_tcp_caps) CapNetConnect == true /\ tcp_write p_s p_data == Some s_) (ensures (s_.f_tcp_buffer == tcp_buffer p_s ++ p_data))) = admit ()
 
 (* P_001_19 (matches Coq: Theorem P_001_19) *)
-let p_001_19_obligation () : Tot bool = (0 = 0)
-let p_001_19_lemma () : Lemma (requires True) (ensures (p_001_19_obligation () == p_001_19_obligation ())) = ()
+let p_001_19 (p_s: tcp_stream) (p_n: nat) : Lemma (requires (has_capability (p_s.f_tcp_caps) CapNetConnect == false) (ensures (tcp_read p_s p_n == None))) = admit ()
 
 (* P_001_20 (matches Coq: Theorem P_001_20) *)
-let p_001_20_obligation () : Tot bool = (0 = 0)
-let p_001_20_lemma () : Lemma (requires True) (ensures (p_001_20_obligation () == p_001_20_obligation ())) = ()
+let p_001_20 (p_cfg: tls_config) (p_offered: tls_version) (p_conn: tls_connection) : Lemma (requires (tls_handshake p_cfg p_offered == Some p_conn) (ensures (tls_version_geq (p_conn.f_tls_negotiated_version) (p_cfg.f_tls_min_version) == true))) = admit ()
 
 (* P_001_21 (matches Coq: Theorem P_001_21) *)
-let p_001_21_obligation () : Tot bool = (0 = 0)
-let p_001_21_lemma () : Lemma (requires True) (ensures (p_001_21_obligation () == p_001_21_obligation ())) = ()
+let p_001_21 (p_ca: connection_audit) (p_entry: audit_entry) : Lemma (fn_let ca_ : == mkconnaudit (p_ca.f_ca_stream) (p_entry :: ca_log p_ca) id_in length (ca_.f_ca_log) = S (length (p_ca.f_ca_log))) = admit ()
 
 (* P_001_22 (matches Coq: Theorem P_001_22) *)
-let p_001_22_obligation () : Tot bool = (0 = 0)
-let p_001_22_lemma () : Lemma (requires True) (ensures (p_001_22_obligation () == p_001_22_obligation ())) = ()
+let p_001_22 (p_d1: duration) (p_d2: duration) : Lemma ((duration_add p_d1 p_d2).f_dur_nanos < NANOS_PER_SEC) = admit ()
 
 (* P_001_23 (matches Coq: Theorem P_001_23) *)
-let p_001_23_obligation () : Tot bool = (0 = 0)
-let p_001_23_lemma () : Lemma (requires True) (ensures (p_001_23_obligation () == p_001_23_obligation ())) = ()
+let p_001_23 (p_i1: instant) (p_i2: instant) : Lemma (requires (p_i1.f_inst_ticks <= p_i2.f_inst_ticks) (ensures (instant_elapsed p_i1 p_i2 >= 0))) = admit ()
 
 (* P_001_24 (matches Coq: Theorem P_001_24) *)
-let p_001_24_obligation () : Tot bool = (0 = 0)
-let p_001_24_lemma () : Lemma (requires True) (ensures (p_001_24_obligation () == p_001_24_obligation ())) = ()
+let p_001_24 (p_ts: secure_timestamp) (p_expected_sig: nat) : Lemma (requires (verify_timestamp p_ts p_expected_sig == true) (ensures (p_ts.f_st_signed == true /\ p_ts.f_st_signature == p_expected_sig))) = admit ()
 
 (* P_001_25 (matches Coq: Theorem P_001_25) *)
-let p_001_25_obligation () : Tot bool = (0 = 0)
-let p_001_25_lemma () : Lemma (requires True) (ensures (p_001_25_obligation () == p_001_25_obligation ())) = ()
+let p_001_25 (p_c: monotonic_counter) : Lemma ((mono_increment p_c).f_mc_value > p_c.f_mc_value) = admit ()
 
 (* P_001_26 (matches Coq: Theorem P_001_26) *)
-let p_001_26_obligation () : Tot bool = (0 = 0)
-let p_001_26_lemma () : Lemma (requires True) (ensures (p_001_26_obligation () == p_001_26_obligation ())) = ()
+let p_001_26 (p_m: mutex_state) (p_t1: nat) (p_t2: nat) (p_m_: mutex_state) : Lemma (requires (mutex_acquire p_m p_t1 == Some m_) (ensures (mutex_acquire m_ p_t2 == None))) = admit ()
 
 (* P_001_27 (matches Coq: Theorem P_001_27) *)
-let p_001_27_obligation () : Tot bool = (0 = 0)
-let p_001_27_lemma () : Lemma (requires True) (ensures (p_001_27_obligation () == p_001_27_obligation ())) = ()
+let p_001_27 (p_rw: rw_lock_state) (p_t1: nat) (p_t2: nat) (p_rw_: rw_lock_state) : Lemma (requires (rwlock_write_acquire p_rw p_t1 == Some rw_) (ensures (rwlock_read_acquire rw_ p_t2 == None))) = admit ()
 
 (* P_001_28 (matches Coq: Theorem P_001_28) *)
-let p_001_28_obligation () : Tot bool = (0 = 0)
-let p_001_28_lemma () : Lemma (requires True) (ensures (p_001_28_obligation () == p_001_28_obligation ())) = ()
+let p_001_28 (p_a: atomic_nat) (p_v: nat) : Lemma (fn_let a_ : == atomic_store p_a p_v id_in atomic_seq a_ > atomic_seq p_a /\ a_.f_atomic_value == p_v) = admit ()
 
 (* P_001_29 (matches Coq: Theorem P_001_29) *)
-let p_001_29_obligation () : Tot bool = (0 = 0)
-let p_001_29_lemma () : Lemma (requires True) (ensures (p_001_29_obligation () == p_001_29_obligation ())) = ()
+let p_001_29 (p_cv: condvar_state) (p_t: nat) : Lemma (requires (p_cv.f_cv_waiters == [p_t]) (ensures (fn_let (cv__ signaled) : == condvar_signal p_cv id_in signaled = Some p_t /\ cv_.f_cv_waiters == []))) = admit ()
 
 (* P_001_30 (matches Coq: Theorem P_001_30) *)
-let p_001_30_obligation () : Tot bool = (0 = 0)
-let p_001_30_lemma () : Lemma (requires True) (ensures (p_001_30_obligation () == p_001_30_obligation ())) = ()
+let p_001_30 (p_ro: resource_order) (p_r1: nat) (p_r2: nat) : Lemma (requires (p_ro.f_ro_acquired == [] /\ p_r1 < p_r2) (ensures (exists ro__ acquire_ordered p_ro p_r1 == Some ro_ /\ exists ro___ acquire_ordered ro_ p_r2 == Some ro__))) = admit ()
 
 (* P_001_31 (matches Coq: Theorem P_001_31) *)
-let p_001_31_obligation () : Tot bool = (0 = 0)
-let p_001_31_lemma () : Lemma (requires True) (ensures (p_001_31_obligation () == p_001_31_obligation ())) = ()
+let p_001_31 (p_k: aes_key) : Lemma (requires (fn_let dropped : == aes_key_drop p_k id_in aes_key_zeroized dropped = true /\ forall x_ In x (dropped.f_aes_key_data) == true) (ensures (x == 0))) = admit ()
 
 (* P_001_32 (matches Coq: Theorem P_001_32) *)
-let p_001_32_obligation () : Tot bool = (0 = 0)
-let p_001_32_lemma () : Lemma (requires True) (ensures (p_001_32_obligation () == p_001_32_obligation ())) = ()
+let p_001_32 (p_data: (list nat)) : Lemma (hash_function p_data == hash_function p_data) = admit ()
 
 (* P_001_33 (matches Coq: Theorem P_001_33) *)
-let p_001_33_obligation () : Tot bool = (0 = 0)
-let p_001_33_lemma () : Lemma (requires True) (ensures (p_001_33_obligation () == p_001_33_obligation ())) = ()
+let p_001_33 (p_data: (list nat)) (p_private_key: nat) : Lemma (fn_let id_sig : == sign_data p_data p_private_key id_in id_let public_key := p_private_key + 1 id_in verify_signature id_sig p_data public_key = true) = admit ()
 
 (* P_001_34 (matches Coq: Theorem P_001_34) *)
-let p_001_34_obligation () : Tot bool = (0 = 0)
-let p_001_34_lemma () : Lemma (requires True) (ensures (p_001_34_obligation () == p_001_34_obligation ())) = ()
+let p_001_34 (p_k: crypto_key) : Lemma (requires (fn_let dropped : == crypto_key_drop p_k id_in ck_zeroized dropped = true /\ forall x_ In x (dropped.f_ck_data) == true) (ensures (x == 0))) = admit ()
 
 (* P_001_35 (matches Coq: Theorem P_001_35) *)
-let p_001_35_obligation () : Tot bool = (0 = 0)
-let p_001_35_lemma () : Lemma (requires True) (ensures (p_001_35_obligation () == p_001_35_obligation ())) = ()
+let p_001_35 (p_s1: nat) (p_s2: nat) (p_c: capability) : Lemma (requires (cap_set_contains p_s1 p_c == true \/ cap_set_contains p_s2 p_c == true) (ensures (cap_set_contains (cap_set_union p_s1 p_s2) p_c == true))) = admit ()
 
 (* P_001_36 (matches Coq: Theorem P_001_36) *)
-let p_001_36_obligation () : Tot bool = (0 = 0)
-let p_001_36_lemma () : Lemma (requires True) (ensures (p_001_36_obligation () == p_001_36_obligation ())) = ()
+let p_001_36 (p_s1: nat) (p_s2: nat) (p_c: capability) : Lemma (requires (cap_set_contains (cap_set_inter p_s1 p_s2) p_c == true) (ensures (cap_set_contains p_s1 p_c == true /\ cap_set_contains p_s2 p_c == true))) = admit ()
 
 (* P_001_37 (matches Coq: Theorem P_001_37) *)
-let p_001_37_obligation () : Tot bool = (0 = 0)
-let p_001_37_lemma () : Lemma (requires True) (ensures (p_001_37_obligation () == p_001_37_obligation ())) = ()
+let p_001_37 (p_s: nat) (p_c: capability) : Lemma (requires (cap_set_contains p_s p_c == false /\ forall c__ In c_ p_s == true) (ensures (cap_eq p_c c_ == false))) = admit ()
 
 (* level_leq_refl (matches Coq: Lemma level_leq_refl) *)
-let level_leq_refl_obligation () : Tot bool = (0 = 0)
-let level_leq_refl_lemma () : Lemma (requires True) (ensures (level_leq_refl_obligation () == level_leq_refl_obligation ())) = ()
+let level_leq_refl (p_l: _) : Lemma (level_leq p_l p_l == true) = admit ()
 
 (* compartments_subset_refl (matches Coq: Lemma compartments_subset_refl) *)
-let compartments_subset_refl_obligation () : Tot bool = (0 = 0)
-let compartments_subset_refl_lemma () : Lemma (requires True) (ensures (compartments_subset_refl_obligation () == compartments_subset_refl_obligation ())) = ()
+let compartments_subset_refl (p_c: _) : Lemma (compartments_subset p_c p_c == true) = admit ()
 
 (* P_001_38 (matches Coq: Theorem P_001_38) *)
-let p_001_38_obligation () : Tot bool = (0 = 0)
-let p_001_38_lemma () : Lemma (requires True) (ensures (p_001_38_obligation () == p_001_38_obligation ())) = ()
+let p_001_38 (p_l1: label) (p_l2: label) : Lemma (flows_to p_l1 (label_join p_l1 p_l2) == true /\ flows_to p_l2 (label_join p_l1 p_l2) == true /\ flows_to p_l1 p_l1 == true) = admit ()
 
 (* level_leq_trans (matches Coq: Lemma level_leq_trans) *)
-let level_leq_trans_obligation () : Tot bool = (0 = 0)
-let level_leq_trans_lemma () : Lemma (requires True) (ensures (level_leq_trans_obligation () == level_leq_trans_obligation ())) = ()
+let level_leq_trans (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (requires (level_leq p_l1 p_l2 == true /\ level_leq p_l2 p_l3 == true) (ensures (level_leq p_l1 p_l3 == true))) = admit ()
 
 (* compartments_subset_trans (matches Coq: Lemma compartments_subset_trans) *)
-let compartments_subset_trans_obligation () : Tot bool = (0 = 0)
-let compartments_subset_trans_lemma () : Lemma (requires True) (ensures (compartments_subset_trans_obligation () == compartments_subset_trans_obligation ())) = ()
+let compartments_subset_trans (p_c1: _) (p_c2: _) (p_c3: _) : Lemma (requires (compartments_subset p_c1 p_c2 == true /\ compartments_subset p_c2 p_c3 == true) (ensures (compartments_subset p_c1 p_c3 == true))) = admit ()
 
 (* P_001_39 (matches Coq: Theorem P_001_39) *)
-let p_001_39_obligation () : Tot bool = (0 = 0)
-let p_001_39_lemma () : Lemma (requires True) (ensures (p_001_39_obligation () == p_001_39_obligation ())) = ()
+let p_001_39 (p_l1: label) (p_l2: label) (p_l3: label) : Lemma (requires (flows_to p_l1 p_l2 == true /\ flows_to p_l2 p_l3 == true) (ensures (flows_to p_l1 p_l3 == true))) = admit ()
 
 (* P_001_40 (matches Coq: Theorem P_001_40) *)
-let p_001_40_obligation () : Tot bool = (0 = 0)
-let p_001_40_lemma () : Lemma (requires True) (ensures (p_001_40_obligation () == p_001_40_obligation ())) = ()
+let p_001_40 (p_a: Type0) (p_lv: nat) (p_clearance: label) (p_v: nat) : Lemma (requires (unlabel p_lv p_clearance == Some p_v) (ensures (flows_to (labeled_label p_lv) p_clearance == true /\ p_v == labeled_value p_lv))) = admit ()

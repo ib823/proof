@@ -157,357 +157,268 @@ let riina_rop : rop_defense_config = mkROPDefense riina_cfi riina_cr true true
 let riina_cpi : cpi_config = {f_cpi_ptr_authentication=true; f_cpi_bounds_checking=true; f_cpi_type_checking=true; f_cpi_isolation=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro_obligation () : Tot bool = (0 = 0)
-let andb_true_intro_lemma () : Lemma (requires True) (ensures (andb_true_intro_obligation () == andb_true_intro_obligation ())) = ()
+let andb_true_intro (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true) (ensures (p_a && p_b == true))) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = (0 = 0)
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = (0 = 0)
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a || p_b == fn_true <) (ensures (p_a == true \/ p_b == true))) = admit ()
 
 (* ROP_001 (matches Coq: Theorem ROP_001) *)
-let rop_001_obligation () : Tot bool = (0 = 0)
-let rop_001_lemma () : Lemma (requires True) (ensures (rop_001_obligation () == rop_001_obligation ())) = ()
+let rop_001 () : Lemma (cfi_complete riina_cfi == true) = admit ()
 
 (* ROP_002 (matches Coq: Theorem ROP_002) *)
-let rop_002_obligation () : Tot bool = (0 = 0)
-let rop_002_lemma () : Lemma (requires True) (ensures (rop_002_obligation () == rop_002_obligation ())) = ()
+let rop_002 () : Lemma (code_reuse_prevented riina_cr == true) = admit ()
 
 (* ROP_003 (matches Coq: Theorem ROP_003) *)
-let rop_003_obligation () : Tot bool = (0 = 0)
-let rop_003_lemma () : Lemma (requires True) (ensures (rop_003_obligation () == rop_003_obligation ())) = ()
+let rop_003 () : Lemma (rop_defended riina_rop == true) = admit ()
 
 (* ROP_004 (matches Coq: Theorem ROP_004) *)
-let rop_004_obligation () : Tot bool = (0 = 0)
-let rop_004_lemma () : Lemma (requires True) (ensures (rop_004_obligation () == rop_004_obligation ())) = ()
+let rop_004 () : Lemma (riina_cfi.f_cfi_shadow_stack == true) = admit ()
 
 (* ROP_005 (matches Coq: Theorem ROP_005) *)
-let rop_005_obligation () : Tot bool = (0 = 0)
-let rop_005_lemma () : Lemma (requires True) (ensures (rop_005_obligation () == rop_005_obligation ())) = ()
+let rop_005 () : Lemma (riina_cfi.f_cfi_indirect_branch_tracking == true) = admit ()
 
 (* ROP_006 (matches Coq: Theorem ROP_006) *)
-let rop_006_obligation () : Tot bool = (0 = 0)
-let rop_006_lemma () : Lemma (requires True) (ensures (rop_006_obligation () == rop_006_obligation ())) = ()
+let rop_006 () : Lemma (riina_cfi.f_cfi_return_address_protection == true) = admit ()
 
 (* ROP_007 (matches Coq: Theorem ROP_007) *)
-let rop_007_obligation () : Tot bool = (0 = 0)
-let rop_007_lemma () : Lemma (requires True) (ensures (rop_007_obligation () == rop_007_obligation ())) = ()
+let rop_007 () : Lemma (riina_cr.f_cr_gadget_elimination == true) = admit ()
 
 (* ROP_008 (matches Coq: Theorem ROP_008) *)
-let rop_008_obligation () : Tot bool = (0 = 0)
-let rop_008_lemma () : Lemma (requires True) (ensures (rop_008_obligation () == rop_008_obligation ())) = ()
+let rop_008 () : Lemma (riina_rop.f_rop_aslr_compatible == true) = admit ()
 
 (* ROP_009 (matches Coq: Theorem ROP_009) *)
-let rop_009_obligation () : Tot bool = (0 = 0)
-let rop_009_lemma () : Lemma (requires True) (ensures (rop_009_obligation () == rop_009_obligation ())) = ()
+let rop_009 (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_shadow_stack == true))) = admit ()
 
 (* ROP_010 (matches Coq: Theorem ROP_010) *)
-let rop_010_obligation () : Tot bool = (0 = 0)
-let rop_010_lemma () : Lemma (requires True) (ensures (rop_010_obligation () == rop_010_obligation ())) = ()
+let rop_010 (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_indirect_branch_tracking == true))) = admit ()
 
 (* ROP_011 (matches Coq: Theorem ROP_011) *)
-let rop_011_obligation () : Tot bool = (0 = 0)
-let rop_011_lemma () : Lemma (requires True) (ensures (rop_011_obligation () == rop_011_obligation ())) = ()
+let rop_011 (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_return_address_protection == true))) = admit ()
 
 (* ROP_012 (matches Coq: Theorem ROP_012) *)
-let rop_012_obligation () : Tot bool = (0 = 0)
-let rop_012_lemma () : Lemma (requires True) (ensures (rop_012_obligation () == rop_012_obligation ())) = ()
+let rop_012 (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_backward_edge_cfi == true))) = admit ()
 
 (* ROP_013 (matches Coq: Theorem ROP_013) *)
-let rop_013_obligation () : Tot bool = (0 = 0)
-let rop_013_lemma () : Lemma (requires True) (ensures (rop_013_obligation () == rop_013_obligation ())) = ()
+let rop_013 (p_r: _) : Lemma (requires (code_reuse_prevented p_r == true) (ensures (p_r.f_cr_gadget_elimination == true))) = admit ()
 
 (* ROP_014 (matches Coq: Theorem ROP_014) *)
-let rop_014_obligation () : Tot bool = (0 = 0)
-let rop_014_lemma () : Lemma (requires True) (ensures (rop_014_obligation () == rop_014_obligation ())) = ()
+let rop_014 (p_r: _) : Lemma (requires (code_reuse_prevented p_r == true) (ensures (p_r.f_cr_code_pointer_integrity == true))) = admit ()
 
 (* ROP_015 (matches Coq: Theorem ROP_015) *)
-let rop_015_obligation () : Tot bool = (0 = 0)
-let rop_015_lemma () : Lemma (requires True) (ensures (rop_015_obligation () == rop_015_obligation ())) = ()
+let rop_015 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures (cfi_complete (p_r.f_rop_cfi) == true))) = admit ()
 
 (* ROP_016 (matches Coq: Theorem ROP_016) *)
-let rop_016_obligation () : Tot bool = (0 = 0)
-let rop_016_lemma () : Lemma (requires True) (ensures (rop_016_obligation () == rop_016_obligation ())) = ()
+let rop_016 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures (code_reuse_prevented (p_r.f_rop_code_reuse) == true))) = admit ()
 
 (* ROP_017 (matches Coq: Theorem ROP_017) *)
-let rop_017_obligation () : Tot bool = (0 = 0)
-let rop_017_lemma () : Lemma (requires True) (ensures (rop_017_obligation () == rop_017_obligation ())) = ()
+let rop_017 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures (p_r.f_rop_aslr_compatible == true))) = admit ()
 
 (* ROP_018 (matches Coq: Theorem ROP_018) *)
-let rop_018_obligation () : Tot bool = (0 = 0)
-let rop_018_lemma () : Lemma (requires True) (ensures (rop_018_obligation () == rop_018_obligation ())) = ()
+let rop_018 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures (p_r.f_rop_dep_compatible == true))) = admit ()
 
 (* ROP_019 (matches Coq: Theorem ROP_019) *)
-let rop_019_obligation () : Tot bool = (0 = 0)
-let rop_019_lemma () : Lemma (requires True) (ensures (rop_019_obligation () == rop_019_obligation ())) = ()
+let rop_019 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures ((p_r.f_rop_cfi).f_cfi_shadow_stack == true))) = admit ()
 
 (* ROP_020 (matches Coq: Theorem ROP_020) *)
-let rop_020_obligation () : Tot bool = (0 = 0)
-let rop_020_lemma () : Lemma (requires True) (ensures (rop_020_obligation () == rop_020_obligation ())) = ()
+let rop_020 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures ((p_r.f_rop_cfi).f_cfi_return_address_protection == true))) = admit ()
 
 (* ROP_021 (matches Coq: Theorem ROP_021) *)
-let rop_021_obligation () : Tot bool = (0 = 0)
-let rop_021_lemma () : Lemma (requires True) (ensures (rop_021_obligation () == rop_021_obligation ())) = ()
+let rop_021 (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures ((p_r.f_rop_code_reuse).f_cr_gadget_elimination == true))) = admit ()
 
 (* ROP_022 (matches Coq: Theorem ROP_022) *)
-let rop_022_obligation () : Tot bool = (0 = 0)
-let rop_022_lemma () : Lemma (requires True) (ensures (rop_022_obligation () == rop_022_obligation ())) = ()
+let rop_022 () : Lemma (cfi_complete riina_cfi == true /\ code_reuse_prevented riina_cr == true) = admit ()
 
 (* ROP_023 (matches Coq: Theorem ROP_023) *)
-let rop_023_obligation () : Tot bool = (0 = 0)
-let rop_023_lemma () : Lemma (requires True) (ensures (rop_023_obligation () == rop_023_obligation ())) = ()
+let rop_023 () : Lemma (riina_cfi.f_cfi_shadow_stack == true /\ riina_cfi.f_cfi_backward_edge_cfi == true) = admit ()
 
 (* ROP_024 (matches Coq: Theorem ROP_024) *)
-let rop_024_obligation () : Tot bool = (0 = 0)
-let rop_024_lemma () : Lemma (requires True) (ensures (rop_024_obligation () == rop_024_obligation ())) = ()
+let rop_024 () : Lemma (rop_defended riina_rop == true /\ riina_rop.f_rop_aslr_compatible == true) = admit ()
 
 (* ROP_025_complete (matches Coq: Theorem ROP_025_complete) *)
-let rop_025_complete_obligation () : Tot bool = (0 = 0)
-let rop_025_complete_lemma () : Lemma (requires True) (ensures (rop_025_complete_obligation () == rop_025_complete_obligation ())) = ()
+let rop_025_complete (p_r: _) : Lemma (requires (rop_defended p_r == true) (ensures ((p_r.f_rop_cfi).f_cfi_shadow_stack == true /\ (p_r.f_rop_cfi).f_cfi_return_address_protection == true /\ (p_r.f_rop_code_reuse).f_cr_gadget_elimination == true /\ p_r.f_rop_aslr_compatible == true))) = admit ()
 
 (* ROP_026_shadow_push_preserves (matches Coq: Theorem ROP_026_shadow_push_preserves) *)
-let rop_026_shadow_push_preserves_obligation () : Tot bool = (0 = 0)
-let rop_026_shadow_push_preserves_lemma () : Lemma (requires True) (ensures (rop_026_shadow_push_preserves_obligation () == rop_026_shadow_push_preserves_obligation ())) = ()
+let rop_026_shadow_push_preserves (p_ss: _) (p_ret: _) (p_caller: _) (p_fp: _) : Lemma (length (shadow_push p_ss p_ret p_caller p_fp) == ((length p_ss) + 1)) = admit ()
 
 (* ROP_027_shadow_pop_decreases (matches Coq: Theorem ROP_027_shadow_pop_decreases) *)
-let rop_027_shadow_pop_decreases_obligation () : Tot bool = (0 = 0)
-let rop_027_shadow_pop_decreases_lemma () : Lemma (requires True) (ensures (rop_027_shadow_pop_decreases_obligation () == rop_027_shadow_pop_decreases_obligation ())) = ()
+let rop_027_shadow_pop_decreases (p_ss: _) (p_e: _) (p_rest: _) : Lemma (requires (shadow_pop p_ss == Some (e_ p_rest)) (ensures (length p_rest == fn_pred (length p_ss)))) = admit ()
 
 (* ROP_028_shadow_peek_top (matches Coq: Theorem ROP_028_shadow_peek_top) *)
-let rop_028_shadow_peek_top_obligation () : Tot bool = (0 = 0)
-let rop_028_shadow_peek_top_lemma () : Lemma (requires True) (ensures (rop_028_shadow_peek_top_obligation () == rop_028_shadow_peek_top_obligation ())) = ()
+let rop_028_shadow_peek_top (p_ss: _) (p_e: _) : Lemma (requires (shadow_peek p_ss == Some p_e) (ensures (exists rest_ p_ss == p_e :: rest))) = admit ()
 
 (* ROP_029_valid_return_requires_entry (matches Coq: Theorem ROP_029_valid_return_requires_entry) *)
-let rop_029_valid_return_requires_entry_obligation () : Tot bool = (0 = 0)
-let rop_029_valid_return_requires_entry_lemma () : Lemma (requires True) (ensures (rop_029_valid_return_requires_entry_obligation () == rop_029_valid_return_requires_entry_obligation ())) = ()
+let rop_029_valid_return_requires_entry (p_ss: _) (p_ret_addr: _) : Lemma (requires (valid_return p_ss p_ret_addr == true) (ensures (exists e rest_ p_ss == e :: rest /\ e.f_se_return_addr == p_ret_addr))) = admit ()
 
 (* ROP_030_empty_stack_no_return (matches Coq: Theorem ROP_030_empty_stack_no_return) *)
-let rop_030_empty_stack_no_return_obligation () : Tot bool = (0 = 0)
-let rop_030_empty_stack_no_return_lemma () : Lemma (requires True) (ensures (rop_030_empty_stack_no_return_obligation () == rop_030_empty_stack_no_return_obligation ())) = ()
+let rop_030_empty_stack_no_return (p_ret_addr: _) : Lemma (~(valid_return nil p_ret_addr == true)) = admit ()
 
 (* ROP_031_push_pop_inverse (matches Coq: Theorem ROP_031_push_pop_inverse) *)
-let rop_031_push_pop_inverse_obligation () : Tot bool = (0 = 0)
-let rop_031_push_pop_inverse_lemma () : Lemma (requires True) (ensures (rop_031_push_pop_inverse_obligation () == rop_031_push_pop_inverse_obligation ())) = ()
+let rop_031_push_pop_inverse (p_ss: _) (p_ret: _) (p_caller: _) (p_fp: _) : Lemma (shadow_pop (shadow_push p_ss p_ret p_caller p_fp) == Some (mkshadowentry p_ret p_caller p_fp true_ p_ss)) = admit ()
 
 (* ROP_032_pushed_entry_valid (matches Coq: Theorem ROP_032_pushed_entry_valid) *)
-let rop_032_pushed_entry_valid_obligation () : Tot bool = (0 = 0)
-let rop_032_pushed_entry_valid_lemma () : Lemma (requires True) (ensures (rop_032_pushed_entry_valid_obligation () == rop_032_pushed_entry_valid_obligation ())) = ()
+let rop_032_pushed_entry_valid (p_ss: _) (p_ret: _) (p_caller: _) (p_fp: _) (p_e: _) (p_rest: _) : Lemma (requires (shadow_pop (shadow_push p_ss p_ret p_caller p_fp) == Some (e_ p_rest)) (ensures (p_e.f_se_mac_valid == true))) = admit ()
 
 (* ROP_033_return_matches_pushed (matches Coq: Theorem ROP_033_return_matches_pushed) *)
-let rop_033_return_matches_pushed_obligation () : Tot bool = (0 = 0)
-let rop_033_return_matches_pushed_lemma () : Lemma (requires True) (ensures (rop_033_return_matches_pushed_obligation () == rop_033_return_matches_pushed_obligation ())) = ()
+let rop_033_return_matches_pushed (p_ss: _) (p_ret: _) (p_caller: _) (p_fp: _) : Lemma (return_matches_shadow (shadow_push p_ss p_ret p_caller p_fp) p_ret == true) = admit ()
 
 (* ROP_034_return_mismatch_fails (matches Coq: Theorem ROP_034_return_mismatch_fails) *)
-let rop_034_return_mismatch_fails_obligation () : Tot bool = (0 = 0)
-let rop_034_return_mismatch_fails_lemma () : Lemma (requires True) (ensures (rop_034_return_mismatch_fails_obligation () == rop_034_return_mismatch_fails_obligation ())) = ()
+let rop_034_return_mismatch_fails (p_ss: _) (p_ret: _) (p_caller: _) (p_fp: _) (p_wrong_addr: _) : Lemma (requires (~(p_ret == p_wrong_addr)) (ensures (return_matches_shadow (shadow_push p_ss p_ret p_caller p_fp) p_wrong_addr == false))) = admit ()
 
 (* ROP_035_shadow_stack_depth_bounded (matches Coq: Theorem ROP_035_shadow_stack_depth_bounded) *)
-let rop_035_shadow_stack_depth_bounded_obligation () : Tot bool = (0 = 0)
-let rop_035_shadow_stack_depth_bounded_lemma () : Lemma (requires True) (ensures (rop_035_shadow_stack_depth_bounded_obligation () == rop_035_shadow_stack_depth_bounded_obligation ())) = ()
+let rop_035_shadow_stack_depth_bounded (p_ss: _) (p_n: _) : Lemma (requires (length p_ss <= p_n) (ensures (forall ret caller fp_ length (shadow_push p_ss ret caller fp) <= (p_n + 1)))) = admit ()
 
 (* ROP_036_valid_target_in_list (matches Coq: Theorem ROP_036_valid_target_in_list) *)
-let rop_036_valid_target_in_list_obligation () : Tot bool = (0 = 0)
-let rop_036_valid_target_in_list_lemma () : Lemma (requires True) (ensures (rop_036_valid_target_in_list_obligation () == rop_036_valid_target_in_list_obligation ())) = ()
+let rop_036_valid_target_in_list (p_targets: _) (p_addr: _) : Lemma (requires (indirect_branch_valid p_targets p_addr == true) (ensures (In p_addr p_targets == true))) = admit ()
 
 (* ROP_037_empty_targets_no_valid (matches Coq: Theorem ROP_037_empty_targets_no_valid) *)
-let rop_037_empty_targets_no_valid_obligation () : Tot bool = (0 = 0)
-let rop_037_empty_targets_no_valid_lemma () : Lemma (requires True) (ensures (rop_037_empty_targets_no_valid_obligation () == rop_037_empty_targets_no_valid_obligation ())) = ()
+let rop_037_empty_targets_no_valid (p_addr: _) : Lemma (~(indirect_branch_valid nil p_addr == true)) = admit ()
 
 (* ROP_038_singleton_target_exact (matches Coq: Theorem ROP_038_singleton_target_exact) *)
-let rop_038_singleton_target_exact_obligation () : Tot bool = (0 = 0)
-let rop_038_singleton_target_exact_lemma () : Lemma (requires True) (ensures (rop_038_singleton_target_exact_obligation () == rop_038_singleton_target_exact_obligation ())) = ()
+let rop_038_singleton_target_exact (p_addr: _) (p_target: _) : Lemma (requires (indirect_branch_valid [p_target] p_addr == true) (ensures (p_addr == p_target))) = admit ()
 
 (* ROP_039_is_valid_target_sound (matches Coq: Theorem ROP_039_is_valid_target_sound) *)
-let rop_039_is_valid_target_sound_obligation () : Tot bool = (0 = 0)
-let rop_039_is_valid_target_sound_lemma () : Lemma (requires True) (ensures (rop_039_is_valid_target_sound_obligation () == rop_039_is_valid_target_sound_obligation ())) = ()
+let rop_039_is_valid_target_sound (p_targets: _) (p_addr: _) : Lemma (requires (is_valid_target p_targets p_addr == true) (ensures (indirect_branch_valid p_targets p_addr == true))) = admit ()
 
 (* ROP_040_is_valid_target_complete (matches Coq: Theorem ROP_040_is_valid_target_complete) *)
-let rop_040_is_valid_target_complete_obligation () : Tot bool = (0 = 0)
-let rop_040_is_valid_target_complete_lemma () : Lemma (requires True) (ensures (rop_040_is_valid_target_complete_obligation () == rop_040_is_valid_target_complete_obligation ())) = ()
+let rop_040_is_valid_target_complete (p_targets: _) (p_addr: _) : Lemma (requires (indirect_branch_valid p_targets p_addr == true) (ensures (is_valid_target p_targets p_addr == true))) = admit ()
 
 (* ROP_041_btb_validated_implies_valid (matches Coq: Theorem ROP_041_btb_validated_implies_valid) *)
-let rop_041_btb_validated_implies_valid_obligation () : Tot bool = (0 = 0)
-let rop_041_btb_validated_implies_valid_lemma () : Lemma (requires True) (ensures (rop_041_btb_validated_implies_valid_obligation () == rop_041_btb_validated_implies_valid_obligation ())) = ()
+let rop_041_btb_validated_implies_valid (p_targets: _) (p_e: _) : Lemma (requires (btb_entry_valid p_targets p_e == true) (ensures (In (p_e.f_btb_target) p_targets == true))) = admit ()
 
 (* ROP_042_unvalidated_btb_unsafe (matches Coq: Theorem ROP_042_unvalidated_btb_unsafe) *)
-let rop_042_unvalidated_btb_unsafe_obligation () : Tot bool = (0 = 0)
-let rop_042_unvalidated_btb_unsafe_lemma () : Lemma (requires True) (ensures (rop_042_unvalidated_btb_unsafe_obligation () == rop_042_unvalidated_btb_unsafe_obligation ())) = ()
+let rop_042_unvalidated_btb_unsafe (p_e: _) : Lemma (requires (p_e.f_btb_validated == false) (ensures (forall targets_ ~ (btb_entry_valid targets p_e /\ btb_validated p_e = true) == true))) = admit ()
 
 (* ROP_043_target_subset_preserved (matches Coq: Theorem ROP_043_target_subset_preserved) *)
-let rop_043_target_subset_preserved_obligation () : Tot bool = (0 = 0)
-let rop_043_target_subset_preserved_lemma () : Lemma (requires True) (ensures (rop_043_target_subset_preserved_obligation () == rop_043_target_subset_preserved_obligation ())) = ()
+let rop_043_target_subset_preserved (p_targets1: _) (p_targets2: _) (p_addr: _) : Lemma (requires ((forall x_ In x p_targets1 -> In x p_targets2 == true) /\ indirect_branch_valid p_targets1 p_addr == true) (ensures (indirect_branch_valid p_targets2 p_addr == true))) = admit ()
 
 (* ROP_044_rop_gadget_blocked (matches Coq: Theorem ROP_044_rop_gadget_blocked) *)
-let rop_044_rop_gadget_blocked_obligation () : Tot bool = (0 = 0)
-let rop_044_rop_gadget_blocked_lemma () : Lemma (requires True) (ensures (rop_044_rop_gadget_blocked_obligation () == rop_044_rop_gadget_blocked_obligation ())) = ()
+let rop_044_rop_gadget_blocked (p_g: _) : Lemma (requires (p_g.f_gadget_type == GadgetROP /\ riina_cfi.f_cfi_backward_edge_cfi == true /\ riina_cfi.f_cfi_shadow_stack == true) (ensures (gadget_blocked riina_cfi p_g == true))) = admit ()
 
 (* ROP_045_jop_gadget_blocked (matches Coq: Theorem ROP_045_jop_gadget_blocked) *)
-let rop_045_jop_gadget_blocked_obligation () : Tot bool = (0 = 0)
-let rop_045_jop_gadget_blocked_lemma () : Lemma (requires True) (ensures (rop_045_jop_gadget_blocked_obligation () == rop_045_jop_gadget_blocked_obligation ())) = ()
+let rop_045_jop_gadget_blocked (p_g: _) : Lemma (requires (p_g.f_gadget_type == GadgetJOP /\ riina_cfi.f_cfi_forward_edge_cfi == true /\ riina_cfi.f_cfi_indirect_branch_tracking == true) (ensures (gadget_blocked riina_cfi p_g == true))) = admit ()
 
 (* ROP_046_cop_gadget_blocked (matches Coq: Theorem ROP_046_cop_gadget_blocked) *)
-let rop_046_cop_gadget_blocked_obligation () : Tot bool = (0 = 0)
-let rop_046_cop_gadget_blocked_lemma () : Lemma (requires True) (ensures (rop_046_cop_gadget_blocked_obligation () == rop_046_cop_gadget_blocked_obligation ())) = ()
+let rop_046_cop_gadget_blocked (p_g: _) : Lemma (requires (p_g.f_gadget_type == GadgetCOP /\ riina_cfi.f_cfi_forward_edge_cfi == true) (ensures (gadget_blocked riina_cfi p_g == true))) = admit ()
 
 (* ROP_047_srop_gadget_blocked (matches Coq: Theorem ROP_047_srop_gadget_blocked) *)
-let rop_047_srop_gadget_blocked_obligation () : Tot bool = (0 = 0)
-let rop_047_srop_gadget_blocked_lemma () : Lemma (requires True) (ensures (rop_047_srop_gadget_blocked_obligation () == rop_047_srop_gadget_blocked_obligation ())) = ()
+let rop_047_srop_gadget_blocked (p_g: _) : Lemma (requires (p_g.f_gadget_type == GadgetSROP /\ riina_cfi.f_cfi_backward_edge_cfi == true /\ riina_cfi.f_cfi_shadow_stack == true) (ensures (gadget_blocked riina_cfi p_g == true))) = admit ()
 
 (* ROP_048_riina_blocks_all_gadgets (matches Coq: Theorem ROP_048_riina_blocks_all_gadgets) *)
-let rop_048_riina_blocks_all_gadgets_obligation () : Tot bool = (0 = 0)
-let rop_048_riina_blocks_all_gadgets_lemma () : Lemma (requires True) (ensures (rop_048_riina_blocks_all_gadgets_obligation () == rop_048_riina_blocks_all_gadgets_obligation ())) = ()
+let rop_048_riina_blocks_all_gadgets (p_g: _) : Lemma (gadget_blocked riina_cfi p_g == true) = admit ()
 
 (* ROP_049_empty_chain_blocked (matches Coq: Theorem ROP_049_empty_chain_blocked) *)
-let rop_049_empty_chain_blocked_obligation () : Tot bool = (0 = 0)
-let rop_049_empty_chain_blocked_lemma () : Lemma (requires True) (ensures (rop_049_empty_chain_blocked_obligation () == rop_049_empty_chain_blocked_obligation ())) = ()
+let rop_049_empty_chain_blocked (p_cfi: _) : Lemma (chain_blocked p_cfi nil == true) = admit ()
 
 (* ROP_050_riina_blocks_all_chains (matches Coq: Theorem ROP_050_riina_blocks_all_chains) *)
-let rop_050_riina_blocks_all_chains_obligation () : Tot bool = (0 = 0)
-let rop_050_riina_blocks_all_chains_lemma () : Lemma (requires True) (ensures (rop_050_riina_blocks_all_chains_obligation () == rop_050_riina_blocks_all_chains_obligation ())) = ()
+let rop_050_riina_blocks_all_chains (p_chain: _) : Lemma (chain_blocked riina_cfi p_chain == true) = admit ()
 
 (* ROP_051_chain_blocked_implies_each_blocked (matches Coq: Theorem ROP_051_chain_blocked_implies_each_blocked) *)
-let rop_051_chain_blocked_implies_each_blocked_obligation () : Tot bool = (0 = 0)
-let rop_051_chain_blocked_implies_each_blocked_lemma () : Lemma (requires True) (ensures (rop_051_chain_blocked_implies_each_blocked_obligation () == rop_051_chain_blocked_implies_each_blocked_obligation ())) = ()
+let rop_051_chain_blocked_implies_each_blocked (p_cfi: _) (p_chain: _) (p_g: _) : Lemma (requires (chain_blocked p_cfi p_chain == true /\ In p_g p_chain == true) (ensures (gadget_blocked p_cfi p_g == true))) = admit ()
 
 (* ROP_052_single_unblocked_breaks_chain (matches Coq: Theorem ROP_052_single_unblocked_breaks_chain) *)
-let rop_052_single_unblocked_breaks_chain_obligation () : Tot bool = (0 = 0)
-let rop_052_single_unblocked_breaks_chain_lemma () : Lemma (requires True) (ensures (rop_052_single_unblocked_breaks_chain_obligation () == rop_052_single_unblocked_breaks_chain_obligation ())) = ()
+let rop_052_single_unblocked_breaks_chain (p_cfi: _) (p_chain: _) (p_g: _) : Lemma (requires (In p_g p_chain == true /\ gadget_blocked p_cfi p_g == false) (ensures (chain_blocked p_cfi p_chain == false))) = admit ()
 
 (* ROP_053_cpi_complete_riina (matches Coq: Theorem ROP_053_cpi_complete_riina) *)
-let rop_053_cpi_complete_riina_obligation () : Tot bool = (0 = 0)
-let rop_053_cpi_complete_riina_lemma () : Lemma (requires True) (ensures (rop_053_cpi_complete_riina_obligation () == rop_053_cpi_complete_riina_obligation ())) = ()
+let rop_053_cpi_complete_riina () : Lemma (cpi_complete riina_cpi == true) = admit ()
 
 (* ROP_054_authenticated_ptr_protected (matches Coq: Theorem ROP_054_authenticated_ptr_protected) *)
-let rop_054_authenticated_ptr_protected_obligation () : Tot bool = (0 = 0)
-let rop_054_authenticated_ptr_protected_lemma () : Lemma (requires True) (ensures (rop_054_authenticated_ptr_protected_obligation () == rop_054_authenticated_ptr_protected_obligation ())) = ()
+let rop_054_authenticated_ptr_protected (p_cpi: _) (p_cp: _) : Lemma (requires (p_cpi.f_cpi_ptr_authentication == true /\ p_cp.f_cp_authenticated == true /\ p_cp.f_cp_bounds_checked == true) (ensures (cp_protected p_cpi p_cp == true))) = admit ()
 
 (* ROP_055_unauthenticated_ptr_unsafe (matches Coq: Theorem ROP_055_unauthenticated_ptr_unsafe) *)
-let rop_055_unauthenticated_ptr_unsafe_obligation () : Tot bool = (0 = 0)
-let rop_055_unauthenticated_ptr_unsafe_lemma () : Lemma (requires True) (ensures (rop_055_unauthenticated_ptr_unsafe_obligation () == rop_055_unauthenticated_ptr_unsafe_obligation ())) = ()
+let rop_055_unauthenticated_ptr_unsafe (p_cp: _) : Lemma (requires (p_cp.f_cp_authenticated == false /\ riina_cpi.f_cpi_ptr_authentication == true) (ensures (cp_protected riina_cpi p_cp == false))) = admit ()
 
 (* ROP_056_bounds_unchecked_unsafe (matches Coq: Theorem ROP_056_bounds_unchecked_unsafe) *)
-let rop_056_bounds_unchecked_unsafe_obligation () : Tot bool = (0 = 0)
-let rop_056_bounds_unchecked_unsafe_lemma () : Lemma (requires True) (ensures (rop_056_bounds_unchecked_unsafe_obligation () == rop_056_bounds_unchecked_unsafe_obligation ())) = ()
+let rop_056_bounds_unchecked_unsafe (p_cp: _) : Lemma (requires (p_cp.f_cp_bounds_checked == false /\ p_cp.f_cp_authenticated == true /\ riina_cpi.f_cpi_bounds_checking == true) (ensures (cp_protected riina_cpi p_cp == false))) = admit ()
 
 (* ROP_057_fully_protected_ptr (matches Coq: Theorem ROP_057_fully_protected_ptr) *)
-let rop_057_fully_protected_ptr_obligation () : Tot bool = (0 = 0)
-let rop_057_fully_protected_ptr_lemma () : Lemma (requires True) (ensures (rop_057_fully_protected_ptr_obligation () == rop_057_fully_protected_ptr_obligation ())) = ()
+let rop_057_fully_protected_ptr (p_cp: _) : Lemma (requires (p_cp.f_cp_authenticated == true /\ p_cp.f_cp_bounds_checked == true) (ensures (cp_protected riina_cpi p_cp == true))) = admit ()
 
 (* ROP_058_no_auth_requirement_passes (matches Coq: Theorem ROP_058_no_auth_requirement_passes) *)
-let rop_058_no_auth_requirement_passes_obligation () : Tot bool = (0 = 0)
-let rop_058_no_auth_requirement_passes_lemma () : Lemma (requires True) (ensures (rop_058_no_auth_requirement_passes_obligation () == rop_058_no_auth_requirement_passes_obligation ())) = ()
+let rop_058_no_auth_requirement_passes (p_cp: _) : Lemma (requires ((mkcpi false true true true).f_cpi_ptr_authentication == false /\ p_cp.f_cp_bounds_checked == true) (ensures (cp_protected (mkcpi false true true true) p_cp == true))) = admit ()
 
 (* ROP_059_function_ptr_type (matches Coq: Theorem ROP_059_function_ptr_type) *)
-let rop_059_function_ptr_type_obligation () : Tot bool = (0 = 0)
-let rop_059_function_ptr_type_lemma () : Lemma (requires True) (ensures (rop_059_function_ptr_type_obligation () == rop_059_function_ptr_type_obligation ())) = ()
+let rop_059_function_ptr_type (p_addr: _) : Lemma ((mkcodeptr CPFunction p_addr true true).f_cp_type == CPFunction) = admit ()
 
 (* ROP_060_return_addr_protected (matches Coq: Theorem ROP_060_return_addr_protected) *)
-let rop_060_return_addr_protected_obligation () : Tot bool = (0 = 0)
-let rop_060_return_addr_protected_lemma () : Lemma (requires True) (ensures (rop_060_return_addr_protected_obligation () == rop_060_return_addr_protected_obligation ())) = ()
+let rop_060_return_addr_protected (p_addr: _) : Lemma (requires ((mkcodeptr CPReturnAddr p_addr true true).f_cp_authenticated == true /\ (mkcodeptr CPReturnAddr p_addr true true).f_cp_bounds_checked == true) (ensures (cp_protected riina_cpi (mkcodeptr CPReturnAddr p_addr true true) == true))) = admit ()
 
 (* ROP_061_forward_edge_enabled (matches Coq: Theorem ROP_061_forward_edge_enabled) *)
-let rop_061_forward_edge_enabled_obligation () : Tot bool = (0 = 0)
-let rop_061_forward_edge_enabled_lemma () : Lemma (requires True) (ensures (rop_061_forward_edge_enabled_obligation () == rop_061_forward_edge_enabled_obligation ())) = ()
+let rop_061_forward_edge_enabled () : Lemma (riina_cfi.f_cfi_forward_edge_cfi == true) = admit ()
 
 (* ROP_062_ibt_enabled (matches Coq: Theorem ROP_062_ibt_enabled) *)
-let rop_062_ibt_enabled_obligation () : Tot bool = (0 = 0)
-let rop_062_ibt_enabled_lemma () : Lemma (requires True) (ensures (rop_062_ibt_enabled_obligation () == rop_062_ibt_enabled_obligation ())) = ()
+let rop_062_ibt_enabled () : Lemma (riina_cfi.f_cfi_indirect_branch_tracking == true) = admit ()
 
 (* ROP_063_forward_edge_complete (matches Coq: Theorem ROP_063_forward_edge_complete) *)
-let rop_063_forward_edge_complete_obligation () : Tot bool = (0 = 0)
-let rop_063_forward_edge_complete_lemma () : Lemma (requires True) (ensures (rop_063_forward_edge_complete_obligation () == rop_063_forward_edge_complete_obligation ())) = ()
+let rop_063_forward_edge_complete (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_forward_edge_cfi == true))) = admit ()
 
 (* ROP_064_forward_edge_blocks_jop (matches Coq: Theorem ROP_064_forward_edge_blocks_jop) *)
-let rop_064_forward_edge_blocks_jop_obligation () : Tot bool = (0 = 0)
-let rop_064_forward_edge_blocks_jop_lemma () : Lemma (requires True) (ensures (rop_064_forward_edge_blocks_jop_obligation () == rop_064_forward_edge_blocks_jop_obligation ())) = ()
+let rop_064_forward_edge_blocks_jop (p_c: _) (p_g: _) : Lemma (requires (p_c.f_cfi_forward_edge_cfi == true /\ p_c.f_cfi_indirect_branch_tracking == true /\ p_g.f_gadget_type == GadgetJOP) (ensures (gadget_blocked p_c p_g == true))) = admit ()
 
 (* ROP_065_forward_edge_blocks_cop (matches Coq: Theorem ROP_065_forward_edge_blocks_cop) *)
-let rop_065_forward_edge_blocks_cop_obligation () : Tot bool = (0 = 0)
-let rop_065_forward_edge_blocks_cop_lemma () : Lemma (requires True) (ensures (rop_065_forward_edge_blocks_cop_obligation () == rop_065_forward_edge_blocks_cop_obligation ())) = ()
+let rop_065_forward_edge_blocks_cop (p_c: _) (p_g: _) : Lemma (requires (p_c.f_cfi_forward_edge_cfi == true /\ p_g.f_gadget_type == GadgetCOP) (ensures (gadget_blocked p_c p_g == true))) = admit ()
 
 (* ROP_066_indirect_call_requires_ibt (matches Coq: Theorem ROP_066_indirect_call_requires_ibt) *)
-let rop_066_indirect_call_requires_ibt_obligation () : Tot bool = (0 = 0)
-let rop_066_indirect_call_requires_ibt_lemma () : Lemma (requires True) (ensures (rop_066_indirect_call_requires_ibt_obligation () == rop_066_indirect_call_requires_ibt_obligation ())) = ()
+let rop_066_indirect_call_requires_ibt (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_indirect_branch_tracking == true))) = admit ()
 
 (* ROP_067_forward_cfi_and_ibt_together (matches Coq: Theorem ROP_067_forward_cfi_and_ibt_together) *)
-let rop_067_forward_cfi_and_ibt_together_obligation () : Tot bool = (0 = 0)
-let rop_067_forward_cfi_and_ibt_together_lemma () : Lemma (requires True) (ensures (rop_067_forward_cfi_and_ibt_together_obligation () == rop_067_forward_cfi_and_ibt_together_obligation ())) = ()
+let rop_067_forward_cfi_and_ibt_together (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_forward_edge_cfi == true /\ p_c.f_cfi_indirect_branch_tracking == true))) = admit ()
 
 (* ROP_068_backward_edge_enabled (matches Coq: Theorem ROP_068_backward_edge_enabled) *)
-let rop_068_backward_edge_enabled_obligation () : Tot bool = (0 = 0)
-let rop_068_backward_edge_enabled_lemma () : Lemma (requires True) (ensures (rop_068_backward_edge_enabled_obligation () == rop_068_backward_edge_enabled_obligation ())) = ()
+let rop_068_backward_edge_enabled () : Lemma (riina_cfi.f_cfi_backward_edge_cfi == true) = admit ()
 
 (* ROP_069_shadow_stack_enabled (matches Coq: Theorem ROP_069_shadow_stack_enabled) *)
-let rop_069_shadow_stack_enabled_obligation () : Tot bool = (0 = 0)
-let rop_069_shadow_stack_enabled_lemma () : Lemma (requires True) (ensures (rop_069_shadow_stack_enabled_obligation () == rop_069_shadow_stack_enabled_obligation ())) = ()
+let rop_069_shadow_stack_enabled () : Lemma (riina_cfi.f_cfi_shadow_stack == true) = admit ()
 
 (* ROP_070_backward_edge_complete (matches Coq: Theorem ROP_070_backward_edge_complete) *)
-let rop_070_backward_edge_complete_obligation () : Tot bool = (0 = 0)
-let rop_070_backward_edge_complete_lemma () : Lemma (requires True) (ensures (rop_070_backward_edge_complete_obligation () == rop_070_backward_edge_complete_obligation ())) = ()
+let rop_070_backward_edge_complete (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_backward_edge_cfi == true))) = admit ()
 
 (* ROP_071_backward_edge_blocks_rop (matches Coq: Theorem ROP_071_backward_edge_blocks_rop) *)
-let rop_071_backward_edge_blocks_rop_obligation () : Tot bool = (0 = 0)
-let rop_071_backward_edge_blocks_rop_lemma () : Lemma (requires True) (ensures (rop_071_backward_edge_blocks_rop_obligation () == rop_071_backward_edge_blocks_rop_obligation ())) = ()
+let rop_071_backward_edge_blocks_rop (p_c: _) (p_g: _) : Lemma (requires (p_c.f_cfi_backward_edge_cfi == true /\ p_c.f_cfi_shadow_stack == true /\ p_g.f_gadget_type == GadgetROP) (ensures (gadget_blocked p_c p_g == true))) = admit ()
 
 (* ROP_072_backward_edge_blocks_srop (matches Coq: Theorem ROP_072_backward_edge_blocks_srop) *)
-let rop_072_backward_edge_blocks_srop_obligation () : Tot bool = (0 = 0)
-let rop_072_backward_edge_blocks_srop_lemma () : Lemma (requires True) (ensures (rop_072_backward_edge_blocks_srop_obligation () == rop_072_backward_edge_blocks_srop_obligation ())) = ()
+let rop_072_backward_edge_blocks_srop (p_c: _) (p_g: _) : Lemma (requires (p_c.f_cfi_backward_edge_cfi == true /\ p_c.f_cfi_shadow_stack == true /\ p_g.f_gadget_type == GadgetSROP) (ensures (gadget_blocked p_c p_g == true))) = admit ()
 
 (* ROP_073_return_requires_shadow (matches Coq: Theorem ROP_073_return_requires_shadow) *)
-let rop_073_return_requires_shadow_obligation () : Tot bool = (0 = 0)
-let rop_073_return_requires_shadow_lemma () : Lemma (requires True) (ensures (rop_073_return_requires_shadow_obligation () == rop_073_return_requires_shadow_obligation ())) = ()
+let rop_073_return_requires_shadow (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_shadow_stack == true))) = admit ()
 
 (* ROP_074_backward_cfi_and_shadow_together (matches Coq: Theorem ROP_074_backward_cfi_and_shadow_together) *)
-let rop_074_backward_cfi_and_shadow_together_obligation () : Tot bool = (0 = 0)
-let rop_074_backward_cfi_and_shadow_together_lemma () : Lemma (requires True) (ensures (rop_074_backward_cfi_and_shadow_together_obligation () == rop_074_backward_cfi_and_shadow_together_obligation ())) = ()
+let rop_074_backward_cfi_and_shadow_together (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_backward_edge_cfi == true /\ p_c.f_cfi_shadow_stack == true))) = admit ()
 
 (* ROP_075_return_address_protection_complete (matches Coq: Theorem ROP_075_return_address_protection_complete) *)
-let rop_075_return_address_protection_complete_obligation () : Tot bool = (0 = 0)
-let rop_075_return_address_protection_complete_lemma () : Lemma (requires True) (ensures (rop_075_return_address_protection_complete_obligation () == rop_075_return_address_protection_complete_obligation ())) = ()
+let rop_075_return_address_protection_complete (p_c: _) : Lemma (requires (cfi_complete p_c == true) (ensures (p_c.f_cfi_return_address_protection == true))) = admit ()
 
 (* ROP_076_riina_full_cfi (matches Coq: Theorem ROP_076_riina_full_cfi) *)
-let rop_076_riina_full_cfi_obligation () : Tot bool = (0 = 0)
-let rop_076_riina_full_cfi_lemma () : Lemma (requires True) (ensures (rop_076_riina_full_cfi_obligation () == rop_076_riina_full_cfi_obligation ())) = ()
+let rop_076_riina_full_cfi () : Lemma (riina_cfi.f_cfi_shadow_stack == true /\ riina_cfi.f_cfi_indirect_branch_tracking == true /\ riina_cfi.f_cfi_return_address_protection == true /\ riina_cfi.f_cfi_forward_edge_cfi == true /\ riina_cfi.f_cfi_backward_edge_cfi == true) = admit ()
 
 (* ROP_077_riina_full_code_reuse (matches Coq: Theorem ROP_077_riina_full_code_reuse) *)
-let rop_077_riina_full_code_reuse_obligation () : Tot bool = (0 = 0)
-let rop_077_riina_full_code_reuse_lemma () : Lemma (requires True) (ensures (rop_077_riina_full_code_reuse_obligation () == rop_077_riina_full_code_reuse_obligation ())) = ()
+let rop_077_riina_full_code_reuse () : Lemma (riina_cr.f_cr_gadget_elimination == true /\ riina_cr.f_cr_instruction_alignment == true /\ riina_cr.f_cr_code_pointer_integrity == true) = admit ()
 
 (* ROP_078_riina_full_rop_defense (matches Coq: Theorem ROP_078_riina_full_rop_defense) *)
-let rop_078_riina_full_rop_defense_obligation () : Tot bool = (0 = 0)
-let rop_078_riina_full_rop_defense_lemma () : Lemma (requires True) (ensures (rop_078_riina_full_rop_defense_obligation () == rop_078_riina_full_rop_defense_obligation ())) = ()
+let rop_078_riina_full_rop_defense () : Lemma (rop_defended riina_rop == true /\ riina_rop.f_rop_aslr_compatible == true /\ riina_rop.f_rop_dep_compatible == true) = admit ()
 
 (* ROP_079_all_attack_types_blocked (matches Coq: Theorem ROP_079_all_attack_types_blocked) *)
-let rop_079_all_attack_types_blocked_obligation () : Tot bool = (0 = 0)
-let rop_079_all_attack_types_blocked_lemma () : Lemma (requires True) (ensures (rop_079_all_attack_types_blocked_obligation () == rop_079_all_attack_types_blocked_obligation ())) = ()
+let rop_079_all_attack_types_blocked (p_g: _) : Lemma (gadget_blocked riina_cfi p_g == true) = admit ()
 
 (* ROP_080_complete_defense_equivalence (matches Coq: Theorem ROP_080_complete_defense_equivalence) *)
-let rop_080_complete_defense_equivalence_obligation () : Tot bool = (0 = 0)
-let rop_080_complete_defense_equivalence_lemma () : Lemma (requires True) (ensures (rop_080_complete_defense_equivalence_obligation () == rop_080_complete_defense_equivalence_obligation ())) = ()
+let rop_080_complete_defense_equivalence (p_r: _) : Lemma (requires (rop_defended p_r == fn_true <) (ensures ((cfi_complete (p_r.f_rop_cfi) == true /\ code_reuse_prevented (p_r.f_rop_code_reuse) == true /\ p_r.f_rop_aslr_compatible == true /\ p_r.f_rop_dep_compatible == true)))) = admit ()
 
 (* ROP_081_shadow_stack_prevents_rop (matches Coq: Theorem ROP_081_shadow_stack_prevents_rop) *)
-let rop_081_shadow_stack_prevents_rop_obligation () : Tot bool = (0 = 0)
-let rop_081_shadow_stack_prevents_rop_lemma () : Lemma (requires True) (ensures (rop_081_shadow_stack_prevents_rop_obligation () == rop_081_shadow_stack_prevents_rop_obligation ())) = ()
+let rop_081_shadow_stack_prevents_rop (p_ss: _) (p_ret_addr: _) (p_attacker_addr: _) : Lemma (requires (valid_return p_ss p_ret_addr == true /\ ~(p_attacker_addr == p_ret_addr)) (ensures (~(valid_return p_ss p_attacker_addr == true)))) = admit ()
 
 (* ROP_082_ibt_prevents_jop (matches Coq: Theorem ROP_082_ibt_prevents_jop) *)
-let rop_082_ibt_prevents_jop_obligation () : Tot bool = (0 = 0)
-let rop_082_ibt_prevents_jop_lemma () : Lemma (requires True) (ensures (rop_082_ibt_prevents_jop_obligation () == rop_082_ibt_prevents_jop_obligation ())) = ()
+let rop_082_ibt_prevents_jop (p_targets: _) (p_addr: _) : Lemma (requires (riina_cfi.f_cfi_indirect_branch_tracking == true /\ ~(In p_addr p_targets == true)) (ensures (~(indirect_branch_valid p_targets p_addr == true)))) = admit ()
 
 (* ROP_083_cpi_prevents_ptr_hijack (matches Coq: Theorem ROP_083_cpi_prevents_ptr_hijack) *)
-let rop_083_cpi_prevents_ptr_hijack_obligation () : Tot bool = (0 = 0)
-let rop_083_cpi_prevents_ptr_hijack_lemma () : Lemma (requires True) (ensures (rop_083_cpi_prevents_ptr_hijack_obligation () == rop_083_cpi_prevents_ptr_hijack_obligation ())) = ()
+let rop_083_cpi_prevents_ptr_hijack (p_cp: _) : Lemma (requires (cp_protected riina_cpi p_cp == true) (ensures (p_cp.f_cp_authenticated == true))) = admit ()
 
 (* ROP_084_defense_in_depth (matches Coq: Theorem ROP_084_defense_in_depth) *)
-let rop_084_defense_in_depth_obligation () : Tot bool = (0 = 0)
-let rop_084_defense_in_depth_lemma () : Lemma (requires True) (ensures (rop_084_defense_in_depth_obligation () == rop_084_defense_in_depth_obligation ())) = ()
+let rop_084_defense_in_depth () : Lemma (cfi_complete riina_cfi == true /\ code_reuse_prevented riina_cr == true /\ cpi_complete riina_cpi == true) = admit ()
 
 (* ROP_085_riina_rop_immune (matches Coq: Theorem ROP_085_riina_rop_immune) *)
-let rop_085_riina_rop_immune_obligation () : Tot bool = (0 = 0)
-let rop_085_riina_rop_immune_lemma () : Lemma (requires True) (ensures (rop_085_riina_rop_immune_obligation () == rop_085_riina_rop_immune_obligation ())) = ()
+let rop_085_riina_rop_immune (p_chain: _) : Lemma (chain_blocked riina_cfi p_chain == true) = admit ()

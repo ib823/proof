@@ -18,81 +18,61 @@ let xor_nat (p_a: nat) (p_b: nat) : Tot nat =
   Nat.lxor p_a p_b
 
 (* uniform_nonneg (matches Coq: Theorem uniform_nonneg) *)
-let uniform_nonneg_obligation () : Tot bool = (0 = 0)
-let uniform_nonneg_lemma () : Lemma (requires True) (ensures (uniform_nonneg_obligation () == uniform_nonneg_obligation ())) = ()
+let uniform_nonneg (p_n: _) (p_n__nat_: _) : Lemma (all_nonneg (uniform_dist p_n Hn) == true) = admit ()
 
 (* zero_negligible (matches Coq: Theorem zero_negligible) *)
-let zero_negligible_obligation () : Tot bool = (0 = 0)
-let zero_negligible_lemma () : Lemma (requires True) (ensures (zero_negligible_obligation () == zero_negligible_obligation ())) = ()
+let zero_negligible () : Lemma (negligible (fn_fun _ => 0) == true) = admit ()
 
 (* Qplus_lt_compat2 (matches Coq: Lemma Qplus_lt_compat2) *)
-let qplus_lt_compat2_obligation () : Tot bool = (0 = 0)
-let qplus_lt_compat2_lemma () : Lemma (requires True) (ensures (qplus_lt_compat2_obligation () == qplus_lt_compat2_obligation ())) = ()
+let qplus_lt_compat2 (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_q: _) : Lemma (requires (p_a < p_b /\ p_c < p_d) (ensures (p_a + p_c < p_b + p_d))) = admit ()
 
 (* two_over_nSc_le_one_over_nc (matches Coq: Lemma two_over_nSc_le_one_over_nc) *)
-let two_over_nsc_le_one_over_nc_obligation () : Tot bool = (0 = 0)
-let two_over_nsc_le_one_over_nc_lemma () : Lemma (requires True) (ensures (two_over_nsc_le_one_over_nc_obligation () == two_over_nsc_le_one_over_nc_obligation ())) = ()
+let two_over_nsc_le_one_over_nc (p_n: _) (p_c: _) (p_nat: _) : Lemma (requires ((p_n > 2)%p_nat == true /\ (0 < p_c)%p_nat == true) (ensures ((1 # Pos.of_nat (p_n ^ S p_c)) + (1 # Pos.of_nat (p_n ^ S p_c)) <= 1 # Pos.of_nat (p_n ^ p_c)))) = admit ()
 
 (* negligible_sum (matches Coq: Theorem negligible_sum) *)
-let negligible_sum_obligation () : Tot bool = (0 = 0)
-let negligible_sum_lemma () : Lemma (requires True) (ensures (negligible_sum_obligation () == negligible_sum_obligation ())) = ()
+let negligible_sum (p_f: _) (p_g: _) : Lemma (requires (negligible p_f == true /\ negligible p_g == true) (ensures (negligible (fn_fun n => p_f n + p_g n) == true))) = admit ()
 
 (* Qabs_Qminus_self (matches Coq: Lemma Qabs_Qminus_self) *)
-let qabs_qminus_self_obligation () : Tot bool = (0 = 0)
-let qabs_qminus_self_lemma () : Lemma (requires True) (ensures (qabs_qminus_self_obligation () == qabs_qminus_self_obligation ())) = ()
+let qabs_qminus_self (p_a: _) (p_q: _) : Lemma (Qabs (p_a - p_a) == 0 == true) = admit ()
 
 (* fold_combine_self_gen (matches Coq: Lemma fold_combine_self_gen) *)
-let fold_combine_self_gen_obligation () : Tot bool = (0 = 0)
-let fold_combine_self_gen_lemma () : Lemma (requires True) (ensures (fold_combine_self_gen_obligation () == fold_combine_self_gen_obligation ())) = ()
+let fold_combine_self_gen (p_l: (list nat)) (p_acc: nat) : Lemma (fold_left (fn_fun a p => a + Qabs (fst p - snd p)) (combine p_l p_l) p_acc == p_acc == true) = admit ()
 
 (* fold_combine_self (matches Coq: Lemma fold_combine_self) *)
-let fold_combine_self_obligation () : Tot bool = (0 = 0)
-let fold_combine_self_lemma () : Lemma (requires True) (ensures (fold_combine_self_obligation () == fold_combine_self_obligation ())) = ()
+let fold_combine_self (p_l: (list nat)) : Lemma (fold_left (fn_fun acc p => acc + Qabs (fst p - snd p)) (combine p_l p_l) 0 == 0 == true) = admit ()
 
 (* identical_indist (matches Coq: Theorem identical_indist) *)
-let identical_indist_obligation () : Tot bool = (0 = 0)
-let identical_indist_lemma () : Lemma (requires True) (ensures (identical_indist_obligation () == identical_indist_obligation ())) = ()
+let identical_indist (p_f: _) : Lemma (comp_indist p_f p_f == true) = admit ()
 
 (* comp_indist_refl (matches Coq: Theorem comp_indist_refl) *)
-let comp_indist_refl_obligation () : Tot bool = (0 = 0)
-let comp_indist_refl_lemma () : Lemma (requires True) (ensures (comp_indist_refl_obligation () == comp_indist_refl_obligation ())) = ()
+let comp_indist_refl (p_f: _) : Lemma (comp_indist p_f p_f == true) = admit ()
 
 (* xor_self_inverse (matches Coq: Theorem xor_self_inverse) *)
-let xor_self_inverse_obligation () : Tot bool = (0 = 0)
-let xor_self_inverse_lemma () : Lemma (requires True) (ensures (xor_self_inverse_obligation () == xor_self_inverse_obligation ())) = ()
+let xor_self_inverse (p_a: _) (p_b: _) : Lemma (xor_nat (xor_nat p_a p_b) p_b == p_a) = admit ()
 
 (* xor_comm (matches Coq: Theorem xor_comm) *)
-let xor_comm_obligation () : Tot bool = (0 = 0)
-let xor_comm_lemma () : Lemma (requires True) (ensures (xor_comm_obligation () == xor_comm_obligation ())) = ()
+let xor_comm (p_a: _) (p_b: _) : Lemma (xor_nat p_a p_b == xor_nat p_b p_a) = admit ()
 
 (* xor_zero_id (matches Coq: Theorem xor_zero_id) *)
-let xor_zero_id_obligation () : Tot bool = (0 = 0)
-let xor_zero_id_lemma () : Lemma (requires True) (ensures (xor_zero_id_obligation () == xor_zero_id_obligation ())) = ()
+let xor_zero_id (p_a: _) : Lemma (xor_nat p_a 0 == p_a) = admit ()
 
 (* xor_assoc (matches Coq: Theorem xor_assoc) *)
-let xor_assoc_obligation () : Tot bool = (0 = 0)
-let xor_assoc_lemma () : Lemma (requires True) (ensures (xor_assoc_obligation () == xor_assoc_obligation ())) = ()
+let xor_assoc (p_a: _) (p_b: _) (p_c: _) : Lemma (xor_nat (xor_nat p_a p_b) p_c == xor_nat p_a (xor_nat p_b p_c)) = admit ()
 
 (* xor_self_zero (matches Coq: Theorem xor_self_zero) *)
-let xor_self_zero_obligation () : Tot bool = (0 = 0)
-let xor_self_zero_lemma () : Lemma (requires True) (ensures (xor_self_zero_obligation () == xor_self_zero_obligation ())) = ()
+let xor_self_zero (p_a: _) : Lemma (xor_nat p_a p_a == 0%nat) = admit ()
 
 (* otp_roundtrip (matches Coq: Theorem otp_roundtrip) *)
-let otp_roundtrip_obligation () : Tot bool = (0 = 0)
-let otp_roundtrip_lemma () : Lemma (requires True) (ensures (otp_roundtrip_obligation () == otp_roundtrip_obligation ())) = ()
+let otp_roundtrip (p_msg: _) (p_key: _) : Lemma (xor_nat (xor_nat p_msg p_key) p_key == p_msg) = admit ()
 
 (* xor_deterministic (matches Coq: Theorem xor_deterministic) *)
-let xor_deterministic_obligation () : Tot bool = (0 = 0)
-let xor_deterministic_lemma () : Lemma (requires True) (ensures (xor_deterministic_obligation () == xor_deterministic_obligation ())) = ()
+let xor_deterministic (p_a: _) (p_b: _) (p_k: _) : Lemma (requires (xor_nat p_a p_k == xor_nat p_b p_k) (ensures (p_a == p_b))) = admit ()
 
 (* uniform_length (matches Coq: Theorem uniform_length) *)
-let uniform_length_obligation () : Tot bool = (0 = 0)
-let uniform_length_lemma () : Lemma (requires True) (ensures (uniform_length_obligation () == uniform_length_obligation ())) = ()
+let uniform_length (p_n: _) (p_n__nat_: _) : Lemma (length (uniform_dist p_n Hn) == p_n) = admit ()
 
 (* qabs_nonneg (matches Coq: Theorem qabs_nonneg) *)
-let qabs_nonneg_obligation () : Tot bool = (0 = 0)
-let qabs_nonneg_lemma () : Lemma (requires True) (ensures (qabs_nonneg_obligation () == qabs_nonneg_obligation ())) = ()
+let qabs_nonneg (p_q: _) (p_q: _) : Lemma ((0 <= Qabs p_q)%p_q == true) = admit ()
 
 (* qabs_zero (matches Coq: Theorem qabs_zero) *)
-let qabs_zero_obligation () : Tot bool = (0 = 0)
-let qabs_zero_lemma () : Lemma (requires True) (ensures (qabs_zero_obligation () == qabs_zero_obligation ())) = ()
+let qabs_zero () : Lemma (Qabs 0 == 0 == true) = admit ()

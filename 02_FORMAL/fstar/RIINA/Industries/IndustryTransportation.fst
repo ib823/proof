@@ -116,8 +116,7 @@ let version_valid (p_old_ver: nat) (p_new_ver: nat) : Tot bool =
   p_old_ver < p_new_ver
 
 (* iso_26262_compliance (matches Coq: Theorem iso_26262_compliance) *)
-let iso_26262_compliance_obligation () : Tot bool = (0 = 0)
-let iso_26262_compliance_lemma () : Lemma (requires True) (ensures (iso_26262_compliance_obligation () == iso_26262_compliance_obligation ())) = ()
+let iso_26262_compliance (p_compliance: iso26262__compliance) (p_asil: asil) : Lemma (p_compliance.f_hazard_analysis == true) = admit ()
 
 (* iso_21434_cybersecurity (matches Coq: Theorem iso_21434_cybersecurity) *)
 let iso_21434_cybersecurity_obligation () : Tot bool = (0 = 0)
@@ -140,65 +139,49 @@ let asil_d_highest_rigor_obligation () : Tot bool = (0 = 0)
 let asil_d_highest_rigor_lemma () : Lemma (requires True) (ensures (asil_d_highest_rigor_obligation () == asil_d_highest_rigor_obligation ())) = ()
 
 (* cyber_safety_interface (matches Coq: Theorem cyber_safety_interface) *)
-let cyber_safety_interface_obligation () : Tot bool = (0 = 0)
-let cyber_safety_interface_lemma () : Lemma (requires True) (ensures (cyber_safety_interface_obligation () == cyber_safety_interface_obligation ())) = ()
+let cyber_safety_interface (p_compliance: iso26262__compliance) : Lemma (p_compliance.f_cybersecurity_interface == true) = admit ()
 
 (* asil_le_refl (matches Coq: Lemma asil_le_refl) *)
-let asil_le_refl_obligation () : Tot bool = (0 = 0)
-let asil_le_refl_lemma () : Lemma (requires True) (ensures (asil_le_refl_obligation () == asil_le_refl_obligation ())) = ()
+let asil_le_refl (p_a: _) : Lemma (asil_le p_a p_a == true) = admit ()
 
 (* asil_le_trans (matches Coq: Lemma asil_le_trans) *)
-let asil_le_trans_obligation () : Tot bool = (0 = 0)
-let asil_le_trans_lemma () : Lemma (requires True) (ensures (asil_le_trans_obligation () == asil_le_trans_obligation ())) = ()
+let asil_le_trans (p_a1: _) (p_a2: _) (p_a3: _) : Lemma (requires (asil_le p_a1 p_a2 == true /\ asil_le p_a2 p_a3 == true) (ensures (asil_le p_a1 p_a3 == true))) = admit ()
 
 (* asil_le_antisym (matches Coq: Lemma asil_le_antisym) *)
-let asil_le_antisym_obligation () : Tot bool = (0 = 0)
-let asil_le_antisym_lemma () : Lemma (requires True) (ensures (asil_le_antisym_obligation () == asil_le_antisym_obligation ())) = ()
+let asil_le_antisym (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true /\ asil_le p_a2 p_a1 == true) (ensures (p_a1 == p_a2))) = admit ()
 
 (* sil_le_refl (matches Coq: Lemma sil_le_refl) *)
-let sil_le_refl_obligation () : Tot bool = (0 = 0)
-let sil_le_refl_lemma () : Lemma (requires True) (ensures (sil_le_refl_obligation () == sil_le_refl_obligation ())) = ()
+let sil_le_refl (p_s: _) : Lemma (sil_le p_s p_s == true) = admit ()
 
 (* asil_d_full_coverage (matches Coq: Theorem asil_d_full_coverage) *)
-let asil_d_full_coverage_obligation () : Tot bool = (0 = 0)
-let asil_d_full_coverage_lemma () : Lemma (requires True) (ensures (asil_d_full_coverage_obligation () == asil_d_full_coverage_obligation ())) = ()
+let asil_d_full_coverage () : Lemma (asil_test_coverage_pct ASIL_D == 100) = admit ()
 
 (* asil_coverage_monotone (matches Coq: Theorem asil_coverage_monotone) *)
-let asil_coverage_monotone_obligation () : Tot bool = (0 = 0)
-let asil_coverage_monotone_lemma () : Lemma (requires True) (ensures (asil_coverage_monotone_obligation () == asil_coverage_monotone_obligation ())) = ()
+let asil_coverage_monotone (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true) (ensures (asil_test_coverage_pct p_a1 <= asil_test_coverage_pct p_a2))) = admit ()
 
 (* work_products_monotone (matches Coq: Theorem work_products_monotone) *)
-let work_products_monotone_obligation () : Tot bool = (0 = 0)
-let work_products_monotone_lemma () : Lemma (requires True) (ensures (work_products_monotone_obligation () == work_products_monotone_obligation ())) = ()
+let work_products_monotone (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true) (ensures (work_products_required p_a1 <= work_products_required p_a2))) = admit ()
 
 (* asil_decomposition_valid (matches Coq: Theorem asil_decomposition_valid) *)
-let asil_decomposition_valid_obligation () : Tot bool = (0 = 0)
-let asil_decomposition_valid_lemma () : Lemma (requires True) (ensures (asil_decomposition_valid_obligation () == asil_decomposition_valid_obligation ())) = ()
+let asil_decomposition_valid (p_target: _) (p_a1: _) (p_a2: _) : Lemma (requires (asil_sum p_a1 p_a2 >= asil_to_nat p_target) (ensures (asil_to_nat p_a1 + asil_to_nat p_a2 >= asil_to_nat p_target))) = admit ()
 
 (* full_requires_hazard_analysis (matches Coq: Theorem full_requires_hazard_analysis) *)
-let full_requires_hazard_analysis_obligation () : Tot bool = (0 = 0)
-let full_requires_hazard_analysis_lemma () : Lemma (requires True) (ensures (full_requires_hazard_analysis_obligation () == full_requires_hazard_analysis_obligation ())) = ()
+let full_requires_hazard_analysis (p_c: _) : Lemma (requires (iso26262_full p_c == true) (ensures (p_c.f_hazard_analysis == true))) = admit ()
 
 (* full_requires_software_design (matches Coq: Theorem full_requires_software_design) *)
-let full_requires_software_design_obligation () : Tot bool = (0 = 0)
-let full_requires_software_design_lemma () : Lemma (requires True) (ensures (full_requires_software_design_obligation () == full_requires_software_design_obligation ())) = ()
+let full_requires_software_design (p_c: _) : Lemma (requires (iso26262_full p_c == true) (ensures (p_c.f_software_design == true))) = admit ()
 
 (* full_requires_cyber_interface (matches Coq: Theorem full_requires_cyber_interface) *)
-let full_requires_cyber_interface_obligation () : Tot bool = (0 = 0)
-let full_requires_cyber_interface_lemma () : Lemma (requires True) (ensures (full_requires_cyber_interface_obligation () == full_requires_cyber_interface_obligation ())) = ()
+let full_requires_cyber_interface (p_c: _) : Lemma (requires (iso26262_full p_c == true) (ensures (p_c.f_cybersecurity_interface == true))) = admit ()
 
 (* sil4_zero_tolerable_hazard (matches Coq: Theorem sil4_zero_tolerable_hazard) *)
-let sil4_zero_tolerable_hazard_obligation () : Tot bool = (0 = 0)
-let sil4_zero_tolerable_hazard_lemma () : Lemma (requires True) (ensures (sil4_zero_tolerable_hazard_obligation () == sil4_zero_tolerable_hazard_obligation ())) = ()
+let sil4_zero_tolerable_hazard () : Lemma (tolerable_hazard_rate_per_hour SIL_4 == 0) = admit ()
 
 (* hazard_rate_decreasing (matches Coq: Theorem hazard_rate_decreasing) *)
-let hazard_rate_decreasing_obligation () : Tot bool = (0 = 0)
-let hazard_rate_decreasing_lemma () : Lemma (requires True) (ensures (hazard_rate_decreasing_obligation () == hazard_rate_decreasing_obligation ())) = ()
+let hazard_rate_decreasing (p_s1: _) (p_s2: _) : Lemma (requires (sil_le p_s1 p_s2 == true) (ensures (tolerable_hazard_rate_per_hour p_s2 <= tolerable_hazard_rate_per_hour p_s1))) = admit ()
 
 (* safety_critical_faster_auth (matches Coq: Theorem safety_critical_faster_auth) *)
-let safety_critical_faster_auth_obligation () : Tot bool = (0 = 0)
-let safety_critical_faster_auth_lemma () : Lemma (requires True) (ensures (safety_critical_faster_auth_obligation () == safety_critical_faster_auth_obligation ())) = ()
+let safety_critical_faster_auth () : Lemma (v2x_auth_timeout_ms true < v2x_auth_timeout_ms false) = admit ()
 
 (* version_no_downgrade (matches Coq: Theorem version_no_downgrade) *)
-let version_no_downgrade_obligation () : Tot bool = (0 = 0)
-let version_no_downgrade_lemma () : Lemma (requires True) (ensures (version_no_downgrade_obligation () == version_no_downgrade_obligation ())) = ()
+let version_no_downgrade (p_old_v: _) (p_new_v: _) : Lemma (requires (version_valid p_old_v p_new_v == true) (ensures (p_old_v < p_new_v))) = admit ()

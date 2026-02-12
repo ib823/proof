@@ -221,101 +221,76 @@ let frame_rate_limited (p_f1: frame_analysis) (p_f2: frame_analysis) : Tot bool 
   (0 = 0)
 
 (* object_detection_bounded (matches Coq: Theorem object_detection_bounded) *)
-let object_detection_bounded_obligation () : Tot bool = (0 = 0)
-let object_detection_bounded_lemma () : Lemma (requires True) (ensures (object_detection_bounded_obligation () == object_detection_bounded_obligation ())) = ()
+let object_detection_bounded (p_result: object_detection_result) : Lemma (requires (detection_bounded p_result == true) (ensures (length (p_result.f_od_detections) <= 100))) = admit ()
 
 (* detection_latency_bounded (matches Coq: Theorem detection_latency_bounded) *)
-let detection_latency_bounded_obligation () : Tot bool = (0 = 0)
-let detection_latency_bounded_lemma () : Lemma (requires True) (ensures (detection_latency_bounded_obligation () == detection_latency_bounded_obligation ())) = ()
+let detection_latency_bounded (p_result: object_detection_result) : Lemma (requires (detection_bounded p_result == true) (ensures (p_result.f_od_latency_ms <= 100))) = admit ()
 
 (* valid_detection_min_confidence (matches Coq: Theorem valid_detection_min_confidence) *)
-let valid_detection_min_confidence_obligation () : Tot bool = (0 = 0)
-let valid_detection_min_confidence_lemma () : Lemma (requires True) (ensures (valid_detection_min_confidence_obligation () == valid_detection_min_confidence_obligation ())) = ()
+let valid_detection_min_confidence (p_d: detection) : Lemma (requires (valid_detection p_d == true) (ensures (p_d.f_det_confidence >= 50))) = admit ()
 
 (* cv_stays_on_device (matches Coq: Theorem cv_stays_on_device) *)
-let cv_stays_on_device_obligation () : Tot bool = (0 = 0)
-let cv_stays_on_device_lemma () : Lemma (requires True) (ensures (cv_stays_on_device_obligation () == cv_stays_on_device_obligation ())) = ()
+let cv_stays_on_device (p_result: object_detection_result) : Lemma (requires (cv_private p_result == true) (ensures (p_result.f_od_processed_on_device == true))) = admit ()
 
 (* empty_result_bounded (matches Coq: Theorem empty_result_bounded) *)
-let empty_result_bounded_obligation () : Tot bool = (0 = 0)
-let empty_result_bounded_lemma () : Lemma (requires True) (ensures (empty_result_bounded_obligation () == empty_result_bounded_obligation ())) = ()
+let empty_result_bounded (p_r: object_detection_result) : Lemma (requires (p_r.f_od_detections == [] /\ p_r.f_od_latency_ms <= 100) (ensures (detection_bounded p_r == true))) = admit ()
 
 (* face_detection_privacy_preserving (matches Coq: Theorem face_detection_privacy_preserving) *)
-let face_detection_privacy_preserving_obligation () : Tot bool = (0 = 0)
-let face_detection_privacy_preserving_lemma () : Lemma (requires True) (ensures (face_detection_privacy_preserving_obligation () == face_detection_privacy_preserving_obligation ())) = ()
+let face_detection_privacy_preserving (p_fd: face_detection) : Lemma (requires (face_privacy_preserving p_fd == true) (ensures (p_fd.f_face_data_on_device == true))) = admit ()
 
 (* ocr_accuracy_bounded (matches Coq: Theorem ocr_accuracy_bounded) *)
-let ocr_accuracy_bounded_obligation () : Tot bool = (0 = 0)
-let ocr_accuracy_bounded_lemma () : Lemma (requires True) (ensures (ocr_accuracy_bounded_obligation () == ocr_accuracy_bounded_obligation ())) = ()
+let ocr_accuracy_bounded (p_r: ocr_result) : Lemma (requires (ocr_accuracy_within_bound p_r == true) (ensures (p_r.f_ocr_confidence >= p_r.f_ocr_accuracy_bound))) = admit ()
 
 (* object_detection_confidence_reported (matches Coq: Theorem object_detection_confidence_reported) *)
-let object_detection_confidence_reported_obligation () : Tot bool = (0 = 0)
-let object_detection_confidence_reported_lemma () : Lemma (requires True) (ensures (object_detection_confidence_reported_obligation () == object_detection_confidence_reported_obligation ())) = ()
+let object_detection_confidence_reported (p_od: object_detection) : Lemma (requires (confidence_properly_reported p_od == true) (ensures (p_od.f_obj_confidence_reported == true))) = admit ()
 
 (* image_classification_deterministic (matches Coq: Theorem image_classification_deterministic) *)
-let image_classification_deterministic_obligation () : Tot bool = (0 = 0)
-let image_classification_deterministic_lemma () : Lemma (requires True) (ensures (image_classification_deterministic_obligation () == image_classification_deterministic_obligation ())) = ()
+let image_classification_deterministic (p_cr: classification_result) : Lemma (requires (classification_deterministic p_cr == true) (ensures (p_cr.f_class_deterministic == true))) = admit ()
 
 (* barcode_format_validated (matches Coq: Theorem barcode_format_validated) *)
-let barcode_format_validated_obligation () : Tot bool = (0 = 0)
-let barcode_format_validated_lemma () : Lemma (requires True) (ensures (barcode_format_validated_obligation () == barcode_format_validated_obligation ())) = ()
+let barcode_format_validated (p_br: barcode_result) : Lemma (requires (barcode_format_known p_br == true) (ensures (p_br.f_barcode_valid == true))) = admit ()
 
 (* face_data_on_device_preserved (matches Coq: Theorem face_data_on_device_preserved) *)
-let face_data_on_device_preserved_obligation () : Tot bool = (0 = 0)
-let face_data_on_device_preserved_lemma () : Lemma (requires True) (ensures (face_data_on_device_preserved_obligation () == face_data_on_device_preserved_obligation ())) = ()
+let face_data_on_device_preserved (p_fd: face_detection) : Lemma (requires (face_privacy_preserving p_fd == true) (ensures (p_fd.f_face_anonymized == true))) = admit ()
 
 (* photo_analysis_permission_required (matches Coq: Theorem photo_analysis_permission_required) *)
-let photo_analysis_permission_required_obligation () : Tot bool = (0 = 0)
-let photo_analysis_permission_required_lemma () : Lemma (requires True) (ensures (photo_analysis_permission_required_obligation () == photo_analysis_permission_required_obligation ())) = ()
+let photo_analysis_permission_required (p_pa: photo_analysis) : Lemma (requires (photo_analysis_permitted p_pa == true) (ensures (p_pa.f_permission_granted == true))) = admit ()
 
 (* depth_estimation_bounded (matches Coq: Theorem depth_estimation_bounded) *)
-let depth_estimation_bounded_obligation () : Tot bool = (0 = 0)
-let depth_estimation_bounded_lemma () : Lemma (requires True) (ensures (depth_estimation_bounded_obligation () == depth_estimation_bounded_obligation ())) = ()
+let depth_estimation_bounded (p_de: depth_estimate) : Lemma (requires (depth_within_bounds p_de == true) (ensures (p_de.f_depth_min <= p_de.f_depth_value /\ p_de.f_depth_value <= p_de.f_depth_max))) = admit ()
 
 (* pose_estimation_stable (matches Coq: Theorem pose_estimation_stable) *)
-let pose_estimation_stable_obligation () : Tot bool = (0 = 0)
-let pose_estimation_stable_lemma () : Lemma (requires True) (ensures (pose_estimation_stable_obligation () == pose_estimation_stable_obligation ())) = ()
+let pose_estimation_stable (p_pe: pose_estimate) : Lemma (requires (pose_is_stable p_pe == true) (ensures (p_pe.f_pose_stable == true))) = admit ()
 
 (* scene_classification_consistent (matches Coq: Theorem scene_classification_consistent) *)
-let scene_classification_consistent_obligation () : Tot bool = (0 = 0)
-let scene_classification_consistent_lemma () : Lemma (requires True) (ensures (scene_classification_consistent_obligation () == scene_classification_consistent_obligation ())) = ()
+let scene_classification_consistent (p_sc: scene_classification) : Lemma (requires (scene_is_consistent p_sc == true) (ensures (p_sc.f_scene_consistent == true /\ p_sc.f_scene_confidence >= 50))) = admit ()
 
 (* text_recognition_language_supported (matches Coq: Theorem text_recognition_language_supported) *)
-let text_recognition_language_supported_obligation () : Tot bool = (0 = 0)
-let text_recognition_language_supported_lemma () : Lemma (requires True) (ensures (text_recognition_language_supported_obligation () == text_recognition_language_supported_obligation ())) = ()
+let text_recognition_language_supported (p_tr: text_recognition) : Lemma (requires (language_is_supported p_tr == true) (ensures (p_tr.f_text_language_supported == true))) = admit ()
 
 (* vision_request_cancellable (matches Coq: Theorem vision_request_cancellable) *)
-let vision_request_cancellable_obligation () : Tot bool = (0 = 0)
-let vision_request_cancellable_lemma () : Lemma (requires True) (ensures (vision_request_cancellable_obligation () == vision_request_cancellable_obligation ())) = ()
+let vision_request_cancellable (p_vr: vision_request) : Lemma (requires (request_cancellable p_vr == true /\ p_vr.f_vr_completed == false) (ensures (p_vr.f_vr_cancelled == true \/ p_vr.f_vr_cancelled == false))) = admit ()
 
 (* image_similarity_symmetric (matches Coq: Theorem image_similarity_symmetric) *)
-let image_similarity_symmetric_obligation () : Tot bool = (0 = 0)
-let image_similarity_symmetric_lemma () : Lemma (requires True) (ensures (image_similarity_symmetric_obligation () == image_similarity_symmetric_obligation ())) = ()
+let image_similarity_symmetric (p_p1: image_pair) (p_p2: image_pair) : Lemma (requires (similarity_symmetric_pair p_p1 p_p2 == true /\ p_p1.f_img_a == p_p2.f_img_b /\ p_p1.f_img_b == p_p2.f_img_a) (ensures (p_p1.f_similarity_score == p_p2.f_similarity_score))) = admit ()
 
 (* vision_pipeline_ordered (matches Coq: Theorem vision_pipeline_ordered) *)
-let vision_pipeline_ordered_obligation () : Tot bool = (0 = 0)
-let vision_pipeline_ordered_lemma () : Lemma (requires True) (ensures (vision_pipeline_ordered_obligation () == vision_pipeline_ordered_obligation ())) = ()
+let vision_pipeline_ordered (p_s1: pipeline_stage) (p_s2: pipeline_stage) : Lemma (requires (pipeline_stages_ordered [p_s1; s2_ == true) (ensures (p_s1.f_stage_order <= p_s2.f_stage_order))) = admit ()
 
 (* frame_analysis_rate_limited (matches Coq: Theorem frame_analysis_rate_limited) *)
-let frame_analysis_rate_limited_obligation () : Tot bool = (0 = 0)
-let frame_analysis_rate_limited_lemma () : Lemma (requires True) (ensures (frame_analysis_rate_limited_obligation () == frame_analysis_rate_limited_obligation ())) = ()
+let frame_analysis_rate_limited (p_f1: frame_analysis) (p_f2: frame_analysis) : Lemma (requires (frame_rate_limited p_f1 p_f2 == true) (ensures (p_f2.f_frame_timestamp_ms >= frame_timestamp_ms p_f1 + min_interval_ms p_f1))) = admit ()
 
 (* object_detection_confidence_bounded (matches Coq: Theorem object_detection_confidence_bounded) *)
-let object_detection_confidence_bounded_obligation () : Tot bool = (0 = 0)
-let object_detection_confidence_bounded_lemma () : Lemma (requires True) (ensures (object_detection_confidence_bounded_obligation () == object_detection_confidence_bounded_obligation ())) = ()
+let object_detection_confidence_bounded (p_od: object_detection) : Lemma (requires (confidence_properly_reported p_od == true) (ensures (p_od.f_obj_confidence <= 100))) = admit ()
 
 (* depth_estimation_lower_bound (matches Coq: Theorem depth_estimation_lower_bound) *)
-let depth_estimation_lower_bound_obligation () : Tot bool = (0 = 0)
-let depth_estimation_lower_bound_lemma () : Lemma (requires True) (ensures (depth_estimation_lower_bound_obligation () == depth_estimation_lower_bound_obligation ())) = ()
+let depth_estimation_lower_bound (p_de: depth_estimate) : Lemma (requires (depth_within_bounds p_de == true) (ensures (p_de.f_depth_min <= p_de.f_depth_value))) = admit ()
 
 (* pose_estimation_min_frames (matches Coq: Theorem pose_estimation_min_frames) *)
-let pose_estimation_min_frames_obligation () : Tot bool = (0 = 0)
-let pose_estimation_min_frames_lemma () : Lemma (requires True) (ensures (pose_estimation_min_frames_obligation () == pose_estimation_min_frames_obligation ())) = ()
+let pose_estimation_min_frames (p_pe: pose_estimate) : Lemma (requires (pose_is_stable p_pe == true) (ensures (p_pe.f_pose_frame_count >= 3))) = admit ()
 
 (* language_in_supported_list (matches Coq: Theorem language_in_supported_list) *)
-let language_in_supported_list_obligation () : Tot bool = (0 = 0)
-let language_in_supported_list_lemma () : Lemma (requires True) (ensures (language_in_supported_list_obligation () == language_in_supported_list_obligation ())) = ()
+let language_in_supported_list (p_tr: text_recognition) : Lemma (requires (language_is_supported p_tr == true) (ensures (In (p_tr.f_text_language) (p_tr.f_text_supported_languages) == true))) = admit ()
 
 (* empty_detections_always_bounded (matches Coq: Theorem empty_detections_always_bounded) *)
-let empty_detections_always_bounded_obligation () : Tot bool = (0 = 0)
-let empty_detections_always_bounded_lemma () : Lemma (requires True) (ensures (empty_detections_always_bounded_obligation () == empty_detections_always_bounded_obligation ())) = ()
+let empty_detections_always_bounded (p_r: object_detection_result) : Lemma (requires (p_r.f_od_detections == []) (ensures (length (p_r.f_od_detections) <= 100))) = admit ()

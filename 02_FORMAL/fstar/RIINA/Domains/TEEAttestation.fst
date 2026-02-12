@@ -247,401 +247,301 @@ let sample_kdp_mrenclave : key_derivation_params = mkKeyDerivationParams SP_MREN
 let sample_kdp_mrsigner : key_derivation_params = mkKeyDerivationParams SP_MRSIGNER riina_enclave_identity 100 256
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff_obligation () : Tot bool = (0 = 0)
-let andb_false_iff_lemma () : Lemma (requires True) (ensures (andb_false_iff_obligation () == andb_false_iff_obligation ())) = ()
+let andb_false_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_false <) (ensures (p_a == false \/ p_b == false))) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = (0 = 0)
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a || p_b == fn_true <) (ensures (p_a == true \/ p_b == true))) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = (0 = 0)
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff_obligation () : Tot bool = (0 = 0)
-let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
+let negb_false_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_false <) (ensures (p_b == true))) = admit ()
 
 (* TEE_001 (matches Coq: Theorem TEE_001) *)
-let tee_001_obligation () : Tot bool = (0 = 0)
-let tee_001_lemma () : Lemma (requires True) (ensures (tee_001_obligation () == tee_001_obligation ())) = ()
+let tee_001 () : Lemma (enclave_secure riina_enclave == true) = admit ()
 
 (* TEE_002 (matches Coq: Theorem TEE_002) *)
-let tee_002_obligation () : Tot bool = (0 = 0)
-let tee_002_lemma () : Lemma (requires True) (ensures (tee_002_obligation () == tee_002_obligation ())) = ()
+let tee_002 () : Lemma (attestation_secure riina_attestation == true) = admit ()
 
 (* TEE_003 (matches Coq: Theorem TEE_003) *)
-let tee_003_obligation () : Tot bool = (0 = 0)
-let tee_003_lemma () : Lemma (requires True) (ensures (tee_003_obligation () == tee_003_obligation ())) = ()
+let tee_003 () : Lemma (tee_secure riina_tee == true) = admit ()
 
 (* TEE_004 (matches Coq: Theorem TEE_004) *)
-let tee_004_obligation () : Tot bool = (0 = 0)
-let tee_004_lemma () : Lemma (requires True) (ensures (tee_004_obligation () == tee_004_obligation ())) = ()
+let tee_004 () : Lemma (riina_enclave.f_enc_memory_encrypted == true) = admit ()
 
 (* TEE_005 (matches Coq: Theorem TEE_005) *)
-let tee_005_obligation () : Tot bool = (0 = 0)
-let tee_005_lemma () : Lemma (requires True) (ensures (tee_005_obligation () == tee_005_obligation ())) = ()
+let tee_005 () : Lemma (riina_enclave.f_enc_code_integrity == true) = admit ()
 
 (* TEE_006 (matches Coq: Theorem TEE_006) *)
-let tee_006_obligation () : Tot bool = (0 = 0)
-let tee_006_lemma () : Lemma (requires True) (ensures (tee_006_obligation () == tee_006_obligation ())) = ()
+let tee_006 () : Lemma (riina_enclave.f_enc_data_sealing == true) = admit ()
 
 (* TEE_007 (matches Coq: Theorem TEE_007) *)
-let tee_007_obligation () : Tot bool = (0 = 0)
-let tee_007_lemma () : Lemma (requires True) (ensures (tee_007_obligation () == tee_007_obligation ())) = ()
+let tee_007 () : Lemma (riina_enclave.f_enc_isolated_execution == true) = admit ()
 
 (* TEE_008 (matches Coq: Theorem TEE_008) *)
-let tee_008_obligation () : Tot bool = (0 = 0)
-let tee_008_lemma () : Lemma (requires True) (ensures (tee_008_obligation () == tee_008_obligation ())) = ()
+let tee_008 () : Lemma (riina_attestation.f_att_measurement == true) = admit ()
 
 (* TEE_009 (matches Coq: Theorem TEE_009) *)
-let tee_009_obligation () : Tot bool = (0 = 0)
-let tee_009_lemma () : Lemma (requires True) (ensures (tee_009_obligation () == tee_009_obligation ())) = ()
+let tee_009 () : Lemma (riina_attestation.f_att_signature == true) = admit ()
 
 (* TEE_010 (matches Coq: Theorem TEE_010) *)
-let tee_010_obligation () : Tot bool = (0 = 0)
-let tee_010_lemma () : Lemma (requires True) (ensures (tee_010_obligation () == tee_010_obligation ())) = ()
+let tee_010 () : Lemma (riina_attestation.f_att_freshness == true) = admit ()
 
 (* TEE_011 (matches Coq: Theorem TEE_011) *)
-let tee_011_obligation () : Tot bool = (0 = 0)
-let tee_011_lemma () : Lemma (requires True) (ensures (tee_011_obligation () == tee_011_obligation ())) = ()
+let tee_011 () : Lemma (riina_attestation.f_att_binding == true) = admit ()
 
 (* TEE_012 (matches Coq: Theorem TEE_012) *)
-let tee_012_obligation () : Tot bool = (0 = 0)
-let tee_012_lemma () : Lemma (requires True) (ensures (tee_012_obligation () == tee_012_obligation ())) = ()
+let tee_012 () : Lemma (riina_tee.f_tee_remote_attestation == true) = admit ()
 
 (* TEE_013 (matches Coq: Theorem TEE_013) *)
-let tee_013_obligation () : Tot bool = (0 = 0)
-let tee_013_lemma () : Lemma (requires True) (ensures (tee_013_obligation () == tee_013_obligation ())) = ()
+let tee_013 () : Lemma (riina_tee.f_tee_local_attestation == true) = admit ()
 
 (* TEE_014 (matches Coq: Theorem TEE_014) *)
-let tee_014_obligation () : Tot bool = (0 = 0)
-let tee_014_lemma () : Lemma (requires True) (ensures (tee_014_obligation () == tee_014_obligation ())) = ()
+let tee_014 (p_e: _) : Lemma (requires (enclave_secure p_e == true) (ensures (p_e.f_enc_memory_encrypted == true))) = admit ()
 
 (* TEE_015 (matches Coq: Theorem TEE_015) *)
-let tee_015_obligation () : Tot bool = (0 = 0)
-let tee_015_lemma () : Lemma (requires True) (ensures (tee_015_obligation () == tee_015_obligation ())) = ()
+let tee_015 (p_e: _) : Lemma (requires (enclave_secure p_e == true) (ensures (p_e.f_enc_isolated_execution == true))) = admit ()
 
 (* TEE_016 (matches Coq: Theorem TEE_016) *)
-let tee_016_obligation () : Tot bool = (0 = 0)
-let tee_016_lemma () : Lemma (requires True) (ensures (tee_016_obligation () == tee_016_obligation ())) = ()
+let tee_016 (p_a: _) : Lemma (requires (attestation_secure p_a == true) (ensures (p_a.f_att_measurement == true))) = admit ()
 
 (* TEE_017 (matches Coq: Theorem TEE_017) *)
-let tee_017_obligation () : Tot bool = (0 = 0)
-let tee_017_lemma () : Lemma (requires True) (ensures (tee_017_obligation () == tee_017_obligation ())) = ()
+let tee_017 (p_a: _) : Lemma (requires (attestation_secure p_a == true) (ensures (p_a.f_att_freshness == true))) = admit ()
 
 (* TEE_018 (matches Coq: Theorem TEE_018) *)
-let tee_018_obligation () : Tot bool = (0 = 0)
-let tee_018_lemma () : Lemma (requires True) (ensures (tee_018_obligation () == tee_018_obligation ())) = ()
+let tee_018 (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures (enclave_secure (p_t.f_tee_enclave) == true))) = admit ()
 
 (* TEE_019 (matches Coq: Theorem TEE_019) *)
-let tee_019_obligation () : Tot bool = (0 = 0)
-let tee_019_lemma () : Lemma (requires True) (ensures (tee_019_obligation () == tee_019_obligation ())) = ()
+let tee_019 (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures (attestation_secure (p_t.f_tee_attestation) == true))) = admit ()
 
 (* TEE_020 (matches Coq: Theorem TEE_020) *)
-let tee_020_obligation () : Tot bool = (0 = 0)
-let tee_020_lemma () : Lemma (requires True) (ensures (tee_020_obligation () == tee_020_obligation ())) = ()
+let tee_020 (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures (p_t.f_tee_remote_attestation == true))) = admit ()
 
 (* TEE_021 (matches Coq: Theorem TEE_021) *)
-let tee_021_obligation () : Tot bool = (0 = 0)
-let tee_021_lemma () : Lemma (requires True) (ensures (tee_021_obligation () == tee_021_obligation ())) = ()
+let tee_021 (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures ((p_t.f_tee_enclave).f_enc_memory_encrypted == true))) = admit ()
 
 (* TEE_022 (matches Coq: Theorem TEE_022) *)
-let tee_022_obligation () : Tot bool = (0 = 0)
-let tee_022_lemma () : Lemma (requires True) (ensures (tee_022_obligation () == tee_022_obligation ())) = ()
+let tee_022 (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures ((p_t.f_tee_attestation).f_att_measurement == true))) = admit ()
 
 (* TEE_023 (matches Coq: Theorem TEE_023) *)
-let tee_023_obligation () : Tot bool = (0 = 0)
-let tee_023_lemma () : Lemma (requires True) (ensures (tee_023_obligation () == tee_023_obligation ())) = ()
+let tee_023 (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures ((p_t.f_tee_attestation).f_att_freshness == true))) = admit ()
 
 (* TEE_024 (matches Coq: Theorem TEE_024) *)
-let tee_024_obligation () : Tot bool = (0 = 0)
-let tee_024_lemma () : Lemma (requires True) (ensures (tee_024_obligation () == tee_024_obligation ())) = ()
+let tee_024 () : Lemma (tee_secure riina_tee == true /\ riina_tee.f_tee_remote_attestation == true) = admit ()
 
 (* TEE_025_complete (matches Coq: Theorem TEE_025_complete) *)
-let tee_025_complete_obligation () : Tot bool = (0 = 0)
-let tee_025_complete_lemma () : Lemma (requires True) (ensures (tee_025_complete_obligation () == tee_025_complete_obligation ())) = ()
+let tee_025_complete (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures ((p_t.f_tee_enclave).f_enc_memory_encrypted == true /\ (p_t.f_tee_attestation).f_att_measurement == true /\ (p_t.f_tee_attestation).f_att_freshness == true /\ p_t.f_tee_remote_attestation == true))) = admit ()
 
 (* TEE_026_create_transition (matches Coq: Theorem TEE_026_create_transition) *)
-let tee_026_create_transition_obligation () : Tot bool = (0 = 0)
-let tee_026_create_transition_lemma () : Lemma (requires True) (ensures (tee_026_create_transition_obligation () == tee_026_create_transition_obligation ())) = ()
+let tee_026_create_transition () : Lemma (enclave_transition ES_Uninitialized EE_Create == Some ES_Created) = admit ()
 
 (* TEE_027_init_transition (matches Coq: Theorem TEE_027_init_transition) *)
-let tee_027_init_transition_obligation () : Tot bool = (0 = 0)
-let tee_027_init_transition_lemma () : Lemma (requires True) (ensures (tee_027_init_transition_obligation () == tee_027_init_transition_obligation ())) = ()
+let tee_027_init_transition () : Lemma (enclave_transition ES_Created EE_Initialize == Some ES_Initialized) = admit ()
 
 (* TEE_028_enter_transition (matches Coq: Theorem TEE_028_enter_transition) *)
-let tee_028_enter_transition_obligation () : Tot bool = (0 = 0)
-let tee_028_enter_transition_lemma () : Lemma (requires True) (ensures (tee_028_enter_transition_obligation () == tee_028_enter_transition_obligation ())) = ()
+let tee_028_enter_transition () : Lemma (enclave_transition ES_Initialized EE_Enter == Some ES_Running) = admit ()
 
 (* TEE_029_exit_transition (matches Coq: Theorem TEE_029_exit_transition) *)
-let tee_029_exit_transition_obligation () : Tot bool = (0 = 0)
-let tee_029_exit_transition_lemma () : Lemma (requires True) (ensures (tee_029_exit_transition_obligation () == tee_029_exit_transition_obligation ())) = ()
+let tee_029_exit_transition () : Lemma (enclave_transition ES_Running EE_Exit == Some ES_Initialized) = admit ()
 
 (* TEE_030_suspend_transition (matches Coq: Theorem TEE_030_suspend_transition) *)
-let tee_030_suspend_transition_obligation () : Tot bool = (0 = 0)
-let tee_030_suspend_transition_lemma () : Lemma (requires True) (ensures (tee_030_suspend_transition_obligation () == tee_030_suspend_transition_obligation ())) = ()
+let tee_030_suspend_transition () : Lemma (enclave_transition ES_Running EE_Suspend == Some ES_Suspended) = admit ()
 
 (* TEE_031_resume_transition (matches Coq: Theorem TEE_031_resume_transition) *)
-let tee_031_resume_transition_obligation () : Tot bool = (0 = 0)
-let tee_031_resume_transition_lemma () : Lemma (requires True) (ensures (tee_031_resume_transition_obligation () == tee_031_resume_transition_obligation ())) = ()
+let tee_031_resume_transition () : Lemma (enclave_transition ES_Suspended EE_Resume == Some ES_Running) = admit ()
 
 (* TEE_032_destroy_from_init (matches Coq: Theorem TEE_032_destroy_from_init) *)
-let tee_032_destroy_from_init_obligation () : Tot bool = (0 = 0)
-let tee_032_destroy_from_init_lemma () : Lemma (requires True) (ensures (tee_032_destroy_from_init_obligation () == tee_032_destroy_from_init_obligation ())) = ()
+let tee_032_destroy_from_init () : Lemma (enclave_transition ES_Initialized EE_Destroy == Some ES_Destroyed) = admit ()
 
 (* TEE_033_destroy_from_created (matches Coq: Theorem TEE_033_destroy_from_created) *)
-let tee_033_destroy_from_created_obligation () : Tot bool = (0 = 0)
-let tee_033_destroy_from_created_lemma () : Lemma (requires True) (ensures (tee_033_destroy_from_created_obligation () == tee_033_destroy_from_created_obligation ())) = ()
+let tee_033_destroy_from_created () : Lemma (enclave_transition ES_Created EE_Destroy == Some ES_Destroyed) = admit ()
 
 (* TEE_034_no_create_from_running (matches Coq: Theorem TEE_034_no_create_from_running) *)
-let tee_034_no_create_from_running_obligation () : Tot bool = (0 = 0)
-let tee_034_no_create_from_running_lemma () : Lemma (requires True) (ensures (tee_034_no_create_from_running_obligation () == tee_034_no_create_from_running_obligation ())) = ()
+let tee_034_no_create_from_running () : Lemma (enclave_transition ES_Running EE_Create == None) = admit ()
 
 (* TEE_035_no_enter_uninitialized (matches Coq: Theorem TEE_035_no_enter_uninitialized) *)
-let tee_035_no_enter_uninitialized_obligation () : Tot bool = (0 = 0)
-let tee_035_no_enter_uninitialized_lemma () : Lemma (requires True) (ensures (tee_035_no_enter_uninitialized_obligation () == tee_035_no_enter_uninitialized_obligation ())) = ()
+let tee_035_no_enter_uninitialized () : Lemma (enclave_transition ES_Uninitialized EE_Enter == None) = admit ()
 
 (* TEE_036_lifecycle_to_running (matches Coq: Theorem TEE_036_lifecycle_to_running) *)
-let tee_036_lifecycle_to_running_obligation () : Tot bool = (0 = 0)
-let tee_036_lifecycle_to_running_lemma () : Lemma (requires True) (ensures (tee_036_lifecycle_to_running_obligation () == tee_036_lifecycle_to_running_obligation ())) = ()
+let tee_036_lifecycle_to_running (p_s1: _) (p_s2: _) (p_s3: _) : Lemma (requires (enclave_transition ES_Uninitialized EE_Create == Some p_s1 /\ enclave_transition p_s1 EE_Initialize == Some p_s2 /\ enclave_transition p_s2 EE_Enter == Some p_s3) (ensures (p_s3 == ES_Running))) = admit ()
 
 (* TEE_037_suspend_resume_cycle (matches Coq: Theorem TEE_037_suspend_resume_cycle) *)
-let tee_037_suspend_resume_cycle_obligation () : Tot bool = (0 = 0)
-let tee_037_suspend_resume_cycle_lemma () : Lemma (requires True) (ensures (tee_037_suspend_resume_cycle_obligation () == tee_037_suspend_resume_cycle_obligation ())) = ()
+let tee_037_suspend_resume_cycle (p_s1: _) (p_s2: _) : Lemma (requires (enclave_transition ES_Running EE_Suspend == Some p_s1 /\ enclave_transition p_s1 EE_Resume == Some p_s2) (ensures (p_s2 == ES_Running))) = admit ()
 
 (* TEE_038_riina_quote_signature_valid (matches Coq: Theorem TEE_038_riina_quote_signature_valid) *)
-let tee_038_riina_quote_signature_valid_obligation () : Tot bool = (0 = 0)
-let tee_038_riina_quote_signature_valid_lemma () : Lemma (requires True) (ensures (tee_038_riina_quote_signature_valid_obligation () == tee_038_riina_quote_signature_valid_obligation ())) = ()
+let tee_038_riina_quote_signature_valid () : Lemma (riina_quote.f_aq_signature_valid == true) = admit ()
 
 (* TEE_039_riina_quote_measurement_valid (matches Coq: Theorem TEE_039_riina_quote_measurement_valid) *)
-let tee_039_riina_quote_measurement_valid_obligation () : Tot bool = (0 = 0)
-let tee_039_riina_quote_measurement_valid_lemma () : Lemma (requires True) (ensures (tee_039_riina_quote_measurement_valid_obligation () == tee_039_riina_quote_measurement_valid_obligation ())) = ()
+let tee_039_riina_quote_measurement_valid () : Lemma (quote_measurement_valid riina_quote riina_verification_context == true) = admit ()
 
 (* TEE_040_riina_quote_signer_valid (matches Coq: Theorem TEE_040_riina_quote_signer_valid) *)
-let tee_040_riina_quote_signer_valid_obligation () : Tot bool = (0 = 0)
-let tee_040_riina_quote_signer_valid_lemma () : Lemma (requires True) (ensures (tee_040_riina_quote_signer_valid_obligation () == tee_040_riina_quote_signer_valid_obligation ())) = ()
+let tee_040_riina_quote_signer_valid () : Lemma (quote_signer_valid riina_quote riina_verification_context == true) = admit ()
 
 (* TEE_041_riina_quote_svn_valid (matches Coq: Theorem TEE_041_riina_quote_svn_valid) *)
-let tee_041_riina_quote_svn_valid_obligation () : Tot bool = (0 = 0)
-let tee_041_riina_quote_svn_valid_lemma () : Lemma (requires True) (ensures (tee_041_riina_quote_svn_valid_obligation () == tee_041_riina_quote_svn_valid_obligation ())) = ()
+let tee_041_riina_quote_svn_valid () : Lemma (quote_svn_valid riina_quote riina_verification_context == true) = admit ()
 
 (* TEE_042_riina_quote_nonce_valid (matches Coq: Theorem TEE_042_riina_quote_nonce_valid) *)
-let tee_042_riina_quote_nonce_valid_obligation () : Tot bool = (0 = 0)
-let tee_042_riina_quote_nonce_valid_lemma () : Lemma (requires True) (ensures (tee_042_riina_quote_nonce_valid_obligation () == tee_042_riina_quote_nonce_valid_obligation ())) = ()
+let tee_042_riina_quote_nonce_valid () : Lemma (quote_nonce_valid riina_quote riina_verification_context == true) = admit ()
 
 (* TEE_043_riina_quote_fresh (matches Coq: Theorem TEE_043_riina_quote_fresh) *)
-let tee_043_riina_quote_fresh_obligation () : Tot bool = (0 = 0)
-let tee_043_riina_quote_fresh_lemma () : Lemma (requires True) (ensures (tee_043_riina_quote_fresh_obligation () == tee_043_riina_quote_fresh_obligation ())) = ()
+let tee_043_riina_quote_fresh () : Lemma (quote_fresh riina_quote riina_verification_context == true) = admit ()
 
 (* TEE_044_riina_quote_verifies (matches Coq: Theorem TEE_044_riina_quote_verifies) *)
-let tee_044_riina_quote_verifies_obligation () : Tot bool = (0 = 0)
-let tee_044_riina_quote_verifies_lemma () : Lemma (requires True) (ensures (tee_044_riina_quote_verifies_obligation () == tee_044_riina_quote_verifies_obligation ())) = ()
+let tee_044_riina_quote_verifies () : Lemma (verify_quote riina_quote riina_verification_context == true) = admit ()
 
 (* TEE_045_verified_quote_has_valid_signature (matches Coq: Theorem TEE_045_verified_quote_has_valid_signature) *)
-let tee_045_verified_quote_has_valid_signature_obligation () : Tot bool = (0 = 0)
-let tee_045_verified_quote_has_valid_signature_lemma () : Lemma (requires True) (ensures (tee_045_verified_quote_has_valid_signature_obligation () == tee_045_verified_quote_has_valid_signature_obligation ())) = ()
+let tee_045_verified_quote_has_valid_signature (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (p_q.f_aq_signature_valid == true))) = admit ()
 
 (* TEE_046_verified_quote_has_valid_measurement (matches Coq: Theorem TEE_046_verified_quote_has_valid_measurement) *)
-let tee_046_verified_quote_has_valid_measurement_obligation () : Tot bool = (0 = 0)
-let tee_046_verified_quote_has_valid_measurement_lemma () : Lemma (requires True) (ensures (tee_046_verified_quote_has_valid_measurement_obligation () == tee_046_verified_quote_has_valid_measurement_obligation ())) = ()
+let tee_046_verified_quote_has_valid_measurement (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (quote_measurement_valid p_q p_ctx == true))) = admit ()
 
 (* TEE_047_verified_quote_has_valid_nonce (matches Coq: Theorem TEE_047_verified_quote_has_valid_nonce) *)
-let tee_047_verified_quote_has_valid_nonce_obligation () : Tot bool = (0 = 0)
-let tee_047_verified_quote_has_valid_nonce_lemma () : Lemma (requires True) (ensures (tee_047_verified_quote_has_valid_nonce_obligation () == tee_047_verified_quote_has_valid_nonce_obligation ())) = ()
+let tee_047_verified_quote_has_valid_nonce (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (quote_nonce_valid p_q p_ctx == true))) = admit ()
 
 (* TEE_048_verified_quote_is_fresh (matches Coq: Theorem TEE_048_verified_quote_is_fresh) *)
-let tee_048_verified_quote_is_fresh_obligation () : Tot bool = (0 = 0)
-let tee_048_verified_quote_is_fresh_lemma () : Lemma (requires True) (ensures (tee_048_verified_quote_is_fresh_obligation () == tee_048_verified_quote_is_fresh_obligation ())) = ()
+let tee_048_verified_quote_is_fresh (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (quote_fresh p_q p_ctx == true))) = admit ()
 
 (* TEE_049_invalid_signature_fails_verification (matches Coq: Theorem TEE_049_invalid_signature_fails_verification) *)
-let tee_049_invalid_signature_fails_verification_obligation () : Tot bool = (0 = 0)
-let tee_049_invalid_signature_fails_verification_lemma () : Lemma (requires True) (ensures (tee_049_invalid_signature_fails_verification_obligation () == tee_049_invalid_signature_fails_verification_obligation ())) = ()
+let tee_049_invalid_signature_fails_verification (p_q: _) (p_ctx: _) : Lemma (requires (p_q.f_aq_signature_valid == false) (ensures (verify_quote p_q p_ctx == false))) = admit ()
 
 (* TEE_050_stale_quote_fails_verification (matches Coq: Theorem TEE_050_stale_quote_fails_verification) *)
-let tee_050_stale_quote_fails_verification_obligation () : Tot bool = (0 = 0)
-let tee_050_stale_quote_fails_verification_lemma () : Lemma (requires True) (ensures (tee_050_stale_quote_fails_verification_obligation () == tee_050_stale_quote_fails_verification_obligation ())) = ()
+let tee_050_stale_quote_fails_verification (p_q: _) (p_ctx: _) : Lemma (requires (quote_fresh p_q p_ctx == false) (ensures (verify_quote p_q p_ctx == false))) = admit ()
 
 (* TEE_051_derive_key_mrenclave (matches Coq: Theorem TEE_051_derive_key_mrenclave) *)
-let tee_051_derive_key_mrenclave_obligation () : Tot bool = (0 = 0)
-let tee_051_derive_key_mrenclave_lemma () : Lemma (requires True) (ensures (tee_051_derive_key_mrenclave_obligation () == tee_051_derive_key_mrenclave_obligation ())) = ()
+let tee_051_derive_key_mrenclave () : Lemma (derive_seal_key_id sample_kdp_mrenclave == ei_measurement riina_enclave_identity + 100) = admit ()
 
 (* TEE_052_derive_key_mrsigner (matches Coq: Theorem TEE_052_derive_key_mrsigner) *)
-let tee_052_derive_key_mrsigner_obligation () : Tot bool = (0 = 0)
-let tee_052_derive_key_mrsigner_lemma () : Lemma (requires True) (ensures (tee_052_derive_key_mrsigner_obligation () == tee_052_derive_key_mrsigner_obligation ())) = ()
+let tee_052_derive_key_mrsigner () : Lemma (derive_seal_key_id sample_kdp_mrsigner == ei_signer riina_enclave_identity + 100) = admit ()
 
 (* TEE_053_key_derivation_deterministic (matches Coq: Theorem TEE_053_key_derivation_deterministic) *)
-let tee_053_key_derivation_deterministic_obligation () : Tot bool = (0 = 0)
-let tee_053_key_derivation_deterministic_lemma () : Lemma (requires True) (ensures (tee_053_key_derivation_deterministic_obligation () == tee_053_key_derivation_deterministic_obligation ())) = ()
+let tee_053_key_derivation_deterministic (p_p1: _) (p_p2: _) : Lemma (requires (p_p1.f_kdp_policy == p_p2.f_kdp_policy /\ p_p1.f_kdp_enclave_id == p_p2.f_kdp_enclave_id /\ p_p1.f_kdp_key_name == p_p2.f_kdp_key_name) (ensures (derive_seal_key_id p_p1 == derive_seal_key_id p_p2))) = admit ()
 
 (* TEE_054_different_policy_different_key (matches Coq: Theorem TEE_054_different_policy_different_key) *)
-let tee_054_different_policy_different_key_obligation () : Tot bool = (0 = 0)
-let tee_054_different_policy_different_key_lemma () : Lemma (requires True) (ensures (tee_054_different_policy_different_key_obligation () == tee_054_different_policy_different_key_obligation ())) = ()
+let tee_054_different_policy_different_key (p_eid: _) (p_kn: _) : Lemma (requires (~(p_eid.f_ei_measurement == p_eid.f_ei_signer)) (ensures (~(derive_seal_key_id (mkkeyderivationparams SP_MRENCLAVE p_eid p_kn 256) == derive_seal_key_id (mkkeyderivationparams SP_MRSIGNER p_eid p_kn 256))))) = admit ()
 
 (* TEE_055_keypolicy_uses_name_only (matches Coq: Theorem TEE_055_keypolicy_uses_name_only) *)
-let tee_055_keypolicy_uses_name_only_obligation () : Tot bool = (0 = 0)
-let tee_055_keypolicy_uses_name_only_lemma () : Lemma (requires True) (ensures (tee_055_keypolicy_uses_name_only_obligation () == tee_055_keypolicy_uses_name_only_obligation ())) = ()
+let tee_055_keypolicy_uses_name_only (p_eid1: _) (p_eid2: _) (p_kn: _) (p_ks: _) : Lemma (derive_seal_key_id (mkkeyderivationparams SP_KEYPOLICY p_eid1 p_kn p_ks) == derive_seal_key_id (mkkeyderivationparams SP_KEYPOLICY p_eid2 p_kn p_ks)) = admit ()
 
 (* TEE_056_mrenclave_binding_enclave_specific (matches Coq: Theorem TEE_056_mrenclave_binding_enclave_specific) *)
-let tee_056_mrenclave_binding_enclave_specific_obligation () : Tot bool = (0 = 0)
-let tee_056_mrenclave_binding_enclave_specific_lemma () : Lemma (requires True) (ensures (tee_056_mrenclave_binding_enclave_specific_obligation () == tee_056_mrenclave_binding_enclave_specific_obligation ())) = ()
+let tee_056_mrenclave_binding_enclave_specific (p_eid1: _) (p_eid2: _) (p_kn: _) (p_ks: _) : Lemma (requires (~(p_eid1.f_ei_measurement == p_eid2.f_ei_measurement)) (ensures (~(derive_seal_key_id (mkkeyderivationparams SP_MRENCLAVE p_eid1 p_kn p_ks) == derive_seal_key_id (mkkeyderivationparams SP_MRENCLAVE p_eid2 p_kn p_ks))))) = admit ()
 
 (* TEE_057_mrsigner_binding_signer_specific (matches Coq: Theorem TEE_057_mrsigner_binding_signer_specific) *)
-let tee_057_mrsigner_binding_signer_specific_obligation () : Tot bool = (0 = 0)
-let tee_057_mrsigner_binding_signer_specific_lemma () : Lemma (requires True) (ensures (tee_057_mrsigner_binding_signer_specific_obligation () == tee_057_mrsigner_binding_signer_specific_obligation ())) = ()
+let tee_057_mrsigner_binding_signer_specific (p_eid1: _) (p_eid2: _) (p_kn: _) (p_ks: _) : Lemma (requires (~(p_eid1.f_ei_signer == p_eid2.f_ei_signer)) (ensures (~(derive_seal_key_id (mkkeyderivationparams SP_MRSIGNER p_eid1 p_kn p_ks) == derive_seal_key_id (mkkeyderivationparams SP_MRSIGNER p_eid2 p_kn p_ks))))) = admit ()
 
 (* TEE_058_different_key_names_different_keys (matches Coq: Theorem TEE_058_different_key_names_different_keys) *)
-let tee_058_different_key_names_different_keys_obligation () : Tot bool = (0 = 0)
-let tee_058_different_key_names_different_keys_lemma () : Lemma (requires True) (ensures (tee_058_different_key_names_different_keys_obligation () == tee_058_different_key_names_different_keys_obligation ())) = ()
+let tee_058_different_key_names_different_keys (p_pol: _) (p_eid: _) (p_kn1: _) (p_kn2: _) (p_ks: _) : Lemma (requires (~(p_kn1 == p_kn2)) (ensures (~(derive_seal_key_id (mkkeyderivationparams p_pol p_eid p_kn1 p_ks) == derive_seal_key_id (mkkeyderivationparams p_pol p_eid p_kn2 p_ks))))) = admit ()
 
 (* TEE_059_keypolicy_unseal_always_possible (matches Coq: Theorem TEE_059_keypolicy_unseal_always_possible) *)
-let tee_059_keypolicy_unseal_always_possible_obligation () : Tot bool = (0 = 0)
-let tee_059_keypolicy_unseal_always_possible_lemma () : Lemma (requires True) (ensures (tee_059_keypolicy_unseal_always_possible_obligation () == tee_059_keypolicy_unseal_always_possible_obligation ())) = ()
+let tee_059_keypolicy_unseal_always_possible (p_sealed: _) (p_current: _) : Lemma (requires (p_sealed.f_sd_policy == SP_KEYPOLICY) (ensures (can_unseal p_sealed p_current == true))) = admit ()
 
 (* TEE_060_key_size_does_not_affect_id (matches Coq: Theorem TEE_060_key_size_does_not_affect_id) *)
-let tee_060_key_size_does_not_affect_id_obligation () : Tot bool = (0 = 0)
-let tee_060_key_size_does_not_affect_id_lemma () : Lemma (requires True) (ensures (tee_060_key_size_does_not_affect_id_obligation () == tee_060_key_size_does_not_affect_id_obligation ())) = ()
+let tee_060_key_size_does_not_affect_id (p_pol: _) (p_eid: _) (p_kn: _) (p_ks1: _) (p_ks2: _) : Lemma (derive_seal_key_id (mkkeyderivationparams p_pol p_eid p_kn p_ks1) == derive_seal_key_id (mkkeyderivationparams p_pol p_eid p_kn p_ks2)) = admit ()
 
 (* TEE_061_riina_memory_encrypted (matches Coq: Theorem TEE_061_riina_memory_encrypted) *)
-let tee_061_riina_memory_encrypted_obligation () : Tot bool = (0 = 0)
-let tee_061_riina_memory_encrypted_lemma () : Lemma (requires True) (ensures (tee_061_riina_memory_encrypted_obligation () == tee_061_riina_memory_encrypted_obligation ())) = ()
+let tee_061_riina_memory_encrypted () : Lemma (riina_secure_memory.f_mr_encrypted == true) = admit ()
 
 (* TEE_062_riina_memory_is_enclave (matches Coq: Theorem TEE_062_riina_memory_is_enclave) *)
-let tee_062_riina_memory_is_enclave_obligation () : Tot bool = (0 = 0)
-let tee_062_riina_memory_is_enclave_lemma () : Lemma (requires True) (ensures (tee_062_riina_memory_is_enclave_obligation () == tee_062_riina_memory_is_enclave_obligation ())) = ()
+let tee_062_riina_memory_is_enclave () : Lemma (riina_secure_memory.f_mr_type == MRT_Enclave) = admit ()
 
 (* TEE_063_enclave_memory_is_protected (matches Coq: Theorem TEE_063_enclave_memory_is_protected) *)
-let tee_063_enclave_memory_is_protected_obligation () : Tot bool = (0 = 0)
-let tee_063_enclave_memory_is_protected_lemma () : Lemma (requires True) (ensures (tee_063_enclave_memory_is_protected_obligation () == tee_063_enclave_memory_is_protected_obligation ())) = ()
+let tee_063_enclave_memory_is_protected () : Lemma (enclave_memory_protected riina_secure_memory == true) = admit ()
 
 (* TEE_064_normal_memory_always_protected (matches Coq: Theorem TEE_064_normal_memory_always_protected) *)
-let tee_064_normal_memory_always_protected_obligation () : Tot bool = (0 = 0)
-let tee_064_normal_memory_always_protected_lemma () : Lemma (requires True) (ensures (tee_064_normal_memory_always_protected_obligation () == tee_064_normal_memory_always_protected_obligation ())) = ()
+let tee_064_normal_memory_always_protected (p_r: _) : Lemma (requires (p_r.f_mr_type == MRT_Normal) (ensures (enclave_memory_protected p_r == true))) = admit ()
 
 (* TEE_065_shared_memory_always_protected (matches Coq: Theorem TEE_065_shared_memory_always_protected) *)
-let tee_065_shared_memory_always_protected_obligation () : Tot bool = (0 = 0)
-let tee_065_shared_memory_always_protected_lemma () : Lemma (requires True) (ensures (tee_065_shared_memory_always_protected_obligation () == tee_065_shared_memory_always_protected_obligation ())) = ()
+let tee_065_shared_memory_always_protected (p_r: _) : Lemma (requires (p_r.f_mr_type == MRT_Shared) (ensures (enclave_memory_protected p_r == true))) = admit ()
 
 (* TEE_066_reserved_memory_always_protected (matches Coq: Theorem TEE_066_reserved_memory_always_protected) *)
-let tee_066_reserved_memory_always_protected_obligation () : Tot bool = (0 = 0)
-let tee_066_reserved_memory_always_protected_lemma () : Lemma (requires True) (ensures (tee_066_reserved_memory_always_protected_obligation () == tee_066_reserved_memory_always_protected_obligation ())) = ()
+let tee_066_reserved_memory_always_protected (p_r: _) : Lemma (requires (p_r.f_mr_type == MRT_Reserved) (ensures (enclave_memory_protected p_r == true))) = admit ()
 
 (* TEE_067_enclave_memory_encrypted_implies_protected (matches Coq: Theorem TEE_067_enclave_memory_encrypted_implies_protected) *)
-let tee_067_enclave_memory_encrypted_implies_protected_obligation () : Tot bool = (0 = 0)
-let tee_067_enclave_memory_encrypted_implies_protected_lemma () : Lemma (requires True) (ensures (tee_067_enclave_memory_encrypted_implies_protected_obligation () == tee_067_enclave_memory_encrypted_implies_protected_obligation ())) = ()
+let tee_067_enclave_memory_encrypted_implies_protected (p_r: _) : Lemma (requires (p_r.f_mr_type == MRT_Enclave /\ p_r.f_mr_encrypted == true) (ensures (enclave_memory_protected p_r == true))) = admit ()
 
 (* TEE_068_unencrypted_enclave_memory_unprotected (matches Coq: Theorem TEE_068_unencrypted_enclave_memory_unprotected) *)
-let tee_068_unencrypted_enclave_memory_unprotected_obligation () : Tot bool = (0 = 0)
-let tee_068_unencrypted_enclave_memory_unprotected_lemma () : Lemma (requires True) (ensures (tee_068_unencrypted_enclave_memory_unprotected_obligation () == tee_068_unencrypted_enclave_memory_unprotected_obligation ())) = ()
+let tee_068_unencrypted_enclave_memory_unprotected (p_r: _) : Lemma (requires (p_r.f_mr_type == MRT_Enclave /\ p_r.f_mr_encrypted == false) (ensures (enclave_memory_protected p_r == false))) = admit ()
 
 (* TEE_069_address_in_region (matches Coq: Theorem TEE_069_address_in_region) *)
-let tee_069_address_in_region_obligation () : Tot bool = (0 = 0)
-let tee_069_address_in_region_lemma () : Lemma (requires True) (ensures (tee_069_address_in_region_obligation () == tee_069_address_in_region_obligation ())) = ()
+let tee_069_address_in_region (p_base: _) (p_size: _) (p_addr: _) : Lemma (requires (p_base <= p_addr /\ p_addr < p_base + p_size /\ p_size > 0) (ensures (region_contains (mkmemoryregion p_base p_size MRT_Enclave (mkmemorypermissions true true false) true) p_addr == true))) = admit ()
 
 (* TEE_070_non_overlapping_regions_disjoint (matches Coq: Theorem TEE_070_non_overlapping_regions_disjoint) *)
-let tee_070_non_overlapping_regions_disjoint_obligation () : Tot bool = (0 = 0)
-let tee_070_non_overlapping_regions_disjoint_lemma () : Lemma (requires True) (ensures (tee_070_non_overlapping_regions_disjoint_obligation () == tee_070_non_overlapping_regions_disjoint_obligation ())) = ()
+let tee_070_non_overlapping_regions_disjoint (p_r1: _) (p_r2: _) : Lemma (requires (mr_base p_r1 + mr_size p_r1 <= p_r2.f_mr_base) (ensures (regions_overlap p_r1 p_r2 == false))) = admit ()
 
 (* TEE_071_riina_platform_tcb_valid (matches Coq: Theorem TEE_071_riina_platform_tcb_valid) *)
-let tee_071_riina_platform_tcb_valid_obligation () : Tot bool = (0 = 0)
-let tee_071_riina_platform_tcb_valid_lemma () : Lemma (requires True) (ensures (tee_071_riina_platform_tcb_valid_obligation () == tee_071_riina_platform_tcb_valid_obligation ())) = ()
+let tee_071_riina_platform_tcb_valid () : Lemma (riina_platform.f_pi_tcb_info_valid == true) = admit ()
 
 (* TEE_072_riina_trust_chain_complete (matches Coq: Theorem TEE_072_riina_trust_chain_complete) *)
-let tee_072_riina_trust_chain_complete_obligation () : Tot bool = (0 = 0)
-let tee_072_riina_trust_chain_complete_lemma () : Lemma (requires True) (ensures (tee_072_riina_trust_chain_complete_obligation () == tee_072_riina_trust_chain_complete_obligation ())) = ()
+let tee_072_riina_trust_chain_complete () : Lemma (trust_chain_complete riina_trust_chain == true) = admit ()
 
 (* TEE_073_riina_platform_trusted (matches Coq: Theorem TEE_073_riina_platform_trusted) *)
-let tee_073_riina_platform_trusted_obligation () : Tot bool = (0 = 0)
-let tee_073_riina_platform_trusted_lemma () : Lemma (requires True) (ensures (tee_073_riina_platform_trusted_obligation () == tee_073_riina_platform_trusted_obligation ())) = ()
+let tee_073_riina_platform_trusted () : Lemma (platform_trusted riina_platform riina_trust_chain == true) = admit ()
 
 (* TEE_074_trust_chain_requires_root_key (matches Coq: Theorem TEE_074_trust_chain_requires_root_key) *)
-let tee_074_trust_chain_requires_root_key_obligation () : Tot bool = (0 = 0)
-let tee_074_trust_chain_requires_root_key_lemma () : Lemma (requires True) (ensures (tee_074_trust_chain_requires_root_key_obligation () == tee_074_trust_chain_requires_root_key_obligation ())) = ()
+let tee_074_trust_chain_requires_root_key (p_tc: _) : Lemma (requires (trust_chain_complete p_tc == true) (ensures (p_tc.f_tc_root_key_valid == true))) = admit ()
 
 (* TEE_075_trust_chain_requires_pck_cert (matches Coq: Theorem TEE_075_trust_chain_requires_pck_cert) *)
-let tee_075_trust_chain_requires_pck_cert_obligation () : Tot bool = (0 = 0)
-let tee_075_trust_chain_requires_pck_cert_lemma () : Lemma (requires True) (ensures (tee_075_trust_chain_requires_pck_cert_obligation () == tee_075_trust_chain_requires_pck_cert_obligation ())) = ()
+let tee_075_trust_chain_requires_pck_cert (p_tc: _) : Lemma (requires (trust_chain_complete p_tc == true) (ensures (p_tc.f_tc_pck_cert_valid == true))) = admit ()
 
 (* TEE_076_trust_chain_requires_tcb_signing (matches Coq: Theorem TEE_076_trust_chain_requires_tcb_signing) *)
-let tee_076_trust_chain_requires_tcb_signing_obligation () : Tot bool = (0 = 0)
-let tee_076_trust_chain_requires_tcb_signing_lemma () : Lemma (requires True) (ensures (tee_076_trust_chain_requires_tcb_signing_obligation () == tee_076_trust_chain_requires_tcb_signing_obligation ())) = ()
+let tee_076_trust_chain_requires_tcb_signing (p_tc: _) : Lemma (requires (trust_chain_complete p_tc == true) (ensures (p_tc.f_tc_tcb_signing_valid == true))) = admit ()
 
 (* TEE_077_trust_chain_requires_qe_report (matches Coq: Theorem TEE_077_trust_chain_requires_qe_report) *)
-let tee_077_trust_chain_requires_qe_report_obligation () : Tot bool = (0 = 0)
-let tee_077_trust_chain_requires_qe_report_lemma () : Lemma (requires True) (ensures (tee_077_trust_chain_requires_qe_report_obligation () == tee_077_trust_chain_requires_qe_report_obligation ())) = ()
+let tee_077_trust_chain_requires_qe_report (p_tc: _) : Lemma (requires (trust_chain_complete p_tc == true) (ensures (p_tc.f_tc_qe_report_valid == true))) = admit ()
 
 (* TEE_078_invalid_root_breaks_trust (matches Coq: Theorem TEE_078_invalid_root_breaks_trust) *)
-let tee_078_invalid_root_breaks_trust_obligation () : Tot bool = (0 = 0)
-let tee_078_invalid_root_breaks_trust_lemma () : Lemma (requires True) (ensures (tee_078_invalid_root_breaks_trust_obligation () == tee_078_invalid_root_breaks_trust_obligation ())) = ()
+let tee_078_invalid_root_breaks_trust (p_tc: _) : Lemma (requires (p_tc.f_tc_root_key_valid == false) (ensures (trust_chain_complete p_tc == false))) = admit ()
 
 (* TEE_079_invalid_tcb_breaks_platform_trust (matches Coq: Theorem TEE_079_invalid_tcb_breaks_platform_trust) *)
-let tee_079_invalid_tcb_breaks_platform_trust_obligation () : Tot bool = (0 = 0)
-let tee_079_invalid_tcb_breaks_platform_trust_lemma () : Lemma (requires True) (ensures (tee_079_invalid_tcb_breaks_platform_trust_obligation () == tee_079_invalid_tcb_breaks_platform_trust_obligation ())) = ()
+let tee_079_invalid_tcb_breaks_platform_trust (p_pi: _) (p_tc: _) : Lemma (requires (p_pi.f_pi_tcb_info_valid == false) (ensures (platform_trusted p_pi p_tc == false))) = admit ()
 
 (* TEE_080_incomplete_chain_breaks_platform_trust (matches Coq: Theorem TEE_080_incomplete_chain_breaks_platform_trust) *)
-let tee_080_incomplete_chain_breaks_platform_trust_obligation () : Tot bool = (0 = 0)
-let tee_080_incomplete_chain_breaks_platform_trust_lemma () : Lemma (requires True) (ensures (tee_080_incomplete_chain_breaks_platform_trust_obligation () == tee_080_incomplete_chain_breaks_platform_trust_obligation ())) = ()
+let tee_080_incomplete_chain_breaks_platform_trust (p_pi: _) (p_tc: _) : Lemma (requires (trust_chain_complete p_tc == false) (ensures (platform_trusted p_pi p_tc == false))) = admit ()
 
 (* TEE_081_full_attestation_implies_all_properties (matches Coq: Theorem TEE_081_full_attestation_implies_all_properties) *)
-let tee_081_full_attestation_implies_all_properties_obligation () : Tot bool = (0 = 0)
-let tee_081_full_attestation_implies_all_properties_lemma () : Lemma (requires True) (ensures (tee_081_full_attestation_implies_all_properties_obligation () == tee_081_full_attestation_implies_all_properties_obligation ())) = ()
+let tee_081_full_attestation_implies_all_properties (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (p_q.f_aq_signature_valid == true /\ quote_measurement_valid p_q p_ctx == true /\ quote_signer_valid p_q p_ctx == true /\ quote_svn_valid p_q p_ctx == true /\ quote_nonce_valid p_q p_ctx == true /\ quote_fresh p_q p_ctx == true))) = admit ()
 
 (* TEE_082_secure_tee_implies_all_enclave_properties (matches Coq: Theorem TEE_082_secure_tee_implies_all_enclave_properties) *)
-let tee_082_secure_tee_implies_all_enclave_properties_obligation () : Tot bool = (0 = 0)
-let tee_082_secure_tee_implies_all_enclave_properties_lemma () : Lemma (requires True) (ensures (tee_082_secure_tee_implies_all_enclave_properties_obligation () == tee_082_secure_tee_implies_all_enclave_properties_obligation ())) = ()
+let tee_082_secure_tee_implies_all_enclave_properties (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures ((p_t.f_tee_enclave).f_enc_memory_encrypted == true /\ (p_t.f_tee_enclave).f_enc_code_integrity == true /\ (p_t.f_tee_enclave).f_enc_data_sealing == true /\ (p_t.f_tee_enclave).f_enc_isolated_execution == true))) = admit ()
 
 (* TEE_083_secure_tee_implies_all_attestation_properties (matches Coq: Theorem TEE_083_secure_tee_implies_all_attestation_properties) *)
-let tee_083_secure_tee_implies_all_attestation_properties_obligation () : Tot bool = (0 = 0)
-let tee_083_secure_tee_implies_all_attestation_properties_lemma () : Lemma (requires True) (ensures (tee_083_secure_tee_implies_all_attestation_properties_obligation () == tee_083_secure_tee_implies_all_attestation_properties_obligation ())) = ()
+let tee_083_secure_tee_implies_all_attestation_properties (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures ((p_t.f_tee_attestation).f_att_measurement == true /\ (p_t.f_tee_attestation).f_att_signature == true /\ (p_t.f_tee_attestation).f_att_freshness == true /\ (p_t.f_tee_attestation).f_att_binding == true))) = admit ()
 
 (* TEE_084_secure_tee_implies_key_derivation (matches Coq: Theorem TEE_084_secure_tee_implies_key_derivation) *)
-let tee_084_secure_tee_implies_key_derivation_obligation () : Tot bool = (0 = 0)
-let tee_084_secure_tee_implies_key_derivation_lemma () : Lemma (requires True) (ensures (tee_084_secure_tee_implies_key_derivation_obligation () == tee_084_secure_tee_implies_key_derivation_obligation ())) = ()
+let tee_084_secure_tee_implies_key_derivation (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures (p_t.f_tee_key_derivation == true))) = admit ()
 
 (* TEE_085_secure_tee_implies_local_attestation (matches Coq: Theorem TEE_085_secure_tee_implies_local_attestation) *)
-let tee_085_secure_tee_implies_local_attestation_obligation () : Tot bool = (0 = 0)
-let tee_085_secure_tee_implies_local_attestation_lemma () : Lemma (requires True) (ensures (tee_085_secure_tee_implies_local_attestation_obligation () == tee_085_secure_tee_implies_local_attestation_obligation ())) = ()
+let tee_085_secure_tee_implies_local_attestation (p_t: _) : Lemma (requires (tee_secure p_t == true) (ensures (p_t.f_tee_local_attestation == true))) = admit ()
 
 (* TEE_086_enclave_security_composition (matches Coq: Theorem TEE_086_enclave_security_composition) *)
-let tee_086_enclave_security_composition_obligation () : Tot bool = (0 = 0)
-let tee_086_enclave_security_composition_lemma () : Lemma (requires True) (ensures (tee_086_enclave_security_composition_obligation () == tee_086_enclave_security_composition_obligation ())) = ()
+let tee_086_enclave_security_composition (p_e: _) : Lemma (requires (p_e.f_enc_memory_encrypted == true /\ p_e.f_enc_code_integrity == true /\ p_e.f_enc_data_sealing == true /\ p_e.f_enc_isolated_execution == true) (ensures (enclave_secure p_e == true))) = admit ()
 
 (* TEE_087_attestation_security_composition (matches Coq: Theorem TEE_087_attestation_security_composition) *)
-let tee_087_attestation_security_composition_obligation () : Tot bool = (0 = 0)
-let tee_087_attestation_security_composition_lemma () : Lemma (requires True) (ensures (tee_087_attestation_security_composition_obligation () == tee_087_attestation_security_composition_obligation ())) = ()
+let tee_087_attestation_security_composition (p_a: _) : Lemma (requires (p_a.f_att_measurement == true /\ p_a.f_att_signature == true /\ p_a.f_att_freshness == true /\ p_a.f_att_binding == true) (ensures (attestation_secure p_a == true))) = admit ()
 
 (* TEE_088_tee_security_composition (matches Coq: Theorem TEE_088_tee_security_composition) *)
-let tee_088_tee_security_composition_obligation () : Tot bool = (0 = 0)
-let tee_088_tee_security_composition_lemma () : Lemma (requires True) (ensures (tee_088_tee_security_composition_obligation () == tee_088_tee_security_composition_obligation ())) = ()
+let tee_088_tee_security_composition (p_t: _) : Lemma (requires (enclave_secure (p_t.f_tee_enclave) == true /\ attestation_secure (p_t.f_tee_attestation) == true /\ p_t.f_tee_remote_attestation == true /\ p_t.f_tee_local_attestation == true /\ p_t.f_tee_key_derivation == true) (ensures (tee_secure p_t == true))) = admit ()
 
 (* TEE_089_verified_quote_measurement_matches_context (matches Coq: Theorem TEE_089_verified_quote_measurement_matches_context) *)
-let tee_089_verified_quote_measurement_matches_context_obligation () : Tot bool = (0 = 0)
-let tee_089_verified_quote_measurement_matches_context_lemma () : Lemma (requires True) (ensures (tee_089_verified_quote_measurement_matches_context_obligation () == tee_089_verified_quote_measurement_matches_context_obligation ())) = ()
+let tee_089_verified_quote_measurement_matches_context (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures ((p_q.f_aq_enclave_identity).f_ei_measurement == p_ctx.f_vc_expected_measurement))) = admit ()
 
 (* TEE_090_verified_quote_signer_matches_context (matches Coq: Theorem TEE_090_verified_quote_signer_matches_context) *)
-let tee_090_verified_quote_signer_matches_context_obligation () : Tot bool = (0 = 0)
-let tee_090_verified_quote_signer_matches_context_lemma () : Lemma (requires True) (ensures (tee_090_verified_quote_signer_matches_context_obligation () == tee_090_verified_quote_signer_matches_context_obligation ())) = ()
+let tee_090_verified_quote_signer_matches_context (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures ((p_q.f_aq_enclave_identity).f_ei_signer == p_ctx.f_vc_expected_signer))) = admit ()
 
 (* TEE_091_verified_quote_svn_sufficient (matches Coq: Theorem TEE_091_verified_quote_svn_sufficient) *)
-let tee_091_verified_quote_svn_sufficient_obligation () : Tot bool = (0 = 0)
-let tee_091_verified_quote_svn_sufficient_lemma () : Lemma (requires True) (ensures (tee_091_verified_quote_svn_sufficient_obligation () == tee_091_verified_quote_svn_sufficient_obligation ())) = ()
+let tee_091_verified_quote_svn_sufficient (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (p_ctx.f_vc_min_security_version <= (p_q.f_aq_enclave_identity).f_ei_security_version))) = admit ()
 
 (* TEE_092_verified_quote_nonce_matches (matches Coq: Theorem TEE_092_verified_quote_nonce_matches) *)
-let tee_092_verified_quote_nonce_matches_obligation () : Tot bool = (0 = 0)
-let tee_092_verified_quote_nonce_matches_lemma () : Lemma (requires True) (ensures (tee_092_verified_quote_nonce_matches_obligation () == tee_092_verified_quote_nonce_matches_obligation ())) = ()
+let tee_092_verified_quote_nonce_matches (p_q: _) (p_ctx: _) : Lemma (requires (verify_quote p_q p_ctx == true) (ensures (p_q.f_aq_nonce == p_ctx.f_vc_expected_nonce))) = admit ()
 
 (* TEE_093_platform_trust_composition (matches Coq: Theorem TEE_093_platform_trust_composition) *)
-let tee_093_platform_trust_composition_obligation () : Tot bool = (0 = 0)
-let tee_093_platform_trust_composition_lemma () : Lemma (requires True) (ensures (tee_093_platform_trust_composition_obligation () == tee_093_platform_trust_composition_obligation ())) = ()
+let tee_093_platform_trust_composition (p_pi: _) (p_tc: _) : Lemma (requires (p_pi.f_pi_tcb_info_valid == true /\ p_tc.f_tc_root_key_valid == true /\ p_tc.f_tc_pck_cert_valid == true /\ p_tc.f_tc_tcb_signing_valid == true /\ p_tc.f_tc_qe_report_valid == true) (ensures (platform_trusted p_pi p_tc == true))) = admit ()
 
 (* TEE_094_riina_complete_security (matches Coq: Theorem TEE_094_riina_complete_security) *)
-let tee_094_riina_complete_security_obligation () : Tot bool = (0 = 0)
-let tee_094_riina_complete_security_lemma () : Lemma (requires True) (ensures (tee_094_riina_complete_security_obligation () == tee_094_riina_complete_security_obligation ())) = ()
+let tee_094_riina_complete_security () : Lemma (tee_secure riina_tee == true /\ verify_quote riina_quote riina_verification_context == true /\ platform_trusted riina_platform riina_trust_chain == true /\ enclave_memory_protected riina_secure_memory == true) = admit ()
 
 (* TEE_095_full_tee_security_decomposition (matches Coq: Theorem TEE_095_full_tee_security_decomposition) *)
-let tee_095_full_tee_security_decomposition_obligation () : Tot bool = (0 = 0)
-let tee_095_full_tee_security_decomposition_lemma () : Lemma (requires True) (ensures (tee_095_full_tee_security_decomposition_obligation () == tee_095_full_tee_security_decomposition_obligation ())) = ()
+let tee_095_full_tee_security_decomposition (p_t: _) (p_q: _) (p_ctx: _) (p_pi: _) (p_tc: _) (p_mem: _) : Lemma (requires (tee_secure p_t == true /\ verify_quote p_q p_ctx == true /\ platform_trusted p_pi p_tc == true /\ p_mem.f_mr_type == MRT_Enclave /\ p_mem.f_mr_encrypted == true) (ensures ((p_t.f_tee_enclave).f_enc_memory_encrypted == true /\ (p_t.f_tee_attestation).f_att_measurement == true /\ p_q.f_aq_signature_valid == true /\ p_pi.f_pi_tcb_info_valid == true /\ enclave_memory_protected p_mem == true))) = admit ()

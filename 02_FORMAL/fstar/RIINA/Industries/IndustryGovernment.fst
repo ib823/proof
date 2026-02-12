@@ -153,73 +153,56 @@ let fips_140_3_compliance_obligation () : Tot bool = (0 = 0)
 let fips_140_3_compliance_lemma () : Lemma (requires True) (ensures (fips_140_3_compliance_obligation () == fips_140_3_compliance_obligation ())) = ()
 
 (* high_impact_all_families (matches Coq: Theorem high_impact_all_families) *)
-let high_impact_all_families_obligation () : Tot bool = (0 = 0)
-let high_impact_all_families_lemma () : Lemma (requires True) (ensures (high_impact_all_families_obligation () == high_impact_all_families_obligation ())) = ()
+let high_impact_all_families (p_controls: nist_800_53__controls) (p_impact: fisma__impact) : Lemma (p_impact == FISMA_High) = admit ()
 
 (* fips_crypto_required (matches Coq: Theorem fips_crypto_required) *)
 let fips_crypto_required_obligation () : Tot bool = (0 = 0)
 let fips_crypto_required_lemma () : Lemma (requires True) (ensures (fips_crypto_required_obligation () == fips_crypto_required_obligation ())) = ()
 
 (* fisma_le_refl (matches Coq: Lemma fisma_le_refl) *)
-let fisma_le_refl_obligation () : Tot bool = (0 = 0)
-let fisma_le_refl_lemma () : Lemma (requires True) (ensures (fisma_le_refl_obligation () == fisma_le_refl_obligation ())) = ()
+let fisma_le_refl (p_f: _) : Lemma (fisma_le p_f p_f == true) = admit ()
 
 (* fisma_le_trans (matches Coq: Lemma fisma_le_trans) *)
-let fisma_le_trans_obligation () : Tot bool = (0 = 0)
-let fisma_le_trans_lemma () : Lemma (requires True) (ensures (fisma_le_trans_obligation () == fisma_le_trans_obligation ())) = ()
+let fisma_le_trans (p_f1: _) (p_f2: _) (p_f3: _) : Lemma (requires (fisma_le p_f1 p_f2 == true /\ fisma_le p_f2 p_f3 == true) (ensures (fisma_le p_f1 p_f3 == true))) = admit ()
 
 (* high_most_controls (matches Coq: Theorem high_most_controls) *)
-let high_most_controls_obligation () : Tot bool = (0 = 0)
-let high_most_controls_lemma () : Lemma (requires True) (ensures (high_most_controls_obligation () == high_most_controls_obligation ())) = ()
+let high_most_controls (p_f: _) : Lemma (controls_for_baseline p_f <= controls_for_baseline FISMA_High) = admit ()
 
 (* controls_monotone (matches Coq: Theorem controls_monotone) *)
-let controls_monotone_obligation () : Tot bool = (0 = 0)
-let controls_monotone_lemma () : Lemma (requires True) (ensures (controls_monotone_obligation () == controls_monotone_obligation ())) = ()
+let controls_monotone (p_f1: _) (p_f2: _) : Lemma (requires (fisma_le p_f1 p_f2 == true) (ensures (controls_for_baseline p_f1 <= controls_for_baseline p_f2))) = admit ()
 
 (* minimum_requires_access_control (matches Coq: Theorem minimum_requires_access_control) *)
-let minimum_requires_access_control_obligation () : Tot bool = (0 = 0)
-let minimum_requires_access_control_lemma () : Lemma (requires True) (ensures (minimum_requires_access_control_obligation () == minimum_requires_access_control_obligation ())) = ()
+let minimum_requires_access_control (p_c: _) : Lemma (requires (nist_minimum_controls p_c == true) (ensures (p_c.f_ac_access_control == true))) = admit ()
 
 (* minimum_requires_audit (matches Coq: Theorem minimum_requires_audit) *)
-let minimum_requires_audit_obligation () : Tot bool = (0 = 0)
-let minimum_requires_audit_lemma () : Lemma (requires True) (ensures (minimum_requires_audit_obligation () == minimum_requires_audit_obligation ())) = ()
+let minimum_requires_audit (p_c: _) : Lemma (requires (nist_minimum_controls p_c == true) (ensures (p_c.f_au_audit == true))) = admit ()
 
 (* minimum_requires_integrity (matches Coq: Theorem minimum_requires_integrity) *)
-let minimum_requires_integrity_obligation () : Tot bool = (0 = 0)
-let minimum_requires_integrity_lemma () : Lemma (requires True) (ensures (minimum_requires_integrity_obligation () == minimum_requires_integrity_obligation ())) = ()
+let minimum_requires_integrity (p_c: _) : Lemma (requires (nist_minimum_controls p_c == true) (ensures (p_c.f_si_system_integrity == true))) = admit ()
 
 (* alignment_low (matches Coq: Theorem alignment_low) *)
-let alignment_low_obligation () : Tot bool = (0 = 0)
-let alignment_low_lemma () : Lemma (requires True) (ensures (alignment_low_obligation () == alignment_low_obligation ())) = ()
+let alignment_low () : Lemma (fedramp_matches_fisma FedRAMP_Low FISMA_Low == true) = admit ()
 
 (* alignment_moderate (matches Coq: Theorem alignment_moderate) *)
-let alignment_moderate_obligation () : Tot bool = (0 = 0)
-let alignment_moderate_lemma () : Lemma (requires True) (ensures (alignment_moderate_obligation () == alignment_moderate_obligation ())) = ()
+let alignment_moderate () : Lemma (fedramp_matches_fisma FedRAMP_Moderate FISMA_Moderate == true) = admit ()
 
 (* alignment_high (matches Coq: Theorem alignment_high) *)
-let alignment_high_obligation () : Tot bool = (0 = 0)
-let alignment_high_lemma () : Lemma (requires True) (ensures (alignment_high_obligation () == alignment_high_obligation ())) = ()
+let alignment_high () : Lemma (fedramp_matches_fisma FedRAMP_High FISMA_High == true) = admit ()
 
 (* cjis_key_sufficient (matches Coq: Theorem cjis_key_sufficient) *)
-let cjis_key_sufficient_obligation () : Tot bool = (0 = 0)
-let cjis_key_sufficient_lemma () : Lemma (requires True) (ensures (cjis_key_sufficient_obligation () == cjis_key_sufficient_obligation ())) = ()
+let cjis_key_sufficient (p_bits: _) : Lemma (requires (cjis_min_key_bits p_bits == true) (ensures (p_bits >= 128))) = admit ()
 
 (* fips_le_refl (matches Coq: Lemma fips_le_refl) *)
-let fips_le_refl_obligation () : Tot bool = (0 = 0)
-let fips_le_refl_lemma () : Lemma (requires True) (ensures (fips_le_refl_obligation () == fips_le_refl_obligation ())) = ()
+let fips_le_refl (p_f: _) : Lemma (fips_le p_f p_f == true) = admit ()
 
 (* high_requires_fips3 (matches Coq: Theorem high_requires_fips3) *)
-let high_requires_fips3_obligation () : Tot bool = (0 = 0)
-let high_requires_fips3_lemma () : Lemma (requires True) (ensures (high_requires_fips3_obligation () == high_requires_fips3_obligation ())) = ()
+let high_requires_fips3 () : Lemma (required_fips_level FISMA_High == FIPS_Level_3) = admit ()
 
 (* fips_requirement_monotone (matches Coq: Theorem fips_requirement_monotone) *)
-let fips_requirement_monotone_obligation () : Tot bool = (0 = 0)
-let fips_requirement_monotone_lemma () : Lemma (requires True) (ensures (fips_requirement_monotone_obligation () == fips_requirement_monotone_obligation ())) = ()
+let fips_requirement_monotone (p_f1: _) (p_f2: _) : Lemma (requires (fisma_le p_f1 p_f2 == true) (ensures (fips_to_nat (required_fips_level p_f1) <= fips_to_nat (required_fips_level p_f2)))) = admit ()
 
 (* scan_frequency_decreasing (matches Coq: Theorem scan_frequency_decreasing) *)
-let scan_frequency_decreasing_obligation () : Tot bool = (0 = 0)
-let scan_frequency_decreasing_lemma () : Lemma (requires True) (ensures (scan_frequency_decreasing_obligation () == scan_frequency_decreasing_obligation ())) = ()
+let scan_frequency_decreasing (p_f1: _) (p_f2: _) : Lemma (requires (fisma_le p_f1 p_f2 == true) (ensures (scan_frequency_days p_f2 <= scan_frequency_days p_f1))) = admit ()
 
 (* poam_bounded (matches Coq: Theorem poam_bounded) *)
-let poam_bounded_obligation () : Tot bool = (0 = 0)
-let poam_bounded_lemma () : Lemma (requires True) (ensures (poam_bounded_obligation () == poam_bounded_obligation ())) = ()
+let poam_bounded (p_f: _) : Lemma (poam_deadline_days p_f <= 180) = admit ()

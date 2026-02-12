@@ -53,93 +53,70 @@ let bursa_fully_compliant_v2 (p_p: nat) : Tot bool =
   (0 = 0)
 
 (* bursa_governance (matches Coq: Theorem bursa_governance) *)
-let bursa_governance_obligation () : Tot bool = (0 = 0)
-let bursa_governance_lemma () : Lemma (requires True) (ensures (bursa_governance_obligation () == bursa_governance_obligation ())) = ()
+let bursa_governance (p_p: nat) : Lemma (requires (mp_it_governance p_p == true) (ensures (it_governance_established p_p == true))) = admit ()
 
 (* bursa_integrity (matches Coq: Theorem bursa_integrity) *)
-let bursa_integrity_obligation () : Tot bool = (0 = 0)
-let bursa_integrity_lemma () : Lemma (requires True) (ensures (bursa_integrity_obligation () == bursa_integrity_obligation ())) = ()
+let bursa_integrity (p_p: nat) : Lemma (requires (mp_system_integrity p_p == true) (ensures (system_integrity p_p == true))) = admit ()
 
 (* bursa_data_protection (matches Coq: Theorem bursa_data_protection) *)
-let bursa_data_protection_obligation () : Tot bool = (0 = 0)
-let bursa_data_protection_lemma () : Lemma (requires True) (ensures (bursa_data_protection_obligation () == bursa_data_protection_obligation ())) = ()
+let bursa_data_protection (p_p: nat) : Lemma (requires (mp_data_protected p_p == true) (ensures (data_protected p_p == true))) = admit ()
 
 (* bursa_connectivity (matches Coq: Theorem bursa_connectivity) *)
-let bursa_connectivity_obligation () : Tot bool = (0 = 0)
-let bursa_connectivity_lemma () : Lemma (requires True) (ensures (bursa_connectivity_obligation () == bursa_connectivity_obligation ())) = ()
+let bursa_connectivity (p_p: nat) : Lemma (requires (mp_connectivity_secured p_p == true) (ensures (connectivity_secured p_p == true))) = admit ()
 
 (* bursa_bcp (matches Coq: Theorem bursa_bcp) *)
-let bursa_bcp_obligation () : Tot bool = (0 = 0)
-let bursa_bcp_lemma () : Lemma (requires True) (ensures (bursa_bcp_obligation () == bursa_bcp_obligation ())) = ()
+let bursa_bcp (p_p: nat) : Lemma (requires (mp_bcp_tested p_p == true) (ensures (bcp_ready p_p == true))) = admit ()
 
 (* bursa_composition (matches Coq: Theorem bursa_composition) *)
-let bursa_composition_obligation () : Tot bool = (0 = 0)
-let bursa_composition_lemma () : Lemma (requires True) (ensures (bursa_composition_obligation () == bursa_composition_obligation ())) = ()
+let bursa_composition (p_p: nat) : Lemma (requires (it_governance_established p_p == true /\ system_integrity p_p == true /\ data_protected p_p == true /\ connectivity_secured p_p == true /\ bcp_ready p_p == true) (ensures (bursa_fully_compliant p_p == true))) = admit ()
 
 (* participant_coverage (matches Coq: Theorem participant_coverage) *)
-let participant_coverage_obligation () : Tot bool = (0 = 0)
-let participant_coverage_lemma () : Lemma (requires True) (ensures (participant_coverage_obligation () == participant_coverage_obligation ())) = ()
+let participant_coverage (p_t: participant_type) : Lemma (In p_t all_participant_types == true) = admit ()
 
 (* bursa_risk (matches Coq: Theorem bursa_risk) *)
-let bursa_risk_obligation () : Tot bool = (0 = 0)
-let bursa_risk_lemma () : Lemma (requires True) (ensures (bursa_risk_obligation () == bursa_risk_obligation ())) = ()
+let bursa_risk (p_p: nat) : Lemma (requires (mp_risk_managed p_p == true) (ensures (risk_managed p_p == true))) = admit ()
 
 (* bursa_compliant_implies_governance (matches Coq: Theorem bursa_compliant_implies_governance) *)
-let bursa_compliant_implies_governance_obligation () : Tot bool = (0 = 0)
-let bursa_compliant_implies_governance_lemma () : Lemma (requires True) (ensures (bursa_compliant_implies_governance_obligation () == bursa_compliant_implies_governance_obligation ())) = ()
+let bursa_compliant_implies_governance (p_p: nat) : Lemma (requires (bursa_fully_compliant p_p == true) (ensures (it_governance_established p_p == true))) = admit ()
 
 (* bursa_compliant_implies_integrity (matches Coq: Theorem bursa_compliant_implies_integrity) *)
-let bursa_compliant_implies_integrity_obligation () : Tot bool = (0 = 0)
-let bursa_compliant_implies_integrity_lemma () : Lemma (requires True) (ensures (bursa_compliant_implies_integrity_obligation () == bursa_compliant_implies_integrity_obligation ())) = ()
+let bursa_compliant_implies_integrity (p_p: nat) : Lemma (requires (bursa_fully_compliant p_p == true) (ensures (system_integrity p_p == true))) = admit ()
 
 (* bursa_compliant_implies_data_protection (matches Coq: Theorem bursa_compliant_implies_data_protection) *)
-let bursa_compliant_implies_data_protection_obligation () : Tot bool = (0 = 0)
-let bursa_compliant_implies_data_protection_lemma () : Lemma (requires True) (ensures (bursa_compliant_implies_data_protection_obligation () == bursa_compliant_implies_data_protection_obligation ())) = ()
+let bursa_compliant_implies_data_protection (p_p: nat) : Lemma (requires (bursa_fully_compliant p_p == true) (ensures (data_protected p_p == true))) = admit ()
 
 (* bursa_compliant_implies_connectivity (matches Coq: Theorem bursa_compliant_implies_connectivity) *)
-let bursa_compliant_implies_connectivity_obligation () : Tot bool = (0 = 0)
-let bursa_compliant_implies_connectivity_lemma () : Lemma (requires True) (ensures (bursa_compliant_implies_connectivity_obligation () == bursa_compliant_implies_connectivity_obligation ())) = ()
+let bursa_compliant_implies_connectivity (p_p: nat) : Lemma (requires (bursa_fully_compliant p_p == true) (ensures (connectivity_secured p_p == true))) = admit ()
 
 (* bursa_compliant_implies_bcp (matches Coq: Theorem bursa_compliant_implies_bcp) *)
-let bursa_compliant_implies_bcp_obligation () : Tot bool = (0 = 0)
-let bursa_compliant_implies_bcp_lemma () : Lemma (requires True) (ensures (bursa_compliant_implies_bcp_obligation () == bursa_compliant_implies_bcp_obligation ())) = ()
+let bursa_compliant_implies_bcp (p_p: nat) : Lemma (requires (bursa_fully_compliant p_p == true) (ensures (bcp_ready p_p == true))) = admit ()
 
 (* governance_violation_blocks_compliance (matches Coq: Theorem governance_violation_blocks_compliance) *)
-let governance_violation_blocks_compliance_obligation () : Tot bool = (0 = 0)
-let governance_violation_blocks_compliance_lemma () : Lemma (requires True) (ensures (governance_violation_blocks_compliance_obligation () == governance_violation_blocks_compliance_obligation ())) = ()
+let governance_violation_blocks_compliance (p_p: nat) : Lemma (requires (mp_it_governance p_p == false) (ensures (~(it_governance_established p_p == true)))) = admit ()
 
 (* integrity_violation_blocks_compliance (matches Coq: Theorem integrity_violation_blocks_compliance) *)
-let integrity_violation_blocks_compliance_obligation () : Tot bool = (0 = 0)
-let integrity_violation_blocks_compliance_lemma () : Lemma (requires True) (ensures (integrity_violation_blocks_compliance_obligation () == integrity_violation_blocks_compliance_obligation ())) = ()
+let integrity_violation_blocks_compliance (p_p: nat) : Lemma (requires (mp_system_integrity p_p == false) (ensures (~(system_integrity p_p == true)))) = admit ()
 
 (* data_violation_blocks_compliance (matches Coq: Theorem data_violation_blocks_compliance) *)
-let data_violation_blocks_compliance_obligation () : Tot bool = (0 = 0)
-let data_violation_blocks_compliance_lemma () : Lemma (requires True) (ensures (data_violation_blocks_compliance_obligation () == data_violation_blocks_compliance_obligation ())) = ()
+let data_violation_blocks_compliance (p_p: nat) : Lemma (requires (mp_data_protected p_p == false) (ensures (~(data_protected p_p == true)))) = admit ()
 
 (* connectivity_violation_blocks_compliance (matches Coq: Theorem connectivity_violation_blocks_compliance) *)
-let connectivity_violation_blocks_compliance_obligation () : Tot bool = (0 = 0)
-let connectivity_violation_blocks_compliance_lemma () : Lemma (requires True) (ensures (connectivity_violation_blocks_compliance_obligation () == connectivity_violation_blocks_compliance_obligation ())) = ()
+let connectivity_violation_blocks_compliance (p_p: nat) : Lemma (requires (mp_connectivity_secured p_p == false) (ensures (~(connectivity_secured p_p == true)))) = admit ()
 
 (* bcp_violation_blocks_compliance (matches Coq: Theorem bcp_violation_blocks_compliance) *)
-let bcp_violation_blocks_compliance_obligation () : Tot bool = (0 = 0)
-let bcp_violation_blocks_compliance_lemma () : Lemma (requires True) (ensures (bcp_violation_blocks_compliance_obligation () == bcp_violation_blocks_compliance_obligation ())) = ()
+let bcp_violation_blocks_compliance (p_p: nat) : Lemma (requires (mp_bcp_tested p_p == false) (ensures (~(bcp_ready p_p == true)))) = admit ()
 
 (* trading_system_availability (matches Coq: Theorem trading_system_availability) *)
-let trading_system_availability_obligation () : Tot bool = (0 = 0)
-let trading_system_availability_lemma () : Lemma (requires True) (ensures (trading_system_availability_obligation () == trading_system_availability_obligation ())) = ()
+let trading_system_availability (p_ts: nat) : Lemma (requires (ts_min_uptime p_ts <= ts_uptime_pct p_ts) (ensures (ts_availability_adequate p_ts == true))) = admit ()
 
 (* trading_system_resilience (matches Coq: Theorem trading_system_resilience) *)
-let trading_system_resilience_obligation () : Tot bool = (0 = 0)
-let trading_system_resilience_lemma () : Lemma (requires True) (ensures (trading_system_resilience_obligation () == trading_system_resilience_obligation ())) = ()
+let trading_system_resilience (p_ts: nat) : Lemma (requires (ts_redundant p_ts == true /\ ts_failover_tested p_ts == true) (ensures (ts_resilient p_ts == true))) = admit ()
 
 (* insufficient_uptime (matches Coq: Theorem insufficient_uptime) *)
-let insufficient_uptime_obligation () : Tot bool = (0 = 0)
-let insufficient_uptime_lemma () : Lemma (requires True) (ensures (insufficient_uptime_obligation () == insufficient_uptime_obligation ())) = ()
+let insufficient_uptime (p_ts: nat) : Lemma (requires (ts_uptime_pct p_ts < ts_min_uptime p_ts) (ensures (~(ts_availability_adequate p_ts == true)))) = admit ()
 
 (* bursa_composition_v2 (matches Coq: Theorem bursa_composition_v2) *)
-let bursa_composition_v2_obligation () : Tot bool = (0 = 0)
-let bursa_composition_v2_lemma () : Lemma (requires True) (ensures (bursa_composition_v2_obligation () == bursa_composition_v2_obligation ())) = ()
+let bursa_composition_v2 (p_p: nat) : Lemma (requires (bursa_fully_compliant p_p == true /\ risk_managed p_p == true) (ensures (bursa_fully_compliant_v2 p_p == true))) = admit ()
 
 (* bursa_v2_implies_v1 (matches Coq: Theorem bursa_v2_implies_v1) *)
-let bursa_v2_implies_v1_obligation () : Tot bool = (0 = 0)
-let bursa_v2_implies_v1_lemma () : Lemma (requires True) (ensures (bursa_v2_implies_v1_obligation () == bursa_v2_implies_v1_obligation ())) = ()
+let bursa_v2_implies_v1 (p_p: nat) : Lemma (requires (bursa_fully_compliant_v2 p_p == true) (ensures (bursa_fully_compliant p_p == true))) = admit ()

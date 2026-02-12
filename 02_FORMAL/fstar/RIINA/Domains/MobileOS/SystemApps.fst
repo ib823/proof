@@ -162,97 +162,73 @@ let uninstall_is_complete (p_lc: app_lifecycle) : Tot bool =
   (0 = 0)
 
 (* system_apps_verified_correct (matches Coq: Theorem system_apps_verified_correct) *)
-let system_apps_verified_correct_obligation () : Tot bool = (0 = 0)
-let system_apps_verified_correct_lemma () : Lemma (requires True) (ensures (system_apps_verified_correct_obligation () == system_apps_verified_correct_obligation ())) = ()
+let system_apps_verified_correct (p_app: system_app) : Lemma (requires (wellformed_system_app p_app == true) (ensures (system_app_correct p_app == true))) = admit ()
 
 (* system_app_data_encrypted (matches Coq: Theorem system_app_data_encrypted) *)
-let system_app_data_encrypted_obligation () : Tot bool = (0 = 0)
-let system_app_data_encrypted_lemma () : Lemma (requires True) (ensures (system_app_data_encrypted_obligation () == system_app_data_encrypted_obligation ())) = ()
+let system_app_data_encrypted (p_app: system_app) : Lemma (requires (wellformed_system_app p_app == true) (ensures (p_app.f_data_encrypted == true))) = admit ()
 
 (* state_transition_valid (matches Coq: Theorem state_transition_valid) *)
-let state_transition_valid_obligation () : Tot bool = (0 = 0)
-let state_transition_valid_lemma () : Lemma (requires True) (ensures (state_transition_valid_obligation () == state_transition_valid_obligation ())) = ()
+let state_transition_valid (p_trans: state_transition) : Lemma (requires (valid_transition p_trans == true) (ensures ((p_trans.f_to_state).f_state_valid == true))) = admit ()
 
 (* sync_preserves_data (matches Coq: Theorem sync_preserves_data) *)
-let sync_preserves_data_obligation () : Tot bool = (0 = 0)
-let sync_preserves_data_lemma () : Lemma (requires True) (ensures (sync_preserves_data_obligation () == sync_preserves_data_obligation ())) = ()
+let sync_preserves_data (p_sync: sync_operation) : Lemma (requires (sync_lossless p_sync == true /\ p_sync.f_sync_successful == true) (ensures ((p_sync.f_merged_state).f_state_valid == true))) = admit ()
 
 (* system_apps_sandboxed (matches Coq: Theorem system_apps_sandboxed) *)
-let system_apps_sandboxed_obligation () : Tot bool = (0 = 0)
-let system_apps_sandboxed_lemma () : Lemma (requires True) (ensures (system_apps_sandboxed_obligation () == system_apps_sandboxed_obligation ())) = ()
+let system_apps_sandboxed (p_app: system_app) : Lemma (requires (system_app_correct p_app == true) (ensures (p_app.f_has_sandbox == true))) = admit ()
 
 (* minimal_permissions_enforced (matches Coq: Theorem minimal_permissions_enforced) *)
-let minimal_permissions_enforced_obligation () : Tot bool = (0 = 0)
-let minimal_permissions_enforced_lemma () : Lemma (requires True) (ensures (minimal_permissions_enforced_obligation () == minimal_permissions_enforced_obligation ())) = ()
+let minimal_permissions_enforced (p_app: system_app) : Lemma (requires (system_app_correct p_app == true) (ensures (p_app.f_permissions_minimal == true))) = admit ()
 
 (* system_app_response_correct (matches Coq: Theorem system_app_response_correct) *)
-let system_app_response_correct_obligation () : Tot bool = (0 = 0)
-let system_app_response_correct_lemma () : Lemma (requires True) (ensures (system_app_response_correct_obligation () == system_app_response_correct_obligation ())) = ()
+let system_app_response_correct (p_resp: app_response) : Lemma (requires (app_responds_correctly p_resp == true) (ensures (p_resp.f_response_correct == true))) = admit ()
 
 (* security_apps_encrypted (matches Coq: Theorem security_apps_encrypted) *)
-let security_apps_encrypted_obligation () : Tot bool = (0 = 0)
-let security_apps_encrypted_lemma () : Lemma (requires True) (ensures (security_apps_encrypted_obligation () == security_apps_encrypted_obligation ())) = ()
+let security_apps_encrypted (p_app: system_app) : Lemma (requires (p_app.f_app_category == Security /\ wellformed_system_app p_app == true) (ensures (p_app.f_data_encrypted == true /\ p_app.f_has_sandbox == true))) = admit ()
 
 (* app_sandbox_enforced (matches Coq: Theorem app_sandbox_enforced) *)
-let app_sandbox_enforced_obligation () : Tot bool = (0 = 0)
-let app_sandbox_enforced_lemma () : Lemma (requires True) (ensures (app_sandbox_enforced_obligation () == app_sandbox_enforced_obligation ())) = ()
+let app_sandbox_enforced (p_app: system_app) (p_perm: app_permission) : Lemma (requires (app_sandbox_holds p_app p_perm == true) (ensures (p_app.f_has_sandbox == true))) = admit ()
 
 (* no_cross_app_data_access (matches Coq: Theorem no_cross_app_data_access) *)
-let no_cross_app_data_access_obligation () : Tot bool = (0 = 0)
-let no_cross_app_data_access_lemma () : Lemma (requires True) (ensures (no_cross_app_data_access_obligation () == no_cross_app_data_access_obligation ())) = ()
+let no_cross_app_data_access (p_app1: system_app) (p_app2: system_app) : Lemma (requires (no_cross_app_access p_app1 p_app2 == true /\ ~(p_app1.f_sys_app_id == p_app2.f_sys_app_id)) (ensures (p_app1.f_has_sandbox == true /\ p_app2.f_has_sandbox == true))) = admit ()
 
 (* app_permission_checked_at_runtime (matches Coq: Theorem app_permission_checked_at_runtime) *)
-let app_permission_checked_at_runtime_obligation () : Tot bool = (0 = 0)
-let app_permission_checked_at_runtime_lemma () : Lemma (requires True) (ensures (app_permission_checked_at_runtime_obligation () == app_permission_checked_at_runtime_obligation ())) = ()
+let app_permission_checked_at_runtime (p_perm: app_permission) : Lemma (requires (app_permission_runtime_check p_perm == true) (ensures (p_perm.f_perm_granted_explicitly == true))) = admit ()
 
 (* background_app_limited (matches Coq: Theorem background_app_limited) *)
-let background_app_limited_obligation () : Tot bool = (0 = 0)
-let background_app_limited_lemma () : Lemma (requires True) (ensures (background_app_limited_obligation () == background_app_limited_obligation ())) = ()
+let background_app_limited (p_lc: app_lifecycle) : Lemma (requires (background_app_is_limited p_lc == true /\ p_lc.f_lc_background == true) (ensures (p_lc.f_lc_background_limited == true))) = admit ()
 
 (* foreground_app_priority (matches Coq: Theorem foreground_app_priority) *)
-let foreground_app_priority_obligation () : Tot bool = (0 = 0)
-let foreground_app_priority_lemma () : Lemma (requires True) (ensures (foreground_app_priority_obligation () == foreground_app_priority_obligation ())) = ()
+let foreground_app_priority (p_lc: app_lifecycle) : Lemma (requires (foreground_has_priority p_lc == true /\ p_lc.f_lc_foreground == true) (ensures (p_lc.f_lc_background == false))) = admit ()
 
 (* app_install_verified (matches Coq: Theorem app_install_verified) *)
-let app_install_verified_obligation () : Tot bool = (0 = 0)
-let app_install_verified_lemma () : Lemma (requires True) (ensures (app_install_verified_obligation () == app_install_verified_obligation ())) = ()
+let app_install_verified (p_lc: app_lifecycle) : Lemma (requires (install_is_verified p_lc == true /\ p_lc.f_lc_installed == true) (ensures (p_lc.f_lc_install_verified == true))) = admit ()
 
 (* app_update_atomic (matches Coq: Theorem app_update_atomic) *)
-let app_update_atomic_obligation () : Tot bool = (0 = 0)
-let app_update_atomic_lemma () : Lemma (requires True) (ensures (app_update_atomic_obligation () == app_update_atomic_obligation ())) = ()
+let app_update_atomic (p_upd: app_update) : Lemma (requires (update_is_atomic p_upd == true /\ p_upd.f_upd_applied == true) (ensures (p_upd.f_upd_signature_valid == true /\ p_upd.f_upd_new_version > p_upd.f_upd_old_version))) = admit ()
 
 (* app_uninstall_complete (matches Coq: Theorem app_uninstall_complete) *)
-let app_uninstall_complete_obligation () : Tot bool = (0 = 0)
-let app_uninstall_complete_lemma () : Lemma (requires True) (ensures (app_uninstall_complete_obligation () == app_uninstall_complete_obligation ())) = ()
+let app_uninstall_complete (p_lc: app_lifecycle) : Lemma (requires (uninstall_is_complete p_lc == true /\ p_lc.f_lc_installed == false) (ensures (p_lc.f_lc_data_on_disk == false))) = admit ()
 
 (* app_data_encrypted_at_rest (matches Coq: Theorem app_data_encrypted_at_rest) *)
-let app_data_encrypted_at_rest_obligation () : Tot bool = (0 = 0)
-let app_data_encrypted_at_rest_lemma () : Lemma (requires True) (ensures (app_data_encrypted_at_rest_obligation () == app_data_encrypted_at_rest_obligation ())) = ()
+let app_data_encrypted_at_rest (p_app: system_app) : Lemma (requires (wellformed_system_app p_app == true) (ensures (p_app.f_data_encrypted == true))) = admit ()
 
 (* app_network_permission_required (matches Coq: Theorem app_network_permission_required) *)
-let app_network_permission_required_obligation () : Tot bool = (0 = 0)
-let app_network_permission_required_lemma () : Lemma (requires True) (ensures (app_network_permission_required_obligation () == app_network_permission_required_obligation ())) = ()
+let app_network_permission_required (p_perm: app_permission) : Lemma (requires (p_perm.f_perm_network == true /\ p_perm.f_perm_granted_explicitly == true) (ensures (p_perm.f_perm_network == true /\ p_perm.f_perm_granted_explicitly == true))) = admit ()
 
 (* clipboard_access_notified (matches Coq: Theorem clipboard_access_notified) *)
-let clipboard_access_notified_obligation () : Tot bool = (0 = 0)
-let clipboard_access_notified_lemma () : Lemma (requires True) (ensures (clipboard_access_notified_obligation () == clipboard_access_notified_obligation ())) = ()
+let clipboard_access_notified (p_perm: app_permission) : Lemma (requires (p_perm.f_perm_clipboard == true /\ p_perm.f_perm_granted_explicitly == true) (ensures (p_perm.f_perm_clipboard == true))) = admit ()
 
 (* camera_access_indicator (matches Coq: Theorem camera_access_indicator) *)
-let camera_access_indicator_obligation () : Tot bool = (0 = 0)
-let camera_access_indicator_lemma () : Lemma (requires True) (ensures (camera_access_indicator_obligation () == camera_access_indicator_obligation ())) = ()
+let camera_access_indicator (p_perm: app_permission) : Lemma (requires (p_perm.f_perm_camera == true /\ app_permission_runtime_check p_perm == true) (ensures (p_perm.f_perm_camera == true /\ p_perm.f_perm_granted_explicitly == true))) = admit ()
 
 (* microphone_access_indicator (matches Coq: Theorem microphone_access_indicator) *)
-let microphone_access_indicator_obligation () : Tot bool = (0 = 0)
-let microphone_access_indicator_lemma () : Lemma (requires True) (ensures (microphone_access_indicator_obligation () == microphone_access_indicator_obligation ())) = ()
+let microphone_access_indicator (p_perm: app_permission) : Lemma (requires (p_perm.f_perm_microphone == true /\ app_permission_runtime_check p_perm == true) (ensures (p_perm.f_perm_microphone == true /\ p_perm.f_perm_granted_explicitly == true))) = admit ()
 
 (* location_access_indicator (matches Coq: Theorem location_access_indicator) *)
-let location_access_indicator_obligation () : Tot bool = (0 = 0)
-let location_access_indicator_lemma () : Lemma (requires True) (ensures (location_access_indicator_obligation () == location_access_indicator_obligation ())) = ()
+let location_access_indicator (p_perm: app_permission) : Lemma (requires (p_perm.f_perm_location == true /\ app_permission_runtime_check p_perm == true) (ensures (p_perm.f_perm_location == true /\ p_perm.f_perm_granted_explicitly == true))) = admit ()
 
 (* notification_permission_explicit (matches Coq: Theorem notification_permission_explicit) *)
-let notification_permission_explicit_obligation () : Tot bool = (0 = 0)
-let notification_permission_explicit_lemma () : Lemma (requires True) (ensures (notification_permission_explicit_obligation () == notification_permission_explicit_obligation ())) = ()
+let notification_permission_explicit (p_perm: app_permission) : Lemma (requires (p_perm.f_perm_notification == true /\ p_perm.f_perm_granted_explicitly == true) (ensures (p_perm.f_perm_notification == true /\ p_perm.f_perm_granted_explicitly == true))) = admit ()
 
 (* check_app_security_correct (matches Coq: Theorem check_app_security_correct) *)
-let check_app_security_correct_obligation () : Tot bool = (0 = 0)
-let check_app_security_correct_lemma () : Lemma (requires True) (ensures (check_app_security_correct_obligation () == check_app_security_correct_obligation ())) = ()
+let check_app_security_correct (p_app: system_app) : Lemma (requires (check_app_security p_app == true) (ensures (p_app.f_is_verified == true /\ p_app.f_has_sandbox == true /\ p_app.f_permissions_minimal == true /\ p_app.f_data_encrypted == true))) = admit ()

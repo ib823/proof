@@ -196,101 +196,76 @@ let notif_no_sensitive_data (p_n: notification) : Tot bool =
   (0 = 0)
 
 (* OS_001_01_cap_unforgeable (matches Coq: Theorem OS_001_01_cap_unforgeable) *)
-let os_001_01_cap_unforgeable_obligation () : Tot bool = (0 = 0)
-let os_001_01_cap_unforgeable_lemma () : Lemma (requires True) (ensures (os_001_01_cap_unforgeable_obligation () == os_001_01_cap_unforgeable_obligation ())) = ()
+let os_001_01_cap_unforgeable (p_s: _) (p_p: _) (p_c: _) : Lemma (requires (holds p_s p_p p_c == true) (ensures (exists slot_ cap_lookup p_s p_p slot == Some p_c))) = admit ()
 
 (* OS_001_02_cap_monotonic (matches Coq: Theorem OS_001_02_cap_monotonic) *)
-let os_001_02_cap_monotonic_obligation () : Tot bool = (0 = 0)
-let os_001_02_cap_monotonic_lemma () : Lemma (requires True) (ensures (os_001_02_cap_monotonic_obligation () == os_001_02_cap_monotonic_obligation ())) = ()
+let os_001_02_cap_monotonic (p_c1: _) (p_c2: _) : Lemma (requires (derives p_c1 p_c2 == true) (ensures (rights_subset (p_c2.f_cap_rights) (p_c1.f_cap_rights) == true))) = admit ()
 
 (* OS_001_03_cap_revocation_complete (matches Coq: Theorem OS_001_03_cap_revocation_complete) *)
-let os_001_03_cap_revocation_complete_obligation () : Tot bool = (0 = 0)
-let os_001_03_cap_revocation_complete_lemma () : Lemma (requires True) (ensures (os_001_03_cap_revocation_complete_obligation () == os_001_03_cap_revocation_complete_obligation ())) = ()
+let os_001_03_cap_revocation_complete (p_s: _) (p_c: _) : Lemma (requires (is_revoked p_s p_c == true) (ensures (~(cap_valid p_s p_c == true)))) = admit ()
 
 (* OS_001_04_cap_transfer_safe (matches Coq: Theorem OS_001_04_cap_transfer_safe) *)
-let os_001_04_cap_transfer_safe_obligation () : Tot bool = (0 = 0)
-let os_001_04_cap_transfer_safe_lemma () : Lemma (requires True) (ensures (os_001_04_cap_transfer_safe_obligation () == os_001_04_cap_transfer_safe_obligation ())) = ()
+let os_001_04_cap_transfer_safe (p_s: _) (p_s_: _) (p_p_from: _) (p_p_to: _) (p_c: _) : Lemma (requires (holds p_s p_p_from p_c == true /\ cap_valid p_s p_c == true /\ transfer_preserves_validity p_s s_ p_c == true /\ holds s_ p_p_to p_c == true) (ensures (cap_valid s_ p_c == true))) = admit ()
 
 (* OS_001_05_cap_derivation_sound (matches Coq: Theorem OS_001_05_cap_derivation_sound) *)
-let os_001_05_cap_derivation_sound_obligation () : Tot bool = (0 = 0)
-let os_001_05_cap_derivation_sound_lemma () : Lemma (requires True) (ensures (os_001_05_cap_derivation_sound_obligation () == os_001_05_cap_derivation_sound_obligation ())) = ()
+let os_001_05_cap_derivation_sound (p_parent: _) (p_child: _) : Lemma (requires (derives p_parent p_child == true) (ensures (p_child.f_cap_object == p_parent.f_cap_object /\ rights_subset (p_child.f_cap_rights) (p_parent.f_cap_rights) == true))) = admit ()
 
 (* OS_001_06_no_confused_deputy (matches Coq: Theorem OS_001_06_no_confused_deputy) *)
-let os_001_06_no_confused_deputy_obligation () : Tot bool = (0 = 0)
-let os_001_06_no_confused_deputy_lemma () : Lemma (requires True) (ensures (os_001_06_no_confused_deputy_obligation () == os_001_06_no_confused_deputy_obligation ())) = ()
+let os_001_06_no_confused_deputy (p_s: _) (p_p: _) (p_c: _) (p_action: _) : Lemma (requires (can_invoke p_s p_p p_action p_c == true) (ensures (holds p_s p_p p_c == true))) = admit ()
 
 (* OS_001_07_cap_lookup_correct (matches Coq: Theorem OS_001_07_cap_lookup_correct) *)
-let os_001_07_cap_lookup_correct_obligation () : Tot bool = (0 = 0)
-let os_001_07_cap_lookup_correct_lemma () : Lemma (requires True) (ensures (os_001_07_cap_lookup_correct_obligation () == os_001_07_cap_lookup_correct_obligation ())) = ()
+let os_001_07_cap_lookup_correct (p_s: _) (p_p: _) (p_slot: _) (p_c: _) : Lemma (requires (cap_lookup p_s p_p p_slot == Some p_c) (ensures (nth_error (cap_tables p_s p_p) p_slot == Some p_c))) = admit ()
 
 (* OS_001_08_cap_space_isolation (matches Coq: Theorem OS_001_08_cap_space_isolation) *)
-let os_001_08_cap_space_isolation_obligation () : Tot bool = (0 = 0)
-let os_001_08_cap_space_isolation_lemma () : Lemma (requires True) (ensures (os_001_08_cap_space_isolation_obligation () == os_001_08_cap_space_isolation_obligation ())) = ()
+let os_001_08_cap_space_isolation (p_s: _) (p_p1: _) (p_p2: _) (p_slot1: _) (p_slot2: _) (p_c: _) : Lemma (requires (~(p_p1 == p_p2) /\ cap_lookup p_s p_p1 p_slot1 == Some p_c /\ cap_lookup p_s p_p2 p_slot2 == Some p_c) (ensures (holds p_s p_p1 p_c == true /\ holds p_s p_p2 p_c == true))) = admit ()
 
 (* OS_001_09_cap_invoke_authorized (matches Coq: Theorem OS_001_09_cap_invoke_authorized) *)
-let os_001_09_cap_invoke_authorized_obligation () : Tot bool = (0 = 0)
-let os_001_09_cap_invoke_authorized_lemma () : Lemma (requires True) (ensures (os_001_09_cap_invoke_authorized_obligation () == os_001_09_cap_invoke_authorized_obligation ())) = ()
+let os_001_09_cap_invoke_authorized (p_s: _) (p_p: _) (p_action: _) (p_c: _) : Lemma (requires (can_invoke p_s p_p p_action p_c == true) (ensures (action_authorized p_c p_action == true))) = admit ()
 
 (* OS_001_10_cap_badge_integrity (matches Coq: Theorem OS_001_10_cap_badge_integrity) *)
-let os_001_10_cap_badge_integrity_obligation () : Tot bool = (0 = 0)
-let os_001_10_cap_badge_integrity_lemma () : Lemma (requires True) (ensures (os_001_10_cap_badge_integrity_obligation () == os_001_10_cap_badge_integrity_obligation ())) = ()
+let os_001_10_cap_badge_integrity (p_c1: _) (p_c2: _) : Lemma (requires (derives p_c1 p_c2 == true) (ensures (p_c2.f_cap_object == p_c1.f_cap_object))) = admit ()
 
 (* OS_001_11_address_space_isolation (matches Coq: Theorem OS_001_11_address_space_isolation) *)
-let os_001_11_address_space_isolation_obligation () : Tot bool = (0 = 0)
-let os_001_11_address_space_isolation_lemma () : Lemma (requires True) (ensures (os_001_11_address_space_isolation_obligation () == os_001_11_address_space_isolation_obligation ())) = ()
+let os_001_11_address_space_isolation (p_ms: _) (p_p1: _) (p_p2: _) (p_vaddr: _) : Lemma (requires (isolation_invariant p_ms == true /\ ~(p_p1 == p_p2) /\ mapped p_ms p_p1 p_vaddr == true) (ensures (properly_isolated p_ms p_p1 p_p2 p_vaddr == true))) = admit ()
 
 (* OS_001_12_kernel_memory_integrity (matches Coq: Theorem OS_001_12_kernel_memory_integrity) *)
-let os_001_12_kernel_memory_integrity_obligation () : Tot bool = (0 = 0)
-let os_001_12_kernel_memory_integrity_lemma () : Lemma (requires True) (ensures (os_001_12_kernel_memory_integrity_obligation () == os_001_12_kernel_memory_integrity_obligation ())) = ()
+let os_001_12_kernel_memory_integrity (p_ms: _) (p_p: _) (p_vaddr: _) (p_pte: _) : Lemma (requires (valid_memory_state p_ms == true /\ address_spaces p_ms p_p p_vaddr == Some p_pte /\ p_pte.f_pte_valid == true /\ p_pte.f_pte_userspace == true) (ensures (~(is_kernel_memory p_ms (p_pte.f_pte_paddr) == true)))) = admit ()
 
 (* OS_001_13_page_table_correct (matches Coq: Theorem OS_001_13_page_table_correct) *)
-let os_001_13_page_table_correct_obligation () : Tot bool = (0 = 0)
-let os_001_13_page_table_correct_lemma () : Lemma (requires True) (ensures (os_001_13_page_table_correct_obligation () == os_001_13_page_table_correct_obligation ())) = ()
+let os_001_13_page_table_correct (p_ms: _) (p_p: _) (p_vaddr: _) (p_paddr: _) : Lemma (requires (translate p_ms p_p p_vaddr == Some p_paddr) (ensures (exists pte_ address_spaces p_ms p_p p_vaddr == Some pte /\ pte.f_pte_valid == true /\ pte.f_pte_paddr == p_paddr))) = admit ()
 
 (* OS_001_14_no_page_table_corruption (matches Coq: Theorem OS_001_14_no_page_table_corruption) *)
-let os_001_14_no_page_table_corruption_obligation () : Tot bool = (0 = 0)
-let os_001_14_no_page_table_corruption_lemma () : Lemma (requires True) (ensures (os_001_14_no_page_table_corruption_obligation () == os_001_14_no_page_table_corruption_obligation ())) = ()
+let os_001_14_no_page_table_corruption (p_ms: _) (p_p: _) (p_vaddr: _) (p_pte: _) : Lemma (requires (valid_memory_state p_ms == true /\ address_spaces p_ms p_p p_vaddr == Some p_pte /\ p_pte.f_pte_userspace == true) (ensures (kernel_memory p_ms (p_pte.f_pte_paddr) == false))) = admit ()
 
 (* OS_001_15_mapping_respects_caps (matches Coq: Theorem OS_001_15_mapping_respects_caps) *)
-let os_001_15_mapping_respects_caps_obligation () : Tot bool = (0 = 0)
-let os_001_15_mapping_respects_caps_lemma () : Lemma (requires True) (ensures (os_001_15_mapping_respects_caps_obligation () == os_001_15_mapping_respects_caps_obligation ())) = ()
+let os_001_15_mapping_respects_caps (p_ms: _) (p_p: _) (p_vaddr: _) (p_pte: _) : Lemma (requires (valid_memory_state p_ms == true /\ address_spaces p_ms p_p p_vaddr == Some p_pte /\ p_pte.f_pte_valid == true) (ensures (has_frame_cap p_ms p_p (p_pte.f_pte_paddr) == true))) = admit ()
 
 (* OS_001_16_unmap_complete (matches Coq: Theorem OS_001_16_unmap_complete) *)
-let os_001_16_unmap_complete_obligation () : Tot bool = (0 = 0)
-let os_001_16_unmap_complete_lemma () : Lemma (requires True) (ensures (os_001_16_unmap_complete_obligation () == os_001_16_unmap_complete_obligation ())) = ()
+let os_001_16_unmap_complete (p_ms: _) (p_p: _) (p_vaddr: _) : Lemma (requires (unmapped p_ms p_p p_vaddr == true) (ensures (translate p_ms p_p p_vaddr == None))) = admit ()
 
 (* OS_001_17_no_kernel_data_leak (matches Coq: Theorem OS_001_17_no_kernel_data_leak) *)
-let os_001_17_no_kernel_data_leak_obligation () : Tot bool = (0 = 0)
-let os_001_17_no_kernel_data_leak_lemma () : Lemma (requires True) (ensures (os_001_17_no_kernel_data_leak_obligation () == os_001_17_no_kernel_data_leak_obligation ())) = ()
+let os_001_17_no_kernel_data_leak (p_ms: _) (p_p: _) (p_vaddr: _) (p_paddr: _) : Lemma (requires (valid_memory_state p_ms == true /\ translate p_ms p_p p_vaddr == Some p_paddr /\ (exists pte_ address_spaces p_ms p_p p_vaddr == Some pte /\ pte.f_pte_userspace == true)) (ensures (~(is_kernel_memory p_ms p_paddr == true)))) = admit ()
 
 (* OS_001_18_frame_allocation_safe (matches Coq: Theorem OS_001_18_frame_allocation_safe) *)
-let os_001_18_frame_allocation_safe_obligation () : Tot bool = (0 = 0)
-let os_001_18_frame_allocation_safe_lemma () : Lemma (requires True) (ensures (os_001_18_frame_allocation_safe_obligation () == os_001_18_frame_allocation_safe_obligation ())) = ()
+let os_001_18_frame_allocation_safe (p_ms: _) (p_ms_: _) (p_paddr: _) (p_owner: _) : Lemma (requires (valid_memory_state p_ms == true /\ frame_owners p_ms p_paddr == None /\ frame_owners ms_ p_paddr == Some p_owner /\ kernel_memory ms_ p_paddr == false /\ valid_memory_state ms_ == true) (ensures (allocation_safe p_ms ms_ p_paddr == true))) = admit ()
 
 (* OS_001_19_ipc_type_safe (matches Coq: Theorem OS_001_19_ipc_type_safe) *)
-let os_001_19_ipc_type_safe_obligation () : Tot bool = (0 = 0)
-let os_001_19_ipc_type_safe_lemma () : Lemma (requires True) (ensures (os_001_19_ipc_type_safe_obligation () == os_001_19_ipc_type_safe_obligation ())) = ()
+let os_001_19_ipc_type_safe (p_msg: _) : Lemma (requires (length (p_msg.f_msg_data) <= 128 /\ length (p_msg.f_msg_caps) <= 4) (ensures (msg_type_safe p_msg == true))) = admit ()
 
 (* OS_001_20_ipc_cap_transfer_safe (matches Coq: Theorem OS_001_20_ipc_cap_transfer_safe) *)
-let os_001_20_ipc_cap_transfer_safe_obligation () : Tot bool = (0 = 0)
-let os_001_20_ipc_cap_transfer_safe_lemma () : Lemma (requires True) (ensures (os_001_20_ipc_cap_transfer_safe_obligation () == os_001_20_ipc_cap_transfer_safe_obligation ())) = ()
+let os_001_20_ipc_cap_transfer_safe (p_is: _) (p_sender: _) (p_msg: _) : Lemma (requires (msg_caps_valid p_is p_sender p_msg == true /\ forall c_ In c (p_msg.f_msg_caps) == true) (ensures (holds ((p_is.f_ipc_mem).f_mem_kernel) p_sender c == true /\ In RGrant (c.f_cap_rights) == true))) = admit ()
 
 (* OS_001_21_ipc_deadlock_free (matches Coq: Theorem OS_001_21_ipc_deadlock_free) *)
-let os_001_21_ipc_deadlock_free_obligation () : Tot bool = (0 = 0)
-let os_001_21_ipc_deadlock_free_lemma () : Lemma (requires True) (ensures (os_001_21_ipc_deadlock_free_obligation () == os_001_21_ipc_deadlock_free_obligation ())) = ()
+let os_001_21_ipc_deadlock_free (p_is: _) : Lemma (requires (valid_ipc_state p_is == true) (ensures (~((exists p_cycle. ipc_wait_cycle p_is p_cycle == true))))) = admit ()
 
 (* OS_001_22_ipc_no_amplification (matches Coq: Theorem OS_001_22_ipc_no_amplification) *)
-let os_001_22_ipc_no_amplification_obligation () : Tot bool = (0 = 0)
-let os_001_22_ipc_no_amplification_lemma () : Lemma (requires True) (ensures (os_001_22_ipc_no_amplification_obligation () == os_001_22_ipc_no_amplification_obligation ())) = ()
+let os_001_22_ipc_no_amplification (p_is: _) (p_sender: _) (p_msg: _) (p_c: _) : Lemma (requires (msg_caps_valid p_is p_sender p_msg == true /\ In p_c (p_msg.f_msg_caps) == true) (ensures (exists c__ holds ((p_is.f_ipc_mem).f_mem_kernel) p_sender c_ == true /\ rights_subset (p_c.f_cap_rights) (c_.f_cap_rights) == true))) = admit ()
 
 (* OS_001_23_ipc_isolation (matches Coq: Theorem OS_001_23_ipc_isolation) *)
-let os_001_23_ipc_isolation_obligation () : Tot bool = (0 = 0)
-let os_001_23_ipc_isolation_lemma () : Lemma (requires True) (ensures (os_001_23_ipc_isolation_obligation () == os_001_23_ipc_isolation_obligation ())) = ()
+let os_001_23_ipc_isolation (p_is: _) (p_p1: _) (p_p2: _) (p_ep: _) : Lemma (requires (ipc_maintains_isolation p_is == true /\ In p_ep (p_is.f_endpoints) == true /\ In p_p1 (p_ep.f_ep_queue) == true /\ ~(In p_p2 (p_ep.f_ep_queue) == true)) (ensures (~(holds ((p_is.f_ipc_mem).f_mem_kernel) p_p2 (p_ep.f_ep_cap) == true)))) = admit ()
 
 (* OS_001_24_endpoint_protection (matches Coq: Theorem OS_001_24_endpoint_protection) *)
-let os_001_24_endpoint_protection_obligation () : Tot bool = (0 = 0)
-let os_001_24_endpoint_protection_lemma () : Lemma (requires True) (ensures (os_001_24_endpoint_protection_obligation () == os_001_24_endpoint_protection_obligation ())) = ()
+let os_001_24_endpoint_protection (p_is: _) (p_ep: _) : Lemma (requires (endpoint_protected p_is p_ep == true /\ forall p_ In p (p_ep.f_ep_queue) == true) (ensures (holds ((p_is.f_ipc_mem).f_mem_kernel) p (p_ep.f_ep_cap) == true))) = admit ()
 
 (* OS_001_25_notification_no_leak (matches Coq: Theorem OS_001_25_notification_no_leak) *)
-let os_001_25_notification_no_leak_obligation () : Tot bool = (0 = 0)
-let os_001_25_notification_no_leak_lemma () : Lemma (requires True) (ensures (os_001_25_notification_no_leak_obligation () == os_001_25_notification_no_leak_obligation ())) = ()
+let os_001_25_notification_no_leak (p_n: _) : Lemma (requires (notif_no_sensitive_data p_n == true) (ensures (p_n.f_notif_word < 2^32))) = admit ()

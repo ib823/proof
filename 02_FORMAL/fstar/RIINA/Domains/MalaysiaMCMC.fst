@@ -42,81 +42,61 @@ let license_eqb (p_a: mcmc_license) (p_b: mcmc_license) : Tot bool =
   Nat.eqb (license_level p_a) (license_level p_b)
 
 (* s234_encrypted_compliant (matches Coq: Theorem s234_encrypted_compliant) *)
-let s234_encrypted_compliant_obligation () : Tot bool = (0 = 0)
-let s234_encrypted_compliant_lemma () : Lemma (requires True) (ensures (s234_encrypted_compliant_obligation () == s234_encrypted_compliant_obligation ())) = ()
+let s234_encrypted_compliant (p_enc: bool) (p_auth: bool) : Lemma (requires (p_enc == true) (ensures (no_unauthorized_interception p_enc p_auth == true))) = admit ()
 
 (* s234_authorized_compliant (matches Coq: Theorem s234_authorized_compliant) *)
-let s234_authorized_compliant_obligation () : Tot bool = (0 = 0)
-let s234_authorized_compliant_lemma () : Lemma (requires True) (ensures (s234_authorized_compliant_obligation () == s234_authorized_compliant_obligation ())) = ()
+let s234_authorized_compliant (p_enc: bool) (p_auth: bool) : Lemma (requires (p_auth == true) (ensures (no_unauthorized_interception p_enc p_auth == true))) = admit ()
 
 (* s236_fraud_prevention (matches Coq: Theorem s236_fraud_prevention) *)
-let s236_fraud_prevention_obligation () : Tot bool = (0 = 0)
-let s236_fraud_prevention_lemma () : Lemma (requires True) (ensures (s236_fraud_prevention_obligation () == s236_fraud_prevention_obligation ())) = ()
+let s236_fraud_prevention (p_id_v: bool) (p_tx_s: bool) (p_audit: bool) : Lemma (requires (p_id_v == true /\ p_tx_s == true /\ p_audit == true) (ensures (fraud_controls_active p_id_v p_tx_s p_audit == true))) = admit ()
 
 (* mcmc_composition (matches Coq: Theorem mcmc_composition) *)
-let mcmc_composition_obligation () : Tot bool = (0 = 0)
-let mcmc_composition_lemma () : Lemma (requires True) (ensures (mcmc_composition_obligation () == mcmc_composition_obligation ())) = ()
+let mcmc_composition (p_c: nat) : Lemma (requires (mcmc_licensed p_c == true /\ mcmc_technical_standards_met p_c == true /\ mcmc_consumer_code_adopted p_c == true /\ mcmc_interception_protected p_c == true /\ mcmc_fraud_controls p_c == true) (ensures (mcmc_fully_compliant p_c == true))) = admit ()
 
 (* mcmc_license_coverage (matches Coq: Theorem mcmc_license_coverage) *)
-let mcmc_license_coverage_obligation () : Tot bool = (0 = 0)
-let mcmc_license_coverage_lemma () : Lemma (requires True) (ensures (mcmc_license_coverage_obligation () == mcmc_license_coverage_obligation ())) = ()
+let mcmc_license_coverage (p_l: mcmc_license) : Lemma (In p_l all_mcmc_licenses == true) = admit ()
 
 (* nfp_highest_level (matches Coq: Theorem nfp_highest_level) *)
-let nfp_highest_level_obligation () : Tot bool = (0 = 0)
-let nfp_highest_level_lemma () : Lemma (requires True) (ensures (nfp_highest_level_obligation () == nfp_highest_level_obligation ())) = ()
+let nfp_highest_level (p_l: _) : Lemma (license_level p_l <= license_level NFP) = admit ()
 
 (* csp_lowest_level (matches Coq: Theorem csp_lowest_level) *)
-let csp_lowest_level_obligation () : Tot bool = (0 = 0)
-let csp_lowest_level_lemma () : Lemma (requires True) (ensures (csp_lowest_level_obligation () == csp_lowest_level_obligation ())) = ()
+let csp_lowest_level (p_l: _) : Lemma (license_level CSP <= license_level p_l) = admit ()
 
 (* license_level_positive (matches Coq: Theorem license_level_positive) *)
-let license_level_positive_obligation () : Tot bool = (0 = 0)
-let license_level_positive_lemma () : Lemma (requires True) (ensures (license_level_positive_obligation () == license_level_positive_obligation ())) = ()
+let license_level_positive (p_l: _) : Lemma (license_level p_l >= 1) = admit ()
 
 (* mcmc_compliant_licensed (matches Coq: Theorem mcmc_compliant_licensed) *)
-let mcmc_compliant_licensed_obligation () : Tot bool = (0 = 0)
-let mcmc_compliant_licensed_lemma () : Lemma (requires True) (ensures (mcmc_compliant_licensed_obligation () == mcmc_compliant_licensed_obligation ())) = ()
+let mcmc_compliant_licensed (p_c: _) : Lemma (requires (mcmc_fully_compliant p_c == true) (ensures (mcmc_licensed p_c == true))) = admit ()
 
 (* mcmc_compliant_technical (matches Coq: Theorem mcmc_compliant_technical) *)
-let mcmc_compliant_technical_obligation () : Tot bool = (0 = 0)
-let mcmc_compliant_technical_lemma () : Lemma (requires True) (ensures (mcmc_compliant_technical_obligation () == mcmc_compliant_technical_obligation ())) = ()
+let mcmc_compliant_technical (p_c: _) : Lemma (requires (mcmc_fully_compliant p_c == true) (ensures (mcmc_technical_standards_met p_c == true))) = admit ()
 
 (* mcmc_compliant_consumer (matches Coq: Theorem mcmc_compliant_consumer) *)
-let mcmc_compliant_consumer_obligation () : Tot bool = (0 = 0)
-let mcmc_compliant_consumer_lemma () : Lemma (requires True) (ensures (mcmc_compliant_consumer_obligation () == mcmc_compliant_consumer_obligation ())) = ()
+let mcmc_compliant_consumer (p_c: _) : Lemma (requires (mcmc_fully_compliant p_c == true) (ensures (mcmc_consumer_code_adopted p_c == true))) = admit ()
 
 (* mcmc_compliant_interception (matches Coq: Theorem mcmc_compliant_interception) *)
-let mcmc_compliant_interception_obligation () : Tot bool = (0 = 0)
-let mcmc_compliant_interception_lemma () : Lemma (requires True) (ensures (mcmc_compliant_interception_obligation () == mcmc_compliant_interception_obligation ())) = ()
+let mcmc_compliant_interception (p_c: _) : Lemma (requires (mcmc_fully_compliant p_c == true) (ensures (mcmc_interception_protected p_c == true))) = admit ()
 
 (* mcmc_compliant_fraud (matches Coq: Theorem mcmc_compliant_fraud) *)
-let mcmc_compliant_fraud_obligation () : Tot bool = (0 = 0)
-let mcmc_compliant_fraud_lemma () : Lemma (requires True) (ensures (mcmc_compliant_fraud_obligation () == mcmc_compliant_fraud_obligation ())) = ()
+let mcmc_compliant_fraud (p_c: _) : Lemma (requires (mcmc_fully_compliant p_c == true) (ensures (mcmc_fraud_controls p_c == true))) = admit ()
 
 (* count_mcmc_bounded (matches Coq: Theorem count_mcmc_bounded) *)
-let count_mcmc_bounded_obligation () : Tot bool = (0 = 0)
-let count_mcmc_bounded_lemma () : Lemma (requires True) (ensures (count_mcmc_bounded_obligation () == count_mcmc_bounded_obligation ())) = ()
+let count_mcmc_bounded (p_c: _) : Lemma (count_mcmc_controls p_c <= 5) = admit ()
 
 (* mcmc_compliant_all_five (matches Coq: Theorem mcmc_compliant_all_five) *)
-let mcmc_compliant_all_five_obligation () : Tot bool = (0 = 0)
-let mcmc_compliant_all_five_lemma () : Lemma (requires True) (ensures (mcmc_compliant_all_five_obligation () == mcmc_compliant_all_five_obligation ())) = ()
+let mcmc_compliant_all_five (p_c: _) : Lemma (requires (mcmc_fully_compliant p_c == true) (ensures (count_mcmc_controls p_c == 5))) = admit ()
 
 (* license_eqb_refl (matches Coq: Theorem license_eqb_refl) *)
-let license_eqb_refl_obligation () : Tot bool = (0 = 0)
-let license_eqb_refl_lemma () : Lemma (requires True) (ensures (license_eqb_refl_obligation () == license_eqb_refl_obligation ())) = ()
+let license_eqb_refl (p_l: _) : Lemma (license_eqb p_l p_l == true) = admit ()
 
 (* fraud_requires_identity (matches Coq: Theorem fraud_requires_identity) *)
-let fraud_requires_identity_obligation () : Tot bool = (0 = 0)
-let fraud_requires_identity_lemma () : Lemma (requires True) (ensures (fraud_requires_identity_obligation () == fraud_requires_identity_obligation ())) = ()
+let fraud_requires_identity (p_id_v: _) (p_tx_s: _) (p_audit: _) : Lemma (requires (fraud_controls_active p_id_v p_tx_s p_audit == true) (ensures (p_id_v == true))) = admit ()
 
 (* fraud_requires_signing (matches Coq: Theorem fraud_requires_signing) *)
-let fraud_requires_signing_obligation () : Tot bool = (0 = 0)
-let fraud_requires_signing_lemma () : Lemma (requires True) (ensures (fraud_requires_signing_obligation () == fraud_requires_signing_obligation ())) = ()
+let fraud_requires_signing (p_id_v: _) (p_tx_s: _) (p_audit: _) : Lemma (requires (fraud_controls_active p_id_v p_tx_s p_audit == true) (ensures (p_tx_s == true))) = admit ()
 
 (* fraud_requires_audit (matches Coq: Theorem fraud_requires_audit) *)
-let fraud_requires_audit_obligation () : Tot bool = (0 = 0)
-let fraud_requires_audit_lemma () : Lemma (requires True) (ensures (fraud_requires_audit_obligation () == fraud_requires_audit_obligation ())) = ()
+let fraud_requires_audit (p_id_v: _) (p_tx_s: _) (p_audit: _) : Lemma (requires (fraud_controls_active p_id_v p_tx_s p_audit == true) (ensures (p_audit == true))) = admit ()
 
 (* mcmc_license_count (matches Coq: Theorem mcmc_license_count) *)
-let mcmc_license_count_obligation () : Tot bool = (0 = 0)
-let mcmc_license_count_lemma () : Lemma (requires True) (ensures (mcmc_license_count_obligation () == mcmc_license_count_obligation ())) = ()
+let mcmc_license_count () : Lemma (length all_mcmc_licenses == 4) = admit ()

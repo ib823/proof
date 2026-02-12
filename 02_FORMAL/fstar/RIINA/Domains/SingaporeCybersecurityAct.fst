@@ -79,105 +79,79 @@ let penalty_exposure_exists (p_e: nat) (p_t: nat) : Tot bool =
   (0 = 0)
 
 (* cii_obligation_1 (matches Coq: Theorem cii_obligation_1) *)
-let cii_obligation_1_obligation () : Tot bool = (0 = 0)
-let cii_obligation_1_lemma () : Lemma (requires True) (ensures (cii_obligation_1_obligation () == cii_obligation_1_obligation ())) = ()
+let cii_obligation_1 (p_e: nat) : Lemma (requires (cii_risk_assessed p_e == true) (ensures (cii_risk_current p_e == true))) = admit ()
 
 (* cii_obligation_2 (matches Coq: Theorem cii_obligation_2) *)
-let cii_obligation_2_obligation () : Tot bool = (0 = 0)
-let cii_obligation_2_lemma () : Lemma (requires True) (ensures (cii_obligation_2_obligation () == cii_obligation_2_obligation ())) = ()
+let cii_obligation_2 (p_e: nat) (p_t: nat) : Lemma (requires (cii_audit_completed p_e == true /\ p_t <= cii_last_audit p_e + 365) (ensures (cii_audit_current p_e p_t == true))) = admit ()
 
 (* cii_obligation_3 (matches Coq: Theorem cii_obligation_3) *)
-let cii_obligation_3_obligation () : Tot bool = (0 = 0)
-let cii_obligation_3_lemma () : Lemma (requires True) (ensures (cii_obligation_3_obligation () == cii_obligation_3_obligation ())) = ()
+let cii_obligation_3 (p_i: nat) : Lemma (requires (sg_incident_reported_at p_i <= sg_incident_detected_at p_i + 2) (ensures (sg_incident_reported_in_time p_i == true))) = admit ()
 
 (* sg_stricter_than_my (matches Coq: Theorem sg_stricter_than_my) *)
-let sg_stricter_than_my_obligation () : Tot bool = (0 = 0)
-let sg_stricter_than_my_lemma () : Lemma (requires True) (ensures (sg_stricter_than_my_obligation () == sg_stricter_than_my_obligation ())) = ()
+let sg_stricter_than_my (p_detected_at: nat) (p_reported_at: nat) : Lemma (requires (p_reported_at <= p_detected_at + 2) (ensures (p_reported_at <= p_detected_at + 6))) = admit ()
 
 (* cii_obligation_4 (matches Coq: Theorem cii_obligation_4) *)
-let cii_obligation_4_obligation () : Tot bool = (0 = 0)
-let cii_obligation_4_lemma () : Lemma (requires True) (ensures (cii_obligation_4_obligation () == cii_obligation_4_obligation ())) = ()
+let cii_obligation_4 (p_e: nat) : Lemma (requires (cii_min_controls p_e <= cii_security_controls p_e) (ensures (cii_controls_adequate p_e == true))) = admit ()
 
 (* esci_compliance (matches Coq: Theorem esci_compliance) *)
-let esci_compliance_obligation () : Tot bool = (0 = 0)
-let esci_compliance_lemma () : Lemma (requires True) (ensures (esci_compliance_obligation () == esci_compliance_obligation ())) = ()
+let esci_compliance (p_e: nat) : Lemma (requires (cii_classification p_e == ESCI /\ cii_risk_assessed p_e == true /\ cii_incident_response_plan p_e == true) (ensures (esci_obligations_met p_e == true))) = admit ()
 
 (* cssp_obligation (matches Coq: Theorem cssp_obligation) *)
-let cssp_obligation_obligation () : Tot bool = (0 = 0)
-let cssp_obligation_lemma () : Lemma (requires True) (ensures (cssp_obligation_obligation () == cssp_obligation_obligation ())) = ()
+let cssp_obligation (p_e: nat) : Lemma (requires (cii_cssp_licensed p_e == true) (ensures (cssp_licensed_sg p_e == true))) = admit ()
 
 (* sg_cybersecurity_composition (matches Coq: Theorem sg_cybersecurity_composition) *)
-let sg_cybersecurity_composition_obligation () : Tot bool = (0 = 0)
-let sg_cybersecurity_composition_lemma () : Lemma (requires True) (ensures (sg_cybersecurity_composition_obligation () == sg_cybersecurity_composition_obligation ())) = ()
+let sg_cybersecurity_composition (p_e: nat) (p_t: nat) : Lemma (requires (cii_risk_current p_e == true /\ cii_audit_current p_e p_t == true /\ cii_controls_adequate p_e == true /\ cii_incident_response_plan p_e == true) (ensures (sg_cybersecurity_act_compliant p_e p_t == true))) = admit ()
 
 (* cii_sector_coverage (matches Coq: Theorem cii_sector_coverage) *)
-let cii_sector_coverage_obligation () : Tot bool = (0 = 0)
-let cii_sector_coverage_lemma () : Lemma (requires True) (ensures (cii_sector_coverage_obligation () == cii_sector_coverage_obligation ())) = ()
+let cii_sector_coverage (p_s: cii_sector) : Lemma (In p_s all_cii_sectors == true) = admit ()
 
 (* entity_classification_coverage (matches Coq: Theorem entity_classification_coverage) *)
-let entity_classification_coverage_obligation () : Tot bool = (0 = 0)
-let entity_classification_coverage_lemma () : Lemma (requires True) (ensures (entity_classification_coverage_obligation () == entity_classification_coverage_obligation ())) = ()
+let entity_classification_coverage (p_c: entity_classification) : Lemma (In p_c all_entity_classifications == true) = admit ()
 
 (* stcc_compliance (matches Coq: Theorem stcc_compliance) *)
-let stcc_compliance_obligation () : Tot bool = (0 = 0)
-let stcc_compliance_lemma () : Lemma (requires True) (ensures (stcc_compliance_obligation () == stcc_compliance_obligation ())) = ()
+let stcc_compliance (p_e: nat) : Lemma (requires (cii_classification p_e == STCC /\ cii_risk_assessed p_e == true /\ cii_security_controls p_e >= cii_min_controls p_e) (ensures (stcc_obligations_met p_e == true))) = admit ()
 
 (* cii_owner_strictest (matches Coq: Theorem cii_owner_strictest) *)
-let cii_owner_strictest_obligation () : Tot bool = (0 = 0)
-let cii_owner_strictest_lemma () : Lemma (requires True) (ensures (cii_owner_strictest_obligation () == cii_owner_strictest_obligation ())) = ()
+let cii_owner_strictest (p_e: nat) (p_t: nat) : Lemma (requires (cii_owner_obligations p_e p_t == true) (ensures (cii_risk_current p_e == true))) = admit ()
 
 (* cii_owner_implies_esci_risk (matches Coq: Theorem cii_owner_implies_esci_risk) *)
-let cii_owner_implies_esci_risk_obligation () : Tot bool = (0 = 0)
-let cii_owner_implies_esci_risk_lemma () : Lemma (requires True) (ensures (cii_owner_implies_esci_risk_obligation () == cii_owner_implies_esci_risk_obligation ())) = ()
+let cii_owner_implies_esci_risk (p_e: nat) (p_t: nat) : Lemma (requires (cii_owner_obligations p_e p_t == true) (ensures (cii_risk_assessed p_e == true /\ cii_incident_response_plan p_e == true))) = admit ()
 
 (* significant_incident_must_notify (matches Coq: Theorem significant_incident_must_notify) *)
-let significant_incident_must_notify_obligation () : Tot bool = (0 = 0)
-let significant_incident_must_notify_lemma () : Lemma (requires True) (ensures (significant_incident_must_notify_obligation () == significant_incident_must_notify_obligation ())) = ()
+let significant_incident_must_notify (p_i: nat) : Lemma (requires (sg_incident_significant p_i == true) (ensures (incident_needs_notification p_i == true))) = admit ()
 
 (* two_hour_deadline_tight (matches Coq: Theorem two_hour_deadline_tight) *)
-let two_hour_deadline_tight_obligation () : Tot bool = (0 = 0)
-let two_hour_deadline_tight_lemma () : Lemma (requires True) (ensures (two_hour_deadline_tight_obligation () == two_hour_deadline_tight_obligation ())) = ()
+let two_hour_deadline_tight (p_detected: nat) : Lemma (p_detected + 2 < p_detected + 6) = admit ()
 
 (* sg_2h_stricter_than_my_6h (matches Coq: Theorem sg_2h_stricter_than_my_6h) *)
-let sg_2h_stricter_than_my_6h_obligation () : Tot bool = (0 = 0)
-let sg_2h_stricter_than_my_6h_lemma () : Lemma (requires True) (ensures (sg_2h_stricter_than_my_6h_obligation () == sg_2h_stricter_than_my_6h_obligation ())) = ()
+let sg_2h_stricter_than_my_6h (p_i: nat) : Lemma (requires (sg_incident_reported_in_time p_i == true) (ensures (sg_incident_reported_at p_i <= sg_incident_detected_at p_i + 6))) = admit ()
 
 (* sg_2h_stricter_than_72h (matches Coq: Theorem sg_2h_stricter_than_72h) *)
-let sg_2h_stricter_than_72h_obligation () : Tot bool = (0 = 0)
-let sg_2h_stricter_than_72h_lemma () : Lemma (requires True) (ensures (sg_2h_stricter_than_72h_obligation () == sg_2h_stricter_than_72h_obligation ())) = ()
+let sg_2h_stricter_than_72h (p_i: nat) : Lemma (requires (sg_incident_reported_in_time p_i == true) (ensures (sg_incident_reported_at p_i <= sg_incident_detected_at p_i + 72))) = admit ()
 
 (* audit_schedule_valid (matches Coq: Theorem audit_schedule_valid) *)
-let audit_schedule_valid_obligation () : Tot bool = (0 = 0)
-let audit_schedule_valid_lemma () : Lemma (requires True) (ensures (audit_schedule_valid_obligation () == audit_schedule_valid_obligation ())) = ()
+let audit_schedule_valid (p_sched: nat) : Lemma (requires (as_next_audit p_sched == as_last_audit p_sched + as_audit_interval p_sched) (ensures (audit_schedule_consistent p_sched == true))) = admit ()
 
 (* more_controls_still_adequate (matches Coq: Theorem more_controls_still_adequate) *)
-let more_controls_still_adequate_obligation () : Tot bool = (0 = 0)
-let more_controls_still_adequate_lemma () : Lemma (requires True) (ensures (more_controls_still_adequate_obligation () == more_controls_still_adequate_obligation ())) = ()
+let more_controls_still_adequate (p_e: nat) (p_extra: nat) : Lemma (requires (cii_controls_adequate p_e == true) (ensures (cii_min_controls p_e <= cii_security_controls p_e + p_extra))) = admit ()
 
 (* sg_cyber_full_implies_risk (matches Coq: Theorem sg_cyber_full_implies_risk) *)
-let sg_cyber_full_implies_risk_obligation () : Tot bool = (0 = 0)
-let sg_cyber_full_implies_risk_lemma () : Lemma (requires True) (ensures (sg_cyber_full_implies_risk_obligation () == sg_cyber_full_implies_risk_obligation ())) = ()
+let sg_cyber_full_implies_risk (p_e: nat) (p_t: nat) : Lemma (requires (sg_cybersecurity_act_compliant p_e p_t == true) (ensures (cii_risk_current p_e == true))) = admit ()
 
 (* sg_cyber_full_implies_audit (matches Coq: Theorem sg_cyber_full_implies_audit) *)
-let sg_cyber_full_implies_audit_obligation () : Tot bool = (0 = 0)
-let sg_cyber_full_implies_audit_lemma () : Lemma (requires True) (ensures (sg_cyber_full_implies_audit_obligation () == sg_cyber_full_implies_audit_obligation ())) = ()
+let sg_cyber_full_implies_audit (p_e: nat) (p_t: nat) : Lemma (requires (sg_cybersecurity_act_compliant p_e p_t == true) (ensures (cii_audit_current p_e p_t == true))) = admit ()
 
 (* sg_cyber_full_implies_controls (matches Coq: Theorem sg_cyber_full_implies_controls) *)
-let sg_cyber_full_implies_controls_obligation () : Tot bool = (0 = 0)
-let sg_cyber_full_implies_controls_lemma () : Lemma (requires True) (ensures (sg_cyber_full_implies_controls_obligation () == sg_cyber_full_implies_controls_obligation ())) = ()
+let sg_cyber_full_implies_controls (p_e: nat) (p_t: nat) : Lemma (requires (sg_cybersecurity_act_compliant p_e p_t == true) (ensures (cii_controls_adequate p_e == true))) = admit ()
 
 (* sg_cyber_full_implies_irp (matches Coq: Theorem sg_cyber_full_implies_irp) *)
-let sg_cyber_full_implies_irp_obligation () : Tot bool = (0 = 0)
-let sg_cyber_full_implies_irp_lemma () : Lemma (requires True) (ensures (sg_cyber_full_implies_irp_obligation () == sg_cyber_full_implies_irp_obligation ())) = ()
+let sg_cyber_full_implies_irp (p_e: nat) (p_t: nat) : Lemma (requires (sg_cybersecurity_act_compliant p_e p_t == true) (ensures (cii_incident_response_plan p_e == true))) = admit ()
 
 (* cssp_expired_non_compliant (matches Coq: Theorem cssp_expired_non_compliant) *)
-let cssp_expired_non_compliant_obligation () : Tot bool = (0 = 0)
-let cssp_expired_non_compliant_lemma () : Lemma (requires True) (ensures (cssp_expired_non_compliant_obligation () == cssp_expired_non_compliant_obligation ())) = ()
+let cssp_expired_non_compliant (p_e: nat) : Lemma (requires (cii_cssp_licensed p_e == false) (ensures (~(cssp_licensed_sg p_e == true)))) = admit ()
 
 (* regular_entity_no_cii_obligation (matches Coq: Theorem regular_entity_no_cii_obligation) *)
-let regular_entity_no_cii_obligation_obligation () : Tot bool = (0 = 0)
-let regular_entity_no_cii_obligation_lemma () : Lemma (requires True) (ensures (regular_entity_no_cii_obligation_obligation () == regular_entity_no_cii_obligation_obligation ())) = ()
+let regular_entity_no_cii_obligation (p_e: nat) : Lemma (requires (cii_classification p_e == RegularEntity) (ensures (regular_entity_exempt p_e == true))) = admit ()
 
 (* compliance_eliminates_penalty (matches Coq: Theorem compliance_eliminates_penalty) *)
-let compliance_eliminates_penalty_obligation () : Tot bool = (0 = 0)
-let compliance_eliminates_penalty_lemma () : Lemma (requires True) (ensures (compliance_eliminates_penalty_obligation () == compliance_eliminates_penalty_obligation ())) = ()
+let compliance_eliminates_penalty (p_e: nat) (p_t: nat) : Lemma (requires (sg_cybersecurity_act_compliant p_e p_t == true) (ensures (~(penalty_exposure_exists p_e p_t == true)))) = admit ()

@@ -128,313 +128,235 @@ let src_ir_equiv (p_e_src: src_expr) (p_e_ir: ir_expr) : Tot bool =
   (0 = 0)
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* CC_001 (matches Coq: Theorem CC_001) *)
-let cc_001_obligation () : Tot bool = (0 = 0)
-let cc_001_lemma () : Lemma (requires True) (ensures (cc_001_obligation () == cc_001_obligation ())) = ()
+let cc_001 () : Lemma (parsing_correct riina_parsing == true) = admit ()
 
 (* CC_002 (matches Coq: Theorem CC_002) *)
-let cc_002_obligation () : Tot bool = (0 = 0)
-let cc_002_lemma () : Lemma (requires True) (ensures (cc_002_obligation () == cc_002_obligation ())) = ()
+let cc_002 () : Lemma (typecheck_sound riina_typecheck == true) = admit ()
 
 (* CC_003 (matches Coq: Theorem CC_003) *)
-let cc_003_obligation () : Tot bool = (0 = 0)
-let cc_003_lemma () : Lemma (requires True) (ensures (cc_003_obligation () == cc_003_obligation ())) = ()
+let cc_003 () : Lemma (optimization_safe riina_optim == true) = admit ()
 
 (* CC_004 (matches Coq: Theorem CC_004) *)
-let cc_004_obligation () : Tot bool = (0 = 0)
-let cc_004_lemma () : Lemma (requires True) (ensures (cc_004_obligation () == cc_004_obligation ())) = ()
+let cc_004 () : Lemma (codegen_correct riina_codegen == true) = admit ()
 
 (* CC_005 (matches Coq: Theorem CC_005) *)
-let cc_005_obligation () : Tot bool = (0 = 0)
-let cc_005_lemma () : Lemma (requires True) (ensures (cc_005_obligation () == cc_005_obligation ())) = ()
+let cc_005 () : Lemma (compiler_verified riina_compiler == true) = admit ()
 
 (* CC_006 (matches Coq: Theorem CC_006) *)
-let cc_006_obligation () : Tot bool = (0 = 0)
-let cc_006_lemma () : Lemma (requires True) (ensures (cc_006_obligation () == cc_006_obligation ())) = ()
+let cc_006 () : Lemma (riina_parsing.f_pp_syntax_correct == true) = admit ()
 
 (* CC_007 (matches Coq: Theorem CC_007) *)
-let cc_007_obligation () : Tot bool = (0 = 0)
-let cc_007_lemma () : Lemma (requires True) (ensures (cc_007_obligation () == cc_007_obligation ())) = ()
+let cc_007 () : Lemma (riina_typecheck.f_tc_type_soundness == true) = admit ()
 
 (* CC_008 (matches Coq: Theorem CC_008) *)
-let cc_008_obligation () : Tot bool = (0 = 0)
-let cc_008_lemma () : Lemma (requires True) (ensures (cc_008_obligation () == cc_008_obligation ())) = ()
+let cc_008 () : Lemma (riina_optim.f_op_semantics_preserved == true) = admit ()
 
 (* CC_009 (matches Coq: Theorem CC_009) *)
-let cc_009_obligation () : Tot bool = (0 = 0)
-let cc_009_lemma () : Lemma (requires True) (ensures (cc_009_obligation () == cc_009_obligation ())) = ()
+let cc_009 () : Lemma (riina_codegen.f_cg_instruction_correct == true) = admit ()
 
 (* CC_010 (matches Coq: Theorem CC_010) *)
-let cc_010_obligation () : Tot bool = (0 = 0)
-let cc_010_lemma () : Lemma (requires True) (ensures (cc_010_obligation () == cc_010_obligation ())) = ()
+let cc_010 () : Lemma (riina_codegen.f_cg_calling_convention == true) = admit ()
 
 (* CC_011 (matches Coq: Theorem CC_011) *)
-let cc_011_obligation () : Tot bool = (0 = 0)
-let cc_011_lemma () : Lemma (requires True) (ensures (cc_011_obligation () == cc_011_obligation ())) = ()
+let cc_011 (p_p: _) : Lemma (requires (parsing_correct p_p == true) (ensures (p_p.f_pp_syntax_correct == true))) = admit ()
 
 (* CC_012 (matches Coq: Theorem CC_012) *)
-let cc_012_obligation () : Tot bool = (0 = 0)
-let cc_012_lemma () : Lemma (requires True) (ensures (cc_012_obligation () == cc_012_obligation ())) = ()
+let cc_012 (p_p: _) : Lemma (requires (parsing_correct p_p == true) (ensures (p_p.f_pp_ast_well_formed == true))) = admit ()
 
 (* CC_013 (matches Coq: Theorem CC_013) *)
-let cc_013_obligation () : Tot bool = (0 = 0)
-let cc_013_lemma () : Lemma (requires True) (ensures (cc_013_obligation () == cc_013_obligation ())) = ()
+let cc_013 (p_t: _) : Lemma (requires (typecheck_sound p_t == true) (ensures (p_t.f_tc_type_soundness == true))) = admit ()
 
 (* CC_014 (matches Coq: Theorem CC_014) *)
-let cc_014_obligation () : Tot bool = (0 = 0)
-let cc_014_lemma () : Lemma (requires True) (ensures (cc_014_obligation () == cc_014_obligation ())) = ()
+let cc_014 (p_t: _) : Lemma (requires (typecheck_sound p_t == true) (ensures (p_t.f_tc_inference_complete == true))) = admit ()
 
 (* CC_015 (matches Coq: Theorem CC_015) *)
-let cc_015_obligation () : Tot bool = (0 = 0)
-let cc_015_lemma () : Lemma (requires True) (ensures (cc_015_obligation () == cc_015_obligation ())) = ()
+let cc_015 (p_o: _) : Lemma (requires (optimization_safe p_o == true) (ensures (p_o.f_op_semantics_preserved == true))) = admit ()
 
 (* CC_016 (matches Coq: Theorem CC_016) *)
-let cc_016_obligation () : Tot bool = (0 = 0)
-let cc_016_lemma () : Lemma (requires True) (ensures (cc_016_obligation () == cc_016_obligation ())) = ()
+let cc_016 (p_o: _) : Lemma (requires (optimization_safe p_o == true) (ensures (p_o.f_op_memory_safety_preserved == true))) = admit ()
 
 (* CC_017 (matches Coq: Theorem CC_017) *)
-let cc_017_obligation () : Tot bool = (0 = 0)
-let cc_017_lemma () : Lemma (requires True) (ensures (cc_017_obligation () == cc_017_obligation ())) = ()
+let cc_017 (p_c: _) : Lemma (requires (codegen_correct p_c == true) (ensures (p_c.f_cg_instruction_correct == true))) = admit ()
 
 (* CC_018 (matches Coq: Theorem CC_018) *)
-let cc_018_obligation () : Tot bool = (0 = 0)
-let cc_018_lemma () : Lemma (requires True) (ensures (cc_018_obligation () == cc_018_obligation ())) = ()
+let cc_018 (p_c: _) : Lemma (requires (codegen_correct p_c == true) (ensures (p_c.f_cg_stack_layout == true))) = admit ()
 
 (* CC_019 (matches Coq: Theorem CC_019) *)
-let cc_019_obligation () : Tot bool = (0 = 0)
-let cc_019_lemma () : Lemma (requires True) (ensures (cc_019_obligation () == cc_019_obligation ())) = ()
+let cc_019 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures (parsing_correct (p_c.f_cc_parsing) == true))) = admit ()
 
 (* CC_020 (matches Coq: Theorem CC_020) *)
-let cc_020_obligation () : Tot bool = (0 = 0)
-let cc_020_lemma () : Lemma (requires True) (ensures (cc_020_obligation () == cc_020_obligation ())) = ()
+let cc_020 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures (typecheck_sound (p_c.f_cc_typecheck) == true))) = admit ()
 
 (* CC_021 (matches Coq: Theorem CC_021) *)
-let cc_021_obligation () : Tot bool = (0 = 0)
-let cc_021_lemma () : Lemma (requires True) (ensures (cc_021_obligation () == cc_021_obligation ())) = ()
+let cc_021 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures (optimization_safe (p_c.f_cc_optimization) == true))) = admit ()
 
 (* CC_022 (matches Coq: Theorem CC_022) *)
-let cc_022_obligation () : Tot bool = (0 = 0)
-let cc_022_lemma () : Lemma (requires True) (ensures (cc_022_obligation () == cc_022_obligation ())) = ()
+let cc_022 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures (codegen_correct (p_c.f_cc_codegen) == true))) = admit ()
 
 (* CC_023 (matches Coq: Theorem CC_023) *)
-let cc_023_obligation () : Tot bool = (0 = 0)
-let cc_023_lemma () : Lemma (requires True) (ensures (cc_023_obligation () == cc_023_obligation ())) = ()
+let cc_023 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures ((p_c.f_cc_typecheck).f_tc_type_soundness == true))) = admit ()
 
 (* CC_024 (matches Coq: Theorem CC_024) *)
-let cc_024_obligation () : Tot bool = (0 = 0)
-let cc_024_lemma () : Lemma (requires True) (ensures (cc_024_obligation () == cc_024_obligation ())) = ()
+let cc_024 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures ((p_c.f_cc_optimization).f_op_semantics_preserved == true))) = admit ()
 
 (* CC_025 (matches Coq: Theorem CC_025) *)
-let cc_025_obligation () : Tot bool = (0 = 0)
-let cc_025_lemma () : Lemma (requires True) (ensures (cc_025_obligation () == cc_025_obligation ())) = ()
+let cc_025 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures ((p_c.f_cc_codegen).f_cg_instruction_correct == true))) = admit ()
 
 (* CC_026 (matches Coq: Theorem CC_026) *)
-let cc_026_obligation () : Tot bool = (0 = 0)
-let cc_026_lemma () : Lemma (requires True) (ensures (cc_026_obligation () == cc_026_obligation ())) = ()
+let cc_026 () : Lemma (parsing_correct riina_parsing == true /\ typecheck_sound riina_typecheck == true) = admit ()
 
 (* CC_027 (matches Coq: Theorem CC_027) *)
-let cc_027_obligation () : Tot bool = (0 = 0)
-let cc_027_lemma () : Lemma (requires True) (ensures (cc_027_obligation () == cc_027_obligation ())) = ()
+let cc_027 () : Lemma (optimization_safe riina_optim == true /\ codegen_correct riina_codegen == true) = admit ()
 
 (* CC_028 (matches Coq: Theorem CC_028) *)
-let cc_028_obligation () : Tot bool = (0 = 0)
-let cc_028_lemma () : Lemma (requires True) (ensures (cc_028_obligation () == cc_028_obligation ())) = ()
+let cc_028 () : Lemma (riina_typecheck.f_tc_type_soundness == true /\ riina_optim.f_op_semantics_preserved == true) = admit ()
 
 (* CC_029 (matches Coq: Theorem CC_029) *)
-let cc_029_obligation () : Tot bool = (0 = 0)
-let cc_029_lemma () : Lemma (requires True) (ensures (cc_029_obligation () == cc_029_obligation ())) = ()
+let cc_029 (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures (parsing_correct (p_c.f_cc_parsing) == true /\ codegen_correct (p_c.f_cc_codegen) == true))) = admit ()
 
 (* CC_030_complete (matches Coq: Theorem CC_030_complete) *)
-let cc_030_complete_obligation () : Tot bool = (0 = 0)
-let cc_030_complete_lemma () : Lemma (requires True) (ensures (cc_030_complete_obligation () == cc_030_complete_obligation ())) = ()
+let cc_030_complete (p_c: _) : Lemma (requires (compiler_verified p_c == true) (ensures ((p_c.f_cc_typecheck).f_tc_type_soundness == true /\ (p_c.f_cc_optimization).f_op_semantics_preserved == true /\ (p_c.f_cc_codegen).f_cg_instruction_correct == true))) = admit ()
 
 (* ir_value_not_step (matches Coq: Lemma ir_value_not_step) *)
-let ir_value_not_step_obligation () : Tot bool = (0 = 0)
-let ir_value_not_step_lemma () : Lemma (requires True) (ensures (ir_value_not_step_obligation () == ir_value_not_step_obligation ())) = ()
+let ir_value_not_step (p_v: _) (p_e: _) : Lemma (requires (ir_value p_v == true) (ensures (~((p_v == > p_e))))) = admit ()
 
 (* ir_preservation (matches Coq: Theorem ir_preservation) *)
-let ir_preservation_obligation () : Tot bool = (0 = 0)
-let ir_preservation_lemma () : Lemma (requires True) (ensures (ir_preservation_obligation () == ir_preservation_obligation ())) = ()
+let ir_preservation (p_e: _) (p_e_: _) (p_t: _) : Lemma (requires (ir_has_type p_e p_t == true /\ p_e == > e_) (ensures (ir_has_type e_ p_t == true))) = admit ()
 
 (* ir_multi_preservation (matches Coq: Theorem ir_multi_preservation) *)
-let ir_multi_preservation_obligation () : Tot bool = (0 = 0)
-let ir_multi_preservation_lemma () : Lemma (requires True) (ensures (ir_multi_preservation_obligation () == ir_multi_preservation_obligation ())) = ()
+let ir_multi_preservation (p_e: _) (p_e_: _) (p_t: _) : Lemma (requires (ir_has_type p_e p_t == true /\ p_e == > * e_) (ensures (ir_has_type e_ p_t == true))) = admit ()
 
 (* ir_pair_value_not_step (matches Coq: Lemma ir_pair_value_not_step) *)
-let ir_pair_value_not_step_obligation () : Tot bool = (0 = 0)
-let ir_pair_value_not_step_lemma () : Lemma (requires True) (ensures (ir_pair_value_not_step_obligation () == ir_pair_value_not_step_obligation ())) = ()
+let ir_pair_value_not_step (p_v1: _) (p_v2: _) (p_e: _) : Lemma (requires (ir_value p_v1 == true /\ ir_value p_v2 == true) (ensures (~((IR_Pair p_v1 p_v2 == > p_e))))) = admit ()
 
 (* ir_bool_not_step (matches Coq: Lemma ir_bool_not_step) *)
-let ir_bool_not_step_obligation () : Tot bool = (0 = 0)
-let ir_bool_not_step_lemma () : Lemma (requires True) (ensures (ir_bool_not_step_obligation () == ir_bool_not_step_obligation ())) = ()
+let ir_bool_not_step (p_b: _) (p_e: _) : Lemma (~((IR_Bool p_b == > p_e))) = admit ()
 
 (* ir_step_deterministic (matches Coq: Theorem ir_step_deterministic) *)
-let ir_step_deterministic_obligation () : Tot bool = (0 = 0)
-let ir_step_deterministic_lemma () : Lemma (requires True) (ensures (ir_step_deterministic_obligation () == ir_step_deterministic_obligation ())) = ()
+let ir_step_deterministic (p_e: _) (p_e1: _) (p_e2: _) : Lemma (requires (p_e == > p_e1 /\ p_e == > p_e2) (ensures (p_e1 == p_e2))) = admit ()
 
 (* ir_progress (matches Coq: Theorem ir_progress) *)
-let ir_progress_obligation () : Tot bool = (0 = 0)
-let ir_progress_lemma () : Lemma (requires True) (ensures (ir_progress_obligation () == ir_progress_obligation ())) = ()
+let ir_progress (p_e: _) (p_t: _) : Lemma (requires (ir_has_type p_e p_t == true) (ensures (ir_value p_e == true \/ exists e__ p_e == > e_))) = admit ()
 
 (* ir_equiv_refl (matches Coq: Theorem ir_equiv_refl) *)
-let ir_equiv_refl_obligation () : Tot bool = (0 = 0)
-let ir_equiv_refl_lemma () : Lemma (requires True) (ensures (ir_equiv_refl_obligation () == ir_equiv_refl_obligation ())) = ()
+let ir_equiv_refl (p_e: _) : Lemma (ir_equiv p_e p_e == true) = admit ()
 
 (* ir_equiv_sym (matches Coq: Theorem ir_equiv_sym) *)
-let ir_equiv_sym_obligation () : Tot bool = (0 = 0)
-let ir_equiv_sym_lemma () : Lemma (requires True) (ensures (ir_equiv_sym_obligation () == ir_equiv_sym_obligation ())) = ()
+let ir_equiv_sym (p_e1: _) (p_e2: _) : Lemma (requires (ir_equiv p_e1 p_e2 == true) (ensures (ir_equiv p_e2 p_e1 == true))) = admit ()
 
 (* ir_equiv_trans (matches Coq: Theorem ir_equiv_trans) *)
-let ir_equiv_trans_obligation () : Tot bool = (0 = 0)
-let ir_equiv_trans_lemma () : Lemma (requires True) (ensures (ir_equiv_trans_obligation () == ir_equiv_trans_obligation ())) = ()
+let ir_equiv_trans (p_e1: _) (p_e2: _) (p_e3: _) : Lemma (requires (ir_equiv p_e1 p_e2 == true /\ ir_equiv p_e2 p_e3 == true) (ensures (ir_equiv p_e1 p_e3 == true))) = admit ()
 
 (* ir_multi_trans (matches Coq: Lemma ir_multi_trans) *)
-let ir_multi_trans_obligation () : Tot bool = (0 = 0)
-let ir_multi_trans_lemma () : Lemma (requires True) (ensures (ir_multi_trans_obligation () == ir_multi_trans_obligation ())) = ()
+let ir_multi_trans (p_e1: _) (p_e2: _) (p_e3: _) : Lemma (requires (p_e1 == > * p_e2 /\ p_e2 == > * p_e3) (ensures (p_e1 == > * p_e3))) = admit ()
 
 (* ir_multi_pair_cong1 (matches Coq: Lemma ir_multi_pair_cong1) *)
-let ir_multi_pair_cong1_obligation () : Tot bool = (0 = 0)
-let ir_multi_pair_cong1_lemma () : Lemma (requires True) (ensures (ir_multi_pair_cong1_obligation () == ir_multi_pair_cong1_obligation ())) = ()
+let ir_multi_pair_cong1 (p_e1: _) (p_e1_: _) (p_e2: _) : Lemma (requires (p_e1 == > * e1_) (ensures (IR_Pair p_e1 p_e2 == > * IR_Pair e1_ p_e2))) = admit ()
 
 (* ir_multi_pair_cong2 (matches Coq: Lemma ir_multi_pair_cong2) *)
-let ir_multi_pair_cong2_obligation () : Tot bool = (0 = 0)
-let ir_multi_pair_cong2_lemma () : Lemma (requires True) (ensures (ir_multi_pair_cong2_obligation () == ir_multi_pair_cong2_obligation ())) = ()
+let ir_multi_pair_cong2 (p_v1: _) (p_e2: _) (p_e2_: _) : Lemma (requires (ir_value p_v1 == true /\ p_e2 == > * e2_) (ensures (IR_Pair p_v1 p_e2 == > * IR_Pair p_v1 e2_))) = admit ()
 
 (* opt_if_true_sound (matches Coq: Theorem opt_if_true_sound) *)
-let opt_if_true_sound_obligation () : Tot bool = (0 = 0)
-let opt_if_true_sound_lemma () : Lemma (requires True) (ensures (opt_if_true_sound_obligation () == opt_if_true_sound_obligation ())) = ()
+let opt_if_true_sound (p_e1: _) (p_e2: _) : Lemma (IR_If (IR_Bool true) p_e1 p_e2 == > * p_e1) = admit ()
 
 (* opt_if_false_sound (matches Coq: Theorem opt_if_false_sound) *)
-let opt_if_false_sound_obligation () : Tot bool = (0 = 0)
-let opt_if_false_sound_lemma () : Lemma (requires True) (ensures (opt_if_false_sound_obligation () == opt_if_false_sound_obligation ())) = ()
+let opt_if_false_sound (p_e1: _) (p_e2: _) : Lemma (IR_If (IR_Bool false) p_e1 p_e2 == > * p_e2) = admit ()
 
 (* opt_fst_pair_sound (matches Coq: Theorem opt_fst_pair_sound) *)
-let opt_fst_pair_sound_obligation () : Tot bool = (0 = 0)
-let opt_fst_pair_sound_lemma () : Lemma (requires True) (ensures (opt_fst_pair_sound_obligation () == opt_fst_pair_sound_obligation ())) = ()
+let opt_fst_pair_sound (p_v1: _) (p_v2: _) : Lemma (requires (ir_value p_v1 == true /\ ir_value p_v2 == true) (ensures (IR_Fst (IR_Pair p_v1 p_v2) == > * p_v1))) = admit ()
 
 (* opt_snd_pair_sound (matches Coq: Theorem opt_snd_pair_sound) *)
-let opt_snd_pair_sound_obligation () : Tot bool = (0 = 0)
-let opt_snd_pair_sound_lemma () : Lemma (requires True) (ensures (opt_snd_pair_sound_obligation () == opt_snd_pair_sound_obligation ())) = ()
+let opt_snd_pair_sound (p_v1: _) (p_v2: _) : Lemma (requires (ir_value p_v1 == true /\ ir_value p_v2 == true) (ensures (IR_Snd (IR_Pair p_v1 p_v2) == > * p_v2))) = admit ()
 
 (* ir_value_normal (matches Coq: Theorem ir_value_normal) *)
-let ir_value_normal_obligation () : Tot bool = (0 = 0)
-let ir_value_normal_lemma () : Lemma (requires True) (ensures (ir_value_normal_obligation () == ir_value_normal_obligation ())) = ()
+let ir_value_normal (p_v: _) : Lemma (requires (ir_value p_v == true) (ensures (~(exists e_ p_v == > e)))) = admit ()
 
 (* ir_value_reduces_self (matches Coq: Theorem ir_value_reduces_self) *)
-let ir_value_reduces_self_obligation () : Tot bool = (0 = 0)
-let ir_value_reduces_self_lemma () : Lemma (requires True) (ensures (ir_value_reduces_self_obligation () == ir_value_reduces_self_obligation ())) = ()
+let ir_value_reduces_self (p_v: _) : Lemma (requires (ir_value p_v == true) (ensures (p_v == > * p_v))) = admit ()
 
 (* equiv_preserves_typing (matches Coq: Theorem equiv_preserves_typing) *)
-let equiv_preserves_typing_obligation () : Tot bool = (0 = 0)
-let equiv_preserves_typing_lemma () : Lemma (requires True) (ensures (equiv_preserves_typing_obligation () == equiv_preserves_typing_obligation ())) = ()
+let equiv_preserves_typing (p_e1: _) (p_e2: _) (p_v: _) (p_t: _) : Lemma (requires (ir_equiv p_e1 p_e2 == true /\ ir_has_type p_e1 p_t == true /\ ir_has_type p_e2 p_t == true /\ p_e1 == > * p_v /\ ir_value p_v == true) (ensures (ir_has_type p_v p_t == true))) = admit ()
 
 (* src_value_not_step (matches Coq: Lemma src_value_not_step) *)
-let src_value_not_step_obligation () : Tot bool = (0 = 0)
-let src_value_not_step_lemma () : Lemma (requires True) (ensures (src_value_not_step_obligation () == src_value_not_step_obligation ())) = ()
+let src_value_not_step (p_v: _) (p_e: _) : Lemma (requires (src_value p_v == true) (ensures (~((p_v ~ > p_e))))) = admit ()
 
 (* src_step_deterministic (matches Coq: Theorem src_step_deterministic) *)
-let src_step_deterministic_obligation () : Tot bool = (0 = 0)
-let src_step_deterministic_lemma () : Lemma (requires True) (ensures (src_step_deterministic_obligation () == src_step_deterministic_obligation ())) = ()
+let src_step_deterministic (p_e: _) (p_e1: _) (p_e2: _) : Lemma (requires (p_e ~ > p_e1 /\ p_e ~ > p_e2) (ensures (p_e1 == p_e2))) = admit ()
 
 (* src_preservation (matches Coq: Theorem src_preservation) *)
-let src_preservation_obligation () : Tot bool = (0 = 0)
-let src_preservation_lemma () : Lemma (requires True) (ensures (src_preservation_obligation () == src_preservation_obligation ())) = ()
+let src_preservation (p_e: _) (p_e_: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true /\ p_e ~ > e_) (ensures (src_has_type e_ p_t == true))) = admit ()
 
 (* src_progress (matches Coq: Theorem src_progress) *)
-let src_progress_obligation () : Tot bool = (0 = 0)
-let src_progress_lemma () : Lemma (requires True) (ensures (src_progress_obligation () == src_progress_obligation ())) = ()
+let src_progress (p_e: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true) (ensures (src_value p_e == true \/ exists e__ p_e ~ > e_))) = admit ()
 
 (* compile_preserves_value (matches Coq: Theorem compile_preserves_value) *)
-let compile_preserves_value_obligation () : Tot bool = (0 = 0)
-let compile_preserves_value_lemma () : Lemma (requires True) (ensures (compile_preserves_value_obligation () == compile_preserves_value_obligation ())) = ()
+let compile_preserves_value (p_e: _) : Lemma (requires (src_value p_e == true) (ensures (ir_value (compile_expr p_e) == true))) = admit ()
 
 (* compile_preserves_typing (matches Coq: Theorem compile_preserves_typing) *)
-let compile_preserves_typing_obligation () : Tot bool = (0 = 0)
-let compile_preserves_typing_lemma () : Lemma (requires True) (ensures (compile_preserves_typing_obligation () == compile_preserves_typing_obligation ())) = ()
+let compile_preserves_typing (p_e: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true) (ensures (ir_has_type (compile_expr p_e) (compile_ty p_t) == true))) = admit ()
 
 (* compile_forward_simulation (matches Coq: Theorem compile_forward_simulation) *)
-let compile_forward_simulation_obligation () : Tot bool = (0 = 0)
-let compile_forward_simulation_lemma () : Lemma (requires True) (ensures (compile_forward_simulation_obligation () == compile_forward_simulation_obligation ())) = ()
+let compile_forward_simulation (p_e: _) (p_e_: _) : Lemma (requires (p_e ~ > e_) (ensures (compile_expr p_e == > compile_expr e_))) = admit ()
 
 (* compile_forward_multi_simulation (matches Coq: Theorem compile_forward_multi_simulation) *)
-let compile_forward_multi_simulation_obligation () : Tot bool = (0 = 0)
-let compile_forward_multi_simulation_lemma () : Lemma (requires True) (ensures (compile_forward_multi_simulation_obligation () == compile_forward_multi_simulation_obligation ())) = ()
+let compile_forward_multi_simulation (p_e: _) (p_e_: _) : Lemma (requires (p_e ~ > * e_) (ensures (compile_expr p_e == > * compile_expr e_))) = admit ()
 
 (* compile_value_inv (matches Coq: Lemma compile_value_inv) *)
-let compile_value_inv_obligation () : Tot bool = (0 = 0)
-let compile_value_inv_lemma () : Lemma (requires True) (ensures (compile_value_inv_obligation () == compile_value_inv_obligation ())) = ()
+let compile_value_inv (p_e: _) : Lemma (requires (ir_value (compile_expr p_e) == true) (ensures (src_value p_e == true))) = admit ()
 
 (* compile_backward_simulation (matches Coq: Theorem compile_backward_simulation) *)
-let compile_backward_simulation_obligation () : Tot bool = (0 = 0)
-let compile_backward_simulation_lemma () : Lemma (requires True) (ensures (compile_backward_simulation_obligation () == compile_backward_simulation_obligation ())) = ()
+let compile_backward_simulation (p_e: _) (p_e_ir_: _) : Lemma (requires (compile_expr p_e == > e_ir_) (ensures (exists e__ p_e ~ > e_ /\ compile_expr e_ == e_ir_))) = admit ()
 
 (* compile_establishes_equiv (matches Coq: Theorem compile_establishes_equiv) *)
-let compile_establishes_equiv_obligation () : Tot bool = (0 = 0)
-let compile_establishes_equiv_lemma () : Lemma (requires True) (ensures (compile_establishes_equiv_obligation () == compile_establishes_equiv_obligation ())) = ()
+let compile_establishes_equiv (p_e: _) : Lemma (src_ir_equiv p_e (compile_expr p_e) == true) = admit ()
 
 (* equiv_preserved_forward (matches Coq: Theorem equiv_preserved_forward) *)
-let equiv_preserved_forward_obligation () : Tot bool = (0 = 0)
-let equiv_preserved_forward_lemma () : Lemma (requires True) (ensures (equiv_preserved_forward_obligation () == equiv_preserved_forward_obligation ())) = ()
+let equiv_preserved_forward (p_e_src: _) (p_e_src_: _) : Lemma (requires (p_e_src ~ > e_src_) (ensures (src_ir_equiv e_src_ (compile_expr e_src_) == true))) = admit ()
 
 (* compile_terminates_equivalently (matches Coq: Theorem compile_terminates_equivalently) *)
-let compile_terminates_equivalently_obligation () : Tot bool = (0 = 0)
-let compile_terminates_equivalently_lemma () : Lemma (requires True) (ensures (compile_terminates_equivalently_obligation () == compile_terminates_equivalently_obligation ())) = ()
+let compile_terminates_equivalently (p_e: _) (p_v: _) : Lemma (requires (src_has_type p_e Src_TUnit == true \/ src_has_type p_e Src_TBool == true \/ src_has_type p_e Src_TInt == true /\ p_e ~ > * p_v /\ src_value p_v == true) (ensures (compile_expr p_e == > * compile_expr p_v /\ ir_value (compile_expr p_v) == true))) = admit ()
 
 (* compile_type_safety (matches Coq: Theorem compile_type_safety) *)
-let compile_type_safety_obligation () : Tot bool = (0 = 0)
-let compile_type_safety_lemma () : Lemma (requires True) (ensures (compile_type_safety_obligation () == compile_type_safety_obligation ())) = ()
+let compile_type_safety (p_e: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true) (ensures (ir_value (compile_expr p_e) == true \/ exists e__ compile_expr p_e == > e_))) = admit ()
 
 (* opt_dead_code_if_true (matches Coq: Theorem opt_dead_code_if_true) *)
-let opt_dead_code_if_true_obligation () : Tot bool = (0 = 0)
-let opt_dead_code_if_true_lemma () : Lemma (requires True) (ensures (opt_dead_code_if_true_obligation () == opt_dead_code_if_true_obligation ())) = ()
+let opt_dead_code_if_true (p_e1: _) (p_e2: _) : Lemma (ir_equiv (IR_If (IR_Bool true) p_e1 p_e2) p_e1 == true) = admit ()
 
 (* opt_dead_code_if_false (matches Coq: Theorem opt_dead_code_if_false) *)
-let opt_dead_code_if_false_obligation () : Tot bool = (0 = 0)
-let opt_dead_code_if_false_lemma () : Lemma (requires True) (ensures (opt_dead_code_if_false_obligation () == opt_dead_code_if_false_obligation ())) = ()
+let opt_dead_code_if_false (p_e1: _) (p_e2: _) : Lemma (ir_equiv (IR_If (IR_Bool false) p_e1 p_e2) p_e2 == true) = admit ()
 
 (* opt_fst_pair_typed (matches Coq: Theorem opt_fst_pair_typed) *)
-let opt_fst_pair_typed_obligation () : Tot bool = (0 = 0)
-let opt_fst_pair_typed_lemma () : Lemma (requires True) (ensures (opt_fst_pair_typed_obligation () == opt_fst_pair_typed_obligation ())) = ()
+let opt_fst_pair_typed (p_v1: _) (p_v2: _) (p_t1: _) (p_t2: _) : Lemma (requires (ir_value p_v1 == true /\ ir_value p_v2 == true /\ ir_has_type (IR_Pair p_v1 p_v2) (IR_TProd p_t1 p_t2) == true) (ensures (ir_has_type p_v1 p_t1 == true))) = admit ()
 
 (* opt_snd_pair_typed (matches Coq: Theorem opt_snd_pair_typed) *)
-let opt_snd_pair_typed_obligation () : Tot bool = (0 = 0)
-let opt_snd_pair_typed_lemma () : Lemma (requires True) (ensures (opt_snd_pair_typed_obligation () == opt_snd_pair_typed_obligation ())) = ()
+let opt_snd_pair_typed (p_v1: _) (p_v2: _) (p_t1: _) (p_t2: _) : Lemma (requires (ir_value p_v1 == true /\ ir_value p_v2 == true /\ ir_has_type (IR_Pair p_v1 p_v2) (IR_TProd p_t1 p_t2) == true) (ensures (ir_has_type p_v2 p_t2 == true))) = admit ()
 
 (* const_prop_bool (matches Coq: Theorem const_prop_bool) *)
-let const_prop_bool_obligation () : Tot bool = (0 = 0)
-let const_prop_bool_lemma () : Lemma (requires True) (ensures (const_prop_bool_obligation () == const_prop_bool_obligation ())) = ()
+let const_prop_bool (p_b: _) : Lemma (ir_value (compile_expr (Src_Bool p_b)) == true) = admit ()
 
 (* const_prop_int (matches Coq: Theorem const_prop_int) *)
-let const_prop_int_obligation () : Tot bool = (0 = 0)
-let const_prop_int_lemma () : Lemma (requires True) (ensures (const_prop_int_obligation () == const_prop_int_obligation ())) = ()
+let const_prop_int (p_n: _) : Lemma (ir_value (compile_expr (Src_Int p_n)) == true) = admit ()
 
 (* const_prop_unit (matches Coq: Theorem const_prop_unit) *)
-let const_prop_unit_obligation () : Tot bool = (0 = 0)
-let const_prop_unit_lemma () : Lemma (requires True) (ensures (const_prop_unit_obligation () == const_prop_unit_obligation ())) = ()
+let const_prop_unit () : Lemma (ir_value (compile_expr Src_Unit) == true) = admit ()
 
 (* parsing_correct_prop (matches Coq: Theorem parsing_correct_prop) *)
-let parsing_correct_prop_obligation () : Tot bool = (0 = 0)
-let parsing_correct_prop_lemma () : Lemma (requires True) (ensures (parsing_correct_prop_obligation () == parsing_correct_prop_obligation ())) = ()
+let parsing_correct_prop () : Lemma (parsing_correctness == true) = admit ()
 
 (* optimization_relation_reflexive (matches Coq: Theorem optimization_relation_reflexive) *)
-let optimization_relation_reflexive_obligation () : Tot bool = (0 = 0)
-let optimization_relation_reflexive_lemma () : Lemma (requires True) (ensures (optimization_relation_reflexive_obligation () == optimization_relation_reflexive_obligation ())) = ()
+let optimization_relation_reflexive (p_e: _) : Lemma (ir_equiv p_e p_e == true) = admit ()
 
 (* optimization_relation_symmetric (matches Coq: Theorem optimization_relation_symmetric) *)
-let optimization_relation_symmetric_obligation () : Tot bool = (0 = 0)
-let optimization_relation_symmetric_lemma () : Lemma (requires True) (ensures (optimization_relation_symmetric_obligation () == optimization_relation_symmetric_obligation ())) = ()
+let optimization_relation_symmetric (p_e1: _) (p_e2: _) : Lemma (requires (ir_equiv p_e1 p_e2 == true) (ensures (ir_equiv p_e2 p_e1 == true))) = admit ()
 
 (* optimization_relation_transitive (matches Coq: Theorem optimization_relation_transitive) *)
-let optimization_relation_transitive_obligation () : Tot bool = (0 = 0)
-let optimization_relation_transitive_lemma () : Lemma (requires True) (ensures (optimization_relation_transitive_obligation () == optimization_relation_transitive_obligation ())) = ()
+let optimization_relation_transitive (p_e1: _) (p_e2: _) (p_e3: _) : Lemma (requires (ir_equiv p_e1 p_e2 == true /\ ir_equiv p_e2 p_e3 == true) (ensures (ir_equiv p_e1 p_e3 == true))) = admit ()
 
 (* full_pipeline_correctness (matches Coq: Theorem full_pipeline_correctness) *)
-let full_pipeline_correctness_obligation () : Tot bool = (0 = 0)
-let full_pipeline_correctness_lemma () : Lemma (requires True) (ensures (full_pipeline_correctness_obligation () == full_pipeline_correctness_obligation ())) = ()
+let full_pipeline_correctness (p_e: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true) (ensures (ir_has_type (compile_expr p_e) (compile_ty p_t) == true /\ (src_value p_e == true \/ exists e__ p_e ~ > e_) /\ (forall e__ p_e ~ > e_ -> compile_expr p_e ==> compile_expr e_)))) = admit ()
 
 (* full_pipeline_termination (matches Coq: Theorem full_pipeline_termination) *)
-let full_pipeline_termination_obligation () : Tot bool = (0 = 0)
-let full_pipeline_termination_lemma () : Lemma (requires True) (ensures (full_pipeline_termination_obligation () == full_pipeline_termination_obligation ())) = ()
+let full_pipeline_termination (p_e: _) (p_v: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true /\ p_e ~ > * p_v /\ src_value p_v == true) (ensures (compile_expr p_e == > * compile_expr p_v /\ ir_value (compile_expr p_v) == true /\ ir_has_type (compile_expr p_v) (compile_ty p_t) == true))) = admit ()

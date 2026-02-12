@@ -80,117 +80,88 @@ let dpo_requirement_met (p_policy: nat) (p_dpo_appointed: bool) : Tot bool =
   (0 = 0)
 
 (* data_residency (matches Coq: Theorem data_residency) *)
-let data_residency_obligation () : Tot bool = (0 = 0)
-let data_residency_lemma () : Lemma (requires True) (ensures (data_residency_obligation () == data_residency_obligation ())) = ()
+let data_residency (p_d: _) (p_dataitem: _) : Lemma (data_resident p_d (data_jurisdiction p_d) == true) = admit ()
 
 (* cross_border_requires_auth (matches Coq: Theorem cross_border_requires_auth) *)
-let cross_border_requires_auth_obligation () : Tot bool = (0 = 0)
-let cross_border_requires_auth_lemma () : Lemma (requires True) (ensures (cross_border_requires_auth_obligation () == cross_border_requires_auth_obligation ())) = ()
+let cross_border_requires_auth (p_agreements: nat) (p_d: nat) (p_target: nat) (p_trail: nat) : Lemma (requires (~(data_jurisdiction p_d == p_target) /\ authorized p_agreements (data_jurisdiction p_d) p_target (data_classification p_d) == true) (ensures (well_formed_transfer p_agreements (mktransfer (data_id p_d) (data_jurisdiction p_d) p_target :: p_trail) p_d p_target == true))) = admit ()
 
 (* jurisdiction_leq_reflexive (matches Coq: Theorem jurisdiction_leq_reflexive) *)
-let jurisdiction_leq_reflexive_obligation () : Tot bool = (0 = 0)
-let jurisdiction_leq_reflexive_lemma () : Lemma (requires True) (ensures (jurisdiction_leq_reflexive_obligation () == jurisdiction_leq_reflexive_obligation ())) = ()
+let jurisdiction_leq_reflexive (p_j: _) (p_jurisdiction: _) : Lemma (jurisdiction_leq p_j p_j == true) = admit ()
 
 (* jurisdiction_leq_transitive (matches Coq: Theorem jurisdiction_leq_transitive) *)
-let jurisdiction_leq_transitive_obligation () : Tot bool = (0 = 0)
-let jurisdiction_leq_transitive_lemma () : Lemma (requires True) (ensures (jurisdiction_leq_transitive_obligation () == jurisdiction_leq_transitive_obligation ())) = ()
+let jurisdiction_leq_transitive (p_j1: _) (p_j2: _) (p_j3: _) (p_jurisdiction: _) : Lemma (requires (jurisdiction_leq p_j1 p_j2 == true /\ jurisdiction_leq p_j2 p_j3 == true) (ensures (jurisdiction_leq p_j1 p_j3 == true))) = admit ()
 
 (* jurisdiction_preorder (matches Coq: Theorem jurisdiction_preorder) *)
-let jurisdiction_preorder_obligation () : Tot bool = (0 = 0)
-let jurisdiction_preorder_lemma () : Lemma (requires True) (ensures (jurisdiction_preorder_obligation () == jurisdiction_preorder_obligation ())) = ()
+let jurisdiction_preorder (p_j: _) (p_jurisdiction: _) : Lemma (jurisdiction_leq p_j p_j == true /\ (forall j2 j3_ jurisdiction_leq p_j j2 -> jurisdiction_leq j2 j3 -> jurisdiction_leq p_j j3 == true)) = admit ()
 
 (* compliance_composition (matches Coq: Theorem compliance_composition) *)
-let compliance_composition_obligation () : Tot bool = (0 = 0)
-let compliance_composition_lemma () : Lemma (requires True) (ensures (compliance_composition_obligation () == compliance_composition_obligation ())) = ()
+let compliance_composition (p_agreements: nat) (p_j1: nat) (p_j2: nat) (p_j3: nat) (p_cls: nat) : Lemma (requires (compliant_op p_agreements p_j1 p_j2 p_cls == true /\ compliant_op p_agreements p_j2 p_j3 p_cls == true) (ensures (compliant_op p_agreements p_j1 p_j2 p_cls == true /\ compliant_op p_agreements p_j2 p_j3 p_cls == true))) = admit ()
 
 (* data_sovereignty (matches Coq: Theorem data_sovereignty) *)
-let data_sovereignty_obligation () : Tot bool = (0 = 0)
-let data_sovereignty_lemma () : Lemma (requires True) (ensures (data_sovereignty_obligation () == data_sovereignty_obligation ())) = ()
+let data_sovereignty (p_agreements: nat) (p_d: nat) (p_target: nat) : Lemma (requires (~(data_jurisdiction p_d == p_target) /\ compliant_op p_agreements (data_jurisdiction p_d) p_target (data_classification p_d) == true) (ensures (authorized p_agreements (data_jurisdiction p_d) p_target (data_classification p_d) == true))) = admit ()
 
 (* authorization_downward_closed (matches Coq: Theorem authorization_downward_closed) *)
-let authorization_downward_closed_obligation () : Tot bool = (0 = 0)
-let authorization_downward_closed_lemma () : Lemma (requires True) (ensures (authorization_downward_closed_obligation () == authorization_downward_closed_obligation ())) = ()
+let authorization_downward_closed (p_agreements: nat) (p_from: nat) (p_to: nat) (p_cls: nat) (p_cls_: nat) : Lemma (requires (authorized p_agreements p_from p_to p_cls == true /\ cls_ <= p_cls) (ensures (authorized p_agreements p_from p_to cls_ == true))) = admit ()
 
 (* audit_trail_completeness (matches Coq: Theorem audit_trail_completeness) *)
-let audit_trail_completeness_obligation () : Tot bool = (0 = 0)
-let audit_trail_completeness_lemma () : Lemma (requires True) (ensures (audit_trail_completeness_obligation () == audit_trail_completeness_obligation ())) = ()
+let audit_trail_completeness (p_trail: nat) (p_did: nat) (p_from: nat) (p_to: nat) : Lemma (transfer_logged (log_transfer p_trail p_did p_from p_to) p_did p_from p_to == true) = admit ()
 
 (* audit_trail_preservation (matches Coq: Theorem audit_trail_preservation) *)
-let audit_trail_preservation_obligation () : Tot bool = (0 = 0)
-let audit_trail_preservation_lemma () : Lemma (requires True) (ensures (audit_trail_preservation_obligation () == audit_trail_preservation_obligation ())) = ()
+let audit_trail_preservation (p_trail: nat) (p_did: nat) (p_from: nat) (p_to: nat) (p_did_: nat) (p_from_: nat) (p_to_: nat) : Lemma (requires (transfer_logged p_trail p_did p_from p_to == true) (ensures (transfer_logged (log_transfer p_trail did_ from_ to_) p_did p_from p_to == true))) = admit ()
 
 (* policy_monotonicity (matches Coq: Theorem policy_monotonicity) *)
-let policy_monotonicity_obligation () : Tot bool = (0 = 0)
-let policy_monotonicity_lemma () : Lemma (requires True) (ensures (policy_monotonicity_obligation () == policy_monotonicity_obligation ())) = ()
+let policy_monotonicity (p_strict: nat) (p_weak: nat) (p_cls: nat) : Lemma (requires (policy_stricter p_strict p_weak == true /\ policy_allows p_strict p_cls == true) (ensures (policy_allows p_weak p_cls == true))) = admit ()
 
 (* same_jurisdiction_compliant (matches Coq: Theorem same_jurisdiction_compliant) *)
-let same_jurisdiction_compliant_obligation () : Tot bool = (0 = 0)
-let same_jurisdiction_compliant_lemma () : Lemma (requires True) (ensures (same_jurisdiction_compliant_obligation () == same_jurisdiction_compliant_obligation ())) = ()
+let same_jurisdiction_compliant (p_agreements: nat) (p_j: nat) (p_cls: nat) : Lemma (compliant_op p_agreements p_j p_j p_cls == true) = admit ()
 
 (* audit_trail_grows (matches Coq: Theorem audit_trail_grows) *)
-let audit_trail_grows_obligation () : Tot bool = (0 = 0)
-let audit_trail_grows_lemma () : Lemma (requires True) (ensures (audit_trail_grows_obligation () == audit_trail_grows_obligation ())) = ()
+let audit_trail_grows (p_trail: nat) (p_did: nat) (p_from: nat) (p_to: nat) : Lemma (length (log_transfer p_trail p_did p_from p_to) == ((length p_trail) + 1)) = admit ()
 
 (* local_only_blocks_cross_border (matches Coq: Theorem local_only_blocks_cross_border) *)
-let local_only_blocks_cross_border_obligation () : Tot bool = (0 = 0)
-let local_only_blocks_cross_border_lemma () : Lemma (requires True) (ensures (local_only_blocks_cross_border_obligation () == local_only_blocks_cross_border_obligation ())) = ()
+let local_only_blocks_cross_border (p_from: nat) (p_to: nat) : Lemma (requires (~(p_from == p_to)) (ensures (~(localization_permits_transfer LocalOnly p_from p_to == true)))) = admit ()
 
 (* regional_allows_intra_asean (matches Coq: Theorem regional_allows_intra_asean) *)
-let regional_allows_intra_asean_obligation () : Tot bool = (0 = 0)
-let regional_allows_intra_asean_lemma () : Lemma (requires True) (ensures (regional_allows_intra_asean_obligation () == regional_allows_intra_asean_obligation ())) = ()
+let regional_allows_intra_asean (p_from: nat) (p_to: nat) : Lemma (requires (p_from <= 9 /\ p_to <= 9) (ensures (localization_permits_transfer RegionalASEAN p_from p_to == true))) = admit ()
 
 (* global_allows_all (matches Coq: Theorem global_allows_all) *)
-let global_allows_all_obligation () : Tot bool = (0 = 0)
-let global_allows_all_lemma () : Lemma (requires True) (ensures (global_allows_all_obligation () == global_allows_all_obligation ())) = ()
+let global_allows_all (p_from: nat) (p_to: nat) : Lemma (localization_permits_transfer GlobalAllowed p_from p_to == true) = admit ()
 
 (* adequacy_list_membership (matches Coq: Theorem adequacy_list_membership) *)
-let adequacy_list_membership_obligation () : Tot bool = (0 = 0)
-let adequacy_list_membership_lemma () : Lemma (requires True) (ensures (adequacy_list_membership_obligation () == adequacy_list_membership_obligation ())) = ()
+let adequacy_list_membership (p_policy: nat) (p_j: nat) (p_rest: (list nat)) : Lemma (requires (adp_adequacy_recognized p_policy == p_j :: p_rest) (ensures (adequacy_recognized p_policy p_j == true))) = admit ()
 
 (* asean_data_flow_compliant (matches Coq: Theorem asean_data_flow_compliant) *)
-let asean_data_flow_compliant_obligation () : Tot bool = (0 = 0)
-let asean_data_flow_compliant_lemma () : Lemma (requires True) (ensures (asean_data_flow_compliant_obligation () == asean_data_flow_compliant_obligation ())) = ()
+let asean_data_flow_compliant (p_flow: nat) : Lemma (requires ((adp_consent_required (cbf_source_policy p_flow) == fn_true -> cbf_consent_obtained p_flow = true) /\ localization_permits_transfer (adp_localization (cbf_source_policy p_flow)) (data_jurisdiction (cbf_data p_flow)) (cbf_target_jurisdiction p_flow) == true /\ cbf_safeguards_in_place p_flow == true) (ensures (cbf_compliant p_flow == true))) = admit ()
 
 (* breach_notification_timeliness (matches Coq: Theorem breach_notification_timeliness) *)
-let breach_notification_timeliness_obligation () : Tot bool = (0 = 0)
-let breach_notification_timeliness_lemma () : Lemma (requires True) (ensures (breach_notification_timeliness_obligation () == breach_notification_timeliness_obligation ())) = ()
+let breach_notification_timeliness (p_policy: nat) (p_det: nat) (p_notif: nat) : Lemma (requires (p_notif <= p_det + adp_breach_notification_hours p_policy) (ensures (breach_notification_compliant p_policy p_det p_notif == true))) = admit ()
 
 (* stricter_deadline_satisfies_weaker (matches Coq: Theorem stricter_deadline_satisfies_weaker) *)
-let stricter_deadline_satisfies_weaker_obligation () : Tot bool = (0 = 0)
-let stricter_deadline_satisfies_weaker_lemma () : Lemma (requires True) (ensures (stricter_deadline_satisfies_weaker_obligation () == stricter_deadline_satisfies_weaker_obligation ())) = ()
+let stricter_deadline_satisfies_weaker (p_p1: nat) (p_p2: nat) (p_det: nat) (p_notif: nat) : Lemma (requires (adp_breach_notification_hours p_p1 <= adp_breach_notification_hours p_p2 /\ breach_notification_compliant p_p1 p_det p_notif == true) (ensures (breach_notification_compliant p_p2 p_det p_notif == true))) = admit ()
 
 (* mcc_compliance (matches Coq: Theorem mcc_compliance) *)
-let mcc_compliance_obligation () : Tot bool = (0 = 0)
-let mcc_compliance_lemma () : Lemma (requires True) (ensures (mcc_compliance_obligation () == mcc_compliance_obligation ())) = ()
+let mcc_compliance (p_mcc: nat) (p_min: nat) : Lemma (requires (mcc_data_protection_standard p_mcc >= p_min /\ mcc_audit_rights p_mcc == true /\ mcc_termination_clause p_mcc == true) (ensures (mcc_adequate p_mcc p_min == true))) = admit ()
 
 (* higher_standard_subsumes (matches Coq: Theorem higher_standard_subsumes) *)
-let higher_standard_subsumes_obligation () : Tot bool = (0 = 0)
-let higher_standard_subsumes_lemma () : Lemma (requires True) (ensures (higher_standard_subsumes_obligation () == higher_standard_subsumes_obligation ())) = ()
+let higher_standard_subsumes (p_mcc: nat) (p_s1: nat) (p_s2: nat) : Lemma (requires (p_s1 <= p_s2 /\ mcc_adequate p_mcc p_s2 == true) (ensures (mcc_adequate p_mcc p_s1 == true))) = admit ()
 
 (* mutual_recognition_symmetric (matches Coq: Theorem mutual_recognition_symmetric) *)
-let mutual_recognition_symmetric_obligation () : Tot bool = (0 = 0)
-let mutual_recognition_symmetric_lemma () : Lemma (requires True) (ensures (mutual_recognition_symmetric_obligation () == mutual_recognition_symmetric_obligation ())) = ()
+let mutual_recognition_symmetric (p_j1: nat) (p_j2: nat) (p_agreements: nat) : Lemma (requires (mutual_recognition p_j1 p_j2 p_agreements == true) (ensures (mutual_recognition p_j2 p_j1 p_agreements == true))) = admit ()
 
 (* classification_bounded (matches Coq: Theorem classification_bounded) *)
-let classification_bounded_obligation () : Tot bool = (0 = 0)
-let classification_bounded_lemma () : Lemma (requires True) (ensures (classification_bounded_obligation () == classification_bounded_obligation ())) = ()
+let classification_bounded (p_d: nat) : Lemma (data_classification p_d <= 3 \/ data_classification p_d > 3) = admit ()
 
 (* audit_trail_monotonic (matches Coq: Theorem audit_trail_monotonic) *)
-let audit_trail_monotonic_obligation () : Tot bool = (0 = 0)
-let audit_trail_monotonic_lemma () : Lemma (requires True) (ensures (audit_trail_monotonic_obligation () == audit_trail_monotonic_obligation ())) = ()
+let audit_trail_monotonic (p_trail: nat) (p_did: nat) (p_from: nat) (p_to: nat) (p_e: nat) : Lemma (requires (In p_e p_trail == true) (ensures (In p_e (log_transfer p_trail p_did p_from p_to) == true))) = admit ()
 
 (* two_transfers_logged (matches Coq: Theorem two_transfers_logged) *)
-let two_transfers_logged_obligation () : Tot bool = (0 = 0)
-let two_transfers_logged_lemma () : Lemma (requires True) (ensures (two_transfers_logged_obligation () == two_transfers_logged_obligation ())) = ()
+let two_transfers_logged (p_trail: nat) (p_d1: nat) (p_f1: nat) (p_t1: nat) (p_d2: nat) (p_f2: nat) (p_t2: nat) : Lemma (fn_let trail1 : == log_transfer p_trail p_d1 p_f1 p_t1 id_in id_let trail2 := log_transfer trail1 p_d2 p_f2 p_t2 id_in transfer_logged trail2 p_d1 p_f1 p_t1 /\ transfer_logged trail2 p_d2 p_f2 p_t2 == true) = admit ()
 
 (* localization_coverage (matches Coq: Theorem localization_coverage) *)
-let localization_coverage_obligation () : Tot bool = (0 = 0)
-let localization_coverage_lemma () : Lemma (requires True) (ensures (localization_coverage_obligation () == localization_coverage_obligation ())) = ()
+let localization_coverage (p_dl: data_localization) : Lemma (In p_dl all_localizations == true) = admit ()
 
 (* dpo_appointed_when_required (matches Coq: Theorem dpo_appointed_when_required) *)
-let dpo_appointed_when_required_obligation () : Tot bool = (0 = 0)
-let dpo_appointed_when_required_lemma () : Lemma (requires True) (ensures (dpo_appointed_when_required_obligation () == dpo_appointed_when_required_obligation ())) = ()
+let dpo_appointed_when_required (p_policy: nat) : Lemma (requires (adp_dpo_required p_policy == true) (ensures (dpo_requirement_met p_policy true == true))) = admit ()
 
 (* dpo_not_required_always_met (matches Coq: Theorem dpo_not_required_always_met) *)
-let dpo_not_required_always_met_obligation () : Tot bool = (0 = 0)
-let dpo_not_required_always_met_lemma () : Lemma (requires True) (ensures (dpo_not_required_always_met_obligation () == dpo_not_required_always_met_obligation ())) = ()
+let dpo_not_required_always_met (p_policy: nat) (p_appointed: bool) : Lemma (requires (adp_dpo_required p_policy == false) (ensures (dpo_requirement_met p_policy p_appointed == true))) = admit ()

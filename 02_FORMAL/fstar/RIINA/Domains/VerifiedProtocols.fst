@@ -277,149 +277,112 @@ let constant_time_op (p_op: nat) : Tot bool =
 let all_theorems_proven : bool = (0 = 0)
 
 (* hkdf_deterministic (matches Coq: Lemma hkdf_deterministic) *)
-let hkdf_deterministic_obligation () : Tot bool = (0 = 0)
-let hkdf_deterministic_lemma () : Lemma (requires True) (ensures (hkdf_deterministic_obligation () == hkdf_deterministic_obligation ())) = ()
+let hkdf_deterministic (p_salt: _) (p_ikm: _) (p_info: _) (p_len: _) : Lemma (hkdf p_salt p_ikm p_info p_len == hkdf p_salt p_ikm p_info p_len) = admit ()
 
 (* AH_001_01_protocol_specification (matches Coq: Theorem AH_001_01_protocol_specification) *)
-let ah_001_01_protocol_specification_obligation () : Tot bool = (0 = 0)
-let ah_001_01_protocol_specification_lemma () : Lemma (requires True) (ensures (ah_001_01_protocol_specification_obligation () == ah_001_01_protocol_specification_obligation ())) = ()
+let ah_001_01_protocol_specification (p_spec: protocol_spec) : Lemma (requires (List.length (p_spec.f_spec_name) >= 0 /\ List.length (p_spec.f_spec_messages) >= 0 /\ List.length (p_spec.f_spec_security_goals) >= 0) (ensures (exists spec__ spec_ == p_spec))) = admit ()
 
 (* AH_001_02_implementation_matches_spec (matches Coq: Theorem AH_001_02_implementation_matches_spec) *)
-let ah_001_02_implementation_matches_spec_obligation () : Tot bool = (0 = 0)
-let ah_001_02_implementation_matches_spec_lemma () : Lemma (requires True) (ensures (ah_001_02_implementation_matches_spec_obligation () == ah_001_02_implementation_matches_spec_obligation ())) = ()
+let ah_001_02_implementation_matches_spec (p_p_impl: _) (p_spec: _) : Lemma (requires (implements id_impl p_spec == true /\ forall trace_ valid_trace id_impl trace == true) (ensures (satisfies_spec trace p_spec == true))) = admit ()
 
 (* AH_001_03_trace_valid (matches Coq: Theorem AH_001_03_trace_valid) *)
-let ah_001_03_trace_valid_obligation () : Tot bool = (0 = 0)
-let ah_001_03_trace_valid_lemma () : Lemma (requires True) (ensures (ah_001_03_trace_valid_obligation () == ah_001_03_trace_valid_obligation ())) = ()
+let ah_001_03_trace_valid (p_p_impl: _) (p_trace: _) : Lemma (valid_trace id_impl p_trace == true) = admit ()
 
 (* AH_001_04_security_goals_satisfied (matches Coq: Theorem AH_001_04_security_goals_satisfied) *)
-let ah_001_04_security_goals_satisfied_obligation () : Tot bool = (0 = 0)
-let ah_001_04_security_goals_satisfied_lemma () : Lemma (requires True) (ensures (ah_001_04_security_goals_satisfied_obligation () == ah_001_04_security_goals_satisfied_obligation ())) = ()
+let ah_001_04_security_goals_satisfied (p_spec: _) (p_p_impl: _) (p_trace: _) : Lemma (requires (implements id_impl p_spec == true /\ valid_trace id_impl p_trace == true) (ensures (satisfies_spec p_trace p_spec == true))) = admit ()
 
 (* AH_001_05_protocol_composition (matches Coq: Theorem AH_001_05_protocol_composition) *)
-let ah_001_05_protocol_composition_obligation () : Tot bool = (0 = 0)
-let ah_001_05_protocol_composition_lemma () : Lemma (requires True) (ensures (ah_001_05_protocol_composition_obligation () == ah_001_05_protocol_composition_obligation ())) = ()
+let ah_001_05_protocol_composition (p_spec1: _) (p_spec2: _) (p_impl1: _) (p_impl2: _) (p_trace1: _) (p_trace2: _) : Lemma (requires (implements p_impl1 p_spec1 == true /\ implements p_impl2 p_spec2 == true /\ valid_trace p_impl1 p_trace1 == true /\ valid_trace p_impl2 p_trace2 == true) (ensures (valid_trace p_impl1 (p_trace1 ++ p_trace2) == true))) = admit ()
 
 (* AH_001_06_proverif_verified (matches Coq: Theorem AH_001_06_proverif_verified) *)
-let ah_001_06_proverif_verified_obligation () : Tot bool = (0 = 0)
-let ah_001_06_proverif_verified_lemma () : Lemma (requires True) (ensures (ah_001_06_proverif_verified_obligation () == ah_001_06_proverif_verified_obligation ())) = ()
+let ah_001_06_proverif_verified (p_p_impl: _) (p_spec: _) : Lemma (requires (implements id_impl p_spec == true /\ (forall trace_ valid_trace id_impl trace -> satisfies_spec trace p_spec == true) /\ forall (adv : Adversary) trace_ valid_trace id_impl trace == true) (ensures (satisfies_spec trace p_spec == true))) = admit ()
 
 (* AH_001_07_protocol_deterministic (matches Coq: Theorem AH_001_07_protocol_deterministic) *)
-let ah_001_07_protocol_deterministic_obligation () : Tot bool = (0 = 0)
-let ah_001_07_protocol_deterministic_lemma () : Lemma (requires True) (ensures (ah_001_07_protocol_deterministic_obligation () == ah_001_07_protocol_deterministic_obligation ())) = ()
+let ah_001_07_protocol_deterministic (p_p_impl: _) (p_input: _) (p_st1: _) (p_st2: _) : Lemma (requires (impl_state_machine id_impl p_input == p_st1 /\ impl_state_machine id_impl p_input == p_st2) (ensures (p_st1 == p_st2))) = admit ()
 
 (* AH_001_08_tls13_confidentiality (matches Coq: Theorem AH_001_08_tls13_confidentiality) *)
-let ah_001_08_tls13_confidentiality_obligation () : Tot bool = (0 = 0)
-let ah_001_08_tls13_confidentiality_lemma () : Lemma (requires True) (ensures (ah_001_08_tls13_confidentiality_obligation () == ah_001_08_tls13_confidentiality_obligation ())) = ()
+let ah_001_08_tls13_confidentiality (p_session: _) : Lemma (requires (tls13_handshake_complete p_session == true) (ensures (strong_confidentiality (p_session.f_session_client_key) == true))) = admit ()
 
 (* AH_001_09_tls13_authentication (matches Coq: Theorem AH_001_09_tls13_authentication) *)
-let ah_001_09_tls13_authentication_obligation () : Tot bool = (0 = 0)
-let ah_001_09_tls13_authentication_lemma () : Lemma (requires True) (ensures (ah_001_09_tls13_authentication_obligation () == ah_001_09_tls13_authentication_obligation ())) = ()
+let ah_001_09_tls13_authentication (p_session: _) (p_peer_cert: _) : Lemma (requires (authenticated p_session p_peer_cert == true) (ensures (authentication (p_session.f_session_peer_cert) p_peer_cert == true))) = admit ()
 
 (* AH_001_10_tls13_forward_secrecy (matches Coq: Theorem AH_001_10_tls13_forward_secrecy) *)
-let ah_001_10_tls13_forward_secrecy_obligation () : Tot bool = (0 = 0)
-let ah_001_10_tls13_forward_secrecy_lemma () : Lemma (requires True) (ensures (ah_001_10_tls13_forward_secrecy_obligation () == ah_001_10_tls13_forward_secrecy_obligation ())) = ()
+let ah_001_10_tls13_forward_secrecy (p_session: _) (p_long_term: _) (p_compromise_time: _) : Lemma (requires (tls13_handshake_complete p_session == true) (ensures (forward_secrecy p_session p_long_term p_compromise_time == true))) = admit ()
 
 (* AH_001_11_tls13_handshake_correct (matches Coq: Theorem AH_001_11_tls13_handshake_correct) *)
-let ah_001_11_tls13_handshake_correct_obligation () : Tot bool = (0 = 0)
-let ah_001_11_tls13_handshake_correct_lemma () : Lemma (requires True) (ensures (ah_001_11_tls13_handshake_correct_obligation () == ah_001_11_tls13_handshake_correct_obligation ())) = ()
+let ah_001_11_tls13_handshake_correct (p_st1: _) (p_msg: _) (p_st2: _) : Lemma (requires (tls13_step p_st1 p_msg p_st2 == true) (ensures (p_st2.f_tls_stage == ((p_st1.f_tls_stage) + 1)))) = admit ()
 
 (* AH_001_12_tls13_key_derivation (matches Coq: Theorem AH_001_12_tls13_key_derivation) *)
-let ah_001_12_tls13_key_derivation_obligation () : Tot bool = (0 = 0)
-let ah_001_12_tls13_key_derivation_lemma () : Lemma (requires True) (ensures (ah_001_12_tls13_key_derivation_obligation () == ah_001_12_tls13_key_derivation_obligation ())) = ()
+let ah_001_12_tls13_key_derivation (p_salt: _) (p_ikm: _) (p_info: _) (p_len: _) : Lemma (hkdf p_salt p_ikm p_info p_len == hkdf p_salt p_ikm p_info p_len) = admit ()
 
 (* AH_001_13_tls13_certificate_verify (matches Coq: Theorem AH_001_13_tls13_certificate_verify) *)
-let ah_001_13_tls13_certificate_verify_obligation () : Tot bool = (0 = 0)
-let ah_001_13_tls13_certificate_verify_lemma () : Lemma (requires True) (ensures (ah_001_13_tls13_certificate_verify_obligation () == ah_001_13_tls13_certificate_verify_obligation ())) = ()
+let ah_001_13_tls13_certificate_verify (p_st: _) (p_cert: _) (p_st_: _) : Lemma (requires (p_st.f_tls_stage == 3 /\ tls13_step p_st (Certificate p_cert) st_ == true) (ensures (In (Certificate p_cert) (st_.f_tls_transcript) == true))) = admit ()
 
 (* AH_001_14_tls13_finished_verify (matches Coq: Theorem AH_001_14_tls13_finished_verify) *)
-let ah_001_14_tls13_finished_verify_obligation () : Tot bool = (0 = 0)
-let ah_001_14_tls13_finished_verify_lemma () : Lemma (requires True) (ensures (ah_001_14_tls13_finished_verify_obligation () == ah_001_14_tls13_finished_verify_obligation ())) = ()
+let ah_001_14_tls13_finished_verify (p_st: _) (p_verify_data: _) (p_st_: _) : Lemma (requires (p_st.f_tls_stage == 5 /\ tls13_step p_st (Finished p_verify_data) st_ == true) (ensures (List.length (st_.f_tls_client_traffic_secret) > 0))) = admit ()
 
 (* AH_001_15_tls13_record_layer (matches Coq: Theorem AH_001_15_tls13_record_layer) *)
-let ah_001_15_tls13_record_layer_obligation () : Tot bool = (0 = 0)
-let ah_001_15_tls13_record_layer_lemma () : Lemma (requires True) (ensures (ah_001_15_tls13_record_layer_obligation () == ah_001_15_tls13_record_layer_obligation ())) = ()
+let ah_001_15_tls13_record_layer (p_key: _) (p_nonce: _) (p_plaintext: _) (p_aad: _) : Lemma (exists ct_ aead_encrypt p_key p_nonce p_plaintext p_aad == ct) = admit ()
 
 (* AH_001_16_tls13_no_downgrade (matches Coq: Theorem AH_001_16_tls13_no_downgrade) *)
-let ah_001_16_tls13_no_downgrade_obligation () : Tot bool = (0 = 0)
-let ah_001_16_tls13_no_downgrade_lemma () : Lemma (requires True) (ensures (ah_001_16_tls13_no_downgrade_obligation () == ah_001_16_tls13_no_downgrade_obligation ())) = ()
+let ah_001_16_tls13_no_downgrade (p_st: _) (p_msg: _) (p_st_: _) : Lemma (requires (tls13_step p_st p_msg st_ == true) (ensures (st_.f_tls_version == p_st.f_tls_version))) = admit ()
 
 (* AH_001_17_noise_pattern_correct (matches Coq: Theorem AH_001_17_noise_pattern_correct) *)
-let ah_001_17_noise_pattern_correct_obligation () : Tot bool = (0 = 0)
-let ah_001_17_noise_pattern_correct_lemma () : Lemma (requires True) (ensures (ah_001_17_noise_pattern_correct_obligation () == ah_001_17_noise_pattern_correct_obligation ())) = ()
+let ah_001_17_noise_pattern_correct (p_pattern: _) : Lemma ((noise_pattern_initiator_static p_pattern == true \/ noise_pattern_initiator_static p_pattern == false) /\ (noise_pattern_responder_static p_pattern == true \/ noise_pattern_responder_static p_pattern == false)) = admit ()
 
 (* AH_001_18_noise_handshake_correct (matches Coq: Theorem AH_001_18_noise_handshake_correct) *)
-let ah_001_18_noise_handshake_correct_obligation () : Tot bool = (0 = 0)
-let ah_001_18_noise_handshake_correct_lemma () : Lemma (requires True) (ensures (ah_001_18_noise_handshake_correct_obligation () == ah_001_18_noise_handshake_correct_obligation ())) = ()
+let ah_001_18_noise_handshake_correct (p_st: _) (p_msg: _) (p_st_: _) : Lemma (requires (noise_step p_st p_msg st_ == true) (ensures (st_.f_hs_messages_sent == ((p_st.f_hs_messages_sent) + 1)))) = admit ()
 
 (* AH_001_19_noise_key_confirmation (matches Coq: Theorem AH_001_19_noise_key_confirmation) *)
-let ah_001_19_noise_key_confirmation_obligation () : Tot bool = (0 = 0)
-let ah_001_19_noise_key_confirmation_lemma () : Lemma (requires True) (ensures (ah_001_19_noise_key_confirmation_obligation () == ah_001_19_noise_key_confirmation_obligation ())) = ()
+let ah_001_19_noise_key_confirmation (p_st: _) (p_msg: _) (p_st_: _) : Lemma (requires (noise_step p_st p_msg st_ == true) (ensures ((st_.f_hs_symmetric).f_noise_h == hkdf [] (noise_h (p_st.f_hs_symmetric) ++ id_match p_msg id_with | NMEphemeral pk => pk | NMStatic data => data | NMPayload data => data end) [] 32))) = admit ()
 
 (* AH_001_20_noise_identity_hiding (matches Coq: Theorem AH_001_20_noise_identity_hiding) *)
-let ah_001_20_noise_identity_hiding_obligation () : Tot bool = (0 = 0)
-let ah_001_20_noise_identity_hiding_lemma () : Lemma (requires True) (ensures (ah_001_20_noise_identity_hiding_obligation () == ah_001_20_noise_identity_hiding_obligation ())) = ()
+let ah_001_20_noise_identity_hiding (p_pattern: _) : Lemma (requires (noise_pattern_identity_hiding_initiator p_pattern == true) (ensures ((p_pattern == XN \/ p_pattern == XK \/ p_pattern == XX \/ p_pattern == IX)))) = admit ()
 
 (* AH_001_21_noise_payload_encrypt (matches Coq: Theorem AH_001_21_noise_payload_encrypt) *)
-let ah_001_21_noise_payload_encrypt_obligation () : Tot bool = (0 = 0)
-let ah_001_21_noise_payload_encrypt_lemma () : Lemma (requires True) (ensures (ah_001_21_noise_payload_encrypt_obligation () == ah_001_21_noise_payload_encrypt_obligation ())) = ()
+let ah_001_21_noise_payload_encrypt (p_st: _) (p_key: _) (p_nonce: _) (p_payload: _) (p_aad: _) : Lemma (requires ((p_st.f_hs_symmetric).f_noise_k == Some p_key) (ensures (exists ciphertext_ aead_encrypt p_key p_nonce p_payload p_aad == ciphertext))) = admit ()
 
 (* AH_001_22_noise_rekey_correct (matches Coq: Theorem AH_001_22_noise_rekey_correct) *)
-let ah_001_22_noise_rekey_correct_obligation () : Tot bool = (0 = 0)
-let ah_001_22_noise_rekey_correct_lemma () : Lemma (requires True) (ensures (ah_001_22_noise_rekey_correct_obligation () == ah_001_22_noise_rekey_correct_obligation ())) = ()
+let ah_001_22_noise_rekey_correct (p_st: _) (p_input_key: _) : Lemma (fn_let st_ : == noise_mix_key p_st p_input_key id_in noise_n st_ = 0 /\ exists k_ noise_k st_ == Some k) = admit ()
 
 (* AH_001_23_noise_composition (matches Coq: Theorem AH_001_23_noise_composition) *)
-let ah_001_23_noise_composition_obligation () : Tot bool = (0 = 0)
-let ah_001_23_noise_composition_lemma () : Lemma (requires True) (ensures (ah_001_23_noise_composition_obligation () == ah_001_23_noise_composition_obligation ())) = ()
+let ah_001_23_noise_composition (p_st1: _) (p_msg1: _) (p_st2: _) (p_msg2: _) (p_st3: _) : Lemma (requires (noise_step p_st1 p_msg1 p_st2 == true /\ noise_step p_st2 p_msg2 p_st3 == true) (ensures (p_st3.f_hs_messages_sent == ((((p_st1.f_hs_messages_sent) + 1)) + 1)))) = admit ()
 
 (* AH_001_24_signal_double_ratchet (matches Coq: Theorem AH_001_24_signal_double_ratchet) *)
-let ah_001_24_signal_double_ratchet_obligation () : Tot bool = (0 = 0)
-let ah_001_24_signal_double_ratchet_lemma () : Lemma (requires True) (ensures (ah_001_24_signal_double_ratchet_obligation () == ah_001_24_signal_double_ratchet_obligation ())) = ()
+let ah_001_24_signal_double_ratchet (p_st: _) (p_new_pair: _) (p_remote: _) : Lemma (fn_let st_ : == signal_dh_ratchet p_st p_new_pair p_remote id_in signal_dh_pair st_ = p_new_pair /\ st_.f_signal_dh_remote == Some p_remote /\ st_.f_signal_send_n == 0) = admit ()
 
 (* AH_001_25_signal_forward_secrecy (matches Coq: Theorem AH_001_25_signal_forward_secrecy) *)
-let ah_001_25_signal_forward_secrecy_obligation () : Tot bool = (0 = 0)
-let ah_001_25_signal_forward_secrecy_lemma () : Lemma (requires True) (ensures (ah_001_25_signal_forward_secrecy_obligation () == ah_001_25_signal_forward_secrecy_obligation ())) = ()
+let ah_001_25_signal_forward_secrecy (p_st: _) (p_new_pair: _) (p_remote: _) : Lemma (fn_let st_ : == signal_dh_ratchet p_st p_new_pair p_remote id_in signal_dh_pair st_ = p_new_pair) = admit ()
 
 (* AH_001_26_signal_break_in_recovery (matches Coq: Theorem AH_001_26_signal_break_in_recovery) *)
-let ah_001_26_signal_break_in_recovery_obligation () : Tot bool = (0 = 0)
-let ah_001_26_signal_break_in_recovery_lemma () : Lemma (requires True) (ensures (ah_001_26_signal_break_in_recovery_obligation () == ah_001_26_signal_break_in_recovery_obligation ())) = ()
+let ah_001_26_signal_break_in_recovery (p_st: _) (p_new_pair: _) (p_remote: _) : Lemma (fn_let st_ : == signal_dh_ratchet p_st p_new_pair p_remote id_in signal_send_n st_ = 0) = admit ()
 
 (* AH_001_27_signal_out_of_order (matches Coq: Theorem AH_001_27_signal_out_of_order) *)
-let ah_001_27_signal_out_of_order_obligation () : Tot bool = (0 = 0)
-let ah_001_27_signal_out_of_order_lemma () : Lemma (requires True) (ensures (ah_001_27_signal_out_of_order_obligation () == ah_001_27_signal_out_of_order_obligation ())) = ()
+let ah_001_27_signal_out_of_order (p_st: _) (p_pk: _) (p_n: _) (p_key: _) : Lemma (requires (In (pk_ n_ p_key) (p_st.f_signal_skipped) == true) (ensures (exists key__ key_ == p_key))) = admit ()
 
 (* AH_001_28_signal_x3dh_correct (matches Coq: Theorem AH_001_28_signal_x3dh_correct) *)
-let ah_001_28_signal_x3dh_correct_obligation () : Tot bool = (0 = 0)
-let ah_001_28_signal_x3dh_correct_lemma () : Lemma (requires True) (ensures (ah_001_28_signal_x3dh_correct_obligation () == ah_001_28_signal_x3dh_correct_obligation ())) = ()
+let ah_001_28_signal_x3dh_correct (p_ik: _) (p_ek: _) (p_bundle: _) : Lemma (fn_let result : == x3dh_initiator p_ik p_ek p_bundle id_in exists ss ad_ x3dh_shared_secret result = ss /\ result.f_x3dh_associated_data == ad) = admit ()
 
 (* AH_001_29_signal_session_correct (matches Coq: Theorem AH_001_29_signal_session_correct) *)
-let ah_001_29_signal_session_correct_obligation () : Tot bool = (0 = 0)
-let ah_001_29_signal_session_correct_lemma () : Lemma (requires True) (ensures (ah_001_29_signal_session_correct_obligation () == ah_001_29_signal_session_correct_obligation ())) = ()
+let ah_001_29_signal_session_correct (p_st: _) (p_plaintext: _) : Lemma (fn_let (st__ ct) : == signal_encrypt p_st p_plaintext id_in signal_send_n st_ = S (p_st.f_signal_send_n)) = admit ()
 
 (* AH_001_30_no_replay (matches Coq: Theorem AH_001_30_no_replay) *)
-let ah_001_30_no_replay_obligation () : Tot bool = (0 = 0)
-let ah_001_30_no_replay_lemma () : Lemma (requires True) (ensures (ah_001_30_no_replay_obligation () == ah_001_30_no_replay_obligation ())) = ()
+let ah_001_30_no_replay (p_nonces_seen: _) (p_incoming: _) : Lemma (requires (In p_incoming p_nonces_seen == true /\ prevents_replay p_nonces_seen p_incoming == true) (ensures (False))) = admit ()
 
 (* AH_001_31_no_reflection (matches Coq: Theorem AH_001_31_no_reflection) *)
-let ah_001_31_no_reflection_obligation () : Tot bool = (0 = 0)
-let ah_001_31_no_reflection_lemma () : Lemma (requires True) (ensures (ah_001_31_no_reflection_obligation () == ah_001_31_no_reflection_obligation ())) = ()
+let ah_001_31_no_reflection (p_local_id: _) (p_remote_id: _) : Lemma (requires (~(p_local_id == p_remote_id)) (ensures (prevents_reflection p_local_id p_remote_id == true))) = admit ()
 
 (* AH_001_32_no_mitm (matches Coq: Theorem AH_001_32_no_mitm) *)
-let ah_001_32_no_mitm_obligation () : Tot bool = (0 = 0)
-let ah_001_32_no_mitm_lemma () : Lemma (requires True) (ensures (ah_001_32_no_mitm_obligation () == ah_001_32_no_mitm_obligation ())) = ()
+let ah_001_32_no_mitm (p_session: _) (p_peer_cert: _) : Lemma (requires (authenticated p_session p_peer_cert == true) (ensures (~((exists p_mitm. in_path p_mitm p_session == true))))) = admit ()
 
 (* AH_001_33_key_material_secret (matches Coq: Theorem AH_001_33_key_material_secret) *)
-let ah_001_33_key_material_secret_obligation () : Tot bool = (0 = 0)
-let ah_001_33_key_material_secret_lemma () : Lemma (requires True) (ensures (ah_001_33_key_material_secret_obligation () == ah_001_33_key_material_secret_obligation ())) = ()
+let ah_001_33_key_material_secret (p_session: _) : Lemma (requires (tls13_handshake_complete p_session == true) (ensures (strong_confidentiality (p_session.f_session_client_key) == true))) = admit ()
 
 (* AH_001_34_randomness_fresh (matches Coq: Theorem AH_001_34_randomness_fresh) *)
-let ah_001_34_randomness_fresh_obligation () : Tot bool = (0 = 0)
-let ah_001_34_randomness_fresh_lemma () : Lemma (requires True) (ensures (ah_001_34_randomness_fresh_obligation () == ah_001_34_randomness_fresh_obligation ())) = ()
+let ah_001_34_randomness_fresh (p_nonce: _) (p_used_nonces: _) : Lemma (requires (fresh_nonce p_nonce p_used_nonces == true) (ensures (~(In p_nonce p_used_nonces == true)))) = admit ()
 
 (* AH_001_35_timing_resistant (matches Coq: Theorem AH_001_35_timing_resistant) *)
-let ah_001_35_timing_resistant_obligation () : Tot bool = (0 = 0)
-let ah_001_35_timing_resistant_lemma () : Lemma (requires True) (ensures (ah_001_35_timing_resistant_obligation () == ah_001_35_timing_resistant_obligation ())) = ()
+let ah_001_35_timing_resistant (p_op: nat) : Lemma (constant_time_op p_op == true) = admit ()
 
 (* verification_complete (matches Coq: Theorem verification_complete) *)
-let verification_complete_obligation () : Tot bool = (0 = 0)
-let verification_complete_lemma () : Lemma (requires True) (ensures (verification_complete_obligation () == verification_complete_obligation ())) = ()
+let verification_complete () : Lemma (all_theorems_proven == true) = admit ()

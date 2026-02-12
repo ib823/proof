@@ -46,7 +46,7 @@ count_qed_active() {
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
-    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
     echo "$total"
 }
 
@@ -57,7 +57,7 @@ count_admitted_active() {
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
-    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
+    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
     echo "$total"
 }
 

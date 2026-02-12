@@ -92,105 +92,79 @@ let is_operational (p_s: phys_state) : Tot bool =
   | _ -> true
 
 (* reading_in_bounds_correct (matches Coq: Theorem reading_in_bounds_correct) *)
-let reading_in_bounds_correct_obligation () : Tot bool = (0 = 0)
-let reading_in_bounds_correct_lemma () : Lemma (requires True) (ensures (reading_in_bounds_correct_obligation () == reading_in_bounds_correct_obligation ())) = ()
+let reading_in_bounds_correct (p_r: _) : Lemma (requires (reading_in_bounds p_r == fn_true <) (ensures (reading_valid p_r == true))) = admit ()
 
 (* valid_reading_min_le_max (matches Coq: Theorem valid_reading_min_le_max) *)
-let valid_reading_min_le_max_obligation () : Tot bool = (0 = 0)
-let valid_reading_min_le_max_lemma () : Lemma (requires True) (ensures (valid_reading_min_le_max_obligation () == valid_reading_min_le_max_obligation ())) = ()
+let valid_reading_min_le_max (p_r: _) : Lemma (requires (reading_valid p_r == true) (ensures (p_r.f_reading_min <= p_r.f_reading_max))) = admit ()
 
 (* reading_value_bounded (matches Coq: Theorem reading_value_bounded) *)
-let reading_value_bounded_obligation () : Tot bool = (0 = 0)
-let reading_value_bounded_lemma () : Lemma (requires True) (ensures (reading_value_bounded_obligation () == reading_value_bounded_obligation ())) = ()
+let reading_value_bounded (p_r: _) : Lemma (requires (reading_valid p_r == true) (ensures (p_r.f_reading_value <= p_r.f_reading_max))) = admit ()
 
 (* spec_feasible_correct (matches Coq: Theorem spec_feasible_correct) *)
-let spec_feasible_correct_obligation () : Tot bool = (0 = 0)
-let spec_feasible_correct_lemma () : Lemma (requires True) (ensures (spec_feasible_correct_obligation () == spec_feasible_correct_obligation ())) = ()
+let spec_feasible_correct (p_spec: _) : Lemma (requires (spec_feasible p_spec == true) (ensures (1 <= p_spec.f_meas_min_samples /\ p_spec.f_meas_min_samples <= p_spec.f_meas_samples))) = admit ()
 
 (* spec_feasible_nonzero_samples (matches Coq: Theorem spec_feasible_nonzero_samples) *)
-let spec_feasible_nonzero_samples_obligation () : Tot bool = (0 = 0)
-let spec_feasible_nonzero_samples_lemma () : Lemma (requires True) (ensures (spec_feasible_nonzero_samples_obligation () == spec_feasible_nonzero_samples_obligation ())) = ()
+let spec_feasible_nonzero_samples (p_spec: _) : Lemma (requires (spec_feasible p_spec == true) (ensures (p_spec.f_meas_samples > 0))) = admit ()
 
 (* empty_readings_avg_zero (matches Coq: Theorem empty_readings_avg_zero) *)
-let empty_readings_avg_zero_obligation () : Tot bool = (0 = 0)
-let empty_readings_avg_zero_lemma () : Lemma (requires True) (ensures (empty_readings_avg_zero_obligation () == empty_readings_avg_zero_obligation ())) = ()
+let empty_readings_avg_zero () : Lemma (readings_avg [] == 0) = admit ()
 
 (* timing_feasible_correct (matches Coq: Theorem timing_feasible_correct) *)
-let timing_feasible_correct_obligation () : Tot bool = (0 = 0)
-let timing_feasible_correct_lemma () : Lemma (requires True) (ensures (timing_feasible_correct_obligation () == timing_feasible_correct_obligation ())) = ()
+let timing_feasible_correct (p_tc: _) : Lemma (requires (timing_feasible p_tc == fn_true <) (ensures (timing_schedulable p_tc == true))) = admit ()
 
 (* feasible_wcet_within_deadline (matches Coq: Theorem feasible_wcet_within_deadline) *)
-let feasible_wcet_within_deadline_obligation () : Tot bool = (0 = 0)
-let feasible_wcet_within_deadline_lemma () : Lemma (requires True) (ensures (feasible_wcet_within_deadline_obligation () == feasible_wcet_within_deadline_obligation ())) = ()
+let feasible_wcet_within_deadline (p_tc: _) : Lemma (requires (timing_schedulable p_tc == true) (ensures (p_tc.f_wcet <= p_tc.f_deadline))) = admit ()
 
 (* feasible_deadline_within_period (matches Coq: Theorem feasible_deadline_within_period) *)
-let feasible_deadline_within_period_obligation () : Tot bool = (0 = 0)
-let feasible_deadline_within_period_lemma () : Lemma (requires True) (ensures (feasible_deadline_within_period_obligation () == feasible_deadline_within_period_obligation ())) = ()
+let feasible_deadline_within_period (p_tc: _) : Lemma (requires (timing_schedulable p_tc == true) (ensures (p_tc.f_deadline <= p_tc.f_period))) = admit ()
 
 (* idle_always_transitions_to_sensing (matches Coq: Theorem idle_always_transitions_to_sensing) *)
-let idle_always_transitions_to_sensing_obligation () : Tot bool = (0 = 0)
-let idle_always_transitions_to_sensing_lemma () : Lemma (requires True) (ensures (idle_always_transitions_to_sensing_obligation () == idle_always_transitions_to_sensing_obligation ())) = ()
+let idle_always_transitions_to_sensing (p_ok: _) : Lemma (phys_transition Idle p_ok == Sensing) = admit ()
 
 (* sensing_error_on_failure (matches Coq: Theorem sensing_error_on_failure) *)
-let sensing_error_on_failure_obligation () : Tot bool = (0 = 0)
-let sensing_error_on_failure_lemma () : Lemma (requires True) (ensures (sensing_error_on_failure_obligation () == sensing_error_on_failure_obligation ())) = ()
+let sensing_error_on_failure () : Lemma (phys_transition Sensing false == Error) = admit ()
 
 (* sensing_proceeds_on_success (matches Coq: Theorem sensing_proceeds_on_success) *)
-let sensing_proceeds_on_success_obligation () : Tot bool = (0 = 0)
-let sensing_proceeds_on_success_lemma () : Lemma (requires True) (ensures (sensing_proceeds_on_success_obligation () == sensing_proceeds_on_success_obligation ())) = ()
+let sensing_proceeds_on_success () : Lemma (phys_transition Sensing true == Processing) = admit ()
 
 (* error_recovers_to_idle (matches Coq: Theorem error_recovers_to_idle) *)
-let error_recovers_to_idle_obligation () : Tot bool = (0 = 0)
-let error_recovers_to_idle_lemma () : Lemma (requires True) (ensures (error_recovers_to_idle_obligation () == error_recovers_to_idle_obligation ())) = ()
+let error_recovers_to_idle (p_ok: _) : Lemma (phys_transition Error p_ok == Idle) = admit ()
 
 (* full_cycle_returns_to_idle (matches Coq: Theorem full_cycle_returns_to_idle) *)
-let full_cycle_returns_to_idle_obligation () : Tot bool = (0 = 0)
-let full_cycle_returns_to_idle_lemma () : Lemma (requires True) (ensures (full_cycle_returns_to_idle_obligation () == full_cycle_returns_to_idle_obligation ())) = ()
+let full_cycle_returns_to_idle (p_ok: _) : Lemma (phys_run Idle [true; true_ true_ ok_ == Idle) = admit ()
 
 (* error_state_not_operational (matches Coq: Theorem error_state_not_operational) *)
-let error_state_not_operational_obligation () : Tot bool = (0 = 0)
-let error_state_not_operational_lemma () : Lemma (requires True) (ensures (error_state_not_operational_obligation () == error_state_not_operational_obligation ())) = ()
+let error_state_not_operational () : Lemma (is_operational Error == false) = admit ()
 
 (* idle_is_operational (matches Coq: Theorem idle_is_operational) *)
-let idle_is_operational_obligation () : Tot bool = (0 = 0)
-let idle_is_operational_lemma () : Lemma (requires True) (ensures (idle_is_operational_obligation () == idle_is_operational_obligation ())) = ()
+let idle_is_operational () : Lemma (is_operational Idle == true) = admit ()
 
 (* reading_bounded_values (matches Coq: Theorem reading_bounded_values) *)
-let reading_bounded_values_obligation () : Tot bool = (0 = 0)
-let reading_bounded_values_lemma () : Lemma (requires True) (ensures (reading_bounded_values_obligation () == reading_bounded_values_obligation ())) = ()
+let reading_bounded_values (p_r: _) : Lemma (requires (reading_in_bounds p_r == true) (ensures (p_r.f_reading_min <= p_r.f_reading_value /\ p_r.f_reading_value <= p_r.f_reading_max))) = admit ()
 
 (* sensing_transitions_depend_on_input (matches Coq: Theorem sensing_transitions_depend_on_input) *)
-let sensing_transitions_depend_on_input_obligation () : Tot bool = (0 = 0)
-let sensing_transitions_depend_on_input_lemma () : Lemma (requires True) (ensures (sensing_transitions_depend_on_input_obligation () == sensing_transitions_depend_on_input_obligation ())) = ()
+let sensing_transitions_depend_on_input () : Lemma (~(phys_transition Sensing true == phys_transition Sensing false)) = admit ()
 
 (* actuating_transitions_to_idle (matches Coq: Theorem actuating_transitions_to_idle) *)
-let actuating_transitions_to_idle_obligation () : Tot bool = (0 = 0)
-let actuating_transitions_to_idle_lemma () : Lemma (requires True) (ensures (actuating_transitions_to_idle_obligation () == actuating_transitions_to_idle_obligation ())) = ()
+let actuating_transitions_to_idle (p_ok: _) : Lemma (phys_transition Actuating p_ok == Idle) = admit ()
 
 (* processing_transitions_to_actuating (matches Coq: Theorem processing_transitions_to_actuating) *)
-let processing_transitions_to_actuating_obligation () : Tot bool = (0 = 0)
-let processing_transitions_to_actuating_lemma () : Lemma (requires True) (ensures (processing_transitions_to_actuating_obligation () == processing_transitions_to_actuating_obligation ())) = ()
+let processing_transitions_to_actuating (p_ok: _) : Lemma (phys_transition Processing p_ok == Actuating) = admit ()
 
 (* processing_is_operational (matches Coq: Theorem processing_is_operational) *)
-let processing_is_operational_obligation () : Tot bool = (0 = 0)
-let processing_is_operational_lemma () : Lemma (requires True) (ensures (processing_is_operational_obligation () == processing_is_operational_obligation ())) = ()
+let processing_is_operational () : Lemma (is_operational Processing == true) = admit ()
 
 (* actuating_is_operational (matches Coq: Theorem actuating_is_operational) *)
-let actuating_is_operational_obligation () : Tot bool = (0 = 0)
-let actuating_is_operational_lemma () : Lemma (requires True) (ensures (actuating_is_operational_obligation () == actuating_is_operational_obligation ())) = ()
+let actuating_is_operational () : Lemma (is_operational Actuating == true) = admit ()
 
 (* sensing_is_operational (matches Coq: Theorem sensing_is_operational) *)
-let sensing_is_operational_obligation () : Tot bool = (0 = 0)
-let sensing_is_operational_lemma () : Lemma (requires True) (ensures (sensing_is_operational_obligation () == sensing_is_operational_obligation ())) = ()
+let sensing_is_operational () : Lemma (is_operational Sensing == true) = admit ()
 
 (* error_recovery_cycle (matches Coq: Theorem error_recovery_cycle) *)
-let error_recovery_cycle_obligation () : Tot bool = (0 = 0)
-let error_recovery_cycle_lemma () : Lemma (requires True) (ensures (error_recovery_cycle_obligation () == error_recovery_cycle_obligation ())) = ()
+let error_recovery_cycle (p_ok: _) : Lemma (phys_run Error [p_ok; true_ true_ true_ ok_ == Idle) = admit ()
 
 (* reading_bounds_decomposition (matches Coq: Theorem reading_bounds_decomposition) *)
-let reading_bounds_decomposition_obligation () : Tot bool = (0 = 0)
-let reading_bounds_decomposition_lemma () : Lemma (requires True) (ensures (reading_bounds_decomposition_obligation () == reading_bounds_decomposition_obligation ())) = ()
+let reading_bounds_decomposition (p_r: _) : Lemma (requires (reading_in_bounds p_r == true) (ensures ((reading_min p_r <=? reading_value p_r) == true /\ (reading_value p_r <=? reading_max p_r) == true))) = admit ()
 
 (* timing_feasible_decomposition (matches Coq: Theorem timing_feasible_decomposition) *)
-let timing_feasible_decomposition_obligation () : Tot bool = (0 = 0)
-let timing_feasible_decomposition_lemma () : Lemma (requires True) (ensures (timing_feasible_decomposition_obligation () == timing_feasible_decomposition_obligation ())) = ()
+let timing_feasible_decomposition (p_tc: _) : Lemma (requires (timing_feasible p_tc == true) (ensures ((wcet p_tc + jitter_bound p_tc <=? deadline p_tc) == true /\ (deadline p_tc <=? period p_tc) == true))) = admit ()

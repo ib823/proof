@@ -54,81 +54,61 @@ let is_spec_safe (p_i: instr) : Tot bool =
   | _ -> false)
 
 (* eff_join_pure_l (matches Coq: Lemma eff_join_pure_l) *)
-let eff_join_pure_l_obligation () : Tot bool = (0 = 0)
-let eff_join_pure_l_lemma () : Lemma (requires True) (ensures (eff_join_pure_l_obligation () == eff_join_pure_l_obligation ())) = ()
+let eff_join_pure_l (p_e: _) : Lemma (eff_join Eff_pure p_e == p_e) = admit ()
 
 (* eff_join_pure_r (matches Coq: Lemma eff_join_pure_r) *)
-let eff_join_pure_r_obligation () : Tot bool = (0 = 0)
-let eff_join_pure_r_lemma () : Lemma (requires True) (ensures (eff_join_pure_r_obligation () == eff_join_pure_r_obligation ())) = ()
+let eff_join_pure_r (p_e: _) : Lemma (eff_join p_e Eff_pure == p_e) = admit ()
 
 (* eff_le_refl (matches Coq: Lemma eff_le_refl) *)
-let eff_le_refl_obligation () : Tot bool = (0 = 0)
-let eff_le_refl_lemma () : Lemma (requires True) (ensures (eff_le_refl_obligation () == eff_le_refl_obligation ())) = ()
+let eff_le_refl (p_e: _) : Lemma (eff_le p_e p_e == true) = admit ()
 
 (* eff_le_trans (matches Coq: Lemma eff_le_trans) *)
-let eff_le_trans_obligation () : Tot bool = (0 = 0)
-let eff_le_trans_lemma () : Lemma (requires True) (ensures (eff_le_trans_obligation () == eff_le_trans_obligation ())) = ()
+let eff_le_trans (p_e1: _) (p_e2: _) (p_e3: _) : Lemma (requires (eff_le p_e1 p_e2 == true /\ eff_le p_e2 p_e3 == true) (ensures (eff_le p_e1 p_e3 == true))) = admit ()
 
 (* pure_is_constant_time (matches Coq: Theorem pure_is_constant_time) *)
-let pure_is_constant_time_obligation () : Tot bool = (0 = 0)
-let pure_is_constant_time_lemma () : Lemma (requires True) (ensures (pure_is_constant_time_obligation () == pure_is_constant_time_obligation ())) = ()
+let pure_is_constant_time (p_i: _) : Lemma (requires (infer_effect p_i == Eff_pure) (ensures (is_constant_time p_i == true))) = admit ()
 
 (* ct_composition (matches Coq: Theorem ct_composition) *)
-let ct_composition_obligation () : Tot bool = (0 = 0)
-let ct_composition_lemma () : Lemma (requires True) (ensures (ct_composition_obligation () == ct_composition_obligation ())) = ()
+let ct_composition (p_a: _) (p_b: _) : Lemma (requires (is_constant_time p_a == true /\ is_constant_time p_b == true) (ensures (is_constant_time (ISeq p_a p_b) == true))) = admit ()
 
 (* no_secret_branch (matches Coq: Lemma no_secret_branch) *)
-let no_secret_branch_obligation () : Tot bool = (0 = 0)
-let no_secret_branch_lemma () : Lemma (requires True) (ensures (no_secret_branch_obligation () == no_secret_branch_obligation ())) = ()
+let no_secret_branch (p_i: _) : Lemma (requires (is_constant_time p_i == true) (ensures (~(forall c t f_ p_i == IBranch Secret c t f)))) = admit ()
 
 (* spec_safe_no_secret_branch_aux (matches Coq: Lemma spec_safe_no_secret_branch_aux) *)
-let spec_safe_no_secret_branch_aux_obligation () : Tot bool = (0 = 0)
-let spec_safe_no_secret_branch_aux_lemma () : Lemma (requires True) (ensures (spec_safe_no_secret_branch_aux_obligation () == spec_safe_no_secret_branch_aux_obligation ())) = ()
+let spec_safe_no_secret_branch_aux (p_i: _) : Lemma (requires (no_speculative_annotation p_i == true /\ ~(infer_effect p_i == Eff_speculative)) (ensures (is_constant_time p_i == true))) = admit ()
 
 (* spec_safe_implies_no_secret_leakage (matches Coq: Theorem spec_safe_implies_no_secret_leakage) *)
-let spec_safe_implies_no_secret_leakage_obligation () : Tot bool = (0 = 0)
-let spec_safe_implies_no_secret_leakage_lemma () : Lemma (requires True) (ensures (spec_safe_implies_no_secret_leakage_obligation () == spec_safe_implies_no_secret_leakage_obligation ())) = ()
+let spec_safe_implies_no_secret_leakage (p_i: _) : Lemma (requires (no_speculative_annotation p_i == true /\ is_spec_safe p_i == true) (ensures (is_constant_time p_i == true))) = admit ()
 
 (* effect_preorder_refl (matches Coq: Theorem effect_preorder_refl) *)
-let effect_preorder_refl_obligation () : Tot bool = (0 = 0)
-let effect_preorder_refl_lemma () : Lemma (requires True) (ensures (effect_preorder_refl_obligation () == effect_preorder_refl_obligation ())) = ()
+let effect_preorder_refl (p_e: _) : Lemma (eff_le p_e p_e == true) = admit ()
 
 (* effect_preorder_trans (matches Coq: Theorem effect_preorder_trans) *)
-let effect_preorder_trans_obligation () : Tot bool = (0 = 0)
-let effect_preorder_trans_lemma () : Lemma (requires True) (ensures (effect_preorder_trans_obligation () == effect_preorder_trans_obligation ())) = ()
+let effect_preorder_trans (p_e1: _) (p_e2: _) (p_e3: _) : Lemma (requires (eff_le p_e1 p_e2 == true /\ eff_le p_e2 p_e3 == true) (ensures (eff_le p_e1 p_e3 == true))) = admit ()
 
 (* pure_is_bottom (matches Coq: Theorem pure_is_bottom) *)
-let pure_is_bottom_obligation () : Tot bool = (0 = 0)
-let pure_is_bottom_lemma () : Lemma (requires True) (ensures (pure_is_bottom_obligation () == pure_is_bottom_obligation ())) = ()
+let pure_is_bottom (p_e: _) : Lemma (eff_le Eff_pure p_e == true) = admit ()
 
 (* seq_preserves_spec_safe (matches Coq: Theorem seq_preserves_spec_safe) *)
-let seq_preserves_spec_safe_obligation () : Tot bool = (0 = 0)
-let seq_preserves_spec_safe_lemma () : Lemma (requires True) (ensures (seq_preserves_spec_safe_obligation () == seq_preserves_spec_safe_obligation ())) = ()
+let seq_preserves_spec_safe (p_a: _) (p_b: _) : Lemma (requires (is_spec_safe p_a == true /\ is_spec_safe p_b == true) (ensures (is_spec_safe (ISeq p_a p_b) == true))) = admit ()
 
 (* public_branch_ct (matches Coq: Theorem public_branch_ct) *)
-let public_branch_ct_obligation () : Tot bool = (0 = 0)
-let public_branch_ct_lemma () : Lemma (requires True) (ensures (public_branch_ct_obligation () == public_branch_ct_obligation ())) = ()
+let public_branch_ct (p_c: _) (p_t: _) (p_f: _) : Lemma (requires (is_constant_time p_c == true /\ is_constant_time p_t == true /\ is_constant_time p_f == true) (ensures (is_constant_time (IBranch Public p_c p_t p_f) == true))) = admit ()
 
 (* annotation_soundness (matches Coq: Theorem annotation_soundness) *)
-let annotation_soundness_obligation () : Tot bool = (0 = 0)
-let annotation_soundness_lemma () : Lemma (requires True) (ensures (annotation_soundness_obligation () == annotation_soundness_obligation ())) = ()
+let annotation_soundness (p_e: _) (p_i: _) : Lemma (requires (eff_le (infer_effect p_i) p_e == true) (ensures (eff_le (infer_effect (IAnnot p_e p_i)) p_e == true))) = admit ()
 
 (* binop_preserves_ct (matches Coq: Theorem binop_preserves_ct) *)
-let binop_preserves_ct_obligation () : Tot bool = (0 = 0)
-let binop_preserves_ct_lemma () : Lemma (requires True) (ensures (binop_preserves_ct_obligation () == binop_preserves_ct_obligation ())) = ()
+let binop_preserves_ct (p_a: _) (p_b: _) : Lemma (requires (is_constant_time p_a == true /\ is_constant_time p_b == true) (ensures (is_constant_time (IBinop p_a p_b) == true))) = admit ()
 
 (* pure_implies_spec_safe (matches Coq: Theorem pure_implies_spec_safe) *)
-let pure_implies_spec_safe_obligation () : Tot bool = (0 = 0)
-let pure_implies_spec_safe_lemma () : Lemma (requires True) (ensures (pure_implies_spec_safe_obligation () == pure_implies_spec_safe_obligation ())) = ()
+let pure_implies_spec_safe (p_i: _) : Lemma (requires (infer_effect p_i == Eff_pure) (ensures (is_spec_safe p_i == true))) = admit ()
 
 (* timed_implies_spec_safe (matches Coq: Theorem timed_implies_spec_safe) *)
-let timed_implies_spec_safe_obligation () : Tot bool = (0 = 0)
-let timed_implies_spec_safe_lemma () : Lemma (requires True) (ensures (timed_implies_spec_safe_obligation () == timed_implies_spec_safe_obligation ())) = ()
+let timed_implies_spec_safe (p_i: _) : Lemma (requires (infer_effect p_i == Eff_timed) (ensures (is_spec_safe p_i == true))) = admit ()
 
 (* const_is_pure (matches Coq: Theorem const_is_pure) *)
-let const_is_pure_obligation () : Tot bool = (0 = 0)
-let const_is_pure_lemma () : Lemma (requires True) (ensures (const_is_pure_obligation () == const_is_pure_obligation ())) = ()
+let const_is_pure (p_v: _) : Lemma (infer_effect (IConst p_v) == Eff_pure) = admit ()
 
 (* eff_join_comm (matches Coq: Theorem eff_join_comm) *)
-let eff_join_comm_obligation () : Tot bool = (0 = 0)
-let eff_join_comm_lemma () : Lemma (requires True) (ensures (eff_join_comm_obligation () == eff_join_comm_obligation ())) = ()
+let eff_join_comm (p_e1: _) (p_e2: _) : Lemma (eff_join p_e1 p_e2 == eff_join p_e2 p_e1) = admit ()

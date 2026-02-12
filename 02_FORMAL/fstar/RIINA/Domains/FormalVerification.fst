@@ -285,144 +285,110 @@ let vc_from_contract (p_c: contract) : Tot vc =
   VCImpl (p_c.f_precondition) (VCValid (p_c.f_postcondition))
 
 (* pred_decidable_PTrue (matches Coq: Lemma pred_decidable_PTrue) *)
-let pred_decidable_ptrue_obligation () : Tot bool = (0 = 0)
-let pred_decidable_ptrue_lemma () : Lemma (requires True) (ensures (pred_decidable_ptrue_obligation () == pred_decidable_ptrue_obligation ())) = ()
+let pred_decidable_ptrue () : Lemma (pred_decidable PTrue == true) = admit ()
 
 (* pred_decidable_eval (matches Coq: Lemma pred_decidable_eval) *)
-let pred_decidable_eval_obligation () : Tot bool = (0 = 0)
-let pred_decidable_eval_lemma () : Lemma (requires True) (ensures (pred_decidable_eval_obligation () == pred_decidable_eval_obligation ())) = ()
+let pred_decidable_eval (p_p: _) (p_env: _) : Lemma (eval_pred p_p p_env == true \/ eval_pred p_p p_env == false) = admit ()
 
 (* E_001_01 (matches Coq: Theorem E_001_01) *)
-let e_001_01_obligation () : Tot bool = (0 = 0)
-let e_001_01_lemma () : Lemma (requires True) (ensures (e_001_01_obligation () == e_001_01_obligation ())) = ()
+let e_001_01 (p_bt: _) (p_p: _) : Lemma (requires (pred_decidable p_p == true) (ensures (refinement_wf (RRefine p_bt p_p) == true))) = admit ()
 
 (* E_001_02 (matches Coq: Theorem E_001_02) *)
-let e_001_02_obligation () : Tot bool = (0 = 0)
-let e_001_02_lemma () : Lemma (requires True) (ensures (e_001_02_obligation () == e_001_02_obligation ())) = ()
+let e_001_02 (p_bt: _) (p_p: _) (p_q: _) : Lemma (requires (pred_implies p_p p_q == true) (ensures (refinement_subtype (RRefine p_bt p_p) (RRefine p_bt p_q) == true))) = admit ()
 
 (* smt_translation_correct (matches Coq: Lemma smt_translation_correct) *)
-let smt_translation_correct_obligation () : Tot bool = (0 = 0)
-let smt_translation_correct_lemma () : Lemma (requires True) (ensures (smt_translation_correct_obligation () == smt_translation_correct_obligation ())) = ()
+let smt_translation_correct (p_p: _) (p_env: _) : Lemma (eval_pred p_p p_env == eval_smt (pred_to_smt p_p) p_env) = admit ()
 
 (* E_001_03 (matches Coq: Theorem E_001_03) *)
-let e_001_03_obligation () : Tot bool = (0 = 0)
-let e_001_03_lemma () : Lemma (requires True) (ensures (e_001_03_obligation () == e_001_03_obligation ())) = ()
+let e_001_03 (p_p: _) (p_env: _) : Lemma (requires (eval_pred p_p p_env == fn_true <) (ensures (eval_smt (pred_to_smt p_p) p_env == true))) = admit ()
 
 (* E_001_04 (matches Coq: Theorem E_001_04) *)
-let e_001_04_obligation () : Tot bool = (0 = 0)
-let e_001_04_lemma () : Lemma (requires True) (ensures (e_001_04_obligation () == e_001_04_obligation ())) = ()
+let e_001_04 (p_s: _) (p_bound: _) : Lemma (requires (p_s.f_liquid_iteration < p_bound) (ensures (liquid_terminates (liquid_step p_s) p_bound == true))) = admit ()
 
 (* E_001_05 (matches Coq: Theorem E_001_05) *)
-let e_001_05_obligation () : Tot bool = (0 = 0)
-let e_001_05_lemma () : Lemma (requires True) (ensures (e_001_05_obligation () == e_001_05_obligation ())) = ()
+let e_001_05 (p_ctx: _) (p_t1: _) (p_t2: _) : Lemma (requires (ty_wf p_ctx p_t1 == true /\ ty_wf (p_t1 :: p_ctx) p_t2 == true) (ensures (ty_wf p_ctx (TEPi p_t1 p_t2) == true))) = admit ()
 
 (* E_001_06 (matches Coq: Theorem E_001_06) *)
-let e_001_06_obligation () : Tot bool = (0 = 0)
-let e_001_06_lemma () : Lemma (requires True) (ensures (e_001_06_obligation () == e_001_06_obligation ())) = ()
+let e_001_06 (p_ctx: _) (p_t1: _) (p_t2: _) : Lemma (requires (ty_wf p_ctx p_t1 == true /\ ty_wf (p_t1 :: p_ctx) p_t2 == true) (ensures (ty_wf p_ctx (TESigma p_t1 p_t2) == true))) = admit ()
 
 (* E_001_07 (matches Coq: Theorem E_001_07) *)
-let e_001_07_obligation () : Tot bool = (0 = 0)
-let e_001_07_lemma () : Lemma (requires True) (ensures (e_001_07_obligation () == e_001_07_obligation ())) = ()
+let e_001_07 (p_ctx: _) (p_fam: _) : Lemma (requires ((forall n_ ty_wf p_ctx (p_fam n) == true)) (ensures (ty_family_wf p_ctx p_fam == true))) = admit ()
 
 (* ty_subst_preserves_base (matches Coq: Lemma ty_subst_preserves_base) *)
-let ty_subst_preserves_base_obligation () : Tot bool = (0 = 0)
-let ty_subst_preserves_base_lemma () : Lemma (requires True) (ensures (ty_subst_preserves_base_obligation () == ty_subst_preserves_base_obligation ())) = ()
+let ty_subst_preserves_base (p_b: _) (p_n: _) (p_s: _) : Lemma (ty_subst (TEBase p_b) p_n p_s == TEBase p_b) = admit ()
 
 (* E_001_08 (matches Coq: Theorem E_001_08) *)
-let e_001_08_obligation () : Tot bool = (0 = 0)
-let e_001_08_lemma () : Lemma (requires True) (ensures (e_001_08_obligation () == e_001_08_obligation ())) = ()
+let e_001_08 (p_ctx: _) (p_t1: _) (p_t2: _) (p_n: _) : Lemma (requires (ty_wf p_ctx p_t1 == true /\ ty_wf p_ctx p_t2 == true /\ ty_wf p_ctx (TEBase TyNat) == true) (ensures (ty_subst (TEBase TyNat) p_n p_t2 == TEBase TyNat))) = admit ()
 
 (* E_001_09 (matches Coq: Theorem E_001_09) *)
-let e_001_09_obligation () : Tot bool = (0 = 0)
-let e_001_09_lemma () : Lemma (requires True) (ensures (e_001_09_obligation () == e_001_09_obligation ())) = ()
+let e_001_09 (p_c: _) (p_env: _) : Lemma (requires (precondition_verified p_c p_env == true) (ensures (eval_pred (p_c.f_precondition) p_env == true))) = admit ()
 
 (* E_001_10 (matches Coq: Theorem E_001_10) *)
-let e_001_10_obligation () : Tot bool = (0 = 0)
-let e_001_10_lemma () : Lemma (requires True) (ensures (e_001_10_obligation () == e_001_10_obligation ())) = ()
+let e_001_10 (p_c: _) (p_pre_env: _) (p_post_env: _) : Lemma (requires (postcondition_verified p_c p_pre_env p_post_env == true) (ensures (contract_sat p_c p_pre_env p_post_env == true))) = admit ()
 
 (* E_001_11 (matches Coq: Theorem E_001_11) *)
-let e_001_11_obligation () : Tot bool = (0 = 0)
-let e_001_11_lemma () : Lemma (requires True) (ensures (e_001_11_obligation () == e_001_11_obligation ())) = ()
+let e_001_11 (p_inv: _) (p_c: _) (p_pre_env: _) (p_post_env: _) : Lemma (requires (eval_pred p_inv p_pre_env == true /\ pred_implies (PAnd p_inv (p_c.f_precondition)) (p_c.f_postcondition) == true /\ pred_implies (p_c.f_postcondition) p_inv == true /\ (eval_pred (p_c.f_precondition) p_pre_env == fn_true -> eval_pred (p_c.f_postcondition) p_post_env = true) /\ (eval_pred (p_c.f_precondition) p_pre_env == fn_false -> p_pre_env = p_post_env)) (ensures (invariant_preserved p_inv p_pre_env p_post_env == true))) = admit ()
 
 (* E_001_12 (matches Coq: Theorem E_001_12) *)
-let e_001_12_obligation () : Tot bool = (0 = 0)
-let e_001_12_lemma () : Lemma (requires True) (ensures (e_001_12_obligation () == e_001_12_obligation ())) = ()
+let e_001_12 (p_c_base: _) (p_c_derived: _) : Lemma (requires (contract_stronger p_c_derived p_c_base == true /\ forall pre_env post_env_ contract_sat p_c_derived pre_env post_env == true) (ensures (contract_sat p_c_base pre_env post_env == true))) = admit ()
 
 (* E_001_13 (matches Coq: Theorem E_001_13) *)
-let e_001_13_obligation () : Tot bool = (0 = 0)
-let e_001_13_lemma () : Lemma (requires True) (ensures (e_001_13_obligation () == e_001_13_obligation ())) = ()
+let e_001_13 (p_h1: _) (p_h2: _) (p_p1: _) (p_p2: _) : Lemma (requires (disjoint p_h1 p_h2 == true /\ heap_sat p_h1 p_p1 == true /\ heap_sat p_h2 p_p2 == true) (ensures (heap_sat (heap_union p_h1 p_h2) (HPSep p_p1 p_p2) == true))) = admit ()
 
 (* E_001_14 (matches Coq: Theorem E_001_14) *)
-let e_001_14_obligation () : Tot bool = (0 = 0)
-let e_001_14_lemma () : Lemma (requires True) (ensures (e_001_14_obligation () == e_001_14_obligation ())) = ()
+let e_001_14 (p_h: _) (p_hp: _) (p_hq: _) : Lemma (requires (heap_sat p_h (HPWand p_hp p_hq) == true /\ forall h__ disjoint p_h h_ == true /\ heap_sat h_ p_hp == true) (ensures (heap_sat (heap_union p_h h_) p_hq == true))) = admit ()
 
 (* E_001_15 (matches Coq: Theorem E_001_15) *)
-let e_001_15_obligation () : Tot bool = (0 = 0)
-let e_001_15_lemma () : Lemma (requires True) (ensures (e_001_15_obligation () == e_001_15_obligation ())) = ()
+let e_001_15 (p_p: _) (p_q: _) (p_r: _) (p_c: _) : Lemma (requires (hoare_triple p_p p_c p_q == true) (ensures (hoare_triple (HPSep p_p p_r) p_c (HPSep p_q p_r) == true))) = admit ()
 
 (* E_001_16 (matches Coq: Theorem E_001_16) *)
-let e_001_16_obligation () : Tot bool = (0 = 0)
-let e_001_16_lemma () : Lemma (requires True) (ensures (e_001_16_obligation () == e_001_16_obligation ())) = ()
+let e_001_16 (p_l: _) (p_v: _) : Lemma (heap_sat (fn_fun x => id_if Nat.eqb x p_l id_then Some p_v id_else None) (HPPointsTo p_l p_v) == true) = admit ()
 
 (* E_001_17 (matches Coq: Theorem E_001_17) *)
-let e_001_17_obligation () : Tot bool = (0 = 0)
-let e_001_17_lemma () : Lemma (requires True) (ensures (e_001_17_obligation () == e_001_17_obligation ())) = ()
+let e_001_17 (p_trans: _) (p_p: _) (p_s: _) (p_k: _) : Lemma (requires (bmc_check p_trans (PropAtom p_p) p_s p_k == true) (ensures (eval_pred p_p p_s == true))) = admit ()
 
 (* E_001_18 (matches Coq: Theorem E_001_18) *)
 let e_001_18_obligation () : Tot bool = (0 = 0)
 let e_001_18_lemma () : Lemma (requires True) (ensures (e_001_18_obligation () == e_001_18_obligation ())) = ()
 
 (* E_001_19 (matches Coq: Theorem E_001_19) *)
-let e_001_19_obligation () : Tot bool = (0 = 0)
-let e_001_19_lemma () : Lemma (requires True) (ensures (e_001_19_obligation () == e_001_19_obligation ())) = ()
+let e_001_19 (p_trans: _) (p_prop: _) (p_trace: _) (p_s: _) : Lemma (requires (valid_counterexample p_trans p_prop (p_s :: p_trace) == true) (ensures (exists s__ (s_ = p_s \/ List.In s_ p_trace) == true /\ ~(prop_sat s_ p_prop == true)))) = admit ()
 
 (* E_001_20 (matches Coq: Theorem E_001_20) *)
-let e_001_20_obligation () : Tot bool = (0 = 0)
-let e_001_20_lemma () : Lemma (requires True) (ensures (e_001_20_obligation () == e_001_20_obligation ())) = ()
+let e_001_20 (p_abs: _) (p_trans: _) (p_abs_trans: _) (p_prop: _) : Lemma (requires (abstraction_sound p_abs p_trans p_abs_trans == true /\ (forall s_ prop_sat (p_abs s) p_prop -> prop_sat s p_prop == true) /\ forall s_ prop_sat (p_abs s) p_prop == true) (ensures (prop_sat s p_prop == true))) = admit ()
 
 (* E_001_21 (matches Coq: Theorem E_001_21) *)
-let e_001_21_obligation () : Tot bool = (0 = 0)
-let e_001_21_lemma () : Lemma (requires True) (ensures (e_001_21_obligation () == e_001_21_obligation ())) = ()
+let e_001_21 (p_ctx: _) (p_t: _) (p_p: _) (p_assignment: _) : Lemma (requires (proof_typed p_ctx p_t p_p == true /\ ctx_valid p_ctx p_assignment == true) (ensures (interp_prop p_p p_assignment == true))) = admit ()
 
 (* E_001_22 (matches Coq: Theorem E_001_22) *)
-let e_001_22_obligation () : Tot bool = (0 = 0)
-let e_001_22_lemma () : Lemma (requires True) (ensures (e_001_22_obligation () == e_001_22_obligation ())) = ()
+let e_001_22 (p_ctx: _) (p_t: _) (p_p: _) (p_assignment: _) : Lemma (requires (proof_typed p_ctx p_t p_p == true /\ ctx_valid p_ctx p_assignment == true) (ensures (interp_prop p_p p_assignment == true))) = admit ()
 
 (* bool_proof_irrelevant (matches Coq: Lemma bool_proof_irrelevant) *)
-let bool_proof_irrelevant_obligation () : Tot bool = (0 = 0)
-let bool_proof_irrelevant_lemma () : Lemma (requires True) (ensures (bool_proof_irrelevant_obligation () == bool_proof_irrelevant_obligation ())) = ()
+let bool_proof_irrelevant (p_b: bool) (p_p1: nat) (p_p2: nat) : Lemma (p_p1 == p_p2) = admit ()
 
 (* E_001_23 (matches Coq: Theorem E_001_23) *)
-let e_001_23_obligation () : Tot bool = (0 = 0)
-let e_001_23_lemma () : Lemma (requires True) (ensures (e_001_23_obligation () == e_001_23_obligation ())) = ()
+let e_001_23 (p_p: _) (p_env: _) (p_pf2: _) (p_eval_pred: _) (p_p: _) (p_env: _) (p_true_: _) : Lemma (pf1 == p_pf2) = admit ()
 
 (* E_001_24 (matches Coq: Theorem E_001_24) *)
-let e_001_24_obligation () : Tot bool = (0 = 0)
-let e_001_24_lemma () : Lemma (requires True) (ensures (e_001_24_obligation () == e_001_24_obligation ())) = ()
+let e_001_24 (p_ctx: _) (p_t1: _) (p_t2: _) (p_p1: _) (p_p2: _) : Lemma (requires (proof_typed p_ctx p_t1 p_p1 == true /\ proof_typed p_ctx p_t2 p_p2 == true) (ensures (proof_typed p_ctx (PTAndI p_t1 p_t2) (SPAnd p_p1 p_p2) == true))) = admit ()
 
 (* E_001_25 (matches Coq: Theorem E_001_25) *)
-let e_001_25_obligation () : Tot bool = (0 = 0)
-let e_001_25_lemma () : Lemma (requires True) (ensures (e_001_25_obligation () == e_001_25_obligation ())) = ()
+let e_001_25 (p_ctx: _) (p_e: _) (p_t: _) : Lemma (requires (src_typed p_ctx p_e p_t == true) (ensures (tgt_typed p_ctx (compile p_e) p_t == true))) = admit ()
 
 (* E_001_26 (matches Coq: Theorem E_001_26) *)
-let e_001_26_obligation () : Tot bool = (0 = 0)
-let e_001_26_lemma () : Lemma (requires True) (ensures (e_001_26_obligation () == e_001_26_obligation ())) = ()
+let e_001_26 (p_e: _) : Lemma (src_effect p_e == tgt_effect (compile p_e)) = admit ()
 
 (* E_001_27 (matches Coq: Theorem E_001_27) *)
-let e_001_27_obligation () : Tot bool = (0 = 0)
-let e_001_27_lemma () : Lemma (requires True) (ensures (e_001_27_obligation () == e_001_27_obligation ())) = ()
+let e_001_27 (p_e: _) : Lemma (src_sec_label p_e == tgt_sec_label (compile p_e)) = admit ()
 
 (* E_001_28 (matches Coq: Theorem E_001_28) *)
-let e_001_28_obligation () : Tot bool = (0 = 0)
-let e_001_28_lemma () : Lemma (requires True) (ensures (e_001_28_obligation () == e_001_28_obligation ())) = ()
+let e_001_28 (p_v: _) : Lemma (obs_equiv p_v (compile_val p_v) == true) = admit ()
 
 (* wp_skip_sound (matches Coq: Lemma wp_skip_sound) *)
-let wp_skip_sound_obligation () : Tot bool = (0 = 0)
-let wp_skip_sound_lemma () : Lemma (requires True) (ensures (wp_skip_sound_obligation () == wp_skip_sound_obligation ())) = ()
+let wp_skip_sound (p_post: _) (p_env: _) : Lemma (requires (eval_pred (wp CmdSkip p_post) p_env == true) (ensures (eval_pred p_post p_env == true))) = admit ()
 
 (* E_001_29 (matches Coq: Theorem E_001_29) *)
-let e_001_29_obligation () : Tot bool = (0 = 0)
-let e_001_29_lemma () : Lemma (requires True) (ensures (e_001_29_obligation () == e_001_29_obligation ())) = ()
+let e_001_29 (p_post: _) (p_env: _) : Lemma (requires (eval_pred (wp CmdSkip p_post) p_env == true /\ forall env2_ cmd_eval CmdSkip p_env env2 == true) (ensures (eval_pred p_post env2 == true))) = admit ()
 
 (* E_001_30 (matches Coq: Theorem E_001_30) *)
 let e_001_30_obligation () : Tot bool = (0 = 0)

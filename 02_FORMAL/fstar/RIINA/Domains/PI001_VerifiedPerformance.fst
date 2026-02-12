@@ -88,137 +88,103 @@ let puzzle_verify (p_x: nat) (p_target: nat) : Tot bool =
   puzzle_valid p_x p_target
 
 (* PI_001_01_simd_add_equiv (matches Coq: Theorem PI_001_01_simd_add_equiv) *)
-let pi_001_01_simd_add_equiv_obligation () : Tot bool = (0 = 0)
-let pi_001_01_simd_add_equiv_lemma () : Lemma (requires True) (ensures (pi_001_01_simd_add_equiv_obligation () == pi_001_01_simd_add_equiv_obligation ())) = ()
+let pi_001_01_simd_add_equiv (p_a: _) (p_b: _) : Lemma (simd_add p_a p_b == scalar_add p_a p_b) = admit ()
 
 (* PI_001_02_simd_mul_equiv (matches Coq: Theorem PI_001_02_simd_mul_equiv) *)
-let pi_001_02_simd_mul_equiv_obligation () : Tot bool = (0 = 0)
-let pi_001_02_simd_mul_equiv_lemma () : Lemma (requires True) (ensures (pi_001_02_simd_mul_equiv_obligation () == pi_001_02_simd_mul_equiv_obligation ())) = ()
+let pi_001_02_simd_mul_equiv (p_a: _) (p_b: _) : Lemma (simd_mul p_a p_b == scalar_mul p_a p_b) = admit ()
 
 (* PI_001_03_scalar_add_length (matches Coq: Theorem PI_001_03_scalar_add_length) *)
-let pi_001_03_scalar_add_length_obligation () : Tot bool = (0 = 0)
-let pi_001_03_scalar_add_length_lemma () : Lemma (requires True) (ensures (pi_001_03_scalar_add_length_obligation () == pi_001_03_scalar_add_length_obligation ())) = ()
+let pi_001_03_scalar_add_length (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b) (ensures (length (scalar_add p_a p_b) == length p_a))) = admit ()
 
 (* PI_001_04_scalar_add_comm (matches Coq: Theorem PI_001_04_scalar_add_comm) *)
-let pi_001_04_scalar_add_comm_obligation () : Tot bool = (0 = 0)
-let pi_001_04_scalar_add_comm_lemma () : Lemma (requires True) (ensures (pi_001_04_scalar_add_comm_obligation () == pi_001_04_scalar_add_comm_obligation ())) = ()
+let pi_001_04_scalar_add_comm (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b) (ensures (scalar_add p_a p_b == scalar_add p_b p_a))) = admit ()
 
 (* PI_001_05_scalar_add_assoc (matches Coq: Theorem PI_001_05_scalar_add_assoc) *)
-let pi_001_05_scalar_add_assoc_obligation () : Tot bool = (0 = 0)
-let pi_001_05_scalar_add_assoc_lemma () : Lemma (requires True) (ensures (pi_001_05_scalar_add_assoc_obligation () == pi_001_05_scalar_add_assoc_obligation ())) = ()
+let pi_001_05_scalar_add_assoc (p_a: _) (p_b: _) (p_c: _) : Lemma (requires (length p_a == length p_b /\ length p_b == length p_c) (ensures (scalar_add (scalar_add p_a p_b) p_c == scalar_add p_a (scalar_add p_b p_c)))) = admit ()
 
 (* PI_001_06_scalar_mul_length (matches Coq: Theorem PI_001_06_scalar_mul_length) *)
-let pi_001_06_scalar_mul_length_obligation () : Tot bool = (0 = 0)
-let pi_001_06_scalar_mul_length_lemma () : Lemma (requires True) (ensures (pi_001_06_scalar_mul_length_obligation () == pi_001_06_scalar_mul_length_obligation ())) = ()
+let pi_001_06_scalar_mul_length (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b) (ensures (length (scalar_mul p_a p_b) == length p_a))) = admit ()
 
 (* PI_001_07_dot_product_zero_left (matches Coq: Theorem PI_001_07_dot_product_zero_left) *)
-let pi_001_07_dot_product_zero_left_obligation () : Tot bool = (0 = 0)
-let pi_001_07_dot_product_zero_left_lemma () : Lemma (requires True) (ensures (pi_001_07_dot_product_zero_left_obligation () == pi_001_07_dot_product_zero_left_obligation ())) = ()
+let pi_001_07_dot_product_zero_left (p_b: _) : Lemma (dot_product [] p_b == 0) = admit ()
 
 (* PI_001_08_simd_preserves_length (matches Coq: Theorem PI_001_08_simd_preserves_length) *)
-let pi_001_08_simd_preserves_length_obligation () : Tot bool = (0 = 0)
-let pi_001_08_simd_preserves_length_lemma () : Lemma (requires True) (ensures (pi_001_08_simd_preserves_length_obligation () == pi_001_08_simd_preserves_length_obligation ())) = ()
+let pi_001_08_simd_preserves_length (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b) (ensures (length (simd_add p_a p_b) == length p_a))) = admit ()
 
 (* PI_002_01_veb_search_root (matches Coq: Theorem PI_002_01_veb_search_root) *)
-let pi_002_01_veb_search_root_obligation () : Tot bool = (0 = 0)
-let pi_002_01_veb_search_root_lemma () : Lemma (requires True) (ensures (pi_002_01_veb_search_root_obligation () == pi_002_01_veb_search_root_obligation ())) = ()
+let pi_002_01_veb_search_root (p_v: _) (p_l: _) (p_r: _) : Lemma (veb_search (VEBNode p_v p_l p_r) p_v == true) = admit ()
 
 (* PI_002_02_veb_leaf_search (matches Coq: Theorem PI_002_02_veb_leaf_search) *)
-let pi_002_02_veb_leaf_search_obligation () : Tot bool = (0 = 0)
-let pi_002_02_veb_leaf_search_lemma () : Lemma (requires True) (ensures (pi_002_02_veb_leaf_search_obligation () == pi_002_02_veb_leaf_search_obligation ())) = ()
+let pi_002_02_veb_leaf_search (p_v: _) : Lemma (veb_search (VEBLeaf p_v) p_v == true) = admit ()
 
 (* PI_002_03_veb_height_positive (matches Coq: Theorem PI_002_03_veb_height_positive) *)
-let pi_002_03_veb_height_positive_obligation () : Tot bool = (0 = 0)
-let pi_002_03_veb_height_positive_lemma () : Lemma (requires True) (ensures (pi_002_03_veb_height_positive_obligation () == pi_002_03_veb_height_positive_obligation ())) = ()
+let pi_002_03_veb_height_positive (p_v: _) (p_l: _) (p_r: _) : Lemma (veb_height (VEBNode p_v p_l p_r) > 0) = admit ()
 
 (* PI_002_04_veb_size_positive (matches Coq: Theorem PI_002_04_veb_size_positive) *)
-let pi_002_04_veb_size_positive_obligation () : Tot bool = (0 = 0)
-let pi_002_04_veb_size_positive_lemma () : Lemma (requires True) (ensures (pi_002_04_veb_size_positive_obligation () == pi_002_04_veb_size_positive_obligation ())) = ()
+let pi_002_04_veb_size_positive (p_t: _) : Lemma (veb_size p_t > 0) = admit ()
 
 (* PI_002_05_veb_inorder_nonempty (matches Coq: Theorem PI_002_05_veb_inorder_nonempty) *)
-let pi_002_05_veb_inorder_nonempty_obligation () : Tot bool = (0 = 0)
-let pi_002_05_veb_inorder_nonempty_lemma () : Lemma (requires True) (ensures (pi_002_05_veb_inorder_nonempty_obligation () == pi_002_05_veb_inorder_nonempty_obligation ())) = ()
+let pi_002_05_veb_inorder_nonempty (p_t: _) : Lemma (~(veb_inorder p_t == [])) = admit ()
 
 (* PI_002_06_veb_height_bound (matches Coq: Theorem PI_002_06_veb_height_bound) *)
-let pi_002_06_veb_height_bound_obligation () : Tot bool = (0 = 0)
-let pi_002_06_veb_height_bound_lemma () : Lemma (requires True) (ensures (pi_002_06_veb_height_bound_obligation () == pi_002_06_veb_height_bound_obligation ())) = ()
+let pi_002_06_veb_height_bound (p_t: _) : Lemma (veb_height p_t < veb_size p_t) = admit ()
 
 (* PI_003_01_msq_empty_dequeue (matches Coq: Theorem PI_003_01_msq_empty_dequeue) *)
-let pi_003_01_msq_empty_dequeue_obligation () : Tot bool = (0 = 0)
-let pi_003_01_msq_empty_dequeue_lemma () : Lemma (requires True) (ensures (pi_003_01_msq_empty_dequeue_obligation () == pi_003_01_msq_empty_dequeue_obligation ())) = ()
+let pi_003_01_msq_empty_dequeue () : Lemma (msq_dequeue msq_empty == (msq_empty_ None)) = admit ()
 
 (* PI_003_02_msq_enqueue_nonempty (matches Coq: Theorem PI_003_02_msq_enqueue_nonempty) *)
-let pi_003_02_msq_enqueue_nonempty_obligation () : Tot bool = (0 = 0)
-let pi_003_02_msq_enqueue_nonempty_lemma () : Lemma (requires True) (ensures (pi_003_02_msq_enqueue_nonempty_obligation () == pi_003_02_msq_enqueue_nonempty_obligation ())) = ()
+let pi_003_02_msq_enqueue_nonempty (p_q: _) (p_v: _) : Lemma (~((msq_enqueue p_q p_v).f_msq_items == [])) = admit ()
 
 (* PI_003_03_msq_fifo (matches Coq: Theorem PI_003_03_msq_fifo) *)
-let pi_003_03_msq_fifo_obligation () : Tot bool = (0 = 0)
-let pi_003_03_msq_fifo_lemma () : Lemma (requires True) (ensures (pi_003_03_msq_fifo_obligation () == pi_003_03_msq_fifo_obligation ())) = ()
+let pi_003_03_msq_fifo (p_v: _) : Lemma (fn_let q : == msq_enqueue msq_empty p_v id_in msq_dequeue q = ({| msq_items := []; msq_head := 1; msq_tail := 1 |}, Some p_v)) = admit ()
 
 (* PI_003_04_msq_enqueue_length (matches Coq: Theorem PI_003_04_msq_enqueue_length) *)
-let pi_003_04_msq_enqueue_length_obligation () : Tot bool = (0 = 0)
-let pi_003_04_msq_enqueue_length_lemma () : Lemma (requires True) (ensures (pi_003_04_msq_enqueue_length_obligation () == pi_003_04_msq_enqueue_length_obligation ())) = ()
+let pi_003_04_msq_enqueue_length (p_q: _) (p_v: _) : Lemma (length ((msq_enqueue p_q p_v).f_msq_items) == ((length (p_q.f_msq_items)) + 1)) = admit ()
 
 (* PI_003_05_cas_success (matches Coq: Theorem PI_003_05_cas_success) *)
-let pi_003_05_cas_success_obligation () : Tot bool = (0 = 0)
-let pi_003_05_cas_success_lemma () : Lemma (requires True) (ensures (pi_003_05_cas_success_obligation () == pi_003_05_cas_success_obligation ())) = ()
+let pi_003_05_cas_success (p_v: _) (p_new_val: _) : Lemma (cas p_v p_v p_new_val == CASSuccess) = admit ()
 
 (* PI_003_06_cas_failure (matches Coq: Theorem PI_003_06_cas_failure) *)
-let pi_003_06_cas_failure_obligation () : Tot bool = (0 = 0)
-let pi_003_06_cas_failure_lemma () : Lemma (requires True) (ensures (pi_003_06_cas_failure_obligation () == pi_003_06_cas_failure_obligation ())) = ()
+let pi_003_06_cas_failure (p_loc: _) (p_expected: _) (p_new_val: _) : Lemma (requires (~(p_loc == p_expected)) (ensures (exists v_ cas p_loc p_expected p_new_val == CASFailure v))) = admit ()
 
 (* PI_003_07_linearization_empty (matches Coq: Theorem PI_003_07_linearization_empty) *)
-let pi_003_07_linearization_empty_obligation () : Tot bool = (0 = 0)
-let pi_003_07_linearization_empty_lemma () : Lemma (requires True) (ensures (pi_003_07_linearization_empty_obligation () == pi_003_07_linearization_empty_obligation ())) = ()
+let pi_003_07_linearization_empty () : Lemma (lin_ordered [] == true) = admit ()
 
 (* PI_004_01_dce_false_branch (matches Coq: Theorem PI_004_01_dce_false_branch) *)
-let pi_004_01_dce_false_branch_obligation () : Tot bool = (0 = 0)
-let pi_004_01_dce_false_branch_lemma () : Lemma (requires True) (ensures (pi_004_01_dce_false_branch_obligation () == pi_004_01_dce_false_branch_obligation ())) = ()
+let pi_004_01_dce_false_branch (p_t: _) (p_f: _) (p_env: _) : Lemma (opt_eval p_env (dce (OIf (OConst 0) p_t p_f)) == opt_eval p_env (dce p_f)) = admit ()
 
 (* PI_004_02_dce_true_branch (matches Coq: Theorem PI_004_02_dce_true_branch) *)
-let pi_004_02_dce_true_branch_obligation () : Tot bool = (0 = 0)
-let pi_004_02_dce_true_branch_lemma () : Lemma (requires True) (ensures (pi_004_02_dce_true_branch_obligation () == pi_004_02_dce_true_branch_obligation ())) = ()
+let pi_004_02_dce_true_branch (p_n: _) (p_t: _) (p_f: _) (p_env: _) : Lemma (requires (p_n > 0) (ensures (opt_eval p_env (dce (OIf (OConst p_n) p_t p_f)) == opt_eval p_env (dce p_t)))) = admit ()
 
 (* PI_004_03_const_fold_add (matches Coq: Theorem PI_004_03_const_fold_add) *)
-let pi_004_03_const_fold_add_obligation () : Tot bool = (0 = 0)
-let pi_004_03_const_fold_add_lemma () : Lemma (requires True) (ensures (pi_004_03_const_fold_add_obligation () == pi_004_03_const_fold_add_obligation ())) = ()
+let pi_004_03_const_fold_add (p_a: _) (p_b: _) (p_env: _) : Lemma (opt_eval p_env (const_fold (OAdd (OConst p_a) (OConst p_b))) == p_a + p_b) = admit ()
 
 (* PI_004_04_const_fold_mul (matches Coq: Theorem PI_004_04_const_fold_mul) *)
-let pi_004_04_const_fold_mul_obligation () : Tot bool = (0 = 0)
-let pi_004_04_const_fold_mul_lemma () : Lemma (requires True) (ensures (pi_004_04_const_fold_mul_obligation () == pi_004_04_const_fold_mul_obligation ())) = ()
+let pi_004_04_const_fold_mul (p_a: _) (p_b: _) (p_env: _) : Lemma (opt_eval p_env (const_fold (OMul (OConst p_a) (OConst p_b))) == p_a * p_b) = admit ()
 
 (* PI_004_05_const_preserves (matches Coq: Theorem PI_004_05_const_preserves) *)
-let pi_004_05_const_preserves_obligation () : Tot bool = (0 = 0)
-let pi_004_05_const_preserves_lemma () : Lemma (requires True) (ensures (pi_004_05_const_preserves_obligation () == pi_004_05_const_preserves_obligation ())) = ()
+let pi_004_05_const_preserves (p_n: _) (p_env: _) : Lemma (opt_eval p_env (const_fold (OConst p_n)) == opt_eval p_env (OConst p_n)) = admit ()
 
 (* PI_004_06_var_preserves (matches Coq: Theorem PI_004_06_var_preserves) *)
-let pi_004_06_var_preserves_obligation () : Tot bool = (0 = 0)
-let pi_004_06_var_preserves_lemma () : Lemma (requires True) (ensures (pi_004_06_var_preserves_obligation () == pi_004_06_var_preserves_obligation ())) = ()
+let pi_004_06_var_preserves (p_x: _) (p_env: _) : Lemma (opt_eval p_env (const_fold (OVar p_x)) == opt_eval p_env (OVar p_x)) = admit ()
 
 (* PI_004_07_dce_const_preserves (matches Coq: Theorem PI_004_07_dce_const_preserves) *)
-let pi_004_07_dce_const_preserves_obligation () : Tot bool = (0 = 0)
-let pi_004_07_dce_const_preserves_lemma () : Lemma (requires True) (ensures (pi_004_07_dce_const_preserves_obligation () == pi_004_07_dce_const_preserves_obligation ())) = ()
+let pi_004_07_dce_const_preserves (p_n: _) (p_env: _) : Lemma (opt_eval p_env (dce (OConst p_n)) == p_n) = admit ()
 
 (* PI_004_08_dce_var_preserves (matches Coq: Theorem PI_004_08_dce_var_preserves) *)
-let pi_004_08_dce_var_preserves_obligation () : Tot bool = (0 = 0)
-let pi_004_08_dce_var_preserves_lemma () : Lemma (requires True) (ensures (pi_004_08_dce_var_preserves_obligation () == pi_004_08_dce_var_preserves_obligation ())) = ()
+let pi_004_08_dce_var_preserves (p_x: _) (p_env: _) : Lemma (opt_eval p_env (dce (OVar p_x)) == p_env p_x) = admit ()
 
 (* PI_005_01_puzzle_verify_sound (matches Coq: Theorem PI_005_01_puzzle_verify_sound) *)
-let pi_005_01_puzzle_verify_sound_obligation () : Tot bool = (0 = 0)
-let pi_005_01_puzzle_verify_sound_lemma () : Lemma (requires True) (ensures (pi_005_01_puzzle_verify_sound_obligation () == pi_005_01_puzzle_verify_sound_obligation ())) = ()
+let pi_005_01_puzzle_verify_sound (p_x: _) (p_target: _) : Lemma (requires (puzzle_valid p_x p_target == true) (ensures (puzzle_verify p_x p_target == true))) = admit ()
 
 (* PI_005_02_puzzle_verify_complete (matches Coq: Theorem PI_005_02_puzzle_verify_complete) *)
-let pi_005_02_puzzle_verify_complete_obligation () : Tot bool = (0 = 0)
-let pi_005_02_puzzle_verify_complete_lemma () : Lemma (requires True) (ensures (pi_005_02_puzzle_verify_complete_obligation () == pi_005_02_puzzle_verify_complete_obligation ())) = ()
+let pi_005_02_puzzle_verify_complete (p_x: _) (p_target: _) : Lemma (requires (puzzle_verify p_x p_target == true) (ensures (puzzle_valid p_x p_target == true))) = admit ()
 
 (* PI_005_03_puzzle_zero_target (matches Coq: Theorem PI_005_03_puzzle_zero_target) *)
-let pi_005_03_puzzle_zero_target_obligation () : Tot bool = (0 = 0)
-let pi_005_03_puzzle_zero_target_lemma () : Lemma (requires True) (ensures (pi_005_03_puzzle_zero_target_obligation () == pi_005_03_puzzle_zero_target_obligation ())) = ()
+let pi_005_03_puzzle_zero_target (p_x: _) : Lemma (puzzle_valid p_x 0 == false) = admit ()
 
 (* PI_005_04_puzzle_deterministic (matches Coq: Theorem PI_005_04_puzzle_deterministic) *)
-let pi_005_04_puzzle_deterministic_obligation () : Tot bool = (0 = 0)
-let pi_005_04_puzzle_deterministic_lemma () : Lemma (requires True) (ensures (pi_005_04_puzzle_deterministic_obligation () == pi_005_04_puzzle_deterministic_obligation ())) = ()
+let pi_005_04_puzzle_deterministic (p_x: _) (p_t1: _) (p_t2: _) : Lemma (requires (p_t1 == p_t2) (ensures (puzzle_valid p_x p_t1 == puzzle_valid p_x p_t2))) = admit ()
 
 (* PI_005_05_vec_sum_nil (matches Coq: Theorem PI_005_05_vec_sum_nil) *)
-let pi_005_05_vec_sum_nil_obligation () : Tot bool = (0 = 0)
-let pi_005_05_vec_sum_nil_lemma () : Lemma (requires True) (ensures (pi_005_05_vec_sum_nil_obligation () == pi_005_05_vec_sum_nil_obligation ())) = ()
+let pi_005_05_vec_sum_nil () : Lemma (vec_sum [] == 0) = admit ()

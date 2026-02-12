@@ -269,109 +269,82 @@ let eval_static_assert (p_fuel: nat) (p_sa: static_assert) : Tot bool =
   | _ -> false
 
 (* tokens_well_formed_app (matches Coq: Lemma tokens_well_formed_app) *)
-let tokens_well_formed_app_obligation () : Tot bool = (0 = 0)
-let tokens_well_formed_app_lemma () : Lemma (requires True) (ensures (tokens_well_formed_app_obligation () == tokens_well_formed_app_obligation ())) = ()
+let tokens_well_formed_app (p_ts1: _) (p_ts2: _) : Lemma (requires (tokens_well_formed p_ts1 == true /\ tokens_well_formed p_ts2 == true) (ensures (tokens_well_formed (p_ts1 ++ p_ts2) == true))) = admit ()
 
 (* K_001_01 (matches Coq: Theorem K_001_01) *)
-let k_001_01_obligation () : Tot bool = (0 = 0)
-let k_001_01_lemma () : Lemma (requires True) (ensures (k_001_01_obligation () == k_001_01_obligation ())) = ()
+let k_001_01 (p_m: macro_def) (p_input: nat) (p_output: nat) : Lemma (requires (tokens_well_formed p_input == true /\ macro_well_formed p_m == true /\ expand_macro_fuel 1 p_m p_input == Some p_output) (ensures (tokens_well_formed p_output == true))) = admit ()
 
 (* K_001_02 (matches Coq: Theorem K_001_02) *)
-let k_001_02_obligation () : Tot bool = (0 = 0)
-let k_001_02_lemma () : Lemma (requires True) (ensures (k_001_02_obligation () == k_001_02_obligation ())) = ()
+let k_001_02 (p_m: macro_def) (p_input: nat) (p_fuel: nat) : Lemma (requires (p_fuel > 0) (ensures (exists output_ expand_macro_fuel p_fuel p_m p_input == Some output))) = admit ()
 
 (* K_001_03 (matches Coq: Theorem K_001_03) *)
-let k_001_03_obligation () : Tot bool = (0 = 0)
-let k_001_03_lemma () : Lemma (requires True) (ensures (k_001_03_obligation () == k_001_03_obligation ())) = ()
+let k_001_03 (p_m: macro_def) (p_input: nat) (p_fuel: nat) : Lemma (requires (p_fuel > 0) (ensures (~(expand_macro_fuel p_fuel p_m p_input == None)))) = admit ()
 
 (* K_001_04 (matches Coq: Theorem K_001_04) *)
-let k_001_04_obligation () : Tot bool = (0 = 0)
-let k_001_04_lemma () : Lemma (requires True) (ensures (k_001_04_obligation () == k_001_04_obligation ())) = ()
+let k_001_04 (p_patterns: (list nat)) (p_input: nat) : Lemma (requires (~(p_patterns == [])) (ensures (((exists p_p. In p_p p_patterns == true) /\ pattern_covers_input p p_input == true) \/ (forall p_ In p p_patterns -> pattern_covers_input p p_input == false)))) = admit ()
 
 (* K_001_05 (matches Coq: Theorem K_001_05) *)
-let k_001_05_obligation () : Tot bool = (0 = 0)
-let k_001_05_lemma () : Lemma (requires True) (ensures (k_001_05_obligation () == k_001_05_obligation ())) = ()
+let k_001_05 (p_ft: fragment_type) (p_input: nat) (p_output: nat) : Lemma (requires (tokens_well_formed p_input == true /\ tokens_well_formed p_output == true) (ensures (fragment_type_eqb p_ft p_ft == true))) = admit ()
 
 (* K_001_06 (matches Coq: Theorem K_001_06) *)
-let k_001_06_obligation () : Tot bool = (0 = 0)
-let k_001_06_lemma () : Lemma (requires True) (ensures (k_001_06_obligation () == k_001_06_obligation ())) = ()
+let k_001_06 (p_count: nat) (p_template: nat) : Lemma (List.length (expand_repetition p_count p_template) == p_count) = admit ()
 
 (* K_001_07 (matches Coq: Theorem K_001_07) *)
-let k_001_07_obligation () : Tot bool = (0 = 0)
-let k_001_07_lemma () : Lemma (requires True) (ensures (k_001_07_obligation () == k_001_07_obligation ())) = ()
+let k_001_07 (p_ts: nat) : Lemma (requires (tokens_well_formed p_ts == true) (ensures (tokens_well_formed (flat_map (fn_fun t => [t]) p_ts) == true))) = admit ()
 
 (* K_001_08 (matches Coq: Theorem K_001_08) *)
-let k_001_08_obligation () : Tot bool = (0 = 0)
-let k_001_08_lemma () : Lemma (requires True) (ensures (k_001_08_obligation () == k_001_08_obligation ())) = ()
+let k_001_08 (p_p_impl: impl_block) (p_bound: trait_bound) : Lemma (requires (impl_satisfies_bound id_impl p_bound == true) (ensures (String.eqb (id_impl.f_impl_trait) (p_bound.f_tb_trait_name) == true))) = admit ()
 
 (* K_001_09 (matches Coq: Theorem K_001_09) *)
-let k_001_09_obligation () : Tot bool = (0 = 0)
-let k_001_09_lemma () : Lemma (requires True) (ensures (k_001_09_obligation () == k_001_09_obligation ())) = ()
+let k_001_09 (p_original: item) (p_modified: item) : Lemma (requires (attr_preserves_structure p_original p_modified == true) (ensures (p_original.f_item_kind == p_modified.f_item_kind))) = admit ()
 
 (* K_001_10 (matches Coq: Theorem K_001_10) *)
-let k_001_10_obligation () : Tot bool = (0 = 0)
-let k_001_10_lemma () : Lemma (requires True) (ensures (k_001_10_obligation () == k_001_10_obligation ())) = ()
+let k_001_10 (p_s: sandbox_state) : Lemma (requires (sandbox_isolated p_s == true) (ensures (p_s.f_sb_can_read_fs == false /\ p_s.f_sb_can_write_fs == false /\ p_s.f_sb_can_network == false /\ p_s.f_sb_can_exec == false))) = admit ()
 
 (* K_001_11 (matches Coq: Theorem K_001_11) *)
-let k_001_11_obligation () : Tot bool = (0 = 0)
-let k_001_11_lemma () : Lemma (requires True) (ensures (k_001_11_obligation () == k_001_11_obligation ())) = ()
+let k_001_11 (p_ctx: hygienic_context) (p_name: string) (p_use_scope: nat) : Lemma (requires (~(p_ctx.f_hyg_current_scope == p_use_scope)) (ensures (is_name_captured p_ctx p_name p_use_scope == true))) = admit ()
 
 (* K_001_12 (matches Coq: Theorem K_001_12) *)
-let k_001_12_obligation () : Tot bool = (0 = 0)
-let k_001_12_lemma () : Lemma (requires True) (ensures (k_001_12_obligation () == k_001_12_obligation ())) = ()
+let k_001_12 (p_ctx: hygienic_context) (p_macro_name: string) (p_user_name: string) : Lemma (requires (~(p_ctx.f_hyg_macro_scope == p_ctx.f_hyg_current_scope) /\ lookup_scoped (p_ctx.f_hyg_bindings) p_macro_name == Some (p_ctx.f_hyg_macro_scope) /\ lookup_scoped (p_ctx.f_hyg_bindings) p_user_name == Some (p_ctx.f_hyg_current_scope)) (ensures (~(lookup_scoped (p_ctx.f_hyg_bindings) p_macro_name == lookup_scoped (p_ctx.f_hyg_bindings) p_user_name)))) = admit ()
 
 (* K_001_13 (matches Coq: Theorem K_001_13) *)
-let k_001_13_obligation () : Tot bool = (0 = 0)
-let k_001_13_lemma () : Lemma (requires True) (ensures (k_001_13_obligation () == k_001_13_obligation ())) = ()
+let k_001_13 (p_ctx: expansion_context) : Lemma (resolve_crate_path p_ctx == [ctx_crate ctx_) = admit ()
 
 (* K_001_14 (matches Coq: Theorem K_001_14) *)
-let k_001_14_obligation () : Tot bool = (0 = 0)
-let k_001_14_lemma () : Lemma (requires True) (ensures (k_001_14_obligation () == k_001_14_obligation ())) = ()
+let k_001_14 (p_span: source_span) : Lemma (requires (p_span.f_span_start <= p_span.f_span_end) (ensures (span_end p_span - span_start p_span >= 0))) = admit ()
 
 (* eval_const_fuel_sufficient (matches Coq: Lemma eval_const_fuel_sufficient) *)
-let eval_const_fuel_sufficient_obligation () : Tot bool = (0 = 0)
-let eval_const_fuel_sufficient_lemma () : Lemma (requires True) (ensures (eval_const_fuel_sufficient_obligation () == eval_const_fuel_sufficient_obligation ())) = ()
+let eval_const_fuel_sufficient (p_e: const_expr) (p_fuel: nat) : Lemma (requires (p_fuel > const_expr_size p_e) (ensures (exists n_ eval_const_fuel p_fuel p_e == Some n))) = admit ()
 
 (* K_001_15 (matches Coq: Theorem K_001_15) *)
-let k_001_15_obligation () : Tot bool = (0 = 0)
-let k_001_15_lemma () : Lemma (requires True) (ensures (k_001_15_obligation () == k_001_15_obligation ())) = ()
+let k_001_15 (p_e: const_expr) : Lemma (~(exists fuel_ eval_const_fuel fuel p_e == None)) = admit ()
 
 (* K_001_16 (matches Coq: Theorem K_001_16) *)
-let k_001_16_obligation () : Tot bool = (0 = 0)
-let k_001_16_lemma () : Lemma (requires True) (ensures (k_001_16_obligation () == k_001_16_obligation ())) = ()
+let k_001_16 (p_cg: const_generic) : Lemma (p_cg.f_cg_type == FTExpr \/ p_cg.f_cg_type == FTStmt \/ p_cg.f_cg_type == FTIdent \/ p_cg.f_cg_type == FTType \/ p_cg.f_cg_type == FTPattern \/ p_cg.f_cg_type == FTBlock) = admit ()
 
 (* K_001_17 (matches Coq: Theorem K_001_17) *)
-let k_001_17_obligation () : Tot bool = (0 = 0)
-let k_001_17_lemma () : Lemma (requires True) (ensures (k_001_17_obligation () == k_001_17_obligation ())) = ()
+let k_001_17 (p_sa: static_assert) (p_fuel: nat) (p_n: nat) : Lemma (requires (eval_const_fuel p_fuel (p_sa.f_sa_condition) == Some p_n) (ensures (eval_static_assert p_fuel p_sa == negb (Nat.eqb p_n 0)))) = admit ()
 
 (* K_001_18 (matches Coq: Theorem K_001_18) *)
-let k_001_18_obligation () : Tot bool = (0 = 0)
-let k_001_18_lemma () : Lemma (requires True) (ensures (k_001_18_obligation () == k_001_18_obligation ())) = ()
+let k_001_18 (p_sc: security_check) (p_fuel: nat) : Lemma (requires (eval_const_fuel p_fuel (p_sc.f_sc_condition) == Some 0 /\ p_sc.f_sc_severity >= 2) (ensures (~(eval_const_fuel p_fuel (p_sc.f_sc_condition) == Some 1)))) = admit ()
 
 (* K_001_19 (matches Coq: Theorem K_001_19) *)
-let k_001_19_obligation () : Tot bool = (0 = 0)
-let k_001_19_lemma () : Lemma (requires True) (ensures (k_001_19_obligation () == k_001_19_obligation ())) = ()
+let k_001_19 (p_p_impl: impl_block) (p_bounds: (list trait_bound)) : Lemma (requires (forallb (impl_satisfies_bound id_impl) p_bounds == true /\ forall b_ In b p_bounds == true) (ensures (impl_satisfies_bound id_impl b == true))) = admit ()
 
 (* K_001_20 (matches Coq: Theorem K_001_20) *)
-let k_001_20_obligation () : Tot bool = (0 = 0)
-let k_001_20_lemma () : Lemma (requires True) (ensures (k_001_20_obligation () == k_001_20_obligation ())) = ()
+let k_001_20 (p_fields: (list field_info)) (p_derived: (list field_info)) : Lemma (requires (List.length p_fields == List.length p_derived /\ map fi_name p_fields == map fi_name p_derived /\ forall i_ i < List.length p_fields) (ensures (nth i (map fi_name p_fields) EmptyString == nth i (map fi_name p_derived) EmptyString))) = admit ()
 
 (* K_001_21 (matches Coq: Theorem K_001_21) *)
-let k_001_21_obligation () : Tot bool = (0 = 0)
-let k_001_21_lemma () : Lemma (requires True) (ensures (k_001_21_obligation () == k_001_21_obligation ())) = ()
+let k_001_21 (p_fields: (list field_info)) : Lemma (requires (all_fields_zeroed p_fields == true /\ forall f_ In f p_fields == true) (ensures (f.f_fi_zero_status == ZSZeroed))) = admit ()
 
 (* K_001_22 (matches Coq: Theorem K_001_22) *)
-let k_001_22_obligation () : Tot bool = (0 = 0)
-let k_001_22_lemma () : Lemma (requires True) (ensures (k_001_22_obligation () == k_001_22_obligation ())) = ()
+let k_001_22 (p_dsl: dsl_def) (p_input: nat) : Lemma (requires (dsl_syntax_valid p_dsl p_input == true) (ensures (p_dsl.f_dsl_syntax == [] \/ (exists p_p. In p_p (p_dsl.f_dsl_syntax) == true) /\ pattern_covers_input p p_input == true))) = admit ()
 
 (* K_001_23 (matches Coq: Theorem K_001_23) *)
-let k_001_23_obligation () : Tot bool = (0 = 0)
-let k_001_23_lemma () : Lemma (requires True) (ensures (k_001_23_obligation () == k_001_23_obligation ())) = ()
+let k_001_23 (p_dsl: dsl_def) (p_input: nat) (p_output: nat) : Lemma (requires (dsl_semantics p_dsl p_input == Some p_output) (ensures (exists output__ dsl_semantics p_dsl p_input == Some output_))) = admit ()
 
 (* K_001_24 (matches Coq: Theorem K_001_24) *)
-let k_001_24_obligation () : Tot bool = (0 = 0)
-let k_001_24_lemma () : Lemma (requires True) (ensures (k_001_24_obligation () == k_001_24_obligation ())) = ()
+let k_001_24 (p_trace: nat) (p_trail: nat) : Lemma (requires (audit_complete p_trace p_trail == true) (ensures (List.length p_trace <= List.length p_trail + 1))) = admit ()
 
 (* K_001_25 (matches Coq: Theorem K_001_25) *)
-let k_001_25_obligation () : Tot bool = (0 = 0)
-let k_001_25_lemma () : Lemma (requires True) (ensures (k_001_25_obligation () == k_001_25_obligation ())) = ()
+let k_001_25 (p_entry: audit_entry) : Lemma (requires (is_security_sensitive (p_entry.f_ae_macro_name) == true /\ p_entry.f_ae_security_relevant == true) (ensures ((exists (p_trail: nat). In p_entry p_trail == true)))) = admit ()

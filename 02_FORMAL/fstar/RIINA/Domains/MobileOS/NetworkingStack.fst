@@ -198,85 +198,64 @@ let network_change_notified_prop (p_old_conn: connection) (p_new_conn: connectio
   (0 = 0)
 
 (* network_all_encrypted (matches Coq: Theorem network_all_encrypted) *)
-let network_all_encrypted_obligation () : Tot bool = (0 = 0)
-let network_all_encrypted_lemma () : Lemma (requires True) (ensures (network_all_encrypted_obligation () == network_all_encrypted_obligation ())) = ()
+let network_all_encrypted (p_packet: packet) : Lemma (requires (secure_stack == true /\ transmitted p_packet == true) (ensures (encrypted p_packet == true))) = admit ()
 
 (* cert_validation_correct (matches Coq: Theorem cert_validation_correct) *)
-let cert_validation_correct_obligation () : Tot bool = (0 = 0)
-let cert_validation_correct_lemma () : Lemma (requires True) (ensures (cert_validation_correct_obligation () == cert_validation_correct_obligation ())) = ()
+let cert_validation_correct (p_cert: certificate) : Lemma (requires (accepted p_cert == true) (ensures (valid_chain p_cert == true /\ not_expired p_cert == true /\ not_revoked p_cert == true))) = admit ()
 
 (* expired_cert_rejected (matches Coq: Theorem expired_cert_rejected) *)
-let expired_cert_rejected_obligation () : Tot bool = (0 = 0)
-let expired_cert_rejected_lemma () : Lemma (requires True) (ensures (expired_cert_rejected_obligation () == expired_cert_rejected_obligation ())) = ()
+let expired_cert_rejected (p_cert: certificate) : Lemma (requires (current_time > p_cert.f_cert_not_after) (ensures (~(not_expired p_cert == true)))) = admit ()
 
 (* revoked_cert_rejected (matches Coq: Theorem revoked_cert_rejected) *)
-let revoked_cert_rejected_obligation () : Tot bool = (0 = 0)
-let revoked_cert_rejected_lemma () : Lemma (requires True) (ensures (revoked_cert_rejected_obligation () == revoked_cert_rejected_obligation ())) = ()
+let revoked_cert_rejected (p_cert: certificate) : Lemma (requires (p_cert.f_cert_revoked == true) (ensures (~(not_revoked p_cert == true)))) = admit ()
 
 (* invalid_chain_rejected (matches Coq: Theorem invalid_chain_rejected) *)
-let invalid_chain_rejected_obligation () : Tot bool = (0 = 0)
-let invalid_chain_rejected_lemma () : Lemma (requires True) (ensures (invalid_chain_rejected_obligation () == invalid_chain_rejected_obligation ())) = ()
+let invalid_chain_rejected (p_cert: certificate) : Lemma (requires (p_cert.f_cert_chain_valid == false) (ensures (~(valid_chain p_cert == true)))) = admit ()
 
 (* secure_conn_valid_cert (matches Coq: Theorem secure_conn_valid_cert) *)
-let secure_conn_valid_cert_obligation () : Tot bool = (0 = 0)
-let secure_conn_valid_cert_lemma () : Lemma (requires True) (ensures (secure_conn_valid_cert_obligation () == secure_conn_valid_cert_obligation ())) = ()
+let secure_conn_valid_cert (p_conn: connection) : Lemma (requires (secure_connection p_conn == true) (ensures (acceptable_cert (p_conn.f_conn_cert) == true))) = admit ()
 
 (* tls_required_for_external (matches Coq: Theorem tls_required_for_external) *)
-let tls_required_for_external_obligation () : Tot bool = (0 = 0)
-let tls_required_for_external_lemma () : Lemma (requires True) (ensures (tls_required_for_external_obligation () == tls_required_for_external_obligation ())) = ()
+let tls_required_for_external (p_conn: http_connection) : Lemma (requires (tls_required p_conn == true) (ensures (p_conn.f_http_tls_version >= 13))) = admit ()
 
 (* certificate_validation_complete (matches Coq: Theorem certificate_validation_complete) *)
-let certificate_validation_complete_obligation () : Tot bool = (0 = 0)
-let certificate_validation_complete_lemma () : Lemma (requires True) (ensures (certificate_validation_complete_obligation () == certificate_validation_complete_obligation ())) = ()
+let certificate_validation_complete (p_cert: certificate) : Lemma (requires (cert_validation_complete_prop p_cert == true) (ensures (valid_chain p_cert == true /\ not_expired p_cert == true /\ not_revoked p_cert == true))) = admit ()
 
 (* dns_resolution_validated (matches Coq: Theorem dns_resolution_validated) *)
-let dns_resolution_validated_obligation () : Tot bool = (0 = 0)
-let dns_resolution_validated_lemma () : Lemma (requires True) (ensures (dns_resolution_validated_obligation () == dns_resolution_validated_obligation ())) = ()
+let dns_resolution_validated (p_q: dns_query) : Lemma (requires (dns_validated_prop p_q == true) (ensures (p_q.f_dns_validated == true /\ p_q.f_dns_dnssec_verified == true))) = admit ()
 
 (* no_plaintext_passwords (matches Coq: Theorem no_plaintext_passwords) *)
-let no_plaintext_passwords_obligation () : Tot bool = (0 = 0)
-let no_plaintext_passwords_lemma () : Lemma (requires True) (ensures (no_plaintext_passwords_obligation () == no_plaintext_passwords_obligation ())) = ()
+let no_plaintext_passwords (p_conn: http_connection) : Lemma (requires (no_plaintext_password p_conn == true) (ensures (p_conn.f_http_tls_version >= 12))) = admit ()
 
 (* connection_timeout_enforced (matches Coq: Theorem connection_timeout_enforced) *)
-let connection_timeout_enforced_obligation () : Tot bool = (0 = 0)
-let connection_timeout_enforced_lemma () : Lemma (requires True) (ensures (connection_timeout_enforced_obligation () == connection_timeout_enforced_obligation ())) = ()
+let connection_timeout_enforced (p_sock: socket) : Lemma (requires (connection_timeout_enforced_prop p_sock == true) (ensures (p_sock.f_socket_timeout_ms > 0 /\ p_sock.f_socket_timeout_ms <= 30000))) = admit ()
 
 (* socket_cleanup_complete (matches Coq: Theorem socket_cleanup_complete) *)
-let socket_cleanup_complete_obligation () : Tot bool = (0 = 0)
-let socket_cleanup_complete_lemma () : Lemma (requires True) (ensures (socket_cleanup_complete_obligation () == socket_cleanup_complete_obligation ())) = ()
+let socket_cleanup_complete (p_sock: socket) : Lemma (requires (socket_cleanup_prop p_sock == true /\ p_sock.f_socket_closed == true) (ensures (p_sock.f_socket_connected == false))) = admit ()
 
 (* bandwidth_throttled (matches Coq: Theorem bandwidth_throttled) *)
-let bandwidth_throttled_obligation () : Tot bool = (0 = 0)
-let bandwidth_throttled_lemma () : Lemma (requires True) (ensures (bandwidth_throttled_obligation () == bandwidth_throttled_obligation ())) = ()
+let bandwidth_throttled (p_sock: socket) : Lemma (requires (connection_timeout_enforced_prop p_sock == true) (ensures (p_sock.f_socket_timeout_ms <= 30000))) = admit ()
 
 (* no_ip_spoofing (matches Coq: Theorem no_ip_spoofing) *)
-let no_ip_spoofing_obligation () : Tot bool = (0 = 0)
-let no_ip_spoofing_lemma () : Lemma (requires True) (ensures (no_ip_spoofing_obligation () == no_ip_spoofing_obligation ())) = ()
+let no_ip_spoofing (p_q: dns_query) : Lemma (requires (dns_validated_prop p_q == true) (ensures (p_q.f_dns_dnssec_verified == true))) = admit ()
 
 (* firewall_rules_applied (matches Coq: Theorem firewall_rules_applied) *)
-let firewall_rules_applied_obligation () : Tot bool = (0 = 0)
-let firewall_rules_applied_lemma () : Lemma (requires True) (ensures (firewall_rules_applied_obligation () == firewall_rules_applied_obligation ())) = ()
+let firewall_rules_applied (p_rules: (list firewall_rule)) (p_src: nat) (p_dst: nat) (p_port: nat) : Lemma (requires (firewall_applied p_rules p_src p_dst p_port == true) (ensures ((exists p_r. In p_r p_rules == true) /\ r.f_fw_src_ip == p_src /\ r.f_fw_dst_ip == p_dst))) = admit ()
 
 (* vpn_traffic_encrypted (matches Coq: Theorem vpn_traffic_encrypted) *)
-let vpn_traffic_encrypted_obligation () : Tot bool = (0 = 0)
-let vpn_traffic_encrypted_lemma () : Lemma (requires True) (ensures (vpn_traffic_encrypted_obligation () == vpn_traffic_encrypted_obligation ())) = ()
+let vpn_traffic_encrypted (p_t: vpn_tunnel) : Lemma (requires (vpn_traffic_encrypted_prop p_t == true /\ p_t.f_tunnel_active == true) (ensures (p_t.f_tunnel_encrypted == true))) = admit ()
 
 (* http_strict_transport_thm (matches Coq: Theorem http_strict_transport_thm) *)
-let http_strict_transport_thm_obligation () : Tot bool = (0 = 0)
-let http_strict_transport_thm_lemma () : Lemma (requires True) (ensures (http_strict_transport_thm_obligation () == http_strict_transport_thm_obligation ())) = ()
+let http_strict_transport_thm (p_conn: http_connection) : Lemma (requires (hsts_enforced p_conn == true /\ p_conn.f_http_strict_transport == true) (ensures (p_conn.f_http_tls_version >= 13))) = admit ()
 
 (* cors_policy_enforced (matches Coq: Theorem cors_policy_enforced) *)
-let cors_policy_enforced_obligation () : Tot bool = (0 = 0)
-let cors_policy_enforced_lemma () : Lemma (requires True) (ensures (cors_policy_enforced_obligation () == cors_policy_enforced_obligation ())) = ()
+let cors_policy_enforced (p_conn: http_connection) : Lemma (requires (cors_enforced p_conn == true) (ensures (p_conn.f_http_cors_allowed == true))) = admit ()
 
 (* websocket_origin_validated (matches Coq: Theorem websocket_origin_validated) *)
-let websocket_origin_validated_obligation () : Tot bool = (0 = 0)
-let websocket_origin_validated_lemma () : Lemma (requires True) (ensures (websocket_origin_validated_obligation () == websocket_origin_validated_obligation ())) = ()
+let websocket_origin_validated (p_ws: web_socket_conn) : Lemma (requires (ws_origin_valid p_ws == true) (ensures (p_ws.f_ws_origin_validated == true /\ p_ws.f_ws_encrypted == true))) = admit ()
 
 (* certificate_pinning_enforced (matches Coq: Theorem certificate_pinning_enforced) *)
-let certificate_pinning_enforced_obligation () : Tot bool = (0 = 0)
-let certificate_pinning_enforced_lemma () : Lemma (requires True) (ensures (certificate_pinning_enforced_obligation () == certificate_pinning_enforced_obligation ())) = ()
+let certificate_pinning_enforced (p_pin: cert_pin) : Lemma (requires (cert_pinning_holds p_pin == true /\ p_pin.f_pin_enforced == true) (ensures (p_pin.f_pin_public_key_hash > 0))) = admit ()
 
 (* network_change_notified (matches Coq: Theorem network_change_notified) *)
-let network_change_notified_obligation () : Tot bool = (0 = 0)
-let network_change_notified_lemma () : Lemma (requires True) (ensures (network_change_notified_obligation () == network_change_notified_obligation ())) = ()
+let network_change_notified (p_old_conn: connection) (p_new_conn: connection) : Lemma (requires (network_change_notified_prop p_old_conn p_new_conn == true /\ ~(p_old_conn.f_conn_id == p_new_conn.f_conn_id)) (ensures (acceptable_cert (p_new_conn.f_conn_cert) == true))) = admit ()

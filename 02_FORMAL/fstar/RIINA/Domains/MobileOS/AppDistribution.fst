@@ -271,109 +271,82 @@ let notarization_required (p_ns: notarization_status) : Tot bool =
   (0 = 0)
 
 (* store_malware_free (matches Coq: Theorem store_malware_free) *)
-let store_malware_free_obligation () : Tot bool = (0 = 0)
-let store_malware_free_lemma () : Lemma (requires True) (ensures (store_malware_free_obligation () == store_malware_free_obligation ())) = ()
+let store_malware_free (p_app: store_application) : Lemma (requires (in_store p_app == true /\ store_well_formed [p_app] == true) (ensures (no_malware p_app == true))) = admit ()
 
 (* security_scan_complete (matches Coq: Theorem security_scan_complete) *)
-let security_scan_complete_obligation () : Tot bool = (0 = 0)
-let security_scan_complete_lemma () : Lemma (requires True) (ensures (security_scan_complete_obligation () == security_scan_complete_obligation ())) = ()
+let security_scan_complete (p_app: store_application) : Lemma (requires (no_malware p_app == true) (ensures (passes_security_checks (p_app.f_scan_result) == true))) = admit ()
 
 (* update_is_atomic (matches Coq: Theorem update_is_atomic) *)
-let update_is_atomic_obligation () : Tot bool = (0 = 0)
-let update_is_atomic_lemma () : Lemma (requires True) (ensures (update_is_atomic_obligation () == update_is_atomic_obligation ())) = ()
+let update_is_atomic (p_inst_before: installation) (p_inst_after: installation) (p_upd: app_update) : Lemma (requires (p_upd.f_update_verified == true /\ update_atomic p_inst_before p_inst_after p_upd == true) (ensures ((p_inst_after.f_installed_version == p_upd.f_new_version \/ p_inst_after.f_installed_version == p_inst_before.f_installed_version)))) = admit ()
 
 (* update_rollback_available (matches Coq: Theorem update_rollback_available) *)
-let update_rollback_available_obligation () : Tot bool = (0 = 0)
-let update_rollback_available_lemma () : Lemma (requires True) (ensures (update_rollback_available_obligation () == update_rollback_available_obligation ())) = ()
+let update_rollback_available (p_inst: installation) : Lemma (requires (rollback_possible p_inst == true) (ensures (p_inst.f_rollback_available == true))) = admit ()
 
 (* no_version_downgrade (matches Coq: Theorem no_version_downgrade) *)
-let no_version_downgrade_obligation () : Tot bool = (0 = 0)
-let no_version_downgrade_lemma () : Lemma (requires True) (ensures (no_version_downgrade_obligation () == no_version_downgrade_obligation ())) = ()
+let no_version_downgrade (p_upd: app_update) : Lemma (requires (p_upd.f_update_verified == true /\ version_increases p_upd == true) (ensures (p_upd.f_new_version > p_upd.f_old_version))) = admit ()
 
 (* signature_required_for_store (matches Coq: Theorem signature_required_for_store) *)
-let signature_required_for_store_obligation () : Tot bool = (0 = 0)
-let signature_required_for_store_lemma () : Lemma (requires True) (ensures (signature_required_for_store_obligation () == signature_required_for_store_obligation ())) = ()
+let signature_required_for_store (p_app: store_application) : Lemma (requires (no_malware p_app == true) (ensures ((p_app.f_scan_result).f_signature_valid == true))) = admit ()
 
 (* failed_install_no_corruption (matches Coq: Theorem failed_install_no_corruption) *)
-let failed_install_no_corruption_obligation () : Tot bool = (0 = 0)
-let failed_install_no_corruption_lemma () : Lemma (requires True) (ensures (failed_install_no_corruption_obligation () == failed_install_no_corruption_obligation ())) = ()
+let failed_install_no_corruption (p_inst_before: installation) (p_inst_after: installation) (p_upd: app_update) : Lemma (requires (p_inst_after.f_install_state == Failed /\ update_atomic p_inst_before p_inst_after p_upd == true) (ensures (p_inst_after.f_installed_version == p_inst_before.f_installed_version))) = admit ()
 
 (* app_signature_verified_thm (matches Coq: Theorem app_signature_verified_thm) *)
-let app_signature_verified_thm_obligation () : Tot bool = (0 = 0)
-let app_signature_verified_thm_lemma () : Lemma (requires True) (ensures (app_signature_verified_thm_obligation () == app_signature_verified_thm_obligation ())) = ()
+let app_signature_verified_thm (p_s: app_signature) : Lemma (requires (app_signature_verified p_s == true) (ensures (p_s.f_sig_verified == true))) = admit ()
 
 (* code_integrity_checked_thm (matches Coq: Theorem code_integrity_checked_thm) *)
-let code_integrity_checked_thm_obligation () : Tot bool = (0 = 0)
-let code_integrity_checked_thm_lemma () : Lemma (requires True) (ensures (code_integrity_checked_thm_obligation () == code_integrity_checked_thm_obligation ())) = ()
+let code_integrity_checked_thm (p_ci: code_integrity) : Lemma (requires (code_integrity_checked p_ci == true) (ensures (p_ci.f_ci_hash_original == p_ci.f_ci_hash_current))) = admit ()
 
 (* entitlements_validated_thm (matches Coq: Theorem entitlements_validated_thm) *)
-let entitlements_validated_thm_obligation () : Tot bool = (0 = 0)
-let entitlements_validated_thm_lemma () : Lemma (requires True) (ensures (entitlements_validated_thm_obligation () == entitlements_validated_thm_obligation ())) = ()
+let entitlements_validated_thm (p_es: entitlement_set) : Lemma (requires (entitlements_validated p_es == true) (ensures (p_es.f_ent_validated == true))) = admit ()
 
 (* provisioning_profile_valid_thm (matches Coq: Theorem provisioning_profile_valid_thm) *)
-let provisioning_profile_valid_thm_obligation () : Tot bool = (0 = 0)
-let provisioning_profile_valid_thm_lemma () : Lemma (requires True) (ensures (provisioning_profile_valid_thm_obligation () == provisioning_profile_valid_thm_obligation ())) = ()
+let provisioning_profile_valid_thm (p_pp: provisioning_profile) : Lemma (requires (provisioning_profile_valid p_pp == true) (ensures (p_pp.f_pp_valid == true))) = admit ()
 
 (* app_review_required_thm (matches Coq: Theorem app_review_required_thm) *)
-let app_review_required_thm_obligation () : Tot bool = (0 = 0)
-let app_review_required_thm_lemma () : Lemma (requires True) (ensures (app_review_required_thm_obligation () == app_review_required_thm_obligation ())) = ()
+let app_review_required_thm (p_ar: app_review) : Lemma (requires (app_review_required p_ar == true /\ p_ar.f_ar_passed == true) (ensures (p_ar.f_ar_reviewed == true))) = admit ()
 
 (* binary_size_reported_thm (matches Coq: Theorem binary_size_reported_thm) *)
-let binary_size_reported_thm_obligation () : Tot bool = (0 = 0)
-let binary_size_reported_thm_lemma () : Lemma (requires True) (ensures (binary_size_reported_thm_obligation () == binary_size_reported_thm_obligation ())) = ()
+let binary_size_reported_thm (p_br: binary_report) : Lemma (requires (binary_size_reported p_br == true) (ensures (p_br.f_br_size_bytes == p_br.f_br_reported_size))) = admit ()
 
 (* app_version_monotonic_thm (matches Coq: Theorem app_version_monotonic_thm) *)
-let app_version_monotonic_thm_obligation () : Tot bool = (0 = 0)
-let app_version_monotonic_thm_lemma () : Lemma (requires True) (ensures (app_version_monotonic_thm_obligation () == app_version_monotonic_thm_obligation ())) = ()
+let app_version_monotonic_thm (p_vh: app_version_history) : Lemma (requires (app_version_monotonic p_vh == true) (ensures (list_monotonic (p_vh.f_vh_versions) == true))) = admit ()
 
 (* minimum_os_version_enforced_thm (matches Coq: Theorem minimum_os_version_enforced_thm) *)
-let minimum_os_version_enforced_thm_obligation () : Tot bool = (0 = 0)
-let minimum_os_version_enforced_thm_lemma () : Lemma (requires True) (ensures (minimum_os_version_enforced_thm_obligation () == minimum_os_version_enforced_thm_obligation ())) = ()
+let minimum_os_version_enforced_thm (p_req: os_requirement) : Lemma (requires (minimum_os_version_enforced p_req == true /\ p_req.f_os_req_enforced == true) (ensures (p_req.f_os_current_version >= p_req.f_os_req_min_version))) = admit ()
 
 (* deprecated_api_flagged_thm (matches Coq: Theorem deprecated_api_flagged_thm) *)
-let deprecated_api_flagged_thm_obligation () : Tot bool = (0 = 0)
-let deprecated_api_flagged_thm_lemma () : Lemma (requires True) (ensures (deprecated_api_flagged_thm_obligation () == deprecated_api_flagged_thm_obligation ())) = ()
+let deprecated_api_flagged_thm (p_au: api_usage) : Lemma (requires (deprecated_api_flagged p_au == true /\ p_au.f_api_deprecated == true) (ensures (p_au.f_api_flagged == true))) = admit ()
 
 (* privacy_manifest_required_thm (matches Coq: Theorem privacy_manifest_required_thm) *)
-let privacy_manifest_required_thm_obligation () : Tot bool = (0 = 0)
-let privacy_manifest_required_thm_lemma () : Lemma (requires True) (ensures (privacy_manifest_required_thm_obligation () == privacy_manifest_required_thm_obligation ())) = ()
+let privacy_manifest_required_thm (p_pm: privacy_manifest) : Lemma (requires (privacy_manifest_required p_pm == true) (ensures (p_pm.f_pm_manifest_present == true))) = admit ()
 
 (* data_collection_declared_thm (matches Coq: Theorem data_collection_declared_thm) *)
-let data_collection_declared_thm_obligation () : Tot bool = (0 = 0)
-let data_collection_declared_thm_lemma () : Lemma (requires True) (ensures (data_collection_declared_thm_obligation () == data_collection_declared_thm_obligation ())) = ()
+let data_collection_declared_thm (p_dd: data_declaration) : Lemma (requires (data_collection_declared p_dd == true) (ensures (p_dd.f_dd_declared == true))) = admit ()
 
 (* app_clip_size_bounded_thm (matches Coq: Theorem app_clip_size_bounded_thm) *)
-let app_clip_size_bounded_thm_obligation () : Tot bool = (0 = 0)
-let app_clip_size_bounded_thm_lemma () : Lemma (requires True) (ensures (app_clip_size_bounded_thm_obligation () == app_clip_size_bounded_thm_obligation ())) = ()
+let app_clip_size_bounded_thm (p_ac: app_clip) : Lemma (requires (app_clip_size_bounded p_ac == true) (ensures (p_ac.f_ac_size_mb <= p_ac.f_ac_max_size_mb))) = admit ()
 
 (* testflight_expiry_enforced_thm (matches Coq: Theorem testflight_expiry_enforced_thm) *)
-let testflight_expiry_enforced_thm_obligation () : Tot bool = (0 = 0)
-let testflight_expiry_enforced_thm_lemma () : Lemma (requires True) (ensures (testflight_expiry_enforced_thm_obligation () == testflight_expiry_enforced_thm_obligation ())) = ()
+let testflight_expiry_enforced_thm (p_tf: test_flight_build) : Lemma (requires (testflight_expiry_enforced p_tf == true) (ensures (p_tf.f_tf_enforced == true))) = admit ()
 
 (* enterprise_certificate_validated_thm (matches Coq: Theorem enterprise_certificate_validated_thm) *)
-let enterprise_certificate_validated_thm_obligation () : Tot bool = (0 = 0)
-let enterprise_certificate_validated_thm_lemma () : Lemma (requires True) (ensures (enterprise_certificate_validated_thm_obligation () == enterprise_certificate_validated_thm_obligation ())) = ()
+let enterprise_certificate_validated_thm (p_ec: enterprise_cert) : Lemma (requires (enterprise_certificate_validated p_ec == true) (ensures (p_ec.f_ec_valid == true /\ p_ec.f_ec_revoked == false))) = admit ()
 
 (* notarization_required_thm (matches Coq: Theorem notarization_required_thm) *)
-let notarization_required_thm_obligation () : Tot bool = (0 = 0)
-let notarization_required_thm_lemma () : Lemma (requires True) (ensures (notarization_required_thm_obligation () == notarization_required_thm_obligation ())) = ()
+let notarization_required_thm (p_ns: notarization_status) : Lemma (requires (notarization_required p_ns == true) (ensures (p_ns.f_ns_notarized == true))) = admit ()
 
 (* provisioning_profile_not_expired (matches Coq: Theorem provisioning_profile_not_expired) *)
-let provisioning_profile_not_expired_obligation () : Tot bool = (0 = 0)
-let provisioning_profile_not_expired_lemma () : Lemma (requires True) (ensures (provisioning_profile_not_expired_obligation () == provisioning_profile_not_expired_obligation ())) = ()
+let provisioning_profile_not_expired (p_pp: provisioning_profile) : Lemma (requires (provisioning_profile_valid p_pp == true) (ensures (p_pp.f_pp_current_date <= p_pp.f_pp_expiry_date))) = admit ()
 
 (* entitlements_granted_bounded (matches Coq: Theorem entitlements_granted_bounded) *)
-let entitlements_granted_bounded_obligation () : Tot bool = (0 = 0)
-let entitlements_granted_bounded_lemma () : Lemma (requires True) (ensures (entitlements_granted_bounded_obligation () == entitlements_granted_bounded_obligation ())) = ()
+let entitlements_granted_bounded (p_es: entitlement_set) : Lemma (requires (entitlements_validated p_es == true) (ensures (length (p_es.f_ent_granted) <= length (p_es.f_ent_requested)))) = admit ()
 
 (* enterprise_cert_not_revoked (matches Coq: Theorem enterprise_cert_not_revoked) *)
-let enterprise_cert_not_revoked_obligation () : Tot bool = (0 = 0)
-let enterprise_cert_not_revoked_lemma () : Lemma (requires True) (ensures (enterprise_cert_not_revoked_obligation () == enterprise_cert_not_revoked_obligation ())) = ()
+let enterprise_cert_not_revoked (p_ec: enterprise_cert) : Lemma (requires (enterprise_certificate_validated p_ec == true) (ensures (p_ec.f_ec_revoked == false))) = admit ()
 
 (* notarization_ticket_stapled (matches Coq: Theorem notarization_ticket_stapled) *)
-let notarization_ticket_stapled_obligation () : Tot bool = (0 = 0)
-let notarization_ticket_stapled_lemma () : Lemma (requires True) (ensures (notarization_ticket_stapled_obligation () == notarization_ticket_stapled_obligation ())) = ()
+let notarization_ticket_stapled (p_ns: notarization_status) : Lemma (requires (notarization_required p_ns == true) (ensures (p_ns.f_ns_ticket_stapled == true))) = admit ()
 
 (* app_signature_has_timestamp (matches Coq: Theorem app_signature_has_timestamp) *)
-let app_signature_has_timestamp_obligation () : Tot bool = (0 = 0)
-let app_signature_has_timestamp_lemma () : Lemma (requires True) (ensures (app_signature_has_timestamp_obligation () == app_signature_has_timestamp_obligation ())) = ()
+let app_signature_has_timestamp (p_s: app_signature) : Lemma (requires (app_signature_verified p_s == true) (ensures (p_s.f_sig_timestamp > 0))) = admit ()

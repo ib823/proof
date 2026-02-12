@@ -321,105 +321,79 @@ let secure_init_valid (p_si: secure_init) (p_available_caps: (list capability_re
   (0 = 0)
 
 (* J_001_01 (matches Coq: Theorem J_001_01) *)
-let j_001_01_obligation () : Tot bool = (0 = 0)
-let j_001_01_lemma () : Lemma (requires True) (ensures (j_001_01_obligation () == j_001_01_obligation ())) = ()
+let j_001_01 (p_m: ty__module) : Lemma (requires (module_wellformed p_m == true /\ forall name_ In name m__mod_exports_ == true) (ensures (item_exists m__mod_items_ name == true))) = admit ()
 
 (* J_001_02 (matches Coq: Theorem J_001_02) *)
-let j_001_02_obligation () : Tot bool = (0 = 0)
-let j_001_02_lemma () : Lemma (requires True) (ensures (j_001_02_obligation () == j_001_02_obligation ())) = ()
+let j_001_02 (p_m1: ty__module) (p_m2: ty__module) (p_m3: ty__module) : Lemma (compose_modules (compose_modules p_m1 p_m2) p_m3 == mkmodule ((p_m1.(mod_path) ++ p_m2.(mod_path)) ++ m3__mod_path_) ((p_m1.(mod_items) ++ p_m2.(mod_items)) ++ m3__mod_items_) ((p_m1.(mod_exports) ++ p_m2.(mod_exports)) ++ m3__mod_exports_)) = admit ()
 
 (* J_001_03 (matches Coq: Theorem J_001_03) *)
-let j_001_03_obligation () : Tot bool = (0 = 0)
-let j_001_03_lemma () : Lemma (requires True) (ensures (j_001_03_obligation () == j_001_03_obligation ())) = ()
+let j_001_03 (p_root: (list nat)) (p_name: string) (p_m: ty__module) : Lemma (requires (find (fn_fun p => String.eqb (fst p) p_name) p_root == Some (name_ p_m)) (ensures (resolve_path p_root [p_name] == Some p_m))) = admit ()
 
 (* J_001_04 (matches Coq: Theorem J_001_04) *)
-let j_001_04_obligation () : Tot bool = (0 = 0)
-let j_001_04_lemma () : Lemma (requires True) (ensures (j_001_04_obligation () == j_001_04_obligation ())) = ()
+let j_001_04 (p_caller: visibility) : Lemma (vis_accessible p_caller VPrivate == false) = admit ()
 
 (* J_001_05 (matches Coq: Theorem J_001_05) *)
-let j_001_05_obligation () : Tot bool = (0 = 0)
-let j_001_05_lemma () : Lemma (requires True) (ensures (j_001_05_obligation () == j_001_05_obligation ())) = ()
+let j_001_05 (p_caller: visibility) : Lemma (vis_accessible p_caller VPublic == true) = admit ()
 
 (* J_001_06 (matches Coq: Theorem J_001_06) *)
-let j_001_06_obligation () : Tot bool = (0 = 0)
-let j_001_06_lemma () : Lemma (requires True) (ensures (j_001_06_obligation () == j_001_06_obligation ())) = ()
+let j_001_06 (p_in_same_crate: bool) : Lemma (crate_accessible p_in_same_crate VCrate == p_in_same_crate) = admit ()
 
 (* J_001_07 (matches Coq: Theorem J_001_07) *)
-let j_001_07_obligation () : Tot bool = (0 = 0)
-let j_001_07_lemma () : Lemma (requires True) (ensures (j_001_07_obligation () == j_001_07_obligation ())) = ()
+let j_001_07 (p_caller_level: nat) (p_callee_level: nat) : Lemma (vis_accessible (VSecurityLevel p_caller_level) (VSecurityLevel p_callee_level) == p_callee_level p_caller_level) = admit ()
 
 (* J_001_08 (matches Coq: Theorem J_001_08) *)
-let j_001_08_obligation () : Tot bool = (0 = 0)
-let j_001_08_lemma () : Lemma (requires True) (ensures (j_001_08_obligation () == j_001_08_obligation ())) = ()
+let j_001_08 (p_ctx: import_context) (p_name: string) : Lemma (requires (valid_import p_ctx == true /\ In p_name ctx__import_names_ == true) (ensures (item_exists ctx__import_source___mod_items_ p_name == true))) = admit ()
 
 (* J_001_09 (matches Coq: Theorem J_001_09) *)
-let j_001_09_obligation () : Tot bool = (0 = 0)
-let j_001_09_lemma () : Lemma (requires True) (ensures (j_001_09_obligation () == j_001_09_obligation ())) = ()
+let j_001_09 (p_r: re_export) (p_name: string) : Lemma (requires (valid_reexport p_r == true /\ In p_name r__reexp_names_ == true /\ is_exported r__reexp_source_ p_name == true) (ensures (is_exported r__reexp_target_ p_name == true))) = admit ()
 
 (* J_001_10 (matches Coq: Theorem J_001_10) *)
-let j_001_10_obligation () : Tot bool = (0 = 0)
-let j_001_10_lemma () : Lemma (requires True) (ensures (j_001_10_obligation () == j_001_10_obligation ())) = ()
+let j_001_10 (p_m: ty__module) (p_name: string) : Lemma (requires (In p_name (get_public_items m__mod_items_) == true /\ is_exported p_m p_name == true) (ensures (In p_name (glob_import p_m) == true))) = admit ()
 
 (* J_001_11 (matches Coq: Theorem J_001_11) *)
-let j_001_11_obligation () : Tot bool = (0 = 0)
-let j_001_11_lemma () : Lemma (requires True) (ensures (j_001_11_obligation () == j_001_11_obligation ())) = ()
+let j_001_11 (p_scope: capability_scope) (p_name: string) (p_req_level: nat) : Lemma (requires (capability_allows_import p_scope p_name p_req_level == true) (ensures (In p_name scope__scope_allowed_ == true /\ scope__scope_cap___cap_level_ >= p_req_level))) = admit ()
 
 (* J_001_12 (matches Coq: Theorem J_001_12) *)
-let j_001_12_obligation () : Tot bool = (0 = 0)
-let j_001_12_lemma () : Lemma (requires True) (ensures (j_001_12_obligation () == j_001_12_obligation ())) = ()
+let j_001_12 (p_abs_ty: abstract_type) : Lemma (requires (abs_ty__abs_exposed_ == false) (ensures (forall (observer_repr : option nat), (abs_ty__abs_repr_ = observer_repr \/ abs_ty__abs_repr_ <> observer_repr) == true))) = admit ()
 
 (* J_001_13 (matches Coq: Theorem J_001_13) *)
-let j_001_13_obligation () : Tot bool = (0 = 0)
-let j_001_13_lemma () : Lemma (requires True) (ensures (j_001_13_obligation () == j_001_13_obligation ())) = ()
+let j_001_13 (p_m: ty__module) (p_s: signature) (p_t: string) : Lemma (requires (impl_matches_sig p_m p_s == true /\ In p_t s__sig_types_ == true) (ensures ((exists p_item. In p_item m__mod_items_ == true) /\ item_name item == p_t))) = admit ()
 
 (* J_001_14 (matches Coq: Theorem J_001_14) *)
-let j_001_14_obligation () : Tot bool = (0 = 0)
-let j_001_14_lemma () : Lemma (requires True) (ensures (j_001_14_obligation () == j_001_14_obligation ())) = ()
+let j_001_14 (p_st: sealed_trait) (p_impl_name: string) : Lemma (requires (sealed_impl_allowed p_st p_impl_name == false) (ensures (~(In p_impl_name st__sealed_impls_ == true)))) = admit ()
 
 (* J_001_15 (matches Coq: Theorem J_001_15) *)
-let j_001_15_obligation () : Tot bool = (0 = 0)
-let j_001_15_lemma () : Lemma (requires True) (ensures (j_001_15_obligation () == j_001_15_obligation ())) = ()
+let j_001_15 (p_mappings: (list assoc_type_mapping)) (p_m1: assoc_type_mapping) (p_m2: assoc_type_mapping) : Lemma (requires (assoc_type_consistent p_mappings == true /\ In p_m1 p_mappings == true /\ In p_m2 p_mappings == true /\ m1__assoc_trait_ == m2__assoc_trait_ /\ m1__assoc_impl_ == m2__assoc_impl_ /\ m1__assoc_type_name_ == m2__assoc_type_name_) (ensures (m1__assoc_resolved_ == m2__assoc_resolved_))) = admit ()
 
 (* J_001_16 (matches Coq: Theorem J_001_16) *)
-let j_001_16_obligation () : Tot bool = (0 = 0)
-let j_001_16_lemma () : Lemma (requires True) (ensures (j_001_16_obligation () == j_001_16_obligation ())) = ()
+let j_001_16 (p_m: ty__module) (p_iface: interface_file) : Lemma (requires (interface_sound p_m p_iface == true /\ forall name_ In name (get_public_items m__mod_items_) == true /\ is_exported p_m name == true) (ensures (In name iface__iface_public_types_ == true \/ In name iface__iface_public_fns_ == true))) = admit ()
 
 (* J_001_17 (matches Coq: Theorem J_001_17) *)
-let j_001_17_obligation () : Tot bool = (0 = 0)
-let j_001_17_lemma () : Lemma (requires True) (ensures (j_001_17_obligation () == j_001_17_obligation ())) = ()
+let j_001_17 (p_old_cu: compilation_unit) (p_new_cu: compilation_unit) (p_recompiled: bool) : Lemma (requires (incremental_correct p_old_cu p_new_cu p_recompiled == true /\ cu_unchanged p_old_cu p_new_cu == true) (ensures (p_recompiled == false))) = admit ()
 
 (* J_001_18 (matches Coq: Theorem J_001_18) *)
-let j_001_18_obligation () : Tot bool = (0 = 0)
-let j_001_18_lemma () : Lemma (requires True) (ensures (j_001_18_obligation () == j_001_18_obligation ())) = ()
+let j_001_18 (p_cu1: compilation_unit) (p_cu2: compilation_unit) (p_type_name: string) : Lemma (requires (type_preserved p_cu1 p_cu2 == true /\ cu_has_type p_cu1 p_type_name == true /\ is_exported cu1__cu_module_ p_type_name == true) (ensures (cu_has_type p_cu2 p_type_name == true))) = admit ()
 
 (* J_001_19 (matches Coq: Theorem J_001_19) *)
-let j_001_19_obligation () : Tot bool = (0 = 0)
-let j_001_19_lemma () : Lemma (requires True) (ensures (j_001_19_obligation () == j_001_19_obligation ())) = ()
+let j_001_19 (p_m: ty__module) (p_iface: interface_file) (p_effects: (list effect_sig)) (p_e: effect_sig) : Lemma (requires (effects_preserved p_m p_iface p_effects == true /\ In p_e p_effects == true) (ensures (In e__effect_name_ iface__iface_effects_ == true))) = admit ()
 
 (* find_exists (matches Coq: Lemma find_exists) *)
-let find_exists_obligation () : Tot bool = (0 = 0)
-let find_exists_lemma () : Lemma (requires True) (ensures (find_exists_obligation () == find_exists_obligation ())) = ()
+let find_exists (p_f: nat) (p_l: (list nat)) (p_x: nat) : Lemma (requires (In p_x p_l == true /\ p_f p_x == true) (ensures (exists y_ find p_f p_l == Some y))) = admit ()
 
 (* J_001_20 (matches Coq: Theorem J_001_20) *)
-let j_001_20_obligation () : Tot bool = (0 = 0)
-let j_001_20_lemma () : Lemma (requires True) (ensures (j_001_20_obligation () == j_001_20_obligation ())) = ()
+let j_001_20 (p_pkgs: (list package)) (p_name: string) (p_fuel: nat) : Lemma (requires (p_fuel > 0 /\ ((exists p_p. In p_p p_pkgs == true) /\ String.eqb p__pkg_name_ p_name == true)) (ensures (exists result_ resolve_deps_fuel p_fuel p_pkgs p_name == Some result))) = admit ()
 
 (* J_001_21 (matches Coq: Theorem J_001_21) *)
-let j_001_21_obligation () : Tot bool = (0 = 0)
-let j_001_21_lemma () : Lemma (requires True) (ensures (j_001_21_obligation () == j_001_21_obligation ())) = ()
+let j_001_21 (p_pkg: package) (p_available: (list package)) (p_d: dependency) : Lemma (requires (all_deps_satisfied p_pkg p_available == true /\ In p_d pkg__pkg_deps_ == true) (ensures ((exists p_p. In p_p p_available == true) /\ String.eqb p__pkg_name_ d__dep_name_ == true /\ version_satisfies d__dep_version_ p__pkg_version_ == true))) = admit ()
 
 (* J_001_22 (matches Coq: Theorem J_001_22) *)
-let j_001_22_obligation () : Tot bool = (0 = 0)
-let j_001_22_lemma () : Lemma (requires True) (ensures (j_001_22_obligation () == j_001_22_obligation ())) = ()
+let j_001_22 (p_pkg: package) (p_available: (list package)) (p_d: dependency) (p_p: package) : Lemma (requires (security_versions_enforced p_pkg p_available == true /\ In p_d pkg__pkg_deps_ == true /\ In p_p p_available == true /\ String.eqb p__pkg_name_ d__dep_name_ == true) (ensures (security_version_ok p_d p__pkg_version_ == true))) = admit ()
 
 (* J_001_23 (matches Coq: Theorem J_001_23) *)
-let j_001_23_obligation () : Tot bool = (0 = 0)
-let j_001_23_lemma () : Lemma (requires True) (ensures (j_001_23_obligation () == j_001_23_obligation ())) = ()
+let j_001_23 (p_order: (list nat)) (p_deps: nat) : Lemma (requires (init_respects_deps p_order p_deps == true /\ forall i j m_dep m_mod_ nth_error p_order i == Some m_dep /\ nth_error p_order j == Some m_mod /\ In m_dep (p_deps m_mod) == true) (ensures (i < j))) = admit ()
 
 (* J_001_24 (matches Coq: Theorem J_001_24) *)
-let j_001_24_obligation () : Tot bool = (0 = 0)
-let j_001_24_lemma () : Lemma (requires True) (ensures (j_001_24_obligation () == j_001_24_obligation ())) = ()
+let j_001_24 (p_inits: (list static_init)) (p_si1: static_init) (p_si2: static_init) : Lemma (requires (init_deterministic p_inits == true /\ In p_si1 p_inits == true /\ In p_si2 p_inits == true /\ si1__si_module_ == si2__si_module_) (ensures (si1__si_value_ == si2__si_value_))) = admit ()
 
 (* J_001_25 (matches Coq: Theorem J_001_25) *)
-let j_001_25_obligation () : Tot bool = (0 = 0)
-let j_001_25_lemma () : Lemma (requires True) (ensures (j_001_25_obligation () == j_001_25_obligation ())) = ()
+let j_001_25 (p_si: secure_init) (p_available_caps: (list capability_req)) : Lemma (requires (secure_init_valid p_si p_available_caps == true) (ensures (caps_satisfied si__sec_init_cap_required_ p_available_caps == true))) = admit ()

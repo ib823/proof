@@ -91,8 +91,7 @@ let dal_max (p_d1: dal) (p_d2: dal) : Tot dal =
   if dal_le p_d1 p_d2 then p_d2 else p_d1
 
 (* do_178c_compliance (matches Coq: Theorem do_178c_compliance) *)
-let do_178c_compliance_obligation () : Tot bool = (0 = 0)
-let do_178c_compliance_lemma () : Lemma (requires True) (ensures (do_178c_compliance_obligation () == do_178c_compliance_obligation ())) = ()
+let do_178c_compliance (p_compliance: do178_c__compliance) : Lemma (p_compliance.f_software_plans == true /\ p_compliance.f_software_development == true /\ p_compliance.f_verification == true) = admit ()
 
 (* do_326a_security (matches Coq: Theorem do_326a_security) *)
 let do_326a_security_obligation () : Tot bool = (0 = 0)
@@ -111,81 +110,61 @@ let do_254_hardware_obligation () : Tot bool = (0 = 0)
 let do_254_hardware_lemma () : Lemma (requires True) (ensures (do_254_hardware_obligation () == do_254_hardware_obligation ())) = ()
 
 (* dal_a_mcdc_required (matches Coq: Theorem dal_a_mcdc_required) *)
-let dal_a_mcdc_required_obligation () : Tot bool = (0 = 0)
-let dal_a_mcdc_required_lemma () : Lemma (requires True) (ensures (dal_a_mcdc_required_obligation () == dal_a_mcdc_required_obligation ())) = ()
+let dal_a_mcdc_required (p_compliance: do178_c__compliance) : Lemma (p_compliance.f_dal_level == DAL_A) = admit ()
 
 (* dal_objectives_monotone (matches Coq: Theorem dal_objectives_monotone) *)
-let dal_objectives_monotone_obligation () : Tot bool = (0 = 0)
-let dal_objectives_monotone_lemma () : Lemma (requires True) (ensures (dal_objectives_monotone_obligation () == dal_objectives_monotone_obligation ())) = ()
+let dal_objectives_monotone (p_d1: _) (p_d2: _) : Lemma (requires (dal_le p_d2 p_d1 == true) (ensures (objectives_for_dal p_d1 >= objectives_for_dal p_d2))) = admit ()
 
 (* dal_le_iff_nat (matches Coq: Lemma dal_le_iff_nat) *)
-let dal_le_iff_nat_obligation () : Tot bool = (0 = 0)
-let dal_le_iff_nat_lemma () : Lemma (requires True) (ensures (dal_le_iff_nat_obligation () == dal_le_iff_nat_obligation ())) = ()
+let dal_le_iff_nat (p_d1: _) (p_d2: _) : Lemma (requires (dal_le p_d1 p_d2 == fn_true <) (ensures (dal_to_nat p_d1 <= dal_to_nat p_d2))) = admit ()
 
 (* dal_le_refl (matches Coq: Lemma dal_le_refl) *)
-let dal_le_refl_obligation () : Tot bool = (0 = 0)
-let dal_le_refl_lemma () : Lemma (requires True) (ensures (dal_le_refl_obligation () == dal_le_refl_obligation ())) = ()
+let dal_le_refl (p_d: _) : Lemma (dal_le p_d p_d == true) = admit ()
 
 (* dal_le_trans (matches Coq: Lemma dal_le_trans) *)
-let dal_le_trans_obligation () : Tot bool = (0 = 0)
-let dal_le_trans_lemma () : Lemma (requires True) (ensures (dal_le_trans_obligation () == dal_le_trans_obligation ())) = ()
+let dal_le_trans (p_d1: _) (p_d2: _) (p_d3: _) : Lemma (requires (dal_le p_d1 p_d2 == true /\ dal_le p_d2 p_d3 == true) (ensures (dal_le p_d1 p_d3 == true))) = admit ()
 
 (* dal_le_antisym (matches Coq: Lemma dal_le_antisym) *)
-let dal_le_antisym_obligation () : Tot bool = (0 = 0)
-let dal_le_antisym_lemma () : Lemma (requires True) (ensures (dal_le_antisym_obligation () == dal_le_antisym_obligation ())) = ()
+let dal_le_antisym (p_d1: _) (p_d2: _) : Lemma (requires (dal_le p_d1 p_d2 == true /\ dal_le p_d2 p_d1 == true) (ensures (p_d1 == p_d2))) = admit ()
 
 (* dal_le_total (matches Coq: Lemma dal_le_total) *)
-let dal_le_total_obligation () : Tot bool = (0 = 0)
-let dal_le_total_lemma () : Lemma (requires True) (ensures (dal_le_total_obligation () == dal_le_total_obligation ())) = ()
+let dal_le_total (p_d1: _) (p_d2: _) : Lemma (dal_le p_d1 p_d2 == true \/ dal_le p_d2 p_d1 == true) = admit ()
 
 (* dal_e_bottom (matches Coq: Lemma dal_e_bottom) *)
-let dal_e_bottom_obligation () : Tot bool = (0 = 0)
-let dal_e_bottom_lemma () : Lemma (requires True) (ensures (dal_e_bottom_obligation () == dal_e_bottom_obligation ())) = ()
+let dal_e_bottom (p_d: _) : Lemma (dal_le DAL_E p_d == true) = admit ()
 
 (* dal_a_max_objectives (matches Coq: Theorem dal_a_max_objectives) *)
-let dal_a_max_objectives_obligation () : Tot bool = (0 = 0)
-let dal_a_max_objectives_lemma () : Lemma (requires True) (ensures (dal_a_max_objectives_obligation () == dal_a_max_objectives_obligation ())) = ()
+let dal_a_max_objectives (p_d: _) : Lemma (objectives_for_dal p_d <= objectives_for_dal DAL_A) = admit ()
 
 (* dal_e_zero_objectives (matches Coq: Theorem dal_e_zero_objectives) *)
-let dal_e_zero_objectives_obligation () : Tot bool = (0 = 0)
-let dal_e_zero_objectives_lemma () : Lemma (requires True) (ensures (dal_e_zero_objectives_obligation () == dal_e_zero_objectives_obligation ())) = ()
+let dal_e_zero_objectives () : Lemma (objectives_for_dal DAL_E == 0) = admit ()
 
 (* objectives_strict_ordering (matches Coq: Theorem objectives_strict_ordering) *)
-let objectives_strict_ordering_obligation () : Tot bool = (0 = 0)
-let objectives_strict_ordering_lemma () : Lemma (requires True) (ensures (objectives_strict_ordering_obligation () == objectives_strict_ordering_obligation ())) = ()
+let objectives_strict_ordering () : Lemma (objectives_for_dal DAL_A > objectives_for_dal DAL_B /\ objectives_for_dal DAL_B > objectives_for_dal DAL_C /\ objectives_for_dal DAL_C > objectives_for_dal DAL_D /\ objectives_for_dal DAL_D > objectives_for_dal DAL_E) = admit ()
 
 (* mcdc_only_high_dal (matches Coq: Theorem mcdc_only_high_dal) *)
-let mcdc_only_high_dal_obligation () : Tot bool = (0 = 0)
-let mcdc_only_high_dal_lemma () : Lemma (requires True) (ensures (mcdc_only_high_dal_obligation () == mcdc_only_high_dal_obligation ())) = ()
+let mcdc_only_high_dal (p_d: _) : Lemma (requires (mcdc_required p_d == true) (ensures (dal_le DAL_B p_d == true))) = admit ()
 
 (* decision_coverage_implies_dal_c_or_above (matches Coq: Theorem decision_coverage_implies_dal_c_or_above) *)
-let decision_coverage_implies_dal_c_or_above_obligation () : Tot bool = (0 = 0)
-let decision_coverage_implies_dal_c_or_above_lemma () : Lemma (requires True) (ensures (decision_coverage_implies_dal_c_or_above_obligation () == decision_coverage_implies_dal_c_or_above_obligation ())) = ()
+let decision_coverage_implies_dal_c_or_above (p_d: _) : Lemma (requires (decision_coverage_required p_d == true) (ensures (dal_le DAL_C p_d == true))) = admit ()
 
 (* do178c_all_requires_plans (matches Coq: Theorem do178c_all_requires_plans) *)
-let do178c_all_requires_plans_obligation () : Tot bool = (0 = 0)
-let do178c_all_requires_plans_lemma () : Lemma (requires True) (ensures (do178c_all_requires_plans_obligation () == do178c_all_requires_plans_obligation ())) = ()
+let do178c_all_requires_plans (p_c: _) : Lemma (requires (do178c_all_sections p_c == true) (ensures (p_c.f_software_plans == true))) = admit ()
 
 (* do178c_all_requires_verification (matches Coq: Theorem do178c_all_requires_verification) *)
-let do178c_all_requires_verification_obligation () : Tot bool = (0 = 0)
-let do178c_all_requires_verification_lemma () : Lemma (requires True) (ensures (do178c_all_requires_verification_obligation () == do178c_all_requires_verification_obligation ())) = ()
+let do178c_all_requires_verification (p_c: _) : Lemma (requires (do178c_all_sections p_c == true) (ensures (p_c.f_verification == true))) = admit ()
 
 (* do178c_all_requires_qa (matches Coq: Theorem do178c_all_requires_qa) *)
-let do178c_all_requires_qa_obligation () : Tot bool = (0 = 0)
-let do178c_all_requires_qa_lemma () : Lemma (requires True) (ensures (do178c_all_requires_qa_obligation () == do178c_all_requires_qa_obligation ())) = ()
+let do178c_all_requires_qa (p_c: _) : Lemma (requires (do178c_all_sections p_c == true) (ensures (p_c.f_quality_assurance == true))) = admit ()
 
 (* formal_methods_only_high_dal (matches Coq: Theorem formal_methods_only_high_dal) *)
-let formal_methods_only_high_dal_obligation () : Tot bool = (0 = 0)
-let formal_methods_only_high_dal_lemma () : Lemma (requires True) (ensures (formal_methods_only_high_dal_obligation () == formal_methods_only_high_dal_obligation ())) = ()
+let formal_methods_only_high_dal (p_d: _) : Lemma (requires (formal_methods_applicable p_d == true) (ensures (objectives_for_dal p_d >= 69))) = admit ()
 
 (* dal_max_dominates_left (matches Coq: Theorem dal_max_dominates_left) *)
-let dal_max_dominates_left_obligation () : Tot bool = (0 = 0)
-let dal_max_dominates_left_lemma () : Lemma (requires True) (ensures (dal_max_dominates_left_obligation () == dal_max_dominates_left_obligation ())) = ()
+let dal_max_dominates_left (p_d1: _) (p_d2: _) : Lemma (dal_le p_d1 (dal_max p_d1 p_d2) == true) = admit ()
 
 (* dal_max_dominates_right (matches Coq: Theorem dal_max_dominates_right) *)
-let dal_max_dominates_right_obligation () : Tot bool = (0 = 0)
-let dal_max_dominates_right_lemma () : Lemma (requires True) (ensures (dal_max_dominates_right_obligation () == dal_max_dominates_right_obligation ())) = ()
+let dal_max_dominates_right (p_d1: _) (p_d2: _) : Lemma (dal_le p_d2 (dal_max p_d1 p_d2) == true) = admit ()
 
 (* dal_max_objectives (matches Coq: Theorem dal_max_objectives) *)
-let dal_max_objectives_obligation () : Tot bool = (0 = 0)
-let dal_max_objectives_lemma () : Lemma (requires True) (ensures (dal_max_objectives_obligation () == dal_max_objectives_obligation ())) = ()
+let dal_max_objectives (p_d1: _) (p_d2: _) : Lemma (objectives_for_dal (dal_max p_d1 p_d2) >= objectives_for_dal p_d1 /\ objectives_for_dal (dal_max p_d1 p_d2) >= objectives_for_dal p_d2) = admit ()

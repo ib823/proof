@@ -88,85 +88,64 @@ let rollback_enforced (p_st: rollback_state) : Tot bool =
   (0 = 0)
 
 (* rollback_protection (matches Coq: Theorem rollback_protection) *)
-let rollback_protection_obligation () : Tot bool = (0 = 0)
-let rollback_protection_lemma () : Lemma (requires True) (ensures (rollback_protection_obligation () == rollback_protection_obligation ())) = ()
+let rollback_protection (p_st: rollback_state) (p_comp: component_id) (p_old_ver: version) : Lemma (requires (rollback_enforced p_st == true /\ is_rollback p_st p_comp p_old_ver == true) (ensures (version_allowed p_st p_comp p_old_ver == false))) = admit ()
 
 (* old_version_cannot_boot (matches Coq: Theorem old_version_cannot_boot) *)
-let old_version_cannot_boot_obligation () : Tot bool = (0 = 0)
-let old_version_cannot_boot_lemma () : Lemma (requires True) (ensures (old_version_cannot_boot_obligation () == old_version_cannot_boot_obligation ())) = ()
+let old_version_cannot_boot (p_st: rollback_state) (p_comp: versioned_component) : Lemma (requires (rollback_enforced p_st == true /\ is_rollback p_st (p_comp.f_comp_id) (p_comp.f_comp_version) == true) (ensures (~(can_boot_prop p_st p_comp == true)))) = admit ()
 
 (* current_or_newer_allowed (matches Coq: Theorem current_or_newer_allowed) *)
-let current_or_newer_allowed_obligation () : Tot bool = (0 = 0)
-let current_or_newer_allowed_lemma () : Lemma (requires True) (ensures (current_or_newer_allowed_obligation () == current_or_newer_allowed_obligation ())) = ()
+let current_or_newer_allowed (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (requires (rollback_enforced p_st == true /\ (forall min_ver_ get_min_version p_st p_comp == Some min_ver -> version_lt p_ver min_ver = false)) (ensures (version_allowed p_st p_comp p_ver == true))) = admit ()
 
 (* min_version_monotonic (matches Coq: Theorem min_version_monotonic) *)
-let min_version_monotonic_obligation () : Tot bool = (0 = 0)
-let min_version_monotonic_lemma () : Lemma (requires True) (ensures (min_version_monotonic_obligation () == min_version_monotonic_obligation ())) = ()
+let min_version_monotonic (p_st: rollback_state) (p_comp: component_id) (p_old_ver: version) (p_new_ver: version) : Lemma (requires (get_min_version p_st p_comp == Some p_old_ver /\ version_lt p_new_ver p_old_ver == true) (ensures (fn_let st_ : == update_min_version p_st p_comp p_new_ver true id_in get_min_version st_ p_comp = Some p_new_ver))) = admit ()
 
 (* no_minimum_any_allowed (matches Coq: Theorem no_minimum_any_allowed) *)
-let no_minimum_any_allowed_obligation () : Tot bool = (0 = 0)
-let no_minimum_any_allowed_lemma () : Lemma (requires True) (ensures (no_minimum_any_allowed_obligation () == no_minimum_any_allowed_obligation ())) = ()
+let no_minimum_any_allowed (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (requires (get_min_version p_st p_comp == None) (ensures (version_allowed p_st p_comp p_ver == true))) = admit ()
 
 (* disabled_rollback_allows_all (matches Coq: Theorem disabled_rollback_allows_all) *)
-let disabled_rollback_allows_all_obligation () : Tot bool = (0 = 0)
-let disabled_rollback_allows_all_lemma () : Lemma (requires True) (ensures (disabled_rollback_allows_all_obligation () == disabled_rollback_allows_all_obligation ())) = ()
+let disabled_rollback_allows_all (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (requires (p_st.f_anti_rollback_enabled == false) (ensures (version_allowed p_st p_comp p_ver == true))) = admit ()
 
 (* version_lt_irreflexive (matches Coq: Theorem version_lt_irreflexive) *)
-let version_lt_irreflexive_obligation () : Tot bool = (0 = 0)
-let version_lt_irreflexive_lemma () : Lemma (requires True) (ensures (version_lt_irreflexive_obligation () == version_lt_irreflexive_obligation ())) = ()
+let version_lt_irreflexive (p_v: version) : Lemma (version_lt p_v p_v == false) = admit ()
 
 (* same_version_always_allowed (matches Coq: Theorem same_version_always_allowed) *)
-let same_version_always_allowed_obligation () : Tot bool = (0 = 0)
-let same_version_always_allowed_lemma () : Lemma (requires True) (ensures (same_version_always_allowed_obligation () == same_version_always_allowed_obligation ())) = ()
+let same_version_always_allowed (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (requires (rollback_enforced p_st == true /\ get_min_version p_st p_comp == Some p_ver) (ensures (version_allowed p_st p_comp p_ver == true))) = admit ()
 
 (* update_stores_new_min (matches Coq: Theorem update_stores_new_min) *)
-let update_stores_new_min_obligation () : Tot bool = (0 = 0)
-let update_stores_new_min_lemma () : Lemma (requires True) (ensures (update_stores_new_min_obligation () == update_stores_new_min_obligation ())) = ()
+let update_stores_new_min (p_st: rollback_state) (p_comp: component_id) (p_ver: version) (p_hw: bool) : Lemma (get_min_version (update_min_version p_st p_comp p_ver p_hw) p_comp == Some p_ver) = admit ()
 
 (* record_preserves_anti_rollback (matches Coq: Theorem record_preserves_anti_rollback) *)
-let record_preserves_anti_rollback_obligation () : Tot bool = (0 = 0)
-let record_preserves_anti_rollback_lemma () : Lemma (requires True) (ensures (record_preserves_anti_rollback_obligation () == record_preserves_anti_rollback_obligation ())) = ()
+let record_preserves_anti_rollback (p_st: rollback_state) (p_comp: versioned_component) : Lemma ((record_current_version p_st p_comp).f_anti_rollback_enabled == p_st.f_anti_rollback_enabled) = admit ()
 
 (* record_preserves_minimums (matches Coq: Theorem record_preserves_minimums) *)
-let record_preserves_minimums_obligation () : Tot bool = (0 = 0)
-let record_preserves_minimums_lemma () : Lemma (requires True) (ensures (record_preserves_minimums_obligation () == record_preserves_minimums_obligation ())) = ()
+let record_preserves_minimums (p_st: rollback_state) (p_comp: versioned_component) : Lemma ((record_current_version p_st p_comp).f_minimum_versions == p_st.f_minimum_versions) = admit ()
 
 (* update_preserves_anti_rollback (matches Coq: Theorem update_preserves_anti_rollback) *)
-let update_preserves_anti_rollback_obligation () : Tot bool = (0 = 0)
-let update_preserves_anti_rollback_lemma () : Lemma (requires True) (ensures (update_preserves_anti_rollback_obligation () == update_preserves_anti_rollback_obligation ())) = ()
+let update_preserves_anti_rollback (p_st: rollback_state) (p_comp: component_id) (p_ver: version) (p_hw: bool) : Lemma ((update_min_version p_st p_comp p_ver p_hw).f_anti_rollback_enabled == p_st.f_anti_rollback_enabled) = admit ()
 
 (* advance_preserves_anti_rollback (matches Coq: Theorem advance_preserves_anti_rollback) *)
-let advance_preserves_anti_rollback_obligation () : Tot bool = (0 = 0)
-let advance_preserves_anti_rollback_lemma () : Lemma (requires True) (ensures (advance_preserves_anti_rollback_obligation () == advance_preserves_anti_rollback_obligation ())) = ()
+let advance_preserves_anti_rollback (p_st: rollback_state) (p_comp: component_id) : Lemma ((advance_min_to_current p_st p_comp).f_anti_rollback_enabled == p_st.f_anti_rollback_enabled) = admit ()
 
 (* equal_version_not_rollback (matches Coq: Theorem equal_version_not_rollback) *)
-let equal_version_not_rollback_obligation () : Tot bool = (0 = 0)
-let equal_version_not_rollback_lemma () : Lemma (requires True) (ensures (equal_version_not_rollback_obligation () == equal_version_not_rollback_obligation ())) = ()
+let equal_version_not_rollback (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (requires (get_min_version p_st p_comp == Some p_ver) (ensures (~(is_rollback p_st p_comp p_ver == true)))) = admit ()
 
 (* initial_state_allows_all (matches Coq: Theorem initial_state_allows_all) *)
-let initial_state_allows_all_obligation () : Tot bool = (0 = 0)
-let initial_state_allows_all_lemma () : Lemma (requires True) (ensures (initial_state_allows_all_obligation () == initial_state_allows_all_obligation ())) = ()
+let initial_state_allows_all (p_comp: component_id) (p_ver: version) : Lemma (version_allowed initial_rollback_state p_comp p_ver == true) = admit ()
 
 (* initial_state_no_minimums (matches Coq: Theorem initial_state_no_minimums) *)
-let initial_state_no_minimums_obligation () : Tot bool = (0 = 0)
-let initial_state_no_minimums_lemma () : Lemma (requires True) (ensures (initial_state_no_minimums_obligation () == initial_state_no_minimums_obligation ())) = ()
+let initial_state_no_minimums (p_comp: component_id) : Lemma (get_min_version initial_rollback_state p_comp == None) = admit ()
 
 (* initial_state_no_current (matches Coq: Theorem initial_state_no_current) *)
-let initial_state_no_current_obligation () : Tot bool = (0 = 0)
-let initial_state_no_current_lemma () : Lemma (requires True) (ensures (initial_state_no_current_obligation () == initial_state_no_current_obligation ())) = ()
+let initial_state_no_current (p_comp: component_id) : Lemma (get_current_version initial_rollback_state p_comp == None) = admit ()
 
 (* enforced_detects_rollback (matches Coq: Theorem enforced_detects_rollback) *)
-let enforced_detects_rollback_obligation () : Tot bool = (0 = 0)
-let enforced_detects_rollback_lemma () : Lemma (requires True) (ensures (enforced_detects_rollback_obligation () == enforced_detects_rollback_obligation ())) = ()
+let enforced_detects_rollback (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (requires (rollback_enforced p_st == true /\ is_rollback p_st p_comp p_ver == true) (ensures (can_boot_version p_st (mkversionedcomp p_comp p_ver 0) == false))) = admit ()
 
 (* hardware_stored_minimum_recorded (matches Coq: Theorem hardware_stored_minimum_recorded) *)
-let hardware_stored_minimum_recorded_obligation () : Tot bool = (0 = 0)
-let hardware_stored_minimum_recorded_lemma () : Lemma (requires True) (ensures (hardware_stored_minimum_recorded_obligation () == hardware_stored_minimum_recorded_obligation ())) = ()
+let hardware_stored_minimum_recorded (p_st: rollback_state) (p_comp: component_id) (p_ver: version) : Lemma (fn_let st_ : == update_min_version p_st p_comp p_ver true id_in In (mkminversion p_comp p_ver true) (st_.f_minimum_versions)) = admit ()
 
 (* advance_missing_current_identity (matches Coq: Theorem advance_missing_current_identity) *)
-let advance_missing_current_identity_obligation () : Tot bool = (0 = 0)
-let advance_missing_current_identity_lemma () : Lemma (requires True) (ensures (advance_missing_current_identity_obligation () == advance_missing_current_identity_obligation ())) = ()
+let advance_missing_current_identity (p_st: rollback_state) (p_comp: component_id) : Lemma (requires (get_current_version p_st p_comp == None) (ensures (advance_min_to_current p_st p_comp == p_st))) = admit ()
 
 (* independent_component_minimums (matches Coq: Theorem independent_component_minimums) *)
-let independent_component_minimums_obligation () : Tot bool = (0 = 0)
-let independent_component_minimums_lemma () : Lemma (requires True) (ensures (independent_component_minimums_obligation () == independent_component_minimums_obligation ())) = ()
+let independent_component_minimums (p_st: rollback_state) (p_comp1: component_id) (p_comp2: component_id) (p_ver: version) (p_hw: bool) : Lemma (requires (~(p_comp1 == p_comp2) /\ get_min_version p_st p_comp2 == None) (ensures (fn_let st_ : == update_min_version p_st p_comp1 p_ver p_hw id_in get_min_version st_ p_comp2 = None))) = admit ()

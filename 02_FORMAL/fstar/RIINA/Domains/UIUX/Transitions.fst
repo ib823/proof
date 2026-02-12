@@ -18,121 +18,91 @@ let lerp (p_a: nat) (p_b: nat) (p_t: nat) : Tot nat =
   p_a + p_t * (p_b - p_a)
 
 (* shared_element_at_zero_is_source (matches Coq: Theorem shared_element_at_zero_is_source) *)
-let shared_element_at_zero_is_source_obligation () : Tot bool = (0 = 0)
-let shared_element_at_zero_is_source_lemma () : Lemma (requires True) (ensures (shared_element_at_zero_is_source_obligation () == shared_element_at_zero_is_source_obligation ())) = ()
+let shared_element_at_zero_is_source (p_src: nat) (p_dest: nat) : Lemma (lerp_position p_src p_dest 0 == p_src) = admit ()
 
 (* shared_element_at_one_is_dest (matches Coq: Theorem shared_element_at_one_is_dest) *)
-let shared_element_at_one_is_dest_obligation () : Tot bool = (0 = 0)
-let shared_element_at_one_is_dest_lemma () : Lemma (requires True) (ensures (shared_element_at_one_is_dest_obligation () == shared_element_at_one_is_dest_obligation ())) = ()
+let shared_element_at_one_is_dest (p_src: nat) (p_dest: nat) : Lemma (lerp_position p_src p_dest 1 == p_dest) = admit ()
 
 (* transition_context_preserved (matches Coq: Theorem transition_context_preserved) *)
-let transition_context_preserved_obligation () : Tot bool = (0 = 0)
-let transition_context_preserved_lemma () : Lemma (requires True) (ensures (transition_context_preserved_obligation () == transition_context_preserved_obligation ())) = ()
+let transition_context_preserved (p_cpt: nat) : Lemma (context_preserved p_cpt == true) = admit ()
 
 (* hero_element_always_matched (matches Coq: Theorem hero_element_always_matched) *)
-let hero_element_always_matched_obligation () : Tot bool = (0 = 0)
-let hero_element_always_matched_lemma () : Lemma (requires True) (ensures (hero_element_always_matched_obligation () == hero_element_always_matched_obligation ())) = ()
+let hero_element_always_matched (p_hero: nat) : Lemma (hero_element_matched p_hero == true) = admit ()
 
 (* lerp_monotonic_x (matches Coq: Lemma lerp_monotonic_x) *)
-let lerp_monotonic_x_obligation () : Tot bool = (0 = 0)
-let lerp_monotonic_x_lemma () : Lemma (requires True) (ensures (lerp_monotonic_x_obligation () == lerp_monotonic_x_obligation ())) = ()
+let lerp_monotonic_x (p_src: nat) (p_dest: nat) (p_t1: nat) (p_t2: nat) : Lemma (requires (0 <= p_t1 <= p_t2 /\ p_t2 <= 1 /\ pos_x p_dest >= pos_x p_src) (ensures (pos_x (lerp_position p_src p_dest p_t1) <= pos_x (lerp_position p_src p_dest p_t2)))) = admit ()
 
 (* progress_bounds_valid (matches Coq: Lemma progress_bounds_valid) *)
-let progress_bounds_valid_obligation () : Tot bool = (0 = 0)
-let progress_bounds_valid_lemma () : Lemma (requires True) (ensures (progress_bounds_valid_obligation () == progress_bounds_valid_obligation ())) = ()
+let progress_bounds_valid (p_trans: nat) : Lemma (0 <= transition_progress p_trans /\ transition_progress p_trans <= 1) = admit ()
 
 (* lerp_at_midpoint (matches Coq: Theorem lerp_at_midpoint) *)
-let lerp_at_midpoint_obligation () : Tot bool = (0 = 0)
-let lerp_at_midpoint_lemma () : Lemma (requires True) (ensures (lerp_at_midpoint_obligation () == lerp_at_midpoint_obligation ())) = ()
+let lerp_at_midpoint (p_a: nat) (p_b: nat) : Lemma (lerp p_a p_b (1/2) == (p_a + p_b) / 2) = admit ()
 
 (* lerp_within_bounds (matches Coq: Theorem lerp_within_bounds) *)
-let lerp_within_bounds_obligation () : Tot bool = (0 = 0)
-let lerp_within_bounds_lemma () : Lemma (requires True) (ensures (lerp_within_bounds_obligation () == lerp_within_bounds_obligation ())) = ()
+let lerp_within_bounds (p_a: nat) (p_b: nat) (p_t: nat) : Lemma (requires (0 <= p_t /\ p_t <= 1 /\ p_a <= p_b) (ensures (p_a <= lerp p_a p_b p_t <= p_b))) = admit ()
 
 (* transition_duration_bounded (matches Coq: Theorem transition_duration_bounded) *)
-let transition_duration_bounded_obligation () : Tot bool = (0 = 0)
-let transition_duration_bounded_lemma () : Lemma (requires True) (ensures (transition_duration_bounded_obligation () == transition_duration_bounded_obligation ())) = ()
+let transition_duration_bounded (p_dbt: nat) : Lemma (dbt_min_duration p_dbt <= dbt_duration p_dbt <= dbt_max_duration p_dbt) = admit ()
 
 (* shared_element_continuous (matches Coq: Theorem shared_element_continuous) *)
-let shared_element_continuous_obligation () : Tot bool = (0 = 0)
-let shared_element_continuous_lemma () : Lemma (requires True) (ensures (shared_element_continuous_obligation () == shared_element_continuous_obligation ())) = ()
+let shared_element_continuous (p_src: nat) (p_dest: nat) : Lemma (lerp_position p_src p_dest 0 == p_src /\ lerp_position p_src p_dest 1 == p_dest) = admit ()
 
 (* back_transition_reverse (matches Coq: Theorem back_transition_reverse) *)
-let back_transition_reverse_obligation () : Tot bool = (0 = 0)
-let back_transition_reverse_lemma () : Lemma (requires True) (ensures (back_transition_reverse_obligation () == back_transition_reverse_obligation ())) = ()
+let back_transition_reverse (p_a: nat) (p_b: nat) (p_t: nat) : Lemma (requires (0 <= p_t /\ p_t <= 1) (ensures (lerp p_a p_b p_t + lerp p_b p_a p_t == p_a + p_b))) = admit ()
 
 (* transition_interruptible (matches Coq: Theorem transition_interruptible) *)
-let transition_interruptible_obligation () : Tot bool = (0 = 0)
-let transition_interruptible_lemma () : Lemma (requires True) (ensures (transition_interruptible_obligation () == transition_interruptible_obligation ())) = ()
+let transition_interruptible (p_it: nat) : Lemma (it_current_value p_it == lerp (it_source p_it) (it_dest p_it) (it_progress p_it)) = admit ()
 
 (* interrupted_transition_smooth (matches Coq: Theorem interrupted_transition_smooth) *)
-let interrupted_transition_smooth_obligation () : Tot bool = (0 = 0)
-let interrupted_transition_smooth_lemma () : Lemma (requires True) (ensures (interrupted_transition_smooth_obligation () == interrupted_transition_smooth_obligation ())) = ()
+let interrupted_transition_smooth (p_it: nat) : Lemma (requires (it_source p_it <= it_dest p_it) (ensures (it_source p_it <= it_current_value p_it <= it_dest p_it))) = admit ()
 
 (* crossfade_opacity_sum_one (matches Coq: Theorem crossfade_opacity_sum_one) *)
-let crossfade_opacity_sum_one_obligation () : Tot bool = (0 = 0)
-let crossfade_opacity_sum_one_lemma () : Lemma (requires True) (ensures (crossfade_opacity_sum_one_obligation () == crossfade_opacity_sum_one_obligation ())) = ()
+let crossfade_opacity_sum_one (p_cf: nat) : Lemma (cf_opacity_outgoing p_cf + cf_opacity_incoming p_cf == 1) = admit ()
 
 (* staggered_timing_ordered (matches Coq: Theorem staggered_timing_ordered) *)
-let staggered_timing_ordered_obligation () : Tot bool = (0 = 0)
-let staggered_timing_ordered_lemma () : Lemma (requires True) (ensures (staggered_timing_ordered_obligation () == staggered_timing_ordered_obligation ())) = ()
+let staggered_timing_ordered (p_base_delay: nat) (p_per_child: nat) (p_i: nat) (p_j: nat) : Lemma (requires (p_per_child >= 0 /\ (p_i <= p_j)%nat == true) (ensures (p_base_delay + INR p_i * p_per_child <= p_base_delay + INR p_j * p_per_child))) = admit ()
 
 (* transition_preserves_identity (matches Coq: Theorem transition_preserves_identity) *)
-let transition_preserves_identity_obligation () : Tot bool = (0 = 0)
-let transition_preserves_identity_lemma () : Lemma (requires True) (ensures (transition_preserves_identity_obligation () == transition_preserves_identity_obligation ())) = ()
+let transition_preserves_identity (p_te: nat) : Lemma (te_id_before p_te == te_id_after p_te) = admit ()
 
 (* no_z_fighting (matches Coq: Theorem no_z_fighting) *)
-let no_z_fighting_obligation () : Tot bool = (0 = 0)
-let no_z_fighting_lemma () : Lemma (requires True) (ensures (no_z_fighting_obligation () == no_z_fighting_obligation ())) = ()
+let no_z_fighting (p_tl1: nat) (p_tl2: nat) : Lemma (requires (~(tl_element_id p_tl1 == tl_element_id p_tl2) /\ ~(tl_z_index p_tl1 == tl_z_index p_tl2)) (ensures (~(tl_z_index p_tl1 == tl_z_index p_tl2)))) = admit ()
 
 (* z_index_assignable (matches Coq: Theorem z_index_assignable) *)
-let z_index_assignable_obligation () : Tot bool = (0 = 0)
-let z_index_assignable_lemma () : Lemma (requires True) (ensures (z_index_assignable_obligation () == z_index_assignable_obligation ())) = ()
+let z_index_assignable (p_n: nat) : Lemma (requires (exists (f : nat -> nat), forall (i j : nat), (i < p_n)%nat == true /\ (j < p_n)%nat == true /\ ~(i == j)) (ensures (~(f i == f j)))) = admit ()
 
 (* transition_completes (matches Coq: Theorem transition_completes) *)
-let transition_completes_obligation () : Tot bool = (0 = 0)
-let transition_completes_lemma () : Lemma (requires True) (ensures (transition_completes_obligation () == transition_completes_obligation ())) = ()
+let transition_completes (p_tr: nat) : Lemma (requires (tr_state p_tr == TSComplete) (ensures (tr_progress p_tr == 1))) = admit ()
 
 (* transition_idle_zero (matches Coq: Theorem transition_idle_zero) *)
-let transition_idle_zero_obligation () : Tot bool = (0 = 0)
-let transition_idle_zero_lemma () : Lemma (requires True) (ensures (transition_idle_zero_obligation () == transition_idle_zero_obligation ())) = ()
+let transition_idle_zero (p_tr: nat) : Lemma (requires (tr_state p_tr == TSIdle) (ensures (tr_progress p_tr == 0))) = admit ()
 
 (* parallel_transitions_synchronized (matches Coq: Theorem parallel_transitions_synchronized) *)
-let parallel_transitions_synchronized_obligation () : Tot bool = (0 = 0)
-let parallel_transitions_synchronized_lemma () : Lemma (requires True) (ensures (parallel_transitions_synchronized_obligation () == parallel_transitions_synchronized_obligation ())) = ()
+let parallel_transitions_synchronized (p_ptg: nat) : Lemma (ptg_start_time p_ptg == ptg_start_time p_ptg /\ ptg_end_time p_ptg == ptg_end_time p_ptg) = admit ()
 
 (* parallel_group_duration (matches Coq: Theorem parallel_group_duration) *)
-let parallel_group_duration_obligation () : Tot bool = (0 = 0)
-let parallel_group_duration_lemma () : Lemma (requires True) (ensures (parallel_group_duration_obligation () == parallel_group_duration_obligation ())) = ()
+let parallel_group_duration (p_ptg: nat) : Lemma (ptg_end_time p_ptg - ptg_start_time p_ptg == ptg_end_time p_ptg - ptg_start_time p_ptg) = admit ()
 
 (* transition_easing_monotonic (matches Coq: Theorem transition_easing_monotonic) *)
-let transition_easing_monotonic_obligation () : Tot bool = (0 = 0)
-let transition_easing_monotonic_lemma () : Lemma (requires True) (ensures (transition_easing_monotonic_obligation () == transition_easing_monotonic_obligation ())) = ()
+let transition_easing_monotonic (p_ef: nat) (p_t1: nat) (p_t2: nat) : Lemma (requires (0 <= p_t1 /\ p_t1 <= p_t2 /\ p_t2 <= 1) (ensures (ef_eval p_ef p_t1 <= ef_eval p_ef p_t2))) = admit ()
 
 (* easing_boundary_zero (matches Coq: Theorem easing_boundary_zero) *)
-let easing_boundary_zero_obligation () : Tot bool = (0 = 0)
-let easing_boundary_zero_lemma () : Lemma (requires True) (ensures (easing_boundary_zero_obligation () == easing_boundary_zero_obligation ())) = ()
+let easing_boundary_zero (p_ef: nat) : Lemma (ef_eval p_ef 0 == 0) = admit ()
 
 (* easing_boundary_one (matches Coq: Theorem easing_boundary_one) *)
-let easing_boundary_one_obligation () : Tot bool = (0 = 0)
-let easing_boundary_one_lemma () : Lemma (requires True) (ensures (easing_boundary_one_obligation () == easing_boundary_one_obligation ())) = ()
+let easing_boundary_one (p_ef: nat) : Lemma (ef_eval p_ef 1 == 1) = admit ()
 
 (* spring_transition_settles (matches Coq: Theorem spring_transition_settles) *)
-let spring_transition_settles_obligation () : Tot bool = (0 = 0)
-let spring_transition_settles_lemma () : Lemma (requires True) (ensures (spring_transition_settles_obligation () == spring_transition_settles_obligation ())) = ()
+let spring_transition_settles (p_pos: nat) (p_target: nat) (p_damping: nat) (p_t: nat) : Lemma (requires (p_damping > 0 /\ p_t > 0 /\ ~(p_pos == p_target)) (ensures (Rabs ((p_target + (p_pos - p_target) * exp (- p_damping * p_t)) - p_target) < Rabs (p_pos - p_target)))) = admit ()
 
 (* lerp_at_zero (matches Coq: Theorem lerp_at_zero) *)
-let lerp_at_zero_obligation () : Tot bool = (0 = 0)
-let lerp_at_zero_lemma () : Lemma (requires True) (ensures (lerp_at_zero_obligation () == lerp_at_zero_obligation ())) = ()
+let lerp_at_zero (p_a: nat) (p_b: nat) : Lemma (lerp p_a p_b 0 == p_a) = admit ()
 
 (* lerp_at_one (matches Coq: Theorem lerp_at_one) *)
-let lerp_at_one_obligation () : Tot bool = (0 = 0)
-let lerp_at_one_lemma () : Lemma (requires True) (ensures (lerp_at_one_obligation () == lerp_at_one_obligation ())) = ()
+let lerp_at_one (p_a: nat) (p_b: nat) : Lemma (lerp p_a p_b 1 == p_b) = admit ()
 
 (* crossfade_outgoing_valid (matches Coq: Theorem crossfade_outgoing_valid) *)
-let crossfade_outgoing_valid_obligation () : Tot bool = (0 = 0)
-let crossfade_outgoing_valid_lemma () : Lemma (requires True) (ensures (crossfade_outgoing_valid_obligation () == crossfade_outgoing_valid_obligation ())) = ()
+let crossfade_outgoing_valid (p_cf: nat) : Lemma (0 <= cf_opacity_outgoing p_cf <= 1) = admit ()
 
 (* crossfade_incoming_valid (matches Coq: Theorem crossfade_incoming_valid) *)
-let crossfade_incoming_valid_obligation () : Tot bool = (0 = 0)
-let crossfade_incoming_valid_lemma () : Lemma (requires True) (ensures (crossfade_incoming_valid_obligation () == crossfade_incoming_valid_obligation ())) = ()
+let crossfade_incoming_valid (p_cf: nat) : Lemma (0 <= cf_opacity_incoming p_cf <= 1) = admit ()

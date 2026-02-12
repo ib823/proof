@@ -154,85 +154,64 @@ let well_formed_channel (p_c: channel) : Tot bool =
   (0 = 0)
 
 (* no_deadlock (matches Coq: Theorem no_deadlock) *)
-let no_deadlock_obligation () : Tot bool = (0 = 0)
-let no_deadlock_lemma () : Lemma (requires True) (ensures (no_deadlock_obligation () == no_deadlock_obligation ())) = ()
+let no_deadlock (p_program: nat) : Lemma (requires (well_typed p_program == true) (ensures (~(can_deadlock p_program == true)))) = admit ()
 
 (* no_data_race (matches Coq: Theorem no_data_race) *)
-let no_data_race_obligation () : Tot bool = (0 = 0)
-let no_data_race_lemma () : Lemma (requires True) (ensures (no_data_race_obligation () == no_data_race_obligation ())) = ()
+let no_data_race (p_program: nat) : Lemma (requires (well_typed p_program == true) (ensures (~(has_data_race p_program == true)))) = admit ()
 
 (* actor_isolation_complete (matches Coq: Theorem actor_isolation_complete) *)
-let actor_isolation_complete_obligation () : Tot bool = (0 = 0)
-let actor_isolation_complete_lemma () : Lemma (requires True) (ensures (actor_isolation_complete_obligation () == actor_isolation_complete_obligation ())) = ()
+let actor_isolation_complete (p_actor1: actor) (p_actor2: actor) (p_data: nat) : Lemma (requires (~(p_actor1.f_actor_id == p_actor2.f_actor_id) /\ owns p_actor1 p_data == true /\ ~(In p_data (p_actor2.f_actor_owned_data) == true)) (ensures (~(owns p_actor2 p_data == true)))) = admit ()
 
 (* ownership_exclusive (matches Coq: Theorem ownership_exclusive) *)
-let ownership_exclusive_obligation () : Tot bool = (0 = 0)
-let ownership_exclusive_lemma () : Lemma (requires True) (ensures (ownership_exclusive_obligation () == ownership_exclusive_obligation ())) = ()
+let ownership_exclusive (p_a1: actor) (p_a2: actor) (p_d: nat) : Lemma (requires (owns p_a1 p_d == true /\ ~(p_a1.f_actor_owned_data == p_a2.f_actor_owned_data) /\ ~(In p_d (p_a2.f_actor_owned_data) == true)) (ensures (~(owns p_a2 p_d == true)))) = admit ()
 
 (* well_typed_all_annotated (matches Coq: Theorem well_typed_all_annotated) *)
-let well_typed_all_annotated_obligation () : Tot bool = (0 = 0)
-let well_typed_all_annotated_lemma () : Lemma (requires True) (ensures (well_typed_all_annotated_obligation () == well_typed_all_annotated_obligation ())) = ()
+let well_typed_all_annotated (p_program: nat) : Lemma (requires (well_typed p_program == true) (ensures (all_typed p_program == true))) = admit ()
 
 (* lock_order_no_cycles (matches Coq: Theorem lock_order_no_cycles) *)
-let lock_order_no_cycles_obligation () : Tot bool = (0 = 0)
-let lock_order_no_cycles_lemma () : Lemma (requires True) (ensures (lock_order_no_cycles_obligation () == lock_order_no_cycles_obligation ())) = ()
+let lock_order_no_cycles (p_acquired: (list resource)) : Lemma (requires (respects_lock_order p_acquired == true /\ forall r_ In r p_acquired == true) (ensures (~((exists r__ In r_ p_acquired == true /\ r.f_resource_order < r_.f_resource_order /\ r_.f_resource_order < r.f_resource_order))))) = admit ()
 
 (* deadlock_free (matches Coq: Theorem deadlock_free) *)
-let deadlock_free_obligation () : Tot bool = (0 = 0)
-let deadlock_free_lemma () : Lemma (requires True) (ensures (deadlock_free_obligation () == deadlock_free_obligation ())) = ()
+let deadlock_free (p_program: nat) : Lemma (requires (well_typed p_program == true) (ensures (~(can_deadlock p_program == true)))) = admit ()
 
 (* priority_inversion_prevented (matches Coq: Theorem priority_inversion_prevented) *)
-let priority_inversion_prevented_obligation () : Tot bool = (0 = 0)
-let priority_inversion_prevented_lemma () : Lemma (requires True) (ensures (priority_inversion_prevented_obligation () == priority_inversion_prevented_obligation ())) = ()
+let priority_inversion_prevented (p_t1: async_task) (p_t2: async_task) : Lemma (requires (p_t1.f_task_priority > p_t2.f_task_priority) (ensures (p_t1.f_task_priority > p_t2.f_task_priority))) = admit ()
 
 (* thread_pool_bounded (matches Coq: Theorem thread_pool_bounded) *)
-let thread_pool_bounded_obligation () : Tot bool = (0 = 0)
-let thread_pool_bounded_lemma () : Lemma (requires True) (ensures (thread_pool_bounded_obligation () == thread_pool_bounded_obligation ())) = ()
+let thread_pool_bounded (p_tp: thread_pool) : Lemma (requires (well_formed_pool p_tp == true) (ensures (p_tp.f_pool_active_count <= p_tp.f_pool_max_size))) = admit ()
 
 (* async_task_cancellable (matches Coq: Theorem async_task_cancellable) *)
-let async_task_cancellable_obligation () : Tot bool = (0 = 0)
-let async_task_cancellable_lemma () : Lemma (requires True) (ensures (async_task_cancellable_obligation () == async_task_cancellable_obligation ())) = ()
+let async_task_cancellable (p_t: async_task) : Lemma (requires (p_t.f_task_cancellable == true /\ p_t.f_task_state == TaskRunning) (ensures (p_t.f_task_cancellable == true))) = admit ()
 
 (* atomic_operation_linearizable (matches Coq: Theorem atomic_operation_linearizable) *)
-let atomic_operation_linearizable_obligation () : Tot bool = (0 = 0)
-let atomic_operation_linearizable_lemma () : Lemma (requires True) (ensures (atomic_operation_linearizable_obligation () == atomic_operation_linearizable_obligation ())) = ()
+let atomic_operation_linearizable (p_p_before: nat) (p_p_after: nat) : Lemma (requires (id_after == fn_before + 1) (ensures (id_after == fn_before + 1))) = admit ()
 
 (* lock_ordering_enforced (matches Coq: Theorem lock_ordering_enforced) *)
-let lock_ordering_enforced_obligation () : Tot bool = (0 = 0)
-let lock_ordering_enforced_lemma () : Lemma (requires True) (ensures (lock_ordering_enforced_obligation () == lock_ordering_enforced_obligation ())) = ()
+let lock_ordering_enforced (p_r1: resource) (p_r2: resource) : Lemma (requires (p_r1.f_resource_order < p_r2.f_resource_order) (ensures (p_r1.f_resource_order < p_r2.f_resource_order))) = admit ()
 
 (* semaphore_count_non_negative (matches Coq: Theorem semaphore_count_non_negative) *)
-let semaphore_count_non_negative_obligation () : Tot bool = (0 = 0)
-let semaphore_count_non_negative_lemma () : Lemma (requires True) (ensures (semaphore_count_non_negative_obligation () == semaphore_count_non_negative_obligation ())) = ()
+let semaphore_count_non_negative (p_s: semaphore) : Lemma (p_s.f_sem_count >= 0) = admit ()
 
 (* barrier_synchronization_complete (matches Coq: Theorem barrier_synchronization_complete) *)
-let barrier_synchronization_complete_obligation () : Tot bool = (0 = 0)
-let barrier_synchronization_complete_lemma () : Lemma (requires True) (ensures (barrier_synchronization_complete_obligation () == barrier_synchronization_complete_obligation ())) = ()
+let barrier_synchronization_complete (p_b: barrier) : Lemma (requires (well_formed_barrier p_b == true /\ p_b.f_barrier_count == p_b.f_barrier_total) (ensures (p_b.f_barrier_released == true))) = admit ()
 
 (* future_resolved_once (matches Coq: Theorem future_resolved_once) *)
-let future_resolved_once_obligation () : Tot bool = (0 = 0)
-let future_resolved_once_lemma () : Lemma (requires True) (ensures (future_resolved_once_obligation () == future_resolved_once_obligation ())) = ()
+let future_resolved_once (p_f: future) : Lemma (requires (well_formed_future p_f == true) (ensures (p_f.f_future_resolve_count <= 1))) = admit ()
 
 (* actor_message_ordered (matches Coq: Theorem actor_message_ordered) *)
-let actor_message_ordered_obligation () : Tot bool = (0 = 0)
-let actor_message_ordered_lemma () : Lemma (requires True) (ensures (actor_message_ordered_obligation () == actor_message_ordered_obligation ())) = ()
+let actor_message_ordered (p_a: ext_actor) (p_seq1: nat) (p_seq2: nat) (p_m1: nat) (p_m2: nat) (p_i: nat) (p_j: nat) : Lemma (requires (nth_error (p_a.f_ea_mailbox) p_i == Some (seq1_ p_m1) /\ nth_error (p_a.f_ea_mailbox) p_j == Some (seq2_ p_m2) /\ p_i < p_j /\ p_seq1 <= p_seq2) (ensures (p_seq1 <= p_seq2))) = admit ()
 
 (* channel_bounded (matches Coq: Theorem channel_bounded) *)
-let channel_bounded_obligation () : Tot bool = (0 = 0)
-let channel_bounded_lemma () : Lemma (requires True) (ensures (channel_bounded_obligation () == channel_bounded_obligation ())) = ()
+let channel_bounded (p_c: channel) : Lemma (requires (well_formed_channel p_c == true) (ensures (length (p_c.f_chan_buffer) <= p_c.f_chan_capacity))) = admit ()
 
 (* work_stealing_fair (matches Coq: Theorem work_stealing_fair) *)
-let work_stealing_fair_obligation () : Tot bool = (0 = 0)
-let work_stealing_fair_lemma () : Lemma (requires True) (ensures (work_stealing_fair_obligation () == work_stealing_fair_obligation ())) = ()
+let work_stealing_fair (p_tp: thread_pool) : Lemma (requires (well_formed_pool p_tp == true) (ensures (p_tp.f_pool_max_size > 0))) = admit ()
 
 (* thread_safe_collection (matches Coq: Theorem thread_safe_collection) *)
-let thread_safe_collection_obligation () : Tot bool = (0 = 0)
-let thread_safe_collection_lemma () : Lemma (requires True) (ensures (thread_safe_collection_obligation () == thread_safe_collection_obligation ())) = ()
+let thread_safe_collection (p_p: nat) : Lemma (requires (well_typed p_p == true) (ensures (all_typed p_p == true))) = admit ()
 
 (* concurrent_modification_detected (matches Coq: Theorem concurrent_modification_detected) *)
-let concurrent_modification_detected_obligation () : Tot bool = (0 = 0)
-let concurrent_modification_detected_lemma () : Lemma (requires True) (ensures (concurrent_modification_detected_obligation () == concurrent_modification_detected_obligation ())) = ()
+let concurrent_modification_detected (p_a1: actor) (p_a2: actor) (p_d: nat) : Lemma (requires (owns p_a1 p_d == true /\ owns p_a2 p_d == true /\ ~(p_a1.f_actor_id == p_a2.f_actor_id)) (ensures (owns p_a1 p_d == true /\ owns p_a2 p_d == true /\ ~(p_a1.f_actor_id == p_a2.f_actor_id)))) = admit ()
 
 (* future_has_value_when_resolved (matches Coq: Theorem future_has_value_when_resolved) *)
-let future_has_value_when_resolved_obligation () : Tot bool = (0 = 0)
-let future_has_value_when_resolved_lemma () : Lemma (requires True) (ensures (future_has_value_when_resolved_obligation () == future_has_value_when_resolved_obligation ())) = ()
+let future_has_value_when_resolved (p_f: future) : Lemma (requires (well_formed_future p_f == true /\ p_f.f_future_resolved == true) (ensures (~(p_f.f_future_value == None)))) = admit ()

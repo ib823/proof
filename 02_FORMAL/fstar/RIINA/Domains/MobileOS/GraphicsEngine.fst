@@ -152,85 +152,64 @@ let well_formed_render_thread (p_rt: render_thread) : Tot bool =
   (0 = 0)
 
 (* frame_rate_120hz_guaranteed (matches Coq: Theorem frame_rate_120hz_guaranteed) *)
-let frame_rate_120hz_guaranteed_obligation () : Tot bool = (0 = 0)
-let frame_rate_120hz_guaranteed_lemma () : Lemma (requires True) (ensures (frame_rate_120hz_guaranteed_obligation () == frame_rate_120hz_guaranteed_obligation ())) = ()
+let frame_rate_120hz_guaranteed (p_frame: frame) : Lemma (requires (well_optimized_frame p_frame == true /\ p_frame.f_frame_complexity <= 1000) (ensures (p_frame.f_frame_render_time <= frame_budget_120hz))) = admit ()
 
 (* no_frame_drops (matches Coq: Theorem no_frame_drops) *)
-let no_frame_drops_obligation () : Tot bool = (0 = 0)
-let no_frame_drops_lemma () : Lemma (requires True) (ensures (no_frame_drops_obligation () == no_frame_drops_obligation ())) = ()
+let no_frame_drops (p_animation: animation) : Lemma (requires (well_formed_animation p_animation == true) (ensures (~(has_frame_drop p_animation == true)))) = admit ()
 
 (* well_formed_renders_all (matches Coq: Theorem well_formed_renders_all) *)
-let well_formed_renders_all_obligation () : Tot bool = (0 = 0)
-let well_formed_renders_all_lemma () : Lemma (requires True) (ensures (well_formed_renders_all_obligation () == well_formed_renders_all_obligation ())) = ()
+let well_formed_renders_all (p_animation: animation) : Lemma (requires (well_formed_animation p_animation == true) (ensures (frames_rendered p_animation == length (p_animation.f_anim_frames)))) = admit ()
 
 (* render_pipeline_complete (matches Coq: Theorem render_pipeline_complete) *)
-let render_pipeline_complete_obligation () : Tot bool = (0 = 0)
-let render_pipeline_complete_lemma () : Lemma (requires True) (ensures (render_pipeline_complete_obligation () == render_pipeline_complete_obligation ())) = ()
+let render_pipeline_complete () : Lemma (length render_pipeline == 5) = admit ()
 
 (* pipeline_starts_geometry (matches Coq: Theorem pipeline_starts_geometry) *)
-let pipeline_starts_geometry_obligation () : Tot bool = (0 = 0)
-let pipeline_starts_geometry_lemma () : Lemma (requires True) (ensures (pipeline_starts_geometry_obligation () == pipeline_starts_geometry_obligation ())) = ()
+let pipeline_starts_geometry () : Lemma (hd_error render_pipeline == Some Geometry) = admit ()
 
 (* pipeline_ends_display (matches Coq: Theorem pipeline_ends_display) *)
-let pipeline_ends_display_obligation () : Tot bool = (0 = 0)
-let pipeline_ends_display_lemma () : Lemma (requires True) (ensures (pipeline_ends_display_obligation () == pipeline_ends_display_obligation ())) = ()
+let pipeline_ends_display () : Lemma (last render_pipeline Geometry == Display) = admit ()
 
 (* render_pipeline_has_all_stages (matches Coq: Theorem render_pipeline_has_all_stages) *)
-let render_pipeline_has_all_stages_obligation () : Tot bool = (0 = 0)
-let render_pipeline_has_all_stages_lemma () : Lemma (requires True) (ensures (render_pipeline_has_all_stages_obligation () == render_pipeline_has_all_stages_obligation ())) = ()
+let render_pipeline_has_all_stages () : Lemma (In Geometry render_pipeline == true /\ In Rasterization render_pipeline == true /\ In Shading render_pipeline == true /\ In Compositing render_pipeline == true /\ In Display render_pipeline == true) = admit ()
 
 (* shader_compilation_validated (matches Coq: Theorem shader_compilation_validated) *)
-let shader_compilation_validated_obligation () : Tot bool = (0 = 0)
-let shader_compilation_validated_lemma () : Lemma (requires True) (ensures (shader_compilation_validated_obligation () == shader_compilation_validated_obligation ())) = ()
+let shader_compilation_validated (p_s: shader) : Lemma (requires (well_formed_shader p_s == true) (ensures (p_s.f_shader_compiled == true /\ p_s.f_shader_validated == true))) = admit ()
 
 (* texture_memory_bounded (matches Coq: Theorem texture_memory_bounded) *)
-let texture_memory_bounded_obligation () : Tot bool = (0 = 0)
-let texture_memory_bounded_lemma () : Lemma (requires True) (ensures (texture_memory_bounded_obligation () == texture_memory_bounded_obligation ())) = ()
+let texture_memory_bounded (p_m: gpu_memory) : Lemma (requires (well_formed_gpu_mem p_m == true) (ensures (p_m.f_gpu_texture_bytes <= p_m.f_gpu_used_bytes))) = admit ()
 
 (* draw_call_batched (matches Coq: Theorem draw_call_batched) *)
-let draw_call_batched_obligation () : Tot bool = (0 = 0)
-let draw_call_batched_lemma () : Lemma (requires True) (ensures (draw_call_batched_obligation () == draw_call_batched_obligation ())) = ()
+let draw_call_batched (p_b: draw_batch) : Lemma (requires (well_formed_batch p_b == true) (ensures (p_b.f_batch_merged_calls <= p_b.f_batch_draw_calls))) = admit ()
 
 (* vsync_synchronized (matches Coq: Theorem vsync_synchronized) *)
-let vsync_synchronized_obligation () : Tot bool = (0 = 0)
-let vsync_synchronized_lemma () : Lemma (requires True) (ensures (vsync_synchronized_obligation () == vsync_synchronized_obligation ())) = ()
+let vsync_synchronized (p_rt: render_thread) : Lemma (requires (well_formed_render_thread p_rt == true) (ensures (p_rt.f_rt_vsync_aligned == true))) = admit ()
 
 (* frame_buffer_double_buffered (matches Coq: Theorem frame_buffer_double_buffered) *)
-let frame_buffer_double_buffered_obligation () : Tot bool = (0 = 0)
-let frame_buffer_double_buffered_lemma () : Lemma (requires True) (ensures (frame_buffer_double_buffered_obligation () == frame_buffer_double_buffered_obligation ())) = ()
+let frame_buffer_double_buffered (p_fb: frame_buffer) : Lemma (requires (well_formed_framebuffer p_fb == true) (ensures (p_fb.f_fb_double_buffered == true))) = admit ()
 
 (* gpu_memory_tracked (matches Coq: Theorem gpu_memory_tracked) *)
-let gpu_memory_tracked_obligation () : Tot bool = (0 = 0)
-let gpu_memory_tracked_lemma () : Lemma (requires True) (ensures (gpu_memory_tracked_obligation () == gpu_memory_tracked_obligation ())) = ()
+let gpu_memory_tracked (p_m: gpu_memory) : Lemma (requires (well_formed_gpu_mem p_m == true) (ensures (p_m.f_gpu_used_bytes <= p_m.f_gpu_max_bytes))) = admit ()
 
 (* overdraw_minimized (matches Coq: Theorem overdraw_minimized) *)
-let overdraw_minimized_obligation () : Tot bool = (0 = 0)
-let overdraw_minimized_lemma () : Lemma (requires True) (ensures (overdraw_minimized_obligation () == overdraw_minimized_obligation ())) = ()
+let overdraw_minimized (p_b: draw_batch) : Lemma (requires (well_formed_batch p_b == true) (ensures (p_b.f_batch_overdraw_ratio >= 100))) = admit ()
 
 (* culling_correct (matches Coq: Theorem culling_correct) *)
-let culling_correct_obligation () : Tot bool = (0 = 0)
-let culling_correct_lemma () : Lemma (requires True) (ensures (culling_correct_obligation () == culling_correct_obligation ())) = ()
+let culling_correct (p_a: animation) : Lemma (requires (well_formed_animation p_a == true /\ forall f_ In f (p_a.f_anim_frames) == true) (ensures (f.f_frame_rendered == true))) = admit ()
 
 (* z_buffer_precise (matches Coq: Theorem z_buffer_precise) *)
-let z_buffer_precise_obligation () : Tot bool = (0 = 0)
-let z_buffer_precise_lemma () : Lemma (requires True) (ensures (z_buffer_precise_obligation () == z_buffer_precise_obligation ())) = ()
+let z_buffer_precise (p_zb: z_buffer) : Lemma (requires (p_zb.f_zbuf_bits >= 24 /\ p_zb.f_zbuf_far > p_zb.f_zbuf_near) (ensures (p_zb.f_zbuf_bits >= 24))) = admit ()
 
 (* anti_aliasing_applied (matches Coq: Theorem anti_aliasing_applied) *)
-let anti_aliasing_applied_obligation () : Tot bool = (0 = 0)
-let anti_aliasing_applied_lemma () : Lemma (requires True) (ensures (anti_aliasing_applied_obligation () == anti_aliasing_applied_obligation ())) = ()
+let anti_aliasing_applied (p_aa: aa_method) : Lemma (requires (~(p_aa == NoAA)) (ensures (~(p_aa == NoAA)))) = admit ()
 
 (* color_space_correct (matches Coq: Theorem color_space_correct) *)
-let color_space_correct_obligation () : Tot bool = (0 = 0)
-let color_space_correct_lemma () : Lemma (requires True) (ensures (color_space_correct_obligation () == color_space_correct_obligation ())) = ()
+let color_space_correct (p_cs: color_space) : Lemma (p_cs == SRGB \/ p_cs == LinearRGB \/ p_cs == DisplayP3 \/ p_cs == HDR10) = admit ()
 
 (* hdr_tone_mapped (matches Coq: Theorem hdr_tone_mapped) *)
-let hdr_tone_mapped_obligation () : Tot bool = (0 = 0)
-let hdr_tone_mapped_lemma () : Lemma (requires True) (ensures (hdr_tone_mapped_obligation () == hdr_tone_mapped_obligation ())) = ()
+let hdr_tone_mapped (p_cs: color_space) : Lemma (requires (p_cs == HDR10) (ensures (p_cs == HDR10))) = admit ()
 
 (* gpu_timeout_handled (matches Coq: Theorem gpu_timeout_handled) *)
-let gpu_timeout_handled_obligation () : Tot bool = (0 = 0)
-let gpu_timeout_handled_lemma () : Lemma (requires True) (ensures (gpu_timeout_handled_obligation () == gpu_timeout_handled_obligation ())) = ()
+let gpu_timeout_handled (p_rt: render_thread) : Lemma (requires (well_formed_render_thread p_rt == true) (ensures (p_rt.f_rt_frame_time_us <= 8333))) = admit ()
 
 (* render_thread_priority (matches Coq: Theorem render_thread_priority) *)
-let render_thread_priority_obligation () : Tot bool = (0 = 0)
-let render_thread_priority_lemma () : Lemma (requires True) (ensures (render_thread_priority_obligation () == render_thread_priority_obligation ())) = ()
+let render_thread_priority (p_rt: render_thread) : Lemma (requires (well_formed_render_thread p_rt == true) (ensures (p_rt.f_rt_priority > 0))) = admit ()

@@ -221,153 +221,116 @@ let has_phantom_read (p_s: nat) : Tot bool =
   false
 
 (* SIGMA_001_01_query_ast_typed (matches Coq: Theorem SIGMA_001_01_query_ast_typed) *)
-let sigma_001_01_query_ast_typed_obligation () : Tot bool = (0 = 0)
-let sigma_001_01_query_ast_typed_lemma () : Lemma (requires True) (ensures (sigma_001_01_query_ast_typed_obligation () == sigma_001_01_query_ast_typed_obligation ())) = ()
+let sigma_001_01_query_ast_typed (p_q: _) (p_db: _) : Lemma (requires (query_well_typed p_q p_db == true) (ensures (exists result_schema : list nat_ True == true))) = admit ()
 
 (* SIGMA_001_02_no_sql_injection (matches Coq: Theorem SIGMA_001_02_no_sql_injection) *)
-let sigma_001_02_no_sql_injection_obligation () : Tot bool = (0 = 0)
-let sigma_001_02_no_sql_injection_lemma () : Lemma (requires True) (ensures (sigma_001_02_no_sql_injection_obligation () == sigma_001_02_no_sql_injection_obligation ())) = ()
+let sigma_001_02_no_sql_injection (p_q: _) : Lemma (~((exists p_s. query_contains_raw_string p_q p_s == true))) = admit ()
 
 (* SIGMA_001_03_query_preserves_schema (matches Coq: Theorem SIGMA_001_03_query_preserves_schema) *)
-let sigma_001_03_query_preserves_schema_obligation () : Tot bool = (0 = 0)
-let sigma_001_03_query_preserves_schema_lemma () : Lemma (requires True) (ensures (sigma_001_03_query_preserves_schema_obligation () == sigma_001_03_query_preserves_schema_obligation ())) = ()
+let sigma_001_03_query_preserves_schema (p_q: _) (p_db: _) (p_db_: _) : Lemma (requires (query_well_typed p_q p_db == true /\ db_ == p_db) (ensures (length (db_.f_db_tables) == length (p_db.f_db_tables)))) = admit ()
 
 (* SIGMA_001_04_predicate_typed (matches Coq: Theorem SIGMA_001_04_predicate_typed) *)
-let sigma_001_04_predicate_typed_obligation () : Tot bool = (0 = 0)
-let sigma_001_04_predicate_typed_lemma () : Lemma (requires True) (ensures (sigma_001_04_predicate_typed_obligation () == sigma_001_04_predicate_typed_obligation ())) = ()
+let sigma_001_04_predicate_typed (p_p: _) (p_schema: _) : Lemma (pred_well_typed p_p p_schema == true) = admit ()
 
 (* SIGMA_001_05_projection_typed (matches Coq: Theorem SIGMA_001_05_projection_typed) *)
-let sigma_001_05_projection_typed_obligation () : Tot bool = (0 = 0)
-let sigma_001_05_projection_typed_lemma () : Lemma (requires True) (ensures (sigma_001_05_projection_typed_obligation () == sigma_001_05_projection_typed_obligation ())) = ()
+let sigma_001_05_projection_typed (p_proj: (list nat)) (p_schema: (list nat)) (p_i: _) : Lemma (In p_i p_proj == true /\ p_i < length p_schema) = admit ()
 
 (* SIGMA_001_06_join_typed (matches Coq: Theorem SIGMA_001_06_join_typed) *)
-let sigma_001_06_join_typed_obligation () : Tot bool = (0 = 0)
-let sigma_001_06_join_typed_lemma () : Lemma (requires True) (ensures (sigma_001_06_join_typed_obligation () == sigma_001_06_join_typed_obligation ())) = ()
+let sigma_001_06_join_typed (p_t1: nat) (p_t2: nat) (p_c1: nat) (p_c2: nat) (p_p_pred: ty__pred) (p_schema1: nat) (p_schema2: nat) : Lemma (pred_well_typed id_pred p_schema1 == true /\ pred_well_typed id_pred p_schema2 == true) = admit ()
 
 (* SIGMA_001_07_query_result_typed (matches Coq: Theorem SIGMA_001_07_query_result_typed) *)
-let sigma_001_07_query_result_typed_obligation () : Tot bool = (0 = 0)
-let sigma_001_07_query_result_typed_lemma () : Lemma (requires True) (ensures (sigma_001_07_query_result_typed_obligation () == sigma_001_07_query_result_typed_obligation ())) = ()
+let sigma_001_07_query_result_typed (p_q: query) (p_db: database) (p_rows: (list nat)) : Lemma (query_well_typed p_q p_db == true) = admit ()
 
 (* SIGMA_001_08_parameterized_safe (matches Coq: Theorem SIGMA_001_08_parameterized_safe) *)
-let sigma_001_08_parameterized_safe_obligation () : Tot bool = (0 = 0)
-let sigma_001_08_parameterized_safe_lemma () : Lemma (requires True) (ensures (sigma_001_08_parameterized_safe_obligation () == sigma_001_08_parameterized_safe_obligation ())) = ()
+let sigma_001_08_parameterized_safe (p_col_idx: _) (p_op: _) (p_v: _) (p_table: _) (p_p_pred: _) : Lemma (fn_let q : == QSelect [p_col_idx] p_table (PAnd (PCol p_col_idx p_op p_v) id_pred) id_in ~ query_contains_raw_string q 0) = admit ()
 
 (* SIGMA_001_09_atomicity (matches Coq: Theorem SIGMA_001_09_atomicity) *)
-let sigma_001_09_atomicity_obligation () : Tot bool = (0 = 0)
-let sigma_001_09_atomicity_lemma () : Lemma (requires True) (ensures (sigma_001_09_atomicity_obligation () == sigma_001_09_atomicity_obligation ())) = ()
+let sigma_001_09_atomicity (p_txn: _) (p_db: _) : Lemma (fn_let (db__ status) : == exec_txn p_txn p_db id_in (txn_status p_txn = TxnPending /\ status = TxnCommitted /\ all_ops_applied (p_txn.f_txn_ops) p_db db_) \/ (~(p_txn.f_txn_status == TxnPending) /\ p_db == db_)) = admit ()
 
 (* SIGMA_001_10_atomicity_commit (matches Coq: Theorem SIGMA_001_10_atomicity_commit) *)
-let sigma_001_10_atomicity_commit_obligation () : Tot bool = (0 = 0)
-let sigma_001_10_atomicity_commit_lemma () : Lemma (requires True) (ensures (sigma_001_10_atomicity_commit_obligation () == sigma_001_10_atomicity_commit_obligation ())) = ()
+let sigma_001_10_atomicity_commit (p_txn: _) (p_db: _) (p_db_: _) (p_status: _) : Lemma (requires (exec_txn p_txn p_db == (db__ p_status) /\ p_status == TxnCommitted /\ p_txn.f_txn_status == TxnPending) (ensures (all_ops_applied (p_txn.f_txn_ops) p_db db_ == true))) = admit ()
 
 (* SIGMA_001_11_atomicity_abort (matches Coq: Theorem SIGMA_001_11_atomicity_abort) *)
-let sigma_001_11_atomicity_abort_obligation () : Tot bool = (0 = 0)
-let sigma_001_11_atomicity_abort_lemma () : Lemma (requires True) (ensures (sigma_001_11_atomicity_abort_obligation () == sigma_001_11_atomicity_abort_obligation ())) = ()
+let sigma_001_11_atomicity_abort (p_txn: _) (p_db: _) (p_db_: _) (p_status: _) : Lemma (requires (exec_txn p_txn p_db == (db__ p_status) /\ p_status == TxnAborted) (ensures (p_db == db_))) = admit ()
 
 (* SIGMA_001_12_consistency (matches Coq: Theorem SIGMA_001_12_consistency) *)
-let sigma_001_12_consistency_obligation () : Tot bool = (0 = 0)
-let sigma_001_12_consistency_lemma () : Lemma (requires True) (ensures (sigma_001_12_consistency_obligation () == sigma_001_12_consistency_obligation ())) = ()
+let sigma_001_12_consistency (p_txn: _) (p_db: _) (p_db_: _) (p_status: _) (p_p_invariant: _) : Lemma (requires (fn_invariant p_db == true /\ (forall ops d_ id_invariant d == fn_true -> id_invariant (apply_ops ops d) = true) /\ exec_txn p_txn p_db == (db__ p_status) /\ p_status == TxnCommitted) (ensures (fn_invariant db_ == true \/ p_status == TxnAborted))) = admit ()
 
 (* SIGMA_001_13_consistency_fk (matches Coq: Theorem SIGMA_001_13_consistency_fk) *)
-let sigma_001_13_consistency_fk_obligation () : Tot bool = (0 = 0)
-let sigma_001_13_consistency_fk_lemma () : Lemma (requires True) (ensures (sigma_001_13_consistency_fk_obligation () == sigma_001_13_consistency_fk_obligation ())) = ()
+let sigma_001_13_consistency_fk (p_db: _) (p_fk_table: _) (p_fk_col: _) (p_ref_table: _) (p_ref_col: _) : Lemma (In (fk_table_ fk_col_ ref_table_ p_ref_col) (p_db.f_db_fk_constraints) == true) = admit ()
 
 (* SIGMA_001_14_consistency_unique (matches Coq: Theorem SIGMA_001_14_consistency_unique) *)
-let sigma_001_14_consistency_unique_obligation () : Tot bool = (0 = 0)
-let sigma_001_14_consistency_unique_lemma () : Lemma (requires True) (ensures (sigma_001_14_consistency_unique_obligation () == sigma_001_14_consistency_unique_obligation ())) = ()
+let sigma_001_14_consistency_unique (p_table: _) (p_c: _) : Lemma (In p_c (p_table.f_table_schema) == true /\ p_c.f_col_unique == true) = admit ()
 
 (* SIGMA_001_15_isolation_serializable (matches Coq: Theorem SIGMA_001_15_isolation_serializable) *)
-let sigma_001_15_isolation_serializable_obligation () : Tot bool = (0 = 0)
-let sigma_001_15_isolation_serializable_lemma () : Lemma (requires True) (ensures (sigma_001_15_isolation_serializable_obligation () == sigma_001_15_isolation_serializable_obligation ())) = ()
+let sigma_001_15_isolation_serializable (p_s: _) : Lemma (is_serializable p_s == true) = admit ()
 
 (* SIGMA_001_16_isolation_no_dirty_read (matches Coq: Theorem SIGMA_001_16_isolation_no_dirty_read) *)
-let sigma_001_16_isolation_no_dirty_read_obligation () : Tot bool = (0 = 0)
-let sigma_001_16_isolation_no_dirty_read_lemma () : Lemma (requires True) (ensures (sigma_001_16_isolation_no_dirty_read_obligation () == sigma_001_16_isolation_no_dirty_read_obligation ())) = ()
+let sigma_001_16_isolation_no_dirty_read (p_s: _) : Lemma (has_dirty_read p_s == false) = admit ()
 
 (* SIGMA_001_17_isolation_no_phantom (matches Coq: Theorem SIGMA_001_17_isolation_no_phantom) *)
-let sigma_001_17_isolation_no_phantom_obligation () : Tot bool = (0 = 0)
-let sigma_001_17_isolation_no_phantom_lemma () : Lemma (requires True) (ensures (sigma_001_17_isolation_no_phantom_obligation () == sigma_001_17_isolation_no_phantom_obligation ())) = ()
+let sigma_001_17_isolation_no_phantom (p_s: _) : Lemma (has_phantom_read p_s == false) = admit ()
 
 (* SIGMA_001_18_durability (matches Coq: Theorem SIGMA_001_18_durability) *)
-let sigma_001_18_durability_obligation () : Tot bool = (0 = 0)
-let sigma_001_18_durability_lemma () : Lemma (requires True) (ensures (sigma_001_18_durability_obligation () == sigma_001_18_durability_obligation ())) = ()
+let sigma_001_18_durability (p_txn: _) (p_db: _) (p_wal: _) : Lemma (requires (p_txn.f_txn_status == TxnCommitted /\ wal_contains p_wal p_txn == true) (ensures (exists db__ db_ == wal_recover p_wal p_db))) = admit ()
 
 (* SIGMA_001_19_wal_correct (matches Coq: Theorem SIGMA_001_19_wal_correct) *)
-let sigma_001_19_wal_correct_obligation () : Tot bool = (0 = 0)
-let sigma_001_19_wal_correct_lemma () : Lemma (requires True) (ensures (sigma_001_19_wal_correct_obligation () == sigma_001_19_wal_correct_obligation ())) = ()
+let sigma_001_19_wal_correct (p_wal: _) (p_op: _) : Lemma (fn_let entry : == {| wal_txn_id := 0; wal_op := op_ wal_lsn := length p_wal |} id_in id_let wal_ := entry :: p_wal id_in length wal_ = S (length p_wal)) = admit ()
 
 (* SIGMA_001_20_wal_recovery (matches Coq: Theorem SIGMA_001_20_wal_recovery) *)
-let sigma_001_20_wal_recovery_obligation () : Tot bool = (0 = 0)
-let sigma_001_20_wal_recovery_lemma () : Lemma (requires True) (ensures (sigma_001_20_wal_recovery_obligation () == sigma_001_20_wal_recovery_obligation ())) = ()
+let sigma_001_20_wal_recovery (p_wal: _) (p_db: _) : Lemma (exists db__ db_ == wal_recover p_wal p_db) = admit ()
 
 (* SIGMA_001_21_wal_idempotent (matches Coq: Theorem SIGMA_001_21_wal_idempotent) *)
-let sigma_001_21_wal_idempotent_obligation () : Tot bool = (0 = 0)
-let sigma_001_21_wal_idempotent_lemma () : Lemma (requires True) (ensures (sigma_001_21_wal_idempotent_obligation () == sigma_001_21_wal_idempotent_obligation ())) = ()
+let sigma_001_21_wal_idempotent (p_wal: _) (p_db: _) : Lemma (wal_recover p_wal (wal_recover p_wal p_db) == wal_recover p_wal (wal_recover p_wal p_db)) = admit ()
 
 (* SIGMA_001_22_checkpoint_correct (matches Coq: Theorem SIGMA_001_22_checkpoint_correct) *)
-let sigma_001_22_checkpoint_correct_obligation () : Tot bool = (0 = 0)
-let sigma_001_22_checkpoint_correct_lemma () : Lemma (requires True) (ensures (sigma_001_22_checkpoint_correct_obligation () == sigma_001_22_checkpoint_correct_obligation ())) = ()
+let sigma_001_22_checkpoint_correct (p_cp: _) (p_wal: _) (p_db: _) : Lemma (requires (p_cp.f_cp_lsn <= length p_wal) (ensures (exists db__ db_ == wal_recover (wal_upto (p_cp.f_cp_lsn) p_wal) p_db))) = admit ()
 
 (* SIGMA_001_23_no_partial_write (matches Coq: Theorem SIGMA_001_23_no_partial_write) *)
-let sigma_001_23_no_partial_write_obligation () : Tot bool = (0 = 0)
-let sigma_001_23_no_partial_write_lemma () : Lemma (requires True) (ensures (sigma_001_23_no_partial_write_obligation () == sigma_001_23_no_partial_write_obligation ())) = ()
+let sigma_001_23_no_partial_write (p_op: _) (p_db: _) : Lemma (fn_let db_ : == apply_op p_op p_db id_in db_ = db_) = admit ()
 
 (* SIGMA_001_24_crash_atomic (matches Coq: Theorem SIGMA_001_24_crash_atomic) *)
-let sigma_001_24_crash_atomic_obligation () : Tot bool = (0 = 0)
-let sigma_001_24_crash_atomic_lemma () : Lemma (requires True) (ensures (sigma_001_24_crash_atomic_obligation () == sigma_001_24_crash_atomic_obligation ())) = ()
+let sigma_001_24_crash_atomic (p_txn: _) (p_db: _) (p_db_: _) (p_status: _) : Lemma (requires (exec_txn p_txn p_db == (db__ p_status)) (ensures (p_status == TxnCommitted \/ p_status == TxnAborted))) = admit ()
 
 (* SIGMA_001_25_recovery_complete (matches Coq: Theorem SIGMA_001_25_recovery_complete) *)
-let sigma_001_25_recovery_complete_obligation () : Tot bool = (0 = 0)
-let sigma_001_25_recovery_complete_lemma () : Lemma (requires True) (ensures (sigma_001_25_recovery_complete_obligation () == sigma_001_25_recovery_complete_obligation ())) = ()
+let sigma_001_25_recovery_complete (p_wal: _) (p_db: _) (p_committed_txns: _) : Lemma (requires ((forall txn_ In txn p_committed_txns -> wal_contains p_wal txn == true)) (ensures (exists db__ db_ == wal_recover p_wal p_db))) = admit ()
 
 (* SIGMA_001_26_recovery_abort (matches Coq: Theorem SIGMA_001_26_recovery_abort) *)
-let sigma_001_26_recovery_abort_obligation () : Tot bool = (0 = 0)
-let sigma_001_26_recovery_abort_lemma () : Lemma (requires True) (ensures (sigma_001_26_recovery_abort_obligation () == sigma_001_26_recovery_abort_obligation ())) = ()
+let sigma_001_26_recovery_abort (p_wal: _) (p_db: _) (p_uncommitted_txn: _) : Lemma (requires (~(wal_contains p_wal p_uncommitted_txn == true)) (ensures (wal_recover p_wal p_db == wal_recover p_wal p_db))) = admit ()
 
 (* SIGMA_001_27_btree_ordered (matches Coq: Theorem SIGMA_001_27_btree_ordered) *)
-let sigma_001_27_btree_ordered_obligation () : Tot bool = (0 = 0)
-let sigma_001_27_btree_ordered_lemma () : Lemma (requires True) (ensures (sigma_001_27_btree_ordered_obligation () == sigma_001_27_btree_ordered_obligation ())) = ()
+let sigma_001_27_btree_ordered (p_v: _) (p_bplustree: _) (p_nat: _) (p_v_: _) (p_k: _) (p_v: _) (p_tree_: _) : Lemma (bp_ordered (bp_root tree) == true /\ bp_insert tree p_k p_v == tree_) = admit ()
 
 (* SIGMA_001_28_btree_balanced (matches Coq: Theorem SIGMA_001_28_btree_balanced) *)
-let sigma_001_28_btree_balanced_obligation () : Tot bool = (0 = 0)
-let sigma_001_28_btree_balanced_lemma () : Lemma (requires True) (ensures (sigma_001_28_btree_balanced_obligation () == sigma_001_28_btree_balanced_obligation ())) = ()
+let sigma_001_28_btree_balanced (p_v: _) (p_bplustree: _) (p_nat: _) (p_v_: _) : Lemma (bp_balanced (bp_root tree) == true) = admit ()
 
 (* SIGMA_001_29_btree_lookup_correct (matches Coq: Theorem SIGMA_001_29_btree_lookup_correct) *)
-let sigma_001_29_btree_lookup_correct_obligation () : Tot bool = (0 = 0)
-let sigma_001_29_btree_lookup_correct_lemma () : Lemma (requires True) (ensures (sigma_001_29_btree_lookup_correct_obligation () == sigma_001_29_btree_lookup_correct_obligation ())) = ()
+let sigma_001_29_btree_lookup_correct (p_v: _) (p_k: _) (p_v_: _) : Lemma (bp_lookup p_k (BPLeaf [(p_k, v)]) == Some v) = admit ()
 
 (* SIGMA_001_30_btree_insert_preserves (matches Coq: Theorem SIGMA_001_30_btree_insert_preserves) *)
-let sigma_001_30_btree_insert_preserves_obligation () : Tot bool = (0 = 0)
-let sigma_001_30_btree_insert_preserves_lemma () : Lemma (requires True) (ensures (sigma_001_30_btree_insert_preserves_obligation () == sigma_001_30_btree_insert_preserves_obligation ())) = ()
+let sigma_001_30_btree_insert_preserves (p_v: _) (p_bplustree: _) (p_nat: _) (p_v_: _) (p_k: _) (p_v: _) : Lemma (exists tree__ tree_ == bp_insert tree p_k p_v) = admit ()
 
 (* SIGMA_001_31_btree_delete_preserves (matches Coq: Theorem SIGMA_001_31_btree_delete_preserves) *)
 let sigma_001_31_btree_delete_preserves_obligation () : Tot bool = (0 = 0)
 let sigma_001_31_btree_delete_preserves_lemma () : Lemma (requires True) (ensures (sigma_001_31_btree_delete_preserves_obligation () == sigma_001_31_btree_delete_preserves_obligation ())) = ()
 
 (* SIGMA_001_32_btree_complexity (matches Coq: Theorem SIGMA_001_32_btree_complexity) *)
-let sigma_001_32_btree_complexity_obligation () : Tot bool = (0 = 0)
-let sigma_001_32_btree_complexity_lemma () : Lemma (requires True) (ensures (sigma_001_32_btree_complexity_obligation () == sigma_001_32_btree_complexity_obligation ())) = ()
+let sigma_001_32_btree_complexity (p_v: _) (p_bplustree: _) (p_nat: _) (p_v_: _) : Lemma (bp_height (bp_root tree) <= bp_height (bp_root tree)) = admit ()
 
 (* SIGMA_001_33_page_integrity (matches Coq: Theorem SIGMA_001_33_page_integrity) *)
-let sigma_001_33_page_integrity_obligation () : Tot bool = (0 = 0)
-let sigma_001_33_page_integrity_lemma () : Lemma (requires True) (ensures (sigma_001_33_page_integrity_obligation () == sigma_001_33_page_integrity_obligation ())) = ()
+let sigma_001_33_page_integrity (p_data: _) (p_expected: _) : Lemma (requires (verify_checksum p_data p_expected == true) (ensures (checksum p_data == p_expected))) = admit ()
 
 (* SIGMA_001_34_encryption_at_rest (matches Coq: Theorem SIGMA_001_34_encryption_at_rest) *)
-let sigma_001_34_encryption_at_rest_obligation () : Tot bool = (0 = 0)
-let sigma_001_34_encryption_at_rest_lemma () : Lemma (requires True) (ensures (sigma_001_34_encryption_at_rest_obligation () == sigma_001_34_encryption_at_rest_obligation ())) = ()
+let sigma_001_34_encryption_at_rest (p_ed: _) : Lemma (requires (p_ed.f_enc_key_id > 0) (ensures (is_encrypted p_ed == true))) = admit ()
 
 (* SIGMA_001_35_merkle_tamper_detect (matches Coq: Theorem SIGMA_001_35_merkle_tamper_detect) *)
-let sigma_001_35_merkle_tamper_detect_obligation () : Tot bool = (0 = 0)
-let sigma_001_35_merkle_tamper_detect_lemma () : Lemma (requires True) (ensures (sigma_001_35_merkle_tamper_detect_obligation () == sigma_001_35_merkle_tamper_detect_obligation ())) = ()
+let sigma_001_35_merkle_tamper_detect (p_tree: _) (p_data: _) : Lemma (requires (verify_merkle p_tree p_data [] == true) (ensures (In p_data (p_tree.f_merkle_leaves) == true))) = admit ()
 
 (* SIGMA_001_36_checksum_correct (matches Coq: Theorem SIGMA_001_36_checksum_correct) *)
-let sigma_001_36_checksum_correct_obligation () : Tot bool = (0 = 0)
-let sigma_001_36_checksum_correct_lemma () : Lemma (requires True) (ensures (sigma_001_36_checksum_correct_obligation () == sigma_001_36_checksum_correct_obligation ())) = ()
+let sigma_001_36_checksum_correct (p_data: _) : Lemma (verify_checksum p_data (checksum p_data) == true) = admit ()
 
 (* SIGMA_001_37_audit_immutable (matches Coq: Theorem SIGMA_001_37_audit_immutable) *)
-let sigma_001_37_audit_immutable_obligation () : Tot bool = (0 = 0)
-let sigma_001_37_audit_immutable_lemma () : Lemma (requires True) (ensures (sigma_001_37_audit_immutable_obligation () == sigma_001_37_audit_immutable_obligation ())) = ()
+let sigma_001_37_audit_immutable (p_log: nat) (p_entry: audit_entry) : Lemma (fn_let log_ : == p_entry :: p_log id_in In p_entry log_) = admit ()
 
 (* SIGMA_001_38_backup_consistent (matches Coq: Theorem SIGMA_001_38_backup_consistent) *)
-let sigma_001_38_backup_consistent_obligation () : Tot bool = (0 = 0)
-let sigma_001_38_backup_consistent_lemma () : Lemma (requires True) (ensures (sigma_001_38_backup_consistent_obligation () == sigma_001_38_backup_consistent_obligation ())) = ()
+let sigma_001_38_backup_consistent (p_db: database) : Lemma (exists backup : Database, backup == p_db) = admit ()

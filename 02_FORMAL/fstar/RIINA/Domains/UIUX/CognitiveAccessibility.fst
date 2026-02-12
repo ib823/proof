@@ -132,193 +132,145 @@ let label_to_effect (p_l: nat) : Tot nat =
   | _ -> 0
 
 (* ui_behavior_predictable (matches Coq: Theorem ui_behavior_predictable) *)
-let ui_behavior_predictable_obligation () : Tot bool = (0 = 0)
-let ui_behavior_predictable_lemma () : Lemma (requires True) (ensures (ui_behavior_predictable_obligation () == ui_behavior_predictable_obligation ())) = ()
+let ui_behavior_predictable (p_pui: nat) (p_interaction: nat) : Lemma (outcome p_interaction == expected_outcome p_interaction) = admit ()
 
 (* ui_behavior_predictable_direct (matches Coq: Theorem ui_behavior_predictable_direct) *)
-let ui_behavior_predictable_direct_obligation () : Tot bool = (0 = 0)
-let ui_behavior_predictable_direct_lemma () : Lemma (requires True) (ensures (ui_behavior_predictable_direct_obligation () == ui_behavior_predictable_direct_obligation ())) = ()
+let ui_behavior_predictable_direct (p_interaction: nat) : Lemma (outcome p_interaction == expected_outcome p_interaction) = admit ()
 
 (* interaction_type_decidable (matches Coq: Lemma interaction_type_decidable) *)
-let interaction_type_decidable_obligation () : Tot bool = (0 = 0)
-let interaction_type_decidable_lemma () : Lemma (requires True) (ensures (interaction_type_decidable_obligation () == interaction_type_decidable_obligation ())) = ()
+let interaction_type_decidable (p_t1: nat) (p_t2: nat) : Lemma ({p_t1 == t2_ + {p_t1 <> t2_) = admit ()
 
 (* outcome_type_decidable (matches Coq: Lemma outcome_type_decidable) *)
-let outcome_type_decidable_obligation () : Tot bool = (0 = 0)
-let outcome_type_decidable_lemma () : Lemma (requires True) (ensures (outcome_type_decidable_obligation () == outcome_type_decidable_obligation ())) = ()
+let outcome_type_decidable (p_o1: nat) (p_o2: nat) : Lemma ({p_o1 == o2_ + {p_o1 <> o2_) = admit ()
 
 (* outcome_eq_reflexive (matches Coq: Lemma outcome_eq_reflexive) *)
-let outcome_eq_reflexive_obligation () : Tot bool = (0 = 0)
-let outcome_eq_reflexive_lemma () : Lemma (requires True) (ensures (outcome_eq_reflexive_obligation () == outcome_eq_reflexive_obligation ())) = ()
+let outcome_eq_reflexive (p_o: nat) : Lemma (outcome_eq p_o p_o == true) = admit ()
 
 (* outcome_eq_symmetric (matches Coq: Lemma outcome_eq_symmetric) *)
-let outcome_eq_symmetric_obligation () : Tot bool = (0 = 0)
-let outcome_eq_symmetric_lemma () : Lemma (requires True) (ensures (outcome_eq_symmetric_obligation () == outcome_eq_symmetric_obligation ())) = ()
+let outcome_eq_symmetric (p_o1: nat) (p_o2: nat) : Lemma (requires (outcome_eq p_o1 p_o2 == true) (ensures (outcome_eq p_o2 p_o1 == true))) = admit ()
 
 (* expected_outcome_deterministic (matches Coq: Lemma expected_outcome_deterministic) *)
-let expected_outcome_deterministic_obligation () : Tot bool = (0 = 0)
-let expected_outcome_deterministic_lemma () : Lemma (requires True) (ensures (expected_outcome_deterministic_obligation () == expected_outcome_deterministic_obligation ())) = ()
+let expected_outcome_deterministic (p_i: nat) : Lemma (exists_ (o : Outcome), expected_outcome p_i == o) = admit ()
 
 (* outcome_matches_interaction_type (matches Coq: Lemma outcome_matches_interaction_type) *)
-let outcome_matches_interaction_type_obligation () : Tot bool = (0 = 0)
-let outcome_matches_interaction_type_lemma () : Lemma (requires True) (ensures (outcome_matches_interaction_type_obligation () == outcome_matches_interaction_type_obligation ())) = ()
+let outcome_matches_interaction_type (p_i: nat) : Lemma (outcome_type (outcome p_i) == expected_outcome_type (interaction_type p_i)) = admit ()
 
 (* context_preserved (matches Coq: Lemma context_preserved) *)
-let context_preserved_obligation () : Tot bool = (0 = 0)
-let context_preserved_lemma () : Lemma (requires True) (ensures (context_preserved_obligation () == context_preserved_obligation ())) = ()
+let context_preserved (p_i: nat) : Lemma (outcome_context (outcome p_i) == context p_i) = admit ()
 
 (* interaction_type_exhaustive (matches Coq: Lemma interaction_type_exhaustive) *)
-let interaction_type_exhaustive_obligation () : Tot bool = (0 = 0)
-let interaction_type_exhaustive_lemma () : Lemma (requires True) (ensures (interaction_type_exhaustive_obligation () == interaction_type_exhaustive_obligation ())) = ()
+let interaction_type_exhaustive (p_t: nat) : Lemma (p_t == ButtonPress \/ p_t == MenuOpen \/ p_t == NavigationPush \/ p_t == NavigationPop \/ p_t == ModalPresent \/ p_t == ModalDismiss \/ p_t == TextInput \/ p_t == ListScroll \/ p_t == SwipeGesture \/ p_t == LongPress) = admit ()
 
 (* outcome_type_exhaustive (matches Coq: Lemma outcome_type_exhaustive) *)
-let outcome_type_exhaustive_obligation () : Tot bool = (0 = 0)
-let outcome_type_exhaustive_lemma () : Lemma (requires True) (ensures (outcome_type_exhaustive_obligation () == outcome_type_exhaustive_obligation ())) = ()
+let outcome_type_exhaustive (p_o: nat) : Lemma (p_o == ButtonActivated \/ p_o == MenuDisplayed \/ p_o == ScreenPushed \/ p_o == ScreenPopped \/ p_o == ModalShown \/ p_o == ModalHidden \/ p_o == TextEntered \/ p_o == ListScrolled \/ p_o == SwipeCompleted \/ p_o == LongPressActivated) = admit ()
 
 (* information_density_bounded (matches Coq: Theorem information_density_bounded) *)
-let information_density_bounded_obligation () : Tot bool = (0 = 0)
-let information_density_bounded_lemma () : Lemma (requires True) (ensures (information_density_bounded_obligation () == information_density_bounded_obligation ())) = ()
+let information_density_bounded (p_id: nat) : Lemma (requires (element_count p_id <= riina_density_threshold) (ensures (density_acceptable p_id riina_density_threshold == true))) = admit ()
 
 (* progressive_disclosure (matches Coq: Theorem progressive_disclosure) *)
-let progressive_disclosure_obligation () : Tot bool = (0 = 0)
-let progressive_disclosure_lemma () : Lemma (requires True) (ensures (progressive_disclosure_obligation () == progressive_disclosure_obligation ())) = ()
+let progressive_disclosure (p_cs: nat) : Lemma (cs_initial_level p_cs == Summary /\ cs_summary_len p_cs <= cs_expanded_len p_cs) = admit ()
 
 (* choice_overload_prevention (matches Coq: Theorem choice_overload_prevention) *)
-let choice_overload_prevention_obligation () : Tot bool = (0 = 0)
-let choice_overload_prevention_lemma () : Lemma (requires True) (ensures (choice_overload_prevention_obligation () == choice_overload_prevention_obligation ())) = ()
+let choice_overload_prevention (p_mc: nat) : Lemma (length (menu_items p_mc) <= hicks_bound) = admit ()
 
 (* consistent_navigation (matches Coq: Theorem consistent_navigation) *)
-let consistent_navigation_obligation () : Tot bool = (0 = 0)
-let consistent_navigation_lemma () : Lemma (requires True) (ensures (consistent_navigation_obligation () == consistent_navigation_obligation ())) = ()
+let consistent_navigation (p_app: nat) (p_p1: nat) (p_p2: nat) : Lemma (requires (In p_p1 (app_pages p_app) == true /\ In p_p2 (app_pages p_app) == true) (ensures (nav_structure_eq p_p1 p_p2 == true))) = admit ()
 
 (* breadcrumb_always_available (matches Coq: Theorem breadcrumb_always_available) *)
-let breadcrumb_always_available_obligation () : Tot bool = (0 = 0)
-let breadcrumb_always_available_lemma () : Lemma (requires True) (ensures (breadcrumb_always_available_obligation () == breadcrumb_always_available_obligation ())) = ()
+let breadcrumb_always_available (p_pc: nat) : Lemma (requires (~(pc_depth p_pc == RootLevel)) (ensures (pc_has_breadcrumb p_pc == true))) = admit ()
 
 (* loading_state_always_shown (matches Coq: Theorem loading_state_always_shown) *)
-let loading_state_always_shown_obligation () : Tot bool = (0 = 0)
-let loading_state_always_shown_lemma () : Lemma (requires True) (ensures (loading_state_always_shown_obligation () == loading_state_always_shown_obligation ())) = ()
+let loading_state_always_shown (p_op: nat) : Lemma (requires (ao_status p_op == Loading) (ensures (ao_shows_loading p_op == true))) = admit ()
 
 (* undo_always_available (matches Coq: Theorem undo_always_available) *)
-let undo_always_available_obligation () : Tot bool = (0 = 0)
-let undo_always_available_lemma () : Lemma (requires True) (ensures (undo_always_available_obligation () == undo_always_available_obligation ())) = ()
+let undo_always_available (p_a: nat) : Lemma (undo_action (undo_action p_a) == p_a) = admit ()
 
 (* undo_edit_swaps (matches Coq: Lemma undo_edit_swaps) *)
-let undo_edit_swaps_obligation () : Tot bool = (0 = 0)
-let undo_edit_swaps_lemma () : Lemma (requires True) (ensures (undo_edit_swaps_obligation () == undo_edit_swaps_obligation ())) = ()
+let undo_edit_swaps (p_fid: _) (p_old_v: _) (p_new_v: _) : Lemma (requires (~(p_old_v == p_new_v)) (ensures (~(undo_action (EditAction p_fid p_old_v p_new_v) == EditAction p_fid p_old_v p_new_v)))) = admit ()
 
 (* confirmation_for_destructive (matches Coq: Theorem confirmation_for_destructive) *)
-let confirmation_for_destructive_obligation () : Tot bool = (0 = 0)
-let confirmation_for_destructive_lemma () : Lemma (requires True) (ensures (confirmation_for_destructive_obligation () == confirmation_for_destructive_obligation ())) = ()
+let confirmation_for_destructive (p_ca: nat) : Lemma (requires (is_destructive (ca_action p_ca) == true) (ensures (ca_confirmed p_ca == true))) = admit ()
 
 (* inline_validation (matches Coq: Theorem inline_validation) *)
-let inline_validation_obligation () : Tot bool = (0 = 0)
-let inline_validation_lemma () : Lemma (requires True) (ensures (inline_validation_obligation () == inline_validation_obligation ())) = ()
+let inline_validation (p_fs: nat) : Lemma (errors_are_inline p_fs == true) = admit ()
 
 (* error_message_specific (matches Coq: Theorem error_message_specific) *)
-let error_message_specific_obligation () : Tot bool = (0 = 0)
-let error_message_specific_lemma () : Lemma (requires True) (ensures (error_message_specific_obligation () == error_message_specific_obligation ())) = ()
+let error_message_specific (p_fs: nat) (p_e: nat) : Lemma (requires (In p_e (fs_errors p_fs) == true) (ensures (exists idx_ error_field_idx p_e == idx /\ idx < fs_field_count p_fs))) = admit ()
 
 (* auto_save_prevents_loss (matches Coq: Theorem auto_save_prevents_loss) *)
-let auto_save_prevents_loss_obligation () : Tot bool = (0 = 0)
-let auto_save_prevents_loss_lemma () : Lemma (requires True) (ensures (auto_save_prevents_loss_obligation () == auto_save_prevents_loss_obligation ())) = ()
+let auto_save_prevents_loss (p_asf: nat) : Lemma (requires (asf_dirty p_asf == true) (ensures (snap_field_values (asf_snapshot p_asf) == asf_field_values p_asf))) = admit ()
 
 (* min_error_idx_nonempty (matches Coq: Lemma min_error_idx_nonempty) *)
-let min_error_idx_nonempty_obligation () : Tot bool = (0 = 0)
-let min_error_idx_nonempty_lemma () : Lemma (requires True) (ensures (min_error_idx_nonempty_obligation () == min_error_idx_nonempty_obligation ())) = ()
+let min_error_idx_nonempty (p_errs: (list nat)) : Lemma (requires (~(p_errs == nil)) (ensures (exists n_ min_error_idx p_errs == Some n))) = admit ()
 
 (* min_error_idx_le_head (matches Coq: Lemma min_error_idx_le_head) *)
-let min_error_idx_le_head_obligation () : Tot bool = (0 = 0)
-let min_error_idx_le_head_lemma () : Lemma (requires True) (ensures (min_error_idx_le_head_obligation () == min_error_idx_le_head_obligation ())) = ()
+let min_error_idx_le_head (p_e: nat) (p_rest: (list nat)) (p_m: nat) : Lemma (requires (min_error_idx (p_e :: p_rest) == Some p_m) (ensures (p_m <= error_field_idx p_e))) = admit ()
 
 (* min_error_idx_le_all (matches Coq: Lemma min_error_idx_le_all) *)
-let min_error_idx_le_all_obligation () : Tot bool = (0 = 0)
-let min_error_idx_le_all_lemma () : Lemma (requires True) (ensures (min_error_idx_le_all_obligation () == min_error_idx_le_all_obligation ())) = ()
+let min_error_idx_le_all (p_errs: (list nat)) (p_m: nat) : Lemma (requires (min_error_idx p_errs == Some p_m /\ forall e_ In e p_errs == true) (ensures (p_m <= error_field_idx e))) = admit ()
 
 (* scroll_to_first_error (matches Coq: Theorem scroll_to_first_error) *)
-let scroll_to_first_error_obligation () : Tot bool = (0 = 0)
-let scroll_to_first_error_lemma () : Lemma (requires True) (ensures (scroll_to_first_error_obligation () == scroll_to_first_error_obligation ())) = ()
+let scroll_to_first_error (p_fs: nat) : Lemma (requires (~(fs_errors p_fs == nil) /\ exists min_idx_ min_error_idx (fs_errors p_fs) == Some min_idx /\ forall e_ In e (fs_errors p_fs) == true) (ensures (min_idx <= error_field_idx e))) = admit ()
 
 (* error_count_visible (matches Coq: Theorem error_count_visible) *)
-let error_count_visible_obligation () : Tot bool = (0 = 0)
-let error_count_visible_lemma () : Lemma (requires True) (ensures (error_count_visible_obligation () == error_count_visible_obligation ())) = ()
+let error_count_visible (p_fs: nat) : Lemma (requires (form_error_count p_fs == 0 <) (ensures (fs_errors p_fs == nil))) = admit ()
 
 (* error_count_monotone (matches Coq: Lemma error_count_monotone) *)
-let error_count_monotone_obligation () : Tot bool = (0 = 0)
-let error_count_monotone_lemma () : Lemma (requires True) (ensures (error_count_monotone_obligation () == error_count_monotone_obligation ())) = ()
+let error_count_monotone (p_errs: (list nat)) (p_e: nat) : Lemma (length (p_e :: p_errs) == ((length p_errs) + 1)) = admit ()
 
 (* error_fixable (matches Coq: Theorem error_fixable) *)
-let error_fixable_obligation () : Tot bool = (0 = 0)
-let error_fixable_lemma () : Lemma (requires True) (ensures (error_fixable_obligation () == error_fixable_obligation ())) = ()
+let error_fixable (p_e: nat) : Lemma (fix_targets_same_field p_e (suggest_fix p_e) == true) = admit ()
 
 (* animation_duration_bounded (matches Coq: Theorem animation_duration_bounded) *)
-let animation_duration_bounded_obligation () : Tot bool = (0 = 0)
-let animation_duration_bounded_lemma () : Lemma (requires True) (ensures (animation_duration_bounded_obligation () == animation_duration_bounded_obligation ())) = ()
+let animation_duration_bounded (p_anim: nat) : Lemma (200 <= at_duration_ms p_anim /\ at_duration_ms p_anim <= 500) = admit ()
 
 (* action_class_eq_dec (matches Coq: Lemma action_class_eq_dec) *)
-let action_class_eq_dec_obligation () : Tot bool = (0 = 0)
-let action_class_eq_dec_lemma () : Lemma (requires True) (ensures (action_class_eq_dec_obligation () == action_class_eq_dec_obligation ())) = ()
+let action_class_eq_dec (p_a: nat) (p_b: nat) : Lemma ({p_a == b_ + {p_a <> b_) = admit ()
 
 (* easing_consistent_singleton (matches Coq: Theorem easing_consistent_singleton) *)
-let easing_consistent_singleton_obligation () : Tot bool = (0 = 0)
-let easing_consistent_singleton_lemma () : Lemma (requires True) (ensures (easing_consistent_singleton_obligation () == easing_consistent_singleton_obligation ())) = ()
+let easing_consistent_singleton (p_a: nat) : Lemma (easing_consistent (p_a :: nil) == true) = admit ()
 
 (* no_layout_shift (matches Coq: Theorem no_layout_shift) *)
-let no_layout_shift_obligation () : Tot bool = (0 = 0)
-let no_layout_shift_lemma () : Lemma (requires True) (ensures (no_layout_shift_obligation () == no_layout_shift_obligation ())) = ()
+let no_layout_shift (p_sl: nat) : Lemma (sl_initial p_sl == sl_final p_sl) = admit ()
 
 (* feedback_immediate (matches Coq: Theorem feedback_immediate) *)
-let feedback_immediate_obligation () : Tot bool = (0 = 0)
-let feedback_immediate_lemma () : Lemma (requires True) (ensures (feedback_immediate_obligation () == feedback_immediate_obligation ())) = ()
+let feedback_immediate (p_fr: nat) : Lemma (fr_latency_ms p_fr <= 100) = admit ()
 
 (* transition_reversible (matches Coq: Theorem transition_reversible) *)
-let transition_reversible_obligation () : Tot bool = (0 = 0)
-let transition_reversible_lemma () : Lemma (requires True) (ensures (transition_reversible_obligation () == transition_reversible_obligation ())) = ()
+let transition_reversible (p_t: nat) : Lemma (reverse_transition (reverse_transition p_t) == p_t) = admit ()
 
 (* reverse_swaps_endpoints (matches Coq: Lemma reverse_swaps_endpoints) *)
-let reverse_swaps_endpoints_obligation () : Tot bool = (0 = 0)
-let reverse_swaps_endpoints_lemma () : Lemma (requires True) (ensures (reverse_swaps_endpoints_obligation () == reverse_swaps_endpoints_obligation ())) = ()
+let reverse_swaps_endpoints (p_t: nat) : Lemma (tr_from (reverse_transition p_t) == tr_to p_t /\ tr_to (reverse_transition p_t) == tr_from p_t) = admit ()
 
 (* reverse_preserves_anim_style (matches Coq: Lemma reverse_preserves_anim_style) *)
-let reverse_preserves_anim_style_obligation () : Tot bool = (0 = 0)
-let reverse_preserves_anim_style_lemma () : Lemma (requires True) (ensures (reverse_preserves_anim_style_obligation () == reverse_preserves_anim_style_obligation ())) = ()
+let reverse_preserves_anim_style (p_t: nat) : Lemma (tr_anim_style (reverse_transition p_t) == tr_anim_style p_t) = admit ()
 
 (* same_input_same_output (matches Coq: Theorem same_input_same_output) *)
-let same_input_same_output_obligation () : Tot bool = (0 = 0)
-let same_input_same_output_lemma () : Lemma (requires True) (ensures (same_input_same_output_obligation () == same_input_same_output_obligation ())) = ()
+let same_input_same_output (p_s1: nat) (p_s2: nat) (p_e1: nat) (p_e2: nat) : Lemma (requires (p_s1 == p_s2 /\ p_e1 == p_e2) (ensures (handle_ui_event p_s1 p_e1 == handle_ui_event p_s2 p_e2))) = admit ()
 
 (* handle_ui_event_deterministic (matches Coq: Lemma handle_ui_event_deterministic) *)
-let handle_ui_event_deterministic_obligation () : Tot bool = (0 = 0)
-let handle_ui_event_deterministic_lemma () : Lemma (requires True) (ensures (handle_ui_event_deterministic_obligation () == handle_ui_event_deterministic_obligation ())) = ()
+let handle_ui_event_deterministic (p_s: nat) (p_e: nat) : Lemma (handle_ui_event p_s p_e == handle_ui_event p_s p_e) = admit ()
 
 (* no_surprise_popups (matches Coq: Theorem no_surprise_popups) *)
-let no_surprise_popups_obligation () : Tot bool = (0 = 0)
-let no_surprise_popups_lemma () : Lemma (requires True) (ensures (no_surprise_popups_obligation () == no_surprise_popups_obligation ())) = ()
+let no_surprise_popups (p_dd: nat) : Lemma (is_user_initiated (dd_trigger p_dd) == true) = admit ()
 
 (* button_does_what_it_says (matches Coq: Theorem button_does_what_it_says) *)
-let button_does_what_it_says_obligation () : Tot bool = (0 = 0)
-let button_does_what_it_says_lemma () : Lemma (requires True) (ensures (button_does_what_it_says_obligation () == button_does_what_it_says_obligation ())) = ()
+let button_does_what_it_says (p_bc: nat) : Lemma (bc_effect p_bc == label_to_effect (bc_label p_bc)) = admit ()
 
 (* label_to_effect_injective (matches Coq: Lemma label_to_effect_injective) *)
-let label_to_effect_injective_obligation () : Tot bool = (0 = 0)
-let label_to_effect_injective_lemma () : Lemma (requires True) (ensures (label_to_effect_injective_obligation () == label_to_effect_injective_obligation ())) = ()
+let label_to_effect_injective (p_l1: _) (p_l2: _) : Lemma (requires (label_to_effect p_l1 == label_to_effect p_l2) (ensures (p_l1 == p_l2))) = admit ()
 
 (* back_button_goes_back (matches Coq: Theorem back_button_goes_back) *)
-let back_button_goes_back_obligation () : Tot bool = (0 = 0)
-let back_button_goes_back_lemma () : Lemma (requires True) (ensures (back_button_goes_back_obligation () == back_button_goes_back_obligation ())) = ()
+let back_button_goes_back (p_stack: (list nat)) (p_page: nat) : Lemma (nav_apply (nav_apply p_stack (NavPush p_page)) NavPop == p_stack) = admit ()
 
 (* nav_push_grows (matches Coq: Lemma nav_push_grows) *)
-let nav_push_grows_obligation () : Tot bool = (0 = 0)
-let nav_push_grows_lemma () : Lemma (requires True) (ensures (nav_push_grows_obligation () == nav_push_grows_obligation ())) = ()
+let nav_push_grows (p_stack: (list nat)) (p_page: nat) : Lemma (length (nav_apply p_stack (NavPush p_page)) == ((length p_stack) + 1)) = admit ()
 
 (* nav_pop_shrinks (matches Coq: Lemma nav_pop_shrinks) *)
-let nav_pop_shrinks_obligation () : Tot bool = (0 = 0)
-let nav_pop_shrinks_lemma () : Lemma (requires True) (ensures (nav_pop_shrinks_obligation () == nav_pop_shrinks_obligation ())) = ()
+let nav_pop_shrinks (p_p: nat) (p_stack: (list nat)) : Lemma (length (nav_apply (p_p :: p_stack) NavPop) == length p_stack) = admit ()
 
 (* link_destination_visible (matches Coq: Theorem link_destination_visible) *)
-let link_destination_visible_obligation () : Tot bool = (0 = 0)
-let link_destination_visible_lemma () : Lemma (requires True) (ensures (link_destination_visible_obligation () == link_destination_visible_obligation ())) = ()
+let link_destination_visible (p_lc: nat) : Lemma (lc_dest_visible p_lc == true) = admit ()
 
 (* no_auto_redirect (matches Coq: Theorem no_auto_redirect) *)
-let no_auto_redirect_obligation () : Tot bool = (0 = 0)
-let no_auto_redirect_lemma () : Lemma (requires True) (ensures (no_auto_redirect_obligation () == no_auto_redirect_obligation ())) = ()
+let no_auto_redirect (p_pt: nat) : Lemma (is_user_initiated (pt_trigger p_pt) == true) = admit ()

@@ -160,85 +160,64 @@ let power_independent (p_op: nat) : Tot bool =
   (0 = 0)
 
 (* PHY_001_01_rtl_gate_equivalent (matches Coq: Theorem PHY_001_01_rtl_gate_equivalent) *)
-let phy_001_01_rtl_gate_equivalent_obligation () : Tot bool = (0 = 0)
-let phy_001_01_rtl_gate_equivalent_lemma () : Lemma (requires True) (ensures (phy_001_01_rtl_gate_equivalent_obligation () == phy_001_01_rtl_gate_equivalent_obligation ())) = ()
+let phy_001_01_rtl_gate_equivalent (p_rtl: _) (p_nl: _) : Lemma (requires (synthesize p_rtl == p_nl) (ensures (semantic_equivalent p_rtl p_nl == true))) = admit ()
 
 (* PHY_001_02_timing_closed (matches Coq: Theorem PHY_001_02_timing_closed) *)
-let phy_001_02_timing_closed_obligation () : Tot bool = (0 = 0)
-let phy_001_02_timing_closed_lemma () : Lemma (requires True) (ensures (phy_001_02_timing_closed_obligation () == phy_001_02_timing_closed_obligation ())) = ()
+let phy_001_02_timing_closed (p_nl: _) (p_clk: _) : Lemma (requires (timing_analysis p_nl p_clk == true) (ensures (timing_met p_nl p_clk == true))) = admit ()
 
 (* PHY_001_03_no_trojans (matches Coq: Theorem PHY_001_03_no_trojans) *)
-let phy_001_03_no_trojans_obligation () : Tot bool = (0 = 0)
-let phy_001_03_no_trojans_lemma () : Lemma (requires True) (ensures (phy_001_03_no_trojans_obligation () == phy_001_03_no_trojans_obligation ())) = ()
+let phy_001_03_no_trojans (p_rtl: _) : Lemma (requires (trojan_scan p_rtl == TrojanFree) (ensures (no_hardware_trojans p_rtl == true))) = admit ()
 
 (* PHY_001_04_hw_constant_time (matches Coq: Theorem PHY_001_04_hw_constant_time) *)
-let phy_001_04_hw_constant_time_obligation () : Tot bool = (0 = 0)
-let phy_001_04_hw_constant_time_lemma () : Lemma (requires True) (ensures (phy_001_04_hw_constant_time_obligation () == phy_001_04_hw_constant_time_obligation ())) = ()
+let phy_001_04_hw_constant_time (p_op: _) : Lemma (requires (crypto_operation p_op == true) (ensures (constant_time_hw p_op == true))) = admit ()
 
 (* PHY_001_05_design_deterministic (matches Coq: Theorem PHY_001_05_design_deterministic) *)
-let phy_001_05_design_deterministic_obligation () : Tot bool = (0 = 0)
-let phy_001_05_design_deterministic_lemma () : Lemma (requires True) (ensures (phy_001_05_design_deterministic_obligation () == phy_001_05_design_deterministic_obligation ())) = ()
+let phy_001_05_design_deterministic (p_rtl: _) : Lemma (deterministic_design p_rtl == true) = admit ()
 
 (* PHY_001_06_golden_equivalent (matches Coq: Theorem PHY_001_06_golden_equivalent) *)
-let phy_001_06_golden_equivalent_obligation () : Tot bool = (0 = 0)
-let phy_001_06_golden_equivalent_lemma () : Lemma (requires True) (ensures (phy_001_06_golden_equivalent_obligation () == phy_001_06_golden_equivalent_obligation ())) = ()
+let phy_001_06_golden_equivalent (p_c: _) (p_g: _) : Lemma (requires (x_ray_compare p_c p_g == Match) (ensures (p_c.f_chip_xray == p_g.f_golden_xray))) = admit ()
 
 (* PHY_001_07_puf_unique (matches Coq: Theorem PHY_001_07_puf_unique) *)
-let phy_001_07_puf_unique_obligation () : Tot bool = (0 = 0)
-let phy_001_07_puf_unique_lemma () : Lemma (requires True) (ensures (phy_001_07_puf_unique_obligation () == phy_001_07_puf_unique_obligation ())) = ()
+let phy_001_07_puf_unique (p_c1: _) (p_c2: _) (p_challenge: _) : Lemma (requires (~(p_c1.f_chip_id == p_c2.f_chip_id)) (ensures (~(chip_puf p_c1 p_challenge == chip_puf p_c2 p_challenge)))) = admit ()
 
 (* PHY_001_08_puf_stable (matches Coq: Theorem PHY_001_08_puf_stable) *)
-let phy_001_08_puf_stable_obligation () : Tot bool = (0 = 0)
-let phy_001_08_puf_stable_lemma () : Lemma (requires True) (ensures (phy_001_08_puf_stable_obligation () == phy_001_08_puf_stable_obligation ())) = ()
+let phy_001_08_puf_stable (p_c: _) (p_t1: _) (p_t2: _) (p_challenge: _) : Lemma (chip_puf_at_time p_c p_t1 p_challenge == chip_puf_at_time p_c p_t2 p_challenge) = admit ()
 
 (* PHY_001_09_counterfeit_detected (matches Coq: Theorem PHY_001_09_counterfeit_detected) *)
-let phy_001_09_counterfeit_detected_obligation () : Tot bool = (0 = 0)
-let phy_001_09_counterfeit_detected_lemma () : Lemma (requires True) (ensures (phy_001_09_counterfeit_detected_obligation () == phy_001_09_counterfeit_detected_obligation ())) = ()
+let phy_001_09_counterfeit_detected (p_c: _) (p_g: _) : Lemma (requires (~(is_genuine p_c p_g == true)) (ensures (authenticate_chip p_c p_g == Counterfeit))) = admit ()
 
 (* PHY_001_10_no_fab_tampering (matches Coq: Theorem PHY_001_10_no_fab_tampering) *)
-let phy_001_10_no_fab_tampering_obligation () : Tot bool = (0 = 0)
-let phy_001_10_no_fab_tampering_lemma () : Lemma (requires True) (ensures (phy_001_10_no_fab_tampering_obligation () == phy_001_10_no_fab_tampering_obligation ())) = ()
+let phy_001_10_no_fab_tampering (p_c: _) (p_g: _) : Lemma (requires (fab_integrity_check p_c p_g == FabClean) (ensures (p_c.f_chip_xray == p_g.f_golden_xray))) = admit ()
 
 (* PHY_001_11_mesh_integrity (matches Coq: Theorem PHY_001_11_mesh_integrity) *)
-let phy_001_11_mesh_integrity_obligation () : Tot bool = (0 = 0)
-let phy_001_11_mesh_integrity_lemma () : Lemma (requires True) (ensures (phy_001_11_mesh_integrity_obligation () == phy_001_11_mesh_integrity_obligation ())) = ()
+let phy_001_11_mesh_integrity (p_d: _) : Lemma (requires (p_d.f_dev_mesh_intact == false) (ensures (detect_probe p_d == ProbeDetected))) = admit ()
 
 (* PHY_001_12_tamper_response (matches Coq: Theorem PHY_001_12_tamper_response) *)
-let phy_001_12_tamper_response_obligation () : Tot bool = (0 = 0)
-let phy_001_12_tamper_response_lemma () : Lemma (requires True) (ensures (phy_001_12_tamper_response_obligation () == phy_001_12_tamper_response_obligation ())) = ()
+let phy_001_12_tamper_response (p_d: _) (p_d_: _) : Lemma (requires (tamper_detected p_d == true /\ step p_d d_ == true) (ensures (keys_zeroized d_ == true))) = admit ()
 
 (* PHY_001_13_voltage_glitch_detected (matches Coq: Theorem PHY_001_13_voltage_glitch_detected) *)
-let phy_001_13_voltage_glitch_detected_obligation () : Tot bool = (0 = 0)
-let phy_001_13_voltage_glitch_detected_lemma () : Lemma (requires True) (ensures (phy_001_13_voltage_glitch_detected_obligation () == phy_001_13_voltage_glitch_detected_obligation ())) = ()
+let phy_001_13_voltage_glitch_detected (p_d: _) : Lemma (requires (voltage_glitch p_d == true) (ensures (voltage_monitor p_d == true))) = admit ()
 
 (* PHY_001_14_temperature_bounds (matches Coq: Theorem PHY_001_14_temperature_bounds) *)
-let phy_001_14_temperature_bounds_obligation () : Tot bool = (0 = 0)
-let phy_001_14_temperature_bounds_lemma () : Lemma (requires True) (ensures (phy_001_14_temperature_bounds_obligation () == phy_001_14_temperature_bounds_obligation ())) = ()
+let phy_001_14_temperature_bounds (p_d: _) : Lemma (requires (temp_violation p_d == true) (ensures (temp_monitor p_d == true))) = admit ()
 
 (* PHY_001_15_power_independent (matches Coq: Theorem PHY_001_15_power_independent) *)
-let phy_001_15_power_independent_obligation () : Tot bool = (0 = 0)
-let phy_001_15_power_independent_lemma () : Lemma (requires True) (ensures (phy_001_15_power_independent_obligation () == phy_001_15_power_independent_obligation ())) = ()
+let phy_001_15_power_independent (p_op: _) : Lemma (requires (crypto_operation p_op == true) (ensures (power_independent p_op == true))) = admit ()
 
 (* PHY_001_16_tamper_disables_operation (matches Coq: Theorem PHY_001_16_tamper_disables_operation) *)
-let phy_001_16_tamper_disables_operation_obligation () : Tot bool = (0 = 0)
-let phy_001_16_tamper_disables_operation_lemma () : Lemma (requires True) (ensures (phy_001_16_tamper_disables_operation_obligation () == phy_001_16_tamper_disables_operation_obligation ())) = ()
+let phy_001_16_tamper_disables_operation (p_d: _) (p_d_: _) : Lemma (requires (tamper_detected p_d == true /\ step p_d d_ == true) (ensures (d_.f_dev_operational == false))) = admit ()
 
 (* PHY_001_17_normal_preserves_state (matches Coq: Theorem PHY_001_17_normal_preserves_state) *)
-let phy_001_17_normal_preserves_state_obligation () : Tot bool = (0 = 0)
-let phy_001_17_normal_preserves_state_lemma () : Lemma (requires True) (ensures (phy_001_17_normal_preserves_state_obligation () == phy_001_17_normal_preserves_state_obligation ())) = ()
+let phy_001_17_normal_preserves_state (p_d: _) (p_d_: _) : Lemma (requires (~(tamper_detected p_d == true) /\ step p_d d_ == true) (ensures (d_ == p_d))) = admit ()
 
 (* PHY_001_18_mesh_broken_tamper (matches Coq: Theorem PHY_001_18_mesh_broken_tamper) *)
-let phy_001_18_mesh_broken_tamper_obligation () : Tot bool = (0 = 0)
-let phy_001_18_mesh_broken_tamper_lemma () : Lemma (requires True) (ensures (phy_001_18_mesh_broken_tamper_obligation () == phy_001_18_mesh_broken_tamper_obligation ())) = ()
+let phy_001_18_mesh_broken_tamper (p_d: _) : Lemma (requires (p_d.f_dev_mesh_intact == false) (ensures (tamper_detected p_d == true))) = admit ()
 
 (* PHY_001_19_voltage_oor_tamper (matches Coq: Theorem PHY_001_19_voltage_oor_tamper) *)
-let phy_001_19_voltage_oor_tamper_obligation () : Tot bool = (0 = 0)
-let phy_001_19_voltage_oor_tamper_lemma () : Lemma (requires True) (ensures (phy_001_19_voltage_oor_tamper_obligation () == phy_001_19_voltage_oor_tamper_obligation ())) = ()
+let phy_001_19_voltage_oor_tamper (p_d: _) : Lemma (requires (~(voltage_ok p_d == true)) (ensures (tamper_detected p_d == true))) = admit ()
 
 (* PHY_001_20_temp_oor_tamper (matches Coq: Theorem PHY_001_20_temp_oor_tamper) *)
-let phy_001_20_temp_oor_tamper_obligation () : Tot bool = (0 = 0)
-let phy_001_20_temp_oor_tamper_lemma () : Lemma (requires True) (ensures (phy_001_20_temp_oor_tamper_obligation () == phy_001_20_temp_oor_tamper_obligation ())) = ()
+let phy_001_20_temp_oor_tamper (p_d: _) : Lemma (requires (~(temp_ok p_d == true)) (ensures (tamper_detected p_d == true))) = admit ()
 
 (* PHY_001_21_synthesis_all_inputs (matches Coq: Theorem PHY_001_21_synthesis_all_inputs) *)
-let phy_001_21_synthesis_all_inputs_obligation () : Tot bool = (0 = 0)
-let phy_001_21_synthesis_all_inputs_lemma () : Lemma (requires True) (ensures (phy_001_21_synthesis_all_inputs_obligation () == phy_001_21_synthesis_all_inputs_obligation ())) = ()
+let phy_001_21_synthesis_all_inputs (p_rtl: _) (p_inputs: _) : Lemma (rtl_behavior p_rtl p_inputs == nl_behavior (synthesize p_rtl) p_inputs) = admit ()

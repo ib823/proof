@@ -197,157 +197,118 @@ let fair_scheduling (p_cfg: nat) : Tot bool =
   (0 = 0)
 
 (* X_001_01_shared_xor_mutable (matches Coq: Theorem X_001_01_shared_xor_mutable) *)
-let x_001_01_shared_xor_mutable_obligation () : Tot bool = (0 = 0)
-let x_001_01_shared_xor_mutable_lemma () : Lemma (requires True) (ensures (x_001_01_shared_xor_mutable_obligation () == x_001_01_shared_xor_mutable_obligation ())) = ()
+let x_001_01_shared_xor_mutable (p_as_: _) (p_t1: _) (p_t2: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true /\ p_as_ p_t1 p_l == Some Exclusive /\ ~(p_t1 == p_t2)) (ensures (~(p_as_ p_t2 p_l == Some Shared)))) = admit ()
 
 (* X_001_02_ownership_exclusive (matches Coq: Theorem X_001_02_ownership_exclusive) *)
-let x_001_02_ownership_exclusive_obligation () : Tot bool = (0 = 0)
-let x_001_02_ownership_exclusive_lemma () : Lemma (requires True) (ensures (x_001_02_ownership_exclusive_obligation () == x_001_02_ownership_exclusive_obligation ())) = ()
+let x_001_02_ownership_exclusive (p_as_: _) (p_t1: _) (p_t2: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true /\ p_as_ p_t1 p_l == Some Exclusive /\ ~(p_t1 == p_t2)) (ensures (p_as_ p_t2 p_l == None))) = admit ()
 
 (* X_001_03_no_concurrent_write (matches Coq: Theorem X_001_03_no_concurrent_write) *)
-let x_001_03_no_concurrent_write_obligation () : Tot bool = (0 = 0)
-let x_001_03_no_concurrent_write_lemma () : Lemma (requires True) (ensures (x_001_03_no_concurrent_write_obligation () == x_001_03_no_concurrent_write_obligation ())) = ()
+let x_001_03_no_concurrent_write (p_as_: _) : Lemma (requires (well_formed_access p_as_ == true) (ensures (no_concurrent_writes p_as_ == true))) = admit ()
 
 (* X_001_04_no_write_during_read (matches Coq: Theorem X_001_04_no_write_during_read) *)
-let x_001_04_no_write_during_read_obligation () : Tot bool = (0 = 0)
-let x_001_04_no_write_during_read_lemma () : Lemma (requires True) (ensures (x_001_04_no_write_during_read_obligation () == x_001_04_no_write_during_read_obligation ())) = ()
+let x_001_04_no_write_during_read (p_as_: _) : Lemma (requires (well_formed_access p_as_ == true /\ (forall t1 t2 l_ t1 <> t2 -> p_as_ t1 l == Some Shared -> p_as_ t2 l = None \/ p_as_ t2 l == Some Shared)) (ensures (no_write_during_read p_as_ == true))) = admit ()
 
 (* X_001_05_race_freedom (matches Coq: Theorem X_001_05_race_freedom) *)
-let x_001_05_race_freedom_obligation () : Tot bool = (0 = 0)
-let x_001_05_race_freedom_lemma () : Lemma (requires True) (ensures (x_001_05_race_freedom_obligation () == x_001_05_race_freedom_obligation ())) = ()
+let x_001_05_race_freedom (p_cfg: _) (p_l: _) : Lemma (requires (well_typed p_cfg == true) (ensures (~(data_race p_cfg p_l == true)))) = admit ()
 
 (* X_001_06_race_freedom_composition (matches Coq: Theorem X_001_06_race_freedom_composition) *)
-let x_001_06_race_freedom_composition_obligation () : Tot bool = (0 = 0)
-let x_001_06_race_freedom_composition_lemma () : Lemma (requires True) (ensures (x_001_06_race_freedom_composition_obligation () == x_001_06_race_freedom_composition_obligation ())) = ()
+let x_001_06_race_freedom_composition (p_cfg1: _) (p_cfg2: _) (p_l: _) : Lemma (requires ((~(data_race p_cfg1 p_l == true)) /\ (~(data_race p_cfg2 p_l == true)) /\ (forall t_ ~ (In t (map thread_id p_cfg1) /\ In t (map thread_id p_cfg2)) == true)) (ensures (~(data_race (p_cfg1 ++ p_cfg2) p_l == true)))) = admit ()
 
 (* X_001_07_atomic_operations (matches Coq: Theorem X_001_07_atomic_operations) *)
-let x_001_07_atomic_operations_obligation () : Tot bool = (0 = 0)
-let x_001_07_atomic_operations_lemma () : Lemma (requires True) (ensures (x_001_07_atomic_operations_obligation () == x_001_07_atomic_operations_obligation ())) = ()
+let x_001_07_atomic_operations (p_op: _) : Lemma (atomic_race_free p_op == true) = admit ()
 
 (* X_001_08_lock_protects (matches Coq: Theorem X_001_08_lock_protects) *)
-let x_001_08_lock_protects_obligation () : Tot bool = (0 = 0)
-let x_001_08_lock_protects_lemma () : Lemma (requires True) (ensures (x_001_08_lock_protects_obligation () == x_001_08_lock_protects_obligation ())) = ()
+let x_001_08_lock_protects (p_m: _) (p_t: _) (p_m_: _) : Lemma (requires (mutex_acquire p_m p_t == Some m_) (ensures (m_.f_mutex_locked == true))) = admit ()
 
 (* X_001_09_session_type_dual (matches Coq: Theorem X_001_09_session_type_dual) *)
-let x_001_09_session_type_dual_obligation () : Tot bool = (0 = 0)
-let x_001_09_session_type_dual_lemma () : Lemma (requires True) (ensures (x_001_09_session_type_dual_obligation () == x_001_09_session_type_dual_obligation ())) = ()
+let x_001_09_session_type_dual (p_s: _) : Lemma (requires (fn_match p_s id_with | SSend m s_ => dual (dual (SSend m s_)) == SSend m s_ /\ dual (dual s_) == s_ /\ True | SRecv m s_ => dual (dual (SRecv m s_)) == SRecv m s_ /\ dual (dual s_) == s_) (ensures (True | SEnd => dual (dual SEnd) == SEnd | _ => True end))) = admit ()
 
 (* X_001_09b_dual_send_recv (matches Coq: Theorem X_001_09b_dual_send_recv) *)
-let x_001_09b_dual_send_recv_obligation () : Tot bool = (0 = 0)
-let x_001_09b_dual_send_recv_lemma () : Lemma (requires True) (ensures (x_001_09b_dual_send_recv_obligation () == x_001_09b_dual_send_recv_obligation ())) = ()
+let x_001_09b_dual_send_recv (p_m: _) : Lemma (dual (dual (SSend p_m SEnd)) == SSend p_m SEnd /\ dual (dual (SRecv p_m SEnd)) == SRecv p_m SEnd) = admit ()
 
 (* X_001_09c_dual_compose (matches Coq: Theorem X_001_09c_dual_compose) *)
-let x_001_09c_dual_compose_obligation () : Tot bool = (0 = 0)
-let x_001_09c_dual_compose_lemma () : Lemma (requires True) (ensures (x_001_09c_dual_compose_obligation () == x_001_09c_dual_compose_obligation ())) = ()
+let x_001_09c_dual_compose (p_m1: _) (p_m2: _) : Lemma (dual (dual (SSend p_m1 (SRecv p_m2 SEnd))) == SSend p_m1 (SRecv p_m2 SEnd)) = admit ()
 
 (* X_001_10_session_fidelity (matches Coq: Theorem X_001_10_session_fidelity) *)
-let x_001_10_session_fidelity_obligation () : Tot bool = (0 = 0)
-let x_001_10_session_fidelity_lemma () : Lemma (requires True) (ensures (x_001_10_session_fidelity_obligation () == x_001_10_session_fidelity_obligation ())) = ()
+let x_001_10_session_fidelity (p_ch: _) (p_mt: _) (p_s: _) : Lemma (requires (p_ch.f_chan_type == SSend p_mt p_s) (ensures ((mkchan (p_ch.f_chan_id) p_s (p_ch.f_chan_linear)).f_chan_type == p_s))) = admit ()
 
 (* X_001_11_session_progress (matches Coq: Theorem X_001_11_session_progress) *)
-let x_001_11_session_progress_obligation () : Tot bool = (0 = 0)
-let x_001_11_session_progress_lemma () : Lemma (requires True) (ensures (x_001_11_session_progress_obligation () == x_001_11_session_progress_obligation ())) = ()
+let x_001_11_session_progress (p_cfg: _) (p_config: _) : Lemma (requires (session_typed p_cfg == true /\ ~(p_cfg == [])) (ensures (exists cfg_ : p_config, True == true))) = admit ()
 
 (* X_001_12_session_safety (matches Coq: Theorem X_001_12_session_safety) *)
-let x_001_12_session_safety_obligation () : Tot bool = (0 = 0)
-let x_001_12_session_safety_lemma () : Lemma (requires True) (ensures (x_001_12_session_safety_obligation () == x_001_12_session_safety_obligation ())) = ()
+let x_001_12_session_safety (p_ch1: _) (p_ch2: _) : Lemma (p_ch1.f_chan_type == dual (p_ch2.f_chan_type) /\ p_ch1.f_chan_id == p_ch2.f_chan_id) = admit ()
 
 (* X_001_13_channel_linear (matches Coq: Theorem X_001_13_channel_linear) *)
-let x_001_13_channel_linear_obligation () : Tot bool = (0 = 0)
-let x_001_13_channel_linear_lemma () : Lemma (requires True) (ensures (x_001_13_channel_linear_obligation () == x_001_13_channel_linear_obligation ())) = ()
+let x_001_13_channel_linear (p_ch: _) : Lemma (requires (is_fresh p_ch == true) (ensures (p_ch.f_chan_linear == true))) = admit ()
 
 (* X_001_14_no_channel_reuse (matches Coq: Theorem X_001_14_no_channel_reuse) *)
-let x_001_14_no_channel_reuse_obligation () : Tot bool = (0 = 0)
-let x_001_14_no_channel_reuse_lemma () : Lemma (requires True) (ensures (x_001_14_no_channel_reuse_obligation () == x_001_14_no_channel_reuse_obligation ())) = ()
+let x_001_14_no_channel_reuse (p_ch: _) : Lemma ((channel_used p_ch).f_chan_linear == false) = admit ()
 
 (* X_001_15_send_recv_match (matches Coq: Theorem X_001_15_send_recv_match) *)
-let x_001_15_send_recv_match_obligation () : Tot bool = (0 = 0)
-let x_001_15_send_recv_match_lemma () : Lemma (requires True) (ensures (x_001_15_send_recv_match_obligation () == x_001_15_send_recv_match_obligation ())) = ()
+let x_001_15_send_recv_match (p_mt: _) (p_s: _) : Lemma (dual (SSend p_mt p_s) == SRecv p_mt (dual p_s)) = admit ()
 
 (* X_001_16_select_offer_match (matches Coq: Theorem X_001_16_select_offer_match) *)
-let x_001_16_select_offer_match_obligation () : Tot bool = (0 = 0)
-let x_001_16_select_offer_match_lemma () : Lemma (requires True) (ensures (x_001_16_select_offer_match_obligation () == x_001_16_select_offer_match_obligation ())) = ()
+let x_001_16_select_offer_match (p_branches: _) : Lemma (dual (SSelect p_branches) == SOffer (map (fn_fun p => (fst p_ dual (snd p))) p_branches)) = admit ()
 
 (* X_001_17_session_composition (matches Coq: Theorem X_001_17_session_composition) *)
-let x_001_17_session_composition_obligation () : Tot bool = (0 = 0)
-let x_001_17_session_composition_lemma () : Lemma (requires True) (ensures (x_001_17_session_composition_obligation () == x_001_17_session_composition_obligation ())) = ()
+let x_001_17_session_composition (p_s: _) : Lemma (requires (dual (dual p_s) == p_s /\ forall s2_ dual p_s == s2) (ensures (dual s2 == p_s))) = admit ()
 
 (* X_001_17b_dual_base_involutive (matches Coq: Theorem X_001_17b_dual_base_involutive) *)
-let x_001_17b_dual_base_involutive_obligation () : Tot bool = (0 = 0)
-let x_001_17b_dual_base_involutive_lemma () : Lemma (requires True) (ensures (x_001_17b_dual_base_involutive_obligation () == x_001_17b_dual_base_involutive_obligation ())) = ()
+let x_001_17b_dual_base_involutive (p_m: _) : Lemma (dual (dual SEnd) == SEnd /\ dual (dual (SSend p_m SEnd)) == SSend p_m SEnd /\ dual (dual (SRecv p_m SEnd)) == SRecv p_m SEnd) = admit ()
 
 (* X_001_17c_dual_chain (matches Coq: Theorem X_001_17c_dual_chain) *)
-let x_001_17c_dual_chain_obligation () : Tot bool = (0 = 0)
-let x_001_17c_dual_chain_lemma () : Lemma (requires True) (ensures (x_001_17c_dual_chain_obligation () == x_001_17c_dual_chain_obligation ())) = ()
+let x_001_17c_dual_chain (p_m1: _) (p_m2: _) : Lemma (dual (dual (SSend p_m1 (SRecv p_m2 SEnd))) == SSend p_m1 (SRecv p_m2 SEnd) /\ dual (dual (SRecv p_m1 (SSend p_m2 SEnd))) == SRecv p_m1 (SSend p_m2 SEnd)) = admit ()
 
 (* X_001_18_no_circular_wait (matches Coq: Theorem X_001_18_no_circular_wait) *)
-let x_001_18_no_circular_wait_obligation () : Tot bool = (0 = 0)
-let x_001_18_no_circular_wait_lemma () : Lemma (requires True) (ensures (x_001_18_no_circular_wait_obligation () == x_001_18_no_circular_wait_obligation ())) = ()
+let x_001_18_no_circular_wait (p_cfg: _) : Lemma (requires (well_typed p_cfg == true /\ all_respect_order p_cfg == true) (ensures (~(circular_wait p_cfg == true)))) = admit ()
 
 (* X_001_19_lock_ordering (matches Coq: Theorem X_001_19_lock_ordering) *)
-let x_001_19_lock_ordering_obligation () : Tot bool = (0 = 0)
-let x_001_19_lock_ordering_lemma () : Lemma (requires True) (ensures (x_001_19_lock_ordering_obligation () == x_001_19_lock_ordering_obligation ())) = ()
+let x_001_19_lock_ordering (p_l1: _) (p_l2: _) : Lemma (requires (~(p_l1 == p_l2)) (ensures (lock_order p_l1 p_l2 == true \/ lock_order p_l2 p_l1 == true))) = admit ()
 
 (* X_001_20_session_deadlock_free (matches Coq: Theorem X_001_20_session_deadlock_free) *)
-let x_001_20_session_deadlock_free_obligation () : Tot bool = (0 = 0)
-let x_001_20_session_deadlock_free_lemma () : Lemma (requires True) (ensures (x_001_20_session_deadlock_free_obligation () == x_001_20_session_deadlock_free_obligation ())) = ()
+let x_001_20_session_deadlock_free (p_cfg: _) : Lemma (requires (session_typed p_cfg == true) (ensures (~(deadlocked p_cfg == true)))) = admit ()
 
 (* X_001_21_resource_ordering (matches Coq: Theorem X_001_21_resource_ordering) *)
-let x_001_21_resource_ordering_obligation () : Tot bool = (0 = 0)
-let x_001_21_resource_ordering_lemma () : Lemma (requires True) (ensures (x_001_21_resource_ordering_obligation () == x_001_21_resource_ordering_obligation ())) = ()
+let x_001_21_resource_ordering (p_r1: _) (p_r2: _) : Lemma (requires (~(p_r1 == p_r2)) (ensures (p_r1 < p_r2 \/ p_r2 < p_r1))) = admit ()
 
 (* X_001_22_timeout_prevents_deadlock (matches Coq: Theorem X_001_22_timeout_prevents_deadlock) *)
-let x_001_22_timeout_prevents_deadlock_obligation () : Tot bool = (0 = 0)
-let x_001_22_timeout_prevents_deadlock_lemma () : Lemma (requires True) (ensures (x_001_22_timeout_prevents_deadlock_obligation () == x_001_22_timeout_prevents_deadlock_obligation ())) = ()
+let x_001_22_timeout_prevents_deadlock (p_cfg: _) : Lemma (requires (has_timeout p_cfg == true) (ensures (~(deadlocked p_cfg == true) \/ True))) = admit ()
 
 (* X_001_23_deadlock_detection (matches Coq: Theorem X_001_23_deadlock_detection) *)
-let x_001_23_deadlock_detection_obligation () : Tot bool = (0 = 0)
-let x_001_23_deadlock_detection_lemma () : Lemma (requires True) (ensures (x_001_23_deadlock_detection_obligation () == x_001_23_deadlock_detection_obligation ())) = ()
+let x_001_23_deadlock_detection (p_cfg: _) : Lemma (deadlocked p_cfg == true \/ ~(deadlocked p_cfg == true)) = admit ()
 
 (* X_001_24_livelock_freedom (matches Coq: Theorem X_001_24_livelock_freedom) *)
-let x_001_24_livelock_freedom_obligation () : Tot bool = (0 = 0)
-let x_001_24_livelock_freedom_lemma () : Lemma (requires True) (ensures (x_001_24_livelock_freedom_obligation () == x_001_24_livelock_freedom_obligation ())) = ()
+let x_001_24_livelock_freedom (p_cfg: _) : Lemma (requires (bounded p_cfg == true) (ensures (~(livelock p_cfg == true)))) = admit ()
 
 (* X_001_25_starvation_freedom (matches Coq: Theorem X_001_25_starvation_freedom) *)
-let x_001_25_starvation_freedom_obligation () : Tot bool = (0 = 0)
-let x_001_25_starvation_freedom_lemma () : Lemma (requires True) (ensures (x_001_25_starvation_freedom_obligation () == x_001_25_starvation_freedom_obligation ())) = ()
+let x_001_25_starvation_freedom (p_cfg: _) (p_t: _) : Lemma (requires (fair_scheduling p_cfg == true) (ensures (~(starved p_cfg p_t == true)))) = admit ()
 
 (* X_001_26_mutex_correct (matches Coq: Theorem X_001_26_mutex_correct) *)
-let x_001_26_mutex_correct_obligation () : Tot bool = (0 = 0)
-let x_001_26_mutex_correct_lemma () : Lemma (requires True) (ensures (x_001_26_mutex_correct_obligation () == x_001_26_mutex_correct_obligation ())) = ()
+let x_001_26_mutex_correct (p_m: _) (p_t1: _) (p_t2: _) (p_m1: _) : Lemma (requires (mutex_acquire p_m p_t1 == Some p_m1) (ensures (mutex_acquire p_m1 p_t2 == None))) = admit ()
 
 (* X_001_27_rwlock_correct (matches Coq: Theorem X_001_27_rwlock_correct) *)
-let x_001_27_rwlock_correct_obligation () : Tot bool = (0 = 0)
-let x_001_27_rwlock_correct_lemma () : Lemma (requires True) (ensures (x_001_27_rwlock_correct_obligation () == x_001_27_rwlock_correct_obligation ())) = ()
+let x_001_27_rwlock_correct (p_rw: _) : Lemma (requires (p_rw.f_rwlock_writer == None) (ensures (p_rw.f_rwlock_readers >= 0))) = admit ()
 
 (* X_001_28_barrier_correct (matches Coq: Theorem X_001_28_barrier_correct) *)
-let x_001_28_barrier_correct_obligation () : Tot bool = (0 = 0)
-let x_001_28_barrier_correct_lemma () : Lemma (requires True) (ensures (x_001_28_barrier_correct_obligation () == x_001_28_barrier_correct_obligation ())) = ()
+let x_001_28_barrier_correct (p_b: _) : Lemma (requires (p_b.f_barrier_count <= p_b.f_barrier_total) (ensures (p_b.f_barrier_count == p_b.f_barrier_total \/ p_b.f_barrier_count < p_b.f_barrier_total))) = admit ()
 
 (* X_001_29_semaphore_correct (matches Coq: Theorem X_001_29_semaphore_correct) *)
-let x_001_29_semaphore_correct_obligation () : Tot bool = (0 = 0)
-let x_001_29_semaphore_correct_lemma () : Lemma (requires True) (ensures (x_001_29_semaphore_correct_obligation () == x_001_29_semaphore_correct_obligation ())) = ()
+let x_001_29_semaphore_correct (p_s: _) : Lemma (p_s.f_sem_count <= p_s.f_sem_max) = admit ()
 
 (* X_001_30_condvar_correct (matches Coq: Theorem X_001_30_condvar_correct) *)
-let x_001_30_condvar_correct_obligation () : Tot bool = (0 = 0)
-let x_001_30_condvar_correct_lemma () : Lemma (requires True) (ensures (x_001_30_condvar_correct_obligation () == x_001_30_condvar_correct_obligation ())) = ()
+let x_001_30_condvar_correct (p_cv: _) (p_t: _) : Lemma ((mkcondvar (p_t :: condvar_waiters p_cv)).f_condvar_waiters == p_t :: condvar_waiters p_cv) = admit ()
 
 (* X_001_31_global_type_projectable (matches Coq: Theorem X_001_31_global_type_projectable) *)
-let x_001_31_global_type_projectable_obligation () : Tot bool = (0 = 0)
-let x_001_31_global_type_projectable_lemma () : Lemma (requires True) (ensures (x_001_31_global_type_projectable_obligation () == x_001_31_global_type_projectable_obligation ())) = ()
+let x_001_31_global_type_projectable (p_g: _) (p_r: _) : Lemma (exists s_ project p_g p_r == s) = admit ()
 
 (* X_001_32_multiparty_safety (matches Coq: Theorem X_001_32_multiparty_safety) *)
-let x_001_32_multiparty_safety_obligation () : Tot bool = (0 = 0)
-let x_001_32_multiparty_safety_lemma () : Lemma (requires True) (ensures (x_001_32_multiparty_safety_obligation () == x_001_32_multiparty_safety_obligation ())) = ()
+let x_001_32_multiparty_safety (p_g: _) (p_r1: _) (p_r2: _) : Lemma (requires (~(p_r1 == p_r2)) (ensures (exists s1 s2_ project p_g p_r1 == s1 /\ project p_g p_r2 == s2))) = admit ()
 
 (* X_001_33_multiparty_progress (matches Coq: Theorem X_001_33_multiparty_progress) *)
-let x_001_33_multiparty_progress_obligation () : Tot bool = (0 = 0)
-let x_001_33_multiparty_progress_lemma () : Lemma (requires True) (ensures (x_001_33_multiparty_progress_obligation () == x_001_33_multiparty_progress_obligation ())) = ()
+let x_001_33_multiparty_progress (p_g: _) : Lemma (requires (~(p_g == GEnd)) (ensures (exists r1 r2 mt g__ p_g == GMsg r1 r2 mt g_ \/ (exists branches_ p_g == GChoice r1 branches)))) = admit ()
 
 (* X_001_34_role_conformance (matches Coq: Theorem X_001_34_role_conformance) *)
-let x_001_34_role_conformance_obligation () : Tot bool = (0 = 0)
-let x_001_34_role_conformance_lemma () : Lemma (requires True) (ensures (x_001_34_role_conformance_obligation () == x_001_34_role_conformance_obligation ())) = ()
+let x_001_34_role_conformance (p_e: _) (p_g: _) (p_r: _) : Lemma (conforms p_e (project p_g p_r) == true) = admit ()
 
 (* X_001_35_multiparty_composition (matches Coq: Theorem X_001_35_multiparty_composition) *)
-let x_001_35_multiparty_composition_obligation () : Tot bool = (0 = 0)
-let x_001_35_multiparty_composition_lemma () : Lemma (requires True) (ensures (x_001_35_multiparty_composition_obligation () == x_001_35_multiparty_composition_obligation ())) = ()
+let x_001_35_multiparty_composition (p_g1: _) (p_g2: _) (p_r: _) : Lemma (requires (project p_g1 p_r == SEnd) (ensures (project p_g2 p_r == project p_g2 p_r))) = admit ()

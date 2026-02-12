@@ -157,81 +157,61 @@ let biometric_not_sole_factor_prop (p_s: biometric_session) : Tot bool =
   (0 = 0)
 
 (* biometric_false_acceptance_bounded (matches Coq: Theorem biometric_false_acceptance_bounded) *)
-let biometric_false_acceptance_bounded_obligation () : Tot bool = (0 = 0)
-let biometric_false_acceptance_bounded_lemma () : Lemma (requires True) (ensures (biometric_false_acceptance_bounded_obligation () == biometric_false_acceptance_bounded_obligation ())) = ()
+let biometric_false_acceptance_bounded (p_attempt: biometric_attempt) : Lemma (requires (secure_biometric_system p_attempt == true /\ ~(authentic p_attempt == true)) (ensures (~(accepted p_attempt == true)))) = admit ()
 
 (* liveness_detection_accurate (matches Coq: Theorem liveness_detection_accurate) *)
-let liveness_detection_accurate_obligation () : Tot bool = (0 = 0)
-let liveness_detection_accurate_lemma () : Lemma (requires True) (ensures (liveness_detection_accurate_obligation () == liveness_detection_accurate_obligation ())) = ()
+let liveness_detection_accurate (p_attempt: biometric_attempt) : Lemma (requires (secure_biometric_system p_attempt == true /\ is_spoof p_attempt == true) (ensures (rejected p_attempt == true))) = admit ()
 
 (* accepted_requires_high_score (matches Coq: Theorem accepted_requires_high_score) *)
-let accepted_requires_high_score_obligation () : Tot bool = (0 = 0)
-let accepted_requires_high_score_lemma () : Lemma (requires True) (ensures (accepted_requires_high_score_obligation () == accepted_requires_high_score_obligation ())) = ()
+let accepted_requires_high_score (p_attempt: biometric_attempt) : Lemma (requires (secure_biometric_system p_attempt == true /\ accepted p_attempt == true) (ensures (p_attempt.f_attempt_match_score >= match_threshold))) = admit ()
 
 (* accepted_requires_liveness (matches Coq: Theorem accepted_requires_liveness) *)
-let accepted_requires_liveness_obligation () : Tot bool = (0 = 0)
-let accepted_requires_liveness_lemma () : Lemma (requires True) (ensures (accepted_requires_liveness_obligation () == accepted_requires_liveness_obligation ())) = ()
+let accepted_requires_liveness (p_attempt: biometric_attempt) : Lemma (requires (secure_biometric_system p_attempt == true /\ accepted p_attempt == true) (ensures (p_attempt.f_attempt_liveness_score >= liveness_threshold))) = admit ()
 
 (* spoof_not_accepted (matches Coq: Theorem spoof_not_accepted) *)
-let spoof_not_accepted_obligation () : Tot bool = (0 = 0)
-let spoof_not_accepted_lemma () : Lemma (requires True) (ensures (spoof_not_accepted_obligation () == spoof_not_accepted_obligation ())) = ()
+let spoof_not_accepted (p_attempt: biometric_attempt) : Lemma (requires (secure_biometric_system p_attempt == true /\ well_formed_attempt p_attempt == true /\ is_spoof p_attempt == true) (ensures (~(accepted p_attempt == true)))) = admit ()
 
 (* biometric_data_never_exported_thm (matches Coq: Theorem biometric_data_never_exported_thm) *)
-let biometric_data_never_exported_thm_obligation () : Tot bool = (0 = 0)
-let biometric_data_never_exported_thm_lemma () : Lemma (requires True) (ensures (biometric_data_never_exported_thm_obligation () == biometric_data_never_exported_thm_obligation ())) = ()
+let biometric_data_never_exported_thm (p_t: biometric_template) : Lemma (requires (biometric_data_never_exported p_t == true) (ensures (p_t.f_tmpl_exportable == false))) = admit ()
 
 (* false_acceptance_rate_bounded (matches Coq: Theorem false_acceptance_rate_bounded) *)
-let false_acceptance_rate_bounded_obligation () : Tot bool = (0 = 0)
-let false_acceptance_rate_bounded_lemma () : Lemma (requires True) (ensures (false_acceptance_rate_bounded_obligation () == false_acceptance_rate_bounded_obligation ())) = ()
+let false_acceptance_rate_bounded (p_cfg: biometric_config) (p_attempt: biometric_attempt) : Lemma (requires (far_bounded p_cfg p_attempt == true /\ ~(authentic p_attempt == true) /\ secure_biometric_system p_attempt == true) (ensures (~(accepted p_attempt == true)))) = admit ()
 
 (* false_rejection_rate_bounded (matches Coq: Theorem false_rejection_rate_bounded) *)
-let false_rejection_rate_bounded_obligation () : Tot bool = (0 = 0)
-let false_rejection_rate_bounded_lemma () : Lemma (requires True) (ensures (false_rejection_rate_bounded_obligation () == false_rejection_rate_bounded_obligation ())) = ()
+let false_rejection_rate_bounded (p_cfg: biometric_config) : Lemma (requires (frr_bounded p_cfg == true) (ensures (p_cfg.f_bio_cfg_frr_threshold <= 5))) = admit ()
 
 (* biometric_template_encrypted (matches Coq: Theorem biometric_template_encrypted) *)
-let biometric_template_encrypted_obligation () : Tot bool = (0 = 0)
-let biometric_template_encrypted_lemma () : Lemma (requires True) (ensures (biometric_template_encrypted_obligation () == biometric_template_encrypted_obligation ())) = ()
+let biometric_template_encrypted (p_t: biometric_template) : Lemma (requires (template_encrypted p_t == true) (ensures (p_t.f_tmpl_encrypted == true))) = admit ()
 
 (* liveness_detection_active (matches Coq: Theorem liveness_detection_active) *)
-let liveness_detection_active_obligation () : Tot bool = (0 = 0)
-let liveness_detection_active_lemma () : Lemma (requires True) (ensures (liveness_detection_active_obligation () == liveness_detection_active_obligation ())) = ()
+let liveness_detection_active (p_cfg: biometric_config) : Lemma (requires (liveness_active p_cfg == true) (ensures (p_cfg.f_bio_cfg_liveness_required == true))) = admit ()
 
 (* biometric_fallback_available (matches Coq: Theorem biometric_fallback_available) *)
-let biometric_fallback_available_obligation () : Tot bool = (0 = 0)
-let biometric_fallback_available_lemma () : Lemma (requires True) (ensures (biometric_fallback_available_obligation () == biometric_fallback_available_obligation ())) = ()
+let biometric_fallback_available (p_s: biometric_session) : Lemma (requires (fallback_available p_s == true) (ensures (p_s.f_bio_session_fallback_available == true))) = admit ()
 
 (* enrollment_requires_auth (matches Coq: Theorem enrollment_requires_auth) *)
-let enrollment_requires_auth_obligation () : Tot bool = (0 = 0)
-let enrollment_requires_auth_lemma () : Lemma (requires True) (ensures (enrollment_requires_auth_obligation () == enrollment_requires_auth_obligation ())) = ()
+let enrollment_requires_auth (p_e: biometric_enrollment) : Lemma (requires (enrollment_requires_auth_prop p_e == true) (ensures (p_e.f_enroll_auth_verified == true))) = admit ()
 
 (* biometric_timeout_enforced (matches Coq: Theorem biometric_timeout_enforced) *)
-let biometric_timeout_enforced_obligation () : Tot bool = (0 = 0)
-let biometric_timeout_enforced_lemma () : Lemma (requires True) (ensures (biometric_timeout_enforced_obligation () == biometric_timeout_enforced_obligation ())) = ()
+let biometric_timeout_enforced (p_s: biometric_session) : Lemma (requires (timeout_enforced p_s == true) (ensures (p_s.f_bio_session_timeout_ms > 0 /\ p_s.f_bio_session_timeout_ms <= 30000))) = admit ()
 
 (* anti_spoofing_active (matches Coq: Theorem anti_spoofing_active) *)
-let anti_spoofing_active_obligation () : Tot bool = (0 = 0)
-let anti_spoofing_active_lemma () : Lemma (requires True) (ensures (anti_spoofing_active_obligation () == anti_spoofing_active_obligation ())) = ()
+let anti_spoofing_active (p_cfg: biometric_config) : Lemma (requires (anti_spoofing_active_prop p_cfg == true) (ensures (p_cfg.f_bio_cfg_anti_spoofing == true))) = admit ()
 
 (* biometric_data_on_device_only (matches Coq: Theorem biometric_data_on_device_only) *)
-let biometric_data_on_device_only_obligation () : Tot bool = (0 = 0)
-let biometric_data_on_device_only_lemma () : Lemma (requires True) (ensures (biometric_data_on_device_only_obligation () == biometric_data_on_device_only_obligation ())) = ()
+let biometric_data_on_device_only (p_t: biometric_template) : Lemma (requires (on_device_only p_t == true) (ensures (p_t.f_tmpl_on_device == true /\ p_t.f_tmpl_exportable == false))) = admit ()
 
 (* multi_factor_supported (matches Coq: Theorem multi_factor_supported) *)
-let multi_factor_supported_obligation () : Tot bool = (0 = 0)
-let multi_factor_supported_lemma () : Lemma (requires True) (ensures (multi_factor_supported_obligation () == multi_factor_supported_obligation ())) = ()
+let multi_factor_supported (p_s: biometric_session) : Lemma (requires (multi_factor_supported_prop p_s == true) (ensures (p_s.f_bio_session_multi_factor == true))) = admit ()
 
 (* biometric_revocable_thm (matches Coq: Theorem biometric_revocable_thm) *)
-let biometric_revocable_thm_obligation () : Tot bool = (0 = 0)
-let biometric_revocable_thm_lemma () : Lemma (requires True) (ensures (biometric_revocable_thm_obligation () == biometric_revocable_thm_obligation ())) = ()
+let biometric_revocable_thm (p_t: biometric_template) : Lemma (requires (biometric_revocable p_t == true) (ensures (p_t.f_tmpl_version > 0))) = admit ()
 
 (* presentation_attack_detected (matches Coq: Theorem presentation_attack_detected) *)
-let presentation_attack_detected_obligation () : Tot bool = (0 = 0)
-let presentation_attack_detected_lemma () : Lemma (requires True) (ensures (presentation_attack_detected_obligation () == presentation_attack_detected_obligation ())) = ()
+let presentation_attack_detected (p_attempt: biometric_attempt) (p_cfg: biometric_config) : Lemma (requires (presentation_attack_detected_prop p_attempt p_cfg == true /\ p_cfg.f_bio_cfg_anti_spoofing == true /\ is_spoof p_attempt == true) (ensures (rejected p_attempt == true))) = admit ()
 
 (* template_update_secure_thm (matches Coq: Theorem template_update_secure_thm) *)
-let template_update_secure_thm_obligation () : Tot bool = (0 = 0)
-let template_update_secure_thm_lemma () : Lemma (requires True) (ensures (template_update_secure_thm_obligation () == template_update_secure_thm_obligation ())) = ()
+let template_update_secure_thm (p_old_t: biometric_template) (p_new_t: biometric_template) : Lemma (requires (template_update_secure p_old_t p_new_t == true) (ensures (p_new_t.f_tmpl_version > p_old_t.f_tmpl_version /\ p_new_t.f_tmpl_encrypted == true))) = admit ()
 
 (* biometric_not_sole_factor (matches Coq: Theorem biometric_not_sole_factor) *)
-let biometric_not_sole_factor_obligation () : Tot bool = (0 = 0)
-let biometric_not_sole_factor_lemma () : Lemma (requires True) (ensures (biometric_not_sole_factor_obligation () == biometric_not_sole_factor_obligation ())) = ()
+let biometric_not_sole_factor (p_s: biometric_session) : Lemma (requires (biometric_not_sole_factor_prop p_s == true) (ensures (p_s.f_bio_session_multi_factor == true \/ p_s.f_bio_session_fallback_available == true))) = admit ()

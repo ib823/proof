@@ -228,105 +228,79 @@ let public_partition : partition = mkPart Public [0; 1; 2; 3]
 let secret_partition : partition = mkPart Secret [100; 101; 102; 103]
 
 (* secure_execute_deterministic (matches Coq: Lemma secure_execute_deterministic) *)
-let secure_execute_deterministic_obligation () : Tot bool = (0 = 0)
-let secure_execute_deterministic_lemma () : Lemma (requires True) (ensures (secure_execute_deterministic_obligation () == secure_execute_deterministic_obligation ())) = ()
+let secure_execute_deterministic (p_s1: _) (p_s2: _) : Lemma (requires (low_equiv p_s1 p_s2 == true) (ensures (secure_execute p_s1 == secure_execute p_s2))) = admit ()
 
 (* SEC_002_01 (matches Coq: Theorem SEC_002_01) *)
-let sec_002_01_obligation () : Tot bool = (0 = 0)
-let sec_002_01_lemma () : Lemma (requires True) (ensures (sec_002_01_obligation () == sec_002_01_obligation ())) = ()
+let sec_002_01 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let t1 : == prog_execute riina_program p_s1 id_in id_let t2 := prog_execute riina_program p_s2 id_in constant_time p_s1 p_s2 t1 t2) = admit ()
 
 (* SEC_002_02 (matches Coq: Theorem SEC_002_02) *)
-let sec_002_02_obligation () : Tot bool = (0 = 0)
-let sec_002_02_lemma () : Lemma (requires True) (ensures (sec_002_02_obligation () == sec_002_02_obligation ())) = ()
+let sec_002_02 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let st1 : == secure_storage p_s1 id_in id_let st2 := secure_storage p_s2 id_in storage_no_leak p_s1 p_s2 st1 st2) = admit ()
 
 (* SEC_002_03 (matches Coq: Theorem SEC_002_03) *)
-let sec_002_03_obligation () : Tot bool = (0 = 0)
-let sec_002_03_lemma () : Lemma (requires True) (ensures (sec_002_03_obligation () == sec_002_03_obligation ())) = ()
+let sec_002_03 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let t1 : == prog_execute riina_program p_s1 id_in id_let t2 := prog_execute riina_program p_s2 id_in constant_cache p_s1 p_s2 t1 t2) = admit ()
 
 (* SEC_002_04 (matches Coq: Theorem SEC_002_04) *)
-let sec_002_04_obligation () : Tot bool = (0 = 0)
-let sec_002_04_lemma () : Lemma (requires True) (ensures (sec_002_04_obligation () == sec_002_04_obligation ())) = ()
+let sec_002_04 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let b1 : == secure_branch p_s1 id_in id_let b2 := secure_branch p_s2 id_in constant_branch p_s1 p_s2 b1 b2) = admit ()
 
 (* SEC_002_05 (matches Coq: Theorem SEC_002_05) *)
-let sec_002_05_obligation () : Tot bool = (0 = 0)
-let sec_002_05_lemma () : Lemma (requires True) (ensures (sec_002_05_obligation () == sec_002_05_obligation ())) = ()
+let sec_002_05 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let t1 : == prog_execute riina_program p_s1 id_in id_let t2 := prog_execute riina_program p_s2 id_in constant_memory_pattern p_s1 p_s2 t1 t2) = admit ()
 
 (* SEC_002_06 (matches Coq: Theorem SEC_002_06) *)
-let sec_002_06_obligation () : Tot bool = (0 = 0)
-let sec_002_06_lemma () : Lemma (requires True) (ensures (sec_002_06_obligation () == sec_002_06_obligation ())) = ()
+let sec_002_06 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let p1 : == secure_power p_s1 id_in id_let p2 := secure_power p_s2 id_in constant_power p_s1 p_s2 p1 p2) = admit ()
 
 (* SEC_002_07 (matches Coq: Theorem SEC_002_07) *)
-let sec_002_07_obligation () : Tot bool = (0 = 0)
-let sec_002_07_lemma () : Lemma (requires True) (ensures (sec_002_07_obligation () == sec_002_07_obligation ())) = ()
+let sec_002_07 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let e1 : == secure_em p_s1 id_in id_let e2 := secure_em p_s2 id_in constant_em p_s1 p_s2 e1 e2) = admit ()
 
 (* SEC_002_08 (matches Coq: Theorem SEC_002_08) *)
-let sec_002_08_obligation () : Tot bool = (0 = 0)
-let sec_002_08_lemma () : Lemma (requires True) (ensures (sec_002_08_obligation () == sec_002_08_obligation ())) = ()
+let sec_002_08 (p_obs: (list observation)) (p_secret_bits: nat) : Lemma (requires (channel_bandwidth p_obs p_secret_bits <= bandwidth_threshold) (ensures (channel_bandwidth p_obs p_secret_bits <= 1))) = admit ()
 
 (* SEC_002_09 (matches Coq: Theorem SEC_002_09) *)
-let sec_002_09_obligation () : Tot bool = (0 = 0)
-let sec_002_09_lemma () : Lemma (requires True) (ensures (sec_002_09_obligation () == sec_002_09_obligation ())) = ()
+let sec_002_09 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let t1 : == prog_execute riina_program p_s1 id_in id_let t2 := prog_execute riina_program p_s2 id_in constant_termination p_s1 p_s2 t1 t2) = admit ()
 
 (* SEC_002_10 (matches Coq: Theorem SEC_002_10) *)
-let sec_002_10_obligation () : Tot bool = (0 = 0)
-let sec_002_10_lemma () : Lemma (requires True) (ensures (sec_002_10_obligation () == sec_002_10_obligation ())) = ()
+let sec_002_10 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let t1 : == prog_execute riina_program p_s1 id_in id_let t2 := prog_execute riina_program p_s2 id_in constant_exception p_s1 p_s2 t1 t2) = admit ()
 
 (* SEC_002_11 (matches Coq: Theorem SEC_002_11) *)
-let sec_002_11_obligation () : Tot bool = (0 = 0)
-let sec_002_11_lemma () : Lemma (requires True) (ensures (sec_002_11_obligation () == sec_002_11_obligation ())) = ()
+let sec_002_11 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let r1 : == prog_resources riina_program p_s1 id_in id_let r2 := prog_resources riina_program p_s2 id_in constant_resources p_s1 p_s2 r1 r2) = admit ()
 
 (* SEC_002_12 (matches Coq: Theorem SEC_002_12) *)
-let sec_002_12_obligation () : Tot bool = (0 = 0)
-let sec_002_12_lemma () : Lemma (requires True) (ensures (sec_002_12_obligation () == sec_002_12_obligation ())) = ()
+let sec_002_12 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let sc1 : == secure_schedule p_s1 id_in id_let sc2 := secure_schedule p_s2 id_in constant_schedule p_s1 p_s2 sc1 sc2) = admit ()
 
 (* SEC_002_13 (matches Coq: Theorem SEC_002_13) *)
-let sec_002_13_obligation () : Tot bool = (0 = 0)
-let sec_002_13_lemma () : Lemma (requires True) (ensures (sec_002_13_obligation () == sec_002_13_obligation ())) = ()
+let sec_002_13 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let n1 : == secure_network p_s1 id_in id_let n2 := secure_network p_s2 id_in constant_network p_s1 p_s2 n1 n2) = admit ()
 
 (* SEC_002_14 (matches Coq: Theorem SEC_002_14) *)
-let sec_002_14_obligation () : Tot bool = (0 = 0)
-let sec_002_14_lemma () : Lemma (requires True) (ensures (sec_002_14_obligation () == sec_002_14_obligation ())) = ()
+let sec_002_14 (p_addr: _) (p_nat: _) : Lemma (requires (p_addr < length zeroed_memory) (ensures (memory_zeroed p_addr zeroed_memory == true))) = admit ()
 
 (* SEC_002_15 (matches Coq: Theorem SEC_002_15) *)
-let sec_002_15_obligation () : Tot bool = (0 = 0)
-let sec_002_15_lemma () : Lemma (requires True) (ensures (sec_002_15_obligation () == sec_002_15_obligation ())) = ()
+let sec_002_15 () : Lemma (partitions_disjoint public_partition secret_partition == true) = admit ()
 
 (* SEC_002_16 (matches Coq: Theorem SEC_002_16) *)
-let sec_002_16_obligation () : Tot bool = (0 = 0)
-let sec_002_16_lemma () : Lemma (requires True) (ensures (sec_002_16_obligation () == sec_002_16_obligation ())) = ()
+let sec_002_16 (p_s1: _) (p_s2: _) (p_state: _) : Lemma (fn_let t1 : == prog_execute riina_program p_s1 id_in id_let t2 := prog_execute riina_program p_s2 id_in constant_output p_s1 p_s2 t1 t2) = admit ()
 
 (* SEC_002_17 (matches Coq: Theorem SEC_002_17) *)
-let sec_002_17_obligation () : Tot bool = (0 = 0)
-let sec_002_17_lemma () : Lemma (requires True) (ensures (sec_002_17_obligation () == sec_002_17_obligation ())) = ()
+let sec_002_17 (p_l: _) (p_seclevel: _) : Lemma (level_leq p_l p_l == true) = admit ()
 
 (* SEC_002_18 (matches Coq: Theorem SEC_002_18) *)
-let sec_002_18_obligation () : Tot bool = (0 = 0)
-let sec_002_18_lemma () : Lemma (requires True) (ensures (sec_002_18_obligation () == sec_002_18_obligation ())) = ()
+let sec_002_18 (p_l: _) (p_seclevel: _) : Lemma (level_eq p_l p_l == true) = admit ()
 
 (* SEC_002_19 (matches Coq: Theorem SEC_002_19) *)
-let sec_002_19_obligation () : Tot bool = (0 = 0)
-let sec_002_19_lemma () : Lemma (requires True) (ensures (sec_002_19_obligation () == sec_002_19_obligation ())) = ()
+let sec_002_19 (p_l: _) (p_seclevel: _) : Lemma (level_leq Public p_l == true) = admit ()
 
 (* SEC_002_20 (matches Coq: Theorem SEC_002_20) *)
-let sec_002_20_obligation () : Tot bool = (0 = 0)
-let sec_002_20_lemma () : Lemma (requires True) (ensures (sec_002_20_obligation () == sec_002_20_obligation ())) = ()
+let sec_002_20 () : Lemma (level_leq TopSecret Public == false /\ level_leq TopSecret Secret == false) = admit ()
 
 (* SEC_002_21 (matches Coq: Theorem SEC_002_21) *)
-let sec_002_21_obligation () : Tot bool = (0 = 0)
-let sec_002_21_lemma () : Lemma (requires True) (ensures (sec_002_21_obligation () == sec_002_21_obligation ())) = ()
+let sec_002_21 (p_s: _) (p_state: _) : Lemma (low_equiv p_s p_s == true) = admit ()
 
 (* level_leq_refl (matches Coq: Theorem level_leq_refl) *)
-let level_leq_refl_obligation () : Tot bool = (0 = 0)
-let level_leq_refl_lemma () : Lemma (requires True) (ensures (level_leq_refl_obligation () == level_leq_refl_obligation ())) = ()
+let level_leq_refl (p_l: _) : Lemma (level_leq p_l p_l == true) = admit ()
 
 (* public_lowest (matches Coq: Theorem public_lowest) *)
-let public_lowest_obligation () : Tot bool = (0 = 0)
-let public_lowest_lemma () : Lemma (requires True) (ensures (public_lowest_obligation () == public_lowest_obligation ())) = ()
+let public_lowest (p_l: _) : Lemma (level_leq Public p_l == true) = admit ()
 
 (* topsecret_no_flow_public (matches Coq: Theorem topsecret_no_flow_public) *)
-let topsecret_no_flow_public_obligation () : Tot bool = (0 = 0)
-let topsecret_no_flow_public_lemma () : Lemma (requires True) (ensures (topsecret_no_flow_public_obligation () == topsecret_no_flow_public_obligation ())) = ()
+let topsecret_no_flow_public () : Lemma (level_leq TopSecret Public == false) = admit ()
 
 (* secret_no_flow_public (matches Coq: Theorem secret_no_flow_public) *)
-let secret_no_flow_public_obligation () : Tot bool = (0 = 0)
-let secret_no_flow_public_lemma () : Lemma (requires True) (ensures (secret_no_flow_public_obligation () == secret_no_flow_public_obligation ())) = ()
+let secret_no_flow_public () : Lemma (level_leq Secret Public == false) = admit ()

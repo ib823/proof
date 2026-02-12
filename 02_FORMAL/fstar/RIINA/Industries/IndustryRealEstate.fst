@@ -90,8 +90,7 @@ let within_occupancy (p_current: nat) (p_max_occupancy: nat) : Tot bool =
   p_current <= p_max_occupancy
 
 (* smart_building_security (matches Coq: Theorem smart_building_security) *)
-let smart_building_security_obligation () : Tot bool = (0 = 0)
-let smart_building_security_lemma () : Lemma (requires True) (ensures (smart_building_security_obligation () == smart_building_security_obligation ())) = ()
+let smart_building_security (p_controls: smart_building_controls) (p_building: nat) : Lemma (p_controls.f_network_segmentation == true /\ p_controls.f_device_authentication == true) = admit ()
 
 (* bacnet_security (matches Coq: Theorem bacnet_security) *)
 let bacnet_security_obligation () : Tot bool = (0 = 0)
@@ -110,85 +109,64 @@ let iot_device_security_obligation () : Tot bool = (0 = 0)
 let iot_device_security_lemma () : Lemma (requires True) (ensures (iot_device_security_obligation () == iot_device_security_obligation ())) = ()
 
 (* building_segmentation (matches Coq: Theorem building_segmentation) *)
-let building_segmentation_obligation () : Tot bool = (0 = 0)
-let building_segmentation_lemma () : Lemma (requires True) (ensures (building_segmentation_obligation () == building_segmentation_obligation ())) = ()
+let building_segmentation (p_controls: smart_building_controls) (p_system: building_system) : Lemma (p_controls.f_network_segmentation == true) = admit ()
 
 (* safety_failsafe (matches Coq: Theorem safety_failsafe) *)
-let safety_failsafe_obligation () : Tot bool = (0 = 0)
-let safety_failsafe_lemma () : Lemma (requires True) (ensures (safety_failsafe_obligation () == safety_failsafe_obligation ())) = ()
+let safety_failsafe (p_controls: smart_building_controls) (p_safety_system: building_system) : Lemma (p_controls.f_failsafe_operation == true) = admit ()
 
 (* financial_records_max_sensitivity (matches Coq: Theorem financial_records_max_sensitivity) *)
-let financial_records_max_sensitivity_obligation () : Tot bool = (0 = 0)
-let financial_records_max_sensitivity_lemma () : Lemma (requires True) (ensures (financial_records_max_sensitivity_obligation () == financial_records_max_sensitivity_obligation ())) = ()
+let financial_records_max_sensitivity (p_d: _) : Lemma (property_sensitivity p_d <= property_sensitivity FinancialRecords) = admit ()
 
 (* access_credentials_max_sensitivity (matches Coq: Theorem access_credentials_max_sensitivity) *)
-let access_credentials_max_sensitivity_obligation () : Tot bool = (0 = 0)
-let access_credentials_max_sensitivity_lemma () : Lemma (requires True) (ensures (access_credentials_max_sensitivity_obligation () == access_credentials_max_sensitivity_obligation ())) = ()
+let access_credentials_max_sensitivity () : Lemma (property_sensitivity AccessCredentials == property_sensitivity FinancialRecords) = admit ()
 
 (* property_sensitivity_positive (matches Coq: Theorem property_sensitivity_positive) *)
-let property_sensitivity_positive_obligation () : Tot bool = (0 = 0)
-let property_sensitivity_positive_lemma () : Lemma (requires True) (ensures (property_sensitivity_positive_obligation () == property_sensitivity_positive_obligation ())) = ()
+let property_sensitivity_positive (p_d: _) : Lemma (property_sensitivity p_d >= 1) = admit ()
 
 (* fire_safety_critical (matches Coq: Theorem fire_safety_critical) *)
-let fire_safety_critical_obligation () : Tot bool = (0 = 0)
-let fire_safety_critical_lemma () : Lemma (requires True) (ensures (fire_safety_critical_obligation () == fire_safety_critical_obligation ())) = ()
+let fire_safety_critical () : Lemma (system_criticality FireSafety == 5) = admit ()
 
 (* elevator_critical (matches Coq: Theorem elevator_critical) *)
-let elevator_critical_obligation () : Tot bool = (0 = 0)
-let elevator_critical_lemma () : Lemma (requires True) (ensures (elevator_critical_obligation () == elevator_critical_obligation ())) = ()
+let elevator_critical () : Lemma (system_criticality Elevator == 5) = admit ()
 
 (* system_criticality_positive (matches Coq: Theorem system_criticality_positive) *)
-let system_criticality_positive_obligation () : Tot bool = (0 = 0)
-let system_criticality_positive_lemma () : Lemma (requires True) (ensures (system_criticality_positive_obligation () == system_criticality_positive_obligation ())) = ()
+let system_criticality_positive (p_s: _) : Lemma (system_criticality p_s >= 1) = admit ()
 
 (* fire_elevator_equal_criticality (matches Coq: Theorem fire_elevator_equal_criticality) *)
-let fire_elevator_equal_criticality_obligation () : Tot bool = (0 = 0)
-let fire_elevator_equal_criticality_lemma () : Lemma (requires True) (ensures (fire_elevator_equal_criticality_obligation () == fire_elevator_equal_criticality_obligation ())) = ()
+let fire_elevator_equal_criticality () : Lemma (system_criticality FireSafety == system_criticality Elevator) = admit ()
 
 (* fire_safety_is_critical (matches Coq: Theorem fire_safety_is_critical) *)
-let fire_safety_is_critical_obligation () : Tot bool = (0 = 0)
-let fire_safety_is_critical_lemma () : Lemma (requires True) (ensures (fire_safety_is_critical_obligation () == fire_safety_is_critical_obligation ())) = ()
+let fire_safety_is_critical () : Lemma (is_safety_critical FireSafety == true) = admit ()
 
 (* hvac_not_safety_critical (matches Coq: Theorem hvac_not_safety_critical) *)
-let hvac_not_safety_critical_obligation () : Tot bool = (0 = 0)
-let hvac_not_safety_critical_lemma () : Lemma (requires True) (ensures (hvac_not_safety_critical_obligation () == hvac_not_safety_critical_obligation ())) = ()
+let hvac_not_safety_critical () : Lemma (is_safety_critical HVAC == false) = admit ()
 
 (* safety_critical_high_criticality (matches Coq: Theorem safety_critical_high_criticality) *)
-let safety_critical_high_criticality_obligation () : Tot bool = (0 = 0)
-let safety_critical_high_criticality_lemma () : Lemma (requires True) (ensures (safety_critical_high_criticality_obligation () == safety_critical_high_criticality_obligation ())) = ()
+let safety_critical_high_criticality (p_s: _) : Lemma (requires (is_safety_critical p_s == true) (ensures (system_criticality p_s >= 5))) = admit ()
 
 (* all_controls_requires_segmentation (matches Coq: Theorem all_controls_requires_segmentation) *)
-let all_controls_requires_segmentation_obligation () : Tot bool = (0 = 0)
-let all_controls_requires_segmentation_lemma () : Lemma (requires True) (ensures (all_controls_requires_segmentation_obligation () == all_controls_requires_segmentation_obligation ())) = ()
+let all_controls_requires_segmentation (p_c: _) : Lemma (requires (all_building_controls p_c == true) (ensures (p_c.f_network_segmentation == true))) = admit ()
 
 (* all_controls_requires_auth (matches Coq: Theorem all_controls_requires_auth) *)
-let all_controls_requires_auth_obligation () : Tot bool = (0 = 0)
-let all_controls_requires_auth_lemma () : Lemma (requires True) (ensures (all_controls_requires_auth_obligation () == all_controls_requires_auth_obligation ())) = ()
+let all_controls_requires_auth (p_c: _) : Lemma (requires (all_building_controls p_c == true) (ensures (p_c.f_device_authentication == true))) = admit ()
 
 (* all_controls_requires_failsafe (matches Coq: Theorem all_controls_requires_failsafe) *)
-let all_controls_requires_failsafe_obligation () : Tot bool = (0 = 0)
-let all_controls_requires_failsafe_lemma () : Lemma (requires True) (ensures (all_controls_requires_failsafe_obligation () == all_controls_requires_failsafe_obligation ())) = ()
+let all_controls_requires_failsafe (p_c: _) : Lemma (requires (all_building_controls p_c == true) (ensures (p_c.f_failsafe_operation == true))) = admit ()
 
 (* count_building_bounded (matches Coq: Theorem count_building_bounded) *)
-let count_building_bounded_obligation () : Tot bool = (0 = 0)
-let count_building_bounded_lemma () : Lemma (requires True) (ensures (count_building_bounded_obligation () == count_building_bounded_obligation ())) = ()
+let count_building_bounded (p_c: _) : Lemma (count_building_controls p_c <= 6) = admit ()
 
 (* all_controls_count_six (matches Coq: Theorem all_controls_count_six) *)
-let all_controls_count_six_obligation () : Tot bool = (0 = 0)
-let all_controls_count_six_lemma () : Lemma (requires True) (ensures (all_controls_count_six_obligation () == all_controls_count_six_obligation ())) = ()
+let all_controls_count_six (p_c: _) : Lemma (requires (all_building_controls p_c == true) (ensures (count_building_controls p_c == 6))) = admit ()
 
 (* fire_safety_long_retention (matches Coq: Theorem fire_safety_long_retention) *)
-let fire_safety_long_retention_obligation () : Tot bool = (0 = 0)
-let fire_safety_long_retention_lemma () : Lemma (requires True) (ensures (fire_safety_long_retention_obligation () == fire_safety_long_retention_obligation ())) = ()
+let fire_safety_long_retention () : Lemma (access_log_retention_days FireSafety == 150) = admit ()
 
 (* retention_positive (matches Coq: Theorem retention_positive) *)
-let retention_positive_obligation () : Tot bool = (0 = 0)
-let retention_positive_lemma () : Lemma (requires True) (ensures (retention_positive_obligation () == retention_positive_obligation ())) = ()
+let retention_positive (p_s: _) : Lemma (access_log_retention_days p_s >= 30) = admit ()
 
 (* firmware_no_downgrade (matches Coq: Theorem firmware_no_downgrade) *)
-let firmware_no_downgrade_obligation () : Tot bool = (0 = 0)
-let firmware_no_downgrade_lemma () : Lemma (requires True) (ensures (firmware_no_downgrade_obligation () == firmware_no_downgrade_obligation ())) = ()
+let firmware_no_downgrade (p_old_v: _) (p_new_v: _) : Lemma (requires (firmware_version_valid p_old_v p_new_v == true) (ensures (p_old_v < p_new_v))) = admit ()
 
 (* occupancy_bounded (matches Coq: Theorem occupancy_bounded) *)
-let occupancy_bounded_obligation () : Tot bool = (0 = 0)
-let occupancy_bounded_lemma () : Lemma (requires True) (ensures (occupancy_bounded_obligation () == occupancy_bounded_obligation ())) = ()
+let occupancy_bounded (p_curr: _) (p_max_o: _) : Lemma (requires (within_occupancy p_curr p_max_o == true) (ensures (p_curr <= p_max_o))) = admit ()

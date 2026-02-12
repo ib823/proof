@@ -136,89 +136,67 @@ let spring_converges (p_sa: spring_animation) : Tot bool =
   (0 = 0)
 
 (* nth_error_In_bounds (matches Coq: Lemma nth_error_In_bounds) *)
-let nth_error_in_bounds_obligation () : Tot bool = (0 = 0)
-let nth_error_in_bounds_lemma () : Lemma (requires True) (ensures (nth_error_in_bounds_obligation () == nth_error_in_bounds_obligation ())) = ()
+let nth_error_in_bounds (p_a: _) (p_list: _) (p_a_: _) (p_n: _) : Lemma (requires (p_n < length l) (ensures (exists x_ nth_error l p_n == Some x))) = admit ()
 
 (* spring_physics_accurate (matches Coq: Theorem spring_physics_accurate) *)
-let spring_physics_accurate_obligation () : Tot bool = (0 = 0)
-let spring_physics_accurate_lemma () : Lemma (requires True) (ensures (spring_physics_accurate_obligation () == spring_physics_accurate_obligation ())) = ()
+let spring_physics_accurate (p_spring: spring_animation) (p_t: nat) : Lemma (requires (well_formed_spring p_spring == true /\ p_t < length (p_spring.f_spring_positions)) (ensures (exists p_ position_at p_spring p_t == Some p))) = admit ()
 
 (* animation_mathematically_smooth (matches Coq: Theorem animation_mathematically_smooth) *)
-let animation_mathematically_smooth_obligation () : Tot bool = (0 = 0)
-let animation_mathematically_smooth_lemma () : Lemma (requires True) (ensures (animation_mathematically_smooth_obligation () == animation_mathematically_smooth_obligation ())) = ()
+let animation_mathematically_smooth (p_animation: spring_animation) : Lemma (requires (well_formed_spring p_animation == true) (ensures (second_derivative_continuous (p_animation.f_spring_positions) == true))) = admit ()
 
 (* spring_has_valid_duration (matches Coq: Theorem spring_has_valid_duration) *)
-let spring_has_valid_duration_obligation () : Tot bool = (0 = 0)
-let spring_has_valid_duration_lemma () : Lemma (requires True) (ensures (spring_has_valid_duration_obligation () == spring_has_valid_duration_obligation ())) = ()
+let spring_has_valid_duration (p_spring: spring_animation) : Lemma (requires (well_formed_spring p_spring == true) (ensures (length (p_spring.f_spring_positions) > 0))) = admit ()
 
 (* position_velocity_match (matches Coq: Theorem position_velocity_match) *)
-let position_velocity_match_obligation () : Tot bool = (0 = 0)
-let position_velocity_match_lemma () : Lemma (requires True) (ensures (position_velocity_match_obligation () == position_velocity_match_obligation ())) = ()
+let position_velocity_match (p_spring: spring_animation) : Lemma (requires (well_formed_spring p_spring == true) (ensures (length (p_spring.f_spring_positions) == length (p_spring.f_spring_velocities)))) = admit ()
 
 (* nth_error_Some_length (matches Coq: Lemma nth_error_Some_length) *)
-let nth_error_some_length_obligation () : Tot bool = (0 = 0)
-let nth_error_some_length_lemma () : Lemma (requires True) (ensures (nth_error_some_length_obligation () == nth_error_some_length_obligation ())) = ()
+let nth_error_some_length (p_l: (list nat)) (p_n: nat) : Lemma (requires (p_n < length p_l) (ensures (exists a_ nth_error p_l p_n == Some a))) = admit ()
 
 (* animation_frame_budget_met (matches Coq: Theorem animation_frame_budget_met) *)
-let animation_frame_budget_met_obligation () : Tot bool = (0 = 0)
-let animation_frame_budget_met_lemma () : Lemma (requires True) (ensures (animation_frame_budget_met_obligation () == animation_frame_budget_met_obligation ())) = ()
+let animation_frame_budget_met (p_f: frame) : Lemma (requires (meets_frame_budget p_f == true) (ensures (p_f.f_frame_render_time <= frame_budget_120hz))) = admit ()
 
 (* implicit_animation_smooth (matches Coq: Theorem implicit_animation_smooth) *)
-let implicit_animation_smooth_obligation () : Tot bool = (0 = 0)
-let implicit_animation_smooth_lemma () : Lemma (requires True) (ensures (implicit_animation_smooth_obligation () == implicit_animation_smooth_obligation ())) = ()
+let implicit_animation_smooth (p_sa: spring_animation) : Lemma (requires (well_formed_spring p_sa == true) (ensures (positions_smooth (p_sa.f_spring_positions) == true))) = admit ()
 
 (* explicit_animation_controllable (matches Coq: Theorem explicit_animation_controllable) *)
-let explicit_animation_controllable_obligation () : Tot bool = (0 = 0)
-let explicit_animation_controllable_lemma () : Lemma (requires True) (ensures (explicit_animation_controllable_obligation () == explicit_animation_controllable_obligation ())) = ()
+let explicit_animation_controllable (p_ac: animation_control) : Lemma (requires (well_formed_anim_control p_ac == true /\ p_ac.f_anim_type == ExplicitAnim) (ensures (p_ac.f_anim_speed > 0 /\ p_ac.f_anim_speed <= 1000))) = admit ()
 
 (* animation_group_synchronized (matches Coq: Theorem animation_group_synchronized) *)
-let animation_group_synchronized_obligation () : Tot bool = (0 = 0)
-let animation_group_synchronized_lemma () : Lemma (requires True) (ensures (animation_group_synchronized_obligation () == animation_group_synchronized_obligation ())) = ()
+let animation_group_synchronized (p_ag: animation_group) : Lemma (requires (well_formed_anim_group p_ag == true) (ensures (p_ag.f_ag_synchronized == true))) = admit ()
 
 (* layer_animation_gpu_accelerated (matches Coq: Theorem layer_animation_gpu_accelerated) *)
-let layer_animation_gpu_accelerated_obligation () : Tot bool = (0 = 0)
-let layer_animation_gpu_accelerated_lemma () : Lemma (requires True) (ensures (layer_animation_gpu_accelerated_obligation () == layer_animation_gpu_accelerated_obligation ())) = ()
+let layer_animation_gpu_accelerated (p_la: layer_animation) : Lemma (requires (well_formed_layer_anim p_la == true) (ensures (p_la.f_la_gpu_accelerated == true))) = admit ()
 
 (* animation_timing_precise (matches Coq: Theorem animation_timing_precise) *)
-let animation_timing_precise_obligation () : Tot bool = (0 = 0)
-let animation_timing_precise_lemma () : Lemma (requires True) (ensures (animation_timing_precise_obligation () == animation_timing_precise_obligation ())) = ()
+let animation_timing_precise (p_ag: animation_group) : Lemma (requires (well_formed_anim_group p_ag == true) (ensures (p_ag.f_ag_duration > 0))) = admit ()
 
 (* keyframe_values_interpolated (matches Coq: Theorem keyframe_values_interpolated) *)
-let keyframe_values_interpolated_obligation () : Tot bool = (0 = 0)
-let keyframe_values_interpolated_lemma () : Lemma (requires True) (ensures (keyframe_values_interpolated_obligation () == keyframe_values_interpolated_obligation ())) = ()
+let keyframe_values_interpolated (p_kf: keyframe) (p_from: nat) (p_to: nat) : Lemma (requires (p_from <= p_to /\ keyframe_in_range p_kf p_from p_to == true) (ensures (p_from <= p_kf.f_kf_value /\ p_kf.f_kf_value <= p_to))) = admit ()
 
 (* spring_animation_converges (matches Coq: Theorem spring_animation_converges) *)
-let spring_animation_converges_obligation () : Tot bool = (0 = 0)
-let spring_animation_converges_lemma () : Lemma (requires True) (ensures (spring_animation_converges_obligation () == spring_animation_converges_obligation ())) = ()
+let spring_animation_converges (p_sa: spring_animation) : Lemma (requires (well_formed_spring p_sa == true /\ spring_converges p_sa == true) (ensures (spring_converges p_sa == true))) = admit ()
 
 (* transition_animation_reversible (matches Coq: Theorem transition_animation_reversible) *)
-let transition_animation_reversible_obligation () : Tot bool = (0 = 0)
-let transition_animation_reversible_lemma () : Lemma (requires True) (ensures (transition_animation_reversible_obligation () == transition_animation_reversible_obligation ())) = ()
+let transition_animation_reversible (p_ac: animation_control) : Lemma (requires (p_ac.f_anim_reversed == true) (ensures (p_ac.f_anim_reversed == true))) = admit ()
 
 (* animation_delegate_notified (matches Coq: Theorem animation_delegate_notified) *)
-let animation_delegate_notified_obligation () : Tot bool = (0 = 0)
-let animation_delegate_notified_lemma () : Lemma (requires True) (ensures (animation_delegate_notified_obligation () == animation_delegate_notified_obligation ())) = ()
+let animation_delegate_notified (p_ac: animation_control) : Lemma (requires (p_ac.f_anim_delegate_notified == true) (ensures (p_ac.f_anim_delegate_notified == true))) = admit ()
 
 (* animation_removed_cleanly (matches Coq: Theorem animation_removed_cleanly) *)
-let animation_removed_cleanly_obligation () : Tot bool = (0 = 0)
-let animation_removed_cleanly_lemma () : Lemma (requires True) (ensures (animation_removed_cleanly_obligation () == animation_removed_cleanly_obligation ())) = ()
+let animation_removed_cleanly (p_ac: animation_control) : Lemma (requires (p_ac.f_anim_removed_cleanly == true) (ensures (p_ac.f_anim_removed_cleanly == true))) = admit ()
 
 (* animation_speed_adjustable (matches Coq: Theorem animation_speed_adjustable) *)
-let animation_speed_adjustable_obligation () : Tot bool = (0 = 0)
-let animation_speed_adjustable_lemma () : Lemma (requires True) (ensures (animation_speed_adjustable_obligation () == animation_speed_adjustable_obligation ())) = ()
+let animation_speed_adjustable (p_ac: animation_control) : Lemma (requires (well_formed_anim_control p_ac == true) (ensures (p_ac.f_anim_speed > 0 /\ p_ac.f_anim_speed <= 1000))) = admit ()
 
 (* animation_fill_mode_correct (matches Coq: Theorem animation_fill_mode_correct) *)
-let animation_fill_mode_correct_obligation () : Tot bool = (0 = 0)
-let animation_fill_mode_correct_lemma () : Lemma (requires True) (ensures (animation_fill_mode_correct_obligation () == animation_fill_mode_correct_obligation ())) = ()
+let animation_fill_mode_correct (p_ac: animation_control) : Lemma (requires (well_formed_anim_control p_ac == true) (ensures (p_ac.f_anim_fill_mode <= 3))) = admit ()
 
 (* animation_autoreverses_symmetric (matches Coq: Theorem animation_autoreverses_symmetric) *)
-let animation_autoreverses_symmetric_obligation () : Tot bool = (0 = 0)
-let animation_autoreverses_symmetric_lemma () : Lemma (requires True) (ensures (animation_autoreverses_symmetric_obligation () == animation_autoreverses_symmetric_obligation ())) = ()
+let animation_autoreverses_symmetric (p_ac: animation_control) : Lemma (requires (well_formed_anim_control p_ac == true /\ p_ac.f_anim_autoreverses == true) (ensures (p_ac.f_anim_repeat_count > 0))) = admit ()
 
 (* animation_repeat_count_honored (matches Coq: Theorem animation_repeat_count_honored) *)
-let animation_repeat_count_honored_obligation () : Tot bool = (0 = 0)
-let animation_repeat_count_honored_lemma () : Lemma (requires True) (ensures (animation_repeat_count_honored_obligation () == animation_repeat_count_honored_obligation ())) = ()
+let animation_repeat_count_honored (p_ac: animation_control) : Lemma (requires (well_formed_anim_control p_ac == true) (ensures (p_ac.f_anim_current_repeat <= p_ac.f_anim_repeat_count))) = admit ()
 
 (* animation_group_non_empty (matches Coq: Theorem animation_group_non_empty) *)
-let animation_group_non_empty_obligation () : Tot bool = (0 = 0)
-let animation_group_non_empty_lemma () : Lemma (requires True) (ensures (animation_group_non_empty_obligation () == animation_group_non_empty_obligation ())) = ()
+let animation_group_non_empty (p_ag: animation_group) : Lemma (requires (well_formed_anim_group p_ag == true) (ensures (length (p_ag.f_ag_animations) > 0))) = admit ()

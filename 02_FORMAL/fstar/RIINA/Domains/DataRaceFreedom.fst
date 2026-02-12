@@ -73,141 +73,106 @@ let mut_borrow_exclusive (p_om: nat) (p_l: nat) (p_t: nat) : Tot bool =
   (0 = 0)
 
 (* DR_001_exclusive_is_exclusive (matches Coq: Theorem DR_001_exclusive_is_exclusive) *)
-let dr_001_exclusive_is_exclusive_obligation () : Tot bool = (0 = 0)
-let dr_001_exclusive_is_exclusive_lemma () : Lemma (requires True) (ensures (dr_001_exclusive_is_exclusive_obligation () == dr_001_exclusive_is_exclusive_obligation ())) = ()
+let dr_001_exclusive_is_exclusive (p_as_: _) (p_t1: _) (p_t2: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true /\ p_as_ p_t1 p_l == Some Exclusive /\ ~(p_t1 == p_t2)) (ensures (p_as_ p_t2 p_l == None))) = admit ()
 
 (* DR_002_shared_compatible (matches Coq: Theorem DR_002_shared_compatible) *)
-let dr_002_shared_compatible_obligation () : Tot bool = (0 = 0)
-let dr_002_shared_compatible_lemma () : Lemma (requires True) (ensures (dr_002_shared_compatible_obligation () == dr_002_shared_compatible_obligation ())) = ()
+let dr_002_shared_compatible (p_as_: _) (p_t1: _) (p_t2: _) (p_l: _) : Lemma (requires (shared_compatible p_as_ == true /\ p_as_ p_t1 p_l == Some Shared) (ensures (p_as_ p_t2 p_l == Some Shared \/ p_as_ p_t2 p_l == None))) = admit ()
 
 (* DR_003_well_formed_prevents_race (matches Coq: Theorem DR_003_well_formed_prevents_race) *)
-let dr_003_well_formed_prevents_race_obligation () : Tot bool = (0 = 0)
-let dr_003_well_formed_prevents_race_lemma () : Lemma (requires True) (ensures (dr_003_well_formed_prevents_race_obligation () == dr_003_well_formed_prevents_race_obligation ())) = ()
+let dr_003_well_formed_prevents_race (p_as_: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true) (ensures (~(data_race p_as_ p_l == true)))) = admit ()
 
 (* DR_004_well_formed_race_free (matches Coq: Theorem DR_004_well_formed_race_free) *)
-let dr_004_well_formed_race_free_obligation () : Tot bool = (0 = 0)
-let dr_004_well_formed_race_free_lemma () : Lemma (requires True) (ensures (dr_004_well_formed_race_free_obligation () == dr_004_well_formed_race_free_obligation ())) = ()
+let dr_004_well_formed_race_free (p_as_: _) : Lemma (requires (well_formed_access p_as_ == true) (ensures (race_free p_as_ == true))) = admit ()
 
 (* DR_005_mutex_acquire_unlocked (matches Coq: Theorem DR_005_mutex_acquire_unlocked) *)
-let dr_005_mutex_acquire_unlocked_obligation () : Tot bool = (0 = 0)
-let dr_005_mutex_acquire_unlocked_lemma () : Lemma (requires True) (ensures (dr_005_mutex_acquire_unlocked_obligation () == dr_005_mutex_acquire_unlocked_obligation ())) = ()
+let dr_005_mutex_acquire_unlocked (p_t: _) : Lemma (mutex_acquire init_mutex p_t == Some (mkmutex true (Some p_t))) = admit ()
 
 (* DR_006_mutex_acquire_locked (matches Coq: Theorem DR_006_mutex_acquire_locked) *)
-let dr_006_mutex_acquire_locked_obligation () : Tot bool = (0 = 0)
-let dr_006_mutex_acquire_locked_lemma () : Lemma (requires True) (ensures (dr_006_mutex_acquire_locked_obligation () == dr_006_mutex_acquire_locked_obligation ())) = ()
+let dr_006_mutex_acquire_locked (p_m: _) (p_t1: _) (p_t2: _) (p_m_: _) : Lemma (requires (mutex_acquire p_m p_t1 == Some m_) (ensures (mutex_acquire m_ p_t2 == None))) = admit ()
 
 (* DR_007_mutex_release_owner (matches Coq: Theorem DR_007_mutex_release_owner) *)
-let dr_007_mutex_release_owner_obligation () : Tot bool = (0 = 0)
-let dr_007_mutex_release_owner_lemma () : Lemma (requires True) (ensures (dr_007_mutex_release_owner_obligation () == dr_007_mutex_release_owner_obligation ())) = ()
+let dr_007_mutex_release_owner (p_t: _) : Lemma (mutex_release (mkmutex true (Some p_t)) p_t == Some init_mutex) = admit ()
 
 (* DR_008_mutex_release_non_owner (matches Coq: Theorem DR_008_mutex_release_non_owner) *)
-let dr_008_mutex_release_non_owner_obligation () : Tot bool = (0 = 0)
-let dr_008_mutex_release_non_owner_lemma () : Lemma (requires True) (ensures (dr_008_mutex_release_non_owner_obligation () == dr_008_mutex_release_non_owner_obligation ())) = ()
+let dr_008_mutex_release_non_owner (p_t1: _) (p_t2: _) : Lemma (requires (~(p_t1 == p_t2)) (ensures (mutex_release (mkmutex true (Some p_t1)) p_t2 == None))) = admit ()
 
 (* DR_009_rwlock_read_no_writer (matches Coq: Theorem DR_009_rwlock_read_no_writer) *)
-let dr_009_rwlock_read_no_writer_obligation () : Tot bool = (0 = 0)
-let dr_009_rwlock_read_no_writer_lemma () : Lemma (requires True) (ensures (dr_009_rwlock_read_no_writer_obligation () == dr_009_rwlock_read_no_writer_obligation ())) = ()
+let dr_009_rwlock_read_no_writer (p_rw: _) : Lemma (requires (p_rw.f_rwlock_writer == None) (ensures (exists rw__ rwlock_read_acquire p_rw == Some rw_))) = admit ()
 
 (* DR_010_rwlock_read_increments (matches Coq: Theorem DR_010_rwlock_read_increments) *)
-let dr_010_rwlock_read_increments_obligation () : Tot bool = (0 = 0)
-let dr_010_rwlock_read_increments_lemma () : Lemma (requires True) (ensures (dr_010_rwlock_read_increments_obligation () == dr_010_rwlock_read_increments_obligation ())) = ()
+let dr_010_rwlock_read_increments (p_rw: _) (p_rw_: _) : Lemma (requires (rwlock_read_acquire p_rw == Some rw_) (ensures (rw_.f_rwlock_readers == ((p_rw.f_rwlock_readers) + 1)))) = admit ()
 
 (* DR_011_rwlock_read_blocked_by_writer (matches Coq: Theorem DR_011_rwlock_read_blocked_by_writer) *)
-let dr_011_rwlock_read_blocked_by_writer_obligation () : Tot bool = (0 = 0)
-let dr_011_rwlock_read_blocked_by_writer_lemma () : Lemma (requires True) (ensures (dr_011_rwlock_read_blocked_by_writer_obligation () == dr_011_rwlock_read_blocked_by_writer_obligation ())) = ()
+let dr_011_rwlock_read_blocked_by_writer (p_rw: _) (p_t: _) : Lemma (requires (p_rw.f_rwlock_writer == Some p_t) (ensures (rwlock_read_acquire p_rw == None))) = admit ()
 
 (* DR_012_rwlock_write_no_readers (matches Coq: Theorem DR_012_rwlock_write_no_readers) *)
-let dr_012_rwlock_write_no_readers_obligation () : Tot bool = (0 = 0)
-let dr_012_rwlock_write_no_readers_lemma () : Lemma (requires True) (ensures (dr_012_rwlock_write_no_readers_obligation () == dr_012_rwlock_write_no_readers_obligation ())) = ()
+let dr_012_rwlock_write_no_readers (p_rw: _) (p_t: _) (p_rw_: _) : Lemma (requires (rwlock_write_acquire p_rw p_t == Some rw_) (ensures (p_rw.f_rwlock_readers == 0))) = admit ()
 
 (* DR_013_rwlock_write_blocked_by_readers (matches Coq: Theorem DR_013_rwlock_write_blocked_by_readers) *)
-let dr_013_rwlock_write_blocked_by_readers_obligation () : Tot bool = (0 = 0)
-let dr_013_rwlock_write_blocked_by_readers_lemma () : Lemma (requires True) (ensures (dr_013_rwlock_write_blocked_by_readers_obligation () == dr_013_rwlock_write_blocked_by_readers_obligation ())) = ()
+let dr_013_rwlock_write_blocked_by_readers (p_rw: _) (p_t: _) : Lemma (requires (p_rw.f_rwlock_readers > 0) (ensures (rwlock_write_acquire p_rw p_t == None))) = admit ()
 
 (* DR_014_mut_borrow_owned (matches Coq: Theorem DR_014_mut_borrow_owned) *)
-let dr_014_mut_borrow_owned_obligation () : Tot bool = (0 = 0)
-let dr_014_mut_borrow_owned_lemma () : Lemma (requires True) (ensures (dr_014_mut_borrow_owned_obligation () == dr_014_mut_borrow_owned_obligation ())) = ()
+let dr_014_mut_borrow_owned (p_om: _) (p_l: _) (p_t: _) : Lemma (requires (p_om p_l == Some (Owned p_t)) (ensures (valid_borrow p_om p_l Exclusive p_t == true))) = admit ()
 
 (* DR_015_shared_borrow_owned (matches Coq: Theorem DR_015_shared_borrow_owned) *)
-let dr_015_shared_borrow_owned_obligation () : Tot bool = (0 = 0)
-let dr_015_shared_borrow_owned_lemma () : Lemma (requires True) (ensures (dr_015_shared_borrow_owned_obligation () == dr_015_shared_borrow_owned_obligation ())) = ()
+let dr_015_shared_borrow_owned (p_om: _) (p_l: _) (p_t: _) : Lemma (requires (p_om p_l == Some (Owned p_t)) (ensures (valid_borrow p_om p_l Shared p_t == true))) = admit ()
 
 (* DR_016_shared_borrow_extends (matches Coq: Theorem DR_016_shared_borrow_extends) *)
-let dr_016_shared_borrow_extends_obligation () : Tot bool = (0 = 0)
-let dr_016_shared_borrow_extends_lemma () : Lemma (requires True) (ensures (dr_016_shared_borrow_extends_obligation () == dr_016_shared_borrow_extends_obligation ())) = ()
+let dr_016_shared_borrow_extends (p_om: _) (p_l: _) (p_ts: _) (p_t: _) : Lemma (requires (p_om p_l == Some (SharedBorrowed p_ts)) (ensures (valid_borrow p_om p_l Shared p_t == true))) = admit ()
 
 (* DR_017_empty_well_formed (matches Coq: Theorem DR_017_empty_well_formed) *)
-let dr_017_empty_well_formed_obligation () : Tot bool = (0 = 0)
-let dr_017_empty_well_formed_lemma () : Lemma (requires True) (ensures (dr_017_empty_well_formed_obligation () == dr_017_empty_well_formed_obligation ())) = ()
+let dr_017_empty_well_formed () : Lemma (well_formed_access (fn_fun _ _ => None) == true) = admit ()
 
 (* DR_018_empty_race_free (matches Coq: Theorem DR_018_empty_race_free) *)
-let dr_018_empty_race_free_obligation () : Tot bool = (0 = 0)
-let dr_018_empty_race_free_lemma () : Lemma (requires True) (ensures (dr_018_empty_race_free_obligation () == dr_018_empty_race_free_obligation ())) = ()
+let dr_018_empty_race_free () : Lemma (race_free (fn_fun _ _ => None) == true) = admit ()
 
 (* DR_019_single_exclusive_well_formed (matches Coq: Theorem DR_019_single_exclusive_well_formed) *)
-let dr_019_single_exclusive_well_formed_obligation () : Tot bool = (0 = 0)
-let dr_019_single_exclusive_well_formed_lemma () : Lemma (requires True) (ensures (dr_019_single_exclusive_well_formed_obligation () == dr_019_single_exclusive_well_formed_obligation ())) = ()
+let dr_019_single_exclusive_well_formed (p_t0: _) (p_l0: _) : Lemma (well_formed_access (fn_fun t l => id_if (Nat.eqb t p_t0) && (Nat.eqb l p_l0) id_then Some Exclusive id_else None) == true) = admit ()
 
 (* DR_020_single_exclusive_race_free (matches Coq: Theorem DR_020_single_exclusive_race_free) *)
-let dr_020_single_exclusive_race_free_obligation () : Tot bool = (0 = 0)
-let dr_020_single_exclusive_race_free_lemma () : Lemma (requires True) (ensures (dr_020_single_exclusive_race_free_obligation () == dr_020_single_exclusive_race_free_obligation ())) = ()
+let dr_020_single_exclusive_race_free (p_t0: _) (p_l0: _) : Lemma (race_free (fn_fun t l => id_if (Nat.eqb t p_t0) && (Nat.eqb l p_l0) id_then Some Exclusive id_else None) == true) = admit ()
 
 (* DR_021_mutex_mutual_exclusion (matches Coq: Theorem DR_021_mutex_mutual_exclusion) *)
-let dr_021_mutex_mutual_exclusion_obligation () : Tot bool = (0 = 0)
-let dr_021_mutex_mutual_exclusion_lemma () : Lemma (requires True) (ensures (dr_021_mutex_mutual_exclusion_obligation () == dr_021_mutex_mutual_exclusion_obligation ())) = ()
+let dr_021_mutex_mutual_exclusion (p_m: _) (p_t1: _) (p_t2: _) (p_m1: _) : Lemma (requires (mutex_acquire p_m p_t1 == Some p_m1) (ensures (mutex_acquire p_m1 p_t2 == None))) = admit ()
 
 (* DR_022_init_mutex_well_formed (matches Coq: Theorem DR_022_init_mutex_well_formed) *)
-let dr_022_init_mutex_well_formed_obligation () : Tot bool = (0 = 0)
-let dr_022_init_mutex_well_formed_lemma () : Lemma (requires True) (ensures (dr_022_init_mutex_well_formed_obligation () == dr_022_init_mutex_well_formed_obligation ())) = ()
+let dr_022_init_mutex_well_formed () : Lemma (mutex_well_formed init_mutex == true) = admit ()
 
 (* DR_023_acquired_mutex_well_formed (matches Coq: Theorem DR_023_acquired_mutex_well_formed) *)
-let dr_023_acquired_mutex_well_formed_obligation () : Tot bool = (0 = 0)
-let dr_023_acquired_mutex_well_formed_lemma () : Lemma (requires True) (ensures (dr_023_acquired_mutex_well_formed_obligation () == dr_023_acquired_mutex_well_formed_obligation ())) = ()
+let dr_023_acquired_mutex_well_formed (p_m: _) (p_t: _) (p_m_: _) : Lemma (requires (mutex_well_formed p_m == true /\ mutex_acquire p_m p_t == Some m_) (ensures (mutex_well_formed m_ == true))) = admit ()
 
 (* DR_024_rwlock_init_well_formed (matches Coq: Theorem DR_024_rwlock_init_well_formed) *)
-let dr_024_rwlock_init_well_formed_obligation () : Tot bool = (0 = 0)
-let dr_024_rwlock_init_well_formed_lemma () : Lemma (requires True) (ensures (dr_024_rwlock_init_well_formed_obligation () == dr_024_rwlock_init_well_formed_obligation ())) = ()
+let dr_024_rwlock_init_well_formed () : Lemma (rwlock_well_formed init_rwlock == true) = admit ()
 
 (* DR_025_shared_no_race (matches Coq: Theorem DR_025_shared_no_race) *)
-let dr_025_shared_no_race_obligation () : Tot bool = (0 = 0)
-let dr_025_shared_no_race_lemma () : Lemma (requires True) (ensures (dr_025_shared_no_race_obligation () == dr_025_shared_no_race_obligation ())) = ()
+let dr_025_shared_no_race (p_as_: _) (p_l: _) : Lemma (requires ((forall t_ p_as_ t p_l == Some Shared \/ p_as_ t p_l == None)) (ensures (~(data_race p_as_ p_l == true)))) = admit ()
 
 (* DR_026_access_mode_dec (matches Coq: Theorem DR_026_access_mode_dec) *)
-let dr_026_access_mode_dec_obligation () : Tot bool = (0 = 0)
-let dr_026_access_mode_dec_lemma () : Lemma (requires True) (ensures (dr_026_access_mode_dec_obligation () == dr_026_access_mode_dec_obligation ())) = ()
+let dr_026_access_mode_dec (p_m1: _) (p_m2: _) (p_accessmode: _) : Lemma ({p_m1 == m2_ + {p_m1 <> m2_) = admit ()
 
 (* DR_027_remove_preserves_wf (matches Coq: Theorem DR_027_remove_preserves_wf) *)
-let dr_027_remove_preserves_wf_obligation () : Tot bool = (0 = 0)
-let dr_027_remove_preserves_wf_lemma () : Lemma (requires True) (ensures (dr_027_remove_preserves_wf_obligation () == dr_027_remove_preserves_wf_obligation ())) = ()
+let dr_027_remove_preserves_wf (p_as_: _) (p_t: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true) (ensures (well_formed_access (fn_fun t_ l_ => id_if (Nat.eqb t_ p_t) && (Nat.eqb l_ p_l) id_then None id_else p_as_ t_ l_) == true))) = admit ()
 
 (* DR_028_race_free_location (matches Coq: Theorem DR_028_race_free_location) *)
-let dr_028_race_free_location_obligation () : Tot bool = (0 = 0)
-let dr_028_race_free_location_lemma () : Lemma (requires True) (ensures (dr_028_race_free_location_obligation () == dr_028_race_free_location_obligation ())) = ()
+let dr_028_race_free_location (p_as_: _) (p_l1: _) (p_l2: _) : Lemma (~(data_race p_as_ p_l1 == true) /\ ~(p_l1 == p_l2)) = admit ()
 
 (* DR_029_ownership_state_cases (matches Coq: Theorem DR_029_ownership_state_cases) *)
-let dr_029_ownership_state_cases_obligation () : Tot bool = (0 = 0)
-let dr_029_ownership_state_cases_lemma () : Lemma (requires True) (ensures (dr_029_ownership_state_cases_obligation () == dr_029_ownership_state_cases_obligation ())) = ()
+let dr_029_ownership_state_cases (p_os: _) (p_ownershipstate: _) : Lemma ((exists t_ p_os == Owned t) \/ (exists t_ p_os == MutBorrowed t) \/ (exists ts_ p_os == SharedBorrowed ts) \/ p_os == Moved) = admit ()
 
 (* DR_030_valid_borrow_respects_ownership (matches Coq: Theorem DR_030_valid_borrow_respects_ownership) *)
-let dr_030_valid_borrow_respects_ownership_obligation () : Tot bool = (0 = 0)
-let dr_030_valid_borrow_respects_ownership_lemma () : Lemma (requires True) (ensures (dr_030_valid_borrow_respects_ownership_obligation () == dr_030_valid_borrow_respects_ownership_obligation ())) = ()
+let dr_030_valid_borrow_respects_ownership (p_om: _) (p_l: _) (p_m: _) (p_t: _) : Lemma (requires (valid_borrow p_om p_l p_m p_t == true) (ensures (~(p_om p_l == None)))) = admit ()
 
 (* DR_031_mutex_locked_dec (matches Coq: Theorem DR_031_mutex_locked_dec) *)
-let dr_031_mutex_locked_dec_obligation () : Tot bool = (0 = 0)
-let dr_031_mutex_locked_dec_lemma () : Lemma (requires True) (ensures (dr_031_mutex_locked_dec_obligation () == dr_031_mutex_locked_dec_obligation ())) = ()
+let dr_031_mutex_locked_dec (p_m: _) : Lemma (p_m.f_mutex_locked == true \/ p_m.f_mutex_locked == false) = admit ()
 
 (* DR_032_rwlock_readers_nonneg (matches Coq: Theorem DR_032_rwlock_readers_nonneg) *)
-let dr_032_rwlock_readers_nonneg_obligation () : Tot bool = (0 = 0)
-let dr_032_rwlock_readers_nonneg_lemma () : Lemma (requires True) (ensures (dr_032_rwlock_readers_nonneg_obligation () == dr_032_rwlock_readers_nonneg_obligation ())) = ()
+let dr_032_rwlock_readers_nonneg (p_rw: _) : Lemma (p_rw.f_rwlock_readers >= 0) = admit ()
 
 (* DR_033_mutex_acquire_release_cycle (matches Coq: Theorem DR_033_mutex_acquire_release_cycle) *)
-let dr_033_mutex_acquire_release_cycle_obligation () : Tot bool = (0 = 0)
-let dr_033_mutex_acquire_release_cycle_lemma () : Lemma (requires True) (ensures (dr_033_mutex_acquire_release_cycle_obligation () == dr_033_mutex_acquire_release_cycle_obligation ())) = ()
+let dr_033_mutex_acquire_release_cycle (p_t: _) : Lemma (exists m__ mutex_acquire init_mutex p_t == Some m_ /\ mutex_release m_ p_t == Some init_mutex) = admit ()
 
 (* DR_034_access_mode_cases (matches Coq: Theorem DR_034_access_mode_cases) *)
-let dr_034_access_mode_cases_obligation () : Tot bool = (0 = 0)
-let dr_034_access_mode_cases_lemma () : Lemma (requires True) (ensures (dr_034_access_mode_cases_obligation () == dr_034_access_mode_cases_obligation ())) = ()
+let dr_034_access_mode_cases (p_m: _) (p_accessmode: _) : Lemma (p_m == Exclusive \/ p_m == Shared \/ p_m == NoAccess) = admit ()
 
 (* DR_035_no_concurrent_exclusive (matches Coq: Theorem DR_035_no_concurrent_exclusive) *)
-let dr_035_no_concurrent_exclusive_obligation () : Tot bool = (0 = 0)
-let dr_035_no_concurrent_exclusive_lemma () : Lemma (requires True) (ensures (dr_035_no_concurrent_exclusive_obligation () == dr_035_no_concurrent_exclusive_obligation ())) = ()
+let dr_035_no_concurrent_exclusive (p_as_: _) (p_t1: _) (p_t2: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true /\ ~(p_t1 == p_t2) /\ p_as_ p_t1 p_l == Some Exclusive) (ensures (~(p_as_ p_t2 p_l == Some Exclusive)))) = admit ()

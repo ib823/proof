@@ -204,205 +204,154 @@ let all_critical_layers_verified (p_ss: stack_state) : Tot bool =
   (0 = 0)
 
 (* layer_eqb_refl (matches Coq: Lemma layer_eqb_refl) *)
-let layer_eqb_refl_obligation () : Tot bool = (0 = 0)
-let layer_eqb_refl_lemma () : Lemma (requires True) (ensures (layer_eqb_refl_obligation () == layer_eqb_refl_obligation ())) = ()
+let layer_eqb_refl (p_l: _) : Lemma (layer_eqb p_l p_l == true) = admit ()
 
 (* layer_eqb_eq (matches Coq: Lemma layer_eqb_eq) *)
-let layer_eqb_eq_obligation () : Tot bool = (0 = 0)
-let layer_eqb_eq_lemma () : Lemma (requires True) (ensures (layer_eqb_eq_obligation () == layer_eqb_eq_obligation ())) = ()
+let layer_eqb_eq (p_l1: _) (p_l2: _) : Lemma (requires (layer_eqb p_l1 p_l2 == fn_true <) (ensures (p_l1 == p_l2))) = admit ()
 
 (* layer_adjacent_L0_L1 (matches Coq: Lemma layer_adjacent_L0_L1) *)
-let layer_adjacent_l0_l1_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l0_l1_lemma () : Lemma (requires True) (ensures (layer_adjacent_l0_l1_obligation () == layer_adjacent_l0_l1_obligation ())) = ()
+let layer_adjacent_l0_l1 () : Lemma (layer_adjacent L0_Physics L1_Silicon == true) = admit ()
 
 (* layer_adjacent_L1_L2 (matches Coq: Lemma layer_adjacent_L1_L2) *)
-let layer_adjacent_l1_l2_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l1_l2_lemma () : Lemma (requires True) (ensures (layer_adjacent_l1_l2_obligation () == layer_adjacent_l1_l2_obligation ())) = ()
+let layer_adjacent_l1_l2 () : Lemma (layer_adjacent L1_Silicon L2_Firmware == true) = admit ()
 
 (* layer_adjacent_L2_L3 (matches Coq: Lemma layer_adjacent_L2_L3) *)
-let layer_adjacent_l2_l3_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l2_l3_lemma () : Lemma (requires True) (ensures (layer_adjacent_l2_l3_obligation () == layer_adjacent_l2_l3_obligation ())) = ()
+let layer_adjacent_l2_l3 () : Lemma (layer_adjacent L2_Firmware L3_Network == true) = admit ()
 
 (* layer_adjacent_L3_L4 (matches Coq: Lemma layer_adjacent_L3_L4) *)
-let layer_adjacent_l3_l4_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l3_l4_lemma () : Lemma (requires True) (ensures (layer_adjacent_l3_l4_obligation () == layer_adjacent_l3_l4_obligation ())) = ()
+let layer_adjacent_l3_l4 () : Lemma (layer_adjacent L3_Network L4_OS == true) = admit ()
 
 (* layer_adjacent_L4_L5 (matches Coq: Lemma layer_adjacent_L4_L5) *)
-let layer_adjacent_l4_l5_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l4_l5_lemma () : Lemma (requires True) (ensures (layer_adjacent_l4_l5_obligation () == layer_adjacent_l4_l5_obligation ())) = ()
+let layer_adjacent_l4_l5 () : Lemma (layer_adjacent L4_OS L5_Runtime == true) = admit ()
 
 (* layer_adjacent_L5_L6 (matches Coq: Lemma layer_adjacent_L5_L6) *)
-let layer_adjacent_l5_l6_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l5_l6_lemma () : Lemma (requires True) (ensures (layer_adjacent_l5_l6_obligation () == layer_adjacent_l5_l6_obligation ())) = ()
+let layer_adjacent_l5_l6 () : Lemma (layer_adjacent L5_Runtime L6_App == true) = admit ()
 
 (* layer_adjacent_L6_L7 (matches Coq: Lemma layer_adjacent_L6_L7) *)
-let layer_adjacent_l6_l7_obligation () : Tot bool = (0 = 0)
-let layer_adjacent_l6_l7_lemma () : Lemma (requires True) (ensures (layer_adjacent_l6_l7_obligation () == layer_adjacent_l6_l7_obligation ())) = ()
+let layer_adjacent_l6_l7 () : Lemma (layer_adjacent L6_App L7_UX == true) = admit ()
 
 (* sp_eqb_refl (matches Coq: Lemma sp_eqb_refl) *)
-let sp_eqb_refl_obligation () : Tot bool = (0 = 0)
-let sp_eqb_refl_lemma () : Lemma (requires True) (ensures (sp_eqb_refl_obligation () == sp_eqb_refl_obligation ())) = ()
+let sp_eqb_refl (p_sp: _) : Lemma (sp_eqb p_sp p_sp == true) = admit ()
 
 (* existsb_app (matches Coq: Lemma existsb_app) *)
-let existsb_app_obligation () : Tot bool = (0 = 0)
-let existsb_app_lemma () : Lemma (requires True) (ensures (existsb_app_obligation () == existsb_app_obligation ())) = ()
+let existsb_app (p_f: nat) (p_l1: _) (p_l2: _) : Lemma (existsb p_f (p_l1 ++ p_l2) == existsb p_f p_l1 || existsb p_f p_l2) = admit ()
 
 (* existsb_cons_true (matches Coq: Lemma existsb_cons_true) *)
-let existsb_cons_true_obligation () : Tot bool = (0 = 0)
-let existsb_cons_true_lemma () : Lemma (requires True) (ensures (existsb_cons_true_obligation () == existsb_cons_true_obligation ())) = ()
+let existsb_cons_true (p_f: nat) (p_x: _) (p_xs: _) : Lemma (requires (p_f p_x == true) (ensures (existsb p_f (p_x :: p_xs) == true))) = admit ()
 
 (* existsb_cons_or (matches Coq: Lemma existsb_cons_or) *)
-let existsb_cons_or_obligation () : Tot bool = (0 = 0)
-let existsb_cons_or_lemma () : Lemma (requires True) (ensures (existsb_cons_or_obligation () == existsb_cons_or_obligation ())) = ()
+let existsb_cons_or (p_f: nat) (p_x: _) (p_xs: _) : Lemma (existsb p_f (p_x :: p_xs) == p_f p_x || existsb p_f p_xs) = admit ()
 
 (* forallb_impl (matches Coq: Lemma forallb_impl) *)
-let forallb_impl_obligation () : Tot bool = (0 = 0)
-let forallb_impl_lemma () : Lemma (requires True) (ensures (forallb_impl_obligation () == forallb_impl_obligation ())) = ()
+let forallb_impl (p_f: nat) (p_g: nat) (p_l: _) : Lemma (requires ((forall x_ p_f x == fn_true -> p_g x = true) /\ forallb p_f p_l == true) (ensures (forallb p_g p_l == true))) = admit ()
 
 (* andb_true_intro_both (matches Coq: Lemma andb_true_intro_both) *)
-let andb_true_intro_both_obligation () : Tot bool = (0 = 0)
-let andb_true_intro_both_lemma () : Lemma (requires True) (ensures (andb_true_intro_both_obligation () == andb_true_intro_both_obligation ())) = ()
+let andb_true_intro_both (p_b1: _) (p_b2: _) : Lemma (requires (p_b1 == true /\ p_b2 == true) (ensures (p_b1 && p_b2 == true))) = admit ()
 
 (* TOTAL_001_01_l0_l1_interface_security (matches Coq: Theorem TOTAL_001_01_l0_l1_interface_security) *)
-let total_001_01_l0_l1_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_01_l0_l1_interface_security_lemma () : Lemma (requires True) (ensures (total_001_01_l0_l1_interface_security_obligation () == total_001_01_l0_l1_interface_security_obligation ())) = ()
+let total_001_01_l0_l1_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L0_Physics L1_Silicon == true /\ layer_verified_in_stack p_ss L0_Physics == true /\ layer_verified_in_stack p_ss L1_Silicon == true) (ensures (layer_adjacent L0_Physics L1_Silicon == true))) = admit ()
 
 (* TOTAL_001_02_l1_l2_interface_security (matches Coq: Theorem TOTAL_001_02_l1_l2_interface_security) *)
-let total_001_02_l1_l2_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_02_l1_l2_interface_security_lemma () : Lemma (requires True) (ensures (total_001_02_l1_l2_interface_security_obligation () == total_001_02_l1_l2_interface_security_obligation ())) = ()
+let total_001_02_l1_l2_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L1_Silicon L2_Firmware == true /\ layer_verified_in_stack p_ss L1_Silicon == true /\ layer_verified_in_stack p_ss L2_Firmware == true) (ensures (layer_adjacent L1_Silicon L2_Firmware == true))) = admit ()
 
 (* TOTAL_001_03_l2_l3_interface_security (matches Coq: Theorem TOTAL_001_03_l2_l3_interface_security) *)
-let total_001_03_l2_l3_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_03_l2_l3_interface_security_lemma () : Lemma (requires True) (ensures (total_001_03_l2_l3_interface_security_obligation () == total_001_03_l2_l3_interface_security_obligation ())) = ()
+let total_001_03_l2_l3_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L2_Firmware L3_Network == true /\ layer_verified_in_stack p_ss L2_Firmware == true /\ layer_verified_in_stack p_ss L3_Network == true) (ensures (layer_adjacent L2_Firmware L3_Network == true))) = admit ()
 
 (* TOTAL_001_04_l3_l4_interface_security (matches Coq: Theorem TOTAL_001_04_l3_l4_interface_security) *)
-let total_001_04_l3_l4_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_04_l3_l4_interface_security_lemma () : Lemma (requires True) (ensures (total_001_04_l3_l4_interface_security_obligation () == total_001_04_l3_l4_interface_security_obligation ())) = ()
+let total_001_04_l3_l4_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L3_Network L4_OS == true /\ layer_verified_in_stack p_ss L3_Network == true /\ layer_verified_in_stack p_ss L4_OS == true) (ensures (layer_adjacent L3_Network L4_OS == true))) = admit ()
 
 (* TOTAL_001_05_l4_l5_interface_security (matches Coq: Theorem TOTAL_001_05_l4_l5_interface_security) *)
-let total_001_05_l4_l5_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_05_l4_l5_interface_security_lemma () : Lemma (requires True) (ensures (total_001_05_l4_l5_interface_security_obligation () == total_001_05_l4_l5_interface_security_obligation ())) = ()
+let total_001_05_l4_l5_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L4_OS L5_Runtime == true /\ layer_verified_in_stack p_ss L4_OS == true /\ layer_verified_in_stack p_ss L5_Runtime == true) (ensures (layer_adjacent L4_OS L5_Runtime == true))) = admit ()
 
 (* TOTAL_001_06_l5_l6_interface_security (matches Coq: Theorem TOTAL_001_06_l5_l6_interface_security) *)
-let total_001_06_l5_l6_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_06_l5_l6_interface_security_lemma () : Lemma (requires True) (ensures (total_001_06_l5_l6_interface_security_obligation () == total_001_06_l5_l6_interface_security_obligation ())) = ()
+let total_001_06_l5_l6_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L5_Runtime L6_App == true /\ layer_verified_in_stack p_ss L5_Runtime == true /\ layer_verified_in_stack p_ss L6_App == true) (ensures (layer_adjacent L5_Runtime L6_App == true))) = admit ()
 
 (* TOTAL_001_07_l6_l7_interface_security (matches Coq: Theorem TOTAL_001_07_l6_l7_interface_security) *)
-let total_001_07_l6_l7_interface_security_obligation () : Tot bool = (0 = 0)
-let total_001_07_l6_l7_interface_security_lemma () : Lemma (requires True) (ensures (total_001_07_l6_l7_interface_security_obligation () == total_001_07_l6_l7_interface_security_obligation ())) = ()
+let total_001_07_l6_l7_interface_security (p_ss: _) (p_stackstate: _) : Lemma (requires (interface_verified p_ss L6_App L7_UX == true /\ layer_verified_in_stack p_ss L6_App == true /\ layer_verified_in_stack p_ss L7_UX == true) (ensures (layer_adjacent L6_App L7_UX == true))) = admit ()
 
 (* TOTAL_001_08_confidentiality_preserved (matches Coq: Theorem TOTAL_001_08_confidentiality_preserved) *)
-let total_001_08_confidentiality_preserved_obligation () : Tot bool = (0 = 0)
-let total_001_08_confidentiality_preserved_lemma () : Lemma (requires True) (ensures (total_001_08_confidentiality_preserved_obligation () == total_001_08_confidentiality_preserved_obligation ())) = ()
+let total_001_08_confidentiality_preserved (p_ss: _) (p_stackstate: _) : Lemma (requires (all_layers_verified p_ss == true /\ (forall l_ In l full_stack -> property_in_layer p_ss l SPConfidentiality == true)) (ensures (property_preserved_across_layers p_ss SPConfidentiality full_stack == true))) = admit ()
 
 (* TOTAL_001_09_integrity_preserved (matches Coq: Theorem TOTAL_001_09_integrity_preserved) *)
-let total_001_09_integrity_preserved_obligation () : Tot bool = (0 = 0)
-let total_001_09_integrity_preserved_lemma () : Lemma (requires True) (ensures (total_001_09_integrity_preserved_obligation () == total_001_09_integrity_preserved_obligation ())) = ()
+let total_001_09_integrity_preserved (p_ss: _) (p_stackstate: _) : Lemma (requires (all_layers_verified p_ss == true /\ (forall l_ In l full_stack -> property_in_layer p_ss l SPIntegrity == true)) (ensures (property_preserved_across_layers p_ss SPIntegrity full_stack == true))) = admit ()
 
 (* TOTAL_001_10_availability_preserved (matches Coq: Theorem TOTAL_001_10_availability_preserved) *)
-let total_001_10_availability_preserved_obligation () : Tot bool = (0 = 0)
-let total_001_10_availability_preserved_lemma () : Lemma (requires True) (ensures (total_001_10_availability_preserved_obligation () == total_001_10_availability_preserved_obligation ())) = ()
+let total_001_10_availability_preserved (p_ss: _) (p_stackstate: _) : Lemma (requires (all_layers_verified p_ss == true /\ (forall l_ In l full_stack -> property_in_layer p_ss l SPAvailability == true)) (ensures (property_preserved_across_layers p_ss SPAvailability full_stack == true))) = admit ()
 
 (* TOTAL_001_11_authentication_preserved (matches Coq: Theorem TOTAL_001_11_authentication_preserved) *)
-let total_001_11_authentication_preserved_obligation () : Tot bool = (0 = 0)
-let total_001_11_authentication_preserved_lemma () : Lemma (requires True) (ensures (total_001_11_authentication_preserved_obligation () == total_001_11_authentication_preserved_obligation ())) = ()
+let total_001_11_authentication_preserved (p_ss: _) (p_stackstate: _) : Lemma (requires (all_layers_verified p_ss == true /\ (forall l_ In l network_to_ux_layers -> property_in_layer p_ss l SPAuthentication == true)) (ensures (property_preserved_across_layers p_ss SPAuthentication network_to_ux_layers == true))) = admit ()
 
 (* TOTAL_001_12_authorization_preserved (matches Coq: Theorem TOTAL_001_12_authorization_preserved) *)
-let total_001_12_authorization_preserved_obligation () : Tot bool = (0 = 0)
-let total_001_12_authorization_preserved_lemma () : Lemma (requires True) (ensures (total_001_12_authorization_preserved_obligation () == total_001_12_authorization_preserved_obligation ())) = ()
+let total_001_12_authorization_preserved (p_ss: _) (p_stackstate: _) : Lemma (requires (all_layers_verified p_ss == true /\ (forall l_ In l os_to_ux_layers -> property_in_layer p_ss l SPAuthorization == true)) (ensures (property_preserved_across_layers p_ss SPAuthorization os_to_ux_layers == true))) = admit ()
 
 (* TOTAL_001_13_memory_corruption_impossible (matches Coq: Theorem TOTAL_001_13_memory_corruption_impossible) *)
-let total_001_13_memory_corruption_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_13_memory_corruption_impossible_lemma () : Lemma (requires True) (ensures (total_001_13_memory_corruption_impossible_obligation () == total_001_13_memory_corruption_impossible_obligation ())) = ()
+let total_001_13_memory_corruption_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L1_Silicon == true) (ensures (attack_blocked p_ss ATMemoryCorruption == true))) = admit ()
 
 (* TOTAL_001_14_side_channel_impossible (matches Coq: Theorem TOTAL_001_14_side_channel_impossible) *)
-let total_001_14_side_channel_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_14_side_channel_impossible_lemma () : Lemma (requires True) (ensures (total_001_14_side_channel_impossible_obligation () == total_001_14_side_channel_impossible_obligation ())) = ()
+let total_001_14_side_channel_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L1_Silicon == true) (ensures (attack_blocked p_ss ATSideChannel == true))) = admit ()
 
 (* TOTAL_001_15_network_attack_impossible (matches Coq: Theorem TOTAL_001_15_network_attack_impossible) *)
-let total_001_15_network_attack_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_15_network_attack_impossible_lemma () : Lemma (requires True) (ensures (total_001_15_network_attack_impossible_obligation () == total_001_15_network_attack_impossible_obligation ())) = ()
+let total_001_15_network_attack_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L3_Network == true) (ensures (attack_blocked p_ss ATNetworkAttack == true))) = admit ()
 
 (* TOTAL_001_16_privilege_escalation_impossible (matches Coq: Theorem TOTAL_001_16_privilege_escalation_impossible) *)
-let total_001_16_privilege_escalation_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_16_privilege_escalation_impossible_lemma () : Lemma (requires True) (ensures (total_001_16_privilege_escalation_impossible_obligation () == total_001_16_privilege_escalation_impossible_obligation ())) = ()
+let total_001_16_privilege_escalation_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L4_OS == true) (ensures (attack_blocked p_ss ATPrivilegeEscalation == true))) = admit ()
 
 (* TOTAL_001_17_ui_deception_impossible (matches Coq: Theorem TOTAL_001_17_ui_deception_impossible) *)
-let total_001_17_ui_deception_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_17_ui_deception_impossible_lemma () : Lemma (requires True) (ensures (total_001_17_ui_deception_impossible_obligation () == total_001_17_ui_deception_impossible_obligation ())) = ()
+let total_001_17_ui_deception_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L7_UX == true) (ensures (attack_blocked p_ss ATUIDeception == true))) = admit ()
 
 (* TOTAL_001_18_boot_compromise_impossible (matches Coq: Theorem TOTAL_001_18_boot_compromise_impossible) *)
-let total_001_18_boot_compromise_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_18_boot_compromise_impossible_lemma () : Lemma (requires True) (ensures (total_001_18_boot_compromise_impossible_obligation () == total_001_18_boot_compromise_impossible_obligation ())) = ()
+let total_001_18_boot_compromise_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L2_Firmware == true) (ensures (attack_blocked p_ss ATBootCompromise == true))) = admit ()
 
 (* TOTAL_001_19_adjacent_layers_compose (matches Coq: Theorem TOTAL_001_19_adjacent_layers_compose) *)
-let total_001_19_adjacent_layers_compose_obligation () : Tot bool = (0 = 0)
-let total_001_19_adjacent_layers_compose_lemma () : Lemma (requires True) (ensures (total_001_19_adjacent_layers_compose_obligation () == total_001_19_adjacent_layers_compose_obligation ())) = ()
+let total_001_19_adjacent_layers_compose (p_ss: _) (p_stackstate: _) (p_l1: _) (p_l2: _) (p_layer: _) : Lemma (requires (layer_adjacent p_l1 p_l2 == true /\ layer_verified_in_stack p_ss p_l1 == true /\ layer_verified_in_stack p_ss p_l2 == true /\ interface_verified p_ss p_l1 p_l2 == true) (ensures (layer_in_stack p_ss p_l1 && layer_in_stack p_ss p_l2 == true))) = admit ()
 
 (* TOTAL_001_20_security_property_transitivity (matches Coq: Theorem TOTAL_001_20_security_property_transitivity) *)
-let total_001_20_security_property_transitivity_obligation () : Tot bool = (0 = 0)
-let total_001_20_security_property_transitivity_lemma () : Lemma (requires True) (ensures (total_001_20_security_property_transitivity_obligation () == total_001_20_security_property_transitivity_obligation ())) = ()
+let total_001_20_security_property_transitivity (p_ss: _) (p_stackstate: _) (p_p: _) (p_securityproperty: _) (p_l1: _) (p_l2: _) (p_l3: _) (p_layer: _) : Lemma (requires (property_in_layer p_ss p_l1 p_p == true /\ property_in_layer p_ss p_l2 p_p == true /\ property_in_layer p_ss p_l3 p_p == true /\ layer_adjacent p_l1 p_l2 == true /\ layer_adjacent p_l2 p_l3 == true /\ interface_verified p_ss p_l1 p_l2 == true /\ interface_verified p_ss p_l2 p_l3 == true) (ensures (property_in_layer p_ss p_l1 p_p == true /\ property_in_layer p_ss p_l2 p_p == true /\ property_in_layer p_ss p_l3 p_p == true))) = admit ()
 
 (* TOTAL_001_21_no_security_gap (matches Coq: Theorem TOTAL_001_21_no_security_gap) *)
-let total_001_21_no_security_gap_obligation () : Tot bool = (0 = 0)
-let total_001_21_no_security_gap_lemma () : Lemma (requires True) (ensures (total_001_21_no_security_gap_obligation () == total_001_21_no_security_gap_obligation ())) = ()
+let total_001_21_no_security_gap (p_ss: _) (p_stackstate: _) : Lemma (requires (all_interfaces_verified p_ss == true) (ensures ((forall l1 l2_ layer_adjacent l1 l2 == fn_true -> interface_verified p_ss l1 l2 = true)))) = admit ()
 
 (* TOTAL_001_22_defense_in_depth (matches Coq: Theorem TOTAL_001_22_defense_in_depth) *)
-let total_001_22_defense_in_depth_obligation () : Tot bool = (0 = 0)
-let total_001_22_defense_in_depth_lemma () : Lemma (requires True) (ensures (total_001_22_defense_in_depth_obligation () == total_001_22_defense_in_depth_obligation ())) = ()
+let total_001_22_defense_in_depth (p_ss: _) (p_stackstate: _) (p_a: _) (p_attacktype: _) : Lemma (requires (attack_blocked p_ss p_a == true) (ensures (existsb (fn_fun lv => lv__lv_verified_ && layer_defends lv__lv_layer_ p_a) ss__ss_layers_ == true))) = admit ()
 
 (* TOTAL_001_23_single_layer_compromise_bounded (matches Coq: Theorem TOTAL_001_23_single_layer_compromise_bounded) *)
-let total_001_23_single_layer_compromise_bounded_obligation () : Tot bool = (0 = 0)
-let total_001_23_single_layer_compromise_bounded_lemma () : Lemma (requires True) (ensures (total_001_23_single_layer_compromise_bounded_obligation () == total_001_23_single_layer_compromise_bounded_obligation ())) = ()
+let total_001_23_single_layer_compromise_bounded (p_ss: _) (p_stackstate: _) (p_l_comp: _) (p_layer: _) (p_a: _) (p_attacktype: _) : Lemma (requires (layer_compromised p_ss p_l_comp == true /\ (~(exists l_def : p_layer, l_def == p_l_comp) /\ layer_verified_in_stack p_ss l_def == true /\ layer_defends l_def p_a == true)) (ensures (attack_blocked p_ss p_a == true))) = admit ()
 
 (* TOTAL_001_24_hardware_root_of_trust (matches Coq: Theorem TOTAL_001_24_hardware_root_of_trust) *)
-let total_001_24_hardware_root_of_trust_obligation () : Tot bool = (0 = 0)
-let total_001_24_hardware_root_of_trust_lemma () : Lemma (requires True) (ensures (total_001_24_hardware_root_of_trust_obligation () == total_001_24_hardware_root_of_trust_obligation ())) = ()
+let total_001_24_hardware_root_of_trust (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L0_Physics == true /\ layer_verified_in_stack p_ss L1_Silicon == true /\ interface_verified p_ss L0_Physics L1_Silicon == true) (ensures (hardware_root_of_trust p_ss == true))) = admit ()
 
 (* TOTAL_001_25_measured_boot_integrity (matches Coq: Theorem TOTAL_001_25_measured_boot_integrity) *)
-let total_001_25_measured_boot_integrity_obligation () : Tot bool = (0 = 0)
-let total_001_25_measured_boot_integrity_lemma () : Lemma (requires True) (ensures (total_001_25_measured_boot_integrity_obligation () == total_001_25_measured_boot_integrity_obligation ())) = ()
+let total_001_25_measured_boot_integrity (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L2_Firmware == true) (ensures (measured_boot_integrity p_ss == true))) = admit ()
 
 (* TOTAL_001_26_secure_channel_establishment (matches Coq: Theorem TOTAL_001_26_secure_channel_establishment) *)
-let total_001_26_secure_channel_establishment_obligation () : Tot bool = (0 = 0)
-let total_001_26_secure_channel_establishment_lemma () : Lemma (requires True) (ensures (total_001_26_secure_channel_establishment_obligation () == total_001_26_secure_channel_establishment_obligation ())) = ()
+let total_001_26_secure_channel_establishment (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L3_Network == true) (ensures (secure_channel p_ss == true))) = admit ()
 
 (* TOTAL_001_27_capability_delegation (matches Coq: Theorem TOTAL_001_27_capability_delegation) *)
-let total_001_27_capability_delegation_obligation () : Tot bool = (0 = 0)
-let total_001_27_capability_delegation_lemma () : Lemma (requires True) (ensures (total_001_27_capability_delegation_obligation () == total_001_27_capability_delegation_obligation ())) = ()
+let total_001_27_capability_delegation (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L4_OS == true /\ layer_verified_in_stack p_ss L5_Runtime == true /\ layer_verified_in_stack p_ss L6_App == true) (ensures (capability_delegation_correct p_ss == true))) = admit ()
 
 (* TOTAL_001_28_end_to_end_encryption (matches Coq: Theorem TOTAL_001_28_end_to_end_encryption) *)
-let total_001_28_end_to_end_encryption_obligation () : Tot bool = (0 = 0)
-let total_001_28_end_to_end_encryption_lemma () : Lemma (requires True) (ensures (total_001_28_end_to_end_encryption_obligation () == total_001_28_end_to_end_encryption_obligation ())) = ()
+let total_001_28_end_to_end_encryption (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L3_Network == true /\ layer_verified_in_stack p_ss L6_App == true) (ensures (end_to_end_encryption p_ss == true))) = admit ()
 
 (* TOTAL_001_29_remote_code_execution_impossible (matches Coq: Theorem TOTAL_001_29_remote_code_execution_impossible) *)
-let total_001_29_remote_code_execution_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_29_remote_code_execution_impossible_lemma () : Lemma (requires True) (ensures (total_001_29_remote_code_execution_impossible_obligation () == total_001_29_remote_code_execution_impossible_obligation ())) = ()
+let total_001_29_remote_code_execution_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L4_OS == true) (ensures (attack_blocked p_ss ATRemoteCodeExec == true))) = admit ()
 
 (* TOTAL_001_30_data_exfiltration_impossible (matches Coq: Theorem TOTAL_001_30_data_exfiltration_impossible) *)
-let total_001_30_data_exfiltration_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_30_data_exfiltration_impossible_lemma () : Lemma (requires True) (ensures (total_001_30_data_exfiltration_impossible_obligation () == total_001_30_data_exfiltration_impossible_obligation ())) = ()
+let total_001_30_data_exfiltration_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L3_Network == true) (ensures (attack_blocked p_ss ATDataExfiltration == true))) = admit ()
 
 (* TOTAL_001_31_denial_of_service_bounded (matches Coq: Theorem TOTAL_001_31_denial_of_service_bounded) *)
-let total_001_31_denial_of_service_bounded_obligation () : Tot bool = (0 = 0)
-let total_001_31_denial_of_service_bounded_lemma () : Lemma (requires True) (ensures (total_001_31_denial_of_service_bounded_obligation () == total_001_31_denial_of_service_bounded_obligation ())) = ()
+let total_001_31_denial_of_service_bounded (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L3_Network == true) (ensures (attack_blocked p_ss ATDenialOfService == true))) = admit ()
 
 (* TOTAL_001_32_malware_execution_impossible (matches Coq: Theorem TOTAL_001_32_malware_execution_impossible) *)
-let total_001_32_malware_execution_impossible_obligation () : Tot bool = (0 = 0)
-let total_001_32_malware_execution_impossible_lemma () : Lemma (requires True) (ensures (total_001_32_malware_execution_impossible_obligation () == total_001_32_malware_execution_impossible_obligation ())) = ()
+let total_001_32_malware_execution_impossible (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L4_OS == true) (ensures (attack_blocked p_ss ATMalwareExec == true))) = admit ()
 
 (* TOTAL_001_33_insider_threat_bounded (matches Coq: Theorem TOTAL_001_33_insider_threat_bounded) *)
-let total_001_33_insider_threat_bounded_obligation () : Tot bool = (0 = 0)
-let total_001_33_insider_threat_bounded_lemma () : Lemma (requires True) (ensures (total_001_33_insider_threat_bounded_obligation () == total_001_33_insider_threat_bounded_obligation ())) = ()
+let total_001_33_insider_threat_bounded (p_ss: _) (p_stackstate: _) : Lemma (requires (layer_verified_in_stack p_ss L6_App == true) (ensures (attack_blocked p_ss ATInsiderThreat == true))) = admit ()
 
 (* TOTAL_001_34_all_layer_proofs_compose (matches Coq: Theorem TOTAL_001_34_all_layer_proofs_compose) *)
-let total_001_34_all_layer_proofs_compose_obligation () : Tot bool = (0 = 0)
-let total_001_34_all_layer_proofs_compose_lemma () : Lemma (requires True) (ensures (total_001_34_all_layer_proofs_compose_obligation () == total_001_34_all_layer_proofs_compose_obligation ())) = ()
+let total_001_34_all_layer_proofs_compose (p_ss: _) (p_stackstate: _) : Lemma (requires (all_critical_layers_verified p_ss == true /\ all_interfaces_verified p_ss == true) (ensures ((attack_blocked p_ss ATMemoryCorruption == true) /\ (attack_blocked p_ss ATSideChannel == true) /\ (attack_blocked p_ss ATNetworkAttack == true) /\ (attack_blocked p_ss ATPrivilegeEscalation == true) /\ (attack_blocked p_ss ATUIDeception == true) /\ (attack_blocked p_ss ATBootCompromise == true) /\ (attack_blocked p_ss ATRemoteCodeExec == true) /\ (attack_blocked p_ss ATDataExfiltration == true) /\ (attack_blocked p_ss ATDenialOfService == true) /\ (attack_blocked p_ss ATMalwareExec == true) /\ (attack_blocked p_ss ATInsiderThreat == true)))) = admit ()
 
 (* attack_blocked_by_layer (matches Coq: Lemma attack_blocked_by_layer) *)
-let attack_blocked_by_layer_obligation () : Tot bool = (0 = 0)
-let attack_blocked_by_layer_lemma () : Lemma (requires True) (ensures (attack_blocked_by_layer_obligation () == attack_blocked_by_layer_obligation ())) = ()
+let attack_blocked_by_layer (p_a: _) (p_attacktype: _) : Lemma (exists l : Layer, layer_defends l p_a == true) = admit ()
 
 (* TOTAL_001_35_total_stack_security (matches Coq: Theorem TOTAL_001_35_total_stack_security) *)
-let total_001_35_total_stack_security_obligation () : Tot bool = (0 = 0)
-let total_001_35_total_stack_security_lemma () : Lemma (requires True) (ensures (total_001_35_total_stack_security_obligation () == total_001_35_total_stack_security_obligation ())) = ()
+let total_001_35_total_stack_security (p_ss: _) (p_stackstate: _) : Lemma (requires (all_critical_layers_verified p_ss == true /\ all_interfaces_verified p_ss == true) (ensures (forall attack : AttackType, attack_blocked p_ss attack == true))) = admit ()

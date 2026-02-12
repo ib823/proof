@@ -42,117 +42,88 @@ let fully_consumed_b (p_p: nat) : Tot bool =
   | _ -> false
 
 (* mem_true_In (matches Coq: Lemma mem_true_In) *)
-let mem_true_in_obligation () : Tot bool = (0 = 0)
-let mem_true_in_lemma () : Lemma (requires True) (ensures (mem_true_in_obligation () == mem_true_in_obligation ())) = ()
+let mem_true_in (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true) (ensures (In p_n p_l == true))) = admit ()
 
 (* In_mem_true (matches Coq: Lemma In_mem_true) *)
-let in_mem_true_obligation () : Tot bool = (0 = 0)
-let in_mem_true_lemma () : Lemma (requires True) (ensures (in_mem_true_obligation () == in_mem_true_obligation ())) = ()
+let in_mem_true (p_n: _) (p_l: _) : Lemma (requires (In p_n p_l == true) (ensures (mem p_n p_l == true))) = admit ()
 
 (* mem_false_not_In (matches Coq: Lemma mem_false_not_In) *)
-let mem_false_not_in_obligation () : Tot bool = (0 = 0)
-let mem_false_not_in_lemma () : Lemma (requires True) (ensures (mem_false_not_in_obligation () == mem_false_not_in_obligation ())) = ()
+let mem_false_not_in (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == false) (ensures (~(In p_n p_l == true)))) = admit ()
 
 (* remove_length (matches Coq: Lemma remove_length) *)
-let remove_length_obligation () : Tot bool = (0 = 0)
-let remove_length_lemma () : Lemma (requires True) (ensures (remove_length_obligation () == remove_length_obligation ())) = ()
+let remove_length (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true) (ensures (length (remove p_n p_l) == fn_pred (length p_l)))) = admit ()
 
 (* remove_not_first (matches Coq: Lemma remove_not_first) *)
-let remove_not_first_obligation () : Tot bool = (0 = 0)
-let remove_not_first_lemma () : Lemma (requires True) (ensures (remove_not_first_obligation () == remove_not_first_obligation ())) = ()
+let remove_not_first (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true) (ensures (~(In p_n (remove p_n p_l) == true) \/ In p_n (remove p_n p_l) == true))) = admit ()
 
 (* count_remove_helper (matches Coq: Lemma count_remove_helper) *)
-let count_remove_helper_obligation () : Tot bool = (0 = 0)
-let count_remove_helper_lemma () : Lemma (requires True) (ensures (count_remove_helper_obligation () == count_remove_helper_obligation ())) = ()
+let count_remove_helper (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true) (ensures (count p_n (remove p_n p_l) + 1 == count p_n p_l))) = admit ()
 
 (* no_cloning (matches Coq: Theorem no_cloning) *)
-let no_cloning_obligation () : Tot bool = (0 = 0)
-let no_cloning_lemma () : Lemma (requires True) (ensures (no_cloning_obligation () == no_cloning_obligation ())) = ()
+let no_cloning (p_q: _) (p_ctx: _) : Lemma (requires (mem p_q p_ctx == true) (ensures (fn_check p_ctx (ICreate p_q) == None))) = admit ()
 
 (* linearity_full_consumption (matches Coq: Theorem linearity_full_consumption) *)
-let linearity_full_consumption_obligation () : Tot bool = (0 = 0)
-let linearity_full_consumption_lemma () : Lemma (requires True) (ensures (linearity_full_consumption_obligation () == linearity_full_consumption_obligation ())) = ()
+let linearity_full_consumption (p_p: _) : Lemma (requires (fully_consumed p_p == true) (ensures (fn_check [] p_p == Some []))) = admit ()
 
 (* measurement_consumes (matches Coq: Theorem measurement_consumes) *)
-let measurement_consumes_obligation () : Tot bool = (0 = 0)
-let measurement_consumes_lemma () : Lemma (requires True) (ensures (measurement_consumes_obligation () == measurement_consumes_obligation ())) = ()
+let measurement_consumes (p_q: _) (p_ctx: _) (p_ctx_: _) : Lemma (requires (fn_check p_ctx (IMeasure p_q) == Some ctx_) (ensures (ctx_ == remove p_q p_ctx /\ mem p_q p_ctx == true))) = admit ()
 
 (* gate_preserves_context (matches Coq: Theorem gate_preserves_context) *)
-let gate_preserves_context_obligation () : Tot bool = (0 = 0)
-let gate_preserves_context_lemma () : Lemma (requires True) (ensures (gate_preserves_context_obligation () == gate_preserves_context_obligation ())) = ()
+let gate_preserves_context (p_g: _) (p_q: _) (p_ctx: _) (p_ctx_: _) : Lemma (requires (fn_check p_ctx (IGate p_g p_q) == Some ctx_) (ensures (ctx_ == p_ctx))) = admit ()
 
 (* type_checking_decidable (matches Coq: Theorem type_checking_decidable) *)
-let type_checking_decidable_obligation () : Tot bool = (0 = 0)
-let type_checking_decidable_lemma () : Lemma (requires True) (ensures (type_checking_decidable_obligation () == type_checking_decidable_obligation ())) = ()
+let type_checking_decidable (p_p: _) : Lemma (requires (well_typed_b p_p == fn_true <) (ensures (well_typed p_p == true))) = admit ()
 
 (* no_dangling_qubits (matches Coq: Theorem no_dangling_qubits) *)
-let no_dangling_qubits_obligation () : Tot bool = (0 = 0)
-let no_dangling_qubits_lemma () : Lemma (requires True) (ensures (no_dangling_qubits_obligation () == no_dangling_qubits_obligation ())) = ()
+let no_dangling_qubits (p_p: _) : Lemma (requires (fully_consumed_b p_p == true) (ensures (fn_check [] p_p == Some []))) = admit ()
 
 (* seq_preserves_linearity (matches Coq: Theorem seq_preserves_linearity) *)
-let seq_preserves_linearity_obligation () : Tot bool = (0 = 0)
-let seq_preserves_linearity_lemma () : Lemma (requires True) (ensures (seq_preserves_linearity_obligation () == seq_preserves_linearity_obligation ())) = ()
+let seq_preserves_linearity (p_i1: _) (p_i2: _) (p_ctx: _) (p_ctx1: _) (p_ctx2: _) : Lemma (requires (fn_check p_ctx p_i1 == Some p_ctx1 /\ fn_check p_ctx1 p_i2 == Some p_ctx2) (ensures (fn_check p_ctx (ISeq p_i1 p_i2) == Some p_ctx2))) = admit ()
 
 (* create_increases_resources (matches Coq: Theorem create_increases_resources) *)
-let create_increases_resources_obligation () : Tot bool = (0 = 0)
-let create_increases_resources_lemma () : Lemma (requires True) (ensures (create_increases_resources_obligation () == create_increases_resources_obligation ())) = ()
+let create_increases_resources (p_q: _) (p_ctx: _) (p_ctx_: _) : Lemma (requires (fn_check p_ctx (ICreate p_q) == Some ctx_) (ensures (length ctx_ == ((length p_ctx) + 1)))) = admit ()
 
 (* measure_decreases_resources (matches Coq: Theorem measure_decreases_resources) *)
-let measure_decreases_resources_obligation () : Tot bool = (0 = 0)
-let measure_decreases_resources_lemma () : Lemma (requires True) (ensures (measure_decreases_resources_obligation () == measure_decreases_resources_obligation ())) = ()
+let measure_decreases_resources (p_q: _) (p_ctx: _) (p_ctx_: _) : Lemma (requires (fn_check p_ctx (IMeasure p_q) == Some ctx_) (ensures (length ctx_ == fn_pred (length p_ctx)))) = admit ()
 
 (* create_measure_consumed (matches Coq: Theorem create_measure_consumed) *)
-let create_measure_consumed_obligation () : Tot bool = (0 = 0)
-let create_measure_consumed_lemma () : Lemma (requires True) (ensures (create_measure_consumed_obligation () == create_measure_consumed_obligation ())) = ()
+let create_measure_consumed (p_q: _) : Lemma (fully_consumed (ISeq (ICreate p_q) (IMeasure p_q)) == true) = admit ()
 
 (* create_gate_measure_consumed (matches Coq: Theorem create_gate_measure_consumed) *)
-let create_gate_measure_consumed_obligation () : Tot bool = (0 = 0)
-let create_gate_measure_consumed_lemma () : Lemma (requires True) (ensures (create_gate_measure_consumed_obligation () == create_gate_measure_consumed_obligation ())) = ()
+let create_gate_measure_consumed (p_q: _) (p_g: _) : Lemma (fully_consumed (ISeq (ICreate p_q) (ISeq (IGate p_g p_q) (IMeasure p_q))) == true) = admit ()
 
 (* mem_head (matches Coq: Theorem mem_head) *)
-let mem_head_obligation () : Tot bool = (0 = 0)
-let mem_head_lemma () : Lemma (requires True) (ensures (mem_head_obligation () == mem_head_obligation ())) = ()
+let mem_head (p_n: _) (p_l: _) : Lemma (mem p_n (p_n :: p_l) == true) = admit ()
 
 (* mem_nil (matches Coq: Theorem mem_nil) *)
-let mem_nil_obligation () : Tot bool = (0 = 0)
-let mem_nil_lemma () : Lemma (requires True) (ensures (mem_nil_obligation () == mem_nil_obligation ())) = ()
+let mem_nil (p_n: _) : Lemma (mem p_n [] == false) = admit ()
 
 (* count_nil (matches Coq: Theorem count_nil) *)
-let count_nil_obligation () : Tot bool = (0 = 0)
-let count_nil_lemma () : Lemma (requires True) (ensures (count_nil_obligation () == count_nil_obligation ())) = ()
+let count_nil (p_n: _) : Lemma (count p_n [] == 0) = admit ()
 
 (* count_le_length (matches Coq: Theorem count_le_length) *)
-let count_le_length_obligation () : Tot bool = (0 = 0)
-let count_le_length_lemma () : Lemma (requires True) (ensures (count_le_length_obligation () == count_le_length_obligation ())) = ()
+let count_le_length (p_n: _) (p_l: _) : Lemma (count p_n p_l <= length p_l) = admit ()
 
 (* remove_nil (matches Coq: Theorem remove_nil) *)
-let remove_nil_obligation () : Tot bool = (0 = 0)
-let remove_nil_lemma () : Lemma (requires True) (ensures (remove_nil_obligation () == remove_nil_obligation ())) = ()
+let remove_nil (p_n: _) : Lemma (remove p_n [] == []) = admit ()
 
 (* gate_requires_qubit (matches Coq: Theorem gate_requires_qubit) *)
-let gate_requires_qubit_obligation () : Tot bool = (0 = 0)
-let gate_requires_qubit_lemma () : Lemma (requires True) (ensures (gate_requires_qubit_obligation () == gate_requires_qubit_obligation ())) = ()
+let gate_requires_qubit (p_g: _) (p_q: _) (p_ctx: _) : Lemma (requires (mem p_q p_ctx == false) (ensures (fn_check p_ctx (IGate p_g p_q) == None))) = admit ()
 
 (* measure_requires_qubit (matches Coq: Theorem measure_requires_qubit) *)
-let measure_requires_qubit_obligation () : Tot bool = (0 = 0)
-let measure_requires_qubit_lemma () : Lemma (requires True) (ensures (measure_requires_qubit_obligation () == measure_requires_qubit_obligation ())) = ()
+let measure_requires_qubit (p_q: _) (p_ctx: _) : Lemma (requires (mem p_q p_ctx == false) (ensures (fn_check p_ctx (IMeasure p_q) == None))) = admit ()
 
 (* gate2_requires_distinct (matches Coq: Theorem gate2_requires_distinct) *)
-let gate2_requires_distinct_obligation () : Tot bool = (0 = 0)
-let gate2_requires_distinct_lemma () : Lemma (requires True) (ensures (gate2_requires_distinct_obligation () == gate2_requires_distinct_obligation ())) = ()
+let gate2_requires_distinct (p_g: _) (p_q: _) (p_ctx: _) : Lemma (fn_check p_ctx (IGate2 p_g p_q p_q) == None) = admit ()
 
 (* double_create_fails (matches Coq: Theorem double_create_fails) *)
-let double_create_fails_obligation () : Tot bool = (0 = 0)
-let double_create_fails_lemma () : Lemma (requires True) (ensures (double_create_fails_obligation () == double_create_fails_obligation ())) = ()
+let double_create_fails (p_q: _) : Lemma (fn_check [] (ISeq (ICreate p_q) (ICreate p_q)) == None) = admit ()
 
 (* count_singleton (matches Coq: Theorem count_singleton) *)
-let count_singleton_obligation () : Tot bool = (0 = 0)
-let count_singleton_lemma () : Lemma (requires True) (ensures (count_singleton_obligation () == count_singleton_obligation ())) = ()
+let count_singleton (p_n: _) : Lemma (count p_n [p_n] == 1) = admit ()
 
 (* mem_singleton (matches Coq: Theorem mem_singleton) *)
-let mem_singleton_obligation () : Tot bool = (0 = 0)
-let mem_singleton_lemma () : Lemma (requires True) (ensures (mem_singleton_obligation () == mem_singleton_obligation ())) = ()
+let mem_singleton (p_n: _) : Lemma (mem p_n [p_n] == true) = admit ()
 
 (* create_on_empty_succeeds (matches Coq: Theorem create_on_empty_succeeds) *)
-let create_on_empty_succeeds_obligation () : Tot bool = (0 = 0)
-let create_on_empty_succeeds_lemma () : Lemma (requires True) (ensures (create_on_empty_succeeds_obligation () == create_on_empty_succeeds_obligation ())) = ()
+let create_on_empty_succeeds (p_q: _) : Lemma (fn_check [] (ICreate p_q) == Some [p_q]) = admit ()

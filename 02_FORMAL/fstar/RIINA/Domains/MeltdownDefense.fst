@@ -47,121 +47,91 @@ let meltdown_fully_protected (p_c: meltdown_defense_config) : Tot bool =
 let riina_meltdown_config : meltdown_defense_config = {f_mdc_us_protected=true; f_mdc_p_protected=true; f_mdc_rw_protected=true; f_mdc_pk_protected=true; f_mdc_br_protected=true; f_mdc_kpti_enabled=true; f_mdc_l1tf_mitigated=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* MELTDOWN_001_all_variants (matches Coq: Theorem MELTDOWN_001_all_variants) *)
-let meltdown_001_all_variants_obligation () : Tot bool = (0 = 0)
-let meltdown_001_all_variants_lemma () : Lemma (requires True) (ensures (meltdown_001_all_variants_obligation () == meltdown_001_all_variants_obligation ())) = ()
+let meltdown_001_all_variants () : Lemma (all_meltdown_protected riina_meltdown_config == true) = admit ()
 
 (* MELTDOWN_002_mitigations (matches Coq: Theorem MELTDOWN_002_mitigations) *)
-let meltdown_002_mitigations_obligation () : Tot bool = (0 = 0)
-let meltdown_002_mitigations_lemma () : Lemma (requires True) (ensures (meltdown_002_mitigations_obligation () == meltdown_002_mitigations_obligation ())) = ()
+let meltdown_002_mitigations () : Lemma (meltdown_mitigations_enabled riina_meltdown_config == true) = admit ()
 
 (* MELTDOWN_003_fully_protected (matches Coq: Theorem MELTDOWN_003_fully_protected) *)
-let meltdown_003_fully_protected_obligation () : Tot bool = (0 = 0)
-let meltdown_003_fully_protected_lemma () : Lemma (requires True) (ensures (meltdown_003_fully_protected_obligation () == meltdown_003_fully_protected_obligation ())) = ()
+let meltdown_003_fully_protected () : Lemma (meltdown_fully_protected riina_meltdown_config == true) = admit ()
 
 (* MELTDOWN_004_us_required (matches Coq: Theorem MELTDOWN_004_us_required) *)
-let meltdown_004_us_required_obligation () : Tot bool = (0 = 0)
-let meltdown_004_us_required_lemma () : Lemma (requires True) (ensures (meltdown_004_us_required_obligation () == meltdown_004_us_required_obligation ())) = ()
+let meltdown_004_us_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (all_meltdown_protected p_c == true) (ensures (p_c.f_mdc_us_protected == true))) = admit ()
 
 (* MELTDOWN_005_p_required (matches Coq: Theorem MELTDOWN_005_p_required) *)
-let meltdown_005_p_required_obligation () : Tot bool = (0 = 0)
-let meltdown_005_p_required_lemma () : Lemma (requires True) (ensures (meltdown_005_p_required_obligation () == meltdown_005_p_required_obligation ())) = ()
+let meltdown_005_p_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (all_meltdown_protected p_c == true) (ensures (p_c.f_mdc_p_protected == true))) = admit ()
 
 (* MELTDOWN_006_kpti_required (matches Coq: Theorem MELTDOWN_006_kpti_required) *)
-let meltdown_006_kpti_required_obligation () : Tot bool = (0 = 0)
-let meltdown_006_kpti_required_lemma () : Lemma (requires True) (ensures (meltdown_006_kpti_required_obligation () == meltdown_006_kpti_required_obligation ())) = ()
+let meltdown_006_kpti_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_mitigations_enabled p_c == true) (ensures (p_c.f_mdc_kpti_enabled == true))) = admit ()
 
 (* MELTDOWN_007_l1tf_required (matches Coq: Theorem MELTDOWN_007_l1tf_required) *)
-let meltdown_007_l1tf_required_obligation () : Tot bool = (0 = 0)
-let meltdown_007_l1tf_required_lemma () : Lemma (requires True) (ensures (meltdown_007_l1tf_required_obligation () == meltdown_007_l1tf_required_obligation ())) = ()
+let meltdown_007_l1tf_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_mitigations_enabled p_c == true) (ensures (p_c.f_mdc_l1tf_mitigated == true))) = admit ()
 
 (* MELTDOWN_008_full_implies_variants (matches Coq: Theorem MELTDOWN_008_full_implies_variants) *)
-let meltdown_008_full_implies_variants_obligation () : Tot bool = (0 = 0)
-let meltdown_008_full_implies_variants_lemma () : Lemma (requires True) (ensures (meltdown_008_full_implies_variants_obligation () == meltdown_008_full_implies_variants_obligation ())) = ()
+let meltdown_008_full_implies_variants (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (all_meltdown_protected p_c == true))) = admit ()
 
 (* MELTDOWN_009_full_implies_mitigations (matches Coq: Theorem MELTDOWN_009_full_implies_mitigations) *)
-let meltdown_009_full_implies_mitigations_obligation () : Tot bool = (0 = 0)
-let meltdown_009_full_implies_mitigations_lemma () : Lemma (requires True) (ensures (meltdown_009_full_implies_mitigations_obligation () == meltdown_009_full_implies_mitigations_obligation ())) = ()
+let meltdown_009_full_implies_mitigations (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (meltdown_mitigations_enabled p_c == true))) = admit ()
 
 (* MELTDOWN_010_riina_kpti (matches Coq: Theorem MELTDOWN_010_riina_kpti) *)
-let meltdown_010_riina_kpti_obligation () : Tot bool = (0 = 0)
-let meltdown_010_riina_kpti_lemma () : Lemma (requires True) (ensures (meltdown_010_riina_kpti_obligation () == meltdown_010_riina_kpti_obligation ())) = ()
+let meltdown_010_riina_kpti () : Lemma (riina_meltdown_config.f_mdc_kpti_enabled == true) = admit ()
 
 (* MELTDOWN_011_riina_l1tf (matches Coq: Theorem MELTDOWN_011_riina_l1tf) *)
-let meltdown_011_riina_l1tf_obligation () : Tot bool = (0 = 0)
-let meltdown_011_riina_l1tf_lemma () : Lemma (requires True) (ensures (meltdown_011_riina_l1tf_obligation () == meltdown_011_riina_l1tf_obligation ())) = ()
+let meltdown_011_riina_l1tf () : Lemma (riina_meltdown_config.f_mdc_l1tf_mitigated == true) = admit ()
 
 (* MELTDOWN_012_full_implies_kpti (matches Coq: Theorem MELTDOWN_012_full_implies_kpti) *)
-let meltdown_012_full_implies_kpti_obligation () : Tot bool = (0 = 0)
-let meltdown_012_full_implies_kpti_lemma () : Lemma (requires True) (ensures (meltdown_012_full_implies_kpti_obligation () == meltdown_012_full_implies_kpti_obligation ())) = ()
+let meltdown_012_full_implies_kpti (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_kpti_enabled == true))) = admit ()
 
 (* MELTDOWN_013_full_implies_us (matches Coq: Theorem MELTDOWN_013_full_implies_us) *)
-let meltdown_013_full_implies_us_obligation () : Tot bool = (0 = 0)
-let meltdown_013_full_implies_us_lemma () : Lemma (requires True) (ensures (meltdown_013_full_implies_us_obligation () == meltdown_013_full_implies_us_obligation ())) = ()
+let meltdown_013_full_implies_us (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_us_protected == true))) = admit ()
 
 (* MELTDOWN_014_riina_us (matches Coq: Theorem MELTDOWN_014_riina_us) *)
-let meltdown_014_riina_us_obligation () : Tot bool = (0 = 0)
-let meltdown_014_riina_us_lemma () : Lemma (requires True) (ensures (meltdown_014_riina_us_obligation () == meltdown_014_riina_us_obligation ())) = ()
+let meltdown_014_riina_us () : Lemma (riina_meltdown_config.f_mdc_us_protected == true) = admit ()
 
 (* MELTDOWN_015_complete_defense (matches Coq: Theorem MELTDOWN_015_complete_defense) *)
-let meltdown_015_complete_defense_obligation () : Tot bool = (0 = 0)
-let meltdown_015_complete_defense_lemma () : Lemma (requires True) (ensures (meltdown_015_complete_defense_obligation () == meltdown_015_complete_defense_obligation ())) = ()
+let meltdown_015_complete_defense (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_us_protected == true /\ p_c.f_mdc_kpti_enabled == true /\ p_c.f_mdc_l1tf_mitigated == true))) = admit ()
 
 (* MELTDOWN_016_rw_required (matches Coq: Theorem MELTDOWN_016_rw_required) *)
-let meltdown_016_rw_required_obligation () : Tot bool = (0 = 0)
-let meltdown_016_rw_required_lemma () : Lemma (requires True) (ensures (meltdown_016_rw_required_obligation () == meltdown_016_rw_required_obligation ())) = ()
+let meltdown_016_rw_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (all_meltdown_protected p_c == true) (ensures (p_c.f_mdc_rw_protected == true))) = admit ()
 
 (* MELTDOWN_017_pk_required (matches Coq: Theorem MELTDOWN_017_pk_required) *)
-let meltdown_017_pk_required_obligation () : Tot bool = (0 = 0)
-let meltdown_017_pk_required_lemma () : Lemma (requires True) (ensures (meltdown_017_pk_required_obligation () == meltdown_017_pk_required_obligation ())) = ()
+let meltdown_017_pk_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (all_meltdown_protected p_c == true) (ensures (p_c.f_mdc_pk_protected == true))) = admit ()
 
 (* MELTDOWN_018_br_required (matches Coq: Theorem MELTDOWN_018_br_required) *)
-let meltdown_018_br_required_obligation () : Tot bool = (0 = 0)
-let meltdown_018_br_required_lemma () : Lemma (requires True) (ensures (meltdown_018_br_required_obligation () == meltdown_018_br_required_obligation ())) = ()
+let meltdown_018_br_required (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (all_meltdown_protected p_c == true) (ensures (p_c.f_mdc_br_protected == true))) = admit ()
 
 (* MELTDOWN_019_full_implies_l1tf (matches Coq: Theorem MELTDOWN_019_full_implies_l1tf) *)
-let meltdown_019_full_implies_l1tf_obligation () : Tot bool = (0 = 0)
-let meltdown_019_full_implies_l1tf_lemma () : Lemma (requires True) (ensures (meltdown_019_full_implies_l1tf_obligation () == meltdown_019_full_implies_l1tf_obligation ())) = ()
+let meltdown_019_full_implies_l1tf (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_l1tf_mitigated == true))) = admit ()
 
 (* MELTDOWN_020_full_implies_p (matches Coq: Theorem MELTDOWN_020_full_implies_p) *)
-let meltdown_020_full_implies_p_obligation () : Tot bool = (0 = 0)
-let meltdown_020_full_implies_p_lemma () : Lemma (requires True) (ensures (meltdown_020_full_implies_p_obligation () == meltdown_020_full_implies_p_obligation ())) = ()
+let meltdown_020_full_implies_p (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_p_protected == true))) = admit ()
 
 (* MELTDOWN_021_full_implies_rw (matches Coq: Theorem MELTDOWN_021_full_implies_rw) *)
-let meltdown_021_full_implies_rw_obligation () : Tot bool = (0 = 0)
-let meltdown_021_full_implies_rw_lemma () : Lemma (requires True) (ensures (meltdown_021_full_implies_rw_obligation () == meltdown_021_full_implies_rw_obligation ())) = ()
+let meltdown_021_full_implies_rw (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_rw_protected == true))) = admit ()
 
 (* MELTDOWN_022_full_implies_pk (matches Coq: Theorem MELTDOWN_022_full_implies_pk) *)
-let meltdown_022_full_implies_pk_obligation () : Tot bool = (0 = 0)
-let meltdown_022_full_implies_pk_lemma () : Lemma (requires True) (ensures (meltdown_022_full_implies_pk_obligation () == meltdown_022_full_implies_pk_obligation ())) = ()
+let meltdown_022_full_implies_pk (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_pk_protected == true))) = admit ()
 
 (* MELTDOWN_023_full_implies_br (matches Coq: Theorem MELTDOWN_023_full_implies_br) *)
-let meltdown_023_full_implies_br_obligation () : Tot bool = (0 = 0)
-let meltdown_023_full_implies_br_lemma () : Lemma (requires True) (ensures (meltdown_023_full_implies_br_obligation () == meltdown_023_full_implies_br_obligation ())) = ()
+let meltdown_023_full_implies_br (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_br_protected == true))) = admit ()
 
 (* MELTDOWN_024_riina_p (matches Coq: Theorem MELTDOWN_024_riina_p) *)
-let meltdown_024_riina_p_obligation () : Tot bool = (0 = 0)
-let meltdown_024_riina_p_lemma () : Lemma (requires True) (ensures (meltdown_024_riina_p_obligation () == meltdown_024_riina_p_obligation ())) = ()
+let meltdown_024_riina_p () : Lemma (riina_meltdown_config.f_mdc_p_protected == true) = admit ()
 
 (* MELTDOWN_025_riina_rw (matches Coq: Theorem MELTDOWN_025_riina_rw) *)
-let meltdown_025_riina_rw_obligation () : Tot bool = (0 = 0)
-let meltdown_025_riina_rw_lemma () : Lemma (requires True) (ensures (meltdown_025_riina_rw_obligation () == meltdown_025_riina_rw_obligation ())) = ()
+let meltdown_025_riina_rw () : Lemma (riina_meltdown_config.f_mdc_rw_protected == true) = admit ()
 
 (* MELTDOWN_026_riina_pk (matches Coq: Theorem MELTDOWN_026_riina_pk) *)
-let meltdown_026_riina_pk_obligation () : Tot bool = (0 = 0)
-let meltdown_026_riina_pk_lemma () : Lemma (requires True) (ensures (meltdown_026_riina_pk_obligation () == meltdown_026_riina_pk_obligation ())) = ()
+let meltdown_026_riina_pk () : Lemma (riina_meltdown_config.f_mdc_pk_protected == true) = admit ()
 
 (* MELTDOWN_027_riina_br (matches Coq: Theorem MELTDOWN_027_riina_br) *)
-let meltdown_027_riina_br_obligation () : Tot bool = (0 = 0)
-let meltdown_027_riina_br_lemma () : Lemma (requires True) (ensures (meltdown_027_riina_br_obligation () == meltdown_027_riina_br_obligation ())) = ()
+let meltdown_027_riina_br () : Lemma (riina_meltdown_config.f_mdc_br_protected == true) = admit ()
 
 (* MELTDOWN_028_variant_mitigation_composition (matches Coq: Theorem MELTDOWN_028_variant_mitigation_composition) *)
-let meltdown_028_variant_mitigation_composition_obligation () : Tot bool = (0 = 0)
-let meltdown_028_variant_mitigation_composition_lemma () : Lemma (requires True) (ensures (meltdown_028_variant_mitigation_composition_obligation () == meltdown_028_variant_mitigation_composition_obligation ())) = ()
+let meltdown_028_variant_mitigation_composition (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (all_meltdown_protected p_c == true /\ meltdown_mitigations_enabled p_c == true) (ensures (meltdown_fully_protected p_c == true))) = admit ()
 
 (* MELTDOWN_029_complete_decomposition (matches Coq: Theorem MELTDOWN_029_complete_decomposition) *)
-let meltdown_029_complete_decomposition_obligation () : Tot bool = (0 = 0)
-let meltdown_029_complete_decomposition_lemma () : Lemma (requires True) (ensures (meltdown_029_complete_decomposition_obligation () == meltdown_029_complete_decomposition_obligation ())) = ()
+let meltdown_029_complete_decomposition (p_c: _) (p_meltdowndefenseconfig: _) : Lemma (requires (meltdown_fully_protected p_c == true) (ensures (p_c.f_mdc_us_protected == true /\ p_c.f_mdc_p_protected == true /\ p_c.f_mdc_rw_protected == true /\ p_c.f_mdc_pk_protected == true /\ p_c.f_mdc_br_protected == true /\ p_c.f_mdc_kpti_enabled == true /\ p_c.f_mdc_l1tf_mitigated == true))) = admit ()

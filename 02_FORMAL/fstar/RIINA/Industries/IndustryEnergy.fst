@@ -109,8 +109,7 @@ let access_log_retention_days (p_impact: cip__impact) : Tot nat =
   | _ -> 0
 
 (* nerc_cip_compliance (matches Coq: Theorem nerc_cip_compliance) *)
-let nerc_cip_compliance_obligation () : Tot bool = (0 = 0)
-let nerc_cip_compliance_lemma () : Lemma (requires True) (ensures (nerc_cip_compliance_obligation () == nerc_cip_compliance_obligation ())) = ()
+let nerc_cip_compliance (p_controls: nerc_cip__controls) (p_asset: nat) : Lemma (p_controls.f_cip_002_identification == true) = admit ()
 
 (* iec_62351_security (matches Coq: Theorem iec_62351_security) *)
 let iec_62351_security_obligation () : Tot bool = (0 = 0)
@@ -129,73 +128,55 @@ let substation_security_obligation () : Tot bool = (0 = 0)
 let substation_security_lemma () : Lemma (requires True) (ensures (substation_security_obligation () == substation_security_obligation ())) = ()
 
 (* high_impact_all_controls (matches Coq: Theorem high_impact_all_controls) *)
-let high_impact_all_controls_obligation () : Tot bool = (0 = 0)
-let high_impact_all_controls_lemma () : Lemma (requires True) (ensures (high_impact_all_controls_obligation () == high_impact_all_controls_obligation ())) = ()
+let high_impact_all_controls (p_controls: nerc_cip__controls) (p_asset: nat) (p_impact: cip__impact) : Lemma (p_impact == High_Impact) = admit ()
 
 (* esp_required (matches Coq: Theorem esp_required) *)
-let esp_required_obligation () : Tot bool = (0 = 0)
-let esp_required_lemma () : Lemma (requires True) (ensures (esp_required_obligation () == esp_required_obligation ())) = ()
+let esp_required (p_controls: nerc_cip__controls) (p_asset: nat) : Lemma (p_controls.f_cip_005_electronic_perimeter == true) = admit ()
 
 (* cip_le_refl (matches Coq: Lemma cip_le_refl) *)
-let cip_le_refl_obligation () : Tot bool = (0 = 0)
-let cip_le_refl_lemma () : Lemma (requires True) (ensures (cip_le_refl_obligation () == cip_le_refl_obligation ())) = ()
+let cip_le_refl (p_c: _) : Lemma (cip_le p_c p_c == true) = admit ()
 
 (* cip_le_trans (matches Coq: Lemma cip_le_trans) *)
-let cip_le_trans_obligation () : Tot bool = (0 = 0)
-let cip_le_trans_lemma () : Lemma (requires True) (ensures (cip_le_trans_obligation () == cip_le_trans_obligation ())) = ()
+let cip_le_trans (p_c1: _) (p_c2: _) (p_c3: _) : Lemma (requires (cip_le p_c1 p_c2 == true /\ cip_le p_c2 p_c3 == true) (ensures (cip_le p_c1 p_c3 == true))) = admit ()
 
 (* high_impact_all_11 (matches Coq: Theorem high_impact_all_11) *)
-let high_impact_all_11_obligation () : Tot bool = (0 = 0)
-let high_impact_all_11_lemma () : Lemma (requires True) (ensures (high_impact_all_11_obligation () == high_impact_all_11_obligation ())) = ()
+let high_impact_all_11 () : Lemma (cip_mandatory_requirements High_Impact == 11) = admit ()
 
 (* cip_requirements_monotone (matches Coq: Theorem cip_requirements_monotone) *)
-let cip_requirements_monotone_obligation () : Tot bool = (0 = 0)
-let cip_requirements_monotone_lemma () : Lemma (requires True) (ensures (cip_requirements_monotone_obligation () == cip_requirements_monotone_obligation ())) = ()
+let cip_requirements_monotone (p_c1: _) (p_c2: _) : Lemma (requires (cip_le p_c1 p_c2 == true) (ensures (cip_mandatory_requirements p_c1 <= cip_mandatory_requirements p_c2))) = admit ()
 
 (* full_cip_requires_identification (matches Coq: Theorem full_cip_requires_identification) *)
-let full_cip_requires_identification_obligation () : Tot bool = (0 = 0)
-let full_cip_requires_identification_lemma () : Lemma (requires True) (ensures (full_cip_requires_identification_obligation () == full_cip_requires_identification_obligation ())) = ()
+let full_cip_requires_identification (p_c: _) : Lemma (requires (nerc_cip_all_controls p_c == true) (ensures (p_c.f_cip_002_identification == true))) = admit ()
 
 (* full_cip_requires_perimeter (matches Coq: Theorem full_cip_requires_perimeter) *)
-let full_cip_requires_perimeter_obligation () : Tot bool = (0 = 0)
-let full_cip_requires_perimeter_lemma () : Lemma (requires True) (ensures (full_cip_requires_perimeter_obligation () == full_cip_requires_perimeter_obligation ())) = ()
+let full_cip_requires_perimeter (p_c: _) : Lemma (requires (nerc_cip_all_controls p_c == true) (ensures (p_c.f_cip_005_electronic_perimeter == true))) = admit ()
 
 (* full_cip_requires_supply_chain (matches Coq: Theorem full_cip_requires_supply_chain) *)
-let full_cip_requires_supply_chain_obligation () : Tot bool = (0 = 0)
-let full_cip_requires_supply_chain_lemma () : Lemma (requires True) (ensures (full_cip_requires_supply_chain_obligation () == full_cip_requires_supply_chain_obligation ())) = ()
+let full_cip_requires_supply_chain (p_c: _) : Lemma (requires (nerc_cip_all_controls p_c == true) (ensures (p_c.f_cip_013_supply_chain == true))) = admit ()
 
 (* control_center_critical (matches Coq: Theorem control_center_critical) *)
-let control_center_critical_obligation () : Tot bool = (0 = 0)
-let control_center_critical_lemma () : Lemma (requires True) (ensures (control_center_critical_obligation () == control_center_critical_obligation ())) = ()
+let control_center_critical () : Lemma (bes_criticality ControlCenter == 5) = admit ()
 
 (* scada_critical (matches Coq: Theorem scada_critical) *)
-let scada_critical_obligation () : Tot bool = (0 = 0)
-let scada_critical_lemma () : Lemma (requires True) (ensures (scada_critical_obligation () == scada_critical_obligation ())) = ()
+let scada_critical () : Lemma (bes_criticality SCADA_System == 5) = admit ()
 
 (* bes_criticality_positive (matches Coq: Theorem bes_criticality_positive) *)
-let bes_criticality_positive_obligation () : Tot bool = (0 = 0)
-let bes_criticality_positive_lemma () : Lemma (requires True) (ensures (bes_criticality_positive_obligation () == bes_criticality_positive_obligation ())) = ()
+let bes_criticality_positive (p_a: _) : Lemma (bes_criticality p_a >= 3) = admit ()
 
 (* high_impact_fastest_response (matches Coq: Theorem high_impact_fastest_response) *)
-let high_impact_fastest_response_obligation () : Tot bool = (0 = 0)
-let high_impact_fastest_response_lemma () : Lemma (requires True) (ensures (high_impact_fastest_response_obligation () == high_impact_fastest_response_obligation ())) = ()
+let high_impact_fastest_response () : Lemma (incident_response_hours High_Impact == 1) = admit ()
 
 (* response_time_decreasing (matches Coq: Theorem response_time_decreasing) *)
-let response_time_decreasing_obligation () : Tot bool = (0 = 0)
-let response_time_decreasing_lemma () : Lemma (requires True) (ensures (response_time_decreasing_obligation () == response_time_decreasing_obligation ())) = ()
+let response_time_decreasing (p_c1: _) (p_c2: _) : Lemma (requires (cip_le p_c1 p_c2 == true) (ensures (incident_response_hours p_c2 <= incident_response_hours p_c1))) = admit ()
 
 (* rto_bounded (matches Coq: Theorem rto_bounded) *)
-let rto_bounded_obligation () : Tot bool = (0 = 0)
-let rto_bounded_lemma () : Lemma (requires True) (ensures (rto_bounded_obligation () == rto_bounded_obligation ())) = ()
+let rto_bounded (p_impact: _) : Lemma (rto_hours p_impact <= 72) = admit ()
 
 (* high_impact_short_rto (matches Coq: Theorem high_impact_short_rto) *)
-let high_impact_short_rto_obligation () : Tot bool = (0 = 0)
-let high_impact_short_rto_lemma () : Lemma (requires True) (ensures (high_impact_short_rto_obligation () == high_impact_short_rto_obligation ())) = ()
+let high_impact_short_rto () : Lemma (rto_hours High_Impact <= rto_hours Medium_Impact) = admit ()
 
 (* assessment_more_frequent_high (matches Coq: Theorem assessment_more_frequent_high) *)
-let assessment_more_frequent_high_obligation () : Tot bool = (0 = 0)
-let assessment_more_frequent_high_lemma () : Lemma (requires True) (ensures (assessment_more_frequent_high_obligation () == assessment_more_frequent_high_obligation ())) = ()
+let assessment_more_frequent_high (p_c1: _) (p_c2: _) : Lemma (requires (cip_le p_c1 p_c2 == true) (ensures (assessment_frequency_days p_c2 <= assessment_frequency_days p_c1))) = admit ()
 
 (* high_medium_same_retention (matches Coq: Theorem high_medium_same_retention) *)
-let high_medium_same_retention_obligation () : Tot bool = (0 = 0)
-let high_medium_same_retention_lemma () : Lemma (requires True) (ensures (high_medium_same_retention_obligation () == high_medium_same_retention_obligation ())) = ()
+let high_medium_same_retention () : Lemma (access_log_retention_days High_Impact == access_log_retention_days Medium_Impact) = admit ()

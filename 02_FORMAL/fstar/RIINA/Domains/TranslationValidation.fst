@@ -194,89 +194,67 @@ let select_instr (p_ir: ir_instr) : Tot mach_instr =
   | _ -> (* TODO: default value for mach_instr *) admit()
 
 (* val_match_refl (matches Coq: Lemma val_match_refl) *)
-let val_match_refl_obligation () : Tot bool = (0 = 0)
-let val_match_refl_lemma () : Lemma (requires True) (ensures (val_match_refl_obligation () == val_match_refl_obligation ())) = ()
+let val_match_refl (p_n: _) : Lemma (val_match (SVInt p_n) (TVInt p_n) == true) = admit ()
 
 (* val_corresp_match (matches Coq: Lemma val_corresp_match) *)
-let val_corresp_match_obligation () : Tot bool = (0 = 0)
-let val_corresp_match_lemma () : Lemma (requires True) (ensures (val_corresp_match_obligation () == val_corresp_match_obligation ())) = ()
+let val_corresp_match (p_sv: _) (p_tv: _) : Lemma (requires (val_corresp p_sv p_tv == true) (ensures (val_match p_sv p_tv == true))) = admit ()
 
 (* trace_equiv_refl (matches Coq: Lemma trace_equiv_refl) *)
-let trace_equiv_refl_obligation () : Tot bool = (0 = 0)
-let trace_equiv_refl_lemma () : Lemma (requires True) (ensures (trace_equiv_refl_obligation () == trace_equiv_refl_obligation ())) = ()
+let trace_equiv_refl (p_t: _) : Lemma (trace_equiv_prop p_t p_t == true) = admit ()
 
 (* trace_equiv_sym (matches Coq: Lemma trace_equiv_sym) *)
-let trace_equiv_sym_obligation () : Tot bool = (0 = 0)
-let trace_equiv_sym_lemma () : Lemma (requires True) (ensures (trace_equiv_sym_obligation () == trace_equiv_sym_obligation ())) = ()
+let trace_equiv_sym (p_t1: _) (p_t2: _) : Lemma (requires (trace_equiv_prop p_t1 p_t2 == true) (ensures (trace_equiv_prop p_t2 p_t1 == true))) = admit ()
 
 (* trace_equiv_trans (matches Coq: Lemma trace_equiv_trans) *)
-let trace_equiv_trans_obligation () : Tot bool = (0 = 0)
-let trace_equiv_trans_lemma () : Lemma (requires True) (ensures (trace_equiv_trans_obligation () == trace_equiv_trans_obligation ())) = ()
+let trace_equiv_trans (p_t1: _) (p_t2: _) (p_t3: _) : Lemma (requires (trace_equiv_prop p_t1 p_t2 == true /\ trace_equiv_prop p_t2 p_t3 == true) (ensures (trace_equiv_prop p_t1 p_t3 == true))) = admit ()
 
 (* tgt_steps_trans (matches Coq: Lemma tgt_steps_trans) *)
-let tgt_steps_trans_obligation () : Tot bool = (0 = 0)
-let tgt_steps_trans_lemma () : Lemma (requires True) (ensures (tgt_steps_trans_obligation () == tgt_steps_trans_obligation ())) = ()
+let tgt_steps_trans (p_prog: _) (p_s1: _) (p_s2: _) (p_s3: _) : Lemma (requires (tgt_steps p_prog p_s1 p_s2 == true /\ tgt_steps p_prog p_s2 p_s3 == true) (ensures (tgt_steps p_prog p_s1 p_s3 == true))) = admit ()
 
 (* is_const_sound (matches Coq: Lemma is_const_sound) *)
-let is_const_sound_obligation () : Tot bool = (0 = 0)
-let is_const_sound_lemma () : Lemma (requires True) (ensures (is_const_sound_obligation () == is_const_sound_obligation ())) = ()
+let is_const_sound (p_e: _) (p_n: _) (p_env: _) : Lemma (requires (is_const p_e == Some p_n) (ensures (src_eval p_env p_e (SVInt p_n) == true))) = admit ()
 
 (* COMPILE_001_01 (matches Coq: Theorem COMPILE_001_01) *)
-let compile_001_01_obligation () : Tot bool = (0 = 0)
-let compile_001_01_lemma () : Lemma (requires True) (ensures (compile_001_01_obligation () == compile_001_01_obligation ())) = ()
+let compile_001_01 (p_env: nat) (p_e: src_expr) (p_sv: src_val) (p_prog: nat) (p_ts_init: tgt_state) (p_ts_final: tgt_state) (p_result_reg: nat) (p_mapping: nat) : Lemma (requires (src_eval p_env p_e p_sv == true /\ env_corresp p_env (p_ts_init.f_ts_regs) p_mapping == true /\ tgt_steps p_prog p_ts_init p_ts_final == true /\ sim_rel p_env p_sv p_ts_final p_result_reg == true) (ensures ((exists p_tv. In (result_reg_ p_tv) (p_ts_final.f_ts_regs) == true) /\ val_corresp p_sv tv == true))) = admit ()
 
 (* COMPILE_001_02 (matches Coq: Theorem COMPILE_001_02) *)
-let compile_001_02_obligation () : Tot bool = (0 = 0)
-let compile_001_02_lemma () : Lemma (requires True) (ensures (compile_001_02_obligation () == compile_001_02_obligation ())) = ()
+let compile_001_02 (p_g: nat) (p_e: src_expr) (p_t: src_type) (p_tt: tgt_type) : Lemma (requires (src_has_type p_g p_e p_t == true /\ type_corresp p_t p_tt == true) (ensures ((p_t == STInt -> p_tt = TTInt) /\ (p_t == STBool -> p_tt = TTInt) /\ (p_t == STUnit -> p_tt = TTInt)))) = admit ()
 
 (* COMPILE_001_03 (matches Coq: Theorem COMPILE_001_03) *)
-let compile_001_03_obligation () : Tot bool = (0 = 0)
-let compile_001_03_lemma () : Lemma (requires True) (ensures (compile_001_03_obligation () == compile_001_03_obligation ())) = ()
+let compile_001_03 (p_src_trace: nat) (p_tgt_trace: nat) : Lemma (requires (trace_equiv_prop p_src_trace p_tgt_trace == true) (ensures (trace_equiv_prop p_tgt_trace p_src_trace == true))) = admit ()
 
 (* COMPILE_001_04 (matches Coq: Theorem COMPILE_001_04) *)
-let compile_001_04_obligation () : Tot bool = (0 = 0)
-let compile_001_04_lemma () : Lemma (requires True) (ensures (compile_001_04_obligation () == compile_001_04_obligation ())) = ()
+let compile_001_04 (p_env: nat) (p_e: src_expr) (p_sv: src_val) (p_prog: nat) (p_ts_init: tgt_state) : Lemma (requires (src_eval p_env p_e p_sv == true /\ ((exists p_ts_final. tgt_steps p_prog p_ts_init p_ts_final == true) /\ sim_rel p_env p_sv ts_final 0 == true)) (ensures (src_terminates p_env p_e == true /\ tgt_terminates p_prog p_ts_init == true))) = admit ()
 
 (* COMPILE_001_05 (matches Coq: Theorem COMPILE_001_05) *)
-let compile_001_05_obligation () : Tot bool = (0 = 0)
-let compile_001_05_lemma () : Lemma (requires True) (ensures (compile_001_05_obligation () == compile_001_05_obligation ())) = ()
+let compile_001_05 (p_sv: src_val) (p_tv: tgt_val) : Lemma (requires (val_corresp p_sv p_tv == true) (ensures (val_match p_sv p_tv == true))) = admit ()
 
 (* COMPILE_001_06 (matches Coq: Theorem COMPILE_001_06) *)
-let compile_001_06_obligation () : Tot bool = (0 = 0)
-let compile_001_06_lemma () : Lemma (requires True) (ensures (compile_001_06_obligation () == compile_001_06_obligation ())) = ()
+let compile_001_06 (p_smem: (list nat)) (p_tmem: nat) (p_addr: nat) (p_sv: src_val) : Lemma (requires (mem_corresp p_smem p_tmem == true /\ In (addr_ p_sv) p_smem == true) (ensures ((exists p_tv. In (addr_ p_tv) p_tmem == true) /\ val_corresp p_sv tv == true))) = admit ()
 
 (* COMPILE_001_07 (matches Coq: Theorem COMPILE_001_07) *)
-let compile_001_07_obligation () : Tot bool = (0 = 0)
-let compile_001_07_lemma () : Lemma (requires True) (ensures (compile_001_07_obligation () == compile_001_07_obligation ())) = ()
+let compile_001_07 (p_abi: abi) (p_args: (list nat)) (p_ret: nat) : Lemma (requires (abi_compliant_call p_abi p_args p_ret == true) (ensures (length p_args <= length (p_abi.f_abi_arg_regs) /\ p_ret == p_abi.f_abi_ret_reg))) = admit ()
 
 (* COMPILE_001_08 (matches Coq: Theorem COMPILE_001_08) *)
-let compile_001_08_obligation () : Tot bool = (0 = 0)
-let compile_001_08_lemma () : Lemma (requires True) (ensures (compile_001_08_obligation () == compile_001_08_obligation ())) = ()
+let compile_001_08 (p_env: nat) (p_e: src_expr) (p_n: nat) : Lemma (requires (is_const p_e == Some p_n) (ensures (src_eval p_env p_e (SVInt p_n) == true))) = admit ()
 
 (* COMPILE_001_09 (matches Coq: Theorem COMPILE_001_09) *)
-let compile_001_09_obligation () : Tot bool = (0 = 0)
-let compile_001_09_lemma () : Lemma (requires True) (ensures (compile_001_09_obligation () == compile_001_09_obligation ())) = ()
+let compile_001_09 (p_x: nat) (p_e: src_expr) (p_result: nat) : Lemma (requires (var_used p_x p_e == false /\ is_const p_e == Some p_result) (ensures (forall env vx_ src_eval ((p_x, vx) :: env) p_e (SVInt p_result) == true))) = admit ()
 
 (* COMPILE_001_10 (matches Coq: Theorem COMPILE_001_10) *)
-let compile_001_10_obligation () : Tot bool = (0 = 0)
-let compile_001_10_lemma () : Lemma (requires True) (ensures (compile_001_10_obligation () == compile_001_10_obligation ())) = ()
+let compile_001_10 (p_env: nat) (p_f_body: src_expr) (p_arg: src_expr) (p_param: nat) (p_v: src_val) (p_arg_val: src_val) : Lemma (requires (src_eval p_env p_arg p_arg_val == true /\ src_eval ((p_param, p_arg_val) :: p_env) p_f_body p_v == true) (ensures (src_eval p_env (SLet p_param p_arg p_f_body) p_v == true))) = admit ()
 
 (* COMPILE_001_11 (matches Coq: Theorem COMPILE_001_11) *)
-let compile_001_11_obligation () : Tot bool = (0 = 0)
-let compile_001_11_lemma () : Lemma (requires True) (ensures (compile_001_11_obligation () == compile_001_11_obligation ())) = ()
+let compile_001_11 (p_env: nat) (p_body: src_expr) (p_n: nat) (p_v: src_val) : Lemma (requires ((forall i_ i < p_n -> exists vi_ src_eval p_env p_body vi) /\ src_eval p_env (unroll_loop p_body p_n) p_v == true) (ensures ((p_n == 0 /\ p_v == SVInt 0) \/ ((exists p_v_last. src_eval p_env p_body p_v_last == true))))) = admit ()
 
 (* COMPILE_001_12 (matches Coq: Theorem COMPILE_001_12) *)
-let compile_001_12_obligation () : Tot bool = (0 = 0)
-let compile_001_12_lemma () : Lemma (requires True) (ensures (compile_001_12_obligation () == compile_001_12_obligation ())) = ()
+let compile_001_12 (p_alloc: nat) (p_regs: nat) (p_env: nat) (p_x: nat) (p_r: nat) (p_sv: src_val) : Lemma (requires (alloc_valid p_alloc p_regs p_env == true /\ In (x_ p_r) p_alloc == true /\ In (x_ p_sv) p_env == true) (ensures ((exists p_tv. In (r_ p_tv) p_regs == true) /\ val_corresp p_sv tv == true))) = admit ()
 
 (* COMPILE_001_13 (matches Coq: Theorem COMPILE_001_13) *)
-let compile_001_13_obligation () : Tot bool = (0 = 0)
-let compile_001_13_lemma () : Lemma (requires True) (ensures (compile_001_13_obligation () == compile_001_13_obligation ())) = ()
+let compile_001_13 (p_ir: ir_instr) (p_regs: nat) (p_regs_: nat) : Lemma (requires (ir_eval p_ir p_regs == Some regs_) (ensures (mach_eval (select_instr p_ir) p_regs == Some regs_))) = admit ()
 
 (* COMPILE_001_14 (matches Coq: Theorem COMPILE_001_14) *)
-let compile_001_14_obligation () : Tot bool = (0 = 0)
-let compile_001_14_lemma () : Lemma (requires True) (ensures (compile_001_14_obligation () == compile_001_14_obligation ())) = ()
+let compile_001_14 (p_sf: stack_frame) (p_abi: abi) : Lemma (requires (stack_valid p_sf p_abi == true) (ensures (sf_size p_sf id_mod abi_stack_align p_abi == 0))) = admit ()
 
 (* COMPILE_001_15 (matches Coq: Theorem COMPILE_001_15) *)
-let compile_001_15_obligation () : Tot bool = (0 = 0)
-let compile_001_15_lemma () : Lemma (requires True) (ensures (compile_001_15_obligation () == compile_001_15_obligation ())) = ()
+let compile_001_15 (p_sp: src_program) (p_tp: nat) (p_mapping: nat) (p_src_trace: nat) (p_tgt_trace: nat) : Lemma (requires (prog_sim p_sp p_tp p_mapping == true /\ trace_equiv_prop p_src_trace p_tgt_trace == true) (ensures (trace_equiv_prop p_tgt_trace p_src_trace == true /\ (forall t_ trace_equiv_prop p_src_trace t -> trace_equiv_prop t p_src_trace == true)))) = admit ()

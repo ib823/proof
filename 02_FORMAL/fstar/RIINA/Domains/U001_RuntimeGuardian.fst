@@ -166,145 +166,109 @@ let tamper_evident (p_old_checksum: nat) (p_new_checksum: nat) : Tot bool =
   (0 = 0)
 
 (* U_001_01_cfi_cfg_wellformed (matches Coq: Theorem U_001_01_cfi_cfg_wellformed) *)
-let u_001_01_cfi_cfg_wellformed_obligation () : Tot bool = (0 = 0)
-let u_001_01_cfi_cfg_wellformed_lemma () : Lemma (requires True) (ensures (u_001_01_cfi_cfg_wellformed_obligation () == u_001_01_cfi_cfg_wellformed_obligation ())) = ()
+let u_001_01_cfi_cfg_wellformed (p_cfg: _) : Lemma (requires ((forall e_ In e p_cfg -> In (edge_source e) (valid_addresses p_cfg) == true /\ In (edge_target e) (valid_addresses p_cfg) == true)) (ensures (cfg_wellformed p_cfg == true))) = admit ()
 
 (* U_001_02_cfi_ip_in_cfg (matches Coq: Theorem U_001_02_cfi_ip_in_cfg) *)
-let u_001_02_cfi_ip_in_cfg_obligation () : Tot bool = (0 = 0)
-let u_001_02_cfi_ip_in_cfg_lemma () : Lemma (requires True) (ensures (u_001_02_cfi_ip_in_cfg_obligation () == u_001_02_cfi_ip_in_cfg_obligation ())) = ()
+let u_001_02_cfi_ip_in_cfg (p_cfg: _) (p_ip: _) : Lemma (requires (In p_ip (valid_addresses p_cfg) == true) (ensures (in_cfg p_cfg p_ip == true))) = admit ()
 
 (* U_001_03_cfi_indirect_safe (matches Coq: Theorem U_001_03_cfi_indirect_safe) *)
-let u_001_03_cfi_indirect_safe_obligation () : Tot bool = (0 = 0)
-let u_001_03_cfi_indirect_safe_lemma () : Lemma (requires True) (ensures (u_001_03_cfi_indirect_safe_obligation () == u_001_03_cfi_indirect_safe_obligation ())) = ()
+let u_001_03_cfi_indirect_safe (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (In (IndirectJump p_src p_tgt) p_cfg == true) (ensures (In p_tgt (valid_addresses p_cfg) == true))) = admit ()
 
 (* U_001_04_cfi_return_integrity (matches Coq: Theorem U_001_04_cfi_return_integrity) *)
-let u_001_04_cfi_return_integrity_obligation () : Tot bool = (0 = 0)
-let u_001_04_cfi_return_integrity_lemma () : Lemma (requires True) (ensures (u_001_04_cfi_return_integrity_obligation () == u_001_04_cfi_return_integrity_obligation ())) = ()
+let u_001_04_cfi_return_integrity (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (In (Return p_src p_tgt) p_cfg == true) (ensures (In p_tgt (valid_addresses p_cfg) == true))) = admit ()
 
 (* U_001_05_cfi_call_integrity (matches Coq: Theorem U_001_05_cfi_call_integrity) *)
-let u_001_05_cfi_call_integrity_obligation () : Tot bool = (0 = 0)
-let u_001_05_cfi_call_integrity_lemma () : Lemma (requires True) (ensures (u_001_05_cfi_call_integrity_obligation () == u_001_05_cfi_call_integrity_obligation ())) = ()
+let u_001_05_cfi_call_integrity (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (In (DirectCall p_src p_tgt) p_cfg == true) (ensures (In p_tgt (valid_addresses p_cfg) == true))) = admit ()
 
 (* U_001_06_cfi_no_arbitrary_jump (matches Coq: Theorem U_001_06_cfi_no_arbitrary_jump) *)
-let u_001_06_cfi_no_arbitrary_jump_obligation () : Tot bool = (0 = 0)
-let u_001_06_cfi_no_arbitrary_jump_lemma () : Lemma (requires True) (ensures (u_001_06_cfi_no_arbitrary_jump_obligation () == u_001_06_cfi_no_arbitrary_jump_obligation ())) = ()
+let u_001_06_cfi_no_arbitrary_jump (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (edge_in_cfg p_cfg p_src p_tgt == true) (ensures (In p_tgt (valid_addresses p_cfg) == true))) = admit ()
 
 (* U_001_07_cfi_shadow_stack (matches Coq: Theorem U_001_07_cfi_shadow_stack) *)
-let u_001_07_cfi_shadow_stack_obligation () : Tot bool = (0 = 0)
-let u_001_07_cfi_shadow_stack_lemma () : Lemma (requires True) (ensures (u_001_07_cfi_shadow_stack_obligation () == u_001_07_cfi_shadow_stack_obligation ())) = ()
+let u_001_07_cfi_shadow_stack (p_ss: _) (p_actual: _) : Lemma (requires (p_ss == p_actual) (ensures (shadow_matches p_ss p_actual == true))) = admit ()
 
 (* U_001_08_cfi_forward_edge (matches Coq: Theorem U_001_08_cfi_forward_edge) *)
-let u_001_08_cfi_forward_edge_obligation () : Tot bool = (0 = 0)
-let u_001_08_cfi_forward_edge_lemma () : Lemma (requires True) (ensures (u_001_08_cfi_forward_edge_obligation () == u_001_08_cfi_forward_edge_obligation ())) = ()
+let u_001_08_cfi_forward_edge (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (In (DirectCall p_src p_tgt) p_cfg == true \/ In (DirectJump p_src p_tgt) p_cfg == true) (ensures (edge_in_cfg p_cfg p_src p_tgt == true))) = admit ()
 
 (* U_001_09_cfi_backward_edge (matches Coq: Theorem U_001_09_cfi_backward_edge) *)
-let u_001_09_cfi_backward_edge_obligation () : Tot bool = (0 = 0)
-let u_001_09_cfi_backward_edge_lemma () : Lemma (requires True) (ensures (u_001_09_cfi_backward_edge_obligation () == u_001_09_cfi_backward_edge_obligation ())) = ()
+let u_001_09_cfi_backward_edge (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (In (Return p_src p_tgt) p_cfg == true) (ensures (edge_in_cfg p_cfg p_src p_tgt == true))) = admit ()
 
 (* U_001_10_cfi_violation_detected (matches Coq: Theorem U_001_10_cfi_violation_detected) *)
-let u_001_10_cfi_violation_detected_obligation () : Tot bool = (0 = 0)
-let u_001_10_cfi_violation_detected_lemma () : Lemma (requires True) (ensures (u_001_10_cfi_violation_detected_obligation () == u_001_10_cfi_violation_detected_obligation ())) = ()
+let u_001_10_cfi_violation_detected (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (~(In p_tgt (valid_addresses p_cfg) == true)) (ensures (~(edge_in_cfg p_cfg p_src p_tgt == true)))) = admit ()
 
 (* U_001_11_mem_checksum_correct (matches Coq: Theorem U_001_11_mem_checksum_correct) *)
-let u_001_11_mem_checksum_correct_obligation () : Tot bool = (0 = 0)
-let u_001_11_mem_checksum_correct_lemma () : Lemma (requires True) (ensures (u_001_11_mem_checksum_correct_obligation () == u_001_11_mem_checksum_correct_obligation ())) = ()
+let u_001_11_mem_checksum_correct (p_mem: _) (p_start: _) (p_len: _) : Lemma (checksum_valid p_mem p_start p_len (compute_checksum p_mem p_start p_len) == true) = admit ()
 
 (* U_001_12_mem_redundant_storage (matches Coq: Theorem U_001_12_mem_redundant_storage) *)
-let u_001_12_mem_redundant_storage_obligation () : Tot bool = (0 = 0)
-let u_001_12_mem_redundant_storage_lemma () : Lemma (requires True) (ensures (u_001_12_mem_redundant_storage_obligation () == u_001_12_mem_redundant_storage_obligation ())) = ()
+let u_001_12_mem_redundant_storage (p_data: nat) (p_copies: nat) : Lemma (requires (p_copies >= 3) (ensures (p_copies >= 3))) = admit ()
 
 (* U_001_13_mem_ecc_corrects (matches Coq: Theorem U_001_13_mem_ecc_corrects) *)
-let u_001_13_mem_ecc_corrects_obligation () : Tot bool = (0 = 0)
-let u_001_13_mem_ecc_corrects_lemma () : Lemma (requires True) (ensures (u_001_13_mem_ecc_corrects_obligation () == u_001_13_mem_ecc_corrects_obligation ())) = ()
+let u_001_13_mem_ecc_corrects (p_data: _) : Lemma (ecc_decode (ecc_encode p_data) == p_data) = admit ()
 
 (* double_even (matches Coq: Lemma double_even) *)
-let double_even_obligation () : Tot bool = (0 = 0)
-let double_even_lemma () : Lemma (requires True) (ensures (double_even_obligation () == double_even_obligation ())) = ()
+let double_even (p_n: _) : Lemma (Nat.even (p_n * 2) == true) = admit ()
 
 (* U_001_14_mem_ecc_detects (matches Coq: Theorem U_001_14_mem_ecc_detects) *)
-let u_001_14_mem_ecc_detects_obligation () : Tot bool = (0 = 0)
-let u_001_14_mem_ecc_detects_lemma () : Lemma (requires True) (ensures (u_001_14_mem_ecc_detects_obligation () == u_001_14_mem_ecc_detects_obligation ())) = ()
+let u_001_14_mem_ecc_detects (p_data: _) : Lemma (ecc_check (ecc_encode p_data) == true) = admit ()
 
 (* U_001_15_mem_bounds_enforced (matches Coq: Theorem U_001_15_mem_bounds_enforced) *)
-let u_001_15_mem_bounds_enforced_obligation () : Tot bool = (0 = 0)
-let u_001_15_mem_bounds_enforced_lemma () : Lemma (requires True) (ensures (u_001_15_mem_bounds_enforced_obligation () == u_001_15_mem_bounds_enforced_obligation ())) = ()
+let u_001_15_mem_bounds_enforced (p_addr: _) (p_lo: _) (p_hi: _) : Lemma (requires (p_lo <= p_addr <= p_hi) (ensures (p_lo <= p_addr /\ p_addr <= p_hi))) = admit ()
 
 (* U_001_16_mem_readonly_protected (matches Coq: Theorem U_001_16_mem_readonly_protected) *)
-let u_001_16_mem_readonly_protected_obligation () : Tot bool = (0 = 0)
-let u_001_16_mem_readonly_protected_lemma () : Lemma (requires True) (ensures (u_001_16_mem_readonly_protected_obligation () == u_001_16_mem_readonly_protected_obligation ())) = ()
+let u_001_16_mem_readonly_protected (p_prot: _) (p_addr: _) : Lemma (requires (p_prot p_addr == ReadOnly) (ensures (protected_readonly p_prot p_addr == true))) = admit ()
 
 (* U_001_17_mem_kernel_isolated (matches Coq: Theorem U_001_17_mem_kernel_isolated) *)
-let u_001_17_mem_kernel_isolated_obligation () : Tot bool = (0 = 0)
-let u_001_17_mem_kernel_isolated_lemma () : Lemma (requires True) (ensures (u_001_17_mem_kernel_isolated_obligation () == u_001_17_mem_kernel_isolated_obligation ())) = ()
+let u_001_17_mem_kernel_isolated (p_prot: _) (p_kernel_start: _) (p_kernel_end: _) (p_addr: _) : Lemma (requires ((p_kernel_start <= p_addr <= p_kernel_end -> p_prot p_addr == NoAccess) /\ p_kernel_start <= p_addr <= p_kernel_end) (ensures (p_prot p_addr == NoAccess))) = admit ()
 
 (* U_001_18_mem_corruption_detected (matches Coq: Theorem U_001_18_mem_corruption_detected) *)
-let u_001_18_mem_corruption_detected_obligation () : Tot bool = (0 = 0)
-let u_001_18_mem_corruption_detected_lemma () : Lemma (requires True) (ensures (u_001_18_mem_corruption_detected_obligation () == u_001_18_mem_corruption_detected_obligation ())) = ()
+let u_001_18_mem_corruption_detected (p_mem: _) (p_start: _) (p_len: _) (p_expected: _) : Lemma (requires (~(compute_checksum p_mem p_start p_len == p_expected)) (ensures (~(checksum_valid p_mem p_start p_len p_expected == true)))) = admit ()
 
 (* U_001_19_nmr_variants_independent (matches Coq: Theorem U_001_19_nmr_variants_independent) *)
-let u_001_19_nmr_variants_independent_obligation () : Tot bool = (0 = 0)
-let u_001_19_nmr_variants_independent_lemma () : Lemma (requires True) (ensures (u_001_19_nmr_variants_independent_obligation () == u_001_19_nmr_variants_independent_obligation ())) = ()
+let u_001_19_nmr_variants_independent (p_v1: _) (p_v2: _) (p_v3: _) : Lemma (variants_independent p_v1 p_v2 p_v3 == true) = admit ()
 
 (* U_001_20_nmr_state_synchronized (matches Coq: Theorem U_001_20_nmr_state_synchronized) *)
-let u_001_20_nmr_state_synchronized_obligation () : Tot bool = (0 = 0)
-let u_001_20_nmr_state_synchronized_lemma () : Lemma (requires True) (ensures (u_001_20_nmr_state_synchronized_obligation () == u_001_20_nmr_state_synchronized_obligation ())) = ()
+let u_001_20_nmr_state_synchronized (p_v1: _) (p_v2: _) (p_v3: _) (p_t: _) : Lemma (requires (p_v1 p_t == p_v2 p_t /\ p_v2 p_t == p_v3 p_t) (ensures (states_synchronized p_v1 p_v2 p_v3 p_t == true))) = admit ()
 
 (* U_001_21_nmr_divergence_detected (matches Coq: Theorem U_001_21_nmr_divergence_detected) *)
-let u_001_21_nmr_divergence_detected_obligation () : Tot bool = (0 = 0)
-let u_001_21_nmr_divergence_detected_lemma () : Lemma (requires True) (ensures (u_001_21_nmr_divergence_detected_obligation () == u_001_21_nmr_divergence_detected_obligation ())) = ()
+let u_001_21_nmr_divergence_detected (p_v1: _) (p_v2: _) (p_v3: _) (p_t: _) : Lemma (requires (~(p_v1 p_t == p_v2 p_t)) (ensures (divergence_detected p_v1 p_v2 p_v3 p_t == true))) = admit ()
 
 (* U_001_22_nmr_single_fault_tolerant (matches Coq: Theorem U_001_22_nmr_single_fault_tolerant) *)
-let u_001_22_nmr_single_fault_tolerant_obligation () : Tot bool = (0 = 0)
-let u_001_22_nmr_single_fault_tolerant_lemma () : Lemma (requires True) (ensures (u_001_22_nmr_single_fault_tolerant_obligation () == u_001_22_nmr_single_fault_tolerant_obligation ())) = ()
+let u_001_22_nmr_single_fault_tolerant (p_a: _) (p_b: _) (p_c: _) (p_correct: _) : Lemma (requires ((p_a == p_correct /\ p_b == p_correct) \/ (p_b == p_correct /\ p_c == p_correct) \/ (p_a == p_correct /\ p_c == p_correct)) (ensures (majority_vote p_a p_b p_c == p_correct))) = admit ()
 
 (* U_001_23_nmr_voting_correct (matches Coq: Theorem U_001_23_nmr_voting_correct) *)
-let u_001_23_nmr_voting_correct_obligation () : Tot bool = (0 = 0)
-let u_001_23_nmr_voting_correct_lemma () : Lemma (requires True) (ensures (u_001_23_nmr_voting_correct_obligation () == u_001_23_nmr_voting_correct_obligation ())) = ()
+let u_001_23_nmr_voting_correct (p_a: _) (p_b: _) (p_c: _) : Lemma (voting_correct p_a p_b p_c == true) = admit ()
 
 (* U_001_24_nmr_recovery_sound (matches Coq: Theorem U_001_24_nmr_recovery_sound) *)
-let u_001_24_nmr_recovery_sound_obligation () : Tot bool = (0 = 0)
-let u_001_24_nmr_recovery_sound_lemma () : Lemma (requires True) (ensures (u_001_24_nmr_recovery_sound_obligation () == u_001_24_nmr_recovery_sound_obligation ())) = ()
+let u_001_24_nmr_recovery_sound (p_v1: nat) (p_v2: nat) (p_v3: nat) (p_t: nat) (p_correct: nat) : Lemma (requires (majority_vote (p_v1 p_t) (p_v2 p_t) (p_v3 p_t) == p_correct) (ensures (majority_vote (p_v1 p_t) (p_v2 p_t) (p_v3 p_t) == p_correct))) = admit ()
 
 (* U_001_25_nmr_coverage (matches Coq: Theorem U_001_25_nmr_coverage) *)
-let u_001_25_nmr_coverage_obligation () : Tot bool = (0 = 0)
-let u_001_25_nmr_coverage_lemma () : Lemma (requires True) (ensures (u_001_25_nmr_coverage_obligation () == u_001_25_nmr_coverage_obligation ())) = ()
+let u_001_25_nmr_coverage (p_p_error: _) : Lemma (requires (p_p_error >= 1) (ensures (p_p_error * p_p_error <= p_p_error * p_p_error * 3))) = admit ()
 
 (* U_001_26_panic_keys_zeroized (matches Coq: Theorem U_001_26_panic_keys_zeroized) *)
-let u_001_26_panic_keys_zeroized_obligation () : Tot bool = (0 = 0)
-let u_001_26_panic_keys_zeroized_lemma () : Lemma (requires True) (ensures (u_001_26_panic_keys_zeroized_obligation () == u_001_26_panic_keys_zeroized_obligation ())) = ()
+let u_001_26_panic_keys_zeroized (p_st: _) (p_event: _) : Lemma (keys_zeroized (trigger_panic p_st p_event) == true) = admit ()
 
 (* U_001_27_panic_execution_halted (matches Coq: Theorem U_001_27_panic_execution_halted) *)
-let u_001_27_panic_execution_halted_obligation () : Tot bool = (0 = 0)
-let u_001_27_panic_execution_halted_lemma () : Lemma (requires True) (ensures (u_001_27_panic_execution_halted_obligation () == u_001_27_panic_execution_halted_obligation ())) = ()
+let u_001_27_panic_execution_halted (p_st: _) (p_event: _) : Lemma (execution_halted (trigger_panic p_st p_event) == true) = admit ()
 
 (* U_001_28_panic_audit_logged (matches Coq: Theorem U_001_28_panic_audit_logged) *)
-let u_001_28_panic_audit_logged_obligation () : Tot bool = (0 = 0)
-let u_001_28_panic_audit_logged_lemma () : Lemma (requires True) (ensures (u_001_28_panic_audit_logged_obligation () == u_001_28_panic_audit_logged_obligation ())) = ()
+let u_001_28_panic_audit_logged (p_st: _) (p_event: _) : Lemma (audit_logged (trigger_panic p_st p_event) p_event == true) = admit ()
 
 (* U_001_29_panic_triggered (matches Coq: Theorem U_001_29_panic_triggered) *)
-let u_001_29_panic_triggered_obligation () : Tot bool = (0 = 0)
-let u_001_29_panic_triggered_lemma () : Lemma (requires True) (ensures (u_001_29_panic_triggered_obligation () == u_001_29_panic_triggered_obligation ())) = ()
+let u_001_29_panic_triggered (p_st: _) (p_event: _) : Lemma (panic_state (trigger_panic p_st p_event) == true) = admit ()
 
 (* U_001_30_panic_irreversible (matches Coq: Theorem U_001_30_panic_irreversible) *)
-let u_001_30_panic_irreversible_obligation () : Tot bool = (0 = 0)
-let u_001_30_panic_irreversible_lemma () : Lemma (requires True) (ensures (u_001_30_panic_irreversible_obligation () == u_001_30_panic_irreversible_obligation ())) = ()
+let u_001_30_panic_irreversible (p_st: _) : Lemma (requires (panic_state p_st == true) (ensures (p_st.f_ss_panic == true))) = admit ()
 
 (* U_001_31_watchdog_nmi (matches Coq: Theorem U_001_31_watchdog_nmi) *)
-let u_001_31_watchdog_nmi_obligation () : Tot bool = (0 = 0)
-let u_001_31_watchdog_nmi_lemma () : Lemma (requires True) (ensures (u_001_31_watchdog_nmi_obligation () == u_001_31_watchdog_nmi_obligation ())) = ()
+let u_001_31_watchdog_nmi (p_config: _) : Lemma (requires (p_config > 0) (ensures (uses_nmi p_config == true))) = admit ()
 
 (* U_001_32_watchdog_monitor_integrity (matches Coq: Theorem U_001_32_watchdog_monitor_integrity) *)
-let u_001_32_watchdog_monitor_integrity_obligation () : Tot bool = (0 = 0)
-let u_001_32_watchdog_monitor_integrity_lemma () : Lemma (requires True) (ensures (u_001_32_watchdog_monitor_integrity_obligation () == u_001_32_watchdog_monitor_integrity_obligation ())) = ()
+let u_001_32_watchdog_monitor_integrity (p_mem: _) : Lemma (requires (compute_checksum p_mem 0 1000 == monitor_checksum) (ensures (verify_monitor_integrity p_mem == true))) = admit ()
 
 (* U_001_33_monitor_unprivileged (matches Coq: Theorem U_001_33_monitor_unprivileged) *)
-let u_001_33_monitor_unprivileged_obligation () : Tot bool = (0 = 0)
-let u_001_33_monitor_unprivileged_lemma () : Lemma (requires True) (ensures (u_001_33_monitor_unprivileged_obligation () == u_001_33_monitor_unprivileged_obligation ())) = ()
+let u_001_33_monitor_unprivileged (p_app_id: _) : Lemma (requires (p_app_id > 0) (ensures (unprivileged_app p_app_id == true))) = admit ()
 
 (* U_001_34_monitor_complete_mediation (matches Coq: Theorem U_001_34_monitor_complete_mediation) *)
-let u_001_34_monitor_complete_mediation_obligation () : Tot bool = (0 = 0)
-let u_001_34_monitor_complete_mediation_lemma () : Lemma (requires True) (ensures (u_001_34_monitor_complete_mediation_obligation () == u_001_34_monitor_complete_mediation_obligation ())) = ()
+let u_001_34_monitor_complete_mediation (p_op: _) : Lemma (complete_mediation p_op true == true) = admit ()
 
 (* U_001_35_monitor_tamper_evident (matches Coq: Theorem U_001_35_monitor_tamper_evident) *)
-let u_001_35_monitor_tamper_evident_obligation () : Tot bool = (0 = 0)
-let u_001_35_monitor_tamper_evident_lemma () : Lemma (requires True) (ensures (u_001_35_monitor_tamper_evident_obligation () == u_001_35_monitor_tamper_evident_obligation ())) = ()
+let u_001_35_monitor_tamper_evident (p_old: _) (p_new: _) : Lemma (requires (~(p_old == p_new)) (ensures (tamper_evident p_old p_new == true))) = admit ()

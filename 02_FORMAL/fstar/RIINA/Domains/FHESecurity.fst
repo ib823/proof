@@ -328,377 +328,283 @@ let rlwe_secure (p_r: rlwe_config) : Tot bool =
 let riina_rlwe : rlwe_config = {f_rlwe_ring_degree=2048; f_rlwe_modulus=32769; f_rlwe_error_width=8; f_rlwe_ntt_compatible=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff_obligation () : Tot bool = (0 = 0)
-let andb3_true_iff_lemma () : Lemma (requires True) (ensures (andb3_true_iff_obligation () == andb3_true_iff_obligation ())) = ()
+let andb3_true_iff (p_a: _) (p_b: _) (p_c: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c == fn_true <) (ensures (p_a == true /\ p_b == true /\ p_c == true))) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = (0 = 0)
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le_obligation () : Tot bool = (0 = 0)
-let leb_le_lemma () : Lemma (requires True) (ensures (leb_le_obligation () == leb_le_obligation ())) = ()
+let leb_le (p_n: _) (p_m: _) (p_nat: _) : Lemma (requires ((p_n <=? p_m) == fn_true <) (ensures (p_n <= p_m))) = admit ()
 
 (* ltb_lt (matches Coq: Lemma ltb_lt) *)
-let ltb_lt_obligation () : Tot bool = (0 = 0)
-let ltb_lt_lemma () : Lemma (requires True) (ensures (ltb_lt_obligation () == ltb_lt_obligation ())) = ()
+let ltb_lt (p_n: _) (p_m: _) (p_nat: _) : Lemma (requires ((p_n <? p_m) == fn_true <) (ensures (p_n < p_m))) = admit ()
 
 (* mult_le_compat (matches Coq: Lemma mult_le_compat) *)
-let mult_le_compat_obligation () : Tot bool = (0 = 0)
-let mult_le_compat_lemma () : Lemma (requires True) (ensures (mult_le_compat_obligation () == mult_le_compat_obligation ())) = ()
+let mult_le_compat (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_nat: _) : Lemma (requires (p_a <= p_b /\ p_c <= p_d) (ensures (p_a * p_c <= p_b * p_d))) = admit ()
 
 (* add_le_compat (matches Coq: Lemma add_le_compat) *)
-let add_le_compat_obligation () : Tot bool = (0 = 0)
-let add_le_compat_lemma () : Lemma (requires True) (ensures (add_le_compat_obligation () == add_le_compat_obligation ())) = ()
+let add_le_compat (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_nat: _) : Lemma (requires (p_a <= p_b /\ p_c <= p_d) (ensures (p_a + p_c <= p_b + p_d))) = admit ()
 
 (* FHE_001 (matches Coq: Theorem FHE_001) *)
-let fhe_001_obligation () : Tot bool = (0 = 0)
-let fhe_001_lemma () : Lemma (requires True) (ensures (fhe_001_obligation () == fhe_001_obligation ())) = ()
+let fhe_001 () : Lemma (ops_fully_homomorphic riina_fhe_ops == true) = admit ()
 
 (* FHE_002 (matches Coq: Theorem FHE_002) *)
-let fhe_002_obligation () : Tot bool = (0 = 0)
-let fhe_002_lemma () : Lemma (requires True) (ensures (fhe_002_obligation () == fhe_002_obligation ())) = ()
+let fhe_002 () : Lemma (fhe_security_complete riina_fhe_sec == true) = admit ()
 
 (* FHE_003 (matches Coq: Theorem FHE_003) *)
-let fhe_003_obligation () : Tot bool = (0 = 0)
-let fhe_003_lemma () : Lemma (requires True) (ensures (fhe_003_obligation () == fhe_003_obligation ())) = ()
+let fhe_003 () : Lemma (noise_managed riina_fhe_noise == true) = admit ()
 
 (* FHE_004 (matches Coq: Theorem FHE_004) *)
-let fhe_004_obligation () : Tot bool = (0 = 0)
-let fhe_004_lemma () : Lemma (requires True) (ensures (fhe_004_obligation () == fhe_004_obligation ())) = ()
+let fhe_004 () : Lemma (fhe_fully_secure riina_fhe == true) = admit ()
 
 (* FHE_005 (matches Coq: Theorem FHE_005) *)
-let fhe_005_obligation () : Tot bool = (0 = 0)
-let fhe_005_lemma () : Lemma (requires True) (ensures (fhe_005_obligation () == fhe_005_obligation ())) = ()
+let fhe_005 () : Lemma (riina_fhe_ops.f_ho_addition == true) = admit ()
 
 (* FHE_006 (matches Coq: Theorem FHE_006) *)
-let fhe_006_obligation () : Tot bool = (0 = 0)
-let fhe_006_lemma () : Lemma (requires True) (ensures (fhe_006_obligation () == fhe_006_obligation ())) = ()
+let fhe_006 () : Lemma (riina_fhe_ops.f_ho_multiplication == true) = admit ()
 
 (* FHE_007 (matches Coq: Theorem FHE_007) *)
-let fhe_007_obligation () : Tot bool = (0 = 0)
-let fhe_007_lemma () : Lemma (requires True) (ensures (fhe_007_obligation () == fhe_007_obligation ())) = ()
+let fhe_007 () : Lemma (riina_fhe_ops.f_ho_arbitrary_depth == true) = admit ()
 
 (* FHE_008 (matches Coq: Theorem FHE_008) *)
-let fhe_008_obligation () : Tot bool = (0 = 0)
-let fhe_008_lemma () : Lemma (requires True) (ensures (fhe_008_obligation () == fhe_008_obligation ())) = ()
+let fhe_008 () : Lemma (riina_fhe_sec.f_fhe_ind_cpa == true) = admit ()
 
 (* FHE_009 (matches Coq: Theorem FHE_009) *)
-let fhe_009_obligation () : Tot bool = (0 = 0)
-let fhe_009_lemma () : Lemma (requires True) (ensures (fhe_009_obligation () == fhe_009_obligation ())) = ()
+let fhe_009 () : Lemma (riina_fhe_sec.f_fhe_circular_secure == true) = admit ()
 
 (* FHE_010 (matches Coq: Theorem FHE_010) *)
-let fhe_010_obligation () : Tot bool = (0 = 0)
-let fhe_010_lemma () : Lemma (requires True) (ensures (fhe_010_obligation () == fhe_010_obligation ())) = ()
+let fhe_010 () : Lemma (riina_fhe_noise.f_nm_bootstrapping == true) = admit ()
 
 (* FHE_011 (matches Coq: Theorem FHE_011) *)
-let fhe_011_obligation () : Tot bool = (0 = 0)
-let fhe_011_lemma () : Lemma (requires True) (ensures (fhe_011_obligation () == fhe_011_obligation ())) = ()
+let fhe_011 () : Lemma (riina_fhe.f_fhe_lattice_based == true) = admit ()
 
 (* FHE_012 (matches Coq: Theorem FHE_012) *)
-let fhe_012_obligation () : Tot bool = (0 = 0)
-let fhe_012_lemma () : Lemma (requires True) (ensures (fhe_012_obligation () == fhe_012_obligation ())) = ()
+let fhe_012 () : Lemma (riina_fhe.f_fhe_post_quantum == true) = admit ()
 
 (* FHE_013 (matches Coq: Theorem FHE_013) *)
-let fhe_013_obligation () : Tot bool = (0 = 0)
-let fhe_013_lemma () : Lemma (requires True) (ensures (fhe_013_obligation () == fhe_013_obligation ())) = ()
+let fhe_013 (p_o: _) : Lemma (requires (ops_fully_homomorphic p_o == true) (ensures (p_o.f_ho_multiplication == true))) = admit ()
 
 (* FHE_014 (matches Coq: Theorem FHE_014) *)
-let fhe_014_obligation () : Tot bool = (0 = 0)
-let fhe_014_lemma () : Lemma (requires True) (ensures (fhe_014_obligation () == fhe_014_obligation ())) = ()
+let fhe_014 (p_o: _) : Lemma (requires (ops_fully_homomorphic p_o == true) (ensures (p_o.f_ho_arbitrary_depth == true))) = admit ()
 
 (* FHE_015 (matches Coq: Theorem FHE_015) *)
-let fhe_015_obligation () : Tot bool = (0 = 0)
-let fhe_015_lemma () : Lemma (requires True) (ensures (fhe_015_obligation () == fhe_015_obligation ())) = ()
+let fhe_015 (p_s: _) : Lemma (requires (fhe_security_complete p_s == true) (ensures (p_s.f_fhe_ind_cpa == true))) = admit ()
 
 (* FHE_016 (matches Coq: Theorem FHE_016) *)
-let fhe_016_obligation () : Tot bool = (0 = 0)
-let fhe_016_lemma () : Lemma (requires True) (ensures (fhe_016_obligation () == fhe_016_obligation ())) = ()
+let fhe_016 (p_n: _) : Lemma (requires (noise_managed p_n == true) (ensures (p_n.f_nm_bootstrapping == true))) = admit ()
 
 (* FHE_017 (matches Coq: Theorem FHE_017) *)
-let fhe_017_obligation () : Tot bool = (0 = 0)
-let fhe_017_lemma () : Lemma (requires True) (ensures (fhe_017_obligation () == fhe_017_obligation ())) = ()
+let fhe_017 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures (ops_fully_homomorphic (p_f.f_fhe_ops) == true))) = admit ()
 
 (* FHE_018 (matches Coq: Theorem FHE_018) *)
-let fhe_018_obligation () : Tot bool = (0 = 0)
-let fhe_018_lemma () : Lemma (requires True) (ensures (fhe_018_obligation () == fhe_018_obligation ())) = ()
+let fhe_018 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures (fhe_security_complete (p_f.f_fhe_security) == true))) = admit ()
 
 (* FHE_019 (matches Coq: Theorem FHE_019) *)
-let fhe_019_obligation () : Tot bool = (0 = 0)
-let fhe_019_lemma () : Lemma (requires True) (ensures (fhe_019_obligation () == fhe_019_obligation ())) = ()
+let fhe_019 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures (noise_managed (p_f.f_fhe_noise) == true))) = admit ()
 
 (* FHE_020 (matches Coq: Theorem FHE_020) *)
-let fhe_020_obligation () : Tot bool = (0 = 0)
-let fhe_020_lemma () : Lemma (requires True) (ensures (fhe_020_obligation () == fhe_020_obligation ())) = ()
+let fhe_020 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures (p_f.f_fhe_post_quantum == true))) = admit ()
 
 (* FHE_021 (matches Coq: Theorem FHE_021) *)
-let fhe_021_obligation () : Tot bool = (0 = 0)
-let fhe_021_lemma () : Lemma (requires True) (ensures (fhe_021_obligation () == fhe_021_obligation ())) = ()
+let fhe_021 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures ((p_f.f_fhe_ops).f_ho_arbitrary_depth == true))) = admit ()
 
 (* FHE_022 (matches Coq: Theorem FHE_022) *)
-let fhe_022_obligation () : Tot bool = (0 = 0)
-let fhe_022_lemma () : Lemma (requires True) (ensures (fhe_022_obligation () == fhe_022_obligation ())) = ()
+let fhe_022 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures ((p_f.f_fhe_security).f_fhe_ind_cpa == true))) = admit ()
 
 (* FHE_023 (matches Coq: Theorem FHE_023) *)
-let fhe_023_obligation () : Tot bool = (0 = 0)
-let fhe_023_lemma () : Lemma (requires True) (ensures (fhe_023_obligation () == fhe_023_obligation ())) = ()
+let fhe_023 (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures ((p_f.f_fhe_noise).f_nm_bootstrapping == true))) = admit ()
 
 (* FHE_024 (matches Coq: Theorem FHE_024) *)
-let fhe_024_obligation () : Tot bool = (0 = 0)
-let fhe_024_lemma () : Lemma (requires True) (ensures (fhe_024_obligation () == fhe_024_obligation ())) = ()
+let fhe_024 () : Lemma (fhe_fully_secure riina_fhe == true /\ riina_fhe.f_fhe_post_quantum == true) = admit ()
 
 (* FHE_025_complete (matches Coq: Theorem FHE_025_complete) *)
-let fhe_025_complete_obligation () : Tot bool = (0 = 0)
-let fhe_025_complete_lemma () : Lemma (requires True) (ensures (fhe_025_complete_obligation () == fhe_025_complete_obligation ())) = ()
+let fhe_025_complete (p_f: _) : Lemma (requires (fhe_fully_secure p_f == true) (ensures ((p_f.f_fhe_ops).f_ho_arbitrary_depth == true /\ (p_f.f_fhe_security).f_fhe_ind_cpa == true /\ (p_f.f_fhe_noise).f_nm_bootstrapping == true /\ p_f.f_fhe_post_quantum == true))) = admit ()
 
 (* indcpa_001_riina_secure (matches Coq: Theorem indcpa_001_riina_secure) *)
-let indcpa_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let indcpa_001_riina_secure_lemma () : Lemma (requires True) (ensures (indcpa_001_riina_secure_obligation () == indcpa_001_riina_secure_obligation ())) = ()
+let indcpa_001_riina_secure () : Lemma (indcpa_secure riina_indcpa == true) = admit ()
 
 (* indcpa_002_key_size_sufficient (matches Coq: Theorem indcpa_002_key_size_sufficient) *)
-let indcpa_002_key_size_sufficient_obligation () : Tot bool = (0 = 0)
-let indcpa_002_key_size_sufficient_lemma () : Lemma (requires True) (ensures (indcpa_002_key_size_sufficient_obligation () == indcpa_002_key_size_sufficient_obligation ())) = ()
+let indcpa_002_key_size_sufficient (p_g: _) : Lemma (requires (indcpa_secure p_g == true) (ensures ((128 <=? icpa_key_size p_g) == true))) = admit ()
 
 (* indcpa_003_has_oracle (matches Coq: Theorem indcpa_003_has_oracle) *)
-let indcpa_003_has_oracle_obligation () : Tot bool = (0 = 0)
-let indcpa_003_has_oracle_lemma () : Lemma (requires True) (ensures (indcpa_003_has_oracle_obligation () == indcpa_003_has_oracle_obligation ())) = ()
+let indcpa_003_has_oracle (p_g: _) : Lemma (requires (indcpa_secure p_g == true) (ensures (p_g.f_icpa_encryption_oracle == true))) = admit ()
 
 (* indcpa_004_negligible_advantage (matches Coq: Theorem indcpa_004_negligible_advantage) *)
-let indcpa_004_negligible_advantage_obligation () : Tot bool = (0 = 0)
-let indcpa_004_negligible_advantage_lemma () : Lemma (requires True) (ensures (indcpa_004_negligible_advantage_obligation () == indcpa_004_negligible_advantage_obligation ())) = ()
+let indcpa_004_negligible_advantage (p_g: _) : Lemma (requires (indcpa_secure p_g == true) (ensures ((negligible_threshold <=? icpa_distinguisher_adv p_g) == true))) = admit ()
 
 (* ss_001_riina_semantic_secure (matches Coq: Theorem ss_001_riina_semantic_secure) *)
-let ss_001_riina_semantic_secure_obligation () : Tot bool = (0 = 0)
-let ss_001_riina_semantic_secure_lemma () : Lemma (requires True) (ensures (ss_001_riina_semantic_secure_obligation () == ss_001_riina_semantic_secure_obligation ())) = ()
+let ss_001_riina_semantic_secure () : Lemma (semantic_secure riina_semantic == true) = admit ()
 
 (* ss_002_implies_indistinguishable (matches Coq: Theorem ss_002_implies_indistinguishable) *)
-let ss_002_implies_indistinguishable_obligation () : Tot bool = (0 = 0)
-let ss_002_implies_indistinguishable_lemma () : Lemma (requires True) (ensures (ss_002_implies_indistinguishable_obligation () == ss_002_implies_indistinguishable_obligation ())) = ()
+let ss_002_implies_indistinguishable (p_ss: _) : Lemma (requires (semantic_secure p_ss == true) (ensures (p_ss.f_ss_indistinguishable == true))) = admit ()
 
 (* ss_003_implies_randomized (matches Coq: Theorem ss_003_implies_randomized) *)
-let ss_003_implies_randomized_obligation () : Tot bool = (0 = 0)
-let ss_003_implies_randomized_lemma () : Lemma (requires True) (ensures (ss_003_implies_randomized_obligation () == ss_003_implies_randomized_obligation ())) = ()
+let ss_003_implies_randomized (p_ss: _) : Lemma (requires (semantic_secure p_ss == true) (ensures (p_ss.f_ss_randomized == true))) = admit ()
 
 (* ss_004_ciphertext_expansion (matches Coq: Theorem ss_004_ciphertext_expansion) *)
-let ss_004_ciphertext_expansion_obligation () : Tot bool = (0 = 0)
-let ss_004_ciphertext_expansion_lemma () : Lemma (requires True) (ensures (ss_004_ciphertext_expansion_obligation () == ss_004_ciphertext_expansion_obligation ())) = ()
+let ss_004_ciphertext_expansion (p_ss: _) : Lemma (requires (semantic_secure p_ss == true) (ensures ((ss_message_space p_ss <? ss_ciphertext_space p_ss) == true))) = admit ()
 
 (* hadd_001_riina_correct (matches Coq: Theorem hadd_001_riina_correct) *)
-let hadd_001_riina_correct_obligation () : Tot bool = (0 = 0)
-let hadd_001_riina_correct_lemma () : Lemma (requires True) (ensures (hadd_001_riina_correct_obligation () == hadd_001_riina_correct_obligation ())) = ()
+let hadd_001_riina_correct () : Lemma (hom_add_correct riina_hom_add == true) = admit ()
 
 (* hadd_002_preserves_structure (matches Coq: Theorem hadd_002_preserves_structure) *)
-let hadd_002_preserves_structure_obligation () : Tot bool = (0 = 0)
-let hadd_002_preserves_structure_lemma () : Lemma (requires True) (ensures (hadd_002_preserves_structure_obligation () == hadd_002_preserves_structure_obligation ())) = ()
+let hadd_002_preserves_structure (p_ha: _) : Lemma (requires (hom_add_correct p_ha == true) (ensures (p_ha.f_ha_preserves_structure == true))) = admit ()
 
 (* hadd_003_modulus_relation (matches Coq: Theorem hadd_003_modulus_relation) *)
-let hadd_003_modulus_relation_obligation () : Tot bool = (0 = 0)
-let hadd_003_modulus_relation_lemma () : Lemma (requires True) (ensures (hadd_003_modulus_relation_obligation () == hadd_003_modulus_relation_obligation ())) = ()
+let hadd_003_modulus_relation (p_ha: _) : Lemma (requires (hom_add_correct p_ha == true) (ensures ((ha_plaintext_modulus p_ha <? ha_ciphertext_modulus p_ha) == true))) = admit ()
 
 (* hmult_001_riina_correct (matches Coq: Theorem hmult_001_riina_correct) *)
-let hmult_001_riina_correct_obligation () : Tot bool = (0 = 0)
-let hmult_001_riina_correct_lemma () : Lemma (requires True) (ensures (hmult_001_riina_correct_obligation () == hmult_001_riina_correct_obligation ())) = ()
+let hmult_001_riina_correct () : Lemma (hom_mult_correct riina_hom_mult == true) = admit ()
 
 (* hmult_002_relinearization (matches Coq: Theorem hmult_002_relinearization) *)
-let hmult_002_relinearization_obligation () : Tot bool = (0 = 0)
-let hmult_002_relinearization_lemma () : Lemma (requires True) (ensures (hmult_002_relinearization_obligation () == hmult_002_relinearization_obligation ())) = ()
+let hmult_002_relinearization (p_hm: _) : Lemma (requires (hom_mult_correct p_hm == true) (ensures (p_hm.f_hm_relinearization == true))) = admit ()
 
 (* hmult_003_key_switching (matches Coq: Theorem hmult_003_key_switching) *)
-let hmult_003_key_switching_obligation () : Tot bool = (0 = 0)
-let hmult_003_key_switching_lemma () : Lemma (requires True) (ensures (hmult_003_key_switching_obligation () == hmult_003_key_switching_obligation ())) = ()
+let hmult_003_key_switching (p_hm: _) : Lemma (requires (hom_mult_correct p_hm == true) (ensures (p_hm.f_hm_key_switching == true))) = admit ()
 
 (* hops_001_riina_valid (matches Coq: Theorem hops_001_riina_valid) *)
-let hops_001_riina_valid_obligation () : Tot bool = (0 = 0)
-let hops_001_riina_valid_lemma () : Lemma (requires True) (ensures (hops_001_riina_valid_obligation () == hops_001_riina_valid_obligation ())) = ()
+let hops_001_riina_valid () : Lemma (hom_ops_valid riina_hom_ops == true) = admit ()
 
 (* hops_002_addition_correct (matches Coq: Theorem hops_002_addition_correct) *)
-let hops_002_addition_correct_obligation () : Tot bool = (0 = 0)
-let hops_002_addition_correct_lemma () : Lemma (requires True) (ensures (hops_002_addition_correct_obligation () == hops_002_addition_correct_obligation ())) = ()
+let hops_002_addition_correct (p_ho: _) : Lemma (requires (hom_ops_valid p_ho == true) (ensures (hom_add_correct (p_ho.f_hops_addition) == true))) = admit ()
 
 (* hops_003_multiplication_correct (matches Coq: Theorem hops_003_multiplication_correct) *)
-let hops_003_multiplication_correct_obligation () : Tot bool = (0 = 0)
-let hops_003_multiplication_correct_lemma () : Lemma (requires True) (ensures (hops_003_multiplication_correct_obligation () == hops_003_multiplication_correct_obligation ())) = ()
+let hops_003_multiplication_correct (p_ho: _) : Lemma (requires (hom_ops_valid p_ho == true) (ensures (hom_mult_correct (p_ho.f_hops_multiplication) == true))) = admit ()
 
 (* hops_004_composition (matches Coq: Theorem hops_004_composition) *)
-let hops_004_composition_obligation () : Tot bool = (0 = 0)
-let hops_004_composition_lemma () : Lemma (requires True) (ensures (hops_004_composition_obligation () == hops_004_composition_obligation ())) = ()
+let hops_004_composition (p_ho: _) : Lemma (requires (hom_ops_valid p_ho == true) (ensures (p_ho.f_hops_composition == true))) = admit ()
 
 (* noise_001_initial_safe (matches Coq: Theorem noise_001_initial_safe) *)
-let noise_001_initial_safe_obligation () : Tot bool = (0 = 0)
-let noise_001_initial_safe_lemma () : Lemma (requires True) (ensures (noise_001_initial_safe_obligation () == noise_001_initial_safe_obligation ())) = ()
+let noise_001_initial_safe () : Lemma (noise_safe riina_noise_model (riina_noise_model.f_noise_initial) == true) = admit ()
 
 (* noise_002_100_additions_safe (matches Coq: Theorem noise_002_100_additions_safe) *)
-let noise_002_100_additions_safe_obligation () : Tot bool = (0 = 0)
-let noise_002_100_additions_safe_lemma () : Lemma (requires True) (ensures (noise_002_100_additions_safe_obligation () == noise_002_100_additions_safe_obligation ())) = ()
+let noise_002_100_additions_safe () : Lemma (noise_safe riina_noise_model (noise_after_additions riina_noise_model 100) == true) = admit ()
 
 (* noise_003_10_multiplications_safe (matches Coq: Theorem noise_003_10_multiplications_safe) *)
-let noise_003_10_multiplications_safe_obligation () : Tot bool = (0 = 0)
-let noise_003_10_multiplications_safe_lemma () : Lemma (requires True) (ensures (noise_003_10_multiplications_safe_obligation () == noise_003_10_multiplications_safe_obligation ())) = ()
+let noise_003_10_multiplications_safe () : Lemma (noise_safe riina_noise_model (noise_after_multiplications riina_noise_model 10) == true) = admit ()
 
 (* noise_004_add_linear_growth (matches Coq: Theorem noise_004_add_linear_growth) *)
-let noise_004_add_linear_growth_obligation () : Tot bool = (0 = 0)
-let noise_004_add_linear_growth_lemma () : Lemma (requires True) (ensures (noise_004_add_linear_growth_obligation () == noise_004_add_linear_growth_obligation ())) = ()
+let noise_004_add_linear_growth (p_nm: _) (p_n: _) : Lemma (noise_after_additions p_nm ((p_n + 1)) == noise_after_additions p_nm p_n + noise_add_growth p_nm) = admit ()
 
 (* noise_005_zero_additions (matches Coq: Theorem noise_005_zero_additions) *)
-let noise_005_zero_additions_obligation () : Tot bool = (0 = 0)
-let noise_005_zero_additions_lemma () : Lemma (requires True) (ensures (noise_005_zero_additions_obligation () == noise_005_zero_additions_obligation ())) = ()
+let noise_005_zero_additions (p_nm: _) : Lemma (noise_after_additions p_nm 0 == p_nm.f_noise_initial) = admit ()
 
 (* nb_001_riina_valid (matches Coq: Theorem nb_001_riina_valid) *)
-let nb_001_riina_valid_obligation () : Tot bool = (0 = 0)
-let nb_001_riina_valid_lemma () : Lemma (requires True) (ensures (nb_001_riina_valid_obligation () == nb_001_riina_valid_obligation ())) = ()
+let nb_001_riina_valid () : Lemma (noise_bound_valid riina_noise_model riina_noise_bound == true) = admit ()
 
 (* nb_002_additions_safe (matches Coq: Theorem nb_002_additions_safe) *)
-let nb_002_additions_safe_obligation () : Tot bool = (0 = 0)
-let nb_002_additions_safe_lemma () : Lemma (requires True) (ensures (nb_002_additions_safe_obligation () == nb_002_additions_safe_obligation ())) = ()
+let nb_002_additions_safe (p_nm: _) (p_nb: _) : Lemma (requires (noise_bound_valid p_nm p_nb == true) (ensures (noise_safe p_nm (noise_after_additions p_nm (p_nb.f_nb_max_additions)) == true))) = admit ()
 
 (* nb_003_multiplications_safe (matches Coq: Theorem nb_003_multiplications_safe) *)
-let nb_003_multiplications_safe_obligation () : Tot bool = (0 = 0)
-let nb_003_multiplications_safe_lemma () : Lemma (requires True) (ensures (nb_003_multiplications_safe_obligation () == nb_003_multiplications_safe_obligation ())) = ()
+let nb_003_multiplications_safe (p_nm: _) (p_nb: _) : Lemma (requires (noise_bound_valid p_nm p_nb == true) (ensures (noise_safe p_nm (noise_after_multiplications p_nm (p_nb.f_nb_max_multiplications)) == true))) = admit ()
 
 (* boot_001_riina_correct (matches Coq: Theorem boot_001_riina_correct) *)
-let boot_001_riina_correct_obligation () : Tot bool = (0 = 0)
-let boot_001_riina_correct_lemma () : Lemma (requires True) (ensures (boot_001_riina_correct_obligation () == boot_001_riina_correct_obligation ())) = ()
+let boot_001_riina_correct () : Lemma (bootstrapping_correct riina_bootstrap == true) = admit ()
 
 (* boot_002_reduces_noise (matches Coq: Theorem boot_002_reduces_noise) *)
-let boot_002_reduces_noise_obligation () : Tot bool = (0 = 0)
-let boot_002_reduces_noise_lemma () : Lemma (requires True) (ensures (boot_002_reduces_noise_obligation () == boot_002_reduces_noise_obligation ())) = ()
+let boot_002_reduces_noise (p_bc: _) : Lemma (requires (bootstrapping_correct p_bc == true) (ensures (p_bc.f_bs_reduces_noise == true))) = admit ()
 
 (* boot_003_preserves_message (matches Coq: Theorem boot_003_preserves_message) *)
-let boot_003_preserves_message_obligation () : Tot bool = (0 = 0)
-let boot_003_preserves_message_lemma () : Lemma (requires True) (ensures (boot_003_preserves_message_obligation () == boot_003_preserves_message_obligation ())) = ()
+let boot_003_preserves_message (p_bc: _) : Lemma (requires (bootstrapping_correct p_bc == true) (ensures (p_bc.f_bs_preserves_message == true))) = admit ()
 
 (* boot_004_polynomial_time (matches Coq: Theorem boot_004_polynomial_time) *)
-let boot_004_polynomial_time_obligation () : Tot bool = (0 = 0)
-let boot_004_polynomial_time_lemma () : Lemma (requires True) (ensures (boot_004_polynomial_time_obligation () == boot_004_polynomial_time_obligation ())) = ()
+let boot_004_polynomial_time (p_bc: _) : Lemma (requires (bootstrapping_correct p_bc == true) (ensures (p_bc.f_bs_polynomial_time == true))) = admit ()
 
 (* boot_005_noise_reduction (matches Coq: Theorem boot_005_noise_reduction) *)
-let boot_005_noise_reduction_obligation () : Tot bool = (0 = 0)
-let boot_005_noise_reduction_lemma () : Lemma (requires True) (ensures (boot_005_noise_reduction_obligation () == boot_005_noise_reduction_obligation ())) = ()
+let boot_005_noise_reduction (p_bc: _) : Lemma (requires (bootstrapping_correct p_bc == true) (ensures ((bs_noise_output p_bc <? bs_noise_input_max p_bc) == true))) = admit ()
 
 (* ufhe_001_riina_valid (matches Coq: Theorem ufhe_001_riina_valid) *)
-let ufhe_001_riina_valid_obligation () : Tot bool = (0 = 0)
-let ufhe_001_riina_valid_lemma () : Lemma (requires True) (ensures (ufhe_001_riina_valid_obligation () == ufhe_001_riina_valid_obligation ())) = ()
+let ufhe_001_riina_valid () : Lemma (unlimited_fhe_valid riina_unlimited == true) = admit ()
 
 (* ufhe_002_bootstrap_correct (matches Coq: Theorem ufhe_002_bootstrap_correct) *)
-let ufhe_002_bootstrap_correct_obligation () : Tot bool = (0 = 0)
-let ufhe_002_bootstrap_correct_lemma () : Lemma (requires True) (ensures (ufhe_002_bootstrap_correct_obligation () == ufhe_002_bootstrap_correct_obligation ())) = ()
+let ufhe_002_bootstrap_correct (p_u: _) : Lemma (requires (unlimited_fhe_valid p_u == true) (ensures (bootstrapping_correct (p_u.f_ufhe_bootstrap_config) == true))) = admit ()
 
 (* kg_001_riina_secure (matches Coq: Theorem kg_001_riina_secure) *)
-let kg_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let kg_001_riina_secure_lemma () : Lemma (requires True) (ensures (kg_001_riina_secure_obligation () == kg_001_riina_secure_obligation ())) = ()
+let kg_001_riina_secure () : Lemma (keygen_secure riina_keygen == true) = admit ()
 
 (* kg_002_security_parameter (matches Coq: Theorem kg_002_security_parameter) *)
-let kg_002_security_parameter_obligation () : Tot bool = (0 = 0)
-let kg_002_security_parameter_lemma () : Lemma (requires True) (ensures (kg_002_security_parameter_obligation () == kg_002_security_parameter_obligation ())) = ()
+let kg_002_security_parameter (p_kg: _) : Lemma (requires (keygen_secure p_kg == true) (ensures ((128 <=? kg_security_parameter p_kg) == true))) = admit ()
 
 (* kg_003_polynomial_degree (matches Coq: Theorem kg_003_polynomial_degree) *)
-let kg_003_polynomial_degree_obligation () : Tot bool = (0 = 0)
-let kg_003_polynomial_degree_lemma () : Lemma (requires True) (ensures (kg_003_polynomial_degree_obligation () == kg_003_polynomial_degree_obligation ())) = ()
+let kg_003_polynomial_degree (p_kg: _) : Lemma (requires (keygen_secure p_kg == true) (ensures ((1024 <=? kg_polynomial_degree p_kg) == true))) = admit ()
 
 (* kg_004_error_distribution (matches Coq: Theorem kg_004_error_distribution) *)
-let kg_004_error_distribution_obligation () : Tot bool = (0 = 0)
-let kg_004_error_distribution_lemma () : Lemma (requires True) (ensures (kg_004_error_distribution_obligation () == kg_004_error_distribution_obligation ())) = ()
+let kg_004_error_distribution (p_kg: _) : Lemma (requires (keygen_secure p_kg == true) (ensures ((0 <? kg_error_distribution p_kg) == true))) = admit ()
 
 (* kg_005_modulus_bits (matches Coq: Theorem kg_005_modulus_bits) *)
-let kg_005_modulus_bits_obligation () : Tot bool = (0 = 0)
-let kg_005_modulus_bits_lemma () : Lemma (requires True) (ensures (kg_005_modulus_bits_obligation () == kg_005_modulus_bits_obligation ())) = ()
+let kg_005_modulus_bits (p_kg: _) : Lemma (requires (keygen_secure p_kg == true) (ensures ((32 <=? kg_modulus_bits p_kg) == true))) = admit ()
 
 (* kp_001_riina_valid (matches Coq: Theorem kp_001_riina_valid) *)
-let kp_001_riina_valid_obligation () : Tot bool = (0 = 0)
-let kp_001_riina_valid_lemma () : Lemma (requires True) (ensures (kp_001_riina_valid_obligation () == kp_001_riina_valid_obligation ())) = ()
+let kp_001_riina_valid () : Lemma (keypair_valid riina_keypair == true) = admit ()
 
 (* kp_002_secure_params (matches Coq: Theorem kp_002_secure_params) *)
-let kp_002_secure_params_obligation () : Tot bool = (0 = 0)
-let kp_002_secure_params_lemma () : Lemma (requires True) (ensures (kp_002_secure_params_obligation () == kp_002_secure_params_obligation ())) = ()
+let kp_002_secure_params (p_kp: _) : Lemma (requires (keypair_valid p_kp == true) (ensures (keygen_secure (p_kp.f_kp_params) == true))) = admit ()
 
 (* ct_001_riina_valid (matches Coq: Theorem ct_001_riina_valid) *)
-let ct_001_riina_valid_obligation () : Tot bool = (0 = 0)
-let ct_001_riina_valid_lemma () : Lemma (requires True) (ensures (ct_001_riina_valid_obligation () == ct_001_riina_valid_obligation ())) = ()
+let ct_001_riina_valid () : Lemma (ciphertext_valid riina_ciphertext riina_noise_model == true) = admit ()
 
 (* ct_002_valid_encryption (matches Coq: Theorem ct_002_valid_encryption) *)
-let ct_002_valid_encryption_obligation () : Tot bool = (0 = 0)
-let ct_002_valid_encryption_lemma () : Lemma (requires True) (ensures (ct_002_valid_encryption_obligation () == ct_002_valid_encryption_obligation ())) = ()
+let ct_002_valid_encryption (p_ct: _) (p_nm: _) : Lemma (requires (ciphertext_valid p_ct p_nm == true) (ensures (p_ct.f_ct_valid_encryption == true))) = admit ()
 
 (* ct_003_safe_noise (matches Coq: Theorem ct_003_safe_noise) *)
-let ct_003_safe_noise_obligation () : Tot bool = (0 = 0)
-let ct_003_safe_noise_lemma () : Lemma (requires True) (ensures (ct_003_safe_noise_obligation () == ct_003_safe_noise_obligation ())) = ()
+let ct_003_safe_noise (p_ct: _) (p_nm: _) : Lemma (requires (ciphertext_valid p_ct p_nm == true) (ensures (noise_safe p_nm (p_ct.f_ct_noise_estimate) == true))) = admit ()
 
 (* ct_004_positive_level (matches Coq: Theorem ct_004_positive_level) *)
-let ct_004_positive_level_obligation () : Tot bool = (0 = 0)
-let ct_004_positive_level_lemma () : Lemma (requires True) (ensures (ct_004_positive_level_obligation () == ct_004_positive_level_obligation ())) = ()
+let ct_004_positive_level (p_ct: _) (p_nm: _) : Lemma (requires (ciphertext_valid p_ct p_nm == true) (ensures ((0 <? ct_level p_ct) == true))) = admit ()
 
 (* cao_001_valid_preserves (matches Coq: Theorem cao_001_valid_preserves) *)
-let cao_001_valid_preserves_obligation () : Tot bool = (0 = 0)
-let cao_001_valid_preserves_lemma () : Lemma (requires True) (ensures (cao_001_valid_preserves_obligation () == cao_001_valid_preserves_obligation ())) = ()
+let cao_001_valid_preserves (p_cao: _) (p_nm: _) : Lemma (requires (op_preserves_validity p_cao p_nm == true) (ensures (ciphertext_valid (p_cao.f_cao_original) p_nm == true))) = admit ()
 
 (* cao_002_result_valid (matches Coq: Theorem cao_002_result_valid) *)
-let cao_002_result_valid_obligation () : Tot bool = (0 = 0)
-let cao_002_result_valid_lemma () : Lemma (requires True) (ensures (cao_002_result_valid_obligation () == cao_002_result_valid_obligation ())) = ()
+let cao_002_result_valid (p_cao: _) (p_nm: _) : Lemma (requires (op_preserves_validity p_cao p_nm == true) (ensures (ciphertext_valid (p_cao.f_cao_result) p_nm == true))) = admit ()
 
 (* cfhe_001_riina_secure (matches Coq: Theorem cfhe_001_riina_secure) *)
-let cfhe_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let cfhe_001_riina_secure_lemma () : Lemma (requires True) (ensures (cfhe_001_riina_secure_obligation () == cfhe_001_riina_secure_obligation ())) = ()
+let cfhe_001_riina_secure () : Lemma (complete_fhe_secure riina_complete_fhe == true) = admit ()
 
 (* cfhe_002_config_secure (matches Coq: Theorem cfhe_002_config_secure) *)
-let cfhe_002_config_secure_obligation () : Tot bool = (0 = 0)
-let cfhe_002_config_secure_lemma () : Lemma (requires True) (ensures (cfhe_002_config_secure_obligation () == cfhe_002_config_secure_obligation ())) = ()
+let cfhe_002_config_secure (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (fhe_fully_secure (p_sys.f_cfhe_config) == true))) = admit ()
 
 (* cfhe_003_keygen_secure (matches Coq: Theorem cfhe_003_keygen_secure) *)
-let cfhe_003_keygen_secure_obligation () : Tot bool = (0 = 0)
-let cfhe_003_keygen_secure_lemma () : Lemma (requires True) (ensures (cfhe_003_keygen_secure_obligation () == cfhe_003_keygen_secure_obligation ())) = ()
+let cfhe_003_keygen_secure (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (keygen_secure (p_sys.f_cfhe_keygen) == true))) = admit ()
 
 (* cfhe_004_indcpa_secure (matches Coq: Theorem cfhe_004_indcpa_secure) *)
-let cfhe_004_indcpa_secure_obligation () : Tot bool = (0 = 0)
-let cfhe_004_indcpa_secure_lemma () : Lemma (requires True) (ensures (cfhe_004_indcpa_secure_obligation () == cfhe_004_indcpa_secure_obligation ())) = ()
+let cfhe_004_indcpa_secure (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (indcpa_secure (p_sys.f_cfhe_indcpa) == true))) = admit ()
 
 (* cfhe_005_bootstrap_correct (matches Coq: Theorem cfhe_005_bootstrap_correct) *)
-let cfhe_005_bootstrap_correct_obligation () : Tot bool = (0 = 0)
-let cfhe_005_bootstrap_correct_lemma () : Lemma (requires True) (ensures (cfhe_005_bootstrap_correct_obligation () == cfhe_005_bootstrap_correct_obligation ())) = ()
+let cfhe_005_bootstrap_correct (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (bootstrapping_correct (p_sys.f_cfhe_bootstrap) == true))) = admit ()
 
 (* cfhe_006_ops_valid (matches Coq: Theorem cfhe_006_ops_valid) *)
-let cfhe_006_ops_valid_obligation () : Tot bool = (0 = 0)
-let cfhe_006_ops_valid_lemma () : Lemma (requires True) (ensures (cfhe_006_ops_valid_obligation () == cfhe_006_ops_valid_obligation ())) = ()
+let cfhe_006_ops_valid (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (hom_ops_valid (p_sys.f_cfhe_operations) == true))) = admit ()
 
 (* cfhe_007_pq_safe (matches Coq: Theorem cfhe_007_pq_safe) *)
-let cfhe_007_pq_safe_obligation () : Tot bool = (0 = 0)
-let cfhe_007_pq_safe_lemma () : Lemma (requires True) (ensures (cfhe_007_pq_safe_obligation () == cfhe_007_pq_safe_obligation ())) = ()
+let cfhe_007_pq_safe (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures ((p_sys.f_cfhe_config).f_fhe_post_quantum == true))) = admit ()
 
 (* cfhe_008_arbitrary_depth (matches Coq: Theorem cfhe_008_arbitrary_depth) *)
-let cfhe_008_arbitrary_depth_obligation () : Tot bool = (0 = 0)
-let cfhe_008_arbitrary_depth_lemma () : Lemma (requires True) (ensures (cfhe_008_arbitrary_depth_obligation () == cfhe_008_arbitrary_depth_obligation ())) = ()
+let cfhe_008_arbitrary_depth (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (((p_sys.f_cfhe_config).f_fhe_ops).f_ho_arbitrary_depth == true))) = admit ()
 
 (* cfhe_009_semantic_secure (matches Coq: Theorem cfhe_009_semantic_secure) *)
-let cfhe_009_semantic_secure_obligation () : Tot bool = (0 = 0)
-let cfhe_009_semantic_secure_lemma () : Lemma (requires True) (ensures (cfhe_009_semantic_secure_obligation () == cfhe_009_semantic_secure_obligation ())) = ()
+let cfhe_009_semantic_secure (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (((p_sys.f_cfhe_config).f_fhe_security).f_fhe_semantic_secure == true))) = admit ()
 
 (* cfhe_010_noise_managed (matches Coq: Theorem cfhe_010_noise_managed) *)
-let cfhe_010_noise_managed_obligation () : Tot bool = (0 = 0)
-let cfhe_010_noise_managed_lemma () : Lemma (requires True) (ensures (cfhe_010_noise_managed_obligation () == cfhe_010_noise_managed_obligation ())) = ()
+let cfhe_010_noise_managed (p_sys: _) : Lemma (requires (complete_fhe_secure p_sys == true) (ensures (noise_managed ((p_sys.f_cfhe_config).f_fhe_noise) == true))) = admit ()
 
 (* circ_001_riina_secure (matches Coq: Theorem circ_001_riina_secure) *)
-let circ_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let circ_001_riina_secure_lemma () : Lemma (requires True) (ensures (circ_001_riina_secure_obligation () == circ_001_riina_secure_obligation ())) = ()
+let circ_001_riina_secure () : Lemma (circular_secure riina_circular == true) = admit ()
 
 (* circ_002_key_encryption (matches Coq: Theorem circ_002_key_encryption) *)
-let circ_002_key_encryption_obligation () : Tot bool = (0 = 0)
-let circ_002_key_encryption_lemma () : Lemma (requires True) (ensures (circ_002_key_encryption_obligation () == circ_002_key_encryption_obligation ())) = ()
+let circ_002_key_encryption (p_cs: _) : Lemma (requires (circular_secure p_cs == true) (ensures (p_cs.f_cs_key_encryption_safe == true))) = admit ()
 
 (* lwe_001_riina_secure (matches Coq: Theorem lwe_001_riina_secure) *)
-let lwe_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let lwe_001_riina_secure_lemma () : Lemma (requires True) (ensures (lwe_001_riina_secure_obligation () == lwe_001_riina_secure_obligation ())) = ()
+let lwe_001_riina_secure () : Lemma (lwe_secure riina_lwe == true) = admit ()
 
 (* lwe_002_dimension (matches Coq: Theorem lwe_002_dimension) *)
-let lwe_002_dimension_obligation () : Tot bool = (0 = 0)
-let lwe_002_dimension_lemma () : Lemma (requires True) (ensures (lwe_002_dimension_obligation () == lwe_002_dimension_obligation ())) = ()
+let lwe_002_dimension (p_lwe: _) : Lemma (requires (lwe_secure p_lwe == true) (ensures ((512 <=? lwe_dimension p_lwe) == true))) = admit ()
 
 (* rlwe_001_riina_secure (matches Coq: Theorem rlwe_001_riina_secure) *)
-let rlwe_001_riina_secure_obligation () : Tot bool = (0 = 0)
-let rlwe_001_riina_secure_lemma () : Lemma (requires True) (ensures (rlwe_001_riina_secure_obligation () == rlwe_001_riina_secure_obligation ())) = ()
+let rlwe_001_riina_secure () : Lemma (rlwe_secure riina_rlwe == true) = admit ()
 
 (* rlwe_002_ring_degree (matches Coq: Theorem rlwe_002_ring_degree) *)
-let rlwe_002_ring_degree_obligation () : Tot bool = (0 = 0)
-let rlwe_002_ring_degree_lemma () : Lemma (requires True) (ensures (rlwe_002_ring_degree_obligation () == rlwe_002_ring_degree_obligation ())) = ()
+let rlwe_002_ring_degree (p_r: _) : Lemma (requires (rlwe_secure p_r == true) (ensures ((1024 <=? rlwe_ring_degree p_r) == true))) = admit ()

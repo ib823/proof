@@ -138,105 +138,79 @@ let riina_sig_slh_dsa_256s : signature_instance = {f_sig_scheme=SLH_DSA_256s; f_
 let riina_sig_security : signature_security = {f_sig_sec_eufcma=mk_compliant_eufcma; f_sig_sec_quantum=mk_compliant_sig_qr; f_sig_sec_level=Level5}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = (0 = 0)
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
 
 (* PQ_SIG_001_mldsa_lattice (matches Coq: Theorem PQ_SIG_001_mldsa_lattice) *)
-let pq_sig_001_mldsa_lattice_obligation () : Tot bool = (0 = 0)
-let pq_sig_001_mldsa_lattice_lemma () : Lemma (requires True) (ensures (pq_sig_001_mldsa_lattice_obligation () == pq_sig_001_mldsa_lattice_obligation ())) = ()
+let pq_sig_001_mldsa_lattice () : Lemma (scheme_category ML_DSA_87 == Lattice_Based) = admit ()
 
 (* PQ_SIG_002_slhdsa_hash (matches Coq: Theorem PQ_SIG_002_slhdsa_hash) *)
-let pq_sig_002_slhdsa_hash_obligation () : Tot bool = (0 = 0)
-let pq_sig_002_slhdsa_hash_lemma () : Lemma (requires True) (ensures (pq_sig_002_slhdsa_hash_obligation () == pq_sig_002_slhdsa_hash_obligation ())) = ()
+let pq_sig_002_slhdsa_hash () : Lemma (scheme_category SLH_DSA_256s == Hash_Based) = admit ()
 
 (* PQ_SIG_003_mldsa87_level5 (matches Coq: Theorem PQ_SIG_003_mldsa87_level5) *)
-let pq_sig_003_mldsa87_level5_obligation () : Tot bool = (0 = 0)
-let pq_sig_003_mldsa87_level5_lemma () : Lemma (requires True) (ensures (pq_sig_003_mldsa87_level5_obligation () == pq_sig_003_mldsa87_level5_obligation ())) = ()
+let pq_sig_003_mldsa87_level5 () : Lemma (scheme_security_level ML_DSA_87 == Level5) = admit ()
 
 (* PQ_SIG_004_slhdsa256_level5 (matches Coq: Theorem PQ_SIG_004_slhdsa256_level5) *)
-let pq_sig_004_slhdsa256_level5_obligation () : Tot bool = (0 = 0)
-let pq_sig_004_slhdsa256_level5_lemma () : Lemma (requires True) (ensures (pq_sig_004_slhdsa256_level5_obligation () == pq_sig_004_slhdsa256_level5_obligation ())) = ()
+let pq_sig_004_slhdsa256_level5 () : Lemma (scheme_security_level SLH_DSA_256s == Level5) = admit ()
 
 (* PQ_SIG_005_level_reflexive (matches Coq: Theorem PQ_SIG_005_level_reflexive) *)
-let pq_sig_005_level_reflexive_obligation () : Tot bool = (0 = 0)
-let pq_sig_005_level_reflexive_lemma () : Lemma (requires True) (ensures (pq_sig_005_level_reflexive_obligation () == pq_sig_005_level_reflexive_obligation ())) = ()
+let pq_sig_005_level_reflexive (p_l: _) (p_securitylevel: _) : Lemma (level_leq p_l p_l == true) = admit ()
 
 (* PQ_SIG_006_level5_max (matches Coq: Theorem PQ_SIG_006_level5_max) *)
-let pq_sig_006_level5_max_obligation () : Tot bool = (0 = 0)
-let pq_sig_006_level5_max_lemma () : Lemma (requires True) (ensures (pq_sig_006_level5_max_obligation () == pq_sig_006_level5_max_obligation ())) = ()
+let pq_sig_006_level5_max (p_l: _) (p_securitylevel: _) : Lemma (level_leq p_l Level5 == true) = admit ()
 
 (* PQ_SIG_007_eufcma_valid (matches Coq: Theorem PQ_SIG_007_eufcma_valid) *)
-let pq_sig_007_eufcma_valid_obligation () : Tot bool = (0 = 0)
-let pq_sig_007_eufcma_valid_lemma () : Lemma (requires True) (ensures (pq_sig_007_eufcma_valid_obligation () == pq_sig_007_eufcma_valid_obligation ())) = ()
+let pq_sig_007_eufcma_valid () : Lemma (eufcma_compliant mk_compliant_eufcma == true) = admit ()
 
 (* PQ_SIG_008_unforgeable (matches Coq: Theorem PQ_SIG_008_unforgeable) *)
-let pq_sig_008_unforgeable_obligation () : Tot bool = (0 = 0)
-let pq_sig_008_unforgeable_lemma () : Lemma (requires True) (ensures (pq_sig_008_unforgeable_obligation () == pq_sig_008_unforgeable_obligation ())) = ()
+let pq_sig_008_unforgeable (p_e: _) (p_eufcmasecure: _) : Lemma (requires (eufcma_compliant p_e == true) (ensures (p_e.f_eufcma_unforgeable == true))) = admit ()
 
 (* PQ_SIG_009_strong_unforgeable (matches Coq: Theorem PQ_SIG_009_strong_unforgeable) *)
-let pq_sig_009_strong_unforgeable_obligation () : Tot bool = (0 = 0)
-let pq_sig_009_strong_unforgeable_lemma () : Lemma (requires True) (ensures (pq_sig_009_strong_unforgeable_obligation () == pq_sig_009_strong_unforgeable_obligation ())) = ()
+let pq_sig_009_strong_unforgeable (p_e: _) (p_eufcmasecure: _) : Lemma (requires (eufcma_compliant p_e == true) (ensures (p_e.f_eufcma_strong_unforgeability == true))) = admit ()
 
 (* PQ_SIG_010_adaptive (matches Coq: Theorem PQ_SIG_010_adaptive) *)
-let pq_sig_010_adaptive_obligation () : Tot bool = (0 = 0)
-let pq_sig_010_adaptive_lemma () : Lemma (requires True) (ensures (pq_sig_010_adaptive_obligation () == pq_sig_010_adaptive_obligation ())) = ()
+let pq_sig_010_adaptive (p_e: _) (p_eufcmasecure: _) : Lemma (requires (eufcma_compliant p_e == true) (ensures (p_e.f_eufcma_adaptive_security == true))) = admit ()
 
 (* PQ_SIG_011_qr_valid (matches Coq: Theorem PQ_SIG_011_qr_valid) *)
-let pq_sig_011_qr_valid_obligation () : Tot bool = (0 = 0)
-let pq_sig_011_qr_valid_lemma () : Lemma (requires True) (ensures (pq_sig_011_qr_valid_obligation () == pq_sig_011_qr_valid_obligation ())) = ()
+let pq_sig_011_qr_valid () : Lemma (sig_quantum_resistant mk_compliant_sig_qr == true) = admit ()
 
 (* PQ_SIG_012_post_quantum (matches Coq: Theorem PQ_SIG_012_post_quantum) *)
-let pq_sig_012_post_quantum_obligation () : Tot bool = (0 = 0)
-let pq_sig_012_post_quantum_lemma () : Lemma (requires True) (ensures (pq_sig_012_post_quantum_obligation () == pq_sig_012_post_quantum_obligation ())) = ()
+let pq_sig_012_post_quantum (p_q: _) (p_sigquantumresistant: _) : Lemma (requires (sig_quantum_resistant p_q == true) (ensures (p_q.f_sqr_post_quantum == true))) = admit ()
 
 (* PQ_SIG_013_no_shor (matches Coq: Theorem PQ_SIG_013_no_shor) *)
-let pq_sig_013_no_shor_obligation () : Tot bool = (0 = 0)
-let pq_sig_013_no_shor_lemma () : Lemma (requires True) (ensures (pq_sig_013_no_shor_obligation () == pq_sig_013_no_shor_obligation ())) = ()
+let pq_sig_013_no_shor (p_q: _) (p_sigquantumresistant: _) : Lemma (requires (sig_quantum_resistant p_q == true) (ensures (p_q.f_sqr_no_shor_attack == true))) = admit ()
 
 (* PQ_SIG_014_conservative (matches Coq: Theorem PQ_SIG_014_conservative) *)
-let pq_sig_014_conservative_obligation () : Tot bool = (0 = 0)
-let pq_sig_014_conservative_lemma () : Lemma (requires True) (ensures (pq_sig_014_conservative_obligation () == pq_sig_014_conservative_obligation ())) = ()
+let pq_sig_014_conservative (p_q: _) (p_sigquantumresistant: _) : Lemma (requires (sig_quantum_resistant p_q == true) (ensures (p_q.f_sqr_conservative_params == true))) = admit ()
 
 (* PQ_SIG_015_riina_sig_secure (matches Coq: Theorem PQ_SIG_015_riina_sig_secure) *)
-let pq_sig_015_riina_sig_secure_obligation () : Tot bool = (0 = 0)
-let pq_sig_015_riina_sig_secure_lemma () : Lemma (requires True) (ensures (pq_sig_015_riina_sig_secure_obligation () == pq_sig_015_riina_sig_secure_obligation ())) = ()
+let pq_sig_015_riina_sig_secure () : Lemma (sig_secure riina_sig_security == true) = admit ()
 
 (* PQ_SIG_016_riina_level5 (matches Coq: Theorem PQ_SIG_016_riina_level5) *)
-let pq_sig_016_riina_level5_obligation () : Tot bool = (0 = 0)
-let pq_sig_016_riina_level5_lemma () : Lemma (requires True) (ensures (pq_sig_016_riina_level5_obligation () == pq_sig_016_riina_level5_obligation ())) = ()
+let pq_sig_016_riina_level5 () : Lemma (riina_sig_security.f_sig_sec_level == Level5) = admit ()
 
 (* PQ_SIG_017_riina_mldsa_correct (matches Coq: Theorem PQ_SIG_017_riina_mldsa_correct) *)
-let pq_sig_017_riina_mldsa_correct_obligation () : Tot bool = (0 = 0)
-let pq_sig_017_riina_mldsa_correct_lemma () : Lemma (requires True) (ensures (pq_sig_017_riina_mldsa_correct_obligation () == pq_sig_017_riina_mldsa_correct_obligation ())) = ()
+let pq_sig_017_riina_mldsa_correct () : Lemma (sig_correct riina_sig_ml_dsa_87 == true) = admit ()
 
 (* PQ_SIG_018_riina_slhdsa_correct (matches Coq: Theorem PQ_SIG_018_riina_slhdsa_correct) *)
-let pq_sig_018_riina_slhdsa_correct_obligation () : Tot bool = (0 = 0)
-let pq_sig_018_riina_slhdsa_correct_lemma () : Lemma (requires True) (ensures (pq_sig_018_riina_slhdsa_correct_obligation () == pq_sig_018_riina_slhdsa_correct_obligation ())) = ()
+let pq_sig_018_riina_slhdsa_correct () : Lemma (sig_correct riina_sig_slh_dsa_256s == true) = admit ()
 
 (* PQ_SIG_019_riina_scheme_mldsa (matches Coq: Theorem PQ_SIG_019_riina_scheme_mldsa) *)
-let pq_sig_019_riina_scheme_mldsa_obligation () : Tot bool = (0 = 0)
-let pq_sig_019_riina_scheme_mldsa_lemma () : Lemma (requires True) (ensures (pq_sig_019_riina_scheme_mldsa_obligation () == pq_sig_019_riina_scheme_mldsa_obligation ())) = ()
+let pq_sig_019_riina_scheme_mldsa () : Lemma (riina_sig_ml_dsa_87.f_sig_scheme == ML_DSA_87) = admit ()
 
 (* PQ_SIG_020_riina_scheme_slhdsa (matches Coq: Theorem PQ_SIG_020_riina_scheme_slhdsa) *)
-let pq_sig_020_riina_scheme_slhdsa_obligation () : Tot bool = (0 = 0)
-let pq_sig_020_riina_scheme_slhdsa_lemma () : Lemma (requires True) (ensures (pq_sig_020_riina_scheme_slhdsa_obligation () == pq_sig_020_riina_scheme_slhdsa_obligation ())) = ()
+let pq_sig_020_riina_scheme_slhdsa () : Lemma (riina_sig_slh_dsa_256s.f_sig_scheme == SLH_DSA_256s) = admit ()
 
 (* PQ_SIG_021_security_implies_eufcma (matches Coq: Theorem PQ_SIG_021_security_implies_eufcma) *)
-let pq_sig_021_security_implies_eufcma_obligation () : Tot bool = (0 = 0)
-let pq_sig_021_security_implies_eufcma_lemma () : Lemma (requires True) (ensures (pq_sig_021_security_implies_eufcma_obligation () == pq_sig_021_security_implies_eufcma_obligation ())) = ()
+let pq_sig_021_security_implies_eufcma (p_s: _) (p_signaturesecurity: _) : Lemma (requires (sig_secure p_s == true) (ensures (eufcma_compliant (p_s.f_sig_sec_eufcma) == true))) = admit ()
 
 (* PQ_SIG_022_security_implies_qr (matches Coq: Theorem PQ_SIG_022_security_implies_qr) *)
-let pq_sig_022_security_implies_qr_obligation () : Tot bool = (0 = 0)
-let pq_sig_022_security_implies_qr_lemma () : Lemma (requires True) (ensures (pq_sig_022_security_implies_qr_obligation () == pq_sig_022_security_implies_qr_obligation ())) = ()
+let pq_sig_022_security_implies_qr (p_s: _) (p_signaturesecurity: _) : Lemma (requires (sig_secure p_s == true) (ensures (sig_quantum_resistant (p_s.f_sig_sec_quantum) == true))) = admit ()
 
 (* PQ_SIG_023_correct_key (matches Coq: Theorem PQ_SIG_023_correct_key) *)
-let pq_sig_023_correct_key_obligation () : Tot bool = (0 = 0)
-let pq_sig_023_correct_key_lemma () : Lemma (requires True) (ensures (pq_sig_023_correct_key_obligation () == pq_sig_023_correct_key_obligation ())) = ()
+let pq_sig_023_correct_key (p_si: _) (p_signatureinstance: _) : Lemma (requires (sig_correct p_si == true) (ensures ((p_si.f_sig_keypair).f_skp_valid == true))) = admit ()
 
 (* PQ_SIG_024_correct_verify (matches Coq: Theorem PQ_SIG_024_correct_verify) *)
-let pq_sig_024_correct_verify_obligation () : Tot bool = (0 = 0)
-let pq_sig_024_correct_verify_lemma () : Lemma (requires True) (ensures (pq_sig_024_correct_verify_obligation () == pq_sig_024_correct_verify_obligation ())) = ()
+let pq_sig_024_correct_verify (p_si: _) (p_signatureinstance: _) : Lemma (requires (sig_correct p_si == true) (ensures (p_si.f_sig_verification == true))) = admit ()
 
 (* PQ_SIG_025_complete_security (matches Coq: Theorem PQ_SIG_025_complete_security) *)
-let pq_sig_025_complete_security_obligation () : Tot bool = (0 = 0)
-let pq_sig_025_complete_security_lemma () : Lemma (requires True) (ensures (pq_sig_025_complete_security_obligation () == pq_sig_025_complete_security_obligation ())) = ()
+let pq_sig_025_complete_security (p_s: _) (p_signaturesecurity: _) : Lemma (requires (sig_secure p_s == true) (ensures ((p_s.f_sig_sec_eufcma).f_eufcma_unforgeable == true /\ (p_s.f_sig_sec_eufcma).f_eufcma_strong_unforgeability == true /\ (p_s.f_sig_sec_quantum).f_sqr_post_quantum == true /\ (p_s.f_sig_sec_quantum).f_sqr_no_shor_attack == true))) = admit ()

@@ -39,44 +39,34 @@ let refine_conj (p_r1: nat) (p_r2: nat) : Tot nat =
   mkRefinement (fun n => p_r1.f_full_pred n && p_r2.f_full_pred n) (fun n => p_r1.f_light_pred n && p_r2.f_light_pred n) (fun n H => let P := andb_prop _ _ H in conj (p_r1.f_light_sound n (proj1 P)) (p_r2.f_light_sound n (proj2 P)))
 
 (* lightweight_sound (matches Coq: Theorem lightweight_sound) *)
-let lightweight_sound_obligation () : Tot bool = (0 = 0)
-let lightweight_sound_lemma () : Lemma (requires True) (ensures (lightweight_sound_obligation () == lightweight_sound_obligation ())) = ()
+let lightweight_sound (p_rt: nat) (p_v: nat) : Lemma (requires (lightweight_check p_rt p_v == true) (ensures (full_check p_rt p_v == true))) = admit ()
 
 (* lightweight_complete_decidable (matches Coq: Theorem lightweight_complete_decidable) *)
-let lightweight_complete_decidable_obligation () : Tot bool = (0 = 0)
-let lightweight_complete_decidable_lemma () : Lemma (requires True) (ensures (lightweight_complete_decidable_obligation () == lightweight_complete_decidable_obligation ())) = ()
+let lightweight_complete_decidable (p_rt: nat) (p_v: nat) : Lemma (requires (decidable_refinement p_rt == true /\ full_check p_rt p_v == true) (ensures (lightweight_check p_rt p_v == true))) = admit ()
 
 (* refine_subtype_refl (matches Coq: Theorem refine_subtype_refl) *)
-let refine_subtype_refl_obligation () : Tot bool = (0 = 0)
-let refine_subtype_refl_lemma () : Lemma (requires True) (ensures (refine_subtype_refl_obligation () == refine_subtype_refl_obligation ())) = ()
+let refine_subtype_refl (p_rt: nat) : Lemma (refine_subtype p_rt p_rt == true) = admit ()
 
 (* refine_subtype_trans (matches Coq: Theorem refine_subtype_trans) *)
-let refine_subtype_trans_obligation () : Tot bool = (0 = 0)
-let refine_subtype_trans_lemma () : Lemma (requires True) (ensures (refine_subtype_trans_obligation () == refine_subtype_trans_obligation ())) = ()
+let refine_subtype_trans (p_r1: nat) (p_r2: nat) (p_r3: nat) : Lemma (requires (refine_subtype p_r1 p_r2 == true /\ refine_subtype p_r2 p_r3 == true) (ensures (refine_subtype p_r1 p_r3 == true))) = admit ()
 
 (* checked_values_satisfy (matches Coq: Theorem checked_values_satisfy) *)
-let checked_values_satisfy_obligation () : Tot bool = (0 = 0)
-let checked_values_satisfy_lemma () : Lemma (requires True) (ensures (checked_values_satisfy_obligation () == checked_values_satisfy_obligation ())) = ()
+let checked_values_satisfy (p_rt: nat) (p_e: expr) : Lemma (requires (lightweight_check p_rt (eval p_e) == true) (ensures (full_check p_rt (eval p_e) == true))) = admit ()
 
 (* dual_mode_agreement (matches Coq: Theorem dual_mode_agreement) *)
-let dual_mode_agreement_obligation () : Tot bool = (0 = 0)
-let dual_mode_agreement_lemma () : Lemma (requires True) (ensures (dual_mode_agreement_obligation () == dual_mode_agreement_obligation ())) = ()
+let dual_mode_agreement (p_rt: nat) (p_v: nat) : Lemma (requires (decidable_refinement p_rt == true) (ensures ((lightweight_check p_rt p_v == fn_true <-> full_check p_rt p_v)))) = admit ()
 
 (* refinement_weakening (matches Coq: Theorem refinement_weakening) *)
-let refinement_weakening_obligation () : Tot bool = (0 = 0)
-let refinement_weakening_lemma () : Lemma (requires True) (ensures (refinement_weakening_obligation () == refinement_weakening_obligation ())) = ()
+let refinement_weakening (p_r1: nat) (p_r2: nat) (p_v: nat) : Lemma (requires (refine_subtype p_r1 p_r2 == true /\ full_check p_r1 p_v == true) (ensures (full_check p_r2 p_v == true))) = admit ()
 
 (* conj_subtype_left (matches Coq: Theorem conj_subtype_left) *)
-let conj_subtype_left_obligation () : Tot bool = (0 = 0)
-let conj_subtype_left_lemma () : Lemma (requires True) (ensures (conj_subtype_left_obligation () == conj_subtype_left_obligation ())) = ()
+let conj_subtype_left (p_r1: nat) (p_r2: nat) : Lemma (refine_subtype (refine_conj p_r1 p_r2) p_r1 == true) = admit ()
 
 (* conj_subtype_right (matches Coq: Theorem conj_subtype_right) *)
-let conj_subtype_right_obligation () : Tot bool = (0 = 0)
-let conj_subtype_right_lemma () : Lemma (requires True) (ensures (conj_subtype_right_obligation () == conj_subtype_right_obligation ())) = ()
+let conj_subtype_right (p_r1: nat) (p_r2: nat) : Lemma (refine_subtype (refine_conj p_r1 p_r2) p_r2 == true) = admit ()
 
 (* conj_greatest_lower_bound (matches Coq: Theorem conj_greatest_lower_bound) *)
-let conj_greatest_lower_bound_obligation () : Tot bool = (0 = 0)
-let conj_greatest_lower_bound_lemma () : Lemma (requires True) (ensures (conj_greatest_lower_bound_obligation () == conj_greatest_lower_bound_obligation ())) = ()
+let conj_greatest_lower_bound (p_r1: nat) (p_r2: nat) (p_r3: nat) : Lemma (requires (refine_subtype p_r3 p_r1 == true /\ refine_subtype p_r3 p_r2 == true) (ensures (refine_subtype p_r3 (refine_conj p_r1 p_r2) == true))) = admit ()
 
 (* conj_full_pred_comm (matches Coq: Theorem conj_full_pred_comm) *)
 let conj_full_pred_comm_obligation () : Tot bool = (0 = 0)
@@ -87,41 +77,32 @@ let conj_full_pred_assoc_obligation () : Tot bool = (0 = 0)
 let conj_full_pred_assoc_lemma () : Lemma (requires True) (ensures (conj_full_pred_assoc_obligation () == conj_full_pred_assoc_obligation ())) = ()
 
 (* conj_light_is_andb (matches Coq: Theorem conj_light_is_andb) *)
-let conj_light_is_andb_obligation () : Tot bool = (0 = 0)
-let conj_light_is_andb_lemma () : Lemma (requires True) (ensures (conj_light_is_andb_obligation () == conj_light_is_andb_obligation ())) = ()
+let conj_light_is_andb (p_r1: nat) (p_r2: nat) (p_v: nat) : Lemma (light_pred (refine_conj p_r1 p_r2) p_v == (light_pred p_r1 p_v && light_pred p_r2 p_v)%bool) = admit ()
 
 (* eval_const (matches Coq: Theorem eval_const) *)
-let eval_const_obligation () : Tot bool = (0 = 0)
-let eval_const_lemma () : Lemma (requires True) (ensures (eval_const_obligation () == eval_const_obligation ())) = ()
+let eval_const (p_n: _) : Lemma (eval (EConst p_n) == p_n) = admit ()
 
 (* eval_plus (matches Coq: Theorem eval_plus) *)
-let eval_plus_obligation () : Tot bool = (0 = 0)
-let eval_plus_lemma () : Lemma (requires True) (ensures (eval_plus_obligation () == eval_plus_obligation ())) = ()
+let eval_plus (p_e1: _) (p_e2: _) : Lemma (eval (EPlus p_e1 p_e2) == eval p_e1 + eval p_e2) = admit ()
 
 (* lightweight_false_implies_not_full (matches Coq: Theorem lightweight_false_implies_not_full) *)
-let lightweight_false_implies_not_full_obligation () : Tot bool = (0 = 0)
-let lightweight_false_implies_not_full_lemma () : Lemma (requires True) (ensures (lightweight_false_implies_not_full_obligation () == lightweight_false_implies_not_full_obligation ())) = ()
+let lightweight_false_implies_not_full (p_rt: nat) (p_v: nat) : Lemma (requires (decidable_refinement p_rt == true /\ lightweight_check p_rt p_v == false) (ensures (~(full_check p_rt p_v == true)))) = admit ()
 
 (* subtype_lightweight_sound (matches Coq: Theorem subtype_lightweight_sound) *)
-let subtype_lightweight_sound_obligation () : Tot bool = (0 = 0)
-let subtype_lightweight_sound_lemma () : Lemma (requires True) (ensures (subtype_lightweight_sound_obligation () == subtype_lightweight_sound_obligation ())) = ()
+let subtype_lightweight_sound (p_r1: nat) (p_r2: nat) (p_v: nat) : Lemma (requires (refine_subtype p_r1 p_r2 == true /\ lightweight_check p_r1 p_v == true) (ensures (full_check p_r2 p_v == true))) = admit ()
 
 (* conj_decidable (matches Coq: Theorem conj_decidable) *)
-let conj_decidable_obligation () : Tot bool = (0 = 0)
-let conj_decidable_lemma () : Lemma (requires True) (ensures (conj_decidable_obligation () == conj_decidable_obligation ())) = ()
+let conj_decidable (p_r1: nat) (p_r2: nat) : Lemma (requires (decidable_refinement p_r1 == true /\ decidable_refinement p_r2 == true) (ensures (decidable_refinement (refine_conj p_r1 p_r2) == true))) = admit ()
 
 (* refine_subtype_antisym_eq (matches Coq: Theorem refine_subtype_antisym_eq) *)
 let refine_subtype_antisym_eq_obligation () : Tot bool = (0 = 0)
 let refine_subtype_antisym_eq_lemma () : Lemma (requires True) (ensures (refine_subtype_antisym_eq_obligation () == refine_subtype_antisym_eq_obligation ())) = ()
 
 (* eval_if_false (matches Coq: Theorem eval_if_false) *)
-let eval_if_false_obligation () : Tot bool = (0 = 0)
-let eval_if_false_lemma () : Lemma (requires True) (ensures (eval_if_false_obligation () == eval_if_false_obligation ())) = ()
+let eval_if_false (p_et: _) (p_ef: _) : Lemma (eval (EIf (EConst 0) p_et p_ef) == eval p_ef) = admit ()
 
 (* eval_if_true (matches Coq: Theorem eval_if_true) *)
-let eval_if_true_obligation () : Tot bool = (0 = 0)
-let eval_if_true_lemma () : Lemma (requires True) (ensures (eval_if_true_obligation () == eval_if_true_obligation ())) = ()
+let eval_if_true (p_n: _) (p_et: _) (p_ef: _) : Lemma (requires (~(p_n == 0)) (ensures (eval (EIf (EConst p_n) p_et p_ef) == eval p_et))) = admit ()
 
 (* conj_sub_both (matches Coq: Theorem conj_sub_both) *)
-let conj_sub_both_obligation () : Tot bool = (0 = 0)
-let conj_sub_both_lemma () : Lemma (requires True) (ensures (conj_sub_both_obligation () == conj_sub_both_obligation ())) = ()
+let conj_sub_both (p_r1: nat) (p_r2: nat) (p_v: nat) : Lemma (requires (full_check (refine_conj p_r1 p_r2) p_v == true) (ensures (full_check p_r1 p_v == true /\ full_check p_r2 p_v == true))) = admit ()

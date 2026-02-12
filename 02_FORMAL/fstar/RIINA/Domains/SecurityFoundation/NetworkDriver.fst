@@ -60,85 +60,64 @@ let has_network_permission (p_app: application) : Tot bool =
   (0 = 0)
 
 (* network_isolation (matches Coq: Theorem network_isolation) *)
-let network_isolation_obligation () : Tot bool = (0 = 0)
-let network_isolation_lemma () : Lemma (requires True) (ensures (network_isolation_obligation () == network_isolation_obligation ())) = ()
+let network_isolation (p_app1: application) (p_app2: application) (p_socket: socket) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_socket p_app1 p_socket == true) (ensures (~(can_access_socket p_app2 p_socket == true)))) = admit ()
 
 (* socket_ownership_exclusive (matches Coq: Theorem socket_ownership_exclusive) *)
-let socket_ownership_exclusive_obligation () : Tot bool = (0 = 0)
-let socket_ownership_exclusive_lemma () : Lemma (requires True) (ensures (socket_ownership_exclusive_obligation () == socket_ownership_exclusive_obligation ())) = ()
+let socket_ownership_exclusive (p_app1: application) (p_app2: application) (p_sock: socket) : Lemma (requires (owns_socket p_app1 p_sock == true /\ owns_socket p_app2 p_sock == true) (ensures (p_app1.f_app_id == p_app2.f_app_id))) = admit ()
 
 (* unbound_socket_not_usable (matches Coq: Theorem unbound_socket_not_usable) *)
-let unbound_socket_not_usable_obligation () : Tot bool = (0 = 0)
-let unbound_socket_not_usable_lemma () : Lemma (requires True) (ensures (unbound_socket_not_usable_obligation () == unbound_socket_not_usable_obligation ())) = ()
+let unbound_socket_not_usable (p_sock: socket) : Lemma (requires (p_sock.f_socket_bound == false) (ensures (~(socket_usable p_sock == true)))) = admit ()
 
 (* send_requires_network_permission (matches Coq: Theorem send_requires_network_permission) *)
-let send_requires_network_permission_obligation () : Tot bool = (0 = 0)
-let send_requires_network_permission_lemma () : Lemma (requires True) (ensures (send_requires_network_permission_obligation () == send_requires_network_permission_obligation ())) = ()
+let send_requires_network_permission (p_app: application) (p_sock: socket) : Lemma (requires (sends_data p_app p_sock == true) (ensures (has_network_permission p_app == true))) = admit ()
 
 (* receive_requires_network_permission (matches Coq: Theorem receive_requires_network_permission) *)
-let receive_requires_network_permission_obligation () : Tot bool = (0 = 0)
-let receive_requires_network_permission_lemma () : Lemma (requires True) (ensures (receive_requires_network_permission_obligation () == receive_requires_network_permission_obligation ())) = ()
+let receive_requires_network_permission (p_app: application) (p_sock: socket) : Lemma (requires (receives_data p_app p_sock == true) (ensures (has_network_permission p_app == true))) = admit ()
 
 (* no_perm_blocks_send (matches Coq: Theorem no_perm_blocks_send) *)
-let no_perm_blocks_send_obligation () : Tot bool = (0 = 0)
-let no_perm_blocks_send_lemma () : Lemma (requires True) (ensures (no_perm_blocks_send_obligation () == no_perm_blocks_send_obligation ())) = ()
+let no_perm_blocks_send (p_app: application) (p_sock: socket) : Lemma (requires (p_app.f_app_network_perm == false) (ensures (~(sends_data p_app p_sock == true)))) = admit ()
 
 (* no_perm_blocks_receive (matches Coq: Theorem no_perm_blocks_receive) *)
-let no_perm_blocks_receive_obligation () : Tot bool = (0 = 0)
-let no_perm_blocks_receive_lemma () : Lemma (requires True) (ensures (no_perm_blocks_receive_obligation () == no_perm_blocks_receive_obligation ())) = ()
+let no_perm_blocks_receive (p_app: application) (p_sock: socket) : Lemma (requires (p_app.f_app_network_perm == false) (ensures (~(receives_data p_app p_sock == true)))) = admit ()
 
 (* unbound_blocks_send (matches Coq: Theorem unbound_blocks_send) *)
-let unbound_blocks_send_obligation () : Tot bool = (0 = 0)
-let unbound_blocks_send_lemma () : Lemma (requires True) (ensures (unbound_blocks_send_obligation () == unbound_blocks_send_obligation ())) = ()
+let unbound_blocks_send (p_app: application) (p_sock: socket) : Lemma (requires (p_sock.f_socket_bound == false) (ensures (~(sends_data p_app p_sock == true)))) = admit ()
 
 (* unbound_blocks_receive (matches Coq: Theorem unbound_blocks_receive) *)
-let unbound_blocks_receive_obligation () : Tot bool = (0 = 0)
-let unbound_blocks_receive_lemma () : Lemma (requires True) (ensures (unbound_blocks_receive_obligation () == unbound_blocks_receive_obligation ())) = ()
+let unbound_blocks_receive (p_app: application) (p_sock: socket) : Lemma (requires (p_sock.f_socket_bound == false) (ensures (~(receives_data p_app p_sock == true)))) = admit ()
 
 (* default_deny_firewall (matches Coq: Theorem default_deny_firewall) *)
-let default_deny_firewall_obligation () : Tot bool = (0 = 0)
-let default_deny_firewall_lemma () : Lemma (requires True) (ensures (default_deny_firewall_obligation () == default_deny_firewall_obligation ())) = ()
+let default_deny_firewall (p_src_port: nat) (p_dst_port: nat) : Lemma (firewall_permits [] p_src_port p_dst_port == false) = admit ()
 
 (* cross_app_socket_impossible (matches Coq: Theorem cross_app_socket_impossible) *)
-let cross_app_socket_impossible_obligation () : Tot bool = (0 = 0)
-let cross_app_socket_impossible_lemma () : Lemma (requires True) (ensures (cross_app_socket_impossible_obligation () == cross_app_socket_impossible_obligation ())) = ()
+let cross_app_socket_impossible (p_app1: application) (p_app2: application) (p_sock: socket) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_socket p_app1 p_sock == true) (ensures (~(sends_data p_app2 p_sock == true)))) = admit ()
 
 (* cross_app_receive_impossible (matches Coq: Theorem cross_app_receive_impossible) *)
-let cross_app_receive_impossible_obligation () : Tot bool = (0 = 0)
-let cross_app_receive_impossible_lemma () : Lemma (requires True) (ensures (cross_app_receive_impossible_obligation () == cross_app_receive_impossible_obligation ())) = ()
+let cross_app_receive_impossible (p_app1: application) (p_app2: application) (p_sock: socket) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_socket p_app1 p_sock == true) (ensures (~(receives_data p_app2 p_sock == true)))) = admit ()
 
 (* send_implies_bound (matches Coq: Theorem send_implies_bound) *)
-let send_implies_bound_obligation () : Tot bool = (0 = 0)
-let send_implies_bound_lemma () : Lemma (requires True) (ensures (send_implies_bound_obligation () == send_implies_bound_obligation ())) = ()
+let send_implies_bound (p_app: application) (p_sock: socket) : Lemma (requires (sends_data p_app p_sock == true) (ensures (socket_usable p_sock == true))) = admit ()
 
 (* receive_implies_bound (matches Coq: Theorem receive_implies_bound) *)
-let receive_implies_bound_obligation () : Tot bool = (0 = 0)
-let receive_implies_bound_lemma () : Lemma (requires True) (ensures (receive_implies_bound_obligation () == receive_implies_bound_obligation ())) = ()
+let receive_implies_bound (p_app: application) (p_sock: socket) : Lemma (requires (receives_data p_app p_sock == true) (ensures (socket_usable p_sock == true))) = admit ()
 
 (* socket_isolation_by_owner (matches Coq: Theorem socket_isolation_by_owner) *)
-let socket_isolation_by_owner_obligation () : Tot bool = (0 = 0)
-let socket_isolation_by_owner_lemma () : Lemma (requires True) (ensures (socket_isolation_by_owner_obligation () == socket_isolation_by_owner_obligation ())) = ()
+let socket_isolation_by_owner (p_app1: application) (p_app2: application) (p_sock1: socket) (p_sock2: socket) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_socket p_app1 p_sock1 == true /\ owns_socket p_app2 p_sock2 == true) (ensures (~(p_sock1.f_socket_owner == p_sock2.f_socket_owner)))) = admit ()
 
 (* access_control_consistent (matches Coq: Theorem access_control_consistent) *)
-let access_control_consistent_obligation () : Tot bool = (0 = 0)
-let access_control_consistent_lemma () : Lemma (requires True) (ensures (access_control_consistent_obligation () == access_control_consistent_obligation ())) = ()
+let access_control_consistent (p_app: application) (p_sock: socket) : Lemma (requires (can_access_socket p_app p_sock == true) (ensures (owns_socket p_app p_sock == true))) = admit ()
 
 (* network_perm_required_both_directions (matches Coq: Theorem network_perm_required_both_directions) *)
-let network_perm_required_both_directions_obligation () : Tot bool = (0 = 0)
-let network_perm_required_both_directions_lemma () : Lemma (requires True) (ensures (network_perm_required_both_directions_obligation () == network_perm_required_both_directions_obligation ())) = ()
+let network_perm_required_both_directions (p_app: application) (p_sock: socket) : Lemma (requires (sends_data p_app p_sock == true \/ receives_data p_app p_sock == true) (ensures (has_network_permission p_app == true))) = admit ()
 
 (* full_network_isolation (matches Coq: Theorem full_network_isolation) *)
-let full_network_isolation_obligation () : Tot bool = (0 = 0)
-let full_network_isolation_lemma () : Lemma (requires True) (ensures (full_network_isolation_obligation () == full_network_isolation_obligation ())) = ()
+let full_network_isolation (p_app: application) : Lemma (requires (p_app.f_app_network_perm == false) (ensures (forall sock_ ~ sends_data p_app sock == true /\ ~(receives_data p_app sock == true)))) = admit ()
 
 (* bound_implies_usable (matches Coq: Theorem bound_implies_usable) *)
-let bound_implies_usable_obligation () : Tot bool = (0 = 0)
-let bound_implies_usable_lemma () : Lemma (requires True) (ensures (bound_implies_usable_obligation () == bound_implies_usable_obligation ())) = ()
+let bound_implies_usable (p_sock: _) : Lemma (requires (p_sock.f_socket_bound == true) (ensures (socket_usable p_sock == true))) = admit ()
 
 (* firewall_protects (matches Coq: Theorem firewall_protects) *)
-let firewall_protects_obligation () : Tot bool = (0 = 0)
-let firewall_protects_lemma () : Lemma (requires True) (ensures (firewall_protects_obligation () == firewall_protects_obligation ())) = ()
+let firewall_protects (p_ns: _) : Lemma (requires (p_ns.f_firewall_enabled == true) (ensures (p_ns.f_firewall_enabled == true))) = admit ()
 
 (* socket_port_nonneg (matches Coq: Theorem socket_port_nonneg) *)
-let socket_port_nonneg_obligation () : Tot bool = (0 = 0)
-let socket_port_nonneg_lemma () : Lemma (requires True) (ensures (socket_port_nonneg_obligation () == socket_port_nonneg_obligation ())) = ()
+let socket_port_nonneg (p_sock: _) : Lemma (p_sock.f_socket_port >= 0) = admit ()

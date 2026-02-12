@@ -189,61 +189,46 @@ let transmission_secure (p_t: transmission) : Tot bool =
   andb (is_hipaa_transport (p_t.f_trans_security)) (andb (is_hipaa_encrypted (phi_encryption (p_t.f_trans_phi))) (p_t.f_trans_verified))
 
 (* COMPLY_001_01 (matches Coq: Theorem COMPLY_001_01) *)
-let comply_001_01_obligation () : Tot bool = (0 = 0)
-let comply_001_01_lemma () : Lemma (requires True) (ensures (comply_001_01_obligation () == comply_001_01_obligation ())) = ()
+let comply_001_01 (p_phi: phi_record) : Lemma (requires (is_hipaa_encrypted (p_phi.f_phi_encryption) == true) (ensures (p_phi.f_phi_encryption == EncryptedAES256))) = admit ()
 
 (* COMPLY_001_02 (matches Coq: Theorem COMPLY_001_02) *)
-let comply_001_02_obligation () : Tot bool = (0 = 0)
-let comply_001_02_lemma () : Lemma (requires True) (ensures (comply_001_02_obligation () == comply_001_02_obligation ())) = ()
+let comply_001_02 (p_ts: transport_security) : Lemma (requires (is_hipaa_transport p_ts == true) (ensures (p_ts == TLS13))) = admit ()
 
 (* COMPLY_001_03 (matches Coq: Theorem COMPLY_001_03) *)
-let comply_001_03_obligation () : Tot bool = (0 = 0)
-let comply_001_03_lemma () : Lemma (requires True) (ensures (comply_001_03_obligation () == comply_001_03_obligation ())) = ()
+let comply_001_03 (p_role: role) (p_cat: phi_category) : Lemma (requires (can_access p_role p_cat == false) (ensures (~((can_access p_role p_cat == true))))) = admit ()
 
 (* COMPLY_001_04 (matches Coq: Theorem COMPLY_001_04) *)
-let comply_001_04_obligation () : Tot bool = (0 = 0)
-let comply_001_04_lemma () : Lemma (requires True) (ensures (comply_001_04_obligation () == comply_001_04_obligation ())) = ()
+let comply_001_04 (p_log: (list audit_entry)) (p_user_id: nat) (p_phi_id: nat) (p_timestamp: nat) (p_action: nat) (p_success: bool) : Lemma (fn_let new_log : == access_with_audit p_log p_user_id p_phi_id p_timestamp p_action p_success id_in audit_exists_for new_log p_user_id p_phi_id = true) = admit ()
 
 (* COMPLY_001_05 (matches Coq: Theorem COMPLY_001_05) *)
-let comply_001_05_obligation () : Tot bool = (0 = 0)
-let comply_001_05_lemma () : Lemma (requires True) (ensures (comply_001_05_obligation () == comply_001_05_obligation ())) = ()
+let comply_001_05 (p_role: role) (p_requested: (list phi_category)) (p_cat: phi_category) : Lemma (requires (In p_cat (minimum_necessary_access p_role p_requested) == true) (ensures (can_access p_role p_cat == true))) = admit ()
 
 (* COMPLY_001_06 (matches Coq: Theorem COMPLY_001_06) *)
-let comply_001_06_obligation () : Tot bool = (0 = 0)
-let comply_001_06_lemma () : Lemma (requires True) (ensures (comply_001_06_obligation () == comply_001_06_obligation ())) = ()
+let comply_001_06 (p_phi: phi_record) : Lemma (requires (can_disclose p_phi == fn_true <) (ensures (p_phi.f_phi_consent_documented == true))) = admit ()
 
 (* COMPLY_001_07 (matches Coq: Theorem COMPLY_001_07) *)
-let comply_001_07_obligation () : Tot bool = (0 = 0)
-let comply_001_07_lemma () : Lemma (requires True) (ensures (comply_001_07_obligation () == comply_001_07_obligation ())) = ()
+let comply_001_07 (p_b: breach_event) : Lemma (requires (breach_detected_timely p_b == true) (ensures (breach_detected_time p_b - breach_occurred_time p_b <= breach_detection_limit))) = admit ()
 
 (* COMPLY_001_08 (matches Coq: Theorem COMPLY_001_08) *)
-let comply_001_08_obligation () : Tot bool = (0 = 0)
-let comply_001_08_lemma () : Lemma (requires True) (ensures (comply_001_08_obligation () == comply_001_08_obligation ())) = ()
+let comply_001_08 (p_role: role) (p_cat: phi_category) : Lemma (requires (authorized_modification p_role p_cat == true) (ensures (can_access p_role p_cat == true /\ (p_role == Physician \/ p_role == Emergency)))) = admit ()
 
 (* COMPLY_001_09 (matches Coq: Theorem COMPLY_001_09) *)
-let comply_001_09_obligation () : Tot bool = (0 = 0)
-let comply_001_09_lemma () : Lemma (requires True) (ensures (comply_001_09_obligation () == comply_001_09_obligation ())) = ()
+let comply_001_09 (p_d: disposal_record) : Lemma (requires (is_secure_disposal p_d == true) (ensures ((p_d.f_disposal_method == 1) \/ (p_d.f_disposal_method == 2) \/ (p_d.f_disposal_method == 0 /\ p_d.f_disposal_passes >= 3)))) = admit ()
 
 (* COMPLY_001_10 (matches Coq: Theorem COMPLY_001_10) *)
-let comply_001_10_obligation () : Tot bool = (0 = 0)
-let comply_001_10_lemma () : Lemma (requires True) (ensures (comply_001_10_obligation () == comply_001_10_obligation ())) = ()
+let comply_001_10 (p_auth: auth_state) : Lemma (requires (is_mfa p_auth == true) (ensures (length (p_auth.f_auth_factors) >= 2))) = admit ()
 
 (* COMPLY_001_11 (matches Coq: Theorem COMPLY_001_11) *)
-let comply_001_11_obligation () : Tot bool = (0 = 0)
-let comply_001_11_lemma () : Lemma (requires True) (ensures (comply_001_11_obligation () == comply_001_11_obligation ())) = ()
+let comply_001_11 (p_current_time: nat) (p_last_activity: nat) : Lemma (requires (p_current_time - p_last_activity > session_timeout) (ensures (session_expired p_current_time p_last_activity == true))) = admit ()
 
 (* COMPLY_001_12 (matches Coq: Theorem COMPLY_001_12) *)
-let comply_001_12_obligation () : Tot bool = (0 = 0)
-let comply_001_12_lemma () : Lemma (requires True) (ensures (comply_001_12_obligation () == comply_001_12_obligation ())) = ()
+let comply_001_12 (p_s: session) (p_current_time: nat) : Lemma (requires (p_s.f_session_is_active == true /\ p_current_time - session_last_activity p_s > session_timeout) (ensures ((check_and_terminate p_current_time p_s).f_session_is_active == false))) = admit ()
 
 (* COMPLY_001_13 (matches Coq: Theorem COMPLY_001_13) *)
-let comply_001_13_obligation () : Tot bool = (0 = 0)
-let comply_001_13_lemma () : Lemma (requires True) (ensures (comply_001_13_obligation () == comply_001_13_obligation ())) = ()
+let comply_001_13 (p_users: (list nat)) (p_uid: nat) (p_r1: role) (p_r2: role) : Lemma (requires (all_unique_ids p_users == true /\ In (uid_ p_r1) p_users == true /\ In (uid_ p_r2) p_users == true) (ensures (p_r1 == p_r2))) = admit ()
 
 (* COMPLY_001_14 (matches Coq: Theorem COMPLY_001_14) *)
-let comply_001_14_obligation () : Tot bool = (0 = 0)
-let comply_001_14_lemma () : Lemma (requires True) (ensures (comply_001_14_obligation () == comply_001_14_obligation ())) = ()
+let comply_001_14 (p_log: (list audit_entry)) (p_user_id: nat) (p_phi_id: nat) (p_timestamp: nat) (p_cat: phi_category) : Lemma (fn_let new_log : == emergency_access p_log p_user_id p_phi_id p_timestamp id_in audit_exists_for new_log p_user_id p_phi_id = true /\ can_access Emergency p_cat == true) = admit ()
 
 (* COMPLY_001_15 (matches Coq: Theorem COMPLY_001_15) *)
-let comply_001_15_obligation () : Tot bool = (0 = 0)
-let comply_001_15_lemma () : Lemma (requires True) (ensures (comply_001_15_obligation () == comply_001_15_obligation ())) = ()
+let comply_001_15 (p_t: transmission) : Lemma (requires (transmission_secure p_t == true) (ensures (p_t.f_trans_security == TLS13 /\ (p_t.f_trans_phi).f_phi_encryption == EncryptedAES256 /\ p_t.f_trans_verified == true))) = admit ()
