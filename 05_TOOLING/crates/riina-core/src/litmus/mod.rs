@@ -91,19 +91,27 @@ mod tests {
     fn test_all_litmus_tests_available() {
         // Ensure all 12 litmus test modules are present
         // This test will fail to compile if any module is missing
-        let _tests = [
-            spectre_v1::SpectreV1,
-            spectre_v2::SpectreV2,
-            spectre_v4::SpectreV4,
-            meltdown::Meltdown,
-            foreshadow::Foreshadow,
-            zombieload::ZombieLoad,
-            ridl::Ridl,
-            fallout::Fallout,
-            lvi::Lvi,
-            ret2spec::Ret2Spec,
-            bhi::Bhi,
-            srbds::Srbds,
+        let tests: Vec<Box<dyn LitmusTest>> = vec![
+            Box::new(spectre_v1::SpectreV1),
+            Box::new(spectre_v2::SpectreV2),
+            Box::new(spectre_v4::SpectreV4),
+            Box::new(meltdown::Meltdown),
+            Box::new(foreshadow::Foreshadow),
+            Box::new(zombieload::ZombieLoad),
+            Box::new(ridl::Ridl),
+            Box::new(fallout::Fallout),
+            Box::new(lvi::Lvi),
+            Box::new(ret2spec::Ret2Spec),
+            Box::new(bhi::Bhi),
+            Box::new(srbds::Srbds),
         ];
+
+        // Verify we have exactly 12 tests
+        assert_eq!(tests.len(), 12);
+
+        // Run all tests
+        for test in tests.iter() {
+            let _ = test.run();
+        }
     }
 }

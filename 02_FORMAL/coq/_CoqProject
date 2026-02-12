@@ -326,3 +326,7 @@ domains/MobileBridgeVerification.v
 domains/PlatformStdlibVerification.v
 domains/BackendTraitVerification.v
 domains/BackendComposition.v
+
+# Worker F: Hardware + Runtime proofs
+runtime/CPUModel.v
+runtime/RuntimeProof.v
