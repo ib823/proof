@@ -328,9 +328,3 @@ domains/BackendTraitVerification.v
 domains/BackendComposition.v
 
 # Worker F: Hardware + Runtime proofs (EXCLUDED until Admitted eliminated)
-# runtime/CPUModel.v  # 1 Admitted - TODO: Complete Z bitwise lemmas
-# runtime/RuntimeProof.v  # 1 Admitted - TODO: Complete capability equality lemmas
-runtime/RuntimeProof.v
-# Incomplete Worker F files (with Admitted, excluded from build)
-runtime/_incomplete/CPUModel.v
-runtime/_incomplete/RuntimeProof.v

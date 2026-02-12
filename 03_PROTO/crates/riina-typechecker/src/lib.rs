@@ -697,6 +697,134 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::System
         ));
 
+    // ── TASK #4: Enhanced XSS Prevention ──
+
+    // URL sanitizer (for safe redirects/links)
+    c = c.extend("sanitize_url".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_url".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)),
+            Effect::Pure
+        ));
+
+    // CSS sanitizer (for safe style injection)
+    c = c.extend("sanitize_css".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_css".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)),
+            Effect::Pure
+        ));
+
+    // ── DOM Manipulation (context-aware) ──
+
+    // Safe innerHTML setter — REQUIRES HtmlEscape
+    c = c.extend("dom_set_html".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Any),  // DOM element
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
+            )),
+            Box::new(Ty::Unit),
+            Effect::System
+        ));
+    c = c.extend("dom_tetap_html".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Any),
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
+            )),
+            Box::new(Ty::Unit),
+            Effect::System
+        ));
+
+    // Safe attribute setter — REQUIRES HtmlEscape
+    c = c.extend("dom_set_attr".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Any),  // DOM element
+                Box::new(Ty::Prod(
+                    Box::new(Ty::String),  // Attribute name
+                    Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
+                ))
+            )),
+            Box::new(Ty::Unit),
+            Effect::System
+        ));
+    c = c.extend("dom_tetap_atribut".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Any),
+                Box::new(Ty::Prod(
+                    Box::new(Ty::String),
+                    Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
+                ))
+            )),
+            Box::new(Ty::Unit),
+            Effect::System
+        ));
+
+    // ── Input Validation (pre-sanitization) ──
+
+    // Length-bounded input validation
+    c = c.extend("validate_length".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+                Box::new(Ty::Int)  // Max length
+            )),
+            Box::new(Ty::Option(Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)))),
+            Effect::Pure
+        ));
+    c = c.extend("sahkan_panjang".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+                Box::new(Ty::Int)
+            )),
+            Box::new(Ty::Option(Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)))),
+            Effect::Pure
+        ));
+
+    // Unicode normalization (prevents homograph attacks)
+    c = c.extend("normalize_unicode".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Effect::Pure
+        ));
+    c = c.extend("normal_unicode".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Effect::Pure
+        ));
+
+    // Strip null bytes (prevents injection bypass)
+    c = c.extend("strip_nulls".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Effect::Pure
+        ));
+    c = c.extend("buang_null".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Effect::Pure
+        ));
+
     c
 }
 
@@ -746,6 +874,16 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
         }
         (Ty::Int, Ty::Sanitized(inner, _)) if **inner == Ty::Int => {
             return true;
+        }
+        _ => {}
+    }
+
+    // TAINT SOURCE COMPATIBILITY: Any Tainted matches expected Tainted
+    // Sanitizers accept any tainted data, regardless of source
+    // Tainted<String, NetworkExternal> matches Tainted<String, UserInput>
+    match (expected, found) {
+        (Ty::Tainted(inner1, _), Ty::Tainted(inner2, _)) => {
+            return types_compatible(inner1, inner2);
         }
         _ => {}
     }

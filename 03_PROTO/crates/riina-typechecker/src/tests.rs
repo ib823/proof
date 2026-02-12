@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::{Context, type_check, TypeError, register_builtin_types, types_compatible};
+    use crate::{Context, type_check, TypeError};
     use riina_types::{BinOp, Expr, Ty, Effect, SecurityLevel};
 
     // ── Literals ──
@@ -1255,6 +1255,459 @@ mod formalized_tests {
                 );
             }
             other => panic!("Expected TypeMismatch for wrong sanitizer, got {:?}", other),
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // TASK #4: Enhanced XSS Prevention Tests
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_xss_url_context() {
+        // URL sanitization for safe redirects
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // sanitize_url(read_line())
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_url".to_string())),
+            Box::new(read_call)
+        );
+
+        let (san_ty, _) = type_check(&ctx, &sanitized).unwrap();
+        assert_eq!(
+            san_ty,
+            Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)
+        );
+    }
+
+    #[test]
+    fn test_xss_css_context() {
+        // CSS sanitization for safe style injection
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // sanitize_css(read_line())
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_css".to_string())),
+            Box::new(read_call)
+        );
+
+        let (san_ty, _) = type_check(&ctx, &sanitized).unwrap();
+        assert_eq!(
+            san_ty,
+            Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)
+        );
+    }
+
+    #[test]
+    fn test_xss_dom_set_html() {
+        // DOM innerHTML requires HtmlEscape sanitization
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // dom_set_html(element, read_line()) — should FAIL
+        let unsafe_dom = Expr::App(
+            Box::new(Expr::Var("dom_set_html".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Unit),  // Mock DOM element
+                Box::new(read_call.clone())
+            ))
+        );
+
+        match type_check(&ctx, &unsafe_dom) {
+            Err(TypeError::TypeMismatch { expected, found: _ }) => {
+                // Expected: (Any, Sanitized<String, HtmlEscape>)
+                // Found: (Unit, Tainted<String, UserInput>)
+                match expected {
+                    Ty::Prod(_, right) => {
+                        assert_eq!(
+                            *right,
+                            Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                        );
+                    }
+                    _ => panic!("Expected product type"),
+                }
+            }
+            other => panic!("Expected TypeMismatch for unsafe DOM, got {:?}", other),
+        }
+
+        // dom_set_html(element, sanitize_html(read_line())) — should succeed
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(read_call)
+        );
+
+        let safe_dom = Expr::App(
+            Box::new(Expr::Var("dom_set_html".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Unit),
+                Box::new(sanitized)
+            ))
+        );
+
+        match type_check(&ctx, &safe_dom) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Unit),
+            Err(e) => panic!("Expected safe DOM to type-check, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xss_dom_set_attr() {
+        // DOM attribute setter requires HtmlEscape
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // Safe: sanitize_html then set attribute
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(read_call)
+        );
+
+        // dom_set_attr(element, ("title", sanitized))
+        let safe_attr = Expr::App(
+            Box::new(Expr::Var("dom_set_attr".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Unit),  // Mock DOM element
+                Box::new(Expr::Pair(
+                    Box::new(Expr::String("title".to_string())),
+                    Box::new(sanitized)
+                ))
+            ))
+        );
+
+        match type_check(&ctx, &safe_attr) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Unit),
+            Err(e) => panic!("Expected safe attribute to type-check, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xss_context_mismatch_url_for_html() {
+        // Using URL sanitizer for HTML context should fail
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // sanitize_url(read_line()) → Sanitized<String, UrlEncode>
+        let url_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_url".to_string())),
+            Box::new(read_call)
+        );
+
+        // html_render(url_sanitized) — wrong sanitizer!
+        let wrong_context = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(url_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_context) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)
+                );
+            }
+            other => panic!("Expected TypeMismatch for wrong context, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_xss_context_mismatch_css_for_js() {
+        // Using CSS sanitizer for JavaScript context should fail
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // sanitize_css(read_line()) → Sanitized<String, CssEscape>
+        let css_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_css".to_string())),
+            Box::new(read_call)
+        );
+
+        // js_eval(css_sanitized) — wrong sanitizer!
+        let wrong_context = Expr::App(
+            Box::new(Expr::Var("js_eval".to_string())),
+            Box::new(css_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_context) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)
+                );
+            }
+            other => panic!("Expected TypeMismatch for CSS→JS context, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_xss_input_validation_length() {
+        // validate_length returns Option<Tainted<String>>
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // validate_length(read_line(), 100)
+        let validated = Expr::App(
+            Box::new(Expr::Var("validate_length".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(read_call),
+                Box::new(Expr::Int(100))
+            ))
+        );
+
+        let (val_ty, _) = type_check(&ctx, &validated).unwrap();
+        assert_eq!(
+            val_ty,
+            Ty::Option(Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)))
+        );
+    }
+
+    #[test]
+    fn test_xss_unicode_normalization() {
+        // normalize_unicode preserves taint
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // normalize_unicode(read_line())
+        let normalized = Expr::App(
+            Box::new(Expr::Var("normalize_unicode".to_string())),
+            Box::new(read_call)
+        );
+
+        let (norm_ty, _) = type_check(&ctx, &normalized).unwrap();
+        assert_eq!(
+            norm_ty,
+            Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+        );
+
+        // Normalized data still requires sanitization before HTML render
+        let unsafe_html = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(normalized)
+        );
+
+        match type_check(&ctx, &unsafe_html) {
+            Err(TypeError::TypeMismatch { .. }) => {
+                // Good! Still tainted, still rejected
+            }
+            other => panic!("Expected TypeMismatch for normalized but unsanitized data, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_xss_null_byte_stripping() {
+        // strip_nulls preserves taint
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // strip_nulls(read_line())
+        let stripped = Expr::App(
+            Box::new(Expr::Var("strip_nulls".to_string())),
+            Box::new(read_call)
+        );
+
+        let (strip_ty, _) = type_check(&ctx, &stripped).unwrap();
+        assert_eq!(
+            strip_ty,
+            Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+        );
+
+        // Stripped data still requires sanitization
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(stripped)
+        );
+
+        let safe_html = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_html) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::String),
+            Err(e) => panic!("Expected safe HTML after strip+sanitize, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xss_reflected_attack_prevented() {
+        // Reflected XSS: user input reflected in HTML without sanitization
+        // Example: ?name=<script>alert('XSS')</script>
+        let ctx = register_builtin_types(&Context::new());
+
+        // Simulated: http_param returns tainted data
+        let http_input = Expr::App(
+            Box::new(Expr::Var("http_body".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // html_render(http_input) — REJECTED (reflected XSS)
+        let reflected_xss = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(http_input.clone())
+        );
+
+        match type_check(&ctx, &reflected_xss) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::NetworkExternal)
+                );
+            }
+            other => panic!("Expected TypeMismatch for reflected XSS, got {:?}", other),
+        }
+
+        // Safe: sanitize before rendering
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(http_input)
+        );
+
+        let safe_render = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_render) {
+            Ok(_) => {}, // Safe!
+            Err(e) => panic!("Expected safe reflected XSS prevention, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xss_stored_attack_prevented() {
+        // Stored XSS: malicious data stored in DB, then rendered
+        // Type system prevents this through persistent taint tracking
+        let ctx = register_builtin_types(&Context::new());
+
+        // Assume: data from database is tainted
+        // (In real implementation, DB reads would return Tainted types)
+        let db_data = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),  // Simulated DB read
+            Box::new(Expr::Unit)
+        );
+
+        // html_render(db_data) — REJECTED (stored XSS)
+        let stored_xss = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(db_data.clone())
+        );
+
+        match type_check(&ctx, &stored_xss) {
+            Err(TypeError::TypeMismatch { .. }) => {
+                // Good! Stored XSS prevented
+            }
+            other => panic!("Expected TypeMismatch for stored XSS, got {:?}", other),
+        }
+
+        // Safe: sanitize data from DB before rendering
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(db_data)
+        );
+
+        let safe_render = Expr::App(
+            Box::new(Expr::Var("html_render".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_render) {
+            Ok(_) => {}, // Safe!
+            Err(e) => panic!("Expected safe stored XSS prevention, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xss_dom_based_attack_prevented() {
+        // DOM-based XSS: user input directly manipulates DOM
+        let ctx = register_builtin_types(&Context::new());
+
+        let read_call = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        // dom_set_html(element, read_line()) — REJECTED
+        let dom_xss = Expr::App(
+            Box::new(Expr::Var("dom_set_html".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Unit),
+                Box::new(read_call.clone())
+            ))
+        );
+
+        match type_check(&ctx, &dom_xss) {
+            Err(TypeError::TypeMismatch { .. }) => {
+                // Good! DOM-based XSS prevented
+            }
+            other => panic!("Expected TypeMismatch for DOM-based XSS, got {:?}", other),
+        }
+
+        // Safe: sanitize before DOM manipulation
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(read_call)
+        );
+
+        let safe_dom = Expr::App(
+            Box::new(Expr::Var("dom_set_html".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::Unit),
+                Box::new(sanitized)
+            ))
+        );
+
+        match type_check(&ctx, &safe_dom) {
+            Ok(_) => {}, // Safe!
+            Err(e) => panic!("Expected safe DOM-based XSS prevention, got error: {:?}", e),
         }
     }
 }
