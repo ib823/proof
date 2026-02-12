@@ -42,7 +42,7 @@ COQ_DIR="$REPO_ROOT/02_FORMAL/coq"
 COQ_PROJECT="$COQ_DIR/_CoqProject"
 if [ -f "$COQ_PROJECT" ]; then
     MISSING=$(comm -23 \
-      <(find "$COQ_DIR" -name "*.v" -type f ! -path "*/_archive_deprecated/*" -printf "%P\n" | sort) \
+      <(find "$COQ_DIR" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" -printf "%P\n" | sort) \
       <(grep '\.v$' "$COQ_PROJECT" | grep -v '^#' | sed 's/^[[:space:]]*//' | sort))
     if [ -n "$MISSING" ]; then
         echo ""
