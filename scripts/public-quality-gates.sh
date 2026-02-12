@@ -252,13 +252,14 @@ claim_phrase_hits=""
 
 if [ -f "$metrics_file" ]; then
   claim_eval="$(
-    python3 - "$metrics_file" "$REPO_ROOT/reports/noncoq_mechanized_status.json" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" <<'PY'
+    python3 - "$metrics_file" "$REPO_ROOT/reports/noncoq_mechanized_status.json" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" <<'PY'
 import json
 import sys
 
 metrics_path = sys.argv[1]
 report_path = sys.argv[2]
 repo_head = sys.argv[3] if len(sys.argv) > 3 else ""
+repo_parent_head = sys.argv[4] if len(sys.argv) > 4 else ""
 d = json.load(open(metrics_path))
 q = d.get("quality", {})
 cl = d.get("claimLevels", {})
@@ -300,7 +301,8 @@ report_max = {
 try:
     with open(report_path) as f:
         report = json.load(f)
-    report_fresh = bool(repo_head) and report.get("repo_head", "") == repo_head
+    report_head = report.get("repo_head", "")
+    report_fresh = bool(repo_head) and (report_head == repo_head or (bool(repo_parent_head) and report_head == repo_parent_head))
     if report_fresh:
         lanes = report.get("lanes", {})
         for lane in ("lean", "isabelle"):

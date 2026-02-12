@@ -446,10 +446,11 @@ DIM14_FRESH=false
 CLAIM_DIM14="generated"
 
 CURRENT_HEAD="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || echo "")"
+CURRENT_PARENT_HEAD="$(git -C "$ROOT_DIR" rev-parse HEAD^ 2>/dev/null || echo "")"
 
 if [ -f "$DIM14_REPORT" ] && command -v jq >/dev/null 2>&1; then
     dim14_head="$(jq -r '.repo_head // ""' "$DIM14_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$CURRENT_HEAD" ] && [ "$dim14_head" = "$CURRENT_HEAD" ]; then
+    if [ -n "$CURRENT_HEAD" ] && { [ "$dim14_head" = "$CURRENT_HEAD" ] || { [ -n "$CURRENT_PARENT_HEAD" ] && [ "$dim14_head" = "$CURRENT_PARENT_HEAD" ]; }; }; then
         DIM14_FRESH=true
     fi
     if [ "$DIM14_FRESH" = true ] && jq -e '.overall == "PASS"' "$DIM14_REPORT" >/dev/null 2>&1; then
@@ -459,7 +460,7 @@ fi
 
 if [ -f "$NONCOQ_MECH_REPORT" ] && command -v jq >/dev/null 2>&1; then
     noncoq_head="$(jq -r '.repo_head // ""' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$CURRENT_HEAD" ] && [ "$noncoq_head" = "$CURRENT_HEAD" ]; then
+    if [ -n "$CURRENT_HEAD" ] && { [ "$noncoq_head" = "$CURRENT_HEAD" ] || { [ -n "$CURRENT_PARENT_HEAD" ] && [ "$noncoq_head" = "$CURRENT_PARENT_HEAD" ]; }; }; then
         NONCOQ_MECH_FRESH=true
     fi
 fi
