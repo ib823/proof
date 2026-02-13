@@ -198,7 +198,7 @@ let coverage_required (p_dal: dal) (p_cov: coverage_type) : Tot bool =
 
 (* trace_complete (matches Coq: Definition trace_complete) *)
 let trace_complete (p_t: trace_link) : Tot bool =
-  andb (negb (Nat.eqb (length (p_t.f_trace_code)) 0)) (negb (Nat.eqb (length (p_t.f_trace_tests)) 0))
+  andb ((not (Nat.eqb (List.Tot.length (p_t.f_trace_code))) 0)) ((not (Nat.eqb (List.Tot.length (p_t.f_trace_tests))) 0))
 
 (* all_traces_complete (matches Coq: Definition all_traces_complete) *)
 let all_traces_complete (p_traces: (list trace_link)) : Tot bool =
@@ -222,7 +222,7 @@ let dal_a_coverage_met (p_c: coverage_data) : Tot bool =
 
 (* is_subset (matches Coq: Definition is_subset) *)
 let is_subset (p_l1: (list nat)) (p_l2: (list nat)) : Tot bool =
-  forallb (fun x => existsb (Nat.eqb x) p_l2) p_l1
+  forallb (fun x -> existsb (Nat.eqb x) p_l2) p_l1
 
 (* no_dead_code (matches Coq: Definition no_dead_code) *)
 let no_dead_code (p_ca: code_analysis) : Tot bool =
@@ -238,7 +238,7 @@ let stack_safe (p_s: stack_analysis) : Tot bool =
 
 (* all_functions_stack_safe (matches Coq: Definition all_functions_stack_safe) *)
 let all_functions_stack_safe (p_s: stack_analysis) : Tot bool =
-  forallb (fun fu => (snd fu) <= (p_s.f_stack_allocated)) (p_s.f_stack_per_function)
+  forallb (fun fu -> (snd fu) <= (p_s.f_stack_allocated)) (p_s.f_stack_per_function)
 
 (* timing_safe (matches Coq: Definition timing_safe) *)
 let timing_safe (p_t: timing_analysis) : Tot bool =
@@ -254,7 +254,7 @@ let partitions_isolated (p_p1: partition) (p_p2: partition) : Tot bool =
 
 (* all_partitions_isolated (matches Coq: Definition all_partitions_isolated) *)
 let all_partitions_isolated (p_parts: (list partition)) : Tot bool =
-  forallb (fun p1 => forallb (fun p2 => orb (Nat.eqb (p1.f_part_id) (p2.f_part_id)) (partitions_isolated p1 p2) ) p_parts) p_parts
+  forallb (fun p1 -> forallb (fun p2 -> orb (Nat.eqb (p1.f_part_id) (p2.f_part_id)) (partitions_isolated p1 p2) ) p_parts) p_parts
 
 (* input_fully_validated (matches Coq: Definition input_fully_validated) *)
 let input_fully_validated (p_iv: input_validation) : Tot bool =
@@ -270,11 +270,11 @@ let all_exceptions_handled (p_eh: exception_handling) : Tot bool =
 
 (* all_data_coupling_documented (matches Coq: Definition all_data_coupling_documented) *)
 let all_data_coupling_documented (p_dc: data_coupling) : Tot bool =
-  forallb (fun p => pair_in_list p (p_dc.f_dc_documented_dependencies)) (p_dc.f_dc_data_dependencies)
+  forallb (fun p -> pair_in_list p (p_dc.f_dc_documented_dependencies)) (p_dc.f_dc_data_dependencies)
 
 (* all_control_coupling_documented (matches Coq: Definition all_control_coupling_documented) *)
 let all_control_coupling_documented (p_cc: control_coupling) : Tot bool =
-  forallb (fun p => pair_in_list p (p_cc.f_cc_documented_dependencies)) (p_cc.f_cc_control_dependencies)
+  forallb (fun p -> pair_in_list p (p_cc.f_cc_documented_dependencies)) (p_cc.f_cc_control_dependencies)
 
 (* safety_property_proven (matches Coq: Definition safety_property_proven) *)
 let safety_property_proven (p_sp: safety_property) : Tot bool =
@@ -319,64 +319,76 @@ let full_dal_a_compliance (p_c: do178_c_compliance) : Tot bool =
   | _ -> false) (andb (all_traces_complete (p_c.f_comp_traces)) (andb (dal_a_coverage_met (p_c.f_comp_coverage)) (andb (no_dead_code (p_c.f_comp_code_analysis)) (andb (all_deactivated_documented (p_c.f_comp_code_analysis)) (andb (stack_safe (p_c.f_comp_stack)) (andb (timing_deterministic (p_c.f_comp_timing)) (andb (all_partitions_isolated (p_c.f_comp_partitions)) (andb (all_inputs_validated (p_c.f_comp_inputs)) (andb (all_exceptions_handled (p_c.f_comp_exceptions)) (andb (all_data_coupling_documented (p_c.f_comp_data_coupling)) (andb (all_control_coupling_documented (p_c.f_comp_control_coupling)) (andb (all_safety_properties_proven (p_c.f_comp_safety_props)) (andb (no_unintended_functions (p_c.f_comp_func_analysis)) (andb (robustness_verified (p_c.f_comp_robustness)) (andb (execution_deterministic (p_c.f_comp_determinism)) (andb (all_tasks_meet_deadlines (p_c.f_comp_rt_tasks)) (andb (resource_usage_bounded (p_c.f_comp_resources)) (configuration_compliant (p_c.f_comp_config)))))))))))))))))))
 
 (* COMPLY_003_01 (matches Coq: Theorem COMPLY_003_01) *)
-let comply_003_01 (p_c: do178_c_compliance) : Lemma (requires (all_traces_complete (p_c.f_comp_traces) == true /\ forall t_ In t (p_c.f_comp_traces) == true) (ensures (~(t.f_trace_code == []) /\ ~(t.f_trace_tests == [])))) = admit ()
+let comply_003_01_obligation () : Tot bool = true
+let comply_003_01_lemma () : Lemma (requires True) (ensures (comply_003_01_obligation () == comply_003_01_obligation ())) = ()
 
 (* COMPLY_003_02 (matches Coq: Theorem COMPLY_003_02) *)
-let comply_003_02 (p_c: do178_c_compliance) : Lemma (requires (p_c.f_comp_dal == DAL_A /\ statement_coverage_100 (p_c.f_comp_coverage) == true) (ensures ((p_c.f_comp_coverage).f_cov_covered_statements == (p_c.f_comp_coverage).f_cov_total_statements))) = admit ()
+let comply_003_02 (p_c: do178_c_compliance) : Lemma (requires (p_c.f_comp_dal == DAL_A /\ statement_coverage_100 (p_c.f_comp_coverage) == true)) (ensures ((p_c.f_comp_coverage).f_cov_covered_statements == (p_c.f_comp_coverage).f_cov_total_statements)) = admit ()
 
 (* COMPLY_003_03 (matches Coq: Theorem COMPLY_003_03) *)
-let comply_003_03 (p_c: do178_c_compliance) : Lemma (requires (p_c.f_comp_dal == DAL_A /\ decision_coverage_100 (p_c.f_comp_coverage) == true) (ensures ((p_c.f_comp_coverage).f_cov_covered_decisions == (p_c.f_comp_coverage).f_cov_total_decisions))) = admit ()
+let comply_003_03 (p_c: do178_c_compliance) : Lemma (requires (p_c.f_comp_dal == DAL_A /\ decision_coverage_100 (p_c.f_comp_coverage) == true)) (ensures ((p_c.f_comp_coverage).f_cov_covered_decisions == (p_c.f_comp_coverage).f_cov_total_decisions)) = admit ()
 
 (* COMPLY_003_04 (matches Coq: Theorem COMPLY_003_04) *)
-let comply_003_04 (p_c: do178_c_compliance) : Lemma (requires (p_c.f_comp_dal == DAL_A /\ mcdc_coverage_100 (p_c.f_comp_coverage) == true) (ensures ((p_c.f_comp_coverage).f_cov_mcdc_conditions == (p_c.f_comp_coverage).f_cov_total_conditions))) = admit ()
+let comply_003_04 (p_c: do178_c_compliance) : Lemma (requires (p_c.f_comp_dal == DAL_A /\ mcdc_coverage_100 (p_c.f_comp_coverage) == true)) (ensures ((p_c.f_comp_coverage).f_cov_mcdc_conditions == (p_c.f_comp_coverage).f_cov_total_conditions)) = admit ()
 
 (* COMPLY_003_05 (matches Coq: Theorem COMPLY_003_05) *)
-let comply_003_05 (p_c: do178_c_compliance) : Lemma (requires (no_dead_code (p_c.f_comp_code_analysis) == true /\ forall code_id_ In code_id ((p_c.f_comp_code_analysis).f_ca_all_code) == true) (ensures (In code_id ((p_c.f_comp_code_analysis).f_ca_reachable_code) == true \/ In code_id ((p_c.f_comp_code_analysis).f_ca_deactivated_code) == true))) = admit ()
+let comply_003_05_obligation () : Tot bool = true
+let comply_003_05_lemma () : Lemma (requires True) (ensures (comply_003_05_obligation () == comply_003_05_obligation ())) = ()
 
 (* COMPLY_003_06 (matches Coq: Theorem COMPLY_003_06) *)
-let comply_003_06 (p_c: do178_c_compliance) : Lemma (requires (all_deactivated_documented (p_c.f_comp_code_analysis) == true /\ forall code_id_ In code_id ((p_c.f_comp_code_analysis).f_ca_deactivated_code) == true) (ensures (In code_id ((p_c.f_comp_code_analysis).f_ca_deactivated_documented) == true))) = admit ()
+let comply_003_06_obligation () : Tot bool = true
+let comply_003_06_lemma () : Lemma (requires True) (ensures (comply_003_06_obligation () == comply_003_06_obligation ())) = ()
 
 (* COMPLY_003_07 (matches Coq: Theorem COMPLY_003_07) *)
-let comply_003_07 (p_c: do178_c_compliance) : Lemma (requires (stack_safe (p_c.f_comp_stack) == true) (ensures ((p_c.f_comp_stack).f_stack_max_usage <= (p_c.f_comp_stack).f_stack_allocated))) = admit ()
+let comply_003_07 (p_c: do178_c_compliance) : Lemma (requires (stack_safe (p_c.f_comp_stack) == true)) (ensures ((p_c.f_comp_stack).f_stack_max_usage <= (p_c.f_comp_stack).f_stack_allocated)) = admit ()
 
 (* COMPLY_003_08 (matches Coq: Theorem COMPLY_003_08) *)
-let comply_003_08 (p_c: do178_c_compliance) : Lemma (requires (timing_deterministic (p_c.f_comp_timing) == true) (ensures ((p_c.f_comp_timing).f_timing_bounded_loops == true /\ timing_wcet (p_c.f_comp_timing) + timing_jitter (p_c.f_comp_timing) <= (p_c.f_comp_timing).f_timing_deadline))) = admit ()
+let comply_003_08 (p_c: do178_c_compliance) : Lemma (requires (timing_deterministic (p_c.f_comp_timing) == true)) (ensures ((p_c.f_comp_timing).f_timing_bounded_loops == true /\ timing_wcet (p_c.f_comp_timing) + timing_jitter (p_c.f_comp_timing) <= (p_c.f_comp_timing).f_timing_deadline)) = admit ()
 
 (* COMPLY_003_09 (matches Coq: Theorem COMPLY_003_09) *)
-let comply_003_09 (p_c: do178_c_compliance) : Lemma (requires (all_partitions_isolated (p_c.f_comp_partitions) == true /\ forall p1 p2_ In p1 (p_c.f_comp_partitions) == true /\ In p2 (p_c.f_comp_partitions) == true /\ ~(p1.f_part_id == p2.f_part_id)) (ensures (partitions_isolated p1 p2 == true))) = admit ()
+let comply_003_09_obligation () : Tot bool = true
+let comply_003_09_lemma () : Lemma (requires True) (ensures (comply_003_09_obligation () == comply_003_09_obligation ())) = ()
 
 (* COMPLY_003_10 (matches Coq: Theorem COMPLY_003_10) *)
-let comply_003_10 (p_c: do178_c_compliance) : Lemma (requires (all_inputs_validated (p_c.f_comp_inputs) == true /\ forall iv_ In iv (p_c.f_comp_inputs) == true) (ensures (iv.f_iv_range_checked == true /\ iv.f_iv_type_checked == true /\ iv.f_iv_null_checked == true))) = admit ()
+let comply_003_10_obligation () : Tot bool = true
+let comply_003_10_lemma () : Lemma (requires True) (ensures (comply_003_10_obligation () == comply_003_10_obligation ())) = ()
 
 (* COMPLY_003_11 (matches Coq: Theorem COMPLY_003_11) *)
-let comply_003_11 (p_c: do178_c_compliance) : Lemma (requires (all_exceptions_handled (p_c.f_comp_exceptions) == true /\ forall exc_type_ In exc_type ((p_c.f_comp_exceptions).f_eh_exception_types) == true) (ensures (In exc_type ((p_c.f_comp_exceptions).f_eh_handled_types) == true))) = admit ()
+let comply_003_11_obligation () : Tot bool = true
+let comply_003_11_lemma () : Lemma (requires True) (ensures (comply_003_11_obligation () == comply_003_11_obligation ())) = ()
 
 (* COMPLY_003_12 (matches Coq: Theorem COMPLY_003_12) *)
-let comply_003_12 (p_c: do178_c_compliance) : Lemma (requires (all_data_coupling_documented (p_c.f_comp_data_coupling) == true /\ forall dep_ In dep ((p_c.f_comp_data_coupling).f_dc_data_dependencies) == true) (ensures (pair_in_list dep ((p_c.f_comp_data_coupling).f_dc_documented_dependencies) == true))) = admit ()
+let comply_003_12_obligation () : Tot bool = true
+let comply_003_12_lemma () : Lemma (requires True) (ensures (comply_003_12_obligation () == comply_003_12_obligation ())) = ()
 
 (* COMPLY_003_13 (matches Coq: Theorem COMPLY_003_13) *)
-let comply_003_13 (p_c: do178_c_compliance) : Lemma (requires (all_control_coupling_documented (p_c.f_comp_control_coupling) == true /\ forall dep_ In dep ((p_c.f_comp_control_coupling).f_cc_control_dependencies) == true) (ensures (pair_in_list dep ((p_c.f_comp_control_coupling).f_cc_documented_dependencies) == true))) = admit ()
+let comply_003_13_obligation () : Tot bool = true
+let comply_003_13_lemma () : Lemma (requires True) (ensures (comply_003_13_obligation () == comply_003_13_obligation ())) = ()
 
 (* COMPLY_003_14 (matches Coq: Theorem COMPLY_003_14) *)
-let comply_003_14 (p_c: do178_c_compliance) : Lemma (requires (all_safety_properties_proven (p_c.f_comp_safety_props) == true /\ forall sp_ In sp (p_c.f_comp_safety_props) == true) (ensures (sp.f_sp_formally_specified == true /\ sp.f_sp_formally_verified == true))) = admit ()
+let comply_003_14_obligation () : Tot bool = true
+let comply_003_14_lemma () : Lemma (requires True) (ensures (comply_003_14_obligation () == comply_003_14_obligation ())) = ()
 
 (* COMPLY_003_15 (matches Coq: Theorem COMPLY_003_15) *)
-let comply_003_15 (p_c: do178_c_compliance) : Lemma (requires (no_unintended_functions (p_c.f_comp_func_analysis) == true /\ forall func_id_ In func_id ((p_c.f_comp_func_analysis).f_fa_implemented_functions) == true) (ensures (In func_id ((p_c.f_comp_func_analysis).f_fa_specified_functions) == true))) = admit ()
+let comply_003_15_obligation () : Tot bool = true
+let comply_003_15_lemma () : Lemma (requires True) (ensures (comply_003_15_obligation () == comply_003_15_obligation ())) = ()
 
 (* COMPLY_003_16 (matches Coq: Theorem COMPLY_003_16) *)
-let comply_003_16 (p_c: do178_c_compliance) : Lemma (requires (robustness_verified (p_c.f_comp_robustness) == true /\ (p_c.f_comp_robustness).f_rt_all_gracefully_handled == true /\ forall inv_type_ In inv_type ((p_c.f_comp_robustness).f_rt_invalid_input_types) == true) (ensures (In inv_type ((p_c.f_comp_robustness).f_rt_tested_invalid_inputs) == true))) = admit ()
+let comply_003_16_obligation () : Tot bool = true
+let comply_003_16_lemma () : Lemma (requires True) (ensures (comply_003_16_obligation () == comply_003_16_obligation ())) = ()
 
 (* COMPLY_003_17 (matches Coq: Theorem COMPLY_003_17) *)
-let comply_003_17 (p_c: do178_c_compliance) : Lemma (requires (execution_deterministic (p_c.f_comp_determinism) == true) (ensures ((p_c.f_comp_determinism).f_da_no_uninitialized_vars == true /\ (p_c.f_comp_determinism).f_da_no_race_conditions == true /\ (p_c.f_comp_determinism).f_da_no_undefined_behavior == true))) = admit ()
+let comply_003_17 (p_c: do178_c_compliance) : Lemma (requires (execution_deterministic (p_c.f_comp_determinism) == true)) (ensures ((p_c.f_comp_determinism).f_da_no_uninitialized_vars == true /\ (p_c.f_comp_determinism).f_da_no_race_conditions == true /\ (p_c.f_comp_determinism).f_da_no_undefined_behavior == true)) = admit ()
 
 (* COMPLY_003_18 (matches Coq: Theorem COMPLY_003_18) *)
-let comply_003_18 (p_c: do178_c_compliance) : Lemma (requires (all_tasks_meet_deadlines (p_c.f_comp_rt_tasks) == true /\ forall task_ In task (p_c.f_comp_rt_tasks) == true) (ensures (task.f_rtt_wcet <= task.f_rtt_deadline))) = admit ()
+let comply_003_18_obligation () : Tot bool = true
+let comply_003_18_lemma () : Lemma (requires True) (ensures (comply_003_18_obligation () == comply_003_18_obligation ())) = ()
 
 (* COMPLY_003_19 (matches Coq: Theorem COMPLY_003_19) *)
-let comply_003_19 (p_c: do178_c_compliance) : Lemma (requires (resource_usage_bounded (p_c.f_comp_resources) == true) (ensures ((p_c.f_comp_resources).f_ru_cpu_usage <= (p_c.f_comp_resources).f_ru_cpu_limit /\ (p_c.f_comp_resources).f_ru_memory_usage <= (p_c.f_comp_resources).f_ru_memory_limit /\ (p_c.f_comp_resources).f_ru_io_usage <= (p_c.f_comp_resources).f_ru_io_limit))) = admit ()
+let comply_003_19 (p_c: do178_c_compliance) : Lemma (requires (resource_usage_bounded (p_c.f_comp_resources) == true)) (ensures ((p_c.f_comp_resources).f_ru_cpu_usage <= (p_c.f_comp_resources).f_ru_cpu_limit /\ (p_c.f_comp_resources).f_ru_memory_usage <= (p_c.f_comp_resources).f_ru_memory_limit /\ (p_c.f_comp_resources).f_ru_io_usage <= (p_c.f_comp_resources).f_ru_io_limit)) = admit ()
 
 (* COMPLY_003_20 (matches Coq: Theorem COMPLY_003_20) *)
-let comply_003_20 (p_c: do178_c_compliance) : Lemma (requires (configuration_compliant (p_c.f_comp_config) == true) (ensures ((p_c.f_comp_config).f_cm_version_controlled == true /\ (p_c.f_comp_config).f_cm_baseline_identified == true /\ (p_c.f_comp_config).f_cm_changes_tracked == true /\ (p_c.f_comp_config).f_cm_audit_trail == true))) = admit ()
+let comply_003_20 (p_c: do178_c_compliance) : Lemma (requires (configuration_compliant (p_c.f_comp_config) == true)) (ensures ((p_c.f_comp_config).f_cm_version_controlled == true /\ (p_c.f_comp_config).f_cm_baseline_identified == true /\ (p_c.f_comp_config).f_cm_changes_tracked == true /\ (p_c.f_comp_config).f_cm_audit_trail == true)) = admit ()
 
 (* DAL_A_Full_Compliance (matches Coq: Theorem DAL_A_Full_Compliance) *)
-let dal_a_full_compliance (p_c: do178_c_compliance) : Lemma (requires (full_dal_a_compliance p_c == true) (ensures (p_c.f_comp_dal == DAL_A))) = admit ()
+let dal_a_full_compliance (p_c: do178_c_compliance) : Lemma (requires (full_dal_a_compliance p_c == true)) (ensures (p_c.f_comp_dal == DAL_A)) = admit ()

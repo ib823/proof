@@ -147,146 +147,146 @@ let recognize (p_v: voice_input) : Tot recognition_result =
 
 (* voice_data_private (matches Coq: Definition voice_data_private) *)
 let voice_data_private (p_v: voice_input) : Tot bool =
-  (0 = 0)
+  true
 
 (* accuracy_threshold (matches Coq: Definition accuracy_threshold) *)
 let accuracy_threshold : nat = 90
 
 (* accurate_voice_system (matches Coq: Definition accurate_voice_system) *)
 let accurate_voice_system (p_r: recognition_result) : Tot bool =
-  (0 = 0)
+  true
 
 (* private_voice_system (matches Coq: Definition private_voice_system) *)
-let private_voice_system : bool = (0 = 0)
+let private_voice_system : bool = true
 
 (* voice_data_processed_locally (matches Coq: Definition voice_data_processed_locally) *)
 let voice_data_processed_locally (p_vp: voice_processing) : Tot bool =
-  (0 = 0)
+  true
 
 (* wake_word_on_device (matches Coq: Definition wake_word_on_device) *)
 let wake_word_on_device (p_ww: wake_word_detector) : Tot bool =
-  (0 = 0)
+  true
 
 (* not_always_listening (matches Coq: Definition not_always_listening) *)
 let not_always_listening (p_ww: wake_word_detector) : Tot bool =
-  (0 = 0)
+  true
 
 (* audio_deleted_after_processing (matches Coq: Definition audio_deleted_after_processing) *)
 let audio_deleted_after_processing (p_al: audio_lifecycle) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_command_intent_validated (matches Coq: Definition voice_command_intent_validated) *)
 let voice_command_intent_validated (p_vc: voice_command) : Tot bool =
-  (0 = 0)
+  true
 
 (* speech_recognition_language_supported (matches Coq: Definition speech_recognition_language_supported) *)
 let speech_recognition_language_supported (p_sr: speech_recognition) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_feedback_appropriate (matches Coq: Definition voice_feedback_appropriate) *)
 let voice_feedback_appropriate (p_vf: voice_feedback) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_permission_explicit (matches Coq: Definition voice_permission_explicit) *)
 let voice_permission_explicit (p_vp: voice_permission) : Tot bool =
-  (0 = 0)
+  true
 
 (* conversation_context_bounded (matches Coq: Definition conversation_context_bounded) *)
 let conversation_context_bounded (p_cc: conversation_context) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_authentication_secure (matches Coq: Definition voice_authentication_secure) *)
 let voice_authentication_secure (p_va: voice_auth) : Tot bool =
-  (0 = 0)
+  true
 
 (* noise_cancellation_bounded (matches Coq: Definition noise_cancellation_bounded) *)
 let noise_cancellation_bounded (p_nc: noise_cancellation) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_synthesis_quality_bounded (matches Coq: Definition voice_synthesis_quality_bounded) *)
 let voice_synthesis_quality_bounded (p_vs: voice_synthesis) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_command_undo_available (matches Coq: Definition voice_command_undo_available) *)
 let voice_command_undo_available (p_vu: voice_undo) : Tot bool =
-  (0 = 0)
+  true
 
 (* accessibility_voice_control_complete (matches Coq: Definition accessibility_voice_control_complete) *)
 let accessibility_voice_control_complete (p_avc: accessibility_voice_control) : Tot bool =
-  (0 = 0)
+  true
 
 (* dictation_privacy_mode (matches Coq: Definition dictation_privacy_mode) *)
 let dictation_privacy_mode (p_dm: dictation_mode) : Tot bool =
-  (0 = 0)
+  true
 
 (* voice_recognition_accurate (matches Coq: Theorem voice_recognition_accurate) *)
-let voice_recognition_accurate (p_result: recognition_result) : Lemma (requires (accurate_voice_system p_result == true) (ensures (p_result.f_recog_confidence >= 90))) = admit ()
+let voice_recognition_accurate (p_result: recognition_result) : Lemma (requires (accurate_voice_system p_result == true)) (ensures (p_result.f_recog_confidence >= 90)) = admit ()
 
 (* voice_data_stays_local (matches Coq: Theorem voice_data_stays_local) *)
-let voice_data_stays_local (p_input: voice_input) : Lemma (requires (private_voice_system == true /\ p_input.f_voice_processed_locally == true) (ensures ((recognize p_input).f_recog_processed_on_device == true))) = admit ()
+let voice_data_stays_local (p_input: voice_input) : Lemma (requires (private_voice_system == true /\ p_input.f_voice_processed_locally == true)) (ensures ((recognize p_input).f_recog_processed_on_device == true)) = admit ()
 
 (* local_processing_preserves_privacy (matches Coq: Theorem local_processing_preserves_privacy) *)
-let local_processing_preserves_privacy (p_input: voice_input) : Lemma (requires (p_input.f_voice_processed_locally == true) (ensures (voice_data_private p_input == true))) = admit ()
+let local_processing_preserves_privacy (p_input: voice_input) : Lemma (requires (p_input.f_voice_processed_locally == true)) (ensures (voice_data_private p_input == true)) = admit ()
 
 (* recognition_reflects_locality (matches Coq: Theorem recognition_reflects_locality) *)
 let recognition_reflects_locality (p_input: voice_input) : Lemma ((recognize p_input).f_recog_processed_on_device == p_input.f_voice_processed_locally) = admit ()
 
 (* voice_data_processed_locally_thm (matches Coq: Theorem voice_data_processed_locally_thm) *)
-let voice_data_processed_locally_thm (p_vp: voice_processing) : Lemma (requires (voice_data_processed_locally p_vp == true) (ensures (p_vp.f_vp_processed_locally == true))) = admit ()
+let voice_data_processed_locally_thm (p_vp: voice_processing) : Lemma (requires (voice_data_processed_locally p_vp == true)) (ensures (p_vp.f_vp_processed_locally == true)) = admit ()
 
 (* wake_word_detection_on_device (matches Coq: Theorem wake_word_detection_on_device) *)
-let wake_word_detection_on_device (p_ww: wake_word_detector) : Lemma (requires (wake_word_on_device p_ww == true) (ensures (p_ww.f_ww_model_on_device == true))) = admit ()
+let wake_word_detection_on_device (p_ww: wake_word_detector) : Lemma (requires (wake_word_on_device p_ww == true)) (ensures (p_ww.f_ww_model_on_device == true)) = admit ()
 
 (* no_always_listening (matches Coq: Theorem no_always_listening) *)
-let no_always_listening (p_ww: wake_word_detector) : Lemma (requires (not_always_listening p_ww == true) (ensures (p_ww.f_ww_always_listening == false))) = admit ()
+let no_always_listening (p_ww: wake_word_detector) : Lemma (requires (not_always_listening p_ww == true)) (ensures (p_ww.f_ww_always_listening == false)) = admit ()
 
 (* audio_deleted_after_processing_thm (matches Coq: Theorem audio_deleted_after_processing_thm) *)
-let audio_deleted_after_processing_thm (p_al: audio_lifecycle) : Lemma (requires (audio_deleted_after_processing p_al == true /\ p_al.f_al_processing_complete == true) (ensures (p_al.f_al_audio_deleted == true))) = admit ()
+let audio_deleted_after_processing_thm (p_al: audio_lifecycle) : Lemma (requires (audio_deleted_after_processing p_al == true /\ p_al.f_al_processing_complete == true)) (ensures (p_al.f_al_audio_deleted == true)) = admit ()
 
 (* voice_command_intent_validated_thm (matches Coq: Theorem voice_command_intent_validated_thm) *)
-let voice_command_intent_validated_thm (p_vc: voice_command) : Lemma (requires (voice_command_intent_validated p_vc == true) (ensures (p_vc.f_vc_intent_validated == true))) = admit ()
+let voice_command_intent_validated_thm (p_vc: voice_command) : Lemma (requires (voice_command_intent_validated p_vc == true)) (ensures (p_vc.f_vc_intent_validated == true)) = admit ()
 
 (* speech_recognition_language_supported_thm (matches Coq: Theorem speech_recognition_language_supported_thm) *)
-let speech_recognition_language_supported_thm (p_sr: speech_recognition) : Lemma (requires (speech_recognition_language_supported p_sr == true) (ensures (p_sr.f_sr_language_supported == true))) = admit ()
+let speech_recognition_language_supported_thm (p_sr: speech_recognition) : Lemma (requires (speech_recognition_language_supported p_sr == true)) (ensures (p_sr.f_sr_language_supported == true)) = admit ()
 
 (* voice_feedback_appropriate_thm (matches Coq: Theorem voice_feedback_appropriate_thm) *)
-let voice_feedback_appropriate_thm (p_vf: voice_feedback) : Lemma (requires (voice_feedback_appropriate p_vf == true) (ensures (p_vf.f_vf_appropriate == true))) = admit ()
+let voice_feedback_appropriate_thm (p_vf: voice_feedback) : Lemma (requires (voice_feedback_appropriate p_vf == true)) (ensures (p_vf.f_vf_appropriate == true)) = admit ()
 
 (* voice_permission_explicit_thm (matches Coq: Theorem voice_permission_explicit_thm) *)
-let voice_permission_explicit_thm (p_vp: voice_permission) : Lemma (requires (voice_permission_explicit p_vp == true) (ensures (p_vp.f_vperm_explicit == true))) = admit ()
+let voice_permission_explicit_thm (p_vp: voice_permission) : Lemma (requires (voice_permission_explicit p_vp == true)) (ensures (p_vp.f_vperm_explicit == true)) = admit ()
 
 (* conversation_context_bounded_thm (matches Coq: Theorem conversation_context_bounded_thm) *)
-let conversation_context_bounded_thm (p_cc: conversation_context) : Lemma (requires (conversation_context_bounded p_cc == true) (ensures (length (p_cc.f_cc_turns) <= p_cc.f_cc_max_turns))) = admit ()
+let conversation_context_bounded_thm (p_cc: conversation_context) : Lemma (requires (conversation_context_bounded p_cc == true)) (ensures (length (p_cc.f_cc_turns) <= p_cc.f_cc_max_turns)) = admit ()
 
 (* voice_authentication_secure_thm (matches Coq: Theorem voice_authentication_secure_thm) *)
-let voice_authentication_secure_thm (p_va: voice_auth) : Lemma (requires (voice_authentication_secure p_va == true) (ensures (p_va.f_va_voiceprint_match == true))) = admit ()
+let voice_authentication_secure_thm (p_va: voice_auth) : Lemma (requires (voice_authentication_secure p_va == true)) (ensures (p_va.f_va_voiceprint_match == true)) = admit ()
 
 (* noise_cancellation_bounded_thm (matches Coq: Theorem noise_cancellation_bounded_thm) *)
-let noise_cancellation_bounded_thm (p_nc: noise_cancellation) : Lemma (requires (noise_cancellation_bounded p_nc == true) (ensures (p_nc.f_nc_output_snr >= p_nc.f_nc_input_snr))) = admit ()
+let noise_cancellation_bounded_thm (p_nc: noise_cancellation) : Lemma (requires (noise_cancellation_bounded p_nc == true)) (ensures (p_nc.f_nc_output_snr >= p_nc.f_nc_input_snr)) = admit ()
 
 (* voice_synthesis_quality_bounded_thm (matches Coq: Theorem voice_synthesis_quality_bounded_thm) *)
-let voice_synthesis_quality_bounded_thm (p_vs: voice_synthesis) : Lemma (requires (voice_synthesis_quality_bounded p_vs == true) (ensures (p_vs.f_vs_quality_score >= p_vs.f_vs_min_quality))) = admit ()
+let voice_synthesis_quality_bounded_thm (p_vs: voice_synthesis) : Lemma (requires (voice_synthesis_quality_bounded p_vs == true)) (ensures (p_vs.f_vs_quality_score >= p_vs.f_vs_min_quality)) = admit ()
 
 (* voice_command_undo_available_thm (matches Coq: Theorem voice_command_undo_available_thm) *)
-let voice_command_undo_available_thm (p_vu: voice_undo) : Lemma (requires (voice_command_undo_available p_vu == true) (ensures (p_vu.f_vu_undoable == true))) = admit ()
+let voice_command_undo_available_thm (p_vu: voice_undo) : Lemma (requires (voice_command_undo_available p_vu == true)) (ensures (p_vu.f_vu_undoable == true)) = admit ()
 
 (* accessibility_voice_control_complete_thm (matches Coq: Theorem accessibility_voice_control_complete_thm) *)
-let accessibility_voice_control_complete_thm (p_avc: accessibility_voice_control) : Lemma (requires (accessibility_voice_control_complete p_avc == true) (ensures (p_avc.f_avc_all_elements_reachable == true))) = admit ()
+let accessibility_voice_control_complete_thm (p_avc: accessibility_voice_control) : Lemma (requires (accessibility_voice_control_complete p_avc == true)) (ensures (p_avc.f_avc_all_elements_reachable == true)) = admit ()
 
 (* dictation_privacy_mode_thm (matches Coq: Theorem dictation_privacy_mode_thm) *)
-let dictation_privacy_mode_thm (p_dm: dictation_mode) : Lemma (requires (dictation_privacy_mode p_dm == true) (ensures (p_dm.f_dm_server_processing == false))) = admit ()
+let dictation_privacy_mode_thm (p_dm: dictation_mode) : Lemma (requires (dictation_privacy_mode p_dm == true)) (ensures (p_dm.f_dm_server_processing == false)) = admit ()
 
 (* voice_data_not_sent_to_server (matches Coq: Theorem voice_data_not_sent_to_server) *)
-let voice_data_not_sent_to_server (p_vp: voice_processing) : Lemma (requires (voice_data_processed_locally p_vp == true) (ensures (p_vp.f_vp_data_sent_to_server == false))) = admit ()
+let voice_data_not_sent_to_server (p_vp: voice_processing) : Lemma (requires (voice_data_processed_locally p_vp == true)) (ensures (p_vp.f_vp_data_sent_to_server == false)) = admit ()
 
 (* voice_permission_requires_microphone (matches Coq: Theorem voice_permission_requires_microphone) *)
-let voice_permission_requires_microphone (p_vp: voice_permission) : Lemma (requires (voice_permission_explicit p_vp == true) (ensures (p_vp.f_vperm_microphone_granted == true))) = admit ()
+let voice_permission_requires_microphone (p_vp: voice_permission) : Lemma (requires (voice_permission_explicit p_vp == true)) (ensures (p_vp.f_vperm_microphone_granted == true)) = admit ()
 
 (* voice_command_known_intent (matches Coq: Theorem voice_command_known_intent) *)
-let voice_command_known_intent (p_vc: voice_command) : Lemma (requires (voice_command_intent_validated p_vc == true) (ensures (~(p_vc.f_vc_intent == UnknownIntent)))) = admit ()
+let voice_command_known_intent (p_vc: voice_command) : Lemma (requires (voice_command_intent_validated p_vc == true)) (ensures (~(p_vc.f_vc_intent == UnknownIntent))) = admit ()
 
 (* voice_undo_window_positive (matches Coq: Theorem voice_undo_window_positive) *)
-let voice_undo_window_positive (p_vu: voice_undo) : Lemma (requires (voice_command_undo_available p_vu == true) (ensures (p_vu.f_vu_undo_window_seconds > 0))) = admit ()
+let voice_undo_window_positive (p_vu: voice_undo) : Lemma (requires (voice_command_undo_available p_vu == true)) (ensures (p_vu.f_vu_undo_window_seconds > 0)) = admit ()
 
 (* accessibility_labels_complete (matches Coq: Theorem accessibility_labels_complete) *)
-let accessibility_labels_complete (p_avc: accessibility_voice_control) : Lemma (requires (accessibility_voice_control_complete p_avc == true) (ensures (p_avc.f_avc_labels_complete == true))) = admit ()
+let accessibility_labels_complete (p_avc: accessibility_voice_control) : Lemma (requires (accessibility_voice_control_complete p_avc == true)) (ensures (p_avc.f_avc_labels_complete == true)) = admit ()

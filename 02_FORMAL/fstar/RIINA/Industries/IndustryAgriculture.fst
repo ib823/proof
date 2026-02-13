@@ -109,19 +109,19 @@ let count_food_controls (p_c: food_safety_controls) : Tot nat =
 let fsma_compliance (p_controls: food_safety_controls) (p_facility: nat) : Lemma (p_controls.f_preventive_controls == true) = admit ()
 
 (* food_traceability (matches Coq: Theorem food_traceability) *)
-let food_traceability_obligation () : Tot bool = (0 = 0)
+let food_traceability_obligation () : Tot bool = true
 let food_traceability_lemma () : Lemma (requires True) (ensures (food_traceability_obligation () == food_traceability_obligation ())) = ()
 
 (* precision_ag_security (matches Coq: Theorem precision_ag_security) *)
-let precision_ag_security_obligation () : Tot bool = (0 = 0)
+let precision_ag_security_obligation () : Tot bool = true
 let precision_ag_security_lemma () : Lemma (requires True) (ensures (precision_ag_security_obligation () == precision_ag_security_obligation ())) = ()
 
 (* iso_22000_compliance (matches Coq: Theorem iso_22000_compliance) *)
-let iso_22000_compliance_obligation () : Tot bool = (0 = 0)
+let iso_22000_compliance_obligation () : Tot bool = true
 let iso_22000_compliance_lemma () : Lemma (requires True) (ensures (iso_22000_compliance_obligation () == iso_22000_compliance_obligation ())) = ()
 
 (* supply_chain_integrity (matches Coq: Theorem supply_chain_integrity) *)
-let supply_chain_integrity_obligation () : Tot bool = (0 = 0)
+let supply_chain_integrity_obligation () : Tot bool = true
 let supply_chain_integrity_lemma () : Lemma (requires True) (ensures (supply_chain_integrity_obligation () == supply_chain_integrity_obligation ())) = ()
 
 (* haccp_required (matches Coq: Theorem haccp_required) *)
@@ -143,19 +143,19 @@ let hazard_severity_bounded (p_h: _) : Lemma (hazard_severity p_h >= 3 /\ hazard
 let biological_radiological_equal () : Lemma (hazard_severity Biological == hazard_severity Radiological) = admit ()
 
 (* higher_severity_more_frequent (matches Coq: Theorem higher_severity_more_frequent) *)
-let higher_severity_more_frequent (p_h: _) : Lemma (requires (hazard_severity p_h >= 5) (ensures (haccp_frequency p_h <= 1))) = admit ()
+let higher_severity_more_frequent (p_h: _) : Lemma (requires (hazard_severity p_h >= 5)) (ensures (haccp_frequency p_h <= 1)) = admit ()
 
 (* haccp_frequency_positive (matches Coq: Theorem haccp_frequency_positive) *)
 let haccp_frequency_positive (p_h: _) : Lemma (haccp_frequency p_h >= 1) = admit ()
 
 (* all_controls_implies_haccp (matches Coq: Theorem all_controls_implies_haccp) *)
-let all_controls_implies_haccp (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (p_c.f_haccp_plan == true))) = admit ()
+let all_controls_implies_haccp (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true)) (ensures (p_c.f_haccp_plan == true)) = admit ()
 
 (* all_controls_implies_recall (matches Coq: Theorem all_controls_implies_recall) *)
-let all_controls_implies_recall (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (p_c.f_recall_capability == true))) = admit ()
+let all_controls_implies_recall (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true)) (ensures (p_c.f_recall_capability == true)) = admit ()
 
 (* all_controls_implies_traceability (matches Coq: Theorem all_controls_implies_traceability) *)
-let all_controls_implies_traceability (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (p_c.f_traceability_system == true))) = admit ()
+let all_controls_implies_traceability (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true)) (ensures (p_c.f_traceability_system == true)) = admit ()
 
 (* farm_area_meets_minimum (matches Coq: Theorem farm_area_meets_minimum) *)
 let farm_area_meets_minimum (p_f: _) (p_certifiedfarm: _) : Lemma (p_f.f_farm_min_area <= p_f.f_farm_area_hectares) = admit ()
@@ -164,7 +164,7 @@ let farm_area_meets_minimum (p_f: _) (p_certifiedfarm: _) : Lemma (p_f.f_farm_mi
 let traceability_dates_valid (p_t: _) (p_traceentry: _) : Lemma (p_t.f_trace_timestamp <= p_t.f_trace_expiry) = admit ()
 
 (* agri_effect_eq_refl (matches Coq: Theorem agri_effect_eq_refl) *)
-let agri_effect_eq_refl (p_e: _) : Lemma (requires (agri_effect_eq_dec p_e p_e == left eq_refl) (ensures (p_e == p_e))) = admit ()
+let agri_effect_eq_refl (p_e: _) : Lemma (requires (agri_effect_eq_dec p_e p_e == left eq_refl)) (ensures (p_e == p_e)) = admit ()
 
 (* risk_score_positive (matches Coq: Theorem risk_score_positive) *)
 let risk_score_positive (p_h: _) : Lemma (risk_score p_h >= 1) = admit ()
@@ -176,4 +176,4 @@ let risk_score_bounded (p_h: _) : Lemma (risk_score p_h <= 25) = admit ()
 let count_controls_bounded (p_c: _) : Lemma (count_food_controls p_c <= 6) = admit ()
 
 (* all_controls_count_six (matches Coq: Theorem all_controls_count_six) *)
-let all_controls_count_six (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true) (ensures (count_food_controls p_c == 6))) = admit ()
+let all_controls_count_six (p_c: _) : Lemma (requires (all_food_safety_controls p_c == true)) (ensures (count_food_controls p_c == 6)) = admit ()

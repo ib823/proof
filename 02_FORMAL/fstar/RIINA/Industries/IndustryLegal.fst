@@ -85,34 +85,34 @@ let legal_retention_years (p_d: legal_data) : Tot nat =
 
 (* no_conflict (matches Coq: Definition no_conflict) *)
 let no_conflict (p_party1: nat) (p_party2: nat) : Tot bool =
-  negb (Nat.eqb p_party1 p_party2)
+  (not ((p_party1 = p_party2)))
 
 (* trust_balanced (matches Coq: Definition trust_balanced) *)
 let trust_balanced (p_balance: nat) (p_client_total: nat) : Tot bool =
-  Nat.eqb p_balance p_client_total
+  (p_balance = p_client_total)
 
 (* litigation_hold_active (matches Coq: Definition litigation_hold_active) *)
 let litigation_hold_active (p_hold_start: nat) (p_current_time: nat) (p_hold_end: nat) : Tot bool =
   p_hold_start <= p_current_time && p_current_time <= p_hold_end
 
 (* privilege_protection_axiom (matches Coq: Theorem privilege_protection_axiom) *)
-let privilege_protection_axiom_obligation () : Tot bool = (0 = 0)
+let privilege_protection_axiom_obligation () : Tot bool = true
 let privilege_protection_axiom_lemma () : Lemma (requires True) (ensures (privilege_protection_axiom_obligation () == privilege_protection_axiom_obligation ())) = ()
 
 (* aba_model_rules (matches Coq: Theorem aba_model_rules) *)
-let aba_model_rules_obligation () : Tot bool = (0 = 0)
+let aba_model_rules_obligation () : Tot bool = true
 let aba_model_rules_lemma () : Lemma (requires True) (ensures (aba_model_rules_obligation () == aba_model_rules_obligation ())) = ()
 
 (* conflict_screening_axiom (matches Coq: Theorem conflict_screening_axiom) *)
-let conflict_screening_axiom_obligation () : Tot bool = (0 = 0)
+let conflict_screening_axiom_obligation () : Tot bool = true
 let conflict_screening_axiom_lemma () : Lemma (requires True) (ensures (conflict_screening_axiom_obligation () == conflict_screening_axiom_obligation ())) = ()
 
 (* ediscovery_compliance (matches Coq: Theorem ediscovery_compliance) *)
-let ediscovery_compliance_obligation () : Tot bool = (0 = 0)
+let ediscovery_compliance_obligation () : Tot bool = true
 let ediscovery_compliance_lemma () : Lemma (requires True) (ensures (ediscovery_compliance_obligation () == ediscovery_compliance_obligation ())) = ()
 
 (* records_retention (matches Coq: Theorem records_retention) *)
-let records_retention_obligation () : Tot bool = (0 = 0)
+let records_retention_obligation () : Tot bool = true
 let records_retention_lemma () : Lemma (requires True) (ensures (records_retention_obligation () == records_retention_obligation ())) = ()
 
 (* privilege_requires_encryption (matches Coq: Theorem privilege_requires_encryption) *)
@@ -146,22 +146,22 @@ let waived_not_effective () : Lemma (privilege_effective Waived == false) = admi
 let qualified_effective () : Lemma (privilege_effective Qualified == true) = admit ()
 
 (* all_legal_requires_privilege (matches Coq: Theorem all_legal_requires_privilege) *)
-let all_legal_requires_privilege (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_privilege_protection == true))) = admit ()
+let all_legal_requires_privilege (p_c: _) : Lemma (requires (all_legal_controls p_c == true)) (ensures (p_c.f_privilege_protection == true)) = admit ()
 
 (* all_legal_requires_conflict_screening (matches Coq: Theorem all_legal_requires_conflict_screening) *)
-let all_legal_requires_conflict_screening (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_conflict_screening == true))) = admit ()
+let all_legal_requires_conflict_screening (p_c: _) : Lemma (requires (all_legal_controls p_c == true)) (ensures (p_c.f_conflict_screening == true)) = admit ()
 
 (* all_legal_requires_ethical_walls (matches Coq: Theorem all_legal_requires_ethical_walls) *)
-let all_legal_requires_ethical_walls (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_ethical_walls == true))) = admit ()
+let all_legal_requires_ethical_walls (p_c: _) : Lemma (requires (all_legal_controls p_c == true)) (ensures (p_c.f_ethical_walls == true)) = admit ()
 
 (* all_legal_requires_retention (matches Coq: Theorem all_legal_requires_retention) *)
-let all_legal_requires_retention (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (p_c.f_retention_compliance == true))) = admit ()
+let all_legal_requires_retention (p_c: _) : Lemma (requires (all_legal_controls p_c == true)) (ensures (p_c.f_retention_compliance == true)) = admit ()
 
 (* count_legal_bounded (matches Coq: Theorem count_legal_bounded) *)
 let count_legal_bounded (p_c: _) : Lemma (count_legal_controls p_c <= 6) = admit ()
 
 (* all_controls_count_six (matches Coq: Theorem all_controls_count_six) *)
-let all_controls_count_six (p_c: _) : Lemma (requires (all_legal_controls p_c == true) (ensures (count_legal_controls p_c == 6))) = admit ()
+let all_controls_count_six (p_c: _) : Lemma (requires (all_legal_controls p_c == true)) (ensures (count_legal_controls p_c == 6)) = admit ()
 
 (* retention_minimum_3 (matches Coq: Theorem retention_minimum_3) *)
 let retention_minimum_3 (p_d: _) : Lemma (legal_retention_years p_d >= 3) = admit ()
@@ -176,10 +176,10 @@ let trust_equals_privilege_retention () : Lemma (legal_retention_years TrustAcco
 let same_party_conflict (p_p: _) : Lemma (no_conflict p_p p_p == false) = admit ()
 
 (* different_parties_no_conflict (matches Coq: Theorem different_parties_no_conflict) *)
-let different_parties_no_conflict (p_p1: _) (p_p2: _) : Lemma (requires (~(p_p1 == p_p2)) (ensures (no_conflict p_p1 p_p2 == true))) = admit ()
+let different_parties_no_conflict (p_p1: _) (p_p2: _) : Lemma (requires (~(p_p1 == p_p2))) (ensures (no_conflict p_p1 p_p2 == true)) = admit ()
 
 (* trust_balance_correct (matches Coq: Theorem trust_balance_correct) *)
-let trust_balance_correct (p_b: _) (p_ct: _) : Lemma (requires (trust_balanced p_b p_ct == true) (ensures (p_b == p_ct))) = admit ()
+let trust_balance_correct (p_b: _) (p_ct: _) : Lemma (requires (trust_balanced p_b p_ct == true)) (ensures (p_b == p_ct)) = admit ()
 
 (* hold_bounds (matches Coq: Theorem hold_bounds) *)
-let hold_bounds (p_hs: _) (p_ct: _) (p_he: _) : Lemma (requires (litigation_hold_active p_hs p_ct p_he == true) (ensures (p_hs <= p_ct /\ p_ct <= p_he))) = admit ()
+let hold_bounds (p_hs: _) (p_ct: _) (p_he: _) : Lemma (requires (litigation_hold_active p_hs p_ct p_he == true)) (ensures (p_hs <= p_ct /\ p_ct <= p_he)) = admit ()

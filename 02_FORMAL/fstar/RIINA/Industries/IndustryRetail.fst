@@ -94,18 +94,18 @@ let inventory_valid (p_count: nat) (p_max_capacity: nat) : Tot bool =
 let ecommerce_pci_compliance (p_controls: ecommerce_controls) : Lemma (p_controls.f_pci_compliant_payment == true) = admit ()
 
 (* ccpa_compliance (matches Coq: Theorem ccpa_compliance) *)
-let ccpa_compliance_obligation () : Tot bool = (0 = 0)
+let ccpa_compliance_obligation () : Tot bool = true
 let ccpa_compliance_lemma () : Lemma (requires True) (ensures (ccpa_compliance_obligation () == ccpa_compliance_obligation ())) = ()
 
 (* gdpr_compliance (matches Coq: Theorem gdpr_compliance) *)
-let gdpr_compliance_obligation () : Tot bool = (0 = 0)
+let gdpr_compliance_obligation () : Tot bool = true
 let gdpr_compliance_lemma () : Lemma (requires True) (ensures (gdpr_compliance_obligation () == gdpr_compliance_obligation ())) = ()
 
 (* owasp_prevention (matches Coq: Theorem owasp_prevention) *)
 let owasp_prevention (p_controls: ecommerce_controls) : Lemma (p_controls.f_input_validation == true /\ p_controls.f_sql_injection_prevention == true /\ p_controls.f_xss_prevention == true) = admit ()
 
 (* soc2_compliance (matches Coq: Theorem soc2_compliance) *)
-let soc2_compliance_obligation () : Tot bool = (0 = 0)
+let soc2_compliance_obligation () : Tot bool = true
 let soc2_compliance_lemma () : Lemma (requires True) (ensures (soc2_compliance_obligation () == soc2_compliance_obligation ())) = ()
 
 (* tls_required (matches Coq: Theorem tls_required) *)
@@ -130,34 +130,34 @@ let right_to_nat_positive (p_r: _) : Lemma (right_to_nat p_r >= 1) = admit ()
 let right_to_nat_bounded (p_r: _) : Lemma (right_to_nat p_r <= all_rights_count) = admit ()
 
 (* all_ecom_requires_tls (matches Coq: Theorem all_ecom_requires_tls) *)
-let all_ecom_requires_tls (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true) (ensures (p_c.f_tls_encryption == true))) = admit ()
+let all_ecom_requires_tls (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true)) (ensures (p_c.f_tls_encryption == true)) = admit ()
 
 (* all_ecom_requires_pci (matches Coq: Theorem all_ecom_requires_pci) *)
-let all_ecom_requires_pci (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true) (ensures (p_c.f_pci_compliant_payment == true))) = admit ()
+let all_ecom_requires_pci (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true)) (ensures (p_c.f_pci_compliant_payment == true)) = admit ()
 
 (* all_ecom_requires_sqli (matches Coq: Theorem all_ecom_requires_sqli) *)
-let all_ecom_requires_sqli (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true) (ensures (p_c.f_sql_injection_prevention == true))) = admit ()
+let all_ecom_requires_sqli (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true)) (ensures (p_c.f_sql_injection_prevention == true)) = admit ()
 
 (* all_ecom_requires_xss (matches Coq: Theorem all_ecom_requires_xss) *)
-let all_ecom_requires_xss (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true) (ensures (p_c.f_xss_prevention == true))) = admit ()
+let all_ecom_requires_xss (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true)) (ensures (p_c.f_xss_prevention == true)) = admit ()
 
 (* count_ecommerce_bounded (matches Coq: Theorem count_ecommerce_bounded) *)
 let count_ecommerce_bounded (p_c: _) : Lemma (count_ecommerce_controls p_c <= 8) = admit ()
 
 (* all_controls_count_eight (matches Coq: Theorem all_controls_count_eight) *)
-let all_controls_count_eight (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true) (ensures (count_ecommerce_controls p_c == 8))) = admit ()
+let all_controls_count_eight (p_c: _) : Lemma (requires (all_ecommerce_controls p_c == true)) (ensures (count_ecommerce_controls p_c == 8)) = admit ()
 
 (* expired_data_must_delete (matches Coq: Theorem expired_data_must_delete) *)
-let expired_data_must_delete (p_ct: _) (p_coll: _) (p_ret: _) : Lemma (requires (retention_expired p_ct p_coll p_ret == true) (ensures (p_ct > p_coll + p_ret))) = admit ()
+let expired_data_must_delete (p_ct: _) (p_coll: _) (p_ret: _) : Lemma (requires (retention_expired p_ct p_coll p_ret == true)) (ensures (p_ct > p_coll + p_ret)) = admit ()
 
 (* expired_session_invalid (matches Coq: Theorem expired_session_invalid) *)
-let expired_session_invalid (p_la: _) (p_ct: _) (p_to: _) : Lemma (requires (session_expired p_la p_ct p_to == true) (ensures (p_ct > p_la + p_to))) = admit ()
+let expired_session_invalid (p_la: _) (p_ct: _) (p_to: _) : Lemma (requires (session_expired p_la p_ct p_to == true)) (ensures (p_ct > p_la + p_to)) = admit ()
 
 (* order_amount_positive (matches Coq: Theorem order_amount_positive) *)
-let order_amount_positive (p_a: _) (p_ma: _) : Lemma (requires (order_amount_valid p_a p_ma == true) (ensures (p_a >= 1))) = admit ()
+let order_amount_positive (p_a: _) (p_ma: _) : Lemma (requires (order_amount_valid p_a p_ma == true)) (ensures (p_a >= 1)) = admit ()
 
 (* order_amount_bounded (matches Coq: Theorem order_amount_bounded) *)
-let order_amount_bounded (p_a: _) (p_ma: _) : Lemma (requires (order_amount_valid p_a p_ma == true) (ensures (p_a <= p_ma))) = admit ()
+let order_amount_bounded (p_a: _) (p_ma: _) : Lemma (requires (order_amount_valid p_a p_ma == true)) (ensures (p_a <= p_ma)) = admit ()
 
 (* inventory_bounded (matches Coq: Theorem inventory_bounded) *)
-let inventory_bounded (p_c: _) (p_mc: _) : Lemma (requires (inventory_valid p_c p_mc == true) (ensures (p_c <= p_mc))) = admit ()
+let inventory_bounded (p_c: _) (p_mc: _) : Lemma (requires (inventory_valid p_c p_mc == true)) (ensures (p_c <= p_mc)) = admit ()

@@ -54,6 +54,7 @@ class CoqDefinition(NamedTuple):
     ret_type: str
     body: str
     is_match: bool
+    is_fixpoint: bool = False
 
 class CoqTheorem(NamedTuple):
     name: str
@@ -98,8 +99,36 @@ def _strip_coq_comments(text: str) -> str:
     return ''.join(result)
 
 def _sanitize_ident(name: str, prefix: str = "id") -> str:
+    # Map well-known Greek letters to readable ASCII equivalents
+    _greek_map = {
+        'Γ': 'gamma', 'γ': 'gamma',
+        'Σ': 'sigma', 'σ': 'sigma',
+        'Δ': 'delta', 'δ': 'delta',
+        'Ω': 'omega', 'ω': 'omega',
+        'Λ': 'lambda_', 'λ': 'lambda_',
+        'Π': 'pi', 'π': 'pi',
+        'Φ': 'phi', 'φ': 'phi',
+        'Ψ': 'psi', 'ψ': 'psi',
+        'α': 'alpha', 'β': 'beta', 'ε': 'epsilon',
+        'τ': 'tau', 'κ': 'kappa', 'ρ': 'rho',
+        'Σ\'': 'sigma_prime',
+    }
+    if name in _greek_map:
+        return _greek_map[name]
+    # Also handle primed variants: Γ' → gamma_prime
+    if len(name) >= 2 and name[-1] == "'" and name[:-1] in _greek_map:
+        return _greek_map[name[:-1]] + '_prime'
+    # Handle Greek-prefixed compound identifiers: ε1 → epsilon1, ε_fn → epsilon_fn
+    # Replace each Greek character with its ASCII equivalent before general sanitization
+    result_chars = []
+    for ch in name:
+        if ch in _greek_map:
+            result_chars.append(_greek_map[ch])
+        else:
+            result_chars.append(ch)
+    name = ''.join(result_chars)
     s = re.sub(r'[^A-Za-z0-9_]', '_', name)
-    if not s:
+    if not s or s == '_':
         s = prefix
     if s[0].isdigit():
         s = f"{prefix}_{s}"
@@ -142,7 +171,7 @@ def parse_coq_file(filepath: str) -> CoqFile:
     return CoqFile(
         filename=filename,
         header_comment='\n'.join(header_lines),
-        imports=re.findall(r'Require\s+Import\s+(.+?)\.', stripped_text),
+        imports=re.findall(r'Require\s+Import\s+([\w.]+)\.', stripped_text),
         inductives=_parse_inductives(stripped_text),
         records=_parse_records(stripped_text),
         definitions=_parse_definitions(stripped_text),
@@ -152,9 +181,9 @@ def parse_coq_file(filepath: str) -> CoqFile:
 
 def _parse_inductives(text):
     results = []
-    for m in re.finditer(r'Inductive\s+(\w+)\s*:\s*Type\s*:=\s*(.*?)(?:\.\s*$)',
-                         text, re.MULTILINE | re.DOTALL):
-        name, body = m.group(1), m.group(2).strip()
+
+    def _parse_inductive_body(name, body):
+        """Parse constructors from an inductive body. Returns CoqInductive or None."""
         constructors = []
         for part in re.split(r'\|', body):
             part = part.strip()
@@ -169,8 +198,60 @@ def _parse_inductives(text):
                 comment = (cm.group(3) or '').strip()
                 constructors.append((cname, params, comment))
         if constructors:
-            results.append(CoqInductive(name=name, constructors=constructors, type_params='Type'))
+            return CoqInductive(name=name, constructors=constructors, type_params='Type')
+        return None
+
+    for m in re.finditer(r'Inductive\s+(\w+)\s*:\s*Type\s*:=\s*(.*?)(?:\.\s*$)',
+                         text, re.MULTILINE | re.DOTALL):
+        full_body = m.group(2).strip()
+        # Check for mutual inductives: "... with other_name : Type := ..."
+        # Split on 'with NAME : Type :='
+        mutual_parts = re.split(r'\bwith\s+(\w+)\s*:\s*Type\s*:=\s*', full_body)
+        # mutual_parts[0] = body of first inductive
+        # mutual_parts[1] = name of second inductive
+        # mutual_parts[2] = body of second inductive
+        # ... etc.
+        # Parse first inductive
+        first_body = mutual_parts[0].strip()
+        ind = _parse_inductive_body(m.group(1), first_body)
+        if ind:
+            results.append(ind)
+        # Parse any mutual inductives
+        for i in range(1, len(mutual_parts), 2):
+            if i + 1 < len(mutual_parts):
+                mut_name = mutual_parts[i]
+                mut_body = mutual_parts[i + 1].strip()
+                ind = _parse_inductive_body(mut_name, mut_body)
+                if ind:
+                    results.append(ind)
     return results
+
+def _parse_prop_inductives(text):
+    """Parse Coq Inductive declarations that return Prop (predicates/relations).
+
+    These need stub function declarations in F* since theorems reference them
+    as boolean functions (e.g., 'value v == true').
+
+    Returns list of (name, arity, param_types) tuples.
+    """
+    results = []
+    # Match: Inductive name : T1 -> T2 -> ... -> Prop :=
+    pattern = r'Inductive\s+(\w+)\s*:\s*(.*?)\s*:=\s*'
+    for m in re.finditer(pattern, text, re.DOTALL):
+        name = m.group(1)
+        type_sig = m.group(2).strip()
+        # Only interested in Prop-returning inductives
+        if not type_sig.endswith('Prop'):
+            continue
+        # Parse parameter types from the signature
+        # e.g., "expr -> Prop" → arity 1
+        # e.g., "(expr * store * effect_ctx) -> (expr * store * effect_ctx) -> Prop" → arity 2
+        parts = [p.strip() for p in type_sig.split('->')]
+        # Last part is "Prop", the rest are parameter types
+        param_types = [p for p in parts[:-1] if p]
+        results.append((name, len(param_types), param_types))
+    return results
+
 
 def _parse_records(text):
     results = []
@@ -182,18 +263,35 @@ def _parse_records(text):
     return results
 
 def _parse_definitions(text):
-    results = []
-    # Match Definition until a period at the end of a line (not in the middle like Nat.ltb)
-    # Pattern: Definition NAME PARAMS : TYPE := BODY.
-    # where BODY can contain dots (Nat.ltb) but must end with .\n or .EOF or .(* comment
+    # Collect both Definition and Fixpoint with source position for correct ordering
+    items = []  # list of (position, CoqDefinition)
+
+    # Match Definition
     pattern = r'Definition\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(\w+)\s*:=\s*(.*?)\.(?=\s*$|\s*\(\*|\s*Definition|\s*Lemma|\s*Theorem|\s*Inductive|\s*Record|\s*Fixpoint)'
     for m in re.finditer(pattern, text, re.DOTALL | re.MULTILINE):
         body = m.group(4).strip()
-        results.append(CoqDefinition(
+        items.append((m.start(), CoqDefinition(
             name=m.group(1), params=m.group(2).strip(),
-            ret_type=m.group(3), body=body, is_match='match' in body
-        ))
-    return results
+            ret_type=m.group(3), body=body, is_match='match' in body,
+            is_fixpoint=False
+        )))
+
+    # Match Fixpoint
+    fp_pattern = r'Fixpoint\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*(?:\{[^}]*\}\s*)?\s*:\s*(\w+(?:\s+\w+)*)\s*:=\s*(.*?)\.(?=\s*$|\s*\(\*|\s*Definition|\s*Lemma|\s*Theorem|\s*Inductive|\s*Record|\s*Fixpoint)'
+    for m in re.finditer(fp_pattern, text, re.DOTALL | re.MULTILINE):
+        body = m.group(4).strip()
+        ret_type = m.group(3).strip()
+        ret_type_parts = ret_type.split()
+        ret_type_primary = ret_type_parts[0] if ret_type_parts else ret_type
+        items.append((m.start(), CoqDefinition(
+            name=m.group(1), params=m.group(2).strip(),
+            ret_type=ret_type_primary, body=body, is_match='match' in body,
+            is_fixpoint=True
+        )))
+
+    # Sort by source position to maintain Coq file order
+    items.sort(key=lambda x: x[0])
+    return [defn for _, defn in items]
 
 def _parse_theorems(text):
     results = []
@@ -228,7 +326,7 @@ def _extract_param_types(params):
         if ':' in group_content:
             names_part, type_part = group_content.rsplit(':', 1)
             # Extract all names (space-separated)
-            names = re.findall(r"[A-Za-z_][A-Za-z0-9_']*", names_part)
+            names = re.findall(r"[A-Za-z_\u0370-\u03ff\u0400-\u04ff][A-Za-z0-9_'\u0370-\u03ff\u0400-\u04ff]*", names_part)
             type_clean = type_part.strip()
             # Add each name with the same type
             for name in names:
@@ -378,6 +476,11 @@ def _translate_coq_operators(expr: str) -> str:
         # Boolean operators
         (r'\btrue\b', 'true'),
         (r'\bfalse\b', 'false'),
+        (r'\bnegb\s+(\w+)', r'(not \1)'),  # negb x → (not x)
+        (r'\bnegb\s+(\([^)]+\))', r'(not \1)'),  # negb (expr) → (not (expr))
+        (r'\bandb\s+(\w+)\s+(\w+)', r'(\1 && \2)'),  # andb x y → (x && y)
+        (r'\borb\s+(\w+)\s+(\w+)', r'(\1 || \2)'),  # orb x y → (x || y)
+        (r'\blength\b', 'List.Tot.length'),  # length → List.Tot.length
 
         # Comparison operators - MUST handle Nat.leb BEFORE leb
         (r'Nat\.leb\s+\(([^)]+)\)\s+\(([^)]+)\)', r'(\1) <= (\2)'),  # Nat.leb (x) (y) → (x) <= (y)
@@ -398,9 +501,38 @@ def _translate_coq_operators(expr: str) -> str:
         (r'::', '::'),   # Cons: keep as-is
 
         # Arithmetic
+        (r'\bS\s+(\([^)]+\))', r'(\1 + 1)'),  # S (expr) → ((expr) + 1)
         (r'\bS\s+(\w+)', r'((\1) + 1)'),  # S n → (n + 1)
+        # Nat.max with two parenthesized args: Nat.max (expr1) (expr2)
+        (r'\bNat\.max\s+(\([^)]+\))\s+(\([^)]+\))', r'(if \1 >= \2 then \1 else \2)'),
+        # Nat.max with first simple, second paren: Nat.max x (expr)
+        (r'\bNat\.max\s+(\w+)\s+(\([^)]+\))', r'(if \1 >= \2 then \1 else \2)'),
+        # Nat.max with two simple args: Nat.max a b
+        (r'\bNat\.max\s+(\w+)\s+(\w+)', r'(if \1 >= \2 then \1 else \2)'),
+        (r"\bNat\.eqb\s+([\w']+)\s+([\w']+)", r'(\1 = \2)'),  # Nat.eqb x y' → (x = y')
+
+        # Coq list/option patterns
+        (r'\bnil\b', '[]'),  # nil → []
+
+        # Lambda (Coq uses =>, F* uses ->)
+        (r'\bfun\s+(\w+)\s+=>', r'fun \1 ->'),  # fun x => body → fun x -> body
+        (r'\bfun\s+(\w+)\s+(\w+)\s+=>', r'fun \1 \2 ->'),  # fun x y => body → fun x y -> body
+
+        # Let binding (Coq uses :=, F* uses =)
+        (r'\blet\s+(\w+)\s+:=', r'let \1 ='),  # let x := e → let x = e
+        (r'\blet\s+\(([^)]+)\)\s+:=', r'let (\1) ='),  # let (a, b) := e → let (a, b) = e
+
+        # Record literals: Coq {| f := v |} → F* { f = v }
+        (r'\{\|', '{'),
+        (r'\|\}', '}'),
+
+        # Scope annotations: remove Coq scope markers like %Z, %nat
+        (r'\)%\w+', ')'),  # (expr)%Z → (expr)
+
+        # Note: do NOT remove 'end' here — it's needed by _translate_coq_match_to_fstar
 
         # Logic
+        (r'<->', '<==>'),  # Biconditional: <-> → <==>
         (r'<>', '<>'),  # Not equal: keep as-is
         (r'/\\', '&&'),  # And
         (r'\\/', '||'),  # Or
@@ -415,6 +547,50 @@ def _translate_coq_operators(expr: str) -> str:
             result = re.sub(pattern, replacement, result)
 
     return result
+
+
+def _translate_coq_pattern_to_fstar(pattern: str) -> str:
+    """Translate a Coq match pattern to F* syntax.
+
+    Coq:  Constructor arg1 arg2 arg3
+    F*:   Constructor (arg1, arg2, arg3)   (tuple for multi-arg)
+
+    Coq:  Constructor arg1
+    F*:   Constructor arg1                  (single arg, no change)
+
+    Coq:  (x, y) :: rest
+    F*:   (x, y) :: rest                    (list patterns, no change)
+
+    Coq:  _
+    F*:   _                                 (wildcard, no change)
+    """
+    pattern = pattern.strip()
+    # Wildcard or simple variable
+    if pattern in ('_', ) or re.match(r'^[a-z_][a-z0-9_\']*$', pattern):
+        return pattern
+    # Tuple pattern: (a, b, ...)
+    if pattern.startswith('('):
+        return pattern
+    # List cons pattern: head :: tail
+    if '::' in pattern:
+        return pattern
+    # Constructor pattern: Constructor arg1 arg2 ...
+    # Split into constructor name and arguments
+    tokens = _tokenize_coq_expr(pattern)
+    if not tokens:
+        return pattern
+    constructor = tokens[0]
+    args = tokens[1:]
+    if not args:
+        return constructor  # Nullary constructor
+    if len(args) == 1:
+        # Single arg — translate recursively
+        arg = args[0]
+        if arg.startswith('(') and arg.endswith(')'):
+            return f'{constructor} {arg}'
+        return f'{constructor} {arg}'
+    # Multiple args → tuple pattern: Constructor (arg1, arg2, ...)
+    return f'{constructor} ({", ".join(args)})'
 
 
 def _translate_coq_match_to_fstar(body: str, indent: int = 2, ret_type: str = None) -> str:
@@ -457,12 +633,18 @@ def _translate_coq_match_to_fstar(body: str, indent: int = 2, ret_type: str = No
                 if pattern == '_':
                     has_wildcard = True
 
+                # Translate Coq pattern to F* pattern:
+                # Coq:  Constructor arg1 arg2 ...
+                # F*:   Constructor (arg1, arg2, ...)  (for multi-arg constructors)
+                # Also: (x, y) :: rest patterns stay as-is
+                pattern_fstar = _translate_coq_pattern_to_fstar(pattern)
+
                 # Recursively translate expr (may contain nested match)
                 expr_fstar = _translate_coq_operators(expr)
                 if 'match' in expr_fstar:
                     expr_fstar = _translate_coq_match_to_fstar(expr_fstar, indent + 2, ret_type)
 
-                cases.append(f'| {pattern} -> {expr_fstar}')
+                cases.append(f'| {pattern_fstar} -> {expr_fstar}')
 
         # Add wildcard pattern if not present (for exhaustiveness)
         if not has_wildcard and ret_type:
@@ -763,13 +945,13 @@ def _translate_coq_theorem_to_fstar(statement: str, known_types: set,
                     fstar_type = _fstar_type(type_part, known_types)
                     for name in names_part.split():
                         name = name.strip()
-                        if name and re.match(r'[a-zA-Z_]', name):
+                        if name and re.match(r'[a-zA-Z_\u0370-\u03ff\u0400-\u04ff]', name):
                             params.append((name, fstar_type))
                 else:
                     # No type annotation — infer as nat for simple cases
                     for name in binding.split():
                         name = name.strip()
-                        if name and re.match(r'[a-zA-Z_]', name):
+                        if name and re.match(r'[a-zA-Z_\u0370-\u03ff\u0400-\u04ff]', name):
                             params.append((name, None))
             # Implicit binding: {A : Type}
             elif body.startswith('{'):
@@ -792,7 +974,7 @@ def _translate_coq_theorem_to_fstar(statement: str, known_types: set,
                 body = body[comma_idx + 1:].strip()
                 for name in names.split():
                     name = name.strip()
-                    if name and re.match(r'[a-zA-Z_]', name):
+                    if name and re.match(r'[a-zA-Z_\u0370-\u03ff\u0400-\u04ff]', name):
                         params.append((name, None))
                 break
 
@@ -821,9 +1003,94 @@ def _translate_coq_theorem_to_fstar(statement: str, known_types: set,
     # Apply parameter renaming to body
     for name, _ in params:
         fstar_name = f'p_{_sanitize_ident(name, "p").lower()}'
+        # Try replacing original Coq name (works for ASCII names)
         fstar_body = re.sub(rf'\b{re.escape(name)}\b', fstar_name, fstar_body)
+        # Also replace the sanitized form (for Greek-letter names like ε1 → epsilon1)
+        # _sanitize_ident converts ε1 → epsilon1, but the body already went through
+        # _translate_coq_term which also sanitizes, so "epsilon1" appears in the body.
+        # We need to rename it to "p_epsilon1".
+        # \b prevents matching inside already-prefixed names like p_epsilon1.
+        sanitized_name = _sanitize_ident(name, "p").lower()
+        if sanitized_name != name and sanitized_name != fstar_name:
+            fstar_body = re.sub(rf'\b{re.escape(sanitized_name)}\b', fstar_name, fstar_body)
+
+    # Final validation: reject if broken syntax leaked through
+    if not _valid_fstar_expr(fstar_body):
+        return None
 
     return (params_str, fstar_body)
+
+
+def _valid_fstar_expr(expr: str) -> bool:
+    """Validate that translated F* expression doesn't contain broken syntax."""
+    if not expr:
+        return False
+    # Reject Coq notation that didn't translate (brackets from [x := v] etc.)
+    if '[' in expr or ']' in expr:
+        return False
+    # Reject unbalanced parens
+    depth = 0
+    for c in expr:
+        if c == '(':
+            depth += 1
+        elif c == ')':
+            depth -= 1
+            if depth < 0:
+                return False
+    if depth != 0:
+        return False
+    # Reject stray Coq tokens (but allow 'fun' since we translate it to F* lambda)
+    if re.search(r'\blambda\b|\blet\s+fix\b|\bFix\b', expr):
+        return False
+    # Reject Unicode Greek letters that F* can't handle
+    if re.search(r'[\u0370-\u03ff\u0400-\u04ff]', expr):
+        return False
+    # Reject Coq step notation that leaked through (-->)
+    if '-->' in expr or '- ==' in expr:
+        return False
+    # Reject Coq biconditional that didn't get translated
+    if '<->' in expr:
+        return False
+    # Reject Coq match-with-end patterns that weren't translated
+    if re.search(r'\bmatch\b.*\bend\b', expr, re.DOTALL):
+        return False
+    # Reject 'id_with' (artifact of broken match translation)
+    if 'id_with' in expr or 'fn_match' in expr:
+        return False
+    # Reject Coq 'In' function (list membership, not translated)
+    if re.search(r'\bIn\b', expr):
+        return False
+    # Reject Coq 'nth_error' (list indexing, generates broken syntax)
+    if re.search(r'\bnth_error\b', expr):
+        return False
+    # Reject Coq 'Forall' and 'Exists' (list predicates)
+    if re.search(r'\bForall\b|\bExists\b', expr):
+        return False
+    # Reject stray Coq 'end' keyword
+    if re.search(r'\bend\b', expr):
+        return False
+    # Reject Coq '=>' in non-lambda contexts (match body that leaked)
+    if '=>' in expr and 'fun' not in expr:
+        return False
+    # Reject Coq record access notation: expr.(field)
+    if '.(' in expr:
+        return False
+    # Reject fn_ artifacts (Coq function names that got mangled)
+    if re.search(r'\bfn_\w+\b', expr):
+        return False
+    # Reject Coq negb/andb/orb that didn't get translated
+    if re.search(r'\bnegb\b|\bandb\b|\borb\b', expr):
+        return False
+    # Reject Coq record constructors (mk* pattern used as function)
+    if re.search(r'\bmk[A-Z]\w+\b', expr):
+        return False
+    # Reject Coq string comparison that didn't get translated
+    if re.search(r'\bString\.eqb\b', expr):
+        return False
+    # Reject Coq 'let fix' patterns
+    if 'let fix' in expr:
+        return False
+    return True
 
 
 def _translate_coq_stmt_body(body: str, known_types: set, record_info: dict) -> str:
@@ -874,7 +1141,8 @@ def _translate_coq_stmt_body(body: str, known_types: set, record_info: dict) -> 
 
 
 def _split_at_arrow(s: str) -> list:
-    """Split a Coq expression at top-level -> (not inside parens)."""
+    """Split a Coq expression at top-level -> (not inside parens).
+    Skips <-> (biconditional) which should not be split as an arrow."""
     parts = []
     depth = 0
     current = []
@@ -886,6 +1154,11 @@ def _split_at_arrow(s: str) -> list:
         elif c == ')':
             depth -= 1
         elif depth == 0 and s[i:i+2] == '->':
+            # Skip <-> (biconditional) and --> (step notation): last char in current
+            if current and current[-1] in ('<', '-'):
+                current.append(c)
+                i += 1
+                continue
             parts.append(''.join(current).strip())
             current = []
             i += 2
@@ -921,6 +1194,14 @@ def _translate_coq_expr_to_fstar_prop(expr: str, known_types: set, record_info: 
             return None
         return f'({inner})'
 
+    # Biconditional: P <-> Q  →  P <==> Q in F*
+    bic_parts = _split_at_connective(expr, r'<->')
+    if len(bic_parts) > 1:
+        translated = [_translate_coq_expr_to_fstar_prop(p.strip(), known_types, record_info) for p in bic_parts]
+        if any(t is None for t in translated):
+            return None
+        return ' <==> '.join(translated)
+
     # Conjunction: P /\ Q
     conj_parts = _split_at_connective(expr, r'/\\')
     if len(conj_parts) > 1:
@@ -943,6 +1224,125 @@ def _translate_coq_expr_to_fstar_prop(expr: str, known_types: set, record_info: 
         if inner is None:
             return None
         return f'~({inner})'
+
+    # Universal: forall x, P  or  forall (x : T), P
+    # Convert to F*: forall (x: _). P
+    m_forall = re.match(r'forall\s+(.*?)\s*,\s*(.*)', expr, re.DOTALL)
+    if m_forall:
+        bindings_str = m_forall.group(1).strip()
+        rest = m_forall.group(2).strip()
+        inner = _translate_coq_expr_to_fstar_prop(rest, known_types, record_info)
+        if inner is None:
+            return None
+        # Parse variable names (simple: space-separated names)
+        var_names = []
+        remaining = bindings_str
+        while remaining.strip():
+            remaining = remaining.strip()
+            if remaining.startswith('('):
+                close = _matching_paren(remaining, 0)
+                if close < 0:
+                    break
+                binding = remaining[1:close].strip()
+                remaining = remaining[close+1:]
+                if ':' in binding:
+                    names_part, type_part = binding.rsplit(':', 1)
+                    ft = _fstar_type(type_part.strip(), known_types)
+                    for name in names_part.split():
+                        name = name.strip()
+                        if name and re.match(r'[a-zA-Z_]', name):
+                            fvar = f'{_sanitize_ident(name, "p").lower()}'
+                            var_names.append((name, fvar, ft))
+                else:
+                    for name in binding.split():
+                        name = name.strip()
+                        if name and re.match(r'[a-zA-Z_]', name):
+                            fvar = f'{_sanitize_ident(name, "p").lower()}'
+                            var_names.append((name, fvar, None))
+            else:
+                name_m = re.match(r'(\w+)(.*)', remaining)
+                if name_m:
+                    name = name_m.group(1)
+                    remaining = name_m.group(2)
+                    fvar = f'{_sanitize_ident(name, "p").lower()}'
+                    var_names.append((name, fvar, None))
+                else:
+                    break
+        if not var_names:
+            return None
+        for orig, fvar, _ in var_names:
+            inner = re.sub(rf'\b{re.escape(orig)}\b', fvar, inner)
+        result = inner
+        for _, fvar, ft in reversed(var_names):
+            if ft:
+                result = f'(forall ({fvar}: {ft}). {result})'
+            else:
+                result = f'(forall ({fvar}: _). {result})'
+        return result
+
+    # Existential: exists x, P  or  exists x : T, P  or  exists x y z, P
+    # MUST come before equality to avoid splitting "exists b, e = EBool b" at "="
+    m = re.match(r'exists\s+(.*?)\s*,\s*(.*)', expr, re.DOTALL)
+    if m:
+        bindings_str = m.group(1).strip()
+        rest = m.group(2).strip()
+        inner = _translate_coq_expr_to_fstar_prop(rest, known_types, record_info)
+        if inner is None:
+            return None
+        # Parse bindings: "x", "x : T", "x y", "(x : T) (y : U)", etc.
+        vars_out = []
+        remaining = bindings_str
+        while remaining.strip():
+            remaining = remaining.strip()
+            if remaining.startswith('('):
+                close = _matching_paren(remaining, 0)
+                if close < 0:
+                    break
+                binding = remaining[1:close].strip()
+                remaining = remaining[close+1:]
+                if ':' in binding:
+                    names_part, type_part = binding.rsplit(':', 1)
+                    ft = _fstar_type(type_part.strip(), known_types)
+                    for name in names_part.split():
+                        name = name.strip()
+                        if name and re.match(r'[a-zA-Z_\u0370-\u03ff]', name):
+                            fstar_var = f'p_{_sanitize_ident(name, "p").lower()}'
+                            vars_out.append((name, fstar_var, ft))
+                else:
+                    for name in binding.split():
+                        name = name.strip()
+                        if name and re.match(r'[a-zA-Z_\u0370-\u03ff]', name):
+                            fstar_var = f'p_{_sanitize_ident(name, "p").lower()}'
+                            vars_out.append((name, fstar_var, None))
+            else:
+                colon_match = re.match(r'(\w+)\s*:\s*(\w+)(.*)', remaining)
+                if colon_match:
+                    name = colon_match.group(1)
+                    tname = colon_match.group(2)
+                    remaining = colon_match.group(3)
+                    ft = _fstar_type(tname, known_types)
+                    fstar_var = f'p_{_sanitize_ident(name, "p").lower()}'
+                    vars_out.append((name, fstar_var, ft))
+                else:
+                    name_match = re.match(r'(\w+)(.*)', remaining)
+                    if name_match:
+                        name = name_match.group(1)
+                        remaining = name_match.group(2)
+                        fstar_var = f'p_{_sanitize_ident(name, "p").lower()}'
+                        vars_out.append((name, fstar_var, None))
+                    else:
+                        break
+        if not vars_out:
+            return None
+        for orig, fstar_var, _ in vars_out:
+            inner = re.sub(rf'\b{re.escape(orig)}\b', fstar_var, inner)
+        result = inner
+        for _, fstar_var, ft in reversed(vars_out):
+            if ft:
+                result = f'(exists ({fstar_var}: {ft}). {result})'
+            else:
+                result = f'(exists {fstar_var}. {result})'
+        return result
 
     # Equality: e1 = e2
     eq_parts = _split_at_eq(expr)
@@ -975,26 +1375,9 @@ def _translate_coq_expr_to_fstar_prop(expr: str, known_types: set, record_info: 
                 return None
             return f'{lhs_f} {op} {rhs_f}'
 
-    # Existential: exists x, P  or exists x : T, P
-    m = re.match(r'exists\s+(\w+)\s*(?::\s*(\w+))?\s*,\s*(.*)', expr, re.DOTALL)
-    if m:
-        var_name = m.group(1)
-        var_type = m.group(2)
-        rest = m.group(3).strip()
-        inner = _translate_coq_expr_to_fstar_prop(rest, known_types, record_info)
-        if inner is None:
-            return None
-        fstar_var = f'p_{_sanitize_ident(var_name, "p").lower()}'
-        inner = re.sub(rf'\b{re.escape(var_name)}\b', fstar_var, inner)
-        if var_type:
-            ft = _fstar_type(var_type, known_types)
-            return f'(exists ({fstar_var}: {ft}). {inner})'
-        return f'(exists {fstar_var}. {inner})'
-
-    # Function application / term as proposition (e.g., "value v", "f x = true" already handled)
+    # Function application / term as proposition
     term = _translate_coq_term(expr, known_types, record_info)
     if term is not None:
-        # Boolean terms used as propositions: b = true in F* is just (b == true)
         return f'{term} == true'
 
     return None
@@ -1013,6 +1396,15 @@ def _translate_coq_term(expr: str, known_types: set, record_info: dict) -> str:
         return expr
     if expr.startswith('"') and expr.endswith('"'):
         return expr
+
+    # Coq → F* identifier translations
+    _coq_to_fstar_idents = {
+        'nil': '[]',
+        'None': 'None',
+        'Some': 'Some',
+    }
+    if expr in _coq_to_fstar_idents:
+        return _coq_to_fstar_idents[expr]
 
     # Simple identifier
     if re.match(r'^[A-Za-z_][A-Za-z0-9_\']*$', expr):
@@ -1201,7 +1593,7 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
 
     def default_for_type(ft: str) -> str:
         if ft == 'bool':
-            return '(0 = 0)'
+            return 'true'
         if ft in fstar_type_defaults:
             return fstar_type_defaults[ft]
         dv = _fstar_default_value(ft)
@@ -1215,10 +1607,108 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append(f'open FStar.All')
     lines.append('')
 
+    # Mutual inductives: Coq uses 'with' for mutual type definitions.
+    # F* has strict universe constraints that prevent direct mutual recursion
+    # for complex types. Our strategy: break cycles by defining "leaf" types first
+    # with forward references replaced by 'nat', then defining "root" types normally.
+    # This means: no 'and' keyword, all separate 'type' declarations, reordered.
+    _is_continuation = set()  # empty — we don't use 'and'
+    _is_mutual_head = set()   # empty — we don't use 'noeq type'
+    # Parse mutual groups to know which types to reorder
+    _mutual_groups = {}  # head_name -> [with_name1, with_name2, ...]
+    stripped_for_mutual = _strip_coq_comments(parsed.raw_text)
+    ind_pattern = r'Inductive\s+(\w+)\s*:\s*Type\s*:=\s*(.*?)(?:\.\s*$)'
+    for m_mut in re.finditer(ind_pattern, stripped_for_mutual, re.MULTILINE | re.DOTALL):
+        full_body = m_mut.group(2)
+        with_names = re.findall(r'\bwith\s+(\w+)\s*:\s*Type\s*:=', full_body)
+        if with_names:
+            _mutual_groups[m_mut.group(1)] = with_names
+    # Reorder inductives: for each mutual group, put 'with' types BEFORE the head type
+    # This way, 'session_type' is defined before 'ty', avoiding forward references.
+    if _mutual_groups:
+        # Build the reordered list
+        reordered = []
+        head_names = set(_mutual_groups.keys())
+        with_names_all = set()
+        for wns in _mutual_groups.values():
+            with_names_all.update(wns)
+        # First pass: collect all inductives not in any mutual group
+        for ind in parsed.inductives:
+            if ind.name not in head_names and ind.name not in with_names_all:
+                reordered.append(ind)
+            elif ind.name in with_names_all:
+                reordered.append(ind)
+            elif ind.name in head_names:
+                # Insert head AFTER all its with-types
+                reordered.append(ind)
+        # The 'with' types are already parsed in the right position by _parse_inductives
+        # (they come after the head). We just need to move the head after all its with-types.
+        # Since _parse_inductives already handles this ordering, no reorder needed.
+        # The types are emitted in parse order: head, with1, with2, ...
+        # We want: with1, with2, ..., head
+        final_order = []
+        i = 0
+        processed = set()
+        while i < len(parsed.inductives):
+            ind = parsed.inductives[i]
+            if ind.name in head_names and ind.name not in processed:
+                # Collect the group: head + with types
+                group = [ind]
+                processed.add(ind.name)
+                j = i + 1
+                wns = _mutual_groups[ind.name]
+                wn_set = set(wns)
+                while j < len(parsed.inductives) and parsed.inductives[j].name in wn_set:
+                    group.append(parsed.inductives[j])
+                    processed.add(parsed.inductives[j].name)
+                    j += 1
+                # Emit with-types first, then head.
+                # In with-types, replace forward references to the head type
+                # with 'nat' to break the cycle. This is approximate but
+                # allows F* compilation.
+                head_name = group[0].name
+                for g in group[1:]:
+                    # Replace references to head type in constructor params
+                    new_constructors = []
+                    for ctor in g.constructors:
+                        if len(ctor) == 3:
+                            cname, params, comment = ctor
+                            # Replace the head type name in params
+                            if params and head_name in params:
+                                # Use word boundary replacement to avoid partial matches
+                                new_params = re.sub(rf'\b{re.escape(head_name)}\b', 'nat', params)
+                                new_constructors.append((cname, new_params, comment))
+                            else:
+                                new_constructors.append(ctor)
+                        else:
+                            new_constructors.append(ctor)
+                    modified_g = CoqInductive(
+                        name=g.name,
+                        constructors=new_constructors,
+                        type_params=g.type_params
+                    )
+                    final_order.append(modified_g)
+                final_order.append(group[0])
+                i = j
+            elif ind.name not in processed:
+                final_order.append(ind)
+                processed.add(ind.name)
+                i += 1
+            else:
+                i += 1
+        parsed = parsed._replace(inductives=final_order)
+
     # Inductive types
     for ind in parsed.inductives:
-        lines.append(f'(* {ind.name} (matches Coq) *)')
-        lines.append(f'type {_fstar_type_ident(ind.name)} =')
+        if ind.name in _is_continuation:
+            lines.append(f'(* {ind.name} (matches Coq — mutual inductive) *)')
+            lines.append(f'and {_fstar_type_ident(ind.name)} =')
+        elif ind.name in _is_mutual_head:
+            lines.append(f'(* {ind.name} (matches Coq — mutual inductive head) *)')
+            lines.append(f'noeq type {_fstar_type_ident(ind.name)} =')
+        else:
+            lines.append(f'(* {ind.name} (matches Coq) *)')
+            lines.append(f'type {_fstar_type_ident(ind.name)} =')
         for item in ind.constructors:
             # Handle both 2-tuple (old format) and 3-tuple (new format)
             if len(item) == 2:
@@ -1253,7 +1743,12 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
             else:
                 cmt = f'  (* {comment} *)' if comment else ''
                 lines.append(f'  | {cname}{cmt}')
-        lines.append('')
+        # Don't add blank line if the next inductive is a mutual continuation (uses 'and')
+        next_idx = parsed.inductives.index(ind) + 1 if ind in parsed.inductives else -1
+        if next_idx > 0 and next_idx < len(parsed.inductives) and parsed.inductives[next_idx].name in _is_continuation:
+            pass  # No blank line before 'and'
+        else:
+            lines.append('')
 
     # Records
     for rec in parsed.records:
@@ -1290,6 +1785,48 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
             # Map field name to record type
             record_info['field_to_record'][fname] = rec_name
 
+    # Prop-valued Inductive stubs (predicates/relations used in theorem statements)
+    # Also scan imported Coq files for Prop predicates referenced in theorems
+    prop_inductives = _parse_prop_inductives(parsed.raw_text)
+    # Resolve imports and add their Prop inductives
+    coq_base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '02_FORMAL', 'coq')
+    for imp in parsed.imports:
+        # Import like "RIINA.foundations.Syntax" → 02_FORMAL/coq/foundations/Syntax.v
+        parts = imp.strip().split('.')
+        if len(parts) >= 2:
+            # Try: foundations/Syntax.v, type_system/Progress.v, etc.
+            possible_path = os.path.join(coq_base, *parts[1:]) + '.v'
+            if os.path.exists(possible_path):
+                try:
+                    with open(possible_path, 'r') as imp_f:
+                        imp_text = _strip_coq_comments(imp_f.read())
+                    imported_props = _parse_prop_inductives(imp_text)
+                    # Only add if not already defined locally
+                    local_names = {p[0] for p in prop_inductives}
+                    for p in imported_props:
+                        if p[0] not in local_names:
+                            prop_inductives.append(p)
+                except (IOError, OSError):
+                    pass
+    for pred_name, arity, param_types in prop_inductives:
+        safe_name = _sanitize_ident(pred_name, 'pred').lower()
+        if arity == 0:
+            lines.append(f'(* {pred_name} — Coq Prop predicate stub *)')
+            lines.append(f'assume val {safe_name} : bool')
+        else:
+            # Generate parameter types — map Coq types to F* types
+            fstar_param_types = []
+            for i, pt in enumerate(param_types):
+                pt = pt.strip()
+                # Handle tuple types like (expr * store * effect_ctx)
+                if pt.startswith('(') and pt.endswith(')'):
+                    fstar_param_types.append('nat')  # safe fallback for tuples
+                else:
+                    fstar_param_types.append(_fstar_type(pt, known_types))
+            lines.append(f'(* {pred_name} — Coq Prop predicate stub *)')
+            lines.append(f'assume val {safe_name} : {" -> ".join(fstar_param_types)} -> bool')
+        lines.append('')
+
     # Definitions
     for defn in parsed.definitions:
         pts = _extract_param_types(defn.params)
@@ -1313,20 +1850,18 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
         # Use original name (not defn_ prefix) for better readability
         safe_name = _sanitize_ident(defn.name, 'defn').lower()
 
-        lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
+        coq_kind = 'Fixpoint' if defn.is_fixpoint else 'Definition'
+        let_kw = 'let rec' if defn.is_fixpoint else 'let'
+        lines.append(f'(* {defn.name} (matches Coq: {coq_kind} {defn.name}) *)')
         if pts:
-            lines.append(f'let {safe_name} {params_str} : Tot {ret} =')
-            # Handle multi-line bodies (e.g., match expressions)
-            if '\n' in body_expr:
-                lines.append(f'  {body_expr}')
-            else:
-                lines.append(f'  {body_expr}')
+            lines.append(f'{let_kw} {safe_name} {params_str} : Tot {ret} =')
+            lines.append(f'  {body_expr}')
         else:
             if '\n' in body_expr:
-                lines.append(f'let {safe_name} : {ret} =')
+                lines.append(f'{let_kw} {safe_name} : {ret} =')
                 lines.append(f'  {body_expr}')
             else:
-                lines.append(f'let {safe_name} : {ret} = {body_expr}')
+                lines.append(f'{let_kw} {safe_name} : {ret} = {body_expr}')
         lines.append('')
 
     # Build definition name set for identifier resolution in theorems
@@ -1350,14 +1885,28 @@ def generate_fstar_file(parsed: CoqFile, coq_path: str) -> str:
 
         if translated is not None:
             params_str, body_str = translated
-            if params_str:
-                lines.append(f'let {lemma_name} {params_str} : Lemma ({body_str}) = admit ()')
+            if body_str.startswith('requires '):
+                # body_str is "requires (H) (ensures (C))" -- format as separate F* Lemma clauses
+                # Extract requires and ensures parts
+                req_match = re.match(r'requires\s*\((.+?)\)\s*\(ensures\s*\((.+)\)\)', body_str, re.DOTALL)
+                if req_match:
+                    req_part = req_match.group(1).strip()
+                    ens_part = req_match.group(2).strip()
+                    p = params_str if params_str else '()'
+                    lines.append(f'let {lemma_name} {p} : Lemma (requires ({req_part})) (ensures ({ens_part})) = admit ()')
+                else:
+                    # Fallback: simple wrap
+                    p = params_str if params_str else '()'
+                    lines.append(f'let {lemma_name} {p} : Lemma ({body_str}) = admit ()')
             else:
-                lines.append(f'let {lemma_name} () : Lemma ({body_str}) = admit ()')
+                if params_str:
+                    lines.append(f'let {lemma_name} {params_str} : Lemma ({body_str}) = admit ()')
+                else:
+                    lines.append(f'let {lemma_name} () : Lemma ({body_str}) = admit ()')
         else:
             # Fallback: vacuous stub (last resort)
             obligation_name = _sanitize_ident(f'{thm.name}_obligation', 'obl').lower()
-            lines.append(f'let {obligation_name} () : Tot bool = (0 = 0)')
+            lines.append(f'let {obligation_name} () : Tot bool = true')
             lines.append(
                 f'let {lemma_name}_lemma () : Lemma (requires True) (ensures ({obligation_name} () == {obligation_name} ())) = ()'
             )

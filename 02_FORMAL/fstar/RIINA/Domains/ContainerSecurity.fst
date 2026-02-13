@@ -161,19 +161,19 @@ let seccomp_fully_hardened (p_s: seccomp_config) : Tot bool =
 
 (* caps_dangerous_dropped (matches Coq: Definition caps_dangerous_dropped) *)
 let caps_dangerous_dropped (p_c: capabilities) : Tot bool =
-  negb (p_c.f_cap_sys_admin) && negb (p_c.f_cap_sys_ptrace) && negb (p_c.f_cap_sys_module) && negb (p_c.f_cap_sys_rawio)
+  (not (p_c.f_cap_sys_admin)) && (not (p_c.f_cap_sys_ptrace)) && (not (p_c.f_cap_sys_module)) && (not (p_c.f_cap_sys_rawio))
 
 (* caps_minimal (matches Coq: Definition caps_minimal) *)
 let caps_minimal (p_c: capabilities) : Tot bool =
-  caps_dangerous_dropped p_c && negb (p_c.f_cap_net_raw) && negb (p_c.f_cap_dac_override) && negb (p_c.f_cap_mknod)
+  caps_dangerous_dropped p_c && (not (p_c.f_cap_net_raw)) && (not (p_c.f_cap_dac_override)) && (not (p_c.f_cap_mknod))
 
 (* caps_rootless_safe (matches Coq: Definition caps_rootless_safe) *)
 let caps_rootless_safe (p_c: capabilities) : Tot bool =
-  caps_minimal p_c && negb (p_c.f_cap_setuid) && negb (p_c.f_cap_setgid) && negb (p_c.f_cap_chown)
+  caps_minimal p_c && (not (p_c.f_cap_setuid)) && (not (p_c.f_cap_setgid)) && (not (p_c.f_cap_chown))
 
 (* caps_network_minimal (matches Coq: Definition caps_network_minimal) *)
 let caps_network_minimal (p_c: capabilities) : Tot bool =
-  negb (p_c.f_cap_net_raw) && p_c.f_cap_net_bind
+  (not (p_c.f_cap_net_raw)) && p_c.f_cap_net_bind
 
 (* image_authenticity_verified (matches Coq: Definition image_authenticity_verified) *)
 let image_authenticity_verified (p_i: image_integrity) : Tot bool =
@@ -257,16 +257,16 @@ let riina_escape : escape_prevention = {f_esc_no_privileged=true; f_esc_no_host_
 let riina_container : container_config = mkContainer riina_ns riina_cgroup riina_seccomp riina_caps riina_image riina_escape true
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true) (ensures (p_a && p_b == true))) = admit ()
+let andb_true_intro (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
 
 (* andb_true_elim1 (matches Coq: Lemma andb_true_elim1) *)
-let andb_true_elim1 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true) (ensures (p_a == true))) = admit ()
+let andb_true_elim1 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
 
 (* andb_true_elim2 (matches Coq: Lemma andb_true_elim2) *)
-let andb_true_elim2 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true) (ensures (p_b == true))) = admit ()
+let andb_true_elim2 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
 
 (* andb7_true (matches Coq: Lemma andb7_true) *)
-let andb7_true (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_e: _) (p_f: _) (p_g: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c && p_d && p_e && p_f && p_g == true) (ensures (p_a == true /\ p_b == true /\ p_c == true /\ p_d == true /\ p_e == true /\ p_f == true /\ p_g == true))) = admit ()
+let andb7_true (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_e: _) (p_f: _) (p_g: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c && p_d && p_e && p_f && p_g == true)) (ensures (p_a == true /\ p_b == true /\ p_c == true /\ p_d == true /\ p_e == true /\ p_f == true /\ p_g == true)) = admit ()
 
 (* NS_001_full_isolation (matches Coq: Theorem NS_001_full_isolation) *)
 let ns_001_full_isolation () : Lemma (ns_fully_isolated riina_ns == true) = admit ()
@@ -305,13 +305,13 @@ let ns_011_network_safe () : Lemma (ns_network_safe riina_ns == true) = admit ()
 let ns_012_process_safe () : Lemma (ns_process_safe riina_ns == true) = admit ()
 
 (* NS_013_full_implies_pid (matches Coq: Theorem NS_013_full_implies_pid) *)
-let ns_013_full_implies_pid (p_n: _) : Lemma (requires (ns_fully_isolated p_n == true) (ensures (p_n.f_ns_pid_isolated == true))) = admit ()
+let ns_013_full_implies_pid (p_n: _) : Lemma (requires (ns_fully_isolated p_n == true)) (ensures (p_n.f_ns_pid_isolated == true)) = admit ()
 
 (* NS_014_full_implies_net (matches Coq: Theorem NS_014_full_implies_net) *)
-let ns_014_full_implies_net (p_n: _) : Lemma (requires (ns_fully_isolated p_n == true) (ensures (p_n.f_ns_net_isolated == true))) = admit ()
+let ns_014_full_implies_net (p_n: _) : Lemma (requires (ns_fully_isolated p_n == true)) (ensures (p_n.f_ns_net_isolated == true)) = admit ()
 
 (* NS_015_full_implies_user (matches Coq: Theorem NS_015_full_implies_user) *)
-let ns_015_full_implies_user (p_n: _) : Lemma (requires (ns_fully_isolated p_n == true) (ensures (p_n.f_ns_user_isolated == true))) = admit ()
+let ns_015_full_implies_user (p_n: _) : Lemma (requires (ns_fully_isolated p_n == true)) (ensures (p_n.f_ns_user_isolated == true)) = admit ()
 
 (* CG_001_cpu_safe (matches Coq: Theorem CG_001_cpu_safe) *)
 let cg_001_cpu_safe () : Lemma (cgroup_cpu_safe riina_cgroup == true) = admit ()
@@ -329,16 +329,16 @@ let cg_004_io_safe () : Lemma (cgroup_io_safe riina_cgroup == true) = admit ()
 let cg_005_fully_limited () : Lemma (cgroup_fully_limited riina_cgroup == true) = admit ()
 
 (* CG_006_full_implies_cpu (matches Coq: Theorem CG_006_full_implies_cpu) *)
-let cg_006_full_implies_cpu (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true) (ensures (cgroup_cpu_safe p_c == true))) = admit ()
+let cg_006_full_implies_cpu (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true)) (ensures (cgroup_cpu_safe p_c == true)) = admit ()
 
 (* CG_007_full_implies_memory (matches Coq: Theorem CG_007_full_implies_memory) *)
-let cg_007_full_implies_memory (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true) (ensures (cgroup_memory_safe p_c == true))) = admit ()
+let cg_007_full_implies_memory (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true)) (ensures (cgroup_memory_safe p_c == true)) = admit ()
 
 (* CG_008_full_implies_pids (matches Coq: Theorem CG_008_full_implies_pids) *)
-let cg_008_full_implies_pids (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true) (ensures (cgroup_pids_safe p_c == true))) = admit ()
+let cg_008_full_implies_pids (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true)) (ensures (cgroup_pids_safe p_c == true)) = admit ()
 
 (* CG_009_full_implies_io (matches Coq: Theorem CG_009_full_implies_io) *)
-let cg_009_full_implies_io (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true) (ensures (cgroup_io_safe p_c == true))) = admit ()
+let cg_009_full_implies_io (p_c: _) : Lemma (requires (cgroup_fully_limited p_c == true)) (ensures (cgroup_io_safe p_c == true)) = admit ()
 
 (* CG_010_swap_disabled (matches Coq: Theorem CG_010_swap_disabled) *)
 let cg_010_swap_disabled () : Lemma (riina_cgroup.f_cg_swap_disabled == true) = admit ()
@@ -377,10 +377,10 @@ let sc_010_block_module () : Lemma (riina_seccomp.f_sc_block_module == true) = a
 let sc_011_block_namespace () : Lemma (riina_seccomp.f_sc_block_namespace == true) = admit ()
 
 (* SC_012_hardened_implies_filter (matches Coq: Theorem SC_012_hardened_implies_filter) *)
-let sc_012_hardened_implies_filter (p_s: _) : Lemma (requires (seccomp_fully_hardened p_s == true) (ensures (p_s.f_sc_syscall_filter == true))) = admit ()
+let sc_012_hardened_implies_filter (p_s: _) : Lemma (requires (seccomp_fully_hardened p_s == true)) (ensures (p_s.f_sc_syscall_filter == true)) = admit ()
 
 (* SC_013_hardened_implies_block_priv (matches Coq: Theorem SC_013_hardened_implies_block_priv) *)
-let sc_013_hardened_implies_block_priv (p_s: _) : Lemma (requires (seccomp_fully_hardened p_s == true) (ensures (p_s.f_sc_block_privileged == true))) = admit ()
+let sc_013_hardened_implies_block_priv (p_s: _) : Lemma (requires (seccomp_fully_hardened p_s == true)) (ensures (p_s.f_sc_block_privileged == true)) = admit ()
 
 (* CAP_001_dangerous_dropped (matches Coq: Theorem CAP_001_dangerous_dropped) *)
 let cap_001_dangerous_dropped () : Lemma (caps_dangerous_dropped riina_caps == true) = admit ()
@@ -458,10 +458,10 @@ let img_011_no_critical_vulns () : Lemma (riina_image.f_img_no_critical_vulns ==
 let img_012_base_verified () : Lemma (riina_image.f_img_base_verified == true) = admit ()
 
 (* IMG_013_full_implies_signed (matches Coq: Theorem IMG_013_full_implies_signed) *)
-let img_013_full_implies_signed (p_i: _) : Lemma (requires (image_fully_verified p_i == true) (ensures (p_i.f_img_signed == true))) = admit ()
+let img_013_full_implies_signed (p_i: _) : Lemma (requires (image_fully_verified p_i == true)) (ensures (p_i.f_img_signed == true)) = admit ()
 
 (* IMG_014_full_implies_no_vulns (matches Coq: Theorem IMG_014_full_implies_no_vulns) *)
-let img_014_full_implies_no_vulns (p_i: _) : Lemma (requires (image_fully_verified p_i == true) (ensures (p_i.f_img_no_critical_vulns == true))) = admit ()
+let img_014_full_implies_no_vulns (p_i: _) : Lemma (requires (image_fully_verified p_i == true)) (ensures (p_i.f_img_no_critical_vulns == true)) = admit ()
 
 (* ESC_001_basic_protected (matches Coq: Theorem ESC_001_basic_protected) *)
 let esc_001_basic_protected () : Lemma (escape_basic_protected riina_escape == true) = admit ()
@@ -500,10 +500,10 @@ let esc_011_seccomp_enabled () : Lemma (riina_escape.f_esc_seccomp_enabled == tr
 let esc_012_drop_all_caps () : Lemma (riina_escape.f_esc_drop_all_caps == true) = admit ()
 
 (* ESC_013_full_implies_no_priv (matches Coq: Theorem ESC_013_full_implies_no_priv) *)
-let esc_013_full_implies_no_priv (p_e: _) : Lemma (requires (escape_fully_protected p_e == true) (ensures (p_e.f_esc_no_privileged == true))) = admit ()
+let esc_013_full_implies_no_priv (p_e: _) : Lemma (requires (escape_fully_protected p_e == true)) (ensures (p_e.f_esc_no_privileged == true)) = admit ()
 
 (* ESC_014_full_implies_seccomp (matches Coq: Theorem ESC_014_full_implies_seccomp) *)
-let esc_014_full_implies_seccomp (p_e: _) : Lemma (requires (escape_fully_protected p_e == true) (ensures (p_e.f_esc_seccomp_enabled == true))) = admit ()
+let esc_014_full_implies_seccomp (p_e: _) : Lemma (requires (escape_fully_protected p_e == true)) (ensures (p_e.f_esc_seccomp_enabled == true)) = admit ()
 
 (* CONT_001_isolated (matches Coq: Theorem CONT_001_isolated) *)
 let cont_001_isolated () : Lemma (container_isolated riina_container == true) = admit ()
@@ -530,28 +530,28 @@ let cont_007_fully_secure () : Lemma (container_fully_secure riina_container == 
 let cont_008_rootless () : Lemma (riina_container.f_cont_rootless == true) = admit ()
 
 (* CONT_009_secure_implies_isolated (matches Coq: Theorem CONT_009_secure_implies_isolated) *)
-let cont_009_secure_implies_isolated (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_isolated p_c == true))) = admit ()
+let cont_009_secure_implies_isolated (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_isolated p_c == true)) = admit ()
 
 (* CONT_010_secure_implies_resource (matches Coq: Theorem CONT_010_secure_implies_resource) *)
-let cont_010_secure_implies_resource (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_resource_safe p_c == true))) = admit ()
+let cont_010_secure_implies_resource (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_resource_safe p_c == true)) = admit ()
 
 (* CONT_011_secure_implies_syscall (matches Coq: Theorem CONT_011_secure_implies_syscall) *)
-let cont_011_secure_implies_syscall (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_syscall_safe p_c == true))) = admit ()
+let cont_011_secure_implies_syscall (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_syscall_safe p_c == true)) = admit ()
 
 (* CONT_012_secure_implies_capability (matches Coq: Theorem CONT_012_secure_implies_capability) *)
-let cont_012_secure_implies_capability (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_capability_safe p_c == true))) = admit ()
+let cont_012_secure_implies_capability (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_capability_safe p_c == true)) = admit ()
 
 (* CONT_013_secure_implies_image (matches Coq: Theorem CONT_013_secure_implies_image) *)
-let cont_013_secure_implies_image (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_image_safe p_c == true))) = admit ()
+let cont_013_secure_implies_image (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_image_safe p_c == true)) = admit ()
 
 (* CONT_014_secure_implies_escape (matches Coq: Theorem CONT_014_secure_implies_escape) *)
-let cont_014_secure_implies_escape (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_escape_safe p_c == true))) = admit ()
+let cont_014_secure_implies_escape (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_escape_safe p_c == true)) = admit ()
 
 (* CONT_015_secure_implies_rootless (matches Coq: Theorem CONT_015_secure_implies_rootless) *)
-let cont_015_secure_implies_rootless (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (p_c.f_cont_rootless == true))) = admit ()
+let cont_015_secure_implies_rootless (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (p_c.f_cont_rootless == true)) = admit ()
 
 (* CROSS_001_all_protections (matches Coq: Theorem CROSS_001_all_protections) *)
-let cross_001_all_protections (p_c: _) : Lemma (requires (container_fully_secure p_c == true) (ensures (container_isolated p_c == true /\ container_resource_safe p_c == true /\ container_syscall_safe p_c == true /\ container_capability_safe p_c == true /\ container_image_safe p_c == true /\ container_escape_safe p_c == true /\ p_c.f_cont_rootless == true))) = admit ()
+let cross_001_all_protections (p_c: _) : Lemma (requires (container_fully_secure p_c == true)) (ensures (container_isolated p_c == true /\ container_resource_safe p_c == true /\ container_syscall_safe p_c == true /\ container_capability_safe p_c == true /\ container_image_safe p_c == true /\ container_escape_safe p_c == true /\ p_c.f_cont_rootless == true)) = admit ()
 
 (* RIINA_001_defense_in_depth (matches Coq: Theorem RIINA_001_defense_in_depth) *)
 let riina_001_defense_in_depth () : Lemma (container_fully_secure riina_container == true /\ ns_fully_isolated riina_ns == true /\ cgroup_fully_limited riina_cgroup == true /\ seccomp_fully_hardened riina_seccomp == true /\ caps_rootless_safe riina_caps == true /\ image_fully_verified riina_image == true /\ escape_fully_protected riina_escape == true) = admit ()

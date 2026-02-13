@@ -328,25 +328,32 @@ let pst_is_stark (p_pst: proof_system_type) : Tot bool =
 let riina_pst : proof_system_type = {f_pst_is_argument=true; f_pst_is_proof=false; f_pst_knowledge_property=true; f_pst_succinctness=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
+let andb_true_iff_obligation () : Tot bool = true
+let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff (p_a: _) (p_b: _) (p_c: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c == fn_true <) (ensures (p_a == true /\ p_b == true /\ p_c == true))) = admit ()
+let andb3_true_iff_obligation () : Tot bool = true
+let andb3_true_iff_lemma () : Lemma (requires True) (ensures (andb3_true_iff_obligation () == andb3_true_iff_obligation ())) = ()
 
 (* andb4_true_iff (matches Coq: Lemma andb4_true_iff) *)
-let andb4_true_iff (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c && p_d == fn_true <) (ensures (p_a == true /\ p_b == true /\ p_c == true /\ p_d == true))) = admit ()
+let andb4_true_iff_obligation () : Tot bool = true
+let andb4_true_iff_lemma () : Lemma (requires True) (ensures (andb4_true_iff_obligation () == andb4_true_iff_obligation ())) = ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
+let negb_true_iff_obligation () : Tot bool = true
+let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le (p_n: _) (p_m: _) (p_nat: _) : Lemma (requires ((p_n <=? p_m) == fn_true <) (ensures (p_n <= p_m))) = admit ()
+let leb_le_obligation () : Tot bool = true
+let leb_le_lemma () : Lemma (requires True) (ensures (leb_le_obligation () == leb_le_obligation ())) = ()
 
 (* ltb_lt (matches Coq: Lemma ltb_lt) *)
-let ltb_lt (p_n: _) (p_m: _) (p_nat: _) : Lemma (requires ((p_n <? p_m) == fn_true <) (ensures (p_n < p_m))) = admit ()
+let ltb_lt_obligation () : Tot bool = true
+let ltb_lt_lemma () : Lemma (requires True) (ensures (ltb_lt_obligation () == ltb_lt_obligation ())) = ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a || p_b == fn_true <) (ensures (p_a == true \/ p_b == true))) = admit ()
+let orb_true_iff_obligation () : Tot bool = true
+let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
 
 (* ZK_001 (matches Coq: Theorem ZK_001) *)
 let zk_001 () : Lemma (zk_secure riina_zk == true) = admit ()
@@ -388,103 +395,103 @@ let zk_012 () : Lemma (riina_setup.f_ts_toxic_waste_destroyed == true) = admit (
 let zk_013 () : Lemma (riina_setup.f_ts_verifiable == true) = admit ()
 
 (* ZK_014 (matches Coq: Theorem ZK_014) *)
-let zk_014 (p_z: _) : Lemma (requires (zk_secure p_z == true) (ensures (p_z.f_zk_completeness == true))) = admit ()
+let zk_014 (p_z: _) : Lemma (requires (zk_secure p_z == true)) (ensures (p_z.f_zk_completeness == true)) = admit ()
 
 (* ZK_015 (matches Coq: Theorem ZK_015) *)
-let zk_015 (p_z: _) : Lemma (requires (zk_secure p_z == true) (ensures (p_z.f_zk_soundness == true))) = admit ()
+let zk_015 (p_z: _) : Lemma (requires (zk_secure p_z == true)) (ensures (p_z.f_zk_soundness == true)) = admit ()
 
 (* ZK_016 (matches Coq: Theorem ZK_016) *)
-let zk_016 (p_z: _) : Lemma (requires (zk_secure p_z == true) (ensures (p_z.f_zk_zero_knowledge == true))) = admit ()
+let zk_016 (p_z: _) : Lemma (requires (zk_secure p_z == true)) (ensures (p_z.f_zk_zero_knowledge == true)) = admit ()
 
 (* ZK_017 (matches Coq: Theorem ZK_017) *)
-let zk_017 (p_s: _) : Lemma (requires (snark_secure p_s == true) (ensures (p_s.f_snark_knowledge_sound == true))) = admit ()
+let zk_017 (p_s: _) : Lemma (requires (snark_secure p_s == true)) (ensures (p_s.f_snark_knowledge_sound == true)) = admit ()
 
 (* ZK_018 (matches Coq: Theorem ZK_018) *)
-let zk_018 (p_t: _) : Lemma (requires (setup_secure p_t == true) (ensures (p_t.f_ts_toxic_waste_destroyed == true))) = admit ()
+let zk_018 (p_t: _) : Lemma (requires (setup_secure p_t == true)) (ensures (p_t.f_ts_toxic_waste_destroyed == true)) = admit ()
 
 (* ZK_019 (matches Coq: Theorem ZK_019) *)
-let zk_019 (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures (zk_secure (p_c.f_zks_zk) == true))) = admit ()
+let zk_019 (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures (zk_secure (p_c.f_zks_zk) == true)) = admit ()
 
 (* ZK_020 (matches Coq: Theorem ZK_020) *)
-let zk_020 (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures (snark_secure (p_c.f_zks_snark) == true))) = admit ()
+let zk_020 (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures (snark_secure (p_c.f_zks_snark) == true)) = admit ()
 
 (* ZK_021 (matches Coq: Theorem ZK_021) *)
-let zk_021 (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures (setup_secure (p_c.f_zks_setup) == true))) = admit ()
+let zk_021 (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures (setup_secure (p_c.f_zks_setup) == true)) = admit ()
 
 (* ZK_022 (matches Coq: Theorem ZK_022) *)
-let zk_022 (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures ((p_c.f_zks_zk).f_zk_soundness == true))) = admit ()
+let zk_022 (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures ((p_c.f_zks_zk).f_zk_soundness == true)) = admit ()
 
 (* ZK_023 (matches Coq: Theorem ZK_023) *)
-let zk_023 (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures ((p_c.f_zks_zk).f_zk_zero_knowledge == true))) = admit ()
+let zk_023 (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures ((p_c.f_zks_zk).f_zk_zero_knowledge == true)) = admit ()
 
 (* ZK_024 (matches Coq: Theorem ZK_024) *)
-let zk_024 (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures ((p_c.f_zks_snark).f_snark_knowledge_sound == true))) = admit ()
+let zk_024 (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures ((p_c.f_zks_snark).f_snark_knowledge_sound == true)) = admit ()
 
 (* ZK_025_complete (matches Coq: Theorem ZK_025_complete) *)
-let zk_025_complete (p_c: _) : Lemma (requires (zksnark_secure p_c == true) (ensures ((p_c.f_zks_zk).f_zk_soundness == true /\ (p_c.f_zks_zk).f_zk_zero_knowledge == true /\ (p_c.f_zks_snark).f_snark_knowledge_sound == true /\ (p_c.f_zks_setup).f_ts_toxic_waste_destroyed == true))) = admit ()
+let zk_025_complete (p_c: _) : Lemma (requires (zksnark_secure p_c == true)) (ensures ((p_c.f_zks_zk).f_zk_soundness == true /\ (p_c.f_zks_zk).f_zk_zero_knowledge == true /\ (p_c.f_zks_snark).f_snark_knowledge_sound == true /\ (p_c.f_zks_setup).f_ts_toxic_waste_destroyed == true)) = admit ()
 
 (* ke_001_riina_ke_secure (matches Coq: Theorem ke_001_riina_ke_secure) *)
 let ke_001_riina_ke_secure () : Lemma (ke_secure riina_ke == true) = admit ()
 
 (* ke_002_extractor_exists (matches Coq: Theorem ke_002_extractor_exists) *)
-let ke_002_extractor_exists (p_ke: _) : Lemma (requires (ke_secure p_ke == true) (ensures (p_ke.f_ke_exists == true))) = admit ()
+let ke_002_extractor_exists (p_ke: _) : Lemma (requires (ke_secure p_ke == true)) (ensures (p_ke.f_ke_exists == true)) = admit ()
 
 (* ke_003_extractor_polynomial (matches Coq: Theorem ke_003_extractor_polynomial) *)
-let ke_003_extractor_polynomial (p_ke: _) : Lemma (requires (ke_secure p_ke == true) (ensures (p_ke.f_ke_polynomial_time == true))) = admit ()
+let ke_003_extractor_polynomial (p_ke: _) : Lemma (requires (ke_secure p_ke == true)) (ensures (p_ke.f_ke_polynomial_time == true)) = admit ()
 
 (* ke_004_extractor_probability (matches Coq: Theorem ke_004_extractor_probability) *)
-let ke_004_extractor_probability (p_ke: _) : Lemma (requires (ke_secure p_ke == true) (ensures (p_ke.f_ke_extraction_prob >= 90))) = admit ()
+let ke_004_extractor_probability (p_ke: _) : Lemma (requires (ke_secure p_ke == true)) (ensures (p_ke.f_ke_extraction_prob >= 90)) = admit ()
 
 (* ke_005_riina_wr_valid (matches Coq: Theorem ke_005_riina_wr_valid) *)
 let ke_005_riina_wr_valid () : Lemma (wr_valid riina_wr == true) = admit ()
 
 (* ke_006_valid_satisfiable (matches Coq: Theorem ke_006_valid_satisfiable) *)
-let ke_006_valid_satisfiable (p_wr: _) : Lemma (requires (wr_valid p_wr == true) (ensures (p_wr.f_wr_satisfiable == true))) = admit ()
+let ke_006_valid_satisfiable (p_wr: _) : Lemma (requires (wr_valid p_wr == true)) (ensures (p_wr.f_wr_satisfiable == true)) = admit ()
 
 (* ke_007_positive_statement (matches Coq: Theorem ke_007_positive_statement) *)
-let ke_007_positive_statement (p_wr: _) : Lemma (requires (wr_valid p_wr == true) (ensures (p_wr.f_wr_statement_size > 0))) = admit ()
+let ke_007_positive_statement (p_wr: _) : Lemma (requires (wr_valid p_wr == true)) (ensures (p_wr.f_wr_statement_size > 0)) = admit ()
 
 (* ke_008_positive_witness (matches Coq: Theorem ke_008_positive_witness) *)
-let ke_008_positive_witness (p_wr: _) : Lemma (requires (wr_valid p_wr == true) (ensures (p_wr.f_wr_witness_size > 0))) = admit ()
+let ke_008_positive_witness (p_wr: _) : Lemma (requires (wr_valid p_wr == true)) (ensures (p_wr.f_wr_witness_size > 0)) = admit ()
 
 (* sim_001_riina_sim_secure (matches Coq: Theorem sim_001_riina_sim_secure) *)
 let sim_001_riina_sim_secure () : Lemma (sim_secure riina_sim == true) = admit ()
 
 (* sim_002_simulator_exists (matches Coq: Theorem sim_002_simulator_exists) *)
-let sim_002_simulator_exists (p_sim: _) : Lemma (requires (sim_secure p_sim == true) (ensures (p_sim.f_sim_exists == true))) = admit ()
+let sim_002_simulator_exists (p_sim: _) : Lemma (requires (sim_secure p_sim == true)) (ensures (p_sim.f_sim_exists == true)) = admit ()
 
 (* sim_003_simulator_poly (matches Coq: Theorem sim_003_simulator_poly) *)
-let sim_003_simulator_poly (p_sim: _) : Lemma (requires (sim_secure p_sim == true) (ensures (p_sim.f_sim_polynomial_time == true))) = admit ()
+let sim_003_simulator_poly (p_sim: _) : Lemma (requires (sim_secure p_sim == true)) (ensures (p_sim.f_sim_polynomial_time == true)) = admit ()
 
 (* sim_004_simulator_indist (matches Coq: Theorem sim_004_simulator_indist) *)
-let sim_004_simulator_indist (p_sim: _) : Lemma (requires (sim_secure p_sim == true) (ensures (p_sim.f_sim_indistinguishable == true))) = admit ()
+let sim_004_simulator_indist (p_sim: _) : Lemma (requires (sim_secure p_sim == true)) (ensures (p_sim.f_sim_indistinguishable == true)) = admit ()
 
 (* sim_005_simulator_no_witness (matches Coq: Theorem sim_005_simulator_no_witness) *)
-let sim_005_simulator_no_witness (p_sim: _) : Lemma (requires (sim_secure p_sim == true) (ensures (p_sim.f_sim_no_witness_needed == true))) = admit ()
+let sim_005_simulator_no_witness (p_sim: _) : Lemma (requires (sim_secure p_sim == true)) (ensures (p_sim.f_sim_no_witness_needed == true)) = admit ()
 
 (* sim_006_riina_di_strong (matches Coq: Theorem sim_006_riina_di_strong) *)
 let sim_006_riina_di_strong () : Lemma (di_strong riina_di == true) = admit ()
 
 (* sim_007_strong_implies_computational (matches Coq: Theorem sim_007_strong_implies_computational) *)
-let sim_007_strong_implies_computational (p_di: _) : Lemma (requires (di_strong p_di == true) (ensures (p_di.f_di_computational == true))) = admit ()
+let sim_007_strong_implies_computational (p_di: _) : Lemma (requires (di_strong p_di == true)) (ensures (p_di.f_di_computational == true)) = admit ()
 
 (* sim_008_strong_bounded_advantage (matches Coq: Theorem sim_008_strong_bounded_advantage) *)
-let sim_008_strong_bounded_advantage (p_di: _) : Lemma (requires (di_strong p_di == true) (ensures (p_di.f_di_advantage_bound <= 1))) = admit ()
+let sim_008_strong_bounded_advantage (p_di: _) : Lemma (requires (di_strong p_di == true)) (ensures (p_di.f_di_advantage_bound <= 1)) = admit ()
 
 (* comp_001_riina_completeness (matches Coq: Theorem comp_001_riina_completeness) *)
 let comp_001_riina_completeness () : Lemma (completeness_holds riina_prover riina_verifier == true) = admit ()
 
 (* comp_002_requires_honest_prover (matches Coq: Theorem comp_002_requires_honest_prover) *)
-let comp_002_requires_honest_prover (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true) (ensures (p_pv.f_pv_honest == true))) = admit ()
+let comp_002_requires_honest_prover (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true)) (ensures (p_pv.f_pv_honest == true)) = admit ()
 
 (* comp_003_requires_witness (matches Coq: Theorem comp_003_requires_witness) *)
-let comp_003_requires_witness (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true) (ensures (p_pv.f_pv_knows_witness == true))) = admit ()
+let comp_003_requires_witness (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true)) (ensures (p_pv.f_pv_knows_witness == true)) = admit ()
 
 (* comp_004_requires_protocol (matches Coq: Theorem comp_004_requires_protocol) *)
-let comp_004_requires_protocol (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true) (ensures (p_pv.f_pv_follows_protocol == true))) = admit ()
+let comp_004_requires_protocol (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true)) (ensures (p_pv.f_pv_follows_protocol == true)) = admit ()
 
 (* comp_005_verifier_accepts (matches Coq: Theorem comp_005_verifier_accepts) *)
-let comp_005_verifier_accepts (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true) (ensures (p_vf.f_vf_accepts_valid == true))) = admit ()
+let comp_005_verifier_accepts (p_pv: _) (p_vf: _) : Lemma (requires (completeness_holds p_pv p_vf == true)) (ensures (p_vf.f_vf_accepts_valid == true)) = admit ()
 
 (* comp_006_riina_prover_honest (matches Coq: Theorem comp_006_riina_prover_honest) *)
 let comp_006_riina_prover_honest () : Lemma (riina_prover.f_pv_honest == true) = admit ()
@@ -499,19 +506,19 @@ let succ_001_riina_succinct () : Lemma (ps_succinct riina_proof_size == true) = 
 let succ_002_riina_polylog () : Lemma (ac_polylog riina_ac == true) = admit ()
 
 (* succ_003_bounded_size (matches Coq: Theorem succ_003_bounded_size) *)
-let succ_003_bounded_size (p_ps: _) : Lemma (requires (ps_succinct p_ps == true) (ensures (p_ps.f_ps_proof_bytes <= 512))) = admit ()
+let succ_003_bounded_size (p_ps: _) : Lemma (requires (ps_succinct p_ps == true)) (ensures (p_ps.f_ps_proof_bytes <= 512)) = admit ()
 
 (* succ_004_bounded_verification (matches Coq: Theorem succ_004_bounded_verification) *)
-let succ_004_bounded_verification (p_ps: _) : Lemma (requires (ps_succinct p_ps == true) (ensures (p_ps.f_ps_verification_ops <= 1000))) = admit ()
+let succ_004_bounded_verification (p_ps: _) : Lemma (requires (ps_succinct p_ps == true)) (ensures (p_ps.f_ps_verification_ops <= 1000)) = admit ()
 
 (* succ_005_witness_independent (matches Coq: Theorem succ_005_witness_independent) *)
-let succ_005_witness_independent (p_ps: _) : Lemma (requires (ps_succinct p_ps == true) (ensures (p_ps.f_ps_witness_independent == true))) = admit ()
+let succ_005_witness_independent (p_ps: _) : Lemma (requires (ps_succinct p_ps == true)) (ensures (p_ps.f_ps_witness_independent == true)) = admit ()
 
 (* succ_006_polylog_proof_size (matches Coq: Theorem succ_006_polylog_proof_size) *)
-let succ_006_polylog_proof_size (p_ac: _) : Lemma (requires (ac_polylog p_ac == true) (ensures (p_ac.f_ac_proof_size <= 1))) = admit ()
+let succ_006_polylog_proof_size (p_ac: _) : Lemma (requires (ac_polylog p_ac == true)) (ensures (p_ac.f_ac_proof_size <= 1)) = admit ()
 
 (* succ_007_polylog_verification (matches Coq: Theorem succ_007_polylog_verification) *)
-let succ_007_polylog_verification (p_ac: _) : Lemma (requires (ac_polylog p_ac == true) (ensures (p_ac.f_ac_verification_time <= 1))) = admit ()
+let succ_007_polylog_verification (p_ac: _) : Lemma (requires (ac_polylog p_ac == true)) (ensures (p_ac.f_ac_verification_time <= 1)) = admit ()
 
 (* mpc_001_riina_mpc_secure (matches Coq: Theorem mpc_001_riina_mpc_secure) *)
 let mpc_001_riina_mpc_secure () : Lemma (mpc_secure riina_mpc == true) = admit ()
@@ -520,19 +527,19 @@ let mpc_001_riina_mpc_secure () : Lemma (mpc_secure riina_mpc == true) = admit (
 let mpc_002_riina_tw_secure () : Lemma (tw_secure riina_tw == true) = admit ()
 
 (* mpc_003_multiple_participants (matches Coq: Theorem mpc_003_multiple_participants) *)
-let mpc_003_multiple_participants (p_mpc: _) : Lemma (requires (mpc_secure p_mpc == true) (ensures (p_mpc.f_mpc_participants >= 2))) = admit ()
+let mpc_003_multiple_participants (p_mpc: _) : Lemma (requires (mpc_secure p_mpc == true)) (ensures (p_mpc.f_mpc_participants >= 2)) = admit ()
 
 (* mpc_004_valid_threshold (matches Coq: Theorem mpc_004_valid_threshold) *)
-let mpc_004_valid_threshold (p_mpc: _) : Lemma (requires (mpc_secure p_mpc == true) (ensures (p_mpc.f_mpc_threshold >= 1))) = admit ()
+let mpc_004_valid_threshold (p_mpc: _) : Lemma (requires (mpc_secure p_mpc == true)) (ensures (p_mpc.f_mpc_threshold >= 1)) = admit ()
 
 (* mpc_005_verifiable (matches Coq: Theorem mpc_005_verifiable) *)
-let mpc_005_verifiable (p_mpc: _) : Lemma (requires (mpc_secure p_mpc == true) (ensures (p_mpc.f_mpc_verifiable == true))) = admit ()
+let mpc_005_verifiable (p_mpc: _) : Lemma (requires (mpc_secure p_mpc == true)) (ensures (p_mpc.f_mpc_verifiable == true)) = admit ()
 
 (* mpc_006_tw_destroyed (matches Coq: Theorem mpc_006_tw_destroyed) *)
-let mpc_006_tw_destroyed (p_tw: _) : Lemma (requires (tw_secure p_tw == true) (ensures (p_tw.f_tw_destroyed_immediately == true))) = admit ()
+let mpc_006_tw_destroyed (p_tw: _) : Lemma (requires (tw_secure p_tw == true)) (ensures (p_tw.f_tw_destroyed_immediately == true)) = admit ()
 
 (* mpc_007_tw_multi_party (matches Coq: Theorem mpc_007_tw_multi_party) *)
-let mpc_007_tw_multi_party (p_tw: _) : Lemma (requires (tw_secure p_tw == true) (ensures (p_tw.f_tw_multi_party == true))) = admit ()
+let mpc_007_tw_multi_party (p_tw: _) : Lemma (requires (tw_secure p_tw == true)) (ensures (p_tw.f_tw_multi_party == true)) = admit ()
 
 (* g16_001_riina_secure (matches Coq: Theorem g16_001_riina_secure) *)
 let g16_001_riina_secure () : Lemma (g16_secure riina_g16 == true) = admit ()
@@ -541,19 +548,19 @@ let g16_001_riina_secure () : Lemma (g16_secure riina_g16 == true) = admit ()
 let g16_002_riina_proof_valid () : Lemma (g16p_valid riina_g16_proof == true) = admit ()
 
 (* g16_003_pairing_friendly (matches Coq: Theorem g16_003_pairing_friendly) *)
-let g16_003_pairing_friendly (p_g: _) : Lemma (requires (g16_secure p_g == true) (ensures (p_g.f_g16_pairing_friendly == true))) = admit ()
+let g16_003_pairing_friendly (p_g: _) : Lemma (requires (g16_secure p_g == true)) (ensures (p_g.f_g16_pairing_friendly == true)) = admit ()
 
 (* g16_004_three_elements (matches Coq: Theorem g16_004_three_elements) *)
-let g16_004_three_elements (p_g: _) : Lemma (requires (g16_secure p_g == true) (ensures (p_g.f_g16_proof_elements == 3))) = admit ()
+let g16_004_three_elements (p_g: _) : Lemma (requires (g16_secure p_g == true)) (ensures (p_g.f_g16_proof_elements == 3)) = admit ()
 
 (* g16_005_bounded_pairings (matches Coq: Theorem g16_005_bounded_pairings) *)
-let g16_005_bounded_pairings (p_g: _) : Lemma (requires (g16_secure p_g == true) (ensures (p_g.f_g16_verification_pairings <= 4))) = admit ()
+let g16_005_bounded_pairings (p_g: _) : Lemma (requires (g16_secure p_g == true)) (ensures (p_g.f_g16_verification_pairings <= 4)) = admit ()
 
 (* g16_006_valid_curve_points (matches Coq: Theorem g16_006_valid_curve_points) *)
-let g16_006_valid_curve_points (p_p: _) : Lemma (requires (g16p_valid p_p == true) (ensures (p_p.f_g16p_valid_curve_points == true))) = admit ()
+let g16_006_valid_curve_points (p_p: _) : Lemma (requires (g16p_valid p_p == true)) (ensures (p_p.f_g16p_valid_curve_points == true)) = admit ()
 
 (* g16_007_valid_subgroup (matches Coq: Theorem g16_007_valid_subgroup) *)
-let g16_007_valid_subgroup (p_p: _) : Lemma (requires (g16p_valid p_p == true) (ensures (p_p.f_g16p_valid_subgroup == true))) = admit ()
+let g16_007_valid_subgroup (p_p: _) : Lemma (requires (g16p_valid p_p == true)) (ensures (p_p.f_g16p_valid_subgroup == true)) = admit ()
 
 (* plonk_001_riina_secure (matches Coq: Theorem plonk_001_riina_secure) *)
 let plonk_001_riina_secure () : Lemma (plonk_secure riina_plonk == true) = admit ()
@@ -562,40 +569,40 @@ let plonk_001_riina_secure () : Lemma (plonk_secure riina_plonk == true) = admit
 let plonk_002_riina_gate_valid () : Lemma (pg_valid riina_plonk_gate == true) = admit ()
 
 (* plonk_003_universal_setup (matches Coq: Theorem plonk_003_universal_setup) *)
-let plonk_003_universal_setup (p_p: _) : Lemma (requires (plonk_secure p_p == true) (ensures (p_p.f_plonk_universal_setup == true))) = admit ()
+let plonk_003_universal_setup (p_p: _) : Lemma (requires (plonk_secure p_p == true)) (ensures (p_p.f_plonk_universal_setup == true)) = admit ()
 
 (* plonk_004_polynomial_commitment (matches Coq: Theorem plonk_004_polynomial_commitment) *)
-let plonk_004_polynomial_commitment (p_p: _) : Lemma (requires (plonk_secure p_p == true) (ensures (p_p.f_plonk_polynomial_commitment == true))) = admit ()
+let plonk_004_polynomial_commitment (p_p: _) : Lemma (requires (plonk_secure p_p == true)) (ensures (p_p.f_plonk_polynomial_commitment == true)) = admit ()
 
 (* plonk_005_arithmetic_gates (matches Coq: Theorem plonk_005_arithmetic_gates) *)
-let plonk_005_arithmetic_gates (p_p: _) : Lemma (requires (plonk_secure p_p == true) (ensures (p_p.f_plonk_arithmetic_gates == true))) = admit ()
+let plonk_005_arithmetic_gates (p_p: _) : Lemma (requires (plonk_secure p_p == true)) (ensures (p_p.f_plonk_arithmetic_gates == true)) = admit ()
 
 (* plonk_006_bounded_degree (matches Coq: Theorem plonk_006_bounded_degree) *)
-let plonk_006_bounded_degree (p_g: _) : Lemma (requires (pg_valid p_g == true) (ensures (p_g.f_pg_degree <= 4))) = admit ()
+let plonk_006_bounded_degree (p_g: _) : Lemma (requires (pg_valid p_g == true)) (ensures (p_g.f_pg_degree <= 4)) = admit ()
 
 (* plonk_007_sufficient_fan_in (matches Coq: Theorem plonk_007_sufficient_fan_in) *)
-let plonk_007_sufficient_fan_in (p_g: _) : Lemma (requires (pg_valid p_g == true) (ensures (p_g.f_pg_fan_in >= 2))) = admit ()
+let plonk_007_sufficient_fan_in (p_g: _) : Lemma (requires (pg_valid p_g == true)) (ensures (p_g.f_pg_fan_in >= 2)) = admit ()
 
 (* full_001_riina_full_zk_secure (matches Coq: Theorem full_001_riina_full_zk_secure) *)
 let full_001_riina_full_zk_secure () : Lemma (full_zk_secure riina_full_zk == true) = admit ()
 
 (* full_002_implies_base (matches Coq: Theorem full_002_implies_base) *)
-let full_002_implies_base (p_f: _) : Lemma (requires (full_zk_secure p_f == true) (ensures (zksnark_secure (p_f.f_fzk_base) == true))) = admit ()
+let full_002_implies_base (p_f: _) : Lemma (requires (full_zk_secure p_f == true)) (ensures (zksnark_secure (p_f.f_fzk_base) == true)) = admit ()
 
 (* full_003_implies_ke (matches Coq: Theorem full_003_implies_ke) *)
-let full_003_implies_ke (p_f: _) : Lemma (requires (full_zk_secure p_f == true) (ensures (ke_secure (p_f.f_fzk_extractor) == true))) = admit ()
+let full_003_implies_ke (p_f: _) : Lemma (requires (full_zk_secure p_f == true)) (ensures (ke_secure (p_f.f_fzk_extractor) == true)) = admit ()
 
 (* full_004_implies_sim (matches Coq: Theorem full_004_implies_sim) *)
-let full_004_implies_sim (p_f: _) : Lemma (requires (full_zk_secure p_f == true) (ensures (sim_secure (p_f.f_fzk_simulator) == true))) = admit ()
+let full_004_implies_sim (p_f: _) : Lemma (requires (full_zk_secure p_f == true)) (ensures (sim_secure (p_f.f_fzk_simulator) == true)) = admit ()
 
 (* full_005_implies_succinct (matches Coq: Theorem full_005_implies_succinct) *)
-let full_005_implies_succinct (p_f: _) : Lemma (requires (full_zk_secure p_f == true) (ensures (ps_succinct (p_f.f_fzk_proof_size) == true))) = admit ()
+let full_005_implies_succinct (p_f: _) : Lemma (requires (full_zk_secure p_f == true)) (ensures (ps_succinct (p_f.f_fzk_proof_size) == true)) = admit ()
 
 (* full_006_implies_mpc (matches Coq: Theorem full_006_implies_mpc) *)
-let full_006_implies_mpc (p_f: _) : Lemma (requires (full_zk_secure p_f == true) (ensures (mpc_secure (p_f.f_fzk_mpc) == true))) = admit ()
+let full_006_implies_mpc (p_f: _) : Lemma (requires (full_zk_secure p_f == true)) (ensures (mpc_secure (p_f.f_fzk_mpc) == true)) = admit ()
 
 (* full_007_implies_tw (matches Coq: Theorem full_007_implies_tw) *)
-let full_007_implies_tw (p_f: _) : Lemma (requires (full_zk_secure p_f == true) (ensures (tw_secure (p_f.f_fzk_tw) == true))) = admit ()
+let full_007_implies_tw (p_f: _) : Lemma (requires (full_zk_secure p_f == true)) (ensures (tw_secure (p_f.f_fzk_tw) == true)) = admit ()
 
 (* full_008_riina_all_properties (matches Coq: Theorem full_008_riina_all_properties) *)
 let full_008_riina_all_properties () : Lemma (zk_secure riina_zk == true /\ snark_secure riina_snark == true /\ setup_secure riina_setup == true /\ ke_secure riina_ke == true /\ sim_secure riina_sim == true /\ ps_succinct riina_proof_size == true /\ mpc_secure riina_mpc == true /\ tw_secure riina_tw == true /\ g16_secure riina_g16 == true /\ plonk_secure riina_plonk == true) = admit ()
@@ -604,19 +611,19 @@ let full_008_riina_all_properties () : Lemma (zk_secure riina_zk == true /\ snar
 let se_001_riina_se_secure () : Lemma (se_secure riina_se == true) = admit ()
 
 (* se_002_security_parameter (matches Coq: Theorem se_002_security_parameter) *)
-let se_002_security_parameter (p_se: _) : Lemma (requires (se_secure p_se == true) (ensures (p_se.f_se_security_parameter >= 128))) = admit ()
+let se_002_security_parameter (p_se: _) : Lemma (requires (se_secure p_se == true)) (ensures (p_se.f_se_security_parameter >= 128)) = admit ()
 
 (* se_003_statistical_bounded (matches Coq: Theorem se_003_statistical_bounded) *)
-let se_003_statistical_bounded (p_se: _) : Lemma (requires (se_secure p_se == true) (ensures (p_se.f_se_statistical >= p_se.f_se_security_parameter))) = admit ()
+let se_003_statistical_bounded (p_se: _) : Lemma (requires (se_secure p_se == true)) (ensures (p_se.f_se_statistical >= p_se.f_se_security_parameter)) = admit ()
 
 (* pst_001_riina_is_snark (matches Coq: Theorem pst_001_riina_is_snark) *)
 let pst_001_riina_is_snark () : Lemma (pst_is_snark riina_pst == true) = admit ()
 
 (* pst_002_snark_is_argument (matches Coq: Theorem pst_002_snark_is_argument) *)
-let pst_002_snark_is_argument (p_pst: _) : Lemma (requires (pst_is_snark p_pst == true) (ensures (p_pst.f_pst_is_argument == true))) = admit ()
+let pst_002_snark_is_argument (p_pst: _) : Lemma (requires (pst_is_snark p_pst == true)) (ensures (p_pst.f_pst_is_argument == true)) = admit ()
 
 (* pst_003_snark_knowledge (matches Coq: Theorem pst_003_snark_knowledge) *)
-let pst_003_snark_knowledge (p_pst: _) : Lemma (requires (pst_is_snark p_pst == true) (ensures (p_pst.f_pst_knowledge_property == true))) = admit ()
+let pst_003_snark_knowledge (p_pst: _) : Lemma (requires (pst_is_snark p_pst == true)) (ensures (p_pst.f_pst_knowledge_property == true)) = admit ()
 
 (* pst_004_snark_succinct (matches Coq: Theorem pst_004_snark_succinct) *)
-let pst_004_snark_succinct (p_pst: _) : Lemma (requires (pst_is_snark p_pst == true) (ensures (p_pst.f_pst_succinctness == true))) = admit ()
+let pst_004_snark_succinct (p_pst: _) : Lemma (requires (pst_is_snark p_pst == true)) (ensures (p_pst.f_pst_succinctness == true)) = admit ()

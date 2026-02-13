@@ -54,10 +54,10 @@ let preserves (p_bk: backend_kind) (p_prop: security_prop) : Tot bool =
   true
 
 (* backend_001_dispatch_total (matches Coq: Theorem backend_001_dispatch_total) *)
-let backend_001_dispatch_total (p_t: _) : Lemma (exists bk_ dispatch p_t == bk) = admit ()
+let backend_001_dispatch_total (p_t: _) : Lemma ((exists p_bk. dispatch p_t == p_bk)) = admit ()
 
 (* backend_001_dispatch_deterministic (matches Coq: Theorem backend_001_dispatch_deterministic) *)
-let backend_001_dispatch_deterministic (p_t: _) (p_bk1: _) (p_bk2: _) : Lemma (requires (dispatch p_t == p_bk1 /\ dispatch p_t == p_bk2) (ensures (p_bk1 == p_bk2))) = admit ()
+let backend_001_dispatch_deterministic (p_t: _) (p_bk1: _) (p_bk2: _) : Lemma (requires (dispatch p_t == p_bk1 /\ dispatch p_t == p_bk2)) (ensures (p_bk1 == p_bk2)) = admit ()
 
 (* backend_001_native_is_c (matches Coq: Theorem backend_001_native_is_c) *)
 let backend_001_native_is_c () : Lemma (dispatch TNative == BKC) = admit ()
@@ -93,19 +93,19 @@ let backend_003_all_preserve_types (p_bk: _) : Lemma (preserves p_bk TypeSafety 
 let backend_003_dispatch_preserves_all (p_t: _) (p_prop: _) : Lemma (preserves (dispatch p_t) p_prop == true) = admit ()
 
 (* backend_004_format_total (matches Coq: Theorem backend_004_format_total) *)
-let backend_004_format_total (p_t: _) : Lemma (exists fmt_ backend_format (dispatch p_t) == fmt) = admit ()
+let backend_004_format_total (p_t: _) : Lemma ((exists p_fmt. backend_format (dispatch p_t) == p_fmt)) = admit ()
 
 (* backend_004_wasm_produces_wasm (matches Coq: Theorem backend_004_wasm_produces_wasm) *)
-let backend_004_wasm_produces_wasm (p_t: _) : Lemma (requires (dispatch p_t == BKWasm) (ensures (backend_format (dispatch p_t) == FmtWasm))) = admit ()
+let backend_004_wasm_produces_wasm (p_t: _) : Lemma (requires (dispatch p_t == BKWasm)) (ensures (backend_format (dispatch p_t) == FmtWasm)) = admit ()
 
 (* backend_004_mobile_produces_bridge (matches Coq: Theorem backend_004_mobile_produces_bridge) *)
-let backend_004_mobile_produces_bridge (p_t: _) : Lemma (requires (dispatch p_t == BKMobile) (ensures (backend_format (dispatch p_t) == FmtCWithBridge))) = admit ()
+let backend_004_mobile_produces_bridge (p_t: _) : Lemma (requires (dispatch p_t == BKMobile)) (ensures (backend_format (dispatch p_t) == FmtCWithBridge)) = admit ()
 
 (* backend_004_native_produces_c (matches Coq: Theorem backend_004_native_produces_c) *)
 let backend_004_native_produces_c () : Lemma (backend_format (dispatch TNative) == FmtC) = admit ()
 
 (* backend_004_format_consistent (matches Coq: Theorem backend_004_format_consistent) *)
-let backend_004_format_consistent (p_t1: _) (p_t2: _) : Lemma (requires (dispatch p_t1 == dispatch p_t2) (ensures (backend_format (dispatch p_t1) == backend_format (dispatch p_t2)))) = admit ()
+let backend_004_format_consistent (p_t1: _) (p_t2: _) : Lemma (requires (dispatch p_t1 == dispatch p_t2)) (ensures (backend_format (dispatch p_t1) == backend_format (dispatch p_t2))) = admit ()
 
 (* backend_wasm32_format (matches Coq: Theorem backend_wasm32_format) *)
 let backend_wasm32_format () : Lemma (backend_format (dispatch TWasm32) == FmtWasm) = admit ()

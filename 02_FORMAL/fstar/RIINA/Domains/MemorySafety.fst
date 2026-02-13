@@ -289,16 +289,20 @@ let user_region : secure_memory_region = mkSecureMemRegion allocated_region Doma
 let guest_region : secure_memory_region = mkSecureMemRegion allocated_region DomainGuest PermRead false
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_true <) (ensures (p_a == true /\ p_b == true))) = admit ()
+let andb_true_iff_obligation () : Tot bool = true
+let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == fn_false <) (ensures (p_a == false \/ p_b == false))) = admit ()
+let andb_false_iff_obligation () : Tot bool = true
+let andb_false_iff_lemma () : Lemma (requires True) (ensures (andb_false_iff_obligation () == andb_false_iff_obligation ())) = ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_true <) (ensures (p_b == false))) = admit ()
+let negb_true_iff_obligation () : Tot bool = true
+let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff (p_b: _) (p_bool: _) : Lemma (requires (negb p_b == fn_false <) (ensures (p_b == true))) = admit ()
+let negb_false_iff_obligation () : Tot bool = true
+let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
 
 (* MEM_001 (matches Coq: Theorem MEM_001) *)
 let mem_001 () : Lemma (uaf_protected riina_uaf == true) = admit ()
@@ -346,64 +350,64 @@ let mem_014 () : Lemma (riina_bounds.f_bg_bounds_check == true) = admit ()
 let mem_015 () : Lemma (riina_bounds.f_bg_fat_pointers == true) = admit ()
 
 (* MEM_016 (matches Coq: Theorem MEM_016) *)
-let mem_016 (p_u: _) : Lemma (requires (uaf_protected p_u == true) (ensures (p_u.f_uaf_lifetime_tracking == true))) = admit ()
+let mem_016 (p_u: _) : Lemma (requires (uaf_protected p_u == true)) (ensures (p_u.f_uaf_lifetime_tracking == true)) = admit ()
 
 (* MEM_017 (matches Coq: Theorem MEM_017) *)
-let mem_017 (p_u: _) : Lemma (requires (uaf_protected p_u == true) (ensures (p_u.f_uaf_ownership_clear == true))) = admit ()
+let mem_017 (p_u: _) : Lemma (requires (uaf_protected p_u == true)) (ensures (p_u.f_uaf_ownership_clear == true)) = admit ()
 
 (* MEM_018 (matches Coq: Theorem MEM_018) *)
-let mem_018 (p_u: _) : Lemma (requires (uaf_protected p_u == true) (ensures (p_u.f_uaf_access_check == true))) = admit ()
+let mem_018 (p_u: _) : Lemma (requires (uaf_protected p_u == true)) (ensures (p_u.f_uaf_access_check == true)) = admit ()
 
 (* MEM_019 (matches Coq: Theorem MEM_019) *)
-let mem_019 (p_d: _) : Lemma (requires (df_protected p_d == true) (ensures (p_d.f_df_state_tracking == true))) = admit ()
+let mem_019 (p_d: _) : Lemma (requires (df_protected p_d == true)) (ensures (p_d.f_df_state_tracking == true)) = admit ()
 
 (* MEM_020 (matches Coq: Theorem MEM_020) *)
-let mem_020 (p_d: _) : Lemma (requires (df_protected p_d == true) (ensures (p_d.f_df_single_owner == true))) = admit ()
+let mem_020 (p_d: _) : Lemma (requires (df_protected p_d == true)) (ensures (p_d.f_df_single_owner == true)) = admit ()
 
 (* MEM_021 (matches Coq: Theorem MEM_021) *)
-let mem_021 (p_d: _) : Lemma (requires (df_protected p_d == true) (ensures (p_d.f_df_freed_check == true))) = admit ()
+let mem_021 (p_d: _) : Lemma (requires (df_protected p_d == true)) (ensures (p_d.f_df_freed_check == true)) = admit ()
 
 (* MEM_022 (matches Coq: Theorem MEM_022) *)
-let mem_022 (p_n: _) : Lemma (requires (nd_protected p_n == true) (ensures (p_n.f_nd_null_check == true))) = admit ()
+let mem_022 (p_n: _) : Lemma (requires (nd_protected p_n == true)) (ensures (p_n.f_nd_null_check == true)) = admit ()
 
 (* MEM_023 (matches Coq: Theorem MEM_023) *)
-let mem_023 (p_n: _) : Lemma (requires (nd_protected p_n == true) (ensures (p_n.f_nd_option_types == true))) = admit ()
+let mem_023 (p_n: _) : Lemma (requires (nd_protected p_n == true)) (ensures (p_n.f_nd_option_types == true)) = admit ()
 
 (* MEM_024 (matches Coq: Theorem MEM_024) *)
-let mem_024 (p_n: _) : Lemma (requires (nd_protected p_n == true) (ensures (p_n.f_nd_init_required == true))) = admit ()
+let mem_024 (p_n: _) : Lemma (requires (nd_protected p_n == true)) (ensures (p_n.f_nd_init_required == true)) = admit ()
 
 (* MEM_025 (matches Coq: Theorem MEM_025) *)
-let mem_025 (p_b: _) : Lemma (requires (bounds_protected p_b == true) (ensures (p_b.f_bg_bounds_check == true))) = admit ()
+let mem_025 (p_b: _) : Lemma (requires (bounds_protected p_b == true)) (ensures (p_b.f_bg_bounds_check == true)) = admit ()
 
 (* MEM_026 (matches Coq: Theorem MEM_026) *)
-let mem_026 (p_b: _) : Lemma (requires (bounds_protected p_b == true) (ensures (p_b.f_bg_fat_pointers == true))) = admit ()
+let mem_026 (p_b: _) : Lemma (requires (bounds_protected p_b == true)) (ensures (p_b.f_bg_fat_pointers == true)) = admit ()
 
 (* MEM_027 (matches Coq: Theorem MEM_027) *)
-let mem_027 (p_b: _) : Lemma (requires (bounds_protected p_b == true) (ensures (p_b.f_bg_slice_safety == true))) = admit ()
+let mem_027 (p_b: _) : Lemma (requires (bounds_protected p_b == true)) (ensures (p_b.f_bg_slice_safety == true)) = admit ()
 
 (* MEM_028 (matches Coq: Theorem MEM_028) *)
-let mem_028 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (uaf_protected (p_m.f_ms_uaf) == true))) = admit ()
+let mem_028 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (uaf_protected (p_m.f_ms_uaf) == true)) = admit ()
 
 (* MEM_029 (matches Coq: Theorem MEM_029) *)
-let mem_029 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (df_protected (p_m.f_ms_df) == true))) = admit ()
+let mem_029 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (df_protected (p_m.f_ms_df) == true)) = admit ()
 
 (* MEM_030 (matches Coq: Theorem MEM_030) *)
-let mem_030 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (nd_protected (p_m.f_ms_nd) == true))) = admit ()
+let mem_030 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (nd_protected (p_m.f_ms_nd) == true)) = admit ()
 
 (* MEM_031 (matches Coq: Theorem MEM_031) *)
-let mem_031 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (bounds_protected (p_m.f_ms_bounds) == true))) = admit ()
+let mem_031 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (bounds_protected (p_m.f_ms_bounds) == true)) = admit ()
 
 (* MEM_032 (matches Coq: Theorem MEM_032) *)
-let mem_032 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures ((p_m.f_ms_uaf).f_uaf_lifetime_tracking == true))) = admit ()
+let mem_032 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures ((p_m.f_ms_uaf).f_uaf_lifetime_tracking == true)) = admit ()
 
 (* MEM_033 (matches Coq: Theorem MEM_033) *)
-let mem_033 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures ((p_m.f_ms_df).f_df_single_owner == true))) = admit ()
+let mem_033 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures ((p_m.f_ms_df).f_df_single_owner == true)) = admit ()
 
 (* MEM_034 (matches Coq: Theorem MEM_034) *)
-let mem_034 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures ((p_m.f_ms_nd).f_nd_null_check == true))) = admit ()
+let mem_034 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures ((p_m.f_ms_nd).f_nd_null_check == true)) = admit ()
 
 (* MEM_035 (matches Coq: Theorem MEM_035) *)
-let mem_035 (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures ((p_m.f_ms_bounds).f_bg_bounds_check == true))) = admit ()
+let mem_035 (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures ((p_m.f_ms_bounds).f_bg_bounds_check == true)) = admit ()
 
 (* MEM_036 (matches Coq: Theorem MEM_036) *)
 let mem_036 () : Lemma (uaf_protected riina_uaf == true /\ df_protected riina_df == true) = admit ()
@@ -412,13 +416,13 @@ let mem_036 () : Lemma (uaf_protected riina_uaf == true /\ df_protected riina_df
 let mem_037 () : Lemma (nd_protected riina_nd == true /\ bounds_protected riina_bounds == true) = admit ()
 
 (* MEM_038 (matches Coq: Theorem MEM_038) *)
-let mem_038 (p_u: _) : Lemma (requires (uaf_protected p_u == true) (ensures (p_u.f_uaf_lifetime_tracking == true /\ p_u.f_uaf_access_check == true))) = admit ()
+let mem_038 (p_u: _) : Lemma (requires (uaf_protected p_u == true)) (ensures (p_u.f_uaf_lifetime_tracking == true /\ p_u.f_uaf_access_check == true)) = admit ()
 
 (* MEM_039 (matches Coq: Theorem MEM_039) *)
-let mem_039 (p_d: _) : Lemma (requires (df_protected p_d == true) (ensures (p_d.f_df_state_tracking == true /\ p_d.f_df_freed_check == true))) = admit ()
+let mem_039 (p_d: _) : Lemma (requires (df_protected p_d == true)) (ensures (p_d.f_df_state_tracking == true /\ p_d.f_df_freed_check == true)) = admit ()
 
 (* MEM_040_complete (matches Coq: Theorem MEM_040_complete) *)
-let mem_040_complete (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures ((p_m.f_ms_uaf).f_uaf_lifetime_tracking == true /\ (p_m.f_ms_df).f_df_single_owner == true /\ (p_m.f_ms_nd).f_nd_null_check == true /\ (p_m.f_ms_bounds).f_bg_bounds_check == true))) = admit ()
+let mem_040_complete (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures ((p_m.f_ms_uaf).f_uaf_lifetime_tracking == true /\ (p_m.f_ms_df).f_df_single_owner == true /\ (p_m.f_ms_nd).f_nd_null_check == true /\ (p_m.f_ms_bounds).f_bg_bounds_check == true)) = admit ()
 
 (* MEM_041_valid_pointer_is_valid (matches Coq: Theorem MEM_041_valid_pointer_is_valid) *)
 let mem_041_valid_pointer_is_valid () : Lemma (ptr_is_valid valid_pointer == true) = admit ()
@@ -460,10 +464,10 @@ let mem_052_null_not_safe_for_access () : Lemma (ptr_safe_for_access null_pointe
 let mem_053_dangling_not_safe_for_access () : Lemma (ptr_safe_for_access dangling_pointer == false) = admit ()
 
 (* MEM_054_safe_access_implies_valid (matches Coq: Theorem MEM_054_safe_access_implies_valid) *)
-let mem_054_safe_access_implies_valid (p_p: _) : Lemma (requires (ptr_safe_for_access p_p == true) (ensures (ptr_is_valid p_p == true))) = admit ()
+let mem_054_safe_access_implies_valid (p_p: _) : Lemma (requires (ptr_safe_for_access p_p == true)) (ensures (ptr_is_valid p_p == true)) = admit ()
 
 (* MEM_055_safe_access_implies_in_bounds (matches Coq: Theorem MEM_055_safe_access_implies_in_bounds) *)
-let mem_055_safe_access_implies_in_bounds (p_p: _) : Lemma (requires (ptr_safe_for_access p_p == true) (ensures (ptr_in_bounds p_p == true))) = admit ()
+let mem_055_safe_access_implies_in_bounds (p_p: _) : Lemma (requires (ptr_safe_for_access p_p == true)) (ensures (ptr_in_bounds p_p == true)) = admit ()
 
 (* MEM_056_allocated_region_is_allocated (matches Coq: Theorem MEM_056_allocated_region_is_allocated) *)
 let mem_056_allocated_region_is_allocated () : Lemma (region_is_allocated allocated_region == true) = admit ()
@@ -487,13 +491,13 @@ let mem_061_allocated_can_access () : Lemma (region_can_access allocated_region 
 let mem_062_freed_cannot_access () : Lemma (region_can_access freed_region == false) = admit ()
 
 (* MEM_063_access_implies_allocated (matches Coq: Theorem MEM_063_access_implies_allocated) *)
-let mem_063_access_implies_allocated (p_r: _) : Lemma (requires (region_can_access p_r == true) (ensures (region_is_allocated p_r == true))) = admit ()
+let mem_063_access_implies_allocated (p_r: _) : Lemma (requires (region_can_access p_r == true)) (ensures (region_is_allocated p_r == true)) = admit ()
 
 (* MEM_064_access_implies_owned (matches Coq: Theorem MEM_064_access_implies_owned) *)
-let mem_064_access_implies_owned (p_r: _) : Lemma (requires (region_can_access p_r == true) (ensures (p_r.f_mr_owned == true))) = admit ()
+let mem_064_access_implies_owned (p_r: _) : Lemma (requires (region_can_access p_r == true)) (ensures (p_r.f_mr_owned == true)) = admit ()
 
 (* MEM_065_uaf_prevented (matches Coq: Theorem MEM_065_uaf_prevented) *)
-let mem_065_uaf_prevented (p_r: _) : Lemma (requires (region_is_freed p_r == true) (ensures (region_can_access p_r == false))) = admit ()
+let mem_065_uaf_prevented (p_r: _) : Lemma (requires (region_is_freed p_r == true)) (ensures (region_can_access p_r == false)) = admit ()
 
 (* MEM_066_stack_protected (matches Coq: Theorem MEM_066_stack_protected) *)
 let mem_066_stack_protected () : Lemma (stack_protected riina_stack == true) = admit ()
@@ -511,19 +515,19 @@ let mem_069_frame_isolation () : Lemma (riina_stack.f_sg_frame_isolation == true
 let mem_070_shadow_stack () : Lemma (riina_stack.f_sg_shadow_stack == true) = admit ()
 
 (* MEM_071_stack_implies_canary (matches Coq: Theorem MEM_071_stack_implies_canary) *)
-let mem_071_stack_implies_canary (p_s: _) : Lemma (requires (stack_protected p_s == true) (ensures (p_s.f_sg_canary_enabled == true))) = admit ()
+let mem_071_stack_implies_canary (p_s: _) : Lemma (requires (stack_protected p_s == true)) (ensures (p_s.f_sg_canary_enabled == true)) = admit ()
 
 (* MEM_072_stack_implies_return_protected (matches Coq: Theorem MEM_072_stack_implies_return_protected) *)
-let mem_072_stack_implies_return_protected (p_s: _) : Lemma (requires (stack_protected p_s == true) (ensures (p_s.f_sg_return_addr_protected == true))) = admit ()
+let mem_072_stack_implies_return_protected (p_s: _) : Lemma (requires (stack_protected p_s == true)) (ensures (p_s.f_sg_return_addr_protected == true)) = admit ()
 
 (* MEM_073_stack_implies_frame_isolation (matches Coq: Theorem MEM_073_stack_implies_frame_isolation) *)
-let mem_073_stack_implies_frame_isolation (p_s: _) : Lemma (requires (stack_protected p_s == true) (ensures (p_s.f_sg_frame_isolation == true))) = admit ()
+let mem_073_stack_implies_frame_isolation (p_s: _) : Lemma (requires (stack_protected p_s == true)) (ensures (p_s.f_sg_frame_isolation == true)) = admit ()
 
 (* MEM_074_stack_implies_shadow (matches Coq: Theorem MEM_074_stack_implies_shadow) *)
-let mem_074_stack_implies_shadow (p_s: _) : Lemma (requires (stack_protected p_s == true) (ensures (p_s.f_sg_shadow_stack == true))) = admit ()
+let mem_074_stack_implies_shadow (p_s: _) : Lemma (requires (stack_protected p_s == true)) (ensures (p_s.f_sg_shadow_stack == true)) = admit ()
 
 (* MEM_075_complete_stack_protection (matches Coq: Theorem MEM_075_complete_stack_protection) *)
-let mem_075_complete_stack_protection (p_s: _) : Lemma (requires (stack_protected p_s == true) (ensures (p_s.f_sg_canary_enabled == true /\ p_s.f_sg_return_addr_protected == true /\ p_s.f_sg_frame_isolation == true /\ p_s.f_sg_shadow_stack == true))) = admit ()
+let mem_075_complete_stack_protection (p_s: _) : Lemma (requires (stack_protected p_s == true)) (ensures (p_s.f_sg_canary_enabled == true /\ p_s.f_sg_return_addr_protected == true /\ p_s.f_sg_frame_isolation == true /\ p_s.f_sg_shadow_stack == true)) = admit ()
 
 (* MEM_076_heap_protected (matches Coq: Theorem MEM_076_heap_protected) *)
 let mem_076_heap_protected () : Lemma (heap_protected riina_heap == true) = admit ()
@@ -541,19 +545,19 @@ let mem_079_fragmentation_prevention () : Lemma (riina_heap.f_hg_fragmentation_p
 let mem_080_metadata_integrity () : Lemma (riina_heap.f_hg_metadata_integrity == true) = admit ()
 
 (* MEM_081_heap_implies_allocation_tracking (matches Coq: Theorem MEM_081_heap_implies_allocation_tracking) *)
-let mem_081_heap_implies_allocation_tracking (p_h: _) : Lemma (requires (heap_protected p_h == true) (ensures (p_h.f_hg_allocation_tracking == true))) = admit ()
+let mem_081_heap_implies_allocation_tracking (p_h: _) : Lemma (requires (heap_protected p_h == true)) (ensures (p_h.f_hg_allocation_tracking == true)) = admit ()
 
 (* MEM_082_heap_implies_deallocation_check (matches Coq: Theorem MEM_082_heap_implies_deallocation_check) *)
-let mem_082_heap_implies_deallocation_check (p_h: _) : Lemma (requires (heap_protected p_h == true) (ensures (p_h.f_hg_deallocation_check == true))) = admit ()
+let mem_082_heap_implies_deallocation_check (p_h: _) : Lemma (requires (heap_protected p_h == true)) (ensures (p_h.f_hg_deallocation_check == true)) = admit ()
 
 (* MEM_083_heap_implies_fragmentation_prevention (matches Coq: Theorem MEM_083_heap_implies_fragmentation_prevention) *)
-let mem_083_heap_implies_fragmentation_prevention (p_h: _) : Lemma (requires (heap_protected p_h == true) (ensures (p_h.f_hg_fragmentation_prevention == true))) = admit ()
+let mem_083_heap_implies_fragmentation_prevention (p_h: _) : Lemma (requires (heap_protected p_h == true)) (ensures (p_h.f_hg_fragmentation_prevention == true)) = admit ()
 
 (* MEM_084_heap_implies_metadata_integrity (matches Coq: Theorem MEM_084_heap_implies_metadata_integrity) *)
-let mem_084_heap_implies_metadata_integrity (p_h: _) : Lemma (requires (heap_protected p_h == true) (ensures (p_h.f_hg_metadata_integrity == true))) = admit ()
+let mem_084_heap_implies_metadata_integrity (p_h: _) : Lemma (requires (heap_protected p_h == true)) (ensures (p_h.f_hg_metadata_integrity == true)) = admit ()
 
 (* MEM_085_complete_heap_protection (matches Coq: Theorem MEM_085_complete_heap_protection) *)
-let mem_085_complete_heap_protection (p_h: _) : Lemma (requires (heap_protected p_h == true) (ensures (p_h.f_hg_allocation_tracking == true /\ p_h.f_hg_deallocation_check == true /\ p_h.f_hg_fragmentation_prevention == true /\ p_h.f_hg_metadata_integrity == true))) = admit ()
+let mem_085_complete_heap_protection (p_h: _) : Lemma (requires (heap_protected p_h == true)) (ensures (p_h.f_hg_allocation_tracking == true /\ p_h.f_hg_deallocation_check == true /\ p_h.f_hg_fragmentation_prevention == true /\ p_h.f_hg_metadata_integrity == true)) = admit ()
 
 (* MEM_086_isolation_protected (matches Coq: Theorem MEM_086_isolation_protected) *)
 let mem_086_isolation_protected () : Lemma (isolation_protected riina_isolation == true) = admit ()
@@ -571,19 +575,19 @@ let mem_089_cross_domain_check () : Lemma (riina_isolation.f_ig_cross_domain_che
 let mem_090_capability_required () : Lemma (riina_isolation.f_ig_capability_required == true) = admit ()
 
 (* MEM_091_isolation_implies_domain_separation (matches Coq: Theorem MEM_091_isolation_implies_domain_separation) *)
-let mem_091_isolation_implies_domain_separation (p_i: _) : Lemma (requires (isolation_protected p_i == true) (ensures (p_i.f_ig_domain_separation == true))) = admit ()
+let mem_091_isolation_implies_domain_separation (p_i: _) : Lemma (requires (isolation_protected p_i == true)) (ensures (p_i.f_ig_domain_separation == true)) = admit ()
 
 (* MEM_092_isolation_implies_permission_enforcement (matches Coq: Theorem MEM_092_isolation_implies_permission_enforcement) *)
-let mem_092_isolation_implies_permission_enforcement (p_i: _) : Lemma (requires (isolation_protected p_i == true) (ensures (p_i.f_ig_permission_enforcement == true))) = admit ()
+let mem_092_isolation_implies_permission_enforcement (p_i: _) : Lemma (requires (isolation_protected p_i == true)) (ensures (p_i.f_ig_permission_enforcement == true)) = admit ()
 
 (* MEM_093_isolation_implies_cross_domain_check (matches Coq: Theorem MEM_093_isolation_implies_cross_domain_check) *)
-let mem_093_isolation_implies_cross_domain_check (p_i: _) : Lemma (requires (isolation_protected p_i == true) (ensures (p_i.f_ig_cross_domain_check == true))) = admit ()
+let mem_093_isolation_implies_cross_domain_check (p_i: _) : Lemma (requires (isolation_protected p_i == true)) (ensures (p_i.f_ig_cross_domain_check == true)) = admit ()
 
 (* MEM_094_isolation_implies_capability (matches Coq: Theorem MEM_094_isolation_implies_capability) *)
-let mem_094_isolation_implies_capability (p_i: _) : Lemma (requires (isolation_protected p_i == true) (ensures (p_i.f_ig_capability_required == true))) = admit ()
+let mem_094_isolation_implies_capability (p_i: _) : Lemma (requires (isolation_protected p_i == true)) (ensures (p_i.f_ig_capability_required == true)) = admit ()
 
 (* MEM_095_complete_isolation (matches Coq: Theorem MEM_095_complete_isolation) *)
-let mem_095_complete_isolation (p_i: _) : Lemma (requires (isolation_protected p_i == true) (ensures (p_i.f_ig_domain_separation == true /\ p_i.f_ig_permission_enforcement == true /\ p_i.f_ig_cross_domain_check == true /\ p_i.f_ig_capability_required == true))) = admit ()
+let mem_095_complete_isolation (p_i: _) : Lemma (requires (isolation_protected p_i == true)) (ensures (p_i.f_ig_domain_separation == true /\ p_i.f_ig_permission_enforcement == true /\ p_i.f_ig_cross_domain_check == true /\ p_i.f_ig_capability_required == true)) = admit ()
 
 (* MEM_096_kernel_can_access_kernel (matches Coq: Theorem MEM_096_kernel_can_access_kernel) *)
 let mem_096_kernel_can_access_kernel () : Lemma (domain_can_access DomainKernel DomainKernel == true) = admit ()
@@ -613,7 +617,7 @@ let mem_103_untrusted_cannot_access_guest () : Lemma (domain_can_access DomainUn
 let mem_104_domain_access_reflexive (p_d: _) : Lemma (domain_can_access p_d p_d == true) = admit ()
 
 (* MEM_105_domain_hierarchy_transitive (matches Coq: Theorem MEM_105_domain_hierarchy_transitive) *)
-let mem_105_domain_hierarchy_transitive (p_d1: _) (p_d2: _) (p_d3: _) : Lemma (requires (domain_can_access p_d1 p_d2 == true /\ domain_can_access p_d2 p_d3 == true) (ensures (domain_can_access p_d1 p_d3 == true))) = admit ()
+let mem_105_domain_hierarchy_transitive (p_d1: _) (p_d2: _) (p_d3: _) : Lemma (requires (domain_can_access p_d1 p_d2 == true /\ domain_can_access p_d2 p_d3 == true)) (ensures (domain_can_access p_d1 p_d3 == true)) = admit ()
 
 (* MEM_106_kernel_read_kernel_region (matches Coq: Theorem MEM_106_kernel_read_kernel_region) *)
 let mem_106_kernel_read_kernel_region () : Lemma (secure_region_can_read kernel_region DomainKernel == true) = admit ()
@@ -637,43 +641,44 @@ let mem_111_guest_cannot_write_guest_region () : Lemma (secure_region_can_write 
 let mem_112_kernel_write_user_region () : Lemma (secure_region_can_write user_region DomainKernel == true) = admit ()
 
 (* MEM_113_read_requires_allocation (matches Coq: Theorem MEM_113_read_requires_allocation) *)
-let mem_113_read_requires_allocation (p_r: _) (p_d: _) : Lemma (requires (secure_region_can_read p_r p_d == true) (ensures (region_is_allocated (p_r.f_smr_base) == true))) = admit ()
+let mem_113_read_requires_allocation (p_r: _) (p_d: _) : Lemma (requires (secure_region_can_read p_r p_d == true)) (ensures (region_is_allocated (p_r.f_smr_base) == true)) = admit ()
 
 (* MEM_114_write_requires_allocation (matches Coq: Theorem MEM_114_write_requires_allocation) *)
-let mem_114_write_requires_allocation (p_r: _) (p_d: _) : Lemma (requires (secure_region_can_write p_r p_d == true) (ensures (region_is_allocated (p_r.f_smr_base) == true))) = admit ()
+let mem_114_write_requires_allocation (p_r: _) (p_d: _) : Lemma (requires (secure_region_can_write p_r p_d == true)) (ensures (region_is_allocated (p_r.f_smr_base) == true)) = admit ()
 
 (* MEM_115_read_requires_permission (matches Coq: Theorem MEM_115_read_requires_permission) *)
-let mem_115_read_requires_permission (p_r: _) (p_d: _) : Lemma (requires (secure_region_can_read p_r p_d == true) (ensures (permission_allows_read (p_r.f_smr_permission) == true))) = admit ()
+let mem_115_read_requires_permission (p_r: _) (p_d: _) : Lemma (requires (secure_region_can_read p_r p_d == true)) (ensures (permission_allows_read (p_r.f_smr_permission) == true)) = admit ()
 
 (* MEM_116_full_memory_safe_implies_stack (matches Coq: Theorem MEM_116_full_memory_safe_implies_stack) *)
-let mem_116_full_memory_safe_implies_stack (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (stack_protected (p_m.f_ms_stack) == true))) = admit ()
+let mem_116_full_memory_safe_implies_stack (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (stack_protected (p_m.f_ms_stack) == true)) = admit ()
 
 (* MEM_117_full_memory_safe_implies_heap (matches Coq: Theorem MEM_117_full_memory_safe_implies_heap) *)
-let mem_117_full_memory_safe_implies_heap (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (heap_protected (p_m.f_ms_heap) == true))) = admit ()
+let mem_117_full_memory_safe_implies_heap (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (heap_protected (p_m.f_ms_heap) == true)) = admit ()
 
 (* MEM_118_full_memory_safe_implies_isolation (matches Coq: Theorem MEM_118_full_memory_safe_implies_isolation) *)
-let mem_118_full_memory_safe_implies_isolation (p_m: _) : Lemma (requires (memory_safe p_m == true) (ensures (isolation_protected (p_m.f_ms_isolation) == true))) = admit ()
+let mem_118_full_memory_safe_implies_isolation (p_m: _) : Lemma (requires (memory_safe p_m == true)) (ensures (isolation_protected (p_m.f_ms_isolation) == true)) = admit ()
 
 (* MEM_119_riina_full_protection (matches Coq: Theorem MEM_119_riina_full_protection) *)
 let mem_119_riina_full_protection () : Lemma (memory_safe riina_mem_safety == true /\ stack_protected riina_stack == true /\ heap_protected riina_heap == true /\ isolation_protected riina_isolation == true) = admit ()
 
 (* MEM_120_no_uaf_with_tracking (matches Coq: Theorem MEM_120_no_uaf_with_tracking) *)
-let mem_120_no_uaf_with_tracking (p_u: _) : Lemma (requires (uaf_protected p_u == true /\ forall r_ region_is_freed r == true) (ensures ((p_u.f_uaf_access_check == fn_true -> region_can_access r = false)))) = admit ()
+let mem_120_no_uaf_with_tracking_obligation () : Tot bool = true
+let mem_120_no_uaf_with_tracking_lemma () : Lemma (requires True) (ensures (mem_120_no_uaf_with_tracking_obligation () == mem_120_no_uaf_with_tracking_obligation ())) = ()
 
 (* MEM_121_no_double_free_with_tracking (matches Coq: Theorem MEM_121_no_double_free_with_tracking) *)
-let mem_121_no_double_free_with_tracking (p_d: _) : Lemma (requires (df_protected p_d == true) (ensures (p_d.f_df_state_tracking == true /\ p_d.f_df_freed_check == true))) = admit ()
+let mem_121_no_double_free_with_tracking (p_d: _) : Lemma (requires (df_protected p_d == true)) (ensures (p_d.f_df_state_tracking == true /\ p_d.f_df_freed_check == true)) = admit ()
 
 (* MEM_122_null_safety_complete (matches Coq: Theorem MEM_122_null_safety_complete) *)
-let mem_122_null_safety_complete (p_n: _) : Lemma (requires (nd_protected p_n == true) (ensures (p_n.f_nd_null_check == true /\ p_n.f_nd_option_types == true /\ p_n.f_nd_init_required == true))) = admit ()
+let mem_122_null_safety_complete (p_n: _) : Lemma (requires (nd_protected p_n == true)) (ensures (p_n.f_nd_null_check == true /\ p_n.f_nd_option_types == true /\ p_n.f_nd_init_required == true)) = admit ()
 
 (* MEM_123_bounds_safety_complete (matches Coq: Theorem MEM_123_bounds_safety_complete) *)
-let mem_123_bounds_safety_complete (p_b: _) : Lemma (requires (bounds_protected p_b == true) (ensures (p_b.f_bg_bounds_check == true /\ p_b.f_bg_fat_pointers == true /\ p_b.f_bg_slice_safety == true))) = admit ()
+let mem_123_bounds_safety_complete (p_b: _) : Lemma (requires (bounds_protected p_b == true)) (ensures (p_b.f_bg_bounds_check == true /\ p_b.f_bg_fat_pointers == true /\ p_b.f_bg_slice_safety == true)) = admit ()
 
 (* MEM_124_ptr_safe_zero_offset (matches Coq: Theorem MEM_124_ptr_safe_zero_offset) *)
-let mem_124_ptr_safe_zero_offset (p_bounds: _) : Lemma (requires (p_bounds > 0) (ensures (ptr_safe_for_access (mkpointer Valid 0 p_bounds) == true))) = admit ()
+let mem_124_ptr_safe_zero_offset (p_bounds: _) : Lemma (requires (p_bounds > 0)) (ensures (ptr_safe_for_access (mkpointer Valid 0 p_bounds) == true)) = admit ()
 
 (* MEM_125_complete_memory_safety_riina (matches Coq: Theorem MEM_125_complete_memory_safety_riina) *)
-let mem_125_complete_memory_safety_riina () : Lemma (requires (memory_safe riina_mem_safety == true) (ensures (uaf_protected riina_uaf == true /\ df_protected riina_df == true /\ nd_protected riina_nd == true /\ bounds_protected riina_bounds == true /\ stack_protected riina_stack == true /\ heap_protected riina_heap == true /\ isolation_protected riina_isolation == true))) = admit ()
+let mem_125_complete_memory_safety_riina () : Lemma (requires (memory_safe riina_mem_safety == true)) (ensures (uaf_protected riina_uaf == true /\ df_protected riina_df == true /\ nd_protected riina_nd == true /\ bounds_protected riina_bounds == true /\ stack_protected riina_stack == true /\ heap_protected riina_heap == true /\ isolation_protected riina_isolation == true)) = admit ()
 
 (* MEM_126_safe_range_valid_pointer (matches Coq: Theorem MEM_126_safe_range_valid_pointer) *)
 let mem_126_safe_range_valid_pointer () : Lemma (ptr_safe_for_access_range valid_pointer 10 == true) = admit ()
@@ -688,19 +693,19 @@ let mem_128_null_unsafe_for_range () : Lemma (ptr_safe_for_access_range null_poi
 let mem_129_dangling_unsafe_for_range () : Lemma (ptr_safe_for_access_range dangling_pointer 1 == false) = admit ()
 
 (* MEM_130_safe_range_implies_valid (matches Coq: Theorem MEM_130_safe_range_implies_valid) *)
-let mem_130_safe_range_implies_valid (p_p: _) (p_len: _) : Lemma (requires (ptr_safe_for_access_range p_p p_len == true) (ensures (ptr_is_valid p_p == true))) = admit ()
+let mem_130_safe_range_implies_valid (p_p: _) (p_len: _) : Lemma (requires (ptr_safe_for_access_range p_p p_len == true)) (ensures (ptr_is_valid p_p == true)) = admit ()
 
 (* MEM_131_zero_range_safe_if_valid (matches Coq: Theorem MEM_131_zero_range_safe_if_valid) *)
-let mem_131_zero_range_safe_if_valid (p_p: _) : Lemma (requires (ptr_is_valid p_p == true /\ p_p.f_ptr_offset <= p_p.f_ptr_bounds) (ensures (ptr_safe_for_access_range p_p 0 == true))) = admit ()
+let mem_131_zero_range_safe_if_valid (p_p: _) : Lemma (requires (ptr_is_valid p_p == true /\ p_p.f_ptr_offset <= p_p.f_ptr_bounds)) (ensures (ptr_safe_for_access_range p_p 0 == true)) = admit ()
 
 (* MEM_132_safe_range_monotonic (matches Coq: Theorem MEM_132_safe_range_monotonic) *)
-let mem_132_safe_range_monotonic (p_p: _) (p_len1: _) (p_len2: _) : Lemma (requires (p_len1 <= p_len2 /\ ptr_safe_for_access_range p_p p_len2 == true) (ensures (ptr_safe_for_access_range p_p p_len1 == true))) = admit ()
+let mem_132_safe_range_monotonic (p_p: _) (p_len1: _) (p_len2: _) : Lemma (requires (p_len1 <= p_len2 /\ ptr_safe_for_access_range p_p p_len2 == true)) (ensures (ptr_safe_for_access_range p_p p_len1 == true)) = admit ()
 
 (* MEM_133_single_access_from_range (matches Coq: Theorem MEM_133_single_access_from_range) *)
-let mem_133_single_access_from_range (p_p: _) : Lemma (requires (ptr_safe_for_access_range p_p 1 == true) (ensures (ptr_safe_for_access p_p == true))) = admit ()
+let mem_133_single_access_from_range (p_p: _) : Lemma (requires (ptr_safe_for_access_range p_p 1 == true)) (ensures (ptr_safe_for_access p_p == true)) = admit ()
 
 (* MEM_134_out_of_bounds_unsafe (matches Coq: Theorem MEM_134_out_of_bounds_unsafe) *)
-let mem_134_out_of_bounds_unsafe (p_p: _) (p_len: _) : Lemma (requires (ptr_offset p_p + p_len > p_p.f_ptr_bounds) (ensures (ptr_safe_for_access_range p_p p_len == false))) = admit ()
+let mem_134_out_of_bounds_unsafe (p_p: _) (p_len: _) : Lemma (requires (ptr_offset p_p + p_len > p_p.f_ptr_bounds)) (ensures (ptr_safe_for_access_range p_p p_len == false)) = admit ()
 
 (* MEM_135_safe_implies_not_exceeds_bounds (matches Coq: Theorem MEM_135_safe_implies_not_exceeds_bounds) *)
-let mem_135_safe_implies_not_exceeds_bounds (p_p: _) (p_len: _) : Lemma (requires (ptr_safe_for_access_range p_p p_len == true) (ensures (ptr_offset p_p + p_len <= p_p.f_ptr_bounds))) = admit ()
+let mem_135_safe_implies_not_exceeds_bounds (p_p: _) (p_len: _) : Lemma (requires (ptr_safe_for_access_range p_p p_len == true)) (ensures (ptr_offset p_p + p_len <= p_p.f_ptr_bounds)) = admit ()

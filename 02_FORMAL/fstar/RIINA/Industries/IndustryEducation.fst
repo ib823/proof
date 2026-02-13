@@ -98,15 +98,15 @@ let ferpa_compliance (p_compliance: ferpa__compliance) (p_record: student_data) 
 let coppa_compliance (p_child: student_age) (p_data: student_data) : Lemma (p_child == Under13) = admit ()
 
 (* cipa_compliance (matches Coq: Theorem cipa_compliance) *)
-let cipa_compliance_obligation () : Tot bool = (0 = 0)
+let cipa_compliance_obligation () : Tot bool = true
 let cipa_compliance_lemma () : Lemma (requires True) (ensures (cipa_compliance_obligation () == cipa_compliance_obligation ())) = ()
 
 (* state_privacy_compliance (matches Coq: Theorem state_privacy_compliance) *)
-let state_privacy_compliance_obligation () : Tot bool = (0 = 0)
+let state_privacy_compliance_obligation () : Tot bool = true
 let state_privacy_compliance_lemma () : Lemma (requires True) (ensures (state_privacy_compliance_obligation () == state_privacy_compliance_obligation ())) = ()
 
 (* vendor_data_practices (matches Coq: Theorem vendor_data_practices) *)
-let vendor_data_practices_obligation () : Tot bool = (0 = 0)
+let vendor_data_practices_obligation () : Tot bool = true
 let vendor_data_practices_lemma () : Lemma (requires True) (ensures (vendor_data_practices_obligation () == vendor_data_practices_obligation ())) = ()
 
 (* education_record_consent (matches Coq: Theorem education_record_consent) *)
@@ -125,7 +125,7 @@ let health_records_highest () : Lemma (student_data_sensitivity HealthRecords ==
 let student_data_sensitivity_positive (p_d: _) : Lemma (student_data_sensitivity p_d >= 1) = admit ()
 
 (* coppa_only_under13 (matches Coq: Theorem coppa_only_under13) *)
-let coppa_only_under13 (p_a: _) : Lemma (requires (coppa_applies p_a == true) (ensures (p_a == Under13))) = admit ()
+let coppa_only_under13 (p_a: _) : Lemma (requires (coppa_applies p_a == true)) (ensures (p_a == Under13)) = admit ()
 
 (* adult_no_coppa (matches Coq: Theorem adult_no_coppa) *)
 let adult_no_coppa () : Lemma (coppa_applies Adult == false) = admit ()
@@ -134,13 +134,13 @@ let adult_no_coppa () : Lemma (coppa_applies Adult == false) = admit ()
 let teen_no_coppa () : Lemma (coppa_applies Teen == false) = admit ()
 
 (* all_ferpa_implies_consent (matches Coq: Theorem all_ferpa_implies_consent) *)
-let all_ferpa_implies_consent (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true) (ensures (p_c.f_parental_consent == true))) = admit ()
+let all_ferpa_implies_consent (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true)) (ensures (p_c.f_parental_consent == true)) = admit ()
 
 (* all_ferpa_implies_disclosure_tracking (matches Coq: Theorem all_ferpa_implies_disclosure_tracking) *)
-let all_ferpa_implies_disclosure_tracking (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true) (ensures (p_c.f_disclosure_tracking == true))) = admit ()
+let all_ferpa_implies_disclosure_tracking (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true)) (ensures (p_c.f_disclosure_tracking == true)) = admit ()
 
 (* all_ferpa_implies_access (matches Coq: Theorem all_ferpa_implies_access) *)
-let all_ferpa_implies_access (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true) (ensures (p_c.f_access_to_records == true))) = admit ()
+let all_ferpa_implies_access (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true)) (ensures (p_c.f_access_to_records == true)) = admit ()
 
 (* student_age_meets_minimum (matches Coq: Theorem student_age_meets_minimum) *)
 let student_age_meets_minimum (p_s: _) (p_studentrecord: _) : Lemma (p_s.f_student_min_age <= p_s.f_student_age_years) = admit ()
@@ -158,13 +158,13 @@ let education_record_long_retention () : Lemma (retention_years EducationRecord 
 let count_ferpa_bounded (p_c: _) : Lemma (count_ferpa_controls p_c <= 6) = admit ()
 
 (* all_ferpa_count_six (matches Coq: Theorem all_ferpa_count_six) *)
-let all_ferpa_count_six (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true) (ensures (count_ferpa_controls p_c == 6))) = admit ()
+let all_ferpa_count_six (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true)) (ensures (count_ferpa_controls p_c == 6)) = admit ()
 
 (* under_13_classified_correctly (matches Coq: Theorem under_13_classified_correctly) *)
-let under_13_classified_correctly (p_n: _) : Lemma (requires (p_n < 13) (ensures (classify_student_age p_n == Under13))) = admit ()
+let under_13_classified_correctly (p_n: _) : Lemma (requires (p_n < 13)) (ensures (classify_student_age p_n == Under13)) = admit ()
 
 (* adult_classified_correctly (matches Coq: Theorem adult_classified_correctly) *)
-let adult_classified_correctly (p_n: _) : Lemma (requires (p_n >= 18) (ensures (classify_student_age p_n == Adult))) = admit ()
+let adult_classified_correctly (p_n: _) : Lemma (requires (p_n >= 18)) (ensures (classify_student_age p_n == Adult)) = admit ()
 
 (* directory_info_least_sensitive (matches Coq: Theorem directory_info_least_sensitive) *)
 let directory_info_least_sensitive (p_d: _) : Lemma (student_data_sensitivity DirectoryInfo <= student_data_sensitivity p_d) = admit ()
