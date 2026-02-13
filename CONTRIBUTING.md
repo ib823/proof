@@ -1,6 +1,6 @@
 # Contributing to RIINA
 
-**Verification:** 7,773 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 7,826 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 

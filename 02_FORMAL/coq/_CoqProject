@@ -327,4 +327,6 @@ domains/PlatformStdlibVerification.v
 domains/BackendTraitVerification.v
 domains/BackendComposition.v
 
-# Worker F: Hardware + Runtime proofs (EXCLUDED until Admitted eliminated)
+# Worker F: Hardware + Runtime proofs (0 Admitted, 0 axioms)
+runtime/CPUModel.v
+runtime/RuntimeProof.v

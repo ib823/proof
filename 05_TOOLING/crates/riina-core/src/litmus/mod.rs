@@ -6,7 +6,7 @@
 //! particularly speculative execution vulnerabilities. These tests verify
 //! that RIINA's code generation patterns do not expose these vulnerabilities.
 //!
-//! # Coverage
+//! # Coverage (19 vulnerabilities)
 //!
 //! ## Speculative Execution Attacks
 //! - **Spectre v1**: Bounds Check Bypass (BCB)
@@ -19,12 +19,25 @@
 //! - **ZombieLoad**: Load port sampling
 //! - **RIDL**: Rogue In-Flight Data Load
 //! - **Fallout**: Store buffer sampling
+//! - **CacheOut/L1DES**: L1 Data Eviction Sampling
 //!
-//! ## Other Attacks
-//! - **LVI**: Load Value Injection
-//! - **Ret2Spec**: Return-to-Speculation
+//! ## Return/Branch Speculation
+//! - **Ret2Spec**: Return-to-Speculation (RSB poisoning)
+//! - **Retbleed**: Return address BTB fallback
+//! - **Inception/SRSO**: Speculative Return Stack Overflow (phantom speculation)
 //! - **BHI**: Branch History Injection
-//! - **SRBDS**: Special Register Buffer Data Sampling
+//!
+//! ## Data Sampling & Gather
+//! - **SRBDS**: Special Register Buffer Data Sampling (RDRAND/RDSEED)
+//! - **Downfall/GDS**: Gather Data Sampling (AVX2/AVX-512)
+//!
+//! ## Side-Channel Attacks
+//! - **PLATYPUS**: Power Leakage via RAPL interface
+//! - **Hertzbleed**: Frequency side-channel via DVFS
+//! - **Prefetch**: TLB/KASLR probing via prefetch timing
+//!
+//! ## Other
+//! - **LVI**: Load Value Injection (reverse Meltdown)
 //!
 //! # Formal Model
 //!
@@ -52,6 +65,15 @@ pub mod lvi;
 pub mod ret2spec;
 pub mod bhi;
 pub mod srbds;
+
+// New litmus tests (Worker F, Session 85)
+pub mod retbleed;
+pub mod inception;
+pub mod downfall;
+pub mod cacheout;
+pub mod platypus;
+pub mod hertzbleed;
+pub mod prefetch;
 
 /// Result type for litmus tests
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -83,35 +105,91 @@ pub trait LitmusTest {
     fn run(&self) -> LitmusResult;
 }
 
+/// Get all registered litmus tests
+pub fn all_litmus_tests() -> Vec<Box<dyn LitmusTest>> {
+    vec![
+        Box::new(spectre_v1::SpectreV1),
+        Box::new(spectre_v2::SpectreV2),
+        Box::new(spectre_v4::SpectreV4),
+        Box::new(meltdown::Meltdown),
+        Box::new(foreshadow::Foreshadow),
+        Box::new(zombieload::ZombieLoad),
+        Box::new(ridl::Ridl),
+        Box::new(fallout::Fallout),
+        Box::new(lvi::Lvi),
+        Box::new(ret2spec::Ret2Spec),
+        Box::new(bhi::Bhi),
+        Box::new(srbds::Srbds),
+        Box::new(retbleed::Retbleed),
+        Box::new(inception::Inception),
+        Box::new(downfall::Downfall),
+        Box::new(cacheout::CacheOut),
+        Box::new(platypus::Platypus),
+        Box::new(hertzbleed::Hertzbleed),
+        Box::new(prefetch::PrefetchAttack),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_all_litmus_tests_available() {
-        // Ensure all 12 litmus test modules are present
+        // Ensure all 19 litmus test modules are present
         // This test will fail to compile if any module is missing
-        let tests: Vec<Box<dyn LitmusTest>> = vec![
-            Box::new(spectre_v1::SpectreV1),
-            Box::new(spectre_v2::SpectreV2),
-            Box::new(spectre_v4::SpectreV4),
-            Box::new(meltdown::Meltdown),
-            Box::new(foreshadow::Foreshadow),
-            Box::new(zombieload::ZombieLoad),
-            Box::new(ridl::Ridl),
-            Box::new(fallout::Fallout),
-            Box::new(lvi::Lvi),
-            Box::new(ret2spec::Ret2Spec),
-            Box::new(bhi::Bhi),
-            Box::new(srbds::Srbds),
-        ];
+        let tests = all_litmus_tests();
 
-        // Verify we have exactly 12 tests
-        assert_eq!(tests.len(), 12);
+        // Verify we have exactly 19 tests
+        assert_eq!(tests.len(), 19);
 
         // Run all tests
         for test in tests.iter() {
-            let _ = test.run();
+            let result = test.run();
+            // All tests should be Safe or Inconclusive (never Vulnerable)
+            assert!(
+                matches!(result, LitmusResult::Safe | LitmusResult::Inconclusive),
+                "Test '{}' returned Vulnerable!",
+                test.name()
+            );
+        }
+    }
+
+    #[test]
+    fn test_all_tests_have_cve() {
+        let tests = all_litmus_tests();
+        for test in tests.iter() {
+            // All known vulnerabilities should have a CVE
+            assert!(
+                test.cve().is_some(),
+                "Test '{}' is missing CVE identifier",
+                test.name()
+            );
+        }
+    }
+
+    #[test]
+    fn test_all_tests_have_description() {
+        let tests = all_litmus_tests();
+        for test in tests.iter() {
+            assert!(
+                !test.description().is_empty(),
+                "Test '{}' has empty description",
+                test.name()
+            );
+        }
+    }
+
+    #[test]
+    fn test_no_duplicate_names() {
+        let tests = all_litmus_tests();
+        let names: Vec<&str> = tests.iter().map(|t| t.name()).collect();
+        for (i, name) in names.iter().enumerate() {
+            for (j, other) in names.iter().enumerate() {
+                if i != j {
+                    assert_ne!(name, other, "Duplicate litmus test name: {}", name);
+                }
+            }
         }
     }
 }
