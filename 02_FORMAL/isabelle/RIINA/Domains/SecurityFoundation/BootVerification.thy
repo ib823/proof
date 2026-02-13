@@ -55,7 +55,7 @@
  *)
 
 theory BootVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BootStageId (matches Coq: Inductive BootStageId) *)

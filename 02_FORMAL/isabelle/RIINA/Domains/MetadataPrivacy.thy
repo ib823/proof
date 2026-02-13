@@ -57,7 +57,7 @@
  *)
 
 theory MetadataPrivacy
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Sensitivity (matches Coq: Inductive Sensitivity) *)

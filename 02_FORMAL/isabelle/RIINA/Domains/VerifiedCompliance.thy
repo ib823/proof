@@ -111,7 +111,7 @@
  *)
 
 theory VerifiedCompliance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Regulation (matches Coq: Inductive Regulation) *)

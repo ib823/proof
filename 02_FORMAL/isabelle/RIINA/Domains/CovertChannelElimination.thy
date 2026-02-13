@@ -61,7 +61,7 @@
  *)
 
 theory CovertChannelElimination
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* IFCLabel (matches Coq: Record IFCLabel) *)

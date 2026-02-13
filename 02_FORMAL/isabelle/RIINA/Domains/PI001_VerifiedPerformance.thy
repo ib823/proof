@@ -77,7 +77,7 @@
  *)
 
 theory PI001_VerifiedPerformance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* VEBTree (matches Coq: Inductive VEBTree) *)

@@ -85,7 +85,7 @@
  *)
 
 theory WasmBackendVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* WasmValType (matches Coq: Inductive WasmValType) *)

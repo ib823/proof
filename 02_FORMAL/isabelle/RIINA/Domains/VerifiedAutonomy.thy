@@ -64,7 +64,7 @@
  *)
 
 theory VerifiedAutonomy
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* FailsafeTrigger (matches Coq: Inductive FailsafeTrigger) *)

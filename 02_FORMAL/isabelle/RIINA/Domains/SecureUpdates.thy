@@ -65,7 +65,7 @@
  *)
 
 theory SecureUpdates
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* UpdateResult (matches Coq: Inductive UpdateResult) *)

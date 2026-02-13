@@ -52,7 +52,7 @@
  *)
 
 theory DistributedConsensus
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* bft_assumption (matches Coq: Definition bft_assumption) *)

@@ -106,7 +106,7 @@
  *)
 
 theory VerifiedHardware
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SecurityLevel (matches Coq: Inductive SecurityLevel) *)

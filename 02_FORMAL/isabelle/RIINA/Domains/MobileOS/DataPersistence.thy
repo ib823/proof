@@ -72,7 +72,7 @@
  *)
 
 theory DataPersistence
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Schema (matches Coq: Record Schema) *)

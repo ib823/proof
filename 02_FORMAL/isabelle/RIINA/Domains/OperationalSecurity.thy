@@ -57,7 +57,7 @@
  *)
 
 theory OperationalSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* budget_ok (matches Coq: Definition budget_ok) *)

@@ -138,7 +138,7 @@
  *)
 
 theory StandardLibrary
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Capability (matches Coq: Inductive Capability) *)

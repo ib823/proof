@@ -53,7 +53,7 @@
  *)
 
 theory HardwareRootOfTrust
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* HSMType (matches Coq: Inductive HSMType) *)

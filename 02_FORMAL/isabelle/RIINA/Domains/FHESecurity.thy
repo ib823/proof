@@ -175,7 +175,7 @@
  *)
 
 theory FHESecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)

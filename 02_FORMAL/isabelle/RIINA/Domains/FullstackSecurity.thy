@@ -60,7 +60,7 @@
  *)
 
 theory FullstackSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ContentType (matches Coq: Inductive ContentType) *)

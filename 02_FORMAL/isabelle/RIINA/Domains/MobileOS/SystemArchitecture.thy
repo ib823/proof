@@ -73,7 +73,7 @@
  *)
 
 theory SystemArchitecture
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DeviceState (matches Coq: Inductive DeviceState) *)

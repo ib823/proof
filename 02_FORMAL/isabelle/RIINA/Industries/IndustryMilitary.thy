@@ -52,7 +52,7 @@
  *)
 
 theory IndustryMilitary
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ClassificationLevel (matches Coq: Inductive ClassificationLevel) *)

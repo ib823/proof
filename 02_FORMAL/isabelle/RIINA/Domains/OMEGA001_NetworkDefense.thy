@@ -67,7 +67,7 @@
  *)
 
 theory OMEGA001_NetworkDefense
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ConnState (matches Coq: Inductive ConnState) *)

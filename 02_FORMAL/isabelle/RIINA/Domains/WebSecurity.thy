@@ -60,7 +60,7 @@
  *)
 
 theory WebSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* HTMLContent (matches Coq: Inductive HTMLContent) *)

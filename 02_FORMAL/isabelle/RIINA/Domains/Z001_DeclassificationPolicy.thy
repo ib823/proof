@@ -83,7 +83,7 @@
  *)
 
 theory Z001_DeclassificationPolicy
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Principal (matches Coq: Inductive Principal) *)

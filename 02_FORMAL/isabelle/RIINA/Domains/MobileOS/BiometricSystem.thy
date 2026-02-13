@@ -65,7 +65,7 @@
  *)
 
 theory BiometricSystem
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BiometricType (matches Coq: Inductive BiometricType) *)

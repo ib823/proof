@@ -107,7 +107,7 @@
  *)
 
 theory DigitalWallet
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* WalletTier (matches Coq: Inductive WalletTier) *)

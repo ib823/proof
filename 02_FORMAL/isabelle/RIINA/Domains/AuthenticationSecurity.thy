@@ -58,7 +58,7 @@
  *)
 
 theory AuthenticationSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* RateLimiter (matches Coq: Record RateLimiter) *)

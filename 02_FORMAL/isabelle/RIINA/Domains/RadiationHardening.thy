@@ -68,7 +68,7 @@
  *)
 
 theory RadiationHardening
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SystemMode (matches Coq: Inductive SystemMode) *)

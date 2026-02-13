@@ -100,7 +100,7 @@
  *)
 
 theory AIMLSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AttackState (matches Coq: Inductive AttackState) *)

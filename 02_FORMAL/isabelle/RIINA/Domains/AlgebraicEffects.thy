@@ -63,7 +63,7 @@
  *)
 
 theory AlgebraicEffects
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* BaseTy (matches Coq: Inductive BaseTy) *)

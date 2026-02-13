@@ -90,7 +90,7 @@
  *)
 
 theory FutureSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* PQ_KEM (matches Coq: Inductive PQ_KEM) *)

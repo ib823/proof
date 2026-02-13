@@ -43,7 +43,7 @@
  *)
 
 theory PlatformStdlibVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Platform (matches Coq: Inductive Platform) *)

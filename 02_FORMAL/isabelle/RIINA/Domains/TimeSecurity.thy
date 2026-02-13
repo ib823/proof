@@ -65,7 +65,7 @@
  *)
 
 theory TimeSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AtomicOp (matches Coq: Inductive AtomicOp) *)

@@ -102,7 +102,7 @@
  *)
 
 theory VerifiedInfra
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* TxnOp (matches Coq: Inductive TxnOp) *)

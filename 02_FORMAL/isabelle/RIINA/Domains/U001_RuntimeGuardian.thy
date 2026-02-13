@@ -87,7 +87,7 @@
  *)
 
 theory U001_RuntimeGuardian
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* CFGEdge (matches Coq: Inductive CFGEdge) *)

@@ -64,7 +64,7 @@
  *)
 
 theory MobilePlatform
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Resource (matches Coq: Inductive Resource) *)

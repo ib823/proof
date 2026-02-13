@@ -50,7 +50,7 @@
  *)
 
 theory DependentTypes
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DTerm (matches Coq: Inductive DTerm) *)

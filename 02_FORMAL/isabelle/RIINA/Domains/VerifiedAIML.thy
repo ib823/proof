@@ -64,7 +64,7 @@
  *)
 
 theory VerifiedAIML
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Layer (matches Coq: Inductive Layer) *)

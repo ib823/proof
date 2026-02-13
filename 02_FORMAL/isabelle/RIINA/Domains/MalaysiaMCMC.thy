@@ -43,7 +43,7 @@
  *)
 
 theory MalaysiaMCMC
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MCMCLicense (matches Coq: Inductive MCMCLicense) *)

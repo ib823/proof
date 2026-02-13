@@ -117,7 +117,7 @@
  *)
 
 theory NetworkDefense
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* NetPerm (matches Coq: Inductive NetPerm) *)

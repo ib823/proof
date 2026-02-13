@@ -155,7 +155,7 @@
  *)
 
 theory VerifiedUI
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* CertStatus (matches Coq: Inductive CertStatus) *)

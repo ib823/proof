@@ -52,7 +52,7 @@
  *)
 
 theory MemoryVirtualization
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* VMId (matches Coq: Inductive VMId) *)

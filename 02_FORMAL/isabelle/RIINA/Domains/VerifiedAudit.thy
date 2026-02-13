@@ -64,7 +64,7 @@
  *)
 
 theory VerifiedAudit
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MerkleNode (matches Coq: Inductive MerkleNode) *)

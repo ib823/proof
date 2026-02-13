@@ -114,7 +114,7 @@
  *)
 
 theory VerifiedIdentity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Credential (matches Coq: Inductive Credential) *)

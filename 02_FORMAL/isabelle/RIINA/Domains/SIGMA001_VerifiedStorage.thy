@@ -93,7 +93,7 @@
  *)
 
 theory SIGMA001_VerifiedStorage
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ColType (matches Coq: Inductive ColType) *)

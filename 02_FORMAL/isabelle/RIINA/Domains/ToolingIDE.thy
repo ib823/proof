@@ -90,7 +90,7 @@
  *)
 
 theory ToolingIDE
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ToolAST (matches Coq: Inductive ToolAST) *)

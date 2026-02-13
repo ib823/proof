@@ -68,7 +68,7 @@
  *)
 
 theory MeshNetworking
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* RouteStatus (matches Coq: Inductive RouteStatus) *)

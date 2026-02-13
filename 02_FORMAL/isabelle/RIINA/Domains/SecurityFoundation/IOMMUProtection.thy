@@ -51,7 +51,7 @@
  *)
 
 theory IOMMUProtection
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DeviceId (matches Coq: Inductive DeviceId) *)

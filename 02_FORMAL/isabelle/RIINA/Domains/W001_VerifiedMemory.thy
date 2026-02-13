@@ -87,7 +87,7 @@
  *)
 
 theory W001_VerifiedMemory
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* assertion (matches Coq: Inductive assertion) *)

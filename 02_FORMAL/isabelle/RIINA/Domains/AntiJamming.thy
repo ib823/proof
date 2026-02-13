@@ -66,7 +66,7 @@
  *)
 
 theory AntiJamming
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* JammerType (matches Coq: Inductive JammerType) *)

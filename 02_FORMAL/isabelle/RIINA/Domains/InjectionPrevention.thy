@@ -59,7 +59,7 @@
  *)
 
 theory InjectionPrevention
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* TaintLevel (matches Coq: Inductive TaintLevel) *)

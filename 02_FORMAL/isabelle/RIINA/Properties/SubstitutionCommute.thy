@@ -30,7 +30,7 @@
  *)
 
 theory SubstitutionCommute
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* id_rho_sc (matches Coq: Definition id_rho_sc) *)

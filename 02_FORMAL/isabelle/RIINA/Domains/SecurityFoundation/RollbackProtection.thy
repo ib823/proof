@@ -54,7 +54,7 @@
  *)
 
 theory RollbackProtection
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ComponentId (matches Coq: Inductive ComponentId) *)

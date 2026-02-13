@@ -65,7 +65,7 @@
  *)
 
 theory KeyLifecycle
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* KeyState (matches Coq: Inductive KeyState) *)

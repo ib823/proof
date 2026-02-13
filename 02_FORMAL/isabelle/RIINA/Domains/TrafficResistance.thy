@@ -56,7 +56,7 @@
  *)
 
 theory TrafficResistance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* constant_rate (matches Coq: Definition constant_rate) *)

@@ -56,7 +56,7 @@
  *)
 
 theory AnonymousComm
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* unlinkable (matches Coq: Definition unlinkable) *)

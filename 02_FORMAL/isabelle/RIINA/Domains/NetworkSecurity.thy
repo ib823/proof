@@ -93,7 +93,7 @@
  *)
 
 theory NetworkSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* TLSConfig (matches Coq: Record TLSConfig) *)

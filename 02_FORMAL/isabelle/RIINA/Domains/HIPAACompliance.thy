@@ -67,7 +67,7 @@
  *)
 
 theory HIPAACompliance
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* Role (matches Coq: Inductive Role) *)

@@ -86,7 +86,7 @@
  *)
 
 theory CovertChannels
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SecLevel (matches Coq: Inductive SecLevel) *)

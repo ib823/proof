@@ -91,7 +91,7 @@
  *)
 
 theory Metaprogramming
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* FragmentType (matches Coq: Inductive FragmentType) *)

@@ -65,7 +65,7 @@
  *)
 
 theory SensorFusion
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* AnomalyResult (matches Coq: Inductive AnomalyResult) *)

@@ -63,7 +63,7 @@
  *)
 
 theory EnterpriseERP
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* DocState (matches Coq: Inductive DocState) *)

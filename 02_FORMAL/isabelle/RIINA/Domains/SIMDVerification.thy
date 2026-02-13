@@ -62,7 +62,7 @@
  *)
 
 theory SIMDVerification
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* MemResult (matches Coq: Inductive MemResult) *)

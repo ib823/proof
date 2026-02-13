@@ -88,7 +88,7 @@
  *)
 
 theory AppDistribution
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* InstallState (matches Coq: Inductive InstallState) *)

@@ -168,7 +168,7 @@
  *)
 
 theory ContainerSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* SyscallCategory (matches Coq: Inductive SyscallCategory) *)

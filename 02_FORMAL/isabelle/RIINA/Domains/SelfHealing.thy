@@ -66,7 +66,7 @@
  *)
 
 theory SelfHealing
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* HealthState (matches Coq: Inductive HealthState) *)

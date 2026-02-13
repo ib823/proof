@@ -45,7 +45,7 @@
  *)
 
 theory GestureSystem
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* recognized (matches Coq: Definition recognized) *)
