@@ -668,14 +668,25 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append(' *)')
     lines.append('')
 
-    # Theory block
+    # Theory block — import CoqCompat for domain/industry files
+    # which may contain residual Coq boolean functions (andb, negb, etc.)
+    needs_compat = any(
+        any(kw in defn.body for kw in ('andb', 'orb', 'negb', 'eqb', 'leb', 'ltb', 'forallb', 'existsb'))
+        for defn in parsed.definitions
+    ) or any(
+        any(kw in thm.statement for kw in ('andb', 'orb', 'negb', 'eqb', 'leb', 'ltb', 'forallb', 'existsb'))
+        for thm in parsed.theorems
+    )
     lines.append(f'theory {module_name}')
-    lines.append(f'  imports Main')
+    if needs_compat:
+        lines.append(f'  imports Main CoqCompat')
+    else:
+        lines.append(f'  imports Main')
     lines.append(f'begin')
     lines.append('')
 
-    # Helper lemma if needed
-    has_andb = any('andb_true_iff' in t.proof for t in parsed.theorems)
+    # Helper lemma if needed (legacy — CoqCompat now provides this)
+    has_andb = any('andb_true_iff' in t.proof for t in parsed.theorems) and not needs_compat
     if has_andb:
         lines.append('(* Boolean conjunction helper (matches Coq: andb_true_iff) *)')
         lines.append('lemma andb_true_iff: "(a \\<and> b) = True \\<longleftrightarrow> a = True \\<and> b = True"')
@@ -799,16 +810,45 @@ def _build_isabelle_type_sig(param_types: list, ret_type: str) -> str:
     return ' \\<Rightarrow> '.join(parts)
 
 
+def _coq_body_to_isabelle(body: str) -> str:
+    """Translate Coq boolean expressions to Isabelle equivalents in a definition body."""
+    import re
+    s = body
+    # Translate Coq boolean operators to Isabelle
+    s = s.replace('&&', '\\<and>')
+    s = s.replace('||', '\\<or>')
+    # Translate Coq boolean functions
+    # andb x y -> x \<and> y
+    s = re.sub(r'\bandb\s*\(([^,)]+)\)\s*\(([^)]+)\)', r'(\1 \\<and> \2)', s)
+    s = re.sub(r'\bandb\s+(\S+)\s+(\S+)', r'(\1 \\<and> \2)', s)
+    # orb x y -> x \<or> y
+    s = re.sub(r'\borb\s*\(([^,)]+)\)\s*\(([^)]+)\)', r'(\1 \\<or> \2)', s)
+    s = re.sub(r'\borb\s+(\S+)\s+(\S+)', r'(\1 \\<or> \2)', s)
+    # negb x -> \<not> x
+    s = re.sub(r'\bnegb\s+(\S+)', r'(\\<not> \1)', s)
+    s = re.sub(r'\bnegb\s*\(([^)]+)\)', r'(\\<not> (\1))', s)
+    # Nat.eqb / eqb -> =
+    s = re.sub(r'Nat\.eqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    s = re.sub(r'\beqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    # Nat.leb / leb -> \<le>
+    s = re.sub(r'Nat\.leb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    s = re.sub(r'\bleb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    # Nat.ltb / ltb -> <
+    s = re.sub(r'Nat\.ltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    s = re.sub(r'\bltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    # true/false -> True/False
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bfalse\b', 'False', s)
+    return s
+
+
 def _translate_def_body_isabelle(defn: CoqDefinition) -> str:
     """Translate a simple Coq Definition to Isabelle."""
     param_types = _extract_param_types(defn.params)
     isa_ret = coq_type_to_isabelle(defn.ret_type)
     type_sig = _build_isabelle_type_sig(param_types, isa_ret)
 
-    body = defn.body.strip()
-    # Translate boolean operators
-    body = body.replace('&&', '\\<and>')
-    body = body.replace('||', '\\<or>')
+    body = _coq_body_to_isabelle(defn.body.strip())
 
     params_names = ' '.join(n for n, _ in param_types) if param_types else ''
     if params_names:
@@ -819,6 +859,7 @@ def _translate_def_body_isabelle(defn: CoqDefinition) -> str:
 
 def _translate_statement_isabelle(stmt: str) -> str:
     """Translate a Coq theorem statement to Isabelle."""
+    import re
     s = stmt
     # Basic translations
     s = s.replace(' -> ', ' \\<longrightarrow> ')
@@ -832,6 +873,18 @@ def _translate_statement_isabelle(stmt: str) -> str:
     s = s.replace(' <> ', ' \\<noteq> ')
     s = s.replace(' = true', ' = True')
     s = s.replace(' = false', ' = False')
+    # Translate Coq boolean functions
+    s = re.sub(r'\bandb\s+(\S+)\s+(\S+)', r'(\1 \\<and> \2)', s)
+    s = re.sub(r'\borb\s+(\S+)\s+(\S+)', r'(\1 \\<or> \2)', s)
+    s = re.sub(r'\bnegb\s+(\S+)', r'(\\<not> \1)', s)
+    s = re.sub(r'Nat\.eqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    s = re.sub(r'\beqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    s = re.sub(r'Nat\.leb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    s = re.sub(r'\bleb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    s = re.sub(r'Nat\.ltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    s = re.sub(r'\bltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bfalse\b', 'False', s)
     return s
 
 

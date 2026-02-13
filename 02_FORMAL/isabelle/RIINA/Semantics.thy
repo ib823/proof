@@ -378,326 +378,339 @@ theorem step_deterministic_cfg:
 proof (induction cfg cfg1 arbitrary: cfg2 rule: step.induct)
   case ST_AppAbs
   from ST_AppAbs.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VLam)
+  proof (cases rule: step.cases)
+    case ST_AppAbs then show ?thesis by auto
+  next
+    case ST_App1 then show ?thesis using value_does_not_step is_value.VLam by blast
+  next
+    case ST_App2 then show ?thesis using ST_AppAbs.hyps(1) value_does_not_step by blast
+  qed
 next
   case ST_App1
   from ST_App1.prems show ?case
   proof (cases rule: step.cases)
-    case ST_AppAbs
-    then show ?thesis using ST_App1.hyps value_does_not_step is_value.VLam by blast
+    case ST_AppAbs then show ?thesis using ST_App1.hyps value_does_not_step is_value.VLam by blast
   next
-    case ST_App1
-    then show ?thesis using ST_App1.IH by auto
+    case ST_App1 then show ?thesis using ST_App1.IH by auto
   next
-    case ST_App2
-    then show ?thesis using ST_App1.hyps value_does_not_step by blast
+    case ST_App2 then show ?thesis using ST_App1.hyps value_does_not_step by blast
   qed
 next
   case ST_App2
   from ST_App2.prems show ?case
   proof (cases rule: step.cases)
-    case ST_AppAbs
-    then show ?thesis using ST_App2.hyps value_does_not_step by blast
+    case ST_AppAbs then show ?thesis using ST_App2.hyps value_does_not_step by blast
   next
-    case ST_App1
-    then show ?thesis using ST_App2.hyps value_does_not_step by blast
+    case ST_App1 then show ?thesis using ST_App2.hyps value_does_not_step by blast
   next
-    case ST_App2
-    then show ?thesis using ST_App2.IH by auto
+    case ST_App2 then show ?thesis using ST_App2.IH by auto
   qed
 next
   case ST_Pair1
   from ST_Pair1.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Pair1
-    then show ?thesis using ST_Pair1.IH by auto
+    case ST_Pair1 then show ?thesis using ST_Pair1.IH by auto
   next
-    case ST_Pair2
-    then show ?thesis using ST_Pair1.hyps value_does_not_step by blast
+    case ST_Pair2 then show ?thesis using ST_Pair1.hyps value_does_not_step by blast
   qed
 next
   case ST_Pair2
   from ST_Pair2.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Pair1
-    then show ?thesis using ST_Pair2.hyps value_does_not_step by blast
+    case ST_Pair1 then show ?thesis using ST_Pair2.hyps value_does_not_step by blast
   next
-    case ST_Pair2
-    then show ?thesis using ST_Pair2.IH by auto
+    case ST_Pair2 then show ?thesis using ST_Pair2.IH by auto
   qed
 next
   case ST_Fst
   from ST_Fst.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VPair ST_Fst.hyps)
+  proof (cases rule: step.cases)
+    case ST_Fst then show ?thesis by auto
+  next
+    case ST_FstStep then show ?thesis using ST_Fst.hyps value_does_not_step is_value.VPair by blast
+  qed
 next
   case ST_Snd
   from ST_Snd.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VPair ST_Snd.hyps)
+  proof (cases rule: step.cases)
+    case ST_Snd then show ?thesis by auto
+  next
+    case ST_SndStep then show ?thesis using ST_Snd.hyps value_does_not_step is_value.VPair by blast
+  qed
 next
   case ST_FstStep
   from ST_FstStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Fst
-    then show ?thesis using ST_FstStep.hyps value_does_not_step is_value.VPair by blast
+    case ST_Fst then show ?thesis using ST_FstStep.hyps value_does_not_step is_value.VPair by blast
   next
-    case ST_FstStep
-    then show ?thesis using ST_FstStep.IH by auto
+    case ST_FstStep then show ?thesis using ST_FstStep.IH by auto
   qed
 next
   case ST_SndStep
   from ST_SndStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Snd
-    then show ?thesis using ST_SndStep.hyps value_does_not_step is_value.VPair by blast
+    case ST_Snd then show ?thesis using ST_SndStep.hyps value_does_not_step is_value.VPair by blast
   next
-    case ST_SndStep
-    then show ?thesis using ST_SndStep.IH by auto
+    case ST_SndStep then show ?thesis using ST_SndStep.IH by auto
   qed
 next
   case ST_CaseInl
   from ST_CaseInl.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VInl ST_CaseInl.hyps)
+  proof (cases rule: step.cases)
+    case ST_CaseInl then show ?thesis by auto
+  next
+    case ST_CaseStep then show ?thesis using ST_CaseInl.hyps value_does_not_step is_value.VInl by blast
+  qed
 next
   case ST_CaseInr
   from ST_CaseInr.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VInr ST_CaseInr.hyps)
+  proof (cases rule: step.cases)
+    case ST_CaseInr then show ?thesis by auto
+  next
+    case ST_CaseStep then show ?thesis using ST_CaseInr.hyps value_does_not_step is_value.VInr by blast
+  qed
 next
   case ST_CaseStep
   from ST_CaseStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_CaseInl
-    then show ?thesis using ST_CaseStep.hyps value_does_not_step is_value.VInl by blast
+    case ST_CaseInl then show ?thesis using ST_CaseStep.hyps value_does_not_step is_value.VInl by blast
   next
-    case ST_CaseInr
-    then show ?thesis using ST_CaseStep.hyps value_does_not_step is_value.VInr by blast
+    case ST_CaseInr then show ?thesis using ST_CaseStep.hyps value_does_not_step is_value.VInr by blast
   next
-    case ST_CaseStep
-    then show ?thesis using ST_CaseStep.IH by auto
+    case ST_CaseStep then show ?thesis using ST_CaseStep.IH by auto
   qed
 next
   case ST_InlStep
   from ST_InlStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_InlStep.IH)
+  proof (cases rule: step.cases)
+    case ST_InlStep then show ?thesis using ST_InlStep.IH by auto
+  qed
 next
   case ST_InrStep
   from ST_InrStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_InrStep.IH)
+  proof (cases rule: step.cases)
+    case ST_InrStep then show ?thesis using ST_InrStep.IH by auto
+  qed
 next
   case ST_IfTrue
   from ST_IfTrue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VBool)
+  proof (cases rule: step.cases)
+    case ST_IfTrue then show ?thesis by auto
+  next
+    case ST_IfFalse then show ?thesis by simp
+  next
+    case ST_IfStep then show ?thesis using value_does_not_step is_value.VBool by blast
+  qed
 next
   case ST_IfFalse
   from ST_IfFalse.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step intro: is_value.VBool)
+  proof (cases rule: step.cases)
+    case ST_IfTrue then show ?thesis by simp
+  next
+    case ST_IfFalse then show ?thesis by auto
+  next
+    case ST_IfStep then show ?thesis using value_does_not_step is_value.VBool by blast
+  qed
 next
   case ST_IfStep
   from ST_IfStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_IfTrue
-    then show ?thesis using ST_IfStep.hyps value_does_not_step is_value.VBool by blast
+    case ST_IfTrue then show ?thesis using ST_IfStep.hyps value_does_not_step is_value.VBool by blast
   next
-    case ST_IfFalse
-    then show ?thesis using ST_IfStep.hyps value_does_not_step is_value.VBool by blast
+    case ST_IfFalse then show ?thesis using ST_IfStep.hyps value_does_not_step is_value.VBool by blast
   next
-    case ST_IfStep
-    then show ?thesis using ST_IfStep.IH by auto
+    case ST_IfStep then show ?thesis using ST_IfStep.IH by auto
   qed
 next
   case ST_LetValue
   from ST_LetValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_LetValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_LetValue then show ?thesis by auto
+  next
+    case ST_LetStep then show ?thesis using ST_LetValue.hyps value_does_not_step by blast
+  qed
 next
   case ST_LetStep
   from ST_LetStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_LetValue
-    then show ?thesis using ST_LetStep.hyps value_does_not_step by blast
+    case ST_LetValue then show ?thesis using ST_LetStep.hyps value_does_not_step by blast
   next
-    case ST_LetStep
-    then show ?thesis using ST_LetStep.IH by auto
+    case ST_LetStep then show ?thesis using ST_LetStep.IH by auto
   qed
 next
   case ST_PerformStep
   from ST_PerformStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_PerformStep
-    then show ?thesis using ST_PerformStep.IH by auto
+    case ST_PerformStep then show ?thesis using ST_PerformStep.IH by auto
   next
-    case ST_PerformValue
-    then show ?thesis using ST_PerformStep.hyps value_does_not_step by blast
+    case ST_PerformValue then show ?thesis using ST_PerformStep.hyps value_does_not_step by blast
   qed
 next
   case ST_PerformValue
   from ST_PerformValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_PerformValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_PerformStep then show ?thesis using ST_PerformValue.hyps value_does_not_step by blast
+  next
+    case ST_PerformValue then show ?thesis by auto
+  qed
 next
   case ST_HandleStep
   from ST_HandleStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_HandleStep
-    then show ?thesis using ST_HandleStep.IH by auto
+    case ST_HandleStep then show ?thesis using ST_HandleStep.IH by auto
   next
-    case ST_HandleValue
-    then show ?thesis using ST_HandleStep.hyps value_does_not_step by blast
+    case ST_HandleValue then show ?thesis using ST_HandleStep.hyps value_does_not_step by blast
   qed
 next
   case ST_HandleValue
   from ST_HandleValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_HandleValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_HandleStep then show ?thesis using ST_HandleValue.hyps value_does_not_step by blast
+  next
+    case ST_HandleValue then show ?thesis by auto
+  qed
 next
   case ST_RefStep
   from ST_RefStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_RefStep
-    then show ?thesis using ST_RefStep.IH by auto
+    case ST_RefStep then show ?thesis using ST_RefStep.IH by auto
   next
-    case ST_RefValue
-    then show ?thesis using ST_RefStep.hyps value_does_not_step by blast
+    case ST_RefValue then show ?thesis using ST_RefStep.hyps value_does_not_step by blast
   qed
 next
   case ST_RefValue
   from ST_RefValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step simp: ST_RefValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_RefStep then show ?thesis using ST_RefValue.hyps value_does_not_step by blast
+  next
+    case ST_RefValue then show ?thesis using ST_RefValue.hyps by simp
+  qed
 next
   case ST_DerefStep
   from ST_DerefStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_DerefStep
-    then show ?thesis using ST_DerefStep.IH by auto
+    case ST_DerefStep then show ?thesis using ST_DerefStep.IH by auto
   next
-    case ST_DerefLoc
-    then show ?thesis by auto
+    case ST_DerefLoc then show ?thesis using ST_DerefStep.hyps value_does_not_step is_value.VLoc by blast
   qed
 next
   case ST_DerefLoc
   from ST_DerefLoc.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_DerefLoc.hyps)
+  proof (cases rule: step.cases)
+    case ST_DerefStep then show ?thesis using value_does_not_step is_value.VLoc by blast
+  next
+    case ST_DerefLoc then show ?thesis using ST_DerefLoc.hyps by auto
+  qed
 next
   case ST_Assign1
   from ST_Assign1.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Assign1
-    then show ?thesis using ST_Assign1.IH by auto
+    case ST_Assign1 then show ?thesis using ST_Assign1.IH by auto
   next
-    case ST_Assign2
-    then show ?thesis using ST_Assign1.hyps value_does_not_step by blast
+    case ST_Assign2 then show ?thesis using ST_Assign1.hyps value_does_not_step by blast
+  next
+    case ST_AssignLoc then show ?thesis using ST_Assign1.hyps value_does_not_step is_value.VLoc by blast
   qed
 next
   case ST_Assign2
   from ST_Assign2.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Assign1
-    then show ?thesis using ST_Assign2.hyps value_does_not_step by blast
+    case ST_Assign1 then show ?thesis using ST_Assign2.hyps value_does_not_step by blast
   next
-    case ST_Assign2
-    then show ?thesis using ST_Assign2.IH by auto
+    case ST_Assign2 then show ?thesis using ST_Assign2.IH by auto
   next
-    case ST_AssignLoc
-    then show ?thesis using ST_Assign2.hyps value_does_not_step is_value.VLoc by blast
+    case ST_AssignLoc then show ?thesis using ST_Assign2.hyps value_does_not_step is_value.VLoc by blast
   qed
 next
   case ST_AssignLoc
   from ST_AssignLoc.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Assign2
-    then show ?thesis using ST_AssignLoc.hyps value_does_not_step by blast
+    case ST_Assign1 then show ?thesis using value_does_not_step is_value.VLoc by blast
   next
-    case ST_AssignLoc
-    then show ?thesis by auto
+    case ST_Assign2 then show ?thesis using ST_AssignLoc.hyps value_does_not_step by blast
+  next
+    case ST_AssignLoc then show ?thesis using ST_AssignLoc.hyps by auto
   qed
 next
   case ST_ClassifyStep
   from ST_ClassifyStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_ClassifyStep.IH)
+  proof (cases rule: step.cases)
+    case ST_ClassifyStep then show ?thesis using ST_ClassifyStep.IH by auto
+  qed
 next
   case ST_Declassify1
   from ST_Declassify1.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Declassify1
-    then show ?thesis using ST_Declassify1.IH by auto
+    case ST_Declassify1 then show ?thesis using ST_Declassify1.IH by auto
   next
-    case ST_Declassify2
-    then show ?thesis using ST_Declassify1.hyps value_does_not_step by blast
+    case ST_Declassify2 then show ?thesis using ST_Declassify1.hyps value_does_not_step by blast
   next
-    case ST_DeclassifyValue
-    then show ?thesis using ST_Declassify1.hyps value_does_not_step is_value.VClassify by blast
+    case ST_DeclassifyValue then show ?thesis using ST_Declassify1.hyps value_does_not_step is_value.VClassify by blast
   qed
 next
   case ST_Declassify2
   from ST_Declassify2.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Declassify1
-    then show ?thesis using ST_Declassify2.hyps value_does_not_step by blast
+    case ST_Declassify1 then show ?thesis using ST_Declassify2.hyps value_does_not_step by blast
   next
-    case ST_Declassify2
-    then show ?thesis using ST_Declassify2.IH by auto
+    case ST_Declassify2 then show ?thesis using ST_Declassify2.IH by auto
   next
     case ST_DeclassifyValue
-    then obtain v0 where "declass_ok (EClassify v) p" "e2 = EProve (EClassify v0)"
-      using ST_Declassify2.hyps unfolding declass_ok_def by auto
-    then show ?thesis using ST_Declassify2.hyps value_does_not_step is_value.VProve is_value.VClassify by blast
+    then show ?thesis
+      using ST_Declassify2.hyps value_does_not_step is_value.VProve is_value.VClassify
+      unfolding declass_ok_def by blast
   qed
 next
   case ST_DeclassifyValue
   from ST_DeclassifyValue.prems show ?case
   proof (cases rule: step.cases)
-    case ST_Declassify1
-    then show ?thesis using ST_DeclassifyValue.hyps value_does_not_step is_value.VClassify by blast
+    case ST_Declassify1 then show ?thesis using ST_DeclassifyValue.hyps value_does_not_step is_value.VClassify by blast
   next
     case ST_Declassify2
-    obtain v0 where "p = EProve (EClassify v0)" "is_value v0"
-      using ST_DeclassifyValue.hyps unfolding declass_ok_def by auto
-    then show ?thesis using ST_Declassify2 value_does_not_step is_value.VProve is_value.VClassify by blast
+    then show ?thesis
+      using ST_DeclassifyValue.hyps value_does_not_step is_value.VProve is_value.VClassify
+      unfolding declass_ok_def by blast
   next
-    case ST_DeclassifyValue
-    then show ?thesis by auto
+    case ST_DeclassifyValue then show ?thesis by auto
   qed
 next
   case ST_ProveStep
   from ST_ProveStep.prems show ?case
-    by (cases rule: step.cases) (auto simp: ST_ProveStep.IH)
+  proof (cases rule: step.cases)
+    case ST_ProveStep then show ?thesis using ST_ProveStep.IH by auto
+  qed
 next
   case ST_RequireStep
   from ST_RequireStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_RequireStep
-    then show ?thesis using ST_RequireStep.IH by auto
+    case ST_RequireStep then show ?thesis using ST_RequireStep.IH by auto
   next
-    case ST_RequireValue
-    then show ?thesis using ST_RequireStep.hyps value_does_not_step by blast
+    case ST_RequireValue then show ?thesis using ST_RequireStep.hyps value_does_not_step by blast
   qed
 next
   case ST_RequireValue
   from ST_RequireValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_RequireValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_RequireStep then show ?thesis using ST_RequireValue.hyps value_does_not_step by blast
+  next
+    case ST_RequireValue then show ?thesis by auto
+  qed
 next
   case ST_GrantStep
   from ST_GrantStep.prems show ?case
   proof (cases rule: step.cases)
-    case ST_GrantStep
-    then show ?thesis using ST_GrantStep.IH by auto
+    case ST_GrantStep then show ?thesis using ST_GrantStep.IH by auto
   next
-    case ST_GrantValue
-    then show ?thesis using ST_GrantStep.hyps value_does_not_step by blast
+    case ST_GrantValue then show ?thesis using ST_GrantStep.hyps value_does_not_step by blast
   qed
 next
   case ST_GrantValue
   from ST_GrantValue.prems show ?case
-    by (cases rule: step.cases)
-       (auto dest: value_does_not_step ST_GrantValue.hyps)
+  proof (cases rule: step.cases)
+    case ST_GrantStep then show ?thesis using ST_GrantValue.hyps value_does_not_step by blast
+  next
+    case ST_GrantValue then show ?thesis by auto
+  qed
 qed
 
 text \<open>Step is deterministic (matches Coq: step_deterministic)\<close>

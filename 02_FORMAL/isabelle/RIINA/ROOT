@@ -21,10 +21,10 @@ session RIINA = HOL +
     Syntax
     Semantics
     Typing
+    EffectAlgebra
     Progress
     Preservation
     TypeSafety
-    EffectAlgebra
     EffectSystem
     EffectGate
     NonInterference

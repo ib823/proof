@@ -242,199 +242,124 @@ theorem type_uniqueness:
   shows "T1 = T2 \<and> \<epsilon>1 = \<epsilon>2"
   using assms
 proof (induction arbitrary: T2 \<epsilon>2 rule: has_type.induct)
-  case (T_Unit \<Gamma> \<Sigma> \<Delta>)
-  then show ?case by (auto elim: has_type.cases)
+  case T_Unit then show ?case by (auto elim: has_type.cases)
 next
-  case (T_Bool \<Gamma> \<Sigma> \<Delta> b)
-  then show ?case by (auto elim: has_type.cases)
+  case T_Bool then show ?case by (auto elim: has_type.cases)
 next
-  case (T_Int \<Gamma> \<Sigma> \<Delta> n)
-  then show ?case by (auto elim: has_type.cases)
+  case T_Int then show ?case by (auto elim: has_type.cases)
 next
-  case (T_String \<Gamma> \<Sigma> \<Delta> s)
-  then show ?case by (auto elim: has_type.cases)
+  case T_String then show ?case by (auto elim: has_type.cases)
 next
-  case (T_Loc l \<Sigma> T sl \<Gamma> \<Delta>)
-  from T_Loc.prems show ?case
-    by (auto elim: has_type.cases simp: T_Loc.hyps)
+  case T_Loc then show ?case by (auto elim: has_type.cases simp: T_Loc.hyps)
 next
-  case (T_Var x \<Gamma> T \<Sigma> \<Delta>)
-  from T_Var.prems show ?case
-    by (auto elim: has_type.cases simp: T_Var.hyps)
+  case T_Var then show ?case by (auto elim: has_type.cases simp: T_Var.hyps)
 next
-  case (T_Lam x T1 \<Gamma> \<Sigma> \<Delta> e T2 \<epsilon>)
-  from T_Lam.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Lam x' T1' T2' e' \<epsilon>')
-    then have "T2 = T2' \<and> \<epsilon> = \<epsilon>'" using T_Lam.IH by auto
-    then show ?thesis using T_Lam by auto
-  qed
+  case T_Lam then show ?case by (auto elim: has_type.cases dest: T_Lam.IH)
 next
-  case (T_App \<Gamma> \<Sigma> \<Delta> e1 T1 T2 \<epsilon> \<epsilon>1 e2 \<epsilon>2)
+  case T_App
   from T_App.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_App T1' T2' \<epsilon>' \<epsilon>1' \<epsilon>2')
-    then have eq1: "TFn T1 T2 \<epsilon> = TFn T1' T2' \<epsilon>' \<and> \<epsilon>1 = \<epsilon>1'" using T_App.IH(1) by blast
-    then have "T1 = T1'" "T2 = T2'" "\<epsilon> = \<epsilon>'" by auto
-    moreover have "\<epsilon>2 = \<epsilon>2'" using T_App.IH(2) T_App \<open>T1 = T1'\<close> by auto
+    case T_App
+    then have eq1: "TFn T1 T2 \<epsilon> = TFn T1a T2a \<epsilon>a \<and> \<epsilon>1 = \<epsilon>1a"
+      using T_App.IH(1) by blast
+    then have "T1 = T1a" "T2 = T2a" "\<epsilon> = \<epsilon>a" by auto
+    moreover have "\<epsilon>2 = \<epsilon>2a"
+      using T_App.IH(2) T_App \<open>T1 = T1a\<close> by auto
     ultimately show ?thesis using T_App by auto
   qed
 next
-  case (T_Pair \<Gamma> \<Sigma> \<Delta> e1 T1 \<epsilon>1 e2 T2 \<epsilon>2)
+  case T_Pair
   from T_Pair.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Pair T1' \<epsilon>1' T2' \<epsilon>2')
-    then have "T1 = T1' \<and> \<epsilon>1 = \<epsilon>1'" using T_Pair.IH(1) by blast
-    moreover have "T2 = T2' \<and> \<epsilon>2 = \<epsilon>2'" using T_Pair.IH(2) T_Pair by blast
+    case T_Pair
+    then have "T1 = T1a \<and> \<epsilon>1 = \<epsilon>1a" using T_Pair.IH(1) by blast
+    moreover have "T2 = T2a \<and> \<epsilon>2 = \<epsilon>2a" using T_Pair.IH(2) T_Pair by blast
     ultimately show ?thesis using T_Pair by auto
   qed
 next
-  case (T_Fst \<Gamma> \<Sigma> \<Delta> e T1 T2 \<epsilon>)
-  from T_Fst.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Fst T1' T2' \<epsilon>')
-    then have "TProd T1 T2 = TProd T1' T2' \<and> \<epsilon> = \<epsilon>'" using T_Fst.IH by blast
-    then show ?thesis by auto
-  qed
+  case T_Fst then show ?case by (auto elim: has_type.cases dest: T_Fst.IH)
 next
-  case (T_Snd \<Gamma> \<Sigma> \<Delta> e T1 T2 \<epsilon>)
-  from T_Snd.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Snd T1' T2' \<epsilon>')
-    then have "TProd T1 T2 = TProd T1' T2' \<and> \<epsilon> = \<epsilon>'" using T_Snd.IH by blast
-    then show ?thesis by auto
-  qed
+  case T_Snd then show ?case by (auto elim: has_type.cases dest: T_Snd.IH)
 next
-  case (T_Inl \<Gamma> \<Sigma> \<Delta> e T1 \<epsilon> T2)
-  from T_Inl.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Inl T1' \<epsilon>' T2')
-    then have "T1 = T1' \<and> \<epsilon> = \<epsilon>'" using T_Inl.IH by blast
-    then show ?thesis using T_Inl by auto
-  qed
+  case T_Inl then show ?case by (auto elim: has_type.cases dest: T_Inl.IH)
 next
-  case (T_Inr \<Gamma> \<Sigma> \<Delta> e T2 \<epsilon> T1)
-  from T_Inr.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Inr T2' \<epsilon>' T1')
-    then have "T2 = T2' \<and> \<epsilon> = \<epsilon>'" using T_Inr.IH by blast
-    then show ?thesis using T_Inr by auto
-  qed
+  case T_Inr then show ?case by (auto elim: has_type.cases dest: T_Inr.IH)
 next
-  case (T_Case \<Gamma> \<Sigma> \<Delta> e T1 T2 \<epsilon> x1 e1 T \<epsilon>1 x2 e2 \<epsilon>2)
+  case T_Case
   from T_Case.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Case T1' T2' \<epsilon>' T' \<epsilon>1' \<epsilon>2')
-    then have eq0: "TSum T1 T2 = TSum T1' T2' \<and> \<epsilon> = \<epsilon>'" using T_Case.IH(1) by blast
-    then have "T1 = T1'" "T2 = T2'" by auto
-    then have "T = T' \<and> \<epsilon>1 = \<epsilon>1'" using T_Case.IH(2) T_Case by auto
-    moreover have "\<epsilon>2 = \<epsilon>2'" using T_Case.IH(3) T_Case \<open>T2 = T2'\<close> by auto
+    case T_Case
+    then have eq0: "TSum T1 T2 = TSum T1a T2a \<and> \<epsilon> = \<epsilon>a"
+      using T_Case.IH(1) by blast
+    then have "T1 = T1a" "T2 = T2a" by auto
+    then have "T = Ta \<and> \<epsilon>1 = \<epsilon>1a" using T_Case.IH(2) T_Case by auto
+    moreover have "\<epsilon>2 = \<epsilon>2a" using T_Case.IH(3) T_Case \<open>T2 = T2a\<close> by auto
     ultimately show ?thesis using T_Case eq0 by auto
   qed
 next
-  case (T_If \<Gamma> \<Sigma> \<Delta> e1 \<epsilon>1 e2 T \<epsilon>2 e3 \<epsilon>3)
+  case T_If
   from T_If.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_If \<epsilon>1' T' \<epsilon>2' \<epsilon>3')
-    then have "\<epsilon>1 = \<epsilon>1'" using T_If.IH(1) by auto
-    moreover have "T = T' \<and> \<epsilon>2 = \<epsilon>2'" using T_If.IH(2) T_If by blast
-    moreover have "\<epsilon>3 = \<epsilon>3'" using T_If.IH(3) T_If by auto
+    case T_If
+    then have "\<epsilon>1 = \<epsilon>1a" using T_If.IH(1) by auto
+    moreover have "T = Ta \<and> \<epsilon>2 = \<epsilon>2a" using T_If.IH(2) T_If by blast
+    moreover have "\<epsilon>3 = \<epsilon>3a" using T_If.IH(3) T_If by auto
     ultimately show ?thesis using T_If by auto
   qed
 next
-  case (T_Let \<Gamma> \<Sigma> \<Delta> e1 T1 \<epsilon>1 x e2 T2 \<epsilon>2)
+  case T_Let
   from T_Let.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Let T1' \<epsilon>1' T2' \<epsilon>2')
-    then have "T1 = T1' \<and> \<epsilon>1 = \<epsilon>1'" using T_Let.IH(1) by blast
-    then have "T2 = T2' \<and> \<epsilon>2 = \<epsilon>2'" using T_Let.IH(2) T_Let by auto
-    then show ?thesis using T_Let \<open>\<epsilon>1 = \<epsilon>1'\<close> by auto
+    case T_Let
+    then have "T1 = T1a \<and> \<epsilon>1 = \<epsilon>1a" using T_Let.IH(1) by blast
+    then have "T2 = T2a \<and> \<epsilon>2 = \<epsilon>2a" using T_Let.IH(2) T_Let by auto
+    then show ?thesis using T_Let by auto
   qed
 next
-  case (T_Perform \<Gamma> \<Sigma> \<Delta> e T \<epsilon> eff)
-  from T_Perform.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Perform T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Perform.IH by blast
-    then show ?thesis using T_Perform by auto
-  qed
+  case T_Perform then show ?case by (auto elim: has_type.cases dest: T_Perform.IH)
 next
-  case (T_Handle \<Gamma> \<Sigma> \<Delta> e T1 \<epsilon>1 x h T2 \<epsilon>2)
+  case T_Handle
   from T_Handle.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Handle T1' \<epsilon>1' T2' \<epsilon>2')
-    then have "T1 = T1' \<and> \<epsilon>1 = \<epsilon>1'" using T_Handle.IH(1) by blast
-    then have "T2 = T2' \<and> \<epsilon>2 = \<epsilon>2'" using T_Handle.IH(2) T_Handle by auto
-    then show ?thesis using T_Handle \<open>\<epsilon>1 = \<epsilon>1'\<close> by auto
+    case T_Handle
+    then have "T1 = T1a \<and> \<epsilon>1 = \<epsilon>1a" using T_Handle.IH(1) by blast
+    then have "T2 = T2a \<and> \<epsilon>2 = \<epsilon>2a" using T_Handle.IH(2) T_Handle by auto
+    then show ?thesis using T_Handle by auto
   qed
 next
-  case (T_Ref \<Gamma> \<Sigma> \<Delta> e T \<epsilon> l)
-  from T_Ref.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Ref T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Ref.IH by blast
-    then show ?thesis using T_Ref by auto
-  qed
+  case T_Ref then show ?case by (auto elim: has_type.cases dest: T_Ref.IH)
 next
-  case (T_Deref \<Gamma> \<Sigma> \<Delta> e T l \<epsilon>)
-  from T_Deref.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Deref T' l' \<epsilon>')
-    then have "TRef T l = TRef T' l' \<and> \<epsilon> = \<epsilon>'" using T_Deref.IH by blast
-    then show ?thesis by auto
-  qed
+  case T_Deref then show ?case by (auto elim: has_type.cases dest: T_Deref.IH)
 next
-  case (T_Assign \<Gamma> \<Sigma> \<Delta> e1 T l \<epsilon>1 e2 \<epsilon>2)
+  case T_Assign
   from T_Assign.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Assign T' l' \<epsilon>1' \<epsilon>2')
-    then have eq1: "TRef T l = TRef T' l' \<and> \<epsilon>1 = \<epsilon>1'" using T_Assign.IH(1) by blast
-    then have "T = T'" by auto
-    then have "\<epsilon>2 = \<epsilon>2'" using T_Assign.IH(2) T_Assign by auto
+    case T_Assign
+    then have eq1: "TRef T l = TRef Ta la \<and> \<epsilon>1 = \<epsilon>1a"
+      using T_Assign.IH(1) by blast
+    then have "T = Ta" by auto
+    then have "\<epsilon>2 = \<epsilon>2a" using T_Assign.IH(2) T_Assign by auto
     then show ?thesis using T_Assign eq1 by auto
   qed
 next
-  case (T_Classify \<Gamma> \<Sigma> \<Delta> e T \<epsilon>)
-  from T_Classify.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Classify T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Classify.IH by blast
-    then show ?thesis using T_Classify by auto
-  qed
+  case T_Classify then show ?case by (auto elim: has_type.cases dest: T_Classify.IH)
 next
-  case (T_Declassify \<Gamma> \<Sigma> \<Delta> e1 T \<epsilon>1 e2 \<epsilon>2 ok)
+  case T_Declassify
   from T_Declassify.prems show ?case
   proof (cases rule: has_type.cases)
-    case (T_Declassify T' \<epsilon>1' \<epsilon>2' ok')
-    then have eq1: "TSecret T = TSecret T' \<and> \<epsilon>1 = \<epsilon>1'" using T_Declassify.IH(1) by blast
-    then have "T = T'" by auto
-    then have "\<epsilon>2 = \<epsilon>2'" using T_Declassify.IH(2) T_Declassify by auto
+    case T_Declassify
+    then have eq1: "TSecret T = TSecret Ta \<and> \<epsilon>1 = \<epsilon>1a"
+      using T_Declassify.IH(1) by blast
+    then have "T = Ta" by auto
+    then have "\<epsilon>2 = \<epsilon>2a" using T_Declassify.IH(2) T_Declassify by auto
     then show ?thesis using T_Declassify eq1 by auto
   qed
 next
-  case (T_Prove \<Gamma> \<Sigma> \<Delta> e T \<epsilon>)
-  from T_Prove.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Prove T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Prove.IH by blast
-    then show ?thesis using T_Prove by auto
-  qed
+  case T_Prove then show ?case by (auto elim: has_type.cases dest: T_Prove.IH)
 next
-  case (T_Require \<Gamma> \<Sigma> \<Delta> e T \<epsilon> eff)
-  from T_Require.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Require T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Require.IH by blast
-    then show ?thesis using T_Require by auto
-  qed
+  case T_Require then show ?case by (auto elim: has_type.cases dest: T_Require.IH)
 next
-  case (T_Grant \<Gamma> \<Sigma> \<Delta> e T \<epsilon> eff)
-  from T_Grant.prems show ?case
-  proof (cases rule: has_type.cases)
-    case (T_Grant T' \<epsilon>')
-    then have "T = T' \<and> \<epsilon> = \<epsilon>'" using T_Grant.IH by blast
-    then show ?thesis using T_Grant by auto
-  qed
+  case T_Grant then show ?case by (auto elim: has_type.cases dest: T_Grant.IH)
 qed
 
 
