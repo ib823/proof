@@ -198,20 +198,17 @@ let process_cleanly_terminated (p_p: ext_process) : Tot bool =
 let boot_time_bounded (p_device: device) : Lemma (requires (well_formed_device p_device == true /\ verified_boot p_device == true)) (ensures (boot_time p_device <= 5000)) = admit ()
 
 (* ota_update_atomic (matches Coq: Theorem ota_update_atomic) *)
-let ota_update_atomic_obligation () : Tot bool = true
-let ota_update_atomic_lemma () : Lemma (requires True) (ensures (ota_update_atomic_obligation () == ota_update_atomic_obligation ())) = ()
+let ota_update_atomic (p_sys: system) (p_upd: system_update) : Lemma (result == UpdateSuccess \/ system_unchanged p_sys new_sys == true) = admit ()
 
 (* no_boot_loop (matches Coq: Theorem no_boot_loop) *)
 let no_boot_loop_obligation () : Tot bool = true
 let no_boot_loop_lemma () : Lemma (requires True) (ensures (no_boot_loop_obligation () == no_boot_loop_obligation ())) = ()
 
 (* process_isolation_sound (matches Coq: Theorem process_isolation_sound) *)
-let process_isolation_sound_obligation () : Tot bool = true
-let process_isolation_sound_lemma () : Lemma (requires True) (ensures (process_isolation_sound_obligation () == process_isolation_sound_obligation ())) = ()
+let process_isolation_sound (p_procs: (list process)) : Lemma (requires (well_isolated_processes p_procs == true /\ (forall (p1: _). (forall (p2: _). List.Tot.memP p1 p_procs)) /\ List.Tot.memP p2 p_procs /\ ~(p1 == p2))) (ensures (memory_disjoint p1 p2 == true)) = admit ()
 
 (* process_isolation_enforced (matches Coq: Theorem process_isolation_enforced) *)
-let process_isolation_enforced_obligation () : Tot bool = true
-let process_isolation_enforced_lemma () : Lemma (requires True) (ensures (process_isolation_enforced_obligation () == process_isolation_enforced_obligation ())) = ()
+let process_isolation_enforced (p_pt: nat) : Lemma (requires (((forall (p1: _). (forall (p2: _). List.Tot.memP p1 p_pt))) /\ (forall (p1: _). (forall (p2: _). List.Tot.memP p1 p_pt)) /\ List.Tot.memP p2 p_pt /\ ~(p1 == p2))) (ensures (ext_mem_start p1 + ext_mem_size p1 <= p2.f_ext_mem_start \/ ext_mem_start p2 + ext_mem_size p2 <= p1.f_ext_mem_start)) = admit ()
 
 (* memory_space_disjoint (matches Coq: Theorem memory_space_disjoint) *)
 let memory_space_disjoint (p_p1: ext_process) (p_p2: ext_process) : Lemma (requires (ext_mem_disjoint p_p1 p_p2 == true /\ (forall (addr: _). (p_p1.f_ext_mem_start <= addr /\ addr < ext_mem_start p_p1 + ext_mem_size p_p1)))) (ensures (~((p_p2.f_ext_mem_start <= addr /\ addr < ext_mem_start p_p2 + ext_mem_size p_p2)))) = admit ()
@@ -238,28 +235,22 @@ let resource_limits_enforced (p_p: ext_process) : Lemma (requires (resource_with
 let process_termination_clean (p_p: ext_process) : Lemma (requires (process_cleanly_terminated p_p == true)) (ensures (p_p.f_ext_resource_used == 0)) = admit ()
 
 (* zombie_process_impossible (matches Coq: Theorem zombie_process_impossible) *)
-let zombie_process_impossible_obligation () : Tot bool = true
-let zombie_process_impossible_lemma () : Lemma (requires True) (ensures (zombie_process_impossible_obligation () == zombie_process_impossible_obligation ())) = ()
+let zombie_process_impossible (p_pt: nat) : Lemma (requires (((forall (p: _). List.Tot.memP p p_pt) \/ process_cleanly_terminated p == true) /\ (forall (p: _). List.Tot.memP p p_pt) /\ p.f_ext_alive == false)) (ensures (p.f_ext_resource_used == 0)) = admit ()
 
 (* init_process_always_running (matches Coq: Theorem init_process_always_running) *)
-let init_process_always_running_obligation () : Tot bool = true
-let init_process_always_running_lemma () : Lemma (requires True) (ensures (init_process_always_running_obligation () == init_process_always_running_obligation ())) = ()
+let init_process_always_running (p_pt: nat) : Lemma (requires (init_process_present p_pt == true)) (ensures ((exists p_p. List.Tot.memP p_p p_pt) /\ p.f_ext_pid == 1 /\ p.f_ext_alive == true)) = admit ()
 
 (* pid_uniqueness (matches Coq: Theorem pid_uniqueness) *)
-let pid_uniqueness_obligation () : Tot bool = true
-let pid_uniqueness_lemma () : Lemma (requires True) (ensures (pid_uniqueness_obligation () == pid_uniqueness_obligation ())) = ()
+let pid_uniqueness (p_pt: nat) : Lemma (requires (all_pids_unique p_pt == true /\ (forall (p1: _). (forall (p2: _). List.Tot.memP p1 p_pt)) /\ List.Tot.memP p2 p_pt /\ p1.f_ext_pid == p2.f_ext_pid)) (ensures (p1 == p2)) = admit ()
 
 (* scheduler_fairness (matches Coq: Theorem scheduler_fairness) *)
-let scheduler_fairness_obligation () : Tot bool = true
-let scheduler_fairness_lemma () : Lemma (requires True) (ensures (scheduler_fairness_obligation () == scheduler_fairness_obligation ())) = ()
+let scheduler_fairness (p_sched: scheduler_state) (p_pid: nat) : Lemma (requires (List.Tot.memP p_pid (p_sched.f_sched_ready_queue) /\ p_sched.f_sched_time_slice > 0)) (ensures ((exists p_ts. p_ts > 0) /\ ts == p_sched.f_sched_time_slice)) = admit ()
 
 (* context_switch_atomic (matches Coq: Theorem context_switch_atomic) *)
-let context_switch_atomic_obligation () : Tot bool = true
-let context_switch_atomic_lemma () : Lemma (requires True) (ensures (context_switch_atomic_obligation () == context_switch_atomic_obligation ())) = ()
+let context_switch_atomic (p_sched: scheduler_state) : Lemma (requires (p_sched.f_sched_context_saved == true /\ ~(p_sched.f_sched_ready_queue == []))) (ensures (p_sched.f_sched_context_saved == true)) = admit ()
 
 (* signal_delivery_guaranteed (matches Coq: Theorem signal_delivery_guaranteed) *)
-let signal_delivery_guaranteed_obligation () : Tot bool = true
-let signal_delivery_guaranteed_lemma () : Lemma (requires True) (ensures (signal_delivery_guaranteed_obligation () == signal_delivery_guaranteed_obligation ())) = ()
+let signal_delivery_guaranteed (p_pt: nat) (p_target_pid: nat) : Lemma (requires (pid_in_table p_target_pid p_pt == true /\ ((forall (p: _). List.Tot.memP p p_pt)))) (ensures ((exists p_p. List.Tot.memP p_p p_pt) /\ p.f_ext_pid == p_target_pid /\ p.f_ext_alive == true)) = admit ()
 
 (* supervisor_cannot_kernel (matches Coq: Theorem supervisor_cannot_kernel) *)
 let supervisor_cannot_kernel (p_sc: syscall) : Lemma (requires (p_sc.f_syscall_caller_privilege == SupervisorMode /\ p_sc.f_syscall_required_privilege == KernelMode)) (ensures (~(syscall_authorized p_sc == true))) = admit ()

@@ -237,8 +237,7 @@ let valid_detection_min_confidence (p_d: detection) : Lemma (requires (valid_det
 let cv_stays_on_device (p_result: object_detection_result) : Lemma (requires (cv_private p_result == true)) (ensures (p_result.f_od_processed_on_device == true)) = admit ()
 
 (* empty_result_bounded (matches Coq: Theorem empty_result_bounded) *)
-let empty_result_bounded_obligation () : Tot bool = true
-let empty_result_bounded_lemma () : Lemma (requires True) (ensures (empty_result_bounded_obligation () == empty_result_bounded_obligation ())) = ()
+let empty_result_bounded (p_r: object_detection_result) : Lemma (requires (p_r.f_od_detections == [] /\ p_r.f_od_latency_ms <= 100)) (ensures (detection_bounded p_r == true)) = admit ()
 
 (* face_detection_privacy_preserving (matches Coq: Theorem face_detection_privacy_preserving) *)
 let face_detection_privacy_preserving (p_fd: face_detection) : Lemma (requires (face_privacy_preserving p_fd == true)) (ensures (p_fd.f_face_data_on_device == true)) = admit ()
@@ -296,9 +295,7 @@ let depth_estimation_lower_bound (p_de: depth_estimate) : Lemma (requires (depth
 let pose_estimation_min_frames (p_pe: pose_estimate) : Lemma (requires (pose_is_stable p_pe == true)) (ensures (p_pe.f_pose_frame_count >= 3)) = admit ()
 
 (* language_in_supported_list (matches Coq: Theorem language_in_supported_list) *)
-let language_in_supported_list_obligation () : Tot bool = true
-let language_in_supported_list_lemma () : Lemma (requires True) (ensures (language_in_supported_list_obligation () == language_in_supported_list_obligation ())) = ()
+let language_in_supported_list (p_tr: text_recognition) : Lemma (requires (language_is_supported p_tr == true)) (ensures (List.Tot.memP (p_tr.f_text_language) (p_tr.f_text_supported_languages))) = admit ()
 
 (* empty_detections_always_bounded (matches Coq: Theorem empty_detections_always_bounded) *)
-let empty_detections_always_bounded_obligation () : Tot bool = true
-let empty_detections_always_bounded_lemma () : Lemma (requires True) (ensures (empty_detections_always_bounded_obligation () == empty_detections_always_bounded_obligation ())) = ()
+let empty_detections_always_bounded (p_r: object_detection_result) : Lemma (requires (p_r.f_od_detections == [])) (ensures (length (p_r.f_od_detections) <= 100)) = admit ()

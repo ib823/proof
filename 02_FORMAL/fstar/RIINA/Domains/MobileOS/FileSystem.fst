@@ -198,8 +198,7 @@ let commit_establishes_consistency (p_fs: file_system) : Lemma ((commit_journal 
 let file_permissions_enforced (p_f: ext_file) (p_requester: nat) : Lemma (requires (permission_enforced p_f p_requester ReadOnly == true)) (ensures (p_f.f_efile_owner == p_requester \/ file_perm_allows_read (p_f.f_efile_permission) == true)) = admit ()
 
 (* directory_traversal_prevented (matches Coq: Theorem directory_traversal_prevented) *)
-let directory_traversal_prevented_obligation () : Tot bool = true
-let directory_traversal_prevented_lemma () : Lemma (requires True) (ensures (directory_traversal_prevented_obligation () == directory_traversal_prevented_obligation ())) = ()
+let directory_traversal_prevented (p_path: (list nat)) : Lemma (requires (no_directory_traversal p_path == true)) (ensures (~(List.Tot.memP 0 p_path))) = admit ()
 
 (* symlink_attack_prevented (matches Coq: Theorem symlink_attack_prevented) *)
 let symlink_attack_prevented (p_f: ext_file) : Lemma (requires (symlink_safe p_f == true /\ p_f.f_efile_type == SymLink)) (ensures (p_f.f_efile_permission == ReadOnly)) = admit ()
@@ -217,8 +216,7 @@ let fsync_durability (p_f: file) (p_d: nat) : Lemma (requires (file_integrity_va
 let no_partial_write (p_f: file) (p_d: nat) : Lemma (reads (writes p_f p_d) == p_d) = admit ()
 
 (* path_canonicalization (matches Coq: Theorem path_canonicalization) *)
-let path_canonicalization_obligation () : Tot bool = true
-let path_canonicalization_lemma () : Lemma (requires True) (ensures (path_canonicalization_obligation () == path_canonicalization_obligation ())) = ()
+let path_canonicalization (p_path: (list nat)) : Lemma (requires (path_canonical p_path == true)) (ensures (~(List.Tot.memP 0 p_path) /\ length p_path > 0)) = admit ()
 
 (* file_descriptor_bounded (matches Coq: Theorem file_descriptor_bounded) *)
 let file_descriptor_bounded (p_fd: file_descriptor) (p_max_fd: nat) : Lemma (requires (fd_bounded p_fd p_max_fd == true)) (ensures (p_fd.f_fd_number < p_max_fd)) = admit ()

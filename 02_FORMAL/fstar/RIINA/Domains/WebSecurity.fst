@@ -146,8 +146,7 @@ let web_004_csrf_impossible (p_req: http_request) (p_expected: csrf_token) : Lem
 let web_005_ssrf_impossible (p_url: validated_url) : Lemma (p_url.f_url_is_allowed == true) = admit ()
 
 (* web_006_clickjacking_impossible (matches Coq: Theorem web_006_clickjacking_impossible) *)
-let web_006_clickjacking_impossible_obligation () : Tot bool = true
-let web_006_clickjacking_impossible_lemma () : Lemma (requires True) (ensures (web_006_clickjacking_impossible_obligation () == web_006_clickjacking_impossible_obligation ())) = ()
+let web_006_clickjacking_impossible (p_csp: csp) : Lemma (p_csp.f_csp_frame_ancestors == []) = admit ()
 
 (* web_007_open_redirect_impossible (matches Coq: Theorem web_007_open_redirect_impossible) *)
 let web_007_open_redirect_impossible (p_url: validated_url) : Lemma (p_url.f_url_is_allowed == true) = admit ()
@@ -199,12 +198,10 @@ let web_020_mass_assignment_impossible_lemma () : Lemma (requires True) (ensures
 let web_021_idor_mitigated (p_user: nat) (p_resource: nat) : Lemma (authorized p_user p_resource == true) = admit ()
 
 (* web_022_verb_tampering_mitigated (matches Coq: Theorem web_022_verb_tampering_mitigated) *)
-let web_022_verb_tampering_mitigated_obligation () : Tot bool = true
-let web_022_verb_tampering_mitigated_lemma () : Lemma (requires True) (ensures (web_022_verb_tampering_mitigated_obligation () == web_022_verb_tampering_mitigated_obligation ())) = ()
+let web_022_verb_tampering_mitigated (p_rc: route_config) (p_method: nat) : Lemma (p_rc.f_route_strict == true /\ List.Tot.memP p_method (p_rc.f_route_methods)) = admit ()
 
 (* web_023_host_header_attack_mitigated (matches Coq: Theorem web_023_host_header_attack_mitigated) *)
-let web_023_host_header_attack_mitigated_obligation () : Tot bool = true
-let web_023_host_header_attack_mitigated_lemma () : Lemma (requires True) (ensures (web_023_host_header_attack_mitigated_obligation () == web_023_host_header_attack_mitigated_obligation ())) = ()
+let web_023_host_header_attack_mitigated (p_hc: host_config) (p_host: (list nat)) : Lemma (List.Tot.memP p_host (p_hc.f_allowed_hosts)) = admit ()
 
 (* web_024_web_cache_deception_mitigated (matches Coq: Theorem web_024_web_cache_deception_mitigated) *)
 let web_024_web_cache_deception_mitigated (p_cc: cache_config) : Lemma (p_cc.f_cache_no_transform == true) = admit ()

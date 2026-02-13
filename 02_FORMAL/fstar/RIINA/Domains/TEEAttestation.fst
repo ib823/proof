@@ -247,24 +247,19 @@ let sample_kdp_mrenclave : key_derivation_params = mkKeyDerivationParams SP_MREN
 let sample_kdp_mrsigner : key_derivation_params = mkKeyDerivationParams SP_MRSIGNER riina_enclave_identity 100 256
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff_obligation () : Tot bool = true
-let andb_false_iff_lemma () : Lemma (requires True) (ensures (andb_false_iff_obligation () == andb_false_iff_obligation ())) = ()
+let andb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == false <==> p_a == false \/ p_b == false) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff_obligation () : Tot bool = true
-let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
+let negb_false_iff (p_b: bool) : Lemma ((not p_b) == false <==> p_b == true) = admit ()
 
 (* TEE_001 (matches Coq: Theorem TEE_001) *)
 let tee_001 () : Lemma (enclave_secure riina_enclave == true) = admit ()

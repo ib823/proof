@@ -188,8 +188,7 @@ let compression_preserves_owner (p_page: memory_page) : Lemma ((compress p_page)
 let no_system_oom_from_app (p_app: application) : Lemma (requires (well_behaved_app p_app == true)) (ensures (~(can_cause p_app system_out_of_memory == true))) = admit ()
 
 (* memory_isolation_sound (matches Coq: Theorem memory_isolation_sound) *)
-let memory_isolation_sound_obligation () : Tot bool = true
-let memory_isolation_sound_lemma () : Lemma (requires True) (ensures (memory_isolation_sound_obligation () == memory_isolation_sound_obligation ())) = ()
+let memory_isolation_sound (p_pages: (list memory_page)) : Lemma (requires (pages_isolated p_pages == true /\ (forall (p1: _). (forall (p2: _). List.Tot.memP p1 p_pages)) /\ List.Tot.memP p2 p_pages /\ ~(p1.f_page_owner == p2.f_page_owner))) (ensures (~(p1.f_page_id == p2.f_page_id))) = admit ()
 
 (* decompress_compress_contents (matches Coq: Theorem decompress_compress_contents) *)
 let decompress_compress_contents (p_page: memory_page) : Lemma ((decompress (compress p_page)).f_page_contents == p_page.f_page_contents) = admit ()
@@ -207,8 +206,7 @@ let no_double_free (p_b: memory_block) : Lemma (requires (block_freed p_b == tru
 let no_use_after_free (p_b: memory_block) : Lemma (requires (block_freed p_b == true)) (ensures (~(block_allocated p_b == true))) = admit ()
 
 (* memory_leak_impossible (matches Coq: Theorem memory_leak_impossible) *)
-let memory_leak_impossible_obligation () : Tot bool = true
-let memory_leak_impossible_lemma () : Lemma (requires True) (ensures (memory_leak_impossible_obligation () == memory_leak_impossible_obligation ())) = ()
+let memory_leak_impossible (p_h: heap) : Lemma (requires (((forall (b: _). List.Tot.memP b (p_h.f_heap_blocks)) \/ block_freed b == true) /\ (forall (b: _). List.Tot.memP b (p_h.f_heap_blocks)))) (ensures (b.f_block_state == Allocated \/ b.f_block_state == Freed)) = admit ()
 
 (* stack_overflow_prevented (matches Coq: Theorem stack_overflow_prevented) *)
 let stack_overflow_prevented (p_s: stack) : Lemma (requires (stack_within_bounds p_s == true)) (ensures (p_s.f_stack_current_depth <= p_s.f_stack_max_depth)) = admit ()

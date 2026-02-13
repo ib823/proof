@@ -420,8 +420,7 @@ let no_riba (p_st: shariah_transaction) : Tot bool =
   true
 
 (* BANK_001_01_customer_identity_uniqueness (matches Coq: Theorem BANK_001_01_customer_identity_uniqueness) *)
-let bank_001_01_customer_identity_uniqueness_obligation () : Tot bool = true
-let bank_001_01_customer_identity_uniqueness_lemma () : Lemma (requires True) (ensures (bank_001_01_customer_identity_uniqueness_obligation () == bank_001_01_customer_identity_uniqueness_obligation ())) = ()
+let bank_001_01_customer_identity_uniqueness (p_customers: (list customer)) (p_c1: customer) (p_c2: customer) : Lemma (requires (unique_customer_ids p_customers == true /\ List.Tot.memP p_c1 p_customers /\ List.Tot.memP p_c2 p_customers /\ p_c1.f_customer_id == p_c2.f_customer_id)) (ensures (p_c1 == p_c2)) = admit ()
 
 (* BANK_001_02_kyc_completeness (matches Coq: Theorem BANK_001_02_kyc_completeness) *)
 let bank_001_02_kyc_completeness (p_c: customer) : Lemma (requires (p_c.f_is_onboarded == true /\ p_c.f_kyc_verified == true /\ p_c.f_address_verified == true /\ p_c.f_risk_assessed == true /\ p_c.f_pep_screened == true /\ p_c.f_sanctions_screened == true)) (ensures (kyc_complete p_c == true)) = admit ()
@@ -430,8 +429,7 @@ let bank_001_02_kyc_completeness (p_c: customer) : Lemma (requires (p_c.f_is_onb
 let bank_001_03_beneficial_ownership_complete (p_owners: (list beneficial_owner)) : Lemma (requires (complete_ownership p_owners == true)) (ensures (total_ownership p_owners == 100)) = admit ()
 
 (* BANK_001_04_sanctions_check_mandatory (matches Coq: Theorem BANK_001_04_sanctions_check_mandatory) *)
-let bank_001_04_sanctions_check_mandatory_obligation () : Tot bool = true
-let bank_001_04_sanctions_check_mandatory_lemma () : Lemma (requires True) (ensures (bank_001_04_sanctions_check_mandatory_obligation () == bank_001_04_sanctions_check_mandatory_obligation ())) = ()
+let bank_001_04_sanctions_check_mandatory (p_parties: (list transaction_party)) : Lemma (requires (all_parties_screened p_parties == true /\ (forall (p: _). List.Tot.memP p p_parties))) (ensures (p.f_party_screened == true)) = admit ()
 
 (* BANK_001_05_pep_enhanced_monitoring (matches Coq: Theorem BANK_001_05_pep_enhanced_monitoring) *)
 let bank_001_05_pep_enhanced_monitoring (p_c: customer) : Lemma (requires (p_c.f_is_pep == true /\ p_c.f_enhanced_due_diligence == true)) (ensures (p_c.f_is_pep == true /\ p_c.f_enhanced_due_diligence == true)) = admit ()
@@ -477,8 +475,7 @@ let bank_001_16_instant_payment_completion (p_p: payment) : Lemma (requires (pay
 let bank_001_17_payment_irrevocability (p_p: payment) : Lemma (requires (p_p.f_status == Completed)) (ensures (payment_irrevocable p_p == true)) = admit ()
 
 (* BANK_001_18_idempotency (matches Coq: Theorem BANK_001_18_idempotency) *)
-let bank_001_18_idempotency_obligation () : Tot bool = true
-let bank_001_18_idempotency_lemma () : Lemma (requires True) (ensures (bank_001_18_idempotency_obligation () == bank_001_18_idempotency_obligation ())) = ()
+let bank_001_18_idempotency (p_p1: payment) (p_p2: payment) (p_executed: (list payment)) : Lemma (requires (unique_idempotency_keys p_executed == true /\ List.Tot.memP p_p1 p_executed /\ List.Tot.memP p_p2 p_executed /\ p_p1.f_idempotency_key == p_p2.f_idempotency_key)) (ensures (p_p1 == p_p2)) = admit ()
 
 (* BANK_001_19_nostro_reconciliation (matches Coq: Theorem BANK_001_19_nostro_reconciliation) *)
 let bank_001_19_nostro_reconciliation (p_n: nostro_account) : Lemma (requires (nostro_balanced p_n == true /\ p_n.f_is_reconciled == true)) (ensures (p_n.f_internal_balance == p_n.f_external_balance)) = admit ()

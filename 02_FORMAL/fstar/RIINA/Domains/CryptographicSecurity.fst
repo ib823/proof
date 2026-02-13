@@ -269,20 +269,16 @@ let full_crypto_secure (p_fc: full_crypto_config) : Tot bool =
 let riina_full_crypto : full_crypto_config = mkFullCrypto riina_ct_op riina_aead riina_hash riina_rng riina_proto riina_pq riina_key riina_cert riina_mraead riina_kdf riina_mac riina_enc_scheme
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff_obligation () : Tot bool = true
-let andb3_true_iff_lemma () : Lemma (requires True) (ensures (andb3_true_iff_obligation () == andb3_true_iff_obligation ())) = ()
+let andb3_true_iff (p_a: bool) (p_b: bool) (p_c: bool) : Lemma (p_a && p_b && p_c == true <==> p_a == true /\ p_b == true /\ p_c == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le_obligation () : Tot bool = true
-let leb_le_lemma () : Lemma (requires True) (ensures (leb_le_obligation () == leb_le_obligation ())) = ()
+let leb_le (p_n: nat) (p_m: nat) : Lemma ((p_n <=? p_m) == true <==> p_n <= p_m) = admit ()
 
 (* cry_001_timing_side_channel_mitigated (matches Coq: Theorem cry_001_timing_side_channel_mitigated) *)
 let cry_001_timing_side_channel_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_is_constant == true)) = admit ()
@@ -477,8 +473,7 @@ let nonce_002_increment_changes_nonce (p_cn: counter_nonce) : Lemma (requires (c
 let nonce_003_different_counters_different_nonces (p_n: nat) (p_m: nat) : Lemma (requires (~(p_n == p_m))) (ensures (~(p_n == p_m))) = admit ()
 
 (* nonce_004_empty_set_no_collision (matches Coq: Theorem nonce_004_empty_set_no_collision) *)
-let nonce_004_empty_set_no_collision_obligation () : Tot bool = true
-let nonce_004_empty_set_no_collision_lemma () : Lemma (requires True) (ensures (nonce_004_empty_set_no_collision_obligation () == nonce_004_empty_set_no_collision_obligation ())) = ()
+let nonce_004_empty_set_no_collision (p_n: (list nat)) : Lemma (nonce_in_set p_n [] == false) = admit ()
 
 (* nonce_005_add_increases_size (matches Coq: Theorem nonce_005_add_increases_size) *)
 let nonce_005_add_increases_size (p_n: (list nat)) (p_ns: nat) : Lemma (length (p_n :: p_ns) == ((length p_ns) + 1)) = admit ()

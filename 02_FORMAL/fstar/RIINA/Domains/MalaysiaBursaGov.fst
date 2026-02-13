@@ -71,8 +71,7 @@ let bursa_bcp (p_p: nat) : Lemma (requires (mp_bcp_tested p_p == true)) (ensures
 let bursa_composition (p_p: nat) : Lemma (requires (it_governance_established p_p == true /\ system_integrity p_p == true /\ data_protected p_p == true /\ connectivity_secured p_p == true /\ bcp_ready p_p == true)) (ensures (bursa_fully_compliant p_p == true)) = admit ()
 
 (* participant_coverage (matches Coq: Theorem participant_coverage) *)
-let participant_coverage_obligation () : Tot bool = true
-let participant_coverage_lemma () : Lemma (requires True) (ensures (participant_coverage_obligation () == participant_coverage_obligation ())) = ()
+let participant_coverage (p_t: participant_type) : Lemma (List.Tot.memP p_t all_participant_types) = admit ()
 
 (* bursa_risk (matches Coq: Theorem bursa_risk) *)
 let bursa_risk (p_p: nat) : Lemma (requires (mp_risk_managed p_p == true)) (ensures (risk_managed p_p == true)) = admit ()

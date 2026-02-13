@@ -208,8 +208,7 @@ let decryption_verifies_integrity (p_enc: encrypted_message) (p_dec: decrypted_m
 let key_derivation_preserves_strength (p_kd: key_derivation) : Lemma (requires (strong_encryption (p_kd.f_master_key) == true /\ (p_kd.f_derived_key).f_key_bits >= (p_kd.f_master_key).f_key_bits /\ (p_kd.f_derived_key).f_key_algorithm == (p_kd.f_master_key).f_key_algorithm)) (ensures (strong_encryption (p_kd.f_derived_key) == true)) = admit ()
 
 (* encryption_decryption_inverse (matches Coq: Theorem encryption_decryption_inverse) *)
-let encryption_decryption_inverse_obligation () : Tot bool = true
-let encryption_decryption_inverse_lemma () : Lemma (requires True) (ensures (encryption_decryption_inverse_obligation () == encryption_decryption_inverse_obligation ())) = ()
+let encryption_decryption_inverse (p_key: nat) (p_plaintext: (list nat)) : Lemma (requires (((forall (x: _). List.Tot.memP x p_plaintext)))) (ensures (decrypt_data p_key (encrypt_data p_key p_plaintext) == p_plaintext)) = admit ()
 
 (* key_generation_random (matches Coq: Theorem key_generation_random) *)
 let key_generation_random (p_k1: encryption_key) (p_k2: encryption_key) : Lemma (requires (~(p_k1.f_key_id == p_k2.f_key_id))) (ensures (~(p_k1 == p_k2))) = admit ()
@@ -218,8 +217,7 @@ let key_generation_random (p_k1: encryption_key) (p_k2: encryption_key) : Lemma 
 let key_length_sufficient (p_key: encryption_key) : Lemma (requires (strong_encryption p_key == true)) (ensures (p_key.f_key_bits >= 256)) = admit ()
 
 (* iv_never_reused_thm (matches Coq: Theorem iv_never_reused_thm) *)
-let iv_never_reused_thm_obligation () : Tot bool = true
-let iv_never_reused_thm_lemma () : Lemma (requires True) (ensures (iv_never_reused_thm_obligation () == iv_never_reused_thm_obligation ())) = ()
+let iv_never_reused_thm (p_tracker: iv_tracker) : Lemma (requires (iv_never_reused p_tracker == true)) (ensures (~(List.Tot.memP (p_tracker.f_iv_current) (p_tracker.f_iv_used_list)))) = admit ()
 
 (* aead_authentication_verified (matches Coq: Theorem aead_authentication_verified) *)
 let aead_authentication_verified (p_op: encryption_operation) : Lemma (requires (aead_verified p_op == true)) (ensures (p_op.f_enc_op_aead_verified == true)) = admit ()

@@ -321,12 +321,10 @@ let net_001_04_tls_key_derivation (p_conn: _) : Lemma (requires (tls_connected p
 let net_001_05_tls_transcript_binding (p_conn: _) : Lemma (requires (tls_connected p_conn == true)) (ensures ((p_conn.f_tls_transcript).f_transcript_bound == true)) = admit ()
 
 (* NET_001_06_tls_0rtt_replay_safe (matches Coq: Theorem NET_001_06_tls_0rtt_replay_safe) *)
-let net_001_06_tls_0rtt_replay_safe_obligation () : Tot bool = true
-let net_001_06_tls_0rtt_replay_safe_lemma () : Lemma (requires True) (ensures (net_001_06_tls_0rtt_replay_safe_obligation () == net_001_06_tls_0rtt_replay_safe_obligation ())) = ()
+let net_001_06_tls_0rtt_replay_safe (p_data: _) : Lemma (p_data.f_zrtt_anti_replay_checked == true /\ ~(p_data.f_zrtt_nonce == [])) = admit ()
 
 (* NET_001_07_tls_certificate_chain_valid (matches Coq: Theorem NET_001_07_tls_certificate_chain_valid) *)
-let net_001_07_tls_certificate_chain_valid_obligation () : Tot bool = true
-let net_001_07_tls_certificate_chain_valid_lemma () : Lemma (requires True) (ensures (net_001_07_tls_certificate_chain_valid_obligation () == net_001_07_tls_certificate_chain_valid_obligation ())) = ()
+let net_001_07_tls_certificate_chain_valid (p_conn: _) (p_cert: _) : Lemma (requires (tls_connected p_conn == true /\ List.Tot.memP p_cert (p_conn.f_tls_cert_chain) /\ (p_conn.f_tls_server_cert).f_cert_chain_verified == true)) (ensures (valid_cert_chain (p_conn.f_tls_server_cert) == true)) = admit ()
 
 (* NET_001_08_tls_cipher_strength (matches Coq: Theorem NET_001_08_tls_cipher_strength) *)
 let net_001_08_tls_cipher_strength (p_conn: _) : Lemma (requires (tls_connected p_conn == true)) (ensures (is_strong_cipher (p_conn.f_tls_cipher) == true)) = admit ()

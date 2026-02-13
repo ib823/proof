@@ -200,12 +200,10 @@ let psi_001_06_shares_distinct_x (p_coeffs: _) (p_n: _) (p_p: _) (p_i: _) (p_j: 
 let psi_001_07_secret_is_constant_term (p_a0: _) (p_rest: _) : Lemma (secret_from_poly (p_a0 :: p_rest) == p_a0) = admit ()
 
 (* PSI_001_08_empty_poly_zero_secret (matches Coq: Theorem PSI_001_08_empty_poly_zero_secret) *)
-let psi_001_08_empty_poly_zero_secret_obligation () : Tot bool = true
-let psi_001_08_empty_poly_zero_secret_lemma () : Lemma (requires True) (ensures (psi_001_08_empty_poly_zero_secret_obligation () == psi_001_08_empty_poly_zero_secret_obligation ())) = ()
+let psi_001_08_empty_poly_zero_secret () : Lemma (secret_from_poly [] == 0) = admit ()
 
 (* PSI_002_01_single_approval_insufficient (matches Coq: Theorem PSI_002_01_single_approval_insufficient) *)
-let psi_002_01_single_approval_insufficient_obligation () : Tot bool = true
-let psi_002_01_single_approval_insufficient_lemma () : Lemma (requires True) (ensures (psi_002_01_single_approval_insufficient_obligation () == psi_002_01_single_approval_insufficient_obligation ())) = ()
+let psi_002_01_single_approval_insufficient (p_pol: _) (p_party: _) : Lemma (requires (p_pol.f_tp_n > 1 /\ p_pol.f_tp_approvals == [])) (ensures (tp_approved (tp_add_approval p_pol p_party) == false)) = admit ()
 
 (* PSI_002_02_approval_monotone (matches Coq: Theorem PSI_002_02_approval_monotone) *)
 let psi_002_02_approval_monotone (p_pol: _) (p_party: _) : Lemma (requires (tp_approved p_pol == true)) (ensures (tp_approved (tp_add_approval p_pol p_party) == true)) = admit ()
@@ -270,8 +268,7 @@ let psi_005_04_record_increases_queries_obligation () : Tot bool = true
 let psi_005_04_record_increases_queries_lemma () : Lemma (requires True) (ensures (psi_005_04_record_increases_queries_obligation () == psi_005_04_record_increases_queries_obligation ())) = ()
 
 (* PSI_005_05_audit_append_preserves (matches Coq: Theorem PSI_005_05_audit_append_preserves) *)
-let psi_005_05_audit_append_preserves_obligation () : Tot bool = true
-let psi_005_05_audit_append_preserves_lemma () : Lemma (requires True) (ensures (psi_005_05_audit_append_preserves_obligation () == psi_005_05_audit_append_preserves_obligation ())) = ()
+let psi_005_05_audit_append_preserves (p_log: _) (p_entry: _) : Lemma (List.Tot.memP p_entry (audit_log_append p_log p_entry)) = admit ()
 
 (* PSI_006_01_timelock_cancellation_window (matches Coq: Theorem PSI_006_01_timelock_cancellation_window) *)
 let psi_006_01_timelock_cancellation_window (p_tl: _) (p_now: _) : Lemma (requires (p_now < p_tl.f_tl_execute_time)) (ensures (tl_can_cancel p_tl p_now == true)) = admit ()
@@ -292,9 +289,7 @@ let psi_006_05_cancel_preserves_operation (p_tl: _) : Lemma ((tl_cancel p_tl).f_
 let psi_007_01_different_vendor_independent (p_p1: _) (p_p2: _) : Lemma (requires (~(p_p1.f_plat_vendor == p_p2.f_plat_vendor))) (ensures (platforms_independent p_p1 p_p2 == true)) = admit ()
 
 (* PSI_007_02_nversion_single_agrees (matches Coq: Theorem PSI_007_02_nversion_single_agrees) *)
-let psi_007_02_nversion_single_agrees_obligation () : Tot bool = true
-let psi_007_02_nversion_single_agrees_lemma () : Lemma (requires True) (ensures (psi_007_02_nversion_single_agrees_obligation () == psi_007_02_nversion_single_agrees_obligation ())) = ()
+let psi_007_02_nversion_single_agrees (p_r: _) : Lemma (nversion_agree [p_r] == true) = admit ()
 
 (* PSI_007_03_nversion_empty_agrees (matches Coq: Theorem PSI_007_03_nversion_empty_agrees) *)
-let psi_007_03_nversion_empty_agrees_obligation () : Tot bool = true
-let psi_007_03_nversion_empty_agrees_lemma () : Lemma (requires True) (ensures (psi_007_03_nversion_empty_agrees_obligation () == psi_007_03_nversion_empty_agrees_obligation ())) = ()
+let psi_007_03_nversion_empty_agrees () : Lemma (nversion_agree [] == true) = admit ()

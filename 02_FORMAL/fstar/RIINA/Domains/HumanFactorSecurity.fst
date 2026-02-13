@@ -241,8 +241,7 @@ let fully_secured_state (p_state: security_policy_state) : Tot bool =
 let example_secure_state : security_policy_state = mkSecurityPolicy WebAuthn true true CertifiedTrained true true MultiPartyVerification true true MantrapRequired true CrossCutShredding true true true true true true true true true true ZeroTrustPolicy true true true ImmutableInfrastructure MultiMaintainerReview true
 
 (* bool_eq_true (matches Coq: Lemma bool_eq_true) *)
-let bool_eq_true_obligation () : Tot bool = true
-let bool_eq_true_lemma () : Lemma (requires True) (ensures (bool_eq_true_obligation () == bool_eq_true_obligation ())) = ()
+let bool_eq_true (p_b: bool) : Lemma (p_b == true <==> p_b == true) = admit ()
 
 (* advanced_training_implies_basic (matches Coq: Lemma advanced_training_implies_basic) *)
 let advanced_training_implies_basic (p_ts: _) : Lemma (requires (p_ts == AdvancedTrained \/ p_ts == CertifiedTrained)) (ensures (~(p_ts == NotTrained))) = admit ()

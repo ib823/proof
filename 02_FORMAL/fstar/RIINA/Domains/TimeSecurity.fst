@@ -108,12 +108,10 @@ let time_layers (p_replay: bool) (p_toctou: bool) (p_atomic: bool) (p_timestamp:
   andb p_replay (andb p_toctou ((p_atomic && p_timestamp)))
 
 (* time_001_nonce_unique (matches Coq: Theorem time_001_nonce_unique) *)
-let time_001_nonce_unique_obligation () : Tot bool = true
-let time_001_nonce_unique_lemma () : Lemma (requires True) (ensures (time_001_nonce_unique_obligation () == time_001_nonce_unique_obligation ())) = ()
+let time_001_nonce_unique (p_nonce: nat) (p_seen: (list nat)) : Lemma (requires (nonce_unique p_nonce p_seen == true)) (ensures (~(List.Tot.memP p_nonce p_seen))) = admit ()
 
 (* time_002_replay_detected (matches Coq: Theorem time_002_replay_detected) *)
-let time_002_replay_detected_obligation () : Tot bool = true
-let time_002_replay_detected_lemma () : Lemma (requires True) (ensures (time_002_replay_detected_obligation () == time_002_replay_detected_obligation ())) = ()
+let time_002_replay_detected (p_msg: nat) (p_window: nat) : Lemma (requires (is_replay p_msg p_window == true)) (ensures (List.Tot.memP (nonce_value (msg_nonce p_msg)) (window_seen p_window))) = admit ()
 
 (* time_003_seq_increasing (matches Coq: Theorem time_003_seq_increasing) *)
 let time_003_seq_increasing (p_msg: nat) (p_window: nat) : Lemma (requires (seq_increasing p_msg p_window == true)) (ensures (window_last_seq p_window < msg_sequence p_msg)) = admit ()

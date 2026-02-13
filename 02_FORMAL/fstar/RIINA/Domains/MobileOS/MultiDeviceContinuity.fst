@@ -293,8 +293,7 @@ let continuity_permission_revocable (p_cp: continuity_permission) : Lemma (requi
 let clipboard_expiry_within_max (p_cs: clipboard_sync) : Lemma (requires (clipboard_has_expiry p_cs == true)) (ensures (p_cs.f_cb_expiry_seconds <= p_cs.f_cb_max_expiry_seconds)) = admit ()
 
 (* shared_keychain_has_group (matches Coq: Theorem shared_keychain_has_group) *)
-let shared_keychain_has_group_obligation () : Tot bool = true
-let shared_keychain_has_group_lemma () : Lemma (requires True) (ensures (shared_keychain_has_group_obligation () == shared_keychain_has_group_obligation ())) = ()
+let shared_keychain_has_group (p_sk: shared_keychain) : Lemma (requires (shared_keychain_access_controlled p_sk == true)) (ensures (~(p_sk.f_sk_access_group == []))) = admit ()
 
 (* handoff_data_integrity_checked (matches Coq: Theorem handoff_data_integrity_checked) *)
 let handoff_data_integrity_checked (p_hd: handoff_data) : Lemma (requires (handoff_data_encrypted p_hd == true)) (ensures (p_hd.f_hd_integrity_checked == true)) = admit ()

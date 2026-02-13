@@ -332,20 +332,16 @@ let riina_sig_security : signature_security_props = {f_sig_euf_cma=true; f_sig_s
 let riina_aead : aead_properties = {f_aead_confidentiality=true; f_aead_integrity=true; f_aead_authenticity=true; f_aead_nonce_unique=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff_obligation () : Tot bool = true
-let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
+let negb_false_iff (p_b: bool) : Lemma ((not p_b) == false <==> p_b == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* QSTLS_001 (matches Coq: Theorem QSTLS_001) *)
 let qstls_001 () : Lemma (hybrid_kex_secure riina_kex == true) = admit ()

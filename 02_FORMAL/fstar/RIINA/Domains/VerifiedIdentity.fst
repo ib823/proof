@@ -319,16 +319,13 @@ let list_eq_sym (p_l1: _) (p_l2: _) : Lemma (list_eq p_l1 p_l2 == list_eq p_l2 p
 let list_eq_sound (p_l1: _) (p_l2: _) : Lemma (requires (list_eq p_l1 p_l2 == true)) (ensures (p_l1 == p_l2)) = admit ()
 
 (* constant_time_eq_correct (matches Coq: Lemma constant_time_eq_correct) *)
-let constant_time_eq_correct_obligation () : Tot bool = true
-let constant_time_eq_correct_lemma () : Lemma (requires True) (ensures (constant_time_eq_correct_obligation () == constant_time_eq_correct_obligation ())) = ()
+let constant_time_eq_correct (p_a: _) (p_b: _) : Lemma (constant_time_eq p_a p_b == true <==> p_a == p_b) = admit ()
 
 (* existsb_exists (matches Coq: Lemma existsb_exists) *)
-let existsb_exists_obligation () : Tot bool = true
-let existsb_exists_lemma () : Lemma (requires True) (ensures (existsb_exists_obligation () == existsb_exists_obligation ())) = ()
+let existsb_exists (p_f: nat) (p_l: _) : Lemma (existsb p_f p_l == true <==> (exists p_x. List.Tot.memP p_x p_l) /\ p_f x == true) = admit ()
 
 (* existsb_not_exists (matches Coq: Lemma existsb_not_exists) *)
-let existsb_not_exists_obligation () : Tot bool = true
-let existsb_not_exists_lemma () : Lemma (requires True) (ensures (existsb_not_exists_obligation () == existsb_not_exists_obligation ())) = ()
+let existsb_not_exists (p_f: nat) (p_l: _) : Lemma (requires (existsb p_f p_l == false <==> (forall (x: _). List.Tot.memP x p_l))) (ensures (p_f x == false)) = admit ()
 
 (* credential_matches_refl (matches Coq: Lemma credential_matches_refl) *)
 let credential_matches_refl (p_c: _) : Lemma (credential_matches p_c p_c == true) = admit ()
@@ -352,15 +349,13 @@ let aa_001_04_credential_unforgeability (p_store: _) (p_p: _) (p_fake_cred: _) :
 let aa_001_05_no_auth_bypass (p_store: _) (p_p: _) (p_c: _) : Lemma (requires (authenticate p_store p_p p_c == AuthSuccess (p_p.f_principal_id))) (ensures (valid_credential p_store p_p p_c == true)) = admit ()
 
 (* AA_001_06_auth_timing_safe (matches Coq: Theorem AA_001_06_auth_timing_safe) *)
-let aa_001_06_auth_timing_safe_obligation () : Tot bool = true
-let aa_001_06_auth_timing_safe_lemma () : Lemma (requires True) (ensures (aa_001_06_auth_timing_safe_obligation () == aa_001_06_auth_timing_safe_obligation ())) = ()
+let aa_001_06_auth_timing_safe (p_a: _) (p_b: _) : Lemma (constant_time_eq p_a p_b == true <==> p_a == p_b) = admit ()
 
 (* AA_001_07_auth_rate_limited (matches Coq: Theorem AA_001_07_auth_rate_limited) *)
 let aa_001_07_auth_rate_limited (p_state: _) (p_now: _) : Lemma (requires (p_state.f_rate_attempts >= p_state.f_rate_max_attempts /\ p_now - rate_window_start p_state <= p_state.f_rate_window_size)) (ensures (rate_limit_check p_state p_now == false)) = admit ()
 
 (* AA_001_08_auth_logging (matches Coq: Theorem AA_001_08_auth_logging) *)
-let aa_001_08_auth_logging_obligation () : Tot bool = true
-let aa_001_08_auth_logging_lemma () : Lemma (requires True) (ensures (aa_001_08_auth_logging_obligation () == aa_001_08_auth_logging_obligation ())) = ()
+let aa_001_08_auth_logging (p_logs: _) (p_pid: _) (p_ts: _) (p_success: _) (p_ip: _) : Lemma ((exists p_entry. List.Tot.memP p_entry new_logs) /\ entry.f_log_principal == p_pid /\ entry.f_log_timestamp == p_ts /\ entry.f_log_success == p_success) = admit ()
 
 (* AA_001_09_password_hash_secure (matches Coq: Theorem AA_001_09_password_hash_secure) *)
 let aa_001_09_password_hash_secure () : Lemma (params_secure secure_params == true) = admit ()
@@ -378,12 +373,10 @@ let aa_001_12_password_pepper_bound (p_pepper: _) : Lemma (p_pepper.f_pepper_bou
 let aa_001_13_password_constant_time_compare (p_h1: _) (p_h2: _) : Lemma (constant_time_eq p_h1 p_h2 == list_eq p_h1 p_h2) = admit ()
 
 (* AA_001_14_password_breach_checked (matches Coq: Theorem AA_001_14_password_breach_checked) *)
-let aa_001_14_password_breach_checked_obligation () : Tot bool = true
-let aa_001_14_password_breach_checked_lemma () : Lemma (requires True) (ensures (aa_001_14_password_breach_checked_obligation () == aa_001_14_password_breach_checked_obligation ())) = ()
+let aa_001_14_password_breach_checked (p_db: _) (p_hash: _) : Lemma (requires (password_in_breach p_db p_hash == true)) (ensures ((exists p_breached_hash. List.Tot.memP p_breached_hash p_db) /\ list_eq breached_hash p_hash == true)) = admit ()
 
 (* AA_001_15_token_unforgeability (matches Coq: Theorem AA_001_15_token_unforgeability) *)
-let aa_001_15_token_unforgeability_obligation () : Tot bool = true
-let aa_001_15_token_unforgeability_lemma () : Lemma (requires True) (ensures (aa_001_15_token_unforgeability_obligation () == aa_001_15_token_unforgeability_obligation ())) = ()
+let aa_001_15_token_unforgeability (p_adv: _) (p_key: _) : Lemma (requires (~(has_key p_adv p_key == true))) (ensures ((forall (claims: token_claims). (forall (binding: channel_binding). (forall (fake_sig: (list nat)). ~((fake_sig == p_key /\ List.length fake_sig > 0 /\ List.Tot.memP fake_sig (p_adv.f_adv_known_keys)))))))) = admit ()
 
 (* AA_001_16_token_channel_bound (matches Coq: Theorem AA_001_16_token_channel_bound) *)
 let aa_001_16_token_channel_bound (p_token: _) (p_binding1: _) (p_binding2: _) : Lemma (requires (~(p_binding1.f_binding_tls_exporter == p_binding2.f_binding_tls_exporter) /\ p_token.f_token_binding == p_binding1)) (ensures (verify_token_binding p_token p_binding2 == false)) = admit ()

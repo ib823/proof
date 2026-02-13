@@ -136,8 +136,7 @@ let spring_converges (p_sa: spring_animation) : Tot bool =
   true
 
 (* nth_error_In_bounds (matches Coq: Lemma nth_error_In_bounds) *)
-let nth_error_in_bounds_obligation () : Tot bool = true
-let nth_error_in_bounds_lemma () : Lemma (requires True) (ensures (nth_error_in_bounds_obligation () == nth_error_in_bounds_obligation ())) = ()
+let nth_error_in_bounds (p_a: (list nat)) : Lemma (requires (n < length l)) (ensures ((exists p_x. nth_error l n == Some p_x))) = admit ()
 
 (* spring_physics_accurate (matches Coq: Theorem spring_physics_accurate) *)
 let spring_physics_accurate (p_spring: spring_animation) (p_t: nat) : Lemma (requires (well_formed_spring p_spring == true /\ p_t < length (p_spring.f_spring_positions))) (ensures ((exists p_p. position_at p_spring p_t == Some p_p))) = admit ()
@@ -152,8 +151,7 @@ let spring_has_valid_duration (p_spring: spring_animation) : Lemma (requires (we
 let position_velocity_match (p_spring: spring_animation) : Lemma (requires (well_formed_spring p_spring == true)) (ensures (length (p_spring.f_spring_positions) == length (p_spring.f_spring_velocities))) = admit ()
 
 (* nth_error_Some_length (matches Coq: Lemma nth_error_Some_length) *)
-let nth_error_some_length_obligation () : Tot bool = true
-let nth_error_some_length_lemma () : Lemma (requires True) (ensures (nth_error_some_length_obligation () == nth_error_some_length_obligation ())) = ()
+let nth_error_some_length (p_l: (list nat)) (p_n: nat) : Lemma (requires (p_n < length p_l)) (ensures ((exists p_a. nth_error p_l p_n == Some p_a))) = admit ()
 
 (* animation_frame_budget_met (matches Coq: Theorem animation_frame_budget_met) *)
 let animation_frame_budget_met (p_f: frame) : Lemma (requires (meets_frame_budget p_f == true)) (ensures (p_f.f_frame_render_time <= frame_budget_120hz)) = admit ()

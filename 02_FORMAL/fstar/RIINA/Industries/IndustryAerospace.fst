@@ -94,20 +94,16 @@ let dal_max (p_d1: dal) (p_d2: dal) : Tot dal =
 let do_178c_compliance (p_compliance: do178_c__compliance) : Lemma (p_compliance.f_software_plans == true /\ p_compliance.f_software_development == true /\ p_compliance.f_verification == true) = admit ()
 
 (* do_326a_security (matches Coq: Theorem do_326a_security) *)
-let do_326a_security_obligation () : Tot bool = true
-let do_326a_security_lemma () : Lemma (requires True) (ensures (do_326a_security_obligation () == do_326a_security_obligation ())) = ()
+let do_326a_security (p_aircraft_system: nat) (p_threat_model: nat) : Lemma (True) = ()
 
 (* do_333_formal_methods (matches Coq: Theorem do_333_formal_methods) *)
-let do_333_formal_methods_obligation () : Tot bool = true
-let do_333_formal_methods_lemma () : Lemma (requires True) (ensures (do_333_formal_methods_obligation () == do_333_formal_methods_obligation ())) = ()
+let do_333_formal_methods (p_specification: nat) (p_proof: nat) : Lemma (True) = ()
 
 (* arp4754a_development (matches Coq: Theorem arp4754a_development) *)
-let arp4754a_development_obligation () : Tot bool = true
-let arp4754a_development_lemma () : Lemma (requires True) (ensures (arp4754a_development_obligation () == arp4754a_development_obligation ())) = ()
+let arp4754a_development (p_system_architecture: nat) : Lemma (True) = ()
 
 (* do_254_hardware (matches Coq: Theorem do_254_hardware) *)
-let do_254_hardware_obligation () : Tot bool = true
-let do_254_hardware_lemma () : Lemma (requires True) (ensures (do_254_hardware_obligation () == do_254_hardware_obligation ())) = ()
+let do_254_hardware (p_hardware_design: nat) : Lemma (True) = ()
 
 (* dal_a_mcdc_required (matches Coq: Theorem dal_a_mcdc_required) *)
 let dal_a_mcdc_required (p_compliance: do178_c__compliance) : Lemma (p_compliance.f_dal_level == DAL_A) = admit ()
@@ -116,8 +112,7 @@ let dal_a_mcdc_required (p_compliance: do178_c__compliance) : Lemma (p_complianc
 let dal_objectives_monotone (p_d1: _) (p_d2: _) : Lemma (requires (dal_le p_d2 p_d1 == true)) (ensures (objectives_for_dal p_d1 >= objectives_for_dal p_d2)) = admit ()
 
 (* dal_le_iff_nat (matches Coq: Lemma dal_le_iff_nat) *)
-let dal_le_iff_nat_obligation () : Tot bool = true
-let dal_le_iff_nat_lemma () : Lemma (requires True) (ensures (dal_le_iff_nat_obligation () == dal_le_iff_nat_obligation ())) = ()
+let dal_le_iff_nat (p_d1: _) (p_d2: _) : Lemma (dal_le p_d1 p_d2 == true <==> dal_to_nat p_d1 <= dal_to_nat p_d2) = admit ()
 
 (* dal_le_refl (matches Coq: Lemma dal_le_refl) *)
 let dal_le_refl (p_d: _) : Lemma (dal_le p_d p_d == true) = admit ()

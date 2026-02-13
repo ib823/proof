@@ -19,24 +19,19 @@ let closed_expr_cv (p_e: nat) : Tot bool =
   true
 
 (* value_typed_closed (matches Coq: Lemma value_typed_closed) *)
-let value_typed_closed_obligation () : Tot bool = true
-let value_typed_closed_lemma () : Lemma (requires True) (ensures (value_typed_closed_obligation () == value_typed_closed_obligation ())) = ()
+let value_typed_closed (p_sigma: _) (p_delta: _) (p_v: _) (p_t: _) (p_epsilon: _) : Lemma (requires (value p_v == true /\ has_type [] p_sigma p_delta p_v p_t p_epsilon == true)) (ensures (closed_expr_cv p_v == true)) = admit ()
 
 (* closed_pair_cv (matches Coq: Lemma closed_pair_cv) *)
-let closed_pair_cv_obligation () : Tot bool = true
-let closed_pair_cv_lemma () : Lemma (requires True) (ensures (closed_pair_cv_obligation () == closed_pair_cv_obligation ())) = ()
+let closed_pair_cv (p_e1: _) (p_e2: _) : Lemma (closed_expr_cv (EPair p_e1 p_e2) == true <==> closed_expr_cv p_e1 == true /\ closed_expr_cv p_e2 == true) = admit ()
 
 (* closed_inl_cv (matches Coq: Lemma closed_inl_cv) *)
-let closed_inl_cv_obligation () : Tot bool = true
-let closed_inl_cv_lemma () : Lemma (requires True) (ensures (closed_inl_cv_obligation () == closed_inl_cv_obligation ())) = ()
+let closed_inl_cv (p_e: _) (p_t: _) : Lemma (closed_expr_cv (EInl p_e p_t) == true <==> closed_expr_cv p_e == true) = admit ()
 
 (* closed_inr_cv (matches Coq: Lemma closed_inr_cv) *)
-let closed_inr_cv_obligation () : Tot bool = true
-let closed_inr_cv_lemma () : Lemma (requires True) (ensures (closed_inr_cv_obligation () == closed_inr_cv_obligation ())) = ()
+let closed_inr_cv (p_e: _) (p_t: _) : Lemma (closed_expr_cv (EInr p_e p_t) == true <==> closed_expr_cv p_e == true) = admit ()
 
 (* closed_app_cv (matches Coq: Lemma closed_app_cv) *)
-let closed_app_cv_obligation () : Tot bool = true
-let closed_app_cv_lemma () : Lemma (requires True) (ensures (closed_app_cv_obligation () == closed_app_cv_obligation ())) = ()
+let closed_app_cv (p_e1: _) (p_e2: _) : Lemma (closed_expr_cv (EApp p_e1 p_e2) == true <==> closed_expr_cv p_e1 == true /\ closed_expr_cv p_e2 == true) = admit ()
 
 (* closed_unit_cv (matches Coq: Lemma closed_unit_cv) *)
 let closed_unit_cv () : Lemma (closed_expr_cv EUnit == true) = admit ()

@@ -106,12 +106,10 @@ let hib_treatment_allowed () : Lemma (use_permitted Treatment == true) = admit (
 let hib_composition (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true /\ hib_audit_compliant p_r == true /\ nehr_sharing_compliant p_r == true)) (ensures (hib_fully_compliant p_r == true)) = admit ()
 
 (* sg_provider_coverage (matches Coq: Theorem sg_provider_coverage) *)
-let sg_provider_coverage_obligation () : Tot bool = true
-let sg_provider_coverage_lemma () : Lemma (requires True) (ensures (sg_provider_coverage_obligation () == sg_provider_coverage_obligation ())) = ()
+let sg_provider_coverage (p_p: sg_healthcare_provider) : Lemma (List.Tot.memP p_p all_sg_providers) = admit ()
 
 (* health_category_coverage (matches Coq: Theorem health_category_coverage) *)
-let health_category_coverage_obligation () : Tot bool = true
-let health_category_coverage_lemma () : Lemma (requires True) (ensures (health_category_coverage_obligation () == health_category_coverage_obligation ())) = ()
+let health_category_coverage (p_c: health_info_category) : Lemma (List.Tot.memP p_c all_health_categories) = admit ()
 
 (* patient_access_right (matches Coq: Theorem patient_access_right) *)
 let patient_access_right (p_req: nat) : Lemma (requires (par_responded_at p_req <= par_requested_at p_req + hib_access_deadline /\ par_data_provided p_req == true)) (ensures (patient_access_fulfilled p_req == true)) = admit ()
@@ -144,8 +142,7 @@ let nehr_requires_encryption (p_r: nat) : Lemma (requires (nehr_sharing_complian
 let nehr_requires_sharing (p_r: nat) : Lemma (requires (nehr_sharing_compliant p_r == true)) (ensures (sgh_nehr_shared p_r == true)) = admit ()
 
 (* use_type_coverage (matches Coq: Theorem use_type_coverage) *)
-let use_type_coverage_obligation () : Tot bool = true
-let use_type_coverage_lemma () : Lemma (requires True) (ensures (use_type_coverage_obligation () == use_type_coverage_obligation ())) = ()
+let use_type_coverage (p_u: use_type) : Lemma (List.Tot.memP p_u all_use_types) = admit ()
 
 (* research_allowed (matches Coq: Theorem research_allowed) *)
 let research_allowed () : Lemma (use_permitted Research == true) = admit ()

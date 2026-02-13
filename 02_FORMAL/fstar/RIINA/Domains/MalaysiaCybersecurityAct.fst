@@ -96,8 +96,7 @@ let obligation_5_cssp (p_l: nat) (p_t: nat) : Lemma (requires (cssp_licensed p_l
 let act854_composition (p_e: nat) (p_l: nat) (p_t: nat) : Lemma (requires (risk_assessment_current p_e == true /\ audit_current p_e p_t == true /\ controls_sufficient p_e == true /\ cssp_valid p_l p_t == true)) (ensures (act854_compliant p_e p_l p_t == true)) = admit ()
 
 (* ncii_sector_coverage (matches Coq: Theorem ncii_sector_coverage) *)
-let ncii_sector_coverage_obligation () : Tot bool = true
-let ncii_sector_coverage_lemma () : Lemma (requires True) (ensures (ncii_sector_coverage_obligation () == ncii_sector_coverage_obligation ())) = ()
+let ncii_sector_coverage (p_s: ncii_sector) : Lemma (List.Tot.memP p_s all_ncii_sectors) = admit ()
 
 (* critical_is_highest_risk (matches Coq: Theorem critical_is_highest_risk) *)
 let critical_is_highest_risk (p_r: risk_level) : Lemma (risk_level_nat p_r <= risk_level_nat Critical) = admit ()
@@ -109,8 +108,7 @@ let low_is_lowest_risk (p_r: risk_level) : Lemma (risk_level_nat Low <= risk_lev
 let risk_level_bounded (p_r: risk_level) : Lemma (risk_level_nat p_r <= 3) = admit ()
 
 (* risk_level_coverage (matches Coq: Theorem risk_level_coverage) *)
-let risk_level_coverage_obligation () : Tot bool = true
-let risk_level_coverage_lemma () : Lemma (requires True) (ensures (risk_level_coverage_obligation () == risk_level_coverage_obligation ())) = ()
+let risk_level_coverage (p_r: risk_level) : Lemma (List.Tot.memP p_r all_risk_levels) = admit ()
 
 (* audit_current_expiry_exclusive (matches Coq: Theorem audit_current_expiry_exclusive) *)
 let audit_current_expiry_exclusive (p_e: nat) (p_t: nat) : Lemma (audit_current p_e p_t == true \/ ~(audit_current p_e p_t == true)) = admit ()

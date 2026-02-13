@@ -351,19 +351,16 @@ let p_001_02_lemma () : Lemma (requires True) (ensures (p_001_02_obligation () =
 let p_001_03 (p_a: Type0) (p_b: Type0) (p_e: Type0) (p_e: nat) : Lemma (((forall (h: nat). option_bind (@None p_a) h == @None p_b)) /\ ((forall (h: nat). result_bind (@Err p_a p_e p_e) h == @Err p_b p_e p_e))) = admit ()
 
 (* rev_app_single (matches Coq: Lemma rev_app_single) *)
-let rev_app_single_obligation () : Tot bool = true
-let rev_app_single_lemma () : Lemma (requires True) (ensures (rev_app_single_obligation () == rev_app_single_obligation ())) = ()
+let rev_app_single (p_l: (list nat)) (p_x: nat) : Lemma (rev (p_l ++ [p_x]) == p_x :: rev p_l) = admit ()
 
 (* P_001_04 (matches Coq: Theorem P_001_04) *)
-let p_001_04 (p_a: Type0) (p_v: nat) (p_x: nat) : Lemma (requires (vlen p_v > 0)) (ensures ((exists p_v. vec_pop (vec_push p_v p_x) == Some (x_ v_)) /\ vdata v_ == vdata p_v /\ vlen v_ == vlen p_v)) = admit ()
+let p_001_04 (p_a: Type0) (p_v: nat) (p_x: nat) : Lemma (requires (vlen p_v > 0)) (ensures ((exists p_v. vec_pop (vec_push p_v p_x) == Some (p_x, v_)) /\ vdata v_ == vdata p_v /\ vlen v_ == vlen p_v)) = admit ()
 
 (* P_001_05 (matches Coq: Theorem P_001_05) *)
-let p_001_05_obligation () : Tot bool = true
-let p_001_05_lemma () : Lemma (requires True) (ensures (p_001_05_obligation () == p_001_05_obligation ())) = ()
+let p_001_05 (p_a: Type0) (p_v: nat) (p_i: nat) : Lemma (vec_in_bounds p_v p_i == true <==> p_i < vlen p_v) = admit ()
 
 (* P_001_06 (matches Coq: Theorem P_001_06) *)
-let p_001_06_obligation () : Tot bool = true
-let p_001_06_lemma () : Lemma (requires True) (ensures (p_001_06_obligation () == p_001_06_obligation ())) = ()
+let p_001_06 (p_k: Type0) (p_v: Type0) (p_eq: nat) (p_m: nat) (p_k: nat) (p_v: nat) : Lemma (requires (((forall (p_k: _). p_eq p_k k_ == true) <==> p_k == k_))) (ensures (hashmap_get p_eq (hashmap_insert p_eq p_m p_k p_v) p_k == Some p_v)) = admit ()
 
 (* P_001_07 (matches Coq: Theorem P_001_07) *)
 let p_001_07 (p_h: sip_hash_state) : Lemma (siphash_collision_resistant p_h == true) = admit ()
@@ -372,8 +369,7 @@ let p_001_07 (p_h: sip_hash_state) : Lemma (siphash_collision_resistant p_h == t
 let p_001_08 (p_k: Type0) (p_v: Type0) (p_lt: nat) (p_t: nat) (p_k: nat) (p_v: nat) : Lemma (requires (((forall (a: _). (forall (b: _). p_lt a b == true)) \/ a == b \/ p_lt b a == true) /\ btree_ordered p_lt p_t == true)) (ensures (btree_ordered p_lt (btree_insert p_lt p_t p_k p_v) == true)) = admit ()
 
 (* P_001_09 (matches Coq: Theorem P_001_09) *)
-let p_001_09_obligation () : Tot bool = true
-let p_001_09_lemma () : Lemma (requires True) (ensures (p_001_09_obligation () == p_001_09_obligation ())) = ()
+let p_001_09 (p_a: Type0) (p_zero: nat) (p_sv: nat) : Lemma (requires (svec_zeroized dropped == true /\ (forall (x: _). List.Tot.memP x (svec_data dropped)))) (ensures (x == p_zero)) = admit ()
 
 (* P_001_10 (matches Coq: Theorem P_001_10) *)
 let p_001_10 (p_bytes: (list nat)) : Lemma (requires (all_valid_utf8 p_bytes == true)) (ensures ((string_from_bytes p_bytes).f_str_is_utf8 == true)) = admit ()
@@ -382,12 +378,10 @@ let p_001_10 (p_bytes: (list nat)) : Lemma (requires (all_valid_utf8 p_bytes == 
 let p_001_11 (p_s: riina_string) (p_start: nat) (p_len: nat) (p_s_: riina_string) : Lemma (requires (string_slice p_s p_start p_len == Some p_s_)) (ensures (p_start <= length (p_s.f_str_bytes) /\ p_start + p_len <= length (p_s.f_str_bytes))) = admit ()
 
 (* P_001_12 (matches Coq: Theorem P_001_12) *)
-let p_001_12_obligation () : Tot bool = true
-let p_001_12_lemma () : Lemma (requires True) (ensures (p_001_12_obligation () == p_001_12_obligation ())) = ()
+let p_001_12 (p_ss: secure_string) : Lemma (requires (dropped.f_sstr_zeroized == true /\ (forall (x: _). List.Tot.memP x (dropped.f_sstr_data)))) (ensures (x == 0)) = admit ()
 
 (* P_001_13 (matches Coq: Theorem P_001_13) *)
-let p_001_13_obligation () : Tot bool = true
-let p_001_13_lemma () : Lemma (requires True) (ensures (p_001_13_obligation () == p_001_13_obligation ())) = ()
+let p_001_13 (p_ss: secure_string) : Lemma (requires (p_ss.f_sstr_redacted == true)) (ensures (secure_string_debug p_ss == [42; 42; 42])) = admit ()
 
 (* P_001_14 (matches Coq: Theorem P_001_14) *)
 let p_001_14 (p_rr: read_result) : Lemma (p_rr.f_read_count <= p_rr.f_read_buffer_size) = admit ()
@@ -399,7 +393,7 @@ let p_001_15 (p_wr: write_result) : Lemma (p_wr.f_write_count <= p_wr.f_write_bu
 let p_001_16 (p_fh: file_handle) (p_buf_size: nat) : Lemma (requires (has_capability (p_fh.f_fh_caps) CapFileRead == false)) (ensures (file_read p_fh p_buf_size == None)) = admit ()
 
 (* P_001_17 (matches Coq: Theorem P_001_17) *)
-let p_001_17 (p_af: audited_file) (p_buf_size: nat) (p_rr: read_result) (p_af_: audited_file) : Lemma (requires (audited_read p_af p_buf_size == Some (rr_ p_af_))) (ensures (length (p_af_.f_af_log) == ((length (p_af.f_af_log)) + 1))) = admit ()
+let p_001_17 (p_af: audited_file) (p_buf_size: nat) (p_rr: read_result) (p_af_: audited_file) : Lemma (requires (audited_read p_af p_buf_size == Some (p_rr, p_af_))) (ensures (length (p_af_.f_af_log) == ((length (p_af.f_af_log)) + 1))) = admit ()
 
 (* P_001_18 (matches Coq: Theorem P_001_18) *)
 let p_001_18 (p_s: tcp_stream) (p_data: (list nat)) (p_s_: tcp_stream) : Lemma (requires (has_capability (p_s.f_tcp_caps) CapNetConnect == true /\ tcp_write p_s p_data == Some p_s_)) (ensures (p_s_.f_tcp_buffer == tcp_buffer p_s ++ p_data)) = admit ()
@@ -437,27 +431,22 @@ let p_001_28_obligation () : Tot bool = true
 let p_001_28_lemma () : Lemma (requires True) (ensures (p_001_28_obligation () == p_001_28_obligation ())) = ()
 
 (* P_001_29 (matches Coq: Theorem P_001_29) *)
-let p_001_29_obligation () : Tot bool = true
-let p_001_29_lemma () : Lemma (requires True) (ensures (p_001_29_obligation () == p_001_29_obligation ())) = ()
+let p_001_29 (p_cv: condvar_state) (p_t: nat) : Lemma (requires (p_cv.f_cv_waiters == [p_t])) (ensures (signaled == Some p_t /\ cv_.f_cv_waiters == [])) = admit ()
 
 (* P_001_30 (matches Coq: Theorem P_001_30) *)
-let p_001_30_obligation () : Tot bool = true
-let p_001_30_lemma () : Lemma (requires True) (ensures (p_001_30_obligation () == p_001_30_obligation ())) = ()
+let p_001_30 (p_ro: resource_order) (p_r1: nat) (p_r2: nat) : Lemma (requires (p_ro.f_ro_acquired == [] /\ p_r1 < p_r2)) (ensures ((exists p_ro. acquire_ordered p_ro p_r1 == Some ro_) /\ (exists p_ro. acquire_ordered ro_ p_r2 == Some ro__))) = admit ()
 
 (* P_001_31 (matches Coq: Theorem P_001_31) *)
-let p_001_31_obligation () : Tot bool = true
-let p_001_31_lemma () : Lemma (requires True) (ensures (p_001_31_obligation () == p_001_31_obligation ())) = ()
+let p_001_31 (p_k: aes_key) : Lemma (requires (dropped.f_aes_key_zeroized == true /\ (forall (x: _). List.Tot.memP x (dropped.f_aes_key_data)))) (ensures (x == 0)) = admit ()
 
 (* P_001_32 (matches Coq: Theorem P_001_32) *)
 let p_001_32 (p_data: (list nat)) : Lemma (hash_function p_data == hash_function p_data) = admit ()
 
 (* P_001_33 (matches Coq: Theorem P_001_33) *)
-let p_001_33_obligation () : Tot bool = true
-let p_001_33_lemma () : Lemma (requires True) (ensures (p_001_33_obligation () == p_001_33_obligation ())) = ()
+let p_001_33 (p_data: (list nat)) (p_private_key: nat) : Lemma (verify_signature id_sig p_data public_key == true) = admit ()
 
 (* P_001_34 (matches Coq: Theorem P_001_34) *)
-let p_001_34_obligation () : Tot bool = true
-let p_001_34_lemma () : Lemma (requires True) (ensures (p_001_34_obligation () == p_001_34_obligation ())) = ()
+let p_001_34 (p_k: crypto_key) : Lemma (requires (dropped.f_ck_zeroized == true /\ (forall (x: _). List.Tot.memP x (dropped.f_ck_data)))) (ensures (x == 0)) = admit ()
 
 (* P_001_35 (matches Coq: Theorem P_001_35) *)
 let p_001_35 (p_s1: nat) (p_s2: nat) (p_c: capability) : Lemma (requires (cap_set_contains p_s1 p_c == true \/ cap_set_contains p_s2 p_c == true)) (ensures (cap_set_contains (cap_set_union p_s1 p_s2) p_c == true)) = admit ()
@@ -466,8 +455,7 @@ let p_001_35 (p_s1: nat) (p_s2: nat) (p_c: capability) : Lemma (requires (cap_se
 let p_001_36 (p_s1: nat) (p_s2: nat) (p_c: capability) : Lemma (requires (cap_set_contains (cap_set_inter p_s1 p_s2) p_c == true)) (ensures (cap_set_contains p_s1 p_c == true /\ cap_set_contains p_s2 p_c == true)) = admit ()
 
 (* P_001_37 (matches Coq: Theorem P_001_37) *)
-let p_001_37_obligation () : Tot bool = true
-let p_001_37_lemma () : Lemma (requires True) (ensures (p_001_37_obligation () == p_001_37_obligation ())) = ()
+let p_001_37 (p_s: nat) (p_c: capability) : Lemma (requires (cap_set_contains p_s p_c == false /\ (forall (p_c: _). List.Tot.memP c_ p_s))) (ensures (cap_eq p_c c_ == false)) = admit ()
 
 (* level_leq_refl (matches Coq: Lemma level_leq_refl) *)
 let level_leq_refl (p_l: _) : Lemma (level_leq p_l p_l == true) = admit ()

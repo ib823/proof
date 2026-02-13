@@ -113,8 +113,7 @@ let sensor_001_byzantine_threshold (p_n: nat) (p_f: nat) : Lemma (requires (byza
 let sensor_002_honest_majority (p_n: nat) (p_f: nat) : Lemma (requires (p_n >= 3 * p_f + 1)) (ensures (p_n - p_f >= 2 * p_f + 1)) = admit ()
 
 (* sensor_003_authenticated (matches Coq: Theorem sensor_003_authenticated) *)
-let sensor_003_authenticated_obligation () : Tot bool = true
-let sensor_003_authenticated_lemma () : Lemma (requires True) (ensures (sensor_003_authenticated_obligation () == sensor_003_authenticated_obligation ())) = ()
+let sensor_003_authenticated (p_reading: nat) (p_valid_sigs: (list nat)) : Lemma (requires (sensor_authenticated p_reading p_valid_sigs == true)) (ensures ((exists p_p_sig. List.Tot.memP id_sig p_valid_sigs) /\ reading_signature p_reading == id_sig)) = admit ()
 
 (* sensor_004_freshness (matches Coq: Theorem sensor_004_freshness) *)
 let sensor_004_freshness (p_reading: nat) (p_current_time: nat) (p_max_age: nat) : Lemma (requires (reading_fresh p_reading p_current_time p_max_age == true)) (ensures (p_current_time - reading_timestamp p_reading <= p_max_age)) = admit ()
@@ -153,8 +152,7 @@ let sensor_014_outlier_rejected (p_value: nat) (p_median: nat) (p_threshold: nat
 let sensor_015_quorum (p_agreeing: nat) (p_total: nat) (p_required_pct: nat) : Lemma (requires (quorum_reached p_agreeing p_total p_required_pct == true)) (ensures (p_total * p_required_pct / 100 <= p_agreeing)) = admit ()
 
 (* sensor_016_no_replay (matches Coq: Theorem sensor_016_no_replay) *)
-let sensor_016_no_replay_obligation () : Tot bool = true
-let sensor_016_no_replay_lemma () : Lemma (requires True) (ensures (sensor_016_no_replay_obligation () == sensor_016_no_replay_obligation ())) = ()
+let sensor_016_no_replay (p_reading: nat) (p_seen: (list nat)) : Lemma (requires (reading_not_replayed p_reading p_seen == true)) (ensures (~(List.Tot.memP (reading_timestamp p_reading) p_seen))) = admit ()
 
 (* sensor_017_calibration_valid (matches Coq: Theorem sensor_017_calibration_valid) *)
 let sensor_017_calibration_valid (p_last_cal: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (calibration_current p_last_cal p_current p_max_age == true)) (ensures (p_current - p_last_cal <= p_max_age)) = admit ()

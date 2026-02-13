@@ -42,8 +42,7 @@ let csrf_request_fully_validated (p_r: csrf_request) : Tot bool =
 let riina_csrf_request : csrf_request = {f_req_has_token=true; f_req_token_matches=true; f_req_same_origin=true; f_req_valid_referer=true; f_req_cookie_present=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* CSRF_001 (matches Coq: Theorem CSRF_001) *)
 let csrf_001 () : Lemma (csrf_protected riina_csrf == true) = admit ()

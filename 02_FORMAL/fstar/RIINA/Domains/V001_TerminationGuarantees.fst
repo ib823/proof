@@ -137,7 +137,7 @@ let v_001_04_list_structural_obligation () : Tot bool = true
 let v_001_04_list_structural_lemma () : Lemma (requires True) (ensures (v_001_04_list_structural_obligation () == v_001_04_list_structural_obligation ())) = ()
 
 (* V_001_05_tree_structural (matches Coq: Theorem V_001_05_tree_structural) *)
-let v_001_05_tree_structural (p_a: _) (p_tree: _) (p_a_: _) : Lemma ((exists p_v. tree_size t == p_v)) = admit ()
+let v_001_05_tree_structural (p_a: nat) : Lemma ((exists p_v. tree_size t == p_v)) = admit ()
 
 (* V_001_06_mutual_structural (matches Coq: Theorem V_001_06_mutual_structural) *)
 let v_001_06_mutual_structural (p_et: _) (p_ot: _) : Lemma ((exists p_ve. (exists p_vo. even_size p_et == p_ve)) /\ odd_size p_ot == vo) = admit ()
@@ -156,10 +156,10 @@ let v_001_09_sized_type_wellformed (p_st: _) : Lemma (sized_wellformed p_st == t
 let v_001_10_size_decreases (p_st1: _) (p_st2: _) (p_s1: _) (p_s2: _) : Lemma (requires (get_size p_st1 == Some p_s1 /\ get_size p_st2 == Some p_s2 /\ p_s1 < p_s2)) (ensures (size_less p_st1 p_st2 == true)) = admit ()
 
 (* V_001_11_sized_list_terminates (matches Coq: Theorem V_001_11_sized_list_terminates) *)
-let v_001_11_sized_list_terminates (p_a: _) (p_b: _) (p_a: _) (p_b: _) (p_b_: _) (p_list: _) (p_a_: _) (p_b_: _) : Lemma ((exists p_v. sized_list_fold f l acc == p_v)) = admit ()
+let v_001_11_sized_list_terminates (p_a: nat) (p_b: nat) : Lemma ((exists p_v. sized_list_fold f l acc == p_v)) = admit ()
 
 (* V_001_12_sized_tree_terminates (matches Coq: Theorem V_001_12_sized_tree_terminates) *)
-let v_001_12_sized_tree_terminates (p_a: _) (p_b: _) (p_a: _) (p_b: _) (p_b: _) (p_b_: _) (p_b_: _) (p_tree: _) (p_a_: _) : Lemma ((exists p_v. sized_tree_fold f leaf t == p_v)) = admit ()
+let v_001_12_sized_tree_terminates (p_a: nat) (p_b: nat) : Lemma ((exists p_v. sized_tree_fold f leaf t == p_v)) = admit ()
 
 (* V_001_13_size_inference_correct (matches Coq: Theorem V_001_13_size_inference_correct) *)
 let v_001_13_size_inference_correct (p_e: _) : Lemma (infer_size p_e == expr_size p_e) = admit ()
@@ -174,47 +174,47 @@ let v_001_15_sized_preservation (p_e1: _) (p_e2: _) (p_st: _) : Lemma (requires 
 let v_001_16_sized_composition (p_s1: _) (p_s2: _) : Lemma (requires (size_subtype p_s1 p_s2 == true /\ size_subtype 0 p_s1 == true)) (ensures (size_subtype 0 p_s2 == true)) = admit ()
 
 (* V_001_17_measure_wellformed (matches Coq: Theorem V_001_17_measure_wellformed) *)
-let v_001_17_measure_wellformed (p_a: _) (p_measure: _) (p_a_: _) : Lemma (wf_measure m == true) = admit ()
+let v_001_17_measure_wellformed (p_a: nat) : Lemma (wf_measure m == true) = admit ()
 
 (* V_001_18_measure_decreases (matches Coq: Theorem V_001_18_measure_decreases) *)
-let v_001_18_measure_decreases (p_a: _) (p_measure: _) (p_a_: _) (p_e: _) : Lemma (decreases_on m p_e == true) = admit ()
+let v_001_18_measure_decreases (p_a: nat) : Lemma (decreases_on m e == true) = admit ()
 
 (* V_001_19_lexicographic_wellformed (matches Coq: Theorem V_001_19_lexicographic_wellformed) *)
-let v_001_19_lexicographic_wellformed (p_a: _) (p_b: _) (p_measure: _) (p_a_: _) (p_measure: _) (p_b_: _) : Lemma (well_founded (lex_order ma mb) == true) = admit ()
+let v_001_19_lexicographic_wellformed (p_a: nat) (p_b: nat) : Lemma (well_founded (lex_order ma mb) == true) = admit ()
 
 (* V_001_20_ackermann_terminates (matches Coq: Theorem V_001_20_ackermann_terminates) *)
 let v_001_20_ackermann_terminates (p_m: _) (p_n: _) : Lemma ((exists p_v. ackermann p_m p_n == p_v)) = admit ()
 
 (* V_001_21_complex_measure_sound (matches Coq: Theorem V_001_21_complex_measure_sound) *)
-let v_001_21_complex_measure_sound (p_a: _) (p_b: _) (p_measure: _) (p_a_: _) (p_measure: _) (p_b_: _) : Lemma (wf_measure (complex_measure ma mb) == true) = admit ()
+let v_001_21_complex_measure_sound (p_a: nat) (p_b: nat) : Lemma (wf_measure (complex_measure ma mb) == true) = admit ()
 
 (* V_001_22_measure_inference (matches Coq: Theorem V_001_22_measure_inference) *)
 let v_001_22_measure_inference (p_e: _) : Lemma (infer_measure p_e >= 1) = admit ()
 
 (* V_001_23_measure_composition (matches Coq: Theorem V_001_23_measure_composition) *)
-let v_001_23_measure_composition (p_a: _) (p_m2: _) (p_measure: _) (p_a_: _) (p_x: _) : Lemma (m1 p_x + p_m2 p_x >= m1 p_x) = admit ()
+let v_001_23_measure_composition (p_a: nat) (p_m2: nat) : Lemma (m1 x + p_m2 x >= m1 x) = admit ()
 
 (* V_001_24_wellfounded_checker_sound (matches Coq: Theorem V_001_24_wellfounded_checker_sound) *)
-let v_001_24_wellfounded_checker_sound (p_a: _) (p_e: _) (p_measure: _) (p_a_: _) : Lemma (requires (check_termination p_e == true /\ wf_measure m == true /\ decreases_on m p_e == true)) (ensures (terminates p_e == true)) = admit ()
+let v_001_24_wellfounded_checker_sound (p_a: nat) (p_e: nat) : Lemma (requires (check_termination p_e == true /\ wf_measure m == true /\ decreases_on m p_e == true)) (ensures (terminates p_e == true)) = admit ()
 
 (* V_001_25_codata_productive (matches Coq: Theorem V_001_25_codata_productive) *)
-let v_001_25_codata_productive (p_a: _) (p_stream: _) (p_a_: _) : Lemma (productive s == true) = admit ()
+let v_001_25_codata_productive (p_a: nat) : Lemma (productive s == true) = admit ()
 
 (* V_001_26_stream_productive (matches Coq: Theorem V_001_26_stream_productive) *)
-let v_001_26_stream_productive (p_a: _) (p_stream: _) (p_a_: _) (p_n: _) : Lemma (List.length (observe p_n s) == p_n) = admit ()
+let v_001_26_stream_productive (p_a: nat) (p_n: _) : Lemma (List.length (observe p_n s) == p_n) = admit ()
 
 (* V_001_27_productivity_observe (matches Coq: Theorem V_001_27_productivity_observe) *)
-let v_001_27_productivity_observe (p_a: _) (p_stream: _) (p_a_: _) (p_k: _) : Lemma ((exists p_l. observe p_k s == p_l) /\ List.length l == p_k) = admit ()
+let v_001_27_productivity_observe (p_a: nat) : Lemma ((exists p_l. observe k s == p_l) /\ List.length l == k) = admit ()
 
 (* V_001_28_guarded_recursion (matches Coq: Theorem V_001_28_guarded_recursion) *)
 let v_001_28_guarded_recursion_obligation () : Tot bool = true
 let v_001_28_guarded_recursion_lemma () : Lemma (requires True) (ensures (v_001_28_guarded_recursion_obligation () == v_001_28_guarded_recursion_obligation ())) = ()
 
 (* V_001_29_codata_unfold (matches Coq: Theorem V_001_29_codata_unfold) *)
-let v_001_29_codata_unfold (p_a: _) (p_s: _) (p_s: _) (p_a: _) (p_s_: _) (p_s_: _) : Lemma (productive (stream_unfold f seed) == true) = admit ()
+let v_001_29_codata_unfold (p_a: nat) (p_s: nat) : Lemma (productive (stream_unfold f seed) == true) = admit ()
 
 (* V_001_30_productive_composition (matches Coq: Theorem V_001_30_productive_composition) *)
-let v_001_30_productive_composition (p_a: _) (p_s2: _) (p_stream: _) (p_a_: _) : Lemma (requires (productive s1 == true /\ productive p_s2 == true)) (ensures (productive s1 == true /\ productive p_s2 == true)) = admit ()
+let v_001_30_productive_composition (p_a: nat) (p_s2: nat) : Lemma (requires (productive s1 == true /\ productive p_s2 == true)) (ensures (productive s1 == true /\ productive p_s2 == true)) = admit ()
 
 (* V_001_31_non_terminating_marked (matches Coq: Theorem V_001_31_non_terminating_marked) *)
 let v_001_31_non_terminating_marked (p_e: _) : Lemma (requires (~(terminates p_e == true))) (ensures (explicitly_marked p_e == true \/ is_value p_e == true \/ (exists p_e. step p_e e_ == true))) = admit ()

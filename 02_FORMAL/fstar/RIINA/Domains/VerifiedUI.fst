@@ -414,12 +414,10 @@ let filter_preserves_property_obligation () : Tot bool = true
 let filter_preserves_property_lemma () : Lemma (requires True) (ensures (filter_preserves_property_obligation () == filter_preserves_property_obligation ())) = ()
 
 (* forall_filter_subset (matches Coq: Lemma forall_filter_subset) *)
-let forall_filter_subset_obligation () : Tot bool = true
-let forall_filter_subset_lemma () : Lemma (requires True) (ensures (forall_filter_subset_obligation () == forall_filter_subset_obligation ())) = ()
+let forall_filter_subset (p_p: nat) (p_f: nat) (p_l: (list nat)) : Lemma (requires (Forall p_p p_l == true)) (ensures (Forall p_p (filter p_f p_l) == true)) = admit ()
 
 (* find_topmost_in_list (matches Coq: Lemma find_topmost_in_list) *)
-let find_topmost_in_list_obligation () : Tot bool = true
-let find_topmost_in_list_lemma () : Lemma (requires True) (ensures (find_topmost_in_list_obligation () == find_topmost_in_list_obligation ())) = ()
+let find_topmost_in_list (p_es: _) (p_p: _) (p_current: _) (p_result: _) : Lemma (requires (find_topmost_at_point p_es p_p p_current == Some p_result)) (ensures (List.Tot.memP p_result p_es \/ p_current == Some p_result)) = admit ()
 
 (* is_visible_implies_visible (matches Coq: Lemma is_visible_implies_visible) *)
 let is_visible_implies_visible (p_e: _) : Lemma (requires (is_visible p_e == true)) (ensures (p_e.f_elem_visible == true)) = admit ()
@@ -434,19 +432,16 @@ let ux_001_01_wysiwyk (p_ui: _) (p_p: _) (p_elem: _) : Lemma (requires (verified
 let find_topmost_geq_current (p_es: _) (p_p: _) (p_c: _) (p_result: _) : Lemma (requires (find_topmost_at_point p_es p_p (Some p_c) == Some p_result)) (ensures (p_c.f_elem_z_index <= p_result.f_elem_z_index)) = admit ()
 
 (* find_topmost_max_z (matches Coq: Lemma find_topmost_max_z) *)
-let find_topmost_max_z_obligation () : Tot bool = true
-let find_topmost_max_z_lemma () : Lemma (requires True) (ensures (find_topmost_max_z_obligation () == find_topmost_max_z_obligation ())) = ()
+let find_topmost_max_z (p_es: _) (p_p: _) (p_current: _) (p_result: _) : Lemma (requires (find_topmost_at_point p_es p_p p_current == Some p_result /\ (forall (e: _). List.Tot.memP e p_es) /\ point_in_rect p_p (e.f_elem_bounds) == true)) (ensures (e.f_elem_z_index <= p_result.f_elem_z_index)) = admit ()
 
 (* UX_001_02_z_order_integrity (matches Coq: Theorem UX_001_02_z_order_integrity) *)
-let ux_001_02_z_order_integrity_obligation () : Tot bool = true
-let ux_001_02_z_order_integrity_lemma () : Lemma (requires True) (ensures (ux_001_02_z_order_integrity_obligation () == ux_001_02_z_order_integrity_obligation ())) = ()
+let ux_001_02_z_order_integrity (p_ui: _) (p_p: _) (p_elem1: _) (p_elem2: _) : Lemma (requires (clickable_at p_ui p_p == Some p_elem1 /\ List.Tot.memP p_elem2 (filter is_interactive (p_ui.f_ui_elements)) /\ point_in_rect p_p (p_elem2.f_elem_bounds) == true)) (ensures (p_elem2.f_elem_z_index <= p_elem1.f_elem_z_index)) = admit ()
 
 (* UX_001_03_no_invisible_overlay (matches Coq: Theorem UX_001_03_no_invisible_overlay) *)
 let ux_001_03_no_invisible_overlay (p_ui: _) (p_p: _) (p_elem: _) : Lemma (requires (verified_ui_state p_ui == true /\ clickable_at p_ui p_p == Some p_elem)) (ensures (p_elem.f_elem_opacity >= MIN_VISIBLE_OPACITY)) = admit ()
 
 (* UX_001_04_visual_consistency (matches Coq: Theorem UX_001_04_visual_consistency) *)
-let ux_001_04_visual_consistency_obligation () : Tot bool = true
-let ux_001_04_visual_consistency_lemma () : Lemma (requires True) (ensures (ux_001_04_visual_consistency_obligation () == ux_001_04_visual_consistency_obligation ())) = ()
+let ux_001_04_visual_consistency (p_ui: _) (p_elem: _) : Lemma (requires (verified_ui_state p_ui == true /\ List.Tot.memP p_elem (p_ui.f_ui_elements) /\ p_elem.f_elem_interactive == true)) (ensures (p_elem.f_elem_visible == true)) = admit ()
 
 (* UX_001_05_layout_deterministic (matches Coq: Theorem UX_001_05_layout_deterministic) *)
 let ux_001_05_layout_deterministic (p_input1: _) (p_input2: _) : Lemma (requires (p_input1 == p_input2)) (ensures (compute_layout p_input1 == compute_layout p_input2)) = admit ()
@@ -467,23 +462,19 @@ let ux_001_09_frame_ancestry_correct (p_frame: _) (p_parent_origin: _) : Lemma (
 let ux_001_10_tab_integrity (p_tab: _) : Lemma (p_tab.f_tab_loaded_origin == p_tab.f_tab_content_origin) = admit ()
 
 (* UX_001_11_consent_explicit (matches Coq: Theorem UX_001_11_consent_explicit) *)
-let ux_001_11_consent_explicit_obligation () : Tot bool = true
-let ux_001_11_consent_explicit_lemma () : Lemma (requires True) (ensures (ux_001_11_consent_explicit_obligation () == ux_001_11_consent_explicit_obligation ())) = ()
+let ux_001_11_consent_explicit (p_action: _) (p_cs: _) : Lemma (requires (~(p_action.f_action_sensitivity == SensNone) /\ VerifiedExecution p_action p_cs == true)) (ensures ((exists p_c. List.Tot.memP p_c (p_cs.f_consent_records)) /\ c.f_consent_action == p_action.f_action_name /\ c.f_consent_granted == true)) = admit ()
 
 (* UX_001_12_consent_revocable (matches Coq: Theorem UX_001_12_consent_revocable) *)
-let ux_001_12_consent_revocable_obligation () : Tot bool = true
-let ux_001_12_consent_revocable_lemma () : Lemma (requires True) (ensures (ux_001_12_consent_revocable_obligation () == ux_001_12_consent_revocable_obligation ())) = ()
+let ux_001_12_consent_revocable (p_cs: _) (p_c: _) : Lemma (requires (List.Tot.memP p_c (p_cs.f_consent_records))) (ensures (p_c.f_consent_revocable == true)) = admit ()
 
 (* UX_001_13_no_confirmshaming (matches Coq: Theorem UX_001_13_no_confirmshaming) *)
-let ux_001_13_no_confirmshaming_obligation () : Tot bool = true
-let ux_001_13_no_confirmshaming_lemma () : Lemma (requires True) (ensures (ux_001_13_no_confirmshaming_obligation () == ux_001_13_no_confirmshaming_obligation ())) = ()
+let ux_001_13_no_confirmshaming (p_dialog: _) (p_opt: _) : Lemma (requires (List.Tot.memP p_opt (p_dialog.f_dialog_options) /\ p_opt.f_opt_is_cancel == true)) (ensures (p_opt.f_opt_uses_neutral_language == true)) = admit ()
 
 (* UX_001_14_no_hidden_costs (matches Coq: Theorem UX_001_14_no_hidden_costs) *)
 let ux_001_14_no_hidden_costs (p_pd: _) : Lemma (p_pd.f_displayed_total == p_pd.f_actual_total) = admit ()
 
 (* UX_001_15_equal_option_presentation (matches Coq: Theorem UX_001_15_equal_option_presentation) *)
-let ux_001_15_equal_option_presentation_obligation () : Tot bool = true
-let ux_001_15_equal_option_presentation_lemma () : Lemma (requires True) (ensures (ux_001_15_equal_option_presentation_obligation () == ux_001_15_equal_option_presentation_obligation ())) = ()
+let ux_001_15_equal_option_presentation (p_dialog: _) (p_o1: _) (p_o2: _) : Lemma (requires (List.Tot.memP p_o1 (p_dialog.f_dialog_options) /\ List.Tot.memP p_o2 (p_dialog.f_dialog_options))) (ensures (p_o1.f_opt_visual_weight <= opt_visual_weight p_o2 + 2 /\ p_o2.f_opt_visual_weight <= opt_visual_weight p_o1 + 2)) = admit ()
 
 (* firstn_length_le (matches Coq: Lemma firstn_length_le) *)
 let firstn_length_le (p_n: nat) (p_l: (list nat)) : Lemma (len (firstn p_n p_l) <= p_n) = admit ()
@@ -493,8 +484,7 @@ let filter_all_true_obligation () : Tot bool = true
 let filter_all_true_lemma () : Lemma (requires True) (ensures (filter_all_true_obligation () == filter_all_true_obligation ())) = ()
 
 (* firstn_forall (matches Coq: Lemma firstn_forall) *)
-let firstn_forall_obligation () : Tot bool = true
-let firstn_forall_lemma () : Lemma (requires True) (ensures (firstn_forall_obligation () == firstn_forall_obligation ())) = ()
+let firstn_forall (p_p: nat) (p_n: nat) (p_l: (list nat)) : Lemma (requires (Forall p_p p_l == true)) (ensures (Forall p_p (firstn p_n p_l) == true)) = admit ()
 
 (* filter_length_le (matches Coq: Lemma filter_length_le) *)
 let filter_length_le (p_f: nat) (p_l: (list nat)) : Lemma (len (filter p_f p_l) <= len p_l) = admit ()
@@ -503,8 +493,7 @@ let filter_length_le (p_f: nat) (p_l: (list nat)) : Lemma (len (filter p_f p_l) 
 let firstn_length_le2 (p_n: nat) (p_l: (list nat)) : Lemma (len (firstn p_n p_l) <= len p_l) = admit ()
 
 (* UX_002_01_input_length_bounded (matches Coq: Theorem UX_002_01_input_length_bounded) *)
-let ux_002_01_input_length_bounded_obligation () : Tot bool = true
-let ux_002_01_input_length_bounded_lemma () : Lemma (requires True) (ensures (ux_002_01_input_length_bounded_obligation () == ux_002_01_input_length_bounded_obligation ())) = ()
+let ux_002_01_input_length_bounded (p_field: _) : Lemma (len (result.f_field_data) <= result.f_input_max_length) = admit ()
 
 (* UX_002_02_xss_injection_impossible (matches Coq: Theorem UX_002_02_xss_injection_impossible) *)
 let ux_002_02_xss_injection_impossible_obligation () : Tot bool = true
@@ -525,8 +514,7 @@ let firstn_all_le (p_n: nat) (p_l: (list nat)) : Lemma (requires (len p_l <= p_n
 let ux_002_04_input_idempotent (p_field: _) : Lemma (requires (input_is_safe p_field == true)) (ensures ((sanitize_input p_field).f_field_data == p_field.f_field_data)) = admit ()
 
 (* UX_002_05_empty_input_safe (matches Coq: Theorem UX_002_05_empty_input_safe) *)
-let ux_002_05_empty_input_safe_obligation () : Tot bool = true
-let ux_002_05_empty_input_safe_lemma () : Lemma (requires True) (ensures (ux_002_05_empty_input_safe_obligation () == ux_002_05_empty_input_safe_obligation ())) = ()
+let ux_002_05_empty_input_safe (p_max_len: _) (p_allowed: _) : Lemma (result.f_field_data == [] /\ result.f_input_sanitized == true) = admit ()
 
 (* UX_002_06_sanitize_preserves_safe (matches Coq: Theorem UX_002_06_sanitize_preserves_safe) *)
 let ux_002_06_sanitize_preserves_safe (p_field: _) : Lemma (requires (input_is_safe p_field == true)) (ensures ((sanitize_input p_field).f_field_data == p_field.f_field_data)) = admit ()
@@ -538,27 +526,22 @@ let ux_002_07_sanitized_flag_set (p_field: _) : Lemma ((sanitize_input p_field).
 let ux_002_08_sanitize_never_increases (p_field: _) : Lemma (len ((sanitize_input p_field).f_field_data) <= len (p_field.f_field_data)) = admit ()
 
 (* UX_003_01_focus_always_visible (matches Coq: Theorem UX_003_01_focus_always_visible) *)
-let ux_003_01_focus_always_visible_obligation () : Tot bool = true
-let ux_003_01_focus_always_visible_lemma () : Lemma (requires True) (ensures (ux_003_01_focus_always_visible_obligation () == ux_003_01_focus_always_visible_obligation ())) = ()
+let ux_003_01_focus_always_visible (p_vfs: _) : Lemma (requires (~((p_vfs.f_vf_state).f_tab_order == []))) (ensures ((exists p_eid. get_focused_id (p_vfs.f_vf_state) == Some p_eid) /\ List.Tot.memP eid (p_vfs.f_vf_visible_elements))) = admit ()
 
 (* UX_003_02_focus_order_deterministic (matches Coq: Theorem UX_003_02_focus_order_deterministic) *)
 let ux_003_02_focus_order_deterministic (p_fs1: _) (p_fs2: _) : Lemma (requires (p_fs1.f_focused_element == p_fs2.f_focused_element /\ p_fs1.f_tab_order == p_fs2.f_tab_order)) (ensures (get_focused_id p_fs1 == get_focused_id p_fs2)) = admit ()
 
 (* UX_003_03_focus_wraps_around (matches Coq: Theorem UX_003_03_focus_wraps_around) *)
-let ux_003_03_focus_wraps_around_obligation () : Tot bool = true
-let ux_003_03_focus_wraps_around_lemma () : Lemma (requires True) (ensures (ux_003_03_focus_wraps_around_obligation () == ux_003_03_focus_wraps_around_obligation ())) = ()
+let ux_003_03_focus_wraps_around (p_fs: _) : Lemma (requires (~(p_fs.f_tab_order == []) /\ p_fs.f_focused_element == len (p_fs.f_tab_order) - 1 /\ len (p_fs.f_tab_order) >= 1)) (ensures ((focus_next p_fs).f_focused_element == 0)) = admit ()
 
 (* UX_003_04_focus_trap_in_modal (matches Coq: Theorem UX_003_04_focus_trap_in_modal) *)
-let ux_003_04_focus_trap_in_modal_obligation () : Tot bool = true
-let ux_003_04_focus_trap_in_modal_lemma () : Lemma (requires True) (ensures (ux_003_04_focus_trap_in_modal_obligation () == ux_003_04_focus_trap_in_modal_obligation ())) = ()
+let ux_003_04_focus_trap_in_modal (p_vfs: _) (p_eid: _) : Lemma (requires ((p_vfs.f_vf_state).f_focus_modal_active == true /\ List.Tot.memP p_eid ((p_vfs.f_vf_state).f_tab_order))) (ensures (List.Tot.memP p_eid ((p_vfs.f_vf_state).f_focus_modal_elements))) = admit ()
 
 (* UX_003_05_no_focus_outside_bounds (matches Coq: Theorem UX_003_05_no_focus_outside_bounds) *)
-let ux_003_05_no_focus_outside_bounds_obligation () : Tot bool = true
-let ux_003_05_no_focus_outside_bounds_lemma () : Lemma (requires True) (ensures (ux_003_05_no_focus_outside_bounds_obligation () == ux_003_05_no_focus_outside_bounds_obligation ())) = ()
+let ux_003_05_no_focus_outside_bounds (p_fs: _) : Lemma (requires (~(p_fs.f_tab_order == []) /\ focus_valid p_fs == true)) (ensures ((focus_next p_fs).f_focused_element < len ((focus_next p_fs).f_tab_order))) = admit ()
 
 (* UX_003_06_focus_moves_forward (matches Coq: Theorem UX_003_06_focus_moves_forward) *)
-let ux_003_06_focus_moves_forward_obligation () : Tot bool = true
-let ux_003_06_focus_moves_forward_lemma () : Lemma (requires True) (ensures (ux_003_06_focus_moves_forward_obligation () == ux_003_06_focus_moves_forward_obligation ())) = ()
+let ux_003_06_focus_moves_forward (p_fs: _) : Lemma (requires (~(p_fs.f_tab_order == []) /\ focus_valid p_fs == true)) (ensures ((focus_next p_fs).f_focused_element == focused_element p_fs + 1 \/ (focus_next p_fs).f_focused_element == 0)) = admit ()
 
 (* UX_004_01_wcag_aa_contrast (matches Coq: Theorem UX_004_01_wcag_aa_contrast) *)
 let ux_004_01_wcag_aa_contrast () : Lemma (wcag_aa black white == true) = admit ()
@@ -570,8 +553,7 @@ let ux_004_02_wcag_aaa_contrast () : Lemma (wcag_aaa black white == true) = admi
 let ux_004_03_large_text_relaxed (p_c1: _) (p_c2: _) : Lemma (requires (wcag_aaa p_c1 p_c2 == true)) (ensures (wcag_large_text p_c1 p_c2 == true)) = admit ()
 
 (* UX_004_04_contrast_symmetric (matches Coq: Theorem UX_004_04_contrast_symmetric) *)
-let ux_004_04_contrast_symmetric_obligation () : Tot bool = true
-let ux_004_04_contrast_symmetric_lemma () : Lemma (requires True) (ensures (ux_004_04_contrast_symmetric_obligation () == ux_004_04_contrast_symmetric_obligation ())) = ()
+let ux_004_04_contrast_symmetric (p_c1: _) (p_c2: _) (p_ratio: _) : Lemma (contrast_meets_ratio p_c1 p_c2 p_ratio == true <==> contrast_meets_ratio p_c2 p_c1 p_ratio == true) = admit ()
 
 (* UX_004_05_same_color_min_contrast (matches Coq: Theorem UX_004_05_same_color_min_contrast) *)
 let ux_004_05_same_color_min_contrast (p_c: _) : Lemma (contrast_meets_ratio p_c p_c 10 == true) = admit ()
@@ -586,16 +568,14 @@ let ux_004_07_aa_implies_large_text (p_c1: _) (p_c2: _) : Lemma (requires (wcag_
 let ux_005_01_breakpoint_deterministic (p_w1: _) (p_w2: _) : Lemma (requires (p_w1 == p_w2)) (ensures (classify_breakpoint p_w1 == classify_breakpoint p_w2)) = admit ()
 
 (* UX_005_02_elements_fit_viewport (matches Coq: Theorem UX_005_02_elements_fit_viewport) *)
-let ux_005_02_elements_fit_viewport_obligation () : Tot bool = true
-let ux_005_02_elements_fit_viewport_lemma () : Lemma (requires True) (ensures (ux_005_02_elements_fit_viewport_obligation () == ux_005_02_elements_fit_viewport_obligation ())) = ()
+let ux_005_02_elements_fit_viewport (p_rl: _) (p_e: _) : Lemma (requires (List.Tot.memP p_e (p_rl.f_rl_elements))) (ensures (p_e.f_le_width <= (p_rl.f_rl_viewport).f_vp_width)) = admit ()
 
 (* UX_005_03_no_horizontal_scroll (matches Coq: Theorem UX_005_03_no_horizontal_scroll) *)
 let ux_005_03_no_horizontal_scroll_obligation () : Tot bool = true
 let ux_005_03_no_horizontal_scroll_lemma () : Lemma (requires True) (ensures (ux_005_03_no_horizontal_scroll_obligation () == ux_005_03_no_horizontal_scroll_obligation ())) = ()
 
 (* UX_005_04_touch_targets_minimum_size (matches Coq: Theorem UX_005_04_touch_targets_minimum_size) *)
-let ux_005_04_touch_targets_minimum_size_obligation () : Tot bool = true
-let ux_005_04_touch_targets_minimum_size_lemma () : Lemma (requires True) (ensures (ux_005_04_touch_targets_minimum_size_obligation () == ux_005_04_touch_targets_minimum_size_obligation ())) = ()
+let ux_005_04_touch_targets_minimum_size (p_rl: _) (p_e: _) : Lemma (requires (List.Tot.memP p_e (p_rl.f_rl_elements) /\ p_e.f_le_is_interactive == true)) (ensures (p_e.f_le_width >= 44 /\ p_e.f_le_height >= 44)) = admit ()
 
 (* UX_005_05_text_readable_at_breakpoint (matches Coq: Theorem UX_005_05_text_readable_at_breakpoint) *)
 let ux_005_05_text_readable_at_breakpoint_obligation () : Tot bool = true
@@ -635,9 +615,7 @@ let ux_006_08_severity_level_monotonic (p_s: _) : Lemma (severity_level p_s <= s
 let ux_006_09_info_style_normal (p_ved: _) : Lemma (requires ((p_ved.f_ve_display).f_err_severity == SevInfo)) (ensures ((p_ved.f_ve_display).f_err_display_style == StyleNormal)) = admit ()
 
 (* UX_007_01_sanitized_input_in_verified_ui (matches Coq: Theorem UX_007_01_sanitized_input_in_verified_ui) *)
-let ux_007_01_sanitized_input_in_verified_ui_obligation () : Tot bool = true
-let ux_007_01_sanitized_input_in_verified_ui_lemma () : Lemma (requires True) (ensures (ux_007_01_sanitized_input_in_verified_ui_obligation () == ux_007_01_sanitized_input_in_verified_ui_obligation ())) = ()
+let ux_007_01_sanitized_input_in_verified_ui (p_field: _) (p_ui: _) : Lemma (requires (verified_ui_state p_ui == true)) (ensures (len (result.f_field_data) <= p_field.f_input_max_length /\ result.f_input_sanitized == true)) = admit ()
 
 (* UX_007_02_accessible_error_in_responsive (matches Coq: Theorem UX_007_02_accessible_error_in_responsive) *)
-let ux_007_02_accessible_error_in_responsive_obligation () : Tot bool = true
-let ux_007_02_accessible_error_in_responsive_lemma () : Lemma (requires True) (ensures (ux_007_02_accessible_error_in_responsive_obligation () == ux_007_02_accessible_error_in_responsive_obligation ())) = ()
+let ux_007_02_accessible_error_in_responsive (p_ved: _) (p_rl: _) (p_e: _) : Lemma (requires (List.Tot.memP p_e (p_rl.f_rl_elements))) (ensures ((p_ved.f_ve_display).f_err_visible == true /\ p_e.f_le_width <= (p_rl.f_rl_viewport).f_vp_width)) = admit ()

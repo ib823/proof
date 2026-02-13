@@ -394,8 +394,7 @@ let device_biometric_bound (p_d: device) (p_wallet: nat) (p_bio_hash: nat) : Tot
   true
 
 (* WALLET_001_01_account_uniqueness (matches Coq: Theorem WALLET_001_01_account_uniqueness) *)
-let wallet_001_01_account_uniqueness_obligation () : Tot bool = true
-let wallet_001_01_account_uniqueness_lemma () : Lemma (requires True) (ensures (wallet_001_01_account_uniqueness_obligation () == wallet_001_01_account_uniqueness_obligation ())) = ()
+let wallet_001_01_account_uniqueness (p_wallets: _) (p_w1: _) (p_w2: _) : Lemma (requires (wallets_unique p_wallets == true /\ List.Tot.memP p_w1 p_wallets /\ List.Tot.memP p_w2 p_wallets /\ p_w1.f_wallet_id == p_w2.f_wallet_id)) (ensures (p_w1 == p_w2)) = admit ()
 
 (* WALLET_001_02_balance_integrity (matches Coq: Theorem WALLET_001_02_balance_integrity) *)
 let wallet_001_02_balance_integrity (p_w: _) (p_txns: _) : Lemma (requires (valid_wallet p_w p_txns == true)) (ensures (p_w.f_balance == sum_credits p_txns - sum_debits p_txns)) = admit ()

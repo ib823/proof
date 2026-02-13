@@ -113,17 +113,16 @@ let stage_terminates (p_s: stage) : Tot bool =
   true
 
 (* T_001_01_hex0_auditable (matches Coq: Theorem T_001_01_hex0_auditable) *)
-let t_001_01_hex0_auditable (p_h: _) (p_hex0: _) : Lemma (requires (valid_hex0 p_h == true)) (ensures (is_auditable p_h == true)) = admit ()
+let t_001_01_hex0_auditable (p_h: nat) : Lemma (requires (valid_hex0 p_h == true)) (ensures (is_auditable p_h == true)) = admit ()
 
 (* T_001_02_hex0_correct (matches Coq: Theorem T_001_02_hex0_correct) *)
-let t_001_02_hex0_correct (p_input: _) (p_list: _) (p_nat: _) : Lemma (hex0_semantics p_input == p_input) = admit ()
+let t_001_02_hex0_correct (p_input: (list nat)) : Lemma (hex0_semantics p_input == p_input) = admit ()
 
 (* T_001_03_stage_preserves_semantics (matches Coq: Theorem T_001_03_stage_preserves_semantics) *)
 let t_001_03_stage_preserves_semantics (p_compiler: _) (p_src: _) (p_out: _) : Lemma (requires (p_out == source_semantics p_src)) (ensures (preserves_semantics p_compiler p_src p_out == true)) = admit ()
 
 (* T_001_04_bootstrap_chain_valid (matches Coq: Theorem T_001_04_bootstrap_chain_valid) *)
-let t_001_04_bootstrap_chain_valid_obligation () : Tot bool = true
-let t_001_04_bootstrap_chain_valid_lemma () : Lemma (requires True) (ensures (t_001_04_bootstrap_chain_valid_obligation () == t_001_04_bootstrap_chain_valid_obligation ())) = ()
+let t_001_04_bootstrap_chain_valid (p_chain: _) : Lemma (requires (((forall (s: _). List.Tot.memP s p_chain)))) (ensures (chain_valid p_chain == true)) = admit ()
 
 (* T_001_05_stage_deterministic (matches Coq: Theorem T_001_05_stage_deterministic) *)
 let t_001_05_stage_deterministic (p_s: _) (p_input: _) : Lemma (compile (p_s.f_stage_binary) p_input == compile (p_s.f_stage_binary) p_input) = admit ()
@@ -153,8 +152,7 @@ let t_001_12_randomness_deterministic (p_env1: _) (p_env2: _) : Lemma (requires 
 let t_001_13_environment_clean (p_env: _) : Lemma (requires (is_hermetic p_env == true)) (ensures (p_env.f_env_network == false /\ p_env.f_env_clock == 0)) = admit ()
 
 (* T_001_14_inputs_whitelisted (matches Coq: Theorem T_001_14_inputs_whitelisted) *)
-let t_001_14_inputs_whitelisted_obligation () : Tot bool = true
-let t_001_14_inputs_whitelisted_lemma () : Lemma (requires True) (ensures (t_001_14_inputs_whitelisted_obligation () == t_001_14_inputs_whitelisted_obligation ())) = ()
+let t_001_14_inputs_whitelisted (p_env: _) (p_h: _) : Lemma (requires (List.Tot.memP p_h (p_env.f_env_inputs))) (ensures (List.Tot.memP p_h (p_env.f_env_inputs))) = admit ()
 
 (* T_001_15_hermetic_composition (matches Coq: Theorem T_001_15_hermetic_composition) *)
 let t_001_15_hermetic_composition_obligation () : Tot bool = true

@@ -152,8 +152,7 @@ let memory_safe (p_ctx: own_ctx) : Tot bool =
   true
 
 (* existsb_false_forall (matches Coq: Lemma existsb_false_forall) *)
-let existsb_false_forall_obligation () : Tot bool = true
-let existsb_false_forall_lemma () : Lemma (requires True) (ensures (existsb_false_forall_obligation () == existsb_false_forall_obligation ())) = ()
+let existsb_false_forall (p_f: nat) (p_l: (list nat)) : Lemma (requires (existsb p_f p_l == false /\ (forall (x: _). List.Tot.memP x p_l))) (ensures (p_f x == false)) = admit ()
 
 (* find_var_map_moved (matches Coq: Lemma find_var_map_moved) *)
 let find_var_map_moved_obligation () : Tot bool = true
@@ -169,26 +168,22 @@ let mem_001_02 (p_ctx: own_ctx) (p_from_id: nat) (p_to_id: nat) (p_ctx_: own_ctx
 let mem_001_03 (p_ctx: own_ctx) (p_id: nat) (p_v: owned_var) : Lemma (requires (find_var (p_ctx.f_oc_vars) p_id == Some p_v /\ p_v.f_ov_state == Owned /\ count_mut_borrows p_ctx p_id == 0)) (ensures (can_shared_borrow p_ctx p_id == true)) = admit ()
 
 (* filter_all_false_empty (matches Coq: Lemma filter_all_false_empty) *)
-let filter_all_false_empty_obligation () : Tot bool = true
-let filter_all_false_empty_lemma () : Lemma (requires True) (ensures (filter_all_false_empty_obligation () == filter_all_false_empty_obligation ())) = ()
+let filter_all_false_empty (p_f: nat) (p_l: (list nat)) : Lemma (requires (((forall (x: _). List.Tot.memP x p_l)))) (ensures (filter p_f p_l == [])) = admit ()
 
 (* MEM_001_04 (matches Coq: Theorem MEM_001_04) *)
 let mem_001_04 (p_ctx: own_ctx) (p_id: nat) (p_v: owned_var) : Lemma (requires (find_var (p_ctx.f_oc_vars) p_id == Some p_v /\ p_v.f_ov_state == Owned /\ can_mut_borrow p_ctx p_id == true)) (ensures (count_borrows p_ctx p_id == 0)) = admit ()
 
 (* MEM_001_05 (matches Coq: Theorem MEM_001_05) *)
-let mem_001_05_obligation () : Tot bool = true
-let mem_001_05_lemma () : Lemma (requires True) (ensures (mem_001_05_obligation () == mem_001_05_obligation ())) = ()
+let mem_001_05 (p_ctx: own_ctx) (p_b: borrow) (p_v: owned_var) : Lemma (requires (List.Tot.memP p_b (p_ctx.f_oc_borrows) /\ find_var (p_ctx.f_oc_vars) (p_b.f_br_source) == Some p_v /\ borrow_lifetime_valid p_ctx p_b == true)) (ensures (lifetime_outlives (p_v.f_ov_lifetime) (p_b.f_br_lifetime) == true)) = admit ()
 
 (* MEM_001_06 (matches Coq: Theorem MEM_001_06) *)
 let mem_001_06 (p_v: owned_var) : Lemma (requires (p_v.f_ov_state == Moved)) (ensures (is_usable p_v == false)) = admit ()
 
 (* MEM_001_07 (matches Coq: Theorem MEM_001_07) *)
-let mem_001_07_obligation () : Tot bool = true
-let mem_001_07_lemma () : Lemma (requires True) (ensures (mem_001_07_obligation () == mem_001_07_obligation ())) = ()
+let mem_001_07 (p_ctx: own_ctx) (p_id: nat) (p_v: owned_var) (p_b: borrow) : Lemma (requires (find_var (p_ctx.f_oc_vars) p_id == Some p_v /\ p_v.f_ov_state == Owned /\ List.Tot.memP p_b (p_ctx.f_oc_borrows) /\ p_b.f_br_source == p_id /\ p_b.f_br_mutable == false)) (ensures (can_mut_borrow p_ctx p_id == false)) = admit ()
 
 (* MEM_001_08 (matches Coq: Theorem MEM_001_08) *)
-let mem_001_08_obligation () : Tot bool = true
-let mem_001_08_lemma () : Lemma (requires True) (ensures (mem_001_08_obligation () == mem_001_08_obligation ())) = ()
+let mem_001_08 (p_ctx: own_ctx) (p_id: nat) (p_v: owned_var) (p_b: borrow) : Lemma (requires (find_var (p_ctx.f_oc_vars) p_id == Some p_v /\ p_v.f_ov_state == Owned /\ List.Tot.memP p_b (p_ctx.f_oc_borrows) /\ p_b.f_br_source == p_id /\ p_b.f_br_mutable == true)) (ensures (can_shared_borrow p_ctx p_id == false)) = admit ()
 
 (* MEM_001_09 (matches Coq: Theorem MEM_001_09) *)
 let mem_001_09 (p_orig_lt: nat) (p_reborrow_lt: nat) : Lemma (requires (lifetime_outlives p_orig_lt p_reborrow_lt == true)) (ensures (p_reborrow_lt p_orig_lt == true)) = admit ()
@@ -201,8 +196,7 @@ let find_var_map_dropped_lemma () : Lemma (requires True) (ensures (find_var_map
 let mem_001_10 (p_ctx: own_ctx) (p_ctx_: own_ctx) (p_id: nat) (p_v: owned_var) : Lemma (requires (find_var (p_ctx.f_oc_vars) p_id == Some p_v /\ p_v.f_ov_state == Owned /\ drop_var p_ctx p_id == Some p_ctx_)) (ensures (drop_var p_ctx_ p_id == None)) = admit ()
 
 (* MEM_001_11 (matches Coq: Theorem MEM_001_11) *)
-let mem_001_11_obligation () : Tot bool = true
-let mem_001_11_lemma () : Lemma (requires True) (ensures (mem_001_11_obligation () == mem_001_11_obligation ())) = ()
+let mem_001_11 (p_ctx: own_ctx) (p_b: borrow) (p_v: owned_var) : Lemma (requires (well_formed_ctx p_ctx == true /\ List.Tot.memP p_b (p_ctx.f_oc_borrows) /\ find_var (p_ctx.f_oc_vars) (p_b.f_br_source) == Some p_v /\ ~(p_v.f_ov_state == Dropped) /\ ~(p_v.f_ov_state == Moved))) (ensures (lifetime_outlives (p_v.f_ov_lifetime) (p_b.f_br_lifetime) == true)) = admit ()
 
 (* MEM_001_12 (matches Coq: Theorem MEM_001_12) *)
 let mem_001_12 (p_rc: ref_cell) : Lemma (requires (p_rc.f_rc_state == RCMutBorrow)) (ensures (refcell_try_borrow p_rc == None /\ refcell_try_borrow_mut p_rc == None)) = admit ()
@@ -211,12 +205,10 @@ let mem_001_12 (p_rc: ref_cell) : Lemma (requires (p_rc.f_rc_state == RCMutBorro
 let mem_001_13 (p_ctx: own_ctx) (p_from_id: nat) (p_to_id: nat) (p_v: owned_var) : Lemma (requires (find_var (p_ctx.f_oc_vars) p_from_id == Some p_v /\ p_v.f_ov_is_copy == true)) (ensures (move_var p_ctx p_from_id p_to_id == Some p_ctx)) = admit ()
 
 (* MEM_001_14 (matches Coq: Theorem MEM_001_14) *)
-let mem_001_14_obligation () : Tot bool = true
-let mem_001_14_lemma () : Lemma (requires True) (ensures (mem_001_14_obligation () == mem_001_14_obligation ())) = ()
+let mem_001_14 (p_id: nat) : Lemma (b.f_box_allocated == true /\ b.f_box_dropped == false /\ ((exists p_b. box_drop p_b == Some b_) /\ b_.f_box_dropped == true)) = admit ()
 
 (* MEM_001_15 (matches Coq: Theorem MEM_001_15) *)
-let mem_001_15_obligation () : Tot bool = true
-let mem_001_15_lemma () : Lemma (requires True) (ensures (mem_001_15_obligation () == mem_001_15_obligation ())) = ()
+let mem_001_15 (p_ctx: own_ctx) : Lemma (requires (memory_safe p_ctx == true)) (ensures (well_formed_ctx p_ctx == true /\ ((forall (v: _). List.Tot.memP v (p_ctx.f_oc_vars))) /\ ((forall (v: _). List.Tot.memP v (p_ctx.f_oc_vars))))) = admit ()
 
 (* lifetime_outlives_refl (matches Coq: Theorem lifetime_outlives_refl) *)
 let lifetime_outlives_refl (p_l: _) : Lemma (lifetime_outlives p_l p_l == true) = admit ()

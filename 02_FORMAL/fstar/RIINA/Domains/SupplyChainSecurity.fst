@@ -259,13 +259,13 @@ let isolation_sufficient (p_level: nat) : Tot bool =
 let fullsupplychainsecurity : bool = true
 
 (* hash_eq_refl (matches Coq: Lemma hash_eq_refl) *)
-let hash_eq_refl (p_h: _) (p_hash: _) : Lemma (hash_eq p_h p_h == true) = admit ()
+let hash_eq_refl (p_h: nat) : Lemma (hash_eq p_h p_h == true) = admit ()
 
 (* hash_eq_sym (matches Coq: Lemma hash_eq_sym) *)
-let hash_eq_sym (p_h1: _) (p_h2: _) (p_hash: _) : Lemma (requires (hash_eq p_h1 p_h2 == true)) (ensures (hash_eq p_h2 p_h1 == true)) = admit ()
+let hash_eq_sym (p_h1: nat) (p_h2: nat) : Lemma (requires (hash_eq p_h1 p_h2 == true)) (ensures (hash_eq p_h2 p_h1 == true)) = admit ()
 
 (* hash_eq_implies_eq (matches Coq: Lemma hash_eq_implies_eq) *)
-let hash_eq_implies_eq (p_h1: _) (p_h2: _) (p_hash: _) : Lemma (requires (hash_eq p_h1 p_h2 == true)) (ensures (p_h1 == p_h2)) = admit ()
+let hash_eq_implies_eq (p_h1: nat) (p_h2: nat) : Lemma (requires (hash_eq p_h1 p_h2 == true)) (ensures (p_h1 == p_h2)) = admit ()
 
 (* bool_impl (matches Coq: Lemma bool_impl) *)
 let bool_impl_obligation () : Tot bool = true
@@ -323,7 +323,7 @@ let sup_008_vendor_audit_security (p_v: vendor_verification) : Lemma (requires (
 let sup_009_watering_hole_mitigated (p_ns: network_segmentation) : Lemma (requires (p_ns.f_ns_segments_isolated == true)) (ensures (WateringHoleMitigated == true)) = admit ()
 
 (* sup_009_segment_isolation_lateral (matches Coq: Theorem sup_009_segment_isolation_lateral) *)
-let sup_009_segment_isolation_lateral (p_ns: network_segmentation) : Lemma (requires (p_ns.f_ns_segments_isolated == true /\ ~(p_ns.f_ns_source_segment == p_ns.f_ns_dest_segment) /\ pair_in_list (ns_source_segment ns_ ns_dest_segment p_ns) (p_ns.f_ns_firewall_rules) == false)) (ensures (WateringHoleMitigated == true)) = admit ()
+let sup_009_segment_isolation_lateral (p_ns: network_segmentation) : Lemma (requires (p_ns.f_ns_segments_isolated == true /\ ~(p_ns.f_ns_source_segment == p_ns.f_ns_dest_segment) /\ pair_in_list (p_ns.f_ns_source_segment, p_ns.f_ns_dest_segment) (p_ns.f_ns_firewall_rules) == false)) (ensures (WateringHoleMitigated == true)) = admit ()
 
 (* sup_010_update_attack_mitigated (matches Coq: Theorem sup_010_update_attack_mitigated) *)
 let sup_010_update_attack_mitigated (p_upd: signed_update) : Lemma (requires (p_upd.f_upd_signature_valid == true /\ p_upd.f_upd_version_incremented == true)) (ensures (UpdateMitigated == true)) = admit ()

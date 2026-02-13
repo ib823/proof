@@ -135,8 +135,7 @@ let dual_perm_app (p_app: application) : Lemma (requires (p_app.f_app_screen_cap
 let no_perm_app (p_app: application) : Lemma (requires (p_app.f_app_screen_capture_perm == false /\ p_app.f_app_overlay_perm == false)) (ensures (~(has_screen_capture_permission p_app == true) /\ ~(has_overlay_permission p_app == true))) = admit ()
 
 (* empty_display_no_read (matches Coq: Theorem empty_display_no_read) *)
-let empty_display_no_read_obligation () : Tot bool = true
-let empty_display_no_read_lemma () : Lemma (requires True) (ensures (empty_display_no_read_obligation () == empty_display_no_read_obligation ())) = ()
+let empty_display_no_read (p_ds: display_state) (p_app: application) (p_fb: frame_buffer) : Lemma (requires (p_ds.f_frame_buffers == [] /\ List.Tot.memP p_fb (p_ds.f_frame_buffers))) (ensures (can_read_buffer p_app p_fb == true)) = admit ()
 
 (* frame_timestamp_order (matches Coq: Theorem frame_timestamp_order) *)
 let frame_timestamp_order (p_f1: frame) (p_f2: frame) : Lemma (p_f1.f_frame_timestamp <= p_f2.f_frame_timestamp \/ p_f2.f_frame_timestamp < p_f1.f_frame_timestamp) = admit ()

@@ -183,8 +183,7 @@ let progressive_disclosure (p_cs: nat) : Lemma (cs_initial_level p_cs == Summary
 let choice_overload_prevention (p_mc: nat) : Lemma (length (menu_items p_mc) <= hicks_bound) = admit ()
 
 (* consistent_navigation (matches Coq: Theorem consistent_navigation) *)
-let consistent_navigation_obligation () : Tot bool = true
-let consistent_navigation_lemma () : Lemma (requires True) (ensures (consistent_navigation_obligation () == consistent_navigation_obligation ())) = ()
+let consistent_navigation (p_app: nat) (p_p1: nat) (p_p2: nat) : Lemma (requires (List.Tot.memP p_p1 (app_pages p_app) /\ List.Tot.memP p_p2 (app_pages p_app))) (ensures (nav_structure_eq p_p1 p_p2 == true)) = admit ()
 
 (* breadcrumb_always_available (matches Coq: Theorem breadcrumb_always_available) *)
 let breadcrumb_always_available (p_pc: nat) : Lemma (requires (~(pc_depth p_pc == RootLevel))) (ensures (pc_has_breadcrumb p_pc == true)) = admit ()
@@ -205,30 +204,25 @@ let confirmation_for_destructive (p_ca: nat) : Lemma (requires (is_destructive (
 let inline_validation (p_fs: nat) : Lemma (errors_are_inline p_fs == true) = admit ()
 
 (* error_message_specific (matches Coq: Theorem error_message_specific) *)
-let error_message_specific_obligation () : Tot bool = true
-let error_message_specific_lemma () : Lemma (requires True) (ensures (error_message_specific_obligation () == error_message_specific_obligation ())) = ()
+let error_message_specific (p_fs: nat) (p_e: nat) : Lemma (requires (List.Tot.memP p_e (fs_errors p_fs))) (ensures ((exists p_idx. error_field_idx p_e == p_idx) /\ idx < fs_field_count p_fs)) = admit ()
 
 (* auto_save_prevents_loss (matches Coq: Theorem auto_save_prevents_loss) *)
 let auto_save_prevents_loss (p_asf: nat) : Lemma (requires (asf_dirty p_asf == true)) (ensures (snap_field_values (asf_snapshot p_asf) == asf_field_values p_asf)) = admit ()
 
 (* min_error_idx_nonempty (matches Coq: Lemma min_error_idx_nonempty) *)
-let min_error_idx_nonempty_obligation () : Tot bool = true
-let min_error_idx_nonempty_lemma () : Lemma (requires True) (ensures (min_error_idx_nonempty_obligation () == min_error_idx_nonempty_obligation ())) = ()
+let min_error_idx_nonempty (p_errs: (list nat)) : Lemma (requires (~(p_errs == []))) (ensures ((exists p_n. min_error_idx p_errs == Some p_n))) = admit ()
 
 (* min_error_idx_le_head (matches Coq: Lemma min_error_idx_le_head) *)
 let min_error_idx_le_head (p_e: nat) (p_rest: (list nat)) (p_m: nat) : Lemma (requires (min_error_idx (p_e :: p_rest) == Some p_m)) (ensures (p_m <= error_field_idx p_e)) = admit ()
 
 (* min_error_idx_le_all (matches Coq: Lemma min_error_idx_le_all) *)
-let min_error_idx_le_all_obligation () : Tot bool = true
-let min_error_idx_le_all_lemma () : Lemma (requires True) (ensures (min_error_idx_le_all_obligation () == min_error_idx_le_all_obligation ())) = ()
+let min_error_idx_le_all (p_errs: (list nat)) (p_m: nat) : Lemma (requires (min_error_idx p_errs == Some p_m /\ (forall (e: _). List.Tot.memP e p_errs))) (ensures (p_m <= error_field_idx e)) = admit ()
 
 (* scroll_to_first_error (matches Coq: Theorem scroll_to_first_error) *)
-let scroll_to_first_error_obligation () : Tot bool = true
-let scroll_to_first_error_lemma () : Lemma (requires True) (ensures (scroll_to_first_error_obligation () == scroll_to_first_error_obligation ())) = ()
+let scroll_to_first_error (p_fs: nat) : Lemma (requires (~(fs_errors p_fs == []) /\ (exists p_min_idx. min_error_idx (fs_errors p_fs) == Some p_min_idx) /\ (forall (e: _). List.Tot.memP e (fs_errors p_fs)))) (ensures (min_idx <= error_field_idx e)) = admit ()
 
 (* error_count_visible (matches Coq: Theorem error_count_visible) *)
-let error_count_visible_obligation () : Tot bool = true
-let error_count_visible_lemma () : Lemma (requires True) (ensures (error_count_visible_obligation () == error_count_visible_obligation ())) = ()
+let error_count_visible (p_fs: nat) : Lemma (form_error_count p_fs == 0 <==> fs_errors p_fs == []) = admit ()
 
 (* error_count_monotone (matches Coq: Lemma error_count_monotone) *)
 let error_count_monotone (p_errs: (list nat)) (p_e: nat) : Lemma (length (p_e :: p_errs) == ((length p_errs) + 1)) = admit ()
@@ -243,8 +237,7 @@ let animation_duration_bounded (p_anim: nat) : Lemma (200 <= at_duration_ms p_an
 let action_class_eq_dec (p_a: nat) (p_b: nat) : Lemma ({p_a == b_ + {p_a <> b_) = admit ()
 
 (* easing_consistent_singleton (matches Coq: Theorem easing_consistent_singleton) *)
-let easing_consistent_singleton_obligation () : Tot bool = true
-let easing_consistent_singleton_lemma () : Lemma (requires True) (ensures (easing_consistent_singleton_obligation () == easing_consistent_singleton_obligation ())) = ()
+let easing_consistent_singleton (p_a: nat) : Lemma (easing_consistent (p_a :: []) == true) = admit ()
 
 (* no_layout_shift (matches Coq: Theorem no_layout_shift) *)
 let no_layout_shift (p_sl: nat) : Lemma (sl_initial p_sl == sl_final p_sl) = admit ()

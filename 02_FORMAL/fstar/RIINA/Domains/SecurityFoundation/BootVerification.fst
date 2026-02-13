@@ -117,8 +117,7 @@ let failed_verification_no_boot_lemma () : Lemma (requires True) (ensures (faile
 let hardware_root_verified () : Lemma (stage_verified initial_boot_state HardwareRoot == true) = admit ()
 
 (* boot_requires_verification (matches Coq: Theorem boot_requires_verification) *)
-let boot_requires_verification_obligation () : Tot bool = true
-let boot_requires_verification_lemma () : Lemma (requires True) (ensures (boot_requires_verification_obligation () == boot_requires_verification_obligation ())) = ()
+let boot_requires_verification (p_st: boot_chain_state) (p_img: boot_image) : Lemma (can_boot p_st p_img == true <==> verify_image p_st p_img == Verified) = admit ()
 
 (* verification_preserves_previous (matches Coq: Theorem verification_preserves_previous) *)
 let verification_preserves_previous_obligation () : Tot bool = true
@@ -128,15 +127,13 @@ let verification_preserves_previous_lemma () : Lemma (requires True) (ensures (v
 let each_stage_verifies_next (p_st: boot_chain_state) (p_img: boot_image) : Lemma (requires (~(boot_stage p_st p_img == p_st))) (ensures (can_boot p_st p_img == true)) = admit ()
 
 (* root_of_trust_immutable (matches Coq: Theorem root_of_trust_immutable) *)
-let root_of_trust_immutable_obligation () : Tot bool = true
-let root_of_trust_immutable_lemma () : Lemma (requires True) (ensures (root_of_trust_immutable_obligation () == root_of_trust_immutable_obligation ())) = ()
+let root_of_trust_immutable () : Lemma (List.Tot.memP HardwareRoot (initial_boot_state.f_verified_stages)) = admit ()
 
 (* firmware_rollback_prevented (matches Coq: Theorem firmware_rollback_prevented) *)
 let firmware_rollback_prevented (p_st: boot_chain_state) (p_img: boot_image) (p_expected: nat) (p_min_ver: nat) : Lemma (requires (get_expected_hash p_st (p_img.f_image_stage) == Some p_expected /\ p_img.f_image_hash == p_expected /\ get_minimum_version p_st (p_img.f_image_stage) == Some p_min_ver /\ p_img.f_image_version < p_min_ver)) (ensures (verify_image p_st p_img == VersionRollback)) = admit ()
 
 (* boot_log_only_grows (matches Coq: Theorem boot_log_only_grows) *)
-let boot_log_only_grows_obligation () : Tot bool = true
-let boot_log_only_grows_lemma () : Lemma (requires True) (ensures (boot_log_only_grows_obligation () == boot_log_only_grows_obligation ())) = ()
+let boot_log_only_grows (p_st: boot_chain_state) (p_img: boot_image) (p_s: boot_stage_id) : Lemma (requires (List.Tot.memP p_s (p_st.f_verified_stages) /\ can_boot p_st p_img == true)) (ensures (List.Tot.memP p_s ((boot_stage p_st p_img).f_verified_stages))) = admit ()
 
 (* hash_mismatch_detected (matches Coq: Theorem hash_mismatch_detected) *)
 let hash_mismatch_detected (p_st: boot_chain_state) (p_img: boot_image) (p_expected: nat) : Lemma (requires (get_expected_hash p_st (p_img.f_image_stage) == Some p_expected /\ ~(p_img.f_image_hash == p_expected))) (ensures (verify_image p_st p_img == HashMismatch)) = admit ()

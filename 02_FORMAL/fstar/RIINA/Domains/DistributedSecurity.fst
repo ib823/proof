@@ -172,19 +172,19 @@ let quorum_valid (p_qc: quorum_config) : Tot bool =
   (p_qc.f_qc_total_nodes < 2 * p_qc.f_qc_quorum_size) && (0 < p_qc.f_qc_quorum_size)
 
 (* andb_true_intro_3 (matches Coq: Lemma andb_true_intro_3) *)
-let andb_true_intro_3 (p_a: _) (p_b: _) (p_c: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true /\ p_c == true)) (ensures (p_a && p_b && p_c == true)) = admit ()
+let andb_true_intro_3 (p_a: bool) (p_b: bool) (p_c: bool) : Lemma (requires (p_a == true /\ p_b == true /\ p_c == true)) (ensures (p_a && p_b && p_c == true)) = admit ()
 
 (* andb_true_elim_l (matches Coq: Lemma andb_true_elim_l) *)
-let andb_true_elim_l (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
+let andb_true_elim_l (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
 
 (* andb_true_elim_r (matches Coq: Lemma andb_true_elim_r) *)
-let andb_true_elim_r (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
+let andb_true_elim_r (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
 
 (* orb_true_intro_l (matches Coq: Lemma orb_true_intro_l) *)
-let orb_true_intro_l (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true)) (ensures (p_a || p_b == true)) = admit ()
+let orb_true_intro_l (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true)) (ensures (p_a || p_b == true)) = admit ()
 
 (* orb_true_intro_r (matches Coq: Lemma orb_true_intro_r) *)
-let orb_true_intro_r (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_b == true)) (ensures (p_a || p_b == true)) = admit ()
+let orb_true_intro_r (p_a: bool) (p_b: bool) : Lemma (requires (p_b == true)) (ensures (p_a || p_b == true)) = admit ()
 
 (* dist_001_byzantine_failure_tolerated (matches Coq: Theorem dist_001_byzantine_failure_tolerated) *)
 let dist_001_byzantine_failure_tolerated (p_cfg: bft_config) : Lemma (requires (bft_valid p_cfg == true)) (ensures (3 * bft_faulty_tolerance p_cfg < p_cfg.f_bft_total_nodes)) = admit ()
@@ -235,15 +235,13 @@ let dist_007_reentrancy_mitigated (p_rg: reentrancy_guard) : Lemma (requires (p_
 let dist_007_checks_effects_interactions_pattern (p_checks_first: bool) (p_effects_second: bool) (p_interactions_third: bool) : Lemma (requires (p_checks_first == true /\ p_effects_second == true /\ p_interactions_third == true)) (ensures (p_checks_first && p_effects_second && p_interactions_third == true)) = admit ()
 
 (* dist_007_locked_guard_prevents_reentry (matches Coq: Theorem dist_007_locked_guard_prevents_reentry) *)
-let dist_007_locked_guard_prevents_reentry_obligation () : Tot bool = true
-let dist_007_locked_guard_prevents_reentry_lemma () : Lemma (requires True) (ensures (dist_007_locked_guard_prevents_reentry_obligation () == dist_007_locked_guard_prevents_reentry_obligation ())) = ()
+let dist_007_locked_guard_prevents_reentry (p_is_locked: bool) : Lemma (requires (p_is_locked == true)) (ensures ((not p_is_locked) == false)) = admit ()
 
 (* dist_008_frontrunning_mitigated (matches Coq: Theorem dist_008_frontrunning_mitigated) *)
 let dist_008_frontrunning_mitigated (p_fo: fair_ordering) : Lemma (requires (p_fo.f_fo_commit_phase == true /\ p_fo.f_fo_reveal_phase == true /\ p_fo.f_fo_ordering_deterministic == true)) (ensures (frontrun_protected p_fo == true)) = admit ()
 
 (* dist_008_commit_reveal_hides_intent (matches Coq: Theorem dist_008_commit_reveal_hides_intent) *)
-let dist_008_commit_reveal_hides_intent_obligation () : Tot bool = true
-let dist_008_commit_reveal_hides_intent_lemma () : Lemma (requires True) (ensures (dist_008_commit_reveal_hides_intent_obligation () == dist_008_commit_reveal_hides_intent_obligation ())) = ()
+let dist_008_commit_reveal_hides_intent (p_committed: bool) (p_revealed: bool) : Lemma (requires (p_committed == true /\ p_revealed == false)) (ensures (p_committed && negb p_revealed == true)) = admit ()
 
 (* dist_009_mev_extraction_mitigated_private (matches Coq: Theorem dist_009_mev_extraction_mitigated_private) *)
 let dist_009_mev_extraction_mitigated_private (p_mp: mev_protection) : Lemma (requires (p_mp.f_mev_private_mempool == true)) (ensures (mev_protected p_mp == true)) = admit ()

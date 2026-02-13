@@ -90,12 +90,10 @@ let val_rel_le_base_permanent_obligation () : Tot bool = true
 let val_rel_le_base_permanent_lemma () : Lemma (requires True) (ensures (val_rel_le_base_permanent_obligation () == val_rel_le_base_permanent_obligation ())) = ()
 
 (* val_rel_le_unit_eq (matches Coq: Lemma val_rel_le_unit_eq) *)
-let val_rel_le_unit_eq_obligation () : Tot bool = true
-let val_rel_le_unit_eq_lemma () : Lemma (requires True) (ensures (val_rel_le_unit_eq_obligation () == val_rel_le_unit_eq_obligation ())) = ()
+let val_rel_le_unit_eq (p_n: _) (p_sigma: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0)) (ensures (val_rel_le p_n p_sigma TUnit p_v1 p_v2 == true <==> (p_v1 == EUnit /\ p_v2 == EUnit))) = admit ()
 
 (* val_rel_le_bool_eq (matches Coq: Lemma val_rel_le_bool_eq) *)
-let val_rel_le_bool_eq_obligation () : Tot bool = true
-let val_rel_le_bool_eq_lemma () : Lemma (requires True) (ensures (val_rel_le_bool_eq_obligation () == val_rel_le_bool_eq_obligation ())) = ()
+let val_rel_le_bool_eq (p_n: _) (p_sigma: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0)) (ensures (val_rel_le p_n p_sigma TBool p_v1 p_v2 == true <==> ((exists p_b. p_v1 == EBool p_b) /\ p_v2 == EBool b))) = admit ()
 
 (* store_ty_lookup_update_neq (matches Coq: Lemma store_ty_lookup_update_neq) *)
 let store_ty_lookup_update_neq (p_l: _) (p_l_: _) (p_t: _) (p_sl: _) (p_sigma: _) : Lemma (requires (~(p_l == p_l_))) (ensures (store_ty_lookup p_l_ (store_ty_update p_l p_t p_sl p_sigma) == store_ty_lookup p_l_ p_sigma)) = admit ()

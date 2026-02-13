@@ -99,8 +99,7 @@ let rec phys_run (p_s: phys_state) (p_inputs: (list bool)) : Tot phys_state =
   | _ -> (* TODO: default value for phys_state *) admit()
 
 (* reading_in_bounds_correct (matches Coq: Theorem reading_in_bounds_correct) *)
-let reading_in_bounds_correct_obligation () : Tot bool = true
-let reading_in_bounds_correct_lemma () : Lemma (requires True) (ensures (reading_in_bounds_correct_obligation () == reading_in_bounds_correct_obligation ())) = ()
+let reading_in_bounds_correct (p_r: _) : Lemma (reading_in_bounds p_r == true <==> reading_valid p_r == true) = admit ()
 
 (* valid_reading_min_le_max (matches Coq: Theorem valid_reading_min_le_max) *)
 let valid_reading_min_le_max (p_r: _) : Lemma (requires (reading_valid p_r == true)) (ensures (p_r.f_reading_min <= p_r.f_reading_max)) = admit ()
@@ -115,12 +114,10 @@ let spec_feasible_correct (p_spec: _) : Lemma (requires (spec_feasible p_spec ==
 let spec_feasible_nonzero_samples (p_spec: _) : Lemma (requires (spec_feasible p_spec == true)) (ensures (p_spec.f_meas_samples > 0)) = admit ()
 
 (* empty_readings_avg_zero (matches Coq: Theorem empty_readings_avg_zero) *)
-let empty_readings_avg_zero_obligation () : Tot bool = true
-let empty_readings_avg_zero_lemma () : Lemma (requires True) (ensures (empty_readings_avg_zero_obligation () == empty_readings_avg_zero_obligation ())) = ()
+let empty_readings_avg_zero () : Lemma (readings_avg [] == 0) = admit ()
 
 (* timing_feasible_correct (matches Coq: Theorem timing_feasible_correct) *)
-let timing_feasible_correct_obligation () : Tot bool = true
-let timing_feasible_correct_lemma () : Lemma (requires True) (ensures (timing_feasible_correct_obligation () == timing_feasible_correct_obligation ())) = ()
+let timing_feasible_correct (p_tc: _) : Lemma (timing_feasible p_tc == true <==> timing_schedulable p_tc == true) = admit ()
 
 (* feasible_wcet_within_deadline (matches Coq: Theorem feasible_wcet_within_deadline) *)
 let feasible_wcet_within_deadline (p_tc: _) : Lemma (requires (timing_schedulable p_tc == true)) (ensures (p_tc.f_wcet <= p_tc.f_deadline)) = admit ()

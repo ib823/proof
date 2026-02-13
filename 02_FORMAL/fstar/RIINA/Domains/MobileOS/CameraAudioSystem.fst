@@ -158,8 +158,7 @@ let audio_latency_bounded (p_sample: audio_sample) : Lemma (requires (low_latenc
 let capture_preserves_identity (p_s1: scene) (p_s2: scene) (p_p: raw_photo) : Lemma (requires (captures p_s1 p_p == true /\ captures p_s2 p_p == true)) (ensures (sensor_data p_s1 == sensor_data p_s2)) = admit ()
 
 (* empty_video_zero_frames (matches Coq: Theorem empty_video_zero_frames) *)
-let empty_video_zero_frames_obligation () : Tot bool = true
-let empty_video_zero_frames_lemma () : Lemma (requires True) (ensures (empty_video_zero_frames_obligation () == empty_video_zero_frames_obligation ())) = ()
+let empty_video_zero_frames (p_v: video_recording) : Lemma (requires (p_v.f_video_frames == [])) (ensures (frames_captured p_v == 0)) = admit ()
 
 (* audio_latency_nonnegative (matches Coq: Theorem audio_latency_nonnegative) *)
 let audio_latency_nonnegative (p_sample: audio_sample) : Lemma (requires (p_sample.f_audio_output_time >= p_sample.f_audio_input_time)) (ensures (input_to_output_latency p_sample >= 0)) = admit ()

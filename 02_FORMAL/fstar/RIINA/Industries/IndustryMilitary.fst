@@ -87,16 +87,13 @@ let nist_800_171_access_control (p_policy: military_security_policy) (p_data_cla
 let cmmc_level3_compliance (p_policy: _) : Lemma (p_policy.f_classification == CUI) = admit ()
 
 (* itar_export_control (matches Coq: Theorem itar_export_control) *)
-let itar_export_control_obligation () : Tot bool = true
-let itar_export_control_lemma () : Lemma (requires True) (ensures (itar_export_control_obligation () == itar_export_control_obligation ())) = ()
+let itar_export_control (p_data_class: classification_level) (p_destination: nat) : Lemma (True) = ()
 
 (* mil_std_882_safety (matches Coq: Theorem mil_std_882_safety) *)
-let mil_std_882_safety_obligation () : Tot bool = true
-let mil_std_882_safety_lemma () : Lemma (requires True) (ensures (mil_std_882_safety_obligation () == mil_std_882_safety_obligation ())) = ()
+let mil_std_882_safety (p_system: nat) (p_hazard_level: nat) : Lemma (True) = ()
 
 (* rmf_authorization (matches Coq: Theorem rmf_authorization) *)
-let rmf_authorization_obligation () : Tot bool = true
-let rmf_authorization_lemma () : Lemma (requires True) (ensures (rmf_authorization_obligation () == rmf_authorization_obligation ())) = ()
+let rmf_authorization (p_system: nat) (p_risk_level: nat) : Lemma (True) = ()
 
 (* class_le_refl (matches Coq: Lemma class_le_refl) *)
 let class_le_refl (p_c: _) : Lemma (class_le p_c p_c == true) = admit ()
@@ -108,8 +105,7 @@ let class_le_trans (p_c1: _) (p_c2: _) (p_c3: _) : Lemma (requires (class_le p_c
 let no_read_up (p_subject_clearance: _) (p_object_classification: _) : Lemma (class_le p_object_classification p_subject_clearance == true) = admit ()
 
 (* class_le_iff_nat (matches Coq: Lemma class_le_iff_nat) *)
-let class_le_iff_nat_obligation () : Tot bool = true
-let class_le_iff_nat_lemma () : Lemma (requires True) (ensures (class_le_iff_nat_obligation () == class_le_iff_nat_obligation ())) = ()
+let class_le_iff_nat (p_c1: _) (p_c2: _) : Lemma (class_le p_c1 p_c2 == true <==> class_to_nat p_c1 <= class_to_nat p_c2) = admit ()
 
 (* class_le_antisym (matches Coq: Lemma class_le_antisym) *)
 let class_le_antisym (p_c1: _) (p_c2: _) : Lemma (requires (class_le p_c1 p_c2 == true /\ class_le p_c2 p_c1 == true)) (ensures (p_c1 == p_c2)) = admit ()
@@ -130,12 +126,10 @@ let bell_lapadula_ss (p_policy: military_security_policy) (p_object_class: class
 let bell_lapadula_star (p_subject_class: _) (p_object_class: _) : Lemma (requires (class_le p_subject_class p_object_class == true)) (ensures (class_to_nat p_subject_class <= class_to_nat p_object_class)) = admit ()
 
 (* has_compartment_In (matches Coq: Lemma has_compartment_In) *)
-let has_compartment_in_obligation () : Tot bool = true
-let has_compartment_in_lemma () : Lemma (requires True) (ensures (has_compartment_in_obligation () == has_compartment_in_obligation ())) = ()
+let has_compartment_in (p_c: _) (p_comps: _) : Lemma (requires (has_compartment p_comps p_c == true)) (ensures ((exists p_x. List.Tot.memP p_x p_comps) /\ Nat.eqb p_c x == true)) = admit ()
 
 (* empty_need_to_know_unrestricted (matches Coq: Lemma empty_need_to_know_unrestricted) *)
-let empty_need_to_know_unrestricted_obligation () : Tot bool = true
-let empty_need_to_know_unrestricted_lemma () : Lemma (requires True) (ensures (empty_need_to_know_unrestricted_obligation () == empty_need_to_know_unrestricted_obligation ())) = ()
+let empty_need_to_know_unrestricted (p_c: _) : Lemma (has_compartment [] p_c == false) = admit ()
 
 (* comsec_required_for_classified_comms (matches Coq: Theorem comsec_required_for_classified_comms) *)
 let comsec_required_for_classified_comms (p_policy: _) : Lemma (requires (class_le Confidential (p_policy.f_classification) == true /\ p_policy.f_comsec_approved == true)) (ensures (class_to_nat (p_policy.f_classification) >= 2)) = admit ()

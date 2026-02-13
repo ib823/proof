@@ -135,8 +135,7 @@ let anon_019_forward_secrecy (p_session_key: nat) (p_long_term_key: nat) : Lemma
 let anon_020_intersection_resistance (p_observations: nat) (p_required: nat) : Lemma (requires (intersection_resistant p_observations p_required == true)) (ensures (p_required > p_observations)) = admit ()
 
 (* anon_021_rendezvous_hidden (matches Coq: Theorem anon_021_rendezvous_hidden) *)
-let anon_021_rendezvous_hidden_obligation () : Tot bool = true
-let anon_021_rendezvous_hidden_lemma () : Lemma (requires True) (ensures (anon_021_rendezvous_hidden_obligation () == anon_021_rendezvous_hidden_obligation ())) = ()
+let anon_021_rendezvous_hidden (p_rp_id: nat) (p_observer_known: (list nat)) : Lemma (requires (~(List.Tot.memP p_rp_id p_observer_known))) (ensures (~(List.Tot.memP p_rp_id p_observer_known))) = admit ()
 
 (* anon_022_bidirectional (matches Coq: Theorem anon_022_bidirectional) *)
 let anon_022_bidirectional (p_sender: nat) (p_receiver: nat) (p_sender_set: nat) (p_receiver_set: nat) : Lemma (requires (k_anonymous p_sender_set 2 == true /\ k_anonymous p_receiver_set 2 == true)) (ensures (length p_sender_set >= 2 /\ length p_receiver_set >= 2)) = admit ()
@@ -145,8 +144,7 @@ let anon_022_bidirectional (p_sender: nat) (p_receiver: nat) (p_sender_set: nat)
 let anon_023_no_spof (p_path: (list nat)) : Lemma (requires (length p_path >= 3)) (ensures (length p_path >= 3)) = admit ()
 
 (* anon_024_replay_prevention (matches Coq: Theorem anon_024_replay_prevention) *)
-let anon_024_replay_prevention_obligation () : Tot bool = true
-let anon_024_replay_prevention_lemma () : Lemma (requires True) (ensures (anon_024_replay_prevention_obligation () == anon_024_replay_prevention_obligation ())) = ()
+let anon_024_replay_prevention (p_seen: (list nat)) (p_nonce: nat) : Lemma (requires (~(List.Tot.memP p_nonce p_seen))) (ensures (~(List.Tot.memP p_nonce p_seen))) = admit ()
 
 (* anon_025_defense_in_depth (matches Coq: Theorem anon_025_defense_in_depth) *)
 let anon_025_defense_in_depth (p_e: _) (p_r: _) (p_t: _) (p_c: _) : Lemma (requires (anon_layers p_e p_r p_t p_c == true)) (ensures (p_e == true /\ p_r == true /\ p_t == true /\ p_c == true)) = admit ()

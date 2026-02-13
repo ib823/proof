@@ -173,86 +173,85 @@ let do178c_level_a_compliant (p_c: do178_c_compliance) : Tot bool =
 let riina_do178c : do178_c_compliance = mkDO178C DAL_A mk_compliant_planning mk_compliant_development mk_compliant_verification mk_compliant_cm mk_compliant_qa (Some mk_compliant_fm)
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* DO178_001_dal_reflexive (matches Coq: Theorem DO178_001_dal_reflexive) *)
-let do178_001_dal_reflexive (p_d: _) (p_dal: _) : Lemma (dal_leq p_d p_d == true) = admit ()
+let do178_001_dal_reflexive (p_d: dal) : Lemma (dal_leq p_d p_d == true) = admit ()
 
 (* DO178_002_dal_transitive (matches Coq: Theorem DO178_002_dal_transitive) *)
-let do178_002_dal_transitive (p_d1: _) (p_d2: _) (p_d3: _) (p_dal: _) : Lemma (requires (dal_leq p_d1 p_d2 == true /\ dal_leq p_d2 p_d3 == true)) (ensures (dal_leq p_d1 p_d3 == true)) = admit ()
+let do178_002_dal_transitive (p_d1: dal) (p_d2: dal) (p_d3: dal) : Lemma (requires (dal_leq p_d1 p_d2 == true /\ dal_leq p_d2 p_d3 == true)) (ensures (dal_leq p_d1 p_d3 == true)) = admit ()
 
 (* DO178_003_dal_e_bottom (matches Coq: Theorem DO178_003_dal_e_bottom) *)
-let do178_003_dal_e_bottom (p_d: _) (p_dal: _) : Lemma (dal_leq DAL_E p_d == true) = admit ()
+let do178_003_dal_e_bottom (p_d: dal) : Lemma (dal_leq DAL_E p_d == true) = admit ()
 
 (* DO178_004_dal_a_top (matches Coq: Theorem DO178_004_dal_a_top) *)
-let do178_004_dal_a_top (p_d: _) (p_dal: _) : Lemma (dal_leq p_d DAL_A == true) = admit ()
+let do178_004_dal_a_top (p_d: dal) : Lemma (dal_leq p_d DAL_A == true) = admit ()
 
 (* DO178_005_planning_valid (matches Coq: Theorem DO178_005_planning_valid) *)
 let do178_005_planning_valid () : Lemma (planning_compliant mk_compliant_planning == true) = admit ()
 
 (* DO178_006_planning_standards (matches Coq: Theorem DO178_006_planning_standards) *)
-let do178_006_planning_standards (p_p: _) (p_planningobjectives: _) : Lemma (requires (planning_compliant p_p == true)) (ensures (p_p.f_plan_standards_defined == true)) = admit ()
+let do178_006_planning_standards (p_p: planning_objectives) : Lemma (requires (planning_compliant p_p == true)) (ensures (p_p.f_plan_standards_defined == true)) = admit ()
 
 (* DO178_007_lifecycle_required (matches Coq: Theorem DO178_007_lifecycle_required) *)
-let do178_007_lifecycle_required (p_p: _) (p_planningobjectives: _) : Lemma (requires (planning_compliant p_p == true)) (ensures (p_p.f_plan_lifecycle_defined == true)) = admit ()
+let do178_007_lifecycle_required (p_p: planning_objectives) : Lemma (requires (planning_compliant p_p == true)) (ensures (p_p.f_plan_lifecycle_defined == true)) = admit ()
 
 (* DO178_008_development_valid (matches Coq: Theorem DO178_008_development_valid) *)
 let do178_008_development_valid () : Lemma (development_compliant mk_compliant_development == true) = admit ()
 
 (* DO178_009_requirements_complete (matches Coq: Theorem DO178_009_requirements_complete) *)
-let do178_009_requirements_complete (p_d: _) (p_developmentprocess: _) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_requirements_complete == true)) = admit ()
+let do178_009_requirements_complete (p_d: development_process) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_requirements_complete == true)) = admit ()
 
 (* DO178_010_requirements_traceable (matches Coq: Theorem DO178_010_requirements_traceable) *)
-let do178_010_requirements_traceable (p_d: _) (p_developmentprocess: _) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_requirements_traceable == true)) = admit ()
+let do178_010_requirements_traceable (p_d: development_process) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_requirements_traceable == true)) = admit ()
 
 (* DO178_011_code_complete (matches Coq: Theorem DO178_011_code_complete) *)
-let do178_011_code_complete (p_d: _) (p_developmentprocess: _) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_code_complete == true)) = admit ()
+let do178_011_code_complete (p_d: development_process) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_code_complete == true)) = admit ()
 
 (* DO178_012_code_traceable (matches Coq: Theorem DO178_012_code_traceable) *)
-let do178_012_code_traceable (p_d: _) (p_developmentprocess: _) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_code_traceable == true)) = admit ()
+let do178_012_code_traceable (p_d: development_process) : Lemma (requires (development_compliant p_d == true)) (ensures (p_d.f_dev_code_traceable == true)) = admit ()
 
 (* DO178_013_verification_valid (matches Coq: Theorem DO178_013_verification_valid) *)
 let do178_013_verification_valid () : Lemma (verification_compliant mk_compliant_verification == true) = admit ()
 
 (* DO178_014_mcdc_required (matches Coq: Theorem DO178_014_mcdc_required) *)
-let do178_014_mcdc_required (p_v: _) (p_verificationprocess: _) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_mc_dc_coverage == true)) = admit ()
+let do178_014_mcdc_required (p_v: verification_process) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_mc_dc_coverage == true)) = admit ()
 
 (* DO178_015_structural_coverage (matches Coq: Theorem DO178_015_structural_coverage) *)
-let do178_015_structural_coverage (p_v: _) (p_verificationprocess: _) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_structural_coverage == true)) = admit ()
+let do178_015_structural_coverage (p_v: verification_process) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_structural_coverage == true)) = admit ()
 
 (* DO178_016_requirements_review (matches Coq: Theorem DO178_016_requirements_review) *)
-let do178_016_requirements_review (p_v: _) (p_verificationprocess: _) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_requirements_reviewed == true)) = admit ()
+let do178_016_requirements_review (p_v: verification_process) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_requirements_reviewed == true)) = admit ()
 
 (* DO178_017_code_review (matches Coq: Theorem DO178_017_code_review) *)
-let do178_017_code_review (p_v: _) (p_verificationprocess: _) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_code_reviewed == true)) = admit ()
+let do178_017_code_review (p_v: verification_process) : Lemma (requires (verification_compliant p_v == true)) (ensures (p_v.f_verif_code_reviewed == true)) = admit ()
 
 (* DO178_018_cm_valid (matches Coq: Theorem DO178_018_cm_valid) *)
 let do178_018_cm_valid () : Lemma (cm_compliant mk_compliant_cm == true) = admit ()
 
 (* DO178_019_change_control (matches Coq: Theorem DO178_019_change_control) *)
-let do178_019_change_control (p_c: _) (p_configurationmanagement: _) : Lemma (requires (cm_compliant p_c == true)) (ensures (p_c.f_cm_change_control == true)) = admit ()
+let do178_019_change_control (p_c: configuration_management) : Lemma (requires (cm_compliant p_c == true)) (ensures (p_c.f_cm_change_control == true)) = admit ()
 
 (* DO178_020_traceability (matches Coq: Theorem DO178_020_traceability) *)
-let do178_020_traceability (p_c: _) (p_configurationmanagement: _) : Lemma (requires (cm_compliant p_c == true)) (ensures (p_c.f_cm_traceability == true)) = admit ()
+let do178_020_traceability (p_c: configuration_management) : Lemma (requires (cm_compliant p_c == true)) (ensures (p_c.f_cm_traceability == true)) = admit ()
 
 (* DO178_021_qa_valid (matches Coq: Theorem DO178_021_qa_valid) *)
 let do178_021_qa_valid () : Lemma (qa_compliant mk_compliant_qa == true) = admit ()
 
 (* DO178_022_qa_independence (matches Coq: Theorem DO178_022_qa_independence) *)
-let do178_022_qa_independence (p_q: _) (p_qualityassurance: _) : Lemma (requires (qa_compliant p_q == true)) (ensures (p_q.f_qa_independence == true)) = admit ()
+let do178_022_qa_independence (p_q: quality_assurance) : Lemma (requires (qa_compliant p_q == true)) (ensures (p_q.f_qa_independence == true)) = admit ()
 
 (* DO178_023_audits (matches Coq: Theorem DO178_023_audits) *)
-let do178_023_audits (p_q: _) (p_qualityassurance: _) : Lemma (requires (qa_compliant p_q == true)) (ensures (p_q.f_qa_audits_performed == true)) = admit ()
+let do178_023_audits (p_q: quality_assurance) : Lemma (requires (qa_compliant p_q == true)) (ensures (p_q.f_qa_audits_performed == true)) = admit ()
 
 (* DO178_024_fm_valid (matches Coq: Theorem DO178_024_fm_valid) *)
 let do178_024_fm_valid () : Lemma (fm_compliant mk_compliant_fm == true) = admit ()
 
 (* DO178_025_fm_soundness (matches Coq: Theorem DO178_025_fm_soundness) *)
-let do178_025_fm_soundness (p_f: _) (p_formalmethods: _) : Lemma (requires (fm_compliant p_f == true)) (ensures (p_f.f_fm_soundness_justified == true)) = admit ()
+let do178_025_fm_soundness (p_f: formal_methods) : Lemma (requires (fm_compliant p_f == true)) (ensures (p_f.f_fm_soundness_justified == true)) = admit ()
 
 (* DO178_026_fm_specification (matches Coq: Theorem DO178_026_fm_specification) *)
-let do178_026_fm_specification (p_f: _) (p_formalmethods: _) : Lemma (requires (fm_compliant p_f == true)) (ensures (p_f.f_fm_specification_formal == true)) = admit ()
+let do178_026_fm_specification (p_f: formal_methods) : Lemma (requires (fm_compliant p_f == true)) (ensures (p_f.f_fm_specification_formal == true)) = admit ()
 
 (* DO178_027_riina_theorem_proving (matches Coq: Theorem DO178_027_riina_theorem_proving) *)
 let do178_027_riina_theorem_proving () : Lemma (riina_fm_category == FM_TheoremProving) = admit ()
@@ -261,22 +260,22 @@ let do178_027_riina_theorem_proving () : Lemma (riina_fm_category == FM_TheoremP
 let do178_028_riina_level_a () : Lemma (do178c_level_a_compliant riina_do178c == true) = admit ()
 
 (* DO178_029_level_a_all_objectives (matches Coq: Theorem DO178_029_level_a_all_objectives) *)
-let do178_029_level_a_all_objectives (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (p_c.f_do178c_dal == DAL_A)) = admit ()
+let do178_029_level_a_all_objectives (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (p_c.f_do178c_dal == DAL_A)) = admit ()
 
 (* DO178_030_level_a_planning (matches Coq: Theorem DO178_030_level_a_planning) *)
-let do178_030_level_a_planning (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (planning_compliant (p_c.f_do178c_planning) == true)) = admit ()
+let do178_030_level_a_planning (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (planning_compliant (p_c.f_do178c_planning) == true)) = admit ()
 
 (* DO178_031_level_a_development (matches Coq: Theorem DO178_031_level_a_development) *)
-let do178_031_level_a_development (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (development_compliant (p_c.f_do178c_development) == true)) = admit ()
+let do178_031_level_a_development (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (development_compliant (p_c.f_do178c_development) == true)) = admit ()
 
 (* DO178_032_level_a_verification (matches Coq: Theorem DO178_032_level_a_verification) *)
-let do178_032_level_a_verification (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (verification_compliant (p_c.f_do178c_verification) == true)) = admit ()
+let do178_032_level_a_verification (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (verification_compliant (p_c.f_do178c_verification) == true)) = admit ()
 
 (* DO178_033_level_a_cm (matches Coq: Theorem DO178_033_level_a_cm) *)
-let do178_033_level_a_cm (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (cm_compliant (p_c.f_do178c_cm) == true)) = admit ()
+let do178_033_level_a_cm (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (cm_compliant (p_c.f_do178c_cm) == true)) = admit ()
 
 (* DO178_034_level_a_qa (matches Coq: Theorem DO178_034_level_a_qa) *)
-let do178_034_level_a_qa (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (qa_compliant (p_c.f_do178c_qa) == true)) = admit ()
+let do178_034_level_a_qa (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (qa_compliant (p_c.f_do178c_qa) == true)) = admit ()
 
 (* DO178_035_riina_dal_a (matches Coq: Theorem DO178_035_riina_dal_a) *)
 let do178_035_riina_dal_a () : Lemma (riina_do178c.f_do178c_dal == DAL_A) = admit ()
@@ -294,4 +293,4 @@ let do178_038_riina_planning () : Lemma (planning_compliant (riina_do178c.f_do17
 let do178_039_riina_development () : Lemma (development_compliant (riina_do178c.f_do178c_development) == true) = admit ()
 
 (* DO178_040_complete_certification (matches Coq: Theorem DO178_040_complete_certification) *)
-let do178_040_complete_certification (p_c: _) (p_do178ccompliance: _) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (planning_compliant (p_c.f_do178c_planning) == true /\ development_compliant (p_c.f_do178c_development) == true /\ verification_compliant (p_c.f_do178c_verification) == true /\ cm_compliant (p_c.f_do178c_cm) == true /\ qa_compliant (p_c.f_do178c_qa) == true)) = admit ()
+let do178_040_complete_certification (p_c: do178_c_compliance) : Lemma (requires (do178c_level_a_compliant p_c == true)) (ensures (planning_compliant (p_c.f_do178c_planning) == true /\ development_compliant (p_c.f_do178c_development) == true /\ verification_compliant (p_c.f_do178c_verification) == true /\ cm_compliant (p_c.f_do178c_cm) == true /\ qa_compliant (p_c.f_do178c_qa) == true)) = admit ()

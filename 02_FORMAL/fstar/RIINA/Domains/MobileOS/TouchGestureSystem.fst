@@ -151,12 +151,10 @@ let touch_registration_complete (p_touch: touch_event) : Lemma (requires (touch_
 let no_ghost_touches (p_event: touch_event) : Lemma (requires (touch_system_correct p_event == true /\ registered p_event == true)) (ensures (physical_touch p_event == true)) = admit ()
 
 (* gesture_recognition_tap (matches Coq: Theorem gesture_recognition_tap) *)
-let gesture_recognition_tap_obligation () : Tot bool = true
-let gesture_recognition_tap_lemma () : Lemma (requires True) (ensures (gesture_recognition_tap_obligation () == gesture_recognition_tap_obligation ())) = ()
+let gesture_recognition_tap (p_t: touch_event) : Lemma (requires (0 < p_t.f_touch_pressure /\ p_t.f_touch_pressure < 100)) (ensures (recognized_gesture [p_t] == Tap)) = admit ()
 
 (* touch_physical_registered_equiv (matches Coq: Theorem touch_physical_registered_equiv) *)
-let touch_physical_registered_equiv_obligation () : Tot bool = true
-let touch_physical_registered_equiv_lemma () : Lemma (requires True) (ensures (touch_physical_registered_equiv_obligation () == touch_physical_registered_equiv_obligation ())) = ()
+let touch_physical_registered_equiv (p_event: touch_event) : Lemma (requires (touch_system_correct p_event == true)) (ensures ((physical_touch p_event == true <==> registered p_event == true))) = admit ()
 
 (* touch_event_ordered (matches Coq: Theorem touch_event_ordered) *)
 let touch_event_ordered (p_t1: touch_event) (p_t2: touch_event) (p_rest: nat) : Lemma (requires (timestamps_monotonic (p_t1 :: p_t2 :: p_rest) == true)) (ensures (p_t1.f_touch_timestamp <= p_t2.f_touch_timestamp)) = admit ()
@@ -165,8 +163,7 @@ let touch_event_ordered (p_t1: touch_event) (p_t2: touch_event) (p_rest: nat) : 
 let multi_touch_tracked (p_mt: multi_touch_state) : Lemma (requires (well_formed_multi_touch p_mt == true)) (ensures (multi_touch_count p_mt <= p_mt.f_max_simultaneous)) = admit ()
 
 (* touch_cancel_handled (matches Coq: Theorem touch_cancel_handled) *)
-let touch_cancel_handled_obligation () : Tot bool = true
-let touch_cancel_handled_lemma () : Lemma (requires True) (ensures (touch_cancel_handled_obligation () == touch_cancel_handled_obligation ())) = ()
+let touch_cancel_handled (p_seq: nat) : Lemma (requires (p_seq == [])) (ensures (touch_cancelled p_seq == true)) = admit ()
 
 (* gesture_priority_defined (matches Coq: Theorem gesture_priority_defined) *)
 let gesture_priority_defined (p_g: gesture_type) : Lemma (gesture_priority p_g >= 0) = admit ()
@@ -199,8 +196,7 @@ let edge_touch_distinguished (p_t: touch_event) (p_w: nat) (p_h: nat) : Lemma (r
 let accidental_touch_rejected (p_t: touch_event) : Lemma (requires (is_accidental_touch p_t == true)) (ensures (p_t.f_touch_pressure < 5)) = admit ()
 
 (* touch_event_timestamp_monotonic_single (matches Coq: Theorem touch_event_timestamp_monotonic_single) *)
-let touch_event_timestamp_monotonic_single_obligation () : Tot bool = true
-let touch_event_timestamp_monotonic_single_lemma () : Lemma (requires True) (ensures (touch_event_timestamp_monotonic_single_obligation () == touch_event_timestamp_monotonic_single_obligation ())) = ()
+let touch_event_timestamp_monotonic_single (p_t: touch_event) : Lemma (timestamps_monotonic [p_t] == true) = admit ()
 
 (* simultaneous_gesture_resolution (matches Coq: Theorem simultaneous_gesture_resolution) *)
 let simultaneous_gesture_resolution (p_g1: gesture_type) (p_g2: gesture_type) : Lemma (requires (gesture_priority p_g1 > gesture_priority p_g2)) (ensures (~(gesture_priority p_g1 == gesture_priority p_g2))) = admit ()

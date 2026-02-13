@@ -212,8 +212,7 @@ let purpose_limitation_enforced (p_r: nat) (p_actual: nat) : Lemma (requires (~(
 let purpose_match_no_violation (p_r: nat) : Lemma (~(sg_purpose_violation p_r (sg_purpose_id p_r) == true)) = admit ()
 
 (* notification_obligation_valid (matches Coq: Theorem notification_obligation_valid) *)
-let notification_obligation_valid_obligation () : Tot bool = true
-let notification_obligation_valid_lemma () : Lemma (requires True) (ensures (notification_obligation_valid_obligation () == notification_obligation_valid_obligation ())) = ()
+let notification_obligation_valid (p_n: nat) : Lemma (requires (sgn_notified_before_collection p_n == true /\ sgn_language_understood p_n == true /\ ~(sgn_purposes_notified p_n == []))) (ensures (notification_obligation_met p_n == true)) = admit ()
 
 (* access_correction_right (matches Coq: Theorem access_correction_right) *)
 let access_correction_right (p_req: nat) : Lemma (requires (sgacr_responded_at p_req <= sgacr_requested_at p_req + sg_access_correction_deadline /\ sgacr_access_provided p_req == true)) (ensures (access_correction_fulfilled p_req == true)) = admit ()
@@ -255,16 +254,13 @@ let accountability_complete (p_ar: nat) : Lemma (requires (sga_policies_document
 let data_anonymization_excludes (p_r: nat) : Lemma (requires (sg_anonymized p_r == true)) (ensures (sg_protection_adequate p_r == true)) = admit ()
 
 (* sg_consent_coverage (matches Coq: Theorem sg_consent_coverage) *)
-let sg_consent_coverage_obligation () : Tot bool = true
-let sg_consent_coverage_lemma () : Lemma (requires True) (ensures (sg_consent_coverage_obligation () == sg_consent_coverage_obligation ())) = ()
+let sg_consent_coverage (p_cs: sg_consent_status) : Lemma (List.Tot.memP p_cs all_sg_consent_statuses) = admit ()
 
 (* sg_data_category_coverage (matches Coq: Theorem sg_data_category_coverage) *)
-let sg_data_category_coverage_obligation () : Tot bool = true
-let sg_data_category_coverage_lemma () : Lemma (requires True) (ensures (sg_data_category_coverage_obligation () == sg_data_category_coverage_obligation ())) = ()
+let sg_data_category_coverage (p_dc: sg_data_category) : Lemma (List.Tot.memP p_dc all_sg_data_categories) = admit ()
 
 (* transfer_adequacy_coverage (matches Coq: Theorem transfer_adequacy_coverage) *)
-let transfer_adequacy_coverage_obligation () : Tot bool = true
-let transfer_adequacy_coverage_lemma () : Lemma (requires True) (ensures (transfer_adequacy_coverage_obligation () == transfer_adequacy_coverage_obligation ())) = ()
+let transfer_adequacy_coverage (p_ta: transfer_adequacy) : Lemma (List.Tot.memP p_ta all_transfer_adequacies) = admit ()
 
 (* notification_purposes_nonempty (matches Coq: Theorem notification_purposes_nonempty) *)
 let notification_purposes_nonempty (p_n: nat) (p_p: nat) (p_ps: (list nat)) : Lemma (requires (sgn_purposes_notified p_n == p_p :: p_ps)) (ensures (length (sgn_purposes_notified p_n) > 0)) = admit ()
@@ -363,12 +359,10 @@ let dpo_not_trained_not_qualified (p_dpo: nat) : Lemma (requires (sg_dpo_trained
 let enterprise_compliance_composition (p_r: nat) (p_transfer: transfer_adequacy) (p_t: nat) (p_acct: nat) (p_dpo: nat) : Lemma (requires (sg_pdpa_fully_compliant p_r p_transfer p_t == true /\ accountability_documented p_acct == true /\ sg_dpo_appointed p_dpo == true)) (ensures (sg_pdpa_enterprise_compliant p_r p_transfer p_t p_acct p_dpo == true)) = admit ()
 
 (* processing_basis_coverage (matches Coq: Theorem processing_basis_coverage) *)
-let processing_basis_coverage_obligation () : Tot bool = true
-let processing_basis_coverage_lemma () : Lemma (requires True) (ensures (processing_basis_coverage_obligation () == processing_basis_coverage_obligation ())) = ()
+let processing_basis_coverage (p_b: sg_processing_basis) : Lemma (List.Tot.memP p_b all_processing_bases) = admit ()
 
 (* pdpc_direction_coverage (matches Coq: Theorem pdpc_direction_coverage) *)
-let pdpc_direction_coverage_obligation () : Tot bool = true
-let pdpc_direction_coverage_lemma () : Lemma (requires True) (ensures (pdpc_direction_coverage_obligation () == pdpc_direction_coverage_obligation ())) = ()
+let pdpc_direction_coverage (p_d: pdpc_direction) : Lemma (List.Tot.memP p_d all_pdpc_directions) = admit ()
 
 (* withdrawal_halts_processing (matches Coq: Theorem withdrawal_halts_processing) *)
 let withdrawal_halts_processing (p_r: nat) : Lemma (requires (sg_consent p_r == SGWithdrawnConsent)) (ensures (sg_processing_halted_on_withdrawal p_r false == true)) = admit ()

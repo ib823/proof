@@ -72,12 +72,10 @@ let dp_compose_comm (p_d1: _) (p_d2: _) : Lemma (dp_compose p_d1 p_d2 == dp_comp
 let shape_eq_implies_same_length (p_s1: _) (p_s2: _) : Lemma (requires (shape_eq p_s1 p_s2 == true)) (ensures (length p_s1 == length p_s2)) = admit ()
 
 (* shape_eq_nil (matches Coq: Theorem shape_eq_nil) *)
-let shape_eq_nil_obligation () : Tot bool = true
-let shape_eq_nil_lemma () : Lemma (requires True) (ensures (shape_eq_nil_obligation () == shape_eq_nil_obligation ())) = ()
+let shape_eq_nil () : Lemma (shape_eq [] [] == true) = admit ()
 
 (* shape_eq_singleton (matches Coq: Theorem shape_eq_singleton) *)
-let shape_eq_singleton_obligation () : Tot bool = true
-let shape_eq_singleton_lemma () : Lemma (requires True) (ensures (shape_eq_singleton_obligation () == shape_eq_singleton_obligation ())) = ()
+let shape_eq_singleton (p_a: _) (p_b: _) : Lemma (requires (shape_eq [p_a] [p_b] == true)) (ensures (p_a == p_b)) = admit ()
 
 (* matmul_square (matches Coq: Theorem matmul_square) *)
 let matmul_square_obligation () : Tot bool = true

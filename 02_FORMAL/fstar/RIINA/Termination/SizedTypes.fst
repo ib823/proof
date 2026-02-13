@@ -82,28 +82,22 @@ let step_terminates (p_e: nat) (p_st: nat) (p_ctx: nat) : Tot bool =
 let expr_size_pos (p_e: _) : Lemma (expr_size p_e > 0) = admit ()
 
 (* value_prod_decompose (matches Coq: Lemma value_prod_decompose) *)
-let value_prod_decompose_obligation () : Tot bool = true
-let value_prod_decompose_lemma () : Lemma (requires True) (ensures (value_prod_decompose_obligation () == value_prod_decompose_obligation ())) = ()
+let value_prod_decompose (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v (TProd p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures ((exists p_v1. (exists p_v2. p_v == EPair p_v1 p_v2)) /\ value v1 == true /\ value v2 == true)) = admit ()
 
 (* value_sum_decompose (matches Coq: Lemma value_sum_decompose) *)
-let value_sum_decompose_obligation () : Tot bool = true
-let value_sum_decompose_lemma () : Lemma (requires True) (ensures (value_sum_decompose_obligation () == value_sum_decompose_obligation ())) = ()
+let value_sum_decompose (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v (TSum p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures (((exists p_v. p_v == EInl v_ p_t2) /\ value v_ == true) \/ ((exists p_v. p_v == EInr v_ p_t1) /\ value v_ == true))) = admit ()
 
 (* value_bool_decompose (matches Coq: Lemma value_bool_decompose) *)
-let value_bool_decompose_obligation () : Tot bool = true
-let value_bool_decompose_lemma () : Lemma (requires True) (ensures (value_bool_decompose_obligation () == value_bool_decompose_obligation ())) = ()
+let value_bool_decompose (p_v: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v TBool p_epsilon == true /\ value p_v == true)) (ensures ((exists p_b. p_v == EBool p_b))) = admit ()
 
 (* value_fn_decompose (matches Coq: Lemma value_fn_decompose) *)
-let value_fn_decompose_obligation () : Tot bool = true
-let value_fn_decompose_lemma () : Lemma (requires True) (ensures (value_fn_decompose_obligation () == value_fn_decompose_obligation ())) = ()
+let value_fn_decompose (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_epsilon_prime: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v (TFn p_t1 p_t2 p_epsilon) p_epsilon_prime == true /\ value p_v == true)) (ensures ((exists p_x. (exists p_body. p_v == ELam p_x p_t1 p_body)))) = admit ()
 
 (* fst_steps_once (matches Coq: Lemma fst_steps_once) *)
-let fst_steps_once_obligation () : Tot bool = true
-let fst_steps_once_lemma () : Lemma (requires True) (ensures (fst_steps_once_obligation () == fst_steps_once_obligation ())) = ()
+let fst_steps_once (p_v1: _) (p_v2: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true)) (ensures (step (EFst (EPair p_v1 p_v2), p_st, p_ctx) (p_v1, p_st, p_ctx) == true)) = admit ()
 
 (* snd_steps_once (matches Coq: Lemma snd_steps_once) *)
-let snd_steps_once_obligation () : Tot bool = true
-let snd_steps_once_lemma () : Lemma (requires True) (ensures (snd_steps_once_obligation () == snd_steps_once_obligation ())) = ()
+let snd_steps_once (p_v1: _) (p_v2: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true)) (ensures (step (ESnd (EPair p_v1 p_v2), p_st, p_ctx) (p_v2, p_st, p_ctx) == true)) = admit ()
 
 (* case_inl_steps_once (matches Coq: Lemma case_inl_steps_once) *)
 let case_inl_steps_once_obligation () : Tot bool = true
@@ -114,12 +108,10 @@ let case_inr_steps_once_obligation () : Tot bool = true
 let case_inr_steps_once_lemma () : Lemma (requires True) (ensures (case_inr_steps_once_obligation () == case_inr_steps_once_obligation ())) = ()
 
 (* if_true_steps_once (matches Coq: Lemma if_true_steps_once) *)
-let if_true_steps_once_obligation () : Tot bool = true
-let if_true_steps_once_lemma () : Lemma (requires True) (ensures (if_true_steps_once_obligation () == if_true_steps_once_obligation ())) = ()
+let if_true_steps_once (p_e2: _) (p_e3: _) (p_st: _) (p_ctx: _) : Lemma (step (EIf (EBool true) p_e2 p_e3, p_st, p_ctx) (p_e2, p_st, p_ctx) == true) = admit ()
 
 (* if_false_steps_once (matches Coq: Lemma if_false_steps_once) *)
-let if_false_steps_once_obligation () : Tot bool = true
-let if_false_steps_once_lemma () : Lemma (requires True) (ensures (if_false_steps_once_obligation () == if_false_steps_once_obligation ())) = ()
+let if_false_steps_once (p_e2: _) (p_e3: _) (p_st: _) (p_ctx: _) : Lemma (step (EIf (EBool false) p_e2 p_e3, p_st, p_ctx) (p_e3, p_st, p_ctx) == true) = admit ()
 
 (* let_value_steps_once (matches Coq: Lemma let_value_steps_once) *)
 let let_value_steps_once_obligation () : Tot bool = true
@@ -134,9 +126,7 @@ let app_lam_steps_once_obligation () : Tot bool = true
 let app_lam_steps_once_lemma () : Lemma (requires True) (ensures (app_lam_steps_once_obligation () == app_lam_steps_once_obligation ())) = ()
 
 (* step_to_multi (matches Coq: Lemma step_to_multi) *)
-let step_to_multi_obligation () : Tot bool = true
-let step_to_multi_lemma () : Lemma (requires True) (ensures (step_to_multi_obligation () == step_to_multi_obligation ())) = ()
+let step_to_multi (p_e: _) (p_st: _) (p_ctx: _) (p_e_: _) (p_st_: _) (p_ctx_: _) : Lemma (requires (step (p_e, p_st, p_ctx) (p_e_, p_st_, p_ctx_) == true)) (ensures (step (p_e, p_st, p_ctx) * (p_e_, p_st_, p_ctx_) == true)) = admit ()
 
 (* multi_step_trans (matches Coq: Lemma multi_step_trans) *)
-let multi_step_trans_obligation () : Tot bool = true
-let multi_step_trans_lemma () : Lemma (requires True) (ensures (multi_step_trans_obligation () == multi_step_trans_obligation ())) = ()
+let multi_step_trans (p_e1: _) (p_st1: _) (p_ctx1: _) (p_e2: _) (p_st2: _) (p_ctx2: _) (p_e3: _) (p_st3: _) (p_ctx3: _) : Lemma (requires (step (p_e1, p_st1, p_ctx1) * (p_e2, p_st2, p_ctx2) == true /\ step (p_e2, p_st2, p_ctx2) * (p_e3, p_st3, p_ctx3) == true)) (ensures (step (p_e1, p_st1, p_ctx1) * (p_e3, p_st3, p_ctx3) == true)) = admit ()

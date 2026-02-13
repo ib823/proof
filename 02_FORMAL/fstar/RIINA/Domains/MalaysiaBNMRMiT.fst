@@ -103,15 +103,13 @@ let rmit_domain_8 (p_fi: nat) : Lemma (requires (fi_bcp_tested p_fi == true)) (e
 let rmit_composition (p_fi: nat) : Lemma (requires (governance_compliant p_fi == true /\ risk_framework_established p_fi == true /\ cyber_controls_adequate p_fi == true /\ ops_resilience_verified p_fi == true /\ audit_compliant p_fi == true /\ cloud_compliant p_fi == true /\ third_party_compliant p_fi == true /\ bcp_compliant p_fi == true)) (ensures (rmit_fully_compliant p_fi == true)) = admit ()
 
 (* fi_type_coverage (matches Coq: Theorem fi_type_coverage) *)
-let fi_type_coverage_obligation () : Tot bool = true
-let fi_type_coverage_lemma () : Lemma (requires True) (ensures (fi_type_coverage_obligation () == fi_type_coverage_obligation ())) = ()
+let fi_type_coverage (p_ft: fi_type) : Lemma (List.Tot.memP p_ft all_fi_types) = admit ()
 
 (* cyber_controls_strengthened (matches Coq: Theorem cyber_controls_strengthened) *)
 let cyber_controls_strengthened (p_fi: nat) (p_extra: nat) : Lemma (requires (cyber_controls_adequate p_fi == true)) (ensures (fi_min_cyber_controls p_fi <= fi_cyber_controls p_fi + p_extra)) = admit ()
 
 (* cloud_deployment_coverage (matches Coq: Theorem cloud_deployment_coverage) *)
-let cloud_deployment_coverage_obligation () : Tot bool = true
-let cloud_deployment_coverage_lemma () : Lemma (requires True) (ensures (cloud_deployment_coverage_obligation () == cloud_deployment_coverage_obligation ())) = ()
+let cloud_deployment_coverage (p_cd: cloud_deployment) : Lemma (List.Tot.memP p_cd all_cloud_deployments) = admit ()
 
 (* on_premise_always_compliant (matches Coq: Theorem on_premise_always_compliant) *)
 let on_premise_always_compliant (p_fi: nat) : Lemma (requires (fi_cloud_model p_fi == OnPremise)) (ensures (cloud_compliant p_fi == true)) = admit ()

@@ -249,8 +249,7 @@ let baseband_isolation (p_baseband: baseband_processor) (p_ap_mem: memory) : Lem
 let call_handoff_is_seamless (p_call: call) (p_handoff: handoff) : Lemma (requires (seamless_handoff_system p_call p_handoff == true /\ during_call p_call p_handoff == true /\ p_handoff.f_handoff_seamless == true)) (ensures (no_audio_gap p_call == true)) = admit ()
 
 (* isolation_preserves_separation (matches Coq: Theorem isolation_preserves_separation) *)
-let isolation_preserves_separation_obligation () : Tot bool = true
-let isolation_preserves_separation_lemma () : Lemma (requires True) (ensures (isolation_preserves_separation_obligation () == isolation_preserves_separation_obligation ())) = ()
+let isolation_preserves_separation (p_bb: baseband_processor) : Lemma (requires (p_bb.f_bb_isolated == true /\ p_bb.f_bb_accessible_memory == [])) (ensures ((forall (m: _). ~(can_access_mem p_bb m == true)))) = admit ()
 
 (* baseband_isolation_contrapositive (matches Coq: Theorem baseband_isolation_contrapositive) *)
 let baseband_isolation_contrapositive (p_bb: baseband_processor) (p_m: memory) : Lemma (requires (baseband_properly_isolated p_bb == true /\ p_bb.f_bb_isolated == true /\ can_access_mem p_bb p_m == true)) (ensures (~(is_ap_memory p_m == true))) = admit ()

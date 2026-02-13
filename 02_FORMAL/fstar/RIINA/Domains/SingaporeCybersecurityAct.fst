@@ -103,12 +103,10 @@ let cssp_obligation (p_e: nat) : Lemma (requires (cii_cssp_licensed p_e == true)
 let sg_cybersecurity_composition (p_e: nat) (p_t: nat) : Lemma (requires (cii_risk_current p_e == true /\ cii_audit_current p_e p_t == true /\ cii_controls_adequate p_e == true /\ cii_incident_response_plan p_e == true)) (ensures (sg_cybersecurity_act_compliant p_e p_t == true)) = admit ()
 
 (* cii_sector_coverage (matches Coq: Theorem cii_sector_coverage) *)
-let cii_sector_coverage_obligation () : Tot bool = true
-let cii_sector_coverage_lemma () : Lemma (requires True) (ensures (cii_sector_coverage_obligation () == cii_sector_coverage_obligation ())) = ()
+let cii_sector_coverage (p_s: cii_sector) : Lemma (List.Tot.memP p_s all_cii_sectors) = admit ()
 
 (* entity_classification_coverage (matches Coq: Theorem entity_classification_coverage) *)
-let entity_classification_coverage_obligation () : Tot bool = true
-let entity_classification_coverage_lemma () : Lemma (requires True) (ensures (entity_classification_coverage_obligation () == entity_classification_coverage_obligation ())) = ()
+let entity_classification_coverage (p_c: entity_classification) : Lemma (List.Tot.memP p_c all_entity_classifications) = admit ()
 
 (* stcc_compliance (matches Coq: Theorem stcc_compliance) *)
 let stcc_compliance (p_e: nat) : Lemma (requires (cii_classification p_e == STCC /\ cii_risk_assessed p_e == true /\ cii_security_controls p_e >= cii_min_controls p_e)) (ensures (stcc_obligations_met p_e == true)) = admit ()

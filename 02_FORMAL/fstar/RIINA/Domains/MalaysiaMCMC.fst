@@ -54,8 +54,7 @@ let s236_fraud_prevention (p_id_v: bool) (p_tx_s: bool) (p_audit: bool) : Lemma 
 let mcmc_composition (p_c: nat) : Lemma (requires (mcmc_licensed p_c == true /\ mcmc_technical_standards_met p_c == true /\ mcmc_consumer_code_adopted p_c == true /\ mcmc_interception_protected p_c == true /\ mcmc_fraud_controls p_c == true)) (ensures (mcmc_fully_compliant p_c == true)) = admit ()
 
 (* mcmc_license_coverage (matches Coq: Theorem mcmc_license_coverage) *)
-let mcmc_license_coverage_obligation () : Tot bool = true
-let mcmc_license_coverage_lemma () : Lemma (requires True) (ensures (mcmc_license_coverage_obligation () == mcmc_license_coverage_obligation ())) = ()
+let mcmc_license_coverage (p_l: mcmc_license) : Lemma (List.Tot.memP p_l all_mcmc_licenses) = admit ()
 
 (* nfp_highest_level (matches Coq: Theorem nfp_highest_level) *)
 let nfp_highest_level (p_l: _) : Lemma (license_level p_l <= license_level NFP) = admit ()

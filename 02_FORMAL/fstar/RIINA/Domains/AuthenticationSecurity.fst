@@ -208,8 +208,7 @@ let auth_017_biometric_spoof_mitigated (p_ba: biometric_auth) : Lemma (p_ba.f_bi
 let auth_018_token_theft_mitigated (p_t: session_token) (p_ip: nat) (p_ua: nat) : Lemma (token_bound p_t p_ip p_ua == true) = admit ()
 
 (* auth_019_replay_mitigated (matches Coq: Theorem auth_019_replay_mitigated) *)
-let auth_019_replay_mitigated_obligation () : Tot bool = true
-let auth_019_replay_mitigated_lemma () : Lemma (requires True) (ensures (auth_019_replay_mitigated_obligation () == auth_019_replay_mitigated_obligation ())) = ()
+let auth_019_replay_mitigated (p_ns: nonce_store) (p_n: nat) : Lemma (requires (nonce_fresh p_ns p_n == true)) (ensures (~(List.Tot.memP p_n (p_ns.f_ns_seen)))) = admit ()
 
 (* auth_020_phishing_mitigated (matches Coq: Theorem auth_020_phishing_mitigated) *)
 let auth_020_phishing_mitigated (p_wa: web_authn_auth) : Lemma (p_wa.f_wa_origin_bound == true /\ p_wa.f_wa_challenge_verified == true) = admit ()

@@ -69,12 +69,10 @@ let rec fsat (p_h: nat) (p_p: fprop) : Tot bool =
   true
 
 (* emp_empty (matches Coq: Theorem emp_empty) *)
-let emp_empty_obligation () : Tot bool = true
-let emp_empty_lemma () : Lemma (requires True) (ensures (emp_empty_obligation () == emp_empty_obligation ())) = ()
+let emp_empty () : Lemma (satisfies [] HEmpty == true) = admit ()
 
 (* points_to_singleton (matches Coq: Theorem points_to_singleton) *)
-let points_to_singleton_obligation () : Tot bool = true
-let points_to_singleton_lemma () : Lemma (requires True) (ensures (points_to_singleton_obligation () == points_to_singleton_obligation ())) = ()
+let points_to_singleton (p_l: _) (p_v: _) : Lemma (satisfies [(p_l, p_v)] (HPointsTo p_l p_v) == true) = admit ()
 
 (* disjoint_sym (matches Coq: Lemma disjoint_sym) *)
 let disjoint_sym (p_h1: _) (p_h2: _) : Lemma (requires (disjoint p_h1 p_h2 == true)) (ensures (disjoint p_h2 p_h1 == true)) = admit ()

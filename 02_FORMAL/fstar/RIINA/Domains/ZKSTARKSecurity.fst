@@ -186,23 +186,19 @@ let full_stark_security (p_s: stark_security) (p_f: fri_properties) (p_sim: simu
   modular_stark p_s p_f p_sim && extended_secure p_e
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* bool_dec (matches Coq: Lemma bool_dec) *)
-let bool_dec (p_b: _) (p_bool: _) : Lemma (p_b == true \/ p_b == false) = admit ()
+let bool_dec (p_b: bool) : Lemma (p_b == true \/ p_b == false) = admit ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff_obligation () : Tot bool = true
-let andb_false_iff_lemma () : Lemma (requires True) (ensures (andb_false_iff_obligation () == andb_false_iff_obligation ())) = ()
+let andb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == false <==> p_a == false \/ p_b == false) = admit ()
 
 (* STARK_001 (matches Coq: Theorem STARK_001) *)
 let stark_001 () : Lemma (stark_props_secure riina_stark_props == true) = admit ()
@@ -490,12 +486,10 @@ let stark_master_security (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (require
 let riina_master_security () : Lemma ((riina_extended.f_ext_base).f_starks_completeness == true /\ (riina_extended.f_ext_base).f_starks_soundness == true /\ (riina_extended.f_ext_base).f_starks_zero_knowledge == true /\ ((riina_extended.f_ext_base).f_starks_stark).f_stark_transparent == true /\ ((riina_extended.f_ext_base).f_starks_stark).f_stark_post_quantum == true /\ riina_extended.f_ext_quantum_resistant == true /\ (riina_extended.f_ext_fri).f_fri_soundness == true /\ (riina_extended.f_ext_fri).f_fri_commitment_binding == true /\ riina_extended.f_ext_simulation_secure == true /\ riina_extended.f_ext_extraction_secure == true) = admit ()
 
 (* stark_security_equivalence (matches Coq: Theorem stark_security_equivalence) *)
-let stark_security_equivalence_obligation () : Tot bool = true
-let stark_security_equivalence_lemma () : Lemma (requires True) (ensures (stark_security_equivalence_obligation () == stark_security_equivalence_obligation ())) = ()
+let stark_security_equivalence (p_s: _) : Lemma (stark_fully_secure p_s == true <==> (p_s.f_starks_completeness == true /\ p_s.f_starks_soundness == true /\ p_s.f_starks_zero_knowledge == true /\ stark_props_secure (p_s.f_starks_stark) == true /\ air_secure (p_s.f_starks_air) == true)) = admit ()
 
 (* fri_security_equivalence (matches Coq: Theorem fri_security_equivalence) *)
-let fri_security_equivalence_obligation () : Tot bool = true
-let fri_security_equivalence_lemma () : Lemma (requires True) (ensures (fri_security_equivalence_obligation () == fri_security_equivalence_obligation ())) = ()
+let fri_security_equivalence (p_f: _) : Lemma (fri_secure p_f == true <==> (p_f.f_fri_soundness == true /\ p_f.f_fri_query_bound == true /\ p_f.f_fri_commitment_binding == true /\ p_f.f_fri_interactive_to_non == true)) = admit ()
 
 (* stark_props_secure_dec (matches Coq: Theorem stark_props_secure_dec) *)
 let stark_props_secure_dec (p_s: _) : Lemma (stark_props_secure p_s == true \/ stark_props_secure p_s == false) = admit ()

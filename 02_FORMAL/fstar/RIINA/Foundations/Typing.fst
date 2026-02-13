@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/foundations/Typing.v (17 lemmas) *)
+(* Derived from 02_FORMAL/coq/foundations/Typing.v (30 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Foundations.Typing
 open FStar.All
@@ -90,12 +90,49 @@ let store_ty_extends_refl (p_sigma: _) : Lemma (store_ty_extends p_sigma p_sigma
 let store_ty_extends_trans (p_sigma1: _) (p_sigma2: _) (p_sigma3: _) : Lemma (requires (store_ty_extends p_sigma1 p_sigma2 == true /\ store_ty_extends p_sigma2 p_sigma3 == true)) (ensures (store_ty_extends p_sigma1 p_sigma3 == true)) = admit ()
 
 (* closed_expr_no_var (matches Coq: Lemma closed_expr_no_var) *)
-let closed_expr_no_var_obligation () : Tot bool = true
-let closed_expr_no_var_lemma () : Lemma (requires True) (ensures (closed_expr_no_var_obligation () == closed_expr_no_var_obligation ())) = ()
+let closed_expr_no_var (p_sigma: _) (p_delta: _) (p_x: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type [] p_sigma p_delta (EVar p_x) p_t p_epsilon == true)) (ensures (False)) = admit ()
 
 (* value_unit_closed (matches Coq: Lemma value_unit_closed) *)
-let value_unit_closed_obligation () : Tot bool = true
-let value_unit_closed_lemma () : Lemma (requires True) (ensures (value_unit_closed_obligation () == value_unit_closed_obligation ())) = ()
+let value_unit_closed (p_sigma: _) (p_delta: _) (p_v: _) (p_epsilon: _) : Lemma (requires (value p_v == true /\ has_type [] p_sigma p_delta p_v TUnit p_epsilon == true)) (ensures (p_v == EUnit /\ p_epsilon == EffectPure)) = admit ()
 
 (* value_has_pure_effect (matches Coq: Lemma value_has_pure_effect) *)
-let value_has_pure_effect (p_gamma: _) (p_sigma: _) (p_delta: _) (p_v: _) (p_t: _) (p_epsilon: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_sigma p_delta p_v p_t p_epsilon == true)) (ensures (p_epsilon == EffectPure \/ ((exists p_t1. (exists p_t2. (exists p_epsilon1. (exists p_epsilon2. p_t == TProd p_t1 p_t2)))) /\ p_epsilon == effect_join epsilon1 epsilon2) \/ ((exists p_t1. (exists p_epsilon1. p_t == TSum p_t1 p_t)) /\ p_epsilon == epsilon1) \/ ((exists p_t1. (exists p_t2. (exists p_epsilon1. (exists p_epsilon2. p_t == TSum p_t1 p_t2)))) /\ p_epsilon == epsilon1))) = admit ()
+let value_has_pure_effect (p_gamma: _) (p_sigma: _) (p_delta: _) (p_v: _) (p_t: _) (p_epsilon: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_sigma p_delta p_v p_t p_epsilon == true)) (ensures (p_epsilon == EffPure \/ ((exists p_t1. (exists p_t2. (exists p_epsilon1. (exists p_epsilon2. p_t == TProd p_t1 p_t2)))) /\ p_epsilon == effect_join epsilon1 epsilon2) \/ ((exists p_t1. (exists p_t2. (exists p_epsilon1. p_t == TSum p_t1 p_t2))) /\ p_epsilon == epsilon1))) = admit ()
+
+(* lookup_head (matches Coq: Lemma lookup_head) *)
+let lookup_head (p_x: _) (p_t: _) (p_gamma: _) : Lemma (lookup p_x ((p_x, p_t) :: p_gamma) == Some p_t) = admit ()
+
+(* lookup_tail (matches Coq: Lemma lookup_tail) *)
+let lookup_tail (p_x: _) (p_y: _) (p_t: _) (p_gamma: _) : Lemma (requires (~(p_x == p_y))) (ensures (lookup p_x ((p_y, p_t) :: p_gamma) == lookup p_x p_gamma)) = admit ()
+
+(* lookup_shadow (matches Coq: Lemma lookup_shadow) *)
+let lookup_shadow (p_x: _) (p_t1: _) (p_t2: _) (p_gamma: _) : Lemma (lookup p_x ((p_x, p_t1) :: (p_x, p_t2) :: p_gamma) == Some p_t1) = admit ()
+
+(* lookup_permute (matches Coq: Lemma lookup_permute) *)
+let lookup_permute (p_x: _) (p_y: _) (p_t1: _) (p_t2: _) (p_gamma: _) : Lemma (requires (~(p_x == p_y))) (ensures (lookup p_x ((p_y, p_t2) :: (p_x, p_t1) :: p_gamma) == lookup p_x ((p_x, p_t1) :: (p_y, p_t2) :: p_gamma))) = admit ()
+
+(* lookup_empty (matches Coq: Lemma lookup_empty) *)
+let lookup_empty (p_x: _) : Lemma (lookup p_x [] == None) = admit ()
+
+(* store_ty_lookup_head (matches Coq: Lemma store_ty_lookup_head) *)
+let store_ty_lookup_head (p_l: _) (p_t: _) (p_sl: _) (p_sigma: _) : Lemma (store_ty_lookup p_l ((p_l, p_t, p_sl) :: p_sigma) == Some (p_t, p_sl)) = admit ()
+
+(* store_ty_lookup_tail (matches Coq: Lemma store_ty_lookup_tail) *)
+let store_ty_lookup_tail (p_l: _) (p_l_: _) (p_t: _) (p_sl: _) (p_sigma: _) : Lemma (requires (~(p_l == p_l_))) (ensures (store_ty_lookup p_l ((p_l', p_t, p_sl) :: p_sigma) == store_ty_lookup p_l p_sigma)) = admit ()
+
+(* store_ty_lookup_empty (matches Coq: Lemma store_ty_lookup_empty) *)
+let store_ty_lookup_empty (p_l: _) : Lemma (store_ty_lookup p_l [] == None) = admit ()
+
+(* store_wf_typed_value (matches Coq: Lemma store_wf_typed_value) *)
+let store_wf_typed_value (p_sigma: _) (p_st: _) (p_l: _) (p_t: _) (p_sl: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_sl))) (ensures ((exists p_v. store_lookup p_l p_st == Some p_v) /\ value v == true /\ has_type [] p_sigma Public v p_t EffectPure == true)) = admit ()
+
+(* store_wf_runtime_typed (matches Coq: Lemma store_wf_runtime_typed) *)
+let store_wf_runtime_typed (p_sigma: _) (p_st: _) (p_l: _) (p_v: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_lookup p_l p_st == Some p_v)) (ensures ((exists p_t. (exists p_sl. store_ty_lookup p_l p_sigma == Some (p_t, p_sl))) /\ value p_v == true /\ has_type [] p_sigma Public p_v T EffectPure == true)) = admit ()
+
+(* typing_var_in_context (matches Coq: Lemma typing_var_in_context) *)
+let typing_var_in_context (p_x: _) (p_gamma: _) (p_sigma: _) (p_delta: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type p_gamma p_sigma p_delta (EVar p_x) p_t p_epsilon == true)) (ensures (lookup p_x p_gamma == Some p_t)) = admit ()
+
+(* closed_value_not_var (matches Coq: Lemma closed_value_not_var) *)
+let closed_value_not_var (p_x: _) (p_sigma: _) (p_delta: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type [] p_sigma p_delta (EVar p_x) p_t p_epsilon == true)) (ensures (False)) = admit ()
+
+(* pure_effect_is_bottom (matches Coq: Lemma pure_effect_is_bottom) *)
+let pure_effect_is_bottom (p_epsilon: _) : Lemma (effect_join EffectPure p_epsilon == p_epsilon) = admit ()

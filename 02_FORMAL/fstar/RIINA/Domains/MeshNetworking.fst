@@ -145,8 +145,7 @@ let mesh_007_disjoint (p_mp: nat) : Lemma (requires (mp_disjoint p_mp == true)) 
 let mesh_008_metric_bounded (p_entry: nat) (p_max_metric: nat) : Lemma (requires (metric_bounded p_entry p_max_metric == true)) (ensures (route_metric p_entry <= p_max_metric)) = admit ()
 
 (* mesh_009_neighbor_auth (matches Coq: Theorem mesh_009_neighbor_auth) *)
-let mesh_009_neighbor_auth_obligation () : Tot bool = true
-let mesh_009_neighbor_auth_lemma () : Lemma (requires True) (ensures (mesh_009_neighbor_auth_obligation () == mesh_009_neighbor_auth_obligation ())) = ()
+let mesh_009_neighbor_auth (p_neighbor: nat) (p_trusted: (list nat)) : Lemma (requires (neighbor_authenticated p_neighbor p_trusted == true)) (ensures ((exists p_t. List.Tot.memP p_t p_trusted) /\ t == p_neighbor)) = admit ()
 
 (* mesh_010_hop_limit (matches Coq: Theorem mesh_010_hop_limit) *)
 let mesh_010_hop_limit (p_route: nat) (p_max_hops: nat) : Lemma (requires (hop_count_ok p_route p_max_hops == true)) (ensures (length p_route <= p_max_hops)) = admit ()
@@ -167,8 +166,7 @@ let mesh_014_convergence (p_elapsed: nat) (p_max_time: nat) : Lemma (requires (c
 let mesh_015_flood_bounded (p_ttl: nat) (p_max_ttl: nat) : Lemma (requires (flood_bounded p_ttl p_max_ttl == true)) (ensures (p_ttl <= p_max_ttl)) = admit ()
 
 (* mesh_016_msg_unique (matches Coq: Theorem mesh_016_msg_unique) *)
-let mesh_016_msg_unique_obligation () : Tot bool = true
-let mesh_016_msg_unique_lemma () : Lemma (requires True) (ensures (mesh_016_msg_unique_obligation () == mesh_016_msg_unique_obligation ())) = ()
+let mesh_016_msg_unique (p_msg_id: nat) (p_seen: (list nat)) : Lemma (requires (msg_id_unique p_msg_id p_seen == true)) (ensures (~(List.Tot.memP p_msg_id p_seen))) = admit ()
 
 (* mesh_017_link_quality (matches Coq: Theorem mesh_017_link_quality) *)
 let mesh_017_link_quality (p_quality: nat) (p_min_quality: nat) : Lemma (requires (link_quality_ok p_quality p_min_quality == true)) (ensures (p_min_quality <= p_quality)) = admit ()

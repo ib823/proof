@@ -143,8 +143,7 @@ let mobile_004_dangerous_consent (p_p: nat) : Lemma (requires (perm_level p_p ==
 let mobile_005_signature_permission (p_app: nat) (p_required_sig: nat) : Lemma (requires (signature_matches p_app p_required_sig == true)) (ensures (app_signature p_app == p_required_sig)) = admit ()
 
 (* mobile_006_system_permission (matches Coq: Theorem mobile_006_system_permission) *)
-let mobile_006_system_permission_obligation () : Tot bool = true
-let mobile_006_system_permission_lemma () : Lemma (requires True) (ensures (mobile_006_system_permission_obligation () == mobile_006_system_permission_obligation ())) = ()
+let mobile_006_system_permission (p_app: nat) (p_system_uids: (list nat)) : Lemma (requires (is_system_app p_app p_system_uids == true)) (ensures ((exists p_uid. List.Tot.memP p_uid p_system_uids) /\ app_uid p_app == uid)) = admit ()
 
 (* mobile_007_unexported_denied (matches Coq: Theorem mobile_007_unexported_denied) *)
 let mobile_007_unexported_denied (p_intent: nat) : Lemma (requires (intent_exported p_intent == false)) (ensures (ipc_allowed p_intent false false == false)) = admit ()
@@ -165,20 +164,16 @@ let mobile_011_grant_owner (p_g: nat) : Lemma (app_uid (grant_app p_g) == app_ui
 let mobile_012_expired_invalid (p_g: nat) (p_current_time: nat) (p_expiry: nat) : Lemma (requires (grant_expiry p_g == Some p_expiry /\ p_current_time >= p_expiry)) (ensures (grant_valid p_g p_current_time == false)) = admit ()
 
 (* mobile_013_network_permission (matches Coq: Theorem mobile_013_network_permission) *)
-let mobile_013_network_permission_obligation () : Tot bool = true
-let mobile_013_network_permission_lemma () : Lemma (requires True) (ensures (mobile_013_network_permission_obligation () == mobile_013_network_permission_obligation ())) = ()
+let mobile_013_network_permission (p_grants: (list nat)) (p_app: nat) : Lemma (requires (has_network_permission p_grants p_app == true)) (ensures ((exists p_g. List.Tot.memP p_g p_grants) /\ app_uid (grant_app g) == app_uid p_app)) = admit ()
 
 (* mobile_014_location_permission (matches Coq: Theorem mobile_014_location_permission) *)
-let mobile_014_location_permission_obligation () : Tot bool = true
-let mobile_014_location_permission_lemma () : Lemma (requires True) (ensures (mobile_014_location_permission_obligation () == mobile_014_location_permission_obligation ())) = ()
+let mobile_014_location_permission (p_grants: (list nat)) (p_app: nat) : Lemma (requires (has_location_permission p_grants p_app == true)) (ensures ((exists p_g. List.Tot.memP p_g p_grants) /\ app_uid (grant_app g) == app_uid p_app)) = admit ()
 
 (* mobile_015_camera_permission (matches Coq: Theorem mobile_015_camera_permission) *)
-let mobile_015_camera_permission_obligation () : Tot bool = true
-let mobile_015_camera_permission_lemma () : Lemma (requires True) (ensures (mobile_015_camera_permission_obligation () == mobile_015_camera_permission_obligation ())) = ()
+let mobile_015_camera_permission (p_grants: (list nat)) (p_app: nat) : Lemma (requires (has_camera_permission p_grants p_app == true)) (ensures ((exists p_g. List.Tot.memP p_g p_grants))) = admit ()
 
 (* mobile_016_microphone_permission (matches Coq: Theorem mobile_016_microphone_permission) *)
-let mobile_016_microphone_permission_obligation () : Tot bool = true
-let mobile_016_microphone_permission_lemma () : Lemma (requires True) (ensures (mobile_016_microphone_permission_obligation () == mobile_016_microphone_permission_obligation ())) = ()
+let mobile_016_microphone_permission (p_grants: (list nat)) (p_app: nat) (p_g: nat) : Lemma (requires (List.Tot.memP p_g p_grants /\ app_uid (grant_app p_g) == app_uid p_app /\ perm_resource (grant_perm p_g) == MicrophoneResource)) (ensures (List.Tot.memP p_g p_grants)) = admit ()
 
 (* mobile_017_intent_filter (matches Coq: Theorem mobile_017_intent_filter) *)
 let mobile_017_intent_filter (p_intent: nat) (p_filter_action: nat) : Lemma (requires (intent_matches p_intent p_filter_action == true)) (ensures (intent_action p_intent == p_filter_action)) = admit ()
@@ -190,8 +185,7 @@ let mobile_018_explicit_target (p_intent: nat) : Lemma (requires (explicit_inten
 let mobile_019_process_isolation (p_pid1: nat) (p_pid2: nat) : Lemma (requires (processes_isolated p_pid1 p_pid2 == true)) (ensures (~(p_pid1 == p_pid2))) = admit ()
 
 (* mobile_020_selinux_enforced (matches Coq: Theorem mobile_020_selinux_enforced) *)
-let mobile_020_selinux_enforced_obligation () : Tot bool = true
-let mobile_020_selinux_enforced_lemma () : Lemma (requires True) (ensures (mobile_020_selinux_enforced_obligation () == mobile_020_selinux_enforced_obligation ())) = ()
+let mobile_020_selinux_enforced (p_source: nat) (p_target: nat) (p_perm: nat) (p_policy: (list nat)) : Lemma (requires (selinux_allows p_source p_target p_perm p_policy == true)) (ensures ((exists p_rule. List.Tot.memP p_rule p_policy))) = admit ()
 
 (* mobile_021_verified_boot (matches Coq: Theorem mobile_021_verified_boot) *)
 let mobile_021_verified_boot_obligation () : Tot bool = true
@@ -204,8 +198,7 @@ let mobile_022_enclave_isolation (p_enclave_mem: nat) (p_normal_mem: nat) : Lemm
 let mobile_023_biometric_tee (p_storage: nat) (p_tee: nat) : Lemma (requires (biometric_in_tee p_storage p_tee == true)) (ensures (p_storage == p_tee)) = admit ()
 
 (* mobile_024_signature_verified (matches Coq: Theorem mobile_024_signature_verified) *)
-let mobile_024_signature_verified_obligation () : Tot bool = true
-let mobile_024_signature_verified_lemma () : Lemma (requires True) (ensures (mobile_024_signature_verified_obligation () == mobile_024_signature_verified_obligation ())) = ()
+let mobile_024_signature_verified (p_app: nat) (p_trusted_sigs: (list nat)) : Lemma (requires (signature_valid p_app p_trusted_sigs == true)) (ensures ((exists p_p_sig. List.Tot.memP id_sig p_trusted_sigs) /\ app_signature p_app == id_sig)) = admit ()
 
 (* mobile_025_defense_in_depth (matches Coq: Theorem mobile_025_defense_in_depth) *)
 let mobile_025_defense_in_depth (p_sb: _) (p_pm: _) (p_ip: _) (p_ks: _) (p_bt: _) : Lemma (requires (mobile_layers p_sb p_pm p_ip p_ks p_bt == true)) (ensures (p_sb == true /\ p_pm == true /\ p_ip == true /\ p_ks == true /\ p_bt == true)) = admit ()

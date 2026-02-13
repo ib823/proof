@@ -220,8 +220,7 @@ let os_001_05_cap_derivation_sound (p_parent: _) (p_child: _) : Lemma (requires 
 let os_001_06_no_confused_deputy (p_s: _) (p_p: _) (p_c: _) (p_action: _) : Lemma (requires (can_invoke p_s p_p p_action p_c == true)) (ensures (holds p_s p_p p_c == true)) = admit ()
 
 (* OS_001_07_cap_lookup_correct (matches Coq: Theorem OS_001_07_cap_lookup_correct) *)
-let os_001_07_cap_lookup_correct_obligation () : Tot bool = true
-let os_001_07_cap_lookup_correct_lemma () : Lemma (requires True) (ensures (os_001_07_cap_lookup_correct_obligation () == os_001_07_cap_lookup_correct_obligation ())) = ()
+let os_001_07_cap_lookup_correct (p_s: _) (p_p: _) (p_slot: _) (p_c: _) : Lemma (requires (cap_lookup p_s p_p p_slot == Some p_c)) (ensures (nth_error (cap_tables p_s p_p) p_slot == Some p_c)) = admit ()
 
 (* OS_001_08_cap_space_isolation (matches Coq: Theorem OS_001_08_cap_space_isolation) *)
 let os_001_08_cap_space_isolation (p_s: _) (p_p1: _) (p_p2: _) (p_slot1: _) (p_slot2: _) (p_c: _) : Lemma (requires (~(p_p1 == p_p2) /\ cap_lookup p_s p_p1 p_slot1 == Some p_c /\ cap_lookup p_s p_p2 p_slot2 == Some p_c)) (ensures (holds p_s p_p1 p_c == true /\ holds p_s p_p2 p_c == true)) = admit ()
@@ -260,23 +259,19 @@ let os_001_18_frame_allocation_safe (p_ms: _) (p_ms_: _) (p_paddr: _) (p_owner: 
 let os_001_19_ipc_type_safe (p_msg: _) : Lemma (requires (length (p_msg.f_msg_data) <= 128 /\ length (p_msg.f_msg_caps) <= 4)) (ensures (msg_type_safe p_msg == true)) = admit ()
 
 (* OS_001_20_ipc_cap_transfer_safe (matches Coq: Theorem OS_001_20_ipc_cap_transfer_safe) *)
-let os_001_20_ipc_cap_transfer_safe_obligation () : Tot bool = true
-let os_001_20_ipc_cap_transfer_safe_lemma () : Lemma (requires True) (ensures (os_001_20_ipc_cap_transfer_safe_obligation () == os_001_20_ipc_cap_transfer_safe_obligation ())) = ()
+let os_001_20_ipc_cap_transfer_safe (p_is: _) (p_sender: _) (p_msg: _) : Lemma (requires (msg_caps_valid p_is p_sender p_msg == true /\ (forall (c: _). List.Tot.memP c (p_msg.f_msg_caps)))) (ensures (holds ((p_is.f_ipc_mem).f_mem_kernel) p_sender c == true /\ List.Tot.memP RGrant (c.f_cap_rights))) = admit ()
 
 (* OS_001_21_ipc_deadlock_free (matches Coq: Theorem OS_001_21_ipc_deadlock_free) *)
 let os_001_21_ipc_deadlock_free (p_is: _) : Lemma (requires (valid_ipc_state p_is == true)) (ensures (~((exists p_cycle. ipc_wait_cycle p_is p_cycle == true)))) = admit ()
 
 (* OS_001_22_ipc_no_amplification (matches Coq: Theorem OS_001_22_ipc_no_amplification) *)
-let os_001_22_ipc_no_amplification_obligation () : Tot bool = true
-let os_001_22_ipc_no_amplification_lemma () : Lemma (requires True) (ensures (os_001_22_ipc_no_amplification_obligation () == os_001_22_ipc_no_amplification_obligation ())) = ()
+let os_001_22_ipc_no_amplification (p_is: _) (p_sender: _) (p_msg: _) (p_c: _) : Lemma (requires (msg_caps_valid p_is p_sender p_msg == true /\ List.Tot.memP p_c (p_msg.f_msg_caps))) (ensures ((exists p_c. holds ((p_is.f_ipc_mem).f_mem_kernel) p_sender c_ == true) /\ rights_subset (p_c.f_cap_rights) (c_.f_cap_rights) == true)) = admit ()
 
 (* OS_001_23_ipc_isolation (matches Coq: Theorem OS_001_23_ipc_isolation) *)
-let os_001_23_ipc_isolation_obligation () : Tot bool = true
-let os_001_23_ipc_isolation_lemma () : Lemma (requires True) (ensures (os_001_23_ipc_isolation_obligation () == os_001_23_ipc_isolation_obligation ())) = ()
+let os_001_23_ipc_isolation (p_is: _) (p_p1: _) (p_p2: _) (p_ep: _) : Lemma (requires (ipc_maintains_isolation p_is == true /\ List.Tot.memP p_ep (p_is.f_endpoints) /\ List.Tot.memP p_p1 (p_ep.f_ep_queue) /\ ~(List.Tot.memP p_p2 (p_ep.f_ep_queue)))) (ensures (~(holds ((p_is.f_ipc_mem).f_mem_kernel) p_p2 (p_ep.f_ep_cap) == true))) = admit ()
 
 (* OS_001_24_endpoint_protection (matches Coq: Theorem OS_001_24_endpoint_protection) *)
-let os_001_24_endpoint_protection_obligation () : Tot bool = true
-let os_001_24_endpoint_protection_lemma () : Lemma (requires True) (ensures (os_001_24_endpoint_protection_obligation () == os_001_24_endpoint_protection_obligation ())) = ()
+let os_001_24_endpoint_protection (p_is: _) (p_ep: _) : Lemma (requires (endpoint_protected p_is p_ep == true /\ (forall (p: _). List.Tot.memP p (p_ep.f_ep_queue)))) (ensures (holds ((p_is.f_ipc_mem).f_mem_kernel) p (p_ep.f_ep_cap) == true)) = admit ()
 
 (* OS_001_25_notification_no_leak (matches Coq: Theorem OS_001_25_notification_no_leak) *)
 let os_001_25_notification_no_leak (p_n: _) : Lemma (requires (notif_no_sensitive_data p_n == true)) (ensures (p_n.f_notif_word < 2^32)) = admit ()

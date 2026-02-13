@@ -84,12 +84,10 @@ let kkm_cross_facility (p_r: nat) (p_target: nat) : Lemma (requires (hc_consent_
 let kkm_composition (p_r: nat) : Lemma (requires (patient_confidentiality p_r == true /\ emr_audit_compliant p_r == true /\ hc_consent_obtained p_r == true)) (ensures (kkm_fully_compliant p_r == true)) = admit ()
 
 (* facility_coverage (matches Coq: Theorem facility_coverage) *)
-let facility_coverage_obligation () : Tot bool = true
-let facility_coverage_lemma () : Lemma (requires True) (ensures (facility_coverage_obligation () == facility_coverage_obligation ())) = ()
+let facility_coverage (p_f: facility_type) : Lemma (List.Tot.memP p_f all_facility_types) = admit ()
 
 (* emr_classification_coverage (matches Coq: Theorem emr_classification_coverage) *)
-let emr_classification_coverage_obligation () : Tot bool = true
-let emr_classification_coverage_lemma () : Lemma (requires True) (ensures (emr_classification_coverage_obligation () == emr_classification_coverage_obligation ())) = ()
+let emr_classification_coverage (p_c: emr_classification) : Lemma (List.Tot.memP p_c all_emr_classifications) = admit ()
 
 (* demographics_not_sensitive (matches Coq: Theorem demographics_not_sensitive) *)
 let demographics_not_sensitive () : Lemma (~(is_sensitive PatientDemographics == true)) = admit ()

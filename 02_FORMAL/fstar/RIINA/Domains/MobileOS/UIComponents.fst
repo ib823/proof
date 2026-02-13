@@ -318,8 +318,7 @@ let progress_bar_monotonic_thm (p_pb: progress_bar) : Lemma (requires (progress_
 let tab_bar_selection_exclusive_thm (p_tb: tab_bar) : Lemma (requires (tab_bar_selection_exclusive p_tb == true)) (ensures (p_tb.f_tb_selection_exclusive == true)) = admit ()
 
 (* navigation_stack_valid_thm (matches Coq: Theorem navigation_stack_valid_thm) *)
-let navigation_stack_valid_thm_obligation () : Tot bool = true
-let navigation_stack_valid_thm_lemma () : Lemma (requires True) (ensures (navigation_stack_valid_thm_obligation () == navigation_stack_valid_thm_obligation ())) = ()
+let navigation_stack_valid_thm (p_ns: navigation_stack) : Lemma (requires (navigation_stack_valid p_ns == true)) (ensures (~(p_ns.f_ns_stack == []))) = admit ()
 
 (* alert_dialog_modal_thm (matches Coq: Theorem alert_dialog_modal_thm) *)
 let alert_dialog_modal_thm (p_ad: alert_dialog) : Lemma (requires (alert_dialog_modal p_ad == true)) (ensures (p_ad.f_ad_modal == true)) = admit ()

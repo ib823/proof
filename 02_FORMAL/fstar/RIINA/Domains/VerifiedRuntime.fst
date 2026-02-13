@@ -132,14 +132,13 @@ let mem_update_same (p_m: _) (p_p: _) (p_v: _) : Lemma (mem_update p_m p_p p_v p
 let mem_update_diff (p_m: _) (p_p1: _) (p_p2: _) (p_v: _) : Lemma (requires (~(p_p1 == p_p2))) (ensures (mem_update p_m p_p2 p_v p_p1 == p_m p_p1)) = admit ()
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_b1: _) (p_b2: _) : Lemma (p_b1 && p_b2 == true <==> p_b1 == true /\ p_b2 == true) = admit ()
 
 (* RT_001_01_alloc_safe (matches Coq: Theorem RT_001_01_alloc_safe) *)
-let rt_001_01_alloc_safe (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (p_size > 0 /\ sufficient_space p_h p_size == true /\ p_size <= p_h.f_heap_max_alloc /\ alloc p_h p_size == Some (p_ p_h_))) (ensures (valid_ptr p_h_ p_p == true /\ accessible_size p_h_ p_p >= p_size)) = admit ()
+let rt_001_01_alloc_safe (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (p_size > 0 /\ sufficient_space p_h p_size == true /\ p_size <= p_h.f_heap_max_alloc /\ alloc p_h p_size == Some (p_p, p_h_))) (ensures (valid_ptr p_h_ p_p == true /\ accessible_size p_h_ p_p >= p_size)) = admit ()
 
 (* RT_001_02_alloc_no_overlap (matches Coq: Theorem RT_001_02_alloc_no_overlap) *)
-let rt_001_02_alloc_no_overlap (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (heap_wf p_h == true /\ p_size > 0 /\ alloc p_h p_size == Some (p_ p_h_))) (ensures (heap_mem p_h p_p == None)) = admit ()
+let rt_001_02_alloc_no_overlap (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (heap_wf p_h == true /\ p_size > 0 /\ alloc p_h p_size == Some (p_p, p_h_))) (ensures (heap_mem p_h p_p == None)) = admit ()
 
 (* RT_001_03_free_correct (matches Coq: Theorem RT_001_03_free_correct) *)
 let rt_001_03_free_correct (p_h: _) (p_p: _) (p_h_: _) : Lemma (requires (valid_ptr p_h p_p == true /\ free p_h p_p == Some p_h_)) (ensures (accessible_size p_h_ p_p == 0)) = admit ()
@@ -151,21 +150,19 @@ let rt_001_04_no_use_after_free (p_h: _) (p_p: _) (p_h_: _) : Lemma (requires (v
 let rt_001_05_no_double_free (p_h: _) (p_p: _) (p_h_: _) : Lemma (requires (free p_h p_p == Some p_h_)) (ensures (free p_h_ p_p == None)) = admit ()
 
 (* RT_001_06_alloc_alignment (matches Coq: Theorem RT_001_06_alloc_alignment) *)
-let rt_001_06_alloc_alignment (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (alloc p_h p_size == Some (p_ p_h_))) (ensures (p_p == p_h.f_heap_next_ptr)) = admit ()
+let rt_001_06_alloc_alignment (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (alloc p_h p_size == Some (p_p, p_h_))) (ensures (p_p == p_h.f_heap_next_ptr)) = admit ()
 
 (* RT_001_07_heap_integrity (matches Coq: Theorem RT_001_07_heap_integrity) *)
-let rt_001_07_heap_integrity (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (heap_wf p_h == true /\ alloc p_h p_size == Some (p_ p_h_))) (ensures (p_h_.f_heap_total_size == p_h.f_heap_total_size /\ p_h_.f_heap_max_alloc == p_h.f_heap_max_alloc)) = admit ()
+let rt_001_07_heap_integrity (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (heap_wf p_h == true /\ alloc p_h p_size == Some (p_p, p_h_))) (ensures (p_h_.f_heap_total_size == p_h.f_heap_total_size /\ p_h_.f_heap_max_alloc == p_h.f_heap_max_alloc)) = admit ()
 
 (* RT_001_08_alloc_bounded (matches Coq: Theorem RT_001_08_alloc_bounded) *)
-let rt_001_08_alloc_bounded (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (alloc p_h p_size == Some (p_ p_h_))) (ensures (p_size <= p_h.f_heap_max_alloc)) = admit ()
+let rt_001_08_alloc_bounded (p_h: _) (p_size: _) (p_p: _) (p_h_: _) : Lemma (requires (alloc p_h p_size == Some (p_p, p_h_))) (ensures (p_size <= p_h.f_heap_max_alloc)) = admit ()
 
 (* RT_001_09_gc_preserves_live (matches Coq: Theorem RT_001_09_gc_preserves_live) *)
-let rt_001_09_gc_preserves_live_obligation () : Tot bool = true
-let rt_001_09_gc_preserves_live_lemma () : Lemma (requires True) (ensures (rt_001_09_gc_preserves_live_obligation () == rt_001_09_gc_preserves_live_obligation ())) = ()
+let rt_001_09_gc_preserves_live (p_h: _) (p_p: _) : Lemma (requires (mh_live p_h p_p == true /\ List.Tot.memP p_p (p_h.f_mh_roots))) (ensures (preserved p_h (gc p_h) p_p == true)) = admit ()
 
 (* RT_001_10_gc_collects_dead (matches Coq: Theorem RT_001_10_gc_collects_dead) *)
-let rt_001_10_gc_collects_dead_obligation () : Tot bool = true
-let rt_001_10_gc_collects_dead_lemma () : Lemma (requires True) (ensures (rt_001_10_gc_collects_dead_obligation () == rt_001_10_gc_collects_dead_obligation ())) = ()
+let rt_001_10_gc_collects_dead (p_h: _) (p_p: _) : Lemma (requires (~(List.Tot.memP p_p (p_h.f_mh_roots)))) (ensures (mh_live (gc p_h) p_p == false)) = admit ()
 
 (* RT_001_11_gc_roots_complete (matches Coq: Theorem RT_001_11_gc_roots_complete) *)
 let rt_001_11_gc_roots_complete (p_h: _) : Lemma ((gc p_h).f_mh_roots == p_h.f_mh_roots) = admit ()
@@ -196,5 +193,4 @@ let rt_001_18_sandbox_resource_limited (p_sb: _) (p_r: _) : Lemma (requires (wit
 let rt_001_19_sandbox_terminable (p_sb: _) : Lemma ((terminate p_sb).f_sb_terminated == true /\ ((forall (p: _). sb_accessible (terminate p_sb) p == false)) /\ ((forall (c: _). sb_granted (terminate p_sb) c == false))) = admit ()
 
 (* RT_001_20_sandbox_comm_controlled (matches Coq: Theorem RT_001_20_sandbox_comm_controlled) *)
-let rt_001_20_sandbox_comm_controlled_obligation () : Tot bool = true
-let rt_001_20_sandbox_comm_controlled_lemma () : Lemma (requires True) (ensures (rt_001_20_sandbox_comm_controlled_obligation () == rt_001_20_sandbox_comm_controlled_obligation ())) = ()
+let rt_001_20_sandbox_comm_controlled (p_ch: _) : Lemma (comm_controlled p_ch == true <==> p_ch.f_ch_authorized == true) = admit ()

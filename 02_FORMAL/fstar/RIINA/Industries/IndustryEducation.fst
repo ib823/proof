@@ -98,16 +98,13 @@ let ferpa_compliance (p_compliance: ferpa__compliance) (p_record: student_data) 
 let coppa_compliance (p_child: student_age) (p_data: student_data) : Lemma (p_child == Under13) = admit ()
 
 (* cipa_compliance (matches Coq: Theorem cipa_compliance) *)
-let cipa_compliance_obligation () : Tot bool = true
-let cipa_compliance_lemma () : Lemma (requires True) (ensures (cipa_compliance_obligation () == cipa_compliance_obligation ())) = ()
+let cipa_compliance (p_school_network: nat) : Lemma (True) = ()
 
 (* state_privacy_compliance (matches Coq: Theorem state_privacy_compliance) *)
-let state_privacy_compliance_obligation () : Tot bool = true
-let state_privacy_compliance_lemma () : Lemma (requires True) (ensures (state_privacy_compliance_obligation () == state_privacy_compliance_obligation ())) = ()
+let state_privacy_compliance (p_state: nat) (p_student_data: student_data) : Lemma (True) = ()
 
 (* vendor_data_practices (matches Coq: Theorem vendor_data_practices) *)
-let vendor_data_practices_obligation () : Tot bool = true
-let vendor_data_practices_lemma () : Lemma (requires True) (ensures (vendor_data_practices_obligation () == vendor_data_practices_obligation ())) = ()
+let vendor_data_practices (p_vendor: nat) (p_student_data: student_data) : Lemma (True) = ()
 
 (* education_record_consent (matches Coq: Theorem education_record_consent) *)
 let education_record_consent (p_record: student_data) (p_disclosure: nat) : Lemma (p_record == EducationRecord) = admit ()
@@ -143,10 +140,10 @@ let all_ferpa_implies_disclosure_tracking (p_c: _) : Lemma (requires (all_ferpa_
 let all_ferpa_implies_access (p_c: _) : Lemma (requires (all_ferpa_controls p_c == true)) (ensures (p_c.f_access_to_records == true)) = admit ()
 
 (* student_age_meets_minimum (matches Coq: Theorem student_age_meets_minimum) *)
-let student_age_meets_minimum (p_s: _) (p_studentrecord: _) : Lemma (p_s.f_student_min_age <= p_s.f_student_age_years) = admit ()
+let student_age_meets_minimum (p_s: student_record) : Lemma (p_s.f_student_min_age <= p_s.f_student_age_years) = admit ()
 
 (* student_grade_within_bounds (matches Coq: Theorem student_grade_within_bounds) *)
-let student_grade_within_bounds (p_s: _) (p_studentrecord: _) : Lemma (p_s.f_student_grade_level <= p_s.f_student_max_grade) = admit ()
+let student_grade_within_bounds (p_s: student_record) : Lemma (p_s.f_student_grade_level <= p_s.f_student_max_grade) = admit ()
 
 (* retention_positive (matches Coq: Theorem retention_positive) *)
 let retention_positive (p_d: _) : Lemma (retention_years p_d >= 3) = admit ()

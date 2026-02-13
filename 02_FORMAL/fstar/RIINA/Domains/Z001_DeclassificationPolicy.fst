@@ -217,8 +217,7 @@ let z_001_06_principal_join (p_p1: _) (p_p2: _) : Lemma ((exists p_join. p_join 
 let z_001_07_principal_meet (p_p1: _) (p_p2: _) : Lemma ((exists p_meet. p_meet == PMeet p_p1 p_p2) /\ (principal_leq meet p_p1 == true \/ principal_leq meet p_p2 == true)) = admit ()
 
 (* Z_001_08_robust_definition (matches Coq: Theorem Z_001_08_robust_definition) *)
-let z_001_08_robust_definition_obligation () : Tot bool = true
-let z_001_08_robust_definition_lemma () : Lemma (requires True) (ensures (z_001_08_robust_definition_obligation () == z_001_08_robust_definition_obligation ())) = ()
+let z_001_08_robust_definition (p_e: _) (p_public: _) : Lemma (robust p_e p_public == true <==> ((forall (s1: _). (forall (s2: _). low_equiv s1 s2 p_public -> p_e s1 == p_e s2)))) = admit ()
 
 (* Z_001_09_robust_guard (matches Coq: Theorem Z_001_09_robust_guard) *)
 let z_001_09_robust_guard (p_de: _) (p_public: _) : Lemma (requires (valid_declass p_de p_public == true)) (ensures (robust (p_de.f_declass_guard) p_public == true)) = admit ()
@@ -276,8 +275,7 @@ let z_001_25_policy_guard_satisfied (p_de: _) (p_s: _) : Lemma (requires (guard_
 let z_001_26_policy_transform_applied (p_de: _) (p_s: _) : Lemma (apply_transform p_de p_s == transform (p_de.f_declass_policy) (declass_value p_de p_s)) = admit ()
 
 (* Z_001_27_policy_audit_logged (matches Coq: Theorem Z_001_27_policy_audit_logged) *)
-let z_001_27_policy_audit_logged_obligation () : Tot bool = true
-let z_001_27_policy_audit_logged_lemma () : Lemma (requires True) (ensures (z_001_27_policy_audit_logged_obligation () == z_001_27_policy_audit_logged_obligation ())) = ()
+let z_001_27_policy_audit_logged (p_de: _) (p_log: _) (p_log_: _) : Lemma (requires (logged_declass p_de p_log p_log_ == true)) (ensures ((exists p_entry. List.Tot.memP p_entry p_log_) /\ entry.f_audit_policy_id == (p_de.f_declass_policy).f_policy_id)) = admit ()
 
 (* Z_001_28_policy_no_bypass (matches Coq: Theorem Z_001_28_policy_no_bypass) *)
 let z_001_28_policy_no_bypass (p_de: _) : Lemma (uses_policy (PDeclass p_de) p_de == true) = admit ()

@@ -143,12 +143,10 @@ let omega_002_04_delegation_permission_subset (p_parent: _) (p_perms: _) (p_expi
 let omega_002_05_nondelegatable_blocks (p_parent: _) (p_perms: _) (p_expiry: _) (p_p_sig: _) : Lemma (requires (p_parent.f_cap_delegatable == false)) (ensures (cap_delegate p_parent p_perms p_expiry id_sig == None)) = admit ()
 
 (* OMEGA_002_06_empty_cap_permits_nothing (matches Coq: Theorem OMEGA_002_06_empty_cap_permits_nothing) *)
-let omega_002_06_empty_cap_permits_nothing_obligation () : Tot bool = true
-let omega_002_06_empty_cap_permits_nothing_lemma () : Lemma (requires True) (ensures (omega_002_06_empty_cap_permits_nothing_obligation () == omega_002_06_empty_cap_permits_nothing_obligation ())) = ()
+let omega_002_06_empty_cap_permits_nothing (p_port: _) : Lemma (cap_permits {| cap_id : == 0; cap_permissions := []; cap_expiry := 0; cap_delegatable := false_ cap_signature := 0 |} p_port = false) = admit ()
 
 (* OMEGA_002_07_cap_permits_sound (matches Coq: Theorem OMEGA_002_07_cap_permits_sound) *)
-let omega_002_07_cap_permits_sound_obligation () : Tot bool = true
-let omega_002_07_cap_permits_sound_lemma () : Lemma (requires True) (ensures (omega_002_07_cap_permits_sound_obligation () == omega_002_07_cap_permits_sound_obligation ())) = ()
+let omega_002_07_cap_permits_sound (p_cap: _) (p_port: _) : Lemma (requires (cap_permits p_cap p_port == true)) (ensures (List.Tot.memP p_port (p_cap.f_cap_permissions) \/ (exists p_p. List.Tot.memP p_p (p_cap.f_cap_permissions)) /\ Nat.eqb p_port p == true)) = admit ()
 
 (* OMEGA_003_01_syn_cookie_verify_sound (matches Coq: Theorem OMEGA_003_01_syn_cookie_verify_sound) *)
 let omega_003_01_syn_cookie_verify_sound (p_secret: _) (p_cookie: _) : Lemma (syn_cookie_verify p_secret p_cookie (syn_cookie_generate p_secret p_cookie) == true) = admit ()
@@ -169,8 +167,7 @@ let omega_003_05_syn_cookie_ip_sensitive (p_secret: _) (p_c1: _) (p_c2: _) : Lem
 let omega_003_06_wrong_mac_rejected (p_secret: _) (p_cookie: _) (p_mac: _) : Lemma (requires (~(p_mac == syn_cookie_generate p_secret p_cookie))) (ensures (syn_cookie_verify p_secret p_cookie p_mac == false)) = admit ()
 
 (* OMEGA_004_01_empty_table_allows (matches Coq: Theorem OMEGA_004_01_empty_table_allows) *)
-let omega_004_01_empty_table_allows_obligation () : Tot bool = true
-let omega_004_01_empty_table_allows_lemma () : Lemma (requires True) (ensures (omega_004_01_empty_table_allows_obligation () == omega_004_01_empty_table_allows_obligation ())) = ()
+let omega_004_01_empty_table_allows (p_src: _) : Lemma (conn_allowed [] p_src == true) = admit ()
 
 (* OMEGA_004_02_conn_count_nonneg (matches Coq: Theorem OMEGA_004_02_conn_count_nonneg) *)
 let omega_004_02_conn_count_nonneg (p_table: _) (p_src: _) : Lemma (conn_count_by_src p_table p_src >= 0) = admit ()

@@ -142,35 +142,28 @@ let plays_implies_active (p_anim: nat) : Lemma (requires (plays p_anim == true))
 let plays_implies_nonessential (p_anim: nat) : Lemma (requires (plays p_anim == true)) (ensures (is_essential p_anim == false)) = admit ()
 
 (* all_visible_elements_in_tree (matches Coq: Theorem all_visible_elements_in_tree) *)
-let all_visible_elements_in_tree_obligation () : Tot bool = true
-let all_visible_elements_in_tree_lemma () : Lemma (requires True) (ensures (all_visible_elements_in_tree_obligation () == all_visible_elements_in_tree_obligation ())) = ()
+let all_visible_elements_in_tree (p_v: nat) (p_elem: nat) : Lemma (requires (List.Tot.memP p_elem (view_elements p_v) /\ is_visible p_elem == true)) (ensures (element_has_node (view_tree p_v) p_elem == true)) = admit ()
 
 (* no_orphan_nodes (matches Coq: Theorem no_orphan_nodes) *)
-let no_orphan_nodes_obligation () : Tot bool = true
-let no_orphan_nodes_lemma () : Lemma (requires True) (ensures (no_orphan_nodes_obligation () == no_orphan_nodes_obligation ())) = ()
+let no_orphan_nodes (p_v: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n (view_tree p_v))) (ensures (node_parent p_n == None \/ ((exists p_pid. node_parent p_n == Some p_pid) /\ id_in_tree (view_tree p_v) pid == true))) = admit ()
 
 (* role_always_set (matches Coq: Theorem role_always_set) *)
-let role_always_set_obligation () : Tot bool = true
-let role_always_set_lemma () : Lemma (requires True) (ensures (role_always_set_obligation () == role_always_set_obligation ())) = ()
+let role_always_set (p_v: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n (view_tree p_v) /\ node_interactive p_n == true)) (ensures (~(node_role p_n == RoleStatic))) = admit ()
 
 (* label_always_nonempty (matches Coq: Theorem label_always_nonempty) *)
-let label_always_nonempty_obligation () : Tot bool = true
-let label_always_nonempty_lemma () : Lemma (requires True) (ensures (label_always_nonempty_obligation () == label_always_nonempty_obligation ())) = ()
+let label_always_nonempty (p_v: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n (view_tree p_v) /\ node_interactive p_n == true)) (ensures (~(node_label p_n == 0))) = admit ()
 
 (* collect_ids_complete (matches Coq: Lemma collect_ids_complete) *)
-let collect_ids_complete_obligation () : Tot bool = true
-let collect_ids_complete_lemma () : Lemma (requires True) (ensures (collect_ids_complete_obligation () == collect_ids_complete_obligation ())) = ()
+let collect_ids_complete (p_tree: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n p_tree)) (ensures (List.Tot.memP (node_id p_n) (collect_ids p_tree))) = admit ()
 
 (* tree_traversal_complete (matches Coq: Theorem tree_traversal_complete) *)
-let tree_traversal_complete_obligation () : Tot bool = true
-let tree_traversal_complete_lemma () : Lemma (requires True) (ensures (tree_traversal_complete_obligation () == tree_traversal_complete_obligation ())) = ()
+let tree_traversal_complete (p_v: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n (view_tree p_v))) (ensures (List.Tot.memP (node_id p_n) (collect_ids (view_tree p_v)))) = admit ()
 
 (* focus_order_from_interactive (matches Coq: Lemma focus_order_from_interactive) *)
 let focus_order_from_interactive (p_tree: nat) : Lemma (focus_order p_tree == map node_id (interactive_nodes p_tree)) = admit ()
 
 (* focus_order_matches_tree (matches Coq: Theorem focus_order_matches_tree) *)
-let focus_order_matches_tree_obligation () : Tot bool = true
-let focus_order_matches_tree_lemma () : Lemma (requires True) (ensures (focus_order_matches_tree_obligation () == focus_order_matches_tree_obligation ())) = ()
+let focus_order_matches_tree (p_v: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n (view_tree p_v) /\ node_interactive p_n == true)) (ensures (List.Tot.memP (node_id p_n) (focus_order (view_tree p_v)))) = admit ()
 
 (* live_regions_announced (matches Coq: Theorem live_regions_announced) *)
 let live_regions_announced (p_rlr: nat) : Lemma (requires (region_content_changed (riina_live_region p_rlr) == true)) (ensures (~(region_politeness (riina_live_region p_rlr) == Off))) = admit ()
@@ -242,5 +235,4 @@ let scaled_text_still_reflows (p_rtp: nat) : Lemma (reflows (riina_tp p_rtp) == 
 let motion_safe_and_controllable (p_rme: nat) : Lemma (requires (motion_type (riina_motion p_rme) == Carousel)) (ensures (safe_flash_rate (riina_motion p_rme) == true /\ user_controllable (riina_motion p_rme) == true)) = admit ()
 
 (* interactive_nodes_fully_accessible (matches Coq: Theorem interactive_nodes_fully_accessible) *)
-let interactive_nodes_fully_accessible_obligation () : Tot bool = true
-let interactive_nodes_fully_accessible_lemma () : Lemma (requires True) (ensures (interactive_nodes_fully_accessible_obligation () == interactive_nodes_fully_accessible_obligation ())) = ()
+let interactive_nodes_fully_accessible (p_v: nat) (p_n: nat) : Lemma (requires (List.Tot.memP p_n (view_tree p_v) /\ node_interactive p_n == true)) (ensures (~(node_role p_n == RoleStatic) /\ ~(node_label p_n == 0))) = admit ()

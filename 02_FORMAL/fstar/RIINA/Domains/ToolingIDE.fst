@@ -306,8 +306,7 @@ let n_001_02_lemma () : Lemma (requires True) (ensures (n_001_02_obligation () =
 let n_001_03 (p_req: lsp_request) : Lemma (lsp_request_wellformed p_req == true) = admit ()
 
 (* N_001_04 (matches Coq: Theorem N_001_04) *)
-let n_001_04_obligation () : Tot bool = true
-let n_001_04_lemma () : Lemma (requires True) (ensures (n_001_04_obligation () == n_001_04_obligation ())) = ()
+let n_001_04 (p_env: nat) (p_items: (list string)) : Lemma (requires (((forall (item: _). List.Tot.memP item p_items)) /\ (forall (item: _). List.Tot.memP item p_items))) (ensures (completion_type_correct p_env item == true)) = admit ()
 
 (* N_001_05 (matches Coq: Theorem N_001_05) *)
 let n_001_05 (p_env: nat) (p_name: string) (p_ty: type_info) : Lemma (requires (type_lookup p_env p_name == Some p_ty)) (ensures (hover_accurate p_env p_name p_ty == true)) = admit ()
@@ -332,8 +331,7 @@ let n_001_11_obligation () : Tot bool = true
 let n_001_11_lemma () : Lemma (requires True) (ensures (n_001_11_obligation () == n_001_11_obligation ())) = ()
 
 (* N_001_12 (matches Coq: Theorem N_001_12) *)
-let n_001_12_obligation () : Tot bool = true
-let n_001_12_lemma () : Lemma (requires True) (ensures (n_001_12_obligation () == n_001_12_obligation ())) = ()
+let n_001_12 (p_rule: lint_rule) (p_code: tool_ast) (p_violations: (list lint_violation)) : Lemma (requires (critical_security_rule p_rule == true /\ ((forall (v: _). List.Tot.memP v p_violations)) /\ (forall (v: _). List.Tot.memP v p_violations))) (ensures (lint_violation_actual p_code v == true)) = admit ()
 
 (* N_001_13 (matches Coq: Theorem N_001_13) *)
 let n_001_13 (p_src: tool_ast) (p_config: build_config) : Lemma (build p_src p_config == build p_src p_config) = admit ()
@@ -348,12 +346,10 @@ let n_001_15 (p_src: tool_ast) (p_config: build_config) : Lemma (hardening_appli
 let resolve_step_terminates (p_fuel: _) (p_deps: _) (p_resolved: _) : Lemma ((exists p_result. resolve_step p_fuel p_deps p_resolved == Some p_result)) = admit ()
 
 (* N_001_16 (matches Coq: Theorem N_001_16) *)
-let n_001_16_obligation () : Tot bool = true
-let n_001_16_lemma () : Lemma (requires True) (ensures (n_001_16_obligation () == n_001_16_obligation ())) = ()
+let n_001_16 (p_deps: nat) : Lemma ((exists p_resolved. resolve_step (List.length p_deps * List.length p_deps) p_deps [] == Some p_resolved)) = admit ()
 
 (* N_001_17 (matches Coq: Theorem N_001_17) *)
-let n_001_17_obligation () : Tot bool = true
-let n_001_17_lemma () : Lemma (requires True) (ensures (n_001_17_obligation () == n_001_17_obligation ())) = ()
+let n_001_17 (p_pkg: package) (p_trusted_keys: (list string)) : Lemma (requires (verify_signature p_pkg p_trusted_keys == true)) (ensures ((exists p_key. List.Tot.memP p_key p_trusted_keys) /\ pkg__pkg_signature_ == Some key)) = admit ()
 
 (* N_001_18 (matches Coq: Theorem N_001_18) *)
 let n_001_18 (p_pkg: package) (p_db: nat) : Lemma (vuln_check_complete p_pkg p_db (check_vulns p_pkg p_db) == true) = admit ()

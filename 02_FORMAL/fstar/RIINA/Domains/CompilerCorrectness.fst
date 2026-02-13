@@ -177,8 +177,7 @@ let src_ir_equiv (p_e_src: src_expr) (p_e_ir: ir_expr) : Tot bool =
   true
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* CC_001 (matches Coq: Theorem CC_001) *)
 let cc_001 () : Lemma (parsing_correct riina_parsing == true) = admit ()
@@ -406,8 +405,7 @@ let optimization_relation_symmetric (p_e1: _) (p_e2: _) : Lemma (requires (ir_eq
 let optimization_relation_transitive (p_e1: _) (p_e2: _) (p_e3: _) : Lemma (requires (ir_equiv p_e1 p_e2 == true /\ ir_equiv p_e2 p_e3 == true)) (ensures (ir_equiv p_e1 p_e3 == true)) = admit ()
 
 (* full_pipeline_correctness (matches Coq: Theorem full_pipeline_correctness) *)
-let full_pipeline_correctness_obligation () : Tot bool = true
-let full_pipeline_correctness_lemma () : Lemma (requires True) (ensures (full_pipeline_correctness_obligation () == full_pipeline_correctness_obligation ())) = ()
+let full_pipeline_correctness (p_e: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true)) (ensures (ir_has_type (compile_expr p_e) (compile_ty p_t) == true /\ (src_value p_e == true \/ (exists p_e. p_e ~ > e_)) /\ ((forall (p_e: _). p_e ~ > e_ -> compile_expr p_e ==> compile_expr e_)))) = admit ()
 
 (* full_pipeline_termination (matches Coq: Theorem full_pipeline_termination) *)
 let full_pipeline_termination (p_e: _) (p_v: _) (p_t: _) : Lemma (requires (src_has_type p_e p_t == true /\ p_e ~ > * p_v /\ src_value p_v == true)) (ensures (compile_expr p_e == > * compile_expr p_v /\ ir_value (compile_expr p_v) == true /\ ir_has_type (compile_expr p_v) (compile_ty p_t) == true)) = admit ()

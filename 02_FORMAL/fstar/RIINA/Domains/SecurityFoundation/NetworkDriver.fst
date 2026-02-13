@@ -103,8 +103,7 @@ let unbound_blocks_send (p_app: application) (p_sock: socket) : Lemma (requires 
 let unbound_blocks_receive (p_app: application) (p_sock: socket) : Lemma (requires (p_sock.f_socket_bound == false)) (ensures (~(receives_data p_app p_sock == true))) = admit ()
 
 (* default_deny_firewall (matches Coq: Theorem default_deny_firewall) *)
-let default_deny_firewall_obligation () : Tot bool = true
-let default_deny_firewall_lemma () : Lemma (requires True) (ensures (default_deny_firewall_obligation () == default_deny_firewall_obligation ())) = ()
+let default_deny_firewall (p_src_port: nat) (p_dst_port: nat) : Lemma (firewall_permits [] p_src_port p_dst_port == false) = admit ()
 
 (* cross_app_socket_impossible (matches Coq: Theorem cross_app_socket_impossible) *)
 let cross_app_socket_impossible (p_app1: application) (p_app2: application) (p_sock: socket) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_socket p_app1 p_sock == true)) (ensures (~(sends_data p_app2 p_sock == true))) = admit ()

@@ -328,32 +328,25 @@ let pst_is_stark (p_pst: proof_system_type) : Tot bool =
 let riina_pst : proof_system_type = {f_pst_is_argument=true; f_pst_is_proof=false; f_pst_knowledge_property=true; f_pst_succinctness=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff_obligation () : Tot bool = true
-let andb3_true_iff_lemma () : Lemma (requires True) (ensures (andb3_true_iff_obligation () == andb3_true_iff_obligation ())) = ()
+let andb3_true_iff (p_a: bool) (p_b: bool) (p_c: bool) : Lemma (p_a && p_b && p_c == true <==> p_a == true /\ p_b == true /\ p_c == true) = admit ()
 
 (* andb4_true_iff (matches Coq: Lemma andb4_true_iff) *)
-let andb4_true_iff_obligation () : Tot bool = true
-let andb4_true_iff_lemma () : Lemma (requires True) (ensures (andb4_true_iff_obligation () == andb4_true_iff_obligation ())) = ()
+let andb4_true_iff (p_a: bool) (p_b: bool) (p_c: bool) (p_d: bool) : Lemma (p_a && p_b && p_c && p_d == true <==> p_a == true /\ p_b == true /\ p_c == true /\ p_d == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le_obligation () : Tot bool = true
-let leb_le_lemma () : Lemma (requires True) (ensures (leb_le_obligation () == leb_le_obligation ())) = ()
+let leb_le (p_n: nat) (p_m: nat) : Lemma ((p_n <=? p_m) == true <==> p_n <= p_m) = admit ()
 
 (* ltb_lt (matches Coq: Lemma ltb_lt) *)
-let ltb_lt_obligation () : Tot bool = true
-let ltb_lt_lemma () : Lemma (requires True) (ensures (ltb_lt_obligation () == ltb_lt_obligation ())) = ()
+let ltb_lt (p_n: nat) (p_m: nat) : Lemma ((p_n <? p_m) == true <==> p_n < p_m) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* ZK_001 (matches Coq: Theorem ZK_001) *)
 let zk_001 () : Lemma (zk_secure riina_zk == true) = admit ()

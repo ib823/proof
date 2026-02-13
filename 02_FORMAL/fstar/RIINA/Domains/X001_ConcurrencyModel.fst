@@ -233,8 +233,7 @@ let x_001_04_no_write_during_read (p_as_: _) : Lemma (requires (well_formed_acce
 let x_001_05_race_freedom (p_cfg: _) (p_l: _) : Lemma (requires (well_typed p_cfg == true)) (ensures (~(data_race p_cfg p_l == true))) = admit ()
 
 (* X_001_06_race_freedom_composition (matches Coq: Theorem X_001_06_race_freedom_composition) *)
-let x_001_06_race_freedom_composition_obligation () : Tot bool = true
-let x_001_06_race_freedom_composition_lemma () : Lemma (requires True) (ensures (x_001_06_race_freedom_composition_obligation () == x_001_06_race_freedom_composition_obligation ())) = ()
+let x_001_06_race_freedom_composition (p_cfg1: _) (p_cfg2: _) (p_l: _) : Lemma (requires ((~(data_race p_cfg1 p_l == true)) /\ (~(data_race p_cfg2 p_l == true)) /\ ((forall (t: _). ~((List.Tot.memP t (map thread_id p_cfg1) /\ List.Tot.memP t (map thread_id p_cfg2))))))) (ensures (~(data_race (p_cfg1 ++ p_cfg2) p_l == true))) = admit ()
 
 (* X_001_07_atomic_operations (matches Coq: Theorem X_001_07_atomic_operations) *)
 let x_001_07_atomic_operations (p_op: _) : Lemma (atomic_race_free p_op == true) = admit ()
@@ -256,8 +255,7 @@ let x_001_09c_dual_compose (p_m1: _) (p_m2: _) : Lemma (dual (dual (SSend p_m1 (
 let x_001_10_session_fidelity (p_ch: _) (p_mt: _) (p_s: _) : Lemma (requires (p_ch.f_chan_type == SSend p_mt p_s)) (ensures ((mkchan (p_ch.f_chan_id) p_s (p_ch.f_chan_linear)).f_chan_type == p_s)) = admit ()
 
 (* X_001_11_session_progress (matches Coq: Theorem X_001_11_session_progress) *)
-let x_001_11_session_progress_obligation () : Tot bool = true
-let x_001_11_session_progress_lemma () : Lemma (requires True) (ensures (x_001_11_session_progress_obligation () == x_001_11_session_progress_obligation ())) = ()
+let x_001_11_session_progress (p_cfg: nat) : Lemma (requires (session_typed p_cfg == true /\ ~(p_cfg == []))) (ensures ((exists p_cfg. True))) = admit ()
 
 (* X_001_12_session_safety (matches Coq: Theorem X_001_12_session_safety) *)
 let x_001_12_session_safety (p_ch1: _) (p_ch2: _) : Lemma (p_ch1.f_chan_type == dual (p_ch2.f_chan_type) /\ p_ch1.f_chan_id == p_ch2.f_chan_id) = admit ()

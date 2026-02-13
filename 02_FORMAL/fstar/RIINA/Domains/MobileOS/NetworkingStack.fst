@@ -240,8 +240,7 @@ let bandwidth_throttled (p_sock: socket) : Lemma (requires (connection_timeout_e
 let no_ip_spoofing (p_q: dns_query) : Lemma (requires (dns_validated_prop p_q == true)) (ensures (p_q.f_dns_dnssec_verified == true)) = admit ()
 
 (* firewall_rules_applied (matches Coq: Theorem firewall_rules_applied) *)
-let firewall_rules_applied_obligation () : Tot bool = true
-let firewall_rules_applied_lemma () : Lemma (requires True) (ensures (firewall_rules_applied_obligation () == firewall_rules_applied_obligation ())) = ()
+let firewall_rules_applied (p_rules: (list firewall_rule)) (p_src: nat) (p_dst: nat) (p_port: nat) : Lemma (requires (firewall_applied p_rules p_src p_dst p_port == true)) (ensures ((exists p_r. List.Tot.memP p_r p_rules) /\ r.f_fw_src_ip == p_src /\ r.f_fw_dst_ip == p_dst)) = admit ()
 
 (* vpn_traffic_encrypted (matches Coq: Theorem vpn_traffic_encrypted) *)
 let vpn_traffic_encrypted (p_t: vpn_tunnel) : Lemma (requires (vpn_traffic_encrypted_prop p_t == true /\ p_t.f_tunnel_active == true)) (ensures (p_t.f_tunnel_encrypted == true)) = admit ()

@@ -28,33 +28,25 @@ let strongly_normalizing (p_e: nat) (p_st: nat) (p_ctx: nat) : Tot bool =
 let value_sn (p_v: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v == true)) (ensures (SN p_st p_ctx p_v == true)) = admit ()
 
 (* SN_step (matches Coq: Lemma SN_step) *)
-let sn_step_obligation () : Tot bool = true
-let sn_step_lemma () : Lemma (requires True) (ensures (sn_step_obligation () == sn_step_obligation ())) = ()
+let sn_step (p_e: _) (p_e_: _) (p_st: _) (p_st_: _) (p_ctx: _) (p_ctx_: _) : Lemma (requires (SN p_st p_ctx p_e == true /\ step (p_e, p_st, p_ctx) (p_e_, p_st_, p_ctx_) == true)) (ensures (SN p_st_ p_ctx_ p_e_ == true)) = admit ()
 
 (* fst_typed_steps_to_value (matches Coq: Lemma fst_typed_steps_to_value) *)
-let fst_typed_steps_to_value_obligation () : Tot bool = true
-let fst_typed_steps_to_value_lemma () : Lemma (requires True) (ensures (fst_typed_steps_to_value_obligation () == fst_typed_steps_to_value_obligation ())) = ()
+let fst_typed_steps_to_value (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) (p_st: _) (p_ctx: _) : Lemma (requires (has_type [] p_sigma Public p_v (TProd p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures ((exists p_v1. (exists p_st. step (EFst p_v, p_st, p_ctx) (p_v1, st_, ctx_) == true)) /\ value v1 == true /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()
 
 (* snd_typed_steps_to_value (matches Coq: Lemma snd_typed_steps_to_value) *)
-let snd_typed_steps_to_value_obligation () : Tot bool = true
-let snd_typed_steps_to_value_lemma () : Lemma (requires True) (ensures (snd_typed_steps_to_value_obligation () == snd_typed_steps_to_value_obligation ())) = ()
+let snd_typed_steps_to_value (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) (p_st: _) (p_ctx: _) : Lemma (requires (has_type [] p_sigma Public p_v (TProd p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures ((exists p_v2. (exists p_st. step (ESnd p_v, p_st, p_ctx) (p_v2, st_, ctx_) == true)) /\ value v2 == true /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()
 
 (* case_typed_steps_once (matches Coq: Lemma case_typed_steps_once) *)
-let case_typed_steps_once_obligation () : Tot bool = true
-let case_typed_steps_once_lemma () : Lemma (requires True) (ensures (case_typed_steps_once_obligation () == case_typed_steps_once_obligation ())) = ()
+let case_typed_steps_once (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) (p_x1: _) (p_e1: _) (p_x2: _) (p_e2: _) (p_st: _) (p_ctx: _) : Lemma (requires (has_type [] p_sigma Public p_v (TSum p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures ((exists p_e. step (ECase p_v p_x1 p_e1 p_x2 p_e2, p_st, p_ctx) (e_, st_, ctx_) == true) /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()
 
 (* if_typed_steps_once (matches Coq: Lemma if_typed_steps_once) *)
-let if_typed_steps_once_obligation () : Tot bool = true
-let if_typed_steps_once_lemma () : Lemma (requires True) (ensures (if_typed_steps_once_obligation () == if_typed_steps_once_obligation ())) = ()
+let if_typed_steps_once (p_v: _) (p_epsilon: _) (p_sigma: _) (p_e2: _) (p_e3: _) (p_st: _) (p_ctx: _) : Lemma (requires (has_type [] p_sigma Public p_v TBool p_epsilon == true /\ value p_v == true)) (ensures ((exists p_e. step (EIf p_v p_e2 p_e3, p_st, p_ctx) (e_, st_, ctx_) == true) /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()
 
 (* let_typed_steps_once (matches Coq: Lemma let_typed_steps_once) *)
-let let_typed_steps_once_obligation () : Tot bool = true
-let let_typed_steps_once_lemma () : Lemma (requires True) (ensures (let_typed_steps_once_obligation () == let_typed_steps_once_obligation ())) = ()
+let let_typed_steps_once (p_v: _) (p_x: _) (p_e2: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v == true)) (ensures ((exists p_e. step (ELet p_x p_v p_e2, p_st, p_ctx) (e_, st_, ctx_) == true) /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()
 
 (* handle_typed_steps_once (matches Coq: Lemma handle_typed_steps_once) *)
-let handle_typed_steps_once_obligation () : Tot bool = true
-let handle_typed_steps_once_lemma () : Lemma (requires True) (ensures (handle_typed_steps_once_obligation () == handle_typed_steps_once_obligation ())) = ()
+let handle_typed_steps_once (p_v: _) (p_x: _) (p_h: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v == true)) (ensures ((exists p_e. step (EHandle p_v p_x p_h, p_st, p_ctx) (e_, st_, ctx_) == true) /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()
 
 (* app_typed_steps_once (matches Coq: Lemma app_typed_steps_once) *)
-let app_typed_steps_once_obligation () : Tot bool = true
-let app_typed_steps_once_lemma () : Lemma (requires True) (ensures (app_typed_steps_once_obligation () == app_typed_steps_once_obligation ())) = ()
+let app_typed_steps_once (p_f: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_epsilon_prime: _) (p_sigma: _) (p_a: _) (p_st: _) (p_ctx: _) : Lemma (requires (has_type [] p_sigma Public p_f (TFn p_t1 p_t2 p_epsilon) p_epsilon_prime == true /\ value p_f == true /\ value p_a == true)) (ensures ((exists p_e. step (EApp p_f p_a, p_st, p_ctx) (e_, st_, ctx_) == true) /\ st_ == p_st /\ ctx_ == p_ctx)) = admit ()

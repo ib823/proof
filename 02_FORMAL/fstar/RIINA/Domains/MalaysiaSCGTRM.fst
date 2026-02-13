@@ -86,8 +86,7 @@ let gtrm_req_7 (p_e: nat) : Lemma (requires (cm_data_protection p_e == true)) (e
 let gtrm_composition (p_e: nat) (p_t: nat) : Lemma (requires (gtrm_board_accountable p_e == true /\ gtrm_risk_framework p_e == true /\ gtrm_pentest_current p_e p_t == true /\ gtrm_ai_assessed p_e == true /\ gtrm_vendor_compliant p_e == true /\ gtrm_incident_ready p_e == true /\ gtrm_data_protected p_e == true)) (ensures (gtrm_fully_compliant p_e p_t == true)) = admit ()
 
 (* cm_entity_coverage (matches Coq: Theorem cm_entity_coverage) *)
-let cm_entity_coverage_obligation () : Tot bool = true
-let cm_entity_coverage_lemma () : Lemma (requires True) (ensures (cm_entity_coverage_obligation () == cm_entity_coverage_obligation ())) = ()
+let cm_entity_coverage (p_t: cm_entity_type) : Lemma (List.Tot.memP p_t all_cm_entity_types) = admit ()
 
 (* pentest_expired (matches Coq: Theorem pentest_expired) *)
 let pentest_expired (p_e: nat) (p_t: nat) : Lemma (requires (cm_last_pentest p_e + cm_pentest_interval p_e < p_t)) (ensures (~(gtrm_pentest_current p_e p_t == true))) = admit ()

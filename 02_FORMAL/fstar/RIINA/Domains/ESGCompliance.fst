@@ -405,101 +405,79 @@ let science_based (p_t: science_based_target) : Tot bool =
   true
 
 (* ESG_001_01_scope1_completeness (matches Coq: Theorem ESG_001_01_scope1_completeness) *)
-let esg_001_01_scope1_completeness_obligation () : Tot bool = true
-let esg_001_01_scope1_completeness_lemma () : Lemma (requires True) (ensures (esg_001_01_scope1_completeness_obligation () == esg_001_01_scope1_completeness_obligation ())) = ()
+let esg_001_01_scope1_completeness (p_sys: esg_compliant_system) (p_s: _) : Lemma (requires (List.Tot.memP p_s (p_sys.f_sys_emissions) /\ p_s.f_source_type == Scope1 /\ p_s.f_owned_or_controlled_flag == true)) (ensures (p_s.f_is_tracked == true /\ p_s.f_is_measured == true /\ p_s.f_is_reported == true)) = admit ()
 
 (* ESG_001_02_scope2_calculation (matches Coq: Theorem ESG_001_02_scope2_calculation) *)
-let esg_001_02_scope2_calculation_obligation () : Tot bool = true
-let esg_001_02_scope2_calculation_lemma () : Lemma (requires True) (ensures (esg_001_02_scope2_calculation_obligation () == esg_001_02_scope2_calculation_obligation ())) = ()
+let esg_001_02_scope2_calculation (p_sys: esg_compliant_system) (p_s: _) : Lemma (requires (List.Tot.memP p_s (p_sys.f_sys_emissions) /\ (p_s.f_source_type == Scope2_Location \/ p_s.f_source_type == Scope2_Market))) (ensures (p_s.f_emission_factor > 0 /\ p_s.f_is_tracked == true)) = admit ()
 
 (* ESG_001_03_scope3_coverage (matches Coq: Theorem ESG_001_03_scope3_coverage) *)
-let esg_001_03_scope3_coverage_obligation () : Tot bool = true
-let esg_001_03_scope3_coverage_lemma () : Lemma (requires True) (ensures (esg_001_03_scope3_coverage_obligation () == esg_001_03_scope3_coverage_obligation ())) = ()
+let esg_001_03_scope3_coverage (p_sys: esg_compliant_system) (p_n: _) : Lemma (requires (valid_scope3_category p_n == true)) (ensures ((exists p_s. List.Tot.memP p_s (p_sys.f_sys_emissions)) /\ s.f_source_type == Scope3 p_n)) = admit ()
 
 (* ESG_001_04_emission_factor_accuracy (matches Coq: Theorem ESG_001_04_emission_factor_accuracy) *)
-let esg_001_04_emission_factor_accuracy_obligation () : Tot bool = true
-let esg_001_04_emission_factor_accuracy_lemma () : Lemma (requires True) (ensures (esg_001_04_emission_factor_accuracy_obligation () == esg_001_04_emission_factor_accuracy_obligation ())) = ()
+let esg_001_04_emission_factor_accuracy (p_sys: esg_compliant_system) (p_s: _) : Lemma (requires (List.Tot.memP p_s (p_sys.f_sys_emissions))) (ensures (p_s.f_emission_factor > 0)) = admit ()
 
 (* ESG_001_05_no_double_counting (matches Coq: Theorem ESG_001_05_no_double_counting) *)
-let esg_001_05_no_double_counting_obligation () : Tot bool = true
-let esg_001_05_no_double_counting_lemma () : Lemma (requires True) (ensures (esg_001_05_no_double_counting_obligation () == esg_001_05_no_double_counting_obligation ())) = ()
+let esg_001_05_no_double_counting (p_sys: esg_compliant_system) (p_s1: _) (p_s2: _) : Lemma (requires (List.Tot.memP p_s1 (p_sys.f_sys_emissions) /\ List.Tot.memP p_s2 (p_sys.f_sys_emissions) /\ same_emission p_s1 p_s2 == true)) (ensures (p_s1 == p_s2)) = admit ()
 
 (* ESG_001_06_renewable_tracking (matches Coq: Theorem ESG_001_06_renewable_tracking) *)
-let esg_001_06_renewable_tracking_obligation () : Tot bool = true
-let esg_001_06_renewable_tracking_lemma () : Lemma (requires True) (ensures (esg_001_06_renewable_tracking_obligation () == esg_001_06_renewable_tracking_obligation ())) = ()
+let esg_001_06_renewable_tracking (p_sys: esg_compliant_system) (p_r: _) : Lemma (requires (List.Tot.memP p_r (p_sys.f_sys_renewables))) (ensures (p_r.f_unique_claim == true)) = admit ()
 
 (* ESG_001_07_carbon_calculation_precision (matches Coq: Theorem ESG_001_07_carbon_calculation_precision) *)
-let esg_001_07_carbon_calculation_precision_obligation () : Tot bool = true
-let esg_001_07_carbon_calculation_precision_lemma () : Lemma (requires True) (ensures (esg_001_07_carbon_calculation_precision_obligation () == esg_001_07_carbon_calculation_precision_obligation ())) = ()
+let esg_001_07_carbon_calculation_precision (p_sys: esg_compliant_system) (p_s: _) : Lemma (requires (List.Tot.memP p_s (p_sys.f_sys_emissions))) (ensures ((exists (p_scaled_emission: int). p_scaled_emission == emission p_s))) = admit ()
 
 (* ESG_001_08_water_withdrawal_tracking (matches Coq: Theorem ESG_001_08_water_withdrawal_tracking) *)
-let esg_001_08_water_withdrawal_tracking_obligation () : Tot bool = true
-let esg_001_08_water_withdrawal_tracking_lemma () : Lemma (requires True) (ensures (esg_001_08_water_withdrawal_tracking_obligation () == esg_001_08_water_withdrawal_tracking_obligation ())) = ()
+let esg_001_08_water_withdrawal_tracking (p_sys: esg_compliant_system) (p_w: _) : Lemma (requires (List.Tot.memP p_w (p_sys.f_sys_water))) (ensures (p_w.f_source_documented == true)) = admit ()
 
 (* ESG_001_09_waste_diversion_rate (matches Coq: Theorem ESG_001_09_waste_diversion_rate) *)
-let esg_001_09_waste_diversion_rate_obligation () : Tot bool = true
-let esg_001_09_waste_diversion_rate_lemma () : Lemma (requires True) (ensures (esg_001_09_waste_diversion_rate_obligation () == esg_001_09_waste_diversion_rate_obligation ())) = ()
+let esg_001_09_waste_diversion_rate (p_sys: esg_compliant_system) (p_w: _) : Lemma (requires (List.Tot.memP p_w (p_sys.f_sys_waste))) (ensures (waste_accounting_correct p_w == true)) = admit ()
 
 (* ESG_001_10_biodiversity_assessment (matches Coq: Theorem ESG_001_10_biodiversity_assessment) *)
-let esg_001_10_biodiversity_assessment_obligation () : Tot bool = true
-let esg_001_10_biodiversity_assessment_lemma () : Lemma (requires True) (ensures (esg_001_10_biodiversity_assessment_obligation () == esg_001_10_biodiversity_assessment_obligation ())) = ()
+let esg_001_10_biodiversity_assessment (p_sys: esg_compliant_system) (p_b: _) : Lemma (requires (List.Tot.memP p_b (p_sys.f_sys_biodiversity))) (ensures (p_b.f_dependencies_mapped == true)) = admit ()
 
 (* ESG_001_11_circular_economy_metrics (matches Coq: Theorem ESG_001_11_circular_economy_metrics) *)
-let esg_001_11_circular_economy_metrics_obligation () : Tot bool = true
-let esg_001_11_circular_economy_metrics_lemma () : Lemma (requires True) (ensures (esg_001_11_circular_economy_metrics_obligation () == esg_001_11_circular_economy_metrics_obligation ())) = ()
+let esg_001_11_circular_economy_metrics (p_sys: esg_compliant_system) (p_c: _) : Lemma (requires (List.Tot.memP p_c (p_sys.f_sys_circular))) (ensures (p_c.f_measurement_verified == true)) = admit ()
 
 (* ESG_001_12_pollution_compliance (matches Coq: Theorem ESG_001_12_pollution_compliance) *)
-let esg_001_12_pollution_compliance_obligation () : Tot bool = true
-let esg_001_12_pollution_compliance_lemma () : Lemma (requires True) (ensures (esg_001_12_pollution_compliance_obligation () == esg_001_12_pollution_compliance_obligation ())) = ()
+let esg_001_12_pollution_compliance (p_sys: esg_compliant_system) (p_p: _) : Lemma (requires (List.Tot.memP p_p (p_sys.f_sys_pollution))) (ensures (pollution_compliant p_p == true)) = admit ()
 
 (* ESG_001_13_living_wage_guarantee (matches Coq: Theorem ESG_001_13_living_wage_guarantee) *)
-let esg_001_13_living_wage_guarantee_obligation () : Tot bool = true
-let esg_001_13_living_wage_guarantee_lemma () : Lemma (requires True) (ensures (esg_001_13_living_wage_guarantee_obligation () == esg_001_13_living_wage_guarantee_obligation ())) = ()
+let esg_001_13_living_wage_guarantee (p_sys: esg_compliant_system) (p_e: _) : Lemma (requires (List.Tot.memP p_e (p_sys.f_sys_employees) /\ p_e.f_employed_flag == true)) (ensures (paid_living_wage p_e == true)) = admit ()
 
 (* ESG_001_14_no_forced_labor (matches Coq: Theorem ESG_001_14_no_forced_labor) *)
-let esg_001_14_no_forced_labor_obligation () : Tot bool = true
-let esg_001_14_no_forced_labor_lemma () : Lemma (requires True) (ensures (esg_001_14_no_forced_labor_obligation () == esg_001_14_no_forced_labor_obligation ())) = ()
+let esg_001_14_no_forced_labor (p_sys: esg_compliant_system) (p_e: _) : Lemma (requires (List.Tot.memP p_e (p_sys.f_sys_employees) /\ p_e.f_employed_flag == true)) (ensures (no_forced_labor p_e == true)) = admit ()
 
 (* ESG_001_15_no_child_labor (matches Coq: Theorem ESG_001_15_no_child_labor) *)
-let esg_001_15_no_child_labor_obligation () : Tot bool = true
-let esg_001_15_no_child_labor_lemma () : Lemma (requires True) (ensures (esg_001_15_no_child_labor_obligation () == esg_001_15_no_child_labor_obligation ())) = ()
+let esg_001_15_no_child_labor (p_sys: esg_compliant_system) (p_e: _) : Lemma (requires (List.Tot.memP p_e (p_sys.f_sys_employees) /\ p_e.f_employed_flag == true)) (ensures (no_child_labor p_e == true)) = admit ()
 
 (* ESG_001_16_safety_incident_tracking (matches Coq: Theorem ESG_001_16_safety_incident_tracking) *)
-let esg_001_16_safety_incident_tracking_obligation () : Tot bool = true
-let esg_001_16_safety_incident_tracking_lemma () : Lemma (requires True) (ensures (esg_001_16_safety_incident_tracking_obligation () == esg_001_16_safety_incident_tracking_obligation ())) = ()
+let esg_001_16_safety_incident_tracking (p_sys: esg_compliant_system) (p_i: _) : Lemma (requires (List.Tot.memP p_i (p_sys.f_sys_incidents))) (ensures (incident_properly_handled p_i == true)) = admit ()
 
 (* ESG_001_17_non_discrimination (matches Coq: Theorem ESG_001_17_non_discrimination) *)
-let esg_001_17_non_discrimination_obligation () : Tot bool = true
-let esg_001_17_non_discrimination_lemma () : Lemma (requires True) (ensures (esg_001_17_non_discrimination_obligation () == esg_001_17_non_discrimination_obligation ())) = ()
+let esg_001_17_non_discrimination (p_sys: esg_compliant_system) (p_d: _) : Lemma (requires (List.Tot.memP p_d (p_sys.f_sys_decisions))) (ensures (non_discriminatory p_d == true)) = admit ()
 
 (* ESG_001_18_equal_pay_verification (matches Coq: Theorem ESG_001_18_equal_pay_verification) *)
-let esg_001_18_equal_pay_verification_obligation () : Tot bool = true
-let esg_001_18_equal_pay_verification_lemma () : Lemma (requires True) (ensures (esg_001_18_equal_pay_verification_obligation () == esg_001_18_equal_pay_verification_obligation ())) = ()
+let esg_001_18_equal_pay_verification (p_sys: esg_compliant_system) (p_p: _) : Lemma (requires (List.Tot.memP p_p (p_sys.f_sys_paygap))) (ensures (p_p.f_gap_calculated == true /\ p_p.f_gap_disclosed == true)) = admit ()
 
 (* ESG_001_19_hrdd_process (matches Coq: Theorem ESG_001_19_hrdd_process) *)
 let esg_001_19_hrdd_process (p_sys: esg_compliant_system) : Lemma (hrdd_implemented (p_sys.f_sys_hrdd) == true) = admit ()
 
 (* ESG_001_20_supply_chain_assessment (matches Coq: Theorem ESG_001_20_supply_chain_assessment) *)
-let esg_001_20_supply_chain_assessment_obligation () : Tot bool = true
-let esg_001_20_supply_chain_assessment_lemma () : Lemma (requires True) (ensures (esg_001_20_supply_chain_assessment_obligation () == esg_001_20_supply_chain_assessment_obligation ())) = ()
+let esg_001_20_supply_chain_assessment (p_sys: esg_compliant_system) (p_s: _) (p_year: _) : Lemma (requires (List.Tot.memP p_s (p_sys.f_sys_suppliers))) (ensures (supplier_recently_assessed p_s p_year == true)) = admit ()
 
 (* ESG_001_21_fpic_requirement (matches Coq: Theorem ESG_001_21_fpic_requirement) *)
-let esg_001_21_fpic_requirement_obligation () : Tot bool = true
-let esg_001_21_fpic_requirement_lemma () : Lemma (requires True) (ensures (esg_001_21_fpic_requirement_obligation () == esg_001_21_fpic_requirement_obligation ())) = ()
+let esg_001_21_fpic_requirement (p_sys: esg_compliant_system) (p_c: _) : Lemma (requires (List.Tot.memP p_c (p_sys.f_sys_indigenous))) (ensures (fpic_satisfied p_c == true)) = admit ()
 
 (* ESG_001_22_grievance_mechanism (matches Coq: Theorem ESG_001_22_grievance_mechanism) *)
 let esg_001_22_grievance_mechanism (p_sys: esg_compliant_system) : Lemma (grievance_adequate (p_sys.f_sys_grievance) == true) = admit ()
 
 (* ESG_001_23_stakeholder_engagement (matches Coq: Theorem ESG_001_23_stakeholder_engagement) *)
-let esg_001_23_stakeholder_engagement_obligation () : Tot bool = true
-let esg_001_23_stakeholder_engagement_lemma () : Lemma (requires True) (ensures (esg_001_23_stakeholder_engagement_obligation () == esg_001_23_stakeholder_engagement_obligation ())) = ()
+let esg_001_23_stakeholder_engagement (p_sys: esg_compliant_system) (p_s: _) : Lemma (requires (List.Tot.memP p_s (p_sys.f_sys_stakeholder))) (ensures (stakeholder_engaged p_s == true)) = admit ()
 
 (* ESG_001_24_board_independence (matches Coq: Theorem ESG_001_24_board_independence) *)
 let esg_001_24_board_independence (p_sys: esg_compliant_system) : Lemma (independent_majority (p_sys.f_sys_board) == true) = admit ()
 
 (* ESG_001_25_esg_linked_compensation (matches Coq: Theorem ESG_001_25_esg_linked_compensation) *)
-let esg_001_25_esg_linked_compensation_obligation () : Tot bool = true
-let esg_001_25_esg_linked_compensation_lemma () : Lemma (requires True) (ensures (esg_001_25_esg_linked_compensation_obligation () == esg_001_25_esg_linked_compensation_obligation ())) = ()
+let esg_001_25_esg_linked_compensation (p_sys: esg_compliant_system) (p_ec: _) : Lemma (requires (List.Tot.memP p_ec (p_sys.f_sys_exec_comp))) (ensures (esg_linked p_ec == true)) = admit ()
 
 (* ESG_001_26_anti_corruption_policy (matches Coq: Theorem ESG_001_26_anti_corruption_policy) *)
 let esg_001_26_anti_corruption_policy (p_sys: esg_compliant_system) : Lemma (anti_corruption_adequate (p_sys.f_sys_anti_corruption) == true) = admit ()
@@ -511,8 +489,7 @@ let esg_001_27_whistleblower_protection (p_sys: esg_compliant_system) : Lemma (w
 let esg_001_28_conflict_of_interest (p_sys: esg_compliant_system) : Lemma (coi_managed (p_sys.f_sys_coi) == true) = admit ()
 
 (* ESG_001_29_related_party_disclosure (matches Coq: Theorem ESG_001_29_related_party_disclosure) *)
-let esg_001_29_related_party_disclosure_obligation () : Tot bool = true
-let esg_001_29_related_party_disclosure_lemma () : Lemma (requires True) (ensures (esg_001_29_related_party_disclosure_obligation () == esg_001_29_related_party_disclosure_obligation ())) = ()
+let esg_001_29_related_party_disclosure (p_sys: esg_compliant_system) (p_r: _) : Lemma (requires (List.Tot.memP p_r (p_sys.f_sys_rpt))) (ensures (rpt_compliant p_r == true)) = admit ()
 
 (* ESG_001_30_gri_compliance (matches Coq: Theorem ESG_001_30_gri_compliance) *)
 let esg_001_30_gri_compliance (p_sys: esg_compliant_system) : Lemma ((p_sys.f_sys_disclosure).f_gri_compliant == true) = admit ()

@@ -6,7 +6,7 @@
 //! particularly speculative execution vulnerabilities. These tests verify
 //! that RIINA's code generation patterns do not expose these vulnerabilities.
 //!
-//! # Coverage (19 vulnerabilities)
+//! # Coverage (23 vulnerabilities)
 //!
 //! ## Speculative Execution Attacks
 //! - **Spectre v1**: Bounds Check Bypass (BCB)
@@ -38,6 +38,12 @@
 //!
 //! ## Other
 //! - **LVI**: Load Value Injection (reverse Meltdown)
+//!
+//! ## 2025-2026 Emerging Threats (Worker F)
+//! - **TSA**: Transient Scheduler Attacks (scheduler as side-channel)
+//! - **VMScape**: Cross-VM Branch Predictor training
+//! - **Training Solo**: eIBRS self-training bypass
+//! - **SLAP/FLOP**: Apple Silicon load address/value prediction
 //!
 //! # Formal Model
 //!
@@ -74,6 +80,12 @@ pub mod cacheout;
 pub mod platypus;
 pub mod hertzbleed;
 pub mod prefetch;
+
+// 2025-2026 emerging threat litmus tests (Worker F)
+pub mod tsa;
+pub mod vmscape;
+pub mod training_solo;
+pub mod slap_flop;
 
 /// Result type for litmus tests
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -127,6 +139,11 @@ pub fn all_litmus_tests() -> Vec<Box<dyn LitmusTest>> {
         Box::new(platypus::Platypus),
         Box::new(hertzbleed::Hertzbleed),
         Box::new(prefetch::PrefetchAttack),
+        // 2025-2026 emerging threats
+        Box::new(tsa::TransientSchedulerAttack),
+        Box::new(vmscape::VMScape),
+        Box::new(training_solo::TrainingSolo),
+        Box::new(slap_flop::SlapFlop),
     ]
 }
 
@@ -136,12 +153,12 @@ mod tests {
 
     #[test]
     fn test_all_litmus_tests_available() {
-        // Ensure all 19 litmus test modules are present
+        // Ensure all 23 litmus test modules are present
         // This test will fail to compile if any module is missing
         let tests = all_litmus_tests();
 
-        // Verify we have exactly 19 tests
-        assert_eq!(tests.len(), 19);
+        // Verify we have exactly 23 tests
+        assert_eq!(tests.len(), 23);
 
         // Run all tests
         for test in tests.iter() {

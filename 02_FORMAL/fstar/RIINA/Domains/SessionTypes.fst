@@ -180,8 +180,7 @@ let st_021_value_done (p_p: _) : Lemma (requires (is_value p_p == true)) (ensure
 let st_022_end_is_value () : Lemma (is_value PEnd == true) = admit ()
 
 (* ST_023_empty_deadlock_free (matches Coq: Theorem ST_023_empty_deadlock_free) *)
-let st_023_empty_deadlock_free_obligation () : Tot bool = true
-let st_023_empty_deadlock_free_lemma () : Lemma (requires True) (ensures (st_023_empty_deadlock_free_obligation () == st_023_empty_deadlock_free_obligation ())) = ()
+let st_023_empty_deadlock_free () : Lemma (~(deadlocked [] == true)) = admit ()
 
 (* ST_024_msg_eq_refl (matches Coq: Theorem ST_024_msg_eq_refl) *)
 let st_024_msg_eq_refl (p_mt: _) : Lemma (msg_type_eqb p_mt p_mt == true) = admit ()
@@ -190,13 +189,13 @@ let st_024_msg_eq_refl (p_mt: _) : Lemma (msg_type_eqb p_mt p_mt == true) = admi
 let st_025_msg_eq_true (p_mt1: _) (p_mt2: _) : Lemma (requires (msg_type_eqb p_mt1 p_mt2 == true)) (ensures (p_mt1 == p_mt2)) = admit ()
 
 (* ST_026_msg_type_cases (matches Coq: Theorem ST_026_msg_type_cases) *)
-let st_026_msg_type_cases (p_mt: _) (p_msgtype: _) : Lemma (p_mt == MTNat \/ p_mt == MTBool \/ p_mt == MTUnit \/ p_mt == MTString) = admit ()
+let st_026_msg_type_cases (p_mt: msg_type) : Lemma (p_mt == MTNat \/ p_mt == MTBool \/ p_mt == MTUnit \/ p_mt == MTString) = admit ()
 
 (* ST_027_msg_type_dec (matches Coq: Theorem ST_027_msg_type_dec) *)
-let st_027_msg_type_dec (p_mt1: _) (p_mt2: _) (p_msgtype: _) : Lemma ({p_mt1 == mt2_ + {p_mt1 <> mt2_) = admit ()
+let st_027_msg_type_dec (p_mt1: msg_type) (p_mt2: msg_type) : Lemma ({p_mt1 == mt2_ + {p_mt1 <> mt2_) = admit ()
 
 (* ST_028_session_type_cases (matches Coq: Theorem ST_028_session_type_cases) *)
-let st_028_session_type_cases (p_s: _) (p_sessiontype: _) : Lemma (((exists p_mt. (exists p_s. p_s == SSend p_mt s_))) \/ ((exists p_mt. (exists p_s. p_s == SRecv p_mt s_))) \/ ((exists p_bs. p_s == SSelect p_bs)) \/ ((exists p_bs. p_s == SOffer p_bs)) \/ p_s == SEnd) = admit ()
+let st_028_session_type_cases (p_s: session_type) : Lemma (((exists p_mt. (exists p_s. p_s == SSend p_mt s_))) \/ ((exists p_mt. (exists p_s. p_s == SRecv p_mt s_))) \/ ((exists p_bs. p_s == SSelect p_bs)) \/ ((exists p_bs. p_s == SOffer p_bs)) \/ p_s == SEnd) = admit ()
 
 (* ST_029_dual_non_end_send (matches Coq: Theorem ST_029_dual_non_end_send) *)
 let st_029_dual_non_end_send (p_mt: _) (p_s: _) : Lemma (~(dual (SSend p_mt p_s) == SEnd)) = admit ()
@@ -205,16 +204,13 @@ let st_029_dual_non_end_send (p_mt: _) (p_s: _) : Lemma (~(dual (SSend p_mt p_s)
 let st_030_dual_non_end_recv (p_mt: _) (p_s: _) : Lemma (~(dual (SRecv p_mt p_s) == SEnd)) = admit ()
 
 (* ST_031_dual_empty_select (matches Coq: Theorem ST_031_dual_empty_select) *)
-let st_031_dual_empty_select_obligation () : Tot bool = true
-let st_031_dual_empty_select_lemma () : Lemma (requires True) (ensures (st_031_dual_empty_select_obligation () == st_031_dual_empty_select_obligation ())) = ()
+let st_031_dual_empty_select () : Lemma (dual (SSelect []) == SOffer []) = admit ()
 
 (* ST_032_dual_empty_offer (matches Coq: Theorem ST_032_dual_empty_offer) *)
-let st_032_dual_empty_offer_obligation () : Tot bool = true
-let st_032_dual_empty_offer_lemma () : Lemma (requires True) (ensures (st_032_dual_empty_offer_obligation () == st_032_dual_empty_offer_obligation ())) = ()
+let st_032_dual_empty_offer () : Lemma (dual (SOffer []) == SSelect []) = admit ()
 
 (* ST_033_lookup_empty (matches Coq: Theorem ST_033_lookup_empty) *)
-let st_033_lookup_empty_obligation () : Tot bool = true
-let st_033_lookup_empty_lemma () : Lemma (requires True) (ensures (st_033_lookup_empty_obligation () == st_033_lookup_empty_obligation ())) = ()
+let st_033_lookup_empty (p_id: _) : Lemma (lookup [] p_id == None) = admit ()
 
 (* ST_034_lookup_found (matches Coq: Theorem ST_034_lookup_found) *)
 let st_034_lookup_found (p_id: _) (p_ty: _) (p_env: _) : Lemma (lookup ((p_id, p_ty) :: p_env) p_id == Some p_ty) = admit ()
@@ -230,12 +226,10 @@ let st_037_dual_branches_obligation () : Tot bool = true
 let st_037_dual_branches_lemma () : Lemma (requires True) (ensures (st_037_dual_branches_obligation () == st_037_dual_branches_obligation ())) = ()
 
 (* ST_038_single_branch_dual (matches Coq: Theorem ST_038_single_branch_dual) *)
-let st_038_single_branch_dual_obligation () : Tot bool = true
-let st_038_single_branch_dual_lemma () : Lemma (requires True) (ensures (st_038_single_branch_dual_obligation () == st_038_single_branch_dual_obligation ())) = ()
+let st_038_single_branch_dual (p_l: nat) (p_s: session_type) : Lemma (dual (SSelect [(p_l, p_s)]) == SOffer [(p_l, dual p_s)]) = admit ()
 
 (* ST_039_wt_end_empty (matches Coq: Theorem ST_039_wt_end_empty) *)
-let st_039_wt_end_empty_obligation () : Tot bool = true
-let st_039_wt_end_empty_lemma () : Lemma (requires True) (ensures (st_039_wt_end_empty_obligation () == st_039_wt_end_empty_obligation ())) = ()
+let st_039_wt_end_empty (p_env: _) : Lemma (requires (well_typed_proc p_env PEnd == true)) (ensures (p_env == [])) = admit ()
 
 (* ST_040_par_exists (matches Coq: Theorem ST_040_par_exists) *)
 let st_040_par_exists (p_p1: _) (p_p2: _) : Lemma (PPar p_p1 p_p2 == PPar p_p1 p_p2) = admit ()
@@ -247,7 +241,7 @@ let st_041_chan_construct (p_id: _) (p_ty: _) (p_lin: _) : Lemma ((mkchan p_id p
 let st_042_pair_construct (p_ea: _) (p_eb: _) : Lemma ((mkchanpair p_ea p_eb).f_endpoint_a == p_ea /\ (mkchanpair p_ea p_eb).f_endpoint_b == p_eb) = admit ()
 
 (* ST_043_process_cases (matches Coq: Theorem ST_043_process_cases) *)
-let st_043_process_cases (p_p: _) (p_process: _) : Lemma (((exists p_ch. (exists p_v. (exists p_p. p_p == PSend p_ch p_v p_)))) \/ ((exists p_ch. (exists p_p. p_p == PRecv p_ch p_))) \/ ((exists p_ch. (exists p_l. (exists p_p. p_p == PSelect p_ch p_l p_)))) \/ ((exists p_ch. (exists p_bs. p_p == POffer p_ch p_bs))) \/ ((exists p_ch. p_p == PClose p_ch)) \/ p_p == PEnd \/ ((exists p_p1. (exists p_p2. p_p == PPar p_p1 p_p2)))) = admit ()
+let st_043_process_cases (p_p: process) : Lemma (((exists p_ch. (exists p_v. (exists p_p. p_p == PSend p_ch p_v p_)))) \/ ((exists p_ch. (exists p_p. p_p == PRecv p_ch p_))) \/ ((exists p_ch. (exists p_l. (exists p_p. p_p == PSelect p_ch p_l p_)))) \/ ((exists p_ch. (exists p_bs. p_p == POffer p_ch p_bs))) \/ ((exists p_ch. p_p == PClose p_ch)) \/ p_p == PEnd \/ ((exists p_p1. (exists p_p2. p_p == PPar p_p1 p_p2)))) = admit ()
 
 (* ST_044_dual_triple_end (matches Coq: Theorem ST_044_dual_triple_end) *)
 let st_044_dual_triple_end () : Lemma (dual (dual (dual SEnd)) == dual SEnd) = admit ()

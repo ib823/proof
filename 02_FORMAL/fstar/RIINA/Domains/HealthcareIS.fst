@@ -445,8 +445,7 @@ let note_immutable (p_n: clinical_note) : Tot bool =
   true
 
 (* HIS_001_01_patient_identity_uniqueness (matches Coq: Theorem HIS_001_01_patient_identity_uniqueness) *)
-let his_001_01_patient_identity_uniqueness_obligation () : Tot bool = true
-let his_001_01_patient_identity_uniqueness_lemma () : Lemma (requires True) (ensures (his_001_01_patient_identity_uniqueness_obligation () == his_001_01_patient_identity_uniqueness_obligation ())) = ()
+let his_001_01_patient_identity_uniqueness (p_reg: patient_registry) (p_p1: _) (p_p2: _) : Lemma (requires (List.Tot.memP p_p1 (p_reg.f_patients) /\ List.Tot.memP p_p2 (p_reg.f_patients) /\ p_p1.f_mrn == p_p2.f_mrn)) (ensures (p_p1 == p_p2)) = admit ()
 
 (* HIS_001_02_patient_matching_accuracy (matches Coq: Theorem HIS_001_02_patient_matching_accuracy) *)
 let his_001_02_patient_matching_accuracy (p_pm: _) : Lemma (requires (p_pm.f_match_score >= 999)) (ensures (high_confidence_match p_pm == true)) = admit ()

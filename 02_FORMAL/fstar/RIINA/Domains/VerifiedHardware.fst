@@ -309,8 +309,7 @@ let phi_001_05_alu_correct (p_rd: _) (p_rs1: _) (p_rs2: _) (p_s: _) : Lemma (rtl
 let phi_001_06_branch_correct (p_rs1: _) (p_rs2: _) (p_target: _) (p_s: _) : Lemma ((rtl_regs p_s p_rs1 == rtl_regs p_s p_rs2 -> rtl_pc (rtl_execute_instr (IBranch p_rs1 p_rs2 p_target) p_s) = p_target) /\ (rtl_regs p_s p_rs1 <> rtl_regs p_s p_rs2 -> rtl_pc (rtl_execute_instr (IBranch p_rs1 p_rs2 p_target) p_s) == ((p_s.f_rtl_pc) + 1))) = admit ()
 
 (* PHI_001_07_interrupt_correct (matches Coq: Theorem PHI_001_07_interrupt_correct) *)
-let phi_001_07_interrupt_correct_obligation () : Tot bool = true
-let phi_001_07_interrupt_correct_lemma () : Lemma (requires True) (ensures (phi_001_07_interrupt_correct_obligation () == phi_001_07_interrupt_correct_obligation ())) = ()
+let phi_001_07_interrupt_correct (p_s: _) : Lemma (p_s.f_rtl_speculating == false /\ p_s.f_rtl_pipeline == []) = admit ()
 
 (* PHI_001_08_instruction_fetch_correct (matches Coq: Theorem PHI_001_08_instruction_fetch_correct) *)
 let phi_001_08_instruction_fetch_correct (p_instr: _) (p_s: _) : Lemma (requires (~(p_instr == IZEROIZE))) (ensures ((rtl_execute_instr p_instr p_s).f_rtl_pc == ((p_s.f_rtl_pc) + 1) \/ (exists p_target. (rtl_execute_instr p_instr p_s).f_rtl_pc == p_target))) = admit ()
@@ -404,8 +403,7 @@ let phi_001_30_formal_equivalence (p_instr: _) (p_s: _) : Lemma (rtl_to_arch (rt
 let phi_001_31_trojan_detected (p_s: _) : Lemma (requires (reachable initial_rtl_state p_s == true)) (ensures (verified p_s == true /\ ~(has_trigger_logic p_s == true) /\ ~(has_payload_logic p_s == true))) = admit ()
 
 (* PHI_001_32_ecc_single_correct (matches Coq: Theorem PHI_001_32_ecc_single_correct) *)
-let phi_001_32_ecc_single_correct_obligation () : Tot bool = true
-let phi_001_32_ecc_single_correct_lemma () : Lemma (requires True) (ensures (phi_001_32_ecc_single_correct_obligation () == phi_001_32_ecc_single_correct_obligation ())) = ()
+let phi_001_32_ecc_single_correct (p_w: _) (p_bit: _) : Lemma (requires (p_bit > 0 /\ p_bit < 32)) (ensures (ecc_correct_single w_err == Nat.lxor (w_err.f_ecc_data) (Nat.pow 2 (w_err.f_ecc_syndrome)))) = admit ()
 
 (* PHI_001_33_ecc_double_detect (matches Coq: Theorem PHI_001_33_ecc_double_detect) *)
 let phi_001_33_ecc_double_detect (p_w: _) : Lemma (requires (~(p_w.f_ecc_syndrome == 0) /\ p_w.f_ecc_parity == true)) (ensures (ecc_is_double_error p_w == true)) = admit ()
@@ -414,8 +412,7 @@ let phi_001_33_ecc_double_detect (p_w: _) : Lemma (requires (~(p_w.f_ecc_syndrom
 let phi_001_34_zeroize_complete (p_s: _) (p_r: _) : Lemma (rtl_regs (exec_zeroize p_s) p_r == 0) = admit ()
 
 (* PHI_001_35_checkpoint_correct (matches Coq: Theorem PHI_001_35_checkpoint_correct) *)
-let phi_001_35_checkpoint_correct_obligation () : Tot bool = true
-let phi_001_35_checkpoint_correct_lemma () : Lemma (requires True) (ensures (phi_001_35_checkpoint_correct_obligation () == phi_001_35_checkpoint_correct_obligation ())) = ()
+let phi_001_35_checkpoint_correct (p_s: _) : Lemma (requires (chk.f_chk_valid == true)) (ensures ((restore_checkpoint p_s chk).f_rtl_regs == chk.f_chk_regs /\ (restore_checkpoint p_s chk).f_rtl_pc == chk.f_chk_pc)) = admit ()
 
 (* PHI_001_36_voltage_monitor (matches Coq: Theorem PHI_001_36_voltage_monitor) *)
 let phi_001_36_voltage_monitor (p_v: _) : Lemma (requires (p_v < 900 \/ p_v > 1100)) (ensures (voltage_glitch_detected p_v == true)) = admit ()

@@ -80,19 +80,19 @@ let dpo_requirement_met (p_policy: nat) (p_dpo_appointed: bool) : Tot bool =
   true
 
 (* data_residency (matches Coq: Theorem data_residency) *)
-let data_residency (p_d: _) (p_dataitem: _) : Lemma (data_resident p_d (data_jurisdiction p_d) == true) = admit ()
+let data_residency (p_d: nat) : Lemma (data_resident p_d (data_jurisdiction p_d) == true) = admit ()
 
 (* cross_border_requires_auth (matches Coq: Theorem cross_border_requires_auth) *)
 let cross_border_requires_auth (p_agreements: nat) (p_d: nat) (p_target: nat) (p_trail: nat) : Lemma (requires (~(data_jurisdiction p_d == p_target) /\ authorized p_agreements (data_jurisdiction p_d) p_target (data_classification p_d) == true)) (ensures (well_formed_transfer p_agreements (mktransfer (data_id p_d) (data_jurisdiction p_d) p_target :: p_trail) p_d p_target == true)) = admit ()
 
 (* jurisdiction_leq_reflexive (matches Coq: Theorem jurisdiction_leq_reflexive) *)
-let jurisdiction_leq_reflexive (p_j: _) (p_jurisdiction: _) : Lemma (jurisdiction_leq p_j p_j == true) = admit ()
+let jurisdiction_leq_reflexive (p_j: nat) : Lemma (jurisdiction_leq p_j p_j == true) = admit ()
 
 (* jurisdiction_leq_transitive (matches Coq: Theorem jurisdiction_leq_transitive) *)
-let jurisdiction_leq_transitive (p_j1: _) (p_j2: _) (p_j3: _) (p_jurisdiction: _) : Lemma (requires (jurisdiction_leq p_j1 p_j2 == true /\ jurisdiction_leq p_j2 p_j3 == true)) (ensures (jurisdiction_leq p_j1 p_j3 == true)) = admit ()
+let jurisdiction_leq_transitive (p_j1: nat) (p_j2: nat) (p_j3: nat) : Lemma (requires (jurisdiction_leq p_j1 p_j2 == true /\ jurisdiction_leq p_j2 p_j3 == true)) (ensures (jurisdiction_leq p_j1 p_j3 == true)) = admit ()
 
 (* jurisdiction_preorder (matches Coq: Theorem jurisdiction_preorder) *)
-let jurisdiction_preorder (p_j: _) (p_jurisdiction: _) : Lemma (jurisdiction_leq p_j p_j == true /\ ((forall (j2: _). (forall (j3: _). jurisdiction_leq p_j j2 -> jurisdiction_leq j2 j3 -> jurisdiction_leq p_j j3 == true)))) = admit ()
+let jurisdiction_preorder (p_j: nat) : Lemma (jurisdiction_leq p_j p_j == true /\ ((forall (j2: _). (forall (j3: _). jurisdiction_leq p_j j2 -> jurisdiction_leq j2 j3 -> jurisdiction_leq p_j j3 == true)))) = admit ()
 
 (* compliance_composition (matches Coq: Theorem compliance_composition) *)
 let compliance_composition (p_agreements: nat) (p_j1: nat) (p_j2: nat) (p_j3: nat) (p_cls: nat) : Lemma (requires (compliant_op p_agreements p_j1 p_j2 p_cls == true /\ compliant_op p_agreements p_j2 p_j3 p_cls == true)) (ensures (compliant_op p_agreements p_j1 p_j2 p_cls == true /\ compliant_op p_agreements p_j2 p_j3 p_cls == true)) = admit ()
@@ -153,16 +153,13 @@ let mutual_recognition_symmetric (p_j1: nat) (p_j2: nat) (p_agreements: nat) : L
 let classification_bounded (p_d: nat) : Lemma (data_classification p_d <= 3 \/ data_classification p_d > 3) = admit ()
 
 (* audit_trail_monotonic (matches Coq: Theorem audit_trail_monotonic) *)
-let audit_trail_monotonic_obligation () : Tot bool = true
-let audit_trail_monotonic_lemma () : Lemma (requires True) (ensures (audit_trail_monotonic_obligation () == audit_trail_monotonic_obligation ())) = ()
+let audit_trail_monotonic (p_trail: nat) (p_did: nat) (p_from: nat) (p_to: nat) (p_e: nat) : Lemma (requires (List.Tot.memP p_e p_trail)) (ensures (List.Tot.memP p_e (log_transfer p_trail p_did p_from p_to))) = admit ()
 
 (* two_transfers_logged (matches Coq: Theorem two_transfers_logged) *)
-let two_transfers_logged_obligation () : Tot bool = true
-let two_transfers_logged_lemma () : Lemma (requires True) (ensures (two_transfers_logged_obligation () == two_transfers_logged_obligation ())) = ()
+let two_transfers_logged (p_trail: nat) (p_d1: nat) (p_f1: nat) (p_t1: nat) (p_d2: nat) (p_f2: nat) (p_t2: nat) : Lemma (transfer_logged trail2 p_d1 p_f1 p_t1 == true /\ transfer_logged trail2 p_d2 p_f2 p_t2 == true) = admit ()
 
 (* localization_coverage (matches Coq: Theorem localization_coverage) *)
-let localization_coverage_obligation () : Tot bool = true
-let localization_coverage_lemma () : Lemma (requires True) (ensures (localization_coverage_obligation () == localization_coverage_obligation ())) = ()
+let localization_coverage (p_dl: data_localization) : Lemma (List.Tot.memP p_dl all_localizations) = admit ()
 
 (* dpo_appointed_when_required (matches Coq: Theorem dpo_appointed_when_required) *)
 let dpo_appointed_when_required (p_policy: nat) : Lemma (requires (adp_dpo_required p_policy == true)) (ensures (dpo_requirement_met p_policy true == true)) = admit ()

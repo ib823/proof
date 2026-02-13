@@ -199,23 +199,19 @@ let data_export_sanitized (p_de: data_export) : Tot bool =
   true
 
 (* migration_lossless (matches Coq: Theorem migration_lossless) *)
-let migration_lossless_obligation () : Tot bool = true
-let migration_lossless_lemma () : Lemma (requires True) (ensures (migration_lossless_obligation () == migration_lossless_obligation ())) = ()
+let migration_lossless (p_data: database) (p_schema1: schema) (p_schema2: schema) : Lemma (requires (migrates p_data p_schema1 p_schema2 == true /\ ((forall (p_fn: _). List.Tot.memP id_fn (p_schema1.f_schema_fields))) /\ no_data_loss p_data == true)) (ensures (no_data_loss p_data == true)) = admit ()
 
 (* migration_preserves_existing_fields (matches Coq: Theorem migration_preserves_existing_fields) *)
-let migration_preserves_existing_fields_obligation () : Tot bool = true
-let migration_preserves_existing_fields_lemma () : Lemma (requires True) (ensures (migration_preserves_existing_fields_obligation () == migration_preserves_existing_fields_obligation ())) = ()
+let migration_preserves_existing_fields (p_old_s: schema) (p_new_s: schema) (p_r: nat) (p_p_fn: nat) (p_fv: nat) : Lemma (requires (List.Tot.memP (id_fn, p_fv) p_r /\ List.Tot.memP id_fn (p_new_s.f_schema_fields) /\ existsb (Nat.eqb id_fn) (p_new_s.f_schema_fields) == true)) (ensures (List.Tot.memP (id_fn, p_fv) (migrate_record p_old_s p_new_s p_r))) = admit ()
 
 (* migration_increases_version (matches Coq: Theorem migration_increases_version) *)
 let migration_increases_version (p_db: database) (p_old_s: schema) (p_new_s: schema) : Lemma (requires (migrates p_db p_old_s p_new_s == true)) (ensures (p_new_s.f_schema_version > p_old_s.f_schema_version)) = admit ()
 
 (* sync_after_resolution (matches Coq: Theorem sync_after_resolution) *)
-let sync_after_resolution_obligation () : Tot bool = true
-let sync_after_resolution_lemma () : Lemma (requires True) (ensures (sync_after_resolution_obligation () == sync_after_resolution_obligation ())) = ()
+let sync_after_resolution (p_s: sync_state) : Lemma (requires (p_s.f_local_version == p_s.f_remote_version /\ p_s.f_conflicts == [])) (ensures (sync_correct p_s == true)) = admit ()
 
 (* empty_db_no_loss (matches Coq: Theorem empty_db_no_loss) *)
-let empty_db_no_loss_obligation () : Tot bool = true
-let empty_db_no_loss_lemma () : Lemma (requires True) (ensures (empty_db_no_loss_obligation () == empty_db_no_loss_obligation ())) = ()
+let empty_db_no_loss (p_db: database) : Lemma (requires (p_db.f_db_records == [])) (ensures (no_data_loss p_db == true)) = admit ()
 
 (* data_encrypted_at_rest (matches Coq: Theorem data_encrypted_at_rest) *)
 let data_encrypted_at_rest (p_s: encrypted_store) : Lemma (requires (data_encrypted_at_rest_prop p_s == true)) (ensures (p_s.f_store_encrypted == true)) = admit ()
@@ -243,8 +239,7 @@ let transaction_acid_compliant (p_txn: transaction) : Lemma (requires (transacti
 let concurrent_access_safe (p_txn1: transaction) (p_txn2: transaction) : Lemma (requires (concurrent_access_safe_prop p_txn1 p_txn2 == true /\ ~(p_txn1.f_txn_id == p_txn2.f_txn_id))) (ensures (~((p_txn1.f_txn_committed == true /\ p_txn1.f_txn_rolled_back == true)))) = admit ()
 
 (* data_deletion_complete (matches Coq: Theorem data_deletion_complete) *)
-let data_deletion_complete_obligation () : Tot bool = true
-let data_deletion_complete_lemma () : Lemma (requires True) (ensures (data_deletion_complete_obligation () == data_deletion_complete_obligation ())) = ()
+let data_deletion_complete (p_s: encrypted_store) : Lemma (requires (data_deletion_complete_prop p_s == true /\ p_s.f_store_records == [])) (ensures (p_s.f_store_checksum == 0)) = admit ()
 
 (* index_consistent (matches Coq: Theorem index_consistent) *)
 let index_consistent (p_idx: index_entry) (p_records: (list nat)) : Lemma (requires (index_consistent_prop p_idx p_records == true /\ p_idx.f_idx_valid == true)) (ensures (p_idx.f_idx_record_id < length p_records)) = admit ()

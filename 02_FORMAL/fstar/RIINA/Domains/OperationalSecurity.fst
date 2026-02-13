@@ -113,8 +113,7 @@ let opsec_012_role_separation (p_roles: (list nat)) : Lemma (requires (roles_dis
 let opsec_013_anomaly_detection (p_score: nat) (p_threshold: nat) : Lemma (requires (anomaly_detected p_score p_threshold == true)) (ensures (p_threshold < p_score)) = admit ()
 
 (* opsec_014_audit_complete (matches Coq: Theorem opsec_014_audit_complete) *)
-let opsec_014_audit_complete_obligation () : Tot bool = true
-let opsec_014_audit_complete_lemma () : Lemma (requires True) (ensures (opsec_014_audit_complete_obligation () == opsec_014_audit_complete_obligation ())) = ()
+let opsec_014_audit_complete (p_entries: (list nat)) (p_action: nat) : Lemma (requires (action_audited p_entries p_action == true)) (ensures ((exists p_e. List.Tot.memP p_e p_entries) /\ audit_action e == p_action)) = admit ()
 
 (* opsec_015_hardware_diversity (matches Coq: Theorem opsec_015_hardware_diversity) *)
 let opsec_015_hardware_diversity (p_p1: nat) (p_p2: nat) : Lemma (requires (platforms_independent p_p1 p_p2 == true)) (ensures (~(p_p1 == p_p2))) = admit ()

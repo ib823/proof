@@ -166,43 +166,34 @@ let tamper_evident (p_old_checksum: nat) (p_new_checksum: nat) : Tot bool =
   true
 
 (* U_001_01_cfi_cfg_wellformed (matches Coq: Theorem U_001_01_cfi_cfg_wellformed) *)
-let u_001_01_cfi_cfg_wellformed_obligation () : Tot bool = true
-let u_001_01_cfi_cfg_wellformed_lemma () : Lemma (requires True) (ensures (u_001_01_cfi_cfg_wellformed_obligation () == u_001_01_cfi_cfg_wellformed_obligation ())) = ()
+let u_001_01_cfi_cfg_wellformed (p_cfg: _) : Lemma (requires (((forall (e: _). List.Tot.memP e p_cfg) /\ List.Tot.memP (edge_target e) (valid_addresses p_cfg)))) (ensures (cfg_wellformed p_cfg == true)) = admit ()
 
 (* U_001_02_cfi_ip_in_cfg (matches Coq: Theorem U_001_02_cfi_ip_in_cfg) *)
-let u_001_02_cfi_ip_in_cfg_obligation () : Tot bool = true
-let u_001_02_cfi_ip_in_cfg_lemma () : Lemma (requires True) (ensures (u_001_02_cfi_ip_in_cfg_obligation () == u_001_02_cfi_ip_in_cfg_obligation ())) = ()
+let u_001_02_cfi_ip_in_cfg (p_cfg: _) (p_ip: _) : Lemma (requires (List.Tot.memP p_ip (valid_addresses p_cfg))) (ensures (in_cfg p_cfg p_ip == true)) = admit ()
 
 (* U_001_03_cfi_indirect_safe (matches Coq: Theorem U_001_03_cfi_indirect_safe) *)
-let u_001_03_cfi_indirect_safe_obligation () : Tot bool = true
-let u_001_03_cfi_indirect_safe_lemma () : Lemma (requires True) (ensures (u_001_03_cfi_indirect_safe_obligation () == u_001_03_cfi_indirect_safe_obligation ())) = ()
+let u_001_03_cfi_indirect_safe (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (List.Tot.memP (IndirectJump p_src p_tgt) p_cfg)) (ensures (List.Tot.memP p_tgt (valid_addresses p_cfg))) = admit ()
 
 (* U_001_04_cfi_return_integrity (matches Coq: Theorem U_001_04_cfi_return_integrity) *)
-let u_001_04_cfi_return_integrity_obligation () : Tot bool = true
-let u_001_04_cfi_return_integrity_lemma () : Lemma (requires True) (ensures (u_001_04_cfi_return_integrity_obligation () == u_001_04_cfi_return_integrity_obligation ())) = ()
+let u_001_04_cfi_return_integrity (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (List.Tot.memP (Return p_src p_tgt) p_cfg)) (ensures (List.Tot.memP p_tgt (valid_addresses p_cfg))) = admit ()
 
 (* U_001_05_cfi_call_integrity (matches Coq: Theorem U_001_05_cfi_call_integrity) *)
-let u_001_05_cfi_call_integrity_obligation () : Tot bool = true
-let u_001_05_cfi_call_integrity_lemma () : Lemma (requires True) (ensures (u_001_05_cfi_call_integrity_obligation () == u_001_05_cfi_call_integrity_obligation ())) = ()
+let u_001_05_cfi_call_integrity (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (List.Tot.memP (DirectCall p_src p_tgt) p_cfg)) (ensures (List.Tot.memP p_tgt (valid_addresses p_cfg))) = admit ()
 
 (* U_001_06_cfi_no_arbitrary_jump (matches Coq: Theorem U_001_06_cfi_no_arbitrary_jump) *)
-let u_001_06_cfi_no_arbitrary_jump_obligation () : Tot bool = true
-let u_001_06_cfi_no_arbitrary_jump_lemma () : Lemma (requires True) (ensures (u_001_06_cfi_no_arbitrary_jump_obligation () == u_001_06_cfi_no_arbitrary_jump_obligation ())) = ()
+let u_001_06_cfi_no_arbitrary_jump (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (edge_in_cfg p_cfg p_src p_tgt == true)) (ensures (List.Tot.memP p_tgt (valid_addresses p_cfg))) = admit ()
 
 (* U_001_07_cfi_shadow_stack (matches Coq: Theorem U_001_07_cfi_shadow_stack) *)
 let u_001_07_cfi_shadow_stack (p_ss: _) (p_actual: _) : Lemma (requires (p_ss == p_actual)) (ensures (shadow_matches p_ss p_actual == true)) = admit ()
 
 (* U_001_08_cfi_forward_edge (matches Coq: Theorem U_001_08_cfi_forward_edge) *)
-let u_001_08_cfi_forward_edge_obligation () : Tot bool = true
-let u_001_08_cfi_forward_edge_lemma () : Lemma (requires True) (ensures (u_001_08_cfi_forward_edge_obligation () == u_001_08_cfi_forward_edge_obligation ())) = ()
+let u_001_08_cfi_forward_edge (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (List.Tot.memP (DirectCall p_src p_tgt) p_cfg \/ List.Tot.memP (DirectJump p_src p_tgt) p_cfg)) (ensures (edge_in_cfg p_cfg p_src p_tgt == true)) = admit ()
 
 (* U_001_09_cfi_backward_edge (matches Coq: Theorem U_001_09_cfi_backward_edge) *)
-let u_001_09_cfi_backward_edge_obligation () : Tot bool = true
-let u_001_09_cfi_backward_edge_lemma () : Lemma (requires True) (ensures (u_001_09_cfi_backward_edge_obligation () == u_001_09_cfi_backward_edge_obligation ())) = ()
+let u_001_09_cfi_backward_edge (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (List.Tot.memP (Return p_src p_tgt) p_cfg)) (ensures (edge_in_cfg p_cfg p_src p_tgt == true)) = admit ()
 
 (* U_001_10_cfi_violation_detected (matches Coq: Theorem U_001_10_cfi_violation_detected) *)
-let u_001_10_cfi_violation_detected_obligation () : Tot bool = true
-let u_001_10_cfi_violation_detected_lemma () : Lemma (requires True) (ensures (u_001_10_cfi_violation_detected_obligation () == u_001_10_cfi_violation_detected_obligation ())) = ()
+let u_001_10_cfi_violation_detected (p_cfg: _) (p_src: _) (p_tgt: _) : Lemma (requires (~(List.Tot.memP p_tgt (valid_addresses p_cfg)))) (ensures (~(edge_in_cfg p_cfg p_src p_tgt == true))) = admit ()
 
 (* U_001_11_mem_checksum_correct (matches Coq: Theorem U_001_11_mem_checksum_correct) *)
 let u_001_11_mem_checksum_correct (p_mem: _) (p_start: _) (p_len: _) : Lemma (checksum_valid p_mem p_start p_len (compute_checksum p_mem p_start p_len) == true) = admit ()

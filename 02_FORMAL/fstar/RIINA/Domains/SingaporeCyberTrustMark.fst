@@ -103,8 +103,7 @@ let ctm_certification (p_a: nat) (p_t: ctm_tier) : Lemma (requires (governance_m
 let tier_monotonicity (p_t1: ctm_tier) (p_t2: ctm_tier) : Lemma (requires (tier_level p_t1 <= tier_level p_t2)) (ensures (tier_threshold p_t1 <= tier_threshold p_t2)) = admit ()
 
 (* ctm_tier_coverage (matches Coq: Theorem ctm_tier_coverage) *)
-let ctm_tier_coverage_obligation () : Tot bool = true
-let ctm_tier_coverage_lemma () : Lemma (requires True) (ensures (ctm_tier_coverage_obligation () == ctm_tier_coverage_obligation ())) = ()
+let ctm_tier_coverage (p_t: ctm_tier) : Lemma (List.Tot.memP p_t all_ctm_tiers) = admit ()
 
 (* essential_is_tier_1 (matches Coq: Theorem essential_is_tier_1) *)
 let essential_is_tier_1 () : Lemma (tier_level Essential == 1) = admit ()

@@ -186,14 +186,14 @@ inductive has_type :: "type_env \<Rightarrow> store_ty \<Rightarrow> security_le
 
   (* References *)
 | T_Ref: "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon> \<Longrightarrow>
-          has_type \<Gamma> \<Sigma> \<Delta> (ERef e l) (TRef T l) (effect_join \<epsilon> EffectWrite)"
+          has_type \<Gamma> \<Sigma> \<Delta> (ERef e l) (TRef T l) (effect_join \<epsilon> EffWrite)"
 
 | T_Deref: "has_type \<Gamma> \<Sigma> \<Delta> e (TRef T l) \<epsilon> \<Longrightarrow>
-            has_type \<Gamma> \<Sigma> \<Delta> (EDeref e) T (effect_join \<epsilon> EffectRead)"
+            has_type \<Gamma> \<Sigma> \<Delta> (EDeref e) T (effect_join \<epsilon> EffRead)"
 
 | T_Assign: "has_type \<Gamma> \<Sigma> \<Delta> e1 (TRef T l) \<epsilon>1 \<Longrightarrow>
              has_type \<Gamma> \<Sigma> \<Delta> e2 T \<epsilon>2 \<Longrightarrow>
-             has_type \<Gamma> \<Sigma> \<Delta> (EAssign e1 e2) TUnit (effect_join \<epsilon>1 (effect_join \<epsilon>2 EffectWrite))"
+             has_type \<Gamma> \<Sigma> \<Delta> (EAssign e1 e2) TUnit (effect_join \<epsilon>1 (effect_join \<epsilon>2 EffWrite))"
 
   (* Security *)
 | T_Classify: "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon> \<Longrightarrow>
@@ -465,11 +465,11 @@ section \<open>Well-Formedness Lemmas\<close>
 
 text \<open>Well-formed types (matches Coq: wf_ty)\<close>
 
-lemma WF_TSecret: "wf_ty T \<Longrightarrow> wf_ty (TSecret T)"
-  by (rule wf_ty.WF_TSecret)
+lemma WF_TSecret_intro: "wf_ty T \<Longrightarrow> wf_ty (TSecret T)"
+  by (rule wf_ty_wf_session.WF_TSecret)
 
-lemma WF_TProof: "wf_ty T \<Longrightarrow> wf_ty (TProof T)"
-  by (rule wf_ty.WF_TProof)
+lemma WF_TProof_intro: "wf_ty T \<Longrightarrow> wf_ty (TProof T)"
+  by (rule wf_ty_wf_session.WF_TProof)
 
 
 section \<open>Verification Summary\<close>

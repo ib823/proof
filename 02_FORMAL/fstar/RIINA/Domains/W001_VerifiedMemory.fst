@@ -153,12 +153,10 @@ let aligned (p_l: nat) (p_align: nat) : Tot bool =
   true
 
 (* W_001_01_sep_emp_neutral (matches Coq: Theorem W_001_01_sep_emp_neutral) *)
-let w_001_01_sep_emp_neutral_obligation () : Tot bool = true
-let w_001_01_sep_emp_neutral_lemma () : Lemma (requires True) (ensures (w_001_01_sep_emp_neutral_obligation () == w_001_01_sep_emp_neutral_obligation ())) = ()
+let w_001_01_sep_emp_neutral (p_a: _) (p_h: _) : Lemma (satisfies p_h p_a == true <==> satisfies p_h (ASep AEmp p_a) == true) = admit ()
 
 (* W_001_02_sep_comm (matches Coq: Theorem W_001_02_sep_comm) *)
-let w_001_02_sep_comm_obligation () : Tot bool = true
-let w_001_02_sep_comm_lemma () : Lemma (requires True) (ensures (w_001_02_sep_comm_obligation () == w_001_02_sep_comm_obligation ())) = ()
+let w_001_02_sep_comm (p_a1: _) (p_a2: _) (p_h: _) : Lemma (satisfies p_h (ASep p_a1 p_a2) == true <==> satisfies p_h (ASep p_a2 p_a1) == true) = admit ()
 
 (* W_001_03_sep_assoc (matches Coq: Theorem W_001_03_sep_assoc) *)
 let w_001_03_sep_assoc (p_a1: _) (p_a2: _) (p_a3: _) (p_h1: _) (p_h2: _) (p_h3: _) : Lemma (requires (heap_disjoint p_h1 p_h2 == true /\ heap_disjoint (heap_union p_h1 p_h2) p_h3 == true /\ satisfies p_h1 p_a1 == true /\ satisfies p_h2 p_a2 == true /\ satisfies p_h3 p_a3 == true)) (ensures ((exists p_h. h_ == heap_union p_h1 (heap_union p_h2 p_h3)) /\ heap_disjoint p_h1 (heap_union p_h2 p_h3) == true)) = admit ()
@@ -188,8 +186,7 @@ let w_001_10_hoare_triple_sound (p_p: _) (p_c: _) (p_q: _) : Lemma (requires (ho
 let w_001_11_alloc_fresh (p_st: _) (p_sz: _) (p_new_loc: _) : Lemma (requires (allocated p_st p_new_loc == None)) (ensures (allocated (alloc p_st p_sz p_new_loc) p_new_loc == Some p_sz)) = admit ()
 
 (* W_001_12_alloc_disjoint (matches Coq: Theorem W_001_12_alloc_disjoint) *)
-let w_001_12_alloc_disjoint_obligation () : Tot bool = true
-let w_001_12_alloc_disjoint_lemma () : Lemma (requires True) (ensures (w_001_12_alloc_disjoint_obligation () == w_001_12_alloc_disjoint_obligation ())) = ()
+let w_001_12_alloc_disjoint (p_st: _) (p_sz1: _) (p_sz2: _) (p_l1: _) (p_l2: _) : Lemma (requires (~(p_l1 == p_l2) /\ allocated p_st p_l1 == None /\ allocated p_st p_l2 == None)) (ensures (allocated st2 p_l1 == Some p_sz1 /\ allocated st2 p_l2 == Some p_sz2)) = admit ()
 
 (* W_001_13_alloc_sized (matches Coq: Theorem W_001_13_alloc_sized) *)
 let w_001_13_alloc_sized (p_st: _) (p_sz: _) (p_new_loc: _) : Lemma (requires (allocated p_st p_new_loc == None)) (ensures (allocated (alloc p_st p_sz p_new_loc) p_new_loc == Some p_sz)) = admit ()
@@ -210,8 +207,7 @@ let w_001_17_no_double_free (p_st: _) (p_l: _) : Lemma (requires (allocated p_st
 let w_001_18_allocator_invariant (p_st: _) (p_sz: _) (p_new_loc: _) : Lemma (requires (alloc_invariant p_st == true /\ p_new_loc >= p_st.f_heap_start /\ p_new_loc + p_sz <= heap_start p_st + total_heap_size p_st /\ allocated p_st p_new_loc == None)) (ensures (alloc_invariant (alloc p_st p_sz p_new_loc) == true)) = admit ()
 
 (* W_001_19_buddy_split_correct (matches Coq: Theorem W_001_19_buddy_split_correct) *)
-let w_001_19_buddy_split_correct_obligation () : Tot bool = true
-let w_001_19_buddy_split_correct_lemma () : Lemma (requires True) (ensures (w_001_19_buddy_split_correct_obligation () == w_001_19_buddy_split_correct_obligation ())) = ()
+let w_001_19_buddy_split_correct (p_sc: _) (p_l: _) : Lemma (requires (p_sc > 0)) (ensures (l1 == p_l /\ l2 == p_l + block_size (p_sc - 1))) = admit ()
 
 (* W_001_20_buddy_merge_correct (matches Coq: Theorem W_001_20_buddy_merge_correct) *)
 let w_001_20_buddy_merge_correct (p_l1: _) (p_l2: _) (p_sc: _) : Lemma (requires (p_l2 == p_l1 + block_size p_sc)) (ensures (buddy_merge p_l1 p_l2 p_sc == Some p_l1)) = admit ()

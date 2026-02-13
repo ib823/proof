@@ -188,12 +188,10 @@ let wasm_eval_const_obligation () : Tot bool = true
 let wasm_eval_const_lemma () : Lemma (requires True) (ensures (wasm_eval_const_obligation () == wasm_eval_const_obligation ())) = ()
 
 (* wasm_eval_add (matches Coq: Lemma wasm_eval_add) *)
-let wasm_eval_add_obligation () : Tot bool = true
-let wasm_eval_add_lemma () : Lemma (requires True) (ensures (wasm_eval_add_obligation () == wasm_eval_add_obligation ())) = ()
+let wasm_eval_add (p_a: _) (p_b: _) (p_stk: _) : Lemma (wasm_eval [WAdd] (p_b :: p_a :: p_stk) ((p_a + p_b) :: p_stk) == true) = admit ()
 
 (* wasm_eval_mul (matches Coq: Lemma wasm_eval_mul) *)
-let wasm_eval_mul_obligation () : Tot bool = true
-let wasm_eval_mul_lemma () : Lemma (requires True) (ensures (wasm_eval_mul_obligation () == wasm_eval_mul_obligation ())) = ()
+let wasm_eval_mul (p_a: _) (p_b: _) (p_stk: _) : Lemma (wasm_eval [WMul] (p_b :: p_a :: p_stk) ((p_a * p_b) :: p_stk) == true) = admit ()
 
 (* wasm_001_const_preservation (matches Coq: Theorem wasm_001_const_preservation) *)
 let wasm_001_const_preservation_obligation () : Tot bool = true
@@ -203,7 +201,7 @@ let wasm_001_const_preservation_lemma () : Lemma (requires True) (ensures (wasm_
 let wasm_002_ni_preservation (p_labeled: _) (p_exports: _) : Lemma (ni_preserved p_labeled p_exports == true) = admit ()
 
 (* wasm_002_memory_separation (matches Coq: Theorem wasm_002_memory_separation) *)
-let wasm_002_memory_separation (p_s_start: _) (p_s_size: _) (p_p_start: _) (p_p_size: _) : Lemma (requires (p_s_start + p_s_size <= p_p_start)) (ensures (memory_partitioned (s_start_ p_s_start + p_s_size) (p_start_ p_p_start + p_p_size) == true)) = admit ()
+let wasm_002_memory_separation (p_s_start: _) (p_s_size: _) (p_p_start: _) (p_p_size: _) : Lemma (requires (p_s_start + p_s_size <= p_p_start)) (ensures (memory_partitioned (p_s_start, p_s_start + p_s_size) (p_p_start, p_p_start + p_p_size) == true)) = admit ()
 
 (* wasm_003_effect_preservation (matches Coq: Theorem wasm_003_effect_preservation) *)
 let wasm_003_effect_preservation (p_eff: _) : Lemma (import_effect_safe p_eff EffPure == true) = admit ()
@@ -212,12 +210,10 @@ let wasm_003_effect_preservation (p_eff: _) : Lemma (import_effect_safe p_eff Ef
 let wasm_003_io_self_safe () : Lemma (import_effect_safe EffIO EffIO == true) = admit ()
 
 (* wasm_004_int_type_preserved (matches Coq: Theorem wasm_004_int_type_preserved) *)
-let wasm_004_int_type_preserved_obligation () : Tot bool = true
-let wasm_004_int_type_preserved_lemma () : Lemma (requires True) (ensures (wasm_004_int_type_preserved_obligation () == wasm_004_int_type_preserved_obligation ())) = ()
+let wasm_004_int_type_preserved () : Lemma (wasm_well_typed (WConst 42) [] [type_compile RTNombor] == true) = admit ()
 
 (* wasm_004_add_type_preserved (matches Coq: Theorem wasm_004_add_type_preserved) *)
-let wasm_004_add_type_preserved_obligation () : Tot bool = true
-let wasm_004_add_type_preserved_lemma () : Lemma (requires True) (ensures (wasm_004_add_type_preserved_obligation () == wasm_004_add_type_preserved_obligation ())) = ()
+let wasm_004_add_type_preserved () : Lemma (wasm_well_typed WAdd [type_compile RTNombor; type_compile RTNombor] [type_compile RTNombor] == true) = admit ()
 
 (* wasm_004_bool_type_preserved (matches Coq: Theorem wasm_004_bool_type_preserved) *)
 let wasm_004_bool_type_preserved () : Lemma (type_compile RTBool == I32) = admit ()
@@ -233,8 +229,7 @@ let wasm_005_public_cannot_access_secret_lemma () : Lemma (requires True) (ensur
 let wasm_006_string_const_produces_ptr (p_s: _) (p_stk: _) : Lemma (wasm_eval (string_compiles_to_ptr p_s) p_stk (sc_offset p_s :: p_stk) == true) = admit ()
 
 (* wasm_006_string_ptr_is_i32 (matches Coq: Theorem wasm_006_string_ptr_is_i32) *)
-let wasm_006_string_ptr_is_i32_obligation () : Tot bool = true
-let wasm_006_string_ptr_is_i32_lemma () : Lemma (requires True) (ensures (wasm_006_string_ptr_is_i32_obligation () == wasm_006_string_ptr_is_i32_obligation ())) = ()
+let wasm_006_string_ptr_is_i32 (p_s: _) : Lemma (wasm_well_typed (WConst (sc_offset p_s)) [] [I32] == true) = admit ()
 
 (* wasm_006_string_dedup (matches Coq: Theorem wasm_006_string_dedup) *)
 let wasm_006_string_dedup (p_s1: _) (p_s2: _) : Lemma (requires (sc_hash p_s1 == sc_hash p_s2 /\ sc_offset p_s1 == sc_offset p_s2)) (ensures (string_compiles_to_ptr p_s1 == string_compiles_to_ptr p_s2)) = admit ()
@@ -264,16 +259,16 @@ let wasm_008_sum_fits_in_region (p_s: _) : Lemma (sum_addr p_s + sum_size == sum
 let wasm_008_pairs_disjoint (p_p1: _) (p_p2: _) : Lemma (requires (pair_addr p_p1 + pair_size <= pair_addr p_p2 \/ pair_addr p_p2 + pair_size <= pair_addr p_p1)) (ensures (regions_disjoint (mkregion (pair_addr p_p1) pair_size Public) (mkregion (pair_addr p_p2) pair_size Public) == true)) = admit ()
 
 (* wasm_009_alloc_returns_current (matches Coq: Theorem wasm_009_alloc_returns_current) *)
-let wasm_009_alloc_returns_current (p_a: _) (p_size: _) (p_ptr: _) (p_a_: _) : Lemma (requires (bump_alloc p_a p_size == Some (ptr_ p_a_))) (ensures (p_ptr == bump_ptr p_a)) = admit ()
+let wasm_009_alloc_returns_current (p_a: _) (p_size: _) (p_ptr: _) (p_a_: _) : Lemma (requires (bump_alloc p_a p_size == Some (p_ptr, p_a_))) (ensures (p_ptr == bump_ptr p_a)) = admit ()
 
 (* wasm_009_alloc_advances_ptr (matches Coq: Theorem wasm_009_alloc_advances_ptr) *)
-let wasm_009_alloc_advances_ptr (p_a: _) (p_size: _) (p_ptr: _) (p_a_: _) : Lemma (requires (bump_alloc p_a p_size == Some (ptr_ p_a_))) (ensures (bump_ptr p_a_ == bump_ptr p_a + p_size)) = admit ()
+let wasm_009_alloc_advances_ptr (p_a: _) (p_size: _) (p_ptr: _) (p_a_: _) : Lemma (requires (bump_alloc p_a p_size == Some (p_ptr, p_a_))) (ensures (bump_ptr p_a_ == bump_ptr p_a + p_size)) = admit ()
 
 (* wasm_009_alloc_preserves_limit (matches Coq: Theorem wasm_009_alloc_preserves_limit) *)
-let wasm_009_alloc_preserves_limit (p_a: _) (p_size: _) (p_ptr: _) (p_a_: _) : Lemma (requires (bump_alloc p_a p_size == Some (ptr_ p_a_))) (ensures (bump_limit p_a_ == bump_limit p_a)) = admit ()
+let wasm_009_alloc_preserves_limit (p_a: _) (p_size: _) (p_ptr: _) (p_a_: _) : Lemma (requires (bump_alloc p_a p_size == Some (p_ptr, p_a_))) (ensures (bump_limit p_a_ == bump_limit p_a)) = admit ()
 
 (* wasm_009_sequential_alloc_disjoint (matches Coq: Theorem wasm_009_sequential_alloc_disjoint) *)
-let wasm_009_sequential_alloc_disjoint (p_a: _) (p_s1: _) (p_s2: _) (p_p1: _) (p_a1: _) (p_p2: _) (p_a2: _) : Lemma (requires (bump_alloc p_a p_s1 == Some (p1_ p_a1) /\ bump_alloc p_a1 p_s2 == Some (p2_ p_a2) /\ p_s1 > 0)) (ensures (p_p1 + p_s1 <= p_p2)) = admit ()
+let wasm_009_sequential_alloc_disjoint (p_a: _) (p_s1: _) (p_s2: _) (p_p1: _) (p_a1: _) (p_p2: _) (p_a2: _) : Lemma (requires (bump_alloc p_a p_s1 == Some (p_p1, p_a1) /\ bump_alloc p_a1 p_s2 == Some (p_p2, p_a2) /\ p_s1 > 0)) (ensures (p_p1 + p_s1 <= p_p2)) = admit ()
 
 (* wasm_009_alloc_oom (matches Coq: Theorem wasm_009_alloc_oom) *)
 let wasm_009_alloc_oom (p_a: _) (p_size: _) : Lemma (requires (bump_ptr p_a + p_size > bump_limit p_a)) (ensures (bump_alloc p_a p_size == None)) = admit ()
@@ -282,52 +277,40 @@ let wasm_009_alloc_oom (p_a: _) (p_size: _) : Lemma (requires (bump_ptr p_a + p_
 let wasm_010_compile_ir_total (p_e: _) : Lemma ((exists p_block. compile_ir p_e == p_block)) = admit ()
 
 (* wasm_010_const_translates (matches Coq: Theorem wasm_010_const_translates) *)
-let wasm_010_const_translates_obligation () : Tot bool = true
-let wasm_010_const_translates_lemma () : Lemma (requires True) (ensures (wasm_010_const_translates_obligation () == wasm_010_const_translates_obligation ())) = ()
+let wasm_010_const_translates (p_n: _) : Lemma (compile_ir (IRConst p_n) == [WConst p_n]) = admit ()
 
 (* wasm_010_var_translates (matches Coq: Theorem wasm_010_var_translates) *)
-let wasm_010_var_translates_obligation () : Tot bool = true
-let wasm_010_var_translates_lemma () : Lemma (requires True) (ensures (wasm_010_var_translates_obligation () == wasm_010_var_translates_obligation ())) = ()
+let wasm_010_var_translates (p_x: _) : Lemma (compile_ir (IRVar p_x) == [WNop]) = admit ()
 
 (* wasm_010_add_translates (matches Coq: Theorem wasm_010_add_translates) *)
-let wasm_010_add_translates_obligation () : Tot bool = true
-let wasm_010_add_translates_lemma () : Lemma (requires True) (ensures (wasm_010_add_translates_obligation () == wasm_010_add_translates_obligation ())) = ()
+let wasm_010_add_translates (p_e1: _) (p_e2: _) : Lemma (compile_ir (IRAdd p_e1 p_e2) == compile_ir p_e1 ++ compile_ir p_e2 ++ [WAdd]) = admit ()
 
 (* wasm_010_mul_translates (matches Coq: Theorem wasm_010_mul_translates) *)
-let wasm_010_mul_translates_obligation () : Tot bool = true
-let wasm_010_mul_translates_lemma () : Lemma (requires True) (ensures (wasm_010_mul_translates_obligation () == wasm_010_mul_translates_obligation ())) = ()
+let wasm_010_mul_translates (p_e1: _) (p_e2: _) : Lemma (compile_ir (IRMul p_e1 p_e2) == compile_ir p_e1 ++ compile_ir p_e2 ++ [WMul]) = admit ()
 
 (* wasm_010_call_translates (matches Coq: Theorem wasm_010_call_translates) *)
-let wasm_010_call_translates_obligation () : Tot bool = true
-let wasm_010_call_translates_lemma () : Lemma (requires True) (ensures (wasm_010_call_translates_obligation () == wasm_010_call_translates_obligation ())) = ()
+let wasm_010_call_translates (p_f: _) (p_args: _) : Lemma (compile_ir (IRCall p_f p_args) == [WNop]) = admit ()
 
 (* wasm_010_let_translates (matches Coq: Theorem wasm_010_let_translates) *)
-let wasm_010_let_translates_obligation () : Tot bool = true
-let wasm_010_let_translates_lemma () : Lemma (requires True) (ensures (wasm_010_let_translates_obligation () == wasm_010_let_translates_obligation ())) = ()
+let wasm_010_let_translates (p_x: _) (p_e1: _) (p_e2: _) : Lemma (compile_ir (IRLet p_x p_e1 p_e2) == compile_ir p_e1 ++ [WDrop] ++ compile_ir p_e2) = admit ()
 
 (* wasm_010_if_translates (matches Coq: Theorem wasm_010_if_translates) *)
 let wasm_010_if_translates (p_c: _) (p_t: _) (p_f: _) : Lemma (compile_ir (IRIf p_c p_t p_f) == compile_ir p_t) = admit ()
 
 (* wasm_010_load_translates (matches Coq: Theorem wasm_010_load_translates) *)
-let wasm_010_load_translates_obligation () : Tot bool = true
-let wasm_010_load_translates_lemma () : Lemma (requires True) (ensures (wasm_010_load_translates_obligation () == wasm_010_load_translates_obligation ())) = ()
+let wasm_010_load_translates (p_addr: _) : Lemma (compile_ir (IRLoad p_addr) == [WNop]) = admit ()
 
 (* wasm_010_store_translates (matches Coq: Theorem wasm_010_store_translates) *)
-let wasm_010_store_translates_obligation () : Tot bool = true
-let wasm_010_store_translates_lemma () : Lemma (requires True) (ensures (wasm_010_store_translates_obligation () == wasm_010_store_translates_obligation ())) = ()
+let wasm_010_store_translates (p_addr: _) (p_v: _) : Lemma (compile_ir (IRStore p_addr p_v) == [WNop]) = admit ()
 
 (* app_ne_nil_r (matches Coq: Lemma app_ne_nil_r) *)
-let app_ne_nil_r_obligation () : Tot bool = true
-let app_ne_nil_r_lemma () : Lemma (requires True) (ensures (app_ne_nil_r_obligation () == app_ne_nil_r_obligation ())) = ()
+let app_ne_nil_r (p_xs: (list nat)) (p_ys: (list nat)) : Lemma (requires (~(p_ys == []))) (ensures (~(p_xs ++ p_ys == []))) = admit ()
 
 (* singleton_ne_nil (matches Coq: Lemma singleton_ne_nil) *)
-let singleton_ne_nil_obligation () : Tot bool = true
-let singleton_ne_nil_lemma () : Lemma (requires True) (ensures (singleton_ne_nil_obligation () == singleton_ne_nil_obligation ())) = ()
+let singleton_ne_nil (p_x: nat) : Lemma (~([p_x] == [])) = admit ()
 
 (* cons_ne_nil (matches Coq: Lemma cons_ne_nil) *)
-let cons_ne_nil_obligation () : Tot bool = true
-let cons_ne_nil_lemma () : Lemma (requires True) (ensures (cons_ne_nil_obligation () == cons_ne_nil_obligation ())) = ()
+let cons_ne_nil (p_x: nat) (p_xs: (list nat)) : Lemma (~(p_x :: p_xs == [])) = admit ()
 
 (* wasm_010_completeness (matches Coq: Theorem wasm_010_completeness) *)
-let wasm_010_completeness_obligation () : Tot bool = true
-let wasm_010_completeness_lemma () : Lemma (requires True) (ensures (wasm_010_completeness_obligation () == wasm_010_completeness_obligation ())) = ()
+let wasm_010_completeness (p_e: _) : Lemma (~(compile_ir p_e == [])) = admit ()

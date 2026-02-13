@@ -188,8 +188,7 @@ let pi_001_05_scalar_add_assoc (p_a: _) (p_b: _) (p_c: _) : Lemma (requires (len
 let pi_001_06_scalar_mul_length (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b)) (ensures (length (scalar_mul p_a p_b) == length p_a)) = admit ()
 
 (* PI_001_07_dot_product_zero_left (matches Coq: Theorem PI_001_07_dot_product_zero_left) *)
-let pi_001_07_dot_product_zero_left_obligation () : Tot bool = true
-let pi_001_07_dot_product_zero_left_lemma () : Lemma (requires True) (ensures (pi_001_07_dot_product_zero_left_obligation () == pi_001_07_dot_product_zero_left_obligation ())) = ()
+let pi_001_07_dot_product_zero_left (p_b: _) : Lemma (dot_product [] p_b == 0) = admit ()
 
 (* PI_001_08_simd_preserves_length (matches Coq: Theorem PI_001_08_simd_preserves_length) *)
 let pi_001_08_simd_preserves_length (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b)) (ensures (length (simd_add p_a p_b) == length p_a)) = admit ()
@@ -207,22 +206,19 @@ let pi_002_03_veb_height_positive (p_v: _) (p_l: _) (p_r: _) : Lemma (veb_height
 let pi_002_04_veb_size_positive (p_t: _) : Lemma (veb_size p_t > 0) = admit ()
 
 (* PI_002_05_veb_inorder_nonempty (matches Coq: Theorem PI_002_05_veb_inorder_nonempty) *)
-let pi_002_05_veb_inorder_nonempty_obligation () : Tot bool = true
-let pi_002_05_veb_inorder_nonempty_lemma () : Lemma (requires True) (ensures (pi_002_05_veb_inorder_nonempty_obligation () == pi_002_05_veb_inorder_nonempty_obligation ())) = ()
+let pi_002_05_veb_inorder_nonempty (p_t: _) : Lemma (~(veb_inorder p_t == [])) = admit ()
 
 (* PI_002_06_veb_height_bound (matches Coq: Theorem PI_002_06_veb_height_bound) *)
 let pi_002_06_veb_height_bound (p_t: _) : Lemma (veb_height p_t < veb_size p_t) = admit ()
 
 (* PI_003_01_msq_empty_dequeue (matches Coq: Theorem PI_003_01_msq_empty_dequeue) *)
-let pi_003_01_msq_empty_dequeue () : Lemma (msq_dequeue msq_empty == (msq_empty_ None)) = admit ()
+let pi_003_01_msq_empty_dequeue () : Lemma (msq_dequeue msq_empty == (msq_empty, None)) = admit ()
 
 (* PI_003_02_msq_enqueue_nonempty (matches Coq: Theorem PI_003_02_msq_enqueue_nonempty) *)
-let pi_003_02_msq_enqueue_nonempty_obligation () : Tot bool = true
-let pi_003_02_msq_enqueue_nonempty_lemma () : Lemma (requires True) (ensures (pi_003_02_msq_enqueue_nonempty_obligation () == pi_003_02_msq_enqueue_nonempty_obligation ())) = ()
+let pi_003_02_msq_enqueue_nonempty (p_q: _) (p_v: _) : Lemma (~((msq_enqueue p_q p_v).f_msq_items == [])) = admit ()
 
 (* PI_003_03_msq_fifo (matches Coq: Theorem PI_003_03_msq_fifo) *)
-let pi_003_03_msq_fifo_obligation () : Tot bool = true
-let pi_003_03_msq_fifo_lemma () : Lemma (requires True) (ensures (pi_003_03_msq_fifo_obligation () == pi_003_03_msq_fifo_obligation ())) = ()
+let pi_003_03_msq_fifo (p_v: _) : Lemma (msq_dequeue q == ({| msq_items := []; msq_head := 1; msq_tail := 1 |}, Some p_v)) = admit ()
 
 (* PI_003_04_msq_enqueue_length (matches Coq: Theorem PI_003_04_msq_enqueue_length) *)
 let pi_003_04_msq_enqueue_length (p_q: _) (p_v: _) : Lemma (length ((msq_enqueue p_q p_v).f_msq_items) == ((length (p_q.f_msq_items)) + 1)) = admit ()
@@ -234,8 +230,7 @@ let pi_003_05_cas_success (p_v: _) (p_new_val: _) : Lemma (cas p_v p_v p_new_val
 let pi_003_06_cas_failure (p_loc: _) (p_expected: _) (p_new_val: _) : Lemma (requires (~(p_loc == p_expected))) (ensures ((exists p_v. cas p_loc p_expected p_new_val == CASFailure p_v))) = admit ()
 
 (* PI_003_07_linearization_empty (matches Coq: Theorem PI_003_07_linearization_empty) *)
-let pi_003_07_linearization_empty_obligation () : Tot bool = true
-let pi_003_07_linearization_empty_lemma () : Lemma (requires True) (ensures (pi_003_07_linearization_empty_obligation () == pi_003_07_linearization_empty_obligation ())) = ()
+let pi_003_07_linearization_empty () : Lemma (lin_ordered [] == true) = admit ()
 
 (* PI_004_01_dce_false_branch (matches Coq: Theorem PI_004_01_dce_false_branch) *)
 let pi_004_01_dce_false_branch (p_t: _) (p_f: _) (p_env: _) : Lemma (opt_eval p_env (dce (OIf (OConst 0) p_t p_f)) == opt_eval p_env (dce p_f)) = admit ()
@@ -274,5 +269,4 @@ let pi_005_03_puzzle_zero_target (p_x: _) : Lemma (puzzle_valid p_x 0 == false) 
 let pi_005_04_puzzle_deterministic (p_x: _) (p_t1: _) (p_t2: _) : Lemma (requires (p_t1 == p_t2)) (ensures (puzzle_valid p_x p_t1 == puzzle_valid p_x p_t2)) = admit ()
 
 (* PI_005_05_vec_sum_nil (matches Coq: Theorem PI_005_05_vec_sum_nil) *)
-let pi_005_05_vec_sum_nil_obligation () : Tot bool = true
-let pi_005_05_vec_sum_nil_lemma () : Lemma (requires True) (ensures (pi_005_05_vec_sum_nil_obligation () == pi_005_05_vec_sum_nil_obligation ())) = ()
+let pi_005_05_vec_sum_nil () : Lemma (vec_sum [] == 0) = admit ()

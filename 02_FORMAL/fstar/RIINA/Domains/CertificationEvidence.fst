@@ -65,8 +65,7 @@ let mcdc_pair_sym (p_v1: _) (p_v2: _) (p_d: _) : Lemma (requires (mcdc_pair p_v1
 let no_self_mcdc (p_v: _) : Lemma (differ_at_one p_v p_v == None) = admit ()
 
 (* full_trace_no_gaps (matches Coq: Theorem full_trace_no_gaps) *)
-let full_trace_no_gaps_obligation () : Tot bool = true
-let full_trace_no_gaps_lemma () : Lemma (requires True) (ensures (full_trace_no_gaps_obligation () == full_trace_no_gaps_obligation ())) = ()
+let full_trace_no_gaps (p_t: _) : Lemma (requires (fully_traced p_t == true /\ (forall (r: _). List.Tot.memP r (tr_reqs p_t)))) (ensures ((exists p_tid. List.Tot.memP p_tid (tr_map p_t r)))) = admit ()
 
 (* sfr_needs_evidence (matches Coq: Theorem sfr_needs_evidence) *)
 let sfr_needs_evidence (p_s: _) : Lemma (requires (sfr_satisfied p_s == true)) (ensures (sfr_evidence_count p_s >= 1)) = admit ()
@@ -91,12 +90,10 @@ let fold_left_add_acc_lemma () : Lemma (requires True) (ensures (fold_left_add_a
 let evidence_count_app (p_l1: _) (p_l2: _) : Lemma (evidence_count (p_l1 ++ p_l2) == evidence_count p_l1 + evidence_count p_l2) = admit ()
 
 (* all_satisfied_have_evidence (matches Coq: Theorem all_satisfied_have_evidence) *)
-let all_satisfied_have_evidence_obligation () : Tot bool = true
-let all_satisfied_have_evidence_lemma () : Lemma (requires True) (ensures (all_satisfied_have_evidence_obligation () == all_satisfied_have_evidence_obligation ())) = ()
+let all_satisfied_have_evidence (p_sfrs: _) : Lemma (requires (Forall sfr_satisfied p_sfrs == true)) (ensures (evidence_count p_sfrs >= length p_sfrs)) = admit ()
 
 (* empty_trace_fully_traced (matches Coq: Theorem empty_trace_fully_traced) *)
-let empty_trace_fully_traced_obligation () : Tot bool = true
-let empty_trace_fully_traced_lemma () : Lemma (requires True) (ensures (empty_trace_fully_traced_obligation () == empty_trace_fully_traced_obligation ())) = ()
+let empty_trace_fully_traced (p_tm: _) (p_tt: _) : Lemma (fully_traced (mktrace [] p_tm p_tt) == true) = admit ()
 
 (* dal_e_lowest (matches Coq: Theorem dal_e_lowest) *)
 let dal_e_lowest (p_d: _) : Lemma (dal_leq DAL_E p_d == true) = admit ()
@@ -108,12 +105,10 @@ let dal_leq_antisym (p_d1: _) (p_d2: _) : Lemma (requires (dal_leq p_d1 p_d2 == 
 let dal_to_nat_bounded (p_d: _) : Lemma (dal_to_nat p_d <= 5 /\ dal_to_nat p_d >= 1) = admit ()
 
 (* evidence_count_nil (matches Coq: Theorem evidence_count_nil) *)
-let evidence_count_nil_obligation () : Tot bool = true
-let evidence_count_nil_lemma () : Lemma (requires True) (ensures (evidence_count_nil_obligation () == evidence_count_nil_obligation ())) = ()
+let evidence_count_nil () : Lemma (evidence_count [] == 0) = admit ()
 
 (* evidence_count_singleton (matches Coq: Theorem evidence_count_singleton) *)
-let evidence_count_singleton_obligation () : Tot bool = true
-let evidence_count_singleton_lemma () : Lemma (requires True) (ensures (evidence_count_singleton_obligation () == evidence_count_singleton_obligation ())) = ()
+let evidence_count_singleton (p_s: _) : Lemma (evidence_count [p_s] == sfr_evidence_count p_s) = admit ()
 
 (* sfr_satisfied_decompose (matches Coq: Theorem sfr_satisfied_decompose) *)
 let sfr_satisfied_decompose (p_sid: _) (p_sv: _) (p_sec: _) : Lemma (requires (sfr_satisfied (mksfr p_sid p_sv p_sec) == true)) (ensures (p_sv == true /\ p_sec >= 1)) = admit ()
@@ -125,5 +120,4 @@ let no_self_mcdc_no_flip (p_v: _) (p_d: _) : Lemma (~(mcdc_pair p_v p_v p_d == t
 let dal_a_gt_b () : Lemma (dal_to_nat DAL_A > dal_to_nat DAL_B) = admit ()
 
 (* evidence_count_mono (matches Coq: Theorem evidence_count_mono) *)
-let evidence_count_mono_obligation () : Tot bool = true
-let evidence_count_mono_lemma () : Lemma (requires True) (ensures (evidence_count_mono_obligation () == evidence_count_mono_obligation ())) = ()
+let evidence_count_mono (p_l: _) (p_s: _) : Lemma (evidence_count p_l <= evidence_count (p_l ++ [p_s])) = admit ()

@@ -209,8 +209,7 @@ let retention_delete_exclusive (p_r: nat) (p_t: nat) : Lemma (requires (within_r
 let principle_6_integrity (p_h: nat) : Lemma (data_integrity_maintained p_h p_h == true) = admit ()
 
 (* principle_7_access_logged (matches Coq: Theorem principle_7_access_logged) *)
-let principle_7_access_logged_obligation () : Tot bool = true
-let principle_7_access_logged_lemma () : Lemma (requires True) (ensures (principle_7_access_logged_obligation () == principle_7_access_logged_obligation ())) = ()
+let principle_7_access_logged (p_trail: nat) (p_subject_id: nat) (p_t: nat) (p_actor: nat) : Lemma (access_request_served (entry :: p_trail) p_subject_id p_t == true) = admit ()
 
 (* breach_notification_ordering (matches Coq: Theorem breach_notification_ordering) *)
 let breach_notification_ordering (p_b: nat) (p_t_pdpc: nat) (p_t_subjects: nat) : Lemma (requires (pdpc_notified_in_time p_b p_t_pdpc == true /\ subjects_notified_in_time p_b p_t_subjects == true)) (ensures (p_t_pdpc <= breach_detected_at p_b + 72)) = admit ()
@@ -258,8 +257,7 @@ let security_measures_proportionate (p_c: pdpa_classification) (p_controls: nat)
 let sensitive_needs_more_controls (p_controls: nat) : Lemma (requires (security_level_adequate SensitivePersonalData p_controls == true)) (ensures (security_level_adequate PersonalData p_controls == true)) = admit ()
 
 (* processor_contract_binding (matches Coq: Theorem processor_contract_binding) *)
-let processor_contract_binding_obligation () : Tot bool = true
-let processor_contract_binding_lemma () : Lemma (requires True) (ensures (processor_contract_binding_obligation () == processor_contract_binding_obligation ())) = ()
+let processor_contract_binding (p_pc: nat) : Lemma (requires (pc_security_obligations p_pc == true /\ pc_data_return_required p_pc == true /\ ~(pc_purposes_allowed p_pc == []))) (ensures (processor_bound p_pc == true)) = admit ()
 
 (* dpia_conducted (matches Coq: Theorem dpia_conducted) *)
 let dpia_conducted (p_d: nat) : Lemma (requires (dpia_approved p_d == true /\ dpia_mitigations_applied p_d >= dpia_risk_identified p_d)) (ensures (dpia_valid p_d == true)) = admit ()
@@ -295,9 +293,7 @@ let public_data_lowest_harm (p_c: pdpa_classification) : Lemma (harm_level Publi
 let sensitive_data_highest_harm (p_c: pdpa_classification) : Lemma (harm_level p_c <= harm_level SensitivePersonalData) = admit ()
 
 (* consent_status_coverage (matches Coq: Theorem consent_status_coverage) *)
-let consent_status_coverage_obligation () : Tot bool = true
-let consent_status_coverage_lemma () : Lemma (requires True) (ensures (consent_status_coverage_obligation () == consent_status_coverage_obligation ())) = ()
+let consent_status_coverage (p_cs: consent_status) : Lemma (List.Tot.memP p_cs all_consent_statuses) = admit ()
 
 (* transfer_basis_coverage (matches Coq: Theorem transfer_basis_coverage) *)
-let transfer_basis_coverage_obligation () : Tot bool = true
-let transfer_basis_coverage_lemma () : Lemma (requires True) (ensures (transfer_basis_coverage_obligation () == transfer_basis_coverage_obligation ())) = ()
+let transfer_basis_coverage (p_tb: transfer_basis) : Lemma (List.Tot.memP p_tb all_transfer_bases) = admit ()

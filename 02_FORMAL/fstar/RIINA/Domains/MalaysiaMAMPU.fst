@@ -83,8 +83,7 @@ let rahsia_besar_highest (p_c: gov_classification) : Lemma (classification_level
 let mampu_composition (p_s: nat) : Lemma (requires (data_sovereign p_s == true /\ controls_match_classification p_s == true /\ security_assessed p_s == true)) (ensures (mampu_fully_compliant p_s == true)) = admit ()
 
 (* gov_classification_coverage (matches Coq: Theorem gov_classification_coverage) *)
-let gov_classification_coverage_obligation () : Tot bool = true
-let gov_classification_coverage_lemma () : Lemma (requires True) (ensures (gov_classification_coverage_obligation () == gov_classification_coverage_obligation ())) = ()
+let gov_classification_coverage (p_c: gov_classification) : Lemma (List.Tot.memP p_c all_gov_classifications) = admit ()
 
 (* terbuka_is_level_zero (matches Coq: Theorem terbuka_is_level_zero) *)
 let terbuka_is_level_zero () : Lemma (classification_level Terbuka == 0) = admit ()

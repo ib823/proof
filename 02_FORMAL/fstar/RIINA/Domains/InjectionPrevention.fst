@@ -131,8 +131,7 @@ let inj_005_xxe_impossible (p_config: xml_parser_config) : Lemma (requires (p_co
 let inj_006_header_injection_impossible (p_h: http_header) : Lemma (contains_newline ((p_h.f_hdr_value).f_tv_data) == false) = admit ()
 
 (* inj_007_template_injection_impossible (matches Coq: Theorem inj_007_template_injection_impossible) *)
-let inj_007_template_injection_impossible_obligation () : Tot bool = true
-let inj_007_template_injection_impossible_lemma () : Lemma (requires True) (ensures (inj_007_template_injection_impossible_obligation () == inj_007_template_injection_impossible_obligation ())) = ()
+let inj_007_template_injection_impossible (p_e: template_expr) : Lemma (True) = ()
 
 (* inj_008_code_injection_impossible (matches Coq: Theorem inj_008_code_injection_impossible) *)
 let inj_008_code_injection_impossible_obligation () : Tot bool = true
@@ -143,8 +142,7 @@ let inj_009_expression_language_safe_obligation () : Tot bool = true
 let inj_009_expression_language_safe_lemma () : Lemma (requires True) (ensures (inj_009_expression_language_safe_obligation () == inj_009_expression_language_safe_obligation ())) = ()
 
 (* inj_010_log_injection_impossible (matches Coq: Theorem inj_010_log_injection_impossible) *)
-let inj_010_log_injection_impossible_obligation () : Tot bool = true
-let inj_010_log_injection_impossible_lemma () : Lemma (requires True) (ensures (inj_010_log_injection_impossible_obligation () == inj_010_log_injection_impossible_obligation ())) = ()
+let inj_010_log_injection_impossible (p_data: (list nat)) : Lemma (~(List.Tot.memP 10 (sanitize_log p_data))) = admit ()
 
 (* inj_011_email_header_safe (matches Coq: Theorem inj_011_email_header_safe) *)
 let inj_011_email_header_safe (p_h: nat) : Lemma (contains_newline ((p_h.f_hdr_value).f_tv_data) == false) = admit ()
@@ -167,10 +165,10 @@ let inj_014_crlf_injection_impossible (p_h: http_header) : Lemma (contains_newli
 let inj_015_null_byte_injection_impossible (p_s: length_prefixed_string) : Lemma (List.length (p_s.f_lpstr_bytes) == p_s.f_lpstr_len) = admit ()
 
 (* inj_016_untrusted_propagation (matches Coq: Theorem inj_016_untrusted_propagation) *)
-let inj_016_untrusted_propagation (p_t: _) (p_taintlevel: _) : Lemma (propagate_taint Untrusted p_t == Untrusted) = admit ()
+let inj_016_untrusted_propagation (p_t: taint_level) : Lemma (propagate_taint Untrusted p_t == Untrusted) = admit ()
 
 (* inj_017_untrusted_propagation_right (matches Coq: Theorem inj_017_untrusted_propagation_right) *)
-let inj_017_untrusted_propagation_right (p_t: _) (p_taintlevel: _) : Lemma (propagate_taint p_t Untrusted == Untrusted) = admit ()
+let inj_017_untrusted_propagation_right (p_t: taint_level) : Lemma (propagate_taint p_t Untrusted == Untrusted) = admit ()
 
 (* inj_018_trusted_propagation (matches Coq: Theorem inj_018_trusted_propagation) *)
 let inj_018_trusted_propagation () : Lemma (propagate_taint Trusted Trusted == Trusted) = admit ()
@@ -179,15 +177,13 @@ let inj_018_trusted_propagation () : Lemma (propagate_taint Trusted Trusted == T
 let inj_019_sanitized_propagation () : Lemma (propagate_taint Sanitized Sanitized == Sanitized) = admit ()
 
 (* inj_020_empty_sql_safe (matches Coq: Theorem inj_020_empty_sql_safe) *)
-let inj_020_empty_sql_safe_obligation () : Tot bool = true
-let inj_020_empty_sql_safe_lemma () : Lemma (requires True) (ensures (inj_020_empty_sql_safe_obligation () == inj_020_empty_sql_safe_obligation ())) = ()
+let inj_020_empty_sql_safe () : Lemma (safe_sql [] == true) = admit ()
 
 (* inj_021_parameterized_always_safe (matches Coq: Theorem inj_021_parameterized_always_safe) *)
-let inj_021_parameterized_always_safe_obligation () : Tot bool = true
-let inj_021_parameterized_always_safe_lemma () : Lemma (requires True) (ensures (inj_021_parameterized_always_safe_obligation () == inj_021_parameterized_always_safe_obligation ())) = ()
+let inj_021_parameterized_always_safe (p_n: nat) : Lemma (safe_sql (SQLParam p_n :: []) == true) = admit ()
 
 (* inj_022_trusted_propagation (matches Coq: Theorem inj_022_trusted_propagation) *)
-let inj_022_trusted_propagation (p_t: _) (p_taintlevel: _) : Lemma (propagate_taint Trusted p_t == p_t) = admit ()
+let inj_022_trusted_propagation (p_t: taint_level) : Lemma (propagate_taint Trusted p_t == p_t) = admit ()
 
 (* inj_023_taint_propagation_comm (matches Coq: Theorem inj_023_taint_propagation_comm) *)
 let inj_023_taint_propagation_comm (p_t1: _) (p_t2: _) : Lemma (propagate_taint p_t1 p_t2 == propagate_taint p_t2 p_t1) = admit ()

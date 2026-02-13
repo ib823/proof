@@ -258,12 +258,10 @@ let notification_compliant (p_rn: recipient_notification) : Tot bool =
   true
 
 (* REMIT_001_01_universal_coverage (matches Coq: Theorem REMIT_001_01_universal_coverage) *)
-let remit_001_01_universal_coverage_obligation () : Tot bool = true
-let remit_001_01_universal_coverage_lemma () : Lemma (requires True) (ensures (remit_001_01_universal_coverage_obligation () == remit_001_01_universal_coverage_obligation ())) = ()
+let remit_001_01_universal_coverage (p_reg: nat) : Lemma (requires (compliant_registry p_reg == true /\ (forall (c: _). List.Tot.memP c un_member_states))) (ensures ((p_reg c).f_sanctioned == true \/ (p_reg c).f_can_send == true \/ (p_reg c).f_can_receive == true)) = admit ()
 
 (* REMIT_001_02_currency_support (matches Coq: Theorem REMIT_001_02_currency_support) *)
-let remit_001_02_currency_support_obligation () : Tot bool = true
-let remit_001_02_currency_support_lemma () : Lemma (requires True) (ensures (remit_001_02_currency_support_obligation () == remit_001_02_currency_support_obligation ())) = ()
+let remit_001_02_currency_support (p_reg: nat) : Lemma (requires (compliant_currency_registry p_reg == true /\ (forall (c: _). List.Tot.memP c iso_4217_currencies))) (ensures ((p_reg c).f_is_supported == true)) = admit ()
 
 (* REMIT_001_03_pricing_transparency (matches Coq: Theorem REMIT_001_03_pricing_transparency) *)
 let remit_001_03_pricing_transparency (p_corr: corridor) : Lemma (requires (p_corr.f_is_enabled == true /\ p_corr.f_fees_disclosed == true)) (ensures (p_corr.f_fees_disclosed == true)) = admit ()

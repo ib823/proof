@@ -62,8 +62,7 @@ let traffic_layers (p_rate: bool) (p_size: bool) (p_mixing: bool) (p_decoy: bool
   andb p_rate (andb p_size ((p_mixing && p_decoy)))
 
 (* traffic_001_constant_rate_hides (matches Coq: Theorem traffic_001_constant_rate_hides) *)
-let traffic_001_constant_rate_hides_obligation () : Tot bool = true
-let traffic_001_constant_rate_hides_lemma () : Lemma (requires True) (ensures (traffic_001_constant_rate_hides_obligation () == traffic_001_constant_rate_hides_obligation ())) = ()
+let traffic_001_constant_rate_hides (p_flow: nat) (p_interval: nat) : Lemma (requires (constant_rate p_flow p_interval == true /\ (forall (i: _). (forall (p1: _). (forall (p2: _). nth_error p_flow i == Some p1))) /\ nth_error p_flow ((i + 1)) == Some p2)) (ensures (pkt_time p2 - pkt_time p1 == p_interval)) = admit ()
 
 (* traffic_002_constant_size_hides (matches Coq: Theorem traffic_002_constant_size_hides) *)
 let traffic_002_constant_size_hides_obligation () : Tot bool = true
@@ -134,8 +133,7 @@ let traffic_022_session_unlinkability (p_s1: nat) (p_s2: nat) : Lemma (requires 
 let traffic_023_intersection_resistance (p_observations: nat) (p_needed: nat) : Lemma (requires (intersection_resistant p_observations p_needed == true)) (ensures (p_needed > p_observations)) = admit ()
 
 (* traffic_024_volume_resistance (matches Coq: Theorem traffic_024_volume_resistance) *)
-let traffic_024_volume_resistance_obligation () : Tot bool = true
-let traffic_024_volume_resistance_lemma () : Lemma (requires True) (ensures (traffic_024_volume_resistance_obligation () == traffic_024_volume_resistance_obligation ())) = ()
+let traffic_024_volume_resistance (p_flow: nat) (p_size: nat) : Lemma (requires (constant_size p_flow p_size == true /\ (forall (p: _). List.Tot.memP p p_flow))) (ensures (pkt_size p == p_size)) = admit ()
 
 (* traffic_025_defense_in_depth (matches Coq: Theorem traffic_025_defense_in_depth) *)
 let traffic_025_defense_in_depth (p_r: _) (p_s: _) (p_m: _) (p_d: _) : Lemma (requires (traffic_layers p_r p_s p_m p_d == true)) (ensures (p_r == true /\ p_s == true /\ p_m == true /\ p_d == true)) = admit ()

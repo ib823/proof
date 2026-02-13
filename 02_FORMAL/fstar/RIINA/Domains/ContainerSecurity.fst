@@ -257,16 +257,16 @@ let riina_escape : escape_prevention = {f_esc_no_privileged=true; f_esc_no_host_
 let riina_container : container_config = mkContainer riina_ns riina_cgroup riina_seccomp riina_caps riina_image riina_escape true
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
+let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
 
 (* andb_true_elim1 (matches Coq: Lemma andb_true_elim1) *)
-let andb_true_elim1 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
+let andb_true_elim1 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
 
 (* andb_true_elim2 (matches Coq: Lemma andb_true_elim2) *)
-let andb_true_elim2 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
+let andb_true_elim2 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
 
 (* andb7_true (matches Coq: Lemma andb7_true) *)
-let andb7_true (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_e: _) (p_f: _) (p_g: _) (p_bool: _) : Lemma (requires (p_a && p_b && p_c && p_d && p_e && p_f && p_g == true)) (ensures (p_a == true /\ p_b == true /\ p_c == true /\ p_d == true /\ p_e == true /\ p_f == true /\ p_g == true)) = admit ()
+let andb7_true (p_a: bool) (p_b: bool) (p_c: bool) (p_d: bool) (p_e: bool) (p_f: bool) (p_g: bool) : Lemma (requires (p_a && p_b && p_c && p_d && p_e && p_f && p_g == true)) (ensures (p_a == true /\ p_b == true /\ p_c == true /\ p_d == true /\ p_e == true /\ p_f == true /\ p_g == true)) = admit ()
 
 (* NS_001_full_isolation (matches Coq: Theorem NS_001_full_isolation) *)
 let ns_001_full_isolation () : Lemma (ns_fully_isolated riina_ns == true) = admit ()

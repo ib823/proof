@@ -100,8 +100,7 @@ let perf_003_03_simd_cmp_equivalence (p_a: nat) (p_b: nat) : Lemma (simd_cmp p_a
 let perf_003_04_simd_shuffle_correctness (p_v: nat) (p_perm: nat) (p_i: nat) : Lemma (Vector.nth (simd_shuffle p_v p_perm) p_i == Vector.nth p_v (Vector.nth p_perm p_i)) = admit ()
 
 (* PERF_003_05_simd_alignment_requirement (matches Coq: Theorem PERF_003_05_simd_alignment_requirement) *)
-let perf_003_05_simd_alignment_requirement_obligation () : Tot bool = true
-let perf_003_05_simd_alignment_requirement_lemma () : Lemma (requires True) (ensures (perf_003_05_simd_alignment_requirement_obligation () == perf_003_05_simd_alignment_requirement_obligation ())) = ()
+let perf_003_05_simd_alignment_requirement (p_mem: (list nat)) (p_addr: nat) : Lemma (((exists p_v. aligned_load p_mem p_addr == MemOK p_v)) <==> (is_aligned p_addr VWidth == true /\ (p_addr + VWidth) (length p_mem) == true)) = admit ()
 
 (* PERF_003_06_simd_lane_independence (matches Coq: Theorem PERF_003_06_simd_lane_independence) *)
 let perf_003_06_simd_lane_independence (p_a: nat) (p_b: nat) (p_i: nat) : Lemma (Vector.nth (simd_add p_a p_b) p_i == scalar_add (Vector.nth p_a p_i) (Vector.nth p_b p_i)) = admit ()
@@ -124,8 +123,7 @@ let perf_003_10_simd_masking_correctness_obligation () : Tot bool = true
 let perf_003_10_simd_masking_correctness_lemma () : Lemma (requires True) (ensures (perf_003_10_simd_masking_correctness_obligation () == perf_003_10_simd_masking_correctness_obligation ())) = ()
 
 (* PERF_003_11_vectorization_legality (matches Coq: Theorem PERF_003_11_vectorization_legality) *)
-let perf_003_11_vectorization_legality_obligation () : Tot bool = true
-let perf_003_11_vectorization_legality_lemma () : Lemma (requires True) (ensures (perf_003_11_vectorization_legality_obligation () == perf_003_11_vectorization_legality_obligation ())) = ()
+let perf_003_11_vectorization_legality (p_l: loop) : Lemma (vectorizable p_l == true <==> has_carried_dependency p_l == false) = admit ()
 
 (* to_list_map2 (matches Coq: Lemma to_list_map2) *)
 let to_list_map2_obligation () : Tot bool = true
@@ -156,4 +154,4 @@ let perf_003_18_all_true_mask_selects_new (p_old: nat) (p_new_val: nat) (p_i: na
 let perf_003_19_all_false_mask_preserves_old (p_old: nat) (p_new_val: nat) (p_i: nat) : Lemma (Vector.nth (simd_select all_false_mask p_old p_new_val) p_i == Vector.nth p_old p_i) = admit ()
 
 (* PERF_003_20_zero_aligned (matches Coq: Theorem PERF_003_20_zero_aligned) *)
-let perf_003_20_zero_aligned (p_alignment: _) (p_nat: _) : Lemma (requires (p_alignment > 0)) (ensures (is_aligned 0 p_alignment == true)) = admit ()
+let perf_003_20_zero_aligned (p_alignment: nat) : Lemma (requires (p_alignment > 0)) (ensures (is_aligned 0 p_alignment == true)) = admit ()

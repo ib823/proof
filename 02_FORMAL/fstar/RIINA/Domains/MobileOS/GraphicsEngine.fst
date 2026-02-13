@@ -170,8 +170,7 @@ let pipeline_starts_geometry () : Lemma (hd_error render_pipeline == Some Geomet
 let pipeline_ends_display () : Lemma (last render_pipeline Geometry == Display) = admit ()
 
 (* render_pipeline_has_all_stages (matches Coq: Theorem render_pipeline_has_all_stages) *)
-let render_pipeline_has_all_stages_obligation () : Tot bool = true
-let render_pipeline_has_all_stages_lemma () : Lemma (requires True) (ensures (render_pipeline_has_all_stages_obligation () == render_pipeline_has_all_stages_obligation ())) = ()
+let render_pipeline_has_all_stages () : Lemma (List.Tot.memP Geometry render_pipeline /\ List.Tot.memP Rasterization render_pipeline /\ List.Tot.memP Shading render_pipeline /\ List.Tot.memP Compositing render_pipeline /\ List.Tot.memP Display render_pipeline) = admit ()
 
 (* shader_compilation_validated (matches Coq: Theorem shader_compilation_validated) *)
 let shader_compilation_validated (p_s: shader) : Lemma (requires (well_formed_shader p_s == true)) (ensures (p_s.f_shader_compiled == true /\ p_s.f_shader_validated == true)) = admit ()
@@ -195,8 +194,7 @@ let gpu_memory_tracked (p_m: gpu_memory) : Lemma (requires (well_formed_gpu_mem 
 let overdraw_minimized (p_b: draw_batch) : Lemma (requires (well_formed_batch p_b == true)) (ensures (p_b.f_batch_overdraw_ratio >= 100)) = admit ()
 
 (* culling_correct (matches Coq: Theorem culling_correct) *)
-let culling_correct_obligation () : Tot bool = true
-let culling_correct_lemma () : Lemma (requires True) (ensures (culling_correct_obligation () == culling_correct_obligation ())) = ()
+let culling_correct (p_a: animation) : Lemma (requires (well_formed_animation p_a == true /\ (forall (f: _). List.Tot.memP f (p_a.f_anim_frames)))) (ensures (f.f_frame_rendered == true)) = admit ()
 
 (* z_buffer_precise (matches Coq: Theorem z_buffer_precise) *)
 let z_buffer_precise (p_zb: z_buffer) : Lemma (requires (p_zb.f_zbuf_bits >= 24 /\ p_zb.f_zbuf_far > p_zb.f_zbuf_near)) (ensures (p_zb.f_zbuf_bits >= 24)) = admit ()

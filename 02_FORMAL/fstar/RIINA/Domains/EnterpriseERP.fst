@@ -110,15 +110,13 @@ let erp_layers (p_rbac: bool) (p_sod: bool) (p_audit: bool) (p_tenant: bool) (p_
   andb p_rbac (andb p_sod (andb p_audit ((p_tenant && p_encryption))))
 
 (* erp_001_rbac_enforced (matches Coq: Theorem erp_001_rbac_enforced) *)
-let erp_001_rbac_enforced_obligation () : Tot bool = true
-let erp_001_rbac_enforced_lemma () : Lemma (requires True) (ensures (erp_001_rbac_enforced_obligation () == erp_001_rbac_enforced_obligation ())) = ()
+let erp_001_rbac_enforced (p_user: nat) (p_perm: nat) (p_assignments: (list nat)) (p_role_perms: (list nat)) : Lemma (requires (user_has_permission p_user p_perm p_assignments p_role_perms == true)) (ensures ((exists p_a. List.Tot.memP p_a p_assignments) /\ user_id (assign_user a) == user_id p_user)) = admit ()
 
 (* erp_002_assignment_active (matches Coq: Theorem erp_002_assignment_active) *)
 let erp_002_assignment_active (p_a: nat) (p_current_time: nat) : Lemma (requires (assignment_active p_a p_current_time == true)) (ensures (assign_start p_a <= p_current_time)) = admit ()
 
 (* erp_003_sod_enforced (matches Coq: Theorem erp_003_sod_enforced) *)
-let erp_003_sod_enforced_obligation () : Tot bool = true
-let erp_003_sod_enforced_lemma () : Lemma (requires True) (ensures (erp_003_sod_enforced_obligation () == erp_003_sod_enforced_obligation ())) = ()
+let erp_003_sod_enforced (p_user_roles: (list nat)) (p_conflicts: nat) : Lemma (requires (check_sod p_user_roles p_conflicts == true /\ (forall (r1: _). (forall (r2: _). List.Tot.memP (r1, r2) p_conflicts)))) (ensures (~((List.Tot.memP r1 p_user_roles /\ List.Tot.memP r2 p_user_roles)) \/ (List.Tot.memP r1 p_user_roles /\ List.Tot.memP r2 p_user_roles))) = admit ()
 
 (* erp_004_txn_authorized (matches Coq: Theorem erp_004_txn_authorized) *)
 let erp_004_txn_authorized_obligation () : Tot bool = true
@@ -128,8 +126,7 @@ let erp_004_txn_authorized_lemma () : Lemma (requires True) (ensures (erp_004_tx
 let erp_005_no_self_approval (p_txn: nat) (p_approver: nat) : Lemma (requires (not_self_approved p_txn p_approver == true)) (ensures (~(user_id (txn_user p_txn) == user_id p_approver))) = admit ()
 
 (* erp_006_audit_created (matches Coq: Theorem erp_006_audit_created) *)
-let erp_006_audit_created_obligation () : Tot bool = true
-let erp_006_audit_created_lemma () : Lemma (requires True) (ensures (erp_006_audit_created_obligation () == erp_006_audit_created_obligation ())) = ()
+let erp_006_audit_created (p_audits: (list nat)) (p_user: nat) (p_action: nat) (p_resource: nat) : Lemma (requires (action_audited p_audits p_user p_action p_resource == true)) (ensures ((exists p_a. List.Tot.memP p_a p_audits) /\ audit_user a == p_user)) = admit ()
 
 (* erp_007_audit_immutable (matches Coq: Theorem erp_007_audit_immutable) *)
 let erp_007_audit_immutable (p_a: nat) : Lemma (audit_id p_a == audit_id p_a) = admit ()
@@ -159,8 +156,7 @@ let erp_014_no_post_without_approval () : Lemma (valid_doc_transition Draft Post
 let erp_015_maker_checker (p_maker: nat) (p_checker: nat) : Lemma (requires (maker_checker p_maker p_checker == true)) (ensures (~(user_id p_maker == user_id p_checker))) = admit ()
 
 (* erp_016_delegation_logged (matches Coq: Theorem erp_016_delegation_logged) *)
-let erp_016_delegation_logged_obligation () : Tot bool = true
-let erp_016_delegation_logged_lemma () : Lemma (requires True) (ensures (erp_016_delegation_logged_obligation () == erp_016_delegation_logged_obligation ())) = ()
+let erp_016_delegation_logged (p_audits: (list nat)) (p_delegator: nat) (p_delegate: nat) : Lemma (requires (action_audited p_audits p_delegator 99 p_delegate == true)) (ensures ((exists p_a. List.Tot.memP p_a p_audits))) = admit ()
 
 (* erp_017_time_limited (matches Coq: Theorem erp_017_time_limited) *)
 let erp_017_time_limited (p_grant_end: nat) (p_current: nat) : Lemma (requires (access_time_limited p_grant_end p_current == true)) (ensures (p_current < p_grant_end)) = admit ()
@@ -178,8 +174,7 @@ let erp_020_concurrent_controlled (p_active: nat) (p_max: nat) : Lemma (requires
 let erp_021_data_validated (p_passed: bool) : Lemma (requires (data_valid p_passed == true)) (ensures (p_passed == true)) = admit ()
 
 (* erp_022_ref_integrity (matches Coq: Theorem erp_022_ref_integrity) *)
-let erp_022_ref_integrity_obligation () : Tot bool = true
-let erp_022_ref_integrity_lemma () : Lemma (requires True) (ensures (erp_022_ref_integrity_obligation () == erp_022_ref_integrity_obligation ())) = ()
+let erp_022_ref_integrity (p_ref_id: nat) (p_valid_refs: (list nat)) : Lemma (requires (ref_exists p_ref_id p_valid_refs == true)) (ensures ((exists p_r. List.Tot.memP p_r p_valid_refs) /\ r == p_ref_id)) = admit ()
 
 (* erp_023_soft_delete (matches Coq: Theorem erp_023_soft_delete) *)
 let erp_023_soft_delete (p_deleted: bool) (p_data_present: bool) : Lemma (requires (soft_deleted p_deleted p_data_present == true /\ p_deleted == true)) (ensures (p_data_present == true)) = admit ()

@@ -160,8 +160,7 @@ let web_013_post_token (p_req: nat) : Lemma (requires (req_method p_req == 1 /\ 
 let web_014_url_validated (p_elem: nat) : Lemma (requires (elem_type p_elem == SafeUrl)) (ensures (url_safe (elem_type p_elem) == true)) = admit ()
 
 (* web_015_csp_present (matches Coq: Theorem web_015_csp_present) *)
-let web_015_csp_present_obligation () : Tot bool = true
-let web_015_csp_present_lemma () : Lemma (requires True) (ensures (web_015_csp_present_obligation () == web_015_csp_present_obligation ())) = ()
+let web_015_csp_present (p_headers: (list nat)) (p_csp_header: nat) : Lemma (requires (csp_active p_headers p_csp_header == true)) (ensures (List.Tot.memP p_csp_header p_headers)) = admit ()
 
 (* web_016_cookie_secure (matches Coq: Theorem web_016_cookie_secure) *)
 let web_016_cookie_secure (p_c: nat) : Lemma (requires (cookie_safe p_c == true)) (ensures (cookie_secure p_c == true /\ cookie_httponly p_c == true /\ cookie_samesite p_c == true)) = admit ()

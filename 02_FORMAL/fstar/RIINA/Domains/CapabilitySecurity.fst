@@ -209,24 +209,19 @@ let empty_rev_table : revocation_table = {f_rev_entries=[]}
 let riina_delegation : delegation = {f_del_from=0; f_del_to=1; f_del_cap_id=100; f_del_type=DelegRestricted; f_del_active=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff_obligation () : Tot bool = true
-let andb_false_iff_lemma () : Lemma (requires True) (ensures (andb_false_iff_obligation () == andb_false_iff_obligation ())) = ()
+let andb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == false <==> p_a == false \/ p_b == false) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff_obligation () : Tot bool = true
-let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
+let negb_false_iff (p_b: bool) : Lemma ((not p_b) == false <==> p_b == true) = admit ()
 
 (* CAP_001 (matches Coq: Theorem CAP_001) *)
 let cap_001 () : Lemma (capability_sound riina_cap == true) = admit ()
@@ -343,8 +338,7 @@ let cap_037_connectivity_controlled (p_o: _) : Lemma (requires (ocap_sound p_o =
 let cap_038_unforgeable_mem_cap () : Lemma (riina_mem_cap.f_mem_valid == true) = admit ()
 
 (* CAP_039_sealed_cap_unforgeable (matches Coq: Theorem CAP_039_sealed_cap_unforgeable) *)
-let cap_039_sealed_cap_unforgeable_obligation () : Tot bool = true
-let cap_039_sealed_cap_unforgeable_lemma () : Lemma (requires True) (ensures (cap_039_sealed_cap_unforgeable_obligation () == cap_039_sealed_cap_unforgeable_obligation ())) = ()
+let cap_039_sealed_cap_unforgeable (p_mc: _) : Lemma (requires (p_mc.f_mem_sealed == true)) (ensures ((not (p_mc.f_mem_sealed)) == false)) = admit ()
 
 (* CAP_040_valid_cap_required (matches Coq: Theorem CAP_040_valid_cap_required) *)
 let cap_040_valid_cap_required (p_mc: _) (p_p: _) : Lemma (requires (mem_has_perm p_mc p_p == true)) (ensures (p_mc.f_mem_valid == true)) = admit ()
@@ -366,8 +360,7 @@ let forallb_impl_lemma () : Lemma (requires True) (ensures (forallb_impl_obligat
 let cap_042_perms_subset_reflexive (p_ps: _) : Lemma (perms_subset p_ps p_ps == true) = admit ()
 
 (* CAP_043_empty_perms_subset (matches Coq: Theorem CAP_043_empty_perms_subset) *)
-let cap_043_empty_perms_subset_obligation () : Tot bool = true
-let cap_043_empty_perms_subset_lemma () : Lemma (requires True) (ensures (cap_043_empty_perms_subset_obligation () == cap_043_empty_perms_subset_obligation ())) = ()
+let cap_043_empty_perms_subset (p_ps: _) : Lemma (perms_subset [] p_ps == true) = admit ()
 
 (* CAP_044_derive_from_self (matches Coq: Theorem CAP_044_derive_from_self) *)
 let cap_044_derive_from_self (p_mc: _) : Lemma (requires (p_mc.f_mem_sealed == false)) (ensures (derive_mem_cap p_mc p_mc == true)) = admit ()
@@ -451,8 +444,7 @@ let cap_069_no_privilege_escalation (p_cp: _) : Lemma (requires (confinement_enf
 let cap_070_ocap_no_ambient (p_o: _) : Lemma (requires (ocap_sound p_o == true)) (ensures (p_o.f_ocap_no_ambient_authority == true)) = admit ()
 
 (* CAP_071_has_cap_empty (matches Coq: Theorem CAP_071_has_cap_empty) *)
-let cap_071_has_cap_empty_obligation () : Tot bool = true
-let cap_071_has_cap_empty_lemma () : Lemma (requires True) (ensures (cap_071_has_cap_empty_obligation () == cap_071_has_cap_empty_obligation ())) = ()
+let cap_071_has_cap_empty (p_p: _) (p_cap_id: _) : Lemma (requires (p_p.f_prin_capabilities == [])) (ensures (has_capability p_p p_cap_id == false)) = admit ()
 
 (* CAP_072_has_cap_head (matches Coq: Theorem CAP_072_has_cap_head) *)
 let cap_072_has_cap_head (p_pid: _) (p_cap_id: _) (p_rest: _) : Lemma (has_capability (mkprincipal p_pid (p_cap_id :: p_rest)) p_cap_id == true) = admit ()
@@ -497,16 +489,13 @@ let cap_084_delegation_type_restricted (p_d: _) : Lemma (requires (p_d.f_del_typ
 let cap_085_delegation_type_once (p_d: _) : Lemma (requires (p_d.f_del_type == DelegOnce)) (ensures (can_redelegate p_d == false)) = admit ()
 
 (* CAP_086_bounds_check_in_range (matches Coq: Theorem CAP_086_bounds_check_in_range) *)
-let cap_086_bounds_check_in_range_obligation () : Tot bool = true
-let cap_086_bounds_check_in_range_lemma () : Lemma (requires True) (ensures (cap_086_bounds_check_in_range_obligation () == cap_086_bounds_check_in_range_obligation ())) = ()
+let cap_086_bounds_check_in_range (p_base: _) (p_len: _) (p_addr: _) : Lemma (requires (p_base <= p_addr /\ p_addr < p_base + p_len)) (ensures (mem_bounds_check (mkmemcap p_base p_len [] false true) p_addr == true)) = admit ()
 
 (* CAP_087_bounds_check_out_of_range_low (matches Coq: Theorem CAP_087_bounds_check_out_of_range_low) *)
-let cap_087_bounds_check_out_of_range_low_obligation () : Tot bool = true
-let cap_087_bounds_check_out_of_range_low_lemma () : Lemma (requires True) (ensures (cap_087_bounds_check_out_of_range_low_obligation () == cap_087_bounds_check_out_of_range_low_obligation ())) = ()
+let cap_087_bounds_check_out_of_range_low (p_base: _) (p_len: _) (p_addr: _) : Lemma (requires (p_addr < p_base)) (ensures (mem_bounds_check (mkmemcap p_base p_len [] false true) p_addr == false)) = admit ()
 
 (* CAP_088_bounds_check_out_of_range_high (matches Coq: Theorem CAP_088_bounds_check_out_of_range_high) *)
-let cap_088_bounds_check_out_of_range_high_obligation () : Tot bool = true
-let cap_088_bounds_check_out_of_range_high_lemma () : Lemma (requires True) (ensures (cap_088_bounds_check_out_of_range_high_obligation () == cap_088_bounds_check_out_of_range_high_obligation ())) = ()
+let cap_088_bounds_check_out_of_range_high (p_base: _) (p_len: _) (p_addr: _) : Lemma (requires (p_addr >= p_base + p_len)) (ensures (mem_bounds_check (mkmemcap p_base p_len [] false true) p_addr == false)) = admit ()
 
 (* CAP_089_riina_mem_cap_valid (matches Coq: Theorem CAP_089_riina_mem_cap_valid) *)
 let cap_089_riina_mem_cap_valid () : Lemma (riina_mem_cap.f_mem_valid == true) = admit ()
@@ -533,15 +522,13 @@ let cap_095_valid_for_execute (p_mc: _) (p_addr: _) : Lemma (requires (mem_can_e
 let cap_096_sealed_cannot_derive (p_mc: _) (p_child: _) : Lemma (requires (p_mc.f_mem_sealed == true)) (ensures (derive_mem_cap p_mc p_child == false)) = admit ()
 
 (* CAP_097_empty_perms_no_access (matches Coq: Theorem CAP_097_empty_perms_no_access) *)
-let cap_097_empty_perms_no_access_obligation () : Tot bool = true
-let cap_097_empty_perms_no_access_lemma () : Lemma (requires True) (ensures (cap_097_empty_perms_no_access_obligation () == cap_097_empty_perms_no_access_obligation ())) = ()
+let cap_097_empty_perms_no_access (p_base: _) (p_len: _) : Lemma (mem_has_perm (mkmemcap p_base p_len [] false true) Read == false) = admit ()
 
 (* CAP_098_mem_cap_complete (matches Coq: Theorem CAP_098_mem_cap_complete) *)
 let cap_098_mem_cap_complete (p_mc: _) : Lemma (requires (p_mc.f_mem_valid == true /\ p_mc.f_mem_sealed == false)) (ensures (derive_mem_cap p_mc p_mc == true)) = admit ()
 
 (* CAP_099_zero_length_no_access (matches Coq: Theorem CAP_099_zero_length_no_access) *)
-let cap_099_zero_length_no_access_obligation () : Tot bool = true
-let cap_099_zero_length_no_access_lemma () : Lemma (requires True) (ensures (cap_099_zero_length_no_access_obligation () == cap_099_zero_length_no_access_obligation ())) = ()
+let cap_099_zero_length_no_access (p_base: _) (p_addr: _) : Lemma (requires (p_addr >= p_base)) (ensures (mem_bounds_check (mkmemcap p_base 0 [] false true) p_addr == false)) = admit ()
 
 (* CAP_100_security_complete (matches Coq: Theorem CAP_100_security_complete) *)
 let cap_100_security_complete (p_c: _) : Lemma (requires (capability_secure p_c == true)) (ensures ((p_c.f_cc_cap).f_cap_unforgeable == true /\ (p_c.f_cc_cap).f_cap_attenuatable == true /\ (p_c.f_cc_cap).f_cap_revocable == true /\ (p_c.f_cc_ocap).f_ocap_no_ambient_authority == true)) = admit ()

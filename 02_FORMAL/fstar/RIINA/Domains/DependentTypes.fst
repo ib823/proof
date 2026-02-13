@@ -121,8 +121,7 @@ let dec_eq_list (p_a: Type0) : Lemma (requires (((forall (x: _). (forall (y: _).
 let dec_to_bool (p_p: bool) : Lemma (requires (Dec p_p == true)) (ensures ({p_p} + {~p_p} == true)) = admit ()
 
 (* nat_eq_reflect (matches Coq: Lemma nat_eq_reflect) *)
-let nat_eq_reflect_obligation () : Tot bool = true
-let nat_eq_reflect_lemma () : Lemma (requires True) (ensures (nat_eq_reflect_obligation () == nat_eq_reflect_obligation ())) = ()
+let nat_eq_reflect (p_x: nat) (p_y: nat) : Lemma (Nat.eqb p_x p_y == true <==> p_x == p_y) = admit ()
 
 (* uip_dec (matches Coq: Lemma uip_dec) *)
 let uip_dec (p_a: Type0) : Lemma (requires (((forall (x: _). (forall (y: _). Dec (x = y) == true))))) (ensures ((forall (x: nat). (forall (p: nat). p == eq_refl)))) = admit ()

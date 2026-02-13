@@ -202,24 +202,19 @@ let is_css_dangerous (p_c: nat) : Tot bool =
   (p_c = 60) || (p_c = 62) || (p_c = 92) || (p_c = 34) || (p_c = 39) || (p_c = 40) || (p_c = 41) || (p_c = 123) || (p_c = 125)
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff_obligation () : Tot bool = true
-let andb_false_iff_lemma () : Lemma (requires True) (ensures (andb_false_iff_obligation () == andb_false_iff_obligation ())) = ()
+let andb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == false <==> p_a == false \/ p_b == false) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* forallb_true (matches Coq: Lemma forallb_true) *)
-let forallb_true_obligation () : Tot bool = true
-let forallb_true_lemma () : Lemma (requires True) (ensures (forallb_true_obligation () == forallb_true_obligation ())) = ()
+let forallb_true (p_f: nat) (p_l: (list nat)) : Lemma (forallb p_f p_l == true <==> ((forall (x: _). List.Tot.memP x p_l))) = admit ()
 
 (* XSS_001 (matches Coq: Theorem XSS_001) *)
 let xss_001 () : Lemma (output_safe riina_output == true) = admit ()
@@ -498,8 +493,7 @@ let xss_091 (p_r: _) : Lemma (requires (p_r.f_rx_sanitization_applied == false))
 let xss_092 (p_r: _) : Lemma (requires (p_r.f_rx_output_encoded == false)) (ensures (reflected_xss_safe p_r == false)) = admit ()
 
 (* XSS_093 (matches Coq: Theorem XSS_093) *)
-let xss_093_obligation () : Tot bool = true
-let xss_093_lemma () : Lemma (requires True) (ensures (xss_093_obligation () == xss_093_obligation ())) = ()
+let xss_093 (p_r: _) : Lemma (reflected_xss_safe p_r == true <==> p_r.f_rx_sanitization_applied == true /\ p_r.f_rx_output_encoded == true) = admit ()
 
 (* XSS_094 (matches Coq: Theorem XSS_094) *)
 let xss_094 () : Lemma (riina_reflected.f_rx_sanitization_applied == true) = admit ()
@@ -568,106 +562,82 @@ let xss_114 () : Lemma (riina_dom_based.f_dx_source_sanitized == true /\ riina_d
 let xss_115 () : Lemma (riina_dom_based.f_dx_trusted_types == true /\ riina_dom_based.f_dx_no_eval == true) = admit ()
 
 (* XSS_116 (matches Coq: Theorem XSS_116) *)
-let xss_116_obligation () : Tot bool = true
-let xss_116_lemma () : Lemma (requires True) (ensures (xss_116_obligation () == xss_116_obligation ())) = ()
+let xss_116 () : Lemma (html_encode_char 60 == [38; 108; 116; 59]) = admit ()
 
 (* XSS_117 (matches Coq: Theorem XSS_117) *)
-let xss_117_obligation () : Tot bool = true
-let xss_117_lemma () : Lemma (requires True) (ensures (xss_117_obligation () == xss_117_obligation ())) = ()
+let xss_117 () : Lemma (html_encode_char 62 == [38; 103; 116; 59]) = admit ()
 
 (* XSS_118 (matches Coq: Theorem XSS_118) *)
-let xss_118_obligation () : Tot bool = true
-let xss_118_lemma () : Lemma (requires True) (ensures (xss_118_obligation () == xss_118_obligation ())) = ()
+let xss_118 () : Lemma (html_encode_char 38 == [38; 97; 109; 112; 59]) = admit ()
 
 (* XSS_119 (matches Coq: Theorem XSS_119) *)
-let xss_119_obligation () : Tot bool = true
-let xss_119_lemma () : Lemma (requires True) (ensures (xss_119_obligation () == xss_119_obligation ())) = ()
+let xss_119 () : Lemma (html_encode_char 34 == [38; 113; 117; 111; 116; 59]) = admit ()
 
 (* XSS_120 (matches Coq: Theorem XSS_120) *)
-let xss_120_obligation () : Tot bool = true
-let xss_120_lemma () : Lemma (requires True) (ensures (xss_120_obligation () == xss_120_obligation ())) = ()
+let xss_120 () : Lemma (html_encode_char 39 == [38; 35; 51; 57; 59]) = admit ()
 
 (* XSS_121 (matches Coq: Theorem XSS_121) *)
-let xss_121_obligation () : Tot bool = true
-let xss_121_lemma () : Lemma (requires True) (ensures (xss_121_obligation () == xss_121_obligation ())) = ()
+let xss_121 () : Lemma (html_encode_char 65 == [65]) = admit ()
 
 (* XSS_122 (matches Coq: Theorem XSS_122) *)
-let xss_122_obligation () : Tot bool = true
-let xss_122_lemma () : Lemma (requires True) (ensures (xss_122_obligation () == xss_122_obligation ())) = ()
+let xss_122 () : Lemma (html_encode [60; 115; 99; 114; 105; 112; 116; 62] == [38; 108; 116; 59; 115; 99; 114; 105; 112; 116; 38; 103; 116; 59]) = admit ()
 
 (* XSS_123 (matches Coq: Theorem XSS_123) *)
-let xss_123_obligation () : Tot bool = true
-let xss_123_lemma () : Lemma (requires True) (ensures (xss_123_obligation () == xss_123_obligation ())) = ()
+let xss_123 (p_c: _) : Lemma (requires (is_html_dangerous p_c == false)) (ensures (html_encode_char p_c == [p_c])) = admit ()
 
 (* XSS_124 (matches Coq: Theorem XSS_124) *)
-let xss_124_obligation () : Tot bool = true
-let xss_124_lemma () : Lemma (requires True) (ensures (xss_124_obligation () == xss_124_obligation ())) = ()
+let xss_124 () : Lemma (html_encode [] == []) = admit ()
 
 (* XSS_125 (matches Coq: Theorem XSS_125) *)
 let xss_125 (p_c: _) : Lemma (length (html_encode_char p_c) >= 1) = admit ()
 
 (* XSS_126 (matches Coq: Theorem XSS_126) *)
-let xss_126_obligation () : Tot bool = true
-let xss_126_lemma () : Lemma (requires True) (ensures (xss_126_obligation () == xss_126_obligation ())) = ()
+let xss_126 () : Lemma (js_escape_char 34 == [92; 34]) = admit ()
 
 (* XSS_127 (matches Coq: Theorem XSS_127) *)
-let xss_127_obligation () : Tot bool = true
-let xss_127_lemma () : Lemma (requires True) (ensures (xss_127_obligation () == xss_127_obligation ())) = ()
+let xss_127 () : Lemma (js_escape_char 39 == [92; 39]) = admit ()
 
 (* XSS_128 (matches Coq: Theorem XSS_128) *)
-let xss_128_obligation () : Tot bool = true
-let xss_128_lemma () : Lemma (requires True) (ensures (xss_128_obligation () == xss_128_obligation ())) = ()
+let xss_128 () : Lemma (js_escape_char 92 == [92; 92]) = admit ()
 
 (* XSS_129 (matches Coq: Theorem XSS_129) *)
-let xss_129_obligation () : Tot bool = true
-let xss_129_lemma () : Lemma (requires True) (ensures (xss_129_obligation () == xss_129_obligation ())) = ()
+let xss_129 () : Lemma (js_escape_char 10 == [92; 110]) = admit ()
 
 (* XSS_130 (matches Coq: Theorem XSS_130) *)
-let xss_130_obligation () : Tot bool = true
-let xss_130_lemma () : Lemma (requires True) (ensures (xss_130_obligation () == xss_130_obligation ())) = ()
+let xss_130 () : Lemma (js_escape_char 60 == [92; 117; 48; 48; 51; 67]) = admit ()
 
 (* XSS_131 (matches Coq: Theorem XSS_131) *)
-let xss_131_obligation () : Tot bool = true
-let xss_131_lemma () : Lemma (requires True) (ensures (xss_131_obligation () == xss_131_obligation ())) = ()
+let xss_131 () : Lemma (js_escape_char 65 == [65]) = admit ()
 
 (* XSS_132 (matches Coq: Theorem XSS_132) *)
-let xss_132_obligation () : Tot bool = true
-let xss_132_lemma () : Lemma (requires True) (ensures (xss_132_obligation () == xss_132_obligation ())) = ()
+let xss_132 () : Lemma (js_escape [] == []) = admit ()
 
 (* XSS_133 (matches Coq: Theorem XSS_133) *)
-let xss_133_obligation () : Tot bool = true
-let xss_133_lemma () : Lemma (requires True) (ensures (xss_133_obligation () == xss_133_obligation ())) = ()
+let xss_133 (p_c: _) : Lemma (requires (is_js_dangerous p_c == false)) (ensures (js_escape_char p_c == [p_c])) = admit ()
 
 (* XSS_134 (matches Coq: Theorem XSS_134) *)
-let xss_134_obligation () : Tot bool = true
-let xss_134_lemma () : Lemma (requires True) (ensures (xss_134_obligation () == xss_134_obligation ())) = ()
+let xss_134 () : Lemma (js_escape [60; 47; 115; 99; 114; 105; 112; 116; 62] == [92; 117; 48; 48; 51; 67; 47; 115; 99; 114; 105; 112; 116; 92; 117; 48; 48; 51; 69]) = admit ()
 
 (* XSS_135 (matches Coq: Theorem XSS_135) *)
 let xss_135 (p_c: _) : Lemma (length (js_escape_char p_c) >= 1) = admit ()
 
 (* XSS_136 (matches Coq: Theorem XSS_136) *)
-let xss_136_obligation () : Tot bool = true
-let xss_136_lemma () : Lemma (requires True) (ensures (xss_136_obligation () == xss_136_obligation ())) = ()
+let xss_136 () : Lemma (url_encode_char 65 == [65]) = admit ()
 
 (* XSS_137 (matches Coq: Theorem XSS_137) *)
-let xss_137_obligation () : Tot bool = true
-let xss_137_lemma () : Lemma (requires True) (ensures (xss_137_obligation () == xss_137_obligation ())) = ()
+let xss_137 () : Lemma (url_encode_char 60 == [37; 51; 67]) = admit ()
 
 (* XSS_138 (matches Coq: Theorem XSS_138) *)
-let xss_138_obligation () : Tot bool = true
-let xss_138_lemma () : Lemma (requires True) (ensures (xss_138_obligation () == xss_138_obligation ())) = ()
+let xss_138 () : Lemma (url_encode_char 62 == [37; 51; 69]) = admit ()
 
 (* XSS_139 (matches Coq: Theorem XSS_139) *)
-let xss_139_obligation () : Tot bool = true
-let xss_139_lemma () : Lemma (requires True) (ensures (xss_139_obligation () == xss_139_obligation ())) = ()
+let xss_139 () : Lemma (url_encode_char 32 == [37; 50; 48]) = admit ()
 
 (* XSS_140 (matches Coq: Theorem XSS_140) *)
-let xss_140_obligation () : Tot bool = true
-let xss_140_lemma () : Lemma (requires True) (ensures (xss_140_obligation () == xss_140_obligation ())) = ()
+let xss_140 () : Lemma (url_encode [] == []) = admit ()
 
 (* XSS_141 (matches Coq: Theorem XSS_141) *)
-let xss_141_obligation () : Tot bool = true
-let xss_141_lemma () : Lemma (requires True) (ensures (xss_141_obligation () == xss_141_obligation ())) = ()
+let xss_141 (p_c: _) : Lemma (requires (needs_url_encoding p_c == false)) (ensures (url_encode_char p_c == [p_c])) = admit ()
 
 (* XSS_142 (matches Coq: Theorem XSS_142) *)
 let xss_142 () : Lemma (needs_url_encoding 65 == false) = admit ()
@@ -679,28 +649,22 @@ let xss_143 () : Lemma (needs_url_encoding 48 == false) = admit ()
 let xss_144 () : Lemma (needs_url_encoding 45 == false) = admit ()
 
 (* XSS_145 (matches Coq: Theorem XSS_145) *)
-let xss_145_obligation () : Tot bool = true
-let xss_145_lemma () : Lemma (requires True) (ensures (xss_145_obligation () == xss_145_obligation ())) = ()
+let xss_145 () : Lemma (url_encode [106; 97; 118; 97; 115; 99; 114; 105; 112; 116; 58] == [106; 97; 118; 97; 115; 99; 114; 105; 112; 116; 37; 51; 65]) = admit ()
 
 (* XSS_146 (matches Coq: Theorem XSS_146) *)
-let xss_146_obligation () : Tot bool = true
-let xss_146_lemma () : Lemma (requires True) (ensures (xss_146_obligation () == xss_146_obligation ())) = ()
+let xss_146 () : Lemma (css_escape_char 65 == [65]) = admit ()
 
 (* XSS_147 (matches Coq: Theorem XSS_147) *)
-let xss_147_obligation () : Tot bool = true
-let xss_147_lemma () : Lemma (requires True) (ensures (xss_147_obligation () == xss_147_obligation ())) = ()
+let xss_147 () : Lemma (css_escape_char 60 == [92; 51; 67; 32]) = admit ()
 
 (* XSS_148 (matches Coq: Theorem XSS_148) *)
-let xss_148_obligation () : Tot bool = true
-let xss_148_lemma () : Lemma (requires True) (ensures (xss_148_obligation () == xss_148_obligation ())) = ()
+let xss_148 () : Lemma (css_escape_char 40 == [92; 50; 56; 32]) = admit ()
 
 (* XSS_149 (matches Coq: Theorem XSS_149) *)
-let xss_149_obligation () : Tot bool = true
-let xss_149_lemma () : Lemma (requires True) (ensures (xss_149_obligation () == xss_149_obligation ())) = ()
+let xss_149 () : Lemma (css_escape [] == []) = admit ()
 
 (* XSS_150 (matches Coq: Theorem XSS_150) *)
-let xss_150_obligation () : Tot bool = true
-let xss_150_lemma () : Lemma (requires True) (ensures (xss_150_obligation () == xss_150_obligation ())) = ()
+let xss_150 (p_c: _) : Lemma (requires (is_css_dangerous p_c == false)) (ensures (css_escape_char p_c == [p_c])) = admit ()
 
 (* XSS_151 (matches Coq: Theorem XSS_151) *)
 let xss_151 () : Lemma (is_css_dangerous 65 == false) = admit ()

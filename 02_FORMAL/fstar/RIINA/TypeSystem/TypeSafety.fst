@@ -25,9 +25,7 @@ let stuck (p_cfg: nat) : Tot bool =
   true
 
 (* type_safety (matches Coq: Theorem type_safety) *)
-let type_safety_obligation () : Tot bool = true
-let type_safety_lemma () : Lemma (requires True) (ensures (type_safety_obligation () == type_safety_obligation ())) = ()
+let type_safety (p_e: _) (p_t: _) (p_epsilon: _) (p_st: _) (p_ctx: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_e p_t p_epsilon == true /\ store_wf p_sigma p_st == true)) (ensures (~(stuck (p_e, p_st, p_ctx) == true))) = admit ()
 
 (* multi_step_safety (matches Coq: Theorem multi_step_safety) *)
-let multi_step_safety_obligation () : Tot bool = true
-let multi_step_safety_lemma () : Lemma (requires True) (ensures (multi_step_safety_obligation () == multi_step_safety_obligation ())) = ()
+let multi_step_safety (p_e: _) (p_e_: _) (p_t: _) (p_epsilon: _) (p_st: _) (p_st_: _) (p_ctx: _) (p_ctx_: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_e p_t p_epsilon == true /\ store_wf p_sigma p_st == true /\ step (p_e, p_st, p_ctx) * (p_e_, p_st_, p_ctx_) == true)) (ensures ((exists p_sigma. store_wf p_sigma' p_st_ == true) /\ ~(stuck (p_e_, p_st_, p_ctx_) == true))) = admit ()

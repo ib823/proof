@@ -154,8 +154,7 @@ let heal_009_degradation_valid (p_level: nat) (p_max_level: nat) : Lemma (requir
 let heal_010_capability_bounded (p_cap: nat) : Lemma (requires (capability_bounded p_cap == true)) (ensures (cap_level p_cap <= 100)) = admit ()
 
 (* heal_011_isolation_effective (matches Coq: Theorem heal_011_isolation_effective) *)
-let heal_011_isolation_effective_obligation () : Tot bool = true
-let heal_011_isolation_effective_lemma () : Lemma (requires True) (ensures (heal_011_isolation_effective_obligation () == heal_011_isolation_effective_obligation ())) = ()
+let heal_011_isolation_effective (p_component: nat) (p_isolated: (list nat)) : Lemma (requires (component_isolated p_component p_isolated == true)) (ensures ((exists p_i. List.Tot.memP p_i p_isolated) /\ i == p_component)) = admit ()
 
 (* heal_012_failover_available (matches Coq: Theorem heal_012_failover_available) *)
 let heal_012_failover_available (p_targets: (list nat)) : Lemma (requires (failover_available p_targets == true)) (ensures (length p_targets > 0)) = admit ()
@@ -164,8 +163,7 @@ let heal_012_failover_available (p_targets: (list nat)) : Lemma (requires (failo
 let heal_013_recovery_completes (p_p_before: health_state) (p_p_after: health_state) : Lemma (requires (recovery_complete id_before id_after == true)) (ensures (id_after == Healthy \/ (exists p_n. id_after == Degraded p_n))) = admit ()
 
 (* heal_014_no_recurrence (matches Coq: Theorem heal_014_no_recurrence) *)
-let heal_014_no_recurrence_obligation () : Tot bool = true
-let heal_014_no_recurrence_lemma () : Lemma (requires True) (ensures (heal_014_no_recurrence_obligation () == heal_014_no_recurrence_obligation ())) = ()
+let heal_014_no_recurrence (p_fault_id: nat) (p_recent: (list nat)) (p_window: nat) : Lemma (requires (recurrence_prevented p_fault_id p_recent p_window == true)) (ensures (~(List.Tot.memP p_fault_id p_recent))) = admit ()
 
 (* heal_015_graceful_order (matches Coq: Theorem heal_015_graceful_order) *)
 let heal_015_graceful_order (p_from_level: nat) (p_to_level: nat) : Lemma (requires (degradation_ordered p_from_level p_to_level == true)) (ensures (p_to_level <= p_from_level)) = admit ()

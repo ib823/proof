@@ -95,8 +95,7 @@ let trm_governance_proof (p_e: nat) : Lemma (requires (mas_board_oversight p_e =
 let mas_composition (p_e: nat) : Lemma (requires (cyber_hygiene_compliant p_e == true /\ trm_governance p_e == true /\ trm_security_testing p_e == true /\ trm_resilience p_e == true)) (ensures (mas_fully_compliant p_e == true)) = admit ()
 
 (* mas_license_coverage (matches Coq: Theorem mas_license_coverage) *)
-let mas_license_coverage_obligation () : Tot bool = true
-let mas_license_coverage_lemma () : Lemma (requires True) (ensures (mas_license_coverage_obligation () == mas_license_coverage_obligation ())) = ()
+let mas_license_coverage (p_l: mas_license_type) : Lemma (List.Tot.memP p_l all_mas_license_types) = admit ()
 
 (* ch_requires_mfa (matches Coq: Theorem ch_requires_mfa) *)
 let ch_requires_mfa (p_e: _) : Lemma (requires (cyber_hygiene_compliant p_e == true)) (ensures (mas_mfa_enabled p_e == true)) = admit ()

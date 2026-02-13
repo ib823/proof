@@ -137,12 +137,10 @@ let delta_001_02_single_vote_per_term (p_node: _) (p_c1: _) (p_c2: _) (p_term: _
 let delta_001_03_log_matching_reflexive (p_log: _) (p_idx: _) : Lemma (logs_match_at p_log p_log p_idx == true) = admit ()
 
 (* DELTA_001_04_committed_requires_quorum (matches Coq: Theorem DELTA_001_04_committed_requires_quorum) *)
-let delta_001_04_committed_requires_quorum_obligation () : Tot bool = true
-let delta_001_04_committed_requires_quorum_lemma () : Lemma (requires True) (ensures (delta_001_04_committed_requires_quorum_obligation () == delta_001_04_committed_requires_quorum_obligation ())) = ()
+let delta_001_04_committed_requires_quorum (p_cluster: _) (p_idx: _) : Lemma (requires (entry_committed p_cluster p_idx == true)) (ensures (is_quorum (length matching) (p_cluster.f_cluster_size) == true)) = admit ()
 
 (* DELTA_001_05_empty_log_no_commit (matches Coq: Theorem DELTA_001_05_empty_log_no_commit) *)
-let delta_001_05_empty_log_no_commit_obligation () : Tot bool = true
-let delta_001_05_empty_log_no_commit_lemma () : Lemma (requires True) (ensures (delta_001_05_empty_log_no_commit_obligation () == delta_001_05_empty_log_no_commit_obligation ())) = ()
+let delta_001_05_empty_log_no_commit (p_cluster: _) (p_idx: _) : Lemma (requires (((forall (n: _). List.Tot.memP n (p_cluster.f_cluster_nodes))) /\ p_idx > 0)) (ensures (entry_committed p_cluster p_idx == false)) = admit ()
 
 (* DELTA_001_06_leader_append_only (matches Coq: Theorem DELTA_001_06_leader_append_only) *)
 let delta_001_06_leader_append_only_obligation () : Tot bool = true
@@ -176,8 +174,7 @@ let delta_002_04_correct_majority (p_state: _) : Lemma (requires (bft_valid p_st
 let delta_002_05_bft_f_zero (p_state: _) : Lemma (requires (p_state.f_bft_f == 0)) (ensures (bft_quorum p_state == 1)) = admit ()
 
 (* DELTA_002_06_bft_phases_ordered (matches Coq: Theorem DELTA_002_06_bft_phases_ordered) *)
-let delta_002_06_bft_phases_ordered_obligation () : Tot bool = true
-let delta_002_06_bft_phases_ordered_lemma () : Lemma (requires True) (ensures (delta_002_06_bft_phases_ordered_obligation () == delta_002_06_bft_phases_ordered_obligation ())) = ()
+let delta_002_06_bft_phases_ordered (p_p1: bft_phase) (p_p2: bft_phase) : Lemma (True) = ()
 
 (* DELTA_003_01_gc_merge_comm (matches Coq: Theorem DELTA_003_01_gc_merge_comm) *)
 let delta_003_01_gc_merge_comm (p_a: _) (p_b: _) : Lemma (requires (length p_a == length p_b)) (ensures (gc_merge p_a p_b == gc_merge p_b p_a)) = admit ()
@@ -210,8 +207,7 @@ let delta_003_08_gs_merge_contains_left (p_a: _) (p_b: _) (p_v: _) : Lemma (requ
 let delta_003_09_gs_add_idempotent (p_s: _) (p_v: _) : Lemma (requires (gs_member p_s p_v == true)) (ensures (gs_add p_s p_v == p_s)) = admit ()
 
 (* DELTA_003_10_gc_empty_zero (matches Coq: Theorem DELTA_003_10_gc_empty_zero) *)
-let delta_003_10_gc_empty_zero_obligation () : Tot bool = true
-let delta_003_10_gc_empty_zero_lemma () : Lemma (requires True) (ensures (delta_003_10_gc_empty_zero_obligation () == delta_003_10_gc_empty_zero_obligation ())) = ()
+let delta_003_10_gc_empty_zero () : Lemma (gc_value [] == 0) = admit ()
 
 (* DELTA_004_01_ring_add_increases (matches Coq: Theorem DELTA_004_01_ring_add_increases) *)
 let delta_004_01_ring_add_increases (p_ring: _) (p_pos: _) (p_node: _) : Lemma (length ((ring_add_node p_ring p_pos p_node).f_ring_nodes) == ((length (p_ring.f_ring_nodes)) + 1)) = admit ()
@@ -226,5 +222,4 @@ let delta_004_03_ring_size_preserved_add (p_ring: _) (p_pos: _) (p_node: _) : Le
 let delta_004_04_ring_size_preserved_remove (p_ring: _) (p_node: _) : Lemma ((ring_remove_node p_ring p_node).f_ring_size == p_ring.f_ring_size) = admit ()
 
 (* DELTA_004_05_empty_ring_no_lookup (matches Coq: Theorem DELTA_004_05_empty_ring_no_lookup) *)
-let delta_004_05_empty_ring_no_lookup_obligation () : Tot bool = true
-let delta_004_05_empty_ring_no_lookup_lemma () : Lemma (requires True) (ensures (delta_004_05_empty_ring_no_lookup_obligation () == delta_004_05_empty_ring_no_lookup_obligation ())) = ()
+let delta_004_05_empty_ring_no_lookup (p_key: _) : Lemma (ring_lookup {| ring_nodes : == []; ring_size := 0 |} p_key = None) = admit ()

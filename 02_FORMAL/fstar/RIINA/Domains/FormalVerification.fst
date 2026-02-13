@@ -450,8 +450,7 @@ let e_001_02 (p_bt: _) (p_p: _) (p_q: _) : Lemma (requires (pred_implies p_p p_q
 let smt_translation_correct (p_p: _) (p_env: _) : Lemma (eval_pred p_p p_env == eval_smt (pred_to_smt p_p) p_env) = admit ()
 
 (* E_001_03 (matches Coq: Theorem E_001_03) *)
-let e_001_03_obligation () : Tot bool = true
-let e_001_03_lemma () : Lemma (requires True) (ensures (e_001_03_obligation () == e_001_03_obligation ())) = ()
+let e_001_03 (p_p: _) (p_env: _) : Lemma (eval_pred p_p p_env == true <==> eval_smt (pred_to_smt p_p) p_env == true) = admit ()
 
 (* E_001_04 (matches Coq: Theorem E_001_04) *)
 let e_001_04 (p_s: _) (p_bound: _) : Lemma (requires (p_s.f_liquid_iteration < p_bound)) (ensures (liquid_terminates (liquid_step p_s) p_bound == true)) = admit ()
@@ -501,12 +500,10 @@ let e_001_16_lemma () : Lemma (requires True) (ensures (e_001_16_obligation () =
 let e_001_17 (p_trans: _) (p_p: _) (p_s: _) (p_k: _) : Lemma (requires (bmc_check p_trans (PropAtom p_p) p_s p_k == true)) (ensures (eval_pred p_p p_s == true)) = admit ()
 
 (* E_001_18 (matches Coq: Theorem E_001_18) *)
-let e_001_18_obligation () : Tot bool = true
-let e_001_18_lemma () : Lemma (requires True) (ensures (e_001_18_obligation () == e_001_18_obligation ())) = ()
+let e_001_18 (p_p: _) (p_s: _) : Lemma (prop_sat p_s (PropAtom p_p) == true <==> eval_pred p_p p_s == true) = admit ()
 
 (* E_001_19 (matches Coq: Theorem E_001_19) *)
-let e_001_19_obligation () : Tot bool = true
-let e_001_19_lemma () : Lemma (requires True) (ensures (e_001_19_obligation () == e_001_19_obligation ())) = ()
+let e_001_19 (p_trans: _) (p_prop: _) (p_trace: _) (p_s: _) : Lemma (requires (valid_counterexample p_trans p_prop (p_s :: p_trace) == true)) (ensures ((exists p_s. (s_ == p_s \/ List.In s_ p_trace == true)) /\ ~(prop_sat s_ p_prop == true))) = admit ()
 
 (* E_001_20 (matches Coq: Theorem E_001_20) *)
 let e_001_20 (p_abs: _) (p_trans: _) (p_abs_trans: _) (p_prop: _) : Lemma (requires (abstraction_sound p_abs p_trans p_abs_trans == true /\ ((forall (s: _). prop_sat (p_abs s) p_prop -> prop_sat s p_prop == true)) /\ (forall (s: _). prop_sat (p_abs s) p_prop == true))) (ensures (prop_sat s p_prop == true)) = admit ()
@@ -521,7 +518,7 @@ let e_001_22 (p_ctx: _) (p_t: _) (p_p: _) (p_assignment: _) : Lemma (requires (p
 let bool_proof_irrelevant (p_b: bool) (p_p1: nat) (p_p2: nat) : Lemma (p_p1 == p_p2) = admit ()
 
 (* E_001_23 (matches Coq: Theorem E_001_23) *)
-let e_001_23 (p_p: _) (p_env: _) (p_pf2: _) (p_eval_pred: _) (p_p: _) (p_env: _) (p_true_: _) : Lemma (pf1 == p_pf2) = admit ()
+let e_001_23 (p_p: nat) (p_env: nat) (p_pf2: nat) : Lemma (pf1 == p_pf2) = admit ()
 
 (* E_001_24 (matches Coq: Theorem E_001_24) *)
 let e_001_24 (p_ctx: _) (p_t1: _) (p_t2: _) (p_p1: _) (p_p2: _) : Lemma (requires (proof_typed p_ctx p_t1 p_p1 == true /\ proof_typed p_ctx p_t2 p_p2 == true)) (ensures (proof_typed p_ctx (PTAndI p_t1 p_t2) (SPAnd p_p1 p_p2) == true)) = admit ()
@@ -545,5 +542,4 @@ let wp_skip_sound (p_post: _) (p_env: _) : Lemma (requires (eval_pred (wp CmdSki
 let e_001_29 (p_post: _) (p_env: _) : Lemma (requires (eval_pred (wp CmdSkip p_post) p_env == true /\ (forall (env2: _). cmd_eval CmdSkip p_env env2 == true))) (ensures (eval_pred p_post env2 == true)) = admit ()
 
 (* E_001_30 (matches Coq: Theorem E_001_30) *)
-let e_001_30_obligation () : Tot bool = true
-let e_001_30_lemma () : Lemma (requires True) (ensures (e_001_30_obligation () == e_001_30_obligation ())) = ()
+let e_001_30 (p_c: _) : Lemma (requires (vc_valid (vc_from_contract p_c) == true <==> (forall (env: _). eval_pred (p_c.f_precondition) env == true))) (ensures (eval_pred (p_c.f_postcondition) env == true)) = admit ()

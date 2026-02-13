@@ -141,12 +141,10 @@ let match_qty_bounded_by_sell (p_buy: _) (p_sell: _) : Lemma (match_qty p_buy p_
 let match_uses_sell_price (p_tid: _) (p_buy: _) (p_sell: _) (p_t: _) : Lemma (requires (execute_match p_tid p_buy p_sell == Some p_t)) (ensures (p_t.f_trade_price == p_sell.f_order_price)) = admit ()
 
 (* empty_ticks_ordered (matches Coq: Theorem empty_ticks_ordered) *)
-let empty_ticks_ordered_obligation () : Tot bool = true
-let empty_ticks_ordered_lemma () : Lemma (requires True) (ensures (empty_ticks_ordered_obligation () == empty_ticks_ordered_obligation ())) = ()
+let empty_ticks_ordered () : Lemma (ticks_ordered [] == True) = admit ()
 
 (* singleton_ticks_ordered (matches Coq: Theorem singleton_ticks_ordered) *)
-let singleton_ticks_ordered_obligation () : Tot bool = true
-let singleton_ticks_ordered_lemma () : Lemma (requires True) (ensures (singleton_ticks_ordered_obligation () == singleton_ticks_ordered_obligation ())) = ()
+let singleton_ticks_ordered (p_t: _) : Lemma (ticks_ordered [p_t] == true) = admit ()
 
 (* ordered_ticks_head_smallest (matches Coq: Theorem ordered_ticks_head_smallest) *)
 let ordered_ticks_head_smallest (p_t1: _) (p_t2: _) (p_rest: _) : Lemma (requires (ticks_ordered (p_t1 :: p_t2 :: p_rest) == true)) (ensures (p_t1.f_tick_seq < p_t2.f_tick_seq)) = admit ()

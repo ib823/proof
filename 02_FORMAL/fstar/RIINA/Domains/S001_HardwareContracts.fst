@@ -143,16 +143,13 @@ let s_001_05_speculation_state_modeled (p_ms: microarch_state) : Lemma ((p_ms.f_
 let s_001_06_leakage_function_defined (p_ms: _) (p_ms_: _) : Lemma ((exists (p_trace: nat). leakage p_ms p_ms_ == p_trace)) = admit ()
 
 (* S_001_07_timing_observable (matches Coq: Theorem S_001_07_timing_observable) *)
-let s_001_07_timing_observable_obligation () : Tot bool = true
-let s_001_07_timing_observable_lemma () : Lemma (requires True) (ensures (s_001_07_timing_observable_obligation () == s_001_07_timing_observable_obligation ())) = ()
+let s_001_07_timing_observable (p_n: _) : Lemma ((exists (p_trace: nat). List.Tot.memP (CyclesTaken p_n) p_trace)) = admit ()
 
 (* S_001_08_power_observable (matches Coq: Theorem S_001_08_power_observable) *)
-let s_001_08_power_observable_obligation () : Tot bool = true
-let s_001_08_power_observable_lemma () : Lemma (requires True) (ensures (s_001_08_power_observable_obligation () == s_001_08_power_observable_obligation ())) = ()
+let s_001_08_power_observable (p_n: _) : Lemma ((exists (p_trace: nat). List.Tot.memP (PowerConsumed p_n) p_trace)) = admit ()
 
 (* S_001_09_constant_time_definition (matches Coq: Theorem S_001_09_constant_time_definition) *)
-let s_001_09_constant_time_definition_obligation () : Tot bool = true
-let s_001_09_constant_time_definition_lemma () : Lemma (requires True) (ensures (s_001_09_constant_time_definition_obligation () == s_001_09_constant_time_definition_obligation ())) = ()
+let s_001_09_constant_time_definition (p_prog: _) (p_l: _) : Lemma (constant_time p_prog p_l == true <==> ((forall (ms1: _). (forall (ms2: _). low_equiv p_l ms1 ms2 -> leakage ms1 (p_prog ms1) == leakage ms2 (p_prog ms2))))) = admit ()
 
 (* S_001_10_ct_independent_of_secrets (matches Coq: Theorem S_001_10_ct_independent_of_secrets) *)
 let s_001_10_ct_independent_of_secrets (p_prog: _) (p_l: _) : Lemma (requires (constant_time p_prog p_l == true /\ (forall (ms1: _). (forall (ms2: _). low_equiv p_l ms1 ms2 == true)))) (ensures (leakage ms1 (p_prog ms1) == leakage ms2 (p_prog ms2))) = admit ()
@@ -210,8 +207,7 @@ let s_001_25_rowhammer_threshold () : Lemma (ROWHAMMER_THRESHOLD == 100000) = ad
 let s_001_26_rowhammer_pattern_safe (p_accesses: _) : Lemma (requires (rowhammer_safe p_accesses == true)) (ensures ((forall (row: _). p_accesses row < ROWHAMMER_THRESHOLD))) = admit ()
 
 (* S_001_27_memory_row_adjacency (matches Coq: Theorem S_001_27_memory_row_adjacency) *)
-let s_001_27_memory_row_adjacency_obligation () : Tot bool = true
-let s_001_27_memory_row_adjacency_lemma () : Lemma (requires True) (ensures (s_001_27_memory_row_adjacency_obligation () == s_001_27_memory_row_adjacency_obligation ())) = ()
+let s_001_27_memory_row_adjacency (p_a1: _) (p_a2: _) : Lemma (row_of_addr p_a1 == row_of_addr p_a2 <==> p_a1 / 1024 == p_a2 / 1024) = admit ()
 
 (* S_001_28_power_independent (matches Coq: Theorem S_001_28_power_independent) *)
 let s_001_28_power_independent (p_prog: _) (p_secrets: _) : Lemma (requires (power_independent p_prog p_secrets == true /\ (forall (ms1: _). (forall (ms2: _). low_equiv p_secrets ms1 ms2 == true)))) (ensures ((p_prog ms1).f_cycle_count == (p_prog ms2).f_cycle_count)) = admit ()

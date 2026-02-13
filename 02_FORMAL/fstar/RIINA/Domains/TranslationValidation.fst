@@ -293,8 +293,7 @@ let tgt_steps_trans (p_prog: _) (p_s1: _) (p_s2: _) (p_s3: _) : Lemma (requires 
 let is_const_sound (p_e: _) (p_n: _) (p_env: _) : Lemma (requires (is_const p_e == Some p_n)) (ensures (src_eval p_env p_e (SVInt p_n) == true)) = admit ()
 
 (* COMPILE_001_01 (matches Coq: Theorem COMPILE_001_01) *)
-let compile_001_01_obligation () : Tot bool = true
-let compile_001_01_lemma () : Lemma (requires True) (ensures (compile_001_01_obligation () == compile_001_01_obligation ())) = ()
+let compile_001_01 (p_env: nat) (p_e: src_expr) (p_sv: src_val) (p_prog: nat) (p_ts_init: tgt_state) (p_ts_final: tgt_state) (p_result_reg: nat) (p_mapping: nat) : Lemma (requires (src_eval p_env p_e p_sv == true /\ env_corresp p_env (p_ts_init.f_ts_regs) p_mapping == true /\ tgt_steps p_prog p_ts_init p_ts_final == true /\ sim_rel p_env p_sv p_ts_final p_result_reg == true)) (ensures ((exists p_tv. List.Tot.memP (p_result_reg, p_tv) (p_ts_final.f_ts_regs)) /\ val_corresp p_sv tv == true)) = admit ()
 
 (* COMPILE_001_02 (matches Coq: Theorem COMPILE_001_02) *)
 let compile_001_02 (p_g: nat) (p_e: src_expr) (p_t: src_type) (p_tt: tgt_type) : Lemma (requires (src_has_type p_g p_e p_t == true /\ type_corresp p_t p_tt == true)) (ensures ((p_t == STInt -> p_tt = TTInt) /\ (p_t == STBool -> p_tt = TTInt) /\ (p_t == STUnit -> p_tt = TTInt))) = admit ()
@@ -309,8 +308,7 @@ let compile_001_04 (p_env: nat) (p_e: src_expr) (p_sv: src_val) (p_prog: nat) (p
 let compile_001_05 (p_sv: src_val) (p_tv: tgt_val) : Lemma (requires (val_corresp p_sv p_tv == true)) (ensures (val_match p_sv p_tv == true)) = admit ()
 
 (* COMPILE_001_06 (matches Coq: Theorem COMPILE_001_06) *)
-let compile_001_06_obligation () : Tot bool = true
-let compile_001_06_lemma () : Lemma (requires True) (ensures (compile_001_06_obligation () == compile_001_06_obligation ())) = ()
+let compile_001_06 (p_smem: (list nat)) (p_tmem: nat) (p_addr: nat) (p_sv: src_val) : Lemma (requires (mem_corresp p_smem p_tmem == true /\ List.Tot.memP (p_addr, p_sv) p_smem)) (ensures ((exists p_tv. List.Tot.memP (p_addr, p_tv) p_tmem) /\ val_corresp p_sv tv == true)) = admit ()
 
 (* COMPILE_001_07 (matches Coq: Theorem COMPILE_001_07) *)
 let compile_001_07 (p_abi: abi) (p_args: (list nat)) (p_ret: nat) : Lemma (requires (abi_compliant_call p_abi p_args p_ret == true)) (ensures (length p_args <= length (p_abi.f_abi_arg_regs) /\ p_ret == p_abi.f_abi_ret_reg)) = admit ()
@@ -328,8 +326,7 @@ let compile_001_10 (p_env: nat) (p_f_body: src_expr) (p_arg: src_expr) (p_param:
 let compile_001_11 (p_env: nat) (p_body: src_expr) (p_n: nat) (p_v: src_val) : Lemma (requires (((forall (i: _). i < p_n -> exists vi_ src_eval p_env p_body vi)) /\ src_eval p_env (unroll_loop p_body p_n) p_v == true)) (ensures ((p_n == 0 /\ p_v == SVInt 0) \/ ((exists p_v_last. src_eval p_env p_body p_v_last == true)))) = admit ()
 
 (* COMPILE_001_12 (matches Coq: Theorem COMPILE_001_12) *)
-let compile_001_12_obligation () : Tot bool = true
-let compile_001_12_lemma () : Lemma (requires True) (ensures (compile_001_12_obligation () == compile_001_12_obligation ())) = ()
+let compile_001_12 (p_alloc: nat) (p_regs: nat) (p_env: nat) (p_x: nat) (p_r: nat) (p_sv: src_val) : Lemma (requires (alloc_valid p_alloc p_regs p_env == true /\ List.Tot.memP (p_x, p_r) p_alloc /\ List.Tot.memP (p_x, p_sv) p_env)) (ensures ((exists p_tv. List.Tot.memP (p_r, p_tv) p_regs) /\ val_corresp p_sv tv == true)) = admit ()
 
 (* COMPILE_001_13 (matches Coq: Theorem COMPILE_001_13) *)
 let compile_001_13 (p_ir: ir_instr) (p_regs: nat) (p_regs_: nat) : Lemma (requires (ir_eval p_ir p_regs == Some p_regs_)) (ensures (mach_eval (select_instr p_ir) p_regs == Some p_regs_)) = admit ()

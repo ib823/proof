@@ -109,23 +109,19 @@ let lab_in_normal_range (p_value: nat) (p_low: nat) (p_high: nat) : Tot bool =
   p_low <= p_value && p_value <= p_high
 
 (* hipaa_privacy_rule (matches Coq: Theorem hipaa_privacy_rule) *)
-let hipaa_privacy_rule_obligation () : Tot bool = true
-let hipaa_privacy_rule_lemma () : Lemma (requires True) (ensures (hipaa_privacy_rule_obligation () == hipaa_privacy_rule_obligation ())) = ()
+let hipaa_privacy_rule (p_phi: phi__category) (p_accessor: nat) (p_purpose: nat) : Lemma (True) = ()
 
 (* hipaa_security_rule (matches Coq: Theorem hipaa_security_rule) *)
 let hipaa_security_rule (p_policy: hipaa__policy) : Lemma (p_policy.f_access_control == true /\ p_policy.f_audit_controls == true /\ p_policy.f_integrity_controls == true /\ p_policy.f_transmission_security == true) = admit ()
 
 (* fda_21_cfr_11 (matches Coq: Theorem fda_21_cfr_11) *)
-let fda_21_cfr_11_obligation () : Tot bool = true
-let fda_21_cfr_11_lemma () : Lemma (requires True) (ensures (fda_21_cfr_11_obligation () == fda_21_cfr_11_obligation ())) = ()
+let fda_21_cfr_11 (p_electronic_record: nat) (p_signature: nat) : Lemma (True) = ()
 
 (* hitech_breach_notification (matches Coq: Theorem hitech_breach_notification) *)
-let hitech_breach_notification_obligation () : Tot bool = true
-let hitech_breach_notification_lemma () : Lemma (requires True) (ensures (hitech_breach_notification_obligation () == hitech_breach_notification_obligation ())) = ()
+let hitech_breach_notification (p_breach: nat) (p_affected_individuals: nat) : Lemma (True) = ()
 
 (* hl7_fhir_security (matches Coq: Theorem hl7_fhir_security) *)
-let hl7_fhir_security_obligation () : Tot bool = true
-let hl7_fhir_security_lemma () : Lemma (requires True) (ensures (hl7_fhir_security_obligation () == hl7_fhir_security_obligation ())) = ()
+let hl7_fhir_security (p_resource: nat) (p_access_token: nat) : Lemma (True) = ()
 
 (* phi_encryption_required (matches Coq: Theorem phi_encryption_required) *)
 let phi_encryption_required (p_policy: hipaa__policy) (p_phi: phi__category) : Lemma (p_policy.f_transmission_security == true) = admit ()

@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/foundations/Syntax.v (21 lemmas) *)
+(* Derived from 02_FORMAL/coq/foundations/Syntax.v (34 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Foundations.Syntax
 open FStar.All
@@ -339,8 +339,7 @@ let sec_leq_public_bottom (p_l: _) : Lemma (sec_leq LPublic p_l == true) = admit
 let sec_leq_secret_top (p_l: _) : Lemma (sec_leq p_l LSecret == true) = admit ()
 
 (* sec_leq_dec_correct (matches Coq: Lemma sec_leq_dec_correct) *)
-let sec_leq_dec_correct_obligation () : Tot bool = true
-let sec_leq_dec_correct_lemma () : Lemma (requires True) (ensures (sec_leq_dec_correct_obligation () == sec_leq_dec_correct_obligation ())) = ()
+let sec_leq_dec_correct (p_l1: _) (p_l2: _) : Lemma (sec_leq_dec p_l1 p_l2 == true <==> sec_leq p_l1 p_l2 == true) = admit ()
 
 (* sec_join_ub_l (matches Coq: Lemma sec_join_ub_l) *)
 let sec_join_ub_l (p_l1: _) (p_l2: _) : Lemma (sec_leq p_l1 (sec_join p_l1 p_l2) == true) = admit ()
@@ -365,6 +364,46 @@ let sec_join_idem (p_l: _) : Lemma (sec_join p_l p_l == p_l) = admit ()
 
 (* sec_meet_idem (matches Coq: Lemma sec_meet_idem) *)
 let sec_meet_idem (p_l: _) : Lemma (sec_meet p_l p_l == p_l) = admit ()
+
+(* sec_join_assoc (matches Coq: Lemma sec_join_assoc) *)
+let sec_join_assoc (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_join p_l1 (sec_join p_l2 p_l3) == sec_join (sec_join p_l1 p_l2) p_l3) = admit ()
+
+(* sec_meet_assoc (matches Coq: Lemma sec_meet_assoc) *)
+let sec_meet_assoc (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_meet p_l1 (sec_meet p_l2 p_l3) == sec_meet (sec_meet p_l1 p_l2) p_l3) = admit ()
+
+(* sec_join_meet_absorb (matches Coq: Lemma sec_join_meet_absorb) *)
+let sec_join_meet_absorb (p_l1: _) (p_l2: _) : Lemma (sec_join p_l1 (sec_meet p_l1 p_l2) == p_l1) = admit ()
+
+(* sec_meet_join_absorb (matches Coq: Lemma sec_meet_join_absorb) *)
+let sec_meet_join_absorb (p_l1: _) (p_l2: _) : Lemma (sec_meet p_l1 (sec_join p_l1 p_l2) == p_l1) = admit ()
+
+(* sec_join_meet_distrib (matches Coq: Lemma sec_join_meet_distrib) *)
+let sec_join_meet_distrib (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_join p_l1 (sec_meet p_l2 p_l3) == sec_meet (sec_join p_l1 p_l2) (sec_join p_l1 p_l3)) = admit ()
+
+(* sec_meet_join_distrib (matches Coq: Lemma sec_meet_join_distrib) *)
+let sec_meet_join_distrib (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_meet p_l1 (sec_join p_l2 p_l3) == sec_join (sec_meet p_l1 p_l2) (sec_meet p_l1 p_l3)) = admit ()
+
+(* sec_join_lub (matches Coq: Lemma sec_join_lub) *)
+let sec_join_lub (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (requires (sec_leq p_l1 p_l3 == true /\ sec_leq p_l2 p_l3 == true)) (ensures (sec_leq (sec_join p_l1 p_l2) p_l3 == true)) = admit ()
+
+(* sec_meet_glb (matches Coq: Lemma sec_meet_glb) *)
+let sec_meet_glb (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (requires (sec_leq p_l3 p_l1 == true /\ sec_leq p_l3 p_l2 == true)) (ensures (sec_leq p_l3 (sec_meet p_l1 p_l2) == true)) = admit ()
+
+(* sec_join_leq_r (matches Coq: Lemma sec_join_leq_r) *)
+let sec_join_leq_r (p_l1: _) (p_l2: _) : Lemma (requires (sec_leq p_l1 p_l2 == true)) (ensures (sec_join p_l1 p_l2 == p_l2)) = admit ()
+
+(* sec_meet_leq_l (matches Coq: Lemma sec_meet_leq_l) *)
+let sec_meet_leq_l (p_l1: _) (p_l2: _) : Lemma (requires (sec_leq p_l1 p_l2 == true)) (ensures (sec_meet p_l1 p_l2 == p_l1)) = admit ()
+
+(* sec_level_eq_dec (matches Coq: Lemma sec_level_eq_dec) *)
+let sec_level_eq_dec (p_l1: security_level) (p_l2: security_level) : Lemma ({p_l1 == l2_ + {p_l1 <> l2_) = admit ()
+
+(* value_dec (matches Coq: Lemma value_dec) *)
+let value_dec (p_e: _) : Lemma ({value e_ + {~ value e_ == true) = admit ()
+
+(* subst_same_var (matches Coq: Lemma subst_same_var) *)
+let subst_same_var_obligation () : Tot bool = true
+let subst_same_var_lemma () : Lemma (requires True) (ensures (subst_same_var_obligation () == subst_same_var_obligation ())) = ()
 
 (* session_dual_involutive (matches Coq: Theorem session_dual_involutive) *)
 let session_dual_involutive (p_s: _) : Lemma (session_dual (session_dual p_s) == p_s) = admit ()

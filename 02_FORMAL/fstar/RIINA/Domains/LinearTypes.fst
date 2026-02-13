@@ -228,14 +228,13 @@ let use_after_consume_impossible (p_rm: nat) (p_x: nat) : Tot bool =
 let no_double_consume : bool = true
 
 (* linearity_eqb_eq (matches Coq: Lemma linearity_eqb_eq) *)
-let linearity_eqb_eq_obligation () : Tot bool = true
-let linearity_eqb_eq_lemma () : Lemma (requires True) (ensures (linearity_eqb_eq_obligation () == linearity_eqb_eq_obligation ())) = ()
+let linearity_eqb_eq (p_q1: _) (p_q2: _) : Lemma (linearity_eqb p_q1 p_q2 == true <==> p_q1 == p_q2) = admit ()
 
 (* get_update_same (matches Coq: Lemma get_update_same) *)
-let get_update_same (p_x: _) (p_ctx: _) (p_ty: _) (p_q: _) : Lemma (requires (lookup p_x p_ctx == Some (ty_ q_ Zero))) (ensures (get_usage p_x (update_usage p_x p_ctx) == One)) = admit ()
+let get_update_same (p_x: _) (p_ctx: _) (p_ty: _) (p_q: _) : Lemma (requires (lookup p_x p_ctx == Some (p_ty, p_q, Zero))) (ensures (get_usage p_x (update_usage p_x p_ctx) == One)) = admit ()
 
 (* TYPE_002_01 (matches Coq: Theorem TYPE_002_01) *)
-let type_002_01 (p_ctx: _) (p_x: _) (p_ty: _) : Lemma (requires (lookup p_x p_ctx == Some (ty_ Lin, Zero) /\ linear_typed p_ctx (LVar p_x) p_ty (update_usage p_x p_ctx) == true)) (ensures (get_usage p_x (update_usage p_x p_ctx) == One)) = admit ()
+let type_002_01 (p_ctx: _) (p_x: _) (p_ty: _) : Lemma (requires (lookup p_x p_ctx == Some (p_ty, Lin, Zero) /\ linear_typed p_ctx (LVar p_x) p_ty (update_usage p_x p_ctx) == true)) (ensures (get_usage p_x (update_usage p_x p_ctx) == One)) = admit ()
 
 (* TYPE_002_02 (matches Coq: Theorem TYPE_002_02) *)
 let type_002_02 (p_u: _) : Lemma (unrestricted_usage_valid p_u == true) = admit ()
@@ -256,8 +255,7 @@ let usage_add_zero_l (p_u: _) : Lemma (usage_add Zero p_u == p_u) = admit ()
 let usage_add_zero_r (p_u: _) : Lemma (usage_add p_u Zero == p_u) = admit ()
 
 (* TYPE_002_06 (matches Coq: Theorem TYPE_002_06) *)
-let type_002_06_obligation () : Tot bool = true
-let type_002_06_lemma () : Lemma (requires True) (ensures (type_002_06_obligation () == type_002_06_obligation ())) = ()
+let type_002_06 (p_ctx1: _) (p_ctx2: _) : Lemma (requires ((forall (x: _). (forall (ty: _). (forall (q: _). (forall (u1: _). lookup x p_ctx1 == Some (ty, q, u1))))))) (ensures ((exists p_u. lookup x ctx == Some (ty, q, p_u)) /\ u == usage_add u1 (get_usage x p_ctx2))) = admit ()
 
 (* TYPE_002_07 (matches Coq: Theorem TYPE_002_07) *)
 let type_002_07 (p_t: _) (p_s: _) (p_x: _) : Lemma (substitution_preserves_structure p_t p_s p_x == true) = admit ()

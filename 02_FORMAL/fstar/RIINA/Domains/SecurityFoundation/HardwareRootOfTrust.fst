@@ -93,8 +93,7 @@ let root_key_protected (p_st: hw_root_state) : Tot bool =
   true
 
 (* root_of_trust_hardware (matches Coq: Theorem root_of_trust_hardware) *)
-let root_of_trust_hardware_obligation () : Tot bool = true
-let root_of_trust_hardware_lemma () : Lemma (requires True) (ensures (root_of_trust_hardware_obligation () == root_of_trust_hardware_obligation ())) = ()
+let root_of_trust_hardware (p_hsm: hsm_type) : Lemma (hw_root_verified st hw_root_component == true) = admit ()
 
 (* trust_extension_preserves_root (matches Coq: Theorem trust_extension_preserves_root) *)
 let trust_extension_preserves_root_obligation () : Tot bool = true
@@ -108,8 +107,7 @@ let extended_component_trusted_lemma () : Lemma (requires True) (ensures (extend
 let untrusted_cannot_extend (p_st: hw_root_state) (p_verifier: boot_component_id) (p_comp: boot_component_id) (p_measurement: nat) : Lemma (requires (in_trust_chain p_st p_verifier == false)) (ensures (extend_trust_chain p_st p_verifier p_comp p_measurement == p_st)) = admit ()
 
 (* root_key_is_protected (matches Coq: Theorem root_key_is_protected) *)
-let root_key_is_protected_obligation () : Tot bool = true
-let root_key_is_protected_lemma () : Lemma (requires True) (ensures (root_key_is_protected_obligation () == root_key_is_protected_obligation ())) = ()
+let root_key_is_protected (p_hsm: hsm_type) : Lemma (root_key_protected st == true) = admit ()
 
 (* pcr_record_preserved (matches Coq: Theorem pcr_record_preserved) *)
 let pcr_record_preserved_obligation () : Tot bool = true
@@ -140,16 +138,13 @@ let pcr_preserves_trust_chain (p_st: hw_root_state) (p_comp: boot_component_id) 
 let pcr_preserves_root_key (p_st: hw_root_state) (p_comp: boot_component_id) (p_value: nat) (p_algo: nat) : Lemma ((record_pcr p_st p_comp p_value p_algo).f_root_key_present == p_st.f_root_key_present) = admit ()
 
 (* pcr_values_grow (matches Coq: Theorem pcr_values_grow) *)
-let pcr_values_grow_obligation () : Tot bool = true
-let pcr_values_grow_lemma () : Lemma (requires True) (ensures (pcr_values_grow_obligation () == pcr_values_grow_obligation ())) = ()
+let pcr_values_grow (p_st: hw_root_state) (p_comp: boot_component_id) (p_value: nat) (p_algo: nat) (p_m: measurement) : Lemma (requires (List.Tot.memP p_m (p_st.f_pcr_values))) (ensures (List.Tot.memP p_m ((record_pcr p_st p_comp p_value p_algo).f_pcr_values))) = admit ()
 
 (* trust_chain_grows (matches Coq: Theorem trust_chain_grows) *)
-let trust_chain_grows_obligation () : Tot bool = true
-let trust_chain_grows_lemma () : Lemma (requires True) (ensures (trust_chain_grows_obligation () == trust_chain_grows_obligation ())) = ()
+let trust_chain_grows (p_st: hw_root_state) (p_verifier: boot_component_id) (p_comp: boot_component_id) (p_measurement: nat) (p_entry: trust_chain_entry) : Lemma (requires (in_trust_chain p_st p_verifier == true /\ List.Tot.memP p_entry (p_st.f_trust_chain))) (ensures (List.Tot.memP p_entry ((extend_trust_chain p_st p_verifier p_comp p_measurement).f_trust_chain))) = admit ()
 
 (* extended_chain_has_component (matches Coq: Theorem extended_chain_has_component) *)
-let extended_chain_has_component_obligation () : Tot bool = true
-let extended_chain_has_component_lemma () : Lemma (requires True) (ensures (extended_chain_has_component_obligation () == extended_chain_has_component_obligation ())) = ()
+let extended_chain_has_component (p_st: hw_root_state) (p_verifier: boot_component_id) (p_comp: boot_component_id) (p_measurement: nat) : Lemma (requires (in_trust_chain p_st p_verifier == true)) (ensures (List.Tot.memP (mktrustentry p_comp p_verifier p_measurement true) ((extend_trust_chain p_st p_verifier p_comp p_measurement).f_trust_chain))) = admit ()
 
 (* hsm_type_invariant_extend (matches Coq: Theorem hsm_type_invariant_extend) *)
 let hsm_type_invariant_extend (p_st: hw_root_state) (p_verifier: boot_component_id) (p_comp: boot_component_id) (p_measurement: nat) : Lemma ((extend_trust_chain p_st p_verifier p_comp p_measurement).f_hsm_type == p_st.f_hsm_type) = admit ()

@@ -118,12 +118,10 @@ let im8_composition (p_s: nat) : Lemma (requires (im8_controls_adequate p_s == t
 let im8_secret_highest (p_c: im8_classification) : Lemma (im8_level p_c <= im8_level IM8_Secret) = admit ()
 
 (* mtcs_level_coverage (matches Coq: Theorem mtcs_level_coverage) *)
-let mtcs_level_coverage_obligation () : Tot bool = true
-let mtcs_level_coverage_lemma () : Lemma (requires True) (ensures (mtcs_level_coverage_obligation () == mtcs_level_coverage_obligation ())) = ()
+let mtcs_level_coverage (p_l: mtcs_level) : Lemma (List.Tot.memP p_l all_mtcs_levels) = admit ()
 
 (* im8_classification_coverage (matches Coq: Theorem im8_classification_coverage) *)
-let im8_classification_coverage_obligation () : Tot bool = true
-let im8_classification_coverage_lemma () : Lemma (requires True) (ensures (im8_classification_coverage_obligation () == im8_classification_coverage_obligation ())) = ()
+let im8_classification_coverage (p_c: im8_classification) : Lemma (List.Tot.memP p_c all_im8_classifications) = admit ()
 
 (* mtcs_level_positive (matches Coq: Theorem mtcs_level_positive) *)
 let mtcs_level_positive (p_l: mtcs_level) : Lemma (mtcs_level_nat p_l >= 1) = admit ()

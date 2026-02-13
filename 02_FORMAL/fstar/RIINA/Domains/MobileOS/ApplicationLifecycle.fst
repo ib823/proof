@@ -200,8 +200,7 @@ let app_extension_sandboxed (p_ext: app_extension) : Lemma (requires (p_ext.f_ex
 let widget_update_throttled (p_w: widget) (p_current_time: nat) : Lemma (requires (p_current_time - widget_last_update p_w < p_w.f_widget_update_interval)) (ensures (p_current_time - widget_last_update p_w < p_w.f_widget_update_interval)) = admit ()
 
 (* share_extension_data_typed (matches Coq: Theorem share_extension_data_typed) *)
-let share_extension_data_typed_obligation () : Tot bool = true
-let share_extension_data_typed_lemma () : Lemma (requires True) (ensures (share_extension_data_typed_obligation () == share_extension_data_typed_obligation ())) = ()
+let share_extension_data_typed (p_ext: app_extension) : Lemma (requires (length (p_ext.f_ext_data_types) > 0)) (ensures (~(p_ext.f_ext_data_types == []))) = admit ()
 
 (* app_group_access_controlled (matches Coq: Theorem app_group_access_controlled) *)
 let app_group_access_controlled (p_g: app_group) : Lemma (requires (p_g.f_group_access_controlled == true)) (ensures (p_g.f_group_access_controlled == true)) = admit ()

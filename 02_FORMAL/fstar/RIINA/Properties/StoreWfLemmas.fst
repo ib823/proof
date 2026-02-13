@@ -24,12 +24,10 @@ assume val has_type : nat -> nat -> nat -> nat -> nat -> nat -> bool
 let store_wf_lookup_value (p_sigma: _) (p_st: _) (p_l: _) (p_v: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_lookup p_l p_st == Some p_v)) (ensures (value p_v == true)) = admit ()
 
 (* store_wf_lookup_typed (matches Coq: Lemma store_wf_lookup_typed) *)
-let store_wf_lookup_typed_obligation () : Tot bool = true
-let store_wf_lookup_typed_lemma () : Lemma (requires True) (ensures (store_wf_lookup_typed_obligation () == store_wf_lookup_typed_obligation ())) = ()
+let store_wf_lookup_typed (p_sigma: _) (p_st: _) (p_l: _) (p_v: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_lookup p_l p_st == Some p_v)) (ensures ((exists p_t. (exists p_sl. store_ty_lookup p_l p_sigma == Some (p_t, p_sl))) /\ has_type [] p_sigma Public p_v T EffectPure == true)) = admit ()
 
 (* store_wf_typed_loc_has_value (matches Coq: Lemma store_wf_typed_loc_has_value) *)
 let store_wf_typed_loc_has_value (p_sigma: _) (p_st: _) (p_l: _) (p_t: _) (p_sl: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_sl))) (ensures ((exists p_v. store_lookup p_l p_st == Some p_v) /\ value v == true)) = admit ()
 
 (* store_wf_typed_loc_gives_typed_value (matches Coq: Lemma store_wf_typed_loc_gives_typed_value) *)
-let store_wf_typed_loc_gives_typed_value_obligation () : Tot bool = true
-let store_wf_typed_loc_gives_typed_value_lemma () : Lemma (requires True) (ensures (store_wf_typed_loc_gives_typed_value_obligation () == store_wf_typed_loc_gives_typed_value_obligation ())) = ()
+let store_wf_typed_loc_gives_typed_value (p_sigma: _) (p_st: _) (p_l: _) (p_t: _) (p_sl: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_sl))) (ensures ((exists p_v. store_lookup p_l p_st == Some p_v) /\ value v == true /\ has_type [] p_sigma Public v p_t EffectPure == true)) = admit ()

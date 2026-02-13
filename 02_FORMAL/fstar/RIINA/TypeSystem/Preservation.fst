@@ -45,12 +45,10 @@ let store_ty_extends_preserves_typing (p_gamma: _) (p_sigma: _) (p_sigma_prime: 
 let store_ty_extends_refl (p_sigma: _) : Lemma (store_ty_extends p_sigma p_sigma == true) = admit ()
 
 (* store_wf_update_existing (matches Coq: Lemma store_wf_update_existing) *)
-let store_wf_update_existing_obligation () : Tot bool = true
-let store_wf_update_existing_lemma () : Lemma (requires True) (ensures (store_wf_update_existing_obligation () == store_wf_update_existing_obligation ())) = ()
+let store_wf_update_existing (p_sigma: _) (p_st: _) (p_l: _) (p_t: _) (p_sl: _) (p_v: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_sl) /\ value p_v == true /\ has_type [] p_sigma Public p_v p_t EffectPure == true)) (ensures (store_wf p_sigma (store_update p_l p_v p_st) == true)) = admit ()
 
 (* store_wf_update_fresh (matches Coq: Lemma store_wf_update_fresh) *)
-let store_wf_update_fresh_obligation () : Tot bool = true
-let store_wf_update_fresh_lemma () : Lemma (requires True) (ensures (store_wf_update_fresh_obligation () == store_wf_update_fresh_obligation ())) = ()
+let store_wf_update_fresh (p_sigma: _) (p_st: _) (p_l: _) (p_t: _) (p_sl: _) (p_v: _) : Lemma (requires (store_wf p_sigma p_st == true /\ store_lookup p_l p_st == None /\ store_ty_lookup p_l p_sigma == None /\ value p_v == true /\ has_type [] p_sigma Public p_v p_t EffectPure == true)) (ensures (store_wf (store_ty_update p_l p_t p_sl p_sigma) (store_update p_l p_v p_st) == true)) = admit ()
 
 (* store_ty_lookup_fresh_none (matches Coq: Lemma store_ty_lookup_fresh_none) *)
 let store_ty_lookup_fresh_none (p_sigma: _) (p_st: _) : Lemma (requires (store_wf p_sigma p_st == true)) (ensures (store_ty_lookup (fresh_loc p_st) p_sigma == None)) = admit ()
@@ -59,16 +57,14 @@ let store_ty_lookup_fresh_none (p_sigma: _) (p_st: _) : Lemma (requires (store_w
 let context_invariance (p_gamma1: _) (p_gamma2: _) (p_sigma: _) (p_delta: _) (p_e: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type p_gamma1 p_sigma p_delta p_e p_t p_epsilon == true /\ ((forall (x: _). free_in x p_e -> lookup x p_gamma1 == lookup x p_gamma2)))) (ensures (has_type p_gamma2 p_sigma p_delta p_e p_t p_epsilon == true)) = admit ()
 
 (* closed_typing_weakening (matches Coq: Lemma closed_typing_weakening) *)
-let closed_typing_weakening_obligation () : Tot bool = true
-let closed_typing_weakening_lemma () : Lemma (requires True) (ensures (closed_typing_weakening_obligation () == closed_typing_weakening_obligation ())) = ()
+let closed_typing_weakening (p_sigma: _) (p_delta: _) (p_v: _) (p_t: _) (p_epsilon: _) (p_gamma: _) : Lemma (requires (has_type [] p_sigma p_delta p_v p_t p_epsilon == true)) (ensures (has_type p_gamma p_sigma p_delta p_v p_t p_epsilon == true)) = admit ()
 
 (* substitution_preserves_typing (matches Coq: Lemma substitution_preserves_typing) *)
 let substitution_preserves_typing_obligation () : Tot bool = true
 let substitution_preserves_typing_lemma () : Lemma (requires True) (ensures (substitution_preserves_typing_obligation () == substitution_preserves_typing_obligation ())) = ()
 
 (* value_has_pure_effect (matches Coq: Lemma value_has_pure_effect) *)
-let value_has_pure_effect_obligation () : Tot bool = true
-let value_has_pure_effect_lemma () : Lemma (requires True) (ensures (value_has_pure_effect_obligation () == value_has_pure_effect_obligation ())) = ()
+let value_has_pure_effect (p_v: _) (p_t: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (value p_v == true /\ has_type [] p_sigma Public p_v p_t p_epsilon == true)) (ensures (has_type [] p_sigma Public p_v p_t EffectPure == true)) = admit ()
 
 (* preservation_helper (matches Coq: Lemma preservation_helper) *)
 let preservation_helper_obligation () : Tot bool = true

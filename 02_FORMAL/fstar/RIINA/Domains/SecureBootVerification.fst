@@ -309,21 +309,19 @@ let riina_policy : secure_boot_policy = {f_sbp_enabled=true; f_sbp_enforcing=tru
 let riina_secure_boot : secure_boot_config = mkSecureBoot riina_boot_chain riina_tpm riina_key_db riina_policy
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
+let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
 
 (* andb_true_elim1 (matches Coq: Lemma andb_true_elim1) *)
-let andb_true_elim1 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
+let andb_true_elim1 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
 
 (* andb_true_elim2 (matches Coq: Lemma andb_true_elim2) *)
-let andb_true_elim2 (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
+let andb_true_elim2 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* SB_001_rom_integrity (matches Coq: Theorem SB_001_rom_integrity) *)
 let sb_001_rom_integrity (p_rom: boot_rom) : Lemma (requires (p_rom.f_rom_hash_verified == true /\ p_rom.f_rom_fused == true)) (ensures (rom_is_root_of_trust p_rom == p_rom.f_rom_contains_root_key)) = admit ()
@@ -445,12 +443,10 @@ let sb_037_tpm_requires_activated (p_tpm: tpm_state) : Lemma (requires (tpm_oper
 let sb_038_construct_operational_tpm (p_tpm: tpm_state) : Lemma (requires (p_tpm.f_tpm_enabled == true /\ p_tpm.f_tpm_activated == true)) (ensures (tpm_operational p_tpm == true)) = admit ()
 
 (* SB_039_empty_pcrs_extended (matches Coq: Theorem SB_039_empty_pcrs_extended) *)
-let sb_039_empty_pcrs_extended_obligation () : Tot bool = true
-let sb_039_empty_pcrs_extended_lemma () : Lemma (requires True) (ensures (sb_039_empty_pcrs_extended_obligation () == sb_039_empty_pcrs_extended_obligation ())) = ()
+let sb_039_empty_pcrs_extended () : Lemma (all_pcrs_extended [] == true) = admit ()
 
 (* SB_040_single_pcr_extended (matches Coq: Theorem SB_040_single_pcr_extended) *)
-let sb_040_single_pcr_extended_obligation () : Tot bool = true
-let sb_040_single_pcr_extended_lemma () : Lemma (requires True) (ensures (sb_040_single_pcr_extended_obligation () == sb_040_single_pcr_extended_obligation ())) = ()
+let sb_040_single_pcr_extended (p_pcr: pcr_value) : Lemma (requires (p_pcr.f_pcr_extended == true)) (ensures (all_pcrs_extended [p_pcr] == true)) = admit ()
 
 (* SB_041_cons_preserves_extended (matches Coq: Theorem SB_041_cons_preserves_extended) *)
 let sb_041_cons_preserves_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (p_pcr.f_pcr_extended == true /\ all_pcrs_extended p_rest == true)) (ensures (all_pcrs_extended (p_pcr :: p_rest) == true)) = admit ()
@@ -528,12 +524,10 @@ let sb_064_valid_not_self_revoked (p_key: hierarchy_key) : Lemma (requires (hier
 let sb_065_key_in_db (p_key_id: nat) (p_key: hierarchy_key) (p_rest: (list hierarchy_key)) : Lemma (requires (p_key.f_hk_id == p_key_id)) (ensures (key_in_trusted_db p_key_id (p_key :: p_rest) == true)) = admit ()
 
 (* SB_066_key_not_in_empty (matches Coq: Theorem SB_066_key_not_in_empty) *)
-let sb_066_key_not_in_empty_obligation () : Tot bool = true
-let sb_066_key_not_in_empty_lemma () : Lemma (requires True) (ensures (sb_066_key_not_in_empty_obligation () == sb_066_key_not_in_empty_obligation ())) = ()
+let sb_066_key_not_in_empty (p_key_id: nat) : Lemma (key_in_trusted_db p_key_id [] == false) = admit ()
 
 (* SB_067_empty_forbidden (matches Coq: Theorem SB_067_empty_forbidden) *)
-let sb_067_empty_forbidden_obligation () : Tot bool = true
-let sb_067_empty_forbidden_lemma () : Lemma (requires True) (ensures (sb_067_empty_forbidden_obligation () == sb_067_empty_forbidden_obligation ())) = ()
+let sb_067_empty_forbidden (p_key_id: nat) : Lemma (key_forbidden p_key_id [] == false) = admit ()
 
 (* SB_068_key_is_forbidden (matches Coq: Theorem SB_068_key_is_forbidden) *)
 let sb_068_key_is_forbidden (p_key_id: nat) (p_forbidden: (list nat)) : Lemma (key_forbidden p_key_id (p_key_id :: p_forbidden) == true) = admit ()

@@ -297,8 +297,7 @@ let forallb_impl_obligation () : Tot bool = true
 let forallb_impl_lemma () : Lemma (requires True) (ensures (forallb_impl_obligation () == forallb_impl_obligation ())) = ()
 
 (* existsb_exists (matches Coq: Lemma existsb_exists) *)
-let existsb_exists_obligation () : Tot bool = true
-let existsb_exists_lemma () : Lemma (requires True) (ensures (existsb_exists_obligation () == existsb_exists_obligation ())) = ()
+let existsb_exists (p_f: nat) (p_l: (list nat)) : Lemma (existsb p_f p_l == true <==> (exists p_x. List.Tot.memP p_x p_l) /\ p_f x == true) = admit ()
 
 (* OMEGA_001_01_puzzle_work_bound (matches Coq: Theorem OMEGA_001_01_puzzle_work_bound) *)
 let omega_001_01_puzzle_work_bound (p_p: _) : Lemma (expected_work p_p == Nat.pow 2 (p_p.f_puzzle_difficulty)) = admit ()
@@ -337,8 +336,7 @@ let omega_001_09_token_bucket_correct (p_tb: _) (p_now: _) : Lemma (requires (bu
 let omega_001_10_rate_limit_bound (p_tb: _) (p_window: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (requests_allowed p_tb p_window <= bucket_refill_rate p_tb * p_window + bucket_max p_tb)) = admit ()
 
 (* OMEGA_001_11_rate_limit_fair (matches Coq: Theorem OMEGA_001_11_rate_limit_fair) *)
-let omega_001_11_rate_limit_fair_obligation () : Tot bool = true
-let omega_001_11_rate_limit_fair_lemma () : Lemma (requires True) (ensures (omega_001_11_rate_limit_fair_obligation () == omega_001_11_rate_limit_fair_obligation ())) = ()
+let omega_001_11_rate_limit_fair (p_buckets: _) (p_total: _) : Lemma (requires (allocation_fair p_buckets p_total == true /\ (forall (cb1: _). (forall (cb2: _). List.Tot.memP cb1 p_buckets)) /\ List.Tot.memP cb2 p_buckets)) (ensures ((cb1.f_cb_bucket).f_bucket_refill_rate == (cb2.f_cb_bucket).f_bucket_refill_rate)) = admit ()
 
 (* OMEGA_001_12_no_starvation (matches Coq: Theorem OMEGA_001_12_no_starvation) *)
 let omega_001_12_no_starvation (p_tb: _) : Lemma (requires (p_tb.f_bucket_refill_rate > 0 /\ p_tb.f_bucket_max > 0 /\ (forall (now: _). now >= bucket_last_refill p_tb + 1))) (ensures ((refill p_tb now).f_bucket_tokens > 0)) = admit ()
@@ -359,12 +357,10 @@ let omega_001_16_cap_unforgeable (p_cap: _) (p_now: _) (p_pubkey: _) : Lemma (re
 let omega_001_17_cap_required (p_action: network_action) (p_cap: net_capability) (p_now: _) (p_pubkey: _) : Lemma (requires (grants_access p_cap (action_target p_action) (action_to_perm p_action) == true /\ cap_valid p_cap p_now p_pubkey == true)) (ensures (endpoint_eq (p_cap.f_cap_target) (action_target p_action) == true)) = admit ()
 
 (* OMEGA_001_18_cap_attenuate (matches Coq: Theorem OMEGA_001_18_cap_attenuate) *)
-let omega_001_18_cap_attenuate_obligation () : Tot bool = true
-let omega_001_18_cap_attenuate_lemma () : Lemma (requires True) (ensures (omega_001_18_cap_attenuate_obligation () == omega_001_18_cap_attenuate_obligation ())) = ()
+let omega_001_18_cap_attenuate (p_cap: _) (p_new_perms: _) (p_new_expiry: _) (p_cap_: _) : Lemma (requires (attenuate_cap p_cap p_new_perms p_new_expiry == Some p_cap_)) (ensures (((forall (p: _). List.Tot.memP p (p_cap_.f_cap_permissions))) /\ p_cap_.f_cap_valid_until <= p_cap.f_cap_valid_until)) = admit ()
 
 (* OMEGA_001_19_cap_revocable (matches Coq: Theorem OMEGA_001_19_cap_revocable) *)
-let omega_001_19_cap_revocable_obligation () : Tot bool = true
-let omega_001_19_cap_revocable_lemma () : Lemma (requires True) (ensures (omega_001_19_cap_revocable_obligation () == omega_001_19_cap_revocable_obligation ())) = ()
+let omega_001_19_cap_revocable (p_cap: _) (p_revoked: _) : Lemma (requires (List.Tot.memP (p_cap.f_cap_signature) p_revoked)) (ensures (cap_revoked p_cap p_revoked == true)) = admit ()
 
 (* OMEGA_001_20_cap_bound_target (matches Coq: Theorem OMEGA_001_20_cap_bound_target) *)
 let omega_001_20_cap_bound_target (p_cap: _) (p_target: _) (p_perm: _) : Lemma (requires (grants_access p_cap p_target p_perm == true)) (ensures (endpoint_eq (p_cap.f_cap_target) p_target == true)) = admit ()

@@ -396,8 +396,7 @@ let fut_002_symmetric_quantum_safe (p_pq: pq_crypto_config) : Lemma (requires (p
 let fut_003_ai_exploit_mitigated (p_did: defense_in_depth) : Lemma (requires (did_robust p_did == true)) (ensures (3 (length (p_did.f_did_layers)) == true /\ 2 (count_verified_layers (p_did.f_did_layers)) == true /\ p_did.f_did_composition_verified == true)) = admit ()
 
 (* fut_003_verified_layer_guarantee (matches Coq: Theorem fut_003_verified_layer_guarantee) *)
-let fut_003_verified_layer_guarantee_obligation () : Tot bool = true
-let fut_003_verified_layer_guarantee_lemma () : Lemma (requires True) (ensures (fut_003_verified_layer_guarantee_obligation () == fut_003_verified_layer_guarantee_obligation ())) = ()
+let fut_003_verified_layer_guarantee (p_layers: (list security_layer)) : Lemma (requires (count_verified_layers p_layers >= 1)) (ensures ((exists p_l. List.Tot.memP p_l p_layers) /\ l.f_sl_verified == true)) = admit ()
 
 (* fut_004_unknown_cpu_vuln_mitigated (matches Coq: Theorem fut_004_unknown_cpu_vuln_mitigated) *)
 let fut_004_unknown_cpu_vuln_mitigated (p_sm: speculation_mitigation) : Lemma (requires (speculation_conservative p_sm == true)) (ensures (p_sm.f_sm_conservative == true /\ p_sm.f_sm_ssbd == true)) = admit ()

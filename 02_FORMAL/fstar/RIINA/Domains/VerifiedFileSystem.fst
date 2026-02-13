@@ -270,20 +270,16 @@ let riina_fs_security : fs_security = {f_fss_access_control=true; f_fss_encrypti
 let riina_vfs : verified_fs = mkVerifiedFS riina_fs_integrity riina_fs_security true true
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff_obligation () : Tot bool = true
-let orb_true_iff_lemma () : Lemma (requires True) (ensures (orb_true_iff_obligation () == orb_true_iff_obligation ())) = ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
 
 (* negb_false_iff (matches Coq: Lemma negb_false_iff) *)
-let negb_false_iff_obligation () : Tot bool = true
-let negb_false_iff_lemma () : Lemma (requires True) (ensures (negb_false_iff_obligation () == negb_false_iff_obligation ())) = ()
+let negb_false_iff (p_b: bool) : Lemma ((not p_b) == false <==> p_b == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* VFS_001 (matches Coq: Theorem VFS_001) *)
 let vfs_001 () : Lemma (fs_integrity_sound riina_fs_integrity == true) = admit ()
@@ -433,12 +429,10 @@ let vfs_048_pending_not_complete (p_txn: _) : Lemma (requires (p_txn.f_txn_state
 let vfs_049_aborted_not_complete (p_txn: _) : Lemma (requires (p_txn.f_txn_state == TxnAborted)) (ensures (txn_complete p_txn == false)) = admit ()
 
 (* VFS_050_empty_journal_consistent (matches Coq: Theorem VFS_050_empty_journal_consistent) *)
-let vfs_050_empty_journal_consistent_obligation () : Tot bool = true
-let vfs_050_empty_journal_consistent_lemma () : Lemma (requires True) (ensures (vfs_050_empty_journal_consistent_obligation () == vfs_050_empty_journal_consistent_obligation ())) = ()
+let vfs_050_empty_journal_consistent (p_head: _) (p_tail: _) : Lemma (requires (p_tail p_head == true)) (ensures (journal_consistent (mkjournal [] p_head p_tail) == true)) = admit ()
 
 (* VFS_051_single_committed_consistent (matches Coq: Theorem VFS_051_single_committed_consistent) *)
-let vfs_051_single_committed_consistent_obligation () : Tot bool = true
-let vfs_051_single_committed_consistent_lemma () : Lemma (requires True) (ensures (vfs_051_single_committed_consistent_obligation () == vfs_051_single_committed_consistent_obligation ())) = ()
+let vfs_051_single_committed_consistent (p_txn_id: _) (p_ops: _) (p_head: _) (p_tail: _) : Lemma (requires (p_tail p_head == true)) (ensures (journal_consistent j == true)) = admit ()
 
 (* VFS_052_txn_complete_decidable (matches Coq: Theorem VFS_052_txn_complete_decidable) *)
 let vfs_052_txn_complete_decidable (p_txn: _) : Lemma (txn_complete p_txn == true \/ txn_complete p_txn == false) = admit ()
@@ -468,16 +462,13 @@ let vfs_059_integrity_requires_parent (p_d: _) : Lemma (requires (dir_integrity 
 let vfs_060_integrity_requires_dot (p_d: _) : Lemma (requires (dir_integrity p_d == true)) (ensures (dir_has_dot_entry p_d == true)) = admit ()
 
 (* VFS_061_empty_dir_no_parent_link (matches Coq: Theorem VFS_061_empty_dir_no_parent_link) *)
-let vfs_061_empty_dir_no_parent_link_obligation () : Tot bool = true
-let vfs_061_empty_dir_no_parent_link_lemma () : Lemma (requires True) (ensures (vfs_061_empty_dir_no_parent_link_obligation () == vfs_061_empty_dir_no_parent_link_obligation ())) = ()
+let vfs_061_empty_dir_no_parent_link (p_inode: _) (p_parent: _) : Lemma (dir_has_parent_link (mkdirectory p_inode p_parent []) == false) = admit ()
 
 (* VFS_062_empty_dir_no_dot (matches Coq: Theorem VFS_062_empty_dir_no_dot) *)
-let vfs_062_empty_dir_no_dot_obligation () : Tot bool = true
-let vfs_062_empty_dir_no_dot_lemma () : Lemma (requires True) (ensures (vfs_062_empty_dir_no_dot_obligation () == vfs_062_empty_dir_no_dot_obligation ())) = ()
+let vfs_062_empty_dir_no_dot (p_inode: _) (p_parent: _) : Lemma (dir_has_dot_entry (mkdirectory p_inode p_parent []) == false) = admit ()
 
 (* VFS_063_empty_dir_no_integrity (matches Coq: Theorem VFS_063_empty_dir_no_integrity) *)
-let vfs_063_empty_dir_no_integrity_obligation () : Tot bool = true
-let vfs_063_empty_dir_no_integrity_lemma () : Lemma (requires True) (ensures (vfs_063_empty_dir_no_integrity_obligation () == vfs_063_empty_dir_no_integrity_obligation ())) = ()
+let vfs_063_empty_dir_no_integrity (p_inode: _) (p_parent: _) : Lemma (requires (~(p_inode == p_parent))) (ensures (dir_integrity (mkdirectory p_inode p_parent []) == false)) = admit ()
 
 (* VFS_064_wellformed_dir_complete (matches Coq: Theorem VFS_064_wellformed_dir_complete) *)
 let vfs_064_wellformed_dir_complete (p_d: _) : Lemma (requires (dir_integrity p_d == true)) (ensures (dir_no_self_cycle p_d == true /\ dir_has_parent_link p_d == true /\ dir_has_dot_entry p_d == true)) = admit ()
@@ -537,8 +528,7 @@ let vfs_081_recovery_needed_blocks (p_j: _) (p_cp: _) : Lemma (recovery_complete
 let vfs_082_crash_safe_journal (p_cs: _) : Lemma (requires (crash_safe p_cs == true)) (ensures (journal_consistent (p_cs.f_cs_journal) == true)) = admit ()
 
 (* VFS_083_empty_journal_safe (matches Coq: Theorem VFS_083_empty_journal_safe) *)
-let vfs_083_empty_journal_safe_obligation () : Tot bool = true
-let vfs_083_empty_journal_safe_lemma () : Lemma (requires True) (ensures (vfs_083_empty_journal_safe_obligation () == vfs_083_empty_journal_safe_obligation ())) = ()
+let vfs_083_empty_journal_safe (p_st: _) (p_cp: _) (p_p_rec: _) : Lemma (crash_safe (mkcrashstate (mkjournal [] 0 0) p_st p_cp id_rec) == true) = admit ()
 
 (* VFS_084_recovery_complete_valid_state (matches Coq: Theorem VFS_084_recovery_complete_valid_state) *)
 let vfs_084_recovery_complete_valid_state (p_cs: _) : Lemma (requires (recovery_complete p_cs == true)) (ensures (p_cs.f_cs_fs_state == FSOnline \/ p_cs.f_cs_fs_state == FSClean)) = admit ()
@@ -565,16 +555,13 @@ let vfs_090_journaled_has_entry (p_aop: _) : Lemma (requires (op_is_journaled p_
 let vfs_091_non_journaled_no_entry (p_aop: _) : Lemma (requires (op_is_journaled p_aop == false)) (ensures (p_aop.f_aop_journal_entry == None)) = admit ()
 
 (* VFS_092_create_journaled (matches Coq: Theorem VFS_092_create_journaled) *)
-let vfs_092_create_journaled_obligation () : Tot bool = true
-let vfs_092_create_journaled_lemma () : Lemma (requires True) (ensures (vfs_092_create_journaled_obligation () == vfs_092_create_journaled_obligation ())) = ()
+let vfs_092_create_journaled (p_parent: _) (p_new_ino: _) : Lemma (op_is_atomic aop == true /\ op_is_journaled aop == true) = admit ()
 
 (* VFS_093_delete_journaled (matches Coq: Theorem VFS_093_delete_journaled) *)
-let vfs_093_delete_journaled_obligation () : Tot bool = true
-let vfs_093_delete_journaled_lemma () : Lemma (requires True) (ensures (vfs_093_delete_journaled_obligation () == vfs_093_delete_journaled_obligation ())) = ()
+let vfs_093_delete_journaled (p_parent: _) (p_del_ino: _) : Lemma (op_is_atomic aop == true /\ op_is_journaled aop == true) = admit ()
 
 (* VFS_094_rename_journaled (matches Coq: Theorem VFS_094_rename_journaled) *)
-let vfs_094_rename_journaled_obligation () : Tot bool = true
-let vfs_094_rename_journaled_lemma () : Lemma (requires True) (ensures (vfs_094_rename_journaled_obligation () == vfs_094_rename_journaled_obligation ())) = ()
+let vfs_094_rename_journaled (p_sp: _) (p_si: _) (p_dp: _) (p_di: _) : Lemma (op_is_atomic aop == true /\ op_is_journaled aop == true) = admit ()
 
 (* VFS_095_atomicity_decidable (matches Coq: Theorem VFS_095_atomicity_decidable) *)
 let vfs_095_atomicity_decidable (p_aop: _) : Lemma (op_is_atomic p_aop == true \/ op_is_atomic p_aop == false) = admit ()

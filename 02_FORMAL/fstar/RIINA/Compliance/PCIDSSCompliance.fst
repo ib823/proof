@@ -258,12 +258,10 @@ let comply_002_06_access_requires_need_to_know (p_u: user) : Lemma (requires (p_
 let comply_002_06_no_access_level_denied (p_u: user) : Lemma (requires (p_u.f_user_access_level == NoAccess)) (ensures (grant_chd_access p_u == false)) = admit ()
 
 (* COMPLY_002_07_unique_ids_singleton (matches Coq: Theorem COMPLY_002_07_unique_ids_singleton) *)
-let comply_002_07_unique_ids_singleton_obligation () : Tot bool = true
-let comply_002_07_unique_ids_singleton_lemma () : Lemma (requires True) (ensures (comply_002_07_unique_ids_singleton_obligation () == comply_002_07_unique_ids_singleton_obligation ())) = ()
+let comply_002_07_unique_ids_singleton (p_u: user) : Lemma (users_unique_ids [p_u] == true) = admit ()
 
 (* COMPLY_002_07_unique_ids_empty (matches Coq: Theorem COMPLY_002_07_unique_ids_empty) *)
-let comply_002_07_unique_ids_empty_obligation () : Tot bool = true
-let comply_002_07_unique_ids_empty_lemma () : Lemma (requires True) (ensures (comply_002_07_unique_ids_empty_obligation () == comply_002_07_unique_ids_empty_obligation ())) = ()
+let comply_002_07_unique_ids_empty () : Lemma (users_unique_ids [] == true) = admit ()
 
 (* COMPLY_002_08_mfa_required (matches Coq: Theorem COMPLY_002_08_mfa_required) *)
 let comply_002_08_mfa_required (p_u: user) : Lemma (requires (p_u.f_user_mfa_enabled == false /\ ~(p_u.f_user_access_level == NoAccess))) (ensures (grant_chd_access p_u == false)) = admit ()
@@ -284,8 +282,7 @@ let comply_002_09_audit_entry_has_action (p_ts: nat) (p_usr: nat) (p_act: nat) (
 let comply_002_10_audit_has_hash (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_hash == p_prev + p_ts + p_usr + p_act) = admit ()
 
 (* COMPLY_002_10_empty_log_valid (matches Coq: Theorem COMPLY_002_10_empty_log_valid) *)
-let comply_002_10_empty_log_valid_obligation () : Tot bool = true
-let comply_002_10_empty_log_valid_lemma () : Lemma (requires True) (ensures (comply_002_10_empty_log_valid_obligation () == comply_002_10_empty_log_valid_obligation ())) = ()
+let comply_002_10_empty_log_valid (p_h: nat) : Lemma (audit_chain_valid [] p_h == true) = admit ()
 
 (* COMPLY_002_11_tls12_compliant (matches Coq: Theorem COMPLY_002_11_tls12_compliant) *)
 let comply_002_11_tls12_compliant () : Lemma (tls_compliant TLS12 == true) = admit ()

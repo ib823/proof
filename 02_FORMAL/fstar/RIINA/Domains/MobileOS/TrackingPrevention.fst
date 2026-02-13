@@ -253,15 +253,13 @@ let no_tracking_without_consent (p_app: application) (p_user: user) : Lemma (req
 let tracking_requires_transparency_prompt (p_ps: privacy_state) (p_app: application) (p_user: user) : Lemma (requires (privacy_state_well_formed p_ps == true /\ tracking_approved p_ps p_app p_user == true)) (ensures (tracking_requested p_ps p_app p_user == true)) = admit ()
 
 (* denied_tracking_not_approved (matches Coq: Theorem denied_tracking_not_approved) *)
-let denied_tracking_not_approved_obligation () : Tot bool = true
-let denied_tracking_not_approved_lemma () : Lemma (requires True) (ensures (denied_tracking_not_approved_obligation () == denied_tracking_not_approved_obligation ())) = ()
+let denied_tracking_not_approved (p_ps: privacy_state) (p_app: application) (p_user: user) : Lemma (requires (List.Tot.memP (p_app.f_app_id, p_user.f_user_id) (p_ps.f_denied_tracking) /\ ~(List.Tot.memP (p_app.f_app_id, p_user.f_user_id) (p_ps.f_approved_tracking)))) (ensures (tracking_allowed p_ps p_app p_user == false)) = admit ()
 
 (* consent_revocation_effective (matches Coq: Theorem consent_revocation_effective) *)
 let consent_revocation_effective (p_user_before: user) (p_user_after: user) (p_app: application) : Lemma (requires (explicit_consent p_user_before p_app == true /\ p_user_after.f_tracking_consent_given == false /\ p_user_before.f_user_id == p_user_after.f_user_id)) (ensures (~(explicit_consent p_user_after p_app == true))) = admit ()
 
 (* no_consent_no_data (matches Coq: Theorem no_consent_no_data) *)
-let no_consent_no_data_obligation () : Tot bool = true
-let no_consent_no_data_lemma () : Lemma (requires True) (ensures (no_consent_no_data_obligation () == no_consent_no_data_obligation ())) = ()
+let no_consent_no_data (p_event: tracking_event) : Lemma (requires (tracking_event_well_formed p_event == true /\ (p_event.f_tracked_user).f_tracking_consent_given == false)) (ensures (p_event.f_tracking_data == [])) = admit ()
 
 (* cross_site_tracking_blocked_thm (matches Coq: Theorem cross_site_tracking_blocked_thm) *)
 let cross_site_tracking_blocked_thm (p_csr: cross_site_request) : Lemma (requires (cross_site_tracking_blocked p_csr == true /\ ~(p_csr.f_csr_source_domain == p_csr.f_csr_target_domain) /\ p_csr.f_csr_has_tracking_params == true)) (ensures (p_csr.f_csr_blocked == true)) = admit ()
@@ -282,8 +280,7 @@ let advertising_id_resettable_thm (p_aid: advertising_id) : Lemma (requires (adv
 let app_tracking_permission_required_thm (p_atr: app_tracking_request) : Lemma (requires (app_tracking_permission_required p_atr == true /\ p_atr.f_atr_permission_granted == true)) (ensures (p_atr.f_atr_permission_asked == true)) = admit ()
 
 (* link_decoration_stripped_thm (matches Coq: Theorem link_decoration_stripped_thm) *)
-let link_decoration_stripped_thm_obligation () : Tot bool = true
-let link_decoration_stripped_thm_lemma () : Lemma (requires True) (ensures (link_decoration_stripped_thm_obligation () == link_decoration_stripped_thm_obligation ())) = ()
+let link_decoration_stripped_thm (p_ld: link_decoration) : Lemma (requires (link_decoration_stripped p_ld == true /\ ~(p_ld.f_ld_tracking_params == []))) (ensures (p_ld.f_ld_stripped == true)) = admit ()
 
 (* bounce_tracking_prevented_thm (matches Coq: Theorem bounce_tracking_prevented_thm) *)
 let bounce_tracking_prevented_thm (p_bt: bounce_tracking) : Lemma (requires (bounce_tracking_prevented p_bt == true /\ p_bt.f_bt_bounce_detected == true)) (ensures (p_bt.f_bt_prevented == true)) = admit ()
@@ -313,8 +310,7 @@ let tracking_report_available_thm (p_tr: tracking_report) : Lemma (requires (tra
 let referrer_policy_options (p_rc: referrer_config) : Lemma (requires (referrer_policy_strict p_rc == true)) (ensures (p_rc.f_ref_policy == NoReferrer \/ p_rc.f_ref_policy == StrictOrigin)) = admit ()
 
 (* tracker_list_non_empty (matches Coq: Theorem tracker_list_non_empty) *)
-let tracker_list_non_empty_obligation () : Tot bool = true
-let tracker_list_non_empty_lemma () : Lemma (requires True) (ensures (tracker_list_non_empty_obligation () == tracker_list_non_empty_obligation ())) = ()
+let tracker_list_non_empty (p_tl: tracker_list) : Lemma (requires (tracker_list_updated p_tl == true)) (ensures (~(p_tl.f_tl_entries == []))) = admit ()
 
 (* no_tracking_without_permission_request (matches Coq: Theorem no_tracking_without_permission_request) *)
 let no_tracking_without_permission_request (p_atr: app_tracking_request) : Lemma (requires (app_tracking_permission_required p_atr == true /\ p_atr.f_atr_permission_asked == false)) (ensures (p_atr.f_atr_permission_granted == false)) = admit ()

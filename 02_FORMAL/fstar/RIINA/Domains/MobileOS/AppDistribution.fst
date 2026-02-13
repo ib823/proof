@@ -275,8 +275,7 @@ let notarization_required (p_ns: notarization_status) : Tot bool =
   true
 
 (* store_malware_free (matches Coq: Theorem store_malware_free) *)
-let store_malware_free_obligation () : Tot bool = true
-let store_malware_free_lemma () : Lemma (requires True) (ensures (store_malware_free_obligation () == store_malware_free_obligation ())) = ()
+let store_malware_free (p_app: store_application) : Lemma (requires (in_store p_app == true /\ store_well_formed [p_app] == true)) (ensures (no_malware p_app == true)) = admit ()
 
 (* security_scan_complete (matches Coq: Theorem security_scan_complete) *)
 let security_scan_complete (p_app: store_application) : Lemma (requires (no_malware p_app == true)) (ensures (passes_security_checks (p_app.f_scan_result) == true)) = admit ()

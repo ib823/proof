@@ -118,8 +118,7 @@ let update_001_version_newer (p_update: nat) (p_sys: nat) : Lemma (requires (ver
 let update_002_sig_count (p_update: nat) (p_threshold: nat) : Lemma (requires (signatures_sufficient p_update p_threshold == true)) (ensures (p_threshold <= length (update_signatures p_update))) = admit ()
 
 (* update_003_key_trusted (matches Coq: Theorem update_003_key_trusted) *)
-let update_003_key_trusted_obligation () : Tot bool = true
-let update_003_key_trusted_lemma () : Lemma (requires True) (ensures (update_003_key_trusted_obligation () == update_003_key_trusted_obligation ())) = ()
+let update_003_key_trusted (p_p_sig: nat) (p_trusted: (list nat)) : Lemma (requires (key_trusted id_sig p_trusted == true)) (ensures ((exists p_k. List.Tot.memP p_k p_trusted) /\ k == sig_key_id id_sig)) = admit ()
 
 (* update_004_rollback_counter (matches Coq: Theorem update_004_rollback_counter) *)
 let update_004_rollback_counter (p_update: nat) (p_sys: nat) : Lemma (requires (rollback_counter_ok p_update p_sys == true)) (ensures (sys_rollback_counter p_sys < update_rollback_counter p_update)) = admit ()

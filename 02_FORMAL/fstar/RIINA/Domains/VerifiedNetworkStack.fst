@@ -329,16 +329,13 @@ let valid_syn_segment (p_seg: tcp_segment) (p_s: tcp_state) : Tot bool =
 let handshake_sequence_valid : bool = true
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* orb_false_iff (matches Coq: Lemma orb_false_iff) *)
-let orb_false_iff_obligation () : Tot bool = true
-let orb_false_iff_lemma () : Lemma (requires True) (ensures (orb_false_iff_obligation () == orb_false_iff_obligation ())) = ()
+let orb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == false <==> p_a == false /\ p_b == false) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* NET_001 (matches Coq: Theorem NET_001) *)
 let net_001 () : Lemma (net_security_sound riina_net_sec == true) = admit ()
@@ -446,13 +443,13 @@ let net_034 () : Lemma (riina_net_rel.f_nr_congestion_control == true /\ riina_n
 let net_035_complete (p_n: _) : Lemma (requires (net_stack_verified p_n == true)) (ensures ((p_n.f_vns_security).f_ns_packet_validation == true /\ (p_n.f_vns_security).f_ns_encryption_in_transit == true /\ (p_n.f_vns_reliability).f_nr_congestion_control == true /\ p_n.f_vns_formally_verified == true)) = admit ()
 
 (* TCP_001_state_eq_refl (matches Coq: Theorem TCP_001_state_eq_refl) *)
-let tcp_001_state_eq_refl (p_s: _) (p_tcpstate: _) : Lemma (tcp_state_eqb p_s p_s == true) = admit ()
+let tcp_001_state_eq_refl (p_s: tcp_state) : Lemma (tcp_state_eqb p_s p_s == true) = admit ()
 
 (* TCP_002_state_eq_sym (matches Coq: Theorem TCP_002_state_eq_sym) *)
-let tcp_002_state_eq_sym (p_s1: _) (p_s2: _) (p_tcpstate: _) : Lemma (tcp_state_eqb p_s1 p_s2 == tcp_state_eqb p_s2 p_s1) = admit ()
+let tcp_002_state_eq_sym (p_s1: tcp_state) (p_s2: tcp_state) : Lemma (tcp_state_eqb p_s1 p_s2 == tcp_state_eqb p_s2 p_s1) = admit ()
 
 (* TCP_003_state_decidable (matches Coq: Theorem TCP_003_state_decidable) *)
-let tcp_003_state_decidable (p_s1: _) (p_s2: _) (p_tcpstate: _) : Lemma ({p_s1 == s2_ + {p_s1 <> s2_) = admit ()
+let tcp_003_state_decidable (p_s1: tcp_state) (p_s2: tcp_state) : Lemma ({p_s1 == s2_ + {p_s1 <> s2_) = admit ()
 
 (* TCP_004_closed_not_connected (matches Coq: Theorem TCP_004_closed_not_connected) *)
 let tcp_004_closed_not_connected () : Lemma (is_connection_state CLOSED == false) = admit ()
@@ -485,38 +482,31 @@ let tcp_012_data_implies_connection (p_s: _) : Lemma (requires (is_data_state p_
 let tcp_013_terminal_cases (p_s: _) : Lemma (requires (is_terminal_state p_s == true)) (ensures (p_s == CLOSED \/ p_s == TIME_WAIT)) = admit ()
 
 (* TCP_014_eleven_states (matches Coq: Theorem TCP_014_eleven_states) *)
-let tcp_014_eleven_states (p_s: _) (p_tcpstate: _) : Lemma (p_s == CLOSED \/ p_s == LISTEN \/ p_s == SYN_SENT \/ p_s == SYN_RECEIVED \/ p_s == ESTABLISHED \/ p_s == FIN_WAIT_1 \/ p_s == FIN_WAIT_2 \/ p_s == CLOSE_WAIT \/ p_s == CLOSING \/ p_s == LAST_ACK \/ p_s == TIME_WAIT) = admit ()
+let tcp_014_eleven_states (p_s: tcp_state) : Lemma (p_s == CLOSED \/ p_s == LISTEN \/ p_s == SYN_SENT \/ p_s == SYN_RECEIVED \/ p_s == ESTABLISHED \/ p_s == FIN_WAIT_1 \/ p_s == FIN_WAIT_2 \/ p_s == CLOSE_WAIT \/ p_s == CLOSING \/ p_s == LAST_ACK \/ p_s == TIME_WAIT) = admit ()
 
 (* TCP_015_syn_only_setup (matches Coq: Theorem TCP_015_syn_only_setup) *)
 let tcp_015_syn_only_setup (p_seg: _) : Lemma (requires ((p_seg.f_seg_flags).f_flag_syn == true)) (ensures (valid_syn_segment p_seg ESTABLISHED == false)) = admit ()
 
 (* TCP_016_listen_syn_transition (matches Coq: Theorem TCP_016_listen_syn_transition) *)
-let tcp_016_listen_syn_transition_obligation () : Tot bool = true
-let tcp_016_listen_syn_transition_lemma () : Lemma (requires True) (ensures (tcp_016_listen_syn_transition_obligation () == tcp_016_listen_syn_transition_obligation ())) = ()
+let tcp_016_listen_syn_transition () : Lemma (tcp_transition LISTEN syn_seg true == SYN_RECEIVED) = admit ()
 
 (* TCP_017_syn_sent_synack_transition (matches Coq: Theorem TCP_017_syn_sent_synack_transition) *)
-let tcp_017_syn_sent_synack_transition_obligation () : Tot bool = true
-let tcp_017_syn_sent_synack_transition_lemma () : Lemma (requires True) (ensures (tcp_017_syn_sent_synack_transition_obligation () == tcp_017_syn_sent_synack_transition_obligation ())) = ()
+let tcp_017_syn_sent_synack_transition () : Lemma (tcp_transition SYN_SENT syn_ack false == ESTABLISHED) = admit ()
 
 (* TCP_018_syn_recv_ack_transition (matches Coq: Theorem TCP_018_syn_recv_ack_transition) *)
-let tcp_018_syn_recv_ack_transition_obligation () : Tot bool = true
-let tcp_018_syn_recv_ack_transition_lemma () : Lemma (requires True) (ensures (tcp_018_syn_recv_ack_transition_obligation () == tcp_018_syn_recv_ack_transition_obligation ())) = ()
+let tcp_018_syn_recv_ack_transition () : Lemma (tcp_transition SYN_RECEIVED ack_seg true == ESTABLISHED) = admit ()
 
 (* TCP_019_established_fin_transition (matches Coq: Theorem TCP_019_established_fin_transition) *)
-let tcp_019_established_fin_transition_obligation () : Tot bool = true
-let tcp_019_established_fin_transition_lemma () : Lemma (requires True) (ensures (tcp_019_established_fin_transition_obligation () == tcp_019_established_fin_transition_obligation ())) = ()
+let tcp_019_established_fin_transition () : Lemma (tcp_transition ESTABLISHED fin_seg false == CLOSE_WAIT) = admit ()
 
 (* TCP_020_last_ack_transition (matches Coq: Theorem TCP_020_last_ack_transition) *)
-let tcp_020_last_ack_transition_obligation () : Tot bool = true
-let tcp_020_last_ack_transition_lemma () : Lemma (requires True) (ensures (tcp_020_last_ack_transition_obligation () == tcp_020_last_ack_transition_obligation ())) = ()
+let tcp_020_last_ack_transition () : Lemma (tcp_transition LAST_ACK ack_seg true == CLOSED) = admit ()
 
 (* PARSE_001_safe_read_sufficient (matches Coq: Theorem PARSE_001_safe_read_sufficient) *)
-let parse_001_safe_read_sufficient_obligation () : Tot bool = true
-let parse_001_safe_read_sufficient_lemma () : Lemma (requires True) (ensures (parse_001_safe_read_sufficient_obligation () == parse_001_safe_read_sufficient_obligation ())) = ()
+let parse_001_safe_read_sufficient (p_cap: _) (p_pos: _) (p_len: _) : Lemma (requires (p_pos + p_len <= p_cap)) (ensures (safe_read (mkbuffer [] p_cap p_pos) p_len == true)) = admit ()
 
 (* PARSE_002_safe_read_insufficient (matches Coq: Theorem PARSE_002_safe_read_insufficient) *)
-let parse_002_safe_read_insufficient_obligation () : Tot bool = true
-let parse_002_safe_read_insufficient_lemma () : Lemma (requires True) (ensures (parse_002_safe_read_insufficient_obligation () == parse_002_safe_read_insufficient_obligation ())) = ()
+let parse_002_safe_read_insufficient (p_cap: _) (p_pos: _) (p_len: _) : Lemma (requires (p_pos + p_len > p_cap)) (ensures (safe_read (mkbuffer [] p_cap p_pos) p_len == false)) = admit ()
 
 (* PARSE_003_advance_preserves_capacity (matches Coq: Theorem PARSE_003_advance_preserves_capacity) *)
 let parse_003_advance_preserves_capacity (p_b: _) (p_n: _) : Lemma ((buffer_advance p_b p_n).f_buf_capacity == p_b.f_buf_capacity) = admit ()
@@ -543,8 +533,7 @@ let parse_009_combined_min () : Lemma (ETH_MIN_FRAME + IP_MIN_HEADER + TCP_MIN_H
 let parse_010_safe_read_monotonic (p_data: _) (p_pos: _) (p_len: _) (p_cap1: _) (p_cap2: _) : Lemma (requires (p_cap1 <= p_cap2 /\ safe_read (mkbuffer p_data p_cap1 p_pos) p_len == true)) (ensures (safe_read (mkbuffer p_data p_cap2 p_pos) p_len == true)) = admit ()
 
 (* PARSE_011_empty_buffer_zero_read (matches Coq: Theorem PARSE_011_empty_buffer_zero_read) *)
-let parse_011_empty_buffer_zero_read_obligation () : Tot bool = true
-let parse_011_empty_buffer_zero_read_lemma () : Lemma (requires True) (ensures (parse_011_empty_buffer_zero_read_obligation () == parse_011_empty_buffer_zero_read_obligation ())) = ()
+let parse_011_empty_buffer_zero_read () : Lemma (safe_read (mkbuffer [] 0 0) 0 == true) = admit ()
 
 (* PARSE_012_at_capacity_no_read (matches Coq: Theorem PARSE_012_at_capacity_no_read) *)
 let parse_012_at_capacity_no_read (p_cap: _) (p_data: _) : Lemma (safe_read (mkbuffer p_data p_cap p_cap) 1 == false) = admit ()
@@ -700,24 +689,19 @@ let sock_009_new_socket_cannot_recv () : Lemma (socket_can_recv new_socket == fa
 let sock_010_default_no_reuse () : Lemma (default_sock_opts.f_opt_reuse_addr == false) = admit ()
 
 (* TCP_021_fin_wait1_fin_ack (matches Coq: Theorem TCP_021_fin_wait1_fin_ack) *)
-let tcp_021_fin_wait1_fin_ack_obligation () : Tot bool = true
-let tcp_021_fin_wait1_fin_ack_lemma () : Lemma (requires True) (ensures (tcp_021_fin_wait1_fin_ack_obligation () == tcp_021_fin_wait1_fin_ack_obligation ())) = ()
+let tcp_021_fin_wait1_fin_ack () : Lemma (tcp_transition FIN_WAIT_1 fin_ack true == TIME_WAIT) = admit ()
 
 (* TCP_022_fin_wait1_fin_only (matches Coq: Theorem TCP_022_fin_wait1_fin_only) *)
-let tcp_022_fin_wait1_fin_only_obligation () : Tot bool = true
-let tcp_022_fin_wait1_fin_only_lemma () : Lemma (requires True) (ensures (tcp_022_fin_wait1_fin_only_obligation () == tcp_022_fin_wait1_fin_only_obligation ())) = ()
+let tcp_022_fin_wait1_fin_only () : Lemma (tcp_transition FIN_WAIT_1 fin_only true == CLOSING) = admit ()
 
 (* TCP_023_fin_wait1_ack_only (matches Coq: Theorem TCP_023_fin_wait1_ack_only) *)
-let tcp_023_fin_wait1_ack_only_obligation () : Tot bool = true
-let tcp_023_fin_wait1_ack_only_lemma () : Lemma (requires True) (ensures (tcp_023_fin_wait1_ack_only_obligation () == tcp_023_fin_wait1_ack_only_obligation ())) = ()
+let tcp_023_fin_wait1_ack_only () : Lemma (tcp_transition FIN_WAIT_1 ack_only true == FIN_WAIT_2) = admit ()
 
 (* TCP_024_fin_wait2_fin (matches Coq: Theorem TCP_024_fin_wait2_fin) *)
-let tcp_024_fin_wait2_fin_obligation () : Tot bool = true
-let tcp_024_fin_wait2_fin_lemma () : Lemma (requires True) (ensures (tcp_024_fin_wait2_fin_obligation () == tcp_024_fin_wait2_fin_obligation ())) = ()
+let tcp_024_fin_wait2_fin () : Lemma (tcp_transition FIN_WAIT_2 fin_seg true == TIME_WAIT) = admit ()
 
 (* TCP_025_closing_ack (matches Coq: Theorem TCP_025_closing_ack) *)
-let tcp_025_closing_ack_obligation () : Tot bool = true
-let tcp_025_closing_ack_lemma () : Lemma (requires True) (ensures (tcp_025_closing_ack_obligation () == tcp_025_closing_ack_obligation ())) = ()
+let tcp_025_closing_ack () : Lemma (tcp_transition CLOSING ack_seg true == TIME_WAIT) = admit ()
 
 (* TCP_026_time_wait_stable (matches Coq: Theorem TCP_026_time_wait_stable) *)
 let tcp_026_time_wait_stable (p_seg: _) (p_is_server: _) : Lemma (tcp_transition TIME_WAIT p_seg p_is_server == TIME_WAIT) = admit ()
@@ -726,15 +710,13 @@ let tcp_026_time_wait_stable (p_seg: _) (p_is_server: _) : Lemma (tcp_transition
 let tcp_027_close_wait_stable (p_seg: _) (p_is_server: _) : Lemma (tcp_transition CLOSE_WAIT p_seg p_is_server == CLOSE_WAIT) = admit ()
 
 (* TCP_028_syn_recv_rst (matches Coq: Theorem TCP_028_syn_recv_rst) *)
-let tcp_028_syn_recv_rst_obligation () : Tot bool = true
-let tcp_028_syn_recv_rst_lemma () : Lemma (requires True) (ensures (tcp_028_syn_recv_rst_obligation () == tcp_028_syn_recv_rst_obligation ())) = ()
+let tcp_028_syn_recv_rst () : Lemma (tcp_transition SYN_RECEIVED rst_seg true == LISTEN) = admit ()
 
 (* TCP_029_connection_subset (matches Coq: Theorem TCP_029_connection_subset) *)
 let tcp_029_connection_subset (p_s: _) : Lemma (requires (is_data_state p_s == true)) (ensures (is_connection_state p_s == true)) = admit ()
 
 (* TCP_030_established_data_stable (matches Coq: Theorem TCP_030_established_data_stable) *)
-let tcp_030_established_data_stable_obligation () : Tot bool = true
-let tcp_030_established_data_stable_lemma () : Lemma (requires True) (ensures (tcp_030_established_data_stable_obligation () == tcp_030_established_data_stable_obligation ())) = ()
+let tcp_030_established_data_stable () : Lemma (tcp_transition ESTABLISHED data_seg false == ESTABLISHED) = admit ()
 
 (* COMP_001_verified_security (matches Coq: Theorem COMP_001_verified_security) *)
 let comp_001_verified_security (p_n: _) : Lemma (requires (net_stack_verified p_n == true)) (ensures ((p_n.f_vns_security).f_ns_packet_validation == true /\ (p_n.f_vns_security).f_ns_protocol_compliance == true /\ (p_n.f_vns_security).f_ns_firewall_enforced == true /\ (p_n.f_vns_security).f_ns_encryption_in_transit == true)) = admit ()
@@ -746,8 +728,7 @@ let comp_002_verified_reliability (p_n: _) : Lemma (requires (net_stack_verified
 let comp_003_handshake_valid () : Lemma (handshake_sequence_valid == true) = admit ()
 
 (* COMP_004_established_data_transfer (matches Coq: Theorem COMP_004_established_data_transfer) *)
-let comp_004_established_data_transfer_obligation () : Tot bool = true
-let comp_004_established_data_transfer_lemma () : Lemma (requires True) (ensures (comp_004_established_data_transfer_obligation () == comp_004_established_data_transfer_obligation ())) = ()
+let comp_004_established_data_transfer (p_opts: _) : Lemma (socket_can_send s == true /\ socket_can_recv s == true) = admit ()
 
 (* COMP_005_cong_fairness (matches Coq: Theorem COMP_005_cong_fairness) *)
 let comp_005_cong_fairness (p_cs: _) (p_mss: _) : Lemma (requires (p_mss > 0)) (ensures ((aimd_increase p_cs p_mss).f_cwnd >= p_cs.f_cwnd)) = admit ()

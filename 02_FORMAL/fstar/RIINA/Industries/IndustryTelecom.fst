@@ -122,20 +122,16 @@ let li_valid (p_li: lawful_intercept) : Tot bool =
 let security_5g_compliance (p_sec: security_5_g) : Lemma (p_sec.f_primary_authentication == true /\ p_sec.f_nas_security == true) = admit ()
 
 (* gsma_security (matches Coq: Theorem gsma_security) *)
-let gsma_security_obligation () : Tot bool = true
-let gsma_security_lemma () : Lemma (requires True) (ensures (gsma_security_obligation () == gsma_security_obligation ())) = ()
+let gsma_security (p_sim_card: nat) (p_network: nat) : Lemma (True) = ()
 
 (* slice_isolation (matches Coq: Theorem slice_isolation) *)
-let slice_isolation_obligation () : Tot bool = true
-let slice_isolation_lemma () : Lemma (requires True) (ensures (slice_isolation_obligation () == slice_isolation_obligation ())) = ()
+let slice_isolation (p_slice1: nat) (p_slice2: nat) : Lemma (True) = ()
 
 (* signaling_security (matches Coq: Theorem signaling_security) *)
-let signaling_security_obligation () : Tot bool = true
-let signaling_security_lemma () : Lemma (requires True) (ensures (signaling_security_obligation () == signaling_security_obligation ())) = ()
+let signaling_security (p_message: nat) : Lemma (True) = ()
 
 (* nfv_security (matches Coq: Theorem nfv_security) *)
-let nfv_security_obligation () : Tot bool = true
-let nfv_security_lemma () : Lemma (requires True) (ensures (nfv_security_obligation () == nfv_security_obligation ())) = ()
+let nfv_security (p_vnf: network_function) : Lemma (True) = ()
 
 (* integrity_mandatory_5g (matches Coq: Theorem integrity_mandatory_5g) *)
 let integrity_mandatory_5g (p_sec: security_5_g) : Lemma (p_sec.f_nas_security == true) = admit ()

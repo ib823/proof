@@ -118,8 +118,7 @@ let relying_party_duty (p_rpc: nat) : Lemma (requires (rpc_status_checked p_rpc 
 let partial_check_not_diligent (p_rpc: nat) : Lemma (requires (rpc_signature_verified p_rpc == false)) (ensures (~(relying_party_diligent p_rpc == true))) = admit ()
 
 (* revoked_cert_on_crl (matches Coq: Theorem revoked_cert_on_crl) *)
-let revoked_cert_on_crl_obligation () : Tot bool = true
-let revoked_cert_on_crl_lemma () : Lemma (requires True) (ensures (revoked_cert_on_crl_obligation () == revoked_cert_on_crl_obligation ())) = ()
+let revoked_cert_on_crl (p_crl: (list nat)) (p_entry: nat) : Lemma (requires (List.Tot.memP p_entry p_crl)) (ensures (cert_on_crl p_crl (crl_cert_id p_entry) == true)) = admit ()
 
 (* crl_addition_preserves (matches Coq: Theorem crl_addition_preserves) *)
 let crl_addition_preserves (p_crl: (list nat)) (p_new_entry: nat) (p_cid: nat) : Lemma (requires (cert_on_crl p_crl p_cid == true)) (ensures (cert_on_crl (p_new_entry :: p_crl) p_cid == true)) = admit ()
@@ -131,9 +130,7 @@ let signature_timestamp_in_cert_validity (p_s: nat) (p_c: nat) : Lemma (requires
 let dsa_composition (p_c: nat) (p_s: nat) (p_t: nat) (p_key_enc: bool) (p_key_hsm: bool) : Lemma (requires (cert_valid p_c p_t == true /\ signature_legally_valid p_s p_c p_t == true /\ key_strength_adequate p_c 2048 == true /\ private_key_protected p_key_enc p_key_hsm == true)) (ensures (dsa_fully_compliant p_c p_s p_t p_key_enc p_key_hsm == true)) = admit ()
 
 (* cert_status_coverage (matches Coq: Theorem cert_status_coverage) *)
-let cert_status_coverage_obligation () : Tot bool = true
-let cert_status_coverage_lemma () : Lemma (requires True) (ensures (cert_status_coverage_obligation () == cert_status_coverage_obligation ())) = ()
+let cert_status_coverage (p_cs: cert_status) : Lemma (List.Tot.memP p_cs all_cert_statuses) = admit ()
 
 (* ca_license_coverage (matches Coq: Theorem ca_license_coverage) *)
-let ca_license_coverage_obligation () : Tot bool = true
-let ca_license_coverage_lemma () : Lemma (requires True) (ensures (ca_license_coverage_obligation () == ca_license_coverage_obligation ())) = ()
+let ca_license_coverage (p_ls: ca_license_status) : Lemma (List.Tot.memP p_ls all_ca_license_statuses) = admit ()

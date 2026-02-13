@@ -134,15 +134,13 @@ let type_004_02_refinement_introduction (p_v: nat) (p_b: base_ty) (p_p: ty__pred
 let type_004_03_refinement_elimination (p_b: base_ty) (p_p: ty__pred) : Lemma (refty_subtype (RRefine p_b p_p) (RBase p_b) == true) = admit ()
 
 (* TYPE_004_04_refinement_conjunction (matches Coq: Theorem TYPE_004_04_refinement_conjunction) *)
-let type_004_04_refinement_conjunction_obligation () : Tot bool = true
-let type_004_04_refinement_conjunction_lemma () : Lemma (requires True) (ensures (type_004_04_refinement_conjunction_obligation () == type_004_04_refinement_conjunction_obligation ())) = ()
+let type_004_04_refinement_conjunction (p_v: nat) (p_b: base_ty) (p_p: ty__pred) (p_q: ty__pred) : Lemma (sat_pred p_v (PAnd p_p p_q) == true <==> (sat_pred p_v p_p == true /\ sat_pred p_v p_q == true)) = admit ()
 
 (* TYPE_004_05_dependent_function_refinement (matches Coq: Theorem TYPE_004_05_dependent_function_refinement) *)
 let type_004_05_dependent_function_refinement (p_b1: base_ty) (p_b2: base_ty) (p_p: ty__pred) (p_q: nat) : Lemma (requires (((forall (x: _). sat_pred x p_p -> exists y_ sat_pred y (p_q x) == true)) /\ (forall (f: nat). (forall (arg: nat). sat_pred arg p_p == true)) /\ sat_pred (f arg) (p_q arg) == true)) (ensures ((exists p_result. sat_pred p_result (p_q arg) == true))) = admit ()
 
 (* TYPE_004_06_refinement_substitution (matches Coq: Theorem TYPE_004_06_refinement_substitution) *)
-let type_004_06_refinement_substitution_obligation () : Tot bool = true
-let type_004_06_refinement_substitution_lemma () : Lemma (requires True) (ensures (type_004_06_refinement_substitution_obligation () == type_004_06_refinement_substitution_obligation ())) = ()
+let type_004_06_refinement_substitution (p_x: nat) (p_v: nat) (p_env: nat) (p_e: expr) (p_b: base_ty) (p_p: ty__pred) : Lemma (requires (has_type ((p_x, RRefine p_b p_p) :: p_env) p_e (RRefine p_b p_p) == true /\ sat_pred p_v p_p == true /\ (forall (result: _). eval ((p_x, p_v) :: []) p_e == Some result) /\ sat_pred result p_p == true)) (ensures (inhabits_refinement result p_b p_p == true)) = admit ()
 
 (* TYPE_004_07_smt_decidability (matches Coq: Theorem TYPE_004_07_smt_decidability) *)
 let type_004_07_smt_decidability (p_v: nat) (p_p: ty__pred) : Lemma ({sat_pred p_v p_ + {~ sat_pred p_v p_ == true) = admit ()
@@ -160,8 +158,7 @@ let type_004_10_array_bounds_safety (p_arr: nat) (p_i: nat) : Lemma (requires (s
 let type_004_11_positive_refinement (p_x: nat) (p_y: nat) : Lemma (requires (sat_pred p_x positive_pred == true /\ sat_pred p_y positive_pred == true)) (ensures (sat_pred (p_x * p_y) positive_pred == true)) = admit ()
 
 (* TYPE_004_12_refinement_preservation (matches Coq: Theorem TYPE_004_12_refinement_preservation) *)
-let type_004_12_refinement_preservation_obligation () : Tot bool = true
-let type_004_12_refinement_preservation_lemma () : Lemma (requires True) (ensures (type_004_12_refinement_preservation_obligation () == type_004_12_refinement_preservation_obligation ())) = ()
+let type_004_12_refinement_preservation (p_e: expr) (p_e_: expr) (p_b: base_ty) (p_p: ty__pred) (p_n: nat) : Lemma (requires (step_clean p_e p_e_ == true /\ p_e_ == EVal p_n /\ sat_pred p_n p_p == true)) (ensures (has_type [] p_e_ (RRefine p_b p_p) == true)) = admit ()
 
 (* TYPE_004_13_pred_true_satisfied (matches Coq: Theorem TYPE_004_13_pred_true_satisfied) *)
 let type_004_13_pred_true_satisfied (p_v: _) : Lemma (sat_pred p_v PTrue == true) = admit ()
@@ -170,12 +167,10 @@ let type_004_13_pred_true_satisfied (p_v: _) : Lemma (sat_pred p_v PTrue == true
 let type_004_14_pred_false_unsatisfied (p_v: _) : Lemma (~(sat_pred p_v PFalse == true)) = admit ()
 
 (* TYPE_004_15_pred_and_comm (matches Coq: Theorem TYPE_004_15_pred_and_comm) *)
-let type_004_15_pred_and_comm_obligation () : Tot bool = true
-let type_004_15_pred_and_comm_lemma () : Lemma (requires True) (ensures (type_004_15_pred_and_comm_obligation () == type_004_15_pred_and_comm_obligation ())) = ()
+let type_004_15_pred_and_comm (p_v: _) (p_p: _) (p_q: _) : Lemma (sat_pred p_v (PAnd p_p p_q) == true <==> sat_pred p_v (PAnd p_q p_p) == true) = admit ()
 
 (* TYPE_004_16_pred_or_comm (matches Coq: Theorem TYPE_004_16_pred_or_comm) *)
-let type_004_16_pred_or_comm_obligation () : Tot bool = true
-let type_004_16_pred_or_comm_lemma () : Lemma (requires True) (ensures (type_004_16_pred_or_comm_obligation () == type_004_16_pred_or_comm_obligation ())) = ()
+let type_004_16_pred_or_comm (p_v: _) (p_p: _) (p_q: _) : Lemma (sat_pred p_v (POr p_p p_q) == true <==> sat_pred p_v (POr p_q p_p) == true) = admit ()
 
 (* TYPE_004_17_pred_implies_ptrue (matches Coq: Theorem TYPE_004_17_pred_implies_ptrue) *)
 let type_004_17_pred_implies_ptrue (p_p: _) : Lemma (pred_implies p_p PTrue == true) = admit ()
@@ -196,9 +191,7 @@ let type_004_21_eval_val (p_env: _) (p_n: _) : Lemma (eval p_env (EVal p_n) == S
 let type_004_22_pred_impl_refl (p_v: _) (p_p: _) : Lemma (sat_pred p_v (PImpl p_p p_p) == true) = admit ()
 
 (* TYPE_004_23_pred_and_assoc (matches Coq: Theorem TYPE_004_23_pred_and_assoc) *)
-let type_004_23_pred_and_assoc_obligation () : Tot bool = true
-let type_004_23_pred_and_assoc_lemma () : Lemma (requires True) (ensures (type_004_23_pred_and_assoc_obligation () == type_004_23_pred_and_assoc_obligation ())) = ()
+let type_004_23_pred_and_assoc (p_v: _) (p_p: _) (p_q: _) (p_r: _) : Lemma (sat_pred p_v (PAnd (PAnd p_p p_q) p_r) == true <==> sat_pred p_v (PAnd p_p (PAnd p_q p_r)) == true) = admit ()
 
 (* TYPE_004_24_pred_or_assoc (matches Coq: Theorem TYPE_004_24_pred_or_assoc) *)
-let type_004_24_pred_or_assoc_obligation () : Tot bool = true
-let type_004_24_pred_or_assoc_lemma () : Lemma (requires True) (ensures (type_004_24_pred_or_assoc_obligation () == type_004_24_pred_or_assoc_obligation ())) = ()
+let type_004_24_pred_or_assoc (p_v: _) (p_p: _) (p_q: _) (p_r: _) : Lemma (sat_pred p_v (POr (POr p_p p_q) p_r) == true <==> sat_pred p_v (POr p_p (POr p_q p_r)) == true) = admit ()

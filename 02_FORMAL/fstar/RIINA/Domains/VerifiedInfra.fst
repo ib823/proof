@@ -308,8 +308,7 @@ let secret_access_audited (p_ss: secrets_store) (p_svc: nat) (p_sec: secret) (p_
 let inf_001_01_lb_routes_correctly (p_lb: _) (p_req: _) (p_b: _) : Lemma (requires (routes_to p_lb p_req p_b == true)) (ensures (healthy p_b == true /\ has_capacity p_b == true)) = admit ()
 
 (* INF_001_02_lb_session_affinity (matches Coq: Theorem INF_001_02_lb_session_affinity) *)
-let inf_001_02_lb_session_affinity_obligation () : Tot bool = true
-let inf_001_02_lb_session_affinity_lemma () : Lemma (requires True) (ensures (inf_001_02_lb_session_affinity_obligation () == inf_001_02_lb_session_affinity_obligation ())) = ()
+let inf_001_02_lb_session_affinity (p_lb: _) (p_s: _) (p_b: _) : Lemma (requires (lb_session_map p_lb p_s == Some (p_b.f_backend_id) /\ List.Tot.memP p_b (p_lb.f_lb_backends) /\ healthy p_b == true /\ has_capacity p_b == true)) (ensures (routes_to p_lb (mkrequest "GET"%string "/"%string [] [] (Some p_s)) p_b == true)) = admit ()
 
 (* INF_001_03_lb_no_request_smuggling (matches Coq: Theorem INF_001_03_lb_no_request_smuggling) *)
 let inf_001_03_lb_no_request_smuggling (p_lb: _) (p_req: _) (p_b: _) : Lemma (requires (routes_to p_lb p_req p_b == true)) (ensures (well_formed_request p_req == true)) = admit ()
@@ -318,8 +317,7 @@ let inf_001_03_lb_no_request_smuggling (p_lb: _) (p_req: _) (p_b: _) : Lemma (re
 let inf_001_04_lb_health_check_correct (p_b: _) (p_hc: _) : Lemma (requires (p_hc.f_hc_backend_id == p_b.f_backend_id /\ p_hc.f_hc_is_healthy == p_b.f_backend_healthy)) (ensures (health_check_correct_for p_b p_hc == true)) = admit ()
 
 (* INF_001_05_lb_fair_distribution (matches Coq: Theorem INF_001_05_lb_fair_distribution) *)
-let inf_001_05_lb_fair_distribution_obligation () : Tot bool = true
-let inf_001_05_lb_fair_distribution_lemma () : Lemma (requires True) (ensures (inf_001_05_lb_fair_distribution_obligation () == inf_001_05_lb_fair_distribution_obligation ())) = ()
+let inf_001_05_lb_fair_distribution (p_backends: _) (p_threshold: _) : Lemma (requires (((forall (b1: _). (forall (b2: _). List.Tot.memP b1 p_backends)) /\ load_ratio b2 <= load_ratio b1 + p_threshold))) (ensures (fair_distribution p_backends p_threshold == true)) = admit ()
 
 (* INF_001_06_db_atomicity (matches Coq: Theorem INF_001_06_db_atomicity) *)
 let inf_001_06_db_atomicity (p_db: _) (p_txn: _) : Lemma (commits p_db p_txn == true \/ ~(commits p_db p_txn == true)) = admit ()
@@ -343,12 +341,10 @@ let inf_001_11_db_encryption_at_rest (p_enc: _) : Lemma (requires (~(p_enc.f_enc
 let inf_001_12_db_access_controlled (p_cap: _) (p_k: _) (p_perm: _) : Lemma (requires (p_cap.f_cap_object == p_k /\ p_cap.f_cap_permission == p_perm /\ p_perm > 0)) (ensures (p_cap.f_cap_subject == p_cap.f_cap_subject)) = admit ()
 
 (* INF_001_13_db_audit_complete (matches Coq: Theorem INF_001_13_db_audit_complete) *)
-let inf_001_13_db_audit_complete_obligation () : Tot bool = true
-let inf_001_13_db_audit_complete_lemma () : Lemma (requires True) (ensures (inf_001_13_db_audit_complete_obligation () == inf_001_13_db_audit_complete_obligation ())) = ()
+let inf_001_13_db_audit_complete (p_log: _) (p_subj: _) (p_obj: _) (p_entry: _) : Lemma (requires (List.Tot.memP p_entry p_log /\ p_entry.f_audit_subject == p_subj /\ p_entry.f_audit_object == p_obj)) (ensures (access_audited p_log p_subj p_obj == true)) = admit ()
 
 (* filter_In_length_pos (matches Coq: Lemma filter_In_length_pos) *)
-let filter_in_length_pos_obligation () : Tot bool = true
-let filter_in_length_pos_lemma () : Lemma (requires True) (ensures (filter_in_length_pos_obligation () == filter_in_length_pos_obligation ())) = ()
+let filter_in_length_pos (p_f: nat) (p_l: (list nat)) (p_x: nat) : Lemma (requires (List.Tot.memP p_x p_l /\ p_f p_x == true)) (ensures (List.length (List.filter p_f p_l) >= 1)) = admit ()
 
 (* INF_001_14_mq_exactly_once (matches Coq: Theorem INF_001_14_mq_exactly_once) *)
 let inf_001_14_mq_exactly_once (p_q: _) (p_m: _) (p_c: _) : Lemma (requires (delivered p_q p_m p_c == true /\ acknowledged p_q p_m p_c == true)) (ensures (delivered_count p_q p_m p_c >= 1)) = admit ()
@@ -360,8 +356,7 @@ let inf_001_15_mq_ordering (p_q: _) : Lemma (preserves_order p_q == true) = admi
 let inf_001_16_mq_no_deser_attack (p_payload: _) (p_expected: _) : Lemma ((exists p_result. safe_deserialize p_payload p_expected == p_result)) = admit ()
 
 (* INF_001_17_mq_dlq_complete (matches Coq: Theorem INF_001_17_mq_dlq_complete) *)
-let inf_001_17_mq_dlq_complete_obligation () : Tot bool = true
-let inf_001_17_mq_dlq_complete_lemma () : Lemma (requires True) (ensures (inf_001_17_mq_dlq_complete_obligation () == inf_001_17_mq_dlq_complete_obligation ())) = ()
+let inf_001_17_mq_dlq_complete (p_q: _) (p_m: _) (p_err: _) : Lemma (requires (goes_to_dlq p_q p_m (POFailure p_err) == true)) (ensures (List.Tot.memP p_m (p_q.f_q_dlq))) = admit ()
 
 (* INF_001_18_mq_backpressure (matches Coq: Theorem INF_001_18_mq_backpressure) *)
 let inf_001_18_mq_backpressure (p_q: _) (p_max: _) : Lemma (requires (List.length (p_q.f_q_messages) >= p_max)) (ensures (backpressure_applied p_q p_max == true)) = admit ()
@@ -379,12 +374,10 @@ let inf_001_21_log_tamper_detected (p_l: _) : Lemma (requires (~(hash_chain_vali
 let inf_001_22_secret_isolated (p_ss: _) : Lemma (requires (((forall (svc: _). (forall (sec: _). has_access p_ss svc sec -> secret_owner sec == svc))))) (ensures (secrets_isolated p_ss == true)) = admit ()
 
 (* INF_001_23_secret_rotation_safe (matches Coq: Theorem INF_001_23_secret_rotation_safe) *)
-let inf_001_23_secret_rotation_safe_obligation () : Tot bool = true
-let inf_001_23_secret_rotation_safe_lemma () : Lemma (requires True) (ensures (inf_001_23_secret_rotation_safe_obligation () == inf_001_23_secret_rotation_safe_obligation ())) = ()
+let inf_001_23_secret_rotation_safe (p_rs: _) : Lemma (requires (~(p_rs.f_rot_old_key == []) /\ ~(p_rs.f_rot_new_key == []))) (ensures (rotation_available p_rs == true)) = admit ()
 
 (* INF_001_24_secret_expiry (matches Coq: Theorem INF_001_24_secret_expiry) *)
 let inf_001_24_secret_expiry (p_sec: _) (p_current_time: _) : Lemma (requires (p_current_time > secret_created p_sec + secret_ttl p_sec)) (ensures (secret_expired p_sec p_current_time == true)) = admit ()
 
 (* INF_001_25_secret_audited (matches Coq: Theorem INF_001_25_secret_audited) *)
-let inf_001_25_secret_audited_obligation () : Tot bool = true
-let inf_001_25_secret_audited_lemma () : Lemma (requires True) (ensures (inf_001_25_secret_audited_obligation () == inf_001_25_secret_audited_obligation ())) = ()
+let inf_001_25_secret_audited (p_ss: _) (p_svc: _) (p_sec: _) (p_ts: _) : Lemma (requires (List.Tot.memP (p_svc, p_sec.f_secret_id, p_ts) (p_ss.f_access_log))) (ensures (secret_access_audited p_ss p_svc p_sec p_ts == true)) = admit ()

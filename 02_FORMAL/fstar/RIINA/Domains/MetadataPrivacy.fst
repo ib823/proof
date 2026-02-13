@@ -104,16 +104,13 @@ let meta_005_jitter_bounded (p_base: nat) (p_jitter: nat) (p_max_jitter: nat) : 
 let meta_006_k_anonymity (p_p_set: nat) (p_k: nat) : Lemma (requires (k_anonymous id_set p_k == true)) (ensures (length id_set >= p_k)) = admit ()
 
 (* meta_007_set_preserved (matches Coq: Theorem meta_007_set_preserved) *)
-let meta_007_set_preserved_obligation () : Tot bool = true
-let meta_007_set_preserved_lemma () : Lemma (requires True) (ensures (meta_007_set_preserved_obligation () == meta_007_set_preserved_obligation ())) = ()
+let meta_007_set_preserved (p_p_set: nat) (p_elem: nat) : Lemma (requires (List.Tot.memP p_elem id_set)) (ensures (length id_set >= 1)) = admit ()
 
 (* meta_008_sender_anonymity (matches Coq: Theorem meta_008_sender_anonymity) *)
-let meta_008_sender_anonymity_obligation () : Tot bool = true
-let meta_008_sender_anonymity_lemma () : Lemma (requires True) (ensures (meta_008_sender_anonymity_obligation () == meta_008_sender_anonymity_obligation ())) = ()
+let meta_008_sender_anonymity (p_sender_set: nat) (p_k: nat) (p_actual_sender: nat) : Lemma (requires (k_anonymous p_sender_set p_k == true /\ List.Tot.memP p_actual_sender p_sender_set)) (ensures (length p_sender_set >= p_k)) = admit ()
 
 (* meta_009_receiver_anonymity (matches Coq: Theorem meta_009_receiver_anonymity) *)
-let meta_009_receiver_anonymity_obligation () : Tot bool = true
-let meta_009_receiver_anonymity_lemma () : Lemma (requires True) (ensures (meta_009_receiver_anonymity_obligation () == meta_009_receiver_anonymity_obligation ())) = ()
+let meta_009_receiver_anonymity (p_receiver_set: nat) (p_k: nat) (p_actual_receiver: nat) : Lemma (requires (k_anonymous p_receiver_set p_k == true /\ List.Tot.memP p_actual_receiver p_receiver_set)) (ensures (length p_receiver_set >= p_k)) = admit ()
 
 (* meta_010_relationship_unlinkable (matches Coq: Theorem meta_010_relationship_unlinkable) *)
 let meta_010_relationship_unlinkable (p_m1: nat) (p_m2: nat) : Lemma (requires (~(meta_sender p_m1 == meta_sender p_m2))) (ensures (unlinkable p_m1 p_m2 == true)) = admit ()

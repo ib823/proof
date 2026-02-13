@@ -75,24 +75,19 @@ let fully_consumed_b (p_p: nat) : Tot bool =
   | _ -> false
 
 (* mem_true_In (matches Coq: Lemma mem_true_In) *)
-let mem_true_in_obligation () : Tot bool = true
-let mem_true_in_lemma () : Lemma (requires True) (ensures (mem_true_in_obligation () == mem_true_in_obligation ())) = ()
+let mem_true_in (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true)) (ensures (List.Tot.memP p_n p_l)) = admit ()
 
 (* In_mem_true (matches Coq: Lemma In_mem_true) *)
-let in_mem_true_obligation () : Tot bool = true
-let in_mem_true_lemma () : Lemma (requires True) (ensures (in_mem_true_obligation () == in_mem_true_obligation ())) = ()
+let in_mem_true (p_n: _) (p_l: _) : Lemma (requires (List.Tot.memP p_n p_l)) (ensures (mem p_n p_l == true)) = admit ()
 
 (* mem_false_not_In (matches Coq: Lemma mem_false_not_In) *)
-let mem_false_not_in_obligation () : Tot bool = true
-let mem_false_not_in_lemma () : Lemma (requires True) (ensures (mem_false_not_in_obligation () == mem_false_not_in_obligation ())) = ()
+let mem_false_not_in (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == false)) (ensures (~(List.Tot.memP p_n p_l))) = admit ()
 
 (* remove_length (matches Coq: Lemma remove_length) *)
-let remove_length_obligation () : Tot bool = true
-let remove_length_lemma () : Lemma (requires True) (ensures (remove_length_obligation () == remove_length_obligation ())) = ()
+let remove_length (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true)) (ensures (length (remove p_n p_l) == (if (length p_l) > 0 then (length p_l) - 1 else 0))) = admit ()
 
 (* remove_not_first (matches Coq: Lemma remove_not_first) *)
-let remove_not_first_obligation () : Tot bool = true
-let remove_not_first_lemma () : Lemma (requires True) (ensures (remove_not_first_obligation () == remove_not_first_obligation ())) = ()
+let remove_not_first (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true)) (ensures (~(List.Tot.memP p_n (remove p_n p_l)) \/ List.Tot.memP p_n (remove p_n p_l))) = admit ()
 
 (* count_remove_helper (matches Coq: Lemma count_remove_helper) *)
 let count_remove_helper (p_n: _) (p_l: _) : Lemma (requires (mem p_n p_l == true)) (ensures (count p_n (remove p_n p_l) + 1 == count p_n p_l)) = admit ()
@@ -114,8 +109,7 @@ let gate_preserves_context_obligation () : Tot bool = true
 let gate_preserves_context_lemma () : Lemma (requires True) (ensures (gate_preserves_context_obligation () == gate_preserves_context_obligation ())) = ()
 
 (* type_checking_decidable (matches Coq: Theorem type_checking_decidable) *)
-let type_checking_decidable_obligation () : Tot bool = true
-let type_checking_decidable_lemma () : Lemma (requires True) (ensures (type_checking_decidable_obligation () == type_checking_decidable_obligation ())) = ()
+let type_checking_decidable (p_p: _) : Lemma (well_typed_b p_p == true <==> well_typed p_p == true) = admit ()
 
 (* no_dangling_qubits (matches Coq: Theorem no_dangling_qubits) *)
 let no_dangling_qubits_obligation () : Tot bool = true
@@ -143,19 +137,16 @@ let create_gate_measure_consumed (p_q: _) (p_g: _) : Lemma (fully_consumed (ISeq
 let mem_head (p_n: _) (p_l: _) : Lemma (mem p_n (p_n :: p_l) == true) = admit ()
 
 (* mem_nil (matches Coq: Theorem mem_nil) *)
-let mem_nil_obligation () : Tot bool = true
-let mem_nil_lemma () : Lemma (requires True) (ensures (mem_nil_obligation () == mem_nil_obligation ())) = ()
+let mem_nil (p_n: _) : Lemma (mem p_n [] == false) = admit ()
 
 (* count_nil (matches Coq: Theorem count_nil) *)
-let count_nil_obligation () : Tot bool = true
-let count_nil_lemma () : Lemma (requires True) (ensures (count_nil_obligation () == count_nil_obligation ())) = ()
+let count_nil (p_n: _) : Lemma (count p_n [] == 0) = admit ()
 
 (* count_le_length (matches Coq: Theorem count_le_length) *)
 let count_le_length (p_n: _) (p_l: _) : Lemma (count p_n p_l <= length p_l) = admit ()
 
 (* remove_nil (matches Coq: Theorem remove_nil) *)
-let remove_nil_obligation () : Tot bool = true
-let remove_nil_lemma () : Lemma (requires True) (ensures (remove_nil_obligation () == remove_nil_obligation ())) = ()
+let remove_nil (p_n: _) : Lemma (remove p_n [] == []) = admit ()
 
 (* gate_requires_qubit (matches Coq: Theorem gate_requires_qubit) *)
 let gate_requires_qubit_obligation () : Tot bool = true
@@ -174,12 +165,10 @@ let double_create_fails_obligation () : Tot bool = true
 let double_create_fails_lemma () : Lemma (requires True) (ensures (double_create_fails_obligation () == double_create_fails_obligation ())) = ()
 
 (* count_singleton (matches Coq: Theorem count_singleton) *)
-let count_singleton_obligation () : Tot bool = true
-let count_singleton_lemma () : Lemma (requires True) (ensures (count_singleton_obligation () == count_singleton_obligation ())) = ()
+let count_singleton (p_n: _) : Lemma (count p_n [p_n] == 1) = admit ()
 
 (* mem_singleton (matches Coq: Theorem mem_singleton) *)
-let mem_singleton_obligation () : Tot bool = true
-let mem_singleton_lemma () : Lemma (requires True) (ensures (mem_singleton_obligation () == mem_singleton_obligation ())) = ()
+let mem_singleton (p_n: _) : Lemma (mem p_n [p_n] == true) = admit ()
 
 (* create_on_empty_succeeds (matches Coq: Theorem create_on_empty_succeeds) *)
 let create_on_empty_succeeds_obligation () : Tot bool = true

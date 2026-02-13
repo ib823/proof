@@ -176,17 +176,16 @@ let riina_world_switch : world_switch_config = {f_ws_smc_filtering=true; f_ws_ns
 let riina_hypervisor : hypervisor_config = mkHypervisor riina_vm_isolation true true true true true riina_side_channel riina_mem_virt riina_int_virt riina_world_switch
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
+let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
 
 (* andb_true_elim_l (matches Coq: Lemma andb_true_elim_l) *)
-let andb_true_elim_l (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
+let andb_true_elim_l (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
 
 (* andb_true_elim_r (matches Coq: Lemma andb_true_elim_r) *)
-let andb_true_elim_r (p_a: _) (p_b: _) (p_bool: _) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
+let andb_true_elim_r (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
 
 (* HV_001 (matches Coq: Theorem HV_001) *)
 let hv_001 () : Lemma (vm_fully_isolated riina_vm_isolation == true) = admit ()

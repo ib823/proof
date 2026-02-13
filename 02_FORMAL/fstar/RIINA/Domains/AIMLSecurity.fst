@@ -271,12 +271,10 @@ let mitigation_transitive (p_m1: bool) (p_m2: bool) : Tot bool =
   implb p_m1 p_m2
 
 (* all_true_single (matches Coq: Lemma all_true_single) *)
-let all_true_single_obligation () : Tot bool = true
-let all_true_single_lemma () : Lemma (requires True) (ensures (all_true_single_obligation () == all_true_single_obligation ())) = ()
+let all_true_single (p_b: _) : Lemma (all_true [p_b] == p_b) = admit ()
 
 (* all_true_cons (matches Coq: Lemma all_true_cons) *)
-let all_true_cons_obligation () : Tot bool = true
-let all_true_cons_lemma () : Lemma (requires True) (ensures (all_true_cons_obligation () == all_true_cons_obligation ())) = ()
+let all_true_cons (p_h: _) (p_t: _) : Lemma (all_true (p_h :: p_t) == true <==> p_h == true /\ all_true p_t == true) = admit ()
 
 (* ai_001_adversarial_examples_mitigated (matches Coq: Theorem ai_001_adversarial_examples_mitigated) *)
 let ai_001_adversarial_examples_mitigated (p_rt: robust_training) (p_iv: input_validation) : Lemma (requires (p_rt.f_rt_adversarial_training == true /\ p_rt.f_rt_certified_defense == true /\ p_iv.f_iv_filtered == true /\ p_iv.f_iv_sanitized == true)) (ensures (adversarial_examples_protected p_rt p_iv == true)) = admit ()
@@ -296,8 +294,7 @@ let ai_002_model_poisoning_complete_verification_lemma () : Lemma (requires True
 let ai_003_data_poisoning_mitigated (p_tp: training_pipeline) : Lemma (requires (p_tp.f_tp_integrity_checked == true /\ p_tp.f_tp_data_verified == true /\ p_tp.f_tp_source_trusted == true)) (ensures (data_poisoning_protected p_tp == true)) = admit ()
 
 (* ai_003_data_poisoning_with_anomaly_detection (matches Coq: Theorem ai_003_data_poisoning_with_anomaly_detection) *)
-let ai_003_data_poisoning_with_anomaly_detection_obligation () : Tot bool = true
-let ai_003_data_poisoning_with_anomaly_detection_lemma () : Lemma (requires True) (ensures (ai_003_data_poisoning_with_anomaly_detection_obligation () == ai_003_data_poisoning_with_anomaly_detection_obligation ())) = ()
+let ai_003_data_poisoning_with_anomaly_detection (p_tp: training_pipeline) (p_ad: anomaly_detection) : Lemma (requires (p_tp.f_tp_integrity_checked == true /\ p_ad.f_ad_statistical_analysis == true /\ p_ad.f_ad_outlier_removal == true)) (ensures (((p_tp.f_tp_integrity_checked) && (((p_ad.f_ad_statistical_analysis) && (p_ad.f_ad_outlier_removal)))) == true)) = admit ()
 
 (* ai_004_model_extraction_mitigated (matches Coq: Theorem ai_004_model_extraction_mitigated) *)
 let ai_004_model_extraction_mitigated (p_ac: access_control) (p_mw: model_watermark) : Lemma (requires (p_ac.f_ac_authenticated == true /\ p_ac.f_ac_authorized == true /\ p_ac.f_ac_rate_limited == true /\ p_ac.f_ac_logged == true /\ p_mw.f_mw_embedded == true /\ p_mw.f_mw_verifiable == true)) (ensures (model_extraction_protected p_ac p_mw == true)) = admit ()
@@ -323,8 +320,7 @@ let ai_006_complete_privacy_protection_lemma () : Lemma (requires True) (ensures
 let ai_007_backdoor_attack_mitigated (p_tp: training_pipeline) (p_ds: detection_system) : Lemma (requires (p_tp.f_tp_data_verified == true /\ p_tp.f_tp_source_trusted == true /\ p_tp.f_tp_reproducible == true /\ p_ds.f_ds_enabled == true /\ p_ds.f_ds_multi_modal == true)) (ensures (backdoor_attack_protected p_tp p_ds == true)) = admit ()
 
 (* ai_007_backdoor_detection_complete (matches Coq: Theorem ai_007_backdoor_detection_complete) *)
-let ai_007_backdoor_detection_complete_obligation () : Tot bool = true
-let ai_007_backdoor_detection_complete_lemma () : Lemma (requires True) (ensures (ai_007_backdoor_detection_complete_obligation () == ai_007_backdoor_detection_complete_obligation ())) = ()
+let ai_007_backdoor_detection_complete (p_bd: backdoor_detection) (p_tp: training_pipeline) : Lemma (requires (p_bd.f_bd_trigger_reverse_eng == true /\ p_bd.f_bd_activation_analysis == true /\ p_tp.f_tp_reproducible == true)) (ensures (((p_bd.f_bd_trigger_reverse_eng) && (((p_bd.f_bd_activation_analysis) && (p_tp.f_tp_reproducible)))) == true)) = admit ()
 
 (* ai_008_prompt_injection_mitigated (matches Coq: Theorem ai_008_prompt_injection_mitigated) *)
 let ai_008_prompt_injection_mitigated (p_iv: input_validation) : Lemma (requires (p_iv.f_iv_sanitized == true /\ p_iv.f_iv_sandboxed == true /\ p_iv.f_iv_filtered == true /\ p_iv.f_iv_max_length > 0)) (ensures (prompt_injection_protected p_iv == true)) = admit ()
@@ -365,8 +361,7 @@ let ai_012_complete_secure_aggregation_lemma () : Lemma (requires True) (ensures
 let ai_013_gradient_leakage_mitigated (p_dp: differential_privacy) (p_sa: secure_aggregation) : Lemma (requires (p_dp.f_dp_noise_added == true /\ p_dp.f_dp_clipping_applied == true /\ p_dp.f_dp_epsilon <= 1 /\ p_sa.f_sa_encrypted == true /\ p_sa.f_sa_masked == true)) (ensures (gradient_leakage_protected p_dp p_sa == true)) = admit ()
 
 (* ai_013_gradient_protection_strong (matches Coq: Theorem ai_013_gradient_protection_strong) *)
-let ai_013_gradient_protection_strong_obligation () : Tot bool = true
-let ai_013_gradient_protection_strong_lemma () : Lemma (requires True) (ensures (ai_013_gradient_protection_strong_obligation () == ai_013_gradient_protection_strong_obligation ())) = ()
+let ai_013_gradient_protection_strong (p_dp: differential_privacy) : Lemma (requires (gradient_protection_strong p_dp == true)) (ensures (((p_dp.f_dp_noise_added) && (p_dp.f_dp_clipping_applied)) == true)) = admit ()
 
 (* ai_014_evasion_attack_mitigated (matches Coq: Theorem ai_014_evasion_attack_mitigated) *)
 let ai_014_evasion_attack_mitigated (p_rt: robust_training) (p_ds: detection_system) : Lemma (requires (p_rt.f_rt_adversarial_training == true /\ p_rt.f_rt_certified_defense == true /\ p_rt.f_rt_ensemble_used == true /\ p_ds.f_ds_enabled == true /\ p_ds.f_ds_threshold_set == true)) (ensures (evasion_attack_protected p_rt p_ds == true)) = admit ()
@@ -404,8 +399,7 @@ let ai_018_complete_protocol_verification_obligation () : Tot bool = true
 let ai_018_complete_protocol_verification_lemma () : Lemma (requires True) (ensures (ai_018_complete_protocol_verification_obligation () == ai_018_complete_protocol_verification_obligation ())) = ()
 
 (* composition_strengthens_security (matches Coq: Theorem composition_strengthens_security) *)
-let composition_strengthens_security_obligation () : Tot bool = true
-let composition_strengthens_security_lemma () : Lemma (requires True) (ensures (composition_strengthens_security_obligation () == composition_strengthens_security_obligation ())) = ()
+let composition_strengthens_security (p_b1: bool) (p_b2: bool) (p_b3: bool) : Lemma (requires (p_b1 == true /\ p_b2 == true /\ p_b3 == true)) (ensures ((p_b1 && ((p_b2 && p_b3))) == true)) = admit ()
 
 (* mitigation_transitivity (matches Coq: Theorem mitigation_transitivity) *)
 let mitigation_transitivity (p_base: bool) (p_enhanced: bool) : Lemma (requires (p_base == true /\ implb p_base p_enhanced == true)) (ensures (p_enhanced == true)) = admit ()
@@ -415,5 +409,4 @@ let defense_layer_accumulation_obligation () : Tot bool = true
 let defense_layer_accumulation_lemma () : Lemma (requires True) (ensures (defense_layer_accumulation_obligation () == defense_layer_accumulation_obligation ())) = ()
 
 (* privacy_security_coexistence (matches Coq: Theorem privacy_security_coexistence) *)
-let privacy_security_coexistence_obligation () : Tot bool = true
-let privacy_security_coexistence_lemma () : Lemma (requires True) (ensures (privacy_security_coexistence_obligation () == privacy_security_coexistence_obligation ())) = ()
+let privacy_security_coexistence (p_dp: differential_privacy) (p_ac: access_control) : Lemma (requires (p_dp.f_dp_noise_added == true /\ p_dp.f_dp_clipping_applied == true /\ p_ac.f_ac_authenticated == true /\ p_ac.f_ac_rate_limited == true)) (ensures (((((p_dp.f_dp_noise_added) && (p_dp.f_dp_clipping_applied))) && (((p_ac.f_ac_authenticated) && (p_ac.f_ac_rate_limited)))) == true)) = admit ()

@@ -155,7 +155,7 @@ let dr_024_rwlock_init_well_formed () : Lemma (rwlock_well_formed init_rwlock ==
 let dr_025_shared_no_race (p_as_: _) (p_l: _) : Lemma (requires (((forall (t: _). p_as_ t p_l == Some Shared) \/ p_as_ t p_l == None))) (ensures (~(data_race p_as_ p_l == true))) = admit ()
 
 (* DR_026_access_mode_dec (matches Coq: Theorem DR_026_access_mode_dec) *)
-let dr_026_access_mode_dec (p_m1: _) (p_m2: _) (p_accessmode: _) : Lemma ({p_m1 == m2_ + {p_m1 <> m2_) = admit ()
+let dr_026_access_mode_dec (p_m1: access_mode) (p_m2: access_mode) : Lemma ({p_m1 == m2_ + {p_m1 <> m2_) = admit ()
 
 (* DR_027_remove_preserves_wf (matches Coq: Theorem DR_027_remove_preserves_wf) *)
 let dr_027_remove_preserves_wf_obligation () : Tot bool = true
@@ -165,7 +165,7 @@ let dr_027_remove_preserves_wf_lemma () : Lemma (requires True) (ensures (dr_027
 let dr_028_race_free_location (p_as_: _) (p_l1: _) (p_l2: _) : Lemma (~(data_race p_as_ p_l1 == true) /\ ~(p_l1 == p_l2)) = admit ()
 
 (* DR_029_ownership_state_cases (matches Coq: Theorem DR_029_ownership_state_cases) *)
-let dr_029_ownership_state_cases (p_os: _) (p_ownershipstate: _) : Lemma (((exists p_t. p_os == Owned p_t)) \/ ((exists p_t. p_os == MutBorrowed p_t)) \/ ((exists p_ts. p_os == SharedBorrowed p_ts)) \/ p_os == Moved) = admit ()
+let dr_029_ownership_state_cases (p_os: ownership_state) : Lemma (((exists p_t. p_os == Owned p_t)) \/ ((exists p_t. p_os == MutBorrowed p_t)) \/ ((exists p_ts. p_os == SharedBorrowed p_ts)) \/ p_os == Moved) = admit ()
 
 (* DR_030_valid_borrow_respects_ownership (matches Coq: Theorem DR_030_valid_borrow_respects_ownership) *)
 let dr_030_valid_borrow_respects_ownership (p_om: _) (p_l: _) (p_m: _) (p_t: _) : Lemma (requires (valid_borrow p_om p_l p_m p_t == true)) (ensures (~(p_om p_l == None))) = admit ()
@@ -180,7 +180,7 @@ let dr_032_rwlock_readers_nonneg (p_rw: _) : Lemma (p_rw.f_rwlock_readers >= 0) 
 let dr_033_mutex_acquire_release_cycle (p_t: _) : Lemma ((exists p_m. mutex_acquire init_mutex p_t == Some m_) /\ mutex_release m_ p_t == Some init_mutex) = admit ()
 
 (* DR_034_access_mode_cases (matches Coq: Theorem DR_034_access_mode_cases) *)
-let dr_034_access_mode_cases (p_m: _) (p_accessmode: _) : Lemma (p_m == Exclusive \/ p_m == Shared \/ p_m == NoAccess) = admit ()
+let dr_034_access_mode_cases (p_m: access_mode) : Lemma (p_m == Exclusive \/ p_m == Shared \/ p_m == NoAccess) = admit ()
 
 (* DR_035_no_concurrent_exclusive (matches Coq: Theorem DR_035_no_concurrent_exclusive) *)
 let dr_035_no_concurrent_exclusive (p_as_: _) (p_t1: _) (p_t2: _) (p_l: _) : Lemma (requires (well_formed_access p_as_ == true /\ ~(p_t1 == p_t2) /\ p_as_ p_t1 p_l == Some Exclusive)) (ensures (~(p_as_ p_t2 p_l == Some Exclusive))) = admit ()

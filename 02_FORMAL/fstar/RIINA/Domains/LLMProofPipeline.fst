@@ -138,16 +138,13 @@ let invalid_mismatch_rejected_obligation () : Tot bool = true
 let invalid_mismatch_rejected_lemma () : Lemma (requires True) (ensures (invalid_mismatch_rejected_obligation () == invalid_mismatch_rejected_obligation ())) = ()
 
 (* nth_error_insert (matches Coq: Lemma nth_error_insert) *)
-let nth_error_insert_obligation () : Tot bool = true
-let nth_error_insert_lemma () : Lemma (requires True) (ensures (nth_error_insert_obligation () == nth_error_insert_obligation ())) = ()
+let nth_error_insert (p_ctx: nat) (p_n: nat) (p_pos: nat) (p_a: formula) : Lemma (requires (p_pos <= p_n)) (ensures (nth_error p_ctx p_n == nth_error (firstn p_pos p_ctx ++ p_a :: skipn p_pos p_ctx) ((p_n + 1)))) = admit ()
 
 (* weakening_derives (matches Coq: Lemma weakening_derives) *)
-let weakening_derives_obligation () : Tot bool = true
-let weakening_derives_lemma () : Lemma (requires True) (ensures (weakening_derives_obligation () == weakening_derives_obligation ())) = ()
+let weakening_derives (p_ctx: _) (p_f: _) : Lemma (requires (derives p_ctx p_f == true)) (ensures ((forall (a: _). derives (p_ctx ++ [a]) p_f == true))) = admit ()
 
 (* weakening (matches Coq: Theorem weakening) *)
-let weakening_obligation () : Tot bool = true
-let weakening_lemma () : Lemma (requires True) (ensures (weakening_obligation () == weakening_obligation ())) = ()
+let weakening (p_ctx: _) (p_f: _) (p_a: _) : Lemma (requires (derives p_ctx p_f == true)) (ensures (derives (p_ctx ++ [p_a]) p_f == true)) = admit ()
 
 (* pipeline_soundness (matches Coq: Theorem pipeline_soundness) *)
 let pipeline_soundness_obligation () : Tot bool = true

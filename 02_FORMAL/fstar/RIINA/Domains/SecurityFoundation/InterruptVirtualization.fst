@@ -124,12 +124,10 @@ let cross_vm_requires_ipi (p_vm1: virtual_machine) (p_vm2: virtual_machine) (p_i
 let ipi_authorization_directional (p_st: interrupt_state) (p_vm1: virtual_machine) (p_vm2: virtual_machine) : Lemma (requires (ipi_authorized p_st (p_vm1.f_vm_id) (p_vm2.f_vm_id) == true /\ ~(ipi_authorized p_st (p_vm2.f_vm_id) (p_vm1.f_vm_id) == true))) (ensures (~(can_inject p_st p_vm2 (IRQ 0) p_vm1 == true) \/ p_vm1.f_vm_id == p_vm2.f_vm_id)) = admit ()
 
 (* empty_ipi_blocks_cross_vm (matches Coq: Theorem empty_ipi_blocks_cross_vm) *)
-let empty_ipi_blocks_cross_vm_obligation () : Tot bool = true
-let empty_ipi_blocks_cross_vm_lemma () : Lemma (requires True) (ensures (empty_ipi_blocks_cross_vm_obligation () == empty_ipi_blocks_cross_vm_obligation ())) = ()
+let empty_ipi_blocks_cross_vm (p_st: interrupt_state) (p_vm1: virtual_machine) (p_vm2: virtual_machine) (p_irq: interrupt) : Lemma (requires (p_st.f_ipi_allowed == [] /\ ~(p_vm1.f_vm_id == p_vm2.f_vm_id))) (ensures (~(can_inject p_st p_vm1 p_irq p_vm2 == true))) = admit ()
 
 (* empty_assignments_blocks_device_irqs (matches Coq: Theorem empty_assignments_blocks_device_irqs) *)
-let empty_assignments_blocks_device_irqs_obligation () : Tot bool = true
-let empty_assignments_blocks_device_irqs_lemma () : Lemma (requires True) (ensures (empty_assignments_blocks_device_irqs_obligation () == empty_assignments_blocks_device_irqs_obligation ())) = ()
+let empty_assignments_blocks_device_irqs (p_st: interrupt_state) (p_irq: nat) (p_vm: virtual_machine) : Lemma (requires (p_st.f_irq_assignments == [])) (ensures (~(injects_interrupt p_st (DeviceSource p_irq) p_vm == true))) = admit ()
 
 (* irq_assignment_deterministic (matches Coq: Theorem irq_assignment_deterministic) *)
 let irq_assignment_deterministic (p_st: interrupt_state) (p_irq: nat) (p_vm1: vm_id) (p_vm2: vm_id) : Lemma (requires (find_vm_for_irq (p_st.f_irq_assignments) p_irq == Some p_vm1 /\ find_vm_for_irq (p_st.f_irq_assignments) p_irq == Some p_vm2)) (ensures (p_vm1 == p_vm2)) = admit ()

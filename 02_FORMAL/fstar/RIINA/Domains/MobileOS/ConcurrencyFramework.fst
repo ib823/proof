@@ -160,19 +160,16 @@ let no_deadlock (p_program: nat) : Lemma (requires (well_typed p_program == true
 let no_data_race (p_program: nat) : Lemma (requires (well_typed p_program == true)) (ensures (~(has_data_race p_program == true))) = admit ()
 
 (* actor_isolation_complete (matches Coq: Theorem actor_isolation_complete) *)
-let actor_isolation_complete_obligation () : Tot bool = true
-let actor_isolation_complete_lemma () : Lemma (requires True) (ensures (actor_isolation_complete_obligation () == actor_isolation_complete_obligation ())) = ()
+let actor_isolation_complete (p_actor1: actor) (p_actor2: actor) (p_data: nat) : Lemma (requires (~(p_actor1.f_actor_id == p_actor2.f_actor_id) /\ owns p_actor1 p_data == true /\ ~(List.Tot.memP p_data (p_actor2.f_actor_owned_data)))) (ensures (~(owns p_actor2 p_data == true))) = admit ()
 
 (* ownership_exclusive (matches Coq: Theorem ownership_exclusive) *)
-let ownership_exclusive_obligation () : Tot bool = true
-let ownership_exclusive_lemma () : Lemma (requires True) (ensures (ownership_exclusive_obligation () == ownership_exclusive_obligation ())) = ()
+let ownership_exclusive (p_a1: actor) (p_a2: actor) (p_d: nat) : Lemma (requires (owns p_a1 p_d == true /\ ~(p_a1.f_actor_owned_data == p_a2.f_actor_owned_data) /\ ~(List.Tot.memP p_d (p_a2.f_actor_owned_data)))) (ensures (~(owns p_a2 p_d == true))) = admit ()
 
 (* well_typed_all_annotated (matches Coq: Theorem well_typed_all_annotated) *)
 let well_typed_all_annotated (p_program: nat) : Lemma (requires (well_typed p_program == true)) (ensures (all_typed p_program == true)) = admit ()
 
 (* lock_order_no_cycles (matches Coq: Theorem lock_order_no_cycles) *)
-let lock_order_no_cycles_obligation () : Tot bool = true
-let lock_order_no_cycles_lemma () : Lemma (requires True) (ensures (lock_order_no_cycles_obligation () == lock_order_no_cycles_obligation ())) = ()
+let lock_order_no_cycles (p_acquired: (list resource)) : Lemma (requires (respects_lock_order p_acquired == true /\ (forall (r: _). List.Tot.memP r p_acquired))) (ensures (~(((exists p_r. List.Tot.memP r_ p_acquired) /\ r.f_resource_order < r_.f_resource_order /\ r_.f_resource_order < r.f_resource_order)))) = admit ()
 
 (* deadlock_free (matches Coq: Theorem deadlock_free) *)
 let deadlock_free (p_program: nat) : Lemma (requires (well_typed p_program == true)) (ensures (~(can_deadlock p_program == true))) = admit ()
@@ -203,8 +200,7 @@ let barrier_synchronization_complete (p_b: barrier) : Lemma (requires (well_form
 let future_resolved_once (p_f: future) : Lemma (requires (well_formed_future p_f == true)) (ensures (p_f.f_future_resolve_count <= 1)) = admit ()
 
 (* actor_message_ordered (matches Coq: Theorem actor_message_ordered) *)
-let actor_message_ordered_obligation () : Tot bool = true
-let actor_message_ordered_lemma () : Lemma (requires True) (ensures (actor_message_ordered_obligation () == actor_message_ordered_obligation ())) = ()
+let actor_message_ordered (p_a: ext_actor) (p_seq1: nat) (p_seq2: nat) (p_m1: nat) (p_m2: nat) (p_i: nat) (p_j: nat) : Lemma (requires (nth_error (p_a.f_ea_mailbox) p_i == Some (p_seq1, p_m1) /\ nth_error (p_a.f_ea_mailbox) p_j == Some (p_seq2, p_m2) /\ p_i < p_j /\ p_seq1 <= p_seq2)) (ensures (p_seq1 <= p_seq2)) = admit ()
 
 (* channel_bounded (matches Coq: Theorem channel_bounded) *)
 let channel_bounded (p_c: channel) : Lemma (requires (well_formed_channel p_c == true)) (ensures (length (p_c.f_chan_buffer) <= p_c.f_chan_capacity)) = admit ()

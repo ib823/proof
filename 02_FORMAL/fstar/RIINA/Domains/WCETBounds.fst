@@ -256,8 +256,7 @@ let perf_001_13_parallel_wcet_bound (p_t1: _) (p_t2: _) : Lemma (parallel_wcet p
 let perf_001_13_parallel_wcet_tight (p_t1: _) (p_t2: _) : Lemma (parallel_wcet p_t1 p_t2 == p_t1 \/ parallel_wcet p_t1 p_t2 == p_t2) = admit ()
 
 (* PERF_001_13_parallel_list_bound (matches Coq: Theorem PERF_001_13_parallel_list_bound) *)
-let perf_001_13_parallel_list_bound_obligation () : Tot bool = true
-let perf_001_13_parallel_list_bound_lemma () : Lemma (requires True) (ensures (perf_001_13_parallel_list_bound_obligation () == perf_001_13_parallel_list_bound_obligation ())) = ()
+let perf_001_13_parallel_list_bound (p_times: _) (p_t: _) : Lemma (requires (List.Tot.memP p_t p_times)) (ensures (p_t <= parallel_wcet_list p_times)) = admit ()
 
 (* PERF_001_14_safe_wcet_margin (matches Coq: Theorem PERF_001_14_safe_wcet_margin) *)
 let perf_001_14_safe_wcet_margin (p_hw: _) (p_ctx: _) (p_s: _) : Lemma (requires (hw_wellformed p_hw == true)) (ensures (actual_time p_hw p_ctx p_s <= wcet p_hw p_s)) = admit ()
@@ -272,12 +271,10 @@ let perf_001_15_schedulability_check (p_tasks: _) : Lemma (requires (total_utili
 let perf_001_15_utilization_monotonic (p_t: _) (p_tasks: _) : Lemma (total_utilization p_tasks <= total_utilization (p_t :: p_tasks)) = admit ()
 
 (* PERF_001_15_empty_schedulable (matches Coq: Theorem PERF_001_15_empty_schedulable) *)
-let perf_001_15_empty_schedulable_obligation () : Tot bool = true
-let perf_001_15_empty_schedulable_lemma () : Lemma (requires True) (ensures (perf_001_15_empty_schedulable_obligation () == perf_001_15_empty_schedulable_obligation ())) = ()
+let perf_001_15_empty_schedulable () : Lemma (schedulable [] == true) = admit ()
 
 (* PERF_001_15_single_task_schedulable (matches Coq: Theorem PERF_001_15_single_task_schedulable) *)
-let perf_001_15_single_task_schedulable_obligation () : Tot bool = true
-let perf_001_15_single_task_schedulable_lemma () : Lemma (requires True) (ensures (perf_001_15_single_task_schedulable_obligation () == perf_001_15_single_task_schedulable_obligation ())) = ()
+let perf_001_15_single_task_schedulable (p_t: _) : Lemma (requires (utilization p_t <= utilization_bound)) (ensures (schedulable [p_t] == true)) = admit ()
 
 (* PERF_001_15_deadline_feasibility (matches Coq: Theorem PERF_001_15_deadline_feasibility) *)
 let perf_001_15_deadline_feasibility (p_t: _) : Lemma (p_t.f_task_wcet <= p_t.f_task_deadline /\ p_t.f_task_wcet <= p_t.f_task_period) = admit ()

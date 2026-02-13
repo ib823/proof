@@ -328,30 +328,25 @@ let rlwe_secure (p_r: rlwe_config) : Tot bool =
 let riina_rlwe : rlwe_config = {f_rlwe_ring_degree=2048; f_rlwe_modulus=32769; f_rlwe_error_width=8; f_rlwe_ntt_compatible=true}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff_obligation () : Tot bool = true
-let andb_true_iff_lemma () : Lemma (requires True) (ensures (andb_true_iff_obligation () == andb_true_iff_obligation ())) = ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff_obligation () : Tot bool = true
-let andb3_true_iff_lemma () : Lemma (requires True) (ensures (andb3_true_iff_obligation () == andb3_true_iff_obligation ())) = ()
+let andb3_true_iff (p_a: bool) (p_b: bool) (p_c: bool) : Lemma (p_a && p_b && p_c == true <==> p_a == true /\ p_b == true /\ p_c == true) = admit ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff_obligation () : Tot bool = true
-let negb_true_iff_lemma () : Lemma (requires True) (ensures (negb_true_iff_obligation () == negb_true_iff_obligation ())) = ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le_obligation () : Tot bool = true
-let leb_le_lemma () : Lemma (requires True) (ensures (leb_le_obligation () == leb_le_obligation ())) = ()
+let leb_le (p_n: nat) (p_m: nat) : Lemma ((p_n <=? p_m) == true <==> p_n <= p_m) = admit ()
 
 (* ltb_lt (matches Coq: Lemma ltb_lt) *)
-let ltb_lt_obligation () : Tot bool = true
-let ltb_lt_lemma () : Lemma (requires True) (ensures (ltb_lt_obligation () == ltb_lt_obligation ())) = ()
+let ltb_lt (p_n: nat) (p_m: nat) : Lemma ((p_n <? p_m) == true <==> p_n < p_m) = admit ()
 
 (* mult_le_compat (matches Coq: Lemma mult_le_compat) *)
-let mult_le_compat (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_nat: _) : Lemma (requires (p_a <= p_b /\ p_c <= p_d)) (ensures (p_a * p_c <= p_b * p_d)) = admit ()
+let mult_le_compat (p_a: nat) (p_b: nat) (p_c: nat) (p_d: nat) : Lemma (requires (p_a <= p_b /\ p_c <= p_d)) (ensures (p_a * p_c <= p_b * p_d)) = admit ()
 
 (* add_le_compat (matches Coq: Lemma add_le_compat) *)
-let add_le_compat (p_a: _) (p_b: _) (p_c: _) (p_d: _) (p_nat: _) : Lemma (requires (p_a <= p_b /\ p_c <= p_d)) (ensures (p_a + p_c <= p_b + p_d)) = admit ()
+let add_le_compat (p_a: nat) (p_b: nat) (p_c: nat) (p_d: nat) : Lemma (requires (p_a <= p_b /\ p_c <= p_d)) (ensures (p_a + p_c <= p_b + p_d)) = admit ()
 
 (* FHE_001 (matches Coq: Theorem FHE_001) *)
 let fhe_001 () : Lemma (ops_fully_homomorphic riina_fhe_ops == true) = admit ()

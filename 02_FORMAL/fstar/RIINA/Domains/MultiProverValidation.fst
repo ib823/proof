@@ -131,8 +131,7 @@ let confidence_ge (p_c1: confidence) (p_c2: confidence) : Tot bool =
 let formula_eqb_refl (p_f: _) : Lemma (formula_eqb p_f p_f == true) = admit ()
 
 (* formula_eqb_eq (matches Coq: Lemma formula_eqb_eq) *)
-let formula_eqb_eq_obligation () : Tot bool = true
-let formula_eqb_eq_lemma () : Lemma (requires True) (ensures (formula_eqb_eq_obligation () == formula_eqb_eq_obligation ())) = ()
+let formula_eqb_eq (p_f1: _) (p_f2: _) : Lemma (formula_eqb p_f1 p_f2 == true <==> p_f1 == p_f2) = admit ()
 
 (* validator_soundness_atomic (matches Coq: Theorem validator_soundness_atomic) *)
 let validator_soundness_atomic (p_c: _) (p_n: _) : Lemma (requires (validate_atomic p_c p_n == true)) (ensures (cert_formula p_c == FAtom p_n)) = admit ()
@@ -156,7 +155,7 @@ let certificate_composition (p_ca: _) (p_cab: _) (p_a: _) (p_b: _) : Lemma (requ
 let validator_deterministic (p_asms: _) (p_c: _) (p_f: _) (p_r1: _) (p_r2: _) : Lemma (requires (validate p_asms p_c p_f == p_r1 /\ validate p_asms p_c p_f == p_r2)) (ensures (p_r1 == p_r2)) = admit ()
 
 (* formula_eq_dec (matches Coq: Theorem formula_eq_dec) *)
-let formula_eq_dec (p_f1: _) (p_f2: _) (p_formula: _) : Lemma ({p_f1 == f2_ + {p_f1 <> f2_) = admit ()
+let formula_eq_dec (p_f1: formula) (p_f2: formula) : Lemma ({p_f1 == f2_ + {p_f1 <> f2_) = admit ()
 
 (* translate_to_A_injective (matches Coq: Theorem translate_to_A_injective) *)
 let translate_to_a_injective (p_f1: _) (p_f2: _) : Lemma (requires (translate_to_a p_f1 == translate_to_a p_f2)) (ensures (p_f1 == p_f2)) = admit ()

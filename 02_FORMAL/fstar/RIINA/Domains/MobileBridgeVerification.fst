@@ -214,8 +214,7 @@ let bridge_007_unmarshal_swift_type_safe (p_sv: _) (p_rv: _) : Lemma (requires (
 let bridge_007_rvalue_string_swift_roundtrip (p_n: _) : Lemma ((exists p_sv. (exists p_rv. marshal_swift (RVString p_n) p_sv == true)) /\ unmarshal_swift sv rv == true /\ rv == RVString p_n) = admit ()
 
 (* bridge_008_pure_callback_safe (matches Coq: Theorem bridge_008_pure_callback_safe) *)
-let bridge_008_pure_callback_safe_obligation () : Tot bool = true
-let bridge_008_pure_callback_safe_lemma () : Lemma (requires True) (ensures (bridge_008_pure_callback_safe_obligation () == bridge_008_pure_callback_safe_obligation ())) = ()
+let bridge_008_pure_callback_safe (p_id: _) : Lemma (callback_safe (mkcallback p_id [] BPublic BPure) == true) = admit ()
 
 (* bridge_008_public_args_safe (matches Coq: Theorem bridge_008_public_args_safe) *)
 let bridge_008_public_args_safe (p_id: _) (p_n: _) (p_eff: _) : Lemma (callback_args_safe (mkcallback p_id (repeat BPublic p_n) BPublic p_eff) == true) = admit ()
@@ -227,5 +226,4 @@ let bridge_008_secret_ret_rejected (p_id: _) (p_args: _) (p_eff: _) : Lemma (cal
 let bridge_008_safe_not_rejected (p_cb: _) : Lemma (requires (callback_safe p_cb == true)) (ensures (~((cb_ret_label p_cb == BSecret)))) = admit ()
 
 (* bridge_008_no_secret_through_safe_callback (matches Coq: Theorem bridge_008_no_secret_through_safe_callback) *)
-let bridge_008_no_secret_through_safe_callback_obligation () : Tot bool = true
-let bridge_008_no_secret_through_safe_callback_lemma () : Lemma (requires True) (ensures (bridge_008_no_secret_through_safe_callback_obligation () == bridge_008_no_secret_through_safe_callback_obligation ())) = ()
+let bridge_008_no_secret_through_safe_callback (p_cb: _) : Lemma (requires (callback_safe p_cb == true)) (ensures (cb_ret_label p_cb == BPublic /\ ((forall (l: _). List.Tot.memP l (cb_arg_labels p_cb))))) = admit ()

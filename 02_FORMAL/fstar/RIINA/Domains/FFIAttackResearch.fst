@@ -119,8 +119,7 @@ let ptr_size_constant (p_t: _) : Lemma (ffi_type_size (FFI_Ptr p_t) == 8) = admi
 let array_size_correct (p_elem: _) (p_n: _) : Lemma (ffi_type_size (FFI_Array p_elem p_n) == p_n * ffi_type_size p_elem) = admit ()
 
 (* empty_struct_zero_size (matches Coq: Theorem empty_struct_zero_size) *)
-let empty_struct_zero_size_obligation () : Tot bool = true
-let empty_struct_zero_size_lemma () : Lemma (requires True) (ensures (empty_struct_zero_size_obligation () == empty_struct_zero_size_obligation ())) = ()
+let empty_struct_zero_size () : Lemma (ffi_type_size (FFI_Struct []) == 0) = admit ()
 
 (* marshal_preserves_capacity (matches Coq: Theorem marshal_preserves_capacity) *)
 let marshal_preserves_capacity (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_capacity == p_b.f_buf_capacity)) = admit ()

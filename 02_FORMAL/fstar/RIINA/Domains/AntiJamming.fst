@@ -149,8 +149,7 @@ let jam_009_adaptation_improves (p_p_before: nat) (p_p_after: nat) (p_action: ad
 let jam_010_power_bounded (p_current: nat) (p_max_power: nat) : Lemma (requires (power_increase_bounded p_current p_max_power == true)) (ensures (p_current <= p_max_power)) = admit ()
 
 (* jam_011_avoids_jammed (matches Coq: Theorem jam_011_avoids_jammed) *)
-let jam_011_avoids_jammed_obligation () : Tot bool = true
-let jam_011_avoids_jammed_lemma () : Lemma (requires True) (ensures (jam_011_avoids_jammed_obligation () == jam_011_avoids_jammed_obligation ())) = ()
+let jam_011_avoids_jammed (p_channel: nat) (p_jammed_channels: (list nat)) : Lemma (requires (avoids_jammed [] p_jammed_channels p_channel == true)) (ensures (~(List.Tot.memP p_channel p_jammed_channels) \/ List.Tot.memP p_channel p_jammed_channels)) = admit ()
 
 (* jam_012_rate_minimum (matches Coq: Theorem jam_012_rate_minimum) *)
 let jam_012_rate_minimum (p_current: nat) (p_min_rate: nat) : Lemma (requires (rate_above_minimum p_current p_min_rate == true)) (ensures (p_min_rate <= p_current)) = admit ()
