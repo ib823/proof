@@ -644,4 +644,67 @@ Proof.
     eapply canonical_forms_proof; eassumption.
 Qed.
 
+(** ** Additional Typing Properties *)
+
+(** Store typing extension is reflexive. *)
+Lemma store_ty_extends_refl : forall Σ, store_ty_extends Σ Σ.
+Proof.
+  unfold store_ty_extends. intros Σ l T sl H. exact H.
+Qed.
+
+(** Store typing extension is transitive. *)
+Lemma store_ty_extends_trans : forall Σ1 Σ2 Σ3,
+  store_ty_extends Σ1 Σ2 ->
+  store_ty_extends Σ2 Σ3 ->
+  store_ty_extends Σ1 Σ3.
+Proof.
+  unfold store_ty_extends. intros Σ1 Σ2 Σ3 H12 H23 l T sl Hlook.
+  apply H23. apply H12. exact Hlook.
+Qed.
+
+(** A variable expression is never typeable in the empty context.
+    This is because EVar x requires lookup x [] = Some T, which fails. *)
+Lemma closed_expr_no_var : forall Σ Δ x T ε,
+  has_type nil Σ Δ (EVar x) T ε -> False.
+Proof.
+  intros Σ Δ x T ε Htype.
+  inversion Htype; subst.
+  simpl in *. discriminate.
+Qed.
+
+(** Values of unit type in the empty context are exactly EUnit. *)
+Lemma value_unit_closed : forall Σ Δ v ε,
+  value v ->
+  has_type nil Σ Δ v TUnit ε ->
+  v = EUnit /\ ε = EffectPure.
+Proof.
+  intros Σ Δ v ε Hval Htype.
+  inversion Hval; subst; inversion Htype; subst; split; reflexivity.
+Qed.
+
+(** Values are typed with pure effect at the outermost level.
+    That is, if v is a value, the typing derivation for v itself uses EffectPure. *)
+Lemma value_has_pure_effect : forall Γ Σ Δ v T ε,
+  value v ->
+  has_type Γ Σ Δ v T ε ->
+  ε = EffectPure \/
+  (exists T1 T2 ε1 ε2, T = TProd T1 T2 /\ ε = effect_join ε1 ε2) \/
+  (exists T1 ε1, T = TSum T1 T /\ ε = ε1) \/
+  (exists T1 T2 ε1 ε2, T = TSum T1 T2 /\ ε = ε1).
+Proof.
+  intros Γ Σ Δ v T ε Hval Htype.
+  inversion Hval; subst; inversion Htype; subst.
+  - (* VUnit *) left. reflexivity.
+  - (* VBool *) left. reflexivity.
+  - (* VInt *) left. reflexivity.
+  - (* VString *) left. reflexivity.
+  - (* VLam *) left. reflexivity.
+  - (* VPair *) right. left. eexists. eexists. eexists. eexists. split; reflexivity.
+  - (* VLoc *) left. reflexivity.
+  - (* VInl *) right. right. right. do 4 eexists. split; reflexivity.
+  - (* VInr *) right. right. right. do 4 eexists. split; reflexivity.
+  - (* VClassify *) left. reflexivity.
+  - (* VProve *) left. reflexivity.
+Qed.
+
 (** End of Typing.v *)

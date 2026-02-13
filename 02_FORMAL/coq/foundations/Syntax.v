@@ -513,6 +513,118 @@ Fixpoint subst (x : ident) (v : expr) (e : expr) : expr :=
 
 Notation "[ x := v ] e" := (subst x v e) (at level 20).
 
+(** ** Security Lattice Properties *)
+
+Lemma sec_leq_refl : forall l, sec_leq l l.
+Proof. intros l. unfold sec_leq. apply Nat.le_refl. Qed.
+
+Lemma sec_leq_trans : forall l1 l2 l3,
+  sec_leq l1 l2 -> sec_leq l2 l3 -> sec_leq l1 l3.
+Proof.
+  intros l1 l2 l3 H12 H23. unfold sec_leq in *.
+  eapply Nat.le_trans; eassumption.
+Qed.
+
+Lemma sec_leq_antisym : forall l1 l2,
+  sec_leq l1 l2 -> sec_leq l2 l1 -> l1 = l2.
+Proof.
+  intros l1 l2 H12 H21. unfold sec_leq in *.
+  assert (sec_level_num l1 = sec_level_num l2) by (apply Nat.le_antisymm; assumption).
+  destruct l1; destruct l2; simpl in H; try reflexivity; discriminate.
+Qed.
+
+Lemma sec_leq_total : forall l1 l2,
+  sec_leq l1 l2 \/ sec_leq l2 l1.
+Proof.
+  intros l1 l2. unfold sec_leq.
+  destruct (Nat.le_ge_cases (sec_level_num l1) (sec_level_num l2)); auto.
+Qed.
+
+Lemma sec_leq_public_bottom : forall l, sec_leq LPublic l.
+Proof. intros l. unfold sec_leq. simpl. apply Nat.le_0_l. Qed.
+
+Lemma sec_leq_secret_top : forall l, sec_leq l LSecret.
+Proof. intros l. unfold sec_leq. simpl. destruct l; simpl; repeat constructor. Qed.
+
+Lemma sec_leq_dec_correct : forall l1 l2,
+  sec_leq_dec l1 l2 = true <-> sec_leq l1 l2.
+Proof.
+  intros l1 l2. unfold sec_leq_dec, sec_leq.
+  split; apply Nat.leb_le.
+Qed.
+
+Lemma sec_join_ub_l : forall l1 l2, sec_leq l1 (sec_join l1 l2).
+Proof.
+  intros l1 l2. unfold sec_join, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.leb_le in H. exact H.
+  - apply Nat.le_refl.
+Qed.
+
+Lemma sec_join_ub_r : forall l1 l2, sec_leq l2 (sec_join l1 l2).
+Proof.
+  intros l1 l2. unfold sec_join, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.le_refl.
+  - apply Nat.leb_nle in H.
+    apply Nat.lt_le_incl. apply Nat.nle_gt. exact H.
+Qed.
+
+Lemma sec_meet_lb_l : forall l1 l2, sec_leq (sec_meet l1 l2) l1.
+Proof.
+  intros l1 l2. unfold sec_meet, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.le_refl.
+  - apply Nat.leb_nle in H.
+    apply Nat.lt_le_incl. apply Nat.nle_gt. exact H.
+Qed.
+
+Lemma sec_meet_lb_r : forall l1 l2, sec_leq (sec_meet l1 l2) l2.
+Proof.
+  intros l1 l2. unfold sec_meet, sec_leq.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H.
+  - apply Nat.leb_le in H. exact H.
+  - apply Nat.le_refl.
+Qed.
+
+Lemma sec_join_comm : forall l1 l2, sec_join l1 l2 = sec_join l2 l1.
+Proof.
+  intros l1 l2. unfold sec_join.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H12;
+  destruct (Nat.leb (sec_level_num l2) (sec_level_num l1)) eqn:H21.
+  - apply Nat.leb_le in H12. apply Nat.leb_le in H21.
+    apply sec_leq_antisym; unfold sec_leq; assumption.
+  - reflexivity.
+  - reflexivity.
+  - apply Nat.leb_nle in H12. apply Nat.leb_nle in H21.
+    exfalso. apply H12. apply Nat.lt_le_incl. apply Nat.nle_gt. exact H21.
+Qed.
+
+Lemma sec_meet_comm : forall l1 l2, sec_meet l1 l2 = sec_meet l2 l1.
+Proof.
+  intros l1 l2. unfold sec_meet.
+  destruct (Nat.leb (sec_level_num l1) (sec_level_num l2)) eqn:H12;
+  destruct (Nat.leb (sec_level_num l2) (sec_level_num l1)) eqn:H21.
+  - apply Nat.leb_le in H12. apply Nat.leb_le in H21.
+    apply sec_leq_antisym; unfold sec_leq; assumption.
+  - reflexivity.
+  - reflexivity.
+  - apply Nat.leb_nle in H12. apply Nat.leb_nle in H21.
+    exfalso. apply H12. apply Nat.lt_le_incl. apply Nat.nle_gt. exact H21.
+Qed.
+
+Lemma sec_join_idem : forall l, sec_join l l = l.
+Proof. intros l. unfold sec_join. rewrite Nat.leb_refl. reflexivity. Qed.
+
+Lemma sec_meet_idem : forall l, sec_meet l l = l.
+Proof. intros l. unfold sec_meet. rewrite Nat.leb_refl. reflexivity. Qed.
+
+(** Session duality is an involution *)
+Theorem session_dual_involutive : forall s, session_dual (session_dual s) = s.
+Proof.
+  induction s; simpl; try rewrite IHs; try rewrite IHs1; try rewrite IHs2; reflexivity.
+Qed.
+
 (** ** Basic Lemmas *)
 
 Definition declass_ok (e1 e2 : expr) : Prop :=

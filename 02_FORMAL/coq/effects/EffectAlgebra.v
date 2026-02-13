@@ -103,4 +103,69 @@ Proof.
   - assumption.
 Qed.
 
+(** ** Additional Algebraic Properties *)
+
+(** Effect join is idempotent: joining an effect with itself yields itself. *)
+Lemma effect_join_idem : forall e, effect_join e e = e.
+Proof.
+  intros e. unfold effect_join.
+  rewrite Nat.ltb_irrefl. reflexivity.
+Qed.
+
+(** The effect ordering is total: any two effects are comparable. *)
+Lemma effect_leq_total : forall e1 e2,
+  effect_leq e1 e2 \/ effect_leq e2 e1.
+Proof.
+  intros e1 e2. unfold effect_leq.
+  destruct (le_gt_dec (effect_level e1) (effect_level e2)).
+  - left. assumption.
+  - right. lia.
+Qed.
+
+(** Decidability of effect ordering. *)
+Lemma effect_leq_dec : forall e1 e2,
+  {effect_leq e1 e2} + {~ effect_leq e1 e2}.
+Proof.
+  intros e1 e2. unfold effect_leq.
+  apply le_dec.
+Qed.
+
+(** EffPure is the bottom element of the effect lattice. *)
+Lemma effect_pure_bottom : forall e, effect_leq EffPure e.
+Proof.
+  intros e. unfold effect_leq. simpl. apply Nat.le_0_l.
+Qed.
+
+(** Joining with EffPure from the left (generalized statement). *)
+Lemma effect_join_pure_l_general : forall e,
+  effect_leq EffPure e -> effect_join EffPure e = e.
+Proof.
+  intros e _. apply effect_join_pure_l.
+Qed.
+
+(** Joining with EffPure from the right (generalized statement). *)
+Lemma effect_join_pure_r_general : forall e,
+  effect_leq EffPure e -> effect_join e EffPure = e.
+Proof.
+  intros e _. apply effect_join_pure_r.
+Qed.
+
+(** Effect level is injective: distinct levels imply distinct effects.
+    This holds because each effect has a unique level (0 through 16). *)
+Lemma effect_level_injective : forall e1 e2,
+  effect_level e1 = effect_level e2 -> e1 = e2.
+Proof.
+  intros e1 e2.
+  destruct e1; destruct e2; simpl; intro H; try reflexivity; discriminate.
+Qed.
+
+(** Effect join monotonicity: if e1 <= e2 then join(e1, e3) <= join(e2, e3). *)
+Lemma effect_join_mono_l : forall e1 e2 e3,
+  effect_leq e1 e2 -> effect_leq (effect_join e1 e3) (effect_join e2 e3).
+Proof.
+  intros e1 e2 e3 H12. unfold effect_leq in *.
+  repeat rewrite effect_level_join.
+  apply Nat.max_le_compat_r. assumption.
+Qed.
+
 (** End of EffectAlgebra.v *)

@@ -586,4 +586,72 @@ Proof.
     apply (step_preserves_store_values e1 st1 ctx1 e2 st2 ctx2 H Hst).
 Qed.
 
+(** ** Multi-step Structural Properties *)
+
+(** Multi-step transitivity: if cfg1 -->* cfg2 and cfg2 -->* cfg3
+    then cfg1 -->* cfg3. This is the fundamental composition property
+    for reasoning about program evaluation sequences. *)
+Theorem multi_step_trans : forall cfg1 cfg2 cfg3,
+  multi_step cfg1 cfg2 ->
+  multi_step cfg2 cfg3 ->
+  multi_step cfg1 cfg3.
+Proof.
+  intros cfg1 cfg2 cfg3 H12 H23.
+  induction H12.
+  - exact H23.
+  - eapply MS_Step. exact H. apply IHmulti_step. exact H23.
+Qed.
+
+(** A single step embeds into multi-step. *)
+Lemma step_to_multi_step : forall cfg1 cfg2,
+  step cfg1 cfg2 ->
+  multi_step cfg1 cfg2.
+Proof.
+  intros cfg1 cfg2 Hstep.
+  eapply MS_Step. exact Hstep. apply MS_Refl.
+Qed.
+
+(** Multi-step congruence for application (function position):
+    if e1 -->* e1' then (e1 e2) -->* (e1' e2). *)
+Lemma multi_step_app1 : forall e1 e1' e2 st st' ctx ctx',
+  (e1, st, ctx) -->* (e1', st', ctx') ->
+  (EApp e1 e2, st, ctx) -->* (EApp e1' e2, st', ctx').
+Proof.
+  intros e1 e1' e2 st st' ctx ctx' Hms.
+  remember (e1, st, ctx) as cfg1 eqn:Heq1.
+  remember (e1', st', ctx') as cfg2 eqn:Heq2.
+  generalize dependent ctx'. generalize dependent st'.
+  generalize dependent e1'. generalize dependent e2.
+  generalize dependent ctx. generalize dependent st.
+  generalize dependent e1.
+  induction Hms; intros e1_0 st0 ctx0 Heq1 e2_0 e1'0 st'0 ctx'0 Heq2.
+  - inversion Heq1; inversion Heq2; subst. apply MS_Refl.
+  - subst. destruct cfg2 as [[e_mid st_mid] ctx_mid].
+    eapply MS_Step.
+    + apply ST_App1. exact H.
+    + eapply IHHms; reflexivity.
+Qed.
+
+(** Multi-step congruence for application (argument position):
+    if v1 is a value and e2 -->* e2' then (v1 e2) -->* (v1 e2'). *)
+Lemma multi_step_app2 : forall v1 e2 e2' st st' ctx ctx',
+  value v1 ->
+  (e2, st, ctx) -->* (e2', st', ctx') ->
+  (EApp v1 e2, st, ctx) -->* (EApp v1 e2', st', ctx').
+Proof.
+  intros v1 e2 e2' st st' ctx ctx' Hval Hms.
+  remember (e2, st, ctx) as cfg1 eqn:Heq1.
+  remember (e2', st', ctx') as cfg2 eqn:Heq2.
+  generalize dependent ctx'. generalize dependent st'.
+  generalize dependent e2'. generalize dependent v1.
+  generalize dependent ctx. generalize dependent st.
+  generalize dependent e2.
+  induction Hms; intros e2_0 st0 ctx0 Heq1 v1_0 Hval e2'0 st'0 ctx'0 Heq2.
+  - inversion Heq1; inversion Heq2; subst. apply MS_Refl.
+  - subst. destruct cfg2 as [[e_mid st_mid] ctx_mid].
+    eapply MS_Step.
+    + apply ST_App2. exact Hval. exact H.
+    + eapply IHHms; try reflexivity. exact Hval.
+Qed.
+
 (** End of Semantics.v *)
