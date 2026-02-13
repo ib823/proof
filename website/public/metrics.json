@@ -1,16 +1,16 @@
 {
-  "generated": "2026-02-12T16:20:43Z",
-  "generatedHuman": "February 12, 2026 at 16:20 UTC",
+  "generated": "2026-02-13T11:28:48Z",
+  "generatedHuman": "February 13, 2026 at 11:28 UTC",
   "version": "0.2.0",
   "session": 83,
   "git": {
-    "commit": "daf115ff",
+    "commit": "392445b0",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 7740,
+    "qedActive": 7773,
     "qedDeprecated": 758,
-    "qedTotal": 8498,
+    "qedTotal": 8531,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
@@ -35,7 +35,7 @@
     "sorry": 0,
     "axioms": 0,
     "files": 261,
-    "lines": 92082,
+    "lines": 92091,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
@@ -59,8 +59,8 @@
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
-    "proofs": 1586,
-    "files": 259,
+    "proofs": 1655,
+    "files": 263,
     "prover": "Verus"
   },
   "kani": {
@@ -75,7 +75,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 7231,
-    "totalProofsAllProvers": 62561,
+    "totalProofsAllProvers": 62663,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 5487,
@@ -120,7 +120,7 @@
       }
     },
     "coqTiers": {
-      "core": 463,
+      "core": 496,
       "domain": 7277,
       "domainTrivial": 773
     }
@@ -142,8 +142,8 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 856,
-    "testsVerified": 856,
+    "tests": 888,
+    "testsVerified": 888,
     "testsEstimated": 884,
     "testsSource": "cached_verified",
     "crates": 15
