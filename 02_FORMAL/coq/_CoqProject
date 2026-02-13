@@ -327,6 +327,12 @@ domains/PlatformStdlibVerification.v
 domains/BackendTraitVerification.v
 domains/BackendComposition.v
 
+# Worker F: 2025-2026 threat domain proofs (0 Admitted, 0 axioms)
+domains/TransientSchedulerAttacks.v
+domains/AgentToolSecurity.v
+domains/DDR5MemoryBus.v
+domains/DeserializationSafety.v
+
 # Worker F: Hardware + Runtime proofs (0 Admitted, 0 axioms)
 runtime/CPUModel.v
 runtime/RuntimeProof.v
