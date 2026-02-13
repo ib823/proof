@@ -825,6 +825,182 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::Pure
         ));
 
+    // ── TASK #5: CSRF Protection ──
+    // Matches Coq CSRFProtection.v (20 Qed proofs)
+    // All 5 CSRF protections: token validation, same-site cookies, origin check,
+    // referer check, double-submit pattern
+
+    // Generate CSRF token (cryptographically secure random token)
+    // Spec: CSRFProtection.v — csrf_token_validation
+    c = c.extend("csrf_generate".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Unit),
+            Box::new(Ty::String),  // Base64-encoded token
+            Effect::Random         // Cryptographic randomness required
+        ));
+    c = c.extend("csrf_jana".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Unit),
+            Box::new(Ty::String),
+            Effect::Random
+        ));
+
+    // Validate CSRF token (request token vs session token)
+    // Spec: CSRFProtection.v — csrf_double_submit
+    c = c.extend("csrf_validate".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),  // Request token
+                Box::new(Ty::String)   // Session token
+            )),
+            Box::new(Ty::Bool),        // Validation result
+            Effect::Pure
+        ));
+    c = c.extend("csrf_sahkan".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::String)
+            )),
+            Box::new(Ty::Bool),
+            Effect::Pure
+        ));
+
+    // Check origin header (same-origin policy enforcement)
+    // Spec: CSRFProtection.v — csrf_origin_check
+    c = c.extend("csrf_check_origin".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),  // Request origin
+                Box::new(Ty::String)   // Expected origin
+            )),
+            Box::new(Ty::Bool),
+            Effect::Pure
+        ));
+    c = c.extend("csrf_semak_origin".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::String)
+            )),
+            Box::new(Ty::Bool),
+            Effect::Pure
+        ));
+
+    // Check referer header
+    // Spec: CSRFProtection.v — csrf_referer_check
+    c = c.extend("csrf_check_referer".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),  // Request referer
+                Box::new(Ty::String)   // Expected referer
+            )),
+            Box::new(Ty::Bool),
+            Effect::Pure
+        ));
+    c = c.extend("csrf_semak_referer".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::String)
+            )),
+            Box::new(Ty::Bool),
+            Effect::Pure
+        ));
+
+    // ── HTTP Methods with CSRF Protection ──
+
+    // Safe GET request (no CSRF token required — safe method)
+    c = c.extend("http_get".to_string(),
+        Ty::Fn(
+            Box::new(Ty::String),  // URL only (no token needed)
+            Box::new(Ty::Any),     // Response
+            Effect::Network
+        ));
+    c = c.extend("http_dapat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::String),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+
+    // State-changing POST (CSRF token REQUIRED in type signature)
+    // Type: (URL, (body, csrf_token)) -> Response
+    // The nested pair forces callers to provide a CSRF token
+    c = c.extend("http_post".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),      // URL
+                Box::new(Ty::Prod(
+                    Box::new(Ty::Any),     // Request body
+                    Box::new(Ty::String)   // CSRF token (REQUIRED)
+                ))
+            )),
+            Box::new(Ty::Any),             // Response
+            Effect::Network
+        ));
+    c = c.extend("http_hantar".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::Prod(
+                    Box::new(Ty::Any),
+                    Box::new(Ty::String)
+                ))
+            )),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+
+    // State-changing PUT (CSRF token REQUIRED)
+    // Type: (URL, (body, csrf_token)) -> Response
+    c = c.extend("http_put".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),      // URL
+                Box::new(Ty::Prod(
+                    Box::new(Ty::Any),     // Request body
+                    Box::new(Ty::String)   // CSRF token (REQUIRED)
+                ))
+            )),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+    c = c.extend("http_kemaskini".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::Prod(
+                    Box::new(Ty::Any),
+                    Box::new(Ty::String)
+                ))
+            )),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+
+    // State-changing DELETE (CSRF token REQUIRED)
+    // Type: (URL, csrf_token) -> Response
+    // DELETE has no body, so just URL + token
+    c = c.extend("http_delete".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),  // URL
+                Box::new(Ty::String)   // CSRF token (REQUIRED)
+            )),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+    c = c.extend("http_padam".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::String)
+            )),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+
     c
 }
 
