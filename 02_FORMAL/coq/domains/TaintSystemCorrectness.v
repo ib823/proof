@@ -484,24 +484,155 @@ Proof.
 Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════ *)
-(* SECTION 8: SUBSTITUTION LEMMA (assumed for preservation)                  *)
-(* The full substitution lemma is proven in foundations/Typing.v.             *)
-(* We state it as an axiom here to keep this file self-contained.            *)
+(* SECTION 8: SUBSTITUTION LEMMA — fully proven                            *)
+(* Standard STLC substitution preservation, extended to taint/sanitize.    *)
+(* Proof follows Pierce TAPL Ch. 9 / Software Foundations structure.       *)
 (* ═══════════════════════════════════════════════════════════════════════ *)
 
-(** Substitution preserves typing — standard STLC result.
-    Full proof in foundations/Typing.v (substitution_preserves_typing).
-    Stated here for self-containment of preservation proof. *)
-Axiom substitution_preserves_typing : forall Γ x U e v T,
+(** Free variable predicate for the taint expression language *)
+Inductive appears_free_in : string -> expr -> Prop :=
+  | afi_var   : forall x, appears_free_in x (EVar x)
+  | afi_abs   : forall x y T e, x <> y -> appears_free_in x e ->
+                  appears_free_in x (EAbs y T e)
+  | afi_app1  : forall x e1 e2, appears_free_in x e1 ->
+                  appears_free_in x (EApp e1 e2)
+  | afi_app2  : forall x e1 e2, appears_free_in x e2 ->
+                  appears_free_in x (EApp e1 e2)
+  | afi_let1  : forall x y e1 e2, appears_free_in x e1 ->
+                  appears_free_in x (ELet y e1 e2)
+  | afi_let2  : forall x y e1 e2, x <> y -> appears_free_in x e2 ->
+                  appears_free_in x (ELet y e1 e2)
+  | afi_if1   : forall x e1 e2 e3, appears_free_in x e1 ->
+                  appears_free_in x (EIf e1 e2 e3)
+  | afi_if2   : forall x e1 e2 e3, appears_free_in x e2 ->
+                  appears_free_in x (EIf e1 e2 e3)
+  | afi_if3   : forall x e1 e2 e3, appears_free_in x e3 ->
+                  appears_free_in x (EIf e1 e2 e3)
+  | afi_pair1 : forall x e1 e2, appears_free_in x e1 ->
+                  appears_free_in x (EPair e1 e2)
+  | afi_pair2 : forall x e1 e2, appears_free_in x e2 ->
+                  appears_free_in x (EPair e1 e2)
+  | afi_fst   : forall x e, appears_free_in x e ->
+                  appears_free_in x (EFst e)
+  | afi_snd   : forall x e, appears_free_in x e ->
+                  appears_free_in x (ESnd e)
+  | afi_taint : forall x src e, appears_free_in x e ->
+                  appears_free_in x (ETaint src e)
+  | afi_san   : forall x san e, appears_free_in x e ->
+                  appears_free_in x (ESanitize san e)
+  | afi_sink  : forall x san e, appears_free_in x e ->
+                  appears_free_in x (EUseSink san e).
+
+Hint Constructors appears_free_in : core.
+
+(** Free variables of well-typed terms exist in the context *)
+Lemma free_in_context : forall x e Γ T,
+  appears_free_in x e -> has_type Γ e T ->
+  exists T', lookup x Γ = Some T'.
+Proof.
+  intros x e Γ T Hfree Htype.
+  induction Htype; inversion Hfree; subst; eauto;
+    match goal with
+    | [ IH : appears_free_in ?y _ -> exists _, _ = _,
+        Hafi : appears_free_in ?y _,
+        Hneq : ?y <> ?z |- _ ] =>
+        destruct (IH Hafi) as [T' Hlk];
+        simpl in Hlk; destruct (String.eqb_spec y z); [contradiction | eauto]
+    end.
+Qed.
+
+(** Context invariance: typing depends only on free variable lookups *)
+Lemma context_invariance : forall Γ Γ' e T,
+  has_type Γ e T ->
+  (forall x, appears_free_in x e -> lookup x Γ = lookup x Γ') ->
+  has_type Γ' e T.
+Proof.
+  intros Γ Γ' e T Htype. generalize dependent Γ'.
+  induction Htype; intros Γ' Heq; try (econstructor; eauto; fail).
+  - (* T_Var *)
+    constructor. rewrite <- (Heq x); auto.
+  - (* T_Abs *)
+    constructor. apply IHHtype. intros y Hy. simpl.
+    destruct (String.eqb_spec y x); [reflexivity | auto].
+  - (* T_Let *)
+    econstructor; eauto.
+    apply IHHtype2. intros y Hy. simpl.
+    destruct (String.eqb_spec y x); [reflexivity | auto].
+Qed.
+
+(** Terms typed in empty context have no free variables *)
+Corollary typable_empty_closed : forall e T x,
+  has_type nil e T -> ~ appears_free_in x e.
+Proof.
+  intros e T x Hty Hfree.
+  destruct (free_in_context _ _ _ _ Hfree Hty) as [? Hlk].
+  discriminate.
+Qed.
+
+(** Weakening from empty context to any context *)
+Lemma weakening_empty : forall Γ e T,
+  has_type nil e T -> has_type Γ e T.
+Proof.
+  intros. eapply context_invariance; eauto.
+  intros x Hfree. exfalso. eapply typable_empty_closed; eauto.
+Qed.
+
+(** Substitution preserves typing — fully proven.
+    Replaces the former axiom. Proof by induction on expression structure. *)
+Lemma substitution_preserves_typing : forall Γ x U e v T,
   has_type ((x, U) :: Γ) e T ->
   has_type nil v U ->
   has_type Γ (subst x v e) T.
-
-(* Justification: This is the standard substitution lemma for STLC,
-   proven in any PL textbook (Pierce TAPL Ch. 9, Harper PFPL Ch. 4).
-   The taint/sanitize extensions are structural wrappers that do not
-   affect the substitution proof. The axiom is justified by the full
-   proof in foundations/Typing.v. *)
+Proof.
+  intros Γ x U e.
+  generalize dependent Γ. generalize dependent U. generalize dependent x.
+  induction e; intros x U Γ v T Hty Hv;
+    simpl; inversion Hty; subst; try (econstructor; eauto; fail).
+  - (* EVar s *)
+    simpl. destruct (String.eqb_spec x s).
+    + (* x = s: substitute *)
+      subst. match goal with
+      | [ H : lookup ?s ((?s, _) :: _) = Some _ |- _ ] =>
+          simpl in H; rewrite String.eqb_refl in H;
+          injection H as <-; apply weakening_empty; assumption
+      end.
+    + (* x <> s: variable unchanged *)
+      constructor. match goal with
+      | [ H : lookup s ((?x, _) :: ?G) = Some ?T |- lookup s ?G = Some ?T ] =>
+          simpl in H; destruct (String.eqb_spec s x);
+          [subst; contradiction | assumption]
+      end.
+  - (* EAbs s t e — binder case *)
+    destruct (String.eqb_spec x s).
+    + (* x = s: shadowed, body unchanged *)
+      subst. constructor. eapply context_invariance; eauto.
+      intros y Hy. simpl.
+      destruct (String.eqb_spec y s); reflexivity.
+    + (* x <> s: substitute into body *)
+      constructor. apply IHe with U; auto.
+      eapply context_invariance; eauto.
+      intros y Hy. simpl.
+      destruct (String.eqb_spec y s).
+      * subst. simpl. destruct (String.eqb_spec s x).
+        -- exfalso; auto.
+        -- reflexivity.
+      * reflexivity.
+  - (* ELet s e1 e2 — binder case *)
+    destruct (String.eqb_spec x s).
+    + (* x = s: shadowed in e2 *)
+      subst. econstructor; eauto. eapply context_invariance; eauto.
+      intros y Hy. simpl.
+      destruct (String.eqb_spec y s); reflexivity.
+    + (* x <> s: substitute into both *)
+      econstructor; eauto. apply IHe2 with U; auto.
+      eapply context_invariance; eauto.
+      intros y Hy. simpl.
+      destruct (String.eqb_spec y s).
+      * subst. simpl. destruct (String.eqb_spec s x).
+        -- exfalso; auto.
+        -- reflexivity.
+      * reflexivity.
+Qed.
 
 (* ═══════════════════════════════════════════════════════════════════════ *)
 (* SECTION 9: PRESERVATION — types are maintained through reduction          *)
