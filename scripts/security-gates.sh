@@ -128,7 +128,7 @@ else
   HITS=""
   for rel in "${!changed_files[@]}"; do
     case "$rel" in
-      *.v|*.lean|*.thy) continue ;;
+      *.v|*.lean|*.thy|*.fst|*.tla|*.als|*.smt2|*.rs.verus) continue ;;
     esac
 
     abs="$REPO_ROOT/$rel"

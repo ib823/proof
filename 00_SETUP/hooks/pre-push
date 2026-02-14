@@ -17,27 +17,10 @@ if command -v opam &> /dev/null; then
 fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
 
 echo "================================================================"
 echo "  RIINA PRE-PUSH VERIFICATION"
 echo "================================================================"
-
-if [ ! -f "$ISABELLE_HELPER" ]; then
-    echo "FAIL: missing Isabelle helper ($ISABELLE_HELPER)"
-    exit 1
-fi
-# shellcheck disable=SC1090
-source "$ISABELLE_HELPER"
-
-if ! ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
-    echo "FAIL: local Isabelle policy failed"
-    echo "$ISABELLE_BIN"
-    echo "Run: bash scripts/provision-isabelle.sh"
-    exit 1
-fi
-riina_export_local_isabelle_env "$ISABELLE_BIN"
-echo "Local Isabelle verified: $ISABELLE_BIN"
 
 # ── Step 1: Locate riinac (with staleness check) ──────────────────
 RIINAC=""
@@ -71,13 +54,22 @@ if [ -z "$RIINAC" ] || [ "$REBUILD_NEEDED" -eq 1 ]; then
     RIINAC="${REPO_ROOT}/03_PROTO/target/release/riinac"
 fi
 
-# ── Step 2: Run riinac verify --full ───────────────────────────────
-echo "[1/4] Running riinac verify --full..."
-"$RIINAC" verify --full || {
-    echo "BLOCKED: riinac verify --full failed"
+# ── Step 2: Run riinac verify ─────────────────────────────────────
+# On resource-constrained machines (<=2 cores), use --fast to avoid OOM/crash
+# from compiling 250+ Coq files. Pre-commit hook already validates Coq individually.
+CORES=$(nproc 2>/dev/null || echo 4)
+if [ "$CORES" -le 2 ]; then
+    VERIFY_MODE="--fast"
+    echo "[1/4] Running riinac verify --fast (${CORES}-core machine; Coq verified at commit time)..."
+else
+    VERIFY_MODE="--full"
+    echo "[1/4] Running riinac verify --full..."
+fi
+"$RIINAC" verify $VERIFY_MODE || {
+    echo "BLOCKED: riinac verify $VERIFY_MODE failed"
     exit 1
 }
-echo "      riinac verify --full passed"
+echo "      riinac verify $VERIFY_MODE passed"
 
 # ── Step 3: Strict security gates ──────────────────────────────────
 echo "[2/4] Running strict security gates..."

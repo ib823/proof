@@ -152,6 +152,7 @@ domains/SpeculativeExecution.v
 domains/QuantumTypes.v
 domains/DistributedConsensus.v
 domains/MultiProverValidation.v
+domains/AIAssistedProofs.v
 domains/ASEANCompliance.v
 
 # Phase 11: Malaysia & Singapore Regulatory Compliance (Session 54)
@@ -332,6 +333,7 @@ domains/TransientSchedulerAttacks.v
 domains/AgentToolSecurity.v
 domains/DDR5MemoryBus.v
 domains/DeserializationSafety.v
+domains/RustFFISecurity.v
 
 # Worker F: Hardware + Runtime proofs (0 Admitted, 0 axioms)
 runtime/CPUModel.v
