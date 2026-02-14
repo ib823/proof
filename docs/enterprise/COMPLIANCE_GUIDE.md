@@ -1,6 +1,6 @@
 # RIINA Compliance System — User Guide
 
-**Verification:** 8,043 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,143 Coq Qed (compiled, 0 Admitted, 1 active axioms) | 10 independent provers | 888 Rust tests
 
 ## Overview
 

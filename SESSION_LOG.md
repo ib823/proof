@@ -1,6 +1,35 @@
 # Session Log
 
-**Verification:** 8,043 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,143 Coq Qed (compiled, 0 Admitted, 1 active axioms) | 10 independent provers | 888 Rust tests
+
+## 2026-02-14 (Session 86): Core Deepening + TaintSystemCorrectness
+
+**Goal:** Coq core deepening (Dimensions 1-4) + Worker E Task 7 completion + design decision resolution.
+
+### Accomplishments
+
+| Task | Description | Status |
+|------|-------------|--------|
+| Worker E Task 7 | TaintSystemCorrectness.v — 47 Qed, 0 Admitted | ✅ Done |
+| Core Deepening | TypingInversion.v — 53 Qed, 0 Admitted | ✅ Done |
+| Design Decisions | D014, D019, D020, D021 resolved | ✅ Done |
+| Metrics Update | 8,143 Qed, 255 files, 71,102 cross-prover | ✅ Done |
+
+### Key Technical Details
+
+- **typing_unique**: Proved type uniqueness for taint system; makes all attack impossibility proofs trivial
+- **value_typed_pure**: Proved values always have EffectPure (required induction for compound values)
+- **attack_impossible Ltac**: 1-line tactic for all 9 injection attack categories
+- **Full `make` and `riinac verify --full`**: All 255 files compile, 888 Rust tests pass
+
+### Files Created
+
+| File | Qed | Content |
+|------|-----|---------|
+| `properties/TypingInversion.v` | 53 | Typing inversion, value purity, determinism |
+| `domains/TaintSystemCorrectness.v` | 47 | Taint tracking, attack impossibility |
+
+---
 
 ## 2026-02-06 (Session 75): P2/P4/P5 Implementation
 

@@ -16,10 +16,10 @@
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-**Report Date:** 2026-02-06 (Session 83)
-**Verification:** 8,143 Coq Qed (compiled, 0 Admitted, 1 active axioms) | 10 independent provers | 888 Rust tests
-**Session:** 83 (Proof Depth 20+ All Files — 63,174 proofs across 3 provers, 0 sorry, 1 axiom)
-**Overall Grade:** A (BUILD PASSING, 0 Admitted/sorry across all provers, 0 active axioms)
+**Report Date:** 2026-02-14 (Session 86)
+**Verification:** 8,143 Coq Qed (compiled, 0 Admitted, 1 active axiom) | 10 independent provers | 888 Rust tests
+**Session:** 86 (Core Deepening — 71,102 proofs across 10 provers, 0 Admitted, 1 axiom)
+**Overall Grade:** A (BUILD PASSING, 0 Admitted across all provers, 1 justified axiom)
 
 ---
 
@@ -31,7 +31,7 @@
 | `Admitted.` (Active Build) | **0** | 0 | ✅ ZERO |
 | Axioms (Active Build) | **0** | 0 | ✅ ZERO |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
-| Files in Build | **254** | - | ✅ All compile |
+| Files in Build | **255** | - | ✅ All compile |
 | Qed Proofs (Coq) | **8,143** | - | ✅ (active build, 0 Admitted) |
 | Lean 4 Theorems | **7933** | - | ✅ (0 sorry) |
 | Isabelle/HOL Lemmas | **8085** | - | ✅ (0 sorry) |
@@ -40,7 +40,7 @@
 | .v Files (Total) | **294** | - | ✅ |
 | .lean Files | **255** | - | ✅ |
 | .thy Files | **260** | - | ✅ |
-| Rust Prototype | ✅ PASSING (852 tests) | PASSING | ✅ GREEN |
+| Rust Prototype | ✅ PASSING (888 tests) | PASSING | ✅ GREEN |
 | Rust Crates | **15** | - | ✅ (+riina-wasm Session 68) |
 | Example .rii Files | **130** | 100+ | ✅ (+5 demos, +3 showcase, +compiler scaffolds) |
 | Prover | **Coq 8.20.1** | - | ✅ Migrated from Rocq 9.1 |
