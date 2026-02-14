@@ -93,12 +93,33 @@
 **Rationale**: Avoids expensive re-verification of formal proofs when adding syntactic sugar.
 **Status**: DOCUMENTED (pending implementation in Phase 1.2)
 
-### D014: While Loop Termination Strategy (OPEN)
+### D014: While Loop Termination Strategy — Fuel-Based
 
-**Date**: 2026-01-30
-**Decision**: PENDING — requires decision between (a) bounded iteration with fuel parameter, (b) effect-based divergence marker, or (c) termination proof obligation.
-**Rationale**: While loops can diverge; RIINA's strong normalization guarantee (well_typed_SN) must be reconciled.
-**Status**: OPEN (see materialization plan §15 for details)
+**Date**: 2026-01-30 (opened), 2026-02-14 (resolved)
+**Decision**: Fuel-based bounded iteration. `selagi cond, had: N { body }` desugars to bounded recursion with fuel parameter N. Pure functions get provable termination. Effectful functions (`kesan Sistem`) may use unbounded `selagi` which desugars to a fuel of `usize::MAX` (non-termination only in effectful context).
+**Rationale**: Preserves strong normalization (well_typed_SN) for pure code. Matches Coq's termination requirement. The fuel parameter is explicit — no hidden divergence. Effect-gating for unbounded loops keeps the pure/effectful boundary clean. Implementable as parser desugaring (D013 principle) — `selagi cond, had: N { body }` → recursive `EApp` with fuel countdown.
+**Status**: RESOLVED
+
+### D019: Module Resolution — File-Based
+
+**Date**: 2026-02-14
+**Decision**: File-based module resolution (like Rust/Go). `modul foo;` looks for `foo.rii` or `foo/lib.rii` relative to the importing file's directory. Search order: (1) sibling `foo.rii`, (2) sibling directory `foo/lib.rii`, (3) package paths from `riina.toml`.
+**Rationale**: File-based resolution is simpler for tooling (LSP, formatter, doc generator), maps naturally to file system, and matches developer expectations from Rust/Go. Declaration-based modules add parser/typechecker complexity with no security benefit.
+**Status**: RESOLVED
+
+### D020: Integer Representation — u64 Core + Signed Library
+
+**Date**: 2026-02-14
+**Decision**: Keep `u64` as the core integer representation (matches Coq's `nat`). Signed integer operations (`tolak`, subtraction yielding negative) provided as library functions returning `Option<u64>` or a dedicated `Bilangan` (Number) type wrapping i64. No change to `Expr::Int(u64)` or Coq `TInt`.
+**Rationale**: Coq's natural number (`nat`) is unsigned. Changing to i64 would require re-proving all arithmetic lemmas in Coq. The library approach keeps the core type system aligned with formal proofs while providing signed arithmetic for practical programs. Future Phase 8 (self-hosting) may introduce `TSignedInt` if needed, with corresponding Coq formalization.
+**Status**: RESOLVED
+
+### D021: Infix Operator Syntax — Both (Desugar to Function Calls)
+
+**Date**: 2026-02-14
+**Decision**: Support both infix operators and function-call style. Infix operators desugar to function applications: `x + y` → `App(App(Var("tambah"), x), y)`. Supported infix operators: `+` (tambah), `-` (tolak), `*` (darab), `/` (bahagi), `%` (baki), `==` (sama), `!=` (tak_sama), `<`, `>`, `<=`, `>=`, `&&` (dan), `||` (atau). Precedence follows standard mathematical convention.
+**Rationale**: Infix is ergonomic for arithmetic and comparisons. Desugaring to function calls means zero new Coq constructors needed (D013 principle). The parser handles precedence; the type system sees only `EApp`. Both styles can be mixed freely.
+**Status**: RESOLVED
 
 ### D015: Coq Directory Consolidation — domains/ as Canonical Location
 

@@ -1,6 +1,6 @@
 # RIINA Materialization Plan v1.0.0
 
-**Verification:** 8,043 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,143 Coq Qed (compiled, 0 Admitted, 1 active axioms) | 10 independent provers | 888 Rust tests
 
 **Document ID:** `RIINA_MATERIALIZATION_PLAN_v1_0_0`
 **Date:** 2026-01-30
@@ -2950,54 +2950,21 @@ cat 06_COORDINATION/ATTACK_PROOF_MAP.md | grep "PROVEN" | wc -l
 
 ## 16. OPEN DECISIONS
 
-### Decision 1: While Loop Termination Strategy
+### Decision 1: While Loop Termination Strategy — RESOLVED
 
-**Context:** `selagi` (while) loops break strong normalization if unrestricted.
+**Resolution (2026-02-14):** Option A — Fuel-based. `selagi cond, had: N { body }` desugars to bounded recursion. Unbounded `selagi` allowed only in `kesan Sistem` functions (fuel = usize::MAX). See `06_COORDINATION/DECISIONS.md` D014.
 
-**Options:**
-- **A (RECOMMENDED):** Fuel-based — `selagi cond, had: 1000 { body }` desugars to bounded recursion. Provably terminates.
-- **B:** Effect-gated — `selagi cond { body }` only allowed in `kesan Sistem` functions. Pure code guaranteed to terminate; effectful code not guaranteed.
+### Decision 2: Module Resolution Strategy — RESOLVED
 
-**Impact:** Determines parser syntax and whether loops are available in pure functions.
+**Resolution (2026-02-14):** Option A — File-based. `modul foo;` looks for `foo.rii` or `foo/lib.rii`. See `06_COORDINATION/DECISIONS.md` D019.
 
-**Decision needed before:** Implementing section 5.3.7.
+### Decision 3: Integer Representation — RESOLVED
 
-### Decision 2: Module Resolution Strategy
+**Resolution (2026-02-14):** Option C — Keep `u64` core (matches Coq `nat`), signed ops as library. See `06_COORDINATION/DECISIONS.md` D020.
 
-**Context:** How does `modul foo;` find `foo`'s source code?
+### Decision 4: Infix Operator Syntax — RESOLVED
 
-**Options:**
-- **A (RECOMMENDED):** File-based (like Rust): `modul foo;` looks for `foo.rii` or `foo/lib.rii` relative to current file.
-- **B:** Declaration-based (like OCaml): Modules are declared inline in the same file.
-
-**Impact:** Determines file system layout and import semantics.
-
-**Decision needed before:** Implementing section 5.3.9.
-
-### Decision 3: Integer Representation
-
-**Context:** `Expr::Int` currently holds `u64` (unsigned). RIINA programs may need negative numbers.
-
-**Options:**
-- **A:** Add `i64` support alongside `u64` — `Ty::Int` for signed, `Ty::Nat` for unsigned
-- **B:** Use `i64` everywhere — simpler, covers most cases
-- **C (RECOMMENDED):** Keep `u64` as the core representation (matches Coq's `nat`), add signed operations as library functions
-
-**Impact:** Affects parser, typechecker, interpreter, C emitter.
-
-**Decision needed before:** Implementing arithmetic builtins (section 5.7).
-
-### Decision 4: Infix Operator Syntax
-
-**Context:** Should RIINA have infix operators (`x + y`) or function-call style (`tambah x y`)?
-
-**Options:**
-- **A (RECOMMENDED):** Both — infix operators desugar to function calls. `x + y` becomes `App(App(Var("tambah"), x), y)`.
-- **B:** Function-call only — simpler parser, but less ergonomic.
-
-**Impact:** Determines parser complexity.
-
-**Decision needed before:** Implementing arithmetic (section 5.7).
+**Resolution (2026-02-14):** Option A — Both. Infix desugars to function calls (`x + y` → `App(App(Var("tambah"), x), y)`). See `06_COORDINATION/DECISIONS.md` D021.
 
 ---
 

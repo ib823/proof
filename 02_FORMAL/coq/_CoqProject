@@ -43,6 +43,7 @@ properties/Declassification.v
 
 # Properties - Core (active)
 properties/AhmedStyleTest.v
+properties/TypingInversion.v
 
 # REMOVED: Leaf files with unprovable admits (no dependents)
 # Moved to _archive_deprecated/ — see commit message for analysis
@@ -124,6 +125,7 @@ domains/AuthenticationProtocols.v
 domains/SQLInjectionPrevention.v
 domains/XSSPrevention.v
 domains/CSRFProtection.v
+domains/TaintSystemCorrectness.v
 domains/SmartContractSecurity.v
 domains/PostQuantumKEM.v
 domains/PostQuantumSignatures.v
