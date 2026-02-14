@@ -1386,7 +1386,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
         ToolStatus::NotFound(msg) => CheckResult {
             name: "Isabelle Compilation".into(),
             passed: false,
-            blocking: true,
+            blocking: false,
             details: format!("{msg}"),
         },
     };
