@@ -1,24 +1,24 @@
 {
-  "generated": "2026-02-14T07:12:15Z",
-  "generatedHuman": "February 14, 2026 at 07:12 UTC",
+  "generated": "2026-02-15T12:37:08Z",
+  "generatedHuman": "February 15, 2026 at 12:37 UTC",
   "version": "0.2.0",
   "session": 86,
   "git": {
-    "commit": "ef3fba51",
+    "commit": "136004c4",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 8148,
+    "qedActive": 8182,
     "qedDeprecated": 758,
-    "qedTotal": 8906,
+    "qedTotal": 8940,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 294,
-    "filesActive": 254,
+    "filesTotal": 296,
+    "filesActive": 256,
     "domains": 202,
     "prover": "Coq 8.20.1"
   },
@@ -75,7 +75,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 7231,
-    "totalProofsAllProvers": 63179,
+    "totalProofsAllProvers": 63213,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 5487,
@@ -120,7 +120,7 @@
       }
     },
     "coqTiers": {
-      "core": 598,
+      "core": 632,
       "domain": 7550,
       "domainTrivial": 836
     }
