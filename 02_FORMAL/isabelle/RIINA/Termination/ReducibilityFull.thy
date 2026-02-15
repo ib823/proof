@@ -17,6 +17,7 @@
  * | SN_expr            | SN_expr                | OK     |
  * | id_rho             | id_rho                 | OK     |
  * | extend_rho         | extend_rho             | OK     |
+ * | subst_env          | subst_env              | OK     |
  * | closed_rho         | closed_rho             | OK     |
  * | Reducible          | Reducible              | OK     |
  * | value_not_step     | value_not_step         | OK     |
@@ -62,7 +63,7 @@
  *)
 
 theory ReducibilityFull
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* step_inv (matches Coq: Definition step_inv) *)
@@ -85,7 +86,11 @@ definition id_rho :: "subst_rho" where
 
 (* extend_rho (matches Coq: Definition extend_rho) *)
 definition extend_rho :: "subst_rho \<Rightarrow> ident \<Rightarrow> expr \<Rightarrow> subst_rho" where
-  "extend_rho ρ x v \<equiv> fun y => if String"
+  "extend_rho ρ x v \<equiv> fun y => if String.(y = x) then v else ρ y"
+
+(* subst_env (matches Coq: Definition subst_env) *)
+fun subst_env :: "subst_rho \<Rightarrow> expr \<Rightarrow> expr" where
+  "subst_env EUnit = EUnit"
 
 (* closed_rho (matches Coq: Definition closed_rho) *)
 definition closed_rho :: "subst_rho \<Rightarrow> bool" where

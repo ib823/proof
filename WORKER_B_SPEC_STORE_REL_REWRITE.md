@@ -1,6 +1,6 @@
 # Worker B Spec: store_rel_n Rewrite (5 Axioms → 1)
 
-**Verification:** 8,235 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,271 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
 
 ## Mission
 

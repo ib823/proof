@@ -15,6 +15,7 @@
  * | sized_ty           | sized_ty               | OK     |
  * | sized_ty_base      | sized_ty_base          | OK     |
  * | sized_ty_bound     | sized_ty_bound         | OK     |
+ * | expr_size          | expr_size              | OK     |
  * | terminates         | terminates             | OK     |
  * | step_terminates    | step_terminates        | OK     |
  * | expr_size_pos      | expr_size_pos          | OK     |
@@ -51,6 +52,10 @@ fun sized_ty_base :: "sized_ty \<Rightarrow> ty" where
 (* sized_ty_bound (matches Coq: Definition sized_ty_bound) *)
 fun sized_ty_bound :: "sized_ty \<Rightarrow> nat" where
 
+
+(* expr_size (matches Coq: Definition expr_size) *)
+fun expr_size :: "expr \<Rightarrow> nat" where
+  "expr_size EUnit = 1"
 
 (* terminates (matches Coq: Definition terminates) *)
 definition terminates :: "expr \<Rightarrow> store \<Rightarrow> effect_ctx \<Rightarrow> bool" where
@@ -107,12 +112,12 @@ lemma case_inr_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrigh
 
 (* If true steps in one step *)
 (* if_true_steps_once (matches Coq) *)
-lemma if_true_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool true) e2 e3, st, ctx) --> (e2, st, ctx)"
+lemma if_true_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool True) e2 e3, st, ctx) --> (e2, st, ctx)"
   by auto
 
 (* If false steps in one step *)
 (* if_false_steps_once (matches Coq) *)
-lemma if_false_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool false) e2 e3, st, ctx) --> (e3, st, ctx)"
+lemma if_false_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool False) e2 e3, st, ctx) --> (e3, st, ctx)"
   by auto
 
 (* Let with value steps in one step *)

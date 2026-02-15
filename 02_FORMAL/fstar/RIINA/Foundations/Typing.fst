@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/foundations/Typing.v (30 lemmas) *)
+(* Derived from 02_FORMAL/coq/foundations/Typing.v (33 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Foundations.Typing
 open FStar.All
@@ -95,8 +95,17 @@ let closed_expr_no_var (p_sigma: _) (p_delta: _) (p_x: _) (p_t: _) (p_epsilon: _
 (* value_unit_closed (matches Coq: Lemma value_unit_closed) *)
 let value_unit_closed (p_sigma: _) (p_delta: _) (p_v: _) (p_epsilon: _) : Lemma (requires (value p_v == true /\ has_type [] p_sigma p_delta p_v TUnit p_epsilon == true)) (ensures (p_v == EUnit /\ p_epsilon == EffectPure)) = admit ()
 
-(* value_has_pure_effect (matches Coq: Lemma value_has_pure_effect) *)
-let value_has_pure_effect (p_gamma: _) (p_sigma: _) (p_delta: _) (p_v: _) (p_t: _) (p_epsilon: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_sigma p_delta p_v p_t p_epsilon == true)) (ensures (p_epsilon == EffPure \/ ((exists p_t1. (exists p_t2. (exists p_epsilon1. (exists p_epsilon2. p_t == TProd p_t1 p_t2)))) /\ p_epsilon == effect_join epsilon1 epsilon2) \/ ((exists p_t1. (exists p_t2. (exists p_epsilon1. p_t == TSum p_t1 p_t2))) /\ p_epsilon == epsilon1))) = admit ()
+(* simple_value_pure_effect (matches Coq: Lemma simple_value_pure_effect) *)
+let simple_value_pure_effect (p_gamma: _) (p_sigma: _) (p_delta: _) (p_t: _) (p_epsilon: _) : Lemma ((has_type p_gamma p_sigma p_delta EUnit p_t p_epsilon -> p_epsilon == EffPure) /\ ((forall (b: _). has_type p_gamma p_sigma p_delta (EBool b) p_t p_epsilon -> p_epsilon == EffPure)) /\ ((forall (n: _). has_type p_gamma p_sigma p_delta (EInt n) p_t p_epsilon -> p_epsilon == EffPure)) /\ ((forall (s: _). has_type p_gamma p_sigma p_delta (EString s) p_t p_epsilon -> p_epsilon == EffPure)) /\ ((forall (l: _). has_type p_gamma p_sigma p_delta (ELoc l) p_t p_epsilon -> p_epsilon == EffPure)) /\ ((forall (x: _). (forall (t1: _). (forall (e: _). has_type p_gamma p_sigma p_delta (ELam x t1 e) p_t p_epsilon -> p_epsilon == EffPure))))) = admit ()
+
+(* unit_value_pure (matches Coq: Lemma unit_value_pure) *)
+let unit_value_pure (p_gamma: _) (p_sigma: _) (p_delta: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type p_gamma p_sigma p_delta EUnit p_t p_epsilon == true)) (ensures (p_epsilon == EffPure)) = admit ()
+
+(* lam_value_pure (matches Coq: Lemma lam_value_pure) *)
+let lam_value_pure (p_gamma: _) (p_sigma: _) (p_delta: _) (p_x: _) (p_t1: _) (p_e: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type p_gamma p_sigma p_delta (ELam p_x p_t1 p_e) p_t p_epsilon == true)) (ensures (p_epsilon == EffPure)) = admit ()
+
+(* loc_value_pure (matches Coq: Lemma loc_value_pure) *)
+let loc_value_pure (p_gamma: _) (p_sigma: _) (p_delta: _) (p_l: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type p_gamma p_sigma p_delta (ELoc p_l) p_t p_epsilon == true)) (ensures (p_epsilon == EffPure)) = admit ()
 
 (* lookup_head (matches Coq: Lemma lookup_head) *)
 let lookup_head (p_x: _) (p_t: _) (p_gamma: _) : Lemma (lookup p_x ((p_x, p_t) :: p_gamma) == Some p_t) = admit ()

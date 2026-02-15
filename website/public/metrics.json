@@ -1,84 +1,84 @@
 {
-  "generated": "2026-02-15T13:08:14Z",
-  "generatedHuman": "February 15, 2026 at 13:08 UTC",
+  "generated": "2026-02-15T15:01:35Z",
+  "generatedHuman": "February 15, 2026 at 15:01 UTC",
   "version": "0.2.0",
   "session": 86,
   "git": {
-    "commit": "17168c95",
+    "commit": "de857570",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 8235,
+    "qedActive": 8271,
     "qedDeprecated": 758,
-    "qedTotal": 8993,
+    "qedTotal": 9029,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 297,
-    "filesActive": 257,
+    "filesTotal": 298,
+    "filesActive": 258,
     "domains": 202,
     "prover": "Coq 8.20.1"
   },
   "lean": {
-    "theorems": 7933,
-    "sorry": 5487,
-    "axioms": 0,
-    "files": 256,
-    "lines": 95493,
+    "theorems": 8394,
+    "sorry": 177,
+    "axioms": 12,
+    "files": 267,
+    "lines": 103918,
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 8085,
+    "lemmas": 8493,
     "sorry": 0,
     "axioms": 0,
-    "files": 262,
-    "lines": 92092,
+    "files": 273,
+    "lines": 95695,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
     "lemmas": 216,
-    "files": 256,
+    "files": 263,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 7928,
-    "files": 251,
+    "theorems": 8366,
+    "files": 262,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 7928,
-    "files": 251,
+    "assertions": 8119,
+    "files": 255,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 7928,
-    "files": 251,
+    "assertions": 8366,
+    "files": 262,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
-    "proofs": 1789,
-    "files": 271,
+    "proofs": 2961,
+    "files": 275,
     "prover": "Verus"
   },
   "kani": {
-    "harnesses": 1536,
-    "files": 253,
+    "harnesses": 2708,
+    "files": 257,
     "prover": "Kani"
   },
   "tv": {
-    "validations": 11688,
-    "files": 251,
+    "validations": 12394,
+    "files": 262,
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": 7231,
-    "totalProofsAllProvers": 63266,
+    "tripleProverTheorems": 7449,
+    "totalProofsAllProvers": 68288,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
-    "sorry": 5487,
+    "sorry": 177,
     "status": "ACTIVE_COQ_MECHANIZED"
   },
   "quality": {
@@ -109,8 +109,8 @@
         "tv": "noncoq_report_missing_or_stale"
       },
       "backlog": {
-        "leanSorry": 5487,
-        "leanAxioms": 0,
+        "leanSorry": 177,
+        "leanAxioms": 12,
         "isabelleSorry": 0,
         "fstarGeneratedFiles": 0,
         "smtGeneratedFiles": 0,
@@ -120,7 +120,7 @@
       }
     },
     "coqTiers": {
-      "core": 685,
+      "core": 721,
       "domain": 7550,
       "domainTrivial": 836
     }
@@ -144,8 +144,8 @@
   "rust": {
     "tests": 888,
     "testsVerified": 888,
-    "testsEstimated": 884,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 15
   },
   "examples": 130,

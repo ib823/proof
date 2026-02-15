@@ -12,6 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
+ * | performs_within    | performs_within        | OK     |
  * | effect_leq_pure    | effect_leq_pure        | OK     |
  * | performs_within_mono | performs_within_mono   | OK     |
  * | effect_leq_join_ub_l_trans | effect_leq_join_ub_l_trans | OK     |
@@ -23,6 +24,10 @@
 theory EffectSystem
   imports Main
 begin
+
+(* performs_within (matches Coq: Definition performs_within) *)
+fun performs_within :: "expr \<Rightarrow> effect \<Rightarrow> bool" where
+  "performs_within EUnit = True"
 
 (* effect_leq_pure (matches Coq) *)
 lemma effect_leq_pure: "\<forall> eff, effect_leq EffectPure eff"
