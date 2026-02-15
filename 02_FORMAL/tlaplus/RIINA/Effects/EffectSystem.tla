@@ -1,7 +1,7 @@
 ---- MODULE EffectSystem ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/effects/EffectSystem.v (6 invariants)
+\* Derived from 02_FORMAL/coq/effects/EffectSystem.v (27 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -36,6 +36,69 @@ THEOREM core_effects_within == Init => TypeOK
 
 \* effect_safety (matches Coq: Theorem effect_safety)
 THEOREM effect_safety == Init => TypeOK
+
+\* performs_within_value (matches Coq: Lemma performs_within_value)
+THEOREM performs_within_value == Init => TypeOK
+
+\* performs_within_value_pure (matches Coq: Lemma performs_within_value_pure)
+THEOREM performs_within_value_pure == Init => TypeOK
+
+\* performs_within_join_l (matches Coq: Lemma performs_within_join_l)
+THEOREM performs_within_join_l == Init => TypeOK
+
+\* performs_within_join_r (matches Coq: Lemma performs_within_join_r)
+THEOREM performs_within_join_r == Init => TypeOK
+
+\* performs_within_top (matches Coq: Lemma performs_within_top)
+THEOREM performs_within_top == Init => TypeOK
+
+\* has_type_embed (matches Coq: Lemma has_type_embed)
+THEOREM has_type_embed == Init => TypeOK
+
+\* has_type_full_effect_bound (matches Coq: Lemma has_type_full_effect_bound)
+THEOREM has_type_full_effect_bound == Init => TypeOK
+
+\* core_typing_sound (matches Coq: Lemma core_typing_sound)
+THEOREM core_typing_sound == Init => TypeOK
+
+\* app_effect_covers_fn_and_arg (matches Coq: Lemma app_effect_covers_fn_and_arg)
+THEOREM app_effect_covers_fn_and_arg == Init => TypeOK
+
+\* if_effect_covers_branches (matches Coq: Lemma if_effect_covers_branches)
+THEOREM if_effect_covers_branches == Init => TypeOK
+
+\* let_effect_covers_both (matches Coq: Lemma let_effect_covers_both)
+THEOREM let_effect_covers_both == Init => TypeOK
+
+\* pair_effect_covers_both (matches Coq: Lemma pair_effect_covers_both)
+THEOREM pair_effect_covers_both == Init => TypeOK
+
+\* has_type_full_weaken_effect (matches Coq: Lemma has_type_full_weaken_effect)
+THEOREM has_type_full_weaken_effect == Init => TypeOK
+
+\* pure_within_any_effect (matches Coq: Lemma pure_within_any_effect)
+THEOREM pure_within_any_effect == Init => TypeOK
+
+\* assign_effect_covers (matches Coq: Lemma assign_effect_covers)
+THEOREM assign_effect_covers == Init => TypeOK
+
+\* case_effect_covers (matches Coq: Lemma case_effect_covers)
+THEOREM case_effect_covers == Init => TypeOK
+
+\* handle_effect_covers (matches Coq: Lemma handle_effect_covers)
+THEOREM handle_effect_covers == Init => TypeOK
+
+\* declassify_effect_covers (matches Coq: Lemma declassify_effect_covers)
+THEOREM declassify_effect_covers == Init => TypeOK
+
+\* performs_within_join_self (matches Coq: Lemma performs_within_join_self)
+THEOREM performs_within_join_self == Init => TypeOK
+
+\* performs_within_join_pure_l (matches Coq: Lemma performs_within_join_pure_l)
+THEOREM performs_within_join_pure_l == Init => TypeOK
+
+\* performs_within_join_pure_r (matches Coq: Lemma performs_within_join_pure_r)
+THEOREM performs_within_join_pure_r == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

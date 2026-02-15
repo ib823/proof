@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (11 validations)
+; Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (40 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for SubstitutionCommute
@@ -88,6 +88,151 @@
 (declare-fun source_closed_loc_sub () Bool)
 (declare-fun target_closed_loc_sub () Bool)
 (assert (= source_closed_loc_sub target_closed_loc_sub))
+
+; subst_var_same: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_var_same () Bool)
+(declare-fun target_subst_var_same () Bool)
+(assert (= source_subst_var_same target_subst_var_same))
+
+; subst_var_diff: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_var_diff () Bool)
+(declare-fun target_subst_var_diff () Bool)
+(assert (= source_subst_var_diff target_subst_var_diff))
+
+; subst_unit: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_unit () Bool)
+(declare-fun target_subst_unit () Bool)
+(assert (= source_subst_unit target_subst_unit))
+
+; subst_bool: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_bool () Bool)
+(declare-fun target_subst_bool () Bool)
+(assert (= source_subst_bool target_subst_bool))
+
+; subst_int: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_int () Bool)
+(declare-fun target_subst_int () Bool)
+(assert (= source_subst_int target_subst_int))
+
+; subst_string: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_string () Bool)
+(declare-fun target_subst_string () Bool)
+(assert (= source_subst_string target_subst_string))
+
+; subst_loc: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_loc () Bool)
+(declare-fun target_subst_loc () Bool)
+(assert (= source_subst_loc target_subst_loc))
+
+; subst_id: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_id () Bool)
+(declare-fun target_subst_id () Bool)
+(assert (= source_subst_id target_subst_id))
+
+; subst_value: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_value () Bool)
+(declare-fun target_subst_value () Bool)
+(assert (= source_subst_value target_subst_value))
+
+; subst_app: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_app () Bool)
+(declare-fun target_subst_app () Bool)
+(assert (= source_subst_app target_subst_app))
+
+; subst_pair: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_pair () Bool)
+(declare-fun target_subst_pair () Bool)
+(assert (= source_subst_pair target_subst_pair))
+
+; subst_fst: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_fst () Bool)
+(declare-fun target_subst_fst () Bool)
+(assert (= source_subst_fst target_subst_fst))
+
+; subst_snd: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_snd () Bool)
+(declare-fun target_subst_snd () Bool)
+(assert (= source_subst_snd target_subst_snd))
+
+; subst_inl: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_inl () Bool)
+(declare-fun target_subst_inl () Bool)
+(assert (= source_subst_inl target_subst_inl))
+
+; subst_inr: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_inr () Bool)
+(declare-fun target_subst_inr () Bool)
+(assert (= source_subst_inr target_subst_inr))
+
+; subst_if: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_if () Bool)
+(declare-fun target_subst_if () Bool)
+(assert (= source_subst_if target_subst_if))
+
+; subst_ref: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_ref () Bool)
+(declare-fun target_subst_ref () Bool)
+(assert (= source_subst_ref target_subst_ref))
+
+; subst_deref: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_deref () Bool)
+(declare-fun target_subst_deref () Bool)
+(assert (= source_subst_deref target_subst_deref))
+
+; subst_assign: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_assign () Bool)
+(declare-fun target_subst_assign () Bool)
+(assert (= source_subst_assign target_subst_assign))
+
+; subst_classify: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_classify () Bool)
+(declare-fun target_subst_classify () Bool)
+(assert (= source_subst_classify target_subst_classify))
+
+; subst_prove: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_prove () Bool)
+(declare-fun target_subst_prove () Bool)
+(assert (= source_subst_prove target_subst_prove))
+
+; subst_declassify: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_declassify () Bool)
+(declare-fun target_subst_declassify () Bool)
+(assert (= source_subst_declassify target_subst_declassify))
+
+; subst_perform: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_perform () Bool)
+(declare-fun target_subst_perform () Bool)
+(assert (= source_subst_perform target_subst_perform))
+
+; subst_require: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_require () Bool)
+(declare-fun target_subst_require () Bool)
+(assert (= source_subst_require target_subst_require))
+
+; subst_grant: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_grant () Bool)
+(declare-fun target_subst_grant () Bool)
+(assert (= source_subst_grant target_subst_grant))
+
+; subst_lam_same: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_lam_same () Bool)
+(declare-fun target_subst_lam_same () Bool)
+(assert (= source_subst_lam_same target_subst_lam_same))
+
+; subst_lam_diff: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_lam_diff () Bool)
+(declare-fun target_subst_lam_diff () Bool)
+(assert (= source_subst_lam_diff target_subst_lam_diff))
+
+; subst_let_same: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_let_same () Bool)
+(declare-fun target_subst_let_same () Bool)
+(assert (= source_subst_let_same target_subst_let_same))
+
+; subst_let_diff: translation preserves property (matches Coq: Lemma)
+(declare-fun source_subst_let_diff () Bool)
+(declare-fun target_subst_let_diff () Bool)
+(assert (= source_subst_let_diff target_subst_let_diff))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

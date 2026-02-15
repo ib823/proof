@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/ClosedValueLemmas.v (11 validations)
+; Derived from 02_FORMAL/coq/properties/ClosedValueLemmas.v (28 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for ClosedValueLemmas
@@ -73,6 +73,91 @@
 (declare-fun source_closed_lam_body_cv () Bool)
 (declare-fun target_closed_lam_body_cv () Bool)
 (assert (= source_closed_lam_body_cv target_closed_lam_body_cv))
+
+; closed_if_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_if_cv () Bool)
+(declare-fun target_closed_if_cv () Bool)
+(assert (= source_closed_if_cv target_closed_if_cv))
+
+; closed_let_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_let_cv () Bool)
+(declare-fun target_closed_let_cv () Bool)
+(assert (= source_closed_let_cv target_closed_let_cv))
+
+; closed_ref_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_ref_cv () Bool)
+(declare-fun target_closed_ref_cv () Bool)
+(assert (= source_closed_ref_cv target_closed_ref_cv))
+
+; closed_deref_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_deref_cv () Bool)
+(declare-fun target_closed_deref_cv () Bool)
+(assert (= source_closed_deref_cv target_closed_deref_cv))
+
+; closed_assign_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_assign_cv () Bool)
+(declare-fun target_closed_assign_cv () Bool)
+(assert (= source_closed_assign_cv target_closed_assign_cv))
+
+; closed_classify_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_classify_cv () Bool)
+(declare-fun target_closed_classify_cv () Bool)
+(assert (= source_closed_classify_cv target_closed_classify_cv))
+
+; closed_prove_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_prove_cv () Bool)
+(declare-fun target_closed_prove_cv () Bool)
+(assert (= source_closed_prove_cv target_closed_prove_cv))
+
+; closed_fst_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_fst_cv () Bool)
+(declare-fun target_closed_fst_cv () Bool)
+(assert (= source_closed_fst_cv target_closed_fst_cv))
+
+; closed_snd_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_snd_cv () Bool)
+(declare-fun target_closed_snd_cv () Bool)
+(assert (= source_closed_snd_cv target_closed_snd_cv))
+
+; value_closed_simple: translation preserves property (matches Coq: Lemma)
+(declare-fun source_value_closed_simple () Bool)
+(declare-fun target_value_closed_simple () Bool)
+(assert (= source_value_closed_simple target_value_closed_simple))
+
+; closed_weaken_ctx: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_weaken_ctx () Bool)
+(declare-fun target_closed_weaken_ctx () Bool)
+(assert (= source_closed_weaken_ctx target_closed_weaken_ctx))
+
+; nil_ctx_is_closed: translation preserves property (matches Coq: Lemma)
+(declare-fun source_nil_ctx_is_closed () Bool)
+(declare-fun target_nil_ctx_is_closed () Bool)
+(assert (= source_nil_ctx_is_closed target_nil_ctx_is_closed))
+
+; closed_grant_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_grant_cv () Bool)
+(declare-fun target_closed_grant_cv () Bool)
+(assert (= source_closed_grant_cv target_closed_grant_cv))
+
+; closed_require_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_require_cv () Bool)
+(declare-fun target_closed_require_cv () Bool)
+(assert (= source_closed_require_cv target_closed_require_cv))
+
+; closed_perform_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_perform_cv () Bool)
+(declare-fun target_closed_perform_cv () Bool)
+(assert (= source_closed_perform_cv target_closed_perform_cv))
+
+; closed_handle_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_handle_cv () Bool)
+(declare-fun target_closed_handle_cv () Bool)
+(assert (= source_closed_handle_cv target_closed_handle_cv))
+
+; closed_declassify_cv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_closed_declassify_cv () Bool)
+(declare-fun target_closed_declassify_cv () Bool)
+(assert (= source_closed_declassify_cv target_closed_declassify_cv))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

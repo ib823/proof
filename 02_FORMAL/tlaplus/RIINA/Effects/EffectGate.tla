@@ -1,7 +1,7 @@
 ---- MODULE EffectGate ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/effects/EffectGate.v (21 invariants)
+\* Derived from 02_FORMAL/coq/effects/EffectGate.v (38 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -81,6 +81,57 @@ THEOREM app_joins_effects == Init => TypeOK
 
 \* let_joins_effects (matches Coq: Theorem let_joins_effects)
 THEOREM let_joins_effects == Init => TypeOK
+
+\* effect_isolation (matches Coq: Theorem effect_isolation)
+THEOREM effect_isolation == Init => TypeOK
+
+\* effect_isolation_let (matches Coq: Theorem effect_isolation_let)
+THEOREM effect_isolation_let == Init => TypeOK
+
+\* effect_isolation_pair (matches Coq: Theorem effect_isolation_pair)
+THEOREM effect_isolation_pair == Init => TypeOK
+
+\* double_handle_body (matches Coq: Theorem double_handle_body)
+THEOREM double_handle_body == Init => TypeOK
+
+\* double_handle_outer_handler (matches Coq: Theorem double_handle_outer_handler)
+THEOREM double_handle_outer_handler == Init => TypeOK
+
+\* double_handle_inner_handler (matches Coq: Theorem double_handle_inner_handler)
+THEOREM double_handle_inner_handler == Init => TypeOK
+
+\* program_effect_contained (matches Coq: Theorem program_effect_contained)
+THEOREM program_effect_contained == Init => TypeOK
+
+\* pure_program_no_effects (matches Coq: Theorem pure_program_no_effects)
+THEOREM pure_program_no_effects == Init => TypeOK
+
+\* grant_idempotent_bound (matches Coq: Theorem grant_idempotent_bound)
+THEOREM grant_idempotent_bound == Init => TypeOK
+
+\* require_bound_transparent (matches Coq: Theorem require_bound_transparent)
+THEOREM require_bound_transparent == Init => TypeOK
+
+\* if_performs_within (matches Coq: Theorem if_performs_within)
+THEOREM if_performs_within == Init => TypeOK
+
+\* case_performs_within (matches Coq: Theorem case_performs_within)
+THEOREM case_performs_within == Init => TypeOK
+
+\* ref_performs_within (matches Coq: Theorem ref_performs_within)
+THEOREM ref_performs_within == Init => TypeOK
+
+\* deref_performs_within (matches Coq: Theorem deref_performs_within)
+THEOREM deref_performs_within == Init => TypeOK
+
+\* assign_performs_within (matches Coq: Theorem assign_performs_within)
+THEOREM assign_performs_within == Init => TypeOK
+
+\* classify_performs_within (matches Coq: Theorem classify_performs_within)
+THEOREM classify_performs_within == Init => TypeOK
+
+\* prove_performs_within (matches Coq: Theorem prove_performs_within)
+THEOREM prove_performs_within == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

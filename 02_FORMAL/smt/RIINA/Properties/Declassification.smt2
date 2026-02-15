@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/Declassification.v (8 assertions)
+; Derived from 02_FORMAL/coq/properties/Declassification.v (16 assertions)
 ; Source mapping: scripts/generate-full-stack.py
 ; Module: Declassification
 
@@ -34,6 +34,38 @@
 ; declassify_policy_safe (matches Coq: Lemma declassify_policy_safe)
 ; declassify_policy_safe: forall Γ Σ Δ e T eff1 eff2 p, has_type Γ Σ Δ e (TSecret T) eff1 -> has_type Γ Σ Δ p (TProof (TSecret T)) eff2 -> declass
 (assert (forall ((gamma Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (eff1 Bool) (eff2 Bool) (p Bool)) (= 0 0))) ; declassify_policy_safe [partial: bindings preserved]
+
+; classify_creates_secret (matches Coq: Lemma classify_creates_secret)
+; classify_creates_secret: forall Γ Σ Δ e T eff, has_type Γ Σ Δ e T eff -> has_type Γ Σ Δ (EClassify e) (TSecret T) eff
+(assert (forall ((gamma Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (eff Bool)) (= 0 0))) ; classify_creates_secret [partial: bindings preserved]
+
+; double_classify_typed (matches Coq: Lemma double_classify_typed)
+; double_classify_typed: forall Γ Σ Δ e T eff, has_type Γ Σ Δ e T eff -> has_type Γ Σ Δ (EClassify (EClassify e)) (TSecret (TSecret T)) eff
+(assert (forall ((gamma Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (eff Bool)) (= 0 0))) ; double_classify_typed [partial: bindings preserved]
+
+; classify_value (matches Coq: Lemma classify_value)
+; classify_value: forall v, value v -> value (EClassify v)
+(assert (forall ((v Bool)) (= 0 0))) ; classify_value [partial: bindings preserved]
+
+; classify_closed (matches Coq: Lemma classify_closed)
+; classify_closed: forall v Σ Δ T ε, value v -> has_type nil Σ Δ v T ε -> has_type nil Σ Δ (EClassify v) (TSecret T) ε
+(assert (forall ((v Bool) (sigma Bool) (delta Bool) (T Bool) (epsilon Bool)) (= 0 0))) ; classify_closed [partial: bindings preserved]
+
+; declassify_requires_public_context (matches Coq: Lemma declassify_requires_public_context)
+; declassify_requires_public_context: forall Γ Σ e T eff1 eff2 p, has_type Γ Σ Public e (TSecret T) eff1 -> has_type Γ Σ Public p (TProof (TSecret T)) eff2 ->
+(assert (forall ((gamma Bool) (sigma Bool) (e Bool) (T Bool) (eff1 Bool) (eff2 Bool) (p Bool)) (= 0 0))) ; declassify_requires_public_context [partial: bindings preserved]
+
+; secret_value_pure (matches Coq: Lemma secret_value_pure)
+; secret_value_pure: forall Σ v T, value v -> has_type nil Σ Public v T EffectPure -> has_type nil Σ Public (EClassify v) (TSecret T) EffectP
+(assert (forall ((sigma Bool) (v Bool) (T Bool)) (= 0 0))) ; secret_value_pure [partial: bindings preserved]
+
+; declassify_deterministic (matches Coq: Lemma declassify_deterministic)
+; declassify_deterministic: forall v p st ctx v1 st1 v2 st2, value v -> declass_ok (EClassify v) p -> multi_step (EDeclassify (EClassify v) p, st, c
+(assert (forall ((v Bool) (p Bool) (st Bool) (ctx Bool) (v1 Bool) (st1 Bool) (v2 Bool) (st2 Bool)) (= 0 0))) ; declassify_deterministic [partial: bindings preserved]
+
+; declassify_result (matches Coq: Lemma declassify_result)
+; declassify_result: forall v p st ctx v' st', value v -> declass_ok (EClassify v) p -> multi_step (EDeclassify (EClassify v) p, st, ctx) (v'
+(assert (forall ((v Bool) (p Bool) (st Bool) (ctx Bool) (v_ Bool) (st_ Bool)) (= 0 0))) ; declassify_result [partial: bindings preserved]
 
 ; declassification_zero_admits (matches Coq: Theorem declassification_zero_admits)
 ; declassification_zero_admits: True

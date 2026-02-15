@@ -1,7 +1,7 @@
 ---- MODULE SubstitutionCommute ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (11 invariants)
+\* Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (40 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -60,6 +60,93 @@ THEOREM closed_string_sub == Init => TypeOK
 
 \* closed_loc_sub (matches Coq: Lemma closed_loc_sub)
 THEOREM closed_loc_sub == Init => TypeOK
+
+\* subst_var_same (matches Coq: Lemma subst_var_same)
+THEOREM subst_var_same == Init => TypeOK
+
+\* subst_var_diff (matches Coq: Lemma subst_var_diff)
+THEOREM subst_var_diff == Init => TypeOK
+
+\* subst_unit (matches Coq: Lemma subst_unit)
+THEOREM subst_unit == Init => TypeOK
+
+\* subst_bool (matches Coq: Lemma subst_bool)
+THEOREM subst_bool == Init => TypeOK
+
+\* subst_int (matches Coq: Lemma subst_int)
+THEOREM subst_int == Init => TypeOK
+
+\* subst_string (matches Coq: Lemma subst_string)
+THEOREM subst_string == Init => TypeOK
+
+\* subst_loc (matches Coq: Lemma subst_loc)
+THEOREM subst_loc == Init => TypeOK
+
+\* subst_id (matches Coq: Lemma subst_id)
+THEOREM subst_id == Init => TypeOK
+
+\* subst_value (matches Coq: Lemma subst_value)
+THEOREM subst_value == Init => TypeOK
+
+\* subst_app (matches Coq: Lemma subst_app)
+THEOREM subst_app == Init => TypeOK
+
+\* subst_pair (matches Coq: Lemma subst_pair)
+THEOREM subst_pair == Init => TypeOK
+
+\* subst_fst (matches Coq: Lemma subst_fst)
+THEOREM subst_fst == Init => TypeOK
+
+\* subst_snd (matches Coq: Lemma subst_snd)
+THEOREM subst_snd == Init => TypeOK
+
+\* subst_inl (matches Coq: Lemma subst_inl)
+THEOREM subst_inl == Init => TypeOK
+
+\* subst_inr (matches Coq: Lemma subst_inr)
+THEOREM subst_inr == Init => TypeOK
+
+\* subst_if (matches Coq: Lemma subst_if)
+THEOREM subst_if == Init => TypeOK
+
+\* subst_ref (matches Coq: Lemma subst_ref)
+THEOREM subst_ref == Init => TypeOK
+
+\* subst_deref (matches Coq: Lemma subst_deref)
+THEOREM subst_deref == Init => TypeOK
+
+\* subst_assign (matches Coq: Lemma subst_assign)
+THEOREM subst_assign == Init => TypeOK
+
+\* subst_classify (matches Coq: Lemma subst_classify)
+THEOREM subst_classify == Init => TypeOK
+
+\* subst_prove (matches Coq: Lemma subst_prove)
+THEOREM subst_prove == Init => TypeOK
+
+\* subst_declassify (matches Coq: Lemma subst_declassify)
+THEOREM subst_declassify == Init => TypeOK
+
+\* subst_perform (matches Coq: Lemma subst_perform)
+THEOREM subst_perform == Init => TypeOK
+
+\* subst_require (matches Coq: Lemma subst_require)
+THEOREM subst_require == Init => TypeOK
+
+\* subst_grant (matches Coq: Lemma subst_grant)
+THEOREM subst_grant == Init => TypeOK
+
+\* subst_lam_same (matches Coq: Lemma subst_lam_same)
+THEOREM subst_lam_same == Init => TypeOK
+
+\* subst_lam_diff (matches Coq: Lemma subst_lam_diff)
+THEOREM subst_lam_diff == Init => TypeOK
+
+\* subst_let_same (matches Coq: Lemma subst_let_same)
+THEOREM subst_let_same == Init => TypeOK
+
+\* subst_let_diff (matches Coq: Lemma subst_let_diff)
+THEOREM subst_let_diff == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

@@ -264,6 +264,91 @@ Qed.
     enforced by the typing rules (T_Declassify, T_Classify).
 *)
 
+(** ** Declassification Safety Properties *)
+
+(** Classify creates a secret value from any base value *)
+Lemma classify_creates_secret : forall Γ Σ Δ e T eff,
+  has_type Γ Σ Δ e T eff ->
+  has_type Γ Σ Δ (EClassify e) (TSecret T) eff.
+Proof.
+  intros. apply T_Classify. assumption.
+Qed.
+
+(** Double classification: classify is idempotent at the type level *)
+Lemma double_classify_typed : forall Γ Σ Δ e T eff,
+  has_type Γ Σ Δ e T eff ->
+  has_type Γ Σ Δ (EClassify (EClassify e)) (TSecret (TSecret T)) eff.
+Proof.
+  intros. apply T_Classify. apply T_Classify. assumption.
+Qed.
+
+(** Classify preserves value-hood *)
+Lemma classify_value : forall v,
+  value v -> value (EClassify v).
+Proof.
+  intros v Hv. constructor. exact Hv.
+Qed.
+
+(** Classify preserves closedness *)
+Lemma classify_closed : forall v Σ Δ T ε,
+  value v ->
+  has_type nil Σ Δ v T ε ->
+  has_type nil Σ Δ (EClassify v) (TSecret T) ε.
+Proof.
+  intros. apply T_Classify. assumption.
+Qed.
+
+(** ** Declassification and Security Levels *)
+
+(** Declassification only permitted at Public security level *)
+Lemma declassify_requires_public_context : forall Γ Σ e T eff1 eff2 p,
+  has_type Γ Σ Public e (TSecret T) eff1 ->
+  has_type Γ Σ Public p (TProof (TSecret T)) eff2 ->
+  declass_ok e p ->
+  has_type Γ Σ Public (EDeclassify e p) T (effect_join eff1 eff2).
+Proof.
+  intros. apply T_Declassify; assumption.
+Qed.
+
+(** Secret values have pure effect when typed as values *)
+Lemma secret_value_pure : forall Σ v T,
+  value v ->
+  has_type nil Σ Public v T EffectPure ->
+  has_type nil Σ Public (EClassify v) (TSecret T) EffectPure.
+Proof.
+  intros. apply T_Classify. assumption.
+Qed.
+
+(** ** Declassification Determinism *)
+
+(** Declassification of the same value produces the same result *)
+Lemma declassify_deterministic : forall v p st ctx v1 st1 v2 st2,
+  value v ->
+  declass_ok (EClassify v) p ->
+  multi_step (EDeclassify (EClassify v) p, st, ctx) (v1, st1, ctx) ->
+  multi_step (EDeclassify (EClassify v) p, st, ctx) (v2, st2, ctx) ->
+  value v1 -> value v2 ->
+  v1 = v2 /\ st1 = st2.
+Proof.
+  intros v p st ctx v1 st1 v2 st2 Hv Hok Hms1 Hms2 Hv1 Hv2.
+  apply eval_deterministic with (e := EDeclassify (EClassify v) p) (st := st) (ctx := ctx);
+    assumption.
+Qed.
+
+(** Declassification produces the unwrapped value *)
+Lemma declassify_result : forall v p st ctx v' st',
+  value v ->
+  declass_ok (EClassify v) p ->
+  multi_step (EDeclassify (EClassify v) p, st, ctx) (v', st', ctx) ->
+  value v' ->
+  v' = v /\ st' = st.
+Proof.
+  intros v p st ctx v' st' Hv Hok Hms Hv'.
+  pose proof (declassify_eval v p st ctx Hv Hok) as Heval.
+  destruct (eval_deterministic _ _ _ _ _ _ _ Heval Hms Hv Hv') as [Heq1 Heq2].
+  split; [symmetry; exact Heq1 | symmetry; exact Heq2].
+Qed.
+
 (** Summary: All admits eliminated *)
 Theorem declassification_zero_admits : True.
 Proof. exact I. Qed.

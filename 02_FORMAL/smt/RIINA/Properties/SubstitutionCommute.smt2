@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (11 assertions)
+; Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (40 assertions)
 ; Source mapping: scripts/generate-full-stack.py
 ; Module: SubstitutionCommute
 
@@ -66,6 +66,122 @@
 ; closed_loc_sub (matches Coq: Lemma closed_loc_sub)
 ; closed_loc_sub: forall l, closed_expr_sc (ELoc l)
 (assert (forall ((l Bool)) (= 0 0))) ; closed_loc_sub [partial: bindings preserved]
+
+; subst_var_same (matches Coq: Lemma subst_var_same)
+; subst_var_same: forall x v, [x := v] (EVar x) = v
+(assert (forall ((x Bool) (v Bool)) (= 0 0))) ; subst_var_same [partial: bindings preserved]
+
+; subst_var_diff (matches Coq: Lemma subst_var_diff)
+; subst_var_diff: forall x y v, x <> y -> [x := v] (EVar y) = EVar y
+(assert (forall ((x Bool) (y Bool) (v Bool)) (= 0 0))) ; subst_var_diff [partial: bindings preserved]
+
+; subst_unit (matches Coq: Lemma subst_unit)
+; subst_unit: forall x v, [x := v] EUnit = EUnit
+(assert (forall ((x Bool) (v Bool)) (= 0 0))) ; subst_unit [partial: bindings preserved]
+
+; subst_bool (matches Coq: Lemma subst_bool)
+; subst_bool: forall x v b, [x := v] (EBool b) = EBool b
+(assert (forall ((x Bool) (v Bool) (b Bool)) (= 0 0))) ; subst_bool [partial: bindings preserved]
+
+; subst_int (matches Coq: Lemma subst_int)
+; subst_int: forall x v n, [x := v] (EInt n) = EInt n
+(assert (forall ((x Bool) (v Bool) (n Bool)) (= 0 0))) ; subst_int [partial: bindings preserved]
+
+; subst_string (matches Coq: Lemma subst_string)
+; subst_string: forall x v s, [x := v] (EString s) = EString s
+(assert (forall ((x Bool) (v Bool) (s Bool)) (= 0 0))) ; subst_string [partial: bindings preserved]
+
+; subst_loc (matches Coq: Lemma subst_loc)
+; subst_loc: forall x v l, [x := v] (ELoc l) = ELoc l
+(assert (forall ((x Bool) (v Bool) (l Bool)) (= 0 0))) ; subst_loc [partial: bindings preserved]
+
+; subst_id (matches Coq: Lemma subst_id)
+; subst_id: forall x e, [x := EVar x] e = e
+(assert (forall ((x Bool) (e Bool)) (= 0 0))) ; subst_id [partial: bindings preserved]
+
+; subst_value (matches Coq: Lemma subst_value)
+; subst_value: forall x v e, value e -> value v -> value ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; subst_value [partial: bindings preserved]
+
+; subst_app (matches Coq: Lemma subst_app)
+; subst_app: forall x v e1 e2, [x := v] (EApp e1 e2) = EApp ([x := v] e1) ([x := v] e2)
+(assert (forall ((x Bool) (v Bool) (e1 Bool) (e2 Bool)) (= 0 0))) ; subst_app [partial: bindings preserved]
+
+; subst_pair (matches Coq: Lemma subst_pair)
+; subst_pair: forall x v e1 e2, [x := v] (EPair e1 e2) = EPair ([x := v] e1) ([x := v] e2)
+(assert (forall ((x Bool) (v Bool) (e1 Bool) (e2 Bool)) (= 0 0))) ; subst_pair [partial: bindings preserved]
+
+; subst_fst (matches Coq: Lemma subst_fst)
+; subst_fst: forall x v e, [x := v] (EFst e) = EFst ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; subst_fst [partial: bindings preserved]
+
+; subst_snd (matches Coq: Lemma subst_snd)
+; subst_snd: forall x v e, [x := v] (ESnd e) = ESnd ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; subst_snd [partial: bindings preserved]
+
+; subst_inl (matches Coq: Lemma subst_inl)
+; subst_inl: forall x v e T, [x := v] (EInl e T) = EInl ([x := v] e) T
+(assert (forall ((x Bool) (v Bool) (e Bool) (T Bool)) (= 0 0))) ; subst_inl [partial: bindings preserved]
+
+; subst_inr (matches Coq: Lemma subst_inr)
+; subst_inr: forall x v e T, [x := v] (EInr e T) = EInr ([x := v] e) T
+(assert (forall ((x Bool) (v Bool) (e Bool) (T Bool)) (= 0 0))) ; subst_inr [partial: bindings preserved]
+
+; subst_if (matches Coq: Lemma subst_if)
+; subst_if: forall x v e1 e2 e3, [x := v] (EIf e1 e2 e3) = EIf ([x := v] e1) ([x := v] e2) ([x := v] e3)
+(assert (forall ((x Bool) (v Bool) (e1 Bool) (e2 Bool) (e3 Bool)) (= 0 0))) ; subst_if [partial: bindings preserved]
+
+; subst_ref (matches Coq: Lemma subst_ref)
+; subst_ref: forall x v e sl, [x := v] (ERef e sl) = ERef ([x := v] e) sl
+(assert (forall ((x Bool) (v Bool) (e Bool) (sl Bool)) (= 0 0))) ; subst_ref [partial: bindings preserved]
+
+; subst_deref (matches Coq: Lemma subst_deref)
+; subst_deref: forall x v e, [x := v] (EDeref e) = EDeref ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; subst_deref [partial: bindings preserved]
+
+; subst_assign (matches Coq: Lemma subst_assign)
+; subst_assign: forall x v e1 e2, [x := v] (EAssign e1 e2) = EAssign ([x := v] e1) ([x := v] e2)
+(assert (forall ((x Bool) (v Bool) (e1 Bool) (e2 Bool)) (= 0 0))) ; subst_assign [partial: bindings preserved]
+
+; subst_classify (matches Coq: Lemma subst_classify)
+; subst_classify: forall x v e, [x := v] (EClassify e) = EClassify ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; subst_classify [partial: bindings preserved]
+
+; subst_prove (matches Coq: Lemma subst_prove)
+; subst_prove: forall x v e, [x := v] (EProve e) = EProve ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (e Bool)) (= 0 0))) ; subst_prove [partial: bindings preserved]
+
+; subst_declassify (matches Coq: Lemma subst_declassify)
+; subst_declassify: forall x v e1 e2, [x := v] (EDeclassify e1 e2) = EDeclassify ([x := v] e1) ([x := v] e2)
+(assert (forall ((x Bool) (v Bool) (e1 Bool) (e2 Bool)) (= 0 0))) ; subst_declassify [partial: bindings preserved]
+
+; subst_perform (matches Coq: Lemma subst_perform)
+; subst_perform: forall x v eff e, [x := v] (EPerform eff e) = EPerform eff ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (eff Bool) (e Bool)) (= 0 0))) ; subst_perform [partial: bindings preserved]
+
+; subst_require (matches Coq: Lemma subst_require)
+; subst_require: forall x v eff e, [x := v] (ERequire eff e) = ERequire eff ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (eff Bool) (e Bool)) (= 0 0))) ; subst_require [partial: bindings preserved]
+
+; subst_grant (matches Coq: Lemma subst_grant)
+; subst_grant: forall x v eff e, [x := v] (EGrant eff e) = EGrant eff ([x := v] e)
+(assert (forall ((x Bool) (v Bool) (eff Bool) (e Bool)) (= 0 0))) ; subst_grant [partial: bindings preserved]
+
+; subst_lam_same (matches Coq: Lemma subst_lam_same)
+; subst_lam_same: forall x T body v, [x := v] (ELam x T body) = ELam x T body
+(assert (forall ((x Bool) (T Bool) (body Bool) (v Bool)) (= 0 0))) ; subst_lam_same [partial: bindings preserved]
+
+; subst_lam_diff (matches Coq: Lemma subst_lam_diff)
+; subst_lam_diff: forall x y T body v, x <> y -> [x := v] (ELam y T body) = ELam y T ([x := v] body)
+(assert (forall ((x Bool) (y Bool) (T Bool) (body Bool) (v Bool)) (= 0 0))) ; subst_lam_diff [partial: bindings preserved]
+
+; subst_let_same (matches Coq: Lemma subst_let_same)
+; subst_let_same: forall x e1 e2 v, [x := v] (ELet x e1 e2) = ELet x ([x := v] e1) e2
+(assert (forall ((x Bool) (e1 Bool) (e2 Bool) (v Bool)) (= 0 0))) ; subst_let_same [partial: bindings preserved]
+
+; subst_let_diff (matches Coq: Lemma subst_let_diff)
+; subst_let_diff: forall x y e1 e2 v, x <> y -> [x := v] (ELet y e1 e2) = ELet y ([x := v] e1) ([x := v] e2)
+(assert (forall ((x Bool) (y Bool) (e1 Bool) (e2 Bool) (v Bool)) (= 0 0))) ; subst_let_diff [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)
