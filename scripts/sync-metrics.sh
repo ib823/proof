@@ -52,7 +52,9 @@ AXIOMS=$(grep -oP '"axioms":\s*\K\d+' "$METRICS_FILE" | head -1)
 COQ_FILES_TOTAL=$(grep -oP '"filesTotal":\s*\K\d+' "$METRICS_FILE" | head -1)
 COQ_FILES_ACTIVE=$(grep -oP '"filesActive":\s*\K\d+' "$METRICS_FILE" | head -1)
 LEAN_THEOREMS=$(grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1)
+LEAN_COMMA=$(add_commas "$LEAN_THEOREMS")
 ISABELLE_LEMMAS=$(grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1)
+ISABELLE_COMMA=$(add_commas "$ISABELLE_LEMMAS")
 TOTAL_PROOFS=$(grep -oP '"totalProofsAllProvers":\s*\K\d+' "$METRICS_FILE" | head -1)
 TOTAL_PROOFS_COMMA=$(add_commas "$TOTAL_PROOFS")
 TRIPLE_PROVER=$(grep -oP '"tripleProverTheorems":\s*\K\d+' "$METRICS_FILE" | head -1)
@@ -224,6 +226,7 @@ if [ -f "$CLAUDE" ]; then
         # Use awk for safe multi-pattern replacement
         tmpfile=$(mktemp)
         awk -v qed="$QED_COMMA" -v lean="$LEAN_THEOREMS" -v isa="$ISABELLE_LEMMAS" \
+            -v lean_c="$LEAN_COMMA" -v isa_c="$ISABELLE_COMMA" \
             -v total="$TOTAL_PROOFS_COMMA" -v lean_files="$LEAN_FILES" \
             -v isa_files="$ISABELLE_FILES" -v examples="$EXAMPLES" \
             -v rust_tests="$RUST_TESTS" -v coq_active="$COQ_FILES_ACTIVE" '
@@ -243,13 +246,13 @@ if [ -f "$CLAUDE" ]; then
         /[|] [*][*]Example .rii Files[*][*]/ {
             gsub(/[|] [0-9]+ [|]/, "| " examples " |")
         }
-        # §0.6 table: | **Lean 4** | Secondary ... | 119 theorems, 0 sorry |
+        # §0.6 table: | **Lean 4** | Secondary ... | 8,394 theorems, 0 sorry |
         /[|] [*][*]Lean 4[*][*] [|] Secondary/ {
-            gsub(/[0-9]+ theorems/, lean " theorems")
+            gsub(/[0-9,]+ theorems/, lean_c " theorems")
         }
-        # §0.6 table: | **Isabelle/HOL** | Tertiary ... | 138 lemmas, 0 sorry |
+        # §0.6 table: | **Isabelle/HOL** | Tertiary ... | 8,493 lemmas, 0 sorry |
         /[|] [*][*]Isabelle[/]HOL[*][*] [|] Tertiary/ {
-            gsub(/[0-9]+ lemmas/, isa " lemmas")
+            gsub(/[0-9,]+ lemmas/, isa_c " lemmas")
         }
         # Footer: 8,185 total proofs: 7,928 Coq + 119 Lean + 138 Isabelle
         /Last updated:.*total proofs:/ {

@@ -448,11 +448,14 @@ if [ -f "$METRICS_FILE" ]; then
 
     ISA_COMPILED=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); print(str(d.get('quality',{}).get('isabelleCompiled',True)).lower())" 2>/dev/null || echo "true")
     ISA_SORRY_WEB=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['sorry'])" 2>/dev/null || echo "0")
-    if [ "$ISA_COMPILED" = "false" ] && [ "$ISA_SORRY_WEB" = "0" ]; then
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${YELLOW}[WARN]${NC} Isabelle reports 0 sorry but isabelleCompiled=false (sorry count is syntactic, not verified)"
+    ISA_SORRY_VERIFIED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('sorryVerified', True)).lower())" 2>/dev/null || echo "true")
+    if [ "$ISA_COMPILED" = "false" ]; then
+        if [ "$ISA_SORRY_VERIFIED" = "false" ]; then
+            echo -e "${GREEN}[OK]${NC} Isabelle sorry count ($ISA_SORRY_WEB) correctly marked as unverified (sorryVerified=false)"
+        else
+            echo -e "${RED}[MISMATCH]${NC} Isabelle isabelleCompiled=false but sorryVerified is not false — run generate-metrics.sh"
+            DISCREPANCIES=$((DISCREPANCIES + 1))
         fi
-        WARNINGS=$((WARNINGS + 1))
     fi
 
     # Check stub prover counts match metrics.json

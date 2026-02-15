@@ -22,8 +22,10 @@ Require Import Coq.Strings.String.
 Require Import Coq.Lists.List.
 Require Import Coq.Arith.Arith.
 Require Import RIINA.foundations.Syntax.
+Require Import RIINA.foundations.Semantics.
 Require Import RIINA.foundations.Typing.
 Require Import RIINA.type_system.Preservation.
+Require Import RIINA.properties.SubstitutionCommute.
 Import ListNotations.
 
 (* ================================================================= *)
@@ -503,6 +505,125 @@ Proof.
   intros.
   apply typing_weaken_store with (Σ := Σ); auto.
   apply typing_weaken_head; assumption.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 12: Lookup Append Properties *)
+(* ================================================================= *)
+
+(** If x is found in the first context, it's found in the append. *)
+Lemma lookup_app_l : forall x Γ1 Γ2 T,
+  lookup x Γ1 = Some T ->
+  lookup x (Γ1 ++ Γ2) = Some T.
+Proof.
+  intros x Γ1. induction Γ1 as [| [y U] Γ1' IH]; intros Γ2 T Hlook.
+  - simpl in Hlook. discriminate.
+  - simpl in *. destruct (String.eqb x y).
+    + exact Hlook.
+    + apply IH. exact Hlook.
+Qed.
+
+(** If x is not in the first context, lookup in append depends on the tail. *)
+Lemma lookup_app_r : forall x Γ1 Γ2,
+  lookup x Γ1 = None ->
+  lookup x (Γ1 ++ Γ2) = lookup x Γ2.
+Proof.
+  intros x Γ1. induction Γ1 as [| [y U] Γ1' IH]; intros Γ2 Hlook.
+  - simpl. reflexivity.
+  - simpl in *. destruct (String.eqb x y).
+    + discriminate.
+    + apply IH. exact Hlook.
+Qed.
+
+(** Lookup in nil is always None. *)
+Lemma lookup_nil : forall x, lookup x nil = None.
+Proof. intros. reflexivity. Qed.
+
+(** If lookup succeeds in the head, x equals the head's name. *)
+Lemma lookup_head_eq : forall x T Γ,
+  lookup x ((x, T) :: Γ) = Some T.
+Proof.
+  intros. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 13: Context Contraction *)
+(* ================================================================= *)
+
+(** Duplicate adjacent bindings can be contracted.
+    (x,T)::(x,T)::Γ ≡ (x,T)::Γ *)
+
+Lemma typing_contract : forall Γ Σ Δ e T ε x Tx,
+  has_type ((x, Tx) :: (x, Tx) :: Γ) Σ Δ e T ε ->
+  has_type ((x, Tx) :: Γ) Σ Δ e T ε.
+Proof.
+  intros. apply typing_shadow with (T2 := Tx). assumption.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 14: Store Typing Well-Formedness *)
+(* ================================================================= *)
+
+(** If store is well-formed, every runtime value has a store typing entry. *)
+Lemma store_wf_runtime_entry_typed : forall Σ st l v,
+  store_wf Σ st ->
+  store_lookup l st = Some v ->
+  exists T sl, store_ty_lookup l Σ = Some (T, sl).
+Proof.
+  intros Σ st l v Hwf Hst.
+  destruct Hwf as [_ Hrev].
+  specialize (Hrev l v Hst).
+  destruct Hrev as [T [sl [Hty _]]].
+  exists T, sl. exact Hty.
+Qed.
+
+(** Store well-formedness implies typed and runtime stores agree on domain. *)
+Lemma store_wf_bidirectional : forall Σ st l,
+  store_wf Σ st ->
+  (exists T sl, store_ty_lookup l Σ = Some (T, sl)) <->
+  (exists v, store_lookup l st = Some v).
+Proof.
+  intros Σ st l Hwf. split.
+  - intros [T [sl Hlook]].
+    destruct Hwf as [Hfwd _].
+    specialize (Hfwd l T sl Hlook).
+    destruct Hfwd as [v [Hst _]].
+    exists v. exact Hst.
+  - intros [v Hst].
+    destruct Hwf as [_ Hrev].
+    specialize (Hrev l v Hst).
+    destruct Hrev as [T [sl [Hty _]]].
+    exists T, sl. exact Hty.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 15: Typing Substitution Invariance *)
+(* ================================================================= *)
+
+(** Substitution into closed (well-typed in empty context) terms is the identity. *)
+Lemma subst_closed_typing : forall Σ Δ e T ε x v,
+  has_type nil Σ Δ e T ε ->
+  [x := v] e = e.
+Proof.
+  intros Σ Δ e T ε x v Hty.
+  apply subst_not_free_sc.
+  intros Hfree.
+  destruct (free_in_context _ _ _ _ _ _ _ Hfree Hty) as [T' Hlook].
+  simpl in Hlook. discriminate.
+Qed.
+
+(** Weakening by a list of fresh bindings preserves typing for open terms. *)
+Lemma typing_weaken_fresh_list : forall Γ1 Γ2 Σ Δ e T ε,
+  has_type Γ2 Σ Δ e T ε ->
+  (forall x, free_in x e -> lookup x Γ1 = None) ->
+  has_type (Γ1 ++ Γ2) Σ Δ e T ε.
+Proof.
+  intros Γ1 Γ2 Σ Δ e T ε Hty Hfresh.
+  eapply context_invariance.
+  - exact Hty.
+  - intros x Hfree.
+    specialize (Hfresh x Hfree).
+    symmetry. apply lookup_app_r. exact Hfresh.
 Qed.
 
 (** End of ContextProperties.v *)

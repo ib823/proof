@@ -603,6 +603,7 @@ cat > "$OUTPUT_FILE" << EOF
   "isabelle": {
     "lemmas": $ISABELLE_LEMMAS,
     "sorry": $ISABELLE_SORRY,
+    "sorryVerified": $ISABELLE_COMPILED,
     "axioms": $ISABELLE_AXIOMS,
     "files": $ISABELLE_FILES,
     "lines": $ISABELLE_LINES,

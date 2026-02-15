@@ -430,4 +430,202 @@ Proof.
   destruct Hjoin as [_ H]. contradiction.
 Qed.
 
+(* ================================================================= *)
+(** ** Section 6: Effect Join Monotonicity *)
+(* ================================================================= *)
+
+(** Effect join is monotone in both arguments:
+    if ε1 ≤ ε1' and ε2 ≤ ε2', then join(ε1, ε2) ≤ join(ε1', ε2'). *)
+
+Lemma effect_join_monotone : forall ε1 ε1' ε2 ε2',
+  effect_leq ε1 ε1' ->
+  effect_leq ε2 ε2' ->
+  effect_leq (effect_join ε1 ε2) (effect_join ε1' ε2').
+Proof.
+  intros ε1 ε1' ε2 ε2' Hle1 Hle2.
+  unfold effect_leq in *.
+  rewrite effect_level_join. rewrite effect_level_join.
+  lia.
+Qed.
+
+(** Effect join is monotone in the left argument. *)
+Lemma effect_join_mono_l : forall ε1 ε1' ε2,
+  effect_leq ε1 ε1' ->
+  effect_leq (effect_join ε1 ε2) (effect_join ε1' ε2).
+Proof.
+  intros. apply effect_join_monotone; auto. apply effect_leq_refl.
+Qed.
+
+(** Effect join is monotone in the right argument. *)
+Lemma effect_join_mono_r : forall ε1 ε2 ε2',
+  effect_leq ε2 ε2' ->
+  effect_leq (effect_join ε1 ε2) (effect_join ε1 ε2').
+Proof.
+  intros. apply effect_join_monotone; auto. apply effect_leq_refl.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 7: Effect Subsumption *)
+(* ================================================================= *)
+
+(** EffPure is the bottom element. *)
+Lemma effect_leq_pure : forall ε,
+  effect_leq EffPure ε.
+Proof.
+  intros ε. unfold effect_leq. simpl. lia.
+Qed.
+
+(** EffRead is below EffWrite. *)
+Lemma read_leq_write :
+  effect_leq EffRead EffWrite.
+Proof.
+  unfold effect_leq. simpl. lia.
+Qed.
+
+(** EffWrite subsumes EffRead under join. *)
+Lemma write_subsumes_read :
+  effect_join EffRead EffWrite = EffWrite.
+Proof. reflexivity. Qed.
+
+(** EffFileSystem is between Write and Network in the hierarchy. *)
+Lemma write_leq_filesystem :
+  effect_leq EffWrite EffFileSystem.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+(** EffPure is below EffRead. *)
+Lemma pure_leq_read :
+  effect_leq EffPure EffRead.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+(** EffPure is below EffWrite. *)
+Lemma pure_leq_write :
+  effect_leq EffPure EffWrite.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+(** Read and Write are not equal. *)
+Lemma read_neq_write : EffRead <> EffWrite.
+Proof. discriminate. Qed.
+
+(* ================================================================= *)
+(** ** Section 8: Effect Join Identity and Idempotence *)
+(* ================================================================= *)
+
+(** EffPure is the left identity for join. *)
+Lemma effect_join_pure_l : forall ε,
+  effect_join EffPure ε = ε.
+Proof.
+  intros ε. unfold effect_join. simpl.
+  destruct (effect_level ε) eqn:Hlev.
+  - simpl. apply effect_level_injective. simpl. symmetry. exact Hlev.
+  - simpl. reflexivity.
+Qed.
+
+(** Effect join is idempotent. *)
+Lemma effect_join_idem : forall ε,
+  effect_join ε ε = ε.
+Proof.
+  intros ε. unfold effect_join.
+  rewrite Nat.ltb_irrefl. reflexivity.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 9: Well-Typed Values Are Pure *)
+(* ================================================================= *)
+
+(** Every base-type value (unit, bool, int, string, loc, lam) is typed with EffPure. *)
+Lemma base_value_always_pure : forall Γ Σ Δ v T ε,
+  has_type Γ Σ Δ v T ε ->
+  (v = EUnit \/ (exists b, v = EBool b) \/ (exists n, v = EInt n) \/
+   (exists s, v = EString s) \/ (exists l, v = ELoc l) \/
+   (exists x T' body, v = ELam x T' body)) ->
+  ε = EffPure.
+Proof.
+  intros Γ Σ Δ v T ε Hty Hbase.
+  destruct Hbase as [H | [H | [H | [H | [H | H]]]]].
+  - subst. inversion Hty. reflexivity.
+  - destruct H as [b H]; subst. inversion Hty. reflexivity.
+  - destruct H as [n H]; subst. inversion Hty. reflexivity.
+  - destruct H as [s H]; subst. inversion Hty. reflexivity.
+  - destruct H as [l H]; subst. inversion Hty. reflexivity.
+  - destruct H as [x [T' [body H]]]; subst. inversion Hty. reflexivity.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 10: Pure Multi-Step Context Invariance *)
+(* ================================================================= *)
+
+(** Multi-step evaluation of pure expressions preserves context. *)
+Theorem pure_multi_step_preserves_ctx :
+  forall e e' T st st' ctx ctx' Σ,
+  has_type nil Σ Public e T EffPure ->
+  store_wf Σ st ->
+  (e, st, ctx) -->* (e', st', ctx') ->
+  ctx' = ctx.
+Proof.
+  intros e e' T st st' ctx ctx' Σ Hty Hwf Hmulti.
+  remember (e, st, ctx) as cfg1 eqn:Heq1.
+  remember (e', st', ctx') as cfg2 eqn:Heq2.
+  revert e st ctx e' st' ctx' T Σ Heq1 Heq2 Hty Hwf.
+  induction Hmulti; intros e0 st0 ctx0 e0' st0' ctx0' T0 Σ0 Heq1 Heq2 Hty Hwf.
+  - rewrite Heq1 in Heq2. inversion Heq2; subst. reflexivity.
+  - subst.
+    destruct cfg2 as [[em stm] ctxm].
+    assert (Hst_eq : stm = st0).
+    { eapply pure_step_preserves_store; eassumption. }
+    assert (Hctx_eq : ctxm = ctx0).
+    { eapply pure_step_preserves_ctx; eassumption. }
+    subst stm ctxm.
+    destruct (preservation_pure e0 em T0 st0 st0 ctx0 ctx0 Σ0 Hty Hwf H)
+      as [Σ' [Hext [Hwf' Hty']]].
+    eapply IHHmulti; try reflexivity; eassumption.
+Qed.
+
+(** Combined: pure multi-step preserves both store and context. *)
+Corollary pure_multi_step_preserves_all :
+  forall e e' T st st' ctx ctx' Σ,
+  has_type nil Σ Public e T EffPure ->
+  store_wf Σ st ->
+  (e, st, ctx) -->* (e', st', ctx') ->
+  st' = st /\ ctx' = ctx.
+Proof.
+  intros. split.
+  - eapply pure_multi_step_preserves_store; eassumption.
+  - eapply pure_multi_step_preserves_ctx; eassumption.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 11: Effect Non-Equality *)
+(* ================================================================= *)
+
+(** All non-pure base effects are distinct from EffPure. *)
+Lemma effect_read_not_pure : EffRead <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_write_not_pure : EffWrite <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_filesystem_not_pure : EffFileSystem <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_network_not_pure : EffNetwork <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_system_not_pure : EffSystem <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_crypto_not_pure : EffCrypto <> EffPure.
+Proof. discriminate. Qed.
+
+(** Quadruple join pure inversion. *)
+Corollary effect_join_quad_pure_inv : forall ε1 ε2 ε3 ε4,
+  effect_join ε1 (effect_join ε2 (effect_join ε3 ε4)) = EffPure ->
+  ε1 = EffPure /\ ε2 = EffPure /\ ε3 = EffPure /\ ε4 = EffPure.
+Proof.
+  intros ε1 ε2 ε3 ε4 H.
+  apply effect_join_pure_inv in H. destruct H as [H1 H234].
+  apply effect_join_pure_inv in H234. destruct H234 as [H2 H34].
+  apply effect_join_pure_inv in H34. destruct H34 as [H3 H4].
+  auto.
+Qed.
+
 (** End of EffectSafety.v *)
