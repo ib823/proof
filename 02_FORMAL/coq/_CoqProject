@@ -46,6 +46,7 @@ properties/AhmedStyleTest.v
 properties/TypingInversion.v
 properties/ContextProperties.v
 properties/EffectSafety.v
+properties/CanonicalForms.v
 
 # REMOVED: Leaf files with unprovable admits (no dependents)
 # Moved to _archive_deprecated/ — see commit message for analysis
