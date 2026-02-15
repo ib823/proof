@@ -409,4 +409,191 @@ Proof.
   simpl. split; assumption.
 Qed.
 
+(** ** Section 13: Effect Isolation
+
+    Two non-overlapping effects cannot interfere with each other.
+    If one subexpression performs only eff1 and another only eff2,
+    their combination is bounded by the join.
+*)
+
+Theorem effect_isolation : forall e1 e2 eff1 eff2,
+  performs_within e1 eff1 ->
+  performs_within e2 eff2 ->
+  performs_within (EApp e1 e2) (effect_join eff1 eff2).
+Proof.
+  intros e1 e2 eff1 eff2 H1 H2.
+  simpl. split.
+  - apply (performs_within_mono e1 eff1 (effect_join eff1 eff2)).
+    + apply effect_join_ub_l.
+    + exact H1.
+  - apply (performs_within_mono e2 eff2 (effect_join eff1 eff2)).
+    + apply effect_join_ub_r.
+    + exact H2.
+Qed.
+
+Theorem effect_isolation_let : forall x e1 e2 eff1 eff2,
+  performs_within e1 eff1 ->
+  performs_within e2 eff2 ->
+  performs_within (ELet x e1 e2) (effect_join eff1 eff2).
+Proof.
+  intros x e1 e2 eff1 eff2 H1 H2.
+  simpl. split.
+  - apply (performs_within_mono e1 eff1 (effect_join eff1 eff2)).
+    + apply effect_join_ub_l.
+    + exact H1.
+  - apply (performs_within_mono e2 eff2 (effect_join eff1 eff2)).
+    + apply effect_join_ub_r.
+    + exact H2.
+Qed.
+
+Theorem effect_isolation_pair : forall e1 e2 eff1 eff2,
+  performs_within e1 eff1 ->
+  performs_within e2 eff2 ->
+  performs_within (EPair e1 e2) (effect_join eff1 eff2).
+Proof.
+  intros e1 e2 eff1 eff2 H1 H2.
+  simpl. split.
+  - apply (performs_within_mono e1 eff1 (effect_join eff1 eff2)).
+    + apply effect_join_ub_l.
+    + exact H1.
+  - apply (performs_within_mono e2 eff2 (effect_join eff1 eff2)).
+    + apply effect_join_ub_r.
+    + exact H2.
+Qed.
+
+(** ** Section 14: Double Handling
+
+    Nesting two EHandle expressions combines the handlers.
+*)
+
+Theorem double_handle_body : forall e x1 h1 x2 h2 eff,
+  performs_within (EHandle (EHandle e x1 h1) x2 h2) eff ->
+  performs_within e eff.
+Proof.
+  intros e x1 h1 x2 h2 eff H.
+  simpl in H. destruct H as [[He _] _].
+  exact He.
+Qed.
+
+Theorem double_handle_outer_handler : forall e x1 h1 x2 h2 eff,
+  performs_within (EHandle (EHandle e x1 h1) x2 h2) eff ->
+  performs_within h2 eff.
+Proof.
+  intros e x1 h1 x2 h2 eff H.
+  simpl in H. destruct H as [_ Hh2].
+  exact Hh2.
+Qed.
+
+Theorem double_handle_inner_handler : forall e x1 h1 x2 h2 eff,
+  performs_within (EHandle (EHandle e x1 h1) x2 h2) eff ->
+  performs_within h1 eff.
+Proof.
+  intros e x1 h1 x2 h2 eff H.
+  simpl in H. destruct H as [[_ Hh1] _].
+  exact Hh1.
+Qed.
+
+(** ** Section 15: Program-Level Soundness
+
+    End-to-end: a well-typed closed program's effects are fully contained.
+*)
+
+Theorem program_effect_contained : forall e T ε,
+  has_type nil nil Public e T ε ->
+  performs_within e ε.
+Proof.
+  intros e T ε Hty.
+  apply core_effects_within with (G := nil) (S := nil) (D := Public) (T := T).
+  exact Hty.
+Qed.
+
+(** A pure closed program has no effects at all *)
+Theorem pure_program_no_effects : forall e T,
+  has_type nil nil Public e T EffectPure ->
+  forall eff, performs_within e eff.
+Proof.
+  intros e T Hty eff.
+  apply pure_performs_any with (G := nil) (S := nil) (D := Public) (T := T).
+  exact Hty.
+Qed.
+
+(** If a program performs within eff, adding a grant doesn't change the bound *)
+Theorem grant_idempotent_bound : forall eff e eff_bound,
+  performs_within e eff_bound ->
+  performs_within (EGrant eff e) eff_bound.
+Proof.
+  intros eff e eff_bound H.
+  simpl. exact H.
+Qed.
+
+(** Require doesn't change the performs_within bound *)
+Theorem require_bound_transparent : forall eff e eff_bound,
+  performs_within e eff_bound ->
+  performs_within (ERequire eff e) eff_bound.
+Proof.
+  intros eff e eff_bound H.
+  simpl. exact H.
+Qed.
+
+(** ** Section 16: Perform Decomposition
+
+    Decomposing performs_within through each expression constructor.
+*)
+
+Theorem if_performs_within : forall e1 e2 e3 eff,
+  performs_within e1 eff ->
+  performs_within e2 eff ->
+  performs_within e3 eff ->
+  performs_within (EIf e1 e2 e3) eff.
+Proof.
+  intros e1 e2 e3 eff H1 H2 H3.
+  simpl. split; [exact H1 | split; [exact H2 | exact H3]].
+Qed.
+
+Theorem case_performs_within : forall e0 x1 e1 x2 e2 eff,
+  performs_within e0 eff ->
+  performs_within e1 eff ->
+  performs_within e2 eff ->
+  performs_within (ECase e0 x1 e1 x2 e2) eff.
+Proof.
+  intros e0 x1 e1 x2 e2 eff H0 H1 H2.
+  simpl. split; [exact H0 | split; [exact H1 | exact H2]].
+Qed.
+
+Theorem ref_performs_within : forall e sl eff,
+  performs_within e eff ->
+  performs_within (ERef e sl) eff.
+Proof.
+  intros e sl eff H. simpl. exact H.
+Qed.
+
+Theorem deref_performs_within : forall e eff,
+  performs_within e eff ->
+  performs_within (EDeref e) eff.
+Proof.
+  intros e eff H. simpl. exact H.
+Qed.
+
+Theorem assign_performs_within : forall e1 e2 eff,
+  performs_within e1 eff ->
+  performs_within e2 eff ->
+  performs_within (EAssign e1 e2) eff.
+Proof.
+  intros e1 e2 eff H1 H2. simpl. split; assumption.
+Qed.
+
+Theorem classify_performs_within : forall e eff,
+  performs_within e eff ->
+  performs_within (EClassify e) eff.
+Proof.
+  intros e eff H. simpl. exact H.
+Qed.
+
+Theorem prove_performs_within : forall e eff,
+  performs_within e eff ->
+  performs_within (EProve e) eff.
+Proof.
+  intros e eff H. simpl. exact H.
+Qed.
+
 (** End of EffectGate.v *)

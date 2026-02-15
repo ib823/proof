@@ -97,4 +97,188 @@ Proof.
   - exfalso. apply (Hclosed y). simpl. split; assumption.
 Qed.
 
+(** ** Section 5: Closedness for More Expression Forms *)
+
+Lemma closed_if_cv : forall e1 e2 e3,
+  closed_expr_cv (EIf e1 e2 e3) <-> closed_expr_cv e1 /\ closed_expr_cv e2 /\ closed_expr_cv e3.
+Proof.
+  intros e1 e2 e3. split.
+  - intros Hc. split; [| split]; unfold closed_expr_cv in *; intros x Hfree;
+    apply (Hc x); simpl;
+    [left | right; left | right; right]; exact Hfree.
+  - intros [Hc1 [Hc2 Hc3]]. unfold closed_expr_cv in *. intros x Hfree.
+    simpl in Hfree. destruct Hfree as [H | [H | H]].
+    + apply (Hc1 x H).
+    + apply (Hc2 x H).
+    + apply (Hc3 x H).
+Qed.
+
+Lemma closed_let_cv : forall y e1 e2,
+  closed_expr_cv (ELet y e1 e2) <->
+  closed_expr_cv e1 /\ (forall x, x <> y -> free_in x e2 -> False).
+Proof.
+  intros y e1 e2. split.
+  - intros Hc. split.
+    + unfold closed_expr_cv in *. intros x Hfree.
+      apply (Hc x). simpl. left. exact Hfree.
+    + intros x Hneq Hfree. apply (Hc x). simpl. right. split; assumption.
+  - intros [Hc1 Hc2]. unfold closed_expr_cv. intros x Hfree.
+    simpl in Hfree. destruct Hfree as [H | [Hneq H]].
+    + apply (Hc1 x H).
+    + exact (Hc2 x Hneq H).
+Qed.
+
+Lemma closed_ref_cv : forall e sl,
+  closed_expr_cv (ERef e sl) <-> closed_expr_cv e.
+Proof.
+  intros e sl. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+Lemma closed_deref_cv : forall e,
+  closed_expr_cv (EDeref e) <-> closed_expr_cv e.
+Proof.
+  intros e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+Lemma closed_assign_cv : forall e1 e2,
+  closed_expr_cv (EAssign e1 e2) <-> closed_expr_cv e1 /\ closed_expr_cv e2.
+Proof.
+  intros e1 e2. split.
+  - intros Hc. split; unfold closed_expr_cv in *; intros x Hfree;
+    apply (Hc x); simpl; [left | right]; exact Hfree.
+  - intros [Hc1 Hc2]. unfold closed_expr_cv in *. intros x Hfree.
+    simpl in Hfree. destruct Hfree as [H | H]; [apply (Hc1 x H) | apply (Hc2 x H)].
+Qed.
+
+Lemma closed_classify_cv : forall e,
+  closed_expr_cv (EClassify e) <-> closed_expr_cv e.
+Proof.
+  intros e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+Lemma closed_prove_cv : forall e,
+  closed_expr_cv (EProve e) <-> closed_expr_cv e.
+Proof.
+  intros e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+Lemma closed_fst_cv : forall e,
+  closed_expr_cv (EFst e) <-> closed_expr_cv e.
+Proof.
+  intros e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+Lemma closed_snd_cv : forall e,
+  closed_expr_cv (ESnd e) <-> closed_expr_cv e.
+Proof.
+  intros e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+(** ** Section 6: Value Closedness Properties *)
+
+Require Import RIINA.foundations.Semantics.
+
+(** Values of simple base types are always closed *)
+Lemma value_closed_simple : forall v Σ Δ T ε,
+  value v ->
+  has_type nil Σ Δ v T ε ->
+  match v with
+  | EUnit | EBool _ | EInt _ | EString _ | ELoc _ => True
+  | _ => True
+  end ->
+  closed_expr_cv v.
+Proof.
+  intros v Σ Δ T ε Hval Hty _.
+  exact (value_typed_closed Σ Δ v T ε Hval Hty).
+Qed.
+
+(** Closed expressions under weakening *)
+Lemma closed_weaken_ctx : forall e Σ1 Σ2 Δ T ε,
+  has_type nil Σ1 Δ e T ε ->
+  store_ty_extends Σ1 Σ2 ->
+  closed_expr_cv e.
+Proof.
+  intros e Σ1 Σ2 Δ T ε Hty Hext.
+  unfold closed_expr_cv. intros x Hfree.
+  destruct (free_in_context x e nil Σ1 Δ T ε Hfree Hty) as [T' Hlook].
+  simpl in Hlook. discriminate.
+Qed.
+
+(** Any expression typed in nil context is closed *)
+Lemma nil_ctx_is_closed : forall e Σ Δ T ε,
+  has_type nil Σ Δ e T ε ->
+  closed_expr_cv e.
+Proof.
+  intros e Σ Δ T ε Hty.
+  unfold closed_expr_cv. intros x Hfree.
+  destruct (free_in_context x e nil Σ Δ T ε Hfree Hty) as [T' Hlook].
+  simpl in Hlook. discriminate.
+Qed.
+
+(** Closedness is preserved by EGrant wrapper *)
+Lemma closed_grant_cv : forall eff e,
+  closed_expr_cv (EGrant eff e) <-> closed_expr_cv e.
+Proof.
+  intros eff e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+(** Closedness is preserved by ERequire wrapper *)
+Lemma closed_require_cv : forall eff e,
+  closed_expr_cv (ERequire eff e) <-> closed_expr_cv e.
+Proof.
+  intros eff e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+(** Closedness is preserved by EPerform wrapper *)
+Lemma closed_perform_cv : forall eff e,
+  closed_expr_cv (EPerform eff e) <-> closed_expr_cv e.
+Proof.
+  intros eff e. split; unfold closed_expr_cv; intros Hc x Hfree.
+  - apply (Hc x). simpl. exact Hfree.
+  - simpl in Hfree. apply (Hc x). exact Hfree.
+Qed.
+
+(** Closedness for handle expressions *)
+Lemma closed_handle_cv : forall e y h,
+  closed_expr_cv (EHandle e y h) <->
+  closed_expr_cv e /\ (forall x, x <> y -> ~ free_in x h).
+Proof.
+  intros e y h. split.
+  - intros Hc. split.
+    + unfold closed_expr_cv in *. intros x Hfree.
+      apply (Hc x). simpl. left. exact Hfree.
+    + intros x Hneq Hfree. apply (Hc x). simpl. right. split; assumption.
+  - intros [Hce Hch]. unfold closed_expr_cv. intros x Hfree.
+    simpl in Hfree. destruct Hfree as [H | [Hneq H]].
+    + apply (Hce x H).
+    + exact (Hch x Hneq H).
+Qed.
+
+(** Closedness for declassify *)
+Lemma closed_declassify_cv : forall e1 e2,
+  closed_expr_cv (EDeclassify e1 e2) <-> closed_expr_cv e1 /\ closed_expr_cv e2.
+Proof.
+  intros e1 e2. split.
+  - intros Hc. split; unfold closed_expr_cv in *; intros x Hfree;
+    apply (Hc x); simpl; [left | right]; exact Hfree.
+  - intros [Hc1 Hc2]. unfold closed_expr_cv in *. intros x Hfree.
+    simpl in Hfree. destruct Hfree as [H | H]; [apply (Hc1 x H) | apply (Hc2 x H)].
+Qed.
+
 (** End of file - ZERO ADMITS *)

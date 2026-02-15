@@ -1,6 +1,6 @@
 # RIINA Specifications (Track C)
 
-**Verification:** 8,362 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,438 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
 
 This directory contains formal specifications for RIINA.
 

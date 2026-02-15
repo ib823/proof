@@ -455,4 +455,106 @@ Proof.
   intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
 Qed.
 
+(* ================================================================= *)
+(** ** Effect Weakening for Full Typing *)
+(* ================================================================= *)
+
+(** If has_type_full gives effect ε, any effect ε' ≥ ε also bounds the expression. *)
+Lemma has_type_full_weaken_effect : forall G S D e T ε ε',
+  has_type_full G S D e T ε ->
+  effect_leq ε ε' ->
+  performs_within e ε'.
+Proof.
+  intros G S D e T ε ε' Hty Hle.
+  apply performs_within_mono with (eff1 := ε).
+  - exact Hle.
+  - apply effect_safety with (G := G) (S := S) (D := D) (T := T). exact Hty.
+Qed.
+
+(** The pure effect is always a valid lower bound. *)
+Lemma pure_within_any_effect : forall e,
+  performs_within e EffPure ->
+  forall eff, performs_within e eff.
+Proof.
+  intros e Hpw eff.
+  apply performs_within_mono with (eff1 := EffPure).
+  - apply effect_leq_pure.
+  - exact Hpw.
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Composition for Nested Expressions *)
+(* ================================================================= *)
+
+(** Assign composes three effects: lhs + rhs + EffWrite. *)
+Lemma assign_effect_covers : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 (effect_join ε2 EffectWrite)) /\
+  effect_leq ε2 (effect_join ε1 (effect_join ε2 EffectWrite)) /\
+  effect_leq EffectWrite (effect_join ε1 (effect_join ε2 EffectWrite)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** Case expression effect covers scrutinee and both branches. *)
+Lemma case_effect_covers : forall ε ε1 ε2,
+  effect_leq ε (effect_join ε (effect_join ε1 ε2)) /\
+  effect_leq ε1 (effect_join ε (effect_join ε1 ε2)) /\
+  effect_leq ε2 (effect_join ε (effect_join ε1 ε2)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** Handle combines body and handler effects. *)
+Lemma handle_effect_covers : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
+Qed.
+
+(** Declassify composes secret and proof effects. *)
+Lemma declassify_effect_covers : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Idempotence for Programs *)
+(* ================================================================= *)
+
+(** If an expression's effects are bounded by ε, joining with ε is idempotent. *)
+Lemma performs_within_join_self : forall e eff,
+  performs_within e eff ->
+  performs_within e (effect_join eff eff).
+Proof.
+  intros e eff Hpw.
+  rewrite effect_join_idem. exact Hpw.
+Qed.
+
+(** Effect bound is preserved under join with pure. *)
+Lemma performs_within_join_pure_l : forall e eff,
+  performs_within e eff ->
+  performs_within e (effect_join EffPure eff).
+Proof.
+  intros e eff Hpw.
+  rewrite effect_join_pure_l. exact Hpw.
+Qed.
+
+(** Effect bound is preserved under join with pure (right). *)
+Lemma performs_within_join_pure_r : forall e eff,
+  performs_within e eff ->
+  performs_within e (effect_join eff EffPure).
+Proof.
+  intros e eff Hpw.
+  rewrite effect_join_pure_r. exact Hpw.
+Qed.
+
 (** End of EffectSystem.v *)

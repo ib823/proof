@@ -247,4 +247,121 @@ Proof.
   - (* VProve *) constructor. auto.
 Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Structural Substitution Lemmas                                 *)
+(** ----------------------------------------------------------------- *)
+
+(** Substitution distributes over application. *)
+Lemma subst_app : forall x v e1 e2,
+  [x := v] (EApp e1 e2) = EApp ([x := v] e1) ([x := v] e2).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over pair. *)
+Lemma subst_pair : forall x v e1 e2,
+  [x := v] (EPair e1 e2) = EPair ([x := v] e1) ([x := v] e2).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over fst/snd. *)
+Lemma subst_fst : forall x v e,
+  [x := v] (EFst e) = EFst ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_snd : forall x v e,
+  [x := v] (ESnd e) = ESnd ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over injection. *)
+Lemma subst_inl : forall x v e T,
+  [x := v] (EInl e T) = EInl ([x := v] e) T.
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_inr : forall x v e T,
+  [x := v] (EInr e T) = EInr ([x := v] e) T.
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over if. *)
+Lemma subst_if : forall x v e1 e2 e3,
+  [x := v] (EIf e1 e2 e3) = EIf ([x := v] e1) ([x := v] e2) ([x := v] e3).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over ref/deref/assign. *)
+Lemma subst_ref : forall x v e sl,
+  [x := v] (ERef e sl) = ERef ([x := v] e) sl.
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_deref : forall x v e,
+  [x := v] (EDeref e) = EDeref ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_assign : forall x v e1 e2,
+  [x := v] (EAssign e1 e2) = EAssign ([x := v] e1) ([x := v] e2).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over classify/prove. *)
+Lemma subst_classify : forall x v e,
+  [x := v] (EClassify e) = EClassify ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_prove : forall x v e,
+  [x := v] (EProve e) = EProve ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over declassify. *)
+Lemma subst_declassify : forall x v e1 e2,
+  [x := v] (EDeclassify e1 e2) = EDeclassify ([x := v] e1) ([x := v] e2).
+Proof. intros. reflexivity. Qed.
+
+(** Substitution distributes over effect operations. *)
+Lemma subst_perform : forall x v eff e,
+  [x := v] (EPerform eff e) = EPerform eff ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_require : forall x v eff e,
+  [x := v] (ERequire eff e) = ERequire eff ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_grant : forall x v eff e,
+  [x := v] (EGrant eff e) = EGrant eff ([x := v] e).
+Proof. intros. reflexivity. Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Lambda Substitution Properties                                  *)
+(** ----------------------------------------------------------------- *)
+
+(** Substituting into a lambda with the same binder is the identity. *)
+Lemma subst_lam_same : forall x T body v,
+  [x := v] (ELam x T body) = ELam x T body.
+Proof.
+  intros x T body v. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** Substituting into a lambda with a different binder descends into the body. *)
+Lemma subst_lam_diff : forall x y T body v,
+  x <> y ->
+  [x := v] (ELam y T body) = ELam y T ([x := v] body).
+Proof.
+  intros x y T body v Hneq. simpl.
+  destruct (String.eqb x y) eqn:Heq.
+  - apply String.eqb_eq in Heq. contradiction.
+  - reflexivity.
+Qed.
+
+(** Substituting into a let with the same binder only affects the binding. *)
+Lemma subst_let_same : forall x e1 e2 v,
+  [x := v] (ELet x e1 e2) = ELet x ([x := v] e1) e2.
+Proof.
+  intros x e1 e2 v. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** Substituting into a let with a different binder descends into both. *)
+Lemma subst_let_diff : forall x y e1 e2 v,
+  x <> y ->
+  [x := v] (ELet y e1 e2) = ELet y ([x := v] e1) ([x := v] e2).
+Proof.
+  intros x y e1 e2 v Hneq. simpl.
+  destruct (String.eqb x y) eqn:Heq.
+  - apply String.eqb_eq in Heq. contradiction.
+  - reflexivity.
+Qed.
+
 (** End of file - ZERO ADMITS *)
