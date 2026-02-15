@@ -48,6 +48,7 @@ properties/ContextProperties.v
 properties/EffectSafety.v
 properties/CanonicalForms.v
 properties/EffectMonotonicity.v
+properties/StoreSafety.v
 
 # REMOVED: Leaf files with unprovable admits (no dependents)
 # Moved to _archive_deprecated/ — see commit message for analysis

@@ -626,4 +626,112 @@ Proof.
     symmetry. apply lookup_app_r. exact Hfresh.
 Qed.
 
+(* ================================================================= *)
+(** ** Section 16: Lookup Domain Properties *)
+(* ================================================================= *)
+
+(** Lookup in a singleton context. *)
+Lemma lookup_singleton : forall x T,
+  lookup x ((x, T) :: nil) = Some T.
+Proof.
+  intros. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** If lookup in (y,U)::Γ returns T and x ≠ y, then T comes from Γ.
+    (Same as lookup_cons_inv above but with reordered args for ergonomics.) *)
+Lemma lookup_cons_tail : forall x y U T Γ,
+  x <> y ->
+  lookup x ((y, U) :: Γ) = Some T ->
+  lookup x Γ = Some T.
+Proof.
+  intros x y U T Γ Hneq Hlook.
+  simpl in Hlook. destruct (String.eqb_spec x y).
+  - contradiction.
+  - exact Hlook.
+Qed.
+
+(** Lookup is decidable. *)
+Lemma lookup_dec : forall x Γ,
+  {exists T, lookup x Γ = Some T} + {lookup x Γ = None}.
+Proof.
+  intros x Γ. destruct (lookup x Γ) eqn:Hlook.
+  - left. exists t. reflexivity.
+  - right. reflexivity.
+Defined.
+
+(* ================================================================= *)
+(** ** Section 17: Typing and Free Variables *)
+(* ================================================================= *)
+
+(** If a variable x has a binding in Γ and e is typed in Γ, then either
+    x is free in e or the binding is unused. This is the contrapositive
+    of free_in_context. *)
+Lemma typed_var_bound : forall x Γ Σ Δ T ε,
+  has_type Γ Σ Δ (EVar x) T ε ->
+  lookup x Γ = Some T.
+Proof.
+  intros x Γ Σ Δ T ε Hty.
+  inversion Hty; subst. assumption.
+Qed.
+
+(** Closed terms are invariant under any context and security level change. *)
+Lemma closed_typing_any_ctx : forall Γ Σ Δ1 Δ2 e T ε,
+  has_type nil Σ Δ1 e T ε ->
+  has_type Γ Σ Δ2 e T ε.
+Proof.
+  intros.
+  apply typing_delta_irrelevance with (Δ1 := Δ1).
+  apply typing_weaken_closed. assumption.
+Qed.
+
+(** Weakening commutes with exchange: can weaken and exchange simultaneously. *)
+Lemma typing_weaken_exchange : forall Γ Σ Δ e T ε x Tx y Ty,
+  has_type Γ Σ Δ e T ε ->
+  ~ free_in x e ->
+  ~ free_in y e ->
+  x <> y ->
+  has_type ((y, Ty) :: (x, Tx) :: Γ) Σ Δ e T ε.
+Proof.
+  intros Γ Σ Δ e T ε x Tx y Ty Hty Hx Hy Hneq.
+  apply typing_exchange with (x := x) (y := y); auto.
+  apply typing_weaken_two; assumption.
+Qed.
+
+(* ================================================================= *)
+(** ** Section 18: Context Length and Induction Helpers *)
+(* ================================================================= *)
+
+(** Weakening by appending: lookup agreement on free vars gives typing. *)
+Lemma typing_weaken_append : forall Γ1 Γ2 Σ Δ e T ε,
+  has_type Γ1 Σ Δ e T ε ->
+  has_type (Γ1 ++ Γ2) Σ Δ e T ε.
+Proof.
+  intros Γ1 Γ2 Σ Δ e T ε Hty.
+  eapply context_invariance.
+  - exact Hty.
+  - intros x Hfree.
+    destruct (free_in_context _ _ _ _ _ _ _ Hfree Hty) as [T' Hlook].
+    rewrite Hlook. symmetry. apply lookup_app_l. exact Hlook.
+Qed.
+
+(** Removing a suffix from Γ preserves typing if all free variables
+    are bound in the prefix. *)
+Lemma typing_prefix_sufficient : forall Γ1 Γ2 Σ Δ e T ε,
+  has_type (Γ1 ++ Γ2) Σ Δ e T ε ->
+  (forall x, free_in x e -> lookup x Γ1 = lookup x (Γ1 ++ Γ2)) ->
+  has_type Γ1 Σ Δ e T ε.
+Proof.
+  intros Γ1 Γ2 Σ Δ e T ε Hty Hagree.
+  eapply context_invariance.
+  - exact Hty.
+  - intros x Hfree. symmetry. apply Hagree. exact Hfree.
+Qed.
+
+(** Typing in singleton context: a variable is well-typed with pure effect. *)
+Lemma typing_singleton_var : forall x T Σ Δ,
+  has_type ((x, T) :: nil) Σ Δ (EVar x) T EffectPure.
+Proof.
+  intros. apply T_Var. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
 (** End of ContextProperties.v *)
