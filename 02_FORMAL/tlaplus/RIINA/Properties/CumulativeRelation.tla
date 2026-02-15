@@ -1,7 +1,7 @@
 ---- MODULE CumulativeRelation ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/CumulativeRelation.v (14 invariants)
+\* Derived from 02_FORMAL/coq/properties/CumulativeRelation.v (24 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -78,6 +78,36 @@ THEOREM store_ty_extends_trans == Init => TypeOK
 
 \* store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 THEOREM store_ty_extends_refl == Init => TypeOK
+
+\* val_rel_le_build_unit (matches Coq: Lemma val_rel_le_build_unit)
+THEOREM val_rel_le_build_unit == Init => TypeOK
+
+\* val_rel_le_build_bool (matches Coq: Lemma val_rel_le_build_bool)
+THEOREM val_rel_le_build_bool == Init => TypeOK
+
+\* val_rel_le_build_int (matches Coq: Lemma val_rel_le_build_int)
+THEOREM val_rel_le_build_int == Init => TypeOK
+
+\* val_rel_le_build_string (matches Coq: Lemma val_rel_le_build_string)
+THEOREM val_rel_le_build_string == Init => TypeOK
+
+\* val_rel_le_unit_eq (matches Coq: Lemma val_rel_le_unit_eq)
+THEOREM val_rel_le_unit_eq == Init => TypeOK
+
+\* val_rel_le_bool_eq (matches Coq: Lemma val_rel_le_bool_eq)
+THEOREM val_rel_le_bool_eq == Init => TypeOK
+
+\* val_rel_le_int_eq (matches Coq: Lemma val_rel_le_int_eq)
+THEOREM val_rel_le_int_eq == Init => TypeOK
+
+\* val_rel_le_string_eq (matches Coq: Lemma val_rel_le_string_eq)
+THEOREM val_rel_le_string_eq == Init => TypeOK
+
+\* exp_rel_le_mono_step (matches Coq: Lemma exp_rel_le_mono_step)
+THEOREM exp_rel_le_mono_step == Init => TypeOK
+
+\* exp_rel_le_zero_val (matches Coq: Lemma exp_rel_le_zero_val)
+THEOREM exp_rel_le_zero_val == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

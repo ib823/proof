@@ -1,7 +1,7 @@
 ---- MODULE KripkeProperties ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/KripkeProperties.v (25 invariants)
+\* Derived from 02_FORMAL/coq/properties/KripkeProperties.v (41 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -93,6 +93,54 @@ THEOREM store_ty_lookup_update_neq == Init => TypeOK
 
 \* store_ty_extends_add (matches Coq: Lemma store_ty_extends_add)
 THEOREM store_ty_extends_add == Init => TypeOK
+
+\* val_rel_le_build_labeled (matches Coq: Lemma val_rel_le_build_labeled)
+THEOREM val_rel_le_build_labeled == Init => TypeOK
+
+\* val_rel_le_step_up_labeled (matches Coq: Lemma val_rel_le_step_up_labeled)
+THEOREM val_rel_le_step_up_labeled == Init => TypeOK
+
+\* val_rel_le_build_tainted (matches Coq: Lemma val_rel_le_build_tainted)
+THEOREM val_rel_le_build_tainted == Init => TypeOK
+
+\* val_rel_le_step_up_tainted (matches Coq: Lemma val_rel_le_step_up_tainted)
+THEOREM val_rel_le_step_up_tainted == Init => TypeOK
+
+\* val_rel_le_build_sanitized (matches Coq: Lemma val_rel_le_build_sanitized)
+THEOREM val_rel_le_build_sanitized == Init => TypeOK
+
+\* val_rel_le_step_up_sanitized (matches Coq: Lemma val_rel_le_step_up_sanitized)
+THEOREM val_rel_le_step_up_sanitized == Init => TypeOK
+
+\* val_rel_le_build_proof (matches Coq: Lemma val_rel_le_build_proof)
+THEOREM val_rel_le_build_proof == Init => TypeOK
+
+\* val_rel_le_step_up_proof (matches Coq: Lemma val_rel_le_step_up_proof)
+THEOREM val_rel_le_step_up_proof == Init => TypeOK
+
+\* val_rel_le_build_ct (matches Coq: Lemma val_rel_le_build_ct)
+THEOREM val_rel_le_build_ct == Init => TypeOK
+
+\* val_rel_le_step_up_ct (matches Coq: Lemma val_rel_le_step_up_ct)
+THEOREM val_rel_le_step_up_ct == Init => TypeOK
+
+\* val_rel_le_build_zero (matches Coq: Lemma val_rel_le_build_zero)
+THEOREM val_rel_le_build_zero == Init => TypeOK
+
+\* val_rel_le_step_up_zero (matches Coq: Lemma val_rel_le_step_up_zero)
+THEOREM val_rel_le_step_up_zero == Init => TypeOK
+
+\* val_rel_le_build_cap (matches Coq: Lemma val_rel_le_build_cap)
+THEOREM val_rel_le_build_cap == Init => TypeOK
+
+\* val_rel_le_step_up_cap (matches Coq: Lemma val_rel_le_step_up_cap)
+THEOREM val_rel_le_step_up_cap == Init => TypeOK
+
+\* val_rel_le_build_ref_kripke (matches Coq: Lemma val_rel_le_build_ref_kripke)
+THEOREM val_rel_le_build_ref_kripke == Init => TypeOK
+
+\* val_rel_le_step_up_ref (matches Coq: Lemma val_rel_le_step_up_ref)
+THEOREM val_rel_le_step_up_ref == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

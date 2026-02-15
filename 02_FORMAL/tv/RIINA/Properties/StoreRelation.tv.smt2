@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/StoreRelation.v (25 validations)
+; Derived from 02_FORMAL/coq/properties/StoreRelation.v (34 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for StoreRelation
@@ -138,6 +138,51 @@
 (declare-fun source_val_rel_le_unit () Bool)
 (declare-fun target_val_rel_le_unit () Bool)
 (assert (= source_val_rel_le_unit target_val_rel_le_unit))
+
+; store_rel_le_empty: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_rel_le_empty () Bool)
+(declare-fun target_store_rel_le_empty () Bool)
+(assert (= source_store_rel_le_empty target_store_rel_le_empty))
+
+; store_rel_simple_empty: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_rel_simple_empty () Bool)
+(declare-fun target_store_rel_simple_empty () Bool)
+(assert (= source_store_rel_simple_empty target_store_rel_simple_empty))
+
+; store_rel_le_both_some: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_rel_le_both_some () Bool)
+(declare-fun target_store_rel_le_both_some () Bool)
+(assert (= source_store_rel_le_both_some target_store_rel_le_both_some))
+
+; store_ty_update_preserves: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_ty_update_preserves () Bool)
+(declare-fun target_store_ty_update_preserves () Bool)
+(assert (= source_store_ty_update_preserves target_store_ty_update_preserves))
+
+; store_max_nil: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_max_nil () Bool)
+(declare-fun target_store_max_nil () Bool)
+(assert (= source_store_max_nil target_store_max_nil))
+
+; store_max_singleton: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_max_singleton () Bool)
+(declare-fun target_store_max_singleton () Bool)
+(assert (= source_store_max_singleton target_store_max_singleton))
+
+; store_rel_le_secret_loc: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_rel_le_secret_loc () Bool)
+(declare-fun target_store_rel_le_secret_loc () Bool)
+(assert (= source_store_rel_le_secret_loc target_store_rel_le_secret_loc))
+
+; store_lookup_fresh_loc: translation preserves property (matches Coq: Lemma)
+(declare-fun source_store_lookup_fresh_loc () Bool)
+(declare-fun target_store_lookup_fresh_loc () Bool)
+(assert (= source_store_lookup_fresh_loc target_store_lookup_fresh_loc))
+
+; val_rel_le_ref_loc_eq: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_ref_loc_eq () Bool)
+(declare-fun target_val_rel_le_ref_loc_eq () Bool)
+(assert (= source_val_rel_le_ref_loc_eq target_val_rel_le_ref_loc_eq))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

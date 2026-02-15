@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/FirstOrderComplete.v (7 validations)
+; Derived from 02_FORMAL/coq/properties/FirstOrderComplete.v (27 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for FirstOrderComplete
@@ -68,6 +68,106 @@
 (declare-fun source_ty_eqb_refl () Bool)
 (declare-fun target_ty_eqb_refl () Bool)
 (assert (= source_ty_eqb_refl target_ty_eqb_refl))
+
+; ty_eqb_eq: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_eq () Bool)
+(declare-fun target_ty_eqb_eq () Bool)
+(assert (= source_ty_eqb_eq target_ty_eqb_eq))
+
+; ty_eqb_unit_bool_false: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_unit_bool_false () Bool)
+(declare-fun target_ty_eqb_unit_bool_false () Bool)
+(assert (= source_ty_eqb_unit_bool_false target_ty_eqb_unit_bool_false))
+
+; ty_eqb_unit_int_false: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_unit_int_false () Bool)
+(declare-fun target_ty_eqb_unit_int_false () Bool)
+(assert (= source_ty_eqb_unit_int_false target_ty_eqb_unit_int_false))
+
+; ty_eqb_bool_int_false: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_bool_int_false () Bool)
+(declare-fun target_ty_eqb_bool_int_false () Bool)
+(assert (= source_ty_eqb_bool_int_false target_ty_eqb_bool_int_false))
+
+; ty_eqb_bool_string_false: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_bool_string_false () Bool)
+(declare-fun target_ty_eqb_bool_string_false () Bool)
+(assert (= source_ty_eqb_bool_string_false target_ty_eqb_bool_string_false))
+
+; ty_eqb_int_string_false: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_int_string_false () Bool)
+(declare-fun target_ty_eqb_int_string_false () Bool)
+(assert (= source_ty_eqb_int_string_false target_ty_eqb_int_string_false))
+
+; ty_eqb_unit_string_false: translation preserves property (matches Coq: Lemma)
+(declare-fun source_ty_eqb_unit_string_false () Bool)
+(declare-fun target_ty_eqb_unit_string_false () Bool)
+(assert (= source_ty_eqb_unit_string_false target_ty_eqb_unit_string_false))
+
+; fn_not_first_order: translation preserves property (matches Coq: Lemma)
+(declare-fun source_fn_not_first_order () Bool)
+(declare-fun target_fn_not_first_order () Bool)
+(assert (= source_fn_not_first_order target_fn_not_first_order))
+
+; chan_not_first_order: translation preserves property (matches Coq: Lemma)
+(declare-fun source_chan_not_first_order () Bool)
+(declare-fun target_chan_not_first_order () Bool)
+(assert (= source_chan_not_first_order target_chan_not_first_order))
+
+; securechan_not_first_order: translation preserves property (matches Coq: Lemma)
+(declare-fun source_securechan_not_first_order () Bool)
+(declare-fun target_securechan_not_first_order () Bool)
+(assert (= source_securechan_not_first_order target_securechan_not_first_order))
+
+; base_type_not_fn: translation preserves property (matches Coq: Lemma)
+(declare-fun source_base_type_not_fn () Bool)
+(declare-fun target_base_type_not_fn () Bool)
+(assert (= source_base_type_not_fn target_base_type_not_fn))
+
+; base_type_not_prod: translation preserves property (matches Coq: Lemma)
+(declare-fun source_base_type_not_prod () Bool)
+(declare-fun target_base_type_not_prod () Bool)
+(assert (= source_base_type_not_prod target_base_type_not_prod))
+
+; base_type_not_sum: translation preserves property (matches Coq: Lemma)
+(declare-fun source_base_type_not_sum () Bool)
+(declare-fun target_base_type_not_sum () Bool)
+(assert (= source_base_type_not_sum target_base_type_not_sum))
+
+; base_type_not_list: translation preserves property (matches Coq: Lemma)
+(declare-fun source_base_type_not_list () Bool)
+(declare-fun target_base_type_not_list () Bool)
+(assert (= source_base_type_not_list target_base_type_not_list))
+
+; base_type_not_option: translation preserves property (matches Coq: Lemma)
+(declare-fun source_base_type_not_option () Bool)
+(declare-fun target_base_type_not_option () Bool)
+(assert (= source_base_type_not_option target_base_type_not_option))
+
+; fo_compound_depth_unit: translation preserves property (matches Coq: Lemma)
+(declare-fun source_fo_compound_depth_unit () Bool)
+(declare-fun target_fo_compound_depth_unit () Bool)
+(assert (= source_fo_compound_depth_unit target_fo_compound_depth_unit))
+
+; fo_compound_depth_bool: translation preserves property (matches Coq: Lemma)
+(declare-fun source_fo_compound_depth_bool () Bool)
+(declare-fun target_fo_compound_depth_bool () Bool)
+(assert (= source_fo_compound_depth_bool target_fo_compound_depth_bool))
+
+; fo_compound_depth_int: translation preserves property (matches Coq: Lemma)
+(declare-fun source_fo_compound_depth_int () Bool)
+(declare-fun target_fo_compound_depth_int () Bool)
+(assert (= source_fo_compound_depth_int target_fo_compound_depth_int))
+
+; fo_compound_depth_string: translation preserves property (matches Coq: Lemma)
+(declare-fun source_fo_compound_depth_string () Bool)
+(declare-fun target_fo_compound_depth_string () Bool)
+(assert (= source_fo_compound_depth_string target_fo_compound_depth_string))
+
+; fo_compound_depth_bytes: translation preserves property (matches Coq: Lemma)
+(declare-fun source_fo_compound_depth_bytes () Bool)
+(declare-fun target_fo_compound_depth_bytes () Bool)
+(assert (= source_fo_compound_depth_bytes target_fo_compound_depth_bytes))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

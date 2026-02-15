@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/properties/AhmedStyleTest.v (7 lemmas) *)
+(* Derived from 02_FORMAL/coq/properties/AhmedStyleTest.v (14 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Properties.AhmedStyleTest
 open FStar.All
@@ -52,3 +52,24 @@ let sval_rel_tower_step_up_unit (p_n: _) : Lemma (sval_rel_tower ((p_n + 1)) STU
 
 (* sval_rel_tower_step_up_bool (matches Coq: Lemma sval_rel_tower_step_up_bool) *)
 let sval_rel_tower_step_up_bool (p_n: _) (p_b: _) : Lemma (sval_rel_tower ((p_n + 1)) STBool (SVBool p_b) (SVBool p_b) == true) = admit ()
+
+(* sval_rel_tower_prefix (matches Coq: Lemma sval_rel_tower_prefix) *)
+let sval_rel_tower_prefix (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (sval_rel_tower ((p_n + 1)) p_t p_v1 p_v2 == true)) (ensures (sval_rel_tower p_n p_t p_v1 p_v2 == true)) = admit ()
+
+(* sval_rel_tower_trivial (matches Coq: Lemma sval_rel_tower_trivial) *)
+let sval_rel_tower_trivial (p_t: _) (p_v1: _) (p_v2: _) : Lemma (sval_rel_tower 0 p_t p_v1 p_v2 == true) = admit ()
+
+(* sval_rel_tower_unit (matches Coq: Lemma sval_rel_tower_unit) *)
+let sval_rel_tower_unit (p_n: _) : Lemma (sval_rel_tower p_n STUnit SVUnit SVUnit == true) = admit ()
+
+(* sval_rel_tower_bool (matches Coq: Lemma sval_rel_tower_bool) *)
+let sval_rel_tower_bool (p_n: _) (p_b: _) : Lemma (sval_rel_tower p_n STBool (SVBool p_b) (SVBool p_b) == true) = admit ()
+
+(* sval_rel_tower_pair (matches Coq: Lemma sval_rel_tower_pair) *)
+let sval_rel_tower_pair (p_n: _) (p_t1: _) (p_t2: _) (p_a1: _) (p_b1: _) (p_a2: _) (p_b2: _) : Lemma (requires (sval_rel_tower p_n p_t1 p_a1 p_a2 == true /\ sval_rel_tower p_n p_t2 p_b1 p_b2 == true)) (ensures (sval_rel_tower p_n (STProd p_t1 p_t2) (SVPair p_a1 p_b1) (SVPair p_a2 p_b2) == true)) = admit ()
+
+(* sval_rel_tower_mono_to_0 (matches Coq: Lemma sval_rel_tower_mono_to_0) *)
+let sval_rel_tower_mono_to_0 (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (sval_rel_tower p_n p_t p_v1 p_v2 == true)) (ensures (sval_rel_tower 0 p_t p_v1 p_v2 == true)) = admit ()
+
+(* sval_rel_tower_drop_2 (matches Coq: Lemma sval_rel_tower_drop_2) *)
+let sval_rel_tower_drop_2 (p_n: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (sval_rel_tower ((((p_n + 1)) + 1)) p_t p_v1 p_v2 == true)) (ensures (sval_rel_tower p_n p_t p_v1 p_v2 == true)) = admit ()

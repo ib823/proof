@@ -130,4 +130,102 @@ Proof.
   apply val_rel_le_mono_step with n; auto.
 Qed.
 
+(** ** Step Down from Successor *)
+
+Lemma val_rel_le_mono_from_succ : forall n Σ T v1 v2,
+  val_rel_le (S n) Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hrel.
+  apply val_rel_le_mono_step with (S n).
+  - lia.
+  - exact Hrel.
+Qed.
+
+(** ** Store Monotonicity at Zero *)
+
+Lemma val_rel_le_mono_store_zero : forall Σ Σ' T v1 v2,
+  store_ty_extends Σ Σ' ->
+  val_rel_le 0 Σ T v1 v2 ->
+  val_rel_le 0 Σ' T v1 v2.
+Proof.
+  intros. simpl. exact I.
+Qed.
+
+(** ** Combined Monotonicity with Transitivity *)
+
+Theorem val_rel_le_mono_chain : forall n m k Σ1 Σ2 Σ3 T v1 v2,
+  k <= m ->
+  m <= n ->
+  store_ty_extends Σ1 Σ2 ->
+  store_ty_extends Σ2 Σ3 ->
+  val_rel_le n Σ1 T v1 v2 ->
+  val_rel_le k Σ3 T v1 v2.
+Proof.
+  intros n m k Σ1 Σ2 Σ3 T v1 v2 Hkm Hmn Hext12 Hext23 Hrel.
+  apply val_rel_le_mono with (n := n) (Σ := Σ1); auto.
+  - lia.
+  - apply store_ty_extends_trans with Σ2; auto.
+Qed.
+
+(** ** Store Relation Monotonicity with Intermediate Step *)
+
+Lemma store_rel_le_mono_from_succ : forall n Σ st1 st2,
+  store_rel_le (S n) Σ st1 st2 ->
+  store_rel_le n Σ st1 st2.
+Proof.
+  intros n Σ st1 st2 Hrel.
+  apply store_rel_le_mono_step with (S n); auto.
+Qed.
+
+(** ** Step Drop Lemma *)
+
+Lemma val_rel_le_mono_drop_k : forall k n Σ Σ' T v1 v2,
+  store_ty_extends Σ Σ' ->
+  val_rel_le (n + k) Σ T v1 v2 ->
+  val_rel_le n Σ' T v1 v2.
+Proof.
+  intros k n Σ Σ' T v1 v2 Hext Hrel.
+  apply val_rel_le_mono with (n := n + k) (Σ := Σ); auto.
+  lia.
+Qed.
+
+(** ** Corollary: Zero is Always Monotone *)
+
+Corollary val_rel_le_mono_to_zero : forall n Σ Σ' T v1 v2,
+  store_ty_extends Σ Σ' ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le 0 Σ' T v1 v2.
+Proof.
+  intros n Σ Σ' T v1 v2 Hext Hrel.
+  apply val_rel_le_mono with (n := n) (Σ := Σ); auto.
+  lia.
+Qed.
+
+(** ** Store Relation Drop *)
+
+Lemma store_rel_le_drop_k : forall k n Σ st1 st2,
+  store_rel_le (n + k) Σ st1 st2 ->
+  store_rel_le n Σ st1 st2.
+Proof.
+  intros k n Σ st1 st2 Hrel.
+  apply store_rel_le_mono_step with (n + k); auto. lia.
+Qed.
+
+(** ** Reflexivity-like Properties *)
+
+Lemma val_rel_le_mono_refl : forall n Σ T v1 v2,
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2.
+Proof.
+  intros. exact H.
+Qed.
+
+Lemma store_rel_le_mono_refl : forall n Σ st1 st2,
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le n Σ st1 st2.
+Proof.
+  intros. exact H.
+Qed.
+
 (** End of CumulativeMonotone.v *)

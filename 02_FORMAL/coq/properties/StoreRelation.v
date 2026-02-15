@@ -552,4 +552,100 @@ Proof.
   apply val_rel_le_build_unit.
 Qed.
 
+(** ** Store Relation for Empty Stores *)
+
+(** Empty stores with empty store typing are trivially related *)
+Lemma store_rel_le_empty : forall n,
+  store_rel_le n nil nil nil.
+Proof.
+  intros n. unfold store_rel_le. split.
+  - simpl. reflexivity.
+  - intros l T sl Hlook. simpl in Hlook. discriminate.
+Qed.
+
+(** Empty stores have simple relation *)
+Lemma store_rel_simple_empty : forall Σ,
+  store_rel_simple Σ nil nil.
+Proof.
+  intros Σ. unfold store_rel_simple. simpl. reflexivity.
+Qed.
+
+(** ** Store Relation Lookup Helpers *)
+
+(** If store_rel_le holds, both stores have values at every typed location *)
+Lemma store_rel_le_both_some : forall n Σ st1 st2 l T sl,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v1 v2,
+    store_lookup l st1 = Some v1 /\
+    store_lookup l st2 = Some v2.
+Proof.
+  intros n Σ st1 st2 l T sl Hrel Hlook.
+  destruct (store_rel_le_lookup n Σ st1 st2 l T sl Hrel Hlook)
+    as [v1 [v2 [H1 [H2 _]]]].
+  exists v1, v2. auto.
+Qed.
+
+(** ** Store Typing Domain Properties *)
+
+(** store_ty_update preserves existing entries at different locations *)
+Lemma store_ty_update_preserves : forall l1 l2 T1 sl1 T2 sl2 Σ,
+  l1 <> l2 ->
+  store_ty_lookup l2 Σ = Some (T2, sl2) ->
+  store_ty_lookup l2 (store_ty_update l1 T1 sl1 Σ) = Some (T2, sl2).
+Proof.
+  intros l1 l2 T1 sl1 T2 sl2 Σ Hneq Hlook.
+  rewrite store_ty_lookup_update_neq; auto.
+Qed.
+
+(** ** Store Max Properties *)
+
+(** store_max of nil is 0 *)
+Lemma store_max_nil : store_max nil = 0.
+Proof. reflexivity. Qed.
+
+(** store_max of singleton *)
+Lemma store_max_singleton : forall l v,
+  store_max ((l, v) :: nil) = Nat.max l 0.
+Proof. intros. simpl. reflexivity. Qed.
+
+(** ** Secret Values in Store *)
+
+(** Secret values at a typed location are always related *)
+Lemma store_rel_le_secret_loc : forall n Σ st1 st2 l T,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (TSecret T, Public) ->
+  exists v1 v2,
+    store_lookup l st1 = Some v1 /\
+    store_lookup l st2 = Some v2 /\
+    val_rel_le n Σ (TSecret T) v1 v2.
+Proof.
+  intros n Σ st1 st2 l T Hrel Hlook.
+  exact (store_rel_le_lookup n Σ st1 st2 l (TSecret T) Public Hrel Hlook).
+Qed.
+
+(** ** Store Update at Fresh Location *)
+
+(** Fresh location has no store entry *)
+Lemma store_lookup_fresh_loc : forall st,
+  store_lookup (fresh_loc st) st = None.
+Proof.
+  intros st. apply store_lookup_fresh.
+Qed.
+
+(** ** Ref Location Equality Lemma *)
+
+(** Two ELoc values that are val_rel_le at TRef must be the same location *)
+Lemma val_rel_le_ref_loc_eq : forall n Σ T sl l1 l2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) (ELoc l1) (ELoc l2) ->
+  l1 = l2.
+Proof.
+  intros n Σ T sl l1 l2 Hn Hrel.
+  destruct (val_rel_le_ref_same_loc n Σ T sl (ELoc l1) (ELoc l2) Hn Hrel)
+    as [l [Heq1 Heq2]].
+  injection Heq1 as Heq1. injection Heq2 as Heq2.
+  subst. reflexivity.
+Qed.
+
 (** End of StoreRelation.v *)

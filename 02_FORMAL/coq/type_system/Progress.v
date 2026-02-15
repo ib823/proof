@@ -279,4 +279,87 @@ Proof.
     + right. exists (EGrant eff e'), st', ctx'. apply ST_GrantStep; assumption.
 Qed.
 
+(** ** Canonical Forms for Additional Types *)
+
+Lemma canonical_unit : forall v ε Σ,
+  has_type nil Σ Public v TUnit ε ->
+  value v ->
+  v = EUnit.
+Proof.
+  intros v ε Σ Hty Hval.
+  inversion Hval; subst; inversion Hty; subst.
+  reflexivity.
+Qed.
+
+Lemma canonical_int : forall v ε Σ,
+  has_type nil Σ Public v TInt ε ->
+  value v ->
+  exists i, v = EInt i.
+Proof.
+  intros v ε Σ Hty Hval.
+  inversion Hval; subst; inversion Hty; subst.
+  exists n. reflexivity.
+Qed.
+
+Lemma canonical_string : forall v ε Σ,
+  has_type nil Σ Public v TString ε ->
+  value v ->
+  exists s, v = EString s.
+Proof.
+  intros v ε Σ Hty Hval.
+  inversion Hval; subst; inversion Hty; subst.
+  exists s. reflexivity.
+Qed.
+
+(** ** Progress Corollaries *)
+
+(** If well-typed and not a value, must step *)
+Corollary progress_non_value : forall e T ε st ctx Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  ~ value e ->
+  exists e' st' ctx', (e, st, ctx) --> (e', st', ctx').
+Proof.
+  intros e T ε st ctx Σ Hty Hwf Hnval.
+  destruct (progress e T ε st ctx Σ Hty Hwf) as [Hval | Hstep].
+  - contradiction.
+  - exact Hstep.
+Qed.
+
+(** ** Canonical Form Invertibility *)
+
+(** If a value has type TBool, it's a boolean constant *)
+Lemma typed_value_bool_inv : forall v ε Σ,
+  has_type nil Σ Public v TBool ε ->
+  value v ->
+  v = EBool true \/ v = EBool false.
+Proof.
+  intros v ε Σ Hty Hval.
+  destruct (canonical_bool v ε Σ Hty Hval) as [b Heq].
+  destruct b; [left | right]; exact Heq.
+Qed.
+
+(** A value of pair type is an EPair *)
+Lemma typed_value_pair_inv : forall v T1 T2 ε Σ,
+  has_type nil Σ Public v (TProd T1 T2) ε ->
+  value v ->
+  exists v1 v2, v = EPair v1 v2.
+Proof.
+  intros v T1 T2 ε Σ Hty Hval.
+  destruct (canonical_pair v T1 T2 ε Σ Hty Hval) as [v1 [v2 [Heq _]]].
+  exists v1, v2. exact Heq.
+Qed.
+
+(** A value of sum type is either EInl or EInr *)
+Lemma typed_value_sum_inv : forall v T1 T2 ε Σ,
+  has_type nil Σ Public v (TSum T1 T2) ε ->
+  value v ->
+  (exists v', v = EInl v' T2) \/ (exists v', v = EInr v' T1).
+Proof.
+  intros v T1 T2 ε Σ Hty Hval.
+  destruct (canonical_sum v T1 T2 ε Σ Hty Hval) as [[v' [Heq _]] | [v' [Heq _]]].
+  - left. exists v'. exact Heq.
+  - right. exists v'. exact Heq.
+Qed.
+
 (** End of Progress.v *)

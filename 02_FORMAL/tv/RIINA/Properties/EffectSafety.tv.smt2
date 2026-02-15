@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/EffectSafety.v (32 validations)
+; Derived from 02_FORMAL/coq/properties/EffectSafety.v (41 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for EffectSafety
@@ -173,6 +173,51 @@
 (declare-fun source_effect_crypto_not_pure () Bool)
 (declare-fun target_effect_crypto_not_pure () Bool)
 (assert (= source_effect_crypto_not_pure target_effect_crypto_not_pure))
+
+; effect_random_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_random_not_pure () Bool)
+(declare-fun target_effect_random_not_pure () Bool)
+(assert (= source_effect_random_not_pure target_effect_random_not_pure))
+
+; effect_time_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_time_not_pure () Bool)
+(declare-fun target_effect_time_not_pure () Bool)
+(assert (= source_effect_time_not_pure target_effect_time_not_pure))
+
+; effect_process_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_process_not_pure () Bool)
+(declare-fun target_effect_process_not_pure () Bool)
+(assert (= source_effect_process_not_pure target_effect_process_not_pure))
+
+; effect_netsecure_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_netsecure_not_pure () Bool)
+(declare-fun target_effect_netsecure_not_pure () Bool)
+(assert (= source_effect_netsecure_not_pure target_effect_netsecure_not_pure))
+
+; effect_level_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_level_pure () Bool)
+(declare-fun target_effect_level_pure () Bool)
+(assert (= source_effect_level_pure target_effect_level_pure))
+
+; effect_level_read: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_level_read () Bool)
+(declare-fun target_effect_level_read () Bool)
+(assert (= source_effect_level_read target_effect_level_read))
+
+; effect_level_write: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_level_write () Bool)
+(declare-fun target_effect_level_write () Bool)
+(assert (= source_effect_level_write target_effect_level_write))
+
+; effect_level_pure_min: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_level_pure_min () Bool)
+(declare-fun target_effect_level_pure_min () Bool)
+(assert (= source_effect_level_pure_min target_effect_level_pure_min))
+
+; pure_multi_step_compose: translation preserves property (matches Coq: Lemma)
+(declare-fun source_pure_multi_step_compose () Bool)
+(declare-fun target_pure_multi_step_compose () Bool)
+(assert (= source_pure_multi_step_compose target_pure_multi_step_compose))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

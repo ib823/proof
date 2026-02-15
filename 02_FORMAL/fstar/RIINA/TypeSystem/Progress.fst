@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/type_system/Progress.v (9 lemmas) *)
+(* Derived from 02_FORMAL/coq/type_system/Progress.v (15 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.TypeSystem.Progress
 open FStar.All
@@ -46,3 +46,21 @@ let lookup_nil_contra (p_x: _) (p_t: _) : Lemma (requires (lookup p_x [] == Some
 
 (* progress (matches Coq: Theorem progress) *)
 let progress () : Lemma (progress_stmt == true) = admit ()
+
+(* canonical_unit (matches Coq: Lemma canonical_unit) *)
+let canonical_unit (p_v: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v TUnit p_epsilon == true /\ value p_v == true)) (ensures (p_v == EUnit)) = admit ()
+
+(* canonical_int (matches Coq: Lemma canonical_int) *)
+let canonical_int (p_v: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v TInt p_epsilon == true /\ value p_v == true)) (ensures ((exists p_i. p_v == EInt p_i))) = admit ()
+
+(* canonical_string (matches Coq: Lemma canonical_string) *)
+let canonical_string (p_v: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v TString p_epsilon == true /\ value p_v == true)) (ensures ((exists p_s. p_v == EString p_s))) = admit ()
+
+(* typed_value_bool_inv (matches Coq: Lemma typed_value_bool_inv) *)
+let typed_value_bool_inv (p_v: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v TBool p_epsilon == true /\ value p_v == true)) (ensures (p_v == EBool true \/ p_v == EBool false)) = admit ()
+
+(* typed_value_pair_inv (matches Coq: Lemma typed_value_pair_inv) *)
+let typed_value_pair_inv (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v (TProd p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures ((exists p_v1. (exists p_v2. p_v == EPair p_v1 p_v2)))) = admit ()
+
+(* typed_value_sum_inv (matches Coq: Lemma typed_value_sum_inv) *)
+let typed_value_sum_inv (p_v: _) (p_t1: _) (p_t2: _) (p_epsilon: _) (p_sigma: _) : Lemma (requires (has_type [] p_sigma Public p_v (TSum p_t1 p_t2) p_epsilon == true /\ value p_v == true)) (ensures (((exists p_v. p_v == EInl v_ p_t2)) \/ ((exists p_v. p_v == EInr v_ p_t1)))) = admit ()

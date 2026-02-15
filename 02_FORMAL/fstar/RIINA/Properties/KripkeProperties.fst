@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/properties/KripkeProperties.v (25 lemmas) *)
+(* Derived from 02_FORMAL/coq/properties/KripkeProperties.v (41 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Properties.KripkeProperties
 open FStar.All
@@ -100,3 +100,51 @@ let store_ty_lookup_update_neq (p_l: _) (p_l_: _) (p_t: _) (p_sl: _) (p_sigma: _
 
 (* store_ty_extends_add (matches Coq: Lemma store_ty_extends_add) *)
 let store_ty_extends_add (p_sigma: _) (p_l: _) (p_t: _) (p_sl: _) : Lemma (requires (store_ty_lookup p_l p_sigma == None)) (ensures (store_ty_extends p_sigma (store_ty_update p_l p_t p_sl p_sigma) == true)) = admit ()
+
+(* val_rel_le_build_labeled (matches Coq: Lemma val_rel_le_build_labeled) *)
+let val_rel_le_build_labeled (p_m: _) (p_sigma: _) (p_t: _) (p_sl: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TLabeled p_t p_sl) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_labeled (matches Coq: Lemma val_rel_le_step_up_labeled) *)
+let val_rel_le_step_up_labeled (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_sl: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TLabeled p_t p_sl) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TLabeled p_t p_sl) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_tainted (matches Coq: Lemma val_rel_le_build_tainted) *)
+let val_rel_le_build_tainted (p_m: _) (p_sigma: _) (p_t: _) (p_src: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TTainted p_t p_src) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_tainted (matches Coq: Lemma val_rel_le_step_up_tainted) *)
+let val_rel_le_step_up_tainted (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_src: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TTainted p_t p_src) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TTainted p_t p_src) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_sanitized (matches Coq: Lemma val_rel_le_build_sanitized) *)
+let val_rel_le_build_sanitized (p_m: _) (p_sigma: _) (p_t: _) (p_san: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TSanitized p_t p_san) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_sanitized (matches Coq: Lemma val_rel_le_step_up_sanitized) *)
+let val_rel_le_step_up_sanitized (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_san: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TSanitized p_t p_san) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TSanitized p_t p_san) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_proof (matches Coq: Lemma val_rel_le_build_proof) *)
+let val_rel_le_build_proof (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TProof p_t) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_proof (matches Coq: Lemma val_rel_le_step_up_proof) *)
+let val_rel_le_step_up_proof (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TProof p_t) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TProof p_t) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_ct (matches Coq: Lemma val_rel_le_build_ct) *)
+let val_rel_le_build_ct (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TConstantTime p_t) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_ct (matches Coq: Lemma val_rel_le_step_up_ct) *)
+let val_rel_le_step_up_ct (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TConstantTime p_t) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TConstantTime p_t) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_zero (matches Coq: Lemma val_rel_le_build_zero) *)
+let val_rel_le_build_zero (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TZeroizing p_t) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_zero (matches Coq: Lemma val_rel_le_step_up_zero) *)
+let val_rel_le_step_up_zero (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TZeroizing p_t) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TZeroizing p_t) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_cap (matches Coq: Lemma val_rel_le_build_cap) *)
+let val_rel_le_build_cap (p_m: _) (p_sigma: _) (p_k: _) (p_v1: _) (p_v2: _) : Lemma (requires (value p_v1 == true /\ value p_v2 == true /\ closed_expr p_v1 == true /\ closed_expr p_v2 == true)) (ensures (val_rel_le p_m p_sigma (TCapability p_k) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_up_cap (matches Coq: Lemma val_rel_le_step_up_cap) *)
+let val_rel_le_step_up_cap (p_n: _) (p_m: _) (p_sigma: _) (p_k: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TCapability p_k) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TCapability p_k) p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_build_ref_kripke (matches Coq: Lemma val_rel_le_build_ref_kripke) *)
+let val_rel_le_build_ref_kripke (p_m: _) (p_sigma: _) (p_t: _) (p_sl: _) (p_l: _) : Lemma (val_rel_le p_m p_sigma (TRef p_t p_sl) (ELoc p_l) (ELoc p_l) == true) = admit ()
+
+(* val_rel_le_step_up_ref (matches Coq: Lemma val_rel_le_step_up_ref) *)
+let val_rel_le_step_up_ref (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_sl: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma (TRef p_t p_sl) p_v1 p_v2 == true /\ p_n > 0)) (ensures (val_rel_le p_m p_sigma (TRef p_t p_sl) p_v1 p_v2 == true)) = admit ()

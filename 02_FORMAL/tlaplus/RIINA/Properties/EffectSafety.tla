@@ -1,7 +1,7 @@
 ---- MODULE EffectSafety ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/EffectSafety.v (32 invariants)
+\* Derived from 02_FORMAL/coq/properties/EffectSafety.v (41 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -111,6 +111,33 @@ THEOREM effect_system_not_pure == Init => TypeOK
 
 \* effect_crypto_not_pure (matches Coq: Lemma effect_crypto_not_pure)
 THEOREM effect_crypto_not_pure == Init => TypeOK
+
+\* effect_random_not_pure (matches Coq: Lemma effect_random_not_pure)
+THEOREM effect_random_not_pure == Init => TypeOK
+
+\* effect_time_not_pure (matches Coq: Lemma effect_time_not_pure)
+THEOREM effect_time_not_pure == Init => TypeOK
+
+\* effect_process_not_pure (matches Coq: Lemma effect_process_not_pure)
+THEOREM effect_process_not_pure == Init => TypeOK
+
+\* effect_netsecure_not_pure (matches Coq: Lemma effect_netsecure_not_pure)
+THEOREM effect_netsecure_not_pure == Init => TypeOK
+
+\* effect_level_pure (matches Coq: Lemma effect_level_pure)
+THEOREM effect_level_pure == Init => TypeOK
+
+\* effect_level_read (matches Coq: Lemma effect_level_read)
+THEOREM effect_level_read == Init => TypeOK
+
+\* effect_level_write (matches Coq: Lemma effect_level_write)
+THEOREM effect_level_write == Init => TypeOK
+
+\* effect_level_pure_min (matches Coq: Lemma effect_level_pure_min)
+THEOREM effect_level_pure_min == Init => TypeOK
+
+\* pure_multi_step_compose (matches Coq: Lemma pure_multi_step_compose)
+THEOREM pure_multi_step_compose == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

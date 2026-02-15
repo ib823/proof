@@ -423,3 +423,77 @@ Print Assumptions ahmed_tower_ft_works.
     The key challenge moves to LogicalRelation.v where the FT
     must be restructured to not use step-up.
     ======================================================================== *)
+
+(** ** Additional Tower Properties *)
+
+(** Tower at step n is a prefix of tower at step n+1 *)
+Lemma sval_rel_tower_prefix : forall n T v1 v2,
+  sval_rel_tower (S n) T v1 v2 ->
+  sval_rel_tower n T v1 v2.
+Proof.
+  intros n T v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [Hrec _]. exact Hrec.
+Qed.
+
+(** Tower at 0 is trivially satisfied for any values *)
+Lemma sval_rel_tower_trivial : forall T v1 v2,
+  sval_rel_tower 0 T v1 v2.
+Proof. intros. simpl. exact I. Qed.
+
+(** Unit tower is always satisfied *)
+Lemma sval_rel_tower_unit : forall n,
+  sval_rel_tower n STUnit SVUnit SVUnit.
+Proof.
+  induction n.
+  - simpl. exact I.
+  - rewrite sval_rel_tower_S. split.
+    + exact IHn.
+    + split; reflexivity.
+Qed.
+
+(** Bool tower is always satisfied for same boolean *)
+Lemma sval_rel_tower_bool : forall n b,
+  sval_rel_tower n STBool (SVBool b) (SVBool b).
+Proof.
+  induction n; intros b.
+  - simpl. exact I.
+  - rewrite sval_rel_tower_S. split.
+    + exact (IHn b).
+    + exists b. split; reflexivity.
+Qed.
+
+(** Pair tower from component towers *)
+Lemma sval_rel_tower_pair : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower n T1 a1 a2 ->
+  sval_rel_tower n T2 b1 b2 ->
+  sval_rel_tower n (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2).
+Proof.
+  induction n; intros T1 T2 a1 b1 a2 b2 H1 H2.
+  - simpl. exact I.
+  - assert (Hp1 : sval_rel_tower n T1 a1 a2) by (apply sval_rel_tower_prefix in H1; exact H1).
+    assert (Hp2 : sval_rel_tower n T2 b1 b2) by (apply sval_rel_tower_prefix in H2; exact H2).
+    rewrite sval_rel_tower_S. split.
+    + apply IHn; auto.
+    + exists a1, b1, a2, b2. auto.
+Qed.
+
+(** Tower monotonicity at step 0 *)
+Lemma sval_rel_tower_mono_to_0 : forall n T v1 v2,
+  sval_rel_tower n T v1 v2 ->
+  sval_rel_tower 0 T v1 v2.
+Proof.
+  intros n T v1 v2 H.
+  apply sval_rel_tower_mono with n; auto. lia.
+Qed.
+
+(** Tower step down by 2 *)
+Lemma sval_rel_tower_drop_2 : forall n T v1 v2,
+  sval_rel_tower (S (S n)) T v1 v2 ->
+  sval_rel_tower n T v1 v2.
+Proof.
+  intros n T v1 v2 H.
+  apply sval_rel_tower_mono with (n := S (S n)).
+  - lia.
+  - exact H.
+Qed.

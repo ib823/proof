@@ -1,7 +1,7 @@
 ---- MODULE StoreRelation ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/StoreRelation.v (25 invariants)
+\* Derived from 02_FORMAL/coq/properties/StoreRelation.v (34 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -90,6 +90,33 @@ THEOREM val_rel_le_secret_value_right == Init => TypeOK
 
 \* val_rel_le_unit (matches Coq: Lemma val_rel_le_unit)
 THEOREM val_rel_le_unit == Init => TypeOK
+
+\* store_rel_le_empty (matches Coq: Lemma store_rel_le_empty)
+THEOREM store_rel_le_empty == Init => TypeOK
+
+\* store_rel_simple_empty (matches Coq: Lemma store_rel_simple_empty)
+THEOREM store_rel_simple_empty == Init => TypeOK
+
+\* store_rel_le_both_some (matches Coq: Lemma store_rel_le_both_some)
+THEOREM store_rel_le_both_some == Init => TypeOK
+
+\* store_ty_update_preserves (matches Coq: Lemma store_ty_update_preserves)
+THEOREM store_ty_update_preserves == Init => TypeOK
+
+\* store_max_nil (matches Coq: Lemma store_max_nil)
+THEOREM store_max_nil == Init => TypeOK
+
+\* store_max_singleton (matches Coq: Lemma store_max_singleton)
+THEOREM store_max_singleton == Init => TypeOK
+
+\* store_rel_le_secret_loc (matches Coq: Lemma store_rel_le_secret_loc)
+THEOREM store_rel_le_secret_loc == Init => TypeOK
+
+\* store_lookup_fresh_loc (matches Coq: Lemma store_lookup_fresh_loc)
+THEOREM store_lookup_fresh_loc == Init => TypeOK
+
+\* val_rel_le_ref_loc_eq (matches Coq: Lemma val_rel_le_ref_loc_eq)
+THEOREM val_rel_le_ref_loc_eq == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

@@ -491,4 +491,224 @@ Proof.
     rewrite store_ty_lookup_update_neq; auto.
 Qed.
 
+(** ** Builder and Step-Up for TLabeled *)
+
+Lemma val_rel_le_build_labeled : forall m Σ T sl v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TLabeled T sl) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ T sl v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_labeled : forall n m Σ T sl v1 v2,
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TLabeled T sl) v1 v2.
+Proof.
+  intros n m Σ T sl v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_labeled; auto.
+Qed.
+
+(** ** Builder and Step-Up for TTainted *)
+
+Lemma val_rel_le_build_tainted : forall m Σ T src v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TTainted T src) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ T src v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_tainted : forall n m Σ T src v1 v2,
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TTainted T src) v1 v2.
+Proof.
+  intros n m Σ T src v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_tainted; auto.
+Qed.
+
+(** ** Builder and Step-Up for TSanitized *)
+
+Lemma val_rel_le_build_sanitized : forall m Σ T san v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TSanitized T san) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ T san v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_sanitized : forall n m Σ T san v1 v2,
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TSanitized T san) v1 v2.
+Proof.
+  intros n m Σ T san v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_sanitized; auto.
+Qed.
+
+(** ** Builder and Step-Up for TProof *)
+
+Lemma val_rel_le_build_proof : forall m Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TProof T) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_proof : forall n m Σ T v1 v2,
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TProof T) v1 v2.
+Proof.
+  intros n m Σ T v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_proof; auto.
+Qed.
+
+(** ** Builder and Step-Up for TConstantTime *)
+
+Lemma val_rel_le_build_ct : forall m Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TConstantTime T) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_ct : forall n m Σ T v1 v2,
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TConstantTime T) v1 v2.
+Proof.
+  intros n m Σ T v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_ct; auto.
+Qed.
+
+(** ** Builder and Step-Up for TZeroizing *)
+
+Lemma val_rel_le_build_zero : forall m Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TZeroizing T) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_zero : forall n m Σ T v1 v2,
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TZeroizing T) v1 v2.
+Proof.
+  intros n m Σ T v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_zero; auto.
+Qed.
+
+(** ** Builder and Step-Up for TCapability *)
+
+Lemma val_rel_le_build_cap : forall m Σ k v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TCapability k) v1 v2.
+Proof.
+  induction m as [|m' IH]; intros Σ k v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_step_up_cap : forall n m Σ k v1 v2,
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TCapability k) v1 v2.
+Proof.
+  intros n m Σ k v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_cap; auto.
+Qed.
+
+(** ** Builder for TRef (already in StoreRelation, duplicated here for completeness) *)
+
+Lemma val_rel_le_build_ref_kripke : forall m Σ T sl l,
+  val_rel_le m Σ (TRef T sl) (ELoc l) (ELoc l).
+Proof.
+  induction m as [|m' IH]; intros Σ T sl l.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split.
+      * apply VLoc.
+      * apply VLoc.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists l. auto.
+Qed.
+
+(** Step-up for TRef *)
+Lemma val_rel_le_step_up_ref : forall n m Σ T sl v1 v2,
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TRef T sl) v1 v2.
+Proof.
+  intros n m Σ T sl v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & [l [Heq1 Heq2]]).
+  subst. apply val_rel_le_build_ref_kripke.
+Qed.
+
 (** End of KripkeProperties.v *)

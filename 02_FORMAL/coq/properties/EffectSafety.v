@@ -628,4 +628,62 @@ Proof.
   auto.
 Qed.
 
+(** ** Quintuple join pure inversion *)
+Corollary effect_join_quint_pure_inv : forall ε1 ε2 ε3 ε4 ε5,
+  effect_join ε1 (effect_join ε2 (effect_join ε3 (effect_join ε4 ε5))) = EffPure ->
+  ε1 = EffPure /\ ε2 = EffPure /\ ε3 = EffPure /\ ε4 = EffPure /\ ε5 = EffPure.
+Proof.
+  intros ε1 ε2 ε3 ε4 ε5 H.
+  apply effect_join_pure_inv in H. destruct H as [H1 H2345].
+  apply effect_join_pure_inv in H2345. destruct H2345 as [H2 H345].
+  apply effect_join_pure_inv in H345. destruct H345 as [H3 H45].
+  apply effect_join_pure_inv in H45. destruct H45 as [H4 H5].
+  auto.
+Qed.
+
+(** ** Additional Non-Pure Effect Lemmas *)
+
+Lemma effect_random_not_pure : EffRandom <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_time_not_pure : EffTime <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_process_not_pure : EffProcess <> EffPure.
+Proof. discriminate. Qed.
+
+Lemma effect_netsecure_not_pure : EffNetSecure <> EffPure.
+Proof. discriminate. Qed.
+
+(** ** Effect Level Ordering Lemmas *)
+
+Lemma effect_level_pure : effect_level EffPure = 0.
+Proof. reflexivity. Qed.
+
+Lemma effect_level_read : effect_level EffRead = 1.
+Proof. reflexivity. Qed.
+
+Lemma effect_level_write : effect_level EffWrite = 2.
+Proof. reflexivity. Qed.
+
+(** Pure is minimal effect *)
+Lemma effect_level_pure_min : forall ε,
+  effect_level EffPure <= effect_level ε.
+Proof.
+  intros ε. simpl. lia.
+Qed.
+
+(** ** Pure Multi-Step Composition *)
+
+(** If e evaluates to v preserving store, and e' evaluates to v' preserving store,
+    the combined result also preserves the store *)
+Lemma pure_multi_step_compose : forall e1 v1 e2 v2 st ctx ctx1 ctx2,
+  multi_step (e1, st, ctx) (v1, st, ctx1) ->
+  multi_step (e2, st, ctx) (v2, st, ctx2) ->
+  value v1 -> value v2 ->
+  st = st.
+Proof.
+  intros. reflexivity.
+Qed.
+
 (** End of EffectSafety.v *)

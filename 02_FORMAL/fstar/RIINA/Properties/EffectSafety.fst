@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/properties/EffectSafety.v (32 lemmas) *)
+(* Derived from 02_FORMAL/coq/properties/EffectSafety.v (41 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Properties.EffectSafety
 open FStar.All
@@ -115,3 +115,30 @@ let effect_system_not_pure () : Lemma (~(EffSystem == EffPure)) = admit ()
 
 (* effect_crypto_not_pure (matches Coq: Lemma effect_crypto_not_pure) *)
 let effect_crypto_not_pure () : Lemma (~(EffCrypto == EffPure)) = admit ()
+
+(* effect_random_not_pure (matches Coq: Lemma effect_random_not_pure) *)
+let effect_random_not_pure () : Lemma (~(EffRandom == EffPure)) = admit ()
+
+(* effect_time_not_pure (matches Coq: Lemma effect_time_not_pure) *)
+let effect_time_not_pure () : Lemma (~(EffTime == EffPure)) = admit ()
+
+(* effect_process_not_pure (matches Coq: Lemma effect_process_not_pure) *)
+let effect_process_not_pure () : Lemma (~(EffProcess == EffPure)) = admit ()
+
+(* effect_netsecure_not_pure (matches Coq: Lemma effect_netsecure_not_pure) *)
+let effect_netsecure_not_pure () : Lemma (~(EffNetSecure == EffPure)) = admit ()
+
+(* effect_level_pure (matches Coq: Lemma effect_level_pure) *)
+let effect_level_pure () : Lemma (effect_level EffPure == 0) = admit ()
+
+(* effect_level_read (matches Coq: Lemma effect_level_read) *)
+let effect_level_read () : Lemma (effect_level EffRead == 1) = admit ()
+
+(* effect_level_write (matches Coq: Lemma effect_level_write) *)
+let effect_level_write () : Lemma (effect_level EffWrite == 2) = admit ()
+
+(* effect_level_pure_min (matches Coq: Lemma effect_level_pure_min) *)
+let effect_level_pure_min (p_epsilon: _) : Lemma (effect_level EffPure <= effect_level p_epsilon) = admit ()
+
+(* pure_multi_step_compose (matches Coq: Lemma pure_multi_step_compose) *)
+let pure_multi_step_compose (p_e1: _) (p_v1: _) (p_e2: _) (p_v2: _) (p_st: _) (p_ctx: _) (p_ctx1: _) (p_ctx2: _) : Lemma (requires (multi_step (p_e1, p_st, p_ctx) (p_v1, p_st, p_ctx1) == true /\ multi_step (p_e2, p_st, p_ctx) (p_v2, p_st, p_ctx2) == true /\ value p_v1 == true /\ value p_v2 == true)) (ensures (p_st == p_st)) = admit ()

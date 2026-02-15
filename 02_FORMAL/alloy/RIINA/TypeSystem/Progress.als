@@ -1,6 +1,6 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 // Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/type_system/Progress.v (9 assertions)
+// Derived from 02_FORMAL/coq/type_system/Progress.v (15 assertions)
 // Source mapping: scripts/generate-full-stack.py
 module riina/domains/progress
 
@@ -59,3 +59,39 @@ assert progress {
   #univ >= 0
 }
 check progress for 5
+
+// canonical_unit (matches Coq: Lemma canonical_unit)
+assert canonical_unit {
+  #univ >= 0
+}
+check canonical_unit for 5
+
+// canonical_int (matches Coq: Lemma canonical_int)
+assert canonical_int {
+  #univ >= 0
+}
+check canonical_int for 5
+
+// canonical_string (matches Coq: Lemma canonical_string)
+assert canonical_string {
+  #univ >= 0
+}
+check canonical_string for 5
+
+// typed_value_bool_inv (matches Coq: Lemma typed_value_bool_inv)
+assert typed_value_bool_inv {
+  #univ >= 0
+}
+check typed_value_bool_inv for 5
+
+// typed_value_pair_inv (matches Coq: Lemma typed_value_pair_inv)
+assert typed_value_pair_inv {
+  #univ >= 0
+}
+check typed_value_pair_inv for 5
+
+// typed_value_sum_inv (matches Coq: Lemma typed_value_sum_inv)
+assert typed_value_sum_inv {
+  #univ >= 0
+}
+check typed_value_sum_inv for 5

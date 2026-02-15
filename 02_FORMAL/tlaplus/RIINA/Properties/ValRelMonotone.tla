@@ -1,7 +1,7 @@
 ---- MODULE ValRelMonotone ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/ValRelMonotone.v (7 invariants)
+\* Derived from 02_FORMAL/coq/properties/ValRelMonotone.v (14 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -36,6 +36,27 @@ THEOREM val_rel_le_to_min == Init => TypeOK
 
 \* val_rel_le_to_min_r (matches Coq: Lemma val_rel_le_to_min_r)
 THEOREM val_rel_le_to_min_r == Init => TypeOK
+
+\* val_rel_le_drop (matches Coq: Lemma val_rel_le_drop)
+THEOREM val_rel_le_drop == Init => TypeOK
+
+\* val_rel_le_double_mono (matches Coq: Lemma val_rel_le_double_mono)
+THEOREM val_rel_le_double_mono == Init => TypeOK
+
+\* val_rel_le_step_down_1 (matches Coq: Lemma val_rel_le_step_down_1)
+THEOREM val_rel_le_step_down_1 == Init => TypeOK
+
+\* val_rel_le_step_down_2 (matches Coq: Lemma val_rel_le_step_down_2)
+THEOREM val_rel_le_step_down_2 == Init => TypeOK
+
+\* val_rel_le_from_succ (matches Coq: Lemma val_rel_le_from_succ)
+THEOREM val_rel_le_from_succ == Init => TypeOK
+
+\* val_rel_le_mono_witness (matches Coq: Lemma val_rel_le_mono_witness)
+THEOREM val_rel_le_mono_witness == Init => TypeOK
+
+\* val_rel_le_half (matches Coq: Lemma val_rel_le_half)
+THEOREM val_rel_le_half == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

@@ -576,4 +576,150 @@ Proof.
   intros Σ. unfold store_ty_extends. intros. exact H.
 Qed.
 
+(** ** Value Builders for Primitive Types *)
+
+(** Build val_rel_le for TUnit at any step *)
+Lemma val_rel_le_build_unit : forall n Σ,
+  val_rel_le n Σ TUnit EUnit EUnit.
+Proof.
+  induction n as [|n' IH]; intros Σ.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VUnit.
+      * apply VUnit.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+Qed.
+
+(** Build val_rel_le for TBool at any step *)
+Lemma val_rel_le_build_bool : forall n Σ b,
+  val_rel_le n Σ TBool (EBool b) (EBool b).
+Proof.
+  induction n as [|n' IH]; intros Σ b.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VBool.
+      * apply VBool.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists b. auto.
+Qed.
+
+(** Build val_rel_le for TInt at any step *)
+Lemma val_rel_le_build_int : forall n Σ i,
+  val_rel_le n Σ TInt (EInt i) (EInt i).
+Proof.
+  induction n as [|n' IH]; intros Σ i.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VInt.
+      * apply VInt.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists i. auto.
+Qed.
+
+(** Build val_rel_le for TString at any step *)
+Lemma val_rel_le_build_string : forall n Σ s,
+  val_rel_le n Σ TString (EString s) (EString s).
+Proof.
+  induction n as [|n' IH]; intros Σ s.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VString.
+      * apply VString.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists s. auto.
+Qed.
+
+(** ** Structural Extraction Lemmas *)
+
+(** Extract structural equality from TUnit relation *)
+Lemma val_rel_le_unit_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  v1 = EUnit /\ v2 = EUnit.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Extract structural equality from TBool relation *)
+Lemma val_rel_le_bool_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  exists b, v1 = EBool b /\ v2 = EBool b.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Extract structural equality from TInt relation *)
+Lemma val_rel_le_int_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  exists i, v1 = EInt i /\ v2 = EInt i.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Extract structural equality from TString relation *)
+Lemma val_rel_le_string_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  exists s, v1 = EString s /\ v2 = EString s.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** ** Expression Relation Properties *)
+
+(** Expression relation is monotone in step index *)
+Lemma exp_rel_le_mono_step : forall n m Σ T e1 e2 st1 st2 ctx,
+  m <= n ->
+  exp_rel_le n Σ T e1 e2 st1 st2 ctx ->
+  exp_rel_le m Σ T e1 e2 st1 st2 ctx.
+Proof.
+  intros n m Σ T e1 e2 st1 st2 ctx Hle Hexp.
+  unfold exp_rel_le in *.
+  intros k v1 v2 st1' st2' ctx' Hk Hms1 Hms2 Hval1 Hval2.
+  apply (Hexp k v1 v2 st1' st2' ctx'); auto. lia.
+Qed.
+
+(** Expression relation at step 0 produces trivially related values *)
+Lemma exp_rel_le_zero_val : forall Σ T e1 e2 st1 st2 ctx
+  k v1 v2 st1' st2' ctx',
+  k <= 0 ->
+  exp_rel_le 0 Σ T e1 e2 st1 st2 ctx ->
+  multi_step (e1, st1, ctx) (v1, st1', ctx') ->
+  multi_step (e2, st2, ctx) (v2, st2', ctx') ->
+  value v1 -> value v2 ->
+  val_rel_le 0 Σ T v1 v2.
+Proof.
+  intros. simpl. exact I.
+Qed.
+
 (** End of CumulativeRelation.v *)

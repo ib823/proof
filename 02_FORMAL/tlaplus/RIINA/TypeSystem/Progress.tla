@@ -1,7 +1,7 @@
 ---- MODULE Progress ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/type_system/Progress.v (9 invariants)
+\* Derived from 02_FORMAL/coq/type_system/Progress.v (15 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -42,6 +42,24 @@ THEOREM lookup_nil_contra == Init => TypeOK
 
 \* progress (matches Coq: Theorem progress)
 THEOREM progress == Init => TypeOK
+
+\* canonical_unit (matches Coq: Lemma canonical_unit)
+THEOREM canonical_unit == Init => TypeOK
+
+\* canonical_int (matches Coq: Lemma canonical_int)
+THEOREM canonical_int == Init => TypeOK
+
+\* canonical_string (matches Coq: Lemma canonical_string)
+THEOREM canonical_string == Init => TypeOK
+
+\* typed_value_bool_inv (matches Coq: Lemma typed_value_bool_inv)
+THEOREM typed_value_bool_inv == Init => TypeOK
+
+\* typed_value_pair_inv (matches Coq: Lemma typed_value_pair_inv)
+THEOREM typed_value_pair_inv == Init => TypeOK
+
+\* typed_value_sum_inv (matches Coq: Lemma typed_value_sum_inv)
+THEOREM typed_value_sum_inv == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

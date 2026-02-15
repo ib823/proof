@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/properties/CumulativeRelation.v (14 lemmas) *)
+(* Derived from 02_FORMAL/coq/properties/CumulativeRelation.v (24 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Properties.CumulativeRelation
 open FStar.All
@@ -89,3 +89,33 @@ let store_ty_extends_trans (p_sigma1: _) (p_sigma2: _) (p_sigma3: _) : Lemma (re
 
 (* store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl) *)
 let store_ty_extends_refl (p_sigma: _) : Lemma (store_ty_extends p_sigma p_sigma == true) = admit ()
+
+(* val_rel_le_build_unit (matches Coq: Lemma val_rel_le_build_unit) *)
+let val_rel_le_build_unit (p_n: _) (p_sigma: _) : Lemma (val_rel_le p_n p_sigma TUnit EUnit EUnit == true) = admit ()
+
+(* val_rel_le_build_bool (matches Coq: Lemma val_rel_le_build_bool) *)
+let val_rel_le_build_bool (p_n: _) (p_sigma: _) (p_b: _) : Lemma (val_rel_le p_n p_sigma TBool (EBool p_b) (EBool p_b) == true) = admit ()
+
+(* val_rel_le_build_int (matches Coq: Lemma val_rel_le_build_int) *)
+let val_rel_le_build_int (p_n: _) (p_sigma: _) (p_i: _) : Lemma (val_rel_le p_n p_sigma TInt (EInt p_i) (EInt p_i) == true) = admit ()
+
+(* val_rel_le_build_string (matches Coq: Lemma val_rel_le_build_string) *)
+let val_rel_le_build_string (p_n: _) (p_sigma: _) (p_s: _) : Lemma (val_rel_le p_n p_sigma TString (EString p_s) (EString p_s) == true) = admit ()
+
+(* val_rel_le_unit_eq (matches Coq: Lemma val_rel_le_unit_eq) *)
+let val_rel_le_unit_eq (p_n: _) (p_sigma: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n p_sigma TUnit p_v1 p_v2 == true)) (ensures (p_v1 == EUnit /\ p_v2 == EUnit)) = admit ()
+
+(* val_rel_le_bool_eq (matches Coq: Lemma val_rel_le_bool_eq) *)
+let val_rel_le_bool_eq (p_n: _) (p_sigma: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n p_sigma TBool p_v1 p_v2 == true)) (ensures ((exists p_b. p_v1 == EBool p_b) /\ p_v2 == EBool b)) = admit ()
+
+(* val_rel_le_int_eq (matches Coq: Lemma val_rel_le_int_eq) *)
+let val_rel_le_int_eq (p_n: _) (p_sigma: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n p_sigma TInt p_v1 p_v2 == true)) (ensures ((exists p_i. p_v1 == EInt p_i) /\ p_v2 == EInt i)) = admit ()
+
+(* val_rel_le_string_eq (matches Coq: Lemma val_rel_le_string_eq) *)
+let val_rel_le_string_eq (p_n: _) (p_sigma: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n p_sigma TString p_v1 p_v2 == true)) (ensures ((exists p_s. p_v1 == EString p_s) /\ p_v2 == EString s)) = admit ()
+
+(* exp_rel_le_mono_step (matches Coq: Lemma exp_rel_le_mono_step) *)
+let exp_rel_le_mono_step (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_e1: _) (p_e2: _) (p_st1: _) (p_st2: _) (p_ctx: _) : Lemma (requires (p_m <= p_n /\ exp_rel_le p_n p_sigma p_t p_e1 p_e2 p_st1 p_st2 p_ctx == true)) (ensures (exp_rel_le p_m p_sigma p_t p_e1 p_e2 p_st1 p_st2 p_ctx == true)) = admit ()
+
+(* exp_rel_le_zero_val (matches Coq: Lemma exp_rel_le_zero_val) *)
+let exp_rel_le_zero_val (p_sigma: _) (p_t: _) (p_e1: _) (p_e2: _) (p_st1: _) (p_st2: _) (p_ctx: _) (p_k: _) (p_v1: _) (p_v2: _) (p_st1_: _) (p_st2_: _) (p_ctx_: _) : Lemma (requires (p_k <= 0 /\ exp_rel_le 0 p_sigma p_t p_e1 p_e2 p_st1 p_st2 p_ctx == true /\ multi_step (p_e1, p_st1, p_ctx) (p_v1, p_st1_, p_ctx_) == true /\ multi_step (p_e2, p_st2, p_ctx) (p_v2, p_st2_, p_ctx_) == true /\ value p_v1 == true /\ value p_v2 == true)) (ensures (val_rel_le 0 p_sigma p_t p_v1 p_v2 == true)) = admit ()

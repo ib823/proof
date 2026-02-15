@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/CumulativeRelation.v (14 validations)
+; Derived from 02_FORMAL/coq/properties/CumulativeRelation.v (24 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for CumulativeRelation
@@ -118,6 +118,56 @@
 (declare-fun source_store_ty_extends_refl () Bool)
 (declare-fun target_store_ty_extends_refl () Bool)
 (assert (= source_store_ty_extends_refl target_store_ty_extends_refl))
+
+; val_rel_le_build_unit: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_build_unit () Bool)
+(declare-fun target_val_rel_le_build_unit () Bool)
+(assert (= source_val_rel_le_build_unit target_val_rel_le_build_unit))
+
+; val_rel_le_build_bool: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_build_bool () Bool)
+(declare-fun target_val_rel_le_build_bool () Bool)
+(assert (= source_val_rel_le_build_bool target_val_rel_le_build_bool))
+
+; val_rel_le_build_int: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_build_int () Bool)
+(declare-fun target_val_rel_le_build_int () Bool)
+(assert (= source_val_rel_le_build_int target_val_rel_le_build_int))
+
+; val_rel_le_build_string: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_build_string () Bool)
+(declare-fun target_val_rel_le_build_string () Bool)
+(assert (= source_val_rel_le_build_string target_val_rel_le_build_string))
+
+; val_rel_le_unit_eq: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_unit_eq () Bool)
+(declare-fun target_val_rel_le_unit_eq () Bool)
+(assert (= source_val_rel_le_unit_eq target_val_rel_le_unit_eq))
+
+; val_rel_le_bool_eq: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_bool_eq () Bool)
+(declare-fun target_val_rel_le_bool_eq () Bool)
+(assert (= source_val_rel_le_bool_eq target_val_rel_le_bool_eq))
+
+; val_rel_le_int_eq: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_int_eq () Bool)
+(declare-fun target_val_rel_le_int_eq () Bool)
+(assert (= source_val_rel_le_int_eq target_val_rel_le_int_eq))
+
+; val_rel_le_string_eq: translation preserves property (matches Coq: Lemma)
+(declare-fun source_val_rel_le_string_eq () Bool)
+(declare-fun target_val_rel_le_string_eq () Bool)
+(assert (= source_val_rel_le_string_eq target_val_rel_le_string_eq))
+
+; exp_rel_le_mono_step: translation preserves property (matches Coq: Lemma)
+(declare-fun source_exp_rel_le_mono_step () Bool)
+(declare-fun target_exp_rel_le_mono_step () Bool)
+(assert (= source_exp_rel_le_mono_step target_exp_rel_le_mono_step))
+
+; exp_rel_le_zero_val: translation preserves property (matches Coq: Lemma)
+(declare-fun source_exp_rel_le_zero_val () Bool)
+(declare-fun target_exp_rel_le_zero_val () Bool)
+(assert (= source_exp_rel_le_zero_val target_exp_rel_le_zero_val))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

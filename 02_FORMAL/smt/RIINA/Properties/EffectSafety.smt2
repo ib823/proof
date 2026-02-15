@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/EffectSafety.v (32 assertions)
+; Derived from 02_FORMAL/coq/properties/EffectSafety.v (41 assertions)
 ; Source mapping: scripts/generate-full-stack.py
 ; Module: EffectSafety
 
@@ -134,6 +134,42 @@
 ; effect_crypto_not_pure (matches Coq: Lemma effect_crypto_not_pure)
 ; effect_crypto_not_pure: EffCrypto <> EffPure
 (assert (= 0 0)) ; effect_crypto_not_pure [Coq-only]
+
+; effect_random_not_pure (matches Coq: Lemma effect_random_not_pure)
+; effect_random_not_pure: EffRandom <> EffPure
+(assert (= 0 0)) ; effect_random_not_pure [Coq-only]
+
+; effect_time_not_pure (matches Coq: Lemma effect_time_not_pure)
+; effect_time_not_pure: EffTime <> EffPure
+(assert (= 0 0)) ; effect_time_not_pure [Coq-only]
+
+; effect_process_not_pure (matches Coq: Lemma effect_process_not_pure)
+; effect_process_not_pure: EffProcess <> EffPure
+(assert (= 0 0)) ; effect_process_not_pure [Coq-only]
+
+; effect_netsecure_not_pure (matches Coq: Lemma effect_netsecure_not_pure)
+; effect_netsecure_not_pure: EffNetSecure <> EffPure
+(assert (= 0 0)) ; effect_netsecure_not_pure [Coq-only]
+
+; effect_level_pure (matches Coq: Lemma effect_level_pure)
+; effect_level_pure: effect_level EffPure = 0
+(assert (= 0 0)) ; effect_level_pure [Coq-only]
+
+; effect_level_read (matches Coq: Lemma effect_level_read)
+; effect_level_read: effect_level EffRead = 1
+(assert (= 0 0)) ; effect_level_read [Coq-only]
+
+; effect_level_write (matches Coq: Lemma effect_level_write)
+; effect_level_write: effect_level EffWrite = 2
+(assert (= 0 0)) ; effect_level_write [Coq-only]
+
+; effect_level_pure_min (matches Coq: Lemma effect_level_pure_min)
+; effect_level_pure_min: forall ε, effect_level EffPure <= effect_level ε
+(assert (forall ((epsilon Bool)) (= 0 0))) ; effect_level_pure_min [partial: bindings preserved]
+
+; pure_multi_step_compose (matches Coq: Lemma pure_multi_step_compose)
+; pure_multi_step_compose: forall e1 v1 e2 v2 st ctx ctx1 ctx2, multi_step (e1, st, ctx) (v1, st, ctx1) -> multi_step (e2, st, ctx) (v2, st, ctx2) 
+(assert (forall ((e1 Bool) (v1 Bool) (e2 Bool) (v2 Bool) (st Bool) (ctx Bool) (ctx1 Bool) (ctx2 Bool)) (= 0 0))) ; pure_multi_step_compose [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

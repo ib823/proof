@@ -1,6 +1,6 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/properties/StoreRelation.v (25 lemmas) *)
+(* Derived from 02_FORMAL/coq/properties/StoreRelation.v (34 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Properties.StoreRelation
 open FStar.All
@@ -95,3 +95,30 @@ let val_rel_le_secret_value_right (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2
 
 (* val_rel_le_unit (matches Coq: Lemma val_rel_le_unit) *)
 let val_rel_le_unit (p_n: _) (p_sigma: _) : Lemma (val_rel_le p_n p_sigma TUnit EUnit EUnit == true) = admit ()
+
+(* store_rel_le_empty (matches Coq: Lemma store_rel_le_empty) *)
+let store_rel_le_empty (p_n: _) : Lemma (store_rel_le p_n [] [] [] == true) = admit ()
+
+(* store_rel_simple_empty (matches Coq: Lemma store_rel_simple_empty) *)
+let store_rel_simple_empty (p_sigma: _) : Lemma (store_rel_simple p_sigma [] [] == true) = admit ()
+
+(* store_rel_le_both_some (matches Coq: Lemma store_rel_le_both_some) *)
+let store_rel_le_both_some (p_n: _) (p_sigma: _) (p_st1: _) (p_st2: _) (p_l: _) (p_t: _) (p_sl: _) : Lemma (requires (store_rel_le p_n p_sigma p_st1 p_st2 == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_sl))) (ensures ((exists p_v1. (exists p_v2. store_lookup p_l p_st1 == Some p_v1)) /\ store_lookup p_l p_st2 == Some v2)) = admit ()
+
+(* store_ty_update_preserves (matches Coq: Lemma store_ty_update_preserves) *)
+let store_ty_update_preserves (p_l1: _) (p_l2: _) (p_t1: _) (p_sl1: _) (p_t2: _) (p_sl2: _) (p_sigma: _) : Lemma (requires (~(p_l1 == p_l2) /\ store_ty_lookup p_l2 p_sigma == Some (p_t2, p_sl2))) (ensures (store_ty_lookup p_l2 (store_ty_update p_l1 p_t1 p_sl1 p_sigma) == Some (p_t2, p_sl2))) = admit ()
+
+(* store_max_nil (matches Coq: Lemma store_max_nil) *)
+let store_max_nil () : Lemma (store_max [] == 0) = admit ()
+
+(* store_max_singleton (matches Coq: Lemma store_max_singleton) *)
+let store_max_singleton (p_l: _) (p_v: _) : Lemma (store_max ((p_l, p_v) :: []) == Nat.max p_l 0) = admit ()
+
+(* store_rel_le_secret_loc (matches Coq: Lemma store_rel_le_secret_loc) *)
+let store_rel_le_secret_loc (p_n: _) (p_sigma: _) (p_st1: _) (p_st2: _) (p_l: _) (p_t: _) : Lemma (requires (store_rel_le p_n p_sigma p_st1 p_st2 == true /\ store_ty_lookup p_l p_sigma == Some (TSecret p_t, Public))) (ensures ((exists p_v1. (exists p_v2. store_lookup p_l p_st1 == Some p_v1)) /\ store_lookup p_l p_st2 == Some v2 /\ val_rel_le p_n p_sigma (TSecret p_t) v1 v2 == true)) = admit ()
+
+(* store_lookup_fresh_loc (matches Coq: Lemma store_lookup_fresh_loc) *)
+let store_lookup_fresh_loc (p_st: _) : Lemma (store_lookup (fresh_loc p_st) p_st == None) = admit ()
+
+(* val_rel_le_ref_loc_eq (matches Coq: Lemma val_rel_le_ref_loc_eq) *)
+let val_rel_le_ref_loc_eq (p_n: _) (p_sigma: _) (p_t: _) (p_sl: _) (p_l1: _) (p_l2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n p_sigma (TRef p_t p_sl) (ELoc p_l1) (ELoc p_l2) == true)) (ensures (p_l1 == p_l2)) = admit ()

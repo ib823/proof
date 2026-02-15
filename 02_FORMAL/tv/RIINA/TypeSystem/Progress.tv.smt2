@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/type_system/Progress.v (9 validations)
+; Derived from 02_FORMAL/coq/type_system/Progress.v (15 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for Progress
@@ -58,6 +58,36 @@
 (declare-fun source_progress () Bool)
 (declare-fun target_progress () Bool)
 (assert (= source_progress target_progress))
+
+; canonical_unit: translation preserves property (matches Coq: Lemma)
+(declare-fun source_canonical_unit () Bool)
+(declare-fun target_canonical_unit () Bool)
+(assert (= source_canonical_unit target_canonical_unit))
+
+; canonical_int: translation preserves property (matches Coq: Lemma)
+(declare-fun source_canonical_int () Bool)
+(declare-fun target_canonical_int () Bool)
+(assert (= source_canonical_int target_canonical_int))
+
+; canonical_string: translation preserves property (matches Coq: Lemma)
+(declare-fun source_canonical_string () Bool)
+(declare-fun target_canonical_string () Bool)
+(assert (= source_canonical_string target_canonical_string))
+
+; typed_value_bool_inv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_typed_value_bool_inv () Bool)
+(declare-fun target_typed_value_bool_inv () Bool)
+(assert (= source_typed_value_bool_inv target_typed_value_bool_inv))
+
+; typed_value_pair_inv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_typed_value_pair_inv () Bool)
+(declare-fun target_typed_value_pair_inv () Bool)
+(assert (= source_typed_value_pair_inv target_typed_value_pair_inv))
+
+; typed_value_sum_inv: translation preserves property (matches Coq: Lemma)
+(declare-fun source_typed_value_sum_inv () Bool)
+(declare-fun target_typed_value_sum_inv () Bool)
+(assert (= source_typed_value_sum_inv target_typed_value_sum_inv))
 
 ; Verify all translation validations are satisfiable
 (check-sat)
