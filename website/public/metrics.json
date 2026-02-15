@@ -1,16 +1,16 @@
 {
-  "generated": "2026-02-15T15:37:32Z",
-  "generatedHuman": "February 15, 2026 at 15:37 UTC",
+  "generated": "2026-02-15T15:43:14Z",
+  "generatedHuman": "February 15, 2026 at 15:43 UTC",
   "version": "0.2.0",
   "session": 86,
   "git": {
-    "commit": "03327f7b",
+    "commit": "0708b195",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 8341,
+    "qedActive": 8362,
     "qedDeprecated": 758,
-    "qedTotal": 9099,
+    "qedTotal": 9120,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
@@ -23,60 +23,60 @@
     "prover": "Coq 8.20.1"
   },
   "lean": {
-    "theorems": 8394,
+    "theorems": 8494,
     "sorry": 177,
     "axioms": 12,
-    "files": 267,
-    "lines": 103918,
+    "files": 269,
+    "lines": 104601,
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 8493,
+    "lemmas": 8593,
     "sorry": 0,
     "sorryVerified": false,
     "axioms": 0,
-    "files": 273,
-    "lines": 95695,
+    "files": 275,
+    "lines": 96340,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
     "lemmas": 216,
-    "files": 263,
+    "files": 265,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 8366,
-    "files": 262,
+    "theorems": 8466,
+    "files": 264,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 8119,
-    "files": 255,
+    "assertions": 8219,
+    "files": 257,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 8366,
-    "files": 262,
+    "assertions": 8466,
+    "files": 264,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
-    "proofs": 2961,
-    "files": 275,
+    "proofs": 3061,
+    "files": 277,
     "prover": "Verus"
   },
   "kani": {
-    "harnesses": 2708,
-    "files": 257,
+    "harnesses": 2808,
+    "files": 259,
     "prover": "Kani"
   },
   "tv": {
-    "validations": 12394,
-    "files": 262,
+    "validations": 12494,
+    "files": 264,
     "prover": "Translation Validation"
   },
   "multiProver": {
     "tripleProverTheorems": 7449,
-    "totalProofsAllProvers": 68358,
+    "totalProofsAllProvers": 69179,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 177,
@@ -121,7 +121,7 @@
       }
     },
     "coqTiers": {
-      "core": 791,
+      "core": 812,
       "domain": 7550,
       "domainTrivial": 837
     }

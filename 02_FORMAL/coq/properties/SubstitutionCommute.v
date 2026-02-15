@@ -161,4 +161,90 @@ Proof. intros s. unfold closed_expr_sc. intros x Hfree. simpl in Hfree. exact Hf
 Lemma closed_loc_sub : forall l, closed_expr_sc (ELoc l).
 Proof. intros l. unfold closed_expr_sc. intros x Hfree. simpl in Hfree. exact Hfree. Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Substitution on Variables                                       *)
+(** ----------------------------------------------------------------- *)
+
+(** Substituting into the same variable yields the replacement. *)
+Lemma subst_var_same : forall x v,
+  [x := v] (EVar x) = v.
+Proof.
+  intros x v. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** Substituting into a different variable is the identity. *)
+Lemma subst_var_diff : forall x y v,
+  x <> y -> [x := v] (EVar y) = EVar y.
+Proof.
+  intros x y v Hneq. simpl.
+  destruct (String.eqb x y) eqn:Heq.
+  - apply String.eqb_eq in Heq. contradiction.
+  - reflexivity.
+Qed.
+
+(** Substitution into base values is always the identity. *)
+Lemma subst_unit : forall x v, [x := v] EUnit = EUnit.
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_bool : forall x v b, [x := v] (EBool b) = EBool b.
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_int : forall x v n, [x := v] (EInt n) = EInt n.
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_string : forall x v s, [x := v] (EString s) = EString s.
+Proof. intros. reflexivity. Qed.
+
+Lemma subst_loc : forall x v l, [x := v] (ELoc l) = ELoc l.
+Proof. intros. reflexivity. Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Substitution Identity                                           *)
+(** ----------------------------------------------------------------- *)
+
+(** Substituting x := EVar x is the identity on all expressions. *)
+Lemma subst_id : forall x e, [x := EVar x] e = e.
+Proof.
+  intros x e. induction e; simpl; try reflexivity;
+  try (f_equal; assumption);
+  try (f_equal; [assumption | assumption]);
+  try (f_equal; [assumption | assumption | assumption]).
+  - (* EVar *) destruct (String.eqb x i) eqn:Heq.
+    + apply String.eqb_eq in Heq. subst. reflexivity.
+    + reflexivity.
+  - (* ELam *) destruct (String.eqb x i) eqn:Heq.
+    + reflexivity.
+    + f_equal. exact IHe.
+  - (* ECase *) f_equal; [exact IHe1 | |].
+    + destruct (String.eqb x i); [reflexivity | exact IHe2].
+    + destruct (String.eqb x i0); [reflexivity | exact IHe3].
+  - (* ELet *) f_equal; [exact IHe1 |].
+    destruct (String.eqb x i); [reflexivity | exact IHe2].
+  - (* EHandle *) f_equal; [exact IHe1 |].
+    destruct (String.eqb x i); [reflexivity | exact IHe2].
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Values are Closed under Substitution                            *)
+(** ----------------------------------------------------------------- *)
+
+(** Substitution preserves the value predicate. *)
+Lemma subst_value : forall x v e,
+  value e -> value v -> value ([x := v] e).
+Proof.
+  intros x v e Hval_e Hval_v.
+  induction Hval_e; simpl.
+  - (* VUnit *) constructor.
+  - (* VBool *) constructor.
+  - (* VInt *) constructor.
+  - (* VString *) constructor.
+  - (* VLoc *) constructor.
+  - (* VLam *) destruct (String.eqb x x0); constructor.
+  - (* VPair *) constructor; auto.
+  - (* VInl *) constructor. auto.
+  - (* VInr *) constructor. auto.
+  - (* VClassify *) constructor. auto.
+  - (* VProve *) constructor. auto.
+Qed.
+
 (** End of file - ZERO ADMITS *)

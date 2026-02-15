@@ -320,4 +320,139 @@ Proof.
   - exact IHHty.
 Qed.
 
+(* ================================================================= *)
+(** ** Values Always Perform Within Any Bound *)
+(* ================================================================= *)
+
+(** Values contain no performed effects (they are fully evaluated). *)
+Lemma performs_within_value : forall v eff,
+  value v ->
+  performs_within v eff.
+Proof.
+  intros v eff Hval.
+  induction Hval; simpl; auto.
+Qed.
+
+(** Values perform within EffPure. *)
+Lemma performs_within_value_pure : forall v,
+  value v ->
+  performs_within v EffPure.
+Proof.
+  intros v Hval. apply performs_within_value. exact Hval.
+Qed.
+
+(* ================================================================= *)
+(** ** Performs-Within Structural Properties *)
+(* ================================================================= *)
+
+(** The join of two bounds covers both sub-expressions. *)
+Lemma performs_within_join_l : forall e eff1 eff2,
+  performs_within e eff1 ->
+  performs_within e (effect_join eff1 eff2).
+Proof.
+  intros e eff1 eff2 Hpw.
+  apply performs_within_mono with (eff1 := eff1); auto.
+  apply effect_join_ub_l.
+Qed.
+
+Lemma performs_within_join_r : forall e eff1 eff2,
+  performs_within e eff2 ->
+  performs_within e (effect_join eff1 eff2).
+Proof.
+  intros e eff1 eff2 Hpw.
+  apply performs_within_mono with (eff1 := eff2); auto.
+  apply effect_join_ub_r.
+Qed.
+
+(** Top effect (EffGapura) bounds everything. *)
+Lemma performs_within_top : forall e eff,
+  performs_within e eff ->
+  performs_within e EffGapura.
+Proof.
+  intros e eff Hpw.
+  apply performs_within_mono with (eff1 := eff); auto.
+  apply effect_gapura_top.
+Qed.
+
+(* ================================================================= *)
+(** ** has_type_full Structural Properties *)
+(* ================================================================= *)
+
+(** has_type embeds into has_type_full. *)
+Lemma has_type_embed : forall G S D e T eff,
+  has_type G S D e T eff ->
+  has_type_full G S D e T eff.
+Proof.
+  intros. apply T_Core. exact H.
+Qed.
+
+(** has_type_full preserves effect ordering via performs_within. *)
+Lemma has_type_full_effect_bound : forall G S D e T eff eff',
+  has_type_full G S D e T eff ->
+  effect_leq eff eff' ->
+  performs_within e eff'.
+Proof.
+  intros G S D e T eff eff' Hty Hle.
+  apply performs_within_mono with (eff1 := eff); auto.
+  apply effect_safety with (G := G) (S := S) (D := D) (T := T).
+  exact Hty.
+Qed.
+
+(** The core typing relation's effect is sound for performs_within. *)
+Lemma core_typing_sound : forall G S D e T eff,
+  has_type G S D e T eff ->
+  forall eff', effect_leq eff eff' -> performs_within e eff'.
+Proof.
+  intros G S D e T eff Hty eff' Hle.
+  apply performs_within_mono with (eff1 := eff); auto.
+  apply core_effects_within with (G := G) (S := S) (D := D) (T := T).
+  exact Hty.
+Qed.
+
+(* ================================================================= *)
+(** ** Effect Composition Properties *)
+(* ================================================================= *)
+
+(** Application composes effects correctly: the join covers both sub-effects. *)
+Lemma app_effect_covers_fn_and_arg : forall ε_fn ε1 ε2,
+  effect_leq ε_fn (effect_join ε_fn (effect_join ε1 ε2)) /\
+  effect_leq ε1 (effect_join ε_fn (effect_join ε1 ε2)) /\
+  effect_leq ε2 (effect_join ε_fn (effect_join ε1 ε2)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** If-expression effect covers all three branches. *)
+Lemma if_effect_covers_branches : forall ε1 ε2 ε3,
+  effect_leq ε1 (effect_join ε1 (effect_join ε2 ε3)) /\
+  effect_leq ε2 (effect_join ε1 (effect_join ε2 ε3)) /\
+  effect_leq ε3 (effect_join ε1 (effect_join ε2 ε3)).
+Proof.
+  intros. repeat split.
+  - apply effect_join_ub_l.
+  - eapply effect_leq_trans. apply effect_join_ub_l. apply effect_join_ub_r.
+  - eapply effect_leq_trans. apply effect_join_ub_r. apply effect_join_ub_r.
+Qed.
+
+(** Let-expression effect covers binding and body. *)
+Lemma let_effect_covers_both : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split.
+  - apply effect_join_ub_l.
+  - apply effect_join_ub_r.
+Qed.
+
+(** Pair effect covers both components. *)
+Lemma pair_effect_covers_both : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2) /\
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros. split; [apply effect_join_ub_l | apply effect_join_ub_r].
+Qed.
+
 (** End of EffectSystem.v *)

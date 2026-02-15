@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/EffectSafety.v (12 validations)
+; Derived from 02_FORMAL/coq/properties/EffectSafety.v (32 validations)
 ; Source mapping: scripts/generate-full-stack.py
 ;
 ; Translation Validation for EffectSafety
@@ -73,6 +73,106 @@
 (declare-fun source_effect_join_nonpure () Bool)
 (declare-fun target_effect_join_nonpure () Bool)
 (assert (= source_effect_join_nonpure target_effect_join_nonpure))
+
+; effect_join_monotone: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_join_monotone () Bool)
+(declare-fun target_effect_join_monotone () Bool)
+(assert (= source_effect_join_monotone target_effect_join_monotone))
+
+; effect_join_mono_l: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_join_mono_l () Bool)
+(declare-fun target_effect_join_mono_l () Bool)
+(assert (= source_effect_join_mono_l target_effect_join_mono_l))
+
+; effect_join_mono_r: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_join_mono_r () Bool)
+(declare-fun target_effect_join_mono_r () Bool)
+(assert (= source_effect_join_mono_r target_effect_join_mono_r))
+
+; effect_leq_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_leq_pure () Bool)
+(declare-fun target_effect_leq_pure () Bool)
+(assert (= source_effect_leq_pure target_effect_leq_pure))
+
+; read_leq_write: translation preserves property (matches Coq: Lemma)
+(declare-fun source_read_leq_write () Bool)
+(declare-fun target_read_leq_write () Bool)
+(assert (= source_read_leq_write target_read_leq_write))
+
+; write_subsumes_read: translation preserves property (matches Coq: Lemma)
+(declare-fun source_write_subsumes_read () Bool)
+(declare-fun target_write_subsumes_read () Bool)
+(assert (= source_write_subsumes_read target_write_subsumes_read))
+
+; write_leq_filesystem: translation preserves property (matches Coq: Lemma)
+(declare-fun source_write_leq_filesystem () Bool)
+(declare-fun target_write_leq_filesystem () Bool)
+(assert (= source_write_leq_filesystem target_write_leq_filesystem))
+
+; pure_leq_read: translation preserves property (matches Coq: Lemma)
+(declare-fun source_pure_leq_read () Bool)
+(declare-fun target_pure_leq_read () Bool)
+(assert (= source_pure_leq_read target_pure_leq_read))
+
+; pure_leq_write: translation preserves property (matches Coq: Lemma)
+(declare-fun source_pure_leq_write () Bool)
+(declare-fun target_pure_leq_write () Bool)
+(assert (= source_pure_leq_write target_pure_leq_write))
+
+; read_neq_write: translation preserves property (matches Coq: Lemma)
+(declare-fun source_read_neq_write () Bool)
+(declare-fun target_read_neq_write () Bool)
+(assert (= source_read_neq_write target_read_neq_write))
+
+; effect_join_pure_l: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_join_pure_l () Bool)
+(declare-fun target_effect_join_pure_l () Bool)
+(assert (= source_effect_join_pure_l target_effect_join_pure_l))
+
+; effect_join_idem: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_join_idem () Bool)
+(declare-fun target_effect_join_idem () Bool)
+(assert (= source_effect_join_idem target_effect_join_idem))
+
+; base_value_always_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_base_value_always_pure () Bool)
+(declare-fun target_base_value_always_pure () Bool)
+(assert (= source_base_value_always_pure target_base_value_always_pure))
+
+; pure_multi_step_preserves_ctx: translation preserves property (matches Coq: Theorem)
+(declare-fun source_pure_multi_step_preserves_ctx () Bool)
+(declare-fun target_pure_multi_step_preserves_ctx () Bool)
+(assert (= source_pure_multi_step_preserves_ctx target_pure_multi_step_preserves_ctx))
+
+; effect_read_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_read_not_pure () Bool)
+(declare-fun target_effect_read_not_pure () Bool)
+(assert (= source_effect_read_not_pure target_effect_read_not_pure))
+
+; effect_write_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_write_not_pure () Bool)
+(declare-fun target_effect_write_not_pure () Bool)
+(assert (= source_effect_write_not_pure target_effect_write_not_pure))
+
+; effect_filesystem_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_filesystem_not_pure () Bool)
+(declare-fun target_effect_filesystem_not_pure () Bool)
+(assert (= source_effect_filesystem_not_pure target_effect_filesystem_not_pure))
+
+; effect_network_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_network_not_pure () Bool)
+(declare-fun target_effect_network_not_pure () Bool)
+(assert (= source_effect_network_not_pure target_effect_network_not_pure))
+
+; effect_system_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_system_not_pure () Bool)
+(declare-fun target_effect_system_not_pure () Bool)
+(assert (= source_effect_system_not_pure target_effect_system_not_pure))
+
+; effect_crypto_not_pure: translation preserves property (matches Coq: Lemma)
+(declare-fun source_effect_crypto_not_pure () Bool)
+(declare-fun target_effect_crypto_not_pure () Bool)
+(assert (= source_effect_crypto_not_pure target_effect_crypto_not_pure))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

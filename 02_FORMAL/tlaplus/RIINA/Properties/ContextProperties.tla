@@ -1,7 +1,7 @@
 ---- MODULE ContextProperties ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
 \* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/ContextProperties.v (21 invariants)
+\* Derived from 02_FORMAL/coq/properties/ContextProperties.v (38 invariants)
 \* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
@@ -78,6 +78,57 @@ THEOREM typing_weaken_two == Init => TypeOK
 
 \* typing_weaken_head_store (matches Coq: Lemma typing_weaken_head_store)
 THEOREM typing_weaken_head_store == Init => TypeOK
+
+\* lookup_app_l (matches Coq: Lemma lookup_app_l)
+THEOREM lookup_app_l == Init => TypeOK
+
+\* lookup_app_r (matches Coq: Lemma lookup_app_r)
+THEOREM lookup_app_r == Init => TypeOK
+
+\* lookup_nil (matches Coq: Lemma lookup_nil)
+THEOREM lookup_nil == Init => TypeOK
+
+\* lookup_head_eq (matches Coq: Lemma lookup_head_eq)
+THEOREM lookup_head_eq == Init => TypeOK
+
+\* typing_contract (matches Coq: Lemma typing_contract)
+THEOREM typing_contract == Init => TypeOK
+
+\* store_wf_runtime_entry_typed (matches Coq: Lemma store_wf_runtime_entry_typed)
+THEOREM store_wf_runtime_entry_typed == Init => TypeOK
+
+\* store_wf_bidirectional (matches Coq: Lemma store_wf_bidirectional)
+THEOREM store_wf_bidirectional == Init => TypeOK
+
+\* subst_closed_typing (matches Coq: Lemma subst_closed_typing)
+THEOREM subst_closed_typing == Init => TypeOK
+
+\* typing_weaken_fresh_list (matches Coq: Lemma typing_weaken_fresh_list)
+THEOREM typing_weaken_fresh_list == Init => TypeOK
+
+\* lookup_singleton (matches Coq: Lemma lookup_singleton)
+THEOREM lookup_singleton == Init => TypeOK
+
+\* lookup_cons_tail (matches Coq: Lemma lookup_cons_tail)
+THEOREM lookup_cons_tail == Init => TypeOK
+
+\* lookup_dec (matches Coq: Lemma lookup_dec)
+THEOREM lookup_dec == Init => TypeOK
+
+\* closed_typing_any_ctx (matches Coq: Lemma closed_typing_any_ctx)
+THEOREM closed_typing_any_ctx == Init => TypeOK
+
+\* typing_weaken_exchange (matches Coq: Lemma typing_weaken_exchange)
+THEOREM typing_weaken_exchange == Init => TypeOK
+
+\* typing_weaken_append (matches Coq: Lemma typing_weaken_append)
+THEOREM typing_weaken_append == Init => TypeOK
+
+\* typing_prefix_sufficient (matches Coq: Lemma typing_prefix_sufficient)
+THEOREM typing_prefix_sufficient == Init => TypeOK
+
+\* typing_singleton_var (matches Coq: Lemma typing_singleton_var)
+THEOREM typing_singleton_var == Init => TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

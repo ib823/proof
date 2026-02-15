@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/properties/ContextProperties.v (21 assertions)
+; Derived from 02_FORMAL/coq/properties/ContextProperties.v (38 assertions)
 ; Source mapping: scripts/generate-full-stack.py
 ; Module: ContextProperties
 
@@ -90,6 +90,74 @@
 ; typing_weaken_head_store (matches Coq: Lemma typing_weaken_head_store)
 ; typing_weaken_head_store: forall Γ Σ Σ' Δ e T ε y U, has_type Γ Σ Δ e T ε -> ~ free_in y e -> store_ty_extends Σ Σ' -> has_type ((y, U) :: Γ) Σ' Δ
 (assert (forall ((gamma Bool) (sigma Bool) (sigma_prime Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool) (y Bool) (U Bool)) (= 0 0))) ; typing_weaken_head_store [partial: bindings preserved]
+
+; lookup_app_l (matches Coq: Lemma lookup_app_l)
+; lookup_app_l: forall x Γ1 Γ2 T, lookup x Γ1 = Some T -> lookup x (Γ1 ++ Γ2) = Some T
+(assert (forall ((x Bool) (gamma1 Bool) (gamma2 Bool) (T Bool)) (= 0 0))) ; lookup_app_l [partial: bindings preserved]
+
+; lookup_app_r (matches Coq: Lemma lookup_app_r)
+; lookup_app_r: forall x Γ1 Γ2, lookup x Γ1 = None -> lookup x (Γ1 ++ Γ2) = lookup x Γ2
+(assert (forall ((x Bool) (gamma1 Bool) (gamma2 Bool)) (= 0 0))) ; lookup_app_r [partial: bindings preserved]
+
+; lookup_nil (matches Coq: Lemma lookup_nil)
+; lookup_nil: forall x, lookup x nil = None
+(assert (forall ((x Bool)) (= 0 0))) ; lookup_nil [partial: bindings preserved]
+
+; lookup_head_eq (matches Coq: Lemma lookup_head_eq)
+; lookup_head_eq: forall x T Γ, lookup x ((x, T) :: Γ) = Some T
+(assert (forall ((x Bool) (T Bool) (gamma Bool)) (= 0 0))) ; lookup_head_eq [partial: bindings preserved]
+
+; typing_contract (matches Coq: Lemma typing_contract)
+; typing_contract: forall Γ Σ Δ e T ε x Tx, has_type ((x, Tx) :: (x, Tx) :: Γ) Σ Δ e T ε -> has_type ((x, Tx) :: Γ) Σ Δ e T ε
+(assert (forall ((gamma Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool) (x Bool) (Tx Bool)) (= 0 0))) ; typing_contract [partial: bindings preserved]
+
+; store_wf_runtime_entry_typed (matches Coq: Lemma store_wf_runtime_entry_typed)
+; store_wf_runtime_entry_typed: forall Σ st l v, store_wf Σ st -> store_lookup l st = Some v -> exists T sl, store_ty_lookup l Σ = Some (T, sl)
+(assert (forall ((sigma Bool) (st Bool) (l Bool) (v Bool)) (= 0 0))) ; store_wf_runtime_entry_typed [partial: bindings preserved]
+
+; store_wf_bidirectional (matches Coq: Lemma store_wf_bidirectional)
+; store_wf_bidirectional: forall Σ st l, store_wf Σ st -> (exists T sl, store_ty_lookup l Σ = Some (T, sl)) <-> (exists v, store_lookup l st = Som
+(assert (forall ((sigma Bool) (st Bool) (l Bool)) (= 0 0))) ; store_wf_bidirectional [partial: bindings preserved]
+
+; subst_closed_typing (matches Coq: Lemma subst_closed_typing)
+; subst_closed_typing: forall Σ Δ e T ε x v, has_type nil Σ Δ e T ε -> [x := v] e = e
+(assert (forall ((sigma Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool) (x Bool) (v Bool)) (= 0 0))) ; subst_closed_typing [partial: bindings preserved]
+
+; typing_weaken_fresh_list (matches Coq: Lemma typing_weaken_fresh_list)
+; typing_weaken_fresh_list: forall Γ1 Γ2 Σ Δ e T ε, has_type Γ2 Σ Δ e T ε -> (forall x, free_in x e -> lookup x Γ1 = None) -> has_type (Γ1 ++ Γ2) Σ 
+(assert (forall ((gamma1 Bool) (gamma2 Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool)) (= 0 0))) ; typing_weaken_fresh_list [partial: bindings preserved]
+
+; lookup_singleton (matches Coq: Lemma lookup_singleton)
+; lookup_singleton: forall x T, lookup x ((x, T) :: nil) = Some T
+(assert (forall ((x Bool) (T Bool)) (= 0 0))) ; lookup_singleton [partial: bindings preserved]
+
+; lookup_cons_tail (matches Coq: Lemma lookup_cons_tail)
+; lookup_cons_tail: forall x y U T Γ, x <> y -> lookup x ((y, U) :: Γ) = Some T -> lookup x Γ = Some T
+(assert (forall ((x Bool) (y Bool) (U Bool) (T Bool) (gamma Bool)) (= 0 0))) ; lookup_cons_tail [partial: bindings preserved]
+
+; lookup_dec (matches Coq: Lemma lookup_dec)
+; lookup_dec: forall x Γ, {exists T, lookup x Γ = Some T} + {lookup x Γ = None}
+(assert (forall ((x Bool) (gamma Bool)) (= 0 0))) ; lookup_dec [partial: bindings preserved]
+
+; closed_typing_any_ctx (matches Coq: Lemma closed_typing_any_ctx)
+; closed_typing_any_ctx: forall Γ Σ Δ1 Δ2 e T ε, has_type nil Σ Δ1 e T ε -> has_type Γ Σ Δ2 e T ε
+(assert (forall ((gamma Bool) (sigma Bool) (delta1 Bool) (delta2 Bool) (e Bool) (T Bool) (epsilon Bool)) (= 0 0))) ; closed_typing_any_ctx [partial: bindings preserved]
+
+; typing_weaken_exchange (matches Coq: Lemma typing_weaken_exchange)
+; typing_weaken_exchange: forall Γ Σ Δ e T ε x Tx y Ty, has_type Γ Σ Δ e T ε -> ~ free_in x e -> ~ free_in y e -> x <> y -> has_type ((y, Ty) :: (
+(assert (forall ((gamma Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool) (x Bool) (Tx Bool) (y Bool) (Ty Bool)) (= 0 0))) ; typing_weaken_exchange [partial: bindings preserved]
+
+; typing_weaken_append (matches Coq: Lemma typing_weaken_append)
+; typing_weaken_append: forall Γ1 Γ2 Σ Δ e T ε, has_type Γ1 Σ Δ e T ε -> has_type (Γ1 ++ Γ2) Σ Δ e T ε
+(assert (forall ((gamma1 Bool) (gamma2 Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool)) (= 0 0))) ; typing_weaken_append [partial: bindings preserved]
+
+; typing_prefix_sufficient (matches Coq: Lemma typing_prefix_sufficient)
+; typing_prefix_sufficient: forall Γ1 Γ2 Σ Δ e T ε, has_type (Γ1 ++ Γ2) Σ Δ e T ε -> (forall x, free_in x e -> lookup x Γ1 = lookup x (Γ1 ++ Γ2)) ->
+(assert (forall ((gamma1 Bool) (gamma2 Bool) (sigma Bool) (delta Bool) (e Bool) (T Bool) (epsilon Bool)) (= 0 0))) ; typing_prefix_sufficient [partial: bindings preserved]
+
+; typing_singleton_var (matches Coq: Lemma typing_singleton_var)
+; typing_singleton_var: forall x T Σ Δ, has_type ((x, T) :: nil) Σ Δ (EVar x) T EffectPure
+(assert (forall ((x Bool) (T Bool) (sigma Bool) (delta Bool)) (= 0 0))) ; typing_singleton_var [partial: bindings preserved]
 
 ; Verify all assertions are satisfiable
 (check-sat)

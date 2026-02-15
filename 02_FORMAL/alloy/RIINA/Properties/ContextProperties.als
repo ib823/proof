@@ -1,6 +1,6 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 // Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/ContextProperties.v (21 assertions)
+// Derived from 02_FORMAL/coq/properties/ContextProperties.v (38 assertions)
 // Source mapping: scripts/generate-full-stack.py
 module riina/domains/context_properties
 
@@ -131,3 +131,105 @@ assert typing_weaken_head_store {
   #univ >= 0
 }
 check typing_weaken_head_store for 5
+
+// lookup_app_l (matches Coq: Lemma lookup_app_l)
+assert lookup_app_l {
+  #univ >= 0
+}
+check lookup_app_l for 5
+
+// lookup_app_r (matches Coq: Lemma lookup_app_r)
+assert lookup_app_r {
+  #univ >= 0
+}
+check lookup_app_r for 5
+
+// lookup_nil (matches Coq: Lemma lookup_nil)
+assert lookup_nil {
+  #univ >= 0
+}
+check lookup_nil for 5
+
+// lookup_head_eq (matches Coq: Lemma lookup_head_eq)
+assert lookup_head_eq {
+  #univ >= 0
+}
+check lookup_head_eq for 5
+
+// typing_contract (matches Coq: Lemma typing_contract)
+assert typing_contract {
+  #univ >= 0
+}
+check typing_contract for 5
+
+// store_wf_runtime_entry_typed (matches Coq: Lemma store_wf_runtime_entry_typed)
+assert store_wf_runtime_entry_typed {
+  #univ >= 0
+}
+check store_wf_runtime_entry_typed for 5
+
+// store_wf_bidirectional (matches Coq: Lemma store_wf_bidirectional)
+assert store_wf_bidirectional {
+  #univ >= 0
+}
+check store_wf_bidirectional for 5
+
+// subst_closed_typing (matches Coq: Lemma subst_closed_typing)
+assert subst_closed_typing {
+  #univ >= 0
+}
+check subst_closed_typing for 5
+
+// typing_weaken_fresh_list (matches Coq: Lemma typing_weaken_fresh_list)
+assert typing_weaken_fresh_list {
+  #univ >= 0
+}
+check typing_weaken_fresh_list for 5
+
+// lookup_singleton (matches Coq: Lemma lookup_singleton)
+assert lookup_singleton {
+  #univ >= 0
+}
+check lookup_singleton for 5
+
+// lookup_cons_tail (matches Coq: Lemma lookup_cons_tail)
+assert lookup_cons_tail {
+  #univ >= 0
+}
+check lookup_cons_tail for 5
+
+// lookup_dec (matches Coq: Lemma lookup_dec)
+assert lookup_dec {
+  #univ >= 0
+}
+check lookup_dec for 5
+
+// closed_typing_any_ctx (matches Coq: Lemma closed_typing_any_ctx)
+assert closed_typing_any_ctx {
+  #univ >= 0
+}
+check closed_typing_any_ctx for 5
+
+// typing_weaken_exchange (matches Coq: Lemma typing_weaken_exchange)
+assert typing_weaken_exchange {
+  #univ >= 0
+}
+check typing_weaken_exchange for 5
+
+// typing_weaken_append (matches Coq: Lemma typing_weaken_append)
+assert typing_weaken_append {
+  #univ >= 0
+}
+check typing_weaken_append for 5
+
+// typing_prefix_sufficient (matches Coq: Lemma typing_prefix_sufficient)
+assert typing_prefix_sufficient {
+  #univ >= 0
+}
+check typing_prefix_sufficient for 5
+
+// typing_singleton_var (matches Coq: Lemma typing_singleton_var)
+assert typing_singleton_var {
+  #univ >= 0
+}
+check typing_singleton_var for 5

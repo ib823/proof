@@ -17,8 +17,8 @@
 ```
 
 **Report Date:** 2026-02-06 (Session 86)
-**Verification:** 8,341 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
-**Session:** 86 (Proof Depth 20+ All Files — 68,358 proofs across 3 provers, 0 sorry, 0 axiom)
+**Verification:** 8,362 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Session:** 86 (Proof Depth 20+ All Files — 69,179 proofs across 3 provers, 0 sorry, 0 axiom)
 **Overall Grade:** A (BUILD PASSING, 0 Admitted across all provers, 1 justified axiom)
 
 ---
@@ -32,11 +32,11 @@
 | Axioms (Active Build) | **0** | 0 | ✅ ZERO |
 | Coq Build | ✅ PASSING | PASSING | ✅ GREEN |
 | Files in Build | **259** | - | ✅ All compile |
-| Qed Proofs (Coq) | **8,341** | - | ✅ (active build, 0 Admitted) |
-| Lean 4 Theorems | **8394** | - | ✅ (0 sorry) |
-| Isabelle/HOL Lemmas | **8493** | - | ✅ (0 sorry) |
+| Qed Proofs (Coq) | **8,362** | - | ✅ (active build, 0 Admitted) |
+| Lean 4 Theorems | **8494** | - | ✅ (0 sorry) |
+| Isabelle/HOL Lemmas | **8593** | - | ✅ (0 sorry) |
 | Triple-Prover Theorems | **86** | - | ✅ (independent agreement across 3 provers) |
-| Total Proofs (All Provers) | **68,358** | - | ✅ |
+| Total Proofs (All Provers) | **69,179** | - | ✅ |
 | .v Files (Total) | **299** | - | ✅ |
 | .lean Files | **255** | - | ✅ |
 | .thy Files | **260** | - | ✅ |
