@@ -447,4 +447,74 @@ Proof. reflexivity. Qed.
 Lemma fo_compound_depth_bytes : fo_compound_depth TBytes = 0.
 Proof. reflexivity. Qed.
 
+(** ** fo_compound_depth for non-compound types *)
+
+Lemma fo_compound_depth_list : forall T,
+  fo_compound_depth (TList T) = 0.
+Proof. intros. reflexivity. Qed.
+
+Lemma fo_compound_depth_option : forall T,
+  fo_compound_depth (TOption T) = 0.
+Proof. intros. reflexivity. Qed.
+
+Lemma fo_compound_depth_ref : forall T sl,
+  fo_compound_depth (TRef T sl) = 0.
+Proof. intros. reflexivity. Qed.
+
+Lemma fo_compound_depth_secret : forall T,
+  fo_compound_depth (TSecret T) = 0.
+Proof. intros. reflexivity. Qed.
+
+Lemma fo_compound_depth_fn : forall T1 T2 eff,
+  fo_compound_depth (TFn T1 T2 eff) = 0.
+Proof. intros. reflexivity. Qed.
+
+(** ** ty_eqb symmetry *)
+
+Lemma ty_eqb_sym : forall T1 T2,
+  ty_eqb T1 T2 = ty_eqb T2 T1.
+Proof.
+  induction T1; destruct T2; simpl; auto;
+  try (rewrite IHT1_1, IHT1_2; reflexivity);
+  try (rewrite IHT1; reflexivity).
+Qed.
+
+(** ** expr_eqb properties *)
+
+(** expr_eqb for base values *)
+Lemma expr_eqb_unit : expr_eqb EUnit EUnit = true.
+Proof. reflexivity. Qed.
+
+Lemma expr_eqb_bool : forall b, expr_eqb (EBool b) (EBool b) = true.
+Proof. intros b. simpl. apply Bool.eqb_reflx. Qed.
+
+Lemma expr_eqb_int : forall n, expr_eqb (EInt n) (EInt n) = true.
+Proof. intros n. simpl. apply PeanoNat.Nat.eqb_refl. Qed.
+
+Lemma expr_eqb_string : forall s, expr_eqb (EString s) (EString s) = true.
+Proof. intros s. simpl. apply String.eqb_refl. Qed.
+
+Lemma expr_eqb_loc : forall l, expr_eqb (ELoc l) (ELoc l) = true.
+Proof. intros l. simpl. apply PeanoNat.Nat.eqb_refl. Qed.
+
+Lemma expr_eqb_var : forall x, expr_eqb (EVar x) (EVar x) = true.
+Proof. intros x. simpl. apply String.eqb_refl. Qed.
+
+(** ** Base type characterization *)
+
+Lemma is_base_type_unit : is_base_type TUnit = true.
+Proof. reflexivity. Qed.
+
+Lemma is_base_type_bool : is_base_type TBool = true.
+Proof. reflexivity. Qed.
+
+Lemma is_base_type_int : is_base_type TInt = true.
+Proof. reflexivity. Qed.
+
+Lemma is_base_type_string : is_base_type TString = true.
+Proof. reflexivity. Qed.
+
+Lemma is_base_type_bytes : is_base_type TBytes = true.
+Proof. reflexivity. Qed.
+
 (** End of FirstOrderComplete.v *)

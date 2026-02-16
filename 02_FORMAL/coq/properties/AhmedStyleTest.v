@@ -497,3 +497,56 @@ Proof.
   - lia.
   - exact H.
 Qed.
+
+(** Tower from higher index *)
+Lemma sval_rel_tower_from_higher : forall m n T v1 v2,
+  m <= n ->
+  sval_rel_tower n T v1 v2 ->
+  sval_rel_tower m T v1 v2.
+Proof. exact sval_rel_tower_mono. Qed.
+
+(** Tower product decomposition *)
+Lemma sval_rel_tower_prod_elim : forall n T1 T2 v1 v2,
+  sval_rel_tower (S n) (STProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = SVPair a1 b1 /\ v2 = SVPair a2 b2 /\
+    sval_rel_tower n T1 a1 a2 /\ sval_rel_tower n T2 b1 b2.
+Proof.
+  intros n T1 T2 v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent].
+  exact Hcontent.
+Qed.
+
+(** Tower function application at step n *)
+Lemma sval_rel_tower_fn_elim : forall n T1 T2 f1 f2,
+  sval_rel_tower (S n) (STFn T1 T2) f1 f2 ->
+  forall x y,
+    sval_rel_tower n T1 x y ->
+    exists r1 r2, sval_rel_tower n T2 r1 r2.
+Proof.
+  intros n T1 T2 f1 f2 H x y Harg.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent].
+  exact (Hcontent x y Harg).
+Qed.
+
+(** Tower unit inversion *)
+Lemma sval_rel_tower_unit_inv : forall n v1 v2,
+  sval_rel_tower (S n) STUnit v1 v2 ->
+  v1 = SVUnit /\ v2 = SVUnit.
+Proof.
+  intros n v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent]. exact Hcontent.
+Qed.
+
+(** Tower bool inversion *)
+Lemma sval_rel_tower_bool_inv : forall n v1 v2,
+  sval_rel_tower (S n) STBool v1 v2 ->
+  exists b, v1 = SVBool b /\ v2 = SVBool b.
+Proof.
+  intros n v1 v2 H.
+  rewrite sval_rel_tower_S in H.
+  destruct H as [_ Hcontent]. exact Hcontent.
+Qed.

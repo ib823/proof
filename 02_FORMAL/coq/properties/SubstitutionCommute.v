@@ -364,4 +364,71 @@ Proof.
   - reflexivity.
 Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Handle Substitution Properties                                 *)
+(** ----------------------------------------------------------------- *)
+
+(** Substituting into a handle with the same binder only affects the body. *)
+Lemma subst_handle_same : forall x e h v,
+  [x := v] (EHandle e x h) = EHandle ([x := v] e) x h.
+Proof.
+  intros x e h v. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** Substituting into a handle with a different binder descends into both. *)
+Lemma subst_handle_diff : forall x y e h v,
+  x <> y ->
+  [x := v] (EHandle e y h) = EHandle ([x := v] e) y ([x := v] h).
+Proof.
+  intros x y e h v Hneq. simpl.
+  destruct (String.eqb x y) eqn:Heq.
+  - apply String.eqb_eq in Heq. contradiction.
+  - reflexivity.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Case Substitution Properties                                   *)
+(** ----------------------------------------------------------------- *)
+
+(** Substituting into a case with the same binder for left branch. *)
+Lemma subst_case_same_left : forall x e y e2 e3 v,
+  [x := v] (ECase e x e2 y e3) = ECase ([x := v] e) x e2 y (if String.eqb x y then e3 else [x := v] e3).
+Proof.
+  intros x e y e2 e3 v. simpl. rewrite String.eqb_refl. reflexivity.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * id_rho Properties                                               *)
+(** ----------------------------------------------------------------- *)
+
+(** Identity rho is closed iff all variables are closed (trivially false for open vars) *)
+Lemma id_rho_sc_identity : forall x, id_rho_sc x = EVar x.
+Proof. intros x. unfold id_rho_sc. reflexivity. Qed.
+
+(** Extending id_rho with a value gives the value at that point *)
+Lemma extend_id_rho_sc_at : forall x v,
+  extend_rho_sc id_rho_sc x v x = v.
+Proof. intros. apply extend_rho_sc_same. Qed.
+
+(** Extending id_rho with a value leaves other variables unchanged *)
+Lemma extend_id_rho_sc_other : forall x y v,
+  x <> y -> extend_rho_sc id_rho_sc x v y = EVar y.
+Proof.
+  intros x y v Hneq. unfold extend_rho_sc.
+  destruct (String.eqb y x) eqn:Heq.
+  - apply String.eqb_eq in Heq. symmetry in Heq. contradiction.
+  - unfold id_rho_sc. reflexivity.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Double Substitution Properties                                 *)
+(** ----------------------------------------------------------------- *)
+
+(** Substituting into a value-variable pair *)
+Lemma subst_var_eqb : forall x y v,
+  [x := v] (EVar y) = if String.eqb x y then v else EVar y.
+Proof.
+  intros. simpl. reflexivity.
+Qed.
+
 (** End of file - ZERO ADMITS *)

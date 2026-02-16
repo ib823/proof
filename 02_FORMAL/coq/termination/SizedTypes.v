@@ -278,4 +278,79 @@ Proof.
   - apply MS_Step with cfg2; [exact H | apply IHmulti_step; exact H2].
 Qed.
 
+(** ** Expression Size Lemmas *)
+
+(** Expression size for compound expressions *)
+Lemma expr_size_app : forall e1 e2,
+  expr_size (EApp e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_pair : forall e1 e2,
+  expr_size (EPair e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_fst : forall e,
+  expr_size (EFst e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_snd : forall e,
+  expr_size (ESnd e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_if : forall e1 e2 e3,
+  expr_size (EIf e1 e2 e3) = 1 + expr_size e1 + expr_size e2 + expr_size e3.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_let : forall x e1 e2,
+  expr_size (ELet x e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_lam : forall x T body,
+  expr_size (ELam x T body) = 1 + expr_size body.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_inl : forall e T,
+  expr_size (EInl e T) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_inr : forall e T,
+  expr_size (EInr e T) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+(** Expression size is at least 1 *)
+Lemma expr_size_ge_1 : forall e, 1 <= expr_size e.
+Proof. intros. pose proof (expr_size_pos e). lia. Qed.
+
+(** Subexpression size is strictly less than parent *)
+Lemma expr_size_fst_sub : forall e,
+  expr_size e < expr_size (EFst e).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_snd_sub : forall e,
+  expr_size e < expr_size (ESnd e).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_app_l : forall e1 e2,
+  expr_size e1 < expr_size (EApp e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_app_r : forall e1 e2,
+  expr_size e2 < expr_size (EApp e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+(** ** Termination Properties *)
+
+(** Values terminate trivially *)
+Lemma value_terminates : forall v st ctx,
+  value v -> terminates v st ctx.
+Proof.
+  intros v st ctx Hv.
+  exists v, st, ctx. split; [apply MS_Refl | exact Hv].
+Qed.
+
+(** Values can step (trivially — they provide themselves) *)
+Lemma value_step_terminates_trivially : forall v st ctx,
+  value v -> terminates v st ctx.
+Proof. exact value_terminates. Qed.
+
 (** End of SizedTypes.v *)

@@ -353,4 +353,37 @@ Qed.
 Theorem declassification_zero_admits : True.
 Proof. exact I. Qed.
 
+(** ** Declassification Multi-Step Properties *)
+
+(** If we declassify then classify, the secret returns to its original type *)
+Lemma classify_declassify_typed : forall Γ Σ e T eff1 eff2 p,
+  has_type Γ Σ Public e (TSecret T) eff1 ->
+  has_type Γ Σ Public p (TProof (TSecret T)) eff2 ->
+  declass_ok e p ->
+  has_type Γ Σ Public (EClassify (EDeclassify e p)) (TSecret T) (effect_join eff1 eff2).
+Proof.
+  intros. apply T_Classify. apply T_Declassify; assumption.
+Qed.
+
+(** Declassification step produces the unwrapped value *)
+Lemma declassify_step_result : forall v p st ctx,
+  value v ->
+  declass_ok (EClassify v) p ->
+  (EDeclassify (EClassify v) p, st, ctx) --> (v, st, ctx).
+Proof.
+  intros v p st ctx Hv Hok.
+  apply ST_DeclassifyValue; auto.
+Qed.
+
+(** Secret relation implies any two classified values are related *)
+Lemma val_rel_le_classify : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSecret T) (EClassify v1) (EClassify v2).
+Proof.
+  intros. apply val_rel_le_secret_always; auto.
+  - apply VClassify; auto.
+  - apply VClassify; auto.
+Qed.
+
 (** End of Declassification.v *)

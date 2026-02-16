@@ -512,4 +512,50 @@ Qed.
 Theorem reference_ops_zero_admits : True.
 Proof. exact I. Qed.
 
+(** ** Reference Operation Properties *)
+
+(** Multi-step context is preserved for ref *)
+Lemma ref_preserves_ctx : forall e sl st v st' ctx ctx',
+  multi_step (ERef e sl, st, ctx) (v, st', ctx') ->
+  value v ->
+  ctx' = ctx.
+Proof.
+  intros. eapply multi_step_preserves_ctx. exact H.
+Qed.
+
+(** Multi-step context is preserved for deref *)
+Lemma deref_preserves_ctx : forall e st v st' ctx ctx',
+  multi_step (EDeref e, st, ctx) (v, st', ctx') ->
+  value v ->
+  ctx' = ctx.
+Proof.
+  intros. eapply multi_step_preserves_ctx. exact H.
+Qed.
+
+(** Multi-step context is preserved for assign *)
+Lemma assign_preserves_ctx : forall e1 e2 st v st' ctx ctx',
+  multi_step (EAssign e1 e2, st, ctx) (v, st', ctx') ->
+  value v ->
+  ctx' = ctx.
+Proof.
+  intros. eapply multi_step_preserves_ctx. exact H.
+Qed.
+
+(** Store relation simple is symmetric in structure *)
+Lemma store_rel_simple_refl : forall Σ st,
+  store_rel_simple Σ st st.
+Proof.
+  intros Σ st. unfold store_rel_simple.
+  reflexivity.
+Qed.
+
+(** Reference creation on related values produces same-length stores *)
+Lemma ref_same_store_max : forall st1 st2 v1 v2 l,
+  store_max st1 = store_max st2 ->
+  store_max (store_update l v1 st1) = store_max (store_update l v2 st2).
+Proof.
+  intros st1 st2 v1 v2 l Hmax.
+  apply store_max_update_eq. exact Hmax.
+Qed.
+
 (** End of ReferenceOps.v *)
