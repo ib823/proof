@@ -1001,6 +1001,268 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::Network
         ));
 
+    // ── TASK #6: Extended Domain Security Enforcement ──
+    // 5 new OWASP attack classes: Path Traversal, XML/XXE, SSRF,
+    // Email Header Injection, Unsafe Deserialization
+
+    // ── 6a: Path Traversal (CWE-22) ──
+    // Spec: TaintSystemCorrectness.v — path_traversal_impossible
+    // Spec: VerifiedFileSystem.v
+
+    // Path sanitizer: Tainted → Sanitized<String, PathTraversal>
+    c = c.extend("sanitize_path".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_laluan".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Effect::Pure
+        ));
+
+    // Safe file read — REQUIRES Sanitized<String, PathTraversal>
+    c = c.extend("file_read_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Box::new(Ty::Any),  // File contents
+            Effect::Read
+        ));
+    c = c.extend("fail_baca_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Box::new(Ty::Any),
+            Effect::Read
+        ));
+
+    // Safe file write — REQUIRES Sanitized<String, PathTraversal>
+    c = c.extend("file_write_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+                Box::new(Ty::Any)  // Data to write
+            )),
+            Box::new(Ty::Unit),
+            Effect::Write
+        ));
+    c = c.extend("fail_tulis_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+                Box::new(Ty::Any)
+            )),
+            Box::new(Ty::Unit),
+            Effect::Write
+        ));
+
+    // Safe file delete — REQUIRES Sanitized<String, PathTraversal>
+    c = c.extend("file_delete_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Box::new(Ty::Bool),  // Success
+            Effect::Write
+        ));
+    c = c.extend("fail_buang_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Box::new(Ty::Bool),
+            Effect::Write
+        ));
+
+    // ── 6b: XML Injection / XXE (CWE-611) ──
+    // Spec: InjectionPrevention.v — inj_005_xxe_impossible
+
+    // XML sanitizer: Tainted → Sanitized<String, XmlEscape>
+    c = c.extend("sanitize_xml".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_xml".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Effect::Pure
+        ));
+
+    // Safe XML parse — REQUIRES Sanitized<String, XmlEscape>
+    c = c.extend("xml_parse_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Box::new(Ty::Any),  // Parsed XML tree
+            Effect::Pure
+        ));
+    c = c.extend("xml_urai_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Box::new(Ty::Any),
+            Effect::Pure
+        ));
+
+    // XML query — REQUIRES Sanitized<String, XmlEscape>
+    c = c.extend("xml_query".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Box::new(Ty::Any),  // Query results
+            Effect::Pure
+        ));
+    c = c.extend("xml_cari".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Box::new(Ty::Any),
+            Effect::Pure
+        ));
+
+    // ── 6c: SSRF (CWE-918) ──
+    // Spec: WebSecurity.v — web_005_ssrf_impossible
+
+    // URL validator: Tainted → Sanitized<String, UrlAllowlist>
+    c = c.extend("validate_url".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Effect::Pure
+        ));
+    c = c.extend("sahkan_url".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Effect::Pure
+        ));
+
+    // Safe HTTP fetch — REQUIRES Sanitized<String, UrlAllowlist>
+    c = c.extend("http_fetch_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Any),  // Response
+            Effect::Network
+        ));
+    c = c.extend("http_ambil_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Any),
+            Effect::Network
+        ));
+
+    // Safe HTTP redirect — REQUIRES Sanitized<String, UrlAllowlist>
+    c = c.extend("http_redirect_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Unit),
+            Effect::Network
+        ));
+    c = c.extend("http_arah_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Unit),
+            Effect::Network
+        ));
+
+    // ── 6d: Email Header Injection (CWE-93) ──
+    // Spec: InjectionPrevention.v — inj_011_email_header_safe
+
+    // Email sanitizer: Tainted → Sanitized<String, EmailValidation>
+    c = c.extend("sanitize_email".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_emel".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
+            Effect::Pure
+        ));
+
+    // Email send — REQUIRES Sanitized<String, EmailValidation>
+    c = c.extend("email_send".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
+                Box::new(Ty::String)  // Message body
+            )),
+            Box::new(Ty::Bool),  // Success
+            Effect::Network
+        ));
+    c = c.extend("emel_hantar".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
+                Box::new(Ty::String)
+            )),
+            Box::new(Ty::Bool),
+            Effect::Network
+        ));
+
+    // Email set header — REQUIRES Sanitized<String, EmailValidation>
+    c = c.extend("email_set_header".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),  // Header name
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation))
+            )),
+            Box::new(Ty::Unit),
+            Effect::Pure
+        ));
+    c = c.extend("emel_tetap_kepala".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(
+                Box::new(Ty::String),
+                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation))
+            )),
+            Box::new(Ty::Unit),
+            Effect::Pure
+        ));
+
+    // ── 6e: Unsafe Deserialization (CWE-502) ──
+    // Spec: DeserializationSafety.v — rce_prevention_active
+
+    // JSON sanitizer: Tainted → Sanitized<String, JsonValidation>
+    c = c.extend("sanitize_json".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Effect::Pure
+        ));
+    c = c.extend("sanitasi_json".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Effect::Pure
+        ));
+
+    // Safe JSON parse — REQUIRES Sanitized<String, JsonValidation>
+    c = c.extend("json_parse_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Box::new(Ty::Any),  // Parsed value
+            Effect::Pure
+        ));
+    c = c.extend("json_urai_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Box::new(Ty::Any),
+            Effect::Pure
+        ));
+
+    // Safe deserialize — REQUIRES Sanitized<String, JsonValidation>
+    c = c.extend("deserialize_safe".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Box::new(Ty::Any),  // Deserialized object
+            Effect::Pure
+        ));
+    c = c.extend("nyahsiri_selamat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Box::new(Ty::Any),
+            Effect::Pure
+        ));
+
     c
 }
 
@@ -1026,20 +1288,14 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
 
     // REJECT: Tainted → Sanitized (TAINT VIOLATION)
     // User input cannot flow to sensitive sink without sanitization
-    match (expected, found) {
-        (Ty::Sanitized(_, _), Ty::Tainted(_, _)) => {
-            return false;  // Will trigger TypeError::TypeMismatch → needs better error
-        }
-        _ => {}
+    if let (Ty::Sanitized(_, _), Ty::Tainted(_, _)) = (expected, found) {
+        return false;  // Will trigger TypeError::TypeMismatch → needs better error
     }
 
     // SANITIZER EXACT MATCH: Sanitized<T, S1> requires Sanitized<T, S2> where S1 == S2
     // SQL sink requires SqlParam sanitizer, not HtmlEscape
-    match (expected, found) {
-        (Ty::Sanitized(inner1, san1), Ty::Sanitized(inner2, san2)) => {
-            return san1 == san2 && types_compatible(inner1, inner2);
-        }
-        _ => {}
+    if let (Ty::Sanitized(inner1, san1), Ty::Sanitized(inner2, san2)) = (expected, found) {
+        return san1 == san2 && types_compatible(inner1, inner2);
     }
 
     // SAFE SUBTYPING: Sanitized → Plain Type
@@ -1057,11 +1313,8 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
     // TAINT SOURCE COMPATIBILITY: Any Tainted matches expected Tainted
     // Sanitizers accept any tainted data, regardless of source
     // Tainted<String, NetworkExternal> matches Tainted<String, UserInput>
-    match (expected, found) {
-        (Ty::Tainted(inner1, _), Ty::Tainted(inner2, _)) => {
-            return types_compatible(inner1, inner2);
-        }
-        _ => {}
+    if let (Ty::Tainted(inner1, _), Ty::Tainted(inner2, _)) = (expected, found) {
+        return types_compatible(inner1, inner2);
     }
 
     // ════════════════════════════════════════════════════════════════════

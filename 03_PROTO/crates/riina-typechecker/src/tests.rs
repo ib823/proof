@@ -2000,4 +2000,529 @@ mod formalized_tests {
             other => panic!("Expected CSRF attack to be prevented, got {:?}", other),
         }
     }
+
+    // ════════════════════════════════════════════════════════════════════
+    // TASK #6: Extended Domain Security Enforcement
+    // 5 OWASP attack classes: Path Traversal, XML/XXE, SSRF,
+    // Email Header Injection, Unsafe Deserialization
+    // ════════════════════════════════════════════════════════════════════
+
+    // ── 6a: Path Traversal (CWE-22) ──
+
+    #[test]
+    fn test_path_traversal_prevented() {
+        // Tainted path passed directly to file_read_safe — REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let unsafe_read = Expr::App(
+            Box::new(Expr::Var("file_read_safe".to_string())),
+            Box::new(user_path)
+        );
+
+        match type_check(&ctx, &unsafe_read) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected path traversal to be prevented, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_path_traversal_safe_with_sanitization() {
+        // sanitize_path(input) → file_read_safe — succeeds
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_path".to_string())),
+            Box::new(user_path)
+        );
+
+        let safe_read = Expr::App(
+            Box::new(Expr::Var("file_read_safe".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_read) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected safe path read to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_path_traversal_sanitizer_mismatch() {
+        // SQL-sanitized path for file read — wrong sanitizer, REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let sql_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_sql".to_string())),
+            Box::new(user_path)
+        );
+
+        let wrong_sink = Expr::App(
+            Box::new(Expr::Var("file_read_safe".to_string())),
+            Box::new(sql_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_sink) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
+                );
+            }
+            other => panic!("Expected sanitizer mismatch for path traversal, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_path_traversal_write_safe() {
+        // sanitize_path(input) → file_write_safe — succeeds
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_path".to_string())),
+            Box::new(user_path)
+        );
+
+        let safe_write = Expr::App(
+            Box::new(Expr::Var("file_write_safe".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(sanitized),
+                Box::new(Expr::String("data".to_string()))
+            ))
+        );
+
+        match type_check(&ctx, &safe_write) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Unit),
+            Err(e) => panic!("Expected safe file write to succeed, got error: {:?}", e),
+        }
+    }
+
+    // ── 6b: XML Injection / XXE (CWE-611) ──
+
+    #[test]
+    fn test_xml_injection_prevented() {
+        // Tainted XML passed to xml_parse_safe — REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_xml = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let unsafe_parse = Expr::App(
+            Box::new(Expr::Var("xml_parse_safe".to_string())),
+            Box::new(user_xml)
+        );
+
+        match type_check(&ctx, &unsafe_parse) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected XML injection to be prevented, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_xml_safe_with_sanitization() {
+        // sanitize_xml(input) → xml_parse_safe — succeeds
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_xml = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_xml".to_string())),
+            Box::new(user_xml)
+        );
+
+        let safe_parse = Expr::App(
+            Box::new(Expr::Var("xml_parse_safe".to_string())),
+            Box::new(sanitized)
+        );
+
+        match type_check(&ctx, &safe_parse) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected safe XML parse to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_xml_sanitizer_mismatch() {
+        // HTML-sanitized data for XML parse — wrong sanitizer, REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_xml = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let html_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(user_xml)
+        );
+
+        let wrong_sink = Expr::App(
+            Box::new(Expr::Var("xml_parse_safe".to_string())),
+            Box::new(html_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_sink) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                );
+            }
+            other => panic!("Expected sanitizer mismatch for XML, got {:?}", other),
+        }
+    }
+
+    // ── 6c: SSRF (CWE-918) ──
+
+    #[test]
+    fn test_ssrf_prevented() {
+        // Tainted URL passed to http_fetch_safe — REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_url = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let unsafe_fetch = Expr::App(
+            Box::new(Expr::Var("http_fetch_safe".to_string())),
+            Box::new(user_url)
+        );
+
+        match type_check(&ctx, &unsafe_fetch) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected SSRF to be prevented, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_ssrf_safe_with_validation() {
+        // validate_url(input) → http_fetch_safe — succeeds
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_url = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let validated = Expr::App(
+            Box::new(Expr::Var("validate_url".to_string())),
+            Box::new(user_url)
+        );
+
+        let safe_fetch = Expr::App(
+            Box::new(Expr::Var("http_fetch_safe".to_string())),
+            Box::new(validated)
+        );
+
+        match type_check(&ctx, &safe_fetch) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected safe URL fetch to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_ssrf_sanitizer_mismatch() {
+        // Path-sanitized URL for HTTP fetch — wrong sanitizer, REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_url = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let path_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_path".to_string())),
+            Box::new(user_url)
+        );
+
+        let wrong_sink = Expr::App(
+            Box::new(Expr::Var("http_fetch_safe".to_string())),
+            Box::new(path_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_sink) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)
+                );
+            }
+            other => panic!("Expected sanitizer mismatch for SSRF, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_ssrf_open_redirect_prevented() {
+        // Tainted URL for redirect — REJECTED (prevents open redirect)
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_url = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let unsafe_redirect = Expr::App(
+            Box::new(Expr::Var("http_redirect_safe".to_string())),
+            Box::new(user_url)
+        );
+
+        match type_check(&ctx, &unsafe_redirect) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected open redirect to be prevented, got {:?}", other),
+        }
+    }
+
+    // ── 6d: Email Header Injection (CWE-93) ──
+
+    #[test]
+    fn test_email_header_injection_prevented() {
+        // Tainted email address for email_send — REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_email = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let unsafe_send = Expr::App(
+            Box::new(Expr::Var("email_send".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(user_email),
+                Box::new(Expr::String("Hello".to_string()))
+            ))
+        );
+
+        match type_check(&ctx, &unsafe_send) {
+            Err(TypeError::TypeMismatch { .. }) => {
+                // Good! Email header injection prevented
+            }
+            other => panic!("Expected email header injection to be prevented, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_email_safe_with_sanitization() {
+        // sanitize_email(input) → email_send — succeeds
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_email = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_email".to_string())),
+            Box::new(user_email)
+        );
+
+        let safe_send = Expr::App(
+            Box::new(Expr::Var("email_send".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(sanitized),
+                Box::new(Expr::String("Hello".to_string()))
+            ))
+        );
+
+        match type_check(&ctx, &safe_send) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Bool),
+            Err(e) => panic!("Expected safe email send to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_email_sanitizer_mismatch() {
+        // JSON-sanitized data for email — wrong sanitizer, REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_email = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let json_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_json".to_string())),
+            Box::new(user_email)
+        );
+
+        let wrong_sink = Expr::App(
+            Box::new(Expr::Var("email_set_header".to_string())),
+            Box::new(Expr::Pair(
+                Box::new(Expr::String("To".to_string())),
+                Box::new(json_sanitized)
+            ))
+        );
+
+        match type_check(&ctx, &wrong_sink) {
+            Err(TypeError::TypeMismatch { .. }) => {
+                // Good! Sanitizer mismatch detected
+            }
+            other => panic!("Expected sanitizer mismatch for email, got {:?}", other),
+        }
+    }
+
+    // ── 6e: Unsafe Deserialization (CWE-502) ──
+
+    #[test]
+    fn test_unsafe_deserialization_prevented() {
+        // Tainted JSON passed to json_parse_safe — REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_json = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let unsafe_parse = Expr::App(
+            Box::new(Expr::Var("json_parse_safe".to_string())),
+            Box::new(user_json)
+        );
+
+        match type_check(&ctx, &unsafe_parse) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected unsafe deserialization to be prevented, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_deserialization_safe_with_validation() {
+        // sanitize_json(input) → deserialize_safe — succeeds
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_json = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let validated = Expr::App(
+            Box::new(Expr::Var("sanitize_json".to_string())),
+            Box::new(user_json)
+        );
+
+        let safe_deser = Expr::App(
+            Box::new(Expr::Var("deserialize_safe".to_string())),
+            Box::new(validated)
+        );
+
+        match type_check(&ctx, &safe_deser) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected safe deserialization to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_deserialization_sanitizer_mismatch() {
+        // XML-sanitized data for JSON parse — wrong sanitizer, REJECTED
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_json = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit)
+        );
+
+        let xml_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_xml".to_string())),
+            Box::new(user_json)
+        );
+
+        let wrong_sink = Expr::App(
+            Box::new(Expr::Var("deserialize_safe".to_string())),
+            Box::new(xml_sanitized)
+        );
+
+        match type_check(&ctx, &wrong_sink) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
+                );
+            }
+            other => panic!("Expected sanitizer mismatch for deserialization, got {:?}", other),
+        }
+    }
 }

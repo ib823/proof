@@ -264,6 +264,7 @@ pub enum Sanitizer {
     CommandEscape,
     LdapEscape,
     XmlEscape,
+    UrlAllowlist,
     // Validation
     JsonValidation,
     XmlValidation,

@@ -98,7 +98,7 @@ struct LexerIter<'a> {
     lexer: Lexer<'a>,
 }
 
-impl<'a> Iterator for LexerIter<'a> {
+impl Iterator for LexerIter<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -1127,6 +1127,7 @@ impl<'a> Parser<'a> {
             "CommandEscape" => Ok(Sanitizer::CommandEscape),
             "LdapEscape" => Ok(Sanitizer::LdapEscape),
             "XmlEscape" => Ok(Sanitizer::XmlEscape),
+            "UrlAllowlist" => Ok(Sanitizer::UrlAllowlist),
             "JsonValidation" => Ok(Sanitizer::JsonValidation),
             "XmlValidation" => Ok(Sanitizer::XmlValidation),
             "EmailValidation" => Ok(Sanitizer::EmailValidation),
