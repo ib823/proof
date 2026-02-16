@@ -561,4 +561,28 @@ Proof.
   intros T Hbase T' Heq. subst. simpl in Hbase. discriminate.
 Qed.
 
+(** ** Additional First-Order Type Iff Lemmas *)
+
+Lemma first_order_type_list_iff : forall T,
+  first_order_type (TList T) = first_order_type T.
+Proof. intros. reflexivity. Qed.
+
+Lemma first_order_type_option_iff : forall T,
+  first_order_type (TOption T) = first_order_type T.
+Proof. intros. reflexivity. Qed.
+
+Lemma ty_eqb_list : forall T1 T2,
+  ty_eqb (TList T1) (TList T2) = ty_eqb T1 T2.
+Proof. intros. reflexivity. Qed.
+
+Lemma ty_eqb_option : forall T1 T2,
+  ty_eqb (TOption T1) (TOption T2) = ty_eqb T1 T2.
+Proof. intros. reflexivity. Qed.
+
+Lemma base_type_not_labeled : forall T,
+  is_base_type T = true -> forall T' sl, T <> TLabeled T' sl.
+Proof.
+  intros T Hbase T' sl Heq. subst. simpl in Hbase. discriminate.
+Qed.
+
 (** End of FirstOrderComplete.v *)

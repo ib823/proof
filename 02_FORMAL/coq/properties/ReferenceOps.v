@@ -592,4 +592,33 @@ Proof.
   exists st. split; [apply ST_DerefLoc; exact Hlook | reflexivity].
 Qed.
 
+(** ** Value Exclusion for Reference Expressions *)
+
+Lemma value_not_ref_expr : forall e sl, ~ value (ERef e sl).
+Proof. intros e sl H. inversion H. Qed.
+
+Lemma value_not_deref_expr : forall e, ~ value (EDeref e).
+Proof. intros e H. inversion H. Qed.
+
+Lemma value_not_assign_expr : forall e1 e2, ~ value (EAssign e1 e2).
+Proof. intros e1 e2 H. inversion H. Qed.
+
+(** Reference creation on a value produces a location *)
+Lemma ref_result_is_loc : forall v sl st v' st' ctx,
+  value v ->
+  (ERef v sl, st, ctx) --> (v', st', ctx) ->
+  exists l, v' = ELoc l.
+Proof.
+  intros v sl st v' st' ctx Hval Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step; eauto.
+  - exists (fresh_loc st). reflexivity.
+Qed.
+
+(** Subexpression stepping lifts to ERef context *)
+Lemma ref_arg_steps : forall e sl e' st st' ctx,
+  (e, st, ctx) --> (e', st', ctx) ->
+  (ERef e sl, st, ctx) --> (ERef e' sl, st', ctx).
+Proof. intros. apply ST_RefStep; auto. Qed.
+
 (** End of ReferenceOps.v *)

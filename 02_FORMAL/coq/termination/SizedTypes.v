@@ -385,4 +385,28 @@ Lemma expr_size_pair_r : forall e1 e2,
   expr_size e2 < expr_size (EPair e1 e2).
 Proof. intros. simpl. lia. Qed.
 
+(** ** Additional Subexpression Size Bounds *)
+
+Lemma expr_size_case_guard : forall e x1 e1 x2 e2,
+  expr_size e < expr_size (ECase e x1 e1 x2 e2).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_if_guard : forall e1 e2 e3,
+  expr_size e1 < expr_size (EIf e1 e2 e3).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_let_body : forall x e1 e2,
+  expr_size e2 < expr_size (ELet x e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+(** ** Sized Type Projection Properties *)
+
+Lemma sized_ty_base_STBase : forall T,
+  sized_ty_base (STBase T) = T.
+Proof. intros. reflexivity. Qed.
+
+Lemma sized_ty_bound_STSized : forall n T,
+  sized_ty_bound (STSized n T) = n.
+Proof. intros. reflexivity. Qed.
+
 (** End of SizedTypes.v *)
