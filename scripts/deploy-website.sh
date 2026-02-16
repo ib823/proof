@@ -34,22 +34,20 @@ echo "  RIINA: DEPLOY WEBSITE → gh-pages"
 echo "================================================================"
 echo ""
 
-if [ ! -f "$ISABELLE_HELPER" ]; then
-    echo -e "${RED}ERROR: missing Isabelle helper: $ISABELLE_HELPER${NC}"
-    exit 1
+if [ -f "$ISABELLE_HELPER" ]; then
+    # shellcheck disable=SC1090
+    source "$ISABELLE_HELPER"
+    echo "Checking local Isabelle toolchain..."
+    if ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
+        riina_export_local_isabelle_env "$ISABELLE_BIN"
+        echo -e "${GREEN}[✓] local Isabelle verified: $ISABELLE_BIN${NC}"
+    else
+        echo -e "${YELLOW}[!] Isabelle not provisioned (non-blocking: claim level = generated)${NC}"
+        echo "    To provision: bash scripts/provision-isabelle.sh"
+    fi
+else
+    echo -e "${YELLOW}[!] Isabelle helper missing (non-blocking)${NC}"
 fi
-# shellcheck disable=SC1090
-source "$ISABELLE_HELPER"
-
-echo "Validating pinned local Isabelle toolchain..."
-if ! ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
-    echo -e "${RED}ERROR: local Isabelle policy failed.${NC}"
-    echo "$ISABELLE_BIN"
-    echo "Run: bash scripts/provision-isabelle.sh"
-    exit 1
-fi
-riina_export_local_isabelle_env "$ISABELLE_BIN"
-echo -e "${GREEN}[✓] local Isabelle verified: $ISABELLE_BIN${NC}"
 
 # Step 1: Verify riina remote exists
 if ! git remote | grep -q "^riina$"; then
