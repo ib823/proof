@@ -427,4 +427,63 @@ Proof.
   intros. eapply canonical_string; eauto.
 Qed.
 
+(** ** Typed Value Component Typing *)
+
+(** A typed pair value has typed components *)
+Lemma typed_value_pair_components_typed : forall v1 v2 T1 T2 ε Σ,
+  has_type nil Σ Public (EPair v1 v2) (TProd T1 T2) ε ->
+  value v1 -> value v2 ->
+  exists ε1 ε2,
+    has_type nil Σ Public v1 T1 ε1 /\
+    has_type nil Σ Public v2 T2 ε2.
+Proof.
+  intros v1 v2 T1 T2 ε Σ Hty Hv1 Hv2.
+  inversion Hty; subst.
+  eexists. eexists. split; eassumption.
+Qed.
+
+(** A typed classified value has a typed inner value *)
+Lemma typed_value_secret_inner_typed : forall v T ε Σ,
+  has_type nil Σ Public (EClassify v) (TSecret T) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T ε'.
+Proof.
+  intros v T ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
+(** A typed Inl value has a typed inner value *)
+Lemma typed_value_inl_inner_typed : forall v T1 T2 ε Σ,
+  has_type nil Σ Public (EInl v T2) (TSum T1 T2) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T1 ε'.
+Proof.
+  intros v T1 T2 ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
+(** A typed Inr value has a typed inner value *)
+Lemma typed_value_inr_inner_typed : forall v T1 T2 ε Σ,
+  has_type nil Σ Public (EInr v T1) (TSum T1 T2) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T2 ε'.
+Proof.
+  intros v T1 T2 ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
+(** A typed Prove value has a typed inner value *)
+Lemma typed_value_prove_inner_typed : forall v T ε Σ,
+  has_type nil Σ Public (EProve v) (TProof T) ε ->
+  value v ->
+  exists ε', has_type nil Σ Public v T ε'.
+Proof.
+  intros v T ε Σ Hty Hv.
+  inversion Hty; subst.
+  eexists. eassumption.
+Qed.
+
 (** End of Progress.v *)

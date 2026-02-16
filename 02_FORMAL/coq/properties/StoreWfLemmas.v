@@ -291,4 +291,70 @@ Proof.
   exists Σ'. split; assumption.
 Qed.
 
+(** ** Section 16: Combined Value and Typing from Lookup *)
+
+(** If a value is in a well-formed store, it is both a value and well-typed *)
+Lemma store_wf_lookup_value_and_typed : forall Σ st l v,
+  store_wf Σ st ->
+  store_lookup l st = Some v ->
+  value v /\ exists T, has_type nil Σ Public v T EffectPure.
+Proof.
+  intros Σ st l v Hwf Hlook.
+  split.
+  - exact (store_wf_lookup_value Σ st l v Hwf Hlook).
+  - exact (store_wf_all_pure Σ st l v Hwf Hlook).
+Qed.
+
+(** ** Section 17: Domain Correspondence *)
+
+(** A location has a runtime value iff it has a type assignment *)
+Lemma store_wf_domain_iff : forall Σ st l,
+  store_wf Σ st ->
+  (exists v, store_lookup l st = Some v) <->
+  (exists T sl, store_ty_lookup l Σ = Some (T, sl)).
+Proof.
+  intros Σ st l Hwf. split.
+  - intros [v Hlook].
+    destruct (store_wf_stored_implies_typed Σ st l v Hwf Hlook) as [T [sl Htlook]].
+    exists T, sl. exact Htlook.
+  - intros [T [sl Htlook]].
+    destruct (store_wf_typed_loc_has_value Σ st l T sl Hwf Htlook) as [v [Hv _]].
+    exists v. exact Hv.
+Qed.
+
+(** ** Section 18: Store Extension Preserves Has-Values *)
+
+Lemma store_wf_extends_preserves_has_values : forall Σ Σ' st,
+  store_wf Σ st ->
+  store_ty_extends Σ Σ' ->
+  store_has_values st.
+Proof.
+  intros Σ Σ' st Hwf _.
+  exact (store_wf_implies_has_values Σ st Hwf).
+Qed.
+
+(** ** Section 19: Forward Lookup Existence *)
+
+(** Type assignment implies runtime value exists *)
+Lemma store_wf_ty_lookup_implies_st_lookup : forall Σ st l T sl,
+  store_wf Σ st ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v, store_lookup l st = Some v.
+Proof.
+  intros Σ st l T sl Hwf Htlook.
+  destruct (store_wf_typed_loc_has_value Σ st l T sl Hwf Htlook) as [v [Hv _]].
+  exists v. exact Hv.
+Qed.
+
+(** ** Section 20: Empty Type Map Properties *)
+
+(** With empty type mapping, no location is typed *)
+Lemma store_wf_empty_ty_no_typed_locs : forall st l T sl,
+  store_wf nil st ->
+  store_ty_lookup l nil <> Some (T, sl).
+Proof.
+  intros st l T sl Hwf Habs.
+  simpl in Habs. discriminate.
+Qed.
+
 (** End of file - ZERO ADMITS *)

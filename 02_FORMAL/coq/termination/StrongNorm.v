@@ -381,4 +381,82 @@ Proof.
   - apply value_SN. exact Hval.
 Qed.
 
+(** ** Value Constructor SN Lemmas *)
+
+(** Pair of values is SN (it's already a value) *)
+Lemma pair_value_SN : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  SN st ctx (EPair v1 v2).
+Proof.
+  intros v1 v2 st ctx Hval1 Hval2.
+  apply value_SN. apply VPair; assumption.
+Qed.
+
+(** Inl of value is SN (it's already a value) *)
+Lemma inl_value_SN : forall v T st ctx,
+  value v ->
+  SN st ctx (EInl v T).
+Proof.
+  intros v T st ctx Hval.
+  apply value_SN. apply VInl; assumption.
+Qed.
+
+(** Inr of value is SN (it's already a value) *)
+Lemma inr_value_SN : forall v T st ctx,
+  value v ->
+  SN st ctx (EInr v T).
+Proof.
+  intros v T st ctx Hval.
+  apply value_SN. apply VInr; assumption.
+Qed.
+
+(** Prove of value is SN (it's already a value) *)
+Lemma prove_value_SN : forall v st ctx,
+  value v ->
+  SN st ctx (EProve v).
+Proof.
+  intros v st ctx Hval.
+  apply value_SN. apply VProve; assumption.
+Qed.
+
+(** Snd of Snd on nested pair is SN *)
+Lemma snd_snd_pair_SN : forall a b c d st ctx,
+  value a -> value b -> value c -> value d ->
+  SN st ctx (ESnd (ESnd (EPair (EPair a b) (EPair c d)))).
+Proof.
+  intros a b c d st ctx Ha Hb Hc Hd.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - match goal with
+    | H : (ESnd (EPair (EPair a b) (EPair c d)), _, _) --> _ |- _ =>
+      inversion H; subst
+    end.
+    + apply snd_value_SN; assumption.
+    + exfalso. match goal with
+      | H : (EPair (EPair a b) (EPair c d), _, _) --> _ |- _ =>
+        eapply value_not_step with (v := EPair (EPair a b) (EPair c d));
+        [apply VPair; apply VPair; assumption | exact H]
+      end.
+Qed.
+
+(** Fst of Snd on nested pair is SN *)
+Lemma fst_snd_pair_SN : forall a b c d st ctx,
+  value a -> value b -> value c -> value d ->
+  SN st ctx (EFst (ESnd (EPair (EPair a b) (EPair c d)))).
+Proof.
+  intros a b c d st ctx Ha Hb Hc Hd.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - match goal with
+    | H : (ESnd (EPair (EPair a b) (EPair c d)), _, _) --> _ |- _ =>
+      inversion H; subst
+    end.
+    + apply fst_value_terminates_pair; assumption.
+    + exfalso. match goal with
+      | H : (EPair (EPair a b) (EPair c d), _, _) --> _ |- _ =>
+        eapply value_not_step with (v := EPair (EPair a b) (EPair c d));
+        [apply VPair; apply VPair; assumption | exact H]
+      end.
+Qed.
+
 (** End of StrongNorm.v *)
