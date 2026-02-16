@@ -333,4 +333,55 @@ Proof.
   split; apply val_rel_le_mono_step with n; auto.
 Qed.
 
+(** ** Store Relation Monotonicity to Zero *)
+
+Lemma store_rel_le_mono_to_zero : forall n Σ st1 st2,
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le 0 Σ st1 st2.
+Proof.
+  intros. apply store_rel_le_mono_step with n; auto. lia.
+Qed.
+
+(** ** Val Rel Mono from Double Step with Store Extension *)
+
+Lemma val_rel_le_mono_double_drop : forall n Σ Σ' T v1 v2,
+  store_ty_extends Σ Σ' ->
+  val_rel_le (S (S n)) Σ T v1 v2 ->
+  val_rel_le n Σ' T v1 v2.
+Proof.
+  intros. apply val_rel_le_mono with (n := S (S n)) (Σ := Σ); auto; lia.
+Qed.
+
+(** ** Store Relation Monotonicity with Strict Inequality *)
+
+Lemma store_rel_le_mono_lt : forall m n Σ st1 st2,
+  m < n ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le m Σ st1 st2.
+Proof.
+  intros. apply store_rel_le_mono_step with n; auto. lia.
+Qed.
+
+(** ** Val Rel at Zero with Any Store Extension *)
+
+Lemma val_rel_le_mono_zero_ext : forall Σ Σ' T v1 v2,
+  store_ty_extends Σ Σ' ->
+  val_rel_le 0 Σ' T v1 v2.
+Proof.
+  intros. simpl. exact I.
+Qed.
+
+(** ** Store Rel Chain with Domain Extraction *)
+
+Lemma store_rel_le_mono_chain_ext : forall k n Σ st1 st2,
+  k <= n ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le k Σ st1 st2 /\ store_max st1 = store_max st2.
+Proof.
+  intros k n Σ st1 st2 Hkn Hrel.
+  split.
+  - apply store_rel_le_mono_step with n; auto.
+  - eapply store_rel_le_domain. exact Hrel.
+Qed.
+
 (** End of CumulativeMonotone.v *)

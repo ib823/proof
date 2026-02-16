@@ -620,3 +620,43 @@ Proof.
   - apply sval_rel_tower_pair; auto.
   - exists a1, b1, a2, b2. repeat split; auto.
 Qed.
+
+(** Tower for pair of units at any step *)
+Lemma sval_rel_tower_pair_unit_unit : forall n,
+  sval_rel_tower n (STProd STUnit STUnit) (SVPair SVUnit SVUnit) (SVPair SVUnit SVUnit).
+Proof.
+  intros n. apply sval_rel_tower_pair.
+  - apply sval_rel_tower_unit.
+  - apply sval_rel_tower_unit.
+Qed.
+
+(** Tower for false at any step *)
+Lemma sval_rel_tower_bool_false : forall n,
+  sval_rel_tower n STBool (SVBool false) (SVBool false).
+Proof. intros. apply sval_rel_tower_bool. Qed.
+
+(** Tower for true at any step *)
+Lemma sval_rel_tower_bool_true : forall n,
+  sval_rel_tower n STBool (SVBool true) (SVBool true).
+Proof. intros. apply sval_rel_tower_bool. Qed.
+
+(** Tower step down by 3 *)
+Lemma sval_rel_tower_drop_3 : forall n T v1 v2,
+  sval_rel_tower (S (S (S n))) T v1 v2 ->
+  sval_rel_tower n T v1 v2.
+Proof.
+  intros. apply sval_rel_tower_mono with (S (S (S n))).
+  - lia.
+  - exact H.
+Qed.
+
+(** Tower product with unit left component *)
+Lemma sval_rel_tower_prod_unit_refl : forall n T,
+  sval_rel_tower n T SVUnit SVUnit ->
+  sval_rel_tower n (STProd STUnit T) (SVPair SVUnit SVUnit) (SVPair SVUnit SVUnit).
+Proof.
+  intros n T H.
+  apply sval_rel_tower_pair.
+  - apply sval_rel_tower_unit.
+  - exact H.
+Qed.

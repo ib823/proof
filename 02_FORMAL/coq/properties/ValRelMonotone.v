@@ -347,4 +347,62 @@ Proof.
   intros. simpl. exact I.
 Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Step Down by Four                                              *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_step_down_4 : forall n Σ T v1 v2,
+  val_rel_le (S (S (S (S n)))) Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2.
+Proof.
+  intros. apply val_rel_le_monotone with (S (S (S (S n)))). lia. exact H.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * From Addition to Component                                      *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_from_add : forall m k n Σ T v1 v2,
+  n = m + k ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2.
+Proof.
+  intros. subst. apply val_rel_le_drop with k. exact H0.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Max to Min Monotonicity                                         *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_from_max_min : forall m n Σ T v1 v2,
+  val_rel_le (max m n) Σ T v1 v2 ->
+  val_rel_le (min m n) Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hmax.
+  apply val_rel_le_monotone with (max m n). lia. exact Hmax.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * From Double Sum                                                 *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_from_double : forall n Σ T v1 v2,
+  val_rel_le (n + n) Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2.
+Proof.
+  intros. apply val_rel_le_monotone with (n + n). lia. exact H.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Range Monotonicity                                              *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_in_range : forall m n Σ T v1 v2,
+  m <= n ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2.
+Proof.
+  intros. apply val_rel_le_monotone with n; auto.
+Qed.
+
 (** End of file - ZERO ADMITS *)
