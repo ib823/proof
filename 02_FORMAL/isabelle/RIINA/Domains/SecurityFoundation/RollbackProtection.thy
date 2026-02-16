@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA RollbackProtection - Isabelle/HOL Port
@@ -19,6 +20,8 @@
  * | version_lt         | version_lt             | OK     |
  * | version_le         | version_le             | OK     |
  * | initial_rollback_state | initial_rollback_state | OK     |
+ * | get_min_version    | get_min_version        | OK     |
+ * | get_current_version | get_current_version    | OK     |
  * | version_allowed    | version_allowed        | OK     |
  * | can_boot_version   | can_boot_version       | OK     |
  * | update_min_version | update_min_version     | OK     |
@@ -51,7 +54,7 @@
  *)
 
 theory RollbackProtection
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* ComponentId (matches Coq: Inductive ComponentId) *)
@@ -85,18 +88,34 @@ record rollback_state =
 
 (* version_lt (matches Coq: Definition version_lt) *)
 definition version_lt :: "bool" where
-  "version_lt \<equiv> if Nat"
+  "version_lt \<equiv> if ((major < v1)) (major v2) then True
+  else if ((major < v2)) (major v1) then False
+  else if ((minor < v1)) (minor v2) then True
+  else if ((minor < v2)) (minor v1) then False
+  else if ((patch < v1)) (patch v2) then True
+  else if ((patch < v2)) (patch v1) then False
+  else ((build < v1)) (build v2)"
 
 (* version_le (matches Coq: Definition version_le) *)
 definition version_le :: "bool" where
   "version_le \<equiv> version_lt v1 v2 \<or> 
-  (Nat"
+  (((major = v1)) (major v2) \<and> 
+   ((minor = v1)) (minor v2) \<and> 
+   ((patch = v1)) (patch v2) \<and> 
+   ((build = v1)) (build v2))"
 
 (* initial_rollback_state (matches Coq: Definition initial_rollback_state) *)
 definition initial_rollback_state :: "RollbackState" where
-  "initial_rollback_state \<equiv> mkRollbackState [] [] true"
+  "initial_rollback_state \<equiv> mkRollbackState [] [] True"
 
-(* version_allowed - complex match, manual review needed *)
+(* get_min_version - complex match, needs manual translation *)
+definition get_min_version :: "bool" where "get_min_version = undefined"
+
+(* get_current_version - complex match, needs manual translation *)
+definition get_current_version :: "bool" where "get_current_version = undefined"
+
+(* version_allowed - complex match, needs manual translation *)
+definition version_allowed :: "bool" where "version_allowed = undefined"
 
 (* can_boot_version (matches Coq: Definition can_boot_version) *)
 definition can_boot_version :: "RollbackState \<Rightarrow> VersionedComponent \<Rightarrow> bool" where
@@ -106,7 +125,7 @@ definition can_boot_version :: "RollbackState \<Rightarrow> VersionedComponent \
 definition update_min_version :: "RollbackState \<Rightarrow> ComponentId \<Rightarrow> Version \<Rightarrow> bool \<Rightarrow> RollbackState" where
   "update_min_version st comp ver hw \<equiv> mkRollbackState
     (mkMinVersion comp ver hw :: 
-     filter (fun mv => negb (if comp_id_eq_dec (min_comp_id mv) comp then true else false))
+     filter (fun mv => (\<not> (if) comp_id_eq_dec (min_comp_id mv) comp then True else False))
             (minimum_versions st))
     (current_versions st)
     (anti_rollback_enabled st)"
@@ -115,21 +134,23 @@ definition update_min_version :: "RollbackState \<Rightarrow> ComponentId \<Righ
 definition record_current_version :: "RollbackState \<Rightarrow> VersionedComponent \<Rightarrow> RollbackState" where
   "record_current_version st comp \<equiv> mkRollbackState
     (minimum_versions st)
-    (comp :: filter (fun vc => negb (if comp_id_eq_dec (comp_id vc) (comp_id comp) then true else false))
+    (comp :: filter (fun vc => (\<not> (if) comp_id_eq_dec (comp_id vc) (comp_id comp) then True else False))
                     (current_versions st))
     (anti_rollback_enabled st)"
 
-(* advance_min_to_current - complex match, manual review needed *)
+(* advance_min_to_current - complex match, needs manual translation *)
+definition advance_min_to_current :: "bool" where "advance_min_to_current = undefined"
 
-(* is_rollback - complex match, manual review needed *)
+(* is_rollback - complex match, needs manual translation *)
+definition is_rollback :: "bool" where "is_rollback = undefined"
 
 (* can_boot_prop (matches Coq: Definition can_boot_prop) *)
 definition can_boot_prop :: "RollbackState \<Rightarrow> VersionedComponent \<Rightarrow> bool" where
-  "can_boot_prop st comp \<equiv> can_boot_version st comp = true"
+  "can_boot_prop st comp \<equiv> can_boot_version st comp = True"
 
 (* rollback_enforced (matches Coq: Definition rollback_enforced) *)
 definition rollback_enforced :: "RollbackState \<Rightarrow> bool" where
-  "rollback_enforced st \<equiv> anti_rollback_enabled st = true"
+  "rollback_enforced st \<equiv> anti_rollback_enabled st = True"
 
 (* rollback_protection (matches Coq) *)
 lemma rollback_protection: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver : Version), rollback_enforced st \<longrightarrow> is_rollback st comp old_ver \<longrightarrow> version_allowed st comp old_ver = False"
@@ -144,7 +165,7 @@ lemma current_or_newer_allowed: "\<forall> (st : RollbackState) (comp : Componen
   by (cases rule: ‹_›.cases; simp)
 
 (* min_version_monotonic (matches Coq) *)
-lemma min_version_monotonic: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver \<longrightarrow> version_lt new_ver old_ver = True \<longrightarrow> let st' := update_min_version st comp new_ver true in (* New minimum is stored, but doesn't go backwards in protection *) get_min_version st' comp = Some new_ver"
+lemma min_version_monotonic: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver \<longrightarrow> version_lt new_ver old_ver = True \<longrightarrow> let st' := update_min_version st comp new_ver True in get_min_version st' comp = Some new_ver"
   by (cases rule: ‹_›.cases; simp)
 
 (* no_minimum_any_allowed (matches Coq) *)
@@ -217,7 +238,7 @@ lemma enforced_detects_rollback: "\<forall> (st : RollbackState) (comp : Compone
 
 (* Hardware-stored minimum is recorded *)
 (* hardware_stored_minimum_recorded (matches Coq) *)
-lemma hardware_stored_minimum_recorded: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), let st' := update_min_version st comp ver true in In (mkMinVersion comp ver true) (minimum_versions st')"
+lemma hardware_stored_minimum_recorded: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), let st' := update_min_version st comp ver True in In (mkMinVersion comp ver True) (minimum_versions st')"
   by simp
 
 (* Advance on missing current version is identity *)

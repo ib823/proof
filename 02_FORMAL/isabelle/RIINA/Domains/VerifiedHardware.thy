@@ -412,7 +412,7 @@ lemma PHI_001_06_branch_correct: "\<forall> rs1 rs2 target s, (rtl_regs s rs1 = 
   by (cases rule: ‹_›.cases; simp)
 
 (* PHI_001_07_interrupt_correct (matches Coq) *)
-lemma PHI_001_07_interrupt_correct: "\<forall> s, rtl_speculating s = False \<longrightarrow> rtl_pipeline s = [] \<longrightarrow> True. (* In-order design: interrupts handled between instructions *)"
+lemma PHI_001_07_interrupt_correct: "\<forall> s, rtl_speculating s = False \<longrightarrow> rtl_pipeline s = [] \<longrightarrow> True. "
   by auto
 
 (* PHI_001_08_instruction_fetch_correct (matches Coq) *)
@@ -496,7 +496,7 @@ lemma PHI_001_25_complete_coverage: "\<forall> s, reachable initial_rtl_state s 
   by simp
 
 (* PHI_001_26_no_hidden_functionality (matches Coq) *)
-lemma PHI_001_26_no_hidden_functionality: "\<forall> s instr, (* For division, we only consider valid (non-zero divisor) cases *) (\<forall> rd rs1 rs2, instr = IDiv rd rs1 rs2 \<longrightarrow> regs (rtl_to_arch s) rs2 \<noteq> 0) \<longrightarrow> \<exists> a', isa_step instr (rtl_to_arch s) a'"
+lemma PHI_001_26_no_hidden_functionality: "\<forall> s instr, (\<forall> rd rs1 rs2, instr = IDiv rd rs1 rs2 \<longrightarrow> regs (rtl_to_arch s) rs2 \<noteq> 0) \<longrightarrow> \<exists> a', isa_step instr (rtl_to_arch s) a'"
   by auto
 
 (* no_hidden_functionality_non_div (matches Coq) *)

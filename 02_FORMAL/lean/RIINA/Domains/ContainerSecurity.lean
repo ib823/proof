@@ -428,9 +428,9 @@ def riina_escape : EscapePrevention := mkEscape true true true true true true tr
 /-- riina_container (matches Coq: Definition riina_container) -/
 def riina_container : ContainerConfig := mkContainer riina_ns riina_cgroup riina_seccomp riina_caps riina_image riina_escape true
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: CORE BOOLEAN LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_intro (matches Coq) -/
 theorem andb_true_intro : ∀ a b : bool, a = true → b = true → a && b = true := by
   rfl
@@ -447,9 +447,9 @@ theorem andb_true_elim2 : ∀ a b : bool, a && b = true → b = true := by
 theorem andb7_true : ∀ a b c d e f g : bool, a && b && c && d && e && f && g = true → a = true ∧ b = true ∧ c = true ∧ d = true ∧ e = true ∧ f = true ∧ g = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 10: NAMESPACE ISOLATION THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- NS_001_full_isolation (matches Coq) -/
 theorem NS_001_full_isolation : ns_fully_isolated riina_ns = true := by
   rfl
@@ -510,9 +510,9 @@ theorem NS_014_full_implies_net : ∀ n, ns_fully_isolated n = true → ns_net_i
 theorem NS_015_full_implies_user : ∀ n, ns_fully_isolated n = true → ns_user_isolated n = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 11: CGROUP RESOURCE LIMIT THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- CG_001_cpu_safe (matches Coq) -/
 theorem CG_001_cpu_safe : cgroup_cpu_safe riina_cgroup = true := by
   rfl
@@ -553,9 +553,9 @@ theorem CG_009_full_implies_io : ∀ c, cgroup_fully_limited c = true → cgroup
 theorem CG_010_swap_disabled : cg_swap_disabled riina_cgroup = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 12: SECCOMP FILTERING THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- SC_001_enforced (matches Coq) -/
 theorem SC_001_enforced : seccomp_enforced riina_seccomp = true := by
   rfl
@@ -608,9 +608,9 @@ theorem SC_012_hardened_implies_filter : ∀ s, seccomp_fully_hardened s = true 
 theorem SC_013_hardened_implies_block_priv : ∀ s, seccomp_fully_hardened s = true → sc_block_privileged s = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 13: CAPABILITY RESTRICTION THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- CAP_001_dangerous_dropped (matches Coq) -/
 theorem CAP_001_dangerous_dropped : caps_dangerous_dropped riina_caps = true := by
   rfl
@@ -663,9 +663,9 @@ theorem CAP_012_no_chown : cap_chown riina_caps = false := by
 theorem CAP_013_net_bind_allowed : cap_net_bind riina_caps = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 14: IMAGE INTEGRITY THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- IMG_001_authenticity_verified (matches Coq) -/
 theorem IMG_001_authenticity_verified : image_authenticity_verified riina_image = true := by
   rfl
@@ -722,9 +722,9 @@ theorem IMG_013_full_implies_signed : ∀ i, image_fully_verified i = true → i
 theorem IMG_014_full_implies_no_vulns : ∀ i, image_fully_verified i = true → img_no_critical_vulns i = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 15: CONTAINER ESCAPE PREVENTION THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- ESC_001_basic_protected (matches Coq) -/
 theorem ESC_001_basic_protected : escape_basic_protected riina_escape = true := by
   rfl
@@ -781,9 +781,9 @@ theorem ESC_013_full_implies_no_priv : ∀ e, escape_fully_protected e = true �
 theorem ESC_014_full_implies_seccomp : ∀ e, escape_fully_protected e = true → esc_seccomp_enabled e = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 16: COMPLETE CONTAINER SECURITY THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- CONT_001_isolated (matches Coq) -/
 theorem CONT_001_isolated : container_isolated riina_container = true := by
   rfl
@@ -844,16 +844,16 @@ theorem CONT_014_secure_implies_escape : ∀ c, container_fully_secure c = true 
 theorem CONT_015_secure_implies_rootless : ∀ c, container_fully_secure c = true → cont_rootless c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 17: CROSS-DOMAIN SECURITY COMPOSITION THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- CROSS_001_all_protections (matches Coq) -/
 theorem CROSS_001_all_protections : ∀ c, container_fully_secure c = true → container_isolated c = true ∧ container_resource_safe c = true ∧ container_syscall_safe c = true ∧ container_capability_safe c = true ∧ container_image_safe c = true ∧ container_escape_safe c = true ∧ cont_rootless c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 18: RIINA CONTAINER COMPLETE VERIFICATION THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- RIINA_001_defense_in_depth (matches Coq) -/
 theorem RIINA_001_defense_in_depth : container_fully_secure riina_container = true ∧ ns_fully_isolated riina_ns = true ∧ cgroup_fully_limited riina_cgroup = true ∧ seccomp_fully_hardened riina_seccomp = true ∧ caps_rootless_safe riina_caps = true ∧ image_fully_verified riina_image = true ∧ escape_fully_protected riina_escape = true := by
   rfl

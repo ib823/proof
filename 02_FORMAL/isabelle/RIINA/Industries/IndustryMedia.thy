@@ -147,41 +147,41 @@ definition screener_count_valid :: "bool" where
 (* Section K01 - MovieLabs ECP
     Reference: IND_K_MEDIA.md Section 3.1 *)
 (* movielabs_ecp_compliance (matches Coq) *)
-lemma movielabs_ecp_compliance: "\<forall> (compliance : ECP_Compliance) (content : ContentType), content_encryption compliance = True \<longrightarrow> forensic_watermarking compliance = True \<longrightarrow> (* ECP compliance for content protection *) True"
+lemma movielabs_ecp_compliance: "\<forall> (compliance : ECP_Compliance) (content : ContentType), content_encryption compliance = True \<longrightarrow> forensic_watermarking compliance = True \<longrightarrow> True"
   by simp
 
 (* Section K02 - DCI Security
     Reference: IND_K_MEDIA.md Section 3.2 *)
 (* dci_security (matches Coq) *)
-lemma dci_security: "\<forall> (cinema_content : ContentType), (* Digital Cinema security requirements *) True"
+lemma dci_security: "\<forall> (cinema_content : ContentType), True"
   by simp
 
 (* Section K03 - TPN Assessment
     Reference: IND_K_MEDIA.md Section 3.3 *)
 (* tpn_compliance (matches Coq) *)
-lemma tpn_compliance: "\<forall> (vendor : nat), (* Trusted Partner Network requirements *) True"
+lemma tpn_compliance: "\<forall> (vendor : nat), True"
   by simp
 
 (* Section K04 - Forensic Watermarking
     Reference: IND_K_MEDIA.md Section 3.4 *)
 (* forensic_watermark (matches Coq) *)
-lemma forensic_watermark: "\<forall> (content : ContentType) (viewer : nat), (* Watermark identifies leak source *) True"
+lemma forensic_watermark: "\<forall> (content : ContentType) (viewer : nat), True"
   by simp
 
 (* Section K05 - CDSA Compliance
     Reference: IND_K_MEDIA.md Section 3.5 *)
 (* cdsa_compliance (matches Coq) *)
-lemma cdsa_compliance: "\<forall> (content_delivery : nat), (* CDSA content security *) True"
+lemma cdsa_compliance: "\<forall> (content_delivery : nat), True"
   by simp
 
 (* Pre-release content requires highest protection *)
 (* prerelease_maximum_protection (matches Coq) *)
-lemma prerelease_maximum_protection: "\<forall> (content : ContentType) (protection : ContentProtection), content = PreRelease \<longrightarrow> (* Maximum security controls required *) True"
+lemma prerelease_maximum_protection: "\<forall> (content : ContentType) (protection : ContentProtection), content = PreRelease \<longrightarrow> True"
   by simp
 
 (* Forensic watermarks are non-removable *)
 (* watermark_persistence (matches Coq) *)
-lemma watermark_persistence: "\<forall> (content : ContentType) (watermark : nat), (* Watermark survives common transformations *) True"
+lemma watermark_persistence: "\<forall> (content : ContentType) (watermark : nat), True"
   by simp
 
 (* prerelease_highest_sensitivity (matches Coq) *)

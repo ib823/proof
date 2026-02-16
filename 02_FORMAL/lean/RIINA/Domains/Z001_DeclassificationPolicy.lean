@@ -251,9 +251,9 @@ def gaussian_mechanism (q : Query) (sensitivity epsilon delta : Nat)
 theorem principal_eqb_refl : ∀ p, principal_eqb p p = true := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: PRINCIPAL AND AUTHORITY (7 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- Z_001_01_principal_lattice (matches Coq) -/
 theorem Z_001_01_principal_lattice : ∀ p1 p2, ∃ join_p meet_p, join_p = PJoin p1 p2 ∧ meet_p = PMeet p1 p2 := by
   rfl
@@ -282,9 +282,9 @@ theorem Z_001_06_principal_join : ∀ p1 p2, ∃ join, join = PJoin p1 p2 ∧ (p
 theorem Z_001_07_principal_meet : ∀ p1 p2, ∃ meet, meet = PMeet p1 p2 ∧ (principal_leq meet p1 ∨ principal_leq meet p2) := by
   omega
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: ROBUST DECLASSIFICATION (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- Z_001_08_robust_definition (matches Coq) -/
 theorem Z_001_08_robust_definition : ∀ e public, robust e public <-> (∀ s1 s2, low_equiv s1 s2 public → e s1 = e s2) := by
   simp_all [Bool.and_eq_true]
@@ -317,9 +317,9 @@ theorem Z_001_14_downgrade_bounded : ∀ de, valid_policy (declass_policy de) �
 theorem Z_001_15_robust_checker_sound : ∀ e public, robust e public → ∀ s1 s2, low_equiv s1 s2 public → e s1 = e s2 := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: INFORMATION BUDGETS (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- Z_001_16_budget_wellformed (matches Coq) -/
 theorem Z_001_16_budget_wellformed : ∀ bs, wellformed_budget bs → total_leaked bs ≤ budget_total_limit bs := by
   intro h; exact h
@@ -352,9 +352,9 @@ theorem Z_001_22_budget_composition : ∀ bs pid1 pid2 bits1 bits2 bs' bs'', pid
 theorem Z_001_23_budget_per_principal : ∀ bs pid1 pid2 bits bs', pid1 ≠ pid2 → consume_budget bs pid1 bits = Some bs' → budget_per_policy bs' pid2 = budget_per_policy bs pid2 := by
   cases ‹_› <;> simp
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: POLICY ENFORCEMENT (7 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- Z_001_24_policy_authorized (matches Coq) -/
 theorem Z_001_24_policy_authorized : ∀ de p, can_declassify de p → acts_for p (authorized_principal (declass_policy de)) := by
   intro h; exact h

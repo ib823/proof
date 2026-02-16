@@ -147,41 +147,41 @@ definition within_occupancy :: "bool" where
 (* Section M01 - Smart Building Security
     Reference: IND_M_REALESTATE.md Section 3.1 *)
 (* smart_building_security (matches Coq) *)
-lemma smart_building_security: "\<forall> (controls : SmartBuildingControls) (building : nat), network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> (* Smart building security *) True"
+lemma smart_building_security: "\<forall> (controls : SmartBuildingControls) (building : nat), network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> True"
   by simp
 
 (* Section M02 - BACnet Security
     Reference: IND_M_REALESTATE.md Section 3.2 *)
 (* bacnet_security (matches Coq) *)
-lemma bacnet_security: "\<forall> (bas_network : nat), (* BACnet/SC secure communication *) True"
+lemma bacnet_security: "\<forall> (bas_network : nat), True"
   by simp
 
 (* Section M03 - Access Control Systems
     Reference: IND_M_REALESTATE.md Section 3.3 *)
 (* access_control_security (matches Coq) *)
-lemma access_control_security: "\<forall> (credential : PropertyData) (access_point : nat), (* Physical access control security *) True"
+lemma access_control_security: "\<forall> (credential : PropertyData) (access_point : nat), True"
   by simp
 
 (* Section M04 - Transaction Data Protection
     Reference: IND_M_REALESTATE.md Section 3.4 *)
 (* transaction_protection (matches Coq) *)
-lemma transaction_protection: "\<forall> (transaction : nat), (* Real estate transaction data protection *) True"
+lemma transaction_protection: "\<forall> (transaction : nat), True"
   by simp
 
 (* Section M05 - IoT Device Security
     Reference: IND_M_REALESTATE.md Section 3.5 *)
 (* iot_device_security (matches Coq) *)
-lemma iot_device_security: "\<forall> (device : nat), (* Smart home/building IoT security *) True"
+lemma iot_device_security: "\<forall> (device : nat), True"
   by simp
 
 (* Building systems require network segmentation *)
 (* building_segmentation (matches Coq) *)
-lemma building_segmentation: "\<forall> (controls : SmartBuildingControls) (system : BuildingSystem), network_segmentation controls = True \<longrightarrow> (* OT network isolated from IT *) True"
+lemma building_segmentation: "\<forall> (controls : SmartBuildingControls) (system : BuildingSystem), network_segmentation controls = True \<longrightarrow> True"
   by simp
 
 (* Safety systems must have failsafe operation *)
 (* safety_failsafe (matches Coq) *)
-lemma safety_failsafe: "\<forall> (controls : SmartBuildingControls) (safety_system : BuildingSystem), failsafe_operation controls = True \<longrightarrow> (* Safety systems operate without network *) True"
+lemma safety_failsafe: "\<forall> (controls : SmartBuildingControls) (safety_system : BuildingSystem), failsafe_operation controls = True \<longrightarrow> True"
   by simp
 
 (* financial_records_max_sensitivity (matches Coq) *)

@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA WebSecurity - Isabelle/HOL Port
@@ -59,13 +60,13 @@
  *)
 
 theory WebSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* HTMLContent (matches Coq: Inductive HTMLContent) *)
 datatype html_content =
     HTMLText
-  |     HTMLEscaped  (* Auto-escaped *)
+  |     HTMLEscaped
   |     HTMLElement
 
 (* CSP (matches Coq: Record CSP) *)
@@ -86,7 +87,7 @@ record secure_cookie =
   cookie_value :: 'a list
   cookie_httponly :: bool
   cookie_secure :: bool
-  cookie_samesite :: nat  (* 0=None, 1=Lax, 2=Strict *)
+  cookie_samesite :: nat
 
 (* CSRFToken (matches Coq: Record CSRFToken) *)
 record csrf_token =
@@ -98,14 +99,14 @@ record http_request =
   req_origin :: Origin
   req_target_origin :: Origin
   req_csrf_token :: option
-  req_method :: nat  (* 0=GET, 1=POST, etc *)
+  req_method :: nat
 
 (* ValidatedURL (matches Coq: Record ValidatedURL) *)
 record validated_url =
   url_scheme :: nat
   url_host :: 'a list
   url_path :: 'a list
-  url_is_allowed :: bool  (* Pre-validated against allowlist *)
+  url_is_allowed :: bool
 
 (* BoundSession (matches Coq: Record BoundSession) *)
 record bound_session =
@@ -152,9 +153,12 @@ record graph_ql_config =
 
 (* same_origin (matches Coq: Definition same_origin) *)
 definition same_origin :: "bool" where
-  "same_origin \<equiv> Nat"
+  "same_origin \<equiv> ((origin_scheme = o1)) (origin_scheme o2) \<and>
+  ((origin_port = o1)) (origin_port o2) \<and>
+  (length (origin_host o1) =? length (origin_host o2))"
 
-(* csrf_protected - complex match, manual review needed *)
+(* csrf_protected - complex match, needs manual translation *)
+definition csrf_protected :: "bool" where "csrf_protected = undefined"
 
 (* regenerate_session (matches Coq: Definition regenerate_session) *)
 definition regenerate_session :: "bool" where
@@ -162,50 +166,50 @@ definition regenerate_session :: "bool" where
 
 (* is_canonical (matches Coq: Definition is_canonical) *)
 definition is_canonical :: "bool" where
-  "is_canonical \<equiv> negb (existsb (fun c => Nat"
+  "is_canonical \<equiv> (\<not> (existsb) (fun c => (c = 46)) path)"
 
 (* authorized (matches Coq: Definition authorized) *)
 definition authorized :: "bool" where
   "authorized \<equiv> True"
 
 (* web_001_reflected_xss_impossible (matches Coq) *)
-lemma web_001_reflected_xss_impossible: "\<forall> (content : HTMLContent), xss_safe content \<longrightarrow> (* All user input is escaped *) True"
+lemma web_001_reflected_xss_impossible: "\<forall> (content : HTMLContent), xss_safe content \<longrightarrow> True"
   by auto
 
 (* web_002_stored_xss_impossible (matches Coq) *)
-lemma web_002_stored_xss_impossible: "\<forall> (content : HTMLContent), xss_safe content \<longrightarrow> (* Database content is escaped on render *) True"
+lemma web_002_stored_xss_impossible: "\<forall> (content : HTMLContent), xss_safe content \<longrightarrow> True"
   by auto
 
 (* web_003_dom_xss_impossible (matches Coq) *)
-lemma web_003_dom_xss_impossible: "\<forall> (th : TrustedHTML), th_sanitized th = True \<longrightarrow> (* Only sanitized content can be assigned to DOM *) True"
+lemma web_003_dom_xss_impossible: "\<forall> (th : TrustedHTML), th_sanitized th = True \<longrightarrow> True"
   by auto
 
 (* web_004_csrf_impossible (matches Coq) *)
-lemma web_004_csrf_impossible: "\<forall> (req : HTTPRequest) (expected : CSRFToken), csrf_protected req expected \<longrightarrow> req_method req \<noteq> 0 \<longrightarrow> (* State-changing request *) \<exists> token, req_csrf_token req = Some token \<and> csrf_value token = csrf_value expected"
+lemma web_004_csrf_impossible: "\<forall> (req : HTTPRequest) (expected : CSRFToken), csrf_protected req expected \<longrightarrow> req_method req \<noteq> 0 \<longrightarrow> \<exists> token, req_csrf_token req = Some token \<and> csrf_value token = csrf_value expected"
   by auto
 
 (* web_005_ssrf_impossible (matches Coq) *)
-lemma web_005_ssrf_impossible: "\<forall> (url : ValidatedURL), url_is_allowed url = True \<longrightarrow> (* Only allowlisted URLs can be fetched *) True"
+lemma web_005_ssrf_impossible: "\<forall> (url : ValidatedURL), url_is_allowed url = True \<longrightarrow> True"
   by auto
 
 (* web_006_clickjacking_impossible (matches Coq) *)
-lemma web_006_clickjacking_impossible: "\<forall> (csp : CSP), csp_frame_ancestors csp = nil \<longrightarrow> (* 'none' *) (* Page cannot be framed *) True"
+lemma web_006_clickjacking_impossible: "\<forall> (csp : CSP), csp_frame_ancestors csp = nil \<longrightarrow> True"
   by auto
 
 (* web_007_open_redirect_impossible (matches Coq) *)
-lemma web_007_open_redirect_impossible: "\<forall> (url : ValidatedURL), url_is_allowed url = True \<longrightarrow> (* Only validated URLs for redirects *) True"
+lemma web_007_open_redirect_impossible: "\<forall> (url : ValidatedURL), url_is_allowed url = True \<longrightarrow> True"
   by auto
 
 (* web_008_http_smuggling_impossible (matches Coq) *)
-lemma web_008_http_smuggling_impossible: "\<forall> (p : StrictHTTPParser), parser_reject_ambiguous p = True \<longrightarrow> (* Ambiguous requests are rejected *) True"
+lemma web_008_http_smuggling_impossible: "\<forall> (p : StrictHTTPParser), parser_reject_ambiguous p = True \<longrightarrow> True"
   by auto
 
 (* web_009_cache_poisoning_impossible (matches Coq) *)
-lemma web_009_cache_poisoning_impossible: "\<forall> (cc : CacheConfig), length (cache_vary_headers cc) > 0 \<longrightarrow> (* Proper Vary headers prevent poisoning *) True"
+lemma web_009_cache_poisoning_impossible: "\<forall> (cc : CacheConfig), length (cache_vary_headers cc) > 0 \<longrightarrow> True"
   by auto
 
 (* web_010_session_hijacking_mitigated (matches Coq) *)
-lemma web_010_session_hijacking_mitigated: "\<forall> (c : SecureCookie), cookie_httponly c = True \<longrightarrow> cookie_secure c = True \<longrightarrow> (* Cookie not accessible to JS, only over HTTPS *) True"
+lemma web_010_session_hijacking_mitigated: "\<forall> (c : SecureCookie), cookie_httponly c = True \<longrightarrow> cookie_secure c = True \<longrightarrow> True"
   by auto
 
 (* web_011_session_fixation_impossible (matches Coq) *)
@@ -213,59 +217,59 @@ lemma web_011_session_fixation_impossible: "\<forall> (old_id new_id : nat), reg
   by auto
 
 (* web_012_cookie_attacks_mitigated (matches Coq) *)
-lemma web_012_cookie_attacks_mitigated: "\<forall> (c : SecureCookie), cookie_samesite c \<ge> 1 \<longrightarrow> (* SameSite=Lax or Strict prevents cross-site sending *) True"
+lemma web_012_cookie_attacks_mitigated: "\<forall> (c : SecureCookie), cookie_samesite c \<ge> 1 \<longrightarrow> True"
   by auto
 
 (* web_013_path_traversal_impossible (matches Coq) *)
-lemma web_013_path_traversal_impossible: "\<forall> (path : list nat), is_canonical path = True \<longrightarrow> (* Canonicalized paths cannot escape root *) True"
+lemma web_013_path_traversal_impossible: "\<forall> (path : list nat), is_canonical path = True \<longrightarrow> True"
   by auto
 
 (* web_014_lfi_impossible (matches Coq) *)
-lemma web_014_lfi_impossible: "\<forall> (path : list nat), is_canonical path = True \<longrightarrow> (* Same as path traversal - canonical paths only *) True"
+lemma web_014_lfi_impossible: "\<forall> (path : list nat), is_canonical path = True \<longrightarrow> True"
   by auto
 
 (* web_015_rfi_impossible (matches Coq) *)
-lemma web_015_rfi_impossible: "(* No remote include functionality \<exists> *) True"
+lemma web_015_rfi_impossible: " True"
   by auto
 
 (* web_016_prototype_pollution_impossible (matches Coq) *)
-lemma web_016_prototype_pollution_impossible: "(* Prototypes are immutable by construction *) True"
+lemma web_016_prototype_pollution_impossible: " True"
   by auto
 
 (* web_017_deserialization_safe (matches Coq) *)
-lemma web_017_deserialization_safe: "\<forall> (sd : SignedData), sd_verified sd = True \<longrightarrow> (* Only verified data is deserialized *) True"
+lemma web_017_deserialization_safe: "\<forall> (sd : SignedData), sd_verified sd = True \<longrightarrow> True"
   by auto
 
 (* web_018_http_response_split_impossible (matches Coq) *)
-lemma web_018_http_response_split_impossible: "\<forall> (h : list nat), negb (\<exists>b (fun c => Nat.eqb c 10 || Nat.eqb c 13) h) = True \<longrightarrow> (* No CRLF in headers *) True"
+lemma web_018_http_response_split_impossible: "\<forall> (h : list nat), (\<not> (\<exists>b) (fun c => (c = 10) || (c = 13)) h) = True \<longrightarrow> True"
   by auto
 
 (* web_019_parameter_pollution_mitigated (matches Coq) *)
-lemma web_019_parameter_pollution_mitigated: "\<forall> (params : list (nat * nat)), NoDup (map fst params) \<longrightarrow> (* No duplicate parameter names *) True"
+lemma web_019_parameter_pollution_mitigated: "\<forall> (params : list (nat * nat)), NoDup (map fst params) \<longrightarrow> True"
   by auto
 
 (* web_020_mass_assignment_impossible (matches Coq) *)
-lemma web_020_mass_assignment_impossible: "(* Type system requires explicit field specification *) True"
+lemma web_020_mass_assignment_impossible: " True"
   by auto
 
 (* web_021_idor_mitigated (matches Coq) *)
-lemma web_021_idor_mitigated: "\<forall> (user resource : nat), authorized user resource \<longrightarrow> (* Authorization checked before access *) True"
+lemma web_021_idor_mitigated: "\<forall> (user resource : nat), authorized user resource \<longrightarrow> True"
   by auto
 
 (* web_022_verb_tampering_mitigated (matches Coq) *)
-lemma web_022_verb_tampering_mitigated: "\<forall> (rc : RouteConfig) (method : nat), route_strict rc = True \<longrightarrow> In method (route_methods rc) \<longrightarrow> (* Only configured methods allowed *) True"
+lemma web_022_verb_tampering_mitigated: "\<forall> (rc : RouteConfig) (method : nat), route_strict rc = True \<longrightarrow> In method (route_methods rc) \<longrightarrow> True"
   by auto
 
 (* web_023_host_header_attack_mitigated (matches Coq) *)
-lemma web_023_host_header_attack_mitigated: "\<forall> (hc : HostConfig) (host : list nat), In host (allowed_hosts hc) \<longrightarrow> (* Only configured hosts accepted *) True"
+lemma web_023_host_header_attack_mitigated: "\<forall> (hc : HostConfig) (host : list nat), In host (allowed_hosts hc) \<longrightarrow> True"
   by auto
 
 (* web_024_web_cache_deception_mitigated (matches Coq) *)
-lemma web_024_web_cache_deception_mitigated: "\<forall> (cc : CacheConfig), cache_no_transform cc = True \<longrightarrow> (* Cache-Control prevents deception *) True"
+lemma web_024_web_cache_deception_mitigated: "\<forall> (cc : CacheConfig), cache_no_transform cc = True \<longrightarrow> True"
   by auto
 
 (* web_025_graphql_attacks_mitigated (matches Coq) *)
-lemma web_025_graphql_attacks_mitigated: "\<forall> (gc : GraphQLConfig), gql_max_depth gc > 0 \<longrightarrow> gql_max_complexity gc > 0 \<longrightarrow> (* Query limits prevent DoS *) True"
+lemma web_025_graphql_attacks_mitigated: "\<forall> (gc : GraphQLConfig), gql_max_depth gc > 0 \<longrightarrow> gql_max_complexity gc > 0 \<longrightarrow> True"
   by auto
 
 end

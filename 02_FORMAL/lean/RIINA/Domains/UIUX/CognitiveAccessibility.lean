@@ -234,228 +234,228 @@ theorem interaction_type_exhaustive : ∀ (t : InteractionType), t = ButtonPress
 theorem outcome_type_exhaustive : ∀ (o : OutcomeType), o = ButtonActivated ∨ o = MenuDisplayed ∨ o = ScreenPushed ∨ o = ScreenPopped ∨ o = ModalShown ∨ o = ModalHidden ∨ o = TextEntered ∨ o = ListScrolled ∨ o = SwipeCompleted ∨ o = LongPressActivated := by
   simp_all [Bool.and_eq_true]
 
-/-- Theorem: information_density_bounded
+-- Theorem: information_density_bounded
     RIINA UI limits the number of elements per viewport.
     Any InformationDensity whose element_count is at most the threshold
-    satisfies density_acceptable. -/
+    satisfies density_acceptable.
 /-- information_density_bounded (matches Coq) -/
 theorem information_density_bounded : ∀ (id : InformationDensity), element_count id ≤ riina_density_threshold → density_acceptable id riina_density_threshold := by
   intro h; exact h
 
-/-- Theorem: progressive_disclosure
+-- Theorem: progressive_disclosure
     Complex information always shows the summary first.  Every
     ContentSection starts at Summary level and the summary text is
-    no longer than the expanded text. -/
+    no longer than the expanded text.
 /-- progressive_disclosure (matches Coq) -/
 theorem progressive_disclosure : ∀ (cs : ContentSection), cs_initial_level cs = Summary ∧ cs_summary_len cs ≤ cs_expanded_len cs := by
   intro h; exact h
 
-/-- Theorem: choice_overload_prevention
+-- Theorem: choice_overload_prevention
     RIINA menus never exceed 7 items, preventing choice overload and
-    keeping Hick's-Law decision time O(log 7) ~ constant. -/
+    keeping Hick's-Law decision time O(log 7) ~ constant.
 /-- choice_overload_prevention (matches Coq) -/
 theorem choice_overload_prevention : ∀ (mc : MenuConfig), length (menu_items mc) ≤ hicks_bound := by
   intro h; exact h
 
-/-- Theorem: consistent_navigation
-    In a ConsistentApp, the navigation structure is identical across all pages. -/
+-- Theorem: consistent_navigation
+    In a ConsistentApp, the navigation structure is identical across all pages.
 /-- consistent_navigation (matches Coq) -/
 theorem consistent_navigation : ∀ (app : ConsistentApp) (p1 p2 : NavigationStructure), In p1 (app_pages app) → In p2 (app_pages app) → nav_structure_eq p1 p2 := by
   intro h; exact h
 
-/-- Theorem: breadcrumb_always_available
-    Every page that is not at the root level shows a breadcrumb trail. -/
+-- Theorem: breadcrumb_always_available
+    Every page that is not at the root level shows a breadcrumb trail.
 /-- breadcrumb_always_available (matches Coq) -/
 theorem breadcrumb_always_available : ∀ (pc : PageConfig), pc_depth pc ≠ RootLevel → pc_has_breadcrumb pc = true := by
   intro h; exact h
 
-/-- Theorem: loading_state_always_shown
+-- Theorem: loading_state_always_shown
     Whenever an async operation is in the Loading state, a loading
-    indicator is visible. -/
+    indicator is visible.
 /-- loading_state_always_shown (matches Coq) -/
 theorem loading_state_always_shown : ∀ (op : AsyncOperation), ao_status op = Loading → ao_shows_loading op = true := by
   intro h; exact h
 
-/-- Theorem: undo_always_available
+-- Theorem: undo_always_available
     Every user action has an inverse, and applying undo twice
-    yields the original action (involution). -/
+    yields the original action (involution).
 /-- undo_always_available (matches Coq) -/
 theorem undo_always_available : ∀ (a : UserAction), undo_action (undo_action a) = a := by
   cases ‹_› <;> simp
 
-/-- Lemma: undo is distinct from the original for non-trivial edits. -/
+-- Lemma: undo is distinct from the original for non-trivial edits.
 /-- undo_edit_swaps (matches Coq) -/
 theorem undo_edit_swaps : ∀ fid old_v new_v, old_v ≠ new_v → undo_action (EditAction fid old_v new_v) ≠ EditAction fid old_v new_v := by
   simp_all [Bool.and_eq_true]
 
-/-- Theorem: confirmation_for_destructive
-    Every destructive action must have user confirmation. -/
+-- Theorem: confirmation_for_destructive
+    Every destructive action must have user confirmation.
 /-- confirmation_for_destructive (matches Coq) -/
 theorem confirmation_for_destructive : ∀ (ca : ConfirmedAction), is_destructive (ca_action ca) = true → ca_confirmed ca = true := by
   intro h; exact h
 
-/-- Theorem: inline_validation
+-- Theorem: inline_validation
     Every error in a FormState is associated with a specific field
-    index that falls within the form's field range. -/
+    index that falls within the form's field range.
 /-- inline_validation (matches Coq) -/
 theorem inline_validation : ∀ (fs : FormState), errors_are_inline fs := by
   intro h; exact h
 
-/-- An error message is specific if it identifies exactly one field. We
-    prove that every error constructor carries a unique field index. -/
+-- An error message is specific if it identifies exactly one field. We
+    prove that every error constructor carries a unique field index.
 /-- error_message_specific (matches Coq) -/
 theorem error_message_specific : ∀ (fs : FormState) (e : ValidationError), In e (fs_errors fs) → ∃ idx, error_field_idx e = idx ∧ idx < fs_field_count fs := by
   intro h; exact h
 
-/-- Theorem: auto_save_prevents_loss
+-- Theorem: auto_save_prevents_loss
     When a form has unsaved changes (dirty = true), the auto-save
-    snapshot contains the current field values. -/
+    snapshot contains the current field values.
 /-- auto_save_prevents_loss (matches Coq) -/
 theorem auto_save_prevents_loss : ∀ (asf : AutoSaveForm), asf_dirty asf = true → snap_field_values (asf_snapshot asf) = asf_field_values asf := by
   intro h; exact h
 
-/-- Lemma: min_error_idx returns Some for non-empty error lists. -/
+-- Lemma: min_error_idx returns Some for non-empty error lists.
 /-- min_error_idx_nonempty (matches Coq) -/
 theorem min_error_idx_nonempty : ∀ (errs : list ValidationError), errs ≠ nil → ∃ n, min_error_idx errs = Some n := by
   cases ‹_› <;> simp
 
-/-- The minimum is at most the index of the first error. -/
+-- The minimum is at most the index of the first error.
 /-- min_error_idx_le_head (matches Coq) -/
 theorem min_error_idx_le_head : ∀ (e : ValidationError) (rest : list ValidationError) (m : nat), min_error_idx (e :: rest) = Some m → m ≤ error_field_idx e := by
   cases ‹_› <;> simp <;> omega
 
-/-- Helper: min_error_idx on a non-empty list returns a value that
-    is <= the field index of every element. -/
+-- Helper: min_error_idx on a non-empty list returns a value that
+    is <= the field index of every element.
 /-- min_error_idx_le_all (matches Coq) -/
 theorem min_error_idx_le_all : ∀ (errs : list ValidationError) (m : nat), min_error_idx errs = Some m → ∀ e, In e errs → m ≤ error_field_idx e := by
   cases ‹_› <;> simp <;> omega
 
-/-- Theorem: scroll_to_first_error
+-- Theorem: scroll_to_first_error
     When a form has errors, there exists a minimum field index that
     the viewport should scroll to, and it is at most every individual
-    error's field index. -/
+    error's field index.
 /-- scroll_to_first_error (matches Coq) -/
 theorem scroll_to_first_error : ∀ (fs : FormState), fs_errors fs ≠ nil → ∃ min_idx, min_error_idx (fs_errors fs) = Some min_idx ∧ ∀ e, In e (fs_errors fs) → min_idx ≤ error_field_idx e := by
   intro h; exact h
 
-/-- Theorem: error_count_visible
+-- Theorem: error_count_visible
     The error count is always computable and equals the number of
-    validation errors.  A zero count is equivalent to no errors. -/
+    validation errors.  A zero count is equivalent to no errors.
 /-- error_count_visible (matches Coq) -/
 theorem error_count_visible : ∀ (fs : FormState), form_error_count fs = 0 <-> fs_errors fs = nil := by
   cases ‹_› <;> simp
 
-/-- Lemma: adding an error increments the count. -/
+-- Lemma: adding an error increments the count.
 /-- error_count_monotone (matches Coq) -/
 theorem error_count_monotone : ∀ (errs : list ValidationError) (e : ValidationError), length (e :: errs) = S (length errs) := by
   rfl
 
-/-- Theorem: error_fixable
+-- Theorem: error_fixable
     Every validation error has a clear fix action that targets the
-    same field. -/
+    same field.
 /-- error_fixable (matches Coq) -/
 theorem error_fixable : ∀ (e : ValidationError), fix_targets_same_field e (suggest_fix e) := by
   cases ‹_› <;> simp
 
-/-- Theorem: animation_duration_bounded
-    All RIINA animations have duration in [200, 500] ms. -/
+-- Theorem: animation_duration_bounded
+    All RIINA animations have duration in [200, 500] ms.
 /-- animation_duration_bounded (matches Coq) -/
 theorem animation_duration_bounded : ∀ (anim : AnimationTiming), 200 ≤ at_duration_ms anim ∧ at_duration_ms anim ≤ 500 := by
   intro h; exact h
 
-/-- Decidable equality on action classes. -/
+-- Decidable equality on action classes.
 /-- action_class_eq_dec (matches Coq) -/
 theorem action_class_eq_dec : ∀ (a b : ActionClass), {a = b} + {a ≠ b} := by
   rfl
 
-/-- Theorem: easing_consistent (singleton — trivially consistent) -/
+-- Theorem: easing_consistent (singleton — trivially consistent)
 /-- easing_consistent_singleton (matches Coq) -/
 theorem easing_consistent_singleton : ∀ (a : ClassifiedAnimation), easing_consistent (a :: nil) := by
   rfl
 
-/-- Theorem: no_layout_shift
-    Elements do not move after the initial render (CLS = 0). -/
+-- Theorem: no_layout_shift
+    Elements do not move after the initial render (CLS = 0).
 /-- no_layout_shift (matches Coq) -/
 theorem no_layout_shift : ∀ (sl : StableLayout), sl_initial sl = sl_final sl := by
   intro h; exact h
 
-/-- Theorem: feedback_immediate
-    User actions receive visual feedback within 100ms. -/
+-- Theorem: feedback_immediate
+    User actions receive visual feedback within 100ms.
 /-- feedback_immediate (matches Coq) -/
 theorem feedback_immediate : ∀ (fr : FeedbackResponse), fr_latency_ms fr ≤ 100 := by
   intro h; exact h
 
-/-- Theorem: transition_reversible
+-- Theorem: transition_reversible
     Back navigation reverses the forward transition. Reversing twice
-    yields the original transition (involution). -/
+    yields the original transition (involution).
 /-- transition_reversible (matches Coq) -/
 theorem transition_reversible : ∀ (t : UITransition), reverse_transition (reverse_transition t) = t := by
   cases ‹_› <;> simp
 
-/-- Lemma: reversing swaps endpoints. -/
+-- Lemma: reversing swaps endpoints.
 /-- reverse_swaps_endpoints (matches Coq) -/
 theorem reverse_swaps_endpoints : ∀ (t : UITransition), tr_from (reverse_transition t) = tr_to t ∧ tr_to (reverse_transition t) = tr_from t := by
   simp
 
-/-- Lemma: reversing preserves the animation style. -/
+-- Lemma: reversing preserves the animation style.
 /-- reverse_preserves_anim_style (matches Coq) -/
 theorem reverse_preserves_anim_style : ∀ (t : UITransition), tr_anim_style (reverse_transition t) = tr_anim_style t := by
   simp
 
-/-- Theorem: same_input_same_output
+-- Theorem: same_input_same_output
     Identical UI states + identical events produce identical results.
-    This is the core determinism property of RIINA's UI model. -/
+    This is the core determinism property of RIINA's UI model.
 /-- same_input_same_output (matches Coq) -/
 theorem same_input_same_output : ∀ (s1 s2 : UIState) (e1 e2 : UIEvent), s1 = s2 → e1 = e2 → handle_ui_event s1 e1 = handle_ui_event s2 e2 := by
   rfl
 
-/-- Stronger form: handle_ui_event is a genuine function (reflexivity). -/
+-- Stronger form: handle_ui_event is a genuine function (reflexivity).
 /-- handle_ui_event_deterministic (matches Coq) -/
 theorem handle_ui_event_deterministic : ∀ (s : UIState) (e : UIEvent), handle_ui_event s e = handle_ui_event s e := by
   rfl
 
-/-- Theorem: no_surprise_popups
-    Dialogs appear only as a result of explicit user action. -/
+-- Theorem: no_surprise_popups
+    Dialogs appear only as a result of explicit user action.
 /-- no_surprise_popups (matches Coq) -/
 theorem no_surprise_popups : ∀ (dd : DialogDisplay), is_user_initiated (dd_trigger dd) = true := by
   intro h; exact h
 
-/-- Theorem: button_does_what_it_says
-    The runtime effect of every button matches its visible label. -/
+-- Theorem: button_does_what_it_says
+    The runtime effect of every button matches its visible label.
 /-- button_does_what_it_says (matches Coq) -/
 theorem button_does_what_it_says : ∀ (bc : ButtonConfig), bc_effect bc = label_to_effect (bc_label bc) := by
   intro h; exact h
 
-/-- Corollary: label_to_effect is injective (distinct labels => distinct effects). -/
+-- Corollary: label_to_effect is injective (distinct labels => distinct effects).
 /-- label_to_effect_injective (matches Coq) -/
 theorem label_to_effect_injective : ∀ l1 l2, label_to_effect l1 = label_to_effect l2 → l1 = l2 := by
   cases ‹_› <;> simp
 
-/-- Theorem: back_button_goes_back
-    Pushing a page and then popping (back) returns to the original stack. -/
+-- Theorem: back_button_goes_back
+    Pushing a page and then popping (back) returns to the original stack.
 /-- back_button_goes_back (matches Coq) -/
 theorem back_button_goes_back : ∀ (stack : list nat) (page : nat), nav_apply (nav_apply stack (NavPush page)) NavPop = stack := by
   rfl
 
-/-- Lemma: push strictly grows the stack. -/
+-- Lemma: push strictly grows the stack.
 /-- nav_push_grows (matches Coq) -/
 theorem nav_push_grows : ∀ (stack : list nat) (page : nat), length (nav_apply stack (NavPush page)) = S (length stack) := by
   rfl
 
-/-- Lemma: pop on non-empty stack shrinks it. -/
+-- Lemma: pop on non-empty stack shrinks it.
 /-- nav_pop_shrinks (matches Coq) -/
 theorem nav_pop_shrinks : ∀ (p : nat) (stack : list nat), length (nav_apply (p :: stack) NavPop) = length stack := by
   rfl
 
-/-- Theorem: link_destination_visible
-    Every link shows its destination before the user clicks. -/
+-- Theorem: link_destination_visible
+    Every link shows its destination before the user clicks.
 /-- link_destination_visible (matches Coq) -/
 theorem link_destination_visible : ∀ (lc : LinkConfig), lc_dest_visible lc = true := by
   intro h; exact h
 
-/-- Theorem: no_auto_redirect
+-- Theorem: no_auto_redirect
     Page transitions never occur automatically — they always require
-    explicit user consent via a user-initiated event. -/
+    explicit user consent via a user-initiated event.
 /-- no_auto_redirect (matches Coq) -/
 theorem no_auto_redirect : ∀ (pt : PageTransition), is_user_initiated (pt_trigger pt) = true := by
   intro h; exact h

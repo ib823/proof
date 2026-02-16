@@ -293,7 +293,7 @@ lemma thread_safe_collection: "\<forall> (p : Program), well_typed p \<longright
   by auto
 
 (* concurrent_modification_detected (matches Coq) *)
-lemma concurrent_modification_detected: "\<forall> (a1 a2 : Actor) (d : Data), owns a1 d \<longrightarrow> owns a2 d \<longrightarrow> actor_id a1 \<noteq> actor_id a2 \<longrightarrow> (* Two actors own same data => invariant violation *) owns a1 d \<and> owns a2 d \<and> actor_id a1 \<noteq> actor_id a2"
+lemma concurrent_modification_detected: "\<forall> (a1 a2 : Actor) (d : Data), owns a1 d \<longrightarrow> owns a2 d \<longrightarrow> actor_id a1 \<noteq> actor_id a2 \<longrightarrow> owns a1 d \<and> owns a2 d \<and> actor_id a1 \<noteq> actor_id a2"
   by auto
 
 (* future_has_value_when_resolved (matches Coq) *)

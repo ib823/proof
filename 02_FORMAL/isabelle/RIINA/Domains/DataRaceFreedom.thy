@@ -255,7 +255,7 @@ lemma DR_027_remove_preserves_wf: "\<forall> as_ t l, well_formed_access as_ \<l
   by simp
 
 (* DR_028_race_free_location (matches Coq) *)
-lemma DR_028_race_free_location: "\<forall> as_ l1 l2, ~ data_race as_ l1 \<longrightarrow> l1 \<noteq> l2 \<longrightarrow> True. (* Different locations don't interfere *)"
+lemma DR_028_race_free_location: "\<forall> as_ l1 l2, ~ data_race as_ l1 \<longrightarrow> l1 \<noteq> l2 \<longrightarrow> True. "
   by auto
 
 (* DR_029_ownership_state_cases (matches Coq) *)

@@ -491,7 +491,7 @@ lemma DO178_039_riina_development: "development_compliant (do178c_development ri
 
 (* DO178_040: Complete DO-178C Level A Certification *)
 (* DO178_040_complete_certification (matches Coq) *)
-lemma DO178_040_complete_certification: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> (* All Level A requirements satisfied *) planning_compliant (do178c_planning c) = True \<and> development_compliant (do178c_development c) = True \<and> verification_compliant (do178c_verification c) = True \<and> cm_compliant (do178c_cm c) = True \<and> qa_compliant (do178c_qa c) = True"
+lemma DO178_040_complete_certification: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> planning_compliant (do178c_planning c) = True \<and> development_compliant (do178c_development c) = True \<and> verification_compliant (do178c_verification c) = True \<and> cm_compliant (do178c_cm c) = True \<and> qa_compliant (do178c_qa c) = True"
   by auto
 
 end

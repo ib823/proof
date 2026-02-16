@@ -470,7 +470,7 @@ lemma OMEGA_001_26_syn_cookie_verify: "\<forall> secret conn time, verify_syn_co
   by simp
 
 (* OMEGA_001_27_syn_cookie_replay_prevent (matches Coq) *)
-lemma OMEGA_001_27_syn_cookie_replay_prevent: "\<forall> secret conn time_old time_now, time_now > time_old + 2 \<longrightarrow> verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = True \<longrightarrow> (* Cookie from time_old verified at time_now means time window overlap *) syn_cookie secret conn time_old = syn_cookie secret conn time_now \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2)"
+lemma OMEGA_001_27_syn_cookie_replay_prevent: "\<forall> secret conn time_old time_now, time_now > time_old + 2 \<longrightarrow> verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = True \<longrightarrow> syn_cookie secret conn time_old = syn_cookie secret conn time_now \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2)"
   by auto
 
 (* OMEGA_001_28_syn_flood_mitigated (matches Coq) *)
@@ -482,7 +482,7 @@ lemma OMEGA_001_29_legitimate_connections: "\<forall> secret conn time, verify_s
   by auto
 
 (* OMEGA_001_30_hash_collision_resistant (matches Coq) *)
-lemma OMEGA_001_30_hash_collision_resistant: "\<forall> ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 \<longrightarrow> siphash_lookup ht key2 = Some v2 \<longrightarrow> key1 \<noteq> key2 \<longrightarrow> (* With random key, maximum bucket size is bounded *) \<exists> bound, max_bucket_size ht \<le> bound"
+lemma OMEGA_001_30_hash_collision_resistant: "\<forall> ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 \<longrightarrow> siphash_lookup ht key2 = Some v2 \<longrightarrow> key1 \<noteq> key2 \<longrightarrow> \<exists> bound, max_bucket_size ht \<le> bound"
   by auto
 
 (* OMEGA_001_31_regex_terminates (matches Coq) *)

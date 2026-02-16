@@ -505,9 +505,9 @@ def riina_sig_security : SignatureSecurityProps := mkSigSecProps
 def riina_aead : AEADProperties := mkAEADProps
   true true true true
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: BASIC LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -524,9 +524,9 @@ theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
 theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 13: THEOREMS - BASIC SECURITY PROPERTIES (QSTLS_001-012)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_001 (matches Coq) -/
 theorem QSTLS_001 : hybrid_kex_secure riina_kex = true := by
   rfl
@@ -575,9 +575,9 @@ theorem QSTLS_011 : rec_aead riina_rec = true := by
 theorem QSTLS_012 : qstls_version_13 riina_qstls = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 14: THEOREMS - HYBRID KEX EXTRACTION (QSTLS_013-018)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_013 (matches Coq) -/
 theorem QSTLS_013 : ∀ h, hybrid_kex_secure h = true → hkex_post_quantum h = true := by
   simp_all [Bool.and_eq_true]
@@ -602,9 +602,9 @@ theorem QSTLS_017 : ∀ c, hybrid_config_valid c = true → hybrid_label c = tru
 theorem QSTLS_018 : hybrid_config_valid riina_hybrid_config = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 15: THEOREMS - PQ AUTHENTICATION (QSTLS_019-024)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_019 (matches Coq) -/
 theorem QSTLS_019 : ∀ p, pq_auth_secure p = true → pqa_pq_sig p = true := by
   simp_all [Bool.and_eq_true]
@@ -629,9 +629,9 @@ theorem QSTLS_023 : sig_is_post_quantum SLH_DSA_256 = true := by
 theorem QSTLS_024 : sig_security_level ML_DSA_87 = Level5 := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 16: THEOREMS - HANDSHAKE PROPERTIES (QSTLS_025-030)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_025 (matches Coq) -/
 theorem QSTLS_025 : ∀ t, handshake_secure t = true → ths_forward_secrecy t = true := by
   simp_all [Bool.and_eq_true]
@@ -656,9 +656,9 @@ theorem QSTLS_029 : ∀ r, record_secure r = true → rec_aead r = true := by
 theorem QSTLS_030 : ∀ r, record_secure r = true → rec_sequence_numbers r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 17: THEOREMS - FULL CONFIG EXTRACTION (QSTLS_031-036)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_031 (matches Coq) -/
 theorem QSTLS_031 : ∀ q, qstls_fully_secure q = true → hybrid_kex_secure (qstls_kex q) = true := by
   simp_all [Bool.and_eq_true]
@@ -683,9 +683,9 @@ theorem QSTLS_035 : ∀ q, qstls_fully_secure q = true → qstls_version_13 q = 
 theorem QSTLS_036 : ∀ q, qstls_fully_secure q = true → hkex_post_quantum (qstls_kex q) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 18: THEOREMS - FORWARD SECRECY (QSTLS_037-042)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_037 (matches Coq) -/
 theorem QSTLS_037 : forward_secrecy_complete riina_fs_config = true := by
   rfl
@@ -710,9 +710,9 @@ theorem QSTLS_041 : ∀ f, forward_secrecy_complete f = true → fs_pfs_per_sess
 theorem QSTLS_042 : ∀ q, qstls_fully_secure q = true → ths_forward_secrecy (qstls_handshake q) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 19: THEOREMS - ALGORITHM AGILITY (QSTLS_043-048)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_043 (matches Coq) -/
 theorem QSTLS_043 : algorithm_agility_valid riina_agility = true := by
   rfl
@@ -737,9 +737,9 @@ theorem QSTLS_047 : ∀ a, algorithm_agility_valid a = true → agility_extensio
 theorem QSTLS_048 : tls13_extensions_valid riina_extensions = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 20: THEOREMS - ML-KEM SECURITY (QSTLS_049-054)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_049 (matches Coq) -/
 theorem QSTLS_049 : kem_fully_secure riina_kem_security = true := by
   rfl
@@ -764,9 +764,9 @@ theorem QSTLS_053 : ∀ k, kem_fully_secure k = true → kem_sec_constant_time k
 theorem QSTLS_054 : kem_security_level ML_KEM_1024 = Level5 := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 21: THEOREMS - ML-DSA SECURITY (QSTLS_055-060)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_055 (matches Coq) -/
 theorem QSTLS_055 : sig_fully_secure riina_sig_security = true := by
   rfl
@@ -791,9 +791,9 @@ theorem QSTLS_059 : sig_is_post_quantum (qstls_sig_scheme riina_qstls_full) = tr
 theorem QSTLS_060 : sig_security_level (qstls_sig_scheme riina_qstls_full) = Level5 := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 22: THEOREMS - COMPLETE SECURITY (QSTLS_061-065)
-    ============================================================================ -/
+    ============================================================================
 /-- QSTLS_061 (matches Coq) -/
 theorem QSTLS_061 : qstls_full_secure riina_qstls_full = true := by
   rfl

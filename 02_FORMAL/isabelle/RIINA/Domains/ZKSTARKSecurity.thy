@@ -761,7 +761,7 @@ lemma riina_full_security: "full_stark_security riina_stark riina_fri valid_simu
 
 (* The master theorem proving all essential STARK properties *)
 (* STARK_MASTER_SECURITY (matches Coq) *)
-lemma STARK_MASTER_SECURITY: "\<forall> s f sim e, full_stark_security s f sim e = True \<longrightarrow> (* Core STARK properties *) starks_completeness (ext_base e) = True \<and> starks_soundness (ext_base e) = True \<and> starks_zero_knowledge (ext_base e) = True \<and> (* Transparency *) stark_transparent (starks_stark (ext_base e)) = True \<and> (* Post-quantum security *) stark_post_quantum (starks_stark (ext_base e)) = True \<and> ext_quantum_resistant e = True \<and> (* FRI properties *) fri_soundness (ext_fri e) = True \<and> fri_commitment_binding (ext_fri e) = True \<and> (* Simulation security *) ext_simulation_secure e = True \<and> (* Extraction security *) ext_extraction_secure e = True"
+lemma STARK_MASTER_SECURITY: "\<forall> s f sim e, full_stark_security s f sim e = True \<longrightarrow> starks_completeness (ext_base e) = True \<and> starks_soundness (ext_base e) = True \<and> starks_zero_knowledge (ext_base e) = True \<and> stark_transparent (starks_stark (ext_base e)) = True \<and> stark_post_quantum (starks_stark (ext_base e)) = True \<and> ext_quantum_resistant e = True \<and> fri_soundness (ext_fri e) = True \<and> fri_commitment_binding (ext_fri e) = True \<and> ext_simulation_secure e = True \<and> ext_extraction_secure e = True"
   by auto
 
 (* riina_master_security (matches Coq) *)

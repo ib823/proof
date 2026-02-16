@@ -149,41 +149,41 @@ definition litigation_hold_active :: "bool" where
 (* Section O01 - Attorney-Client Privilege
     Reference: IND_O_LEGAL.md Section 3.1 *)
 (* privilege_protection_axiom (matches Coq) *)
-lemma privilege_protection_axiom: "\<forall> (communication : LegalData), (* Attorney-client privilege preserved *) True"
+lemma privilege_protection_axiom: "\<forall> (communication : LegalData), True"
   by simp
 
 (* Section O02 - ABA Model Rules Compliance
     Reference: IND_O_LEGAL.md Section 3.2 *)
 (* aba_model_rules (matches Coq) *)
-lemma aba_model_rules: "\<forall> (firm : nat) (practice : nat), (* ABA competence and confidentiality rules *) True"
+lemma aba_model_rules: "\<forall> (firm : nat) (practice : nat), True"
   by simp
 
 (* Section O03 - Conflict of Interest Screening
     Reference: IND_O_LEGAL.md Section 3.3 *)
 (* conflict_screening_axiom (matches Coq) *)
-lemma conflict_screening_axiom: "\<forall> (matter : nat) (client : nat), (* Conflict screening performed *) True"
+lemma conflict_screening_axiom: "\<forall> (matter : nat) (client : nat), True"
   by simp
 
 (* Section O04 - E-Discovery Compliance
     Reference: IND_O_LEGAL.md Section 3.4 *)
 (* ediscovery_compliance (matches Coq) *)
-lemma ediscovery_compliance: "\<forall> (matter : nat) (documents : nat), (* E-discovery obligations met *) True"
+lemma ediscovery_compliance: "\<forall> (matter : nat) (documents : nat), True"
   by simp
 
 (* Section O05 - Records Retention
     Reference: IND_O_LEGAL.md Section 3.5 *)
 (* records_retention (matches Coq) *)
-lemma records_retention: "\<forall> (record : LegalData) (retention_period : nat), (* SEC 17a-4 and state bar requirements *) True"
+lemma records_retention: "\<forall> (record : LegalData) (retention_period : nat), True"
   by simp
 
 (* Privileged communications require encryption *)
 (* privilege_requires_encryption (matches Coq) *)
-lemma privilege_requires_encryption: "\<forall> (controls : LegalSecurityControls) (comm : LegalData), privilege_protection controls = True \<longrightarrow> (* Privileged communications encrypted *) True"
+lemma privilege_requires_encryption: "\<forall> (controls : LegalSecurityControls) (comm : LegalData), privilege_protection controls = True \<longrightarrow> True"
   by simp
 
 (* Ethical walls prevent conflicts *)
 (* ethical_walls_effective (matches Coq) *)
-lemma ethical_walls_effective: "\<forall> (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = True \<longrightarrow> (* Conflicting matters segregated *) True"
+lemma ethical_walls_effective: "\<forall> (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = True \<longrightarrow> True"
   by simp
 
 (* privilege_max_sensitivity (matches Coq) *)

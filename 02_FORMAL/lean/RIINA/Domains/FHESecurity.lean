@@ -534,9 +534,9 @@ def rlwe_secure (r : RLWEConfig) : Bool :=
 /-- riina_rlwe (matches Coq: Definition riina_rlwe) -/
 def riina_rlwe : RLWEConfig := mkRLWEConfig 2048 32769 8 true
 
-/-- ============================================================================
+-- ============================================================================
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -565,7 +565,7 @@ theorem mult_le_compat : ∀ a b c d : nat, a ≤ b → c ≤ d → a * c ≤ b 
 theorem add_le_compat : ∀ a b c d : nat, a ≤ b → c ≤ d → a + c ≤ b + d := by
   simp_all [Bool.and_eq_true]
 
-/-- Basic FHE configuration theorems -/
+-- Basic FHE configuration theorems
 /-- FHE_001 (matches Coq) -/
 theorem FHE_001 : ops_fully_homomorphic riina_fhe_ops = true := by
   rfl
@@ -666,312 +666,312 @@ theorem FHE_024 : fhe_fully_secure riina_fhe = true ∧ fhe_post_quantum riina_f
 theorem FHE_025_complete : ∀ f, fhe_fully_secure f = true → ho_arbitrary_depth (fhe_ops f) = true ∧ fhe_ind_cpa (fhe_security f) = true ∧ nm_bootstrapping (fhe_noise f) = true ∧ fhe_post_quantum f = true := by
   simp_all [Bool.and_eq_true]
 
-/-- IND-CPA-001: RIINA satisfies IND-CPA security -/
+-- IND-CPA-001: RIINA satisfies IND-CPA security
 /-- indcpa_001_riina_secure (matches Coq) -/
 theorem indcpa_001_riina_secure : indcpa_secure riina_indcpa = true := by
   rfl
 
-/-- IND-CPA-002: Secure game has sufficient key size -/
+-- IND-CPA-002: Secure game has sufficient key size
 /-- indcpa_002_key_size_sufficient (matches Coq) -/
 theorem indcpa_002_key_size_sufficient : ∀ g, indcpa_secure g = true → (128 <=? icpa_key_size g) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- IND-CPA-003: Secure game has encryption oracle -/
+-- IND-CPA-003: Secure game has encryption oracle
 /-- indcpa_003_has_oracle (matches Coq) -/
 theorem indcpa_003_has_oracle : ∀ g, indcpa_secure g = true → icpa_encryption_oracle g = true := by
   simp_all [Bool.and_eq_true]
 
-/-- IND-CPA-004: Secure game has negligible advantage -/
+-- IND-CPA-004: Secure game has negligible advantage
 /-- indcpa_004_negligible_advantage (matches Coq) -/
 theorem indcpa_004_negligible_advantage : ∀ g, indcpa_secure g = true → (negligible_threshold <=? icpa_distinguisher_adv g) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SS-001: RIINA has semantic security -/
+-- SS-001: RIINA has semantic security
 /-- ss_001_riina_semantic_secure (matches Coq) -/
 theorem ss_001_riina_semantic_secure : semantic_secure riina_semantic = true := by
   rfl
 
-/-- SS-002: Semantic security implies indistinguishability -/
+-- SS-002: Semantic security implies indistinguishability
 /-- ss_002_implies_indistinguishable (matches Coq) -/
 theorem ss_002_implies_indistinguishable : ∀ ss, semantic_secure ss = true → ss_indistinguishable ss = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SS-003: Semantic security implies randomized encryption -/
+-- SS-003: Semantic security implies randomized encryption
 /-- ss_003_implies_randomized (matches Coq) -/
 theorem ss_003_implies_randomized : ∀ ss, semantic_secure ss = true → ss_randomized ss = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SS-004: Semantic security implies ciphertext expansion -/
+-- SS-004: Semantic security implies ciphertext expansion
 /-- ss_004_ciphertext_expansion (matches Coq) -/
 theorem ss_004_ciphertext_expansion : ∀ ss, semantic_secure ss = true → (ss_message_space ss <? ss_ciphertext_space ss) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HADD-001: RIINA homomorphic addition is correct -/
+-- HADD-001: RIINA homomorphic addition is correct
 /-- hadd_001_riina_correct (matches Coq) -/
 theorem hadd_001_riina_correct : hom_add_correct riina_hom_add = true := by
   rfl
 
-/-- HADD-002: Correct addition preserves structure -/
+-- HADD-002: Correct addition preserves structure
 /-- hadd_002_preserves_structure (matches Coq) -/
 theorem hadd_002_preserves_structure : ∀ ha, hom_add_correct ha = true → ha_preserves_structure ha = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HADD-003: Plaintext modulus less than ciphertext modulus -/
+-- HADD-003: Plaintext modulus less than ciphertext modulus
 /-- hadd_003_modulus_relation (matches Coq) -/
 theorem hadd_003_modulus_relation : ∀ ha, hom_add_correct ha = true → (ha_plaintext_modulus ha <? ha_ciphertext_modulus ha) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HMULT-001: RIINA homomorphic multiplication is correct -/
+-- HMULT-001: RIINA homomorphic multiplication is correct
 /-- hmult_001_riina_correct (matches Coq) -/
 theorem hmult_001_riina_correct : hom_mult_correct riina_hom_mult = true := by
   rfl
 
-/-- HMULT-002: Correct multiplication supports relinearization -/
+-- HMULT-002: Correct multiplication supports relinearization
 /-- hmult_002_relinearization (matches Coq) -/
 theorem hmult_002_relinearization : ∀ hm, hom_mult_correct hm = true → hm_relinearization hm = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HMULT-003: Correct multiplication supports key switching -/
+-- HMULT-003: Correct multiplication supports key switching
 /-- hmult_003_key_switching (matches Coq) -/
 theorem hmult_003_key_switching : ∀ hm, hom_mult_correct hm = true → hm_key_switching hm = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HOPS-001: RIINA homomorphic operations are valid -/
+-- HOPS-001: RIINA homomorphic operations are valid
 /-- hops_001_riina_valid (matches Coq) -/
 theorem hops_001_riina_valid : hom_ops_valid riina_hom_ops = true := by
   rfl
 
-/-- HOPS-002: Valid operations have correct addition -/
+-- HOPS-002: Valid operations have correct addition
 /-- hops_002_addition_correct (matches Coq) -/
 theorem hops_002_addition_correct : ∀ ho, hom_ops_valid ho = true → hom_add_correct (hops_addition ho) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HOPS-003: Valid operations have correct multiplication -/
+-- HOPS-003: Valid operations have correct multiplication
 /-- hops_003_multiplication_correct (matches Coq) -/
 theorem hops_003_multiplication_correct : ∀ ho, hom_ops_valid ho = true → hom_mult_correct (hops_multiplication ho) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- HOPS-004: Valid operations support composition -/
+-- HOPS-004: Valid operations support composition
 /-- hops_004_composition (matches Coq) -/
 theorem hops_004_composition : ∀ ho, hom_ops_valid ho = true → hops_composition ho = true := by
   simp_all [Bool.and_eq_true]
 
-/-- NOISE-001: Initial noise is safe -/
+-- NOISE-001: Initial noise is safe
 /-- noise_001_initial_safe (matches Coq) -/
 theorem noise_001_initial_safe : noise_safe riina_noise_model (noise_initial riina_noise_model) = true := by
   rfl
 
-/-- NOISE-002: Noise after 100 additions is safe -/
+-- NOISE-002: Noise after 100 additions is safe
 /-- noise_002_100_additions_safe (matches Coq) -/
 theorem noise_002_100_additions_safe : noise_safe riina_noise_model (noise_after_additions riina_noise_model 100) = true := by
   rfl
 
-/-- NOISE-003: Noise after 10 multiplications is safe -/
+-- NOISE-003: Noise after 10 multiplications is safe
 /-- noise_003_10_multiplications_safe (matches Coq) -/
 theorem noise_003_10_multiplications_safe : noise_safe riina_noise_model (noise_after_multiplications riina_noise_model 10) = true := by
   rfl
 
-/-- NOISE-004: Addition increases noise linearly -/
+-- NOISE-004: Addition increases noise linearly
 /-- noise_004_add_linear_growth (matches Coq) -/
 theorem noise_004_add_linear_growth : ∀ nm n, noise_after_additions nm (S n) = noise_after_additions nm n + noise_add_growth nm := by
   omega
 
-/-- NOISE-005: Zero additions preserves initial noise -/
+-- NOISE-005: Zero additions preserves initial noise
 /-- noise_005_zero_additions (matches Coq) -/
 theorem noise_005_zero_additions : ∀ nm, noise_after_additions nm 0 = noise_initial nm := by
   omega
 
-/-- NB-001: RIINA noise bounds are valid -/
+-- NB-001: RIINA noise bounds are valid
 /-- nb_001_riina_valid (matches Coq) -/
 theorem nb_001_riina_valid : noise_bound_valid riina_noise_model riina_noise_bound = true := by
   rfl
 
-/-- NB-002: Valid bounds imply safe additions -/
+-- NB-002: Valid bounds imply safe additions
 /-- nb_002_additions_safe (matches Coq) -/
 theorem nb_002_additions_safe : ∀ nm nb, noise_bound_valid nm nb = true → noise_safe nm (noise_after_additions nm (nb_max_additions nb)) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- NB-003: Valid bounds imply safe multiplications -/
+-- NB-003: Valid bounds imply safe multiplications
 /-- nb_003_multiplications_safe (matches Coq) -/
 theorem nb_003_multiplications_safe : ∀ nm nb, noise_bound_valid nm nb = true → noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb)) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BOOT-001: RIINA bootstrapping is correct -/
+-- BOOT-001: RIINA bootstrapping is correct
 /-- boot_001_riina_correct (matches Coq) -/
 theorem boot_001_riina_correct : bootstrapping_correct riina_bootstrap = true := by
   rfl
 
-/-- BOOT-002: Correct bootstrapping reduces noise -/
+-- BOOT-002: Correct bootstrapping reduces noise
 /-- boot_002_reduces_noise (matches Coq) -/
 theorem boot_002_reduces_noise : ∀ bc, bootstrapping_correct bc = true → bs_reduces_noise bc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BOOT-003: Correct bootstrapping preserves message -/
+-- BOOT-003: Correct bootstrapping preserves message
 /-- boot_003_preserves_message (matches Coq) -/
 theorem boot_003_preserves_message : ∀ bc, bootstrapping_correct bc = true → bs_preserves_message bc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BOOT-004: Correct bootstrapping runs in polynomial time -/
+-- BOOT-004: Correct bootstrapping runs in polynomial time
 /-- boot_004_polynomial_time (matches Coq) -/
 theorem boot_004_polynomial_time : ∀ bc, bootstrapping_correct bc = true → bs_polynomial_time bc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BOOT-005: Output noise less than input max -/
+-- BOOT-005: Output noise less than input max
 /-- boot_005_noise_reduction (matches Coq) -/
 theorem boot_005_noise_reduction : ∀ bc, bootstrapping_correct bc = true → (bs_noise_output bc <? bs_noise_input_max bc) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- UFHE-001: RIINA unlimited FHE is valid -/
+-- UFHE-001: RIINA unlimited FHE is valid
 /-- ufhe_001_riina_valid (matches Coq) -/
 theorem ufhe_001_riina_valid : unlimited_fhe_valid riina_unlimited = true := by
   rfl
 
-/-- UFHE-002: Valid unlimited FHE has correct bootstrapping -/
+-- UFHE-002: Valid unlimited FHE has correct bootstrapping
 /-- ufhe_002_bootstrap_correct (matches Coq) -/
 theorem ufhe_002_bootstrap_correct : ∀ u, unlimited_fhe_valid u = true → bootstrapping_correct (ufhe_bootstrap_config u) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KG-001: RIINA key generation is secure -/
+-- KG-001: RIINA key generation is secure
 /-- kg_001_riina_secure (matches Coq) -/
 theorem kg_001_riina_secure : keygen_secure riina_keygen = true := by
   rfl
 
-/-- KG-002: Secure keygen has sufficient security parameter -/
+-- KG-002: Secure keygen has sufficient security parameter
 /-- kg_002_security_parameter (matches Coq) -/
 theorem kg_002_security_parameter : ∀ kg, keygen_secure kg = true → (128 <=? kg_security_parameter kg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KG-003: Secure keygen has sufficient polynomial degree -/
+-- KG-003: Secure keygen has sufficient polynomial degree
 /-- kg_003_polynomial_degree (matches Coq) -/
 theorem kg_003_polynomial_degree : ∀ kg, keygen_secure kg = true → (1024 <=? kg_polynomial_degree kg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KG-004: Secure keygen has non-zero error distribution -/
+-- KG-004: Secure keygen has non-zero error distribution
 /-- kg_004_error_distribution (matches Coq) -/
 theorem kg_004_error_distribution : ∀ kg, keygen_secure kg = true → (0 <? kg_error_distribution kg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KG-005: Secure keygen has sufficient modulus bits -/
+-- KG-005: Secure keygen has sufficient modulus bits
 /-- kg_005_modulus_bits (matches Coq) -/
 theorem kg_005_modulus_bits : ∀ kg, keygen_secure kg = true → (32 <=? kg_modulus_bits kg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KP-001: RIINA keypair is valid -/
+-- KP-001: RIINA keypair is valid
 /-- kp_001_riina_valid (matches Coq) -/
 theorem kp_001_riina_valid : keypair_valid riina_keypair = true := by
   rfl
 
-/-- KP-002: Valid keypair has secure parameters -/
+-- KP-002: Valid keypair has secure parameters
 /-- kp_002_secure_params (matches Coq) -/
 theorem kp_002_secure_params : ∀ kp, keypair_valid kp = true → keygen_secure (kp_params kp) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CT-001: RIINA ciphertext is valid -/
+-- CT-001: RIINA ciphertext is valid
 /-- ct_001_riina_valid (matches Coq) -/
 theorem ct_001_riina_valid : ciphertext_valid riina_ciphertext riina_noise_model = true := by
   rfl
 
-/-- CT-002: Valid ciphertext has valid encryption flag -/
+-- CT-002: Valid ciphertext has valid encryption flag
 /-- ct_002_valid_encryption (matches Coq) -/
 theorem ct_002_valid_encryption : ∀ ct nm, ciphertext_valid ct nm = true → ct_valid_encryption ct = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CT-003: Valid ciphertext has safe noise -/
+-- CT-003: Valid ciphertext has safe noise
 /-- ct_003_safe_noise (matches Coq) -/
 theorem ct_003_safe_noise : ∀ ct nm, ciphertext_valid ct nm = true → noise_safe nm (ct_noise_estimate ct) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CT-004: Valid ciphertext has positive level -/
+-- CT-004: Valid ciphertext has positive level
 /-- ct_004_positive_level (matches Coq) -/
 theorem ct_004_positive_level : ∀ ct nm, ciphertext_valid ct nm = true → (0 <? ct_level ct) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CAO-001: Operation on valid ciphertexts -/
+-- CAO-001: Operation on valid ciphertexts
 /-- cao_001_valid_preserves (matches Coq) -/
 theorem cao_001_valid_preserves : ∀ cao nm, op_preserves_validity cao nm = true → ciphertext_valid (cao_original cao) nm = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CAO-002: Result ciphertext is valid -/
+-- CAO-002: Result ciphertext is valid
 /-- cao_002_result_valid (matches Coq) -/
 theorem cao_002_result_valid : ∀ cao nm, op_preserves_validity cao nm = true → ciphertext_valid (cao_result cao) nm = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-001: RIINA complete FHE system is secure -/
+-- CFHE-001: RIINA complete FHE system is secure
 /-- cfhe_001_riina_secure (matches Coq) -/
 theorem cfhe_001_riina_secure : complete_fhe_secure riina_complete_fhe = true := by
   rfl
 
-/-- CFHE-002: Secure system has fully secure config -/
+-- CFHE-002: Secure system has fully secure config
 /-- cfhe_002_config_secure (matches Coq) -/
 theorem cfhe_002_config_secure : ∀ sys, complete_fhe_secure sys = true → fhe_fully_secure (cfhe_config sys) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-003: Secure system has secure keygen -/
+-- CFHE-003: Secure system has secure keygen
 /-- cfhe_003_keygen_secure (matches Coq) -/
 theorem cfhe_003_keygen_secure : ∀ sys, complete_fhe_secure sys = true → keygen_secure (cfhe_keygen sys) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-004: Secure system is IND-CPA secure -/
+-- CFHE-004: Secure system is IND-CPA secure
 /-- cfhe_004_indcpa_secure (matches Coq) -/
 theorem cfhe_004_indcpa_secure : ∀ sys, complete_fhe_secure sys = true → indcpa_secure (cfhe_indcpa sys) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-005: Secure system has correct bootstrapping -/
+-- CFHE-005: Secure system has correct bootstrapping
 /-- cfhe_005_bootstrap_correct (matches Coq) -/
 theorem cfhe_005_bootstrap_correct : ∀ sys, complete_fhe_secure sys = true → bootstrapping_correct (cfhe_bootstrap sys) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-006: Secure system has valid operations -/
+-- CFHE-006: Secure system has valid operations
 /-- cfhe_006_ops_valid (matches Coq) -/
 theorem cfhe_006_ops_valid : ∀ sys, complete_fhe_secure sys = true → hom_ops_valid (cfhe_operations sys) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-007: Complete security implies post-quantum safety -/
+-- CFHE-007: Complete security implies post-quantum safety
 /-- cfhe_007_pq_safe (matches Coq) -/
 theorem cfhe_007_pq_safe : ∀ sys, complete_fhe_secure sys = true → fhe_post_quantum (cfhe_config sys) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-008: Complete security implies arbitrary depth -/
+-- CFHE-008: Complete security implies arbitrary depth
 /-- cfhe_008_arbitrary_depth (matches Coq) -/
 theorem cfhe_008_arbitrary_depth : ∀ sys, complete_fhe_secure sys = true → ho_arbitrary_depth (fhe_ops (cfhe_config sys)) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-009: Complete security implies semantic security -/
+-- CFHE-009: Complete security implies semantic security
 /-- cfhe_009_semantic_secure (matches Coq) -/
 theorem cfhe_009_semantic_secure : ∀ sys, complete_fhe_secure sys = true → fhe_semantic_secure (fhe_security (cfhe_config sys)) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CFHE-010: Complete security implies noise management -/
+-- CFHE-010: Complete security implies noise management
 /-- cfhe_010_noise_managed (matches Coq) -/
 theorem cfhe_010_noise_managed : ∀ sys, complete_fhe_secure sys = true → noise_managed (fhe_noise (cfhe_config sys)) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CIRC-001: RIINA is circularly secure -/
+-- CIRC-001: RIINA is circularly secure
 /-- circ_001_riina_secure (matches Coq) -/
 theorem circ_001_riina_secure : circular_secure riina_circular = true := by
   rfl
 
-/-- CIRC-002: Circular security implies key encryption safety -/
+-- CIRC-002: Circular security implies key encryption safety
 /-- circ_002_key_encryption (matches Coq) -/
 theorem circ_002_key_encryption : ∀ cs, circular_secure cs = true → cs_key_encryption_safe cs = true := by
   simp_all [Bool.and_eq_true]
 
-/-- LWE-001: RIINA LWE parameters are secure -/
+-- LWE-001: RIINA LWE parameters are secure
 /-- lwe_001_riina_secure (matches Coq) -/
 theorem lwe_001_riina_secure : lwe_secure riina_lwe = true := by
   rfl
 
-/-- LWE-002: Secure LWE has sufficient dimension -/
+-- LWE-002: Secure LWE has sufficient dimension
 /-- lwe_002_dimension (matches Coq) -/
 theorem lwe_002_dimension : ∀ lwe, lwe_secure lwe = true → (512 <=? lwe_dimension lwe) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- RLWE-001: RIINA RLWE is secure -/
+-- RLWE-001: RIINA RLWE is secure
 /-- rlwe_001_riina_secure (matches Coq) -/
 theorem rlwe_001_riina_secure : rlwe_secure riina_rlwe = true := by
   rfl
 
-/-- RLWE-002: Secure RLWE has sufficient ring degree -/
+-- RLWE-002: Secure RLWE has sufficient ring degree
 /-- rlwe_002_ring_degree (matches Coq) -/
 theorem rlwe_002_ring_degree : ∀ r, rlwe_secure r = true → (1024 <=? rlwe_ring_degree r) = true := by
   simp_all [Bool.and_eq_true]

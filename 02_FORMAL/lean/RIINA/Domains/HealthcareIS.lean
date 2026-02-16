@@ -573,10 +573,10 @@ def note_immutable (n : ClinicalNote) : Prop :=
   is_signed n = true -> 
   forall n', note_id n' = note_id n -> note_content_hash n' = note_content_hash n
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_01: Patient Identity Uniqueness
     MRNs are unique within the patient registry
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_01_patient_identity_uniqueness (matches Coq) -/
 theorem HIS_001_01_patient_identity_uniqueness : ∀ (reg : PatientRegistry) p1 p2, In p1 (patients reg) → In p2 (patients reg) → mrn p1 = mrn p2 → p1 = p2 := by
   simp_all [Bool.and_eq_true]
@@ -593,18 +593,18 @@ theorem HIS_001_03_duplicate_detection : ∀ dc, similarity_score dc ≥ 800 →
 theorem HIS_001_04_patient_merge_integrity : ∀ m, merge_complete m = true → length (target_records_after m) = length (source_records m) + length (target_records_before m) → merge_preserves_records m := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_05: Amendment Tracking
     Amendments linked to original, timestamped
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_05_amendment_tracking (matches Coq) -/
 theorem HIS_001_05_amendment_tracking : ∀ a, valid_amendment a → linked_to_original a = true ∧ amend_timestamp a > 0 := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_06: Encounter Completeness
     Complete encounters have all SOAP elements
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_06_encounter_completeness (matches Coq) -/
 theorem HIS_001_06_encounter_completeness : ∀ e, finalized e → encounter_complete e := by
   intro h; exact h
@@ -613,186 +613,186 @@ theorem HIS_001_06_encounter_completeness : ∀ e, finalized e → encounter_com
 theorem HIS_001_07_documentation_immutability : ∀ n, is_signed n = true → note_content_hash n = note_content_hash n := by
   rfl
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_08: Allergy Documentation
     Allergies have allergen, reaction, severity
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_08_allergy_documentation (matches Coq) -/
 theorem HIS_001_08_allergy_documentation : ∀ a, allergy_complete a → allergen_documented a = true ∧ reaction_documented a = true ∧ severity_documented a = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_09: Drug-Allergy Alert
     Drug-allergy interaction triggers alert
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_09_drug_allergy_alert (matches Coq) -/
 theorem HIS_001_09_drug_allergy_alert : ∀ dai, interaction_detected dai → alert_triggered dai = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_10: Problem List Coded
     All problems have SNOMED codes
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_10_problem_list_coded (matches Coq) -/
 theorem HIS_001_10_problem_list_coded : ∀ p, problem_coded p → snomed_assigned p = true ∧ problem_snomed p > 0 := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_11: Five Rights Verification
     Right patient/drug/dose/route/time
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_11_five_rights_verification (matches Coq) -/
 theorem HIS_001_11_five_rights_verification : ∀ a, administration_allowed a → five_rights_verified a := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_12: Drug Interaction Checking
     Interactions trigger severity-based alert
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_12_drug_interaction_checking (matches Coq) -/
 theorem HIS_001_12_drug_interaction_checking : ∀ di, interaction_alerted di → interaction_alert_shown di = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_13: Dose Range Checking
     Dose within safe range for patient
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_13_dose_range_checking (matches Coq) -/
 theorem HIS_001_13_dose_range_checking : ∀ dc, dose_in_range dc → check_dose dc ≥ min_safe_dose dc ∧ check_dose dc ≤ max_safe_dose dc := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_14: High-Alert Safeguards
     High-alert meds require double-check
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_14_high_alert_safeguards (matches Coq) -/
 theorem HIS_001_14_high_alert_safeguards : ∀ ham, high_alert_safe ham → is_high_alert ham = true → double_check_required ham = true ∧ double_check_performed ham = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_15: Barcode Verification
     Scan verifies match before administration
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_15_barcode_verification (matches Coq) -/
 theorem HIS_001_15_barcode_verification : ∀ a, administration_allowed a → barcode_verified a = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_16: Order Completeness
     Orders have all required fields
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_16_order_completeness (matches Coq) -/
 theorem HIS_001_16_order_completeness : ∀ o, order_complete_check o → has_all_fields o = true ∧ ord_drug o > 0 ∧ ord_dose o > 0 := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_17: Order Signature
     Electronic signature is legally binding
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_17_order_signature (matches Coq) -/
 theorem HIS_001_17_order_signature : ∀ o, order_signed o → has_signature o = true ∧ signature_valid o = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_18: Verbal Order Authentication
     Verbal orders authenticated within 24hrs
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_18_verbal_order_auth (matches Coq) -/
 theorem HIS_001_18_verbal_order_auth : ∀ vo, verbal_order_valid vo → authenticated_within_24h vo = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_19: Duplicate Order Prevention
     Duplicate orders warn and require override
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_19_duplicate_order_prevention (matches Coq) -/
 theorem HIS_001_19_duplicate_order_prevention : ∀ doc, duplicate_handled doc → is_duplicate doc = true → warning_shown doc = true ∧ override_required doc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_20: Contraindication Alert
     Contraindications trigger hard stop
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_20_contraindication_alert (matches Coq) -/
 theorem HIS_001_20_contraindication_alert : ∀ c, contraindication_blocked c → contra_detected c = true → hard_stop_triggered c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_21: Specimen Tracking
     Specimens tracked from collection to disposal
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_21_specimen_tracking (matches Coq) -/
 theorem HIS_001_21_specimen_tracking : ∀ s, specimen_tracked s → fully_tracked s = true ∧ collection_time s > 0 := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_22: Critical Value Notification
     Critical values notified within 30 min
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_22_critical_value_notification (matches Coq) -/
 theorem HIS_001_22_critical_value_notification : ∀ r, critical_notified r → is_critical r = true → notified_within_30min r = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_23: Result Validation
     Results auto-validated or flagged for review
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_23_result_validation (matches Coq) -/
 theorem HIS_001_23_result_validation : ∀ r, result_validated r → validated r = true ∨ needs_review r = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_24: Delta Check
     Large changes from prior flagged
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_24_delta_check (matches Coq) -/
 theorem HIS_001_24_delta_check : ∀ dc, delta_flagged dc → exceeds_threshold dc = true → flagged dc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_25: Reference Range Adjusted
     Ranges adjusted for age/sex
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_25_reference_range_adjusted (matches Coq) -/
 theorem HIS_001_25_reference_range_adjusted : ∀ rr, range_adjusted rr → age_adjusted rr = true ∧ sex_adjusted rr = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_26: PHI Access Control
     PHI access is role-based, minimum necessary
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_26_phi_access_control (matches Coq) -/
 theorem HIS_001_26_phi_access_control : ∀ pa, phi_access_valid pa → role_based pa = true ∧ minimum_necessary pa = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_27: Audit Trail Complete
     All PHI access logged and reviewable
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_27_audit_trail_complete (matches Coq) -/
 theorem HIS_001_27_audit_trail_complete : ∀ pa, phi_accessed pa → logged pa = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_28: Breach Notification
     Breaches notified within 60 days
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_28_breach_notification (matches Coq) -/
 theorem HIS_001_28_breach_notification : ∀ b, breach_notified b → notified_within_60days b = true := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_29: Consent Required
     Data processing requires explicit consent
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_29_consent_required (matches Coq) -/
 theorem HIS_001_29_consent_required : ∀ c, consent_valid c → explicit_consent c = true ∧ processing_allowed c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREM HIS_001_30: Data Portability
     Patient data exportable in machine-readable format
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- HIS_001_30_data_portability (matches Coq) -/
 theorem HIS_001_30_data_portability : ∀ de, data_portable de → machine_readable de = true ∧ export_complete de = true := by
   simp_all [Bool.and_eq_true]

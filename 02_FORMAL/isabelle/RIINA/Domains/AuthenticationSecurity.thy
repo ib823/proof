@@ -187,7 +187,7 @@ lemma auth_001_credential_stuffing_mitigated: "\<forall> (rl : RateLimiter), rl_
   by auto
 
 (* auth_002_password_spraying_mitigated (matches Coq) *)
-lemma auth_002_password_spraying_mitigated: "\<forall> (rl : RateLimiter), is_rate_limited rl = True \<longrightarrow> (* Further attempts blocked *) rl_attempts rl \<ge> rl_max_attempts rl"
+lemma auth_002_password_spraying_mitigated: "\<forall> (rl : RateLimiter), is_rate_limited rl = True \<longrightarrow> rl_attempts rl \<ge> rl_max_attempts rl"
   by auto
 
 (* auth_003_brute_force_mitigated (matches Coq) *)
@@ -195,7 +195,7 @@ lemma auth_003_brute_force_mitigated: "\<forall> (rl : RateLimiter) (n : nat), n
   by auto
 
 (* auth_004_pass_the_hash_mitigated (matches Coq) *)
-lemma auth_004_pass_the_hash_mitigated: "\<forall> (t : AuthTicket), (* Ticket doesn't contain password hash *) length (at_signature t) > 0 \<longrightarrow> True"
+lemma auth_004_pass_the_hash_mitigated: "\<forall> (t : AuthTicket), length (at_signature t) > 0 \<longrightarrow> True"
   by auto
 
 (* auth_005_pass_the_ticket_mitigated (matches Coq) *)
@@ -203,15 +203,15 @@ lemma auth_005_pass_the_ticket_mitigated: "\<forall> (t : SessionToken) (now : n
   by auto
 
 (* auth_006_kerberoasting_mitigated (matches Coq) *)
-lemma auth_006_kerberoasting_mitigated: "\<forall> (sk : ServiceKey), sk_algorithm sk \<ge> 2 \<longrightarrow> (* AES or stronger required *) True"
+lemma auth_006_kerberoasting_mitigated: "\<forall> (sk : ServiceKey), sk_algorithm sk \<ge> 2 \<longrightarrow> True"
   by auto
 
 (* auth_007_golden_ticket_mitigated (matches Coq) *)
-lemma auth_007_golden_ticket_mitigated: "\<forall> (k : HSMProtectedKey), hsm_extractable k = False \<longrightarrow> (* Key cannot be extracted from HSM *) True"
+lemma auth_007_golden_ticket_mitigated: "\<forall> (k : HSMProtectedKey), hsm_extractable k = False \<longrightarrow> True"
   by auto
 
 (* auth_008_silver_ticket_mitigated (matches Coq) *)
-lemma auth_008_silver_ticket_mitigated: "\<forall> (ma : MutualAuth), ma_client_verified ma = True \<longrightarrow> ma_server_verified ma = True \<longrightarrow> (* Both parties authenticated *) True"
+lemma auth_008_silver_ticket_mitigated: "\<forall> (ma : MutualAuth), ma_client_verified ma = True \<longrightarrow> ma_server_verified ma = True \<longrightarrow> True"
   by auto
 
 (* auth_009_credential_theft_mitigated (matches Coq) *)
@@ -223,23 +223,23 @@ lemma auth_010_session_fixation_mitigated: "\<forall> (old_id new_id : nat), old
   by auto
 
 (* auth_011_auth_bypass_mitigated (matches Coq) *)
-lemma auth_011_auth_bypass_mitigated: "\<forall> (ra : RouteAuth), ra_auth_required ra = True \<longrightarrow> ra_auth_checked ra = True \<longrightarrow> (* Auth was checked when required *) True"
+lemma auth_011_auth_bypass_mitigated: "\<forall> (ra : RouteAuth), ra_auth_required ra = True \<longrightarrow> ra_auth_checked ra = True \<longrightarrow> True"
   by auto
 
 (* auth_012_oauth_attacks_mitigated (matches Coq) *)
-lemma auth_012_oauth_attacks_mitigated: "\<forall> (os : OAuthState), length (oauth_state_param os) \<ge> 32 \<longrightarrow> length (oauth_pkce_verifier os) \<ge> 43 \<longrightarrow> oauth_redirect_validated os = True \<longrightarrow> (* State, PKCE, and redirect validation *) True"
+lemma auth_012_oauth_attacks_mitigated: "\<forall> (os : OAuthState), length (oauth_state_param os) \<ge> 32 \<longrightarrow> length (oauth_pkce_verifier os) \<ge> 43 \<longrightarrow> oauth_redirect_validated os = True \<longrightarrow> True"
   by auto
 
 (* auth_013_jwt_attacks_mitigated (matches Coq) *)
-lemma auth_013_jwt_attacks_mitigated: "\<forall> (jc : JWTConfig), jwt_alg_none_disabled jc = True \<longrightarrow> jwt_exp_required jc = True \<longrightarrow> (* None algorithm rejected, expiry required *) True"
+lemma auth_013_jwt_attacks_mitigated: "\<forall> (jc : JWTConfig), jwt_alg_none_disabled jc = True \<longrightarrow> jwt_exp_required jc = True \<longrightarrow> True"
   by auto
 
 (* auth_014_saml_attacks_mitigated (matches Coq) *)
-lemma auth_014_saml_attacks_mitigated: "\<forall> (sc : SAMLConfig), saml_signature_required sc = True \<longrightarrow> saml_replay_detection sc = True \<longrightarrow> (* Signatures and replay detection *) True"
+lemma auth_014_saml_attacks_mitigated: "\<forall> (sc : SAMLConfig), saml_signature_required sc = True \<longrightarrow> saml_replay_detection sc = True \<longrightarrow> True"
   by auto
 
 (* auth_015_sso_attacks_mitigated (matches Coq) *)
-lemma auth_015_sso_attacks_mitigated: "\<forall> (os : OAuthState) (jc : JWTConfig), oauth_redirect_validated os = True \<longrightarrow> jwt_alg_none_disabled jc = True \<longrightarrow> (* Combined OAuth + JWT security *) True"
+lemma auth_015_sso_attacks_mitigated: "\<forall> (os : OAuthState) (jc : JWTConfig), oauth_redirect_validated os = True \<longrightarrow> jwt_alg_none_disabled jc = True \<longrightarrow> True"
   by auto
 
 (* auth_016_mfa_bypass_mitigated (matches Coq) *)
@@ -247,11 +247,11 @@ lemma auth_016_mfa_bypass_mitigated: "\<forall> (s : MFAState), mfa_required s =
   by auto
 
 (* auth_017_biometric_spoof_mitigated (matches Coq) *)
-lemma auth_017_biometric_spoof_mitigated: "\<forall> (ba : BiometricAuth), bio_liveness_check ba = True \<longrightarrow> bio_confidence ba \<ge> bio_min_confidence ba \<longrightarrow> (* Liveness detection and confidence threshold *) True"
+lemma auth_017_biometric_spoof_mitigated: "\<forall> (ba : BiometricAuth), bio_liveness_check ba = True \<longrightarrow> bio_confidence ba \<ge> bio_min_confidence ba \<longrightarrow> True"
   by auto
 
 (* auth_018_token_theft_mitigated (matches Coq) *)
-lemma auth_018_token_theft_mitigated: "\<forall> (t : SessionToken) (ip ua : nat), token_bound t ip ua = True \<longrightarrow> (* Token bound to client attributes *) True"
+lemma auth_018_token_theft_mitigated: "\<forall> (t : SessionToken) (ip ua : nat), token_bound t ip ua = True \<longrightarrow> True"
   by auto
 
 (* auth_019_replay_mitigated (matches Coq) *)
@@ -259,7 +259,7 @@ lemma auth_019_replay_mitigated: "\<forall> (ns : NonceStore) (n : nat), nonce_f
   by auto
 
 (* auth_020_phishing_mitigated (matches Coq) *)
-lemma auth_020_phishing_mitigated: "\<forall> (wa : WebAuthnAuth), wa_origin_bound wa = True \<longrightarrow> wa_challenge_verified wa = True \<longrightarrow> (* Origin-bound credentials prevent phishing *) True"
+lemma auth_020_phishing_mitigated: "\<forall> (wa : WebAuthnAuth), wa_origin_bound wa = True \<longrightarrow> wa_challenge_verified wa = True \<longrightarrow> True"
   by auto
 
 end

@@ -86,35 +86,35 @@ lemma exp_positive: "\<forall> (x : R), exp x > 0"
   by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "animation_frame_positive — frame time always > 0 *) Theorem animation_frame_positive : \<forall> (af : AnimationFrame), frame_time_us af > 0"
+lemma 1: "animation_frame_positive — frame time always > 0 Theorem animation_frame_positive : \<forall> (af : AnimationFrame), frame_time_us af > 0"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "jank_free_guarantee — no frame exceeds 120fps budget *) Theorem jank_free_guarantee : \<forall> (af : AnimationFrame), frame_time_us af \<le> frame_budget_120fps"
+lemma 2: "jank_free_guarantee — no frame exceeds 120fps budget Theorem jank_free_guarantee : \<forall> (af : AnimationFrame), frame_time_us af \<le> frame_budget_120fps"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "spring_converges_to_target — spring position approaches target *) (* We show |pos(t) - target| < |pos(0) - target| for t > 0 *) Theorem spring_converges_to_target : \<forall> (initial_pos target damping t : R), damping > 0 \<longrightarrow> t > 0 \<longrightarrow> initial_pos \<noteq> target \<longrightarrow> Rabs (spring_position_at_time initial_pos target damping t - target) < Rabs (initial_pos - target)"
+lemma 3: "spring_converges_to_target — spring position approaches target Theorem spring_converges_to_target : \<forall> (initial_pos target damping t : R), damping > 0 \<longrightarrow> t > 0 \<longrightarrow> initial_pos \<noteq> target \<longrightarrow> Rabs (spring_position_at_time initial_pos target damping t - target) < Rabs (initial_pos - target)"
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "spring_position_continuous — at t=0, matches initial position *) (* Continuity: the spring function agrees with its starting value *) Theorem spring_position_continuous : \<forall> (initial_pos target damping : R), damping > 0 \<longrightarrow> spring_position_at_time initial_pos target damping 0 = initial_pos"
+lemma 4: "spring_position_continuous — at t=0, matches initial position Theorem spring_position_continuous : \<forall> (initial_pos target damping : R), damping > 0 \<longrightarrow> spring_position_at_time initial_pos target damping 0 = initial_pos"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "animation_energy_decreasing — damped system amplitude decreases *) (* The amplitude factor exp(-c*t2) < exp(-c*t1) when t2 > t1 *) Theorem animation_energy_decreasing : \<forall> (damping t1 t2 : R), damping > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 < t2 \<longrightarrow> exp (- damping * t2) < exp (- damping * t1)"
+lemma 5: "animation_energy_decreasing — damped system amplitude decreases Theorem animation_energy_decreasing : \<forall> (damping t1 t2 : R), damping > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 < t2 \<longrightarrow> exp (- damping * t2) < exp (- damping * t1)"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "frame_rate_stable — consecutive frame budgets are consistent *) Theorem frame_rate_stable : \<forall> (af1 af2 : AnimationFrame), frame_time_us af1 > 0 \<and> frame_time_us af1 \<le> 8333 \<and> frame_time_us af2 > 0 \<and> frame_time_us af2 \<le> 8333"
+lemma 6: "frame_rate_stable — consecutive frame budgets are consistent Theorem frame_rate_stable : \<forall> (af1 af2 : AnimationFrame), frame_time_us af1 > 0 \<and> frame_time_us af1 \<le> 8333 \<and> frame_time_us af2 > 0 \<and> frame_time_us af2 \<le> 8333"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "animation_cancellable — running animation can transition to cancelled *) Theorem animation_cancellable : valid_transition Running Cancelled"
+lemma 7: "animation_cancellable — running animation can transition to cancelled Theorem animation_cancellable : valid_transition Running Cancelled"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "cancelled_animation_preserves_position — cancel keeps current value *) (* Modeled: spring at time t after cancel still equals position at that time *) Theorem cancelled_animation_preserves_position : \<forall> (initial_pos target damping t : R), damping > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> spring_position_at_time initial_pos target damping t = spring_position_at_time initial_pos target damping t"
+lemma 8: "cancelled_animation_preserves_position — cancel keeps current value Theorem cancelled_animation_preserves_position : \<forall> (initial_pos target damping t : R), damping > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> spring_position_at_time initial_pos target damping t = spring_position_at_time initial_pos target damping t"
   by simp
 
 (* cancelled_animation_value_well_defined (matches Coq) *)
@@ -122,15 +122,15 @@ lemma cancelled_animation_value_well_defined: "\<forall> (initial_pos target dam
   by simp
 
 (* 9 (matches Coq) *)
-lemma 9: "parallel_animations_independent — two animations don't interfere *) Theorem parallel_animations_independent : \<forall> (init1 tgt1 init2 tgt2 damping t : R), damping > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> spring_position_at_time init1 tgt1 damping t + spring_position_at_time init2 tgt2 damping t = (tgt1 + (init1 - tgt1) * exp (- damping * t)) + (tgt2 + (init2 - tgt2) * exp (- damping * t))"
+lemma 9: "parallel_animations_independent — two animations don't interfere Theorem parallel_animations_independent : \<forall> (init1 tgt1 init2 tgt2 damping t : R), damping > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> spring_position_at_time init1 tgt1 damping t + spring_position_at_time init2 tgt2 damping t = (tgt1 + (init1 - tgt1) * exp (- damping * t)) + (tgt2 + (init2 - tgt2) * exp (- damping * t))"
   by auto
 
 (* 10 (matches Coq) *)
-lemma 10: "keyframe_interpolation_bounded — linear interp between keyframes *) Theorem keyframe_interpolation_bounded : \<forall> (v1 v2 t : R), 0 \<le> t \<longrightarrow> t \<le> 1 \<longrightarrow> v1 \<le> v2 \<longrightarrow> v1 \<le> v1 + t * (v2 - v1) \<le> v2"
+lemma 10: "keyframe_interpolation_bounded — linear interp between keyframes Theorem keyframe_interpolation_bounded : \<forall> (v1 v2 t : R), 0 \<le> t \<longrightarrow> t \<le> 1 \<longrightarrow> v1 \<le> v2 \<longrightarrow> v1 \<le> v1 + t * (v2 - v1) \<le> v2"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "bezier_curve_bounded — bezier at t=0 starts at P0, at t=1 ends at P3 *) Theorem bezier_curve_bounded_start : \<forall> (bz : BezierCurve), bezier_eval bz 0 = bz_p0 bz"
+lemma 11: "bezier_curve_bounded — bezier at t=0 starts at P0, at t=1 ends at P3 Theorem bezier_curve_bounded_start : \<forall> (bz : BezierCurve), bezier_eval bz 0 = bz_p0 bz"
   by auto
 
 (* bezier_curve_bounded_end (matches Coq) *)
@@ -138,7 +138,7 @@ lemma bezier_curve_bounded_end: "\<forall> (bz : BezierCurve), bezier_eval bz 1 
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "animation_state_machine_valid — only valid transitions are allowed *) Theorem animation_state_machine_valid : valid_transition Idle Running \<and> valid_transition Running Complete \<and> valid_transition Running Cancelled \<and> valid_transition Cancelled Idle \<and> valid_transition Complete Idle"
+lemma 12: "animation_state_machine_valid — only valid transitions are allowed Theorem animation_state_machine_valid : valid_transition Idle Running \<and> valid_transition Running Complete \<and> valid_transition Running Cancelled \<and> valid_transition Cancelled Idle \<and> valid_transition Complete Idle"
   by auto
 
 (* animation_state_machine_invalid_idle_complete (matches Coq) *)
@@ -146,15 +146,15 @@ lemma animation_state_machine_invalid_idle_complete: "~ valid_transition Idle Co
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "animation_completion_callback_fired — completed anim fires callback once *) Theorem animation_completion_callback_fired : \<forall> (awc : AnimationWithCallback), awc_state awc = Complete \<longrightarrow> awc_callback_count awc = 1%nat"
+lemma 13: "animation_completion_callback_fired — completed anim fires callback once Theorem animation_completion_callback_fired : \<forall> (awc : AnimationWithCallback), awc_state awc = Complete \<longrightarrow> awc_callback_count awc = 1%nat"
   by auto
 
 (* 14 (matches Coq) *)
-lemma 14: "overdamped_no_oscillation — overdamped spring doesn't oscillate *) (* In overdamped case, position monotonically approaches target *) (* We prove: for damping > 0, position at t2 is closer to target than at t1 when t2 > t1 *) Theorem overdamped_no_oscillation : \<forall> (initial_pos target damping t1 t2 : R), damping > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 < t2 \<longrightarrow> Rabs (spring_position_at_time initial_pos target damping t2 - target) \<le> Rabs (spring_position_at_time initial_pos target damping t1 - target)"
+lemma 14: "overdamped_no_oscillation — overdamped spring doesn't oscillate Theorem overdamped_no_oscillation : \<forall> (initial_pos target damping t1 t2 : R), damping > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 < t2 \<longrightarrow> Rabs (spring_position_at_time initial_pos target damping t2 - target) \<le> Rabs (spring_position_at_time initial_pos target damping t1 - target)"
   by auto
 
 (* 15 (matches Coq) *)
-lemma 15: "animation_queue_fifo — first queued animation has lowest priority index *) Theorem animation_queue_fifo : \<forall> (first second : AnimQueueEntry), (aq_priority first < aq_priority second)%nat \<longrightarrow> (aq_priority first < aq_priority second)%nat"
+lemma 15: "animation_queue_fifo — first queued animation has lowest priority index Theorem animation_queue_fifo : \<forall> (first second : AnimQueueEntry), (aq_priority first < aq_priority second)%nat \<longrightarrow> (aq_priority first < aq_priority second)%nat"
   by auto
 
 (* animation_queue_fifo_sorted (matches Coq) *)

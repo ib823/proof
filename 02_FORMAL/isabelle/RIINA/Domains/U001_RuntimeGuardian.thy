@@ -337,7 +337,7 @@ lemma U_001_24_nmr_recovery_sound: "\<forall> (v1 v2 v3 : Variant) (t : nat) (co
   by auto
 
 (* U_001_25_nmr_coverage (matches Coq) *)
-lemma U_001_25_nmr_coverage: "\<forall> p_error, p_error \<ge> 1 \<longrightarrow> (* For majority failure, need at least 2 of 3 to fail *) (* This models that triple redundancy tolerates single faults *) p_error * p_error \<le> p_error * p_error * 3"
+lemma U_001_25_nmr_coverage: "\<forall> p_error, p_error \<ge> 1 \<longrightarrow> p_error * p_error \<le> p_error * p_error * 3"
   by simp
 
 (* U_001_26_panic_keys_zeroized (matches Coq) *)

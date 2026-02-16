@@ -360,9 +360,9 @@ def empty_rev_table : RevocationTable := mkRevTable []
 /-- riina_delegation (matches Coq: Definition riina_delegation) -/
 def riina_delegation : Delegation := mkDelegation 0 1 100 DelegRestricted true
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: BASIC LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -383,9 +383,9 @@ theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
 theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 11: BASIC CAPABILITY THEOREMS (CAP_001 - CAP_030)
-    ============================================================================ -/
+    ============================================================================
 /-- CAP_001 (matches Coq) -/
 theorem CAP_001 : capability_sound riina_cap = true := by
   rfl
@@ -506,7 +506,7 @@ theorem CAP_029 : cap_unforgeable riina_cap = true ∧ ocap_no_ambient_authority
 theorem CAP_030_complete : ∀ c, capability_secure c = true → cap_unforgeable (cc_cap c) = true ∧ ocap_no_ambient_authority (cc_ocap c) = true ∧ lp_minimal_permissions (cc_lp c) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Unforgability: capabilities cannot be created out of thin air -/
+-- Unforgability: capabilities cannot be created out of thin air
 /-- CAP_031_unforgeable_implies_authentic (matches Coq) -/
 theorem CAP_031_unforgeable_implies_authentic : ∀ c, capability_sound c = true → cap_unforgeable c = true := by
   simp_all [Bool.and_eq_true]
@@ -547,7 +547,7 @@ theorem CAP_039_sealed_cap_unforgeable : ∀ mc, mem_sealed mc = true → negb (
 theorem CAP_040_valid_cap_required : ∀ mc p, mem_has_perm mc p = true → mem_valid mc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Monotonicity: capabilities can only lose permissions, never gain them -/
+-- Monotonicity: capabilities can only lose permissions, never gain them
 /-- CAP_041_attenuatable_means_monotonic (matches Coq) -/
 theorem CAP_041_attenuatable_means_monotonic : ∀ c, capability_sound c = true → cap_attenuatable c = true := by
   simp_all [Bool.and_eq_true]
@@ -660,9 +660,9 @@ theorem CAP_064_revoked_cannot_write : ∀ mc addr, mem_valid mc = false → mem
 theorem CAP_065_revoked_cannot_execute : ∀ mc addr, mem_valid mc = false → mem_can_execute mc addr = false := by
   simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 15: AUTHORITY CONFINEMENT THEOREMS (CAP_066 - CAP_075)
-    ============================================================================ -/
+    ============================================================================
 /-- CAP_066_confinement_enforced (matches Coq) -/
 theorem CAP_066_confinement_enforced : confinement_enforced riina_confinement = true := by
   rfl
@@ -743,9 +743,9 @@ theorem CAP_084_delegation_type_restricted : ∀ d, del_type d = DelegRestricted
 theorem CAP_085_delegation_type_once : ∀ d, del_type d = DelegOnce → can_redelegate d = false := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 17: MEMORY CAPABILITY THEOREMS (CAP_086 - CAP_100)
-    ============================================================================ -/
+    ============================================================================
 /-- CAP_086_bounds_check_in_range (matches Coq) -/
 theorem CAP_086_bounds_check_in_range : ∀ base len addr, base ≤ addr → addr < base + len → mem_bounds_check (mkMemCap base len [] false true) addr = true := by
   simp_all [Bool.and_eq_true]

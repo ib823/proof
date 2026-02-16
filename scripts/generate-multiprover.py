@@ -70,6 +70,27 @@ class CoqFile(NamedTuple):
 # Parser
 # ---------------------------------------------------------------------------
 
+def _strip_coq_comments(text: str) -> str:
+    """Remove all Coq comments (* ... *) from text, handling nesting."""
+    result = []
+    i = 0
+    depth = 0
+    while i < len(text):
+        if i + 1 < len(text) and text[i] == '(' and text[i + 1] == '*':
+            depth += 1
+            i += 2
+        elif i + 1 < len(text) and text[i] == '*' and text[i + 1] == ')':
+            if depth > 0:
+                depth -= 1
+            i += 2
+        elif depth == 0:
+            result.append(text[i])
+            i += 1
+        else:
+            i += 1
+    return ''.join(result)
+
+
 def parse_coq_file(filepath: str) -> CoqFile:
     """Parse a Coq .v file and extract definitions and theorems."""
     with open(filepath, 'r') as f:
@@ -90,19 +111,22 @@ def parse_coq_file(filepath: str) -> CoqFile:
 
     header_comment = '\n'.join(header_lines)
 
+    # Strip Coq comments for parsing structure (prevents comment leaks into output)
+    stripped_text = _strip_coq_comments(text)
+
     # Extract Require Import statements
-    imports = re.findall(r'Require\s+Import\s+(.+?)\.', text)
+    imports = re.findall(r'Require\s+Import\s+(.+?)\.', stripped_text)
 
-    # Extract Inductive types
-    inductives = _parse_inductives(text)
+    # Extract Inductive types (from comment-stripped text)
+    inductives = _parse_inductives(stripped_text)
 
-    # Extract Record types
-    records = _parse_records(text)
+    # Extract Record types (from comment-stripped text)
+    records = _parse_records(stripped_text)
 
-    # Extract Definitions
-    definitions = _parse_definitions(text)
+    # Extract Definitions (from comment-stripped text)
+    definitions = _parse_definitions(stripped_text)
 
-    # Extract Theorems and Lemmas
+    # Extract Theorems and Lemmas (use original text for doc comments)
     theorems = _parse_theorems(text)
 
     return CoqFile(
@@ -134,13 +158,14 @@ def _parse_inductives(text: str) -> list:
             part = part.strip()
             if not part:
                 continue
-            # Extract name and optional comment
-            # Format: "ConstructorName : Type  (* comment *)"
-            cmatch = re.match(r'(\w+)\s*(?::.*?)?(?:\(\*\s*(.*?)\s*\*\))?\s*$', part, re.DOTALL)
+            # Extract name and type signature (preserving type params)
+            # Format: "ConstructorName : ty -> ty -> effect -> ty"
+            # (comments already stripped by _strip_coq_comments)
+            cmatch = re.match(r'(\w+)\s*(?::\s*(.+?))?\s*$', part, re.DOTALL)
             if cmatch:
                 cname = cmatch.group(1)
-                comment = cmatch.group(2) or ''
-                constructors.append((cname, comment.strip()))
+                ctype = (cmatch.group(2) or '').strip()
+                constructors.append((cname, ctype))
 
         if constructors:
             results.append(CoqInductive(name=name, constructors=constructors, type_params='Type'))
@@ -171,20 +196,62 @@ def _parse_records(text: str) -> list:
 
 
 def _parse_definitions(text: str) -> list:
-    """Extract Definition and Fixpoint declarations."""
+    """Extract Definition and Fixpoint declarations.
+
+    This parser is line/section aware so qualified names like `Nat.eqb`
+    inside bodies do not truncate at the first `.`.
+    """
     results = []
-    # Pattern: Definition name (params) : type := body.
-    pattern = r'Definition\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(\w+)\s*:=\s*(.*?)\.'
-    for m in re.finditer(pattern, text, re.DOTALL):
-        name = m.group(1)
-        params = m.group(2).strip()
-        ret_type = m.group(3)
-        body = m.group(4).strip()
-        is_match = 'match' in body
-        results.append(CoqDefinition(
-            name=name, params=params, ret_type=ret_type,
-            body=body, is_match=is_match
-        ))
+
+    start_pat = re.compile(r'(?m)^(Definition|Fixpoint)\s+(\w+)\b')
+    boundary_pat = re.compile(
+        r'(?m)^(?:Definition|Fixpoint|Theorem|Lemma|Record|Inductive|Arguments|Require|Import|Section|End|Set|Unset|Notation)\b'
+    )
+
+    starts = list(start_pat.finditer(text))
+    if not starts:
+        return results
+
+    boundaries = [m.start() for m in boundary_pat.finditer(text)] + [len(text)]
+
+    for m in starts:
+        start = m.start()
+        end = len(text)
+        for b in boundaries:
+            if b > start:
+                end = b
+                break
+
+        block = text[start:end].strip()
+        if not block:
+            continue
+
+        # Definition/Fixpoint Name (params) : ret := body.
+        header = re.match(
+            r'^(Definition|Fixpoint)\s+(\w+)\s*((?:\([^)]*\)\s*)*)\s*:\s*(.*?)\s*:=\s*(.*)$',
+            block,
+            re.DOTALL,
+        )
+        if not header:
+            continue
+
+        name = header.group(2)
+        params = header.group(3).strip()
+        ret_type = header.group(4).strip()
+        body = header.group(5).strip()
+        body = re.sub(r'\.\s*$', '', body, flags=re.DOTALL)
+
+        is_match = bool(re.search(r'\bmatch\b', body))
+        results.append(
+            CoqDefinition(
+                name=name,
+                params=params,
+                ret_type=ret_type,
+                body=body,
+                is_match=is_match,
+            )
+        )
+
     return results
 
 
@@ -201,6 +268,10 @@ def _parse_theorems(text: str) -> list:
         name = m.group(3)
         statement = m.group(4).strip()
         proof = m.group(5).strip()
+
+        # Strip embedded Coq comments from statements before translation.
+        # Without this, (* ... *) fragments leak into Lean/Isabelle output.
+        statement = _strip_coq_comments(statement)
 
         # Clean up statement (remove trailing period if present)
         statement = statement.rstrip('.')
@@ -257,11 +328,42 @@ def classify_proof(proof: str) -> str:
 def coq_type_to_lean(t: str) -> str:
     """Convert Coq type names to Lean 4 equivalents."""
     mapping = {
-        'bool': 'Bool', 'nat': 'Nat', 'Prop': 'Prop',
-        'Type': 'Type', 'list': 'List', 'string': 'String',
-        'true': 'true', 'false': 'false',
+        'bool': 'Bool',
+        'nat': 'Nat',
+        'Prop': 'Prop',
+        'Type': 'Type',
+        'list': 'List',
+        'string': 'String',
+        'option': 'Option',
+        'true': 'true',
+        'false': 'false',
     }
-    return mapping.get(t, t)
+    out = t
+    for coq_t, lean_t in mapping.items():
+        out = re.sub(rf'\b{coq_t}\b', lean_t, out)
+    out = out.replace('->', '→')
+    return out.strip()
+
+
+def _lean_imports_for_path(coq_path: str) -> list:
+    """Determine Lean 4 import statements needed based on the Coq source path."""
+    imports = []
+    p = coq_path.lower()
+    if p.startswith('type_system/'):
+        # TypeSystem files need Foundations + Typing
+        imports.append('import RIINA.Foundations.Syntax')
+        imports.append('import RIINA.Foundations.Semantics')
+        imports.append('import RIINA.TypeSystem.Typing')
+    elif p.startswith('effects/'):
+        imports.append('import RIINA.Foundations.Syntax')
+        imports.append('import RIINA.TypeSystem.Typing')
+    elif p.startswith('properties/'):
+        imports.append('import RIINA.Foundations.Syntax')
+        imports.append('import RIINA.Foundations.Semantics')
+        imports.append('import RIINA.TypeSystem.Typing')
+    elif p.startswith('termination/'):
+        imports.append('import RIINA.Foundations.Syntax')
+    return imports
 
 
 def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
@@ -271,6 +373,12 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     # Header
     lines.append('-- Copyright (c) 2026 The RIINA Authors. All rights reserved.')
     lines.append('-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.')
+
+    # Add import statements based on source path
+    lean_imports = _lean_imports_for_path(coq_path)
+    if lean_imports:
+        for imp in lean_imports:
+            lines.append(imp)
     lines.append('')
 
     module_name = parsed.filename.replace('.v', '')
@@ -307,6 +415,29 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append('namespace RIINA')
     lines.append('')
 
+    # Coq boolean/list compatibility shims for generated corpus.
+    lines.append('/-- Coq compatibility shim: boolean negation -/')
+    lines.append('@[inline] def negb (b : Bool) : Bool := !b')
+    lines.append('/-- Coq compatibility shim: boolean conjunction -/')
+    lines.append('@[inline] def andb (a b : Bool) : Bool := a && b')
+    lines.append('/-- Coq compatibility shim: boolean disjunction -/')
+    lines.append('@[inline] def orb (a b : Bool) : Bool := a || b')
+    lines.append('/-- Coq compatibility shim: list universal predicate -/')
+    lines.append('@[inline] def forallb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.all f')
+    lines.append('/-- Coq compatibility shim: list existential predicate -/')
+    lines.append('@[inline] def existsb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.any f')
+    lines.append('/-- Coq compatibility shim: list length alias -/')
+    lines.append('@[inline] def length {α : Type} (xs : List α) : Nat := xs.length')
+    lines.append('/-- Coq compatibility shim: list head option -/')
+    lines.append('@[inline] def hd_error {α : Type} (xs : List α) : Option α := xs.head?')
+    lines.append('/-- Coq compatibility shim: list find option -/')
+    lines.append('@[inline] def find {α : Type} (p : α → Bool) (xs : List α) : Option α := xs.find? p')
+    lines.append('/-- Coq compatibility shim: pair first projection -/')
+    lines.append('@[inline] def fst {α β : Type} (p : α × β) : α := p.1')
+    lines.append('/-- Coq compatibility shim: pair second projection -/')
+    lines.append('@[inline] def snd {α β : Type} (p : α × β) : β := p.2')
+    lines.append('')
+
     # Helper lemma (included if andb_true_iff is used)
     has_andb = any('andb_true_iff' in t.proof for t in parsed.theorems)
     if has_andb:
@@ -322,10 +453,17 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     for ind in parsed.inductives:
         lines.append(f'/-- {ind.name} (matches Coq: Inductive {ind.name}) -/')
         lines.append(f'inductive {ind.name} where')
-        for cname, comment in ind.constructors:
-            lean_cname = cname[0].lower() + cname[1:] if cname[0].isupper() else cname
-            cmt = f'  -- {comment}' if comment else ''
-            lines.append(f'  | {lean_cname} : {ind.name}{cmt}')
+        for cname, ctype in ind.constructors:
+            # Preserve constructor names to keep direct Coq term references valid.
+            lean_cname = cname
+            if ctype and ctype != ind.name:
+                # Translate Coq type signature to Lean
+                lean_type = ctype.replace(' -> ', ' → ')
+                for coq_t, lean_t in [('bool', 'Bool'), ('nat', 'Nat'), ('list', 'List'), ('string', 'String')]:
+                    lean_type = lean_type.replace(coq_t, lean_t)
+                lines.append(f'  | {lean_cname} : {lean_type}')
+            else:
+                lines.append(f'  | {lean_cname} : {ind.name}')
         lines.append(f'  deriving DecidableEq, Repr')
         lines.append('')
 
@@ -338,6 +476,8 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
             cmt = f'  -- {fcomment}' if fcomment else ''
             lines.append(f'  {fname} : {lean_type}{cmt}')
         lines.append(f'  deriving DecidableEq, Repr')
+        lines.append(f'/-- Coq constructor alias for {rec.name}. -/')
+        lines.append(f'abbrev {rec.constructor} := {rec.name}.mk')
         lines.append('')
 
     # Definitions
@@ -350,7 +490,10 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
             if match_body:
                 lines.append(match_body)
             else:
-                lines.append(f'def {defn.name} := True -- complex match, simplified to Prop')
+                # Explicitly mark unresolved translations as axioms instead of
+                # implicit sorry placeholders, so backlog is transparent.
+                params_str = _translate_params_lean(defn.params)
+                lines.append(f'axiom {defn.name}{params_str} : {lean_ret} -- fallback: unresolved match translation')
         else:
             # Direct definition (could be a boolean combination)
             lines.append(f'/-- {defn.name} (matches Coq: Definition {defn.name}) -/')
@@ -362,30 +505,40 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     for thm in parsed.theorems:
         cat = classify_proof(thm.proof)
         lean_proof = _translate_proof_lean(thm, cat)
+        # Rename Σ in theorem name (Lean 4 sigma-type conflict)
+        lean_name = re.sub(r'Σ([_\w\']*)', r'St\1', thm.name)
         if thm.doc_comment:
-            # Convert Coq doc comment to Lean
+            # Emit Coq doc comment as a regular comment (-- ...) to avoid
+            # consecutive /-- ... -/ blocks which Lean rejects.
             doc = thm.doc_comment.replace('(**', '').replace('*)', '').strip()
-            lines.append(f'/-- {doc} -/')
-        lines.append(f'/-- {thm.name} (matches Coq) -/')
+            lines.append(f'-- {doc}')
+        lines.append(f'/-- {lean_name} (matches Coq) -/')
         lean_stmt = _translate_statement_lean(thm.statement)
-        lines.append(f'theorem {thm.name} : {lean_stmt} := by')
+        lines.append(f'theorem {lean_name} : {lean_stmt} := by')
         lines.append(f'  {lean_proof}')
         lines.append('')
 
     lines.append('end RIINA')
     lines.append('')
 
-    return '\n'.join(lines)
+    # Post-processing: remove any residual Coq comment syntax from Lean output
+    result = '\n'.join(lines)
+    result = re.sub(r'\(\*[^)]*\*\)', '', result)  # Remove (* ... *)
+    result = re.sub(r'\(\*', '', result)  # Remove orphan (*
+    result = re.sub(r'\*\)', '', result)  # Remove orphan *)
+    # Replace any remaining Σ that escaped per-theorem handling (e.g. in types)
+    result = re.sub(r'Σ([_\w\']*)', r'St\1', result)
+    return result
 
 
 def _translate_match_to_lean(defn: CoqDefinition) -> str:
     """Translate a Coq match-based Definition to Lean 4."""
-    # Extract the match variable and cases
-    m = re.search(r'match\s+(\w+)\s+with(.*?)end', defn.body, re.DOTALL)
+    # Extract `match <expr> with ... end`
+    m = re.search(r'match\s+(.+?)\s+with(.*?)end', defn.body, re.DOTALL)
     if not m:
         return None
 
-    match_var = m.group(1)
+    match_expr = m.group(1).strip()
     cases_text = m.group(2)
 
     # Parse params
@@ -393,15 +546,20 @@ def _translate_match_to_lean(defn: CoqDefinition) -> str:
     lean_ret = coq_type_to_lean(defn.ret_type)
 
     result_lines = [f'def {defn.name}{params_str} : {lean_ret} :=']
-    result_lines.append(f'  match {match_var} with')
+    result_lines.append(f'  match {match_expr} with')
 
-    # Parse cases: | Constructor => value
-    for cm in re.finditer(r'\|\s*(\w+)\s*=>\s*(\w+)', cases_text):
-        cname = cm.group(1)
-        value = cm.group(2)
-        lean_cname = '.' + (cname[0].lower() + cname[1:] if cname[0].isupper() else cname)
-        lean_value = coq_type_to_lean(value)
-        result_lines.append(f'  | {lean_cname} => {lean_value}')
+    # Parse cases in a line-oriented way: | pattern => expr
+    for cm in re.finditer(r'\|\s*(.*?)\s*=>\s*(.*?)(?=(?:\n\s*\|)|\Z)', cases_text, re.DOTALL):
+        pat = cm.group(1).strip()
+        rhs = cm.group(2).strip()
+        rhs = rhs.rstrip('.').strip()
+        if not pat or not rhs:
+            continue
+        rhs = rhs.replace('&&', '&&').replace('||', '||').replace('->', '→')
+        result_lines.append(f'  | {pat} => {rhs}')
+
+    if len(result_lines) == 2:
+        return None
 
     return '\n'.join(result_lines)
 
@@ -411,7 +569,13 @@ def _translate_params_lean(params: str) -> str:
     if not params:
         return ''
     # Convert (x : T) to (x : T)
-    result = params.replace('bool', 'Bool').replace('nat', 'Nat').replace('list', 'List')
+    result = (
+        params.replace('bool', 'Bool')
+        .replace('nat', 'Nat')
+        .replace('list', 'List')
+        .replace('option', 'Option')
+        .replace('->', '→')
+    )
     return ' ' + result
 
 
@@ -421,15 +585,20 @@ def _translate_def_body_lean(defn: CoqDefinition) -> str:
     lean_ret = coq_type_to_lean(defn.ret_type)
     body = defn.body.strip()
 
-    # Translate boolean operators
-    body = body.replace('&&', '&&')  # same in Lean
+    # Basic operator/type token normalization
+    body = body.replace('&&', '&&')
     body = body.replace('||', '||')
+    body = body.replace('->', '→')
+    body = re.sub(r'\bbool\b', 'Bool', body)
+    body = re.sub(r'\bnat\b', 'Nat', body)
+    body = re.sub(r'\blist\b', 'List', body)
+    body = re.sub(r'\boption\b', 'Option', body)
 
     # Handle record constructor calls: mkName true true true ...
     m = re.match(r'mk\w+\s+(.*)', body)
     if m:
         # Record literal
-        return f'def {defn.name}{params_str} : {defn.ret_type} := {body}'
+        return f'def {defn.name}{params_str} : {lean_ret} := {body}'
 
     return f'def {defn.name}{params_str} : {lean_ret} :=\n  {body}'
 
@@ -447,6 +616,10 @@ def _translate_statement_lean(stmt: str) -> str:
     s = s.replace(' >= ', ' ≥ ')
     s = s.replace(' <= ', ' ≤ ')
     s = s.replace(' <> ', ' ≠ ')
+    # Rename Greek letters that conflict with Lean 4 syntax.
+    # Σ is sigma-type notation in Lean 4 — cannot be used as a variable name.
+    # Handle all Σ-prefixed identifiers: Σ, Σ', Σ1, Σ2, Σ3, Σ_mid, etc.
+    s = re.sub(r'Σ([_\w\']*)', r'St\1', s)
     return s
 
 
@@ -535,14 +708,25 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append(' *)')
     lines.append('')
 
-    # Theory block
+    # Theory block — import CoqCompat for domain/industry files
+    # which may contain residual Coq boolean functions (andb, negb, etc.)
+    needs_compat = any(
+        any(kw in defn.body for kw in ('andb', 'orb', 'negb', 'eqb', 'leb', 'ltb', 'forallb', 'existsb'))
+        for defn in parsed.definitions
+    ) or any(
+        any(kw in thm.statement for kw in ('andb', 'orb', 'negb', 'eqb', 'leb', 'ltb', 'forallb', 'existsb'))
+        for thm in parsed.theorems
+    )
     lines.append(f'theory {module_name}')
-    lines.append(f'  imports Main')
+    if needs_compat:
+        lines.append(f'  imports Main CoqCompat')
+    else:
+        lines.append(f'  imports Main')
     lines.append(f'begin')
     lines.append('')
 
-    # Helper lemma if needed
-    has_andb = any('andb_true_iff' in t.proof for t in parsed.theorems)
+    # Helper lemma if needed (legacy — CoqCompat now provides this)
+    has_andb = any('andb_true_iff' in t.proof for t in parsed.theorems) and not needs_compat
     if has_andb:
         lines.append('(* Boolean conjunction helper (matches Coq: andb_true_iff) *)')
         lines.append('lemma andb_true_iff: "(a \\<and> b) = True \\<longleftrightarrow> a = True \\<and> b = True"')
@@ -555,9 +739,16 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
         lines.append(f'(* {ind.name} (matches Coq: Inductive {ind.name}) *)')
         lines.append(f'datatype {isa_name} =')
         clines = []
-        for cname, comment in ind.constructors:
-            cmt = f'  (* {comment} *)' if comment else ''
-            clines.append(f'    {cname}{cmt}')
+        for cname, ctype in ind.constructors:
+            if ctype and ctype != ind.name:
+                # Translate type signature for Isabelle
+                isa_type = ctype
+                for coq_t, isa_t in [('bool', 'bool'), ('nat', 'nat'), ('Prop', 'bool')]:
+                    isa_type = isa_type.replace(coq_t, isa_t)
+                # Convert "a -> b -> c" to Isabelle syntax (keep as-is for now)
+                clines.append(f'    {cname}')
+            else:
+                clines.append(f'    {cname}')
         lines.append('\n  | '.join(clines))
         lines.append('')
 
@@ -580,7 +771,8 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
                 lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
                 lines.append(isa_def)
             else:
-                lines.append(f'(* {defn.name} - complex match, manual review needed *)')
+                lines.append(f'(* {defn.name} - complex match, needs manual translation *)')
+                lines.append(f'definition {defn.name} :: "bool" where "{defn.name} = undefined"')
         else:
             lines.append(f'(* {defn.name} (matches Coq: Definition {defn.name}) *)')
             isa_def = _translate_def_body_isabelle(defn)
@@ -603,7 +795,11 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append('end')
     lines.append('')
 
-    return '\n'.join(lines)
+    # Post-processing: comment stripping at parse time (_parse_theorems) handles
+    # the root cause. Isabelle uses (* ... *) natively so we do NOT strip those
+    # from generated output — only orphan fragments within single-line strings.
+    result = '\n'.join(lines)
+    return result
 
 
 def _to_snake_case(name: str) -> str:
@@ -658,16 +854,45 @@ def _build_isabelle_type_sig(param_types: list, ret_type: str) -> str:
     return ' \\<Rightarrow> '.join(parts)
 
 
+def _coq_body_to_isabelle(body: str) -> str:
+    """Translate Coq boolean expressions to Isabelle equivalents in a definition body."""
+    import re
+    s = body
+    # Translate Coq boolean operators to Isabelle
+    s = s.replace('&&', '\\<and>')
+    s = s.replace('||', '\\<or>')
+    # Translate Coq boolean functions
+    # andb x y -> x \<and> y
+    s = re.sub(r'\bandb\s*\(([^,)]+)\)\s*\(([^)]+)\)', r'(\1 \\<and> \2)', s)
+    s = re.sub(r'\bandb\s+(\S+)\s+(\S+)', r'(\1 \\<and> \2)', s)
+    # orb x y -> x \<or> y
+    s = re.sub(r'\borb\s*\(([^,)]+)\)\s*\(([^)]+)\)', r'(\1 \\<or> \2)', s)
+    s = re.sub(r'\borb\s+(\S+)\s+(\S+)', r'(\1 \\<or> \2)', s)
+    # negb x -> \<not> x
+    s = re.sub(r'\bnegb\s+(\S+)', r'(\\<not> \1)', s)
+    s = re.sub(r'\bnegb\s*\(([^)]+)\)', r'(\\<not> (\1))', s)
+    # Nat.eqb / eqb -> =
+    s = re.sub(r'Nat\.eqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    s = re.sub(r'\beqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    # Nat.leb / leb -> \<le>
+    s = re.sub(r'Nat\.leb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    s = re.sub(r'\bleb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    # Nat.ltb / ltb -> <
+    s = re.sub(r'Nat\.ltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    s = re.sub(r'\bltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    # true/false -> True/False
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bfalse\b', 'False', s)
+    return s
+
+
 def _translate_def_body_isabelle(defn: CoqDefinition) -> str:
     """Translate a simple Coq Definition to Isabelle."""
     param_types = _extract_param_types(defn.params)
     isa_ret = coq_type_to_isabelle(defn.ret_type)
     type_sig = _build_isabelle_type_sig(param_types, isa_ret)
 
-    body = defn.body.strip()
-    # Translate boolean operators
-    body = body.replace('&&', '\\<and>')
-    body = body.replace('||', '\\<or>')
+    body = _coq_body_to_isabelle(defn.body.strip())
 
     params_names = ' '.join(n for n, _ in param_types) if param_types else ''
     if params_names:
@@ -678,6 +903,7 @@ def _translate_def_body_isabelle(defn: CoqDefinition) -> str:
 
 def _translate_statement_isabelle(stmt: str) -> str:
     """Translate a Coq theorem statement to Isabelle."""
+    import re
     s = stmt
     # Basic translations
     s = s.replace(' -> ', ' \\<longrightarrow> ')
@@ -691,6 +917,18 @@ def _translate_statement_isabelle(stmt: str) -> str:
     s = s.replace(' <> ', ' \\<noteq> ')
     s = s.replace(' = true', ' = True')
     s = s.replace(' = false', ' = False')
+    # Translate Coq boolean functions
+    s = re.sub(r'\bandb\s+(\S+)\s+(\S+)', r'(\1 \\<and> \2)', s)
+    s = re.sub(r'\borb\s+(\S+)\s+(\S+)', r'(\1 \\<or> \2)', s)
+    s = re.sub(r'\bnegb\s+(\S+)', r'(\\<not> \1)', s)
+    s = re.sub(r'Nat\.eqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    s = re.sub(r'\beqb\s+(\S+)\s+(\S+)', r'(\1 = \2)', s)
+    s = re.sub(r'Nat\.leb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    s = re.sub(r'\bleb\s+(\S+)\s+(\S+)', r'(\1 \\<le> \2)', s)
+    s = re.sub(r'Nat\.ltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    s = re.sub(r'\bltb\s+(\S+)\s+(\S+)', r'(\1 < \2)', s)
+    s = re.sub(r'\btrue\b', 'True', s)
+    s = re.sub(r'\bfalse\b', 'False', s)
     return s
 
 

@@ -169,7 +169,7 @@ theorem mas_composition : ∀ (e : MASRegulatedEntity), cyber_hygiene_compliant 
 theorem mas_license_coverage : ∀ (l : MASLicenseType), In l all_mas_license_types := by
   simp_all [Bool.and_eq_true]
 
-/-- Cyber hygiene field decomposition -/
+-- Cyber hygiene field decomposition
 /-- ch_requires_mfa (matches Coq) -/
 theorem ch_requires_mfa : ∀ e, cyber_hygiene_compliant e → mas_mfa_enabled e = true := by
   intro h; exact h
@@ -190,7 +190,7 @@ theorem ch_requires_antimalware : ∀ e, cyber_hygiene_compliant e → mas_antim
 theorem ch_requires_pam : ∀ e, cyber_hygiene_compliant e → mas_privileged_access_managed e = true := by
   intro h; exact h
 
-/-- Patch deadline ordering -/
+-- Patch deadline ordering
 /-- patch_critical_strictest (matches Coq) -/
 theorem patch_critical_strictest : ∀ p, patch_deadline PatchCritical ≤ patch_deadline p := by
   cases ‹_› <;> simp <;> omega
@@ -203,12 +203,12 @@ theorem patch_low_most_lenient : ∀ p, patch_deadline p ≤ patch_deadline Patc
 theorem patch_deadline_positive : ∀ p, patch_deadline p ≥ 14 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Patch subsumption: if applied in time for critical, then in time for any -/
+-- Patch subsumption: if applied in time for critical, then in time for any
 /-- patch_critical_subsumes_all (matches Coq) -/
 theorem patch_critical_subsumes_all : ∀ d a p, patch_applied_in_time PatchCritical d a → patch_applied_in_time p d a := by
   cases ‹_› <;> simp <;> omega
 
-/-- Full compliance decomposition -/
+-- Full compliance decomposition
 /-- mas_full_requires_hygiene (matches Coq) -/
 theorem mas_full_requires_hygiene : ∀ e, mas_fully_compliant e → cyber_hygiene_compliant e := by
   intro h; exact h
@@ -229,7 +229,7 @@ theorem mas_full_requires_resilience : ∀ e, mas_fully_compliant e → trm_resi
 theorem count_mas_bounded : ∀ e, count_mas_controls e ≤ 10 := by
   cases ‹_› <;> simp <;> omega
 
-/-- License type count -/
+-- License type count
 /-- mas_seven_licenses (matches Coq) -/
 theorem mas_seven_licenses : length all_mas_license_types = 7 := by
   rfl

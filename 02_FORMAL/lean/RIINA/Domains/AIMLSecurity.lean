@@ -368,12 +368,12 @@ def mcp_server_exploitation_protected (pv : ProtocolVerification) (ac : AccessCo
 def mitigation_transitive (m1 m2 : Bool) : Bool :=
   implb m1 m2
 
-/-- Lemma: all_true with single element -/
+-- Lemma: all_true with single element
 /-- all_true_single (matches Coq) -/
 theorem all_true_single : ∀ b, all_true [b] = b := by
   rfl
 
-/-- Lemma: all_true conjunction -/
+-- Lemma: all_true conjunction
 /-- all_true_cons (matches Coq) -/
 theorem all_true_cons : ∀ h t, all_true (h :: t) = true <-> h = true ∧ all_true t = true := by
   simp_all [Bool.and_eq_true]
@@ -382,7 +382,7 @@ theorem all_true_cons : ∀ h t, all_true (h :: t) = true <-> h = true ∧ all_t
 theorem ai_001_adversarial_examples_mitigated : ∀ (rt : RobustTraining) (iv : InputValidation), rt_adversarial_training rt = true → rt_certified_defense rt = true → iv_filtered iv = true → iv_sanitized iv = true → adversarial_examples_protected rt iv = true := by
   rfl
 
-/-- Strong version with ensemble and preprocessing -/
+-- Strong version with ensemble and preprocessing
 /-- ai_001_adversarial_examples_strong_defense (matches Coq) -/
 theorem ai_001_adversarial_examples_strong_defense : ∀ (rt : RobustTraining) (iv : InputValidation), rt_adversarial_training rt = true → rt_ensemble_used rt = true → rt_input_preprocessing rt = true → iv_filtered iv = true → all_true [rt_adversarial_training rt; rt_ensemble_used rt; rt_input_preprocessing rt; iv_filtered iv] = true := by
   rfl
@@ -391,7 +391,7 @@ theorem ai_001_adversarial_examples_strong_defense : ∀ (rt : RobustTraining) (
 theorem ai_002_model_poisoning_mitigated : ∀ (tp : TrainingPipeline), tp_data_verified tp = true → tp_source_trusted tp = true → tp_integrity_checked tp = true → model_poisoning_protected tp = true := by
   rfl
 
-/-- Complete pipeline verification -/
+-- Complete pipeline verification
 /-- ai_002_model_poisoning_complete_verification (matches Coq) -/
 theorem ai_002_model_poisoning_complete_verification : ∀ (tp : TrainingPipeline), tp_data_verified tp = true → tp_source_trusted tp = true → tp_integrity_checked tp = true → tp_reproducible tp = true → all_true [tp_data_verified tp; tp_source_trusted tp; tp_integrity_checked tp; tp_reproducible tp] = true := by
   rfl
@@ -408,7 +408,7 @@ theorem ai_003_data_poisoning_with_anomaly_detection : ∀ (tp : TrainingPipelin
 theorem ai_004_model_extraction_mitigated : ∀ (ac : AccessControl) (mw : ModelWatermark), ac_authenticated ac = true → ac_authorized ac = true → ac_rate_limited ac = true → ac_logged ac = true → mw_embedded mw = true → mw_verifiable mw = true → model_extraction_protected ac mw = true := by
   rfl
 
-/-- Watermark robustness theorem -/
+-- Watermark robustness theorem
 /-- ai_004_watermark_robustness (matches Coq) -/
 theorem ai_004_watermark_robustness : ∀ (mw : ModelWatermark), mw_embedded mw = true → mw_verifiable mw = true → mw_robust mw = true → all_true [mw_embedded mw; mw_verifiable mw; mw_robust mw] = true := by
   rfl
@@ -425,7 +425,7 @@ theorem ai_005_strong_differential_privacy : ∀ (dp : DifferentialPrivacy), str
 theorem ai_006_model_inversion_mitigated : ∀ (pg : PrivacyGuarantees) (dp : DifferentialPrivacy), pg_output_perturbed pg = true → pg_intermediate_hidden pg = true → pg_access_controlled pg = true → dp_noise_added dp = true → model_inversion_protected pg dp = true := by
   rfl
 
-/-- Complete privacy protection -/
+-- Complete privacy protection
 /-- ai_006_complete_privacy_protection (matches Coq) -/
 theorem ai_006_complete_privacy_protection : ∀ (pg : PrivacyGuarantees), pg_output_perturbed pg = true → pg_intermediate_hidden pg = true → pg_access_controlled pg = true → pg_aggregation_only pg = true → all_true [pg_output_perturbed pg; pg_intermediate_hidden pg; pg_access_controlled pg; pg_aggregation_only pg] = true := by
   rfl
@@ -442,7 +442,7 @@ theorem ai_007_backdoor_detection_complete : ∀ (bd : BackdoorDetection) (tp : 
 theorem ai_008_prompt_injection_mitigated : ∀ (iv : InputValidation), iv_sanitized iv = true → iv_sandboxed iv = true → iv_filtered iv = true → iv_max_length iv > 0 → prompt_injection_protected iv = true := by
   rfl
 
-/-- Complete input validation -/
+-- Complete input validation
 /-- ai_008_complete_input_validation (matches Coq) -/
 theorem ai_008_complete_input_validation : ∀ (iv : InputValidation), iv_sanitized iv = true → iv_sandboxed iv = true → iv_filtered iv = true → all_true [iv_sanitized iv; iv_sandboxed iv; iv_filtered iv] = true := by
   rfl
@@ -451,7 +451,7 @@ theorem ai_008_complete_input_validation : ∀ (iv : InputValidation), iv_saniti
 theorem ai_009_jailbreaking_mitigated : ∀ (st : SafetyTraining) (iv : InputValidation), st_rlhf_applied st = true → st_red_teamed st = true → st_safety_filters st = true → st_refusal_trained st = true → iv_filtered iv = true → jailbreaking_protected st iv = true := by
   rfl
 
-/-- Complete safety training verification -/
+-- Complete safety training verification
 /-- ai_009_complete_safety_training (matches Coq) -/
 theorem ai_009_complete_safety_training : ∀ (st : SafetyTraining), st_rlhf_applied st = true → st_red_teamed st = true → st_safety_filters st = true → st_refusal_trained st = true → all_true [st_rlhf_applied st; st_red_teamed st; st_safety_filters st; st_refusal_trained st] = true := by
   rfl
@@ -460,7 +460,7 @@ theorem ai_009_complete_safety_training : ∀ (st : SafetyTraining), st_rlhf_app
 theorem ai_010_ai_generated_malware_mitigated : ∀ (did : DefenseInDepth) (ds : DetectionSystem), did_multiple_layers did = true → did_diverse_methods did = true → did_fail_safe did = true → did_monitoring did = true → ds_enabled ds = true → ds_alerts_enabled ds = true → ai_malware_protected did ds = true := by
   rfl
 
-/-- Defense in depth completeness -/
+-- Defense in depth completeness
 /-- ai_010_defense_in_depth_complete (matches Coq) -/
 theorem ai_010_defense_in_depth_complete : ∀ (did : DefenseInDepth), did_multiple_layers did = true → did_diverse_methods did = true → did_fail_safe did = true → did_monitoring did = true → all_true [did_multiple_layers did; did_diverse_methods did; did_fail_safe did; did_monitoring did] = true := by
   rfl
@@ -469,7 +469,7 @@ theorem ai_010_defense_in_depth_complete : ∀ (did : DefenseInDepth), did_multi
 theorem ai_011_deepfakes_mitigated : ∀ (ds : DetectionSystem) (pt : ProvenanceTracking), ds_enabled ds = true → ds_multi_modal ds = true → ds_threshold_set ds = true → pt_origin_tracked pt = true → pt_chain_verified pt = true → pt_tamper_evident pt = true → deepfakes_protected ds pt = true := by
   rfl
 
-/-- Complete provenance chain -/
+-- Complete provenance chain
 /-- ai_011_complete_provenance (matches Coq) -/
 theorem ai_011_complete_provenance : ∀ (pt : ProvenanceTracking), pt_origin_tracked pt = true → pt_chain_verified pt = true → pt_metadata_preserved pt = true → pt_tamper_evident pt = true → all_true [pt_origin_tracked pt; pt_chain_verified pt; pt_metadata_preserved pt; pt_tamper_evident pt] = true := by
   rfl
@@ -478,7 +478,7 @@ theorem ai_011_complete_provenance : ∀ (pt : ProvenanceTracking), pt_origin_tr
 theorem ai_012_federated_learning_attack_mitigated : ∀ (sa : SecureAggregation) (dp : DifferentialPrivacy), sa_encrypted sa = true → sa_masked sa = true → sa_threshold_scheme sa = true → sa_byzantine_resilient sa = true → dp_noise_added dp = true → federated_learning_protected sa dp = true := by
   rfl
 
-/-- Complete secure aggregation -/
+-- Complete secure aggregation
 /-- ai_012_complete_secure_aggregation (matches Coq) -/
 theorem ai_012_complete_secure_aggregation : ∀ (sa : SecureAggregation), sa_encrypted sa = true → sa_masked sa = true → sa_threshold_scheme sa = true → sa_byzantine_resilient sa = true → all_true [sa_encrypted sa; sa_masked sa; sa_threshold_scheme sa; sa_byzantine_resilient sa] = true := by
   rfl
@@ -495,7 +495,7 @@ theorem ai_013_gradient_protection_strong : ∀ (dp : DifferentialPrivacy), grad
 theorem ai_014_evasion_attack_mitigated : ∀ (rt : RobustTraining) (ds : DetectionSystem), rt_adversarial_training rt = true → rt_certified_defense rt = true → rt_ensemble_used rt = true → ds_enabled ds = true → ds_threshold_set ds = true → evasion_attack_protected rt ds = true := by
   rfl
 
-/-- Certified robustness theorem -/
+-- Certified robustness theorem
 /-- ai_014_certified_robustness (matches Coq) -/
 theorem ai_014_certified_robustness : ∀ (rt : RobustTraining), rt_adversarial_training rt = true → rt_certified_defense rt = true → rt_ensemble_used rt = true → rt_input_preprocessing rt = true → all_true [rt_adversarial_training rt; rt_certified_defense rt; rt_ensemble_used rt; rt_input_preprocessing rt] = true := by
   rfl
@@ -504,7 +504,7 @@ theorem ai_014_certified_robustness : ∀ (rt : RobustTraining), rt_adversarial_
 theorem ai_015_model_dos_mitigated : ∀ (rl : ResourceLimits) (ac : AccessControl), rl_compute_bounded rl = true → rl_memory_bounded rl = true → rl_time_bounded rl = true → rl_batch_limited rl = true → ac_rate_limited ac = true → model_dos_protected rl ac = true := by
   rfl
 
-/-- Complete resource limiting -/
+-- Complete resource limiting
 /-- ai_015_complete_resource_limits (matches Coq) -/
 theorem ai_015_complete_resource_limits : ∀ (rl : ResourceLimits), rl_compute_bounded rl = true → rl_memory_bounded rl = true → rl_time_bounded rl = true → rl_batch_limited rl = true → all_true [rl_compute_bounded rl; rl_memory_bounded rl; rl_time_bounded rl; rl_batch_limited rl] = true := by
   rfl
@@ -513,7 +513,7 @@ theorem ai_015_complete_resource_limits : ∀ (rl : ResourceLimits), rl_compute_
 theorem ai_016_cross_prompt_injection_mitigated : ∀ (ii : InputIsolation) (iv : InputValidation), ii_context_separated ii = true → ii_privilege_separated ii = true → ii_output_filtered ii = true → ii_injection_markers ii = true → iv_sanitized iv = true → cross_prompt_injection_protected ii iv = true := by
   rfl
 
-/-- Complete input isolation -/
+-- Complete input isolation
 /-- ai_016_complete_input_isolation (matches Coq) -/
 theorem ai_016_complete_input_isolation : ∀ (ii : InputIsolation), ii_context_separated ii = true → ii_privilege_separated ii = true → ii_output_filtered ii = true → ii_injection_markers ii = true → all_true [ii_context_separated ii; ii_privilege_separated ii; ii_output_filtered ii; ii_injection_markers ii] = true := by
   rfl
@@ -522,7 +522,7 @@ theorem ai_016_complete_input_isolation : ∀ (ii : InputIsolation), ii_context_
 theorem ai_017_ai_agent_swarms_mitigated : ∀ (av : AgentVerification) (rl : ResourceLimits), av_identity_verified av = true → av_capability_bounded av = true → av_communication_secure av = true → av_consensus_required av = true → rl_compute_bounded rl = true → rl_time_bounded rl = true → ai_agent_swarms_protected av rl = true := by
   rfl
 
-/-- Complete agent verification -/
+-- Complete agent verification
 /-- ai_017_complete_agent_verification (matches Coq) -/
 theorem ai_017_complete_agent_verification : ∀ (av : AgentVerification), av_identity_verified av = true → av_capability_bounded av = true → av_communication_secure av = true → av_consensus_required av = true → all_true [av_identity_verified av; av_capability_bounded av; av_communication_secure av; av_consensus_required av] = true := by
   rfl
@@ -531,12 +531,12 @@ theorem ai_017_complete_agent_verification : ∀ (av : AgentVerification), av_id
 theorem ai_018_mcp_server_exploitation_mitigated : ∀ (pv : ProtocolVerification) (ac : AccessControl), pv_schema_validated pv = true → pv_auth_required pv = true → pv_integrity_checked pv = true → pv_replay_protected pv = true → ac_authenticated ac = true → ac_authorized ac = true → mcp_server_exploitation_protected pv ac = true := by
   rfl
 
-/-- Complete protocol verification -/
+-- Complete protocol verification
 /-- ai_018_complete_protocol_verification (matches Coq) -/
 theorem ai_018_complete_protocol_verification : ∀ (pv : ProtocolVerification), pv_schema_validated pv = true → pv_auth_required pv = true → pv_integrity_checked pv = true → pv_replay_protected pv = true → all_true [pv_schema_validated pv; pv_auth_required pv; pv_integrity_checked pv; pv_replay_protected pv] = true := by
   rfl
 
-/-- Composition: Multiple protections strengthen overall security -/
+-- Composition: Multiple protections strengthen overall security
 /-- composition_strengthens_security (matches Coq) -/
 theorem composition_strengthens_security : ∀ (b1 b2 b3 : bool), b1 = true → b2 = true → b3 = true → andb b1 (andb b2 b3) = true := by
   rfl
@@ -545,12 +545,12 @@ theorem composition_strengthens_security : ∀ (b1 b2 b3 : bool), b1 = true → 
 theorem mitigation_transitivity : ∀ (base enhanced : bool), base = true → implb base enhanced = true → enhanced = true := by
   intro h; exact h
 
-/-- Defense layers accumulate protection -/
+-- Defense layers accumulate protection
 /-- defense_layer_accumulation (matches Coq) -/
 theorem defense_layer_accumulation : ∀ (layer1 layer2 layer3 layer4 : bool), layer1 = true → layer2 = true → layer3 = true → layer4 = true → all_true [layer1; layer2; layer3; layer4] = true := by
   rfl
 
-/-- Privacy-Security tradeoff: Both can be achieved simultaneously -/
+-- Privacy-Security tradeoff: Both can be achieved simultaneously
 /-- privacy_security_coexistence (matches Coq) -/
 theorem privacy_security_coexistence : ∀ (dp : DifferentialPrivacy) (ac : AccessControl), dp_noise_added dp = true → dp_clipping_applied dp = true → ac_authenticated ac = true → ac_rate_limited ac = true → andb (andb (dp_noise_added dp) (dp_clipping_applied dp)) (andb (ac_authenticated ac) (ac_rate_limited ac)) = true := by
   rfl

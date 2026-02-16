@@ -434,7 +434,7 @@ lemma J_001_11: "\<forall> (scope : CapabilityScope) (name : string) (req_level 
   by auto
 
 (* J_001_12 (matches Coq) *)
-lemma J_001_12: "\<forall> (abs_ty : AbstractType), abs_ty.(abs_exposed) = False \<longrightarrow> \<forall> (observer_repr : option nat), (* Observer cannot determine representation *) (abs_ty.(abs_repr) = observer_repr \<or> abs_ty.(abs_repr) \<noteq> observer_repr)"
+lemma J_001_12: "\<forall> (abs_ty : AbstractType), abs_ty.(abs_exposed) = False \<longrightarrow> \<forall> (observer_repr : option nat), (abs_ty.(abs_repr) = observer_repr \<or> abs_ty.(abs_repr) \<noteq> observer_repr)"
   by auto
 
 (* J_001_13 (matches Coq) *)

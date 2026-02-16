@@ -116,53 +116,53 @@ def kernel_region_base : Nat :=
 def kernel_region_size : Nat :=
   4096
 
-/-- Theorem: A device cannot perform DMA to an address not permitted by IOMMU. -/
+-- Theorem: A device cannot perform DMA to an address not permitted by IOMMU.
 /-- dma_isolation (matches Coq) -/
 theorem dma_isolation : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), ~ iommu_permits_dma iommu dev addr → ~ can_dma_access dev addr iommu := by
   simp_all [Bool.and_eq_true]
 
-/-- Theorem: Guest VMs cannot modify IOMMU configuration.
-    This is a structural property - can_modify_config has no constructors for guests. -/
+-- Theorem: Guest VMs cannot modify IOMMU configuration.
+    This is a structural property - can_modify_config has no constructors for guests.
 /-- iommu_config_protected (matches Coq) -/
 theorem iommu_config_protected : ∀ (guest : VirtualMachine) (cfg : IOMMUConfig), ~ can_modify_config guest cfg := by
   simp_all [Bool.and_eq_true]
 
-/-- Alternative formulation with IOMMU record -/
+-- Alternative formulation with IOMMU record
 /-- iommu_config_protected_v2 (matches Coq) -/
 theorem iommu_config_protected_v2 : ∀ (guest : VirtualMachine) (iommu : IOMMU), ∀ cfg, In cfg (iommu_config iommu) → ~ can_modify_config guest cfg := by
   simp_all [Bool.and_eq_true]
 
-/-- DMA requires IOMMU enabled -/
+-- DMA requires IOMMU enabled
 /-- dma_requires_iommu_enabled (matches Coq) -/
 theorem dma_requires_iommu_enabled : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), iommu_enabled iommu = false → ~ iommu_permits_dma iommu dev addr := by
   simp_all [Bool.and_eq_true]
 
-/-- Device not in config cannot DMA -/
+-- Device not in config cannot DMA
 /-- unconfigured_device_no_dma (matches Coq) -/
 theorem unconfigured_device_no_dma : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), find_device_config (dev_id dev) (iommu_configs iommu) = None → ~ iommu_permits_dma iommu dev addr := by
   simp_all [Bool.and_eq_true]
 
-/-- Out of range DMA blocked -/
+-- Out of range DMA blocked
 /-- out_of_range_dma_blocked (matches Coq) -/
 theorem out_of_range_dma_blocked : ∀ (dev : Device) (n : nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → address_in_range n cfg = false → ~ iommu_permits_dma iommu dev (Addr n) := by
   simp_all [Bool.and_eq_true]
 
-/-- IOMMU lockdown preserves security -/
+-- IOMMU lockdown preserves security
 /-- iommu_lockdown_effective (matches Coq) -/
 theorem iommu_lockdown_effective : ∀ (iommu : IOMMU) (guest : VirtualMachine), guest_isolated_from_iommu guest iommu → ∀ cfg, In cfg (iommu_configs iommu) → config_locked cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DMA isolation is enforced: permitted access implies config exists -/
+-- DMA isolation is enforced: permitted access implies config exists
 /-- dma_isolation_enforced (matches Coq) -/
 theorem dma_isolation_enforced : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), can_dma_access dev addr iommu → iommu_enabled iommu = true := by
   intro h; exact h
 
-/-- Device address is bounded by config range -/
+-- Device address is bounded by config range
 /-- device_address_bounded (matches Coq) -/
 theorem device_address_bounded : ∀ (dev : Device) (n : nat) (iommu : IOMMU) (cfg : IOMMUConfig), iommu_permits_dma iommu dev (Addr n) → find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → address_in_range n cfg = true := by
   intro h; exact h
 
-/-- Mapping table is consistent: find returns consistent configs -/
+-- Mapping table is consistent: find returns consistent configs
 /-- mapping_table_consistent (matches Coq) -/
 theorem mapping_table_consistent : ∀ (dev : DeviceId) (configs : list IOMMUConfig) (cfg1 cfg2 : IOMMUConfig), find_device_config dev configs = Some cfg1 → find_device_config dev configs = Some cfg2 → cfg1 = cfg2 := by
   intro h; exact h
@@ -171,57 +171,57 @@ theorem mapping_table_consistent : ∀ (dev : DeviceId) (configs : list IOMMUCon
 theorem no_dma_to_kernel : ∀ (dev : Device) (addr : nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg → config_allowed_base cfg ≥ kernel_region_base + kernel_region_size → addr < kernel_region_base + kernel_region_size → address_in_range addr cfg = false := by
   omega
 
-/-- IOMMU bypass impossible when enabled and device has no config -/
+-- IOMMU bypass impossible when enabled and device has no config
 /-- iommu_bypass_impossible (matches Coq) -/
 theorem iommu_bypass_impossible : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), iommu_enabled iommu = true → find_device_config (dev_id dev) (iommu_configs iommu) = None → ~ can_dma_access dev addr iommu := by
   simp_all [Bool.and_eq_true]
 
-/-- Address range checking: lower bound verified -/
+-- Address range checking: lower bound verified
 /-- address_range_lower_bound (matches Coq) -/
 theorem address_range_lower_bound : ∀ (addr : nat) (cfg : IOMMUConfig), address_in_range addr cfg = true → config_allowed_base cfg ≤ addr := by
   simp_all [Bool.and_eq_true]
 
-/-- Address range checking: upper bound verified -/
+-- Address range checking: upper bound verified
 /-- address_range_upper_bound (matches Coq) -/
 theorem address_range_upper_bound : ∀ (addr : nat) (cfg : IOMMUConfig), address_in_range addr cfg = true → addr < config_allowed_base cfg + config_allowed_size cfg := by
   simp_all [Bool.and_eq_true]
 
-/-- Device identity verified: DMA access implies device is configured -/
+-- Device identity verified: DMA access implies device is configured
 /-- device_identity_verified (matches Coq) -/
 theorem device_identity_verified : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), can_dma_access dev addr iommu → ∃ cfg, find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg := by
   intro h; exact h
 
-/-- Empty config list denies all DMA -/
+-- Empty config list denies all DMA
 /-- empty_config_denies_all (matches Coq) -/
 theorem empty_config_denies_all : ∀ (dev : Device) (addr : Address), let iommu := mkIOMMU 0 [] true in ~ can_dma_access dev addr iommu := by
   simp_all [Bool.and_eq_true]
 
-/-- IOMMU disabled means all DMA denied -/
+-- IOMMU disabled means all DMA denied
 /-- disabled_iommu_denies_all (matches Coq) -/
 theorem disabled_iommu_denies_all : ∀ (dev : Device) (addr : Address) (iommu : IOMMU), iommu_enabled iommu = false → ~ can_dma_access dev addr iommu := by
   simp_all [Bool.and_eq_true]
 
-/-- Locked configs remain across guest operations -/
+-- Locked configs remain across guest operations
 /-- locked_config_invariant (matches Coq) -/
 theorem locked_config_invariant : ∀ (guest : VirtualMachine) (iommu : IOMMU) (cfg : IOMMUConfig), guest_isolated_from_iommu guest iommu → In cfg (iommu_configs iommu) → config_locked cfg = true ∧ ~ can_modify_config guest cfg := by
   simp_all [Bool.and_eq_true]
 
-/-- Zero-size config denies all addresses -/
+-- Zero-size config denies all addresses
 /-- zero_size_config_denies (matches Coq) -/
 theorem zero_size_config_denies : ∀ (addr : nat) (cfg : IOMMUConfig), config_allowed_size cfg = 0 → address_in_range addr cfg = false := by
   cases ‹_› <;> simp <;> omega
 
-/-- Find device config: not found means not in list -/
+-- Find device config: not found means not in list
 /-- find_device_config_none_not_in (matches Coq) -/
 theorem find_device_config_none_not_in : ∀ (dev : DeviceId) (configs : list IOMMUConfig), find_device_config dev configs = None → ∀ cfg, In cfg configs → config_device cfg ≠ dev := by
   simp_all [Bool.and_eq_true]
 
-/-- Config found means device matches -/
+-- Config found means device matches
 /-- find_device_config_some_matches (matches Coq) -/
 theorem find_device_config_some_matches : ∀ (dev : DeviceId) (configs : list IOMMUConfig) (cfg : IOMMUConfig), find_device_config dev configs = Some cfg → config_device cfg = dev := by
   simp_all [Bool.and_eq_true]
 
-/-- Two distinct devices with different IDs have independent configs -/
+-- Two distinct devices with different IDs have independent configs
 /-- independent_device_configs (matches Coq) -/
 theorem independent_device_configs : ∀ (dev1 dev2 : Device) (iommu : IOMMU) (cfg1 cfg2 : IOMMUConfig), dev_id dev1 ≠ dev_id dev2 → find_device_config (dev_id dev1) (iommu_configs iommu) = Some cfg1 → find_device_config (dev_id dev2) (iommu_configs iommu) = Some cfg2 → config_device cfg1 ≠ config_device cfg2 := by
   simp_all [Bool.and_eq_true]

@@ -335,7 +335,7 @@ lemma OS_001_07_cap_lookup_correct: "\<forall> s p slot c, cap_lookup s p slot =
   by auto
 
 (* OS_001_08_cap_space_isolation (matches Coq) *)
-lemma OS_001_08_cap_space_isolation: "\<forall> s p1 p2 slot1 slot2 c, p1 \<noteq> p2 \<longrightarrow> cap_lookup s p1 slot1 = Some c \<longrightarrow> cap_lookup s p2 slot2 = Some c \<longrightarrow> (* If same capability appears in two different processes, it must have been explicitly granted (both hold it independently) *) holds s p1 c \<and> holds s p2 c"
+lemma OS_001_08_cap_space_isolation: "\<forall> s p1 p2 slot1 slot2 c, p1 \<noteq> p2 \<longrightarrow> cap_lookup s p1 slot1 = Some c \<longrightarrow> cap_lookup s p2 slot2 = Some c \<longrightarrow> holds s p1 c \<and> holds s p2 c"
   by auto
 
 (* OS_001_09_cap_invoke_authorized (matches Coq) *)
@@ -343,7 +343,7 @@ lemma OS_001_09_cap_invoke_authorized: "\<forall> s p action c, can_invoke s p a
   by auto
 
 (* OS_001_10_cap_badge_integrity (matches Coq) *)
-lemma OS_001_10_cap_badge_integrity: "\<forall> c1 c2, derives c1 c2 \<longrightarrow> (* Badge may change during derivation, but the new badge is system-assigned and unforgeable - we prove badges are determined by the derivation relation, not arbitrary *) cap_object c2 = cap_object c1"
+lemma OS_001_10_cap_badge_integrity: "\<forall> c1 c2, derives c1 c2 \<longrightarrow> cap_object c2 = cap_object c1"
   by simp
 
 (* OS_001_11_address_space_isolation (matches Coq) *)
@@ -403,7 +403,7 @@ lemma OS_001_24_endpoint_protection: "\<forall> is ep, endpoint_protected is ep 
   by auto
 
 (* OS_001_25_notification_no_leak (matches Coq) *)
-lemma OS_001_25_notification_no_leak: "\<forall> n, notif_no_sensitive_data n \<longrightarrow> (* Notification contains only signaling information, no capability data *) notif_word n < 2^32"
+lemma OS_001_25_notification_no_leak: "\<forall> n, notif_no_sensitive_data n \<longrightarrow> notif_word n < 2^32"
   by auto
 
 end

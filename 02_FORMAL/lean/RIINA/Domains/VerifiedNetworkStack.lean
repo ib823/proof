@@ -527,9 +527,9 @@ def handshake_sequence_valid : Prop :=
   tcp_transition SYN_SENT (make_syn_ack 2000 1001) false = ESTABLISHED /\
   tcp_transition SYN_RECEIVED (make_ack 1001 2001) true = ESTABLISHED
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: BASIC NETWORK LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -542,9 +542,9 @@ theorem orb_false_iff : ∀ a b : bool, a || b = false <-> a = false ∧ b = fal
 theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 9: BASIC NETWORK STACK THEOREMS (NET_001 - NET_035)
-    ============================================================================ -/
+    ============================================================================
 /-- NET_001 (matches Coq) -/
 theorem NET_001 : net_security_sound riina_net_sec = true := by
   rfl

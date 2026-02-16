@@ -812,7 +812,7 @@ lemma TEE_094_riina_complete_security: "tee_secure riina_tee = True \<and> verif
   by simp
 
 (* TEE_095_full_tee_security_decomposition (matches Coq) *)
-lemma TEE_095_full_tee_security_decomposition: "\<forall> t q ctx pi tc mem, tee_secure t = True \<longrightarrow> verify_quote q ctx = True \<longrightarrow> platform_trusted pi tc = True \<longrightarrow> mr_type mem = MRT_Enclave \<longrightarrow> mr_encrypted mem = True \<longrightarrow> (* All security properties hold *) enc_memory_encrypted (tee_enclave t) = True \<and> att_measurement (tee_attestation t) = True \<and> aq_signature_valid q = True \<and> pi_tcb_info_valid pi = True \<and> enclave_memory_protected mem = True"
+lemma TEE_095_full_tee_security_decomposition: "\<forall> t q ctx pi tc mem, tee_secure t = True \<longrightarrow> verify_quote q ctx = True \<longrightarrow> platform_trusted pi tc = True \<longrightarrow> mr_type mem = MRT_Enclave \<longrightarrow> mr_encrypted mem = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> att_measurement (tee_attestation t) = True \<and> aq_signature_valid q = True \<and> pi_tcb_info_valid pi = True \<and> enclave_memory_protected mem = True"
   by auto
 
 end

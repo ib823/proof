@@ -137,7 +137,7 @@ lemma meta_002_constant_size: "\<forall> (pm1 pm2 : PaddedMessage), pm_total_siz
   by auto
 
 (* meta_003_size_no_leak (matches Coq) *)
-lemma meta_003_size_no_leak: "\<forall> (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> (* Different payloads can have same total size *) pm_payload_size pm1 = pm_payload_size pm2 \<or> pm_payload_size pm1 \<noteq> pm_payload_size pm2"
+lemma meta_003_size_no_leak: "\<forall> (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_payload_size pm1 = pm_payload_size pm2 \<or> pm_payload_size pm1 \<noteq> pm_payload_size pm2"
   by auto
 
 (* meta_004_timing_bucketed (matches Coq) *)

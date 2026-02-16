@@ -146,9 +146,9 @@ def is_operational (s : PhysState) : Bool :=
   | .error => false
   | ._ => true
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: SENSOR READING VALIDATION
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- reading_in_bounds_correct (matches Coq) -/
 theorem reading_in_bounds_correct : ∀ r, reading_in_bounds r = true <-> reading_valid r := by
   simp_all [Bool.and_eq_true]
@@ -161,9 +161,9 @@ theorem valid_reading_min_le_max : ∀ r, reading_valid r → reading_min r ≤ 
 theorem reading_value_bounded : ∀ r, reading_valid r → reading_value r ≤ reading_max r := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: MEASUREMENT PRECISION BOUNDS
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- spec_feasible_correct (matches Coq) -/
 theorem spec_feasible_correct : ∀ spec, spec_feasible spec = true → 1 ≤ meas_min_samples spec ∧ meas_min_samples spec ≤ meas_samples spec := by
   simp_all [Bool.and_eq_true]
@@ -176,9 +176,9 @@ theorem spec_feasible_nonzero_samples : ∀ spec, spec_feasible spec = true → 
 theorem empty_readings_avg_zero : readings_avg [] = 0 := by
   rfl
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: TIMING CONSTRAINT SATISFACTION
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- timing_feasible_correct (matches Coq) -/
 theorem timing_feasible_correct : ∀ tc, timing_feasible tc = true <-> timing_schedulable tc := by
   simp_all [Bool.and_eq_true]
@@ -191,9 +191,9 @@ theorem feasible_wcet_within_deadline : ∀ tc, timing_schedulable tc → wcet t
 theorem feasible_deadline_within_period : ∀ tc, timing_schedulable tc → deadline tc ≤ period tc := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: PHYSICAL STATE MACHINE CORRECTNESS
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- idle_always_transitions_to_sensing (matches Coq) -/
 theorem idle_always_transitions_to_sensing : ∀ ok, phys_transition Idle ok = Sensing := by
   rfl
@@ -238,9 +238,9 @@ theorem actuating_transitions_to_idle : ∀ ok, phys_transition Actuating ok = I
 theorem processing_transitions_to_actuating : ∀ ok, phys_transition Processing ok = Actuating := by
   rfl
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ADDITIONAL PROPERTIES
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- processing_is_operational (matches Coq) -/
 theorem processing_is_operational : is_operational Processing = true := by
   rfl

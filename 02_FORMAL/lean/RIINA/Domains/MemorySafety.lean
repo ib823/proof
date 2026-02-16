@@ -502,9 +502,9 @@ theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
 theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 8: BASIC CONFIGURATION THEOREMS (MEM_001 - MEM_040)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_001 (matches Coq) -/
 theorem MEM_001 : uaf_protected riina_uaf = true := by
   rfl
@@ -665,9 +665,9 @@ theorem MEM_039 : ∀ d, df_protected d = true → df_state_tracking d = true �
 theorem MEM_040_complete : ∀ m, memory_safe m = true → uaf_lifetime_tracking (ms_uaf m) = true ∧ df_single_owner (ms_df m) = true ∧ nd_null_check (ms_nd m) = true ∧ bg_bounds_check (ms_bounds m) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 9: POINTER VALIDITY THEOREMS (MEM_041 - MEM_055)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_041_valid_pointer_is_valid (matches Coq) -/
 theorem MEM_041_valid_pointer_is_valid : ptr_is_valid valid_pointer = true := by
   rfl
@@ -728,9 +728,9 @@ theorem MEM_054_safe_access_implies_valid : ∀ p, ptr_safe_for_access p = true 
 theorem MEM_055_safe_access_implies_in_bounds : ∀ p, ptr_safe_for_access p = true → ptr_in_bounds p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 10: TEMPORAL MEMORY SAFETY (MEM_056 - MEM_065)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_056_allocated_region_is_allocated (matches Coq) -/
 theorem MEM_056_allocated_region_is_allocated : region_is_allocated allocated_region = true := by
   rfl
@@ -771,9 +771,9 @@ theorem MEM_064_access_implies_owned : ∀ r, region_can_access r = true → mr_
 theorem MEM_065_uaf_prevented : ∀ r, region_is_freed r = true → region_can_access r = false := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 11: STACK SAFETY THEOREMS (MEM_066 - MEM_075)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_066_stack_protected (matches Coq) -/
 theorem MEM_066_stack_protected : stack_protected riina_stack = true := by
   rfl
@@ -814,9 +814,9 @@ theorem MEM_074_stack_implies_shadow : ∀ s, stack_protected s = true → sg_sh
 theorem MEM_075_complete_stack_protection : ∀ s, stack_protected s = true → sg_canary_enabled s = true ∧ sg_return_addr_protected s = true ∧ sg_frame_isolation s = true ∧ sg_shadow_stack s = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 12: HEAP SAFETY THEOREMS (MEM_076 - MEM_085)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_076_heap_protected (matches Coq) -/
 theorem MEM_076_heap_protected : heap_protected riina_heap = true := by
   rfl
@@ -857,9 +857,9 @@ theorem MEM_084_heap_implies_metadata_integrity : ∀ h, heap_protected h = true
 theorem MEM_085_complete_heap_protection : ∀ h, heap_protected h = true → hg_allocation_tracking h = true ∧ hg_deallocation_check h = true ∧ hg_fragmentation_prevention h = true ∧ hg_metadata_integrity h = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 13: MEMORY ISOLATION THEOREMS (MEM_086 - MEM_095)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_086_isolation_protected (matches Coq) -/
 theorem MEM_086_isolation_protected : isolation_protected riina_isolation = true := by
   rfl
@@ -900,9 +900,9 @@ theorem MEM_094_isolation_implies_capability : ∀ i, isolation_protected i = tr
 theorem MEM_095_complete_isolation : ∀ i, isolation_protected i = true → ig_domain_separation i = true ∧ ig_permission_enforcement i = true ∧ ig_cross_domain_check i = true ∧ ig_capability_required i = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 14: SECURITY DOMAIN ACCESS THEOREMS (MEM_096 - MEM_105)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_096_kernel_can_access_kernel (matches Coq) -/
 theorem MEM_096_kernel_can_access_kernel : domain_can_access DomainKernel DomainKernel = true := by
   rfl
@@ -943,9 +943,9 @@ theorem MEM_104_domain_access_reflexive : ∀ d, domain_can_access d d = true :=
 theorem MEM_105_domain_hierarchy_transitive : ∀ d1 d2 d3, domain_can_access d1 d2 = true → domain_can_access d2 d3 = true → domain_can_access d1 d3 = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 15: SECURE REGION ACCESS THEOREMS (MEM_106 - MEM_115)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_106_kernel_read_kernel_region (matches Coq) -/
 theorem MEM_106_kernel_read_kernel_region : secure_region_can_read kernel_region DomainKernel = true := by
   rfl
@@ -986,9 +986,9 @@ theorem MEM_114_write_requires_allocation : ∀ r d, secure_region_can_write r d
 theorem MEM_115_read_requires_permission : ∀ r d, secure_region_can_read r d = true → permission_allows_read (smr_permission r) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 16: COMPREHENSIVE MEMORY SAFETY THEOREMS (MEM_116 - MEM_125)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_116_full_memory_safe_implies_stack (matches Coq) -/
 theorem MEM_116_full_memory_safe_implies_stack : ∀ m, memory_safe m = true → stack_protected (ms_stack m) = true := by
   simp_all [Bool.and_eq_true]
@@ -1029,9 +1029,9 @@ theorem MEM_124_ptr_safe_zero_offset : ∀ bounds, bounds > 0 → ptr_safe_for_a
 theorem MEM_125_complete_memory_safety_riina : memory_safe riina_mem_safety = true → uaf_protected riina_uaf = true ∧ df_protected riina_df = true ∧ nd_protected riina_nd = true ∧ bounds_protected riina_bounds = true ∧ stack_protected riina_stack = true ∧ heap_protected riina_heap = true ∧ isolation_protected riina_isolation = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 17: POINTER RANGE ACCESS THEOREMS (MEM_126 - MEM_135)
-    ============================================================================ -/
+    ============================================================================
 /-- MEM_126_safe_range_valid_pointer (matches Coq) -/
 theorem MEM_126_safe_range_valid_pointer : ptr_safe_for_access_range valid_pointer 10 = true := by
   rfl

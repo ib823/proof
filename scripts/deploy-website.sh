@@ -21,6 +21,7 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 WEBSITE_DIR="$REPO_ROOT/website"
 DIST_DIR="$WEBSITE_DIR/dist"
+ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -33,6 +34,23 @@ echo "  RIINA: DEPLOY WEBSITE → gh-pages"
 echo "================================================================"
 echo ""
 
+if [ ! -f "$ISABELLE_HELPER" ]; then
+    echo -e "${RED}ERROR: missing Isabelle helper: $ISABELLE_HELPER${NC}"
+    exit 1
+fi
+# shellcheck disable=SC1090
+source "$ISABELLE_HELPER"
+
+echo "Validating pinned local Isabelle toolchain..."
+if ! ISABELLE_BIN="$(riina_require_local_isabelle "$REPO_ROOT" 2>&1)"; then
+    echo -e "${RED}ERROR: local Isabelle policy failed.${NC}"
+    echo "$ISABELLE_BIN"
+    echo "Run: bash scripts/provision-isabelle.sh"
+    exit 1
+fi
+riina_export_local_isabelle_env "$ISABELLE_BIN"
+echo -e "${GREEN}[✓] local Isabelle verified: $ISABELLE_BIN${NC}"
+
 # Step 1: Verify riina remote exists
 if ! git remote | grep -q "^riina$"; then
     echo -e "${RED}ERROR: riina remote not configured${NC}"
@@ -42,7 +60,18 @@ fi
 echo -e "${GREEN}[✓] riina remote configured${NC}"
 
 # Step 2: Refresh metrics and enforce public quality/claim gates
+# Use default (non-strict) mode: Coq core must pass; Lean/Isabelle build gaps
+# are non-blocking because their claim level is "generated" (not "compiled").
+# Full strict mode (--strict-tools) is reserved for when all provers are mechanized.
 echo ""
+echo "Running Dim1/Dim9 promotion gate..."
+bash "$REPO_ROOT/scripts/check-dim1-dim9-promotion.sh" || {
+    echo -e "${RED}ERROR: Dim1/Dim9 promotion gate failed.${NC}"
+    echo "Run: bash scripts/check-dim1-dim9-promotion.sh"
+    exit 1
+}
+echo -e "${GREEN}[✓] Dim1/Dim9 promotion gate passed${NC}"
+
 echo "Refreshing public metrics..."
 bash "$REPO_ROOT/scripts/generate-metrics.sh" --fast >/dev/null
 echo -e "${GREEN}[✓] metrics.json refreshed${NC}"
@@ -54,19 +83,6 @@ bash "$REPO_ROOT/scripts/public-quality-gates.sh" >/dev/null || {
     exit 1
 }
 echo -e "${GREEN}[✓] public quality gates passed${NC}"
-
-if [ "${REQUIRE_ISABELLE:-0}" = "1" ]; then
-    if command -v isabelle >/dev/null 2>&1; then
-        echo -e "${GREEN}[✓] Isabelle toolchain found (REQUIRE_ISABELLE=1)${NC}"
-    else
-        echo -e "${RED}ERROR: REQUIRE_ISABELLE=1 but 'isabelle' is not installed.${NC}"
-        exit 1
-    fi
-else
-    if ! command -v isabelle >/dev/null 2>&1; then
-        echo -e "${YELLOW}WARNING: Isabelle not found (set REQUIRE_ISABELLE=1 to enforce locally).${NC}"
-    fi
-fi
 
 # Step 3: Build WASM binary for playground
 echo ""

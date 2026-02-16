@@ -185,77 +185,77 @@ theorem CSRF_019 : ∀ c, csrf_protected c = true → csrf_token_validation c = 
 theorem CSRF_020_complete : ∀ c, csrf_protected c = true → csrf_token_validation c = true ∧ csrf_same_site_cookies c = true ∧ csrf_origin_check c = true ∧ csrf_double_submit c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_021: RIINA CSRF request is safe -/
+-- CSRF_021: RIINA CSRF request is safe
 /-- CSRF_021_riina_request_safe (matches Coq) -/
 theorem CSRF_021_riina_request_safe : csrf_request_safe riina_csrf_request = true := by
   rfl
 
-/-- CSRF_022: RIINA CSRF request is fully validated -/
+-- CSRF_022: RIINA CSRF request is fully validated
 /-- CSRF_022_riina_request_fully_validated (matches Coq) -/
 theorem CSRF_022_riina_request_fully_validated : csrf_request_fully_validated riina_csrf_request = true := by
   rfl
 
-/-- CSRF_023: Safe request has token -/
+-- CSRF_023: Safe request has token
 /-- CSRF_023_safe_has_token (matches Coq) -/
 theorem CSRF_023_safe_has_token : ∀ r, csrf_request_safe r = true → req_has_token r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_024: Safe request has matching token -/
+-- CSRF_024: Safe request has matching token
 /-- CSRF_024_safe_token_matches (matches Coq) -/
 theorem CSRF_024_safe_token_matches : ∀ r, csrf_request_safe r = true → req_token_matches r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_025: Safe request is same origin -/
+-- CSRF_025: Safe request is same origin
 /-- CSRF_025_safe_same_origin (matches Coq) -/
 theorem CSRF_025_safe_same_origin : ∀ r, csrf_request_safe r = true → req_same_origin r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_026: Fully validated implies safe -/
+-- CSRF_026: Fully validated implies safe
 /-- CSRF_026_fully_validated_implies_safe (matches Coq) -/
 theorem CSRF_026_fully_validated_implies_safe : ∀ r, csrf_request_fully_validated r = true → csrf_request_safe r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_027: Fully validated implies valid referer -/
+-- CSRF_027: Fully validated implies valid referer
 /-- CSRF_027_fully_validated_referer (matches Coq) -/
 theorem CSRF_027_fully_validated_referer : ∀ r, csrf_request_fully_validated r = true → req_valid_referer r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_028: Fully validated implies cookie present -/
+-- CSRF_028: Fully validated implies cookie present
 /-- CSRF_028_fully_validated_cookie (matches Coq) -/
 theorem CSRF_028_fully_validated_cookie : ∀ r, csrf_request_fully_validated r = true → req_cookie_present r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_029: Full validation implies token and origin -/
+-- CSRF_029: Full validation implies token and origin
 /-- CSRF_029_full_implies_token_and_origin (matches Coq) -/
 theorem CSRF_029_full_implies_token_and_origin : ∀ r, csrf_request_fully_validated r = true → req_has_token r = true ∧ req_same_origin r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_030: Config protection implies all request checks available -/
+-- CSRF_030: Config protection implies all request checks available
 /-- CSRF_030_config_enables_request_checks (matches Coq) -/
 theorem CSRF_030_config_enables_request_checks : ∀ c, csrf_protected c = true → csrf_token_validation c = true ∧ csrf_referer_check c = true ∧ csrf_double_submit c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_031: Referer check is part of csrf_protected -/
+-- CSRF_031: Referer check is part of csrf_protected
 /-- CSRF_031_referer_in_protection (matches Coq) -/
 theorem CSRF_031_referer_in_protection : csrf_referer_check riina_csrf = true := by
   rfl
 
-/-- CSRF_032: Complete request validation -/
+-- CSRF_032: Complete request validation
 /-- CSRF_032_complete_request_validation (matches Coq) -/
 theorem CSRF_032_complete_request_validation : ∀ r, csrf_request_fully_validated r = true → req_has_token r = true ∧ req_token_matches r = true ∧ req_same_origin r = true ∧ req_valid_referer r = true ∧ req_cookie_present r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF_033: Config with all false is not protected -/
+-- CSRF_033: Config with all false is not protected
 /-- CSRF_033_all_false_not_protected (matches Coq) -/
 theorem CSRF_033_all_false_not_protected : csrf_protected (mkCSRF false false false false false) = false := by
   rfl
 
-/-- CSRF_034: Missing token validation breaks protection -/
+-- CSRF_034: Missing token validation breaks protection
 /-- CSRF_034_missing_token_breaks (matches Coq) -/
 theorem CSRF_034_missing_token_breaks : csrf_protected (mkCSRF false true true true true) = false := by
   rfl
 
-/-- CSRF_035: Protection reconstruction from components -/
+-- CSRF_035: Protection reconstruction from components
 /-- CSRF_035_protection_reconstruction (matches Coq) -/
 theorem CSRF_035_protection_reconstruction : ∀ c, csrf_token_validation c = true → csrf_same_site_cookies c = true → csrf_origin_check c = true → csrf_referer_check c = true → csrf_double_submit c = true → csrf_protected c = true := by
   rfl

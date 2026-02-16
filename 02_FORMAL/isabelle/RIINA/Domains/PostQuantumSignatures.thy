@@ -338,7 +338,7 @@ lemma PQ_SIG_024_correct_verify: "\<forall> si : SignatureInstance, sig_correct 
 
 (* PQ_SIG_025: Complete PQ-Signature Security *)
 (* PQ_SIG_025_complete_security (matches Coq) *)
-lemma PQ_SIG_025_complete_security: "\<forall> s : SignatureSecurity, sig_secure s = True \<longrightarrow> (* All security properties satisfied *) eufcma_unforgeable (sig_sec_eufcma s) = True \<and> eufcma_strong_unforgeability (sig_sec_eufcma s) = True \<and> sqr_post_quantum (sig_sec_quantum s) = True \<and> sqr_no_shor_attack (sig_sec_quantum s) = True"
+lemma PQ_SIG_025_complete_security: "\<forall> s : SignatureSecurity, sig_secure s = True \<longrightarrow> eufcma_unforgeable (sig_sec_eufcma s) = True \<and> eufcma_strong_unforgeability (sig_sec_eufcma s) = True \<and> sqr_post_quantum (sig_sec_quantum s) = True \<and> sqr_no_shor_attack (sig_sec_quantum s) = True"
   by simp
 
 end

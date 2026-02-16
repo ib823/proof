@@ -347,7 +347,7 @@ lemma K_001_11: "\<forall> (ctx : HygienicContext) (name : string) (use_scope : 
   by auto
 
 (* K_001_12 (matches Coq) *)
-lemma K_001_12: "\<forall> (ctx : HygienicContext) (macro_name user_name : string), hyg_macro_scope ctx \<noteq> hyg_current_scope ctx \<longrightarrow> (* If macro_name was added in macro scope and user_name in current scope *) lookup_scoped (hyg_bindings ctx) macro_name = Some (hyg_macro_scope ctx) \<longrightarrow> lookup_scoped (hyg_bindings ctx) user_name = Some (hyg_current_scope ctx) \<longrightarrow> (* Then the lookups return different scopes *) lookup_scoped (hyg_bindings ctx) macro_name \<noteq> lookup_scoped (hyg_bindings ctx) user_name"
+lemma K_001_12: "\<forall> (ctx : HygienicContext) (macro_name user_name : string), hyg_macro_scope ctx \<noteq> hyg_current_scope ctx \<longrightarrow> lookup_scoped (hyg_bindings ctx) macro_name = Some (hyg_macro_scope ctx) \<longrightarrow> lookup_scoped (hyg_bindings ctx) user_name = Some (hyg_current_scope ctx) \<longrightarrow> lookup_scoped (hyg_bindings ctx) macro_name \<noteq> lookup_scoped (hyg_bindings ctx) user_name"
   by auto
 
 (* K_001_13 (matches Coq) *)

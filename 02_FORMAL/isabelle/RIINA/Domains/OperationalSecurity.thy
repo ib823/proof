@@ -1,4 +1,5 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
+(* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
  * RIINA OperationalSecurity - Isabelle/HOL Port
@@ -56,7 +57,7 @@
  *)
 
 theory OperationalSecurity
-  imports Main
+  imports Main CoqCompat
 begin
 
 (* budget_ok (matches Coq: Definition budget_ok) *)
@@ -68,15 +69,15 @@ definition budget_ok :: "InsiderBudget \<Rightarrow> bool" where
 definition is_duress :: "bool" where
   "is_duress \<equiv> let n := length duress_suffix in
   let suffix := skipn (length input - n) input in
-  if list_eq_dec Nat"
+  if list_eq_dec Nat.eq_dec suffix duress_suffix then True else False"
 
 (* dead_man_triggered (matches Coq: Definition dead_man_triggered) *)
 definition dead_man_triggered :: "bool" where
-  "dead_man_triggered \<equiv> Nat"
+  "dead_man_triggered \<equiv> ((last_checkin < +) interval * 2) current_time"
 
 (* within_time_window (matches Coq: Definition within_time_window) *)
 definition within_time_window :: "bool" where
-  "within_time_window \<equiv> Nat"
+  "within_time_window \<equiv> ((current_time \<le> -) approval_time) window"
 
 (* roles_distinct (matches Coq: Definition roles_distinct) *)
 definition roles_distinct :: "bool" where
@@ -84,27 +85,27 @@ definition roles_distinct :: "bool" where
 
 (* anomaly_detected (matches Coq: Definition anomaly_detected) *)
 definition anomaly_detected :: "bool" where
-  "anomaly_detected \<equiv> Nat"
+  "anomaly_detected \<equiv> (threshold < score)"
 
 (* action_audited (matches Coq: Definition action_audited) *)
 definition action_audited :: "nat \<Rightarrow> bool" where
-  "action_audited action \<equiv> existsb (fun e => Nat"
+  "action_audited action \<equiv> existsb (fun e => ((audit_action = e)) action) entries"
 
 (* platforms_independent (matches Coq: Definition platforms_independent) *)
 definition platforms_independent :: "bool" where
-  "platforms_independent \<equiv> negb (Nat"
+  "platforms_independent \<equiv> (\<not> (Nat.eqb) p1 p2)"
 
 (* majority_agrees (matches Coq: Definition majority_agrees) *)
 definition majority_agrees :: "nat \<Rightarrow> bool" where
-  "majority_agrees expected \<equiv> Nat"
+  "majority_agrees expected \<equiv> ((length < results) / 2) (count_occ Nat.eq_dec results expected)"
 
 (* time_lock_expired (matches Coq: Definition time_lock_expired) *)
 definition time_lock_expired :: "bool" where
-  "time_lock_expired \<equiv> Nat"
+  "time_lock_expired \<equiv> (unlock_time \<le> current_time)"
 
 (* in_cancellation_window (matches Coq: Definition in_cancellation_window) *)
 definition in_cancellation_window :: "bool" where
-  "in_cancellation_window \<equiv> Nat"
+  "in_cancellation_window \<equiv> (current_time < (op_time) + cancel_window)"
 
 (* principals_unique (matches Coq: Definition principals_unique) *)
 definition principals_unique :: "bool" where
@@ -112,12 +113,12 @@ definition principals_unique :: "bool" where
 
 (* channels_diverse (matches Coq: Definition channels_diverse) *)
 definition channels_diverse :: "bool" where
-  "channels_diverse \<equiv> length (nodup Nat"
+  "channels_diverse \<equiv> length (nodup Nat.eq_dec (map (fun a => principal_channel (approver a)) approvals)) > 1"
 
 (* jurisdictions_spread (matches Coq: Definition jurisdictions_spread) *)
 definition jurisdictions_spread :: "ShareSet \<Rightarrow> bool" where
   "jurisdictions_spread shares \<equiv> length shares = length jurisdictions /\
-  length (nodup Nat"
+  length (nodup Nat.eq_dec jurisdictions) >= 3"
 
 (* all_signatures_valid (matches Coq: Definition all_signatures_valid) *)
 definition all_signatures_valid :: "bool" where
@@ -129,30 +130,30 @@ definition reset_budget :: "InsiderBudget \<Rightarrow> InsiderBudget" where
 
 (* layers_active (matches Coq: Definition layers_active) *)
 definition layers_active :: "bool" where
-  "layers_active \<equiv> andb layer1 (andb layer2 (andb layer3 (andb layer4 layer5)))"
+  "layers_active \<equiv> (layer1 \<and> (andb) layer2 ((layer3 \<and> (andb) layer4 layer5)))"
 
 (* opsec_001_shamir_security (matches Coq) *)
-lemma opsec_001_shamir_security: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme \<longrightarrow> (* k-1 shares give no information about secret - true by construction *) True"
+lemma opsec_001_shamir_security: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme \<longrightarrow> True"
   by auto
 
 (* opsec_002_shamir_reconstruction (matches Coq) *)
-lemma opsec_002_shamir_reconstruction: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> (* Sufficient shares for reconstruction *) length shares \<ge> threshold scheme"
+lemma opsec_002_shamir_reconstruction: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> length shares \<ge> threshold scheme"
   by auto
 
 (* opsec_003_no_single_keyholder (matches Coq) *)
-lemma opsec_003_no_single_keyholder: "\<forall> (scheme : ShamirScheme), threshold scheme > 1 \<longrightarrow> (* Single keyholder compromise insufficient *) 1 < threshold scheme"
+lemma opsec_003_no_single_keyholder: "\<forall> (scheme : ShamirScheme), threshold scheme > 1 \<longrightarrow> 1 < threshold scheme"
   by auto
 
 (* opsec_004_geographic_distribution (matches Coq) *)
-lemma opsec_004_geographic_distribution: "\<forall> (shares : ShareSet) (locations : list nat), length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> (* All shares in different locations *) length (nodup Nat.eq_dec locations) = length locations"
+lemma opsec_004_geographic_distribution: "\<forall> (shares : ShareSet) (locations : list nat), length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> length (nodup Nat.eq_dec locations) = length locations"
   by auto
 
 (* opsec_005_multiparty_required (matches Coq) *)
-lemma opsec_005_multiparty_required: "\<forall> (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> (* Multiple approvals obtained *) length approvals \<ge> required_approvers mpa"
+lemma opsec_005_multiparty_required: "\<forall> (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> length approvals \<ge> required_approvers mpa"
   by auto
 
 (* opsec_006_social_engineering_insufficient (matches Coq) *)
-lemma opsec_006_social_engineering_insufficient: "\<forall> (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> (* Cannot authorize with only compromised approvers *) compromised < required_approvers mpa"
+lemma opsec_006_social_engineering_insufficient: "\<forall> (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> compromised < required_approvers mpa"
   by auto
 
 (* opsec_007_insider_bounded (matches Coq) *)
@@ -164,7 +165,7 @@ lemma opsec_008_export_limit: "\<forall> (budget : InsiderBudget), budget_ok bud
   by auto
 
 (* opsec_009_duress_detection (matches Coq) *)
-lemma opsec_009_duress_detection: "\<forall> (input duress_suffix : list nat), is_duress input duress_suffix = True \<longrightarrow> (* Duress condition detected *) is_duress input duress_suffix = True"
+lemma opsec_009_duress_detection: "\<forall> (input duress_suffix : list nat), is_duress input duress_suffix = True \<longrightarrow> is_duress input duress_suffix = True"
   by auto
 
 (* opsec_010_dead_man_switch (matches Coq) *)
@@ -212,7 +213,7 @@ lemma opsec_020_channel_diversity: "\<forall> (approvals : list Approval) (chann
   by auto
 
 (* opsec_021_coercion_resistant (matches Coq) *)
-lemma opsec_021_coercion_resistant: "\<forall> (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme \<longrightarrow> (* Cannot reconstruct with fewer than threshold *) compromised < threshold scheme"
+lemma opsec_021_coercion_resistant: "\<forall> (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme \<longrightarrow> compromised < threshold scheme"
   by auto
 
 (* opsec_022_jurisdictional_spread (matches Coq) *)

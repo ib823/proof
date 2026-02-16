@@ -237,7 +237,7 @@ lemma OMEGA_003_01_syn_cookie_verify_sound: "\<forall> secret cookie, syn_cookie
   by auto
 
 (* OMEGA_003_02_syn_cookie_wrong_secret (matches Coq) *)
-lemma OMEGA_003_02_syn_cookie_wrong_secret: "\<forall> s1 s2 cookie, s1 \<noteq> s2 \<longrightarrow> (* Wrong secret produces different MAC *) syn_cookie_generate s1 cookie \<noteq> syn_cookie_generate s2 cookie"
+lemma OMEGA_003_02_syn_cookie_wrong_secret: "\<forall> s1 s2 cookie, s1 \<noteq> s2 \<longrightarrow> syn_cookie_generate s1 cookie \<noteq> syn_cookie_generate s2 cookie"
   by simp
 
 (* OMEGA_003_03_syn_cookie_deterministic (matches Coq) *)

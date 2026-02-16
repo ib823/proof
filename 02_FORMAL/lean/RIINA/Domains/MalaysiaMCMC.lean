@@ -119,7 +119,7 @@ theorem csp_lowest_level : ∀ l, license_level CSP ≤ license_level l := by
 theorem license_level_positive : ∀ l, license_level l ≥ 1 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Compliance field decomposition -/
+-- Compliance field decomposition
 /-- mcmc_compliant_licensed (matches Coq) -/
 theorem mcmc_compliant_licensed : ∀ c, mcmc_fully_compliant c → mcmc_licensed c = true := by
   intro h; exact h
@@ -152,7 +152,7 @@ theorem mcmc_compliant_all_five : ∀ c, mcmc_fully_compliant c → count_mcmc_c
 theorem license_eqb_refl : ∀ l, license_eqb l l = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Fraud controls require identity -/
+-- Fraud controls require identity
 /-- fraud_requires_identity (matches Coq) -/
 theorem fraud_requires_identity : ∀ id_v tx_s audit, fraud_controls_active id_v tx_s audit → id_v = true := by
   intro h; exact h
@@ -165,7 +165,7 @@ theorem fraud_requires_signing : ∀ id_v tx_s audit, fraud_controls_active id_v
 theorem fraud_requires_audit : ∀ id_v tx_s audit, fraud_controls_active id_v tx_s audit → audit = true := by
   intro h; exact h
 
-/-- Four license types -/
+-- Four license types
 /-- mcmc_license_count (matches Coq) -/
 theorem mcmc_license_count : length all_mcmc_licenses = 4 := by
   rfl

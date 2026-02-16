@@ -150,41 +150,41 @@ definition inventory_valid :: "bool" where
 (* Section J01 - PCI-DSS for E-commerce
     Reference: IND_J_RETAIL.md Section 3.1 *)
 (* ecommerce_pci_compliance (matches Coq) *)
-lemma ecommerce_pci_compliance: "\<forall> (controls : EcommerceControls), pci_compliant_payment controls = True \<longrightarrow> (* E-commerce PCI-DSS compliance *) True"
+lemma ecommerce_pci_compliance: "\<forall> (controls : EcommerceControls), pci_compliant_payment controls = True \<longrightarrow> True"
   by simp
 
 (* Section J02 - CCPA Consumer Rights
     Reference: IND_J_RETAIL.md Section 3.2 *)
 (* ccpa_compliance (matches Coq) *)
-lemma ccpa_compliance: "\<forall> (consumer : nat) (right : PrivacyRight), (* CCPA consumer rights honored *) True"
+lemma ccpa_compliance: "\<forall> (consumer : nat) (right : PrivacyRight), True"
   by simp
 
 (* Section J03 - GDPR Compliance
     Reference: IND_J_RETAIL.md Section 3.3 *)
 (* gdpr_compliance (matches Coq) *)
-lemma gdpr_compliance: "\<forall> (data_subject : nat) (processing : nat), (* GDPR data protection *) True"
+lemma gdpr_compliance: "\<forall> (data_subject : nat) (processing : nat), True"
   by simp
 
 (* Section J04 - OWASP Top 10 Prevention
     Reference: IND_J_RETAIL.md Section 3.4 *)
 (* owasp_prevention (matches Coq) *)
-lemma owasp_prevention: "\<forall> (controls : EcommerceControls), input_validation controls = True \<longrightarrow> sql_injection_prevention controls = True \<longrightarrow> xss_prevention controls = True \<longrightarrow> (* OWASP Top 10 mitigated *) True"
+lemma owasp_prevention: "\<forall> (controls : EcommerceControls), input_validation controls = True \<longrightarrow> sql_injection_prevention controls = True \<longrightarrow> xss_prevention controls = True \<longrightarrow> True"
   by simp
 
 (* Section J05 - SOC 2 Trust Principles
     Reference: IND_J_RETAIL.md Section 3.5 *)
 (* soc2_compliance (matches Coq) *)
-lemma soc2_compliance: "\<forall> (service : nat) (criteria : nat), (* SOC 2 trust principles met *) True"
+lemma soc2_compliance: "\<forall> (service : nat) (criteria : nat), True"
   by simp
 
 (* TLS required for all customer data *)
 (* tls_required (matches Coq) *)
-lemma tls_required: "\<forall> (controls : EcommerceControls) (data : ConsumerData), tls_encryption controls = True \<longrightarrow> (* All customer data encrypted in transit *) True"
+lemma tls_required: "\<forall> (controls : EcommerceControls) (data : ConsumerData), tls_encryption controls = True \<longrightarrow> True"
   by simp
 
 (* CSRF tokens required for state-changing operations *)
 (* csrf_tokens_required (matches Coq) *)
-lemma csrf_tokens_required: "\<forall> (controls : EcommerceControls), csrf_protection controls = True \<longrightarrow> (* CSRF protection active *) True"
+lemma csrf_tokens_required: "\<forall> (controls : EcommerceControls), csrf_protection controls = True \<longrightarrow> True"
   by simp
 
 (* payment_biometric_highest (matches Coq) *)

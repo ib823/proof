@@ -147,7 +147,7 @@ lemma constant_time_prevents_timing_attack: "\<forall> (ctx : CryptoContext) (op
 
 (* Non-constant time is vulnerable *)
 (* non_constant_time_vulnerable (matches Coq) *)
-lemma non_constant_time_vulnerable: "\<forall> (ctx : CryptoContext), ctx_constant_time ctx = False \<longrightarrow> (* System is potentially vulnerable - but our system enforces constant time *) True"
+lemma non_constant_time_vulnerable: "\<forall> (ctx : CryptoContext), ctx_constant_time ctx = False \<longrightarrow> True"
   by auto
 
 (* Key never exposed: secure storage implies not in plaintext *)

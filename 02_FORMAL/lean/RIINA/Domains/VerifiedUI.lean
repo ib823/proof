@@ -550,9 +550,9 @@ def required_style (s : ErrorSeverity) : DisplayStyle :=
   | .sevError => StyleWarning
   | .sevCritical => StyleDanger
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     HELPER LEMMAS
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- filter_preserves_property (matches Coq) -/
 theorem filter_preserves_property : ∀ {A : Type} (f : A → bool) (P : A → Prop) (l : list A), (∀ x, f x = true → P x) → Forall P (filter f l) := by
   simp_all [Bool.and_eq_true]
@@ -661,22 +661,22 @@ theorem filter_length_le : ∀ {A : Type} (f : A → bool) (l : list A), len (fi
 theorem firstn_length_le2 : ∀ {A : Type} (n : nat) (l : list A), len (firstn n l) ≤ len l := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_002_01: Input Length Bounded
-    Sanitized input never exceeds max_length. -/
+-- UX_002_01: Input Length Bounded
+    Sanitized input never exceeds max_length.
 /-- UX_002_01_input_length_bounded (matches Coq) -/
 theorem UX_002_01_input_length_bounded : ∀ field, let result := sanitize_input field in len (field_data result) ≤ input_max_length result := by
   omega
 
-/-- UX_002_02: XSS Injection Impossible
+-- UX_002_02: XSS Injection Impossible
     Sanitized input with a whitelist that rejects dangerous chars
-    contains no dangerous characters. -/
+    contains no dangerous characters.
 /-- UX_002_02_xss_injection_impossible (matches Coq) -/
 theorem UX_002_02_xss_injection_impossible : ∀ field, (∀ c, input_allowed field c = true → char_is_dangerous c = false) → let result := sanitize_input field in Forall (fun c => char_is_dangerous c = false) (field_data result) := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_002_03: SQL Injection Impossible
+-- UX_002_03: SQL Injection Impossible
     Sanitized input with a whitelist that rejects SQL metacharacters
-    contains no SQL metacharacters. -/
+    contains no SQL metacharacters.
 /-- UX_002_03_sql_injection_impossible (matches Coq) -/
 theorem UX_002_03_sql_injection_impossible : ∀ field, (∀ c, input_allowed field c = true → char_is_sql_meta c = false) → let result := sanitize_input field in Forall (fun c => char_is_sql_meta c = false) (field_data result) := by
   simp_all [Bool.and_eq_true]
@@ -689,68 +689,68 @@ theorem filter_id_forall : ∀ {A : Type} (f : A → bool) (l : list A), Forall 
 theorem firstn_all_le : ∀ {A : Type} (n : nat) (l : list A), len l ≤ n → firstn n l = l := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_002_04: Input Sanitization Idempotent
-    Sanitizing an already-sanitized input returns the same data. -/
+-- UX_002_04: Input Sanitization Idempotent
+    Sanitizing an already-sanitized input returns the same data.
 /-- UX_002_04_input_idempotent (matches Coq) -/
 theorem UX_002_04_input_idempotent : ∀ field, input_is_safe field → field_data (sanitize_input field) = field_data field := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_002_05: Empty Input Safe
-    An empty input field is always safe after sanitization. -/
+-- UX_002_05: Empty Input Safe
+    An empty input field is always safe after sanitization.
 /-- UX_002_05_empty_input_safe (matches Coq) -/
 theorem UX_002_05_empty_input_safe : ∀ max_len allowed, let field := mkInputField [] max_len allowed false in let result := sanitize_input field in field_data result = [] ∧ input_sanitized result = true := by
   cases ‹_› <;> simp
 
-/-- UX_002_06: Sanitize Preserves Safe Input
-    If input was already safe, sanitize returns the same content. -/
+-- UX_002_06: Sanitize Preserves Safe Input
+    If input was already safe, sanitize returns the same content.
 /-- UX_002_06_sanitize_preserves_safe (matches Coq) -/
 theorem UX_002_06_sanitize_preserves_safe : ∀ field, input_is_safe field → field_data (sanitize_input field) = field_data field := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_002_07: Sanitized Flag Set
-    After sanitization, the sanitized flag is always true. -/
+-- UX_002_07: Sanitized Flag Set
+    After sanitization, the sanitized flag is always true.
 /-- UX_002_07_sanitized_flag_set (matches Coq) -/
 theorem UX_002_07_sanitized_flag_set : ∀ field, input_sanitized (sanitize_input field) = true := by
   simp
 
-/-- UX_002_08: Sanitize Never Increases Length
-    Sanitized output is never longer than the original input. -/
+-- UX_002_08: Sanitize Never Increases Length
+    Sanitized output is never longer than the original input.
 /-- UX_002_08_sanitize_never_increases (matches Coq) -/
 theorem UX_002_08_sanitize_never_increases : ∀ field, len (field_data (sanitize_input field)) ≤ len (field_data field) := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_003_01: Focus Always Visible
-    The focused element is always in the visible elements list. -/
+-- UX_003_01: Focus Always Visible
+    The focused element is always in the visible elements list.
 /-- UX_003_01_focus_always_visible (matches Coq) -/
 theorem UX_003_01_focus_always_visible : ∀ vfs, tab_order (vf_state vfs) ≠ [] → ∃ eid, get_focused_id (vf_state vfs) = Some eid ∧ In eid (vf_visible_elements vfs) := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_003_02: Focus Order Deterministic
-    The same focus state always resolves to the same focused element. -/
+-- UX_003_02: Focus Order Deterministic
+    The same focus state always resolves to the same focused element.
 /-- UX_003_02_focus_order_deterministic (matches Coq) -/
 theorem UX_003_02_focus_order_deterministic : ∀ fs1 fs2, focused_element fs1 = focused_element fs2 → tab_order fs1 = tab_order fs2 → get_focused_id fs1 = get_focused_id fs2 := by
   rfl
 
-/-- UX_003_03: Focus Wraps Around
-    When focus is at the last element, focus_next goes to index 0. -/
+-- UX_003_03: Focus Wraps Around
+    When focus is at the last element, focus_next goes to index 0.
 /-- UX_003_03_focus_wraps_around (matches Coq) -/
 theorem UX_003_03_focus_wraps_around : ∀ fs, tab_order fs ≠ [] → focused_element fs = len (tab_order fs) - 1 → len (tab_order fs) ≥ 1 → focused_element (focus_next fs) = 0 := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_003_04: Focus Trap in Modal
-    When a modal is active, focused elements are within the modal. -/
+-- UX_003_04: Focus Trap in Modal
+    When a modal is active, focused elements are within the modal.
 /-- UX_003_04_focus_trap_in_modal (matches Coq) -/
 theorem UX_003_04_focus_trap_in_modal : ∀ vfs eid, focus_modal_active (vf_state vfs) = true → In eid (tab_order (vf_state vfs)) → In eid (focus_modal_elements (vf_state vfs)) := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_003_05: No Focus Outside Tab Order
-    The focused index is always within the tab order length. -/
+-- UX_003_05: No Focus Outside Tab Order
+    The focused index is always within the tab order length.
 /-- UX_003_05_no_focus_outside_bounds (matches Coq) -/
 theorem UX_003_05_no_focus_outside_bounds : ∀ fs, tab_order fs ≠ [] → focus_valid fs → focused_element (focus_next fs) < len (tab_order (focus_next fs)) := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_003_06: Focus Moves Forward
-    Tab key always moves focus to the next index (or wraps). -/
+-- UX_003_06: Focus Moves Forward
+    Tab key always moves focus to the next index (or wraps).
 /-- UX_003_06_focus_moves_forward (matches Coq) -/
 theorem UX_003_06_focus_moves_forward : ∀ fs, tab_order fs ≠ [] → focus_valid fs → focused_element (focus_next fs) = focused_element fs + 1 ∨ focused_element (focus_next fs) = 0 := by
   rfl
@@ -763,14 +763,14 @@ theorem UX_004_01_wcag_aa_contrast : wcag_aa black white := by
 theorem UX_004_02_wcag_aaa_contrast : wcag_aaa black white := by
   omega
 
-/-- UX_004_03: Large Text Relaxed Threshold
-    WCAG AAA compliance implies large text compliance (since 7:1 > 3:1). -/
+-- UX_004_03: Large Text Relaxed Threshold
+    WCAG AAA compliance implies large text compliance (since 7:1 > 3:1).
 /-- UX_004_03_large_text_relaxed (matches Coq) -/
 theorem UX_004_03_large_text_relaxed : ∀ c1 c2, wcag_aaa c1 c2 → wcag_large_text c1 c2 := by
   omega
 
-/-- UX_004_04: Contrast Symmetric
-    Contrast between (a, b) equals contrast between (b, a). -/
+-- UX_004_04: Contrast Symmetric
+    Contrast between (a, b) equals contrast between (b, a).
 /-- UX_004_04_contrast_symmetric (matches Coq) -/
 theorem UX_004_04_contrast_symmetric : ∀ c1 c2 ratio, contrast_meets_ratio c1 c2 ratio <-> contrast_meets_ratio c2 c1 ratio := by
   intro h; exact h
@@ -779,128 +779,128 @@ theorem UX_004_04_contrast_symmetric : ∀ c1 c2 ratio, contrast_meets_ratio c1 
 theorem UX_004_05_same_color_min_contrast : ∀ c, contrast_meets_ratio c c 10 := by
   omega
 
-/-- UX_004_06: Black on White Passes AAA
-    Black on white always meets the strongest WCAG contrast requirement. -/
+-- UX_004_06: Black on White Passes AAA
+    Black on white always meets the strongest WCAG contrast requirement.
 /-- UX_004_06_black_white_max (matches Coq) -/
 theorem UX_004_06_black_white_max : wcag_aaa black white := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_004_07: AA Implies Large Text Compliance
-    If colors meet AA normal text, they meet large text (3:1) too. -/
+-- UX_004_07: AA Implies Large Text Compliance
+    If colors meet AA normal text, they meet large text (3:1) too.
 /-- UX_004_07_aa_implies_large_text (matches Coq) -/
 theorem UX_004_07_aa_implies_large_text : ∀ c1 c2, wcag_aa c1 c2 → wcag_large_text c1 c2 := by
   omega
 
-/-- UX_005_01: Breakpoint Deterministic
-    Same width always gives the same breakpoint classification. -/
+-- UX_005_01: Breakpoint Deterministic
+    Same width always gives the same breakpoint classification.
 /-- UX_005_01_breakpoint_deterministic (matches Coq) -/
 theorem UX_005_01_breakpoint_deterministic : ∀ w1 w2, w1 = w2 → classify_breakpoint w1 = classify_breakpoint w2 := by
   rfl
 
-/-- UX_005_02: Elements Fit Viewport
-    In a verified responsive layout, all element widths fit within viewport. -/
+-- UX_005_02: Elements Fit Viewport
+    In a verified responsive layout, all element widths fit within viewport.
 /-- UX_005_02_elements_fit_viewport (matches Coq) -/
 theorem UX_005_02_elements_fit_viewport : ∀ rl e, In e (rl_elements rl) → le_width e ≤ vp_width (rl_viewport rl) := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_005_03: No Horizontal Scroll
+-- UX_005_03: No Horizontal Scroll
     Content width of any single element never exceeds viewport width,
-    so no horizontal scrolling is needed. -/
+    so no horizontal scrolling is needed.
 /-- UX_005_03_no_horizontal_scroll (matches Coq) -/
 theorem UX_005_03_no_horizontal_scroll : ∀ rl, Forall (fun e => le_width e ≤ vp_width (rl_viewport rl)) (rl_elements rl) := by
   intro h; exact h
 
-/-- UX_005_04: Touch Targets Minimum Size
-    Interactive elements in a verified layout are at least 44x44 px. -/
+-- UX_005_04: Touch Targets Minimum Size
+    Interactive elements in a verified layout are at least 44x44 px.
 /-- UX_005_04_touch_targets_minimum_size (matches Coq) -/
 theorem UX_005_04_touch_targets_minimum_size : ∀ rl e, In e (rl_elements rl) → le_is_interactive e = true → le_width e ≥ 44 ∧ le_height e ≥ 44 := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_005_05: Text Readable at Breakpoint
-    Font size meets minimum for the current breakpoint. -/
+-- UX_005_05: Text Readable at Breakpoint
+    Font size meets minimum for the current breakpoint.
 /-- UX_005_05_text_readable_at_breakpoint (matches Coq) -/
 theorem UX_005_05_text_readable_at_breakpoint : ∀ rl e, In e (rl_elements rl) → le_font_size e ≥ match classify_breakpoint (vp_width (rl_viewport rl)) with | BPMobile => 14 | BPTablet => 14 | BPDesktop => 12 end := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_005_06: Layout Stable on Resize (Pure Function Property)
+-- UX_005_06: Layout Stable on Resize (Pure Function Property)
     Applying the same breakpoint classification twice yields the same result.
-    This ensures no layout thrashing: the layout is a pure function of width. -/
+    This ensures no layout thrashing: the layout is a pure function of width.
 /-- UX_005_06_layout_stable_on_resize (matches Coq) -/
 theorem UX_005_06_layout_stable_on_resize : ∀ w, classify_breakpoint w = classify_breakpoint w := by
   rfl
 
-/-- UX_005_07: Breakpoint Boundaries Correct
-    Width < 768 is Mobile, 768-1023 is Tablet, >= 1024 is Desktop. -/
+-- UX_005_07: Breakpoint Boundaries Correct
+    Width < 768 is Mobile, 768-1023 is Tablet, >= 1024 is Desktop.
 /-- UX_005_07_breakpoint_boundaries (matches Coq) -/
 theorem UX_005_07_breakpoint_boundaries : ∀ w, (w < mobile_max → classify_breakpoint w = BPMobile) ∧ (mobile_max ≤ w < desktop_min → classify_breakpoint w = BPTablet) ∧ (desktop_min ≤ w → classify_breakpoint w = BPDesktop) := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_006_01: Error Always Visible
-    In a verified error display, the error is always shown to the user. -/
+-- UX_006_01: Error Always Visible
+    In a verified error display, the error is always shown to the user.
 /-- UX_006_01_error_always_visible (matches Coq) -/
 theorem UX_006_01_error_always_visible : ∀ ved, err_visible (ve_display ved) = true := by
   intro h; exact h
 
-/-- UX_006_02: Error Persists Until Acknowledged
-    Critical errors do not auto-dismiss. -/
+-- UX_006_02: Error Persists Until Acknowledged
+    Critical errors do not auto-dismiss.
 /-- UX_006_02_error_persists_until_acknowledged (matches Coq) -/
 theorem UX_006_02_error_persists_until_acknowledged : ∀ ved, err_severity (ve_display ved) = SevCritical → err_auto_dismiss (ve_display ved) = false := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_006_03: Error Message Matches Severity
-    Critical errors use the danger display style. -/
+-- UX_006_03: Error Message Matches Severity
+    Critical errors use the danger display style.
 /-- UX_006_03_error_message_matches_severity (matches Coq) -/
 theorem UX_006_03_error_message_matches_severity : ∀ ved, err_severity (ve_display ved) = SevCritical → err_display_style (ve_display ved) = StyleDanger := by
   cases ‹_› <;> simp
 
-/-- UX_006_04: No Silent Failure
+-- UX_006_04: No Silent Failure
     Every verified error display has a visible indicator —
-    err_visible is true, guaranteeing the user sees the error. -/
+    err_visible is true, guaranteeing the user sees the error.
 /-- UX_006_04_no_silent_failure (matches Coq) -/
 theorem UX_006_04_no_silent_failure : ∀ ved, err_visible (ve_display ved) = true := by
   intro h; exact h
 
-/-- UX_006_05: Error Recoverable
+-- UX_006_05: Error Recoverable
     Every verified error display has an associated recovery action.
-    This is structural — the RecoveryAction field always exists. -/
+    This is structural — the RecoveryAction field always exists.
 /-- UX_006_05_error_recoverable (matches Coq) -/
 theorem UX_006_05_error_recoverable : ∀ ved, ∃ action, err_recovery (ve_display ved) = action := by
   rfl
 
-/-- UX_006_06: Error Message Honest
-    The displayed message matches the actual error in a verified display. -/
+-- UX_006_06: Error Message Honest
+    The displayed message matches the actual error in a verified display.
 /-- UX_006_06_error_message_honest (matches Coq) -/
 theorem UX_006_06_error_message_honest : ∀ ved, err_message (ve_display ved) = err_actual_error (ve_display ved) := by
   intro h; exact h
 
-/-- UX_006_07: Warning Style for Errors
-    Errors (non-critical) use the warning display style. -/
+-- UX_006_07: Warning Style for Errors
+    Errors (non-critical) use the warning display style.
 /-- UX_006_07_warning_style_for_errors (matches Coq) -/
 theorem UX_006_07_warning_style_for_errors : ∀ ved, err_severity (ve_display ved) = SevError → err_display_style (ve_display ved) = StyleWarning := by
   cases ‹_› <;> simp
 
-/-- UX_006_08: Severity Level Monotonic
-    Critical severity has the highest severity level. -/
+-- UX_006_08: Severity Level Monotonic
+    Critical severity has the highest severity level.
 /-- UX_006_08_severity_level_monotonic (matches Coq) -/
 theorem UX_006_08_severity_level_monotonic : ∀ s, severity_level s ≤ severity_level SevCritical := by
   cases ‹_› <;> simp <;> omega
 
-/-- UX_006_09: Info Style Normal
-    Info-level errors use normal display style. -/
+-- UX_006_09: Info Style Normal
+    Info-level errors use normal display style.
 /-- UX_006_09_info_style_normal (matches Coq) -/
 theorem UX_006_09_info_style_normal : ∀ ved, err_severity (ve_display ved) = SevInfo → err_display_style (ve_display ved) = StyleNormal := by
   cases ‹_› <;> simp
 
-/-- UX_007_01: Sanitized Input in Verified UI
+-- UX_007_01: Sanitized Input in Verified UI
     Combining input sanitization with verified UI state:
-    if a field is displayed in a verified UI, its sanitized form is bounded. -/
+    if a field is displayed in a verified UI, its sanitized form is bounded.
 /-- UX_007_01_sanitized_input_in_verified_ui (matches Coq) -/
 theorem UX_007_01_sanitized_input_in_verified_ui : ∀ field ui, verified_ui_state ui → let result := sanitize_input field in len (field_data result) ≤ input_max_length field ∧ input_sanitized result = true := by
   simp_all [Bool.and_eq_true]
 
-/-- UX_007_02: Accessible Error in Responsive Layout
+-- UX_007_02: Accessible Error in Responsive Layout
     A verified error display in a responsive layout is both visible
-    and fits within the viewport. -/
+    and fits within the viewport.
 /-- UX_007_02_accessible_error_in_responsive (matches Coq) -/
 theorem UX_007_02_accessible_error_in_responsive : ∀ ved rl e, In e (rl_elements rl) → err_visible (ve_display ved) = true ∧ le_width e ≤ vp_width (rl_viewport rl) := by
   simp_all [Bool.and_eq_true]
