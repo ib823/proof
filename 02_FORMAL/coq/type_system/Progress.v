@@ -362,4 +362,69 @@ Proof.
   - right. exists v'. exact Heq.
 Qed.
 
+(** ** Value-Type Correspondence *)
+
+(** A value of function type is a lambda *)
+Lemma typed_value_fn_inv : forall v T1 T2 ε ε' Σ,
+  has_type nil Σ Public v (TFn T1 T2 ε) ε' ->
+  value v ->
+  exists x body, v = ELam x T1 body.
+Proof.
+  intros. eapply canonical_fn; eauto.
+Qed.
+
+(** A value of reference type is a location *)
+Lemma typed_value_ref_inv : forall v T sl ε Σ,
+  has_type nil Σ Public v (TRef T sl) ε ->
+  value v ->
+  exists l, v = ELoc l.
+Proof.
+  intros. eapply canonical_ref; eauto.
+Qed.
+
+(** A value of secret type is a classified expression *)
+Lemma typed_value_secret_inv : forall v T ε Σ,
+  has_type nil Σ Public v (TSecret T) ε ->
+  value v ->
+  exists v', v = EClassify v' /\ value v'.
+Proof.
+  intros. eapply canonical_secret; eauto.
+Qed.
+
+(** A value of proof type is a proved expression *)
+Lemma typed_value_proof_inv : forall v T ε Σ,
+  has_type nil Σ Public v (TProof T) ε ->
+  value v ->
+  exists v', v = EProve v' /\ value v'.
+Proof.
+  intros. eapply canonical_proof; eauto.
+Qed.
+
+(** A value of unit type is EUnit *)
+Lemma typed_value_unit_inv : forall v ε Σ,
+  has_type nil Σ Public v TUnit ε ->
+  value v ->
+  v = EUnit.
+Proof.
+  intros. eapply canonical_unit; eauto.
+Qed.
+
+(** A value of int type is an EInt *)
+Lemma typed_value_int_inv : forall v ε Σ,
+  has_type nil Σ Public v TInt ε ->
+  value v ->
+  exists n, v = EInt n.
+Proof.
+  intros. eapply canonical_int; eauto.
+Qed.
+
+(** A value of string type is an EString *)
+Lemma typed_value_string_inv : forall v ε Σ,
+  has_type nil Σ Public v TString ε ->
+  value v ->
+  exists s, v = EString s.
+Proof.
+  intros. eapply canonical_string; eauto.
+Qed.
+
 (** End of Progress.v *)

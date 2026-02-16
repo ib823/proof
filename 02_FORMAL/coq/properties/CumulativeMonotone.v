@@ -228,4 +228,47 @@ Proof.
   intros. exact H.
 Qed.
 
+(** ** Store Relation at Zero *)
+
+Lemma store_rel_le_zero : forall Σ st1 st2,
+  store_rel_le 0 Σ st1 st2 ->
+  store_max st1 = store_max st2.
+Proof.
+  intros Σ st1 st2 [Hmax _]. exact Hmax.
+Qed.
+
+(** ** Combined Step and Store Monotonicity for Store Relation *)
+
+Lemma store_rel_le_mono : forall n m Σ st1 st2,
+  m <= n ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le m Σ st1 st2.
+Proof.
+  intros n m Σ st1 st2 Hle Hrel.
+  apply store_rel_le_mono_step with n; auto.
+Qed.
+
+(** ** Store Relation Monotonicity Composition *)
+
+Lemma store_rel_le_mono_chain : forall k m n Σ st1 st2,
+  k <= m ->
+  m <= n ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le k Σ st1 st2.
+Proof.
+  intros k m n Σ st1 st2 Hkm Hmn Hrel.
+  apply store_rel_le_mono_step with n; auto. lia.
+Qed.
+
+(** ** Val Rel at Max of Two *)
+
+Lemma val_rel_le_at_min : forall m n Σ T v1 v2,
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2 ->
+  val_rel_le (min m n) Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hn Hm.
+  apply val_rel_le_to_min. exact Hm.
+Qed.
+
 (** End of CumulativeMonotone.v *)

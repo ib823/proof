@@ -234,4 +234,47 @@ Proof.
   - exact Hrel.
 Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Monotonicity with Nat.sub                                      *)
+(** ----------------------------------------------------------------- *)
+
+(** Related at n implies related at n - k (for k <= n) *)
+Lemma val_rel_le_sub : forall k n Σ T v1 v2,
+  k <= n ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le (n - k) Σ T v1 v2.
+Proof.
+  intros k n Σ T v1 v2 Hk Hrel.
+  apply val_rel_le_monotone with n.
+  - lia.
+  - exact Hrel.
+Qed.
+
+(** Related at n implies related at n / 2 (integer division) *)
+Lemma val_rel_le_div2 : forall n Σ T v1 v2,
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le (n / 2) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hrel.
+  apply val_rel_le_monotone with n.
+  - apply PeanoNat.Nat.div_le_upper_bound. lia. lia.
+  - exact Hrel.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Additional Composition Lemmas                                  *)
+(** ----------------------------------------------------------------- *)
+
+(** If related at both n and m, related at min *)
+Lemma val_rel_le_both_min : forall m n Σ T v1 v2,
+  val_rel_le m Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le (min m n) Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hm Hn.
+  apply val_rel_le_monotone with m.
+  - apply PeanoNat.Nat.le_min_l.
+  - exact Hm.
+Qed.
+
 (** End of file - ZERO ADMITS *)
