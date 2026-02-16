@@ -600,4 +600,46 @@ Proof.
   - exact Hpw.
 Qed.
 
+(** ** Structural Decomposition of performs_within *)
+
+(** Pair decomposition: if pair performs within eff, so do both components *)
+Lemma performs_within_pair_components : forall e1 e2 eff,
+  performs_within (EPair e1 e2) eff ->
+  performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros e1 e2 eff H. simpl in H. exact H.
+Qed.
+
+(** App decomposition: if app performs within eff, so do both sub-expressions *)
+Lemma performs_within_app_components : forall e1 e2 eff,
+  performs_within (EApp e1 e2) eff ->
+  performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros e1 e2 eff H. simpl in H. exact H.
+Qed.
+
+(** If decomposition: if-expression components all perform within eff *)
+Lemma performs_within_if_components : forall e1 e2 e3 eff,
+  performs_within (EIf e1 e2 e3) eff ->
+  performs_within e1 eff /\ performs_within e2 eff /\ performs_within e3 eff.
+Proof.
+  intros e1 e2 e3 eff H. simpl in H. exact H.
+Qed.
+
+(** Let decomposition: both binding and body perform within eff *)
+Lemma performs_within_let_components : forall x e1 e2 eff,
+  performs_within (ELet x e1 e2) eff ->
+  performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros x e1 e2 eff H. simpl in H. exact H.
+Qed.
+
+(** Case decomposition: scrutinee and both branches perform within eff *)
+Lemma performs_within_case_components : forall e x1 e1 x2 e2 eff,
+  performs_within (ECase e x1 e1 x2 e2) eff ->
+  performs_within e eff /\ performs_within e1 eff /\ performs_within e2 eff.
+Proof.
+  intros e x1 e1 x2 e2 eff H. simpl in H. exact H.
+Qed.
+
 (** End of EffectSystem.v *)

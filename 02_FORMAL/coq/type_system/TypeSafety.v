@@ -359,4 +359,59 @@ Proof.
   intros. eapply type_safety; eauto.
 Qed.
 
+(** ** Stuck Decomposition *)
+
+(** If stuck, not a value *)
+Lemma stuck_implies_not_value : forall e st ctx,
+  stuck (e, st, ctx) -> ~ value e.
+Proof.
+  intros e st ctx [Hnval _]. exact Hnval.
+Qed.
+
+(** If stuck, cannot step *)
+Lemma stuck_implies_not_stepping : forall e st ctx,
+  stuck (e, st, ctx) -> ~ exists cfg', (e, st, ctx) --> cfg'.
+Proof.
+  intros e st ctx [_ Hnstep]. exact Hnstep.
+Qed.
+
+(** Value or stepping implies not stuck *)
+Lemma not_stuck_from_value_or_step : forall e st ctx,
+  (value e \/ exists e' st' ctx', (e, st, ctx) --> (e', st', ctx')) ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros e st ctx [Hv | [e' [st' [ctx' Hstep]]]] [Hnval Hnstep].
+  - apply Hnval. exact Hv.
+  - apply Hnstep. exists (e', st', ctx'). exact Hstep.
+Qed.
+
+(** Stuck implies neither value nor stepping — constructive version *)
+Lemma stuck_complete : forall e st ctx,
+  stuck (e, st, ctx) ->
+  ~ value e /\ ~ exists e' st' ctx', (e, st, ctx) --> (e', st', ctx').
+Proof.
+  intros e st ctx [Hnval Hnstep]. split.
+  - exact Hnval.
+  - intros [e' [st' [ctx' Hstep]]].
+    apply Hnstep. exists (e', st', ctx'). exact Hstep.
+Qed.
+
+(** Type safety for proof-typed terms *)
+Corollary proof_type_safety : forall e T ε Σ st ctx,
+  has_type nil Σ Public e (TProof T) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
+(** Type safety for constant-time-typed terms *)
+Corollary constant_time_type_safety : forall e T ε Σ st ctx,
+  has_type nil Σ Public e (TConstantTime T) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
 (** End of TypeSafety.v *)

@@ -585,4 +585,51 @@ Proof.
   exists v, st, ctx. split; [apply MS_Refl | exact Hval].
 Qed.
 
+(** ** val_rel_0 Structural Properties *)
+
+(** val_rel_0 is reflexive *)
+Lemma val_rel_0_refl : forall Σ T v, val_rel_0 Σ T v v.
+Proof.
+  intros. unfold val_rel_0. exact I.
+Qed.
+
+(** val_rel_0 is symmetric *)
+Lemma val_rel_0_sym : forall Σ T v1 v2,
+  val_rel_0 Σ T v1 v2 -> val_rel_0 Σ T v2 v1.
+Proof.
+  intros. unfold val_rel_0. exact I.
+Qed.
+
+(** store_rel_0 is transitive *)
+Lemma store_rel_0_trans : forall Σ st1 st2 st3,
+  store_rel_0 Σ st1 st2 -> store_rel_0 Σ st2 st3 -> store_rel_0 Σ st1 st3.
+Proof.
+  intros. unfold store_rel_0. exact I.
+Qed.
+
+(** If e steps to e' and e' terminates, then e terminates *)
+Lemma terminates_step : forall e e' st st' ctx ctx',
+  (e, st, ctx) --> (e', st', ctx') ->
+  terminates e' st' ctx' ->
+  terminates e st ctx.
+Proof.
+  intros e e' st st' ctx ctx' Hstep [v [st'' [ctx'' [Hms Hval]]]].
+  exists v, st'', ctx''.
+  split.
+  - eapply MS_Step; eauto.
+  - exact Hval.
+Qed.
+
+(** Combined if termination: if value is a bool and both branches terminate *)
+Lemma if_terminates : forall b e2 e3 st ctx,
+  terminates e2 st ctx ->
+  terminates e3 st ctx ->
+  terminates (EIf (EBool b) e2 e3) st ctx.
+Proof.
+  intros b e2 e3 st ctx Hterm2 Hterm3.
+  destruct b.
+  - exact (if_true_terminates e2 e3 st ctx Hterm2).
+  - exact (if_false_terminates e2 e3 st ctx Hterm3).
+Qed.
+
 (** End of TerminationLemmas.v *)
