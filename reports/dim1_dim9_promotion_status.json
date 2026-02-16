@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-02-16T04:39:31Z",
-  "repo_head": "9e966673cf806d0b7aa7f52d73a96609193c5a70",
+  "generated_utc": "2026-02-16T05:05:21Z",
+  "repo_head": "a41b160a844926a47beb40d39ce5f993c27ad0ec",
   "scope": "dim1_dim9_promotion_readiness",
   "strict_tools": 0,
   "provision": {
@@ -10,10 +10,11 @@
   },
   "tools": {
     "lake": true,
-    "isabelle": true,
+    "isabelle": false,
     "docker": false,
-    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
-    "isabelle_local_error": "",
+    "isabelle_bin": "",
+    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-isabelle.sh",
     "java": true,
     "tla2tools_jar": false,
     "alloy_jar": false,
@@ -33,7 +34,8 @@
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=lake_core_build_failed lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=isabelle_core_build_local_failed lean_tail=./././RIINA/Foundations/Syntax.lean:542:84: error: unknown identifier 'EInt' ./././RIINA/Foundations/Syntax.lean:542:104: error: unknown identifier 'EString' ./././RIINA/Foundations/Syntax.lean:542:134: error: unknown identifier 'ELam' ./././RIINA/Foundations/Syntax.lean:542:165: error: unknown identifier 'EPair' ./././RIINA/Foundations/Syntax.lean:542:192: error: unknown identifier 'EInl' ./././RIINA/Foundations/Syntax.lean:542:216: error: unknown identifier 'EInr' ./././RIINA/Foundations/Syntax.lean:542:238: error: unknown identifier 'ELoc' ./././RIINA/Foundations/Syntax.lean:542:258: error: unknown identifier 'EClassify' ./././RIINA/Foundations/Syntax.lean:542:283: error: unknown identifier 'EProve' error: external command `/home/codespace/.elan/toolchains/leanprover--lean4---v4.5.0/bin/lean` exited with code 1 [0/6] Building RIINA.Foundations.Semantics [0/6] Building RIINA.Foundations.Syntax "
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=lake_core_build_failed lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-isabelle.sh lean_tail=./././RIINA/Foundations/Syntax.lean:542:84: error: unknown identifier 'EInt' ./././RIINA/Foundations/Syntax.lean:542:104: error: unknown identifier 'EString' ./././RIINA/Foundations/Syntax.lean:542:134: error: unknown identifier 'ELam' ./././RIINA/Foundations/Syntax.lean:542:165: error: unknown identifier 'EPair' ./././RIINA/Foundations/Syntax.lean:542:192: error: unknown identifier 'EInl' ./././RIINA/Foundations/Syntax.lean:542:216: error: unknown identifier 'EInr' ./././RIINA/Foundations/Syntax.lean:542:238: error: unknown identifier 'ELoc' ./././RIINA/Foundations/Syntax.lean:542:258: error: unknown identifier 'EClassify' ./././RIINA/Foundations/Syntax.lean:542:283: error: unknown identifier 'EProve' error: external command `/home/codespace/.elan/toolchains/leanprover--lean4---v4.5.0/bin/lean` exited with code 1 [0/6] Building RIINA.Foundations.Syntax [0/6] Building RIINA.Foundations.Semantics "
   },
   "dimension_9": {
     "status": "PASS",
