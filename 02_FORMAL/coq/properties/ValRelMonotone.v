@@ -277,4 +277,74 @@ Proof.
   - exact Hm.
 Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Step Down by Three                                              *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_step_down_3 : forall n Σ T v1 v2,
+  val_rel_le (S (S (S n))) Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hrel.
+  apply val_rel_le_pred. apply val_rel_le_pred. apply val_rel_le_pred. exact Hrel.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Greater-or-Equal Variant                                        *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_from_ge : forall m n Σ T v1 v2,
+  n >= m ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hge Hrel.
+  apply val_rel_le_monotone with n; auto.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Nat.pred Monotonicity                                           *)
+(** ----------------------------------------------------------------- *)
+
+Lemma val_rel_le_pred_nat : forall n Σ T v1 v2,
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le (Nat.pred n) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hrel.
+  apply val_rel_le_monotone with n; auto. lia.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Projections from Max                                            *)
+(** ----------------------------------------------------------------- *)
+
+(** Left projection: related at max m n implies related at m *)
+Lemma val_rel_le_from_max_l : forall m n Σ T v1 v2,
+  val_rel_le (max m n) Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hmax.
+  apply val_rel_le_from_max in Hmax. destruct Hmax. exact H.
+Qed.
+
+(** Right projection: related at max m n implies related at n *)
+Lemma val_rel_le_from_max_r : forall m n Σ T v1 v2,
+  val_rel_le (max m n) Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hmax.
+  apply val_rel_le_from_max in Hmax. destruct Hmax. exact H0.
+Qed.
+
+(** ----------------------------------------------------------------- *)
+(** * Zero Step is Trivially True                                    *)
+(** ----------------------------------------------------------------- *)
+
+(** val_rel_le at step 0 is I (the trivial proposition) *)
+Lemma val_rel_le_zero_trivial : forall Σ T v1 v2,
+  val_rel_le 0 Σ T v1 v2.
+Proof.
+  intros. simpl. exact I.
+Qed.
+
 (** End of file - ZERO ADMITS *)

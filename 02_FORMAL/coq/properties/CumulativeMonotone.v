@@ -271,4 +271,66 @@ Proof.
   apply val_rel_le_to_min. exact Hm.
 Qed.
 
+(** ** Zero Step is Always Satisfied *)
+
+Lemma val_rel_le_zero_always : forall Σ T v1 v2,
+  val_rel_le 0 Σ T v1 v2.
+Proof.
+  intros. simpl. exact I.
+Qed.
+
+(** ** Strict Step Monotonicity *)
+
+Lemma val_rel_le_mono_step_lt : forall m n Σ T v1 v2,
+  m < n ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2.
+Proof.
+  intros m n Σ T v1 v2 Hlt Hrel.
+  apply val_rel_le_mono_step with n; auto. lia.
+Qed.
+
+(** ** Step Predecessor Monotonicity *)
+
+Lemma val_rel_le_step_pred : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le (pred n) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_mono_step with n; auto. lia.
+Qed.
+
+(** ** Store Relation Step Predecessor *)
+
+Lemma store_rel_le_step_pred : forall n Σ st1 st2,
+  n > 0 ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le (pred n) Σ st1 st2.
+Proof.
+  intros n Σ st1 st2 Hn Hrel.
+  apply store_rel_le_mono_step with n; auto. lia.
+Qed.
+
+(** ** Store Relation Domain Equality Extraction *)
+
+Lemma store_rel_le_domain : forall n Σ st1 st2,
+  store_rel_le n Σ st1 st2 ->
+  store_max st1 = store_max st2.
+Proof.
+  intros n Σ st1 st2 [Hmax _]. exact Hmax.
+Qed.
+
+(** ** Simultaneous Monotonicity to Two Steps *)
+
+Lemma val_rel_le_mono_both : forall m k n Σ T v1 v2,
+  m <= n ->
+  k <= n ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le m Σ T v1 v2 /\ val_rel_le k Σ T v1 v2.
+Proof.
+  intros m k n Σ T v1 v2 Hm Hk Hrel.
+  split; apply val_rel_le_mono_step with n; auto.
+Qed.
+
 (** End of CumulativeMonotone.v *)

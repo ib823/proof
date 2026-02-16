@@ -550,3 +550,73 @@ Proof.
   rewrite sval_rel_tower_S in H.
   destruct H as [_ Hcontent]. exact Hcontent.
 Qed.
+
+(** Tower product left component extraction *)
+Lemma sval_rel_tower_pair_left : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) ->
+  sval_rel_tower n T1 a1 a2.
+Proof.
+  intros n T1 T2 a1 b1 a2 b2 H.
+  apply sval_rel_tower_prod_elim in H.
+  destruct H as (a1' & b1' & a2' & b2' & Heq1 & Heq2 & Hr1 & Hr2).
+  injection Heq1 as Heq1a Heq1b.
+  injection Heq2 as Heq2a Heq2b.
+  subst. exact Hr1.
+Qed.
+
+(** Tower product right component extraction *)
+Lemma sval_rel_tower_pair_right : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) ->
+  sval_rel_tower n T2 b1 b2.
+Proof.
+  intros n T1 T2 a1 b1 a2 b2 H.
+  apply sval_rel_tower_prod_elim in H.
+  destruct H as (a1' & b1' & a2' & b2' & Heq1 & Heq2 & Hr1 & Hr2).
+  injection Heq1 as Heq1a Heq1b.
+  injection Heq2 as Heq2a Heq2b.
+  subst. exact Hr2.
+Qed.
+
+(** Tower function application with monotonicity *)
+Lemma sval_rel_tower_fn_mono_app : forall m n T1 T2 f1 f2 x y,
+  m <= n ->
+  sval_rel_tower (S n) (STFn T1 T2) f1 f2 ->
+  sval_rel_tower m T1 x y ->
+  exists r1 r2, sval_rel_tower m T2 r1 r2.
+Proof.
+  intros m n T1 T2 f1 f2 x y Hle Hfn Harg.
+  assert (Hfn' : sval_rel_tower (S m) (STFn T1 T2) f1 f2).
+  { apply sval_rel_tower_mono with (S n). lia. exact Hfn. }
+  eapply sval_rel_tower_fn_apply; eauto.
+Qed.
+
+(** Tower unit value extraction — left value *)
+Lemma sval_rel_tower_unit_val : forall n v1 v2,
+  sval_rel_tower (S n) STUnit v1 v2 ->
+  v1 = SVUnit.
+Proof.
+  intros n v1 v2 H.
+  apply sval_rel_tower_unit_inv in H. destruct H. exact H.
+Qed.
+
+(** Tower bool equality — both values are equal *)
+Lemma sval_rel_tower_bool_same : forall n v1 v2,
+  sval_rel_tower (S n) STBool v1 v2 ->
+  v1 = v2.
+Proof.
+  intros n v1 v2 H.
+  apply sval_rel_tower_bool_inv in H.
+  destruct H as [b [H1 H2]]. subst. reflexivity.
+Qed.
+
+(** Tower step-up for pairs: build at step S n from step n components *)
+Lemma sval_rel_tower_step_up_pair : forall n T1 T2 a1 b1 a2 b2,
+  sval_rel_tower n T1 a1 a2 ->
+  sval_rel_tower n T2 b1 b2 ->
+  sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2).
+Proof.
+  intros n T1 T2 a1 b1 a2 b2 H1 H2.
+  rewrite sval_rel_tower_S. split.
+  - apply sval_rel_tower_pair; auto.
+  - exists a1, b1, a2, b2. repeat split; auto.
+Qed.
