@@ -715,4 +715,53 @@ Proof.
     + unfold val_rel_struct. repeat split; auto.
 Qed.
 
+(** ** Store Relation Simple Symmetry *)
+
+Lemma store_rel_simple_sym : forall Σ st1 st2,
+  store_rel_simple Σ st1 st2 ->
+  store_rel_simple Σ st2 st1.
+Proof.
+  intros Σ st1 st2 H.
+  unfold store_rel_simple in *.
+  symmetry. exact H.
+Qed.
+
+(** ** Store Relation Simple Transitivity *)
+
+Lemma store_rel_simple_trans : forall Σ st1 st2 st3,
+  store_rel_simple Σ st1 st2 ->
+  store_rel_simple Σ st2 st3 ->
+  store_rel_simple Σ st1 st3.
+Proof.
+  intros Σ st1 st2 st3 H12 H23.
+  unfold store_rel_simple in *.
+  transitivity (store_max st2); auto.
+Qed.
+
+(** ** Store Relation Max Extraction *)
+
+Lemma store_rel_le_max_eq : forall n Σ st1 st2,
+  store_rel_le n Σ st1 st2 ->
+  store_max st1 = store_max st2.
+Proof.
+  intros n Σ st1 st2 [Hmax _]. exact Hmax.
+Qed.
+
+(** ** Store Relation From Successor Step *)
+
+Lemma store_rel_le_from_succ : forall n Σ st1 st2,
+  store_rel_le (S n) Σ st1 st2 ->
+  store_rel_le n Σ st1 st2.
+Proof.
+  intros. apply store_rel_le_step_mono with (S n); auto.
+Qed.
+
+(** ** Val Rel Reference Reflexivity at All Steps *)
+
+Lemma val_rel_le_ref_refl : forall n Σ T sl l,
+  val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l).
+Proof.
+  intros. apply val_rel_le_build_ref.
+Qed.
+
 (** End of StoreRelation.v *)

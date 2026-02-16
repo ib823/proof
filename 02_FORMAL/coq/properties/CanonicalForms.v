@@ -427,4 +427,41 @@ Proof.
   eexists. eexists. split; eassumption.
 Qed.
 
+(** ** Section 10: Compound Value Component Extraction *)
+
+(** A pair value has value components *)
+Lemma canonical_pair_component_values : forall v1 v2,
+  value (EPair v1 v2) -> value v1 /\ value v2.
+Proof.
+  intros v1 v2 Hval. inversion Hval; subst. auto.
+Qed.
+
+(** An inl value has a value inner expression *)
+Lemma canonical_inl_component_value : forall v T,
+  value (EInl v T) -> value v.
+Proof.
+  intros v T Hval. inversion Hval; subst. auto.
+Qed.
+
+(** An inr value has a value inner expression *)
+Lemma canonical_inr_component_value : forall v T,
+  value (EInr v T) -> value v.
+Proof.
+  intros v T Hval. inversion Hval; subst. auto.
+Qed.
+
+(** A classify value has a value inner expression *)
+Lemma canonical_classify_component_value : forall v,
+  value (EClassify v) -> value v.
+Proof.
+  intros v Hval. inversion Hval; subst. auto.
+Qed.
+
+(** A prove value has a value inner expression *)
+Lemma canonical_prove_component_value : forall v,
+  value (EProve v) -> value v.
+Proof.
+  intros v Hval. inversion Hval; subst. auto.
+Qed.
+
 (** End of CanonicalForms.v *)

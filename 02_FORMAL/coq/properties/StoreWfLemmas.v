@@ -357,4 +357,64 @@ Proof.
   simpl in Habs. discriminate.
 Qed.
 
+(** ** Section 21: Absence Agreement *)
+
+(** If no value at location, then no type assignment either *)
+Lemma store_wf_none_implies_ty_none : forall Σ st l,
+  store_wf Σ st ->
+  store_lookup l st = None ->
+  store_ty_lookup l Σ = None.
+Proof.
+  intros Σ st l Hwf Hnone.
+  destruct (store_ty_lookup l Σ) as [[T sl]|] eqn:Hlook; auto.
+  destruct (store_wf_forward _ _ Hwf l T sl Hlook) as [v [Hst _]].
+  rewrite Hnone in Hst. discriminate.
+Qed.
+
+(** If no type assignment, then no runtime value *)
+Lemma store_wf_ty_none_implies_none : forall Σ st l,
+  store_wf Σ st ->
+  store_ty_lookup l Σ = None ->
+  store_lookup l st = None.
+Proof.
+  intros Σ st l Hwf Hnone.
+  destruct (store_lookup l st) as [v|] eqn:Hlook; auto.
+  destruct (store_wf_backward _ _ Hwf l v Hlook) as [T [sl [Htlook _]]].
+  rewrite Hnone in Htlook. discriminate.
+Qed.
+
+(** Absence is bidirectional *)
+Lemma store_wf_absent_agree : forall Σ st l,
+  store_wf Σ st ->
+  store_lookup l st = None <-> store_ty_lookup l Σ = None.
+Proof.
+  intros Σ st l Hwf. split.
+  - apply store_wf_none_implies_ty_none; auto.
+  - apply store_wf_ty_none_implies_none; auto.
+Qed.
+
+(** Direct typing from both lookups *)
+Lemma store_wf_lookup_has_type : forall Σ st l v T sl,
+  store_wf Σ st ->
+  store_lookup l st = Some v ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  has_type nil Σ Public v T EffectPure.
+Proof.
+  intros Σ st l v T sl Hwf Hlook Htlook.
+  destruct (store_wf_forward _ _ Hwf l T sl Htlook) as [v' [Hst [_ Hty]]].
+  rewrite Hlook in Hst. injection Hst as Heq. subst. exact Hty.
+Qed.
+
+(** Type assignment is functionally determined by location *)
+Lemma store_wf_ty_deterministic : forall Σ st l v T1 sl1 T2 sl2,
+  store_wf Σ st ->
+  store_lookup l st = Some v ->
+  store_ty_lookup l Σ = Some (T1, sl1) ->
+  store_ty_lookup l Σ = Some (T2, sl2) ->
+  T1 = T2 /\ sl1 = sl2.
+Proof.
+  intros Σ st l v T1 sl1 T2 sl2 Hwf Hlook Hty1 Hty2.
+  rewrite Hty1 in Hty2. injection Hty2 as H1 H2. auto.
+Qed.
+
 (** End of file - ZERO ADMITS *)
