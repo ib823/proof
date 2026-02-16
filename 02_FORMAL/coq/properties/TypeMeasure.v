@@ -521,4 +521,40 @@ Proof.
   intros T H. simpl in H. exact H.
 Qed.
 
+(** ** Type Size Ordering *)
+
+(** Type depth is always non-negative (trivial but useful) *)
+Lemma ty_depth_nonneg : forall T, 0 <= ty_depth T.
+Proof.
+  intros T. lia.
+Qed.
+
+(** Function type has strictly positive depth *)
+Lemma ty_depth_fn_positive : forall T1 T2 ε,
+  ty_depth (TFn T1 T2 ε) > 0.
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** Product type has strictly positive depth *)
+Lemma ty_depth_prod_positive : forall T1 T2,
+  ty_depth (TProd T1 T2) > 0.
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** Sum type has strictly positive depth *)
+Lemma ty_depth_sum_positive : forall T1 T2,
+  ty_depth (TSum T1 T2) > 0.
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** Secret type has strictly positive depth *)
+Lemma ty_depth_secret_positive : forall T,
+  ty_depth (TSecret T) > 0.
+Proof.
+  intros. simpl. lia.
+Qed.
+
 (** End of TypeMeasure.v *)

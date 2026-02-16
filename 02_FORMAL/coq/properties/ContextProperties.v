@@ -734,4 +734,56 @@ Proof.
   intros. apply T_Var. simpl. rewrite String.eqb_refl. reflexivity.
 Qed.
 
+(** ** Section 19: Additional Typing Utilities *)
+
+(** Typing in empty context: free variables must not exist *)
+Lemma nil_ctx_no_free_vars : forall Σ Δ e T ε x,
+  has_type nil Σ Δ e T ε ->
+  ~ free_in x e.
+Proof.
+  intros Σ Δ e T ε x Hty Hfree.
+  destruct (free_in_context x e nil Σ Δ T ε Hfree Hty) as [T' Hlook].
+  simpl in Hlook. discriminate.
+Qed.
+
+(** Weakening by cons on the right side *)
+Lemma typing_weaken_cons_right : forall Γ Σ Δ e T ε y Ty,
+  has_type Γ Σ Δ e T ε ->
+  has_type (Γ ++ (y, Ty) :: nil) Σ Δ e T ε.
+Proof.
+  intros. apply typing_weaken_append. exact H.
+Qed.
+
+(** Singleton context extension *)
+Lemma typing_weaken_singleton : forall Σ Δ e T ε x Tx,
+  has_type nil Σ Δ e T ε ->
+  has_type ((x, Tx) :: nil) Σ Δ e T ε.
+Proof.
+  intros Σ Δ e T ε x Tx Hty.
+  eapply context_invariance.
+  - exact Hty.
+  - intros y Hfree.
+    exfalso. eapply nil_ctx_no_free_vars; eauto.
+Qed.
+
+(** Double singleton context extension *)
+Lemma typing_weaken_double : forall Σ Δ e T ε x Tx y Ty,
+  has_type nil Σ Δ e T ε ->
+  has_type ((x, Tx) :: (y, Ty) :: nil) Σ Δ e T ε.
+Proof.
+  intros Σ Δ e T ε x Tx y Ty Hty.
+  eapply context_invariance.
+  - exact Hty.
+  - intros z Hfree.
+    exfalso. eapply nil_ctx_no_free_vars; eauto.
+Qed.
+
+(** Typing in empty context is closed *)
+Lemma nil_ctx_typed_closed : forall Σ Δ e T ε,
+  has_type nil Σ Δ e T ε ->
+  forall x, ~ free_in x e.
+Proof.
+  intros. eapply nil_ctx_no_free_vars; eauto.
+Qed.
+
 (** End of ContextProperties.v *)

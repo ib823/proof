@@ -451,4 +451,52 @@ Proof.
     apply Hext. exact Hlook.
 Qed.
 
+(** ** Section 11: Store Typing Extension Preservation *)
+
+(** Extension preserves type at a location *)
+Lemma store_ty_extends_preserves_lookup : forall Σ Σ' l T sl,
+  store_ty_extends Σ Σ' ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  store_ty_lookup l Σ' = Some (T, sl).
+Proof.
+  intros Σ Σ' l T sl Hext Hlook. apply Hext. exact Hlook.
+Qed.
+
+(** Extension is compatible with looking up the same location *)
+Lemma store_ty_extends_same_type : forall Σ Σ' l T1 sl1 T2 sl2,
+  store_ty_extends Σ Σ' ->
+  store_ty_lookup l Σ = Some (T1, sl1) ->
+  store_ty_lookup l Σ' = Some (T2, sl2) ->
+  T1 = T2 /\ sl1 = sl2.
+Proof.
+  intros Σ Σ' l T1 sl1 T2 sl2 Hext Hlook1 Hlook2.
+  assert (Hlook1' : store_ty_lookup l Σ' = Some (T1, sl1)).
+  { apply Hext. exact Hlook1. }
+  rewrite Hlook1' in Hlook2.
+  injection Hlook2 as H1 H2. auto.
+Qed.
+
+(** Adding then looking up same location *)
+Lemma store_ty_update_lookup_same : forall l T sl Σ,
+  store_ty_lookup l (store_ty_update l T sl Σ) = Some (T, sl).
+Proof.
+  intros. apply store_ty_lookup_update_eq.
+Qed.
+
+(** Extension is reflexive (proven directly) *)
+Lemma store_ty_extends_reflexive : forall Σ,
+  store_ty_extends Σ Σ.
+Proof.
+  intros Σ. apply store_ty_extends_refl.
+Qed.
+
+(** Two-step extension chain *)
+Lemma store_ty_extends_chain : forall Σ1 Σ2 Σ3,
+  store_ty_extends Σ1 Σ2 ->
+  store_ty_extends Σ2 Σ3 ->
+  store_ty_extends Σ1 Σ3.
+Proof.
+  intros. apply store_ty_extends_trans with Σ2; auto.
+Qed.
+
 (** End of StoreSafety.v *)
