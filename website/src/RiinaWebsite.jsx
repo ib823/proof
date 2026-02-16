@@ -21,9 +21,6 @@ const RiinaWebsite = () => {
   const runtimeClaim = claimLevelLabel(
     claimLevels.runtimeProofArchitecture || metrics.quality?.runtimeProofStatus || 'generated'
   );
-  const nonCoqMechanization = metrics.quality?.nonCoqMechanization || {};
-  const nonCoqBacklog = nonCoqMechanization.backlog || {};
-
   useEffect(() => { window.scrollTo(0, 0); }, [currentPage]);
 
   // Release data (auto-updated by scripts/release.sh)
@@ -108,7 +105,7 @@ const RiinaWebsite = () => {
       {/* Act 1: Hero */}
       <section className="hero">
         <p className="hero-stat-line">
-          <span>{fmt(metrics.multiProver.totalProofsAllProvers)}</span> proofs &middot; <span>{metrics.multiProver.totalProvers}</span> provers &middot; <span>{metrics.proofs.admitted}</span> admits &middot; <span>{metrics.proofs.axioms}</span> axiom &middot; Verified
+          <span>{fmt(metrics.proofs.qedActive)}</span> Coq proofs &middot; <span>{metrics.proofs.admitted}</span> admitted &middot; <span>{metrics.proofs.axioms}</span> axioms &middot; <span>{fmt(metrics.rust.tests)}</span> tests
         </p>
         <h1>
           Security<br/><strong>proven at compile time.</strong>
@@ -264,54 +261,29 @@ const RiinaWebsite = () => {
         </div>
 
         <div className="triple-prover">
-          <h3 className="triple-prover__title">{metrics.multiProver.totalProvers} provers. One truth.</h3>
+          <h3 className="triple-prover__title">Multi-prover verification</h3>
           <p className="triple-prover__desc">
-            Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical
-            foundations. Current overall claim level: {claimLevelLabel(claimLevels.overall)}. Active mechanized guarantees are from
-            the Coq production build; other lanes are published with explicit claim levels. Runtime proof architecture (Dimension 14)
-            claim level: {runtimeClaim}.
+            Coq is the primary proof engine — all {fmt(metrics.proofs.qedActive)} proofs compile with zero admits and zero axioms.
+            Lean and Isabelle serve as secondary verification targets with explicit claim levels.
           </p>
           <div className="triple-prover__grid">
             {[
               { prover: metrics.coq.prover, count: fmt(metrics.proofs.qedActive), role: 'Primary', foundation: 'CIC', level: laneClaim('coq') },
               { prover: metrics.lean.prover, count: fmt(metrics.lean.theorems), role: 'Secondary', foundation: 'DTT', level: laneClaim('lean') },
               { prover: metrics.isabelle.prover, count: fmt(metrics.isabelle.lemmas), role: 'Tertiary', foundation: 'HOL', level: laneClaim('isabelle') },
-              { prover: (metrics.fstar || {}).prover || 'F*', count: fmt((metrics.fstar || {}).lemmas || 0), role: 'Dependent types', foundation: 'DTT', level: laneClaim('fstar') },
-              { prover: (metrics.tlaplus || {}).prover || 'TLA+', count: fmt((metrics.tlaplus || {}).theorems || 0), role: 'Model checking', foundation: 'TLA', level: laneClaim('tlaplus') },
-              { prover: (metrics.alloy || {}).prover || 'Alloy 6', count: fmt((metrics.alloy || {}).assertions || 0), role: 'Relational logic', foundation: 'FOL', level: laneClaim('alloy') },
-              { prover: (metrics.smt || {}).prover || 'Z3/CVC5', count: fmt((metrics.smt || {}).assertions || 0), role: 'SMT solving', foundation: 'SMT-LIB', level: laneClaim('smt') },
-              { prover: (metrics.verus || {}).prover || 'Verus', count: fmt((metrics.verus || {}).proofs || 0), role: 'Rust verification', foundation: 'VIR', level: laneClaim('verus') },
-              { prover: (metrics.kani || {}).prover || 'Kani', count: fmt((metrics.kani || {}).harnesses || 0), role: 'Model checking', foundation: 'CBMC', level: laneClaim('kani') },
-              { prover: (metrics.tv || {}).prover || 'Translation Validation', count: fmt((metrics.tv || {}).validations || 0), role: 'Binary equivalence', foundation: 'TV', level: laneClaim('tv') },
             ].map((p, i) => (
               <div key={i} className="triple-prover__card">
                 <div className="triple-prover__prover">{p.prover}</div>
                 <div className="triple-prover__count">{p.count}</div>
                 <div className="triple-prover__role">{p.role} &middot; {p.foundation}</div>
-                <div className="triple-prover__role">Claim level: {p.level}</div>
+                <div className="triple-prover__role">Claim: {p.level}</div>
               </div>
             ))}
           </div>
-          <div className="card" style={{marginTop:16}}>
-            <div style={{fontSize:12,color:'var(--text-muted)',fontFamily:'var(--font-mono)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>
-              Runtime Proof Architecture (Dimension 14)
-            </div>
-            <div style={{fontSize:14,color:'var(--text-secondary)',lineHeight:1.8}}>
-              Current claim level: {runtimeClaim}. Executable foundation is implemented for capability-bound effect gates, runtime
-              proof-bundle chaining, constant-time oracle primitives, and local verifier self-checks. Hardware-rooted attestation and
-              full external verifier ecosystem remain roadmap work.
-            </div>
-          </div>
-          <div className="card" style={{marginTop:12}}>
-            <div style={{fontSize:12,color:'var(--text-muted)',fontFamily:'var(--font-mono)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>
-              Non-Coq Mechanization Backlog
-            </div>
-            <div style={{fontSize:14,color:'var(--text-secondary)',lineHeight:1.8}}>
-              Fresh strict report: {nonCoqMechanization.reportFresh ? 'yes' : 'no'}. Overall non-Coq mechanized:
-              {' '}{nonCoqMechanization.overallMechanized ? 'yes' : 'no'}.
-              {' '}Current blockers include Lean `sorry` ({fmt(nonCoqBacklog.leanSorry || 0)}), Lean axioms ({fmt(nonCoqBacklog.leanAxioms || 0)}), Isabelle `sorry` ({fmt(nonCoqBacklog.isabelleSorry || 0)}), and generated placeholders in F*/SMT/Verus/Kani/TV.
-            </div>
-          </div>
+          <p className="triple-prover__note" style={{marginTop:16}}>
+            7 additional verification lanes (F*, TLA+, Alloy, Z3/CVC5, Verus, Kani, Translation Validation) are published
+            at the <em>generated</em> claim level. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
+          </p>
         </div>
       </section>
 
@@ -334,7 +306,7 @@ const RiinaWebsite = () => {
             <div className="start-card__desc">Language guide, CLI reference, examples.</div>
           </div>
         </div>
-        <p className="act-start__footer">Open source &middot; Proprietary &middot; Zero dependencies</p>
+        <p className="act-start__footer">Proprietary license &middot; Source available &middot; Zero dependencies</p>
       </section>
     </div>
   );
@@ -618,18 +590,6 @@ riinac build hello.rii    # Compile to native binary`}</pre>
                   </div>
                 ))}
 
-                <h2 style={{fontSize:20,fontWeight:500,marginBottom:16,marginTop:40}}>Proof Tooling Commands</h2>
-                {[
-                  ['bash scripts/check-noncoq-mechanized.sh', 'Strict non-Coq mechanization readiness check (repo-head fresh)'],
-                  ['bash scripts/check-dim14-runtime.sh', 'Dimension 14 runtime proof executable gate'],
-                  ['cargo run --manifest-path 05_TOOLING/Cargo.toml -p runtime-proof-verify -- --self-check', 'Runtime proof verifier self-check'],
-                ].map(([cmd, desc], i) => (
-                  <div key={i} className="cli-row">
-                    <code>{cmd}</code>
-                    <span>{desc}</span>
-                  </div>
-                ))}
-
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16,marginTop:40}}>Targets</h2>
                 {[
                   ['Native (C)', 'Any platform with a C compiler'],
@@ -648,7 +608,7 @@ riinac build hello.rii    # Compile to native binary`}</pre>
             {tab === 'contributing' && (
               <div style={{maxWidth:'var(--max-w-text)'}}>
                 <p style={{color:'var(--text-secondary)',marginBottom:24}}>
-                  RIINA is open source under Proprietary. Contributions to the compiler, proofs, standard library, and documentation are welcome.
+                  RIINA's source code is publicly available under the RIINA Proprietary License. Contributions to the compiler, proofs, standard library, and documentation are welcome.
                 </p>
                 <pre className="code-block" style={{marginBottom:24}}>{`# Setup
 git clone https://github.com/ib823/riina.git && cd riina
@@ -723,9 +683,9 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
       <section style={{padding:'0 24px 80px'}}>
         <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
           <p style={{color:'var(--text-secondary)',maxWidth:'var(--max-w-text)',marginBottom:48,lineHeight:1.8}}>
-            RIINA programs carry machine-checkable proof certificates that satisfy regulatory requirements.
-            When you compile, the compiler generates a compliance report mapping proven properties to specific
-            regulatory controls. No manual audit. Mathematical proof.
+            RIINA's security type system maps directly to regulatory controls. The formal proofs
+            in the compiler verify properties that compliance frameworks require — access control,
+            audit completeness, data isolation — at compile time rather than through manual audit.
           </p>
 
           <div className="industry-grid" style={{marginBottom:48}}>
@@ -747,7 +707,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
             + 11 more compliance profiles: Energy, Telecom, Government, Transportation, Manufacturing, Retail, Media, Education, Agriculture, Real Estate, Legal
           </p>
 
-          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate</h2>
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate <span style={{color:'var(--text-muted)',fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:11}}>(target workflow)</span></h2>
           <pre className="code-block" style={{maxWidth:'var(--max-w-text)'}}>{`$ riinac verify --compliance hipaa,pci-dss myapp.rii
 
 RIINA COMPLIANCE CERTIFICATE
@@ -795,7 +755,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { num: '02', title: 'Effects Track Side Effects', desc: 'Every function declares its effects: kesan Baca + Kripto. The compiler tracks what your code can do. Security-critical code is restricted to specific effects.' },
             { num: '03', title: 'The Compiler Proves Security', desc: 'When you compile, the compiler proves: no information leakage (non-interference), effects are tracked (effect safety), timing-sensitive code runs in constant time, and secrets are zeroed.' },
             { num: '04', title: 'Verification Evidence', desc: `Formal proof artifacts ship with the compiler (${metrics.coq.filesActive} active Coq files, ${metrics.lean.files} Lean files, ${metrics.isabelle.files} Isabelle files). Current overall claim level is ${claimLevelLabel(claimLevels.overall)} with deploy gates enforcing active-build hygiene (0 Admitted, 0 active axioms, 0 active assumptions).` },
-            { num: '05', title: 'Runtime Proof Foundation', desc: `Dimension 14 runtime lane is currently ${runtimeClaim}: capability-bound effect gates, runtime proof-bundle chaining, constant-time oracle primitives, and runtime verifier self-check are executable in 05_TOOLING.` },
+            { num: '05', title: 'Runtime Proof Foundation', desc: `Runtime verification is currently at the ${runtimeClaim} claim level. Capability-bound effect gates, proof-bundle chaining, and constant-time oracle primitives are implemented. Hardware-rooted attestation remains roadmap work.` },
           ].map((step, i) => (
             <div key={i} className="pipeline-step">
               <div className="pipeline-step__num">{step.num}</div>
@@ -812,11 +772,9 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
-            {fmt(metrics.multiProver.tripleProverTheorems)} mapped obligations across {metrics.multiProver.totalProvers} verification lanes.
-            Multi-prover status: {metrics.multiProver.status}. Overall claim level: {claimLevelLabel(claimLevels.overall)}.
-            Lean compiled: {String(metrics.quality?.leanCompiled || false)}. Isabelle compiled: {String(metrics.quality?.isabelleCompiled || false)}.
-            Runtime proof architecture: {runtimeClaim}.
-            Independent external audit published: {String(claimLevels.independentlyAudited || false)}.
+            Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical foundations.
+            Coq is the only lane at the <em>mechanized</em> claim level — all other lanes are published at the <em>generated</em> level
+            and are not yet independently compiled. No independent external audit has been published.
           </p>
           {[
             { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, role: 'Primary — authoritative proofs (CIC)' },
@@ -892,10 +850,11 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
 
             {tab === 'license' && (
               <div>
-                <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>Proprietary</h2>
+                <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>RIINA Proprietary License</h2>
                 <p style={{color:'var(--text-secondary)',lineHeight:1.8,marginBottom:24}}>
-                  RIINA is licensed under the RIINA Proprietary License with the "Incompatible With Secondary Licenses"
-                  notice. This means the code cannot be relicensed under GPL, AGPL, or LGPL.
+                  RIINA is distributed under its own proprietary license. Source code is publicly viewable
+                  for transparency and auditability. See the full license text on GitHub for terms governing
+                  use, modification, and distribution.
                 </p>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16,marginBottom:24}}>
                   <div className="card">
@@ -940,7 +899,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             {tab === 'terms' && (
               <div style={{fontSize:14,color:'var(--text-secondary)',lineHeight:1.8}}>
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16,color:'var(--text-primary)'}}>Software License</h2>
-                <p style={{marginBottom:24}}>RIINA is distributed under the RIINA Proprietary License (Proprietary).</p>
+                <p style={{marginBottom:24}}>RIINA is distributed under the RIINA Proprietary License.</p>
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16,color:'var(--text-primary)'}}>No Warranty</h2>
                 <p style={{marginBottom:24}}>
                   Covered Software is provided under this License on an "as is" basis, without warranty
