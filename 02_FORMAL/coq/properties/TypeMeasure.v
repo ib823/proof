@@ -403,4 +403,122 @@ Qed.
 Definition step_ty_measure (n : nat) (T : ty) : nat * nat :=
   (n, ty_size T).
 
+(** ** Additional Type Size Lemmas *)
+
+(** TList component is smaller *)
+Lemma ty_size_list : forall T,
+  ty_size T < ty_size (TList T).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** TOption component is smaller *)
+Lemma ty_size_option : forall T,
+  ty_size T < ty_size (TOption T).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** TLabeled component is smaller *)
+Lemma ty_size_labeled : forall T sl,
+  ty_size T < ty_size (TLabeled T sl).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** TTainted component is smaller *)
+Lemma ty_size_tainted : forall T sl,
+  ty_size T < ty_size (TTainted T sl).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** TSanitized component is smaller *)
+Lemma ty_size_sanitized : forall T sl,
+  ty_size T < ty_size (TSanitized T sl).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** TConstantTime component is smaller *)
+Lemma ty_size_constant_time : forall T,
+  ty_size T < ty_size (TConstantTime T).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** TZeroizing component is smaller *)
+Lemma ty_size_zeroizing : forall T,
+  ty_size T < ty_size (TZeroizing T).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** ** Type Depth Subcomponent Lemmas *)
+
+(** ty_depth for product left *)
+Lemma ty_depth_prod_left : forall T1 T2,
+  ty_depth T1 < ty_depth (TProd T1 T2).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** ty_depth for product right *)
+Lemma ty_depth_prod_right : forall T1 T2,
+  ty_depth T2 < ty_depth (TProd T1 T2).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** ty_depth for sum left *)
+Lemma ty_depth_sum_left : forall T1 T2,
+  ty_depth T1 < ty_depth (TSum T1 T2).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** ty_depth for sum right *)
+Lemma ty_depth_sum_right : forall T1 T2,
+  ty_depth T2 < ty_depth (TSum T1 T2).
+Proof.
+  intros. simpl. lia.
+Qed.
+
+(** ** First-Order Inversion Lemmas *)
+
+Lemma first_order_list_inv : forall T,
+  first_order_type (TList T) = true ->
+  first_order_type T = true.
+Proof.
+  intros T H. simpl in H. exact H.
+Qed.
+
+Lemma first_order_option_inv : forall T,
+  first_order_type (TOption T) = true ->
+  first_order_type T = true.
+Proof.
+  intros T H. simpl in H. exact H.
+Qed.
+
+Lemma first_order_labeled_inv : forall T sl,
+  first_order_type (TLabeled T sl) = true ->
+  first_order_type T = true.
+Proof.
+  intros T sl H. simpl in H. exact H.
+Qed.
+
+Lemma first_order_constant_time_inv : forall T,
+  first_order_type (TConstantTime T) = true ->
+  first_order_type T = true.
+Proof.
+  intros T H. simpl in H. exact H.
+Qed.
+
+Lemma first_order_zeroizing_inv : forall T,
+  first_order_type (TZeroizing T) = true ->
+  first_order_type T = true.
+Proof.
+  intros T H. simpl in H. exact H.
+Qed.
+
 (** End of TypeMeasure.v *)

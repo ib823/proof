@@ -239,4 +239,56 @@ Proof.
   - intros [Hfwd Hbwd]. split; assumption.
 Qed.
 
+(** ** Section 13: Store Has Values *)
+
+(** store_has_values follows from store_wf *)
+Lemma store_wf_implies_has_values : forall Σ st,
+  store_wf Σ st ->
+  store_has_values st.
+Proof.
+  intros Σ st Hwf l v Hlook.
+  exact (store_wf_lookup_value Σ st l v Hwf Hlook).
+Qed.
+
+(** Empty store has values trivially *)
+Lemma store_has_values_empty : store_has_values nil.
+Proof.
+  unfold store_has_values. intros l v Hlook.
+  simpl in Hlook. discriminate.
+Qed.
+
+(** ** Section 14: Store WF Strengthening *)
+
+(** If Σ' extends Σ and store_wf Σ st, then forward property
+    holds for all Σ-typed locations in Σ' *)
+Lemma store_wf_extends_lookup_typed : forall Σ Σ' st l T sl,
+  store_wf Σ st ->
+  store_ty_extends Σ Σ' ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v, store_lookup l st = Some v /\ value v /\
+            has_type nil Σ' Public v T EffectPure.
+Proof.
+  intros Σ Σ' st l T sl Hwf Hext Hlook.
+  destruct (store_wf_forward _ _ Hwf l T sl Hlook) as [v [Hst [Hval Hty]]].
+  exists v. split; [| split].
+  - exact Hst.
+  - exact Hval.
+  - eapply store_ty_extends_preserves_typing; eassumption.
+Qed.
+
+(** ** Section 15: Store WF and Step Preservation *)
+
+(** Store well-formedness is preserved by evaluation steps *)
+Lemma store_wf_preserved_by_step : forall e e' T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) --> (e', st', ctx') ->
+  exists Σ', store_wf Σ' st' /\ store_ty_extends Σ Σ'.
+Proof.
+  intros e e' T ε st st' ctx ctx' Σ Hty Hwf Hstep.
+  destruct (preservation e e' T ε st st' ctx ctx' Σ Hty Hwf Hstep)
+    as [Σ' [ε' [Hext [Hwf' _]]]].
+  exists Σ'. split; assumption.
+Qed.
+
 (** End of file - ZERO ADMITS *)
