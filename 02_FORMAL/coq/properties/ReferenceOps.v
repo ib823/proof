@@ -558,4 +558,38 @@ Proof.
   apply store_max_update_eq. exact Hmax.
 Qed.
 
+(** ** Direct Step Lemmas for Reference Operations *)
+
+(** ELoc is always a value *)
+Lemma loc_is_value : forall l, value (ELoc l).
+Proof. intros. apply VLoc. Qed.
+
+(** Deref of location steps to looked-up value *)
+Lemma deref_of_loc_steps : forall l v st ctx,
+  store_lookup l st = Some v ->
+  (EDeref (ELoc l), st, ctx) --> (v, st, ctx).
+Proof. intros. apply ST_DerefLoc. exact H. Qed.
+
+(** Assignment at location with value takes a single step *)
+Lemma assign_loc_value_steps : forall l v v_old st ctx,
+  value v ->
+  store_lookup l st = Some v_old ->
+  (EAssign (ELoc l) v, st, ctx) --> (EUnit, store_update l v st, ctx).
+Proof. intros. eapply ST_AssignLoc; eassumption. Qed.
+
+(** Ref with value takes a single step producing a location *)
+Lemma ref_value_steps : forall v sl st ctx,
+  value v ->
+  (ERef v sl, st, ctx) --> (ELoc (fresh_loc st), store_update (fresh_loc st) v st, ctx).
+Proof. intros. apply ST_RefValue; auto. Qed.
+
+(** Deref of location doesn't change store *)
+Lemma deref_step_preserves_store : forall l v st ctx,
+  store_lookup l st = Some v ->
+  exists st', (EDeref (ELoc l), st, ctx) --> (v, st', ctx) /\ st' = st.
+Proof.
+  intros l v st ctx Hlook.
+  exists st. split; [apply ST_DerefLoc; exact Hlook | reflexivity].
+Qed.
+
 (** End of ReferenceOps.v *)

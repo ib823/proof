@@ -379,4 +379,46 @@ Proof. intros. apply value_SN. apply VString. Qed.
 Lemma loc_SN : forall l st ctx, SN st ctx (ELoc l).
 Proof. intros. apply value_SN. apply VLoc. Qed.
 
+(** ** Additional Value and SN Lemmas *)
+
+(** Prove of value is a value *)
+Lemma prove_value_value : forall v,
+  value v -> value (EProve v).
+Proof. intros. apply VProve; assumption. Qed.
+
+(** Prove of value is SN *)
+Lemma prove_SN : forall v st ctx,
+  value v -> SN st ctx (EProve v).
+Proof.
+  intros. apply value_SN. apply VProve; assumption.
+Qed.
+
+(** Fst of pair value steps to a value *)
+Lemma fst_pair_step_value : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  exists v, (EFst (EPair v1 v2), st, ctx) --> (v, st, ctx) /\ value v.
+Proof.
+  intros. exists v1. split.
+  - apply ST_Fst; assumption.
+  - assumption.
+Qed.
+
+(** Snd of pair value steps to a value *)
+Lemma snd_pair_step_value : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  exists v, (ESnd (EPair v1 v2), st, ctx) --> (v, st, ctx) /\ value v.
+Proof.
+  intros. exists v2. split.
+  - apply ST_Snd; assumption.
+  - assumption.
+Qed.
+
+(** App with lambda and value steps *)
+Lemma app_lam_steps : forall x T body v st ctx,
+  value v ->
+  (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx).
+Proof.
+  intros. apply ST_AppAbs; assumption.
+Qed.
+
 (** End of Reducibility.v *)

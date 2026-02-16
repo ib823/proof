@@ -431,4 +431,45 @@ Proof.
   intros. simpl. reflexivity.
 Qed.
 
+(** ----------------------------------------------------------------- *)
+(** * Closedness for Compound Values                                 *)
+(** ----------------------------------------------------------------- *)
+
+Lemma closed_pair_sub : forall e1 e2,
+  closed_expr_sc e1 -> closed_expr_sc e2 -> closed_expr_sc (EPair e1 e2).
+Proof.
+  intros e1 e2 H1 H2 x Hfree. simpl in Hfree.
+  destruct Hfree as [Hf | Hf]; [apply (H1 x) | apply (H2 x)]; exact Hf.
+Qed.
+
+Lemma closed_inl_sub : forall e T,
+  closed_expr_sc e -> closed_expr_sc (EInl e T).
+Proof.
+  intros e T H x Hfree. simpl in Hfree. apply (H x). exact Hfree.
+Qed.
+
+Lemma closed_inr_sub : forall e T,
+  closed_expr_sc e -> closed_expr_sc (EInr e T).
+Proof.
+  intros e T H x Hfree. simpl in Hfree. apply (H x). exact Hfree.
+Qed.
+
+Lemma closed_classify_sub : forall e,
+  closed_expr_sc e -> closed_expr_sc (EClassify e).
+Proof.
+  intros e H x Hfree. simpl in Hfree. apply (H x). exact Hfree.
+Qed.
+
+Lemma closed_prove_sub : forall e,
+  closed_expr_sc e -> closed_expr_sc (EProve e).
+Proof.
+  intros e H x Hfree. simpl in Hfree. apply (H x). exact Hfree.
+Qed.
+
+Lemma closed_fst_sub : forall e,
+  closed_expr_sc e -> closed_expr_sc (EFst e).
+Proof.
+  intros e H x Hfree. simpl in Hfree. apply (H x). exact Hfree.
+Qed.
+
 (** End of file - ZERO ADMITS *)
