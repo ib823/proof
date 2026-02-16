@@ -293,4 +293,90 @@ Proof. intros. apply VString. Qed.
 Lemma loc_value : forall l, value (ELoc l).
 Proof. intros. apply VLoc. Qed.
 
+(** ** SN Composition Lemmas *)
+
+(** SN is closed under multiple steps *)
+Lemma SN_multi_step_closed : forall cfg cfg',
+  cfg -->* cfg' ->
+  forall e st ctx e' st' ctx',
+  cfg = (e, st, ctx) ->
+  cfg' = (e', st', ctx') ->
+  SN st ctx e ->
+  SN st' ctx' e'.
+Proof.
+  intros cfg cfg' Hmulti.
+  induction Hmulti; intros e0 st0 ctx0 e0' st0' ctx0' Heq1 Heq2 HSN.
+  - subst. injection Heq2. intros; subst. exact HSN.
+  - subst. destruct cfg2 as [[e_mid st_mid] ctx_mid].
+    assert (SN st_mid ctx_mid e_mid) by (eapply SN_step; eauto).
+    eapply IHHmulti; eauto.
+Qed.
+
+(** Classify of value is a value *)
+Lemma classify_value_value : forall v,
+  value v -> value (EClassify v).
+Proof.
+  intros. apply VClassify; assumption.
+Qed.
+
+(** Classify of value is SN *)
+Lemma classify_value_SN : forall v st ctx,
+  value v -> SN st ctx (EClassify v).
+Proof.
+  intros v st ctx Hval.
+  apply value_SN. apply VClassify. exact Hval.
+Qed.
+
+(** Pair of SN values is SN *)
+Lemma pair_SN : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  SN st ctx (EPair v1 v2).
+Proof.
+  intros v1 v2 st ctx Hval1 Hval2.
+  apply value_SN. apply VPair; assumption.
+Qed.
+
+(** Inl of SN value is SN *)
+Lemma inl_SN : forall v T st ctx,
+  value v -> SN st ctx (EInl v T).
+Proof.
+  intros v T st ctx Hval.
+  apply value_SN. apply VInl; assumption.
+Qed.
+
+(** Inr of SN value is SN *)
+Lemma inr_SN : forall v T st ctx,
+  value v -> SN st ctx (EInr v T).
+Proof.
+  intros v T st ctx Hval.
+  apply value_SN. apply VInr; assumption.
+Qed.
+
+(** Lambda is always SN *)
+Lemma lam_SN : forall x T body st ctx,
+  SN st ctx (ELam x T body).
+Proof.
+  intros. apply value_SN. apply VLam.
+Qed.
+
+(** Unit is always SN *)
+Lemma unit_SN : forall st ctx, SN st ctx EUnit.
+Proof. intros. apply value_SN. apply VUnit. Qed.
+
+(** Bool is always SN *)
+Lemma bool_SN : forall b st ctx, SN st ctx (EBool b).
+Proof. intros. apply value_SN. apply VBool. Qed.
+
+(** Int is always SN *)
+Lemma int_SN : forall n st ctx, SN st ctx (EInt n).
+Proof. intros. apply value_SN. apply VInt. Qed.
+
+(** String is always SN *)
+Lemma string_SN : forall s st ctx, SN st ctx (EString s).
+Proof. intros. apply value_SN. apply VString. Qed.
+
+(** Loc is always SN *)
+Lemma loc_SN : forall l st ctx, SN st ctx (ELoc l).
+Proof. intros. apply value_SN. apply VLoc. Qed.
+
 (** End of Reducibility.v *)

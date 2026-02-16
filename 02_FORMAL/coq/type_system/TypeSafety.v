@@ -284,4 +284,79 @@ Proof.
   intros. eapply type_safety; eauto.
 Qed.
 
+(** ** Secret Type Safety *)
+
+(** Type safety for secret-typed terms *)
+Corollary secret_type_safety : forall e T ε Σ st ctx,
+  has_type nil Σ Public e (TSecret T) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
+(** ** Safety Composition Lemmas *)
+
+(** Two steps of safety: if e steps to e', and e' steps to e'', both are safe *)
+Corollary two_step_safety : forall e e' e'' T ε st st' st'' ctx ctx' ctx'' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) --> (e', st', ctx') ->
+  (e', st', ctx') --> (e'', st'', ctx'') ->
+  ~ stuck (e'', st'', ctx'').
+Proof.
+  intros e e' e'' T ε st st' st'' ctx ctx' ctx'' Σ Hty Hwf Hstep1 Hstep2.
+  destruct (preservation e e' T ε st st' ctx ctx' Σ Hty Hwf Hstep1)
+    as [Σ' [ε' [_ [Hwf' Hty']]]].
+  destruct (preservation e' e'' T ε' st' st'' ctx' ctx'' Σ' Hty' Hwf' Hstep2)
+    as [Σ'' [ε'' [_ [Hwf'' Hty'']]]].
+  eapply type_safety; eauto.
+Qed.
+
+(** Values can always be given pure effect *)
+Corollary value_effect_pure : forall v T ε Σ,
+  has_type nil Σ Public v T ε ->
+  value v ->
+  has_type nil Σ Public v T EffectPure.
+Proof.
+  intros. eapply value_has_pure_effect; eauto.
+Qed.
+
+(** Well-typed values remain well-typed under store extension *)
+Corollary value_store_weakening : forall v T ε Σ Σ',
+  has_type nil Σ Public v T ε ->
+  value v ->
+  store_ty_extends Σ Σ' ->
+  has_type nil Σ' Public v T ε.
+Proof.
+  intros. eapply store_ty_extends_preserves_typing; eauto.
+Qed.
+
+(** Type safety for labeled-typed terms *)
+Corollary labeled_type_safety : forall e T s ε Σ st ctx,
+  has_type nil Σ Public e (TLabeled T s) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
+(** Type safety for tainted-typed terms *)
+Corollary tainted_type_safety : forall e T src ε Σ st ctx,
+  has_type nil Σ Public e (TTainted T src) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
+(** Type safety for sanitized-typed terms *)
+Corollary sanitized_type_safety : forall e T san ε Σ st ctx,
+  has_type nil Σ Public e (TSanitized T san) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
 (** End of TypeSafety.v *)

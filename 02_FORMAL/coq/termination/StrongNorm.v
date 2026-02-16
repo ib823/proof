@@ -258,4 +258,127 @@ Proof.
   - exact HSN_h.
 Qed.
 
+(** ** Case Elimination SN Lemmas *)
+
+(** Case on inl value is SN when left branch substitution is SN *)
+Lemma case_inl_value_SN : forall v T x1 e1 x2 e2 st ctx,
+  value v ->
+  SN st ctx ([x1 := v] e1) ->
+  SN st ctx (ECase (EInl v T) x1 e1 x2 e2).
+Proof.
+  intros v T x1 e1 x2 e2 st ctx Hval HSN1.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exact HSN1.
+  - exfalso. eapply value_not_step with (v := EInl v T).
+    + apply VInl; assumption.
+    + eassumption.
+Qed.
+
+(** Case on inr value is SN when right branch substitution is SN *)
+Lemma case_inr_value_SN : forall v T x1 e1 x2 e2 st ctx,
+  value v ->
+  SN st ctx ([x2 := v] e2) ->
+  SN st ctx (ECase (EInr v T) x1 e1 x2 e2).
+Proof.
+  intros v T x1 e1 x2 e2 st ctx Hval HSN2.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exact HSN2.
+  - exfalso. eapply value_not_step with (v := EInr v T).
+    + apply VInr; assumption.
+    + eassumption.
+Qed.
+
+(** ** Classify/Declassify SN Lemmas *)
+
+(** Classify of value is SN (it's a value itself) *)
+Lemma classify_value_strongly_normalizing : forall v st ctx,
+  value v -> SN st ctx (EClassify v).
+Proof.
+  intros v st ctx Hval.
+  apply value_SN. apply VClassify. exact Hval.
+Qed.
+
+(** Declassify of classify-value with proof is SN when stepping to value *)
+Lemma declassify_classify_SN : forall v p st ctx,
+  value v ->
+  declass_ok (EClassify v) p ->
+  SN st ctx v ->
+  SN st ctx (EDeclassify (EClassify v) p).
+Proof.
+  intros v p st ctx Hval Hdeclass HSNv.
+  destruct Hdeclass as [v0 [Hval0 [Heq1 Heq2]]].
+  injection Heq1. intros; subst.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step with (v := EClassify v0).
+    + apply VClassify; assumption.
+    + eassumption.
+  - exfalso. eapply value_not_step with (v := EProve (EClassify v0)).
+    + apply VProve. apply VClassify. assumption.
+    + eassumption.
+  - exact HSNv.
+Qed.
+
+(** ** Nested Elimination SN Lemmas *)
+
+(** Fst on fst on nested pair — if inner fst reduces to v1, outer fst applies *)
+Lemma fst_fst_pair_SN : forall a b c d st ctx,
+  value a -> value b -> value c -> value d ->
+  SN st ctx (EFst (EFst (EPair (EPair a b) (EPair c d)))).
+Proof.
+  intros a b c d st ctx Ha Hb Hc Hd.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - (* ST_FstStep: inner EFst steps *)
+    match goal with
+    | H : (EFst (EPair (EPair a b) (EPair c d)), _, _) --> _ |- _ =>
+      inversion H; subst
+    end.
+    + (* ST_Fst on inner pair — result is EPair a b *)
+      apply fst_value_terminates_pair; assumption.
+    + (* ST_FstStep: inner pair can't step *)
+      exfalso. match goal with
+      | H : (EPair (EPair a b) (EPair c d), _, _) --> _ |- _ =>
+        eapply value_not_step with (v := EPair (EPair a b) (EPair c d));
+        [apply VPair; apply VPair; assumption | exact H]
+      end.
+Qed.
+
+(** ** Perform/Grant/Require SN Lemmas *)
+
+(** Perform of value is SN *)
+Lemma perform_value_SN : forall eff v st ctx,
+  value v -> SN st ctx (EPerform eff v).
+Proof.
+  intros eff v st ctx Hval.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step with (v := v); eassumption.
+  - apply value_SN. exact Hval.
+Qed.
+
+(** Require with value is SN *)
+Lemma require_value_SN : forall eff v st ctx,
+  value v -> SN st ctx (ERequire eff v).
+Proof.
+  intros eff v st ctx Hval.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step with (v := v); eassumption.
+  - apply value_SN. exact Hval.
+Qed.
+
+(** Grant with value is SN *)
+Lemma grant_value_SN : forall eff v st ctx,
+  value v -> SN st ctx (EGrant eff v).
+Proof.
+  intros eff v st ctx Hval.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step with (v := v); eassumption.
+  - apply value_SN. exact Hval.
+Qed.
+
 (** End of StrongNorm.v *)
