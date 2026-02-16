@@ -1,6 +1,6 @@
 # RIINA DEFINITIVE SCOPE DOCUMENT
 
-**Verification:** 8,946 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,946 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 905 Rust tests
 
 ## Version 1.0.0 — The Single Source of Truth
 
