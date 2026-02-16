@@ -390,4 +390,133 @@ Qed.
     3. Separate effect contexts for each reduction path
 *)
 
+(** ** Additional Termination Infrastructure *)
+
+(** Multi-step composed with single step *)
+Lemma multi_step_step_left : forall cfg1 cfg2 cfg3,
+  cfg1 --> cfg2 ->
+  cfg2 -->* cfg3 ->
+  cfg1 -->* cfg3.
+Proof.
+  intros. eapply MS_Step; eauto.
+Qed.
+
+(** val_rel_0 is trivially true for any type *)
+Lemma val_rel_0_trivial : forall Σ T v1 v2, val_rel_0 Σ T v1 v2.
+Proof.
+  intros. unfold val_rel_0. exact I.
+Qed.
+
+(** store_rel_0 is trivially true for any stores *)
+Lemma store_rel_0_trivial : forall Σ st1 st2, store_rel_0 Σ st1 st2.
+Proof.
+  intros. unfold store_rel_0. exact I.
+Qed.
+
+(** val_rel_0 is irrelevant to the type parameter *)
+Lemma val_rel_0_type_irrelevant : forall Σ T1 T2 v1 v2,
+  val_rel_0 Σ T1 v1 v2 <-> val_rel_0 Σ T2 v1 v2.
+Proof.
+  intros. unfold val_rel_0. tauto.
+Qed.
+
+(** val_rel_0 is irrelevant to the store typing *)
+Lemma val_rel_0_store_irrelevant : forall Σ1 Σ2 T v1 v2,
+  val_rel_0 Σ1 T v1 v2 <-> val_rel_0 Σ2 T v1 v2.
+Proof.
+  intros. unfold val_rel_0. tauto.
+Qed.
+
+(** store_rel_0 is symmetric *)
+Lemma store_rel_0_sym : forall Σ st1 st2,
+  store_rel_0 Σ st1 st2 -> store_rel_0 Σ st2 st1.
+Proof.
+  intros. unfold store_rel_0. exact I.
+Qed.
+
+(** Fst terminates in exactly one step on a pair value *)
+Lemma fst_terminates : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  terminates (EFst (EPair v1 v2)) st ctx.
+Proof.
+  intros v1 v2 st ctx Hv1 Hv2.
+  exists v1, st, ctx.
+  split.
+  - apply step_to_multi. apply ST_Fst; assumption.
+  - exact Hv1.
+Qed.
+
+(** Snd terminates in exactly one step on a pair value *)
+Lemma snd_terminates : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  terminates (ESnd (EPair v1 v2)) st ctx.
+Proof.
+  intros v1 v2 st ctx Hv1 Hv2.
+  exists v2, st, ctx.
+  split.
+  - apply step_to_multi. apply ST_Snd; assumption.
+  - exact Hv2.
+Qed.
+
+(** If with true terminates if the true branch terminates *)
+Lemma if_true_terminates : forall e2 e3 st ctx,
+  terminates e2 st ctx ->
+  terminates (EIf (EBool true) e2 e3) st ctx.
+Proof.
+  intros e2 e3 st ctx [v [st' [ctx' [Hms Hval]]]].
+  exists v, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_IfTrue. exact Hms.
+  - exact Hval.
+Qed.
+
+(** If with false terminates if the false branch terminates *)
+Lemma if_false_terminates : forall e2 e3 st ctx,
+  terminates e3 st ctx ->
+  terminates (EIf (EBool false) e2 e3) st ctx.
+Proof.
+  intros e2 e3 st ctx [v [st' [ctx' [Hms Hval]]]].
+  exists v, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_IfFalse. exact Hms.
+  - exact Hval.
+Qed.
+
+(** Let terminates if the substituted body terminates *)
+Lemma let_terminates : forall x v e2 st ctx,
+  value v ->
+  terminates ([x := v] e2) st ctx ->
+  terminates (ELet x v e2) st ctx.
+Proof.
+  intros x v e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_LetValue. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** App terminates if the substituted body terminates *)
+Lemma app_lam_terminates : forall x T body v st ctx,
+  value v ->
+  terminates ([x := v] body) st ctx ->
+  terminates (EApp (ELam x T body) v) st ctx.
+Proof.
+  intros x T body v st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_AppAbs. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** Values terminate immediately *)
+Lemma value_terminates : forall v st ctx,
+  value v -> terminates v st ctx.
+Proof.
+  intros v st ctx Hval.
+  exists v, st, ctx.
+  split.
+  - apply MS_Refl.
+  - exact Hval.
+Qed.
+
 (** End of TerminationLemmas.v *)

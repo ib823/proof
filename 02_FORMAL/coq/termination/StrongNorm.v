@@ -155,4 +155,107 @@ Proof.
   exact Hlookup.
 Qed.
 
+(** ** Additional Strong Normalization Lemmas *)
+
+(** SN is preserved by multi-step: if e1 is SN and e1 -->* e2, then e2 is SN *)
+Lemma SN_multi_step : forall cfg cfg',
+  cfg -->* cfg' ->
+  forall e st ctx e' st' ctx',
+  cfg = (e, st, ctx) ->
+  cfg' = (e', st', ctx') ->
+  SN st ctx e -> SN st' ctx' e'.
+Proof.
+  intros cfg cfg' Hms.
+  induction Hms; intros e0 st0 ctx0 e0' st0' ctx0' Heq1 Heq2 HSN0.
+  - subst. injection Heq2. intros; subst. exact HSN0.
+  - subst. destruct cfg2 as [[e1 st1] ctx1].
+    assert (SN st1 ctx1 e1) as HSN1 by (eapply SN_step; eauto).
+    eapply IHHms; eauto.
+Qed.
+
+(** Fst on a pair of values is SN *)
+Lemma fst_value_terminates_pair : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  SN st ctx (EFst (EPair v1 v2)).
+Proof.
+  intros v1 v2 st ctx Hval1 Hval2.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - apply value_SN. exact Hval1.
+  - exfalso. eapply value_not_step with (v := EPair v1 v2).
+    + apply VPair; assumption.
+    + eassumption.
+Qed.
+
+(** Snd on a pair value is SN *)
+Lemma snd_value_SN : forall v1 v2 st ctx,
+  value v1 -> value v2 ->
+  SN st ctx (ESnd (EPair v1 v2)).
+Proof.
+  intros v1 v2 st ctx Hval1 Hval2.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - apply value_SN. exact Hval2.
+  - exfalso. eapply value_not_step with (v := EPair v1 v2).
+    + apply VPair; assumption.
+    + eassumption.
+Qed.
+
+(** If with boolean value is SN when both branches are SN *)
+Lemma if_bool_SN : forall b e2 e3 st ctx,
+  SN st ctx e2 -> SN st ctx e3 ->
+  SN st ctx (EIf (EBool b) e2 e3).
+Proof.
+  intros b e2 e3 st ctx HSN2 HSN3.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exact HSN2.
+  - exact HSN3.
+  - exfalso. eapply value_not_step with (v := EBool b).
+    + apply VBool.
+    + eassumption.
+Qed.
+
+(** Let with value is SN when substituted body is SN *)
+Lemma let_value_SN : forall x v e2 st ctx,
+  value v ->
+  SN st ctx ([x := v] e2) ->
+  SN st ctx (ELet x v e2).
+Proof.
+  intros x v e2 st ctx Hval HSN2.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exact HSN2.
+  - exfalso. eapply value_not_step with (v := v); eassumption.
+Qed.
+
+(** App with lambda and value is SN when substituted body is SN *)
+Lemma app_lam_value_SN : forall x T body v st ctx,
+  value v ->
+  SN st ctx ([x := v] body) ->
+  SN st ctx (EApp (ELam x T body) v).
+Proof.
+  intros x T body v st ctx Hval HSN_body.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exact HSN_body.
+  - exfalso. eapply value_not_step with (v := ELam x T body).
+    + apply VLam.
+    + eassumption.
+  - exfalso. eapply value_not_step with (v := v); eassumption.
+Qed.
+
+(** Handle with value is SN when substituted body is SN *)
+Lemma handle_value_SN : forall x v h st ctx,
+  value v ->
+  SN st ctx ([x := v] h) ->
+  SN st ctx (EHandle v x h).
+Proof.
+  intros x v h st ctx Hval HSN_h.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - exfalso. eapply value_not_step with (v := v); eassumption.
+  - exact HSN_h.
+Qed.
+
 (** End of StrongNorm.v *)

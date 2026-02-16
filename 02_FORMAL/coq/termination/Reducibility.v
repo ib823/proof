@@ -202,4 +202,95 @@ Proof.
   - reflexivity.
 Qed.
 
+(** ** Additional Reducibility Lemmas *)
+
+(** SN values are irreducible *)
+Lemma SN_value_irreducible : forall v st ctx,
+  value v -> SN st ctx v ->
+  forall e' st' ctx', ~ ((v, st, ctx) --> (e', st', ctx')).
+Proof.
+  intros v st ctx Hval HSN e' st' ctx' Hstep.
+  eapply value_not_step; eauto.
+Qed.
+
+(** Case on inl steps to the left branch *)
+Lemma case_inl_typed_steps : forall v T2 x1 e1 x2 e2 st ctx,
+  value v ->
+  exists e' st' ctx',
+    (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') /\
+    e' = [x1 := v] e1 /\ st' = st /\ ctx' = ctx.
+Proof.
+  intros v T2 x1 e1 x2 e2 st ctx Hval.
+  exists ([x1 := v] e1), st, ctx.
+  split; [| split; [| split]].
+  - apply ST_CaseInl. exact Hval.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(** Case on inr steps to the right branch *)
+Lemma case_inr_typed_steps : forall v T1 x1 e1 x2 e2 st ctx,
+  value v ->
+  exists e' st' ctx',
+    (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') /\
+    e' = [x2 := v] e2 /\ st' = st /\ ctx' = ctx.
+Proof.
+  intros v T1 x1 e1 x2 e2 st ctx Hval.
+  exists ([x2 := v] e2), st, ctx.
+  split; [| split; [| split]].
+  - apply ST_CaseInr. exact Hval.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(** Pair of values is a value *)
+Lemma pair_values_value : forall v1 v2,
+  value v1 -> value v2 -> value (EPair v1 v2).
+Proof.
+  intros. apply VPair; assumption.
+Qed.
+
+(** Inl of value is a value *)
+Lemma inl_value_value : forall v T,
+  value v -> value (EInl v T).
+Proof.
+  intros. apply VInl; assumption.
+Qed.
+
+(** Inr of value is a value *)
+Lemma inr_value_value : forall v T,
+  value v -> value (EInr v T).
+Proof.
+  intros. apply VInr; assumption.
+Qed.
+
+(** Lambda is always a value *)
+Lemma lam_value : forall x T body,
+  value (ELam x T body).
+Proof.
+  intros. apply VLam.
+Qed.
+
+(** Unit is a value *)
+Lemma unit_value : value EUnit.
+Proof. apply VUnit. Qed.
+
+(** Bool is a value *)
+Lemma bool_value : forall b, value (EBool b).
+Proof. intros. apply VBool. Qed.
+
+(** Int is a value *)
+Lemma int_value : forall n, value (EInt n).
+Proof. intros. apply VInt. Qed.
+
+(** String is a value *)
+Lemma string_value : forall s, value (EString s).
+Proof. intros. apply VString. Qed.
+
+(** Location is a value *)
+Lemma loc_value : forall l, value (ELoc l).
+Proof. intros. apply VLoc. Qed.
+
 (** End of Reducibility.v *)

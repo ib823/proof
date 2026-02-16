@@ -209,4 +209,79 @@ Proof.
   exact (canonical_forms_ref nil Σ Public e T sl ε Hval Hty).
 Qed.
 
+(** ** Additional Type Safety Properties *)
+
+(** Preservation as a corollary: types are preserved over arbitrary steps *)
+Corollary preservation_multi : forall e e' T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) -->* (e', st', ctx') ->
+  exists Σ' ε',
+    store_ty_extends Σ Σ' /\
+    store_wf Σ' st' /\
+    has_type nil Σ' Public e' T ε'.
+Proof.
+  intros. eapply multi_step_preservation; eauto.
+Qed.
+
+(** If evaluation produces a value, it has the same type *)
+Corollary eval_preserves_type : forall e v T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  (e, st, ctx) -->* (v, st', ctx') ->
+  value v ->
+  exists Σ' ε',
+    store_ty_extends Σ Σ' /\
+    store_wf Σ' st' /\
+    has_type nil Σ' Public v T ε'.
+Proof.
+  intros. eapply multi_step_preservation; eauto.
+Qed.
+
+(** Well-typed pair-typed value always decomposes *)
+Corollary pair_value_decompose : forall v T1 T2 ε Σ,
+  has_type nil Σ Public v (TProd T1 T2) ε ->
+  value v ->
+  exists v1 v2, v = EPair v1 v2 /\ value v1 /\ value v2.
+Proof.
+  intros. eapply canonical_forms_prod; eauto.
+Qed.
+
+(** Well-typed sum-typed value always decomposes *)
+Corollary sum_value_decompose : forall v T1 T2 ε Σ,
+  has_type nil Σ Public v (TSum T1 T2) ε ->
+  value v ->
+  (exists v', v = EInl v' T2 /\ value v') \/
+  (exists v', v = EInr v' T1 /\ value v').
+Proof.
+  intros. eapply canonical_forms_sum; eauto.
+Qed.
+
+(** Well-typed ref-typed value is always a location *)
+Corollary ref_value_is_loc : forall v T sl ε Σ,
+  has_type nil Σ Public v (TRef T sl) ε ->
+  value v ->
+  exists l, v = ELoc l.
+Proof.
+  intros. eapply canonical_forms_ref; eauto.
+Qed.
+
+(** Type safety for list-typed terms *)
+Corollary list_type_safety : forall e T ε Σ st ctx,
+  has_type nil Σ Public e (TList T) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
+(** Type safety for option-typed terms *)
+Corollary option_type_safety : forall e T ε Σ st ctx,
+  has_type nil Σ Public e (TOption T) ε ->
+  store_wf Σ st ->
+  ~ stuck (e, st, ctx).
+Proof.
+  intros. eapply type_safety; eauto.
+Qed.
+
 (** End of TypeSafety.v *)
