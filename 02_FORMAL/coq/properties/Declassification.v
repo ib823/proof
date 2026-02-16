@@ -386,4 +386,39 @@ Proof.
   - apply VClassify; auto.
 Qed.
 
+(** ** Additional Declassification Properties *)
+
+(** Declassification of classified value produces the value *)
+Lemma declassify_value_produces : forall v p st ctx,
+  value v ->
+  declass_ok (EClassify v) p ->
+  exists v' st' ctx',
+    (EDeclassify (EClassify v) p, st, ctx) --> (v', st', ctx') /\
+    v' = v /\ st' = st /\ ctx' = ctx.
+Proof.
+  intros v p st ctx Hv Hok.
+  exists v, st, ctx. repeat split.
+  apply ST_DeclassifyValue; auto.
+Qed.
+
+(** Classify constructor is injective *)
+Lemma classify_injective : forall v1 v2,
+  EClassify v1 = EClassify v2 -> v1 = v2.
+Proof.
+  intros v1 v2 Heq. injection Heq. auto.
+Qed.
+
+(** Classify is not a base value *)
+Lemma classify_not_unit : forall v,
+  EClassify v <> EUnit.
+Proof. intros v H. discriminate. Qed.
+
+Lemma classify_not_bool : forall v b,
+  EClassify v <> EBool b.
+Proof. intros v b H. discriminate. Qed.
+
+Lemma classify_not_int : forall v n,
+  EClassify v <> EInt n.
+Proof. intros v n H. discriminate. Qed.
+
 (** End of Declassification.v *)

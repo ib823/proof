@@ -353,4 +353,36 @@ Lemma value_step_terminates_trivially : forall v st ctx,
   value v -> terminates v st ctx.
 Proof. exact value_terminates. Qed.
 
+(** ** Expression Size for Additional Constructs *)
+
+Lemma expr_size_case : forall e x1 e1 x2 e2,
+  expr_size (ECase e x1 e1 x2 e2) = 1 + expr_size e + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_ref : forall e sl,
+  expr_size (ERef e sl) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_deref : forall e,
+  expr_size (EDeref e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_assign : forall e1 e2,
+  expr_size (EAssign e1 e2) = 1 + expr_size e1 + expr_size e2.
+Proof. intros. reflexivity. Qed.
+
+Lemma expr_size_classify : forall e,
+  expr_size (EClassify e) = 1 + expr_size e.
+Proof. intros. reflexivity. Qed.
+
+(** ** Additional Subexpression Bounds *)
+
+Lemma expr_size_pair_l : forall e1 e2,
+  expr_size e1 < expr_size (EPair e1 e2).
+Proof. intros. simpl. lia. Qed.
+
+Lemma expr_size_pair_r : forall e1 e2,
+  expr_size e2 < expr_size (EPair e1 e2).
+Proof. intros. simpl. lia. Qed.
+
 (** End of SizedTypes.v *)

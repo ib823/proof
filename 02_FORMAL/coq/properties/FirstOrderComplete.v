@@ -517,4 +517,48 @@ Proof. reflexivity. Qed.
 Lemma is_base_type_bytes : is_base_type TBytes = true.
 Proof. reflexivity. Qed.
 
+(** ** First-Order Bidirectional Characterizations *)
+
+Lemma first_order_type_prod_iff : forall T1 T2,
+  first_order_type (TProd T1 T2) = true <->
+  first_order_type T1 = true /\ first_order_type T2 = true.
+Proof.
+  intros T1 T2. simpl. split; apply Bool.andb_true_iff.
+Qed.
+
+Lemma first_order_type_sum_iff : forall T1 T2,
+  first_order_type (TSum T1 T2) = true <->
+  first_order_type T1 = true /\ first_order_type T2 = true.
+Proof.
+  intros T1 T2. simpl. split; apply Bool.andb_true_iff.
+Qed.
+
+Lemma first_order_type_secret_iff : forall T,
+  first_order_type (TSecret T) = first_order_type T.
+Proof. intros. reflexivity. Qed.
+
+(** ** ty_eqb Computation Rules *)
+
+Lemma ty_eqb_prod : forall T1 T2 T3 T4,
+  ty_eqb (TProd T1 T2) (TProd T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool.
+Proof. intros. reflexivity. Qed.
+
+Lemma ty_eqb_sum : forall T1 T2 T3 T4,
+  ty_eqb (TSum T1 T2) (TSum T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool.
+Proof. intros. reflexivity. Qed.
+
+(** ** Base Type Exclusion Lemmas *)
+
+Lemma base_type_not_ref : forall T,
+  is_base_type T = true -> forall T' sl, T <> TRef T' sl.
+Proof.
+  intros T Hbase T' sl Heq. subst. simpl in Hbase. discriminate.
+Qed.
+
+Lemma base_type_not_secret : forall T,
+  is_base_type T = true -> forall T', T <> TSecret T'.
+Proof.
+  intros T Hbase T' Heq. subst. simpl in Hbase. discriminate.
+Qed.
+
 (** End of FirstOrderComplete.v *)

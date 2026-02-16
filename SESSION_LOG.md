@@ -1,6 +1,6 @@
 # Session Log
 
-**Verification:** 8,821 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
+**Verification:** 8,840 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 888 Rust tests
 
 ## 2026-02-14 (Session 86): Core Deepening + TaintSystemCorrectness
 
