@@ -339,4 +339,81 @@ Proof.
   intros. apply step_ty_lt_ty. simpl. lia.
 Qed.
 
+(** ** Security Type Component Decreases *)
+
+(** TSecret inner type is smaller *)
+Lemma step_ty_lt_secret : forall n T,
+  step_ty_lt (n, T) (n, TSecret T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TTainted inner type is smaller *)
+Lemma step_ty_lt_tainted : forall n T src,
+  step_ty_lt (n, T) (n, TTainted T src).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TSanitized inner type is smaller *)
+Lemma step_ty_lt_sanitized : forall n T san,
+  step_ty_lt (n, T) (n, TSanitized T san).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TConstantTime inner type is smaller *)
+Lemma step_ty_lt_constant_time : forall n T,
+  step_ty_lt (n, T) (n, TConstantTime T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** TZeroizing inner type is smaller *)
+Lemma step_ty_lt_zeroizing : forall n T,
+  step_ty_lt (n, T) (n, TZeroizing T).
+Proof.
+  intros. apply step_ty_lt_ty. simpl. lia.
+Qed.
+
+(** ** Bottom Properties *)
+
+(** Nothing is lexicographically less than (0, 0) *)
+Lemma lex_lt_zero_zero_absurd : forall p,
+  lex_lt p (0, 0) -> False.
+Proof.
+  intros [a b]. unfold lex_lt. lia.
+Qed.
+
+(** Nothing is less than (0, T) when ty_size T = 0 *)
+Lemma step_ty_lt_zero_absurd : forall T T',
+  ty_size T = 0 ->
+  step_ty_lt (0, T') (0, T) -> False.
+Proof.
+  intros T T' Hsize. unfold step_ty_lt. lia.
+Qed.
+
+(** ** Triple Order Component Decrease Lemmas *)
+
+(** First component strictly decreases in triple order *)
+Lemma triple_lt_first : forall a a' b b' c c',
+  a' < a -> triple_lt (a', b', c') (a, b, c).
+Proof.
+  intros. unfold triple_lt. left. exact H.
+Qed.
+
+(** Second component strictly decreases (first equal) in triple order *)
+Lemma triple_lt_second : forall a b b' c c',
+  b' < b -> triple_lt (a, b', c') (a, b, c).
+Proof.
+  intros. unfold triple_lt. right. left. split; [reflexivity | exact H].
+Qed.
+
+(** Third component strictly decreases (first two equal) in triple order *)
+Lemma triple_lt_third : forall a b c c',
+  c' < c -> triple_lt (a, b, c') (a, b, c).
+Proof.
+  intros. unfold triple_lt. right. right. repeat split; auto.
+Qed.
+
 (** End of LexOrder.v *)

@@ -281,4 +281,78 @@ Proof.
     simpl in Hfree. destruct Hfree as [H | H]; [apply (Hc1 x H) | apply (Hc2 x H)].
 Qed.
 
+(** ** Section 7: More Expression Form Decompositions *)
+
+(** Closedness for case expressions *)
+Lemma closed_case_cv : forall e y1 e1 y2 e2,
+  closed_expr_cv (ECase e y1 e1 y2 e2) <->
+  closed_expr_cv e /\
+  (forall x, x <> y1 -> ~ free_in x e1) /\
+  (forall x, x <> y2 -> ~ free_in x e2).
+Proof.
+  intros e y1 e1 y2 e2. split.
+  - intros Hc. repeat split.
+    + unfold closed_expr_cv in *. intros x Hfree.
+      apply (Hc x). simpl. left. exact Hfree.
+    + intros x Hneq Hfree. apply (Hc x). simpl. right. left. split; assumption.
+    + intros x Hneq Hfree. apply (Hc x). simpl. right. right. split; assumption.
+  - intros [Hce [Hc1 Hc2]]. unfold closed_expr_cv. intros x Hfree.
+    simpl in Hfree. destruct Hfree as [H | [[Hneq H] | [Hneq H]]].
+    + apply (Hce x H).
+    + exact (Hc1 x Hneq H).
+    + exact (Hc2 x Hneq H).
+Qed.
+
+(** Closedness for lambda (full iff decomposition) *)
+Lemma closed_lam_cv : forall x T body,
+  closed_expr_cv (ELam x T body) <->
+  (forall y, y <> x -> ~ free_in y body).
+Proof.
+  intros x T body. split.
+  - intros Hc y Hneq Hfree. apply (Hc y). simpl. split; assumption.
+  - intros Hbody. unfold closed_expr_cv. intros y Hfree.
+    simpl in Hfree. destruct Hfree as [Hneq Hfb].
+    exact (Hbody y Hneq Hfb).
+Qed.
+
+(** Components of closed pair value are closed *)
+Lemma closed_pair_value_components : forall a b,
+  value (EPair a b) ->
+  closed_expr_cv (EPair a b) ->
+  closed_expr_cv a /\ closed_expr_cv b.
+Proof.
+  intros a b Hval Hclosed.
+  apply closed_pair_cv. exact Hclosed.
+Qed.
+
+(** Inner value of closed inl is closed *)
+Lemma closed_inl_value_inner : forall a T,
+  value (EInl a T) ->
+  closed_expr_cv (EInl a T) ->
+  closed_expr_cv a.
+Proof.
+  intros a T Hval Hclosed.
+  apply closed_inl_cv in Hclosed. exact Hclosed.
+Qed.
+
+(** Inner value of closed inr is closed *)
+Lemma closed_inr_value_inner : forall b T,
+  value (EInr b T) ->
+  closed_expr_cv (EInr b T) ->
+  closed_expr_cv b.
+Proof.
+  intros b T Hval Hclosed.
+  apply closed_inr_cv in Hclosed. exact Hclosed.
+Qed.
+
+(** Closed expression is stable under store extension *)
+Lemma closed_store_extension : forall e Σ1 Σ2 Δ T ε,
+  has_type nil Σ1 Δ e T ε ->
+  store_ty_extends Σ1 Σ2 ->
+  closed_expr_cv e.
+Proof.
+  intros e Σ1 Σ2 Δ T ε Hty _.
+  apply nil_ctx_is_closed with (Σ := Σ1) (Δ := Δ) (T := T) (ε := ε). exact Hty.
+Qed.
+
 (** End of file - ZERO ADMITS *)
