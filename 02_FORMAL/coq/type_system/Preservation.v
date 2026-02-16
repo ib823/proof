@@ -1248,4 +1248,69 @@ Proof.
     + exact Hty3.
 Qed.
 
+(** ** Corollaries of Multi-Step Preservation *)
+
+(** Multi-step extends store typing *)
+Corollary multi_step_store_extends : forall e e' T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  multi_step (e, st, ctx) (e', st', ctx') ->
+  exists Σ', store_ty_extends Σ Σ' /\ store_wf Σ' st'.
+Proof.
+  intros e e' T ε st st' ctx ctx' Σ Hty Hwf Hmulti.
+  destruct (multi_step_preservation _ _ Hmulti e e' T ε st st' ctx ctx' Σ
+              eq_refl eq_refl Hty Hwf) as [Σ' [ε' [Hext [Hwf' _]]]].
+  exists Σ'. auto.
+Qed.
+
+(** In a well-formed store, a typed location has a value *)
+Lemma store_wf_typed_loc_value : forall Σ st l T sl,
+  store_wf Σ st ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v, store_lookup l st = Some v /\ value v.
+Proof.
+  intros Σ st l T sl [HΣtoSt _] Hlook.
+  destruct (HΣtoSt l T sl Hlook) as [v [Hst [Hval _]]].
+  exists v. auto.
+Qed.
+
+(** In a well-formed store, a typed location has a well-typed value *)
+Lemma store_wf_lookup_has_type : forall Σ st l T sl,
+  store_wf Σ st ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v, store_lookup l st = Some v /\ value v /\ has_type nil Σ Public v T EffectPure.
+Proof.
+  intros Σ st l T sl [HΣtoSt _] Hlook.
+  destruct (HΣtoSt l T sl Hlook) as [v [Hst [Hval Hty]]].
+  exists v. auto.
+Qed.
+
+(** Multi-step to value preserves type and yields pure effect *)
+Corollary multi_step_value_typed : forall e v T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  multi_step (e, st, ctx) (v, st', ctx') ->
+  value v ->
+  exists Σ' ε', store_ty_extends Σ Σ' /\ store_wf Σ' st' /\ has_type nil Σ' Public v T ε'.
+Proof.
+  intros e v T ε st st' ctx ctx' Σ Hty Hwf Hmulti Hval.
+  exact (multi_step_preservation _ _ Hmulti e v T ε st st' ctx ctx' Σ
+           eq_refl eq_refl Hty Hwf).
+Qed.
+
+(** After multi-step to a value, the value has pure effect *)
+Corollary multi_step_value_pure : forall e v T ε st st' ctx ctx' Σ,
+  has_type nil Σ Public e T ε ->
+  store_wf Σ st ->
+  multi_step (e, st, ctx) (v, st', ctx') ->
+  value v ->
+  exists Σ', store_ty_extends Σ Σ' /\ has_type nil Σ' Public v T EffectPure.
+Proof.
+  intros e v T ε st st' ctx ctx' Σ Hty Hwf Hmulti Hval.
+  destruct (multi_step_preservation _ _ Hmulti e v T ε st st' ctx ctx' Σ
+              eq_refl eq_refl Hty Hwf) as [Σ' [ε' [Hext [Hwf' Hty']]]].
+  exists Σ'. split; [exact Hext|].
+  eapply value_has_pure_effect; eassumption.
+Qed.
+
 (** End of Preservation.v *)

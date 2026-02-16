@@ -358,4 +358,73 @@ Proof.
   - right. right. right. right. right. right. right. right. right. right. eauto.
 Qed.
 
+(* ================================================================= *)
+(** ** Section 8: Type Determination Lemmas *)
+(* ================================================================= *)
+
+(** EUnit typed in empty context must have type TUnit. *)
+Lemma value_type_unit : forall Σ T ε,
+  has_type nil Σ Public EUnit T ε ->
+  T = TUnit.
+Proof.
+  intros Σ T ε Hty. inversion Hty. reflexivity.
+Qed.
+
+(** EBool typed in empty context must have type TBool. *)
+Lemma value_type_bool : forall b Σ T ε,
+  has_type nil Σ Public (EBool b) T ε ->
+  T = TBool.
+Proof.
+  intros b Σ T ε Hty. inversion Hty. reflexivity.
+Qed.
+
+(** EInt typed in empty context must have type TInt. *)
+Lemma value_type_int : forall n Σ T ε,
+  has_type nil Σ Public (EInt n) T ε ->
+  T = TInt.
+Proof.
+  intros n Σ T ε Hty. inversion Hty. reflexivity.
+Qed.
+
+(** EString typed in empty context must have type TString. *)
+Lemma value_type_string : forall s Σ T ε,
+  has_type nil Σ Public (EString s) T ε ->
+  T = TString.
+Proof.
+  intros s Σ T ε Hty. inversion Hty. reflexivity.
+Qed.
+
+(** ELoc typed in empty context must have reference type. *)
+Lemma value_type_loc : forall l Σ T ε,
+  has_type nil Σ Public (ELoc l) T ε ->
+  exists T' sl, T = TRef T' sl.
+Proof.
+  intros l Σ T ε Hty. inversion Hty; subst.
+  eexists. eexists. reflexivity.
+Qed.
+
+(** ELam typed in empty context must have function type. *)
+Lemma value_type_lam : forall x T1 body Σ T ε,
+  has_type nil Σ Public (ELam x T1 body) T ε ->
+  exists T2 ε_body, T = TFn T1 T2 ε_body.
+Proof.
+  intros x T1 body Σ T ε Hty. inversion Hty; subst.
+  eexists. eexists. reflexivity.
+Qed.
+
+(** ** Section 9: Typed Value Component Extraction *)
+
+(** A well-typed pair value has well-typed components at the component types. *)
+Lemma canonical_pair_typed_components : forall v1 v2 T1 T2 ε Σ,
+  has_type nil Σ Public (EPair v1 v2) (TProd T1 T2) ε ->
+  value v1 -> value v2 ->
+  exists ε1 ε2,
+    has_type nil Σ Public v1 T1 ε1 /\
+    has_type nil Σ Public v2 T2 ε2.
+Proof.
+  intros v1 v2 T1 T2 ε Σ Hty Hval1 Hval2.
+  inversion Hty; subst.
+  eexists. eexists. split; eassumption.
+Qed.
+
 (** End of CanonicalForms.v *)

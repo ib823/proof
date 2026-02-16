@@ -648,4 +648,71 @@ Proof.
   subst. reflexivity.
 Qed.
 
+(** ** Store Relation Reflexivity *)
+
+(** Simple store relation is reflexive *)
+Lemma store_rel_simple_refl : forall Σ st,
+  store_rel_simple Σ st st.
+Proof.
+  intros Σ st. unfold store_rel_simple. reflexivity.
+Qed.
+
+(** ** Store Relation Step Monotonicity *)
+
+(** Store relation is monotone in step index *)
+Lemma store_rel_le_step_mono : forall n m Σ st1 st2,
+  m <= n ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le m Σ st1 st2.
+Proof.
+  intros n m Σ st1 st2 Hle [Hmax Hlocs].
+  split; [exact Hmax|].
+  intros l T sl Hlook.
+  specialize (Hlocs l T sl Hlook).
+  destruct (store_lookup l st1) as [v1|] eqn:Hst1;
+  destruct (store_lookup l st2) as [v2|] eqn:Hst2; auto.
+  apply val_rel_le_mono_step with (n := n); auto.
+Qed.
+
+(** ** Security Type Value Relations *)
+
+(** Labeled values are always related (like secrets) *)
+Lemma val_rel_le_labeled_always : forall n Σ T sl v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T sl v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+(** Tainted values are always related *)
+Lemma val_rel_le_tainted_always : forall n Σ T src v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TTainted T src) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T src v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+(** Sanitized values are always related *)
+Lemma val_rel_le_sanitized_always : forall n Σ T san v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T san v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
 (** End of StoreRelation.v *)
