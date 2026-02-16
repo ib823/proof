@@ -355,4 +355,47 @@ Proof.
   apply nil_ctx_is_closed with (Σ := Σ1) (Δ := Δ) (T := T) (ε := ε). exact Hty.
 Qed.
 
+(** ** Section 8: Typed Closedness Corollaries *)
+
+(** Typed pair in nil context has closed components *)
+Lemma nil_ctx_pair_closed : forall Σ Δ a b T ε,
+  has_type nil Σ Δ (EPair a b) T ε ->
+  closed_expr_cv a /\ closed_expr_cv b.
+Proof.
+  intros. apply (proj1 (closed_pair_cv a b)).
+  eapply nil_ctx_is_closed; eauto.
+Qed.
+
+(** Typed inl in nil context has closed inner expression *)
+Lemma nil_ctx_inl_closed : forall Σ Δ e T' T ε,
+  has_type nil Σ Δ (EInl e T') T ε ->
+  closed_expr_cv e.
+Proof.
+  intros. apply (proj1 (closed_inl_cv e T')).
+  eapply nil_ctx_is_closed; eauto.
+Qed.
+
+(** Typed inr in nil context has closed inner expression *)
+Lemma nil_ctx_inr_closed : forall Σ Δ e T' T ε,
+  has_type nil Σ Δ (EInr e T') T ε ->
+  closed_expr_cv e.
+Proof.
+  intros. apply (proj1 (closed_inr_cv e T')).
+  eapply nil_ctx_is_closed; eauto.
+Qed.
+
+(** Classify of closed is closed — direct forward lemma *)
+Lemma closed_classify_value_inner : forall v,
+  closed_expr_cv (EClassify v) -> closed_expr_cv v.
+Proof.
+  intros v H. apply closed_classify_cv in H. exact H.
+Qed.
+
+(** Prove of closed is closed — direct forward lemma *)
+Lemma closed_prove_value_inner : forall v,
+  closed_expr_cv (EProve v) -> closed_expr_cv v.
+Proof.
+  intros v H. apply closed_prove_cv in H. exact H.
+Qed.
+
 (** End of file - ZERO ADMITS *)

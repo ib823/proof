@@ -719,4 +719,43 @@ Proof. simpl. lia. Qed.
 Lemma read_lt_write : effect_level EffRead < effect_level EffWrite.
 Proof. simpl. lia. Qed.
 
+(** ** Effect Leq Join Bounds *)
+
+(** An effect is at most the join with any other effect *)
+Lemma effect_leq_join_l : forall ε1 ε2,
+  effect_leq ε1 (effect_join ε1 ε2).
+Proof.
+  intros ε1 ε2. unfold effect_leq. rewrite effect_level_join. lia.
+Qed.
+
+Lemma effect_leq_join_r : forall ε1 ε2,
+  effect_leq ε2 (effect_join ε1 ε2).
+Proof.
+  intros ε1 ε2. unfold effect_leq. rewrite effect_level_join. lia.
+Qed.
+
+(** Join with EffNetwork is never pure *)
+Lemma effect_join_network_not_pure : forall ε,
+  effect_join ε EffNetwork <> EffPure.
+Proof.
+  intros ε H. apply effect_join_pure_inv in H. destruct H as [_ H]. discriminate.
+Qed.
+
+(** Positive level implies not pure *)
+Lemma effect_level_positive_not_pure : forall ε,
+  effect_level ε > 0 -> ε <> EffPure.
+Proof.
+  intros ε H Heq. subst. simpl in H. lia.
+Qed.
+
+(** EffPure is the right identity for join *)
+Lemma effect_join_pure_r : forall ε,
+  effect_join ε EffPure = ε.
+Proof.
+  intros ε. unfold effect_join. simpl.
+  destruct (effect_level ε <? 0) eqn:Hlt.
+  - apply Nat.ltb_lt in Hlt. lia.
+  - reflexivity.
+Qed.
+
 (** End of EffectSafety.v *)

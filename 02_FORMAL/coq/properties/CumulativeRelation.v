@@ -858,4 +858,66 @@ Proof.
   try exact Hlookup; simpl; exact I.
 Qed.
 
+(** ** Additional Structural Extraction Lemmas *)
+
+(** Extract equality from TBytes relation *)
+Lemma val_rel_le_bytes_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  v1 = v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+Qed.
+
+(** Build val_rel_le for TRef (locations) at any step *)
+Lemma val_rel_le_build_ref : forall n Σ T sl l,
+  val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l).
+Proof.
+  induction n as [|n' IH]; intros Σ T sl l.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH.
+    + unfold val_rel_struct. repeat split; auto.
+      * apply VLoc.
+      * apply VLoc.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * unfold closed_expr. intros x Hfree. inversion Hfree.
+      * exists l. auto.
+Qed.
+
+(** Extract sum injection from TSum relation *)
+Lemma val_rel_le_sum_extract : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2, v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+                 val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2, v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+                 val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel. destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (_ & _ & _ & _ & HT).
+  simpl. exact HT.
+Qed.
+
+(** Shorthand: val_rel_le for unit *)
+Lemma val_rel_le_unit : forall n Σ,
+  val_rel_le n Σ TUnit EUnit EUnit.
+Proof.
+  intros. apply val_rel_le_build_unit.
+Qed.
+
+(** Store relation simple for identical stores *)
+Lemma store_rel_simple_refl_cum : forall Σ st,
+  store_rel_simple Σ st st.
+Proof.
+  intros. unfold store_rel_simple. reflexivity.
+Qed.
+
 (** End of CumulativeRelation.v *)
