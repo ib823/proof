@@ -519,4 +519,70 @@ Proof.
   - exact Hval.
 Qed.
 
+(** ** Case-Inl Terminates *)
+
+Lemma case_inl_terminates : forall v T x1 e1 x2 e2 st ctx,
+  value v ->
+  terminates ([x1 := v] e1) st ctx ->
+  terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx.
+Proof.
+  intros v T x1 e1 x2 e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_CaseInl. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** ** Case-Inr Terminates *)
+
+Lemma case_inr_terminates : forall v T x1 e1 x2 e2 st ctx,
+  value v ->
+  terminates ([x2 := v] e2) st ctx ->
+  terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx.
+Proof.
+  intros v T x1 e1 x2 e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_CaseInr. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** ** Handle Terminates *)
+
+Lemma handle_terminates : forall x v h st ctx,
+  value v ->
+  terminates ([x := v] h) st ctx ->
+  terminates (EHandle v x h) st ctx.
+Proof.
+  intros x v h st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
+  exists r, st', ctx'.
+  split.
+  - eapply MS_Step. apply ST_HandleValue. exact Hval. exact Hms.
+  - exact Hvalr.
+Qed.
+
+(** ** Multi-step terminates transitivity *)
+
+Lemma terminates_trans : forall e e' st st' ctx ctx',
+  (e, st, ctx) -->* (e', st', ctx') ->
+  terminates e' st' ctx' ->
+  terminates e st ctx.
+Proof.
+  intros e e' st st' ctx ctx' Hms [v [st'' [ctx'' [Hms' Hval]]]].
+  exists v, st'', ctx''.
+  split.
+  - eapply multi_step_trans; eauto.
+  - exact Hval.
+Qed.
+
+(** ** Termination is preserved by values *)
+
+Lemma value_terminates_refl : forall v st ctx,
+  value v ->
+  terminates v st ctx.
+Proof.
+  intros v st ctx Hval.
+  exists v, st, ctx. split; [apply MS_Refl | exact Hval].
+Qed.
+
 (** End of TerminationLemmas.v *)

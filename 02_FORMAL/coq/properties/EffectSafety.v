@@ -686,4 +686,37 @@ Proof.
   intros. reflexivity.
 Qed.
 
+(** ** Read/Write Effect Ordering *)
+
+Lemma pure_leq_filesystem :
+  effect_leq EffPure EffFileSystem.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+Lemma read_leq_filesystem :
+  effect_leq EffRead EffFileSystem.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+Lemma pure_leq_network :
+  effect_leq EffPure EffNetwork.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+Lemma pure_leq_crypto :
+  effect_leq EffPure EffCrypto.
+Proof. unfold effect_leq. simpl. lia. Qed.
+
+(** ** Effect Join Associativity for Pure *)
+
+Lemma effect_join_pure_pure : effect_join EffPure EffPure = EffPure.
+Proof. reflexivity. Qed.
+
+(** ** Pure effect is strictly below read *)
+
+Lemma pure_lt_read : effect_level EffPure < effect_level EffRead.
+Proof. simpl. lia. Qed.
+
+(** ** Read effect is strictly below write *)
+
+Lemma read_lt_write : effect_level EffRead < effect_level EffWrite.
+Proof. simpl. lia. Qed.
+
 (** End of EffectSafety.v *)

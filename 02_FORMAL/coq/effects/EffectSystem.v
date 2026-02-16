@@ -557,4 +557,47 @@ Proof.
   rewrite effect_join_pure_r. exact Hpw.
 Qed.
 
+(** ** Values Always Type With Pure Effect in has_type_full *)
+
+Lemma has_type_full_value_pure : forall v S D T eff,
+  value v ->
+  has_type_full nil S D v T eff ->
+  performs_within v EffPure.
+Proof.
+  intros v S D T eff Hval Hty.
+  apply performs_within_value. exact Hval.
+Qed.
+
+(** ** Effect Safety for Values *)
+
+Lemma effect_safety_value : forall v S D T eff,
+  value v ->
+  has_type_full nil S D v T eff ->
+  forall eff', performs_within v eff'.
+Proof.
+  intros v S D T eff Hval Hty eff'.
+  apply performs_within_value. exact Hval.
+Qed.
+
+(** ** Performs-Within Reflexivity for Pure *)
+
+Lemma performs_within_pure_refl : forall e,
+  performs_within e EffPure ->
+  performs_within e EffPure.
+Proof.
+  intros. exact H.
+Qed.
+
+(** ** Double Join Associativity for Effect Bounds *)
+
+Lemma performs_within_double_join : forall e eff1 eff2 eff3,
+  performs_within e eff1 ->
+  performs_within e (effect_join eff1 (effect_join eff2 eff3)).
+Proof.
+  intros e eff1 eff2 eff3 Hpw.
+  apply performs_within_mono with (eff1 := eff1).
+  - apply effect_join_ub_l.
+  - exact Hpw.
+Qed.
+
 (** End of EffectSystem.v *)
