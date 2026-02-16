@@ -388,4 +388,41 @@ Proof.
   - right. right. exact H.
 Qed.
 
+(** ** Strict order composition *)
+
+Lemma effect_lt_leq_trans : forall e1 e2 e3,
+  effect_lt e1 e2 -> effect_leq e2 e3 -> effect_lt e1 e3.
+Proof.
+  intros e1 e2 e3 H1 H2. unfold effect_lt, effect_leq in *. lia.
+Qed.
+
+Lemma effect_leq_lt_trans : forall e1 e2 e3,
+  effect_leq e1 e2 -> effect_lt e2 e3 -> effect_lt e1 e3.
+Proof.
+  intros e1 e2 e3 H1 H2. unfold effect_lt, effect_leq in *. lia.
+Qed.
+
+(** Strict order implies distinct effects *)
+Lemma effect_lt_not_eq : forall e1 e2,
+  effect_lt e1 e2 -> e1 <> e2.
+Proof.
+  intros e1 e2 H Heq. subst. apply effect_lt_irrefl in H. exact H.
+Qed.
+
+(** Strict order is asymmetric *)
+Lemma effect_lt_asymmetric : forall e1 e2,
+  effect_lt e1 e2 -> ~ effect_lt e2 e1.
+Proof.
+  intros e1 e2 H1 H2. unfold effect_lt in *. lia.
+Qed.
+
+(** EffPure is strictly below any non-pure effect *)
+Lemma effect_pure_lt_nonpure : forall e,
+  e <> EffPure -> effect_lt EffPure e.
+Proof.
+  intros e Hne. unfold effect_lt. simpl.
+  destruct e; simpl; try lia.
+  contradiction.
+Qed.
+
 (** End of EffectAlgebra.v *)

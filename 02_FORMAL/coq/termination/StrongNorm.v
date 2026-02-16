@@ -459,4 +459,75 @@ Proof.
       end.
 Qed.
 
+(** Snd of Fst on nested pair is SN *)
+Lemma snd_fst_pair_SN : forall a b c d st ctx,
+  value a -> value b -> value c -> value d ->
+  SN st ctx (ESnd (EFst (EPair (EPair a b) (EPair c d)))).
+Proof.
+  intros a b c d st ctx Ha Hb Hc Hd.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - match goal with
+    | H : (EFst (EPair (EPair a b) (EPair c d)), _, _) --> _ |- _ =>
+      inversion H; subst
+    end.
+    + apply snd_value_SN; assumption.
+    + exfalso. match goal with
+      | H : (EPair (EPair a b) (EPair c d), _, _) --> _ |- _ =>
+        eapply value_not_step with (v := EPair (EPair a b) (EPair c d));
+        [apply VPair; apply VPair; assumption | exact H]
+      end.
+Qed.
+
+(** Fst of Fst on nested pair is SN *)
+Lemma fst_fst_nested_SN : forall a b c st ctx,
+  value a -> value b -> value c ->
+  SN st ctx (EFst (EFst (EPair (EPair a b) c))).
+Proof.
+  intros a b c st ctx Ha Hb Hc.
+  apply SN_intro. intros e' st' ctx' Hstep.
+  inversion Hstep; subst.
+  - match goal with
+    | H : (EFst (EPair (EPair a b) c), _, _) --> _ |- _ =>
+      inversion H; subst
+    end.
+    + apply fst_value_terminates_pair; assumption.
+    + exfalso. match goal with
+      | H : (EPair (EPair a b) c, _, _) --> _ |- _ =>
+        eapply value_not_step with (v := EPair (EPair a b) c);
+        [apply VPair; [apply VPair; assumption | assumption] | exact H]
+      end.
+Qed.
+
+(** SN for classify of classify *)
+Lemma classify_classify_SN : forall v st ctx,
+  value v ->
+  SN st ctx (EClassify (EClassify v)).
+Proof.
+  intros v st ctx Hv.
+  apply classify_value_strongly_normalizing.
+  apply VClassify. exact Hv.
+Qed.
+
+(** SN for prove of prove *)
+Lemma prove_prove_SN : forall v st ctx,
+  value v ->
+  SN st ctx (EProve (EProve v)).
+Proof.
+  intros v st ctx Hv.
+  apply prove_value_SN.
+  apply VProve. exact Hv.
+Qed.
+
+(** SN for nested pair value *)
+Lemma nested_pair_value_SN : forall a b c d st ctx,
+  value a -> value b -> value c -> value d ->
+  SN st ctx (EPair (EPair a b) (EPair c d)).
+Proof.
+  intros a b c d st ctx Ha Hb Hc Hd.
+  apply pair_value_SN.
+  - apply VPair; assumption.
+  - apply VPair; assumption.
+Qed.
+
 (** End of StrongNorm.v *)

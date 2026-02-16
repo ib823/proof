@@ -362,4 +362,58 @@ Proof.
   unfold effect_leq in Hle. simpl in Hle. lia.
 Qed.
 
+(** ** Effect Level Positivity for Stateful Operations *)
+
+(** Ref expression always has positive effect level *)
+Lemma ref_effect_level_positive : forall Γ Σ Δ e l T ε,
+  has_type Γ Σ Δ (ERef e l) T ε ->
+  effect_level ε > 0.
+Proof.
+  intros Γ Σ Δ e l T ε Hty.
+  assert (H := ref_introduces_write _ _ _ _ _ _ _ Hty).
+  unfold effect_leq in H. simpl in H. lia.
+Qed.
+
+(** Deref expression always has positive effect level *)
+Lemma deref_effect_level_positive : forall Γ Σ Δ e T ε,
+  has_type Γ Σ Δ (EDeref e) T ε ->
+  effect_level ε > 0.
+Proof.
+  intros Γ Σ Δ e T ε Hty.
+  assert (H := deref_introduces_read _ _ _ _ _ _ Hty).
+  unfold effect_leq in H. simpl in H. lia.
+Qed.
+
+(** Assign expression always has positive effect level *)
+Lemma assign_effect_level_positive : forall Γ Σ Δ e1 e2 T ε,
+  has_type Γ Σ Δ (EAssign e1 e2) T ε ->
+  effect_level ε > 0.
+Proof.
+  intros Γ Σ Δ e1 e2 T ε Hty.
+  assert (H := assign_introduces_write _ _ _ _ _ _ _ Hty).
+  unfold effect_leq in H. simpl in H. lia.
+Qed.
+
+(** Ref and deref are both nonpure *)
+Lemma ref_deref_both_nonpure : forall Γ Σ Δ e1 l1 e2 T1 T2 ε1 ε2,
+  has_type Γ Σ Δ (ERef e1 l1) T1 ε1 ->
+  has_type Γ Σ Δ (EDeref e2) T2 ε2 ->
+  ε1 <> EffPure /\ ε2 <> EffPure.
+Proof.
+  intros. split.
+  - intro Heq. subst. eapply ref_not_pure; eauto.
+  - intro Heq. subst. eapply deref_not_pure; eauto.
+Qed.
+
+(** Assign and deref are both nonpure *)
+Lemma assign_deref_both_nonpure : forall Γ Σ Δ e1 e2 e3 T1 T2 ε1 ε2,
+  has_type Γ Σ Δ (EAssign e1 e2) T1 ε1 ->
+  has_type Γ Σ Δ (EDeref e3) T2 ε2 ->
+  ε1 <> EffPure /\ ε2 <> EffPure.
+Proof.
+  intros. split.
+  - intro Heq. subst. eapply assign_not_pure; eauto.
+  - intro Heq. subst. eapply deref_not_pure; eauto.
+Qed.
+
 (** End of EffectMonotonicity.v *)
