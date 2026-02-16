@@ -273,9 +273,9 @@ def puzzle_valid (x target : Nat) : Bool :=
 def puzzle_verify (x target : Nat) : Bool :=
   puzzle_valid x target
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: SIMD EQUIVALENCE (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PI_001_01_simd_add_equiv (matches Coq) -/
 theorem PI_001_01_simd_add_equiv : ∀ a b, simd_add a b = scalar_add a b := by
   rfl
@@ -308,9 +308,9 @@ theorem PI_001_07_dot_product_zero_left : ∀ b, dot_product [] b = 0 := by
 theorem PI_001_08_simd_preserves_length : ∀ a b, length a = length b → length (simd_add a b) = length a := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: CACHE-OBLIVIOUS PROPERTIES (6 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PI_002_01_veb_search_root (matches Coq) -/
 theorem PI_002_01_veb_search_root : ∀ v l r, veb_search (VEBNode v l r) v = true := by
   rfl
@@ -335,9 +335,9 @@ theorem PI_002_05_veb_inorder_nonempty : ∀ t, veb_inorder t ≠ [] := by
 theorem PI_002_06_veb_height_bound : ∀ t, veb_height t < veb_size t := by
   omega
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: LOCK-FREE SAFETY (7 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PI_003_01_msq_empty_dequeue (matches Coq) -/
 theorem PI_003_01_msq_empty_dequeue : msq_dequeue msq_empty = (msq_empty, None) := by
   simp
@@ -366,9 +366,9 @@ theorem PI_003_06_cas_failure : ∀ loc expected new_val, loc ≠ expected → �
 theorem PI_003_07_linearization_empty : lin_ordered [] = true := by
   simp
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: COMPILER OPTIMIZATION CORRECTNESS (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PI_004_01_dce_false_branch (matches Coq) -/
 theorem PI_004_01_dce_false_branch : ∀ t f env, opt_eval env (dce (OIf (OConst 0) t f)) = opt_eval env (dce f) := by
   rfl
@@ -401,9 +401,9 @@ theorem PI_004_07_dce_const_preserves : ∀ n env, opt_eval env (dce (OConst n))
 theorem PI_004_08_dce_var_preserves : ∀ x env, opt_eval env (dce (OVar x)) = env x := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: PUZZLE / RATE-LIMITING (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PI_005_01_puzzle_verify_sound (matches Coq) -/
 theorem PI_005_01_puzzle_verify_sound : ∀ x target, puzzle_valid x target = true → puzzle_verify x target = true := by
   intro h; exact h

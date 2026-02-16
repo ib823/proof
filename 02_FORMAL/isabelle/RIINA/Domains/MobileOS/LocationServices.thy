@@ -165,7 +165,7 @@ definition well_formed_location_config :: "LocationConfig \<Rightarrow> bool" wh
   loc_significant_change_meters config > 0"
 
 (* location_accuracy_bounded (matches Coq) *)
-lemma location_accuracy_bounded: "\<forall> (location : Location), accurate_location_service location \<longrightarrow> loc_source location = 0 \<longrightarrow> (* GPS available *) error location \<le> 5"
+lemma location_accuracy_bounded: "\<forall> (location : Location), accurate_location_service location \<longrightarrow> loc_source location = 0 \<longrightarrow> error location \<le> 5"
   by auto
 
 (* geofence_accurate (matches Coq) *)

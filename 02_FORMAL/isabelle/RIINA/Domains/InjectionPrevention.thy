@@ -170,7 +170,7 @@ lemma inj_004_xpath_injection_impossible: "\<forall> (q : XPathQuery), safe_xpat
   by auto
 
 (* inj_005_xxe_impossible (matches Coq) *)
-lemma inj_005_xxe_impossible: "\<forall> (config : XMLParserConfig), xc_expand_entities config = False \<longrightarrow> xc_allow_external config = False \<longrightarrow> (* XXE requires entity expansion *) ~ (xc_expand_entities config = True \<and> xc_allow_external config = True)"
+lemma inj_005_xxe_impossible: "\<forall> (config : XMLParserConfig), xc_expand_entities config = False \<longrightarrow> xc_allow_external config = False \<longrightarrow> ~ (xc_expand_entities config = True \<and> xc_allow_external config = True)"
   by auto
 
 (* inj_006_header_injection_impossible (matches Coq) *)
@@ -178,11 +178,11 @@ lemma inj_006_header_injection_impossible: "\<forall> (h : HTTPHeader), contains
   by auto
 
 (* inj_007_template_injection_impossible (matches Coq) *)
-lemma inj_007_template_injection_impossible: "\<forall> (e : TemplateExpr), (* Template expressions are structurally limited - no eval *) True"
+lemma inj_007_template_injection_impossible: "\<forall> (e : TemplateExpr), True"
   by auto
 
 (* inj_008_code_injection_impossible (matches Coq) *)
-lemma inj_008_code_injection_impossible: "\<forall> (e : RIINAExpr), (* No eval constructor \<exists> in the language *) match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end"
+lemma inj_008_code_injection_impossible: "\<forall> (e : RIINAExpr), match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end"
   by auto
 
 (* inj_009_expression_language_safe (matches Coq) *)
@@ -202,7 +202,7 @@ lemma csv_escape_safe_helper: "\<forall> c rest, ((c = 61) || (c = 43) || (c = 4
   by (cases rule: ‹_›.cases; simp)
 
 (* inj_012_csv_injection_impossible (matches Coq) *)
-lemma inj_012_csv_injection_impossible: "\<forall> (data : list nat), match escape_csv_cell data with | 61 :: _ => False (* Cannot start with = *) | 43 :: _ => False (* Cannot start with + *) | 45 :: _ => False (* Cannot start with - *) | 64 :: _ => False (* Cannot start with @ *) | _ => True end"
+lemma inj_012_csv_injection_impossible: "\<forall> (data : list nat), match escape_csv_cell data with | 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True end"
   by auto
 
 (* inj_013_pdf_injection_impossible (matches Coq) *)
@@ -214,7 +214,7 @@ lemma inj_014_crlf_injection_impossible: "\<forall> (h : HTTPHeader), contains_n
   by auto
 
 (* inj_015_null_byte_injection_impossible (matches Coq) *)
-lemma inj_015_null_byte_injection_impossible: "\<forall> (s : LengthPrefixedString), (* Null bytes don't truncate - length is explicit *) List.length (lpstr_bytes s) = lpstr_len s"
+lemma inj_015_null_byte_injection_impossible: "\<forall> (s : LengthPrefixedString), List.length (lpstr_bytes s) = lpstr_len s"
   by auto
 
 (* inj_016_untrusted_propagation (matches Coq) *)

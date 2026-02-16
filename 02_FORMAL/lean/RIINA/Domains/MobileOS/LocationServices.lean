@@ -203,7 +203,7 @@ def well_formed_location_config (config : LocationConfig) : Prop :=
   loc_significant_change_meters config > 0
 
 /-- location_accuracy_bounded (matches Coq) -/
-theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 →  error location ≤ 5 := by
+theorem location_accuracy_bounded : ∀ (location : Location), accurate_location_service location → loc_source location = 0 → error location ≤ 5 := by
   simp_all [Bool.and_eq_true]
 
 /-- geofence_accurate (matches Coq) -/

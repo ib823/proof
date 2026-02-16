@@ -204,8 +204,8 @@ def subst (x : string) (s : expr) (e : expr) : expr :=
   | ESanitize san e => ESanitize san (subst x s e)
   | EUseSink san e => EUseSink san (subst x s e)
 
-/-- No typing derivation exists for ETaint src e at a sink expecting
-    TSanitized T san. The type system rejects it structurally. -/
+-- No typing derivation exists for ETaint src e at a sink expecting
+    TSanitized T san. The type system rejects it structurally.
 /-- taint_source_eqb_refl (matches Coq) -/
 theorem taint_source_eqb_refl : ∀ t, taint_source_eqb t t = true := by
   cases ‹_› <;> simp
@@ -222,17 +222,17 @@ theorem taint_source_eqb_eq : ∀ t1 t2, taint_source_eqb t1 t2 = true → t1 = 
 theorem sanitizer_eqb_eq : ∀ s1 s2, sanitizer_eqb s1 s2 = true → s1 = s2 := by
   cases ‹_› <;> simp
 
-/-- Key structural lemma: TTainted <> TSanitized -/
+-- Key structural lemma: TTainted <> TSanitized
 /-- tainted_not_sanitized (matches Coq) -/
 theorem tainted_not_sanitized : ∀ T1 T2 src san, TTainted T1 src ≠ TSanitized T2 san := by
   simp_all [Bool.and_eq_true]
 
-/-- Tainted types are not base types -/
+-- Tainted types are not base types
 /-- tainted_not_base (matches Coq) -/
 theorem tainted_not_base : ∀ T src, TTainted T src ≠ TUnit ∧ TTainted T src ≠ TBool ∧ TTainted T src ≠ TInt ∧ TTainted T src ≠ TString := by
   simp_all [Bool.and_eq_true]
 
-/-- Sanitized types are not base types -/
+-- Sanitized types are not base types
 /-- sanitized_not_base (matches Coq) -/
 theorem sanitized_not_base : ∀ T san, TSanitized T san ≠ TUnit ∧ TSanitized T san ≠ TBool ∧ TSanitized T san ≠ TInt ∧ TSanitized T san ≠ TString := by
   simp_all [Bool.and_eq_true]
@@ -257,28 +257,28 @@ theorem canonical_bool : ∀ Γ v, value v → has_type Γ v TBool → v = ETrue
 theorem canonical_pair : ∀ Γ v T1 T2, value v → has_type Γ v (TProd T1 T2) → ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Progress theorem for taint-aware type system -/
+-- Progress theorem for taint-aware type system
 /-- taint_progress (matches Coq) -/
 theorem taint_progress : ∀ e T, has_type nil e T → value e ∨ ∃ e', step e e' := by
   simp_all [Bool.and_eq_true]
 
-/-- Free variables of well-typed terms exist in the context -/
+-- Free variables of well-typed terms exist in the context
 /-- free_in_context (matches Coq) -/
 theorem free_in_context : ∀ x e Γ T, appears_free_in x e → has_type Γ e T → ∃ T', lookup x Γ = Some T' := by
   simp_all [Bool.and_eq_true]
 
-/-- Context invariance: typing depends only on free variable lookups -/
+-- Context invariance: typing depends only on free variable lookups
 /-- context_invariance (matches Coq) -/
 theorem context_invariance : ∀ Γ Γ' e T, has_type Γ e T → (∀ x, appears_free_in x e → lookup x Γ = lookup x Γ') → has_type Γ' e T := by
   cases ‹_› <;> simp
 
-/-- Weakening from empty context to any context -/
+-- Weakening from empty context to any context
 /-- weakening_empty (matches Coq) -/
 theorem weakening_empty : ∀ Γ e T, has_type nil e T → has_type Γ e T := by
   simp_all [Bool.and_eq_true]
 
-/-- Substitution preserves typing — fully proven.
-    Replaces the former axiom. Proof by induction on expression structure. -/
+-- Substitution preserves typing — fully proven.
+    Replaces the former axiom. Proof by induction on expression structure.
 /-- substitution_preserves_typing (matches Coq) -/
 theorem substitution_preserves_typing : ∀ Γ x U e v T, has_type ((x, U) :: Γ) e T → has_type nil v U → has_type Γ (subst x v e) T := by
   cases ‹_› <;> simp
@@ -291,38 +291,38 @@ theorem taint_preservation : ∀ e e' Ty0, has_type nil e Ty0 → step e e' → 
 theorem taint_type_safety : ∀ e e' T, has_type nil e T → multi_step e e' → value e' ∨ ∃ e'', step e' e'' := by
   simp_all [Bool.and_eq_true]
 
-/-- If a well-typed program reaches EUseSink san e where e is a value,
-    then e must be a sanitized+tainted value (ESanitize san (ETaint src v')). -/
+-- If a well-typed program reaches EUseSink san e where e is a value,
+    then e must be a sanitized+tainted value (ESanitize san (ETaint src v')).
 /-- injection_prevention (matches Coq) -/
 theorem injection_prevention : ∀ san e0 T, has_type nil (EUseSink san e0) T → value e0 → ∃ san' v' src, e0 = ESanitize san' (ETaint src v') ∧ value v' ∧ san = san' := by
   simp_all [Bool.and_eq_true]
 
-/-- Stronger formulation: direct structural impossibility -/
+-- Stronger formulation: direct structural impossibility
 /-- taint_sink_structural_impossibility (matches Coq) -/
 theorem taint_sink_structural_impossibility : ∀ Γ src san e T, has_type Γ (ETaint src e) (TSanitized T san) → False := by
   simp_all [Bool.and_eq_true]
 
-/-- Key lemma: TTainted and TSanitized are structurally disjoint types -/
+-- Key lemma: TTainted and TSanitized are structurally disjoint types
 /-- tainted_neq_sanitized (matches Coq) -/
 theorem tainted_neq_sanitized : ∀ T1 T2 src san, TTainted T1 src ≠ TSanitized T2 san := by
   simp_all [Bool.and_eq_true]
 
-/-- An ETaint expression cannot have a TSanitized type -/
+-- An ETaint expression cannot have a TSanitized type
 /-- taint_expr_not_sanitized (matches Coq) -/
 theorem taint_expr_not_sanitized : ∀ Γ src e T san, has_type Γ (ETaint src e) (TSanitized T san) → False := by
   simp_all [Bool.and_eq_true]
 
-/-- An ESanitize expression cannot have a TTainted type -/
+-- An ESanitize expression cannot have a TTainted type
 /-- sanitize_expr_not_tainted (matches Coq) -/
 theorem sanitize_expr_not_tainted : ∀ Γ san e T src, has_type Γ (ESanitize san e) (TTainted T src) → False := by
   simp_all [Bool.and_eq_true]
 
-/-- Combined: For value expressions, tainted and sanitized are disjoint -/
+-- Combined: For value expressions, tainted and sanitized are disjoint
 /-- taint_sanitize_disjointness_values (matches Coq) -/
 theorem taint_sanitize_disjointness_values : ∀ Γ v T1 T2 src san, value v → has_type Γ v (TTainted T1 src) → has_type Γ v (TSanitized T2 san) → False := by
   simp_all [Bool.and_eq_true]
 
-/-- Taint is preserved through pair construction -/
+-- Taint is preserved through pair construction
 /-- taint_preserved_pair_fst (matches Coq) -/
 theorem taint_preserved_pair_fst : ∀ Γ e1 e2 T1 T2 src, has_type Γ e1 (TTainted T1 src) → has_type Γ e2 T2 → has_type Γ (EPair e1 e2) (TProd (TTainted T1 src) T2) := by
   simp_all [Bool.and_eq_true]
@@ -331,57 +331,57 @@ theorem taint_preserved_pair_fst : ∀ Γ e1 e2 T1 T2 src, has_type Γ e1 (TTain
 theorem taint_preserved_pair_snd : ∀ Γ e1 e2 T1 T2 src, has_type Γ e1 T1 → has_type Γ e2 (TTainted T2 src) → has_type Γ (EPair e1 e2) (TProd T1 (TTainted T2 src)) := by
   simp_all [Bool.and_eq_true]
 
-/-- Taint is preserved through let bindings -/
+-- Taint is preserved through let bindings
 /-- taint_preserved_let (matches Coq) -/
 theorem taint_preserved_let : ∀ Γ x e1 e2 T1 src T2, has_type Γ e1 (TTainted T1 src) → has_type ((x, TTainted T1 src) :: Γ) e2 T2 → has_type Γ (ELet x e1 e2) T2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Sanitization is preserved through let bindings -/
+-- Sanitization is preserved through let bindings
 /-- sanitized_preserved_let (matches Coq) -/
 theorem sanitized_preserved_let : ∀ Γ x e1 e2 T san T2, has_type Γ e1 (TSanitized T san) → has_type ((x, TSanitized T san) :: Γ) e2 T2 → has_type Γ (ELet x e1 e2) T2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for SQL context -/
+-- Correct sanitizer for SQL context
 /-- sql_requires_sql_sanitizer (matches Coq) -/
 theorem sql_requires_sql_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanSqlParam e) T → has_type Γ e (TSanitized T SanSqlParam) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for HTML context -/
+-- Correct sanitizer for HTML context
 /-- html_requires_html_sanitizer (matches Coq) -/
 theorem html_requires_html_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanHtmlEscape e) T → has_type Γ e (TSanitized T SanHtmlEscape) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for JS context -/
+-- Correct sanitizer for JS context
 /-- js_requires_js_sanitizer (matches Coq) -/
 theorem js_requires_js_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanJsEscape e) T → has_type Γ e (TSanitized T SanJsEscape) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for command context -/
+-- Correct sanitizer for command context
 /-- cmd_requires_cmd_sanitizer (matches Coq) -/
 theorem cmd_requires_cmd_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanCommandEscape e) T → has_type Γ e (TSanitized T SanCommandEscape) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for LDAP context -/
+-- Correct sanitizer for LDAP context
 /-- ldap_requires_ldap_sanitizer (matches Coq) -/
 theorem ldap_requires_ldap_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanLdapEscape e) T → has_type Γ e (TSanitized T SanLdapEscape) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for URL context -/
+-- Correct sanitizer for URL context
 /-- url_requires_url_sanitizer (matches Coq) -/
 theorem url_requires_url_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanUrlEncode e) T → has_type Γ e (TSanitized T SanUrlEncode) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for CSS context -/
+-- Correct sanitizer for CSS context
 /-- css_requires_css_sanitizer (matches Coq) -/
 theorem css_requires_css_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanCssEscape e) T → has_type Γ e (TSanitized T SanCssEscape) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for path context -/
+-- Correct sanitizer for path context
 /-- path_requires_path_sanitizer (matches Coq) -/
 theorem path_requires_path_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanPathSanitize e) T → has_type Γ e (TSanitized T SanPathSanitize) := by
   simp_all [Bool.and_eq_true]
 
-/-- Correct sanitizer for CSRF context -/
+-- Correct sanitizer for CSRF context
 /-- csrf_requires_csrf_sanitizer (matches Coq) -/
 theorem csrf_requires_csrf_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanCsrfToken e) T → has_type Γ e (TSanitized T SanCsrfToken) := by
   simp_all [Bool.and_eq_true]
@@ -390,61 +390,61 @@ theorem csrf_requires_csrf_sanitizer : ∀ Γ e T, has_type Γ (EUseSink SanCsrf
 theorem lookup_deterministic : ∀ x Γ T1 T2, lookup x Γ = Some T1 → lookup x Γ = Some T2 → T1 = T2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Uniqueness of typing: each expression has at most one type.
+-- Uniqueness of typing: each expression has at most one type.
     This holds because our type system is syntax-directed (no subtyping,
-    no implicit coercions, no overloading). -/
+    no implicit coercions, no overloading).
 /-- typing_unique (matches Coq) -/
 theorem typing_unique : ∀ Γ e T1 T2, has_type Γ e T1 → has_type Γ e T2 → T1 = T2 := by
   rfl
 
-/-- Wrong sanitizer is rejected: HTML sanitizer cannot satisfy SQL sink.
-    Proved trivially via typing_unique. -/
+-- Wrong sanitizer is rejected: HTML sanitizer cannot satisfy SQL sink.
+    Proved trivially via typing_unique.
 /-- wrong_sanitizer_rejected (matches Coq) -/
 theorem wrong_sanitizer_rejected : ∀ Γ e T, has_type Γ e (TSanitized T SanHtmlEscape) → ~ has_type Γ (EUseSink SanSqlParam e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- SQL Injection Prevention (CVSS 9.8 → IMPOSSIBLE)
-    No well-typed RIINA program can pass unsanitized user input to a SQL query. -/
+-- SQL Injection Prevention (CVSS 9.8 → IMPOSSIBLE)
+    No well-typed RIINA program can pass unsanitized user input to a SQL query.
 /-- sql_injection_impossible (matches Coq) -/
 theorem sql_injection_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanSqlParam e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- XSS Prevention — HTML context (CVSS 7.5 → IMPOSSIBLE) -/
+-- XSS Prevention — HTML context (CVSS 7.5 → IMPOSSIBLE)
 /-- xss_html_impossible (matches Coq) -/
 theorem xss_html_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanHtmlEscape e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- XSS Prevention — JavaScript context -/
+-- XSS Prevention — JavaScript context
 /-- xss_js_impossible (matches Coq) -/
 theorem xss_js_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanJsEscape e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- XSS Prevention — CSS context -/
+-- XSS Prevention — CSS context
 /-- xss_css_impossible (matches Coq) -/
 theorem xss_css_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanCssEscape e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- XSS Prevention — URL context -/
+-- XSS Prevention — URL context
 /-- xss_url_impossible (matches Coq) -/
 theorem xss_url_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanUrlEncode e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- Command Injection Prevention (CVSS 9.8 → IMPOSSIBLE) -/
+-- Command Injection Prevention (CVSS 9.8 → IMPOSSIBLE)
 /-- command_injection_impossible (matches Coq) -/
 theorem command_injection_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanCommandEscape e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- LDAP Injection Prevention -/
+-- LDAP Injection Prevention
 /-- ldap_injection_impossible (matches Coq) -/
 theorem ldap_injection_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanLdapEscape e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- Path Traversal Prevention -/
+-- Path Traversal Prevention
 /-- path_traversal_impossible (matches Coq) -/
 theorem path_traversal_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanPathSanitize e) T := by
   simp_all [Bool.and_eq_true]
 
-/-- CSRF Prevention -/
+-- CSRF Prevention
 /-- csrf_impossible (matches Coq) -/
 theorem csrf_impossible : ∀ Γ e T src, has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanCsrfToken e) T := by
   simp_all [Bool.and_eq_true]

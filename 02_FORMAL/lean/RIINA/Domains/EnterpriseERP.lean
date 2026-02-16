@@ -262,7 +262,7 @@ theorem erp_015_maker_checker : ∀ (maker checker : User), maker_checker maker 
   simp_all [Bool.and_eq_true]
 
 /-- erp_016_delegation_logged (matches Coq) -/
-theorem erp_016_delegation_logged : ∀ (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = true →  ∃ a, In a audits := by
+theorem erp_016_delegation_logged : ∀ (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = true → ∃ a, In a audits := by
   simp_all [Bool.and_eq_true]
 
 /-- erp_017_time_limited (matches Coq) -/

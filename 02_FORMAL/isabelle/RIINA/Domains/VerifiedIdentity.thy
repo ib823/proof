@@ -493,15 +493,15 @@ lemma AA_001_09_password_hash_secure: "params_secure secure_params = True"
   by simp
 
 (* AA_001_10_password_preimage_resistant (matches Coq) *)
-lemma AA_001_10_password_preimage_resistant: "\<forall> hash salt params, (* Given only the hash, finding the preimage requires inverting argon2id *) (* We model this as: any candidate preimage can be verified but not derived *) \<forall> candidate, argon2id_hash candidate salt params = hash \<longrightarrow> (* Verification is possible but finding candidate without brute force is not *) True"
+lemma AA_001_10_password_preimage_resistant: "\<forall> hash salt params, \<forall> candidate, argon2id_hash candidate salt params = hash \<longrightarrow> True"
   by auto
 
 (* AA_001_11_password_not_stored (matches Coq) *)
-lemma AA_001_11_password_not_stored: "\<forall> store p pwd_hash, valid_credential store p (CredPassword pwd_hash) \<longrightarrow> (* The stored value is a hash, not plaintext *) (* By construction, CredPassword only holds hashed values *) \<exists> (salt : list nat) (params : Argon2Params), List.length pwd_hash \<ge> 0. (* Hash \<exists> and has structure *)"
+lemma AA_001_11_password_not_stored: "\<forall> store p pwd_hash, valid_credential store p (CredPassword pwd_hash) \<longrightarrow> \<exists> (salt : list nat) (params : Argon2Params), List.length pwd_hash \<ge> 0. "
   by simp
 
 (* AA_001_12_password_pepper_bound (matches Coq) *)
-lemma AA_001_12_password_pepper_bound: "\<forall> pepper, pepper_bound pepper = True \<longrightarrow> pepper_hsm_id pepper > 0 \<longrightarrow> (* Pepper value is only accessible through HSM operations *) True"
+lemma AA_001_12_password_pepper_bound: "\<forall> pepper, pepper_bound pepper = True \<longrightarrow> pepper_hsm_id pepper > 0 \<longrightarrow> True"
   by auto
 
 (* AA_001_13_password_constant_time_compare (matches Coq) *)
@@ -513,7 +513,7 @@ lemma AA_001_14_password_breach_checked: "\<forall> db hash, password_in_breach 
   by auto
 
 (* AA_001_15_token_unforgeability (matches Coq) *)
-lemma AA_001_15_token_unforgeability: "\<forall> adv key, ~ has_key adv key \<longrightarrow> \<forall> (claims : TokenClaims) (binding : ChannelBinding) (fake_sig : list nat), (* Adversary cannot produce valid token without key *) ~ (fake_sig = key \<and> List.length fake_sig > 0 \<and> In fake_sig (adv_known_keys adv))"
+lemma AA_001_15_token_unforgeability: "\<forall> adv key, ~ has_key adv key \<longrightarrow> \<forall> (claims : TokenClaims) (binding : ChannelBinding) (fake_sig : list nat), ~ (fake_sig = key \<and> List.length fake_sig > 0 \<and> In fake_sig (adv_known_keys adv))"
   by auto
 
 (* AA_001_16_token_channel_bound (matches Coq) *)
@@ -533,7 +533,7 @@ lemma AA_001_19_token_revocation: "\<forall> revoked jti, is_revoked (revoke_tok
   by simp
 
 (* AA_001_20_token_refresh_secure (matches Coq) *)
-lemma AA_001_20_token_refresh_secure: "\<forall> old_token new_claims binding now used, verify_token old_token binding now used = True \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token) \<longrightarrow> claim_exp new_claims > claim_exp (token_claims old_token) \<longrightarrow> (* New token maintains identity binding *) claim_sub new_claims = claim_sub (token_claims old_token)"
+lemma AA_001_20_token_refresh_secure: "\<forall> old_token new_claims binding now used, verify_token old_token binding now used = True \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token) \<longrightarrow> claim_exp new_claims > claim_exp (token_claims old_token) \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token)"
   by auto
 
 (* AA_001_21_token_claims_integrity (matches Coq) *)

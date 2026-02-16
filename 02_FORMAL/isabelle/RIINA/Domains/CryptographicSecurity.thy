@@ -686,7 +686,7 @@ lemma cry_029_random_fault_mitigated: "\<forall> (op : ConstantTimeOp) (rng : RN
 
 (* ---------- CRY-030: Bleichenbacher Attack Mitigated ---------- *)
 (* cry_030_bleichenbacher_mitigated (matches Coq) *)
-lemma cry_030_bleichenbacher_mitigated: "\<forall> (cfg : AEADConfig), aead_secure cfg = True \<longrightarrow> (* AEAD modes don't use PKCS#1 v1.5 padding *) (aead_algorithm cfg <=? 1) = True"
+lemma cry_030_bleichenbacher_mitigated: "\<forall> (cfg : AEADConfig), aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
   by auto
 
 (* ---------- CRY-031: Whisper Leak (LLM Timing) Mitigated ---------- *)
@@ -711,7 +711,7 @@ lemma riina_complete_crypto_security: "ct_valid riina_ct_op = True \<and> aead_s
 
 (* ENC-001: Authenticated encryption preserves plaintext length *)
 (* enc_001_length_preservation (matches Coq) *)
-lemma enc_001_length_preservation: "\<forall> (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = True \<longrightarrow> pt_len = ct_len \<longrightarrow> (* AEAD doesn't expand plaintext (except tag) *) pt_len = ct_len"
+lemma enc_001_length_preservation: "\<forall> (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = True \<longrightarrow> pt_len = ct_len \<longrightarrow> pt_len = ct_len"
   by auto
 
 (* ENC-002: Encryption requires valid key size *)

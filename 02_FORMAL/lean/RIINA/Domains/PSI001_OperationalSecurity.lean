@@ -340,9 +340,9 @@ def tl_cancel (tl : TimeLock) : TimeLock :=
 theorem nth_map_seq : ∀ (A : Type) (f : nat → A) (start len i : nat) (d : A), i < len → nth i (map f (seq start len)) d = f (start + i) := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: SHAMIR SECRET SHARING (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_001_01_poly_eval_zero (matches Coq) -/
 theorem PSI_001_01_poly_eval_zero : ∀ coeffs p, p > 0 → poly_eval coeffs 0 p = match coeffs with [] => 0 | a :: _ => a mod p end := by
   cases ‹_› <;> simp <;> omega
@@ -375,9 +375,9 @@ theorem PSI_001_07_secret_is_constant_term : ∀ a0 rest, secret_from_poly (a0 :
 theorem PSI_001_08_empty_poly_zero_secret : secret_from_poly [] = 0 := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: THRESHOLD OPERATIONS (6 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_002_01_single_approval_insufficient (matches Coq) -/
 theorem PSI_002_01_single_approval_insufficient : ∀ pol party, tp_n pol > 1 → tp_approvals pol = [] → tp_approved (tp_add_approval pol party) = false := by
   omega
@@ -402,9 +402,9 @@ theorem PSI_002_05_valid_policy_n_positive : ∀ pol, tp_valid pol = true → tp
 theorem PSI_002_06_approval_count_increases : ∀ pol party, ∃b (Nat.eqb party) (tp_approvals pol) = false → length (tp_approvals (tp_add_approval pol party)) = S (length (tp_approvals pol)) := by
   simp
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: DURESS DETECTION (6 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_003_01_duress_triggers_alert (matches Coq) -/
 theorem PSI_003_01_duress_triggers_alert : ∀ code, dr_silent_alert (handle_auth (DuressAuth code)) = true := by
   rfl
@@ -429,9 +429,9 @@ theorem PSI_003_05_normal_no_fake : ∀ key, dr_fake_access (handle_auth (Normal
 theorem PSI_003_06_normal_no_alert : ∀ key, dr_silent_alert (handle_auth (NormalAuth key)) = false := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: DEAD MAN'S SWITCH (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_004_01_checkin_resets (matches Coq) -/
 theorem PSI_004_01_checkin_resets : ∀ dms now, dms_triggered (dms_checkin dms now) = false := by
   rfl
@@ -452,9 +452,9 @@ theorem PSI_004_04_no_timeout_no_trigger : ∀ dms now, now ≤ dms_timeout dms 
 theorem PSI_004_05_recovery_action_preserved : ∀ dms now, dms_recovery_action (dms_check dms now) = dms_recovery_action dms := by
   cases ‹_› <;> simp
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: INSIDER BUDGET (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_005_01_budget_enforced (matches Coq) -/
 theorem PSI_005_01_budget_enforced : ∀ budget bytes, ib_can_query budget bytes = true → budget.(ib_bytes_used) + bytes ≤ budget.(ib_max_bytes) := by
   simp_all [Bool.and_eq_true]
@@ -475,9 +475,9 @@ theorem PSI_005_04_record_increases_queries : ∀ budget bytes, (ib_record_query
 theorem PSI_005_05_audit_append_preserves : ∀ log entry, In entry (audit_log_append log entry) := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: TIME-LOCKED OPERATIONS (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_006_01_timelock_cancellation_window (matches Coq) -/
 theorem PSI_006_01_timelock_cancellation_window : ∀ tl now, now < tl_execute_time tl → tl_can_cancel tl now = true := by
   simp_all [Bool.and_eq_true]
@@ -498,9 +498,9 @@ theorem PSI_006_04_early_execute_blocked : ∀ tl now, now < tl_execute_time tl 
 theorem PSI_006_05_cancel_preserves_operation : ∀ tl, tl_operation (tl_cancel tl) = tl_operation tl := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: HARDWARE DIVERSITY (3 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- PSI_007_01_different_vendor_independent (matches Coq) -/
 theorem PSI_007_01_different_vendor_independent : ∀ p1 p2, plat_vendor p1 ≠ plat_vendor p2 → platforms_independent p1 p2 = true := by
   cases ‹_› <;> simp

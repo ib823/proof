@@ -218,7 +218,7 @@ theorem inj_004_xpath_injection_impossible : ∀ (q : XPathQuery), safe_xpath q 
   simp_all [Bool.and_eq_true]
 
 /-- inj_005_xxe_impossible (matches Coq) -/
-theorem inj_005_xxe_impossible : ∀ (config : XMLParserConfig), xc_expand_entities config = false → xc_allow_external config = false →  ~ (xc_expand_entities config = true ∧ xc_allow_external config = true) := by
+theorem inj_005_xxe_impossible : ∀ (config : XMLParserConfig), xc_expand_entities config = false → xc_allow_external config = false → ~ (xc_expand_entities config = true ∧ xc_allow_external config = true) := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_006_header_injection_impossible (matches Coq) -/
@@ -226,11 +226,11 @@ theorem inj_006_header_injection_impossible : ∀ (h : HTTPHeader), contains_new
   simp_all [Bool.and_eq_true]
 
 /-- inj_007_template_injection_impossible (matches Coq) -/
-theorem inj_007_template_injection_impossible : ∀ (e : TemplateExpr),  True := by
+theorem inj_007_template_injection_impossible : ∀ (e : TemplateExpr), True := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_008_code_injection_impossible (matches Coq) -/
-theorem inj_008_code_injection_impossible : ∀ (e : RIINAExpr),  match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end := by
+theorem inj_008_code_injection_impossible : ∀ (e : RIINAExpr), match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_009_expression_language_safe (matches Coq) -/
@@ -250,7 +250,7 @@ theorem csv_escape_safe_helper : ∀ c rest, (Nat.eqb c 61 || Nat.eqb c 43 || Na
   cases ‹_› <;> simp <;> omega
 
 /-- inj_012_csv_injection_impossible (matches Coq) -/
-theorem inj_012_csv_injection_impossible : ∀ (data : list nat), match escape_csv_cell data with | 61 :: _ => False  | 43 :: _ => False  | 45 :: _ => False  | 64 :: _ => False  | _ => True end := by
+theorem inj_012_csv_injection_impossible : ∀ (data : list nat), match escape_csv_cell data with | 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True end := by
   simp_all
 
 /-- inj_013_pdf_injection_impossible (matches Coq) -/
@@ -262,7 +262,7 @@ theorem inj_014_crlf_injection_impossible : ∀ (h : HTTPHeader), contains_newli
   simp_all [Bool.and_eq_true]
 
 /-- inj_015_null_byte_injection_impossible (matches Coq) -/
-theorem inj_015_null_byte_injection_impossible : ∀ (s : LengthPrefixedString),  List.length (lpstr_bytes s) = lpstr_len s := by
+theorem inj_015_null_byte_injection_impossible : ∀ (s : LengthPrefixedString), List.length (lpstr_bytes s) = lpstr_len s := by
   simp_all [Bool.and_eq_true]
 
 /-- inj_016_untrusted_propagation (matches Coq) -/

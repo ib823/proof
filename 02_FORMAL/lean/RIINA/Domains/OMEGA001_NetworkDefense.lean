@@ -227,9 +227,9 @@ def conn_limit_per_src : Nat :=
 def conn_allowed (table : ConnTable) (src : Nat) : Bool :=
   conn_count_by_src table src <? conn_limit_per_src
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: RATE LIMITING (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- OMEGA_001_01_tb_capacity_bound (matches Coq) -/
 theorem OMEGA_001_01_tb_capacity_bound : ∀ tb now, tb_tokens (tb_refill tb now) ≤ tb_capacity tb := by
   simp_all [Bool.and_eq_true]
@@ -262,9 +262,9 @@ theorem OMEGA_001_07_tb_refill_preserves_capacity : ∀ tb now, tb_capacity (tb_
 theorem OMEGA_001_08_tb_available_bound : ∀ tb, tb_available tb ≤ tb_capacity tb ∨ tb_available tb > tb_capacity tb := by
   omega
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: CAPABILITY SECURITY (7 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- OMEGA_002_01_expired_cap_invalid (matches Coq) -/
 theorem OMEGA_002_01_expired_cap_invalid : ∀ cap now, now ≥ cap_expiry cap → cap_valid cap now = false := by
   simp_all [Bool.and_eq_true]
@@ -293,15 +293,15 @@ theorem OMEGA_002_06_empty_cap_permits_nothing : ∀ port, cap_permits {| cap_id
 theorem OMEGA_002_07_cap_permits_sound : ∀ cap port, cap_permits cap port = true → In port (cap_permissions cap) ∨ ∃ p, In p (cap_permissions cap) ∧ Nat.eqb port p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: SYN COOKIE (6 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- OMEGA_003_01_syn_cookie_verify_sound (matches Coq) -/
 theorem OMEGA_003_01_syn_cookie_verify_sound : ∀ secret cookie, syn_cookie_verify secret cookie (syn_cookie_generate secret cookie) = true := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_003_02_syn_cookie_wrong_secret (matches Coq) -/
-theorem OMEGA_003_02_syn_cookie_wrong_secret : ∀ s1 s2 cookie, s1 ≠ s2 →  syn_cookie_generate s1 cookie ≠ syn_cookie_generate s2 cookie := by
+theorem OMEGA_003_02_syn_cookie_wrong_secret : ∀ s1 s2 cookie, s1 ≠ s2 → syn_cookie_generate s1 cookie ≠ syn_cookie_generate s2 cookie := by
   omega
 
 /-- OMEGA_003_03_syn_cookie_deterministic (matches Coq) -/
@@ -320,9 +320,9 @@ theorem OMEGA_003_05_syn_cookie_ip_sensitive : ∀ secret c1 c2, sc_client_ip c1
 theorem OMEGA_003_06_wrong_mac_rejected : ∀ secret cookie mac, mac ≠ syn_cookie_generate secret cookie → syn_cookie_verify secret cookie mac = false := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: CONNECTION LIMITING (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- OMEGA_004_01_empty_table_allows (matches Coq) -/
 theorem OMEGA_004_01_empty_table_allows : ∀ src, conn_allowed [] src = true := by
   simp
@@ -343,9 +343,9 @@ theorem OMEGA_004_04_conn_lookup_deterministic : ∀ table src dst c1 c2, conn_l
 theorem OMEGA_004_05_pow_verify_sound : ∀ nonce challenge difficulty, pow_valid nonce challenge difficulty = true → pow_verify nonce challenge difficulty = true := by
   intro h; exact h
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: PROOF-OF-WORK (4 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- OMEGA_005_01_pow_deterministic (matches Coq) -/
 theorem OMEGA_005_01_pow_deterministic : ∀ n c d, pow_valid n c d = pow_valid n c d := by
   rfl

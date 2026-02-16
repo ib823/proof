@@ -1,5 +1,8 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
 
 /-!
 # RIINA TypingInversion - Lean 4 Port
@@ -89,171 +92,171 @@ namespace RIINA
 /-- Coq compatibility shim: pair second projection -/
 @[inline] def snd {α β : Type} (p : α × β) : β := p.2
 
-/-- Application inversion -/
+-- Application inversion
 /-- inversion_app (matches Coq) -/
-theorem inversion_app : ∀ Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EApp e1 e2) T ε → ∃ T1 ε_fn ε1 ε2, has_type Γ Σ Δ e1 (TFn T1 T ε_fn) ε1 ∧ has_type Γ Σ Δ e2 T1 ε2 ∧ ε = effect_join ε_fn (effect_join ε1 ε2) := by
+theorem inversion_app : ∀ Γ St Δ e1 e2 T ε, has_type Γ St Δ (EApp e1 e2) T ε → ∃ T1 ε_fn ε1 ε2, has_type Γ St Δ e1 (TFn T1 T ε_fn) ε1 ∧ has_type Γ St Δ e2 T1 ε2 ∧ ε = effect_join ε_fn (effect_join ε1 ε2) := by
   simp_all [Bool.and_eq_true]
 
-/-- Lambda inversion -/
+-- Lambda inversion
 /-- inversion_lam (matches Coq) -/
-theorem inversion_lam : ∀ Γ Σ Δ x T1 e T ε, has_type Γ Σ Δ (ELam x T1 e) T ε → ∃ T2 ε_body, has_type ((x, T1) :: Γ) Σ Δ e T2 ε_body ∧ T = TFn T1 T2 ε_body ∧ ε = EffectPure := by
+theorem inversion_lam : ∀ Γ St Δ x T1 e T ε, has_type Γ St Δ (ELam x T1 e) T ε → ∃ T2 ε_body, has_type ((x, T1) :: Γ) St Δ e T2 ε_body ∧ T = TFn T1 T2 ε_body ∧ ε = EffectPure := by
   simp_all [Bool.and_eq_true]
 
-/-- Pair inversion -/
+-- Pair inversion
 /-- inversion_pair (matches Coq) -/
-theorem inversion_pair : ∀ Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EPair e1 e2) T ε → ∃ T1 T2 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 ∧ has_type Γ Σ Δ e2 T2 ε2 ∧ T = TProd T1 T2 ∧ ε = effect_join ε1 ε2 := by
+theorem inversion_pair : ∀ Γ St Δ e1 e2 T ε, has_type Γ St Δ (EPair e1 e2) T ε → ∃ T1 T2 ε1 ε2, has_type Γ St Δ e1 T1 ε1 ∧ has_type Γ St Δ e2 T2 ε2 ∧ T = TProd T1 T2 ∧ ε = effect_join ε1 ε2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Fst inversion -/
+-- Fst inversion
 /-- inversion_fst (matches Coq) -/
-theorem inversion_fst : ∀ Γ Σ Δ e T ε, has_type Γ Σ Δ (EFst e) T ε → ∃ T2, has_type Γ Σ Δ e (TProd T T2) ε := by
+theorem inversion_fst : ∀ Γ St Δ e T ε, has_type Γ St Δ (EFst e) T ε → ∃ T2, has_type Γ St Δ e (TProd T T2) ε := by
   simp_all [Bool.and_eq_true]
 
-/-- Snd inversion -/
+-- Snd inversion
 /-- inversion_snd (matches Coq) -/
-theorem inversion_snd : ∀ Γ Σ Δ e T ε, has_type Γ Σ Δ (ESnd e) T ε → ∃ T1, has_type Γ Σ Δ e (TProd T1 T) ε := by
+theorem inversion_snd : ∀ Γ St Δ e T ε, has_type Γ St Δ (ESnd e) T ε → ∃ T1, has_type Γ St Δ e (TProd T1 T) ε := by
   simp_all [Bool.and_eq_true]
 
-/-- Inl inversion -/
+-- Inl inversion
 /-- inversion_inl (matches Coq) -/
-theorem inversion_inl : ∀ Γ Σ Δ e T_sum T ε, has_type Γ Σ Δ (EInl e T_sum) T ε → ∃ T1 T2, has_type Γ Σ Δ e T1 ε ∧ T = TSum T1 T2 := by
+theorem inversion_inl : ∀ Γ St Δ e T_sum T ε, has_type Γ St Δ (EInl e T_sum) T ε → ∃ T1 T2, has_type Γ St Δ e T1 ε ∧ T = TSum T1 T2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Inr inversion -/
+-- Inr inversion
 /-- inversion_inr (matches Coq) -/
-theorem inversion_inr : ∀ Γ Σ Δ e T_sum T ε, has_type Γ Σ Δ (EInr e T_sum) T ε → ∃ T1 T2, has_type Γ Σ Δ e T2 ε ∧ T = TSum T1 T2 := by
+theorem inversion_inr : ∀ Γ St Δ e T_sum T ε, has_type Γ St Δ (EInr e T_sum) T ε → ∃ T1 T2, has_type Γ St Δ e T2 ε ∧ T = TSum T1 T2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Case inversion -/
+-- Case inversion
 /-- inversion_case (matches Coq) -/
-theorem inversion_case : ∀ Γ Σ Δ e x1 e1 x2 e2 T ε, has_type Γ Σ Δ (ECase e x1 e1 x2 e2) T ε → ∃ T1 T2 ε0 ε1 ε2, has_type Γ Σ Δ e (TSum T1 T2) ε0 ∧ has_type ((x1, T1) :: Γ) Σ Δ e1 T ε1 ∧ has_type ((x2, T2) :: Γ) Σ Δ e2 T ε2 ∧ ε = effect_join ε0 (effect_join ε1 ε2) := by
+theorem inversion_case : ∀ Γ St Δ e x1 e1 x2 e2 T ε, has_type Γ St Δ (ECase e x1 e1 x2 e2) T ε → ∃ T1 T2 ε0 ε1 ε2, has_type Γ St Δ e (TSum T1 T2) ε0 ∧ has_type ((x1, T1) :: Γ) St Δ e1 T ε1 ∧ has_type ((x2, T2) :: Γ) St Δ e2 T ε2 ∧ ε = effect_join ε0 (effect_join ε1 ε2) := by
   simp_all [Bool.and_eq_true]
 
-/-- If inversion -/
+-- If inversion
 /-- inversion_if (matches Coq) -/
-theorem inversion_if : ∀ Γ Σ Δ e1 e2 e3 T ε, has_type Γ Σ Δ (EIf e1 e2 e3) T ε → ∃ ε1 ε2 ε3, has_type Γ Σ Δ e1 TBool ε1 ∧ has_type Γ Σ Δ e2 T ε2 ∧ has_type Γ Σ Δ e3 T ε3 ∧ ε = effect_join ε1 (effect_join ε2 ε3) := by
+theorem inversion_if : ∀ Γ St Δ e1 e2 e3 T ε, has_type Γ St Δ (EIf e1 e2 e3) T ε → ∃ ε1 ε2 ε3, has_type Γ St Δ e1 TBool ε1 ∧ has_type Γ St Δ e2 T ε2 ∧ has_type Γ St Δ e3 T ε3 ∧ ε = effect_join ε1 (effect_join ε2 ε3) := by
   simp_all [Bool.and_eq_true]
 
-/-- Let inversion -/
+-- Let inversion
 /-- inversion_let (matches Coq) -/
-theorem inversion_let : ∀ Γ Σ Δ x e1 e2 T ε, has_type Γ Σ Δ (ELet x e1 e2) T ε → ∃ T1 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 ∧ has_type ((x, T1) :: Γ) Σ Δ e2 T ε2 ∧ ε = effect_join ε1 ε2 := by
+theorem inversion_let : ∀ Γ St Δ x e1 e2 T ε, has_type Γ St Δ (ELet x e1 e2) T ε → ∃ T1 ε1 ε2, has_type Γ St Δ e1 T1 ε1 ∧ has_type ((x, T1) :: Γ) St Δ e2 T ε2 ∧ ε = effect_join ε1 ε2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Ref inversion -/
+-- Ref inversion
 /-- inversion_ref (matches Coq) -/
-theorem inversion_ref : ∀ Γ Σ Δ e l T ε, has_type Γ Σ Δ (ERef e l) T ε → ∃ T' ε', has_type Γ Σ Δ e T' ε' ∧ T = TRef T' l ∧ ε = effect_join ε' EffectWrite := by
+theorem inversion_ref : ∀ Γ St Δ e l T ε, has_type Γ St Δ (ERef e l) T ε → ∃ T' ε', has_type Γ St Δ e T' ε' ∧ T = TRef T' l ∧ ε = effect_join ε' EffectWrite := by
   simp_all [Bool.and_eq_true]
 
-/-- Deref inversion -/
+-- Deref inversion
 /-- inversion_deref (matches Coq) -/
-theorem inversion_deref : ∀ Γ Σ Δ e T ε, has_type Γ Σ Δ (EDeref e) T ε → ∃ l ε', has_type Γ Σ Δ e (TRef T l) ε' ∧ ε = effect_join ε' EffectRead := by
+theorem inversion_deref : ∀ Γ St Δ e T ε, has_type Γ St Δ (EDeref e) T ε → ∃ l ε', has_type Γ St Δ e (TRef T l) ε' ∧ ε = effect_join ε' EffectRead := by
   simp_all [Bool.and_eq_true]
 
-/-- Assign inversion -/
+-- Assign inversion
 /-- inversion_assign (matches Coq) -/
-theorem inversion_assign : ∀ Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EAssign e1 e2) T ε → ∃ T' l ε1 ε2, has_type Γ Σ Δ e1 (TRef T' l) ε1 ∧ has_type Γ Σ Δ e2 T' ε2 ∧ T = TUnit ∧ ε = effect_join ε1 (effect_join ε2 EffectWrite) := by
+theorem inversion_assign : ∀ Γ St Δ e1 e2 T ε, has_type Γ St Δ (EAssign e1 e2) T ε → ∃ T' l ε1 ε2, has_type Γ St Δ e1 (TRef T' l) ε1 ∧ has_type Γ St Δ e2 T' ε2 ∧ T = TUnit ∧ ε = effect_join ε1 (effect_join ε2 EffectWrite) := by
   simp_all [Bool.and_eq_true]
 
-/-- Perform inversion -/
+-- Perform inversion
 /-- inversion_perform (matches Coq) -/
-theorem inversion_perform : ∀ Γ Σ Δ eff e T ε, has_type Γ Σ Δ (EPerform eff e) T ε → ∃ ε', has_type Γ Σ Δ e T ε' ∧ ε = effect_join ε' eff := by
+theorem inversion_perform : ∀ Γ St Δ eff e T ε, has_type Γ St Δ (EPerform eff e) T ε → ∃ ε', has_type Γ St Δ e T ε' ∧ ε = effect_join ε' eff := by
   simp_all [Bool.and_eq_true]
 
-/-- Handle inversion -/
+-- Handle inversion
 /-- inversion_handle (matches Coq) -/
-theorem inversion_handle : ∀ Γ Σ Δ e x h T ε, has_type Γ Σ Δ (EHandle e x h) T ε → ∃ T1 ε1 ε2, has_type Γ Σ Δ e T1 ε1 ∧ has_type ((x, T1) :: Γ) Σ Δ h T ε2 ∧ ε = effect_join ε1 ε2 := by
+theorem inversion_handle : ∀ Γ St Δ e x h T ε, has_type Γ St Δ (EHandle e x h) T ε → ∃ T1 ε1 ε2, has_type Γ St Δ e T1 ε1 ∧ has_type ((x, T1) :: Γ) St Δ h T ε2 ∧ ε = effect_join ε1 ε2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Classify inversion -/
+-- Classify inversion
 /-- inversion_classify (matches Coq) -/
-theorem inversion_classify : ∀ Γ Σ Δ e T ε, has_type Γ Σ Δ (EClassify e) T ε → ∃ T', has_type Γ Σ Δ e T' ε ∧ T = TSecret T' := by
+theorem inversion_classify : ∀ Γ St Δ e T ε, has_type Γ St Δ (EClassify e) T ε → ∃ T', has_type Γ St Δ e T' ε ∧ T = TSecret T' := by
   simp_all [Bool.and_eq_true]
 
-/-- Declassify inversion -/
+-- Declassify inversion
 /-- inversion_declassify (matches Coq) -/
-theorem inversion_declassify : ∀ Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EDeclassify e1 e2) T ε → ∃ ε1 ε2, has_type Γ Σ Δ e1 (TSecret T) ε1 ∧ has_type Γ Σ Δ e2 (TProof (TSecret T)) ε2 ∧ declass_ok e1 e2 ∧ ε = effect_join ε1 ε2 := by
+theorem inversion_declassify : ∀ Γ St Δ e1 e2 T ε, has_type Γ St Δ (EDeclassify e1 e2) T ε → ∃ ε1 ε2, has_type Γ St Δ e1 (TSecret T) ε1 ∧ has_type Γ St Δ e2 (TProof (TSecret T)) ε2 ∧ declass_ok e1 e2 ∧ ε = effect_join ε1 ε2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Prove inversion -/
+-- Prove inversion
 /-- inversion_prove (matches Coq) -/
-theorem inversion_prove : ∀ Γ Σ Δ e T ε, has_type Γ Σ Δ (EProve e) T ε → ∃ T', has_type Γ Σ Δ e T' ε ∧ T = TProof T' := by
+theorem inversion_prove : ∀ Γ St Δ e T ε, has_type Γ St Δ (EProve e) T ε → ∃ T', has_type Γ St Δ e T' ε ∧ T = TProof T' := by
   simp_all [Bool.and_eq_true]
 
-/-- Require inversion -/
+-- Require inversion
 /-- inversion_require (matches Coq) -/
-theorem inversion_require : ∀ Γ Σ Δ eff e T ε, has_type Γ Σ Δ (ERequire eff e) T ε → ∃ ε', has_type Γ Σ Δ e T ε' ∧ ε = effect_join ε' eff := by
+theorem inversion_require : ∀ Γ St Δ eff e T ε, has_type Γ St Δ (ERequire eff e) T ε → ∃ ε', has_type Γ St Δ e T ε' ∧ ε = effect_join ε' eff := by
   simp_all [Bool.and_eq_true]
 
-/-- Grant inversion -/
+-- Grant inversion
 /-- inversion_grant (matches Coq) -/
-theorem inversion_grant : ∀ Γ Σ Δ eff e T ε, has_type Γ Σ Δ (EGrant eff e) T ε → has_type Γ Σ Δ e T ε := by
+theorem inversion_grant : ∀ Γ St Δ eff e T ε, has_type Γ St Δ (EGrant eff e) T ε → has_type Γ St Δ e T ε := by
   simp_all [Bool.and_eq_true]
 
-/-- Variable inversion -/
+-- Variable inversion
 /-- inversion_var (matches Coq) -/
-theorem inversion_var : ∀ Γ Σ Δ x T ε, has_type Γ Σ Δ (EVar x) T ε → lookup x Γ = Some T ∧ ε = EffectPure := by
+theorem inversion_var : ∀ Γ St Δ x T ε, has_type Γ St Δ (EVar x) T ε → lookup x Γ = Some T ∧ ε = EffectPure := by
   simp_all [Bool.and_eq_true]
 
-/-- Location inversion -/
+-- Location inversion
 /-- inversion_loc (matches Coq) -/
-theorem inversion_loc : ∀ Γ Σ Δ l T ε, has_type Γ Σ Δ (ELoc l) T ε → ∃ T' sl, store_ty_lookup l Σ = Some (T', sl) ∧ T = TRef T' sl ∧ ε = EffectPure := by
+theorem inversion_loc : ∀ Γ St Δ l T ε, has_type Γ St Δ (ELoc l) T ε → ∃ T' sl, store_ty_lookup l St = Some (T', sl) ∧ T = TRef T' sl ∧ ε = EffectPure := by
   simp_all [Bool.and_eq_true]
 
-/-- Values are typed with pure effects.
+-- Values are typed with pure effects.
     Compound values (pairs, injections, classify, prove) require
     induction on the value derivation since their effects are
-    composed from subexpression effects via effect_join. -/
+    composed from subexpression effects via effect_join.
 /-- value_typed_pure (matches Coq) -/
-theorem value_typed_pure : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v T ε → ε = EffectPure := by
+theorem value_typed_pure : ∀ Γ St Δ v T ε, value v → has_type Γ St Δ v T ε → ε = EffectPure := by
   rfl
 
-/-- Corollary: value typing with arbitrary effect implies pure typing -/
+-- Corollary: value typing with arbitrary effect implies pure typing
 /-- value_pure_typing (matches Coq) -/
-theorem value_pure_typing : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v T ε → has_type Γ Σ Δ v T EffectPure := by
+theorem value_pure_typing : ∀ Γ St Δ v T ε, value v → has_type Γ St Δ v T ε → has_type Γ St Δ v T EffectPure := by
   simp_all [Bool.and_eq_true]
 
-/-- Lookup is preserved by appending to the front if name differs -/
+-- Lookup is preserved by appending to the front if name differs
 /-- lookup_cons_neq (matches Coq) -/
 theorem lookup_cons_neq : ∀ x y T Γ, x ≠ y → lookup x ((y, T) :: Γ) = lookup x Γ := by
   cases ‹_› <;> simp
 
-/-- Lookup is preserved by appending to the front if name matches -/
+-- Lookup is preserved by appending to the front if name matches
 /-- lookup_cons_eq (matches Coq) -/
 theorem lookup_cons_eq : ∀ x T Γ, lookup x ((x, T) :: Γ) = Some T := by
   cases ‹_› <;> simp
 
-/-- Extending the context preserves existing lookups -/
+-- Extending the context preserves existing lookups
 /-- lookup_weaken (matches Coq) -/
 theorem lookup_weaken : ∀ x T Γ y T', lookup x Γ = Some T → x ≠ y → lookup x ((y, T') :: Γ) = Some T := by
   simp_all [Bool.and_eq_true]
 
-/-- If e1 : T1 → T2 and e2 : T1, application is well-typed -/
+-- If e1 : T1 → T2 and e2 : T1, application is well-typed
 /-- app_well_typed (matches Coq) -/
-theorem app_well_typed : ∀ Γ Σ Δ e1 e2 T1 T2 ε_fn ε1 ε2, has_type Γ Σ Δ e1 (TFn T1 T2 ε_fn) ε1 → has_type Γ Σ Δ e2 T1 ε2 → has_type Γ Σ Δ (EApp e1 e2) T2 (effect_join ε_fn (effect_join ε1 ε2)) := by
+theorem app_well_typed : ∀ Γ St Δ e1 e2 T1 T2 ε_fn ε1 ε2, has_type Γ St Δ e1 (TFn T1 T2 ε_fn) ε1 → has_type Γ St Δ e2 T1 ε2 → has_type Γ St Δ (EApp e1 e2) T2 (effect_join ε_fn (effect_join ε1 ε2)) := by
   simp_all [Bool.and_eq_true]
 
-/-- Sequential composition via let -/
+-- Sequential composition via let
 /-- let_well_typed (matches Coq) -/
-theorem let_well_typed : ∀ Γ Σ Δ x e1 e2 T1 T2 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 → has_type ((x, T1) :: Γ) Σ Δ e2 T2 ε2 → has_type Γ Σ Δ (ELet x e1 e2) T2 (effect_join ε1 ε2) := by
+theorem let_well_typed : ∀ Γ St Δ x e1 e2 T1 T2 ε1 ε2, has_type Γ St Δ e1 T1 ε1 → has_type ((x, T1) :: Γ) St Δ e2 T2 ε2 → has_type Γ St Δ (ELet x e1 e2) T2 (effect_join ε1 ε2) := by
   simp_all [Bool.and_eq_true]
 
-/-- If both branches have the same type, if is well-typed -/
+-- If both branches have the same type, if is well-typed
 /-- if_well_typed (matches Coq) -/
-theorem if_well_typed : ∀ Γ Σ Δ e1 e2 e3 T ε1 ε2 ε3, has_type Γ Σ Δ e1 TBool ε1 → has_type Γ Σ Δ e2 T ε2 → has_type Γ Σ Δ e3 T ε3 → has_type Γ Σ Δ (EIf e1 e2 e3) T (effect_join ε1 (effect_join ε2 ε3)) := by
+theorem if_well_typed : ∀ Γ St Δ e1 e2 e3 T ε1 ε2 ε3, has_type Γ St Δ e1 TBool ε1 → has_type Γ St Δ e2 T ε2 → has_type Γ St Δ e3 T ε3 → has_type Γ St Δ (EIf e1 e2 e3) T (effect_join ε1 (effect_join ε2 ε3)) := by
   simp_all [Bool.and_eq_true]
 
-/-- Pair construction -/
+-- Pair construction
 /-- pair_well_typed (matches Coq) -/
-theorem pair_well_typed : ∀ Γ Σ Δ e1 e2 T1 T2 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 → has_type Γ Σ Δ e2 T2 ε2 → has_type Γ Σ Δ (EPair e1 e2) (TProd T1 T2) (effect_join ε1 ε2) := by
+theorem pair_well_typed : ∀ Γ St Δ e1 e2 T1 T2 ε1 ε2, has_type Γ St Δ e1 T1 ε1 → has_type Γ St Δ e2 T2 ε2 → has_type Γ St Δ (EPair e1 e2) (TProd T1 T2) (effect_join ε1 ε2) := by
   simp_all [Bool.and_eq_true]
 
-/-- Projection composition: if e : T1 × T2 then fst e : T1 -/
+-- Projection composition: if e : T1 × T2 then fst e : T1
 /-- fst_well_typed (matches Coq) -/
-theorem fst_well_typed : ∀ Γ Σ Δ e T1 T2 ε, has_type Γ Σ Δ e (TProd T1 T2) ε → has_type Γ Σ Δ (EFst e) T1 ε := by
+theorem fst_well_typed : ∀ Γ St Δ e T1 T2 ε, has_type Γ St Δ e (TProd T1 T2) ε → has_type Γ St Δ (EFst e) T1 ε := by
   simp_all [Bool.and_eq_true]
 
 /-- snd_well_typed (matches Coq) -/
-theorem snd_well_typed : ∀ Γ Σ Δ e T1 T2 ε, has_type Γ Σ Δ e (TProd T1 T2) ε → has_type Γ Σ Δ (ESnd e) T2 ε := by
+theorem snd_well_typed : ∀ Γ St Δ e T1 T2 ε, has_type Γ St Δ e (TProd T1 T2) ε → has_type Γ St Δ (ESnd e) T2 ε := by
   simp_all [Bool.and_eq_true]
 
 /-- fn_not_prod (matches Coq) -/
@@ -300,7 +303,7 @@ theorem secret_not_bool : ∀ T, TSecret T ≠ TBool := by
 theorem proof_not_fn : ∀ T T1 T2 ε, TProof T ≠ TFn T1 T2 ε := by
   simp_all [Bool.and_eq_true]
 
-/-- Type constructor injection: equal compound types have equal components -/
+-- Type constructor injection: equal compound types have equal components
 /-- fn_type_injective (matches Coq) -/
 theorem fn_type_injective : ∀ T1 T2 ε T1' T2' ε', TFn T1 T2 ε = TFn T1' T2' ε' → T1 = T1' ∧ T2 = T2' ∧ ε = ε' := by
   simp_all [Bool.and_eq_true]
@@ -325,14 +328,14 @@ theorem secret_type_injective : ∀ T T', TSecret T = TSecret T' → T = T' := b
 theorem proof_type_injective : ∀ T T', TProof T = TProof T' → T = T' := by
   simp_all [Bool.and_eq_true]
 
-/-- Effect is uniquely determined by the expression and context -/
+-- Effect is uniquely determined by the expression and context
 /-- effect_unique (matches Coq) -/
-theorem effect_unique : ∀ Γ Σ Δ e T1 ε1 T2 ε2, has_type Γ Σ Δ e T1 ε1 → has_type Γ Σ Δ e T2 ε2 → ε1 = ε2 := by
+theorem effect_unique : ∀ Γ St Δ e T1 ε1 T2 ε2, has_type Γ St Δ e T1 ε1 → has_type Γ St Δ e T2 ε2 → ε1 = ε2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Type is uniquely determined -/
+-- Type is uniquely determined
 /-- type_unique (matches Coq) -/
-theorem type_unique : ∀ Γ Σ Δ e T1 ε1 T2 ε2, has_type Γ Σ Δ e T1 ε1 → has_type Γ Σ Δ e T2 ε2 → T1 = T2 := by
+theorem type_unique : ∀ Γ St Δ e T1 ε1 T2 ε2, has_type Γ St Δ e T1 ε1 → has_type Γ St Δ e T2 ε2 → T1 = T2 := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

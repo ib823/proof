@@ -133,27 +133,27 @@ definition layers_active :: "bool" where
   "layers_active \<equiv> (layer1 \<and> (andb) layer2 ((layer3 \<and> (andb) layer4 layer5)))"
 
 (* opsec_001_shamir_security (matches Coq) *)
-lemma opsec_001_shamir_security: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme \<longrightarrow> (* k-1 shares give no information about secret - True by construction *) True"
+lemma opsec_001_shamir_security: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme \<longrightarrow> True"
   by auto
 
 (* opsec_002_shamir_reconstruction (matches Coq) *)
-lemma opsec_002_shamir_reconstruction: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> (* Sufficient shares for reconstruction *) length shares \<ge> threshold scheme"
+lemma opsec_002_shamir_reconstruction: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> length shares \<ge> threshold scheme"
   by auto
 
 (* opsec_003_no_single_keyholder (matches Coq) *)
-lemma opsec_003_no_single_keyholder: "\<forall> (scheme : ShamirScheme), threshold scheme > 1 \<longrightarrow> (* Single keyholder compromise insufficient *) 1 < threshold scheme"
+lemma opsec_003_no_single_keyholder: "\<forall> (scheme : ShamirScheme), threshold scheme > 1 \<longrightarrow> 1 < threshold scheme"
   by auto
 
 (* opsec_004_geographic_distribution (matches Coq) *)
-lemma opsec_004_geographic_distribution: "\<forall> (shares : ShareSet) (locations : list nat), length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> (* All shares in different locations *) length (nodup Nat.eq_dec locations) = length locations"
+lemma opsec_004_geographic_distribution: "\<forall> (shares : ShareSet) (locations : list nat), length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> length (nodup Nat.eq_dec locations) = length locations"
   by auto
 
 (* opsec_005_multiparty_required (matches Coq) *)
-lemma opsec_005_multiparty_required: "\<forall> (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> (* Multiple approvals obtained *) length approvals \<ge> required_approvers mpa"
+lemma opsec_005_multiparty_required: "\<forall> (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> length approvals \<ge> required_approvers mpa"
   by auto
 
 (* opsec_006_social_engineering_insufficient (matches Coq) *)
-lemma opsec_006_social_engineering_insufficient: "\<forall> (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> (* Cannot authorize with only compromised approvers *) compromised < required_approvers mpa"
+lemma opsec_006_social_engineering_insufficient: "\<forall> (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> compromised < required_approvers mpa"
   by auto
 
 (* opsec_007_insider_bounded (matches Coq) *)
@@ -165,7 +165,7 @@ lemma opsec_008_export_limit: "\<forall> (budget : InsiderBudget), budget_ok bud
   by auto
 
 (* opsec_009_duress_detection (matches Coq) *)
-lemma opsec_009_duress_detection: "\<forall> (input duress_suffix : list nat), is_duress input duress_suffix = True \<longrightarrow> (* Duress condition detected *) is_duress input duress_suffix = True"
+lemma opsec_009_duress_detection: "\<forall> (input duress_suffix : list nat), is_duress input duress_suffix = True \<longrightarrow> is_duress input duress_suffix = True"
   by auto
 
 (* opsec_010_dead_man_switch (matches Coq) *)
@@ -213,7 +213,7 @@ lemma opsec_020_channel_diversity: "\<forall> (approvals : list Approval) (chann
   by auto
 
 (* opsec_021_coercion_resistant (matches Coq) *)
-lemma opsec_021_coercion_resistant: "\<forall> (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme \<longrightarrow> (* Cannot reconstruct with fewer than threshold *) compromised < threshold scheme"
+lemma opsec_021_coercion_resistant: "\<forall> (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme \<longrightarrow> compromised < threshold scheme"
   by auto
 
 (* opsec_022_jurisdictional_spread (matches Coq) *)

@@ -346,7 +346,7 @@ theorem thread_safe_collection : ∀ (p : Program), well_typed p → all_typed p
   intro h; exact h
 
 /-- concurrent_modification_detected (matches Coq) -/
-theorem concurrent_modification_detected : ∀ (a1 a2 : Actor) (d : Data), owns a1 d → owns a2 d → actor_id a1 ≠ actor_id a2 →  owns a1 d ∧ owns a2 d ∧ actor_id a1 ≠ actor_id a2 := by
+theorem concurrent_modification_detected : ∀ (a1 a2 : Actor) (d : Data), owns a1 d → owns a2 d → actor_id a1 ≠ actor_id a2 → owns a1 d ∧ owns a2 d ∧ actor_id a1 ≠ actor_id a2 := by
   intro h; exact h
 
 /-- future_has_value_when_resolved (matches Coq) -/

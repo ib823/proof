@@ -178,15 +178,15 @@ def dpo_requirement_met (policy : ASEANDataPolicy) (dpo_appointed : Bool) : Prop
   adp_dpo_required policy = true → dpo_appointed = true
 
 /-- 1 (matches Coq) -/
-theorem 1 : Data Residency — data stays in declared jurisdiction   Definition data_resident (d : DataItem) (loc : jurisdiction) : Prop := data_jurisdiction d = loc. Theorem data_residency : ∀ d : DataItem, data_resident d (data_jurisdiction d) := by
+theorem 1 : Data Residency — data stays in declared jurisdiction Definition data_resident (d : DataItem) (loc : jurisdiction) : Prop := data_jurisdiction d = loc. Theorem data_residency : ∀ d : DataItem, data_resident d (data_jurisdiction d) := by
   rfl
 
 /-- 2 (matches Coq) -/
-theorem 2 : Cross-border transfer requires authorization   Definition well_formed_transfer (agreements : Agreements) (trail : AuditTrail) (d : DataItem) (target : jurisdiction) : Prop := data_jurisdiction d ≠ target → transfer_logged trail (data_id d) (data_jurisdiction d) target → authorized agreements (data_jurisdiction d) target (data_classification d). Theorem cross_border_requires_auth : ∀ (agreements : Agreements) (d : DataItem) (target : jurisdiction) (trail : AuditTrail), data_jurisdiction d ≠ target → authorized agreements (data_jurisdiction d) target (data_classification d) → well_formed_transfer agreements (mkTransfer (data_id d) (data_jurisdiction d) target :: trail) d target := by
+theorem 2 : Cross-border transfer requires authorization Definition well_formed_transfer (agreements : Agreements) (trail : AuditTrail) (d : DataItem) (target : jurisdiction) : Prop := data_jurisdiction d ≠ target → transfer_logged trail (data_id d) (data_jurisdiction d) target → authorized agreements (data_jurisdiction d) target (data_classification d). Theorem cross_border_requires_auth : ∀ (agreements : Agreements) (d : DataItem) (target : jurisdiction) (trail : AuditTrail), data_jurisdiction d ≠ target → authorized agreements (data_jurisdiction d) target (data_classification d) → well_formed_transfer agreements (mkTransfer (data_id d) (data_jurisdiction d) target :: trail) d target := by
   intro h; exact h
 
 /-- 3 (matches Coq) -/
-theorem 3 : Jurisdiction ordering is a preorder   Theorem jurisdiction_leq_reflexive : ∀ j : jurisdiction, jurisdiction_leq j j := by
+theorem 3 : Jurisdiction ordering is a preorder Theorem jurisdiction_leq_reflexive : ∀ j : jurisdiction, jurisdiction_leq j j := by
   simp_all [Bool.and_eq_true]
 
 /-- jurisdiction_leq_transitive (matches Coq) -/
@@ -198,19 +198,19 @@ theorem jurisdiction_preorder : ∀ j : jurisdiction, jurisdiction_leq j j ∧ (
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Compliance composition — compliant legs compose   Definition compliant_op (agreements : Agreements) (from to : jurisdiction) (cls : nat) : Prop := from = to ∨ authorized agreements from to cls. Theorem compliance_composition : ∀ (agreements : Agreements) (j1 j2 j3 : jurisdiction) (cls : nat), compliant_op agreements j1 j2 cls → compliant_op agreements j2 j3 cls → compliant_op agreements j1 j2 cls ∧ compliant_op agreements j2 j3 cls := by
+theorem 4 : Compliance composition — compliant legs compose Definition compliant_op (agreements : Agreements) (from to : jurisdiction) (cls : nat) : Prop := from = to ∨ authorized agreements from to cls. Theorem compliance_composition : ∀ (agreements : Agreements) (j1 j2 j3 : jurisdiction) (cls : nat), compliant_op agreements j1 j2 cls → compliant_op agreements j2 j3 cls → compliant_op agreements j1 j2 cls ∧ compliant_op agreements j2 j3 cls := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : Data sovereignty — local data cannot leave without    Theorem data_sovereignty : ∀ (agreements : Agreements) (d : DataItem) (target : jurisdiction), data_jurisdiction d ≠ target → compliant_op agreements (data_jurisdiction d) target (data_classification d) → authorized agreements (data_jurisdiction d) target (data_classification d) := by
+theorem 5 : Data sovereignty — local data cannot leave without Theorem data_sovereignty : ∀ (agreements : Agreements) (d : DataItem) (target : jurisdiction), data_jurisdiction d ≠ target → compliant_op agreements (data_jurisdiction d) target (data_classification d) → authorized agreements (data_jurisdiction d) target (data_classification d) := by
   cases ‹_› <;> simp <;> omega
 
 /-- 6 (matches Coq) -/
-theorem 6 : Authorization is downward-closed (transitive across   classification levels)   Theorem authorization_downward_closed : ∀ (agreements : Agreements) (from to : jurisdiction) (cls cls' : nat), authorized agreements from to cls → cls' ≤ cls → authorized agreements from to cls' := by
+theorem 6 : Authorization is downward-closed (transitive across Theorem authorization_downward_closed : ∀ (agreements : Agreements) (from to : jurisdiction) (cls cls' : nat), authorized agreements from to cls → cls' ≤ cls → authorized agreements from to cls' := by
   simp_all
 
 /-- 7 (matches Coq) -/
-theorem 7 : Audit trail completeness — every transfer is logged   Definition log_transfer (trail : AuditTrail) (did from to : nat) : AuditTrail := mkTransfer did from to :: trail. Theorem audit_trail_completeness : ∀ (trail : AuditTrail) (did from to : nat), transfer_logged (log_transfer trail did from to) did from to := by
+theorem 7 : Audit trail completeness — every transfer is logged Definition log_transfer (trail : AuditTrail) (did from to : nat) : AuditTrail := mkTransfer did from to :: trail. Theorem audit_trail_completeness : ∀ (trail : AuditTrail) (did from to : nat), transfer_logged (log_transfer trail did from to) did from to := by
   simp
 
 /-- audit_trail_preservation (matches Coq) -/
@@ -218,15 +218,15 @@ theorem audit_trail_preservation : ∀ (trail : AuditTrail) (did from to did' fr
   intro h; exact h
 
 /-- 8 (matches Coq) -/
-theorem 8 : Policy monotonicity — stricter policies subsume    Definition policy_allows (threshold : nat) (cls : nat) : Prop := cls ≤ threshold. Theorem policy_monotonicity : ∀ (strict weak : nat) (cls : nat), policy_stricter strict weak → policy_allows strict cls → policy_allows weak cls := by
+theorem 8 : Policy monotonicity — stricter policies subsume Definition policy_allows (threshold : nat) (cls : nat) : Prop := cls ≤ threshold. Theorem policy_monotonicity : ∀ (strict weak : nat) (cls : nat), policy_stricter strict weak → policy_allows strict cls → policy_allows weak cls := by
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : Same-jurisdiction transfers are always compliant   Theorem same_jurisdiction_compliant : ∀ (agreements : Agreements) (j : jurisdiction) (cls : nat), compliant_op agreements j j cls := by
+theorem 9 : Same-jurisdiction transfers are always compliant Theorem same_jurisdiction_compliant : ∀ (agreements : Agreements) (j : jurisdiction) (cls : nat), compliant_op agreements j j cls := by
   omega
 
 /-- 10 (matches Coq) -/
-theorem 10 : Audit trail length grows with each transfer   Theorem audit_trail_grows : ∀ (trail : AuditTrail) (did from to : nat), length (log_transfer trail did from to) = S (length trail) := by
+theorem 10 : Audit trail length grows with each transfer Theorem audit_trail_grows : ∀ (trail : AuditTrail) (did from to : nat), length (log_transfer trail did from to) = S (length trail) := by
   simp
 
 /-- local_only_blocks_cross_border (matches Coq) -/

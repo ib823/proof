@@ -216,9 +216,9 @@ def ticks_ordered (ticks : List MarketDataTick) : Prop :=
   | [_] => True
   | t1 :: ((t2 :: _) as rest) => tick_seq t1 < tick_seq t2 /\ ticks_ordered rest
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ORDER PRIORITY (PRICE-TIME)
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- buy_priority_reflexive (matches Coq) -/
 theorem buy_priority_reflexive : ∀ o, buy_has_priority o o = true := by
   cases ‹_› <;> simp <;> omega
@@ -235,9 +235,9 @@ theorem higher_price_buy_wins : ∀ o1 o2, order_price o1 > order_price o2 → b
 theorem lower_price_sell_wins : ∀ o1 o2, order_price o1 < order_price o2 → sell_has_priority o1 o2 = true := by
   cases ‹_› <;> simp <;> omega
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: TRADE BALANCE (BUYER PAYS = SELLER RECEIVES)
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- trade_always_balanced (matches Coq) -/
 theorem trade_always_balanced : ∀ t, trade_balanced t := by
   rfl
@@ -250,9 +250,9 @@ theorem settlement_balanced_implies_equal_payment : ∀ s, settlement_balanced s
 theorem settlement_complete_implies_balanced : ∀ s, settlement_complete s → buyer_paid s = seller_received s := by
   simp_all [Bool.and_eq_true]
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: MATCHING ENGINE CORRECTNESS
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- match_only_when_price_crosses (matches Coq) -/
 theorem match_only_when_price_crosses : ∀ tid buy sell t, execute_match tid buy sell = Some t → order_price buy ≥ order_price sell := by
   cases ‹_› <;> simp <;> omega
@@ -273,9 +273,9 @@ theorem match_qty_bounded_by_sell : ∀ buy sell, match_qty buy sell ≤ order_q
 theorem match_uses_sell_price : ∀ tid buy sell t, execute_match tid buy sell = Some t → trade_price t = order_price sell := by
   rfl
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: MARKET DATA INTEGRITY
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- empty_ticks_ordered (matches Coq) -/
 theorem empty_ticks_ordered : ticks_ordered [] = True := by
   rfl
@@ -288,9 +288,9 @@ theorem singleton_ticks_ordered : ∀ t, ticks_ordered [t] := by
 theorem ordered_ticks_head_smallest : ∀ t1 t2 rest, ticks_ordered (t1 :: t2 :: rest) → tick_seq t1 < tick_seq t2 := by
   intro h; exact h
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     ADDITIONAL THEOREMS: TRADE INTEGRITY
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- trade_consideration_comm (matches Coq) -/
 theorem trade_consideration_comm : ∀ t, trade_consideration t = trade_qty t * trade_price t := by
   omega

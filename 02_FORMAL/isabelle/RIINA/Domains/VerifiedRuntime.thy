@@ -239,7 +239,7 @@ lemma RT_001_01_alloc_safe: "\<forall> h size p h', size > 0 \<longrightarrow> s
   by (cases rule: ‹_›.cases; simp)
 
 (* RT_001_02_alloc_no_overlap (matches Coq) *)
-lemma RT_001_02_alloc_no_overlap: "\<forall> h size p h', heap_wf h \<longrightarrow> size > 0 \<longrightarrow> alloc h size = Some (p, h') \<longrightarrow> heap_mem h p = None. (* New allocation is at a fresh location *)"
+lemma RT_001_02_alloc_no_overlap: "\<forall> h size p h', heap_wf h \<longrightarrow> size > 0 \<longrightarrow> alloc h size = Some (p, h') \<longrightarrow> heap_mem h p = None. "
   by auto
 
 (* RT_001_03_free_correct (matches Coq) *)

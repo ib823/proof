@@ -310,7 +310,7 @@ lemma PQ_KEM_024_shared_secret_match: "\<forall> k : KEMInstance, kem_correct k 
 
 (* PQ_KEM_025: Complete PQ-KEM Security Theorem *)
 (* PQ_KEM_025_complete_security (matches Coq) *)
-lemma PQ_KEM_025_complete_security: "\<forall> s : KEMSecurity, kem_secure s = True \<longrightarrow> (* All security properties satisfied *) indcca_ciphertext_indistinguishable (kem_sec_indcca s) = True \<and> indcca_key_indistinguishable (kem_sec_indcca s) = True \<and> qr_lattice_based (kem_sec_quantum s) = True \<and> qr_no_known_quantum_attack (kem_sec_quantum s) = True"
+lemma PQ_KEM_025_complete_security: "\<forall> s : KEMSecurity, kem_secure s = True \<longrightarrow> indcca_ciphertext_indistinguishable (kem_sec_indcca s) = True \<and> indcca_key_indistinguishable (kem_sec_indcca s) = True \<and> qr_lattice_based (kem_sec_quantum s) = True \<and> qr_no_known_quantum_attack (kem_sec_quantum s) = True"
   by simp
 
 end

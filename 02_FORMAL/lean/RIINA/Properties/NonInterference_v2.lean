@@ -101,9 +101,9 @@ def closed_expr (e : expr) : Prop :=
   forall x, ~ free_in x e
 
 /-- stores_agree_low_fo (matches Coq: Definition stores_agree_low_fo) -/
-def stores_agree_low_fo (Σ : store_ty) (st1 st2 : store) : Prop :=
+def stores_agree_low_fo (St : store_ty) (st1 st2 : store) : Prop :=
   forall l T sl,
-    store_ty_lookup l Σ = Some (T, sl) ->
+    store_ty_lookup l St = Some (T, sl) ->
     first_order_type T = true ->
     is_low sl ->
     forall v1 v2,
@@ -112,7 +112,7 @@ def stores_agree_low_fo (Σ : store_ty) (st1 st2 : store) : Prop :=
       val_rel_at_type_fo T v1 v2
 
 /-- val_rel_at_type_n (matches Coq: Definition val_rel_at_type_n) -/
-def val_rel_at_type_n (n : Nat) (Σ : store_ty)
+def val_rel_at_type_n (n : Nat) (St : store_ty)
     (store_rel_pred : store_ty -> store -> store -> Prop)
     (val_rel_lower : store_ty -> ty -> expr -> expr -> Prop)
     (store_rel_lower : store_ty -> store -> store -> Prop)
@@ -122,309 +122,309 @@ def val_rel_at_type_n (n : Nat) (Σ : store_ty)
   | .0 => True
 
 /-- store_vals_rel (matches Coq: Definition store_vals_rel) -/
-def store_vals_rel (n : Nat) (Σ : store_ty) (st1 st2 : store) : Prop :=
+def store_vals_rel (n : Nat) (St : store_ty) (st1 st2 : store) : Prop :=
   forall l T sl,
-    store_ty_lookup l Σ = Some (T, sl) ->
+    store_ty_lookup l St = Some (T, sl) ->
     exists v1 v2,
       store_lookup l st1 = Some v1 /\
       store_lookup l st2 = Some v2 /\
-      val_rel_n n Σ T v1 v2
+      val_rel_n n St T v1 v2
 
 /-- combined_step_up (matches Coq: Definition combined_step_up) -/
 def combined_step_up (n : Nat) : Prop :=
-  (forall T Σ v1 v2,
-     val_rel_n n Σ T v1 v2 ->
-     has_type nil Σ Public v1 T EffectPure ->
-     has_type nil Σ Public v2 T EffectPure ->
-     val_rel_n (S n) Σ T v1 v2) /\
-  (forall Σ st1 st2,
-     store_rel_n n Σ st1 st2 ->
-     store_wf Σ st1 ->
-     store_wf Σ st2 ->
+  (forall T St v1 v2,
+     val_rel_n n St T v1 v2 ->
+     has_type nil St Public v1 T EffectPure ->
+     has_type nil St Public v2 T EffectPure ->
+     val_rel_n (S n) St T v1 v2) /\
+  (forall St st1 st2,
+     store_rel_n n St st1 st2 ->
+     store_wf St st1 ->
+     store_wf St st2 ->
      store_has_values st1 ->
      store_has_values st2 ->
-     stores_agree_low_fo Σ st1 st2 ->  
-     store_rel_n (S n) Σ st1 st2)
+     stores_agree_low_fo St st1 st2 ->  
+     store_rel_n (S n) St st1 st2)
 
 /-- val_rel (matches Coq: Definition val_rel) -/
-def val_rel (Σ : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
-  forall n, val_rel_n n Σ T v1 v2
+def val_rel (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  forall n, val_rel_n n St T v1 v2
 
 /-- store_rel (matches Coq: Definition store_rel) -/
-def store_rel (Σ : store_ty) (st1 st2 : store) : Prop :=
-  forall n, store_rel_n n Σ st1 st2
+def store_rel (St : store_ty) (st1 st2 : store) : Prop :=
+  forall n, store_rel_n n St st1 st2
 
 /-- exp_rel (matches Coq: Definition exp_rel) -/
-def exp_rel (Σ : store_ty) (T : ty) (e1 e2 : expr) : Prop :=
-  forall n, exp_rel_n n Σ T e1 e2
+def exp_rel (St : store_ty) (T : ty) (e1 e2 : expr) : Prop :=
+  forall n, exp_rel_n n St T e1 e2
 
-/-- is_low and is_low_dec equivalence -/
+-- is_low and is_low_dec equivalence
 /-- is_low_dec_correct (matches Coq) -/
 theorem is_low_dec_correct : ∀ l, is_low_dec l = true <-> is_low l := by sorry
 
-/-- Helper: typing in nil context implies closed.
-    Uses free_in_context from Preservation.v -/
+-- Helper: typing in nil context implies closed.
+--     Uses free_in_context from Preservation.v
 /-- typing_nil_implies_closed (matches Coq) -/
-theorem typing_nil_implies_closed : ∀ Σ Δ e T ε, has_type nil Σ Δ e T ε → closed_expr e := by sorry
+theorem typing_nil_implies_closed : ∀ St Δ e T ε, has_type nil St Δ e T ε → closed_expr e := by sorry
 
-/-- val_rel_at_type_fo is reflexive for well-typed values.
-    This is used when v1 = v2 (from stores_agree_low_fo).
-    Requires typing to ensure the value matches the type structure. -/
+-- val_rel_at_type_fo is reflexive for well-typed values.
+--     This is used when v1 = v2 (from stores_agree_low_fo).
+--     Requires typing to ensure the value matches the type structure.
 /-- val_rel_at_type_fo_refl (matches Coq) -/
-theorem val_rel_at_type_fo_refl : ∀ T Σ v, first_order_type T = true → value v → has_type nil Σ Public v T EffectPure → val_rel_at_type_fo T v v := by sorry
+theorem val_rel_at_type_fo_refl : ∀ T St v, first_order_type T = true → value v → has_type nil St Public v T EffectPure → val_rel_at_type_fo T v v := by sorry
 
-/-- For trivial FO types, any two well-typed values are related.
-    Requires typing to use canonical forms for TProd/TSum decomposition.
-
-    STATUS: UNUSED LEMMA with known issues.
-    - TSum with trivial components fails when v1=EInl, v2=EInr
-    - fo_type_has_trivial_rel incorrectly returns true for TSum
-    - The admits are justified dead code until this lemma is actually needed
-
-    TODO: Fix by either:
-    1. Remove TSum from fo_type_has_trivial_rel (TSum requires matching constructors)
-    2. Weaken val_rel_at_type_fo for TSum to return True when components are trivial -/
+-- For trivial FO types, any two well-typed values are related.
+--     Requires typing to use canonical forms for TProd/TSum decomposition.
+--
+--     STATUS: UNUSED LEMMA with known issues.
+--     - TSum with trivial components fails when v1=EInl, v2=EInr
+--     - fo_type_has_trivial_rel incorrectly returns true for TSum
+--     - The admits are justified dead code until this lemma is actually needed
+--
+--     TODO: Fix by either:
+--     1. Remove TSum from fo_type_has_trivial_rel (TSum requires matching constructors)
+--     2. Weaken val_rel_at_type_fo for TSum to return True when components are trivial
 /-- val_rel_at_type_fo_trivial (matches Coq) -/
-theorem val_rel_at_type_fo_trivial : ∀ T Σ v1 v2, first_order_type T = true → fo_type_has_trivial_rel T = true → value v1 → value v2 → has_type nil Σ Public v1 T EffectPure → has_type nil Σ Public v2 T EffectPure → val_rel_at_type_fo T v1 v2 := by sorry
+theorem val_rel_at_type_fo_trivial : ∀ T St v1 v2, first_order_type T = true → fo_type_has_trivial_rel T = true → value v1 → value v2 → has_type nil St Public v1 T EffectPure → has_type nil St Public v2 T EffectPure → val_rel_at_type_fo T v1 v2 := by sorry
 
-/-- Unfold lemma for val_rel_at_type_n at successor step.
-    At S n, val_rel_at_type_n reduces to val_rel_at_type. -/
+-- Unfold lemma for val_rel_at_type_n at successor step.
+--     At S n, val_rel_at_type_n reduces to val_rel_at_type.
 /-- val_rel_at_type_n_S (matches Coq) -/
-theorem val_rel_at_type_n_S : ∀ n Σ sp vl sl svp T v1 v2, val_rel_at_type_n (S n) Σ sp vl sl svp T v1 v2 = val_rel_at_type Σ sp vl sl svp T v1 v2 := by sorry
+theorem val_rel_at_type_n_S : ∀ n St sp vl sl svp T v1 v2, val_rel_at_type_n (S n) St sp vl sl svp T v1 v2 = val_rel_at_type St sp vl sl svp T v1 v2 := by sorry
 
-/-- Unfolding lemmas for val_rel_n - needed because simpl doesn't work well
-    on mutual fixpoints with abstract arguments -/
+-- Unfolding lemmas for val_rel_n - needed because simpl doesn't work well
+--     on mutual fixpoints with abstract arguments
 /-- val_rel_n_0_unfold (matches Coq) -/
-theorem val_rel_n_0_unfold : ∀ Σ T v1 v2, val_rel_n .0 Σ T v1 v2 = (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure ∧ (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)) := by sorry
+theorem val_rel_n_0_unfold : ∀ St T v1 v2, val_rel_n .0 St T v1 v2 = (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)) := by sorry
 
 /-- val_rel_n_S_unfold (matches Coq) -/
-theorem val_rel_n_S_unfold : ∀ n Σ T v1 v2, val_rel_n (S n) Σ T v1 v2 = (val_rel_n n Σ T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure ∧ val_rel_at_type_n n Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2) := by sorry
+theorem val_rel_n_S_unfold : ∀ n St T v1 v2, val_rel_n (S n) St T v1 v2 = (val_rel_n n St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type_n n St (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2) := by sorry
 
-/-- Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
-    This recovers the old val_rel_n_S_unfold form at step >= 2. -/
+-- Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
+--     This recovers the old val_rel_n_S_unfold form at step >= 2.
 /-- val_rel_n_SS_unfold (matches Coq) -/
-theorem val_rel_n_SS_unfold : ∀ n Σ T v1 v2, val_rel_n (S (S n)) Σ T v1 v2 = (val_rel_n (S n) Σ T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure ∧ val_rel_at_type Σ (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2) := by sorry
+theorem val_rel_n_SS_unfold : ∀ n St T v1 v2, val_rel_n (S (S n)) St T v1 v2 = (val_rel_n (S n) St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type St (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2) := by sorry
 
 /-- store_rel_n_0_unfold (matches Coq) -/
-theorem store_rel_n_0_unfold : ∀ Σ st1 st2, store_rel_n .0 Σ st1 st2 = (store_max st1 = store_max st2) := by sorry
+theorem store_rel_n_0_unfold : ∀ St st1 st2, store_rel_n .0 St st1 st2 = (store_max st1 = store_max st2) := by sorry
 
 /-- store_rel_n_S_unfold (matches Coq) -/
-theorem store_rel_n_S_unfold : ∀ n Σ st1 st2, store_rel_n (S n) Σ st1 st2 = (store_rel_n n Σ st1 st2 ∧ store_max st1 = store_max st2 ∧ (∀ l T sl, store_ty_lookup l Σ = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ (if is_low_dec sl then val_rel_n n Σ T v1 v2 else (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure)))) := by sorry
+theorem store_rel_n_S_unfold : ∀ n St st1 st2, store_rel_n (S n) St st1 st2 = (store_rel_n n St st1 st2 ∧ store_max st1 = store_max st2 ∧ (∀ l T sl, store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ (if is_low_dec sl then val_rel_n n St T v1 v2 else (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure)))) := by sorry
 
-/-- ========================================================================
-    SECTION 3.5: FIRST-ORDER EQUIVALENCE
-    ========================================================================
-
-    KEY THEOREM: For first-order types, val_rel_at_type equals val_rel_at_type_fo.
-
-    This is because first-order types don't use the predicate parameters (sp, vl, sl).
-    The predicates are only used for TFn types (function types). -/
+-- ========================================================================
+--     SECTION 3.5: FIRST-ORDER EQUIVALENCE
+--     ========================================================================
+--
+--     KEY THEOREM: For first-order types, val_rel_at_type equals val_rel_at_type_fo.
+--
+--     This is because first-order types don't use the predicate parameters (sp, vl, sl).
+--     The predicates are only used for TFn types (function types).
 /-- val_rel_at_type_fo_equiv (matches Coq) -/
-theorem val_rel_at_type_fo_equiv : ∀ T Σ sp vl sl svp v1 v2, first_order_type T = true → val_rel_at_type Σ sp vl sl svp T v1 v2 <-> val_rel_at_type_fo T v1 v2 := by sorry
+theorem val_rel_at_type_fo_equiv : ∀ T St sp vl sl svp v1 v2, first_order_type T = true → val_rel_at_type St sp vl sl svp T v1 v2 <-> val_rel_at_type_fo T v1 v2 := by sorry
 
-/-- Downward closure: val_rel_n n implies val_rel_n .0 (base case).
-    This follows directly from the definition where S-case includes the predecessor. -/
+-- Downward closure: val_rel_n n implies val_rel_n .0 (base case).
+--     This follows directly from the definition where S-case includes the predecessor.
 /-- val_rel_n_to_0 (matches Coq) -/
-theorem val_rel_n_to_0 : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → val_rel_n .0 Σ T v1 v2 := by sorry
+theorem val_rel_n_to_0 : ∀ n St T v1 v2, val_rel_n n St T v1 v2 → val_rel_n .0 St T v1 v2 := by sorry
 
 /-- val_rel_n_step_up_fo (matches Coq) -/
-theorem val_rel_n_step_up_fo : ∀ T n Σ v1 v2, first_order_type T = true → val_rel_n .0 Σ T v1 v2 → val_rel_n n Σ T v1 v2 := by
+theorem val_rel_n_step_up_fo : ∀ T n St v1 v2, first_order_type T = true → val_rel_n .0 St T v1 v2 → val_rel_n n St T v1 v2 := by
   simp_all
 
-/-- CRITICAL: Downward monotonicity for first-order types.
-    For FO types, val_rel_n at larger step index implies val_rel_n at smaller step index.
-    This is the FO-specific version that avoids the Kripke complications of TFn.
-
-    Proof strategy:
-    - Induction on n with m generalized
-    - For FO types, val_rel_at_type equals val_rel_at_type_fo at ALL steps
-    - So the structural content is step-independent -/
+-- CRITICAL: Downward monotonicity for first-order types.
+--     For FO types, val_rel_n at larger step index implies val_rel_n at smaller step index.
+--     This is the FO-specific version that avoids the Kripke complications of TFn.
+--
+--     Proof strategy:
+--     - Induction on n with m generalized
+--     - For FO types, val_rel_at_type equals val_rel_at_type_fo at ALL steps
+--     - So the structural content is step-independent
 /-- val_rel_n_mono_fo (matches Coq) -/
-theorem val_rel_n_mono_fo : ∀ m n Σ T v1 v2, first_order_type T = true → m ≤ n → val_rel_n n Σ T v1 v2 → val_rel_n m Σ T v1 v2 := by sorry <;> omega
+theorem val_rel_n_mono_fo : ∀ m n St T v1 v2, first_order_type T = true → m ≤ n → val_rel_n n St T v1 v2 → val_rel_n m St T v1 v2 := by sorry <;> omega
 
-/-- Corollary: For FO types, val_rel_n at any step index implies val_rel_n at any other.
-    Now provable using val_rel_n_step_up_fo and val_rel_n_mono_fo. -/
+-- Corollary: For FO types, val_rel_n at any step index implies val_rel_n at any other.
+--     Now provable using val_rel_n_step_up_fo and val_rel_n_mono_fo.
 /-- val_rel_n_fo_equiv (matches Coq) -/
-theorem val_rel_n_fo_equiv : ∀ m n Σ T v1 v2, first_order_type T = true → val_rel_n m Σ T v1 v2 → val_rel_n n Σ T v1 v2 := by sorry <;> omega
+theorem val_rel_n_fo_equiv : ∀ m n St T v1 v2, first_order_type T = true → val_rel_n m St T v1 v2 → val_rel_n n St T v1 v2 := by sorry <;> omega
 
-/-- Extract value property from val_rel_n -/
+-- Extract value property from val_rel_n
 /-- val_rel_n_value (matches Coq) -/
-theorem val_rel_n_value : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → value v1 ∧ value v2 := by sorry
+theorem val_rel_n_value : ∀ n St T v1 v2, val_rel_n n St T v1 v2 → value v1 ∧ value v2 := by sorry
 
-/-- Extract closed property from val_rel_n -/
+-- Extract closed property from val_rel_n
 /-- val_rel_n_closed (matches Coq) -/
-theorem val_rel_n_closed : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → closed_expr v1 ∧ closed_expr v2 := by sorry
+theorem val_rel_n_closed : ∀ n St T v1 v2, val_rel_n n St T v1 v2 → closed_expr v1 ∧ closed_expr v2 := by sorry
 
-/-- Extract typing from val_rel_n (unconditional since typing is always present) -/
+-- Extract typing from val_rel_n (unconditional since typing is always present)
 /-- val_rel_n_typing (matches Coq) -/
-theorem val_rel_n_typing : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → has_type nil Σ Public v1 T EffectPure ∧ has_type nil Σ Public v2 T EffectPure := by sorry
+theorem val_rel_n_typing : ∀ n St T v1 v2, val_rel_n n St T v1 v2 → has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure := by sorry
 
-/-- Extract pair structure from val_rel_n for TProd - FIRST-ORDER TYPES ONLY -/
+-- Extract pair structure from val_rel_n for TProd - FIRST-ORDER TYPES ONLY
 /-- val_rel_n_prod_structure (matches Coq) -/
-theorem val_rel_n_prod_structure : ∀ n Σ T1 T2 v1 v2, first_order_type T1 = true → first_order_type T2 = true → val_rel_n n Σ (TProd T1 T2) v1 v2 → ∃ a1 b1 a2 b2, v1 = EPair a1 b1 ∧ v2 = EPair a2 b2 ∧ value a1 ∧ value b1 ∧ value a2 ∧ value b2 := by sorry
+theorem val_rel_n_prod_structure : ∀ n St T1 T2 v1 v2, first_order_type T1 = true → first_order_type T2 = true → val_rel_n n St (TProd T1 T2) v1 v2 → ∃ a1 b1 a2 b2, v1 = EPair a1 b1 ∧ v2 = EPair a2 b2 ∧ value a1 ∧ value b1 ∧ value a2 ∧ value b2 := by sorry
 
-/-- Extract boolean structure from val_rel_n for TBool -/
+-- Extract boolean structure from val_rel_n for TBool
 /-- val_rel_n_bool_structure (matches Coq) -/
-theorem val_rel_n_bool_structure : ∀ n Σ v1 v2, val_rel_n n Σ TBool v1 v2 → ∃ b, v1 = EBool b ∧ v2 = EBool b := by
+theorem val_rel_n_bool_structure : ∀ n St v1 v2, val_rel_n n St TBool v1 v2 → ∃ b, v1 = EBool b ∧ v2 = EBool b := by
   intro h; exact h
 
-/-- Extract sum structure from val_rel_n for TSum - FIRST-ORDER TYPES ONLY -/
+-- Extract sum structure from val_rel_n for TSum - FIRST-ORDER TYPES ONLY
 /-- val_rel_n_sum_structure (matches Coq) -/
-theorem val_rel_n_sum_structure : ∀ n Σ T1 T2 v1 v2, first_order_type T1 = true → first_order_type T2 = true → val_rel_n n Σ (TSum T1 T2) v1 v2 → (∃ a1 a2, v1 = EInl a1 T2 ∧ v2 = EInl a2 T2 ∧ value a1 ∧ value a2) ∨ (∃ b1 b2, v1 = EInr b1 T1 ∧ v2 = EInr b2 T1 ∧ value b1 ∧ value b2) := by sorry
+theorem val_rel_n_sum_structure : ∀ n St T1 T2 v1 v2, first_order_type T1 = true → first_order_type T2 = true → val_rel_n n St (TSum T1 T2) v1 v2 → (∃ a1 a2, v1 = EInl a1 T2 ∧ v2 = EInl a2 T2 ∧ value a1 ∧ value a2) ∨ (∃ b1 b2, v1 = EInr b1 T1 ∧ v2 = EInr b2 T1 ∧ value b1 ∧ value b2) := by sorry
 
-/-- Downward monotonicity for val_rel_n -/
+-- Downward monotonicity for val_rel_n
 /-- val_rel_n_mono (matches Coq) -/
-theorem val_rel_n_mono : ∀ m n Σ T v1 v2, m ≤ n → val_rel_n n Σ T v1 v2 → val_rel_n m Σ T v1 v2 := by sorry <;> omega
+theorem val_rel_n_mono : ∀ m n St T v1 v2, m ≤ n → val_rel_n n St T v1 v2 → val_rel_n m St T v1 v2 := by sorry <;> omega
 
-/-- Downward monotonicity for store_rel_n -/
+-- Downward monotonicity for store_rel_n
 /-- store_rel_n_mono (matches Coq) -/
-theorem store_rel_n_mono : ∀ m n Σ st1 st2, m ≤ n → store_rel_n n Σ st1 st2 → store_rel_n m Σ st1 st2 := by sorry <;> omega
+theorem store_rel_n_mono : ∀ m n St st1 st2, m ≤ n → store_rel_n n St st1 st2 → store_rel_n m St st1 st2 := by sorry <;> omega
 
-/-- Helper: invert pair typing to get component typing at EffectPure -/
+-- Helper: invert pair typing to get component typing at EffectPure
 /-- pair_typing_pure_inv (matches Coq) -/
-theorem pair_typing_pure_inv : ∀ Γ Σ Δ e1 e2 T1 T2, has_type Γ Σ Δ (EPair e1 e2) (TProd T1 T2) EffectPure → has_type Γ Σ Δ e1 T1 EffectPure ∧ has_type Γ Σ Δ e2 T2 EffectPure := by sorry
+theorem pair_typing_pure_inv : ∀ Γ St Δ e1 e2 T1 T2, has_type Γ St Δ (EPair e1 e2) (TProd T1 T2) EffectPure → has_type Γ St Δ e1 T1 EffectPure ∧ has_type Γ St Δ e2 T2 EffectPure := by sorry
 
-/-- FORMER AXIOM 1: exp_rel_step1_fst - NOW PROVEN -/
+-- FORMER AXIOM 1: exp_rel_step1_fst - NOW PROVEN
 /-- exp_rel_step1_fst (matches Coq) -/
-theorem exp_rel_step1_fst : ∀ Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 Σ' (TProd T1 T2) v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ a1 a2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EFst v, st1, ctx) -->* (a1, st1', ctx') ∧ (EFst v', st2, ctx) -->* (a2, st2', ctx') ∧ value a1 ∧ value a2 ∧ val_rel_n .0 Σ'' T1 a1 a2 ∧ store_rel_n .0 Σ'' st1' st2' := by sorry
+theorem exp_rel_step1_fst : ∀ St T1 T2 v v' st1 st2 ctx St', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 St' (TProd T1 T2) v v' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' → ∃ a1 a2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EFst v, st1, ctx) -->* (a1, st1', ctx') ∧ (EFst v', st2, ctx) -->* (a2, st2', ctx') ∧ value a1 ∧ value a2 ∧ val_rel_n .0 St'' T1 a1 a2 ∧ store_rel_n .0 St'' st1' st2' := by sorry
 
-/-- FORMER AXIOM 2: exp_rel_step1_snd - NOW PROVEN -/
+-- FORMER AXIOM 2: exp_rel_step1_snd - NOW PROVEN
 /-- exp_rel_step1_snd (matches Coq) -/
-theorem exp_rel_step1_snd : ∀ Σ T1 T2 v v' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 Σ' (TProd T1 T2) v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ b1 b2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ESnd v, st1, ctx) -->* (b1, st1', ctx') ∧ (ESnd v', st2, ctx) -->* (b2, st2', ctx') ∧ value b1 ∧ value b2 ∧ val_rel_n .0 Σ'' T2 b1 b2 ∧ store_rel_n .0 Σ'' st1' st2' := by sorry
+theorem exp_rel_step1_snd : ∀ St T1 T2 v v' st1 st2 ctx St', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 St' (TProd T1 T2) v v' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' → ∃ b1 b2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (ESnd v, st1, ctx) -->* (b1, st1', ctx') ∧ (ESnd v', st2, ctx) -->* (b2, st2', ctx') ∧ value b1 ∧ value b2 ∧ val_rel_n .0 St'' T2 b1 b2 ∧ store_rel_n .0 St'' st1' st2' := by sorry
 
-/-- FORMER AXIOM 3: exp_rel_step1_if - NOW PROVEN - THE BIG WIN! -/
+-- FORMER AXIOM 3: exp_rel_step1_if - NOW PROVEN - THE BIG WIN!
 /-- exp_rel_step1_if (matches Coq) -/
-theorem exp_rel_step1_if : ∀ Σ (v v' e2 e2' e3 e3' : expr) st1 st2 ctx Σ', val_rel_n .0 Σ' TBool v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') ∧ (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') := by
+theorem exp_rel_step1_if : ∀ St (v v' e2 e2' e3 e3' : expr) st1 st2 ctx St', val_rel_n .0 St' TBool v v' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' → ∃ r1 r2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx') ∧ (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx') := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- FORMER AXIOM 4: exp_rel_step1_case - NOW PROVEN - THE BIG WIN! -/
+-- FORMER AXIOM 4: exp_rel_step1_case - NOW PROVEN - THE BIG WIN!
 /-- exp_rel_step1_case (matches Coq) -/
-theorem exp_rel_step1_case : ∀ Σ T1 T2 (v v' : expr) x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 Σ' (TSum T1 T2) v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') := by sorry
+theorem exp_rel_step1_case : ∀ St T1 T2 (v v' : expr) x1 e1 e1' x2 e2 e2' st1 st2 ctx St', first_order_type T1 = true → first_order_type T2 = true → val_rel_n .0 St' (TSum T1 T2) v v' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' → ∃ r1 r2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx') := by sorry
 
-/-- FORMER AXIOM 5: exp_rel_step1_let - NOW PROVEN -/
+-- FORMER AXIOM 5: exp_rel_step1_let - NOW PROVEN
 /-- exp_rel_step1_let (matches Coq) -/
-theorem exp_rel_step1_let : ∀ Σ T v v' x e2 e2' st1 st2 ctx Σ', val_rel_n .0 Σ' T v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') := by sorry
+theorem exp_rel_step1_let : ∀ St T v v' x e2 e2' st1 st2 ctx St', val_rel_n .0 St' T v v' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' → ∃ r1 r2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (ELet x v e2, st1, ctx) -->* (r1, st1', ctx') ∧ (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx') := by sorry
 
-/-- FORMER AXIOM 6: exp_rel_step1_handle - NOW PROVEN -/
+-- FORMER AXIOM 6: exp_rel_step1_handle - NOW PROVEN
 /-- exp_rel_step1_handle (matches Coq) -/
-theorem exp_rel_step1_handle : ∀ Σ T v v' x h h' st1 st2 ctx Σ', val_rel_n .0 Σ' T v v' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EHandle v x h, st1, ctx) -->* (r1, st1', ctx') ∧ (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx') := by sorry
+theorem exp_rel_step1_handle : ∀ St T v v' x h h' st1 st2 ctx St', val_rel_n .0 St' T v v' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' → ∃ r1 r2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EHandle v x h, st1, ctx) -->* (r1, st1', ctx') ∧ (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx') := by sorry
 
-/-- exp_rel_step1_app - Needs typing to get lambda structure -/
+-- exp_rel_step1_app - Needs typing to get lambda structure
 /-- exp_rel_step1_app (matches Coq) -/
-theorem exp_rel_step1_app : ∀ Σ T1 T2 ε f f' a a' st1 st2 ctx Σ', val_rel_n .0 Σ' (TFn T1 T2 ε) f f' → val_rel_n .0 Σ' T1 a a' → store_rel_n .0 Σ' st1 st2 → store_ty_extends Σ Σ' →  has_type nil Σ' Public f (TFn T1 T2 ε) EffectPure → has_type nil Σ' Public f' (TFn T1 T2 ε) EffectPure → ∃ r1 r2 st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx') := by sorry
+theorem exp_rel_step1_app : ∀ St T1 T2 ε f f' a a' st1 st2 ctx St', val_rel_n .0 St' (TFn T1 T2 ε) f f' → val_rel_n .0 St' T1 a a' → store_rel_n .0 St' st1 st2 → store_ty_extends St St' →  has_type nil St' Public f (TFn T1 T2 ε) EffectPure → has_type nil St' Public f' (TFn T1 T2 ε) EffectPure → ∃ r1 r2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EApp f a, st1, ctx) -->* (r1, st1', ctx') ∧ (EApp f' a', st2, ctx) -->* (r2, st2', ctx') := by sorry
 
-/-- Extract just the store_wf part from preservation -/
+-- Extract just the store_wf part from preservation
 /-- preservation_store_wf (matches Coq) -/
-theorem preservation_store_wf : ∀ e e' st st' ctx ctx' Σ T ε, has_type nil Σ Public e T ε → store_wf Σ st → (e, st, ctx) --> (e', st', ctx') → ∃ Σ', store_ty_extends Σ Σ' ∧ store_wf Σ' st' := by sorry
+theorem preservation_store_wf : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) --> (e', st', ctx') → ∃ St', store_ty_extends St St' ∧ store_wf St' st' := by sorry
 
-/-- store_wf implies store_has_values - NOW TRIVIAL after store_wf strengthening -/
+-- store_wf implies store_has_values - NOW TRIVIAL after store_wf strengthening
 /-- store_wf_to_has_values (matches Coq) -/
-theorem store_wf_to_has_values : ∀ Σ st, store_wf Σ st → store_has_values st := by
+theorem store_wf_to_has_values : ∀ St st, store_wf St st → store_has_values st := by
   intro h; exact h
 
-/-- Use preservation to show store_has_values is preserved -/
+-- Use preservation to show store_has_values is preserved
 /-- preservation_store_has_values (matches Coq) -/
-theorem preservation_store_has_values : ∀ e e' st st' ctx ctx' Σ T ε, has_type nil Σ Public e T ε → store_wf Σ st → (e, st, ctx) --> (e', st', ctx') → store_has_values st' := by sorry
+theorem preservation_store_has_values : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) --> (e', st', ctx') → store_has_values st' := by sorry
 
-/-- val_rel_at_type step-up for FIRST-ORDER types.
-
-    For FO types (first_order_type T = true), val_rel_at_type uses
-    val_rel_at_type_fo which doesn't depend on predicates at all.
-    This means step-up is trivial.
-
-    For HO types (containing TFn), we need the combined IH and handle
-    them directly in combined_step_up. -/
+-- val_rel_at_type step-up for FIRST-ORDER types.
+--
+--     For FO types (first_order_type T = true), val_rel_at_type uses
+--     val_rel_at_type_fo which doesn't depend on predicates at all.
+--     This means step-up is trivial.
+--
+--     For HO types (containing TFn), we need the combined IH and handle
+--     them directly in combined_step_up.
 /-- val_rel_at_type_fo_step_invariant (matches Coq) -/
-theorem val_rel_at_type_fo_step_invariant : ∀ T n' m' Σ v1 v2, first_order_type T = true → @val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 → @val_rel_at_type Σ (store_rel_n m') (val_rel_n m') (store_rel_n m') (store_vals_rel m') T v1 v2 := by sorry
+theorem val_rel_at_type_fo_step_invariant : ∀ T n' m' St v1 v2, first_order_type T = true → @val_rel_at_type St (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 → @val_rel_at_type St (store_rel_n m') (val_rel_n m') (store_rel_n m') (store_vals_rel m') T v1 v2 := by sorry
 
-/-- val_rel_at_type step-up using combined IH.
-
-    This handles ALL type cases by induction on type structure:
-    - FO types: predicate-independent (use val_rel_at_type_fo_equiv)
-    - TFn: weaken preconditions to n', apply, then step-up results using IH
-    - TProd/TSum: recurse on components
-
-    Takes the val_rel step-up IH as a parameter. -/
+-- val_rel_at_type step-up using combined IH.
+--
+--     This handles ALL type cases by induction on type structure:
+--     - FO types: predicate-independent (use val_rel_at_type_fo_equiv)
+--     - TFn: weaken preconditions to n', apply, then step-up results using IH
+--     - TProd/TSum: recurse on components
+--
+--     Takes the val_rel step-up IH as a parameter.
 /-- val_rel_at_type_step_up_with_IH (matches Coq) -/
-theorem val_rel_at_type_step_up_with_IH : ∀ T n' Σ v1 v2,  (∀ T' Σ' v1' v2', val_rel_n n' Σ' T' v1' v2' → (first_order_type T' = false → has_type nil Σ' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil Σ' Public v2' T' EffectPure) → val_rel_n (S n') Σ' T' v1' v2') →  (∀ Σ' st1 st2, store_rel_n n' Σ' st1 st2 → store_wf Σ' st1 → store_wf Σ' st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo Σ' st1 st2 → store_rel_n (S n') Σ' st1 st2) → @val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 → @val_rel_at_type Σ (store_rel_n (S n')) (val_rel_n (S n')) (store_rel_n (S n')) (store_vals_rel (S n')) T v1 v2 := by sorry <;> omega
+theorem val_rel_at_type_step_up_with_IH : ∀ T n' St v1 v2,  (∀ T' St' v1' v2', val_rel_n n' St' T' v1' v2' → (first_order_type T' = false → has_type nil St' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil St' Public v2' T' EffectPure) → val_rel_n (S n') St' T' v1' v2') →  (∀ St' st1 st2, store_rel_n n' St' st1 st2 → store_wf St' st1 → store_wf St' st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo St' st1 st2 → store_rel_n (S n') St' st1 st2) → @val_rel_at_type St (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 → @val_rel_at_type St (store_rel_n (S n')) (val_rel_n (S n')) (store_rel_n (S n')) (store_vals_rel (S n')) T v1 v2 := by sorry <;> omega
 
-/-- Wrap combined_step_up val component to match conditional typing IH -/
+-- Wrap combined_step_up val component to match conditional typing IH
 /-- combined_step_up_val_wrap (matches Coq) -/
-theorem combined_step_up_val_wrap : ∀ n, combined_step_up n → (∀ T' Σ' v1' v2', val_rel_n n Σ' T' v1' v2' → (first_order_type T' = false → has_type nil Σ' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil Σ' Public v2' T' EffectPure) → val_rel_n (S n) Σ' T' v1' v2') := by sorry
+theorem combined_step_up_val_wrap : ∀ n, combined_step_up n → (∀ T' St' v1' v2', val_rel_n n St' T' v1' v2' → (first_order_type T' = false → has_type nil St' Public v1' T' EffectPure) → (first_order_type T' = false → has_type nil St' Public v2' T' EffectPure) → val_rel_n (S n) St' T' v1' v2') := by sorry
 
-/-- Helper: store_rel step-up for n > .0 using val_rel step-up from IH -/
+-- Helper: store_rel step-up for n > .0 using val_rel step-up from IH
 /-- store_rel_n_step_up_from_IH (matches Coq) -/
-theorem store_rel_n_step_up_from_IH : ∀ n' Σ st1 st2,  (∀ T Σ' v1 v2, val_rel_n n' Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S n') Σ' T v1 v2) → store_rel_n (S n') Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S n')) Σ st1 st2 := by sorry
+theorem store_rel_n_step_up_from_IH : ∀ n' St st1 st2,  (∀ T St' v1 v2, val_rel_n n' St' T v1 v2 → has_type nil St' Public v1 T EffectPure → has_type nil St' Public v2 T EffectPure → val_rel_n (S n') St' T v1 v2) → store_rel_n (S n') St st1 st2 → store_wf St st1 → store_wf St st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S n')) St st1 st2 := by sorry
 
-/-- Helper: store_rel step-up from n to S n when n > .0, using val_rel step-up -/
+-- Helper: store_rel step-up from n to S n when n > .0, using val_rel step-up
 /-- store_rel_n_step_up_with_val_IH (matches Coq) -/
-theorem store_rel_n_step_up_with_val_IH : ∀ m Σ st1 st2,  (∀ T Σ' v1 v2, val_rel_n m Σ' T v1 v2 → has_type nil Σ' Public v1 T EffectPure → has_type nil Σ' Public v2 T EffectPure → val_rel_n (S m) Σ' T v1 v2) → store_rel_n (S m) Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S m)) Σ st1 st2 := by sorry
+theorem store_rel_n_step_up_with_val_IH : ∀ m St st1 st2,  (∀ T St' v1 v2, val_rel_n m St' T v1 v2 → has_type nil St' Public v1 T EffectPure → has_type nil St' Public v2 T EffectPure → val_rel_n (S m) St' T v1 v2) → store_rel_n (S m) St st1 st2 → store_wf St st1 → store_wf St st2 → store_has_values st1 → store_has_values st2 → store_rel_n (S (S m)) St st1 st2 := by sorry
 
-/-- Main theorem: combined_step_up holds for all n via strong induction -/
+-- Main theorem: combined_step_up holds for all n via strong induction
 /-- combined_step_up_all (matches Coq) -/
 theorem combined_step_up_all : ∀ n, combined_step_up n := by sorry <;> omega
 
-/-- Auxiliary lemma: val_rel_n step-up with type-structural induction.
-    The outer induction is on type size, enabling recursive calls on subtypes. -/
+-- Auxiliary lemma: val_rel_n step-up with type-structural induction.
+--     The outer induction is on type size, enabling recursive calls on subtypes.
 /-- val_rel_n_step_up_by_type (matches Coq) -/
-theorem val_rel_n_step_up_by_type : ∀ T n Σ v1 v2, val_rel_n n Σ T v1 v2 → has_type nil Σ Public v1 T EffectPure → has_type nil Σ Public v2 T EffectPure → val_rel_n (S n) Σ T v1 v2 := by sorry
+theorem val_rel_n_step_up_by_type : ∀ T n St v1 v2, val_rel_n n St T v1 v2 → has_type nil St Public v1 T EffectPure → has_type nil St Public v2 T EffectPure → val_rel_n (S n) St T v1 v2 := by sorry
 
-/-- Main step-up lemma - derives from type-structural version -/
+-- Main step-up lemma - derives from type-structural version
 /-- val_rel_n_step_up (matches Coq) -/
-theorem val_rel_n_step_up : ∀ n Σ T v1 v2, val_rel_n n Σ T v1 v2 → has_type nil Σ Public v1 T EffectPure → has_type nil Σ Public v2 T EffectPure → val_rel_n (S n) Σ T v1 v2 := by sorry
+theorem val_rel_n_step_up : ∀ n St T v1 v2, val_rel_n n St T v1 v2 → has_type nil St Public v1 T EffectPure → has_type nil St Public v2 T EffectPure → val_rel_n (S n) St T v1 v2 := by sorry
 
-/-- store_rel_n_step_up - Follows from val_rel_n_step_up
-    Requires store_wf to establish value relations for store locations
-
-    REVISED: The n=.0 case for FO types at LOW security levels requires
-    stores_agree_low_fo precondition. For HIGH security, we rely on
-    the type having a trivial val_rel (TSecret, TLabeled, etc.).
-
-    For n >= 1, this lemma is fully provable using val_rel_n_step_up. -/
+-- store_rel_n_step_up - Follows from val_rel_n_step_up
+--     Requires store_wf to establish value relations for store locations
+--
+--     REVISED: The n=.0 case for FO types at LOW security levels requires
+--     stores_agree_low_fo precondition. For HIGH security, we rely on
+--     the type having a trivial val_rel (TSecret, TLabeled, etc.).
+--
+--     For n >= 1, this lemma is fully provable using val_rel_n_step_up.
 /-- store_rel_n_step_up (matches Coq) -/
-theorem store_rel_n_step_up : ∀ n Σ st1 st2, store_rel_n n Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo Σ st1 st2 →  store_rel_n (S n) Σ st1 st2 := by sorry
+theorem store_rel_n_step_up : ∀ n St st1 st2, store_rel_n n St st1 st2 → store_wf St st1 → store_wf St st2 → store_has_values st1 → store_has_values st2 → stores_agree_low_fo St st1 st2 →  store_rel_n (S n) St st1 st2 := by sorry
 
-/-- store_vals_rel monotonicity: step down -/
+-- store_vals_rel monotonicity: step down
 /-- store_vals_rel_mono (matches Coq) -/
-theorem store_vals_rel_mono : ∀ m n Σ st1 st2, m ≤ n → store_vals_rel n Σ st1 st2 → store_vals_rel m Σ st1 st2 := by
+theorem store_vals_rel_mono : ∀ m n St st1 st2, m ≤ n → store_vals_rel n St st1 st2 → store_vals_rel m St st1 st2 := by
   simp_all
 
-/-- store_vals_rel step-up: uses val_rel_n_step_up on each location -/
+-- store_vals_rel step-up: uses val_rel_n_step_up on each location
 /-- store_vals_rel_step_up (matches Coq) -/
-theorem store_vals_rel_step_up : ∀ n Σ st1 st2, store_vals_rel n Σ st1 st2 → store_wf Σ st1 → store_wf Σ st2 → store_vals_rel (S n) Σ st1 st2 := by sorry
+theorem store_vals_rel_step_up : ∀ n St st1 st2, store_vals_rel n St st1 st2 → store_wf St st1 → store_wf St st2 → store_vals_rel (S n) St st1 st2 := by sorry
 
-/-- QUICK-WIN 1: exp_rel_n at step .0 is trivially true
-    This follows from the definition: exp_rel_n .0 = True.
-    Proves: Axiom exp_rel_n_base from LogicalRelationAssign_PROOF.v -/
+-- QUICK-WIN 1: exp_rel_n at step .0 is trivially true
+--     This follows from the definition: exp_rel_n .0 = True.
+--     Proves: Axiom exp_rel_n_base from LogicalRelationAssign_PROOF.v
 /-- exp_rel_n_base (matches Coq) -/
-theorem exp_rel_n_base : ∀ Σ T e1 e2, exp_rel_n .0 Σ T e1 e2 := by
+theorem exp_rel_n_base : ∀ St T e1 e2, exp_rel_n .0 St T e1 e2 := by
   intro h; exact h
 
-/-- Helper: val_rel_n .0 for TUnit with EUnit -/
+-- Helper: val_rel_n .0 for TUnit with EUnit
 /-- val_rel_n_0_unit (matches Coq) -/
-theorem val_rel_n_0_unit : ∀ Σ, val_rel_n .0 Σ TUnit EUnit EUnit := by
+theorem val_rel_n_0_unit : ∀ St, val_rel_n .0 St TUnit EUnit EUnit := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- val_rel_n_unit (matches Coq) -/
-theorem val_rel_n_unit : ∀ n Σ, n > .0 → val_rel_n n Σ TUnit EUnit EUnit := by sorry <;> omega
+theorem val_rel_n_unit : ∀ n St, n > .0 → val_rel_n n St TUnit EUnit EUnit := by sorry <;> omega
 
-/-- QUICK-WIN 3: exp_rel_n for EUnit at TUnit (all n)
-    EUnit is already a value, so it terminates to itself immediately.
-    Proves: Axiom exp_rel_n_unit from LogicalRelationAssign_PROOF.v -/
+-- QUICK-WIN 3: exp_rel_n for EUnit at TUnit (all n)
+--     EUnit is already a value, so it terminates to itself immediately.
+--     Proves: Axiom exp_rel_n_unit from LogicalRelationAssign_PROOF.v
 /-- exp_rel_n_unit (matches Coq) -/
-theorem exp_rel_n_unit : ∀ n Σ, exp_rel_n n Σ TUnit EUnit EUnit := by sorry <;> omega
+theorem exp_rel_n_unit : ∀ n St, exp_rel_n n St TUnit EUnit EUnit := by sorry <;> omega
 
-/-- Bridge lemma: well_typed TFn applications at step .0 produce related results.
-    This captures what we need from the fundamental theorem for the TFn case.
-
-    STATUS: Depends on well_typed_SN from ReducibilityFull.v
-    PROOF APPROACH:
-    1. Extract lambda structure via canonical_forms_fn
-    2. Beta reduction: EApp (ELam x T body) arg --> [x := arg] body
-    3. Apply well_typed_SN to show applications terminate in values
-    4. Apply preservation to get typing for result values
-    5. Build val_rel_n .0 from typing (HO) or structure (FO) -/
+-- Bridge lemma: well_typed TFn applications at step .0 produce related results.
+--     This captures what we need from the fundamental theorem for the TFn case.
+--
+--     STATUS: Depends on well_typed_SN from ReducibilityFull.v
+--     PROOF APPROACH:
+--     1. Extract lambda structure via canonical_forms_fn
+--     2. Beta reduction: EApp (ELam x T body) arg --> [x := arg] body
+--     3. Apply well_typed_SN to show applications terminate in values
+--     4. Apply preservation to get typing for result values
+--     5. Build val_rel_n .0 from typing (HO) or structure (FO)
 /-- val_rel_at_type_TFn_step_0_bridge (matches Coq) -/
-theorem val_rel_at_type_TFn_step_0_bridge : ∀ Σ T1 T2 eff v1 v2, has_type nil Σ Public v1 (TFn T1 T2 eff) EffectPure → has_type nil Σ Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ Σ', store_ty_extends Σ Σ' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n .0 Σ' T1 x y → ∀ st1 st2 ctx, store_rel_n .0 Σ' st1 st2 → store_wf Σ' st1 → store_wf Σ' st2 → stores_agree_low_fo Σ' st1 st2 → store_vals_rel .0 Σ' st1 st2 → ∃ v1' v2' st1' st2' ctx' Σ'', store_ty_extends Σ' Σ'' ∧ (EApp v1 x, st1, ctx) -->* (v1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -->* (v2', st2', ctx') ∧ val_rel_n .0 Σ'' T2 v1' v2' ∧ store_rel_n .0 Σ'' st1' st2' ∧ store_wf Σ'' st1' ∧ store_wf Σ'' st2' ∧ stores_agree_low_fo Σ'' st1' st2' := by sorry
+theorem val_rel_at_type_TFn_step_0_bridge : ∀ St T1 T2 eff v1 v2, has_type nil St Public v1 (TFn T1 T2 eff) EffectPure → has_type nil St Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ St', store_ty_extends St St' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n .0 St' T1 x y → ∀ st1 st2 ctx, store_rel_n .0 St' st1 st2 → store_wf St' st1 → store_wf St' st2 → stores_agree_low_fo St' st1 st2 → store_vals_rel .0 St' st1 st2 → ∃ v1' v2' st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EApp v1 x, st1, ctx) -->* (v1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -->* (v2', st2', ctx') ∧ val_rel_n .0 St'' T2 v1' v2' ∧ store_rel_n .0 St'' st1' st2' ∧ store_wf St'' st1' ∧ store_wf St'' st2' ∧ stores_agree_low_fo St'' st1' st2' := by sorry
 
 end RIINA

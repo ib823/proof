@@ -503,9 +503,9 @@ def riina_fs_security : FSSecurity := mkFSSecurity true true true true
 /-- riina_vfs (matches Coq: Definition riina_vfs) -/
 def riina_vfs : VerifiedFS := mkVerifiedFS riina_fs_integrity riina_fs_security true true
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: BASIC BOOLEAN INFRASTRUCTURE
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -522,9 +522,9 @@ theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
 theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 10: BASIC THEOREMS (VFS_001 - VFS_030)
-    ============================================================================ -/
+    ============================================================================
 /-- VFS_001 (matches Coq) -/
 theorem VFS_001 : fs_integrity_sound riina_fs_integrity = true := by
   rfl

@@ -534,9 +534,9 @@ def riina_full_crypto : FullCryptoConfig := mkFullCrypto
   riina_pq riina_key riina_cert riina_mraead riina_kdf riina_mac
   riina_enc_scheme
 
-/-- ============================================================================
+-- ============================================================================
     SECTION A: BOOLEAN HELPER LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -553,362 +553,362 @@ theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
 theorem leb_le : ∀ n m : nat, (n <=? m) = true <-> n ≤ m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-001: Timing Side Channel Mitigated ---------- -/
+-- ---------- CRY-001: Timing Side Channel Mitigated ----------
 /-- cry_001_timing_side_channel_mitigated (matches Coq) -/
 theorem cry_001_timing_side_channel_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_is_constant op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-001a: RIINA config satisfies timing requirements -/
+-- CRY-001a: RIINA config satisfies timing requirements
 /-- cry_001a_riina_timing_safe (matches Coq) -/
 theorem cry_001a_riina_timing_safe : ct_valid riina_ct_op = true := by
   rfl
 
-/-- ---------- CRY-002: Power Analysis (SPA) Mitigated ---------- -/
+-- ---------- CRY-002: Power Analysis (SPA) Mitigated ----------
 /-- cry_002_spa_mitigated (matches Coq) -/
 theorem cry_002_spa_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_no_secret_branch op = true ∧ ct_no_variable_time op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-003: Power Analysis (DPA) Mitigated ---------- -/
+-- ---------- CRY-003: Power Analysis (DPA) Mitigated ----------
 /-- cry_003_dpa_mitigated (matches Coq) -/
 theorem cry_003_dpa_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_no_secret_branch op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-004: EM Analysis Mitigated ---------- -/
+-- ---------- CRY-004: EM Analysis Mitigated ----------
 /-- cry_004_em_analysis_mitigated (matches Coq) -/
 theorem cry_004_em_analysis_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_no_secret_addr op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-005: Acoustic Analysis Mitigated ---------- -/
+-- ---------- CRY-005: Acoustic Analysis Mitigated ----------
 /-- cry_005_acoustic_analysis_mitigated (matches Coq) -/
 theorem cry_005_acoustic_analysis_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_no_variable_time op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-006: Cache Timing Mitigated ---------- -/
+-- ---------- CRY-006: Cache Timing Mitigated ----------
 /-- cry_006_cache_timing_mitigated (matches Coq) -/
 theorem cry_006_cache_timing_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_no_secret_addr op = true ∧ ct_is_constant op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-007: Padding Oracle Mitigated ---------- -/
+-- ---------- CRY-007: Padding Oracle Mitigated ----------
 /-- cry_007_padding_oracle_mitigated (matches Coq) -/
 theorem cry_007_padding_oracle_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (128 <=? aead_tag_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-007a: RIINA AEAD satisfies padding requirements -/
+-- CRY-007a: RIINA AEAD satisfies padding requirements
 /-- cry_007a_riina_aead_padding_safe (matches Coq) -/
 theorem cry_007a_riina_aead_padding_safe : aead_secure riina_aead = true := by
   rfl
 
-/-- ---------- CRY-008: Chosen Plaintext Mitigated ---------- -/
+-- ---------- CRY-008: Chosen Plaintext Mitigated ----------
 /-- cry_008_chosen_plaintext_mitigated (matches Coq) -/
 theorem cry_008_chosen_plaintext_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (aead_algorithm cfg <=? 1) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-009: Chosen Ciphertext Mitigated ---------- -/
+-- ---------- CRY-009: Chosen Ciphertext Mitigated ----------
 /-- cry_009_chosen_ciphertext_mitigated (matches Coq) -/
 theorem cry_009_chosen_ciphertext_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (128 <=? aead_tag_bits cfg) = true ∧ aead_constant_time cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-010: Known Plaintext Mitigated ---------- -/
+-- ---------- CRY-010: Known Plaintext Mitigated ----------
 /-- cry_010_known_plaintext_mitigated (matches Coq) -/
 theorem cry_010_known_plaintext_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (128 <=? aead_key_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-011: Meet-in-the-Middle Mitigated ---------- -/
+-- ---------- CRY-011: Meet-in-the-Middle Mitigated ----------
 /-- cry_011_mitm_mitigated (matches Coq) -/
 theorem cry_011_mitm_mitigated : ∀ (k : CryptoKey), key_secure k = true → (128 <=? key_bits k) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-011a: RIINA key meets MITM requirements -/
+-- CRY-011a: RIINA key meets MITM requirements
 /-- cry_011a_riina_key_mitm_safe (matches Coq) -/
 theorem cry_011a_riina_key_mitm_safe : key_secure riina_key = true := by
   rfl
 
-/-- ---------- CRY-012: Birthday Attack Mitigated ---------- -/
+-- ---------- CRY-012: Birthday Attack Mitigated ----------
 /-- cry_012_birthday_attack_mitigated (matches Coq) -/
 theorem cry_012_birthday_attack_mitigated : ∀ (h : HashConfig), hash_secure h = true → (256 <=? hash_output_bits h) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-012a: RIINA hash meets birthday attack requirements -/
+-- CRY-012a: RIINA hash meets birthday attack requirements
 /-- cry_012a_riina_hash_birthday_safe (matches Coq) -/
 theorem cry_012a_riina_hash_birthday_safe : hash_secure riina_hash = true := by
   rfl
 
-/-- ---------- CRY-013: Length Extension Mitigated ---------- -/
+-- ---------- CRY-013: Length Extension Mitigated ----------
 /-- cry_013_length_extension_mitigated (matches Coq) -/
 theorem cry_013_length_extension_mitigated : ∀ (h : HashConfig), hash_secure h = true → hash_length_ext_safe h = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-014: Downgrade Attack Mitigated ---------- -/
+-- ---------- CRY-014: Downgrade Attack Mitigated ----------
 /-- cry_014_downgrade_attack_mitigated (matches Coq) -/
 theorem cry_014_downgrade_attack_mitigated : ∀ (pc : ProtocolConfig), proto_secure pc = true → proto_fallback_disabled pc = true ∧ (3 <=? proto_min_version pc) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-014a: RIINA protocol meets downgrade requirements -/
+-- CRY-014a: RIINA protocol meets downgrade requirements
 /-- cry_014a_riina_proto_downgrade_safe (matches Coq) -/
 theorem cry_014a_riina_proto_downgrade_safe : proto_secure riina_proto = true := by
   rfl
 
-/-- ---------- CRY-015: Protocol Attack Mitigated ---------- -/
+-- ---------- CRY-015: Protocol Attack Mitigated ----------
 /-- cry_015_protocol_attack_mitigated (matches Coq) -/
 theorem cry_015_protocol_attack_mitigated : ∀ (pc : ProtocolConfig), proto_secure pc = true → proto_forward_secrecy pc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-016: Implementation Flaw Mitigated ---------- -/
+-- ---------- CRY-016: Implementation Flaw Mitigated ----------
 /-- cry_016_implementation_flaw_mitigated (matches Coq) -/
 theorem cry_016_implementation_flaw_mitigated : ∀ (op : ConstantTimeOp) (cfg : AEADConfig), ct_valid op = true → aead_secure cfg = true → ct_is_constant op = true ∧ aead_constant_time cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-017: RNG Attack Mitigated ---------- -/
+-- ---------- CRY-017: RNG Attack Mitigated ----------
 /-- cry_017_rng_attack_mitigated (matches Coq) -/
 theorem cry_017_rng_attack_mitigated : ∀ (rng : RNGConfig), rng_secure rng = true → rng_hardware_seeded rng = true ∧ rng_prediction_resistant rng = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-017a: RIINA RNG meets security requirements -/
+-- CRY-017a: RIINA RNG meets security requirements
 /-- cry_017a_riina_rng_secure (matches Coq) -/
 theorem cry_017a_riina_rng_secure : rng_secure riina_rng = true := by
   rfl
 
-/-- ---------- CRY-018: Key Reuse Mitigated ---------- -/
+-- ---------- CRY-018: Key Reuse Mitigated ----------
 /-- cry_018_key_reuse_mitigated (matches Coq) -/
 theorem cry_018_key_reuse_mitigated : ∀ (nt : NonceTracker), nonce_counter_safe nt = true → nt_counter nt < nt_max_uses nt := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-019: Weak Keys Mitigated ---------- -/
+-- ---------- CRY-019: Weak Keys Mitigated ----------
 /-- cry_019_weak_keys_mitigated (matches Coq) -/
 theorem cry_019_weak_keys_mitigated : ∀ (k : CryptoKey), key_secure k = true → (128 <=? key_bits k) = true ∧ key_extractable k = false := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-020: Related-Key Attack Mitigated ---------- -/
+-- ---------- CRY-020: Related-Key Attack Mitigated ----------
 /-- cry_020_related_key_attack_mitigated (matches Coq) -/
 theorem cry_020_related_key_attack_mitigated : ∀ (k : CryptoKey), key_strong k = true → (256 <=? key_bits k) = true ∧ key_hardware_bound k = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-020a: RIINA key meets related-key requirements -/
+-- CRY-020a: RIINA key meets related-key requirements
 /-- cry_020a_riina_key_related_safe (matches Coq) -/
 theorem cry_020a_riina_key_related_safe : key_strong riina_key = true := by
   rfl
 
-/-- ---------- CRY-021: Differential Cryptanalysis Mitigated ---------- -/
+-- ---------- CRY-021: Differential Cryptanalysis Mitigated ----------
 /-- cry_021_differential_cryptanalysis_mitigated (matches Coq) -/
 theorem cry_021_differential_cryptanalysis_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (aead_algorithm cfg <=? 1) = true ∧ (128 <=? aead_key_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-022: Linear Cryptanalysis Mitigated ---------- -/
+-- ---------- CRY-022: Linear Cryptanalysis Mitigated ----------
 /-- cry_022_linear_cryptanalysis_mitigated (matches Coq) -/
 theorem cry_022_linear_cryptanalysis_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (aead_algorithm cfg <=? 1) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-023: Algebraic Attack Mitigated ---------- -/
+-- ---------- CRY-023: Algebraic Attack Mitigated ----------
 /-- cry_023_algebraic_attack_mitigated (matches Coq) -/
 theorem cry_023_algebraic_attack_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (128 <=? aead_key_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-024: Quantum Attack Mitigated ---------- -/
+-- ---------- CRY-024: Quantum Attack Mitigated ----------
 /-- cry_024_quantum_attack_mitigated (matches Coq) -/
 theorem cry_024_quantum_attack_mitigated : ∀ (pq : PQConfig), pq_secure pq = true → (3 <=? pq_security_level pq) = true ∧ pq_hybrid_mode pq = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-024a: RIINA PQ configuration is secure -/
+-- CRY-024a: RIINA PQ configuration is secure
 /-- cry_024a_riina_pq_secure (matches Coq) -/
 theorem cry_024a_riina_pq_secure : pq_secure riina_pq = true := by
   rfl
 
-/-- ---------- CRY-025: Harvest Now Decrypt Later Mitigated ---------- -/
+-- ---------- CRY-025: Harvest Now Decrypt Later Mitigated ----------
 /-- cry_025_harvest_now_decrypt_later_mitigated (matches Coq) -/
 theorem cry_025_harvest_now_decrypt_later_mitigated : ∀ (pq : PQConfig), pq_secure pq = true → (pq_kem_algorithm pq <=? 0) = true ∧ (3 <=? pq_security_level pq) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-026: Key Extraction Mitigated ---------- -/
+-- ---------- CRY-026: Key Extraction Mitigated ----------
 /-- cry_026_key_extraction_mitigated (matches Coq) -/
 theorem cry_026_key_extraction_mitigated : ∀ (k : CryptoKey), key_secure k = true → key_extractable k = false := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-027: IV/Nonce Misuse Mitigated ---------- -/
+-- ---------- CRY-027: IV/Nonce Misuse Mitigated ----------
 /-- cry_027_nonce_misuse_mitigated (matches Coq) -/
 theorem cry_027_nonce_misuse_mitigated : ∀ (mr : MRAEADConfig), mraead_secure mr = true → mraead_siv_mode mr = true ∧ aead_secure (mraead_base mr) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-027a: RIINA MR-AEAD is secure -/
+-- CRY-027a: RIINA MR-AEAD is secure
 /-- cry_027a_riina_mraead_secure (matches Coq) -/
 theorem cry_027a_riina_mraead_secure : mraead_secure riina_mraead = true := by
   rfl
 
-/-- ---------- CRY-028: Certificate Attack Mitigated ---------- -/
+-- ---------- CRY-028: Certificate Attack Mitigated ----------
 /-- cry_028_certificate_attack_mitigated (matches Coq) -/
 theorem cry_028_certificate_attack_mitigated : ∀ (cc : CertConfig), cert_secure cc = true → cert_ct_required cc = true ∧ cert_revocation_check cc = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CRY-028a: RIINA certificate config is secure -/
+-- CRY-028a: RIINA certificate config is secure
 /-- cry_028a_riina_cert_secure (matches Coq) -/
 theorem cry_028a_riina_cert_secure : cert_secure riina_cert = true := by
   rfl
 
-/-- ---------- CRY-029: Random Fault Mitigated ---------- -/
+-- ---------- CRY-029: Random Fault Mitigated ----------
 /-- cry_029_random_fault_mitigated (matches Coq) -/
 theorem cry_029_random_fault_mitigated : ∀ (op : ConstantTimeOp) (rng : RNGConfig), ct_valid op = true → rng_secure rng = true → ct_is_constant op = true ∧ rng_hardware_seeded rng = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-030: Bleichenbacher Attack Mitigated ---------- -/
+-- ---------- CRY-030: Bleichenbacher Attack Mitigated ----------
 /-- cry_030_bleichenbacher_mitigated (matches Coq) -/
-theorem cry_030_bleichenbacher_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true →  (aead_algorithm cfg <=? 1) = true := by
+theorem cry_030_bleichenbacher_mitigated : ∀ (cfg : AEADConfig), aead_secure cfg = true → (aead_algorithm cfg <=? 1) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ---------- CRY-031: Whisper Leak (LLM Timing) Mitigated ---------- -/
+-- ---------- CRY-031: Whisper Leak (LLM Timing) Mitigated ----------
 /-- cry_031_whisper_leak_mitigated (matches Coq) -/
 theorem cry_031_whisper_leak_mitigated : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_is_constant op = true ∧ ct_no_secret_branch op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Complete constant-time security -/
+-- Complete constant-time security
 /-- complete_ct_security (matches Coq) -/
 theorem complete_ct_security : ∀ (op : ConstantTimeOp), ct_valid op = true → ct_no_secret_branch op = true ∧ ct_no_secret_addr op = true ∧ ct_no_variable_time op = true ∧ ct_is_constant op = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Complete AEAD security -/
+-- Complete AEAD security
 /-- complete_aead_security (matches Coq) -/
 theorem complete_aead_security : ∀ (cfg : AEADConfig), aead_secure cfg = true → (aead_algorithm cfg <=? 1) = true ∧ (128 <=? aead_key_bits cfg) = true ∧ (128 <=? aead_tag_bits cfg) = true ∧ aead_constant_time cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- RIINA complete cryptographic security -/
+-- RIINA complete cryptographic security
 /-- riina_complete_crypto_security (matches Coq) -/
 theorem riina_complete_crypto_security : ct_valid riina_ct_op = true ∧ aead_secure riina_aead = true ∧ hash_secure riina_hash = true ∧ rng_secure riina_rng = true ∧ proto_secure riina_proto = true ∧ pq_secure riina_pq = true ∧ key_strong riina_key = true ∧ cert_secure riina_cert = true ∧ mraead_secure riina_mraead = true := by
   rfl
 
-/-- ENC-001: Authenticated encryption preserves plaintext length -/
+-- ENC-001: Authenticated encryption preserves plaintext length
 /-- enc_001_length_preservation (matches Coq) -/
-theorem enc_001_length_preservation : ∀ (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = true → pt_len = ct_len →  AEAD doesn't expand plaintext (except tag)  pt_len = ct_len := by
+theorem enc_001_length_preservation : ∀ (scheme : EncryptionScheme) (pt_len ct_len : nat), enc_is_authenticated scheme = true → pt_len = ct_len → pt_len = ct_len := by
   intro h; exact h
 
-/-- ENC-002: Encryption requires valid key size -/
+-- ENC-002: Encryption requires valid key size
 /-- enc_002_key_size_requirement (matches Coq) -/
 theorem enc_002_key_size_requirement : ∀ (scheme : EncryptionScheme), (128 <=? enc_key_bits scheme) = true → enc_key_bits scheme ≥ 128 := by
   simp_all [Bool.and_eq_true]
 
-/-- ENC-003: RIINA scheme has valid key size -/
+-- ENC-003: RIINA scheme has valid key size
 /-- enc_003_riina_key_size_valid (matches Coq) -/
 theorem enc_003_riina_key_size_valid : (128 <=? enc_key_bits riina_enc_scheme) = true := by
   rfl
 
-/-- ENC-004: RIINA scheme has valid nonce size -/
+-- ENC-004: RIINA scheme has valid nonce size
 /-- enc_004_riina_nonce_size_valid (matches Coq) -/
 theorem enc_004_riina_nonce_size_valid : (96 <=? enc_nonce_bits riina_enc_scheme) = true := by
   rfl
 
-/-- ENC-005: RIINA scheme has valid tag size -/
+-- ENC-005: RIINA scheme has valid tag size
 /-- enc_005_riina_tag_size_valid (matches Coq) -/
 theorem enc_005_riina_tag_size_valid : (128 <=? enc_tag_bits riina_enc_scheme) = true := by
   rfl
 
-/-- ENC-006: RIINA scheme is authenticated -/
+-- ENC-006: RIINA scheme is authenticated
 /-- enc_006_riina_is_authenticated (matches Coq) -/
 theorem enc_006_riina_is_authenticated : enc_is_authenticated riina_enc_scheme = true := by
   rfl
 
-/-- KDF-001: RIINA KDF is secure -/
+-- KDF-001: RIINA KDF is secure
 /-- kdf_001_riina_kdf_secure (matches Coq) -/
 theorem kdf_001_riina_kdf_secure : kdf_secure riina_kdf = true := by
   rfl
 
-/-- KDF-002: Secure KDF has sufficient output -/
+-- KDF-002: Secure KDF has sufficient output
 /-- kdf_002_kdf_output_sufficient (matches Coq) -/
 theorem kdf_002_kdf_output_sufficient : ∀ (cfg : KDFConfig), kdf_secure cfg = true → (256 <=? kdf_output_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KDF-003: Secure KDF has sufficient salt -/
+-- KDF-003: Secure KDF has sufficient salt
 /-- kdf_003_kdf_salt_sufficient (matches Coq) -/
 theorem kdf_003_kdf_salt_sufficient : ∀ (cfg : KDFConfig), kdf_secure cfg = true → (128 <=? kdf_salt_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- KDF-004: Secure KDF uses approved algorithm -/
+-- KDF-004: Secure KDF uses approved algorithm
 /-- kdf_004_kdf_approved_algorithm (matches Coq) -/
 theorem kdf_004_kdf_approved_algorithm : ∀ (cfg : KDFConfig), kdf_secure cfg = true → (kdf_algorithm cfg <=? 2) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DK-001: Valid derived key came from secure KDF -/
+-- DK-001: Valid derived key came from secure KDF
 /-- dk_001_valid_implies_secure_kdf (matches Coq) -/
 theorem dk_001_valid_implies_secure_kdf : ∀ (dk : DerivedKey), derived_key_valid dk = true → kdf_secure (dk_kdf_config dk) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- MAC-001: RIINA MAC is secure -/
+-- MAC-001: RIINA MAC is secure
 /-- mac_001_riina_mac_secure (matches Coq) -/
 theorem mac_001_riina_mac_secure : mac_secure riina_mac = true := by
   rfl
 
-/-- MAC-002: Secure MAC has sufficient key size -/
+-- MAC-002: Secure MAC has sufficient key size
 /-- mac_002_mac_key_sufficient (matches Coq) -/
 theorem mac_002_mac_key_sufficient : ∀ (cfg : MACConfig), mac_secure cfg = true → (128 <=? mac_key_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- MAC-003: Secure MAC has sufficient tag size -/
+-- MAC-003: Secure MAC has sufficient tag size
 /-- mac_003_mac_tag_sufficient (matches Coq) -/
 theorem mac_003_mac_tag_sufficient : ∀ (cfg : MACConfig), mac_secure cfg = true → (128 <=? mac_tag_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- MAC-004: Secure MAC is constant-time -/
+-- MAC-004: Secure MAC is constant-time
 /-- mac_004_mac_constant_time (matches Coq) -/
 theorem mac_004_mac_constant_time : ∀ (cfg : MACConfig), mac_secure cfg = true → mac_constant_time cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TAG-001: Equal tags verify as valid -/
+-- TAG-001: Equal tags verify as valid
 /-- tag_001_equal_tags_valid (matches Coq) -/
 theorem tag_001_equal_tags_valid : ∀ (tag : Tag), tag_compare_ct tag tag = TagValid := by
   intro h; exact h
 
-/-- TAG-002: Tag comparison is reflexive -/
+-- TAG-002: Tag comparison is reflexive
 /-- tag_002_tag_compare_reflexive (matches Coq) -/
 theorem tag_002_tag_compare_reflexive : ∀ (tag : Tag), tag_compare_ct tag tag = TagValid := by
   simp_all [Bool.and_eq_true]
 
-/-- NONCE-001: Valid counter implies room for increment -/
+-- NONCE-001: Valid counter implies room for increment
 /-- nonce_001_counter_incrementable (matches Coq) -/
 theorem nonce_001_counter_incrementable : ∀ (cn : CounterNonce), counter_nonce_valid cn = true → cn_counter cn < cn_max_value cn := by
   simp_all [Bool.and_eq_true]
 
-/-- NONCE-002: Incrementing counter changes nonce -/
+-- NONCE-002: Incrementing counter changes nonce
 /-- nonce_002_increment_changes_nonce (matches Coq) -/
 theorem nonce_002_increment_changes_nonce : ∀ (cn : CounterNonce), counter_nonce_valid cn = true → cn_counter cn ≠ S (cn_counter cn) := by
   simp_all
 
-/-- NONCE-003: Different counters produce different nonces -/
+-- NONCE-003: Different counters produce different nonces
 /-- nonce_003_different_counters_different_nonces (matches Coq) -/
 theorem nonce_003_different_counters_different_nonces : ∀ (n m : nat), n ≠ m → n ≠ m := by
   intro h; exact h
 
-/-- Empty set contains no nonces -/
+-- Empty set contains no nonces
 /-- nonce_004_empty_set_no_collision (matches Coq) -/
 theorem nonce_004_empty_set_no_collision : ∀ (n : list nat), nonce_in_set n [] = false := by
   rfl
 
-/-- NONCE-005: Adding to set increases size -/
+-- NONCE-005: Adding to set increases size
 /-- nonce_005_add_increases_size (matches Coq) -/
 theorem nonce_005_add_increases_size : ∀ (n : list nat) (ns : NonceSet), length (n :: ns) = S (length ns) := by
   rfl
 
-/-- FULL-001: RIINA full crypto config is secure -/
+-- FULL-001: RIINA full crypto config is secure
 /-- full_001_riina_full_crypto_secure (matches Coq) -/
 theorem full_001_riina_full_crypto_secure : full_crypto_secure riina_full_crypto = true := by
   rfl
 
-/-- FULL-002: Secure full config implies constant-time -/
+-- FULL-002: Secure full config implies constant-time
 /-- full_002_full_implies_ct (matches Coq) -/
 theorem full_002_full_implies_ct : ∀ (fc : FullCryptoConfig), full_crypto_secure fc = true → ct_valid (fc_ct_op fc) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FULL-003: Secure full config implies authenticated encryption -/
+-- FULL-003: Secure full config implies authenticated encryption
 /-- full_003_full_implies_authenticated (matches Coq) -/
 theorem full_003_full_implies_authenticated : ∀ (fc : FullCryptoConfig), full_crypto_secure fc = true → enc_is_authenticated (fc_enc fc) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FULL-004: Secure full config implies post-quantum ready -/
+-- FULL-004: Secure full config implies post-quantum ready
 /-- full_004_full_implies_pq_ready (matches Coq) -/
 theorem full_004_full_implies_pq_ready : ∀ (fc : FullCryptoConfig), full_crypto_secure fc = true → pq_secure (fc_pq fc) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FULL-005: Secure full config implies secure key derivation -/
+-- FULL-005: Secure full config implies secure key derivation
 /-- full_005_full_implies_kdf_secure (matches Coq) -/
 theorem full_005_full_implies_kdf_secure : ∀ (fc : FullCryptoConfig), full_crypto_secure fc = true → kdf_secure (fc_kdf fc) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FULL-006: Secure full config implies secure MAC -/
+-- FULL-006: Secure full config implies secure MAC
 /-- full_006_full_implies_mac_secure (matches Coq) -/
 theorem full_006_full_implies_mac_secure : ∀ (fc : FullCryptoConfig), full_crypto_secure fc = true → mac_secure (fc_mac fc) = true := by
   simp_all [Bool.and_eq_true]

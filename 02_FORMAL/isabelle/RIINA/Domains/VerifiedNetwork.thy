@@ -391,7 +391,7 @@ lemma NET_001_05_tls_transcript_binding: "\<forall> conn, tls_connected conn \<l
   by auto
 
 (* NET_001_06_tls_0rtt_replay_safe (matches Coq) *)
-lemma NET_001_06_tls_0rtt_replay_safe: "\<forall> data, zrtt_anti_replay_checked data = True \<longrightarrow> zrtt_nonce data \<noteq> [] \<longrightarrow> True. (* 0-RTT with anti-replay check and unique nonce is safe *)"
+lemma NET_001_06_tls_0rtt_replay_safe: "\<forall> data, zrtt_anti_replay_checked data = True \<longrightarrow> zrtt_nonce data \<noteq> [] \<longrightarrow> True. "
   by auto
 
 (* NET_001_07_tls_certificate_chain_valid (matches Coq) *)

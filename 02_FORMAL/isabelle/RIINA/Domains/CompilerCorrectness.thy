@@ -603,7 +603,7 @@ lemma optimization_relation_transitive: "\<forall> e1 e2 e3, ir_equiv e1 e2 \<lo
 
 (* The full pipeline: source to IR preserves semantics *)
 (* full_pipeline_correctness (matches Coq) *)
-lemma full_pipeline_correctness: "\<forall> e T, src_has_type e T \<longrightarrow> (* Type preservation *) ir_has_type (compile_expr e) (compile_ty T) \<and> (* Progress preservation *) (src_value e \<or> \<exists> e', e ~> e') \<and> (* Semantic preservation *) (\<forall> e', e ~> e' \<longrightarrow> compile_expr e ==> compile_expr e')"
+lemma full_pipeline_correctness: "\<forall> e T, src_has_type e T \<longrightarrow> ir_has_type (compile_expr e) (compile_ty T) \<and> (src_value e \<or> \<exists> e', e ~> e') \<and> (\<forall> e', e ~> e' \<longrightarrow> compile_expr e ==> compile_expr e')"
   by auto
 
 (* The full pipeline: termination behavior is preserved *)

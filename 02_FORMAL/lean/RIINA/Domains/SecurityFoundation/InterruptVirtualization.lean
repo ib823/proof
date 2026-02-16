@@ -156,107 +156,107 @@ def irq_deliverable (ctrl : InterruptController) (irq : Nat) : Prop :=
     irq_pending ip = true /\
     irq_priority ip >= ctrl_mask_threshold ctrl
 
-/-- Theorem: Any interrupt injection must be authorized by the hypervisor. -/
+-- Theorem: Any interrupt injection must be authorized by the hypervisor.
 /-- interrupt_injection_authorized (matches Coq) -/
 theorem interrupt_injection_authorized : ∀ (st : InterruptState) (source : InterruptSource) (target : VirtualMachine), injects_interrupt st source target → authorized_injection st source target := by
   intro h; exact h
 
-/-- Theorem: One VM cannot inject interrupts to another VM without explicit authorization. -/
+-- Theorem: One VM cannot inject interrupts to another VM without explicit authorization.
 /-- interrupt_isolation (matches Coq) -/
 theorem interrupt_isolation : ∀ (vm1 vm2 : VirtualMachine) (irq : Interrupt) (st : InterruptState), vm_id vm1 ≠ vm_id vm2 → ~ ipi_authorized st (vm_id vm1) (vm_id vm2) → ~ can_inject st vm1 irq vm2 := by
   simp_all [Bool.and_eq_true]
 
-/-- IRQ ownership is unique when assignment exists -/
+-- IRQ ownership is unique when assignment exists
 /-- device_irq_unique_owner (matches Coq) -/
 theorem device_irq_unique_owner : ∀ (st : InterruptState) (vm1 vm2 : VirtualMachine) (irq : nat), find_vm_for_irq (irq_assignments st) irq = Some (vm_id vm1) → find_vm_for_irq (irq_assignments st) irq = Some (vm_id vm2) → vm_id vm1 = vm_id vm2 := by
   intro h; exact h
 
-/-- Timer interrupts are always local -/
+-- Timer interrupts are always local
 /-- timer_interrupt_local (matches Coq) -/
 theorem timer_interrupt_local : ∀ (st : InterruptState) (vm : VirtualMachine), authorized_injection st TimerSource vm := by
   intro h; exact h
 
-/-- IPI requires explicit authorization -/
+-- IPI requires explicit authorization
 /-- ipi_requires_authorization (matches Coq) -/
 theorem ipi_requires_authorization : ∀ (st : InterruptState) (src tgt : VirtualMachine), authorized_injection st (IPISource (vm_id src)) tgt → ipi_authorized st (vm_id src) (vm_id tgt) := by
   intro h; exact h
 
-/-- Unauthorized IPI blocked -/
+-- Unauthorized IPI blocked
 /-- unauthorized_ipi_blocked (matches Coq) -/
 theorem unauthorized_ipi_blocked : ∀ (st : InterruptState) (src_vm tgt_vm : VirtualMachine), ~ ipi_authorized st (vm_id src_vm) (vm_id tgt_vm) → ~ injects_interrupt st (IPISource (vm_id src_vm)) tgt_vm := by
   simp_all [Bool.and_eq_true]
 
-/-- Self-injection always allowed -/
+-- Self-injection always allowed
 /-- self_injection_allowed (matches Coq) -/
 theorem self_injection_allowed : ∀ (st : InterruptState) (vm : VirtualMachine) (irq : Interrupt), can_inject st vm irq vm := by
   rfl
 
-/-- Masked IRQ cannot fire -/
+-- Masked IRQ cannot fire
 /-- masked_irq_not_deliverable (matches Coq) -/
 theorem masked_irq_not_deliverable : ∀ (ctrl : InterruptController) (irq : nat) (ip : InterruptPriority), find_irq_prio irq (ctrl_irqs ctrl) = Some ip → irq_priority ip < ctrl_mask_threshold ctrl → ~ irq_deliverable ctrl irq := by
   cases ‹_› <;> simp <;> omega
 
-/-- Disabled IRQ cannot fire -/
+-- Disabled IRQ cannot fire
 /-- disabled_irq_not_deliverable (matches Coq) -/
 theorem disabled_irq_not_deliverable : ∀ (ctrl : InterruptController) (irq : nat) (ip : InterruptPriority), find_irq_prio irq (ctrl_irqs ctrl) = Some ip → irq_enabled ip = false → ~ irq_deliverable ctrl irq := by
   simp_all [Bool.and_eq_true]
 
-/-- Non-pending IRQ cannot fire -/
+-- Non-pending IRQ cannot fire
 /-- non_pending_irq_not_deliverable (matches Coq) -/
 theorem non_pending_irq_not_deliverable : ∀ (ctrl : InterruptController) (irq : nat) (ip : InterruptPriority), find_irq_prio irq (ctrl_irqs ctrl) = Some ip → irq_pending ip = false → ~ irq_deliverable ctrl irq := by
   simp_all [Bool.and_eq_true]
 
-/-- Unknown IRQ cannot fire -/
+-- Unknown IRQ cannot fire
 /-- unknown_irq_not_deliverable (matches Coq) -/
 theorem unknown_irq_not_deliverable : ∀ (ctrl : InterruptController) (irq : nat), find_irq_prio irq (ctrl_irqs ctrl) = None → ~ irq_deliverable ctrl irq := by
   simp_all [Bool.and_eq_true]
 
-/-- Injection requires authorization — contrapositive -/
+-- Injection requires authorization — contrapositive
 /-- no_auth_no_injection (matches Coq) -/
 theorem no_auth_no_injection : ∀ (st : InterruptState) (source : InterruptSource) (target : VirtualMachine), ~ authorized_injection st source target → ~ injects_interrupt st source target := by
   simp_all [Bool.and_eq_true]
 
-/-- Device IRQ injection requires ownership -/
+-- Device IRQ injection requires ownership
 /-- device_irq_requires_ownership (matches Coq) -/
 theorem device_irq_requires_ownership : ∀ (st : InterruptState) (irq : nat) (target : VirtualMachine), injects_interrupt st (DeviceSource irq) target → vm_owns_irq st target irq := by
   intro h; exact h
 
-/-- VM cannot inject to different VM without IPI -/
+-- VM cannot inject to different VM without IPI
 /-- cross_vm_requires_ipi (matches Coq) -/
 theorem cross_vm_requires_ipi : ∀ (vm1 vm2 : VirtualMachine) (irq : Interrupt) (st : InterruptState), vm_id vm1 ≠ vm_id vm2 → can_inject st vm1 irq vm2 → ipi_authorized st (vm_id vm1) (vm_id vm2) := by
   intro h; exact h
 
-/-- IPI authorization is directional -/
+-- IPI authorization is directional
 /-- ipi_authorization_directional (matches Coq) -/
 theorem ipi_authorization_directional : ∀ (st : InterruptState) (vm1 vm2 : VirtualMachine), ipi_authorized st (vm_id vm1) (vm_id vm2) → ~ ipi_authorized st (vm_id vm2) (vm_id vm1) → ~ can_inject st vm2 (IRQ 0) vm1 ∨ vm_id vm1 = vm_id vm2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Empty IPI list blocks all cross-VM injection -/
+-- Empty IPI list blocks all cross-VM injection
 /-- empty_ipi_blocks_cross_vm (matches Coq) -/
 theorem empty_ipi_blocks_cross_vm : ∀ (st : InterruptState) (vm1 vm2 : VirtualMachine) (irq : Interrupt), ipi_allowed st = [] → vm_id vm1 ≠ vm_id vm2 → ~ can_inject st vm1 irq vm2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Empty assignment list blocks all device IRQ injection -/
+-- Empty assignment list blocks all device IRQ injection
 /-- empty_assignments_blocks_device_irqs (matches Coq) -/
 theorem empty_assignments_blocks_device_irqs : ∀ (st : InterruptState) (irq : nat) (vm : VirtualMachine), irq_assignments st = [] → ~ injects_interrupt st (DeviceSource irq) vm := by
   simp_all [Bool.and_eq_true]
 
-/-- IRQ assignment deterministic -/
+-- IRQ assignment deterministic
 /-- irq_assignment_deterministic (matches Coq) -/
 theorem irq_assignment_deterministic : ∀ (st : InterruptState) (irq : nat) (vm1 vm2 : VMId), find_vm_for_irq (irq_assignments st) irq = Some vm1 → find_vm_for_irq (irq_assignments st) irq = Some vm2 → vm1 = vm2 := by
   intro h; exact h
 
-/-- Timer injection always succeeds -/
+-- Timer injection always succeeds
 /-- timer_injection_always_succeeds (matches Coq) -/
 theorem timer_injection_always_succeeds : ∀ (st : InterruptState) (vm : VirtualMachine), injects_interrupt st TimerSource vm := by
   simp_all [Bool.and_eq_true]
 
-/-- Self injection via IPI is possible if authorized -/
+-- Self injection via IPI is possible if authorized
 /-- self_ipi_possible (matches Coq) -/
 theorem self_ipi_possible : ∀ (st : InterruptState) (vm : VirtualMachine), ipi_authorized st (vm_id vm) (vm_id vm) → injects_interrupt st (IPISource (vm_id vm)) vm := by
   simp_all [Bool.and_eq_true]
 
-/-- Injection implies source is valid -/
+-- Injection implies source is valid
 /-- injection_source_valid (matches Coq) -/
 theorem injection_source_valid : ∀ (st : InterruptState) (src : InterruptSource) (tgt : VirtualMachine), injects_interrupt st src tgt → match src with | DeviceSource irq => vm_owns_irq st tgt irq | TimerSource => True | IPISource vm => ipi_authorized st vm (vm_id tgt) end := by
   intro h; exact h

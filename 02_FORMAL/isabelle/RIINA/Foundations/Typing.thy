@@ -144,7 +144,7 @@ lemma canonical_forms_proof: "\<forall> Γ Σ Δ v T ε, value v \<longrightarro
   by simp
 
 (* canonical_forms (matches Coq) *)
-lemma canonical_forms: "\<forall> Γ Σ Δ v T ε, value v \<longrightarrow> has_type Γ Σ Δ v T ε \<longrightarrow> match T with | TUnit => v = EUnit | TBool => \<exists> b, v = EBool b | TInt => \<exists> n, v = EInt n | TString => \<exists> s, v = EString s | TFn T1 T2 _ => \<exists> x body, v = ELam x T1 body | TProd T1 T2 => \<exists> v1 v2, v = EPair v1 v2 \<and> value v1 \<and> value v2 | TSum T1 T2 => (\<exists> v', v = EInl v' T2 \<and> value v') \<or> (\<exists> v', v = EInr v' T1 \<and> value v') | TRef T' sl => \<exists> l, v = ELoc l | TSecret T' => \<exists> v', v = EClassify v' \<and> value v' | TProof T' => \<exists> v', v = EProve v' \<and> value v' (* Other types - treat as True for extensibility *) | _ => True end"
+lemma canonical_forms: "\<forall> Γ Σ Δ v T ε, value v \<longrightarrow> has_type Γ Σ Δ v T ε \<longrightarrow> match T with | TUnit => v = EUnit | TBool => \<exists> b, v = EBool b | TInt => \<exists> n, v = EInt n | TString => \<exists> s, v = EString s | TFn T1 T2 _ => \<exists> x body, v = ELam x T1 body | TProd T1 T2 => \<exists> v1 v2, v = EPair v1 v2 \<and> value v1 \<and> value v2 | TSum T1 T2 => (\<exists> v', v = EInl v' T2 \<and> value v') \<or> (\<exists> v', v = EInr v' T1 \<and> value v') | TRef T' sl => \<exists> l, v = ELoc l | TSecret T' => \<exists> v', v = EClassify v' \<and> value v' | TProof T' => \<exists> v', v = EProve v' \<and> value v' | _ => True end"
   by auto
 
 (* Store typing extension is reflexive. *)

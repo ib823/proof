@@ -361,7 +361,7 @@ lemma PERF_001_15_single_task_schedulable: "\<forall> t, utilization t \<le> uti
   by simp
 
 (* PERF_001_15_deadline_feasibility (matches Coq) *)
-lemma PERF_001_15_deadline_feasibility: "\<forall> t, task_wcet t \<le> task_deadline t \<longrightarrow> task_wcet t \<le> task_period t \<longrightarrow> True. (* Task is feasible *)"
+lemma PERF_001_15_deadline_feasibility: "\<forall> t, task_wcet t \<le> task_deadline t \<longrightarrow> task_wcet t \<le> task_period t \<longrightarrow> True. "
   by auto
 
 (* PERF_001_15_response_time_valid (matches Coq) *)

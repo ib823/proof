@@ -261,7 +261,7 @@ lemma secure_negotiation_highest_common: "\<forall> (n : ConnectionNegotiation),
   by auto
 
 (* minimum_version_enforced (matches Coq) *)
-lemma minimum_version_enforced: "\<forall> (n : ConnectionNegotiation), valid_negotiation n \<longrightarrow> neg_selected_version n \<ge> 12. (* TLS 1.2 *)"
+lemma minimum_version_enforced: "\<forall> (n : ConnectionNegotiation), valid_negotiation n \<longrightarrow> neg_selected_version n \<ge> 12. "
   by auto
 
 (* packet_inspection_complete (matches Coq) *)

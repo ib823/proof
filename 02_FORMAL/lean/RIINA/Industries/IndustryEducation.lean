@@ -179,44 +179,44 @@ def classify_student_age (years : Nat) : StudentAge :=
   else if Nat.ltb years 18 then Teen
   else Adult
 
-/-- Section L01 - FERPA Compliance
-    Reference: IND_L_EDUCATION.md Section 3.1 -/
+-- Section L01 - FERPA Compliance
+    Reference: IND_L_EDUCATION.md Section 3.1
 /-- ferpa_compliance (matches Coq) -/
-theorem ferpa_compliance : ∀ (compliance : FERPA_Compliance) (record : StudentData), legitimate_educational_interest compliance = true →  True := by
+theorem ferpa_compliance : ∀ (compliance : FERPA_Compliance) (record : StudentData), legitimate_educational_interest compliance = true → True := by
   trivial
 
-/-- Section L02 - COPPA for Under-13
-    Reference: IND_L_EDUCATION.md Section 3.2 -/
+-- Section L02 - COPPA for Under-13
+    Reference: IND_L_EDUCATION.md Section 3.2
 /-- coppa_compliance (matches Coq) -/
-theorem coppa_compliance : ∀ (child : StudentAge) (data : StudentData), child = Under13 →  True := by
+theorem coppa_compliance : ∀ (child : StudentAge) (data : StudentData), child = Under13 → True := by
   trivial
 
-/-- Section L03 - CIPA Filtering
-    Reference: IND_L_EDUCATION.md Section 3.3 -/
+-- Section L03 - CIPA Filtering
+    Reference: IND_L_EDUCATION.md Section 3.3
 /-- cipa_compliance (matches Coq) -/
-theorem cipa_compliance : ∀ (school_network : nat),  True := by
+theorem cipa_compliance : ∀ (school_network : nat), True := by
   trivial
 
-/-- Section L04 - State Privacy Laws
-    Reference: IND_L_EDUCATION.md Section 3.4 -/
+-- Section L04 - State Privacy Laws
+    Reference: IND_L_EDUCATION.md Section 3.4
 /-- state_privacy_compliance (matches Coq) -/
-theorem state_privacy_compliance : ∀ (state : nat) (student_data : StudentData),  True := by
+theorem state_privacy_compliance : ∀ (state : nat) (student_data : StudentData), True := by
   trivial
 
-/-- Section L05 - Vendor Data Practices
-    Reference: IND_L_EDUCATION.md Section 3.5 -/
+-- Section L05 - Vendor Data Practices
+    Reference: IND_L_EDUCATION.md Section 3.5
 /-- vendor_data_practices (matches Coq) -/
-theorem vendor_data_practices : ∀ (vendor : nat) (student_data : StudentData),  True := by
+theorem vendor_data_practices : ∀ (vendor : nat) (student_data : StudentData), True := by
   trivial
 
-/-- Education records require consent for disclosure -/
+-- Education records require consent for disclosure
 /-- education_record_consent (matches Coq) -/
-theorem education_record_consent : ∀ (record : StudentData) (disclosure : nat), record = EducationRecord →  True := by
+theorem education_record_consent : ∀ (record : StudentData) (disclosure : nat), record = EducationRecord → True := by
   trivial
 
-/-- Under-13 requires verifiable parental consent -/
+-- Under-13 requires verifiable parental consent
 /-- under13_parental_consent (matches Coq) -/
-theorem under13_parental_consent : ∀ (age : StudentAge) (data_collection : nat), age = Under13 →  True := by
+theorem under13_parental_consent : ∀ (age : StudentAge) (data_collection : nat), age = Under13 → True := by
   trivial
 
 /-- special_ed_highest (matches Coq) -/
@@ -287,7 +287,7 @@ theorem under_13_classified_correctly : ∀ n, n < 13 → classify_student_age n
 theorem adult_classified_correctly : ∀ n, n ≥ 18 → classify_student_age n = Adult := by
   cases ‹_› <;> simp <;> omega
 
-/-- Directory info is least sensitive -/
+-- Directory info is least sensitive
 /-- directory_info_least_sensitive (matches Coq) -/
 theorem directory_info_least_sensitive : ∀ d, student_data_sensitivity DirectoryInfo ≤ student_data_sensitivity d := by
   cases ‹_› <;> simp <;> omega

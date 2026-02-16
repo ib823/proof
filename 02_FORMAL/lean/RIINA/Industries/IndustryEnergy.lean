@@ -185,44 +185,44 @@ def access_log_retention_days (impact : CIP_Impact) : Nat :=
   | Medium_Impact => 90
   | Low_Impact => 0
 
-/-- Section E01 - NERC CIP Compliance
-    Reference: IND_E_ENERGY.md Section 3.1 -/
+-- Section E01 - NERC CIP Compliance
+    Reference: IND_E_ENERGY.md Section 3.1
 /-- nerc_cip_compliance (matches Coq) -/
-theorem nerc_cip_compliance : ∀ (controls : NERC_CIP_Controls) (asset : nat), cip_002_identification controls = true →  True := by
+theorem nerc_cip_compliance : ∀ (controls : NERC_CIP_Controls) (asset : nat), cip_002_identification controls = true → True := by
   trivial
 
-/-- Section E02 - IEC 62351 Security
-    Reference: IND_E_ENERGY.md Section 3.2 -/
+-- Section E02 - IEC 62351 Security
+    Reference: IND_E_ENERGY.md Section 3.2
 /-- iec_62351_security (matches Coq) -/
-theorem iec_62351_security : ∀ (communication : nat),  True := by
+theorem iec_62351_security : ∀ (communication : nat), True := by
   trivial
 
-/-- Section E03 - Nuclear Cyber Security
-    Reference: IND_E_ENERGY.md Section 3.3 -/
+-- Section E03 - Nuclear Cyber Security
+    Reference: IND_E_ENERGY.md Section 3.3
 /-- nrc_cyber_security (matches Coq) -/
-theorem nrc_cyber_security : ∀ (nuclear_system : nat),  True := by
+theorem nrc_cyber_security : ∀ (nuclear_system : nat), True := by
   trivial
 
-/-- Section E04 - OT Security
-    Reference: IND_E_ENERGY.md Section 3.4 -/
+-- Section E04 - OT Security
+    Reference: IND_E_ENERGY.md Section 3.4
 /-- ot_security (matches Coq) -/
-theorem ot_security : ∀ (scada_system : nat),  True := by
+theorem ot_security : ∀ (scada_system : nat), True := by
   trivial
 
-/-- Section E05 - Substation Security
-    Reference: IND_E_ENERGY.md Section 3.5 -/
+-- Section E05 - Substation Security
+    Reference: IND_E_ENERGY.md Section 3.5
 /-- substation_security (matches Coq) -/
-theorem substation_security : ∀ (ied : nat),  True := by
+theorem substation_security : ∀ (ied : nat), True := by
   trivial
 
-/-- High impact requires all CIP controls -/
+-- High impact requires all CIP controls
 /-- high_impact_all_controls (matches Coq) -/
-theorem high_impact_all_controls : ∀ (controls : NERC_CIP_Controls) (asset : nat) (impact : CIP_Impact), impact = High_Impact →  True := by
+theorem high_impact_all_controls : ∀ (controls : NERC_CIP_Controls) (asset : nat) (impact : CIP_Impact), impact = High_Impact → True := by
   trivial
 
-/-- Electronic Security Perimeter required for routable protocols -/
+-- Electronic Security Perimeter required for routable protocols
 /-- esp_required (matches Coq) -/
-theorem esp_required : ∀ (controls : NERC_CIP_Controls) (asset : nat), cip_005_electronic_perimeter controls = true →  True := by
+theorem esp_required : ∀ (controls : NERC_CIP_Controls) (asset : nat), cip_005_electronic_perimeter controls = true → True := by
   trivial
 
 /-- cip_le_refl (matches Coq) -/

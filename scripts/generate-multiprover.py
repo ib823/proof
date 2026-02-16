@@ -269,6 +269,10 @@ def _parse_theorems(text: str) -> list:
         statement = m.group(4).strip()
         proof = m.group(5).strip()
 
+        # Strip embedded Coq comments from statements before translation.
+        # Without this, (* ... *) fragments leak into Lean/Isabelle output.
+        statement = _strip_coq_comments(statement)
+
         # Clean up statement (remove trailing period if present)
         statement = statement.rstrip('.')
         statement = re.sub(r'\s+', ' ', statement)  # normalize whitespace
@@ -341,6 +345,27 @@ def coq_type_to_lean(t: str) -> str:
     return out.strip()
 
 
+def _lean_imports_for_path(coq_path: str) -> list:
+    """Determine Lean 4 import statements needed based on the Coq source path."""
+    imports = []
+    p = coq_path.lower()
+    if p.startswith('type_system/'):
+        # TypeSystem files need Foundations + Typing
+        imports.append('import RIINA.Foundations.Syntax')
+        imports.append('import RIINA.Foundations.Semantics')
+        imports.append('import RIINA.TypeSystem.Typing')
+    elif p.startswith('effects/'):
+        imports.append('import RIINA.Foundations.Syntax')
+        imports.append('import RIINA.TypeSystem.Typing')
+    elif p.startswith('properties/'):
+        imports.append('import RIINA.Foundations.Syntax')
+        imports.append('import RIINA.Foundations.Semantics')
+        imports.append('import RIINA.TypeSystem.Typing')
+    elif p.startswith('termination/'):
+        imports.append('import RIINA.Foundations.Syntax')
+    return imports
+
+
 def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     """Generate a Lean 4 file from parsed Coq AST."""
     lines = []
@@ -348,6 +373,12 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     # Header
     lines.append('-- Copyright (c) 2026 The RIINA Authors. All rights reserved.')
     lines.append('-- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.')
+
+    # Add import statements based on source path
+    lean_imports = _lean_imports_for_path(coq_path)
+    if lean_imports:
+        for imp in lean_imports:
+            lines.append(imp)
     lines.append('')
 
     module_name = parsed.filename.replace('.v', '')
@@ -474,13 +505,16 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     for thm in parsed.theorems:
         cat = classify_proof(thm.proof)
         lean_proof = _translate_proof_lean(thm, cat)
+        # Rename Σ in theorem name (Lean 4 sigma-type conflict)
+        lean_name = re.sub(r'Σ([_\w\']*)', r'St\1', thm.name)
         if thm.doc_comment:
-            # Convert Coq doc comment to Lean
+            # Emit Coq doc comment as a regular comment (-- ...) to avoid
+            # consecutive /-- ... -/ blocks which Lean rejects.
             doc = thm.doc_comment.replace('(**', '').replace('*)', '').strip()
-            lines.append(f'/-- {doc} -/')
-        lines.append(f'/-- {thm.name} (matches Coq) -/')
+            lines.append(f'-- {doc}')
+        lines.append(f'/-- {lean_name} (matches Coq) -/')
         lean_stmt = _translate_statement_lean(thm.statement)
-        lines.append(f'theorem {thm.name} : {lean_stmt} := by')
+        lines.append(f'theorem {lean_name} : {lean_stmt} := by')
         lines.append(f'  {lean_proof}')
         lines.append('')
 
@@ -492,6 +526,8 @@ def generate_lean_file(parsed: CoqFile, coq_path: str) -> str:
     result = re.sub(r'\(\*[^)]*\*\)', '', result)  # Remove (* ... *)
     result = re.sub(r'\(\*', '', result)  # Remove orphan (*
     result = re.sub(r'\*\)', '', result)  # Remove orphan *)
+    # Replace any remaining Σ that escaped per-theorem handling (e.g. in types)
+    result = re.sub(r'Σ([_\w\']*)', r'St\1', result)
     return result
 
 
@@ -580,6 +616,10 @@ def _translate_statement_lean(stmt: str) -> str:
     s = s.replace(' >= ', ' ≥ ')
     s = s.replace(' <= ', ' ≤ ')
     s = s.replace(' <> ', ' ≠ ')
+    # Rename Greek letters that conflict with Lean 4 syntax.
+    # Σ is sigma-type notation in Lean 4 — cannot be used as a variable name.
+    # Handle all Σ-prefixed identifiers: Σ, Σ', Σ1, Σ2, Σ3, Σ_mid, etc.
+    s = re.sub(r'Σ([_\w\']*)', r'St\1', s)
     return s
 
 
@@ -755,7 +795,11 @@ def generate_isabelle_file(parsed: CoqFile, coq_path: str) -> str:
     lines.append('end')
     lines.append('')
 
-    return '\n'.join(lines)
+    # Post-processing: comment stripping at parse time (_parse_theorems) handles
+    # the root cause. Isabelle uses (* ... *) natively so we do NOT strip those
+    # from generated output — only orphan fragments within single-line strings.
+    result = '\n'.join(lines)
+    return result
 
 
 def _to_snake_case(name: str) -> str:

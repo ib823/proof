@@ -254,7 +254,7 @@ lemma DELTA_002_02_bft_quorum_sufficient: "\<forall> state, bft_valid state = Tr
   by simp
 
 (* DELTA_002_03_bft_two_quorums_overlap (matches Coq) *)
-lemma DELTA_002_03_bft_two_quorums_overlap: "\<forall> state, bft_valid state = True \<longrightarrow> bft_n state = 3 * bft_f state + 1 \<longrightarrow> (* Minimal BFT configuration *) 2 * bft_quorum state > bft_n state"
+lemma DELTA_002_03_bft_two_quorums_overlap: "\<forall> state, bft_valid state = True \<longrightarrow> bft_n state = 3 * bft_f state + 1 \<longrightarrow> 2 * bft_quorum state > bft_n state"
   by simp
 
 (* DELTA_002_04_correct_majority (matches Coq) *)

@@ -107,6 +107,13 @@ HAS_ALLOY_JAR=0
 PROVISION_ATTEMPTED=0
 PROVISION_SUCCEEDED=0
 
+# Source elan env for Lean toolchain (lake, lean, leanc)
+if [ -f "$HOME/.elan/env" ]; then
+  # shellcheck disable=SC1091
+  source "$HOME/.elan/env"
+elif [ -d "$HOME/.elan/bin" ]; then
+  export PATH="$HOME/.elan/bin:$PATH"
+fi
 command -v lake >/dev/null 2>&1 && HAS_LAKE=1
 command -v java >/dev/null 2>&1 && HAS_JAVA=1
 

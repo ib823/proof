@@ -305,16 +305,16 @@ def compile_expr (e : src_expr) : ir_expr :=
 def src_ir_equiv (e_src : src_expr) (e_ir : ir_expr) : Prop :=
   compile_expr e_src = e_ir
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 2: COMPLIANCE PREDICATES
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 4: LEGACY THEOREMS (CC_001 - CC_030)
-    ============================================================================ -/
+    ============================================================================
 /-- CC_001 (matches Coq) -/
 theorem CC_001 : parsing_correct riina_parsing = true := by
   rfl
@@ -435,57 +435,57 @@ theorem CC_029 : ∀ c, compiler_verified c = true → parsing_correct (cc_parsi
 theorem CC_030_complete : ∀ c, compiler_verified c = true → tc_type_soundness (cc_typecheck c) = true ∧ op_semantics_preserved (cc_optimization c) = true ∧ cg_instruction_correct (cc_codegen c) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Values don't step -/
+-- Values don't step
 /-- ir_value_not_step (matches Coq) -/
 theorem ir_value_not_step : ∀ v e, ir_value v → ~ (v ==> e) := by
   intro h; exact h
 
-/-- IR Type Preservation Theorem -/
+-- IR Type Preservation Theorem
 /-- ir_preservation (matches Coq) -/
 theorem ir_preservation : ∀ e e' T, ir_has_type e T → e ==> e' → ir_has_type e' T := by
   simp_all [Bool.and_eq_true]
 
-/-- Multi-step preserves typing -/
+-- Multi-step preserves typing
 /-- ir_multi_preservation (matches Coq) -/
 theorem ir_multi_preservation : ∀ e e' T, ir_has_type e T → e ==>* e' → ir_has_type e' T := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper: pair of values doesn't step -/
+-- Helper: pair of values doesn't step
 /-- ir_pair_value_not_step (matches Coq) -/
 theorem ir_pair_value_not_step : ∀ v1 v2 e, ir_value v1 → ir_value v2 → ~ (IR_Pair v1 v2 ==> e) := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper: bool doesn't step -/
+-- Helper: bool doesn't step
 /-- ir_bool_not_step (matches Coq) -/
 theorem ir_bool_not_step : ∀ b e, ~ (IR_Bool b ==> e) := by
   simp_all [Bool.and_eq_true]
 
-/-- IR step is deterministic -/
+-- IR step is deterministic
 /-- ir_step_deterministic (matches Coq) -/
 theorem ir_step_deterministic : ∀ e e1 e2, e ==> e1 → e ==> e2 → e1 = e2 := by
   simp_all [Bool.and_eq_true]
 
-/-- IR Progress theorem -/
+-- IR Progress theorem
 /-- ir_progress (matches Coq) -/
 theorem ir_progress : ∀ e T, ir_has_type e T → ir_value e ∨ ∃ e', e ==> e' := by
   simp_all [Bool.and_eq_true]
 
-/-- Reflexivity of equivalence -/
+-- Reflexivity of equivalence
 /-- ir_equiv_refl (matches Coq) -/
 theorem ir_equiv_refl : ∀ e, ir_equiv e e := by
   simp_all [Bool.and_eq_true]
 
-/-- Symmetry of equivalence -/
+-- Symmetry of equivalence
 /-- ir_equiv_sym (matches Coq) -/
 theorem ir_equiv_sym : ∀ e1 e2, ir_equiv e1 e2 → ir_equiv e2 e1 := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- Transitivity of equivalence -/
+-- Transitivity of equivalence
 /-- ir_equiv_trans (matches Coq) -/
 theorem ir_equiv_trans : ∀ e1 e2 e3, ir_equiv e1 e2 → ir_equiv e2 e3 → ir_equiv e1 e3 := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- Multi-step transitivity -/
+-- Multi-step transitivity
 /-- ir_multi_trans (matches Coq) -/
 theorem ir_multi_trans : ∀ e1 e2 e3, e1 ==>* e2 → e2 ==>* e3 → e1 ==>* e3 := by
   simp_all [Bool.and_eq_true]
@@ -494,7 +494,7 @@ theorem ir_multi_trans : ∀ e1 e2 e3, e1 ==>* e2 → e2 ==>* e3 → e1 ==>* e3 
 theorem ir_multi_pair_cong1 : ∀ e1 e1' e2, e1 ==>* e1' → IR_Pair e1 e2 ==>* IR_Pair e1' e2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Congruence for Pair (right) -/
+-- Congruence for Pair (right)
 /-- ir_multi_pair_cong2 (matches Coq) -/
 theorem ir_multi_pair_cong2 : ∀ v1 e2 e2', ir_value v1 → e2 ==>* e2' → IR_Pair v1 e2 ==>* IR_Pair v1 e2' := by
   simp_all [Bool.and_eq_true]
@@ -515,112 +515,112 @@ theorem opt_fst_pair_sound : ∀ v1 v2, ir_value v1 → ir_value v2 → IR_Fst (
 theorem opt_snd_pair_sound : ∀ v1 v2, ir_value v1 → ir_value v2 → IR_Snd (IR_Pair v1 v2) ==>* v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Values are normal forms -/
+-- Values are normal forms
 /-- ir_value_normal (matches Coq) -/
 theorem ir_value_normal : ∀ v, ir_value v → ~ ∃ e, v ==> e := by
   simp_all [Bool.and_eq_true]
 
-/-- Values reduce to themselves -/
+-- Values reduce to themselves
 /-- ir_value_reduces_self (matches Coq) -/
 theorem ir_value_reduces_self : ∀ v, ir_value v → v ==>* v := by
   simp_all [Bool.and_eq_true]
 
-/-- Equivalence preserves typing -/
+-- Equivalence preserves typing
 /-- equiv_preserves_typing (matches Coq) -/
 theorem equiv_preserves_typing : ∀ e1 e2 v T, ir_equiv e1 e2 → ir_has_type e1 T → ir_has_type e2 T → e1 ==>* v → ir_value v → ir_has_type v T := by
   simp_all [Bool.and_eq_true]
 
-/-- Source values don't step -/
+-- Source values don't step
 /-- src_value_not_step (matches Coq) -/
 theorem src_value_not_step : ∀ v e, src_value v → ~ (v ~> e) := by
   intro h; exact h
 
-/-- Source step is deterministic -/
+-- Source step is deterministic
 /-- src_step_deterministic (matches Coq) -/
 theorem src_step_deterministic : ∀ e e1 e2, e ~> e1 → e ~> e2 → e1 = e2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Source type preservation -/
+-- Source type preservation
 /-- src_preservation (matches Coq) -/
 theorem src_preservation : ∀ e e' T, src_has_type e T → e ~> e' → src_has_type e' T := by
   simp_all [Bool.and_eq_true]
 
-/-- Source progress -/
+-- Source progress
 /-- src_progress (matches Coq) -/
 theorem src_progress : ∀ e T, src_has_type e T → src_value e ∨ ∃ e', e ~> e' := by
   simp_all [Bool.and_eq_true]
 
-/-- Compilation preserves values -/
+-- Compilation preserves values
 /-- compile_preserves_value (matches Coq) -/
 theorem compile_preserves_value : ∀ e, src_value e → ir_value (compile_expr e) := by
   simp_all [Bool.and_eq_true]
 
-/-- Compilation preserves typing -/
+-- Compilation preserves typing
 /-- compile_preserves_typing (matches Coq) -/
 theorem compile_preserves_typing : ∀ e T, src_has_type e T → ir_has_type (compile_expr e) (compile_ty T) := by
   simp_all [Bool.and_eq_true]
 
-/-- Forward simulation: source step implies IR step -/
+-- Forward simulation: source step implies IR step
 /-- compile_forward_simulation (matches Coq) -/
 theorem compile_forward_simulation : ∀ e e', e ~> e' → compile_expr e ==> compile_expr e' := by
   simp_all [Bool.and_eq_true]
 
-/-- Forward simulation for multi-step -/
+-- Forward simulation for multi-step
 /-- compile_forward_multi_simulation (matches Coq) -/
 theorem compile_forward_multi_simulation : ∀ e e', e ~>* e' → compile_expr e ==>* compile_expr e' := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper: compiled value means source value -/
+-- Helper: compiled value means source value
 /-- compile_value_inv (matches Coq) -/
 theorem compile_value_inv : ∀ e, ir_value (compile_expr e) → src_value e := by
   simp_all [Bool.and_eq_true]
 
-/-- Backward simulation: IR step from compiled implies source step -/
+-- Backward simulation: IR step from compiled implies source step
 /-- compile_backward_simulation (matches Coq) -/
 theorem compile_backward_simulation : ∀ e e_ir', compile_expr e ==> e_ir' → ∃ e', e ~> e' ∧ compile_expr e' = e_ir' := by
   cases ‹_› <;> simp
 
-/-- Compilation establishes equivalence -/
+-- Compilation establishes equivalence
 /-- compile_establishes_equiv (matches Coq) -/
 theorem compile_establishes_equiv : ∀ e, src_ir_equiv e (compile_expr e) := by
   rfl
 
-/-- Equivalence is preserved by stepping -/
+-- Equivalence is preserved by stepping
 /-- equiv_preserved_forward (matches Coq) -/
 theorem equiv_preserved_forward : ∀ e_src e_src', e_src ~> e_src' → src_ir_equiv e_src' (compile_expr e_src') := by
   rfl
 
-/-- If source terminates at value, compiled terminates at corresponding value -/
+-- If source terminates at value, compiled terminates at corresponding value
 /-- compile_terminates_equivalently (matches Coq) -/
 theorem compile_terminates_equivalently : ∀ e v, src_has_type e Src_TUnit ∨ src_has_type e Src_TBool ∨ src_has_type e Src_TInt → e ~>* v → src_value v → compile_expr e ==>* compile_expr v ∧ ir_value (compile_expr v) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- Compilation preserves type-safety: compiled well-typed source is type-safe -/
+-- Compilation preserves type-safety: compiled well-typed source is type-safe
 /-- compile_type_safety (matches Coq) -/
 theorem compile_type_safety : ∀ e T, src_has_type e T → ir_value (compile_expr e) ∨ ∃ e', compile_expr e ==> e' := by
   simp_all [Bool.and_eq_true]
 
-/-- Dead code elimination: if (true) e1 e2 is equivalent to e1 -/
+-- Dead code elimination: if (true) e1 e2 is equivalent to e1
 /-- opt_dead_code_if_true (matches Coq) -/
 theorem opt_dead_code_if_true : ∀ e1 e2, ir_equiv (IR_If (IR_Bool true) e1 e2) e1 := by
   simp_all [Bool.and_eq_true]
 
-/-- Dead code elimination: if (false) e1 e2 is equivalent to e2 -/
+-- Dead code elimination: if (false) e1 e2 is equivalent to e2
 /-- opt_dead_code_if_false (matches Coq) -/
 theorem opt_dead_code_if_false : ∀ e1 e2, ir_equiv (IR_If (IR_Bool false) e1 e2) e2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Pair projection optimization with type preservation -/
+-- Pair projection optimization with type preservation
 /-- opt_fst_pair_typed (matches Coq) -/
 theorem opt_fst_pair_typed : ∀ v1 v2 T1 T2, ir_value v1 → ir_value v2 → ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) → ir_has_type v1 T1 := by
   simp_all [Bool.and_eq_true]
 
-/-- Pair projection optimization with type preservation -/
+-- Pair projection optimization with type preservation
 /-- opt_snd_pair_typed (matches Coq) -/
 theorem opt_snd_pair_typed : ∀ v1 v2 T1 T2, ir_value v1 → ir_value v2 → ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) → ir_has_type v2 T2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Constant propagation: compiling a known constant gives a value -/
+-- Constant propagation: compiling a known constant gives a value
 /-- const_prop_bool (matches Coq) -/
 theorem const_prop_bool : ∀ b, ir_value (compile_expr (Src_Bool b)) := by
   simp_all [Bool.and_eq_true]
@@ -637,7 +637,7 @@ theorem const_prop_unit : ir_value (compile_expr Src_Unit) := by
 theorem parsing_correct_prop : parsing_correctness := by
   simp_all [Bool.and_eq_true]
 
-/-- Optimization is correct: IR equivalence relation is an equivalence -/
+-- Optimization is correct: IR equivalence relation is an equivalence
 /-- optimization_relation_reflexive (matches Coq) -/
 theorem optimization_relation_reflexive : ∀ e, ir_equiv e e := by
   simp_all [Bool.and_eq_true]
@@ -650,12 +650,12 @@ theorem optimization_relation_symmetric : ∀ e1 e2, ir_equiv e1 e2 → ir_equiv
 theorem optimization_relation_transitive : ∀ e1 e2 e3, ir_equiv e1 e2 → ir_equiv e2 e3 → ir_equiv e1 e3 := by
   simp_all [Bool.and_eq_true]
 
-/-- The full pipeline: source to IR preserves semantics -/
+-- The full pipeline: source to IR preserves semantics
 /-- full_pipeline_correctness (matches Coq) -/
-theorem full_pipeline_correctness : ∀ e T, src_has_type e T →  ir_has_type (compile_expr e) (compile_ty T) ∧  (src_value e ∨ ∃ e', e ~> e') ∧  (∀ e', e ~> e' → compile_expr e ==> compile_expr e') := by
+theorem full_pipeline_correctness : ∀ e T, src_has_type e T → ir_has_type (compile_expr e) (compile_ty T) ∧ (src_value e ∨ ∃ e', e ~> e') ∧ (∀ e', e ~> e' → compile_expr e ==> compile_expr e') := by
   simp_all [Bool.and_eq_true]
 
-/-- The full pipeline: termination behavior is preserved -/
+-- The full pipeline: termination behavior is preserved
 /-- full_pipeline_termination (matches Coq) -/
 theorem full_pipeline_termination : ∀ e v T, src_has_type e T → e ~>* v → src_value v → compile_expr e ==>* compile_expr v ∧ ir_value (compile_expr v) ∧ ir_has_type (compile_expr v) (compile_ty T) := by
   constructor <;> simp_all [Bool.and_eq_true]

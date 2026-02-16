@@ -183,132 +183,132 @@ def region_protected (r : MemoryRegion) : Bool :=
 def all_regions_protected (regions : List MemoryRegion) : Bool :=
   forallb region_protected regions
 
-/-- Helper -/
+-- Helper
 /-- andb_true_iff_ddr5 (matches Coq) -/
 theorem andb_true_iff_ddr5 : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- DDR5_001: RIINA bus defense active -/
+-- DDR5_001: RIINA bus defense active
 /-- DDR5_001_bus_defense (matches Coq) -/
 theorem DDR5_001_bus_defense : bus_defense_active riina_ddr5_config = true := by
   rfl
 
-/-- DDR5_002: RIINA rowhammer defense active -/
+-- DDR5_002: RIINA rowhammer defense active
 /-- DDR5_002_rowhammer_defense (matches Coq) -/
 theorem DDR5_002_rowhammer_defense : rowhammer_defense_active riina_ddr5_config = true := by
   rfl
 
-/-- DDR5_003: RIINA cold boot defense active -/
+-- DDR5_003: RIINA cold boot defense active
 /-- DDR5_003_cold_boot_defense (matches Coq) -/
 theorem DDR5_003_cold_boot_defense : cold_boot_defense_active riina_ddr5_config = true := by
   rfl
 
-/-- DDR5_004: RIINA fault defense active -/
+-- DDR5_004: RIINA fault defense active
 /-- DDR5_004_fault_defense (matches Coq) -/
 theorem DDR5_004_fault_defense : fault_defense_active riina_ddr5_config = true := by
   rfl
 
-/-- DDR5_005: All RIINA DDR5 defenses active -/
+-- DDR5_005: All RIINA DDR5 defenses active
 /-- DDR5_005_all_defenses (matches Coq) -/
 theorem DDR5_005_all_defenses : all_ddr5_defenses riina_ddr5_config = true := by
   rfl
 
-/-- DDR5_006: Bus defense requires software encryption -/
+-- DDR5_006: Bus defense requires software encryption
 /-- DDR5_006_bus_requires_encryption (matches Coq) -/
 theorem DDR5_006_bus_requires_encryption : ∀ c : DDR5DefenseConfig, bus_defense_active c = true → ddr5_software_encryption c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_007: Bus defense requires integrity tree -/
+-- DDR5_007: Bus defense requires integrity tree
 /-- DDR5_007_bus_requires_tree (matches Coq) -/
 theorem DDR5_007_bus_requires_tree : ∀ c : DDR5DefenseConfig, bus_defense_active c = true → ddr5_integrity_tree c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_008: Bus defense requires MAC signing -/
+-- DDR5_008: Bus defense requires MAC signing
 /-- DDR5_008_bus_requires_mac (matches Coq) -/
 theorem DDR5_008_bus_requires_mac : ∀ c : DDR5DefenseConfig, bus_defense_active c = true → ddr5_mac_signing c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_009: Bus defense requires interposition defense -/
+-- DDR5_009: Bus defense requires interposition defense
 /-- DDR5_009_bus_requires_interposition (matches Coq) -/
 theorem DDR5_009_bus_requires_interposition : ∀ c : DDR5DefenseConfig, bus_defense_active c = true → ddr5_bus_interposition_defense c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_010: Rowhammer defense requires mitigation -/
+-- DDR5_010: Rowhammer defense requires mitigation
 /-- DDR5_010_rowhammer_requires_mitigation (matches Coq) -/
 theorem DDR5_010_rowhammer_requires_mitigation : ∀ c : DDR5DefenseConfig, rowhammer_defense_active c = true → ddr5_rowhammer_mitigation c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_011: Rowhammer defense requires ECC bypass defense -/
+-- DDR5_011: Rowhammer defense requires ECC bypass defense
 /-- DDR5_011_rowhammer_requires_ecc (matches Coq) -/
 theorem DDR5_011_rowhammer_requires_ecc : ∀ c : DDR5DefenseConfig, rowhammer_defense_active c = true → ddr5_ecc_bypass_defense c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_012: Rowhammer defense requires refresh randomization -/
+-- DDR5_012: Rowhammer defense requires refresh randomization
 /-- DDR5_012_rowhammer_requires_refresh (matches Coq) -/
 theorem DDR5_012_rowhammer_requires_refresh : ∀ c : DDR5DefenseConfig, rowhammer_defense_active c = true → ddr5_refresh_randomization c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_013: Cold boot defense requires encryption -/
+-- DDR5_013: Cold boot defense requires encryption
 /-- DDR5_013_coldboot_requires_encryption (matches Coq) -/
 theorem DDR5_013_coldboot_requires_encryption : ∀ c : DDR5DefenseConfig, cold_boot_defense_active c = true → ddr5_software_encryption c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_014: Cold boot defense requires cold boot defense flag -/
+-- DDR5_014: Cold boot defense requires cold boot defense flag
 /-- DDR5_014_coldboot_requires_flag (matches Coq) -/
 theorem DDR5_014_coldboot_requires_flag : ∀ c : DDR5DefenseConfig, cold_boot_defense_active c = true → ddr5_cold_boot_defense c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_015: Fault defense requires detection -/
+-- DDR5_015: Fault defense requires detection
 /-- DDR5_015_fault_requires_detection (matches Coq) -/
 theorem DDR5_015_fault_requires_detection : ∀ c : DDR5DefenseConfig, fault_defense_active c = true → ddr5_fault_detection c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_016: Fault defense requires redundancy -/
+-- DDR5_016: Fault defense requires redundancy
 /-- DDR5_016_fault_requires_redundancy (matches Coq) -/
 theorem DDR5_016_fault_requires_redundancy : ∀ c : DDR5DefenseConfig, fault_defense_active c = true → ddr5_redundant_storage c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_017: All defenses imply bus defense -/
+-- DDR5_017: All defenses imply bus defense
 /-- DDR5_017_all_implies_bus (matches Coq) -/
 theorem DDR5_017_all_implies_bus : ∀ c : DDR5DefenseConfig, all_ddr5_defenses c = true → bus_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_018: All defenses imply rowhammer defense -/
+-- DDR5_018: All defenses imply rowhammer defense
 /-- DDR5_018_all_implies_rowhammer (matches Coq) -/
 theorem DDR5_018_all_implies_rowhammer : ∀ c : DDR5DefenseConfig, all_ddr5_defenses c = true → rowhammer_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_019: All defenses imply cold boot defense -/
+-- DDR5_019: All defenses imply cold boot defense
 /-- DDR5_019_all_implies_coldboot (matches Coq) -/
 theorem DDR5_019_all_implies_coldboot : ∀ c : DDR5DefenseConfig, all_ddr5_defenses c = true → cold_boot_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_020: All defenses imply fault defense -/
+-- DDR5_020: All defenses imply fault defense
 /-- DDR5_020_all_implies_fault (matches Coq) -/
 theorem DDR5_020_all_implies_fault : ∀ c : DDR5DefenseConfig, all_ddr5_defenses c = true → fault_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_021: Empty region list is all-protected -/
+-- DDR5_021: Empty region list is all-protected
 /-- DDR5_021_empty_regions_protected (matches Coq) -/
 theorem DDR5_021_empty_regions_protected : all_regions_protected [] = true := by
   rfl
 
-/-- DDR5_022: Fully annotated region is protected -/
+-- DDR5_022: Fully annotated region is protected
 /-- DDR5_022_annotated_region_protected (matches Coq) -/
 theorem DDR5_022_annotated_region_protected : ∀ base size, region_protected (mkMemRegion base size true true true true) = true := by
   rfl
 
-/-- DDR5_023: Single protected region list is all-protected -/
+-- DDR5_023: Single protected region list is all-protected
 /-- DDR5_023_single_protected (matches Coq) -/
 theorem DDR5_023_single_protected : ∀ base size, all_regions_protected [mkMemRegion base size true true true true] = true := by
   rfl
 
-/-- DDR5_024: Full defense implies encryption -/
+-- DDR5_024: Full defense implies encryption
 /-- DDR5_024_full_implies_encryption (matches Coq) -/
 theorem DDR5_024_full_implies_encryption : ∀ c : DDR5DefenseConfig, all_ddr5_defenses c = true → ddr5_software_encryption c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DDR5_025: Complete DDR5 defense — all properties hold -/
+-- DDR5_025: Complete DDR5 defense — all properties hold
 /-- DDR5_025_complete_defense (matches Coq) -/
 theorem DDR5_025_complete_defense : ∀ c : DDR5DefenseConfig, all_ddr5_defenses c = true → ddr5_software_encryption c = true ∧ ddr5_integrity_tree c = true ∧ ddr5_mac_signing c = true ∧ ddr5_rowhammer_mitigation c = true ∧ ddr5_cold_boot_defense c = true ∧ ddr5_fault_detection c = true ∧ ddr5_ecc_bypass_defense c = true ∧ ddr5_bus_interposition_defense c = true ∧ ddr5_redundant_storage c = true ∧ ddr5_refresh_randomization c = true := by
   simp_all [Bool.and_eq_true]

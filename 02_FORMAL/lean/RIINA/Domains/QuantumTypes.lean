@@ -172,35 +172,35 @@ theorem count_remove_helper : ∀ n l, mem n l = true → count n (remove n l) +
   cases ‹_› <;> simp <;> omega
 
 /-- 1 (matches Coq) -/
-theorem 1 : No-cloning — well-typed programs never duplicate a qubit. Creating a qubit that already ∃ in context is rejected.  Theorem no_cloning : ∀ q ctx, mem q ctx = true → check ctx (ICreate q) = None := by
+theorem 1 : No-cloning — well-typed programs never duplicate a qubit. Creating a qubit that already ∃ in context is rejected. Theorem no_cloning : ∀ q ctx, mem q ctx = true → check ctx (ICreate q) = None := by
   rfl
 
 /-- 2 (matches Coq) -/
-theorem 2 : Linearity — a fully consumed program leaves no dangling qubits.  Theorem linearity_full_consumption : ∀ p, fully_consumed p → check [] p = Some [] := by
+theorem 2 : Linearity — a fully consumed program leaves no dangling qubits. Theorem linearity_full_consumption : ∀ p, fully_consumed p → check [] p = Some [] := by
   intro h; exact h
 
 /-- 3 (matches Coq) -/
-theorem 3 : Measurement consumes the qubit — after measurement, the qubit is removed from context.  Theorem measurement_consumes : ∀ q ctx ctx', check ctx (IMeasure q) = Some ctx' → ctx' = remove q ctx ∧ mem q ctx = true := by
+theorem 3 : Measurement consumes the qubit — after measurement, the qubit is removed from context. Theorem measurement_consumes : ∀ q ctx ctx', check ctx (IMeasure q) = Some ctx' → ctx' = remove q ctx ∧ mem q ctx = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Gate application preserves linearity — the context is unchanged.  Theorem gate_preserves_context : ∀ g q ctx ctx', check ctx (IGate g q) = Some ctx' → ctx' = ctx := by
+theorem 4 : Gate application preserves linearity — the context is unchanged. Theorem gate_preserves_context : ∀ g q ctx ctx', check ctx (IGate g q) = Some ctx' → ctx' = ctx := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : Type checking is decidable — the boolean checker reflects the Prop.  Theorem type_checking_decidable : ∀ p, well_typed_b p = true <-> well_typed p := by
+theorem 5 : Type checking is decidable — the boolean checker reflects the Prop. Theorem type_checking_decidable : ∀ p, well_typed_b p = true <-> well_typed p := by
   rfl
 
 /-- 6 (matches Coq) -/
-theorem 6 : Well-typed fully-consumed programs have no dangling qubits.  Theorem no_dangling_qubits : ∀ p, fully_consumed_b p = true → check [] p = Some [] := by
+theorem 6 : Well-typed fully-consumed programs have no dangling qubits. Theorem no_dangling_qubits : ∀ p, fully_consumed_b p = true → check [] p = Some [] := by
   rfl
 
 /-- 7 (matches Coq) -/
-theorem 7 : Sequential composition preserves linearity — if both parts type-check, the composition does too.  Theorem seq_preserves_linearity : ∀ i1 i2 ctx ctx1 ctx2, check ctx i1 = Some ctx1 → check ctx1 i2 = Some ctx2 → check ctx (ISeq i1 i2) = Some ctx2 := by
+theorem 7 : Sequential composition preserves linearity — if both parts type-check, the composition does too. Theorem seq_preserves_linearity : ∀ i1 i2 ctx ctx1 ctx2, check ctx i1 = Some ctx1 → check ctx1 i2 = Some ctx2 → check ctx (ISeq i1 i2) = Some ctx2 := by
   intro h; exact h
 
 /-- 8 (matches Coq) -/
-theorem 8 : Resource counting is monotone — create increases context length, measure decreases it.  Theorem create_increases_resources : ∀ q ctx ctx', check ctx (ICreate q) = Some ctx' → length ctx' = S (length ctx) := by
+theorem 8 : Resource counting is monotone — create increases context length, measure decreases it. Theorem create_increases_resources : ∀ q ctx ctx', check ctx (ICreate q) = Some ctx' → length ctx' = S (length ctx) := by
   cases ‹_› <;> simp <;> omega
 
 /-- measure_decreases_resources (matches Coq) -/
@@ -216,51 +216,51 @@ theorem create_gate_measure_consumed : ∀ q g, fully_consumed (ISeq (ICreate q)
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : mem reflects membership for the head of a list  Theorem mem_head : ∀ n l, mem n (n :: l) = true := by
+theorem 12 : mem reflects membership for the head of a list Theorem mem_head : ∀ n l, mem n (n :: l) = true := by
   rfl
 
 /-- 13 (matches Coq) -/
-theorem 13 : mem on empty list is always false  Theorem mem_nil : ∀ n, mem n [] = false := by
+theorem 13 : mem on empty list is always false Theorem mem_nil : ∀ n, mem n [] = false := by
   rfl
 
 /-- 14 (matches Coq) -/
-theorem 14 : count on empty list is always 0  Theorem count_nil : ∀ n, count n [] = 0 := by
+theorem 14 : count on empty list is always 0 Theorem count_nil : ∀ n, count n [] = 0 := by
   rfl
 
 /-- 15 (matches Coq) -/
-theorem 15 : count is non-negative (trivial for nat) and bounded by length  Theorem count_le_length : ∀ n l, count n l ≤ length l := by
+theorem 15 : count is non-negative (trivial for nat) and bounded by length Theorem count_le_length : ∀ n l, count n l ≤ length l := by
   cases ‹_› <;> simp <;> omega
 
 /-- 16 (matches Coq) -/
-theorem 16 : remove on empty list is empty  Theorem remove_nil : ∀ n, remove n [] = [] := by
+theorem 16 : remove on empty list is empty Theorem remove_nil : ∀ n, remove n [] = [] := by
   rfl
 
 /-- 17 (matches Coq) -/
-theorem 17 : A gate on a qubit not in context fails  Theorem gate_requires_qubit : ∀ g q ctx, mem q ctx = false → check ctx (IGate g q) = None := by
+theorem 17 : A gate on a qubit not in context fails Theorem gate_requires_qubit : ∀ g q ctx, mem q ctx = false → check ctx (IGate g q) = None := by
   rfl
 
 /-- 18 (matches Coq) -/
-theorem 18 : Measure on a qubit not in context fails  Theorem measure_requires_qubit : ∀ q ctx, mem q ctx = false → check ctx (IMeasure q) = None := by
+theorem 18 : Measure on a qubit not in context fails Theorem measure_requires_qubit : ∀ q ctx, mem q ctx = false → check ctx (IMeasure q) = None := by
   rfl
 
 /-- 19 (matches Coq) -/
-theorem 19 : Two-qubit gate requires both qubits to be distinct  Theorem gate2_requires_distinct : ∀ g q ctx, check ctx (IGate2 g q q) = None := by
+theorem 19 : Two-qubit gate requires both qubits to be distinct Theorem gate2_requires_distinct : ∀ g q ctx, check ctx (IGate2 g q q) = None := by
   cases ‹_› <;> simp
 
 /-- 20 (matches Coq) -/
-theorem 20 : Create followed by create of same qubit fails  Theorem double_create_fails : ∀ q, check [] (ISeq (ICreate q) (ICreate q)) = None := by
+theorem 20 : Create followed by create of same qubit fails Theorem double_create_fails : ∀ q, check [] (ISeq (ICreate q) (ICreate q)) = None := by
   rfl
 
 /-- 21 (matches Coq) -/
-theorem 21 : count of n in singleton [n] is 1  Theorem count_singleton : ∀ n, count n [n] = 1 := by
+theorem 21 : count of n in singleton [n] is 1 Theorem count_singleton : ∀ n, count n [n] = 1 := by
   rfl
 
 /-- 22 (matches Coq) -/
-theorem 22 : mem of n in singleton [n] is true  Theorem mem_singleton : ∀ n, mem n [n] = true := by
+theorem 22 : mem of n in singleton [n] is true Theorem mem_singleton : ∀ n, mem n [n] = true := by
   rfl
 
 /-- 23 (matches Coq) -/
-theorem 23 : Creating a qubit on empty context always succeeds  Theorem create_on_empty_succeeds : ∀ q, check [] (ICreate q) = Some [q] := by
+theorem 23 : Creating a qubit on empty context always succeeds Theorem create_on_empty_succeeds : ∀ q, check [] (ICreate q) = Some [q] := by
   rfl
 
 end RIINA

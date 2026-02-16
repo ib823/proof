@@ -193,44 +193,44 @@ def v2x_auth_timeout_ms (safety_critical : Bool) : Nat :=
 def version_valid (old_ver new_ver : Nat) : Bool :=
   Nat.ltb old_ver new_ver
 
-/-- Section H01 - ISO 26262 Compliance
-    Reference: IND_H_TRANSPORTATION.md Section 3.1 -/
+-- Section H01 - ISO 26262 Compliance
+    Reference: IND_H_TRANSPORTATION.md Section 3.1
 /-- iso_26262_compliance (matches Coq) -/
-theorem iso_26262_compliance : ∀ (compliance : ISO26262_Compliance) (asil : ASIL), hazard_analysis compliance = true →  True := by
+theorem iso_26262_compliance : ∀ (compliance : ISO26262_Compliance) (asil : ASIL), hazard_analysis compliance = true → True := by
   trivial
 
-/-- Section H02 - ISO/SAE 21434 Cybersecurity
-    Reference: IND_H_TRANSPORTATION.md Section 3.2 -/
+-- Section H02 - ISO/SAE 21434 Cybersecurity
+    Reference: IND_H_TRANSPORTATION.md Section 3.2
 /-- iso_21434_cybersecurity (matches Coq) -/
-theorem iso_21434_cybersecurity : ∀ (vehicle : nat) (system : nat),  True := by
+theorem iso_21434_cybersecurity : ∀ (vehicle : nat) (system : nat), True := by
   trivial
 
-/-- Section H03 - UNECE R155
-    Reference: IND_H_TRANSPORTATION.md Section 3.3 -/
+-- Section H03 - UNECE R155
+    Reference: IND_H_TRANSPORTATION.md Section 3.3
 /-- unece_r155_compliance (matches Coq) -/
-theorem unece_r155_compliance : ∀ (vehicle_type : nat),  True := by
+theorem unece_r155_compliance : ∀ (vehicle_type : nat), True := by
   trivial
 
-/-- Section H04 - EN 50128 Railway Software
-    Reference: IND_H_TRANSPORTATION.md Section 3.4 -/
+-- Section H04 - EN 50128 Railway Software
+    Reference: IND_H_TRANSPORTATION.md Section 3.4
 /-- en_50128_compliance (matches Coq) -/
-theorem en_50128_compliance : ∀ (railway_software : nat) (sil : SIL),  True := by
+theorem en_50128_compliance : ∀ (railway_software : nat) (sil : SIL), True := by
   trivial
 
-/-- Section H05 - Maritime Cyber
-    Reference: IND_H_TRANSPORTATION.md Section 3.5 -/
+-- Section H05 - Maritime Cyber
+    Reference: IND_H_TRANSPORTATION.md Section 3.5
 /-- imo_maritime_cyber (matches Coq) -/
-theorem imo_maritime_cyber : ∀ (vessel : nat),  True := by
+theorem imo_maritime_cyber : ∀ (vessel : nat), True := by
   trivial
 
-/-- ASIL D requires highest rigor -/
+-- ASIL D requires highest rigor
 /-- asil_d_highest_rigor (matches Coq) -/
-theorem asil_d_highest_rigor : ∀ (compliance : ISO26262_Compliance),  True := by
+theorem asil_d_highest_rigor : ∀ (compliance : ISO26262_Compliance), True := by
   trivial
 
-/-- Cybersecurity and safety interface required -/
+-- Cybersecurity and safety interface required
 /-- cyber_safety_interface (matches Coq) -/
-theorem cyber_safety_interface : ∀ (compliance : ISO26262_Compliance), cybersecurity_interface compliance = true →  True := by
+theorem cyber_safety_interface : ∀ (compliance : ISO26262_Compliance), cybersecurity_interface compliance = true → True := by
   trivial
 
 /-- asil_le_refl (matches Coq) -/

@@ -206,44 +206,44 @@ def roaming_security_level (home_sec visited_sec : Nat) : Nat :=
 def li_valid (li : LawfulIntercept) : Bool :=
   li_authorized li && li_logged li
 
-/-- Section F01 - 5G Security Architecture
-    Reference: IND_F_TELECOM.md Section 3.1 -/
+-- Section F01 - 5G Security Architecture
+    Reference: IND_F_TELECOM.md Section 3.1
 /-- security_5g_compliance (matches Coq) -/
-theorem security_5g_compliance : ∀ (sec : Security_5G), primary_authentication sec = true → nas_security sec = true →  True := by
+theorem security_5g_compliance : ∀ (sec : Security_5G), primary_authentication sec = true → nas_security sec = true → True := by
   trivial
 
-/-- Section F02 - GSMA Security
-    Reference: IND_F_TELECOM.md Section 3.2 -/
+-- Section F02 - GSMA Security
+    Reference: IND_F_TELECOM.md Section 3.2
 /-- gsma_security (matches Coq) -/
-theorem gsma_security : ∀ (sim_card : nat) (network : nat),  True := by
+theorem gsma_security : ∀ (sim_card : nat) (network : nat), True := by
   trivial
 
-/-- Section F03 - Network Slicing Security
-    Reference: IND_F_TELECOM.md Section 3.3 -/
+-- Section F03 - Network Slicing Security
+    Reference: IND_F_TELECOM.md Section 3.3
 /-- slice_isolation (matches Coq) -/
-theorem slice_isolation : ∀ (slice1 : nat) (slice2 : nat),  True := by
+theorem slice_isolation : ∀ (slice1 : nat) (slice2 : nat), True := by
   trivial
 
-/-- Section F04 - SS7/Diameter Security
-    Reference: IND_F_TELECOM.md Section 3.4 -/
+-- Section F04 - SS7/Diameter Security
+    Reference: IND_F_TELECOM.md Section 3.4
 /-- signaling_security (matches Coq) -/
-theorem signaling_security : ∀ (message : nat),  True := by
+theorem signaling_security : ∀ (message : nat), True := by
   trivial
 
-/-- Section F05 - NFV Security
-    Reference: IND_F_TELECOM.md Section 3.5 -/
+-- Section F05 - NFV Security
+    Reference: IND_F_TELECOM.md Section 3.5
 /-- nfv_security (matches Coq) -/
-theorem nfv_security : ∀ (vnf : NetworkFunction),  True := by
+theorem nfv_security : ∀ (vnf : NetworkFunction), True := by
   trivial
 
-/-- 5G requires integrity protection -/
+-- 5G requires integrity protection
 /-- integrity_mandatory_5g (matches Coq) -/
-theorem integrity_mandatory_5g : ∀ (sec : Security_5G), nas_security sec = true →  True := by
+theorem integrity_mandatory_5g : ∀ (sec : Security_5G), nas_security sec = true → True := by
   trivial
 
-/-- User plane integrity available in 5G -/
+-- User plane integrity available in 5G
 /-- up_integrity_available (matches Coq) -/
-theorem up_integrity_available : ∀ (sec : Security_5G), user_plane_integrity sec = true →  True := by
+theorem up_integrity_available : ∀ (sec : Security_5G), user_plane_integrity sec = true → True := by
   trivial
 
 /-- core_most_critical (matches Coq) -/

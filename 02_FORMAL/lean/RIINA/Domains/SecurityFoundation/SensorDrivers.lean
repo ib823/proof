@@ -164,112 +164,112 @@ def rate_limit_ok (rl : SensorRateLimit) : Prop :=
 def rate_limit_exceeded (rl : SensorRateLimit) : Prop :=
   rate_current_reads rl > rate_max_reads_per_sec rl
 
-/-- Theorem: Sensor access requires appropriate permission. -/
+-- Theorem: Sensor access requires appropriate permission.
 /-- sensor_access_controlled (matches Coq) -/
 theorem sensor_access_controlled : ∀ (app : Application) (sensor : Sensor), reads_sensor app sensor → has_sensor_permission app sensor := by
   intro h; exact h
 
-/-- Theorem: When camera or microphone is in use, indicator must be visible. -/
+-- Theorem: When camera or microphone is in use, indicator must be visible.
 /-- recording_indicator_mandatory (matches Coq) -/
 theorem recording_indicator_mandatory : ∀ (app : Application) (st : SystemState), (uses_camera app ∧ any_camera_active st = true) ∨ (uses_microphone app ∧ any_mic_active st = true) → indicator_visible st → (camera_indicator st = true ∨ mic_indicator st = true) := by
   simp_all [Bool.and_eq_true]
 
-/-- No permission implies no sensor access -/
+-- No permission implies no sensor access
 /-- no_permission_no_sensor (matches Coq) -/
 theorem no_permission_no_sensor : ∀ (app : Application) (sensor : Sensor), ~ has_sensor_permission app sensor → ~ reads_sensor app sensor := by
   simp_all [Bool.and_eq_true]
 
-/-- Camera permission specific -/
+-- Camera permission specific
 /-- camera_requires_camera_perm (matches Coq) -/
 theorem camera_requires_camera_perm : ∀ (app : Application) (cam : Sensor), sensor_type cam = Camera → reads_sensor app cam → app_camera_perm app = true := by
   intro h; exact h
 
-/-- Location permission specific -/
+-- Location permission specific
 /-- gps_requires_location_perm (matches Coq) -/
 theorem gps_requires_location_perm : ∀ (app : Application) (gps : Sensor), sensor_type gps = GPS → reads_sensor app gps → app_location_perm app = true := by
   intro h; exact h
 
-/-- Rate limit exceeded blocks further reads -/
+-- Rate limit exceeded blocks further reads
 /-- rate_limit_blocks_excess (matches Coq) -/
 theorem rate_limit_blocks_excess : ∀ (rl : SensorRateLimit), rate_limit_exceeded rl → ~ rate_limit_ok rl := by
   omega
 
-/-- Microphone requires microphone permission -/
+-- Microphone requires microphone permission
 /-- microphone_requires_mic_perm (matches Coq) -/
 theorem microphone_requires_mic_perm : ∀ (app : Application) (mic : Sensor), sensor_type mic = Microphone → reads_sensor app mic → app_microphone_perm app = true := by
   intro h; exact h
 
-/-- Accelerometer requires motion permission -/
+-- Accelerometer requires motion permission
 /-- accelerometer_requires_motion_perm (matches Coq) -/
 theorem accelerometer_requires_motion_perm : ∀ (app : Application) (accel : Sensor), sensor_type accel = Accelerometer → reads_sensor app accel → app_motion_perm app = true := by
   intro h; exact h
 
-/-- Gyroscope requires motion permission -/
+-- Gyroscope requires motion permission
 /-- gyroscope_requires_motion_perm (matches Coq) -/
 theorem gyroscope_requires_motion_perm : ∀ (app : Application) (gyro : Sensor), sensor_type gyro = Gyroscope → reads_sensor app gyro → app_motion_perm app = true := by
   intro h; exact h
 
-/-- App with no permissions cannot read any sensor -/
+-- App with no permissions cannot read any sensor
 /-- no_permissions_no_sensors (matches Coq) -/
 theorem no_permissions_no_sensors : ∀ (app : Application), app_camera_perm app = false → app_microphone_perm app = false → app_location_perm app = false → app_motion_perm app = false → ∀ sensor, ~ reads_sensor app sensor := by
   simp_all [Bool.and_eq_true]
 
-/-- Camera and microphone indicators are independent -/
+-- Camera and microphone indicators are independent
 /-- indicators_independent (matches Coq) -/
 theorem indicators_independent : ∀ (st : SystemState), any_camera_active st = true → any_mic_active st = false → indicator_visible st → camera_indicator st = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Mic indicator when mic active -/
+-- Mic indicator when mic active
 /-- mic_indicator_when_active (matches Coq) -/
 theorem mic_indicator_when_active : ∀ (st : SystemState), any_mic_active st = true → indicator_visible st → mic_indicator st = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Camera indicator when camera active -/
+-- Camera indicator when camera active
 /-- cam_indicator_when_active (matches Coq) -/
 theorem cam_indicator_when_active : ∀ (st : SystemState), any_camera_active st = true → indicator_visible st → camera_indicator st = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Both sensors active means both indicators visible -/
+-- Both sensors active means both indicators visible
 /-- both_sensors_both_indicators (matches Coq) -/
 theorem both_sensors_both_indicators : ∀ (st : SystemState), any_camera_active st = true → any_mic_active st = true → indicator_visible st → camera_indicator st = true ∧ mic_indicator st = true := by
   simp_all [Bool.and_eq_true]
 
-/-- No active sensors means no indicator requirement -/
+-- No active sensors means no indicator requirement
 /-- no_active_no_indicator_required (matches Coq) -/
 theorem no_active_no_indicator_required : ∀ (st : SystemState), any_camera_active st = false → any_mic_active st = false → indicator_visible st := by
   simp_all [Bool.and_eq_true]
 
-/-- Sensor permission is type-specific -/
+-- Sensor permission is type-specific
 /-- sensor_perm_type_specific (matches Coq) -/
 theorem sensor_perm_type_specific : ∀ (app : Application) (s1 s2 : Sensor), sensor_type s1 ≠ sensor_type s2 → has_sensor_permission app s1 → ~ has_sensor_permission app s2 → sensor_type s1 ≠ sensor_type s2 := by
   intro h; exact h
 
-/-- Camera permission does not grant microphone access -/
+-- Camera permission does not grant microphone access
 /-- camera_perm_not_mic (matches Coq) -/
 theorem camera_perm_not_mic : ∀ (app : Application) (cam mic : Sensor), sensor_type cam = Camera → sensor_type mic = Microphone → app_camera_perm app = true → app_microphone_perm app = false → has_sensor_permission app cam ∧ ~ has_sensor_permission app mic := by
   intro h; exact h
 
-/-- Motion permission covers both accelerometer and gyroscope -/
+-- Motion permission covers both accelerometer and gyroscope
 /-- motion_perm_covers_both (matches Coq) -/
 theorem motion_perm_covers_both : ∀ (app : Application) (accel gyro : Sensor), sensor_type accel = Accelerometer → sensor_type gyro = Gyroscope → app_motion_perm app = true → has_sensor_permission app accel ∧ has_sensor_permission app gyro := by
   intro h; exact h
 
-/-- Sensor reading validity: read implies permission was checked -/
+-- Sensor reading validity: read implies permission was checked
 /-- sensor_reading_valid (matches Coq) -/
 theorem sensor_reading_valid : ∀ (app : Application) (sensor : Sensor), reads_sensor app sensor → match sensor_type sensor with | Camera => app_camera_perm app = true | Microphone => app_microphone_perm app = true | GPS => app_location_perm app = true | Accelerometer => app_motion_perm app = true | Gyroscope => app_motion_perm app = true end := by
   intro h; exact h
 
-/-- Bounded sensor current rate is within max -/
+-- Bounded sensor current rate is within max
 /-- bounded_sensor_rate_valid (matches Coq) -/
 theorem bounded_sensor_rate_valid : ∀ (bs : BoundedSensor), bs_current_rate bs ≤ bs_max_rate bs := by
   intro h; exact h
 
-/-- Revoking all permissions blocks all sensor types -/
+-- Revoking all permissions blocks all sensor types
 /-- revoke_all_blocks_all_types (matches Coq) -/
 theorem revoke_all_blocks_all_types : ∀ (app : Application), app_camera_perm app = false → app_microphone_perm app = false → app_location_perm app = false → app_motion_perm app = false → ∀ (st : SensorType) (s : Sensor), sensor_type s = st → ~ has_sensor_permission app s := by
   simp_all [Bool.and_eq_true]
 
-/-- GPS does not require camera permission -/
+-- GPS does not require camera permission
 /-- gps_independent_of_camera (matches Coq) -/
 theorem gps_independent_of_camera : ∀ (app : Application) (gps_sensor : Sensor), sensor_type gps_sensor = GPS → app_camera_perm app = false → app_location_perm app = true → has_sensor_permission app gps_sensor := by
   intro h; exact h

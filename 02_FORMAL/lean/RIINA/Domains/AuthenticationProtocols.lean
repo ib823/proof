@@ -480,9 +480,9 @@ def riina_session : SessionSecurity := mkSession true true true true
 /-- riina_auth (matches Coq: Definition riina_auth) -/
 def riina_auth : AuthConfig := mkAuth riina_pwd riina_mfa riina_session
 
-/-- ============================================================================
+-- ============================================================================
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -503,9 +503,9 @@ theorem leb_le : ∀ n m : nat, (n <=? m) = true <-> n ≤ m := by
 theorem ltb_lt : ∀ n m : nat, (n <? m) = true <-> n < m := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION I: CORE AUTHENTICATION THEOREMS (AUTH_001 - AUTH_025)
-    ============================================================================ -/
+    ============================================================================
 /-- AUTH_001 (matches Coq) -/
 theorem AUTH_001 : password_secure riina_pwd = true := by
   rfl
@@ -606,362 +606,362 @@ theorem AUTH_024 : ∀ a, auth_complete a = true → password_secure (auth_pwd a
 theorem AUTH_025_complete : ∀ a, auth_complete a = true → pwd_bcrypt_argon (auth_pwd a) = true ∧ mfa_webauthn (auth_mfa a) = true ∧ sess_secure_token (auth_session a) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PBKDF2_001: RIINA PBKDF2 is secure -/
+-- PBKDF2_001: RIINA PBKDF2 is secure
 /-- PBKDF2_001_riina_secure (matches Coq) -/
 theorem PBKDF2_001_riina_secure : pbkdf2_secure riina_pbkdf2 = true := by
   rfl
 
-/-- PBKDF2_002: Secure PBKDF2 has sufficient iterations -/
+-- PBKDF2_002: Secure PBKDF2 has sufficient iterations
 /-- PBKDF2_002_sufficient_iterations (matches Coq) -/
 theorem PBKDF2_002_sufficient_iterations : ∀ cfg, pbkdf2_secure cfg = true → (600000 <=? pbkdf2_iterations cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PBKDF2_003: Secure PBKDF2 has sufficient salt -/
+-- PBKDF2_003: Secure PBKDF2 has sufficient salt
 /-- PBKDF2_003_sufficient_salt (matches Coq) -/
 theorem PBKDF2_003_sufficient_salt : ∀ cfg, pbkdf2_secure cfg = true → (128 <=? pbkdf2_salt_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PBKDF2_004: Secure PBKDF2 has sufficient output -/
+-- PBKDF2_004: Secure PBKDF2 has sufficient output
 /-- PBKDF2_004_sufficient_output (matches Coq) -/
 theorem PBKDF2_004_sufficient_output : ∀ cfg, pbkdf2_secure cfg = true → (256 <=? pbkdf2_output_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PBKDF2_005: Secure PBKDF2 uses approved algorithm -/
+-- PBKDF2_005: Secure PBKDF2 uses approved algorithm
 /-- PBKDF2_005_approved_algorithm (matches Coq) -/
 theorem PBKDF2_005_approved_algorithm : ∀ cfg, pbkdf2_secure cfg = true → (pbkdf2_hash_alg cfg <=? 1) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PBKDF2_006: Iterations provide work factor security -/
+-- PBKDF2_006: Iterations provide work factor security
 /-- PBKDF2_006_work_factor (matches Coq) -/
 theorem PBKDF2_006_work_factor : ∀ cfg, pbkdf2_secure cfg = true → pbkdf2_iterations cfg ≥ 600000 := by
   simp_all [Bool.and_eq_true]
 
-/-- ARGON2_001: RIINA Argon2 is secure -/
+-- ARGON2_001: RIINA Argon2 is secure
 /-- ARGON2_001_riina_secure (matches Coq) -/
 theorem ARGON2_001_riina_secure : argon2_secure riina_argon2 = true := by
   rfl
 
-/-- ARGON2_002: Secure Argon2 has sufficient time cost -/
+-- ARGON2_002: Secure Argon2 has sufficient time cost
 /-- ARGON2_002_sufficient_time (matches Coq) -/
 theorem ARGON2_002_sufficient_time : ∀ cfg, argon2_secure cfg = true → (3 <=? argon2_time_cost cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ARGON2_003: Secure Argon2 has sufficient memory cost -/
+-- ARGON2_003: Secure Argon2 has sufficient memory cost
 /-- ARGON2_003_sufficient_memory (matches Coq) -/
 theorem ARGON2_003_sufficient_memory : ∀ cfg, argon2_secure cfg = true → (65536 <=? argon2_memory_cost cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ARGON2_004: Secure Argon2 uses Argon2id variant -/
+-- ARGON2_004: Secure Argon2 uses Argon2id variant
 /-- ARGON2_004_argon2id_variant (matches Coq) -/
 theorem ARGON2_004_argon2id_variant : ∀ cfg, argon2_secure cfg = true → (argon2_variant cfg =? 2) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ARGON2_005: Memory hardness prevents GPU attacks -/
+-- ARGON2_005: Memory hardness prevents GPU attacks
 /-- ARGON2_005_memory_hardness (matches Coq) -/
 theorem ARGON2_005_memory_hardness : ∀ cfg, argon2_secure cfg = true → argon2_memory_cost cfg ≥ 65536 := by
   simp_all [Bool.and_eq_true]
 
-/-- ARGON2_006: Secure Argon2 has parallelism -/
+-- ARGON2_006: Secure Argon2 has parallelism
 /-- ARGON2_006_parallelism (matches Coq) -/
 theorem ARGON2_006_parallelism : ∀ cfg, argon2_secure cfg = true → argon2_parallelism cfg ≥ 1 := by
   simp_all [Bool.and_eq_true]
 
-/-- BCRYPT_001: RIINA bcrypt is secure -/
+-- BCRYPT_001: RIINA bcrypt is secure
 /-- BCRYPT_001_riina_secure (matches Coq) -/
 theorem BCRYPT_001_riina_secure : bcrypt_secure riina_bcrypt = true := by
   rfl
 
-/-- BCRYPT_002: Secure bcrypt has sufficient cost factor -/
+-- BCRYPT_002: Secure bcrypt has sufficient cost factor
 /-- BCRYPT_002_sufficient_cost (matches Coq) -/
 theorem BCRYPT_002_sufficient_cost : ∀ cfg, bcrypt_secure cfg = true → (12 <=? bcrypt_cost_factor cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BCRYPT_003: bcrypt uses fixed salt size -/
+-- BCRYPT_003: bcrypt uses fixed salt size
 /-- BCRYPT_003_fixed_salt (matches Coq) -/
 theorem BCRYPT_003_fixed_salt : ∀ cfg, bcrypt_secure cfg = true → (bcrypt_salt_bits cfg =? 128) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BCRYPT_004: bcrypt uses fixed output size -/
+-- BCRYPT_004: bcrypt uses fixed output size
 /-- BCRYPT_004_fixed_output (matches Coq) -/
 theorem BCRYPT_004_fixed_output : ∀ cfg, bcrypt_secure cfg = true → (bcrypt_output_bits cfg =? 184) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- BCRYPT_005: Cost factor provides exponential work -/
+-- BCRYPT_005: Cost factor provides exponential work
 /-- BCRYPT_005_exponential_work (matches Coq) -/
 theorem BCRYPT_005_exponential_work : ∀ cfg, bcrypt_secure cfg = true → bcrypt_cost_factor cfg ≥ 12 := by
   simp_all [Bool.and_eq_true]
 
-/-- TOTP_001: RIINA TOTP is secure -/
+-- TOTP_001: RIINA TOTP is secure
 /-- TOTP_001_riina_secure (matches Coq) -/
 theorem TOTP_001_riina_secure : totp_secure riina_totp = true := by
   rfl
 
-/-- TOTP_002: Secure TOTP has sufficient secret entropy -/
+-- TOTP_002: Secure TOTP has sufficient secret entropy
 /-- TOTP_002_sufficient_secret (matches Coq) -/
 theorem TOTP_002_sufficient_secret : ∀ cfg, totp_secure cfg = true → (160 <=? totp_secret_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TOTP_003: Secure TOTP has sufficient digits -/
+-- TOTP_003: Secure TOTP has sufficient digits
 /-- TOTP_003_sufficient_digits (matches Coq) -/
 theorem TOTP_003_sufficient_digits : ∀ cfg, totp_secure cfg = true → (6 <=? totp_digits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TOTP_004: Secure TOTP uses 30-second period -/
+-- TOTP_004: Secure TOTP uses 30-second period
 /-- TOTP_004_standard_period (matches Coq) -/
 theorem TOTP_004_standard_period : ∀ cfg, totp_secure cfg = true → (totp_period cfg =? 30) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TOTP_005: Secure TOTP limits clock drift -/
+-- TOTP_005: Secure TOTP limits clock drift
 /-- TOTP_005_limited_drift (matches Coq) -/
 theorem TOTP_005_limited_drift : ∀ cfg, totp_secure cfg = true → (totp_drift_window cfg <=? 1) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TOTP_006: TOTP entropy prevents brute force -/
+-- TOTP_006: TOTP entropy prevents brute force
 /-- TOTP_006_brute_force_resistant (matches Coq) -/
 theorem TOTP_006_brute_force_resistant : ∀ cfg, totp_secure cfg = true → totp_secret_bits cfg ≥ 160 := by
   simp_all [Bool.and_eq_true]
 
-/-- WEBAUTHN_001: RIINA WebAuthn is secure -/
+-- WEBAUTHN_001: RIINA WebAuthn is secure
 /-- WEBAUTHN_001_riina_secure (matches Coq) -/
 theorem WEBAUTHN_001_riina_secure : webauthn_secure riina_webauthn = true := by
   rfl
 
-/-- WEBAUTHN_002: Secure WebAuthn requires user verification -/
+-- WEBAUTHN_002: Secure WebAuthn requires user verification
 /-- WEBAUTHN_002_user_verification (matches Coq) -/
 theorem WEBAUTHN_002_user_verification : ∀ cfg, webauthn_secure cfg = true → (webauthn_user_verification cfg =? 2) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- WEBAUTHN_003: Secure WebAuthn has sufficient challenge entropy -/
+-- WEBAUTHN_003: Secure WebAuthn has sufficient challenge entropy
 /-- WEBAUTHN_003_challenge_entropy (matches Coq) -/
 theorem WEBAUTHN_003_challenge_entropy : ∀ cfg, webauthn_secure cfg = true → (128 <=? webauthn_challenge_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- WEBAUTHN_004: Secure WebAuthn has appropriate timeout -/
+-- WEBAUTHN_004: Secure WebAuthn has appropriate timeout
 /-- WEBAUTHN_004_timeout_range (matches Coq) -/
 theorem WEBAUTHN_004_timeout_range : ∀ cfg, webauthn_secure cfg = true → (60000 <=? webauthn_timeout_ms cfg) = true ∧ (webauthn_timeout_ms cfg <=? 300000) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- WEBAUTHN_005: User verification prevents impersonation -/
+-- WEBAUTHN_005: User verification prevents impersonation
 /-- WEBAUTHN_005_impersonation_prevention (matches Coq) -/
 theorem WEBAUTHN_005_impersonation_prevention : ∀ cfg, webauthn_secure cfg = true → webauthn_user_verification cfg = 2 := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_001: RIINA session token is secure -/
+-- SESSION_001: RIINA session token is secure
 /-- SESSION_001_riina_secure (matches Coq) -/
 theorem SESSION_001_riina_secure : session_token_secure riina_session_token = true := by
   rfl
 
-/-- SESSION_002: Secure session has sufficient entropy -/
+-- SESSION_002: Secure session has sufficient entropy
 /-- SESSION_002_sufficient_entropy (matches Coq) -/
 theorem SESSION_002_sufficient_entropy : ∀ cfg, session_token_secure cfg = true → (256 <=? token_entropy_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_003: Secure session has rotation -/
+-- SESSION_003: Secure session has rotation
 /-- SESSION_003_rotation_enabled (matches Coq) -/
 theorem SESSION_003_rotation_enabled : ∀ cfg, session_token_secure cfg = true → token_rotation cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_004: Secure session has binding -/
+-- SESSION_004: Secure session has binding
 /-- SESSION_004_binding_enabled (matches Coq) -/
 theorem SESSION_004_binding_enabled : ∀ cfg, session_token_secure cfg = true → token_binding cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_005: Secure session has Secure flag -/
+-- SESSION_005: Secure session has Secure flag
 /-- SESSION_005_secure_flag (matches Coq) -/
 theorem SESSION_005_secure_flag : ∀ cfg, session_token_secure cfg = true → token_secure_flag cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_006: Secure session has HttpOnly flag -/
+-- SESSION_006: Secure session has HttpOnly flag
 /-- SESSION_006_httponly_flag (matches Coq) -/
 theorem SESSION_006_httponly_flag : ∀ cfg, session_token_secure cfg = true → token_httponly_flag cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_007: Secure session has SameSite protection -/
+-- SESSION_007: Secure session has SameSite protection
 /-- SESSION_007_samesite_protection (matches Coq) -/
 theorem SESSION_007_samesite_protection : ∀ cfg, session_token_secure cfg = true → (1 <=? token_samesite cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SESSION_008: Session entropy prevents guessing -/
+-- SESSION_008: Session entropy prevents guessing
 /-- SESSION_008_guessing_resistant (matches Coq) -/
 theorem SESSION_008_guessing_resistant : ∀ cfg, session_token_secure cfg = true → token_entropy_bits cfg ≥ 256 := by
   simp_all [Bool.and_eq_true]
 
-/-- OAUTH2_001: RIINA OAuth 2.0 is secure -/
+-- OAUTH2_001: RIINA OAuth 2.0 is secure
 /-- OAUTH2_001_riina_secure (matches Coq) -/
 theorem OAUTH2_001_riina_secure : oauth2_secure riina_oauth2 = true := by
   rfl
 
-/-- OAUTH2_002: Secure OAuth 2.0 requires PKCE -/
+-- OAUTH2_002: Secure OAuth 2.0 requires PKCE
 /-- OAUTH2_002_pkce_required (matches Coq) -/
 theorem OAUTH2_002_pkce_required : ∀ cfg, oauth2_secure cfg = true → oauth2_pkce cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OAUTH2_003: Secure OAuth 2.0 requires state parameter -/
+-- OAUTH2_003: Secure OAuth 2.0 requires state parameter
 /-- OAUTH2_003_state_required (matches Coq) -/
 theorem OAUTH2_003_state_required : ∀ cfg, oauth2_secure cfg = true → oauth2_state_param cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OAUTH2_004: Secure OAuth 2.0 has sufficient code entropy -/
+-- OAUTH2_004: Secure OAuth 2.0 has sufficient code entropy
 /-- OAUTH2_004_code_entropy (matches Coq) -/
 theorem OAUTH2_004_code_entropy : ∀ cfg, oauth2_secure cfg = true → (128 <=? oauth2_code_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OAUTH2_005: Secure OAuth 2.0 has short code expiry -/
+-- OAUTH2_005: Secure OAuth 2.0 has short code expiry
 /-- OAUTH2_005_short_code_expiry (matches Coq) -/
 theorem OAUTH2_005_short_code_expiry : ∀ cfg, oauth2_secure cfg = true → (oauth2_code_expiry cfg <=? 60) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OAUTH2_006: Secure OAuth 2.0 rotates refresh tokens -/
+-- OAUTH2_006: Secure OAuth 2.0 rotates refresh tokens
 /-- OAUTH2_006_refresh_rotation (matches Coq) -/
 theorem OAUTH2_006_refresh_rotation : ∀ cfg, oauth2_secure cfg = true → oauth2_refresh_rotation cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OAUTH2_007: PKCE prevents authorization code interception -/
+-- OAUTH2_007: PKCE prevents authorization code interception
 /-- OAUTH2_007_code_interception_prevention (matches Coq) -/
 theorem OAUTH2_007_code_interception_prevention : ∀ cfg, oauth2_secure cfg = true → oauth2_pkce cfg = true ∧ (128 <=? oauth2_code_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OIDC_001: RIINA OIDC is secure -/
+-- OIDC_001: RIINA OIDC is secure
 /-- OIDC_001_riina_secure (matches Coq) -/
 theorem OIDC_001_riina_secure : oidc_secure riina_oidc = true := by
   rfl
 
-/-- OIDC_002: Secure OIDC has secure OAuth 2.0 base -/
+-- OIDC_002: Secure OIDC has secure OAuth 2.0 base
 /-- OIDC_002_secure_base (matches Coq) -/
 theorem OIDC_002_secure_base : ∀ cfg, oidc_secure cfg = true → oauth2_secure (oidc_base cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OIDC_003: Secure OIDC uses strong signing algorithm -/
+-- OIDC_003: Secure OIDC uses strong signing algorithm
 /-- OIDC_003_strong_signing (matches Coq) -/
 theorem OIDC_003_strong_signing : ∀ cfg, oidc_secure cfg = true → (1 <=? oidc_id_token_alg cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OIDC_004: Secure OIDC has short ID token expiry -/
+-- OIDC_004: Secure OIDC has short ID token expiry
 /-- OIDC_004_short_id_expiry (matches Coq) -/
 theorem OIDC_004_short_id_expiry : ∀ cfg, oidc_secure cfg = true → (oidc_id_token_expiry cfg <=? 3600) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OIDC_005: Secure OIDC verifies claims -/
+-- OIDC_005: Secure OIDC verifies claims
 /-- OIDC_005_claims_verified (matches Coq) -/
 theorem OIDC_005_claims_verified : ∀ cfg, oidc_secure cfg = true → oidc_claims_verified cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- OIDC_006: OIDC inherits OAuth 2.0 PKCE protection -/
+-- OIDC_006: OIDC inherits OAuth 2.0 PKCE protection
 /-- OIDC_006_inherits_pkce (matches Coq) -/
 theorem OIDC_006_inherits_pkce : ∀ cfg, oidc_secure cfg = true → oauth2_pkce (oidc_base cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CHALLENGE_001: RIINA challenge config is secure -/
+-- CHALLENGE_001: RIINA challenge config is secure
 /-- CHALLENGE_001_riina_secure (matches Coq) -/
 theorem CHALLENGE_001_riina_secure : challenge_secure riina_challenge = true := by
   rfl
 
-/-- CHALLENGE_002: Secure challenge has sufficient entropy -/
+-- CHALLENGE_002: Secure challenge has sufficient entropy
 /-- CHALLENGE_002_sufficient_entropy (matches Coq) -/
 theorem CHALLENGE_002_sufficient_entropy : ∀ cfg, challenge_secure cfg = true → (128 <=? challenge_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CHALLENGE_003: Secure challenge has short expiry -/
+-- CHALLENGE_003: Secure challenge has short expiry
 /-- CHALLENGE_003_short_expiry (matches Coq) -/
 theorem CHALLENGE_003_short_expiry : ∀ cfg, challenge_secure cfg = true → (challenge_expiry_ms cfg <=? 300000) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CHALLENGE_004: Secure challenge is single-use -/
+-- CHALLENGE_004: Secure challenge is single-use
 /-- CHALLENGE_004_single_use (matches Coq) -/
 theorem CHALLENGE_004_single_use : ∀ cfg, challenge_secure cfg = true → challenge_single_use cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CHALLENGE_005: Secure challenge is session-bound -/
+-- CHALLENGE_005: Secure challenge is session-bound
 /-- CHALLENGE_005_session_bound (matches Coq) -/
 theorem CHALLENGE_005_session_bound : ∀ cfg, challenge_secure cfg = true → challenge_bound cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- CHALLENGE_006: Challenge entropy prevents guessing -/
+-- CHALLENGE_006: Challenge entropy prevents guessing
 /-- CHALLENGE_006_guessing_resistant (matches Coq) -/
 theorem CHALLENGE_006_guessing_resistant : ∀ cfg, challenge_secure cfg = true → challenge_bits cfg ≥ 128 := by
   simp_all [Bool.and_eq_true]
 
-/-- CHALLENGE_007: Single-use and binding prevent replay -/
+-- CHALLENGE_007: Single-use and binding prevent replay
 /-- CHALLENGE_007_replay_prevention (matches Coq) -/
 theorem CHALLENGE_007_replay_prevention : ∀ cfg, challenge_secure cfg = true → challenge_single_use cfg = true ∧ challenge_bound cfg = true := by
   simp_all [Bool.and_eq_true]
 
-/-- REPLAY_001: RIINA nonce tracker is secure -/
+-- REPLAY_001: RIINA nonce tracker is secure
 /-- REPLAY_001_riina_secure (matches Coq) -/
 theorem REPLAY_001_riina_secure : replay_prevention_secure riina_nonce_tracker = true := by
   rfl
 
-/-- REPLAY_002: Secure tracker has sufficient nonce size -/
+-- REPLAY_002: Secure tracker has sufficient nonce size
 /-- REPLAY_002_sufficient_nonce (matches Coq) -/
 theorem REPLAY_002_sufficient_nonce : ∀ cfg, replay_prevention_secure cfg = true → (128 <=? nonce_size_bits cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- REPLAY_003: Secure tracker has sufficient window size -/
+-- REPLAY_003: Secure tracker has sufficient window size
 /-- REPLAY_003_sufficient_window (matches Coq) -/
 theorem REPLAY_003_sufficient_window : ∀ cfg, replay_prevention_secure cfg = true → (1000 <=? nonce_window_size cfg) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- REPLAY_004: Secure tracker has bounded timestamp -/
+-- REPLAY_004: Secure tracker has bounded timestamp
 /-- REPLAY_004_bounded_timestamp (matches Coq) -/
 theorem REPLAY_004_bounded_timestamp : ∀ cfg, replay_prevention_secure cfg = true → (nonce_timestamp_bound cfg <=? 300) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- REPLAY_005: Large window prevents replay -/
+-- REPLAY_005: Large window prevents replay
 /-- REPLAY_005_window_prevents_replay (matches Coq) -/
 theorem REPLAY_005_window_prevents_replay : ∀ cfg, replay_prevention_secure cfg = true → nonce_window_size cfg ≥ 1000 := by
   simp_all [Bool.and_eq_true]
 
-/-- REPLAY_006: Timestamp bound limits attack window -/
+-- REPLAY_006: Timestamp bound limits attack window
 /-- REPLAY_006_limited_attack_window (matches Coq) -/
 theorem REPLAY_006_limited_attack_window : ∀ cfg, replay_prevention_secure cfg = true → nonce_timestamp_bound cfg ≤ 300 := by
   simp_all [Bool.and_eq_true]
 
-/-- COMPOSITE_001: Complete password hashing security -/
+-- COMPOSITE_001: Complete password hashing security
 /-- COMPOSITE_001_password_hashing_secure (matches Coq) -/
 theorem COMPOSITE_001_password_hashing_secure : pbkdf2_secure riina_pbkdf2 = true ∧ argon2_secure riina_argon2 = true ∧ bcrypt_secure riina_bcrypt = true := by
   rfl
 
-/-- COMPOSITE_002: Complete MFA security -/
+-- COMPOSITE_002: Complete MFA security
 /-- COMPOSITE_002_mfa_complete (matches Coq) -/
 theorem COMPOSITE_002_mfa_complete : totp_secure riina_totp = true ∧ webauthn_secure riina_webauthn = true := by
   constructor <;> rfl
 
-/-- COMPOSITE_003: Complete session security -/
+-- COMPOSITE_003: Complete session security
 /-- COMPOSITE_003_session_complete (matches Coq) -/
 theorem COMPOSITE_003_session_complete : session_token_secure riina_session_token = true ∧ oauth2_secure riina_oauth2 = true ∧ oidc_secure riina_oidc = true := by
   rfl
 
-/-- COMPOSITE_004: Complete challenge-response security -/
+-- COMPOSITE_004: Complete challenge-response security
 /-- COMPOSITE_004_challenge_complete (matches Coq) -/
 theorem COMPOSITE_004_challenge_complete : challenge_secure riina_challenge = true ∧ replay_prevention_secure riina_nonce_tracker = true := by
   constructor <;> rfl
 
-/-- COMPOSITE_005: All RIINA auth configurations are secure -/
+-- COMPOSITE_005: All RIINA auth configurations are secure
 /-- COMPOSITE_005_riina_auth_complete (matches Coq) -/
 theorem COMPOSITE_005_riina_auth_complete : auth_complete riina_auth = true ∧ pbkdf2_secure riina_pbkdf2 = true ∧ argon2_secure riina_argon2 = true ∧ bcrypt_secure riina_bcrypt = true ∧ totp_secure riina_totp = true ∧ webauthn_secure riina_webauthn = true ∧ session_token_secure riina_session_token = true ∧ oauth2_secure riina_oauth2 = true ∧ oidc_secure riina_oidc = true ∧ challenge_secure riina_challenge = true ∧ replay_prevention_secure riina_nonce_tracker = true := by
   rfl
 
-/-- COMPOSITE_006: Secure auth implies all subcomponent properties -/
+-- COMPOSITE_006: Secure auth implies all subcomponent properties
 /-- COMPOSITE_006_auth_implies_all (matches Coq) -/
 theorem COMPOSITE_006_auth_implies_all : ∀ a, auth_complete a = true → pwd_bcrypt_argon (auth_pwd a) = true ∧ pwd_salt_unique (auth_pwd a) = true ∧ mfa_totp_support (auth_mfa a) = true ∧ mfa_webauthn (auth_mfa a) = true ∧ sess_secure_token (auth_session a) = true ∧ sess_rotation (auth_session a) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TOKEN_001: Valid tokens are not expired -/
+-- TOKEN_001: Valid tokens are not expired
 /-- TOKEN_001_valid_not_expired (matches Coq) -/
 theorem TOKEN_001_valid_not_expired : TokenValid ≠ TokenExpired := by
   simp_all [Bool.and_eq_true]
 
-/-- TOKEN_002: Valid tokens are not invalid -/
+-- TOKEN_002: Valid tokens are not invalid
 /-- TOKEN_002_valid_not_invalid (matches Coq) -/
 theorem TOKEN_002_valid_not_invalid : TokenValid ≠ TokenInvalid := by
   simp_all [Bool.and_eq_true]
 
-/-- TOKEN_003: Valid tokens are not revoked -/
+-- TOKEN_003: Valid tokens are not revoked
 /-- TOKEN_003_valid_not_revoked (matches Coq) -/
 theorem TOKEN_003_valid_not_revoked : TokenValid ≠ TokenRevoked := by
   simp_all [Bool.and_eq_true]
 
-/-- TOKEN_004: Expired tokens are not valid -/
+-- TOKEN_004: Expired tokens are not valid
 /-- TOKEN_004_expired_not_valid (matches Coq) -/
 theorem TOKEN_004_expired_not_valid : TokenExpired ≠ TokenValid := by
   simp_all [Bool.and_eq_true]

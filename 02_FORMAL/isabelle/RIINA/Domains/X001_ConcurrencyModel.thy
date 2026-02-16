@@ -381,11 +381,11 @@ lemma X_001_10_session_fidelity: "\<forall> ch mt s, chan_type ch = SSend mt s \
   by simp
 
 (* X_001_11_session_progress (matches Coq) *)
-lemma X_001_11_session_progress: "\<forall> cfg : Config, session_typed cfg \<longrightarrow> cfg \<noteq> [] \<longrightarrow> \<exists> cfg' : Config, True. (* Sessions can always progress or are done *)"
+lemma X_001_11_session_progress: "\<forall> cfg : Config, session_typed cfg \<longrightarrow> cfg \<noteq> [] \<longrightarrow> \<exists> cfg' : Config, True. "
   by auto
 
 (* X_001_12_session_safety (matches Coq) *)
-lemma X_001_12_session_safety: "\<forall> ch1 ch2, chan_type ch1 = dual (chan_type ch2) \<longrightarrow> chan_id ch1 = chan_id ch2 \<longrightarrow> True. (* Communication is safe *)"
+lemma X_001_12_session_safety: "\<forall> ch1 ch2, chan_type ch1 = dual (chan_type ch2) \<longrightarrow> chan_id ch1 = chan_id ch2 \<longrightarrow> True. "
   by auto
 
 (* X_001_13_channel_linear (matches Coq) *)
@@ -433,7 +433,7 @@ lemma X_001_21_resource_ordering: "\<forall> r1 r2, r1 \<noteq> r2 \<longrightar
   by simp
 
 (* X_001_22_timeout_prevents_deadlock (matches Coq) *)
-lemma X_001_22_timeout_prevents_deadlock: "\<forall> cfg, has_timeout cfg \<longrightarrow> ~ deadlocked cfg \<or> True. (* Timeout either prevents or allows recovery *)"
+lemma X_001_22_timeout_prevents_deadlock: "\<forall> cfg, has_timeout cfg \<longrightarrow> ~ deadlocked cfg \<or> True. "
   by auto
 
 (* X_001_23_deadlock_detection (matches Coq) *)

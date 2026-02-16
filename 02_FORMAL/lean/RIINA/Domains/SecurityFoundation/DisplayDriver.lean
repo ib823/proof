@@ -138,118 +138,118 @@ def valid_framebuffer (fb : FrameBuffer) : Prop :=
 def pixel_count (fb : FrameBuffer) : Nat :=
   fb_width fb * fb_height fb
 
-/-- Theorem: An application cannot read another application's frame buffer
-    without explicit permission. -/
+-- Theorem: An application cannot read another application's frame buffer
+    without explicit permission.
 /-- display_buffer_isolated (matches Coq) -/
 theorem display_buffer_isolated : ∀ (app1 app2 : Application) (buffer : FrameBuffer), app_id app1 ≠ app_id app2 → owns_buffer app1 buffer → app_screen_capture_perm app2 = false → ~ can_read_buffer app2 buffer := by
   simp_all [Bool.and_eq_true]
 
-/-- Theorem: Screen capture requires explicit permission. -/
+-- Theorem: Screen capture requires explicit permission.
 /-- screen_capture_requires_permission (matches Coq) -/
 theorem screen_capture_requires_permission : ∀ (app : Application) (frame : Frame), captures_screen app frame → has_screen_capture_permission app := by
   intro h; exact h
 
-/-- Protected buffers require special permission -/
+-- Protected buffers require special permission
 /-- protected_buffer_access (matches Coq) -/
 theorem protected_buffer_access : ∀ (app : Application) (fb : FrameBuffer), fb_protected fb = true → owns_buffer app fb → ~ can_read_buffer app fb ∨ app_screen_capture_perm app = true := by
   rfl
 
-/-- No permission implies no capture -/
+-- No permission implies no capture
 /-- no_permission_no_capture (matches Coq) -/
 theorem no_permission_no_capture : ∀ (app : Application), app_screen_capture_perm app = false → ∀ frame, ~ captures_screen app frame := by
   simp_all [Bool.and_eq_true]
 
-/-- Buffer ownership is exclusive -/
+-- Buffer ownership is exclusive
 /-- buffer_ownership_exclusive (matches Coq) -/
 theorem buffer_ownership_exclusive : ∀ (app1 app2 : Application) (fb : FrameBuffer), owns_buffer app1 fb → owns_buffer app2 fb → app_id app1 = app_id app2 := by
   intro h; exact h
 
-/-- Overlay requires permission -/
+-- Overlay requires permission
 /-- overlay_requires_permission (matches Coq) -/
 theorem overlay_requires_permission : ∀ (app : Application), creates_overlay app → has_overlay_permission app := by
   intro h; exact h
 
-/-- No overlay without permission -/
+-- No overlay without permission
 /-- no_overlay_without_permission (matches Coq) -/
 theorem no_overlay_without_permission : ∀ (app : Application), app_overlay_perm app = false → ~ creates_overlay app := by
   simp_all [Bool.and_eq_true]
 
-/-- Display output integrity: frame is from a valid buffer -/
+-- Display output integrity: frame is from a valid buffer
 /-- display_output_integrity (matches Coq) -/
 theorem display_output_integrity : ∀ (app : Application) (fb : FrameBuffer) (frame : Frame), owns_buffer app fb → frame_source frame = fb_id fb → fb_owner fb = app_id app := by
   intro h; exact h
 
-/-- Valid framebuffer has positive pixel count -/
+-- Valid framebuffer has positive pixel count
 /-- valid_fb_positive_pixels (matches Coq) -/
 theorem valid_fb_positive_pixels : ∀ (fb : FrameBuffer), valid_framebuffer fb → pixel_count fb > 0 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Screen capture with no permission fails for all frames -/
+-- Screen capture with no permission fails for all frames
 /-- no_capture_perm_blocks_all_frames (matches Coq) -/
 theorem no_capture_perm_blocks_all_frames : ∀ (app : Application), app_screen_capture_perm app = false → ∀ f, ~ captures_screen app f := by
   simp_all [Bool.and_eq_true]
 
-/-- Protected buffer blocks non-owner without capture perm -/
+-- Protected buffer blocks non-owner without capture perm
 /-- protected_buffer_blocks_non_owner (matches Coq) -/
 theorem protected_buffer_blocks_non_owner : ∀ (app : Application) (fb : FrameBuffer), fb_protected fb = true → fb_owner fb ≠ app_id app → app_screen_capture_perm app = false → ~ can_read_buffer app fb := by
   simp_all [Bool.and_eq_true]
 
-/-- Buffer read requires either ownership or capture permission -/
+-- Buffer read requires either ownership or capture permission
 /-- read_requires_ownership_or_capture (matches Coq) -/
 theorem read_requires_ownership_or_capture : ∀ (app : Application) (fb : FrameBuffer), can_read_buffer app fb → (owns_buffer app fb ∧ fb_protected fb = false) ∨ app_screen_capture_perm app = true := by
   intro h; exact h
 
-/-- Capture permission implies can read any buffer -/
+-- Capture permission implies can read any buffer
 /-- capture_perm_reads_all (matches Coq) -/
 theorem capture_perm_reads_all : ∀ (app : Application) (fb : FrameBuffer), app_screen_capture_perm app = true → can_read_buffer app fb := by
   simp_all [Bool.and_eq_true]
 
-/-- Owner can read unprotected buffer -/
+-- Owner can read unprotected buffer
 /-- owner_reads_unprotected (matches Coq) -/
 theorem owner_reads_unprotected : ∀ (app : Application) (fb : FrameBuffer), owns_buffer app fb → fb_protected fb = false → can_read_buffer app fb := by
   simp_all [Bool.and_eq_true]
 
-/-- Active overlay recorded in display state -/
+-- Active overlay recorded in display state
 /-- overlay_state_consistent (matches Coq) -/
 theorem overlay_state_consistent : ∀ (ds : DisplayState) (app_id : AppId), active_overlay ds = Some app_id → active_overlay ds ≠ None := by
   simp_all [Bool.and_eq_true]
 
-/-- No active overlay means no overlay app -/
+-- No active overlay means no overlay app
 /-- no_overlay_no_app (matches Coq) -/
 theorem no_overlay_no_app : ∀ (ds : DisplayState), active_overlay ds = None → ∀ aid, active_overlay ds ≠ Some aid := by
   simp_all [Bool.and_eq_true]
 
-/-- Buffer identity via frame buffer id -/
+-- Buffer identity via frame buffer id
 /-- fb_id_determines_buffer (matches Coq) -/
 theorem fb_id_determines_buffer : ∀ (fb1 fb2 : FrameBuffer), fb_id fb1 = fb_id fb2 → fb_owner fb1 = fb_owner fb2 → fb_width fb1 = fb_width fb2 → fb_height fb1 = fb_height fb2 → fb_protected fb1 = fb_protected fb2 → fb1 = fb2 := by
   cases ‹_› <;> simp
 
-/-- Display isolation symmetric: if app1 isolated from app2, vice versa -/
+-- Display isolation symmetric: if app1 isolated from app2, vice versa
 /-- display_isolation_symmetric (matches Coq) -/
 theorem display_isolation_symmetric : ∀ (app1 app2 : Application) (fb : FrameBuffer), app_id app1 ≠ app_id app2 → owns_buffer app2 fb → app_screen_capture_perm app1 = false → ~ can_read_buffer app1 fb := by
   simp_all [Bool.and_eq_true]
 
-/-- Capture permission for capture and overlay are independent -/
+-- Capture permission for capture and overlay are independent
 /-- capture_overlay_independent (matches Coq) -/
 theorem capture_overlay_independent : ∀ (app : Application), app_screen_capture_perm app = true → app_overlay_perm app = false → has_screen_capture_permission app ∧ ~ has_overlay_permission app := by
   intro h; exact h
 
-/-- An app with both permissions can both capture and overlay -/
+-- An app with both permissions can both capture and overlay
 /-- dual_perm_app (matches Coq) -/
 theorem dual_perm_app : ∀ (app : Application), app_screen_capture_perm app = true → app_overlay_perm app = true → has_screen_capture_permission app ∧ has_overlay_permission app := by
   intro h; exact h
 
-/-- An app with no permissions can neither capture nor overlay -/
+-- An app with no permissions can neither capture nor overlay
 /-- no_perm_app (matches Coq) -/
 theorem no_perm_app : ∀ (app : Application), app_screen_capture_perm app = false → app_overlay_perm app = false → ~ has_screen_capture_permission app ∧ ~ has_overlay_permission app := by
   simp_all [Bool.and_eq_true]
 
-/-- Display state with no buffers has no readable buffers -/
+-- Display state with no buffers has no readable buffers
 /-- empty_display_no_read (matches Coq) -/
 theorem empty_display_no_read : ∀ (ds : DisplayState) (app : Application) (fb : FrameBuffer), frame_buffers ds = [] → In fb (frame_buffers ds) → can_read_buffer app fb := by
   simp_all [Bool.and_eq_true]
 
-/-- Frame timestamps are comparable -/
+-- Frame timestamps are comparable
 /-- frame_timestamp_order (matches Coq) -/
 theorem frame_timestamp_order : ∀ (f1 f2 : Frame), frame_timestamp f1 ≤ frame_timestamp f2 ∨ frame_timestamp f2 < frame_timestamp f1 := by
   intro h; exact h

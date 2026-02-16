@@ -184,132 +184,132 @@ def unsandboxed_tool : ToolCapability := mkToolCap
 def unvalidated_tool : ToolCapability := mkToolCap
   5 ReadOnly true false true true
 
-/-- AGENT_001: Read-only tool permitted under RIINA boundary -/
+-- AGENT_001: Read-only tool permitted under RIINA boundary
 /-- AGENT_001_readonly_permitted (matches Coq) -/
 theorem AGENT_001_readonly_permitted : is_permitted (check_invocation riina_agent_boundary safe_readonly_tool) = true := by
   rfl
 
-/-- AGENT_002: Read-write tool permitted under RIINA boundary -/
+-- AGENT_002: Read-write tool permitted under RIINA boundary
 /-- AGENT_002_readwrite_permitted (matches Coq) -/
 theorem AGENT_002_readwrite_permitted : is_permitted (check_invocation riina_agent_boundary safe_readwrite_tool) = true := by
   rfl
 
-/-- AGENT_003: Network tool denied under RIINA boundary -/
+-- AGENT_003: Network tool denied under RIINA boundary
 /-- AGENT_003_network_denied (matches Coq) -/
 theorem AGENT_003_network_denied : is_permitted (check_invocation riina_agent_boundary unsafe_network_tool) = false := by
   rfl
 
-/-- AGENT_004: Unsandboxed tool denied under RIINA boundary -/
+-- AGENT_004: Unsandboxed tool denied under RIINA boundary
 /-- AGENT_004_unsandboxed_denied (matches Coq) -/
 theorem AGENT_004_unsandboxed_denied : is_permitted (check_invocation riina_agent_boundary unsandboxed_tool) = false := by
   rfl
 
-/-- AGENT_005: Unvalidated tool denied under RIINA boundary -/
+-- AGENT_005: Unvalidated tool denied under RIINA boundary
 /-- AGENT_005_unvalidated_denied (matches Coq) -/
 theorem AGENT_005_unvalidated_denied : is_permitted (check_invocation riina_agent_boundary unvalidated_tool) = false := by
   rfl
 
-/-- AGENT_006: Cap level reflexivity -/
+-- AGENT_006: Cap level reflexivity
 /-- AGENT_006_cap_level_refl (matches Coq) -/
 theorem AGENT_006_cap_level_refl : ∀ l : CapLevel, cap_level_leq l l = true := by
   rfl
 
-/-- AGENT_007: ReadOnly is minimum capability -/
+-- AGENT_007: ReadOnly is minimum capability
 /-- AGENT_007_readonly_min (matches Coq) -/
 theorem AGENT_007_readonly_min : ∀ l : CapLevel, cap_level_leq ReadOnly l = true := by
   rfl
 
-/-- AGENT_008: System is maximum capability -/
+-- AGENT_008: System is maximum capability
 /-- AGENT_008_system_max (matches Coq) -/
 theorem AGENT_008_system_max : ∀ l : CapLevel, cap_level_leq l System = true := by
   rfl
 
-/-- Helper for andb -/
+-- Helper for andb
 /-- andb_true_iff_agent (matches Coq) -/
 theorem andb_true_iff_agent : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- AGENT_009: Network capability exceeds ReadWrite -/
+-- AGENT_009: Network capability exceeds ReadWrite
 /-- AGENT_009_network_exceeds_rw (matches Coq) -/
 theorem AGENT_009_network_exceeds_rw : cap_level_leq Network ReadWrite = false := by
   rfl
 
-/-- AGENT_010: Execute capability exceeds ReadWrite -/
+-- AGENT_010: Execute capability exceeds ReadWrite
 /-- AGENT_010_execute_exceeds_rw (matches Coq) -/
 theorem AGENT_010_execute_exceeds_rw : cap_level_leq Execute ReadWrite = false := by
   rfl
 
-/-- AGENT_011: Permitted result is Permitted -/
+-- AGENT_011: Permitted result is Permitted
 /-- AGENT_011_permitted_is_permitted (matches Coq) -/
 theorem AGENT_011_permitted_is_permitted : is_permitted Permitted = true := by
   rfl
 
-/-- AGENT_012: DeniedLevel is not permitted -/
+-- AGENT_012: DeniedLevel is not permitted
 /-- AGENT_012_denied_level (matches Coq) -/
 theorem AGENT_012_denied_level : is_permitted DeniedLevel = false := by
   rfl
 
-/-- AGENT_013: DeniedNetwork is not permitted -/
+-- AGENT_013: DeniedNetwork is not permitted
 /-- AGENT_013_denied_network (matches Coq) -/
 theorem AGENT_013_denied_network : is_permitted DeniedNetwork = false := by
   rfl
 
-/-- AGENT_014: DeniedSandbox is not permitted -/
+-- AGENT_014: DeniedSandbox is not permitted
 /-- AGENT_014_denied_sandbox (matches Coq) -/
 theorem AGENT_014_denied_sandbox : is_permitted DeniedSandbox = false := by
   rfl
 
-/-- AGENT_015: DeniedValidation is not permitted -/
+-- AGENT_015: DeniedValidation is not permitted
 /-- AGENT_015_denied_validation (matches Coq) -/
 theorem AGENT_015_denied_validation : is_permitted DeniedValidation = false := by
   rfl
 
-/-- AGENT_016: Sandbox enforcement — RIINA unsandboxed ReadOnly tool denied -/
+-- AGENT_016: Sandbox enforcement — RIINA unsandboxed ReadOnly tool denied
 /-- AGENT_016_sandbox_enforcement (matches Coq) -/
 theorem AGENT_016_sandbox_enforcement : ∀ n : nat, is_permitted (check_invocation riina_agent_boundary (mkToolCap n ReadOnly false true true true)) = false := by
   rfl
 
-/-- AGENT_017: RIINA denies all System-level tools -/
+-- AGENT_017: RIINA denies all System-level tools
 /-- AGENT_017_riina_denies_system (matches Coq) -/
 theorem AGENT_017_riina_denies_system : ∀ tool : ToolCapability, tc_level tool = System → is_permitted (check_invocation riina_agent_boundary tool) = false := by
   simp
 
-/-- AGENT_018: RIINA denies all Execute-level tools -/
+-- AGENT_018: RIINA denies all Execute-level tools
 /-- AGENT_018_riina_denies_execute (matches Coq) -/
 theorem AGENT_018_riina_denies_execute : ∀ tool : ToolCapability, tc_level tool = Execute → is_permitted (check_invocation riina_agent_boundary tool) = false := by
   simp
 
-/-- AGENT_019: RIINA denies all Network-level tools -/
+-- AGENT_019: RIINA denies all Network-level tools
 /-- AGENT_019_riina_denies_network (matches Coq) -/
 theorem AGENT_019_riina_denies_network : ∀ tool : ToolCapability, tc_level tool = Network → is_permitted (check_invocation riina_agent_boundary tool) = false := by
   simp
 
-/-- AGENT_020: ReadOnly leq ReadWrite -/
+-- AGENT_020: ReadOnly leq ReadWrite
 /-- AGENT_020_readonly_leq_rw (matches Coq) -/
 theorem AGENT_020_readonly_leq_rw : cap_level_leq ReadOnly ReadWrite = true := by
   rfl
 
-/-- AGENT_021: Boundary with no restrictions permits any sandboxed+validated RO tool -/
+-- AGENT_021: Boundary with no restrictions permits any sandboxed+validated RO tool
 /-- AGENT_021_permissive_boundary (matches Coq) -/
 theorem AGENT_021_permissive_boundary : ∀ tool : ToolCapability, tc_level tool = ReadOnly → tc_sandboxed tool = true → tc_input_validated tool = true → tc_output_sanitized tool = true → tc_rate_limited tool = true → is_permitted (check_invocation (mkAgentBoundary System true true true true true true true) tool) = true := by
   simp
 
-/-- AGENT_022: Cap level transitivity for ReadOnly -> ReadWrite -> Execute -/
+-- AGENT_022: Cap level transitivity for ReadOnly -> ReadWrite -> Execute
 /-- AGENT_022_cap_transitivity_example (matches Coq) -/
 theorem AGENT_022_cap_transitivity_example : cap_level_leq ReadOnly ReadWrite = true ∧ cap_level_leq ReadWrite Execute = true ∧ cap_level_leq ReadOnly Execute = true := by
   constructor <;> rfl
 
-/-- AGENT_023: RIINA max level is ReadWrite -/
+-- AGENT_023: RIINA max level is ReadWrite
 /-- AGENT_023_riina_max_rw (matches Coq) -/
 theorem AGENT_023_riina_max_rw : ab_max_level riina_agent_boundary = ReadWrite := by
   rfl
 
-/-- AGENT_024: DeniedRateLimit is not permitted -/
+-- AGENT_024: DeniedRateLimit is not permitted
 /-- AGENT_024_denied_ratelimit (matches Coq) -/
 theorem AGENT_024_denied_ratelimit : is_permitted DeniedRateLimit = false := by
   rfl
 
-/-- AGENT_025: Complete tool security — RIINA boundary blocks all dangerous operations -/
+-- AGENT_025: Complete tool security — RIINA boundary blocks all dangerous operations
 /-- AGENT_025_complete_agent_security (matches Coq) -/
 theorem AGENT_025_complete_agent_security : (∀ tool, tc_level tool = System → is_permitted (check_invocation riina_agent_boundary tool) = false) ∧ (∀ tool, tc_level tool = Execute → is_permitted (check_invocation riina_agent_boundary tool) = false) ∧ (∀ tool, tc_level tool = Network → is_permitted (check_invocation riina_agent_boundary tool) = false) := by
   constructor <;> simp_all [Bool.and_eq_true]

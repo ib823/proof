@@ -167,7 +167,7 @@ lemma val_rel_le_step_up_fo: "\<forall> n m Σ T v1 v2, first_order_type T = Tru
 
 (* For base/indistinguishable types, relation at step 1 implies relation at all steps *)
 (* val_rel_le_base_permanent (matches Coq) *)
-lemma val_rel_le_base_permanent: "\<forall> Σ T v1 v2, match T with (* Primitive types *) | TUnit | TBool | TInt | TString | TBytes => True (* Indistinguishable types (val_rel_struct returns True) *) | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ => True | TCapability _ | TCapabilityFull _ | TProof _ => True | TChan _ | TSecureChan _ _ => True | TConstantTime _ | TZeroizing _ => True | TList _ | TOption _ => True (* Simplified to True in val_rel_struct *) | _ => False end \<longrightarrow> val_rel_le 1 Σ T v1 v2 \<longrightarrow> \<forall> n, val_rel_le n Σ T v1 v2"
+lemma val_rel_le_base_permanent: "\<forall> Σ T v1 v2, match T with | TUnit | TBool | TInt | TString | TBytes => True | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ => True | TCapability _ | TCapabilityFull _ | TProof _ => True | TChan _ | TSecureChan _ _ => True | TConstantTime _ | TZeroizing _ => True | TList _ | TOption _ => True | _ => False end \<longrightarrow> val_rel_le 1 Σ T v1 v2 \<longrightarrow> \<forall> n, val_rel_le n Σ T v1 v2"
   by auto
 
 (* Two closed values of TUnit are equal iff related at any positive step *)

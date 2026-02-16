@@ -400,7 +400,7 @@ theorem OS_001_07_cap_lookup_correct : ∀ s p slot c, cap_lookup s p slot = Som
   intro h; exact h
 
 /-- OS_001_08_cap_space_isolation (matches Coq) -/
-theorem OS_001_08_cap_space_isolation : ∀ s p1 p2 slot1 slot2 c, p1 ≠ p2 → cap_lookup s p1 slot1 = Some c → cap_lookup s p2 slot2 = Some c →  If same capability appears in two different processes, it must have been explicitly granted (both hold it independently)  holds s p1 c ∧ holds s p2 c := by
+theorem OS_001_08_cap_space_isolation : ∀ s p1 p2 slot1 slot2 c, p1 ≠ p2 → cap_lookup s p1 slot1 = Some c → cap_lookup s p2 slot2 = Some c → holds s p1 c ∧ holds s p2 c := by
   intro h; exact h
 
 /-- OS_001_09_cap_invoke_authorized (matches Coq) -/
@@ -408,7 +408,7 @@ theorem OS_001_09_cap_invoke_authorized : ∀ s p action c, can_invoke s p actio
   intro h; exact h
 
 /-- OS_001_10_cap_badge_integrity (matches Coq) -/
-theorem OS_001_10_cap_badge_integrity : ∀ c1 c2, derives c1 c2 →  cap_object c2 = cap_object c1 := by
+theorem OS_001_10_cap_badge_integrity : ∀ c1 c2, derives c1 c2 → cap_object c2 = cap_object c1 := by
   rfl
 
 /-- OS_001_11_address_space_isolation (matches Coq) -/
@@ -468,7 +468,7 @@ theorem OS_001_24_endpoint_protection : ∀ is ep, endpoint_protected is ep → 
   simp_all [Bool.and_eq_true]
 
 /-- OS_001_25_notification_no_leak (matches Coq) -/
-theorem OS_001_25_notification_no_leak : ∀ n, notif_no_sensitive_data n →  notif_word n < 2^32 := by
+theorem OS_001_25_notification_no_leak : ∀ n, notif_no_sensitive_data n → notif_word n < 2^32 := by
   intro h; exact h
 
 end RIINA

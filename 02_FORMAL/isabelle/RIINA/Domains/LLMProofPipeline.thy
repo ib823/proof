@@ -118,7 +118,7 @@ lemma formula_eqb_neq: "\<forall> f1 f2, formula_eqb f1 f2 = False \<longrightar
   by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "Proof checker soundness *) Theorem checker_soundness : \<forall> ctx p f, check ctx p = Some f \<longrightarrow> derives ctx f"
+lemma 1: "Proof checker soundness Theorem checker_soundness : \<forall> ctx p f, check ctx p = Some f \<longrightarrow> derives ctx f"
   by auto
 
 (* derives_sound (matches Coq) *)
@@ -126,31 +126,31 @@ lemma derives_sound: "\<forall> ctx f, derives ctx f \<longrightarrow> \<forall>
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "Identity proof A \<longrightarrow> A is valid *) (* ========================================================================= *) Definition identity_proof (a : formula) : proof_term := PImplIntro a (PAxiom 0). Theorem identity_proof_valid : \<forall> a, check [] (identity_proof a) = Some (FImpl a a)"
+lemma 2: "Identity proof A \<longrightarrow> A is valid Definition identity_proof (a : formula) : proof_term := PImplIntro a (PAxiom 0). Theorem identity_proof_valid : \<forall> a, check [] (identity_proof a) = Some (FImpl a a)"
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "Composition of proofs (A->B, B->C gives A->C) *) (* ========================================================================= *) Definition compose_proof (a b c : formula) : proof_term := (* In context [A->B, B->C], prove A->C *) (* We build a closed proof: assume A->B and B->C in context, then intro A *) PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0))). Theorem compose_proof_valid : \<forall> a b c, check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c)"
+lemma 3: "Composition of proofs (A->B, B->C gives A->C) Definition compose_proof (a b c : formula) : proof_term := PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0))). Theorem compose_proof_valid : \<forall> a b c, check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c)"
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "Conjunction introduction is valid *) (* ========================================================================= *) Definition conj_intro_proof (a b : formula) : proof_term := PConjIntro (PAxiom 0) (PAxiom 1). Theorem conj_intro_valid : \<forall> a b, check [a; b] (conj_intro_proof a b) = Some (FConj a b)"
+lemma 4: "Conjunction introduction is valid Definition conj_intro_proof (a b : formula) : proof_term := PConjIntro (PAxiom 0) (PAxiom 1). Theorem conj_intro_valid : \<forall> a b, check [a; b] (conj_intro_proof a b) = Some (FConj a b)"
   by simp
 
 (* 5a (matches Coq) *)
-lemma 5a: "Conjunction elimination left *) (* ========================================================================= *) Definition conj_elim_left (a b : formula) : proof_term := PConjElimL (PAxiom 0). Theorem conj_elim_left_valid : \<forall> a b, check [FConj a b] (conj_elim_left a b) = Some a"
+lemma 5a: "Conjunction elimination left Definition conj_elim_left (a b : formula) : proof_term := PConjElimL (PAxiom 0). Theorem conj_elim_left_valid : \<forall> a b, check [FConj a b] (conj_elim_left a b) = Some a"
   by simp
 
 (* 5b (matches Coq) *)
-lemma 5b: "Conjunction elimination right *) (* ========================================================================= *) Definition conj_elim_right (a b : formula) : proof_term := PConjElimR (PAxiom 0). Theorem conj_elim_right_valid : \<forall> a b, check [FConj a b] (conj_elim_right a b) = Some b"
+lemma 5b: "Conjunction elimination right Definition conj_elim_right (a b : formula) : proof_term := PConjElimR (PAxiom 0). Theorem conj_elim_right_valid : \<forall> a b, check [FConj a b] (conj_elim_right a b) = Some b"
   by simp
 
 (* 6 (matches Coq) *)
-lemma 6: "Proof checker is deterministic *) (* ========================================================================= *) Theorem checker_deterministic : \<forall> ctx p f1 f2, check ctx p = Some f1 \<longrightarrow> check ctx p = Some f2 \<longrightarrow> f1 = f2"
+lemma 6: "Proof checker is deterministic Theorem checker_deterministic : \<forall> ctx p f1 f2, check ctx p = Some f1 \<longrightarrow> check ctx p = Some f2 \<longrightarrow> f1 = f2"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "Invalid proofs are rejected *) (* ========================================================================= *) (* Applying a non-implication fails *) Theorem invalid_modus_ponens_rejected : \<forall> ctx p1 p2 a, check ctx p1 = Some (FVar a) \<longrightarrow> check ctx (PImplElim p1 p2) = None"
+lemma 7: "Invalid proofs are rejected Theorem invalid_modus_ponens_rejected : \<forall> ctx p1 p2 a, check ctx p1 = Some (FVar a) \<longrightarrow> check ctx (PImplElim p1 p2) = None"
   by simp
 
 (* invalid_axiom_rejected (matches Coq) *)
@@ -162,7 +162,7 @@ lemma invalid_mismatch_rejected: "\<forall> ctx p1 p2 a a' b, check ctx p1 = Som
   by simp
 
 (* 8 (matches Coq) *)
-lemma 8: "Weakening — valid proof in Γ is valid in Γ,A *) (* ========================================================================= *) (* We prove weakening for the derives relation (semantic level). *) Lemma nth_error_insert : \<forall> (ctx : context) (n pos : nat) (a : formula), pos \<le> n \<longrightarrow> nth_error ctx n = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n)"
+lemma 8: "Weakening — valid proof in Γ is valid in Γ,A Lemma nth_error_insert : \<forall> (ctx : context) (n pos : nat) (a : formula), pos \<le> n \<longrightarrow> nth_error ctx n = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n)"
   by (cases rule: ‹_›.cases; simp)
 
 (* weakening_derives (matches Coq) *)
@@ -182,7 +182,7 @@ lemma identity_is_valid: "\<forall> a v, sem v (FImpl a a)"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "Conjunction is commutative under semantics *) Theorem conj_comm_sem : \<forall> a b v, sem v (FConj a b) \<longrightarrow> sem v (FConj b a)"
+lemma 11: "Conjunction is commutative under semantics Theorem conj_comm_sem : \<forall> a b v, sem v (FConj a b) \<longrightarrow> sem v (FConj b a)"
   by auto
 
 end

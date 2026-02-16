@@ -223,17 +223,17 @@ lemma dora_resilience: "\<forall> (system : nat) (incident : nat), True"
 
 (* CVV must never be stored post-authorization *)
 (* cvv_not_stored (matches Coq) *)
-lemma cvv_not_stored: "\<forall> (d : FinancialData) (storage : bool), d = CVV \<longrightarrow> (* CVV cannot be stored after authorization *) True"
+lemma cvv_not_stored: "\<forall> (d : FinancialData) (storage : bool), d = CVV \<longrightarrow> True"
   by simp
 
 (* PAN must be masked when displayed *)
 (* pan_masking (matches Coq) *)
-lemma pan_masking: "\<forall> (pan : FinancialData) (display_format : nat), (* Only last 4 digits visible *) True"
+lemma pan_masking: "\<forall> (pan : FinancialData) (display_format : nat), True"
   by simp
 
 (* Strong cryptography for cardholder data *)
 (* strong_crypto_required (matches Coq) *)
-lemma strong_crypto_required: "\<forall> (data : FinancialData), pci_cardholder_data data = True \<longrightarrow> (* AES-256 or equivalent required *) True"
+lemma strong_crypto_required: "\<forall> (data : FinancialData), pci_cardholder_data data = True \<longrightarrow> True"
   by simp
 
 (* PCI cardholder data classification is decidable *)

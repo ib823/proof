@@ -86,7 +86,7 @@ theorem page_width_positive_lemma : ∀ (ps : PagingState), page_width ps > 0 :=
   intro h; exact h
 
 /-- 1 (matches Coq) -/
-theorem 1 : velocity_always_positive_direction — velocity decays toward zero   Theorem velocity_always_positive_direction : ∀ (v0 friction t : R), friction > 0 → t ≥ 0 → v0 > 0 → velocity_at_time v0 friction t > 0 := by
+theorem 1 : velocity_always_positive_direction — velocity decays toward zero Theorem velocity_always_positive_direction : ∀ (v0 friction t : R), friction > 0 → t ≥ 0 → v0 > 0 → velocity_at_time v0 friction t > 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- velocity_negative_stays_negative (matches Coq) -/
@@ -94,59 +94,59 @@ theorem velocity_negative_stays_negative : ∀ (v0 friction t : R), friction > 0
   simp_all [Bool.and_eq_true]
 
 /-- 2 (matches Coq) -/
-theorem 2 : scroll_position_bounded — bounded scroll stays within range  Theorem scroll_position_bounded : ∀ (bss : BoundedScrollState), 0 ≤ bss_position bss ∧ bss_position bss ≤ bss_content_height bss - bss_viewport_height bss := by
+theorem 2 : scroll_position_bounded — bounded scroll stays within range Theorem scroll_position_bounded : ∀ (bss : BoundedScrollState), 0 ≤ bss_position bss ∧ bss_position bss ≤ bss_content_height bss - bss_viewport_height bss := by
   intro h; exact h
 
 /-- 3 (matches Coq) -/
-theorem 3 : rubber_band_returns — rubber band displacement is less than overshoot   Theorem rubber_band_returns : ∀ (overshoot max_distance : R), overshoot > 0 → max_distance > 0 → rubber_band_displacement overshoot max_distance < overshoot := by
+theorem 3 : rubber_band_returns — rubber band displacement is less than overshoot Theorem rubber_band_returns : ∀ (overshoot max_distance : R), overshoot > 0 → max_distance > 0 → rubber_band_displacement overshoot max_distance < overshoot := by
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : rubber_band_resistance_increases — further pull = more resistance   Ratio rb(d)/d = 1/(1 + d/max) decreases as d increases  Theorem rubber_band_resistance_increases : ∀ (d1 d2 max_distance : R), 0 < d1 → d1 < d2 → max_distance > 0 → / (1 + d2 / max_distance) < / (1 + d1 / max_distance) := by
+theorem 4 : rubber_band_resistance_increases — further pull = more resistance Theorem rubber_band_resistance_increases : ∀ (d1 d2 max_distance : R), 0 < d1 → d1 < d2 → max_distance > 0 → / (1 + d2 / max_distance) < / (1 + d1 / max_distance) := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : momentum_scroll_continuous — velocity function is well-defined everywhere  Theorem momentum_scroll_continuous : ∀ (v0 friction t1 t2 : R), friction > 0 → 0 ≤ t1 → t1 ≤ t2 → v0 > 0 → velocity_at_time v0 friction t2 ≤ velocity_at_time v0 friction t1 := by
+theorem 5 : momentum_scroll_continuous — velocity function is well-defined everywhere Theorem momentum_scroll_continuous : ∀ (v0 friction t1 t2 : R), friction > 0 → 0 ≤ t1 → t1 ≤ t2 → v0 > 0 → velocity_at_time v0 friction t2 ≤ velocity_at_time v0 friction t1 := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : scroll_snapping_lands_exactly — snap point is hit precisely  Theorem scroll_snapping_lands_exactly : ∀ (sps : SnapPointScroll), sps_snapped sps = true → sps_position sps = sps_snap_point sps := by
+theorem 6 : scroll_snapping_lands_exactly — snap point is hit precisely Theorem scroll_snapping_lands_exactly : ∀ (sps : SnapPointScroll), sps_snapped sps = true → sps_position sps = sps_snap_point sps := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
-theorem 7 : nested_scroll_disambiguation — child scrolls when not at boundary  Theorem nested_scroll_disambiguation : ∀ (nss : NestedScrollState), nss_child_at_boundary nss = false → nss_active_scroller nss = true := by
+theorem 7 : nested_scroll_disambiguation — child scrolls when not at boundary Theorem nested_scroll_disambiguation : ∀ (nss : NestedScrollState), nss_child_at_boundary nss = false → nss_active_scroller nss = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
-theorem 8 : scroll_indicator_accurate — indicator matches scroll position  Theorem scroll_indicator_accurate : ∀ (si : ScrollIndicator), si_indicator_position si = si_scroll_offset si / si_content_size si := by
+theorem 8 : scroll_indicator_accurate — indicator matches scroll position Theorem scroll_indicator_accurate : ∀ (si : ScrollIndicator), si_indicator_position si = si_scroll_offset si / si_content_size si := by
   intro h; exact h
 
 /-- 9 (matches Coq) -/
-theorem 9 : content_offset_non_negative — bounded scroll has non-negative offset  Theorem content_offset_non_negative : ∀ (bss : BoundedScrollState), bss_position bss ≥ 0 := by
+theorem 9 : content_offset_non_negative — bounded scroll has non-negative offset Theorem content_offset_non_negative : ∀ (bss : BoundedScrollState), bss_position bss ≥ 0 := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/
-theorem 10 : scroll_to_top_works — position 0 is always reachable   Theorem scroll_to_top_works : ∀ (v0 friction : R), friction > 0 → v0 > 0 → velocity_at_time v0 friction 0 = v0 := by
+theorem 10 : scroll_to_top_works — position 0 is always reachable Theorem scroll_to_top_works : ∀ (v0 friction : R), friction > 0 → v0 > 0 → velocity_at_time v0 friction 0 = v0 := by
   simp_all [Bool.and_eq_true]
 
 /-- 11 (matches Coq) -/
-theorem 11 : pull_to_refresh_threshold — refresh triggers at correct distance  Theorem pull_to_refresh_threshold : ∀ (ptr : PullToRefresh), ptr_pull_distance ptr ≥ ptr_threshold ptr → ptr_triggered ptr = true := by
+theorem 11 : pull_to_refresh_threshold — refresh triggers at correct distance Theorem pull_to_refresh_threshold : ∀ (ptr : PullToRefresh), ptr_pull_distance ptr ≥ ptr_threshold ptr → ptr_triggered ptr = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : infinite_scroll_loads — reaching bottom triggers load  Theorem infinite_scroll_loads : ∀ (is_ : InfiniteScroll), is_position is_ ≥ is_content_end is_ - is_threshold is_ → is_load_triggered is_ = true := by
+theorem 12 : infinite_scroll_loads — reaching bottom triggers load Theorem infinite_scroll_loads : ∀ (is_ : InfiniteScroll), is_position is_ ≥ is_content_end is_ - is_threshold is_ → is_load_triggered is_ = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 13 (matches Coq) -/
-theorem 13 : scroll_restoration — returning to page restores position  Theorem scroll_restoration : ∀ (sr : ScrollRestoration), sr_restored_position sr = sr_saved_position sr := by
+theorem 13 : scroll_restoration — returning to page restores position Theorem scroll_restoration : ∀ (sr : ScrollRestoration), sr_restored_position sr = sr_saved_position sr := by
   intro h; exact h
 
 /-- 14 (matches Coq) -/
-theorem 14 : velocity_zero_at_rest — velocity decays to approach 0   At any time t > 0, |v(t)| < |v(0)| for non-zero friction  Theorem velocity_zero_at_rest : ∀ (v0 friction t : R), friction > 0 → t > 0 → v0 ≠ 0 → Rabs (velocity_at_time v0 friction t) < Rabs v0 := by
+theorem 14 : velocity_zero_at_rest — velocity decays to approach 0 Theorem velocity_zero_at_rest : ∀ (v0 friction t : R), friction > 0 → t > 0 → v0 ≠ 0 → Rabs (velocity_at_time v0 friction t) < Rabs v0 := by
   simp_all [Bool.and_eq_true]
 
 /-- 15 (matches Coq) -/
-theorem 15 : friction_positive_definite — friction always reduces velocity  Theorem friction_positive_definite : ∀ (ss : ScrollState), friction_coefficient ss > 0 := by
+theorem 15 : friction_positive_definite — friction always reduces velocity Theorem friction_positive_definite : ∀ (ss : ScrollState), friction_coefficient ss > 0 := by
   intro h; exact h
 
 /-- velocity_strictly_decreasing (matches Coq) -/

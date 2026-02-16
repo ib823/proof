@@ -370,9 +370,9 @@ def has_dirty_read (s : Schedule) : Bool :=
 def has_phantom_read (s : Schedule) : Bool :=
   false
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: TYPE-SAFE QUERIES (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- SIGMA_001_01_query_ast_typed (matches Coq) -/
 theorem SIGMA_001_01_query_ast_typed : ∀ q db, query_well_typed q db = true → ∃ result_schema : list nat, True := by
   simp_all [Bool.and_eq_true]
@@ -382,7 +382,7 @@ theorem SIGMA_001_02_no_sql_injection : ∀ q, ~ ∃ s, query_contains_raw_strin
   intro h; exact h
 
 /-- SIGMA_001_03_query_preserves_schema (matches Coq) -/
-theorem SIGMA_001_03_query_preserves_schema : ∀ q db db', query_well_typed q db = true → db' = db →  length (db_tables db') = length (db_tables db) := by
+theorem SIGMA_001_03_query_preserves_schema : ∀ q db db', query_well_typed q db = true → db' = db → length (db_tables db') = length (db_tables db) := by
   rfl
 
 /-- SIGMA_001_04_predicate_typed (matches Coq) -/
@@ -405,11 +405,11 @@ theorem SIGMA_001_07_query_result_typed : ∀ (q : Query) (db : Database) (rows 
 theorem SIGMA_001_08_parameterized_safe : ∀ col_idx op v table pred, let q := QSelect [col_idx] table (PAnd (PCol col_idx op v) pred) in ~ query_contains_raw_string q 0 := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: ACID PROPERTIES (10 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- SIGMA_001_09_atomicity (matches Coq) -/
-theorem SIGMA_001_09_atomicity : ∀ txn db, let (db', status) := exec_txn txn db in  (txn_status txn = TxnPending ∧ status = TxnCommitted ∧ all_ops_applied (txn_ops txn) db db') ∨ (txn_status txn ≠ TxnPending ∧ db = db') := by
+theorem SIGMA_001_09_atomicity : ∀ txn db, let (db', status) := exec_txn txn db in (txn_status txn = TxnPending ∧ status = TxnCommitted ∧ all_ops_applied (txn_ops txn) db db') ∨ (txn_status txn ≠ TxnPending ∧ db = db') := by
   rfl
 
 /-- SIGMA_001_10_atomicity_commit (matches Coq) -/
@@ -421,7 +421,7 @@ theorem SIGMA_001_11_atomicity_abort : ∀ txn db db' status, exec_txn txn db = 
   rfl
 
 /-- SIGMA_001_12_consistency (matches Coq) -/
-theorem SIGMA_001_12_consistency : ∀ txn db db' status invariant, invariant db = true →  (∀ ops d, invariant d = true → invariant (apply_ops ops d) = true) → exec_txn txn db = (db', status) → status = TxnCommitted → invariant db' = true ∨ status = TxnAborted := by
+theorem SIGMA_001_12_consistency : ∀ txn db db' status invariant, invariant db = true → (∀ ops d, invariant d = true → invariant (apply_ops ops d) = true) → exec_txn txn db = (db', status) → status = TxnCommitted → invariant db' = true ∨ status = TxnAborted := by
   simp_all [Bool.and_eq_true]
 
 /-- SIGMA_001_13_consistency_fk (matches Coq) -/
@@ -448,9 +448,9 @@ theorem SIGMA_001_17_isolation_no_phantom : ∀ s, has_phantom_read s = false :=
 theorem SIGMA_001_18_durability : ∀ txn db wal, txn_status txn = TxnCommitted → wal_contains wal txn → ∃ db', db' = wal_recover wal db := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: CRASH RECOVERY (8 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- SIGMA_001_19_wal_correct (matches Coq) -/
 theorem SIGMA_001_19_wal_correct : ∀ wal op, let entry := {| wal_txn_id := 0; wal_op := op; wal_lsn := length wal |} in let wal' := entry :: wal in length wal' = S (length wal) := by
   rfl
@@ -483,9 +483,9 @@ theorem SIGMA_001_25_recovery_complete : ∀ wal db committed_txns, (∀ txn, In
 theorem SIGMA_001_26_recovery_abort : ∀ wal db uncommitted_txn, ~ wal_contains wal uncommitted_txn → wal_recover wal db = wal_recover wal db := by
   rfl
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: STORAGE ENGINE (7 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- SIGMA_001_27_btree_ordered (matches Coq) -/
 theorem SIGMA_001_27_btree_ordered : ∀ V (tree : BPlusTree nat V) k v tree', bp_ordered (bp_root tree) = true → bp_insert tree k v = tree' → True.  := by
   simp_all [Bool.and_eq_true]
@@ -514,9 +514,9 @@ theorem SIGMA_001_32_btree_complexity : ∀ V (tree : BPlusTree nat V), bp_heigh
 theorem SIGMA_001_33_page_integrity : ∀ data expected, verify_checksum data expected = true → checksum data = expected := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: DATA INTEGRITY (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- SIGMA_001_34_encryption_at_rest (matches Coq) -/
 theorem SIGMA_001_34_encryption_at_rest : ∀ ed, enc_key_id ed > 0 → is_encrypted ed = true := by
   cases ‹_› <;> simp <;> omega

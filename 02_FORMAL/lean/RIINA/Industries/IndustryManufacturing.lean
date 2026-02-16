@@ -222,44 +222,44 @@ def patch_window_days (sl : SecurityLevel) : Nat :=
   | SL_3 => 14
   | SL_4 => 7
 
-/-- Section I01 - IEC 62443 Compliance
-    Reference: IND_I_MANUFACTURING.md Section 3.1 -/
+-- Section I01 - IEC 62443 Compliance
+    Reference: IND_I_MANUFACTURING.md Section 3.1
 /-- iec_62443_compliance (matches Coq) -/
-theorem iec_62443_compliance : ∀ (compliance : IEC62443_Compliance), part_3_3_system_requirements compliance = true →  True := by
+theorem iec_62443_compliance : ∀ (compliance : IEC62443_Compliance), part_3_3_system_requirements compliance = true → True := by
   trivial
 
-/-- Section I02 - IEC 61508 Safety
-    Reference: IND_I_MANUFACTURING.md Section 3.2 -/
+-- Section I02 - IEC 61508 Safety
+    Reference: IND_I_MANUFACTURING.md Section 3.2
 /-- iec_61508_safety (matches Coq) -/
-theorem iec_61508_safety : ∀ (system : nat) (sil : IEC61508_SIL),  True := by
+theorem iec_61508_safety : ∀ (system : nat) (sil : IEC61508_SIL), True := by
   trivial
 
-/-- Section I03 - Zone and Conduit Model
-    Reference: IND_I_MANUFACTURING.md Section 3.3 -/
+-- Section I03 - Zone and Conduit Model
+    Reference: IND_I_MANUFACTURING.md Section 3.3
 /-- zone_conduit_security (matches Coq) -/
-theorem zone_conduit_security : ∀ (zone : PurdueLevel) (conduit : nat),  True := by
+theorem zone_conduit_security : ∀ (zone : PurdueLevel) (conduit : nat), True := by
   trivial
 
-/-- Section I04 - Secure Development
-    Reference: IND_I_MANUFACTURING.md Section 3.4 -/
+-- Section I04 - Secure Development
+    Reference: IND_I_MANUFACTURING.md Section 3.4
 /-- secure_development_lifecycle (matches Coq) -/
-theorem secure_development_lifecycle : ∀ (product : nat),  True := by
+theorem secure_development_lifecycle : ∀ (product : nat), True := by
   trivial
 
-/-- Section I05 - NIST 800-82 ICS
-    Reference: IND_I_MANUFACTURING.md Section 3.5 -/
+-- Section I05 - NIST 800-82 ICS
+    Reference: IND_I_MANUFACTURING.md Section 3.5
 /-- nist_800_82_compliance (matches Coq) -/
-theorem nist_800_82_compliance : ∀ (ics : nat),  True := by
+theorem nist_800_82_compliance : ∀ (ics : nat), True := by
   trivial
 
-/-- SL-4 protects against state-level threats -/
+-- SL-4 protects against state-level threats
 /-- sl4_state_level_protection (matches Coq) -/
-theorem sl4_state_level_protection : ∀ (compliance : IEC62443_Compliance), target_security_level compliance = SL_4 →  True := by
+theorem sl4_state_level_protection : ∀ (compliance : IEC62443_Compliance), target_security_level compliance = SL_4 → True := by
   trivial
 
-/-- Zone boundaries enforced -/
+-- Zone boundaries enforced
 /-- zone_boundary_enforcement (matches Coq) -/
-theorem zone_boundary_enforcement : ∀ (l1 : PurdueLevel) (l2 : PurdueLevel),  True := by
+theorem zone_boundary_enforcement : ∀ (l1 : PurdueLevel) (l2 : PurdueLevel), True := by
   trivial
 
 /-- sl_le_refl (matches Coq) -/

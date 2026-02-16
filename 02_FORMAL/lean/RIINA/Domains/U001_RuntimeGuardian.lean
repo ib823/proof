@@ -388,7 +388,7 @@ theorem U_001_24_nmr_recovery_sound : ∀ (v1 v2 v3 : Variant) (t : nat) (correc
   intro h; exact h
 
 /-- U_001_25_nmr_coverage (matches Coq) -/
-theorem U_001_25_nmr_coverage : ∀ p_error, p_error ≥ 1 →   p_error * p_error ≤ p_error * p_error * 3 := by
+theorem U_001_25_nmr_coverage : ∀ p_error, p_error ≥ 1 → p_error * p_error ≤ p_error * p_error * 3 := by
   omega
 
 /-- U_001_26_panic_keys_zeroized (matches Coq) -/

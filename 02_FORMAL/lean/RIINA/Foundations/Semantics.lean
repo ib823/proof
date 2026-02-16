@@ -146,27 +146,27 @@ theorem store_update_lookup_eq : ∀ st l v, store_lookup l (store_update l v st
 theorem store_update_lookup_neq : ∀ st l l' v, l ≠ l' → store_lookup l' (store_update l v st) = store_lookup l' st := by
   cases ‹_› <;> simp
 
-/-- Empty store has the values property -/
+-- Empty store has the values property
 /-- store_has_values_empty (matches Coq) -/
 theorem store_has_values_empty : store_has_values nil := by
   simp_all [Bool.and_eq_true]
 
-/-- store_update preserves store_has_values when updating with a value -/
+-- store_update preserves store_has_values when updating with a value
 /-- store_update_preserves_values (matches Coq) -/
 theorem store_update_preserves_values : ∀ st l v, store_has_values st → value v → store_has_values (store_update l v st) := by
   simp_all [Bool.and_eq_true]
 
-/-- Step preserves store_has_values - auxiliary for proving by induction -/
+-- Step preserves store_has_values - auxiliary for proving by induction
 /-- step_preserves_store_values_aux (matches Coq) -/
 theorem step_preserves_store_values_aux : ∀ cfg1 cfg2, cfg1 --> cfg2 → store_has_values (snd (fst cfg1)) → store_has_values (snd (fst cfg2)) := by
   simp_all [Bool.and_eq_true]
 
-/-- Step preserves store_has_values -/
+-- Step preserves store_has_values
 /-- step_preserves_store_values (matches Coq) -/
 theorem step_preserves_store_values : ∀ e st ctx e' st' ctx', (e, st, ctx) --> (e', st', ctx') → store_has_values st → store_has_values st' := by
   simp_all
 
-/-- Multi-step preserves store_has_values -/
+-- Multi-step preserves store_has_values
 /-- multi_step_preserves_store_values (matches Coq) -/
 theorem multi_step_preserves_store_values : ∀ cfg1 cfg2, multi_step cfg1 cfg2 → store_has_values (snd (fst cfg1)) → store_has_values (snd (fst cfg2)) := by
   simp_all [Bool.and_eq_true]
@@ -175,7 +175,7 @@ theorem multi_step_preserves_store_values : ∀ cfg1 cfg2, multi_step cfg1 cfg2 
 theorem multi_step_trans : ∀ cfg1 cfg2 cfg3, multi_step cfg1 cfg2 → multi_step cfg2 cfg3 → multi_step cfg1 cfg3 := by
   simp_all [Bool.and_eq_true]
 
-/-- A single step embeds into multi-step. -/
+-- A single step embeds into multi-step.
 /-- step_to_multi_step (matches Coq) -/
 theorem step_to_multi_step : ∀ cfg1 cfg2, step cfg1 cfg2 → multi_step cfg1 cfg2 := by
   simp_all [Bool.and_eq_true]

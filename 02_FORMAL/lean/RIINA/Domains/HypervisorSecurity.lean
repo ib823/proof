@@ -356,9 +356,9 @@ def riina_world_switch : WorldSwitchConfig := mkWorldSwitch true true true true 
 def riina_hypervisor : HypervisorConfig := mkHypervisor riina_vm_isolation true true true true true
                riina_side_channel riina_mem_virt riina_int_virt riina_world_switch
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: CORE DEFINITIONS AND HELPERS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -375,9 +375,9 @@ theorem andb_true_elim_l : ∀ a b : bool, a && b = true → a = true := by
 theorem andb_true_elim_r : ∀ a b : bool, a && b = true → b = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 6: VM ISOLATION THEOREMS (HV_001 - HV_020)
-    ============================================================================ -/
+    ============================================================================
 /-- HV_001 (matches Coq) -/
 theorem HV_001 : vm_fully_isolated riina_vm_isolation = true := by
   rfl
@@ -458,9 +458,9 @@ theorem HV_019 : ∀ h, hv_secure h = true → hv_memory_encryption h = true := 
 theorem HV_020 : ∀ h, hv_secure h = true → hv_nested_paging h = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 7: MEMORY VIRTUALIZATION THEOREMS (HV_021 - HV_035)
-    ============================================================================ -/
+    ============================================================================
 /-- HV_021 (matches Coq) -/
 theorem HV_021 : ∀ h, hv_secure h = true → hv_iommu_enabled h = true := by
   simp_all [Bool.and_eq_true]
@@ -521,9 +521,9 @@ theorem HV_034 : ∀ h, hv_secure h = true → mem_virt_secure (hv_mem_virt h) =
 theorem HV_035 : ∀ h, hv_secure h = true → hv_iommu_enabled h = true ∧ hv_nested_paging h = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 8: INTERRUPT HANDLING SECURITY (HV_036 - HV_050)
-    ============================================================================ -/
+    ============================================================================
 /-- HV_036 (matches Coq) -/
 theorem HV_036 : int_virt_secure riina_int_virt = true := by
   rfl
@@ -584,9 +584,9 @@ theorem HV_049 : iv_posted_interrupts riina_int_virt = true := by
 theorem HV_050 : iv_ple_enabled riina_int_virt = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 9: SIDE-CHANNEL RESISTANCE (HV_051 - HV_065)
-    ============================================================================ -/
+    ============================================================================
 /-- HV_051 (matches Coq) -/
 theorem HV_051 : side_channel_mitigated riina_side_channel = true := by
   rfl
@@ -647,9 +647,9 @@ theorem HV_064 : ∀ s, side_channel_mitigated s = true → scm_ibrs_enabled s =
 theorem HV_065 : ∀ s, side_channel_mitigated s = true → scm_flush_l1d s = true ∧ scm_mds_clear s = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 10: SECURE WORLD SWITCHING (HV_066 - HV_080)
-    ============================================================================ -/
+    ============================================================================
 /-- HV_066 (matches Coq) -/
 theorem HV_066 : world_switch_secure riina_world_switch = true := by
   rfl
@@ -710,9 +710,9 @@ theorem HV_079 : ∀ h, hv_secure h = true → world_switch_secure (hv_world_swi
 theorem HV_080 : ∀ h, world_switch_secure (hv_world_switch h) = true → ws_smc_filtering (hv_world_switch h) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 11: COMPREHENSIVE SECURITY THEOREMS (HV_081 - HV_085)
-    ============================================================================ -/
+    ============================================================================
 /-- HV_081 (matches Coq) -/
 theorem HV_081 : hv_fully_secure riina_hypervisor = true := by
   rfl

@@ -537,7 +537,7 @@ theorem K_001_11 : ∀ (ctx : HygienicContext) (name : string) (use_scope : Scop
   simp_all [Bool.and_eq_true]
 
 /-- K_001_12 (matches Coq) -/
-theorem K_001_12 : ∀ (ctx : HygienicContext) (macro_name user_name : string), hyg_macro_scope ctx ≠ hyg_current_scope ctx →  lookup_scoped (hyg_bindings ctx) macro_name = Some (hyg_macro_scope ctx) → lookup_scoped (hyg_bindings ctx) user_name = Some (hyg_current_scope ctx) →  lookup_scoped (hyg_bindings ctx) macro_name ≠ lookup_scoped (hyg_bindings ctx) user_name := by
+theorem K_001_12 : ∀ (ctx : HygienicContext) (macro_name user_name : string), hyg_macro_scope ctx ≠ hyg_current_scope ctx → lookup_scoped (hyg_bindings ctx) macro_name = Some (hyg_macro_scope ctx) → lookup_scoped (hyg_bindings ctx) user_name = Some (hyg_current_scope ctx) → lookup_scoped (hyg_bindings ctx) macro_name ≠ lookup_scoped (hyg_bindings ctx) user_name := by
   intro h; exact h
 
 /-- K_001_13 (matches Coq) -/

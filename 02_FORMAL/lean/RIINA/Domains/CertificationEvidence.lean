@@ -133,35 +133,35 @@ theorem differ_at_one_sym : ∀ v1 v2 pos, differ_at_one v1 v2 = Some pos → di
   cases ‹_› <;> simp
 
 /-- 1 (matches Coq) -/
-theorem 1 : MC/DC pair symmetry  Theorem mcdc_pair_sym : ∀ v1 v2 d, mcdc_pair v1 v2 d → mcdc_pair v2 v1 d := by
+theorem 1 : MC/DC pair symmetry Theorem mcdc_pair_sym : ∀ v1 v2 d, mcdc_pair v1 v2 d → mcdc_pair v2 v1 d := by
   intro h; exact h
 
 /-- 2 (matches Coq) -/
-theorem 2 : Vectors equal to themselves have no MC/DC differ  Theorem no_self_mcdc : ∀ v, differ_at_one v v = None := by
+theorem 2 : Vectors equal to themselves have no MC/DC differ Theorem no_self_mcdc : ∀ v, differ_at_one v v = None := by
   simp_all [Bool.and_eq_true]
 
 /-- 3 (matches Coq) -/
-theorem 3 : Full traceability means no untested requirements  Theorem full_trace_no_gaps : ∀ t, fully_traced t → ∀ r, In r (tr_reqs t) → ∃ tid, In tid (tr_map t r) := by
+theorem 3 : Full traceability means no untested requirements Theorem full_trace_no_gaps : ∀ t, fully_traced t → ∀ r, In r (tr_reqs t) → ∃ tid, In tid (tr_map t r) := by
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : SFR satisfaction requires evidence  Theorem sfr_needs_evidence : ∀ s, sfr_satisfied s → sfr_evidence_count s ≥ 1 := by
+theorem 4 : SFR satisfaction requires evidence Theorem sfr_needs_evidence : ∀ s, sfr_satisfied s → sfr_evidence_count s ≥ 1 := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : SFR satisfaction requires verification  Theorem sfr_needs_verification : ∀ s, sfr_satisfied s → sfr_verified s = true := by
+theorem 5 : SFR satisfaction requires verification Theorem sfr_needs_verification : ∀ s, sfr_satisfied s → sfr_verified s = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : DAL_A is the highest level  Theorem dal_a_highest : ∀ d, dal_leq d DAL_A = true := by
+theorem 6 : DAL_A is the highest level Theorem dal_a_highest : ∀ d, dal_leq d DAL_A = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
-theorem 7 : DAL ordering is reflexive  Theorem dal_leq_refl : ∀ d, dal_leq d d = true := by
+theorem 7 : DAL ordering is reflexive Theorem dal_leq_refl : ∀ d, dal_leq d d = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 8 (matches Coq) -/
-theorem 8 : DAL ordering is transitive  Theorem dal_leq_trans : ∀ d1 d2 d3, dal_leq d1 d2 = true → dal_leq d2 d3 = true → dal_leq d1 d3 = true := by
+theorem 8 : DAL ordering is transitive Theorem dal_leq_trans : ∀ d1 d2 d3, dal_leq d1 d2 = true → dal_leq d2 d3 = true → dal_leq d1 d3 = true := by
   omega
 
 /-- fold_left_add_acc (matches Coq) -/
@@ -169,51 +169,51 @@ theorem fold_left_add_acc : ∀ l acc, fold_left (fun a s => a + sfr_evidence_co
   omega
 
 /-- 9 (matches Coq) -/
-theorem 9 : Evidence count is additive over concatenation  Theorem evidence_count_app : ∀ l1 l2, evidence_count (l1 ++ l2) = evidence_count l1 + evidence_count l2 := by
+theorem 9 : Evidence count is additive over concatenation Theorem evidence_count_app : ∀ l1 l2, evidence_count (l1 ++ l2) = evidence_count l1 + evidence_count l2 := by
   rfl
 
 /-- 10 (matches Coq) -/
-theorem 10 : All satisfied SFRs contribute evidence  Theorem all_satisfied_have_evidence : ∀ sfrs, Forall sfr_satisfied sfrs → evidence_count sfrs ≥ length sfrs := by
+theorem 10 : All satisfied SFRs contribute evidence Theorem all_satisfied_have_evidence : ∀ sfrs, Forall sfr_satisfied sfrs → evidence_count sfrs ≥ length sfrs := by
   cases ‹_› <;> simp <;> omega
 
 /-- 11 (matches Coq) -/
-theorem 11 : Empty traceability is vacuously fully traced  Theorem empty_trace_fully_traced : ∀ tm tt, fully_traced (mkTrace [] tm tt) := by
+theorem 11 : Empty traceability is vacuously fully traced Theorem empty_trace_fully_traced : ∀ tm tt, fully_traced (mkTrace [] tm tt) := by
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : DAL_E is the lowest level  Theorem dal_e_lowest : ∀ d, dal_leq DAL_E d = true := by
+theorem 12 : DAL_E is the lowest level Theorem dal_e_lowest : ∀ d, dal_leq DAL_E d = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 13 (matches Coq) -/
-theorem 13 : DAL ordering is antisymmetric on nat  Theorem dal_leq_antisym : ∀ d1 d2, dal_leq d1 d2 = true → dal_leq d2 d1 = true → dal_to_nat d1 = dal_to_nat d2 := by
+theorem 13 : DAL ordering is antisymmetric on nat Theorem dal_leq_antisym : ∀ d1 d2, dal_leq d1 d2 = true → dal_leq d2 d1 = true → dal_to_nat d1 = dal_to_nat d2 := by
   omega
 
 /-- 14 (matches Coq) -/
-theorem 14 : dal_to_nat is bounded  Theorem dal_to_nat_bounded : ∀ d, dal_to_nat d ≤ 5 ∧ dal_to_nat d ≥ 1 := by
+theorem 14 : dal_to_nat is bounded Theorem dal_to_nat_bounded : ∀ d, dal_to_nat d ≤ 5 ∧ dal_to_nat d ≥ 1 := by
   cases ‹_› <;> simp <;> omega
 
 /-- 15 (matches Coq) -/
-theorem 15 : Evidence count of nil is zero  Theorem evidence_count_nil : evidence_count [] = 0 := by
+theorem 15 : Evidence count of nil is zero Theorem evidence_count_nil : evidence_count [] = 0 := by
   simp
 
 /-- 16 (matches Coq) -/
-theorem 16 : Evidence count of singleton  Theorem evidence_count_singleton : ∀ s, evidence_count [s] = sfr_evidence_count s := by
+theorem 16 : Evidence count of singleton Theorem evidence_count_singleton : ∀ s, evidence_count [s] = sfr_evidence_count s := by
   omega
 
 /-- 17 (matches Coq) -/
-theorem 17 : SFR satisfied decomposition  Theorem sfr_satisfied_decompose : ∀ sid sv sec, sfr_satisfied (mkSFR sid sv sec) → sv = true ∧ sec ≥ 1 := by
+theorem 17 : SFR satisfied decomposition Theorem sfr_satisfied_decompose : ∀ sid sv sec, sfr_satisfied (mkSFR sid sv sec) → sv = true ∧ sec ≥ 1 := by
   simp_all [Bool.and_eq_true]
 
 /-- 18 (matches Coq) -/
-theorem 18 : No self MC/DC means no decision flip  Theorem no_self_mcdc_no_flip : ∀ v d, ~ mcdc_pair v v d := by
+theorem 18 : No self MC/DC means no decision flip Theorem no_self_mcdc_no_flip : ∀ v d, ~ mcdc_pair v v d := by
   simp_all [Bool.and_eq_true]
 
 /-- 19 (matches Coq) -/
-theorem 19 : DAL_A strictly greater than DAL_B  Theorem dal_a_gt_b : dal_to_nat DAL_A > dal_to_nat DAL_B := by
+theorem 19 : DAL_A strictly greater than DAL_B Theorem dal_a_gt_b : dal_to_nat DAL_A > dal_to_nat DAL_B := by
   omega
 
 /-- 20 (matches Coq) -/
-theorem 20 : Evidence count monotonic under append  Theorem evidence_count_mono : ∀ l s, evidence_count l ≤ evidence_count (l ++ [s]) := by
+theorem 20 : Evidence count monotonic under append Theorem evidence_count_mono : ∀ l s, evidence_count l ≤ evidence_count (l ++ [s]) := by
   omega
 
 end RIINA

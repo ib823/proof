@@ -277,31 +277,31 @@ theorem action_type_exhaustive : ∀ (t : ActionType), t = TapAction ∨ t = Swi
   simp_all [Bool.and_eq_true]
 
 /-- 1 (matches Coq) -/
-theorem 1 : Touch Target Minimum Width ----   Theorem touch_target_minimum_width : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_width t ≥ MIN_TOUCH_SIZE := by
+theorem 1 : Touch Target Minimum Width ---- Theorem touch_target_minimum_width : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_width t ≥ MIN_TOUCH_SIZE := by
   simp_all [Bool.and_eq_true]
 
 /-- 2 (matches Coq) -/
-theorem 2 : Touch Target Minimum Height ----   Theorem touch_target_minimum_height : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_height t ≥ MIN_TOUCH_SIZE := by
+theorem 2 : Touch Target Minimum Height ---- Theorem touch_target_minimum_height : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_height t ≥ MIN_TOUCH_SIZE := by
   simp_all [Bool.and_eq_true]
 
 /-- 3 (matches Coq) -/
-theorem 3 : Touch Target Spacing ----   Theorem touch_target_spacing : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_spacing_left t ≥ MIN_SPACING ∧ tt_spacing_right t ≥ MIN_SPACING ∧ tt_spacing_top t ≥ MIN_SPACING ∧ tt_spacing_bottom t ≥ MIN_SPACING := by
+theorem 3 : Touch Target Spacing ---- Theorem touch_target_spacing : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_spacing_left t ≥ MIN_SPACING ∧ tt_spacing_right t ≥ MIN_SPACING ∧ tt_spacing_top t ≥ MIN_SPACING ∧ tt_spacing_bottom t ≥ MIN_SPACING := by
   simp_all [Bool.and_eq_true]
 
 /-- 4 (matches Coq) -/
-theorem 4 : Touch Targets Not Overlapping ----   Theorem touch_target_not_overlapping : ∀ (layout : WCAGLayout) (a b : TouchTarget), In a (wl_targets layout) → In b (wl_targets layout) → tt_interactive a = true → tt_interactive b = true → tt_id a ≠ tt_id b → targets_no_overlap a b := by
+theorem 4 : Touch Targets Not Overlapping ---- Theorem touch_target_not_overlapping : ∀ (layout : WCAGLayout) (a b : TouchTarget), In a (wl_targets layout) → In b (wl_targets layout) → tt_interactive a = true → tt_interactive b = true → tt_id a ≠ tt_id b → targets_no_overlap a b := by
   simp_all [Bool.and_eq_true]
 
 /-- 5 (matches Coq) -/
-theorem 5 : Close Button Reachable ----   Theorem close_button_reachable : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_is_close_button t = true → tt_x t + tt_width t ≤ MAX_THUMB_REACH_X ∧ tt_y t + tt_height t ≤ MAX_THUMB_REACH_Y := by
+theorem 5 : Close Button Reachable ---- Theorem close_button_reachable : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_is_close_button t = true → tt_x t + tt_width t ≤ MAX_THUMB_REACH_X ∧ tt_y t + tt_height t ≤ MAX_THUMB_REACH_Y := by
   simp_all [Bool.and_eq_true]
 
 /-- 6 (matches Coq) -/
-theorem 6 : Corner Targets Enlarged ----   Edge-positioned interactive targets have enlarged hit areas (>= 56px)  Theorem corner_targets_enlarged : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_is_edge t = true → tt_width t ≥ MIN_CORNER_SIZE ∧ tt_height t ≥ MIN_CORNER_SIZE := by
+theorem 6 : Corner Targets Enlarged ---- Theorem corner_targets_enlarged : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_is_edge t = true → tt_width t ≥ MIN_CORNER_SIZE ∧ tt_height t ≥ MIN_CORNER_SIZE := by
   simp_all [Bool.and_eq_true]
 
 /-- 7 (matches Coq) -/
-theorem 7 : Nested Targets Resolved ----   Theorem nested_targets_resolved : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_nesting_depth t = 0 ∨ tt_interactive t = false := by
+theorem 7 : Nested Targets Resolved ---- Theorem nested_targets_resolved : ∀ (layout : WCAGLayout) (t : TouchTarget), In t (wl_targets layout) → tt_interactive t = true → tt_nesting_depth t = 0 ∨ tt_interactive t = false := by
   simp_all [Bool.and_eq_true]
 
 /-- corner_size_exceeds_minimum (matches Coq) -/
@@ -309,51 +309,51 @@ theorem corner_size_exceeds_minimum : MIN_CORNER_SIZE > MIN_TOUCH_SIZE := by
   omega
 
 /-- 8 (matches Coq) -/
-theorem 8 : All Interactive Elements Keyboard Accessible ----  Theorem all_interactive_keyboard_accessible : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_interactive e = true → keyboard_reachable (rk_state sys) (ue_id e) := by
+theorem 8 : All Interactive Elements Keyboard Accessible ---- Theorem all_interactive_keyboard_accessible : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_interactive e = true → keyboard_reachable (rk_state sys) (ue_id e) := by
   simp_all [Bool.and_eq_true]
 
 /-- 9 (matches Coq) -/
-theorem 9 : No Keyboard Trap ----   Theorem no_keyboard_trap : ∀ (sys : RIINA_KeyboardSystem) (eid : nat), In eid (kb_tab_index_list (rk_state sys)) → length (kb_tab_index_list (rk_state sys)) ≥ 2 := by
+theorem 9 : No Keyboard Trap ---- Theorem no_keyboard_trap : ∀ (sys : RIINA_KeyboardSystem) (eid : nat), In eid (kb_tab_index_list (rk_state sys)) → length (kb_tab_index_list (rk_state sys)) ≥ 2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 10 (matches Coq) -/
-theorem 10 : Visible Focus Indicator ----   Theorem visible_focus_indicator : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_focusable e = true → ue_has_focus_indicator e = true := by
+theorem 10 : Visible Focus Indicator ---- Theorem visible_focus_indicator : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_focusable e = true → ue_has_focus_indicator e = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 11 (matches Coq) -/
-theorem 11 : Skip Navigation Available ----   Theorem skip_navigation_available : ∀ (sys : RIINA_KeyboardSystem), ∃ e, In e (kb_elements (rk_state sys)) ∧ ue_is_skip_link e = true := by
+theorem 11 : Skip Navigation Available ---- Theorem skip_navigation_available : ∀ (sys : RIINA_KeyboardSystem), ∃ e, In e (kb_elements (rk_state sys)) ∧ ue_is_skip_link e = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 12 (matches Coq) -/
-theorem 12 : Shortcut Keys Not Conflicting ----   No two custom (non-OS) keyboard shortcuts share the same key binding  Theorem shortcut_keys_not_conflicting : ∀ (sys : RIINA_KeyboardSystem) (a b : KeyboardShortcut), In a (kb_shortcuts (rk_state sys)) → In b (kb_shortcuts (rk_state sys)) → ks_is_os_shortcut a = false → ks_is_os_shortcut b = false → ks_id a ≠ ks_id b → ~(ks_modifier a = ks_modifier b ∧ ks_key a = ks_key b ∧ ks_id a ≠ ks_id b) := by
+theorem 12 : Shortcut Keys Not Conflicting ---- Theorem shortcut_keys_not_conflicting : ∀ (sys : RIINA_KeyboardSystem) (a b : KeyboardShortcut), In a (kb_shortcuts (rk_state sys)) → In b (kb_shortcuts (rk_state sys)) → ks_is_os_shortcut a = false → ks_is_os_shortcut b = false → ks_id a ≠ ks_id b → ~(ks_modifier a = ks_modifier b ∧ ks_key a = ks_key b ∧ ks_id a ≠ ks_id b) := by
   intro h; exact h
 
 /-- 13 (matches Coq) -/
-theorem 13 : Escape Closes Modal ----   Every modal element is keyboard-reachable (precondition for Escape handling)  Theorem escape_closes_modal : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_is_modal e = true → keyboard_reachable (rk_state sys) (ue_id e) := by
+theorem 13 : Escape Closes Modal ---- Theorem escape_closes_modal : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_is_modal e = true → keyboard_reachable (rk_state sys) (ue_id e) := by
   simp_all [Bool.and_eq_true]
 
 /-- 14 (matches Coq) -/
-theorem 14 : Time Limits Extendable ----   Theorem time_limits_extendable : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_extendable ta = true := by
+theorem 14 : Time Limits Extendable ---- Theorem time_limits_extendable : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_extendable ta = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 15 (matches Coq) -/
-theorem 15 : No Auto Timeout ----   Theorem no_auto_timeout : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_warns_before_timeout ta = true := by
+theorem 15 : No Auto Timeout ---- Theorem no_auto_timeout : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_warns_before_timeout ta = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 16 (matches Coq) -/
-theorem 16 : Timeout Warning ----   Theorem timeout_warning : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_warns_before_timeout ta ≠ false := by
+theorem 16 : Timeout Warning ---- Theorem timeout_warning : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_warns_before_timeout ta ≠ false := by
   simp_all [Bool.and_eq_true]
 
 /-- 17 (matches Coq) -/
-theorem 17 : Progress Saved on Timeout ----   Theorem progress_saved_on_timeout : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_saves_progress ta = true := by
+theorem 17 : Progress Saved on Timeout ---- Theorem progress_saved_on_timeout : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_saves_progress ta = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 18 (matches Coq) -/
-theorem 18 : Timeout Extension Sufficient ----   Theorem timeout_extension_sufficient : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_extendable ta = true → ta_extension_factor ta ≥ 2 := by
+theorem 18 : Timeout Extension Sufficient ---- Theorem timeout_extension_sufficient : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_extendable ta = true → ta_extension_factor ta ≥ 2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 19 (matches Coq) -/
-theorem 19 : Untimed Alternative Available ----   Theorem untimed_alternative_available : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_has_untimed_alt ta = true := by
+theorem 19 : Untimed Alternative Available ---- Theorem untimed_alternative_available : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_has_untimed_alt ta = true := by
   simp_all [Bool.and_eq_true]
 
 /-- input_method_in_correct (matches Coq) -/
@@ -361,63 +361,63 @@ theorem input_method_in_correct : ∀ m l, input_method_in m l = true <-> In m l
   cases ‹_› <;> simp
 
 /-- 20 (matches Coq) -/
-theorem 20 : Voice Input Supported ----   Theorem voice_input_supported : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_is_text_field f = true → In VoiceInput (uf_supported_inputs f) := by
+theorem 20 : Voice Input Supported ---- Theorem voice_input_supported : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_is_text_field f = true → In VoiceInput (uf_supported_inputs f) := by
   simp_all [Bool.and_eq_true]
 
 /-- 21 (matches Coq) -/
-theorem 21 : Eye Tracking Supported ----   Theorem eye_tracking_supported : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In EyeTracking (uf_supported_inputs f) := by
+theorem 21 : Eye Tracking Supported ---- Theorem eye_tracking_supported : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In EyeTracking (uf_supported_inputs f) := by
   simp_all [Bool.and_eq_true]
 
 /-- 22 (matches Coq) -/
-theorem 22 : Head Switch Supported ----   Theorem head_switch_supported : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In HeadSwitch (uf_supported_inputs f) := by
+theorem 22 : Head Switch Supported ---- Theorem head_switch_supported : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In HeadSwitch (uf_supported_inputs f) := by
   simp_all [Bool.and_eq_true]
 
 /-- 23 (matches Coq) -/
-theorem 23 : Single Switch Operable ----   Theorem single_switch_operable : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In SingleSwitch (uf_supported_inputs f) := by
+theorem 23 : Single Switch Operable ---- Theorem single_switch_operable : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In SingleSwitch (uf_supported_inputs f) := by
   simp_all [Bool.and_eq_true]
 
 /-- 24 (matches Coq) -/
-theorem 24 : Dwell Activation Available ----   Every feature supports dwell (hover) activation as a click alternative  Theorem dwell_activation_available : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_has_dwell_alt f = true := by
+theorem 24 : Dwell Activation Available ---- Theorem dwell_activation_available : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_has_dwell_alt f = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 25 (matches Coq) -/
-theorem 25 : Gesture Alternatives Available ----   Theorem gesture_alternatives_available : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_requires_multitouch f = true → uf_has_single_finger_alt f = true := by
+theorem 25 : Gesture Alternatives Available ---- Theorem gesture_alternatives_available : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_requires_multitouch f = true → uf_has_single_finger_alt f = true := by
   simp_all [Bool.and_eq_true]
 
 /-- 26 (matches Coq) -/
-theorem 26 : Motor-complete system existence ----   Theorem motor_complete_system_composable : ∀ (ws : RIINA_SwitchControlSystem) (wv : RIINA_VoiceControlSystem) (wk : RIINA_KeyboardSystem) (wt : RIINA_TimingSystem), (∀ action, possible_with_switch_control action) ∧ (∀ action, speakable_command action) ∧ (∀ e, In e (kb_elements (rk_state wk)) → ue_interactive e = true → keyboard_reachable (rk_state wk) (ue_id e)) ∧ (∀ ta, In ta (rt_actions wt) → ta_time_limit ta > 0 → ta_extendable ta = true) := by
+theorem 26 : Motor-complete system existence ---- Theorem motor_complete_system_composable : ∀ (ws : RIINA_SwitchControlSystem) (wv : RIINA_VoiceControlSystem) (wk : RIINA_KeyboardSystem) (wt : RIINA_TimingSystem), (∀ action, possible_with_switch_control action) ∧ (∀ action, speakable_command action) ∧ (∀ e, In e (kb_elements (rk_state wk)) → ue_interactive e = true → keyboard_reachable (rk_state wk) (ue_id e)) ∧ (∀ ta, In ta (rt_actions wt) → ta_time_limit ta > 0 → ta_extendable ta = true) := by
   simp_all [Bool.and_eq_true]
 
 /-- 27 (matches Coq) -/
-theorem 27 : Alt input fully covers standard input ----   Theorem alt_input_covers_standard : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In EyeTracking (uf_supported_inputs f) ∧ In HeadSwitch (uf_supported_inputs f) ∧ In SingleSwitch (uf_supported_inputs f) := by
+theorem 27 : Alt input fully covers standard input ---- Theorem alt_input_covers_standard : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In EyeTracking (uf_supported_inputs f) ∧ In HeadSwitch (uf_supported_inputs f) ∧ In SingleSwitch (uf_supported_inputs f) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 28 (matches Coq) -/
-theorem 28 : Timing safety is total ----   Theorem timing_safety_total : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_extendable ta = true ∧ ta_warns_before_timeout ta = true ∧ ta_saves_progress ta = true ∧ ta_has_untimed_alt ta = true := by
+theorem 28 : Timing safety is total ---- Theorem timing_safety_total : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_extendable ta = true ∧ ta_warns_before_timeout ta = true ∧ ta_saves_progress ta = true ∧ ta_has_untimed_alt ta = true := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 29 (matches Coq) -/
-theorem 29 : Keyboard and touch are both covered ----   Theorem touch_and_keyboard_covered : ∀ (layout : WCAGLayout) (ksys : RIINA_KeyboardSystem) (tt : TouchTarget) (ue : UIElement), In tt (wl_targets layout) → tt_interactive tt = true → In ue (kb_elements (rk_state ksys)) → ue_interactive ue = true → tt_id tt = ue_id ue → tt_width tt ≥ MIN_TOUCH_SIZE ∧ tt_height tt ≥ MIN_TOUCH_SIZE ∧ keyboard_reachable (rk_state ksys) (ue_id ue) := by
+theorem 29 : Keyboard and touch are both covered ---- Theorem touch_and_keyboard_covered : ∀ (layout : WCAGLayout) (ksys : RIINA_KeyboardSystem) (tt : TouchTarget) (ue : UIElement), In tt (wl_targets layout) → tt_interactive tt = true → In ue (kb_elements (rk_state ksys)) → ue_interactive ue = true → tt_id tt = ue_id ue → tt_width tt ≥ MIN_TOUCH_SIZE ∧ tt_height tt ≥ MIN_TOUCH_SIZE ∧ keyboard_reachable (rk_state ksys) (ue_id ue) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 30 (matches Coq) -/
-theorem 30 : Extension factor is at least 2 for all timed extendable actions ----   Theorem timed_action_doubles_at_minimum : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_extension_factor ta ≥ 2 := by
+theorem 30 : Extension factor is at least 2 for all timed extendable actions ---- Theorem timed_action_doubles_at_minimum : ∀ (sys : RIINA_TimingSystem) (ta : TimedAction), In ta (rt_actions sys) → ta_time_limit ta > 0 → ta_extension_factor ta ≥ 2 := by
   simp_all [Bool.and_eq_true]
 
 /-- 31 (matches Coq) -/
-theorem 31 : No interactive element is left behind ----   Theorem no_action_left_behind : ∀ (action : UserAction), (∃ cmd, switch_command_for_action action = cmd) ∧ speakable_for_action action > 0 := by
+theorem 31 : No interactive element is left behind ---- Theorem no_action_left_behind : ∀ (action : UserAction), (∃ cmd, switch_command_for_action action = cmd) ∧ speakable_for_action action > 0 := by
   cases ‹_› <;> simp <;> omega
 
 /-- 32 (matches Coq) -/
-theorem 32 : Dwell activation implies no forced clicking ----   Theorem dwell_implies_no_forced_click : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_has_dwell_alt f = true ∧ In SingleSwitch (uf_supported_inputs f) := by
+theorem 32 : Dwell activation implies no forced clicking ---- Theorem dwell_implies_no_forced_click : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → uf_has_dwell_alt f = true ∧ In SingleSwitch (uf_supported_inputs f) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 33 (matches Coq) -/
-theorem 33 : Focus indicator and skip link co-exist ----   Theorem focus_and_skip_coexist : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_focusable e = true → ue_has_focus_indicator e = true ∧ ∃ skip, In skip (kb_elements (rk_state sys)) ∧ ue_is_skip_link skip = true := by
+theorem 33 : Focus indicator and skip link co-exist ---- Theorem focus_and_skip_coexist : ∀ (sys : RIINA_KeyboardSystem) (e : UIElement), In e (kb_elements (rk_state sys)) → ue_focusable e = true → ue_has_focus_indicator e = true ∧ ∃ skip, In skip (kb_elements (rk_state sys)) ∧ ue_is_skip_link skip = true := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 /-- 34 (matches Coq) -/
-theorem 34 : Complete motor accessibility guarantee ----   Theorem complete_alt_input_guarantee : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In EyeTracking (uf_supported_inputs f) ∧ In HeadSwitch (uf_supported_inputs f) ∧ In SingleSwitch (uf_supported_inputs f) ∧ uf_has_dwell_alt f = true := by
+theorem 34 : Complete motor accessibility guarantee ---- Theorem complete_alt_input_guarantee : ∀ (sys : RIINA_AltInputSystem) (f : UIFeature), In f (rai_features sys) → In EyeTracking (uf_supported_inputs f) ∧ In HeadSwitch (uf_supported_inputs f) ∧ In SingleSwitch (uf_supported_inputs f) ∧ uf_has_dwell_alt f = true := by
   constructor <;> simp_all [Bool.and_eq_true]
 
 end RIINA

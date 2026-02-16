@@ -116,123 +116,123 @@ definition verify_exploit :: "exploit_candidate \<Rightarrow> bool" where
   "verify_exploit ex \<equiv> verified_safe ex"
 
 (* 1 (matches Coq) *)
-lemma 1: "Kernel verification is independent of proof source *) Theorem kernel_independent_of_source : \<forall> cand1 cand2 cert, source cand1 \<noteq> source cand2 \<longrightarrow> kernel_check cert = kernel_check cert"
+lemma 1: "Kernel verification is independent of proof source Theorem kernel_independent_of_source : \<forall> cand1 cand2 cert, source cand1 \<noteq> source cand2 \<longrightarrow> kernel_check cert = kernel_check cert"
   by simp
 
 (* 2 (matches Coq) *)
-lemma 2: "Valid certificates always pass kernel check *) Theorem valid_cert_passes_kernel : \<forall> c, cert_valid c = True \<longrightarrow> kernel_check c = True"
+lemma 2: "Valid certificates always pass kernel check Theorem valid_cert_passes_kernel : \<forall> c, cert_valid c = True \<longrightarrow> kernel_check c = True"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "Hallucinated proofs never cross trust boundary *) Theorem hallucinated_never_trusted : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = True \<longrightarrow> reject_hallucinated cand cert = False"
+lemma 3: "Hallucinated proofs never cross trust boundary Theorem hallucinated_never_trusted : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = True \<longrightarrow> reject_hallucinated cand cert = False"
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "Kernel acceptance implies certificate validity *) Theorem kernel_accept_implies_valid : \<forall> cert, kernel_check cert = True \<longrightarrow> cert_valid cert = True"
+lemma 4: "Kernel acceptance implies certificate validity Theorem kernel_accept_implies_valid : \<forall> cert, kernel_check cert = True \<longrightarrow> cert_valid cert = True"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "Certificate validity is deterministic *) Theorem cert_valid_deterministic : \<forall> c r1 r2, cert_valid c = r1 \<longrightarrow> cert_valid c = r2 \<longrightarrow> r1 = r2"
+lemma 5: "Certificate validity is deterministic Theorem cert_valid_deterministic : \<forall> c r1 r2, cert_valid c = r1 \<longrightarrow> cert_valid c = r2 \<longrightarrow> r1 = r2"
   by simp
 
 (* 6 (matches Coq) *)
-lemma 6: "Reflexivity certificates always valid *) Theorem refl_always_valid : cert_valid CertRefl = True"
+lemma 6: "Reflexivity certificates always valid Theorem refl_always_valid : cert_valid CertRefl = True"
   by simp
 
 (* 7 (matches Coq) *)
-lemma 7: "Elimination preserves validity *) Theorem elim_preserves_validity : \<forall> c1 c2, cert_valid c1 = True \<longrightarrow> cert_valid c2 = True \<longrightarrow> cert_valid (CertElim c1 c2) = True"
+lemma 7: "Elimination preserves validity Theorem elim_preserves_validity : \<forall> c1 c2, cert_valid c1 = True \<longrightarrow> cert_valid c2 = True \<longrightarrow> cert_valid (CertElim c1 c2) = True"
   by simp
 
 (* 8 (matches Coq) *)
-lemma 8: "Introduction preserves validity *) Theorem intro_preserves_validity : \<forall> c, cert_valid c = True \<longrightarrow> cert_valid (CertIntro c) = True"
+lemma 8: "Introduction preserves validity Theorem intro_preserves_validity : \<forall> c, cert_valid c = True \<longrightarrow> cert_valid (CertIntro c) = True"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "AI confidence score does not affect kernel check *) Theorem confidence_irrelevant_to_kernel : \<forall> cand1 cand2 cert, confidence cand1 \<noteq> confidence cand2 \<longrightarrow> kernel_check cert = kernel_check cert"
+lemma 9: "AI confidence score does not affect kernel check Theorem confidence_irrelevant_to_kernel : \<forall> cand1 cand2 cert, confidence cand1 \<noteq> confidence cand2 \<longrightarrow> kernel_check cert = kernel_check cert"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "Untrusted AI proof does not imply invalid certificate *) Theorem untrusted_not_invalid : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand \<longrightarrow> cert_valid cert = True \<longrightarrow> kernel_check cert = True"
+lemma 10: "Untrusted AI proof does not imply invalid certificate Theorem untrusted_not_invalid : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand \<longrightarrow> cert_valid cert = True \<longrightarrow> kernel_check cert = True"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "Kernel result is deterministic *) Theorem kernel_deterministic : \<forall> cand cert r1 r2, run_kernel cand cert = r1 \<longrightarrow> run_kernel cand cert = r2 \<longrightarrow> r1 = r2"
+lemma 11: "Kernel result is deterministic Theorem kernel_deterministic : \<forall> cand cert r1 r2, run_kernel cand cert = r1 \<longrightarrow> run_kernel cand cert = r2 \<longrightarrow> r1 = r2"
   by simp
 
 (* 12 (matches Coq) *)
-lemma 12: "Non-hallucinated proofs may cross trust boundary *) Theorem non_hallucinated_may_cross : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = False \<longrightarrow> cert_valid cert = True \<longrightarrow> crosses_trust_boundary cand cert"
+lemma 12: "Non-hallucinated proofs may cross trust boundary Theorem non_hallucinated_may_cross : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = False \<longrightarrow> cert_valid cert = True \<longrightarrow> crosses_trust_boundary cand cert"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "Axiom certificates always valid *) Theorem axiom_always_valid : \<forall> n, cert_valid (CertAxiom n) = True"
+lemma 13: "Axiom certificates always valid Theorem axiom_always_valid : \<forall> n, cert_valid (CertAxiom n) = True"
   by simp
 
 (* 14 (matches Coq) *)
-lemma 14: "Exploit verification is independent of source *) Theorem exploit_verify_source_independent : \<forall> ex1 ex2, exploit_source ex1 \<noteq> exploit_source ex2 \<longrightarrow> verify_exploit ex1 = verified_safe ex1"
+lemma 14: "Exploit verification is independent of source Theorem exploit_verify_source_independent : \<forall> ex1 ex2, exploit_source ex1 \<noteq> exploit_source ex2 \<longrightarrow> verify_exploit ex1 = verified_safe ex1"
   by simp
 
 (* 15 (matches Coq) *)
-lemma 15: "Invalid certificate rejected regardless of AI confidence *) Theorem invalid_cert_rejected : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), cert_valid cert = False \<longrightarrow> kernel_check cert = False"
+lemma 15: "Invalid certificate rejected regardless of AI confidence Theorem invalid_cert_rejected : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), cert_valid cert = False \<longrightarrow> kernel_check cert = False"
   by auto
 
 (* 16 (matches Coq) *)
-lemma 16: "Human proofs are not untrusted AI proofs *) Theorem human_not_untrusted_ai : \<forall> (cand : ai_proof_candidate), source cand = HumanProver \<longrightarrow> ~ untrusted_ai_proof cand"
+lemma 16: "Human proofs are not untrusted AI proofs Theorem human_not_untrusted_ai : \<forall> (cand : ai_proof_candidate), source cand = HumanProver \<longrightarrow> ~ untrusted_ai_proof cand"
   by auto
 
 (* 17 (matches Coq) *)
-lemma 17: "AI_LLM proofs are untrusted *) Theorem llm_is_untrusted : \<forall> model cand, source cand = AI_LLM model \<longrightarrow> untrusted_ai_proof cand"
+lemma 17: "AI_LLM proofs are untrusted Theorem llm_is_untrusted : \<forall> model cand, source cand = AI_LLM model \<longrightarrow> untrusted_ai_proof cand"
   by auto
 
 (* 18 (matches Coq) *)
-lemma 18: "AutoVerus proofs are untrusted *) Theorem autoverus_is_untrusted : \<forall> (cand : ai_proof_candidate), source cand = AI_AutoVerus \<longrightarrow> untrusted_ai_proof cand"
+lemma 18: "AutoVerus proofs are untrusted Theorem autoverus_is_untrusted : \<forall> (cand : ai_proof_candidate), source cand = AI_AutoVerus \<longrightarrow> untrusted_ai_proof cand"
   by auto
 
 (* 19 (matches Coq) *)
-lemma 19: "APOLLO proofs are untrusted *) Theorem apollo_is_untrusted : \<forall> (cand : ai_proof_candidate), source cand = AI_APOLLO \<longrightarrow> untrusted_ai_proof cand"
+lemma 19: "APOLLO proofs are untrusted Theorem apollo_is_untrusted : \<forall> (cand : ai_proof_candidate), source cand = AI_APOLLO \<longrightarrow> untrusted_ai_proof cand"
   by auto
 
 (* 20 (matches Coq) *)
-lemma 20: "Hybrid proofs are untrusted (conservative) *) Theorem hybrid_is_untrusted : \<forall> (cand : ai_proof_candidate), source cand = HybridHumanAI \<longrightarrow> untrusted_ai_proof cand"
+lemma 20: "Hybrid proofs are untrusted (conservative) Theorem hybrid_is_untrusted : \<forall> (cand : ai_proof_candidate), source cand = HybridHumanAI \<longrightarrow> untrusted_ai_proof cand"
   by auto
 
 (* 21 (matches Coq) *)
-lemma 21: "Kernel acceptance commutes with certificate structure *) Theorem kernel_check_commutes_intro : \<forall> c, kernel_check (CertIntro c) = kernel_check c"
+lemma 21: "Kernel acceptance commutes with certificate structure Theorem kernel_check_commutes_intro : \<forall> c, kernel_check (CertIntro c) = kernel_check c"
   by simp
 
 (* 22 (matches Coq) *)
-lemma 22: "Reject hallucinated is negation of is_hallucinated *) Theorem reject_hallucinated_negation : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), reject_hallucinated cand cert = (\<not> (hallucinated) cand)"
+lemma 22: "Reject hallucinated is negation of is_hallucinated Theorem reject_hallucinated_negation : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), reject_hallucinated cand cert = (\<not> (hallucinated) cand)"
   by simp
 
 (* 23 (matches Coq) *)
-lemma 23: "Certificate composition — two valid certs produce valid elimination *) Theorem cert_composition_elim : \<forall> c1 c2, cert_valid c1 = True \<longrightarrow> cert_valid c2 = True \<longrightarrow> cert_valid (CertElim c1 c2) = True"
+lemma 23: "Certificate composition — two valid certs produce valid elimination Theorem cert_composition_elim : \<forall> c1 c2, cert_valid c1 = True \<longrightarrow> cert_valid c2 = True \<longrightarrow> cert_valid (CertElim c1 c2) = True"
   by simp
 
 (* 24 (matches Coq) *)
-lemma 24: "Kernel check is monotone (validity preserved) *) Theorem kernel_check_monotone : \<forall> c, cert_valid c = True \<longrightarrow> kernel_check c = True"
+lemma 24: "Kernel check is monotone (validity preserved) Theorem kernel_check_monotone : \<forall> c, cert_valid c = True \<longrightarrow> kernel_check c = True"
   by auto
 
 (* 25 (matches Coq) *)
-lemma 25: "Trust boundary is one-way — untrusted cannot become trusted without kernel *) Theorem trust_boundary_one_way : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand \<longrightarrow> trusted_certificate cert \<longrightarrow> kernel_check cert = True"
+lemma 25: "Trust boundary is one-way — untrusted cannot become trusted without kernel Theorem trust_boundary_one_way : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand \<longrightarrow> trusted_certificate cert \<longrightarrow> kernel_check cert = True"
   by auto
 
 (* 26 (matches Coq) *)
-lemma 26: "Exploit safety independent of target vulnerability *) Theorem exploit_safety_independent : \<forall> ex1 ex2, target_vulnerability ex1 \<noteq> target_vulnerability ex2 \<longrightarrow> verify_exploit ex1 = verified_safe ex1"
+lemma 26: "Exploit safety independent of target vulnerability Theorem exploit_safety_independent : \<forall> ex1 ex2, target_vulnerability ex1 \<noteq> target_vulnerability ex2 \<longrightarrow> verify_exploit ex1 = verified_safe ex1"
   by simp
 
 (* 27 (matches Coq) *)
-lemma 27: "Non-hallucinated rejection always succeeds *) Theorem non_hallucinated_rejection_succeeds : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = False \<longrightarrow> reject_hallucinated cand cert = True"
+lemma 27: "Non-hallucinated rejection always succeeds Theorem non_hallucinated_rejection_succeeds : \<forall> (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = False \<longrightarrow> reject_hallucinated cand cert = True"
   by simp
 
 (* 28 (matches Coq) *)
-lemma 28: "Kernel rejection means invalid certificate *) Theorem kernel_reject_means_invalid : \<forall> cert, kernel_check cert = False \<longrightarrow> cert_valid cert = False"
+lemma 28: "Kernel rejection means invalid certificate Theorem kernel_reject_means_invalid : \<forall> cert, kernel_check cert = False \<longrightarrow> cert_valid cert = False"
   by auto
 
 (* 29 (matches Coq) *)
-lemma 29: "Certificate validity is compositional (intro case) *) Theorem cert_valid_compositional_intro : \<forall> c, cert_valid (CertIntro c) = cert_valid c"
+lemma 29: "Certificate validity is compositional (intro case) Theorem cert_valid_compositional_intro : \<forall> c, cert_valid (CertIntro c) = cert_valid c"
   by simp
 
 (* 30 (matches Coq) *)
-lemma 30: "All AI sources are untrusted except human *) Theorem all_ai_untrusted : \<forall> (cand : ai_proof_candidate), source cand \<noteq> HumanProver \<longrightarrow> untrusted_ai_proof cand"
+lemma 30: "All AI sources are untrusted except human Theorem all_ai_untrusted : \<forall> (cand : ai_proof_candidate), source cand \<noteq> HumanProver \<longrightarrow> untrusted_ai_proof cand"
   by auto
 
 end

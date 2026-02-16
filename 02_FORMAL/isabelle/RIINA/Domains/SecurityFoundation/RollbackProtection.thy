@@ -165,7 +165,7 @@ lemma current_or_newer_allowed: "\<forall> (st : RollbackState) (comp : Componen
   by (cases rule: ‹_›.cases; simp)
 
 (* min_version_monotonic (matches Coq) *)
-lemma min_version_monotonic: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver \<longrightarrow> version_lt new_ver old_ver = True \<longrightarrow> let st' := update_min_version st comp new_ver True in (* New minimum is stored, but doesn't go backwards in protection *) get_min_version st' comp = Some new_ver"
+lemma min_version_monotonic: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver \<longrightarrow> version_lt new_ver old_ver = True \<longrightarrow> let st' := update_min_version st comp new_ver True in get_min_version st' comp = Some new_ver"
   by (cases rule: ‹_›.cases; simp)
 
 (* no_minimum_any_allowed (matches Coq) *)

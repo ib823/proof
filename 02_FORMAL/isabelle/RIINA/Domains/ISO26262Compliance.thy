@@ -398,7 +398,7 @@ lemma ISO_034_asil_d_implies_mcdc: "\<forall> c : ISO26262Compliance, asil_d_com
 
 (* ISO_035: Complete ISO 26262 ASIL-D Certification *)
 (* ISO_035_complete_certification (matches Coq) *)
-lemma ISO_035_complete_certification: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> (* All ASIL-D requirements satisfied *) hara_compliant (iso_hara c) = True \<and> safety_concept_compliant (iso_safety_concept c) = True \<and> sw_dev_compliant (iso_sw_dev c) = True \<and> verif_methods_compliant (iso_verif_methods c) = True \<and> testing_compliant (iso_testing c) = True"
+lemma ISO_035_complete_certification: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> hara_compliant (iso_hara c) = True \<and> safety_concept_compliant (iso_safety_concept c) = True \<and> sw_dev_compliant (iso_sw_dev c) = True \<and> verif_methods_compliant (iso_verif_methods c) = True \<and> testing_compliant (iso_testing c) = True"
   by (cases rule: ‹_›.cases; simp)
 
 end

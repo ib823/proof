@@ -212,44 +212,44 @@ def poam_deadline_days (impact : FISMA_Impact) : Nat :=
   | FISMA_Moderate => 90
   | FISMA_Low => 180
 
-/-- Section G01 - FISMA Compliance
-    Reference: IND_G_GOVERNMENT.md Section 3.1 -/
+-- Section G01 - FISMA Compliance
+    Reference: IND_G_GOVERNMENT.md Section 3.1
 /-- fisma_compliance (matches Coq) -/
-theorem fisma_compliance : ∀ (system : nat) (impact : FISMA_Impact),  True := by
+theorem fisma_compliance : ∀ (system : nat) (impact : FISMA_Impact), True := by
   trivial
 
-/-- Section G02 - FedRAMP Authorization
-    Reference: IND_G_GOVERNMENT.md Section 3.2 -/
+-- Section G02 - FedRAMP Authorization
+    Reference: IND_G_GOVERNMENT.md Section 3.2
 /-- fedramp_authorization (matches Coq) -/
-theorem fedramp_authorization : ∀ (cloud_service : nat) (level : FedRAMP_Level),  True := by
+theorem fedramp_authorization : ∀ (cloud_service : nat) (level : FedRAMP_Level), True := by
   trivial
 
-/-- Section G03 - NIST 800-53 Controls
-    Reference: IND_G_GOVERNMENT.md Section 3.3 -/
+-- Section G03 - NIST 800-53 Controls
+    Reference: IND_G_GOVERNMENT.md Section 3.3
 /-- nist_800_53_compliance (matches Coq) -/
-theorem nist_800_53_compliance : ∀ (controls : NIST_800_53_Controls) (impact : FISMA_Impact),  True := by
+theorem nist_800_53_compliance : ∀ (controls : NIST_800_53_Controls) (impact : FISMA_Impact), True := by
   trivial
 
-/-- Section G04 - CJIS Security
-    Reference: IND_G_GOVERNMENT.md Section 3.4 -/
+-- Section G04 - CJIS Security
+    Reference: IND_G_GOVERNMENT.md Section 3.4
 /-- cjis_compliance (matches Coq) -/
-theorem cjis_compliance : ∀ (cji_data : nat) (access : nat),  True := by
+theorem cjis_compliance : ∀ (cji_data : nat) (access : nat), True := by
   trivial
 
-/-- Section G05 - FIPS 140-3 Crypto
-    Reference: IND_G_GOVERNMENT.md Section 3.5 -/
+-- Section G05 - FIPS 140-3 Crypto
+    Reference: IND_G_GOVERNMENT.md Section 3.5
 /-- fips_140_3_compliance (matches Coq) -/
-theorem fips_140_3_compliance : ∀ (crypto_module : nat) (level : nat),  True := by
+theorem fips_140_3_compliance : ∀ (crypto_module : nat) (level : nat), True := by
   trivial
 
-/-- High impact requires all 20 control families -/
+-- High impact requires all 20 control families
 /-- high_impact_all_families (matches Coq) -/
-theorem high_impact_all_families : ∀ (controls : NIST_800_53_Controls) (impact : FISMA_Impact), impact = FISMA_High →  True := by
+theorem high_impact_all_families : ∀ (controls : NIST_800_53_Controls) (impact : FISMA_Impact), impact = FISMA_High → True := by
   trivial
 
-/-- FIPS cryptography required for federal systems -/
+-- FIPS cryptography required for federal systems
 /-- fips_crypto_required (matches Coq) -/
-theorem fips_crypto_required : ∀ (system : nat),  True := by
+theorem fips_crypto_required : ∀ (system : nat), True := by
   trivial
 
 /-- fisma_le_refl (matches Coq) -/

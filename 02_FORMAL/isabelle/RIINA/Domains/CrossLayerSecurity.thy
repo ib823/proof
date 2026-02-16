@@ -135,7 +135,7 @@ lemma label_join_comm: "\<forall> l1 l2, label_join l1 l2 = label_join l2 l1"
   by simp
 
 (* 1 (matches Coq) *)
-lemma 1: "Source Non-Interference ==================================================================== *) Lemma lookup_some_both : \<forall> env1 env2 x v1 l1, length env1 = length env2 \<longrightarrow> lookup env1 x = Some (v1, l1) \<longrightarrow> \<exists> v2 l2, lookup env2 x = Some (v2, l2)"
+lemma 1: "Source Non-Interference ==================================================================== Lemma lookup_some_both : \<forall> env1 env2 x v1 l1, length env1 = length env2 \<longrightarrow> lookup env1 x = Some (v1, l1) \<longrightarrow> \<exists> v2 l2, lookup env2 x = Some (v2, l2)"
   by (cases rule: ‹_›.cases; simp)
 
 (* source_noninterference (matches Coq) *)
@@ -143,11 +143,11 @@ lemma source_noninterference: "\<forall> e env1 env2 v1 l1 v2 l2, src_low_equiv 
   by (cases rule: ‹_›.cases; simp)
 
 (* 2 (matches Coq) *)
-lemma 2: "Compilation Preserves Security Labels ==================================================================== *) Theorem compilation_preserves_labels : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> tgt_label_of_prog prog = l"
+lemma 2: "Compilation Preserves Security Labels ==================================================================== Theorem compilation_preserves_labels : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> tgt_label_of_prog prog = l"
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "Target Non-Interference (for read-free programs) ==================================================================== *) Lemma tgt_eval_env_independent : \<forall> fuel env1 env2 prog pc stk, (\<forall> i instr, nth_error prog i = Some instr \<longrightarrow> match instr with TRead _ _ => False | _ => True end) \<longrightarrow> tgt_eval_fuel fuel env1 prog pc stk = tgt_eval_fuel fuel env2 prog pc stk"
+lemma 3: "Target Non-Interference (for read-free programs) ==================================================================== Lemma tgt_eval_env_independent : \<forall> fuel env1 env2 prog pc stk, (\<forall> i instr, nth_error prog i = Some instr \<longrightarrow> match instr with TRead _ _ => False | _ => True end) \<longrightarrow> tgt_eval_fuel fuel env1 prog pc stk = tgt_eval_fuel fuel env2 prog pc stk"
   by (cases rule: ‹_›.cases; simp)
 
 (* target_noninterference (matches Coq) *)
@@ -155,31 +155,31 @@ lemma target_noninterference: "\<forall> prog env1 env2 v1 l1 v2 l2 fuel, tgt_ev
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "Semantic Preservation ==================================================================== *) Theorem semantic_preservation : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> tgt_eval_fuel 3 env prog 0 [] = Some (v, l)"
+lemma 4: "Semantic Preservation ==================================================================== Theorem semantic_preservation : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> tgt_eval_fuel 3 env prog 0 [] = Some (v, l)"
   by simp
 
 (* 5 (matches Coq) *)
-lemma 5: "Security Composition ==================================================================== *) Theorem security_composition : \<forall> env1 env2 e1 e2 v1 l1 v2 l2 v3 l3 v4 l4, src_low_equiv env1 env2 \<longrightarrow> src_eval env1 e1 = Some (v1, l1) \<longrightarrow> src_eval env2 e1 = Some (v2, l2) \<longrightarrow> src_eval env1 e2 = Some (v3, l3) \<longrightarrow> src_eval env2 e2 = Some (v4, l4) \<longrightarrow> l1 = Low \<longrightarrow> l2 = Low \<longrightarrow> l3 = Low \<longrightarrow> l4 = Low \<longrightarrow> v1 = v2 \<and> v3 = v4"
+lemma 5: "Security Composition ==================================================================== Theorem security_composition : \<forall> env1 env2 e1 e2 v1 l1 v2 l2 v3 l3 v4 l4, src_low_equiv env1 env2 \<longrightarrow> src_eval env1 e1 = Some (v1, l1) \<longrightarrow> src_eval env2 e1 = Some (v2, l2) \<longrightarrow> src_eval env1 e2 = Some (v3, l3) \<longrightarrow> src_eval env2 e2 = Some (v4, l4) \<longrightarrow> l1 = Low \<longrightarrow> l2 = Low \<longrightarrow> l3 = Low \<longrightarrow> l4 = Low \<longrightarrow> v1 = v2 \<and> v3 = v4"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "Label Monotonicity Through Compilation ==================================================================== *) Theorem label_monotonicity_compilation : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> label_leb l (tgt_label_of_prog prog) = True"
+lemma 6: "Label Monotonicity Through Compilation ==================================================================== Theorem label_monotonicity_compilation : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> label_leb l (tgt_label_of_prog prog) = True"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "Constant-Time Property Preserved ==================================================================== *) Definition is_constant_time (prog : tgt_prog) : Prop := \<forall> i instr, nth_error prog i = Some instr \<longrightarrow> match instr with | TBrz _ => False | _ => True end. Theorem constant_time_preserved : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> is_constant_time prog"
+lemma 7: "Constant-Time Property Preserved ==================================================================== Definition is_constant_time (prog : tgt_prog) : Prop := \<forall> i instr, nth_error prog i = Some instr \<longrightarrow> match instr with | TBrz _ => False | _ => True end. Theorem constant_time_preserved : \<forall> env e v l prog, src_eval env e = Some (v, l) \<longrightarrow> compile_with_env env e = Some prog \<longrightarrow> is_constant_time prog"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "End-to-End Security ==================================================================== *) Theorem end_to_end_security : \<forall> e env1 env2 v1 l1 v2 l2 prog1 prog2, src_low_equiv env1 env2 \<longrightarrow> src_eval env1 e = Some (v1, l1) \<longrightarrow> src_eval env2 e = Some (v2, l2) \<longrightarrow> compile_with_env env1 e = Some prog1 \<longrightarrow> compile_with_env env2 e = Some prog2 \<longrightarrow> l1 = Low \<longrightarrow> l2 = Low \<longrightarrow> \<exists> tv1 tl1 tv2 tl2, tgt_eval_fuel 3 env1 prog1 0 [] = Some (tv1, tl1) \<and> tgt_eval_fuel 3 env2 prog2 0 [] = Some (tv2, tl2) \<and> tv1 = tv2 \<and> tl1 = Low \<and> tl2 = Low"
+lemma 8: "End-to-End Security ==================================================================== Theorem end_to_end_security : \<forall> e env1 env2 v1 l1 v2 l2 prog1 prog2, src_low_equiv env1 env2 \<longrightarrow> src_eval env1 e = Some (v1, l1) \<longrightarrow> src_eval env2 e = Some (v2, l2) \<longrightarrow> compile_with_env env1 e = Some prog1 \<longrightarrow> compile_with_env env2 e = Some prog2 \<longrightarrow> l1 = Low \<longrightarrow> l2 = Low \<longrightarrow> \<exists> tv1 tl1 tv2 tl2, tgt_eval_fuel 3 env1 prog1 0 [] = Some (tv1, tl1) \<and> tgt_eval_fuel 3 env2 prog2 0 [] = Some (tv2, tl2) \<and> tv1 = tv2 \<and> tl1 = Low \<and> tl2 = Low"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "Compiler Determinism ==================================================================== *) Theorem compiler_determinism : \<forall> env e prog1 prog2, compile_with_env env e = Some prog1 \<longrightarrow> compile_with_env env e = Some prog2 \<longrightarrow> prog1 = prog2"
+lemma 9: "Compiler Determinism ==================================================================== Theorem compiler_determinism : \<forall> env e prog1 prog2, compile_with_env env e = Some prog1 \<longrightarrow> compile_with_env env e = Some prog2 \<longrightarrow> prog1 = prog2"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "Security Label Lattice Correctness ==================================================================== *) Theorem label_lattice_join_upper_bound : \<forall> l1 l2, label_leb l1 (label_join l1 l2) = True \<and> label_leb l2 (label_join l1 l2) = True"
+lemma 10: "Security Label Lattice Correctness ==================================================================== Theorem label_lattice_join_upper_bound : \<forall> l1 l2, label_leb l1 (label_join l1 l2) = True \<and> label_leb l2 (label_join l1 l2) = True"
   by auto
 
 (* label_lattice_join_least (matches Coq) *)

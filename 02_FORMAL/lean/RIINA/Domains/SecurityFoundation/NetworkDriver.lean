@@ -145,12 +145,12 @@ def firewall_permits (rules : List FirewallRule) (src_port dst_port : Nat) : Boo
       else
         firewall_permits rest src_port dst_port
 
-/-- Theorem: An application cannot access another application's sockets. -/
+-- Theorem: An application cannot access another application's sockets.
 /-- network_isolation (matches Coq) -/
 theorem network_isolation : ∀ (app1 app2 : Application) (socket : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 socket → ~ can_access_socket app2 socket := by
   simp_all [Bool.and_eq_true]
 
-/-- Socket ownership is exclusive -/
+-- Socket ownership is exclusive
 /-- socket_ownership_exclusive (matches Coq) -/
 theorem socket_ownership_exclusive : ∀ (app1 app2 : Application) (sock : Socket), owns_socket app1 sock → owns_socket app2 sock → app_id app1 = app_id app2 := by
   intro h; exact h
@@ -159,92 +159,92 @@ theorem socket_ownership_exclusive : ∀ (app1 app2 : Application) (sock : Socke
 theorem unbound_socket_not_usable : ∀ (sock : Socket), socket_bound sock = false → ~ socket_usable sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Send requires network permission -/
+-- Send requires network permission
 /-- send_requires_network_permission (matches Coq) -/
 theorem send_requires_network_permission : ∀ (app : Application) (sock : Socket), sends_data app sock → has_network_permission app := by
   intro h; exact h
 
-/-- Receive requires network permission -/
+-- Receive requires network permission
 /-- receive_requires_network_permission (matches Coq) -/
 theorem receive_requires_network_permission : ∀ (app : Application) (sock : Socket), receives_data app sock → has_network_permission app := by
   intro h; exact h
 
-/-- No network permission blocks send -/
+-- No network permission blocks send
 /-- no_perm_blocks_send (matches Coq) -/
 theorem no_perm_blocks_send : ∀ (app : Application) (sock : Socket), app_network_perm app = false → ~ sends_data app sock := by
   simp_all [Bool.and_eq_true]
 
-/-- No network permission blocks receive -/
+-- No network permission blocks receive
 /-- no_perm_blocks_receive (matches Coq) -/
 theorem no_perm_blocks_receive : ∀ (app : Application) (sock : Socket), app_network_perm app = false → ~ receives_data app sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Unbound socket blocks send -/
+-- Unbound socket blocks send
 /-- unbound_blocks_send (matches Coq) -/
 theorem unbound_blocks_send : ∀ (app : Application) (sock : Socket), socket_bound sock = false → ~ sends_data app sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Unbound socket blocks receive -/
+-- Unbound socket blocks receive
 /-- unbound_blocks_receive (matches Coq) -/
 theorem unbound_blocks_receive : ∀ (app : Application) (sock : Socket), socket_bound sock = false → ~ receives_data app sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Default deny firewall: empty rules block all -/
+-- Default deny firewall: empty rules block all
 /-- default_deny_firewall (matches Coq) -/
 theorem default_deny_firewall : ∀ (src_port dst_port : nat), firewall_permits [] src_port dst_port = false := by
   rfl
 
-/-- Cross-app socket access is impossible -/
+-- Cross-app socket access is impossible
 /-- cross_app_socket_impossible (matches Coq) -/
 theorem cross_app_socket_impossible : ∀ (app1 app2 : Application) (sock : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock → ~ sends_data app2 sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Cross-app receive impossible -/
+-- Cross-app receive impossible
 /-- cross_app_receive_impossible (matches Coq) -/
 theorem cross_app_receive_impossible : ∀ (app1 app2 : Application) (sock : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock → ~ receives_data app2 sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Send implies socket bound -/
+-- Send implies socket bound
 /-- send_implies_bound (matches Coq) -/
 theorem send_implies_bound : ∀ (app : Application) (sock : Socket), sends_data app sock → socket_usable sock := by
   intro h; exact h
 
-/-- Receive implies socket bound -/
+-- Receive implies socket bound
 /-- receive_implies_bound (matches Coq) -/
 theorem receive_implies_bound : ∀ (app : Application) (sock : Socket), receives_data app sock → socket_usable sock := by
   intro h; exact h
 
-/-- Socket isolation: different apps have different sockets -/
+-- Socket isolation: different apps have different sockets
 /-- socket_isolation_by_owner (matches Coq) -/
 theorem socket_isolation_by_owner : ∀ (app1 app2 : Application) (sock1 sock2 : Socket), app_id app1 ≠ app_id app2 → owns_socket app1 sock1 → owns_socket app2 sock2 → socket_owner sock1 ≠ socket_owner sock2 := by
   intro h; exact h
 
-/-- Access control consistent: can_access implies ownership -/
+-- Access control consistent: can_access implies ownership
 /-- access_control_consistent (matches Coq) -/
 theorem access_control_consistent : ∀ (app : Application) (sock : Socket), can_access_socket app sock → owns_socket app sock := by
   intro h; exact h
 
-/-- Network permission is required for both send and receive -/
+-- Network permission is required for both send and receive
 /-- network_perm_required_both_directions (matches Coq) -/
 theorem network_perm_required_both_directions : ∀ (app : Application) (sock : Socket), sends_data app sock ∨ receives_data app sock → has_network_permission app := by
   simp_all [Bool.and_eq_true]
 
-/-- Full isolation: no perm, no access, no send, no receive -/
+-- Full isolation: no perm, no access, no send, no receive
 /-- full_network_isolation (matches Coq) -/
 theorem full_network_isolation : ∀ (app : Application), app_network_perm app = false → ∀ sock, ~ sends_data app sock ∧ ~ receives_data app sock := by
   simp_all [Bool.and_eq_true]
 
-/-- Bound socket is usable -/
+-- Bound socket is usable
 /-- bound_implies_usable (matches Coq) -/
 theorem bound_implies_usable : ∀ sock, socket_bound sock = true → socket_usable sock := by
   intro h; exact h
 
-/-- Firewall enabled provides protection -/
+-- Firewall enabled provides protection
 /-- firewall_protects (matches Coq) -/
 theorem firewall_protects : ∀ ns, firewall_enabled ns = true → firewall_enabled ns = true := by
   intro h; exact h
 
-/-- Socket port is a natural number — always non-negative -/
+-- Socket port is a natural number — always non-negative
 /-- socket_port_nonneg (matches Coq) -/
 theorem socket_port_nonneg : ∀ sock, socket_port sock ≥ 0 := by
   omega

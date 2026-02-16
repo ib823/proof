@@ -186,7 +186,7 @@ theorem meta_002_constant_size : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm
   intro h; exact h
 
 /-- meta_003_size_no_leak (matches Coq) -/
-theorem meta_003_size_no_leak : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 →  pm_payload_size pm1 = pm_payload_size pm2 ∨ pm_payload_size pm1 ≠ pm_payload_size pm2 := by
+theorem meta_003_size_no_leak : ∀ (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 → pm_payload_size pm1 = pm_payload_size pm2 ∨ pm_payload_size pm1 ≠ pm_payload_size pm2 := by
   intro h; exact h
 
 /-- meta_004_timing_bucketed (matches Coq) -/

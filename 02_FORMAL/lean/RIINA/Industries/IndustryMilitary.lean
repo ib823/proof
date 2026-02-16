@@ -150,77 +150,77 @@ def redundancy_factor (c : ClassificationLevel) : Nat :=
   | TopSecret => 4
   | TS_SCI => 5
 
-/-- Section A01 - NIST 800-171 Compliance
-    Reference: IND_A_MILITARY.md Section 3.1 -/
+-- Section A01 - NIST 800-171 Compliance
+    Reference: IND_A_MILITARY.md Section 3.1
 /-- nist_800_171_access_control (matches Coq) -/
-theorem nist_800_171_access_control : ∀ (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = true →  True := by
+theorem nist_800_171_access_control : ∀ (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = true → True := by
   trivial
 
-/-- Section A02 - CMMC Level 3 Requirements
-    Reference: IND_A_MILITARY.md Section 3.2 -/
+-- Section A02 - CMMC Level 3 Requirements
+    Reference: IND_A_MILITARY.md Section 3.2
 /-- cmmc_level3_compliance (matches Coq) -/
-theorem cmmc_level3_compliance : ∀ policy, classification policy = CUI →  True := by
+theorem cmmc_level3_compliance : ∀ policy, classification policy = CUI → True := by
   trivial
 
-/-- Section A03 - ITAR Export Control
-    Reference: IND_A_MILITARY.md Section 3.3 -/
+-- Section A03 - ITAR Export Control
+    Reference: IND_A_MILITARY.md Section 3.3
 /-- itar_export_control (matches Coq) -/
-theorem itar_export_control : ∀ (data_class : ClassificationLevel) (destination : nat),  True := by
+theorem itar_export_control : ∀ (data_class : ClassificationLevel) (destination : nat), True := by
   trivial
 
-/-- Section A04 - MIL-STD-882 Safety
-    Reference: IND_A_MILITARY.md Section 3.4 -/
+-- Section A04 - MIL-STD-882 Safety
+    Reference: IND_A_MILITARY.md Section 3.4
 /-- mil_std_882_safety (matches Coq) -/
-theorem mil_std_882_safety : ∀ (system : nat) (hazard_level : nat),  True := by
+theorem mil_std_882_safety : ∀ (system : nat) (hazard_level : nat), True := by
   trivial
 
-/-- Section A05 - RMF Authorization
-    Reference: IND_A_MILITARY.md Section 3.5 -/
+-- Section A05 - RMF Authorization
+    Reference: IND_A_MILITARY.md Section 3.5
 /-- rmf_authorization (matches Coq) -/
-theorem rmf_authorization : ∀ (system : nat) (risk_level : nat),  True := by
+theorem rmf_authorization : ∀ (system : nat) (risk_level : nat), True := by
   trivial
 
-/-- Classification lattice reflexivity -/
+-- Classification lattice reflexivity
 /-- class_le_refl (matches Coq) -/
 theorem class_le_refl : ∀ c, class_le c c = true := by
   rfl
 
-/-- Classification lattice transitivity -/
+-- Classification lattice transitivity
 /-- class_le_trans (matches Coq) -/
 theorem class_le_trans : ∀ c1 c2 c3, class_le c1 c2 = true → class_le c2 c3 = true → class_le c1 c3 = true := by
   cases ‹_› <;> simp
 
-/-- No read up - Bell-LaPadula simple security -/
+-- No read up - Bell-LaPadula simple security
 /-- no_read_up (matches Coq) -/
-theorem no_read_up : ∀ subject_clearance object_classification, class_le object_classification subject_clearance = true →  True := by
+theorem no_read_up : ∀ subject_clearance object_classification, class_le object_classification subject_clearance = true → True := by
   trivial
 
-/-- class_le agrees with nat ordering -/
+-- class_le agrees with nat ordering
 /-- class_le_iff_nat (matches Coq) -/
 theorem class_le_iff_nat : ∀ c1 c2, class_le c1 c2 = true <-> class_to_nat c1 ≤ class_to_nat c2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Classification ordering is antisymmetric -/
+-- Classification ordering is antisymmetric
 /-- class_le_antisym (matches Coq) -/
 theorem class_le_antisym : ∀ c1 c2, class_le c1 c2 = true → class_le c2 c1 = true → c1 = c2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Classification is a total order -/
+-- Classification is a total order
 /-- class_le_total (matches Coq) -/
 theorem class_le_total : ∀ c1 c2, class_le c1 c2 = true ∨ class_le c2 c1 = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Unclassified is the bottom of the lattice -/
+-- Unclassified is the bottom of the lattice
 /-- unclassified_bottom (matches Coq) -/
 theorem unclassified_bottom : ∀ c, class_le Unclassified c = true := by
   cases ‹_› <;> simp
 
-/-- TS_SCI is the top of the lattice -/
+-- TS_SCI is the top of the lattice
 /-- ts_sci_top (matches Coq) -/
 theorem ts_sci_top : ∀ c, class_le c TS_SCI = true := by
   cases ‹_› <;> simp
 
-/-- No entity can read above its clearance (Bell-LaPadula simple security property) -/
+-- No entity can read above its clearance (Bell-LaPadula simple security property)
 /-- bell_lapadula_ss (matches Coq) -/
 theorem bell_lapadula_ss : ∀ (policy : MilitarySecurityPolicy) (object_class : ClassificationLevel), class_le object_class (clearance_required policy) = false → class_to_nat object_class > class_to_nat (clearance_required policy) := by
   cases ‹_› <;> simp <;> omega
@@ -233,27 +233,27 @@ theorem bell_lapadula_star : ∀ subject_class object_class, class_le subject_cl
 theorem has_compartment_In : ∀ c comps, has_compartment comps c = true → ∃ x, In x comps ∧ Nat.eqb c x = true := by
   cases ‹_› <;> simp
 
-/-- Empty need_to_know means no compartment restriction -/
+-- Empty need_to_know means no compartment restriction
 /-- empty_need_to_know_unrestricted (matches Coq) -/
 theorem empty_need_to_know_unrestricted : ∀ c, has_compartment nil c = false := by
   simp
 
-/-- COMSEC: approved communication requires comsec flag -/
+-- COMSEC: approved communication requires comsec flag
 /-- comsec_required_for_classified_comms (matches Coq) -/
 theorem comsec_required_for_classified_comms : ∀ policy, class_le Confidential (classification policy) = true → comsec_approved policy = true → class_to_nat (classification policy) ≥ 2 := by
   simp_all [Bool.and_eq_true]
 
-/-- TEMPEST: emanations security required for Secret and above -/
+-- TEMPEST: emanations security required for Secret and above
 /-- tempest_required_for_secret (matches Coq) -/
 theorem tempest_required_for_secret : ∀ policy, class_le Secret (classification policy) = true → tempest_certified policy = true → class_to_nat (classification policy) ≥ 3 := by
   simp_all [Bool.and_eq_true]
 
-/-- Cross-domain transfer: cannot move data to lower classification -/
+-- Cross-domain transfer: cannot move data to lower classification
 /-- cross_domain_no_downgrade (matches Coq) -/
 theorem cross_domain_no_downgrade : ∀ src_class dst_class, class_le src_class dst_class = false → class_to_nat src_class > class_to_nat dst_class := by
   cases ‹_› <;> simp <;> omega
 
-/-- class_max is commutative up to ordering -/
+-- class_max is commutative up to ordering
 /-- class_max_ge_left (matches Coq) -/
 theorem class_max_ge_left : ∀ c1 c2, class_le c1 (class_max c1 c2) = true := by
   simp_all [Bool.and_eq_true]
@@ -262,7 +262,7 @@ theorem class_max_ge_left : ∀ c1 c2, class_le c1 (class_max c1 c2) = true := b
 theorem class_max_ge_right : ∀ c1 c2, class_le c2 (class_max c1 c2) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Aggregation raises classification: combined data takes the max level -/
+-- Aggregation raises classification: combined data takes the max level
 /-- aggregation_raises_classification (matches Coq) -/
 theorem aggregation_raises_classification : ∀ c1 c2, class_to_nat (class_max c1 c2) ≥ class_to_nat c1 ∧ class_to_nat (class_max c1 c2) ≥ class_to_nat c2 := by
   constructor <;> simp_all [Bool.and_eq_true]
@@ -271,7 +271,7 @@ theorem aggregation_raises_classification : ∀ c1 c2, class_to_nat (class_max c
 theorem key_level_monotone : ∀ c1 c2, class_le c1 c2 = true → key_level c1 ≤ key_level c2 := by
   omega
 
-/-- Personnel clearance verification: clearance must dominate data classification -/
+-- Personnel clearance verification: clearance must dominate data classification
 /-- personnel_clearance_dominates (matches Coq) -/
 theorem personnel_clearance_dominates : ∀ policy, class_le (classification policy) (clearance_required policy) = true → class_to_nat (classification policy) ≤ class_to_nat (clearance_required policy) := by
   simp_all [Bool.and_eq_true]

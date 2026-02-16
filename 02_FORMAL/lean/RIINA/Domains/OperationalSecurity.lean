@@ -151,27 +151,27 @@ def layers_active (layer1 layer2 layer3 layer4 layer5 : Bool) : Bool :=
   andb layer1 (andb layer2 (andb layer3 (andb layer4 layer5)))
 
 /-- opsec_001_shamir_security (matches Coq) -/
-theorem opsec_001_shamir_security : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme →  True := by
+theorem opsec_001_shamir_security : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme → True := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_002_shamir_reconstruction (matches Coq) -/
-theorem opsec_002_shamir_reconstruction : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares ≥ threshold scheme → length shares ≤ total_shares scheme →  length shares ≥ threshold scheme := by
+theorem opsec_002_shamir_reconstruction : ∀ (scheme : ShamirScheme) (shares : ShareSet), length shares ≥ threshold scheme → length shares ≤ total_shares scheme → length shares ≥ threshold scheme := by
   intro h; exact h
 
 /-- opsec_003_no_single_keyholder (matches Coq) -/
-theorem opsec_003_no_single_keyholder : ∀ (scheme : ShamirScheme), threshold scheme > 1 →  1 < threshold scheme := by
+theorem opsec_003_no_single_keyholder : ∀ (scheme : ShamirScheme), threshold scheme > 1 → 1 < threshold scheme := by
   intro h; exact h
 
 /-- opsec_004_geographic_distribution (matches Coq) -/
-theorem opsec_004_geographic_distribution : ∀ (shares : ShareSet) (locations : list nat), length shares = length locations → NoDup locations →  length (nodup Nat.eq_dec locations) = length locations := by
+theorem opsec_004_geographic_distribution : ∀ (shares : ShareSet) (locations : list nat), length shares = length locations → NoDup locations → length (nodup Nat.eq_dec locations) = length locations := by
   simp_all [Bool.and_eq_true]
 
 /-- opsec_005_multiparty_required (matches Coq) -/
-theorem opsec_005_multiparty_required : ∀ (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 → length approvals ≥ required_approvers mpa →  length approvals ≥ required_approvers mpa := by
+theorem opsec_005_multiparty_required : ∀ (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 → length approvals ≥ required_approvers mpa → length approvals ≥ required_approvers mpa := by
   intro h; exact h
 
 /-- opsec_006_social_engineering_insufficient (matches Coq) -/
-theorem opsec_006_social_engineering_insufficient : ∀ (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 → compromised < required_approvers mpa →  compromised < required_approvers mpa := by
+theorem opsec_006_social_engineering_insufficient : ∀ (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 → compromised < required_approvers mpa → compromised < required_approvers mpa := by
   intro h; exact h
 
 /-- opsec_007_insider_bounded (matches Coq) -/
@@ -183,7 +183,7 @@ theorem opsec_008_export_limit : ∀ (budget : InsiderBudget), budget_ok budget 
   intro h; exact h
 
 /-- opsec_009_duress_detection (matches Coq) -/
-theorem opsec_009_duress_detection : ∀ (input duress_suffix : list nat), is_duress input duress_suffix = true →  is_duress input duress_suffix = true := by
+theorem opsec_009_duress_detection : ∀ (input duress_suffix : list nat), is_duress input duress_suffix = true → is_duress input duress_suffix = true := by
   intro h; exact h
 
 /-- opsec_010_dead_man_switch (matches Coq) -/
@@ -231,7 +231,7 @@ theorem opsec_020_channel_diversity : ∀ (approvals : list Approval) (channels 
   intro h; exact h
 
 /-- opsec_021_coercion_resistant (matches Coq) -/
-theorem opsec_021_coercion_resistant : ∀ (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme →  compromised < threshold scheme := by
+theorem opsec_021_coercion_resistant : ∀ (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme → compromised < threshold scheme := by
   intro h; exact h
 
 /-- opsec_022_jurisdictional_spread (matches Coq) -/

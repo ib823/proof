@@ -185,9 +185,9 @@ def marshal_into (b : MarshalBuffer) (t : FFIType) : Option MarshalBuffer :=
   else
     None
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: FFI CALL VALIDATION
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- ffi_safe_implies_sandboxed (matches Coq) -/
 theorem ffi_safe_implies_sandboxed : ∀ call, ffi_call_safe call = true → ffi_sandboxed call = true := by
   simp_all [Bool.and_eq_true]
@@ -200,9 +200,9 @@ theorem ffi_safe_implies_validated : ∀ call, ffi_call_safe call = true → ffi
 theorem ffi_safe_construct : ∀ call, ffi_sandboxed call = true → ffi_validated call = true → ffi_call_safe call = true := by
   rfl
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: TYPE ALIGNMENT
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- int8_alignment_positive (matches Coq) -/
 theorem int8_alignment_positive : ffi_type_align FFI_Int8 = 1 := by
   rfl
@@ -223,9 +223,9 @@ theorem array_size_correct : ∀ elem n, ffi_type_size (FFI_Array elem n) = n * 
 theorem empty_struct_zero_size : ffi_type_size (FFI_Struct []) = 0 := by
   rfl
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: BUFFER SIZE BOUNDS & MARSHALLING
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- marshal_preserves_capacity (matches Coq) -/
 theorem marshal_preserves_capacity : ∀ b t b', marshal_into b t = Some b' → buf_capacity b' = buf_capacity b := by
   rfl
@@ -246,9 +246,9 @@ theorem marshal_failure_means_insufficient : ∀ b t, marshal_into b t = None �
 theorem marshal_void_always_succeeds : ∀ b, buf_used b ≤ buf_capacity b → ∃ b', marshal_into b FFI_Void = Some b' := by
   omega
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: SANDBOX ESCAPE PREVENTION & MEMORY ISOLATION
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- disjoint_regions_no_overlap (matches Coq) -/
 theorem disjoint_regions_no_overlap : ∀ r1 r2 addr sz, regions_disjoint r1 r2 → addr_in_region addr sz r1 → sz > 0 → ~ addr_in_region addr sz r2 := by
   cases ‹_› <;> simp <;> omega
@@ -265,9 +265,9 @@ theorem disjoint_symmetric : ∀ r1 r2, regions_disjoint r1 r2 → regions_disjo
 theorem addr_in_region_bounds : ∀ addr sz r, addr_in_region addr sz r → addr ≥ region_base r ∧ addr + sz ≤ region_base r + region_size r := by
   omega
 
-/-- ═══════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ADDITIONAL FFI PROPERTIES
-    ═══════════════════════════════════════════════════════════════════════════ -/
+    ═══════════════════════════════════════════════════════════════════════════
 /-- ffi_void_size_zero (matches Coq) -/
 theorem ffi_void_size_zero : ffi_type_size FFI_Void = 0 := by
   rfl

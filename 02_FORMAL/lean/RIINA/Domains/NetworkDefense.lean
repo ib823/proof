@@ -498,9 +498,9 @@ def is_reflection_safe (cap : NetCapability) : Bool :=
   negb (existsb (fun p => netperm_eq p NPSend) (cap_permissions cap)) ||
   existsb (fun p => netperm_eq p NPReceive) (cap_permissions cap)
 
-/-- ===============================================================================
+-- ===============================================================================
     HELPER LEMMAS
-    =============================================================================== -/
+    ===============================================================================
 /-- list_eq_dec_refl (matches Coq) -/
 theorem list_eq_dec_refl : ∀ (l : list nat), (if list_eq_dec Nat.eq_dec l l then true else false) = true := by
   rfl
@@ -638,7 +638,7 @@ theorem OMEGA_001_26_syn_cookie_verify : ∀ secret conn time, verify_syn_cookie
   rfl
 
 /-- OMEGA_001_27_syn_cookie_replay_prevent (matches Coq) -/
-theorem OMEGA_001_27_syn_cookie_replay_prevent : ∀ secret conn time_old time_now, time_now > time_old + 2 → verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = true →  syn_cookie secret conn time_old = syn_cookie secret conn time_now ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2) := by
+theorem OMEGA_001_27_syn_cookie_replay_prevent : ∀ secret conn time_old time_now, time_now > time_old + 2 → verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = true → syn_cookie secret conn time_old = syn_cookie secret conn time_now ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) ∨ syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2) := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_28_syn_flood_mitigated (matches Coq) -/
@@ -650,7 +650,7 @@ theorem OMEGA_001_29_legitimate_connections : ∀ secret conn time, verify_syn_c
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_30_hash_collision_resistant (matches Coq) -/
-theorem OMEGA_001_30_hash_collision_resistant : ∀ ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 → siphash_lookup ht key2 = Some v2 → key1 ≠ key2 →  ∃ bound, max_bucket_size ht ≤ bound := by
+theorem OMEGA_001_30_hash_collision_resistant : ∀ ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 → siphash_lookup ht key2 = Some v2 → key1 ≠ key2 → ∃ bound, max_bucket_size ht ≤ bound := by
   simp_all [Bool.and_eq_true]
 
 /-- OMEGA_001_31_regex_terminates (matches Coq) -/

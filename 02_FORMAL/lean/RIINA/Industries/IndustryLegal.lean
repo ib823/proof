@@ -183,44 +183,44 @@ def trust_balanced (balance client_total : Nat) : Bool :=
 def litigation_hold_active (hold_start current_time hold_end : Nat) : Bool :=
   Nat.leb hold_start current_time && Nat.leb current_time hold_end
 
-/-- Section O01 - Attorney-Client Privilege
-    Reference: IND_O_LEGAL.md Section 3.1 -/
+-- Section O01 - Attorney-Client Privilege
+    Reference: IND_O_LEGAL.md Section 3.1
 /-- privilege_protection_axiom (matches Coq) -/
-theorem privilege_protection_axiom : ∀ (communication : LegalData),  True := by
+theorem privilege_protection_axiom : ∀ (communication : LegalData), True := by
   trivial
 
-/-- Section O02 - ABA Model Rules Compliance
-    Reference: IND_O_LEGAL.md Section 3.2 -/
+-- Section O02 - ABA Model Rules Compliance
+    Reference: IND_O_LEGAL.md Section 3.2
 /-- aba_model_rules (matches Coq) -/
-theorem aba_model_rules : ∀ (firm : nat) (practice : nat),  True := by
+theorem aba_model_rules : ∀ (firm : nat) (practice : nat), True := by
   trivial
 
-/-- Section O03 - Conflict of Interest Screening
-    Reference: IND_O_LEGAL.md Section 3.3 -/
+-- Section O03 - Conflict of Interest Screening
+    Reference: IND_O_LEGAL.md Section 3.3
 /-- conflict_screening_axiom (matches Coq) -/
-theorem conflict_screening_axiom : ∀ (matter : nat) (client : nat),  True := by
+theorem conflict_screening_axiom : ∀ (matter : nat) (client : nat), True := by
   trivial
 
-/-- Section O04 - E-Discovery Compliance
-    Reference: IND_O_LEGAL.md Section 3.4 -/
+-- Section O04 - E-Discovery Compliance
+    Reference: IND_O_LEGAL.md Section 3.4
 /-- ediscovery_compliance (matches Coq) -/
-theorem ediscovery_compliance : ∀ (matter : nat) (documents : nat),  True := by
+theorem ediscovery_compliance : ∀ (matter : nat) (documents : nat), True := by
   trivial
 
-/-- Section O05 - Records Retention
-    Reference: IND_O_LEGAL.md Section 3.5 -/
+-- Section O05 - Records Retention
+    Reference: IND_O_LEGAL.md Section 3.5
 /-- records_retention (matches Coq) -/
-theorem records_retention : ∀ (record : LegalData) (retention_period : nat),  True := by
+theorem records_retention : ∀ (record : LegalData) (retention_period : nat), True := by
   trivial
 
-/-- Privileged communications require encryption -/
+-- Privileged communications require encryption
 /-- privilege_requires_encryption (matches Coq) -/
-theorem privilege_requires_encryption : ∀ (controls : LegalSecurityControls) (comm : LegalData), privilege_protection controls = true →  True := by
+theorem privilege_requires_encryption : ∀ (controls : LegalSecurityControls) (comm : LegalData), privilege_protection controls = true → True := by
   trivial
 
-/-- Ethical walls prevent conflicts -/
+-- Ethical walls prevent conflicts
 /-- ethical_walls_effective (matches Coq) -/
-theorem ethical_walls_effective : ∀ (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = true →  True := by
+theorem ethical_walls_effective : ∀ (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = true → True := by
   trivial
 
 /-- privilege_max_sensitivity (matches Coq) -/

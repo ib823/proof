@@ -233,7 +233,7 @@ lemma erp_015_maker_checker: "\<forall> (maker checker : User), maker_checker ma
   by auto
 
 (* erp_016_delegation_logged (matches Coq) *)
-lemma erp_016_delegation_logged: "\<forall> (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = True \<longrightarrow> (* 99 = delegation action *) \<exists> a, In a audits"
+lemma erp_016_delegation_logged: "\<forall> (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = True \<longrightarrow> \<exists> a, In a audits"
   by auto
 
 (* erp_017_time_limited (matches Coq) *)

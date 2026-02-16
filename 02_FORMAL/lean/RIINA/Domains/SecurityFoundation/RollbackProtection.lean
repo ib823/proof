@@ -211,7 +211,7 @@ theorem current_or_newer_allowed : ∀ (st : RollbackState) (comp : ComponentId)
   cases ‹_› <;> simp
 
 /-- min_version_monotonic (matches Coq) -/
-theorem min_version_monotonic : ∀ (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver → version_lt new_ver old_ver = true → let st' := update_min_version st comp new_ver true in  get_min_version st' comp = Some new_ver := by
+theorem min_version_monotonic : ∀ (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver → version_lt new_ver old_ver = true → let st' := update_min_version st comp new_ver true in get_min_version st' comp = Some new_ver := by
   cases ‹_› <;> simp
 
 /-- no_minimum_any_allowed (matches Coq) -/
@@ -222,77 +222,77 @@ theorem no_minimum_any_allowed : ∀ (st : RollbackState) (comp : ComponentId) (
 theorem disabled_rollback_allows_all : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version), anti_rollback_enabled st = false → version_allowed st comp ver = true := by
   rfl
 
-/-- Version comparison is irreflexive: no version is less than itself -/
+-- Version comparison is irreflexive: no version is less than itself
 /-- version_lt_irreflexive (matches Coq) -/
 theorem version_lt_irreflexive : ∀ (v : Version), version_lt v v = false := by
   rfl
 
-/-- Same version is always allowed when rollback enforced -/
+-- Same version is always allowed when rollback enforced
 /-- same_version_always_allowed (matches Coq) -/
 theorem same_version_always_allowed : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version), rollback_enforced st → get_min_version st comp = Some ver → version_allowed st comp ver = true := by
   simp
 
-/-- Update stores new minimum correctly -/
+-- Update stores new minimum correctly
 /-- update_stores_new_min (matches Coq) -/
 theorem update_stores_new_min : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : bool), get_min_version (update_min_version st comp ver hw) comp = Some ver := by
   cases ‹_› <;> simp
 
-/-- Record current version preserves anti-rollback setting -/
+-- Record current version preserves anti-rollback setting
 /-- record_preserves_anti_rollback (matches Coq) -/
 theorem record_preserves_anti_rollback : ∀ (st : RollbackState) (comp : VersionedComponent), anti_rollback_enabled (record_current_version st comp) = anti_rollback_enabled st := by
   simp
 
-/-- Record current version preserves minimum versions -/
+-- Record current version preserves minimum versions
 /-- record_preserves_minimums (matches Coq) -/
 theorem record_preserves_minimums : ∀ (st : RollbackState) (comp : VersionedComponent), minimum_versions (record_current_version st comp) = minimum_versions st := by
   simp
 
-/-- Update minimum preserves anti-rollback setting -/
+-- Update minimum preserves anti-rollback setting
 /-- update_preserves_anti_rollback (matches Coq) -/
 theorem update_preserves_anti_rollback : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : bool), anti_rollback_enabled (update_min_version st comp ver hw) = anti_rollback_enabled st := by
   simp
 
-/-- Advance minimum preserves anti-rollback setting -/
+-- Advance minimum preserves anti-rollback setting
 /-- advance_preserves_anti_rollback (matches Coq) -/
 theorem advance_preserves_anti_rollback : ∀ (st : RollbackState) (comp : ComponentId), anti_rollback_enabled (advance_min_to_current st comp) = anti_rollback_enabled st := by
   cases ‹_› <;> simp
 
-/-- Version equality means not a rollback -/
+-- Version equality means not a rollback
 /-- equal_version_not_rollback (matches Coq) -/
 theorem equal_version_not_rollback : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version), get_min_version st comp = Some ver → ~ is_rollback st comp ver := by
   simp_all [Bool.and_eq_true]
 
-/-- Initial state allows all versions -/
+-- Initial state allows all versions
 /-- initial_state_allows_all (matches Coq) -/
 theorem initial_state_allows_all : ∀ (comp : ComponentId) (ver : Version), version_allowed initial_rollback_state comp ver = true := by
   simp
 
-/-- Initial state has no minimums -/
+-- Initial state has no minimums
 /-- initial_state_no_minimums (matches Coq) -/
 theorem initial_state_no_minimums : ∀ (comp : ComponentId), get_min_version initial_rollback_state comp = None := by
   simp
 
-/-- Initial state has no current versions -/
+-- Initial state has no current versions
 /-- initial_state_no_current (matches Coq) -/
 theorem initial_state_no_current : ∀ (comp : ComponentId), get_current_version initial_rollback_state comp = None := by
   simp
 
-/-- Rollback enforced implies can detect rollback -/
+-- Rollback enforced implies can detect rollback
 /-- enforced_detects_rollback (matches Coq) -/
 theorem enforced_detects_rollback : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version), rollback_enforced st → is_rollback st comp ver → can_boot_version st (mkVersionedComp comp ver 0) = false := by
   simp_all [Bool.and_eq_true]
 
-/-- Hardware-stored minimum is recorded -/
+-- Hardware-stored minimum is recorded
 /-- hardware_stored_minimum_recorded (matches Coq) -/
 theorem hardware_stored_minimum_recorded : ∀ (st : RollbackState) (comp : ComponentId) (ver : Version), let st' := update_min_version st comp ver true in In (mkMinVersion comp ver true) (minimum_versions st') := by
   simp
 
-/-- Advance on missing current version is identity -/
+-- Advance on missing current version is identity
 /-- advance_missing_current_identity (matches Coq) -/
 theorem advance_missing_current_identity : ∀ (st : RollbackState) (comp : ComponentId), get_current_version st comp = None → advance_min_to_current st comp = st := by
   rfl
 
-/-- Different component minimums are independent -/
+-- Different component minimums are independent
 /-- independent_component_minimums (matches Coq) -/
 theorem independent_component_minimums : ∀ (st : RollbackState) (comp1 comp2 : ComponentId) (ver : Version) (hw : bool), comp1 ≠ comp2 → get_min_version st comp2 = None → let st' := update_min_version st comp1 ver hw in get_min_version st' comp2 = None := by
   cases ‹_› <;> simp

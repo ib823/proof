@@ -203,133 +203,133 @@ def is_gadget_blocked (r : DeserResult) : Bool :=
   match r with
   | _ => false
 
-/-- Helper -/
+-- Helper
 /-- andb_true_iff_deser (matches Coq) -/
 theorem andb_true_iff_deser : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- DESER_001: RIINA RCE prevention active -/
+-- DESER_001: RIINA RCE prevention active
 /-- DESER_001_rce_prevention (matches Coq) -/
 theorem DESER_001_rce_prevention : rce_prevention_active riina_deser_policy = true := by
   rfl
 
-/-- DESER_002: RIINA schema enforcement active -/
+-- DESER_002: RIINA schema enforcement active
 /-- DESER_002_schema_enforcement (matches Coq) -/
 theorem DESER_002_schema_enforcement : schema_enforcement_active riina_deser_policy = true := by
   rfl
 
-/-- DESER_003: RIINA input validation active -/
+-- DESER_003: RIINA input validation active
 /-- DESER_003_input_validation (matches Coq) -/
 theorem DESER_003_input_validation : input_validation_active riina_deser_policy = true := by
   rfl
 
-/-- DESER_004: RIINA string safety active -/
+-- DESER_004: RIINA string safety active
 /-- DESER_004_string_safety (matches Coq) -/
 theorem DESER_004_string_safety : string_safety_active riina_deser_policy = true := by
   rfl
 
-/-- DESER_005: All RIINA deser defenses active -/
+-- DESER_005: All RIINA deser defenses active
 /-- DESER_005_all_defenses (matches Coq) -/
 theorem DESER_005_all_defenses : all_deser_defenses riina_deser_policy = true := by
   rfl
 
-/-- DESER_006: Code-containing input is blocked (concrete example) -/
+-- DESER_006: Code-containing input is blocked (concrete example)
 /-- DESER_006_gadget_blocked (matches Coq) -/
 theorem DESER_006_gadget_blocked : ∀ fmt sch tags allow, is_gadget_blocked (check_input riina_deser_policy (mkSerInput fmt 100 5 sch tags true allow)) = true := by
   rfl
 
-/-- DESER_007: RCE prevention means no polymorphic deser -/
+-- DESER_007: RCE prevention means no polymorphic deser
 /-- DESER_007_no_polymorphic (matches Coq) -/
 theorem DESER_007_no_polymorphic : ∀ p : DeserPolicy, rce_prevention_active p = true → dp_allow_polymorphic p = false := by
   cases ‹_› <;> simp
 
-/-- DESER_008: RCE prevention means no callbacks -/
+-- DESER_008: RCE prevention means no callbacks
 /-- DESER_008_no_callbacks (matches Coq) -/
 theorem DESER_008_no_callbacks : ∀ p : DeserPolicy, rce_prevention_active p = true → dp_allow_callbacks p = false := by
   cases ‹_› <;> simp
 
-/-- DESER_009: RCE prevention means no reflection -/
+-- DESER_009: RCE prevention means no reflection
 /-- DESER_009_no_reflection (matches Coq) -/
 theorem DESER_009_no_reflection : ∀ p : DeserPolicy, rce_prevention_active p = true → dp_allow_reflection p = false := by
   cases ‹_› <;> simp
 
-/-- DESER_010: Schema enforcement requires schema -/
+-- DESER_010: Schema enforcement requires schema
 /-- DESER_010_requires_schema (matches Coq) -/
 theorem DESER_010_requires_schema : ∀ p : DeserPolicy, schema_enforcement_active p = true → dp_require_schema p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_011: Schema enforcement requires type tags -/
+-- DESER_011: Schema enforcement requires type tags
 /-- DESER_011_requires_type_tags (matches Coq) -/
 theorem DESER_011_requires_type_tags : ∀ p : DeserPolicy, schema_enforcement_active p = true → dp_require_type_tag p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_012: Schema enforcement requires allowlisting -/
+-- DESER_012: Schema enforcement requires allowlisting
 /-- DESER_012_requires_allowlist (matches Coq) -/
 theorem DESER_012_requires_allowlist : ∀ p : DeserPolicy, schema_enforcement_active p = true → dp_allowlist_types p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_013: Valid safe input passes -/
+-- DESER_013: Valid safe input passes
 /-- DESER_013_valid_input_passes (matches Coq) -/
 theorem DESER_013_valid_input_passes : ∀ fmt, is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 100 5 true true false true)) = true := by
   rfl
 
-/-- DESER_014: Oversized input rejected -/
+-- DESER_014: Oversized input rejected
 /-- DESER_014_oversized_rejected (matches Coq) -/
 theorem DESER_014_oversized_rejected : ∀ fmt d sch tags code allow, is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 5000 d sch tags code allow)) = false := by
   rfl
 
-/-- DESER_015: Over-depth input rejected (concrete) -/
+-- DESER_015: Over-depth input rejected (concrete)
 /-- DESER_015_overdepth_rejected (matches Coq) -/
 theorem DESER_015_overdepth_rejected : ∀ fmt sch tags code allow, is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 100 100 sch tags code allow)) = false := by
   rfl
 
-/-- DESER_016: DeserOk is ok -/
+-- DESER_016: DeserOk is ok
 /-- DESER_016_ok_is_ok (matches Coq) -/
 theorem DESER_016_ok_is_ok : is_deser_ok DeserOk = true := by
   rfl
 
-/-- DESER_017: DeserGadget is not ok -/
+-- DESER_017: DeserGadget is not ok
 /-- DESER_017_gadget_not_ok (matches Coq) -/
 theorem DESER_017_gadget_not_ok : is_deser_ok DeserGadget = false := by
   rfl
 
-/-- DESER_018: DeserTypeErr is not ok -/
+-- DESER_018: DeserTypeErr is not ok
 /-- DESER_018_type_err_not_ok (matches Coq) -/
 theorem DESER_018_type_err_not_ok : is_deser_ok DeserTypeErr = false := by
   rfl
 
-/-- DESER_019: DeserOverflow is not ok -/
+-- DESER_019: DeserOverflow is not ok
 /-- DESER_019_overflow_not_ok (matches Coq) -/
 theorem DESER_019_overflow_not_ok : is_deser_ok DeserOverflow = false := by
   rfl
 
-/-- DESER_020: DeserMalformed is not ok -/
+-- DESER_020: DeserMalformed is not ok
 /-- DESER_020_malformed_not_ok (matches Coq) -/
 theorem DESER_020_malformed_not_ok : is_deser_ok DeserMalformed = false := by
   rfl
 
-/-- DESER_021: All defenses imply RCE prevention -/
+-- DESER_021: All defenses imply RCE prevention
 /-- DESER_021_all_implies_rce (matches Coq) -/
 theorem DESER_021_all_implies_rce : ∀ p : DeserPolicy, all_deser_defenses p = true → rce_prevention_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_022: All defenses imply schema enforcement -/
+-- DESER_022: All defenses imply schema enforcement
 /-- DESER_022_all_implies_schema (matches Coq) -/
 theorem DESER_022_all_implies_schema : ∀ p : DeserPolicy, all_deser_defenses p = true → schema_enforcement_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_023: All defenses imply input validation -/
+-- DESER_023: All defenses imply input validation
 /-- DESER_023_all_implies_validation (matches Coq) -/
 theorem DESER_023_all_implies_validation : ∀ p : DeserPolicy, all_deser_defenses p = true → input_validation_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_024: All defenses imply string safety -/
+-- DESER_024: All defenses imply string safety
 /-- DESER_024_all_implies_string (matches Coq) -/
 theorem DESER_024_all_implies_string : ∀ p : DeserPolicy, all_deser_defenses p = true → string_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DESER_025: Complete deser defense — no polymorphic, no callbacks, no reflection,
-    schema required, type tags required, allowlisted types only -/
+-- DESER_025: Complete deser defense — no polymorphic, no callbacks, no reflection,
+    schema required, type tags required, allowlisted types only
 /-- DESER_025_complete_defense (matches Coq) -/
 theorem DESER_025_complete_defense : ∀ p : DeserPolicy, all_deser_defenses p = true → dp_allow_polymorphic p = false ∧ dp_allow_callbacks p = false ∧ dp_allow_reflection p = false ∧ dp_require_schema p = true ∧ dp_require_type_tag p = true ∧ dp_allowlist_types p = true ∧ dp_sanitize_strings p = true := by
   simp_all [Bool.and_eq_true]

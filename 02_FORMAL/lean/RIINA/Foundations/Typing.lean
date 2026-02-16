@@ -83,16 +83,16 @@ def lookup (x : ident) (Γ : type_env) : Option ty :=
   | (y, T) :: Γ' => if String.eqb x y then Some T else lookup x Γ'
 
 /-- store_ty_lookup (matches Coq: Definition store_ty_lookup) -/
-def store_ty_lookup (l : loc) (Σ : store_ty) : Option (ty * security_level) :=
-  match Σ with
+def store_ty_lookup (l : loc) (St : store_ty) : Option (ty * security_level) :=
+  match St with
   | nil => None
-  | (l', T, sl) :: Σ' => if Nat.eqb l l' then Some (T, sl) else store_ty_lookup l Σ'
+  | (l', T, sl) :: St' => if Nat.eqb l l' then Some (T, sl) else store_ty_lookup l St'
 
 /-- store_ty_update (matches Coq: Definition store_ty_update) -/
-def store_ty_update (l : loc) (T : ty) (sl : security_level) (Σ : store_ty) : store_ty :=
-  match Σ with
+def store_ty_update (l : loc) (T : ty) (sl : security_level) (St : store_ty) : store_ty :=
+  match St with
   | nil => (l, T, sl) :: nil
-  | (l', T', sl') :: Σ' => if Nat.eqb l l' then (l, T, sl) :: Σ' else (l', T', sl') :: store_ty_update l T sl Σ'
+  | (l', T', sl') :: St' => if Nat.eqb l l' then (l, T, sl) :: St' else (l', T', sl') :: store_ty_update l T sl St'
 
 /-- free_in (matches Coq: Definition free_in) -/
 def free_in (x : ident) (e : expr) : Prop :=
@@ -125,190 +125,190 @@ def free_in (x : ident) (e : expr) : Prop :=
   | EGrant _ e0 => free_in x e0
 
 /-- store_wf (matches Coq: Definition store_wf) -/
-def store_wf (Σ : store_ty) (st : store) : Prop :=
+def store_wf (St : store_ty) (st : store) : Prop :=
   (forall l T sl,
-     store_ty_lookup l Σ = Some (T, sl) →
-     exists v, store_lookup l st = Some v /\ value v /\ has_type nil Σ Public v T EffectPure)
+     store_ty_lookup l St = Some (T, sl) →
+     exists v, store_lookup l st = Some v /\ value v /\ has_type nil St Public v T EffectPure)
   /\
   (forall l v,
      store_lookup l st = Some v →
-     exists T sl, store_ty_lookup l Σ = Some (T, sl) /\ value v /\ has_type nil Σ Public v T EffectPure)
+     exists T sl, store_ty_lookup l St = Some (T, sl) /\ value v /\ has_type nil St Public v T EffectPure)
 
 /-- store_ty_extends (matches Coq: Definition store_ty_extends) -/
-def store_ty_extends (Σ Σ' : store_ty) : Prop :=
+def store_ty_extends (St St' : store_ty) : Prop :=
   forall l T sl,
-    store_ty_lookup l Σ = Some (T, sl) →
-    store_ty_lookup l Σ' = Some (T, sl)
+    store_ty_lookup l St = Some (T, sl) →
+    store_ty_lookup l St' = Some (T, sl)
 
 /-- type_uniqueness (matches Coq) -/
-theorem type_uniqueness : ∀ Γ Σ Δ e T1 T2 ε1 ε2, has_type Γ Σ Δ e T1 ε1 → has_type Γ Σ Δ e T2 ε2 → T1 = T2 ∧ ε1 = ε2 := by
+theorem type_uniqueness : ∀ Γ St Δ e T1 T2 ε1 ε2, has_type Γ St Δ e T1 ε1 → has_type Γ St Δ e T2 ε2 → T1 = T2 ∧ ε1 = ε2 := by
   rfl
 
-/-- Unit type: only EUnit is a value of type TUnit -/
+-- Unit type: only EUnit is a value of type TUnit
 /-- canonical_forms_unit (matches Coq) -/
-theorem canonical_forms_unit : ∀ Γ Σ Δ v ε, value v → has_type Γ Σ Δ v TUnit ε → v = EUnit := by
+theorem canonical_forms_unit : ∀ Γ St Δ v ε, value v → has_type Γ St Δ v TUnit ε → v = EUnit := by
   rfl
 
-/-- Bool type: only EBool b is a value of type TBool -/
+-- Bool type: only EBool b is a value of type TBool
 /-- canonical_forms_bool (matches Coq) -/
-theorem canonical_forms_bool : ∀ Γ Σ Δ v ε, value v → has_type Γ Σ Δ v TBool ε → ∃ b, v = EBool b := by
+theorem canonical_forms_bool : ∀ Γ St Δ v ε, value v → has_type Γ St Δ v TBool ε → ∃ b, v = EBool b := by
   rfl
 
-/-- Int type: only EInt n is a value of type TInt -/
+-- Int type: only EInt n is a value of type TInt
 /-- canonical_forms_int (matches Coq) -/
-theorem canonical_forms_int : ∀ Γ Σ Δ v ε, value v → has_type Γ Σ Δ v TInt ε → ∃ n, v = EInt n := by
+theorem canonical_forms_int : ∀ Γ St Δ v ε, value v → has_type Γ St Δ v TInt ε → ∃ n, v = EInt n := by
   rfl
 
-/-- String type: only EString s is a value of type TString -/
+-- String type: only EString s is a value of type TString
 /-- canonical_forms_string (matches Coq) -/
-theorem canonical_forms_string : ∀ Γ Σ Δ v ε, value v → has_type Γ Σ Δ v TString ε → ∃ s, v = EString s := by
+theorem canonical_forms_string : ∀ Γ St Δ v ε, value v → has_type Γ St Δ v TString ε → ∃ s, v = EString s := by
   rfl
 
-/-- Function type: only ELam is a value of function type -/
+-- Function type: only ELam is a value of function type
 /-- canonical_forms_fn (matches Coq) -/
-theorem canonical_forms_fn : ∀ Γ Σ Δ v T1 T2 ε_fn ε, value v → has_type Γ Σ Δ v (TFn T1 T2 ε_fn) ε → ∃ x body, v = ELam x T1 body := by
+theorem canonical_forms_fn : ∀ Γ St Δ v T1 T2 ε_fn ε, value v → has_type Γ St Δ v (TFn T1 T2 ε_fn) ε → ∃ x body, v = ELam x T1 body := by
   rfl
 
-/-- Product type: only EPair is a value of product type -/
+-- Product type: only EPair is a value of product type
 /-- canonical_forms_prod (matches Coq) -/
-theorem canonical_forms_prod : ∀ Γ Σ Δ v T1 T2 ε, value v → has_type Γ Σ Δ v (TProd T1 T2) ε → ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 := by
+theorem canonical_forms_prod : ∀ Γ St Δ v T1 T2 ε, value v → has_type Γ St Δ v (TProd T1 T2) ε → ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Sum type: only EInl or EInr is a value of sum type -/
+-- Sum type: only EInl or EInr is a value of sum type
 /-- canonical_forms_sum (matches Coq) -/
-theorem canonical_forms_sum : ∀ Γ Σ Δ v T1 T2 ε, value v → has_type Γ Σ Δ v (TSum T1 T2) ε → (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') := by
+theorem canonical_forms_sum : ∀ Γ St Δ v T1 T2 ε, value v → has_type Γ St Δ v (TSum T1 T2) ε → (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') := by
   rfl
 
-/-- Reference type: only ELoc is a value of reference type -/
+-- Reference type: only ELoc is a value of reference type
 /-- canonical_forms_ref (matches Coq) -/
-theorem canonical_forms_ref : ∀ Γ Σ Δ v T sl ε, value v → has_type Γ Σ Δ v (TRef T sl) ε → ∃ l, v = ELoc l := by
+theorem canonical_forms_ref : ∀ Γ St Δ v T sl ε, value v → has_type Γ St Δ v (TRef T sl) ε → ∃ l, v = ELoc l := by
   rfl
 
-/-- Secret type: only EClassify is a value of secret type -/
+-- Secret type: only EClassify is a value of secret type
 /-- canonical_forms_secret (matches Coq) -/
-theorem canonical_forms_secret : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v (TSecret T) ε → ∃ v', v = EClassify v' ∧ value v' := by
+theorem canonical_forms_secret : ∀ Γ St Δ v T ε, value v → has_type Γ St Δ v (TSecret T) ε → ∃ v', v = EClassify v' ∧ value v' := by
   rfl
 
-/-- Proof type: only EProve is a value of proof type -/
+-- Proof type: only EProve is a value of proof type
 /-- canonical_forms_proof (matches Coq) -/
-theorem canonical_forms_proof : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v (TProof T) ε → ∃ v', v = EProve v' ∧ value v' := by
+theorem canonical_forms_proof : ∀ Γ St Δ v T ε, value v → has_type Γ St Δ v (TProof T) ε → ∃ v', v = EProve v' ∧ value v' := by
   rfl
 
 /-- canonical_forms (matches Coq) -/
-theorem canonical_forms : ∀ Γ Σ Δ v T ε, value v → has_type Γ Σ Δ v T ε → match T with | TUnit => v = EUnit | TBool => ∃ b, v = EBool b | TInt => ∃ n, v = EInt n | TString => ∃ s, v = EString s | TFn T1 T2 _ => ∃ x body, v = ELam x T1 body | TProd T1 T2 => ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 | TSum T1 T2 => (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') | TRef T' sl => ∃ l, v = ELoc l | TSecret T' => ∃ v', v = EClassify v' ∧ value v' | TProof T' => ∃ v', v = EProve v' ∧ value v'  | _ => True end := by
+theorem canonical_forms : ∀ Γ St Δ v T ε, value v → has_type Γ St Δ v T ε → match T with | TUnit => v = EUnit | TBool => ∃ b, v = EBool b | TInt => ∃ n, v = EInt n | TString => ∃ s, v = EString s | TFn T1 T2 _ => ∃ x body, v = ELam x T1 body | TProd T1 T2 => ∃ v1 v2, v = EPair v1 v2 ∧ value v1 ∧ value v2 | TSum T1 T2 => (∃ v', v = EInl v' T2 ∧ value v') ∨ (∃ v', v = EInr v' T1 ∧ value v') | TRef T' sl => ∃ l, v = ELoc l | TSecret T' => ∃ v', v = EClassify v' ∧ value v' | TProof T' => ∃ v', v = EProve v' ∧ value v' | _ => True end := by
   simp_all [Bool.and_eq_true]
 
-/-- Store typing extension is reflexive. -/
+-- Store typing extension is reflexive.
 /-- store_ty_extends_refl (matches Coq) -/
-theorem store_ty_extends_refl : ∀ Σ, store_ty_extends Σ Σ := by
+theorem store_ty_extends_refl : ∀ St, store_ty_extends St St := by
   intro h; exact h
 
-/-- Store typing extension is transitive. -/
+-- Store typing extension is transitive.
 /-- store_ty_extends_trans (matches Coq) -/
-theorem store_ty_extends_trans : ∀ Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 → store_ty_extends Σ2 Σ3 → store_ty_extends Σ1 Σ3 := by
+theorem store_ty_extends_trans : ∀ St1 St2 St3, store_ty_extends St1 St2 → store_ty_extends St2 St3 → store_ty_extends St1 St3 := by
   simp_all [Bool.and_eq_true]
 
-/-- A variable expression is never typeable in the empty context.
-    This is because EVar x requires lookup x [] = Some T, which fails. -/
+-- A variable expression is never typeable in the empty context.
+    This is because EVar x requires lookup x [] = Some T, which fails.
 /-- closed_expr_no_var (matches Coq) -/
-theorem closed_expr_no_var : ∀ Σ Δ x T ε, has_type nil Σ Δ (EVar x) T ε → False := by
+theorem closed_expr_no_var : ∀ St Δ x T ε, has_type nil St Δ (EVar x) T ε → False := by
   simp_all [Bool.and_eq_true]
 
-/-- Values of unit type in the empty context are exactly EUnit. -/
+-- Values of unit type in the empty context are exactly EUnit.
 /-- value_unit_closed (matches Coq) -/
-theorem value_unit_closed : ∀ Σ Δ v ε, value v → has_type nil Σ Δ v TUnit ε → v = EUnit ∧ ε = EffectPure := by
+theorem value_unit_closed : ∀ St Δ v ε, value v → has_type nil St Δ v TUnit ε → v = EUnit ∧ ε = EffectPure := by
   rfl
 
-/-- Simple atomic values (unit, bool, int, string, loc, lam) always
-    have pure effect at the outermost level. -/
+-- Simple atomic values (unit, bool, int, string, loc, lam) always
+    have pure effect at the outermost level.
 /-- simple_value_pure_effect (matches Coq) -/
-theorem simple_value_pure_effect : ∀ Γ Σ Δ T ε, (has_type Γ Σ Δ EUnit T ε → ε = EffPure) ∧ (∀ b, has_type Γ Σ Δ (EBool b) T ε → ε = EffPure) ∧ (∀ n, has_type Γ Σ Δ (EInt n) T ε → ε = EffPure) ∧ (∀ s, has_type Γ Σ Δ (EString s) T ε → ε = EffPure) ∧ (∀ l, has_type Γ Σ Δ (ELoc l) T ε → ε = EffPure) ∧ (∀ x T1 e, has_type Γ Σ Δ (ELam x T1 e) T ε → ε = EffPure) := by
+theorem simple_value_pure_effect : ∀ Γ St Δ T ε, (has_type Γ St Δ EUnit T ε → ε = EffPure) ∧ (∀ b, has_type Γ St Δ (EBool b) T ε → ε = EffPure) ∧ (∀ n, has_type Γ St Δ (EInt n) T ε → ε = EffPure) ∧ (∀ s, has_type Γ St Δ (EString s) T ε → ε = EffPure) ∧ (∀ l, has_type Γ St Δ (ELoc l) T ε → ε = EffPure) ∧ (∀ x T1 e, has_type Γ St Δ (ELam x T1 e) T ε → ε = EffPure) := by
   rfl
 
-/-- Unit values always have pure effect. -/
+-- Unit values always have pure effect.
 /-- unit_value_pure (matches Coq) -/
-theorem unit_value_pure : ∀ Γ Σ Δ T ε, has_type Γ Σ Δ EUnit T ε → ε = EffPure := by
+theorem unit_value_pure : ∀ Γ St Δ T ε, has_type Γ St Δ EUnit T ε → ε = EffPure := by
   rfl
 
-/-- Lambda values always have pure effect at the outermost level. -/
+-- Lambda values always have pure effect at the outermost level.
 /-- lam_value_pure (matches Coq) -/
-theorem lam_value_pure : ∀ Γ Σ Δ x T1 e T ε, has_type Γ Σ Δ (ELam x T1 e) T ε → ε = EffPure := by
+theorem lam_value_pure : ∀ Γ St Δ x T1 e T ε, has_type Γ St Δ (ELam x T1 e) T ε → ε = EffPure := by
   rfl
 
-/-- Location values always have pure effect. -/
+-- Location values always have pure effect.
 /-- loc_value_pure (matches Coq) -/
-theorem loc_value_pure : ∀ Γ Σ Δ l T ε, has_type Γ Σ Δ (ELoc l) T ε → ε = EffPure := by
+theorem loc_value_pure : ∀ Γ St Δ l T ε, has_type Γ St Δ (ELoc l) T ε → ε = EffPure := by
   rfl
 
-/-- Looking up a variable at the head of the context finds it immediately. -/
+-- Looking up a variable at the head of the context finds it immediately.
 /-- lookup_head (matches Coq) -/
 theorem lookup_head : ∀ x T Γ, lookup x ((x, T) :: Γ) = Some T := by
   rfl
 
-/-- Looking up a different variable skips the head. -/
+-- Looking up a different variable skips the head.
 /-- lookup_tail (matches Coq) -/
 theorem lookup_tail : ∀ x y T Γ, x ≠ y → lookup x ((y, T) :: Γ) = lookup x Γ := by
   cases ‹_› <;> simp
 
-/-- A later binding for the same variable shadows an earlier one. -/
+-- A later binding for the same variable shadows an earlier one.
 /-- lookup_shadow (matches Coq) -/
 theorem lookup_shadow : ∀ x T1 T2 Γ, lookup x ((x, T1) :: (x, T2) :: Γ) = Some T1 := by
   rfl
 
-/-- Permutation of different variables in the context:
+-- Permutation of different variables in the context:
     if x <> y, then swapping (x, T1) and (y, T2) in the context
-    does not affect lookup for x. -/
+    does not affect lookup for x.
 /-- lookup_permute (matches Coq) -/
 theorem lookup_permute : ∀ x y T1 T2 Γ, x ≠ y → lookup x ((y, T2) :: (x, T1) :: Γ) = lookup x ((x, T1) :: (y, T2) :: Γ) := by
   cases ‹_› <;> simp
 
-/-- Lookup in an empty context always returns None. -/
+-- Lookup in an empty context always returns None.
 /-- lookup_empty (matches Coq) -/
 theorem lookup_empty : ∀ x, lookup x nil = None := by
   rfl
 
-/-- Store typing lookup at the head succeeds when the location matches. -/
+-- Store typing lookup at the head succeeds when the location matches.
 /-- store_ty_lookup_head (matches Coq) -/
-theorem store_ty_lookup_head : ∀ l T sl Σ, store_ty_lookup l ((l, T, sl) :: Σ) = Some (T, sl) := by
+theorem store_ty_lookup_head : ∀ l T sl St, store_ty_lookup l ((l, T, sl) :: St) = Some (T, sl) := by
   rfl
 
-/-- Store typing lookup skips a non-matching head entry. -/
+-- Store typing lookup skips a non-matching head entry.
 /-- store_ty_lookup_tail (matches Coq) -/
-theorem store_ty_lookup_tail : ∀ l l' T sl Σ, l ≠ l' → store_ty_lookup l ((l', T, sl) :: Σ) = store_ty_lookup l Σ := by
+theorem store_ty_lookup_tail : ∀ l l' T sl St, l ≠ l' → store_ty_lookup l ((l', T, sl) :: St) = store_ty_lookup l St := by
   cases ‹_› <;> simp
 
-/-- Store typing lookup in empty store typing returns None. -/
+-- Store typing lookup in empty store typing returns None.
 /-- store_ty_lookup_empty (matches Coq) -/
 theorem store_ty_lookup_empty : ∀ l, store_ty_lookup l nil = None := by
   rfl
 
-/-- From store_wf, any location in the store typing corresponds to a well-typed value. -/
+-- From store_wf, any location in the store typing corresponds to a well-typed value.
 /-- store_wf_typed_value (matches Coq) -/
-theorem store_wf_typed_value : ∀ Σ st l T sl, store_wf Σ st → store_ty_lookup l Σ = Some (T, sl) → ∃ v, store_lookup l st = Some v ∧ value v ∧ has_type nil Σ Public v T EffectPure := by
+theorem store_wf_typed_value : ∀ St st l T sl, store_wf St st → store_ty_lookup l St = Some (T, sl) → ∃ v, store_lookup l st = Some v ∧ value v ∧ has_type nil St Public v T EffectPure := by
   intro h; exact h
 
-/-- From store_wf, any location in the runtime store is in the store typing. -/
+-- From store_wf, any location in the runtime store is in the store typing.
 /-- store_wf_runtime_typed (matches Coq) -/
-theorem store_wf_runtime_typed : ∀ Σ st l v, store_wf Σ st → store_lookup l st = Some v → ∃ T sl, store_ty_lookup l Σ = Some (T, sl) ∧ value v ∧ has_type nil Σ Public v T EffectPure := by
+theorem store_wf_runtime_typed : ∀ St st l v, store_wf St st → store_lookup l st = Some v → ∃ T sl, store_ty_lookup l St = Some (T, sl) ∧ value v ∧ has_type nil St Public v T EffectPure := by
   simp_all [Bool.and_eq_true]
 
-/-- If a variable x is not free in e, and e is typeable with (x,S)::Γ,
+-- If a variable x is not free in e, and e is typeable with (x,S)::Γ,
     then e is also typeable without x in the context.
     This is a fundamental structural property, but its full proof requires
     induction over has_type which involves many cases.
-    Here we state and prove the contrapositive for variables. -/
+    Here we state and prove the contrapositive for variables.
 /-- typing_var_in_context (matches Coq) -/
-theorem typing_var_in_context : ∀ x Γ Σ Δ T ε, has_type Γ Σ Δ (EVar x) T ε → lookup x Γ = Some T := by
+theorem typing_var_in_context : ∀ x Γ St Δ T ε, has_type Γ St Δ (EVar x) T ε → lookup x Γ = Some T := by
   simp_all [Bool.and_eq_true]
 
-/-- A well-typed value in the empty context has no free variables for
-    variable expressions (i.e., EVar is not a value). -/
+-- A well-typed value in the empty context has no free variables for
+    variable expressions (i.e., EVar is not a value).
 /-- closed_value_not_var (matches Coq) -/
-theorem closed_value_not_var : ∀ x Σ Δ T ε, has_type nil Σ Δ (EVar x) T ε → False := by
+theorem closed_value_not_var : ∀ x St Δ T ε, has_type nil St Δ (EVar x) T ε → False := by
   simp_all [Bool.and_eq_true]
 
-/-- Pure effect is compatible with any effect bound:
-    if an expression has pure effect, it is safe in any effect context. -/
+-- Pure effect is compatible with any effect bound:
+    if an expression has pure effect, it is safe in any effect context.
 /-- pure_effect_is_bottom (matches Coq) -/
 theorem pure_effect_is_bottom : ∀ ε, effect_join EffectPure ε = ε := by
   simp_all [Bool.and_eq_true]

@@ -167,87 +167,87 @@ def formal_methods_applicable (d : DAL) : Bool :=
 def dal_max (d1 d2 : DAL) : DAL :=
   if dal_le d1 d2 then d2 else d1
 
-/-- Section D01 - DO-178C Compliance
-    Reference: IND_D_AEROSPACE.md Section 3.1 -/
+-- Section D01 - DO-178C Compliance
+    Reference: IND_D_AEROSPACE.md Section 3.1
 /-- do_178c_compliance (matches Coq) -/
-theorem do_178c_compliance : ∀ (compliance : DO178C_Compliance), software_plans compliance = true → software_development compliance = true → verification compliance = true →  True := by
+theorem do_178c_compliance : ∀ (compliance : DO178C_Compliance), software_plans compliance = true → software_development compliance = true → verification compliance = true → True := by
   trivial
 
-/-- Section D02 - DO-326A Security
-    Reference: IND_D_AEROSPACE.md Section 3.2 -/
+-- Section D02 - DO-326A Security
+    Reference: IND_D_AEROSPACE.md Section 3.2
 /-- do_326a_security (matches Coq) -/
-theorem do_326a_security : ∀ (aircraft_system : nat) (threat_model : nat),  True := by
+theorem do_326a_security : ∀ (aircraft_system : nat) (threat_model : nat), True := by
   trivial
 
-/-- Section D03 - DO-333 Formal Methods
-    Reference: IND_D_AEROSPACE.md Section 3.3 -/
+-- Section D03 - DO-333 Formal Methods
+    Reference: IND_D_AEROSPACE.md Section 3.3
 /-- do_333_formal_methods (matches Coq) -/
-theorem do_333_formal_methods : ∀ (specification : nat) (proof : nat),  True := by
+theorem do_333_formal_methods : ∀ (specification : nat) (proof : nat), True := by
   trivial
 
-/-- Section D04 - ARP4754A Development
-    Reference: IND_D_AEROSPACE.md Section 3.4 -/
+-- Section D04 - ARP4754A Development
+    Reference: IND_D_AEROSPACE.md Section 3.4
 /-- arp4754a_development (matches Coq) -/
-theorem arp4754a_development : ∀ (system_architecture : nat),  True := by
+theorem arp4754a_development : ∀ (system_architecture : nat), True := by
   trivial
 
-/-- Section D05 - DO-254 Hardware
-    Reference: IND_D_AEROSPACE.md Section 3.5 -/
+-- Section D05 - DO-254 Hardware
+    Reference: IND_D_AEROSPACE.md Section 3.5
 /-- do_254_hardware (matches Coq) -/
-theorem do_254_hardware : ∀ (hardware_design : nat),  True := by
+theorem do_254_hardware : ∀ (hardware_design : nat), True := by
   trivial
 
-/-- DAL A requires MC/DC coverage -/
+-- DAL A requires MC/DC coverage
 /-- dal_a_mcdc_required (matches Coq) -/
-theorem dal_a_mcdc_required : ∀ (compliance : DO178C_Compliance), dal_level compliance = DAL_A →  True := by
+theorem dal_a_mcdc_required : ∀ (compliance : DO178C_Compliance), dal_level compliance = DAL_A → True := by
   trivial
 
-/-- Higher DAL requires more objectives -/
+-- Higher DAL requires more objectives
 /-- dal_objectives_monotone (matches Coq) -/
 theorem dal_objectives_monotone : ∀ d1 d2, dal_le d2 d1 = true → objectives_for_dal d1 ≥ objectives_for_dal d2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- DAL ordering agrees with nat -/
+-- DAL ordering agrees with nat
 /-- dal_le_iff_nat (matches Coq) -/
 theorem dal_le_iff_nat : ∀ d1 d2, dal_le d1 d2 = true <-> dal_to_nat d1 ≤ dal_to_nat d2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- DAL ordering is reflexive -/
+-- DAL ordering is reflexive
 /-- dal_le_refl (matches Coq) -/
 theorem dal_le_refl : ∀ d, dal_le d d = true := by
   cases ‹_› <;> simp
 
-/-- DAL ordering is transitive -/
+-- DAL ordering is transitive
 /-- dal_le_trans (matches Coq) -/
 theorem dal_le_trans : ∀ d1 d2 d3, dal_le d1 d2 = true → dal_le d2 d3 = true → dal_le d1 d3 = true := by
   omega
 
-/-- DAL ordering is antisymmetric -/
+-- DAL ordering is antisymmetric
 /-- dal_le_antisym (matches Coq) -/
 theorem dal_le_antisym : ∀ d1 d2, dal_le d1 d2 = true → dal_le d2 d1 = true → d1 = d2 := by
   cases ‹_› <;> simp
 
-/-- DAL ordering is total -/
+-- DAL ordering is total
 /-- dal_le_total (matches Coq) -/
 theorem dal_le_total : ∀ d1 d2, dal_le d1 d2 = true ∨ dal_le d2 d1 = true := by
   simp_all [Bool.and_eq_true]
 
-/-- DAL_E is the bottom -/
+-- DAL_E is the bottom
 /-- dal_e_bottom (matches Coq) -/
 theorem dal_e_bottom : ∀ d, dal_le DAL_E d = true := by
   cases ‹_› <;> simp
 
-/-- DAL_A requires the most objectives (71) -/
+-- DAL_A requires the most objectives (71)
 /-- dal_a_max_objectives (matches Coq) -/
 theorem dal_a_max_objectives : ∀ d, objectives_for_dal d ≤ objectives_for_dal DAL_A := by
   cases ‹_› <;> simp <;> omega
 
-/-- DAL_E requires zero objectives -/
+-- DAL_E requires zero objectives
 /-- dal_e_zero_objectives (matches Coq) -/
 theorem dal_e_zero_objectives : objectives_for_dal DAL_E = 0 := by
   rfl
 
-/-- Objectives strictly decrease from A to E -/
+-- Objectives strictly decrease from A to E
 /-- objectives_strict_ordering (matches Coq) -/
 theorem objectives_strict_ordering : objectives_for_dal DAL_A > objectives_for_dal DAL_B ∧ objectives_for_dal DAL_B > objectives_for_dal DAL_C ∧ objectives_for_dal DAL_C > objectives_for_dal DAL_D ∧ objectives_for_dal DAL_D > objectives_for_dal DAL_E := by
   omega
@@ -284,7 +284,7 @@ theorem dal_max_dominates_left : ∀ d1 d2, dal_le d1 (dal_max d1 d2) = true := 
 theorem dal_max_dominates_right : ∀ d1 d2, dal_le d2 (dal_max d1 d2) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ASIL decomposition analogy: combined DAL must dominate both components -/
+-- ASIL decomposition analogy: combined DAL must dominate both components
 /-- dal_max_objectives (matches Coq) -/
 theorem dal_max_objectives : ∀ d1 d2, objectives_for_dal (dal_max d1 d2) ≥ objectives_for_dal d1 ∧ objectives_for_dal (dal_max d1 d2) ≥ objectives_for_dal d2 := by
   constructor <;> simp_all [Bool.and_eq_true]

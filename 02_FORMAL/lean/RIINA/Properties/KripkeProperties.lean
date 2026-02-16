@@ -1,5 +1,8 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
+import RIINA.Foundations.Syntax
+import RIINA.Foundations.Semantics
+import RIINA.TypeSystem.Typing
 
 /-!
 # RIINA KripkeProperties - Lean 4 Port
@@ -80,199 +83,199 @@ namespace RIINA
 @[inline] def snd {α β : Type} (p : α × β) : β := p.2
 
 /-- val_rel_at (matches Coq: Definition val_rel_at) -/
-def val_rel_at (n : Nat) (Σ : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+def val_rel_at (n : Nat) (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
   match n with
   | 0 => True
-  | S n' => val_rel_struct (val_rel_le n') Σ T v1 v2
+  | S n' => val_rel_struct (val_rel_le n') St T v1 v2
 
-/-- Store extension is a preorder -/
+-- Store extension is a preorder
 /-- store_ty_extends_preorder (matches Coq) -/
-theorem store_ty_extends_preorder : (∀ Σ, store_ty_extends Σ Σ) ∧ (∀ Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 → store_ty_extends Σ2 Σ3 → store_ty_extends Σ1 Σ3) := by
+theorem store_ty_extends_preorder : (∀ St, store_ty_extends St St) ∧ (∀ St1 St2 St3, store_ty_extends St1 St2 → store_ty_extends St2 St3 → store_ty_extends St1 St3) := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- Build val_rel_le at any step for TUnit -/
+-- Build val_rel_le at any step for TUnit
 /-- val_rel_le_build_unit (matches Coq) -/
-theorem val_rel_le_build_unit : ∀ m Σ, val_rel_le m Σ TUnit EUnit EUnit := by
+theorem val_rel_le_build_unit : ∀ m St, val_rel_le m St TUnit EUnit EUnit := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for TUnit -/
+-- Step-up for TUnit
 /-- val_rel_le_step_up_unit (matches Coq) -/
-theorem val_rel_le_step_up_unit : ∀ n m Σ v1 v2, val_rel_le n Σ TUnit v1 v2 → n > 0 → val_rel_le m Σ TUnit v1 v2 := by
+theorem val_rel_le_step_up_unit : ∀ n m St v1 v2, val_rel_le n St TUnit v1 v2 → n > 0 → val_rel_le m St TUnit v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Build val_rel_le at any step for TBool -/
+-- Build val_rel_le at any step for TBool
 /-- val_rel_le_build_bool (matches Coq) -/
-theorem val_rel_le_build_bool : ∀ m Σ b, val_rel_le m Σ TBool (EBool b) (EBool b) := by
+theorem val_rel_le_build_bool : ∀ m St b, val_rel_le m St TBool (EBool b) (EBool b) := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for TBool -/
+-- Step-up for TBool
 /-- val_rel_le_step_up_bool (matches Coq) -/
-theorem val_rel_le_step_up_bool : ∀ n m Σ v1 v2, val_rel_le n Σ TBool v1 v2 → n > 0 → val_rel_le m Σ TBool v1 v2 := by
+theorem val_rel_le_step_up_bool : ∀ n m St v1 v2, val_rel_le n St TBool v1 v2 → n > 0 → val_rel_le m St TBool v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Build val_rel_le at any step for TInt -/
+-- Build val_rel_le at any step for TInt
 /-- val_rel_le_build_int (matches Coq) -/
-theorem val_rel_le_build_int : ∀ m Σ i, val_rel_le m Σ TInt (EInt i) (EInt i) := by
+theorem val_rel_le_build_int : ∀ m St i, val_rel_le m St TInt (EInt i) (EInt i) := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for TInt -/
+-- Step-up for TInt
 /-- val_rel_le_step_up_int (matches Coq) -/
-theorem val_rel_le_step_up_int : ∀ n m Σ v1 v2, val_rel_le n Σ TInt v1 v2 → n > 0 → val_rel_le m Σ TInt v1 v2 := by
+theorem val_rel_le_step_up_int : ∀ n m St v1 v2, val_rel_le n St TInt v1 v2 → n > 0 → val_rel_le m St TInt v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Build val_rel_le at any step for TString -/
+-- Build val_rel_le at any step for TString
 /-- val_rel_le_build_string (matches Coq) -/
-theorem val_rel_le_build_string : ∀ m Σ s, val_rel_le m Σ TString (EString s) (EString s) := by
+theorem val_rel_le_build_string : ∀ m St s, val_rel_le m St TString (EString s) (EString s) := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for TString -/
+-- Step-up for TString
 /-- val_rel_le_step_up_string (matches Coq) -/
-theorem val_rel_le_step_up_string : ∀ n m Σ v1 v2, val_rel_le n Σ TString v1 v2 → n > 0 → val_rel_le m Σ TString v1 v2 := by
+theorem val_rel_le_step_up_string : ∀ n m St v1 v2, val_rel_le n St TString v1 v2 → n > 0 → val_rel_le m St TString v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Build val_rel_le for TBytes at any step (requires v1 = v2) -/
+-- Build val_rel_le for TBytes at any step (requires v1 = v2)
 /-- val_rel_le_build_bytes (matches Coq) -/
-theorem val_rel_le_build_bytes : ∀ m Σ v, value v → closed_expr v → val_rel_le m Σ TBytes v v := by
+theorem val_rel_le_build_bytes : ∀ m St v, value v → closed_expr v → val_rel_le m St TBytes v v := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for TBytes (requires v1 = v2 from val_rel_struct) -/
+-- Step-up for TBytes (requires v1 = v2 from val_rel_struct)
 /-- val_rel_le_step_up_bytes (matches Coq) -/
-theorem val_rel_le_step_up_bytes : ∀ n m Σ v1 v2, val_rel_le n Σ TBytes v1 v2 → n > 0 → val_rel_le m Σ TBytes v1 v2 := by
+theorem val_rel_le_step_up_bytes : ∀ n m St v1 v2, val_rel_le n St TBytes v1 v2 → n > 0 → val_rel_le m St TBytes v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Build val_rel_le for secrets at any step (requires knowing the values) -/
+-- Build val_rel_le for secrets at any step (requires knowing the values)
 /-- val_rel_le_build_secret (matches Coq) -/
-theorem val_rel_le_build_secret : ∀ m Σ l v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TSecret l) v1 v2 := by
+theorem val_rel_le_build_secret : ∀ m St l v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TSecret l) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for secrets (always trivially related) -/
+-- Step-up for secrets (always trivially related)
 /-- val_rel_le_step_up_secret (matches Coq) -/
-theorem val_rel_le_step_up_secret : ∀ n m Σ l v1 v2, val_rel_le n Σ (TSecret l) v1 v2 → n > 0 → val_rel_le m Σ (TSecret l) v1 v2 := by
+theorem val_rel_le_step_up_secret : ∀ n m St l v1 v2, val_rel_le n St (TSecret l) v1 v2 → n > 0 → val_rel_le m St (TSecret l) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Full Kripke monotonicity: can change both step and store -/
+-- Full Kripke monotonicity: can change both step and store
 /-- val_rel_le_kripke_mono (matches Coq) -/
-theorem val_rel_le_kripke_mono : ∀ n m Σ Σ' T v1 v2, m ≤ n → store_ty_extends Σ Σ' → val_rel_le n Σ T v1 v2 → val_rel_le m Σ' T v1 v2 := by
+theorem val_rel_le_kripke_mono : ∀ n m St St' T v1 v2, m ≤ n → store_ty_extends St St' → val_rel_le n St T v1 v2 → val_rel_le m St' T v1 v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Store monotonicity preserves step -/
+-- Store monotonicity preserves step
 /-- val_rel_le_store_preserves_step (matches Coq) -/
-theorem val_rel_le_store_preserves_step : ∀ n Σ Σ' T v1 v2, store_ty_extends Σ Σ' → val_rel_le n Σ T v1 v2 → val_rel_le n Σ' T v1 v2 := by
+theorem val_rel_le_store_preserves_step : ∀ n St St' T v1 v2, store_ty_extends St St' → val_rel_le n St T v1 v2 → val_rel_le n St' T v1 v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Store relation is monotone in step -/
+-- Store relation is monotone in step
 /-- store_rel_le_kripke_step (matches Coq) -/
-theorem store_rel_le_kripke_step : ∀ n m Σ st1 st2, m ≤ n → store_rel_le n Σ st1 st2 → store_rel_le m Σ st1 st2 := by
+theorem store_rel_le_kripke_step : ∀ n m St st1 st2, m ≤ n → store_rel_le n St st1 st2 → store_rel_le m St st1 st2 := by
   simp_all [Bool.and_eq_true]
 
-/-- val_rel_le includes val_rel_at -/
+-- val_rel_le includes val_rel_at
 /-- val_rel_le_includes_at (matches Coq) -/
-theorem val_rel_le_includes_at : ∀ n Σ T v1 v2, val_rel_le n Σ T v1 v2 → val_rel_at n Σ T v1 v2 := by
+theorem val_rel_le_includes_at : ∀ n St T v1 v2, val_rel_le n St T v1 v2 → val_rel_at n St T v1 v2 := by
   intro h; exact h
 
-/-- val_rel_at plus cumulative gives val_rel_le -/
+-- val_rel_at plus cumulative gives val_rel_le
 /-- val_rel_at_to_le (matches Coq) -/
-theorem val_rel_at_to_le : ∀ n Σ T v1 v2, val_rel_le n Σ T v1 v2 → val_rel_at (S n) Σ T v1 v2 → val_rel_le (S n) Σ T v1 v2 := by
+theorem val_rel_at_to_le : ∀ n St T v1 v2, val_rel_le n St T v1 v2 → val_rel_at (S n) St T v1 v2 → val_rel_le (S n) St T v1 v2 := by
   simp_all [Bool.and_eq_true]
 
-/-- Helper lemma for building relations on indistinguishable types.
+-- Helper lemma for building relations on indistinguishable types.
     These are types where val_rel_struct is True (not requiring equality).
-    NOTE: TBytes is excluded because it requires v1 = v2. -/
+    NOTE: TBytes is excluded because it requires v1 = v2.
 /-- val_rel_le_build_indist (matches Coq) -/
-theorem val_rel_le_build_indist : ∀ m Σ T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → match T with | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TCapability _ | TCapabilityFull _ | TProof _ | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _ | TList _ | TOption _ => True | _ => False end → val_rel_le m Σ T v1 v2 := by
+theorem val_rel_le_build_indist : ∀ m St T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → match T with | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TCapability _ | TCapabilityFull _ | TProof _ | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _ | TList _ | TOption _ => True | _ => False end → val_rel_le m St T v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_fo (matches Coq) -/
-theorem val_rel_le_step_up_fo : ∀ n m Σ T v1 v2, first_order_type T = true → val_rel_le n Σ T v1 v2 → n > fo_compound_depth T → val_rel_le m Σ T v1 v2 := by
+theorem val_rel_le_step_up_fo : ∀ n m St T v1 v2, first_order_type T = true → val_rel_le n St T v1 v2 → n > fo_compound_depth T → val_rel_le m St T v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
-/-- For base/indistinguishable types, relation at step 1 implies relation at all steps -/
+-- For base/indistinguishable types, relation at step 1 implies relation at all steps
 /-- val_rel_le_base_permanent (matches Coq) -/
-theorem val_rel_le_base_permanent : ∀ Σ T v1 v2, match T with  | TUnit | TBool | TInt | TString | TBytes => True  Indistinguishable types (val_rel_struct returns True)  | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ => True | TCapability _ | TCapabilityFull _ | TProof _ => True | TChan _ | TSecureChan _ _ => True | TConstantTime _ | TZeroizing _ => True | TList _ | TOption _ => True  | _ => False end → val_rel_le 1 Σ T v1 v2 → ∀ n, val_rel_le n Σ T v1 v2 := by
+theorem val_rel_le_base_permanent : ∀ St T v1 v2, match T with | TUnit | TBool | TInt | TString | TBytes => True | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ => True | TCapability _ | TCapabilityFull _ | TProof _ => True | TChan _ | TSecureChan _ _ => True | TConstantTime _ | TZeroizing _ => True | TList _ | TOption _ => True | _ => False end → val_rel_le 1 St T v1 v2 → ∀ n, val_rel_le n St T v1 v2 := by
   intro h; exact h
 
-/-- Two closed values of TUnit are equal iff related at any positive step -/
+-- Two closed values of TUnit are equal iff related at any positive step
 /-- val_rel_le_unit_eq (matches Coq) -/
-theorem val_rel_le_unit_eq : ∀ n Σ v1 v2, n > 0 → val_rel_le n Σ TUnit v1 v2 <-> (v1 = EUnit ∧ v2 = EUnit) := by
+theorem val_rel_le_unit_eq : ∀ n St v1 v2, n > 0 → val_rel_le n St TUnit v1 v2 <-> (v1 = EUnit ∧ v2 = EUnit) := by
   cases ‹_› <;> simp <;> omega
 
-/-- Two closed values of TBool are equal iff related at any positive step -/
+-- Two closed values of TBool are equal iff related at any positive step
 /-- val_rel_le_bool_eq (matches Coq) -/
-theorem val_rel_le_bool_eq : ∀ n Σ v1 v2, n > 0 → val_rel_le n Σ TBool v1 v2 <-> (∃ b, v1 = EBool b ∧ v2 = EBool b) := by
+theorem val_rel_le_bool_eq : ∀ n St v1 v2, n > 0 → val_rel_le n St TBool v1 v2 <-> (∃ b, v1 = EBool b ∧ v2 = EBool b) := by
   cases ‹_› <;> simp <;> omega
 
-/-- Helper: lookup at l' is unchanged by update at l when l <> l' -/
+-- Helper: lookup at l' is unchanged by update at l when l <> l'
 /-- store_ty_lookup_update_neq (matches Coq) -/
-theorem store_ty_lookup_update_neq : ∀ l l' T sl Σ, l ≠ l' → store_ty_lookup l' (store_ty_update l T sl Σ) = store_ty_lookup l' Σ := by
+theorem store_ty_lookup_update_neq : ∀ l l' T sl St, l ≠ l' → store_ty_lookup l' (store_ty_update l T sl St) = store_ty_lookup l' St := by
   cases ‹_› <;> simp
 
 /-- store_ty_extends_add (matches Coq) -/
-theorem store_ty_extends_add : ∀ Σ l T sl, store_ty_lookup l Σ = None → store_ty_extends Σ (store_ty_update l T sl Σ) := by
+theorem store_ty_extends_add : ∀ St l T sl, store_ty_lookup l St = None → store_ty_extends St (store_ty_update l T sl St) := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_build_labeled (matches Coq) -/
-theorem val_rel_le_build_labeled : ∀ m Σ T sl v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TLabeled T sl) v1 v2 := by
+theorem val_rel_le_build_labeled : ∀ m St T sl v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TLabeled T sl) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_labeled (matches Coq) -/
-theorem val_rel_le_step_up_labeled : ∀ n m Σ T sl v1 v2, val_rel_le n Σ (TLabeled T sl) v1 v2 → n > 0 → val_rel_le m Σ (TLabeled T sl) v1 v2 := by
+theorem val_rel_le_step_up_labeled : ∀ n m St T sl v1 v2, val_rel_le n St (TLabeled T sl) v1 v2 → n > 0 → val_rel_le m St (TLabeled T sl) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_tainted (matches Coq) -/
-theorem val_rel_le_build_tainted : ∀ m Σ T src v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TTainted T src) v1 v2 := by
+theorem val_rel_le_build_tainted : ∀ m St T src v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TTainted T src) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_tainted (matches Coq) -/
-theorem val_rel_le_step_up_tainted : ∀ n m Σ T src v1 v2, val_rel_le n Σ (TTainted T src) v1 v2 → n > 0 → val_rel_le m Σ (TTainted T src) v1 v2 := by
+theorem val_rel_le_step_up_tainted : ∀ n m St T src v1 v2, val_rel_le n St (TTainted T src) v1 v2 → n > 0 → val_rel_le m St (TTainted T src) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_sanitized (matches Coq) -/
-theorem val_rel_le_build_sanitized : ∀ m Σ T san v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TSanitized T san) v1 v2 := by
+theorem val_rel_le_build_sanitized : ∀ m St T san v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TSanitized T san) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_sanitized (matches Coq) -/
-theorem val_rel_le_step_up_sanitized : ∀ n m Σ T san v1 v2, val_rel_le n Σ (TSanitized T san) v1 v2 → n > 0 → val_rel_le m Σ (TSanitized T san) v1 v2 := by
+theorem val_rel_le_step_up_sanitized : ∀ n m St T san v1 v2, val_rel_le n St (TSanitized T san) v1 v2 → n > 0 → val_rel_le m St (TSanitized T san) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_proof (matches Coq) -/
-theorem val_rel_le_build_proof : ∀ m Σ T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TProof T) v1 v2 := by
+theorem val_rel_le_build_proof : ∀ m St T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TProof T) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_proof (matches Coq) -/
-theorem val_rel_le_step_up_proof : ∀ n m Σ T v1 v2, val_rel_le n Σ (TProof T) v1 v2 → n > 0 → val_rel_le m Σ (TProof T) v1 v2 := by
+theorem val_rel_le_step_up_proof : ∀ n m St T v1 v2, val_rel_le n St (TProof T) v1 v2 → n > 0 → val_rel_le m St (TProof T) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_ct (matches Coq) -/
-theorem val_rel_le_build_ct : ∀ m Σ T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TConstantTime T) v1 v2 := by
+theorem val_rel_le_build_ct : ∀ m St T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TConstantTime T) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_ct (matches Coq) -/
-theorem val_rel_le_step_up_ct : ∀ n m Σ T v1 v2, val_rel_le n Σ (TConstantTime T) v1 v2 → n > 0 → val_rel_le m Σ (TConstantTime T) v1 v2 := by
+theorem val_rel_le_step_up_ct : ∀ n m St T v1 v2, val_rel_le n St (TConstantTime T) v1 v2 → n > 0 → val_rel_le m St (TConstantTime T) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_zero (matches Coq) -/
-theorem val_rel_le_build_zero : ∀ m Σ T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TZeroizing T) v1 v2 := by
+theorem val_rel_le_build_zero : ∀ m St T v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TZeroizing T) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_zero (matches Coq) -/
-theorem val_rel_le_step_up_zero : ∀ n m Σ T v1 v2, val_rel_le n Σ (TZeroizing T) v1 v2 → n > 0 → val_rel_le m Σ (TZeroizing T) v1 v2 := by
+theorem val_rel_le_step_up_zero : ∀ n m St T v1 v2, val_rel_le n St (TZeroizing T) v1 v2 → n > 0 → val_rel_le m St (TZeroizing T) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_cap (matches Coq) -/
-theorem val_rel_le_build_cap : ∀ m Σ k v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m Σ (TCapability k) v1 v2 := by
+theorem val_rel_le_build_cap : ∀ m St k v1 v2, value v1 → value v2 → closed_expr v1 → closed_expr v2 → val_rel_le m St (TCapability k) v1 v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- val_rel_le_step_up_cap (matches Coq) -/
-theorem val_rel_le_step_up_cap : ∀ n m Σ k v1 v2, val_rel_le n Σ (TCapability k) v1 v2 → n > 0 → val_rel_le m Σ (TCapability k) v1 v2 := by
+theorem val_rel_le_step_up_cap : ∀ n m St k v1 v2, val_rel_le n St (TCapability k) v1 v2 → n > 0 → val_rel_le m St (TCapability k) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 /-- val_rel_le_build_ref_kripke (matches Coq) -/
-theorem val_rel_le_build_ref_kripke : ∀ m Σ T sl l, val_rel_le m Σ (TRef T sl) (ELoc l) (ELoc l) := by
+theorem val_rel_le_build_ref_kripke : ∀ m St T sl l, val_rel_le m St (TRef T sl) (ELoc l) (ELoc l) := by
   simp_all [Bool.and_eq_true]
 
-/-- Step-up for TRef -/
+-- Step-up for TRef
 /-- val_rel_le_step_up_ref (matches Coq) -/
-theorem val_rel_le_step_up_ref : ∀ n m Σ T sl v1 v2, val_rel_le n Σ (TRef T sl) v1 v2 → n > 0 → val_rel_le m Σ (TRef T sl) v1 v2 := by
+theorem val_rel_le_step_up_ref : ∀ n m St T sl v1 v2, val_rel_le n St (TRef T sl) v1 v2 → n > 0 → val_rel_le m St (TRef T sl) v1 v2 := by
   cases ‹_› <;> simp <;> omega
 
 end RIINA

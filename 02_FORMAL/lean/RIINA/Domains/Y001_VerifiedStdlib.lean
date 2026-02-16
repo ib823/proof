@@ -248,7 +248,7 @@ theorem Y_001_13_hashmap_get_put : ∀ (K V : Type) (eq_dec : ∀ k1 k2 : K, {k1
   cases ‹_› <;> simp
 
 /-- Y_001_14_hashmap_get_other (matches Coq) -/
-theorem Y_001_14_hashmap_get_other : ∀ (K V : Type) (eq_dec : ∀ k1 k2 : K, {k1 = k2} + {k1 ≠ k2}) (m : HashMap K V) (k1 k2 : K) (v : V), k1 ≠ k2 →  ∀ v2, hashmap_get eq_dec (hashmap_put eq_dec m k1 v) k2 = Some v2 → ∃ entry, In entry m ∧ fst entry = k2 ∧ snd entry = v2 := by
+theorem Y_001_14_hashmap_get_other : ∀ (K V : Type) (eq_dec : ∀ k1 k2 : K, {k1 = k2} + {k1 ≠ k2}) (m : HashMap K V) (k1 k2 : K) (v : V), k1 ≠ k2 → ∀ v2, hashmap_get eq_dec (hashmap_put eq_dec m k1 v) k2 = Some v2 → ∃ entry, In entry m ∧ fst entry = k2 ∧ snd entry = v2 := by
   simp_all [Bool.and_eq_true]
 
 /-- Y_001_14b_hashmap_different_key (matches Coq) -/

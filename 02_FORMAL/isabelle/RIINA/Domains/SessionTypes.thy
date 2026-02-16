@@ -249,7 +249,7 @@ lemma ST_019_session_no_deadlock: "\<forall> cfg, session_typed cfg \<longrighta
   by (cases rule: ‹_›.cases; simp)
 
 (* ST_020_dual_communicate (matches Coq) *)
-lemma ST_020_dual_communicate: "\<forall> mt s, dual (SSend mt s) = SRecv mt (dual s) \<longrightarrow> True. (* Send and receive are compatible *)"
+lemma ST_020_dual_communicate: "\<forall> mt s, dual (SSend mt s) = SRecv mt (dual s) \<longrightarrow> True. "
   by auto
 
 (* ST_021_value_done (matches Coq) *)

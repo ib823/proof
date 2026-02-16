@@ -1,5 +1,7 @@
 -- Copyright (c) 2026 The RIINA Authors. All rights reserved.
 -- Copyright (c) 2026 The RIINA Authors. See AUTHORS file.
+import RIINA.Foundations.Syntax
+import RIINA.TypeSystem.Typing
 
 /-!
 # RIINA EffectGate - Lean 4 Port
@@ -99,7 +101,7 @@ theorem grant_no_escalation : ∀ G S D eff e T ε, has_type G S D (EGrant eff e
 theorem grant_effect_transparent : ∀ G S D eff e T ε, has_type G S D e T ε → has_type G S D (EGrant eff e) T ε := by
   simp_all [Bool.and_eq_true]
 
-/-- Grant preserves the performs_within bound -/
+-- Grant preserves the performs_within bound
 /-- grant_preserves_bound (matches Coq) -/
 theorem grant_preserves_bound : ∀ eff e eff_bound, performs_within e eff_bound → performs_within (EGrant eff e) eff_bound := by
   intro h; exact h
@@ -120,12 +122,12 @@ theorem handle_bound_combine : ∀ e x h eff, performs_within e eff → performs
 theorem perform_requires_license : ∀ eff' e, effect_level eff' > 0 → ~ performs_within (EPerform eff' e) EffectPure := by
   cases ‹_› <;> simp <;> omega
 
-/-- Every non-pure effect has level > 0 -/
+-- Every non-pure effect has level > 0
 /-- nonpure_level_pos (matches Coq) -/
 theorem nonpure_level_pos : ∀ eff, eff ≠ EffPure → effect_level eff > 0 := by
   cases ‹_› <;> simp <;> omega
 
-/-- If a pure-typed expression IS a perform, the effect must be pure -/
+-- If a pure-typed expression IS a perform, the effect must be pure
 /-- pure_perform_is_pure (matches Coq) -/
 theorem pure_perform_is_pure : ∀ G S D eff' e_inner T, has_type G S D (EPerform eff' e_inner) T EffectPure → eff' = EffPure := by
   cases ‹_› <;> simp <;> omega
@@ -147,19 +149,19 @@ theorem gate_weakening : ∀ eff1 eff2 g, is_gate eff1 g → effect_leq eff1 eff
   simp_all [Bool.and_eq_true]
 
 /-- effect_sound_after_step (matches Coq) -/
-theorem effect_sound_after_step : ∀ e e' T ε st st' ctx ctx' Σ, has_type nil Σ Public e T ε → store_wf Σ st → (e, st, ctx) --> (e', st', ctx') → ∃ Σ' ε', store_ty_extends Σ Σ' ∧ store_wf Σ' st' ∧ performs_within e' ε' := by
+theorem effect_sound_after_step : ∀ e e' T ε st st' ctx ctx' St, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) --> (e', st', ctx') → ∃ St' ε', store_ty_extends St St' ∧ store_wf St' st' ∧ performs_within e' ε' := by
   simp_all [Bool.and_eq_true]
 
-/-- Multi-step effect soundness -/
+-- Multi-step effect soundness
 /-- effect_sound_multi_step (matches Coq) -/
-theorem effect_sound_multi_step : ∀ cfg cfg' e e' T ε st st' ctx ctx' Σ, cfg = (e, st, ctx) → cfg' = (e', st', ctx') → has_type nil Σ Public e T ε → store_wf Σ st → cfg -->* cfg' → ∃ Σ' ε', store_ty_extends Σ Σ' ∧ store_wf Σ' st' ∧ performs_within e' ε' := by
+theorem effect_sound_multi_step : ∀ cfg cfg' e e' T ε st st' ctx ctx' St, cfg = (e, st, ctx) → cfg' = (e', st', ctx') → has_type nil St Public e T ε → store_wf St st → cfg -->* cfg' → ∃ St' ε', store_ty_extends St St' ∧ store_wf St' st' ∧ performs_within e' ε' := by
   simp_all [Bool.and_eq_true]
 
 /-- capability_lexical_scope (matches Coq) -/
 theorem capability_lexical_scope : ∀ G S D eff e T ε, has_type G S D (EGrant eff e) T ε → has_type G S D e T ε := by
   simp_all [Bool.and_eq_true]
 
-/-- ERequire adds the required effect to the bound -/
+-- ERequire adds the required effect to the bound
 /-- require_effect_additive (matches Coq) -/
 theorem require_effect_additive : ∀ G S D eff e T ε, has_type G S D (ERequire eff e) T (effect_join ε eff) → ∃ ε', has_type G S D e T ε' ∧ effect_leq ε' (effect_join ε eff) := by
   constructor <;> simp_all [Bool.and_eq_true]
@@ -200,17 +202,17 @@ theorem double_handle_inner_handler : ∀ e x1 h1 x2 h2 eff, performs_within (EH
 theorem program_effect_contained : ∀ e T ε, has_type nil nil Public e T ε → performs_within e ε := by
   simp_all [Bool.and_eq_true]
 
-/-- A pure closed program has no effects at all -/
+-- A pure closed program has no effects at all
 /-- pure_program_no_effects (matches Coq) -/
 theorem pure_program_no_effects : ∀ e T, has_type nil nil Public e T EffectPure → ∀ eff, performs_within e eff := by
   simp_all [Bool.and_eq_true]
 
-/-- If a program performs within eff, adding a grant doesn't change the bound -/
+-- If a program performs within eff, adding a grant doesn't change the bound
 /-- grant_idempotent_bound (matches Coq) -/
 theorem grant_idempotent_bound : ∀ eff e eff_bound, performs_within e eff_bound → performs_within (EGrant eff e) eff_bound := by
   intro h; exact h
 
-/-- Require doesn't change the performs_within bound -/
+-- Require doesn't change the performs_within bound
 /-- require_bound_transparent (matches Coq) -/
 theorem require_bound_transparent : ∀ eff e eff_bound, performs_within e eff_bound → performs_within (ERequire eff e) eff_bound := by
   intro h; exact h

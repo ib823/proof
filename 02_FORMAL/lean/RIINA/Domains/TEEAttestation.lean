@@ -471,9 +471,9 @@ def sample_kdp_mrenclave : KeyDerivationParams := mkKeyDerivationParams SP_MRENC
 /-- sample_kdp_mrsigner (matches Coq: Definition sample_kdp_mrsigner) -/
 def sample_kdp_mrsigner : KeyDerivationParams := mkKeyDerivationParams SP_MRSIGNER riina_enclave_identity 100 256
 
-/-- ============================================================================
+-- ============================================================================
     PART 1: FOUNDATIONAL DEFINITIONS AND HELPER LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -494,9 +494,9 @@ theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
 theorem negb_false_iff : ∀ b : bool, negb b = false <-> b = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     PART 9: BASIC PROPERTY THEOREMS (TEE_001 - TEE_025)
-    ============================================================================ -/
+    ============================================================================
 /-- TEE_001 (matches Coq) -/
 theorem TEE_001 : enclave_secure riina_enclave = true := by
   rfl
@@ -597,9 +597,9 @@ theorem TEE_024 : tee_secure riina_tee = true ∧ tee_remote_attestation riina_t
 theorem TEE_025_complete : ∀ t, tee_secure t = true → enc_memory_encrypted (tee_enclave t) = true ∧ att_measurement (tee_attestation t) = true ∧ att_freshness (tee_attestation t) = true ∧ tee_remote_attestation t = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     PART 10: ENCLAVE STATE MACHINE THEOREMS (TEE_026 - TEE_035)
-    ============================================================================ -/
+    ============================================================================
 /-- TEE_026_create_transition (matches Coq) -/
 theorem TEE_026_create_transition : enclave_transition ES_Uninitialized EE_Create = Some ES_Created := by
   rfl
@@ -640,19 +640,19 @@ theorem TEE_034_no_create_from_running : enclave_transition ES_Running EE_Create
 theorem TEE_035_no_enter_uninitialized : enclave_transition ES_Uninitialized EE_Enter = None := by
   rfl
 
-/-- Enclave lifecycle: can reach Running from Uninitialized -/
+-- Enclave lifecycle: can reach Running from Uninitialized
 /-- TEE_036_lifecycle_to_running (matches Coq) -/
 theorem TEE_036_lifecycle_to_running : ∀ s1 s2 s3, enclave_transition ES_Uninitialized EE_Create = Some s1 → enclave_transition s1 EE_Initialize = Some s2 → enclave_transition s2 EE_Enter = Some s3 → s3 = ES_Running := by
   rfl
 
-/-- Enclave can be suspended and resumed -/
+-- Enclave can be suspended and resumed
 /-- TEE_037_suspend_resume_cycle (matches Coq) -/
 theorem TEE_037_suspend_resume_cycle : ∀ s1 s2, enclave_transition ES_Running EE_Suspend = Some s1 → enclave_transition s1 EE_Resume = Some s2 → s2 = ES_Running := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     PART 11: ATTESTATION QUOTE VERIFICATION THEOREMS (TEE_038 - TEE_050)
-    ============================================================================ -/
+    ============================================================================
 /-- TEE_038_riina_quote_signature_valid (matches Coq) -/
 theorem TEE_038_riina_quote_signature_valid : aq_signature_valid riina_quote = true := by
   rfl
@@ -745,9 +745,9 @@ theorem TEE_059_keypolicy_unseal_always_possible : ∀ sealed current, sd_policy
 theorem TEE_060_key_size_does_not_affect_id : ∀ pol eid kn ks1 ks2, derive_seal_key_id (mkKeyDerivationParams pol eid kn ks1) = derive_seal_key_id (mkKeyDerivationParams pol eid kn ks2) := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     PART 13: MEMORY ISOLATION THEOREMS (TEE_061 - TEE_070)
-    ============================================================================ -/
+    ============================================================================
 /-- TEE_061_riina_memory_encrypted (matches Coq) -/
 theorem TEE_061_riina_memory_encrypted : mr_encrypted riina_secure_memory = true := by
   rfl
@@ -788,9 +788,9 @@ theorem TEE_069_address_in_region : ∀ base size addr, base ≤ addr → addr <
 theorem TEE_070_non_overlapping_regions_disjoint : ∀ r1 r2, mr_base r1 + mr_size r1 ≤ mr_base r2 → regions_overlap r1 r2 = false := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     PART 14: PLATFORM IDENTITY AND TRUST THEOREMS (TEE_071 - TEE_080)
-    ============================================================================ -/
+    ============================================================================
 /-- TEE_071_riina_platform_tcb_valid (matches Coq) -/
 theorem TEE_071_riina_platform_tcb_valid : pi_tcb_info_valid riina_platform = true := by
   rfl
@@ -831,9 +831,9 @@ theorem TEE_079_invalid_tcb_breaks_platform_trust : ∀ pi tc, pi_tcb_info_valid
 theorem TEE_080_incomplete_chain_breaks_platform_trust : ∀ pi tc, trust_chain_complete tc = false → platform_trusted pi tc = false := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     PART 15: COMPREHENSIVE SECURITY COMPOSITION THEOREMS (TEE_081 - TEE_095)
-    ============================================================================ -/
+    ============================================================================
 /-- TEE_081_full_attestation_implies_all_properties (matches Coq) -/
 theorem TEE_081_full_attestation_implies_all_properties : ∀ q ctx, verify_quote q ctx = true → aq_signature_valid q = true ∧ quote_measurement_valid q ctx = true ∧ quote_signer_valid q ctx = true ∧ quote_svn_valid q ctx = true ∧ quote_nonce_valid q ctx = true ∧ quote_fresh q ctx = true := by
   simp_all [Bool.and_eq_true]
@@ -891,7 +891,7 @@ theorem TEE_094_riina_complete_security : tee_secure riina_tee = true ∧ verify
   rfl
 
 /-- TEE_095_full_tee_security_decomposition (matches Coq) -/
-theorem TEE_095_full_tee_security_decomposition : ∀ t q ctx pi tc mem, tee_secure t = true → verify_quote q ctx = true → platform_trusted pi tc = true → mr_type mem = MRT_Enclave → mr_encrypted mem = true →  enc_memory_encrypted (tee_enclave t) = true ∧ att_measurement (tee_attestation t) = true ∧ aq_signature_valid q = true ∧ pi_tcb_info_valid pi = true ∧ enclave_memory_protected mem = true := by
+theorem TEE_095_full_tee_security_decomposition : ∀ t q ctx pi tc mem, tee_secure t = true → verify_quote q ctx = true → platform_trusted pi tc = true → mr_type mem = MRT_Enclave → mr_encrypted mem = true → enc_memory_encrypted (tee_enclave t) = true ∧ att_measurement (tee_attestation t) = true ∧ aq_signature_valid q = true ∧ pi_tcb_info_valid pi = true ∧ enclave_memory_protected mem = true := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

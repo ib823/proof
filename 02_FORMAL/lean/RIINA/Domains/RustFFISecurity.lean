@@ -237,7 +237,7 @@ def cve_2025_21756_scenario : FFICall := mkFFICall
   TypeMarshalUnsafe        
   true
 
-/-- Helper lemmas -/
+-- Helper lemmas
 /-- andb_true_iff_ffi (matches Coq) -/
 theorem andb_true_iff_ffi : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -254,152 +254,152 @@ theorem negb_true_iff_ffi : ∀ b : bool, negb b = true <-> b = false := by
 theorem negb_false_iff_ffi : ∀ b : bool, negb b = false <-> b = true := by
   cases ‹_› <;> simp
 
-/-- FFI_001: RIINA requires effect annotation for all FFI calls -/
+-- FFI_001: RIINA requires effect annotation for all FFI calls
 /-- FFI_001_effect_annotation_required (matches Coq) -/
 theorem FFI_001_effect_annotation_required : ffi_require_effect_annotation riina_ffi_policy = true := by
   rfl
 
-/-- FFI_002: RIINA enforces lifetime bounds at FFI boundary -/
+-- FFI_002: RIINA enforces lifetime bounds at FFI boundary
 /-- FFI_002_lifetime_bounds_enforced (matches Coq) -/
 theorem FFI_002_lifetime_bounds_enforced : lifetime_safety_active riina_ffi_policy = true := by
   rfl
 
-/-- FFI_003: RIINA requires panic wrapper for FFI -/
+-- FFI_003: RIINA requires panic wrapper for FFI
 /-- FFI_003_panic_wrapper_required (matches Coq) -/
 theorem FFI_003_panic_wrapper_required : panic_safety_active riina_ffi_policy = true := by
   rfl
 
-/-- FFI_004: RIINA requires null checking -/
+-- FFI_004: RIINA requires null checking
 /-- FFI_004_null_check_required (matches Coq) -/
 theorem FFI_004_null_check_required : null_safety_active riina_ffi_policy = true := by
   rfl
 
-/-- FFI_005: RIINA requires buffer validation -/
+-- FFI_005: RIINA requires buffer validation
 /-- FFI_005_buffer_validation_required (matches Coq) -/
 theorem FFI_005_buffer_validation_required : buffer_safety_active riina_ffi_policy = true := by
   rfl
 
-/-- FFI_006: RIINA requires type marshalling -/
+-- FFI_006: RIINA requires type marshalling
 /-- FFI_006_type_marshalling_required (matches Coq) -/
 theorem FFI_006_type_marshalling_required : type_safety_active riina_ffi_policy = true := by
   rfl
 
-/-- FFI_007: RIINA memory safety active (prevents UAF, double-free) -/
+-- FFI_007: RIINA memory safety active (prevents UAF, double-free)
 /-- FFI_007_memory_safety_active (matches Coq) -/
 theorem FFI_007_memory_safety_active : memory_safety_active riina_ffi_policy = true := by
   rfl
 
-/-- FFI_008: All FFI defenses active in RIINA -/
+-- FFI_008: All FFI defenses active in RIINA
 /-- FFI_008_all_defenses_active (matches Coq) -/
 theorem FFI_008_all_defenses_active : all_ffi_defenses riina_ffi_policy = true := by
   rfl
 
-/-- FFI_009: CVE-2025-21756 scenario blocked by RIINA policy -/
+-- FFI_009: CVE-2025-21756 scenario blocked by RIINA policy
 /-- FFI_009_cve_2025_21756_blocked (matches Coq) -/
 theorem FFI_009_cve_2025_21756_blocked : check_ffi_call riina_ffi_policy cve_2025_21756_scenario = false := by
   rfl
 
-/-- FFI_010: Safe FFI call with all checks passes -/
+-- FFI_010: Safe FFI call with all checks passes
 /-- FFI_010_safe_call_passes (matches Coq) -/
 theorem FFI_010_safe_call_passes : check_ffi_call riina_ffi_policy (mkFFICall RustToC true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) = true := by
   rfl
 
-/-- FFI_011: All defenses implies lifetime safety -/
+-- FFI_011: All defenses implies lifetime safety
 /-- FFI_011_all_implies_lifetime (matches Coq) -/
 theorem FFI_011_all_implies_lifetime : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → lifetime_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_012: All defenses implies panic safety -/
+-- FFI_012: All defenses implies panic safety
 /-- FFI_012_all_implies_panic (matches Coq) -/
 theorem FFI_012_all_implies_panic : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → panic_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_013: All defenses implies null safety -/
+-- FFI_013: All defenses implies null safety
 /-- FFI_013_all_implies_null (matches Coq) -/
 theorem FFI_013_all_implies_null : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → null_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_014: All defenses implies buffer safety -/
+-- FFI_014: All defenses implies buffer safety
 /-- FFI_014_all_implies_buffer (matches Coq) -/
 theorem FFI_014_all_implies_buffer : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → buffer_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_015: All defenses implies type safety -/
+-- FFI_015: All defenses implies type safety
 /-- FFI_015_all_implies_type (matches Coq) -/
 theorem FFI_015_all_implies_type : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → type_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_016: All defenses implies memory safety -/
+-- FFI_016: All defenses implies memory safety
 /-- FFI_016_all_implies_memory (matches Coq) -/
 theorem FFI_016_all_implies_memory : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → memory_safety_active p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_017: Memory safety requires lifetime enforcement -/
+-- FFI_017: Memory safety requires lifetime enforcement
 /-- FFI_017_memory_requires_lifetime (matches Coq) -/
 theorem FFI_017_memory_requires_lifetime : ∀ p : FFISafetyPolicy, memory_safety_active p = true → ffi_enforce_lifetime_bounds p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_018: Memory safety forbids shared mutable state -/
+-- FFI_018: Memory safety forbids shared mutable state
 /-- FFI_018_memory_forbids_shared_mut (matches Coq) -/
 theorem FFI_018_memory_forbids_shared_mut : ∀ p : FFISafetyPolicy, memory_safety_active p = true → ffi_forbid_shared_mut p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_019: Lifetime violation rejected under RIINA policy -/
+-- FFI_019: Lifetime violation rejected under RIINA policy
 /-- FFI_019_lifetime_violation_rejected (matches Coq) -/
 theorem FFI_019_lifetime_violation_rejected : ∀ bnd eff panic null buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff LifetimeViolated panic null buf typ mut) = false := by
   cases ‹_› <;> simp
 
-/-- FFI_020: Panic unsafe rejected under RIINA policy -/
+-- FFI_020: Panic unsafe rejected under RIINA policy
 /-- FFI_020_panic_unsafe_rejected (matches Coq) -/
 theorem FFI_020_panic_unsafe_rejected : ∀ bnd eff life null buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life PanicUnsafe null buf typ mut) = false := by
   cases ‹_› <;> simp
 
-/-- FFI_021: Null unchecked rejected under RIINA policy -/
+-- FFI_021: Null unchecked rejected under RIINA policy
 /-- FFI_021_null_unchecked_rejected (matches Coq) -/
 theorem FFI_021_null_unchecked_rejected : ∀ bnd eff life panic buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic NullUnchecked buf typ mut) = false := by
   cases ‹_› <;> simp
 
-/-- FFI_022: Buffer unchecked rejected under RIINA policy -/
+-- FFI_022: Buffer unchecked rejected under RIINA policy
 /-- FFI_022_buffer_unchecked_rejected (matches Coq) -/
 theorem FFI_022_buffer_unchecked_rejected : ∀ bnd eff life panic null typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null BufferUnchecked typ mut) = false := by
   cases ‹_› <;> simp
 
-/-- FFI_023: Type marshal unsafe rejected under RIINA policy -/
+-- FFI_023: Type marshal unsafe rejected under RIINA policy
 /-- FFI_023_type_unsafe_rejected (matches Coq) -/
 theorem FFI_023_type_unsafe_rejected : ∀ bnd eff life panic null buf mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null buf TypeMarshalUnsafe mut) = false := by
   cases ‹_› <;> simp
 
-/-- FFI_024: Shared mutable state rejected under RIINA policy -/
+-- FFI_024: Shared mutable state rejected under RIINA policy
 /-- FFI_024_shared_mut_rejected (matches Coq) -/
 theorem FFI_024_shared_mut_rejected : ∀ bnd eff life panic null buf typ, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null buf typ true) = false := by
   cases ‹_› <;> simp
 
-/-- FFI_025: Missing effect annotation rejected -/
+-- FFI_025: Missing effect annotation rejected
 /-- FFI_025_no_effect_rejected (matches Coq) -/
 theorem FFI_025_no_effect_rejected : ∀ bnd life panic null buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd false life panic null buf typ mut) = false := by
   simp
 
-/-- FFI_026: Bidirectional FFI respects same safety rules -/
+-- FFI_026: Bidirectional FFI respects same safety rules
 /-- FFI_026_bidirectional_safe (matches Coq) -/
 theorem FFI_026_bidirectional_safe : check_ffi_call riina_ffi_policy (mkFFICall Bidirectional true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) = true := by
   rfl
 
-/-- FFI_027: C-to-Rust call respects same safety rules -/
+-- FFI_027: C-to-Rust call respects same safety rules
 /-- FFI_027_c_to_rust_safe (matches Coq) -/
 theorem FFI_027_c_to_rust_safe : check_ffi_call riina_ffi_policy (mkFFICall CToRust true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) = true := by
   rfl
 
-/-- FFI_028: Complete FFI defense composition -/
+-- FFI_028: Complete FFI defense composition
 /-- FFI_028_complete_defense (matches Coq) -/
 theorem FFI_028_complete_defense : ∀ p : FFISafetyPolicy, all_ffi_defenses p = true → ffi_require_effect_annotation p = true ∧ ffi_enforce_lifetime_bounds p = true ∧ ffi_require_panic_wrapper p = true ∧ ffi_require_null_check p = true ∧ ffi_require_buffer_validation p = true ∧ ffi_require_type_marshalling p = true ∧ ffi_forbid_shared_mut p = true ∧ ffi_log_all_calls p = true := by
   simp_all [Bool.and_eq_true]
 
-/-- FFI_029: UAF prevention via lifetime enforcement -/
+-- FFI_029: UAF prevention via lifetime enforcement
 /-- FFI_029_uaf_prevention (matches Coq) -/
 theorem FFI_029_uaf_prevention : ∀ p : FFISafetyPolicy, memory_safety_active p = true → ∀ call : FFICall, ffi_lifetime_safety call = LifetimeViolated → check_ffi_call p call = false := by
   cases ‹_› <;> simp
 
-/-- FFI_030: Data race prevention via forbidding shared mutable state -/
+-- FFI_030: Data race prevention via forbidding shared mutable state
 /-- FFI_030_data_race_prevention (matches Coq) -/
 theorem FFI_030_data_race_prevention : ∀ p : FFISafetyPolicy, memory_safety_active p = true → ∀ call : FFICall, ffi_shared_mut call = true → check_ffi_call p call = false := by
   cases ‹_› <;> simp

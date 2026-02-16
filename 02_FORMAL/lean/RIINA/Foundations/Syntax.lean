@@ -391,7 +391,7 @@ def subst (x : ident) (v : expr) (e : expr) : expr :=
 def declass_ok (e1 e2 : expr) : Prop :=
   exists v, value v /\ e1 = EClassify v /\ e2 = EProve (EClassify v)
 
-/-- Pure is identity for effect join -/
+-- Pure is identity for effect join
 /-- effect_join_pure_l (matches Coq) -/
 theorem effect_join_pure_l : ∀ e, effect_join EffPure e = e := by
   cases ‹_› <;> simp
@@ -460,72 +460,72 @@ theorem sec_join_idem : ∀ l, sec_join l l = l := by
 theorem sec_meet_idem : ∀ l, sec_meet l l = l := by
   rfl
 
-/-- Security lattice associativity: join is associative. -/
+-- Security lattice associativity: join is associative.
 /-- sec_join_assoc (matches Coq) -/
 theorem sec_join_assoc : ∀ l1 l2 l3, sec_join l1 (sec_join l2 l3) = sec_join (sec_join l1 l2) l3 := by
   rfl
 
-/-- Security lattice associativity: meet is associative. -/
+-- Security lattice associativity: meet is associative.
 /-- sec_meet_assoc (matches Coq) -/
 theorem sec_meet_assoc : ∀ l1 l2 l3, sec_meet l1 (sec_meet l2 l3) = sec_meet (sec_meet l1 l2) l3 := by
   rfl
 
-/-- Absorption law: join(l, meet(l, m)) = l. -/
+-- Absorption law: join(l, meet(l, m)) = l.
 /-- sec_join_meet_absorb (matches Coq) -/
 theorem sec_join_meet_absorb : ∀ l1 l2, sec_join l1 (sec_meet l1 l2) = l1 := by
   rfl
 
-/-- Absorption law: meet(l, join(l, m)) = l. -/
+-- Absorption law: meet(l, join(l, m)) = l.
 /-- sec_meet_join_absorb (matches Coq) -/
 theorem sec_meet_join_absorb : ∀ l1 l2, sec_meet l1 (sec_join l1 l2) = l1 := by
   rfl
 
-/-- Distributivity: join(l1, meet(l2, l3)) = meet(join(l1, l2), join(l1, l3)). -/
+-- Distributivity: join(l1, meet(l2, l3)) = meet(join(l1, l2), join(l1, l3)).
 /-- sec_join_meet_distrib (matches Coq) -/
 theorem sec_join_meet_distrib : ∀ l1 l2 l3, sec_join l1 (sec_meet l2 l3) = sec_meet (sec_join l1 l2) (sec_join l1 l3) := by
   rfl
 
-/-- Distributivity: meet(l1, join(l2, l3)) = join(meet(l1, l2), meet(l1, l3)). -/
+-- Distributivity: meet(l1, join(l2, l3)) = join(meet(l1, l2), meet(l1, l3)).
 /-- sec_meet_join_distrib (matches Coq) -/
 theorem sec_meet_join_distrib : ∀ l1 l2 l3, sec_meet l1 (sec_join l2 l3) = sec_join (sec_meet l1 l2) (sec_meet l1 l3) := by
   rfl
 
-/-- Join is the least upper bound: if l1 <= l3 and l2 <= l3 then join(l1,l2) <= l3. -/
+-- Join is the least upper bound: if l1 <= l3 and l2 <= l3 then join(l1,l2) <= l3.
 /-- sec_join_lub (matches Coq) -/
 theorem sec_join_lub : ∀ l1 l2 l3, sec_leq l1 l3 → sec_leq l2 l3 → sec_leq (sec_join l1 l2) l3 := by
   simp_all [Bool.and_eq_true]
 
-/-- Meet is the greatest lower bound: if l3 <= l1 and l3 <= l2 then l3 <= meet(l1,l2). -/
+-- Meet is the greatest lower bound: if l3 <= l1 and l3 <= l2 then l3 <= meet(l1,l2).
 /-- sec_meet_glb (matches Coq) -/
 theorem sec_meet_glb : ∀ l1 l2 l3, sec_leq l3 l1 → sec_leq l3 l2 → sec_leq l3 (sec_meet l1 l2) := by
   simp_all [Bool.and_eq_true]
 
-/-- If l1 <= l2, then join(l1, l2) = l2. -/
+-- If l1 <= l2, then join(l1, l2) = l2.
 /-- sec_join_leq_r (matches Coq) -/
 theorem sec_join_leq_r : ∀ l1 l2, sec_leq l1 l2 → sec_join l1 l2 = l2 := by
   simp_all [Bool.and_eq_true]
 
-/-- If l1 <= l2, then meet(l1, l2) = l1. -/
+-- If l1 <= l2, then meet(l1, l2) = l1.
 /-- sec_meet_leq_l (matches Coq) -/
 theorem sec_meet_leq_l : ∀ l1 l2, sec_leq l1 l2 → sec_meet l1 l2 = l1 := by
   simp_all [Bool.and_eq_true]
 
-/-- Security level equality is decidable. -/
+-- Security level equality is decidable.
 /-- sec_level_eq_dec (matches Coq) -/
 theorem sec_level_eq_dec : ∀ (l1 l2 : security_level), {l1 = l2} + {l1 ≠ l2} := by
   rfl
 
-/-- Value predicate is decidable. -/
+-- Value predicate is decidable.
 /-- value_dec (matches Coq) -/
 theorem value_dec : ∀ e, {value e} + {~ value e} := by
   cases ‹_› <;> simp
 
-/-- Substitution with the same variable as the target replaces it. -/
+-- Substitution with the same variable as the target replaces it.
 /-- subst_same_var (matches Coq) -/
 theorem subst_same_var : ∀ x v, [x := v] (EVar x) = v := by
   rfl
 
-/-- Session duality is an involution -/
+-- Session duality is an involution
 /-- session_dual_involutive (matches Coq) -/
 theorem session_dual_involutive : ∀ s, session_dual (session_dual s) = s := by
   rfl

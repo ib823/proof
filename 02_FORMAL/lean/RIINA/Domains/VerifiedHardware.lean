@@ -732,7 +732,7 @@ theorem PHI_001_25_complete_coverage : ∀ s, reachable initial_rtl_state s → 
   rfl
 
 /-- PHI_001_26_no_hidden_functionality (matches Coq) -/
-theorem PHI_001_26_no_hidden_functionality : ∀ s instr,  For division, we only consider valid (non-zero divisor) cases  (∀ rd rs1 rs2, instr = IDiv rd rs1 rs2 → regs (rtl_to_arch s) rs2 ≠ 0) → ∃ a', isa_step instr (rtl_to_arch s) a' := by
+theorem PHI_001_26_no_hidden_functionality : ∀ s instr, (∀ rd rs1 rs2, instr = IDiv rd rs1 rs2 → regs (rtl_to_arch s) rs2 ≠ 0) → ∃ a', isa_step instr (rtl_to_arch s) a' := by
   simp_all [Bool.and_eq_true]
 
 /-- no_hidden_functionality_non_div (matches Coq) -/

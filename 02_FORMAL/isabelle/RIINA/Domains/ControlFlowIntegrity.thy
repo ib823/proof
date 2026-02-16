@@ -192,11 +192,11 @@ definition thread_accessible :: "ThreadContext \<Rightarrow> nat \<Rightarrow> b
   "thread_accessible tc accessor \<equiv> tc_owner tc = accessor /\ tc_valid tc = True"
 
 (* ctl_001_rop_impossible (matches Coq) *)
-lemma ctl_001_rop_impossible: "\<forall> (ss : ShadowStack) (attacker_addr : InstrAddr), (* Attacker cannot return to address not on shadow stack *) valid_return ss attacker_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = attacker_addr"
+lemma ctl_001_rop_impossible: "\<forall> (ss : ShadowStack) (attacker_addr : InstrAddr), valid_return ss attacker_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = attacker_addr"
   by (cases rule: ‹_›.cases; simp)
 
 (* ctl_002_jop_impossible (matches Coq) *)
-lemma ctl_002_jop_impossible: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2, In b1 trace \<longrightarrow> In b2 trace \<longrightarrow> (* If b1 transitions to b2, must be in CFG *) (\<exists> rest, trace = b1 :: b2 :: rest) \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
+lemma ctl_002_jop_impossible: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2, In b1 trace \<longrightarrow> In b2 trace \<longrightarrow> (\<exists> rest, trace = b1 :: b2 :: rest) \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
   by auto
 
 (* ctl_003_cop_impossible (matches Coq) *)
@@ -204,11 +204,11 @@ lemma ctl_003_cop_impossible: "\<forall> (vt : ValidTargets) (fp : TypedFuncPtr)
   by auto
 
 (* ctl_004_ret2libc_impossible (matches Coq) *)
-lemma ctl_004_ret2libc_impossible: "\<forall> (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr \<longrightarrow> (* Return must go to legitimate return site *) match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end"
+lemma ctl_004_ret2libc_impossible: "\<forall> (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr \<longrightarrow> match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end"
   by auto
 
 (* ctl_005_srop_impossible (matches Coq) *)
-lemma ctl_005_srop_impossible: "\<forall> (ss : ShadowStack) (sig_frame_addr : InstrAddr), (* Signal returns also validated against shadow stack *) valid_return ss sig_frame_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = sig_frame_addr"
+lemma ctl_005_srop_impossible: "\<forall> (ss : ShadowStack) (sig_frame_addr : InstrAddr), valid_return ss sig_frame_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = sig_frame_addr"
   by (cases rule: ‹_›.cases; simp)
 
 (* ctl_006_code_injection_impossible (matches Coq) *)
@@ -220,15 +220,15 @@ lemma ctl_007_code_reuse_controlled: "\<forall> (cfg : ValidCFG) (trace : Trace)
   by auto
 
 (* ctl_008_data_only_mitigated (matches Coq) *)
-lemma ctl_008_data_only_mitigated: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> (* Even with corrupted data, control flow follows CFG *) \<forall> b1 b2, In b1 trace \<longrightarrow> (\<exists> rest, trace = b1 :: b2 :: rest) \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
+lemma ctl_008_data_only_mitigated: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2, In b1 trace \<longrightarrow> (\<exists> rest, trace = b1 :: b2 :: rest) \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
   by auto
 
 (* ctl_009_cf_bending_impossible (matches Coq) *)
-lemma ctl_009_cf_bending_impossible: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> (* Every transition in trace is in CFG *) \<forall> b1 b2 rest, trace = b1 :: b2 :: rest \<longrightarrow> \<exists> e, edge_in_cfg e cfg"
+lemma ctl_009_cf_bending_impossible: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2 rest, trace = b1 :: b2 :: rest \<longrightarrow> \<exists> e, edge_in_cfg e cfg"
   by auto
 
 (* ctl_010_indirect_call_safe (matches Coq) *)
-lemma ctl_010_indirect_call_safe: "\<forall> (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp \<longrightarrow> (* Target must be in valid set for that type *) In (tfp_addr fp) (vt (tfp_type fp))"
+lemma ctl_010_indirect_call_safe: "\<forall> (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
   by auto
 
 (* ctl_011_vtable_hijack_impossible (matches Coq) *)

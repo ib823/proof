@@ -705,7 +705,7 @@ lemma CC_049_objectives_complete: "\<forall> ase : SecurityTargetAssurance, ase_
 
 (* CC_050: EAL7 Complete Certification Theorem *)
 (* CC_050_eal7_complete_certification (matches Coq) *)
-lemma CC_050_eal7_complete_certification: "\<forall> pkg : EAL7Package, \<forall> toe : TOEConfiguration, eal7_compliant pkg = True \<longrightarrow> toe_boundary_defined toe = True \<longrightarrow> toe_interfaces_specified toe = True \<longrightarrow> toe_evaluated_configuration toe = True \<longrightarrow> has_complete_coverage (toe_security_functions toe) = True \<longrightarrow> (* All EAL7 assurance components are satisfied *) adv_compliant (eal7_adv pkg) = True \<and> agd_compliant (eal7_agd pkg) = True \<and> alc_compliant (eal7_alc pkg) = True \<and> ase_compliant (eal7_ase pkg) = True \<and> ate_compliant (eal7_ate pkg) = True \<and> ava_compliant (eal7_ava pkg) = True"
+lemma CC_050_eal7_complete_certification: "\<forall> pkg : EAL7Package, \<forall> toe : TOEConfiguration, eal7_compliant pkg = True \<longrightarrow> toe_boundary_defined toe = True \<longrightarrow> toe_interfaces_specified toe = True \<longrightarrow> toe_evaluated_configuration toe = True \<longrightarrow> has_complete_coverage (toe_security_functions toe) = True \<longrightarrow> adv_compliant (eal7_adv pkg) = True \<and> agd_compliant (eal7_agd pkg) = True \<and> alc_compliant (eal7_alc pkg) = True \<and> ase_compliant (eal7_ase pkg) = True \<and> ate_compliant (eal7_ate pkg) = True \<and> ava_compliant (eal7_ava pkg) = True"
   by (cases rule: ‹_›.cases; simp)
 
 end

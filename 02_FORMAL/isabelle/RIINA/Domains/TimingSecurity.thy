@@ -417,7 +417,7 @@ lemma time_003_constant_time_property: "\<forall> (op : TimedOperation) (d : Dur
   by auto
 
 (* time_003_no_timing_leakage (matches Coq) *)
-lemma time_003_no_timing_leakage: "\<forall> (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op \<longrightarrow> (* Same operation takes same time regardless of input *) op_duration op = op_duration op"
+lemma time_003_no_timing_leakage: "\<forall> (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op \<longrightarrow> op_duration op = op_duration op"
   by simp
 
 (* time_003_ct_compare_deterministic (matches Coq) *)
@@ -533,7 +533,7 @@ lemma time_013_out_of_order_rejected: "\<forall> (policy : LockOrderPolicy) (loc
   by (cases rule: ‹_›.cases; simp)
 
 (* time_013_deadlock_free (matches Coq) *)
-lemma time_013_deadlock_free: "\<forall> (policy : LockOrderPolicy) (l1 l2 : ResourceId), (* If thread holds l1 and wants l2, must have order(l1) < order(l2) *) In l1 (held_locks policy) \<longrightarrow> time_013_can_acquire policy l2 = True \<longrightarrow> lock_order_fn policy l1 < lock_order_fn policy l2"
+lemma time_013_deadlock_free: "\<forall> (policy : LockOrderPolicy) (l1 l2 : ResourceId), In l1 (held_locks policy) \<longrightarrow> time_013_can_acquire policy l2 = True \<longrightarrow> lock_order_fn policy l1 < lock_order_fn policy l2"
   by auto
 
 (* time_014_progress_increases (matches Coq) *)
@@ -557,7 +557,7 @@ lemma time_015_starved_thread_prioritized: "\<forall> (fs : FairScheduler) (tid 
   by simp
 
 (* time_015_fairness_guaranteed (matches Coq) *)
-lemma time_015_fairness_guaranteed: "\<forall> (fs : FairScheduler) (tid : ThreadId) (now scheduled_time : Time), time_015_fair_schedule fs now = Some tid \<longrightarrow> (* After scheduling, update the scheduler *) let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs')"
+lemma time_015_fairness_guaranteed: "\<forall> (fs : FairScheduler) (tid : ThreadId) (now scheduled_time : Time), time_015_fair_schedule fs now = Some tid \<longrightarrow> let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs')"
   by simp
 
 (* time_015_update_preserves_threads (matches Coq) *)

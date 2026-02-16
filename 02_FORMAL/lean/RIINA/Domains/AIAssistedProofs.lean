@@ -145,123 +145,123 @@ def verify_exploit (ex : exploit_candidate) : Bool :=
   verified_safe ex
 
 /-- 1 (matches Coq) -/
-theorem 1 : Kernel verification is independent of proof source  Theorem kernel_independent_of_source : ∀ cand1 cand2 cert, source cand1 ≠ source cand2 → kernel_check cert = kernel_check cert := by
+theorem 1 : Kernel verification is independent of proof source Theorem kernel_independent_of_source : ∀ cand1 cand2 cert, source cand1 ≠ source cand2 → kernel_check cert = kernel_check cert := by
   rfl
 
 /-- 2 (matches Coq) -/
-theorem 2 : Valid certificates always pass kernel check  Theorem valid_cert_passes_kernel : ∀ c, cert_valid c = true → kernel_check c = true := by
+theorem 2 : Valid certificates always pass kernel check Theorem valid_cert_passes_kernel : ∀ c, cert_valid c = true → kernel_check c = true := by
   intro h; exact h
 
 /-- 3 (matches Coq) -/
-theorem 3 : Hallucinated proofs never cross trust boundary  Theorem hallucinated_never_trusted : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = true → reject_hallucinated cand cert = false := by
+theorem 3 : Hallucinated proofs never cross trust boundary Theorem hallucinated_never_trusted : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = true → reject_hallucinated cand cert = false := by
   simp
 
 /-- 4 (matches Coq) -/
-theorem 4 : Kernel acceptance implies certificate validity  Theorem kernel_accept_implies_valid : ∀ cert, kernel_check cert = true → cert_valid cert = true := by
+theorem 4 : Kernel acceptance implies certificate validity Theorem kernel_accept_implies_valid : ∀ cert, kernel_check cert = true → cert_valid cert = true := by
   intro h; exact h
 
 /-- 5 (matches Coq) -/
-theorem 5 : Certificate validity is deterministic  Theorem cert_valid_deterministic : ∀ c r1 r2, cert_valid c = r1 → cert_valid c = r2 → r1 = r2 := by
+theorem 5 : Certificate validity is deterministic Theorem cert_valid_deterministic : ∀ c r1 r2, cert_valid c = r1 → cert_valid c = r2 → r1 = r2 := by
   rfl
 
 /-- 6 (matches Coq) -/
-theorem 6 : Reflexivity certificates always valid  Theorem refl_always_valid : cert_valid CertRefl = true := by
+theorem 6 : Reflexivity certificates always valid Theorem refl_always_valid : cert_valid CertRefl = true := by
   rfl
 
 /-- 7 (matches Coq) -/
-theorem 7 : Elimination preserves validity  Theorem elim_preserves_validity : ∀ c1 c2, cert_valid c1 = true → cert_valid c2 = true → cert_valid (CertElim c1 c2) = true := by
+theorem 7 : Elimination preserves validity Theorem elim_preserves_validity : ∀ c1 c2, cert_valid c1 = true → cert_valid c2 = true → cert_valid (CertElim c1 c2) = true := by
   rfl
 
 /-- 8 (matches Coq) -/
-theorem 8 : Introduction preserves validity  Theorem intro_preserves_validity : ∀ c, cert_valid c = true → cert_valid (CertIntro c) = true := by
+theorem 8 : Introduction preserves validity Theorem intro_preserves_validity : ∀ c, cert_valid c = true → cert_valid (CertIntro c) = true := by
   intro h; exact h
 
 /-- 9 (matches Coq) -/
-theorem 9 : AI confidence score does not affect kernel check  Theorem confidence_irrelevant_to_kernel : ∀ cand1 cand2 cert, confidence cand1 ≠ confidence cand2 → kernel_check cert = kernel_check cert := by
+theorem 9 : AI confidence score does not affect kernel check Theorem confidence_irrelevant_to_kernel : ∀ cand1 cand2 cert, confidence cand1 ≠ confidence cand2 → kernel_check cert = kernel_check cert := by
   rfl
 
 /-- 10 (matches Coq) -/
-theorem 10 : Untrusted AI proof does not imply invalid certificate  Theorem untrusted_not_invalid : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand → cert_valid cert = true → kernel_check cert = true := by
+theorem 10 : Untrusted AI proof does not imply invalid certificate Theorem untrusted_not_invalid : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand → cert_valid cert = true → kernel_check cert = true := by
   intro h; exact h
 
 /-- 11 (matches Coq) -/
-theorem 11 : Kernel result is deterministic  Theorem kernel_deterministic : ∀ cand cert r1 r2, run_kernel cand cert = r1 → run_kernel cand cert = r2 → r1 = r2 := by
+theorem 11 : Kernel result is deterministic Theorem kernel_deterministic : ∀ cand cert r1 r2, run_kernel cand cert = r1 → run_kernel cand cert = r2 → r1 = r2 := by
   rfl
 
 /-- 12 (matches Coq) -/
-theorem 12 : Non-hallucinated proofs may cross trust boundary  Theorem non_hallucinated_may_cross : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = false → cert_valid cert = true → crosses_trust_boundary cand cert := by
+theorem 12 : Non-hallucinated proofs may cross trust boundary Theorem non_hallucinated_may_cross : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = false → cert_valid cert = true → crosses_trust_boundary cand cert := by
   intro h; exact h
 
 /-- 13 (matches Coq) -/
-theorem 13 : Axiom certificates always valid  Theorem axiom_always_valid : ∀ n, cert_valid (CertAxiom n) = true := by
+theorem 13 : Axiom certificates always valid Theorem axiom_always_valid : ∀ n, cert_valid (CertAxiom n) = true := by
   rfl
 
 /-- 14 (matches Coq) -/
-theorem 14 : Exploit verification is independent of source  Theorem exploit_verify_source_independent : ∀ ex1 ex2, exploit_source ex1 ≠ exploit_source ex2 → verify_exploit ex1 = verified_safe ex1 := by
+theorem 14 : Exploit verification is independent of source Theorem exploit_verify_source_independent : ∀ ex1 ex2, exploit_source ex1 ≠ exploit_source ex2 → verify_exploit ex1 = verified_safe ex1 := by
   rfl
 
 /-- 15 (matches Coq) -/
-theorem 15 : Invalid certificate rejected regardless of AI confidence  Theorem invalid_cert_rejected : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), cert_valid cert = false → kernel_check cert = false := by
+theorem 15 : Invalid certificate rejected regardless of AI confidence Theorem invalid_cert_rejected : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), cert_valid cert = false → kernel_check cert = false := by
   intro h; exact h
 
 /-- 16 (matches Coq) -/
-theorem 16 : Human proofs are not untrusted AI proofs  Theorem human_not_untrusted_ai : ∀ (cand : ai_proof_candidate), source cand = HumanProver → ~ untrusted_ai_proof cand := by
+theorem 16 : Human proofs are not untrusted AI proofs Theorem human_not_untrusted_ai : ∀ (cand : ai_proof_candidate), source cand = HumanProver → ~ untrusted_ai_proof cand := by
   intro h; exact h
 
 /-- 17 (matches Coq) -/
-theorem 17 : AI_LLM proofs are untrusted  Theorem llm_is_untrusted : ∀ model cand, source cand = AI_LLM model → untrusted_ai_proof cand := by
+theorem 17 : AI_LLM proofs are untrusted Theorem llm_is_untrusted : ∀ model cand, source cand = AI_LLM model → untrusted_ai_proof cand := by
   intro h; exact h
 
 /-- 18 (matches Coq) -/
-theorem 18 : AutoVerus proofs are untrusted  Theorem autoverus_is_untrusted : ∀ (cand : ai_proof_candidate), source cand = AI_AutoVerus → untrusted_ai_proof cand := by
+theorem 18 : AutoVerus proofs are untrusted Theorem autoverus_is_untrusted : ∀ (cand : ai_proof_candidate), source cand = AI_AutoVerus → untrusted_ai_proof cand := by
   intro h; exact h
 
 /-- 19 (matches Coq) -/
-theorem 19 : APOLLO proofs are untrusted  Theorem apollo_is_untrusted : ∀ (cand : ai_proof_candidate), source cand = AI_APOLLO → untrusted_ai_proof cand := by
+theorem 19 : APOLLO proofs are untrusted Theorem apollo_is_untrusted : ∀ (cand : ai_proof_candidate), source cand = AI_APOLLO → untrusted_ai_proof cand := by
   intro h; exact h
 
 /-- 20 (matches Coq) -/
-theorem 20 : Hybrid proofs are untrusted (conservative)  Theorem hybrid_is_untrusted : ∀ (cand : ai_proof_candidate), source cand = HybridHumanAI → untrusted_ai_proof cand := by
+theorem 20 : Hybrid proofs are untrusted (conservative) Theorem hybrid_is_untrusted : ∀ (cand : ai_proof_candidate), source cand = HybridHumanAI → untrusted_ai_proof cand := by
   intro h; exact h
 
 /-- 21 (matches Coq) -/
-theorem 21 : Kernel acceptance commutes with certificate structure  Theorem kernel_check_commutes_intro : ∀ c, kernel_check (CertIntro c) = kernel_check c := by
+theorem 21 : Kernel acceptance commutes with certificate structure Theorem kernel_check_commutes_intro : ∀ c, kernel_check (CertIntro c) = kernel_check c := by
   simp
 
 /-- 22 (matches Coq) -/
-theorem 22 : Reject hallucinated is negation of is_hallucinated  Theorem reject_hallucinated_negation : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), reject_hallucinated cand cert = negb (hallucinated cand) := by
+theorem 22 : Reject hallucinated is negation of is_hallucinated Theorem reject_hallucinated_negation : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), reject_hallucinated cand cert = negb (hallucinated cand) := by
   rfl
 
 /-- 23 (matches Coq) -/
-theorem 23 : Certificate composition — two valid certs produce valid elimination  Theorem cert_composition_elim : ∀ c1 c2, cert_valid c1 = true → cert_valid c2 = true → cert_valid (CertElim c1 c2) = true := by
+theorem 23 : Certificate composition — two valid certs produce valid elimination Theorem cert_composition_elim : ∀ c1 c2, cert_valid c1 = true → cert_valid c2 = true → cert_valid (CertElim c1 c2) = true := by
   rfl
 
 /-- 24 (matches Coq) -/
-theorem 24 : Kernel check is monotone (validity preserved)  Theorem kernel_check_monotone : ∀ c, cert_valid c = true → kernel_check c = true := by
+theorem 24 : Kernel check is monotone (validity preserved) Theorem kernel_check_monotone : ∀ c, cert_valid c = true → kernel_check c = true := by
   intro h; exact h
 
 /-- 25 (matches Coq) -/
-theorem 25 : Trust boundary is one-way — untrusted cannot become trusted without kernel  Theorem trust_boundary_one_way : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand → trusted_certificate cert → kernel_check cert = true := by
+theorem 25 : Trust boundary is one-way — untrusted cannot become trusted without kernel Theorem trust_boundary_one_way : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), untrusted_ai_proof cand → trusted_certificate cert → kernel_check cert = true := by
   intro h; exact h
 
 /-- 26 (matches Coq) -/
-theorem 26 : Exploit safety independent of target vulnerability  Theorem exploit_safety_independent : ∀ ex1 ex2, target_vulnerability ex1 ≠ target_vulnerability ex2 → verify_exploit ex1 = verified_safe ex1 := by
+theorem 26 : Exploit safety independent of target vulnerability Theorem exploit_safety_independent : ∀ ex1 ex2, target_vulnerability ex1 ≠ target_vulnerability ex2 → verify_exploit ex1 = verified_safe ex1 := by
   rfl
 
 /-- 27 (matches Coq) -/
-theorem 27 : Non-hallucinated rejection always succeeds  Theorem non_hallucinated_rejection_succeeds : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = false → reject_hallucinated cand cert = true := by
+theorem 27 : Non-hallucinated rejection always succeeds Theorem non_hallucinated_rejection_succeeds : ∀ (cand : ai_proof_candidate) (cert : proof_certificate), hallucinated cand = false → reject_hallucinated cand cert = true := by
   simp
 
 /-- 28 (matches Coq) -/
-theorem 28 : Kernel rejection means invalid certificate  Theorem kernel_reject_means_invalid : ∀ cert, kernel_check cert = false → cert_valid cert = false := by
+theorem 28 : Kernel rejection means invalid certificate Theorem kernel_reject_means_invalid : ∀ cert, kernel_check cert = false → cert_valid cert = false := by
   intro h; exact h
 
 /-- 29 (matches Coq) -/
-theorem 29 : Certificate validity is compositional (intro case)  Theorem cert_valid_compositional_intro : ∀ c, cert_valid (CertIntro c) = cert_valid c := by
+theorem 29 : Certificate validity is compositional (intro case) Theorem cert_valid_compositional_intro : ∀ c, cert_valid (CertIntro c) = cert_valid c := by
   rfl
 
 /-- 30 (matches Coq) -/
-theorem 30 : All AI sources are untrusted except human  Theorem all_ai_untrusted : ∀ (cand : ai_proof_candidate), source cand ≠ HumanProver → untrusted_ai_proof cand := by
+theorem 30 : All AI sources are untrusted except human Theorem all_ai_untrusted : ∀ (cand : ai_proof_candidate), source cand ≠ HumanProver → untrusted_ai_proof cand := by
   simp_all [Bool.and_eq_true]
 
 end RIINA

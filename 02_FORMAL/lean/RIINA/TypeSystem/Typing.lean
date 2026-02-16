@@ -53,7 +53,7 @@ def eff_join (e1 e2 : effect) : effect :=
 
 /-! ## Typing Judgment
 
-has_type Γ Σ Δ e T ε means: under environment Γ, store typing Σ,
+has_type Γ St Δ e T ε means: under environment Γ, store typing St,
 and security context Δ, expression e has type T with effect ε.
 -/
 

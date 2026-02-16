@@ -119,31 +119,31 @@ fun redundancy_factor :: "ClassificationLevel \<Rightarrow> nat" where
 (* Section A01 - NIST 800-171 Compliance
     Reference: IND_A_MILITARY.md Section 3.1 *)
 (* nist_800_171_access_control (matches Coq) *)
-lemma nist_800_171_access_control: "\<forall> (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = True \<longrightarrow> (* Access control verification *) True"
+lemma nist_800_171_access_control: "\<forall> (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = True \<longrightarrow> True"
   by simp
 
 (* Section A02 - CMMC Level 3 Requirements
     Reference: IND_A_MILITARY.md Section 3.2 *)
 (* cmmc_level3_compliance (matches Coq) *)
-lemma cmmc_level3_compliance: "\<forall> policy, classification policy = CUI \<longrightarrow> (* CMMC Level 3 controls satisfied *) True"
+lemma cmmc_level3_compliance: "\<forall> policy, classification policy = CUI \<longrightarrow> True"
   by simp
 
 (* Section A03 - ITAR Export Control
     Reference: IND_A_MILITARY.md Section 3.3 *)
 (* itar_export_control (matches Coq) *)
-lemma itar_export_control: "\<forall> (data_class : ClassificationLevel) (destination : nat), (* Export control verification *) True"
+lemma itar_export_control: "\<forall> (data_class : ClassificationLevel) (destination : nat), True"
   by simp
 
 (* Section A04 - MIL-STD-882 Safety
     Reference: IND_A_MILITARY.md Section 3.4 *)
 (* mil_std_882_safety (matches Coq) *)
-lemma mil_std_882_safety: "\<forall> (system : nat) (hazard_level : nat), (* Safety analysis *) True"
+lemma mil_std_882_safety: "\<forall> (system : nat) (hazard_level : nat), True"
   by simp
 
 (* Section A05 - RMF Authorization
     Reference: IND_A_MILITARY.md Section 3.5 *)
 (* rmf_authorization (matches Coq) *)
-lemma rmf_authorization: "\<forall> (system : nat) (risk_level : nat), (* Risk management framework authorization *) True"
+lemma rmf_authorization: "\<forall> (system : nat) (risk_level : nat), True"
   by simp
 
 (* Classification lattice reflexivity *)
@@ -158,7 +158,7 @@ lemma class_le_trans: "\<forall> c1 c2 c3, class_le c1 c2 = True \<longrightarro
 
 (* No read up - Bell-LaPadula simple security *)
 (* no_read_up (matches Coq) *)
-lemma no_read_up: "\<forall> subject_clearance object_classification, class_le object_classification subject_clearance = True \<longrightarrow> (* Subject can read object *) True"
+lemma no_read_up: "\<forall> subject_clearance object_classification, class_le object_classification subject_clearance = True \<longrightarrow> True"
   by simp
 
 (* class_le agrees with nat ordering *)

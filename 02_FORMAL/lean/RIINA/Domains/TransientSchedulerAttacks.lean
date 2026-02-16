@@ -188,132 +188,132 @@ def constant_time_codegen (footprints : List SchedulerFootprint) : Bool :=
   | [] => true
   | f :: rest => forallb (scheduler_indistinguishable f) rest
 
-/-- Helper lemma -/
+-- Helper lemma
 /-- andb_true_iff_local (matches Coq) -/
 theorem andb_true_iff_local : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- TSA_001: RIINA SQ defense active -/
+-- TSA_001: RIINA SQ defense active
 /-- TSA_001_sq_defense (matches Coq) -/
 theorem TSA_001_sq_defense : sq_defense_active riina_tsa_config = true := by
   rfl
 
-/-- TSA_002: RIINA L1 defense active -/
+-- TSA_002: RIINA L1 defense active
 /-- TSA_002_l1_defense (matches Coq) -/
 theorem TSA_002_l1_defense : l1_defense_active riina_tsa_config = true := by
   rfl
 
-/-- TSA_003: RIINA TLB/IPI defense active -/
+-- TSA_003: RIINA TLB/IPI defense active
 /-- TSA_003_tlb_ipi_defense (matches Coq) -/
 theorem TSA_003_tlb_ipi_defense : tlb_ipi_defense_active riina_tsa_config = true := by
   rfl
 
-/-- TSA_004: RIINA frequency defense active -/
+-- TSA_004: RIINA frequency defense active
 /-- TSA_004_freq_defense (matches Coq) -/
 theorem TSA_004_freq_defense : freq_defense_active riina_tsa_config = true := by
   rfl
 
-/-- TSA_005: All RIINA TSA defenses active -/
+-- TSA_005: All RIINA TSA defenses active
 /-- TSA_005_all_defenses (matches Coq) -/
 theorem TSA_005_all_defenses : all_tsa_defenses riina_tsa_config = true := by
   rfl
 
-/-- TSA_006: Constant-time scheduling required by SQ defense -/
+-- TSA_006: Constant-time scheduling required by SQ defense
 /-- TSA_006_sq_requires_ct (matches Coq) -/
 theorem TSA_006_sq_requires_ct : ∀ c : TSADefenseConfig, sq_defense_active c = true → tsa_constant_time_scheduling c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_007: Queue isolation required by SQ defense -/
+-- TSA_007: Queue isolation required by SQ defense
 /-- TSA_007_sq_requires_isolation (matches Coq) -/
 theorem TSA_007_sq_requires_isolation : ∀ c : TSADefenseConfig, sq_defense_active c = true → tsa_scheduler_queue_isolation c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_008: Timer noise required by SQ defense -/
+-- TSA_008: Timer noise required by SQ defense
 /-- TSA_008_sq_requires_noise (matches Coq) -/
 theorem TSA_008_sq_requires_noise : ∀ c : TSADefenseConfig, sq_defense_active c = true → tsa_timer_noise_injection c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_009: Cache partitioning required by L1 defense -/
+-- TSA_009: Cache partitioning required by L1 defense
 /-- TSA_009_l1_requires_partition (matches Coq) -/
 theorem TSA_009_l1_requires_partition : ∀ c : TSADefenseConfig, l1_defense_active c = true → tsa_cache_partitioning c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_010: Preemption hardening required by L1 defense -/
+-- TSA_010: Preemption hardening required by L1 defense
 /-- TSA_010_l1_requires_preemption (matches Coq) -/
 theorem TSA_010_l1_requires_preemption : ∀ c : TSADefenseConfig, l1_defense_active c = true → tsa_preemption_hardening c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_011: TLB isolation required by TLB defense -/
+-- TSA_011: TLB isolation required by TLB defense
 /-- TSA_011_tlb_requires_isolation (matches Coq) -/
 theorem TSA_011_tlb_requires_isolation : ∀ c : TSADefenseConfig, tlb_ipi_defense_active c = true → tsa_tlb_isolation c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_012: IPI constant-time required by TLB defense -/
+-- TSA_012: IPI constant-time required by TLB defense
 /-- TSA_012_tlb_requires_ipi (matches Coq) -/
 theorem TSA_012_tlb_requires_ipi : ∀ c : TSADefenseConfig, tlb_ipi_defense_active c = true → tsa_ipi_constant_time c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_013: All defenses imply SQ defense -/
+-- TSA_013: All defenses imply SQ defense
 /-- TSA_013_all_implies_sq (matches Coq) -/
 theorem TSA_013_all_implies_sq : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → sq_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_014: All defenses imply L1 defense -/
+-- TSA_014: All defenses imply L1 defense
 /-- TSA_014_all_implies_l1 (matches Coq) -/
 theorem TSA_014_all_implies_l1 : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → l1_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_015: All defenses imply TLB/IPI defense -/
+-- TSA_015: All defenses imply TLB/IPI defense
 /-- TSA_015_all_implies_tlb (matches Coq) -/
 theorem TSA_015_all_implies_tlb : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → tlb_ipi_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_016: All defenses imply frequency defense -/
+-- TSA_016: All defenses imply frequency defense
 /-- TSA_016_all_implies_freq (matches Coq) -/
 theorem TSA_016_all_implies_freq : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → freq_defense_active c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_017: Single-element footprint list is constant-time -/
+-- TSA_017: Single-element footprint list is constant-time
 /-- TSA_017_single_footprint_ct (matches Coq) -/
 theorem TSA_017_single_footprint_ct : ∀ f : SchedulerFootprint, constant_time_codegen [f] = true := by
   rfl
 
-/-- TSA_018: Empty footprint list is constant-time -/
+-- TSA_018: Empty footprint list is constant-time
 /-- TSA_018_empty_footprint_ct (matches Coq) -/
 theorem TSA_018_empty_footprint_ct : constant_time_codegen [] = true := by
   rfl
 
-/-- TSA_019: Identical footprints are scheduler-indistinguishable -/
+-- TSA_019: Identical footprints are scheduler-indistinguishable
 /-- TSA_019_identical_indistinguishable (matches Coq) -/
 theorem TSA_019_identical_indistinguishable : ∀ f : SchedulerFootprint, scheduler_indistinguishable f f = true := by
   rfl
 
-/-- TSA_020: Identical pair is constant-time -/
+-- TSA_020: Identical pair is constant-time
 /-- TSA_020_identical_pair_ct (matches Coq) -/
 theorem TSA_020_identical_pair_ct : ∀ f : SchedulerFootprint, constant_time_codegen [f; f] = true := by
   rfl
 
-/-- TSA_021: Identical triple is constant-time -/
+-- TSA_021: Identical triple is constant-time
 /-- TSA_021_identical_triple_ct (matches Coq) -/
 theorem TSA_021_identical_triple_ct : ∀ f : SchedulerFootprint, constant_time_codegen [f; f; f] = true := by
   rfl
 
-/-- TSA_022: Full defense implies constant-time scheduling -/
+-- TSA_022: Full defense implies constant-time scheduling
 /-- TSA_022_full_implies_ct_sched (matches Coq) -/
 theorem TSA_022_full_implies_ct_sched : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → tsa_constant_time_scheduling c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_023: Full defense implies cache partitioning -/
+-- TSA_023: Full defense implies cache partitioning
 /-- TSA_023_full_implies_partition (matches Coq) -/
 theorem TSA_023_full_implies_partition : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → tsa_cache_partitioning c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_024: Full defense implies TLB isolation -/
+-- TSA_024: Full defense implies TLB isolation
 /-- TSA_024_full_implies_tlb_iso (matches Coq) -/
 theorem TSA_024_full_implies_tlb_iso : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → tsa_tlb_isolation c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- TSA_025: Complete TSA defense for RIINA -/
+-- TSA_025: Complete TSA defense for RIINA
 /-- TSA_025_complete_defense (matches Coq) -/
 theorem TSA_025_complete_defense : ∀ c : TSADefenseConfig, all_tsa_defenses c = true → tsa_constant_time_scheduling c = true ∧ tsa_cache_partitioning c = true ∧ tsa_preemption_hardening c = true ∧ tsa_tlb_isolation c = true ∧ tsa_ipi_constant_time c = true ∧ tsa_freq_pinning c = true ∧ tsa_scheduler_queue_isolation c = true ∧ tsa_timer_noise_injection c = true := by
   simp_all [Bool.and_eq_true]

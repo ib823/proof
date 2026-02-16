@@ -604,7 +604,7 @@ theorem J_001_11 : ∀ (scope : CapabilityScope) (name : string) (req_level : na
   simp_all [Bool.and_eq_true]
 
 /-- J_001_12 (matches Coq) -/
-theorem J_001_12 : ∀ (abs_ty : AbstractType), abs_ty.(abs_exposed) = false → ∀ (observer_repr : option nat),  (abs_ty.(abs_repr) = observer_repr ∨ abs_ty.(abs_repr) ≠ observer_repr) := by
+theorem J_001_12 : ∀ (abs_ty : AbstractType), abs_ty.(abs_exposed) = false → ∀ (observer_repr : option nat), (abs_ty.(abs_repr) = observer_repr ∨ abs_ty.(abs_repr) ≠ observer_repr) := by
   intro h; exact h
 
 /-- J_001_13 (matches Coq) -/

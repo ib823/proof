@@ -247,11 +247,11 @@ def thread_accessible (tc : ThreadContext) (accessor : Nat) : Prop :=
   tc_owner tc = accessor /\ tc_valid tc = true
 
 /-- ctl_001_rop_impossible (matches Coq) -/
-theorem ctl_001_rop_impossible : ∀ (ss : ShadowStack) (attacker_addr : InstrAddr),  valid_return ss attacker_addr → ∃ e, In e ss ∧ se_return_addr e = attacker_addr := by
+theorem ctl_001_rop_impossible : ∀ (ss : ShadowStack) (attacker_addr : InstrAddr), valid_return ss attacker_addr → ∃ e, In e ss ∧ se_return_addr e = attacker_addr := by
   cases ‹_› <;> simp
 
 /-- ctl_002_jop_impossible (matches Coq) -/
-theorem ctl_002_jop_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → ∀ b1 b2, In b1 trace → In b2 trace →  (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
+theorem ctl_002_jop_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → ∀ b1 b2, In b1 trace → In b2 trace → (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
   intro h; exact h
 
 /-- ctl_003_cop_impossible (matches Coq) -/
@@ -259,11 +259,11 @@ theorem ctl_003_cop_impossible : ∀ (vt : ValidTargets) (fp : TypedFuncPtr), va
   intro h; exact h
 
 /-- ctl_004_ret2libc_impossible (matches Coq) -/
-theorem ctl_004_ret2libc_impossible : ∀ (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr →  match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end := by
+theorem ctl_004_ret2libc_impossible : ∀ (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr → match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end := by
   intro h; exact h
 
 /-- ctl_005_srop_impossible (matches Coq) -/
-theorem ctl_005_srop_impossible : ∀ (ss : ShadowStack) (sig_frame_addr : InstrAddr),  valid_return ss sig_frame_addr → ∃ e, In e ss ∧ se_return_addr e = sig_frame_addr := by
+theorem ctl_005_srop_impossible : ∀ (ss : ShadowStack) (sig_frame_addr : InstrAddr), valid_return ss sig_frame_addr → ∃ e, In e ss ∧ se_return_addr e = sig_frame_addr := by
   cases ‹_› <;> simp
 
 /-- ctl_006_code_injection_impossible (matches Coq) -/
@@ -275,15 +275,15 @@ theorem ctl_007_code_reuse_controlled : ∀ (cfg : ValidCFG) (trace : Trace), va
   intro h; exact h
 
 /-- ctl_008_data_only_mitigated (matches Coq) -/
-theorem ctl_008_data_only_mitigated : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace →  ∀ b1 b2, In b1 trace → (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
+theorem ctl_008_data_only_mitigated : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → ∀ b1 b2, In b1 trace → (∃ rest, trace = b1 :: b2 :: rest) → ∃ e, edge_in_cfg e cfg ∧ edge_src e = b1 ∧ edge_dst e = b2 := by
   intro h; exact h
 
 /-- ctl_009_cf_bending_impossible (matches Coq) -/
-theorem ctl_009_cf_bending_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace →  ∀ b1 b2 rest, trace = b1 :: b2 :: rest → ∃ e, edge_in_cfg e cfg := by
+theorem ctl_009_cf_bending_impossible : ∀ (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace → ∀ b1 b2 rest, trace = b1 :: b2 :: rest → ∃ e, edge_in_cfg e cfg := by
   intro h; exact h
 
 /-- ctl_010_indirect_call_safe (matches Coq) -/
-theorem ctl_010_indirect_call_safe : ∀ (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp →  In (tfp_addr fp) (vt (tfp_type fp)) := by
+theorem ctl_010_indirect_call_safe : ∀ (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp → In (tfp_addr fp) (vt (tfp_type fp)) := by
   intro h; exact h
 
 /-- ctl_011_vtable_hijack_impossible (matches Coq) -/

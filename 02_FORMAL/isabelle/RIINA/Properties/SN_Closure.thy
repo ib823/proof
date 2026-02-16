@@ -132,7 +132,7 @@ lemma SN_app_aux: "\<forall> cfg e2, SN cfg \<longrightarrow> (\<forall> st ctx,
   by auto
 
 (* SN_app (matches Coq) *)
-lemma SN_app: "\<forall> e1 e2 st ctx, (\<forall> st' ctx', SN (e1, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> (* Beta reduction premise: for any substitution of a value into a body, result is SN *) (\<forall> x body v st' ctx', value v \<longrightarrow> SN ([x := v] body, st', ctx')) \<longrightarrow> SN (EApp e1 e2, st, ctx)"
+lemma SN_app: "\<forall> e1 e2 st ctx, (\<forall> st' ctx', SN (e1, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> (\<forall> x body v st' ctx', value v \<longrightarrow> SN ([x := v] body, st', ctx')) \<longrightarrow> SN (EApp e1 e2, st, ctx)"
   by auto
 
 (* Helper: SN_app for values *)

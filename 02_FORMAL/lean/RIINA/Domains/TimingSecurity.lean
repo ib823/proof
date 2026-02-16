@@ -507,7 +507,7 @@ theorem time_003_constant_time_property : ∀ (op : TimedOperation) (d : Duratio
   intro h; exact h
 
 /-- time_003_no_timing_leakage (matches Coq) -/
-theorem time_003_no_timing_leakage : ∀ (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op →  op_duration op = op_duration op := by
+theorem time_003_no_timing_leakage : ∀ (op : TimedOperation) (input1 input2 : nat), time_003_is_constant_time op → op_duration op = op_duration op := by
   rfl
 
 /-- time_003_ct_compare_deterministic (matches Coq) -/
@@ -623,7 +623,7 @@ theorem time_013_out_of_order_rejected : ∀ (policy : LockOrderPolicy) (lock_id
   cases ‹_› <;> simp <;> omega
 
 /-- time_013_deadlock_free (matches Coq) -/
-theorem time_013_deadlock_free : ∀ (policy : LockOrderPolicy) (l1 l2 : ResourceId),  If thread holds l1 and wants l2, must have order(l1) < order(l2)  In l1 (held_locks policy) → time_013_can_acquire policy l2 = true → lock_order_fn policy l1 < lock_order_fn policy l2 := by
+theorem time_013_deadlock_free : ∀ (policy : LockOrderPolicy) (l1 l2 : ResourceId), In l1 (held_locks policy) → time_013_can_acquire policy l2 = true → lock_order_fn policy l1 < lock_order_fn policy l2 := by
   simp_all [Bool.and_eq_true]
 
 /-- time_014_progress_increases (matches Coq) -/
@@ -647,7 +647,7 @@ theorem time_015_starved_thread_prioritized : ∀ (fs : FairScheduler) (tid : Th
   rfl
 
 /-- time_015_fairness_guaranteed (matches Coq) -/
-theorem time_015_fairness_guaranteed : ∀ (fs : FairScheduler) (tid : ThreadId) (now scheduled_time : Time), time_015_fair_schedule fs now = Some tid →  let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs') := by
+theorem time_015_fairness_guaranteed : ∀ (fs : FairScheduler) (tid : ThreadId) (now scheduled_time : Time), time_015_fair_schedule fs now = Some tid → let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs') := by
   simp
 
 /-- time_015_update_preserves_threads (matches Coq) -/

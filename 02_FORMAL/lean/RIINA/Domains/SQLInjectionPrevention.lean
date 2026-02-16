@@ -138,77 +138,77 @@ def riina_sql_config : SQLSecurityConfig := mkSQLConfig
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- SQLI_001: Untainted is Safe -/
+-- SQLI_001: Untainted is Safe
 /-- SQLI_001_untainted_safe (matches Coq) -/
 theorem SQLI_001_untainted_safe : taint_safe Untainted = true := by
   rfl
 
-/-- SQLI_002: Sanitized is Safe -/
+-- SQLI_002: Sanitized is Safe
 /-- SQLI_002_sanitized_safe (matches Coq) -/
 theorem SQLI_002_sanitized_safe : taint_safe Sanitized = true := by
   rfl
 
-/-- SQLI_003: UserInput is Unsafe -/
+-- SQLI_003: UserInput is Unsafe
 /-- SQLI_003_userinput_unsafe (matches Coq) -/
 theorem SQLI_003_userinput_unsafe : taint_safe UserInput = false := by
   rfl
 
-/-- SQLI_004: Parameterized is Safe -/
+-- SQLI_004: Parameterized is Safe
 /-- SQLI_004_parameterized_safe (matches Coq) -/
 theorem SQLI_004_parameterized_safe : method_safe Parameterized = true := by
   rfl
 
-/-- SQLI_005: ORM is Safe -/
+-- SQLI_005: ORM is Safe
 /-- SQLI_005_orm_safe (matches Coq) -/
 theorem SQLI_005_orm_safe : method_safe ORM = true := by
   rfl
 
-/-- SQLI_006: StringConcat is Unsafe -/
+-- SQLI_006: StringConcat is Unsafe
 /-- SQLI_006_concat_unsafe (matches Coq) -/
 theorem SQLI_006_concat_unsafe : method_safe StringConcat = false := by
   rfl
 
-/-- SQLI_007: RIINA SQL Protected -/
+-- SQLI_007: RIINA SQL Protected
 /-- SQLI_007_riina_protected (matches Coq) -/
 theorem SQLI_007_riina_protected : sql_injection_protected riina_sql_config = true := by
   rfl
 
-/-- SQLI_008: Parameterized Only Required -/
+-- SQLI_008: Parameterized Only Required
 /-- SQLI_008_parameterized_required (matches Coq) -/
 theorem SQLI_008_parameterized_required : ∀ c : SQLSecurityConfig, sql_injection_protected c = true → sql_parameterized_only c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SQLI_009: No String Concat Required -/
+-- SQLI_009: No String Concat Required
 /-- SQLI_009_no_concat_required (matches Coq) -/
 theorem SQLI_009_no_concat_required : ∀ c : SQLSecurityConfig, sql_injection_protected c = true → sql_no_string_concat c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SQLI_010: Input Sanitization Required -/
+-- SQLI_010: Input Sanitization Required
 /-- SQLI_010_sanitization_required (matches Coq) -/
 theorem SQLI_010_sanitization_required : ∀ c : SQLSecurityConfig, sql_injection_protected c = true → sql_input_sanitized c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SQLI_011: Whitelist Validation Required -/
+-- SQLI_011: Whitelist Validation Required
 /-- SQLI_011_whitelist_required (matches Coq) -/
 theorem SQLI_011_whitelist_required : ∀ c : SQLSecurityConfig, sql_injection_protected c = true → sql_whitelist_validation c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SQLI_012: Escape Special Chars Required -/
+-- SQLI_012: Escape Special Chars Required
 /-- SQLI_012_escape_required (matches Coq) -/
 theorem SQLI_012_escape_required : ∀ c : SQLSecurityConfig, sql_injection_protected c = true → sql_escape_special_chars c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- SQLI_013: RIINA Parameterized Only -/
+-- SQLI_013: RIINA Parameterized Only
 /-- SQLI_013_riina_parameterized (matches Coq) -/
 theorem SQLI_013_riina_parameterized : sql_parameterized_only riina_sql_config = true := by
   rfl
 
-/-- SQLI_014: Safe Taint After Sanitization -/
+-- SQLI_014: Safe Taint After Sanitization
 /-- SQLI_014_sanitization_makes_safe (matches Coq) -/
 theorem SQLI_014_sanitization_makes_safe : ∀ t : TaintLevel, t = Sanitized ∨ t = Untainted → taint_safe t = true := by
   rfl
 
-/-- SQLI_015: Complete SQL Injection Prevention -/
+-- SQLI_015: Complete SQL Injection Prevention
 /-- SQLI_015_complete_prevention (matches Coq) -/
 theorem SQLI_015_complete_prevention : ∀ c : SQLSecurityConfig, sql_injection_protected c = true → sql_parameterized_only c = true ∧ sql_no_string_concat c = true ∧ sql_input_sanitized c = true ∧ sql_escape_special_chars c = true := by
   simp_all [Bool.and_eq_true]

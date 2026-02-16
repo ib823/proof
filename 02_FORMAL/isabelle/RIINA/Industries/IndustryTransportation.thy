@@ -159,41 +159,41 @@ definition version_valid :: "bool" where
 (* Section H01 - ISO 26262 Compliance
     Reference: IND_H_TRANSPORTATION.md Section 3.1 *)
 (* iso_26262_compliance (matches Coq) *)
-lemma iso_26262_compliance: "\<forall> (compliance : ISO26262_Compliance) (asil : ASIL), hazard_analysis compliance = True \<longrightarrow> (* ISO 26262 compliance for ASIL level *) True"
+lemma iso_26262_compliance: "\<forall> (compliance : ISO26262_Compliance) (asil : ASIL), hazard_analysis compliance = True \<longrightarrow> True"
   by simp
 
 (* Section H02 - ISO/SAE 21434 Cybersecurity
     Reference: IND_H_TRANSPORTATION.md Section 3.2 *)
 (* iso_21434_cybersecurity (matches Coq) *)
-lemma iso_21434_cybersecurity: "\<forall> (vehicle : nat) (system : nat), (* Automotive cybersecurity engineering *) True"
+lemma iso_21434_cybersecurity: "\<forall> (vehicle : nat) (system : nat), True"
   by simp
 
 (* Section H03 - UNECE R155
     Reference: IND_H_TRANSPORTATION.md Section 3.3 *)
 (* unece_r155_compliance (matches Coq) *)
-lemma unece_r155_compliance: "\<forall> (vehicle_type : nat), (* Vehicle type approval cybersecurity *) True"
+lemma unece_r155_compliance: "\<forall> (vehicle_type : nat), True"
   by simp
 
 (* Section H04 - EN 50128 Railway Software
     Reference: IND_H_TRANSPORTATION.md Section 3.4 *)
 (* en_50128_compliance (matches Coq) *)
-lemma en_50128_compliance: "\<forall> (railway_software : nat) (sil : SIL), (* Railway software safety *) True"
+lemma en_50128_compliance: "\<forall> (railway_software : nat) (sil : SIL), True"
   by simp
 
 (* Section H05 - Maritime Cyber
     Reference: IND_H_TRANSPORTATION.md Section 3.5 *)
 (* imo_maritime_cyber (matches Coq) *)
-lemma imo_maritime_cyber: "\<forall> (vessel : nat), (* IMO maritime cyber risk management *) True"
+lemma imo_maritime_cyber: "\<forall> (vessel : nat), True"
   by simp
 
 (* ASIL D requires highest rigor *)
 (* asil_d_highest_rigor (matches Coq) *)
-lemma asil_d_highest_rigor: "\<forall> (compliance : ISO26262_Compliance), (* ASIL D requires all work products with highest coverage *) True"
+lemma asil_d_highest_rigor: "\<forall> (compliance : ISO26262_Compliance), True"
   by simp
 
 (* Cybersecurity and safety interface required *)
 (* cyber_safety_interface (matches Coq) *)
-lemma cyber_safety_interface: "\<forall> (compliance : ISO26262_Compliance), cybersecurity_interface compliance = True \<longrightarrow> (* Safety and security coordinated *) True"
+lemma cyber_safety_interface: "\<forall> (compliance : ISO26262_Compliance), cybersecurity_interface compliance = True \<longrightarrow> True"
   by simp
 
 (* asil_le_refl (matches Coq) *)

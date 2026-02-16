@@ -287,9 +287,9 @@ theorem DELTA_001_09_log_prefix_match : ∀ log1 log2 idx e1 e2, log_entry_at lo
 theorem DELTA_001_10_quorum_nonempty : ∀ n votes, is_quorum votes n = true → votes > 0 := by
   omega
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: BFT SAFETY (6 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- DELTA_002_01_bft_bound (matches Coq) -/
 theorem DELTA_002_01_bft_bound : ∀ state, bft_valid state = true → bft_n state ≥ 3 * bft_f state + 1 := by
   omega
@@ -299,7 +299,7 @@ theorem DELTA_002_02_bft_quorum_sufficient : ∀ state, bft_valid state = true �
   omega
 
 /-- DELTA_002_03_bft_two_quorums_overlap (matches Coq) -/
-theorem DELTA_002_03_bft_two_quorums_overlap : ∀ state, bft_valid state = true → bft_n state = 3 * bft_f state + 1 →  2 * bft_quorum state > bft_n state := by
+theorem DELTA_002_03_bft_two_quorums_overlap : ∀ state, bft_valid state = true → bft_n state = 3 * bft_f state + 1 → 2 * bft_quorum state > bft_n state := by
   omega
 
 /-- DELTA_002_04_correct_majority (matches Coq) -/
@@ -314,9 +314,9 @@ theorem DELTA_002_05_bft_f_zero : ∀ state, bft_f state = 0 → bft_quorum stat
 theorem DELTA_002_06_bft_phases_ordered : ∀ p1 p2 : BFTPhase, True := by
   simp_all [Bool.and_eq_true]
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: CRDT PROPERTIES (10 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- DELTA_003_01_gc_merge_comm (matches Coq) -/
 theorem DELTA_003_01_gc_merge_comm : ∀ a b, length a = length b → gc_merge a b = gc_merge b a := by
   cases ‹_› <;> simp <;> omega
@@ -361,9 +361,9 @@ theorem DELTA_003_09_gs_add_idempotent : ∀ s v, gs_member s v = true → gs_ad
 theorem DELTA_003_10_gc_empty_zero : gc_value [] = 0 := by
   simp
 
-/-- ===============================================================================
+-- ===============================================================================
     PROOFS: CONSISTENT HASHING (5 theorems)
-    =============================================================================== -/
+    ===============================================================================
 /-- DELTA_004_01_ring_add_increases (matches Coq) -/
 theorem DELTA_004_01_ring_add_increases : ∀ ring pos node, length (ring_nodes (ring_add_node ring pos node)) = S (length (ring_nodes ring)) := by
   simp

@@ -233,72 +233,72 @@ def account_active (frozen : Bool) : Bool :=
 def capital_adequate (reserves liabilities min_pct : Nat) : Bool :=
   Nat.leb (liabilities * min_pct) (reserves * 100)
 
-/-- Section C01 - PCI-DSS 4.0.1 Compliance
-    Reference: IND_C_FINANCIAL.md Section 3.1 -/
+-- Section C01 - PCI-DSS 4.0.1 Compliance
+    Reference: IND_C_FINANCIAL.md Section 3.1
 /-- pci_dss_compliance (matches Coq) -/
 theorem pci_dss_compliance : ∀ (controls : PCI_DSS_Controls), pci_compliant controls = true → True := by
   trivial
 
-/-- Section C02 - SWIFT CSP
-    Reference: IND_C_FINANCIAL.md Section 3.2 -/
+-- Section C02 - SWIFT CSP
+    Reference: IND_C_FINANCIAL.md Section 3.2
 /-- swift_csp_compliance (matches Coq) -/
 theorem swift_csp_compliance : ∀ (transaction : nat), True := by
   trivial
 
-/-- Section C03 - SOX Section 404
-    Reference: IND_C_FINANCIAL.md Section 3.3 -/
+-- Section C03 - SOX Section 404
+    Reference: IND_C_FINANCIAL.md Section 3.3
 /-- sox_404_compliance (matches Coq) -/
 theorem sox_404_compliance : ∀ (internal_controls : bool) (audit_trail : bool), True := by
   trivial
 
-/-- Section C04 - GLBA Safeguards Rule
-    Reference: IND_C_FINANCIAL.md Section 3.4 -/
+-- Section C04 - GLBA Safeguards Rule
+    Reference: IND_C_FINANCIAL.md Section 3.4
 /-- glba_safeguards (matches Coq) -/
 theorem glba_safeguards : ∀ (npi : FinancialData) (protection : bool), True := by
   trivial
 
-/-- Section C05 - DORA Requirements
-    Reference: IND_C_FINANCIAL.md Section 3.5 -/
+-- Section C05 - DORA Requirements
+    Reference: IND_C_FINANCIAL.md Section 3.5
 /-- dora_resilience (matches Coq) -/
 theorem dora_resilience : ∀ (system : nat) (incident : nat), True := by
   trivial
 
-/-- CVV must never be stored post-authorization -/
+-- CVV must never be stored post-authorization
 /-- cvv_not_stored (matches Coq) -/
-theorem cvv_not_stored : ∀ (d : FinancialData) (storage : bool), d = CVV →  True := by
+theorem cvv_not_stored : ∀ (d : FinancialData) (storage : bool), d = CVV → True := by
   trivial
 
-/-- PAN must be masked when displayed -/
+-- PAN must be masked when displayed
 /-- pan_masking (matches Coq) -/
-theorem pan_masking : ∀ (pan : FinancialData) (display_format : nat),  True := by
+theorem pan_masking : ∀ (pan : FinancialData) (display_format : nat), True := by
   trivial
 
-/-- Strong cryptography for cardholder data -/
+-- Strong cryptography for cardholder data
 /-- strong_crypto_required (matches Coq) -/
-theorem strong_crypto_required : ∀ (data : FinancialData), pci_cardholder_data data = true →  True := by
+theorem strong_crypto_required : ∀ (data : FinancialData), pci_cardholder_data data = true → True := by
   trivial
 
-/-- PCI cardholder data classification is decidable -/
+-- PCI cardholder data classification is decidable
 /-- pci_cardholder_data_dec (matches Coq) -/
 theorem pci_cardholder_data_dec : ∀ d, pci_cardholder_data d = true ∨ pci_cardholder_data d = false := by
   simp_all [Bool.and_eq_true]
 
-/-- PAN is always cardholder data -/
+-- PAN is always cardholder data
 /-- pan_is_cardholder (matches Coq) -/
 theorem pan_is_cardholder : pci_cardholder_data PAN = true := by
   rfl
 
-/-- CVV is always cardholder data -/
+-- CVV is always cardholder data
 /-- cvv_is_cardholder (matches Coq) -/
 theorem cvv_is_cardholder : pci_cardholder_data CVV = true := by
   rfl
 
-/-- PIN is always cardholder data -/
+-- PIN is always cardholder data
 /-- pin_is_cardholder (matches Coq) -/
 theorem pin_is_cardholder : pci_cardholder_data PIN = true := by
   rfl
 
-/-- AccountNumber, RoutingNumber, SSN, NPI are not PCI cardholder data -/
+-- AccountNumber, RoutingNumber, SSN, NPI are not PCI cardholder data
 /-- non_card_data_not_pci (matches Coq) -/
 theorem non_card_data_not_pci : ∀ d, d = AccountNumber ∨ d = RoutingNumber ∨ d = SSN ∨ d = NPI → pci_cardholder_data d = false := by
   cases ‹_› <;> simp

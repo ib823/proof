@@ -192,44 +192,44 @@ def count_food_controls (c : FoodSafetyControls) : Nat :=
   (if sanitation_controls c then 1 else 0) +
   (if recall_capability c then 1 else 0)
 
-/-- Section N01 - FSMA Compliance
-    Reference: IND_N_AGRICULTURE.md Section 3.1 -/
+-- Section N01 - FSMA Compliance
+    Reference: IND_N_AGRICULTURE.md Section 3.1
 /-- fsma_compliance (matches Coq) -/
-theorem fsma_compliance : ∀ (controls : FoodSafetyControls) (facility : nat), preventive_controls controls = true →  True := by
+theorem fsma_compliance : ∀ (controls : FoodSafetyControls) (facility : nat), preventive_controls controls = true → True := by
   trivial
 
-/-- Section N02 - Traceability
-    Reference: IND_N_AGRICULTURE.md Section 3.2 -/
+-- Section N02 - Traceability
+    Reference: IND_N_AGRICULTURE.md Section 3.2
 /-- food_traceability (matches Coq) -/
-theorem food_traceability : ∀ (product : nat) (supply_chain : nat),  True := by
+theorem food_traceability : ∀ (product : nat) (supply_chain : nat), True := by
   trivial
 
-/-- Section N03 - Precision Agriculture Security
-    Reference: IND_N_AGRICULTURE.md Section 3.3 -/
+-- Section N03 - Precision Agriculture Security
+    Reference: IND_N_AGRICULTURE.md Section 3.3
 /-- precision_ag_security (matches Coq) -/
-theorem precision_ag_security : ∀ (equipment : nat) (data : AgriData),  True := by
+theorem precision_ag_security : ∀ (equipment : nat) (data : AgriData), True := by
   trivial
 
-/-- Section N04 - ISO 22000 FSMS
-    Reference: IND_N_AGRICULTURE.md Section 3.4 -/
+-- Section N04 - ISO 22000 FSMS
+    Reference: IND_N_AGRICULTURE.md Section 3.4
 /-- iso_22000_compliance (matches Coq) -/
-theorem iso_22000_compliance : ∀ (organization : nat),  True := by
+theorem iso_22000_compliance : ∀ (organization : nat), True := by
   trivial
 
-/-- Section N05 - Supply Chain Integrity
-    Reference: IND_N_AGRICULTURE.md Section 3.5 -/
+-- Section N05 - Supply Chain Integrity
+    Reference: IND_N_AGRICULTURE.md Section 3.5
 /-- supply_chain_integrity (matches Coq) -/
-theorem supply_chain_integrity : ∀ (supplier : nat) (product : nat),  True := by
+theorem supply_chain_integrity : ∀ (supplier : nat) (product : nat), True := by
   trivial
 
-/-- HACCP required for processing facilities -/
+-- HACCP required for processing facilities
 /-- haccp_required (matches Coq) -/
-theorem haccp_required : ∀ (controls : FoodSafetyControls) (facility : nat), haccp_plan controls = true →  True := by
+theorem haccp_required : ∀ (controls : FoodSafetyControls) (facility : nat), haccp_plan controls = true → True := by
   trivial
 
-/-- Recall capability required -/
+-- Recall capability required
 /-- recall_capability_required (matches Coq) -/
-theorem recall_capability_required : ∀ (controls : FoodSafetyControls), recall_capability controls = true → traceability_system controls = true →  True := by
+theorem recall_capability_required : ∀ (controls : FoodSafetyControls), recall_capability controls = true → traceability_system controls = true → True := by
   trivial
 
 /-- chemical_usage_highest_sensitivity (matches Coq) -/

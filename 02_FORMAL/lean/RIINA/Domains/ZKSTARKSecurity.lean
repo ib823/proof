@@ -391,9 +391,9 @@ def full_stark_security (s : STARKSecurity) (f : FRIProperties)
                                (sim : SimulatorState) (e : ExtendedSTARKSecurity) : Bool :=
   modular_stark s f sim && extended_secure e
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: BOOLEAN UTILITIES
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -414,9 +414,9 @@ theorem bool_dec : ∀ b : bool, b = true ∨ b = false := by
 theorem andb_false_iff : ∀ a b : bool, a && b = false <-> a = false ∨ b = false := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 5: BASIC STARK THEOREMS (Original 25)
-    ============================================================================ -/
+    ============================================================================
 /-- STARK_001 (matches Coq) -/
 theorem STARK_001 : stark_props_secure riina_stark_props = true := by
   rfl
@@ -517,9 +517,9 @@ theorem STARK_024 : stark_transparent riina_stark_props = true ∧ air_fri_verif
 theorem STARK_025_complete : ∀ s, stark_fully_secure s = true → starks_soundness s = true ∧ starks_zero_knowledge s = true ∧ stark_transparent (starks_stark s) = true ∧ stark_post_quantum (starks_stark s) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 6: FRI PROTOCOL SECURITY THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- FRI_soundness_property (matches Coq) -/
 theorem FRI_soundness_property : ∀ f, fri_secure f = true → fri_soundness f = true := by
   simp_all [Bool.and_eq_true]
@@ -680,7 +680,7 @@ theorem hash_security_binding : ∀ s f, hash_based_security s f = true → fri_
 theorem riina_hash_security : hash_based_security riina_stark_props riina_fri = true := by
   rfl
 
-/-- No trusted setup implies quantum resistance -/
+-- No trusted setup implies quantum resistance
 /-- transparency_enables_pq (matches Coq) -/
 theorem transparency_enables_pq : ∀ s, stark_transparent s = true → stark_post_quantum s = true → stark_props_secure s = true ∨ stark_scalable s = false := by
   rfl
@@ -709,9 +709,9 @@ theorem public_verify_sound : ∀ s f, publicly_verifiable s f = true → starks
 theorem riina_publicly_verifiable : publicly_verifiable riina_stark riina_fri = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 12: EXTENDED STARK SECURITY THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- extended_implies_base (matches Coq) -/
 theorem extended_implies_base : ∀ e, extended_secure e = true → stark_fully_secure (ext_base e) = true := by
   simp_all [Bool.and_eq_true]
@@ -752,9 +752,9 @@ theorem extraction_implies_query_bound : ∀ e f, extraction_secure e f = true �
 theorem riina_extraction_secure : extraction_secure riina_extended riina_fri = true := by
   rfl
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 14: AIR (ALGEBRAIC INTERMEDIATE REPRESENTATION) THEOREMS
-    ============================================================================ -/
+    ============================================================================
 /-- air_algebraic_required (matches Coq) -/
 theorem air_algebraic_required : ∀ a, air_secure a = true → air_algebraic a = true := by
   simp_all [Bool.and_eq_true]
@@ -799,16 +799,16 @@ theorem full_security_extended : ∀ s f sim e, full_stark_security s f sim e = 
 theorem riina_full_security : full_stark_security riina_stark riina_fri valid_simulator riina_extended = true := by
   rfl
 
-/-- The master theorem proving all essential STARK properties -/
+-- The master theorem proving all essential STARK properties
 /-- STARK_MASTER_SECURITY (matches Coq) -/
-theorem STARK_MASTER_SECURITY : ∀ s f sim e, full_stark_security s f sim e = true →  starks_completeness (ext_base e) = true ∧ starks_soundness (ext_base e) = true ∧ starks_zero_knowledge (ext_base e) = true ∧  stark_transparent (starks_stark (ext_base e)) = true ∧  stark_post_quantum (starks_stark (ext_base e)) = true ∧ ext_quantum_resistant e = true ∧  fri_soundness (ext_fri e) = true ∧ fri_commitment_binding (ext_fri e) = true ∧  ext_simulation_secure e = true ∧  ext_extraction_secure e = true := by
+theorem STARK_MASTER_SECURITY : ∀ s f sim e, full_stark_security s f sim e = true → starks_completeness (ext_base e) = true ∧ starks_soundness (ext_base e) = true ∧ starks_zero_knowledge (ext_base e) = true ∧ stark_transparent (starks_stark (ext_base e)) = true ∧ stark_post_quantum (starks_stark (ext_base e)) = true ∧ ext_quantum_resistant e = true ∧ fri_soundness (ext_fri e) = true ∧ fri_commitment_binding (ext_fri e) = true ∧ ext_simulation_secure e = true ∧ ext_extraction_secure e = true := by
   simp_all [Bool.and_eq_true]
 
 /-- riina_master_security (matches Coq) -/
 theorem riina_master_security : starks_completeness (ext_base riina_extended) = true ∧ starks_soundness (ext_base riina_extended) = true ∧ starks_zero_knowledge (ext_base riina_extended) = true ∧ stark_transparent (starks_stark (ext_base riina_extended)) = true ∧ stark_post_quantum (starks_stark (ext_base riina_extended)) = true ∧ ext_quantum_resistant riina_extended = true ∧ fri_soundness (ext_fri riina_extended) = true ∧ fri_commitment_binding (ext_fri riina_extended) = true ∧ ext_simulation_secure riina_extended = true ∧ ext_extraction_secure riina_extended = true := by
   simp_all
 
-/-- Equivalence theorems -/
+-- Equivalence theorems
 /-- stark_security_equivalence (matches Coq) -/
 theorem stark_security_equivalence : ∀ s, stark_fully_secure s = true <-> (starks_completeness s = true ∧ starks_soundness s = true ∧ starks_zero_knowledge s = true ∧ stark_props_secure (starks_stark s) = true ∧ air_secure (starks_air s) = true) := by
   simp_all [Bool.and_eq_true]
@@ -817,7 +817,7 @@ theorem stark_security_equivalence : ∀ s, stark_fully_secure s = true <-> (sta
 theorem fri_security_equivalence : ∀ f, fri_secure f = true <-> (fri_soundness f = true ∧ fri_query_bound f = true ∧ fri_commitment_binding f = true ∧ fri_interactive_to_non f = true) := by
   simp_all [Bool.and_eq_true]
 
-/-- Decisability of security predicates -/
+-- Decisability of security predicates
 /-- stark_props_secure_dec (matches Coq) -/
 theorem stark_props_secure_dec : ∀ s, stark_props_secure s = true ∨ stark_props_secure s = false := by
   simp_all [Bool.and_eq_true]

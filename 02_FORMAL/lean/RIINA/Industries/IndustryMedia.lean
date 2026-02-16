@@ -182,44 +182,44 @@ def viewing_within_window (v : ViewingSession) (max_hours : Nat) : Bool :=
 def screener_count_valid (copies max_copies : Nat) : Bool :=
   Nat.leb copies max_copies
 
-/-- Section K01 - MovieLabs ECP
-    Reference: IND_K_MEDIA.md Section 3.1 -/
+-- Section K01 - MovieLabs ECP
+    Reference: IND_K_MEDIA.md Section 3.1
 /-- movielabs_ecp_compliance (matches Coq) -/
-theorem movielabs_ecp_compliance : ∀ (compliance : ECP_Compliance) (content : ContentType), content_encryption compliance = true → forensic_watermarking compliance = true →  True := by
+theorem movielabs_ecp_compliance : ∀ (compliance : ECP_Compliance) (content : ContentType), content_encryption compliance = true → forensic_watermarking compliance = true → True := by
   trivial
 
-/-- Section K02 - DCI Security
-    Reference: IND_K_MEDIA.md Section 3.2 -/
+-- Section K02 - DCI Security
+    Reference: IND_K_MEDIA.md Section 3.2
 /-- dci_security (matches Coq) -/
-theorem dci_security : ∀ (cinema_content : ContentType),  True := by
+theorem dci_security : ∀ (cinema_content : ContentType), True := by
   trivial
 
-/-- Section K03 - TPN Assessment
-    Reference: IND_K_MEDIA.md Section 3.3 -/
+-- Section K03 - TPN Assessment
+    Reference: IND_K_MEDIA.md Section 3.3
 /-- tpn_compliance (matches Coq) -/
-theorem tpn_compliance : ∀ (vendor : nat),  True := by
+theorem tpn_compliance : ∀ (vendor : nat), True := by
   trivial
 
-/-- Section K04 - Forensic Watermarking
-    Reference: IND_K_MEDIA.md Section 3.4 -/
+-- Section K04 - Forensic Watermarking
+    Reference: IND_K_MEDIA.md Section 3.4
 /-- forensic_watermark (matches Coq) -/
-theorem forensic_watermark : ∀ (content : ContentType) (viewer : nat),  True := by
+theorem forensic_watermark : ∀ (content : ContentType) (viewer : nat), True := by
   trivial
 
-/-- Section K05 - CDSA Compliance
-    Reference: IND_K_MEDIA.md Section 3.5 -/
+-- Section K05 - CDSA Compliance
+    Reference: IND_K_MEDIA.md Section 3.5
 /-- cdsa_compliance (matches Coq) -/
-theorem cdsa_compliance : ∀ (content_delivery : nat),  True := by
+theorem cdsa_compliance : ∀ (content_delivery : nat), True := by
   trivial
 
-/-- Pre-release content requires highest protection -/
+-- Pre-release content requires highest protection
 /-- prerelease_maximum_protection (matches Coq) -/
-theorem prerelease_maximum_protection : ∀ (content : ContentType) (protection : ContentProtection), content = PreRelease →  True := by
+theorem prerelease_maximum_protection : ∀ (content : ContentType) (protection : ContentProtection), content = PreRelease → True := by
   trivial
 
-/-- Forensic watermarks are non-removable -/
+-- Forensic watermarks are non-removable
 /-- watermark_persistence (matches Coq) -/
-theorem watermark_persistence : ∀ (content : ContentType) (watermark : nat),  True := by
+theorem watermark_persistence : ∀ (content : ContentType) (watermark : nat), True := by
   trivial
 
 /-- prerelease_highest_sensitivity (matches Coq) -/

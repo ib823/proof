@@ -345,9 +345,9 @@ def riina_rop : ROPDefenseConfig := mkROPDefense riina_cfi riina_cr true true
 /-- riina_cpi (matches Coq: Definition riina_cpi) -/
 def riina_cpi : CPIConfig := mkCPI true true true true
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 1: BASIC LEMMAS
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
@@ -364,9 +364,9 @@ theorem negb_true_iff : ∀ b : bool, negb b = true <-> b = false := by
 theorem orb_true_iff : ∀ a b : bool, a || b = true <-> a = true ∨ b = true := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 9: BASIC COMPLIANCE THEOREMS (ROP_001 - ROP_025)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_001 (matches Coq) -/
 theorem ROP_001 : cfi_complete riina_cfi = true := by
   rfl
@@ -467,9 +467,9 @@ theorem ROP_024 : rop_defended riina_rop = true ∧ rop_aslr_compatible riina_ro
 theorem ROP_025_complete : ∀ r, rop_defended r = true → cfi_shadow_stack (rop_cfi r) = true ∧ cfi_return_address_protection (rop_cfi r) = true ∧ cr_gadget_elimination (rop_code_reuse r) = true ∧ rop_aslr_compatible r = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 10: SHADOW STACK THEOREMS (ROP_026 - ROP_035)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_026_shadow_push_preserves (matches Coq) -/
 theorem ROP_026_shadow_push_preserves : ∀ ss ret caller fp, length (shadow_push ss ret caller fp) = S (length ss) := by
   simp
@@ -510,9 +510,9 @@ theorem ROP_034_return_mismatch_fails : ∀ ss ret caller fp wrong_addr, ret ≠
 theorem ROP_035_shadow_stack_depth_bounded : ∀ ss n, length ss ≤ n → ∀ ret caller fp, length (shadow_push ss ret caller fp) ≤ S n := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 11: BRANCH TARGET VALIDATION THEOREMS (ROP_036 - ROP_043)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_036_valid_target_in_list (matches Coq) -/
 theorem ROP_036_valid_target_in_list : ∀ targets addr, indirect_branch_valid targets addr → In addr targets := by
   intro h; exact h
@@ -545,9 +545,9 @@ theorem ROP_042_unvalidated_btb_unsafe : ∀ e, btb_validated e = false → ∀ 
 theorem ROP_043_target_subset_preserved : ∀ targets1 targets2 addr, (∀ x, In x targets1 → In x targets2) → indirect_branch_valid targets1 addr → indirect_branch_valid targets2 addr := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 12: GADGET CHAIN PREVENTION THEOREMS (ROP_044 - ROP_052)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_044_rop_gadget_blocked (matches Coq) -/
 theorem ROP_044_rop_gadget_blocked : ∀ g, gadget_type g = GadgetROP → cfi_backward_edge_cfi riina_cfi = true → cfi_shadow_stack riina_cfi = true → gadget_blocked riina_cfi g = true := by
   rfl
@@ -584,9 +584,9 @@ theorem ROP_051_chain_blocked_implies_each_blocked : ∀ cfi chain g, chain_bloc
 theorem ROP_052_single_unblocked_breaks_chain : ∀ cfi chain g, In g chain → gadget_blocked cfi g = false → chain_blocked cfi chain = false := by
   cases ‹_› <;> simp
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 13: CODE POINTER INTEGRITY THEOREMS (ROP_053 - ROP_060)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_053_cpi_complete_riina (matches Coq) -/
 theorem ROP_053_cpi_complete_riina : cpi_complete riina_cpi = true := by
   rfl
@@ -619,9 +619,9 @@ theorem ROP_059_function_ptr_type : ∀ addr, cp_type (mkCodePtr CPFunction addr
 theorem ROP_060_return_addr_protected : ∀ addr, cp_authenticated (mkCodePtr CPReturnAddr addr true true) = true → cp_bounds_checked (mkCodePtr CPReturnAddr addr true true) = true → cp_protected riina_cpi (mkCodePtr CPReturnAddr addr true true) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 14: FORWARD EDGE CFI THEOREMS (ROP_061 - ROP_067)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_061_forward_edge_enabled (matches Coq) -/
 theorem ROP_061_forward_edge_enabled : cfi_forward_edge_cfi riina_cfi = true := by
   rfl
@@ -650,9 +650,9 @@ theorem ROP_066_indirect_call_requires_ibt : ∀ c, cfi_complete c = true → cf
 theorem ROP_067_forward_cfi_and_ibt_together : ∀ c, cfi_complete c = true → cfi_forward_edge_cfi c = true ∧ cfi_indirect_branch_tracking c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 15: BACKWARD EDGE CFI THEOREMS (ROP_068 - ROP_075)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_068_backward_edge_enabled (matches Coq) -/
 theorem ROP_068_backward_edge_enabled : cfi_backward_edge_cfi riina_cfi = true := by
   rfl
@@ -685,9 +685,9 @@ theorem ROP_074_backward_cfi_and_shadow_together : ∀ c, cfi_complete c = true 
 theorem ROP_075_return_address_protection_complete : ∀ c, cfi_complete c = true → cfi_return_address_protection c = true := by
   simp_all [Bool.and_eq_true]
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 16: COMPREHENSIVE DEFENSE THEOREMS (ROP_076 - ROP_085)
-    ============================================================================ -/
+    ============================================================================
 /-- ROP_076_riina_full_cfi (matches Coq) -/
 theorem ROP_076_riina_full_cfi : cfi_shadow_stack riina_cfi = true ∧ cfi_indirect_branch_tracking riina_cfi = true ∧ cfi_return_address_protection riina_cfi = true ∧ cfi_forward_edge_cfi riina_cfi = true ∧ cfi_backward_edge_cfi riina_cfi = true := by
   rfl

@@ -58,11 +58,11 @@ definition xor_nat :: "nat" where
   "xor_nat \<equiv> Nat.lxor a b"
 
 (* 1 (matches Coq) *)
-lemma 1: "Uniform distribution has non-negative probabilities *) Theorem uniform_nonneg : \<forall> n (Hn : (0 < n)%nat), all_nonneg (uniform_dist n Hn)"
+lemma 1: "Uniform distribution has non-negative probabilities Theorem uniform_nonneg : \<forall> n (Hn : (0 < n)%nat), all_nonneg (uniform_dist n Hn)"
   by (cases rule: ‹_›.cases; simp)
 
 (* 2 (matches Coq) *)
-lemma 2: "Zero function is negligible *) Theorem zero_negligible : negligible (fun _ => 0)"
+lemma 2: "Zero function is negligible Theorem zero_negligible : negligible (fun _ => 0)"
   by simp
 
 (* Auxiliary: sum of Q-strict-less *)
@@ -76,7 +76,7 @@ lemma two_over_nSc_le_one_over_nc: "\<forall> n c : nat, (n > 2)%nat \<longright
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "Sum of negligibles is negligible *) Theorem negligible_sum : \<forall> f g, negligible f \<longrightarrow> negligible g \<longrightarrow> negligible (fun n => f n + g n)"
+lemma 3: "Sum of negligibles is negligible Theorem negligible_sum : \<forall> f g, negligible f \<longrightarrow> negligible g \<longrightarrow> negligible (fun n => f n + g n)"
   by (cases rule: ‹_›.cases; simp)
 
 (* Helper: Qabs of self-difference is zero *)
@@ -95,51 +95,51 @@ lemma fold_combine_self: "\<forall> (l : list Q), fold_left (fun acc p => acc + 
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "Identical distributions are indistinguishable *) Theorem identical_indist : \<forall> f, comp_indist f f"
+lemma 4: "Identical distributions are indistinguishable Theorem identical_indist : \<forall> f, comp_indist f f"
   by simp
 
 (* 5 (matches Coq) *)
-lemma 5: "Indistinguishability is reflexive *) Theorem comp_indist_refl : \<forall> f, comp_indist f f"
+lemma 5: "Indistinguishability is reflexive Theorem comp_indist_refl : \<forall> f, comp_indist f f"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "XOR is self-inverse *) Theorem xor_self_inverse : \<forall> a b, xor_nat (xor_nat a b) b = a"
+lemma 6: "XOR is self-inverse Theorem xor_self_inverse : \<forall> a b, xor_nat (xor_nat a b) b = a"
   by simp
 
 (* 7 (matches Coq) *)
-lemma 7: "XOR is commutative *) Theorem xor_comm : \<forall> a b, xor_nat a b = xor_nat b a"
+lemma 7: "XOR is commutative Theorem xor_comm : \<forall> a b, xor_nat a b = xor_nat b a"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "XOR with zero is identity *) Theorem xor_zero_id : \<forall> a, xor_nat a 0 = a"
+lemma 8: "XOR with zero is identity Theorem xor_zero_id : \<forall> a, xor_nat a 0 = a"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "XOR is associative *) Theorem xor_assoc : \<forall> a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)"
+lemma 9: "XOR is associative Theorem xor_assoc : \<forall> a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)"
   by auto
 
 (* 10 (matches Coq) *)
-lemma 10: "XOR self is zero *) Theorem xor_self_zero : \<forall> a, xor_nat a a = 0%nat"
+lemma 10: "XOR self is zero Theorem xor_self_zero : \<forall> a, xor_nat a a = 0%nat"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "Double OTP encryption-decryption roundtrip *) Theorem otp_roundtrip : \<forall> msg key, xor_nat (xor_nat msg key) key = msg"
+lemma 11: "Double OTP encryption-decryption roundtrip Theorem otp_roundtrip : \<forall> msg key, xor_nat (xor_nat msg key) key = msg"
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "XOR with same key is deterministic *) Theorem xor_deterministic : \<forall> a b k, xor_nat a k = xor_nat b k \<longrightarrow> a = b"
+lemma 12: "XOR with same key is deterministic Theorem xor_deterministic : \<forall> a b k, xor_nat a k = xor_nat b k \<longrightarrow> a = b"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "Uniform distribution has correct length *) Theorem uniform_length : \<forall> n (Hn : (0 < n)%nat), length (uniform_dist n Hn) = n"
+lemma 13: "Uniform distribution has correct length Theorem uniform_length : \<forall> n (Hn : (0 < n)%nat), length (uniform_dist n Hn) = n"
   by simp
 
 (* 14 (matches Coq) *)
-lemma 14: "Qabs is non-negative *) Theorem qabs_nonneg : \<forall> q : Q, (0 \<le> Qabs q)%Q"
+lemma 14: "Qabs is non-negative Theorem qabs_nonneg : \<forall> q : Q, (0 \<le> Qabs q)%Q"
   by auto
 
 (* 15 (matches Coq) *)
-lemma 15: "Qabs of zero is zero *) Theorem qabs_zero : Qabs 0 == 0"
+lemma 15: "Qabs of zero is zero Theorem qabs_zero : Qabs 0 == 0"
   by auto
 
 end

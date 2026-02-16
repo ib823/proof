@@ -457,15 +457,15 @@ definition future_security_complete :: "bool" where
                   verification_rigorous f = True -> verification_rigorous f = True)"
 
 (* fut_001_quantum_shor_mitigated (matches Coq) *)
-lemma fut_001_quantum_shor_mitigated: "\<forall> (classical : ClassicalCrypto) (pq : PQCryptoConfig), vulnerable_to_shor classical = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> (* Post-quantum crypto provides security against Shor's algorithm *) (* ML-KEM security based on lattice problems, not factoring/DLP *) (3 \<le> (kem_security_level) (pqc_kem pq)) = True"
+lemma fut_001_quantum_shor_mitigated: "\<forall> (classical : ClassicalCrypto) (pq : PQCryptoConfig), vulnerable_to_shor classical = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> (3 \<le> (kem_security_level) (pqc_kem pq)) = True"
   by auto
 
 (* fut_001_hybrid_defense (matches Coq) *)
-lemma fut_001_hybrid_defense: "\<forall> (pq : PQCryptoConfig), pqc_hybrid_mode pq = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> (* Hybrid mode: attacker must break BOTH classical AND post-quantum *) pqc_hybrid_mode pq = True \<and> pq_config_secure pq = True"
+lemma fut_001_hybrid_defense: "\<forall> (pq : PQCryptoConfig), pqc_hybrid_mode pq = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> pqc_hybrid_mode pq = True \<and> pq_config_secure pq = True"
   by auto
 
 (* fut_002_quantum_grover_mitigated (matches Coq) *)
-lemma fut_002_quantum_grover_mitigated: "\<forall> (bits : nat), (256 \<le> bits) = True \<longrightarrow> (* 256 bits / 2 = 128 bits post-quantum security *) (128 \<le> (grover_effective_bits) bits) = True"
+lemma fut_002_quantum_grover_mitigated: "\<forall> (bits : nat), (256 \<le> bits) = True \<longrightarrow> (128 \<le> (grover_effective_bits) bits) = True"
   by auto
 
 (* fut_002_symmetric_quantum_safe (matches Coq) *)
@@ -473,47 +473,47 @@ lemma fut_002_symmetric_quantum_safe: "\<forall> (pq : PQCryptoConfig), pq_confi
   by auto
 
 (* fut_003_ai_exploit_mitigated (matches Coq) *)
-lemma fut_003_ai_exploit_mitigated: "\<forall> (did : DefenseInDepth), did_robust did = True \<longrightarrow> (* Multiple verified independent layers resist automated attacks *) (3 \<le> (length) (did_layers did)) = True \<and> (2 \<le> (count_verified_layers) (did_layers did)) = True \<and> did_composition_verified did = True"
+lemma fut_003_ai_exploit_mitigated: "\<forall> (did : DefenseInDepth), did_robust did = True \<longrightarrow> (3 \<le> (length) (did_layers did)) = True \<and> (2 \<le> (count_verified_layers) (did_layers did)) = True \<and> did_composition_verified did = True"
   by auto
 
 (* fut_003_verified_layer_guarantee (matches Coq) *)
-lemma fut_003_verified_layer_guarantee: "\<forall> (layers : list SecurityLayer), count_verified_layers layers \<ge> 1 \<longrightarrow> (* At least one layer has mathematical proof of security *) \<exists> l, In l layers \<and> sl_verified l = True"
+lemma fut_003_verified_layer_guarantee: "\<forall> (layers : list SecurityLayer), count_verified_layers layers \<ge> 1 \<longrightarrow> \<exists> l, In l layers \<and> sl_verified l = True"
   by (cases rule: ‹_›.cases; simp)
 
 (* fut_004_unknown_cpu_vuln_mitigated (matches Coq) *)
-lemma fut_004_unknown_cpu_vuln_mitigated: "\<forall> (sm : SpeculationMitigation), speculation_conservative sm = True \<longrightarrow> (* Conservative barriers applied even where not proven necessary *) sm_conservative sm = True \<and> sm_ssbd sm = True"
+lemma fut_004_unknown_cpu_vuln_mitigated: "\<forall> (sm : SpeculationMitigation), speculation_conservative sm = True \<longrightarrow> sm_conservative sm = True \<and> sm_ssbd sm = True"
   by auto
 
 (* fut_004_full_serialize_safe (matches Coq) *)
-lemma fut_004_full_serialize_safe: "\<forall> (sm : SpeculationMitigation), has_full_serialize (sm_barriers sm) = True \<longrightarrow> sm_ssbd sm = True \<longrightarrow> (* Full serialization + SSBD covers known and unknown speculation *) has_full_serialize (sm_barriers sm) = True \<and> sm_ssbd sm = True"
+lemma fut_004_full_serialize_safe: "\<forall> (sm : SpeculationMitigation), has_full_serialize (sm_barriers sm) = True \<longrightarrow> sm_ssbd sm = True \<longrightarrow> has_full_serialize (sm_barriers sm) = True \<and> sm_ssbd sm = True"
   by auto
 
 (* fut_005_novel_side_channel_mitigated (matches Coq) *)
-lemma fut_005_novel_side_channel_mitigated: "\<forall> (scm : SideChannelMitigation) (lb : LeakageBound), scm_comprehensive scm = True \<longrightarrow> leakage_minimal lb = True \<longrightarrow> (* No secret-dependent behavior = no information leakage *) scm_constant_time scm = True \<and> scm_no_secret_dependent_branches scm = True \<and> scm_no_secret_dependent_memory scm = True \<and> ((lb_bits_per_operation = lb)) 0 = True"
+lemma fut_005_novel_side_channel_mitigated: "\<forall> (scm : SideChannelMitigation) (lb : LeakageBound), scm_comprehensive scm = True \<longrightarrow> leakage_minimal lb = True \<longrightarrow> scm_constant_time scm = True \<and> scm_no_secret_dependent_branches scm = True \<and> scm_no_secret_dependent_memory scm = True \<and> ((lb_bits_per_operation = lb)) 0 = True"
   by auto
 
 (* fut_005_minimal_surface_defense (matches Coq) *)
-lemma fut_005_minimal_surface_defense: "\<forall> (scm : SideChannelMitigation), scm_minimal_surface scm = True \<longrightarrow> scm_constant_time scm = True \<longrightarrow> (* Less code surface = fewer potential leakage points *) scm_minimal_surface scm = True \<and> scm_constant_time scm = True"
+lemma fut_005_minimal_surface_defense: "\<forall> (scm : SideChannelMitigation), scm_minimal_surface scm = True \<longrightarrow> scm_constant_time scm = True \<longrightarrow> scm_minimal_surface scm = True \<and> scm_constant_time scm = True"
   by auto
 
 (* fut_006_emergent_combo_mitigated (matches Coq) *)
-lemma fut_006_emergent_combo_mitigated: "\<forall> (cs : ComposedSecurity), composed_security_sound cs = True \<longrightarrow> (* Verified composition prevents emergent vulnerabilities *) all_components_verified (cs_components cs) = True \<and> cs_composition_proof cs = True \<and> cs_emergent_analysis cs = True"
+lemma fut_006_emergent_combo_mitigated: "\<forall> (cs : ComposedSecurity), composed_security_sound cs = True \<longrightarrow> all_components_verified (cs_components cs) = True \<and> cs_composition_proof cs = True \<and> cs_emergent_analysis cs = True"
   by auto
 
 (* fut_006_no_circular_vulnerabilities (matches Coq) *)
-lemma fut_006_no_circular_vulnerabilities: "\<forall> (cs : ComposedSecurity), cs_no_assumption_cycles cs = True \<longrightarrow> cs_all_assumptions_met cs = True \<longrightarrow> (* Sound assumption chain = no hidden dependencies to exploit *) cs_no_assumption_cycles cs = True \<and> cs_all_assumptions_met cs = True"
+lemma fut_006_no_circular_vulnerabilities: "\<forall> (cs : ComposedSecurity), cs_no_assumption_cycles cs = True \<longrightarrow> cs_all_assumptions_met cs = True \<longrightarrow> cs_no_assumption_cycles cs = True \<and> cs_all_assumptions_met cs = True"
   by auto
 
 (* fut_007_apt_mitigated (matches Coq) *)
-lemma fut_007_apt_mitigated: "\<forall> (apt : APTResistance), apt_resistance_adequate apt = True \<longrightarrow> (* Continuous verification detects anomalies *) (* Key rotation limits compromise window *) key_rotation_apt_safe (apt_key_rotation apt) = True \<and> cv_comprehensive (apt_continuous_verify apt) = True \<and> apt_compartmentalization apt = True"
+lemma fut_007_apt_mitigated: "\<forall> (apt : APTResistance), apt_resistance_adequate apt = True \<longrightarrow> key_rotation_apt_safe (apt_key_rotation apt) = True \<and> cv_comprehensive (apt_continuous_verify apt) = True \<and> apt_compartmentalization apt = True"
   by auto
 
 (* fut_007_forward_secrecy_protection (matches Coq) *)
-lemma fut_007_forward_secrecy_protection: "\<forall> (krp : KeyRotationPolicy), key_rotation_apt_safe krp = True \<longrightarrow> (* Forward secrecy: past sessions safe even if current key compromised *) krp_forward_secrecy krp = True"
+lemma fut_007_forward_secrecy_protection: "\<forall> (krp : KeyRotationPolicy), key_rotation_apt_safe krp = True \<longrightarrow> krp_forward_secrecy krp = True"
   by auto
 
 (* fut_008_pq_signature_secure (matches Coq) *)
-lemma fut_008_pq_signature_secure: "\<forall> (pq : PQCryptoConfig), pq_config_secure pq = True \<longrightarrow> (* Post-quantum signature at NIST Level 3+ *) (3 \<le> (sig_security_level) (pqc_signature pq)) = True"
+lemma fut_008_pq_signature_secure: "\<forall> (pq : PQCryptoConfig), pq_config_secure pq = True \<longrightarrow> (3 \<le> (sig_security_level) (pqc_signature pq)) = True"
   by auto
 
 (* fut_008_ml_dsa_87_maximum (matches Coq) *)
@@ -525,11 +525,11 @@ lemma fut_008_slh_dsa_256_secure: "sig_security_level SLH_DSA_256f = 5"
   by simp
 
 (* fut_009_quantum_network_mitigated (matches Coq) *)
-lemma fut_009_quantum_network_mitigated: "\<forall> (qsn : QuantumSafeNetwork), qsn_secure qsn = True \<longrightarrow> (* TLS with post-quantum key exchange *) tls_pq_safe (qsn_tls qsn) = True \<and> qsn_pq_required qsn = True"
+lemma fut_009_quantum_network_mitigated: "\<forall> (qsn : QuantumSafeNetwork), qsn_secure qsn = True \<longrightarrow> tls_pq_safe (qsn_tls qsn) = True \<and> qsn_pq_required qsn = True"
   by auto
 
 (* fut_009_qkd_option (matches Coq) *)
-lemma fut_009_qkd_option: "\<forall> (qkd : QKDConfig), qkd_secure qkd = True \<longrightarrow> (* QKD with proper QBER threshold *) qkd_enabled qkd = True \<and> ((qkd_error_threshold \<le> qkd)) 11 = True \<and> qkd_authentication qkd = True"
+lemma fut_009_qkd_option: "\<forall> (qkd : QKDConfig), qkd_secure qkd = True \<longrightarrow> qkd_enabled qkd = True \<and> ((qkd_error_threshold \<le> qkd)) 11 = True \<and> qkd_authentication qkd = True"
   by auto
 
 (* fut_010_math_truth_fundamental (matches Coq) *)
@@ -537,15 +537,15 @@ lemma fut_010_math_truth_fundamental: "\<forall> (P : Prop), P \<longrightarrow>
   by auto
 
 (* fut_010_agi_adversary_handled (matches Coq) *)
-lemma fut_010_agi_adversary_handled: "\<forall> (fvc : FormalVerificationConfig) (adv : AdversaryCapability), verification_rigorous fvc = True \<longrightarrow> (* Machine-checked proofs hold regardless of adversary capability *) (* An AGI cannot change that 2+2=4 or that a proven property holds *) verification_rigorous fvc = True"
+lemma fut_010_agi_adversary_handled: "\<forall> (fvc : FormalVerificationConfig) (adv : AdversaryCapability), verification_rigorous fvc = True \<longrightarrow> verification_rigorous fvc = True"
   by auto
 
 (* fut_010_proof_assistant_guarantee (matches Coq) *)
-lemma fut_010_proof_assistant_guarantee: "\<forall> (fvc : FormalVerificationConfig), fvc_level fvc = MachineCheckedProof \<longrightarrow> fvc_spec_complete fvc = True \<longrightarrow> fvc_assumptions_explicit fvc = True \<longrightarrow> (* Machine-checked + complete spec + explicit assumptions = *) (* Proven properties hold unconditionally *) verification_strength (fvc_level fvc) = 6"
+lemma fut_010_proof_assistant_guarantee: "\<forall> (fvc : FormalVerificationConfig), fvc_level fvc = MachineCheckedProof \<longrightarrow> fvc_spec_complete fvc = True \<longrightarrow> fvc_assumptions_explicit fvc = True \<longrightarrow> verification_strength (fvc_level fvc) = 6"
   by simp
 
 (* fut_010_scaling_defense (matches Coq) *)
-lemma fut_010_scaling_defense: "\<forall> (adv : AdversaryCapability) (fvc : FormalVerificationConfig), verification_rigorous fvc = True \<longrightarrow> (* As adversary capability increases, only math remains constant *) (* ScriptKiddie \<longrightarrow> SkilledHacker \<longrightarrow> NationState \<longrightarrow> QuantumCapable \<longrightarrow> AGI *) (* Formal verification effectiveness: unchanged *) \<forall> (adv' : AdversaryCapability), adversary_capability_level adv' > adversary_capability_level adv \<longrightarrow> verification_rigorous fvc = True"
+lemma fut_010_scaling_defense: "\<forall> (adv : AdversaryCapability) (fvc : FormalVerificationConfig), verification_rigorous fvc = True \<longrightarrow> \<forall> (adv' : AdversaryCapability), adversary_capability_level adv' > adversary_capability_level adv \<longrightarrow> verification_rigorous fvc = True"
   by auto
 
 (* all_future_theorems_proven (matches Coq) *)

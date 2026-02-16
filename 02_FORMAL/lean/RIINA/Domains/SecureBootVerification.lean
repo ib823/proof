@@ -569,7 +569,7 @@ theorem SB_001_rom_integrity : ∀ (rom : BootROM), rom_hash_verified rom = true
   simp
 
 /-- SB_002_rom_immutability (matches Coq) -/
-theorem SB_002_rom_immutability : ∀ (rom : BootROM), rom_fused rom = true →  True := by
+theorem SB_002_rom_immutability : ∀ (rom : BootROM), rom_fused rom = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_003_rot_complete (matches Coq) -/
@@ -577,11 +577,11 @@ theorem SB_003_rot_complete : ∀ (rom : BootROM), rom_is_root_of_trust rom = tr
   simp_all [Bool.and_eq_true]
 
 /-- SB_004_rot_anti_debug (matches Coq) -/
-theorem SB_004_rot_anti_debug : ∀ (rom : BootROM), rom_is_root_of_trust rom = true → rom_anti_debug rom = true →  True := by
+theorem SB_004_rot_anti_debug : ∀ (rom : BootROM), rom_is_root_of_trust rom = true → rom_anti_debug rom = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_005_root_key_enables_cot (matches Coq) -/
-theorem SB_005_root_key_enables_cot : ∀ (rom : BootROM), rom_contains_root_key rom = true → rom_fused rom = true →  True := by
+theorem SB_005_root_key_enables_cot : ∀ (rom : BootROM), rom_contains_root_key rom = true → rom_fused rom = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_006_full_rom_implies_rot (matches Coq) -/
@@ -745,15 +745,15 @@ theorem SB_045_measurement_pcr_in_bounds : ∀ (meas : MeasurementEvent) (pcrs :
   simp_all [Bool.and_eq_true]
 
 /-- SB_046_quote_requires_sig (matches Coq) -/
-theorem SB_046_quote_requires_sig : ∀ (quote : AttestationQuote), quote_valid quote = true → sig_valid (quote_signature quote) = true →  True := by
+theorem SB_046_quote_requires_sig : ∀ (quote : AttestationQuote), quote_valid quote = true → sig_valid (quote_signature quote) = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_047_pcr_sealed (matches Coq) -/
-theorem SB_047_pcr_sealed : ∀ (pcr : PCRValue), pcr_extended pcr = true → pcr_locked pcr = true →  True := by
+theorem SB_047_pcr_sealed : ∀ (pcr : PCRValue), pcr_extended pcr = true → pcr_locked pcr = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_048_locality_access (matches Coq) -/
-theorem SB_048_locality_access : ∀ (tpm : TPMState) (required_locality : nat), tpm_operational tpm = true → Nat.leb required_locality (tpm_locality tpm) = true →  True := by
+theorem SB_048_locality_access : ∀ (tpm : TPMState) (required_locality : nat), tpm_operational tpm = true → Nat.leb required_locality (tpm_locality tpm) = true → True := by
   simp_all [Bool.and_eq_true]
 
 /-- SB_049_measured_boot_tpm (matches Coq) -/

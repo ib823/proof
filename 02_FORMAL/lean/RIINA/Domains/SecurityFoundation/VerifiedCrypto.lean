@@ -154,107 +154,107 @@ def key_is_strong (key : CryptoKey) : Prop :=
 def derived_key_independent (parent child : CryptoKey) : Prop :=
   key_id parent <> key_id child
 
-/-- Theorem: Key material is never exposed in plaintext in unprotected memory. -/
+-- Theorem: Key material is never exposed in plaintext in unprotected memory.
 /-- key_never_plaintext (matches Coq) -/
 theorem key_never_plaintext : ∀ (key : CryptoKey) (mem : Memory), secure_key_storage key mem → ~ key_in_plaintext key mem := by
   simp_all [Bool.and_eq_true]
 
-/-- Theorem: Cryptographic operations execute in constant time regardless of input. -/
+-- Theorem: Cryptographic operations execute in constant time regardless of input.
 /-- crypto_constant_time (matches Coq) -/
 theorem crypto_constant_time : ∀ (ctx : CryptoContext) (op : CryptoOp) (input1 input2 : Data), ctx_constant_time ctx = true → execution_time ctx op input1 = execution_time ctx op input2 := by
   rfl
 
-/-- Key wrapping provides protection -/
+-- Key wrapping provides protection
 /-- wrapped_key_protected (matches Coq) -/
 theorem wrapped_key_protected : ∀ (key : CryptoKey) (mem : Memory), key_wrapped key = true → key_protected key mem := by
   intro h; exact h
 
-/-- Secure memory provides protection -/
+-- Secure memory provides protection
 /-- secure_memory_protects_key (matches Coq) -/
 theorem secure_memory_protects_key : ∀ (key : CryptoKey) (mem : Memory), mem_protected mem = true → key_protected key mem := by
   intro h; exact h
 
-/-- Constant time prevents timing attacks -/
+-- Constant time prevents timing attacks
 /-- constant_time_prevents_timing_attack (matches Coq) -/
 theorem constant_time_prevents_timing_attack : ∀ (ctx : CryptoContext) (op : CryptoOp) (secret public : Data), ctx_constant_time ctx = true → execute_crypto ctx op secret = execute_crypto ctx op public := by
   simp_all [Bool.and_eq_true]
 
-/-- Non-constant time is vulnerable -/
+-- Non-constant time is vulnerable
 /-- non_constant_time_vulnerable (matches Coq) -/
-theorem non_constant_time_vulnerable : ∀ (ctx : CryptoContext), ctx_constant_time ctx = false →  True := by
+theorem non_constant_time_vulnerable : ∀ (ctx : CryptoContext), ctx_constant_time ctx = false → True := by
   intro h; exact h
 
-/-- Key never exposed: secure storage implies not in plaintext -/
+-- Key never exposed: secure storage implies not in plaintext
 /-- key_never_exposed (matches Coq) -/
 theorem key_never_exposed : ∀ (key : CryptoKey) (mem : Memory), key_wrapped key = true → mem_protected mem = true → ~ key_in_plaintext key mem := by
   simp_all [Bool.and_eq_true]
 
-/-- Weak key detection: insufficient key strength -/
+-- Weak key detection: insufficient key strength
 /-- weak_key_detected (matches Coq) -/
 theorem weak_key_detected : ∀ (key : CryptoKey), key_bits key < 128 → ~ key_strength_sufficient key := by
   omega
 
-/-- Strong key implies sufficient strength -/
+-- Strong key implies sufficient strength
 /-- strong_key_sufficient (matches Coq) -/
 theorem strong_key_sufficient : ∀ (key : CryptoKey), key_is_strong key → key_strength_sufficient key := by
   omega
 
-/-- Encryption and decryption take equal time -/
+-- Encryption and decryption take equal time
 /-- encrypt_decrypt_equal_time (matches Coq) -/
 theorem encrypt_decrypt_equal_time : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx Encrypt input = execution_time ctx Decrypt input := by
   rfl
 
-/-- Sign and verify take equal time -/
+-- Sign and verify take equal time
 /-- sign_verify_equal_time (matches Coq) -/
 theorem sign_verify_equal_time : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx Sign input = execution_time ctx Verify input := by
   rfl
 
-/-- Hash is the fastest operation -/
+-- Hash is the fastest operation
 /-- hash_fastest_operation (matches Coq) -/
 theorem hash_fastest_operation : ∀ (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = true → execution_time ctx Hash input ≤ execution_time ctx op input := by
   cases ‹_› <;> simp <;> omega
 
-/-- Key derivation is the slowest operation -/
+-- Key derivation is the slowest operation
 /-- key_derive_slowest (matches Coq) -/
 theorem key_derive_slowest : ∀ (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = true → execution_time ctx op input ≤ execution_time ctx KeyDerive input := by
   cases ‹_› <;> simp <;> omega
 
-/-- Secure key storage is stronger than key protected -/
+-- Secure key storage is stronger than key protected
 /-- secure_storage_implies_protected (matches Coq) -/
 theorem secure_storage_implies_protected : ∀ (key : CryptoKey) (mem : Memory), secure_key_storage key mem → key_protected key mem := by
   intro h; exact h
 
-/-- Unprotected memory with unwrapped key is dangerous -/
+-- Unprotected memory with unwrapped key is dangerous
 /-- unprotected_key_vulnerable (matches Coq) -/
 theorem unprotected_key_vulnerable : ∀ (key : CryptoKey) (mem : Memory), key_wrapped key = false → mem_protected mem = false → key_in_plaintext key mem := by
   simp_all [Bool.and_eq_true]
 
-/-- Wrapping and memory protection are complementary -/
+-- Wrapping and memory protection are complementary
 /-- protection_complementary (matches Coq) -/
 theorem protection_complementary : ∀ (key : CryptoKey) (mem : Memory), key_wrapped key = true ∨ mem_protected mem = true → key_protected key mem := by
   intro h; exact h
 
-/-- No protection means potential exposure -/
+-- No protection means potential exposure
 /-- no_protection_potential_exposure (matches Coq) -/
 theorem no_protection_potential_exposure : ∀ (key : CryptoKey) (mem : Memory), ~ key_protected key mem → key_in_plaintext key mem := by
   constructor <;> simp_all [Bool.and_eq_true]
 
-/-- Constant time context with secure memory is fully hardened -/
+-- Constant time context with secure memory is fully hardened
 /-- fully_hardened_context (matches Coq) -/
 theorem fully_hardened_context : ∀ (ctx : CryptoContext), ctx_constant_time ctx = true → ctx_secure_memory ctx = true → ctx_constant_time ctx = true ∧ ctx_secure_memory ctx = true := by
   simp_all [Bool.and_eq_true]
 
-/-- Operation time is positive -/
+-- Operation time is positive
 /-- operation_time_positive (matches Coq) -/
 theorem operation_time_positive : ∀ (ctx : CryptoContext) (op : CryptoOp) (input : Data), ctx_constant_time ctx = true → execution_time ctx op input > 0 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Different operations may have different times -/
+-- Different operations may have different times
 /-- encrypt_faster_than_sign (matches Coq) -/
 theorem encrypt_faster_than_sign : ∀ (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = true → execution_time ctx Encrypt input < execution_time ctx Sign input := by
   omega
 
-/-- Execution is deterministic -/
+-- Execution is deterministic
 /-- crypto_execution_deterministic (matches Coq) -/
 theorem crypto_execution_deterministic : ∀ (ctx : CryptoContext) (op : CryptoOp) (input : Data), execute_crypto ctx op input = execute_crypto ctx op input := by
   rfl

@@ -197,62 +197,62 @@ def dose_in_range (dose min_dose max_dose : Nat) : Bool :=
 def lab_in_normal_range (value low high : Nat) : Bool :=
   Nat.leb low value && Nat.leb value high
 
-/-- Section B01 - HIPAA Privacy Rule
-    Reference: IND_B_HEALTHCARE.md Section 3.1 -/
+-- Section B01 - HIPAA Privacy Rule
+    Reference: IND_B_HEALTHCARE.md Section 3.1
 /-- hipaa_privacy_rule (matches Coq) -/
-theorem hipaa_privacy_rule : ∀ (phi : PHI_Category) (accessor : nat) (purpose : nat),  True := by
+theorem hipaa_privacy_rule : ∀ (phi : PHI_Category) (accessor : nat) (purpose : nat), True := by
   trivial
 
-/-- Section B02 - HIPAA Security Rule
-    Reference: IND_B_HEALTHCARE.md Section 3.2 -/
+-- Section B02 - HIPAA Security Rule
+    Reference: IND_B_HEALTHCARE.md Section 3.2
 /-- hipaa_security_rule (matches Coq) -/
-theorem hipaa_security_rule : ∀ (policy : HIPAA_Policy), access_control policy = true → audit_controls policy = true → integrity_controls policy = true → transmission_security policy = true →  True := by
+theorem hipaa_security_rule : ∀ (policy : HIPAA_Policy), access_control policy = true → audit_controls policy = true → integrity_controls policy = true → transmission_security policy = true → True := by
   trivial
 
-/-- Section B03 - FDA 21 CFR Part 11
-    Reference: IND_B_HEALTHCARE.md Section 3.3 -/
+-- Section B03 - FDA 21 CFR Part 11
+    Reference: IND_B_HEALTHCARE.md Section 3.3
 /-- fda_21_cfr_11 (matches Coq) -/
-theorem fda_21_cfr_11 : ∀ (electronic_record : nat) (signature : nat),  True := by
+theorem fda_21_cfr_11 : ∀ (electronic_record : nat) (signature : nat), True := by
   trivial
 
-/-- Section B04 - HITECH Breach Notification
-    Reference: IND_B_HEALTHCARE.md Section 3.4 -/
+-- Section B04 - HITECH Breach Notification
+    Reference: IND_B_HEALTHCARE.md Section 3.4
 /-- hitech_breach_notification (matches Coq) -/
-theorem hitech_breach_notification : ∀ (breach : nat) (affected_individuals : nat),  True := by
+theorem hitech_breach_notification : ∀ (breach : nat) (affected_individuals : nat), True := by
   trivial
 
-/-- Section B05 - HL7 FHIR Security
-    Reference: IND_B_HEALTHCARE.md Section 3.5 -/
+-- Section B05 - HL7 FHIR Security
+    Reference: IND_B_HEALTHCARE.md Section 3.5
 /-- hl7_fhir_security (matches Coq) -/
-theorem hl7_fhir_security : ∀ (resource : nat) (access_token : nat),  True := by
+theorem hl7_fhir_security : ∀ (resource : nat) (access_token : nat), True := by
   trivial
 
-/-- PHI must be encrypted in transit -/
+-- PHI must be encrypted in transit
 /-- phi_encryption_required (matches Coq) -/
-theorem phi_encryption_required : ∀ (policy : HIPAA_Policy) (phi : PHI_Category), transmission_security policy = true →  True := by
+theorem phi_encryption_required : ∀ (policy : HIPAA_Policy) (phi : PHI_Category), transmission_security policy = true → True := by
   trivial
 
-/-- Minimum necessary access -/
+-- Minimum necessary access
 /-- minimum_necessary_access (matches Coq) -/
-theorem minimum_necessary_access : ∀ phi_requested treatment_required, minimum_necessary phi_requested treatment_required = true →  True := by
+theorem minimum_necessary_access : ∀ phi_requested treatment_required, minimum_necessary phi_requested treatment_required = true → True := by
   trivial
 
-/-- Sensitivity ordering -/
+-- Sensitivity ordering
 /-- phi_sensitivity_positive (matches Coq) -/
 theorem phi_sensitivity_positive : ∀ cat, phi_sensitivity cat ≥ 1 := by
   cases ‹_› <;> simp <;> omega
 
-/-- Psychotherapy, Substance, HIV all have maximum sensitivity -/
+-- Psychotherapy, Substance, HIV all have maximum sensitivity
 /-- max_sensitivity_categories (matches Coq) -/
 theorem max_sensitivity_categories : ∀ cat, cat = Psychotherapy ∨ cat = Substance ∨ cat = HIV_Status → phi_sensitivity cat = 4 := by
   cases ‹_› <;> simp
 
-/-- Demographics has minimum sensitivity -/
+-- Demographics has minimum sensitivity
 /-- demographics_minimum (matches Coq) -/
 theorem demographics_minimum : ∀ cat, phi_sensitivity Demographics ≤ phi_sensitivity cat := by
   cases ‹_› <;> simp <;> omega
 
-/-- Genetic data is less sensitive than psychotherapy but more than medical records -/
+-- Genetic data is less sensitive than psychotherapy but more than medical records
 /-- genetic_sensitivity_ordering (matches Coq) -/
 theorem genetic_sensitivity_ordering : phi_sensitivity MedicalRecord < phi_sensitivity Genetic ∧ phi_sensitivity Genetic < phi_sensitivity Psychotherapy := by
   omega
@@ -277,7 +277,7 @@ theorem hipaa_all_controls_transmission : transmission_security hipaa_all_contro
 theorem hipaa_all_controls_encryption : encryption_at_rest hipaa_all_controls = true := by
   simp
 
-/-- Full security implies minimum -/
+-- Full security implies minimum
 /-- hipaa_full_implies_minimum (matches Coq) -/
 theorem hipaa_full_implies_minimum : ∀ p, access_control p = true → audit_controls p = true → integrity_controls p = true → transmission_security p = true → hipaa_security_minimum p = true := by
   simp
@@ -294,7 +294,7 @@ theorem high_role_accesses_demographics : ∀ r, r ≥ 1 → access_permitted r 
 theorem low_role_denied_psychotherapy : access_permitted 2 Psychotherapy = false := by
   simp
 
-/-- Sufficient role level grants access -/
+-- Sufficient role level grants access
 /-- role_sufficient_access (matches Coq) -/
 theorem role_sufficient_access : ∀ r cat, r ≥ phi_sensitivity cat → access_permitted r cat = true := by
   simp_all [Bool.and_eq_true]

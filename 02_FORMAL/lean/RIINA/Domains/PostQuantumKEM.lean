@@ -228,136 +228,136 @@ def riina_kem_security : KEMSecurity := mkKEMSecurity
   mk_compliant_qr
   Level5
 
-/-- ============================================================================
+-- ============================================================================
     SECTION 4: COMPLIANCE PREDICATES
-    ============================================================================ -/
+    ============================================================================
 /-- andb_true_iff (matches Coq) -/
 theorem andb_true_iff : ∀ a b : bool, a && b = true <-> a = true ∧ b = true := by
   cases ‹_› <;> simp
 
-/-- PQ_KEM_001: Level Reflexivity -/
+-- PQ_KEM_001: Level Reflexivity
 /-- PQ_KEM_001_level_reflexive (matches Coq) -/
 theorem PQ_KEM_001_level_reflexive : ∀ l : SecurityLevel, level_leq l l = true := by
   rfl
 
-/-- PQ_KEM_002: Level Transitivity -/
+-- PQ_KEM_002: Level Transitivity
 /-- PQ_KEM_002_level_transitive (matches Coq) -/
 theorem PQ_KEM_002_level_transitive : ∀ l1 l2 l3 : SecurityLevel, level_leq l1 l2 = true → level_leq l2 l3 = true → level_leq l1 l3 = true := by
   cases ‹_› <;> simp
 
-/-- PQ_KEM_003: Level 1 is minimum -/
+-- PQ_KEM_003: Level 1 is minimum
 /-- PQ_KEM_003_level1_minimum (matches Coq) -/
 theorem PQ_KEM_003_level1_minimum : ∀ l : SecurityLevel, level_leq Level1 l = true := by
   rfl
 
-/-- PQ_KEM_004: Level 5 is maximum -/
+-- PQ_KEM_004: Level 5 is maximum
 /-- PQ_KEM_004_level5_maximum (matches Coq) -/
 theorem PQ_KEM_004_level5_maximum : ∀ l : SecurityLevel, level_leq l Level5 = true := by
   rfl
 
-/-- PQ_KEM_005: ML-KEM-512 is Level 1 -/
+-- PQ_KEM_005: ML-KEM-512 is Level 1
 /-- PQ_KEM_005_mlkem512_level1 (matches Coq) -/
 theorem PQ_KEM_005_mlkem512_level1 : param_security_level ML_KEM_512 = Level1 := by
   rfl
 
-/-- PQ_KEM_006: ML-KEM-768 is Level 3 -/
+-- PQ_KEM_006: ML-KEM-768 is Level 3
 /-- PQ_KEM_006_mlkem768_level3 (matches Coq) -/
 theorem PQ_KEM_006_mlkem768_level3 : param_security_level ML_KEM_768 = Level3 := by
   rfl
 
-/-- PQ_KEM_007: ML-KEM-1024 is Level 5 -/
+-- PQ_KEM_007: ML-KEM-1024 is Level 5
 /-- PQ_KEM_007_mlkem1024_level5 (matches Coq) -/
 theorem PQ_KEM_007_mlkem1024_level5 : param_security_level ML_KEM_1024 = Level5 := by
   rfl
 
-/-- PQ_KEM_008: Higher parameters provide higher security -/
+-- PQ_KEM_008: Higher parameters provide higher security
 /-- PQ_KEM_008_params_ordered (matches Coq) -/
 theorem PQ_KEM_008_params_ordered : level_leq (param_security_level ML_KEM_512) (param_security_level ML_KEM_1024) = true := by
   rfl
 
-/-- PQ_KEM_009: Compliant IND-CCA Valid -/
+-- PQ_KEM_009: Compliant IND-CCA Valid
 /-- PQ_KEM_009_indcca_valid (matches Coq) -/
 theorem PQ_KEM_009_indcca_valid : indcca_compliant mk_compliant_indcca = true := by
   rfl
 
-/-- PQ_KEM_010: Ciphertext Indistinguishability -/
+-- PQ_KEM_010: Ciphertext Indistinguishability
 /-- PQ_KEM_010_ciphertext_indist (matches Coq) -/
 theorem PQ_KEM_010_ciphertext_indist : ∀ s : INDCCASecure, indcca_compliant s = true → indcca_ciphertext_indistinguishable s = true := by
   cases ‹_› <;> simp <;> omega
 
-/-- PQ_KEM_011: Key Indistinguishability -/
+-- PQ_KEM_011: Key Indistinguishability
 /-- PQ_KEM_011_key_indist (matches Coq) -/
 theorem PQ_KEM_011_key_indist : ∀ s : INDCCASecure, indcca_compliant s = true → indcca_key_indistinguishable s = true := by
   cases ‹_› <;> simp <;> omega
 
-/-- PQ_KEM_012: Decapsulation Consistency -/
+-- PQ_KEM_012: Decapsulation Consistency
 /-- PQ_KEM_012_decaps_consistent (matches Coq) -/
 theorem PQ_KEM_012_decaps_consistent : ∀ s : INDCCASecure, indcca_compliant s = true → indcca_decaps_consistent s = true := by
   cases ‹_› <;> simp <;> omega
 
-/-- PQ_KEM_013: Compliant QR Valid -/
+-- PQ_KEM_013: Compliant QR Valid
 /-- PQ_KEM_013_qr_valid (matches Coq) -/
 theorem PQ_KEM_013_qr_valid : quantum_resistant mk_compliant_qr = true := by
   rfl
 
-/-- PQ_KEM_014: Lattice-Based Construction -/
+-- PQ_KEM_014: Lattice-Based Construction
 /-- PQ_KEM_014_lattice_based (matches Coq) -/
 theorem PQ_KEM_014_lattice_based : ∀ q : QuantumResistant, quantum_resistant q = true → qr_lattice_based q = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_015: Module-LWE Hardness -/
+-- PQ_KEM_015: Module-LWE Hardness
 /-- PQ_KEM_015_module_lwe (matches Coq) -/
 theorem PQ_KEM_015_module_lwe : ∀ q : QuantumResistant, quantum_resistant q = true → qr_module_lwe q = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_016: No Known Quantum Attack -/
+-- PQ_KEM_016: No Known Quantum Attack
 /-- PQ_KEM_016_no_quantum_attack (matches Coq) -/
 theorem PQ_KEM_016_no_quantum_attack : ∀ q : QuantumResistant, quantum_resistant q = true → qr_no_known_quantum_attack q = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_017: RIINA KEM Correct -/
+-- PQ_KEM_017: RIINA KEM Correct
 /-- PQ_KEM_017_riina_kem_correct (matches Coq) -/
 theorem PQ_KEM_017_riina_kem_correct : kem_correct riina_kem_1024 = true := by
   rfl
 
-/-- PQ_KEM_018: RIINA KEM Secure -/
+-- PQ_KEM_018: RIINA KEM Secure
 /-- PQ_KEM_018_riina_kem_secure (matches Coq) -/
 theorem PQ_KEM_018_riina_kem_secure : kem_secure riina_kem_security = true := by
   rfl
 
-/-- PQ_KEM_019: RIINA Uses Level 5 -/
+-- PQ_KEM_019: RIINA Uses Level 5
 /-- PQ_KEM_019_riina_level5 (matches Coq) -/
 theorem PQ_KEM_019_riina_level5 : kem_sec_level riina_kem_security = Level5 := by
   rfl
 
-/-- PQ_KEM_020: RIINA Uses ML-KEM-1024 -/
+-- PQ_KEM_020: RIINA Uses ML-KEM-1024
 /-- PQ_KEM_020_riina_mlkem1024 (matches Coq) -/
 theorem PQ_KEM_020_riina_mlkem1024 : kem_params riina_kem_1024 = ML_KEM_1024 := by
   rfl
 
-/-- PQ_KEM_021: Security Implies IND-CCA -/
+-- PQ_KEM_021: Security Implies IND-CCA
 /-- PQ_KEM_021_security_implies_indcca (matches Coq) -/
 theorem PQ_KEM_021_security_implies_indcca : ∀ s : KEMSecurity, kem_secure s = true → indcca_compliant (kem_sec_indcca s) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_022: Security Implies Quantum Resistance -/
+-- PQ_KEM_022: Security Implies Quantum Resistance
 /-- PQ_KEM_022_security_implies_qr (matches Coq) -/
 theorem PQ_KEM_022_security_implies_qr : ∀ s : KEMSecurity, kem_secure s = true → quantum_resistant (kem_sec_quantum s) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_023: Correctness Requires Valid KeyPair -/
+-- PQ_KEM_023: Correctness Requires Valid KeyPair
 /-- PQ_KEM_023_correct_keypair (matches Coq) -/
 theorem PQ_KEM_023_correct_keypair : ∀ k : KEMInstance, kem_correct k = true → kp_valid (kem_keypair k) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_024: Correctness Requires Shared Secret Match -/
+-- PQ_KEM_024: Correctness Requires Shared Secret Match
 /-- PQ_KEM_024_shared_secret_match (matches Coq) -/
 theorem PQ_KEM_024_shared_secret_match : ∀ k : KEMInstance, kem_correct k = true → Nat.eqb (enc_shared_secret (kem_encaps_result k)) (kem_decaps_result k) = true := by
   simp_all [Bool.and_eq_true]
 
-/-- PQ_KEM_025: Complete PQ-KEM Security Theorem -/
+-- PQ_KEM_025: Complete PQ-KEM Security Theorem
 /-- PQ_KEM_025_complete_security (matches Coq) -/
-theorem PQ_KEM_025_complete_security : ∀ s : KEMSecurity, kem_secure s = true →  indcca_ciphertext_indistinguishable (kem_sec_indcca s) = true ∧ indcca_key_indistinguishable (kem_sec_indcca s) = true ∧ qr_lattice_based (kem_sec_quantum s) = true ∧ qr_no_known_quantum_attack (kem_sec_quantum s) = true := by
+theorem PQ_KEM_025_complete_security : ∀ s : KEMSecurity, kem_secure s = true → indcca_ciphertext_indistinguishable (kem_sec_indcca s) = true ∧ indcca_key_indistinguishable (kem_sec_indcca s) = true ∧ qr_lattice_based (kem_sec_quantum s) = true ∧ qr_no_known_quantum_attack (kem_sec_quantum s) = true := by
   omega
 
 end RIINA
