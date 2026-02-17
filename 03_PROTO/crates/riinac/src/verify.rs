@@ -45,6 +45,19 @@ struct CheckResult {
     details: String,
 }
 
+struct ProverDirs<'a> {
+    coq_dir: &'a Path,
+    lean_dir: &'a Path,
+    isabelle_dir: &'a Path,
+    fstar_dir: &'a Path,
+    tlaplus_dir: &'a Path,
+    alloy_dir: &'a Path,
+    smt_dir: &'a Path,
+    verus_dir: &'a Path,
+    kani_dir: &'a Path,
+    tv_dir: &'a Path,
+}
+
 #[derive(Debug)]
 enum ToolStatus {
     Found(PathBuf),
@@ -1387,7 +1400,7 @@ fn compile_isabelle(isabelle_dir: &Path) -> CheckResult {
             name: "Isabelle Compilation".into(),
             passed: false,
             blocking: false,
-            details: format!("{msg}"),
+            details: msg.to_string(),
         },
     };
 
@@ -1552,28 +1565,17 @@ fn verify_metrics_accuracy(
 /// Cross-validate proof counts across all ten provers.
 /// Checks that Lean and Isabelle theorem counts are within 50% of the Coq domain count.
 /// Also aggregates counts from all 7 additional provers.
-fn cross_validate_provers(
-    coq_dir: &Path,
-    lean_dir: &Path,
-    isabelle_dir: &Path,
-    fstar_dir: &Path,
-    tlaplus_dir: &Path,
-    alloy_dir: &Path,
-    smt_dir: &Path,
-    verus_dir: &Path,
-    kani_dir: &Path,
-    tv_dir: &Path,
-) -> CheckResult {
-    let coq_qed = count_coq_qed(coq_dir);
-    let lean_thm = count_lean_theorems(lean_dir);
-    let isa_lem = count_isabelle_lemmas(&isabelle_dir.join("RIINA"));
-    let fstar_lem = count_fstar_lemmas(fstar_dir);
-    let tla_thm = count_tla_theorems(tlaplus_dir);
-    let alloy_asrt = count_alloy_assertions(alloy_dir);
-    let smt_asrt = count_smt_assertions(smt_dir);
-    let verus_pf = count_verus_proofs(verus_dir);
-    let kani_pf = count_kani_proofs(kani_dir);
-    let tv_val = count_tv_validations(tv_dir);
+fn cross_validate_provers(dirs: &ProverDirs<'_>) -> CheckResult {
+    let coq_qed = count_coq_qed(dirs.coq_dir);
+    let lean_thm = count_lean_theorems(dirs.lean_dir);
+    let isa_lem = count_isabelle_lemmas(&dirs.isabelle_dir.join("RIINA"));
+    let fstar_lem = count_fstar_lemmas(dirs.fstar_dir);
+    let tla_thm = count_tla_theorems(dirs.tlaplus_dir);
+    let alloy_asrt = count_alloy_assertions(dirs.alloy_dir);
+    let smt_asrt = count_smt_assertions(dirs.smt_dir);
+    let verus_pf = count_verus_proofs(dirs.verus_dir);
+    let kani_pf = count_kani_proofs(dirs.kani_dir);
+    let tv_val = count_tv_validations(dirs.tv_dir);
 
     let grand_total = coq_qed
         + lean_thm
@@ -1638,20 +1640,8 @@ fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
 
 /// Check if transpiled prover files are stale relative to Coq source files.
 /// Returns non-blocking warnings for each stale prover.
-fn check_transpiler_staleness(
-    repo: &Path,
-    coq_dir: &Path,
-    lean_dir: &Path,
-    isabelle_dir: &Path,
-    fstar_dir: &Path,
-    tlaplus_dir: &Path,
-    alloy_dir: &Path,
-    smt_dir: &Path,
-    verus_dir: &Path,
-    kani_dir: &Path,
-    tv_dir: &Path,
-) -> Vec<CheckResult> {
-    let coq_newest = match newest_mtime(coq_dir, "v") {
+fn check_transpiler_staleness(repo: &Path, dirs: &ProverDirs<'_>) -> Vec<CheckResult> {
+    let coq_newest = match newest_mtime(dirs.coq_dir, "v") {
         Some(t) => t,
         None => return vec![],
     };
@@ -1700,55 +1690,55 @@ fn check_transpiler_staleness(
     let provers: &[(&str, &Path, &str, &str)] = &[
         (
             "Lean",
-            lean_dir,
+            dirs.lean_dir,
             "lean",
             "python3 scripts/generate-multiprover.py",
         ),
         (
             "Isabelle",
-            isabelle_dir,
+            dirs.isabelle_dir,
             "thy",
             "python3 scripts/generate-multiprover.py",
         ),
         (
             "F*",
-            fstar_dir,
+            dirs.fstar_dir,
             "fst",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "TLA+",
-            tlaplus_dir,
+            dirs.tlaplus_dir,
             "tla",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "Alloy",
-            alloy_dir,
+            dirs.alloy_dir,
             "als",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "SMT",
-            smt_dir,
+            dirs.smt_dir,
             "smt2",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "Verus",
-            verus_dir,
+            dirs.verus_dir,
             "rs",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "Kani",
-            kani_dir,
+            dirs.kani_dir,
             "rs",
             "python3 scripts/generate-full-stack.py",
         ),
         (
             "TV",
-            tv_dir,
+            dirs.tv_dir,
             "smt2",
             "python3 scripts/generate-full-stack.py",
         ),
@@ -2274,6 +2264,18 @@ pub fn run(mode: Mode) -> i32 {
         let verus_dir = repo.join("02_FORMAL").join("verus");
         let kani_dir = repo.join("02_FORMAL").join("kani");
         let tv_dir = repo.join("02_FORMAL").join("tv");
+        let prover_dirs = ProverDirs {
+            coq_dir: &coq_dir,
+            lean_dir: &lean_dir,
+            isabelle_dir: &isabelle_dir,
+            fstar_dir: &fstar_dir,
+            tlaplus_dir: &tlaplus_dir,
+            alloy_dir: &alloy_dir,
+            smt_dir: &smt_dir,
+            verus_dir: &verus_dir,
+            kani_dir: &kani_dir,
+            tv_dir: &tv_dir,
+        };
 
         // === Coq ===
         eprintln!("\n=== Coq Verification ===");
@@ -2340,34 +2342,11 @@ pub fn run(mode: Mode) -> i32 {
 
         // === Cross-Prover ===
         eprintln!("\n=== Cross-Prover Validation (10 provers) ===");
-        results.push(cross_validate_provers(
-            &coq_dir,
-            &lean_dir,
-            &isabelle_dir,
-            &fstar_dir,
-            &tlaplus_dir,
-            &alloy_dir,
-            &smt_dir,
-            &verus_dir,
-            &kani_dir,
-            &tv_dir,
-        ));
+        results.push(cross_validate_provers(&prover_dirs));
 
         // === Transpiler Staleness ===
         eprintln!("\n=== Transpiler Staleness Check ===");
-        results.extend(check_transpiler_staleness(
-            &repo,
-            &coq_dir,
-            &lean_dir,
-            &isabelle_dir,
-            &fstar_dir,
-            &tlaplus_dir,
-            &alloy_dir,
-            &smt_dir,
-            &verus_dir,
-            &kani_dir,
-            &tv_dir,
-        ));
+        results.extend(check_transpiler_staleness(&repo, &prover_dirs));
 
         // === Metrics Accuracy ===
         eprintln!("\n=== Metrics Accuracy Check ===");

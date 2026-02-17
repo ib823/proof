@@ -1799,7 +1799,7 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &post_without_token) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
+            Err(TypeError::TypeMismatch { expected, found: _ }) => {
                 // Expected: (String, (Any, String))
                 // Found: (String, Unit)
                 match expected {

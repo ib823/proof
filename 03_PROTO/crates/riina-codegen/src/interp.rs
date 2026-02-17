@@ -1233,21 +1233,6 @@ mod tests {
     #[test]
     fn test_eval_subtraction() {
         let mut interp = Interpreter::new();
-        let expr = Expr::Let(
-            "x".to_string(),
-            Box::new(Expr::Int(10)),
-            Box::new(Expr::Let(
-                "y".to_string(),
-                Box::new(Expr::Int(3)),
-                Box::new(Expr::App(
-                    Box::new(Expr::App(
-                        Box::new(Expr::Var("__sub".to_string())),
-                        Box::new(Expr::Var("x".to_string())),
-                    )),
-                    Box::new(Expr::Var("y".to_string())),
-                )),
-            )),
-        );
         // We can't directly test subtraction without the built-in,
         // so let's test nested pairs instead
         let pair_expr = Expr::Pair(
