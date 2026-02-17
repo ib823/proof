@@ -94,6 +94,7 @@ INTERNAL_PATHS=(
     "scripts/verify-public.sh"
     "scripts/sync-metrics.sh"
     "scripts/verify-riina-deploy.sh"
+    "scripts/generate-full-stack.py"
 
     # --- IDE/editor config ---
     ".cursor/"
