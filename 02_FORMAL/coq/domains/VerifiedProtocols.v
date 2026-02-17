@@ -611,7 +611,7 @@ Theorem AH_001_05_protocol_composition : forall spec1 spec2 impl1 impl2 trace1 t
 Proof.
   intros spec1 spec2 impl1 impl2 trace1 trace2 H1 H2 Hv1 Hv2.
   unfold valid_trace.
-  rewrite app_length.
+  rewrite length_app.
   apply Nat.le_0_l.
 Qed.
 

@@ -351,7 +351,7 @@ Theorem PI_003_04_msq_enqueue_length : forall q v,
   length (msq_items (msq_enqueue q v)) = S (length (msq_items q)).
 Proof.
   intros q v. unfold msq_enqueue. simpl.
-  rewrite app_length. simpl. lia.
+  rewrite length_app. simpl. lia.
 Qed.
 
 Theorem PI_003_05_cas_success : forall v new_val,

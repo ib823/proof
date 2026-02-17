@@ -195,7 +195,7 @@ Theorem traffic_010_sender_anonymity :
 Proof.
   intros batch H.
   unfold sender_anonymity_set.
-  rewrite map_length. exact H.
+  rewrite length_map. exact H.
 Qed.
 
 (* ---------- TRAFFIC-011: Receiver Anonymity Set ---------- *)
@@ -210,7 +210,7 @@ Theorem traffic_011_receiver_anonymity :
 Proof.
   intros batch H.
   unfold receiver_anonymity_set.
-  rewrite map_length. exact H.
+  rewrite length_map. exact H.
 Qed.
 
 (* ---------- TRAFFIC-012: Padding Ratio Correct ---------- *)

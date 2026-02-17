@@ -254,7 +254,7 @@ Qed.
 Theorem PSI_001_02_generate_shares_length : forall coeffs n p,
   length (generate_shares coeffs n p) = n.
 Proof.
-  intros. unfold generate_shares. rewrite map_length. apply seq_length.
+  intros. unfold generate_shares. rewrite length_map. apply length_seq.
 Qed.
 
 Theorem PSI_001_03_threshold_monotone : forall shares k1 k2,

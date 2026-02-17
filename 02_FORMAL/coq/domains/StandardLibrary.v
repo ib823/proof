@@ -1119,7 +1119,7 @@ Proof.
   unfold sign_data, verify_signature.
   simpl.
   rewrite Nat.eqb_refl.
-  rewrite map_length.
+  rewrite length_map.
   rewrite Nat.eqb_refl.
   reflexivity.
 Qed.

@@ -109,7 +109,7 @@ Definition vec_empty {A : Type} : Vec A :=
 Definition vec_push {A : Type} (v : Vec A) (x : A) : Vec A.
 Proof.
   refine (mkVec (vec_data v ++ [x]) (S (vec_length v)) _).
-  rewrite app_length. simpl.
+  rewrite length_app. simpl.
   rewrite (vec_length_ok v). lia.
 Defined.
 
@@ -758,7 +758,7 @@ Theorem Y_001_39_bigint_correct : forall (a b : BigInt),
 Proof.
   intros a b.
   unfold bigint_add.
-  apply app_length.
+  apply length_app.
 Qed.
 
 (* Y_001_40: Numeric operations are constant-time *)

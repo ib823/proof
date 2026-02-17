@@ -230,7 +230,7 @@ Theorem DELTA_001_06_leader_append_only : forall leader entry,
   let log' := node_log leader ++ [entry] in
   length log' = S (length (node_log leader)).
 Proof.
-  intros leader entry Hrole. simpl. rewrite app_length. simpl. lia.
+  intros leader entry Hrole. simpl. rewrite length_app. simpl. lia.
 Qed.
 
 Theorem DELTA_001_07_term_monotonic : forall t1 t2,

@@ -210,7 +210,7 @@ Theorem uniform_length : forall n (Hn : (0 < n)%nat),
   length (uniform_dist n Hn) = n.
 Proof.
   unfold uniform_dist. intros.
-  rewrite map_length. rewrite seq_length. reflexivity.
+  rewrite length_map. rewrite length_seq. reflexivity.
 Qed.
 
 (** * Theorem 14: Qabs is non-negative *)
