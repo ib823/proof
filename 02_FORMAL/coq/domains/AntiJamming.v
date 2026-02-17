@@ -199,7 +199,7 @@ Proof.
   unfold detect_jamming.
   destruct (Nat.ltb snr (threshold / 2)) eqn:E1.
   - apply Nat.ltb_lt in E1.
-    assert (threshold / 2 <= threshold) by (apply Nat.div_le_upper_bound; lia).
+    assert (threshold / 2 <= threshold) by (apply Nat.Private_NDivProp.div_le_upper_bound; lia).
     lia.
   - destruct (Nat.ltb snr threshold) eqn:E2.
     + apply Nat.ltb_lt in E2. lia.

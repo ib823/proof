@@ -790,7 +790,7 @@ Theorem CONG_005_aimd_decrease_halves : forall cs,
 Proof.
   intros cs H. unfold aimd_decrease. simpl.
   apply Nat.max_lub.
-  - assert (cwnd cs / 2 <= cwnd cs) by (apply Nat.div_le_upper_bound; lia).
+  - assert (cwnd cs / 2 <= cwnd cs) by (apply Nat.Private_NDivProp.div_le_upper_bound; lia).
     exact H0.
   - lia.
 Qed.
@@ -1261,8 +1261,8 @@ Theorem COMP_010_seq_wraparound : forall n,
   (n + SEQ_SPACE) mod SEQ_SPACE = n mod SEQ_SPACE.
 Proof.
   intros n.
-  rewrite Nat.add_mod. rewrite Nat.mod_same. rewrite Nat.add_0_r.
-  rewrite Nat.mod_mod. reflexivity.
+  rewrite Nat.Private_NDivProp.add_mod. rewrite Nat.Private_NDivProp.mod_same. rewrite Nat.add_0_r.
+  rewrite Nat.Private_NDivProp.mod_mod. reflexivity.
   exact SEQ_SPACE_neq_0.
   exact SEQ_SPACE_neq_0.
   exact SEQ_SPACE_neq_0.

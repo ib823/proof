@@ -257,7 +257,7 @@ Lemma val_rel_le_div2 : forall n Σ T v1 v2,
 Proof.
   intros n Σ T v1 v2 Hrel.
   apply val_rel_le_monotone with n.
-  - apply PeanoNat.Nat.div_le_upper_bound. lia. lia.
+  - apply Nat.Private_NDivProp.div_le_upper_bound. lia. lia.
   - exact Hrel.
 Qed.
 

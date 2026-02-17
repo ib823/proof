@@ -247,7 +247,7 @@ Proof.
   intros coeffs p Hp. destruct coeffs as [|a rest].
   - simpl. reflexivity.
   - simpl. unfold field_add, field_mul. simpl.
-    rewrite Nat.mod_0_l; [| lia]. rewrite Nat.add_0_r.
+    rewrite Nat.Private_NDivProp.mod_0_l; [| lia]. rewrite Nat.add_0_r.
     reflexivity.
 Qed.
 

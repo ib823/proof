@@ -545,7 +545,7 @@ Theorem PERF_003_20_zero_aligned :
 Proof.
   intros alignment Hpos.
   unfold is_aligned.
-  rewrite Nat.mod_0_l.
+  rewrite Nat.Private_NDivProp.mod_0_l.
   - simpl. reflexivity.
   - lia.
 Qed.

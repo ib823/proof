@@ -510,7 +510,7 @@ Proof.
   - (* 128 <= 256 / 2 = 128 *)
     apply Nat.le_refl.
   - (* 256 / 2 <= bits / 2 *)
-    apply Nat.div_le_mono.
+    apply Nat.Private_NDivProp.div_le_mono.
     + discriminate.
     + exact Hbits.
 Qed.

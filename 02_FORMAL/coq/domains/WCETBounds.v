@@ -381,7 +381,7 @@ Proof.
   intros cfg size1 size2 Hle.
   unfold dma_wcet.
   assert (H: size1 / max 1 (dma_bandwidth cfg) <= size2 / max 1 (dma_bandwidth cfg)).
-  { apply Nat.div_le_mono.
+  { apply Nat.Private_NDivProp.div_le_mono.
     - lia.
     - assumption.
   }

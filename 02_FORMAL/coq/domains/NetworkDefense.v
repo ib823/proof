@@ -648,7 +648,7 @@ Proof.
   unfold adaptive_rate.
   destruct (Nat.leb current_load (max_capacity / 2)) eqn:Hle.
   - apply Nat.leb_le in Hle. lia.
-  - apply Nat.div_le_upper_bound.
+  - apply Nat.Private_NDivProp.div_le_upper_bound.
     + lia.
     + lia.
 Qed.
@@ -769,7 +769,7 @@ Proof.
   unfold amplification_factor.
   destruct request_size as [| n].
   - lia.
-  - apply Nat.div_le_upper_bound.
+  - apply Nat.Private_NDivProp.div_le_upper_bound.
     + lia.
     + lia.
 Qed.
