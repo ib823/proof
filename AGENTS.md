@@ -70,7 +70,7 @@ Never the reverse.
 ## Quick Reference
 
 - **Language:** RIINA (Bahasa Melayu keywords, `.rii` files)
-- **Coq proofs:** `02_FORMAL/coq/` (primary, 7,276 Qed active, 0 Admitted)
+- **Coq proofs:** `02_FORMAL/coq/` (primary, 8,946 Qed active, 0 Admitted)
 - **Rust prototype:** `03_PROTO/` (905 tests, 15 crates)
 - **Lean 4:** `02_FORMAL/lean/` (33 compiled theorems, toolchain v4.16.0)
 - **Specs:** `04_SPECS/`
