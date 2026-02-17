@@ -175,7 +175,7 @@ Definition macro_well_formed (m : MacroDef) : bool :=
   forallb tokens_well_formed (macro_templates m).
 
 (* Simple macro expansion with fuel *)
-Fixpoint expand_macro_fuel (fuel : ExpansionFuel) (m : MacroDef) (input : TokenStream) 
+Definition expand_macro_fuel (fuel : ExpansionFuel) (m : MacroDef) (input : TokenStream) 
   : option TokenStream :=
   match fuel with
   | 0 => None  (* Out of fuel = potential non-termination *)

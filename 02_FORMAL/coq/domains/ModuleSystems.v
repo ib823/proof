@@ -646,7 +646,7 @@ Definition deps_acyclic (pkgs : list Package) : Prop :=
       last cycle EmptyString = p.(pkg_name).
 
 (* Resolve dependencies with fuel to ensure termination *)
-Fixpoint resolve_deps_fuel (fuel : nat) (pkgs : list Package) (name : string) : option Package :=
+Definition resolve_deps_fuel (fuel : nat) (pkgs : list Package) (name : string) : option Package :=
   match fuel with
   | 0 => None
   | S n =>

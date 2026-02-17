@@ -210,7 +210,7 @@ Qed.
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 
 (* Pure expression evaluation — platform-independent *)
-Fixpoint pure_eval (e : nat) : nat :=
+Definition pure_eval (e : nat) : nat :=
   e.  (* identity for simplified model *)
 
 (* Pure functions produce same result on all platforms *)
