@@ -1,0 +1,116 @@
+{
+  "generatedAt": "2026-02-17T12:33:16.207980+00:00",
+  "repoHead": "5958aabd12823d78bce3f587ea393aa91d81f632",
+  "repoParentHead": "7beb15f2c18cc2a9c50dbb7abb7965dde9a7fb1f",
+  "totals": {
+    "warnings": 112,
+    "kinds": {
+      "abstract-large-number": 112
+    },
+    "filesWithWarnings": 28
+  },
+  "topFiles": [
+    {
+      "file": "domains/VerifiedNetworkStack.v",
+      "warnings": 20
+    },
+    {
+      "file": "domains/AuthenticationProtocols.v",
+      "warnings": 20
+    },
+    {
+      "file": "domains/FHESecurity.v",
+      "warnings": 9
+    },
+    {
+      "file": "domains/BinarySizeBounds.v",
+      "warnings": 6
+    },
+    {
+      "file": "domains/CrossBorderRemittance.v",
+      "warnings": 6
+    },
+    {
+      "file": "domains/mobile_os/CameraAudioSystem.v",
+      "warnings": 6
+    },
+    {
+      "file": "domains/TEEAttestation.v",
+      "warnings": 5
+    },
+    {
+      "file": "domains/mobile_os/PowerManagement.v",
+      "warnings": 5
+    },
+    {
+      "file": "domains/mobile_os/TouchGestureSystem.v",
+      "warnings": 4
+    },
+    {
+      "file": "domains/mobile_os/BiometricSystem.v",
+      "warnings": 3
+    },
+    {
+      "file": "domains/mobile_os/NetworkingStack.v",
+      "warnings": 3
+    },
+    {
+      "file": "domains/XSSPrevention.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/S001_HardwareContracts.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/FutureSecurity.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/VerifiedNetwork.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/mobile_os/AnimationSystem.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/mobile_os/ApplicationLifecycle.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/mobile_os/EncryptionSystem.v",
+      "warnings": 2
+    },
+    {
+      "file": "domains/mobile_os/GraphicsEngine.v",
+      "warnings": 2
+    },
+    {
+      "file": "compliance/HIPAACompliance.v",
+      "warnings": 1
+    },
+    {
+      "file": "domains/SecureBootVerification.v",
+      "warnings": 1
+    },
+    {
+      "file": "domains/PostQuantumSignatures.v",
+      "warnings": 1
+    },
+    {
+      "file": "domains/U001_RuntimeGuardian.v",
+      "warnings": 1
+    },
+    {
+      "file": "domains/CryptographicSecurity.v",
+      "warnings": 1
+    },
+    {
+      "file": "domains/HIPAACompliance.v",
+      "warnings": 1
+    }
+  ],
+  "logPath": "reports/coq_warning_build.log",
+  "inventoryPath": "reports/coq_warning_inventory.tsv"
+}

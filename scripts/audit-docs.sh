@@ -578,6 +578,82 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo ""
 fi
 
+# ── Check Coq warning budget status ───────────────────────────────────
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking Coq warning budget...${NC}"
+fi
+
+COQ_WARNING_STATUS="$REPO_ROOT/reports/coq_warning_status.json"
+COQ_WARNING_BUDGET="$REPO_ROOT/reports/coq_warning_budget.json"
+if [ -f "$COQ_WARNING_STATUS" ] && [ -f "$COQ_WARNING_BUDGET" ]; then
+    COQ_WARN_EVAL=$(python3 - "$COQ_WARNING_STATUS" "$COQ_WARNING_BUDGET" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" <<'PY'
+import json, sys
+status_path, budget_path, head, parent = sys.argv[1:5]
+with open(status_path, "r", encoding="utf-8") as f:
+    status = json.load(f)
+with open(budget_path, "r", encoding="utf-8") as f:
+    budget = json.load(f)
+
+repo_head = status.get("repoHead", "")
+fresh = repo_head in {head, parent}
+
+totals = status.get("totals", {})
+obs_total = int(totals.get("warnings", 0))
+obs_kinds = totals.get("kinds", {})
+if not isinstance(obs_kinds, dict):
+    obs_kinds = {}
+
+max_total = int(budget.get("maxTotalWarnings", 0))
+max_by_kind = budget.get("maxByKind", {})
+if not isinstance(max_by_kind, dict):
+    max_by_kind = {}
+
+bad = []
+if obs_total > max_total:
+    bad.append(f"total={obs_total}>{max_total}")
+for k, v in obs_kinds.items():
+    observed = int(v)
+    allowed = int(max_by_kind.get(k, 0))
+    if observed > allowed:
+        bad.append(f"{k}={observed}>{allowed}")
+
+print(f"fresh={'true' if fresh else 'false'}")
+print(f"total={obs_total}")
+print(f"budget_total={max_total}")
+print(f"violations={'|'.join(bad)}")
+PY
+)
+    COQ_WARN_FRESH="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^fresh=/{print $2}' | tail -1)"
+    COQ_WARN_TOTAL="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^total=/{print $2}' | tail -1)"
+    COQ_WARN_BUDGET_TOTAL="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^budget_total=/{print $2}' | tail -1)"
+    COQ_WARN_VIOLATIONS="$(printf '%s\n' "$COQ_WARN_EVAL" | awk -F= '/^violations=/{print $2}' | tail -1)"
+
+    if [ "$COQ_WARN_FRESH" != "true" ]; then
+        if [ "$QUICK_MODE" != "--quick" ]; then
+            echo -e "${YELLOW}[WARN]${NC} Coq warning status is stale (run: python3 scripts/audit-coq-warnings.py --mode build --clean --enforce-budget)"
+        fi
+        WARNINGS=$((WARNINGS + 1))
+    else
+        if [ -n "$COQ_WARN_VIOLATIONS" ]; then
+            if [ "$QUICK_MODE" != "--quick" ]; then
+                echo -e "${RED}[MISMATCH]${NC} Coq warning budget exceeded: $COQ_WARN_VIOLATIONS"
+            fi
+            DISCREPANCIES=$((DISCREPANCIES + 1))
+        else
+            if [ "$QUICK_MODE" != "--quick" ]; then
+                echo -e "${GREEN}[OK]${NC} Coq warning budget: total=$COQ_WARN_TOTAL (budget=$COQ_WARN_BUDGET_TOTAL)"
+            fi
+        fi
+    fi
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${YELLOW}[WARN]${NC} Coq warning status/budget missing (run: python3 scripts/audit-coq-warnings.py --mode build --clean --write-budget)"
+    fi
+    WARNINGS=$((WARNINGS + 1))
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
 # ── Final report ──────────────────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
