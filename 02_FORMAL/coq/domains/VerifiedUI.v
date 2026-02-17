@@ -10,11 +10,11 @@
    and dark patterns are PROVEN IMPOSSIBLE in verified UI states.
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Strings.String.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.PeanoNat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.PeanoNat.
 Import ListNotations.
 
 (** ═══════════════════════════════════════════════════════════════════════════
@@ -666,7 +666,7 @@ Qed.
     INPUT SANITIZATION DEFINITIONS
     ═══════════════════════════════════════════════════════════════════════════ *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (* Override String.length with List.length for this section *)
 Local Definition len {A : Type} := @List.length A.

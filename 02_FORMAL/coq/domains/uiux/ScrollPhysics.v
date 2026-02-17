@@ -7,9 +7,9 @@
 (* This module proves natural deceleration and paging exactness                  *)
 (* ============================================================================ *)
 
-Require Import Coq.Reals.Reals.
-Require Import Coq.micromega.Lra.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Reals.Reals.
+From Stdlib Require Import micromega.Lra.
+From Stdlib Require Import Bool.Bool.
 
 Open Scope R_scope.
 
@@ -101,7 +101,7 @@ Qed.
 (* SECTION 4: Extended Scroll Safety Theorems                                   *)
 (* ============================================================================ *)
 
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Arith.Arith.
 
 (* Rubber band / overscroll model *)
 (* resistance(d) = d / (1 + d/max) — approaches max asymptotically *)

@@ -17,9 +17,9 @@
     Estimated Effort: 880 - 1,350 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. NERC CIP Asset Classifications *)
 
@@ -135,7 +135,7 @@ Inductive EnergyEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — Grid Security & CIP Compliance *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** CIP impact as nat for ordering *)
 Definition cip_impact_to_nat (c : CIP_Impact) : nat :=

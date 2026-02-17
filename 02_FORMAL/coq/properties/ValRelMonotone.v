@@ -10,9 +10,9 @@
 *)
 
 Require Import Nat.
-Require Import Arith.
-Require Import Lia.
-Require Import List.
+From Stdlib Require Import Arith.
+From Stdlib Require Import Lia.
+From Stdlib Require Import List.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
 Require Import RIINA.properties.CumulativeRelation.

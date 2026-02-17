@@ -16,9 +16,9 @@
 (*   - Cross-institutional health data exchange framework                    *)
 (* ========================================================================= *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 Import ListNotations.
 
 (* ================================================================ *)
@@ -212,8 +212,8 @@ Qed.
 (* Extended Singapore Health Information Bill Theorems               *)
 (* ================================================================ *)
 
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 
 (* --- Patient Data Access Rights --- *)
 (* HIB: Patients have right to access their health records *)

@@ -9,9 +9,9 @@
     Mode: Comprehensive Verification | Zero Trust
 *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
 Import ListNotations.

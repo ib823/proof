@@ -18,12 +18,12 @@
     Phase: 1 (Foundation)
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Wf_nat.
-Require Import Coq.Wellfounded.Lexicographic_Product.
-Require Import Coq.Relations.Relation_Operators.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Arith.Wf_nat.
+From Stdlib Require Import Wellfounded.Lexicographic_Product.
+From Stdlib Require Import Relations.Relation_Operators.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.properties.TypeMeasure.

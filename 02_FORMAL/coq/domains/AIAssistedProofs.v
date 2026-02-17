@@ -12,10 +12,10 @@
 
    Spec: 04_SPECS/scope/RIINA_DEFINITIVE_SCOPE.md §5 (Verification Independence) *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
 Import ListNotations.
 
 (* ===== Proof Source Model ===== *)

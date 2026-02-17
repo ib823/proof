@@ -8,10 +8,10 @@
 *)
 
 Require Import RIINA.foundations.Syntax.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Bool.Bool.
-Require Import Lia.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lia.
 
 (** Effect ordering based on levels *)
 Definition effect_leq (e1 e2 : effect) : Prop :=

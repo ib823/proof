@@ -17,9 +17,9 @@
     Estimated Effort: 450 - 720 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. Consumer Data Classifications *)
 
@@ -138,7 +138,7 @@ Inductive RetailEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — Consumer Privacy & E-Commerce Security *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** Consumer data sensitivity ordering *)
 Definition consumer_sensitivity (d : ConsumerData) : nat :=

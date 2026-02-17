@@ -17,9 +17,9 @@
     Estimated Effort: 750 - 1,200 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. FISMA Impact Levels *)
 
@@ -140,7 +140,7 @@ Inductive GovernmentEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — Federal Controls & FedRAMP *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** FISMA impact as nat *)
 Definition fisma_to_nat (f : FISMA_Impact) : nat :=

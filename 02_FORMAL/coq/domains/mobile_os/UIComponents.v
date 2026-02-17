@@ -10,10 +10,10 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md Section 2.3
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
-Require Import Coq.Strings.String.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Strings.String.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -169,7 +169,7 @@ Qed.
 
 (** ** Extended Definitions for UI Component Safety *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** Button state *)
 Inductive ButtonState : Type :=

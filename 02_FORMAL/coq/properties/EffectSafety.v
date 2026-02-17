@@ -20,17 +20,17 @@
     Mode: Core Deepening | Zero Trust
 *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
 Require Import RIINA.foundations.Typing.
 Require Import RIINA.type_system.Preservation.
 Require Import RIINA.effects.EffectAlgebra.
-Require Import Coq.Program.Equality.
+From Stdlib Require Import Program.Equality.
 Import ListNotations.
 
 (* ================================================================= *)

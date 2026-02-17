@@ -7,10 +7,10 @@
 (* This module proves gesture disambiguation and velocity modeling               *)
 (* ============================================================================ *)
 
-Require Import Coq.Reals.Reals.
-Require Import Coq.micromega.Lra.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Reals.Reals.
+From Stdlib Require Import micromega.Lra.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
 
 Open Scope R_scope.
 
@@ -159,8 +159,8 @@ Qed.
 (* SECTION 5: Extended Gesture Safety Theorems                                  *)
 (* ============================================================================ *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (* Decidable equality for GestureType *)

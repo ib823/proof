@@ -18,9 +18,9 @@
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
 Require Import RIINA.effects.EffectAlgebra.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (** ** Effect Occurrence Predicate *)

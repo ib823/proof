@@ -21,11 +21,11 @@
     properties directly.
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Strings.String.
-Require Import Coq.Strings.Ascii.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Strings.Ascii.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 Import ListNotations.
 
 (** ** 1. Permission Model *)

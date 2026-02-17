@@ -17,9 +17,9 @@
     Estimated Effort: 380 - 600 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. Content Security Classifications *)
 
@@ -131,7 +131,7 @@ Inductive MediaEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — Content Protection & DRM *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** Content type sensitivity ordering *)
 Definition content_sensitivity (c : ContentType) : nat :=

@@ -17,9 +17,9 @@
     Estimated Effort: 280 - 450 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. Property Data Classifications *)
 
@@ -134,7 +134,7 @@ Inductive RealEstateEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — Building Automation & Property Protection *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** Property data sensitivity *)
 Definition property_sensitivity (d : PropertyData) : nat :=

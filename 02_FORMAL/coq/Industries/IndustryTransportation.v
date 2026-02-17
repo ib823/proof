@@ -17,9 +17,9 @@
     Estimated Effort: 620 - 980 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. Automotive Safety Integrity Levels *)
 
@@ -133,7 +133,7 @@ Inductive TransportationEffect : Type :=
 
 (** ** 7. Substantial Security Theorems — ASIL Ordering & Safety Integrity *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** ASIL as nat for ordering (QM=0, A=1, ..., D=4) *)
 Definition asil_to_nat (a : ASIL) : nat :=

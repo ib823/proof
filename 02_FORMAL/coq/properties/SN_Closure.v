@@ -16,11 +16,11 @@
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
 Require Import RIINA.foundations.Typing.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Wellfounded.Inverse_Image.
-Require Import Coq.Wellfounded.Lexicographic_Product.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Wellfounded.Inverse_Image.
+From Stdlib Require Import Wellfounded.Lexicographic_Product.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** ========================================================================

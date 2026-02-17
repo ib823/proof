@@ -15,9 +15,9 @@
 (*   - ISMS (Information Security Management System) requirements            *)
 (* ========================================================================= *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 Import ListNotations.
 
 (* ================================================================ *)
@@ -209,7 +209,7 @@ Qed.
 (* Extended MAMPU / MyGovCloud Compliance Theorems                   *)
 (* ================================================================ *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (* --- Classification Level Arithmetic Properties --- *)
 

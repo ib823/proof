@@ -21,12 +21,12 @@
     - Phase 2 infrastructure (CumulativeRelation.v, CumulativeMonotone.v, KripkeProperties.v)
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
-Require Import Arith.PeanoNat.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.

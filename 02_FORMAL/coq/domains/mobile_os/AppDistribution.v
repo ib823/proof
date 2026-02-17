@@ -5,9 +5,9 @@
 (*  Formal verification of app store security and update atomicity       *)
 (* ===================================================================== *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
 Import ListNotations.
 
 (* ===================== Type Definitions ===================== *)
@@ -218,7 +218,7 @@ Qed.
 
 (** ** Extended Definitions for App Store Safety *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** App signature verification *)
 Record AppSignature : Type := mkAppSignature {

@@ -19,10 +19,10 @@
     ** Correspondence: 05_TOOLING/crates/riina-core/src/litmus/ (19 tests)
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.ZArith.ZArith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.ZArith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 Import ListNotations.
 
 (** ** 1. Memory Model *)

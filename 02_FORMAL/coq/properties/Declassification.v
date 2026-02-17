@@ -20,13 +20,13 @@
     - Myers et al. (2006) "Decentralized robustness"
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
-Require Import Arith.PeanoNat.
-Require Import Coq.Program.Equality.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Program.Equality.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.

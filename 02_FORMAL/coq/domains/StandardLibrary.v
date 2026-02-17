@@ -4,12 +4,12 @@
 (* Spec: 01_RESEARCH/16_DOMAIN_P_STANDARD_LIBRARY/RESEARCH_DOMAIN_P_COMPLETE.md *)
 (* Security Property: Verified secure-by-default standard library *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ======================================================================= *)

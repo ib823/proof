@@ -4,12 +4,12 @@
 (* Spec: 01_RESEARCH/01_DOMAIN_A_TYPE_THEORY/ *)
 (* Generated for RIINA formal verification *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Coq.Program.Equality.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Program.Equality.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)

@@ -24,11 +24,11 @@
     - Appel & McAllester (2001) "An indexed model of recursive types"
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.

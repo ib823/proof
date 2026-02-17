@@ -9,8 +9,8 @@
     Mode: Comprehensive Verification | Zero Admits
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
 Require Import RIINA.type_system.Preservation.

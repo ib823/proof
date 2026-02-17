@@ -10,8 +10,8 @@
     Mode: Comprehensive Verification | Zero Trust
 *)
 
-Require Import Coq.Strings.String.
-Require Import Coq.Lists.List.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Semantics.
 Require Import RIINA.foundations.Typing.

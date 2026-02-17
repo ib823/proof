@@ -17,10 +17,10 @@
     If this file compiles, Phase 1 can proceed.
 *)
 
-Require Import Coq.Arith.PeanoNat.
-Require Import Coq.Arith.Wf_nat.
-Require Import Coq.Arith.Compare_dec.
-Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Arith.Wf_nat.
+From Stdlib Require Import Arith.Compare_dec.
+From Stdlib Require Import Lia.
 
 (** ========================================================================
     SIMPLIFIED TYPE AND VALUE DEFINITIONS

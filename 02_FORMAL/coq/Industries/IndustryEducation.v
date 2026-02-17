@@ -17,9 +17,9 @@
     Estimated Effort: 350 - 550 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
 
 (** ** 1. Student Data Classifications *)
 
@@ -131,7 +131,7 @@ Inductive EducationEffect : Type :=
 
 (** ** 7. Substantial Education Security Theorems *)
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (** Student data sensitivity level *)

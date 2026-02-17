@@ -4,9 +4,9 @@
 (* RIINA Authentication Security Proofs *)
 (* Proves AUTH-001 through AUTH-020 are mitigated *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
 Import ListNotations.
 
 (* ═══════════════════════════════════════════════════════════════════════ *)

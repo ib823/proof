@@ -7,10 +7,10 @@
     Mode: Comprehensive Verification | Zero Admits
 *)
 
-Require Import String.
-Require Import Bool.
-Require Import List.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import String.
+From Stdlib Require Import Bool.
+From Stdlib Require Import List.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
 Import ListNotations.

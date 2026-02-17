@@ -10,10 +10,10 @@
     Reference: RESEARCH_MOBILEOS02_COMPLETE_FEATURE_MATRIX.md
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
-Require Import Coq.Logic.Classical_Prop.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Logic.Classical_Prop.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -164,7 +164,7 @@ Qed.
 
 (** ** Extended OS Architecture Safety Proofs *)
 
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import micromega.Lia.
 
 (** *** Privilege Level Definitions *)
 

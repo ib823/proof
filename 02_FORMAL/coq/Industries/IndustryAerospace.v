@@ -17,10 +17,10 @@
     Estimated Effort: 910 - 1,400 hours
 *)
 
-Require Import Coq.Lists.List.
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lia.
 
 (** ** 1. DO-178C Design Assurance Levels *)
 

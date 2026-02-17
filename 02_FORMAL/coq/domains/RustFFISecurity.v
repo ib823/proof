@@ -29,10 +29,10 @@
     6. Type marshalling verified at compile time
     ============================================================================ *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
-Require Import Coq.Arith.Arith.
-Require Import Coq.micromega.Lia.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import micromega.Lia.
 Import ListNotations.
 
 (** ============================================================================

@@ -25,8 +25,8 @@ Require Import RIINA.foundations.Typing.
 Require Import RIINA.effects.EffectAlgebra.
 Require Import RIINA.effects.EffectSystem.
 Require Import RIINA.type_system.Preservation.
-Require Import Coq.Arith.PeanoNat.
-Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import Lia.
 
 (** ** Section 1: Gate Definition
 

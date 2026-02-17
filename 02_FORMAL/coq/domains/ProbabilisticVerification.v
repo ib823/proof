@@ -10,13 +10,13 @@
     Spec: 01_RESEARCH/specs/RIINA_PROB_VERIFICATION.md
 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
-Require Import Coq.QArith.QArith.
-Require Import Coq.QArith.Qabs.
-Require Import Coq.micromega.Lia.
-Require Import Coq.micromega.Lqa.
-Require Import Coq.Classes.Morphisms.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import QArith.QArith.
+From Stdlib Require Import QArith.Qabs.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import micromega.Lqa.
+From Stdlib Require Import Classes.Morphisms.
 Import ListNotations.
 
 Open Scope Q_scope.
