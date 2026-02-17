@@ -387,6 +387,40 @@ Proof.
   - exact Hst.
 Qed.
 
+(** Declassifying the same classified integer remains related at [TInt]
+    across related stores for any step index. *)
+Lemma exp_rel_le_declassify_same_secret_int :
+  forall n Σ i p st1 st2 ctx,
+  declass_ok (EClassify (EInt i)) p ->
+  store_rel_simple Σ st1 st2 ->
+  exp_rel_le n Σ TInt
+    (EDeclassify (EClassify (EInt i)) p)
+    (EDeclassify (EClassify (EInt i)) p)
+    st1 st2 ctx.
+Proof.
+  intros n Σ i p st1 st2 ctx Hok Hst.
+  unfold exp_rel_le.
+  intros k v1 v2 st1' st2' ctx' Hk Hms1 Hms2 Hv1 Hv2.
+  pose proof (declassify_eval (EInt i) p st1 ctx (VInt i) Hok) as Heval1.
+  pose proof (declassify_eval (EInt i) p st2 ctx (VInt i) Hok) as Heval2.
+  pose proof (eval_deterministic_cfg
+    (EDeclassify (EClassify (EInt i)) p, st1, ctx)
+    (v1, st1', ctx')
+    (EInt i, st1, ctx)
+    Hms1 Heval1 Hv1 (VInt i)) as Hcfg1.
+  pose proof (eval_deterministic_cfg
+    (EDeclassify (EClassify (EInt i)) p, st2, ctx)
+    (v2, st2', ctx')
+    (EInt i, st2, ctx)
+    Hms2 Heval2 Hv2 (VInt i)) as Hcfg2.
+  inversion Hcfg1; inversion Hcfg2; subst.
+  subst.
+  exists Σ. repeat split.
+  - apply store_ty_extends_refl.
+  - apply val_rel_le_build_int.
+  - exact Hst.
+Qed.
+
 (** Summary: All admits eliminated *)
 Theorem declassification_zero_admits : True.
 Proof. exact I. Qed.
