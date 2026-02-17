@@ -1,0 +1,3 @@
+QUARANTINED_STUBS=1
+These files are generated/transpiled stubs and MUST NOT be counted as proofs.
+Remove this marker only after lane-specific real tool-verified artifacts exist.

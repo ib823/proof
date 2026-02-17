@@ -378,11 +378,18 @@ if [ -f "$METRICS_FILE" ]; then
     WEB_SESSION=$(grep -oP '"session":\s*\K\d+' "$METRICS_FILE" || echo "0")
     WEB_LEAN=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['theorems'])" 2>/dev/null || grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
     WEB_ISABELLE=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['lemmas'])" 2>/dev/null || grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
+    WEB_ISABELLE_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['isabelle']['lemmas']))" 2>/dev/null || echo "$WEB_ISABELLE")
+    WEB_ISABELLE_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
     check_value "Website active Coq files (metrics.json)" "$ACTUAL_COQ_ACTIVE_FILES" "$WEB_COQ_ACTIVE" "metrics.json" || true
     check_value "Website Lean (metrics.json)" "$ACTUAL_LEAN" "$WEB_LEAN" "metrics.json" || true
-    check_value "Website Isabelle (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE" "metrics.json" || true
+    if [ "$WEB_ISABELLE_QUARANTINED" = "true" ]; then
+        check_value "Website Isabelle raw (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE_RAW" "metrics.json" || true
+        check_value "Website Isabelle quarantined count (metrics.json)" "0" "$WEB_ISABELLE" "metrics.json" || true
+    else
+        check_value "Website Isabelle (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE" "metrics.json" || true
+    fi
     # Session number is internal tracking — warn but don't block
     if [ "$ACTUAL_SESSION" != "$WEB_SESSION" ]; then
         if [ "$QUICK_MODE" != "--quick" ]; then

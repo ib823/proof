@@ -254,6 +254,44 @@ if [ -d "$ROOT_DIR/02_FORMAL/tv" ]; then
     TV_FILES=$(find "$ROOT_DIR/02_FORMAL/tv" -name "*.smt2" -type f 2>/dev/null | wc -l)
 fi
 
+# Stub prover quarantine markers: if present, generated stub files are
+# explicitly excluded from proof totals and headline prover counts.
+ISABELLE_QUARANTINED=false
+FSTAR_QUARANTINED=false
+TLAPLUS_QUARANTINED=false
+ALLOY_QUARANTINED=false
+SMT_QUARANTINED=false
+VERUS_QUARANTINED=false
+KANI_QUARANTINED=false
+TV_QUARANTINED=false
+
+[ -f "$ROOT_DIR/02_FORMAL/isabelle/.STUB_QUARANTINED" ] && ISABELLE_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/fstar/.STUB_QUARANTINED" ] && FSTAR_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/tlaplus/.STUB_QUARANTINED" ] && TLAPLUS_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/alloy/.STUB_QUARANTINED" ] && ALLOY_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/smt/.STUB_QUARANTINED" ] && SMT_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/verus/.STUB_QUARANTINED" ] && VERUS_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/kani/.STUB_QUARANTINED" ] && KANI_QUARANTINED=true
+[ -f "$ROOT_DIR/02_FORMAL/tv/.STUB_QUARANTINED" ] && TV_QUARANTINED=true
+
+ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
+FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
+TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
+ALLOY_ASSERTIONS_PUBLIC=$ALLOY_ASSERTIONS
+SMT_ASSERTIONS_PUBLIC=$SMT_ASSERTIONS
+VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
+KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
+TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
+
+[ "$ISABELLE_QUARANTINED" = true ] && ISABELLE_LEMMAS_PUBLIC=0
+[ "$FSTAR_QUARANTINED" = true ] && FSTAR_LEMMAS_PUBLIC=0
+[ "$TLAPLUS_QUARANTINED" = true ] && TLAPLUS_THEOREMS_PUBLIC=0
+[ "$ALLOY_QUARANTINED" = true ] && ALLOY_ASSERTIONS_PUBLIC=0
+[ "$SMT_QUARANTINED" = true ] && SMT_ASSERTIONS_PUBLIC=0
+[ "$VERUS_QUARANTINED" = true ] && VERUS_PROOFS_PUBLIC=0
+[ "$KANI_QUARANTINED" = true ] && KANI_HARNESSES_PUBLIC=0
+[ "$TV_QUARANTINED" = true ] && TV_VALIDATIONS_PUBLIC=0
+
 # Quality tier counting: core vs domain vs trivial
 # Tier 1 (core): foundations/ + type_system/ + effects/ + properties/ + termination/
 COQ_TIER1_CORE=0
@@ -281,8 +319,8 @@ while IFS= read -r f; do
     fi
 done < <(find "$ROOT_DIR/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" 2>/dev/null)
 
-# Total proofs across ALL 10 provers
-TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS + FSTAR_LEMMAS + TLAPLUS_THEOREMS + ALLOY_ASSERTIONS + SMT_ASSERTIONS + VERUS_PROOFS + KANI_HARNESSES + TV_VALIDATIONS))
+# Total proofs across ALL 10 provers (excludes quarantined stub lanes)
+TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
 
 # Count triple-prover theorems: min(domain Lean theorems, domain Isabelle lemmas)
 # + foundation triple-prover count from MULTIPROVER_VALIDATION.md
@@ -317,8 +355,14 @@ if [ -d "$ROOT_DIR/02_FORMAL/isabelle/RIINA/Domains" ] || [ -d "$ROOT_DIR/02_FOR
     done
 fi
 # Triple-prover = min(Lean domain, Isabelle domain) + foundation
-DOMAIN_TRIPLE=$((LEAN_DOMAIN_THEOREMS < ISA_DOMAIN_LEMMAS ? LEAN_DOMAIN_THEOREMS : ISA_DOMAIN_LEMMAS))
-TRIPLE_PROVER=$((FOUNDATION_TRIPLE + DOMAIN_TRIPLE))
+# If Isabelle is quarantined as generated stubs, triple-prover claims are zeroed.
+if [ "$ISABELLE_QUARANTINED" = true ]; then
+    DOMAIN_TRIPLE=0
+    TRIPLE_PROVER=0
+else
+    DOMAIN_TRIPLE=$((LEAN_DOMAIN_THEOREMS < ISA_DOMAIN_LEMMAS ? LEAN_DOMAIN_THEOREMS : ISA_DOMAIN_LEMMAS))
+    TRIPLE_PROVER=$((FOUNDATION_TRIPLE + DOMAIN_TRIPLE))
+fi
 
 # Count Rust tests
 if [ -f "${HOME}/.cargo/env" ]; then
@@ -522,6 +566,16 @@ CLAIM_VERUS="generated"; [ "$VERUS_COMPILED" = true ] && CLAIM_VERUS="compiled"
 CLAIM_KANI="generated"; [ "$KANI_COMPILED" = true ] && CLAIM_KANI="compiled"
 CLAIM_TV="generated"; [ "$TV_COMPILED" = true ] && CLAIM_TV="compiled"
 
+# Quarantined lanes are always reported as generated-only until dequarantined.
+[ "$ISABELLE_QUARANTINED" = true ] && CLAIM_ISABELLE="generated" && ISABELLE_COMPILED=false
+[ "$FSTAR_QUARANTINED" = true ] && CLAIM_FSTAR="generated" && FSTAR_COMPILED=false
+[ "$TLAPLUS_QUARANTINED" = true ] && CLAIM_TLAPLUS="generated" && TLAPLUS_COMPILED=false
+[ "$ALLOY_QUARANTINED" = true ] && CLAIM_ALLOY="generated" && ALLOY_COMPILED=false
+[ "$SMT_QUARANTINED" = true ] && CLAIM_SMT="generated" && SMT_COMPILED=false
+[ "$VERUS_QUARANTINED" = true ] && CLAIM_VERUS="generated" && VERUS_COMPILED=false
+[ "$KANI_QUARANTINED" = true ] && CLAIM_KANI="generated" && KANI_COMPILED=false
+[ "$TV_QUARANTINED" = true ] && CLAIM_TV="generated" && TV_COMPILED=false
+
 [ "$CLAIM_LEAN" = "compiled" ] && [ "$LEAN_MECHANIZED_READY" = true ] && CLAIM_LEAN="mechanized"
 [ "$CLAIM_ISABELLE" = "compiled" ] && [ "$ISABELLE_MECHANIZED_READY" = true ] && CLAIM_ISABELLE="mechanized"
 [ "$CLAIM_FSTAR" = "compiled" ] && [ "$FSTAR_MECHANIZED_READY" = true ] && CLAIM_FSTAR="mechanized"
@@ -601,7 +655,9 @@ cat > "$OUTPUT_FILE" << EOF
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": $ISABELLE_LEMMAS,
+    "lemmas": $ISABELLE_LEMMAS_PUBLIC,
+    "lemmasRaw": $ISABELLE_LEMMAS,
+    "quarantined": $ISABELLE_QUARANTINED,
     "sorry": $ISABELLE_SORRY,
     "sorryVerified": $ISABELLE_COMPILED,
     "axioms": $ISABELLE_AXIOMS,
@@ -610,37 +666,51 @@ cat > "$OUTPUT_FILE" << EOF
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": $FSTAR_LEMMAS,
+    "lemmas": $FSTAR_LEMMAS_PUBLIC,
+    "lemmasRaw": $FSTAR_LEMMAS,
+    "quarantined": $FSTAR_QUARANTINED,
     "files": $FSTAR_FILES,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": $TLAPLUS_THEOREMS,
+    "theorems": $TLAPLUS_THEOREMS_PUBLIC,
+    "theoremsRaw": $TLAPLUS_THEOREMS,
+    "quarantined": $TLAPLUS_QUARANTINED,
     "files": $TLAPLUS_FILES,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": $ALLOY_ASSERTIONS,
+    "assertions": $ALLOY_ASSERTIONS_PUBLIC,
+    "assertionsRaw": $ALLOY_ASSERTIONS,
+    "quarantined": $ALLOY_QUARANTINED,
     "files": $ALLOY_FILES,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": $SMT_ASSERTIONS,
+    "assertions": $SMT_ASSERTIONS_PUBLIC,
+    "assertionsRaw": $SMT_ASSERTIONS,
+    "quarantined": $SMT_QUARANTINED,
     "files": $SMT_FILES,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
-    "proofs": $VERUS_PROOFS,
+    "proofs": $VERUS_PROOFS_PUBLIC,
+    "proofsRaw": $VERUS_PROOFS,
+    "quarantined": $VERUS_QUARANTINED,
     "files": $VERUS_FILES,
     "prover": "Verus"
   },
   "kani": {
-    "harnesses": $KANI_HARNESSES,
+    "harnesses": $KANI_HARNESSES_PUBLIC,
+    "harnessesRaw": $KANI_HARNESSES,
+    "quarantined": $KANI_QUARANTINED,
     "files": $KANI_FILES,
     "prover": "Kani"
   },
   "tv": {
-    "validations": $TV_VALIDATIONS,
+    "validations": $TV_VALIDATIONS_PUBLIC,
+    "validationsRaw": $TV_VALIDATIONS,
+    "quarantined": $TV_QUARANTINED,
     "files": $TV_FILES,
     "prover": "Translation Validation"
   },
@@ -745,14 +815,14 @@ echo "  Admitted:     $ADMITTED"
 echo "  Axioms:       $AXIOMS"
 echo "  Assumptions:  $ASSUMPTIONS"
 echo "  Lean:         $LEAN_THEOREMS theorems, $LEAN_SORRY sorry, $LEAN_FILES files"
-echo "  Isabelle:     $ISABELLE_LEMMAS lemmas, $ISABELLE_SORRY sorry, $ISABELLE_FILES files"
-echo "  F*:           $FSTAR_LEMMAS lemmas, $FSTAR_FILES files"
-echo "  TLA+:         $TLAPLUS_THEOREMS theorems, $TLAPLUS_FILES files"
-echo "  Alloy:        $ALLOY_ASSERTIONS assertions, $ALLOY_FILES files"
-echo "  SMT:          $SMT_ASSERTIONS assertions, $SMT_FILES files"
-echo "  Verus:        $VERUS_PROOFS proofs, $VERUS_FILES files"
-echo "  Kani:         $KANI_HARNESSES harnesses, $KANI_FILES files"
-echo "  TV:           $TV_VALIDATIONS validations, $TV_FILES files"
+echo "  Isabelle:     $ISABELLE_LEMMAS_PUBLIC lemmas (raw $ISABELLE_LEMMAS), $ISABELLE_SORRY sorry, $ISABELLE_FILES files, quarantined=$ISABELLE_QUARANTINED"
+echo "  F*:           $FSTAR_LEMMAS_PUBLIC lemmas (raw $FSTAR_LEMMAS), $FSTAR_FILES files, quarantined=$FSTAR_QUARANTINED"
+echo "  TLA+:         $TLAPLUS_THEOREMS_PUBLIC theorems (raw $TLAPLUS_THEOREMS), $TLAPLUS_FILES files, quarantined=$TLAPLUS_QUARANTINED"
+echo "  Alloy:        $ALLOY_ASSERTIONS_PUBLIC assertions (raw $ALLOY_ASSERTIONS), $ALLOY_FILES files, quarantined=$ALLOY_QUARANTINED"
+echo "  SMT:          $SMT_ASSERTIONS_PUBLIC assertions (raw $SMT_ASSERTIONS), $SMT_FILES files, quarantined=$SMT_QUARANTINED"
+echo "  Verus:        $VERUS_PROOFS_PUBLIC proofs (raw $VERUS_PROOFS), $VERUS_FILES files, quarantined=$VERUS_QUARANTINED"
+echo "  Kani:         $KANI_HARNESSES_PUBLIC harnesses (raw $KANI_HARNESSES), $KANI_FILES files, quarantined=$KANI_QUARANTINED"
+echo "  TV:           $TV_VALIDATIONS_PUBLIC validations (raw $TV_VALIDATIONS), $TV_FILES files, quarantined=$TV_QUARANTINED"
 echo "  Total proofs: $TOTAL_PROOFS (10 provers)"
 echo "  Claim levels: overall=$OVERALL_CLAIM coq=$CLAIM_COQ lean=$CLAIM_LEAN isabelle=$CLAIM_ISABELLE"
 echo "                fstar=$CLAIM_FSTAR tlaplus=$CLAIM_TLAPLUS alloy=$CLAIM_ALLOY smt=$CLAIM_SMT"
