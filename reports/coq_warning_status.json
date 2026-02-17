@@ -1,34 +1,18 @@
 {
-  "generatedAt": "2026-02-17T15:40:37.390852+00:00",
-  "repoHead": "b4ac7e0e5b111b67d720ae3ac6193f2bf08a934c",
-  "repoParentHead": "a11120768c3e21c53a151232466b507b42405b8f",
+  "generatedAt": "2026-02-17T15:46:20.013474+00:00",
+  "repoHead": "0c8200c213ce9476c4a7c04ddb776bd567523415",
+  "repoParentHead": "b4ac7e0e5b111b67d720ae3ac6193f2bf08a934c",
   "totals": {
-    "warnings": 50,
+    "warnings": 34,
     "kinds": {
-      "abstract-large-number": 50
+      "abstract-large-number": 34
     },
-    "filesWithWarnings": 22
+    "filesWithWarnings": 18
   },
   "topFiles": [
     {
       "file": "domains/FHESecurity.v",
       "warnings": 9
-    },
-    {
-      "file": "domains/mobile_os/CameraAudioSystem.v",
-      "warnings": 6
-    },
-    {
-      "file": "domains/mobile_os/TouchGestureSystem.v",
-      "warnings": 4
-    },
-    {
-      "file": "domains/mobile_os/BiometricSystem.v",
-      "warnings": 3
-    },
-    {
-      "file": "domains/mobile_os/NetworkingStack.v",
-      "warnings": 3
     },
     {
       "file": "domains/XSSPrevention.v",

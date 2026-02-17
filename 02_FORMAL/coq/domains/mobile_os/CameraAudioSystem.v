@@ -13,6 +13,7 @@
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -20,6 +21,10 @@ Import ListNotations.
 Definition Microseconds : Type := nat.
 Definition PixelData : Type := list nat.
 Definition SensorData : Type := list nat.
+
+(* Large constants represented via Z literals to avoid abstract-large-number warnings. *)
+Definition AUDIO_SAMPLE_RATE_MIN : nat := Z.to_nat 8000%Z.
+Definition AUDIO_SAMPLE_RATE_MAX : nat := Z.to_nat 192000%Z.
 
 (** Scene and capture representations *)
 Record Scene : Type := mkScene {
@@ -223,8 +228,8 @@ Definition well_formed_recording (rs : RecordingSession) : Prop :=
 
 (** Well-formed audio config *)
 Definition well_formed_audio (ac : AudioConfig) : Prop :=
-  sample_rate ac >= 8000 /\
-  sample_rate ac <= 192000 /\
+  sample_rate ac >= AUDIO_SAMPLE_RATE_MIN /\
+  sample_rate ac <= AUDIO_SAMPLE_RATE_MAX /\
   audio_level ac <= 100 /\
   channels ac >= 1.
 
@@ -302,7 +307,7 @@ Qed.
 Theorem audio_sample_rate_valid :
   forall (ac : AudioConfig),
     well_formed_audio ac ->
-    sample_rate ac >= 8000 /\ sample_rate ac <= 192000.
+    sample_rate ac >= AUDIO_SAMPLE_RATE_MIN /\ sample_rate ac <= AUDIO_SAMPLE_RATE_MAX.
 Proof.
   intros ac Hwf.
   unfold well_formed_audio in Hwf.
@@ -384,7 +389,8 @@ Theorem audio_route_change_handled :
   forall (ac1 ac2 : AudioConfig),
     well_formed_audio ac1 ->
     well_formed_audio ac2 ->
-    sample_rate ac1 >= 8000 /\ sample_rate ac2 >= 8000.
+    sample_rate ac1 >= AUDIO_SAMPLE_RATE_MIN /\
+    sample_rate ac2 >= AUDIO_SAMPLE_RATE_MIN.
 Proof.
   intros ac1 ac2 Hwf1 Hwf2.
   split.
