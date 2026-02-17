@@ -22,8 +22,21 @@ From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Arith.PeanoNat.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Lia.
 Import ListNotations.
+
+(* Large constants represented via Z literals to avoid abstract-large-number warnings. *)
+Definition PBKDF2_ITER_MIN : nat := Z.to_nat 600000%Z.
+Definition ARGON2_MEMORY_MIN : nat := Z.to_nat 65536%Z.
+Definition WEBAUTHN_TIMEOUT_MIN_MS : nat := Z.to_nat 60000%Z.
+Definition WEBAUTHN_TIMEOUT_MAX_MS : nat := Z.to_nat 300000%Z.
+Definition WEBAUTHN_TIMEOUT_DEFAULT_MS : nat := Z.to_nat 120000%Z.
+Definition SESSION_EXPIRY_MIN_S : nat := Z.to_nat 86400%Z.
+Definition SESSION_EXPIRY_MAX_S : nat := Z.to_nat 604800%Z.
+Definition CHALLENGE_EXPIRY_MAX_MS : nat := Z.to_nat 300000%Z.
+Definition CHALLENGE_EXPIRY_DEFAULT_MS : nat := Z.to_nat 60000%Z.
+Definition NONCE_WINDOW_DEFAULT : nat := Z.to_nat 10000%Z.
 
 (** ============================================================================
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
@@ -75,13 +88,13 @@ Record PBKDF2Config : Type := mkPBKDF2 {
 
 (** PBKDF2 security predicate *)
 Definition pbkdf2_secure (cfg : PBKDF2Config) : bool :=
-  (600000 <=? pbkdf2_iterations cfg) &&      (* OWASP 2023: 600k for SHA-256 *)
+  (PBKDF2_ITER_MIN <=? pbkdf2_iterations cfg) &&      (* OWASP 2023: 600k for SHA-256 *)
   (128 <=? pbkdf2_salt_bits cfg) &&          (* Min 128-bit salt *)
   (256 <=? pbkdf2_output_bits cfg) &&        (* Min 256-bit output *)
   (pbkdf2_hash_alg cfg <=? 1).               (* Approved hash algorithm *)
 
 (** RIINA PBKDF2 configuration *)
-Definition riina_pbkdf2 : PBKDF2Config := mkPBKDF2 600000 256 256 0.
+Definition riina_pbkdf2 : PBKDF2Config := mkPBKDF2 PBKDF2_ITER_MIN 256 256 0.
 
 (** Argon2 configuration *)
 Record Argon2Config : Type := mkArgon2 {
@@ -96,14 +109,14 @@ Record Argon2Config : Type := mkArgon2 {
 (** Argon2 security predicate *)
 Definition argon2_secure (cfg : Argon2Config) : bool :=
   (3 <=? argon2_time_cost cfg) &&            (* Min 3 iterations *)
-  (65536 <=? argon2_memory_cost cfg) &&      (* Min 64 MiB *)
+  (ARGON2_MEMORY_MIN <=? argon2_memory_cost cfg) &&      (* Min 64 MiB *)
   (1 <=? argon2_parallelism cfg) &&          (* At least 1 thread *)
   (128 <=? argon2_salt_bits cfg) &&          (* Min 128-bit salt *)
   (256 <=? argon2_output_bits cfg) &&        (* Min 256-bit output *)
   (argon2_variant cfg =? 2).                 (* Argon2id required *)
 
 (** RIINA Argon2 configuration *)
-Definition riina_argon2 : Argon2Config := mkArgon2 4 65536 4 256 256 2.
+Definition riina_argon2 : Argon2Config := mkArgon2 4 ARGON2_MEMORY_MIN 4 256 256 2.
 
 (** bcrypt configuration *)
 Record BcryptConfig : Type := mkBcrypt {
@@ -162,11 +175,11 @@ Record WebAuthnConfig : Type := mkWebAuthn {
 Definition webauthn_secure (cfg : WebAuthnConfig) : bool :=
   (webauthn_user_verification cfg =? 2) &&   (* User verification required *)
   (128 <=? webauthn_challenge_bits cfg) &&   (* Min 128-bit challenge *)
-  (60000 <=? webauthn_timeout_ms cfg) &&     (* At least 60s timeout *)
-  (webauthn_timeout_ms cfg <=? 300000).      (* At most 5min timeout *)
+  (WEBAUTHN_TIMEOUT_MIN_MS <=? webauthn_timeout_ms cfg) &&     (* At least 60s timeout *)
+  (webauthn_timeout_ms cfg <=? WEBAUTHN_TIMEOUT_MAX_MS).      (* At most 5min timeout *)
 
 (** RIINA WebAuthn configuration *)
-Definition riina_webauthn : WebAuthnConfig := mkWebAuthn 2 2 true 256 120000.
+Definition riina_webauthn : WebAuthnConfig := mkWebAuthn 2 2 true 256 WEBAUTHN_TIMEOUT_DEFAULT_MS.
 
 (** ============================================================================
     SECTION D: SESSION MANAGEMENT MODELS
@@ -191,8 +204,8 @@ Record SessionTokenConfig : Type := mkSessionToken {
 (** Session token security predicate *)
 Definition session_token_secure (cfg : SessionTokenConfig) : bool :=
   (256 <=? token_entropy_bits cfg) &&        (* Min 256-bit entropy *)
-  (86400 <=? token_expiry_seconds cfg) &&    (* Min 24h expiry *)
-  (token_expiry_seconds cfg <=? 604800) &&   (* Max 7 day expiry *)
+  (SESSION_EXPIRY_MIN_S <=? token_expiry_seconds cfg) &&    (* Min 24h expiry *)
+  (token_expiry_seconds cfg <=? SESSION_EXPIRY_MAX_S) &&   (* Max 7 day expiry *)
   token_rotation cfg &&                       (* Rotation required *)
   token_binding cfg &&                        (* Binding required *)
   token_secure_flag cfg &&                    (* Secure flag required *)
@@ -201,7 +214,7 @@ Definition session_token_secure (cfg : SessionTokenConfig) : bool :=
 
 (** RIINA session token configuration *)
 Definition riina_session_token : SessionTokenConfig :=
-  mkSessionToken 256 86400 true true true true 2.
+  mkSessionToken 256 SESSION_EXPIRY_MIN_S true true true true 2.
 
 (** Token validation result *)
 Inductive TokenValidation : Type :=
@@ -271,12 +284,12 @@ Record ChallengeConfig : Type := mkChallenge {
 (** Challenge security predicate *)
 Definition challenge_secure (cfg : ChallengeConfig) : bool :=
   (128 <=? challenge_bits cfg) &&            (* Min 128-bit challenge *)
-  (challenge_expiry_ms cfg <=? 300000) &&    (* Max 5min expiry *)
+  (challenge_expiry_ms cfg <=? CHALLENGE_EXPIRY_MAX_MS) &&    (* Max 5min expiry *)
   challenge_single_use cfg &&                 (* Must be single-use *)
   challenge_bound cfg.                        (* Must be session-bound *)
 
 (** RIINA challenge configuration *)
-Definition riina_challenge : ChallengeConfig := mkChallenge 256 60000 true true true.
+Definition riina_challenge : ChallengeConfig := mkChallenge 256 CHALLENGE_EXPIRY_DEFAULT_MS true true true.
 
 (** ============================================================================
     SECTION G: REPLAY ATTACK PREVENTION MODELS
@@ -297,7 +310,7 @@ Definition replay_prevention_secure (cfg : NonceTracker) : bool :=
   (nonce_timestamp_bound cfg <=? 300).       (* Max 5min timestamp validity *)
 
 (** RIINA nonce tracker configuration *)
-Definition riina_nonce_tracker : NonceTracker := mkNonceTracker 256 10000 60 true.
+Definition riina_nonce_tracker : NonceTracker := mkNonceTracker 256 NONCE_WINDOW_DEFAULT 60 true.
 
 (** ============================================================================
     SECTION H: COMPLETE AUTHENTICATION CONFIG
@@ -427,7 +440,7 @@ Proof. reflexivity. Qed.
 
 (** PBKDF2_002: Secure PBKDF2 has sufficient iterations *)
 Theorem PBKDF2_002_sufficient_iterations :
-  forall cfg, pbkdf2_secure cfg = true -> (600000 <=? pbkdf2_iterations cfg) = true.
+  forall cfg, pbkdf2_secure cfg = true -> (PBKDF2_ITER_MIN <=? pbkdf2_iterations cfg) = true.
 Proof.
   intros cfg H. unfold pbkdf2_secure in H.
   apply andb_true_iff in H. destruct H as [H _].
@@ -464,7 +477,7 @@ Qed.
 
 (** PBKDF2_006: Iterations provide work factor security *)
 Theorem PBKDF2_006_work_factor :
-  forall cfg, pbkdf2_secure cfg = true -> pbkdf2_iterations cfg >= 600000.
+  forall cfg, pbkdf2_secure cfg = true -> pbkdf2_iterations cfg >= PBKDF2_ITER_MIN.
 Proof.
   intros cfg H.
   apply PBKDF2_002_sufficient_iterations in H.
@@ -493,7 +506,7 @@ Qed.
 
 (** ARGON2_003: Secure Argon2 has sufficient memory cost *)
 Theorem ARGON2_003_sufficient_memory :
-  forall cfg, argon2_secure cfg = true -> (65536 <=? argon2_memory_cost cfg) = true.
+  forall cfg, argon2_secure cfg = true -> (ARGON2_MEMORY_MIN <=? argon2_memory_cost cfg) = true.
 Proof.
   intros cfg H. unfold argon2_secure in H.
   apply andb_true_iff in H. destruct H as [H _].
@@ -513,7 +526,7 @@ Qed.
 
 (** ARGON2_005: Memory hardness prevents GPU attacks *)
 Theorem ARGON2_005_memory_hardness :
-  forall cfg, argon2_secure cfg = true -> argon2_memory_cost cfg >= 65536.
+  forall cfg, argon2_secure cfg = true -> argon2_memory_cost cfg >= ARGON2_MEMORY_MIN.
 Proof.
   intros cfg H.
   apply ARGON2_003_sufficient_memory in H.
@@ -660,7 +673,8 @@ Qed.
 (** WEBAUTHN_004: Secure WebAuthn has appropriate timeout *)
 Theorem WEBAUTHN_004_timeout_range :
   forall cfg, webauthn_secure cfg = true ->
-    (60000 <=? webauthn_timeout_ms cfg) = true /\ (webauthn_timeout_ms cfg <=? 300000) = true.
+    (WEBAUTHN_TIMEOUT_MIN_MS <=? webauthn_timeout_ms cfg) = true /\
+    (webauthn_timeout_ms cfg <=? WEBAUTHN_TIMEOUT_MAX_MS) = true.
 Proof.
   intros cfg H. unfold webauthn_secure in H.
   apply andb_true_iff in H. destruct H as [H Hmax].
@@ -893,7 +907,8 @@ Qed.
 
 (** CHALLENGE_003: Secure challenge has short expiry *)
 Theorem CHALLENGE_003_short_expiry :
-  forall cfg, challenge_secure cfg = true -> (challenge_expiry_ms cfg <=? 300000) = true.
+  forall cfg, challenge_secure cfg = true ->
+    (challenge_expiry_ms cfg <=? CHALLENGE_EXPIRY_MAX_MS) = true.
 Proof.
   intros cfg H. unfold challenge_secure in H.
   apply andb_true_iff in H. destruct H as [H _].

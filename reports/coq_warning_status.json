@@ -1,19 +1,15 @@
 {
-  "generatedAt": "2026-02-17T15:06:54.502783+00:00",
-  "repoHead": "7c249942c7d342cb220304ec329bb4f0218b4057",
-  "repoParentHead": "5958aabd12823d78bce3f587ea393aa91d81f632",
+  "generatedAt": "2026-02-17T15:34:34.059966+00:00",
+  "repoHead": "a11120768c3e21c53a151232466b507b42405b8f",
+  "repoParentHead": "eadbffb9ca3a9fc944da628efb4fc32c3cd490ac",
   "totals": {
-    "warnings": 92,
+    "warnings": 72,
     "kinds": {
-      "abstract-large-number": 92
+      "abstract-large-number": 72
     },
-    "filesWithWarnings": 27
+    "filesWithWarnings": 26
   },
   "topFiles": [
-    {
-      "file": "domains/AuthenticationProtocols.v",
-      "warnings": 20
-    },
     {
       "file": "domains/FHESecurity.v",
       "warnings": 9
@@ -108,6 +104,10 @@
     },
     {
       "file": "domains/HealthcareIS.v",
+      "warnings": 1
+    },
+    {
+      "file": "domains/mobile_os/SystemApps.v",
       "warnings": 1
     }
   ],
