@@ -268,7 +268,7 @@ These files show intent but have zero verification value.
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 905 passing |
+| Tests (03_PROTO/) | 904 passing |
 | Tests (05_TOOLING/) | 240 passing |
 | Crates | 15 |
 | Clippy | Clean |

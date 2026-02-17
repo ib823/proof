@@ -392,7 +392,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build: Passing. Grade: A.**
-**Verification:** 8,946 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 905 Rust tests
+**Verification:** 8,946 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 | Phase | Description | Status |
 |-------|-------------|--------|
