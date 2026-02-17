@@ -58,17 +58,8 @@ impl LitmusTest for Lvi {
     }
 
     fn run(&self) -> LitmusResult {
-        #[cfg(all(target_arch = "x86_64", target_feature = "sgx"))]
-        {
-            // LVI is critical for SGX
-            // RIINA doesn't use SGX, so not vulnerable
-            LitmusResult::Safe
-        }
-        #[cfg(not(all(target_arch = "x86_64", target_feature = "sgx")))]
-        {
-            // Non-SGX environments are less affected
-            LitmusResult::Safe
-        }
+        // RIINA doesn't use SGX, so this lane remains safe in our model.
+        LitmusResult::Safe
     }
 }
 

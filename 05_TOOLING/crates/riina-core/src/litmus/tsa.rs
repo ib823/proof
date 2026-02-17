@@ -81,15 +81,13 @@ impl LitmusTest for TransientSchedulerAttack {
 #[inline(never)]
 pub fn constant_time_yield_pattern(secret_branch: bool) -> u64 {
     // Both branches do the same amount of work (constant-time)
-    let result = if secret_branch {
+    if secret_branch {
         // Path A: some computation
         42u64.wrapping_mul(7)
     } else {
         // Path B: equivalent computation (same cycle count)
         43u64.wrapping_mul(7).wrapping_sub(7)
-    };
-    // Both paths converge with identical scheduler footprint
-    result
+    }
 }
 
 /// Demonstrate cache partition isolation
