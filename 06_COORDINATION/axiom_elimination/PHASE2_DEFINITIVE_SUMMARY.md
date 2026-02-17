@@ -1,6 +1,6 @@
 # RIINA PHASE 2: CASCADE ADMITS - DEFINITIVE PATCH
 
-**Verification:** 8,946 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 905 Rust tests
+**Verification:** 8,949 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 **Date:** 2026-01-25  
 **Target:** NonInterference_v2.v - 3 admits → 0
