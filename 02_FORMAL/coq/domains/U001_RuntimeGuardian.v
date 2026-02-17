@@ -7,10 +7,12 @@
 
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Logic.FunctionalExtensionality.
 From Stdlib Require Import Lia.
 Import ListNotations.
+
 
 (** ===============================================================================
     CONTROL FLOW GRAPH
@@ -84,6 +86,7 @@ Definition shadow_matches (ss : ShadowStack) (actual : list Addr) : Prop :=
 
 Definition Memory := Addr -> nat.
 Definition Checksum := nat.
+Definition MONITOR_CHECKSUM_CONST : Checksum := Z.to_nat 12345%Z.
 
 Definition compute_checksum (mem : Memory) (start len : nat) : Checksum :=
   fold_left (fun acc i => acc + mem (start + i)) (seq 0 len) 0.
@@ -176,7 +179,7 @@ Definition trigger_panic (st : SystemState) (event : nat) : SystemState :=
 Definition uses_nmi (watchdog_config : nat) : Prop :=
   watchdog_config > 0.
 
-Definition monitor_checksum : Checksum := 12345.
+Definition monitor_checksum : Checksum := MONITOR_CHECKSUM_CONST.
 
 Definition verify_monitor_integrity (mem : Memory) : Prop :=
   compute_checksum mem 0 1000 = monitor_checksum.

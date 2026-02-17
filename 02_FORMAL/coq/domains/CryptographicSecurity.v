@@ -18,7 +18,10 @@ From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import ZArith.
 Import ListNotations.
+
+Definition KDF_MIN_ITERATIONS : nat := Z.to_nat 100000%Z.
 
 (** ============================================================================
     SECTION A: BOOLEAN HELPER LEMMAS
@@ -819,7 +822,7 @@ Definition kdf_secure (cfg : KDFConfig) : bool :=
   (256 <=? kdf_output_bits cfg) &&       (* min 256-bit output *)
   (128 <=? kdf_salt_bits cfg) &&         (* min 128-bit salt *)
   ((kdf_algorithm cfg =? 0) ||           (* HKDF doesn't need iterations *)
-   (100000 <=? kdf_iterations cfg)).     (* or min 100k iterations *)
+   (KDF_MIN_ITERATIONS <=? kdf_iterations cfg)).     (* or min 100k iterations *)
 
 (** RIINA KDF configuration - HKDF *)
 Definition riina_kdf : KDFConfig := mkKDFConfig

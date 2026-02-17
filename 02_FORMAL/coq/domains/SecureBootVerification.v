@@ -16,8 +16,11 @@
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Logic.Decidable.
 Import ListNotations.
+
+Definition RIINA_PCR_DIGEST_EXAMPLE : nat := Z.to_nat 12345%Z.
 
 (* ═══════════════════════════════════════════════════════════════════════════ *)
 (* SECTION A: HELPER LEMMAS                                                     *)
@@ -1377,7 +1380,7 @@ Definition riina_initramfs : Initramfs :=
 Definition riina_boot_chain : BootChain :=
   mkBootChain riina_rom riina_bootloader riina_kernel riina_initramfs.
 
-Definition riina_pcr : PCRValue := mkPCR 0 12345 true true.
+Definition riina_pcr : PCRValue := mkPCR 0 RIINA_PCR_DIGEST_EXAMPLE true true.
 
 Definition riina_tpm : TPMState :=
   mkTPM true true true [riina_pcr] 0.

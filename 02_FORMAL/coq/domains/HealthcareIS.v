@@ -17,6 +17,7 @@ Import ListNotations.
     ═══════════════════════════════════════════════════════════════════════════ *)
 
 Definition MRN := nat.  (* Medical Record Number *)
+Definition BREACH_NOTIFY_WINDOW : nat := Z.to_nat 86400%Z.
 
 Record Patient : Type := mkPatient {
   mrn : MRN;
@@ -436,7 +437,7 @@ Record Breach : Type := mkBreach {
 
 Definition breach_notified (b : Breach) : Prop :=
   match breach_notif_time b with
-  | Some t => t <= detection_time b + 86400 (* 60 days in minutes, simplified *)
+  | Some t => t <= detection_time b + BREACH_NOTIFY_WINDOW (* 60 days in minutes, simplified *)
   | None => False
   end /\ notified_within_60days b = true.
 

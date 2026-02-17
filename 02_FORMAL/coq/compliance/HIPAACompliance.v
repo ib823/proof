@@ -7,7 +7,10 @@
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import ZArith.
 Import ListNotations.
+
+Definition BREACH_DETECTION_LIMIT_S : nat := Z.to_nat 86400%Z.
 
 (* User roles *)
 Inductive Role : Type :=
@@ -166,7 +169,7 @@ Definition is_secure_disposal (d : DisposalRecord) : bool :=
   end.
 
 (* Breach detection within 24 hours (86400 seconds) *)
-Definition breach_detection_limit : nat := 86400.
+Definition breach_detection_limit : nat := BREACH_DETECTION_LIMIT_S.
 
 Definition breach_detected_timely (b : BreachEvent) : bool :=
   Nat.leb (breach_detected_time b - breach_occurred_time b) breach_detection_limit.

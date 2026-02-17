@@ -1,56 +1,13 @@
 {
-  "generatedAt": "2026-02-17T15:53:39.207959+00:00",
-  "repoHead": "053b3d23fb0d3a283f996a77c558a1bd5bfb0168",
-  "repoParentHead": "0c8200c213ce9476c4a7c04ddb776bd567523415",
+  "generatedAt": "2026-02-17T16:04:05.651651+00:00",
+  "repoHead": "f9ce7e5ad21f67d8ce7a08e56c8ddd31efd5db4e",
+  "repoParentHead": "053b3d23fb0d3a283f996a77c558a1bd5bfb0168",
   "totals": {
-    "warnings": 18,
-    "kinds": {
-      "abstract-large-number": 18
-    },
-    "filesWithWarnings": 10
+    "warnings": 0,
+    "kinds": {},
+    "filesWithWarnings": 0
   },
-  "topFiles": [
-    {
-      "file": "domains/FHESecurity.v",
-      "warnings": 9
-    },
-    {
-      "file": "compliance/HIPAACompliance.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/SecureBootVerification.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/PostQuantumSignatures.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/U001_RuntimeGuardian.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/CryptographicSecurity.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/HIPAACompliance.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/HealthcareIS.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/mobile_os/SystemApps.v",
-      "warnings": 1
-    },
-    {
-      "file": "domains/mobile_os/SystemArchitecture.v",
-      "warnings": 1
-    }
-  ],
+  "topFiles": [],
   "logPath": "reports/coq_warning_build.log",
   "inventoryPath": "reports/coq_warning_inventory.tsv"
 }

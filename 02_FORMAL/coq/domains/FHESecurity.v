@@ -22,8 +22,19 @@ From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Arith.PeanoNat.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Lia.
 Import ListNotations.
+
+Definition NEGLIGIBLE_THRESHOLD_CONST : nat := Z.to_nat 10000%Z.
+Definition RIINA_ADVANTAGE_CONST : nat := Z.to_nat 100000%Z.
+Definition NOISE_THRESHOLD_CONST : nat := Z.to_nat 100000%Z.
+Definition RIINA_KP_PUBLIC_CONST : nat := Z.to_nat 12345%Z.
+Definition RIINA_KP_SECRET_CONST : nat := Z.to_nat 67890%Z.
+Definition RIINA_KP_EVAL_CONST : nat := Z.to_nat 11111%Z.
+Definition RLWE_MODULUS_MIN_CONST : nat := Z.to_nat 32768%Z.
+Definition RIINA_RLWE_MODULUS_CONST : nat := Z.to_nat 32769%Z.
+Definition RIINA_NOISE_BOUND_MODULUS_CONST : nat := Z.to_nat 65536%Z.
 
 (** ============================================================================
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
@@ -215,8 +226,8 @@ Record INDCPAGame : Type := mkINDCPAGame {
 
 (** IND-CPA security: advantage must be negligible (represented as large denominator) *)
 (** Note: Using abstract values instead of 2^80 to avoid computation blowup *)
-Definition negligible_threshold : nat := 10000.  (* Abstract threshold for negligibility *)
-Definition riina_advantage : nat := 100000.      (* RIINA's advantage denominator *)
+Definition negligible_threshold : nat := NEGLIGIBLE_THRESHOLD_CONST.  (* Abstract threshold for negligibility *)
+Definition riina_advantage : nat := RIINA_ADVANTAGE_CONST.      (* RIINA's advantage denominator *)
 
 Definition indcpa_secure (g : INDCPAGame) : bool :=
   (128 <=? icpa_key_size g) &&
@@ -463,7 +474,7 @@ Definition noise_safe (nm : NoiseModel) (current : nat) : bool :=
   current <? noise_threshold nm.
 
 (** RIINA noise model *)
-Definition riina_noise_model : NoiseModel := mkNoiseModel 10 2 2 100000.
+Definition riina_noise_model : NoiseModel := mkNoiseModel 10 2 2 NOISE_THRESHOLD_CONST.
 
 (** NOISE-001: Initial noise is safe *)
 Theorem noise_001_initial_safe :
@@ -509,7 +520,8 @@ Definition noise_bound_valid (nm : NoiseModel) (nb : NoiseBound) : bool :=
   noise_safe nm (noise_after_additions nm (nb_max_additions nb)) &&
   noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb)).
 
-Definition riina_noise_bound : NoiseBound := mkNoiseBound 100 8 65536.
+Definition riina_noise_bound : NoiseBound :=
+  mkNoiseBound 100 8 RIINA_NOISE_BOUND_MODULUS_CONST.
 
 (** NB-001: RIINA noise bounds are valid *)
 Theorem nb_001_riina_valid : noise_bound_valid riina_noise_model riina_noise_bound = true.
@@ -705,7 +717,8 @@ Definition keypair_valid (kp : FHEKeyPair) : bool :=
   (0 <? kp_public kp) &&
   (0 <? kp_secret kp).
 
-Definition riina_keypair : FHEKeyPair := mkFHEKeyPair 12345 67890 11111 riina_keygen.
+Definition riina_keypair : FHEKeyPair :=
+  mkFHEKeyPair RIINA_KP_PUBLIC_CONST RIINA_KP_SECRET_CONST RIINA_KP_EVAL_CONST riina_keygen.
 
 (** KP-001: RIINA keypair is valid *)
 Theorem kp_001_riina_valid : keypair_valid riina_keypair = true.
@@ -1001,10 +1014,10 @@ Record RLWEConfig : Type := mkRLWEConfig {
 
 Definition rlwe_secure (r : RLWEConfig) : bool :=
   (1024 <=? rlwe_ring_degree r) &&
-  (32768 <=? rlwe_modulus r) &&
+  (RLWE_MODULUS_MIN_CONST <=? rlwe_modulus r) &&
   rlwe_ntt_compatible r.
 
-Definition riina_rlwe : RLWEConfig := mkRLWEConfig 2048 32769 8 true.
+Definition riina_rlwe : RLWEConfig := mkRLWEConfig 2048 RIINA_RLWE_MODULUS_CONST 8 true.
 
 (** RLWE-001: RIINA RLWE is secure *)
 Theorem rlwe_001_riina_secure : rlwe_secure riina_rlwe = true.

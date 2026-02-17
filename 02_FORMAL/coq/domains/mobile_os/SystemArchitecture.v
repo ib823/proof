@@ -13,8 +13,11 @@
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Logic.Classical_Prop.
 Import ListNotations.
+
+Definition KERNEL_MEM_BOUNDARY : nat := Z.to_nat 1073741824%Z.
 
 (** ** Core Definitions *)
 
@@ -245,7 +248,7 @@ Definition ext_mem_disjoint (p1 p2 : ExtProcess) : Prop :=
   ext_mem_start p1 + ext_mem_size p1 <= ext_mem_start p2 \/
   ext_mem_start p2 + ext_mem_size p2 <= ext_mem_start p1.
 
-Definition kernel_mem_boundary : nat := 1073741824. (* 1GB *)
+Definition kernel_mem_boundary : nat := KERNEL_MEM_BOUNDARY. (* 1GB *)
 
 Definition in_user_space (p : ExtProcess) : Prop :=
   ext_mem_start p >= kernel_mem_boundary.
