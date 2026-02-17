@@ -36,6 +36,7 @@ dist/
 .isabelle-core*/
 
 # Build artifacts
+VERIFICATION_MANIFEST.md
 axiom_audit_report.txt
 .keepalive_timestamp
 integrity_reports/
