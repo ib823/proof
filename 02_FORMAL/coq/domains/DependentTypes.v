@@ -7,7 +7,9 @@
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
+Set Warnings "-stdlib-vector".
 From Stdlib Require Import Vectors.Vector.
+Set Warnings "stdlib-vector".
 From Stdlib Require Import Logic.Eqdep_dec.
 From Stdlib Require Import Arith.PeanoNat.
 From Stdlib Require Import Logic.Decidable.
