@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-02-16T05:05:21Z",
-  "repo_head": "a41b160a844926a47beb40d39ce5f993c27ad0ec",
+  "generated_utc": "2026-02-16T14:54:49Z",
+  "repo_head": "e69f90ef51bbc9051d22232dc4f4cab8a193c286",
   "scope": "dim1_dim9_promotion_readiness",
-  "strict_tools": 0,
+  "strict_tools": 1,
   "provision": {
-    "requested": false,
-    "attempted": false,
+    "requested": true,
+    "attempted": true,
     "succeeded": false
   },
   "tools": {
-    "lake": true,
+    "lake": false,
     "isabelle": false,
     "docker": false,
     "isabelle_bin": "",
@@ -34,8 +34,8 @@ Run: bash scripts/provision-isabelle.sh",
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=lake_core_build_failed lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-isabelle.sh lean_tail=./././RIINA/Foundations/Syntax.lean:542:84: error: unknown identifier 'EInt' ./././RIINA/Foundations/Syntax.lean:542:104: error: unknown identifier 'EString' ./././RIINA/Foundations/Syntax.lean:542:134: error: unknown identifier 'ELam' ./././RIINA/Foundations/Syntax.lean:542:165: error: unknown identifier 'EPair' ./././RIINA/Foundations/Syntax.lean:542:192: error: unknown identifier 'EInl' ./././RIINA/Foundations/Syntax.lean:542:216: error: unknown identifier 'EInr' ./././RIINA/Foundations/Syntax.lean:542:238: error: unknown identifier 'ELoc' ./././RIINA/Foundations/Syntax.lean:542:258: error: unknown identifier 'EClassify' ./././RIINA/Foundations/Syntax.lean:542:283: error: unknown identifier 'EProve' error: external command `/home/codespace/.elan/toolchains/leanprover--lean4---v4.5.0/bin/lean` exited with code 1 [0/6] Building RIINA.Foundations.Syntax [0/6] Building RIINA.Foundations.Semantics "
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-isabelle.sh"
   },
   "dimension_9": {
     "status": "PASS",

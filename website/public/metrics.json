@@ -1,10 +1,10 @@
 {
-  "generated": "2026-02-16T05:05:44Z",
-  "generatedHuman": "February 16, 2026 at 05:05 UTC",
+  "generated": "2026-02-17T08:37:10Z",
+  "generatedHuman": "February 17, 2026 at 08:37 UTC",
   "version": "0.2.0",
-  "session": 87,
+  "session": 0,
   "git": {
-    "commit": "a41b160a",
+    "commit": "e69f90ef",
     "branch": "main"
   },
   "proofs": {
@@ -23,11 +23,11 @@
     "prover": "Coq 8.20.1"
   },
   "lean": {
-    "theorems": 9066,
+    "theorems": 9018,
     "sorry": 177,
     "axioms": 12,
     "files": 269,
-    "lines": 107927,
+    "lines": 107683,
     "prover": "Lean 4"
   },
   "isabelle": {
@@ -76,7 +76,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 7449,
-    "totalProofsAllProvers": 72068,
+    "totalProofsAllProvers": 72020,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 177,
@@ -145,8 +145,8 @@
   "rust": {
     "tests": 905,
     "testsVerified": 905,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 901,
+    "testsSource": "cached_verified",
     "crates": 15
   },
   "examples": 130,

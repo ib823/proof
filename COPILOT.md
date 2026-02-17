@@ -1,4 +1,4 @@
-# RIINA Language — Copilot Instructions
+# COPILOT.md — RIINA Repository Instructions for GitHub Copilot
 
 ## Before ANY Action
 
@@ -16,43 +16,48 @@ ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → 
 ## Commit-Push-Deploy Chain
 
 ```
-Stage specific files → commit [TRACK_X] TYPE: → push origin main (never --no-verify)
-→ sync-public.sh → sync-metrics.sh → deploy-website.sh
+Stage specific files → commit [TRACK_X] TYPE: → push origin main → sync-public.sh → sync-metrics.sh → deploy-website.sh
 ```
 Numbers flow ONE direction: actual commands → metrics.json → all docs → website → master plan.
 
-## Language Basics
+## RIINA Language Basics
+
 - RIINA uses Bahasa Melayu (Malaysian) keywords with English aliases
 - File extension: `.rii`
 - All functions MUST declare their effect: `kesan Bersih` (pure), `kesan Tulis` (write), etc.
 - Security types prevent information leaks at compile time
 
 ## Key Syntax Rules
+
 1. Functions: `fungsi name(param: Type) -> ReturnType kesan Effect { body }`
-2. Bindings: `biar name = value;` (semicolons required between statements)
+2. Bindings: `biar name = value;` (semicolons required)
 3. Conditionals: `kalau condition { ... } lain { ... }` (else branch required)
-4. Match: `padan value { pattern => result, _ => default }` (use `=>` not `->`)
+4. Match: `padan value { pattern => result, _ => default }`
 5. Effects: Always declare with `kesan`. Pure = `Bersih`, I/O = `Tulis`/`Baca`
 6. Secrets: `Rahsia<T>` cannot be printed or leaked. Use `dedah` with proof.
 7. Pipe: `value |> function1 |> function2`
 8. Entry point: `fungsi utama() -> Nombor kesan Tulis { ... pulang 0; }`
 
+## Types
+
+- `Nombor` (Int), `Teks` (String), `Benar` (Bool), `Kosong` (Unit)
+- `Rahsia<T>` (Secret), `Bukti<T>` (Proof), `Senarai<T>` (List)
+- `Mungkin<T>` (Option), `Hasil<T,E>` (Result)
+
+## Effects (declare with `kesan`)
+
+Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSystem) | Rangkaian (Network) | Kripto (Crypto) | Sistem (System) | Masa (Time)
+
 ## Style
+
 - Function/variable names: snake_case (Bahasa Melayu preferred)
 - Type names: PascalCase
 - Constants: SCREAMING_SNAKE_CASE
 - Indent: 4 spaces
 - Always use Bahasa Melayu keywords over English alternatives
 
-## Common Types
-- `Nombor` (Int), `Teks` (String), `Benar` (Bool), `Kosong` (Unit)
-- `Rahsia<T>` (Secret), `Bukti<T>` (Proof), `Ruj<T>@Level` (Reference)
-- `Senarai<T>` (List), `Mungkin<T>` (Option), `Hasil<T,E>` (Result)
-
-## Effects (declare with `kesan`)
-Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSystem) | Rangkaian (Network) | Kripto (Crypto) | Sistem (System) | Masa (Time)
-
 ## Rules
+
 - Do NOT create new planning documents. `RIINA_MASTER_PLAN.md` is the only plan.
 - Do NOT commit Coq proofs with `Admitted`.
 - Do NOT count stub prover files as real proofs.

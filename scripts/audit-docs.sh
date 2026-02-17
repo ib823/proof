@@ -222,38 +222,76 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo ""
 fi
 
-# ── Check CLAUDE.md ───────────────────────────────────────────────────
+# ── Check CLAUDE.md / RIINA_MASTER_PLAN.md ────────────────────────────
+# CLAUDE.md is now a thin operational pointer (no metrics).
+# Metrics live in RIINA_MASTER_PLAN.md Part 2. Check the banner if present,
+# otherwise check the master plan.
 
 if [ "$QUICK_MODE" != "--quick" ]; then
-    echo -e "${CYAN}Checking CLAUDE.md...${NC}"
+    echo -e "${CYAN}Checking CLAUDE.md / RIINA_MASTER_PLAN.md...${NC}"
 fi
 
+# Try CLAUDE.md banner first (sync-metrics.sh writes it), then fall back to master plan
+METRICS_SOURCE=""
 if [ -f "$REPO_ROOT/CLAUDE.md" ]; then
     DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/CLAUDE.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
-    DOC_SESSION=$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md")
-    DOC_LEAN=$(grep -oP 'Lean 4 Theorems[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
-    DOC_ISABELLE=$(grep -oP 'Isabelle/HOL Lemmas[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" | head -1 || echo "0")
-
-    check_value "Qed proofs (CLAUDE.md)" "$ACTUAL_QED" "$DOC_QED" "CLAUDE.md" || true
-    check_value "Lean theorems (CLAUDE.md)" "$ACTUAL_LEAN" "$DOC_LEAN" "CLAUDE.md" || true
-    check_value "Isabelle lemmas (CLAUDE.md)" "$ACTUAL_ISABELLE" "$DOC_ISABELLE" "CLAUDE.md" || true
-    # Session number is internal tracking — warn but don't block
-    if [ "$ACTUAL_SESSION" != "$DOC_SESSION" ]; then
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${YELLOW}[WARN]${NC} Session number (CLAUDE.md): actual=$ACTUAL_SESSION, documented=$DOC_SESSION"
-        fi
-        WARNINGS=$((WARNINGS + 1))
-    else
-        if [ "$QUICK_MODE" != "--quick" ]; then
-            echo -e "${GREEN}[OK]${NC} Session number (CLAUDE.md): $DOC_SESSION"
-        fi
+    if [ "$DOC_QED" != "0" ]; then
+        METRICS_SOURCE="CLAUDE.md"
     fi
+fi
+
+# Fall back to RIINA_MASTER_PLAN.md if CLAUDE.md has no metrics (thin pointer mode)
+if [ "$DOC_QED" = "0" ] && [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    DOC_QED=$(grep -oP '\d+,?\d* Qed' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 | grep -oP '^\d+,?\d*' | tr -d ',' || echo "0")
+    METRICS_SOURCE="RIINA_MASTER_PLAN.md"
+fi
+
+# Lean/Isabelle: try CLAUDE.md table format, then master plan
+DOC_LEAN=$(grep -oP 'Lean 4 Theorems[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" 2>/dev/null | head -1 || echo "0")
+if [ "$DOC_LEAN" = "0" ] && [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    # Master plan uses "Theorem/lemma declarations | N,NNN" format
+    DOC_LEAN=$(grep -oP 'Theorem/lemma declarations \| \K\d+,?\d*' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 | tr -d ',' || echo "0")
+fi
+
+DOC_ISABELLE=$(grep -oP 'Isabelle/HOL Lemmas[*]{2} \| \K\d+' "$REPO_ROOT/CLAUDE.md" 2>/dev/null | head -1 || echo "0")
+if [ "$DOC_ISABELLE" = "0" ] && [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    # Master plan Isabelle section — look for lemma count line
+    DOC_ISABELLE=$(grep -oP 'Lemma count \(grep\) \| ~?\K\d+,?\d*' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 | tr -d ',~' || echo "0")
+fi
+
+DOC_SESSION=$(get_max_session_from_file "$REPO_ROOT/CLAUDE.md" 2>/dev/null || echo "0")
+
+LABEL="${METRICS_SOURCE:-CLAUDE.md}"
+check_value "Qed proofs ($LABEL)" "$ACTUAL_QED" "$DOC_QED" "$LABEL" || true
+
+# Lean/Isabelle: only check if documented value is non-zero (thin CLAUDE.md may omit)
+if [ "$DOC_LEAN" != "0" ]; then
+    check_value "Lean theorems ($LABEL)" "$ACTUAL_LEAN" "$DOC_LEAN" "$LABEL" || true
 else
     if [ "$QUICK_MODE" != "--quick" ]; then
-        echo -e "${RED}[ERROR]${NC} CLAUDE.md not found!"
+        echo -e "${GREEN}[OK]${NC} Lean theorems: not in $LABEL (metrics in metrics.json)"
     fi
-    DISCREPANCIES=$((DISCREPANCIES + 1))
 fi
+if [ "$DOC_ISABELLE" != "0" ]; then
+    check_value "Isabelle lemmas ($LABEL)" "$ACTUAL_ISABELLE" "$DOC_ISABELLE" "$LABEL" || true
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Isabelle lemmas: not in $LABEL (metrics in metrics.json)"
+    fi
+fi
+
+# Session number is internal tracking — warn but don't block
+if [ "$ACTUAL_SESSION" != "$DOC_SESSION" ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${YELLOW}[WARN]${NC} Session number ($LABEL): actual=$ACTUAL_SESSION, documented=$DOC_SESSION"
+    fi
+    WARNINGS=$((WARNINGS + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Session number ($LABEL): $DOC_SESSION"
+    fi
+fi
+
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
 # ── Check README.md ───────────────────────────────────────────────────

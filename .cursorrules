@@ -1,6 +1,34 @@
 # RIINA Language Rules for Cursor AI
 
-You are writing code in RIINA, a formally verified language with Bahasa Melayu keywords.
+## Before ANY Action
+
+Read `RIINA_MASTER_PLAN.md` (the ONLY planning authority) and `CLAUDE.md` (operational instructions).
+
+## Mandatory Session Protocol
+
+**Follow `RIINA_MASTER_PLAN.md` Part 8 exactly.** 8 steps, no shortcuts:
+ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
+
+## Branch Policy (Absolute)
+
+**ALL work on `main` branch.** No feature branches. No exceptions.
+- NEVER commit to `public` — managed by `scripts/sync-public.sh` only
+- NEVER commit to `gh-pages` — managed by `scripts/deploy-website.sh` only
+
+## Commit-Push-Deploy Chain
+
+```
+Stage specific files → commit [TRACK_X] TYPE: → push origin main (never --no-verify)
+→ sync-public.sh → generate-metrics.sh + sync-metrics.sh → deploy-website.sh
+```
+Numbers flow ONE direction: actual commands → metrics.json → all docs → website → master plan.
+
+## Prime Directives (Root Authority)
+
+1. ALL status verified by running actual commands, NEVER copied from docs
+2. No stubs, no inflated metrics, no shortcuts
+3. `RIINA_MASTER_PLAN.md` is the ONLY planning document — do NOT create new ones
+4. Zero trust on documentation claims — compiler output and grep counts only
 
 ## File Extension
 .rii
@@ -36,3 +64,12 @@ Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
 - PascalCase for types
 - 4-space indent
 - Always use Bahasa Melayu keywords
+
+## Forbidden Actions
+- Do NOT create new planning/roadmap/audit documents
+- Do NOT commit Coq proofs with `Admitted`
+- Do NOT count stub prover files as proofs
+- Do NOT create feature branches — all work on `main`
+- Do NOT push with `--no-verify` — hooks are the CI/CD
+- Do NOT commit to `public` or `gh-pages` directly
+- Run tests before committing
