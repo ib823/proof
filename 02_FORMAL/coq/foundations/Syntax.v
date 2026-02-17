@@ -511,7 +511,7 @@ Fixpoint subst (x : ident) (v : expr) (e : expr) : expr :=
   | EGrant eff e1 => EGrant eff (subst x v e1)
   end.
 
-Notation "[ x := v ] e" := (subst x v e) (at level 20).
+Notation "'subst[' x := v ']' e" := (subst x v e) (at level 20).
 
 (** ** Security Lattice Properties *)
 
@@ -766,7 +766,7 @@ Defined.
 (** Substitution with a different variable from the binding does not affect that variable. *)
 Lemma subst_diff_var : forall x y v,
   x <> y ->
-  [x := v] (EVar y) = EVar y.
+  subst[x := v] (EVar y) = EVar y.
 Proof.
   intros x y v Hneq. simpl.
   destruct (String.eqb x y) eqn:Heq.
@@ -776,7 +776,7 @@ Qed.
 
 (** Substitution with the same variable as the target replaces it. *)
 Lemma subst_same_var : forall x v,
-  [x := v] (EVar x) = v.
+  subst[x := v] (EVar x) = v.
 Proof.
   intros x v. simpl.
   rewrite String.eqb_refl. reflexivity.
@@ -796,7 +796,7 @@ Definition declass_ok (e1 e2 : expr) : Prop :=
 Lemma value_subst : forall x v1 v2,
   value v1 ->
   value v2 ->
-  value ([x := v2] v1).
+  value (subst[x := v2] v1).
 Proof.
   intros x v1 v2 Hv1 Hv2.
   induction Hv1; simpl.
@@ -816,11 +816,11 @@ Qed.
 Lemma declass_ok_subst : forall x v e1 e2,
   value v ->
   declass_ok e1 e2 ->
-  declass_ok ([x := v] e1) ([x := v] e2).
+  declass_ok (subst[x := v] e1) (subst[x := v] e2).
 Proof.
   intros x v e1 e2 Hv Hok.
   destruct Hok as [v0 [Hv0 [He1 He2]]]; subst.
-  simpl. exists ([x := v] v0). split.
+  simpl. exists (subst[x := v] v0). split.
   - apply value_subst; assumption.
   - split; reflexivity.
 Qed.
@@ -852,7 +852,7 @@ Qed.
     1. A 'closed' predicate ensuring values have no free variables, or
     2. A 'free_vars' function to check if x is free in e.
 
-    The naive statement "forall x v e, value e -> [x := v] e = e" is false
+    The naive statement "forall x v e, value e -> subst[x := v] e = e" is false
     because lambda bodies can contain free variables. We will add the
     correct formulation in Preservation.v when needed for type safety. *)
 

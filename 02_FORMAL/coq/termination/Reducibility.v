@@ -124,13 +124,13 @@ Proof.
   intros v T1 T2 ε Σ x1 e1 x2 e2 st ctx Hty Hval.
   destruct (value_sum_decompose v T1 T2 ε Σ Hty Hval) as [[v' [Heq Hval']] | [v' [Heq Hval']]].
   - subst v.
-    exists ([x1 := v'] e1), st, ctx.
+    exists (subst[x1 := v'] e1), st, ctx.
     split; [| split].
     + apply ST_CaseInl. assumption.
     + reflexivity.
     + reflexivity.
   - subst v.
-    exists ([x2 := v'] e2), st, ctx.
+    exists (subst[x2 := v'] e2), st, ctx.
     split; [| split].
     + apply ST_CaseInr. assumption.
     + reflexivity.
@@ -161,7 +161,7 @@ Lemma let_typed_steps_once : forall v x e2 st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros v x e2 st ctx Hval.
-  exists ([x := v] e2), st, ctx.
+  exists (subst[x := v] e2), st, ctx.
   split; [| split].
   - apply ST_LetValue. assumption.
   - reflexivity.
@@ -176,7 +176,7 @@ Lemma handle_typed_steps_once : forall v x h st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros v x h st ctx Hval.
-  exists ([x := v] h), st, ctx.
+  exists (subst[x := v] h), st, ctx.
   split; [| split].
   - apply ST_HandleValue. assumption.
   - reflexivity.
@@ -195,7 +195,7 @@ Proof.
   intros f T1 T2 ε ε' Σ a st ctx Hty Hvalf Hvala.
   destruct (value_fn_decompose f T1 T2 ε ε' Σ Hty Hvalf) as [x [body Heq]].
   subst f.
-  exists ([x := a] body), st, ctx.
+  exists (subst[x := a] body), st, ctx.
   split; [| split].
   - apply ST_AppAbs. assumption.
   - reflexivity.
@@ -218,10 +218,10 @@ Lemma case_inl_typed_steps : forall v T2 x1 e1 x2 e2 st ctx,
   value v ->
   exists e' st' ctx',
     (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') /\
-    e' = [x1 := v] e1 /\ st' = st /\ ctx' = ctx.
+    e' = subst[x1 := v] e1 /\ st' = st /\ ctx' = ctx.
 Proof.
   intros v T2 x1 e1 x2 e2 st ctx Hval.
-  exists ([x1 := v] e1), st, ctx.
+  exists (subst[x1 := v] e1), st, ctx.
   split; [| split; [| split]].
   - apply ST_CaseInl. exact Hval.
   - reflexivity.
@@ -234,10 +234,10 @@ Lemma case_inr_typed_steps : forall v T1 x1 e1 x2 e2 st ctx,
   value v ->
   exists e' st' ctx',
     (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') /\
-    e' = [x2 := v] e2 /\ st' = st /\ ctx' = ctx.
+    e' = subst[x2 := v] e2 /\ st' = st /\ ctx' = ctx.
 Proof.
   intros v T1 x1 e1 x2 e2 st ctx Hval.
-  exists ([x2 := v] e2), st, ctx.
+  exists (subst[x2 := v] e2), st, ctx.
   split; [| split; [| split]].
   - apply ST_CaseInr. exact Hval.
   - reflexivity.
@@ -416,7 +416,7 @@ Qed.
 (** App with lambda and value steps *)
 Lemma app_lam_steps : forall x T body v st ctx,
   value v ->
-  (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx).
+  (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx).
 Proof.
   intros. apply ST_AppAbs; assumption.
 Qed.

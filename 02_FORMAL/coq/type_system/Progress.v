@@ -139,7 +139,7 @@ Proof.
     + destruct (IHHty2 eq_refl eq_refl Hwf) as [Hv2 | [e2' [st2' [ctx2' Hstep2]]]].
       * (* Both values - can beta reduce *)
         destruct (canonical_fn e1 T1 T2 ε ε1 Σ Hty1 Hv1) as [x [body Heq]].
-        subst. right. exists ([x := e2] body), st, ctx.
+        subst. right. exists (subst[x := e2] body), st, ctx.
         apply ST_AppAbs. assumption.
       * (* e2 steps *)
         right. exists (EApp e1 e2'), st2', ctx2'.
@@ -185,9 +185,9 @@ Proof.
   - (* T_Case *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv | [e'' [st'' [ctx'' Hstep]]]].
     + destruct (canonical_sum e T1 T2 ε Σ Hty1 Hv) as [[v' [Heq Hv']] | [v' [Heq Hv']]].
-      * subst. right. exists ([x1 := v'] e1), st, ctx.
+      * subst. right. exists (subst[x1 := v'] e1), st, ctx.
         apply ST_CaseInl; assumption.
-      * subst. right. exists ([x2 := v'] e2), st, ctx.
+      * subst. right. exists (subst[x2 := v'] e2), st, ctx.
         apply ST_CaseInr; assumption.
     + right. exists (ECase e'' x1 e1 x2 e2), st'', ctx''.
       apply ST_CaseStep; assumption.
@@ -201,7 +201,7 @@ Proof.
       apply ST_IfStep; assumption.
   - (* T_Let *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv | [e1'' [st'' [ctx'' Hstep]]]].
-    + right. exists ([x := e1] e2), st, ctx.
+    + right. exists (subst[x := e1] e2), st, ctx.
       apply ST_LetValue; assumption.
     + right. exists (ELet x e1'' e2), st'', ctx''.
       apply ST_LetStep; assumption.
@@ -213,7 +213,7 @@ Proof.
 
   - (* T_Handle *)
     destruct (IHHty1 eq_refl eq_refl Hwf) as [Hv | [e' [st' [ctx' Hstep]]]].
-    + right. exists ([x := e] h), st, ctx. apply ST_HandleValue; assumption.
+    + right. exists (subst[x := e] h), st, ctx. apply ST_HandleValue; assumption.
     + right. exists (EHandle e' x h), st', ctx'. apply ST_HandleStep; assumption.
 
   - (* T_Ref *)

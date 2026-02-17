@@ -109,10 +109,10 @@ Lemma exp_rel_step1_case_typed : forall Σ T T1 T2 v v' x1 e1 e1' x2 e2 e2' st1 
   value v -> value v' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  (forall v1, value v1 -> terminates ([x1 := v1] e1) st1 ctx) ->
-  (forall v2, value v2 -> terminates ([x2 := v2] e2) st1 ctx) ->
-  (forall v1', value v1' -> terminates ([x1 := v1'] e1') st2 ctx) ->
-  (forall v2', value v2' -> terminates ([x2 := v2'] e2') st2 ctx) ->
+  (forall v1, value v1 -> terminates (subst[x1 := v1] e1) st1 ctx) ->
+  (forall v2, value v2 -> terminates (subst[x2 := v2] e2) st1 ctx) ->
+  (forall v1', value v1' -> terminates (subst[x1 := v1'] e1') st2 ctx) ->
+  (forall v2', value v2' -> terminates (subst[x2 := v2'] e2') st2 ctx) ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -132,10 +132,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -146,10 +146,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl] e1) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -160,10 +160,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x1 := vl'] e1') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInl. exact Hvall'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -174,10 +174,10 @@ Proof.
     exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
     repeat split.
     + apply store_ty_extends_refl.
-    + apply multi_step_trans with (e2 := [x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr] e2) (st2 := st1) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr.
       * exact Hmulti1.
-    + apply multi_step_trans with (e2 := [x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
+    + apply multi_step_trans with (e2 := subst[x2 := vr'] e2') (st2 := st2) (ctx2 := ctx).
       * apply step_to_multi. apply ST_CaseInr. exact Hvalr'.
       * exact Hmulti2.
     + exact Hvalr1.
@@ -274,8 +274,8 @@ Lemma exp_rel_step1_let_typed : forall Σ T v v' x e2 e2' st1 st2 ctx Σ',
   value v -> value v' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  terminates ([x := v] e2) st1 ctx ->
-  terminates ([x := v'] e2') st2 ctx ->
+  terminates (subst[x := v] e2) st1 ctx ->
+  terminates (subst[x := v'] e2') st2 ctx ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (ELet x v e2, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -290,10 +290,10 @@ Proof.
   exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
   repeat split.
   - apply store_ty_extends_refl.
-  - apply multi_step_trans with (e2 := [x := v] e2) (st2 := st1) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v] e2) (st2 := st1) (ctx2 := ctx).
     + apply step_to_multi. apply ST_LetValue. exact Hval.
     + exact Hmulti1.
-  - apply multi_step_trans with (e2 := [x := v'] e2') (st2 := st2) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v'] e2') (st2 := st2) (ctx2 := ctx).
     + apply step_to_multi. apply ST_LetValue. exact Hval'.
     + exact Hmulti2.
   - exact Hvalr1.
@@ -306,8 +306,8 @@ Lemma exp_rel_step1_handle_typed : forall Σ T v v' x h h' st1 st2 ctx Σ',
   value v -> value v' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  terminates ([x := v] h) st1 ctx ->
-  terminates ([x := v'] h') st2 ctx ->
+  terminates (subst[x := v] h) st1 ctx ->
+  terminates (subst[x := v'] h') st2 ctx ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (EHandle v x h, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -322,10 +322,10 @@ Proof.
   exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
   repeat split.
   - apply store_ty_extends_refl.
-  - apply multi_step_trans with (e2 := [x := v] h) (st2 := st1) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v] h) (st2 := st1) (ctx2 := ctx).
     + apply step_to_multi. apply ST_HandleValue. exact Hval.
     + exact Hmulti1.
-  - apply multi_step_trans with (e2 := [x := v'] h') (st2 := st2) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := v'] h') (st2 := st2) (ctx2 := ctx).
     + apply step_to_multi. apply ST_HandleValue. exact Hval'.
     + exact Hmulti2.
   - exact Hvalr1.
@@ -340,8 +340,8 @@ Lemma exp_rel_step1_app_typed : forall Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε'
   value f -> value f' -> value a -> value a' ->
   store_rel_0 Σ' st1 st2 ->
   store_ty_extends Σ Σ' ->
-  (forall x body, f = ELam x T1 body -> terminates ([x := a] body) st1 ctx) ->
-  (forall x body, f' = ELam x T1 body -> terminates ([x := a'] body) st2 ctx) ->
+  (forall x body, f = ELam x T1 body -> terminates (subst[x := a] body) st1 ctx) ->
+  (forall x body, f' = ELam x T1 body -> terminates (subst[x := a'] body) st2 ctx) ->
   exists r1 r2 st1' st2' ctx1' ctx2' Σ'',
     store_ty_extends Σ' Σ'' /\
     (EApp f a, st1, ctx) -->* (r1, st1', ctx1') /\
@@ -360,10 +360,10 @@ Proof.
   exists r1, r2, st1', st2', ctx1', ctx2', Σ'.
   repeat split.
   - apply store_ty_extends_refl.
-  - apply multi_step_trans with (e2 := [x := a] body) (st2 := st1) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x := a] body) (st2 := st1) (ctx2 := ctx).
     + apply step_to_multi. apply ST_AppAbs. exact Hvala.
     + exact Hmulti1.
-  - apply multi_step_trans with (e2 := [x' := a'] body') (st2 := st2) (ctx2 := ctx).
+  - apply multi_step_trans with (e2 := subst[x' := a'] body') (st2 := st2) (ctx2 := ctx).
     + apply step_to_multi. apply ST_AppAbs. exact Hvala'.
     + exact Hmulti2.
   - exact Hvalr1.
@@ -485,7 +485,7 @@ Qed.
 (** Let terminates if the substituted body terminates *)
 Lemma let_terminates : forall x v e2 st ctx,
   value v ->
-  terminates ([x := v] e2) st ctx ->
+  terminates (subst[x := v] e2) st ctx ->
   terminates (ELet x v e2) st ctx.
 Proof.
   intros x v e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
@@ -498,7 +498,7 @@ Qed.
 (** App terminates if the substituted body terminates *)
 Lemma app_lam_terminates : forall x T body v st ctx,
   value v ->
-  terminates ([x := v] body) st ctx ->
+  terminates (subst[x := v] body) st ctx ->
   terminates (EApp (ELam x T body) v) st ctx.
 Proof.
   intros x T body v st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
@@ -523,7 +523,7 @@ Qed.
 
 Lemma case_inl_terminates : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  terminates ([x1 := v] e1) st ctx ->
+  terminates (subst[x1 := v] e1) st ctx ->
   terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx.
 Proof.
   intros v T x1 e1 x2 e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
@@ -537,7 +537,7 @@ Qed.
 
 Lemma case_inr_terminates : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  terminates ([x2 := v] e2) st ctx ->
+  terminates (subst[x2 := v] e2) st ctx ->
   terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx.
 Proof.
   intros v T x1 e1 x2 e2 st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].
@@ -551,7 +551,7 @@ Qed.
 
 Lemma handle_terminates : forall x v h st ctx,
   value v ->
-  terminates ([x := v] h) st ctx ->
+  terminates (subst[x := v] h) st ctx ->
   terminates (EHandle v x h) st ctx.
 Proof.
   intros x v h st ctx Hval [r [st' [ctx' [Hms Hvalr]]]].

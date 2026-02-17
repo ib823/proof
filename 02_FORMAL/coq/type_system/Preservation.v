@@ -508,14 +508,14 @@ Qed.
     Key lemma: substitution preserves typing.
 
     If v has type T1 in empty context, and e has type T2 in context
-    extended with x:T1, then [x := v] e has type T2 in the original context.
+    extended with x:T1, then subst[x := v] e has type T2 in the original context.
 *)
 
 Lemma substitution_preserves_typing : forall Γ Σ Δ z v e T1 T2 ε2,
   value v ->
   has_type nil Σ Δ v T1 EffectPure ->
   has_type ((z, T1) :: Γ) Σ Δ e T2 ε2 ->
-  has_type Γ Σ Δ ([z := v] e) T2 ε2.
+  has_type Γ Σ Δ (subst[z := v] e) T2 ε2.
 Proof.
   intros Γ Σ Δ z v e T1 T2 ε2 Hval Htyv.
   generalize dependent Γ.

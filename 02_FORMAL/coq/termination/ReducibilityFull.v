@@ -378,7 +378,7 @@ Qed.
 (** Helper: substitution has no effect when variable is not free *)
 Lemma subst_not_free_in : forall x v e,
   ~ free_in x e ->
-  [x := v] e = e.
+  subst[x := v] e = e.
 Proof.
   induction e; intros Hfree; simpl in *; try reflexivity.
   - destruct (String.eqb x i) eqn:Heq.
@@ -553,7 +553,7 @@ Qed.
 (** Generalized substitution commutation lemma *)
 Lemma subst_subst_env_commute_gen : forall e ρ x v,
   (forall y, y <> x -> ~ free_in x (ρ y)) ->
-  [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e.
+  subst[x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e.
 Proof.
   induction e; intros ρ x v Hcond; simpl.
   - (* EUnit *) reflexivity.
@@ -569,7 +569,7 @@ Proof.
       simpl. destruct (String.eqb x x) eqn:Hxx.
       * reflexivity.
       * apply String.eqb_neq in Hxx. exfalso. apply Hxx. reflexivity.
-    + (* i <> x: need to show [x := v] (ρ i) = ρ i *)
+    + (* i <> x: need to show subst[x := v] (ρ i) = ρ i *)
       apply subst_not_free_in.
       apply Hcond.
       apply String.eqb_neq. exact Heq.
@@ -795,7 +795,7 @@ Qed.
 (** Main lemma with closed_rho hypothesis *)
 Lemma subst_subst_env_commute : forall ρ x v e,
   closed_rho ρ ->
-  [x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e.
+  subst[x := v] (subst_env (extend_rho ρ x (EVar x)) e) = subst_env (extend_rho ρ x v) e.
 Proof.
   intros ρ x v e Hclosed.
   apply subst_subst_env_commute_gen.
@@ -970,7 +970,7 @@ Hypothesis env_reducible_closed : forall Γ ρ,
 Hypothesis lambda_body_SN : forall x (T : ty) body v st ctx,
   value v ->
   SN_expr v ->
-  SN (([x := v] body), st, ctx).
+  SN ((subst[x := v] body), st, ctx).
 
 (** Axiom: Store values are actually values.
 
@@ -1097,7 +1097,7 @@ Proof.
     + apply IHHty1. assumption.  (* SN of discriminee *)
     + intros v st' ctx' Hv.  (* Inl branch *)
       (* IHHty2 : forall ρ', env_reducible ((x1, T1) :: Γ) ρ' -> SN_expr (subst_env ρ' e1) *)
-      (* Use commutation: [x1 := v] (subst_env (extend_rho ρ x1 (EVar x1)) e1) = subst_env (extend_rho ρ x1 v) e1 *)
+      (* Use commutation: subst[x1 := v] (subst_env (extend_rho ρ x1 (EVar x1)) e1) = subst_env (extend_rho ρ x1 v) e1 *)
       rewrite subst_subst_env_commute; [|apply (env_reducible_closed Γ ρ); assumption].
       specialize (IHHty2 (extend_rho ρ x1 v)).
       apply IHHty2.
@@ -1233,7 +1233,7 @@ Qed.
 (** SN of beta when body is SN *)
 Lemma SN_beta_value : forall x T body a st ctx,
   value a ->
-  SN (([x := a] body), st, ctx) ->
+  SN ((subst[x := a] body), st, ctx) ->
   SN (EApp (ELam x T body) a, st, ctx).
 Proof.
   intros x T body a st ctx Hval Hsn_body.

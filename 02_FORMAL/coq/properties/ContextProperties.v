@@ -603,7 +603,7 @@ Qed.
 (** Substitution into closed (well-typed in empty context) terms is the identity. *)
 Lemma subst_closed_typing : forall Σ Δ e T ε x v,
   has_type nil Σ Δ e T ε ->
-  [x := v] e = e.
+  subst[x := v] e = e.
 Proof.
   intros Σ Δ e T ε x v Hty.
   apply subst_not_free_sc.

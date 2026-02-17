@@ -108,7 +108,7 @@ Lemma let_terminates_once : forall x v e2 st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros x v e2 st ctx Hval.
-  exists ([x := v] e2), st, ctx.
+  exists (subst[x := v] e2), st, ctx.
   split; [| split].
   - apply step_to_multi. apply ST_LetValue. assumption.
   - reflexivity.
@@ -123,7 +123,7 @@ Lemma handle_terminates_once : forall x v h st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros x v h st ctx Hval.
-  exists ([x := v] h), st, ctx.
+  exists (subst[x := v] h), st, ctx.
   split; [| split].
   - apply step_to_multi. apply ST_HandleValue. assumption.
   - reflexivity.
@@ -138,7 +138,7 @@ Lemma app_lam_terminates_once : forall x T body v st ctx,
     st' = st /\ ctx' = ctx.
 Proof.
   intros x T body v st ctx Hval.
-  exists ([x := v] body), st, ctx.
+  exists (subst[x := v] body), st, ctx.
   split; [| split].
   - apply step_to_multi. apply ST_AppAbs. assumption.
   - reflexivity.
@@ -219,7 +219,7 @@ Qed.
 (** Let with value is SN when substituted body is SN *)
 Lemma let_value_SN : forall x v e2 st ctx,
   value v ->
-  SN st ctx ([x := v] e2) ->
+  SN st ctx (subst[x := v] e2) ->
   SN st ctx (ELet x v e2).
 Proof.
   intros x v e2 st ctx Hval HSN2.
@@ -232,7 +232,7 @@ Qed.
 (** App with lambda and value is SN when substituted body is SN *)
 Lemma app_lam_value_SN : forall x T body v st ctx,
   value v ->
-  SN st ctx ([x := v] body) ->
+  SN st ctx (subst[x := v] body) ->
   SN st ctx (EApp (ELam x T body) v).
 Proof.
   intros x T body v st ctx Hval HSN_body.
@@ -248,7 +248,7 @@ Qed.
 (** Handle with value is SN when substituted body is SN *)
 Lemma handle_value_SN : forall x v h st ctx,
   value v ->
-  SN st ctx ([x := v] h) ->
+  SN st ctx (subst[x := v] h) ->
   SN st ctx (EHandle v x h).
 Proof.
   intros x v h st ctx Hval HSN_h.
@@ -263,7 +263,7 @@ Qed.
 (** Case on inl value is SN when left branch substitution is SN *)
 Lemma case_inl_value_SN : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  SN st ctx ([x1 := v] e1) ->
+  SN st ctx (subst[x1 := v] e1) ->
   SN st ctx (ECase (EInl v T) x1 e1 x2 e2).
 Proof.
   intros v T x1 e1 x2 e2 st ctx Hval HSN1.
@@ -278,7 +278,7 @@ Qed.
 (** Case on inr value is SN when right branch substitution is SN *)
 Lemma case_inr_value_SN : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  SN st ctx ([x2 := v] e2) ->
+  SN st ctx (subst[x2 := v] e2) ->
   SN st ctx (ECase (EInr v T) x1 e1 x2 e2).
 Proof.
   intros v T x1 e1 x2 e2 st ctx Hval HSN2.

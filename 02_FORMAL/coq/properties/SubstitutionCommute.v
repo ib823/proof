@@ -75,7 +75,7 @@ Definition closed_rho_sc (ρ : subst_rho_sc) : Prop := forall x, closed_expr_sc 
 (** ----------------------------------------------------------------- *)
 
 Lemma subst_not_free_sc : forall x v e,
-  ~ free_in x e -> [x := v] e = e.
+  ~ free_in x e -> subst[x := v] e = e.
 Proof.
   intros x v e Hnotfree.
   induction e; simpl; try reflexivity.
@@ -140,7 +140,7 @@ Proof.
 Qed.
 
 Lemma subst_closed_sc : forall x v e,
-  closed_expr_sc e -> [x := v] e = e.
+  closed_expr_sc e -> subst[x := v] e = e.
 Proof.
   intros x v e Hclosed. apply subst_not_free_sc. apply Hclosed.
 Qed.
@@ -167,14 +167,14 @@ Proof. intros l. unfold closed_expr_sc. intros x Hfree. simpl in Hfree. exact Hf
 
 (** Substituting into the same variable yields the replacement. *)
 Lemma subst_var_same : forall x v,
-  [x := v] (EVar x) = v.
+  subst[x := v] (EVar x) = v.
 Proof.
   intros x v. simpl. rewrite String.eqb_refl. reflexivity.
 Qed.
 
 (** Substituting into a different variable is the identity. *)
 Lemma subst_var_diff : forall x y v,
-  x <> y -> [x := v] (EVar y) = EVar y.
+  x <> y -> subst[x := v] (EVar y) = EVar y.
 Proof.
   intros x y v Hneq. simpl.
   destruct (String.eqb x y) eqn:Heq.
@@ -183,19 +183,19 @@ Proof.
 Qed.
 
 (** Substitution into base values is always the identity. *)
-Lemma subst_unit : forall x v, [x := v] EUnit = EUnit.
+Lemma subst_unit : forall x v, subst[x := v] EUnit = EUnit.
 Proof. intros. reflexivity. Qed.
 
-Lemma subst_bool : forall x v b, [x := v] (EBool b) = EBool b.
+Lemma subst_bool : forall x v b, subst[x := v] (EBool b) = EBool b.
 Proof. intros. reflexivity. Qed.
 
-Lemma subst_int : forall x v n, [x := v] (EInt n) = EInt n.
+Lemma subst_int : forall x v n, subst[x := v] (EInt n) = EInt n.
 Proof. intros. reflexivity. Qed.
 
-Lemma subst_string : forall x v s, [x := v] (EString s) = EString s.
+Lemma subst_string : forall x v s, subst[x := v] (EString s) = EString s.
 Proof. intros. reflexivity. Qed.
 
-Lemma subst_loc : forall x v l, [x := v] (ELoc l) = ELoc l.
+Lemma subst_loc : forall x v l, subst[x := v] (ELoc l) = ELoc l.
 Proof. intros. reflexivity. Qed.
 
 (** ----------------------------------------------------------------- *)
@@ -203,7 +203,7 @@ Proof. intros. reflexivity. Qed.
 (** ----------------------------------------------------------------- *)
 
 (** Substituting x := EVar x is the identity on all expressions. *)
-Lemma subst_id : forall x e, [x := EVar x] e = e.
+Lemma subst_id : forall x e, subst[x := EVar x] e = e.
 Proof.
   intros x e. induction e; simpl; try reflexivity;
   try (f_equal; assumption);
@@ -230,7 +230,7 @@ Qed.
 
 (** Substitution preserves the value predicate. *)
 Lemma subst_value : forall x v e,
-  value e -> value v -> value ([x := v] e).
+  value e -> value v -> value (subst[x := v] e).
 Proof.
   intros x v e Hval_e Hval_v.
   induction Hval_e; simpl.
@@ -253,75 +253,75 @@ Qed.
 
 (** Substitution distributes over application. *)
 Lemma subst_app : forall x v e1 e2,
-  [x := v] (EApp e1 e2) = EApp ([x := v] e1) ([x := v] e2).
+  subst[x := v] (EApp e1 e2) = EApp (subst[x := v] e1) (subst[x := v] e2).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over pair. *)
 Lemma subst_pair : forall x v e1 e2,
-  [x := v] (EPair e1 e2) = EPair ([x := v] e1) ([x := v] e2).
+  subst[x := v] (EPair e1 e2) = EPair (subst[x := v] e1) (subst[x := v] e2).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over fst/snd. *)
 Lemma subst_fst : forall x v e,
-  [x := v] (EFst e) = EFst ([x := v] e).
+  subst[x := v] (EFst e) = EFst (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_snd : forall x v e,
-  [x := v] (ESnd e) = ESnd ([x := v] e).
+  subst[x := v] (ESnd e) = ESnd (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over injection. *)
 Lemma subst_inl : forall x v e T,
-  [x := v] (EInl e T) = EInl ([x := v] e) T.
+  subst[x := v] (EInl e T) = EInl (subst[x := v] e) T.
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_inr : forall x v e T,
-  [x := v] (EInr e T) = EInr ([x := v] e) T.
+  subst[x := v] (EInr e T) = EInr (subst[x := v] e) T.
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over if. *)
 Lemma subst_if : forall x v e1 e2 e3,
-  [x := v] (EIf e1 e2 e3) = EIf ([x := v] e1) ([x := v] e2) ([x := v] e3).
+  subst[x := v] (EIf e1 e2 e3) = EIf (subst[x := v] e1) (subst[x := v] e2) (subst[x := v] e3).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over ref/deref/assign. *)
 Lemma subst_ref : forall x v e sl,
-  [x := v] (ERef e sl) = ERef ([x := v] e) sl.
+  subst[x := v] (ERef e sl) = ERef (subst[x := v] e) sl.
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_deref : forall x v e,
-  [x := v] (EDeref e) = EDeref ([x := v] e).
+  subst[x := v] (EDeref e) = EDeref (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_assign : forall x v e1 e2,
-  [x := v] (EAssign e1 e2) = EAssign ([x := v] e1) ([x := v] e2).
+  subst[x := v] (EAssign e1 e2) = EAssign (subst[x := v] e1) (subst[x := v] e2).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over classify/prove. *)
 Lemma subst_classify : forall x v e,
-  [x := v] (EClassify e) = EClassify ([x := v] e).
+  subst[x := v] (EClassify e) = EClassify (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_prove : forall x v e,
-  [x := v] (EProve e) = EProve ([x := v] e).
+  subst[x := v] (EProve e) = EProve (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over declassify. *)
 Lemma subst_declassify : forall x v e1 e2,
-  [x := v] (EDeclassify e1 e2) = EDeclassify ([x := v] e1) ([x := v] e2).
+  subst[x := v] (EDeclassify e1 e2) = EDeclassify (subst[x := v] e1) (subst[x := v] e2).
 Proof. intros. reflexivity. Qed.
 
 (** Substitution distributes over effect operations. *)
 Lemma subst_perform : forall x v eff e,
-  [x := v] (EPerform eff e) = EPerform eff ([x := v] e).
+  subst[x := v] (EPerform eff e) = EPerform eff (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_require : forall x v eff e,
-  [x := v] (ERequire eff e) = ERequire eff ([x := v] e).
+  subst[x := v] (ERequire eff e) = ERequire eff (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 Lemma subst_grant : forall x v eff e,
-  [x := v] (EGrant eff e) = EGrant eff ([x := v] e).
+  subst[x := v] (EGrant eff e) = EGrant eff (subst[x := v] e).
 Proof. intros. reflexivity. Qed.
 
 (** ----------------------------------------------------------------- *)
@@ -330,7 +330,7 @@ Proof. intros. reflexivity. Qed.
 
 (** Substituting into a lambda with the same binder is the identity. *)
 Lemma subst_lam_same : forall x T body v,
-  [x := v] (ELam x T body) = ELam x T body.
+  subst[x := v] (ELam x T body) = ELam x T body.
 Proof.
   intros x T body v. simpl. rewrite String.eqb_refl. reflexivity.
 Qed.
@@ -338,7 +338,7 @@ Qed.
 (** Substituting into a lambda with a different binder descends into the body. *)
 Lemma subst_lam_diff : forall x y T body v,
   x <> y ->
-  [x := v] (ELam y T body) = ELam y T ([x := v] body).
+  subst[x := v] (ELam y T body) = ELam y T (subst[x := v] body).
 Proof.
   intros x y T body v Hneq. simpl.
   destruct (String.eqb x y) eqn:Heq.
@@ -348,7 +348,7 @@ Qed.
 
 (** Substituting into a let with the same binder only affects the binding. *)
 Lemma subst_let_same : forall x e1 e2 v,
-  [x := v] (ELet x e1 e2) = ELet x ([x := v] e1) e2.
+  subst[x := v] (ELet x e1 e2) = ELet x (subst[x := v] e1) e2.
 Proof.
   intros x e1 e2 v. simpl. rewrite String.eqb_refl. reflexivity.
 Qed.
@@ -356,7 +356,7 @@ Qed.
 (** Substituting into a let with a different binder descends into both. *)
 Lemma subst_let_diff : forall x y e1 e2 v,
   x <> y ->
-  [x := v] (ELet y e1 e2) = ELet y ([x := v] e1) ([x := v] e2).
+  subst[x := v] (ELet y e1 e2) = ELet y (subst[x := v] e1) (subst[x := v] e2).
 Proof.
   intros x y e1 e2 v Hneq. simpl.
   destruct (String.eqb x y) eqn:Heq.
@@ -370,7 +370,7 @@ Qed.
 
 (** Substituting into a handle with the same binder only affects the body. *)
 Lemma subst_handle_same : forall x e h v,
-  [x := v] (EHandle e x h) = EHandle ([x := v] e) x h.
+  subst[x := v] (EHandle e x h) = EHandle (subst[x := v] e) x h.
 Proof.
   intros x e h v. simpl. rewrite String.eqb_refl. reflexivity.
 Qed.
@@ -378,7 +378,7 @@ Qed.
 (** Substituting into a handle with a different binder descends into both. *)
 Lemma subst_handle_diff : forall x y e h v,
   x <> y ->
-  [x := v] (EHandle e y h) = EHandle ([x := v] e) y ([x := v] h).
+  subst[x := v] (EHandle e y h) = EHandle (subst[x := v] e) y (subst[x := v] h).
 Proof.
   intros x y e h v Hneq. simpl.
   destruct (String.eqb x y) eqn:Heq.
@@ -392,7 +392,7 @@ Qed.
 
 (** Substituting into a case with the same binder for left branch. *)
 Lemma subst_case_same_left : forall x e y e2 e3 v,
-  [x := v] (ECase e x e2 y e3) = ECase ([x := v] e) x e2 y (if String.eqb x y then e3 else [x := v] e3).
+  subst[x := v] (ECase e x e2 y e3) = ECase (subst[x := v] e) x e2 y (if String.eqb x y then e3 else subst[x := v] e3).
 Proof.
   intros x e y e2 e3 v. simpl. rewrite String.eqb_refl. reflexivity.
 Qed.
@@ -426,7 +426,7 @@ Qed.
 
 (** Substituting into a value-variable pair *)
 Lemma subst_var_eqb : forall x y v,
-  [x := v] (EVar y) = if String.eqb x y then v else EVar y.
+  subst[x := v] (EVar y) = if String.eqb x y then v else EVar y.
 Proof.
   intros. simpl. reflexivity.
 Qed.

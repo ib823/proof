@@ -97,7 +97,7 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
   (* Beta reduction *)
   | ST_AppAbs : forall x T body v st ctx,
       value v ->
-      (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx)
+      (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx)
   
   (* Application congruence *)
   | ST_App1 : forall e1 e1' e2 st st' ctx ctx',
@@ -139,11 +139,11 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
   (* Sum elimination *)
   | ST_CaseInl : forall v T x1 e1 x2 e2 st ctx,
       value v ->
-      (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx)
+      (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst[x1 := v] e1, st, ctx)
   
   | ST_CaseInr : forall v T x1 e1 x2 e2 st ctx,
       value v ->
-      (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx)
+      (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst[x2 := v] e2, st, ctx)
   
   | ST_CaseStep : forall e e' x1 e1 x2 e2 st st' ctx ctx',
       (e, st, ctx) --> (e', st', ctx') ->
@@ -172,7 +172,7 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
   (* Let binding *)
   | ST_LetValue : forall x v e2 st ctx,
       value v ->
-      (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx)
+      (ELet x v e2, st, ctx) --> (subst[x := v] e2, st, ctx)
   
   | ST_LetStep : forall x e1 e1' e2 st st' ctx ctx',
       (e1, st, ctx) --> (e1', st', ctx') ->
@@ -193,7 +193,7 @@ Inductive step : (expr * store * effect_ctx) -> (expr * store * effect_ctx) -> P
 
   | ST_HandleValue : forall v x h st ctx,
       value v ->
-      (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx)
+      (EHandle v x h, st, ctx) --> (subst[x := v] h, st, ctx)
 
   (* References *)
   | ST_RefStep : forall e e' l st st' ctx ctx',

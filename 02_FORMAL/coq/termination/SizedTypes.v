@@ -200,7 +200,7 @@ Qed.
 (** Case on Inl steps in one step *)
 Lemma case_inl_steps_once : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx).
+  (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst[x1 := v] e1, st, ctx).
 Proof.
   intros. apply ST_CaseInl; assumption.
 Qed.
@@ -208,7 +208,7 @@ Qed.
 (** Case on Inr steps in one step *)
 Lemma case_inr_steps_once : forall v T x1 e1 x2 e2 st ctx,
   value v ->
-  (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx).
+  (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst[x2 := v] e2, st, ctx).
 Proof.
   intros. apply ST_CaseInr; assumption.
 Qed.
@@ -230,7 +230,7 @@ Qed.
 (** Let with value steps in one step *)
 Lemma let_value_steps_once : forall x v e2 st ctx,
   value v ->
-  (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx).
+  (ELet x v e2, st, ctx) --> (subst[x := v] e2, st, ctx).
 Proof.
   intros. apply ST_LetValue; assumption.
 Qed.
@@ -238,7 +238,7 @@ Qed.
 (** Handle with value steps in one step *)
 Lemma handle_value_steps_once : forall v x h st ctx,
   value v ->
-  (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx).
+  (EHandle v x h, st, ctx) --> (subst[x := v] h, st, ctx).
 Proof.
   intros. apply ST_HandleValue; assumption.
 Qed.
@@ -246,7 +246,7 @@ Qed.
 (** App with lambda and value steps in one step *)
 Lemma app_lam_steps_once : forall x T body v st ctx,
   value v ->
-  (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx).
+  (EApp (ELam x T body) v, st, ctx) --> (subst[x := v] body, st, ctx).
 Proof.
   intros. apply ST_AppAbs; assumption.
 Qed.
