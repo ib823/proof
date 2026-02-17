@@ -442,6 +442,36 @@ Proof.
     apply val_rel_le_build_bool.
 Qed.
 
+(** Two closed values of TInt are equal iff related at any positive step *)
+Lemma val_rel_le_int_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 <-> (exists i, v1 = EInt i /\ v2 = EInt i).
+Proof.
+  intros n Σ v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+  - intros [i [Heq1 Heq2]]. subst.
+    apply val_rel_le_build_int.
+Qed.
+
+(** Two closed values of TString are equal iff related at any positive step *)
+Lemma val_rel_le_string_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 <-> (exists s, v1 = EString s /\ v2 = EString s).
+Proof.
+  intros n Σ v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (_ & _ & _ & _ & HT). exact HT.
+  - intros [s [Heq1 Heq2]]. subst.
+    apply val_rel_le_build_string.
+Qed.
+
 (** ** Store Extension Builder
 
     This lemma helps construct store extensions.
