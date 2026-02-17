@@ -367,6 +367,26 @@ Proof.
   subst. reflexivity.
 Qed.
 
+(** Same-secret declassification preserves related stores and yields the same value. *)
+Lemma declassify_same_secret_preserves_store_relation :
+  forall v p st1 st2 ctx v1 st1' v2 st2' Σ,
+  value v ->
+  declass_ok (EClassify v) p ->
+  store_rel_simple Σ st1 st2 ->
+  multi_step (EDeclassify (EClassify v) p, st1, ctx) (v1, st1', ctx) ->
+  multi_step (EDeclassify (EClassify v) p, st2, ctx) (v2, st2', ctx) ->
+  value v1 ->
+  value v2 ->
+  v1 = v2 /\ store_rel_simple Σ st1' st2'.
+Proof.
+  intros v p st1 st2 ctx v1 st1' v2 st2' Σ Hv Hok Hst Hms1 Hms2 Hv1 Hv2.
+  pose proof (declassify_result v p st1 ctx v1 st1' Hv Hok Hms1 Hv1) as [Hv1eq Hst1eq].
+  pose proof (declassify_result v p st2 ctx v2 st2' Hv Hok Hms2 Hv2) as [Hv2eq Hst2eq].
+  subst. split.
+  - reflexivity.
+  - exact Hst.
+Qed.
+
 (** Summary: All admits eliminated *)
 Theorem declassification_zero_admits : True.
 Proof. exact I. Qed.
