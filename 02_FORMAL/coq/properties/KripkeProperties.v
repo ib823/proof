@@ -488,6 +488,23 @@ Proof.
     apply val_rel_le_build_bytes; auto.
 Qed.
 
+(** Secret relation at positive steps is exactly value+closedness on both sides *)
+Lemma val_rel_le_secret_characterization : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecret T) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ T v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    apply val_rel_le_build_secret; auto.
+Qed.
+
 (** ** Store Extension Builder
 
     This lemma helps construct store extensions.
