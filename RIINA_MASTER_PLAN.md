@@ -301,7 +301,7 @@ research source, and detailed description.
 
 | ID | Title | Priority | Status | Phase |
 |----|-------|----------|--------|-------|
-| REQ-01 | Honest metrics in all public-facing docs | P0 | IN PROGRESS | 0 |
+| REQ-01 | Honest metrics in all public-facing docs | P0 | DONE | 0 |
 | REQ-02 | Delete competing planning docs | P0 | DONE | 0 |
 | REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | TODO | 0 |
