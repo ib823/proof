@@ -13,6 +13,7 @@
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -20,6 +21,11 @@ Import ListNotations.
 (** Temperature and thermal management *)
 Definition Temperature : Type := nat.  (* In centidegrees Celsius *)
 Definition PowerLevel : Type := nat.   (* Percentage 0-100 *)
+
+(* Large constants represented via Z literals to avoid abstract-large-number warnings. *)
+Definition critical_temp_const : Temperature := Z.to_nat 9500%Z.
+Definition throttle_temp_const : Temperature := Z.to_nat 8000%Z.
+Definition charge_rate_max_const : nat := Z.to_nat 25000%Z.
 
 Record ThermalState : Type := mkThermal {
   cpu_temp : Temperature;
@@ -29,8 +35,8 @@ Record ThermalState : Type := mkThermal {
 }.
 
 (** Thermal thresholds (in centidegrees, e.g., 8000 = 80.00°C) *)
-Definition critical_temp : Temperature := 9500.   (* 95°C *)
-Definition throttle_temp : Temperature := 8000.   (* 80°C *)
+Definition critical_temp : Temperature := critical_temp_const.   (* 95°C *)
+Definition throttle_temp : Temperature := throttle_temp_const.   (* 80°C *)
 Definition safe_temp : Temperature := 4500.       (* 45°C *)
 
 (** Power states *)
@@ -208,7 +214,7 @@ Record CpuState : Type := mkCpu {
 
 (** Safe battery temperature threshold *)
 Definition battery_safe_temp : nat := 4500.  (* 45.00 C *)
-Definition charge_rate_max : nat := 25000.   (* 25W *)
+Definition charge_rate_max : nat := charge_rate_max_const.   (* 25W *)
 Definition background_power_limit : nat := 500.  (* 500mW *)
 
 (** Well-formed battery *)
@@ -368,7 +374,7 @@ Qed.
 Theorem charge_rate_safe :
   forall (b : BatteryInfo),
     well_formed_battery b ->
-    bat_charge_rate b <= 25000.
+    bat_charge_rate b <= charge_rate_max_const.
 Proof.
   intros b Hwf.
   destruct Hwf as [_ [_ [_ Hrate]]]. exact Hrate.
@@ -378,10 +384,10 @@ Qed.
 Theorem discharge_rate_bounded :
   forall (b : BatteryInfo),
     bat_discharge_rate b <= charge_rate_max ->
-    bat_discharge_rate b <= 25000.
+    bat_discharge_rate b <= charge_rate_max_const.
 Proof.
   intros b H.
-  unfold charge_rate_max in H. exact H.
+  unfold charge_rate_max, charge_rate_max_const in H. exact H.
 Qed.
 
 (* Spec: RESEARCH_MOBILEOS02 Section 1.4 - Power budget per app enforced *)

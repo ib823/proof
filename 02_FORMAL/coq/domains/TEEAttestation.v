@@ -22,8 +22,15 @@ From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Lia.
 Import ListNotations.
+
+(* Large constants represented via Z literals to avoid abstract-large-number warnings. *)
+Definition RIINA_ENCLAVE_MRENCLAVE : nat := Z.to_nat 12345%Z.
+Definition RIINA_ENCLAVE_MRSIGNER : nat := Z.to_nat 67890%Z.
+Definition RIINA_SECURE_MEM_BASE : nat := Z.to_nat 4096%Z.
+Definition RIINA_SECURE_MEM_SIZE : nat := Z.to_nat 65536%Z.
 
 (** ============================================================================
     PART 1: FOUNDATIONAL DEFINITIONS AND HELPER LEMMAS
@@ -303,10 +310,10 @@ Definition riina_attestation : AttestationProperties := mkAttestationProperties 
 Definition riina_tee : TEEConfig := mkTEEConfig riina_enclave riina_attestation true true true.
 
 Definition riina_enclave_identity : EnclaveIdentity :=
-  mkEnclaveIdentity 12345 67890 1 100.
+  mkEnclaveIdentity RIINA_ENCLAVE_MRENCLAVE RIINA_ENCLAVE_MRSIGNER 1 100.
 
 Definition riina_verification_context : VerificationContext :=
-  mkVerificationContext 12345 67890 50 42 3600 1000.
+  mkVerificationContext RIINA_ENCLAVE_MRENCLAVE RIINA_ENCLAVE_MRSIGNER 50 42 3600 1000.
 
 Definition riina_quote : AttestationQuote :=
   mkAttestationQuote riina_enclave_identity 999 42 900 555 true.
@@ -318,7 +325,8 @@ Definition riina_trust_chain : TrustChain :=
   mkTrustChain true true true true.
 
 Definition riina_secure_memory : MemoryRegion :=
-  mkMemoryRegion 0x1000 0x10000 MRT_Enclave (mkMemoryPermissions true true false) true.
+  mkMemoryRegion RIINA_SECURE_MEM_BASE RIINA_SECURE_MEM_SIZE
+                 MRT_Enclave (mkMemoryPermissions true true false) true.
 
 (** ============================================================================
     PART 9: BASIC PROPERTY THEOREMS (TEE_001 - TEE_025)

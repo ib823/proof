@@ -7,8 +7,17 @@
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import micromega.Lia.
 Import ListNotations.
+
+(* Large architecture constants represented via Z literals to avoid warnings. *)
+Definition FLASH_64K : nat := Z.to_nat 65536%Z.
+Definition FLASH_256K : nat := Z.to_nat 262144%Z.
+Definition FLASH_128K : nat := Z.to_nat 131072%Z.
+Definition RAM_8K : nat := Z.to_nat 8192%Z.
+Definition RAM_64K : nat := Z.to_nat 65536%Z.
+Definition RAM_32K : nat := Z.to_nat 32768%Z.
 
 (* Size in bytes *)
 Definition Size := nat.
@@ -24,9 +33,9 @@ Record ArchParams : Type := mkArch {
 }.
 
 (* Common architectures *)
-Definition arm_cortex_m0 : ArchParams := mkArch 4 4 4 2 65536 8192.
-Definition arm_cortex_m4 : ArchParams := mkArch 4 4 4 2 262144 65536.
-Definition riscv32 : ArchParams := mkArch 4 4 4 4 131072 32768.
+Definition arm_cortex_m0 : ArchParams := mkArch 4 4 4 2 FLASH_64K RAM_8K.
+Definition arm_cortex_m4 : ArchParams := mkArch 4 4 4 2 FLASH_256K RAM_64K.
+Definition riscv32 : ArchParams := mkArch 4 4 4 4 FLASH_128K RAM_32K.
 
 (* Instruction *)
 Inductive Instr : Type :=

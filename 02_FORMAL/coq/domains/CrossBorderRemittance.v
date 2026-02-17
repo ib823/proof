@@ -13,6 +13,11 @@ From Stdlib Require Import Logic.FunctionalExtensionality.
 Import ListNotations.
 Open Scope Z_scope.
 
+(* Large nat constants represented via Z literals to avoid abstract-large-number warnings. *)
+Definition AVAILABILITY_99_99_BPS : nat := Z.to_nat 9999%Z.
+Definition HEDGE_RATIO_MIN_BPS : nat := Z.to_nat 9800%Z.
+Definition HEDGE_RATIO_MAX_BPS : nat := Z.to_nat 10200%Z.
+
 (** ═══════════════════════════════════════════════════════════════════════════
     CORRIDOR DEFINITIONS
     ═══════════════════════════════════════════════════════════════════════════ *)
@@ -90,7 +95,8 @@ Definition rate_staleness (q : FXQuote) (current_time : nat) : nat :=
 Definition valid_quote (q : FXQuote) : Prop :=
   customer_rate q = mid_market_rate q + spread q /\
   (guarantee_window q > 0)%nat /\
-  (hedge_ratio_bps q >= 9800)%nat /\ (hedge_ratio_bps q <= 10200)%nat.
+  (hedge_ratio_bps q >= HEDGE_RATIO_MIN_BPS)%nat /\
+  (hedge_ratio_bps q <= HEDGE_RATIO_MAX_BPS)%nat.
 
 (* Fresh quote: staleness <= 1 second *)
 Definition fresh_quote (q : FXQuote) (current_time : nat) : Prop :=
@@ -325,8 +331,8 @@ Qed.
 Theorem REMIT_001_04_corridor_availability :
   forall (corr : Corridor),
     is_enabled corr = true ->
-    (availability_pct corr >= 9999)%nat ->
-    (availability_pct corr >= 9999)%nat.
+    (availability_pct corr >= AVAILABILITY_99_99_BPS)%nat ->
+    (availability_pct corr >= AVAILABILITY_99_99_BPS)%nat.
 Proof.
   intros corr Henabled Havail.
   exact Havail.
@@ -397,7 +403,8 @@ Qed.
 Theorem REMIT_001_10_hedge_ratio_maintenance :
   forall (q : FXQuote),
     valid_quote q ->
-    (hedge_ratio_bps q >= 9800)%nat /\ (hedge_ratio_bps q <= 10200)%nat.
+    (hedge_ratio_bps q >= HEDGE_RATIO_MIN_BPS)%nat /\
+    (hedge_ratio_bps q <= HEDGE_RATIO_MAX_BPS)%nat.
 Proof.
   intros q Hvalid.
   unfold valid_quote in Hvalid.
