@@ -1,6 +1,6 @@
 # RIINA MASTER PLAN
 
-**Status: AUTHORITATIVE | Version: 2.1.0 | Date: 2026-02-17**
+**Status: AUTHORITATIVE | Version: 2.2.0 | Date: 2026-02-17**
 **This is the ONLY planning document in this repository. All others have been deleted.**
 
 Any LLM CLI (Claude Code, Codex, Cursor, Copilot, Gemini, or any future tool) entering this
@@ -185,6 +185,8 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **SINAR** | Concept | Phase 8 | WebGPU/Vulkan/Metal rendering engine |
 | **RUPA** | Spec complete (Coq + Rust templates) | Phase 8 | Type-safe styling with verified layout engine. O(n) complexity. Source: `04_SPECS/requirements/RIINA_COMPONENT_SPECS_v1_0_0.md` Part I |
 | **TERAS-OS** | Research complete (~700 lines) | Phase 9 | seL4-style verified microkernel. Theorem landscape from CertiKOS, Komodo, FSCQ, CakeML, CompCert. 108 theorems identified. Source: `04_SPECS/requirements/TERAS_OS_MOBILE_OS_THEOREM_LANDSCAPE_v1_0_0.md` |
+| **Blockchain Primitives** | Research complete | Phase 6 | Verified Merkle trees, content-addressed storage, consensus types, smart contract safety (reentrancy-free, capability-gated). Source: `01_RESEARCH/60_DOMAIN_AO_VERIFIED_BLOCKCHAIN/` |
+| **Syariah Compliance** | Research complete | Phase 6 | Type-level Islamic finance regulation grounded in AAOIFI SS 1-62, IFSB, BNM. ~80% formalizable. Source: `01_RESEARCH/59_DOMAIN_AN_SYARIAH_FINANCE_FORMALIZATION/` |
 
 #### Separate Codebases (Applications written IN RIINA)
 
@@ -319,6 +321,8 @@ research source, and detailed description.
 | REQ-16 | JALINAN session types implementation | P2 | TODO | 6 |
 | REQ-17 | CAHAYA syntax extensions | P2 | TODO | 6 |
 | REQ-18 | Self-hosting compiler | P3 | TODO | 10 |
+| REQ-19 | Blockchain primitive library in stdlib | P1 | TODO | 6 |
+| REQ-20 | Syariah-compliant financial type library | P2 | TODO | 6 |
 
 ### Extension Protocol
 
@@ -567,8 +571,117 @@ spacing consistency, layout balance. What CANNOT: whether it "feels right."
 - Berlyne (1971): Optimal arousal through moderate complexity
 - Palmer et al. (2013): Spatial composition and visual balance
 
+#### Blockchain Primitives: Verified Distributed Ledger Foundation (REQ-19)
+
+Source: `01_RESEARCH/60_DOMAIN_AO_VERIFIED_BLOCKCHAIN/VERIFIED_BLOCKCHAIN_RESEARCH_v1_0_0.md`
+
+RIINA's blockchain value proposition: the ONLY language where the smart contract bug classes
+responsible for $10B+ in historical losses are structurally impossible at compile time.
+
+| Bug Class | Historical Loss | RIINA Prevention | Type System Mechanism |
+|-----------|----------------|------------------|----------------------|
+| Reentrancy (The DAO) | $60M | Linear types | State consumed exactly once, update atomic |
+| Access control (Ronin) | $625M | Capability types | `Keupayaan<Kontrak, Pentadbir>` unforgeable |
+| Input validation (Wormhole) | $320M | Refinement types | Values carry validity proofs |
+| Logic errors (Nomad) | $190M | Session types | Protocol state machine-checked |
+| Oracle manipulation (Mango) | $114M | IFC taint tracking | External data carries `Luar` security label |
+| Integer overflow | ~$100M | Verified arithmetic | Coq-proven overflow-free operations |
+| Flash loan exploits | ~$500M | Effect types | Composability constraints enforced |
+| Signature replay | ~$50M | Linear types | Signature consumed on use |
+
+**Stdlib primitives (same codebase):**
+
+| Primitive | Bahasa Melayu | Description |
+|-----------|---------------|-------------|
+| Merkle tree | `PokokMerkle<T>` | Coq-proven inclusion/exclusion proofs |
+| Content-addressed storage | `KandunganAlamat<T>` | Hash-indexed, immutable, deduplicated |
+| Consensus protocol type | `Konsensus<P>` | Session-typed, BFT safety/liveness proven |
+| Smart contract type | `KontrakPintar<S>` | Linear state, capability-gated, reentrancy-free |
+| Execution receipt | `ResitPelaksanaan` | Cryptographic proof of correct computation (Phase 7) |
+| Token standard | `TokenRIINA<T>` | Value conservation proven, no approve race condition |
+
+**Key theorems (Coq — full sketches in research doc):**
+```
+value_conservation      — total value in system conserved across all transactions
+no_reentrancy           — contract state is linear, cannot be read during external call
+consensus_safety        — no two honest nodes disagree on finalized blocks
+consensus_liveness      — every valid transaction eventually included
+token_supply_invariant  — sum of all balances = total supply (always)
+```
+
+**10-prover coverage:** Coq (core safety ~50 theorems), TLA+ (consensus models ~10 specs),
+F* (verified crypto), Lean/Isabelle (cross-verification), SMT/Z3 (arithmetic),
+Verus (implementation correctness), Kani (edge cases), RV (runtime monitoring).
+
+**Dependency chain:** Phase 2 (crypto) → Phase 3 (compiler enforcement) → Phase 4 (compilation) → Phase 6 (this).
+
+#### Syariah Compliance: Type-Level Islamic Finance Regulation (REQ-20)
+
+Source: `01_RESEARCH/59_DOMAIN_AN_SYARIAH_FINANCE_FORMALIZATION/SYARIAH_FORMALIZATION_RESEARCH_v1_0_0.md`
+
+Malaysia is the world's largest sukuk market. RIINA — a Bahasa Melayu formally verified
+language — is uniquely positioned to offer compile-time Syariah compliance grounded in
+international gold-standard frameworks (AAOIFI SS 1-62, IFSB-1 to IFSB-24, BNM).
+
+**Core principle:** Syariah rules are EFFECT CONSTRAINTS and IFC POLICIES.
+If a RIINA financial program type-checks, it is provably compliant.
+
+| Syariah Rule | Standard | RIINA Mechanism | Formal Property |
+|-------------|----------|-----------------|-----------------|
+| No riba (interest) | AAOIFI SS 3, 8, 13 | Effect prohibition | `kesan SyariahPatuh` cannot invoke `kesan Riba` |
+| No gharar (excess uncertainty) | Fiqh Muamalat | Refinement types | Subject, quantity, price all determined at contract time |
+| No maysir (gambling) | Quran 5:90-91 | IFC + effects | Zero-sum chance-based outcomes rejected at type level |
+| Halal screening | AAOIFI SS 21 | Type constraints | Business activity + financial ratios (debt < 33%, impure < 5%) |
+| Asset-backing (sukuk) | AAOIFI SS 17 | Linear types | Certificate maps to real asset, no double-pledging |
+| Profit sharing (mudarabah) | AAOIFI SS 13 | Session types | Two-party protocol, loss to capital provider only, proven |
+| Joint venture (musharakah) | AAOIFI SS 12 | Session types | Multi-party, loss proportional to capital, proven |
+| Zakat calculation | AAOIFI SS 35 | Verified arithmetic | 2.5% above nisab after haul, 8 valid recipient categories |
+| Takaful (Islamic insurance) | AAOIFI SS 26 | Conservation law | Surplus belongs to participants, not operator |
+| Purification (tathir) | AAOIFI SS 21 | IFC flow rules | Impure income (< 5%) flows to charity, not portfolio |
+| Audit trail | BNM Governance | Execution receipts | Every financial operation produces cryptographic compliance proof |
+
+**Bahasa Melayu keywords for Syariah types:**
+
+| Keyword | Usage |
+|---------|-------|
+| `patuh Syariah` | Compliance type modifier |
+| `mudarabah` | Profit-sharing session type |
+| `musharakah` | Joint venture session type |
+| `murabahah` | Cost-plus contract type |
+| `sukuk` | Asset-backed certificate type |
+| `takaful` | Mutual insurance pool type |
+| `zakat` | Obligatory charity computation |
+| `wakaf` | Irrevocable endowment (linear — cannot be transferred) |
+| `tathir` | Purification obligation on impure income |
+
+**Key theorems (Coq — full sketches in research doc):**
+```
+no_riba_nasiah          — loan repayment = principal (no interest)
+no_riba_fadl            — same-genus exchange: equal quantity, spot settlement
+mudarabah_loss          — loss borne entirely by capital provider
+musharakah_proportional — loss proportional to capital contribution
+sukuk_asset_backed      — each certificate = proportional ownership of real asset
+zakat_calculation       — 2.5% of qualifying wealth above nisab after haul
+takaful_surplus         — surplus distributed to participants, not operator
+value_conservation      — total value conserved across all Syariah transactions
+```
+
+**10-prover coverage:** Coq (core contract theorems), TLA+ (multi-party protocol models),
+SMT/Z3 (arithmetic: zakat, ratios, screening thresholds), Alloy (Syariah board role models),
+Lean/Isabelle (cross-verification), Verus (implementation), Kani (financial arithmetic edge cases),
+RV (runtime compliance monitoring), F* (Syariah-relevant crypto for receipts).
+
+**Honest assessment:** ~80% of Syariah financial rules are fully formalizable. The remaining ~20%
+requires human Syariah advisory board judgment, but the type system enforces that approval
+WAS obtained (capability token `Keupayaan<Kontrak, LulusSyariah>`) before execution proceeds.
+
+**This is NOT a Syariah fatwa.** It is a formal methods encoding of established standards.
+Actual Syariah advisory board review remains necessary for deployed financial products.
+
 **Gate:** A distributed RIINA program compiles and communicates correctly via
 session-typed actor messages. CAHAYA views render with type-checked accessibility.
+A simple smart contract (e.g., Syariah-compliant escrow) compiles with proven
+reentrancy-freedom, riba prohibition, and value conservation.
 
 ---
 
@@ -1760,11 +1873,38 @@ Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
 | `cincang` | hash | Cryptographic digest |
 | `sahkan` | verify | Integrity check |
 
+### Blockchain Keywords (Phase 6)
+
+| Bahasa Melayu | English | Role |
+|---------------|---------|------|
+| `kontrak` | contract | Smart contract declaration |
+| `lejar` | ledger | Ledger state type |
+| `blok` | block | Block type |
+| `rantai` | chain | Chain/link type |
+| `konsensus` | consensus | Consensus protocol block |
+
+### Syariah Finance Keywords (Phase 6)
+
+| Bahasa Melayu | English | Role |
+|---------------|---------|------|
+| `patuh` | compliant | Compliance type modifier (`patuh Syariah`) |
+| `mudarabah` | profit-sharing | Session type for 2-party profit sharing |
+| `musharakah` | joint venture | Session type for multi-party venture |
+| `murabahah` | cost-plus | Contract type for disclosed-markup sale |
+| `sukuk` | certificate | Asset-backed certificate type |
+| `takaful` | mutual help | Mutual insurance pool type |
+| `zakat` | alms-tax | Obligatory charity computation |
+| `wakaf` | endowment | Irrevocable endowment type (linear, no transfer) |
+| `tathir` | purification | Charity obligation on impure income |
+| `aset` | asset | Asset-backed type wrapper |
+| `nisab` | threshold | Zakat threshold constant |
+| `haul` | year | Lunar year duration type |
+
 ---
 
 *This document is the SOLE planning authority for the RIINA project.*
 *All requirement documents are preserved at `04_SPECS/requirements/` (15 files, 708KB).*
-*All research documents are preserved at `01_RESEARCH/` (75 directories, untouched).*
+*Research documents preserved at `01_RESEARCH/` (including domains 59-60: Syariah + Blockchain).*
 *All proofs are preserved at `02_FORMAL/` (coq, lean, isabelle, + 7 extended provers).*
 *Nothing was lost. Everything that matters is here or referenced here.*
-*Last updated: 2026-02-17 (Version 2.1.0)*
+*Last updated: 2026-02-17 (Version 2.2.0)*
