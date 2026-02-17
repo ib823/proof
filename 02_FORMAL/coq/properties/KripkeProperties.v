@@ -472,6 +472,22 @@ Proof.
     apply val_rel_le_build_string.
 Qed.
 
+(** Two closed values of TBytes are equal iff related at any positive step *)
+Lemma val_rel_le_bytes_eq : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 <-> (v1 = v2 /\ value v1 /\ closed_expr v1).
+Proof.
+  intros n Σ v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & _ & Hc1 & _ & Heq).
+    repeat split; auto.
+  - intros (Heq & Hv1 & Hc1). subst.
+    apply val_rel_le_build_bytes; auto.
+Qed.
+
 (** ** Store Extension Builder
 
     This lemma helps construct store extensions.
