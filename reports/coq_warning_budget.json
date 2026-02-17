@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-02-17T12:32:01.946499+00:00",
-  "baselineHead": "5958aabd12823d78bce3f587ea393aa91d81f632",
-  "maxTotalWarnings": 112,
+  "generatedAt": "2026-02-17T15:06:54.504076+00:00",
+  "baselineHead": "7c249942c7d342cb220304ec329bb4f0218b4057",
+  "maxTotalWarnings": 92,
   "maxByKind": {
-    "abstract-large-number": 112
+    "abstract-large-number": 92
   }
 }

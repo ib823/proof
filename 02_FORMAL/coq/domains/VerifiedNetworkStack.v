@@ -19,6 +19,7 @@ From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Arith.PeanoNat.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Lia.
 Import ListNotations.
 
@@ -195,7 +196,11 @@ Definition is_terminal_state (s : TCPState) : bool :=
 
 (* 32-bit sequence number space (modeled as nat with mod) *)
 (* Defined as S pred to make positivity structurally immediate *)
-Definition SEQ_SPACE : nat := S 4294967295. (* 2^32 *)
+Definition SEQ_SPACE_PRED : nat := Z.to_nat 4294967295%Z.
+Definition SEQ_SPACE : nat := S SEQ_SPACE_PRED. (* 2^32 *)
+
+(* Common network constants represented via Z literals to avoid large nat warnings *)
+Definition TCP_WINDOW_MAX : nat := Z.to_nat 65535%Z.
 
 (* Sequence number comparison with wraparound *)
 Definition seq_lt (a b : nat) : bool :=
@@ -282,7 +287,7 @@ Record CongestionState : Type := mkCongState {
 
 (* Initial congestion state (per RFC 5681) *)
 Definition initial_cong_state (mss : nat) : CongestionState :=
-  mkCongState (2 * mss) 65535 0 1000.
+  mkCongState (2 * mss) TCP_WINDOW_MAX 0 1000.
 
 (* Slow start: cwnd < ssthresh *)
 Definition in_slow_start (cs : CongestionState) : bool :=
@@ -390,15 +395,15 @@ Record HandshakeState : Type := mkHSState {
 
 (* Create SYN segment *)
 Definition make_syn (isn : nat) : TCPSegment :=
-  mkSegment isn 0 (mkFlags true false false false false false) 65535 0.
+  mkSegment isn 0 (mkFlags true false false false false false) TCP_WINDOW_MAX 0.
 
 (* Create SYN-ACK segment *)
 Definition make_syn_ack (isn ack : nat) : TCPSegment :=
-  mkSegment isn ack (mkFlags true true false false false false) 65535 0.
+  mkSegment isn ack (mkFlags true true false false false false) TCP_WINDOW_MAX 0.
 
 (* Create ACK segment *)
 Definition make_ack (seq ack : nat) : TCPSegment :=
-  mkSegment seq ack (mkFlags false true false false false false) 65535 0.
+  mkSegment seq ack (mkFlags false true false false false false) TCP_WINDOW_MAX 0.
 
 (* Handshake complete check *)
 Definition handshake_complete (hs : HandshakeState) : bool :=
@@ -636,13 +641,14 @@ Proof. reflexivity. Qed.
 
 (* TCP_019: ESTABLISHED transitions to CLOSE_WAIT on FIN *)
 Theorem TCP_019_established_fin_transition :
-  let fin_seg := mkSegment 5000 6000 (mkFlags false false true false false false) 65535 0 in
+  let fin_seg := mkSegment (Z.to_nat 5000%Z) (Z.to_nat 6000%Z)
+                           (mkFlags false false true false false false) TCP_WINDOW_MAX 0 in
   tcp_transition ESTABLISHED fin_seg false = CLOSE_WAIT.
 Proof. reflexivity. Qed.
 
 (* TCP_020: LAST_ACK transitions to CLOSED on ACK *)
 Theorem TCP_020_last_ack_transition :
-  let ack_seg := make_ack 8000 9000 in
+  let ack_seg := make_ack (Z.to_nat 8000%Z) (Z.to_nat 9000%Z) in
   tcp_transition LAST_ACK ack_seg true = CLOSED.
 Proof. reflexivity. Qed.
 
@@ -762,7 +768,7 @@ Proof. intros mss. reflexivity. Qed.
 
 (* CONG_002: Initial ssthresh is 65535 *)
 Theorem CONG_002_initial_ssthresh : forall mss,
-  ssthresh (initial_cong_state mss) = 65535.
+  ssthresh (initial_cong_state mss) = TCP_WINDOW_MAX.
 Proof. intros mss. reflexivity. Qed.
 
 (* CONG_003: Slow start and congestion avoidance are mutually exclusive *)
@@ -863,7 +869,7 @@ Qed.
 
 (* CONG_015: Initial state starts in slow start (when mss is reasonable) *)
 Theorem CONG_015_initial_slow_start : forall mss,
-  mss > 0 -> 2 * mss < 65535 -> in_slow_start (initial_cong_state mss) = true.
+  mss > 0 -> 2 * mss < TCP_WINDOW_MAX -> in_slow_start (initial_cong_state mss) = true.
 Proof.
   intros mss Hmss Hbound. unfold initial_cong_state, in_slow_start. simpl.
   apply Nat.ltb_lt. exact Hbound.
@@ -929,8 +935,8 @@ Proof. intros isn. reflexivity. Qed.
     SECTION 14: SEQUENCE NUMBER HANDLING (SEQ_001 - SEQ_010)
     ============================================================================ *)
 
-(* SEQ_001: SEQ_SPACE is 2^32 — defined as S 4294967295 for structural positivity *)
-Theorem SEQ_001_seq_space : SEQ_SPACE = S 4294967295.
+(* SEQ_001: SEQ_SPACE is 2^32 — defined as S SEQ_SPACE_PRED for structural positivity *)
+Theorem SEQ_001_seq_space : SEQ_SPACE = S SEQ_SPACE_PRED.
 Proof. reflexivity. Qed.
 
 (* Structural positivity — no computation needed *)
@@ -1092,31 +1098,31 @@ Proof. reflexivity. Qed.
 
 (* TCP_021: FIN_WAIT_1 to TIME_WAIT on FIN+ACK *)
 Theorem TCP_021_fin_wait1_fin_ack :
-  let fin_ack := mkSegment 100 200 (mkFlags false true true false false false) 65535 0 in
+  let fin_ack := mkSegment 100 200 (mkFlags false true true false false false) TCP_WINDOW_MAX 0 in
   tcp_transition FIN_WAIT_1 fin_ack true = TIME_WAIT.
 Proof. reflexivity. Qed.
 
 (* TCP_022: FIN_WAIT_1 to CLOSING on FIN only *)
 Theorem TCP_022_fin_wait1_fin_only :
-  let fin_only := mkSegment 100 200 (mkFlags false false true false false false) 65535 0 in
+  let fin_only := mkSegment 100 200 (mkFlags false false true false false false) TCP_WINDOW_MAX 0 in
   tcp_transition FIN_WAIT_1 fin_only true = CLOSING.
 Proof. reflexivity. Qed.
 
 (* TCP_023: FIN_WAIT_1 to FIN_WAIT_2 on ACK only *)
 Theorem TCP_023_fin_wait1_ack_only :
-  let ack_only := mkSegment 100 200 (mkFlags false true false false false false) 65535 0 in
+  let ack_only := mkSegment 100 200 (mkFlags false true false false false false) TCP_WINDOW_MAX 0 in
   tcp_transition FIN_WAIT_1 ack_only true = FIN_WAIT_2.
 Proof. reflexivity. Qed.
 
 (* TCP_024: FIN_WAIT_2 to TIME_WAIT on FIN *)
 Theorem TCP_024_fin_wait2_fin :
-  let fin_seg := mkSegment 100 200 (mkFlags false false true false false false) 65535 0 in
+  let fin_seg := mkSegment 100 200 (mkFlags false false true false false false) TCP_WINDOW_MAX 0 in
   tcp_transition FIN_WAIT_2 fin_seg true = TIME_WAIT.
 Proof. reflexivity. Qed.
 
 (* TCP_025: CLOSING to TIME_WAIT on ACK *)
 Theorem TCP_025_closing_ack :
-  let ack_seg := mkSegment 100 200 (mkFlags false true false false false false) 65535 0 in
+  let ack_seg := mkSegment 100 200 (mkFlags false true false false false false) TCP_WINDOW_MAX 0 in
   tcp_transition CLOSING ack_seg true = TIME_WAIT.
 Proof. reflexivity. Qed.
 
@@ -1132,7 +1138,7 @@ Proof. intros seg is_server. reflexivity. Qed.
 
 (* TCP_028: SYN_RECEIVED to LISTEN on RST *)
 Theorem TCP_028_syn_recv_rst :
-  let rst_seg := mkSegment 100 200 (mkFlags false false false true false false) 65535 0 in
+  let rst_seg := mkSegment 100 200 (mkFlags false false false true false false) TCP_WINDOW_MAX 0 in
   tcp_transition SYN_RECEIVED rst_seg true = LISTEN.
 Proof. reflexivity. Qed.
 
@@ -1146,7 +1152,7 @@ Qed.
 
 (* TCP_030: ESTABLISHED does not transition on data-only segment *)
 Theorem TCP_030_established_data_stable :
-  let data_seg := mkSegment 100 200 (mkFlags false true false false true false) 65535 100 in
+  let data_seg := mkSegment 100 200 (mkFlags false true false false true false) TCP_WINDOW_MAX 100 in
   tcp_transition ESTABLISHED data_seg false = ESTABLISHED.
 Proof. reflexivity. Qed.
 
@@ -1201,7 +1207,7 @@ Qed.
 
 (* COMP_004: Socket in ESTABLISHED can transfer data *)
 Theorem COMP_004_established_data_transfer : forall opts,
-  let s := mkSocket SockConnected (Some 80) (Some 12345) ESTABLISHED opts in
+  let s := mkSocket SockConnected (Some 80) (Some (Z.to_nat 12345%Z)) ESTABLISHED opts in
   socket_can_send s = true /\ socket_can_recv s = true.
 Proof.
   intros opts. simpl. split; reflexivity.
