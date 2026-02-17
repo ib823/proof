@@ -349,6 +349,24 @@ Proof.
   split; [symmetry; exact Heq1 | symmetry; exact Heq2].
 Qed.
 
+(** Same classified secret declassifies to the same observable value,
+    even across different starting stores.
+    This is a store-parametric non-interference shape for declassification. *)
+Lemma declassify_same_secret_cross_store : forall v p st1 st2 ctx v1 st1' v2 st2',
+  value v ->
+  declass_ok (EClassify v) p ->
+  multi_step (EDeclassify (EClassify v) p, st1, ctx) (v1, st1', ctx) ->
+  multi_step (EDeclassify (EClassify v) p, st2, ctx) (v2, st2', ctx) ->
+  value v1 ->
+  value v2 ->
+  v1 = v2.
+Proof.
+  intros v p st1 st2 ctx v1 st1' v2 st2' Hv Hok Hms1 Hms2 Hv1 Hv2.
+  pose proof (declassify_result v p st1 ctx v1 st1' Hv Hok Hms1 Hv1) as [Hv1eq _].
+  pose proof (declassify_result v p st2 ctx v2 st2' Hv Hok Hms2 Hv2) as [Hv2eq _].
+  subst. reflexivity.
+Qed.
+
 (** Summary: All admits eliminated *)
 Theorem declassification_zero_admits : True.
 Proof. exact I. Qed.
