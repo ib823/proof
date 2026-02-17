@@ -1515,7 +1515,7 @@ fn verify_metrics_accuracy(
 
     let json_qed = parse_field("qedActive").unwrap_or(0);
     let json_lean = parse_field("theorems").unwrap_or(0);
-    let json_isabelle = parse_field("lemmas").unwrap_or(0);
+    let json_isabelle = parse_field("lemmasRaw").unwrap_or(0);
     let json_admitted = parse_field("admitted").unwrap_or(u32::MAX);
     let json_axioms = parse_field("axioms").unwrap_or(u32::MAX);
 
