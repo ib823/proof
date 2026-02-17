@@ -303,7 +303,7 @@ research source, and detailed description.
 |----|-------|----------|--------|-------|
 | REQ-01 | Honest metrics in all public-facing docs | P0 | IN PROGRESS | 0 |
 | REQ-02 | Delete competing planning docs | P0 | DONE | 0 |
-| REQ-03 | Single license (no contradictions) | P0 | TODO | 0 |
+| REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | TODO | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
 | REQ-06 | Lean 4: compile ALL files, eliminate ALL sorry | P1 | TODO | 2 |
@@ -353,7 +353,7 @@ work for future phases is always permitted, but it MUST be clearly labeled as
 | Fix metrics in llms.txt | DONE |
 | Archive _req_batch1/ and _req_batch2/ to 04_SPECS/requirements/ | DONE |
 | Quarantine stub prover files (mark as STUBS) | TODO |
-| Fix license contradictions | TODO |
+| Fix license contradictions | DONE |
 | Remove generate-full-stack.py from public branch | TODO |
 
 **Gate:** Root directory has ≤12 markdown files. No competing planning docs exist.

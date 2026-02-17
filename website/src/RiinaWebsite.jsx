@@ -860,19 +860,19 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
                   <div className="card">
                     <div style={{fontSize:12,color:'var(--text-string)',fontFamily:'var(--font-mono)',marginBottom:8}}>PERMISSIONS</div>
                     <div style={{fontSize:13,color:'var(--text-secondary)',lineHeight:2}}>
-                      Commercial use<br/>Modification<br/>Distribution<br/>Patent use<br/>Private use
+                      Commercial use<br/>Private use<br/>Compile software with RIINA<br/>Distribute software you build
                     </div>
                   </div>
                   <div className="card">
                     <div style={{fontSize:12,color:'#fbbf24',fontFamily:'var(--font-mono)',marginBottom:8}}>CONDITIONS</div>
                     <div style={{fontSize:13,color:'var(--text-secondary)',lineHeight:2}}>
-                      Disclose source (file-level)<br/>Same license for modified files<br/>Copyright notice preserved
+                      Follow RIINA license terms<br/>Retain copyright notices<br/>Use for authorized purposes only
                     </div>
                   </div>
                   <div className="card">
                     <div style={{fontSize:12,color:'#f87171',fontFamily:'var(--font-mono)',marginBottom:8}}>LIMITATIONS</div>
                     <div style={{fontSize:13,color:'var(--text-secondary)',lineHeight:2}}>
-                      No liability<br/>No warranty<br/>No trademark rights
+                      No compiler source modification<br/>No compiler redistribution<br/>No warranty or liability
                     </div>
                   </div>
                 </div>
