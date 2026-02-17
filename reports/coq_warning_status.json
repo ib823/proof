@@ -1,50 +1,18 @@
 {
-  "generatedAt": "2026-02-17T15:46:20.013474+00:00",
-  "repoHead": "0c8200c213ce9476c4a7c04ddb776bd567523415",
-  "repoParentHead": "b4ac7e0e5b111b67d720ae3ac6193f2bf08a934c",
+  "generatedAt": "2026-02-17T15:53:39.207959+00:00",
+  "repoHead": "053b3d23fb0d3a283f996a77c558a1bd5bfb0168",
+  "repoParentHead": "0c8200c213ce9476c4a7c04ddb776bd567523415",
   "totals": {
-    "warnings": 34,
+    "warnings": 18,
     "kinds": {
-      "abstract-large-number": 34
+      "abstract-large-number": 18
     },
-    "filesWithWarnings": 18
+    "filesWithWarnings": 10
   },
   "topFiles": [
     {
       "file": "domains/FHESecurity.v",
       "warnings": 9
-    },
-    {
-      "file": "domains/XSSPrevention.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/S001_HardwareContracts.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/FutureSecurity.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/VerifiedNetwork.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/mobile_os/AnimationSystem.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/mobile_os/ApplicationLifecycle.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/mobile_os/EncryptionSystem.v",
-      "warnings": 2
-    },
-    {
-      "file": "domains/mobile_os/GraphicsEngine.v",
-      "warnings": 2
     },
     {
       "file": "compliance/HIPAACompliance.v",

@@ -7,6 +7,7 @@
 
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Strings.String.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Arith.PeanoNat.
@@ -25,6 +26,7 @@ Definition MAC := list nat.
 Definition Hash := list nat.
 Definition Signature := list nat.
 Definition SessionID := nat.
+Definition IPV4_TOTAL_LENGTH_MAX : nat := Z.to_nat 65535%Z.
 
 (* X25519 key exchange result *)
 Record KEResult : Type := mkKE {
@@ -245,7 +247,7 @@ Record FragmentBuffer : Type := mkFragBuf {
 (* Safe fragment reassembly *)
 Definition frag_reassembly_safe (buf : FragmentBuffer) : Prop :=
   frag_no_overlap_verified buf = true /\
-  frag_total_size buf <= 65535.
+  frag_total_size buf <= IPV4_TOTAL_LENGTH_MAX.
 
 (* No overlapping fragments *)
 Definition no_overlapping_frags (buf : FragmentBuffer) : Prop :=
@@ -533,7 +535,7 @@ Qed.
 (* NET_001_15: IP fragmentation reassembly is safe *)
 Theorem NET_001_15_ip_frag_reassembly_safe : forall buf,
   frag_no_overlap_verified buf = true ->
-  frag_total_size buf <= 65535 ->
+  frag_total_size buf <= IPV4_TOTAL_LENGTH_MAX ->
   frag_reassembly_safe buf.
 Proof.
   intros buf Hno_overlap Hsize.

@@ -13,6 +13,7 @@
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
 
 (** ** Core Definitions *)
@@ -216,7 +217,8 @@ Record AppScene : Type := mkScene_ {
 }.
 
 (** Background execution time limit *)
-Definition bg_time_limit : nat := 30000.  (* 30 seconds *)
+Definition BG_TIME_LIMIT_MS : nat := Z.to_nat 30000%Z.
+Definition bg_time_limit : nat := BG_TIME_LIMIT_MS.  (* 30 seconds *)
 
 (** Low memory warning *)
 Definition LowMemoryLevel : Type := nat.  (* 0=normal, 1=warning, 2=critical *)
@@ -308,7 +310,7 @@ Theorem background_execution_time_limited :
   forall (ea : ExtApp),
     well_formed_ext_app ea ->
     app_state (ext_app ea) = Background ->
-    ext_bg_time_used ea <= 30000.
+    ext_bg_time_used ea <= BG_TIME_LIMIT_MS.
 Proof.
   intros ea Hwf Hbg.
   destruct Hwf as [Htime _].

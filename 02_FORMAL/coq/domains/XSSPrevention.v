@@ -21,8 +21,11 @@
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import ZArith.
 From Stdlib Require Import Lia.
 Import ListNotations.
+
+Definition INPUT_MAX_LENGTH_DEFAULT : nat := Z.to_nat 65536%Z.
 
 (* =========================================================================== *)
 (* SECTION A: HELPER LEMMAS                                                    *)
@@ -191,7 +194,7 @@ Definition taint_safe (t : TaintLevel) : bool :=
 Definition riina_output : OutputEncoding := mkOutputEnc true true true true.
 Definition riina_csp : ContentSecurityPolicy := mkCSP true true true true true true true.
 Definition riina_dom : DOMSanitizer := mkDOMSan true true true true true.
-Definition riina_input : InputValidator := mkInputVal 65536 true true true.
+Definition riina_input : InputValidator := mkInputVal INPUT_MAX_LENGTH_DEFAULT true true true.
 Definition riina_xss : XSSConfig := mkXSS riina_output riina_csp riina_dom riina_input true.
 
 (* =========================================================================== *)
@@ -454,7 +457,7 @@ Proof. split; reflexivity. Qed.
 Theorem XSS_066 : iv_encoding_validation riina_input = true. Proof. reflexivity. Qed.
 Theorem XSS_067 : iv_strip_null_bytes riina_input = true. Proof. reflexivity. Qed.
 Theorem XSS_068 : iv_normalize_unicode riina_input = true. Proof. reflexivity. Qed.
-Theorem XSS_069 : iv_max_length riina_input = 65536. Proof. reflexivity. Qed.
+Theorem XSS_069 : iv_max_length riina_input = INPUT_MAX_LENGTH_DEFAULT. Proof. reflexivity. Qed.
 Theorem XSS_070 : input_validation_complete riina_input = true. Proof. reflexivity. Qed.
 
 Theorem XSS_071 : forall i, input_validation_complete i = true -> iv_encoding_validation i = true.

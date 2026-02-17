@@ -8,7 +8,10 @@
 From Stdlib Require Import Arith.Arith.
 From Stdlib Require Import Bool.Bool.
 From Stdlib Require Import Lists.List.
+From Stdlib Require Import ZArith.
 Import ListNotations.
+
+Definition PASSWORD_HASH_MIN_ITERS : nat := Z.to_nat 10000%Z.
 
 (* ===================== Type Definitions ===================== *)
 
@@ -277,7 +280,7 @@ Definition key_derivation_deterministic_prop (kd1 kd2 : KeyDerivation) : Prop :=
   key_id (derived_key kd1) = key_id (derived_key kd2).
 
 Definition password_hash_one_way (h : PasswordHash) : Prop :=
-  pwd_hash_value h > 0 /\ pwd_iterations h >= 10000.
+  pwd_hash_value h > 0 /\ pwd_iterations h >= PASSWORD_HASH_MIN_ITERS.
 
 Definition salt_unique (h1 h2 : PasswordHash) : Prop :=
   pwd_salt h1 <> pwd_salt h2.
@@ -384,7 +387,7 @@ Qed.
 Theorem password_hash_one_way_thm :
   forall (h : PasswordHash),
     password_hash_one_way h ->
-    pwd_hash_value h > 0 /\ pwd_iterations h >= 10000.
+    pwd_hash_value h > 0 /\ pwd_iterations h >= PASSWORD_HASH_MIN_ITERS.
 Proof.
   intros h Hone.
   unfold password_hash_one_way in Hone.
