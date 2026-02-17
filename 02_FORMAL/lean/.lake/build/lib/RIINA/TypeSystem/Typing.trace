@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/TypeSystem/Typing.lean -R ./././. -o ././.lake/build/lib/RIINA/TypeSystem/Typing.olean -i ././.lake/build/lib/RIINA/TypeSystem/Typing.ilean -c ././.lake/build/ir/RIINA/TypeSystem/Typing.c --json",
+   "level": "trace"}],
+ "depHash": "14657545189574539679"}
