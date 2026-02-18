@@ -975,6 +975,44 @@ Proof.
   repeat split; auto.
 Qed.
 
+Lemma exp_rel_step1_fst_kripke : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    multi_step (EFst v1, st1, ctx) (a1, st1, ctx) /\
+    multi_step (EFst v2, st2, ctx) (a2, st2, ctx) /\
+    val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  destruct (val_rel_le_prod_case_kripke n Σ T1 T2 v1 v2 Hn Hrel)
+    as [a1 [b1 [a2 [b2 Hpack]]]].
+  destruct Hpack as [Heq1 [Heq2 [Hva1 [Hvb1 [Hva2 [Hvb2 [Hca1 [Hcb1 [Hca2 [Hcb2 [Hr1 Hr2]]]]]]]]]]].
+  exists a1, b1, a2, b2.
+  repeat split; auto.
+  - subst v1. apply step_to_multi_step. apply ST_Fst; assumption.
+  - subst v2. apply step_to_multi_step. apply ST_Fst; assumption.
+Qed.
+
+Lemma exp_rel_step1_snd_kripke : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    multi_step (ESnd v1, st1, ctx) (b1, st1, ctx) /\
+    multi_step (ESnd v2, st2, ctx) (b2, st2, ctx) /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  destruct (val_rel_le_prod_case_kripke n Σ T1 T2 v1 v2 Hn Hrel)
+    as [a1 [b1 [a2 [b2 Hpack]]]].
+  destruct Hpack as [Heq1 [Heq2 [Hva1 [Hvb1 [Hva2 [Hvb2 [Hca1 [Hcb1 [Hca2 [Hcb2 [Hr1 Hr2]]]]]]]]]]].
+  exists a1, b1, a2, b2.
+  repeat split; auto.
+  - subst v1. apply step_to_multi_step. apply ST_Snd; assumption.
+  - subst v2. apply step_to_multi_step. apply ST_Snd; assumption.
+Qed.
+
 Lemma val_rel_le_prod_mono_step : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->

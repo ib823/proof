@@ -1532,6 +1532,32 @@ Proof.
   eapply val_rel_le_prod_pair_pair_case_kripke; eauto.
 Qed.
 
+Lemma exp_rel_step1_fst_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    multi_step (EFst v1, st1, ctx) (a1, st1, ctx) /\
+    multi_step (EFst v2, st2, ctx) (a2, st2, ctx) /\
+    val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_fst_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_snd_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    multi_step (ESnd v1, st1, ctx) (b1, st1, ctx) /\
+    multi_step (ESnd v2, st2, ctx) (b2, st2, ctx) /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_snd_kripke; eauto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
