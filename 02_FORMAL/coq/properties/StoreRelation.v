@@ -1206,6 +1206,103 @@ Proof.
   apply val_rel_le_closed_right with n Σ (TRef T sl) v1; auto.
 Qed.
 
+(** Product/sum projections *)
+Lemma val_rel_le_prod_components_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_prod_components_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_extract_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2, v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+                 val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2, v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+                 val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_sum_extract_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_prod_value_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TProd T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_prod_value_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TProd T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_prod_closed_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TProd T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_prod_closed_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TProd T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_sum_value_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TSum T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_sum_value_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TSum T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_sum_closed_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TSum T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_sum_closed_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TSum T1 T2) v1; auto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
