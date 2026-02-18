@@ -1,6 +1,6 @@
 # RIINA PHASE 3: INFRASTRUCTURE HELPER LEMMAS
 
-**Verification:** 9,158 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,160 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 **Date:** 2026-01-25  
 **Target:** 6 helper lemmas from Phase 2 patch

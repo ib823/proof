@@ -1629,6 +1629,56 @@ Proof.
   eapply exp_rel_step1_app_kripke; eauto.
 Qed.
 
+Lemma exp_rel_step1_inl_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T1 v1 v2 ->
+  exists r1 r2,
+    r1 = EInl v1 T2 /\
+    r2 = EInl v2 T2 /\
+    multi_step (EInl v1 T2, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EInl v2 T2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSum T1 T2) r1 r2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T1 v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T1 v1 v2 Hn Hrel) as Hv2.
+  pose proof (val_rel_le_closed_left n Σ T1 v1 v2 Hn Hrel) as Hc1.
+  pose proof (val_rel_le_closed_right n Σ T1 v1 v2 Hn Hrel) as Hc2.
+  exists (EInl v1 T2), (EInl v2 T2).
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split.
+  - apply MS_Refl.
+  - split.
+    + apply MS_Refl.
+    + apply val_rel_le_build_sum_inl_kripke; auto.
+Qed.
+
+Lemma exp_rel_step1_inr_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T2 v1 v2 ->
+  exists r1 r2,
+    r1 = EInr v1 T1 /\
+    r2 = EInr v2 T1 /\
+    multi_step (EInr v1 T1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EInr v2 T1, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSum T1 T2) r1 r2.
+Proof.
+  intros n Σ T1 T2 v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T2 v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T2 v1 v2 Hn Hrel) as Hv2.
+  pose proof (val_rel_le_closed_left n Σ T2 v1 v2 Hn Hrel) as Hc1.
+  pose proof (val_rel_le_closed_right n Σ T2 v1 v2 Hn Hrel) as Hc2.
+  exists (EInr v1 T1), (EInr v2 T1).
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split.
+  - apply MS_Refl.
+  - split.
+    + apply MS_Refl.
+    + apply val_rel_le_build_sum_inr_kripke; auto.
+Qed.
+
 Lemma exp_rel_step1_deref_store : forall n Σ st1 st2 l T sl ctx,
   store_rel_le n Σ st1 st2 ->
   store_ty_lookup l Σ = Some (T, sl) ->
