@@ -539,6 +539,222 @@ Proof.
   apply val_rel_le_value_right with n Σ (TSecret T) v1; auto.
 Qed.
 
+Lemma val_rel_le_labeled_value_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TLabeled T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_labeled_value_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TLabeled T sl) v1; auto.
+Qed.
+
+Lemma val_rel_le_tainted_value_left : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TTainted T src) v2; auto.
+Qed.
+
+Lemma val_rel_le_tainted_value_right : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TTainted T src) v1; auto.
+Qed.
+
+Lemma val_rel_le_sanitized_value_left : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TSanitized T san) v2; auto.
+Qed.
+
+Lemma val_rel_le_sanitized_value_right : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TSanitized T san) v1; auto.
+Qed.
+
+Lemma val_rel_le_capability_value_left : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TCapability k) v2; auto.
+Qed.
+
+Lemma val_rel_le_capability_value_right : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TCapability k) v1; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_value_left : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TCapabilityFull cap) v2; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_value_right : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TCapabilityFull cap) v1; auto.
+Qed.
+
+Lemma val_rel_le_proof_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TProof T) v2; auto.
+Qed.
+
+Lemma val_rel_le_proof_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TProof T) v1; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TConstantTime T) v2; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TConstantTime T) v1; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TZeroizing T) v2; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TZeroizing T) v1; auto.
+Qed.
+
+Lemma val_rel_le_chan_value_left : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TChan pid) v2; auto.
+Qed.
+
+Lemma val_rel_le_chan_value_right : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TChan pid) v1; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_value_left : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TSecureChan pid sid) v2; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_value_right : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TSecureChan pid sid) v1; auto.
+Qed.
+
+Lemma val_rel_le_list_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TList T) v2; auto.
+Qed.
+
+Lemma val_rel_le_list_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TList T) v1; auto.
+Qed.
+
+Lemma val_rel_le_option_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TOption T) v2; auto.
+Qed.
+
+Lemma val_rel_le_option_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TOption T) v1; auto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
