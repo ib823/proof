@@ -859,6 +859,86 @@ Proof.
   exact Hrel.
 Qed.
 
+Lemma val_rel_le_secret_values_closed : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecret T) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_secret_characterization n Σ T v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_labeled_values_closed : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_labeled_characterization n Σ T sl v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_tainted_values_closed : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_tainted_characterization n Σ T src v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_sanitized_values_closed : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_sanitized_characterization n Σ T san v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_capability_values_closed : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_capability_characterization n Σ k v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_proof_values_closed : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_proof_characterization n Σ T v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_constant_time_values_closed : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_constant_time_characterization n Σ T v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_zeroizing_values_closed : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_zeroizing_characterization n Σ T v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
 (** ** Store Extension Builder
 
     This lemma helps construct store extensions.
