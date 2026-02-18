@@ -1629,6 +1629,54 @@ Proof.
   eapply exp_rel_step1_app_kripke; eauto.
 Qed.
 
+Lemma exp_rel_step1_deref_store : forall n Σ st1 st2 l T sl ctx,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v1 v2,
+    store_lookup l st1 = Some v1 /\
+    store_lookup l st2 = Some v2 /\
+    multi_step (EDeref (ELoc l), st1, ctx) (v1, st1, ctx) /\
+    multi_step (EDeref (ELoc l), st2, ctx) (v2, st2, ctx) /\
+    val_rel_le n Σ T v1 v2.
+Proof.
+  intros n Σ st1 st2 l T sl ctx Hrel Hlook.
+  destruct (store_rel_le_lookup n Σ st1 st2 l T sl Hrel Hlook)
+    as [v1 [v2 [Hst1 [Hst2 Hval]]]].
+  exists v1, v2.
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_DerefLoc. exact Hst1.
+  - apply step_to_multi_step. apply ST_DerefLoc. exact Hst2.
+Qed.
+
+Lemma exp_rel_step1_assign_store : forall n Σ st1 st2 l T sl v v' ctx,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  val_rel_le n Σ T v v' ->
+  value v ->
+  value v' ->
+  exists old1 old2,
+    store_lookup l st1 = Some old1 /\
+    store_lookup l st2 = Some old2 /\
+    multi_step (EAssign (ELoc l) v, st1, ctx) (EUnit, store_update l v st1, ctx) /\
+    multi_step (EAssign (ELoc l) v', st2, ctx) (EUnit, store_update l v' st2, ctx) /\
+    store_rel_le n Σ (store_update l v st1) (store_update l v' st2) /\
+    val_rel_le n Σ TUnit EUnit EUnit.
+Proof.
+  intros n Σ st1 st2 l T sl v v' ctx Hrel Hlook Hval Hv Hv'.
+  destruct (store_rel_le_lookup n Σ st1 st2 l T sl Hrel Hlook)
+    as [old1 [old2 [Hst1 [Hst2 Hold]]]].
+  exists old1, old2.
+  split; [exact Hst1|].
+  split; [exact Hst2|].
+  split.
+  - apply step_to_multi_step. eapply ST_AssignLoc; eauto.
+  - split.
+    + apply step_to_multi_step. eapply ST_AssignLoc; eauto.
+    + split.
+      * eapply store_rel_le_update; eauto.
+      * exact (val_rel_le_build_unit n Σ).
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
