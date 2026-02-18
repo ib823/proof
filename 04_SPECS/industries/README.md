@@ -1,6 +1,6 @@
 # RIINA Industry Specifications
 
-**Verification:** 8,971 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 8,979 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 This directory contains industry-specific security requirements and threat models for RIINA.
 

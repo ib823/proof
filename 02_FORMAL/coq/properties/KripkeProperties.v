@@ -1047,6 +1047,98 @@ Proof.
   apply val_rel_le_build_cap; auto.
 Qed.
 
+Lemma val_rel_le_build_list : forall m Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TList T) v1 v2.
+Proof.
+  intros m Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_indist; auto.
+Qed.
+
+Lemma val_rel_le_step_up_list : forall n m Σ T v1 v2,
+  val_rel_le n Σ (TList T) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TList T) v1 v2.
+Proof.
+  intros n m Σ T v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel.
+  destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_list; auto.
+Qed.
+
+Lemma val_rel_le_build_option : forall m Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TOption T) v1 v2.
+Proof.
+  intros m Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_indist; auto.
+Qed.
+
+Lemma val_rel_le_step_up_option : forall n m Σ T v1 v2,
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TOption T) v1 v2.
+Proof.
+  intros n m Σ T v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel.
+  destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_option; auto.
+Qed.
+
+Lemma val_rel_le_build_chan : forall m Σ pid v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TChan pid) v1 v2.
+Proof.
+  intros m Σ pid v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_indist; auto.
+Qed.
+
+Lemma val_rel_le_step_up_chan : forall n m Σ pid v1 v2,
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TChan pid) v1 v2.
+Proof.
+  intros n m Σ pid v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel.
+  destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_chan; auto.
+Qed.
+
+Lemma val_rel_le_build_secure_chan : forall m Σ pid sid v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TSecureChan pid sid) v1 v2.
+Proof.
+  intros m Σ pid sid v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_indist; auto.
+Qed.
+
+Lemma val_rel_le_step_up_secure_chan : forall n m Σ pid sid v1 v2,
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TSecureChan pid sid) v1 v2.
+Proof.
+  intros n m Σ pid sid v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel.
+  destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_secure_chan; auto.
+Qed.
+
 (** ** Builder for TRef (already in StoreRelation, duplicated here for completeness) *)
 
 Lemma val_rel_le_build_ref_kripke : forall m Σ T sl l,
