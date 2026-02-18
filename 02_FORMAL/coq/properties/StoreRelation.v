@@ -21,12 +21,12 @@
     - Phase 2 infrastructure (CumulativeRelation.v, CumulativeMonotone.v, KripkeProperties.v)
 *)
 
-Require Import String.
-Require Import List.
+From Stdlib Require Import String.
+From Stdlib Require Import List.
 Require Import Nat.
-Require Import Bool.
-Require Import Lia.
-Require Import Arith.PeanoNat.
+From Stdlib Require Import Bool.
+From Stdlib Require Import Lia.
+From Stdlib Require Import Arith.PeanoNat.
 
 Require Import RIINA.foundations.Syntax.
 Require Import RIINA.foundations.Typing.
@@ -539,6 +539,990 @@ Proof.
   apply val_rel_le_value_right with n Σ (TSecret T) v1; auto.
 Qed.
 
+Lemma val_rel_le_labeled_value_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TLabeled T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_labeled_value_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TLabeled T sl) v1; auto.
+Qed.
+
+Lemma val_rel_le_tainted_value_left : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TTainted T src) v2; auto.
+Qed.
+
+Lemma val_rel_le_tainted_value_right : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TTainted T src) v1; auto.
+Qed.
+
+Lemma val_rel_le_sanitized_value_left : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TSanitized T san) v2; auto.
+Qed.
+
+Lemma val_rel_le_sanitized_value_right : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TSanitized T san) v1; auto.
+Qed.
+
+Lemma val_rel_le_capability_value_left : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TCapability k) v2; auto.
+Qed.
+
+Lemma val_rel_le_capability_value_right : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TCapability k) v1; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_value_left : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TCapabilityFull cap) v2; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_value_right : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TCapabilityFull cap) v1; auto.
+Qed.
+
+Lemma val_rel_le_proof_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TProof T) v2; auto.
+Qed.
+
+Lemma val_rel_le_proof_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TProof T) v1; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TConstantTime T) v2; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TConstantTime T) v1; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TZeroizing T) v2; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TZeroizing T) v1; auto.
+Qed.
+
+Lemma val_rel_le_chan_value_left : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TChan pid) v2; auto.
+Qed.
+
+Lemma val_rel_le_chan_value_right : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TChan pid) v1; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_value_left : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TSecureChan pid sid) v2; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_value_right : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TSecureChan pid sid) v1; auto.
+Qed.
+
+Lemma val_rel_le_list_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TList T) v2; auto.
+Qed.
+
+Lemma val_rel_le_list_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TList T) v1; auto.
+Qed.
+
+Lemma val_rel_le_option_value_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TOption T) v2; auto.
+Qed.
+
+Lemma val_rel_le_option_value_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TOption T) v1; auto.
+Qed.
+
+Lemma val_rel_le_secret_closed_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecret T) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TSecret T) v2; auto.
+Qed.
+
+Lemma val_rel_le_secret_closed_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecret T) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TSecret T) v1; auto.
+Qed.
+
+Lemma val_rel_le_labeled_closed_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TLabeled T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_labeled_closed_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TLabeled T sl) v1; auto.
+Qed.
+
+Lemma val_rel_le_tainted_closed_left : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TTainted T src) v2; auto.
+Qed.
+
+Lemma val_rel_le_tainted_closed_right : forall n Σ T src v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TTainted T src) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T src v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TTainted T src) v1; auto.
+Qed.
+
+Lemma val_rel_le_sanitized_closed_left : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TSanitized T san) v2; auto.
+Qed.
+
+Lemma val_rel_le_sanitized_closed_right : forall n Σ T san v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T san v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TSanitized T san) v1; auto.
+Qed.
+
+Lemma val_rel_le_capability_closed_left : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TCapability k) v2; auto.
+Qed.
+
+Lemma val_rel_le_capability_closed_right : forall n Σ k v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapability k) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ k v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TCapability k) v1; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_closed_left : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TCapabilityFull cap) v2; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_closed_right : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TCapabilityFull cap) v1; auto.
+Qed.
+
+Lemma val_rel_le_proof_closed_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TProof T) v2; auto.
+Qed.
+
+Lemma val_rel_le_proof_closed_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TProof T) v1; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_closed_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TConstantTime T) v2; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_closed_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TConstantTime T) v1; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_closed_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TZeroizing T) v2; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_closed_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TZeroizing T) v1; auto.
+Qed.
+
+Lemma val_rel_le_chan_closed_left : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TChan pid) v2; auto.
+Qed.
+
+Lemma val_rel_le_chan_closed_right : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TChan pid) v1; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_closed_left : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TSecureChan pid sid) v2; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_closed_right : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TSecureChan pid sid) v1; auto.
+Qed.
+
+Lemma val_rel_le_list_closed_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TList T) v2; auto.
+Qed.
+
+Lemma val_rel_le_list_closed_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TList T) v1; auto.
+Qed.
+
+Lemma val_rel_le_option_closed_left : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TOption T) v2; auto.
+Qed.
+
+Lemma val_rel_le_option_closed_right : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TOption T) v1; auto.
+Qed.
+
+(** Primitive/reference projections *)
+Lemma val_rel_le_unit_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TUnit v2; auto.
+Qed.
+
+Lemma val_rel_le_unit_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TUnit v1; auto.
+Qed.
+
+Lemma val_rel_le_bool_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TBool v2; auto.
+Qed.
+
+Lemma val_rel_le_bool_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TBool v1; auto.
+Qed.
+
+Lemma val_rel_le_int_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TInt v2; auto.
+Qed.
+
+Lemma val_rel_le_int_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TInt v1; auto.
+Qed.
+
+Lemma val_rel_le_string_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TString v2; auto.
+Qed.
+
+Lemma val_rel_le_string_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TString v1; auto.
+Qed.
+
+Lemma val_rel_le_bytes_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TBytes v2; auto.
+Qed.
+
+Lemma val_rel_le_bytes_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TBytes v1; auto.
+Qed.
+
+Lemma val_rel_le_ref_value_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TRef T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_ref_value_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TRef T sl) v1; auto.
+Qed.
+
+Lemma val_rel_le_unit_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TUnit v2; auto.
+Qed.
+
+Lemma val_rel_le_unit_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TUnit v1; auto.
+Qed.
+
+Lemma val_rel_le_bool_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TBool v2; auto.
+Qed.
+
+Lemma val_rel_le_bool_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TBool v1; auto.
+Qed.
+
+Lemma val_rel_le_int_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TInt v2; auto.
+Qed.
+
+Lemma val_rel_le_int_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TInt v1; auto.
+Qed.
+
+Lemma val_rel_le_string_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TString v2; auto.
+Qed.
+
+Lemma val_rel_le_string_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TString v1; auto.
+Qed.
+
+Lemma val_rel_le_bytes_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TBytes v2; auto.
+Qed.
+
+Lemma val_rel_le_bytes_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TBytes v1; auto.
+Qed.
+
+Lemma val_rel_le_ref_closed_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TRef T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_ref_closed_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TRef T sl) v1; auto.
+Qed.
+
+(** Product/sum projections *)
+Lemma val_rel_le_prod_components_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_prod_components_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_extract_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2, v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+                 val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2, v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+                 val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_sum_extract_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_prod_value_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TProd T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_prod_value_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TProd T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_prod_closed_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TProd T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_prod_closed_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TProd T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_sum_value_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TSum T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_sum_value_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TSum T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_sum_closed_left : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TSum T1 T2) v2; auto.
+Qed.
+
+Lemma val_rel_le_sum_closed_right : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TSum T1 T2) v1; auto.
+Qed.
+
+Lemma val_rel_le_prod_intro_store : forall n Σ T1 T2 a1 b1 a2 b2,
+  value a1 -> value b1 -> value a2 -> value b2 ->
+  closed_expr a1 -> closed_expr b1 -> closed_expr a2 -> closed_expr b2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  val_rel_le n Σ T2 b1 b2 ->
+  val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2).
+Proof.
+  intros n Σ T1 T2 a1 b1 a2 b2 Hva1 Hvb1 Hva2 Hvb2 Hca1 Hcb1 Hca2 Hcb2 Hr1 Hr2.
+  apply val_rel_le_build_prod_pair_kripke; auto.
+Qed.
+
+Lemma val_rel_le_sum_inl_intro_store : forall n Σ T1 T2 a1 a2,
+  value a1 -> value a2 ->
+  closed_expr a1 -> closed_expr a2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2).
+Proof.
+  intros n Σ T1 T2 a1 a2 Hva1 Hva2 Hca1 Hca2 Hr.
+  apply val_rel_le_build_sum_inl_kripke; auto.
+Qed.
+
+Lemma val_rel_le_sum_inr_intro_store : forall n Σ T1 T2 b1 b2,
+  value b1 -> value b2 ->
+  closed_expr b1 -> closed_expr b2 ->
+  val_rel_le n Σ T2 b1 b2 ->
+  val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1).
+Proof.
+  intros n Σ T1 T2 b1 b2 Hvb1 Hvb2 Hcb1 Hcb2 Hr.
+  apply val_rel_le_build_sum_inr_kripke; auto.
+Qed.
+
+Lemma val_rel_le_prod_mono_step_store : forall n m Σ T1 T2 v1 v2,
+  m <= n ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  val_rel_le m Σ (TProd T1 T2) v1 v2.
+Proof.
+  intros n m Σ T1 T2 v1 v2 Hle Hrel.
+  eapply val_rel_le_prod_mono_step; eauto.
+Qed.
+
+Lemma val_rel_le_sum_mono_step_store : forall n m Σ T1 T2 v1 v2,
+  m <= n ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  val_rel_le m Σ (TSum T1 T2) v1 v2.
+Proof.
+  intros n m Σ T1 T2 v1 v2 Hle Hrel.
+  eapply val_rel_le_sum_mono_step; eauto.
+Qed.
+
+Lemma val_rel_le_prod_components_wf_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    value a1 /\ value b1 /\ value a2 /\ value b2 /\
+    closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_prod_components_wf_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_prod_case_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    value a1 /\ value b1 /\ value a2 /\ value b2 /\
+    closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_prod_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_extract_wf_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2,
+      v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+      value a1 /\ value a2 /\ closed_expr a1 /\ closed_expr a2 /\
+      val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2,
+      v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+      value b1 /\ value b2 /\ closed_expr b1 /\ closed_expr b2 /\
+      val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_sum_extract_wf_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_case_store : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2,
+      v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+      value a1 /\ value a2 /\ closed_expr a1 /\ closed_expr a2 /\
+      val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2,
+      v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+      value b1 /\ value b2 /\ closed_expr b1 /\ closed_expr b2 /\
+      val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_sum_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_inl_case_store : forall n Σ T1 T2 a1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) v2 ->
+  exists a2,
+    v2 = EInl a2 T2 /\
+    value a1 /\ value a2 /\
+    closed_expr a1 /\ closed_expr a2 /\
+    val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 a1 v2 Hn Hrel.
+  eapply val_rel_le_sum_inl_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_inr_case_store : forall n Σ T1 T2 b1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) v2 ->
+  exists b2,
+    v2 = EInr b2 T1 /\
+    value b1 /\ value b2 /\
+    closed_expr b1 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 b1 v2 Hn Hrel.
+  eapply val_rel_le_sum_inr_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_inl_case_right_store : forall n Σ T1 T2 v1 a2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 (EInl a2 T2) ->
+  exists a1,
+    v1 = EInl a1 T2 /\
+    value a1 /\ value a2 /\
+    closed_expr a1 /\ closed_expr a2 /\
+    val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 v1 a2 Hn Hrel.
+  eapply val_rel_le_sum_inl_case_right_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_inr_case_right_store : forall n Σ T1 T2 v1 b2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 (EInr b2 T1) ->
+  exists b1,
+    v1 = EInr b1 T1 /\
+    value b1 /\ value b2 /\
+    closed_expr b1 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 b2 Hn Hrel.
+  eapply val_rel_le_sum_inr_case_right_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_inl_pair_case_store : forall n Σ T1 T2 a1 a2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2) ->
+  value a1 /\ value a2 /\ closed_expr a1 /\ closed_expr a2 /\
+  val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 a1 a2 Hn Hrel.
+  eapply val_rel_le_sum_inl_pair_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_sum_inr_pair_case_store : forall n Σ T1 T2 b1 b2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1) ->
+  value b1 /\ value b2 /\ closed_expr b1 /\ closed_expr b2 /\
+  val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 b1 b2 Hn Hrel.
+  eapply val_rel_le_sum_inr_pair_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_prod_pair_case_store : forall n Σ T1 T2 a1 b1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) v2 ->
+  exists a2 b2,
+    v2 = EPair a2 b2 /\
+    value a1 /\ value b1 /\ value a2 /\ value b2 /\
+    closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 a1 b1 v2 Hn Hrel.
+  eapply val_rel_le_prod_pair_case_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_prod_pair_case_right_store : forall n Σ T1 T2 v1 a2 b2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 (EPair a2 b2) ->
+  exists a1 b1,
+    v1 = EPair a1 b1 /\
+    value a1 /\ value b1 /\ value a2 /\ value b2 /\
+    closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 a2 b2 Hn Hrel.
+  eapply val_rel_le_prod_pair_case_right_kripke; eauto.
+Qed.
+
+Lemma val_rel_le_prod_pair_pair_case_store : forall n Σ T1 T2 a1 b1 a2 b2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2) ->
+  value a1 /\ value b1 /\ value a2 /\ value b2 /\
+  closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+  val_rel_le (pred n) Σ T1 a1 a2 /\ val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 a1 b1 a2 b2 Hn Hrel.
+  eapply val_rel_le_prod_pair_pair_case_kripke; eauto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
@@ -550,6 +1534,299 @@ Lemma val_rel_le_unit : forall n Σ,
 Proof.
   intros n Σ.
   apply val_rel_le_build_unit.
+Qed.
+
+(** ** Store Relation for Empty Stores *)
+
+(** Empty stores with empty store typing are trivially related *)
+Lemma store_rel_le_empty : forall n,
+  store_rel_le n nil nil nil.
+Proof.
+  intros n. unfold store_rel_le. split.
+  - simpl. reflexivity.
+  - intros l T sl Hlook. simpl in Hlook. discriminate.
+Qed.
+
+(** Empty stores have simple relation *)
+Lemma store_rel_simple_empty : forall Σ,
+  store_rel_simple Σ nil nil.
+Proof.
+  intros Σ. unfold store_rel_simple. simpl. reflexivity.
+Qed.
+
+(** ** Store Relation Lookup Helpers *)
+
+(** If store_rel_le holds, both stores have values at every typed location *)
+Lemma store_rel_le_both_some : forall n Σ st1 st2 l T sl,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (T, sl) ->
+  exists v1 v2,
+    store_lookup l st1 = Some v1 /\
+    store_lookup l st2 = Some v2.
+Proof.
+  intros n Σ st1 st2 l T sl Hrel Hlook.
+  destruct (store_rel_le_lookup n Σ st1 st2 l T sl Hrel Hlook)
+    as [v1 [v2 [H1 [H2 _]]]].
+  exists v1, v2. auto.
+Qed.
+
+(** ** Store Typing Domain Properties *)
+
+(** store_ty_update preserves existing entries at different locations *)
+Lemma store_ty_update_preserves : forall l1 l2 T1 sl1 T2 sl2 Σ,
+  l1 <> l2 ->
+  store_ty_lookup l2 Σ = Some (T2, sl2) ->
+  store_ty_lookup l2 (store_ty_update l1 T1 sl1 Σ) = Some (T2, sl2).
+Proof.
+  intros l1 l2 T1 sl1 T2 sl2 Σ Hneq Hlook.
+  rewrite store_ty_lookup_update_neq; auto.
+Qed.
+
+(** ** Store Max Properties *)
+
+(** store_max of nil is 0 *)
+Lemma store_max_nil : store_max nil = 0.
+Proof. reflexivity. Qed.
+
+(** store_max of singleton *)
+Lemma store_max_singleton : forall l v,
+  store_max ((l, v) :: nil) = Nat.max l 0.
+Proof. intros. simpl. reflexivity. Qed.
+
+(** ** Secret Values in Store *)
+
+(** Secret values at a typed location are always related *)
+Lemma store_rel_le_secret_loc : forall n Σ st1 st2 l T,
+  store_rel_le n Σ st1 st2 ->
+  store_ty_lookup l Σ = Some (TSecret T, Public) ->
+  exists v1 v2,
+    store_lookup l st1 = Some v1 /\
+    store_lookup l st2 = Some v2 /\
+    val_rel_le n Σ (TSecret T) v1 v2.
+Proof.
+  intros n Σ st1 st2 l T Hrel Hlook.
+  exact (store_rel_le_lookup n Σ st1 st2 l (TSecret T) Public Hrel Hlook).
+Qed.
+
+(** ** Store Update at Fresh Location *)
+
+(** Fresh location has no store entry *)
+Lemma store_lookup_fresh_loc : forall st,
+  store_lookup (fresh_loc st) st = None.
+Proof.
+  intros st. apply store_lookup_fresh.
+Qed.
+
+(** ** Ref Location Equality Lemma *)
+
+(** Two ELoc values that are val_rel_le at TRef must be the same location *)
+Lemma val_rel_le_ref_loc_eq : forall n Σ T sl l1 l2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) (ELoc l1) (ELoc l2) ->
+  l1 = l2.
+Proof.
+  intros n Σ T sl l1 l2 Hn Hrel.
+  destruct (val_rel_le_ref_same_loc n Σ T sl (ELoc l1) (ELoc l2) Hn Hrel)
+    as [l [Heq1 Heq2]].
+  injection Heq1 as Heq1. injection Heq2 as Heq2.
+  subst. reflexivity.
+Qed.
+
+(** ** Store Relation Reflexivity *)
+
+(** Simple store relation is reflexive *)
+Lemma store_rel_simple_refl : forall Σ st,
+  store_rel_simple Σ st st.
+Proof.
+  intros Σ st. unfold store_rel_simple. reflexivity.
+Qed.
+
+(** ** Store Relation Step Monotonicity *)
+
+(** Store relation is monotone in step index *)
+Lemma store_rel_le_step_mono : forall n m Σ st1 st2,
+  m <= n ->
+  store_rel_le n Σ st1 st2 ->
+  store_rel_le m Σ st1 st2.
+Proof.
+  intros n m Σ st1 st2 Hle [Hmax Hlocs].
+  split; [exact Hmax|].
+  intros l T sl Hlook.
+  specialize (Hlocs l T sl Hlook).
+  destruct (store_lookup l st1) as [v1|] eqn:Hst1;
+  destruct (store_lookup l st2) as [v2|] eqn:Hst2; auto.
+  apply val_rel_le_mono_step with (n := n); auto.
+Qed.
+
+(** ** Security Type Value Relations *)
+
+(** Labeled values are always related (like secrets) *)
+Lemma val_rel_le_labeled_always : forall n Σ T sl v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TLabeled T sl) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T sl v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+(** Tainted values are always related *)
+Lemma val_rel_le_tainted_always : forall n Σ T src v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TTainted T src) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T src v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+(** Sanitized values are always related *)
+Lemma val_rel_le_sanitized_always : forall n Σ T san v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSanitized T san) v1 v2.
+Proof.
+  induction n as [|n' IH]; intros Σ T san v1 v2 Hv1 Hv2 Hc1 Hc2.
+  - simpl. exact I.
+  - simpl. split.
+    + apply IH; auto.
+    + unfold val_rel_struct. repeat split; auto.
+Qed.
+
+Lemma val_rel_le_capability_always : forall n Σ k v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TCapability k) v1 v2.
+Proof.
+  intros n Σ k v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_cap; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_always : forall n Σ cap v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2.
+Proof.
+  intros n Σ cap v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_cap_full; auto.
+Qed.
+
+Lemma val_rel_le_proof_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TProof T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_proof; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_ct; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_zero; auto.
+Qed.
+
+Lemma val_rel_le_chan_always : forall n Σ pid v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TChan pid) v1 v2.
+Proof.
+  intros n Σ pid v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_chan; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_always : forall n Σ pid sid v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2.
+Proof.
+  intros n Σ pid sid v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_secure_chan; auto.
+Qed.
+
+Lemma val_rel_le_list_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TList T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_list; auto.
+Qed.
+
+Lemma val_rel_le_option_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TOption T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_option; auto.
+Qed.
+
+(** ** Store Relation Simple Symmetry *)
+
+Lemma store_rel_simple_sym : forall Σ st1 st2,
+  store_rel_simple Σ st1 st2 ->
+  store_rel_simple Σ st2 st1.
+Proof.
+  intros Σ st1 st2 H.
+  unfold store_rel_simple in *.
+  symmetry. exact H.
+Qed.
+
+(** ** Store Relation Simple Transitivity *)
+
+Lemma store_rel_simple_trans : forall Σ st1 st2 st3,
+  store_rel_simple Σ st1 st2 ->
+  store_rel_simple Σ st2 st3 ->
+  store_rel_simple Σ st1 st3.
+Proof.
+  intros Σ st1 st2 st3 H12 H23.
+  unfold store_rel_simple in *.
+  transitivity (store_max st2); auto.
+Qed.
+
+(** ** Store Relation Max Extraction *)
+
+Lemma store_rel_le_max_eq : forall n Σ st1 st2,
+  store_rel_le n Σ st1 st2 ->
+  store_max st1 = store_max st2.
+Proof.
+  intros n Σ st1 st2 [Hmax _]. exact Hmax.
+Qed.
+
+(** ** Store Relation From Successor Step *)
+
+Lemma store_rel_le_from_succ : forall n Σ st1 st2,
+  store_rel_le (S n) Σ st1 st2 ->
+  store_rel_le n Σ st1 st2.
+Proof.
+  intros. apply store_rel_le_step_mono with (S n); auto.
+Qed.
+
+(** ** Val Rel Reference Reflexivity at All Steps *)
+
+Lemma val_rel_le_ref_refl : forall n Σ T sl l,
+  val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l).
+Proof.
+  intros. apply val_rel_le_build_ref.
 Qed.
 
 (** End of StoreRelation.v *)
