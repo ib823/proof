@@ -5,7 +5,7 @@
 > It includes stale "remaining admits" state and is not operational truth.
 > Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md` and `PROOF_STATUS.md` for live status.
 
-**Verification:** 9,123 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,127 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 **Date:** 2026-01-25
 **Mode:** ULTRA KIASU | ZERO TRUST | ZERO SHORTCUTS

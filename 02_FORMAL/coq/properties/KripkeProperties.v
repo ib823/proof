@@ -722,6 +722,20 @@ Proof.
   - unfold closed_expr in *. intros x Hf. apply (Hc2 x). simpl. right. exact Hf.
 Qed.
 
+Lemma val_rel_le_prod_case_kripke : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    value a1 /\ value b1 /\ value a2 /\ value b2 /\
+    closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_prod_components_wf_kripke; eauto.
+Qed.
+
 Lemma val_rel_le_sum_extract_wf_kripke : forall n Σ T1 T2 v1 v2,
   n > 0 ->
   val_rel_le n Σ (TSum T1 T2) v1 v2 ->
@@ -765,6 +779,22 @@ Proof.
     right.
     exists b1, b2.
     repeat split; auto.
+Qed.
+
+Lemma val_rel_le_sum_case_kripke : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2,
+      v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+      value a1 /\ value a2 /\ closed_expr a1 /\ closed_expr a2 /\
+      val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2,
+      v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+      value b1 /\ value b2 /\ closed_expr b1 /\ closed_expr b2 /\
+      val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  eapply val_rel_le_sum_extract_wf_kripke; eauto.
 Qed.
 
 Lemma val_rel_le_sum_inl_case_kripke : forall n Σ T1 T2 a1 v2,
