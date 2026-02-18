@@ -488,6 +488,46 @@ Proof.
     apply val_rel_le_build_bytes; auto.
 Qed.
 
+Lemma val_rel_le_unit_characterization : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 <-> (v1 = EUnit /\ v2 = EUnit).
+Proof.
+  intros n Σ v1 v2 Hn.
+  apply val_rel_le_unit_eq; exact Hn.
+Qed.
+
+Lemma val_rel_le_bool_characterization : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 <-> (exists b, v1 = EBool b /\ v2 = EBool b).
+Proof.
+  intros n Σ v1 v2 Hn.
+  apply val_rel_le_bool_eq; exact Hn.
+Qed.
+
+Lemma val_rel_le_int_characterization : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 <-> (exists i, v1 = EInt i /\ v2 = EInt i).
+Proof.
+  intros n Σ v1 v2 Hn.
+  apply val_rel_le_int_eq; exact Hn.
+Qed.
+
+Lemma val_rel_le_string_characterization : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 <-> (exists s, v1 = EString s /\ v2 = EString s).
+Proof.
+  intros n Σ v1 v2 Hn.
+  apply val_rel_le_string_eq; exact Hn.
+Qed.
+
+Lemma val_rel_le_bytes_characterization : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 <-> (v1 = v2 /\ value v1 /\ closed_expr v1).
+Proof.
+  intros n Σ v1 v2 Hn.
+  apply val_rel_le_bytes_eq; exact Hn.
+Qed.
+
 (** Secret relation at positive steps is exactly value+closedness on both sides *)
 Lemma val_rel_le_secret_characterization : forall n Σ T v1 v2,
   n > 0 ->
@@ -1036,6 +1076,25 @@ Proof.
   unfold val_rel_struct in Hstruct.
   destruct Hstruct as (_ & _ & _ & _ & [l [Heq1 Heq2]]).
   subst. apply val_rel_le_build_ref_kripke.
+Qed.
+
+Lemma val_rel_le_ref_characterization : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 <->
+  exists l, v1 = ELoc l /\ v2 = ELoc l.
+Proof.
+  intros n Σ T sl v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel.
+    simpl in Hrel.
+    destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (_ & _ & _ & _ & [l [Heq1 Heq2]]).
+    exists l. split; assumption.
+  - intros [l [Heq1 Heq2]].
+    subst. apply val_rel_le_build_ref_kripke.
 Qed.
 
 (** End of KripkeProperties.v *)
