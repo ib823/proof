@@ -873,6 +873,32 @@ Proof.
     exists b1. repeat split; auto.
 Qed.
 
+Lemma val_rel_le_sum_inl_pair_case_kripke : forall n Σ T1 T2 a1 a2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2) ->
+  value a1 /\ value a2 /\ closed_expr a1 /\ closed_expr a2 /\
+  val_rel_le (pred n) Σ T1 a1 a2.
+Proof.
+  intros n Σ T1 T2 a1 a2 Hn Hrel.
+  destruct (val_rel_le_sum_inl_case_kripke n Σ T1 T2 a1 (EInl a2 T2) Hn Hrel)
+    as [a2' [Heq2 [Hva1 [Hva2 [Hca1 [Hca2 Hr]]]]]].
+  inversion Heq2; subst.
+  repeat split; auto.
+Qed.
+
+Lemma val_rel_le_sum_inr_pair_case_kripke : forall n Σ T1 T2 b1 b2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1) ->
+  value b1 /\ value b2 /\ closed_expr b1 /\ closed_expr b2 /\
+  val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 b1 b2 Hn Hrel.
+  destruct (val_rel_le_sum_inr_case_kripke n Σ T1 T2 b1 (EInr b2 T1) Hn Hrel)
+    as [b2' [Heq2 [Hvb1 [Hvb2 [Hcb1 [Hcb2 Hr]]]]]].
+  inversion Heq2; subst.
+  repeat split; auto.
+Qed.
+
 Lemma val_rel_le_prod_pair_case_kripke : forall n Σ T1 T2 a1 b1 v2,
   n > 0 ->
   val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) v2 ->
@@ -918,6 +944,20 @@ Proof.
   destruct Hpack as [Hr1 Hr2].
   inversion Heq2; subst.
   exists a1, b1.
+  repeat split; auto.
+Qed.
+
+Lemma val_rel_le_prod_pair_pair_case_kripke : forall n Σ T1 T2 a1 b1 a2 b2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2) ->
+  value a1 /\ value b1 /\ value a2 /\ value b2 /\
+  closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+  val_rel_le (pred n) Σ T1 a1 a2 /\ val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 a1 b1 a2 b2 Hn Hrel.
+  destruct (val_rel_le_prod_pair_case_kripke n Σ T1 T2 a1 b1 (EPair a2 b2) Hn Hrel)
+    as [a2' [b2' [Heq2 [Hva1 [Hvb1 [Hva2 [Hvb2 [Hca1 [Hcb1 [Hca2 [Hcb2 [Hr1 Hr2]]]]]]]]]]]].
+  inversion Heq2; subst.
   repeat split; auto.
 Qed.
 

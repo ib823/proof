@@ -1,6 +1,6 @@
 # RIINA LLM-Assisted Proof Pipeline v1.0.0
 
-**Verification:** 9,133 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,139 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 **Document ID:** RIINA_LLM_PROOF_PIPELINE_v1_0_0  
 **Version:** 1.0.0  
