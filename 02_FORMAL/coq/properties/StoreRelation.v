@@ -989,6 +989,223 @@ Proof.
   apply val_rel_le_closed_right with n Σ (TOption T) v1; auto.
 Qed.
 
+(** Primitive/reference projections *)
+Lemma val_rel_le_unit_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TUnit v2; auto.
+Qed.
+
+Lemma val_rel_le_unit_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TUnit v1; auto.
+Qed.
+
+Lemma val_rel_le_bool_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TBool v2; auto.
+Qed.
+
+Lemma val_rel_le_bool_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TBool v1; auto.
+Qed.
+
+Lemma val_rel_le_int_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TInt v2; auto.
+Qed.
+
+Lemma val_rel_le_int_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TInt v1; auto.
+Qed.
+
+Lemma val_rel_le_string_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TString v2; auto.
+Qed.
+
+Lemma val_rel_le_string_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TString v1; auto.
+Qed.
+
+Lemma val_rel_le_bytes_value_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ TBytes v2; auto.
+Qed.
+
+Lemma val_rel_le_bytes_value_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ TBytes v1; auto.
+Qed.
+
+Lemma val_rel_le_ref_value_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  value v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_left with n Σ (TRef T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_ref_value_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  value v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_value_right with n Σ (TRef T sl) v1; auto.
+Qed.
+
+Lemma val_rel_le_unit_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TUnit v2; auto.
+Qed.
+
+Lemma val_rel_le_unit_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TUnit v1; auto.
+Qed.
+
+Lemma val_rel_le_bool_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TBool v2; auto.
+Qed.
+
+Lemma val_rel_le_bool_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TBool v1; auto.
+Qed.
+
+Lemma val_rel_le_int_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TInt v2; auto.
+Qed.
+
+Lemma val_rel_le_int_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TInt v1; auto.
+Qed.
+
+Lemma val_rel_le_string_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TString v2; auto.
+Qed.
+
+Lemma val_rel_le_string_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TString v1; auto.
+Qed.
+
+Lemma val_rel_le_bytes_closed_left : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ TBytes v2; auto.
+Qed.
+
+Lemma val_rel_le_bytes_closed_right : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ TBytes v1; auto.
+Qed.
+
+Lemma val_rel_le_ref_closed_left : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  closed_expr v1.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_closed_left with n Σ (TRef T sl) v2; auto.
+Qed.
+
+Lemma val_rel_le_ref_closed_right : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  closed_expr v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply val_rel_le_closed_right with n Σ (TRef T sl) v1; auto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
