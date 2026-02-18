@@ -357,6 +357,20 @@ Proof.
   apply (proj2 (val_rel_le_succ_inv n' Σ T v1 v2 Hrel)).
 Qed.
 
+Lemma val_rel_le_extract_struct_0 : forall n Σ T v1 v2,
+  n >= 1 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_struct (val_rel_le 0) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hge Hrel.
+  destruct n as [|n']; [lia|].
+  clear Hge.
+  revert Σ T v1 v2 Hrel.
+  induction n' as [|k IH]; intros Σ T v1 v2 Hrel.
+  - simpl in Hrel. exact (proj2 Hrel).
+  - simpl in Hrel. apply IH. exact (proj1 Hrel).
+Qed.
+
 (** ** First-Order Type Properties
 
     For first-order types, many properties become simpler

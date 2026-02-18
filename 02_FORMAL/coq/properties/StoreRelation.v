@@ -1334,6 +1334,15 @@ Proof.
   apply val_rel_le_build_sum_inr_kripke; auto.
 Qed.
 
+Lemma val_rel_le_extract_struct_0_store : forall n Σ T v1 v2,
+  n >= 1 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_struct (val_rel_le 0) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hge Hrel.
+  eapply val_rel_le_extract_struct_0; eauto.
+Qed.
+
 Lemma val_rel_le_prod_mono_step_store : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->
