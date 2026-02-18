@@ -655,6 +655,16 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
 Qed.
 
+Lemma val_rel_le_capability_full_values_closed : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ cap v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_capability_full_characterization n Σ cap v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
 (** Proof relation at positive steps is exactly value+closedness *)
 Lemma val_rel_le_proof_characterization : forall n Σ T v1 v2,
   n > 0 ->
@@ -743,6 +753,16 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
 Qed.
 
+Lemma val_rel_le_chan_values_closed : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ pid v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_chan_characterization n Σ pid v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
 (** Secure channel relation at positive steps is exactly value+closedness *)
 Lemma val_rel_le_secure_chan_characterization : forall n Σ pid sid v1 v2,
   n > 0 ->
@@ -763,6 +783,16 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
     { simpl. split; [exact IH|].
       unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+Lemma val_rel_le_secure_chan_values_closed : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ pid sid v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_secure_chan_characterization n Σ pid sid v1 v2 Hn)).
+  exact Hrel.
 Qed.
 
 (** List relation at positive steps is exactly value+closedness *)
@@ -787,6 +817,16 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
 Qed.
 
+Lemma val_rel_le_list_values_closed : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_list_characterization n Σ T v1 v2 Hn)).
+  exact Hrel.
+Qed.
+
 (** Option relation at positive steps is exactly value+closedness *)
 Lemma val_rel_le_option_characterization : forall n Σ T v1 v2,
   n > 0 ->
@@ -807,6 +847,16 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
     { simpl. split; [exact IH|].
       unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+Lemma val_rel_le_option_values_closed : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_option_characterization n Σ T v1 v2 Hn)).
+  exact Hrel.
 Qed.
 
 (** ** Store Extension Builder
@@ -1047,6 +1097,29 @@ Proof.
   apply val_rel_le_build_cap; auto.
 Qed.
 
+Lemma val_rel_le_build_cap_full : forall m Σ cap v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le m Σ (TCapabilityFull cap) v1 v2.
+Proof.
+  intros m Σ cap v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_indist; auto.
+Qed.
+
+Lemma val_rel_le_step_up_cap_full : forall n m Σ cap v1 v2,
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 ->
+  n > 0 ->
+  val_rel_le m Σ (TCapabilityFull cap) v1 v2.
+Proof.
+  intros n m Σ cap v1 v2 Hrel Hn.
+  destruct n as [|n']; [lia|].
+  simpl in Hrel.
+  destruct Hrel as [_ Hstruct].
+  unfold val_rel_struct in Hstruct.
+  destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+  apply val_rel_le_build_cap_full; auto.
+Qed.
+
 Lemma val_rel_le_build_list : forall m Σ T v1 v2,
   value v1 -> value v2 ->
   closed_expr v1 -> closed_expr v2 ->
@@ -1187,6 +1260,22 @@ Proof.
     exists l. split; assumption.
   - intros [l [Heq1 Heq2]].
     subst. apply val_rel_le_build_ref_kripke.
+Qed.
+
+Lemma val_rel_le_ref_values_closed : forall n Σ T sl v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TRef T sl) v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T sl v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_ref_characterization n Σ T sl v1 v2 Hn)) in Hrel.
+  destruct Hrel as [l [Heq1 Heq2]].
+  subst.
+  repeat split.
+  - apply VLoc.
+  - apply VLoc.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
 Qed.
 
 (** End of KripkeProperties.v *)
