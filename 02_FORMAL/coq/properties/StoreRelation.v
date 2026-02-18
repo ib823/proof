@@ -1677,6 +1677,47 @@ Proof.
       * exact (val_rel_le_build_unit n Σ).
 Qed.
 
+Lemma exp_rel_step1_ref_store : forall n Σ st1 st2 T sl v1 v2 ctx,
+  store_rel_le n Σ st1 st2 ->
+  val_rel_le n Σ T v1 v2 ->
+  value v1 ->
+  value v2 ->
+  store_ty_lookup (fresh_loc st1) Σ = None ->
+  fresh_loc st1 = fresh_loc st2 ->
+  exists l Σ',
+    l = fresh_loc st1 /\
+    Σ' = store_ty_update l T sl Σ /\
+    multi_step (ERef v1 sl, st1, ctx) (ELoc l, store_update l v1 st1, ctx) /\
+    multi_step (ERef v2 sl, st2, ctx) (ELoc l, store_update l v2 st2, ctx) /\
+    val_rel_le n Σ' (TRef T sl) (ELoc l) (ELoc l) /\
+    store_rel_le n Σ' (store_update l v1 st1) (store_update l v2 st2).
+Proof.
+  intros n Σ st1 st2 T sl v1 v2 ctx Hrel Hval Hv1 Hv2 Hfresh_none Hfresh_eq.
+  exists (fresh_loc st1), (store_ty_update (fresh_loc st1) T sl Σ).
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split.
+  - apply step_to_multi_step.
+    apply ST_RefValue.
+    + exact Hv1.
+    + reflexivity.
+  - split.
+    + apply step_to_multi_step.
+      apply ST_RefValue.
+      * exact Hv2.
+      * rewrite <- Hfresh_eq. reflexivity.
+    + split.
+      * apply val_rel_le_build_ref.
+      * assert (Halloc :
+          store_rel_le n
+            (store_ty_update (fresh_loc st1) T sl Σ)
+            (store_update (fresh_loc st1) v1 st1)
+            (store_update (fresh_loc st2) v2 st2)).
+        { eapply store_rel_le_alloc; eauto. }
+        rewrite <- Hfresh_eq in Halloc.
+        exact Halloc.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
