@@ -1,15 +1,15 @@
 {
-  "generated_utc": "2026-02-16T14:54:49Z",
-  "repo_head": "e69f90ef51bbc9051d22232dc4f4cab8a193c286",
+  "generated_utc": "2026-02-18T22:28:35Z",
+  "repo_head": "95e9b697ccae3e06a280439a2b0f8eb36264df6e",
   "scope": "dim1_dim9_promotion_readiness",
-  "strict_tools": 1,
+  "strict_tools": 0,
   "provision": {
-    "requested": true,
-    "attempted": true,
+    "requested": false,
+    "attempted": false,
     "succeeded": false
   },
   "tools": {
-    "lake": false,
+    "lake": true,
     "isabelle": false,
     "docker": false,
     "isabelle_bin": "",
@@ -34,8 +34,8 @@ Run: bash scripts/provision-isabelle.sh",
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=missing_lake lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-isabelle.sh"
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=0 lean_mode=lake_core_build_failed lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-isabelle.sh lean_tail=error: ././././RIINA/TypeSystem/Progress.lean:190:87: unknown identifier 'TProof' error: ././././RIINA/TypeSystem/Progress.lean:190:126: unknown identifier 'nil' error: ././././RIINA/TypeSystem/Progress.lean:190:133: unknown identifier 'Public' error: ././././RIINA/TypeSystem/Progress.lean:190:150: unsolved goals ⊢ ∀ (v : expr) (T : ty) (ε : effect) (St : store_ty), has_type (sorry ()) St (sorry ()) (sorry ()) (sorry ()) ε → value v → ∃ ε', has_type (sorry ()) St (sorry ()) v T ε' error: Lean exited with code 1 Some required builds logged failures: - RIINA.TypeSystem.TypeSafety - RIINA.TypeSystem.Preservation - RIINA.TypeSystem.Progress error: build failed "
   },
   "dimension_9": {
     "status": "PASS",
