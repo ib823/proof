@@ -1474,4 +1474,54 @@ Proof.
   - unfold closed_expr. intros x Hfree. inversion Hfree.
 Qed.
 
+Lemma val_rel_le_pos_values_closed_indist : forall n Σ T v1 v2,
+  n > 0 ->
+  (match T with
+   | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _
+   | TCapability _ | TCapabilityFull _ | TProof _
+   | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _
+   | TList _ | TOption _ => True
+   | _ => False
+   end) ->
+  val_rel_le n Σ T v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hindist Hrel.
+  destruct T; simpl in Hindist; try contradiction.
+  all: eauto using
+    val_rel_le_secret_values_closed,
+    val_rel_le_labeled_values_closed,
+    val_rel_le_tainted_values_closed,
+    val_rel_le_sanitized_values_closed,
+    val_rel_le_capability_values_closed,
+    val_rel_le_capability_full_values_closed,
+    val_rel_le_proof_values_closed,
+    val_rel_le_chan_values_closed,
+    val_rel_le_secure_chan_values_closed,
+    val_rel_le_constant_time_values_closed,
+    val_rel_le_zeroizing_values_closed,
+    val_rel_le_list_values_closed,
+    val_rel_le_option_values_closed.
+Qed.
+
+Lemma val_rel_le_pos_values_closed_base : forall n Σ T v1 v2,
+  n > 0 ->
+  (match T with
+   | TUnit | TBool | TInt | TString | TBytes | TRef _ _ => True
+   | _ => False
+   end) ->
+  val_rel_le n Σ T v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hbase Hrel.
+  destruct T; simpl in Hbase; try contradiction.
+  all: eauto using
+    val_rel_le_unit_values_closed,
+    val_rel_le_bool_values_closed,
+    val_rel_le_int_values_closed,
+    val_rel_le_string_values_closed,
+    val_rel_le_bytes_values_closed,
+    val_rel_le_ref_values_closed.
+Qed.
+
 (** End of KripkeProperties.v *)
