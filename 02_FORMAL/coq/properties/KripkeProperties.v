@@ -1412,6 +1412,37 @@ Proof.
   apply val_rel_le_build_option; auto.
 Qed.
 
+Lemma val_rel_le_build_prod_pair_kripke : forall n Σ T1 T2 a1 b1 a2 b2,
+  value a1 -> value b1 -> value a2 -> value b2 ->
+  closed_expr a1 -> closed_expr b1 -> closed_expr a2 -> closed_expr b2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  val_rel_le n Σ T2 b1 b2 ->
+  val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2).
+Proof.
+  intros n Σ T1 T2 a1 b1 a2 b2 Hva1 Hvb1 Hva2 Hvb2 Hca1 Hcb1 Hca2 Hcb2 Hr1 Hr2.
+  apply val_rel_le_build_pair; auto.
+Qed.
+
+Lemma val_rel_le_build_sum_inl_kripke : forall n Σ T1 T2 a1 a2,
+  value a1 -> value a2 ->
+  closed_expr a1 -> closed_expr a2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2).
+Proof.
+  intros n Σ T1 T2 a1 a2 Hva1 Hva2 Hca1 Hca2 Hr.
+  apply val_rel_le_build_inl; auto.
+Qed.
+
+Lemma val_rel_le_build_sum_inr_kripke : forall n Σ T1 T2 b1 b2,
+  value b1 -> value b2 ->
+  closed_expr b1 -> closed_expr b2 ->
+  val_rel_le n Σ T2 b1 b2 ->
+  val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1).
+Proof.
+  intros n Σ T1 T2 b1 b2 Hvb1 Hvb2 Hcb1 Hcb2 Hr.
+  apply val_rel_le_build_inr; auto.
+Qed.
+
 Lemma val_rel_le_build_chan : forall m Σ pid v1 v2,
   value v1 -> value v2 ->
   closed_expr v1 -> closed_expr v2 ->
