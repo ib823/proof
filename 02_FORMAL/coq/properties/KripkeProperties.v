@@ -1013,6 +1013,94 @@ Proof.
   - subst v2. apply step_to_multi_step. apply ST_Snd; assumption.
 Qed.
 
+Lemma exp_rel_step1_if_kripke : forall n Σ v1 v2 e2 e2' e3 e3' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  exists b,
+    v1 = EBool b /\ v2 = EBool b /\
+    multi_step (EIf v1 e2 e3, st1, ctx) ((if b then e2 else e3), st1, ctx) /\
+    multi_step (EIf v2 e2' e3', st2, ctx) ((if b then e2' else e3'), st2, ctx).
+Proof.
+  intros n Σ v1 v2 e2 e2' e3 e3' st1 st2 ctx Hn Hrel.
+  apply (proj1 (val_rel_le_bool_characterization n Σ v1 v2 Hn)) in Hrel.
+  destruct Hrel as [b [Heq1 Heq2]].
+  exists b.
+  repeat split; auto.
+  - subst v1. destruct b.
+    + simpl. apply step_to_multi_step. apply ST_IfTrue.
+    + simpl. apply step_to_multi_step. apply ST_IfFalse.
+  - subst v2. destruct b.
+    + simpl. apply step_to_multi_step. apply ST_IfTrue.
+    + simpl. apply step_to_multi_step. apply ST_IfFalse.
+Qed.
+
+Lemma exp_rel_step1_case_kripke : forall n Σ T1 T2 v1 v2 x1 e1 e1' x2 e2 e2' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2,
+      v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+      multi_step (ECase v1 x1 e1 x2 e2, st1, ctx) (subst[x1 := a1] e1, st1, ctx) /\
+      multi_step (ECase v2 x1 e1' x2 e2', st2, ctx) (subst[x1 := a2] e1', st2, ctx) /\
+      val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2,
+      v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+      multi_step (ECase v1 x1 e1 x2 e2, st1, ctx) (subst[x2 := b1] e2, st1, ctx) /\
+      multi_step (ECase v2 x1 e1' x2 e2', st2, ctx) (subst[x2 := b2] e2', st2, ctx) /\
+      val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 x1 e1 e1' x2 e2 e2' st1 st2 ctx Hn Hrel.
+  destruct (val_rel_le_sum_case_kripke n Σ T1 T2 v1 v2 Hn Hrel)
+    as [Hinl | Hinr].
+  - left.
+    destruct Hinl as [a1 [a2 [Heq1 [Heq2 [Hva1 [Hva2 [Hca1 [Hca2 Hr]]]]]]]].
+    exists a1, a2.
+    repeat split; auto.
+    + subst v1. apply step_to_multi_step. apply ST_CaseInl. exact Hva1.
+    + subst v2. apply step_to_multi_step. apply ST_CaseInl. exact Hva2.
+  - right.
+    destruct Hinr as [b1 [b2 [Heq1 [Heq2 [Hvb1 [Hvb2 [Hcb1 [Hcb2 Hr]]]]]]]].
+    exists b1, b2.
+    repeat split; auto.
+    + subst v1. apply step_to_multi_step. apply ST_CaseInr. exact Hvb1.
+    + subst v2. apply step_to_multi_step. apply ST_CaseInr. exact Hvb2.
+Qed.
+
+Lemma exp_rel_step1_let_kripke : forall n Σ T v1 v2 x e e' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = subst[x := v1] e /\
+    r2 = subst[x := v2] e' /\
+    multi_step (ELet x v1 e, st1, ctx) (r1, st1, ctx) /\
+    multi_step (ELet x v2 e', st2, ctx) (r2, st2, ctx).
+Proof.
+  intros n Σ T v1 v2 x e e' st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  exists (subst[x := v1] e), (subst[x := v2] e').
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_LetValue. exact Hv1.
+  - apply step_to_multi_step. apply ST_LetValue. exact Hv2.
+Qed.
+
+Lemma exp_rel_step1_handle_kripke : forall n Σ T v1 v2 x h h' st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = subst[x := v1] h /\
+    r2 = subst[x := v2] h' /\
+    multi_step (EHandle v1 x h, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EHandle v2 x h', st2, ctx) (r2, st2, ctx).
+Proof.
+  intros n Σ T v1 v2 x h h' st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  exists (subst[x := v1] h), (subst[x := v2] h').
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_HandleValue. exact Hv1.
+  - apply step_to_multi_step. apply ST_HandleValue. exact Hv2.
+Qed.
+
 Lemma val_rel_le_prod_mono_step : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->
