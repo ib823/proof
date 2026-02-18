@@ -715,6 +715,87 @@ Proof.
     + unfold val_rel_struct. repeat split; auto.
 Qed.
 
+Lemma val_rel_le_capability_always : forall n Σ k v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TCapability k) v1 v2.
+Proof.
+  intros n Σ k v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_cap; auto.
+Qed.
+
+Lemma val_rel_le_capability_full_always : forall n Σ cap v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2.
+Proof.
+  intros n Σ cap v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_cap_full; auto.
+Qed.
+
+Lemma val_rel_le_proof_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TProof T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_proof; auto.
+Qed.
+
+Lemma val_rel_le_constant_time_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_ct; auto.
+Qed.
+
+Lemma val_rel_le_zeroizing_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_zero; auto.
+Qed.
+
+Lemma val_rel_le_chan_always : forall n Σ pid v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TChan pid) v1 v2.
+Proof.
+  intros n Σ pid v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_chan; auto.
+Qed.
+
+Lemma val_rel_le_secure_chan_always : forall n Σ pid sid v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2.
+Proof.
+  intros n Σ pid sid v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_secure_chan; auto.
+Qed.
+
+Lemma val_rel_le_list_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TList T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_list; auto.
+Qed.
+
+Lemma val_rel_le_option_always : forall n Σ T v1 v2,
+  value v1 -> value v2 ->
+  closed_expr v1 -> closed_expr v2 ->
+  val_rel_le n Σ (TOption T) v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hv1 Hv2 Hc1 Hc2.
+  apply val_rel_le_build_option; auto.
+Qed.
+
 (** ** Store Relation Simple Symmetry *)
 
 Lemma store_rel_simple_sym : forall Σ st1 st2,
