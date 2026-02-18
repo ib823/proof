@@ -593,6 +593,94 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
 Qed.
 
+(** Full capability relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_capability_full_characterization : forall n Σ cap v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TCapabilityFull cap) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ cap v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+(** Proof relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_proof_characterization : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProof T) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ T v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+(** Constant-time wrapper relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_constant_time_characterization : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TConstantTime T) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ T v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+(** Zeroizing wrapper relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_zeroizing_characterization : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TZeroizing T) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ T v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
 (** ** Store Extension Builder
 
     This lemma helps construct store extensions.
