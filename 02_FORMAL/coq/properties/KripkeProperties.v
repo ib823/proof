@@ -317,6 +317,46 @@ Proof.
   simpl. split; auto.
 Qed.
 
+Lemma val_rel_le_succ_inv : forall n Σ T v1 v2,
+  val_rel_le (S n) Σ T v1 v2 ->
+  val_rel_le n Σ T v1 v2 /\
+  val_rel_struct (val_rel_le n) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hrel.
+  simpl in Hrel.
+  exact Hrel.
+Qed.
+
+Lemma val_rel_le_succ_intro : forall n Σ T v1 v2,
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_struct (val_rel_le n) Σ T v1 v2 ->
+  val_rel_le (S n) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hprev Hstruct.
+  simpl. split; assumption.
+Qed.
+
+Lemma val_rel_le_pos_has_prev : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_le (pred n) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl. apply (proj1 (val_rel_le_succ_inv n' Σ T v1 v2 Hrel)).
+Qed.
+
+Lemma val_rel_le_pos_has_struct : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  val_rel_struct (val_rel_le (pred n)) Σ T v1 v2.
+Proof.
+  intros n Σ T v1 v2 Hn Hrel.
+  destruct n as [|n']; [lia|].
+  simpl.
+  apply (proj2 (val_rel_le_succ_inv n' Σ T v1 v2 Hrel)).
+Qed.
+
 (** ** First-Order Type Properties
 
     For first-order types, many properties become simpler
