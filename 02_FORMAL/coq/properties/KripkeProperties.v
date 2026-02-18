@@ -528,6 +528,82 @@ Proof.
   apply val_rel_le_bytes_eq; exact Hn.
 Qed.
 
+Lemma val_rel_le_unit_values_closed : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TUnit v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_unit_characterization n Σ v1 v2 Hn)) in Hrel.
+  destruct Hrel as [Heq1 Heq2].
+  subst.
+  repeat split.
+  - apply VUnit.
+  - apply VUnit.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+Qed.
+
+Lemma val_rel_le_bool_values_closed : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBool v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_bool_characterization n Σ v1 v2 Hn)) in Hrel.
+  destruct Hrel as [b [Heq1 Heq2]].
+  subst.
+  repeat split.
+  - apply VBool.
+  - apply VBool.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+Qed.
+
+Lemma val_rel_le_int_values_closed : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TInt v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_int_characterization n Σ v1 v2 Hn)) in Hrel.
+  destruct Hrel as [i [Heq1 Heq2]].
+  subst.
+  repeat split.
+  - apply VInt.
+  - apply VInt.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+Qed.
+
+Lemma val_rel_le_string_values_closed : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TString v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_string_characterization n Σ v1 v2 Hn)) in Hrel.
+  destruct Hrel as [s [Heq1 Heq2]].
+  subst.
+  repeat split.
+  - apply VString.
+  - apply VString.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+  - unfold closed_expr. intros x Hfree. inversion Hfree.
+Qed.
+
+Lemma val_rel_le_bytes_values_closed : forall n Σ v1 v2,
+  n > 0 ->
+  val_rel_le n Σ TBytes v1 v2 ->
+  value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2.
+Proof.
+  intros n Σ v1 v2 Hn Hrel.
+  apply (proj1 (val_rel_le_bytes_characterization n Σ v1 v2 Hn)) in Hrel.
+  destruct Hrel as [Heq [Hv Hc]].
+  subst.
+  repeat split; auto.
+Qed.
+
 (** Secret relation at positive steps is exactly value+closedness on both sides *)
 Lemma val_rel_le_secret_characterization : forall n Σ T v1 v2,
   n > 0 ->
