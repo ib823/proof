@@ -1101,6 +1101,34 @@ Proof.
   - apply step_to_multi_step. apply ST_HandleValue. exact Hv2.
 Qed.
 
+Lemma exp_rel_step1_app_kripke : forall n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TFn T1 T2 eff) f1 f2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  has_type nil Σ Public f1 (TFn T1 T2 eff) EffectPure ->
+  has_type nil Σ Public f2 (TFn T1 T2 eff) EffectPure ->
+  exists x1 body1 x2 body2,
+    f1 = ELam x1 T1 body1 /\ f2 = ELam x2 T1 body2 /\
+    multi_step (EApp f1 a1, st1, ctx) (subst[x1 := a1] body1, st1, ctx) /\
+    multi_step (EApp f2 a2, st2, ctx) (subst[x2 := a2] body2, st2, ctx).
+Proof.
+  intros n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx Hn Hfrel Harel Htyf1 Htyf2.
+  pose proof (val_rel_le_value_left n Σ (TFn T1 T2 eff) f1 f2 Hn Hfrel) as Hvf1.
+  pose proof (val_rel_le_value_right n Σ (TFn T1 T2 eff) f1 f2 Hn Hfrel) as Hvf2.
+  pose proof (val_rel_le_value_left n Σ T1 a1 a2 Hn Harel) as Hva1.
+  pose proof (val_rel_le_value_right n Σ T1 a1 a2 Hn Harel) as Hva2.
+
+  destruct (canonical_forms_fn nil Σ Public f1 T1 T2 eff EffectPure Hvf1 Htyf1)
+    as [x1 [body1 Heq1]].
+  destruct (canonical_forms_fn nil Σ Public f2 T1 T2 eff EffectPure Hvf2 Htyf2)
+    as [x2 [body2 Heq2]].
+
+  exists x1, body1, x2, body2.
+  repeat split; auto.
+  - rewrite Heq1. apply step_to_multi_step. apply ST_AppAbs. exact Hva1.
+  - rewrite Heq2. apply step_to_multi_step. apply ST_AppAbs. exact Hva2.
+Qed.
+
 Lemma val_rel_le_prod_mono_step : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->

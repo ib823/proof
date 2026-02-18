@@ -1614,6 +1614,21 @@ Proof.
   eapply exp_rel_step1_handle_kripke; eauto.
 Qed.
 
+Lemma exp_rel_step1_app_store : forall n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ (TFn T1 T2 eff) f1 f2 ->
+  val_rel_le n Σ T1 a1 a2 ->
+  has_type nil Σ Public f1 (TFn T1 T2 eff) EffectPure ->
+  has_type nil Σ Public f2 (TFn T1 T2 eff) EffectPure ->
+  exists x1 body1 x2 body2,
+    f1 = ELam x1 T1 body1 /\ f2 = ELam x2 T1 body2 /\
+    multi_step (EApp f1 a1, st1, ctx) (subst[x1 := a1] body1, st1, ctx) /\
+    multi_step (EApp f2 a2, st2, ctx) (subst[x2 := a2] body2, st2, ctx).
+Proof.
+  intros n Σ T1 T2 eff f1 f2 a1 a2 st1 st2 ctx Hn Hfrel Harel Htyf1 Htyf2.
+  eapply exp_rel_step1_app_kripke; eauto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
