@@ -681,6 +681,94 @@ Proof.
       unfold val_rel_struct. repeat split; auto. }
 Qed.
 
+(** Channel relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_chan_characterization : forall n Σ pid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TChan pid) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ pid v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+(** Secure channel relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_secure_chan_characterization : forall n Σ pid sid v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSecureChan pid sid) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ pid sid v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+(** List relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_list_characterization : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TList T) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ T v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
+(** Option relation at positive steps is exactly value+closedness *)
+Lemma val_rel_le_option_characterization : forall n Σ T v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TOption T) v1 v2 <->
+  (value v1 /\ value v2 /\ closed_expr v1 /\ closed_expr v2).
+Proof.
+  intros n Σ T v1 v2 Hn.
+  destruct n as [|n']; [lia|].
+  clear Hn.
+  split.
+  - intros Hrel. simpl in Hrel. destruct Hrel as [_ Hstruct].
+    unfold val_rel_struct in Hstruct.
+    destruct Hstruct as (Hv1 & Hv2 & Hc1 & Hc2 & _).
+    repeat split; auto.
+  - intros (Hv1 & Hv2 & Hc1 & Hc2).
+    induction n' as [|m IH].
+    { simpl. split; [exact I|].
+      unfold val_rel_struct. repeat split; auto. }
+    { simpl. split; [exact IH|].
+      unfold val_rel_struct. repeat split; auto. }
+Qed.
+
 (** ** Store Extension Builder
 
     This lemma helps construct store extensions.
