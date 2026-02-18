@@ -694,6 +694,24 @@ Proof.
   - apply val_rel_le_closed_right with n Σ (TSum T1 T2) v1; auto.
 Qed.
 
+Lemma val_rel_le_prod_mono_step : forall n m Σ T1 T2 v1 v2,
+  m <= n ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  val_rel_le m Σ (TProd T1 T2) v1 v2.
+Proof.
+  intros n m Σ T1 T2 v1 v2 Hle Hrel.
+  eapply val_rel_le_mono_step; eauto.
+Qed.
+
+Lemma val_rel_le_sum_mono_step : forall n m Σ T1 T2 v1 v2,
+  m <= n ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  val_rel_le m Σ (TSum T1 T2) v1 v2.
+Proof.
+  intros n m Σ T1 T2 v1 v2 Hle Hrel.
+  eapply val_rel_le_mono_step; eauto.
+Qed.
+
 (** Secret relation at positive steps is exactly value+closedness on both sides *)
 Lemma val_rel_le_secret_characterization : forall n Σ T v1 v2,
   n > 0 ->

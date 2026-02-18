@@ -1334,6 +1334,24 @@ Proof.
   apply val_rel_le_build_sum_inr_kripke; auto.
 Qed.
 
+Lemma val_rel_le_prod_mono_step_store : forall n m Σ T1 T2 v1 v2,
+  m <= n ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  val_rel_le m Σ (TProd T1 T2) v1 v2.
+Proof.
+  intros n m Σ T1 T2 v1 v2 Hle Hrel.
+  eapply val_rel_le_prod_mono_step; eauto.
+Qed.
+
+Lemma val_rel_le_sum_mono_step_store : forall n m Σ T1 T2 v1 v2,
+  m <= n ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  val_rel_le m Σ (TSum T1 T2) v1 v2.
+Proof.
+  intros n m Σ T1 T2 v1 v2 Hle Hrel.
+  eapply val_rel_le_sum_mono_step; eauto.
+Qed.
+
 (** ** Unit Value Relations
 
     Unit values are always equal when related.
