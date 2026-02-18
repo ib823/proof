@@ -694,6 +694,79 @@ Proof.
   - apply val_rel_le_closed_right with n Σ (TSum T1 T2) v1; auto.
 Qed.
 
+Lemma val_rel_le_prod_components_wf_kripke : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TProd T1 T2) v1 v2 ->
+  exists a1 b1 a2 b2,
+    v1 = EPair a1 b1 /\ v2 = EPair a2 b2 /\
+    value a1 /\ value b1 /\ value a2 /\ value b2 /\
+    closed_expr a1 /\ closed_expr b1 /\ closed_expr a2 /\ closed_expr b2 /\
+    val_rel_le (pred n) Σ T1 a1 a2 /\
+    val_rel_le (pred n) Σ T2 b1 b2.
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  destruct (val_rel_le_prod_components_kripke n Σ T1 T2 v1 v2 Hn Hrel)
+    as [a1 [b1 [a2 [b2 [Heq1 [Heq2 [Hr1 Hr2]]]]]]].
+  destruct (val_rel_le_prod_values_closed n Σ T1 T2 v1 v2 Hn Hrel)
+    as [Hv1 [Hv2 [Hc1 Hc2]]].
+  subst.
+  assert (Hva1 : value a1) by (inversion Hv1; subst; assumption).
+  assert (Hvb1 : value b1) by (inversion Hv1; subst; assumption).
+  assert (Hva2 : value a2) by (inversion Hv2; subst; assumption).
+  assert (Hvb2 : value b2) by (inversion Hv2; subst; assumption).
+  exists a1, b1, a2, b2.
+  repeat split; auto.
+  - unfold closed_expr in *. intros x Hf. apply (Hc1 x). simpl. left. exact Hf.
+  - unfold closed_expr in *. intros x Hf. apply (Hc1 x). simpl. right. exact Hf.
+  - unfold closed_expr in *. intros x Hf. apply (Hc2 x). simpl. left. exact Hf.
+  - unfold closed_expr in *. intros x Hf. apply (Hc2 x). simpl. right. exact Hf.
+Qed.
+
+Lemma val_rel_le_sum_extract_wf_kripke : forall n Σ T1 T2 v1 v2,
+  n > 0 ->
+  val_rel_le n Σ (TSum T1 T2) v1 v2 ->
+  (exists a1 a2,
+      v1 = EInl a1 T2 /\ v2 = EInl a2 T2 /\
+      value a1 /\ value a2 /\ closed_expr a1 /\ closed_expr a2 /\
+      val_rel_le (pred n) Σ T1 a1 a2) \/
+  (exists b1 b2,
+      v1 = EInr b1 T1 /\ v2 = EInr b2 T1 /\
+      value b1 /\ value b2 /\ closed_expr b1 /\ closed_expr b2 /\
+      val_rel_le (pred n) Σ T2 b1 b2).
+Proof.
+  intros n Σ T1 T2 v1 v2 Hn Hrel.
+  destruct (val_rel_le_sum_extract_kripke n Σ T1 T2 v1 v2 Hn Hrel)
+    as [Hinl | Hinr].
+  - destruct Hinl as [a1 [a2 [Heq1 [Heq2 Hr]]]].
+    destruct (val_rel_le_sum_values_closed n Σ T1 T2 v1 v2 Hn Hrel)
+      as [Hv1 [Hv2 [Hc1 Hc2]]].
+    assert (Hva1 : value a1).
+    { rewrite Heq1 in Hv1. inversion Hv1; assumption. }
+    assert (Hva2 : value a2).
+    { rewrite Heq2 in Hv2. inversion Hv2; assumption. }
+    assert (Hca1 : closed_expr a1).
+    { unfold closed_expr in *. intros x Hf. apply (Hc1 x). rewrite Heq1. simpl. exact Hf. }
+    assert (Hca2 : closed_expr a2).
+    { unfold closed_expr in *. intros x Hf. apply (Hc2 x). rewrite Heq2. simpl. exact Hf. }
+    left.
+    exists a1, a2.
+    repeat split; auto.
+  - destruct Hinr as [b1 [b2 [Heq1 [Heq2 Hr]]]].
+    destruct (val_rel_le_sum_values_closed n Σ T1 T2 v1 v2 Hn Hrel)
+      as [Hv1 [Hv2 [Hc1 Hc2]]].
+    assert (Hvb1 : value b1).
+    { rewrite Heq1 in Hv1. inversion Hv1; assumption. }
+    assert (Hvb2 : value b2).
+    { rewrite Heq2 in Hv2. inversion Hv2; assumption. }
+    assert (Hcb1 : closed_expr b1).
+    { unfold closed_expr in *. intros x Hf. apply (Hc1 x). rewrite Heq1. simpl. exact Hf. }
+    assert (Hcb2 : closed_expr b2).
+    { unfold closed_expr in *. intros x Hf. apply (Hc2 x). rewrite Heq2. simpl. exact Hf. }
+    right.
+    exists b1, b2.
+    repeat split; auto.
+Qed.
+
 Lemma val_rel_le_prod_mono_step : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->
