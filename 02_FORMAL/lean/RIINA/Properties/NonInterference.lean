@@ -47,6 +47,9 @@ Mode: Comprehensive Verification | Zero Trust
 
 namespace RIINA
 
+open security_level effect effect_category taint_source sanitizer
+     capability_kind capability ty session_type expr
+
 open Expr Ty SecurityLevel
 
 /-! ## Observer Level
