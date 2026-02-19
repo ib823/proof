@@ -313,7 +313,7 @@ research source, and detailed description.
 | REQ-08 | F*: first real proof (not stub) | P2 | TODO | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | TODO | 2 |
 | REQ-10 | Alloy: first real model (not stub) | P2 | TODO | 2 |
-| REQ-11 | Deep NI proofs in active Coq build | P1 | IN PROGRESS | 1 |
+| REQ-11 | Deep NI proofs in active Coq build | P1 | DONE | 1 |
 | REQ-12 | Compiler enforces information flow | P1 | TODO | 3 |
 | REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | TODO | 4 |
 | REQ-14 | Working WASM backend (not scaffolding) | P1 | TODO | 4 |
@@ -392,17 +392,19 @@ All public-facing metrics are command-derived, not copied from docs.
 
 | Task | Status | Research Depth |
 |------|--------|----------------|
-| Move NI proofs from archive to active build (eliminate 98 Admitted) | TODO | Step-indexed logical relations approach. Requires constructing interpretation function `V⟦τ⟧(k)` that is step-indexed anti-monotone. Following Appel-McAllester (2001) methodology. |
-| Logical relations proof (step-indexed, not axiomatized) | TODO | Dimensions 1+2. Must prove: `∀ e τ, has_type ∅ e τ → safe(e)` and `∀ e₁ e₂ τ, low_equiv(e₁, e₂) → low_equiv(eval(e₁), eval(e₂))`. Currently axiomatized in 66 places. Estimated 15-30 hours per axiom = 974-1,948 hours total. |
-| Linear type soundness | TODO | Dimension 4. RustBelt (Jung et al., POPL 2018) methodology using Iris separation logic. Must prove linear resources are consumed exactly once across all language features including closures, effects, and secret types. |
-| Constant-time execution proofs | TODO | Dimension 5. Must prove `∀ secret : Secret<T>, execution_time(f(secret_value_1)) = execution_time(f(secret_value_2))` at type level. FaCT (Cauligi et al., PLDI 2019) approach. |
-| Effect soundness completion | TODO | Dimension 3. Must prove Effect Gate correctly mediates all side effects. Theorem: `∀ e ε, ⊢ e : τ ! ε → eval(e) only performs effects in ε`. |
-| Termination proofs for all recursive constructs | TODO | Dimension related. Sized types approach (Abel 2006). Must prove all recursive functions in RIINA terminate via well-founded recursion on decreasing measures. |
+| Move NI proofs from archive to active build (eliminate 98 Admitted) | DONE | Step-indexed logical relations approach. Requires constructing interpretation function `V⟦τ⟧(k)` that is step-indexed anti-monotone. Following Appel-McAllester (2001) methodology. |
+| Logical relations proof (step-indexed, not axiomatized) | DONE | Dimensions 1+2. Must prove: `∀ e τ, has_type ∅ e τ → safe(e)` and `∀ e₁ e₂ τ, low_equiv(e₁, e₂) → low_equiv(eval(e₁), eval(e₂))`. Currently axiomatized in 66 places. Estimated 15-30 hours per axiom = 974-1,948 hours total. |
+| Linear type soundness | DONE | Dimension 4. RustBelt (Jung et al., POPL 2018) methodology using Iris separation logic. Must prove linear resources are consumed exactly once across all language features including closures, effects, and secret types. |
+| Constant-time execution proofs | DONE | Dimension 5. Must prove `∀ secret : Secret<T>, execution_time(f(secret_value_1)) = execution_time(f(secret_value_2))` at type level. FaCT (Cauligi et al., PLDI 2019) approach. |
+| Effect soundness completion | DONE | Dimension 3. Must prove Effect Gate correctly mediates all side effects. Theorem: `∀ e ε, ⊢ e : τ ! ε → eval(e) only performs effects in ε`. |
+| Termination proofs for all recursive constructs | DONE | Dimension related. Sized types approach (Abel 2006). Must prove all recursive functions in RIINA terminate via well-founded recursion on decreasing measures. |
 
 **Effort estimate:** 1,000-2,000 hours (Coq axiom elimination dominates).
 
 **Gate:** Coq active build has deep NI in active build, logical relations proven (not axiomatized),
 effect soundness proven. Total Qed increases. Zero Admitted remains.
+
+**Gate status (2026-02-19): PASSED. Phase 1 complete.**
 
 ---
 
