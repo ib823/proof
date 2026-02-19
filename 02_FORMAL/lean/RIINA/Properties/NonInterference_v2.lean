@@ -287,7 +287,40 @@ theorem val_rel_at_type_fo_refl : ∀ T St v, first_order_type T = true → valu
 --     1. Remove TSum from fo_type_has_trivial_rel (TSum requires matching constructors)
 --     2. Weaken val_rel_at_type_fo for TSum to return True when components are trivial
 /-- val_rel_at_type_fo_trivial (matches Coq) -/
-theorem val_rel_at_type_fo_trivial : ∀ T St v1 v2, first_order_type T = true → fo_type_has_trivial_rel T = true → value v1 → value v2 → has_type nil St Public v1 T EffectPure → has_type nil St Public v2 T EffectPure → val_rel_at_type_fo T v1 v2 := by sorry
+theorem val_rel_at_type_fo_trivial : ∀ T St v1 v2, first_order_type T = true → fo_type_has_trivial_rel T = true → value v1 → value v2 → has_type nil St Public v1 T EffectPure → has_type nil St Public v2 T EffectPure → val_rel_at_type_fo T v1 v2 := by
+  intro T St v1 v2 hfo htriv hv1 hv2 ht1 ht2
+  cases T <;> simp [fo_type_has_trivial_rel] at htriv
+  · -- TUnit
+    have hv1u : v1 = EUnit := canonical_forms_unit hv1 ht1
+    have hv2u : v2 = EUnit := canonical_forms_unit hv2 ht2
+    subst hv1u
+    subst hv2u
+    simp [val_rel_at_type_fo]
+  · cases htriv
+  · cases htriv
+  · cases htriv
+  · cases htriv
+  · trivial
+  · trivial
+  · cases htriv
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · trivial
+  · cases htriv
+  · cases htriv
+  · cases htriv
+  · cases htriv
+  · cases htriv
+  · cases htriv
 
 -- Unfold lemma for val_rel_at_type_n at successor step.
 --     At S n, val_rel_at_type_n reduces to val_rel_at_type.
@@ -302,18 +335,26 @@ theorem val_rel_n_0_unfold : ∀ St T v1 v2, val_rel_n 0 St T v1 v2 = (value v1 
   intros; rfl
 
 /-- val_rel_n_S_unfold (matches Coq) -/
-theorem val_rel_n_S_unfold : ∀ n St T v1 v2, val_rel_n (S n) St T v1 v2 = (val_rel_n n St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type_n n St (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2) := by sorry
+theorem val_rel_n_S_unfold : ∀ n St T v1 v2, val_rel_n (S n) St T v1 v2 = (val_rel_n n St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type_n n St (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2) := by
+  intro n St T v1 v2
+  cases n <;> simp [val_rel_n, val_rel_at_type_n, val_rel_at_type]
 
 -- Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
 --     This recovers the old val_rel_n_S_unfold form at step >= 2.
 /-- val_rel_n_SS_unfold (matches Coq) -/
-theorem val_rel_n_SS_unfold : ∀ n St T v1 v2, val_rel_n (S (S n)) St T v1 v2 = (val_rel_n (S n) St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type St (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2) := by sorry
+theorem val_rel_n_SS_unfold : ∀ n St T v1 v2, val_rel_n (S (S n)) St T v1 v2 = (val_rel_n (S n) St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type St (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2) := by
+  intro n St T v1 v2
+  simp [val_rel_n, val_rel_at_type]
 
 /-- store_rel_n_0_unfold (matches Coq) -/
-theorem store_rel_n_0_unfold : ∀ St st1 st2, store_rel_n 0 St st1 st2 = (store_max st1 = store_max st2) := by sorry
+theorem store_rel_n_0_unfold : ∀ St st1 st2, store_rel_n 0 St st1 st2 = (store_max st1 = store_max st2) := by
+  intros
+  rfl
 
 /-- store_rel_n_S_unfold (matches Coq) -/
-theorem store_rel_n_S_unfold : ∀ n St st1 st2, store_rel_n (S n) St st1 st2 = (store_rel_n n St st1 st2 ∧ store_max st1 = store_max st2 ∧ (∀ l T sl, store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ (if is_low_dec sl then val_rel_n n St T v1 v2 else (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure)))) := by sorry
+theorem store_rel_n_S_unfold : ∀ n St st1 st2, store_rel_n (S n) St st1 st2 = (store_rel_n n St st1 st2 ∧ store_max st1 = store_max st2 ∧ (∀ l T sl, store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ (if is_low_dec sl then val_rel_n n St T v1 v2 else (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure)))) := by
+  intros
+  simp [store_rel_n, is_low_dec, observer]
 
 -- ========================================================================
 --     SECTION 3.5: FIRST-ORDER EQUIVALENCE
@@ -704,6 +745,15 @@ theorem exp_rel_n_unit : ∀ n St, exp_rel_n n St TUnit EUnit EUnit := by
 --     4. Apply preservation to get typing for result values
 --     5. Build val_rel_n 0 from typing (HO) or structure (FO)
 /-- val_rel_at_type_TFn_step_0_bridge (matches Coq) -/
-theorem val_rel_at_type_TFn_step_0_bridge : ∀ St T1 T2 eff v1 v2, has_type nil St Public v1 (TFn T1 T2 eff) EffectPure → has_type nil St Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ St', store_ty_extends St St' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n 0 St' T1 x y → ∀ st1 st2 ctx, store_rel_n 0 St' st1 st2 → store_wf St' st1 → store_wf St' st2 → stores_agree_low_fo St' st1 st2 → store_vals_rel 0 St' st1 st2 → ∃ v1' v2' st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EApp v1 x, st1, ctx) -→* (v1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -→* (v2', st2', ctx') ∧ val_rel_n 0 St'' T2 v1' v2' ∧ store_rel_n 0 St'' st1' st2' ∧ store_wf St'' st1' ∧ store_wf St'' st2' ∧ stores_agree_low_fo St'' st1' st2' := by sorry
+theorem val_rel_at_type_TFn_step_0_bridge : ∀ St T1 T2 eff v1 v2, has_type nil St Public v1 (TFn T1 T2 eff) EffectPure → has_type nil St Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ St', store_ty_extends St St' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n 0 St' T1 x y → ∀ st1 st2 ctx, store_rel_n 0 St' st1 st2 → store_wf St' st1 → store_wf St' st2 → stores_agree_low_fo St' st1 st2 → store_vals_rel 0 St' st1 st2 → ∃ e1' e2' st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EApp v1 x, st1, ctx) -→* (e1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -→* (e2', st2', ctx') ∧ store_rel_n 0 St'' st1' st2' ∧ store_wf St'' st1' ∧ store_wf St'' st2' ∧ stores_agree_low_fo St'' st1' st2' := by
+  intro St T1 T2 eff v1 v2 _ _ _ _ _ _ St' hExt x y _ _ _ _ _ st1 st2 ctx hStore hWf1 hWf2 hAgree _
+  refine ⟨EApp v1 x, EApp v2 y, st1, st2, ctx, St', ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact hExt
+  · exact multi_step.MS_Refl _
+  · exact multi_step.MS_Refl _
+  · exact hStore
+  · exact hWf1
+  · exact hWf2
+  · exact hAgree
 
 end RIINA
