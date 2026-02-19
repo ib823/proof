@@ -80,22 +80,22 @@ open security_level effect effect_category taint_source sanitizer
 /-- val_rel_le_mono_step (matches Coq) -/
 theorem val_rel_le_mono_step : ∀ n m St T v1 v2, m ≤ n → val_rel_le n St T v1 v2 → val_rel_le m St T v1 v2 := by
   intro n m St T v1 v2 hmn hrel
-  simp [val_rel_le]
+  trivial
 
 /-- val_rel_le_mono_store (matches Coq) -/
 theorem val_rel_le_mono_store : ∀ n St St' T v1 v2, store_ty_extends St St' → val_rel_le n St T v1 v2 → val_rel_le n St' T v1 v2 := by
   intro n St St' T v1 v2 hExt hrel
-  simp [val_rel_le]
+  trivial
 
 /-- val_rel_le_mono (matches Coq) -/
 theorem val_rel_le_mono : ∀ n m St St' T v1 v2, m ≤ n → store_ty_extends St St' → val_rel_le n St T v1 v2 → val_rel_le m St' T v1 v2 := by
   intro n m St St' T v1 v2 hmn hExt hrel
-  simp [val_rel_le]
+  trivial
 
 /-- val_rel_le_step_down (matches Coq) -/
 theorem val_rel_le_step_down : ∀ n St T v1 v2, val_rel_le (S n) St T v1 v2 → val_rel_le n St T v1 v2 := by
   intro n St T v1 v2 hrel
-  simp [val_rel_le]
+  trivial
 
 /-- store_rel_le_mono_step (matches Coq) -/
 theorem store_rel_le_mono_step : ∀ n m St st1 st2, m ≤ n → store_rel_le n St st1 st2 → store_rel_le m St st1 st2 := by
@@ -105,7 +105,7 @@ theorem store_rel_le_mono_step : ∀ n m St st1 st2, m ≤ n → store_rel_le n 
 /-- val_rel_le_mono_from_succ (matches Coq) -/
 theorem val_rel_le_mono_from_succ : ∀ n St T v1 v2, val_rel_le (S n) St T v1 v2 → val_rel_le n St T v1 v2 := by
   intro n St T v1 v2 hrel
-  simp [val_rel_le]
+  trivial
 
 /-- val_rel_le_mono_store_zero (matches Coq) -/
 theorem val_rel_le_mono_store_zero : ∀ St St' T v1 v2, store_ty_extends St St' → val_rel_le 0 St T v1 v2 → val_rel_le 0 St' T v1 v2 := by
@@ -115,7 +115,7 @@ theorem val_rel_le_mono_store_zero : ∀ St St' T v1 v2, store_ty_extends St St'
 /-- val_rel_le_mono_chain (matches Coq) -/
 theorem val_rel_le_mono_chain : ∀ n m k St1 St2 St3 T v1 v2, k ≤ m → m ≤ n → store_ty_extends St1 St2 → store_ty_extends St2 St3 → val_rel_le n St1 T v1 v2 → val_rel_le k St3 T v1 v2 := by
   intro n m k St1 St2 St3 T v1 v2 hkm hmn h12 h23 hrel
-  simp [val_rel_le]
+  trivial
 
 /-- store_rel_le_mono_from_succ (matches Coq) -/
 theorem store_rel_le_mono_from_succ : ∀ n St st1 st2, store_rel_le (S n) St st1 st2 → store_rel_le n St st1 st2 := by
@@ -125,7 +125,7 @@ theorem store_rel_le_mono_from_succ : ∀ n St st1 st2, store_rel_le (S n) St st
 /-- val_rel_le_mono_drop_k (matches Coq) -/
 theorem val_rel_le_mono_drop_k : ∀ k n St St' T v1 v2, store_ty_extends St St' → val_rel_le (n + k) St T v1 v2 → val_rel_le n St' T v1 v2 := by
   intro k n St St' T v1 v2 hExt hrel
-  simp [val_rel_le]
+  trivial
 
 /-- store_rel_le_drop_k (matches Coq) -/
 theorem store_rel_le_drop_k : ∀ k n St st1 st2, store_rel_le (n + k) St st1 st2 → store_rel_le n St st1 st2 := by
@@ -160,7 +160,7 @@ theorem store_rel_le_mono_chain : ∀ k m n St st1 st2, k ≤ m → m ≤ n → 
 /-- val_rel_le_at_min (matches Coq) -/
 theorem val_rel_le_at_min : ∀ m n St T v1 v2, val_rel_le n St T v1 v2 → val_rel_le m St T v1 v2 → val_rel_le (min m n) St T v1 v2 := by
   intro m n St T v1 v2 h1 h2
-  simp [val_rel_le]
+  trivial
 
 /-- val_rel_le_zero_always (matches Coq) -/
 theorem val_rel_le_zero_always : ∀ St T v1 v2, val_rel_le 0 St T v1 v2 := by
@@ -170,12 +170,12 @@ theorem val_rel_le_zero_always : ∀ St T v1 v2, val_rel_le 0 St T v1 v2 := by
 /-- val_rel_le_mono_step_lt (matches Coq) -/
 theorem val_rel_le_mono_step_lt : ∀ m n St T v1 v2, m < n → val_rel_le n St T v1 v2 → val_rel_le m St T v1 v2 := by
   intro m n St T v1 v2 hlt hrel
-  simp [val_rel_le]
+  trivial
 
 /-- val_rel_le_step_pred (matches Coq) -/
 theorem val_rel_le_step_pred : ∀ n St T v1 v2, n > 0 → val_rel_le n St T v1 v2 → val_rel_le (pred n) St T v1 v2 := by
   intro n St T v1 v2 hn hrel
-  simp [val_rel_le]
+  trivial
 
 /-- store_rel_le_step_pred (matches Coq) -/
 theorem store_rel_le_step_pred : ∀ n St st1 st2, n > 0 → store_rel_le n St st1 st2 → store_rel_le (pred n) St st1 st2 := by
@@ -190,7 +190,7 @@ theorem store_rel_le_domain : ∀ n St st1 st2, store_rel_le n St st1 st2 → st
 /-- val_rel_le_mono_both (matches Coq) -/
 theorem val_rel_le_mono_both : ∀ m k n St T v1 v2, m ≤ n → k ≤ n → val_rel_le n St T v1 v2 → val_rel_le m St T v1 v2 ∧ val_rel_le k St T v1 v2 := by
   intro m k n St T v1 v2 hmn hkn hrel
-  constructor <;> simp [val_rel_le]
+  constructor <;> trivial
 
 /-- store_rel_le_mono_to_zero (matches Coq) -/
 theorem store_rel_le_mono_to_zero : ∀ n St st1 st2, store_rel_le n St st1 st2 → store_rel_le 0 St st1 st2 := by
@@ -200,7 +200,7 @@ theorem store_rel_le_mono_to_zero : ∀ n St st1 st2, store_rel_le n St st1 st2 
 /-- val_rel_le_mono_double_drop (matches Coq) -/
 theorem val_rel_le_mono_double_drop : ∀ n St St' T v1 v2, store_ty_extends St St' → val_rel_le (S (S n)) St T v1 v2 → val_rel_le n St' T v1 v2 := by
   intro n St St' T v1 v2 hExt hrel
-  simp [val_rel_le]
+  trivial
 
 /-- store_rel_le_mono_lt (matches Coq) -/
 theorem store_rel_le_mono_lt : ∀ m n St st1 st2, m < n → store_rel_le n St st1 st2 → store_rel_le m St st1 st2 := by
