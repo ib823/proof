@@ -88,6 +88,9 @@ private theorem andb_true_iff (a b : Bool) :
   · intro h; cases a <;> cases b <;> simp_all
   · intro ⟨ha, hb⟩; simp [ha, hb]
 
+/-- Fixed low observer used by low-equivalence predicates. -/
+def observer : security_level := Public
+
 /-- is_low (matches Coq: Definition is_low) -/
 def is_low (l : security_level) : Prop :=
   sec_leq l observer

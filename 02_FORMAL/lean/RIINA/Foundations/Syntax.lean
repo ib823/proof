@@ -17,6 +17,27 @@ namespace RIINA
 abbrev ident := String
 abbrev loc := Nat
 
+-- Coq compatibility shims for generated Lean ports.
+notation "nil" => (List.nil)
+notation "S" n => Nat.succ n
+notation "Some" => Option.some
+notation "None" => Option.none
+notation "NoDup" => List.Nodup
+prefix:40 "~" => Not
+infix:50 " <> " => Ne
+
+@[inline] def nth_error {α : Type} (xs : List α) (n : Nat) : Option α :=
+  xs.get? n
+
+@[inline] def filter {α : Type} (p : α → Bool) (xs : List α) : List α :=
+  List.filter p xs
+
+namespace Nat
+@[inline] def leb : Nat → Nat → Bool := Nat.ble
+@[inline] def ltb : Nat → Nat → Bool := Nat.blt
+@[inline] def eqb : Nat → Nat → Bool := Nat.beq
+end Nat
+
 /-- security_level (matches Coq: Inductive security_level) -/
 inductive security_level where
   | LPublic : security_level
@@ -207,6 +228,21 @@ inductive expr where
 open security_level effect effect_category taint_source sanitizer
      capability_kind capability ty session_type expr
 
+-- Coq-era aliases preserved for transpiled files.
+abbrev Public : security_level := LPublic
+abbrev Internal : security_level := LInternal
+abbrev Session : security_level := LSession
+abbrev User : security_level := LUser
+abbrev System : security_level := LSystem
+abbrev Secret : security_level := LSecret
+
+abbrev EffectPure : effect := EffPure
+abbrev EffectRead : effect := EffRead
+abbrev EffectWrite : effect := EffWrite
+abbrev EffectFileSystem : effect := EffFileSystem
+abbrev EffectNetwork : effect := EffNetwork
+abbrev EffectCrypto : effect := EffCrypto
+
 /-- value predicate (matches Coq: Inductive value : expr -> Prop) -/
 inductive value : expr → Prop where
   | VUnit   : value EUnit
@@ -330,6 +366,38 @@ def substExpr (x : ident) (v : expr) : expr → expr
   | EProve e1 => EProve (substExpr x v e1)
   | ERequire eff e1 => ERequire eff (substExpr x v e1)
   | EGrant eff e1 => EGrant eff (substExpr x v e1)
+
+notation "[" x " := " v "] " e => substExpr x v e
+
+/-- Coq-compatible free variable predicate used by transpiled proofs. -/
+def free_in (x : ident) (e : expr) : Prop :=
+  match e with
+  | EUnit => False
+  | EBool _ => False
+  | EInt _ => False
+  | EString _ => False
+  | ELoc _ => False
+  | EVar y => x = y
+  | ELam y _ body => x <> y /\ free_in x body
+  | EApp e1 e2 => free_in x e1 \/ free_in x e2
+  | EPair e1 e2 => free_in x e1 \/ free_in x e2
+  | EFst e0 => free_in x e0
+  | ESnd e0 => free_in x e0
+  | EInl e0 _ => free_in x e0
+  | EInr e0 _ => free_in x e0
+  | ECase e0 y1 e1 y2 e2 => free_in x e0 \/ (x <> y1 /\ free_in x e1) \/ (x <> y2 /\ free_in x e2)
+  | EIf e1 e2 e3 => free_in x e1 \/ free_in x e2 \/ free_in x e3
+  | ELet y e1 e2 => free_in x e1 \/ (x <> y /\ free_in x e2)
+  | EPerform _ e0 => free_in x e0
+  | EHandle e0 y h => free_in x e0 \/ (x <> y /\ free_in x h)
+  | ERef e0 _ => free_in x e0
+  | EDeref e0 => free_in x e0
+  | EAssign e1 e2 => free_in x e1 \/ free_in x e2
+  | EClassify e0 => free_in x e0
+  | EDeclassify e1 e2 => free_in x e1 \/ free_in x e2
+  | EProve e0 => free_in x e0
+  | ERequire _ e0 => free_in x e0
+  | EGrant _ e0 => free_in x e0
 
 /-- declass_ok (matches Coq) -/
 def declass_ok (e1 e2 : expr) : Prop :=

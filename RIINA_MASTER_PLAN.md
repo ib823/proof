@@ -308,7 +308,7 @@ research source, and detailed description.
 | REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | DONE | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
-| REQ-06 | Lean 4: compile ALL files, eliminate ALL sorry | P1 | TODO | 2 |
+| REQ-06 | Lean 4: compile ALL files, eliminate ALL sorry | P1 | IN PROGRESS | 2 |
 | REQ-07 | Isabelle: first successful build | P1 | TODO | 2 |
 | REQ-08 | F*: first real proof (not stub) | P2 | TODO | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | TODO | 2 |
