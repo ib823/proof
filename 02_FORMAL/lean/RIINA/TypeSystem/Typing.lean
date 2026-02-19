@@ -24,6 +24,9 @@ def type_env_lookup (x : ident) : type_env → Option ty
   | [] => none
   | (y, T) :: Γ' => if x = y then some T else type_env_lookup x Γ'
 
+/-- Coq-compat alias used by transpiled files. -/
+abbrev lookup := type_env_lookup
+
 /-! ## Store Typing -/
 
 /-- Store typing: list of (location, type, security level) -/
@@ -47,6 +50,95 @@ def store_ty_update (l : loc) (T : ty) (sl : security_level) : store_ty → stor
 def store_ty_extends (σ σ' : store_ty) : Prop :=
   ∀ (l : loc) (T : ty) (sl : security_level),
     store_ty_lookup l σ = some (T, sl) → store_ty_lookup l σ' = some (T, sl)
+
+/-- Coq-compat alias used by transpiled files. -/
+abbrev store_ty_ext := store_ty_extends
+
+/-- Transpilation-compat placeholder: one-step structural relation. -/
+def val_rel_struct
+    (val_rel_prev : store_ty → ty → expr → expr → Prop)
+    (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  value v1 ∧ value v2 ∧
+  closed_expr v1 ∧ closed_expr v2 ∧
+  match T with
+  | TUnit => v1 = EUnit ∧ v2 = EUnit
+  | TBool => ∃ b, v1 = EBool b ∧ v2 = EBool b
+  | TInt => ∃ i, v1 = EInt i ∧ v2 = EInt i
+  | TString => ∃ s, v1 = EString s ∧ v2 = EString s
+  | TBytes => v1 = v2
+  | TSecret _ => True
+  | TLabeled _ _ => True
+  | TTainted _ _ => True
+  | TSanitized _ _ => True
+  | TCapability _ => True
+  | TCapabilityFull _ => True
+  | TProof _ => True
+  | TChan _ => True
+  | TSecureChan _ _ => True
+  | TConstantTime _ => True
+  | TZeroizing _ => True
+  | TRef _ _ => ∃ l, v1 = ELoc l ∧ v2 = ELoc l
+  | TList _ => True
+  | TOption _ => True
+  | TProd T1 T2 =>
+      ∃ a1 b1 a2 b2,
+        v1 = EPair a1 b1 ∧ v2 = EPair a2 b2 ∧
+        val_rel_prev St T1 a1 a2 ∧
+        val_rel_prev St T2 b1 b2
+  | TSum T1 T2 =>
+      (∃ a1 a2,
+          v1 = EInl a1 T2 ∧ v2 = EInl a2 T2 ∧ val_rel_prev St T1 a1 a2) ∨
+      (∃ b1 b2,
+          v1 = EInr b1 T1 ∧ v2 = EInr b2 T1 ∧ val_rel_prev St T2 b1 b2)
+  | TFn _ _ _ => True
+
+/-- Transpilation-compat placeholder: structural value relation at a type. -/
+def val_rel_at_type
+    (St : store_ty)
+    (store_rel_pred : store_ty → store → store → Prop)
+    (val_rel_lower : store_ty → ty → expr → expr → Prop)
+    (store_rel_lower : store_ty → store → store → Prop)
+    (store_vals_pred : store_ty → store → store → Prop)
+    (T : ty) (v1 v2 : expr) : Prop :=
+  val_rel_at_type_fo T v1 v2
+
+/-- Transpilation-compat placeholder: cumulative value relation. -/
+def val_rel_le : Nat → store_ty → ty → expr → expr → Prop
+  | 0, _St, _T, _v1, _v2 => True
+  | Nat.succ n, St, T, v1, v2 =>
+      val_rel_le n St T v1 v2 ∧ val_rel_struct (val_rel_le n) St T v1 v2
+
+/-- Transpilation-compat placeholder: cumulative store relation. -/
+def store_rel_le (n : Nat) (St : store_ty) (st1 st2 : store) : Prop :=
+  store_max st1 = store_max st2
+
+/-- Transpilation-compat placeholder: cumulative expression relation. -/
+def exp_rel_le (n : Nat) (St : store_ty) (T : ty)
+    (e1 e2 : expr) (st1 st2 : store) (ctx : effect_ctx) : Prop := True
+
+/-- Transpilation-compat placeholder: step-indexed value relation. -/
+def val_rel_n (n : Nat) (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  value v1 ∧ value v2 ∧
+  closed_expr v1 ∧ closed_expr v2 ∧
+  (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)
+
+/-- Transpilation-compat placeholder: step-indexed store relation. -/
+def store_rel_n (n : Nat) (St : store_ty) (st1 st2 : store) : Prop := True
+
+/-- Transpilation-compat placeholder: step-indexed expression relation. -/
+def exp_rel_n (n : Nat) (St : store_ty) (T : ty) (e1 e2 : expr) : Prop := True
+
+/-- Transpilation-compat placeholder: non-indexed value relation. -/
+def val_rel (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  ∀ n, val_rel_n n St T v1 v2
+
+/-- Transpilation-compat placeholder: non-indexed store relation. -/
+def store_rel (St : store_ty) (st1 st2 : store) : Prop :=
+  ∀ n, store_rel_n n St st1 st2
+
+/-- Transpilation-compat placeholder: non-indexed expression relation. -/
+def exp_rel (St : store_ty) (T : ty) (e1 e2 : expr) : Prop :=
+  ∀ n, exp_rel_n n St T e1 e2
 
 /-! ## Effect join (for typing) -/
 
