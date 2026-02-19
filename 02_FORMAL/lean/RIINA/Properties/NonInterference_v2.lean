@@ -125,15 +125,6 @@ def val_rel_at_type_n (n : Nat) (St : store_ty)
   | Nat.succ n' =>
       val_rel_at_type St store_rel_pred val_rel_lower store_rel_lower store_vals_pred T v1 v2
 
-/-- store_vals_rel (matches Coq: Definition store_vals_rel) -/
-def store_vals_rel (n : Nat) (St : store_ty) (st1 st2 : store) : Prop :=
-  forall l T sl,
-    store_ty_lookup l St = Some (T, sl) ->
-    exists v1 v2,
-      store_lookup l st1 = Some v1 /\
-      store_lookup l st2 = Some v2 /\
-      val_rel_n n St T v1 v2
-
 /-- combined_step_up (matches Coq: Definition combined_step_up) -/
 def combined_step_up (n : Nat) : Prop :=
   (forall T St v1 v2,
@@ -172,11 +163,8 @@ private theorem free_in_context' : ∀ Γ St Δ e T ε, has_type Γ St Δ e T ε
   | T_Lam _ ih =>
     intro x ⟨hne, hf⟩
     have ⟨Tx, hlk⟩ := ih x hf
-    simp [lookup] at hlk
-    by_cases hxy : String.eqb x _ = true
-    · have heq : x = _ := by cases h : String.eqb x _ <;> simp_all [String.eqb_eq]
-      exact absurd heq hne
-    · simp [hxy] at hlk; exact ⟨Tx, hlk⟩
+    simp [lookup, hne] at hlk
+    exact ⟨Tx, hlk⟩
   | T_App _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
   | T_Pair _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
   | T_Fst _ ih => exact ih
@@ -187,33 +175,29 @@ private theorem free_in_context' : ∀ Γ St Δ e T ε, has_type Γ St Δ e T ε
     intro x hf
     rcases hf with hf0 | ⟨hne1, hf1⟩ | ⟨hne2, hf2⟩
     · exact ih x hf0
-    · have ⟨Tx, hlk⟩ := ih1 x hf1; simp [lookup] at hlk
-      by_cases h : String.eqb x _ = true
-      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne1
-      · simp [h] at hlk; exact ⟨Tx, hlk⟩
-    · have ⟨Tx, hlk⟩ := ih2 x hf2; simp [lookup] at hlk
-      by_cases h : String.eqb x _ = true
-      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne2
-      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+    · have ⟨Tx, hlk⟩ := ih1 x hf1
+      simp [lookup, hne1] at hlk
+      exact ⟨Tx, hlk⟩
+    · have ⟨Tx, hlk⟩ := ih2 x hf2
+      simp [lookup, hne2] at hlk
+      exact ⟨Tx, hlk⟩
   | T_If _ _ _ ih1 ih2 ih3 =>
     intro x hf; rcases hf with hf | hf | hf; exact ih1 x hf; exact ih2 x hf; exact ih3 x hf
   | T_Let _ _ ih1 ih2 =>
     intro x hf
     rcases hf with hf1 | ⟨hne, hf2⟩
     · exact ih1 x hf1
-    · have ⟨Tx, hlk⟩ := ih2 x hf2; simp [lookup] at hlk
-      by_cases h : String.eqb x _ = true
-      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne
-      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+    · have ⟨Tx, hlk⟩ := ih2 x hf2
+      simp [lookup, hne] at hlk
+      exact ⟨Tx, hlk⟩
   | T_Perform _ ih => exact ih
   | T_Handle _ _ ih1 ih2 =>
     intro x hf
     rcases hf with hf0 | ⟨hne, hfh⟩
     · exact ih1 x hf0
-    · have ⟨Tx, hlk⟩ := ih2 x hfh; simp [lookup] at hlk
-      by_cases h : String.eqb x _ = true
-      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne
-      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+    · have ⟨Tx, hlk⟩ := ih2 x hfh
+      simp [lookup, hne] at hlk
+      exact ⟨Tx, hlk⟩
   | T_Ref _ ih => exact ih
   | T_Deref _ ih => exact ih
   | T_Assign _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
@@ -228,7 +212,8 @@ private theorem free_in_context' : ∀ Γ St Δ e T ε, has_type Γ St Δ e T ε
 theorem typing_nil_implies_closed : ∀ St Δ e T ε, has_type nil St Δ e T ε → closed_expr e := by
   intro St Δ e T ε h x hfree
   have ⟨Tx, hlk⟩ := free_in_context' nil St Δ e T ε h x hfree
-  simp [lookup] at hlk
+  have : False := by simpa [lookup] using hlk
+  exact this
 
 -- val_rel_at_type_fo is reflexive for well-typed values.
 --     This is used when v1 = v2 (from stores_agree_low_fo).
@@ -325,7 +310,8 @@ theorem store_rel_n_S_unfold : ∀ n St st1 st2, store_rel_n (S n) St st1 st2 = 
 --     The predicates are only used for TFn types (function types).
 /-- val_rel_at_type_fo_equiv (matches Coq) -/
 theorem val_rel_at_type_fo_equiv : ∀ T St sp vl sl svp v1 v2, first_order_type T = true → (val_rel_at_type St sp vl sl svp T v1 v2 ↔ val_rel_at_type_fo T v1 v2) := by
-  intro _ _ _ _ _ _ _ _ _; exact Iff.rfl
+  intro T St sp vl sl svp v1 v2 hfo
+  simp [val_rel_at_type, hfo]
 
 -- Downward closure: val_rel_n n implies val_rel_n 0 (base case).
 --     This follows directly from the definition where S-case includes the predecessor.
@@ -413,7 +399,13 @@ theorem val_rel_n_mono : ∀ m n St T v1 v2, m ≤ n → val_rel_n n St T v1 v2 
 -- Downward monotonicity for store_rel_n
 /-- store_rel_n_mono (matches Coq) -/
 theorem store_rel_n_mono : ∀ m n St st1 st2, m ≤ n → store_rel_n n St st1 st2 → store_rel_n m St st1 st2 := by
-  intros; trivial
+  intro m n St st1 st2 hle hrel
+  induction hle generalizing st1 st2 with
+  | refl =>
+    exact hrel
+  | @step n hle ih =>
+    rcases hrel with ⟨hprev, _, _⟩
+    exact ih _ _ hprev
 
 -- Helper: invert pair typing to get component typing at EffectPure
 /-- pair_typing_pure_inv (matches Coq) -/
@@ -436,7 +428,7 @@ theorem pair_typing_pure_inv : ∀ Γ St Δ e1 e2 T1 T2, has_type Γ St Δ (EPai
 -- FORMER AXIOM 1: exp_rel_step1_fst - NOW PROVEN
 /-- exp_rel_step1_fst (matches Coq) -/
 theorem exp_rel_step1_fst : ∀ St T1 T2 v v' st1 st2 ctx St', first_order_type T1 = true → first_order_type T2 = true → val_rel_n 0 St' (TProd T1 T2) v v' → store_rel_n 0 St' st1 st2 → store_ty_extends St St' → ∃ a1 a2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EFst v, st1, ctx) -→* (a1, st1', ctx') ∧ (EFst v', st2, ctx) -→* (a2, st2', ctx') ∧ value a1 ∧ value a2 ∧ val_rel_n 0 St'' T1 a1 a2 ∧ store_rel_n 0 St'' st1' st2' := by
-  intro St T1 T2 v v' st1 st2 ctx St' hfo1 hfo2 ⟨hv, hv', hc, hc', ht, ht', hfo⟩ _ _
+  intro St T1 T2 v v' st1 st2 ctx St' hfo1 hfo2 ⟨hv, hv', hc, hc', ht, ht', hfo⟩ hstore _
   obtain ⟨a1, b1, rfl, hva1, hvb1⟩ := canonical_forms_prod hv ht
   obtain ⟨a2, b2, rfl, hva2, hvb2⟩ := canonical_forms_prod hv' ht'
   obtain ⟨hta1, _⟩ := pair_typing_pure_inv _ _ _ _ _ _ _ ht
@@ -450,12 +442,12 @@ theorem exp_rel_step1_fst : ∀ St T1 T2 v v' st1 st2 ctx St', first_order_type 
     hva1, hva2,
     ⟨hva1, hva2, fun x hf => hc x (Or.inl hf), fun x hf => hc' x (Or.inl hf),
      hta1, hta2, by rw [if_pos hfo1]; exact hfo.1⟩,
-    trivial⟩
+    hstore⟩
 
 -- FORMER AXIOM 2: exp_rel_step1_snd - NOW PROVEN
 /-- exp_rel_step1_snd (matches Coq) -/
 theorem exp_rel_step1_snd : ∀ St T1 T2 v v' st1 st2 ctx St', first_order_type T1 = true → first_order_type T2 = true → val_rel_n 0 St' (TProd T1 T2) v v' → store_rel_n 0 St' st1 st2 → store_ty_extends St St' → ∃ b1 b2 st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (ESnd v, st1, ctx) -→* (b1, st1', ctx') ∧ (ESnd v', st2, ctx) -→* (b2, st2', ctx') ∧ value b1 ∧ value b2 ∧ val_rel_n 0 St'' T2 b1 b2 ∧ store_rel_n 0 St'' st1' st2' := by
-  intro St T1 T2 v v' st1 st2 ctx St' hfo1 hfo2 ⟨hv, hv', hc, hc', ht, ht', hfo⟩ _ _
+  intro St T1 T2 v v' st1 st2 ctx St' hfo1 hfo2 ⟨hv, hv', hc, hc', ht, ht', hfo⟩ hstore _
   obtain ⟨a1, b1, rfl, hva1, hvb1⟩ := canonical_forms_prod hv ht
   obtain ⟨a2, b2, rfl, hva2, hvb2⟩ := canonical_forms_prod hv' ht'
   obtain ⟨_, htb1⟩ := pair_typing_pure_inv _ _ _ _ _ _ _ ht
@@ -469,7 +461,7 @@ theorem exp_rel_step1_snd : ∀ St T1 T2 v v' st1 st2 ctx St', first_order_type 
     hvb1, hvb2,
     ⟨hvb1, hvb2, fun x hf => hc x (Or.inr hf), fun x hf => hc' x (Or.inr hf),
      htb1, htb2, by rw [if_pos hfo2]; exact hfo.2⟩,
-    trivial⟩
+    hstore⟩
 
 -- FORMER AXIOM 3: exp_rel_step1_if - NOW PROVEN - THE BIG WIN!
 /-- exp_rel_step1_if (matches Coq) -/
@@ -507,63 +499,47 @@ theorem exp_rel_step1_app : ∀ St T1 T2 ε f f' a a' st1 st2 ctx St', val_rel_n
   intro _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
   exact ⟨_, _, _, _, _, _, fun l T sl h => h, multi_step.MS_Refl _, multi_step.MS_Refl _⟩
 
+/-- In this operational semantics, one-step reductions preserve store identity. -/
+private theorem step_preserves_store : ∀ e e' st st' ctx ctx', (e, st, ctx) -→ (e', st', ctx') → st' = st := by
+  intro e e' st st' ctx ctx' hstep
+  induction hstep with
+  | ST_AppAbs => rfl
+  | ST_App1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_App2 _ _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Fst => rfl
+  | ST_Snd => rfl
+  | ST_IfTrue => rfl
+  | ST_IfFalse => rfl
+  | ST_LetVal => rfl
+  | ST_CaseInl => rfl
+  | ST_CaseInr => rfl
+  | ST_Pair1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Pair2 _ _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Fst1 _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Snd1 _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Inl1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Inr1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Case1 _ _ _ _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_If1 _ _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Let1 _ _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Classify1 _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Prove1 _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Require1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Grant1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Perform1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Handle1 _ _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Ref1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Deref1 _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Assign1 _ _ _ _ _ _ _ _ hs ih => exact ih
+  | ST_Assign2 _ _ _ _ _ _ _ _ _ hs ih => exact ih
+
 -- Extract just the store_wf part from preservation
 /-- preservation_store_wf (matches Coq) -/
 theorem preservation_store_wf : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→ (e', st', ctx') → ∃ St', store_ty_extends St St' ∧ store_wf St' st' := by
   intro e e' st st' ctx ctx' St T ε htype hwf hstep
-  induction hstep generalizing St T ε with
-  -- Compute rules: store unchanged (st' = st)
-  | ST_AppAbs => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_Fst => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_Snd => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_IfTrue => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_IfFalse => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_LetVal => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_CaseInl => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  | ST_CaseInr => exact ⟨St, fun _ _ _ h => h, hwf⟩
-  -- Congruence rules: forward IH using typing inversion
-  | ST_App1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_App h1 h2 => exact ih St _ _ h1 hwf
-  | ST_App2 _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_App h1 h2 => exact ih St _ _ h2 hwf
-  | ST_Pair1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Pair h1 h2 => exact ih St _ _ h1 hwf
-  | ST_Pair2 _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Pair h1 h2 => exact ih St _ _ h2 hwf
-  | ST_Fst1 _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Fst h1 => exact ih St _ _ h1 hwf
-  | ST_Snd1 _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Snd h1 => exact ih St _ _ h1 hwf
-  | ST_Inl1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Inl h1 => exact ih St _ _ h1 hwf
-  | ST_Inr1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Inr h1 => exact ih St _ _ h1 hwf
-  | ST_Case1 _ _ _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Case h0 h1 h2 => exact ih St _ _ h0 hwf
-  | ST_If1 _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_If h1 h2 h3 => exact ih St _ _ h1 hwf
-  | ST_Let1 _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Let h1 h2 => exact ih St _ _ h1 hwf
-  | ST_Classify1 _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Classify h1 => exact ih St _ _ h1 hwf
-  | ST_Prove1 _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Prove h1 => exact ih St _ _ h1 hwf
-  | ST_Require1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Require h1 => exact ih St _ _ h1 hwf
-  | ST_Grant1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Grant h1 => exact ih St _ _ h1 hwf
-  | ST_Perform1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Perform h1 => exact ih St _ _ h1 hwf
-  | ST_Handle1 _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Handle h1 h2 => exact ih St _ _ h1 hwf
-  | ST_Ref1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Ref h1 => exact ih St _ _ h1 hwf
-  | ST_Deref1 _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Deref h1 => exact ih St _ _ h1 hwf
-  | ST_Assign1 _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Assign h1 h2 => exact ih St _ _ h1 hwf
-  | ST_Assign2 _ _ _ _ _ _ _ _ _ ih =>
-    cases htype with | T_Assign h1 h2 => exact ih St _ _ h2 hwf
+  have hst : st' = st := step_preserves_store e e' st st' ctx ctx' hstep
+  subst hst
+  exact ⟨St, (fun _ _ _ h => h), hwf⟩
 
 -- store_wf implies store_has_values - NOW TRIVIAL after store_wf strengthening
 /-- store_wf_to_has_values (matches Coq) -/
@@ -577,8 +553,7 @@ theorem store_wf_to_has_values : ∀ St st, store_wf St st → store_has_values 
 theorem preservation_store_has_values : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→ (e', st', ctx') → store_has_values st' := by
   intro e e' st st' ctx ctx' St T ε htype hwf hstep
   obtain ⟨St', _, hwf'⟩ := preservation_store_wf e e' st st' ctx ctx' St T ε htype hwf hstep
-  intro l v hlk
-  exact (hwf'.2 l v hlk).2.1
+  exact store_wf_to_has_values St' st' hwf'
 
 -- val_rel_at_type step-up for FIRST-ORDER types.
 --

@@ -100,7 +100,7 @@ def val_rel_at_type
     (store_rel_lower : store_ty → store → store → Prop)
     (store_vals_pred : store_ty → store → store → Prop)
     (T : ty) (v1 v2 : expr) : Prop :=
-  val_rel_at_type_fo T v1 v2
+  if first_order_type T then val_rel_at_type_fo T v1 v2 else True
 
 /-- Transpilation-compat placeholder: cumulative value relation. -/
 def val_rel_le : Nat → store_ty → ty → expr → expr → Prop
@@ -434,8 +434,34 @@ def val_rel_n (_n : Nat) (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
   has_type [] St Public v2 T EffectPure ∧
   (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)
 
-/-- Step-indexed store relation (placeholder). -/
-def store_rel_n (_n : Nat) (_St : store_ty) (_st1 _st2 : store) : Prop := True
+/-- Step-indexed store relation (structural shape used by NI ports). -/
+def store_rel_n : Nat → store_ty → store → store → Prop
+  | 0, _St, st1, st2 =>
+      store_max st1 = store_max st2
+  | Nat.succ n, St, st1, st2 =>
+      store_rel_n n St st1 st2 ∧
+      store_max st1 = store_max st2 ∧
+      (∀ l T sl,
+         store_ty_lookup l St = some (T, sl) →
+         ∃ v1 v2,
+           store_lookup l st1 = some v1 ∧
+           store_lookup l st2 = some v2 ∧
+           (if sec_leq_dec sl Public then
+              val_rel_n n St T v1 v2
+            else
+              value v1 ∧ value v2 ∧
+              closed_expr v1 ∧ closed_expr v2 ∧
+              has_type [] St Public v1 T EffectPure ∧
+              has_type [] St Public v2 T EffectPure))
+
+/-- Pointwise store-values relation (used by NI ports). -/
+def store_vals_rel (n : Nat) (St : store_ty) (st1 st2 : store) : Prop :=
+  ∀ l T sl,
+    store_ty_lookup l St = some (T, sl) →
+    ∃ v1 v2,
+      store_lookup l st1 = some v1 ∧
+      store_lookup l st2 = some v2 ∧
+      val_rel_n n St T v1 v2
 
 /-- Step-indexed expression relation (placeholder). -/
 def exp_rel_n (_n : Nat) (_St : store_ty) (_T : ty) (_e1 _e2 : expr) : Prop := True
