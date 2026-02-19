@@ -96,6 +96,9 @@ inductive multi_step : config → config → Prop where
   | MS_Step : ∀ cfg1 cfg2 cfg3,
       step cfg1 cfg2 → multi_step cfg2 cfg3 → multi_step cfg1 cfg3
 
+infix:55 " -→ " => step
+infix:55 " -→* " => multi_step
+
 -- ============================================================================
 -- Theorems (corresponding to Coq proofs)
 -- ============================================================================

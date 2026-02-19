@@ -25,7 +25,6 @@ notation "None" => Option.none
 notation "NoDup" => List.Nodup
 prefix:40 "~" => Not
 infix:50 " <> " => Ne
-
 @[inline] def nth_error {α : Type} (xs : List α) (n : Nat) : Option α :=
   xs.get? n
 
@@ -37,6 +36,14 @@ namespace Nat
 @[inline] def ltb : Nat → Nat → Bool := Nat.blt
 @[inline] def eqb : Nat → Nat → Bool := Nat.beq
 end Nat
+
+namespace Bool
+@[inline] def eqb (a b : Bool) : Bool := decide (a = b)
+end Bool
+
+namespace String
+@[inline] def eqb (a b : String) : Bool := (a == b)
+end String
 
 /-- security_level (matches Coq: Inductive security_level) -/
 inductive security_level where
@@ -398,6 +405,164 @@ def free_in (x : ident) (e : expr) : Prop :=
   | EProve e0 => free_in x e0
   | ERequire _ e0 => free_in x e0
   | EGrant _ e0 => free_in x e0
+
+/-- Coq-compatible notion of closed expressions. -/
+def closed_expr (e : expr) : Prop :=
+  forall x, ~ free_in x e
+
+/-- Reachability placeholder used by transpiled SN lemmas. -/
+def expr_reaches (e1 e2 : expr) : Prop :=
+  e1 = e2
+
+/-- Substitution by environment mapping (Coq `subst_rho` compatibility). -/
+def subst_rho (rho : ident → expr) : expr → expr
+  | EVar x => rho x
+  | EUnit => EUnit
+  | EBool b => EBool b
+  | EInt n => EInt n
+  | EString s => EString s
+  | ELam x T body =>
+      ELam x T (subst_rho (fun y => if y = x then EVar y else rho y) body)
+  | EApp e1 e2 => EApp (subst_rho rho e1) (subst_rho rho e2)
+  | EPair e1 e2 => EPair (subst_rho rho e1) (subst_rho rho e2)
+  | EFst e => EFst (subst_rho rho e)
+  | ESnd e => ESnd (subst_rho rho e)
+  | EInl e T => EInl (subst_rho rho e) T
+  | EInr e T => EInr (subst_rho rho e) T
+  | ECase e x1 e1 x2 e2 =>
+      ECase (subst_rho rho e)
+        x1 (subst_rho (fun y => if y = x1 then EVar y else rho y) e1)
+        x2 (subst_rho (fun y => if y = x2 then EVar y else rho y) e2)
+  | EIf e1 e2 e3 => EIf (subst_rho rho e1) (subst_rho rho e2) (subst_rho rho e3)
+  | ELet x e1 e2 =>
+      ELet x (subst_rho rho e1) (subst_rho (fun y => if y = x then EVar y else rho y) e2)
+  | EPerform eff e => EPerform eff (subst_rho rho e)
+  | EHandle e x h =>
+      EHandle (subst_rho rho e) x (subst_rho (fun y => if y = x then EVar y else rho y) h)
+  | ERef e sl => ERef (subst_rho rho e) sl
+  | EDeref e => EDeref (subst_rho rho e)
+  | EAssign e1 e2 => EAssign (subst_rho rho e1) (subst_rho rho e2)
+  | ELoc l => ELoc l
+  | EClassify e => EClassify (subst_rho rho e)
+  | EDeclassify e1 e2 => EDeclassify (subst_rho rho e1) (subst_rho rho e2)
+  | EProve e => EProve (subst_rho rho e)
+  | ERequire eff e => ERequire eff (subst_rho rho e)
+  | EGrant eff e => EGrant eff (subst_rho rho e)
+
+/-- Shadow a variable in an environment substitution (used in lambda/let binding). -/
+def rho_shadow (rho : ident → expr) (x : ident) : ident → expr :=
+  fun y => if y = x then EVar y else rho y
+
+/-- Extend an environment substitution with a new binding. -/
+def rho_extend (rho : ident → expr) (x : ident) (v : expr) : ident → expr :=
+  fun y => if y = x then v else rho y
+
+/-- Single-binding environment substitution. -/
+def rho_single (x : ident) (v : expr) : ident → expr :=
+  fun y => if y = x then v else EVar y
+
+/-- Identity environment substitution. -/
+def rho_id : ident → expr :=
+  fun y => EVar y
+
+/-- Structural size of RIINA types (for well-founded inductions in ports). -/
+def ty_size : ty → Nat
+  | TUnit => 1
+  | TBool => 1
+  | TInt => 1
+  | TString => 1
+  | TBytes => 1
+  | TFn t1 t2 _ => 1 + ty_size t1 + ty_size t2
+  | TProd t1 t2 => 1 + ty_size t1 + ty_size t2
+  | TSum t1 t2 => 1 + ty_size t1 + ty_size t2
+  | TList t => 1 + ty_size t
+  | TOption t => 1 + ty_size t
+  | TRef t _ => 1 + ty_size t
+  | TSecret t => 1 + ty_size t
+  | TLabeled t _ => 1 + ty_size t
+  | TTainted t _ => 1 + ty_size t
+  | TSanitized t _ => 1 + ty_size t
+  | TProof t => 1 + ty_size t
+  | TCapability _ => 1
+  | TCapabilityFull _ => 1
+  | TChan _ => 1
+  | TSecureChan _ _ => 1
+  | TConstantTime t => 1 + ty_size t
+  | TZeroizing t => 1 + ty_size t
+
+/-- True iff a type is first-order (no function or channel values). -/
+def first_order_type : ty → Bool
+  | TFn _ _ _ => false
+  | TChan _ => false
+  | TSecureChan _ _ => false
+  | TProd t1 t2 => first_order_type t1 && first_order_type t2
+  | TSum t1 t2 => first_order_type t1 && first_order_type t2
+  | TList t => first_order_type t
+  | TOption t => first_order_type t
+  | TRef t _ => first_order_type t
+  | TSecret t => first_order_type t
+  | TLabeled t _ => first_order_type t
+  | TTainted t _ => first_order_type t
+  | TSanitized t _ => first_order_type t
+  | TProof t => first_order_type t
+  | TConstantTime t => first_order_type t
+  | TZeroizing t => first_order_type t
+  | _ => true
+
+/-- Maximum compound depth among first-order constructors. -/
+def fo_compound_depth : ty → Nat
+  | TProd t1 t2 => Nat.succ (Nat.max (fo_compound_depth t1) (fo_compound_depth t2))
+  | TSum t1 t2 => Nat.succ (Nat.max (fo_compound_depth t1) (fo_compound_depth t2))
+  | TList t => Nat.succ (fo_compound_depth t)
+  | TOption t => Nat.succ (fo_compound_depth t)
+  | TRef t _ => Nat.succ (fo_compound_depth t)
+  | TSecret t => Nat.succ (fo_compound_depth t)
+  | TLabeled t _ => Nat.succ (fo_compound_depth t)
+  | TTainted t _ => Nat.succ (fo_compound_depth t)
+  | TSanitized t _ => Nat.succ (fo_compound_depth t)
+  | TProof t => Nat.succ (fo_compound_depth t)
+  | TConstantTime t => Nat.succ (fo_compound_depth t)
+  | TZeroizing t => Nat.succ (fo_compound_depth t)
+  | _ => 0
+
+/-- Conservative marker for first-order types with trivial relational structure. -/
+def fo_type_has_trivial_rel : ty → Bool
+  | TUnit | TBool | TInt | TString | TBytes => true
+  | TCapability _ | TCapabilityFull _ => true
+  | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TProof _ => true
+  | TRef _ _ => true
+  | TList t => fo_type_has_trivial_rel t
+  | TOption t => fo_type_has_trivial_rel t
+  | TProd t1 t2 => fo_type_has_trivial_rel t1 && fo_type_has_trivial_rel t2
+  | TSum t1 t2 => fo_type_has_trivial_rel t1 && fo_type_has_trivial_rel t2
+  | TConstantTime t => fo_type_has_trivial_rel t
+  | TZeroizing t => fo_type_has_trivial_rel t
+  | _ => false
+
+/-- First-order value relation used by transpiled logical-relation files. -/
+def val_rel_at_type_fo : ty → expr → expr → Prop
+  | TUnit, EUnit, EUnit => True
+  | TBool, EBool b1, EBool b2 => b1 = b2
+  | TInt, EInt n1, EInt n2 => n1 = n2
+  | TString, EString s1, EString s2 => s1 = s2
+  | TBytes, v1, v2 => v1 = v2
+  | TRef _ _, ELoc l1, ELoc l2 => l1 = l2
+  | TProd t1 t2, EPair a1 b1, EPair a2 b2 =>
+      val_rel_at_type_fo t1 a1 a2 /\ val_rel_at_type_fo t2 b1 b2
+  | TSum t1 t2, EInl a1 _, EInl a2 _ => val_rel_at_type_fo t1 a1 a2
+  | TSum t1 t2, EInr b1 _, EInr b2 _ => val_rel_at_type_fo t2 b1 b2
+  | TList _, _, _ => True
+  | TOption _, _, _ => True
+  | TSecret _, _, _ => True
+  | TLabeled _ _, _, _ => True
+  | TTainted _ _, _, _ => True
+  | TSanitized _ _, _, _ => True
+  | TProof _, _, _ => True
+  | TCapability _, _, _ => True
+  | TCapabilityFull _, _, _ => True
+  | TConstantTime t, v1, v2 => val_rel_at_type_fo t v1 v2
+  | TZeroizing t, v1, v2 => val_rel_at_type_fo t v1 v2
+  | _, _, _ => False
 
 /-- declass_ok (matches Coq) -/
 def declass_ok (e1 e2 : expr) : Prop :=

@@ -116,30 +116,6 @@ def store_rel_le (n : Nat) (St : store_ty) (st1 st2 : store) : Prop :=
 def exp_rel_le (n : Nat) (St : store_ty) (T : ty)
     (e1 e2 : expr) (st1 st2 : store) (ctx : effect_ctx) : Prop := True
 
-/-- Transpilation-compat placeholder: step-indexed value relation. -/
-def val_rel_n (n : Nat) (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
-  value v1 ∧ value v2 ∧
-  closed_expr v1 ∧ closed_expr v2 ∧
-  (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)
-
-/-- Transpilation-compat placeholder: step-indexed store relation. -/
-def store_rel_n (n : Nat) (St : store_ty) (st1 st2 : store) : Prop := True
-
-/-- Transpilation-compat placeholder: step-indexed expression relation. -/
-def exp_rel_n (n : Nat) (St : store_ty) (T : ty) (e1 e2 : expr) : Prop := True
-
-/-- Transpilation-compat placeholder: non-indexed value relation. -/
-def val_rel (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
-  ∀ n, val_rel_n n St T v1 v2
-
-/-- Transpilation-compat placeholder: non-indexed store relation. -/
-def store_rel (St : store_ty) (st1 st2 : store) : Prop :=
-  ∀ n, store_rel_n n St st1 st2
-
-/-- Transpilation-compat placeholder: non-indexed expression relation. -/
-def exp_rel (St : store_ty) (T : ty) (e1 e2 : expr) : Prop :=
-  ∀ n, exp_rel_n n St T e1 e2
-
 /-! ## Effect join (for typing) -/
 
 /-- Join of two effects (max by level) -/
@@ -407,5 +383,73 @@ theorem canonical_forms_proof {Γ : type_env} {σ : store_ty} {Δ : security_lev
   | VInr _ _ _ => cases htype
   | VClassify _ _ => cases htype
   | VProve _ hv => cases htype; exact ⟨_, rfl, hv⟩
+
+/-! ## Store Typing Weakening -/
+
+/-- Typing is monotone in the store typing: extending the store preserves typing. -/
+theorem has_type_store_weaken {Γ : type_env} {σ σ' : store_ty} {Δ : security_level}
+    {e : expr} {T : ty} {ε : effect}
+    (htype : has_type Γ σ Δ e T ε) (hext : store_ty_extends σ σ') :
+    has_type Γ σ' Δ e T ε := by
+  induction htype with
+  | T_Unit => exact has_type.T_Unit
+  | T_Bool => exact has_type.T_Bool
+  | T_Int => exact has_type.T_Int
+  | T_String => exact has_type.T_String
+  | T_Loc hlookup => exact has_type.T_Loc (hext _ _ _ hlookup)
+  | T_Var hlookup => exact has_type.T_Var hlookup
+  | T_Lam _ ih => exact has_type.T_Lam (ih hext)
+  | T_App _ _ ih1 ih2 => exact has_type.T_App (ih1 hext) (ih2 hext)
+  | T_Pair _ _ ih1 ih2 => exact has_type.T_Pair (ih1 hext) (ih2 hext)
+  | T_Fst _ ih => exact has_type.T_Fst (ih hext)
+  | T_Snd _ ih => exact has_type.T_Snd (ih hext)
+  | T_Inl _ ih => exact has_type.T_Inl (ih hext)
+  | T_Inr _ ih => exact has_type.T_Inr (ih hext)
+  | T_Case _ _ _ ih1 ih2 ih3 => exact has_type.T_Case (ih1 hext) (ih2 hext) (ih3 hext)
+  | T_If _ _ _ ih1 ih2 ih3 => exact has_type.T_If (ih1 hext) (ih2 hext) (ih3 hext)
+  | T_Let _ _ ih1 ih2 => exact has_type.T_Let (ih1 hext) (ih2 hext)
+  | T_Perform _ ih => exact has_type.T_Perform (ih hext)
+  | T_Handle _ _ ih1 ih2 => exact has_type.T_Handle (ih1 hext) (ih2 hext)
+  | T_Ref _ ih => exact has_type.T_Ref (ih hext)
+  | T_Deref _ ih => exact has_type.T_Deref (ih hext)
+  | T_Assign _ _ ih1 ih2 => exact has_type.T_Assign (ih1 hext) (ih2 hext)
+  | T_Classify _ ih => exact has_type.T_Classify (ih hext)
+  | T_Declassify _ _ hd ih1 ih2 => exact has_type.T_Declassify (ih1 hext) (ih2 hext) hd
+  | T_Prove _ ih => exact has_type.T_Prove (ih hext)
+  | T_Require _ ih => exact has_type.T_Require (ih hext)
+  | T_Grant _ ih => exact has_type.T_Grant (ih hext)
+
+/-! ## Step-Indexed Relational Predicates
+
+These are defined after `has_type` so that `val_rel_n` can include
+typing as a component, matching the Coq originals and enabling
+typing extraction lemmas.
+-/
+
+/-- Step-indexed value relation (includes typing for extraction lemmas). -/
+def val_rel_n (_n : Nat) (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  value v1 ∧ value v2 ∧
+  closed_expr v1 ∧ closed_expr v2 ∧
+  has_type [] St Public v1 T EffectPure ∧
+  has_type [] St Public v2 T EffectPure ∧
+  (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)
+
+/-- Step-indexed store relation (placeholder). -/
+def store_rel_n (_n : Nat) (_St : store_ty) (_st1 _st2 : store) : Prop := True
+
+/-- Step-indexed expression relation (placeholder). -/
+def exp_rel_n (_n : Nat) (_St : store_ty) (_T : ty) (_e1 _e2 : expr) : Prop := True
+
+/-- Non-indexed value relation. -/
+def val_rel (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  ∀ n, val_rel_n n St T v1 v2
+
+/-- Non-indexed store relation. -/
+def store_rel (St : store_ty) (st1 st2 : store) : Prop :=
+  ∀ n, store_rel_n n St st1 st2
+
+/-- Non-indexed expression relation. -/
+def exp_rel (St : store_ty) (T : ty) (e1 e2 : expr) : Prop :=
+  ∀ n, exp_rel_n n St T e1 e2
 
 end RIINA

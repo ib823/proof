@@ -239,16 +239,16 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Theorem/lemma declarations | 9,017 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
-| Sorry count (grep) | 177 | |
+| Theorem/lemma declarations | 9,018 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
+| Sorry count (grep) | 48 | Reduced from 177 via systematic elimination |
 | .lean files | 270 | Most are transpiled, not hand-written |
 | `lake build RIINA` | PASSES | Core files compile: Syntax.lean, Semantics.lean, Typing.lean, Domains/All.lean |
 | Compiled theorems (real) | 33 | Only the core files that `lake build` actually checks |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** 33 theorems actually compiled by Lean. The 9,017 declaration count
+**Honest assessment:** 33 theorems actually compiled by Lean. The 9,018 declaration count
 includes transpiled files that have never been checked by the Lean compiler. The `sorry` count
-of 177 is also from grep — many files with sorry are never compiled.
+of 48 is from grep — reduced from 177 via systematic elimination in core property files.
 
 ### Isabelle/HOL (Tertiary Prover)
 
