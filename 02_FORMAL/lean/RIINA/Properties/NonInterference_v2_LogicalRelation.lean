@@ -288,7 +288,83 @@ theorem val_rel_value_right : ∀ St T v1 v2, val_rel St T v1 v2 → value v2 :=
   intro St T v1 v2 h; exact (h 0).2.1
 
 /-- free_in_subst_rho (matches Coq) -/
-theorem free_in_subst_rho : ∀ x rho e, free_in x (subst_rho rho e) → ∃ y, free_in y e ∧ free_in x (rho y) := by sorry
+theorem free_in_subst_rho : ∀ x rho e, free_in x (subst_rho rho e) → ∃ y, free_in y e ∧ free_in x (rho y) := by
+  intro x rho e
+  induction e generalizing rho with
+  | EVar y => intro h; exact ⟨y, rfl, h⟩
+  | EUnit => intro h; exact absurd h id
+  | EBool _ => intro h; exact absurd h id
+  | EInt _ => intro h; exact absurd h id
+  | EString _ => intro h; exact absurd h id
+  | ELoc _ => intro h; exact absurd h id
+  | EApp e1 e2 ih1 ih2 =>
+    intro h; cases h with
+    | inl h1 => obtain ⟨y, hy, hx⟩ := ih1 h1; exact ⟨y, Or.inl hy, hx⟩
+    | inr h2 => obtain ⟨y, hy, hx⟩ := ih2 h2; exact ⟨y, Or.inr hy, hx⟩
+  | EPair e1 e2 ih1 ih2 =>
+    intro h; cases h with
+    | inl h1 => obtain ⟨y, hy, hx⟩ := ih1 h1; exact ⟨y, Or.inl hy, hx⟩
+    | inr h2 => obtain ⟨y, hy, hx⟩ := ih2 h2; exact ⟨y, Or.inr hy, hx⟩
+  | EFst e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | ESnd e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EInl e T ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EInr e T ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EClassify e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EProve e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EDeref e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | ERef e sl ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EPerform eff e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | ERequire eff e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EGrant eff e ih => intro h; obtain ⟨y, hy, hx⟩ := ih h; exact ⟨y, hy, hx⟩
+  | EAssign e1 e2 ih1 ih2 =>
+    intro h; cases h with
+    | inl h1 => obtain ⟨y, hy, hx⟩ := ih1 h1; exact ⟨y, Or.inl hy, hx⟩
+    | inr h2 => obtain ⟨y, hy, hx⟩ := ih2 h2; exact ⟨y, Or.inr hy, hx⟩
+  | EDeclassify e1 e2 ih1 ih2 =>
+    intro h; cases h with
+    | inl h1 => obtain ⟨y, hy, hx⟩ := ih1 h1; exact ⟨y, Or.inl hy, hx⟩
+    | inr h2 => obtain ⟨y, hy, hx⟩ := ih2 h2; exact ⟨y, Or.inr hy, hx⟩
+  | EIf e1 e2 e3 ih1 ih2 ih3 =>
+    intro h; rcases h with h1 | h2 | h3
+    · obtain ⟨y, hy, hx⟩ := ih1 h1; exact ⟨y, Or.inl hy, hx⟩
+    · obtain ⟨y, hy, hx⟩ := ih2 h2; exact ⟨y, Or.inr (Or.inl hy), hx⟩
+    · obtain ⟨y, hy, hx⟩ := ih3 h3; exact ⟨y, Or.inr (Or.inr hy), hx⟩
+  | ELam y T body ih =>
+    intro ⟨hne, hfree⟩
+    obtain ⟨z, hz, hx⟩ := ih hfree
+    simp only [rho_shadow] at hx
+    split at hx
+    · rename_i heq; subst heq; simp [free_in] at hx; exact absurd hx.symm hne
+    · exact ⟨z, ⟨(fun heq => ‹z ≠ y› heq), hz⟩, hx⟩
+  | ELet y e1 e2 ih1 ih2 =>
+    intro h; rcases h with h1 | ⟨hne, h2⟩
+    · obtain ⟨z, hz, hx⟩ := ih1 h1; exact ⟨z, Or.inl hz, hx⟩
+    · obtain ⟨z, hz, hx⟩ := ih2 h2
+      simp only [rho_shadow] at hx
+      split at hx
+      · rename_i heq; subst heq; simp [free_in] at hx; exact absurd hx.symm hne
+      · exact ⟨z, Or.inr ⟨(fun heq => ‹z ≠ y› heq), hz⟩, hx⟩
+  | ECase e0 y1 e1 y2 e2 ih ih1 ih2 =>
+    intro hfr; rcases hfr with h0 | ⟨hne1, h1⟩ | ⟨hne2, h2⟩
+    · obtain ⟨z, hz, hx⟩ := ih h0; exact ⟨z, Or.inl hz, hx⟩
+    · obtain ⟨z, hz, hx⟩ := ih1 h1
+      simp only [rho_shadow] at hx
+      split at hx
+      · rename_i heq; subst heq; simp [free_in] at hx; exact absurd hx.symm hne1
+      · exact ⟨z, Or.inr (Or.inl ⟨(fun heq => ‹z ≠ y1› heq), hz⟩), hx⟩
+    · obtain ⟨z, hz, hx⟩ := ih2 h2
+      simp only [rho_shadow] at hx
+      split at hx
+      · rename_i heq; subst heq; simp [free_in] at hx; exact absurd hx.symm hne2
+      · exact ⟨z, Or.inr (Or.inr ⟨(fun heq => ‹z ≠ y2› heq), hz⟩), hx⟩
+  | EHandle e0 y hdl ih0 ihdl =>
+    intro hfr; rcases hfr with h0 | ⟨hne, hh⟩
+    · obtain ⟨z, hz, hx⟩ := ih0 h0; exact ⟨z, Or.inl hz, hx⟩
+    · obtain ⟨z, hz, hx⟩ := ihdl hh
+      simp only [rho_shadow] at hx
+      split at hx
+      · rename_i heq; subst heq; simp [free_in] at hx; exact absurd hx.symm hne
+      · exact ⟨z, Or.inr ⟨(fun heq => ‹z ≠ y› heq), hz⟩, hx⟩
 
 -- Store monotonicity for env_rel_n: forward-weakening from St to St'.
 /-- env_rel_n_mono_store (matches Coq) -/
@@ -307,9 +383,81 @@ theorem env_rel_mono_store : ∀ St St' G rho1 rho2, store_ty_extends St St' →
 theorem env_typed_lookup : ∀ St Γ rho x T, env_typed St Γ rho → lookup x Γ = Some T → value (rho x) ∧ has_type nil St Public (rho x) T EffectPure := by
   intro St Γ rho x T het hlookup; exact het x T hlookup
 
+-- Helper: free variables must appear in the typing context.
+private theorem free_in_context : ∀ Γ St Δ e T ε, has_type Γ St Δ e T ε →
+    ∀ x, free_in x e → ∃ Tx, lookup x Γ = Some Tx := by
+  intro Γ St Δ e T ε h
+  induction h with
+  | T_Unit => intro x hf; exact absurd hf id
+  | T_Bool => intro x hf; exact absurd hf id
+  | T_Int => intro x hf; exact absurd hf id
+  | T_String => intro x hf; exact absurd hf id
+  | T_Loc _ => intro x hf; exact absurd hf id
+  | T_Var hlookup => intro x hf; exact ⟨_, by rwa [hf]⟩
+  | T_Lam _ ih =>
+    intro x ⟨hne, hf⟩
+    have ⟨Tx, hlk⟩ := ih x hf
+    simp [lookup] at hlk
+    by_cases hxy : String.eqb x _ = true
+    · have heq : x = _ := by cases h : String.eqb x _ <;> simp_all [String.eqb_eq]
+      exact absurd heq hne
+    · simp [hxy] at hlk; exact ⟨Tx, hlk⟩
+  | T_App _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Pair _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Fst _ ih => exact ih
+  | T_Snd _ ih => exact ih
+  | T_Inl _ ih => exact ih
+  | T_Inr _ ih => exact ih
+  | T_Case _ _ _ ih ih1 ih2 =>
+    intro x hf
+    rcases hf with hf0 | ⟨hne1, hf1⟩ | ⟨hne2, hf2⟩
+    · exact ih x hf0
+    · have ⟨Tx, hlk⟩ := ih1 x hf1
+      simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne1
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+    · have ⟨Tx, hlk⟩ := ih2 x hf2
+      simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne2
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+  | T_If _ _ _ ih1 ih2 ih3 =>
+    intro x hf; rcases hf with hf | hf | hf; exact ih1 x hf; exact ih2 x hf; exact ih3 x hf
+  | T_Let _ _ ih1 ih2 =>
+    intro x hf
+    rcases hf with hf1 | ⟨hne, hf2⟩
+    · exact ih1 x hf1
+    · have ⟨Tx, hlk⟩ := ih2 x hf2
+      simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+  | T_Perform _ ih => exact ih
+  | T_Handle _ _ ih1 ih2 =>
+    intro x hf
+    rcases hf with hf0 | ⟨hne, hfh⟩
+    · exact ih1 x hf0
+    · have ⟨Tx, hlk⟩ := ih2 x hfh
+      simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+  | T_Ref _ ih => exact ih
+  | T_Deref _ ih => exact ih
+  | T_Assign _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Classify _ ih => exact ih
+  | T_Declassify _ _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Prove _ ih => exact ih
+  | T_Require _ ih => exact ih
+  | T_Grant _ ih => exact ih
+
 -- Typing in empty context implies closed.
 /-- typing_nil_closed (matches Coq) -/
-theorem typing_nil_closed : ∀ St Δ e T ε, has_type nil St Δ e T ε → closed_expr e := by sorry
+theorem typing_nil_closed : ∀ St Δ e T ε, has_type nil St Δ e T ε → closed_expr e := by
+  intro St Δ e T ε h x hfree
+  have ⟨Tx, hlk⟩ := free_in_context nil St Δ e T ε h x hfree
+  simp [lookup] at hlk
 
 /-- env_typed_closed (matches Coq) -/
 theorem env_typed_closed : ∀ St Γ rho x T, env_typed St Γ rho → lookup x Γ = Some T → closed_expr (rho x) := by
@@ -355,16 +503,177 @@ theorem value_subst_rho : ∀ rho v, value v → value (subst_rho rho v) := by
 -- Lemma: declass_ok is preserved by subst_rho.
 --     PROVEN (was Axiom). Uses value_subst_rho.
 /-- declass_ok_subst_rho (matches Coq) -/
-theorem declass_ok_subst_rho : ∀ rho e1 e2, declass_ok e1 e2 → declass_ok (subst_rho rho e1) (subst_rho rho e2) := by sorry
+theorem declass_ok_subst_rho : ∀ rho e1 e2, declass_ok e1 e2 → declass_ok (subst_rho rho e1) (subst_rho rho e2) := by
+  intro rho e1 e2 ⟨v, hval, heq1, heq2⟩
+  subst heq1; subst heq2
+  exact ⟨subst_rho rho v, value_subst_rho rho v hval, rfl, rfl⟩
+
+-- Context weakening: typing is preserved when the context is extended.
+private theorem has_type_context_weaken : ∀ Γ1 Γ2 St Δ e T ε,
+    has_type Γ1 St Δ e T ε →
+    (∀ x T, lookup x Γ1 = Some T → lookup x Γ2 = Some T) →
+    has_type Γ2 St Δ e T ε := by
+  intro Γ1 Γ2 St Δ e T ε h hsub
+  induction h generalizing Γ2 with
+  | T_Unit => exact has_type.T_Unit
+  | T_Bool => exact has_type.T_Bool
+  | T_Int => exact has_type.T_Int
+  | T_String => exact has_type.T_String
+  | T_Loc hlookup => exact has_type.T_Loc hlookup
+  | T_Var hlookup => exact has_type.T_Var (hsub _ _ hlookup)
+  | T_Lam _ ih =>
+    apply has_type.T_Lam; apply ih; intro z Tz hlk
+    simp only [lookup, type_env_lookup] at hlk ⊢; split at hlk <;> [exact hlk; exact hsub _ _ hlk]
+  | T_App _ _ ih1 ih2 => exact has_type.T_App (ih1 hsub) (ih2 hsub)
+  | T_Pair _ _ ih1 ih2 => exact has_type.T_Pair (ih1 hsub) (ih2 hsub)
+  | T_Fst _ ih => exact has_type.T_Fst (ih hsub)
+  | T_Snd _ ih => exact has_type.T_Snd (ih hsub)
+  | T_Inl _ ih => exact has_type.T_Inl (ih hsub)
+  | T_Inr _ ih => exact has_type.T_Inr (ih hsub)
+  | T_Case _ _ _ ih ih1 ih2 =>
+    apply has_type.T_Case (ih hsub)
+    · apply ih1; intro z Tz hlk
+      simp only [lookup, type_env_lookup] at hlk ⊢; split at hlk <;> [exact hlk; exact hsub _ _ hlk]
+    · apply ih2; intro z Tz hlk
+      simp only [lookup, type_env_lookup] at hlk ⊢; split at hlk <;> [exact hlk; exact hsub _ _ hlk]
+  | T_If _ _ _ ih1 ih2 ih3 => exact has_type.T_If (ih1 hsub) (ih2 hsub) (ih3 hsub)
+  | T_Let _ _ ih1 ih2 =>
+    apply has_type.T_Let (ih1 hsub); apply ih2; intro z Tz hlk
+    simp only [lookup, type_env_lookup] at hlk ⊢; split at hlk <;> [exact hlk; exact hsub _ _ hlk]
+  | T_Perform _ ih => exact has_type.T_Perform (ih hsub)
+  | T_Handle _ _ ih1 ih2 =>
+    apply has_type.T_Handle (ih1 hsub); apply ih2; intro z Tz hlk
+    simp only [lookup, type_env_lookup] at hlk ⊢; split at hlk <;> [exact hlk; exact hsub _ _ hlk]
+  | T_Ref _ ih => exact has_type.T_Ref (ih hsub)
+  | T_Deref _ ih => exact has_type.T_Deref (ih hsub)
+  | T_Assign _ _ ih1 ih2 => exact has_type.T_Assign (ih1 hsub) (ih2 hsub)
+  | T_Classify _ ih => exact has_type.T_Classify (ih hsub)
+  | T_Declassify _ _ hd ih1 ih2 => exact has_type.T_Declassify (ih1 hsub) (ih2 hsub) hd
+  | T_Prove _ ih => exact has_type.T_Prove (ih hsub)
+  | T_Require _ ih => exact has_type.T_Require (ih hsub)
+  | T_Grant _ ih => exact has_type.T_Grant (ih hsub)
 
 -- The correct formulation: substitution reduces the typing context.
 /-- subst_rho_typing_general (matches Coq) -/
-theorem subst_rho_typing_general : ∀ Γ Γ' St Δ e T ε rho, has_type Γ St Δ e T ε →  (∀ x Tx, lookup x Γ = Some Tx → lookup x Γ' = None → value (rho x) ∧ has_type nil St Δ (rho x) Tx EffectPure) →  (∀ x, lookup x Γ' ≠ None → rho x = EVar x) →  (∀ x Tx, lookup x Γ' = Some Tx → lookup x Γ = Some Tx) → has_type Γ' St Δ (subst_rho rho e) T ε := by sorry
+theorem subst_rho_typing_general : ∀ Γ Γ' St Δ e T ε rho, has_type Γ St Δ e T ε →  (∀ x Tx, lookup x Γ = Some Tx → lookup x Γ' = None → value (rho x) ∧ has_type nil St Δ (rho x) Tx EffectPure) →  (∀ x, lookup x Γ' ≠ None → rho x = EVar x) →  (∀ x Tx, lookup x Γ' = Some Tx → lookup x Γ = Some Tx) → has_type Γ' St Δ (subst_rho rho e) T ε := by
+  intro Γ Γ' St Δ e T ε rho htype h1 h2 h3
+  induction htype generalizing Γ' rho with
+  | T_Unit => exact has_type.T_Unit
+  | T_Bool => exact has_type.T_Bool
+  | T_Int => exact has_type.T_Int
+  | T_String => exact has_type.T_String
+  | T_Loc hlookup => exact has_type.T_Loc hlookup
+  | T_Var hlookup =>
+    show has_type Γ' St Δ (rho _) _ _
+    by_cases hx : lookup _ Γ' = none
+    · have ⟨_, hty⟩ := h1 _ _ hlookup hx
+      exact has_type_context_weaken _ _ _ _ _ _ _ hty (fun _ _ h => by simp [lookup] at h)
+    · have ⟨Tx, hlk'⟩ : ∃ Tx, lookup _ Γ' = Some Tx := by
+        cases h : lookup _ Γ' <;> [exact absurd rfl hx; exact ⟨_, rfl⟩]
+      have hrho := h2 _ (by rw [hlk']; exact Option.some_ne_none _)
+      rw [hrho]; have := h3 _ _ hlk'; rw [hlookup] at this
+      exact has_type.T_Var (by rw [hlk']; congr; exact Option.some.inj this.symm)
+  | T_Lam _ ih =>
+    show has_type Γ' St Δ (ELam _ _ (subst_rho (fun y => if y = _ then EVar y else rho y) _)) _ _
+    apply has_type.T_Lam
+    apply ih
+    · intro z Tz hlk hne
+      simp only [lookup, type_env_lookup] at hlk hne
+      split at hlk
+      · rename_i heq; subst heq; simp at hne
+      · rename_i hzne; simp only [rho_shadow]; rw [if_neg hzne]
+        simp only [lookup, type_env_lookup] at hne; rw [if_neg hzne] at hne
+        exact h1 z Tz hlk hne
+    · intro z hne; simp only [rho_shadow]
+      simp only [lookup, type_env_lookup] at hne
+      split
+      · rfl
+      · rename_i hzne; rw [if_neg hzne] at hne; exact h2 z hne
+    · intro z Tz hlk
+      simp only [lookup, type_env_lookup] at hlk ⊢
+      split at hlk
+      · exact hlk
+      · exact h3 z Tz hlk
+  | T_App _ _ ih1 ih2 =>
+    exact has_type.T_App (ih1 h1 h2 h3) (ih2 h1 h2 h3)
+  | T_Pair _ _ ih1 ih2 =>
+    exact has_type.T_Pair (ih1 h1 h2 h3) (ih2 h1 h2 h3)
+  | T_Fst _ ih => exact has_type.T_Fst (ih h1 h2 h3)
+  | T_Snd _ ih => exact has_type.T_Snd (ih h1 h2 h3)
+  | T_Inl _ ih => exact has_type.T_Inl (ih h1 h2 h3)
+  | T_Inr _ ih => exact has_type.T_Inr (ih h1 h2 h3)
+  | T_Case _ _ _ ih ih1 ih2 =>
+    apply has_type.T_Case (ih h1 h2 h3)
+    · apply ih1
+      · intro z Tz hlk hne
+        simp only [lookup, type_env_lookup] at hlk hne
+        split at hlk
+        · rename_i heq; subst heq; simp at hne
+        · rename_i hzne; simp only [rho_shadow]; rw [if_neg hzne]
+          simp only [lookup, type_env_lookup] at hne; rw [if_neg hzne] at hne; exact h1 z Tz hlk hne
+      · intro z hne; simp only [rho_shadow]; simp only [lookup, type_env_lookup] at hne
+        split; rfl; rename_i hzne; rw [if_neg hzne] at hne; exact h2 z hne
+      · intro z Tz hlk; simp only [lookup, type_env_lookup] at hlk ⊢
+        split at hlk; exact hlk; exact h3 z Tz hlk
+    · apply ih2
+      · intro z Tz hlk hne
+        simp only [lookup, type_env_lookup] at hlk hne
+        split at hlk
+        · rename_i heq; subst heq; simp at hne
+        · rename_i hzne; simp only [rho_shadow]; rw [if_neg hzne]
+          simp only [lookup, type_env_lookup] at hne; rw [if_neg hzne] at hne; exact h1 z Tz hlk hne
+      · intro z hne; simp only [rho_shadow]; simp only [lookup, type_env_lookup] at hne
+        split; rfl; rename_i hzne; rw [if_neg hzne] at hne; exact h2 z hne
+      · intro z Tz hlk; simp only [lookup, type_env_lookup] at hlk ⊢
+        split at hlk; exact hlk; exact h3 z Tz hlk
+  | T_If _ _ _ ih1 ih2 ih3 =>
+    exact has_type.T_If (ih1 h1 h2 h3) (ih2 h1 h2 h3) (ih3 h1 h2 h3)
+  | T_Let _ _ ih1 ih2 =>
+    apply has_type.T_Let (ih1 h1 h2 h3)
+    apply ih2
+    · intro z Tz hlk hne
+      simp only [lookup, type_env_lookup] at hlk hne
+      split at hlk
+      · rename_i heq; subst heq; simp at hne
+      · rename_i hzne; simp only [rho_shadow]; rw [if_neg hzne]
+        simp only [lookup, type_env_lookup] at hne; rw [if_neg hzne] at hne; exact h1 z Tz hlk hne
+    · intro z hne; simp only [rho_shadow]; simp only [lookup, type_env_lookup] at hne
+      split; rfl; rename_i hzne; rw [if_neg hzne] at hne; exact h2 z hne
+    · intro z Tz hlk; simp only [lookup, type_env_lookup] at hlk ⊢
+      split at hlk; exact hlk; exact h3 z Tz hlk
+  | T_Perform _ ih => exact has_type.T_Perform (ih h1 h2 h3)
+  | T_Handle _ _ ih1 ih2 =>
+    apply has_type.T_Handle (ih1 h1 h2 h3)
+    apply ih2
+    · intro z Tz hlk hne
+      simp only [lookup, type_env_lookup] at hlk hne
+      split at hlk
+      · rename_i heq; subst heq; simp at hne
+      · rename_i hzne; simp only [rho_shadow]; rw [if_neg hzne]
+        simp only [lookup, type_env_lookup] at hne; rw [if_neg hzne] at hne; exact h1 z Tz hlk hne
+    · intro z hne; simp only [rho_shadow]; simp only [lookup, type_env_lookup] at hne
+      split; rfl; rename_i hzne; rw [if_neg hzne] at hne; exact h2 z hne
+    · intro z Tz hlk; simp only [lookup, type_env_lookup] at hlk ⊢
+      split at hlk; exact hlk; exact h3 z Tz hlk
+  | T_Ref _ ih => exact has_type.T_Ref (ih h1 h2 h3)
+  | T_Deref _ ih => exact has_type.T_Deref (ih h1 h2 h3)
+  | T_Assign _ _ ih1 ih2 => exact has_type.T_Assign (ih1 h1 h2 h3) (ih2 h1 h2 h3)
+  | T_Classify _ ih => exact has_type.T_Classify (ih h1 h2 h3)
+  | T_Declassify _ _ hd ih1 ih2 =>
+    exact has_type.T_Declassify (ih1 h1 h2 h3) (ih2 h1 h2 h3) hd
+  | T_Prove _ ih => exact has_type.T_Prove (ih h1 h2 h3)
+  | T_Require _ ih => exact has_type.T_Require (ih h1 h2 h3)
+  | T_Grant _ ih => exact has_type.T_Grant (ih h1 h2 h3)
 
 -- Corollary: Full substitution to empty context.
 --     Note: env_typed provides typing at Public level, so we specialize to Public.
 /-- subst_rho_preserves_typing (matches Coq) -/
-theorem subst_rho_preserves_typing : ∀ Γ St e T ε rho, has_type Γ St Public e T ε → env_typed St Γ rho → has_type nil St Public (subst_rho rho e) T ε := by sorry
+theorem subst_rho_preserves_typing : ∀ Γ St e T ε rho, has_type Γ St Public e T ε → env_typed St Γ rho → has_type nil St Public (subst_rho rho e) T ε := by
+  intro Γ St e T ε rho htype henv
+  exact subst_rho_typing_general Γ nil St Public e T ε rho htype
+    (fun x Tx hlk _ => henv x Tx hlk)
+    (fun _ h => absurd rfl h)
+    (fun _ _ h => by simp [lookup] at h)
 
 -- Bridge: extract env_typed from env_rel using val_rel_n_typing.
 --     env_rel gives val_rel_n at every step; val_rel_n_typing extracts typing.
@@ -383,7 +692,26 @@ theorem env_rel_implies_env_typed : ∀ St Γ rho1 rho2, env_rel St Γ rho1 rho2
 --     Given G |- ELam x T1 e : TFn T1 T2 e and env_rel on G,
 --     the substituted lambda has_type nil St Public ... (TFn T1 T2 e) EffectPure.
 /-- lam_typing_from_env_rel (matches Coq) -/
-theorem lam_typing_from_env_rel : ∀ Γ St x T1 T2 e ε rho1 rho2, has_type ((x, T1) :: Γ) St Public e T2 ε → env_rel St Γ rho1 rho2 → has_type nil St Public (ELam x T1 (subst_rho (rho_shadow rho1 x) e)) (TFn T1 T2 ε) EffectPure ∧ has_type nil St Public (ELam x T1 (subst_rho (rho_shadow rho2 x) e)) (TFn T1 T2 ε) EffectPure := by sorry
+theorem lam_typing_from_env_rel : ∀ Γ St x T1 T2 e ε rho1 rho2, has_type ((x, T1) :: Γ) St Public e T2 ε → env_rel St Γ rho1 rho2 → has_type nil St Public (ELam x T1 (subst_rho (rho_shadow rho1 x) e)) (TFn T1 T2 ε) EffectPure ∧ has_type nil St Public (ELam x T1 (subst_rho (rho_shadow rho2 x) e)) (TFn T1 T2 ε) EffectPure := by
+  intro Γ St x T1 T2 e ε rho1 rho2 htype hrel
+  have ⟨henv1, henv2⟩ := env_rel_implies_env_typed St Γ rho1 rho2 hrel
+  constructor <;> {
+    apply has_type.T_Lam
+    apply subst_rho_typing_general ((x, T1) :: Γ) ((x, T1) :: nil) St Public e T2 ε
+    · exact htype
+    · intro z Tz hlk hne
+      simp only [lookup, type_env_lookup] at hlk hne
+      split at hlk
+      · rename_i h; subst h; simp at hne
+      · rename_i hzne; simp only [rho_shadow]; rw [if_neg hzne]
+        simp only [lookup, type_env_lookup] at hne; rw [if_neg hzne] at hne
+        simp at hne; first | exact henv1 z Tz hlk | exact henv2 z Tz hlk
+    · intro z hne; simp only [rho_shadow]
+      simp only [lookup, type_env_lookup] at hne
+      split; rfl; rename_i hzne; rw [if_neg hzne] at hne; simp at hne
+    · intro z Tz hlk; simp only [lookup, type_env_lookup] at hlk ⊢
+      split at hlk; exact hlk; simp at hlk
+  }
 
 /-- val_rel_at_type_store_weaken (matches Coq) -/
 theorem val_rel_at_type_store_weaken : ∀ T St St' sr vr sr2 svr v1 v2, store_ty_extends St St' → val_rel_at_type St sr vr sr2 svr T v1 v2 → val_rel_at_type St' sr vr sr2 svr T v1 v2 := by
@@ -440,6 +768,67 @@ theorem store_max_update_eq : ∀ st1 st2 l v1 v2, store_max st1 = store_max st2
   intro st1 st2 l v1 v2 heq
   rw [store_max_update_single, store_max_update_single, heq]
 
+-- Store operation helpers for alloc/update proofs.
+private theorem store_ty_lookup_update_eq : ∀ (St : store_ty) (l : loc) (T : ty) (sl : security_level),
+    store_ty_lookup l (store_ty_update l T sl St) = Some (T, sl) := by
+  intro St l T sl
+  induction St with
+  | nil => simp [store_ty_update, store_ty_lookup]
+  | cons entry tl ih =>
+    simp only [store_ty_update]; split
+    · simp [store_ty_lookup]
+    · rename_i hne; simp only [store_ty_lookup]; split
+      · exact absurd ‹_› hne
+      · exact ih
+
+private theorem store_ty_lookup_update_neq : ∀ (St : store_ty) (l l' : loc) (T : ty) (sl : security_level),
+    l ≠ l' → store_ty_lookup l (store_ty_update l' T sl St) = store_ty_lookup l St := by
+  intro St l l' T sl hne
+  induction St with
+  | nil => simp [store_ty_update, store_ty_lookup, Ne.symm hne]
+  | cons entry tl ih =>
+    simp only [store_ty_update]; split
+    · rename_i heq; simp only [store_ty_lookup]; split
+      · rename_i heq2; rw [← heq] at heq2; exact absurd heq2 hne
+      · rfl
+    · simp only [store_ty_lookup]; split <;> [rfl; exact ih]
+
+private theorem store_lookup_update_eq : ∀ (st : store) (l : loc) (v : expr),
+    store_lookup l (store_update l v st) = Some v := by
+  intro st l v
+  induction st with
+  | nil => simp [store_update, store_lookup]
+  | cons entry tl ih =>
+    simp only [store_update]; split
+    · simp [store_lookup]
+    · rename_i hne; simp only [store_lookup]; split
+      · exact absurd ‹_› hne
+      · exact ih
+
+private theorem store_lookup_update_neq : ∀ (st : store) (l l' : loc) (v : expr),
+    l ≠ l' → store_lookup l (store_update l' v st) = store_lookup l st := by
+  intro st l l' v hne
+  induction st with
+  | nil =>
+    simp [store_update, store_lookup]
+    have : ¬(l == l' = true) := fun h => hne (eq_of_beq h)
+    cases h : (l == l'); · rfl; · exact absurd h (by simp [this])
+  | cons entry tl ih =>
+    simp only [store_update]; split
+    · rename_i heq; simp only [store_lookup]; split
+      · rename_i heq2
+        have := eq_of_beq heq2; have := eq_of_beq heq
+        exact absurd (this.symm ▸ ‹l = _›) hne
+      · rfl
+    · simp only [store_lookup]; split <;> [rfl; exact ih]
+
+private theorem store_ty_extends_update_fresh : ∀ (St : store_ty) (l : loc) (T : ty) (sl : security_level),
+    store_ty_lookup l St = None → store_ty_extends St (store_ty_update l T sl St) := by
+  intro St l T sl hfresh l' T' sl' hlk
+  by_cases h : l' = l
+  · subst h; rw [hfresh] at hlk; exact Option.noConfusion hlk
+  · rwa [store_ty_lookup_update_neq St l' l T sl h]
+
 -- Helper: store_rel_n extended with a fresh location.
 --     If the existing store_rel_n holds, and we add the same fresh location
 --     to both stores with related values, the extended relation holds.
@@ -450,7 +839,22 @@ theorem store_rel_n_alloc_fresh : ∀ n St st1 st2 loc T l v1 v2, store_rel_n n 
 
 -- Helper: store_vals_rel extended with a fresh location.
 /-- store_vals_rel_alloc_fresh (matches Coq) -/
-theorem store_vals_rel_alloc_fresh : ∀ n St st1 st2 loc T l v1 v2, store_vals_rel n St st1 st2 → store_ty_lookup loc St = None → val_rel_n n (store_ty_update loc T l St) T v1 v2 → store_vals_rel n (store_ty_update loc T l St) (store_update loc v1 st1) (store_update loc v2 st2) := by sorry
+theorem store_vals_rel_alloc_fresh : ∀ n St st1 st2 loc T l v1 v2, store_vals_rel n St st1 st2 → store_ty_lookup loc St = None → val_rel_n n (store_ty_update loc T l St) T v1 v2 → store_vals_rel n (store_ty_update loc T l St) (store_update loc v1 st1) (store_update loc v2 st2) := by
+  intro n St st1 st2 loc T l v1 v2 hsvr hfresh hvr l' T' sl' hlk
+  by_cases h : l' = loc
+  · -- l' = loc: the fresh location
+    subst h; rw [store_ty_lookup_update_eq] at hlk
+    have ⟨hT, hsl⟩ := Option.some.inj hlk
+    subst hT; subst hsl
+    exact ⟨v1, v2, store_lookup_update_eq st1 loc v1, store_lookup_update_eq st2 loc v2, hvr⟩
+  · -- l' ≠ loc: existing location
+    rw [store_ty_lookup_update_neq St l' loc T l h] at hlk
+    have ⟨w1, w2, hl1, hl2, hvw⟩ := hsvr l' T' sl' hlk
+    refine ⟨w1, w2, ?_, ?_, ?_⟩
+    · rwa [store_lookup_update_neq st1 l' loc v1 h]
+    · rwa [store_lookup_update_neq st2 l' loc v2 h]
+    · exact val_rel_n_store_weaken n St (store_ty_update loc T l St) T' w1 w2
+        (store_ty_extends_update_fresh St loc T l hfresh) hvw
 
 -- val_rel_n extracts val_rel_at_type_fo for FO types at any step.
 --     Uses qualified NonInterference_v2.first_order_type to match the
@@ -462,7 +866,21 @@ theorem val_rel_n_fo_extract : ∀ n St T v1 v2, val_rel_n n St T v1 v2 → NonI
 
 -- Helper: stores_agree_low_fo extended with a fresh location.
 /-- stores_agree_low_fo_alloc_fresh (matches Coq) -/
-theorem stores_agree_low_fo_alloc_fresh : ∀ St st1 st2 loc T l v1 v2, stores_agree_low_fo St st1 st2 → store_ty_lookup loc St = None → (NonInterference_v2.first_order_type T = true → is_low l → val_rel_at_type_fo T v1 v2) → stores_agree_low_fo (store_ty_update loc T l St) (store_update loc v1 st1) (store_update loc v2 st2) := by sorry
+theorem stores_agree_low_fo_alloc_fresh : ∀ St st1 st2 loc T l v1 v2, stores_agree_low_fo St st1 st2 → store_ty_lookup loc St = None → (NonInterference_v2.first_order_type T = true → is_low l → val_rel_at_type_fo T v1 v2) → stores_agree_low_fo (store_ty_update loc T l St) (store_update loc v1 st1) (store_update loc v2 st2) := by
+  intro St st1 st2 loc T l v1 v2 hagree hfresh hnew l' T' sl' hlk hfo hlow w1 w2 hl1 hl2
+  by_cases h : l' = loc
+  · -- Fresh location
+    subst h; rw [store_ty_lookup_update_eq] at hlk
+    have ⟨hT, hsl⟩ := Option.some.inj hlk; subst hT; subst hsl
+    rw [store_lookup_update_eq] at hl1; rw [store_lookup_update_eq] at hl2
+    have := Option.some.inj hl1; have := Option.some.inj hl2
+    subst ‹w1 = v1›; subst ‹w2 = v2›
+    exact hnew hfo hlow
+  · -- Existing location
+    rw [store_ty_lookup_update_neq St l' loc T l h] at hlk
+    rw [store_lookup_update_neq st1 l' loc v1 h] at hl1
+    rw [store_lookup_update_neq st2 l' loc v2 h] at hl2
+    exact hagree l' T' sl' hlk hfo hlow w1 w2 hl1 hl2
 
 -- Helper: store_rel_n preserved by updating an existing location.
 --     Unlike store_rel_n_alloc_fresh which adds a NEW location,
@@ -473,11 +891,34 @@ theorem store_rel_n_update_existing : ∀ n St st1 st2 loc T l v1 v2, store_rel_
 
 -- Helper: store_vals_rel preserved by updating an existing location.
 /-- store_vals_rel_update_existing (matches Coq) -/
-theorem store_vals_rel_update_existing : ∀ n St st1 st2 loc T l v1 v2, store_vals_rel n St st1 st2 → store_ty_lookup loc St = Some (T, l) → val_rel_n n St T v1 v2 → store_vals_rel n St (store_update loc v1 st1) (store_update loc v2 st2) := by sorry
+theorem store_vals_rel_update_existing : ∀ n St st1 st2 loc T l v1 v2, store_vals_rel n St st1 st2 → store_ty_lookup loc St = Some (T, l) → val_rel_n n St T v1 v2 → store_vals_rel n St (store_update loc v1 st1) (store_update loc v2 st2) := by
+  intro n St st1 st2 loc T l v1 v2 hsvr hexists hvr l' T' sl' hlk
+  by_cases h : l' = loc
+  · -- Same location: use the new values
+    subst h; rw [hexists] at hlk
+    have ⟨hT, hsl⟩ := Option.some.inj hlk; subst hT; subst hsl
+    exact ⟨v1, v2, store_lookup_update_eq st1 loc v1, store_lookup_update_eq st2 loc v2, hvr⟩
+  · -- Different location: use existing values
+    have ⟨w1, w2, hl1, hl2, hvw⟩ := hsvr l' T' sl' hlk
+    exact ⟨w1, w2, by rwa [store_lookup_update_neq st1 l' loc v1 h],
+                      by rwa [store_lookup_update_neq st2 l' loc v2 h], hvw⟩
 
 -- Helper: stores_agree_low_fo preserved by updating an existing location.
 /-- stores_agree_low_fo_update_existing (matches Coq) -/
-theorem stores_agree_low_fo_update_existing : ∀ St st1 st2 loc T l v1 v2, stores_agree_low_fo St st1 st2 → store_ty_lookup loc St = Some (T, l) → (NonInterference_v2.first_order_type T = true → is_low l → val_rel_at_type_fo T v1 v2) → stores_agree_low_fo St (store_update loc v1 st1) (store_update loc v2 st2) := by sorry
+theorem stores_agree_low_fo_update_existing : ∀ St st1 st2 loc T l v1 v2, stores_agree_low_fo St st1 st2 → store_ty_lookup loc St = Some (T, l) → (NonInterference_v2.first_order_type T = true → is_low l → val_rel_at_type_fo T v1 v2) → stores_agree_low_fo St (store_update loc v1 st1) (store_update loc v2 st2) := by
+  intro St st1 st2 loc T l v1 v2 hagree hexists hnew l' T' sl' hlk hfo hlow w1 w2 hl1 hl2
+  by_cases h : l' = loc
+  · -- Same location
+    subst h; rw [hexists] at hlk
+    have ⟨hT, hsl⟩ := Option.some.inj hlk; subst hT; subst hsl
+    rw [store_lookup_update_eq] at hl1; rw [store_lookup_update_eq] at hl2
+    have := Option.some.inj hl1; have := Option.some.inj hl2
+    subst ‹w1 = v1›; subst ‹w2 = v2›
+    exact hnew hfo hlow
+  · -- Different location
+    rw [store_lookup_update_neq st1 l' loc v1 h] at hl1
+    rw [store_lookup_update_neq st2 l' loc v2 h] at hl2
+    exact hagree l' T' sl' hlk hfo hlow w1 w2 hl1 hl2
 
 -- LEMMA: Higher-order step-to-limit conversion -- PROVEN.
 --     Strategy: from val_rel_n (S n), extract typing via val_rel_n_typing,
@@ -552,10 +993,90 @@ theorem env_rel_closed_right : ∀ St G rho1 rho2, env_rel St G rho1 rho2 → rh
   exact (env_rel_rho_closed St G rho1 rho2 x T hrel hlookup).2
 
 /-- closed_except_subst_rho_shadow (matches Coq) -/
-theorem closed_except_subst_rho_shadow : ∀ G St Δ rho x e T1 T2 eps, has_type ((x, T1) :: G) St Δ e T2 eps → rho_closed_on G rho → closed_except x (subst_rho (rho_shadow rho x) e) := by sorry
+theorem closed_except_subst_rho_shadow : ∀ G St Δ rho x e T1 T2 eps, has_type ((x, T1) :: G) St Δ e T2 eps → rho_closed_on G rho → closed_except x (subst_rho (rho_shadow rho x) e) := by
+  intro G St Δ rho x e T1 T2 eps htype hclosed y hne hfree
+  obtain ⟨z, hfz, hfy⟩ := free_in_subst_rho y (rho_shadow rho x) e hfree
+  simp only [rho_shadow] at hfy
+  split at hfy
+  · rename_i heq; subst heq; simp [free_in] at hfy; exact hne hfy.symm
+  · rename_i hzne
+    have ⟨Tz, hlk⟩ := free_in_context _ _ _ _ _ _ htype z hfz
+    simp [lookup] at hlk
+    split at hlk
+    · rename_i heq; subst heq; exact absurd rfl hzne
+    · exact hclosed z Tz hlk y hfy
 
 /-- subst_not_free (matches Coq) -/
-theorem subst_not_free : ∀ x v e, ~ free_in x e → [x := v] e = e := by sorry
+theorem subst_not_free : ∀ x v e, ¬ free_in x e → [x := v] e = e := by
+  intro x v e hnf
+  induction e with
+  | EVar y =>
+    show (if x == y then v else EVar y) = EVar y
+    split
+    · exact absurd (eq_of_beq ‹_›) hnf
+    · rfl
+  | EUnit => rfl
+  | EBool _ => rfl
+  | EInt _ => rfl
+  | EString _ => rfl
+  | ELoc _ => rfl
+  | ELam y T body ih =>
+    show (if x == y then ELam y T body else ELam y T ([x := v] body)) = ELam y T body
+    split
+    · rfl
+    · rename_i hbeq
+      have hne : x ≠ y := fun heq => hbeq (beq_iff_eq.mpr heq)
+      congr 1; exact ih (fun hf => hnf ⟨hne, hf⟩)
+  | EApp e1 e2 ih1 ih2 =>
+    show EApp ([x := v] e1) ([x := v] e2) = EApp e1 e2
+    rw [ih1 (fun hf => hnf (Or.inl hf)), ih2 (fun hf => hnf (Or.inr hf))]
+  | EPair e1 e2 ih1 ih2 =>
+    show EPair ([x := v] e1) ([x := v] e2) = EPair e1 e2
+    rw [ih1 (fun hf => hnf (Or.inl hf)), ih2 (fun hf => hnf (Or.inr hf))]
+  | EFst e ih => show EFst ([x := v] e) = EFst e; rw [ih hnf]
+  | ESnd e ih => show ESnd ([x := v] e) = ESnd e; rw [ih hnf]
+  | EInl e T ih => show EInl ([x := v] e) T = EInl e T; rw [ih hnf]
+  | EInr e T ih => show EInr ([x := v] e) T = EInr e T; rw [ih hnf]
+  | ECase e0 y1 e1 y2 e2 ih ih1 ih2 =>
+    have h0 : ¬ free_in x e0 := fun hf => hnf (Or.inl hf)
+    have hb1 : (if x == y1 then e1 else [x := v] e1) = e1 := by
+      split; · rfl
+      · rename_i h; exact ih1 (fun hf => hnf (Or.inr (Or.inl ⟨fun heq => h (beq_iff_eq.mpr heq), hf⟩)))
+    have hb2 : (if x == y2 then e2 else [x := v] e2) = e2 := by
+      split; · rfl
+      · rename_i h; exact ih2 (fun hf => hnf (Or.inr (Or.inr ⟨fun heq => h (beq_iff_eq.mpr heq), hf⟩)))
+    show ECase ([x := v] e0) y1 (if x == y1 then e1 else [x := v] e1) y2 (if x == y2 then e2 else [x := v] e2) = ECase e0 y1 e1 y2 e2
+    rw [ih h0, hb1, hb2]
+  | EIf e1 e2 e3 ih1 ih2 ih3 =>
+    show EIf ([x := v] e1) ([x := v] e2) ([x := v] e3) = EIf e1 e2 e3
+    rw [ih1 (fun hf => hnf (Or.inl hf)), ih2 (fun hf => hnf (Or.inr (Or.inl hf))), ih3 (fun hf => hnf (Or.inr (Or.inr hf)))]
+  | ELet y e1 e2 ih1 ih2 =>
+    have h1 : ¬ free_in x e1 := fun hf => hnf (Or.inl hf)
+    have hb : (if x == y then e2 else [x := v] e2) = e2 := by
+      split; · rfl
+      · rename_i h; exact ih2 (fun hf => hnf (Or.inr ⟨fun heq => h (beq_iff_eq.mpr heq), hf⟩))
+    show ELet y ([x := v] e1) (if x == y then e2 else [x := v] e2) = ELet y e1 e2
+    rw [ih1 h1, hb]
+  | EPerform eff e ih => show EPerform eff ([x := v] e) = EPerform eff e; rw [ih hnf]
+  | EHandle e0 y hdl ih0 ihdl =>
+    have h0 : ¬ free_in x e0 := fun hf => hnf (Or.inl hf)
+    have hb : (if x == y then hdl else [x := v] hdl) = hdl := by
+      split; · rfl
+      · rename_i h; exact ihdl (fun hf => hnf (Or.inr ⟨fun heq => h (beq_iff_eq.mpr heq), hf⟩))
+    show EHandle ([x := v] e0) y (if x == y then hdl else [x := v] hdl) = EHandle e0 y hdl
+    rw [ih0 h0, hb]
+  | ERef e sl ih => show ERef ([x := v] e) sl = ERef e sl; rw [ih hnf]
+  | EDeref e ih => show EDeref ([x := v] e) = EDeref e; rw [ih hnf]
+  | EAssign e1 e2 ih1 ih2 =>
+    show EAssign ([x := v] e1) ([x := v] e2) = EAssign e1 e2
+    rw [ih1 (fun hf => hnf (Or.inl hf)), ih2 (fun hf => hnf (Or.inr hf))]
+  | EClassify e ih => show EClassify ([x := v] e) = EClassify e; rw [ih hnf]
+  | EDeclassify e1 e2 ih1 ih2 =>
+    show EDeclassify ([x := v] e1) ([x := v] e2) = EDeclassify e1 e2
+    rw [ih1 (fun hf => hnf (Or.inl hf)), ih2 (fun hf => hnf (Or.inr hf))]
+  | EProve e ih => show EProve ([x := v] e) = EProve e; rw [ih hnf]
+  | ERequire eff e ih => show ERequire eff ([x := v] e) = ERequire eff e; rw [ih hnf]
+  | EGrant eff e ih => show EGrant eff ([x := v] e) = EGrant eff e; rw [ih hnf]
 
 /-- rho_shadow_id (matches Coq) -/
 theorem rho_shadow_id : ∀ x, rho_shadow rho_id x = rho_id := by
@@ -623,8 +1144,109 @@ theorem rho_shadow_single_id : ∀ x v, rho_shadow (rho_single x v) x = rho_id :
   · simp_all
 
 /-- subst_rho_single (matches Coq) -/
-theorem subst_rho_single : ∀ e x v, subst_rho (rho_single x v) e = [x := v] e := by sorry
-  -- Requires structural induction with rho_shadow_single_id/rho_shadow_single_eq
+theorem subst_rho_single : ∀ e x v, subst_rho (rho_single x v) e = [x := v] e := by
+  intro e x v
+  induction e with
+  | EVar y =>
+    show (if y = x then v else EVar y) = (if x == y then v else EVar y)
+    by_cases hxy : x = y
+    · subst hxy; simp
+    · have h1 : y ≠ x := fun h => hxy h.symm
+      have h2 : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [h1, h2]
+  | EUnit => rfl
+  | EBool _ => rfl
+  | EInt _ => rfl
+  | EString _ => rfl
+  | ELoc _ => rfl
+  | ELam y T body ih =>
+    show ELam y T (subst_rho (rho_shadow (rho_single x v) y) body) =
+         (if x == y then ELam y T body else ELam y T ([x := v] body))
+    by_cases hxy : x = y
+    · subst hxy; rw [rho_shadow_single_id, subst_rho_id]; simp
+    · rw [rho_shadow_single_eq x v y hxy, ih]
+      have : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [this]
+  | EApp e1 e2 ih1 ih2 =>
+    show EApp (subst_rho (rho_single x v) e1) (subst_rho (rho_single x v) e2) =
+         EApp ([x := v] e1) ([x := v] e2)
+    rw [ih1, ih2]
+  | EPair e1 e2 ih1 ih2 =>
+    show EPair (subst_rho (rho_single x v) e1) (subst_rho (rho_single x v) e2) =
+         EPair ([x := v] e1) ([x := v] e2)
+    rw [ih1, ih2]
+  | EFst e ih => show EFst (subst_rho (rho_single x v) e) = EFst ([x := v] e); rw [ih]
+  | ESnd e ih => show ESnd (subst_rho (rho_single x v) e) = ESnd ([x := v] e); rw [ih]
+  | EInl e T ih => show EInl (subst_rho (rho_single x v) e) T = EInl ([x := v] e) T; rw [ih]
+  | EInr e T ih => show EInr (subst_rho (rho_single x v) e) T = EInr ([x := v] e) T; rw [ih]
+  | ECase e0 y1 e1 y2 e2 ih ih1 ih2 =>
+    show ECase (subst_rho (rho_single x v) e0)
+              y1 (subst_rho (rho_shadow (rho_single x v) y1) e1)
+              y2 (subst_rho (rho_shadow (rho_single x v) y2) e2) =
+         ECase ([x := v] e0)
+              y1 (if x == y1 then e1 else [x := v] e1)
+              y2 (if x == y2 then e2 else [x := v] e2)
+    rw [ih]
+    congr 1
+    · by_cases h1 : x = y1
+      · subst h1; rw [rho_shadow_single_id, subst_rho_id]; simp
+      · rw [rho_shadow_single_eq x v y1 h1, ih1]
+        have : (x == y1) = false := by cases h : x == y1; rfl; exact absurd (eq_of_beq h) h1
+        simp [this]
+    · by_cases h2 : x = y2
+      · subst h2; rw [rho_shadow_single_id, subst_rho_id]; simp
+      · rw [rho_shadow_single_eq x v y2 h2, ih2]
+        have : (x == y2) = false := by cases h : x == y2; rfl; exact absurd (eq_of_beq h) h2
+        simp [this]
+  | EIf e1 e2 e3 ih1 ih2 ih3 =>
+    show EIf (subst_rho (rho_single x v) e1) (subst_rho (rho_single x v) e2)
+             (subst_rho (rho_single x v) e3) =
+         EIf ([x := v] e1) ([x := v] e2) ([x := v] e3)
+    rw [ih1, ih2, ih3]
+  | ELet y e1 e2 ih1 ih2 =>
+    show ELet y (subst_rho (rho_single x v) e1)
+              (subst_rho (rho_shadow (rho_single x v) y) e2) =
+         ELet y ([x := v] e1) (if x == y then e2 else [x := v] e2)
+    rw [ih1]
+    congr 1
+    by_cases hxy : x = y
+    · subst hxy; rw [rho_shadow_single_id, subst_rho_id]; simp
+    · rw [rho_shadow_single_eq x v y hxy, ih2]
+      have : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [this]
+  | EPerform eff e ih =>
+    show EPerform eff (subst_rho (rho_single x v) e) = EPerform eff ([x := v] e); rw [ih]
+  | EHandle e0 y hdl ih0 ihdl =>
+    show EHandle (subst_rho (rho_single x v) e0) y
+                (subst_rho (rho_shadow (rho_single x v) y) hdl) =
+         EHandle ([x := v] e0) y (if x == y then hdl else [x := v] hdl)
+    rw [ih0]
+    congr 1
+    by_cases hxy : x = y
+    · subst hxy; rw [rho_shadow_single_id, subst_rho_id]; simp
+    · rw [rho_shadow_single_eq x v y hxy, ihdl]
+      have : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [this]
+  | ERef e sl ih =>
+    show ERef (subst_rho (rho_single x v) e) sl = ERef ([x := v] e) sl; rw [ih]
+  | EDeref e ih =>
+    show EDeref (subst_rho (rho_single x v) e) = EDeref ([x := v] e); rw [ih]
+  | EAssign e1 e2 ih1 ih2 =>
+    show EAssign (subst_rho (rho_single x v) e1) (subst_rho (rho_single x v) e2) =
+         EAssign ([x := v] e1) ([x := v] e2)
+    rw [ih1, ih2]
+  | EClassify e ih =>
+    show EClassify (subst_rho (rho_single x v) e) = EClassify ([x := v] e); rw [ih]
+  | EDeclassify e1 e2 ih1 ih2 =>
+    show EDeclassify (subst_rho (rho_single x v) e1) (subst_rho (rho_single x v) e2) =
+         EDeclassify ([x := v] e1) ([x := v] e2)
+    rw [ih1, ih2]
+  | EProve e ih =>
+    show EProve (subst_rho (rho_single x v) e) = EProve ([x := v] e); rw [ih]
+  | ERequire eff e ih =>
+    show ERequire eff (subst_rho (rho_single x v) e) = ERequire eff ([x := v] e); rw [ih]
+  | EGrant eff e ih =>
+    show EGrant eff (subst_rho (rho_single x v) e) = EGrant eff ([x := v] e); rw [ih]
 
 /-- rho_shadow_extend_same (matches Coq) -/
 theorem rho_shadow_extend_same : ∀ rho x v, rho_shadow (rho_extend rho x v) x = rho_shadow rho x := by
@@ -671,7 +1293,132 @@ theorem rho_no_free_shadow : ∀ rho x, rho_no_free_all rho → rho_no_free_all 
   · exact hnf a b hne hfree
 
 /-- subst_rho_extend (matches Coq) -/
-theorem subst_rho_extend : ∀ rho x v e, rho_no_free_all rho → [x := v] (subst_rho (rho_shadow rho x) e) = subst_rho (rho_extend rho x v) e := by sorry
+theorem subst_rho_extend : ∀ rho x v e, rho_no_free_all rho → [x := v] (subst_rho (rho_shadow rho x) e) = subst_rho (rho_extend rho x v) e := by
+  intro rho x v e hnf
+  induction e generalizing rho with
+  | EVar y =>
+    show substExpr x v ((rho_shadow rho x) y) = (rho_extend rho x v) y
+    simp only [rho_shadow, rho_extend]
+    by_cases hyx : y = x
+    · subst hyx; simp [substExpr, beq_self_eq_true]
+    · simp [hyx]
+      have : ¬ free_in x (rho y) := hnf x y hyx
+      exact subst_not_free x v (rho y) this
+  | EUnit => rfl
+  | EBool _ => rfl
+  | EInt _ => rfl
+  | EString _ => rfl
+  | ELoc _ => rfl
+  | EApp e1 e2 ih1 ih2 =>
+    show EApp ([x := v] (subst_rho (rho_shadow rho x) e1)) ([x := v] (subst_rho (rho_shadow rho x) e2)) =
+         EApp (subst_rho (rho_extend rho x v) e1) (subst_rho (rho_extend rho x v) e2)
+    rw [ih1 hnf, ih2 hnf]
+  | EPair e1 e2 ih1 ih2 =>
+    show EPair ([x := v] (subst_rho (rho_shadow rho x) e1)) ([x := v] (subst_rho (rho_shadow rho x) e2)) =
+         EPair (subst_rho (rho_extend rho x v) e1) (subst_rho (rho_extend rho x v) e2)
+    rw [ih1 hnf, ih2 hnf]
+  | EFst e ih =>
+    show EFst ([x := v] (subst_rho (rho_shadow rho x) e)) = EFst (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | ESnd e ih =>
+    show ESnd ([x := v] (subst_rho (rho_shadow rho x) e)) = ESnd (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | EInl e T ih =>
+    show EInl ([x := v] (subst_rho (rho_shadow rho x) e)) T = EInl (subst_rho (rho_extend rho x v) e) T
+    rw [ih hnf]
+  | EInr e T ih =>
+    show EInr ([x := v] (subst_rho (rho_shadow rho x) e)) T = EInr (subst_rho (rho_extend rho x v) e) T
+    rw [ih hnf]
+  | EIf e1 e2 e3 ih1 ih2 ih3 =>
+    show EIf ([x := v] (subst_rho (rho_shadow rho x) e1)) ([x := v] (subst_rho (rho_shadow rho x) e2))
+             ([x := v] (subst_rho (rho_shadow rho x) e3)) =
+         EIf (subst_rho (rho_extend rho x v) e1) (subst_rho (rho_extend rho x v) e2)
+             (subst_rho (rho_extend rho x v) e3)
+    rw [ih1 hnf, ih2 hnf, ih3 hnf]
+  | ELam y T body ih =>
+    show (if x == y then ELam y T (subst_rho (rho_shadow (rho_shadow rho x) y) body)
+          else ELam y T ([x := v] (subst_rho (rho_shadow (rho_shadow rho x) y) body))) =
+         ELam y T (subst_rho (rho_shadow (rho_extend rho x v) y) body)
+    by_cases hxy : x = y
+    · subst hxy; simp
+      rw [rho_shadow_shadow_same, rho_shadow_extend_same]
+    · have hbeq : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [hbeq]
+      rw [rho_shadow_shadow_comm rho x y hxy, rho_shadow_extend_comm rho x y v hxy]
+      exact ih (rho_no_free_shadow rho y hnf)
+  | ECase e0 y1 e1 y2 e2 ih ih1 ih2 =>
+    show ECase ([x := v] (subst_rho (rho_shadow rho x) e0))
+              y1 (if x == y1 then subst_rho (rho_shadow (rho_shadow rho x) y1) e1
+                  else [x := v] (subst_rho (rho_shadow (rho_shadow rho x) y1) e1))
+              y2 (if x == y2 then subst_rho (rho_shadow (rho_shadow rho x) y2) e2
+                  else [x := v] (subst_rho (rho_shadow (rho_shadow rho x) y2) e2)) =
+         ECase (subst_rho (rho_extend rho x v) e0)
+              y1 (subst_rho (rho_shadow (rho_extend rho x v) y1) e1)
+              y2 (subst_rho (rho_shadow (rho_extend rho x v) y2) e2)
+    rw [ih hnf]; congr 1
+    · by_cases h1 : x = y1
+      · subst h1; simp; rw [rho_shadow_shadow_same, rho_shadow_extend_same]
+      · have hb1 : (x == y1) = false := by cases h : x == y1; rfl; exact absurd (eq_of_beq h) h1
+        simp [hb1]; rw [rho_shadow_shadow_comm rho x y1 h1, rho_shadow_extend_comm rho x y1 v h1]
+        exact ih1 (rho_no_free_shadow rho y1 hnf)
+    · by_cases h2 : x = y2
+      · subst h2; simp; rw [rho_shadow_shadow_same, rho_shadow_extend_same]
+      · have hb2 : (x == y2) = false := by cases h : x == y2; rfl; exact absurd (eq_of_beq h) h2
+        simp [hb2]; rw [rho_shadow_shadow_comm rho x y2 h2, rho_shadow_extend_comm rho x y2 v h2]
+        exact ih2 (rho_no_free_shadow rho y2 hnf)
+  | ELet y e1 e2 ih1 ih2 =>
+    show ELet y ([x := v] (subst_rho (rho_shadow rho x) e1))
+              (if x == y then subst_rho (rho_shadow (rho_shadow rho x) y) e2
+               else [x := v] (subst_rho (rho_shadow (rho_shadow rho x) y) e2)) =
+         ELet y (subst_rho (rho_extend rho x v) e1)
+              (subst_rho (rho_shadow (rho_extend rho x v) y) e2)
+    rw [ih1 hnf]; congr 1
+    by_cases hxy : x = y
+    · subst hxy; simp; rw [rho_shadow_shadow_same, rho_shadow_extend_same]
+    · have hbeq : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [hbeq]; rw [rho_shadow_shadow_comm rho x y hxy, rho_shadow_extend_comm rho x y v hxy]
+      exact ih2 (rho_no_free_shadow rho y hnf)
+  | EHandle e0 y hdl ih0 ihdl =>
+    show EHandle ([x := v] (subst_rho (rho_shadow rho x) e0)) y
+                (if x == y then subst_rho (rho_shadow (rho_shadow rho x) y) hdl
+                 else [x := v] (subst_rho (rho_shadow (rho_shadow rho x) y) hdl)) =
+         EHandle (subst_rho (rho_extend rho x v) e0) y
+                (subst_rho (rho_shadow (rho_extend rho x v) y) hdl)
+    rw [ih0 hnf]; congr 1
+    by_cases hxy : x = y
+    · subst hxy; simp; rw [rho_shadow_shadow_same, rho_shadow_extend_same]
+    · have hbeq : (x == y) = false := by cases h : x == y; rfl; exact absurd (eq_of_beq h) hxy
+      simp [hbeq]; rw [rho_shadow_shadow_comm rho x y hxy, rho_shadow_extend_comm rho x y v hxy]
+      exact ihdl (rho_no_free_shadow rho y hnf)
+  | EPerform eff e ih =>
+    show EPerform eff ([x := v] (subst_rho (rho_shadow rho x) e)) = EPerform eff (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | ERef e sl ih =>
+    show ERef ([x := v] (subst_rho (rho_shadow rho x) e)) sl = ERef (subst_rho (rho_extend rho x v) e) sl
+    rw [ih hnf]
+  | EDeref e ih =>
+    show EDeref ([x := v] (subst_rho (rho_shadow rho x) e)) = EDeref (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | EAssign e1 e2 ih1 ih2 =>
+    show EAssign ([x := v] (subst_rho (rho_shadow rho x) e1)) ([x := v] (subst_rho (rho_shadow rho x) e2)) =
+         EAssign (subst_rho (rho_extend rho x v) e1) (subst_rho (rho_extend rho x v) e2)
+    rw [ih1 hnf, ih2 hnf]
+  | EClassify e ih =>
+    show EClassify ([x := v] (subst_rho (rho_shadow rho x) e)) = EClassify (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | EDeclassify e1 e2 ih1 ih2 =>
+    show EDeclassify ([x := v] (subst_rho (rho_shadow rho x) e1)) ([x := v] (subst_rho (rho_shadow rho x) e2)) =
+         EDeclassify (subst_rho (rho_extend rho x v) e1) (subst_rho (rho_extend rho x v) e2)
+    rw [ih1 hnf, ih2 hnf]
+  | EProve e ih =>
+    show EProve ([x := v] (subst_rho (rho_shadow rho x) e)) = EProve (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | ERequire eff e ih =>
+    show ERequire eff ([x := v] (subst_rho (rho_shadow rho x) e)) = ERequire eff (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
+  | EGrant eff e ih =>
+    show EGrant eff ([x := v] (subst_rho (rho_shadow rho x) e)) = EGrant eff (subst_rho (rho_extend rho x v) e)
+    rw [ih hnf]
 
 -- Empty environment is related to any environments (step-indexed version)
 --     Package I Proof Integration: env_rel_empty
@@ -727,61 +1474,175 @@ theorem multi_step_app2 : ∀ v1 e2 e2' st st' ctx ctx', value v1 → (e2, st, c
     exact multi_step.MS_Step _ _ _ (step.ST_App2 _ _ _ _ _ _ _ hval hs) ih
 
 /-- multi_step_pair1 (matches Coq) -/
-theorem multi_step_pair1 : ∀ e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (EPair e1 e2, st, ctx) -→* (EPair e1' e2, st', ctx') := by sorry
+theorem multi_step_pair1 : ∀ e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (EPair e1 e2, st, ctx) -→* (EPair e1' e2, st', ctx') := by
+  intro e1 e1' e2 st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Pair1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_pair2 (matches Coq) -/
-theorem multi_step_pair2 : ∀ v1 e2 e2' st st' ctx ctx', value v1 → (e2, st, ctx) -→* (e2', st', ctx') → (EPair v1 e2, st, ctx) -→* (EPair v1 e2', st', ctx') := by sorry
+theorem multi_step_pair2 : ∀ v1 e2 e2' st st' ctx ctx', value v1 → (e2, st, ctx) -→* (e2', st', ctx') → (EPair v1 e2, st, ctx) -→* (EPair v1 e2', st', ctx') := by
+  intro v1 e2 e2' st st' ctx ctx' hval h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Pair2 _ _ _ _ _ _ _ hval hs) ih
 
 /-- multi_step_fst (matches Coq) -/
-theorem multi_step_fst : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EFst e, st, ctx) -→* (EFst e', st', ctx') := by sorry
+theorem multi_step_fst : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EFst e, st, ctx) -→* (EFst e', st', ctx') := by
+  intro e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Fst1 _ _ _ _ _ _ hs) ih
 
 /-- multi_step_snd (matches Coq) -/
-theorem multi_step_snd : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ESnd e, st, ctx) -→* (ESnd e', st', ctx') := by sorry
+theorem multi_step_snd : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ESnd e, st, ctx) -→* (ESnd e', st', ctx') := by
+  intro e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Snd1 _ _ _ _ _ _ hs) ih
 
 /-- multi_step_inl (matches Coq) -/
-theorem multi_step_inl : ∀ e e' T st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EInl e T, st, ctx) -→* (EInl e' T, st', ctx') := by sorry
+theorem multi_step_inl : ∀ e e' T st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EInl e T, st, ctx) -→* (EInl e' T, st', ctx') := by
+  intro e e' T st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Inl1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_inr (matches Coq) -/
-theorem multi_step_inr : ∀ e e' T st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EInr e T, st, ctx) -→* (EInr e' T, st', ctx') := by sorry
+theorem multi_step_inr : ∀ e e' T st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EInr e T, st, ctx) -→* (EInr e' T, st', ctx') := by
+  intro e e' T st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Inr1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_case (matches Coq) -/
-theorem multi_step_case : ∀ e e' x1 e1 x2 e2 st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ECase e x1 e1 x2 e2, st, ctx) -→* (ECase e' x1 e1 x2 e2, st', ctx') := by sorry
+theorem multi_step_case : ∀ e e' x1 e1 x2 e2 st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ECase e x1 e1 x2 e2, st, ctx) -→* (ECase e' x1 e1 x2 e2, st', ctx') := by
+  intro e e' x1 e1 x2 e2 st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Case1 _ _ _ _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_if (matches Coq) -/
-theorem multi_step_if : ∀ e1 e1' e2 e3 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (EIf e1 e2 e3, st, ctx) -→* (EIf e1' e2 e3, st', ctx') := by sorry
+theorem multi_step_if : ∀ e1 e1' e2 e3 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (EIf e1 e2 e3, st, ctx) -→* (EIf e1' e2 e3, st', ctx') := by
+  intro e1 e1' e2 e3 st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_If1 _ _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_let (matches Coq) -/
-theorem multi_step_let : ∀ x e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (ELet x e1 e2, st, ctx) -→* (ELet x e1' e2, st', ctx') := by sorry
+theorem multi_step_let : ∀ x e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (ELet x e1 e2, st, ctx) -→* (ELet x e1' e2, st', ctx') := by
+  intro x e1 e1' e2 st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Let1 _ _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_classify (matches Coq) -/
-theorem multi_step_classify : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EClassify e, st, ctx) -→* (EClassify e', st', ctx') := by sorry
+theorem multi_step_classify : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EClassify e, st, ctx) -→* (EClassify e', st', ctx') := by
+  intro e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Classify1 _ _ _ _ _ _ hs) ih
 
 /-- multi_step_prove (matches Coq) -/
-theorem multi_step_prove : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EProve e, st, ctx) -→* (EProve e', st', ctx') := by sorry
+theorem multi_step_prove : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EProve e, st, ctx) -→* (EProve e', st', ctx') := by
+  intro e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Prove1 _ _ _ _ _ _ hs) ih
 
 /-- multi_step_require (matches Coq) -/
-theorem multi_step_require : ∀ eff e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ERequire eff e, st, ctx) -→* (ERequire eff e', st', ctx') := by sorry
+theorem multi_step_require : ∀ eff e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ERequire eff e, st, ctx) -→* (ERequire eff e', st', ctx') := by
+  intro eff e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Require1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_grant (matches Coq) -/
-theorem multi_step_grant : ∀ eff e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EGrant eff e, st, ctx) -→* (EGrant eff e', st', ctx') := by sorry
+theorem multi_step_grant : ∀ eff e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EGrant eff e, st, ctx) -→* (EGrant eff e', st', ctx') := by
+  intro eff e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Grant1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_perform (matches Coq) -/
-theorem multi_step_perform : ∀ eff e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EPerform eff e, st, ctx) -→* (EPerform eff e', st', ctx') := by sorry
+theorem multi_step_perform : ∀ eff e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EPerform eff e, st, ctx) -→* (EPerform eff e', st', ctx') := by
+  intro eff e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Perform1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_handle (matches Coq) -/
-theorem multi_step_handle : ∀ e e' x h st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EHandle e x h, st, ctx) -→* (EHandle e' x h, st', ctx') := by sorry
+theorem multi_step_handle : ∀ e e' x h st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EHandle e x h, st, ctx) -→* (EHandle e' x h, st', ctx') := by
+  intro e e' x h st st' ctx ctx' hm
+  induction hm with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Handle1 _ _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_ref (matches Coq) -/
-theorem multi_step_ref : ∀ e e' sl st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ERef e sl, st, ctx) -→* (ERef e' sl, st', ctx') := by sorry
+theorem multi_step_ref : ∀ e e' sl st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (ERef e sl, st, ctx) -→* (ERef e' sl, st', ctx') := by
+  intro e e' sl st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Ref1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_deref (matches Coq) -/
-theorem multi_step_deref : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EDeref e, st, ctx) -→* (EDeref e', st', ctx') := by sorry
+theorem multi_step_deref : ∀ e e' st st' ctx ctx', (e, st, ctx) -→* (e', st', ctx') → (EDeref e, st, ctx) -→* (EDeref e', st', ctx') := by
+  intro e e' st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Deref1 _ _ _ _ _ _ hs) ih
 
 /-- multi_step_assign1 (matches Coq) -/
-theorem multi_step_assign1 : ∀ e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (EAssign e1 e2, st, ctx) -→* (EAssign e1' e2, st', ctx') := by sorry
+theorem multi_step_assign1 : ∀ e1 e1' e2 st st' ctx ctx', (e1, st, ctx) -→* (e1', st', ctx') → (EAssign e1 e2, st, ctx) -→* (EAssign e1' e2, st', ctx') := by
+  intro e1 e1' e2 st st' ctx ctx' h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Assign1 _ _ _ _ _ _ _ hs) ih
 
 /-- multi_step_assign2 (matches Coq) -/
-theorem multi_step_assign2 : ∀ v1 e2 e2' st st' ctx ctx', value v1 → (e2, st, ctx) -→* (e2', st', ctx') → (EAssign v1 e2, st, ctx) -→* (EAssign v1 e2', st', ctx') := by sorry
+theorem multi_step_assign2 : ∀ v1 e2 e2' st st' ctx ctx', value v1 → (e2, st, ctx) -→* (e2', st', ctx') → (EAssign v1 e2, st, ctx) -→* (EAssign v1 e2', st', ctx') := by
+  intro v1 e2 e2' st st' ctx ctx' hval h
+  induction h with
+  | MS_Refl _ => exact multi_step.MS_Refl _
+  | MS_Step _ _ _ hs _ ih =>
+    have ⟨_, _, _⟩ := ‹config›
+    exact multi_step.MS_Step _ _ _ (step.ST_Assign2 _ _ _ _ _ _ _ hval hs) ih
 
 /-- exp_rel_of_val_rel (matches Coq) -/
 theorem exp_rel_of_val_rel : ∀ St T v1 v2, val_rel St T v1 v2 → exp_rel St T v1 v2 := by
@@ -1218,11 +2079,64 @@ theorem multi_step_preservation : ∀ e e' T ε st st' ctx ctx' St, has_type nil
 
 -- Security level is irrelevant in typing -- Delta is universally passed through
 /-- has_type_level_irrelevant (matches Coq) -/
-theorem has_type_level_irrelevant : ∀ Γ St Δ1 e T ε, has_type Γ St Δ1 e T ε → ∀ Δ2, has_type Γ St Δ2 e T ε := by sorry
+theorem has_type_level_irrelevant : ∀ Γ St Δ1 e T ε, has_type Γ St Δ1 e T ε → ∀ Δ2, has_type Γ St Δ2 e T ε := by
+  intro Γ St Δ1 e T ε h Δ2
+  induction h with
+  | T_Unit => exact has_type.T_Unit
+  | T_Bool => exact has_type.T_Bool
+  | T_Int => exact has_type.T_Int
+  | T_String => exact has_type.T_String
+  | T_Loc hlookup => exact has_type.T_Loc hlookup
+  | T_Var hlookup => exact has_type.T_Var hlookup
+  | T_Lam _ ih => exact has_type.T_Lam (ih Δ2)
+  | T_App _ _ ih1 ih2 => exact has_type.T_App (ih1 Δ2) (ih2 Δ2)
+  | T_Pair _ _ ih1 ih2 => exact has_type.T_Pair (ih1 Δ2) (ih2 Δ2)
+  | T_Fst _ ih => exact has_type.T_Fst (ih Δ2)
+  | T_Snd _ ih => exact has_type.T_Snd (ih Δ2)
+  | T_Inl _ ih => exact has_type.T_Inl (ih Δ2)
+  | T_Inr _ ih => exact has_type.T_Inr (ih Δ2)
+  | T_Case _ _ _ ih ih1 ih2 => exact has_type.T_Case (ih Δ2) (ih1 Δ2) (ih2 Δ2)
+  | T_If _ _ _ ih1 ih2 ih3 => exact has_type.T_If (ih1 Δ2) (ih2 Δ2) (ih3 Δ2)
+  | T_Let _ _ ih1 ih2 => exact has_type.T_Let (ih1 Δ2) (ih2 Δ2)
+  | T_Perform _ ih => exact has_type.T_Perform (ih Δ2)
+  | T_Handle _ _ ih1 ih2 => exact has_type.T_Handle (ih1 Δ2) (ih2 Δ2)
+  | T_Ref _ ih => exact has_type.T_Ref (ih Δ2)
+  | T_Deref _ ih => exact has_type.T_Deref (ih Δ2)
+  | T_Assign _ _ ih1 ih2 => exact has_type.T_Assign (ih1 Δ2) (ih2 Δ2)
+  | T_Classify _ ih => exact has_type.T_Classify (ih Δ2)
+  | T_Declassify _ _ hdo ih1 ih2 => exact has_type.T_Declassify (ih1 Δ2) (ih2 Δ2) hdo
+  | T_Prove _ ih => exact has_type.T_Prove (ih Δ2)
+  | T_Require _ ih => exact has_type.T_Require (ih Δ2)
+  | T_Grant _ ih => exact has_type.T_Grant (ih Δ2)
+
+-- Helper: lookups beyond store_max return None.
+private theorem store_lookup_gt_max : ∀ st (l : loc), l > store_max st → store_lookup l st = None := by
+  intro st l hgt
+  induction st with
+  | nil => rfl
+  | cons hd tl ih =>
+    match hd with
+    | (l', _) =>
+      show (if l == l' then _ else store_lookup l tl) = None
+      have hne : l ≠ l' := by simp [store_max] at hgt; omega
+      have : (l == l') = false := by
+        cases h : (l == l'); · rfl; · exact absurd (eq_of_beq h) hne
+      simp [this]; exact ih (by simp [store_max] at hgt; omega)
 
 -- Fresh location is not in store typing -- follows from store_wf.
 /-- store_wf_fresh_not_in_ty (matches Coq) -/
-theorem store_wf_fresh_not_in_ty : ∀ St st, store_wf St st → store_ty_lookup (fresh_loc st) St = None := by sorry
+theorem store_wf_fresh_not_in_ty : ∀ St st, store_wf St st → store_ty_lookup (fresh_loc st) St = None := by
+  intro St st ⟨hwf1, _⟩
+  by_contra h
+  push_neg at h
+  -- h : store_ty_lookup (fresh_loc st) St ≠ None
+  cases hlk : store_ty_lookup (fresh_loc st) St with
+  | none => exact h rfl
+  | some p =>
+    have ⟨T, sl⟩ := p
+    have ⟨v, hsl, _, _⟩ := hwf1 (fresh_loc st) T sl hlk
+    have := store_lookup_gt_max st (fresh_loc st) (by simp [fresh_loc]; omega)
+    rw [this] at hsl; exact Option.noConfusion hsl
 
 -- Related stores have the same fresh location.
 /-- store_rel_n_same_fresh (matches Coq) -/

@@ -158,16 +158,122 @@ def combined_step_up (n : Nat) : Prop :=
 theorem is_low_dec_correct : ∀ l, is_low_dec l = true <-> is_low l := by
   intro l; simp [is_low_dec, is_low, sec_leq_dec, sec_leq, Nat.ble_eq, decide_eq_true_eq]
 
+-- Helper: free variables appear in the typing context.
+private theorem free_in_context' : ∀ Γ St Δ e T ε, has_type Γ St Δ e T ε →
+    ∀ x, free_in x e → ∃ Tx, lookup x Γ = Some Tx := by
+  intro Γ St Δ e T ε h
+  induction h with
+  | T_Unit => intro x hf; exact absurd hf id
+  | T_Bool => intro x hf; exact absurd hf id
+  | T_Int => intro x hf; exact absurd hf id
+  | T_String => intro x hf; exact absurd hf id
+  | T_Loc _ => intro x hf; exact absurd hf id
+  | T_Var hlookup => intro x hf; exact ⟨_, by rwa [hf]⟩
+  | T_Lam _ ih =>
+    intro x ⟨hne, hf⟩
+    have ⟨Tx, hlk⟩ := ih x hf
+    simp [lookup] at hlk
+    by_cases hxy : String.eqb x _ = true
+    · have heq : x = _ := by cases h : String.eqb x _ <;> simp_all [String.eqb_eq]
+      exact absurd heq hne
+    · simp [hxy] at hlk; exact ⟨Tx, hlk⟩
+  | T_App _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Pair _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Fst _ ih => exact ih
+  | T_Snd _ ih => exact ih
+  | T_Inl _ ih => exact ih
+  | T_Inr _ ih => exact ih
+  | T_Case _ _ _ ih ih1 ih2 =>
+    intro x hf
+    rcases hf with hf0 | ⟨hne1, hf1⟩ | ⟨hne2, hf2⟩
+    · exact ih x hf0
+    · have ⟨Tx, hlk⟩ := ih1 x hf1; simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne1
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+    · have ⟨Tx, hlk⟩ := ih2 x hf2; simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne2
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+  | T_If _ _ _ ih1 ih2 ih3 =>
+    intro x hf; rcases hf with hf | hf | hf; exact ih1 x hf; exact ih2 x hf; exact ih3 x hf
+  | T_Let _ _ ih1 ih2 =>
+    intro x hf
+    rcases hf with hf1 | ⟨hne, hf2⟩
+    · exact ih1 x hf1
+    · have ⟨Tx, hlk⟩ := ih2 x hf2; simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+  | T_Perform _ ih => exact ih
+  | T_Handle _ _ ih1 ih2 =>
+    intro x hf
+    rcases hf with hf0 | ⟨hne, hfh⟩
+    · exact ih1 x hf0
+    · have ⟨Tx, hlk⟩ := ih2 x hfh; simp [lookup] at hlk
+      by_cases h : String.eqb x _ = true
+      · exact absurd (by cases hx : String.eqb x _ <;> simp_all [String.eqb_eq]) hne
+      · simp [h] at hlk; exact ⟨Tx, hlk⟩
+  | T_Ref _ ih => exact ih
+  | T_Deref _ ih => exact ih
+  | T_Assign _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Classify _ ih => exact ih
+  | T_Declassify _ _ _ ih1 ih2 => intro x hf; exact hf.elim (ih1 x) (ih2 x)
+  | T_Prove _ ih => exact ih
+  | T_Require _ ih => exact ih
+  | T_Grant _ ih => exact ih
+
 -- Helper: typing in nil context implies closed.
---     Uses free_in_context from Preservation.v
 /-- typing_nil_implies_closed (matches Coq) -/
-theorem typing_nil_implies_closed : ∀ St Δ e T ε, has_type nil St Δ e T ε → closed_expr e := by sorry
+theorem typing_nil_implies_closed : ∀ St Δ e T ε, has_type nil St Δ e T ε → closed_expr e := by
+  intro St Δ e T ε h x hfree
+  have ⟨Tx, hlk⟩ := free_in_context' nil St Δ e T ε h x hfree
+  simp [lookup] at hlk
 
 -- val_rel_at_type_fo is reflexive for well-typed values.
 --     This is used when v1 = v2 (from stores_agree_low_fo).
 --     Requires typing to ensure the value matches the type structure.
 /-- val_rel_at_type_fo_refl (matches Coq) -/
-theorem val_rel_at_type_fo_refl : ∀ T St v, first_order_type T = true → value v → has_type nil St Public v T EffectPure → val_rel_at_type_fo T v v := by sorry
+theorem val_rel_at_type_fo_refl : ∀ T St v, first_order_type T = true → value v → has_type nil St Public v T EffectPure → val_rel_at_type_fo T v v := by
+  intro T
+  induction T with
+  | TUnit => intro _ v _ hval htype; have := canonical_forms_unit hval htype; subst this; trivial
+  | TBool => intro _ v _ hval htype; have ⟨b, hb⟩ := canonical_forms_bool hval htype; subst hb; rfl
+  | TInt => intro _ v _ hval htype; have ⟨n, hn⟩ := canonical_forms_int hval htype; subst hn; rfl
+  | TString => intro _ v _ hval htype; have ⟨s, hs⟩ := canonical_forms_string hval htype; subst hs; rfl
+  | TBytes => intro _ v _ _ _; exact rfl
+  | TRef t sl _ => intro _ v _ hval htype; have ⟨l, hl⟩ := canonical_forms_ref hval htype; subst hl; rfl
+  | TProd T1 T2 ih1 ih2 =>
+    intro St v hfo hval htype
+    have ⟨hfo1, hfo2⟩ := (andb_true_iff _ _).mp hfo
+    have ⟨v1, v2, heq, hv1, hv2⟩ := canonical_forms_prod hval htype
+    subst heq; cases htype with
+    | T_Pair h1 h2 => exact ⟨ih1 St v1 hfo1 hv1 h1, ih2 St v2 hfo2 hv2 h2⟩
+  | TSum T1 T2 ih1 ih2 =>
+    intro St v hfo hval htype
+    have ⟨hfo1, hfo2⟩ := (andb_true_iff _ _).mp hfo
+    rcases canonical_forms_sum hval htype with ⟨v', heq, hv'⟩ | ⟨v', heq, hv'⟩
+    · subst heq; cases htype with | T_Inl h => exact ih1 St v' hfo1 hv' h
+    · subst heq; cases htype with | T_Inr h => exact ih2 St v' hfo2 hv' h
+  | TFn _ _ _ => intro _ _ hfo; simp [first_order_type] at hfo
+  | TChan _ => intro _ _ hfo; simp [first_order_type] at hfo
+  | TSecureChan _ _ => intro _ _ hfo; simp [first_order_type] at hfo
+  | TList _ _ => intro _ _ _ _ _ _; trivial
+  | TOption _ _ => intro _ _ _ _ _ _; trivial
+  | TSecret _ _ => intro _ _ _ _ _ _; trivial
+  | TLabeled _ _ _ => intro _ _ _ _ _ _; trivial
+  | TTainted _ _ _ => intro _ _ _ _ _ _; trivial
+  | TSanitized _ _ _ => intro _ _ _ _ _ _; trivial
+  | TProof _ _ => intro _ _ _ _ _ _; trivial
+  | TCapability _ => intro _ _ _ _ _ _; trivial
+  | TCapabilityFull _ => intro _ _ _ _ _ _; trivial
+  | TConstantTime t ih =>
+    intro St v hfo hval htype
+    -- No typing rule produces TConstantTime for values
+    cases hval <;> cases htype
+  | TZeroizing t ih =>
+    intro St v hfo hval htype
+    cases hval <;> cases htype
 
 -- For trivial FO types, any two well-typed values are related.
 --     Requires typing to use canonical forms for TProd/TSum decomposition.
@@ -403,7 +509,61 @@ theorem exp_rel_step1_app : ∀ St T1 T2 ε f f' a a' st1 st2 ctx St', val_rel_n
 
 -- Extract just the store_wf part from preservation
 /-- preservation_store_wf (matches Coq) -/
-theorem preservation_store_wf : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→ (e', st', ctx') → ∃ St', store_ty_extends St St' ∧ store_wf St' st' := by sorry
+theorem preservation_store_wf : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→ (e', st', ctx') → ∃ St', store_ty_extends St St' ∧ store_wf St' st' := by
+  intro e e' st st' ctx ctx' St T ε htype hwf hstep
+  induction hstep generalizing St T ε with
+  -- Compute rules: store unchanged (st' = st)
+  | ST_AppAbs => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_Fst => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_Snd => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_IfTrue => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_IfFalse => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_LetVal => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_CaseInl => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  | ST_CaseInr => exact ⟨St, fun _ _ _ h => h, hwf⟩
+  -- Congruence rules: forward IH using typing inversion
+  | ST_App1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_App h1 h2 => exact ih St _ _ h1 hwf
+  | ST_App2 _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_App h1 h2 => exact ih St _ _ h2 hwf
+  | ST_Pair1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Pair h1 h2 => exact ih St _ _ h1 hwf
+  | ST_Pair2 _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Pair h1 h2 => exact ih St _ _ h2 hwf
+  | ST_Fst1 _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Fst h1 => exact ih St _ _ h1 hwf
+  | ST_Snd1 _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Snd h1 => exact ih St _ _ h1 hwf
+  | ST_Inl1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Inl h1 => exact ih St _ _ h1 hwf
+  | ST_Inr1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Inr h1 => exact ih St _ _ h1 hwf
+  | ST_Case1 _ _ _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Case h0 h1 h2 => exact ih St _ _ h0 hwf
+  | ST_If1 _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_If h1 h2 h3 => exact ih St _ _ h1 hwf
+  | ST_Let1 _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Let h1 h2 => exact ih St _ _ h1 hwf
+  | ST_Classify1 _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Classify h1 => exact ih St _ _ h1 hwf
+  | ST_Prove1 _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Prove h1 => exact ih St _ _ h1 hwf
+  | ST_Require1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Require h1 => exact ih St _ _ h1 hwf
+  | ST_Grant1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Grant h1 => exact ih St _ _ h1 hwf
+  | ST_Perform1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Perform h1 => exact ih St _ _ h1 hwf
+  | ST_Handle1 _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Handle h1 h2 => exact ih St _ _ h1 hwf
+  | ST_Ref1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Ref h1 => exact ih St _ _ h1 hwf
+  | ST_Deref1 _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Deref h1 => exact ih St _ _ h1 hwf
+  | ST_Assign1 _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Assign h1 h2 => exact ih St _ _ h1 hwf
+  | ST_Assign2 _ _ _ _ _ _ _ _ _ ih =>
+    cases htype with | T_Assign h1 h2 => exact ih St _ _ h2 hwf
 
 -- store_wf implies store_has_values - NOW TRIVIAL after store_wf strengthening
 /-- store_wf_to_has_values (matches Coq) -/
@@ -414,7 +574,11 @@ theorem store_wf_to_has_values : ∀ St st, store_wf St st → store_has_values 
 
 -- Use preservation to show store_has_values is preserved
 /-- preservation_store_has_values (matches Coq) -/
-theorem preservation_store_has_values : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→ (e', st', ctx') → store_has_values st' := by sorry
+theorem preservation_store_has_values : ∀ e e' st st' ctx ctx' St T ε, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→ (e', st', ctx') → store_has_values st' := by
+  intro e e' st st' ctx ctx' St T ε htype hwf hstep
+  obtain ⟨St', _, hwf'⟩ := preservation_store_wf e e' st st' ctx ctx' St T ε htype hwf hstep
+  intro l v hlk
+  exact (hwf'.2 l v hlk).2.1
 
 -- val_rel_at_type step-up for FIRST-ORDER types.
 --

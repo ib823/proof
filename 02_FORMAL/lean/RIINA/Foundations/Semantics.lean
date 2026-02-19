@@ -89,6 +89,66 @@ inductive step : config → config → Prop where
   | ST_CaseInr : ∀ v T x1 e1 x2 e2 st ctx,
       value v →
       step (ECase (EInr v T) x1 e1 x2 e2, st, ctx) (substExpr x2 v e2, st, ctx)
+  -- Congruence rules for evaluation contexts
+  | ST_Pair1 : ∀ e1 e1' e2 st st' ctx ctx',
+      step (e1, st, ctx) (e1', st', ctx') →
+      step (EPair e1 e2, st, ctx) (EPair e1' e2, st', ctx')
+  | ST_Pair2 : ∀ v1 e2 e2' st st' ctx ctx',
+      value v1 →
+      step (e2, st, ctx) (e2', st', ctx') →
+      step (EPair v1 e2, st, ctx) (EPair v1 e2', st', ctx')
+  | ST_Fst1 : ∀ e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EFst e, st, ctx) (EFst e', st', ctx')
+  | ST_Snd1 : ∀ e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (ESnd e, st, ctx) (ESnd e', st', ctx')
+  | ST_Inl1 : ∀ e e' T st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EInl e T, st, ctx) (EInl e' T, st', ctx')
+  | ST_Inr1 : ∀ e e' T st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EInr e T, st, ctx) (EInr e' T, st', ctx')
+  | ST_Case1 : ∀ e e' x1 e1 x2 e2 st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (ECase e x1 e1 x2 e2, st, ctx) (ECase e' x1 e1 x2 e2, st', ctx')
+  | ST_If1 : ∀ e1 e1' e2 e3 st st' ctx ctx',
+      step (e1, st, ctx) (e1', st', ctx') →
+      step (EIf e1 e2 e3, st, ctx) (EIf e1' e2 e3, st', ctx')
+  | ST_Let1 : ∀ x e1 e1' e2 st st' ctx ctx',
+      step (e1, st, ctx) (e1', st', ctx') →
+      step (ELet x e1 e2, st, ctx) (ELet x e1' e2, st', ctx')
+  | ST_Classify1 : ∀ e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EClassify e, st, ctx) (EClassify e', st', ctx')
+  | ST_Prove1 : ∀ e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EProve e, st, ctx) (EProve e', st', ctx')
+  | ST_Require1 : ∀ eff e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (ERequire eff e, st, ctx) (ERequire eff e', st', ctx')
+  | ST_Grant1 : ∀ eff e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EGrant eff e, st, ctx) (EGrant eff e', st', ctx')
+  | ST_Perform1 : ∀ eff e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EPerform eff e, st, ctx) (EPerform eff e', st', ctx')
+  | ST_Handle1 : ∀ e e' x h st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EHandle e x h, st, ctx) (EHandle e' x h, st', ctx')
+  | ST_Ref1 : ∀ e e' sl st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (ERef e sl, st, ctx) (ERef e' sl, st', ctx')
+  | ST_Deref1 : ∀ e e' st st' ctx ctx',
+      step (e, st, ctx) (e', st', ctx') →
+      step (EDeref e, st, ctx) (EDeref e', st', ctx')
+  | ST_Assign1 : ∀ e1 e1' e2 st st' ctx ctx',
+      step (e1, st, ctx) (e1', st', ctx') →
+      step (EAssign e1 e2, st, ctx) (EAssign e1' e2, st', ctx')
+  | ST_Assign2 : ∀ v1 e2 e2' st st' ctx ctx',
+      value v1 →
+      step (e2, st, ctx) (e2', st', ctx') →
+      step (EAssign v1 e2, st, ctx) (EAssign v1 e2', st', ctx')
 
 /-- Multi-step relation (reflexive-transitive closure of step) -/
 inductive multi_step : config → config → Prop where
