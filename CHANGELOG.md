@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 9,160 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 All notable changes to RIINA will be documented in this file.
 
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
 - Eliminated all 7 previously-tracked Admitted proofs (DELTA001, Platform/WASM/Mobile stubs, ValRelStepLimit)
 - Eliminated remaining active proof assumptions; active Coq build is now `Axioms=0`, `Admitted=0`, explicit assumptions `=0`
-- Active Coq build now at 9,160 Qed proofs
+- Active Coq build now at 9,172 Qed proofs
 
 ### Added (Phase 7)
 - Phase 7: Platform Universality — modular backend trait architecture (`Backend` trait, `Target` enum)

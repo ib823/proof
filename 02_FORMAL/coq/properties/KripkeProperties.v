@@ -1129,6 +1129,143 @@ Proof.
   - rewrite Heq2. apply step_to_multi_step. apply ST_AppAbs. exact Hva2.
 Qed.
 
+Lemma exp_rel_step1_perform_kripke : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EPerform eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EPerform eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  exists v1, v2.
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_PerformValue. exact Hv1.
+  - apply step_to_multi_step. apply ST_PerformValue. exact Hv2.
+Qed.
+
+Lemma exp_rel_step1_require_kripke : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (ERequire eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (ERequire eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  exists v1, v2.
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_RequireValue. exact Hv1.
+  - apply step_to_multi_step. apply ST_RequireValue. exact Hv2.
+Qed.
+
+Lemma exp_rel_step1_grant_kripke : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EGrant eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EGrant eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  exists v1, v2.
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_GrantValue. exact Hv1.
+  - apply step_to_multi_step. apply ST_GrantValue. exact Hv2.
+Qed.
+
+Lemma exp_rel_step1_classify_kripke : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = EClassify v1 /\ r2 = EClassify v2 /\
+    multi_step (EClassify v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EClassify v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSecret T) r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  pose proof (val_rel_le_closed_left n Σ T v1 v2 Hn Hrel) as Hc1.
+  pose proof (val_rel_le_closed_right n Σ T v1 v2 Hn Hrel) as Hc2.
+  assert (Hcv1 : closed_expr (EClassify v1)).
+  { unfold closed_expr in *. intros x Hfree.
+    apply (Hc1 x). simpl in Hfree. exact Hfree. }
+  assert (Hcv2 : closed_expr (EClassify v2)).
+  { unfold closed_expr in *. intros x Hfree.
+    apply (Hc2 x). simpl in Hfree. exact Hfree. }
+  exists (EClassify v1), (EClassify v2).
+  repeat split; auto.
+  - apply MS_Refl.
+  - apply MS_Refl.
+  - apply val_rel_le_build_secret; auto.
+    + apply VClassify. exact Hv1.
+    + apply VClassify. exact Hv2.
+Qed.
+
+Lemma exp_rel_step1_prove_kripke : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = EProve v1 /\ r2 = EProve v2 /\
+    multi_step (EProve v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EProve v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TProof T) r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  pose proof (val_rel_le_closed_left n Σ T v1 v2 Hn Hrel) as Hc1.
+  pose proof (val_rel_le_closed_right n Σ T v1 v2 Hn Hrel) as Hc2.
+  assert (Hpv1 : closed_expr (EProve v1)).
+  { unfold closed_expr in *. intros x Hfree.
+    apply (Hc1 x). simpl in Hfree. exact Hfree. }
+  assert (Hpv2 : closed_expr (EProve v2)).
+  { unfold closed_expr in *. intros x Hfree.
+    apply (Hc2 x). simpl in Hfree. exact Hfree. }
+  exists (EProve v1), (EProve v2).
+  repeat split; auto.
+  - apply MS_Refl.
+  - apply MS_Refl.
+  - apply val_rel_le_build_indist.
+    + apply VProve. exact Hv1.
+    + apply VProve. exact Hv2.
+    + exact Hpv1.
+    + exact Hpv2.
+    + simpl. exact I.
+Qed.
+
+Lemma exp_rel_step1_declassify_kripke : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EDeclassify (EClassify v1) (EProve (EClassify v1)), st1, ctx) (r1, st1, ctx) /\
+    multi_step (EDeclassify (EClassify v2) (EProve (EClassify v2)), st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  pose proof (val_rel_le_value_left n Σ T v1 v2 Hn Hrel) as Hv1.
+  pose proof (val_rel_le_value_right n Σ T v1 v2 Hn Hrel) as Hv2.
+  assert (Hok1 : declass_ok (EClassify v1) (EProve (EClassify v1))).
+  { exists v1. repeat split; auto. }
+  assert (Hok2 : declass_ok (EClassify v2) (EProve (EClassify v2))).
+  { exists v2. repeat split; auto. }
+  exists v1, v2.
+  repeat split; auto.
+  - apply step_to_multi_step. apply ST_DeclassifyValue; auto.
+  - apply step_to_multi_step. apply ST_DeclassifyValue; auto.
+Qed.
+
 Lemma val_rel_le_prod_mono_step : forall n m Σ T1 T2 v1 v2,
   m <= n ->
   val_rel_le n Σ (TProd T1 T2) v1 v2 ->

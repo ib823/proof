@@ -1629,6 +1629,84 @@ Proof.
   eapply exp_rel_step1_app_kripke; eauto.
 Qed.
 
+Lemma exp_rel_step1_perform_store : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EPerform eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EPerform eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_perform_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_require_store : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (ERequire eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (ERequire eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_require_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_grant_store : forall n Σ T eff v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EGrant eff v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EGrant eff v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T eff v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_grant_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_classify_store : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = EClassify v1 /\ r2 = EClassify v2 /\
+    multi_step (EClassify v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EClassify v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TSecret T) r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_classify_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_prove_store : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = EProve v1 /\ r2 = EProve v2 /\
+    multi_step (EProve v1, st1, ctx) (r1, st1, ctx) /\
+    multi_step (EProve v2, st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ (TProof T) r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_prove_kripke; eauto.
+Qed.
+
+Lemma exp_rel_step1_declassify_store : forall n Σ T v1 v2 st1 st2 ctx,
+  n > 0 ->
+  val_rel_le n Σ T v1 v2 ->
+  exists r1 r2,
+    r1 = v1 /\ r2 = v2 /\
+    multi_step (EDeclassify (EClassify v1) (EProve (EClassify v1)), st1, ctx) (r1, st1, ctx) /\
+    multi_step (EDeclassify (EClassify v2) (EProve (EClassify v2)), st2, ctx) (r2, st2, ctx) /\
+    val_rel_le n Σ T r1 r2.
+Proof.
+  intros n Σ T v1 v2 st1 st2 ctx Hn Hrel.
+  eapply exp_rel_step1_declassify_kripke; eauto.
+Qed.
+
 Lemma exp_rel_step1_inl_store : forall n Σ T1 T2 v1 v2 st1 st2 ctx,
   n > 0 ->
   val_rel_le n Σ T1 v1 v2 ->
