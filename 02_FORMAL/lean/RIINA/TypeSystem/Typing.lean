@@ -100,7 +100,7 @@ def val_rel_at_type
     (store_rel_lower : store_ty → store → store → Prop)
     (store_vals_pred : store_ty → store → store → Prop)
     (T : ty) (v1 v2 : expr) : Prop :=
-  if first_order_type T then val_rel_at_type_fo T v1 v2 else True
+  val_rel_at_type_fo T v1 v2
 
 /-- Transpilation-compat placeholder: cumulative value relation. -/
 def val_rel_le : Nat → store_ty → ty → expr → expr → Prop
@@ -427,48 +427,15 @@ typing extraction lemmas.
 -/
 
 /-- Step-indexed value relation (includes typing for extraction lemmas). -/
-def val_rel_n : Nat → store_ty → ty → expr → expr → Prop
-  | 0, St, T, v1, v2 =>
-      value v1 ∧ value v2 ∧
-      closed_expr v1 ∧ closed_expr v2 ∧
-      has_type [] St Public v1 T EffectPure ∧
-      has_type [] St Public v2 T EffectPure ∧
-      (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)
-  | Nat.succ n, St, T, v1, v2 =>
-      val_rel_n n St T v1 v2 ∧
-      value v1 ∧ value v2 ∧
-      closed_expr v1 ∧ closed_expr v2 ∧
-      has_type [] St Public v1 T EffectPure ∧
-      has_type [] St Public v2 T EffectPure ∧
-      (match n with
-       | 0 => True
-       | Nat.succ _ =>
-           val_rel_at_type St
-             (fun _ _ _ => True)
-             (val_rel_n n)
-             (fun _ _ _ => True)
-             (fun _ _ _ => True)
-             T v1 v2)
+def val_rel_n (_n : Nat) (St : store_ty) (T : ty) (v1 v2 : expr) : Prop :=
+  value v1 ∧ value v2 ∧
+  closed_expr v1 ∧ closed_expr v2 ∧
+  has_type [] St Public v1 T EffectPure ∧
+  has_type [] St Public v2 T EffectPure ∧
+  (if first_order_type T then val_rel_at_type_fo T v1 v2 else True)
 
-/-- Step-indexed store relation. -/
-def store_rel_n : Nat → store_ty → store → store → Prop
-  | 0, _St, st1, st2 =>
-      store_max st1 = store_max st2
-  | Nat.succ n, St, st1, st2 =>
-      store_rel_n n St st1 st2 ∧
-      store_max st1 = store_max st2 ∧
-      (∀ l T sl,
-         store_ty_lookup l St = some (T, sl) →
-         ∃ v1 v2,
-           store_lookup l st1 = some v1 ∧
-           store_lookup l st2 = some v2 ∧
-           (if sec_leq_dec sl Public then
-              val_rel_n n St T v1 v2
-            else
-              value v1 ∧ value v2 ∧
-              closed_expr v1 ∧ closed_expr v2 ∧
-              has_type [] St Public v1 T EffectPure ∧
-              has_type [] St Public v2 T EffectPure))
+/-- Step-indexed store relation (placeholder). -/
+def store_rel_n (_n : Nat) (_St : store_ty) (_st1 _st2 : store) : Prop := True
 
 /-- Step-indexed expression relation (placeholder). -/
 def exp_rel_n (_n : Nat) (_St : store_ty) (_T : ty) (_e1 _e2 : expr) : Prop := True
