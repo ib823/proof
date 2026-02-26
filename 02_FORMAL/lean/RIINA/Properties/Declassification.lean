@@ -113,15 +113,169 @@ theorem value_multi_step_refl_decl : ∀ v st ctx cfg, value v → multi_step (v
   | .MS_Refl _ => rfl
   | .MS_Step _ _ _ hs _ => exact absurd hs (fun h => value_no_step v hv _ _ _ h)
 
+-- Step determinism: single step is deterministic
+private theorem step_deterministic : ∀ cfg cfg1 cfg2,
+    step cfg cfg1 → step cfg cfg2 → cfg1 = cfg2 := by
+  intro cfg cfg1 cfg2 h1 h2
+  revert cfg2
+  induction h1 with
+  | @ST_AppAbs x T body v st ctx hv =>
+    intro _ h2; cases h2 with
+    | ST_AppAbs => rfl
+    | @ST_App1 _ _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ (value.VLam x T body) _ _ _ h)
+    | @ST_App2 _ _ _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_App1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_AppAbs _ _ _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ (value.VLam _ _ _) _ _ _ h)
+    | @ST_App1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_App2 _ _ _ _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_App2 _ _ _ _ _ _ _ hv1 _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_AppAbs _ _ _ _ _ _ hv2 => exact absurd ‹_› (fun h => value_no_step _ hv2 _ _ _ h)
+    | @ST_App1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv1 _ _ _ h)
+    | @ST_App2 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Fst _ _ _ _ hv1 hv2 =>
+    intro _ h2; cases h2 with
+    | ST_Fst => rfl
+    | @ST_Fst1 _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ (value.VPair _ _ hv1 hv2) _ _ _ h)
+  | @ST_Snd _ _ _ _ hv1 hv2 =>
+    intro _ h2; cases h2 with
+    | ST_Snd => rfl
+    | @ST_Snd1 _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ (value.VPair _ _ hv1 hv2) _ _ _ h)
+  | ST_IfTrue =>
+    intro _ h2; cases h2 with
+    | ST_IfTrue => rfl
+    | @ST_If1 _ _ _ _ _ _ _ _ hsub => cases hsub
+  | ST_IfFalse =>
+    intro _ h2; cases h2 with
+    | ST_IfFalse => rfl
+    | @ST_If1 _ _ _ _ _ _ _ _ hsub => cases hsub
+  | @ST_LetVal _ _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | ST_LetVal => rfl
+    | @ST_Let1 _ _ _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_CaseInl _ _ _ _ _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | ST_CaseInl => rfl
+    | @ST_Case1 _ _ _ _ _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ (value.VInl _ _ hv) _ _ _ h)
+  | @ST_CaseInr _ _ _ _ _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | ST_CaseInr => rfl
+    | @ST_Case1 _ _ _ _ _ _ _ _ _ _ hsub => exact absurd hsub (fun h => value_no_step _ (value.VInr _ _ hv) _ _ _ h)
+  | @ST_Pair1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Pair1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_Pair2 _ _ _ _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_Pair2 _ _ _ _ _ _ _ hv1 _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Pair1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv1 _ _ _ h)
+    | @ST_Pair2 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Fst1 _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Fst _ _ _ _ hv1 hv2 => exact absurd ‹_› (fun h => value_no_step _ (value.VPair _ _ hv1 hv2) _ _ _ h)
+    | @ST_Fst1 _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Snd1 _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Snd _ _ _ _ hv1 hv2 => exact absurd ‹_› (fun h => value_no_step _ (value.VPair _ _ hv1 hv2) _ _ _ h)
+    | @ST_Snd1 _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Inl1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Inl1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Inr1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Inr1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Case1 _ _ _ _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_CaseInl _ _ _ _ _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ (value.VInl _ _ hv) _ _ _ h)
+    | @ST_CaseInr _ _ _ _ _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ (value.VInr _ _ hv) _ _ _ h)
+    | @ST_Case1 _ _ _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_If1 _ _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | ST_IfTrue => exact absurd ‹_› (fun h => value_no_step _ (value.VBool true) _ _ _ h)
+    | ST_IfFalse => exact absurd ‹_› (fun h => value_no_step _ (value.VBool false) _ _ _ h)
+    | @ST_If1 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Let1 _ _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_LetVal _ _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+    | @ST_Let1 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Classify1 _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Classify1 _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Declassify1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Declassify1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_Declassify2 _ _ _ _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+    | @ST_DeclassifyValue _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ (value.VClassify _ hv) _ _ _ h)
+  | @ST_Declassify2 _ _ _ _ _ _ _ hv1 _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Declassify1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv1 _ _ _ h)
+    | @ST_Declassify2 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_DeclassifyValue _ _ _ _ hv hd =>
+      obtain ⟨w, hw, _, heq⟩ := hd
+      exact absurd ‹_› (fun h => value_no_step _ (heq ▸ value.VProve _ (value.VClassify w hw)) _ _ _ h)
+  | @ST_DeclassifyValue _ _ _ _ hv hd =>
+    intro _ h2; cases h2 with
+    | @ST_Declassify1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ (value.VClassify _ hv) _ _ _ h)
+    | @ST_Declassify2 _ _ _ _ _ _ _ _ hs2 =>
+      obtain ⟨w, hw, _, heq⟩ := hd
+      exact absurd hs2 (fun h => value_no_step _ (heq ▸ value.VProve _ (value.VClassify w hw)) _ _ _ h)
+    | ST_DeclassifyValue => rfl
+  | @ST_Prove1 _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Prove1 _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Require1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Require1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Grant1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Grant1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Perform1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Perform1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Handle1 _ _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Handle1 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Ref1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Ref1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Deref1 _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Deref1 _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+  | @ST_Assign1 _ _ _ _ _ _ _ _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Assign1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_Assign2 _ _ _ _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_Assign2 _ _ _ _ _ _ _ hv1 _ ih =>
+    intro _ h2; cases h2 with
+    | @ST_Assign1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv1 _ _ _ h)
+    | @ST_Assign2 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+
 -- Helper: Multi-step determinism on configs
 /-- eval_deterministic_cfg (matches Coq) -/
 theorem eval_deterministic_cfg : ∀ cfg cfg1 cfg2, multi_step cfg cfg1 → multi_step cfg cfg2 → value cfg1.1 → value cfg2.1 → cfg1 = cfg2 := by
-  sorry
+  intro cfg cfg1 cfg2 hms1
+  revert cfg2
+  induction hms1 with
+  | MS_Refl _ =>
+    intro _ hms2 hv1 hv2
+    match hms2 with
+    | .MS_Refl _ => rfl
+    | .MS_Step _ _ _ hs _ => exact absurd hs (fun h => value_no_step _ hv1 _ _ _ h)
+  | @MS_Step _ cfg_mid _ hs1 _ ih =>
+    intro _ hms2 hv1 hv2
+    match hms2 with
+    | .MS_Refl _ => exact absurd hs1 (fun h => value_no_step _ hv2 _ _ _ h)
+    | .MS_Step _ _ _ hs2 hms2' =>
+      have := step_deterministic _ _ _ hs1 hs2
+      subst this
+      exact ih _ hms2' hv1 hv2
 
 -- Evaluation is deterministic
 /-- eval_deterministic (matches Coq) -/
 theorem eval_deterministic : ∀ e st ctx v1 st1 v2 st2, multi_step (e, st, ctx) (v1, st1, ctx) → multi_step (e, st, ctx) (v2, st2, ctx) → value v1 → value v2 → v1 = v2 ∧ st1 = st2 := by
-  sorry
+  intro e st ctx v1 st1 v2 st2 hms1 hms2 hv1 hv2
+  have h := eval_deterministic_cfg _ _ _ hms1 hms2 hv1 hv2
+  exact ⟨congrArg (·.1) h, congrArg (·.2.1) h⟩
 
 -- Declassification is safe when policy allows
 /-- declassify_policy_safe (matches Coq) -/
