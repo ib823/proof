@@ -173,7 +173,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 33 compiled theorems | Secondary verification |
+| **Lean proofs** | `02_FORMAL/lean/` | 267 compiled theorems | Secondary verification |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 0 compiled | Tertiary (stubs) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -209,7 +209,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-02-19 by running commands listed in Part 0.**
+**Last verified: 2026-02-26 by running commands listed in Part 0.**
 
 ### Coq (Primary Prover)
 
@@ -242,13 +242,13 @@ but the compiler does not yet enforce them.
 | Theorem/lemma declarations | 9,018 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
 | Sorry count (grep) | 9 | Reduced from 177 via systematic elimination |
 | .lean files | 270 | Most are transpiled, not hand-written |
-| `lake build RIINA` | PASSES | Core files compile: Syntax.lean, Semantics.lean, Typing.lean, Domains/All.lean |
-| Compiled theorems (real) | 33 | Only the core files that `lake build` actually checks |
+| `lake build RIINA` | PASSES | 14 modules compile: Syntax, Semantics, Typing, Domains/All + 10 Properties |
+| Compiled theorems (real) | 267 | Core (34) + AhmedStyleTest (30) + CanonicalForms (43) + Composition (6) + CumulativeMonotone (28) + LexOrder (36) + NI_v2_Monotone (4) + SecurityProperties (1) + TypeMeasure (50) + ValRelMonotone (28) + ValRelStepLimit_PROOF (7) |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** 33 theorems actually compiled by Lean. The 9,018 declaration count
-includes transpiled files that have never been checked by the Lean compiler. The `sorry` count
-of 9 is from grep — reduced from 177 via systematic elimination in core property files.
+**Honest assessment:** 267 theorems actually compiled by Lean (up from 33). The 9,018 declaration
+count includes transpiled files that have never been checked by the Lean compiler. The `sorry`
+count of 9 is from grep — all in NonInterference_v2 files which have not yet been compiled.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -939,9 +939,9 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 270 |
-| Compiled theorems (real) | 33 |
-| Sorry (grep) | 177 |
-| `lake build RIINA` | PASSES |
+| Compiled theorems (real) | 267 |
+| Sorry (grep) | 9 |
+| `lake build RIINA` | PASSES (14 modules) |
 
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress, Preservation, Safety)
