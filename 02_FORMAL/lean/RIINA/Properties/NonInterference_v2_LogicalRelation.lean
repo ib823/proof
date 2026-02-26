@@ -2072,10 +2072,27 @@ theorem step_up_at_0 : step_up_at 0 := by
 -- Multi-step preservation - extends single-step preservation to multi-step.
 --     This lemma is needed for typing premises in IH_step_up applications.
 /-- multi_step_preservation_aux (matches Coq) -/
-theorem multi_step_preservation_aux : ∀ cfg1 cfg2, cfg1 -→* cfg2 → ∀ St e st ctx T ε, cfg1 = (e, st, ctx) → has_type nil St Public e T ε → store_wf St st → ∃ e' st' ctx' St' ε', cfg2 = (e', st', ctx') ∧ store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by sorry
+theorem multi_step_preservation_aux : ∀ cfg1 cfg2, cfg1 -→* cfg2 → ∀ St e st ctx T ε, cfg1 = (e, st, ctx) → has_type nil St Public e T ε → store_wf St st → ∃ e' st' ctx' St' ε', cfg2 = (e', st', ctx') ∧ store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by
+  intro cfg1 cfg2 hsteps St e st ctx T ε hcfg hty hwf
+  subst hcfg
+  induction hsteps generalizing St T ε with
+  | MS_Refl =>
+      refine ⟨e, st, ctx, St, ε, rfl, ?_, hwf, hty⟩
+      intro l T' sl hlookup
+      exact ⟨T', sl, hlookup, rfl, rfl⟩
+  | MS_Step hstep hrest ih =>
+      rcases preservation cfg1 cfg2 hstep e st ctx _ _ _ T ε St rfl rfl hty hwf with ⟨St1, ε1, hExt1, hWf1, hTy1⟩
+      rcases ih hTy1 hWf1 with ⟨e', st', ctx', St', ε', hEq, hExt2, hWf2, hTy2⟩
+      refine ⟨e', st', ctx', St', ε', hEq, ?_, hWf2, hTy2⟩
+      exact store_ty_extends_trans hExt1 hExt2
 
 /-- multi_step_preservation (matches Coq) -/
-theorem multi_step_preservation : ∀ e e' T ε st st' ctx ctx' St, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→* (e', st', ctx') → ∃ St' ε', store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by sorry
+theorem multi_step_preservation : ∀ e e' T ε st st' ctx ctx' St, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→* (e', st', ctx') → ∃ St' ε', store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by
+  intro e e' T ε st st' ctx ctx' St hty hwf hsteps
+  rcases multi_step_preservation_aux (e, st, ctx) (e', st', ctx') hsteps St e st ctx T ε rfl hty hwf with
+    ⟨e'', st'', ctx'', St', ε', hEq, hExt, hWf, hTy⟩
+  cases hEq
+  exact ⟨St', ε', hExt, hWf, hTy⟩
 
 -- Security level is irrelevant in typing -- Delta is universally passed through
 /-- has_type_level_irrelevant (matches Coq) -/
@@ -2140,8 +2157,13 @@ theorem store_wf_fresh_not_in_ty : ∀ St st, store_wf St st → store_ty_lookup
 
 -- Related stores have the same fresh location.
 /-- store_rel_n_same_fresh (matches Coq) -/
-theorem store_rel_n_same_fresh : ∀ n St st1 st2, store_rel_n n St st1 st2 → fresh_loc st1 = fresh_loc st2 := by sorry
-  -- Note: store_rel_n is True (placeholder), so this is unprovable from True alone
+theorem store_rel_n_same_fresh : ∀ n St st1 st2, store_rel_n n St st1 st2 → fresh_loc st1 = fresh_loc st2 := by
+  intro n St st1 st2 hrel
+  cases n with
+  | zero =>
+      simpa [store_rel_n, fresh_loc, Nat.add_right_cancel_iff] using hrel
+  | succ n' =>
+      exact Nat.succ.inj (hrel.2.1)
 
 /-- logical_relation (matches Coq) -/
 theorem logical_relation : ∀ G St e T eps, has_type G St Public e T eps → ∀ St_base, store_ty_extends St St_base → ∀ rho1 rho2, env_rel St_base G rho1 rho2 → rho_no_free_all rho1 → rho_no_free_all rho2 → exp_rel St_base T (subst_rho rho1 e) (subst_rho rho2 e) := by

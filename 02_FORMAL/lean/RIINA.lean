@@ -2,6 +2,8 @@ import RIINA.Foundations.Syntax
 import RIINA.Foundations.Semantics
 import RIINA.TypeSystem.Typing
 import RIINA.Domains.All
+import RIINA.Properties.NonInterference_v2
+import RIINA.Properties.NonInterference_v2_LogicalRelation
 
 /-!
 # RIINA Formal Proofs - Main Library
