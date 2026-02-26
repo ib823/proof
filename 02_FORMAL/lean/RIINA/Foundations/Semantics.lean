@@ -121,6 +121,17 @@ inductive step : config → config → Prop where
   | ST_Classify1 : ∀ e e' st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (EClassify e, st, ctx) (EClassify e', st', ctx')
+  | ST_Declassify1 : ∀ e1 e1' e2 st st' ctx ctx',
+      step (e1, st, ctx) (e1', st', ctx') →
+      step (EDeclassify e1 e2, st, ctx) (EDeclassify e1' e2, st', ctx')
+  | ST_Declassify2 : ∀ v1 e2 e2' st st' ctx ctx',
+      value v1 →
+      step (e2, st, ctx) (e2', st', ctx') →
+      step (EDeclassify v1 e2, st, ctx) (EDeclassify v1 e2', st', ctx')
+  | ST_DeclassifyValue : ∀ v p st ctx,
+      value v →
+      declass_ok (EClassify v) p →
+      step (EDeclassify (EClassify v) p, st, ctx) (v, st, ctx)
   | ST_Prove1 : ∀ e e' st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (EProve e, st, ctx) (EProve e', st', ctx')

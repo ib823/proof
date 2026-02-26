@@ -64,30 +64,7 @@ namespace RIINA
 open security_level effect effect_category taint_source sanitizer
      capability_kind capability ty session_type expr
 
-/-- Coq compatibility shim: boolean negation -/
-@[inline] def negb (b : Bool) : Bool := !b
-/-- Coq compatibility shim: boolean conjunction -/
-@[inline] def andb (a b : Bool) : Bool := a && b
-/-- Coq compatibility shim: boolean disjunction -/
-@[inline] def orb (a b : Bool) : Bool := a || b
-/-- Coq compatibility shim: list universal predicate -/
-@[inline] def forallb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.all f
-/-- Coq compatibility shim: list existential predicate -/
-@[inline] def existsb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.any f
-/-- Coq compatibility shim: list length alias -/
-@[inline] def length {α : Type} (xs : List α) : Nat := xs.length
-/-- Coq compatibility shim: list head option -/
-@[inline] def hd_error {α : Type} (xs : List α) : Option α := xs.head?
-/-- Coq compatibility shim: list find option -/
-@[inline] def find {α : Type} (p : α → Bool) (xs : List α) : Option α := xs.find? p
-/-- Coq compatibility shim: pair first projection -/
-@[inline] def fst {α β : Type} (p : α × β) : α :=
-  match p with
-  | (a, _) => a
-/-- Coq compatibility shim: pair second projection -/
-@[inline] def snd {α β : Type} (p : α × β) : β :=
-  match p with
-  | (_, b) => b
+-- Coq compatibility shims imported from RIINA.Foundations.Typing
 
 /-- Boolean conjunction iff (matches Coq: andb_true_iff) -/
 private theorem andb_true_iff (a b : Bool) :
@@ -105,7 +82,7 @@ def store_rel_simple (St : store_ty) (st1 st2 : store) : Prop :=
 -- Unfold val_rel_le at 0: trivially True
 /-- val_rel_le_0_unfold (matches Coq) -/
 theorem val_rel_le_0_unfold : ∀ St T v1 v2, val_rel_le 0 St T v1 v2 = True := by
-  rfl
+  intro _ _ _ _; rfl
 
 -- Unfold val_rel_le at S n: cumulative plus structural
 /-- val_rel_le_S_unfold (matches Coq) -/
@@ -123,7 +100,7 @@ theorem val_rel_le_at_zero : ∀ St T v1 v2, val_rel_le 0 St T v1 v2 := by
 /-- val_rel_le_cumulative (matches Coq) -/
 theorem val_rel_le_cumulative : ∀ n St T v1 v2, val_rel_le (S n) St T v1 v2 → val_rel_le n St T v1 v2 := by
   intro n St T v1 v2 h
-  trivial
+  exact h.1
 
 -- Values are values
 /-- val_rel_le_value_left (matches Coq) -/
