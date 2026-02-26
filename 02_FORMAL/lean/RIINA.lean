@@ -12,6 +12,7 @@ import RIINA.Properties.SecurityProperties
 import RIINA.Properties.TypeMeasure
 import RIINA.Properties.ValRelMonotone
 import RIINA.Properties.ValRelStepLimit_PROOF
+import RIINA.Properties.Declassification
 
 /-!
 # RIINA Formal Proofs - Main Library
@@ -28,6 +29,7 @@ Multi-prover verification port from Coq 8.20.1 originals.
 - `RIINA.Properties.CanonicalForms` - Canonical forms lemmas
 - `RIINA.Properties.Composition` - Composition properties
 - `RIINA.Properties.CumulativeMonotone` - Cumulative monotonicity
+- `RIINA.Properties.Declassification` - Declassification safety proofs
 - `RIINA.Properties.LexOrder` - Lexicographic ordering proofs
 - `RIINA.Properties.NonInterference_v2_Monotone` - NI monotonicity
 - `RIINA.Properties.SecurityProperties` - Security property theorems
