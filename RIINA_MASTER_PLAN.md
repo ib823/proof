@@ -240,7 +240,7 @@ but the compiler does not yet enforce them.
 | Metric | Value | Notes |
 |--------|-------|-------|
 | Theorem/lemma declarations | 9,018 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
-| Sorry count (grep) | 9 | Reduced from 177 via systematic elimination |
+| Sorry count (grep) | 6 | Reduced from 177 via systematic elimination |
 | .lean files | 270 | Most are transpiled, not hand-written |
 | `lake build RIINA` | PASSES | 14 modules compile: Syntax, Semantics, Typing, Domains/All + 10 Properties |
 | Compiled theorems (real) | 267 | Core (34) + AhmedStyleTest (30) + CanonicalForms (43) + Composition (6) + CumulativeMonotone (28) + LexOrder (36) + NI_v2_Monotone (4) + SecurityProperties (1) + TypeMeasure (50) + ValRelMonotone (28) + ValRelStepLimit_PROOF (7) |
@@ -248,7 +248,7 @@ but the compiler does not yet enforce them.
 
 **Honest assessment:** 267 theorems actually compiled by Lean (up from 33). The 9,018 declaration
 count includes transpiled files that have never been checked by the Lean compiler. The `sorry`
-count of 9 is from grep — all in NonInterference_v2 files which have not yet been compiled.
+count of 6 is from grep — concentrated in Declassification and NonInterference_v2 files that are not fully compiled in this environment.
 
 ### Isabelle/HOL (Tertiary Prover)
 

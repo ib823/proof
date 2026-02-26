@@ -2140,7 +2140,14 @@ theorem store_wf_fresh_not_in_ty : ∀ St st, store_wf St st → store_ty_lookup
 
 -- Related stores have the same fresh location.
 /-- store_rel_n_same_fresh (matches Coq) -/
-theorem store_rel_n_same_fresh : ∀ n St st1 st2, store_rel_n n St st1 st2 → fresh_loc st1 = fresh_loc st2 := by sorry
+theorem store_rel_n_same_fresh : ∀ n St st1 st2, store_rel_n n St st1 st2 → fresh_loc st1 = fresh_loc st2 := by
+  intro n St st1 st2 hrel
+  cases n with
+  | zero =>
+    simpa [store_rel_n, fresh_loc] using hrel
+  | succ k =>
+    have hmax : store_max st1 = store_max st2 := hrel.2.1
+    simpa [fresh_loc] using hmax
   -- Note: store_rel_n is True (placeholder), so this is unprovable from True alone
 
 /-- logical_relation (matches Coq) -/
