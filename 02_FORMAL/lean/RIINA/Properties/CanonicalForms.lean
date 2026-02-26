@@ -65,30 +65,7 @@ namespace RIINA
 open security_level effect effect_category taint_source sanitizer
      capability_kind capability ty session_type expr
 
-/-- Coq compatibility shim: boolean negation -/
-@[inline] def negb (b : Bool) : Bool := !b
-/-- Coq compatibility shim: boolean conjunction -/
-@[inline] def andb (a b : Bool) : Bool := a && b
-/-- Coq compatibility shim: boolean disjunction -/
-@[inline] def orb (a b : Bool) : Bool := a || b
-/-- Coq compatibility shim: list universal predicate -/
-@[inline] def forallb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.all f
-/-- Coq compatibility shim: list existential predicate -/
-@[inline] def existsb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.any f
-/-- Coq compatibility shim: list length alias -/
-@[inline] def length {α : Type} (xs : List α) : Nat := xs.length
-/-- Coq compatibility shim: list head option -/
-@[inline] def hd_error {α : Type} (xs : List α) : Option α := xs.head?
-/-- Coq compatibility shim: list find option -/
-@[inline] def find {α : Type} (p : α → Bool) (xs : List α) : Option α := xs.find? p
-/-- Coq compatibility shim: pair first projection -/
-@[inline] def fst {α β : Type} (p : α × β) : α :=
-  match p with
-  | (a, _) => a
-/-- Coq compatibility shim: pair second projection -/
-@[inline] def snd {α β : Type} (p : α × β) : β :=
-  match p with
-  | (_, b) => b
+-- Coq compatibility shims imported from RIINA.Foundations.Typing
 
 -- A closed value of type TUnit must be EUnit.
 /-- canonical_unit (matches Coq) -/
