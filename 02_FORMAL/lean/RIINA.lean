@@ -20,6 +20,8 @@ import RIINA.Properties.NonInterference_v2
 import RIINA.Properties.ClosedValueLemmas
 import RIINA.Properties.check_ax
 import RIINA.TypeSystem.TypeSafety
+import RIINA.Properties.ContextProperties
+import RIINA.Properties.SN_Closure
 -- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
