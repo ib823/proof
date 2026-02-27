@@ -13,9 +13,9 @@ import RIINA.Properties.TypeMeasure
 import RIINA.Properties.ValRelMonotone
 import RIINA.Properties.ValRelStepLimit_PROOF
 import RIINA.Properties.Declassification
--- NOT YET COMPILABLE (pre-existing errors, 9 sorry):
--- import RIINA.Properties.NonInterference_v2            -- 12 errors, 6 sorry
--- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 239 errors, 3 sorry
+-- NOT YET COMPILABLE (pre-existing errors, 4 sorry):
+-- import RIINA.Properties.NonInterference_v2            -- 12 errors, 2 sorry
+-- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
 /-!
 # RIINA Formal Proofs - Main Library
@@ -42,7 +42,7 @@ Multi-prover verification port from Coq 8.20.1 originals.
 - `RIINA.Properties.ValRelStepLimit_PROOF` - Step-limit value relation
 
 ## Pending Modules (not yet compilable)
-- `RIINA.Properties.NonInterference_v2` - 12 errors, 6 sorry
-- `RIINA.Properties.NonInterference_v2_LogicalRelation` - 239 errors, 3 sorry
+- `RIINA.Properties.NonInterference_v2` - 12 errors, 2 sorry
+- `RIINA.Properties.NonInterference_v2_LogicalRelation` - 240 errors, 2 sorry
 - ~15 other property files with transpilation errors
 -/

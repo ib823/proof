@@ -48,11 +48,13 @@ These override ALL other instructions on conflict:
 
 ## TOOL LOCATIONS & BUILD COMMANDS
 
-### Coq
+### Coq/Rocq
 ```bash
+# Requires Rocq 9.1.1 (not Coq 8.20 — files use `From Stdlib`)
+eval $(opam env --switch=rocq)
 cd /workspaces/proof/02_FORMAL/coq
 make                              # Build all proofs
-coqc -Q . RIINA foundations/Syntax.v   # Build one file
+rocq compile -Q . RIINA foundations/Syntax.v   # Build one file
 ```
 
 ### Lean 4

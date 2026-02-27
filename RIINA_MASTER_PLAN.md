@@ -248,8 +248,8 @@ but the compiler does not yet enforce them.
 
 **Honest assessment:** 302 theorems actually compiled by Lean (up from 267). Includes Declassification.lean
 with 26 theorems (24 original + step_deterministic + eval_deterministic_cfg). All in-build sorry
-eliminated. The 9 remaining sorry are in NonInterference_v2 files which have pre-existing errors
-and are not yet imported into the build.
+eliminated. 4 remaining sorry in NonInterference_v2 files (down from 9 — 5 eliminated via propext/rfl proofs).
+Remaining 4 sorry require missing infrastructure (preservation theorem, canonical forms for TFn, unprovable fo_trivial).
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -941,7 +941,7 @@ X = primary role, o = supporting role
 |--------|-------|
 | Files | 270 |
 | Compiled theorems (real) | 302 |
-| Sorry (grep) | 9 (0 in build) |
+| Sorry (grep) | 4 (0 in build) |
 | `lake build RIINA` | PASSES (15 modules, 0 sorry) |
 
 **Closure criteria:**
