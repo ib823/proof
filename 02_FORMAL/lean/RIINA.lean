@@ -17,6 +17,9 @@ import RIINA.Properties.TypingInversion
 import RIINA.Properties.StoreWfLemmas
 import RIINA.Properties.StoreSafety
 import RIINA.Properties.NonInterference_v2
+import RIINA.Properties.ClosedValueLemmas
+import RIINA.Properties.check_ax
+import RIINA.TypeSystem.TypeSafety
 -- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
@@ -24,31 +27,5 @@ import RIINA.Properties.NonInterference_v2
 # RIINA Formal Proofs - Main Library
 
 Multi-prover verification port from Coq 8.20.1 originals.
-481 compiled theorems, 1 in-build sorry (NI_v2).
-
-## Core Modules (compilation verified)
-- `RIINA.Foundations.Syntax` - Core syntax definitions (port of Syntax.v)
-- `RIINA.Foundations.Semantics` - Operational semantics (port of Semantics.v)
-- `RIINA.TypeSystem.Typing` - Typing rules + canonical forms (port of Typing.v)
-
-## Property Modules (compilation verified)
-- `RIINA.Properties.AhmedStyleTest` - Ahmed-style step-indexed tests
-- `RIINA.Properties.CanonicalForms` - Canonical forms lemmas
-- `RIINA.Properties.Composition` - Composition properties
-- `RIINA.Properties.CumulativeMonotone` - Cumulative monotonicity
-- `RIINA.Properties.Declassification` - Declassification safety proofs (0 sorry)
-- `RIINA.Properties.TypingInversion` - Typing inversion, discrimination, injectivity, uniqueness (52 theorems)
-- `RIINA.Properties.StoreWfLemmas` - Store well-formedness lemmas (32 theorems)
-- `RIINA.Properties.StoreSafety` - Store safety and extension theorems (34 theorems)
-- `RIINA.Properties.LexOrder` - Lexicographic ordering proofs
-- `RIINA.Properties.NonInterference_v2_Monotone` - NI monotonicity
-- `RIINA.Properties.SecurityProperties` - Security property theorems
-- `RIINA.Properties.TypeMeasure` - Type measure proofs
-- `RIINA.Properties.ValRelMonotone` - Value relation monotonicity
-- `RIINA.Properties.ValRelStepLimit_PROOF` - Step-limit value relation
-- `RIINA.Properties.NonInterference_v2` - Non-interference proof (1 sorry)
-
-## Pending Modules (not yet compilable)
-- `RIINA.Properties.NonInterference_v2_LogicalRelation` - 240 errors, 2 sorry
-- ~12 other property files with transpilation errors
+1 in-build sorry (NI_v2).
 -/
