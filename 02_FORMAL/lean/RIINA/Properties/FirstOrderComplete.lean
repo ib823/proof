@@ -82,31 +82,6 @@ namespace RIINA
 open security_level effect effect_category taint_source sanitizer
      capability_kind capability ty session_type expr
 
-/-- Coq compatibility shim: boolean negation -/
-@[inline] def negb (b : Bool) : Bool := !b
-/-- Coq compatibility shim: boolean conjunction -/
-@[inline] def andb (a b : Bool) : Bool := a && b
-/-- Coq compatibility shim: boolean disjunction -/
-@[inline] def orb (a b : Bool) : Bool := a || b
-/-- Coq compatibility shim: list universal predicate -/
-@[inline] def forallb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.all f
-/-- Coq compatibility shim: list existential predicate -/
-@[inline] def existsb {α : Type} (f : α → Bool) (xs : List α) : Bool := xs.any f
-/-- Coq compatibility shim: list length alias -/
-@[inline] def length {α : Type} (xs : List α) : Nat := xs.length
-/-- Coq compatibility shim: list head option -/
-@[inline] def hd_error {α : Type} (xs : List α) : Option α := xs.head?
-/-- Coq compatibility shim: list find option -/
-@[inline] def find {α : Type} (p : α → Bool) (xs : List α) : Option α := xs.find? p
-/-- Coq compatibility shim: pair first projection -/
-@[inline] def fst {α β : Type} (p : α × β) : α :=
-  match p with
-  | (a, _) => a
-/-- Coq compatibility shim: pair second projection -/
-@[inline] def snd {α β : Type} (p : α × β) : β :=
-  match p with
-  | (_, b) => b
-
 /-- Boolean conjunction iff (matches Coq: andb_true_iff) -/
 private theorem andb_true_iff (a b : Bool) :
     (a && b) = true ↔ a = true ∧ b = true := by
@@ -135,10 +110,10 @@ def expr_eqb (e1 e2 : expr) : Bool :=
   | EString s1, EString s2 => String.eqb s1 s2
   | ELoc l1, ELoc l2 => Nat.eqb l1 l2
   | EVar x1, EVar x2 => String.eqb x1 x2
-  | ELam x1 T1 e1', ELam x2 T2 e2' => String.eqb x1 x2 && expr_eqb e1' e2'
+  | ELam x1 _T1 e1', ELam x2 _T2 e2' => String.eqb x1 x2 && expr_eqb e1' e2'
   | EPair a1 b1, EPair a2 b2 => expr_eqb a1 a2 && expr_eqb b1 b2
-  | EInl e1' T1, EInl e2' T2 => expr_eqb e1' e2'
-  | EInr e1' T1, EInr e2' T2 => expr_eqb e1' e2'
+  | EInl e1' _T1, EInl e2' _T2 => expr_eqb e1' e2'
+  | EInr e1' _T1, EInr e2' _T2 => expr_eqb e1' e2'
   | EClassify e1', EClassify e2' => expr_eqb e1' e2'
   | EProve e1', EProve e2' => expr_eqb e1' e2'
   | _, _ => false
@@ -151,7 +126,7 @@ def ty_eqb (T1 T2 : ty) : Bool :=
   | TInt, TInt => true
   | TString, TString => true
   | TBytes, TBytes => true
-  | TFn A1 B1 e1, TFn A2 B2 e2 => ty_eqb A1 A2 && ty_eqb B1 B2
+  | TFn A1 B1 _e1, TFn A2 B2 _e2 => ty_eqb A1 A2 && ty_eqb B1 B2
   | TProd A1 B1, TProd A2 B2 => ty_eqb A1 A2 && ty_eqb B1 B2
   | TSum A1 B1, TSum A2 B2 => ty_eqb A1 A2 && ty_eqb B1 B2
   | TList T1', TList T2' => ty_eqb T1' T2'
@@ -189,37 +164,255 @@ theorem first_order_subtype :
       | TConstantTime T' => first_order_type T' = true
       | TZeroizing T' => first_order_type T' = true
       | _ => True := by
-  simp_all [Bool.and_eq_true]
+  intro T h
+  match T with
+  | TUnit | TBool | TInt | TString | TBytes => trivial
+  | TCapability _ | TCapabilityFull _ => trivial
+  | TFn _ _ _ => simp [first_order_type] at h
+  | TChan _ => simp [first_order_type] at h
+  | TSecureChan _ _ => simp [first_order_type] at h
+  | TProd T1 T2 =>
+    simp [first_order_type] at h
+    exact ⟨h.1, h.2⟩
+  | TSum T1 T2 =>
+    simp [first_order_type] at h
+    exact ⟨h.1, h.2⟩
+  | TList T' => simp [first_order_type] at h; exact h
+  | TOption T' => simp [first_order_type] at h; exact h
+  | TRef T' _ => simp [first_order_type] at h; exact h
+  | TSecret T' => simp [first_order_type] at h; exact h
+  | TLabeled T' _ => simp [first_order_type] at h; exact h
+  | TTainted T' _ => simp [first_order_type] at h; exact h
+  | TSanitized T' _ => simp [first_order_type] at h; exact h
+  | TProof T' => simp [first_order_type] at h; exact h
+  | TConstantTime T' => simp [first_order_type] at h; exact h
+  | TZeroizing T' => simp [first_order_type] at h; exact h
 
 -- All immediate subtypes of a first-order type are first-order
 /-- first_order_subtypes_fo (matches Coq) -/
-theorem first_order_subtypes_fo : ∀ T, first_order_type T = true → ∀ T', (∃ T2, T = TProd T' T2) ∨ (∃ T1, T = TProd T1 T') ∨ (∃ T2, T = TSum T' T2) ∨ (∃ T1, T = TSum T1 T') ∨ T = TList T' ∨ T = TOption T' ∨ (∃ sl, T = TRef T' sl) ∨ T = TSecret T' ∨ (∃ sl, T = TLabeled T' sl) ∨ (∃ src, T = TTainted T' src) ∨ (∃ san, T = TSanitized T' san) ∨ T = TProof T' ∨ T = TConstantTime T' ∨ T = TZeroizing T' → first_order_type T' = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_subtypes_fo :
+    ∀ T, first_order_type T = true →
+    ∀ T', (∃ T2, T = TProd T' T2) ∨ (∃ T1, T = TProd T1 T') ∨
+          (∃ T2, T = TSum T' T2) ∨ (∃ T1, T = TSum T1 T') ∨
+          T = TList T' ∨ T = TOption T' ∨
+          (∃ sl, T = TRef T' sl) ∨ T = TSecret T' ∨
+          (∃ sl, T = TLabeled T' sl) ∨ (∃ src, T = TTainted T' src) ∨
+          (∃ san, T = TSanitized T' san) ∨ T = TProof T' ∨
+          T = TConstantTime T' ∨ T = TZeroizing T' →
+    first_order_type T' = true := by
+  intro T hfo T' hsub
+  rcases hsub with ⟨T2, rfl⟩ | ⟨T1, rfl⟩ | ⟨T2, rfl⟩ | ⟨T1, rfl⟩ |
+    rfl | rfl | ⟨sl, rfl⟩ | rfl | ⟨sl, rfl⟩ | ⟨src, rfl⟩ | ⟨san, rfl⟩ |
+    rfl | rfl | rfl <;>
+    simp [first_order_type] at hfo <;>
+    (first | exact hfo | exact hfo.1 | exact hfo.2)
 
 /-- base_type_first_order (matches Coq) -/
 theorem base_type_first_order : ∀ T, is_base_type T = true → first_order_type T = true := by
-  simp_all [Bool.and_eq_true]
+  intro T h
+  match T with
+  | TUnit | TBool | TInt | TString | TBytes => rfl
+  | TCapability _ | TCapabilityFull _ => rfl
+  | TFn _ _ _ | TProd _ _ | TSum _ _ | TList _ | TOption _ | TRef _ _
+  | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TProof _
+  | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _ =>
+    simp [is_base_type] at h
 
 /-- base_type_size_one (matches Coq) -/
 theorem base_type_size_one : ∀ T, is_base_type T = true → ty_size T = 1 := by
-  simp_all [Bool.and_eq_true]
+  intro T h
+  match T with
+  | TUnit | TBool | TInt | TString | TBytes => rfl
+  | TCapability _ | TCapabilityFull _ => rfl
+  | TFn _ _ _ | TProd _ _ | TSum _ _ | TList _ | TOption _ | TRef _ _
+  | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TProof _
+  | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _ =>
+    simp [is_base_type] at h
 
 -- First-order value relations are structurally determined
 /-- first_order_value_structure (matches Coq) -/
-theorem first_order_value_structure : ∀ T, first_order_type T = true → match T with | TUnit => True | TBool => True | TInt => True | TString => True | TBytes => True | TCapability _ => True | TCapabilityFull _ => True | TProd T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true | TSum T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true | TList T' => first_order_type T' = true | TOption T' => first_order_type T' = true | TRef T' _ => first_order_type T' = true | TSecret T' => first_order_type T' = true | TLabeled T' _ => first_order_type T' = true | TTainted T' _ => first_order_type T' = true | TSanitized T' _ => first_order_type T' = true | TProof T' => first_order_type T' = true | TConstantTime T' => first_order_type T' = true | TZeroizing T' => first_order_type T' = true | TFn _ _ _ => False | TChan _ => False | TSecureChan _ _ => False end := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_value_structure :
+    ∀ T, first_order_type T = true →
+    match T with
+    | TUnit => True
+    | TBool => True
+    | TInt => True
+    | TString => True
+    | TBytes => True
+    | TCapability _ => True
+    | TCapabilityFull _ => True
+    | TProd T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true
+    | TSum T1 T2 => first_order_type T1 = true ∧ first_order_type T2 = true
+    | TList T' => first_order_type T' = true
+    | TOption T' => first_order_type T' = true
+    | TRef T' _ => first_order_type T' = true
+    | TSecret T' => first_order_type T' = true
+    | TLabeled T' _ => first_order_type T' = true
+    | TTainted T' _ => first_order_type T' = true
+    | TSanitized T' _ => first_order_type T' = true
+    | TProof T' => first_order_type T' = true
+    | TConstantTime T' => first_order_type T' = true
+    | TZeroizing T' => first_order_type T' = true
+    | TFn _ _ _ => False
+    | TChan _ => False
+    | TSecureChan _ _ => False := by
+  intro T h
+  match T with
+  | TUnit | TBool | TInt | TString | TBytes => trivial
+  | TCapability _ | TCapabilityFull _ => trivial
+  | TFn _ _ _ => simp [first_order_type] at h
+  | TChan _ => simp [first_order_type] at h
+  | TSecureChan _ _ => simp [first_order_type] at h
+  | TProd T1 T2 =>
+    simp [first_order_type] at h; exact ⟨h.1, h.2⟩
+  | TSum T1 T2 =>
+    simp [first_order_type] at h; exact ⟨h.1, h.2⟩
+  | TList T' => simp [first_order_type] at h; exact h
+  | TOption T' => simp [first_order_type] at h; exact h
+  | TRef T' _ => simp [first_order_type] at h; exact h
+  | TSecret T' => simp [first_order_type] at h; exact h
+  | TLabeled T' _ => simp [first_order_type] at h; exact h
+  | TTainted T' _ => simp [first_order_type] at h; exact h
+  | TSanitized T' _ => simp [first_order_type] at h; exact h
+  | TProof T' => simp [first_order_type] at h; exact h
+  | TConstantTime T' => simp [first_order_type] at h; exact h
+  | TZeroizing T' => simp [first_order_type] at h; exact h
 
 /-- first_order_induction_simple (matches Coq) -/
-theorem first_order_induction_simple : ∀ (P : ty → Prop), P TUnit → P TBool → P TInt → P TString → P TBytes → (∀ k, P (TCapability k)) → (∀ cap, P (TCapabilityFull cap)) → (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TProd T1 T2)) → (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TSum T1 T2)) → (∀ T, first_order_type T = true → P (TList T)) → (∀ T, first_order_type T = true → P (TOption T)) → (∀ T sl, first_order_type T = true → P (TRef T sl)) → (∀ T, first_order_type T = true → P (TSecret T)) → (∀ T sl, first_order_type T = true → P (TLabeled T sl)) → (∀ T src, first_order_type T = true → P (TTainted T src)) → (∀ T san, first_order_type T = true → P (TSanitized T san)) → (∀ T, first_order_type T = true → P (TProof T)) → (∀ T, first_order_type T = true → P (TConstantTime T)) → (∀ T, first_order_type T = true → P (TZeroizing T)) → ∀ T, first_order_type T = true → P T := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_induction_simple :
+    ∀ (P : ty → Prop),
+    P TUnit → P TBool → P TInt → P TString → P TBytes →
+    (∀ k, P (TCapability k)) →
+    (∀ cap, P (TCapabilityFull cap)) →
+    (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TProd T1 T2)) →
+    (∀ T1 T2, first_order_type T1 = true → first_order_type T2 = true → P (TSum T1 T2)) →
+    (∀ T, first_order_type T = true → P (TList T)) →
+    (∀ T, first_order_type T = true → P (TOption T)) →
+    (∀ T sl, first_order_type T = true → P (TRef T sl)) →
+    (∀ T, first_order_type T = true → P (TSecret T)) →
+    (∀ T sl, first_order_type T = true → P (TLabeled T sl)) →
+    (∀ T src, first_order_type T = true → P (TTainted T src)) →
+    (∀ T san, first_order_type T = true → P (TSanitized T san)) →
+    (∀ T, first_order_type T = true → P (TProof T)) →
+    (∀ T, first_order_type T = true → P (TConstantTime T)) →
+    (∀ T, first_order_type T = true → P (TZeroizing T)) →
+    ∀ T, first_order_type T = true → P T := by
+  intro P hUnit hBool hInt hString hBytes hCap hCapFull
+        hProd hSum hList hOption hRef hSecret hLabeled hTainted hSanitized
+        hProof hConstTime hZeroizing T hfo
+  match T with
+  | TUnit => exact hUnit
+  | TBool => exact hBool
+  | TInt => exact hInt
+  | TString => exact hString
+  | TBytes => exact hBytes
+  | TCapability k => exact hCap k
+  | TCapabilityFull c => exact hCapFull c
+  | TFn _ _ _ => simp [first_order_type] at hfo
+  | TChan _ => simp [first_order_type] at hfo
+  | TSecureChan _ _ => simp [first_order_type] at hfo
+  | TProd T1 T2 =>
+    simp [first_order_type] at hfo
+    exact hProd T1 T2 hfo.1 hfo.2
+  | TSum T1 T2 =>
+    simp [first_order_type] at hfo
+    exact hSum T1 T2 hfo.1 hfo.2
+  | TList T' =>
+    simp [first_order_type] at hfo
+    exact hList T' hfo
+  | TOption T' =>
+    simp [first_order_type] at hfo
+    exact hOption T' hfo
+  | TRef T' sl =>
+    simp [first_order_type] at hfo
+    exact hRef T' sl hfo
+  | TSecret T' =>
+    simp [first_order_type] at hfo
+    exact hSecret T' hfo
+  | TLabeled T' sl =>
+    simp [first_order_type] at hfo
+    exact hLabeled T' sl hfo
+  | TTainted T' src =>
+    simp [first_order_type] at hfo
+    exact hTainted T' src hfo
+  | TSanitized T' san =>
+    simp [first_order_type] at hfo
+    exact hSanitized T' san hfo
+  | TProof T' =>
+    simp [first_order_type] at hfo
+    exact hProof T' hfo
+  | TConstantTime T' =>
+    simp [first_order_type] at hfo
+    exact hConstTime T' hfo
+  | TZeroizing T' =>
+    simp [first_order_type] at hfo
+    exact hZeroizing T' hfo
+
+-- Helper lemmas to avoid expensive ty_eqb unfolding
+private theorem ty_eqb_fn_eq (A1 B1 : ty) (e1 : effect) (A2 B2 : ty) (e2 : effect) :
+    ty_eqb (TFn A1 B1 e1) (TFn A2 B2 e2) = (ty_eqb A1 A2 && ty_eqb B1 B2) := rfl
+private theorem ty_eqb_prod_eq (A1 B1 A2 B2 : ty) :
+    ty_eqb (TProd A1 B1) (TProd A2 B2) = (ty_eqb A1 A2 && ty_eqb B1 B2) := rfl
+private theorem ty_eqb_sum_eq (A1 B1 A2 B2 : ty) :
+    ty_eqb (TSum A1 B1) (TSum A2 B2) = (ty_eqb A1 A2 && ty_eqb B1 B2) := rfl
+private theorem ty_eqb_list_eq (T1 T2 : ty) :
+    ty_eqb (TList T1) (TList T2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_option_eq (T1 T2 : ty) :
+    ty_eqb (TOption T1) (TOption T2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_ref_eq (T1 : ty) (s1 : security_level) (T2 : ty) (s2 : security_level) :
+    ty_eqb (TRef T1 s1) (TRef T2 s2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_secret_eq (T1 T2 : ty) :
+    ty_eqb (TSecret T1) (TSecret T2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_labeled_eq (T1 : ty) (s1 : security_level) (T2 : ty) (s2 : security_level) :
+    ty_eqb (TLabeled T1 s1) (TLabeled T2 s2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_tainted_eq (T1 : ty) (src1 : taint_source) (T2 : ty) (src2 : taint_source) :
+    ty_eqb (TTainted T1 src1) (TTainted T2 src2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_sanitized_eq (T1 : ty) (san1 : sanitizer) (T2 : ty) (san2 : sanitizer) :
+    ty_eqb (TSanitized T1 san1) (TSanitized T2 san2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_proof_eq (T1 T2 : ty) :
+    ty_eqb (TProof T1) (TProof T2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_ct_eq (T1 T2 : ty) :
+    ty_eqb (TConstantTime T1) (TConstantTime T2) = ty_eqb T1 T2 := rfl
+private theorem ty_eqb_zero_eq (T1 T2 : ty) :
+    ty_eqb (TZeroizing T1) (TZeroizing T2) = ty_eqb T1 T2 := rfl
 
 /-- ty_eqb_refl (matches Coq) -/
 theorem ty_eqb_refl : ∀ T, ty_eqb T T = true := by
-  rfl
+  intro T
+  match T with
+  | TUnit | TBool | TInt | TString | TBytes
+  | TCapability _ | TCapabilityFull _ | TChan _ | TSecureChan _ _ => rfl
+  | TFn A B e =>
+    rw [ty_eqb_fn_eq, ty_eqb_refl A, ty_eqb_refl B]; rfl
+  | TProd A B =>
+    rw [ty_eqb_prod_eq, ty_eqb_refl A, ty_eqb_refl B]; rfl
+  | TSum A B =>
+    rw [ty_eqb_sum_eq, ty_eqb_refl A, ty_eqb_refl B]; rfl
+  | TList T' => rw [ty_eqb_list_eq]; exact ty_eqb_refl T'
+  | TOption T' => rw [ty_eqb_option_eq]; exact ty_eqb_refl T'
+  | TRef T' sl => rw [ty_eqb_ref_eq]; exact ty_eqb_refl T'
+  | TSecret T' => rw [ty_eqb_secret_eq]; exact ty_eqb_refl T'
+  | TLabeled T' sl => rw [ty_eqb_labeled_eq]; exact ty_eqb_refl T'
+  | TTainted T' src => rw [ty_eqb_tainted_eq]; exact ty_eqb_refl T'
+  | TSanitized T' san => rw [ty_eqb_sanitized_eq]; exact ty_eqb_refl T'
+  | TProof T' => rw [ty_eqb_proof_eq]; exact ty_eqb_refl T'
+  | TConstantTime T' => rw [ty_eqb_ct_eq]; exact ty_eqb_refl T'
+  | TZeroizing T' => rw [ty_eqb_zero_eq]; exact ty_eqb_refl T'
 
 /-- ty_eqb_eq (matches Coq) -/
-theorem ty_eqb_eq : ∀ T1 T2, ty_eqb T1 T2 = true → match T1, T2 with | TUnit, TUnit => True | TBool, TBool => True | TInt, TInt => True | TString, TString => True | TBytes, TBytes => True | _, _ => True end := by
-  simp_all [Bool.and_eq_true]
+theorem ty_eqb_eq :
+    ∀ T1 T2, ty_eqb T1 T2 = true →
+    match T1, T2 with
+    | TUnit, TUnit => True
+    | TBool, TBool => True
+    | TInt, TInt => True
+    | TString, TString => True
+    | TBytes, TBytes => True
+    | _, _ => True := by
+  intro T1 T2 _
+  -- Every branch of the match returns True, so the match always reduces to True
+  -- We need to case-split to let Lean reduce the match
+  cases T1 <;> cases T2 <;> trivial
 
 -- ty_eqb is false for mismatched constructors
 /-- ty_eqb_unit_bool_false (matches Coq) -/
@@ -248,35 +441,40 @@ theorem ty_eqb_unit_string_false : ty_eqb TUnit TString = false := by
 
 /-- fn_not_first_order (matches Coq) -/
 theorem fn_not_first_order : ∀ T1 T2 eff, first_order_type (TFn T1 T2 eff) = false := by
-  rfl
+  intro _ _ _; rfl
 
 /-- chan_not_first_order (matches Coq) -/
 theorem chan_not_first_order : ∀ s, first_order_type (TChan s) = false := by
-  rfl
+  intro _; rfl
 
 /-- securechan_not_first_order (matches Coq) -/
 theorem securechan_not_first_order : ∀ s sl, first_order_type (TSecureChan s sl) = false := by
-  rfl
+  intro _ _; rfl
 
 /-- base_type_not_fn (matches Coq) -/
 theorem base_type_not_fn : ∀ T, is_base_type T = true → ∀ T1 T2 eff, T ≠ TFn T1 T2 eff := by
-  simp_all [Bool.and_eq_true]
+  intro T h T1 T2 eff heq
+  subst heq; simp [is_base_type] at h
 
 /-- base_type_not_prod (matches Coq) -/
 theorem base_type_not_prod : ∀ T, is_base_type T = true → ∀ T1 T2, T ≠ TProd T1 T2 := by
-  simp_all [Bool.and_eq_true]
+  intro T h T1 T2 heq
+  subst heq; simp [is_base_type] at h
 
 /-- base_type_not_sum (matches Coq) -/
 theorem base_type_not_sum : ∀ T, is_base_type T = true → ∀ T1 T2, T ≠ TSum T1 T2 := by
-  simp_all [Bool.and_eq_true]
+  intro T h T1 T2 heq
+  subst heq; simp [is_base_type] at h
 
 /-- base_type_not_list (matches Coq) -/
 theorem base_type_not_list : ∀ T, is_base_type T = true → ∀ T', T ≠ TList T' := by
-  simp_all [Bool.and_eq_true]
+  intro T h T' heq
+  subst heq; simp [is_base_type] at h
 
 /-- base_type_not_option (matches Coq) -/
 theorem base_type_not_option : ∀ T, is_base_type T = true → ∀ T', T ≠ TOption T' := by
-  simp_all [Bool.and_eq_true]
+  intro T h T' heq
+  subst heq; simp [is_base_type] at h
 
 /-- fo_compound_depth_unit (matches Coq) -/
 theorem fo_compound_depth_unit : fo_compound_depth TUnit = 0 := by
@@ -299,28 +497,299 @@ theorem fo_compound_depth_bytes : fo_compound_depth TBytes = 0 := by
   rfl
 
 /-- fo_compound_depth_list (matches Coq) -/
-theorem fo_compound_depth_list : ∀ T, fo_compound_depth (TList T) = 0 := by
-  rfl
+theorem fo_compound_depth_list : ∀ T, fo_compound_depth (TList T) = Nat.succ (fo_compound_depth T) := by
+  intro _; rfl
 
 /-- fo_compound_depth_option (matches Coq) -/
-theorem fo_compound_depth_option : ∀ T, fo_compound_depth (TOption T) = 0 := by
-  rfl
+theorem fo_compound_depth_option : ∀ T, fo_compound_depth (TOption T) = Nat.succ (fo_compound_depth T) := by
+  intro _; rfl
 
 /-- fo_compound_depth_ref (matches Coq) -/
-theorem fo_compound_depth_ref : ∀ T sl, fo_compound_depth (TRef T sl) = 0 := by
-  rfl
+theorem fo_compound_depth_ref : ∀ T sl, fo_compound_depth (TRef T sl) = Nat.succ (fo_compound_depth T) := by
+  intro _ _; rfl
 
 /-- fo_compound_depth_secret (matches Coq) -/
-theorem fo_compound_depth_secret : ∀ T, fo_compound_depth (TSecret T) = 0 := by
-  rfl
+theorem fo_compound_depth_secret : ∀ T, fo_compound_depth (TSecret T) = Nat.succ (fo_compound_depth T) := by
+  intro _; rfl
 
 /-- fo_compound_depth_fn (matches Coq) -/
 theorem fo_compound_depth_fn : ∀ T1 T2 eff, fo_compound_depth (TFn T1 T2 eff) = 0 := by
-  rfl
+  intro _ _ _; rfl
+
+private theorem bool_and_comm (a b : Bool) : (a && b) = (b && a) := by
+  cases a <;> cases b <;> rfl
 
 /-- ty_eqb_sym (matches Coq) -/
 theorem ty_eqb_sym : ∀ T1 T2, ty_eqb T1 T2 = ty_eqb T2 T1 := by
-  cases ‹_› <;> simp
+  intro T1 T2
+  match T1, T2 with
+  | TUnit, TUnit => rfl
+  | TBool, TBool => rfl
+  | TInt, TInt => rfl
+  | TString, TString => rfl
+  | TBytes, TBytes => rfl
+  | TFn A1 B1 e1, TFn A2 B2 e2 =>
+    rw [ty_eqb_fn_eq, ty_eqb_fn_eq, ty_eqb_sym A1 A2, ty_eqb_sym B1 B2]
+  | TProd A1 B1, TProd A2 B2 =>
+    rw [ty_eqb_prod_eq, ty_eqb_prod_eq, ty_eqb_sym A1 A2, ty_eqb_sym B1 B2]
+  | TSum A1 B1, TSum A2 B2 =>
+    rw [ty_eqb_sum_eq, ty_eqb_sum_eq, ty_eqb_sym A1 A2, ty_eqb_sym B1 B2]
+  | TList T1', TList T2' =>
+    rw [ty_eqb_list_eq, ty_eqb_list_eq]; exact ty_eqb_sym T1' T2'
+  | TOption T1', TOption T2' =>
+    rw [ty_eqb_option_eq, ty_eqb_option_eq]; exact ty_eqb_sym T1' T2'
+  | TRef T1' s1, TRef T2' s2 =>
+    rw [ty_eqb_ref_eq, ty_eqb_ref_eq]; exact ty_eqb_sym T1' T2'
+  | TSecret T1', TSecret T2' =>
+    rw [ty_eqb_secret_eq, ty_eqb_secret_eq]; exact ty_eqb_sym T1' T2'
+  | TLabeled T1' s1, TLabeled T2' s2 =>
+    rw [ty_eqb_labeled_eq, ty_eqb_labeled_eq]; exact ty_eqb_sym T1' T2'
+  | TTainted T1' src1, TTainted T2' src2 =>
+    rw [ty_eqb_tainted_eq, ty_eqb_tainted_eq]; exact ty_eqb_sym T1' T2'
+  | TSanitized T1' san1, TSanitized T2' san2 =>
+    rw [ty_eqb_sanitized_eq, ty_eqb_sanitized_eq]; exact ty_eqb_sym T1' T2'
+  | TProof T1', TProof T2' =>
+    rw [ty_eqb_proof_eq, ty_eqb_proof_eq]; exact ty_eqb_sym T1' T2'
+  | TCapability _, TCapability _ => rfl
+  | TCapabilityFull _, TCapabilityFull _ => rfl
+  | TChan _, TChan _ => rfl
+  | TSecureChan _ _, TSecureChan _ _ => rfl
+  | TConstantTime T1', TConstantTime T2' =>
+    rw [ty_eqb_ct_eq, ty_eqb_ct_eq]; exact ty_eqb_sym T1' T2'
+  | TZeroizing T1', TZeroizing T2' =>
+    rw [ty_eqb_zero_eq, ty_eqb_zero_eq]; exact ty_eqb_sym T1' T2'
+  -- All cross-constructor cases: both sides reduce to false
+  | TUnit, TBool | TBool, TUnit => rfl
+  | TUnit, TInt | TInt, TUnit => rfl
+  | TUnit, TString | TString, TUnit => rfl
+  | TUnit, TBytes | TBytes, TUnit => rfl
+  | TUnit, TFn _ _ _ | TFn _ _ _, TUnit => rfl
+  | TUnit, TProd _ _ | TProd _ _, TUnit => rfl
+  | TUnit, TSum _ _ | TSum _ _, TUnit => rfl
+  | TUnit, TList _ | TList _, TUnit => rfl
+  | TUnit, TOption _ | TOption _, TUnit => rfl
+  | TUnit, TRef _ _ | TRef _ _, TUnit => rfl
+  | TUnit, TSecret _ | TSecret _, TUnit => rfl
+  | TUnit, TLabeled _ _ | TLabeled _ _, TUnit => rfl
+  | TUnit, TTainted _ _ | TTainted _ _, TUnit => rfl
+  | TUnit, TSanitized _ _ | TSanitized _ _, TUnit => rfl
+  | TUnit, TProof _ | TProof _, TUnit => rfl
+  | TUnit, TCapability _ | TCapability _, TUnit => rfl
+  | TUnit, TCapabilityFull _ | TCapabilityFull _, TUnit => rfl
+  | TUnit, TChan _ | TChan _, TUnit => rfl
+  | TUnit, TSecureChan _ _ | TSecureChan _ _, TUnit => rfl
+  | TUnit, TConstantTime _ | TConstantTime _, TUnit => rfl
+  | TUnit, TZeroizing _ | TZeroizing _, TUnit => rfl
+  | TBool, TInt | TInt, TBool => rfl
+  | TBool, TString | TString, TBool => rfl
+  | TBool, TBytes | TBytes, TBool => rfl
+  | TBool, TFn _ _ _ | TFn _ _ _, TBool => rfl
+  | TBool, TProd _ _ | TProd _ _, TBool => rfl
+  | TBool, TSum _ _ | TSum _ _, TBool => rfl
+  | TBool, TList _ | TList _, TBool => rfl
+  | TBool, TOption _ | TOption _, TBool => rfl
+  | TBool, TRef _ _ | TRef _ _, TBool => rfl
+  | TBool, TSecret _ | TSecret _, TBool => rfl
+  | TBool, TLabeled _ _ | TLabeled _ _, TBool => rfl
+  | TBool, TTainted _ _ | TTainted _ _, TBool => rfl
+  | TBool, TSanitized _ _ | TSanitized _ _, TBool => rfl
+  | TBool, TProof _ | TProof _, TBool => rfl
+  | TBool, TCapability _ | TCapability _, TBool => rfl
+  | TBool, TCapabilityFull _ | TCapabilityFull _, TBool => rfl
+  | TBool, TChan _ | TChan _, TBool => rfl
+  | TBool, TSecureChan _ _ | TSecureChan _ _, TBool => rfl
+  | TBool, TConstantTime _ | TConstantTime _, TBool => rfl
+  | TBool, TZeroizing _ | TZeroizing _, TBool => rfl
+  | TInt, TString | TString, TInt => rfl
+  | TInt, TBytes | TBytes, TInt => rfl
+  | TInt, TFn _ _ _ | TFn _ _ _, TInt => rfl
+  | TInt, TProd _ _ | TProd _ _, TInt => rfl
+  | TInt, TSum _ _ | TSum _ _, TInt => rfl
+  | TInt, TList _ | TList _, TInt => rfl
+  | TInt, TOption _ | TOption _, TInt => rfl
+  | TInt, TRef _ _ | TRef _ _, TInt => rfl
+  | TInt, TSecret _ | TSecret _, TInt => rfl
+  | TInt, TLabeled _ _ | TLabeled _ _, TInt => rfl
+  | TInt, TTainted _ _ | TTainted _ _, TInt => rfl
+  | TInt, TSanitized _ _ | TSanitized _ _, TInt => rfl
+  | TInt, TProof _ | TProof _, TInt => rfl
+  | TInt, TCapability _ | TCapability _, TInt => rfl
+  | TInt, TCapabilityFull _ | TCapabilityFull _, TInt => rfl
+  | TInt, TChan _ | TChan _, TInt => rfl
+  | TInt, TSecureChan _ _ | TSecureChan _ _, TInt => rfl
+  | TInt, TConstantTime _ | TConstantTime _, TInt => rfl
+  | TInt, TZeroizing _ | TZeroizing _, TInt => rfl
+  | TString, TBytes | TBytes, TString => rfl
+  | TString, TFn _ _ _ | TFn _ _ _, TString => rfl
+  | TString, TProd _ _ | TProd _ _, TString => rfl
+  | TString, TSum _ _ | TSum _ _, TString => rfl
+  | TString, TList _ | TList _, TString => rfl
+  | TString, TOption _ | TOption _, TString => rfl
+  | TString, TRef _ _ | TRef _ _, TString => rfl
+  | TString, TSecret _ | TSecret _, TString => rfl
+  | TString, TLabeled _ _ | TLabeled _ _, TString => rfl
+  | TString, TTainted _ _ | TTainted _ _, TString => rfl
+  | TString, TSanitized _ _ | TSanitized _ _, TString => rfl
+  | TString, TProof _ | TProof _, TString => rfl
+  | TString, TCapability _ | TCapability _, TString => rfl
+  | TString, TCapabilityFull _ | TCapabilityFull _, TString => rfl
+  | TString, TChan _ | TChan _, TString => rfl
+  | TString, TSecureChan _ _ | TSecureChan _ _, TString => rfl
+  | TString, TConstantTime _ | TConstantTime _, TString => rfl
+  | TString, TZeroizing _ | TZeroizing _, TString => rfl
+  | TBytes, TFn _ _ _ | TFn _ _ _, TBytes => rfl
+  | TBytes, TProd _ _ | TProd _ _, TBytes => rfl
+  | TBytes, TSum _ _ | TSum _ _, TBytes => rfl
+  | TBytes, TList _ | TList _, TBytes => rfl
+  | TBytes, TOption _ | TOption _, TBytes => rfl
+  | TBytes, TRef _ _ | TRef _ _, TBytes => rfl
+  | TBytes, TSecret _ | TSecret _, TBytes => rfl
+  | TBytes, TLabeled _ _ | TLabeled _ _, TBytes => rfl
+  | TBytes, TTainted _ _ | TTainted _ _, TBytes => rfl
+  | TBytes, TSanitized _ _ | TSanitized _ _, TBytes => rfl
+  | TBytes, TProof _ | TProof _, TBytes => rfl
+  | TBytes, TCapability _ | TCapability _, TBytes => rfl
+  | TBytes, TCapabilityFull _ | TCapabilityFull _, TBytes => rfl
+  | TBytes, TChan _ | TChan _, TBytes => rfl
+  | TBytes, TSecureChan _ _ | TSecureChan _ _, TBytes => rfl
+  | TBytes, TConstantTime _ | TConstantTime _, TBytes => rfl
+  | TBytes, TZeroizing _ | TZeroizing _, TBytes => rfl
+  | TFn _ _ _, TProd _ _ | TProd _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TSum _ _ | TSum _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TList _ | TList _, TFn _ _ _ => rfl
+  | TFn _ _ _, TOption _ | TOption _, TFn _ _ _ => rfl
+  | TFn _ _ _, TRef _ _ | TRef _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TSecret _ | TSecret _, TFn _ _ _ => rfl
+  | TFn _ _ _, TLabeled _ _ | TLabeled _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TTainted _ _ | TTainted _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TSanitized _ _ | TSanitized _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TProof _ | TProof _, TFn _ _ _ => rfl
+  | TFn _ _ _, TCapability _ | TCapability _, TFn _ _ _ => rfl
+  | TFn _ _ _, TCapabilityFull _ | TCapabilityFull _, TFn _ _ _ => rfl
+  | TFn _ _ _, TChan _ | TChan _, TFn _ _ _ => rfl
+  | TFn _ _ _, TSecureChan _ _ | TSecureChan _ _, TFn _ _ _ => rfl
+  | TFn _ _ _, TConstantTime _ | TConstantTime _, TFn _ _ _ => rfl
+  | TFn _ _ _, TZeroizing _ | TZeroizing _, TFn _ _ _ => rfl
+  | TProd _ _, TSum _ _ | TSum _ _, TProd _ _ => rfl
+  | TProd _ _, TList _ | TList _, TProd _ _ => rfl
+  | TProd _ _, TOption _ | TOption _, TProd _ _ => rfl
+  | TProd _ _, TRef _ _ | TRef _ _, TProd _ _ => rfl
+  | TProd _ _, TSecret _ | TSecret _, TProd _ _ => rfl
+  | TProd _ _, TLabeled _ _ | TLabeled _ _, TProd _ _ => rfl
+  | TProd _ _, TTainted _ _ | TTainted _ _, TProd _ _ => rfl
+  | TProd _ _, TSanitized _ _ | TSanitized _ _, TProd _ _ => rfl
+  | TProd _ _, TProof _ | TProof _, TProd _ _ => rfl
+  | TProd _ _, TCapability _ | TCapability _, TProd _ _ => rfl
+  | TProd _ _, TCapabilityFull _ | TCapabilityFull _, TProd _ _ => rfl
+  | TProd _ _, TChan _ | TChan _, TProd _ _ => rfl
+  | TProd _ _, TSecureChan _ _ | TSecureChan _ _, TProd _ _ => rfl
+  | TProd _ _, TConstantTime _ | TConstantTime _, TProd _ _ => rfl
+  | TProd _ _, TZeroizing _ | TZeroizing _, TProd _ _ => rfl
+  | TSum _ _, TList _ | TList _, TSum _ _ => rfl
+  | TSum _ _, TOption _ | TOption _, TSum _ _ => rfl
+  | TSum _ _, TRef _ _ | TRef _ _, TSum _ _ => rfl
+  | TSum _ _, TSecret _ | TSecret _, TSum _ _ => rfl
+  | TSum _ _, TLabeled _ _ | TLabeled _ _, TSum _ _ => rfl
+  | TSum _ _, TTainted _ _ | TTainted _ _, TSum _ _ => rfl
+  | TSum _ _, TSanitized _ _ | TSanitized _ _, TSum _ _ => rfl
+  | TSum _ _, TProof _ | TProof _, TSum _ _ => rfl
+  | TSum _ _, TCapability _ | TCapability _, TSum _ _ => rfl
+  | TSum _ _, TCapabilityFull _ | TCapabilityFull _, TSum _ _ => rfl
+  | TSum _ _, TChan _ | TChan _, TSum _ _ => rfl
+  | TSum _ _, TSecureChan _ _ | TSecureChan _ _, TSum _ _ => rfl
+  | TSum _ _, TConstantTime _ | TConstantTime _, TSum _ _ => rfl
+  | TSum _ _, TZeroizing _ | TZeroizing _, TSum _ _ => rfl
+  | TList _, TOption _ | TOption _, TList _ => rfl
+  | TList _, TRef _ _ | TRef _ _, TList _ => rfl
+  | TList _, TSecret _ | TSecret _, TList _ => rfl
+  | TList _, TLabeled _ _ | TLabeled _ _, TList _ => rfl
+  | TList _, TTainted _ _ | TTainted _ _, TList _ => rfl
+  | TList _, TSanitized _ _ | TSanitized _ _, TList _ => rfl
+  | TList _, TProof _ | TProof _, TList _ => rfl
+  | TList _, TCapability _ | TCapability _, TList _ => rfl
+  | TList _, TCapabilityFull _ | TCapabilityFull _, TList _ => rfl
+  | TList _, TChan _ | TChan _, TList _ => rfl
+  | TList _, TSecureChan _ _ | TSecureChan _ _, TList _ => rfl
+  | TList _, TConstantTime _ | TConstantTime _, TList _ => rfl
+  | TList _, TZeroizing _ | TZeroizing _, TList _ => rfl
+  | TOption _, TRef _ _ | TRef _ _, TOption _ => rfl
+  | TOption _, TSecret _ | TSecret _, TOption _ => rfl
+  | TOption _, TLabeled _ _ | TLabeled _ _, TOption _ => rfl
+  | TOption _, TTainted _ _ | TTainted _ _, TOption _ => rfl
+  | TOption _, TSanitized _ _ | TSanitized _ _, TOption _ => rfl
+  | TOption _, TProof _ | TProof _, TOption _ => rfl
+  | TOption _, TCapability _ | TCapability _, TOption _ => rfl
+  | TOption _, TCapabilityFull _ | TCapabilityFull _, TOption _ => rfl
+  | TOption _, TChan _ | TChan _, TOption _ => rfl
+  | TOption _, TSecureChan _ _ | TSecureChan _ _, TOption _ => rfl
+  | TOption _, TConstantTime _ | TConstantTime _, TOption _ => rfl
+  | TOption _, TZeroizing _ | TZeroizing _, TOption _ => rfl
+  | TRef _ _, TSecret _ | TSecret _, TRef _ _ => rfl
+  | TRef _ _, TLabeled _ _ | TLabeled _ _, TRef _ _ => rfl
+  | TRef _ _, TTainted _ _ | TTainted _ _, TRef _ _ => rfl
+  | TRef _ _, TSanitized _ _ | TSanitized _ _, TRef _ _ => rfl
+  | TRef _ _, TProof _ | TProof _, TRef _ _ => rfl
+  | TRef _ _, TCapability _ | TCapability _, TRef _ _ => rfl
+  | TRef _ _, TCapabilityFull _ | TCapabilityFull _, TRef _ _ => rfl
+  | TRef _ _, TChan _ | TChan _, TRef _ _ => rfl
+  | TRef _ _, TSecureChan _ _ | TSecureChan _ _, TRef _ _ => rfl
+  | TRef _ _, TConstantTime _ | TConstantTime _, TRef _ _ => rfl
+  | TRef _ _, TZeroizing _ | TZeroizing _, TRef _ _ => rfl
+  | TSecret _, TLabeled _ _ | TLabeled _ _, TSecret _ => rfl
+  | TSecret _, TTainted _ _ | TTainted _ _, TSecret _ => rfl
+  | TSecret _, TSanitized _ _ | TSanitized _ _, TSecret _ => rfl
+  | TSecret _, TProof _ | TProof _, TSecret _ => rfl
+  | TSecret _, TCapability _ | TCapability _, TSecret _ => rfl
+  | TSecret _, TCapabilityFull _ | TCapabilityFull _, TSecret _ => rfl
+  | TSecret _, TChan _ | TChan _, TSecret _ => rfl
+  | TSecret _, TSecureChan _ _ | TSecureChan _ _, TSecret _ => rfl
+  | TSecret _, TConstantTime _ | TConstantTime _, TSecret _ => rfl
+  | TSecret _, TZeroizing _ | TZeroizing _, TSecret _ => rfl
+  | TLabeled _ _, TTainted _ _ | TTainted _ _, TLabeled _ _ => rfl
+  | TLabeled _ _, TSanitized _ _ | TSanitized _ _, TLabeled _ _ => rfl
+  | TLabeled _ _, TProof _ | TProof _, TLabeled _ _ => rfl
+  | TLabeled _ _, TCapability _ | TCapability _, TLabeled _ _ => rfl
+  | TLabeled _ _, TCapabilityFull _ | TCapabilityFull _, TLabeled _ _ => rfl
+  | TLabeled _ _, TChan _ | TChan _, TLabeled _ _ => rfl
+  | TLabeled _ _, TSecureChan _ _ | TSecureChan _ _, TLabeled _ _ => rfl
+  | TLabeled _ _, TConstantTime _ | TConstantTime _, TLabeled _ _ => rfl
+  | TLabeled _ _, TZeroizing _ | TZeroizing _, TLabeled _ _ => rfl
+  | TTainted _ _, TSanitized _ _ | TSanitized _ _, TTainted _ _ => rfl
+  | TTainted _ _, TProof _ | TProof _, TTainted _ _ => rfl
+  | TTainted _ _, TCapability _ | TCapability _, TTainted _ _ => rfl
+  | TTainted _ _, TCapabilityFull _ | TCapabilityFull _, TTainted _ _ => rfl
+  | TTainted _ _, TChan _ | TChan _, TTainted _ _ => rfl
+  | TTainted _ _, TSecureChan _ _ | TSecureChan _ _, TTainted _ _ => rfl
+  | TTainted _ _, TConstantTime _ | TConstantTime _, TTainted _ _ => rfl
+  | TTainted _ _, TZeroizing _ | TZeroizing _, TTainted _ _ => rfl
+  | TSanitized _ _, TProof _ | TProof _, TSanitized _ _ => rfl
+  | TSanitized _ _, TCapability _ | TCapability _, TSanitized _ _ => rfl
+  | TSanitized _ _, TCapabilityFull _ | TCapabilityFull _, TSanitized _ _ => rfl
+  | TSanitized _ _, TChan _ | TChan _, TSanitized _ _ => rfl
+  | TSanitized _ _, TSecureChan _ _ | TSecureChan _ _, TSanitized _ _ => rfl
+  | TSanitized _ _, TConstantTime _ | TConstantTime _, TSanitized _ _ => rfl
+  | TSanitized _ _, TZeroizing _ | TZeroizing _, TSanitized _ _ => rfl
+  | TProof _, TCapability _ | TCapability _, TProof _ => rfl
+  | TProof _, TCapabilityFull _ | TCapabilityFull _, TProof _ => rfl
+  | TProof _, TChan _ | TChan _, TProof _ => rfl
+  | TProof _, TSecureChan _ _ | TSecureChan _ _, TProof _ => rfl
+  | TProof _, TConstantTime _ | TConstantTime _, TProof _ => rfl
+  | TProof _, TZeroizing _ | TZeroizing _, TProof _ => rfl
+  | TCapability _, TCapabilityFull _ | TCapabilityFull _, TCapability _ => rfl
+  | TCapability _, TChan _ | TChan _, TCapability _ => rfl
+  | TCapability _, TSecureChan _ _ | TSecureChan _ _, TCapability _ => rfl
+  | TCapability _, TConstantTime _ | TConstantTime _, TCapability _ => rfl
+  | TCapability _, TZeroizing _ | TZeroizing _, TCapability _ => rfl
+  | TCapabilityFull _, TChan _ | TChan _, TCapabilityFull _ => rfl
+  | TCapabilityFull _, TSecureChan _ _ | TSecureChan _ _, TCapabilityFull _ => rfl
+  | TCapabilityFull _, TConstantTime _ | TConstantTime _, TCapabilityFull _ => rfl
+  | TCapabilityFull _, TZeroizing _ | TZeroizing _, TCapabilityFull _ => rfl
+  | TChan _, TSecureChan _ _ | TSecureChan _ _, TChan _ => rfl
+  | TChan _, TConstantTime _ | TConstantTime _, TChan _ => rfl
+  | TChan _, TZeroizing _ | TZeroizing _, TChan _ => rfl
+  | TSecureChan _ _, TConstantTime _ | TConstantTime _, TSecureChan _ _ => rfl
+  | TSecureChan _ _, TZeroizing _ | TZeroizing _, TSecureChan _ _ => rfl
+  | TConstantTime _, TZeroizing _ | TZeroizing _, TConstantTime _ => rfl
 
 -- expr_eqb for base values
 /-- expr_eqb_unit (matches Coq) -/
@@ -329,23 +798,23 @@ theorem expr_eqb_unit : expr_eqb EUnit EUnit = true := by
 
 /-- expr_eqb_bool (matches Coq) -/
 theorem expr_eqb_bool : ∀ b, expr_eqb (EBool b) (EBool b) = true := by
-  simp_all [Bool.and_eq_true]
+  intro b; show Bool.eqb b b = true; cases b <;> rfl
 
 /-- expr_eqb_int (matches Coq) -/
 theorem expr_eqb_int : ∀ n, expr_eqb (EInt n) (EInt n) = true := by
-  simp_all [Bool.and_eq_true]
+  intro n; show Nat.eqb n n = true; exact Nat.beq_refl n
 
 /-- expr_eqb_string (matches Coq) -/
 theorem expr_eqb_string : ∀ s, expr_eqb (EString s) (EString s) = true := by
-  simp_all [Bool.and_eq_true]
+  intro s; show String.eqb s s = true; simp [String.eqb]
 
 /-- expr_eqb_loc (matches Coq) -/
 theorem expr_eqb_loc : ∀ l, expr_eqb (ELoc l) (ELoc l) = true := by
-  simp_all [Bool.and_eq_true]
+  intro l; show Nat.eqb l l = true; exact Nat.beq_refl l
 
 /-- expr_eqb_var (matches Coq) -/
 theorem expr_eqb_var : ∀ x, expr_eqb (EVar x) (EVar x) = true := by
-  simp_all [Bool.and_eq_true]
+  intro x; show String.eqb x x = true; simp [String.eqb]
 
 /-- is_base_type_unit (matches Coq) -/
 theorem is_base_type_unit : is_base_type TUnit = true := by
@@ -368,51 +837,62 @@ theorem is_base_type_bytes : is_base_type TBytes = true := by
   rfl
 
 /-- first_order_type_prod_iff (matches Coq) -/
-theorem first_order_type_prod_iff : ∀ T1 T2, first_order_type (TProd T1 T2) = true <-> first_order_type T1 = true ∧ first_order_type T2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_type_prod_iff :
+    ∀ T1 T2, first_order_type (TProd T1 T2) = true ↔
+    first_order_type T1 = true ∧ first_order_type T2 = true := by
+  intro T1 T2
+  simp [first_order_type, Bool.and_eq_true]
 
 /-- first_order_type_sum_iff (matches Coq) -/
-theorem first_order_type_sum_iff : ∀ T1 T2, first_order_type (TSum T1 T2) = true <-> first_order_type T1 = true ∧ first_order_type T2 = true := by
-  simp_all [Bool.and_eq_true]
+theorem first_order_type_sum_iff :
+    ∀ T1 T2, first_order_type (TSum T1 T2) = true ↔
+    first_order_type T1 = true ∧ first_order_type T2 = true := by
+  intro T1 T2
+  simp [first_order_type, Bool.and_eq_true]
 
 /-- first_order_type_secret_iff (matches Coq) -/
 theorem first_order_type_secret_iff : ∀ T, first_order_type (TSecret T) = first_order_type T := by
-  rfl
+  intro _; rfl
 
 /-- ty_eqb_prod (matches Coq) -/
-theorem ty_eqb_prod : ∀ T1 T2 T3 T4, ty_eqb (TProd T1 T2) (TProd T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool := by
-  rfl
+theorem ty_eqb_prod :
+    ∀ T1 T2 T3 T4, ty_eqb (TProd T1 T2) (TProd T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4) := by
+  intro _ _ _ _; rfl
 
 /-- ty_eqb_sum (matches Coq) -/
-theorem ty_eqb_sum : ∀ T1 T2 T3 T4, ty_eqb (TSum T1 T2) (TSum T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool := by
-  rfl
+theorem ty_eqb_sum :
+    ∀ T1 T2 T3 T4, ty_eqb (TSum T1 T2) (TSum T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4) := by
+  intro _ _ _ _; rfl
 
 /-- base_type_not_ref (matches Coq) -/
 theorem base_type_not_ref : ∀ T, is_base_type T = true → ∀ T' sl, T ≠ TRef T' sl := by
-  simp_all [Bool.and_eq_true]
+  intro T h T' sl heq
+  subst heq; simp [is_base_type] at h
 
 /-- base_type_not_secret (matches Coq) -/
 theorem base_type_not_secret : ∀ T, is_base_type T = true → ∀ T', T ≠ TSecret T' := by
-  simp_all [Bool.and_eq_true]
+  intro T h T' heq
+  subst heq; simp [is_base_type] at h
 
 /-- first_order_type_list_iff (matches Coq) -/
 theorem first_order_type_list_iff : ∀ T, first_order_type (TList T) = first_order_type T := by
-  rfl
+  intro _; rfl
 
 /-- first_order_type_option_iff (matches Coq) -/
 theorem first_order_type_option_iff : ∀ T, first_order_type (TOption T) = first_order_type T := by
-  rfl
+  intro _; rfl
 
 /-- ty_eqb_list (matches Coq) -/
 theorem ty_eqb_list : ∀ T1 T2, ty_eqb (TList T1) (TList T2) = ty_eqb T1 T2 := by
-  rfl
+  intro _ _; rfl
 
 /-- ty_eqb_option (matches Coq) -/
 theorem ty_eqb_option : ∀ T1 T2, ty_eqb (TOption T1) (TOption T2) = ty_eqb T1 T2 := by
-  rfl
+  intro _ _; rfl
 
 /-- base_type_not_labeled (matches Coq) -/
 theorem base_type_not_labeled : ∀ T, is_base_type T = true → ∀ T' sl, T ≠ TLabeled T' sl := by
-  simp_all [Bool.and_eq_true]
+  intro T h T' sl heq
+  subst heq; simp [is_base_type] at h
 
 end RIINA

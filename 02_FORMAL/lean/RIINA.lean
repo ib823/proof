@@ -29,6 +29,14 @@ import RIINA.Properties.SubstitutionCommute
 import RIINA.Properties.EffectSafety
 import RIINA.Properties.EffectMonotonicity
 import RIINA.Properties.ReferenceOps
+import RIINA.Effects.EffectSystem
+import RIINA.Effects.EffectGate
+import RIINA.Properties.NonInterference
+import RIINA.Properties.KripkeProperties
+import RIINA.TypeSystem.Progress
+import RIINA.TypeSystem.Preservation
+import RIINA.Properties.FirstOrderComplete
+import RIINA.Properties.MaximumAxiomElimination
 -- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
