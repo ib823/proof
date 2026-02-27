@@ -527,16 +527,10 @@ def fo_compound_depth : ty → Nat
 
 /-- Conservative marker for first-order types with trivial relational structure. -/
 def fo_type_has_trivial_rel : ty → Bool
-  | TUnit | TBool | TInt | TString | TBytes => true
+  | TUnit => true
   | TCapability _ | TCapabilityFull _ => true
   | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TProof _ => true
-  | TRef _ _ => true
-  | TList t => fo_type_has_trivial_rel t
-  | TOption t => fo_type_has_trivial_rel t
-  | TProd t1 t2 => fo_type_has_trivial_rel t1 && fo_type_has_trivial_rel t2
-  | TSum t1 t2 => fo_type_has_trivial_rel t1 && fo_type_has_trivial_rel t2
-  | TConstantTime t => fo_type_has_trivial_rel t
-  | TZeroizing t => fo_type_has_trivial_rel t
+  | TList _ | TOption _ => true
   | _ => false
 
 /-- First-order value relation used by transpiled logical-relation files. -/
