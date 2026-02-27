@@ -25,6 +25,10 @@ import RIINA.Properties.SN_Closure
 import RIINA.Effects.EffectAlgebra
 import RIINA.Properties.CumulativeRelation
 import RIINA.Properties.StoreRelation
+import RIINA.Properties.SubstitutionCommute
+import RIINA.Properties.EffectSafety
+import RIINA.Properties.EffectMonotonicity
+import RIINA.Properties.ReferenceOps
 -- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
