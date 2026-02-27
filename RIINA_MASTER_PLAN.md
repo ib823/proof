@@ -173,7 +173,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 302 compiled theorems, 0 in-build sorry | Secondary verification |
+| **Lean proofs** | `02_FORMAL/lean/` | 415 compiled theorems, 1 in-build sorry | Secondary verification |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 0 compiled | Tertiary (stubs) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -240,16 +240,16 @@ but the compiler does not yet enforce them.
 | Metric | Value | Notes |
 |--------|-------|-------|
 | Theorem/lemma declarations | 9,018 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
-| Sorry count (grep) | 9 | Reduced from 177 via systematic elimination |
+| Sorry count (grep) | 3 | Reduced from 177 via systematic elimination |
 | .lean files | 270 | Most are transpiled, not hand-written |
-| `lake build RIINA` | PASSES (0 sorry) | 15 modules compile: Syntax, Semantics, Typing, Domains/All + 11 Properties |
-| Compiled theorems (real) | 302 | Core (34) + AhmedStyleTest (31) + CanonicalForms (43) + Composition (8) + CumulativeMonotone (31) + Declassification (26) + LexOrder (36) + NI_v2_Monotone (4) + SecurityProperties (1) + TypeMeasure (52) + ValRelMonotone (29) + ValRelStepLimit_PROOF (7) |
+| `lake build RIINA` | PASSES (1 sorry) | 17 modules compile: Syntax, Semantics, Typing, Domains/All + 13 Properties |
+| Compiled theorems (real) | 415 | Core (34) + AhmedStyleTest (31) + CanonicalForms (43) + Composition (8) + CumulativeMonotone (31) + Declassification (26) + LexOrder (36) + NI_v2_Monotone (4) + NI_v2 (61) + SecurityProperties (1) + TypeMeasure (52) + TypingInversion (52) + ValRelMonotone (29) + ValRelStepLimit_PROOF (7) |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** 302 theorems actually compiled by Lean (up from 267). Includes Declassification.lean
-with 26 theorems (24 original + step_deterministic + eval_deterministic_cfg). All in-build sorry
-eliminated. 4 remaining sorry in NonInterference_v2 files (down from 9 — 5 eliminated via propext/rfl proofs).
-Remaining 4 sorry require missing infrastructure (preservation theorem, canonical forms for TFn, unprovable fo_trivial).
+**Honest assessment:** 415 theorems compiled by Lean (up from 302). NI_v2 now compiles (0 errors, 1 sorry).
+TypingInversion added (52 theorems, all proofs rewritten from broken transpilations).
+3 remaining sorry: val_rel_at_type_TFn_step_0_bridge (#6), multi_step_preservation_aux (#7),
+multi_step_preservation (#8). All require subject reduction infrastructure not yet in codebase.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -416,7 +416,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 302 compiled theorems, 0 in-build sorry | ALL files compile, 0 sorry | 400-800 hrs | High |
+| Lean 4 | 415 compiled theorems, 1 in-build sorry | ALL files compile, 0 sorry | 300-600 hrs | High |
 | Isabelle | 0 compiled | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 0 real proofs | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 0 real specs | TELUS procurement protocol verified | 150-300 hrs | Very High |

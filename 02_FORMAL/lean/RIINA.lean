@@ -14,15 +14,15 @@ import RIINA.Properties.ValRelMonotone
 import RIINA.Properties.ValRelStepLimit_PROOF
 import RIINA.Properties.Declassification
 import RIINA.Properties.TypingInversion
--- NOT YET COMPILABLE (pre-existing errors, 4 sorry):
--- import RIINA.Properties.NonInterference_v2            -- 12 errors, 2 sorry
+import RIINA.Properties.NonInterference_v2
+-- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
 /-!
 # RIINA Formal Proofs - Main Library
 
 Multi-prover verification port from Coq 8.20.1 originals.
-354 compiled theorems, 0 in-build sorry.
+415 compiled theorems, 1 in-build sorry (NI_v2).
 
 ## Core Modules (compilation verified)
 - `RIINA.Foundations.Syntax` - Core syntax definitions (port of Syntax.v)
@@ -42,9 +42,9 @@ Multi-prover verification port from Coq 8.20.1 originals.
 - `RIINA.Properties.TypeMeasure` - Type measure proofs
 - `RIINA.Properties.ValRelMonotone` - Value relation monotonicity
 - `RIINA.Properties.ValRelStepLimit_PROOF` - Step-limit value relation
+- `RIINA.Properties.NonInterference_v2` - Non-interference proof (1 sorry)
 
 ## Pending Modules (not yet compilable)
-- `RIINA.Properties.NonInterference_v2` - 12 errors, 2 sorry
 - `RIINA.Properties.NonInterference_v2_LogicalRelation` - 240 errors, 2 sorry
 - ~14 other property files with transpilation errors
 -/
