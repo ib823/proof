@@ -13,6 +13,7 @@ import RIINA.Properties.TypeMeasure
 import RIINA.Properties.ValRelMonotone
 import RIINA.Properties.ValRelStepLimit_PROOF
 import RIINA.Properties.Declassification
+import RIINA.Properties.TypingInversion
 -- NOT YET COMPILABLE (pre-existing errors, 4 sorry):
 -- import RIINA.Properties.NonInterference_v2            -- 12 errors, 2 sorry
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
@@ -21,7 +22,7 @@ import RIINA.Properties.Declassification
 # RIINA Formal Proofs - Main Library
 
 Multi-prover verification port from Coq 8.20.1 originals.
-302 compiled theorems, 0 in-build sorry.
+354 compiled theorems, 0 in-build sorry.
 
 ## Core Modules (compilation verified)
 - `RIINA.Foundations.Syntax` - Core syntax definitions (port of Syntax.v)
@@ -34,6 +35,7 @@ Multi-prover verification port from Coq 8.20.1 originals.
 - `RIINA.Properties.Composition` - Composition properties
 - `RIINA.Properties.CumulativeMonotone` - Cumulative monotonicity
 - `RIINA.Properties.Declassification` - Declassification safety proofs (0 sorry)
+- `RIINA.Properties.TypingInversion` - Typing inversion, discrimination, injectivity, uniqueness (52 theorems)
 - `RIINA.Properties.LexOrder` - Lexicographic ordering proofs
 - `RIINA.Properties.NonInterference_v2_Monotone` - NI monotonicity
 - `RIINA.Properties.SecurityProperties` - Security property theorems
@@ -44,5 +46,5 @@ Multi-prover verification port from Coq 8.20.1 originals.
 ## Pending Modules (not yet compilable)
 - `RIINA.Properties.NonInterference_v2` - 12 errors, 2 sorry
 - `RIINA.Properties.NonInterference_v2_LogicalRelation` - 240 errors, 2 sorry
-- ~15 other property files with transpilation errors
+- ~14 other property files with transpilation errors
 -/
