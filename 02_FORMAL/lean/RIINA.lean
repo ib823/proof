@@ -37,6 +37,11 @@ import RIINA.TypeSystem.Progress
 import RIINA.TypeSystem.Preservation
 import RIINA.Properties.FirstOrderComplete
 import RIINA.Properties.MaximumAxiomElimination
+import RIINA.Termination.StrongNorm
+import RIINA.Termination.TerminationLemmas
+import RIINA.Termination.Reducibility
+import RIINA.Termination.ReducibilityFull
+import RIINA.Termination.SizedTypes
 -- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
