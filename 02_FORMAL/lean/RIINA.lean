@@ -19,15 +19,16 @@ import RIINA.Properties.StoreSafety
 import RIINA.Properties.NonInterference_v2
 import RIINA.Properties.ClosedValueLemmas
 import RIINA.Properties.check_ax
+import RIINA.TypeSystem.Preservation
 import RIINA.TypeSystem.TypeSafety
 import RIINA.Properties.ContextProperties
 import RIINA.Properties.SN_Closure
--- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
--- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
+-- NOT YET COMPILABLE (pre-existing errors):
+-- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, sorry eliminated
 
 /-!
 # RIINA Formal Proofs - Main Library
 
 Multi-prover verification port from Coq 8.20.1 originals.
-1 in-build sorry (NI_v2).
+0 sorry in build. Type preservation fully proven.
 -/

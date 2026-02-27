@@ -728,16 +728,33 @@ theorem exp_rel_n_unit : ∀ n St, exp_rel_n n St TUnit EUnit EUnit := by
   intro n St; simp [exp_rel_n]
 
 -- Bridge lemma: well_typed TFn applications at step 0 produce related results.
---     This captures what we need from the fundamental theorem for the TFn case.
 --
---     STATUS: Depends on well_typed_SN from ReducibilityFull.v
---     PROOF APPROACH:
---     1. Extract lambda structure via canonical_forms_fn
---     2. Beta reduction: EApp (ELam x T body) arg -→ [x := arg] body
---     3. Apply well_typed_SN to show applications terminate in values
---     4. Apply preservation to get typing for result values
---     5. Build val_rel_n 0 from typing (HO) or structure (FO)
-/-- val_rel_at_type_TFn_step_0_bridge (matches Coq) -/
-theorem val_rel_at_type_TFn_step_0_bridge : ∀ St T1 T2 eff v1 v2, has_type nil St Public v1 (TFn T1 T2 eff) EffectPure → has_type nil St Public v2 (TFn T1 T2 eff) EffectPure → value v1 → value v2 → closed_expr v1 → closed_expr v2 → ∀ St', store_ty_extends St St' → ∀ x y, value x → value y → closed_expr x → closed_expr y → val_rel_n 0 St' T1 x y → ∀ st1 st2 ctx, store_rel_n 0 St' st1 st2 → store_wf St' st1 → store_wf St' st2 → stores_agree_low_fo St' st1 st2 → store_vals_rel 0 St' st1 st2 → ∃ v1' v2' st1' st2' ctx' St'', store_ty_extends St' St'' ∧ (EApp v1 x, st1, ctx) -→* (v1', st1', ctx') ∧ (EApp v2 y, st2, ctx) -→* (v2', st2', ctx') ∧ val_rel_n 0 St'' T2 v1' v2' ∧ store_rel_n 0 St'' st1' st2' ∧ store_wf St'' st1' ∧ store_wf St'' st2' ∧ stores_agree_low_fo St'' st1' st2' := by sorry
+-- BLOCKED: Requires well_typed_SN (strong normalization for well-typed terms)
+-- from Termination/ReducibilityFull.lean, which is currently a stub.
+-- The proof needs SN to guarantee that EApp (ELam x T body) arg terminates
+-- in a value, which is necessary to construct val_rel_n 0 (requires `value`).
+-- Commented out per project rules: no sorry allowed.
+--
+-- /-- val_rel_at_type_TFn_step_0_bridge (matches Coq) -/
+-- theorem val_rel_at_type_TFn_step_0_bridge :
+--     ∀ St T1 T2 eff v1 v2,
+--     has_type nil St Public v1 (TFn T1 T2 eff) EffectPure →
+--     has_type nil St Public v2 (TFn T1 T2 eff) EffectPure →
+--     value v1 → value v2 → closed_expr v1 → closed_expr v2 →
+--     ∀ St', store_ty_extends St St' →
+--     ∀ x y, value x → value y → closed_expr x → closed_expr y →
+--     val_rel_n 0 St' T1 x y →
+--     ∀ st1 st2 ctx,
+--     store_rel_n 0 St' st1 st2 → store_wf St' st1 → store_wf St' st2 →
+--     stores_agree_low_fo St' st1 st2 → store_vals_rel 0 St' st1 st2 →
+--     ∃ v1' v2' st1' st2' ctx' St'',
+--       store_ty_extends St' St'' ∧
+--       (EApp v1 x, st1, ctx) -→* (v1', st1', ctx') ∧
+--       (EApp v2 y, st2, ctx) -→* (v2', st2', ctx') ∧
+--       val_rel_n 0 St'' T2 v1' v2' ∧
+--       store_rel_n 0 St'' st1' st2' ∧
+--       store_wf St'' st1' ∧ store_wf St'' st2' ∧
+--       stores_agree_low_fo St'' st1' st2' := by
+--   sorry -- BLOCKED: requires well_typed_SN (strong normalization)
 
 end RIINA

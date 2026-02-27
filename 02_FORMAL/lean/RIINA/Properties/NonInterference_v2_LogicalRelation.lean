@@ -4,6 +4,7 @@
 import RIINA.Foundations.Syntax
 import RIINA.Foundations.Semantics
 import RIINA.TypeSystem.Typing
+import RIINA.TypeSystem.Preservation
 
 
 /-!
@@ -2072,10 +2073,19 @@ theorem step_up_at_0 : step_up_at 0 := by
 -- Multi-step preservation - extends single-step preservation to multi-step.
 --     This lemma is needed for typing premises in IH_step_up applications.
 /-- multi_step_preservation_aux (matches Coq) -/
-theorem multi_step_preservation_aux : ∀ cfg1 cfg2, cfg1 -→* cfg2 → ∀ St e st ctx T ε, cfg1 = (e, st, ctx) → has_type nil St Public e T ε → store_wf St st → ∃ e' st' ctx' St' ε', cfg2 = (e', st', ctx') ∧ store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by sorry
+theorem multi_step_preservation_aux : ∀ cfg1 cfg2, cfg1 -→* cfg2 → ∀ St e st ctx T ε, cfg1 = (e, st, ctx) → has_type nil St Public e T ε → store_wf St st → ∃ e' st' ctx' St' ε', cfg2 = (e', st', ctx') ∧ store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by
+  intro cfg1 cfg2 hmulti St e st ctx T ε heq1 htype hwf
+  subst heq1
+  obtain ⟨e', st', ctx'⟩ := cfg2
+  -- Destructure cfg2 for the existential
+  obtain ⟨St', ε', hext, hwf', htype'⟩ :=
+    preservation_multi_step e e' T ε st st' ctx ctx' St htype hwf hmulti
+  exact ⟨e', st', ctx', St', ε', rfl, hext, hwf', htype'⟩
 
 /-- multi_step_preservation (matches Coq) -/
-theorem multi_step_preservation : ∀ e e' T ε st st' ctx ctx' St, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→* (e', st', ctx') → ∃ St' ε', store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by sorry
+theorem multi_step_preservation : ∀ e e' T ε st st' ctx ctx' St, has_type nil St Public e T ε → store_wf St st → (e, st, ctx) -→* (e', st', ctx') → ∃ St' ε', store_ty_extends St St' ∧ store_wf St' st' ∧ has_type nil St' Public e' T ε' := by
+  intro e e' T ε st st' ctx ctx' St htype hwf hmulti
+  exact preservation_multi_step e e' T ε st st' ctx ctx' St htype hwf hmulti
 
 -- Security level is irrelevant in typing -- Delta is universally passed through
 /-- has_type_level_irrelevant (matches Coq) -/
