@@ -287,18 +287,34 @@ theorem val_rel_n_0_unfold : ∀ St T v1 v2, val_rel_n 0 St T v1 v2 = (value v1 
   intros; rfl
 
 /-- val_rel_n_S_unfold (matches Coq) -/
-theorem val_rel_n_S_unfold : ∀ n St T v1 v2, val_rel_n (S n) St T v1 v2 = (val_rel_n n St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type_n n St (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2) := by sorry
+theorem val_rel_n_S_unfold : ∀ n St T v1 v2, val_rel_n (S n) St T v1 v2 = (val_rel_n n St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type_n n St (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2) := by
+  intro n St T v1 v2
+  apply propext; constructor
+  · intro ⟨hv1, hv2, hc1, hc2, ht1, ht2, hfo⟩
+    refine ⟨⟨hv1, hv2, hc1, hc2, ht1, ht2, hfo⟩, hv1, hv2, hc1, hc2, ht1, ht2, ?_⟩
+    cases n with
+    | zero => trivial
+    | succ _ => exact hfo
+  · intro ⟨h, _⟩; exact h
 
 -- Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
 --     This recovers the old val_rel_n_S_unfold form at step >= 2.
 /-- val_rel_n_SS_unfold (matches Coq) -/
-theorem val_rel_n_SS_unfold : ∀ n St T v1 v2, val_rel_n (S (S n)) St T v1 v2 = (val_rel_n (S n) St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type St (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2) := by sorry
+theorem val_rel_n_SS_unfold : ∀ n St T v1 v2, val_rel_n (S (S n)) St T v1 v2 = (val_rel_n (S n) St T v1 v2 ∧ value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure ∧ val_rel_at_type St (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2) := by
+  intro n St T v1 v2
+  apply propext; constructor
+  · intro ⟨hv1, hv2, hc1, hc2, ht1, ht2, hfo⟩
+    refine ⟨⟨hv1, hv2, hc1, hc2, ht1, ht2, hfo⟩, hv1, hv2, hc1, hc2, ht1, ht2, ?_⟩
+    exact hfo
+  · intro ⟨h, _⟩; exact h
 
 /-- store_rel_n_0_unfold (matches Coq) -/
-theorem store_rel_n_0_unfold : ∀ St st1 st2, store_rel_n 0 St st1 st2 = (store_max st1 = store_max st2) := by sorry
+theorem store_rel_n_0_unfold : ∀ St st1 st2, store_rel_n 0 St st1 st2 = (store_max st1 = store_max st2) := by
+  intros; rfl
 
 /-- store_rel_n_S_unfold (matches Coq) -/
-theorem store_rel_n_S_unfold : ∀ n St st1 st2, store_rel_n (S n) St st1 st2 = (store_rel_n n St st1 st2 ∧ store_max st1 = store_max st2 ∧ (∀ l T sl, store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ (if is_low_dec sl then val_rel_n n St T v1 v2 else (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure)))) := by sorry
+theorem store_rel_n_S_unfold : ∀ n St st1 st2, store_rel_n (S n) St st1 st2 = (store_rel_n n St st1 st2 ∧ store_max st1 = store_max st2 ∧ (∀ l T sl, store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ (if is_low_dec sl then val_rel_n n St T v1 v2 else (value v1 ∧ value v2 ∧ closed_expr v1 ∧ closed_expr v2 ∧ has_type nil St Public v1 T EffectPure ∧ has_type nil St Public v2 T EffectPure)))) := by
+  intros; rfl
 
 -- ========================================================================
 --     SECTION 3.5: FIRST-ORDER EQUIVALENCE
