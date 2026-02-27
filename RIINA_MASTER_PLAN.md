@@ -173,7 +173,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 267 compiled theorems | Secondary verification |
+| **Lean proofs** | `02_FORMAL/lean/` | 302 compiled theorems, 0 in-build sorry | Secondary verification |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 0 compiled | Tertiary (stubs) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -242,13 +242,14 @@ but the compiler does not yet enforce them.
 | Theorem/lemma declarations | 9,018 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
 | Sorry count (grep) | 9 | Reduced from 177 via systematic elimination |
 | .lean files | 270 | Most are transpiled, not hand-written |
-| `lake build RIINA` | PASSES | 14 modules compile: Syntax, Semantics, Typing, Domains/All + 10 Properties |
-| Compiled theorems (real) | 267 | Core (34) + AhmedStyleTest (30) + CanonicalForms (43) + Composition (6) + CumulativeMonotone (28) + LexOrder (36) + NI_v2_Monotone (4) + SecurityProperties (1) + TypeMeasure (50) + ValRelMonotone (28) + ValRelStepLimit_PROOF (7) |
+| `lake build RIINA` | PASSES (0 sorry) | 15 modules compile: Syntax, Semantics, Typing, Domains/All + 11 Properties |
+| Compiled theorems (real) | 302 | Core (34) + AhmedStyleTest (31) + CanonicalForms (43) + Composition (8) + CumulativeMonotone (31) + Declassification (26) + LexOrder (36) + NI_v2_Monotone (4) + SecurityProperties (1) + TypeMeasure (52) + ValRelMonotone (29) + ValRelStepLimit_PROOF (7) |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** 267 theorems actually compiled by Lean (up from 33). The 9,018 declaration
-count includes transpiled files that have never been checked by the Lean compiler. The `sorry`
-count of 9 is from grep — all in NonInterference_v2 files which have not yet been compiled.
+**Honest assessment:** 302 theorems actually compiled by Lean (up from 267). Includes Declassification.lean
+with 26 theorems (24 original + step_deterministic + eval_deterministic_cfg). All in-build sorry
+eliminated. The 9 remaining sorry are in NonInterference_v2 files which have pre-existing errors
+and are not yet imported into the build.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -415,7 +416,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 33 compiled theorems | ALL files compile, 0 sorry | 400-800 hrs | High |
+| Lean 4 | 302 compiled theorems, 0 in-build sorry | ALL files compile, 0 sorry | 400-800 hrs | High |
 | Isabelle | 0 compiled | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 0 real proofs | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 0 real specs | TELUS procurement protocol verified | 150-300 hrs | Very High |
@@ -939,9 +940,9 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 270 |
-| Compiled theorems (real) | 267 |
-| Sorry (grep) | 9 |
-| `lake build RIINA` | PASSES (14 modules) |
+| Compiled theorems (real) | 302 |
+| Sorry (grep) | 9 (0 in build) |
+| `lake build RIINA` | PASSES (15 modules, 0 sorry) |
 
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress, Preservation, Safety)
