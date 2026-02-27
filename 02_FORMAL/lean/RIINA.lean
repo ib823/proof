@@ -42,6 +42,9 @@ import RIINA.Termination.TerminationLemmas
 import RIINA.Termination.Reducibility
 import RIINA.Termination.ReducibilityFull
 import RIINA.Termination.SizedTypes
+import RIINA.Industries
+import RIINA.Compliance
+import RIINA.Domains.MobileOS
 -- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
 -- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
 
