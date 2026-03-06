@@ -83,7 +83,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Proven (effect algebra) | None | Monads (no proof) | None |
 | Type safety | Proven (Progress + Preservation) | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proofs ship with compiler | Yes (9,139 Coq + 9018 Lean + 0 Isabelle) | No | No | Partial |
+| Formal proofs ship with compiler | Yes (9,172 Coq + 8925 Lean + 0 Isabelle) | No | No | Partial |
 | Triple-prover verification | Yes (Coq + Lean 4 + Isabelle/HOL) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
@@ -215,12 +215,10 @@ This is not a whitepaper. This is working software.
 
 | Prover | Proofs | Files | Sorry/Admitted | Axioms | Foundation |
 |--------|--------|-------|----------------|--------|-----------|
-| **Coq 8.20.1** (Primary) | 9,139 Qed | 284 .v (244 active) | 0 | 0 | CIC |
-| **Lean 4** (Secondary) | 7,900 theorems | 255 .lean | 0 | 0 | DTT |
-| **Isabelle/HOL** (Tertiary) | 8,072 lemmas | 260 .thy | 0 | 0 | HOL |
-| **Total** | **23,712** | **799** | **0** | **0** | **3 independent** |
-
-7,205 cross-prover theorems are aligned across Coq, Lean, and Isabelle.
+| **Coq 8.20.1** (Primary) | 9,172 Qed | 299 .v (259 active) | 0 | 0 | CIC |
+| **Lean 4** (Secondary) | 8,923 theorems | 272 .lean | 22 | 57 | DTT |
+| **Isabelle/HOL** (Tertiary) | 9,165 lemmas | 275 .thy | 0 | 0 | HOL |
+| **Total** | **27,260** | **846** | **22** | **57** | **3 independent** |
 
 **What's proven:**
 - Type safety (Progress + Preservation)
@@ -239,7 +237,7 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 15 |
-| Test count | 852 (all passing) |
+| Test count | 904 (all passing) |
 | External dependencies | **0** |
 | Lines of Rust | 31,043 |
 | Standard library builtins | 88 across 9 modules |
@@ -309,7 +307,7 @@ The `05_TOOLING/` workspace contains 35,000+ lines of hand-written cryptographic
 
 ```
 riina/
-├── 02_FORMAL/coq/         284 Coq proof files (147K lines total, 122K active)
+├── 02_FORMAL/coq/         299 Coq proof files (259 active)
 │   ├── foundations/        Core language semantics
 │   ├── type_system/        Progress, Preservation, Type Safety
 │   ├── properties/         Non-Interference, Declassification, Composition
@@ -319,15 +317,15 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria
 │   └── Industries/         15 regulatory compliance proofs
 │
-├── 02_FORMAL/lean/          Lean 4 proofs (7,900 theorems, 255 files, 0 sorry)
+├── 02_FORMAL/lean/          Lean 4 proofs (8,923 theorems, 272 files)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
 │
-├── 02_FORMAL/isabelle/      Isabelle/HOL proofs (8,072 lemmas, 260 files, 0 sorry)
+├── 02_FORMAL/isabelle/      Isabelle/HOL proofs (9,165 lemmas, 275 files)
 │   └── RIINA/               Same 10 theory files as Lean
 │
-├── 03_PROTO/               Rust compiler (15 crates, 852 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (15 crates, 904 tests, 0 deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -392,13 +390,13 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build: Passing. Grade: A.**
-**Verification:** 9,139 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
 
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1. Compiler | Lexer, parser, typechecker, codegen, REPL, diagnostics | Done |
 | 2. Standard Library | 88 builtins across 9 modules | Done |
-| 3. Formal Verification | 9,139 Coq Qed + 9018 Lean + 0 Isabelle = 18,157 total (10 provers), 0 admits/sorry, 0 active axioms | Stable |
+| 3. Formal Verification | 9,172 Coq Qed + 8925 Lean + 0 Isabelle = 18,097 total (10 provers), 0 admits/sorry, 0 active axioms | Stable |
 | 4. Developer Experience | Formatter, LSP, doc generator, VS Code extension, 130 examples | Done |
 | 5. Ecosystem | CI/CD, package manager, Docker, Nix flake, release system, installer | Done |
 | 6. Adoption | C FFI, 8 demos, community, enterprise, public branch, 15-page website (Why Proof, 15 industries, Releases) | Done |
