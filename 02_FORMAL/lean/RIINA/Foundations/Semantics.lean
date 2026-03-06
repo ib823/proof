@@ -138,21 +138,40 @@ inductive step : config → config → Prop where
   | ST_Require1 : ∀ eff e e' st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (ERequire eff e, st, ctx) (ERequire eff e', st', ctx')
+  | ST_RequireValue : ∀ eff v st ctx,
+      value v →
+      step (ERequire eff v, st, ctx) (v, st, ctx)
   | ST_Grant1 : ∀ eff e e' st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (EGrant eff e, st, ctx) (EGrant eff e', st', ctx')
+  | ST_GrantValue : ∀ eff v st ctx,
+      value v →
+      step (EGrant eff v, st, ctx) (v, st, ctx)
   | ST_Perform1 : ∀ eff e e' st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (EPerform eff e, st, ctx) (EPerform eff e', st', ctx')
+  | ST_PerformValue : ∀ eff v st ctx,
+      value v →
+      step (EPerform eff v, st, ctx) (v, st, ctx)
   | ST_Handle1 : ∀ e e' x h st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (EHandle e x h, st, ctx) (EHandle e' x h, st', ctx')
+  | ST_HandleValue : ∀ v x h st ctx,
+      value v →
+      step (EHandle v x h, st, ctx) (substExpr x v h, st, ctx)
   | ST_Ref1 : ∀ e e' sl st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (ERef e sl, st, ctx) (ERef e' sl, st', ctx')
+  | ST_RefValue : ∀ v sl st ctx l,
+      value v →
+      l = fresh_loc st →
+      step (ERef v sl, st, ctx) (ELoc l, store_update l v st, ctx)
   | ST_Deref1 : ∀ e e' st st' ctx ctx',
       step (e, st, ctx) (e', st', ctx') →
       step (EDeref e, st, ctx) (EDeref e', st', ctx')
+  | ST_DerefLoc : ∀ v l st ctx,
+      store_lookup l st = some v →
+      step (EDeref (ELoc l), st, ctx) (v, st, ctx)
   | ST_Assign1 : ∀ e1 e1' e2 st st' ctx ctx',
       step (e1, st, ctx) (e1', st', ctx') →
       step (EAssign e1 e2, st, ctx) (EAssign e1' e2, st', ctx')
@@ -160,6 +179,10 @@ inductive step : config → config → Prop where
       value v1 →
       step (e2, st, ctx) (e2', st', ctx') →
       step (EAssign v1 e2, st, ctx) (EAssign v1 e2', st', ctx')
+  | ST_AssignLoc : ∀ v1 l st ctx,
+      store_lookup l st = some v1 →
+      ∀ v2, value v2 →
+      step (EAssign (ELoc l) v2, st, ctx) (EUnit, store_update l v2 st, ctx)
 
 /-- Multi-step relation (reflexive-transitive closure of step) -/
 inductive multi_step : config → config → Prop where

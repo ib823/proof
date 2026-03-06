@@ -263,6 +263,7 @@ theorem SN_perform_aux : ∀ eff e st ctx, SN (e, st, ctx) →
     dsimp at hstep
     cases hstep with
     | ST_Perform1 _ _ _ _ _ _ _ hstep1 => exact ih ⟨_, _, _⟩ hstep1
+    | ST_PerformValue _ _ _ _ hval => exact value_SN _ hval _ _
 
 /-- SN_perform (matches Coq) -/
 theorem SN_perform : ∀ eff e st ctx, SN (e, st, ctx) →
@@ -289,6 +290,7 @@ theorem SN_require_aux : ∀ eff e st ctx, SN (e, st, ctx) →
     dsimp at hstep
     cases hstep with
     | ST_Require1 _ _ _ _ _ _ _ hstep1 => exact ih ⟨_, _, _⟩ hstep1
+    | ST_RequireValue _ _ _ _ hval => exact value_SN _ hval _ _
 
 /-- SN_require (matches Coq) -/
 theorem SN_require : ∀ eff e st ctx, SN (e, st, ctx) →
@@ -315,6 +317,7 @@ theorem SN_grant_aux : ∀ eff e st ctx, SN (e, st, ctx) →
     dsimp at hstep
     cases hstep with
     | ST_Grant1 _ _ _ _ _ _ _ hstep1 => exact ih ⟨_, _, _⟩ hstep1
+    | ST_GrantValue _ _ _ _ hval => exact value_SN _ hval _ _
 
 /-- SN_grant (matches Coq) -/
 theorem SN_grant : ∀ eff e st ctx, SN (e, st, ctx) →

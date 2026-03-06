@@ -128,13 +128,20 @@ theorem step_preserves_ctx :
   | ST_DeclassifyValue _ _ _ _ _ _ => rfl
   | ST_Prove1 _ _ _ _ _ _ _ ih => exact ih
   | ST_Require1 _ _ _ _ _ _ _ _ ih => exact ih
+  | ST_RequireValue _ _ _ _ _ => rfl
   | ST_Grant1 _ _ _ _ _ _ _ _ ih => exact ih
+  | ST_GrantValue _ _ _ _ _ => rfl
   | ST_Perform1 _ _ _ _ _ _ _ _ ih => exact ih
+  | ST_PerformValue _ _ _ _ _ => rfl
   | ST_Handle1 _ _ _ _ _ _ _ _ _ ih => exact ih
+  | ST_HandleValue _ _ _ _ _ _ => rfl
   | ST_Ref1 _ _ _ _ _ _ _ _ ih => exact ih
+  | ST_RefValue _ _ _ _ _ _ _ => rfl
   | ST_Deref1 _ _ _ _ _ _ _ ih => exact ih
+  | ST_DerefLoc _ _ _ _ _ => rfl
   | ST_Assign1 _ _ _ _ _ _ _ _ ih => exact ih
   | ST_Assign2 _ _ _ _ _ _ _ _ _ ih => exact ih
+  | ST_AssignLoc _ _ _ _ _ _ _ => rfl
 
 -- step_preserves_ctx_snd is COMMENTED OUT because the Coq `snd` shim on a config
 -- (e, st, ctx) gives (st, ctx), not just ctx, and the store changes during steps.
@@ -424,6 +431,7 @@ theorem ref_result_is_loc :
   cases hs with
   | ST_Ref1 _ _ _ _ _ _ _ hsub =>
     exact absurd hsub (value_no_step v st ctx _ _ _ hv)
+  | ST_RefValue _ _ _ _ _ _ _ => exact ⟨_, rfl⟩
 
 /-- ref_arg_steps (matches Coq): subexpression stepping lifts to ERef context -/
 theorem ref_arg_steps :

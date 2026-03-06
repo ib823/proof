@@ -472,6 +472,7 @@ theorem SN_ref_aux : ∀ e sl st ctx, SN (e, st, ctx) →
     dsimp at hstep
     cases hstep with
     | ST_Ref1 _ _ _ _ _ _ _ hstep1 => exact ih ⟨_, _, _⟩ hstep1
+    | ST_RefValue _ _ _ _ _ _ _ => exact value_SN _ _ _ (value.VLoc _)
 
 /-- SN_ref (matches Coq) -/
 theorem SN_ref : ∀ e sl st ctx, SN (e, st, ctx) → SN (ERef e sl, st, ctx) :=
@@ -575,6 +576,10 @@ theorem SN_deref_aux : ∀ e st ctx, SN (e, st, ctx) →
     dsimp at hstep
     cases hstep with
     | ST_Deref1 _ _ _ _ _ _ hstep1 => exact ih ⟨_, _, _⟩ hstep1
+    | ST_DerefLoc _ _ _ _ hlook =>
+      -- Result is (v, st', ctx') where v was in store. Since store_has_values
+      -- was given, v is a value.
+      exact value_SN _ _ _ (hstore _ _ _ hlook)
 
 /-- SN_deref (matches Coq) -/
 theorem SN_deref : ∀ e st ctx, SN (e, st, ctx) →
@@ -601,6 +606,7 @@ theorem SN_assign_value_left_aux : ∀ v e2 st ctx, value v → SN (e2, st, ctx)
     | ST_Assign1 _ _ _ _ _ _ _ hstep1 =>
       exact absurd hstep1 (fun h => value_not_step _ _ _ _ _ _ hv h)
     | ST_Assign2 _ _ _ _ _ _ _ _ hstep2 => exact ih ⟨_, _, _⟩ hstep2
+    | ST_AssignLoc _ _ _ _ _ _ _ => exact value_SN _ _ _ value.VUnit
 
 /-- SN_assign_aux (matches Coq) -/
 theorem SN_assign_aux : ∀ e1 st ctx e2, SN (e1, st, ctx) →
@@ -621,6 +627,7 @@ theorem SN_assign_aux : ∀ e1 st ctx e2, SN (e1, st, ctx) →
     | ST_Assign2 _ _ _ _ _ _ _ hv1 hstep2 =>
       exact SN_assign_value_left_aux _ _ _ _ hv1
         (SN_step _ _ _ _ _ _ (hsn2 st1 ctx1) hstep2)
+    | ST_AssignLoc _ _ _ _ _ _ _ => exact value_SN _ _ _ value.VUnit
 
 /-- SN_assign (matches Coq) -/
 theorem SN_assign : ∀ e1 e2 st ctx, (∀ st' ctx', SN (e1, st', ctx')) →
@@ -649,6 +656,7 @@ theorem SN_handle_aux : ∀ e x h st ctx, SN (e, st, ctx) →
     dsimp at hstep
     cases hstep with
     | ST_Handle1 _ _ _ _ _ _ _ _ hstep1 => exact ih ⟨_, _, _⟩ hstep1
+    | ST_HandleValue _ _ _ _ _ hval => exact hbody _ _ _ hval
 
 /-- SN_handle (matches Coq) -/
 theorem SN_handle : ∀ e x h st ctx, SN (e, st, ctx) →

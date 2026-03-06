@@ -20,7 +20,7 @@ Port of 02_FORMAL/coq/type_system/Preservation.v.
 - store_ty_lookup_fresh_none
 - value_has_pure_effect
 - store_wf_typed_loc_value, store_wf_lookup_has_type
-- preservation_helper (32 step cases, 0 sorry)
+- preservation_helper (39 step cases, 0 sorry)
 - preservation (single-step, wrapper)
 - multi_step_preservation (reflexive-transitive closure)
 -/
@@ -401,6 +401,56 @@ theorem preservation_helper :
     | T_Declassify h1 h2 _hd =>
       cases h1 with
       | T_Classify hv => exact ⟨St, _, store_ty_extends_refl St, hwf, hv⟩
+  | ST_RequireValue _eff v _st _ctx _hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Require h => exact ⟨St, _, store_ty_extends_refl St, hwf, h⟩
+  | ST_GrantValue _eff v _st _ctx _hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Grant h => exact ⟨St, _, store_ty_extends_refl St, hwf, h⟩
+  | ST_PerformValue _eff v _st _ctx _hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Perform h => exact ⟨St, _, store_ty_extends_refl St, hwf, h⟩
+  | ST_HandleValue v x h _st _ctx hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Handle h1 h2 =>
+      have hv_pure := value_has_pure_effect v _ _ St hval h1
+      exact ⟨St, _, store_ty_extends_refl St, hwf,
+             substitution_preserves_typing [] St Public x _ v h _ _ h2 hv_pure⟩
+  | ST_RefValue v sl st _ctx _l hval heq =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Ref hinner =>
+      subst heq
+      have hv_pure := value_has_pure_effect v _ _ St hval hinner
+      have hSt_none := store_ty_lookup_fresh_none St st hwf
+      have hst_none := store_lookup_fresh st
+      exact ⟨store_ty_update (fresh_loc st) _ _ St, _,
+             store_ty_extends_update_fresh St _ _ _ hSt_none,
+             store_wf_update_fresh St st _ _ _ v hwf hst_none hSt_none hval hv_pure,
+             has_type.T_Loc (store_ty_lookup_update_eq St _ _ _)⟩
+  | ST_DerefLoc v l st _ctx hlook =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Deref hinner =>
+      cases hinner with
+      | T_Loc hty_lookup =>
+        obtain ⟨v', hv1, hv2, hv3⟩ := hwf.1 l _ _ hty_lookup
+        rw [hlook] at hv1; cases hv1
+        exact ⟨St, _, store_ty_extends_refl St, hwf, hv3⟩
+  | ST_AssignLoc _v1 l st _ctx hlook v2 hval2 =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Assign h1 h2 =>
+      cases h1 with
+      | T_Loc hty_lookup =>
+        have hv2_pure := value_has_pure_effect v2 _ _ St hval2 h2
+        exact ⟨St, _, store_ty_extends_refl St,
+               store_wf_update_existing St st l _ _ v2 hwf hty_lookup hval2 hv2_pure,
+               has_type.T_Unit⟩
   -- ===== CONGRUENCE RULES =====
   | ST_App1 e1 _e1' e2 _st _st' _ctx _ctx' _hstep1 ih =>
     intro T ε St hty hwf

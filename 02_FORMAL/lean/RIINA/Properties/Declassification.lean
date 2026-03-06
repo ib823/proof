@@ -226,29 +226,66 @@ private theorem step_deterministic : ∀ cfg cfg1 cfg2,
   | @ST_Require1 _ _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Require1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_RequireValue _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_RequireValue _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | @ST_Require1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv _ _ _ h)
+    | ST_RequireValue => rfl
   | @ST_Grant1 _ _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Grant1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_GrantValue _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_GrantValue _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | @ST_Grant1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv _ _ _ h)
+    | ST_GrantValue => rfl
   | @ST_Perform1 _ _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Perform1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_PerformValue _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_PerformValue _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | @ST_Perform1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv _ _ _ h)
+    | ST_PerformValue => rfl
   | @ST_Handle1 _ _ _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Handle1 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_HandleValue _ _ _ _ _ hv => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_HandleValue _ _ _ _ _ hv =>
+    intro _ h2; cases h2 with
+    | @ST_Handle1 _ _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv _ _ _ h)
+    | ST_HandleValue => rfl
   | @ST_Ref1 _ _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Ref1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_RefValue _ _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+  | @ST_RefValue _ _ _ _ _ hv heq =>
+    intro _ h2; cases h2 with
+    | @ST_Ref1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv _ _ _ h)
+    | @ST_RefValue _ _ _ _ _ _ heq2 => subst heq; subst heq2; rfl
   | @ST_Deref1 _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Deref1 _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_DerefLoc _ _ _ _ _ => exact absurd ‹_› (fun h => value_no_step _ (value.VLoc _) _ _ _ h)
+  | @ST_DerefLoc _ _ _ _ hlook =>
+    intro _ h2; cases h2 with
+    | @ST_Deref1 _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ (value.VLoc _) _ _ _ h)
+    | @ST_DerefLoc _ _ _ _ hlook2 => simp [hlook] at hlook2; cases hlook2; rfl
   | @ST_Assign1 _ _ _ _ _ _ _ _ ih =>
     intro _ h2; cases h2 with
     | @ST_Assign1 _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
     | @ST_Assign2 _ _ _ _ _ _ _ hv _ => exact absurd ‹_› (fun h => value_no_step _ hv _ _ _ h)
+    | @ST_AssignLoc _ _ _ _ _ _ hv2 => exact absurd ‹_› (fun h => value_no_step _ (value.VLoc _) _ _ _ h)
   | @ST_Assign2 _ _ _ _ _ _ _ hv1 _ ih =>
     intro _ h2; cases h2 with
     | @ST_Assign1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv1 _ _ _ h)
     | @ST_Assign2 _ _ _ _ _ _ _ _ hs2 => have := ih _ hs2; cases this; rfl
+    | @ST_AssignLoc _ _ _ _ _ _ hv2 => exact absurd ‹_› (fun h => value_no_step _ hv2 _ _ _ h)
+  | @ST_AssignLoc _ _ _ _ hlook _ hv2 =>
+    intro _ h2; cases h2 with
+    | @ST_Assign1 _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ (value.VLoc _) _ _ _ h)
+    | @ST_Assign2 _ _ _ _ _ _ _ _ hs2 => exact absurd hs2 (fun h => value_no_step _ hv2 _ _ _ h)
+    | ST_AssignLoc => rfl
 
 -- Helper: Multi-step determinism on configs
 /-- eval_deterministic_cfg (matches Coq) -/

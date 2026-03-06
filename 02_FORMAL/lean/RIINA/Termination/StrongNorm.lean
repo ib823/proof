@@ -238,20 +238,19 @@ theorem app_lam_value_SN : ∀ x T body v st ctx,
       (fun h => SN_Closure.value_not_step _ _ _ _ _ _ hv h)
 
 -- Handle with value is SN when substituted body is SN
--- NOTE: The Lean Semantics does not include ST_HandleValue, so EHandle v x h
--- when v is a value is stuck (no steps possible). It is trivially SN.
 /-- handle_value_SN (matches Coq) -/
 theorem handle_value_SN : ∀ x v h st ctx,
     value v →
     SN st ctx ([x := v] h) →
     SN st ctx (EHandle v x h) := by
-  intro x v h st ctx hv _hsn_body
+  intro x v h st ctx hv hsn_body
   apply Acc.intro
   intro ⟨e', st', ctx'⟩ hstep
   cases hstep with
   | ST_Handle1 _ _ _ _ _ _ _ _ hstep1 =>
     exact absurd hstep1
       (fun h => SN_Closure.value_not_step _ _ _ _ _ _ hv h)
+  | ST_HandleValue _ _ _ _ _ _ => exact hsn_body
 
 -- ============================================================================
 -- SECTION 6: CASE ELIMINATION SN LEMMAS
@@ -356,7 +355,7 @@ theorem fst_fst_pair_SN : ∀ a b c d st ctx,
 -- SECTION 9: PERFORM/GRANT/REQUIRE SN LEMMAS
 -- ============================================================================
 
--- Perform of value is SN (stuck — no reduction rule for perform of value)
+-- Perform of value is SN
 /-- perform_value_SN (matches Coq) -/
 theorem perform_value_SN : ∀ eff v st ctx,
     value v → SN st ctx (EPerform eff v) := by
@@ -367,8 +366,9 @@ theorem perform_value_SN : ∀ eff v st ctx,
   | ST_Perform1 _ _ _ _ _ _ _ hstep1 =>
     exact absurd hstep1
       (fun h => SN_Closure.value_not_step _ _ _ _ _ _ hv h)
+  | ST_PerformValue _ _ _ _ _ => exact SN_Closure.value_SN _ _ _ hv
 
--- Require with value is SN (stuck — no reduction rule for require of value)
+-- Require with value is SN
 /-- require_value_SN (matches Coq) -/
 theorem require_value_SN : ∀ eff v st ctx,
     value v → SN st ctx (ERequire eff v) := by
@@ -379,8 +379,9 @@ theorem require_value_SN : ∀ eff v st ctx,
   | ST_Require1 _ _ _ _ _ _ _ hstep1 =>
     exact absurd hstep1
       (fun h => SN_Closure.value_not_step _ _ _ _ _ _ hv h)
+  | ST_RequireValue _ _ _ _ _ => exact SN_Closure.value_SN _ _ _ hv
 
--- Grant with value is SN (stuck — no reduction rule for grant of value)
+-- Grant with value is SN
 /-- grant_value_SN (matches Coq) -/
 theorem grant_value_SN : ∀ eff v st ctx,
     value v → SN st ctx (EGrant eff v) := by
@@ -391,6 +392,7 @@ theorem grant_value_SN : ∀ eff v st ctx,
   | ST_Grant1 _ _ _ _ _ _ _ hstep1 =>
     exact absurd hstep1
       (fun h => SN_Closure.value_not_step _ _ _ _ _ _ hv h)
+  | ST_GrantValue _ _ _ _ _ => exact SN_Closure.value_SN _ _ _ hv
 
 -- ============================================================================
 -- SECTION 10: VALUE CONSTRUCTOR SN LEMMAS
