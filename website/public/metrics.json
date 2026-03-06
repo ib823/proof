@@ -1,16 +1,16 @@
 {
-  "generated": "2026-02-18T22:45:21Z",
-  "generatedHuman": "February 18, 2026 at 22:45 UTC",
+  "generated": "2026-03-06T15:49:10Z",
+  "generatedHuman": "March 06, 2026 at 15:49 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "572771a5",
+    "commit": "b2e646f2",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 9139,
+    "qedActive": 9172,
     "qedDeprecated": 758,
-    "qedTotal": 9897,
+    "qedTotal": 9930,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
@@ -23,11 +23,11 @@
     "prover": "Coq 8.20.1"
   },
   "lean": {
-    "theorems": 9018,
-    "sorry": 177,
-    "axioms": 12,
-    "files": 269,
-    "lines": 107683,
+    "theorems": 8926,
+    "sorry": 22,
+    "axioms": 59,
+    "files": 272,
+    "lines": 122093,
     "prover": "Lean 4"
   },
   "isabelle": {
@@ -92,10 +92,10 @@
   },
   "multiProver": {
     "tripleProverTheorems": 0,
-    "totalProofsAllProvers": 18157,
+    "totalProofsAllProvers": 18098,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
-    "sorry": 177,
+    "sorry": 22,
     "status": "ACTIVE_COQ_MECHANIZED"
   },
   "quality": {
@@ -126,8 +126,8 @@
         "tv": "noncoq_report_missing_or_stale"
       },
       "backlog": {
-        "leanSorry": 177,
-        "leanAxioms": 12,
+        "leanSorry": 22,
+        "leanAxioms": 59,
         "isabelleSorry": 0,
         "fstarGeneratedFiles": 0,
         "smtGeneratedFiles": 0,
@@ -137,7 +137,7 @@
       }
     },
     "coqTiers": {
-      "core": 1589,
+      "core": 1622,
       "domain": 7550,
       "domainTrivial": 859
     }
