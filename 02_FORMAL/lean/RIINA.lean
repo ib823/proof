@@ -26,6 +26,7 @@ import RIINA.Effects.EffectAlgebra
 import RIINA.Properties.CumulativeRelation
 import RIINA.Properties.StoreRelation
 import RIINA.Properties.SubstitutionCommute
+import RIINA.Properties.SubstitutionLemma
 import RIINA.Properties.EffectSafety
 import RIINA.Properties.EffectMonotonicity
 import RIINA.Properties.ReferenceOps
