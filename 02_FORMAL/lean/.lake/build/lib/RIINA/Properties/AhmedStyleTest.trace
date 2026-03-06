@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Properties/AhmedStyleTest.lean -R ./././. -o ././.lake/build/lib/RIINA/Properties/AhmedStyleTest.olean -i ././.lake/build/lib/RIINA/Properties/AhmedStyleTest.ilean -c ././.lake/build/ir/RIINA/Properties/AhmedStyleTest.c --json",
+   "level": "trace"}],
+ "depHash": "7262104109039999971"}

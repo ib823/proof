@@ -1,0 +1,29 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Industries/IndustryEnergy.lean -R ./././. -o ././.lake/build/lib/RIINA/Industries/IndustryEnergy.olean -i ././.lake/build/lib/RIINA/Industries/IndustryEnergy.ilean -c ././.lake/build/ir/RIINA/Industries/IndustryEnergy.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:191:64: unused variable `asset`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:197:32: unused variable `communication`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:203:32: unused variable `nuclear_system`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:209:25: unused variable `scada_system`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:215:33: unused variable `ied`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:220:38: unused variable `controls`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:220:69: unused variable `asset`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryEnergy.lean:225:57: unused variable `asset`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "depHash": "150765704106961472"}

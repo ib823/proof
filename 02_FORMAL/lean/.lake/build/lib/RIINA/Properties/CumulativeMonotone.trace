@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Properties/CumulativeMonotone.lean -R ./././. -o ././.lake/build/lib/RIINA/Properties/CumulativeMonotone.olean -i ././.lake/build/lib/RIINA/Properties/CumulativeMonotone.ilean -c ././.lake/build/ir/RIINA/Properties/CumulativeMonotone.c --json",
+   "level": "trace"}],
+ "depHash": "7786191371478464929"}

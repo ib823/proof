@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Properties/Declassification.lean -R ./././. -o ././.lake/build/lib/RIINA/Properties/Declassification.olean -i ././.lake/build/lib/RIINA/Properties/Declassification.ilean -c ././.lake/build/ir/RIINA/Properties/Declassification.c --json",
+   "level": "trace"}],
+ "depHash": "1812556921128123926"}

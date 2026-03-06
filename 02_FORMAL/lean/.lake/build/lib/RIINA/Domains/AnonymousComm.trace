@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Domains/AnonymousComm.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/AnonymousComm.olean -i ././.lake/build/lib/RIINA/Domains/AnonymousComm.ilean -c ././.lake/build/ir/RIINA/Domains/AnonymousComm.c --json",
+   "level": "trace"}],
+ "depHash": "17511758369592773292"}

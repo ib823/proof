@@ -1,0 +1,41 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Industries/IndustryGovernment.lean -R ./././. -o ././.lake/build/lib/RIINA/Industries/IndustryGovernment.olean -i ././.lake/build/lib/RIINA/Industries/IndustryGovernment.ilean -c ././.lake/build/ir/RIINA/Industries/IndustryGovernment.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:218:30: unused variable `system`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:218:45: unused variable `impact`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:224:35: unused variable `cloud_service`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:224:57: unused variable `level`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:230:36: unused variable `controls`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:230:70: unused variable `impact`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:236:29: unused variable `cji_data`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:236:46: unused variable `access`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:242:35: unused variable `crypto_module`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:242:57: unused variable `level`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:247:38: unused variable `controls`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryGovernment.lean:252:34: unused variable `system`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "depHash": "17227824806594173722"}

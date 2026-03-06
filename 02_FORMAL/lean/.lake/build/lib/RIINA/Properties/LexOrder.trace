@@ -1,0 +1,32 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Properties/LexOrder.lean -R ./././. -o ././.lake/build/lib/RIINA/Properties/LexOrder.olean -i ././.lake/build/lib/RIINA/Properties/LexOrder.ilean -c ././.lake/build/ir/RIINA/Properties/LexOrder.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:302:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:309:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:316:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:323:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:330:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:337:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:344:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:351:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Properties/LexOrder.lean:358:4: try 'simp' instead of 'simpa'\nnote: this linter can be disabled with `set_option linter.unnecessarySimpa false`",
+   "level": "warning"}],
+ "depHash": "996437837118837715"}

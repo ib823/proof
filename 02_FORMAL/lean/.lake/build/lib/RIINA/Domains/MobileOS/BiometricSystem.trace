@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Domains/MobileOS/BiometricSystem.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/MobileOS/BiometricSystem.olean -i ././.lake/build/lib/RIINA/Domains/MobileOS/BiometricSystem.ilean -c ././.lake/build/ir/RIINA/Domains/MobileOS/BiometricSystem.c --json",
+   "level": "trace"}],
+ "depHash": "17842376142036916824"}

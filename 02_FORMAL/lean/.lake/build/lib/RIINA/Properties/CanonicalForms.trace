@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Properties/CanonicalForms.lean -R ./././. -o ././.lake/build/lib/RIINA/Properties/CanonicalForms.olean -i ././.lake/build/lib/RIINA/Properties/CanonicalForms.ilean -c ././.lake/build/ir/RIINA/Properties/CanonicalForms.c --json",
+   "level": "trace"}],
+ "depHash": "7286763948703023594"}

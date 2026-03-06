@@ -1,0 +1,23 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Industries/IndustryAerospace.lean -R ./././. -o ././.lake/build/lib/RIINA/Industries/IndustryAerospace.olean -i ././.lake/build/lib/RIINA/Industries/IndustryAerospace.ilean -c ././.lake/build/ir/RIINA/Industries/IndustryAerospace.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Industries/IndustryAerospace.lean:183:30: unused variable `aircraft_system`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryAerospace.lean:183:54: unused variable `threat_model`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryAerospace.lean:188:35: unused variable `specification`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryAerospace.lean:188:57: unused variable `proof`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryAerospace.lean:193:34: unused variable `system_architecture`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryAerospace.lean:198:29: unused variable `hardware_design`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "depHash": "14563019940684302995"}

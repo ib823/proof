@@ -1,0 +1,26 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Industries/IndustryRetail.lean -R ./././. -o ././.lake/build/lib/RIINA/Industries/IndustryRetail.olean -i ././.lake/build/lib/RIINA/Industries/IndustryRetail.ilean -c ././.lake/build/ir/RIINA/Industries/IndustryRetail.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:190:29: unused variable `consumer`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:190:46: unused variable `right`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:196:29: unused variable `data_subject`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:196:50: unused variable `processing`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:208:29: unused variable `service`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:208:45: unused variable `criteria`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Industries/IndustryRetail.lean:213:57: unused variable `data`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "depHash": "3499074469690909716"}

@@ -1,0 +1,5 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false ././././RIINA/Domains/MobileOS/TrackingPrevention.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/MobileOS/TrackingPrevention.olean -i ././.lake/build/lib/RIINA/Domains/MobileOS/TrackingPrevention.ilean -c ././.lake/build/ir/RIINA/Domains/MobileOS/TrackingPrevention.c --json",
+   "level": "trace"}],
+ "depHash": "15087039956666950571"}
