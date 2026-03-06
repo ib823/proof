@@ -3,6 +3,8 @@
 import RIINA.Foundations.Syntax
 import RIINA.Foundations.Semantics
 import RIINA.TypeSystem.Typing
+import RIINA.Properties.SubstitutionLemma
+import RIINA.Properties.SN_Closure
 
 /-!
 # RIINA Preservation - Lean 4 Port
@@ -18,17 +20,14 @@ Port of 02_FORMAL/coq/type_system/Preservation.v.
 - store_ty_lookup_fresh_none
 - value_has_pure_effect
 - store_wf_typed_loc_value, store_wf_lookup_has_type
-
-## Commented Out (require substantial infrastructure not yet available)
-- free_in_context (theorem 1): needs well-formulated statement
-- context_invariance (theorem 2): needs well-formulated statement
-- closed_typing_weakening (theorem 3): needs well-formulated statement
-- substitution_preserves_typing: needs context weakening/invariance lemmas
-- preservation_helper, preservation, multi_step_preservation:
-    need substitution_preserves_typing and deep step induction
+- preservation_helper (32 step cases, 0 sorry)
+- preservation (single-step, wrapper)
+- multi_step_preservation (reflexive-transitive closure)
 -/
 
 namespace RIINA
+
+open expr value
 
 /-! ## Helper lemmas for store operations -/
 
@@ -322,44 +321,280 @@ private theorem store_wf_lookup_has_type :
   obtain ⟨v, hv1, hv2, hv3⟩ := hwf1 l T sl hlookup
   exact ⟨v, hv1, hv2, hv3⟩
 
-/-! ## Theorems commented out
+/-! ## Preservation Theorem
 
-The following theorems from the Coq port require substantial infrastructure that is not
-yet available in the Lean formalization. They are commented out with explanations.
+If a well-typed expression takes a step, the result is also well-typed
+(with the same type, possibly different effect and extended store typing).
 -/
 
--- COMMENTED OUT: free_in_context (theorem "1" in the Coq port)
--- Reason: The original auto-generated statement had invalid Lean syntax (prose text in
--- the theorem identifier). The theorem states that if x is free in e and e is well-typed
--- in Gamma, then x is in Gamma. Proving this requires induction on the free_in predicate
--- and the typing derivation simultaneously, which needs additional infrastructure.
+/-- Single-step preservation (subject reduction). -/
+theorem preservation_helper :
+    ∀ (cfg1 cfg2 : config),
+    step cfg1 cfg2 →
+    ∀ (T : ty) (ε : effect) (St : store_ty),
+    has_type [] St Public cfg1.1 T ε →
+    store_wf St cfg1.2.1 →
+    ∃ (St' : store_ty) (ε' : effect),
+      store_ty_extends St St' ∧
+      store_wf St' cfg2.2.1 ∧
+      has_type [] St' Public cfg2.1 T ε' := by
+  intro cfg1 cfg2 hstep
+  induction hstep with
+  -- ===== COMPUTATION RULES =====
+  | ST_AppAbs x T_param body v _st _ctx hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_App h1 h2 =>
+      cases h1 with
+      | T_Lam hbody =>
+        have hv_pure := value_has_pure_effect v _ _ St hval h2
+        exact ⟨St, _, store_ty_extends_refl St, hwf,
+               substitution_preserves_typing [] St Public x T_param v body _ _ hbody hv_pure⟩
+  | ST_Fst v1 v2 _st _ctx _hv1 _hv2 =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Fst hpair =>
+      cases hpair with
+      | T_Pair h1 h2 => exact ⟨St, _, store_ty_extends_refl St, hwf, h1⟩
+  | ST_Snd v1 v2 _st _ctx _hv1 _hv2 =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Snd hpair =>
+      cases hpair with
+      | T_Pair h1 h2 => exact ⟨St, _, store_ty_extends_refl St, hwf, h2⟩
+  | ST_IfTrue e1 _e2 _st _ctx =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_If hcond h1 h2 => exact ⟨St, _, store_ty_extends_refl St, hwf, h1⟩
+  | ST_IfFalse _e1 e2 _st _ctx =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_If hcond h1 h2 => exact ⟨St, _, store_ty_extends_refl St, hwf, h2⟩
+  | ST_LetVal x v e2 _st _ctx hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Let h1 h2 =>
+      have hv_pure := value_has_pure_effect v _ _ St hval h1
+      exact ⟨St, _, store_ty_extends_refl St, hwf,
+             substitution_preserves_typing [] St Public x _ v e2 _ _ h2 hv_pure⟩
+  | ST_CaseInl v _T x1 e1 _x2 _e2 _st _ctx hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Case hscr h1 h2 =>
+      cases hscr with
+      | T_Inl hv =>
+        have hv_pure := value_has_pure_effect v _ _ St hval hv
+        exact ⟨St, _, store_ty_extends_refl St, hwf,
+               substitution_preserves_typing [] St Public x1 _ v e1 _ _ h1 hv_pure⟩
+  | ST_CaseInr v _T _x1 _e1 x2 e2 _st _ctx hval =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Case hscr h1 h2 =>
+      cases hscr with
+      | T_Inr hv =>
+        have hv_pure := value_has_pure_effect v _ _ St hval hv
+        exact ⟨St, _, store_ty_extends_refl St, hwf,
+               substitution_preserves_typing [] St Public x2 _ v e2 _ _ h2 hv_pure⟩
+  | ST_DeclassifyValue v p _st _ctx hval _hdeclass =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Declassify h1 h2 _hd =>
+      cases h1 with
+      | T_Classify hv => exact ⟨St, _, store_ty_extends_refl St, hwf, hv⟩
+  -- ===== CONGRUENCE RULES =====
+  | ST_App1 e1 _e1' e2 _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_App h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h1 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_App hty' (has_type_store_weaken h2 hext)⟩
+  | ST_App2 v1 e2 _e2' _st _st' _ctx _ctx' _hval _hstep2 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_App h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h2 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_App (has_type_store_weaken h1 hext) hty'⟩
+  | ST_Pair1 e1 _e1' e2 _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Pair h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h1 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Pair hty' (has_type_store_weaken h2 hext)⟩
+  | ST_Pair2 v1 e2 _e2' _st _st' _ctx _ctx' _hval _hstep2 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Pair h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h2 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Pair (has_type_store_weaken h1 hext) hty'⟩
+  | ST_Fst1 e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Fst h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Fst hty'⟩
+  | ST_Snd1 e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Snd h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Snd hty'⟩
+  | ST_Inl1 e _e' _T _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Inl h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Inl hty'⟩
+  | ST_Inr1 e _e' _T _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Inr h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Inr hty'⟩
+  | ST_Case1 e _e' x1 e1 x2 e2 _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Case hscr h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ hscr hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Case hty'
+               (has_type_store_weaken h1 hext)
+               (has_type_store_weaken h2 hext)⟩
+  | ST_If1 e1 _e1' e2 e3 _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_If h1 h2 h3 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h1 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_If hty'
+               (has_type_store_weaken h2 hext)
+               (has_type_store_weaken h3 hext)⟩
+  | ST_Let1 x e1 _e1' e2 _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Let h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h1 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Let hty' (has_type_store_weaken h2 hext)⟩
+  | ST_Classify1 e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Classify h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Classify hty'⟩
+  | ST_Declassify1 e1 _e1' e2 _st _st' _ctx _ctx' hstep1 _ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Declassify h1 h2 hd =>
+      obtain ⟨w, hval_w, heq1, _⟩ := hd
+      subst heq1
+      exact absurd hstep1 (fun h => SN_Closure.value_not_step (EClassify w) _ _ _ _ _
+        (value.VClassify w hval_w) h)
+  | ST_Declassify2 v1 e2 _e2' _st _st' _ctx _ctx' hval1 hstep2 _ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Declassify h1 h2 hd =>
+      obtain ⟨w, hval_w, _, heq2⟩ := hd
+      subst heq2
+      exact absurd hstep2 (fun h => SN_Closure.value_not_step (EProve (EClassify w)) _ _ _ _ _
+        (value.VProve (EClassify w) (value.VClassify w hval_w)) h)
+  | ST_Prove1 e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Prove h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Prove hty'⟩
+  | ST_Require1 eff e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Require h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Require hty'⟩
+  | ST_Grant1 eff e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Grant h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Grant hty'⟩
+  | ST_Perform1 eff e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Perform h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Perform hty'⟩
+  | ST_Handle1 e _e' x h _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Handle h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h1 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Handle hty' (has_type_store_weaken h2 hext)⟩
+  | ST_Ref1 e _e' _sl _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Ref h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Ref hty'⟩
+  | ST_Deref1 e _e' _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Deref h =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h hwf
+      exact ⟨St', _, hext, hwf', has_type.T_Deref hty'⟩
+  | ST_Assign1 e1 _e1' e2 _st _st' _ctx _ctx' _hstep1 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Assign h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h1 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Assign hty' (has_type_store_weaken h2 hext)⟩
+  | ST_Assign2 v1 e2 _e2' _st _st' _ctx _ctx' _hval _hstep2 ih =>
+    intro T ε St hty hwf
+    cases hty with
+    | T_Assign h1 h2 =>
+      obtain ⟨St', ε', hext, hwf', hty'⟩ := ih _ _ _ h2 hwf
+      exact ⟨St', _, hext, hwf',
+             has_type.T_Assign (has_type_store_weaken h1 hext) hty'⟩
 
--- COMMENTED OUT: context_invariance (theorem "2" in the Coq port)
--- Reason: Same invalid syntax issue. States that typing depends only on free variables.
--- Requires induction on the typing derivation with careful handling of variable binding.
+/-- Single-step preservation (user-facing wrapper). -/
+theorem preservation :
+    ∀ (e e' : expr) (st st' : store) (ctx ctx' : effect_ctx)
+      (T : ty) (ε : effect) (St : store_ty),
+    step (e, st, ctx) (e', st', ctx') →
+    has_type [] St Public e T ε →
+    store_wf St st →
+    ∃ (St' : store_ty) (ε' : effect),
+      store_ty_extends St St' ∧
+      store_wf St' st' ∧
+      has_type [] St' Public e' T ε' := by
+  intro e e' st st' ctx ctx' T ε St hstep hty hwf
+  exact preservation_helper (e, st, ctx) (e', st', ctx') hstep T ε St hty hwf
 
--- COMMENTED OUT: closed_typing_weakening (theorem "3" in the Coq port)
--- Reason: Same invalid syntax issue. States that closed terms can be typed in any context.
--- Requires context_invariance as a prerequisite.
-
--- COMMENTED OUT: substitution_preserves_typing
--- Reason: Requires induction on the typing derivation with the context containing (z, T1).
--- The Lean 4 induction tactic cannot induct when an index is not a variable. This needs
--- context invariance and weakening lemmas, plus careful handling of BEq vs propositional
--- equality for identifiers. Would be a substantial proof effort.
-
--- COMMENTED OUT: preservation_helper
--- Reason: Requires substitution_preserves_typing and deep case analysis on the step relation
--- combined with typing rule inversion. The full preservation proof depends on all the
--- infrastructure lemmas above.
-
--- COMMENTED OUT: preservation
--- Reason: The original used an undefined `preservation_stmt` type. The actual theorem would
--- state that if e has type T and e steps to e', then e' has type T (possibly with extended
--- store typing). Requires preservation_helper.
-
--- COMMENTED OUT: multi_step_preservation
--- Reason: Requires preservation (single-step) and induction on the multi_step relation.
--- Straightforward once preservation is proved, but depends on the unproved preservation.
+/-- Multi-step preservation: extends single-step preservation to the
+    reflexive-transitive closure of step. -/
+theorem multi_step_preservation :
+    ∀ (cfg1 cfg2 : config),
+    multi_step cfg1 cfg2 →
+    ∀ (T : ty) (ε : effect) (St : store_ty),
+    has_type [] St Public cfg1.1 T ε →
+    store_wf St cfg1.2.1 →
+    ∃ (St' : store_ty) (ε' : effect),
+      store_ty_extends St St' ∧
+      store_wf St' cfg2.2.1 ∧
+      has_type [] St' Public cfg2.1 T ε' := by
+  intro cfg1 cfg2 hmulti
+  induction hmulti with
+  | MS_Refl _ =>
+    intro T ε St hty hwf
+    exact ⟨St, ε, store_ty_extends_refl St, hwf, hty⟩
+  | MS_Step cfg1 cfg2 cfg3 hstep _hmulti' ih =>
+    intro T ε St hty hwf
+    obtain ⟨St2, ε2, hext1, hwf2, hty2⟩ :=
+      preservation_helper cfg1 cfg2 hstep T ε St hty hwf
+    obtain ⟨St', ε', hext2, hwf', hty'⟩ := ih T ε2 St2 hty2 hwf2
+    exact ⟨St', ε', store_ty_extends_trans St St2 St' hext1 hext2, hwf', hty'⟩
 
 end RIINA
