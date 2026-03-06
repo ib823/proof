@@ -21,7 +21,7 @@ Every RIINA program gets these guarantees **without any flags**:
 | Effect safety | Functions cannot perform undeclared side effects | `effects/EffectSafety.v` |
 | Declassification correctness | Secrets only released through authorized policy | `properties/Declassification.v` |
 
-These are proven theorems in Coq (7,740 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
+These are proven theorems in Coq (9,172 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
 
 ---
 
@@ -167,7 +167,7 @@ cd 03_PROTO && cargo build --release -p riinac && cd ..
 
 # 4. Verify the Coq proofs compile (proves security theorems are valid)
 cd 02_FORMAL/coq && make
-# Expected: 245 files, 0 errors, 0 admits
+# Expected: 259 active files, 0 errors, 0 admits
 
 # 5. Check axiom count
 grep -r "^Axiom " 02_FORMAL/coq/**/*.v | wc -l

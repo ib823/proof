@@ -239,9 +239,9 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Theorem/lemma declarations | 9,018 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
-| Sorry count (grep) | 3 | Reduced from 177 via systematic elimination |
-| .lean files | 270 | Most are transpiled, not hand-written |
+| Theorem/lemma declarations | 8,923 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (matches audit methodology) |
+| Sorry count (grep) | 22 | Token-level sorry across all files (1 in-build) |
+| .lean files | 272 | Most are transpiled, not hand-written |
 | `lake build RIINA` | PASSES (1 sorry) | 17 modules compile: Syntax, Semantics, Typing, Domains/All + 13 Properties |
 | Compiled theorems (real) | 420 | Core (34) + AhmedStyleTest (31) + CanonicalForms (43) + Composition (8) + CumulativeMonotone (31) + Declassification (26) + LexOrder (36) + NI_v2_Monotone (4) + NI_v2 (61) + SecurityProperties (1) + TypeMeasure (52) + TypingInversion (52) + ValRelMonotone (29) + ValRelStepLimit_PROOF (7) + SubstitutionLemma (5) |
 | Toolchain | leanprover/lean4:v4.16.0 | |

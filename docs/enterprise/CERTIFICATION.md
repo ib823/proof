@@ -45,7 +45,7 @@ This is not a test report. This is a mathematical proof that your program satisf
 │ VERIFICATION                                         │
 │   To independently verify:                           │
 │   $ cd 02_FORMAL/coq && make                         │
-│   Expected: 245 files, 0 errors, 0 admits            │
+│   Expected: 259 active files, 0 errors, 0 admits     │
 │                                                      │
 └──────────────────────────────────────────────────────┘
 ```
