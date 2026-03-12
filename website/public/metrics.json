@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-12T13:29:35Z",
-  "generatedHuman": "March 12, 2026 at 13:29 UTC",
+  "generated": "2026-03-12T13:34:31Z",
+  "generatedHuman": "March 12, 2026 at 13:34 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "7fa554e7",
+    "commit": "8826a340",
     "branch": "main"
   },
   "proofs": {
@@ -31,45 +31,45 @@
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 0,
+    "lemmas": 5,
     "lemmasRaw": 9165,
-    "compiledTheories": 0,
-    "compiledLemmas": 0,
-    "smokeBuildOk": false,
+    "compiledTheories": 1,
+    "compiledLemmas": 5,
+    "smokeBuildOk": true,
     "smokeSession": "RIINA_CORE",
     "quarantined": true,
     "sorry": 0,
-    "sorryVerified": false,
+    "sorryVerified": true,
     "axioms": 0,
     "files": 275,
     "lines": 99580,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": 0,
+    "lemmas": 3,
     "lemmasRaw": 219,
-    "compiledLemmas": 0,
-    "smokeBuildOk": false,
+    "compiledLemmas": 3,
+    "smokeBuildOk": true,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
     "quarantined": true,
     "files": 265,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 0,
+    "theorems": 5,
     "theoremsRaw": 8668,
-    "compiledTheorems": 0,
-    "smokeBuildOk": false,
+    "compiledTheorems": 5,
+    "smokeBuildOk": true,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "quarantined": true,
     "files": 265,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 0,
+    "assertions": 6,
     "assertionsRaw": 8415,
-    "compiledAssertions": 0,
-    "smokeBuildOk": false,
+    "compiledAssertions": 6,
+    "smokeBuildOk": true,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
     "quarantined": true,
     "files": 258,
@@ -105,7 +105,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 0,
-    "totalProofsAllProvers": 13198,
+    "totalProofsAllProvers": 13217,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 22,
@@ -113,8 +113,8 @@
   },
   "quality": {
     "coqCompiled": true,
-    "leanCompiled": false,
-    "isabelleCompiled": false,
+    "leanCompiled": true,
+    "isabelleCompiled": true,
     "fstarStatus": "generated",
     "tlaplusStatus": "generated",
     "alloyStatus": "generated",
@@ -124,29 +124,29 @@
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": false,
+      "reportFresh": true,
       "overallMechanized": false,
-      "source": "missing_or_stale",
+      "source": "strict_report",
       "pending": {
-        "lean": "noncoq_report_missing_or_stale",
-        "isabelle": "noncoq_report_missing_or_stale",
-        "fstar": "noncoq_report_missing_or_stale",
-        "tlaplus": "noncoq_report_missing_or_stale",
-        "alloy": "noncoq_report_missing_or_stale",
-        "smt": "noncoq_report_missing_or_stale",
-        "verus": "noncoq_report_missing_or_stale",
-        "kani": "noncoq_report_missing_or_stale",
-        "tv": "noncoq_report_missing_or_stale"
+        "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
+        "isabelle": "partial RIINA_CORE smoke build verified; full RIINA+RIINA_Domains build still pending",
+        "fstar": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending",
+        "tlaplus": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending",
+        "alloy": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending",
+        "smt": "require full-lane Z3 checks and zero generated placeholders",
+        "verus": "require full-lane Verus checks and zero generated placeholders",
+        "kani": "require full-lane Kani checks and zero generated placeholders",
+        "tv": "require full-lane TV checks and zero generated placeholders"
       },
       "backlog": {
-        "leanSorry": 22,
+        "leanSorry": 19,
         "leanAxioms": 50,
         "isabelleSorry": 0,
-        "fstarGeneratedFiles": 0,
-        "smtGeneratedFiles": 0,
-        "verusGeneratedFiles": 0,
-        "kaniGeneratedFiles": 0,
-        "tvGeneratedFiles": 0
+        "fstarGeneratedFiles": 7,
+        "smtGeneratedFiles": 7,
+        "verusGeneratedFiles": 30,
+        "kaniGeneratedFiles": 30,
+        "tvGeneratedFiles": 7
       }
     },
     "coqTiers": {
@@ -160,7 +160,7 @@
     "overall": "generated",
     "independentlyAudited": false,
     "coq": "mechanized",
-    "lean": "generated",
+    "lean": "compiled",
     "isabelle": "generated",
     "fstar": "generated",
     "tlaplus": "generated",
@@ -174,8 +174,8 @@
   "rust": {
     "tests": 912,
     "testsVerified": 912,
-    "testsEstimated": 908,
-    "testsSource": "cached_verified",
+    "testsEstimated": 0,
+    "testsSource": "full_cargo_test",
     "crates": 15
   },
   "examples": 130,
