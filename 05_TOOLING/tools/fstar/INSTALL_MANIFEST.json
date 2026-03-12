@@ -1,0 +1,13 @@
+{
+  "generated_utc": "2026-03-12T06:08:52Z",
+  "version": "F* 2025.12.15",
+  "url": "https://github.com/FStarLang/FStar/releases/download/v2025.12.15/fstar-v2025.12.15-Linux-x86_64.tar.gz",
+  "archive_sha256_expected": "d175809ba0fbdacad871fa7ba049d966d1c12aee0c52b7c0c35d30a5a649ffd8",
+  "archive_sha256_actual": "d175809ba0fbdacad871fa7ba049d966d1c12aee0c52b7c0c35d30a5a649ffd8",
+  "archive_size_bytes": 167733453,
+  "install_dir": "/workspaces/proof/05_TOOLING/tools/fstar/fstar-v2025.12.15",
+  "current_link": "/workspaces/proof/05_TOOLING/tools/fstar/current",
+  "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
+  "fstar_bin_sha256": "00da762a9199a45db38215fd234df7ab3363322ef5a1ee3eb1b27b99beb90383",
+  "fstar_version_output": "F* 2025.12.15"
+}
