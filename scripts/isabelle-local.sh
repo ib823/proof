@@ -85,7 +85,8 @@ riina_require_local_isabelle() {
   local bin
   if ! bin="$(riina_isabelle_resolve_bin "$repo_root")"; then
     echo "ERROR: pinned local Isabelle not found at $default_bin." >&2
-    echo "Run: bash scripts/provision-isabelle.sh" >&2
+    echo "Run: bash scripts/provision-smoke-toolchains.sh" >&2
+    echo "     or: bash scripts/provision-isabelle.sh" >&2
     return 1
   fi
 
@@ -105,7 +106,8 @@ riina_require_local_isabelle() {
 
   if [ ! -f "$manifest" ]; then
     echo "ERROR: missing Isabelle install manifest: $manifest" >&2
-    echo "Run: bash scripts/provision-isabelle.sh" >&2
+    echo "Run: bash scripts/provision-smoke-toolchains.sh" >&2
+    echo "     or: bash scripts/provision-isabelle.sh" >&2
     return 1
   fi
 
@@ -123,7 +125,8 @@ riina_require_local_isabelle() {
     echo "ERROR: Isabelle binary checksum mismatch for $bin" >&2
     echo "Expected: $expected_sha" >&2
     echo "Actual  : $actual_sha" >&2
-    echo "Run: bash scripts/provision-isabelle.sh" >&2
+    echo "Run: bash scripts/provision-smoke-toolchains.sh" >&2
+    echo "     or: bash scripts/provision-isabelle.sh" >&2
     return 1
   fi
 

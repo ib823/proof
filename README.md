@@ -118,6 +118,12 @@ nix run github:ib823/riina
 bash scripts/install.sh
 ```
 
+For the pinned Isabelle/F* smoke lanes used by repo verification on a fresh clone:
+
+```bash
+bash scripts/provision-smoke-toolchains.sh
+```
+
 ### Hello World
 
 Create `hello.rii`:

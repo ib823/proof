@@ -34,6 +34,7 @@ KANI_DIR="$REPO_ROOT/02_FORMAL/kani/RIINA"
 TV_DIR="$REPO_ROOT/02_FORMAL/tv/RIINA"
 FORMAL_TOOLS_DIR="$REPO_ROOT/05_TOOLING/tools/formal"
 ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
+FSTAR_HELPER="$REPO_ROOT/scripts/fstar-local.sh"
 ISABELLE_BUILD_TIMEOUT_SEC="${RIINA_ISABELLE_BUILD_TIMEOUT_SEC:-14400}"
 
 if [ -f "$ISABELLE_HELPER" ]; then
@@ -41,6 +42,14 @@ if [ -f "$ISABELLE_HELPER" ]; then
   source "$ISABELLE_HELPER"
 else
   echo "ERROR: missing Isabelle helper: $ISABELLE_HELPER" >&2
+  exit 1
+fi
+
+if [ -f "$FSTAR_HELPER" ]; then
+  # shellcheck disable=SC1090
+  source "$FSTAR_HELPER"
+else
+  echo "ERROR: missing F* helper: $FSTAR_HELPER" >&2
   exit 1
 fi
 
@@ -77,30 +86,6 @@ tool_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-detect_fstar_bin() {
-  if [ -n "${RIINA_FSTAR_BIN:-}" ] && [ -x "${RIINA_FSTAR_BIN}" ]; then
-    printf '%s\n' "${RIINA_FSTAR_BIN}"
-    return 0
-  fi
-  if [ -n "${RIINA_FSTAR_HOME:-}" ] && [ -x "${RIINA_FSTAR_HOME}/bin/fstar.exe" ]; then
-    printf '%s\n' "${RIINA_FSTAR_HOME}/bin/fstar.exe"
-    return 0
-  fi
-  if [ -x "$REPO_ROOT/05_TOOLING/tools/fstar/current/bin/fstar.exe" ]; then
-    printf '%s\n' "$REPO_ROOT/05_TOOLING/tools/fstar/current/bin/fstar.exe"
-    return 0
-  fi
-  if tool_exists fstar.exe; then
-    command -v fstar.exe
-    return 0
-  fi
-  if tool_exists fstar; then
-    command -v fstar
-    return 0
-  fi
-  return 1
-}
-
 count_files() {
   local dir="$1"
   local glob="$2"
@@ -120,6 +105,32 @@ count_grep_files() {
   else
     echo "0"
   fi
+}
+
+count_fstar_lemmas_in_file() {
+  local file="$1"
+  local val_count let_count
+  val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$file" 2>/dev/null || true)
+  let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$file" 2>/dev/null || true)
+  echo $((val_count + let_count))
+}
+
+read_isabelle_smoke_theories() {
+  local root_file="$1"
+  if [ ! -f "$root_file" ]; then
+    return 0
+  fi
+  awk '
+    /^  theories$/ { in_theories = 1; next }
+    in_theories && /^[[:space:]]{4}[^[:space:]]/ {
+      line = $0
+      sub(/^[[:space:]]+/, "", line)
+      sub(/[[:space:]]+$/, "", line)
+      print line
+      next
+    }
+    in_theories { exit }
+  ' "$root_file" 2>/dev/null
 }
 
 z3_file_ok() {
@@ -148,12 +159,17 @@ HAS_FSTAR=0
 HAS_VERUS=0
 HAS_KANI=0
 FSTAR_BIN=""
+FSTAR_LOCAL_ERROR=""
 
 tool_exists lake && HAS_LAKE=1
 tool_exists java && HAS_JAVA=1
 tool_exists z3 && HAS_Z3=1
-if FSTAR_BIN="$(detect_fstar_bin)"; then
+if FSTAR_BIN="$(riina_require_local_fstar "$REPO_ROOT" 2>&1)"; then
   HAS_FSTAR=1
+  riina_export_local_fstar_env "$FSTAR_BIN"
+else
+  FSTAR_LOCAL_ERROR="$FSTAR_BIN"
+  FSTAR_BIN=""
 fi
 tool_exists verus && HAS_VERUS=1
 tool_exists kani && HAS_KANI=1
@@ -232,11 +248,42 @@ if [ -n "$ISABELLE_LOCAL_ERROR" ]; then
   ISABELLE_PENDING="$ISABELLE_PENDING (local Isabelle enforcement: $ISABELLE_LOCAL_ERROR)"
 fi
 
+ISABELLE_SMOKE_SESSION="RIINA_CORE"
+ISABELLE_SMOKE_DIR="$REPO_ROOT/02_FORMAL/isabelle/RIINA/Core"
+ISABELLE_SMOKE_DECLARED_THEORIES=0
+ISABELLE_SMOKE_DECLARED_LEMMAS=0
+ISABELLE_SMOKE_COMPILED_THEORIES=0
+ISABELLE_SMOKE_COMPILED_LEMMAS=0
+ISABELLE_SMOKE_BUILD_OK=0
+if [ -f "$ISABELLE_SMOKE_DIR/ROOT" ]; then
+  mapfile -t ISABELLE_SMOKE_THEORIES < <(read_isabelle_smoke_theories "$ISABELLE_SMOKE_DIR/ROOT")
+  ISABELLE_SMOKE_DECLARED_THEORIES=${#ISABELLE_SMOKE_THEORIES[@]}
+  for theory in "${ISABELLE_SMOKE_THEORIES[@]}"; do
+    thy_path="$REPO_ROOT/02_FORMAL/isabelle/RIINA/$theory.thy"
+    count=$(grep -cP "^\s*(lemma|theorem|corollary)\s" "$thy_path" 2>/dev/null || true)
+    if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+      ISABELLE_SMOKE_DECLARED_LEMMAS=$((ISABELLE_SMOKE_DECLARED_LEMMAS + count))
+    fi
+  done
+fi
+if [ "$HAS_ISABELLE" -eq 1 ] && [ -d "$ISABELLE_SMOKE_DIR" ]; then
+  if run_with_timeout "$ISABELLE_BUILD_TIMEOUT_SEC" "$ISABELLE_BIN" build -d "$ISABELLE_SMOKE_DIR" -b "$ISABELLE_SMOKE_SESSION" >/dev/null 2>&1; then
+    ISABELLE_SMOKE_BUILD_OK=1
+    ISABELLE_SMOKE_COMPILED_THEORIES="$ISABELLE_SMOKE_DECLARED_THEORIES"
+    ISABELLE_SMOKE_COMPILED_LEMMAS="$ISABELLE_SMOKE_DECLARED_LEMMAS"
+  fi
+fi
+
 # ---------------------------------------------------------------------------
 # F*
 # ---------------------------------------------------------------------------
 FSTAR_FILES="$(count_files "$FSTAR_DIR" "*.fst")"
 FSTAR_GENERATED_FILES="$(count_grep_files "Auto-generated from 02_FORMAL/coq/" "$FSTAR_DIR" "*.fst")"
+FSTAR_SMOKE_MODULE="RIINA.Active.CryptographicSecurityActive"
+FSTAR_SMOKE_FILE="$FSTAR_DIR/Active/CryptographicSecurityActive.fst"
+FSTAR_SMOKE_DECLARED_LEMMAS=0
+FSTAR_SMOKE_COMPILED_LEMMAS=0
+FSTAR_SMOKE_BUILD_OK=0
 FSTAR_FULL_EXEC=0
 if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_FILES" -gt 0 ]; then
   mapfile -t FSTAR_LIST < <(find "$FSTAR_DIR" -type f -name "*.fst" | sort)
@@ -250,6 +297,19 @@ if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_FILES" -gt 0 ]; then
     fi
   fi
 fi
+if [ -f "$FSTAR_SMOKE_FILE" ]; then
+  FSTAR_SMOKE_DECLARED_LEMMAS="$(count_fstar_lemmas_in_file "$FSTAR_SMOKE_FILE")"
+  if [ -n "$FSTAR_BIN" ]; then
+    if run_with_timeout 900 "$FSTAR_BIN" \
+      --cache_checked_modules \
+      --cache_dir /tmp/riina-fstar-active-cache \
+      --include "$REPO_ROOT/02_FORMAL/fstar" \
+      "$FSTAR_SMOKE_FILE" >/dev/null 2>&1; then
+      FSTAR_SMOKE_BUILD_OK=1
+      FSTAR_SMOKE_COMPILED_LEMMAS="$FSTAR_SMOKE_DECLARED_LEMMAS"
+    fi
+  fi
+fi
 FSTAR_MECHANIZED=0
 if [ "$FSTAR_FULL_EXEC" -eq 1 ] && [ "$FSTAR_GENERATED_FILES" -eq 0 ] && [ "$FSTAR_FILES" -gt 0 ]; then
   FSTAR_MECHANIZED=1
@@ -257,6 +317,9 @@ fi
 FSTAR_PENDING="none"
 if [ "$FSTAR_MECHANIZED" -ne 1 ]; then
   FSTAR_PENDING="require full Active+Domains F* compilation with zero generated placeholders"
+fi
+if [ -n "$FSTAR_LOCAL_ERROR" ]; then
+  FSTAR_PENDING="$FSTAR_PENDING (local F* enforcement: $FSTAR_LOCAL_ERROR)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -418,8 +481,8 @@ for lane in "$LEAN_MECHANIZED" "$ISABELLE_MECHANIZED" "$FSTAR_MECHANIZED" "$TLA_
 done
 
 echo "Lean mechanized      : $LEAN_MECHANIZED (build=$LEAN_BUILD_OK sorry=$LEAN_SORRY axioms=$LEAN_AXIOMS files=$LEAN_FILES)"
-echo "Isabelle mechanized  : $ISABELLE_MECHANIZED (build=$ISABELLE_BUILD_OK mode=$ISABELLE_BUILD_MODE sorry=$ISABELLE_SORRY files=$ISABELLE_FILES)"
-echo "F* mechanized        : $FSTAR_MECHANIZED (exec=$FSTAR_FULL_EXEC generated=$FSTAR_GENERATED_FILES files=$FSTAR_FILES)"
+echo "Isabelle mechanized  : $ISABELLE_MECHANIZED (build=$ISABELLE_BUILD_OK mode=$ISABELLE_BUILD_MODE smoke=$ISABELLE_SMOKE_BUILD_OK compiled=$ISABELLE_SMOKE_COMPILED_LEMMAS files=$ISABELLE_FILES)"
+echo "F* mechanized        : $FSTAR_MECHANIZED (exec=$FSTAR_FULL_EXEC smoke=$FSTAR_SMOKE_BUILD_OK compiled=$FSTAR_SMOKE_COMPILED_LEMMAS generated=$FSTAR_GENERATED_FILES files=$FSTAR_FILES)"
 echo "TLA+ mechanized      : $TLA_MECHANIZED (exec=$TLA_FULL_EXEC files=$TLA_FILES)"
 echo "Alloy mechanized     : $ALLOY_MECHANIZED (exec=$ALLOY_FULL_EXEC files=$ALLOY_FILES)"
 echo "SMT mechanized       : $SMT_MECHANIZED (exec=$SMT_FULL_EXEC generated=$SMT_GENERATED_FILES files=$SMT_FILES)"
@@ -446,6 +509,8 @@ cat > "$REPORT_PATH" <<EOF_JSON
     "java": $(bool_json "$HAS_JAVA"),
     "z3": $(bool_json "$HAS_Z3"),
     "fstar": $(bool_json "$HAS_FSTAR"),
+    "fstar_bin": "$(escape_json "${FSTAR_BIN:-}")",
+    "fstar_local_error": "$(escape_json "${FSTAR_LOCAL_ERROR:-}")",
     "verus": $(bool_json "$HAS_VERUS"),
     "kani": $(bool_json "$HAS_KANI"),
     "tla2tools_jar": $(bool_json "$HAS_TLA2TOOLS_JAR"),
@@ -467,6 +532,12 @@ cat > "$REPORT_PATH" <<EOF_JSON
       "build_mode": "$(escape_json "$ISABELLE_BUILD_MODE")",
       "files": $ISABELLE_FILES,
       "sorry": $ISABELLE_SORRY,
+      "smoke_session": "$(escape_json "$ISABELLE_SMOKE_SESSION")",
+      "smoke_build_ok": $(bool_json "$ISABELLE_SMOKE_BUILD_OK"),
+      "smoke_declared_theories": $ISABELLE_SMOKE_DECLARED_THEORIES,
+      "smoke_declared_lemmas": $ISABELLE_SMOKE_DECLARED_LEMMAS,
+      "smoke_compiled_theories": $ISABELLE_SMOKE_COMPILED_THEORIES,
+      "smoke_compiled_lemmas": $ISABELLE_SMOKE_COMPILED_LEMMAS,
       "mechanized_ready": $(bool_json "$ISABELLE_MECHANIZED"),
       "pending": "$(escape_json "$ISABELLE_PENDING")"
     },
@@ -474,6 +545,10 @@ cat > "$REPORT_PATH" <<EOF_JSON
       "full_exec_ok": $(bool_json "$FSTAR_FULL_EXEC"),
       "files": $FSTAR_FILES,
       "generated_files": $FSTAR_GENERATED_FILES,
+      "smoke_module": "$(escape_json "$FSTAR_SMOKE_MODULE")",
+      "smoke_build_ok": $(bool_json "$FSTAR_SMOKE_BUILD_OK"),
+      "smoke_declared_lemmas": $FSTAR_SMOKE_DECLARED_LEMMAS,
+      "smoke_compiled_lemmas": $FSTAR_SMOKE_COMPILED_LEMMAS,
       "mechanized_ready": $(bool_json "$FSTAR_MECHANIZED"),
       "pending": "$(escape_json "$FSTAR_PENDING")"
     },

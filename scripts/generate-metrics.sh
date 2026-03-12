@@ -31,26 +31,38 @@ escape_json() {
     printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+ISABELLE_HELPER="$ROOT_DIR/scripts/isabelle-local.sh"
+if [ -f "$ISABELLE_HELPER" ]; then
+    # shellcheck disable=SC1090
+    source "$ISABELLE_HELPER"
+fi
+
+FSTAR_HELPER="$ROOT_DIR/scripts/fstar-local.sh"
+if [ -f "$FSTAR_HELPER" ]; then
+    # shellcheck disable=SC1090
+    source "$FSTAR_HELPER"
+fi
+
+detect_isabelle_bin() {
+    if declare -F riina_require_local_isabelle >/dev/null 2>&1; then
+        local bin
+        if bin="$(riina_require_local_isabelle "$ROOT_DIR" 2>/dev/null)"; then
+            riina_export_local_isabelle_env "$bin"
+            printf '%s\n' "$bin"
+            return 0
+        fi
+    fi
+    return 1
+}
+
 detect_fstar_bin() {
-    if [ -n "${RIINA_FSTAR_BIN:-}" ] && [ -x "${RIINA_FSTAR_BIN}" ]; then
-        printf '%s\n' "${RIINA_FSTAR_BIN}"
-        return 0
-    fi
-    if [ -n "${RIINA_FSTAR_HOME:-}" ] && [ -x "${RIINA_FSTAR_HOME}/bin/fstar.exe" ]; then
-        printf '%s\n' "${RIINA_FSTAR_HOME}/bin/fstar.exe"
-        return 0
-    fi
-    if [ -x "$ROOT_DIR/05_TOOLING/tools/fstar/current/bin/fstar.exe" ]; then
-        printf '%s\n' "$ROOT_DIR/05_TOOLING/tools/fstar/current/bin/fstar.exe"
-        return 0
-    fi
-    if command -v fstar.exe >/dev/null 2>&1; then
-        command -v fstar.exe
-        return 0
-    fi
-    if command -v fstar >/dev/null 2>&1; then
-        command -v fstar
-        return 0
+    if declare -F riina_require_local_fstar >/dev/null 2>&1; then
+        local bin
+        if bin="$(riina_require_local_fstar "$ROOT_DIR" 2>/dev/null)"; then
+            riina_export_local_fstar_env "$bin"
+            printf '%s\n' "$bin"
+            return 0
+        fi
     fi
     return 1
 }
@@ -180,6 +192,8 @@ ISABELLE_LEMMAS=0
 ISABELLE_SORRY=0
 ISABELLE_FILES=0
 ISABELLE_LINES=0
+ISABELLE_SMOKE_DECLARED_THEORIES=0
+ISABELLE_SMOKE_DECLARED_LEMMAS=0
 ISABELLE_COMPILED_THEORIES=0
 ISABELLE_COMPILED_LEMMAS=0
 ISABELLE_SMOKE_BUILD_OK=false
@@ -215,21 +229,14 @@ if [ -f "$ISABELLE_SMOKE_DIR/ROOT" ]; then
             in_theories { exit }
         ' "$ISABELLE_SMOKE_DIR/ROOT" 2>/dev/null
     )
-    ISABELLE_COMPILED_THEORIES=${#ISABELLE_SMOKE_THEORIES[@]}
+    ISABELLE_SMOKE_DECLARED_THEORIES=${#ISABELLE_SMOKE_THEORIES[@]}
     for theory in "${ISABELLE_SMOKE_THEORIES[@]}"; do
         thy_path="$ROOT_DIR/02_FORMAL/isabelle/RIINA/$theory.thy"
         count=$(grep -cP "^\s*(lemma|theorem|corollary)\s" "$thy_path" 2>/dev/null || true)
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
-            ISABELLE_COMPILED_LEMMAS=$((ISABELLE_COMPILED_LEMMAS + count))
+            ISABELLE_SMOKE_DECLARED_LEMMAS=$((ISABELLE_SMOKE_DECLARED_LEMMAS + count))
         fi
     done
-fi
-
-ISABELLE_BIN_LOCAL="$ROOT_DIR/05_TOOLING/tools/isabelle/current/bin/isabelle"
-if [ -x "$ISABELLE_BIN_LOCAL" ] && [ -d "$ISABELLE_SMOKE_DIR" ]; then
-    if "$ISABELLE_BIN_LOCAL" build -d "$ISABELLE_SMOKE_DIR" -b "$ISABELLE_SMOKE_SESSION" >/dev/null 2>&1; then
-        ISABELLE_SMOKE_BUILD_OK=true
-    fi
 fi
 
 # Compute Lean axioms (axiom declarations)
@@ -261,7 +268,7 @@ FSTAR_COMPILED_LEMMAS=0
 FSTAR_SMOKE_BUILD_OK=false
 FSTAR_SMOKE_MODULE="RIINA.Active.CryptographicSecurityActive"
 FSTAR_SMOKE_FILE="$ROOT_DIR/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"
-FSTAR_SMOKE_LEMMAS=0
+FSTAR_SMOKE_DECLARED_LEMMAS=0
 if [ -d "$ROOT_DIR/02_FORMAL/fstar" ]; then
     while IFS= read -r f; do
         count=$(count_fstar_lemmas_in_file "$f")
@@ -271,17 +278,7 @@ if [ -d "$ROOT_DIR/02_FORMAL/fstar" ]; then
 fi
 
 if [ -f "$FSTAR_SMOKE_FILE" ]; then
-    FSTAR_SMOKE_LEMMAS="$(count_fstar_smoke_lemmas "$FSTAR_SMOKE_FILE")"
-    if FSTAR_BIN="$(detect_fstar_bin)"; then
-        if "$FSTAR_BIN" \
-            --cache_checked_modules \
-            --cache_dir /tmp/riina-fstar-active-cache \
-            --include "$ROOT_DIR/02_FORMAL/fstar" \
-            "$FSTAR_SMOKE_FILE" >/dev/null 2>&1; then
-            FSTAR_SMOKE_BUILD_OK=true
-            FSTAR_COMPILED_LEMMAS="$FSTAR_SMOKE_LEMMAS"
-        fi
-    fi
+    FSTAR_SMOKE_DECLARED_LEMMAS="$(count_fstar_smoke_lemmas "$FSTAR_SMOKE_FILE")"
 fi
 
 # Count TLA+ theorems (THEOREM declarations)
@@ -659,7 +656,72 @@ if [ "$NONCOQ_MECH_FRESH" = true ]; then
     VERUS_GENERATED_BACKLOG="$(jq -r '.lanes.verus.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
     KANI_GENERATED_BACKLOG="$(jq -r '.lanes.kani.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
     TV_GENERATED_BACKLOG="$(jq -r '.lanes.tv.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+
+    ISABELLE_SMOKE_SESSION="$(jq -r '.lanes.isabelle.smoke_session // "RIINA_CORE"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "RIINA_CORE")"
+    ISABELLE_SMOKE_BUILD_OK="$(jq -r '.lanes.isabelle.smoke_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    ISABELLE_SMOKE_DECLARED_THEORIES="$(jq -r '.lanes.isabelle.smoke_declared_theories // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    ISABELLE_SMOKE_DECLARED_LEMMAS="$(jq -r '.lanes.isabelle.smoke_declared_lemmas // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    ISABELLE_COMPILED_THEORIES="$(jq -r '.lanes.isabelle.smoke_compiled_theories // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    ISABELLE_COMPILED_LEMMAS="$(jq -r '.lanes.isabelle.smoke_compiled_lemmas // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+
+    FSTAR_SMOKE_MODULE="$(jq -r '.lanes.fstar.smoke_module // "RIINA.Active.CryptographicSecurityActive"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "RIINA.Active.CryptographicSecurityActive")"
+    FSTAR_SMOKE_BUILD_OK="$(jq -r '.lanes.fstar.smoke_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    FSTAR_SMOKE_DECLARED_LEMMAS="$(jq -r '.lanes.fstar.smoke_declared_lemmas // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    FSTAR_COMPILED_LEMMAS="$(jq -r '.lanes.fstar.smoke_compiled_lemmas // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
 fi
+
+if [ "$NONCOQ_MECH_FRESH" != true ]; then
+    if ISABELLE_BIN_LOCAL="$(detect_isabelle_bin)"; then
+        if [ -d "$ISABELLE_SMOKE_DIR" ] && "$ISABELLE_BIN_LOCAL" build -d "$ISABELLE_SMOKE_DIR" -b "$ISABELLE_SMOKE_SESSION" >/dev/null 2>&1; then
+            ISABELLE_SMOKE_BUILD_OK=true
+            ISABELLE_COMPILED_THEORIES="$ISABELLE_SMOKE_DECLARED_THEORIES"
+            ISABELLE_COMPILED_LEMMAS="$ISABELLE_SMOKE_DECLARED_LEMMAS"
+        fi
+    fi
+
+    if [ -f "$FSTAR_SMOKE_FILE" ] && FSTAR_BIN="$(detect_fstar_bin)"; then
+        if "$FSTAR_BIN" \
+            --cache_checked_modules \
+            --cache_dir /tmp/riina-fstar-active-cache \
+            --include "$ROOT_DIR/02_FORMAL/fstar" \
+            "$FSTAR_SMOKE_FILE" >/dev/null 2>&1; then
+            FSTAR_SMOKE_BUILD_OK=true
+            FSTAR_COMPILED_LEMMAS="$FSTAR_SMOKE_DECLARED_LEMMAS"
+        fi
+    fi
+fi
+
+ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
+FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS
+TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_THEOREMS
+ALLOY_ASSERTIONS_PUBLIC=$ALLOY_ASSERTIONS
+SMT_ASSERTIONS_PUBLIC=$SMT_ASSERTIONS
+VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
+KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
+TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
+
+if [ "$ISABELLE_QUARANTINED" = true ]; then
+    if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_LEMMAS" -gt 0 ]; then
+        ISABELLE_LEMMAS_PUBLIC=$ISABELLE_COMPILED_LEMMAS
+    else
+        ISABELLE_LEMMAS_PUBLIC=0
+    fi
+fi
+if [ "$FSTAR_QUARANTINED" = true ]; then
+    if [ "$FSTAR_SMOKE_BUILD_OK" = true ] && [ "$FSTAR_COMPILED_LEMMAS" -gt 0 ]; then
+        FSTAR_LEMMAS_PUBLIC=$FSTAR_COMPILED_LEMMAS
+    else
+        FSTAR_LEMMAS_PUBLIC=0
+    fi
+fi
+[ "$TLAPLUS_QUARANTINED" = true ] && TLAPLUS_THEOREMS_PUBLIC=0
+[ "$ALLOY_QUARANTINED" = true ] && ALLOY_ASSERTIONS_PUBLIC=0
+[ "$SMT_QUARANTINED" = true ] && SMT_ASSERTIONS_PUBLIC=0
+[ "$VERUS_QUARANTINED" = true ] && VERUS_PROOFS_PUBLIC=0
+[ "$KANI_QUARANTINED" = true ] && KANI_HARNESSES_PUBLIC=0
+[ "$TV_QUARANTINED" = true ] && TV_VALIDATIONS_PUBLIC=0
+
+TOTAL_PROOFS=$((QED_ACTIVE + LEAN_THEOREMS + ISABELLE_LEMMAS_PUBLIC + FSTAR_LEMMAS_PUBLIC + TLAPLUS_THEOREMS_PUBLIC + ALLOY_ASSERTIONS_PUBLIC + SMT_ASSERTIONS_PUBLIC + VERUS_PROOFS_PUBLIC + KANI_HARNESSES_PUBLIC + TV_VALIDATIONS_PUBLIC))
 
 if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_THEORIES" -gt 0 ]; then
     ISABELLE_COMPILED=true

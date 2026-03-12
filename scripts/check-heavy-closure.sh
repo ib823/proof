@@ -25,6 +25,7 @@ REPORT_PATH="$REPO_ROOT/reports/heavy_closure_status.json"
 FOUNDATION_REPORT="$REPO_ROOT/reports/heavy_gap_status.json"
 REPO_HEAD="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo "")"
 REPO_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+FSTAR_HELPER="$REPO_ROOT/scripts/fstar-local.sh"
 
 STRICT=0
 if [ "${1:-}" = "--strict" ]; then
@@ -58,32 +59,16 @@ bool_json() {
   fi
 }
 
+if [ -f "$FSTAR_HELPER" ]; then
+  # shellcheck disable=SC1090
+  source "$FSTAR_HELPER"
+else
+  echo "ERROR: missing F* helper: $FSTAR_HELPER" >&2
+  exit 1
+fi
+
 tool_exists() {
   command -v "$1" >/dev/null 2>&1
-}
-
-detect_fstar_bin() {
-  if [ -n "${RIINA_FSTAR_BIN:-}" ] && [ -x "${RIINA_FSTAR_BIN}" ]; then
-    printf '%s\n' "${RIINA_FSTAR_BIN}"
-    return 0
-  fi
-  if [ -n "${RIINA_FSTAR_HOME:-}" ] && [ -x "${RIINA_FSTAR_HOME}/bin/fstar.exe" ]; then
-    printf '%s\n' "${RIINA_FSTAR_HOME}/bin/fstar.exe"
-    return 0
-  fi
-  if [ -x "$REPO_ROOT/05_TOOLING/tools/fstar/current/bin/fstar.exe" ]; then
-    printf '%s\n' "$REPO_ROOT/05_TOOLING/tools/fstar/current/bin/fstar.exe"
-    return 0
-  fi
-  if tool_exists fstar.exe; then
-    command -v fstar.exe
-    return 0
-  fi
-  if tool_exists fstar; then
-    command -v fstar
-    return 0
-  fi
-  return 1
 }
 
 file_exists() {
@@ -167,8 +152,13 @@ tool_exists z3 && HAS_Z3=1
 
 HAS_FSTAR=0
 FSTAR_BIN=""
-if FSTAR_BIN="$(detect_fstar_bin)"; then
+FSTAR_LOCAL_ERROR=""
+if FSTAR_BIN="$(riina_require_local_fstar "$REPO_ROOT" 2>&1)"; then
   HAS_FSTAR=1
+  riina_export_local_fstar_env "$FSTAR_BIN"
+else
+  FSTAR_LOCAL_ERROR="$FSTAR_BIN"
+  FSTAR_BIN=""
 fi
 
 HAS_VERUS=0
@@ -315,8 +305,6 @@ FSTAR_DOMAIN_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/"
 FSTAR_ACTIVE_FILES="$(find "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" -type f -name "*.fst" 2>/dev/null | wc -l | tr -d ' ')"
 FSTAR_ACTIVE_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/" "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active" --include="*.fst" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 FSTAR_ACTIVE_EXEC=0
-
-FSTAR_BIN=""
 if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_ACTIVE_FILES" -gt 0 ] \
   && file_exists "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"; then
   if run_quiet 900 "$FSTAR_BIN" \
@@ -527,6 +515,8 @@ cat > "$REPORT_PATH" <<EOF_JSON
   "tools": {
     "z3": $(bool_json "$HAS_Z3"),
     "fstar": $(bool_json "$HAS_FSTAR"),
+    "fstar_bin": "$(escape_json "${FSTAR_BIN:-}")",
+    "fstar_local_error": "$(escape_json "${FSTAR_LOCAL_ERROR:-}")",
     "verus": $(bool_json "$HAS_VERUS"),
     "kani": $(bool_json "$HAS_KANI")
   },

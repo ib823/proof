@@ -228,13 +228,13 @@ fn detect_isabelle() -> ToolStatus {
     }
 
     ToolStatus::NotFound(
-        "pinned local Isabelle not found (run: bash scripts/provision-isabelle.sh)".into(),
+        "pinned local Isabelle not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-isabelle.sh)".into(),
     )
 }
 
 /// Detect pinned local `fstar.exe`:
 /// `RIINA_FSTAR_BIN` → `RIINA_FSTAR_HOME` → repo-local
-/// `05_TOOLING/tools/fstar/current/bin/fstar.exe` → `which fstar.exe`.
+/// `05_TOOLING/tools/fstar/current/bin/fstar.exe`.
 fn detect_fstar() -> ToolStatus {
     // 1. Explicit binary override
     if let Ok(bin) = std::env::var("RIINA_FSTAR_BIN") {
@@ -271,15 +271,9 @@ fn detect_fstar() -> ToolStatus {
         }
     }
 
-    // 4. PATH lookup
-    if let Some(p) = which_tool("fstar.exe") {
-        return ToolStatus::Found(p);
-    }
-    if let Some(p) = which_tool("fstar") {
-        return ToolStatus::Found(p);
-    }
-
-    ToolStatus::NotFound("pinned local F* not found (run: bash scripts/provision-fstar.sh)".into())
+    ToolStatus::NotFound(
+        "pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh)".into(),
+    )
 }
 
 // ---------------------------------------------------------------------------
