@@ -2485,7 +2485,8 @@ fn compile_alloy(alloy_dir: &Path) -> CheckResult {
                             name: "Alloy Compilation".into(),
                             passed: false,
                             blocking: false,
-                            details: "Alloy commands listing produced no executable commands".into(),
+                            details: "Alloy commands listing produced no executable commands"
+                                .into(),
                         };
                     }
 
@@ -2570,7 +2571,9 @@ fn compile_alloy(alloy_dir: &Path) -> CheckResult {
                                     name: "Alloy Compilation".into(),
                                     passed: false,
                                     blocking: false,
-                                    details: format!("unsupported Alloy command kind in smoke file: {other}"),
+                                    details: format!(
+                                        "unsupported Alloy command kind in smoke file: {other}"
+                                    ),
                                 }
                             }
                         };
@@ -2582,7 +2585,11 @@ fn compile_alloy(alloy_dir: &Path) -> CheckResult {
                                 blocking: false,
                                 details: format!(
                                     "command {idx} expected {expected} but got {}\n{}",
-                                    if status.is_empty() { "<missing>" } else { &status },
+                                    if status.is_empty() {
+                                        "<missing>"
+                                    } else {
+                                        &status
+                                    },
                                     truncate_str(&tail, 500)
                                 ),
                             };
@@ -2594,7 +2601,9 @@ fn compile_alloy(alloy_dir: &Path) -> CheckResult {
                             name: "Alloy Compilation".into(),
                             passed: false,
                             blocking: false,
-                            details: "Alloy smoke file must include at least one satisfiable run command".into(),
+                            details:
+                                "Alloy smoke file must include at least one satisfiable run command"
+                                    .into(),
                         };
                     }
 
@@ -3266,7 +3275,10 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
         );
         if file.exists() {
             let count = count_alloy_smoke_assertions(&file);
-            assert!(count >= 1, "Expected >=1 Alloy smoke assertion, got {count}");
+            assert!(
+                count >= 1,
+                "Expected >=1 Alloy smoke assertion, got {count}"
+            );
         }
     }
 

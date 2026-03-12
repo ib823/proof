@@ -161,7 +161,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-lexer** | `03_PROTO/crates/riina-lexer/` | Implemented | Bahasa Melayu tokenizer |
 | **riina-parser** | `03_PROTO/crates/riina-parser/` | Implemented | AST construction (170+ BNF productions) |
 | **riina-types** | `03_PROTO/crates/riina-types/` | Implemented | Type definitions |
-| **riina-typechecker** | `03_PROTO/crates/riina-typechecker/` | Implemented | Type checking (linear + effects + IFC) |
+| **riina-typechecker** | `03_PROTO/crates/riina-typechecker/` | Implemented | Type checking (effects + IFC + declassification; linear/capability compile-time lanes still partial) |
 | **riina-codegen** | `03_PROTO/crates/riina-codegen/` | Implemented (basic) | C + WASM emission |
 | **riinac** | `03_PROTO/crates/riinac/` | Implemented | Compiler driver |
 | **riina-fmt** | `03_PROTO/crates/riina-fmt/` | Implemented | Code formatter |
@@ -289,7 +289,7 @@ be counted as verified proofs.
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 908 passing |
+| Tests (03_PROTO/) | 912 passing |
 | Tests (05_TOOLING/) | 240 passing |
 | Crates | 15 |
 | Clippy | Clean |
@@ -298,14 +298,18 @@ be counted as verified proofs.
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords
 - Parses basic RIINA syntax to AST
-- Type-checks with effect annotations
+- Type-checks through the Coq-matching shipped path
+- Rejects basic information-flow violations on references and dereferences
+- Rejects invalid declassification proofs
+- Rejects declared-effect violations in top-level functions
 - Emits C code (basic programs)
 - WASM backend exists (scaffolding — emits WASM sections but no distributed binary)
 - Mobile backends exist (scaffolding — generates code strings, no compiled artifacts)
 
 **What riinac CANNOT do yet:**
 - Compile non-trivial programs end-to-end
-- Enforce information flow at compile time (type system exists, enforcement partial)
+- Enforce capability types at compile time
+- Enforce linear resource usage at compile time
 - Produce optimized output
 - Self-host
 
@@ -333,7 +337,7 @@ research source, and detailed description.
 | REQ-09 | TLA+: first real spec (not stub) | P2 | DONE | 2 |
 | REQ-10 | Alloy: first real model (not stub) | P2 | DONE | 2 |
 | REQ-11 | Deep NI proofs in active Coq build | P1 | DONE | 1 |
-| REQ-12 | Compiler enforces information flow | P1 | TODO | 3 |
+| REQ-12 | Compiler enforces information flow | P1 | IN PROGRESS | 3 |
 | REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | TODO | 4 |
 | REQ-14 | Working WASM backend (not scaffolding) | P1 | TODO | 4 |
 | REQ-15 | Real artifact signing | P2 | TODO | 5 |
