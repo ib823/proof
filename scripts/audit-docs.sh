@@ -105,6 +105,35 @@ count_isabelle_lemmas() {
     echo "$total"
 }
 
+count_isabelle_smoke_lemmas() {
+    local root="$REPO_ROOT/02_FORMAL/isabelle/RIINA/Core/ROOT"
+    local total=0
+    if [ ! -f "$root" ]; then
+        echo "0"
+        return
+    fi
+    while IFS= read -r theory; do
+        local thy="$REPO_ROOT/02_FORMAL/isabelle/RIINA/${theory}.thy"
+        local count=$(grep -cP "^\s*(lemma|theorem|corollary)\s" "$thy" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(
+        awk '
+            /^  theories$/ { in_theories = 1; next }
+            in_theories && /^[[:space:]]{4}[^[:space:]]/ {
+                line = $0
+                sub(/^[[:space:]]+/, "", line)
+                sub(/[[:space:]]+$/, "", line)
+                print line
+                next
+            }
+            in_theories { exit }
+        ' "$root" 2>/dev/null
+    )
+    echo "$total"
+}
+
 count_examples() {
     find "$REPO_ROOT/07_EXAMPLES" -name "*.rii" -type f 2>/dev/null | wc -l
 }
@@ -199,6 +228,7 @@ ACTUAL_COQ_FILES=$(count_coq_files)
 ACTUAL_COQ_ACTIVE_FILES=$(count_coq_active_files)
 ACTUAL_LEAN=$(count_lean_theorems)
 ACTUAL_ISABELLE=$(count_isabelle_lemmas)
+ACTUAL_ISABELLE_SMOKE=$(count_isabelle_smoke_lemmas)
 # Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
@@ -379,6 +409,8 @@ if [ -f "$METRICS_FILE" ]; then
     WEB_LEAN=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['lean']['theorems'])" 2>/dev/null || grep -oP '"theorems":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
     WEB_ISABELLE=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle']['lemmas'])" 2>/dev/null || grep -oP '"lemmas":\s*\K\d+' "$METRICS_FILE" | head -1 || echo "0")
     WEB_ISABELLE_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['isabelle']['lemmas']))" 2>/dev/null || echo "$WEB_ISABELLE")
+    WEB_ISABELLE_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
+    WEB_ISABELLE_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_ISABELLE_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
@@ -386,7 +418,12 @@ if [ -f "$METRICS_FILE" ]; then
     check_value "Website Lean (metrics.json)" "$ACTUAL_LEAN" "$WEB_LEAN" "metrics.json" || true
     if [ "$WEB_ISABELLE_QUARANTINED" = "true" ]; then
         check_value "Website Isabelle raw (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE_RAW" "metrics.json" || true
-        check_value "Website Isabelle quarantined count (metrics.json)" "0" "$WEB_ISABELLE" "metrics.json" || true
+        if [ "$WEB_ISABELLE_SMOKE" = "true" ]; then
+            check_value "Website Isabelle partial compiled count (metrics.json)" "$ACTUAL_ISABELLE_SMOKE" "$WEB_ISABELLE" "metrics.json" || true
+            check_value "Website Isabelle compiledLemmas (metrics.json)" "$ACTUAL_ISABELLE_SMOKE" "$WEB_ISABELLE_COMPILED" "metrics.json" || true
+        else
+            check_value "Website Isabelle quarantined count (metrics.json)" "0" "$WEB_ISABELLE" "metrics.json" || true
+        fi
     else
         check_value "Website Isabelle (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE" "metrics.json" || true
     fi

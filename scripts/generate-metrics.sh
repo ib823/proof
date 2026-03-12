@@ -139,6 +139,11 @@ ISABELLE_LEMMAS=0
 ISABELLE_SORRY=0
 ISABELLE_FILES=0
 ISABELLE_LINES=0
+ISABELLE_COMPILED_THEORIES=0
+ISABELLE_COMPILED_LEMMAS=0
+ISABELLE_SMOKE_BUILD_OK=false
+ISABELLE_SMOKE_SESSION="RIINA_CORE"
+ISABELLE_SMOKE_DIR="$ROOT_DIR/02_FORMAL/isabelle/RIINA/Core"
 if [ -d "$ROOT_DIR/02_FORMAL/isabelle" ]; then
     while IFS= read -r f; do
         count=$(grep -cP "^\s*(lemma|theorem|corollary)\s" "$f" 2>/dev/null || true)
@@ -153,6 +158,37 @@ if [ -d "$ROOT_DIR/02_FORMAL/isabelle" ]; then
     done < <(find "$ROOT_DIR/02_FORMAL/isabelle" -name "*.thy" -type f 2>/dev/null)
     ISABELLE_FILES=$(find "$ROOT_DIR/02_FORMAL/isabelle" -name "*.thy" -type f 2>/dev/null | wc -l)
     ISABELLE_LINES=$(find "$ROOT_DIR/02_FORMAL/isabelle" -name "*.thy" -type f -exec cat {} + 2>/dev/null | wc -l)
+fi
+
+if [ -f "$ISABELLE_SMOKE_DIR/ROOT" ]; then
+    mapfile -t ISABELLE_SMOKE_THEORIES < <(
+        awk '
+            /^  theories$/ { in_theories = 1; next }
+            in_theories && /^[[:space:]]{4}[^[:space:]]/ {
+                line = $0
+                sub(/^[[:space:]]+/, "", line)
+                sub(/[[:space:]]+$/, "", line)
+                print line
+                next
+            }
+            in_theories { exit }
+        ' "$ISABELLE_SMOKE_DIR/ROOT" 2>/dev/null
+    )
+    ISABELLE_COMPILED_THEORIES=${#ISABELLE_SMOKE_THEORIES[@]}
+    for theory in "${ISABELLE_SMOKE_THEORIES[@]}"; do
+        thy_path="$ROOT_DIR/02_FORMAL/isabelle/RIINA/$theory.thy"
+        count=$(grep -cP "^\s*(lemma|theorem|corollary)\s" "$thy_path" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            ISABELLE_COMPILED_LEMMAS=$((ISABELLE_COMPILED_LEMMAS + count))
+        fi
+    done
+fi
+
+ISABELLE_BIN_LOCAL="$ROOT_DIR/05_TOOLING/tools/isabelle/current/bin/isabelle"
+if [ -x "$ISABELLE_BIN_LOCAL" ] && [ -d "$ISABELLE_SMOKE_DIR" ]; then
+    if "$ISABELLE_BIN_LOCAL" build -d "$ISABELLE_SMOKE_DIR" -b "$ISABELLE_SMOKE_SESSION" >/dev/null 2>&1; then
+        ISABELLE_SMOKE_BUILD_OK=true
+    fi
 fi
 
 # Compute Lean axioms (axiom declarations)
@@ -283,7 +319,13 @@ VERUS_PROOFS_PUBLIC=$VERUS_PROOFS
 KANI_HARNESSES_PUBLIC=$KANI_HARNESSES
 TV_VALIDATIONS_PUBLIC=$TV_VALIDATIONS
 
-[ "$ISABELLE_QUARANTINED" = true ] && ISABELLE_LEMMAS_PUBLIC=0
+if [ "$ISABELLE_QUARANTINED" = true ]; then
+    if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_LEMMAS" -gt 0 ]; then
+        ISABELLE_LEMMAS_PUBLIC=$ISABELLE_COMPILED_LEMMAS
+    else
+        ISABELLE_LEMMAS_PUBLIC=0
+    fi
+fi
 [ "$FSTAR_QUARANTINED" = true ] && FSTAR_LEMMAS_PUBLIC=0
 [ "$TLAPLUS_QUARANTINED" = true ] && TLAPLUS_THEOREMS_PUBLIC=0
 [ "$ALLOY_QUARANTINED" = true ] && ALLOY_ASSERTIONS_PUBLIC=0
@@ -553,6 +595,13 @@ if [ "$NONCOQ_MECH_FRESH" = true ]; then
     TV_GENERATED_BACKLOG="$(jq -r '.lanes.tv.generated_files // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
 fi
 
+if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_THEORIES" -gt 0 ]; then
+    ISABELLE_COMPILED=true
+    if [ "$ISABELLE_MECHANIZED_READY" != true ]; then
+        ISABELLE_PENDING_REASON="partial RIINA_CORE smoke build verified; full RIINA+RIINA_Domains build still pending"
+    fi
+fi
+
 CLAIM_COQ="generated"
 [ "$COQ_COMPILED" = true ] && CLAIM_COQ="mechanized"
 
@@ -566,8 +615,14 @@ CLAIM_VERUS="generated"; [ "$VERUS_COMPILED" = true ] && CLAIM_VERUS="compiled"
 CLAIM_KANI="generated"; [ "$KANI_COMPILED" = true ] && CLAIM_KANI="compiled"
 CLAIM_TV="generated"; [ "$TV_COMPILED" = true ] && CLAIM_TV="compiled"
 
-# Quarantined lanes are always reported as generated-only until dequarantined.
-[ "$ISABELLE_QUARANTINED" = true ] && CLAIM_ISABELLE="generated" && ISABELLE_COMPILED=false
+# Quarantined lanes keep generated-only public claim levels until explicitly
+# dequarantined, even if a bounded smoke session proves partial compilation.
+if [ "$ISABELLE_QUARANTINED" = true ]; then
+  CLAIM_ISABELLE="generated"
+  if [ "$ISABELLE_SMOKE_BUILD_OK" != true ] || [ "$ISABELLE_COMPILED_THEORIES" -eq 0 ]; then
+    ISABELLE_COMPILED=false
+  fi
+fi
 [ "$FSTAR_QUARANTINED" = true ] && CLAIM_FSTAR="generated" && FSTAR_COMPILED=false
 [ "$TLAPLUS_QUARANTINED" = true ] && CLAIM_TLAPLUS="generated" && TLAPLUS_COMPILED=false
 [ "$ALLOY_QUARANTINED" = true ] && CLAIM_ALLOY="generated" && ALLOY_COMPILED=false
@@ -657,6 +712,10 @@ cat > "$OUTPUT_FILE" << EOF
   "isabelle": {
     "lemmas": $ISABELLE_LEMMAS_PUBLIC,
     "lemmasRaw": $ISABELLE_LEMMAS,
+    "compiledTheories": $ISABELLE_COMPILED_THEORIES,
+    "compiledLemmas": $ISABELLE_COMPILED_LEMMAS,
+    "smokeBuildOk": $ISABELLE_SMOKE_BUILD_OK,
+    "smokeSession": "$(escape_json "$ISABELLE_SMOKE_SESSION")",
     "quarantined": $ISABELLE_QUARANTINED,
     "sorry": $ISABELLE_SORRY,
     "sorryVerified": $ISABELLE_COMPILED,
@@ -815,7 +874,7 @@ echo "  Admitted:     $ADMITTED"
 echo "  Axioms:       $AXIOMS"
 echo "  Assumptions:  $ASSUMPTIONS"
 echo "  Lean:         $LEAN_THEOREMS theorems, $LEAN_SORRY sorry, $LEAN_FILES files"
-echo "  Isabelle:     $ISABELLE_LEMMAS_PUBLIC lemmas (raw $ISABELLE_LEMMAS), $ISABELLE_SORRY sorry, $ISABELLE_FILES files, quarantined=$ISABELLE_QUARANTINED"
+echo "  Isabelle:     $ISABELLE_LEMMAS_PUBLIC lemmas (raw $ISABELLE_LEMMAS, compiled $ISABELLE_COMPILED_LEMMAS across $ISABELLE_COMPILED_THEORIES theories), $ISABELLE_SORRY sorry, $ISABELLE_FILES files, quarantined=$ISABELLE_QUARANTINED, smoke=$ISABELLE_SMOKE_BUILD_OK"
 echo "  F*:           $FSTAR_LEMMAS_PUBLIC lemmas (raw $FSTAR_LEMMAS), $FSTAR_FILES files, quarantined=$FSTAR_QUARANTINED"
 echo "  TLA+:         $TLAPLUS_THEOREMS_PUBLIC theorems (raw $TLAPLUS_THEOREMS), $TLAPLUS_FILES files, quarantined=$TLAPLUS_QUARANTINED"
 echo "  Alloy:        $ALLOY_ASSERTIONS_PUBLIC assertions (raw $ALLOY_ASSERTIONS), $ALLOY_FILES files, quarantined=$ALLOY_QUARANTINED"

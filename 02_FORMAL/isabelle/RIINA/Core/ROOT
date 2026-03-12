@@ -1,0 +1,11 @@
+(* Bounded Isabelle smoke session for REQ-07: first successful build. *)
+
+session RIINA_CORE = HOL +
+  description "RIINA core Isabelle smoke build"
+  options [quick_and_dirty = false, document = false]
+  sessions
+    "HOL-Library"
+  directories
+    ".."
+  theories
+    Syntax
