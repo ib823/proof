@@ -252,14 +252,16 @@ claim_phrase_hits=""
 
 if [ -f "$metrics_file" ]; then
   claim_eval="$(
-    python3 - "$metrics_file" "$REPO_ROOT/reports/noncoq_mechanized_status.json" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" <<'PY'
+    python3 - "$metrics_file" "$REPO_ROOT/reports/noncoq_mechanized_status.json" "$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || echo '')" "$(git -C "$REPO_ROOT" rev-parse HEAD^ 2>/dev/null || echo '')" "$REPO_ROOT" <<'PY'
 import json
+import subprocess
 import sys
 
 metrics_path = sys.argv[1]
 report_path = sys.argv[2]
 repo_head = sys.argv[3] if len(sys.argv) > 3 else ""
 repo_parent_head = sys.argv[4] if len(sys.argv) > 4 else ""
+repo_root = sys.argv[5] if len(sys.argv) > 5 else ""
 d = json.load(open(metrics_path))
 q = d.get("quality", {})
 cl = d.get("claimLevels", {})
@@ -271,6 +273,39 @@ rank = {"generated": 0, "compiled": 1, "mechanized": 2, "independently_audited":
 
 def norm(level):
     return level if level in rank else "generated"
+
+
+def git_ok(*args):
+    return subprocess.run(
+        ["git", "-C", repo_root, *args],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    ).returncode == 0
+
+
+def git_stdout(*args):
+    proc = subprocess.run(
+        ["git", "-C", repo_root, *args],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout
+
+
+def report_head_matches_or_compatible(report_head, paths):
+    if not report_head or not repo_head or not repo_root:
+        return False
+    if report_head == repo_head or (repo_parent_head and report_head == repo_parent_head):
+        return True
+    if not git_ok("merge-base", "--is-ancestor", report_head, repo_head):
+        return False
+    diff = git_stdout("diff", "--name-only", f"{report_head}..{repo_head}", "--", *paths)
+    return not diff.strip()
 
 quality_max = {
     "coq": "mechanized" if q.get("coqCompiled") is True else "generated",
@@ -302,7 +337,28 @@ try:
     with open(report_path) as f:
         report = json.load(f)
     report_head = report.get("repo_head", "")
-    report_fresh = bool(repo_head) and (report_head == repo_head or (bool(repo_parent_head) and report_head == repo_parent_head))
+    report_fresh = report_head_matches_or_compatible(report_head, [
+        "02_FORMAL/lean",
+        "02_FORMAL/isabelle",
+        "02_FORMAL/fstar",
+        "02_FORMAL/tlaplus",
+        "02_FORMAL/alloy",
+        "02_FORMAL/smt",
+        "02_FORMAL/verus",
+        "02_FORMAL/kani",
+        "02_FORMAL/tv",
+        "05_TOOLING/tools/formal",
+        "05_TOOLING/tools/isabelle",
+        "05_TOOLING/tools/fstar",
+        "scripts/check-noncoq-mechanized.sh",
+        "scripts/check-heavy-closure.sh",
+        "scripts/provision-formal-tools.sh",
+        "scripts/provision-smoke-toolchains.sh",
+        "scripts/provision-isabelle.sh",
+        "scripts/provision-fstar.sh",
+        "scripts/isabelle-local.sh",
+        "scripts/fstar-local.sh",
+    ])
     if report_fresh:
         lanes = report.get("lanes", {})
         for lane in ("lean", "isabelle"):

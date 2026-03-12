@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Triple-prover verification complete: 86 theorems independently proved in Coq, Lean 4, and Isabelle/HOL
 - Lean 4 proofs: 7,900 theorems across 255 files
 - Isabelle/HOL proofs: 8,072 lemmas across 260 theory files
-- 0 sorry remaining across all secondary/tertiary provers
+- Active Lean builds reached 0 compiler-reported `sorry` warnings; strict secondary/tertiary prover closure still remains pending
 - Website: Triple-prover verification section on homepage and How page
 
 ### Fixed

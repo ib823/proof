@@ -11,6 +11,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 OUTPUT_FILE="$ROOT_DIR/website/public/metrics.json"
+PREV_METRICS="$ROOT_DIR/website/public/metrics.json"
 
 # --fast mode: count #[test] annotations statically instead of running cargo test
 FAST_MODE=0
@@ -29,6 +30,112 @@ DATE_HUMAN=$(date -u +"%B %d, %Y at %H:%M UTC")
 
 escape_json() {
     printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+load_cached_fast_noncoq_metrics() {
+    [ "$FAST_MODE" -eq 1 ] || return 0
+    [ "$NONCOQ_MECH_FRESH" != true ] || return 0
+    [ -f "$PREV_METRICS" ] || return 0
+    command -v python3 >/dev/null 2>&1 || return 0
+
+    eval "$(
+        python3 - <<'PY' "$PREV_METRICS"
+import json
+import shlex
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+quality = data.get("quality", {})
+noncoq = quality.get("nonCoqMechanization", {})
+pending = noncoq.get("pending", {})
+backlog = noncoq.get("backlog", {})
+claims = data.get("claimLevels", {})
+
+compiled_claims = {"compiled", "mechanized", "independently_audited"}
+mechanized_claims = {"mechanized", "independently_audited"}
+
+
+def shell(name, value):
+    if isinstance(value, bool):
+        print(f"{name}={'true' if value else 'false'}")
+    elif isinstance(value, int):
+        print(f"{name}={value}")
+    else:
+        print(f"{name}={shlex.quote(str(value))}")
+
+
+def claim_compiled(name):
+    return claims.get(name) in compiled_claims
+
+
+def claim_mechanized(name):
+    return claims.get(name) in mechanized_claims
+
+
+isabelle = data.get("isabelle", {})
+fstar = data.get("fstar", {})
+tlaplus = data.get("tlaplus", {})
+alloy = data.get("alloy", {})
+
+values = {
+    "NONCOQ_MECH_SOURCE": "cached_metrics",
+    "NONCOQ_MECH_OVERALL": bool(noncoq.get("overallMechanized", False)),
+    "LEAN_COMPILED": bool(quality.get("leanCompiled", False)),
+    "ISABELLE_COMPILED": claim_compiled("isabelle") or bool(quality.get("isabelleCompiled", False)),
+    "FSTAR_COMPILED": claim_compiled("fstar") or bool(fstar.get("smokeBuildOk", False)),
+    "TLAPLUS_COMPILED": claim_compiled("tlaplus") or bool(tlaplus.get("smokeBuildOk", False)),
+    "ALLOY_COMPILED": claim_compiled("alloy") or bool(alloy.get("smokeBuildOk", False)),
+    "SMT_COMPILED": claim_compiled("smt"),
+    "VERUS_COMPILED": claim_compiled("verus"),
+    "KANI_COMPILED": claim_compiled("kani"),
+    "TV_COMPILED": claim_compiled("tv"),
+    "LEAN_MECHANIZED_READY": claim_mechanized("lean"),
+    "ISABELLE_MECHANIZED_READY": claim_mechanized("isabelle"),
+    "FSTAR_MECHANIZED_READY": claim_mechanized("fstar"),
+    "TLAPLUS_MECHANIZED_READY": claim_mechanized("tlaplus"),
+    "ALLOY_MECHANIZED_READY": claim_mechanized("alloy"),
+    "SMT_MECHANIZED_READY": claim_mechanized("smt"),
+    "VERUS_MECHANIZED_READY": claim_mechanized("verus"),
+    "KANI_MECHANIZED_READY": claim_mechanized("kani"),
+    "TV_MECHANIZED_READY": claim_mechanized("tv"),
+    "LEAN_PENDING_REASON": pending.get("lean", "noncoq_report_missing_or_stale"),
+    "ISABELLE_PENDING_REASON": pending.get("isabelle", "noncoq_report_missing_or_stale"),
+    "FSTAR_PENDING_REASON": pending.get("fstar", "noncoq_report_missing_or_stale"),
+    "TLAPLUS_PENDING_REASON": pending.get("tlaplus", "noncoq_report_missing_or_stale"),
+    "ALLOY_PENDING_REASON": pending.get("alloy", "noncoq_report_missing_or_stale"),
+    "SMT_PENDING_REASON": pending.get("smt", "noncoq_report_missing_or_stale"),
+    "VERUS_PENDING_REASON": pending.get("verus", "noncoq_report_missing_or_stale"),
+    "KANI_PENDING_REASON": pending.get("kani", "noncoq_report_missing_or_stale"),
+    "TV_PENDING_REASON": pending.get("tv", "noncoq_report_missing_or_stale"),
+    "LEAN_SORRY_BACKLOG": int(backlog.get("leanSorry", 0) or 0),
+    "LEAN_AXIOMS_BACKLOG": int(backlog.get("leanAxioms", 0) or 0),
+    "ISABELLE_SORRY_BACKLOG": int(backlog.get("isabelleSorry", 0) or 0),
+    "FSTAR_GENERATED_BACKLOG": int(backlog.get("fstarGeneratedFiles", 0) or 0),
+    "SMT_GENERATED_BACKLOG": int(backlog.get("smtGeneratedFiles", 0) or 0),
+    "VERUS_GENERATED_BACKLOG": int(backlog.get("verusGeneratedFiles", 0) or 0),
+    "KANI_GENERATED_BACKLOG": int(backlog.get("kaniGeneratedFiles", 0) or 0),
+    "TV_GENERATED_BACKLOG": int(backlog.get("tvGeneratedFiles", 0) or 0),
+    "ISABELLE_SMOKE_SESSION": isabelle.get("smokeSession", "RIINA_CORE"),
+    "ISABELLE_SMOKE_BUILD_OK": bool(isabelle.get("smokeBuildOk", False)),
+    "ISABELLE_COMPILED_THEORIES": int(isabelle.get("compiledTheories", 0) or 0),
+    "ISABELLE_COMPILED_LEMMAS": int(isabelle.get("compiledLemmas", 0) or 0),
+    "FSTAR_SMOKE_MODULE": fstar.get("smokeModule", "RIINA.Active.CryptographicSecurityActive"),
+    "FSTAR_SMOKE_BUILD_OK": bool(fstar.get("smokeBuildOk", False)),
+    "FSTAR_COMPILED_LEMMAS": int(fstar.get("compiledLemmas", 0) or 0),
+    "TLAPLUS_SMOKE_SPEC": tlaplus.get("smokeSpec", "RIINA.Active.TelusProcurementProtocol"),
+    "TLAPLUS_SMOKE_BUILD_OK": bool(tlaplus.get("smokeBuildOk", False)),
+    "TLAPLUS_COMPILED_THEOREMS": int(tlaplus.get("compiledTheorems", 0) or 0),
+    "ALLOY_SMOKE_MODEL": alloy.get("smokeModel", "RIINA.Active.TelusProcurementAccessControl"),
+    "ALLOY_SMOKE_BUILD_OK": bool(alloy.get("smokeBuildOk", False)),
+    "ALLOY_COMPILED_ASSERTIONS": int(alloy.get("compiledAssertions", 0) or 0),
+}
+
+for key, value in values.items():
+    shell(key, value)
+PY
+    )"
 }
 
 ISABELLE_HELPER="$ROOT_DIR/scripts/isabelle-local.sh"
@@ -99,6 +206,29 @@ run_with_timeout() {
     else
         "$@"
     fi
+}
+
+report_head_matches_or_compatible() {
+    local report_head="$1"
+    shift
+
+    if [ -z "$report_head" ] || [ -z "$CURRENT_HEAD" ]; then
+        return 1
+    fi
+
+    if [ "$report_head" = "$CURRENT_HEAD" ] || { [ -n "$CURRENT_PARENT_HEAD" ] && [ "$report_head" = "$CURRENT_PARENT_HEAD" ]; }; then
+        return 0
+    fi
+
+    if ! git -C "$ROOT_DIR" merge-base --is-ancestor "$report_head" "$CURRENT_HEAD" >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if git -C "$ROOT_DIR" diff --name-only "$report_head..$CURRENT_HEAD" -- "$@" | grep -q .; then
+        return 1
+    fi
+
+    return 0
 }
 
 count_fstar_lemmas_in_file() {
@@ -279,7 +409,8 @@ LEAN_THEOREMS=0
 LEAN_SORRY=0
 LEAN_FILES=0
 LEAN_LINES=0
-if [ -d "$ROOT_DIR/02_FORMAL/lean" ]; then
+LEAN_METRICS_DIR="$ROOT_DIR/02_FORMAL/lean/RIINA"
+if [ -d "$LEAN_METRICS_DIR" ]; then
     while IFS= read -r f; do
         count=$(grep -cP "^\s*(theorem|lemma)\s" "$f" 2>/dev/null || true)
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
@@ -290,9 +421,9 @@ if [ -d "$ROOT_DIR/02_FORMAL/lean" ]; then
         if [ -n "$sorry_count" ] && [ "$sorry_count" -gt 0 ] 2>/dev/null; then
             LEAN_SORRY=$((LEAN_SORRY + sorry_count))
         fi
-    done < <(find "$ROOT_DIR/02_FORMAL/lean" -name "*.lean" -type f ! -name "lakefile.lean" 2>/dev/null)
-    LEAN_FILES=$(find "$ROOT_DIR/02_FORMAL/lean" -name "*.lean" -type f ! -name "lakefile.lean" 2>/dev/null | wc -l)
-    LEAN_LINES=$(find "$ROOT_DIR/02_FORMAL/lean" -name "*.lean" -type f ! -name "lakefile.lean" -exec cat {} + 2>/dev/null | wc -l)
+    done < <(find "$LEAN_METRICS_DIR" -name "*.lean" -type f 2>/dev/null)
+    LEAN_FILES=$(find "$LEAN_METRICS_DIR" -name "*.lean" -type f 2>/dev/null | wc -l)
+    LEAN_LINES=$(find "$LEAN_METRICS_DIR" -name "*.lean" -type f -exec cat {} + 2>/dev/null | wc -l)
 fi
 
 # Count Isabelle lemmas (lemma + theorem + corollary declarations)
@@ -349,13 +480,13 @@ fi
 
 # Compute Lean axioms (axiom declarations)
 LEAN_AXIOMS=0
-if [ -d "$ROOT_DIR/02_FORMAL/lean" ]; then
+if [ -d "$LEAN_METRICS_DIR" ]; then
     while IFS= read -r f; do
         count=$(grep -c "^axiom " "$f" 2>/dev/null || true)
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             LEAN_AXIOMS=$((LEAN_AXIOMS + count))
         fi
-    done < <(find "$ROOT_DIR/02_FORMAL/lean" -name "*.lean" -type f ! -name "lakefile.lean" 2>/dev/null)
+    done < <(find "$LEAN_METRICS_DIR" -name "*.lean" -type f 2>/dev/null)
 fi
 
 # Compute Isabelle axioms
@@ -609,7 +740,6 @@ if [ "$FAST_MODE" -eq 1 ]; then
 
     # Preserve last verified test count when available so fast mode does not
     # regress published metrics to a static approximation.
-    PREV_METRICS="$ROOT_DIR/website/public/metrics.json"
     if [ -f "$PREV_METRICS" ] && command -v python3 >/dev/null 2>&1; then
         PREV_VERIFIED=$(python3 - <<'PY' "$PREV_METRICS"
 import json, sys
@@ -728,7 +858,10 @@ CURRENT_PARENT_HEAD="$(git -C "$ROOT_DIR" rev-parse HEAD^ 2>/dev/null || echo ""
 
 if [ -f "$DIM14_REPORT" ] && command -v jq >/dev/null 2>&1; then
     dim14_head="$(jq -r '.repo_head // ""' "$DIM14_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$CURRENT_HEAD" ] && { [ "$dim14_head" = "$CURRENT_HEAD" ] || { [ -n "$CURRENT_PARENT_HEAD" ] && [ "$dim14_head" = "$CURRENT_PARENT_HEAD" ]; }; }; then
+    if report_head_matches_or_compatible "$dim14_head" \
+        03_PROTO/crates/riina-codegen \
+        03_PROTO/crates/riinac \
+        scripts/check-dim14-runtime.sh; then
         DIM14_FRESH=true
     fi
     if [ "$DIM14_FRESH" = true ] && jq -e '.overall == "PASS"' "$DIM14_REPORT" >/dev/null 2>&1; then
@@ -738,7 +871,27 @@ fi
 
 if [ -f "$NONCOQ_MECH_REPORT" ] && command -v jq >/dev/null 2>&1; then
     noncoq_head="$(jq -r '.repo_head // ""' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "")"
-    if [ -n "$CURRENT_HEAD" ] && { [ "$noncoq_head" = "$CURRENT_HEAD" ] || { [ -n "$CURRENT_PARENT_HEAD" ] && [ "$noncoq_head" = "$CURRENT_PARENT_HEAD" ]; }; }; then
+    if report_head_matches_or_compatible "$noncoq_head" \
+        02_FORMAL/lean \
+        02_FORMAL/isabelle \
+        02_FORMAL/fstar \
+        02_FORMAL/tlaplus \
+        02_FORMAL/alloy \
+        02_FORMAL/smt \
+        02_FORMAL/verus \
+        02_FORMAL/kani \
+        02_FORMAL/tv \
+        05_TOOLING/tools/formal \
+        05_TOOLING/tools/isabelle \
+        05_TOOLING/tools/fstar \
+        scripts/check-noncoq-mechanized.sh \
+        scripts/check-heavy-closure.sh \
+        scripts/provision-formal-tools.sh \
+        scripts/provision-smoke-toolchains.sh \
+        scripts/provision-isabelle.sh \
+        scripts/provision-fstar.sh \
+        scripts/isabelle-local.sh \
+        scripts/fstar-local.sh; then
         NONCOQ_MECH_FRESH=true
     fi
 fi
@@ -845,6 +998,8 @@ if [ "$NONCOQ_MECH_FRESH" != true ]; then
         fi
     fi
 fi
+
+load_cached_fast_noncoq_metrics
 
 ISABELLE_LEMMAS_PUBLIC=$ISABELLE_LEMMAS
 FSTAR_LEMMAS_PUBLIC=$FSTAR_LEMMAS

@@ -173,7 +173,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 136 files, 3,879 compiled theorems, 0 sorry | Secondary verification |
+| **Lean proofs** | `02_FORMAL/lean/` | 137 files, `lake build` passes, 19 `sorry`, 50 axioms | Secondary verification (compiled, not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 1 compiled theory (`RIINA_CORE`) | Tertiary (closure started) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -239,20 +239,17 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Active .lean files | 136 | ALL compile. 1 WIP file quarantined (NI_v2_LogicalRelation) |
-| Theorem/lemma declarations | 4,026 | Repo-wide `grep -cP "^\s*(theorem\|lemma)\s"` (matches Part 0 / audit-docs.sh) |
-| Compiled theorems (active lane) | 3,879 | Active files only; excludes quarantined `_wip/NonInterference_v2_LogicalRelation` |
-| Sorry count (compiler) | 0 | Zero sorry warnings from `lake build RIINA` |
-| Sorry count (grep, active) | 0 | 1 grep match is inside `/-` `-/` comment block (StoreWfLemmas:312) |
-| Axioms (active) | 50 | 2 justified in NI_v2 + 48 in AlgebraicEffects |
-| `lake build RIINA` | PASSES (0 sorry) | 136 active files, all with .olean |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 137 | Strict mechanization gate scope |
+| Theorem/lemma declarations | 4,026 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` |
+| `lake build RIINA` | PASSES | Full Lean lane builds successfully |
+| `sorry` count (full lane) | 19 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` |
+| `axiom` count (full lane) | 50 | 2 in NI_v2 + 48 in AlgebraicEffects |
+| Mechanized readiness | NOT READY | Pending zero `sorry` / zero `axiom` across the full Lean lane |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** ALL 136 active .lean files compile with `autoImplicit=false` and 0 sorry.
-134 never-compiled auto-generated stubs deleted (diverse deep errors, never in any import chain).
-1 WIP file quarantined: NI_v2_LogicalRelation (147 theorems, 240 errors, 2 sorry — needs repair).
-2 justified axioms in NI_v2 (`fo_noninterference_pure`, `val_rel_at_type_TFn_step_0_bridge`).
-48 axioms in AlgebraicEffects (Comp/Handler model).
+**Honest assessment:** The full Lean namespace builds, so the current claim level is
+**compiled**. It is **not** mechanized-ready: 19 `sorry` and 50 `axiom` remain across
+`02_FORMAL/lean/RIINA`. Earlier active-lane-only wording overstated closure.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -332,7 +329,7 @@ research source, and detailed description.
 | REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | DONE | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
-| REQ-06 | Lean 4: compile ALL files, eliminate ALL sorry | P1 | DONE | 2 |
+| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom` | P1 | IN PROGRESS | 2 |
 | REQ-07 | Isabelle: first successful build | P1 | DONE | 2 |
 | REQ-08 | F*: first real proof (not stub) | P2 | DONE | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | DONE | 2 |
@@ -439,7 +436,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 136 files, 3,879 theorems, 0 sorry | ALL files compile, 0 sorry | DONE | High |
+| Lean 4 | 137 files, 4,026 declarations, 19 `sorry`, 50 axioms | Full lane builds; mechanized closure still pending | IN PROGRESS | High |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 1 smoke-compiled active module (3 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | 150-300 hrs | Very High |
@@ -963,19 +960,20 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 272 |
-| Active .lean files | 136 |
-| Compiled theorems | 3,879 |
-| Sorry (compiler) | 0 |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 137 |
+| Theorem/lemma declarations | 4,026 |
+| `sorry` (full lane) | 19 |
 | Axioms | 50 (2 justified NI + 48 AlgebraicEffects) |
-| `lake build RIINA` | PASSES (0 sorry, 0 errors) |
-| WIP (quarantined) | NI_v2_LogicalRelation (147 theorems, 240 errors, 2 sorry) |
+| `lake build RIINA` | PASSES |
+| Mechanized readiness | NOT MET |
 
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress ✓, Preservation ✓, Safety ✓)
-2. Achieve 0 sorry across ALL files ✓ (134 never-compiled stubs deleted, 1 WIP quarantined)
-3. Full compilation of entire RIINA Lean namespace ✓ (136/136 active files compile)
+2. Achieve 0 `sorry` across `02_FORMAL/lean/RIINA` (pending: 19 remain)
+3. Achieve 0 `axiom` across `02_FORMAL/lean/RIINA` for strict mechanized closure (pending: 50 remain)
+4. Keep the full RIINA Lean namespace compiling (`lake build RIINA` passes)
 
-**Status: CLOSURE CRITERIA MET.** Remaining work: repair NI_v2_LogicalRelation (optional, quarantined).
+**Status: ACTIVE LANE COMPILED; FULL MECHANIZED CLOSURE NOT MET.**
 **Key gotchas:** `mutual` blocks can't have doc comments, `import` must be first line,
 constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
