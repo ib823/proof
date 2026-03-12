@@ -1,6 +1,6 @@
 # RIINA MASTER PLAN
 
-**Status: AUTHORITATIVE | Version: 2.2.0 | Date: 2026-02-17**
+**Status: AUTHORITATIVE | Version: 2.2.1 | Date: 2026-03-12**
 **This is the ONLY planning document in this repository. All others have been deleted.**
 
 Any LLM CLI (Claude Code, Codex, Cursor, Copilot, Gemini, or any future tool) entering this
@@ -174,7 +174,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 136 files, 3,879 compiled theorems, 0 sorry | Secondary verification |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 0 compiled | Tertiary (stubs) |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 1 compiled theory (`RIINA_CORE`) | Tertiary (closure started) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
 
@@ -209,7 +209,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-02-26 by running commands listed in Part 0.**
+**Last verified: 2026-03-12 by running commands listed in Part 0.**
 
 ### Coq (Primary Prover)
 
@@ -240,7 +240,8 @@ but the compiler does not yet enforce them.
 | Metric | Value | Notes |
 |--------|-------|-------|
 | Active .lean files | 136 | ALL compile. 1 WIP file quarantined (NI_v2_LogicalRelation) |
-| Theorem/lemma declarations | 3,879 | Per-file `grep -cP "^\s*(theorem\|lemma)\s"` (active files only) |
+| Theorem/lemma declarations | 4,026 | Repo-wide `grep -cP "^\s*(theorem\|lemma)\s"` (matches Part 0 / audit-docs.sh) |
+| Compiled theorems (active lane) | 3,879 | Active files only; excludes quarantined `_wip/NonInterference_v2_LogicalRelation` |
 | Sorry count (compiler) | 0 | Zero sorry warnings from `lake build RIINA` |
 | Sorry count (grep, active) | 0 | 1 grep match is inside `/-` `-/` comment block (StoreWfLemmas:312) |
 | Axioms (active) | 50 | 2 justified in NI_v2 + 48 in AlgebraicEffects |
@@ -257,11 +258,13 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| .thy files | 275 | ALL transpiled by `generate-multiprover.py` |
-| Compilation | NEVER ATTEMPTED | No file has ever been checked by Isabelle |
-| Lemma count (grep) | ~9,165 | Meaningless — never compiled |
+| .thy files | 275 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
+| Compiled theories | 1 | `RIINA_CORE` currently compiles `Syntax.thy` |
+| Compilation | PASSES (`RIINA_CORE`) | `isabelle build -d 02_FORMAL/isabelle/RIINA/Core -b RIINA_CORE` |
+| Lemma count (grep) | ~9,165 | Repo-wide grep only; most files remain uncompiled stubs |
 
-**Honest assessment:** Zero verified Isabelle proofs. All files are transpiled stubs.
+**Honest assessment:** `Syntax.thy` now compiles in Isabelle/HOL via the `RIINA_CORE`
+smoke session. The remaining 274 `.thy` files are still unverified transpiled stubs.
 
 ### Extended Provers (F*, TLA+, Alloy, SMT, Verus, Kani, TV)
 
@@ -312,7 +315,7 @@ research source, and detailed description.
 | REQ-04 | Quarantine stub prover files | P1 | DONE | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
 | REQ-06 | Lean 4: compile ALL files, eliminate ALL sorry | P1 | DONE | 2 |
-| REQ-07 | Isabelle: first successful build | P1 | TODO | 2 |
+| REQ-07 | Isabelle: first successful build | P1 | DONE | 2 |
 | REQ-08 | F*: first real proof (not stub) | P2 | TODO | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | TODO | 2 |
 | REQ-10 | Alloy: first real model (not stub) | P2 | TODO | 2 |
@@ -419,7 +422,7 @@ See Part 5 for detailed per-prover closure criteria.
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
 | Lean 4 | 136 files, 3,879 theorems, 0 sorry | ALL files compile, 0 sorry | DONE | High |
-| Isabelle | 0 compiled | First successful build, core theorems | 600-1,200 hrs | High |
+| Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 0 real proofs | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 0 real specs | TELUS procurement protocol verified | 150-300 hrs | Very High |
 | Alloy | 0 real models | Access control model verified | 100-200 hrs | Very High |
@@ -1004,9 +1007,9 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 
 | Metric | Value |
 |--------|-------|
-| Files | 275 (all transpiled stubs) |
-| Compiled | NEVER |
-| Lemma count (grep) | ~9,165 (meaningless) |
+| Files | 275 (repo total) |
+| Compiled | 1 (`Syntax` in `RIINA_CORE`) |
+| Lemma count (grep) | ~9,165 (repo-wide; mostly still uncompiled) |
 
 **Closure criteria:**
 1. First successful `isabelle build` on at least one file
@@ -1914,4 +1917,4 @@ Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
 *Research documents preserved at `01_RESEARCH/` (including domains 59-60: Syariah + Blockchain).*
 *All proofs are preserved at `02_FORMAL/` (coq, lean, isabelle, + 7 extended provers).*
 *Nothing was lost. Everything that matters is here or referenced here.*
-*Last updated: 2026-02-17 (Version 2.2.0)*
+*Last updated: 2026-03-12 (Version 2.2.1)*
