@@ -1,20 +1,19 @@
 {
-  "generated_utc": "2026-03-06T16:02:18Z",
-  "repo_head": "3c69f48fa3b20235f793f2c9a8ff2064e426d5fc",
+  "generated_utc": "2026-03-12T06:15:22Z",
+  "repo_head": "1b65d8c149d854239d7075c1f3df6a6cfea4a9a1",
   "scope": "dim1_dim9_promotion_readiness",
-  "strict_tools": 0,
+  "strict_tools": 1,
   "provision": {
-    "requested": false,
-    "attempted": false,
+    "requested": true,
+    "attempted": true,
     "succeeded": false
   },
   "tools": {
     "lake": true,
-    "isabelle": false,
+    "isabelle": true,
     "docker": false,
-    "isabelle_bin": "",
-    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-isabelle.sh",
+    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
+    "isabelle_local_error": "",
     "java": true,
     "tla2tools_jar": false,
     "alloy_jar": false,
@@ -34,8 +33,7 @@ Run: bash scripts/provision-isabelle.sh",
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=3 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-isabelle.sh"
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=3 isa_core=1 isa_thm=54 isa_build=0 isa_mode=isabelle_core_build_local_failed"
   },
   "dimension_9": {
     "status": "PASS",

@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-02-12T02:33:41Z",
-  "repo_head": "b43e5510e310cfc0e8dbb939838c3883ff63dd3a",
+  "generated_utc": "2026-03-12T06:28:33Z",
+  "repo_head": "1b65d8c149d854239d7075c1f3df6a6cfea4a9a1",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -10,77 +10,77 @@
     "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
     "isabelle_local_error": "",
     "java": true,
-    "z3": true,
+    "z3": false,
     "fstar": true,
-    "verus": true,
-    "kani": true,
-    "tla2tools_jar": true,
-    "alloy_jar": true,
-    "tla2tools_path": "/workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar",
-    "alloy_path": "/workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+    "verus": false,
+    "kani": false,
+    "tla2tools_jar": false,
+    "alloy_jar": false,
+    "tla2tools_path": "",
+    "alloy_path": ""
   },
   "lanes": {
     "lean": {
       "full_build_ok": true,
-      "files": 255,
-      "sorry": 0,
-      "axioms": 0,
-      "mechanized_ready": true,
-      "pending": "none"
+      "files": 137,
+      "sorry": 19,
+      "axioms": 50,
+      "mechanized_ready": false,
+      "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
     },
     "isabelle": {
       "full_build_ok": false,
       "build_mode": "isabelle_full_build_local_failed",
-      "files": 261,
+      "files": 275,
       "sorry": 0,
       "mechanized_ready": false,
       "pending": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus"
     },
     "fstar": {
       "full_exec_ok": false,
-      "files": 252,
-      "generated_files": 56,
+      "files": 265,
+      "generated_files": 7,
       "mechanized_ready": false,
       "pending": "require full Active+Domains F* compilation with zero generated placeholders"
     },
     "tlaplus": {
       "full_exec_ok": false,
-      "files": 251,
+      "files": 264,
       "mechanized_ready": false,
       "pending": "require full-lane executable SANY checks across TLA corpus"
     },
     "alloy": {
       "full_exec_ok": false,
-      "files": 251,
+      "files": 257,
       "mechanized_ready": false,
       "pending": "require full-lane executable command checks across Alloy corpus"
     },
     "smt": {
       "full_exec_ok": false,
-      "files": 251,
-      "generated_files": 251,
+      "files": 264,
+      "generated_files": 7,
       "mechanized_ready": false,
       "pending": "require full-lane Z3 checks and zero generated placeholders"
     },
     "verus": {
       "full_exec_ok": false,
-      "files": 252,
-      "generated_files": 56,
+      "files": 277,
+      "generated_files": 30,
       "mechanized_ready": false,
       "pending": "require full-lane Verus checks and zero generated placeholders"
     },
     "kani": {
       "full_exec_ok": false,
-      "files": 252,
-      "generated_files": 56,
-      "harness_files": 251,
+      "files": 259,
+      "generated_files": 30,
+      "harness_files": 257,
       "mechanized_ready": false,
       "pending": "require full-lane Kani checks and zero generated placeholders"
     },
     "tv": {
-      "full_exec_ok": true,
-      "files": 251,
-      "generated_files": 251,
+      "full_exec_ok": false,
+      "files": 264,
+      "generated_files": 7,
       "mechanized_ready": false,
       "pending": "require full-lane TV checks and zero generated placeholders"
     }

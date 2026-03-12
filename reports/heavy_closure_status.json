@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-02-16T14:54:50Z",
-  "repo_head": "e69f90ef51bbc9051d22232dc4f4cab8a193c286",
+  "generated_utc": "2026-03-12T06:15:25Z",
+  "repo_head": "1b65d8c149d854239d7075c1f3df6a6cfea4a9a1",
   "repo_branch": "main",
   "scope": "heavy_dims_5_6_7_8_10_11_13_closure",
   "strict_mode": 0,
@@ -8,16 +8,16 @@
   "foundation_overall": "PASS",
   "tools": {
     "z3": false,
-    "fstar": false,
+    "fstar": true,
     "verus": false,
     "kani": false
   },
   "shared_exec": {
-    "ct_tests": false,
-    "zeroize_tests": false,
-    "secret_zeroize_test": false,
-    "crypto_tests": false,
-    "riinac_verify_fast": false,
+    "ct_tests": true,
+    "zeroize_tests": true,
+    "secret_zeroize_test": true,
+    "crypto_tests": true,
+    "riinac_verify_fast": true,
     "strict_dim1_dim9": false
   },
   "dimension_5_constant_time": {
