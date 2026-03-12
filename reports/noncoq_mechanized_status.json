@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-12T10:06:25Z",
-  "repo_head": "e6661e7e4206c671dcb45b5bdaacd49c75a971c7",
+  "generated_utc": "2026-03-12T12:48:06Z",
+  "repo_head": "cc948b6f47383af9e46c8d91b8dabd563501db1d",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -72,9 +72,13 @@
     "alloy": {
       "full_exec_ok": false,
       "quarantined": true,
-      "files": 257,
+      "files": 258,
+      "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
+      "smoke_build_ok": true,
+      "smoke_declared_assertions": 6,
+      "smoke_checked_assertions": 6,
       "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after real-lane replacement"
+      "pending": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending"
     },
     "smt": {
       "full_exec_ok": false,

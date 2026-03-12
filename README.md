@@ -390,21 +390,21 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 905 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 908 Rust tests
 
 | Area | Status |
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | Coq primary lane healthy; Lean active lane healthy; Isabelle smoke lane; bounded F* smoke proof; bounded TLA+ smoke model |
+| Formal verification | Coq primary lane healthy; Lean active lane healthy; Isabelle smoke lane; bounded F* smoke proof; bounded TLA+ smoke model; bounded Alloy smoke model |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
-| Extended provers | F* and TLA+ have bounded smoke artifacts; the rest remain generated stubs |
+| Extended provers | F*, TLA+, and Alloy have bounded smoke artifacts; the rest remain generated stubs |
 
 ### What's next
 
 - **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
 - **Axiom status:** Active build is axiom-free (`Axioms=0`, `Admitted=0`, explicit assumptions `=0`).
-- **Phase 2 active work:** First non-stub Alloy artifact remains open in the master plan.
+- **Phase 2 milestone:** First non-stub Alloy artifact is now closed; next requirement-driven work is compiler alignment (`REQ-12`).
 - **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 
 ---

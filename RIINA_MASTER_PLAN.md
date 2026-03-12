@@ -274,19 +274,22 @@ smoke session. The remaining 274 `.thy` files are still unverified transpiled st
 | F* compiled lemmas | 3 | `fstar.exe --include 02_FORMAL/fstar 02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst` |
 | TLA+ active smoke spec | 1 | `RIINA/Active/TelusProcurementProtocol.tla` + `.cfg` |
 | TLA+ smoke theorem count | 5 | TLC-checked procurement smoke model counts 5 `THEOREM` declarations |
-| Alloy / SMT / Verus / Kani / TV | 0 real artifacts | Still quarantined generated corpora |
+| Alloy active smoke model | 1 | `RIINA/Active/TelusProcurementAccessControl.als` |
+| Alloy checked assertions | 6 | Alloy `exec` smoke run checks 6 assertions in the active model |
+| SMT / Verus / Kani / TV | 0 real artifacts | Still quarantined generated corpora |
 
 **Honest assessment:** F* now has one manually maintained smoke-compiled module with three
-real lemmas, and TLA+ now has one manually maintained TLC-checked procurement smoke model
-with five counted `THEOREM` declarations. The remaining `.fst` / `.tla` files, and all
-other extended prover lanes, are still generated placeholders and must not be counted as
-verified proofs.
+real lemmas, TLA+ now has one manually maintained TLC-checked procurement smoke model with
+five counted `THEOREM` declarations, and Alloy now has one manually maintained bounded
+access-control model with six checked assertions. The remaining `.fst` / `.tla` / `.als`
+files, and all other extended prover lanes, are still generated placeholders and must not
+be counted as verified proofs.
 
 ### Rust Prototype
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 905 passing |
+| Tests (03_PROTO/) | 908 passing |
 | Tests (05_TOOLING/) | 240 passing |
 | Crates | 15 |
 | Clippy | Clean |
@@ -328,7 +331,7 @@ research source, and detailed description.
 | REQ-07 | Isabelle: first successful build | P1 | DONE | 2 |
 | REQ-08 | F*: first real proof (not stub) | P2 | DONE | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | DONE | 2 |
-| REQ-10 | Alloy: first real model (not stub) | P2 | TODO | 2 |
+| REQ-10 | Alloy: first real model (not stub) | P2 | DONE | 2 |
 | REQ-11 | Deep NI proofs in active Coq build | P1 | DONE | 1 |
 | REQ-12 | Compiler enforces information flow | P1 | TODO | 3 |
 | REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | TODO | 4 |
@@ -435,7 +438,7 @@ See Part 5 for detailed per-prover closure criteria.
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 1 smoke-compiled active module (3 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | 150-300 hrs | Very High |
-| Alloy | 0 real models | Access control model verified | 100-200 hrs | Very High |
+| Alloy | 1 smoke-checked active model (6 assertions) | Access control model verified | DONE | Very High |
 | SMT/Z3 | 0 real queries | Refinement type checking in riinac | 200-400 hrs | Very High |
 | Verus | 0 real annotations | Type checker implementation verified | 1,200-2,400 hrs | Medium |
 | Kani | 0 real harnesses | Bounded model checking of type checker | 200-400 hrs | High |
