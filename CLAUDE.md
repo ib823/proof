@@ -77,6 +77,7 @@ cargo clippy -- -D warnings
 ### Other Tools
 ```
 Isabelle: /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle
+F*: /workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe
 TLA2tools: /workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar
 Alloy: /workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar
 ```

@@ -45,6 +45,7 @@ reports/coq_warning_build.log
 reports/coq_warning_inventory.tsv
 05_TOOLING/tools/formal/
 05_TOOLING/tools/isabelle/
+05_TOOLING/tools/fstar/
 
 # Node
 **/node_modules/

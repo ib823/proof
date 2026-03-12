@@ -4,9 +4,10 @@
 //!
 //! `riinac verify [--fast|--full]` — runs all checks and produces a manifest.
 //!
-//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) with
-//! proper toolchain detection, timeout handling, and static scanning for all
-//! three provers. Tool-not-found is a hard FAIL (verification incomplete).
+//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) plus a
+//! bounded F* smoke build when a pinned toolchain is available. Static scans
+//! cover the broader prover corpus, but claim levels stay tied to executable
+//! evidence.
 
 #![forbid(unsafe_code)]
 
@@ -24,6 +25,7 @@ use std::time::{Duration, Instant, SystemTime};
 const COQ_TIMEOUT: Duration = Duration::from_secs(45 * 60); // 45 min
 const LEAN_TIMEOUT: Duration = Duration::from_secs(30 * 60); // 30 min
 const ISABELLE_TIMEOUT: Duration = Duration::from_secs(20 * 60); // 20 min
+const FSTAR_TIMEOUT: Duration = Duration::from_secs(10 * 60); // 10 min
 
 // ---------------------------------------------------------------------------
 // Mode / CheckResult / ToolStatus
@@ -228,6 +230,56 @@ fn detect_isabelle() -> ToolStatus {
     ToolStatus::NotFound(
         "pinned local Isabelle not found (run: bash scripts/provision-isabelle.sh)".into(),
     )
+}
+
+/// Detect pinned local `fstar.exe`:
+/// `RIINA_FSTAR_BIN` → `RIINA_FSTAR_HOME` → repo-local
+/// `05_TOOLING/tools/fstar/current/bin/fstar.exe` → `which fstar.exe`.
+fn detect_fstar() -> ToolStatus {
+    // 1. Explicit binary override
+    if let Ok(bin) = std::env::var("RIINA_FSTAR_BIN") {
+        let p = PathBuf::from(bin);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 2. RIINA_FSTAR_HOME
+    if let Ok(home) = std::env::var("RIINA_FSTAR_HOME") {
+        let p = PathBuf::from(&home).join("bin").join("fstar.exe");
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    // 3. Search upward from current directory for pinned repo-local install.
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("fstar")
+                .join("current")
+                .join("bin")
+                .join("fstar.exe");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+    }
+
+    // 4. PATH lookup
+    if let Some(p) = which_tool("fstar.exe") {
+        return ToolStatus::Found(p);
+    }
+    if let Some(p) = which_tool("fstar") {
+        return ToolStatus::Found(p);
+    }
+
+    ToolStatus::NotFound("pinned local F* not found (run: bash scripts/provision-fstar.sh)".into())
 }
 
 // ---------------------------------------------------------------------------
@@ -1961,8 +2013,125 @@ fn is_leap(y: u64) -> bool {
 }
 
 // ---------------------------------------------------------------------------
-// F* / TLA+ / Alloy / SMT / Verus / Kani / TV static scans
+// F* / TLA+ / Alloy / SMT / Verus / Kani / TV smoke builds + static scans
 // ---------------------------------------------------------------------------
+
+fn count_fstar_smoke_lemmas(active_file: &Path) -> u32 {
+    fs::read_to_string(active_file)
+        .ok()
+        .map(|content| {
+            content
+                .lines()
+                .filter(|line| {
+                    let trimmed = line.trim();
+                    trimmed.starts_with("let lemma_")
+                        || trimmed.starts_with("let rec lemma_")
+                        || (trimmed.starts_with("val ") && trimmed.contains("Lemma"))
+                })
+                .count() as u32
+        })
+        .unwrap_or(0)
+}
+
+/// Compile the manually maintained F* smoke module.
+fn compile_fstar(fstar_dir: &Path) -> CheckResult {
+    let active_file = fstar_dir
+        .join("RIINA")
+        .join("Active")
+        .join("CryptographicSecurityActive.fst");
+    if !active_file.exists() {
+        return CheckResult {
+            name: "F* Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: "active smoke file not found (expected RIINA/Active/CryptographicSecurityActive.fst)".into(),
+        };
+    }
+
+    let repo_root = fstar_dir
+        .parent()
+        .and_then(|p| p.parent())
+        .unwrap_or(fstar_dir);
+    let cache_dir = repo_root.join(format!(
+        ".fstar-active-verify-{}-{}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis()
+    ));
+    let _ = fs::create_dir_all(&cache_dir);
+
+    let smoke_lemmas = count_fstar_smoke_lemmas(&active_file);
+    let result = match detect_fstar() {
+        ToolStatus::Found(fstar_path) => {
+            eprintln!("  fstar found: {}", fstar_path.display());
+            let args = vec![
+                "--cache_checked_modules".to_string(),
+                "--cache_dir".to_string(),
+                cache_dir.to_string_lossy().into_owned(),
+                "--include".to_string(),
+                fstar_dir.to_string_lossy().into_owned(),
+                active_file.to_string_lossy().into_owned(),
+            ];
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            let start = Instant::now();
+            match run_with_timeout(
+                fstar_path.to_str().unwrap_or("fstar.exe"),
+                &arg_refs,
+                repo_root,
+                FSTAR_TIMEOUT,
+            ) {
+                Ok(o) => {
+                    let elapsed = start.elapsed();
+                    if o.status.success() {
+                        CheckResult {
+                            name: "F* Compilation".into(),
+                            passed: true,
+                            blocking: false,
+                            details: format!(
+                                "Active module CryptographicSecurityActive compiled in {:.0}s ({} lemmas, local_active)",
+                                elapsed.as_secs_f64(),
+                                smoke_lemmas
+                            ),
+                        }
+                    } else {
+                        let code = o.status.code().unwrap_or(-1);
+                        let stderr = String::from_utf8_lossy(&o.stderr);
+                        let stdout = String::from_utf8_lossy(&o.stdout);
+                        let combined = format!("{stdout}\n{stderr}");
+                        let tail = last_n_lines(&combined, 10);
+                        CheckResult {
+                            name: "F* Compilation".into(),
+                            passed: false,
+                            blocking: false,
+                            details: format!(
+                                "FAILED (exit {code}, {:.0}s)\n{}",
+                                elapsed.as_secs_f64(),
+                                truncate_str(&tail, 500)
+                            ),
+                        }
+                    }
+                }
+                Err(e) => CheckResult {
+                    name: "F* Compilation".into(),
+                    passed: false,
+                    blocking: false,
+                    details: format!("failed to run F* local_active: {e}"),
+                },
+            }
+        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "F* Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: msg,
+        },
+    };
+
+    let _ = fs::remove_dir_all(&cache_dir);
+    result
+}
 
 /// Static scan of F* `.fst` files for `admit` keyword and lemma count.
 fn scan_fstar(dir: &Path) -> Vec<CheckResult> {
@@ -2307,6 +2476,8 @@ pub fn run(mode: Mode) -> i32 {
 
         // === F* ===
         eprintln!("\n=== F* Verification ===");
+        eprintln!("Compiling F* smoke proof...");
+        results.push(compile_fstar(&fstar_dir));
         eprintln!("Scanning F* files...");
         results.extend(scan_fstar(&fstar_dir));
 

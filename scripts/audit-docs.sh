@@ -134,6 +134,32 @@ count_isabelle_smoke_lemmas() {
     echo "$total"
 }
 
+count_fstar_lemmas() {
+    local total=0
+    while IFS= read -r f; do
+        local val_count let_count count
+        val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$f" 2>/dev/null || true)
+        let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$f" 2>/dev/null || true)
+        count=$((val_count + let_count))
+        if [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/fstar" -name "*.fst" -type f 2>/dev/null)
+    echo "$total"
+}
+
+count_fstar_smoke_lemmas() {
+    local f="$REPO_ROOT/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"
+    if [ ! -f "$f" ]; then
+        echo "0"
+        return
+    fi
+    local val_count let_count
+    val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$f" 2>/dev/null || true)
+    let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$f" 2>/dev/null || true)
+    echo $((val_count + let_count))
+}
+
 count_examples() {
     find "$REPO_ROOT/07_EXAMPLES" -name "*.rii" -type f 2>/dev/null | wc -l
 }
@@ -236,6 +262,8 @@ ACTUAL_COQ_ACTIVE_FILES=$(count_coq_active_files)
 ACTUAL_LEAN=$(count_lean_theorems)
 ACTUAL_ISABELLE=$(count_isabelle_lemmas)
 ACTUAL_ISABELLE_SMOKE=$(count_isabelle_smoke_lemmas)
+ACTUAL_FSTAR=$(count_fstar_lemmas)
+ACTUAL_FSTAR_SMOKE=$(count_fstar_smoke_lemmas)
 # Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
@@ -253,6 +281,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo "  Coq active:    $ACTUAL_COQ_ACTIVE_FILES"
     echo "  Lean:          $ACTUAL_LEAN theorems"
     echo "  Isabelle:      $ACTUAL_ISABELLE lemmas"
+    echo "  F*:            $ACTUAL_FSTAR raw lemmas, $ACTUAL_FSTAR_SMOKE smoke lemmas"
     echo "  Total proofs:  $ACTUAL_TOTAL"
     echo "  Examples:      $ACTUAL_EXAMPLES"
     echo "  Session:       $ACTUAL_SESSION"
@@ -349,15 +378,18 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     check_no_stale "$REPO_ROOT/README.md" "15 industry compliance properties" "Unsupported blanket compliance claim" || true
     check_no_stale "$REPO_ROOT/README.md" "0 sorry across all provers" "Unsupported all-prover cleanliness claim" || true
     check_no_stale "$REPO_ROOT/README.md" "10 independent provers" "Misleading active verification breadth claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "First non-stub F\\* / TLA\\+ / Alloy artifacts remain open" "Stale Phase 2 open-work claim" || true
 
     # Dynamically check that README prover rows match the current verified state.
     README_COQ_LINE=$(grep -m1 '^\| \*\*Coq 8\.20\.1\*\*' "$REPO_ROOT/README.md" || true)
     README_LEAN_LINE=$(grep -m1 '^\| \*\*Lean 4\*\*' "$REPO_ROOT/README.md" || true)
     README_ISABELLE_LINE=$(grep -m1 '^\| \*\*Isabelle/HOL\*\*' "$REPO_ROOT/README.md" || true)
+    README_FSTAR_LINE=$(grep -m1 'CryptographicSecurityActive' "$REPO_ROOT/README.md" || true)
 
     README_QED=$(extract_first_number_from_line "$README_COQ_LINE")
     README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
     README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
+    README_FSTAR=$(extract_first_number_from_line "$README_FSTAR_LINE")
 
     if [ "$README_QED" != "0" ]; then
         check_value "Qed in README.md" "$ACTUAL_QED" "$README_QED" "README.md" || true
@@ -367,6 +399,9 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     fi
     if [ "$README_ISABELLE" != "0" ]; then
         check_value "Compiled Isabelle lemmas in README.md" "$ACTUAL_ISABELLE_SMOKE" "$README_ISABELLE" "README.md" || true
+    fi
+    if [ "$README_FSTAR" != "0" ]; then
+        check_value "Compiled F* smoke lemmas in README.md" "$ACTUAL_FSTAR_SMOKE" "$README_FSTAR" "README.md" || true
     fi
 else
     warn_check "README.md not found" "missing"
@@ -438,6 +473,11 @@ if [ -f "$METRICS_FILE" ]; then
     WEB_ISABELLE_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['isabelle'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
     WEB_ISABELLE_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_ISABELLE_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['isabelle'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
+    WEB_FSTAR=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar']['lemmas'])" 2>/dev/null || echo "0")
+    WEB_FSTAR_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('lemmasRaw', json.load(open('$METRICS_FILE'))['fstar']['lemmas']))" 2>/dev/null || echo "$WEB_FSTAR")
+    WEB_FSTAR_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
+    WEB_FSTAR_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_FSTAR_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
     check_value "Website active Coq files (metrics.json)" "$ACTUAL_COQ_ACTIVE_FILES" "$WEB_COQ_ACTIVE" "metrics.json" || true
@@ -452,6 +492,17 @@ if [ -f "$METRICS_FILE" ]; then
         fi
     else
         check_value "Website Isabelle (metrics.json)" "$ACTUAL_ISABELLE" "$WEB_ISABELLE" "metrics.json" || true
+    fi
+    if [ "$WEB_FSTAR_QUARANTINED" = "true" ]; then
+        check_value "Website F* raw (metrics.json)" "$ACTUAL_FSTAR" "$WEB_FSTAR_RAW" "metrics.json" || true
+        if [ "$WEB_FSTAR_SMOKE" = "true" ]; then
+            check_value "Website F* partial compiled count (metrics.json)" "$ACTUAL_FSTAR_SMOKE" "$WEB_FSTAR" "metrics.json" || true
+            check_value "Website F* compiledLemmas (metrics.json)" "$ACTUAL_FSTAR_SMOKE" "$WEB_FSTAR_COMPILED" "metrics.json" || true
+        else
+            check_value "Website F* quarantined count (metrics.json)" "0" "$WEB_FSTAR" "metrics.json" || true
+        fi
+    else
+        check_value "Website F* (metrics.json)" "$ACTUAL_FSTAR" "$WEB_FSTAR" "metrics.json" || true
     fi
     # Session number is internal tracking — warn but don't block
     if [ "$ACTUAL_SESSION" != "$WEB_SESSION" ]; then

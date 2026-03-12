@@ -31,6 +31,47 @@ escape_json() {
     printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+detect_fstar_bin() {
+    if [ -n "${RIINA_FSTAR_BIN:-}" ] && [ -x "${RIINA_FSTAR_BIN}" ]; then
+        printf '%s\n' "${RIINA_FSTAR_BIN}"
+        return 0
+    fi
+    if [ -n "${RIINA_FSTAR_HOME:-}" ] && [ -x "${RIINA_FSTAR_HOME}/bin/fstar.exe" ]; then
+        printf '%s\n' "${RIINA_FSTAR_HOME}/bin/fstar.exe"
+        return 0
+    fi
+    if [ -x "$ROOT_DIR/05_TOOLING/tools/fstar/current/bin/fstar.exe" ]; then
+        printf '%s\n' "$ROOT_DIR/05_TOOLING/tools/fstar/current/bin/fstar.exe"
+        return 0
+    fi
+    if command -v fstar.exe >/dev/null 2>&1; then
+        command -v fstar.exe
+        return 0
+    fi
+    if command -v fstar >/dev/null 2>&1; then
+        command -v fstar
+        return 0
+    fi
+    return 1
+}
+
+count_fstar_lemmas_in_file() {
+    local file="$1"
+    local val_count let_count
+    val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$file" 2>/dev/null || true)
+    let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$file" 2>/dev/null || true)
+    echo $((val_count + let_count))
+}
+
+count_fstar_smoke_lemmas() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        echo "0"
+        return
+    fi
+    count_fstar_lemmas_in_file "$file"
+}
+
 # Count Qed proofs (active build) — from _CoqProject only (matches verify.rs)
 QED_ACTIVE=0
 while IFS= read -r f; do
@@ -213,15 +254,34 @@ if [ -d "$ROOT_DIR/02_FORMAL/isabelle" ]; then
     done < <(find "$ROOT_DIR/02_FORMAL/isabelle" -name "*.thy" -type f 2>/dev/null)
 fi
 
-# Count F* lemmas (val ... _lemma declarations)
+# Count F* lemmas (generated `val ... _lemma` plus hand-written `let lemma_...`)
 FSTAR_LEMMAS=0
 FSTAR_FILES=0
+FSTAR_COMPILED_LEMMAS=0
+FSTAR_SMOKE_BUILD_OK=false
+FSTAR_SMOKE_MODULE="RIINA.Active.CryptographicSecurityActive"
+FSTAR_SMOKE_FILE="$ROOT_DIR/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"
+FSTAR_SMOKE_LEMMAS=0
 if [ -d "$ROOT_DIR/02_FORMAL/fstar" ]; then
     while IFS= read -r f; do
-        count=$(grep -cP "val\s+\w+_lemma\b" "$f" 2>/dev/null || true)
+        count=$(count_fstar_lemmas_in_file "$f")
         [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null && FSTAR_LEMMAS=$((FSTAR_LEMMAS + count))
     done < <(find "$ROOT_DIR/02_FORMAL/fstar" -name "*.fst" -type f 2>/dev/null)
     FSTAR_FILES=$(find "$ROOT_DIR/02_FORMAL/fstar" -name "*.fst" -type f 2>/dev/null | wc -l)
+fi
+
+if [ -f "$FSTAR_SMOKE_FILE" ]; then
+    FSTAR_SMOKE_LEMMAS="$(count_fstar_smoke_lemmas "$FSTAR_SMOKE_FILE")"
+    if FSTAR_BIN="$(detect_fstar_bin)"; then
+        if "$FSTAR_BIN" \
+            --cache_checked_modules \
+            --cache_dir /tmp/riina-fstar-active-cache \
+            --include "$ROOT_DIR/02_FORMAL/fstar" \
+            "$FSTAR_SMOKE_FILE" >/dev/null 2>&1; then
+            FSTAR_SMOKE_BUILD_OK=true
+            FSTAR_COMPILED_LEMMAS="$FSTAR_SMOKE_LEMMAS"
+        fi
+    fi
 fi
 
 # Count TLA+ theorems (THEOREM declarations)
@@ -326,7 +386,13 @@ if [ "$ISABELLE_QUARANTINED" = true ]; then
         ISABELLE_LEMMAS_PUBLIC=0
     fi
 fi
-[ "$FSTAR_QUARANTINED" = true ] && FSTAR_LEMMAS_PUBLIC=0
+if [ "$FSTAR_QUARANTINED" = true ]; then
+    if [ "$FSTAR_SMOKE_BUILD_OK" = true ] && [ "$FSTAR_COMPILED_LEMMAS" -gt 0 ]; then
+        FSTAR_LEMMAS_PUBLIC=$FSTAR_COMPILED_LEMMAS
+    else
+        FSTAR_LEMMAS_PUBLIC=0
+    fi
+fi
 [ "$TLAPLUS_QUARANTINED" = true ] && TLAPLUS_THEOREMS_PUBLIC=0
 [ "$ALLOY_QUARANTINED" = true ] && ALLOY_ASSERTIONS_PUBLIC=0
 [ "$SMT_QUARANTINED" = true ] && SMT_ASSERTIONS_PUBLIC=0
@@ -602,6 +668,13 @@ if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_THEORIES" -gt 
     fi
 fi
 
+if [ "$FSTAR_SMOKE_BUILD_OK" = true ] && [ "$FSTAR_COMPILED_LEMMAS" -gt 0 ]; then
+    FSTAR_COMPILED=true
+    if [ "$FSTAR_MECHANIZED_READY" != true ]; then
+        FSTAR_PENDING_REASON="partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
+    fi
+fi
+
 CLAIM_COQ="generated"
 [ "$COQ_COMPILED" = true ] && CLAIM_COQ="mechanized"
 
@@ -623,7 +696,12 @@ if [ "$ISABELLE_QUARANTINED" = true ]; then
     ISABELLE_COMPILED=false
   fi
 fi
-[ "$FSTAR_QUARANTINED" = true ] && CLAIM_FSTAR="generated" && FSTAR_COMPILED=false
+if [ "$FSTAR_QUARANTINED" = true ]; then
+  CLAIM_FSTAR="generated"
+  if [ "$FSTAR_SMOKE_BUILD_OK" != true ] || [ "$FSTAR_COMPILED_LEMMAS" -eq 0 ]; then
+    FSTAR_COMPILED=false
+  fi
+fi
 [ "$TLAPLUS_QUARANTINED" = true ] && CLAIM_TLAPLUS="generated" && TLAPLUS_COMPILED=false
 [ "$ALLOY_QUARANTINED" = true ] && CLAIM_ALLOY="generated" && ALLOY_COMPILED=false
 [ "$SMT_QUARANTINED" = true ] && CLAIM_SMT="generated" && SMT_COMPILED=false
@@ -727,6 +805,9 @@ cat > "$OUTPUT_FILE" << EOF
   "fstar": {
     "lemmas": $FSTAR_LEMMAS_PUBLIC,
     "lemmasRaw": $FSTAR_LEMMAS,
+    "compiledLemmas": $FSTAR_COMPILED_LEMMAS,
+    "smokeBuildOk": $FSTAR_SMOKE_BUILD_OK,
+    "smokeModule": "$(escape_json "$FSTAR_SMOKE_MODULE")",
     "quarantined": $FSTAR_QUARANTINED,
     "files": $FSTAR_FILES,
     "prover": "F*"
@@ -875,7 +956,7 @@ echo "  Axioms:       $AXIOMS"
 echo "  Assumptions:  $ASSUMPTIONS"
 echo "  Lean:         $LEAN_THEOREMS theorems, $LEAN_SORRY sorry, $LEAN_FILES files"
 echo "  Isabelle:     $ISABELLE_LEMMAS_PUBLIC lemmas (raw $ISABELLE_LEMMAS, compiled $ISABELLE_COMPILED_LEMMAS across $ISABELLE_COMPILED_THEORIES theories), $ISABELLE_SORRY sorry, $ISABELLE_FILES files, quarantined=$ISABELLE_QUARANTINED, smoke=$ISABELLE_SMOKE_BUILD_OK"
-echo "  F*:           $FSTAR_LEMMAS_PUBLIC lemmas (raw $FSTAR_LEMMAS), $FSTAR_FILES files, quarantined=$FSTAR_QUARANTINED"
+echo "  F*:           $FSTAR_LEMMAS_PUBLIC lemmas (raw $FSTAR_LEMMAS, compiled $FSTAR_COMPILED_LEMMAS), $FSTAR_FILES files, quarantined=$FSTAR_QUARANTINED, smoke=$FSTAR_SMOKE_BUILD_OK"
 echo "  TLA+:         $TLAPLUS_THEOREMS_PUBLIC theorems (raw $TLAPLUS_THEOREMS), $TLAPLUS_FILES files, quarantined=$TLAPLUS_QUARANTINED"
 echo "  Alloy:        $ALLOY_ASSERTIONS_PUBLIC assertions (raw $ALLOY_ASSERTIONS), $ALLOY_FILES files, quarantined=$ALLOY_QUARANTINED"
 echo "  SMT:          $SMT_ASSERTIONS_PUBLIC assertions (raw $SMT_ASSERTIONS), $SMT_FILES files, quarantined=$SMT_QUARANTINED"

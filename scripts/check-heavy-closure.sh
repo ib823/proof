@@ -62,6 +62,30 @@ tool_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+detect_fstar_bin() {
+  if [ -n "${RIINA_FSTAR_BIN:-}" ] && [ -x "${RIINA_FSTAR_BIN}" ]; then
+    printf '%s\n' "${RIINA_FSTAR_BIN}"
+    return 0
+  fi
+  if [ -n "${RIINA_FSTAR_HOME:-}" ] && [ -x "${RIINA_FSTAR_HOME}/bin/fstar.exe" ]; then
+    printf '%s\n' "${RIINA_FSTAR_HOME}/bin/fstar.exe"
+    return 0
+  fi
+  if [ -x "$REPO_ROOT/05_TOOLING/tools/fstar/current/bin/fstar.exe" ]; then
+    printf '%s\n' "$REPO_ROOT/05_TOOLING/tools/fstar/current/bin/fstar.exe"
+    return 0
+  fi
+  if tool_exists fstar.exe; then
+    command -v fstar.exe
+    return 0
+  fi
+  if tool_exists fstar; then
+    command -v fstar
+    return 0
+  fi
+  return 1
+}
+
 file_exists() {
   [ -f "$1" ]
 }
@@ -142,8 +166,8 @@ HAS_Z3=0
 tool_exists z3 && HAS_Z3=1
 
 HAS_FSTAR=0
-tool_exists fstar && HAS_FSTAR=1
-if [ "$HAS_FSTAR" -eq 0 ] && tool_exists fstar.exe; then
+FSTAR_BIN=""
+if FSTAR_BIN="$(detect_fstar_bin)"; then
   HAS_FSTAR=1
 fi
 
@@ -293,12 +317,6 @@ FSTAR_ACTIVE_GENERATED_FILES="$( (grep -RIl "Auto-generated from 02_FORMAL/coq/"
 FSTAR_ACTIVE_EXEC=0
 
 FSTAR_BIN=""
-if tool_exists fstar.exe; then
-  FSTAR_BIN="$(command -v fstar.exe)"
-elif tool_exists fstar; then
-  FSTAR_BIN="$(command -v fstar)"
-fi
-
 if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_ACTIVE_FILES" -gt 0 ] \
   && file_exists "$REPO_ROOT/02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst"; then
   if run_quiet 900 "$FSTAR_BIN" \
