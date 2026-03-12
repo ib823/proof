@@ -638,15 +638,15 @@ impl CEmitter {
         self.writeln("        fprintf(stderr, \"RIINA: invalid declassification proof\\n\");");
         self.writeln("        abort();");
         self.writeln("    }");
-        self.writeln("    riina_value_t* proof_secret = proof->data.wrapped_val;");
-        self.writeln("    if (!proof_secret || proof_secret->tag != RIINA_TAG_SECRET) {");
+        self.writeln("    riina_value_t* proved_value = proof->data.wrapped_val;");
+        self.writeln("    if (!proved_value || proved_value->tag != RIINA_TAG_SECRET) {");
         self.writeln(
             "        fprintf(stderr, \"RIINA: declassification proof must wrap a secret\\n\");",
         );
         self.writeln("        abort();");
         self.writeln("    }");
         self.writeln(
-            "    if (!riina_value_eq(secret->data.wrapped_val, proof_secret->data.wrapped_val)) {",
+            "    if (!riina_value_eq(secret->data.wrapped_val, proved_value->data.wrapped_val)) {",
         );
         self.writeln(
             "        fprintf(stderr, \"RIINA: declassification proof does not match secret\\n\");",
