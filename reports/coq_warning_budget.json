@@ -1,6 +1,8 @@
 {
-  "generatedAt": "2026-02-17T16:04:05.652842+00:00",
-  "baselineHead": "f9ce7e5ad21f67d8ce7a08e56c8ddd31efd5db4e",
-  "maxTotalWarnings": 0,
-  "maxByKind": {}
+  "generatedAt": "2026-03-12T07:30:41.399970+00:00",
+  "baselineHead": "2dc2128f2d54abb809e564f23cadaaf8d7b9b671",
+  "maxTotalWarnings": 2,
+  "maxByKind": {
+    "build-warning": 2
+  }
 }

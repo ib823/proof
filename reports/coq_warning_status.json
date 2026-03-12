@@ -1,10 +1,12 @@
 {
-  "generatedAt": "2026-02-19T09:44:38.677632+00:00",
-  "repoHead": "4a2073d141cd592fbc8f66601fc749d558b46bc9",
-  "repoParentHead": "6f405b4259f287ed0ab52a3e59384aae12aaa81c",
+  "generatedAt": "2026-03-12T07:30:41.394439+00:00",
+  "repoHead": "2dc2128f2d54abb809e564f23cadaaf8d7b9b671",
+  "repoParentHead": "27b99d9b38c5610a756b974c732e7400544a2cd4",
   "totals": {
-    "warnings": 0,
-    "kinds": {},
+    "warnings": 2,
+    "kinds": {
+      "build-warning": 2
+    },
     "filesWithWarnings": 0
   },
   "topFiles": [],

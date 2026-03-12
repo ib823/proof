@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-12T06:36:45Z",
-  "repo_head": "27b99d9b38c5610a756b974c732e7400544a2cd4",
+  "generated_utc": "2026-03-12T07:29:48Z",
+  "repo_head": "2dc2128f2d54abb809e564f23cadaaf8d7b9b671",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -12,6 +12,8 @@
     "java": true,
     "z3": false,
     "fstar": true,
+    "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
+    "fstar_local_error": "",
     "verus": false,
     "kani": false,
     "tla2tools_jar": false,
@@ -33,6 +35,12 @@
       "build_mode": "isabelle_full_build_local_failed",
       "files": 275,
       "sorry": 0,
+      "smoke_session": "RIINA_CORE",
+      "smoke_build_ok": true,
+      "smoke_declared_theories": 1,
+      "smoke_declared_lemmas": 5,
+      "smoke_compiled_theories": 1,
+      "smoke_compiled_lemmas": 5,
       "mechanized_ready": false,
       "pending": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus"
     },
@@ -40,6 +48,10 @@
       "full_exec_ok": false,
       "files": 265,
       "generated_files": 7,
+      "smoke_module": "RIINA.Active.CryptographicSecurityActive",
+      "smoke_build_ok": true,
+      "smoke_declared_lemmas": 3,
+      "smoke_compiled_lemmas": 3,
       "mechanized_ready": false,
       "pending": "require full Active+Domains F* compilation with zero generated placeholders"
     },

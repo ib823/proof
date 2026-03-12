@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-12T06:15:25Z",
-  "repo_head": "1b65d8c149d854239d7075c1f3df6a6cfea4a9a1",
+  "generated_utc": "2026-03-12T07:31:51Z",
+  "repo_head": "2dc2128f2d54abb809e564f23cadaaf8d7b9b671",
   "repo_branch": "main",
   "scope": "heavy_dims_5_6_7_8_10_11_13_closure",
   "strict_mode": 0,
@@ -9,6 +9,8 @@
   "tools": {
     "z3": false,
     "fstar": true,
+    "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
+    "fstar_local_error": "",
     "verus": false,
     "kani": false
   },
@@ -46,7 +48,7 @@
     "artifact_gate": true,
     "executable_gate": false,
     "closure_ready": false,
-    "fstar_active_exec": false,
+    "fstar_active_exec": true,
     "fstar_active_files": 1,
     "fstar_active_generated_files": 0,
     "fstar_domain_files": 202,
