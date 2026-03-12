@@ -775,17 +775,25 @@ impl Lower {
                     }
                 }
 
+                // Infer the component types from the scrutinee's sum type
+                let scrut_ty = self.infer_type(scrutinee);
+                let (left_ty, right_ty) = if let Ty::Sum(l, r) = scrut_ty {
+                    (*l, *r)
+                } else {
+                    (Ty::Unit, Ty::Unit)
+                };
+
                 // Left branch (then block)
                 self.current_block = then_block;
                 let left_val = self.emit(
                     Instruction::UnwrapLeft(scrut_var),
-                    Ty::Unit, // TODO: proper type
+                    left_ty.clone(),
                     SecurityLevel::Public,
                     Effect::Pure,
                 );
 
                 let saved_env = self.env.clone();
-                self.env.bind(left_name.clone(), left_val, Ty::Unit, SecurityLevel::Public);
+                self.env.bind(left_name.clone(), left_val, left_ty, SecurityLevel::Public);
                 let left_result = self.lower_expr(left_branch)?;
                 self.env = saved_env;
 
@@ -804,13 +812,13 @@ impl Lower {
                 self.current_block = else_block;
                 let right_val = self.emit(
                     Instruction::UnwrapRight(scrut_var),
-                    Ty::Unit, // TODO: proper type
+                    right_ty.clone(),
                     SecurityLevel::Public,
                     Effect::Pure,
                 );
 
                 let saved_env = self.env.clone();
-                self.env.bind(right_name.clone(), right_val, Ty::Unit, SecurityLevel::Public);
+                self.env.bind(right_name.clone(), right_val, right_ty, SecurityLevel::Public);
                 let right_result = self.lower_expr(right_branch)?;
                 self.env = saved_env;
 

@@ -268,7 +268,7 @@ impl WasmBackend {
                     BinOp::Div => code.push(Op::I32DivS as u8),
                     BinOp::Eq => code.push(Op::I32Eq as u8),
                     BinOp::Ne => code.push(Op::I32Ne as u8),
-                    BinOp::Mod => code.push(Op::I32DivS as u8), // TODO: use i32.rem_s
+                    BinOp::Mod => code.push(Op::I32RemS as u8),
                     BinOp::Lt => code.push(Op::I32LtS as u8),
                     BinOp::Gt => code.push(Op::I32GtS as u8),
                     BinOp::Le => code.push(Op::I32LeS as u8),
