@@ -1,6 +1,6 @@
 # Contributing to RIINA
 
-**Verification:** 9,139 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 908 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 904 passing)
+# Run all tests (should show 908 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out
@@ -33,7 +33,7 @@ cd 03_PROTO && cargo test --all && cd ..
 
 | Directory | What | Language |
 |-----------|------|---------|
-| `02_FORMAL/coq/` | Formal proofs (8,121 theorems, 3 provers) | Coq/Lean/Isabelle |
+| `02_FORMAL/` | Formal proofs (9,172 Coq Qed + 8,923 Lean + 9,165 Isabelle, 10 provers) | Coq/Lean/Isabelle + 7 more |
 | `03_PROTO/crates/` | Compiler (15 crates) | Rust |
 | `04_SPECS/` | Language specifications | Markdown |
 | `05_TOOLING/` | Crypto primitives, build tools | Rust |

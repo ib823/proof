@@ -1,6 +1,6 @@
 # RIINA Certification Output
 
-**Verification:** 9,139 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 908 Rust tests
 
 ## What RIINA Certifies
 
@@ -45,7 +45,7 @@ This is not a test report. This is a mathematical proof that your program satisf
 │ VERIFICATION                                         │
 │   To independently verify:                           │
 │   $ cd 02_FORMAL/coq && make                         │
-│   Expected: 245 files, 0 errors, 0 admits            │
+│   Expected: 259 active files, 0 errors, 0 admits     │
 │                                                      │
 └──────────────────────────────────────────────────────┘
 ```
