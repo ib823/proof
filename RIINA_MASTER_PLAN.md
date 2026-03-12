@@ -289,7 +289,7 @@ be counted as verified proofs.
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 912 passing |
+| Tests (03_PROTO/) | 924 passing |
 | Tests (05_TOOLING/) | 240 passing |
 | Crates | 15 |
 | Clippy | Clean |
@@ -302,13 +302,14 @@ be counted as verified proofs.
 - Rejects basic information-flow violations on references and dereferences
 - Rejects invalid declassification proofs
 - Rejects declared-effect violations in top-level functions
+- Rejects missing top-level capability grants and capability-gated function calls
 - Emits C code (basic programs)
 - WASM backend exists (scaffolding — emits WASM sections but no distributed binary)
 - Mobile backends exist (scaffolding — generates code strings, no compiled artifacts)
 
 **What riinac CANNOT do yet:**
 - Compile non-trivial programs end-to-end
-- Enforce capability types at compile time
+- Enforce capability typing exhaustively across the full language surface
 - Enforce linear resource usage at compile time
 - Produce optimized output
 - Self-host

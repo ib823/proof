@@ -1,6 +1,6 @@
 # RIINA Scope Specifications
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 912 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
 
 This directory contains the definitive scope and architecture documents for the RIINA project.
 
