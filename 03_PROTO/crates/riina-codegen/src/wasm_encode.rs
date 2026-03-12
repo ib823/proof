@@ -73,6 +73,7 @@ pub enum Op {
     I32Sub = 0x6B,
     I32Mul = 0x6C,
     I32DivS = 0x6D,
+    I32RemS = 0x6F,
     I64Add = 0x7C,
     I64Sub = 0x7D,
     I64Mul = 0x7E,
