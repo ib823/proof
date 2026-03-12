@@ -82,7 +82,7 @@ TLA2tools: /workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar
 Alloy: /workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar
 ```
 
-Fresh clone smoke-tool bootstrap:
+Fresh clone smoke-tool bootstrap (Isabelle, F*, TLA2Tools, Alloy):
 ```bash
 bash scripts/provision-smoke-toolchains.sh
 ```

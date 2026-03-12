@@ -160,6 +160,27 @@ count_fstar_smoke_lemmas() {
     echo $((val_count + let_count))
 }
 
+count_tla_theorems() {
+    local total=0
+    while IFS= read -r f; do
+        local count
+        count=$(grep -cP "^\s*THEOREM\b" "$f" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/tlaplus" -name "*.tla" -type f 2>/dev/null)
+    echo "$total"
+}
+
+count_tla_smoke_theorems() {
+    local f="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
+    if [ ! -f "$f" ]; then
+        echo "0"
+        return
+    fi
+    grep -cP "^\s*THEOREM\b" "$f" 2>/dev/null || true
+}
+
 count_examples() {
     find "$REPO_ROOT/07_EXAMPLES" -name "*.rii" -type f 2>/dev/null | wc -l
 }
@@ -264,6 +285,8 @@ ACTUAL_ISABELLE=$(count_isabelle_lemmas)
 ACTUAL_ISABELLE_SMOKE=$(count_isabelle_smoke_lemmas)
 ACTUAL_FSTAR=$(count_fstar_lemmas)
 ACTUAL_FSTAR_SMOKE=$(count_fstar_smoke_lemmas)
+ACTUAL_TLAPLUS=$(count_tla_theorems)
+ACTUAL_TLAPLUS_SMOKE=$(count_tla_smoke_theorems)
 # Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
@@ -282,6 +305,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo "  Lean:          $ACTUAL_LEAN theorems"
     echo "  Isabelle:      $ACTUAL_ISABELLE lemmas"
     echo "  F*:            $ACTUAL_FSTAR raw lemmas, $ACTUAL_FSTAR_SMOKE smoke lemmas"
+    echo "  TLA+:          $ACTUAL_TLAPLUS raw theorems, $ACTUAL_TLAPLUS_SMOKE smoke theorems"
     echo "  Total proofs:  $ACTUAL_TOTAL"
     echo "  Examples:      $ACTUAL_EXAMPLES"
     echo "  Session:       $ACTUAL_SESSION"
@@ -385,11 +409,13 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     README_LEAN_LINE=$(grep -m1 '^\| \*\*Lean 4\*\*' "$REPO_ROOT/README.md" || true)
     README_ISABELLE_LINE=$(grep -m1 '^\| \*\*Isabelle/HOL\*\*' "$REPO_ROOT/README.md" || true)
     README_FSTAR_LINE=$(grep -m1 'CryptographicSecurityActive' "$REPO_ROOT/README.md" || true)
+    README_TLAPLUS_LINE=$(grep -m1 'TelusProcurementProtocol' "$REPO_ROOT/README.md" || true)
 
     README_QED=$(extract_first_number_from_line "$README_COQ_LINE")
     README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
     README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
     README_FSTAR=$(extract_first_number_from_line "$README_FSTAR_LINE")
+    README_TLAPLUS=$(extract_first_number_from_line "$README_TLAPLUS_LINE")
 
     if [ "$README_QED" != "0" ]; then
         check_value "Qed in README.md" "$ACTUAL_QED" "$README_QED" "README.md" || true
@@ -402,6 +428,9 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     fi
     if [ "$README_FSTAR" != "0" ]; then
         check_value "Compiled F* smoke lemmas in README.md" "$ACTUAL_FSTAR_SMOKE" "$README_FSTAR" "README.md" || true
+    fi
+    if [ "$README_TLAPLUS" != "0" ]; then
+        check_value "Compiled TLA+ smoke theorems in README.md" "$ACTUAL_TLAPLUS_SMOKE" "$README_TLAPLUS" "README.md" || true
     fi
 else
     warn_check "README.md not found" "missing"
@@ -478,6 +507,11 @@ if [ -f "$METRICS_FILE" ]; then
     WEB_FSTAR_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['fstar'].get('compiledLemmas', 0))" 2>/dev/null || echo "0")
     WEB_FSTAR_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_FSTAR_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['fstar'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
+    WEB_TLAPLUS=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus']['theorems'])" 2>/dev/null || echo "0")
+    WEB_TLAPLUS_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('theoremsRaw', json.load(open('$METRICS_FILE'))['tlaplus']['theorems']))" 2>/dev/null || echo "$WEB_TLAPLUS")
+    WEB_TLAPLUS_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('compiledTheorems', 0))" 2>/dev/null || echo "0")
+    WEB_TLAPLUS_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_TLAPLUS_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
     check_value "Website active Coq files (metrics.json)" "$ACTUAL_COQ_ACTIVE_FILES" "$WEB_COQ_ACTIVE" "metrics.json" || true
@@ -503,6 +537,17 @@ if [ -f "$METRICS_FILE" ]; then
         fi
     else
         check_value "Website F* (metrics.json)" "$ACTUAL_FSTAR" "$WEB_FSTAR" "metrics.json" || true
+    fi
+    if [ "$WEB_TLAPLUS_QUARANTINED" = "true" ]; then
+        check_value "Website TLA+ raw (metrics.json)" "$ACTUAL_TLAPLUS" "$WEB_TLAPLUS_RAW" "metrics.json" || true
+        if [ "$WEB_TLAPLUS_SMOKE" = "true" ]; then
+            check_value "Website TLA+ partial compiled count (metrics.json)" "$ACTUAL_TLAPLUS_SMOKE" "$WEB_TLAPLUS" "metrics.json" || true
+            check_value "Website TLA+ compiledTheorems (metrics.json)" "$ACTUAL_TLAPLUS_SMOKE" "$WEB_TLAPLUS_COMPILED" "metrics.json" || true
+        else
+            check_value "Website TLA+ quarantined count (metrics.json)" "0" "$WEB_TLAPLUS" "metrics.json" || true
+        fi
+    else
+        check_value "Website TLA+ (metrics.json)" "$ACTUAL_TLAPLUS" "$WEB_TLAPLUS" "metrics.json" || true
     fi
     # Session number is internal tracking — warn but don't block
     if [ "$ACTUAL_SESSION" != "$WEB_SESSION" ]; then

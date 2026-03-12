@@ -67,6 +67,18 @@ detect_fstar_bin() {
     return 1
 }
 
+detect_tla2tools_jar() {
+    if [ -n "${TLA2TOOLS_JAR:-}" ] && [ -f "${TLA2TOOLS_JAR:-}" ]; then
+        printf '%s\n' "$TLA2TOOLS_JAR"
+        return 0
+    fi
+    if [ -f "$ROOT_DIR/05_TOOLING/tools/formal/tla2tools.jar" ]; then
+        printf '%s\n' "$ROOT_DIR/05_TOOLING/tools/formal/tla2tools.jar"
+        return 0
+    fi
+    return 1
+}
+
 count_fstar_lemmas_in_file() {
     local file="$1"
     local val_count let_count
@@ -82,6 +94,20 @@ count_fstar_smoke_lemmas() {
         return
     fi
     count_fstar_lemmas_in_file "$file"
+}
+
+count_tla_theorems_in_file() {
+    local file="$1"
+    grep -cP "^\s*THEOREM\b" "$file" 2>/dev/null || true
+}
+
+count_tla_smoke_theorems() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        echo "0"
+        return
+    fi
+    count_tla_theorems_in_file "$file"
 }
 
 # Count Qed proofs (active build) — from _CoqProject only (matches verify.rs)
@@ -284,12 +310,19 @@ fi
 # Count TLA+ theorems (THEOREM declarations)
 TLAPLUS_THEOREMS=0
 TLAPLUS_FILES=0
+TLAPLUS_SMOKE_FILE="$ROOT_DIR/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
+TLAPLUS_SMOKE_CFG="$ROOT_DIR/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.cfg"
+TLAPLUS_SMOKE_SPEC="RIINA.Active.TelusProcurementProtocol"
+TLAPLUS_SMOKE_DECLARED_THEOREMS=0
 if [ -d "$ROOT_DIR/02_FORMAL/tlaplus" ]; then
     while IFS= read -r f; do
-        count=$(grep -cP "^THEOREM\s" "$f" 2>/dev/null || true)
+        count=$(count_tla_theorems_in_file "$f")
         [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null && TLAPLUS_THEOREMS=$((TLAPLUS_THEOREMS + count))
     done < <(find "$ROOT_DIR/02_FORMAL/tlaplus" -name "*.tla" -type f 2>/dev/null)
     TLAPLUS_FILES=$(find "$ROOT_DIR/02_FORMAL/tlaplus" -name "*.tla" -type f 2>/dev/null | wc -l)
+fi
+if [ -f "$TLAPLUS_SMOKE_FILE" ]; then
+    TLAPLUS_SMOKE_DECLARED_THEOREMS="$(count_tla_smoke_theorems "$TLAPLUS_SMOKE_FILE")"
 fi
 
 # Count Alloy assertions (check declarations)
@@ -589,6 +622,8 @@ SMT_GENERATED_BACKLOG=0
 VERUS_GENERATED_BACKLOG=0
 KANI_GENERATED_BACKLOG=0
 TV_GENERATED_BACKLOG=0
+TLAPLUS_SMOKE_BUILD_OK=false
+TLAPLUS_COMPILED_THEOREMS=0
 
 DIM14_REPORT="$ROOT_DIR/reports/dim14_runtime_status.json"
 DIM14_FRESH=false
@@ -668,6 +703,10 @@ if [ "$NONCOQ_MECH_FRESH" = true ]; then
     FSTAR_SMOKE_BUILD_OK="$(jq -r '.lanes.fstar.smoke_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
     FSTAR_SMOKE_DECLARED_LEMMAS="$(jq -r '.lanes.fstar.smoke_declared_lemmas // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
     FSTAR_COMPILED_LEMMAS="$(jq -r '.lanes.fstar.smoke_compiled_lemmas // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    TLAPLUS_SMOKE_SPEC="$(jq -r '.lanes.tlaplus.smoke_spec // "RIINA.Active.TelusProcurementProtocol"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "RIINA.Active.TelusProcurementProtocol")"
+    TLAPLUS_SMOKE_BUILD_OK="$(jq -r '.lanes.tlaplus.smoke_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    TLAPLUS_SMOKE_DECLARED_THEOREMS="$(jq -r '.lanes.tlaplus.smoke_declared_theorems // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    TLAPLUS_COMPILED_THEOREMS="$(jq -r '.lanes.tlaplus.smoke_compiled_theorems // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
 fi
 
 if [ "$NONCOQ_MECH_FRESH" != true ]; then
@@ -688,6 +727,17 @@ if [ "$NONCOQ_MECH_FRESH" != true ]; then
             FSTAR_SMOKE_BUILD_OK=true
             FSTAR_COMPILED_LEMMAS="$FSTAR_SMOKE_DECLARED_LEMMAS"
         fi
+    fi
+
+    if [ -f "$TLAPLUS_SMOKE_FILE" ] && [ -f "$TLAPLUS_SMOKE_CFG" ] && command -v java >/dev/null 2>&1 && TLA2TOOLS_JAR_LOCAL="$(detect_tla2tools_jar)"; then
+        TLAPLUS_META_DIR="$(mktemp -d 2>/dev/null || mktemp -d -t riina-tla-smoke)"
+        if (cd "$(dirname "$TLAPLUS_SMOKE_FILE")" \
+            && java -cp "$TLA2TOOLS_JAR_LOCAL" tla2sany.SANY "$(basename "$TLAPLUS_SMOKE_FILE")" >/dev/null 2>&1 \
+            && java -cp "$TLA2TOOLS_JAR_LOCAL" tlc2.TLC -cleanup -workers 1 -metadir "$TLAPLUS_META_DIR" -config "$(basename "$TLAPLUS_SMOKE_CFG")" "$(basename "$TLAPLUS_SMOKE_FILE")" >/dev/null 2>&1); then
+            TLAPLUS_SMOKE_BUILD_OK=true
+            TLAPLUS_COMPILED_THEOREMS="$TLAPLUS_SMOKE_DECLARED_THEOREMS"
+        fi
+        rm -rf "$TLAPLUS_META_DIR"
     fi
 fi
 
@@ -714,7 +764,13 @@ if [ "$FSTAR_QUARANTINED" = true ]; then
         FSTAR_LEMMAS_PUBLIC=0
     fi
 fi
-[ "$TLAPLUS_QUARANTINED" = true ] && TLAPLUS_THEOREMS_PUBLIC=0
+if [ "$TLAPLUS_QUARANTINED" = true ]; then
+    if [ "$TLAPLUS_SMOKE_BUILD_OK" = true ] && [ "$TLAPLUS_COMPILED_THEOREMS" -gt 0 ]; then
+        TLAPLUS_THEOREMS_PUBLIC=$TLAPLUS_COMPILED_THEOREMS
+    else
+        TLAPLUS_THEOREMS_PUBLIC=0
+    fi
+fi
 [ "$ALLOY_QUARANTINED" = true ] && ALLOY_ASSERTIONS_PUBLIC=0
 [ "$SMT_QUARANTINED" = true ] && SMT_ASSERTIONS_PUBLIC=0
 [ "$VERUS_QUARANTINED" = true ] && VERUS_PROOFS_PUBLIC=0
@@ -734,6 +790,13 @@ if [ "$FSTAR_SMOKE_BUILD_OK" = true ] && [ "$FSTAR_COMPILED_LEMMAS" -gt 0 ]; the
     FSTAR_COMPILED=true
     if [ "$FSTAR_MECHANIZED_READY" != true ]; then
         FSTAR_PENDING_REASON="partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
+    fi
+fi
+
+if [ "$TLAPLUS_SMOKE_BUILD_OK" = true ] && [ "$TLAPLUS_COMPILED_THEOREMS" -gt 0 ]; then
+    TLAPLUS_COMPILED=true
+    if [ "$TLAPLUS_MECHANIZED_READY" != true ]; then
+        TLAPLUS_PENDING_REASON="partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
     fi
 fi
 
@@ -764,7 +827,12 @@ if [ "$FSTAR_QUARANTINED" = true ]; then
     FSTAR_COMPILED=false
   fi
 fi
-[ "$TLAPLUS_QUARANTINED" = true ] && CLAIM_TLAPLUS="generated" && TLAPLUS_COMPILED=false
+if [ "$TLAPLUS_QUARANTINED" = true ]; then
+  CLAIM_TLAPLUS="generated"
+  if [ "$TLAPLUS_SMOKE_BUILD_OK" != true ] || [ "$TLAPLUS_COMPILED_THEOREMS" -eq 0 ]; then
+    TLAPLUS_COMPILED=false
+  fi
+fi
 [ "$ALLOY_QUARANTINED" = true ] && CLAIM_ALLOY="generated" && ALLOY_COMPILED=false
 [ "$SMT_QUARANTINED" = true ] && CLAIM_SMT="generated" && SMT_COMPILED=false
 [ "$VERUS_QUARANTINED" = true ] && CLAIM_VERUS="generated" && VERUS_COMPILED=false
@@ -877,6 +945,9 @@ cat > "$OUTPUT_FILE" << EOF
   "tlaplus": {
     "theorems": $TLAPLUS_THEOREMS_PUBLIC,
     "theoremsRaw": $TLAPLUS_THEOREMS,
+    "compiledTheorems": $TLAPLUS_COMPILED_THEOREMS,
+    "smokeBuildOk": $TLAPLUS_SMOKE_BUILD_OK,
+    "smokeSpec": "$(escape_json "$TLAPLUS_SMOKE_SPEC")",
     "quarantined": $TLAPLUS_QUARANTINED,
     "files": $TLAPLUS_FILES,
     "prover": "TLA+"
@@ -1019,7 +1090,7 @@ echo "  Assumptions:  $ASSUMPTIONS"
 echo "  Lean:         $LEAN_THEOREMS theorems, $LEAN_SORRY sorry, $LEAN_FILES files"
 echo "  Isabelle:     $ISABELLE_LEMMAS_PUBLIC lemmas (raw $ISABELLE_LEMMAS, compiled $ISABELLE_COMPILED_LEMMAS across $ISABELLE_COMPILED_THEORIES theories), $ISABELLE_SORRY sorry, $ISABELLE_FILES files, quarantined=$ISABELLE_QUARANTINED, smoke=$ISABELLE_SMOKE_BUILD_OK"
 echo "  F*:           $FSTAR_LEMMAS_PUBLIC lemmas (raw $FSTAR_LEMMAS, compiled $FSTAR_COMPILED_LEMMAS), $FSTAR_FILES files, quarantined=$FSTAR_QUARANTINED, smoke=$FSTAR_SMOKE_BUILD_OK"
-echo "  TLA+:         $TLAPLUS_THEOREMS_PUBLIC theorems (raw $TLAPLUS_THEOREMS), $TLAPLUS_FILES files, quarantined=$TLAPLUS_QUARANTINED"
+echo "  TLA+:         $TLAPLUS_THEOREMS_PUBLIC theorems (raw $TLAPLUS_THEOREMS, compiled $TLAPLUS_COMPILED_THEOREMS), $TLAPLUS_FILES files, quarantined=$TLAPLUS_QUARANTINED, smoke=$TLAPLUS_SMOKE_BUILD_OK"
 echo "  Alloy:        $ALLOY_ASSERTIONS_PUBLIC assertions (raw $ALLOY_ASSERTIONS), $ALLOY_FILES files, quarantined=$ALLOY_QUARANTINED"
 echo "  SMT:          $SMT_ASSERTIONS_PUBLIC assertions (raw $SMT_ASSERTIONS), $SMT_FILES files, quarantined=$SMT_QUARANTINED"
 echo "  Verus:        $VERUS_PROOFS_PUBLIC proofs (raw $VERUS_PROOFS), $VERUS_FILES files, quarantined=$VERUS_QUARANTINED"

@@ -46,7 +46,7 @@ RIINA provides first-class support for AI-assisted development:
 
 ## What is RIINA?
 
-RIINA is a programming language with a large machine-checked proof corpus and a security-oriented compiler. The repository currently ships audited Coq proofs, a compiling Lean lane, an Isabelle smoke session, and a bounded F* smoke module. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
+RIINA is a programming language with a large machine-checked proof corpus and a security-oriented compiler. The repository currently ships audited Coq proofs, a compiling Lean lane, an Isabelle smoke session, a bounded F* smoke module, and a bounded TLA+ smoke model. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
 
 Most languages ask you to *trust* that your code is secure. RIINA asks you to *verify* it.
 
@@ -82,8 +82,8 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (9,172 Coq + 4,026 Lean declarations + Isabelle smoke lane) | No | No | Partial |
-| Multi-prover work | Yes (Coq primary, Lean active, Isabelle smoke session) | No | No | No |
+| Formal proof corpus in repo | Yes (9,172 Coq + 4,026 Lean declarations + Isabelle/TLA+ smoke lanes) | No | No | Partial |
+| Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+ smoke lanes) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
 ---
@@ -118,7 +118,7 @@ nix run github:ib823/riina
 bash scripts/install.sh
 ```
 
-For the pinned Isabelle/F* smoke lanes used by repo verification on a fresh clone:
+For the pinned Isabelle/F* smoke lanes and TLA+/Alloy formal jars used by repo verification on a fresh clone:
 
 ```bash
 bash scripts/provision-smoke-toolchains.sh
@@ -224,11 +224,12 @@ This is not a whitepaper. This is working software.
 | **Lean 4** (Secondary) | 4,026 theorem/lemma declarations repo-wide | 136 active files compile; 3,879 compiled active-lane theorems; 0 sorry |
 | **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
 | **F\*** (Seed lane) | 3 compiled lemmas in `CryptographicSecurityActive` | 1 smoke-built active module; remaining `.fst` files are quarantined generated/transpiled stubs |
+| **TLA+** (Protocol seed lane) | 5 `THEOREM` declarations in `TelusProcurementProtocol` | 1 TLC-checked procurement spec; remaining `.tla` files are quarantined generated stubs |
 
 **Honest scope:**
 - Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
 - Many domain files are formal models or specifications, not compiler-enforced guarantees.
-- F* has one smoke-built active module; the remaining extended-prover corpora remain quarantined generated artifacts and are not counted as verified proofs.
+- F* and TLA+ each have one bounded smoke artifact; the remaining extended-prover corpora remain quarantined generated artifacts and are not counted as verified proofs.
 
 ### Compiler & Toolchain (Rust)
 
@@ -321,9 +322,10 @@ riina/
 │                             NonInterference
 │
 ├── 02_FORMAL/isabelle/      Isabelle/HOL smoke lane (1 compiled theory, 275 .thy total)
+├── 02_FORMAL/tlaplus/       TLA+ smoke lane (1 TLC-checked spec, 265 .tla total)
 │   └── RIINA/               `RIINA_CORE` currently compiles `Syntax.thy`
 │
-├── 03_PROTO/               Rust compiler (15 crates, 904 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (15 crates, 905 tests, 0 deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -388,21 +390,21 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 904 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 905 Rust tests
 
 | Area | Status |
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | Coq primary lane healthy; Lean active lane healthy; Isabelle smoke lane; bounded F* smoke proof |
+| Formal verification | Coq primary lane healthy; Lean active lane healthy; Isabelle smoke lane; bounded F* smoke proof; bounded TLA+ smoke model |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
-| Extended provers | F* has a bounded smoke artifact; the rest remain generated stubs |
+| Extended provers | F* and TLA+ have bounded smoke artifacts; the rest remain generated stubs |
 
 ### What's next
 
 - **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
 - **Axiom status:** Active build is axiom-free (`Axioms=0`, `Admitted=0`, explicit assumptions `=0`).
-- **Phase 2 active work:** First non-stub TLA+ / Alloy artifacts remain open in the master plan.
+- **Phase 2 active work:** First non-stub Alloy artifact remains open in the master plan.
 - **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 
 ---

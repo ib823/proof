@@ -27,9 +27,9 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 FORMAL_TOOLS_DIR="${RIINA_FORMAL_TOOLS_DIR:-$REPO_ROOT/05_TOOLING/tools/formal}"
 
-TLA2TOOLS_VERSION="${RIINA_TLA2TOOLS_VERSION:-1.8.0}"
+TLA2TOOLS_VERSION="${RIINA_TLA2TOOLS_VERSION:-1.7.4}"
 TLA2TOOLS_URL="${RIINA_TLA2TOOLS_URL:-https://github.com/tlaplus/tlaplus/releases/download/v${TLA2TOOLS_VERSION}/tla2tools.jar}"
-TLA2TOOLS_SHA256="${RIINA_TLA2TOOLS_SHA256:-2381bd7d3a8af296e1f6012d049ff13d85006bd1670e6f5b1555f4bb5bf79cbf}"
+TLA2TOOLS_SHA256="${RIINA_TLA2TOOLS_SHA256:-936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88}"
 TLA2TOOLS_JAR="$FORMAL_TOOLS_DIR/tla2tools.jar"
 
 ALLOY_VERSION="${RIINA_ALLOY_VERSION:-6.2.0}"
@@ -123,7 +123,8 @@ run_smoke_checks() {
     return 0
   fi
 
-  local tla_sample="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Domains/SessionTypes.tla"
+  local tla_sample="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
+  local tla_cfg="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.cfg"
   local alloy_sample="$REPO_ROOT/02_FORMAL/alloy/RIINA/Domains/SessionTypes.als"
 
   if [ -f "$tla_sample" ]; then
@@ -134,6 +135,19 @@ run_smoke_checks() {
       echo -e "${RED}ERROR: TLA2Tools smoke check failed.${NC}" >&2
       return 1
     }
+    if [ -f "$tla_cfg" ]; then
+      local tla_meta
+      tla_meta="$(mktemp -d)"
+      (
+        cd "$(dirname "$tla_sample")"
+        java -cp "$TLA2TOOLS_JAR" tlc2.TLC -cleanup -workers 1 -metadir "$tla_meta" -config "$(basename "$tla_cfg")" "$(basename "$tla_sample")" >/dev/null 2>&1
+      ) || {
+        rm -rf "$tla_meta"
+        echo -e "${RED}ERROR: TLA2Tools TLC smoke check failed.${NC}" >&2
+        return 1
+      }
+      rm -rf "$tla_meta"
+    fi
     echo -e "${GREEN}[ok]${NC} TLA2Tools smoke check passed."
   fi
 

@@ -4,10 +4,10 @@
 //!
 //! `riinac verify [--fast|--full]` — runs all checks and produces a manifest.
 //!
-//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) plus a
-//! bounded F* smoke build when a pinned toolchain is available. Static scans
-//! cover the broader prover corpus, but claim levels stay tied to executable
-//! evidence.
+//! Full mode invokes real proof compilers (Coq, Lean 4, Isabelle/HOL) plus
+//! bounded F* and TLA+ smoke builds when pinned local tooling is available.
+//! Static scans cover the broader prover corpus, but claim levels stay tied to
+//! executable evidence.
 
 #![forbid(unsafe_code)]
 
@@ -26,6 +26,7 @@ const COQ_TIMEOUT: Duration = Duration::from_secs(45 * 60); // 45 min
 const LEAN_TIMEOUT: Duration = Duration::from_secs(30 * 60); // 30 min
 const ISABELLE_TIMEOUT: Duration = Duration::from_secs(20 * 60); // 20 min
 const FSTAR_TIMEOUT: Duration = Duration::from_secs(10 * 60); // 10 min
+const TLAPLUS_TIMEOUT: Duration = Duration::from_secs(5 * 60); // 5 min
 
 // ---------------------------------------------------------------------------
 // Mode / CheckResult / ToolStatus
@@ -273,6 +274,37 @@ fn detect_fstar() -> ToolStatus {
 
     ToolStatus::NotFound(
         "pinned local F* not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-fstar.sh)".into(),
+    )
+}
+
+/// Detect pinned local `tla2tools.jar`:
+/// `TLA2TOOLS_JAR` → repo-local `05_TOOLING/tools/formal/tla2tools.jar`.
+fn detect_tla2tools() -> ToolStatus {
+    if let Ok(jar) = std::env::var("TLA2TOOLS_JAR") {
+        let p = PathBuf::from(jar);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("formal")
+                .join("tla2tools.jar");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+    }
+
+    ToolStatus::NotFound(
+        "pinned local TLA2Tools jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh)".into(),
     )
 }
 
@@ -639,6 +671,18 @@ fn count_tla_theorems(dir: &Path) -> u32 {
         }
     }
     count
+}
+
+fn count_tlaplus_smoke_theorems(active_file: &Path) -> u32 {
+    fs::read_to_string(active_file)
+        .ok()
+        .map(|content| {
+            content
+                .lines()
+                .filter(|line| line.trim_start().starts_with("THEOREM "))
+                .count() as u32
+        })
+        .unwrap_or(0)
 }
 
 /// Count `assert` and `check` declarations in Alloy `.als` files.
@@ -2127,6 +2171,177 @@ fn compile_fstar(fstar_dir: &Path) -> CheckResult {
     result
 }
 
+/// Parse and bounded-model-check the manually maintained TLA+ smoke spec.
+fn compile_tlaplus(tlaplus_dir: &Path) -> CheckResult {
+    let active_dir = tlaplus_dir.join("RIINA").join("Active");
+    let active_file = active_dir.join("TelusProcurementProtocol.tla");
+    let cfg_file = active_dir.join("TelusProcurementProtocol.cfg");
+    if !active_file.exists() || !cfg_file.exists() {
+        return CheckResult {
+            name: "TLA+ Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: "active smoke files not found (expected RIINA/Active/TelusProcurementProtocol.{tla,cfg})".into(),
+        };
+    }
+
+    let smoke_theorems = count_tlaplus_smoke_theorems(&active_file);
+    let java_path = match which_tool("java") {
+        Some(path) => path,
+        None => {
+            return CheckResult {
+                name: "TLA+ Compilation".into(),
+                passed: false,
+                blocking: false,
+                details: "java not found (install a JRE/JDK to run tla2tools.jar)".into(),
+            };
+        }
+    };
+
+    match detect_tla2tools() {
+        ToolStatus::Found(tla2tools_jar) => {
+            eprintln!("  tla2tools jar found: {}", tla2tools_jar.display());
+            let meta_dir = std::env::temp_dir().join(format!(
+                "riina-tla-active-verify-{}-{}",
+                std::process::id(),
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis()
+            ));
+            let _ = fs::create_dir_all(&meta_dir);
+
+            let sany_args = vec![
+                "-cp".to_string(),
+                tla2tools_jar.to_string_lossy().into_owned(),
+                "tla2sany.SANY".to_string(),
+                active_file
+                    .file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("TelusProcurementProtocol.tla")
+                    .to_string(),
+            ];
+            let sany_refs: Vec<&str> = sany_args.iter().map(String::as_str).collect();
+            let start = Instant::now();
+            match run_with_timeout(
+                java_path.to_str().unwrap_or("java"),
+                &sany_refs,
+                &active_dir,
+                TLAPLUS_TIMEOUT,
+            ) {
+                Ok(o) if o.status.success() => {
+                    let tlc_args = vec![
+                        "-cp".to_string(),
+                        tla2tools_jar.to_string_lossy().into_owned(),
+                        "tlc2.TLC".to_string(),
+                        "-cleanup".to_string(),
+                        "-workers".to_string(),
+                        "1".to_string(),
+                        "-metadir".to_string(),
+                        meta_dir.to_string_lossy().into_owned(),
+                        "-config".to_string(),
+                        cfg_file
+                            .file_name()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("TelusProcurementProtocol.cfg")
+                            .to_string(),
+                        active_file
+                            .file_name()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("TelusProcurementProtocol.tla")
+                            .to_string(),
+                    ];
+                    let tlc_refs: Vec<&str> = tlc_args.iter().map(String::as_str).collect();
+                    match run_with_timeout(
+                        java_path.to_str().unwrap_or("java"),
+                        &tlc_refs,
+                        &active_dir,
+                        TLAPLUS_TIMEOUT,
+                    ) {
+                        Ok(tlc_output) => {
+                            let elapsed = start.elapsed();
+                            let result = if tlc_output.status.success() {
+                                CheckResult {
+                                    name: "TLA+ Compilation".into(),
+                                    passed: true,
+                                    blocking: false,
+                                    details: format!(
+                                        "Active spec TelusProcurementProtocol parsed and model checked in {:.0}s ({} theorems, local_active)",
+                                        elapsed.as_secs_f64(),
+                                        smoke_theorems
+                                    ),
+                                }
+                            } else {
+                                let code = tlc_output.status.code().unwrap_or(-1);
+                                let stderr = String::from_utf8_lossy(&tlc_output.stderr);
+                                let stdout = String::from_utf8_lossy(&tlc_output.stdout);
+                                let combined = format!("{stdout}\n{stderr}");
+                                let tail = last_n_lines(&combined, 10);
+                                CheckResult {
+                                    name: "TLA+ Compilation".into(),
+                                    passed: false,
+                                    blocking: false,
+                                    details: format!(
+                                        "FAILED TLC (exit {code}, {:.0}s)\n{}",
+                                        elapsed.as_secs_f64(),
+                                        truncate_str(&tail, 500)
+                                    ),
+                                }
+                            };
+                            let _ = fs::remove_dir_all(&meta_dir);
+                            result
+                        }
+                        Err(e) => {
+                            let _ = fs::remove_dir_all(&meta_dir);
+                            CheckResult {
+                                name: "TLA+ Compilation".into(),
+                                passed: false,
+                                blocking: false,
+                                details: format!("failed to run TLA+ TLC local_active: {e}"),
+                            }
+                        }
+                    }
+                }
+                Ok(o) => {
+                    let elapsed = start.elapsed();
+                    let stderr = String::from_utf8_lossy(&o.stderr);
+                    let stdout = String::from_utf8_lossy(&o.stdout);
+                    let combined = format!("{stdout}\n{stderr}");
+                    let tail = last_n_lines(&combined, 10);
+                    let result = CheckResult {
+                        name: "TLA+ Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "FAILED SANY (exit {}, {:.0}s)\n{}",
+                            o.status.code().unwrap_or(-1),
+                            elapsed.as_secs_f64(),
+                            truncate_str(&tail, 500)
+                        ),
+                    };
+                    let _ = fs::remove_dir_all(&meta_dir);
+                    result
+                }
+                Err(e) => {
+                    let _ = fs::remove_dir_all(&meta_dir);
+                    CheckResult {
+                        name: "TLA+ Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!("failed to run TLA+ SANY local_active: {e}"),
+                    }
+                }
+            }
+        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "TLA+ Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: msg,
+        },
+    }
+}
+
 /// Static scan of F* `.fst` files for `admit` keyword and lemma count.
 fn scan_fstar(dir: &Path) -> Vec<CheckResult> {
     if !dir.is_dir() {
@@ -2477,6 +2692,8 @@ pub fn run(mode: Mode) -> i32 {
 
         // === TLA+ ===
         eprintln!("\n=== TLA+ Verification ===");
+        eprintln!("Compiling TLA+ smoke proof...");
+        results.push(compile_tlaplus(&tlaplus_dir));
         eprintln!("Scanning TLA+ files...");
         results.extend(scan_tlaplus(&tlaplus_dir));
 
@@ -2715,6 +2932,17 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
         if dir.exists() {
             let count = count_tla_theorems(&dir);
             assert!(count > 100, "Expected >100 TLA+ theorems, got {count}");
+        }
+    }
+
+    #[test]
+    fn test_count_tlaplus_smoke_theorems() {
+        let file = PathBuf::from(
+            "/workspaces/proof/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla",
+        );
+        if file.exists() {
+            let count = count_tlaplus_smoke_theorems(&file);
+            assert!(count >= 1, "Expected >=1 TLA+ smoke theorem, got {count}");
         }
     }
 

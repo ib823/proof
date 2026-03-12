@@ -13,7 +13,7 @@
 #   - Lean/Isabelle require full-lane build and zero `sorry`.
 #   - F* requires full Active+Domains compilation and zero generated files.
 #   - SMT/Verus/Kani/TV require full-lane machine checks and zero generated files.
-#   - TLA+/Alloy require full-lane executable checks.
+#   - TLA+/Alloy require full-lane executable checks after dequarantine.
 # ============================================================================
 
 set -euo pipefail
@@ -36,6 +36,14 @@ FORMAL_TOOLS_DIR="$REPO_ROOT/05_TOOLING/tools/formal"
 ISABELLE_HELPER="$REPO_ROOT/scripts/isabelle-local.sh"
 FSTAR_HELPER="$REPO_ROOT/scripts/fstar-local.sh"
 ISABELLE_BUILD_TIMEOUT_SEC="${RIINA_ISABELLE_BUILD_TIMEOUT_SEC:-14400}"
+TLA_QUARANTINED=0
+ALLOY_QUARANTINED=0
+ISABELLE_QUARANTINED=0
+FSTAR_QUARANTINED=0
+[ -f "$REPO_ROOT/02_FORMAL/tlaplus/.STUB_QUARANTINED" ] && TLA_QUARANTINED=1
+[ -f "$REPO_ROOT/02_FORMAL/alloy/.STUB_QUARANTINED" ] && ALLOY_QUARANTINED=1
+[ -f "$REPO_ROOT/02_FORMAL/isabelle/.STUB_QUARANTINED" ] && ISABELLE_QUARANTINED=1
+[ -f "$REPO_ROOT/02_FORMAL/fstar/.STUB_QUARANTINED" ] && FSTAR_QUARANTINED=1
 
 if [ -f "$ISABELLE_HELPER" ]; then
   # shellcheck disable=SC1090
@@ -82,6 +90,20 @@ run_with_timeout() {
   fi
 }
 
+run_tla_smoke_tlc() {
+  local jar="$1"
+  local tla_file="$2"
+  local cfg_file="$3"
+  local meta_dir
+  meta_dir="$(mktemp -d 2>/dev/null || mktemp -d -t riina-tla-smoke)"
+  if (cd "$(dirname "$tla_file")" && run_with_timeout 180 java -cp "$jar" tlc2.TLC -cleanup -workers 1 -metadir "$meta_dir" -config "$(basename "$cfg_file")" "$(basename "$tla_file")") >/dev/null 2>&1; then
+    rm -rf "$meta_dir"
+    return 0
+  fi
+  rm -rf "$meta_dir"
+  return 1
+}
+
 tool_exists() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -113,6 +135,11 @@ count_fstar_lemmas_in_file() {
   val_count=$(grep -cP "^\s*val\s+\w+_lemma\b" "$file" 2>/dev/null || true)
   let_count=$(grep -cP "^\s*let(?:\s+rec)?\s+lemma_[A-Za-z0-9_']+\b" "$file" 2>/dev/null || true)
   echo $((val_count + let_count))
+}
+
+count_tla_theorems_in_file() {
+  local file="$1"
+  grep -cP "^\s*THEOREM\b" "$file" 2>/dev/null || true
 }
 
 read_isabelle_smoke_theories() {
@@ -225,7 +252,9 @@ ISABELLE_FILES="$(count_files "$ISA_DIR" "*.thy")"
 ISABELLE_SORRY="$( (grep -RIn '\bsorry\b' "$ISA_DIR" --include="*.thy" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 ISABELLE_BUILD_OK=0
 ISABELLE_BUILD_MODE="missing_local_isabelle"
-if [ "$ISABELLE_FILES" -gt 0 ]; then
+if [ "$ISABELLE_QUARANTINED" -eq 1 ]; then
+  ISABELLE_BUILD_MODE="quarantined_generated_corpus"
+elif [ "$ISABELLE_FILES" -gt 0 ]; then
   if [ "$HAS_ISABELLE" -eq 1 ]; then
     if run_with_timeout "$ISABELLE_BUILD_TIMEOUT_SEC" "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA >/dev/null 2>&1 \
       && run_with_timeout "$ISABELLE_BUILD_TIMEOUT_SEC" "$ISABELLE_BIN" build -d "$ISA_DIR" -b -o document=false RIINA_Domains >/dev/null 2>&1; then
@@ -237,11 +266,13 @@ if [ "$ISABELLE_FILES" -gt 0 ]; then
   fi
 fi
 ISABELLE_MECHANIZED=0
-if [ "$ISABELLE_BUILD_OK" -eq 1 ] && [ "$ISABELLE_SORRY" -eq 0 ] && [ "$ISABELLE_FILES" -gt 0 ]; then
+if [ "$ISABELLE_QUARANTINED" -ne 1 ] && [ "$ISABELLE_BUILD_OK" -eq 1 ] && [ "$ISABELLE_SORRY" -eq 0 ] && [ "$ISABELLE_FILES" -gt 0 ]; then
   ISABELLE_MECHANIZED=1
 fi
 ISABELLE_PENDING="none"
-if [ "$ISABELLE_MECHANIZED" -ne 1 ]; then
+if [ "$ISABELLE_QUARANTINED" -eq 1 ]; then
+  ISABELLE_PENDING="quarantined generated corpus; dequarantine only after full Isabelle replacement"
+elif [ "$ISABELLE_MECHANIZED" -ne 1 ]; then
   ISABELLE_PENDING="require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus"
 fi
 if [ -n "$ISABELLE_LOCAL_ERROR" ]; then
@@ -285,7 +316,7 @@ FSTAR_SMOKE_DECLARED_LEMMAS=0
 FSTAR_SMOKE_COMPILED_LEMMAS=0
 FSTAR_SMOKE_BUILD_OK=0
 FSTAR_FULL_EXEC=0
-if [ -n "$FSTAR_BIN" ] && [ "$FSTAR_FILES" -gt 0 ]; then
+if [ "$FSTAR_QUARANTINED" -ne 1 ] && [ -n "$FSTAR_BIN" ] && [ "$FSTAR_FILES" -gt 0 ]; then
   mapfile -t FSTAR_LIST < <(find "$FSTAR_DIR" -type f -name "*.fst" | sort)
   if [ "${#FSTAR_LIST[@]}" -gt 0 ]; then
     if run_with_timeout 7200 "$FSTAR_BIN" \
@@ -311,12 +342,17 @@ if [ -f "$FSTAR_SMOKE_FILE" ]; then
   fi
 fi
 FSTAR_MECHANIZED=0
-if [ "$FSTAR_FULL_EXEC" -eq 1 ] && [ "$FSTAR_GENERATED_FILES" -eq 0 ] && [ "$FSTAR_FILES" -gt 0 ]; then
+if [ "$FSTAR_QUARANTINED" -ne 1 ] && [ "$FSTAR_FULL_EXEC" -eq 1 ] && [ "$FSTAR_GENERATED_FILES" -eq 0 ] && [ "$FSTAR_FILES" -gt 0 ]; then
   FSTAR_MECHANIZED=1
 fi
 FSTAR_PENDING="none"
-if [ "$FSTAR_MECHANIZED" -ne 1 ]; then
+if [ "$FSTAR_QUARANTINED" -eq 1 ]; then
+  FSTAR_PENDING="quarantined generated corpus; dequarantine only after full F* replacement"
+elif [ "$FSTAR_MECHANIZED" -ne 1 ]; then
   FSTAR_PENDING="require full Active+Domains F* compilation with zero generated placeholders"
+fi
+if [ "$FSTAR_SMOKE_BUILD_OK" -eq 1 ] && [ "$FSTAR_MECHANIZED" -ne 1 ]; then
+  FSTAR_PENDING="partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
 fi
 if [ -n "$FSTAR_LOCAL_ERROR" ]; then
   FSTAR_PENDING="$FSTAR_PENDING (local F* enforcement: $FSTAR_LOCAL_ERROR)"
@@ -326,24 +362,50 @@ fi
 # TLA+
 # ---------------------------------------------------------------------------
 TLA_FILES="$(count_files "$TLA_DIR" "*.tla")"
+TLA_SMOKE_FILE="$TLA_DIR/Active/TelusProcurementProtocol.tla"
+TLA_SMOKE_CFG="$TLA_DIR/Active/TelusProcurementProtocol.cfg"
+TLA_SMOKE_SPEC="RIINA.Active.TelusProcurementProtocol"
+TLA_SMOKE_SANY_OK=0
+TLA_SMOKE_BUILD_OK=0
+TLA_SMOKE_DECLARED_THEOREMS=0
+TLA_SMOKE_COMPILED_THEOREMS=0
+if [ -f "$TLA_SMOKE_FILE" ]; then
+  TLA_SMOKE_DECLARED_THEOREMS="$(count_tla_theorems_in_file "$TLA_SMOKE_FILE")"
+fi
 TLA_FULL_EXEC=0
 if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_TLA2TOOLS_JAR" -eq 1 ] && [ "$TLA_FILES" -gt 0 ]; then
-  TLA_FULL_EXEC=1
-  mapfile -t TLA_LIST < <(find "$TLA_DIR" -type f -name "*.tla" | sort)
-  for f in "${TLA_LIST[@]}"; do
-    if ! (cd "$(dirname "$f")" && run_with_timeout 120 java -cp "$TLA2TOOLS_JAR" tla2sany.SANY "$(basename "$f")") >/dev/null 2>&1; then
-      TLA_FULL_EXEC=0
-      break
+  if [ -f "$TLA_SMOKE_FILE" ] && [ -f "$TLA_SMOKE_CFG" ]; then
+    if (cd "$(dirname "$TLA_SMOKE_FILE")" && run_with_timeout 120 java -cp "$TLA2TOOLS_JAR" tla2sany.SANY "$(basename "$TLA_SMOKE_FILE")") >/dev/null 2>&1; then
+      TLA_SMOKE_SANY_OK=1
+      if run_tla_smoke_tlc "$TLA2TOOLS_JAR" "$TLA_SMOKE_FILE" "$TLA_SMOKE_CFG"; then
+        TLA_SMOKE_BUILD_OK=1
+        TLA_SMOKE_COMPILED_THEOREMS="$TLA_SMOKE_DECLARED_THEOREMS"
+      fi
     fi
-  done
+  fi
+  if [ "$TLA_QUARANTINED" -ne 1 ]; then
+    TLA_FULL_EXEC=1
+    mapfile -t TLA_LIST < <(find "$TLA_DIR" -type f -name "*.tla" | sort)
+    for f in "${TLA_LIST[@]}"; do
+      if ! (cd "$(dirname "$f")" && run_with_timeout 120 java -cp "$TLA2TOOLS_JAR" tla2sany.SANY "$(basename "$f")") >/dev/null 2>&1; then
+        TLA_FULL_EXEC=0
+        break
+      fi
+    done
+  fi
 fi
 TLA_MECHANIZED=0
-if [ "$TLA_FULL_EXEC" -eq 1 ] && [ "$TLA_FILES" -gt 0 ]; then
+if [ "$TLA_QUARANTINED" -ne 1 ] && [ "$TLA_FULL_EXEC" -eq 1 ] && [ "$TLA_FILES" -gt 0 ]; then
   TLA_MECHANIZED=1
 fi
 TLA_PENDING="none"
-if [ "$TLA_MECHANIZED" -ne 1 ]; then
+if [ "$TLA_QUARANTINED" -eq 1 ]; then
+  TLA_PENDING="quarantined generated corpus; dequarantine only after real-lane replacement"
+elif [ "$TLA_MECHANIZED" -ne 1 ]; then
   TLA_PENDING="require full-lane executable SANY checks across TLA corpus"
+fi
+if [ "$TLA_SMOKE_BUILD_OK" -eq 1 ] && [ "$TLA_MECHANIZED" -ne 1 ]; then
+  TLA_PENDING="partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
 fi
 
 # ---------------------------------------------------------------------------
@@ -351,7 +413,7 @@ fi
 # ---------------------------------------------------------------------------
 ALLOY_FILES="$(count_files "$ALLOY_DIR" "*.als")"
 ALLOY_FULL_EXEC=0
-if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_ALLOY_JAR" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ]; then
+if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_ALLOY_JAR" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ] && [ "$ALLOY_QUARANTINED" -ne 1 ]; then
   ALLOY_EXEC_CLASS="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
   ALLOY_FULL_EXEC=1
   mapfile -t ALLOY_LIST < <(find "$ALLOY_DIR" -type f -name "*.als" | sort)
@@ -363,11 +425,13 @@ if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_ALLOY_JAR" -eq 1 ] && [ "$ALLOY_FILES" -gt 0
   done
 fi
 ALLOY_MECHANIZED=0
-if [ "$ALLOY_FULL_EXEC" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ]; then
+if [ "$ALLOY_QUARANTINED" -ne 1 ] && [ "$ALLOY_FULL_EXEC" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ]; then
   ALLOY_MECHANIZED=1
 fi
 ALLOY_PENDING="none"
-if [ "$ALLOY_MECHANIZED" -ne 1 ]; then
+if [ "$ALLOY_QUARANTINED" -eq 1 ]; then
+  ALLOY_PENDING="quarantined generated corpus; dequarantine only after real-lane replacement"
+elif [ "$ALLOY_MECHANIZED" -ne 1 ]; then
   ALLOY_PENDING="require full-lane executable command checks across Alloy corpus"
 fi
 
@@ -483,7 +547,7 @@ done
 echo "Lean mechanized      : $LEAN_MECHANIZED (build=$LEAN_BUILD_OK sorry=$LEAN_SORRY axioms=$LEAN_AXIOMS files=$LEAN_FILES)"
 echo "Isabelle mechanized  : $ISABELLE_MECHANIZED (build=$ISABELLE_BUILD_OK mode=$ISABELLE_BUILD_MODE smoke=$ISABELLE_SMOKE_BUILD_OK compiled=$ISABELLE_SMOKE_COMPILED_LEMMAS files=$ISABELLE_FILES)"
 echo "F* mechanized        : $FSTAR_MECHANIZED (exec=$FSTAR_FULL_EXEC smoke=$FSTAR_SMOKE_BUILD_OK compiled=$FSTAR_SMOKE_COMPILED_LEMMAS generated=$FSTAR_GENERATED_FILES files=$FSTAR_FILES)"
-echo "TLA+ mechanized      : $TLA_MECHANIZED (exec=$TLA_FULL_EXEC files=$TLA_FILES)"
+echo "TLA+ mechanized      : $TLA_MECHANIZED (exec=$TLA_FULL_EXEC smoke=$TLA_SMOKE_BUILD_OK compiled=$TLA_SMOKE_COMPILED_THEOREMS files=$TLA_FILES)"
 echo "Alloy mechanized     : $ALLOY_MECHANIZED (exec=$ALLOY_FULL_EXEC files=$ALLOY_FILES)"
 echo "SMT mechanized       : $SMT_MECHANIZED (exec=$SMT_FULL_EXEC generated=$SMT_GENERATED_FILES files=$SMT_FILES)"
 echo "Verus mechanized     : $VERUS_MECHANIZED (exec=$VERUS_FULL_EXEC generated=$VERUS_GENERATED_FILES files=$VERUS_FILES)"
@@ -530,6 +594,7 @@ cat > "$REPORT_PATH" <<EOF_JSON
     "isabelle": {
       "full_build_ok": $(bool_json "$ISABELLE_BUILD_OK"),
       "build_mode": "$(escape_json "$ISABELLE_BUILD_MODE")",
+      "quarantined": $(bool_json "$ISABELLE_QUARANTINED"),
       "files": $ISABELLE_FILES,
       "sorry": $ISABELLE_SORRY,
       "smoke_session": "$(escape_json "$ISABELLE_SMOKE_SESSION")",
@@ -543,6 +608,7 @@ cat > "$REPORT_PATH" <<EOF_JSON
     },
     "fstar": {
       "full_exec_ok": $(bool_json "$FSTAR_FULL_EXEC"),
+      "quarantined": $(bool_json "$FSTAR_QUARANTINED"),
       "files": $FSTAR_FILES,
       "generated_files": $FSTAR_GENERATED_FILES,
       "smoke_module": "$(escape_json "$FSTAR_SMOKE_MODULE")",
@@ -554,12 +620,19 @@ cat > "$REPORT_PATH" <<EOF_JSON
     },
     "tlaplus": {
       "full_exec_ok": $(bool_json "$TLA_FULL_EXEC"),
+      "quarantined": $(bool_json "$TLA_QUARANTINED"),
       "files": $TLA_FILES,
+      "smoke_spec": "$(escape_json "$TLA_SMOKE_SPEC")",
+      "smoke_sany_ok": $(bool_json "$TLA_SMOKE_SANY_OK"),
+      "smoke_build_ok": $(bool_json "$TLA_SMOKE_BUILD_OK"),
+      "smoke_declared_theorems": $TLA_SMOKE_DECLARED_THEOREMS,
+      "smoke_compiled_theorems": $TLA_SMOKE_COMPILED_THEOREMS,
       "mechanized_ready": $(bool_json "$TLA_MECHANIZED"),
       "pending": "$(escape_json "$TLA_PENDING")"
     },
     "alloy": {
       "full_exec_ok": $(bool_json "$ALLOY_FULL_EXEC"),
+      "quarantined": $(bool_json "$ALLOY_QUARANTINED"),
       "files": $ALLOY_FILES,
       "mechanized_ready": $(bool_json "$ALLOY_MECHANIZED"),
       "pending": "$(escape_json "$ALLOY_PENDING")"
