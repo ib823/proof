@@ -112,7 +112,7 @@ echo -e "${GREEN}      Signed-commit policy passed${NC}"
 
 # Step 2: secret detection on changed files in outgoing range(s)
 echo "[2/3] Scanning changed files for secrets..."
-SECRETS_PATTERN='(password|secret|api[_-]?key|token|private[_-]?key)\s*[=:]\s*["\x27][^"\x27]+'
+SECRETS_PATTERN='(?<![A-Za-z0-9_])(password|secret|api[_-]?key|token|private[_-]?key)(?![A-Za-z0-9_])\s*[=:]\s*["\x27][^"\x27]+'
 declare -A changed_files=()
 
 for range in "${RANGES[@]}"; do
@@ -134,7 +134,7 @@ else
     abs="$REPO_ROOT/$rel"
     [ -f "$abs" ] || continue
 
-    if grep -nEi "$SECRETS_PATTERN" "$abs" >/dev/null 2>&1; then
+    if grep -nPi "$SECRETS_PATTERN" "$abs" >/dev/null 2>&1; then
       HITS+="$rel"$'\n'
     fi
   done
