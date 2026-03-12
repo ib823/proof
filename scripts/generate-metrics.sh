@@ -79,6 +79,28 @@ detect_tla2tools_jar() {
     return 1
 }
 
+detect_alloy_jar() {
+    if [ -n "${ALLOY_JAR:-}" ] && [ -f "${ALLOY_JAR:-}" ]; then
+        printf '%s\n' "$ALLOY_JAR"
+        return 0
+    fi
+    if [ -f "$ROOT_DIR/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar" ]; then
+        printf '%s\n' "$ROOT_DIR/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+        return 0
+    fi
+    return 1
+}
+
+run_with_timeout() {
+    local seconds="$1"
+    shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$seconds" "$@"
+    else
+        "$@"
+    fi
+}
+
 count_fstar_lemmas_in_file() {
     local file="$1"
     local val_count let_count
@@ -108,6 +130,66 @@ count_tla_smoke_theorems() {
         return
     fi
     count_tla_theorems_in_file "$file"
+}
+
+count_alloy_smoke_assertions() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        echo "0"
+        return
+    fi
+    grep -cP "^\s*check\s" "$file" 2>/dev/null || true
+}
+
+alloy_command_rows() {
+    local jar="$1"
+    local file="$2"
+    local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+    run_with_timeout 120 java -cp "$jar" "$class" commands "$file" 2>/dev/null \
+        | awk '/^[0-9]+[[:space:]]+\./ { print $1 ":" tolower($3) }'
+}
+
+alloy_exec_status() {
+    local jar="$1"
+    local file="$2"
+    local index="$3"
+    local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+    local tmp_dir
+    tmp_dir="$(mktemp -d 2>/dev/null || mktemp -d -t riina-alloy-exec)"
+    local output
+    if ! output="$(cd "$tmp_dir" && run_with_timeout 180 java -cp "$jar" "$class" exec -c "$index" "$file" 2>&1)"; then
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+    rm -rf "$tmp_dir"
+    printf '%s\n' "$output" \
+        | tr '\010\r' '  ' \
+        | awk '/^[0-9][0-9]*\. / { print $NF }' \
+        | tail -1
+}
+
+alloy_smoke_ok() {
+    local jar="$1"
+    local file="$2"
+    local row idx kind expected status
+    mapfile -t rows < <(alloy_command_rows "$jar" "$file")
+    if [ "${#rows[@]}" -eq 0 ]; then
+        return 1
+    fi
+    for row in "${rows[@]}"; do
+        idx="${row%%:*}"
+        kind="${row##*:}"
+        case "$kind" in
+            run) expected="SAT" ;;
+            check) expected="UNSAT" ;;
+            *) return 1 ;;
+        esac
+        status="$(alloy_exec_status "$jar" "$file" "$idx" || true)"
+        if [ "$status" != "$expected" ]; then
+            return 1
+        fi
+    done
+    return 0
 }
 
 # Count Qed proofs (active build) — from _CoqProject only (matches verify.rs)
@@ -310,6 +392,8 @@ fi
 # Count TLA+ theorems (THEOREM declarations)
 TLAPLUS_THEOREMS=0
 TLAPLUS_FILES=0
+TLAPLUS_COMPILED_THEOREMS=0
+TLAPLUS_SMOKE_BUILD_OK=false
 TLAPLUS_SMOKE_FILE="$ROOT_DIR/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
 TLAPLUS_SMOKE_CFG="$ROOT_DIR/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.cfg"
 TLAPLUS_SMOKE_SPEC="RIINA.Active.TelusProcurementProtocol"
@@ -328,9 +412,17 @@ fi
 # Count Alloy assertions (check declarations)
 ALLOY_ASSERTIONS=0
 ALLOY_FILES=0
+ALLOY_COMPILED_ASSERTIONS=0
+ALLOY_SMOKE_BUILD_OK=false
+ALLOY_SMOKE_FILE="$ROOT_DIR/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als"
+ALLOY_SMOKE_MODEL="RIINA.Active.TelusProcurementAccessControl"
+ALLOY_SMOKE_DECLARED_ASSERTIONS=0
+if [ -f "$ALLOY_SMOKE_FILE" ]; then
+    ALLOY_SMOKE_DECLARED_ASSERTIONS="$(count_alloy_smoke_assertions "$ALLOY_SMOKE_FILE")"
+fi
 if [ -d "$ROOT_DIR/02_FORMAL/alloy" ]; then
     while IFS= read -r f; do
-        count=$(grep -cP "^check\s" "$f" 2>/dev/null || true)
+        count=$(grep -cP "^\s*check\s" "$f" 2>/dev/null || true)
         [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null && ALLOY_ASSERTIONS=$((ALLOY_ASSERTIONS + count))
     done < <(find "$ROOT_DIR/02_FORMAL/alloy" -name "*.als" -type f 2>/dev/null)
     ALLOY_FILES=$(find "$ROOT_DIR/02_FORMAL/alloy" -name "*.als" -type f 2>/dev/null | wc -l)
@@ -624,6 +716,8 @@ KANI_GENERATED_BACKLOG=0
 TV_GENERATED_BACKLOG=0
 TLAPLUS_SMOKE_BUILD_OK=false
 TLAPLUS_COMPILED_THEOREMS=0
+ALLOY_SMOKE_BUILD_OK=false
+ALLOY_COMPILED_ASSERTIONS=0
 
 DIM14_REPORT="$ROOT_DIR/reports/dim14_runtime_status.json"
 DIM14_FRESH=false
@@ -707,6 +801,10 @@ if [ "$NONCOQ_MECH_FRESH" = true ]; then
     TLAPLUS_SMOKE_BUILD_OK="$(jq -r '.lanes.tlaplus.smoke_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
     TLAPLUS_SMOKE_DECLARED_THEOREMS="$(jq -r '.lanes.tlaplus.smoke_declared_theorems // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
     TLAPLUS_COMPILED_THEOREMS="$(jq -r '.lanes.tlaplus.smoke_compiled_theorems // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    ALLOY_SMOKE_MODEL="$(jq -r '.lanes.alloy.smoke_model // "RIINA.Active.TelusProcurementAccessControl"' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "RIINA.Active.TelusProcurementAccessControl")"
+    ALLOY_SMOKE_BUILD_OK="$(jq -r '.lanes.alloy.smoke_build_ok // false' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "false")"
+    ALLOY_SMOKE_DECLARED_ASSERTIONS="$(jq -r '.lanes.alloy.smoke_declared_assertions // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
+    ALLOY_COMPILED_ASSERTIONS="$(jq -r '.lanes.alloy.smoke_checked_assertions // 0' "$NONCOQ_MECH_REPORT" 2>/dev/null || echo "0")"
 fi
 
 if [ "$NONCOQ_MECH_FRESH" != true ]; then
@@ -738,6 +836,13 @@ if [ "$NONCOQ_MECH_FRESH" != true ]; then
             TLAPLUS_COMPILED_THEOREMS="$TLAPLUS_SMOKE_DECLARED_THEOREMS"
         fi
         rm -rf "$TLAPLUS_META_DIR"
+    fi
+
+    if [ -f "$ALLOY_SMOKE_FILE" ] && command -v java >/dev/null 2>&1 && ALLOY_JAR_LOCAL="$(detect_alloy_jar)"; then
+        if alloy_smoke_ok "$ALLOY_JAR_LOCAL" "$ALLOY_SMOKE_FILE"; then
+            ALLOY_SMOKE_BUILD_OK=true
+            ALLOY_COMPILED_ASSERTIONS="$ALLOY_SMOKE_DECLARED_ASSERTIONS"
+        fi
     fi
 fi
 
@@ -771,7 +876,13 @@ if [ "$TLAPLUS_QUARANTINED" = true ]; then
         TLAPLUS_THEOREMS_PUBLIC=0
     fi
 fi
-[ "$ALLOY_QUARANTINED" = true ] && ALLOY_ASSERTIONS_PUBLIC=0
+if [ "$ALLOY_QUARANTINED" = true ]; then
+    if [ "$ALLOY_SMOKE_BUILD_OK" = true ] && [ "$ALLOY_COMPILED_ASSERTIONS" -gt 0 ]; then
+        ALLOY_ASSERTIONS_PUBLIC=$ALLOY_COMPILED_ASSERTIONS
+    else
+        ALLOY_ASSERTIONS_PUBLIC=0
+    fi
+fi
 [ "$SMT_QUARANTINED" = true ] && SMT_ASSERTIONS_PUBLIC=0
 [ "$VERUS_QUARANTINED" = true ] && VERUS_PROOFS_PUBLIC=0
 [ "$KANI_QUARANTINED" = true ] && KANI_HARNESSES_PUBLIC=0
@@ -797,6 +908,13 @@ if [ "$TLAPLUS_SMOKE_BUILD_OK" = true ] && [ "$TLAPLUS_COMPILED_THEOREMS" -gt 0 
     TLAPLUS_COMPILED=true
     if [ "$TLAPLUS_MECHANIZED_READY" != true ]; then
         TLAPLUS_PENDING_REASON="partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
+    fi
+fi
+
+if [ "$ALLOY_SMOKE_BUILD_OK" = true ] && [ "$ALLOY_COMPILED_ASSERTIONS" -gt 0 ]; then
+    ALLOY_COMPILED=true
+    if [ "$ALLOY_MECHANIZED_READY" != true ]; then
+        ALLOY_PENDING_REASON="partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending"
     fi
 fi
 
@@ -833,7 +951,12 @@ if [ "$TLAPLUS_QUARANTINED" = true ]; then
     TLAPLUS_COMPILED=false
   fi
 fi
-[ "$ALLOY_QUARANTINED" = true ] && CLAIM_ALLOY="generated" && ALLOY_COMPILED=false
+if [ "$ALLOY_QUARANTINED" = true ]; then
+  CLAIM_ALLOY="generated"
+  if [ "$ALLOY_SMOKE_BUILD_OK" != true ] || [ "$ALLOY_COMPILED_ASSERTIONS" -eq 0 ]; then
+    ALLOY_COMPILED=false
+  fi
+fi
 [ "$SMT_QUARANTINED" = true ] && CLAIM_SMT="generated" && SMT_COMPILED=false
 [ "$VERUS_QUARANTINED" = true ] && CLAIM_VERUS="generated" && VERUS_COMPILED=false
 [ "$KANI_QUARANTINED" = true ] && CLAIM_KANI="generated" && KANI_COMPILED=false
@@ -955,6 +1078,9 @@ cat > "$OUTPUT_FILE" << EOF
   "alloy": {
     "assertions": $ALLOY_ASSERTIONS_PUBLIC,
     "assertionsRaw": $ALLOY_ASSERTIONS,
+    "compiledAssertions": $ALLOY_COMPILED_ASSERTIONS,
+    "smokeBuildOk": $ALLOY_SMOKE_BUILD_OK,
+    "smokeModel": "$(escape_json "$ALLOY_SMOKE_MODEL")",
     "quarantined": $ALLOY_QUARANTINED,
     "files": $ALLOY_FILES,
     "prover": "Alloy 6"
@@ -1091,7 +1217,7 @@ echo "  Lean:         $LEAN_THEOREMS theorems, $LEAN_SORRY sorry, $LEAN_FILES fi
 echo "  Isabelle:     $ISABELLE_LEMMAS_PUBLIC lemmas (raw $ISABELLE_LEMMAS, compiled $ISABELLE_COMPILED_LEMMAS across $ISABELLE_COMPILED_THEORIES theories), $ISABELLE_SORRY sorry, $ISABELLE_FILES files, quarantined=$ISABELLE_QUARANTINED, smoke=$ISABELLE_SMOKE_BUILD_OK"
 echo "  F*:           $FSTAR_LEMMAS_PUBLIC lemmas (raw $FSTAR_LEMMAS, compiled $FSTAR_COMPILED_LEMMAS), $FSTAR_FILES files, quarantined=$FSTAR_QUARANTINED, smoke=$FSTAR_SMOKE_BUILD_OK"
 echo "  TLA+:         $TLAPLUS_THEOREMS_PUBLIC theorems (raw $TLAPLUS_THEOREMS, compiled $TLAPLUS_COMPILED_THEOREMS), $TLAPLUS_FILES files, quarantined=$TLAPLUS_QUARANTINED, smoke=$TLAPLUS_SMOKE_BUILD_OK"
-echo "  Alloy:        $ALLOY_ASSERTIONS_PUBLIC assertions (raw $ALLOY_ASSERTIONS), $ALLOY_FILES files, quarantined=$ALLOY_QUARANTINED"
+echo "  Alloy:        $ALLOY_ASSERTIONS_PUBLIC assertions (raw $ALLOY_ASSERTIONS, compiled $ALLOY_COMPILED_ASSERTIONS), $ALLOY_FILES files, quarantined=$ALLOY_QUARANTINED, smoke=$ALLOY_SMOKE_BUILD_OK"
 echo "  SMT:          $SMT_ASSERTIONS_PUBLIC assertions (raw $SMT_ASSERTIONS), $SMT_FILES files, quarantined=$SMT_QUARANTINED"
 echo "  Verus:        $VERUS_PROOFS_PUBLIC proofs (raw $VERUS_PROOFS), $VERUS_FILES files, quarantined=$VERUS_QUARANTINED"
 echo "  Kani:         $KANI_HARNESSES_PUBLIC harnesses (raw $KANI_HARNESSES), $KANI_FILES files, quarantined=$KANI_QUARANTINED"

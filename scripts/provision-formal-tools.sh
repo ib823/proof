@@ -112,6 +112,54 @@ install_artifact() {
   echo -e "${GREEN}[ok]${NC} installed $name -> $dest"
 }
 
+alloy_command_rows() {
+  local file="$1"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  java -cp "$ALLOY_JAR" "$class" commands "$file" 2>/dev/null \
+    | awk '/^[0-9]+[[:space:]]+\./ { print $1 ":" tolower($3) }'
+}
+
+alloy_exec_status() {
+  local file="$1"
+  local index="$2"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  local tmp_dir
+  tmp_dir="$(mktemp -d)"
+  local output
+  if ! output="$(cd "$tmp_dir" && java -cp "$ALLOY_JAR" "$class" exec -c "$index" "$file" 2>&1)"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  rm -rf "$tmp_dir"
+  printf '%s\n' "$output" \
+    | tr '\010\r' '  ' \
+    | awk '/^[0-9][0-9]*\. / { print $NF }' \
+    | tail -1
+}
+
+alloy_smoke_ok() {
+  local file="$1"
+  local row idx kind status expected
+  mapfile -t rows < <(alloy_command_rows "$file")
+  if [ "${#rows[@]}" -eq 0 ]; then
+    return 1
+  fi
+  for row in "${rows[@]}"; do
+    idx="${row%%:*}"
+    kind="${row##*:}"
+    case "$kind" in
+      run) expected="SAT" ;;
+      check) expected="UNSAT" ;;
+      *) return 1 ;;
+    esac
+    status="$(alloy_exec_status "$file" "$idx" || true)"
+    if [ "$status" != "$expected" ]; then
+      return 1
+    fi
+  done
+  return 0
+}
+
 run_smoke_checks() {
   if [ "${RIINA_FORMAL_TOOLS_SMOKE:-1}" = "0" ]; then
     echo -e "${YELLOW}[skip]${NC} smoke checks disabled (RIINA_FORMAL_TOOLS_SMOKE=0)."
@@ -125,7 +173,7 @@ run_smoke_checks() {
 
   local tla_sample="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.tla"
   local tla_cfg="$REPO_ROOT/02_FORMAL/tlaplus/RIINA/Active/TelusProcurementProtocol.cfg"
-  local alloy_sample="$REPO_ROOT/02_FORMAL/alloy/RIINA/Domains/SessionTypes.als"
+  local alloy_sample="$REPO_ROOT/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als"
 
   if [ -f "$tla_sample" ]; then
     (
@@ -152,9 +200,8 @@ run_smoke_checks() {
   fi
 
   if [ -f "$alloy_sample" ]; then
-    local alloy_class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
-    java -cp "$ALLOY_JAR" "$alloy_class" commands "$alloy_sample" >/dev/null 2>&1 || {
-      echo -e "${RED}ERROR: Alloy smoke check failed (class=$alloy_class).${NC}" >&2
+    alloy_smoke_ok "$alloy_sample" || {
+      echo -e "${RED}ERROR: Alloy smoke check failed (run/check status mismatch).${NC}" >&2
       return 1
     }
     echo -e "${GREEN}[ok]${NC} Alloy smoke check passed."

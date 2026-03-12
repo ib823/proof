@@ -27,6 +27,7 @@ const LEAN_TIMEOUT: Duration = Duration::from_secs(30 * 60); // 30 min
 const ISABELLE_TIMEOUT: Duration = Duration::from_secs(20 * 60); // 20 min
 const FSTAR_TIMEOUT: Duration = Duration::from_secs(10 * 60); // 10 min
 const TLAPLUS_TIMEOUT: Duration = Duration::from_secs(5 * 60); // 5 min
+const ALLOY_TIMEOUT: Duration = Duration::from_secs(5 * 60); // 5 min
 
 // ---------------------------------------------------------------------------
 // Mode / CheckResult / ToolStatus
@@ -305,6 +306,41 @@ fn detect_tla2tools() -> ToolStatus {
 
     ToolStatus::NotFound(
         "pinned local TLA2Tools jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh)".into(),
+    )
+}
+
+/// Detect pinned local `org.alloytools.alloy.dist.jar`:
+/// `ALLOY_JAR` → repo-local
+/// `05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar`.
+fn detect_alloy() -> ToolStatus {
+    if let Ok(jar) = std::env::var("ALLOY_JAR") {
+        let p = PathBuf::from(jar);
+        if p.exists() {
+            return ToolStatus::Found(p);
+        }
+    }
+
+    if let Ok(mut dir) = std::env::current_dir() {
+        loop {
+            let p = dir
+                .join("05_TOOLING")
+                .join("tools")
+                .join("formal")
+                .join("alloy-6.2.0")
+                .join("lib")
+                .join("app")
+                .join("org.alloytools.alloy.dist.jar");
+            if p.exists() {
+                return ToolStatus::Found(p);
+            }
+            if !dir.pop() {
+                break;
+            }
+        }
+    }
+
+    ToolStatus::NotFound(
+        "pinned local Alloy jar not found (run: bash scripts/provision-smoke-toolchains.sh or bash scripts/provision-formal-tools.sh)".into(),
     )
 }
 
@@ -685,7 +721,19 @@ fn count_tlaplus_smoke_theorems(active_file: &Path) -> u32 {
         .unwrap_or(0)
 }
 
-/// Count `assert` and `check` declarations in Alloy `.als` files.
+fn count_alloy_smoke_assertions(active_file: &Path) -> u32 {
+    fs::read_to_string(active_file)
+        .ok()
+        .map(|content| {
+            content
+                .lines()
+                .filter(|line| line.trim_start().starts_with("check "))
+                .count() as u32
+        })
+        .unwrap_or(0)
+}
+
+/// Count `check` declarations in Alloy `.als` files.
 fn count_alloy_assertions(dir: &Path) -> u32 {
     let files = glob_als_files(dir);
     let mut count = 0u32;
@@ -693,13 +741,45 @@ fn count_alloy_assertions(dir: &Path) -> u32 {
         if let Ok(content) = fs::read_to_string(&path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t.starts_with("assert ") || t.starts_with("check ") {
+                if t.starts_with("check ") {
                     count += 1;
                 }
             }
         }
     }
     count
+}
+
+fn parse_alloy_command_rows(output: &str) -> Vec<(usize, String)> {
+    output
+        .lines()
+        .filter_map(|line| {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.len() >= 3 && parts[1] == "." {
+                let idx = parts[0].parse::<usize>().ok()?;
+                Some((idx, parts[2].to_ascii_lowercase()))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn parse_alloy_exec_status(output: &str) -> Option<String> {
+    let normalized = output.replace('\u{0008}', " ").replace('\r', " ");
+    normalized
+        .lines()
+        .filter_map(|line| {
+            let trimmed = line.trim_start();
+            if !trimmed.chars().next().is_some_and(|c| c.is_ascii_digit()) {
+                return None;
+            }
+            if !trimmed.contains(". ") {
+                return None;
+            }
+            trimmed.split_whitespace().last().map(str::to_string)
+        })
+        .last()
 }
 
 /// Count `(assert ` occurrences in `.smt2` files (excluding `.tv.smt2`).
@@ -2342,6 +2422,228 @@ fn compile_tlaplus(tlaplus_dir: &Path) -> CheckResult {
     }
 }
 
+/// Parse and execute the manually maintained Alloy smoke model.
+fn compile_alloy(alloy_dir: &Path) -> CheckResult {
+    let active_file = alloy_dir
+        .join("RIINA")
+        .join("Active")
+        .join("TelusProcurementAccessControl.als");
+    if !active_file.exists() {
+        return CheckResult {
+            name: "Alloy Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: "active smoke file not found (expected RIINA/Active/TelusProcurementAccessControl.als)".into(),
+        };
+    }
+
+    let smoke_assertions = count_alloy_smoke_assertions(&active_file);
+    let java_path = match which_tool("java") {
+        Some(path) => path,
+        None => {
+            return CheckResult {
+                name: "Alloy Compilation".into(),
+                passed: false,
+                blocking: false,
+                details: "java not found (install a JRE/JDK to run Alloy)".into(),
+            };
+        }
+    };
+
+    match detect_alloy() {
+        ToolStatus::Found(alloy_jar) => {
+            eprintln!("  alloy jar found: {}", alloy_jar.display());
+            let repo_root = alloy_dir
+                .parent()
+                .and_then(|p| p.parent())
+                .unwrap_or(alloy_dir);
+            let class = "org.alloytools.alloy.core.infra.Alloy";
+            let commands_args = vec![
+                "-cp".to_string(),
+                alloy_jar.to_string_lossy().into_owned(),
+                class.to_string(),
+                "commands".to_string(),
+                active_file.to_string_lossy().into_owned(),
+            ];
+            let command_refs: Vec<&str> = commands_args.iter().map(String::as_str).collect();
+            let start = Instant::now();
+            match run_with_timeout(
+                java_path.to_str().unwrap_or("java"),
+                &command_refs,
+                repo_root,
+                ALLOY_TIMEOUT,
+            ) {
+                Ok(o) if o.status.success() => {
+                    let combined = format!(
+                        "{}\n{}",
+                        String::from_utf8_lossy(&o.stdout),
+                        String::from_utf8_lossy(&o.stderr)
+                    );
+                    let command_rows = parse_alloy_command_rows(&combined);
+                    if command_rows.is_empty() {
+                        return CheckResult {
+                            name: "Alloy Compilation".into(),
+                            passed: false,
+                            blocking: false,
+                            details: "Alloy commands listing produced no executable commands".into(),
+                        };
+                    }
+
+                    let mut saw_run = false;
+                    let mut checked_assertions = 0u32;
+                    for (idx, kind) in command_rows {
+                        let exec_dir = std::env::temp_dir().join(format!(
+                            "riina-alloy-active-verify-{}-{}-{}",
+                            std::process::id(),
+                            idx,
+                            SystemTime::now()
+                                .duration_since(SystemTime::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_millis()
+                        ));
+                        let _ = fs::create_dir_all(&exec_dir);
+                        let idx_str = idx.to_string();
+                        let exec_args = vec![
+                            "-cp".to_string(),
+                            alloy_jar.to_string_lossy().into_owned(),
+                            class.to_string(),
+                            "exec".to_string(),
+                            "-c".to_string(),
+                            idx_str,
+                            active_file.to_string_lossy().into_owned(),
+                        ];
+                        let exec_refs: Vec<&str> = exec_args.iter().map(String::as_str).collect();
+                        let exec_output = run_with_timeout(
+                            java_path.to_str().unwrap_or("java"),
+                            &exec_refs,
+                            &exec_dir,
+                            ALLOY_TIMEOUT,
+                        );
+                        let _ = fs::remove_dir_all(&exec_dir);
+                        let exec_output = match exec_output {
+                            Ok(output) => output,
+                            Err(e) => {
+                                return CheckResult {
+                                    name: "Alloy Compilation".into(),
+                                    passed: false,
+                                    blocking: false,
+                                    details: format!("failed to run Alloy command {idx}: {e}"),
+                                }
+                            }
+                        };
+                        if !exec_output.status.success() {
+                            let code = exec_output.status.code().unwrap_or(-1);
+                            let combined = format!(
+                                "{}\n{}",
+                                String::from_utf8_lossy(&exec_output.stdout),
+                                String::from_utf8_lossy(&exec_output.stderr)
+                            );
+                            let tail = last_n_lines(&combined, 10);
+                            return CheckResult {
+                                name: "Alloy Compilation".into(),
+                                passed: false,
+                                blocking: false,
+                                details: format!(
+                                    "FAILED exec command {idx} (exit {code})\n{}",
+                                    truncate_str(&tail, 500)
+                                ),
+                            };
+                        }
+
+                        let combined = format!(
+                            "{}\n{}",
+                            String::from_utf8_lossy(&exec_output.stdout),
+                            String::from_utf8_lossy(&exec_output.stderr)
+                        );
+                        let status = parse_alloy_exec_status(&combined).unwrap_or_default();
+                        let expected = match kind.as_str() {
+                            "run" => {
+                                saw_run = true;
+                                "SAT"
+                            }
+                            "check" => {
+                                checked_assertions += 1;
+                                "UNSAT"
+                            }
+                            other => {
+                                return CheckResult {
+                                    name: "Alloy Compilation".into(),
+                                    passed: false,
+                                    blocking: false,
+                                    details: format!("unsupported Alloy command kind in smoke file: {other}"),
+                                }
+                            }
+                        };
+                        if status != expected {
+                            let tail = last_n_lines(&combined, 10);
+                            return CheckResult {
+                                name: "Alloy Compilation".into(),
+                                passed: false,
+                                blocking: false,
+                                details: format!(
+                                    "command {idx} expected {expected} but got {}\n{}",
+                                    if status.is_empty() { "<missing>" } else { &status },
+                                    truncate_str(&tail, 500)
+                                ),
+                            };
+                        }
+                    }
+
+                    if !saw_run {
+                        return CheckResult {
+                            name: "Alloy Compilation".into(),
+                            passed: false,
+                            blocking: false,
+                            details: "Alloy smoke file must include at least one satisfiable run command".into(),
+                        };
+                    }
+
+                    CheckResult {
+                        name: "Alloy Compilation".into(),
+                        passed: true,
+                        blocking: false,
+                        details: format!(
+                            "Active model TelusProcurementAccessControl executed in {:.0}s ({} checked assertions, local_active)",
+                            start.elapsed().as_secs_f64(),
+                            checked_assertions.max(smoke_assertions)
+                        ),
+                    }
+                }
+                Ok(o) => {
+                    let combined = format!(
+                        "{}\n{}",
+                        String::from_utf8_lossy(&o.stdout),
+                        String::from_utf8_lossy(&o.stderr)
+                    );
+                    let tail = last_n_lines(&combined, 10);
+                    CheckResult {
+                        name: "Alloy Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "FAILED commands listing (exit {})\n{}",
+                            o.status.code().unwrap_or(-1),
+                            truncate_str(&tail, 500)
+                        ),
+                    }
+                }
+                Err(e) => CheckResult {
+                    name: "Alloy Compilation".into(),
+                    passed: false,
+                    blocking: false,
+                    details: format!("failed to run Alloy commands local_active: {e}"),
+                },
+            }
+        }
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "Alloy Compilation".into(),
+            passed: false,
+            blocking: false,
+            details: msg,
+        },
+    }
+}
+
 /// Static scan of F* `.fst` files for `admit` keyword and lemma count.
 fn scan_fstar(dir: &Path) -> Vec<CheckResult> {
     if !dir.is_dir() {
@@ -2423,7 +2725,7 @@ fn scan_tlaplus(dir: &Path) -> Vec<CheckResult> {
     }]
 }
 
-/// Static scan of Alloy `.als` files for assertion count.
+/// Static scan of Alloy `.als` files for `check` command count.
 fn scan_alloy(dir: &Path) -> Vec<CheckResult> {
     if !dir.is_dir() {
         return vec![CheckResult {
@@ -2441,7 +2743,7 @@ fn scan_alloy(dir: &Path) -> Vec<CheckResult> {
         if let Ok(content) = fs::read_to_string(path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t.starts_with("assert ") || t.starts_with("check ") {
+                if t.starts_with("check ") {
                     assertion_count += 1;
                 }
             }
@@ -2699,6 +3001,8 @@ pub fn run(mode: Mode) -> i32 {
 
         // === Alloy ===
         eprintln!("\n=== Alloy Verification ===");
+        eprintln!("Compiling Alloy smoke model...");
+        results.push(compile_alloy(&alloy_dir));
         eprintln!("Scanning Alloy files...");
         results.extend(scan_alloy(&alloy_dir));
 
@@ -2953,6 +3257,36 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
             let count = count_alloy_assertions(&dir);
             assert!(count > 100, "Expected >100 Alloy assertions, got {count}");
         }
+    }
+
+    #[test]
+    fn test_count_alloy_smoke_assertions() {
+        let file = PathBuf::from(
+            "/workspaces/proof/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als",
+        );
+        if file.exists() {
+            let count = count_alloy_smoke_assertions(&file);
+            assert!(count >= 1, "Expected >=1 Alloy smoke assertion, got {count}");
+        }
+    }
+
+    #[test]
+    fn test_parse_alloy_command_rows() {
+        let rows = parse_alloy_command_rows(
+            "0 . Run ExampleTelusProcurement for 5\n1 . Check DerivedCapabilitiesCannotAmplify for 6\n",
+        );
+        assert_eq!(
+            rows,
+            vec![(0usize, "run".to_string()), (1usize, "check".to_string())]
+        );
+    }
+
+    #[test]
+    fn test_parse_alloy_exec_status() {
+        let status = parse_alloy_exec_status(
+            "00. check Broken                   0\u{0008}\u{0008}\u{0008}\u{0008}\u{0008}    1/1     SAT\n",
+        );
+        assert_eq!(status.as_deref(), Some("SAT"));
     }
 
     #[test]

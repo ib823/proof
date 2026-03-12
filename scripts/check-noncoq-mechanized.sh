@@ -104,6 +104,67 @@ run_tla_smoke_tlc() {
   return 1
 }
 
+count_alloy_checks_in_file() {
+  local file="$1"
+  grep -cP "^\s*check\s" "$file" 2>/dev/null || true
+}
+
+alloy_command_rows() {
+  local jar="$1"
+  local file="$2"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  run_with_timeout 120 java -cp "$jar" "$class" commands "$file" 2>/dev/null \
+    | awk '/^[0-9]+[[:space:]]+\./ { print $1 ":" tolower($3) }'
+}
+
+alloy_exec_status() {
+  local jar="$1"
+  local file="$2"
+  local index="$3"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  local tmp_dir
+  tmp_dir="$(mktemp -d 2>/dev/null || mktemp -d -t riina-alloy-exec)"
+
+  local output
+  if ! output="$(cd "$tmp_dir" && run_with_timeout 180 java -cp "$jar" "$class" exec -c "$index" "$file" 2>&1)"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  rm -rf "$tmp_dir"
+
+  printf '%s\n' "$output" \
+    | tr '\010\r' '  ' \
+    | awk '/^[0-9][0-9]*\. / { print $NF }' \
+    | tail -1
+}
+
+alloy_file_exec_ok() {
+  local jar="$1"
+  local file="$2"
+  local row idx kind status expected
+
+  mapfile -t rows < <(alloy_command_rows "$jar" "$file")
+  if [ "${#rows[@]}" -eq 0 ]; then
+    return 1
+  fi
+
+  for row in "${rows[@]}"; do
+    idx="${row%%:*}"
+    kind="${row##*:}"
+    case "$kind" in
+      run) expected="SAT" ;;
+      check) expected="UNSAT" ;;
+      *) return 1 ;;
+    esac
+    status="$(alloy_exec_status "$jar" "$file" "$idx" || true)"
+    if [ "$status" != "$expected" ]; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
 tool_exists() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -412,17 +473,32 @@ fi
 # Alloy
 # ---------------------------------------------------------------------------
 ALLOY_FILES="$(count_files "$ALLOY_DIR" "*.als")"
+ALLOY_SMOKE_FILE="$ALLOY_DIR/Active/TelusProcurementAccessControl.als"
+ALLOY_SMOKE_MODEL="RIINA.Active.TelusProcurementAccessControl"
+ALLOY_SMOKE_DECLARED_ASSERTIONS=0
+ALLOY_SMOKE_CHECKED_ASSERTIONS=0
+ALLOY_SMOKE_BUILD_OK=0
+if [ -f "$ALLOY_SMOKE_FILE" ]; then
+  ALLOY_SMOKE_DECLARED_ASSERTIONS="$(count_alloy_checks_in_file "$ALLOY_SMOKE_FILE")"
+fi
 ALLOY_FULL_EXEC=0
-if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_ALLOY_JAR" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ] && [ "$ALLOY_QUARANTINED" -ne 1 ]; then
-  ALLOY_EXEC_CLASS="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
-  ALLOY_FULL_EXEC=1
-  mapfile -t ALLOY_LIST < <(find "$ALLOY_DIR" -type f -name "*.als" | sort)
-  for f in "${ALLOY_LIST[@]}"; do
-    if ! run_with_timeout 120 java -cp "$ALLOY_JAR" "$ALLOY_EXEC_CLASS" commands "$f" >/dev/null 2>&1; then
-      ALLOY_FULL_EXEC=0
-      break
+if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_ALLOY_JAR" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ]; then
+  if [ -f "$ALLOY_SMOKE_FILE" ]; then
+    if alloy_file_exec_ok "$ALLOY_JAR" "$ALLOY_SMOKE_FILE"; then
+      ALLOY_SMOKE_BUILD_OK=1
+      ALLOY_SMOKE_CHECKED_ASSERTIONS="$ALLOY_SMOKE_DECLARED_ASSERTIONS"
     fi
-  done
+  fi
+  if [ "$ALLOY_QUARANTINED" -ne 1 ]; then
+    ALLOY_FULL_EXEC=1
+    mapfile -t ALLOY_LIST < <(find "$ALLOY_DIR" -type f -name "*.als" | sort)
+    for f in "${ALLOY_LIST[@]}"; do
+      if ! alloy_file_exec_ok "$ALLOY_JAR" "$f"; then
+        ALLOY_FULL_EXEC=0
+        break
+      fi
+    done
+  fi
 fi
 ALLOY_MECHANIZED=0
 if [ "$ALLOY_QUARANTINED" -ne 1 ] && [ "$ALLOY_FULL_EXEC" -eq 1 ] && [ "$ALLOY_FILES" -gt 0 ]; then
@@ -433,6 +509,9 @@ if [ "$ALLOY_QUARANTINED" -eq 1 ]; then
   ALLOY_PENDING="quarantined generated corpus; dequarantine only after real-lane replacement"
 elif [ "$ALLOY_MECHANIZED" -ne 1 ]; then
   ALLOY_PENDING="require full-lane executable command checks across Alloy corpus"
+fi
+if [ "$ALLOY_SMOKE_BUILD_OK" -eq 1 ] && [ "$ALLOY_MECHANIZED" -ne 1 ]; then
+  ALLOY_PENDING="partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending"
 fi
 
 # ---------------------------------------------------------------------------
@@ -548,7 +627,7 @@ echo "Lean mechanized      : $LEAN_MECHANIZED (build=$LEAN_BUILD_OK sorry=$LEAN_
 echo "Isabelle mechanized  : $ISABELLE_MECHANIZED (build=$ISABELLE_BUILD_OK mode=$ISABELLE_BUILD_MODE smoke=$ISABELLE_SMOKE_BUILD_OK compiled=$ISABELLE_SMOKE_COMPILED_LEMMAS files=$ISABELLE_FILES)"
 echo "F* mechanized        : $FSTAR_MECHANIZED (exec=$FSTAR_FULL_EXEC smoke=$FSTAR_SMOKE_BUILD_OK compiled=$FSTAR_SMOKE_COMPILED_LEMMAS generated=$FSTAR_GENERATED_FILES files=$FSTAR_FILES)"
 echo "TLA+ mechanized      : $TLA_MECHANIZED (exec=$TLA_FULL_EXEC smoke=$TLA_SMOKE_BUILD_OK compiled=$TLA_SMOKE_COMPILED_THEOREMS files=$TLA_FILES)"
-echo "Alloy mechanized     : $ALLOY_MECHANIZED (exec=$ALLOY_FULL_EXEC files=$ALLOY_FILES)"
+echo "Alloy mechanized     : $ALLOY_MECHANIZED (exec=$ALLOY_FULL_EXEC files=$ALLOY_FILES smoke=$ALLOY_SMOKE_BUILD_OK checks=$ALLOY_SMOKE_CHECKED_ASSERTIONS)"
 echo "SMT mechanized       : $SMT_MECHANIZED (exec=$SMT_FULL_EXEC generated=$SMT_GENERATED_FILES files=$SMT_FILES)"
 echo "Verus mechanized     : $VERUS_MECHANIZED (exec=$VERUS_FULL_EXEC generated=$VERUS_GENERATED_FILES files=$VERUS_FILES)"
 echo "Kani mechanized      : $KANI_MECHANIZED (exec=$KANI_FULL_EXEC generated=$KANI_GENERATED_FILES harness_files=$KANI_HARNESS_FILES)"
@@ -634,6 +713,10 @@ cat > "$REPORT_PATH" <<EOF_JSON
       "full_exec_ok": $(bool_json "$ALLOY_FULL_EXEC"),
       "quarantined": $(bool_json "$ALLOY_QUARANTINED"),
       "files": $ALLOY_FILES,
+      "smoke_model": "$(escape_json "$ALLOY_SMOKE_MODEL")",
+      "smoke_build_ok": $(bool_json "$ALLOY_SMOKE_BUILD_OK"),
+      "smoke_declared_assertions": $ALLOY_SMOKE_DECLARED_ASSERTIONS,
+      "smoke_checked_assertions": $ALLOY_SMOKE_CHECKED_ASSERTIONS,
       "mechanized_ready": $(bool_json "$ALLOY_MECHANIZED"),
       "pending": "$(escape_json "$ALLOY_PENDING")"
     },

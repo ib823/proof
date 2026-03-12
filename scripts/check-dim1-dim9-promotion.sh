@@ -86,6 +86,57 @@ run_with_timeout() {
   fi
 }
 
+alloy_command_rows() {
+  local jar="$1"
+  local file="$2"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  run_with_timeout 120 java -cp "$jar" "$class" commands "$file" 2>/dev/null \
+    | awk '/^[0-9]+[[:space:]]+\./ { print $1 ":" tolower($3) }'
+}
+
+alloy_exec_status() {
+  local jar="$1"
+  local file="$2"
+  local index="$3"
+  local class="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
+  local tmp_dir
+  tmp_dir="$(mktemp -d 2>/dev/null || mktemp -d -t riina-alloy-exec)"
+  local output
+  if ! output="$(cd "$tmp_dir" && run_with_timeout 180 java -cp "$jar" "$class" exec -c "$index" "$file" 2>&1)"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  rm -rf "$tmp_dir"
+  printf '%s\n' "$output" \
+    | tr '\010\r' '  ' \
+    | awk '/^[0-9][0-9]*\. / { print $NF }' \
+    | tail -1
+}
+
+alloy_file_exec_ok() {
+  local jar="$1"
+  local file="$2"
+  local row idx kind status expected
+  mapfile -t rows < <(alloy_command_rows "$jar" "$file")
+  if [ "${#rows[@]}" -eq 0 ]; then
+    return 1
+  fi
+  for row in "${rows[@]}"; do
+    idx="${row%%:*}"
+    kind="${row##*:}"
+    case "$kind" in
+      run) expected="SAT" ;;
+      check) expected="UNSAT" ;;
+      *) return 1 ;;
+    esac
+    status="$(alloy_exec_status "$jar" "$file" "$idx" || true)"
+    if [ "$status" != "$expected" ]; then
+      return 1
+    fi
+  done
+  return 0
+}
+
 echo ""
 echo "================================================================"
 echo "  RIINA DIM1/DIM9 PROMOTION READINESS"
@@ -336,14 +387,12 @@ fi
 alloy_exec_ok=0
 alloy_exec_mode="static_only"
 if [ "$HAS_JAVA" -eq 1 ] && [ "$HAS_ALLOY_JAR" -eq 1 ]; then
-  ALLOY_EXEC_CLASS="${ALLOY_CLI_CLASS:-org.alloytools.alloy.core.infra.Alloy}"
   alloy_exec_ok=1
-  alloy_exec_mode="jar_commands"
+  alloy_exec_mode="jar_exec"
   for f in "${alloy_proto_files[@]}"; do
-    if ! run_with_timeout 90 \
-      java -cp "$ALLOY_JAR" "$ALLOY_EXEC_CLASS" commands "$f" >/dev/null 2>&1; then
+    if ! alloy_file_exec_ok "$ALLOY_JAR" "$f"; then
       alloy_exec_ok=0
-      alloy_exec_mode="jar_commands_failed"
+      alloy_exec_mode="jar_exec_failed"
       break
     fi
   done

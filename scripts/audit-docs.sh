@@ -181,6 +181,27 @@ count_tla_smoke_theorems() {
     grep -cP "^\s*THEOREM\b" "$f" 2>/dev/null || true
 }
 
+count_alloy_smoke_assertions() {
+    local f="$REPO_ROOT/02_FORMAL/alloy/RIINA/Active/TelusProcurementAccessControl.als"
+    if [ ! -f "$f" ]; then
+        echo "0"
+        return
+    fi
+    grep -cP "^\s*check\s" "$f" 2>/dev/null || true
+}
+
+count_alloy_assertions() {
+    local total=0
+    while IFS= read -r f; do
+        local count
+        count=$(grep -cP "^\s*check\s" "$f" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/alloy" -name "*.als" -type f 2>/dev/null)
+    echo "$total"
+}
+
 count_examples() {
     find "$REPO_ROOT/07_EXAMPLES" -name "*.rii" -type f 2>/dev/null | wc -l
 }
@@ -287,6 +308,8 @@ ACTUAL_FSTAR=$(count_fstar_lemmas)
 ACTUAL_FSTAR_SMOKE=$(count_fstar_smoke_lemmas)
 ACTUAL_TLAPLUS=$(count_tla_theorems)
 ACTUAL_TLAPLUS_SMOKE=$(count_tla_smoke_theorems)
+ACTUAL_ALLOY=$(count_alloy_assertions)
+ACTUAL_ALLOY_SMOKE=$(count_alloy_smoke_assertions)
 # Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
@@ -306,6 +329,7 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo "  Isabelle:      $ACTUAL_ISABELLE lemmas"
     echo "  F*:            $ACTUAL_FSTAR raw lemmas, $ACTUAL_FSTAR_SMOKE smoke lemmas"
     echo "  TLA+:          $ACTUAL_TLAPLUS raw theorems, $ACTUAL_TLAPLUS_SMOKE smoke theorems"
+    echo "  Alloy:         $ACTUAL_ALLOY raw assertions, $ACTUAL_ALLOY_SMOKE smoke assertions"
     echo "  Total proofs:  $ACTUAL_TOTAL"
     echo "  Examples:      $ACTUAL_EXAMPLES"
     echo "  Session:       $ACTUAL_SESSION"
@@ -410,12 +434,14 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     README_ISABELLE_LINE=$(grep -m1 '^\| \*\*Isabelle/HOL\*\*' "$REPO_ROOT/README.md" || true)
     README_FSTAR_LINE=$(grep -m1 'CryptographicSecurityActive' "$REPO_ROOT/README.md" || true)
     README_TLAPLUS_LINE=$(grep -m1 'TelusProcurementProtocol' "$REPO_ROOT/README.md" || true)
+    README_ALLOY_LINE=$(grep -m1 'TelusProcurementAccessControl' "$REPO_ROOT/README.md" || true)
 
     README_QED=$(extract_first_number_from_line "$README_COQ_LINE")
     README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
     README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
     README_FSTAR=$(extract_first_number_from_line "$README_FSTAR_LINE")
     README_TLAPLUS=$(extract_first_number_from_line "$README_TLAPLUS_LINE")
+    README_ALLOY=$(extract_first_number_from_line "$README_ALLOY_LINE")
 
     if [ "$README_QED" != "0" ]; then
         check_value "Qed in README.md" "$ACTUAL_QED" "$README_QED" "README.md" || true
@@ -431,6 +457,9 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     fi
     if [ "$README_TLAPLUS" != "0" ]; then
         check_value "Compiled TLA+ smoke theorems in README.md" "$ACTUAL_TLAPLUS_SMOKE" "$README_TLAPLUS" "README.md" || true
+    fi
+    if [ "$README_ALLOY" != "0" ]; then
+        check_value "Checked Alloy smoke assertions in README.md" "$ACTUAL_ALLOY_SMOKE" "$README_ALLOY" "README.md" || true
     fi
 else
     warn_check "README.md not found" "missing"
@@ -512,6 +541,11 @@ if [ -f "$METRICS_FILE" ]; then
     WEB_TLAPLUS_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['tlaplus'].get('compiledTheorems', 0))" 2>/dev/null || echo "0")
     WEB_TLAPLUS_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
     WEB_TLAPLUS_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['tlaplus'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
+    WEB_ALLOY=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy']['assertions'])" 2>/dev/null || echo "0")
+    WEB_ALLOY_RAW=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy'].get('assertionsRaw', json.load(open('$METRICS_FILE'))['alloy']['assertions']))" 2>/dev/null || echo "$WEB_ALLOY")
+    WEB_ALLOY_COMPILED=$(python3 -c "import json; print(json.load(open('$METRICS_FILE'))['alloy'].get('compiledAssertions', 0))" 2>/dev/null || echo "0")
+    WEB_ALLOY_SMOKE=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['alloy'].get('smokeBuildOk', False)).lower())" 2>/dev/null || echo "false")
+    WEB_ALLOY_QUARANTINED=$(python3 -c "import json; print(str(json.load(open('$METRICS_FILE'))['alloy'].get('quarantined', False)).lower())" 2>/dev/null || echo "false")
 
     check_value "Website Qed (metrics.json)" "$ACTUAL_QED" "$WEB_QED" "metrics.json" || true
     check_value "Website active Coq files (metrics.json)" "$ACTUAL_COQ_ACTIVE_FILES" "$WEB_COQ_ACTIVE" "metrics.json" || true
@@ -548,6 +582,17 @@ if [ -f "$METRICS_FILE" ]; then
         fi
     else
         check_value "Website TLA+ (metrics.json)" "$ACTUAL_TLAPLUS" "$WEB_TLAPLUS" "metrics.json" || true
+    fi
+    if [ "$WEB_ALLOY_QUARANTINED" = "true" ]; then
+        check_value "Website Alloy raw (metrics.json)" "$ACTUAL_ALLOY" "$WEB_ALLOY_RAW" "metrics.json" || true
+        if [ "$WEB_ALLOY_SMOKE" = "true" ]; then
+            check_value "Website Alloy partial compiled count (metrics.json)" "$ACTUAL_ALLOY_SMOKE" "$WEB_ALLOY" "metrics.json" || true
+            check_value "Website Alloy compiledAssertions (metrics.json)" "$ACTUAL_ALLOY_SMOKE" "$WEB_ALLOY_COMPILED" "metrics.json" || true
+        else
+            check_value "Website Alloy quarantined count (metrics.json)" "0" "$WEB_ALLOY" "metrics.json" || true
+        fi
+    else
+        check_value "Website Alloy (metrics.json)" "$ACTUAL_ALLOY" "$WEB_ALLOY" "metrics.json" || true
     fi
     # Session number is internal tracking — warn but don't block
     if [ "$ACTUAL_SESSION" != "$WEB_SESSION" ]; then
