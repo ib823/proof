@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-12T07:47:02Z",
-  "repo_head": "5484ac86c37dd627d07cc991a6679a0939a9c459",
+  "generated_utc": "2026-03-12T10:06:25Z",
+  "repo_head": "e6661e7e4206c671dcb45b5bdaacd49c75a971c7",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -16,10 +16,10 @@
     "fstar_local_error": "",
     "verus": false,
     "kani": false,
-    "tla2tools_jar": false,
-    "alloy_jar": false,
-    "tla2tools_path": "",
-    "alloy_path": ""
+    "tla2tools_jar": true,
+    "alloy_jar": true,
+    "tla2tools_path": "/workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar",
+    "alloy_path": "/workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
   },
   "lanes": {
     "lean": {
@@ -32,7 +32,8 @@
     },
     "isabelle": {
       "full_build_ok": false,
-      "build_mode": "isabelle_full_build_local_failed",
+      "build_mode": "quarantined_generated_corpus",
+      "quarantined": true,
       "files": 275,
       "sorry": 0,
       "smoke_session": "RIINA_CORE",
@@ -42,10 +43,11 @@
       "smoke_compiled_theories": 1,
       "smoke_compiled_lemmas": 5,
       "mechanized_ready": false,
-      "pending": "require full RIINA+RIINA_Domains build and zero sorry across Isabelle corpus"
+      "pending": "quarantined generated corpus; dequarantine only after full Isabelle replacement"
     },
     "fstar": {
       "full_exec_ok": false,
+      "quarantined": true,
       "files": 265,
       "generated_files": 7,
       "smoke_module": "RIINA.Active.CryptographicSecurityActive",
@@ -53,19 +55,26 @@
       "smoke_declared_lemmas": 3,
       "smoke_compiled_lemmas": 3,
       "mechanized_ready": false,
-      "pending": "require full Active+Domains F* compilation with zero generated placeholders"
+      "pending": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
     },
     "tlaplus": {
       "full_exec_ok": false,
-      "files": 264,
+      "quarantined": true,
+      "files": 265,
+      "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
+      "smoke_sany_ok": true,
+      "smoke_build_ok": true,
+      "smoke_declared_theorems": 5,
+      "smoke_compiled_theorems": 5,
       "mechanized_ready": false,
-      "pending": "require full-lane executable SANY checks across TLA corpus"
+      "pending": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
     },
     "alloy": {
       "full_exec_ok": false,
+      "quarantined": true,
       "files": 257,
       "mechanized_ready": false,
-      "pending": "require full-lane executable command checks across Alloy corpus"
+      "pending": "quarantined generated corpus; dequarantine only after real-lane replacement"
     },
     "smt": {
       "full_exec_ok": false,
