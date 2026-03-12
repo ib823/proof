@@ -55,6 +55,15 @@ use riina_types::{BinOp, Effect, Expr, SecurityLevel};
 use std::collections::HashMap;
 use std::rc::Rc;
 
+fn declassify_proof_matches(secret_expr: &Expr, proof_expr: &Expr) -> bool {
+    match (secret_expr, proof_expr) {
+        (Expr::Classify(secret), Expr::Prove(inner_proof)) => {
+            matches!(inner_proof.as_ref(), Expr::Classify(proof_secret) if **secret == **proof_secret)
+        }
+        _ => false,
+    }
+}
+
 /// Mutable store (heap)
 #[derive(Debug, Clone, Default)]
 pub struct Store {
@@ -104,7 +113,10 @@ impl Store {
             *v = value;
             Ok(())
         } else {
-            Err(Error::InvalidReference(format!("location {} not found", loc)))
+            Err(Error::InvalidReference(format!(
+                "location {} not found",
+                loc
+            )))
         }
     }
 }
@@ -228,25 +240,22 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
 
             // E_Var: lookup ρ x = Some v -> eval ρ σ (EVar x) σ v
-            Expr::Var(name) => {
-                env.lookup(name)
-                    .cloned()
-                    .ok_or_else(|| Error::UnboundVariable(name.clone()))
-            }
+            Expr::Var(name) => env
+                .lookup(name)
+                .cloned()
+                .ok_or_else(|| Error::UnboundVariable(name.clone())),
 
             // ═══════════════════════════════════════════════════════════════
             // FUNCTIONS (E_Lam, E_App)
             // ═══════════════════════════════════════════════════════════════
 
             // E_Lam: eval ρ σ (ELam x T e) σ (VClosure ρ x T e)
-            Expr::Lam(param, param_ty, body) => {
-                Ok(Value::Closure(Closure {
-                    env: env.clone(),
-                    param: param.clone(),
-                    param_ty: param_ty.clone(),
-                    body: Rc::new((**body).clone()),
-                }))
-            }
+            Expr::Lam(param, param_ty, body) => Ok(Value::Closure(Closure {
+                env: env.clone(),
+                param: param.clone(),
+                param_ty: param_ty.clone(),
+                body: Rc::new((**body).clone()),
+            })),
 
             // E_App: Application rule
             Expr::App(func_expr, arg_expr) => {
@@ -262,11 +271,14 @@ impl Interpreter {
                     }
                     Value::Builtin(ref name) if crate::builtins::is_higher_order_builtin(name) => {
                         self.eval_higher_order_builtin(name, arg_val)?
-                            .ok_or_else(|| Error::InvalidOperation(format!("higher-order builtin {} failed", name)))
+                            .ok_or_else(|| {
+                                Error::InvalidOperation(format!(
+                                    "higher-order builtin {} failed",
+                                    name
+                                ))
+                            })
                     }
-                    Value::Builtin(name) => {
-                        crate::builtins::apply_builtin(&name, arg_val)
-                    }
+                    Value::Builtin(name) => crate::builtins::apply_builtin(&name, arg_val),
                     // Partially-applied builtin: form pair and complete the call
                     Value::BuiltinPartial(name, first_arg) => {
                         let pair = Value::Pair(first_arg, Box::new(arg_val));
@@ -433,10 +445,9 @@ impl Interpreter {
                 // Look for a handler
                 if let Some(handler_ctx) = self.handlers.pop() {
                     // Run handler with payload
-                    let handler_env = handler_ctx.handler_env.extend(
-                        handler_ctx.handler_var.clone(),
-                        payload_val,
-                    );
+                    let handler_env = handler_ctx
+                        .handler_env
+                        .extend(handler_ctx.handler_var.clone(), payload_val);
                     let result = self.eval_with_env(&handler_env, &handler_ctx.handler)?;
                     self.handlers.push(handler_ctx);
                     Ok(result)
@@ -494,8 +505,7 @@ impl Interpreter {
                         let (val, level) = self.store.read_with_level(cell.location)?;
 
                         // Security check: don't leak high data to low context
-                        if !level.leq(self.security_context)
-                        {
+                        if !level.leq(self.security_context) {
                             return Err(Error::SecurityViolation {
                                 context_level: self.security_context,
                                 data_level: level,
@@ -555,8 +565,11 @@ impl Interpreter {
                 let secret_val = self.eval_with_env(env, secret)?;
                 let _proof_val = self.eval_with_env(env, proof)?;
 
-                // TODO: Verify proof is valid witness for declassification
-                // For now, we trust the proof exists
+                if !declassify_proof_matches(secret, proof) {
+                    return Err(Error::InvalidOperation(
+                        "invalid declassification proof".to_string(),
+                    ));
+                }
 
                 match secret_val {
                     Value::Secret(v) => Ok(*v),
@@ -600,11 +613,10 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
             // FFI CALLS — cannot be interpreted
             // ═══════════════════════════════════════════════════════════════
-            Expr::FFICall { name, .. } => {
-                Err(Error::InvalidOperation(format!(
-                    "FFI call to '{}' cannot be interpreted; use `riinac build` to compile", name
-                )))
-            }
+            Expr::FFICall { name, .. } => Err(Error::InvalidOperation(format!(
+                "FFI call to '{}' cannot be interpreted; use `riinac build` to compile",
+                name
+            ))),
 
             // ═══════════════════════════════════════════════════════════════
             // BINARY OPERATIONS (Expr::BinOp)
@@ -613,16 +625,28 @@ impl Interpreter {
                 let l = self.eval_with_env(env, lhs)?;
                 let r = self.eval_with_env(env, rhs)?;
                 match (op, &l, &r) {
-                    (BinOp::Add, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.wrapping_add(*b))),
-                    (BinOp::Add, Value::String(a), Value::String(b)) => Ok(Value::String(format!("{a}{b}"))),
-                    (BinOp::Sub, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.wrapping_sub(*b))),
-                    (BinOp::Mul, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.wrapping_mul(*b))),
+                    (BinOp::Add, Value::Int(a), Value::Int(b)) => {
+                        Ok(Value::Int(a.wrapping_add(*b)))
+                    }
+                    (BinOp::Add, Value::String(a), Value::String(b)) => {
+                        Ok(Value::String(format!("{a}{b}")))
+                    }
+                    (BinOp::Sub, Value::Int(a), Value::Int(b)) => {
+                        Ok(Value::Int(a.wrapping_sub(*b)))
+                    }
+                    (BinOp::Mul, Value::Int(a), Value::Int(b)) => {
+                        Ok(Value::Int(a.wrapping_mul(*b)))
+                    }
                     (BinOp::Div, Value::Int(a), Value::Int(b)) => {
-                        if *b == 0 { return Err(Error::DivisionByZero); }
+                        if *b == 0 {
+                            return Err(Error::DivisionByZero);
+                        }
                         Ok(Value::Int(a / b))
                     }
                     (BinOp::Mod, Value::Int(a), Value::Int(b)) => {
-                        if *b == 0 { return Err(Error::DivisionByZero); }
+                        if *b == 0 {
+                            return Err(Error::DivisionByZero);
+                        }
                         Ok(Value::Int(a % b))
                     }
                     (BinOp::Eq, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a == b)),
@@ -658,19 +682,23 @@ impl Interpreter {
                     Value::Pair(list, func) => {
                         let items = match *list {
                             Value::List(items) => items,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "list".to_string(),
-                                found: format!("{:?}", list),
-                                context: "senarai_peta".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "list".to_string(),
+                                    found: format!("{:?}", list),
+                                    context: "senarai_peta".to_string(),
+                                })
+                            }
                         };
                         let closure = match *func {
                             Value::Closure(c) => c,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "closure".to_string(),
-                                found: format!("{:?}", func),
-                                context: "senarai_peta".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "closure".to_string(),
+                                    found: format!("{:?}", func),
+                                    context: "senarai_peta".to_string(),
+                                })
+                            }
                         };
                         let mut result = Vec::with_capacity(items.len());
                         for item in items {
@@ -693,19 +721,23 @@ impl Interpreter {
                     Value::Pair(list, func) => {
                         let items = match *list {
                             Value::List(items) => items,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "list".to_string(),
-                                found: format!("{:?}", list),
-                                context: "senarai_tapis".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "list".to_string(),
+                                    found: format!("{:?}", list),
+                                    context: "senarai_tapis".to_string(),
+                                })
+                            }
                         };
                         let closure = match *func {
                             Value::Closure(c) => c,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "closure".to_string(),
-                                found: format!("{:?}", func),
-                                context: "senarai_tapis".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "closure".to_string(),
+                                    found: format!("{:?}", func),
+                                    context: "senarai_tapis".to_string(),
+                                })
+                            }
                         };
                         let mut result = Vec::new();
                         for item in items {
@@ -730,21 +762,25 @@ impl Interpreter {
                     Value::Pair(list, init_and_func) => {
                         let items = match *list {
                             Value::List(items) => items,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "list".to_string(),
-                                found: format!("{:?}", list),
-                                context: "senarai_lipat".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "list".to_string(),
+                                    found: format!("{:?}", list),
+                                    context: "senarai_lipat".to_string(),
+                                })
+                            }
                         };
                         match *init_and_func {
                             Value::Pair(init, func) => {
                                 let closure = match *func {
                                     Value::Closure(c) => c,
-                                    _ => return Err(Error::TypeMismatch {
-                                        expected: "closure".to_string(),
-                                        found: format!("{:?}", func),
-                                        context: "senarai_lipat".to_string(),
-                                    }),
+                                    _ => {
+                                        return Err(Error::TypeMismatch {
+                                            expected: "closure".to_string(),
+                                            found: format!("{:?}", func),
+                                            context: "senarai_lipat".to_string(),
+                                        })
+                                    }
                                 };
                                 let mut acc = *init;
                                 for item in items {
@@ -889,7 +925,10 @@ mod tests {
         let pair = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
         assert_eq!(
             interp.eval(&pair),
-            Ok(Value::Pair(Box::new(Value::Int(1)), Box::new(Value::Int(2))))
+            Ok(Value::Pair(
+                Box::new(Value::Int(1)),
+                Box::new(Value::Int(2))
+            ))
         );
     }
 
@@ -1034,7 +1073,10 @@ mod tests {
         let outer_let = Expr::Let("x".to_string(), Box::new(Expr::Int(1)), Box::new(inner_let));
         assert_eq!(
             interp.eval(&outer_let),
-            Ok(Value::Pair(Box::new(Value::Int(1)), Box::new(Value::Int(2))))
+            Ok(Value::Pair(
+                Box::new(Value::Int(1)),
+                Box::new(Value::Int(2))
+            ))
         );
     }
 
@@ -1100,11 +1142,25 @@ mod tests {
     #[test]
     fn test_eval_declassify() {
         let mut interp = Interpreter::new();
-        // declassify (classify 42) with (prove ())
+        // declassify (classify 42) with (prove (classify 42))
+        let classified = Expr::Classify(Box::new(Expr::Int(42)));
+        let proof = Expr::Prove(Box::new(Expr::Classify(Box::new(Expr::Int(42)))));
+        let declassify = Expr::Declassify(Box::new(classified), Box::new(proof));
+        assert_eq!(interp.eval(&declassify), Ok(Value::Int(42)));
+    }
+
+    #[test]
+    fn test_eval_declassify_rejects_invalid_proof() {
+        let mut interp = Interpreter::new();
         let classified = Expr::Classify(Box::new(Expr::Int(42)));
         let proof = Expr::Prove(Box::new(Expr::Unit));
         let declassify = Expr::Declassify(Box::new(classified), Box::new(proof));
-        assert_eq!(interp.eval(&declassify), Ok(Value::Int(42)));
+        assert_eq!(
+            interp.eval(&declassify),
+            Err(Error::InvalidOperation(
+                "invalid declassification proof".to_string(),
+            ))
+        );
     }
 
     #[test]
@@ -1136,7 +1192,10 @@ mod tests {
         // require Network in 42 (without grant)
         let require = Expr::Require(Effect::Network, Box::new(Expr::Int(42)));
         let result = interp.eval(&require);
-        assert!(matches!(result, Err(Error::MissingCapability(Effect::Network))));
+        assert!(matches!(
+            result,
+            Err(Error::MissingCapability(Effect::Network))
+        ));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -1162,7 +1221,10 @@ mod tests {
         );
         assert_eq!(
             interp.eval(&expr),
-            Ok(Value::Pair(Box::new(Value::Int(5)), Box::new(Value::Int(5))))
+            Ok(Value::Pair(
+                Box::new(Value::Int(5)),
+                Box::new(Value::Int(5))
+            ))
         );
     }
 
@@ -1236,14 +1298,8 @@ mod tests {
         // We can't directly test subtraction without the built-in,
         // so let's test nested pairs instead
         let pair_expr = Expr::Pair(
-            Box::new(Expr::Pair(
-                Box::new(Expr::Int(1)),
-                Box::new(Expr::Int(2)),
-            )),
-            Box::new(Expr::Pair(
-                Box::new(Expr::Int(3)),
-                Box::new(Expr::Int(4)),
-            )),
+            Box::new(Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)))),
+            Box::new(Expr::Pair(Box::new(Expr::Int(3)), Box::new(Expr::Int(4)))),
         );
         let result = interp.eval(&pair_expr).unwrap();
         assert!(result.is_pair());
@@ -1407,14 +1463,22 @@ mod tests {
         // let rec f : Int -> Int = λn. if n <= 0 then 1 else n * f(n-1) in f(5)
         let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
         let body = Expr::If(
-            Box::new(Expr::BinOp(BinOp::Le, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(0)))),
+            Box::new(Expr::BinOp(
+                BinOp::Le,
+                Box::new(Expr::Var("n".into())),
+                Box::new(Expr::Int(0)),
+            )),
             Box::new(Expr::Int(1)),
             Box::new(Expr::BinOp(
                 BinOp::Mul,
                 Box::new(Expr::Var("n".into())),
                 Box::new(Expr::App(
                     Box::new(Expr::Var("f".into())),
-                    Box::new(Expr::BinOp(BinOp::Sub, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(1)))),
+                    Box::new(Expr::BinOp(
+                        BinOp::Sub,
+                        Box::new(Expr::Var("n".into())),
+                        Box::new(Expr::Int(1)),
+                    )),
                 )),
             )),
         );
@@ -1423,7 +1487,10 @@ mod tests {
             "f".into(),
             fn_ty,
             Box::new(lam),
-            Box::new(Expr::App(Box::new(Expr::Var("f".into())), Box::new(Expr::Int(5)))),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("f".into())),
+                Box::new(Expr::Int(5)),
+            )),
         );
         assert_eq!(interp.eval(&letrec), Ok(Value::Int(120)));
     }
@@ -1434,11 +1501,19 @@ mod tests {
         // let rec count : Int -> Int = λn. if n <= 0 then 0 else count(n-1) in count(10)
         let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
         let body = Expr::If(
-            Box::new(Expr::BinOp(BinOp::Le, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(0)))),
+            Box::new(Expr::BinOp(
+                BinOp::Le,
+                Box::new(Expr::Var("n".into())),
+                Box::new(Expr::Int(0)),
+            )),
             Box::new(Expr::Int(0)),
             Box::new(Expr::App(
                 Box::new(Expr::Var("count".into())),
-                Box::new(Expr::BinOp(BinOp::Sub, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(1)))),
+                Box::new(Expr::BinOp(
+                    BinOp::Sub,
+                    Box::new(Expr::Var("n".into())),
+                    Box::new(Expr::Int(1)),
+                )),
             )),
         );
         let lam = Expr::Lam("n".into(), Ty::Int, Box::new(body));
@@ -1446,7 +1521,10 @@ mod tests {
             "count".into(),
             fn_ty,
             Box::new(lam),
-            Box::new(Expr::App(Box::new(Expr::Var("count".into())), Box::new(Expr::Int(10)))),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("count".into())),
+                Box::new(Expr::Int(10)),
+            )),
         );
         assert_eq!(interp.eval(&letrec), Ok(Value::Int(0)));
     }

@@ -23,6 +23,7 @@
 //!
 //! RIINA = Rigorous Immutable Invariant — Normalized Axiom
 
+use crate::frontend;
 use std::io;
 
 use riina_lsp::json::{self, JsonValue};
@@ -93,10 +94,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
             }
             "shutdown" | "exit" => {
                 if let Some(id) = id {
-                    jsonrpc::write_message(
-                        &mut writer,
-                        &jsonrpc::response(id, JsonValue::Null),
-                    )?;
+                    jsonrpc::write_message(&mut writer, &jsonrpc::response(id, JsonValue::Null))?;
                 }
                 break;
             }
@@ -119,13 +117,17 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
 fn handle_initialize() -> JsonValue {
     json::obj(vec![
         ("protocolVersion", JsonValue::String("2024-11-05".into())),
-        ("capabilities", json::obj(vec![
-            ("tools", json::obj(vec![])),
-        ])),
-        ("serverInfo", json::obj(vec![
-            ("name", JsonValue::String("riinac".into())),
-            ("version", JsonValue::String("0.1.0".into())),
-        ])),
+        (
+            "capabilities",
+            json::obj(vec![("tools", json::obj(vec![]))]),
+        ),
+        (
+            "serverInfo",
+            json::obj(vec![
+                ("name", JsonValue::String("riinac".into())),
+                ("version", JsonValue::String("0.1.0".into())),
+            ]),
+        ),
     ])
 }
 
@@ -188,7 +190,6 @@ fn handle_tools_call(params: &JsonValue) -> JsonValue {
 
 fn tool_check(source: &str) -> JsonValue {
     use riina_parser::Parser;
-    use riina_typechecker::{type_check, Context};
 
     let mut parser = Parser::new(source);
     let program = match parser.parse_program() {
@@ -201,20 +202,18 @@ fn tool_check(source: &str) -> JsonValue {
         }
     };
 
-    let expr = program.desugar();
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-
-    match type_check(&ctx, &expr) {
-        Ok((ty, eff)) => {
-            tool_text(&format!(
-                "{{\"success\":true,\"type\":\"{}\",\"effect\":\"{}\"}}",
-                json_escape_str(&format!("{ty:?}")),
-                json_escape_str(&format!("{eff:?}"))
-            ))
-        }
+    match frontend::check_program(&program) {
+        Ok((_expr, ty, eff)) => tool_text(&format!(
+            "{{\"success\":true,\"type\":\"{}\",\"effect\":\"{}\"}}",
+            json_escape_str(&format!("{ty:?}")),
+            json_escape_str(&format!("{eff:?}"))
+        )),
         Err(e) => {
             let code = e.error_code();
-            let fix = e.fix_hint().map(|h| json_escape_str(&h)).unwrap_or_default();
+            let fix = e
+                .fix_hint()
+                .map(|h| json_escape_str(&h))
+                .unwrap_or_default();
             let rule = e.coq_rule().unwrap_or("");
             tool_text(&format!(
                 "{{\"success\":false,\"error\":\"{}\",\"code\":\"{code}\",\"fix_hint\":\"{fix}\",\"rule\":\"{}\"}}",
@@ -227,7 +226,6 @@ fn tool_check(source: &str) -> JsonValue {
 
 fn tool_test(source: &str) -> JsonValue {
     use riina_parser::Parser;
-    use riina_typechecker::{type_check, Context};
 
     let mut parser = Parser::new(source);
     let program = match parser.parse_program() {
@@ -241,23 +239,26 @@ fn tool_test(source: &str) -> JsonValue {
     };
 
     // Extract tests and non-test decls
-    let test_blocks: Vec<(String, riina_types::Expr)> = program.decls.iter()
+    let test_blocks: Vec<(String, riina_types::Expr)> = program
+        .decls
+        .iter()
         .filter_map(|d| match d {
-            riina_types::TopLevelDecl::Test { name, body } =>
-                Some((name.clone(), (**body).clone())),
+            riina_types::TopLevelDecl::Test { name, body } => {
+                Some((name.clone(), (**body).clone()))
+            }
             _ => None,
         })
         .collect();
 
-    let non_test_decls: Vec<riina_types::TopLevelDecl> = program.decls.iter()
+    let non_test_decls: Vec<riina_types::TopLevelDecl> = program
+        .decls
+        .iter()
         .filter(|d| !matches!(d, riina_types::TopLevelDecl::Test { .. }))
         .cloned()
         .collect();
 
     // Typecheck the whole file first
-    let expr = program.desugar();
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    if let Err(e) = type_check(&ctx, &expr) {
+    if let Err(e) = frontend::check_program(&program) {
         return tool_text(&format!(
             "{{\"success\":false,\"error\":\"Type error: {}\"}}",
             json_escape_str(&e.to_string())
@@ -271,8 +272,8 @@ fn tool_test(source: &str) -> JsonValue {
     let mut test_results = Vec::new();
 
     for (name, body) in &test_blocks {
-        let test_expr = riina_types::Program::new(non_test_decls.clone())
-            .desugar_with_body(body.clone());
+        let test_expr =
+            riina_types::Program::new(non_test_decls.clone()).desugar_with_body(body.clone());
 
         match riina_codegen::eval_with_builtins(&test_expr) {
             Ok(_) => {
@@ -302,7 +303,6 @@ fn tool_test(source: &str) -> JsonValue {
 
 fn tool_run(source: &str) -> JsonValue {
     use riina_parser::Parser;
-    use riina_typechecker::{type_check, Context};
 
     let mut parser = Parser::new(source);
     let program = match parser.parse_program() {
@@ -312,11 +312,10 @@ fn tool_run(source: &str) -> JsonValue {
         }
     };
 
-    let expr = program.desugar();
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    if let Err(e) = type_check(&ctx, &expr) {
-        return tool_text(&format!("Type error: {e}"));
-    }
+    let (expr, _ty, _eff) = match frontend::check_program(&program) {
+        Ok(result) => result,
+        Err(e) => return tool_text(&format!("Type error: {e}")),
+    };
 
     match riina_codegen::eval_with_builtins(&expr) {
         Ok(val) => tool_text(&format!("{val:?}")),
@@ -338,10 +337,13 @@ fn tool_def(name: &str, description: &str, params: &[(&str, &str, &str)]) -> Jso
     let mut properties = Vec::new();
     let mut required = Vec::new();
     for &(pname, ptype, pdesc) in params {
-        properties.push((pname, json::obj(vec![
-            ("type", JsonValue::String(ptype.into())),
-            ("description", JsonValue::String(pdesc.into())),
-        ])));
+        properties.push((
+            pname,
+            json::obj(vec![
+                ("type", JsonValue::String(ptype.into())),
+                ("description", JsonValue::String(pdesc.into())),
+            ]),
+        ));
         required.push(JsonValue::String(pname.into()));
     }
 
@@ -353,36 +355,39 @@ fn tool_def(name: &str, description: &str, params: &[(&str, &str, &str)]) -> Jso
     json::obj(vec![
         ("name", JsonValue::String(name.into())),
         ("description", JsonValue::String(description.into())),
-        ("inputSchema", json::obj(vec![
-            ("type", JsonValue::String("object".into())),
-            ("properties", JsonValue::Object(prop_map)),
-            ("required", JsonValue::Array(required)),
-        ])),
+        (
+            "inputSchema",
+            json::obj(vec![
+                ("type", JsonValue::String("object".into())),
+                ("properties", JsonValue::Object(prop_map)),
+                ("required", JsonValue::Array(required)),
+            ]),
+        ),
     ])
 }
 
 /// Build an MCP tool result with text content.
 fn tool_text(text: &str) -> JsonValue {
-    json::obj(vec![
-        ("content", JsonValue::Array(vec![
-            json::obj(vec![
-                ("type", JsonValue::String("text".into())),
-                ("text", JsonValue::String(text.into())),
-            ]),
-        ])),
-    ])
+    json::obj(vec![(
+        "content",
+        JsonValue::Array(vec![json::obj(vec![
+            ("type", JsonValue::String("text".into())),
+            ("text", JsonValue::String(text.into())),
+        ])]),
+    )])
 }
 
 /// Build an MCP tool error result.
 fn tool_error(message: &str) -> JsonValue {
     json::obj(vec![
         ("isError", JsonValue::Bool(true)),
-        ("content", JsonValue::Array(vec![
-            json::obj(vec![
+        (
+            "content",
+            JsonValue::Array(vec![json::obj(vec![
                 ("type", JsonValue::String("text".into())),
                 ("text", JsonValue::String(message.into())),
-            ]),
-        ])),
+            ])]),
+        ),
     ])
 }
 
@@ -391,10 +396,13 @@ fn json_rpc_error(id: JsonValue, code: i64, message: &str) -> JsonValue {
     json::obj(vec![
         ("jsonrpc", JsonValue::String("2.0".into())),
         ("id", id),
-        ("error", json::obj(vec![
-            ("code", JsonValue::Number(code as f64)),
-            ("message", JsonValue::String(message.into())),
-        ])),
+        (
+            "error",
+            json::obj(vec![
+                ("code", JsonValue::Number(code as f64)),
+                ("message", JsonValue::String(message.into())),
+            ]),
+        ),
     ])
 }
 
@@ -429,7 +437,10 @@ mod tests {
             Some(&JsonValue::String("2024-11-05".into()))
         );
         let server = result.get("serverInfo").unwrap();
-        assert_eq!(server.get("name"), Some(&JsonValue::String("riinac".into())));
+        assert_eq!(
+            server.get("name"),
+            Some(&JsonValue::String("riinac".into()))
+        );
     }
 
     #[test]
@@ -438,7 +449,8 @@ mod tests {
         let tools = result.get("tools").unwrap();
         if let JsonValue::Array(arr) = tools {
             assert_eq!(arr.len(), 4);
-            let names: Vec<&str> = arr.iter()
+            let names: Vec<&str> = arr
+                .iter()
                 .filter_map(|t| t.get("name").and_then(|n| n.as_str()))
                 .collect();
             assert!(names.contains(&"riina_check"));
@@ -532,9 +544,10 @@ mod tests {
     fn test_unknown_tool_returns_error() {
         let params = json::obj(vec![
             ("name", JsonValue::String("nonexistent_tool".into())),
-            ("arguments", json::obj(vec![
-                ("source", JsonValue::String("42".into())),
-            ])),
+            (
+                "arguments",
+                json::obj(vec![("source", JsonValue::String("42".into()))]),
+            ),
         ]);
         let result = handle_tools_call(&params);
         assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
@@ -554,9 +567,10 @@ mod tests {
     fn test_empty_source_returns_error() {
         let params = json::obj(vec![
             ("name", JsonValue::String("riina_check".into())),
-            ("arguments", json::obj(vec![
-                ("source", JsonValue::String("".into())),
-            ])),
+            (
+                "arguments",
+                json::obj(vec![("source", JsonValue::String("".into()))]),
+            ),
         ]);
         let result = handle_tools_call(&params);
         assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
@@ -570,11 +584,10 @@ mod tests {
 
     #[test]
     fn test_missing_tool_name_returns_error() {
-        let params = json::obj(vec![
-            ("arguments", json::obj(vec![
-                ("source", JsonValue::String("42".into())),
-            ])),
-        ]);
+        let params = json::obj(vec![(
+            "arguments",
+            json::obj(vec![("source", JsonValue::String("42".into()))]),
+        )]);
         let result = handle_tools_call(&params);
         // Empty tool name → "Unknown tool: "
         assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
@@ -586,9 +599,10 @@ mod tests {
         let big_source = "a".repeat(MAX_SOURCE_BYTES + 1);
         let params = json::obj(vec![
             ("name", JsonValue::String("riina_check".into())),
-            ("arguments", json::obj(vec![
-                ("source", JsonValue::String(big_source)),
-            ])),
+            (
+                "arguments",
+                json::obj(vec![("source", JsonValue::String(big_source))]),
+            ),
         ]);
         let result = handle_tools_call(&params);
         assert_eq!(result.get("isError"), Some(&JsonValue::Bool(true)));
@@ -606,9 +620,10 @@ mod tests {
         let source = "a".repeat(MAX_SOURCE_BYTES);
         let params = json::obj(vec![
             ("name", JsonValue::String("riina_check".into())),
-            ("arguments", json::obj(vec![
-                ("source", JsonValue::String(source)),
-            ])),
+            (
+                "arguments",
+                json::obj(vec![("source", JsonValue::String(source))]),
+            ),
         ]);
         let result = handle_tools_call(&params);
         // Should NOT be a tool error (isError) — it's a parse error instead
@@ -663,8 +678,10 @@ mod tests {
         let content = result.get("content").unwrap();
         if let JsonValue::Array(arr) = content {
             let text = arr[0].get("text").unwrap().as_str().unwrap();
-            assert!(text.contains("error") || text.contains("Error") || text.contains("failed"),
-                "Expected error message, got: {text}");
+            assert!(
+                text.contains("error") || text.contains("Error") || text.contains("failed"),
+                "Expected error message, got: {text}"
+            );
         }
     }
 
@@ -683,7 +700,7 @@ mod tests {
     fn test_max_message_bytes_constant() {
         // Verify constants are reasonable
         assert_eq!(MAX_MESSAGE_BYTES, 1_048_576); // 1 MiB
-        assert_eq!(MAX_SOURCE_BYTES, 262_144);    // 256 KiB
+        assert_eq!(MAX_SOURCE_BYTES, 262_144); // 256 KiB
         assert!(MAX_SOURCE_BYTES < MAX_MESSAGE_BYTES);
     }
 }

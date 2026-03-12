@@ -10,6 +10,7 @@
 #![forbid(unsafe_code)]
 
 mod diagnostics;
+mod frontend;
 mod mcp;
 mod repl;
 mod verify;
@@ -20,7 +21,6 @@ use std::path::PathBuf;
 use std::process;
 
 use riina_parser::Parser;
-use riina_typechecker::{type_check, Context};
 
 #[derive(Debug)]
 enum Command {
@@ -201,7 +201,9 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
                     Some(t) => opts.target = Some(t),
                     None => {
                         eprintln!("Unknown target: {}", rest_slice[i]);
-                        eprintln!("Available targets: native, wasm32, wasm64, android-arm64, ios-arm64");
+                        eprintln!(
+                            "Available targets: native, wasm32, wasm64, android-arm64, ios-arm64"
+                        );
                         process::exit(1);
                     }
                 }
@@ -249,7 +251,13 @@ fn parse_expect_mismatch(msg: &str) -> Option<(String, String)> {
     if !msg.contains("expect mismatch") {
         return None;
     }
-    let actual = msg.split("actual:").nth(1)?.split('\n').next()?.trim().to_string();
+    let actual = msg
+        .split("actual:")
+        .nth(1)?
+        .split('\n')
+        .next()?
+        .trim()
+        .to_string();
     let expected = msg.split("expected:").nth(1)?.trim().to_string();
     if actual.is_empty() || expected.is_empty() {
         return None;
@@ -261,7 +269,11 @@ fn parse_expect_mismatch(msg: &str) -> Option<(String, String)> {
 fn format_parse_error_json(e: &riina_parser::ParseError, filename: &str) -> String {
     let code = e.kind.error_code();
     let msg = json_escape(&e.to_string());
-    let fix = e.kind.fix_hint().map(|h| json_escape(&h)).unwrap_or_default();
+    let fix = e
+        .kind
+        .fix_hint()
+        .map(|h| json_escape(&h))
+        .unwrap_or_default();
 
     format!(
         r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"{code}","message":"{msg}","file":"{fn_esc}","line":0,"column":{start},"end_column":{end},"fix_hint":"{fix}","rule":null,"related":[]}}]}}"#,
@@ -276,7 +288,10 @@ fn format_type_error_json(e: &riina_typechecker::TypeError, filename: &str) -> S
     let code = e.error_code();
     let msg = json_escape(&e.to_string());
     let fix = e.fix_hint().map(|h| json_escape(&h)).unwrap_or_default();
-    let rule = e.coq_rule().map(|r| format!("\"{}\"", json_escape(r))).unwrap_or_else(|| "null".to_string());
+    let rule = e
+        .coq_rule()
+        .map(|r| format!("\"{}\"", json_escape(r)))
+        .unwrap_or_else(|| "null".to_string());
 
     format!(
         r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"{code}","message":"{msg}","file":"{fn_esc}","line":0,"column":0,"fix_hint":"{fix}","rule":{rule},"related":[]}}]}}"#,
@@ -344,7 +359,10 @@ fn main() {
         let mut buf = String::new();
         if let Err(e) = std::io::stdin().read_to_string(&mut buf) {
             if opts.json {
-                println!(r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"I0001","message":"Failed to read stdin: {}","file":"<stdin>","line":0,"column":0,"fix_hint":"Pipe source code to stdin","rule":null,"related":[]}}]}}"#, json_escape(&e.to_string()));
+                println!(
+                    r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"I0001","message":"Failed to read stdin: {}","file":"<stdin>","line":0,"column":0,"fix_hint":"Pipe source code to stdin","rule":null,"related":[]}}]}}"#,
+                    json_escape(&e.to_string())
+                );
             } else {
                 eprintln!("Error reading stdin: {}", e);
             }
@@ -357,7 +375,11 @@ fn main() {
             Ok(s) => s,
             Err(e) => {
                 if opts.json {
-                    println!(r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"I0002","message":"Cannot read file: {}","file":"{}","line":0,"column":0,"fix_hint":"Check the file path exists","rule":null,"related":[]}}]}}"#, json_escape(&e.to_string()), json_escape(&path.display().to_string()));
+                    println!(
+                        r#"{{"success":false,"diagnostics":[{{"severity":"error","code":"I0002","message":"Cannot read file: {}","file":"{}","line":0,"column":0,"fix_hint":"Check the file path exists","rule":null,"related":[]}}]}}"#,
+                        json_escape(&e.to_string()),
+                        json_escape(&path.display().to_string())
+                    );
                 } else {
                     eprintln!("Error reading file: {}", e);
                 }
@@ -376,40 +398,41 @@ fn main() {
             if opts.json {
                 println!("{}", format_parse_error_json(&e, &filename));
             } else {
-                eprintln!("{}", diagnostics::format_diagnostic(
-                    &source, &e.span, &e.to_string(), &filename
-                ));
+                eprintln!(
+                    "{}",
+                    diagnostics::format_diagnostic(&source, &e.span, &e.to_string(), &filename)
+                );
             }
             process::exit(1);
         }
     };
 
     // Extract test blocks before desugaring (desugar() consumes the Program)
-    let test_blocks: Vec<(String, riina_types::Expr)> = program.decls.iter()
+    let test_blocks: Vec<(String, riina_types::Expr)> = program
+        .decls
+        .iter()
         .filter_map(|d| match d {
-            riina_types::TopLevelDecl::Test { name, body } =>
-                Some((name.clone(), (**body).clone())),
+            riina_types::TopLevelDecl::Test { name, body } => {
+                Some((name.clone(), (**body).clone()))
+            }
             _ => None,
         })
         .collect();
 
     // Save non-test decls for building test expressions
-    let non_test_decls: Vec<riina_types::TopLevelDecl> =
-        if matches!(command, Command::Test) {
-            program.decls.iter()
-                .filter(|d| !matches!(d, riina_types::TopLevelDecl::Test { .. }))
-                .cloned()
-                .collect()
-        } else {
-            vec![]
-        };
+    let non_test_decls: Vec<riina_types::TopLevelDecl> = if matches!(command, Command::Test) {
+        program
+            .decls
+            .iter()
+            .filter(|d| !matches!(d, riina_types::TopLevelDecl::Test { .. }))
+            .cloned()
+            .collect()
+    } else {
+        vec![]
+    };
 
-    // Desugar to expression for typecheck
-    let expr = program.desugar();
-
-    // 2. Typecheck (with builtin types registered)
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    let (ty, eff) = match type_check(&ctx, &expr) {
+    // 2. Typecheck through the shared Coq-matching frontend path.
+    let (expr, ty, eff) = match frontend::check_program(&program) {
         Ok(r) => r,
         Err(e) => {
             if opts.json {
@@ -499,7 +522,11 @@ fn main() {
                         let elapsed = start.elapsed();
                         passed += 1;
                         if !opts.json {
-                            eprintln!("ujian \"{}\" ... LULUS ({:.1}ms)", name, elapsed.as_secs_f64() * 1000.0);
+                            eprintln!(
+                                "ujian \"{}\" ... LULUS ({:.1}ms)",
+                                name,
+                                elapsed.as_secs_f64() * 1000.0
+                            );
                         }
                         results.push((name.clone(), true, elapsed, String::new()));
                     }
@@ -516,7 +543,11 @@ fn main() {
 
                         failed += 1;
                         if !opts.json {
-                            eprintln!("ujian \"{}\" ... GAGAL ({:.1}ms)", name, elapsed.as_secs_f64() * 1000.0);
+                            eprintln!(
+                                "ujian \"{}\" ... GAGAL ({:.1}ms)",
+                                name,
+                                elapsed.as_secs_f64() * 1000.0
+                            );
                             eprintln!("  {}", msg);
                         }
                         results.push((name.clone(), false, elapsed, msg));
@@ -543,25 +574,36 @@ fn main() {
                             eprintln!("Error updating file: {e}");
                         } else {
                             eprintln!();
-                            eprintln!("Updated {} jangkakan expected value(s) in {}", update_count, filename);
+                            eprintln!(
+                                "Updated {} jangkakan expected value(s) in {}",
+                                update_count, filename
+                            );
                         }
                     }
                 }
             }
 
             if opts.json {
-                let tests_json: Vec<String> = results.iter().map(|(name, pass, elapsed, msg)| {
-                    format!(
-                        r#"{{"name":"{}","passed":{},"duration_ms":{:.1},"message":"{}"}}"#,
-                        json_escape(name), pass,
-                        elapsed.as_secs_f64() * 1000.0,
-                        json_escape(msg)
-                    )
-                }).collect();
+                let tests_json: Vec<String> = results
+                    .iter()
+                    .map(|(name, pass, elapsed, msg)| {
+                        format!(
+                            r#"{{"name":"{}","passed":{},"duration_ms":{:.1},"message":"{}"}}"#,
+                            json_escape(name),
+                            pass,
+                            elapsed.as_secs_f64() * 1000.0,
+                            json_escape(msg)
+                        )
+                    })
+                    .collect();
                 println!(
                     r#"{{"success":{},"tests":[{}],"file":"{}","summary":{{"total":{},"passed":{},"failed":{}}}}}"#,
-                    failed == 0, tests_json.join(","),
-                    json_escape(&filename), total, passed, failed
+                    failed == 0,
+                    tests_json.join(","),
+                    json_escape(&filename),
+                    total,
+                    passed,
+                    failed
                 );
             } else {
                 eprintln!();
@@ -572,15 +614,13 @@ fn main() {
                 process::exit(1);
             }
         }
-        Command::Run => {
-            match riina_codegen::eval_with_builtins(&expr) {
-                Ok(val) => println!("{:?}", val),
-                Err(e) => {
-                    eprintln!("Runtime Error: {}", e);
-                    process::exit(1);
-                }
+        Command::Run => match riina_codegen::eval_with_builtins(&expr) {
+            Ok(val) => println!("{:?}", val),
+            Err(e) => {
+                eprintln!("Runtime Error: {}", e);
+                process::exit(1);
             }
-        }
+        },
         Command::EmitC => {
             let target = opts.target.unwrap_or(riina_codegen::Target::Native);
             match riina_codegen::compile(&expr) {
@@ -604,15 +644,13 @@ fn main() {
                 }
             }
         }
-        Command::EmitIR => {
-            match riina_codegen::compile(&expr) {
-                Ok(program) => println!("{:#?}", program),
-                Err(e) => {
-                    eprintln!("Codegen Error: {}", e);
-                    process::exit(1);
-                }
+        Command::EmitIR => match riina_codegen::compile(&expr) {
+            Ok(program) => println!("{:#?}", program),
+            Err(e) => {
+                eprintln!("Codegen Error: {}", e);
+                process::exit(1);
             }
-        }
+        },
         Command::Build => {
             let target = opts.target.unwrap_or(riina_codegen::Target::Native);
 
@@ -634,7 +672,8 @@ fn main() {
             };
 
             let stem = filename.strip_suffix(".rii").unwrap_or(&filename);
-            let output_dir = input_path.as_ref()
+            let output_dir = input_path
+                .as_ref()
                 .and_then(|p| p.parent())
                 .unwrap_or_else(|| std::path::Path::new("."));
 
@@ -649,7 +688,8 @@ fn main() {
 
                 let status = process::Command::new("cc")
                     .args([
-                        "-o", &output_name.to_string_lossy(),
+                        "-o",
+                        &output_name.to_string_lossy(),
                         &*tmp_c.to_string_lossy(),
                     ])
                     .status();
@@ -690,17 +730,16 @@ fn main() {
                 eprintln!("Built for target: {}", target);
             }
         }
-        Command::Fmt => {
-            match riina_fmt::format_source(&source) {
-                Ok(formatted) => print!("{formatted}"),
-                Err(e) => {
-                    eprintln!("Format error: {e}");
-                    process::exit(1);
-                }
+        Command::Fmt => match riina_fmt::format_source(&source) {
+            Ok(formatted) => print!("{formatted}"),
+            Err(e) => {
+                eprintln!("Format error: {e}");
+                process::exit(1);
             }
-        }
+        },
         Command::Doc => {
-            let title = input_path.as_ref()
+            let title = input_path
+                .as_ref()
                 .and_then(|p| p.file_stem())
                 .and_then(|s| s.to_str())
                 .unwrap_or("RIINA");

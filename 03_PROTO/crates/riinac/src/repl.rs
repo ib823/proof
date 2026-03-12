@@ -5,10 +5,10 @@
 //! Supports bilingual commands (Bahasa Melayu + English).
 //! RIINA = Rigorous Immutable Invariant — Normalized Axiom
 
-use std::io::{self, Write, BufRead};
+use std::io::{self, BufRead, Write};
 
+use crate::frontend;
 use riina_parser::Parser;
-use riina_typechecker::{type_check, Context};
 
 /// Run the REPL.
 pub fn run() {
@@ -123,8 +123,7 @@ fn eval_line(input: &str) {
         }
     };
 
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    let (ty, eff) = match type_check(&ctx, &expr) {
+    let (ty, eff) = match frontend::check_expr(&expr) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("Ralat jenis / Type error: {}", e);
@@ -152,8 +151,7 @@ fn show_type(input: &str) {
         }
     };
 
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    match type_check(&ctx, &expr) {
+    match frontend::check_expr(&expr) {
         Ok((ty, eff)) => println!("{:?} [{:?}]", ty, eff),
         Err(e) => eprintln!("Ralat jenis / Type error: {}", e),
     }

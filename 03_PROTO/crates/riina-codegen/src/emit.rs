@@ -70,8 +70,8 @@
 //! # Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST
 
 use crate::ir::{
-    AnnotatedInstr, BasicBlock, BinOp, BlockId, Constant, Function, FuncId,
-    Instruction, Program, Terminator, UnaryOp, VarId,
+    AnnotatedInstr, BasicBlock, BinOp, BlockId, Constant, FuncId, Function, Instruction, Program,
+    Terminator, UnaryOp, VarId,
 };
 use crate::Result;
 use riina_types::{Effect, SecurityLevel};
@@ -426,9 +426,13 @@ impl CEmitter {
         self.writeln("");
 
         // String concat
-        self.writeln("static riina_value_t* riina_string_concat(riina_value_t* a, riina_value_t* b) {");
+        self.writeln(
+            "static riina_value_t* riina_string_concat(riina_value_t* a, riina_value_t* b) {",
+        );
         self.writeln("    if (a->tag != RIINA_TAG_STRING || b->tag != RIINA_TAG_STRING) {");
-        self.writeln("        fprintf(stderr, \"RIINA: string_concat on non-string\\n\"); abort();");
+        self.writeln(
+            "        fprintf(stderr, \"RIINA: string_concat on non-string\\n\"); abort();",
+        );
         self.writeln("    }");
         self.writeln("    size_t len = a->data.string_val.len + b->data.string_val.len;");
         self.writeln("    riina_value_t* v = riina_alloc();");
@@ -436,7 +440,9 @@ impl CEmitter {
         self.writeln("    v->security = RIINA_LEVEL_PUBLIC;");
         self.writeln("    v->data.string_val.data = (char*)malloc(len + 1);");
         self.writeln("    if (!v->data.string_val.data) abort();");
-        self.writeln("    memcpy(v->data.string_val.data, a->data.string_val.data, a->data.string_val.len);");
+        self.writeln(
+            "    memcpy(v->data.string_val.data, a->data.string_val.data, a->data.string_val.len);",
+        );
         self.writeln("    memcpy(v->data.string_val.data + a->data.string_val.len, b->data.string_val.data, b->data.string_val.len + 1);");
         self.writeln("    v->data.string_val.len = len;");
         self.writeln("    return v;");
@@ -446,7 +452,9 @@ impl CEmitter {
         // String length
         self.writeln("static riina_value_t* riina_string_length(riina_value_t* s) {");
         self.writeln("    if (s->tag != RIINA_TAG_STRING) {");
-        self.writeln("        fprintf(stderr, \"RIINA: string_length on non-string\\n\"); abort();");
+        self.writeln(
+            "        fprintf(stderr, \"RIINA: string_length on non-string\\n\"); abort();",
+        );
         self.writeln("    }");
         self.writeln("    return riina_int((uint64_t)s->data.string_val.len);");
         self.writeln("}");
@@ -544,7 +552,9 @@ impl CEmitter {
         self.writeln("");
 
         // Reference
-        self.writeln("static riina_value_t* riina_ref(riina_value_t* init, riina_security_level_t level) {");
+        self.writeln(
+            "static riina_value_t* riina_ref(riina_value_t* init, riina_security_level_t level) {",
+        );
         self.writeln("    riina_value_t* v = riina_alloc();");
         self.writeln("    v->tag = RIINA_TAG_REF;");
         self.writeln("    v->security = level;");
@@ -592,8 +602,10 @@ impl CEmitter {
         self.writeln("");
 
         // Declassify
-        self.writeln("static riina_value_t* riina_declassify(riina_value_t* secret, riina_value_t* proof) {");
-        self.writeln("    (void)proof; /* TODO: verify proof */");
+        self.writeln(
+            "static riina_value_t* riina_declassify(riina_value_t* secret, riina_value_t* proof) {",
+        );
+        self.writeln("    (void)proof; /* proof is expected to be validated by the frontend */");
         self.writeln("    if (secret->tag == RIINA_TAG_SECRET) {");
         self.writeln("        return secret->data.wrapped_val;");
         self.writeln("    }");
@@ -697,10 +709,16 @@ impl CEmitter {
         self.writeln("    if (a->tag != b->tag) return riina_bool(false);");
         self.writeln("    switch (a->tag) {");
         self.writeln("        case RIINA_TAG_UNIT: return riina_bool(true);");
-        self.writeln("        case RIINA_TAG_BOOL: return riina_bool(a->data.bool_val == b->data.bool_val);");
-        self.writeln("        case RIINA_TAG_INT: return riina_bool(a->data.int_val == b->data.int_val);");
+        self.writeln(
+            "        case RIINA_TAG_BOOL: return riina_bool(a->data.bool_val == b->data.bool_val);",
+        );
+        self.writeln(
+            "        case RIINA_TAG_INT: return riina_bool(a->data.int_val == b->data.int_val);",
+        );
         self.writeln("        case RIINA_TAG_STRING:");
-        self.writeln("            return riina_bool(a->data.string_val.len == b->data.string_val.len &&");
+        self.writeln(
+            "            return riina_bool(a->data.string_val.len == b->data.string_val.len &&",
+        );
         self.writeln("                memcmp(a->data.string_val.data, b->data.string_val.data, a->data.string_val.len) == 0);");
         self.writeln("        default: return riina_bool(false);");
         self.writeln("    }");
@@ -804,7 +822,9 @@ impl CEmitter {
         self.writeln("static void riina_require_cap(riina_effect_t eff) {");
         self.writeln("    if (eff == RIINA_EFFECT_PURE) return; /* Pure always allowed */");
         self.writeln("    if (!(riina_ctx.capabilities & (1u << eff))) {");
-        self.writeln("        fprintf(stderr, \"RIINA: missing capability for effect %d\\n\", eff);");
+        self.writeln(
+            "        fprintf(stderr, \"RIINA: missing capability for effect %d\\n\", eff);",
+        );
         self.writeln("        abort();");
         self.writeln("    }");
         self.writeln("}");
@@ -841,7 +861,9 @@ impl CEmitter {
         self.writeln("    if (riina_handler_top > 0) riina_handler_top--;");
         self.writeln("}");
         self.writeln("");
-        self.writeln("static riina_value_t* riina_perform(riina_effect_t eff, riina_value_t* payload) {");
+        self.writeln(
+            "static riina_value_t* riina_perform(riina_effect_t eff, riina_value_t* payload) {",
+        );
         self.writeln("    riina_require_cap(eff);");
         self.writeln("    /* Search handler stack for matching handler */");
         self.writeln("    for (int i = riina_handler_top - 1; i >= 0; i--) {");
@@ -868,7 +890,9 @@ impl CEmitter {
         self.writeln("    static char buf[256];");
         self.writeln("    switch (v->tag) {");
         self.writeln("        case RIINA_TAG_UNIT: return \"()\";");
-        self.writeln("        case RIINA_TAG_BOOL: return v->data.bool_val ? \"betul\" : \"salah\";");
+        self.writeln(
+            "        case RIINA_TAG_BOOL: return v->data.bool_val ? \"betul\" : \"salah\";",
+        );
         self.writeln("        case RIINA_TAG_INT:");
         self.writeln("            snprintf(buf, sizeof(buf), \"%llu\", (unsigned long long)v->data.int_val);");
         self.writeln("            return buf;");
@@ -947,7 +971,9 @@ impl CEmitter {
         self.writeln("    switch (arg->tag) {");
         self.writeln("        case RIINA_TAG_BOOL: return arg;");
         self.writeln("        case RIINA_TAG_INT: return riina_bool(arg->data.int_val != 0);");
-        self.writeln("        case RIINA_TAG_STRING: return riina_bool(arg->data.string_val.len > 0);");
+        self.writeln(
+            "        case RIINA_TAG_STRING: return riina_bool(arg->data.string_val.len > 0);",
+        );
         self.writeln("        default: return riina_bool(false);");
         self.writeln("    }");
         self.writeln("}");
@@ -1237,7 +1263,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* sep = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* lst = arg->data.pair_val.snd;");
-        self.writeln("    if (sep->tag != RIINA_TAG_STRING || lst->tag != RIINA_TAG_LIST) abort();");
+        self.writeln(
+            "    if (sep->tag != RIINA_TAG_STRING || lst->tag != RIINA_TAG_LIST) abort();",
+        );
         self.writeln("    riina_list_t* l = RIINA_LIST_DATA(lst);");
         self.writeln("    size_t total = 0;");
         self.writeln("    for (size_t i = 0; i < l->len; i++) {");
@@ -1282,7 +1310,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* sub = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || sub->tag != RIINA_TAG_STRING) abort();");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || sub->tag != RIINA_TAG_STRING) abort();",
+        );
         self.writeln("    return riina_bool(strstr(s->data.string_val.data, sub->data.string_val.data) != NULL);");
         self.writeln("}");
         self.writeln("");
@@ -1295,9 +1325,13 @@ impl CEmitter {
         self.writeln("    if (s->tag != RIINA_TAG_STRING || p->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* from = p->data.pair_val.fst;");
         self.writeln("    riina_value_t* to = p->data.pair_val.snd;");
-        self.writeln("    if (from->tag != RIINA_TAG_STRING || to->tag != RIINA_TAG_STRING) abort();");
+        self.writeln(
+            "    if (from->tag != RIINA_TAG_STRING || to->tag != RIINA_TAG_STRING) abort();",
+        );
         self.writeln("    const char* src = s->data.string_val.data;");
-        self.writeln("    size_t flen = from->data.string_val.len, tlen = to->data.string_val.len;");
+        self.writeln(
+            "    size_t flen = from->data.string_val.len, tlen = to->data.string_val.len;",
+        );
         self.writeln("    if (flen == 0) return s;");
         self.writeln("    /* Count occurrences */");
         self.writeln("    size_t count = 0;");
@@ -1327,8 +1361,12 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* pfx = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || pfx->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    if (pfx->data.string_val.len > s->data.string_val.len) return riina_bool(false);");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || pfx->tag != RIINA_TAG_STRING) abort();",
+        );
+        self.writeln(
+            "    if (pfx->data.string_val.len > s->data.string_val.len) return riina_bool(false);",
+        );
         self.writeln("    return riina_bool(strncmp(s->data.string_val.data, pfx->data.string_val.data, pfx->data.string_val.len) == 0);");
         self.writeln("}");
         self.writeln("");
@@ -1338,8 +1376,12 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* sfx = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || sfx->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    if (sfx->data.string_val.len > s->data.string_val.len) return riina_bool(false);");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || sfx->tag != RIINA_TAG_STRING) abort();",
+        );
+        self.writeln(
+            "    if (sfx->data.string_val.len > s->data.string_val.len) return riina_bool(false);",
+        );
         self.writeln("    size_t off = s->data.string_val.len - sfx->data.string_val.len;");
         self.writeln("    return riina_bool(strcmp(s->data.string_val.data + off, sfx->data.string_val.data) == 0);");
         self.writeln("}");
@@ -1397,7 +1439,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* range = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || range->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || range->tag != RIINA_TAG_PAIR) abort();",
+        );
         self.writeln("    size_t start = (size_t)range->data.pair_val.fst->data.int_val;");
         self.writeln("    size_t end = (size_t)range->data.pair_val.snd->data.int_val;");
         self.writeln("    if (start > s->data.string_val.len) start = s->data.string_val.len;");
@@ -1419,9 +1463,15 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* sub = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || sub->tag != RIINA_TAG_STRING) abort();");
-        self.writeln("    const char* found = strstr(s->data.string_val.data, sub->data.string_val.data);");
-        self.writeln("    if (found) return riina_int((uint64_t)(found - s->data.string_val.data));");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || sub->tag != RIINA_TAG_STRING) abort();",
+        );
+        self.writeln(
+            "    const char* found = strstr(s->data.string_val.data, sub->data.string_val.data);",
+        );
+        self.writeln(
+            "    if (found) return riina_int((uint64_t)(found - s->data.string_val.data));",
+        );
         self.writeln("    return riina_int(UINT64_MAX);");
         self.writeln("}");
         self.writeln("");
@@ -1446,7 +1496,9 @@ impl CEmitter {
         self.writeln("    if (lst->tag != RIINA_TAG_LIST) abort();");
         self.writeln("    riina_list_t* old = RIINA_LIST_DATA(lst);");
         self.writeln("    riina_list_t nl = riina_list_new();");
-        self.writeln("    for (size_t i = 0; i < old->len; i++) riina_list_push(&nl, old->items[i]);");
+        self.writeln(
+            "    for (size_t i = 0; i < old->len; i++) riina_list_push(&nl, old->items[i]);",
+        );
         self.writeln("    riina_list_push(&nl, val);");
         self.writeln("    return riina_make_list(nl);");
         self.writeln("}");
@@ -1477,7 +1529,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_LIST) abort();");
         self.writeln("    riina_list_t* old = RIINA_LIST_DATA(arg);");
         self.writeln("    riina_list_t nl = riina_list_new();");
-        self.writeln("    for (size_t i = old->len; i > 0; i--) riina_list_push(&nl, old->items[i-1]);");
+        self.writeln(
+            "    for (size_t i = old->len; i > 0; i--) riina_list_push(&nl, old->items[i-1]);",
+        );
         self.writeln("    return riina_make_list(nl);");
         self.writeln("}");
         self.writeln("");
@@ -1498,7 +1552,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_LIST) abort();");
         self.writeln("    riina_list_t* old = RIINA_LIST_DATA(arg);");
         self.writeln("    riina_list_t nl = riina_list_new();");
-        self.writeln("    for (size_t i = 0; i < old->len; i++) riina_list_push(&nl, old->items[i]);");
+        self.writeln(
+            "    for (size_t i = 0; i < old->len; i++) riina_list_push(&nl, old->items[i]);",
+        );
         self.writeln("    if (nl.len > 1) qsort(nl.items, nl.len, sizeof(riina_value_t*), riina_cmp_values);");
         self.writeln("    return riina_make_list(nl);");
         self.writeln("}");
@@ -1509,7 +1565,9 @@ impl CEmitter {
         self.writeln("    return riina_binop_eq(a, b)->data.bool_val;");
         self.writeln("}");
         self.writeln("");
-        self.writeln("static riina_value_t* riina_builtin_senarai_mengandungi(riina_value_t* arg) {");
+        self.writeln(
+            "static riina_value_t* riina_builtin_senarai_mengandungi(riina_value_t* arg) {",
+        );
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* lst = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* val = arg->data.pair_val.snd;");
@@ -1541,7 +1599,9 @@ impl CEmitter {
         self.writeln("static riina_value_t* riina_builtin_senarai_kepala(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_LIST) abort();");
         self.writeln("    riina_list_t* l = RIINA_LIST_DATA(arg);");
-        self.writeln("    if (l->len == 0) { fprintf(stderr, \"RIINA: head of empty list\\n\"); abort(); }");
+        self.writeln(
+            "    if (l->len == 0) { fprintf(stderr, \"RIINA: head of empty list\\n\"); abort(); }",
+        );
         self.writeln("    return l->items[0];");
         self.writeln("}");
         self.writeln("");
@@ -1550,7 +1610,9 @@ impl CEmitter {
         self.writeln("static riina_value_t* riina_builtin_senarai_ekor(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_LIST) abort();");
         self.writeln("    riina_list_t* l = RIINA_LIST_DATA(arg);");
-        self.writeln("    if (l->len == 0) { fprintf(stderr, \"RIINA: tail of empty list\\n\"); abort(); }");
+        self.writeln(
+            "    if (l->len == 0) { fprintf(stderr, \"RIINA: tail of empty list\\n\"); abort(); }",
+        );
         self.writeln("    riina_list_t nl = riina_list_new();");
         self.writeln("    for (size_t i = 1; i < l->len; i++) riina_list_push(&nl, l->items[i]);");
         self.writeln("    return riina_make_list(nl);");
@@ -1644,7 +1706,9 @@ impl CEmitter {
         self.writeln("    if (mv->tag != RIINA_TAG_MAP || key->tag != RIINA_TAG_STRING) abort();");
         self.writeln("    riina_map_t* m = RIINA_MAP_DATA(mv);");
         self.writeln("    for (riina_map_entry_t* e = m->head; e; e = e->next) {");
-        self.writeln("        if (strcmp(e->key, key->data.string_val.data) == 0) return e->value;");
+        self.writeln(
+            "        if (strcmp(e->key, key->data.string_val.data) == 0) return e->value;",
+        );
         self.writeln("    }");
         self.writeln("    fprintf(stderr, \"RIINA: key not found in map\\n\"); abort();");
         self.writeln("    return NULL;");
@@ -1664,7 +1728,9 @@ impl CEmitter {
         self.writeln("        if (strcmp(e->key, key->data.string_val.data) != 0) {");
         self.writeln("            riina_map_entry_t* ne = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
         self.writeln("            if (!ne) abort();");
-        self.writeln("            ne->key = strdup(e->key); ne->value = e->value; ne->next = NULL;");
+        self.writeln(
+            "            ne->key = strdup(e->key); ne->value = e->value; ne->next = NULL;",
+        );
         self.writeln("            *tail = ne; tail = &ne->next;");
         self.writeln("            nm.len++;");
         self.writeln("        }");
@@ -1701,7 +1767,9 @@ impl CEmitter {
         self.writeln("    if (mv->tag != RIINA_TAG_MAP || key->tag != RIINA_TAG_STRING) abort();");
         self.writeln("    riina_map_t* m = RIINA_MAP_DATA(mv);");
         self.writeln("    for (riina_map_entry_t* e = m->head; e; e = e->next) {");
-        self.writeln("        if (strcmp(e->key, key->data.string_val.data) == 0) return riina_bool(true);");
+        self.writeln(
+            "        if (strcmp(e->key, key->data.string_val.data) == 0) return riina_bool(true);",
+        );
         self.writeln("    }");
         self.writeln("    return riina_bool(false);");
         self.writeln("}");
@@ -1738,7 +1806,9 @@ impl CEmitter {
         self.writeln("        if (riina_values_equal(old->items[i], val)) return lst;");
         self.writeln("    }");
         self.writeln("    riina_list_t nl = riina_list_new();");
-        self.writeln("    for (size_t i = 0; i < old->len; i++) riina_list_push(&nl, old->items[i]);");
+        self.writeln(
+            "    for (size_t i = 0; i < old->len; i++) riina_list_push(&nl, old->items[i]);",
+        );
         self.writeln("    riina_list_push(&nl, val);");
         self.writeln("    return riina_make_list(nl);");
         self.writeln("}");
@@ -1832,7 +1902,9 @@ impl CEmitter {
         self.writeln("    (void)arg;");
         self.writeln("    struct timespec ts;");
         self.writeln("    clock_gettime(CLOCK_REALTIME, &ts);");
-        self.writeln("    return riina_int((uint64_t)ts.tv_sec * 1000 + (uint64_t)ts.tv_nsec / 1000000);");
+        self.writeln(
+            "    return riina_int((uint64_t)ts.tv_sec * 1000 + (uint64_t)ts.tv_nsec / 1000000);",
+        );
         self.writeln("}");
         self.writeln("");
 
@@ -1855,7 +1927,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* fmt = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || fmt->tag != RIINA_TAG_STRING) abort();");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || fmt->tag != RIINA_TAG_STRING) abort();",
+        );
         self.writeln("    struct tm tm_s = {0};");
         self.writeln("    strptime(s->data.string_val.data, fmt->data.string_val.data, &tm_s);");
         self.writeln("    return riina_int((uint64_t)mktime(&tm_s));");
@@ -1878,7 +1952,9 @@ impl CEmitter {
         self.writeln("    (void)arg;");
         self.writeln("    struct timespec ts;");
         self.writeln("    clock_gettime(CLOCK_MONOTONIC, &ts);");
-        self.writeln("    return riina_int((uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec);");
+        self.writeln(
+            "    return riina_int((uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec);",
+        );
         self.writeln("}");
         self.writeln("");
 
@@ -1915,10 +1991,14 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* path = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* content = arg->data.pair_val.snd;");
-        self.writeln("    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();");
+        self.writeln(
+            "    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();",
+        );
         self.writeln("    FILE* f = fopen(path->data.string_val.data, \"w\");");
         self.writeln("    if (!f) { fprintf(stderr, \"RIINA: cannot write file '%s'\\n\", path->data.string_val.data); abort(); }");
-        self.writeln("    fwrite(content->data.string_val.data, 1, content->data.string_val.len, f);");
+        self.writeln(
+            "    fwrite(content->data.string_val.data, 1, content->data.string_val.len, f);",
+        );
         self.writeln("    fclose(f);");
         self.writeln("    return riina_unit();");
         self.writeln("}");
@@ -1929,10 +2009,14 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* path = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* content = arg->data.pair_val.snd;");
-        self.writeln("    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();");
+        self.writeln(
+            "    if (path->tag != RIINA_TAG_STRING || content->tag != RIINA_TAG_STRING) abort();",
+        );
         self.writeln("    FILE* f = fopen(path->data.string_val.data, \"a\");");
         self.writeln("    if (!f) { fprintf(stderr, \"RIINA: cannot append file '%s'\\n\", path->data.string_val.data); abort(); }");
-        self.writeln("    fwrite(content->data.string_val.data, 1, content->data.string_val.len, f);");
+        self.writeln(
+            "    fwrite(content->data.string_val.data, 1, content->data.string_val.len, f);",
+        );
         self.writeln("    fclose(f);");
         self.writeln("    return riina_unit();");
         self.writeln("}");
@@ -2005,7 +2089,9 @@ impl CEmitter {
 
         // Skip whitespace helper
         self.writeln("static void riina_json_skip_ws(const char** p) {");
-        self.writeln("    while (**p == ' ' || **p == '\\t' || **p == '\\n' || **p == '\\r') (*p)++;");
+        self.writeln(
+            "    while (**p == ' ' || **p == '\\t' || **p == '\\n' || **p == '\\r') (*p)++;",
+        );
         self.writeln("}");
         self.writeln("");
 
@@ -2068,7 +2154,9 @@ impl CEmitter {
         self.writeln("        riina_json_skip_ws(p);");
         self.writeln("        if (**p == ':') (*p)++;");
         self.writeln("        riina_value_t* val = riina_json_parse_value(p);");
-        self.writeln("        riina_map_entry_t* e = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));");
+        self.writeln(
+            "        riina_map_entry_t* e = (riina_map_entry_t*)malloc(sizeof(riina_map_entry_t));",
+        );
         self.writeln("        if (!e) abort();");
         self.writeln("        e->key = strdup(key->data.string_val.data);");
         self.writeln("        e->value = val;");
@@ -2139,7 +2227,9 @@ impl CEmitter {
         self.writeln("    switch (v->tag) {");
         self.writeln("        case RIINA_TAG_UNIT: riina_json_buf_append(buf, len, cap, \"null\", 4); break;");
         self.writeln("        case RIINA_TAG_BOOL:");
-        self.writeln("            if (v->data.bool_val) riina_json_buf_append(buf, len, cap, \"true\", 4);");
+        self.writeln(
+            "            if (v->data.bool_val) riina_json_buf_append(buf, len, cap, \"true\", 4);",
+        );
         self.writeln("            else riina_json_buf_append(buf, len, cap, \"false\", 5);");
         self.writeln("            break;");
         self.writeln("        case RIINA_TAG_INT: {");
@@ -2151,7 +2241,9 @@ impl CEmitter {
         self.writeln("            riina_json_buf_append(buf, len, cap, \"\\\"\", 1);");
         self.writeln("            for (size_t i = 0; i < v->data.string_val.len; i++) {");
         self.writeln("                char c = v->data.string_val.data[i];");
-        self.writeln("                if (c == '\"') riina_json_buf_append(buf, len, cap, \"\\\\\\\"\", 2);");
+        self.writeln(
+            "                if (c == '\"') riina_json_buf_append(buf, len, cap, \"\\\\\\\"\", 2);",
+        );
         self.writeln("                else if (c == '\\\\') riina_json_buf_append(buf, len, cap, \"\\\\\\\\\", 2);");
         self.writeln("                else if (c == '\\n') riina_json_buf_append(buf, len, cap, \"\\\\n\", 2);");
         self.writeln("                else if (c == '\\r') riina_json_buf_append(buf, len, cap, \"\\\\r\", 2);");
@@ -2176,9 +2268,13 @@ impl CEmitter {
         self.writeln("            riina_json_buf_append(buf, len, cap, \"{\", 1);");
         self.writeln("            size_t idx = 0;");
         self.writeln("            for (riina_map_entry_t* e = m->head; e; e = e->next, idx++) {");
-        self.writeln("                if (idx > 0) riina_json_buf_append(buf, len, cap, \",\", 1);");
+        self.writeln(
+            "                if (idx > 0) riina_json_buf_append(buf, len, cap, \",\", 1);",
+        );
         self.writeln("                riina_json_buf_append(buf, len, cap, \"\\\"\", 1);");
-        self.writeln("                riina_json_buf_append(buf, len, cap, e->key, strlen(e->key));");
+        self.writeln(
+            "                riina_json_buf_append(buf, len, cap, e->key, strlen(e->key));",
+        );
         self.writeln("                riina_json_buf_append(buf, len, cap, \"\\\":\", 2);");
         self.writeln("                riina_json_stringify_impl(e->value, buf, len, cap);");
         self.writeln("            }");
@@ -2248,7 +2344,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* params = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || params->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || params->tag != RIINA_TAG_PAIR) abort();",
+        );
         self.writeln("    size_t width = (size_t)params->data.pair_val.fst->data.int_val;");
         self.writeln("    char pc = params->data.pair_val.snd->data.string_val.data[0];");
         self.writeln("    size_t slen = s->data.string_val.len;");
@@ -2270,7 +2368,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* s = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* params = arg->data.pair_val.snd;");
-        self.writeln("    if (s->tag != RIINA_TAG_STRING || params->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln(
+            "    if (s->tag != RIINA_TAG_STRING || params->tag != RIINA_TAG_PAIR) abort();",
+        );
         self.writeln("    size_t width = (size_t)params->data.pair_val.fst->data.int_val;");
         self.writeln("    char pc = params->data.pair_val.snd->data.string_val.data[0];");
         self.writeln("    size_t slen = s->data.string_val.len;");
@@ -2356,7 +2456,9 @@ impl CEmitter {
         self.writeln("    if (arg->tag != RIINA_TAG_PAIR) abort();");
         self.writeln("    riina_value_t* lst = arg->data.pair_val.fst;");
         self.writeln("    riina_value_t* range = arg->data.pair_val.snd;");
-        self.writeln("    if (lst->tag != RIINA_TAG_LIST || range->tag != RIINA_TAG_PAIR) abort();");
+        self.writeln(
+            "    if (lst->tag != RIINA_TAG_LIST || range->tag != RIINA_TAG_PAIR) abort();",
+        );
         self.writeln("    riina_list_t* l = RIINA_LIST_DATA(lst);");
         self.writeln("    size_t start = (size_t)range->data.pair_val.fst->data.int_val;");
         self.writeln("    size_t end = (size_t)range->data.pair_val.snd->data.int_val;");
@@ -2383,7 +2485,9 @@ impl CEmitter {
         self.writeln("static riina_value_t* riina_builtin_log2(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_INT) abort();");
         self.writeln("    uint64_t n = arg->data.int_val;");
-        self.writeln("    if (n == 0) { fprintf(stderr, \"RIINA: log2(0) undefined\\n\"); abort(); }");
+        self.writeln(
+            "    if (n == 0) { fprintf(stderr, \"RIINA: log2(0) undefined\\n\"); abort(); }",
+        );
         self.writeln("    uint64_t r = 0;");
         self.writeln("    while (n > 1) { n >>= 1; r++; }");
         self.writeln("    return riina_int(r);");
@@ -2393,7 +2497,9 @@ impl CEmitter {
         // rawak (random): Int -> Int (0..n)
         self.writeln("static riina_value_t* riina_builtin_rawak(riina_value_t* arg) {");
         self.writeln("    if (arg->tag != RIINA_TAG_INT || arg->data.int_val == 0) {");
-        self.writeln("        fprintf(stderr, \"RIINA: random requires positive int\\n\"); abort();");
+        self.writeln(
+            "        fprintf(stderr, \"RIINA: random requires positive int\\n\"); abort();",
+        );
         self.writeln("    }");
         self.writeln("    static uint64_t seed = 0;");
         self.writeln("    if (seed == 0) {");
@@ -2499,22 +2605,14 @@ impl CEmitter {
                 ));
             }
             let param_var = VarId::new(func.captures.len() as u32);
-            self.writeln(&format!(
-                "{} = {};",
-                self.var_name(&param_var),
-                func.param
-            ));
+            self.writeln(&format!("{} = {};", self.var_name(&param_var), func.param));
             self.writeln("");
         } else {
             // For non-capture functions, bind parameter to VarId(0)
             // (the lowerer allocates VarId(0) for the parameter)
             let param_var = VarId::new(0);
             if self.declared_vars.contains(&param_var) {
-                self.writeln(&format!(
-                    "{} = {};",
-                    self.var_name(&param_var),
-                    func.param
-                ));
+                self.writeln(&format!("{} = {};", self.var_name(&param_var), func.param));
                 self.writeln("");
             }
         }
@@ -2552,14 +2650,24 @@ impl CEmitter {
                 vars.insert(instr.result);
                 // Also collect operand VarIds (for captures/params referenced)
                 match &instr.instr {
-                    Instruction::Copy(v) | Instruction::Fst(v) | Instruction::Snd(v)
-                    | Instruction::IsLeft(v) | Instruction::UnwrapLeft(v) | Instruction::UnwrapRight(v)
-                    | Instruction::Load(v) | Instruction::Classify(v) | Instruction::Prove(v)
-                    | Instruction::UnaryOp(_, v) | Instruction::Inl(v) | Instruction::Inr(v) => {
+                    Instruction::Copy(v)
+                    | Instruction::Fst(v)
+                    | Instruction::Snd(v)
+                    | Instruction::IsLeft(v)
+                    | Instruction::UnwrapLeft(v)
+                    | Instruction::UnwrapRight(v)
+                    | Instruction::Load(v)
+                    | Instruction::Classify(v)
+                    | Instruction::Prove(v)
+                    | Instruction::UnaryOp(_, v)
+                    | Instruction::Inl(v)
+                    | Instruction::Inr(v) => {
                         vars.insert(*v);
                     }
-                    Instruction::BinOp(_, a, b) | Instruction::Pair(a, b)
-                    | Instruction::Store(a, b) | Instruction::Declassify(a, b)
+                    Instruction::BinOp(_, a, b)
+                    | Instruction::Pair(a, b)
+                    | Instruction::Store(a, b)
+                    | Instruction::Declassify(a, b)
                     | Instruction::Call(a, b) => {
                         vars.insert(*a);
                         vars.insert(*b);
@@ -2591,7 +2699,9 @@ impl CEmitter {
                     Instruction::FixClosure { closure, .. } => {
                         vars.insert(*closure);
                     }
-                    Instruction::Const(_) | Instruction::RequireCap(_) | Instruction::GrantCap(_) => {}
+                    Instruction::Const(_)
+                    | Instruction::RequireCap(_)
+                    | Instruction::GrantCap(_) => {}
                 }
             }
         }
@@ -2629,7 +2739,6 @@ impl CEmitter {
         Ok(())
     }
 
-
     /// Emit a single instruction
     fn emit_instruction(&mut self, instr: &AnnotatedInstr) -> Result<()> {
         let result = self.var_name(&instr.result);
@@ -2638,7 +2747,9 @@ impl CEmitter {
             Instruction::Const(c) => {
                 let val = match c {
                     Constant::Unit => "riina_unit()".to_string(),
-                    Constant::Bool(b) => format!("riina_bool({})", if *b { "true" } else { "false" }),
+                    Constant::Bool(b) => {
+                        format!("riina_bool({})", if *b { "true" } else { "false" })
+                    }
                     Constant::Int(n) => format!("riina_int({n}ULL)"),
                     Constant::String(s) => format!("riina_string(\"{}\")", self.escape_string(s)),
                 };
@@ -2684,25 +2795,15 @@ impl CEmitter {
                 // Closure emission: captures array allocated and populated.
                 // Single-arg calling convention; multi-arg via currying.
                 if captures.is_empty() {
-                    self.writeln(&format!(
-                        "{result} = riina_alloc();",
-                    ));
-                    self.writeln(&format!(
-                        "{result}->tag = RIINA_TAG_CLOSURE;",
-                    ));
-                    self.writeln(&format!(
-                        "{result}->security = RIINA_LEVEL_PUBLIC;",
-                    ));
+                    self.writeln(&format!("{result} = riina_alloc();",));
+                    self.writeln(&format!("{result}->tag = RIINA_TAG_CLOSURE;",));
+                    self.writeln(&format!("{result}->security = RIINA_LEVEL_PUBLIC;",));
                     self.writeln(&format!(
                         "{result}->data.closure_val.func_ptr = (void*){};",
                         self.func_name(func)
                     ));
-                    self.writeln(&format!(
-                        "{result}->data.closure_val.captures = NULL;",
-                    ));
-                    self.writeln(&format!(
-                        "{result}->data.closure_val.num_captures = 0;",
-                    ));
+                    self.writeln(&format!("{result}->data.closure_val.captures = NULL;",));
+                    self.writeln(&format!("{result}->data.closure_val.num_captures = 0;",));
                 } else {
                     self.writeln(&format!("{result} = riina_alloc();"));
                     self.writeln(&format!("{result}->tag = RIINA_TAG_CLOSURE;"));
@@ -2722,13 +2823,17 @@ impl CEmitter {
                     for (i, cap) in captures.iter().enumerate() {
                         self.writeln(&format!(
                             "{result}->data.closure_val.captures[{}] = {};",
-                            i, self.var_name(cap)
+                            i,
+                            self.var_name(cap)
                         ));
                     }
                 }
             }
 
-            Instruction::FixClosure { closure, capture_index } => {
+            Instruction::FixClosure {
+                closure,
+                capture_index,
+            } => {
                 // Patch a closure's capture to point to itself (recursive closure).
                 let closure_name = self.var_name(closure);
                 self.writeln(&format!(
@@ -2798,11 +2903,17 @@ impl CEmitter {
             }
 
             Instruction::UnwrapLeft(sum) => {
-                self.writeln(&format!("{result} = riina_unwrap_left({});", self.var_name(sum)));
+                self.writeln(&format!(
+                    "{result} = riina_unwrap_left({});",
+                    self.var_name(sum)
+                ));
             }
 
             Instruction::UnwrapRight(sum) => {
-                self.writeln(&format!("{result} = riina_unwrap_right({});", self.var_name(sum)));
+                self.writeln(&format!(
+                    "{result} = riina_unwrap_right({});",
+                    self.var_name(sum)
+                ));
             }
 
             Instruction::Alloc { init, level } => {
@@ -2814,7 +2925,10 @@ impl CEmitter {
             }
 
             Instruction::Load(ref_var) => {
-                self.writeln(&format!("{result} = riina_load({});", self.var_name(ref_var)));
+                self.writeln(&format!(
+                    "{result} = riina_load({});",
+                    self.var_name(ref_var)
+                ));
             }
 
             Instruction::Store(ref_var, val) => {
@@ -2826,7 +2940,10 @@ impl CEmitter {
             }
 
             Instruction::Classify(val) => {
-                self.writeln(&format!("{result} = riina_classify({});", self.var_name(val)));
+                self.writeln(&format!(
+                    "{result} = riina_classify({});",
+                    self.var_name(val)
+                ));
             }
 
             Instruction::Declassify(secret, proof) => {
@@ -2869,7 +2986,10 @@ impl CEmitter {
             }
 
             Instruction::FFICall { name, args } => {
-                let arg_strs: Vec<String> = args.iter().map(|a| format!("{}.int_val", self.var_name(a))).collect();
+                let arg_strs: Vec<String> = args
+                    .iter()
+                    .map(|a| format!("{}.int_val", self.var_name(a)))
+                    .collect();
                 self.writeln(&format!(
                     "{result} = riina_int((int64_t){name}({args}));",
                     result = result,
@@ -2886,7 +3006,9 @@ impl CEmitter {
                 //
                 // However, as a safety net for blocks with no predecessor assignment,
                 // initialize to unit (dead code in well-formed IR).
-                self.writeln(&format!("{result} = {result}; /* phi: assigned by predecessors */"));
+                self.writeln(&format!(
+                    "{result} = {result}; /* phi: assigned by predecessors */"
+                ));
             }
         }
 
@@ -2929,13 +3051,19 @@ impl CEmitter {
                 self.writeln(&format!("goto {};", self.block_name(target)));
             }
 
-            Terminator::CondBranch { cond, then_block, else_block } => {
+            Terminator::CondBranch {
+                cond,
+                then_block,
+                else_block,
+            } => {
                 // Emit phi copies for both branches using an if/else to select
                 // which copies to perform before jumping.
-                let has_then_phis = phi_map.get(then_block)
+                let has_then_phis = phi_map
+                    .get(then_block)
                     .and_then(|m| m.get(current_block))
                     .is_some_and(|v| !v.is_empty());
-                let has_else_phis = phi_map.get(else_block)
+                let has_else_phis = phi_map
+                    .get(else_block)
                     .and_then(|m| m.get(current_block))
                     .is_some_and(|v| !v.is_empty());
 
@@ -2961,12 +3089,15 @@ impl CEmitter {
                 }
             }
 
-            Terminator::Handle { body_block, handler_block, resume_var, result_block } => {
+            Terminator::Handle {
+                body_block,
+                handler_block,
+                resume_var,
+                result_block,
+            } => {
                 // Push handler frame, setjmp for non-local return from perform
                 self.writeln("riina_push_handler(RIINA_EFFECT_PURE); /* handler frame */");
-                self.writeln(
-                    "if (setjmp(riina_handler_stack[riina_handler_top - 1].env) == 0) {"
-                );
+                self.writeln("if (setjmp(riina_handler_stack[riina_handler_top - 1].env) == 0) {");
                 self.indent();
                 // Normal path: execute body
                 self.emit_phi_copies(current_block, body_block, phi_map);
@@ -2995,7 +3126,6 @@ impl CEmitter {
 
         Ok(())
     }
-
 
     /// Emit main wrapper function
     fn emit_main_wrapper(&mut self, program: &Program) -> Result<()> {
@@ -3141,7 +3271,7 @@ pub fn emit_c(program: &Program) -> Result<String> {
 mod tests {
     use super::*;
     use crate::lower::Lower;
-    use riina_types::{Expr, Ty, Effect, SecurityLevel};
+    use riina_types::{Effect, Expr, SecurityLevel, Ty};
 
     fn compile_and_emit(expr: &Expr) -> Result<String> {
         let mut lower = Lower::new();
@@ -3347,7 +3477,10 @@ mod tests {
 
     #[test]
     fn test_emit_deref() {
-        let deref = Expr::Deref(Box::new(Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Public)));
+        let deref = Expr::Deref(Box::new(Expr::Ref(
+            Box::new(Expr::Int(42)),
+            SecurityLevel::Public,
+        )));
         let code = compile_and_emit(&deref).unwrap();
         assert!(code.contains("riina_load"));
     }
@@ -3355,10 +3488,7 @@ mod tests {
     #[test]
     fn test_emit_nested_pairs() {
         let nested = Expr::Pair(
-            Box::new(Expr::Pair(
-                Box::new(Expr::Int(1)),
-                Box::new(Expr::Int(2)),
-            )),
+            Box::new(Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)))),
             Box::new(Expr::Int(3)),
         );
         let code = compile_and_emit(&nested).unwrap();
