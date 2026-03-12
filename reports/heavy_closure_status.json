@@ -1,14 +1,18 @@
 {
-  "generated_utc": "2026-02-11T10:59:50Z",
+  "generated_utc": "2026-03-12T07:47:47Z",
+  "repo_head": "5484ac86c37dd627d07cc991a6679a0939a9c459",
+  "repo_branch": "main",
   "scope": "heavy_dims_5_6_7_8_10_11_13_closure",
   "strict_mode": 0,
   "foundation_run_ok": true,
   "foundation_overall": "PASS",
   "tools": {
-    "z3": true,
+    "z3": false,
     "fstar": true,
-    "verus": true,
-    "kani": true
+    "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
+    "fstar_local_error": "",
+    "verus": false,
+    "kani": false
   },
   "shared_exec": {
     "ct_tests": true,
@@ -16,48 +20,48 @@
     "secret_zeroize_test": true,
     "crypto_tests": true,
     "riinac_verify_fast": true,
-    "strict_dim1_dim9": true
+    "strict_dim1_dim9": false
   },
   "dimension_5_constant_time": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
-    "pending": "none"
+    "executable_gate": false,
+    "closure_ready": false,
+    "pending": "close constant-time backend-preservation obligations and extend executable checks beyond representative SMT gates"
   },
   "dimension_6_zeroization": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
-    "pending": "none"
+    "executable_gate": false,
+    "closure_ready": false,
+    "pending": "close optimizer-preservation proof chain and add binary-level zeroization verification"
   },
   "dimension_7_compiler_correctness": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
-    "pending": "none"
+    "executable_gate": false,
+    "closure_ready": false,
+    "pending": "publish per-target correctness evidence packs (native/WASM/eBPF/SGX scope) with reproducible reports"
   },
   "dimension_8_crypto_correctness": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
+    "executable_gate": false,
+    "closure_ready": false,
     "fstar_active_exec": true,
     "fstar_active_files": 1,
     "fstar_active_generated_files": 0,
-    "fstar_domain_files": 195,
+    "fstar_domain_files": 202,
     "fstar_domain_generated_files": 0,
-    "pending": "none"
+    "pending": "active F* lane is executable; migrate generated domain corpus to real F* obligations and keep executable lane mandatory"
   },
   "dimension_10_implementation_correctness": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
-    "verus_active_exec": true,
-    "kani_active_exec": true,
+    "executable_gate": false,
+    "closure_ready": false,
+    "verus_active_exec": false,
+    "kani_active_exec": false,
     "verus_active_files": 1,
     "kani_active_files": 1,
     "verus_active_generated_files": 0,
@@ -67,24 +71,24 @@
     "verus_domain_generated_files": 0,
     "kani_domain_generated_files": 0,
     "riinac_src_files": 5,
-    "pending": "none"
+    "pending": "active Verus/Kani lane is executable; migrate generated domain corpus to real obligations bound to production compiler modules"
   },
   "dimension_11_protocol_impl_binding": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
+    "executable_gate": false,
+    "closure_ready": false,
     "implementation_binding_hits": 2,
-    "pending": "none"
+    "pending": "implement and verify protocol/runtime conformance binding on real compiler/runtime paths"
   },
   "dimension_13_hardware_assumptions": {
     "foundation": "PASS",
     "artifact_gate": true,
-    "executable_gate": true,
-    "closure_ready": true,
+    "executable_gate": false,
+    "closure_ready": false,
     "litmus_files": 3,
-    "pending": "none"
+    "pending": "add explicit hardware litmus suite and release-gated trust-boundary evidence"
   },
-  "overall_executable": "PASS",
-  "overall_closure_ready": true
+  "overall_executable": "FAIL",
+  "overall_closure_ready": false
 }

@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-03-12T07:47:53.976604+00:00",
+  "baselineHead": "5484ac86c37dd627d07cc991a6679a0939a9c459",
+  "maxTotalWarnings": 2,
+  "maxByKind": {
+    "build-warning": 2
+  }
+}
