@@ -601,15 +601,59 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
+        self.writeln("static bool riina_value_eq(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a == b) return true;");
+        self.writeln("    if (!a || !b) return false;");
+        self.writeln("    if (a->tag != b->tag) return false;");
+        self.writeln("    switch (a->tag) {");
+        self.writeln("        case RIINA_TAG_UNIT:");
+        self.writeln("            return true;");
+        self.writeln("        case RIINA_TAG_BOOL:");
+        self.writeln("            return a->data.bool_val == b->data.bool_val;");
+        self.writeln("        case RIINA_TAG_INT:");
+        self.writeln("            return a->data.int_val == b->data.int_val;");
+        self.writeln("        case RIINA_TAG_STRING:");
+        self.writeln(
+            "            return strcmp(a->data.string_val.data, b->data.string_val.data) == 0;",
+        );
+        self.writeln("        case RIINA_TAG_SECRET:");
+        self.writeln("        case RIINA_TAG_PROOF:");
+        self.writeln(
+            "            return riina_value_eq(a->data.wrapped_val, b->data.wrapped_val);",
+        );
+        self.writeln("        default:");
+        self.writeln("            return false;");
+        self.writeln("    }");
+        self.writeln("}");
+        self.writeln("");
+
         // Declassify
         self.writeln(
             "static riina_value_t* riina_declassify(riina_value_t* secret, riina_value_t* proof) {",
         );
-        self.writeln("    (void)proof; /* proof is expected to be validated by the frontend */");
-        self.writeln("    if (secret->tag == RIINA_TAG_SECRET) {");
-        self.writeln("        return secret->data.wrapped_val;");
+        self.writeln("    if (secret->tag != RIINA_TAG_SECRET) {");
+        self.writeln("        return secret;");
         self.writeln("    }");
-        self.writeln("    return secret;");
+        self.writeln("    if (!proof || proof->tag != RIINA_TAG_PROOF) {");
+        self.writeln("        fprintf(stderr, \"RIINA: invalid declassification proof\\n\");");
+        self.writeln("        abort();");
+        self.writeln("    }");
+        self.writeln("    riina_value_t* proof_secret = proof->data.wrapped_val;");
+        self.writeln("    if (!proof_secret || proof_secret->tag != RIINA_TAG_SECRET) {");
+        self.writeln(
+            "        fprintf(stderr, \"RIINA: declassification proof must wrap a secret\\n\");",
+        );
+        self.writeln("        abort();");
+        self.writeln("    }");
+        self.writeln(
+            "    if (!riina_value_eq(secret->data.wrapped_val, proof_secret->data.wrapped_val)) {",
+        );
+        self.writeln(
+            "        fprintf(stderr, \"RIINA: declassification proof does not match secret\\n\");",
+        );
+        self.writeln("        abort();");
+        self.writeln("    }");
+        self.writeln("    return secret->data.wrapped_val;");
         self.writeln("}");
         self.writeln("");
 
@@ -3451,6 +3495,8 @@ mod tests {
         let declassify = Expr::Declassify(classified, proof);
         let code = compile_and_emit(&declassify).unwrap();
         assert!(code.contains("riina_declassify"));
+        assert!(code.contains("invalid declassification proof"));
+        assert!(code.contains("riina_value_eq"));
     }
 
     #[test]

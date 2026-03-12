@@ -7,21 +7,33 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
-use riina_types::{BinOp, Expr, Ty, SecurityLevel, Effect, Ident, StoreTy, Location};
+use riina_types::{BinOp, Effect, Expr, Ident, Location, SecurityLevel, StoreTy, Ty};
 use std::collections::HashMap;
+
+pub mod program;
+pub use program::check_program;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TypeError {
     VarNotFound(Ident),
-    TypeMismatch { expected: Ty, found: Ty },
+    TypeMismatch {
+        expected: Ty,
+        found: Ty,
+    },
     ExpectedFunction(Ty),
     ExpectedProduct(Ty),
     ExpectedSum(Ty),
     ExpectedRef(Ty),
     ExpectedSecret(Ty),
     ExpectedProof(Ty),
-    EffectViolation { allowed: Effect, found: Effect },
-    AnnotationMismatch { expected: Ty, found: Ty },
+    EffectViolation {
+        allowed: Effect,
+        found: Effect,
+    },
+    AnnotationMismatch {
+        expected: Ty,
+        found: Ty,
+    },
     /// Security level violation: found level does not flow to expected level
     /// Matches Coq's `sl ⊑ Δ` check in T_Deref and T_Assign
     SecurityViolation {
@@ -31,7 +43,14 @@ pub enum TypeError {
     },
     /// Invalid declassification: proof does not match secret
     /// Matches Coq's `declass_ok e1 e2` predicate
-    InvalidDeclassification { message: String },
+    InvalidDeclassification {
+        message: String,
+    },
+    /// Capability violation: an effect gate is required without a matching grant
+    CapabilityViolation {
+        required: Effect,
+        message: String,
+    },
     /// Location not found in store typing
     LocationNotFound(Location),
     /// Tainted data flowing to sensitive sink without sanitization
@@ -55,7 +74,11 @@ impl std::fmt::Display for TypeError {
         match self {
             TypeError::VarNotFound(id) => write!(f, "Variable not found: {}", id),
             TypeError::TypeMismatch { expected, found } => {
-                write!(f, "Type mismatch: expected {:?}, found {:?}", expected, found)
+                write!(
+                    f,
+                    "Type mismatch: expected {:?}, found {:?}",
+                    expected, found
+                )
             }
             TypeError::ExpectedFunction(ty) => write!(f, "Expected function type, found {:?}", ty),
             TypeError::ExpectedProduct(ty) => write!(f, "Expected product type, found {:?}", ty),
@@ -64,27 +87,60 @@ impl std::fmt::Display for TypeError {
             TypeError::ExpectedSecret(ty) => write!(f, "Expected secret type, found {:?}", ty),
             TypeError::ExpectedProof(ty) => write!(f, "Expected proof type, found {:?}", ty),
             TypeError::EffectViolation { allowed, found } => {
-                write!(f, "Effect violation: allowed {:?}, found {:?}", allowed, found)
+                write!(
+                    f,
+                    "Effect violation: allowed {:?}, found {:?}",
+                    allowed, found
+                )
             }
             TypeError::AnnotationMismatch { expected, found } => {
-                write!(f, "Annotation mismatch: expected {:?}, found {:?}", expected, found)
+                write!(
+                    f,
+                    "Annotation mismatch: expected {:?}, found {:?}",
+                    expected, found
+                )
             }
-            TypeError::SecurityViolation { found, expected, context } => {
-                write!(f, "Security violation in {}: level {:?} does not flow to {:?}", context, found, expected)
+            TypeError::SecurityViolation {
+                found,
+                expected,
+                context,
+            } => {
+                write!(
+                    f,
+                    "Security violation in {}: level {:?} does not flow to {:?}",
+                    context, found, expected
+                )
             }
             TypeError::InvalidDeclassification { message } => {
                 write!(f, "Invalid declassification: {}", message)
             }
+            TypeError::CapabilityViolation { required, message } => {
+                write!(f, "Capability violation for {:?}: {}", required, message)
+            }
             TypeError::LocationNotFound(loc) => {
                 write!(f, "Location not found in store: {}", loc)
             }
-            TypeError::TaintViolation { taint_source, required_sanitizer, context } => {
-                write!(f, "Taint violation in {}: {:?} data requires {:?} sanitization before use",
-                    context, taint_source, required_sanitizer)
+            TypeError::TaintViolation {
+                taint_source,
+                required_sanitizer,
+                context,
+            } => {
+                write!(
+                    f,
+                    "Taint violation in {}: {:?} data requires {:?} sanitization before use",
+                    context, taint_source, required_sanitizer
+                )
             }
-            TypeError::SanitizerMismatch { expected, found, context } => {
-                write!(f, "Sanitizer mismatch in {}: expected {:?}, found {:?}",
-                    context, expected, found)
+            TypeError::SanitizerMismatch {
+                expected,
+                found,
+                context,
+            } => {
+                write!(
+                    f,
+                    "Sanitizer mismatch in {}: expected {:?}, found {:?}",
+                    context, expected, found
+                )
             }
         }
     }
@@ -113,20 +169,34 @@ impl TypeError {
                     found, found
                 )
             }
-            TypeError::SecurityViolation { found, expected, context } => {
+            TypeError::SecurityViolation {
+                found,
+                expected,
+                context,
+            } => {
                 format!(
                     "In {context}: level {:?} does not flow to {:?}. Use 'dedah' with a proof to declassify, or raise the context security level",
                     found, expected
                 )
             }
             TypeError::ExpectedFunction(ty) => {
-                format!("'{:?}' is not a function. Check that you are calling a function, not a value", ty)
+                format!(
+                    "'{:?}' is not a function. Check that you are calling a function, not a value",
+                    ty
+                )
             }
             TypeError::ExpectedSecret(_) => {
                 "Wrap the value with sulit(value) or Rahsia(value) to make it secret".to_string()
             }
             TypeError::InvalidDeclassification { .. } => {
-                "Provide a valid Bukti proof term: dedah(sulit(value), bukti(sulit(value)))".to_string()
+                "Provide a valid Bukti proof term: dedah(sulit(value), bukti(sulit(value)))"
+                    .to_string()
+            }
+            TypeError::CapabilityViolation { required, .. } => {
+                format!(
+                    "Add a prior or enclosing 'beri {:?} ...' before the guarded operation, or remove the matching 'perlu {:?}'",
+                    required, required
+                )
             }
             TypeError::AnnotationMismatch { expected, found } => {
                 format!(
@@ -138,7 +208,8 @@ impl TypeError {
                 "Use 'ruj' to create a reference first: biar r = ruj value @Awam;".to_string()
             }
             TypeError::LocationNotFound(_) => {
-                "Location not in store typing — ensure the reference was allocated with 'ruj'".to_string()
+                "Location not in store typing — ensure the reference was allocated with 'ruj'"
+                    .to_string()
             }
             TypeError::ExpectedProduct(_) => {
                 "Expected a pair/tuple (T1, T2). Use fst/snd only on pairs".to_string()
@@ -149,17 +220,18 @@ impl TypeError {
             TypeError::ExpectedProof(_) => {
                 "Expected a Bukti<T> proof type. Use bukti(expr) to create one".to_string()
             }
-            TypeError::TaintViolation { taint_source, required_sanitizer, .. } => {
+            TypeError::TaintViolation {
+                taint_source,
+                required_sanitizer,
+                ..
+            } => {
                 format!(
                     "Sanitize the {:?} input with {:?} first. Example: biar bersih = sanitize_sql(input);",
                     taint_source, required_sanitizer
                 )
             }
             TypeError::SanitizerMismatch { expected, .. } => {
-                format!(
-                    "Use the correct sanitizer for this context: {:?}",
-                    expected
-                )
+                format!("Use the correct sanitizer for this context: {:?}", expected)
             }
         })
     }
@@ -180,6 +252,7 @@ impl TypeError {
             TypeError::AnnotationMismatch { .. } => "T0009",
             TypeError::SecurityViolation { .. } => "S0001",
             TypeError::InvalidDeclassification { .. } => "S0002",
+            TypeError::CapabilityViolation { .. } => "CAP0001",
             TypeError::LocationNotFound(_) => "T0010",
             TypeError::TaintViolation { .. } => "TAINT001",
             TypeError::SanitizerMismatch { .. } => "TAINT002",
@@ -191,18 +264,25 @@ impl TypeError {
     pub fn coq_rule(&self) -> Option<&'static str> {
         match self {
             TypeError::TypeMismatch { .. } => Some("T_App (Typing.v:142)"),
-            TypeError::ExpectedFunction(_) => Some("T_App (Typing.v:142) — e1 must have function type"),
-            TypeError::EffectViolation { .. } => Some("effect_sub (EffectSystem.v:89) — effect hierarchy"),
-            TypeError::SecurityViolation { context, .. } => {
-                match *context {
-                    "dereference" => Some("T_Deref (Typing.v:178) — sl must flow to delta"),
-                    "assignment" => Some("T_Assign (Typing.v:183) — sl must flow to delta"),
-                    _ => Some("Information flow lattice (Syntax.v:48)"),
-                }
+            TypeError::ExpectedFunction(_) => {
+                Some("T_App (Typing.v:142) — e1 must have function type")
             }
-            TypeError::InvalidDeclassification { .. } => Some("T_Declassify (Typing.v:196) — declass_ok predicate"),
+            TypeError::EffectViolation { .. } => {
+                Some("effect_sub (EffectSystem.v:89) — effect hierarchy")
+            }
+            TypeError::SecurityViolation { context, .. } => match *context {
+                "dereference" => Some("T_Deref (Typing.v:178) — sl must flow to delta"),
+                "assignment" => Some("T_Assign (Typing.v:183) — sl must flow to delta"),
+                _ => Some("Information flow lattice (Syntax.v:48)"),
+            },
+            TypeError::InvalidDeclassification { .. } => {
+                Some("T_Declassify (Typing.v:196) — declass_ok predicate")
+            }
+            TypeError::CapabilityViolation { .. } => Some("T_Require/T_Grant (Typing.v:207-213)"),
             TypeError::ExpectedRef(_) => Some("T_Deref (Typing.v:178) — operand must be TRef"),
-            TypeError::ExpectedSecret(_) => Some("T_Classify (Typing.v:192) — operand must be TSecret"),
+            TypeError::ExpectedSecret(_) => {
+                Some("T_Classify (Typing.v:192) — operand must be TSecret")
+            }
             TypeError::TaintViolation { .. } => {
                 Some("SQLInjectionPrevention.v:92 — taint_safe predicate")
             }
@@ -231,7 +311,9 @@ impl Default for TypeEnv {
 
 impl TypeEnv {
     pub fn new() -> Self {
-        Self { vars: HashMap::new() }
+        Self {
+            vars: HashMap::new(),
+        }
     }
 
     pub fn extend(&self, name: Ident, ty: Ty) -> Self {
@@ -365,66 +447,177 @@ impl Context {
 pub fn register_builtin_types(ctx: &Context) -> Context {
     let mut c = ctx.clone();
     // I/O builtins
-    c = c.extend("cetak".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System));
-    c = c.extend("print".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System));
-    c = c.extend("cetakln".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System));
-    c = c.extend("println".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System));
+    c = c.extend(
+        "cetak".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+    );
+    c = c.extend(
+        "print".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+    );
+    c = c.extend(
+        "cetakln".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+    );
+    c = c.extend(
+        "println".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+    );
     // String
-    c = c.extend("gabung_teks".to_string(), Ty::Fn(
-        Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
-        Box::new(Ty::String), Effect::Pure));
-    c = c.extend("concat".to_string(), Ty::Fn(
-        Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
-        Box::new(Ty::String), Effect::Pure));
-    c = c.extend("panjang".to_string(), Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("length".to_string(), Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure));
+    c = c.extend(
+        "gabung_teks".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+            Box::new(Ty::String),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "concat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
+            Box::new(Ty::String),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "panjang".to_string(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "length".to_string(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+    );
     // Conversion
-    c = c.extend("ke_teks".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure));
-    c = c.extend("to_string".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure));
-    c = c.extend("ke_nombor".to_string(), Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("parse_int".to_string(), Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("ke_bool".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure));
-    c = c.extend("to_bool".to_string(), Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure));
+    c = c.extend(
+        "ke_teks".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure),
+    );
+    c = c.extend(
+        "to_string".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::String), Effect::Pure),
+    );
+    c = c.extend(
+        "ke_nombor".to_string(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "parse_int".to_string(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "ke_bool".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+    );
+    c = c.extend(
+        "to_bool".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+    );
     // Math
-    c = c.extend("mutlak".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("abs".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure));
-    for name in &["minimum", "min", "maksimum", "max", "kuasa", "pow", "gcd", "lcm"] {
-        c = c.extend(name.to_string(), Ty::Fn(
-            Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
-            Box::new(Ty::Int), Effect::Pure));
+    c = c.extend(
+        "mutlak".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "abs".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+    );
+    for name in &[
+        "minimum", "min", "maksimum", "max", "kuasa", "pow", "gcd", "lcm",
+    ] {
+        c = c.extend(
+            name.to_string(),
+            Ty::Fn(
+                Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
+                Box::new(Ty::Int),
+                Effect::Pure,
+            ),
+        );
     }
-    c = c.extend("punca".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("sqrt".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure));
+    c = c.extend(
+        "punca".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "sqrt".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+    );
     // Assert
-    c = c.extend("tegaskan".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("assert".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("tegaskan_betul".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("assert_true".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("tegaskan_salah".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("assert_false".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("tegaskan_sama".to_string(), Ty::Fn(
-        Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
-        Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("assert_eq".to_string(), Ty::Fn(
-        Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
-        Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("tegaskan_beza".to_string(), Ty::Fn(
-        Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
-        Box::new(Ty::Unit), Effect::Pure));
-    c = c.extend("assert_ne".to_string(), Ty::Fn(
-        Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
-        Box::new(Ty::Unit), Effect::Pure));
+    c = c.extend(
+        "tegaskan".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+    );
+    c = c.extend(
+        "assert".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+    );
+    c = c.extend(
+        "tegaskan_betul".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+    );
+    c = c.extend(
+        "assert_true".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+    );
+    c = c.extend(
+        "tegaskan_salah".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+    );
+    c = c.extend(
+        "assert_false".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Unit), Effect::Pure),
+    );
+    c = c.extend(
+        "tegaskan_sama".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
+            Box::new(Ty::Unit),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "assert_eq".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
+            Box::new(Ty::Unit),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "tegaskan_beza".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
+            Box::new(Ty::Unit),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "assert_ne".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::Any))),
+            Box::new(Ty::Unit),
+            Effect::Pure,
+        ),
+    );
 
     // ── String builtins (teks) ──
     for (bm, en) in &[
-        ("teks_belah", "str_split"), ("teks_cantum", "str_join"),
-        ("teks_potong", "str_trim"), ("teks_mengandungi", "str_contains"),
-        ("teks_ganti", "str_replace"), ("teks_mula_dengan", "str_starts_with"),
-        ("teks_akhir_dengan", "str_ends_with"), ("teks_huruf_besar", "str_to_upper"),
-        ("teks_huruf_kecil", "str_to_lower"), ("teks_aksara_di", "str_char_at"),
-        ("teks_sub", "str_substring"), ("teks_indeks", "str_index_of"),
-        ("teks_ulang", "str_repeat"), ("teks_pad_kiri", "str_pad_left"),
-        ("teks_pad_kanan", "str_pad_right"), ("teks_baris", "str_lines"),
+        ("teks_belah", "str_split"),
+        ("teks_cantum", "str_join"),
+        ("teks_potong", "str_trim"),
+        ("teks_mengandungi", "str_contains"),
+        ("teks_ganti", "str_replace"),
+        ("teks_mula_dengan", "str_starts_with"),
+        ("teks_akhir_dengan", "str_ends_with"),
+        ("teks_huruf_besar", "str_to_upper"),
+        ("teks_huruf_kecil", "str_to_lower"),
+        ("teks_aksara_di", "str_char_at"),
+        ("teks_sub", "str_substring"),
+        ("teks_indeks", "str_index_of"),
+        ("teks_ulang", "str_repeat"),
+        ("teks_pad_kiri", "str_pad_left"),
+        ("teks_pad_kanan", "str_pad_right"),
+        ("teks_baris", "str_lines"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
         c = c.extend(bm.to_string(), ty.clone());
@@ -433,15 +626,24 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // ── List builtins (senarai) ──
     for (bm, en) in &[
-        ("senarai_baru", "list_new"), ("senarai_tolak", "list_push"),
-        ("senarai_dapat", "list_get"), ("senarai_panjang", "list_len"),
-        ("senarai_peta", "list_map"), ("senarai_tapis", "list_filter"),
-        ("senarai_lipat", "list_fold"), ("senarai_balik", "list_reverse"),
-        ("senarai_susun", "list_sort"), ("senarai_mengandungi", "list_contains"),
-        ("senarai_sambung", "list_concat"), ("senarai_kepala", "list_head"),
-        ("senarai_ekor", "list_tail"), ("senarai_zip", "list_zip"),
-        ("senarai_nombor", "list_enumerate"), ("senarai_rata", "list_flatten"),
-        ("senarai_unik", "list_unique"), ("senarai_potong", "list_slice"),
+        ("senarai_baru", "list_new"),
+        ("senarai_tolak", "list_push"),
+        ("senarai_dapat", "list_get"),
+        ("senarai_panjang", "list_len"),
+        ("senarai_peta", "list_map"),
+        ("senarai_tapis", "list_filter"),
+        ("senarai_lipat", "list_fold"),
+        ("senarai_balik", "list_reverse"),
+        ("senarai_susun", "list_sort"),
+        ("senarai_mengandungi", "list_contains"),
+        ("senarai_sambung", "list_concat"),
+        ("senarai_kepala", "list_head"),
+        ("senarai_ekor", "list_tail"),
+        ("senarai_zip", "list_zip"),
+        ("senarai_nombor", "list_enumerate"),
+        ("senarai_rata", "list_flatten"),
+        ("senarai_unik", "list_unique"),
+        ("senarai_potong", "list_slice"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
         c = c.extend(bm.to_string(), ty.clone());
@@ -450,10 +652,14 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // ── Map builtins (peta) ──
     for (bm, en) in &[
-        ("peta_baru", "map_new"), ("peta_letak", "map_insert"),
-        ("peta_dapat", "map_get"), ("peta_buang", "map_remove"),
-        ("peta_kunci", "map_keys"), ("peta_nilai", "map_values"),
-        ("peta_mengandungi", "map_contains"), ("peta_panjang", "map_len"),
+        ("peta_baru", "map_new"),
+        ("peta_letak", "map_insert"),
+        ("peta_dapat", "map_get"),
+        ("peta_buang", "map_remove"),
+        ("peta_kunci", "map_keys"),
+        ("peta_nilai", "map_values"),
+        ("peta_mengandungi", "map_contains"),
+        ("peta_panjang", "map_len"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
         c = c.extend(bm.to_string(), ty.clone());
@@ -462,9 +668,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // ── Set builtins ──
     for (bm, en) in &[
-        ("set_baru", "set_new"), ("set_letak", "set_insert"),
-        ("set_buang", "set_remove"), ("set_mengandungi", "set_contains"),
-        ("set_kesatuan", "set_union"), ("set_persilangan", "set_intersect"),
+        ("set_baru", "set_new"),
+        ("set_letak", "set_insert"),
+        ("set_buang", "set_remove"),
+        ("set_mengandungi", "set_contains"),
+        ("set_kesatuan", "set_union"),
+        ("set_persilangan", "set_intersect"),
         ("set_panjang", "set_len"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
@@ -474,10 +683,14 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // ── File I/O builtins (fail) — Effect::FileSystem ──
     for (bm, en) in &[
-        ("fail_baca", "file_read"), ("fail_tulis", "file_write"),
-        ("fail_tambah", "file_append"), ("fail_ada", "file_exists"),
-        ("fail_buang", "file_delete"), ("fail_panjang", "file_size"),
-        ("fail_senarai", "file_list_dir"), ("fail_baca_baris", "file_read_lines"),
+        ("fail_baca", "file_read"),
+        ("fail_tulis", "file_write"),
+        ("fail_tambah", "file_append"),
+        ("fail_ada", "file_exists"),
+        ("fail_buang", "file_delete"),
+        ("fail_panjang", "file_size"),
+        ("fail_senarai", "file_list_dir"),
+        ("fail_baca_baris", "file_read_lines"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::FileSystem);
         c = c.extend(bm.to_string(), ty.clone());
@@ -486,9 +699,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // ── Time builtins (masa) — Effect::Time ──
     for (bm, en) in &[
-        ("masa_sekarang", "time_now"), ("masa_sekarang_ms", "time_now_ms"),
-        ("masa_format", "time_format"), ("masa_urai", "time_parse"),
-        ("masa_tidur", "time_sleep"), ("masa_jam", "time_clock"),
+        ("masa_sekarang", "time_now"),
+        ("masa_sekarang_ms", "time_now_ms"),
+        ("masa_format", "time_format"),
+        ("masa_urai", "time_parse"),
+        ("masa_tidur", "time_sleep"),
+        ("masa_jam", "time_clock"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Time);
         c = c.extend(bm.to_string(), ty.clone());
@@ -497,8 +713,10 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // ── JSON builtins ──
     for (bm, en) in &[
-        ("json_urai", "json_parse"), ("json_ke_teks", "json_stringify"),
-        ("json_dapat", "json_get"), ("json_letak", "json_set"),
+        ("json_urai", "json_parse"),
+        ("json_ke_teks", "json_stringify"),
+        ("json_dapat", "json_get"),
+        ("json_letak", "json_set"),
         ("json_ada", "json_has"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure);
@@ -507,323 +725,595 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     }
 
     // ── Extra math builtins ──
-    for (bm, en) in &[
-        ("baki", "rem"), ("log2", "log2"),
-    ] {
-        c = c.extend(bm.to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure));
-        c = c.extend(en.to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure));
+    for (bm, en) in &[("baki", "rem"), ("log2", "log2")] {
+        c = c.extend(
+            bm.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        );
+        c = c.extend(
+            en.to_string(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+        );
     }
     // Random — Effect::Random
-    c = c.extend("rawak".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random));
-    c = c.extend("random".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random));
+    c = c.extend(
+        "rawak".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random),
+    );
+    c = c.extend(
+        "random".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Random),
+    );
 
     // ── Extra conversion builtins ──
-    c = c.extend("bool_ke_nombor".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("bool_to_int".to_string(), Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure));
-    c = c.extend("nombor_ke_teks".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure));
-    c = c.extend("int_to_string".to_string(), Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure));
+    c = c.extend(
+        "bool_ke_nombor".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "bool_to_int".to_string(),
+        Ty::Fn(Box::new(Ty::Bool), Box::new(Ty::Int), Effect::Pure),
+    );
+    c = c.extend(
+        "nombor_ke_teks".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure),
+    );
+    c = c.extend(
+        "int_to_string".to_string(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure),
+    );
 
     // ── DOMAIN SECURITY: Taint Sources (return tainted data) ──
 
     // User input → Tainted<String, UserInput>
-    c = c.extend("read_line".to_string(),
+    c = c.extend(
+        "read_line".to_string(),
         Ty::Fn(
             Box::new(Ty::Unit),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Effect::System
-        ));
-    c = c.extend("baca_baris".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "baca_baris".to_string(),
         Ty::Fn(
             Box::new(Ty::Unit),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Effect::System
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Effect::System,
+        ),
+    );
 
     // HTTP request body → Tainted<String, NetworkExternal>
-    c = c.extend("http_body".to_string(),
+    c = c.extend(
+        "http_body".to_string(),
         Ty::Fn(
             Box::new(Ty::Any),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::NetworkExternal)),
-            Effect::Network
-        ));
-    c = c.extend("badan_http".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::NetworkExternal,
+            )),
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "badan_http".to_string(),
         Ty::Fn(
             Box::new(Ty::Any),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::NetworkExternal)),
-            Effect::Network
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::NetworkExternal,
+            )),
+            Effect::Network,
+        ),
+    );
 
     // ── DOMAIN SECURITY: Sanitizers (Tainted → Sanitized) ──
 
     // SQL sanitizer
-    c = c.extend("sanitize_sql".to_string(),
+    c = c.extend(
+        "sanitize_sql".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_sql".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::SqlParam,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_sql".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::SqlParam,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // HTML sanitizer
-    c = c.extend("sanitize_html".to_string(),
+    c = c.extend(
+        "sanitize_html".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_html".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::HtmlEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_html".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::HtmlEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // JavaScript sanitizer
-    c = c.extend("sanitize_js".to_string(),
+    c = c.extend(
+        "sanitize_js".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_js".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_js".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Command sanitizer
-    c = c.extend("sanitize_command".to_string(),
+    c = c.extend(
+        "sanitize_command".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_perintah".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::CommandEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_perintah".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::CommandEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // LDAP sanitizer
-    c = c.extend("sanitize_ldap".to_string(),
+    c = c.extend(
+        "sanitize_ldap".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_ldap".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::LdapEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_ldap".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::LdapEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // ── DOMAIN SECURITY: Sensitive Sinks (require Sanitized) ──
 
     // SQL execution — REQUIRES Sanitized<String, SqlParam>
-    c = c.extend("sql_execute".to_string(),
+    c = c.extend(
+        "sql_execute".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
-            Box::new(Ty::Any),  // Query results
-            Effect::System
-        ));
-    c = c.extend("sql_laksana".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::SqlParam,
+            )),
+            Box::new(Ty::Any), // Query results
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "sql_laksana".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::SqlParam,
+            )),
             Box::new(Ty::Any),
-            Effect::System
-        ));
+            Effect::System,
+        ),
+    );
 
     // HTML rendering — REQUIRES Sanitized<String, HtmlEscape>
-    c = c.extend("html_render".to_string(),
+    c = c.extend(
+        "html_render".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::HtmlEscape,
+            )),
             Box::new(Ty::String),
-            Effect::Pure
-        ));
-    c = c.extend("html_papar".to_string(),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "html_papar".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::HtmlEscape,
+            )),
             Box::new(Ty::String),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // JavaScript eval — REQUIRES Sanitized<String, JsEscape>
-    c = c.extend("js_eval".to_string(),
+    c = c.extend(
+        "js_eval".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsEscape,
+            )),
             Box::new(Ty::Any),
-            Effect::System
-        ));
-    c = c.extend("js_nilai".to_string(),
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "js_nilai".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsEscape,
+            )),
             Box::new(Ty::Any),
-            Effect::System
-        ));
+            Effect::System,
+        ),
+    );
 
     // Shell command execution — REQUIRES Sanitized<String, CommandEscape>
-    c = c.extend("shell_exec".to_string(),
+    c = c.extend(
+        "shell_exec".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
-            Box::new(Ty::Int),  // Exit code
-            Effect::System
-        ));
-    c = c.extend("shell_laksana".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::CommandEscape,
+            )),
+            Box::new(Ty::Int), // Exit code
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "shell_laksana".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::CommandEscape,
+            )),
             Box::new(Ty::Int),
-            Effect::System
-        ));
+            Effect::System,
+        ),
+    );
 
     // LDAP search — REQUIRES Sanitized<String, LdapEscape>
-    c = c.extend("ldap_search".to_string(),
+    c = c.extend(
+        "ldap_search".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
-            Box::new(Ty::Any),  // Search results
-            Effect::System
-        ));
-    c = c.extend("ldap_cari".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::LdapEscape,
+            )),
+            Box::new(Ty::Any), // Search results
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "ldap_cari".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::LdapEscape,
+            )),
             Box::new(Ty::Any),
-            Effect::System
-        ));
+            Effect::System,
+        ),
+    );
 
     // ── TASK #4: Enhanced XSS Prevention ──
 
     // URL sanitizer (for safe redirects/links)
-    c = c.extend("sanitize_url".to_string(),
+    c = c.extend(
+        "sanitize_url".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_url".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlEncode,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_url".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlEncode,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // CSS sanitizer (for safe style injection)
-    c = c.extend("sanitize_css".to_string(),
+    c = c.extend(
+        "sanitize_css".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_css".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::CssEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_css".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::CssEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // ── DOM Manipulation (context-aware) ──
 
     // Safe innerHTML setter — REQUIRES HtmlEscape
-    c = c.extend("dom_set_html".to_string(),
+    c = c.extend(
+        "dom_set_html".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Any),  // DOM element
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
+                Box::new(Ty::Any), // DOM element
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::HtmlEscape,
+                )),
             )),
             Box::new(Ty::Unit),
-            Effect::System
-        ));
-    c = c.extend("dom_tetap_html".to_string(),
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "dom_tetap_html".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
                 Box::new(Ty::Any),
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::HtmlEscape,
+                )),
             )),
             Box::new(Ty::Unit),
-            Effect::System
-        ));
+            Effect::System,
+        ),
+    );
 
     // Safe attribute setter — REQUIRES HtmlEscape
-    c = c.extend("dom_set_attr".to_string(),
+    c = c.extend(
+        "dom_set_attr".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Any),  // DOM element
+                Box::new(Ty::Any), // DOM element
                 Box::new(Ty::Prod(
-                    Box::new(Ty::String),  // Attribute name
-                    Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
-                ))
+                    Box::new(Ty::String), // Attribute name
+                    Box::new(Ty::Sanitized(
+                        Box::new(Ty::String),
+                        riina_types::Sanitizer::HtmlEscape,
+                    )),
+                )),
             )),
             Box::new(Ty::Unit),
-            Effect::System
-        ));
-    c = c.extend("dom_tetap_atribut".to_string(),
+            Effect::System,
+        ),
+    );
+    c = c.extend(
+        "dom_tetap_atribut".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
                 Box::new(Ty::Any),
                 Box::new(Ty::Prod(
                     Box::new(Ty::String),
-                    Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape))
-                ))
+                    Box::new(Ty::Sanitized(
+                        Box::new(Ty::String),
+                        riina_types::Sanitizer::HtmlEscape,
+                    )),
+                )),
             )),
             Box::new(Ty::Unit),
-            Effect::System
-        ));
+            Effect::System,
+        ),
+    );
 
     // ── Input Validation (pre-sanitization) ──
 
     // Length-bounded input validation
-    c = c.extend("validate_length".to_string(),
+    c = c.extend(
+        "validate_length".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-                Box::new(Ty::Int)  // Max length
+                Box::new(Ty::Tainted(
+                    Box::new(Ty::String),
+                    riina_types::TaintSource::UserInput,
+                )),
+                Box::new(Ty::Int), // Max length
             )),
-            Box::new(Ty::Option(Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)))),
-            Effect::Pure
-        ));
-    c = c.extend("sahkan_panjang".to_string(),
+            Box::new(Ty::Option(Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )))),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sahkan_panjang".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-                Box::new(Ty::Int)
+                Box::new(Ty::Tainted(
+                    Box::new(Ty::String),
+                    riina_types::TaintSource::UserInput,
+                )),
+                Box::new(Ty::Int),
             )),
-            Box::new(Ty::Option(Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)))),
-            Effect::Pure
-        ));
+            Box::new(Ty::Option(Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )))),
+            Effect::Pure,
+        ),
+    );
 
     // Unicode normalization (prevents homograph attacks)
-    c = c.extend("normalize_unicode".to_string(),
+    c = c.extend(
+        "normalize_unicode".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Effect::Pure
-        ));
-    c = c.extend("normal_unicode".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "normal_unicode".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Strip null bytes (prevents injection bypass)
-    c = c.extend("strip_nulls".to_string(),
+    c = c.extend(
+        "strip_nulls".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Effect::Pure
-        ));
-    c = c.extend("buang_null".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "buang_null".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // ── TASK #5: CSRF Protection ──
     // Matches Coq CSRFProtection.v (20 Qed proofs)
@@ -832,174 +1322,180 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
 
     // Generate CSRF token (cryptographically secure random token)
     // Spec: CSRFProtection.v — csrf_token_validation
-    c = c.extend("csrf_generate".to_string(),
+    c = c.extend(
+        "csrf_generate".to_string(),
         Ty::Fn(
             Box::new(Ty::Unit),
-            Box::new(Ty::String),  // Base64-encoded token
-            Effect::Random         // Cryptographic randomness required
-        ));
-    c = c.extend("csrf_jana".to_string(),
-        Ty::Fn(
-            Box::new(Ty::Unit),
-            Box::new(Ty::String),
-            Effect::Random
-        ));
+            Box::new(Ty::String), // Base64-encoded token
+            Effect::Random,       // Cryptographic randomness required
+        ),
+    );
+    c = c.extend(
+        "csrf_jana".to_string(),
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::String), Effect::Random),
+    );
 
     // Validate CSRF token (request token vs session token)
     // Spec: CSRFProtection.v — csrf_double_submit
-    c = c.extend("csrf_validate".to_string(),
+    c = c.extend(
+        "csrf_validate".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),  // Request token
-                Box::new(Ty::String)   // Session token
+                Box::new(Ty::String), // Request token
+                Box::new(Ty::String), // Session token
             )),
-            Box::new(Ty::Bool),        // Validation result
-            Effect::Pure
-        ));
-    c = c.extend("csrf_sahkan".to_string(),
+            Box::new(Ty::Bool), // Validation result
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "csrf_sahkan".to_string(),
         Ty::Fn(
-            Box::new(Ty::Prod(
-                Box::new(Ty::String),
-                Box::new(Ty::String)
-            )),
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Bool),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // Check origin header (same-origin policy enforcement)
     // Spec: CSRFProtection.v — csrf_origin_check
-    c = c.extend("csrf_check_origin".to_string(),
+    c = c.extend(
+        "csrf_check_origin".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),  // Request origin
-                Box::new(Ty::String)   // Expected origin
+                Box::new(Ty::String), // Request origin
+                Box::new(Ty::String), // Expected origin
             )),
             Box::new(Ty::Bool),
-            Effect::Pure
-        ));
-    c = c.extend("csrf_semak_origin".to_string(),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "csrf_semak_origin".to_string(),
         Ty::Fn(
-            Box::new(Ty::Prod(
-                Box::new(Ty::String),
-                Box::new(Ty::String)
-            )),
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Bool),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // Check referer header
     // Spec: CSRFProtection.v — csrf_referer_check
-    c = c.extend("csrf_check_referer".to_string(),
+    c = c.extend(
+        "csrf_check_referer".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),  // Request referer
-                Box::new(Ty::String)   // Expected referer
+                Box::new(Ty::String), // Request referer
+                Box::new(Ty::String), // Expected referer
             )),
             Box::new(Ty::Bool),
-            Effect::Pure
-        ));
-    c = c.extend("csrf_semak_referer".to_string(),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "csrf_semak_referer".to_string(),
         Ty::Fn(
-            Box::new(Ty::Prod(
-                Box::new(Ty::String),
-                Box::new(Ty::String)
-            )),
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Bool),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // ── HTTP Methods with CSRF Protection ──
 
     // Safe GET request (no CSRF token required — safe method)
-    c = c.extend("http_get".to_string(),
+    c = c.extend(
+        "http_get".to_string(),
         Ty::Fn(
-            Box::new(Ty::String),  // URL only (no token needed)
-            Box::new(Ty::Any),     // Response
-            Effect::Network
-        ));
-    c = c.extend("http_dapat".to_string(),
-        Ty::Fn(
-            Box::new(Ty::String),
-            Box::new(Ty::Any),
-            Effect::Network
-        ));
+            Box::new(Ty::String), // URL only (no token needed)
+            Box::new(Ty::Any),    // Response
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "http_dapat".to_string(),
+        Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::Network),
+    );
 
     // State-changing POST (CSRF token REQUIRED in type signature)
     // Type: (URL, (body, csrf_token)) -> Response
     // The nested pair forces callers to provide a CSRF token
-    c = c.extend("http_post".to_string(),
+    c = c.extend(
+        "http_post".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),      // URL
+                Box::new(Ty::String), // URL
                 Box::new(Ty::Prod(
-                    Box::new(Ty::Any),     // Request body
-                    Box::new(Ty::String)   // CSRF token (REQUIRED)
-                ))
+                    Box::new(Ty::Any),    // Request body
+                    Box::new(Ty::String), // CSRF token (REQUIRED)
+                )),
             )),
-            Box::new(Ty::Any),             // Response
-            Effect::Network
-        ));
-    c = c.extend("http_hantar".to_string(),
+            Box::new(Ty::Any), // Response
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "http_hantar".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
                 Box::new(Ty::String),
-                Box::new(Ty::Prod(
-                    Box::new(Ty::Any),
-                    Box::new(Ty::String)
-                ))
+                Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::String))),
             )),
             Box::new(Ty::Any),
-            Effect::Network
-        ));
+            Effect::Network,
+        ),
+    );
 
     // State-changing PUT (CSRF token REQUIRED)
     // Type: (URL, (body, csrf_token)) -> Response
-    c = c.extend("http_put".to_string(),
+    c = c.extend(
+        "http_put".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),      // URL
+                Box::new(Ty::String), // URL
                 Box::new(Ty::Prod(
-                    Box::new(Ty::Any),     // Request body
-                    Box::new(Ty::String)   // CSRF token (REQUIRED)
-                ))
+                    Box::new(Ty::Any),    // Request body
+                    Box::new(Ty::String), // CSRF token (REQUIRED)
+                )),
             )),
             Box::new(Ty::Any),
-            Effect::Network
-        ));
-    c = c.extend("http_kemaskini".to_string(),
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "http_kemaskini".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
                 Box::new(Ty::String),
-                Box::new(Ty::Prod(
-                    Box::new(Ty::Any),
-                    Box::new(Ty::String)
-                ))
+                Box::new(Ty::Prod(Box::new(Ty::Any), Box::new(Ty::String))),
             )),
             Box::new(Ty::Any),
-            Effect::Network
-        ));
+            Effect::Network,
+        ),
+    );
 
     // State-changing DELETE (CSRF token REQUIRED)
     // Type: (URL, csrf_token) -> Response
     // DELETE has no body, so just URL + token
-    c = c.extend("http_delete".to_string(),
+    c = c.extend(
+        "http_delete".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),  // URL
-                Box::new(Ty::String)   // CSRF token (REQUIRED)
+                Box::new(Ty::String), // URL
+                Box::new(Ty::String), // CSRF token (REQUIRED)
             )),
             Box::new(Ty::Any),
-            Effect::Network
-        ));
-    c = c.extend("http_padam".to_string(),
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "http_padam".to_string(),
         Ty::Fn(
-            Box::new(Ty::Prod(
-                Box::new(Ty::String),
-                Box::new(Ty::String)
-            )),
+            Box::new(Ty::Prod(Box::new(Ty::String), Box::new(Ty::String))),
             Box::new(Ty::Any),
-            Effect::Network
-        ));
+            Effect::Network,
+        ),
+    );
 
     // ── TASK #6: Extended Domain Security Enforcement ──
     // 5 new OWASP attack classes: Path Traversal, XML/XXE, SSRF,
@@ -1010,258 +1506,448 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     // Spec: VerifiedFileSystem.v
 
     // Path sanitizer: Tainted → Sanitized<String, PathTraversal>
-    c = c.extend("sanitize_path".to_string(),
+    c = c.extend(
+        "sanitize_path".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_laluan".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::PathTraversal,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_laluan".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::PathTraversal,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Safe file read — REQUIRES Sanitized<String, PathTraversal>
-    c = c.extend("file_read_safe".to_string(),
+    c = c.extend(
+        "file_read_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
-            Box::new(Ty::Any),  // File contents
-            Effect::Read
-        ));
-    c = c.extend("fail_baca_selamat".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::PathTraversal,
+            )),
+            Box::new(Ty::Any), // File contents
+            Effect::Read,
+        ),
+    );
+    c = c.extend(
+        "fail_baca_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::PathTraversal,
+            )),
             Box::new(Ty::Any),
-            Effect::Read
-        ));
+            Effect::Read,
+        ),
+    );
 
     // Safe file write — REQUIRES Sanitized<String, PathTraversal>
-    c = c.extend("file_write_safe".to_string(),
+    c = c.extend(
+        "file_write_safe".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
-                Box::new(Ty::Any)  // Data to write
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::PathTraversal,
+                )),
+                Box::new(Ty::Any), // Data to write
             )),
             Box::new(Ty::Unit),
-            Effect::Write
-        ));
-    c = c.extend("fail_tulis_selamat".to_string(),
+            Effect::Write,
+        ),
+    );
+    c = c.extend(
+        "fail_tulis_selamat".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
-                Box::new(Ty::Any)
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::PathTraversal,
+                )),
+                Box::new(Ty::Any),
             )),
             Box::new(Ty::Unit),
-            Effect::Write
-        ));
+            Effect::Write,
+        ),
+    );
 
     // Safe file delete — REQUIRES Sanitized<String, PathTraversal>
-    c = c.extend("file_delete_safe".to_string(),
+    c = c.extend(
+        "file_delete_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
-            Box::new(Ty::Bool),  // Success
-            Effect::Write
-        ));
-    c = c.extend("fail_buang_selamat".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::PathTraversal,
+            )),
+            Box::new(Ty::Bool), // Success
+            Effect::Write,
+        ),
+    );
+    c = c.extend(
+        "fail_buang_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::PathTraversal,
+            )),
             Box::new(Ty::Bool),
-            Effect::Write
-        ));
+            Effect::Write,
+        ),
+    );
 
     // ── 6b: XML Injection / XXE (CWE-611) ──
     // Spec: InjectionPrevention.v — inj_005_xxe_impossible
 
     // XML sanitizer: Tainted → Sanitized<String, XmlEscape>
-    c = c.extend("sanitize_xml".to_string(),
+    c = c.extend(
+        "sanitize_xml".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_xml".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::XmlEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_xml".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::XmlEscape,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Safe XML parse — REQUIRES Sanitized<String, XmlEscape>
-    c = c.extend("xml_parse_safe".to_string(),
+    c = c.extend(
+        "xml_parse_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
-            Box::new(Ty::Any),  // Parsed XML tree
-            Effect::Pure
-        ));
-    c = c.extend("xml_urai_selamat".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::XmlEscape,
+            )),
+            Box::new(Ty::Any), // Parsed XML tree
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "xml_urai_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::XmlEscape,
+            )),
             Box::new(Ty::Any),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // XML query — REQUIRES Sanitized<String, XmlEscape>
-    c = c.extend("xml_query".to_string(),
+    c = c.extend(
+        "xml_query".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
-            Box::new(Ty::Any),  // Query results
-            Effect::Pure
-        ));
-    c = c.extend("xml_cari".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::XmlEscape,
+            )),
+            Box::new(Ty::Any), // Query results
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "xml_cari".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::XmlEscape,
+            )),
             Box::new(Ty::Any),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // ── 6c: SSRF (CWE-918) ──
     // Spec: WebSecurity.v — web_005_ssrf_impossible
 
     // URL validator: Tainted → Sanitized<String, UrlAllowlist>
-    c = c.extend("validate_url".to_string(),
+    c = c.extend(
+        "validate_url".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
-            Effect::Pure
-        ));
-    c = c.extend("sahkan_url".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlAllowlist,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sahkan_url".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlAllowlist,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Safe HTTP fetch — REQUIRES Sanitized<String, UrlAllowlist>
-    c = c.extend("http_fetch_safe".to_string(),
+    c = c.extend(
+        "http_fetch_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
-            Box::new(Ty::Any),  // Response
-            Effect::Network
-        ));
-    c = c.extend("http_ambil_selamat".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlAllowlist,
+            )),
+            Box::new(Ty::Any), // Response
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "http_ambil_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlAllowlist,
+            )),
             Box::new(Ty::Any),
-            Effect::Network
-        ));
+            Effect::Network,
+        ),
+    );
 
     // Safe HTTP redirect — REQUIRES Sanitized<String, UrlAllowlist>
-    c = c.extend("http_redirect_safe".to_string(),
+    c = c.extend(
+        "http_redirect_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlAllowlist,
+            )),
             Box::new(Ty::Unit),
-            Effect::Network
-        ));
-    c = c.extend("http_arah_selamat".to_string(),
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "http_arah_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::UrlAllowlist,
+            )),
             Box::new(Ty::Unit),
-            Effect::Network
-        ));
+            Effect::Network,
+        ),
+    );
 
     // ── 6d: Email Header Injection (CWE-93) ──
     // Spec: InjectionPrevention.v — inj_011_email_header_safe
 
     // Email sanitizer: Tainted → Sanitized<String, EmailValidation>
-    c = c.extend("sanitize_email".to_string(),
+    c = c.extend(
+        "sanitize_email".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_emel".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::EmailValidation,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_emel".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::EmailValidation,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Email send — REQUIRES Sanitized<String, EmailValidation>
-    c = c.extend("email_send".to_string(),
+    c = c.extend(
+        "email_send".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
-                Box::new(Ty::String)  // Message body
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::EmailValidation,
+                )),
+                Box::new(Ty::String), // Message body
             )),
-            Box::new(Ty::Bool),  // Success
-            Effect::Network
-        ));
-    c = c.extend("emel_hantar".to_string(),
+            Box::new(Ty::Bool), // Success
+            Effect::Network,
+        ),
+    );
+    c = c.extend(
+        "emel_hantar".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation)),
-                Box::new(Ty::String)
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::EmailValidation,
+                )),
+                Box::new(Ty::String),
             )),
             Box::new(Ty::Bool),
-            Effect::Network
-        ));
+            Effect::Network,
+        ),
+    );
 
     // Email set header — REQUIRES Sanitized<String, EmailValidation>
-    c = c.extend("email_set_header".to_string(),
+    c = c.extend(
+        "email_set_header".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
-                Box::new(Ty::String),  // Header name
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation))
+                Box::new(Ty::String), // Header name
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::EmailValidation,
+                )),
             )),
             Box::new(Ty::Unit),
-            Effect::Pure
-        ));
-    c = c.extend("emel_tetap_kepala".to_string(),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "emel_tetap_kepala".to_string(),
         Ty::Fn(
             Box::new(Ty::Prod(
                 Box::new(Ty::String),
-                Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::EmailValidation))
+                Box::new(Ty::Sanitized(
+                    Box::new(Ty::String),
+                    riina_types::Sanitizer::EmailValidation,
+                )),
             )),
             Box::new(Ty::Unit),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // ── 6e: Unsafe Deserialization (CWE-502) ──
     // Spec: DeserializationSafety.v — rce_prevention_active
 
     // JSON sanitizer: Tainted → Sanitized<String, JsonValidation>
-    c = c.extend("sanitize_json".to_string(),
+    c = c.extend(
+        "sanitize_json".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
-            Effect::Pure
-        ));
-    c = c.extend("sanitasi_json".to_string(),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonValidation,
+            )),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "sanitasi_json".to_string(),
         Ty::Fn(
-            Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)),
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
-            Effect::Pure
-        ));
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput,
+            )),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonValidation,
+            )),
+            Effect::Pure,
+        ),
+    );
 
     // Safe JSON parse — REQUIRES Sanitized<String, JsonValidation>
-    c = c.extend("json_parse_safe".to_string(),
+    c = c.extend(
+        "json_parse_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
-            Box::new(Ty::Any),  // Parsed value
-            Effect::Pure
-        ));
-    c = c.extend("json_urai_selamat".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonValidation,
+            )),
+            Box::new(Ty::Any), // Parsed value
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "json_urai_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonValidation,
+            )),
             Box::new(Ty::Any),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     // Safe deserialize — REQUIRES Sanitized<String, JsonValidation>
-    c = c.extend("deserialize_safe".to_string(),
+    c = c.extend(
+        "deserialize_safe".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
-            Box::new(Ty::Any),  // Deserialized object
-            Effect::Pure
-        ));
-    c = c.extend("nyahsiri_selamat".to_string(),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonValidation,
+            )),
+            Box::new(Ty::Any), // Deserialized object
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "nyahsiri_selamat".to_string(),
         Ty::Fn(
-            Box::new(Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)),
+            Box::new(Ty::Sanitized(
+                Box::new(Ty::String),
+                riina_types::Sanitizer::JsonValidation,
+            )),
             Box::new(Ty::Any),
-            Effect::Pure
-        ));
+            Effect::Pure,
+        ),
+    );
 
     c
 }
@@ -1289,7 +1975,7 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
     // REJECT: Tainted → Sanitized (TAINT VIOLATION)
     // User input cannot flow to sensitive sink without sanitization
     if let (Ty::Sanitized(_, _), Ty::Tainted(_, _)) = (expected, found) {
-        return false;  // Will trigger TypeError::TypeMismatch → needs better error
+        return false; // Will trigger TypeError::TypeMismatch → needs better error
     }
 
     // SANITIZER EXACT MATCH: Sanitized<T, S1> requires Sanitized<T, S2> where S1 == S2
@@ -1333,9 +2019,7 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
         }
 
         // Sum types: covariant in both branches
-        (Ty::Sum(l1, r1), Ty::Sum(l2, r2)) => {
-            types_compatible(l1, l2) && types_compatible(r1, r2)
-        }
+        (Ty::Sum(l1, r1), Ty::Sum(l2, r2)) => types_compatible(l1, l2) && types_compatible(r1, r2),
 
         // List types: covariant in element
         (Ty::List(t1), Ty::List(t2)) => types_compatible(t1, t2),
@@ -1344,17 +2028,13 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
         (Ty::Option(t1), Ty::Option(t2)) => types_compatible(t1, t2),
 
         // Reference types: covariant in inner type, must match security level
-        (Ty::Ref(t1, sl1), Ty::Ref(t2, sl2)) => {
-            sl1 == sl2 && types_compatible(t1, t2)
-        }
+        (Ty::Ref(t1, sl1), Ty::Ref(t2, sl2)) => sl1 == sl2 && types_compatible(t1, t2),
 
         // Secret types: covariant in inner type
         (Ty::Secret(t1), Ty::Secret(t2)) => types_compatible(t1, t2),
 
         // Labeled types: covariant in inner type, must match security level
-        (Ty::Labeled(t1, sl1), Ty::Labeled(t2, sl2)) => {
-            sl1 == sl2 && types_compatible(t1, t2)
-        }
+        (Ty::Labeled(t1, sl1), Ty::Labeled(t2, sl2)) => sl1 == sl2 && types_compatible(t1, t2),
 
         // No match
         _ => false,
@@ -1389,21 +2069,19 @@ fn declass_ok(secret_expr: &Expr, proof_expr: &Expr) -> Result<(), TypeError> {
 
     // e2 must be Prove(Classify(v')) where v' == v
     match proof_expr {
-        Expr::Prove(inner_proof) => {
-            match inner_proof.as_ref() {
-                Expr::Classify(v_prime) => {
-                    if **inner_val != **v_prime {
-                        return Err(TypeError::InvalidDeclassification {
-                            message: "Proof must wrap the same value as secret".to_string(),
-                        });
-                    }
-                    Ok(())
+        Expr::Prove(inner_proof) => match inner_proof.as_ref() {
+            Expr::Classify(v_prime) => {
+                if **inner_val != **v_prime {
+                    return Err(TypeError::InvalidDeclassification {
+                        message: "Proof must wrap the same value as secret".to_string(),
+                    });
                 }
-                _ => Err(TypeError::InvalidDeclassification {
-                    message: "Proof must be EProve(EClassify(v))".to_string(),
-                }),
+                Ok(())
             }
-        }
+            _ => Err(TypeError::InvalidDeclassification {
+                message: "Proof must be EProve(EClassify(v))".to_string(),
+            }),
+        },
         _ => Err(TypeError::InvalidDeclassification {
             message: "Proof expression must be EProve(...)".to_string(),
         }),
@@ -1439,7 +2117,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
         // T_Var: Γ(x) = T → has_type Γ Σ Δ (EVar x) T EffectPure
         Expr::Var(x) => {
-            let ty = ctx.lookup_var(x).cloned().ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
+            let ty = ctx
+                .lookup_var(x)
+                .cloned()
+                .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
             Ok((ty, Effect::Pure))
         }
 
@@ -1452,7 +2133,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let new_ctx = ctx.extend_gamma(x.clone(), t1.clone());
             let mut new_ctx_mut = new_ctx;
             let (t2, eff) = type_check_full(&mut new_ctx_mut, body)?;
-            Ok((Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff), Effect::Pure))
+            Ok((
+                Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff),
+                Effect::Pure,
+            ))
         }
 
         // T_App: has_type Γ Σ Δ e1 (T1 →[ε'] T2) ε1 →
@@ -1465,7 +2149,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             match t1 {
                 Ty::Fn(arg_ty, ret_ty, fn_eff) => {
                     if !types_compatible(&arg_ty, &t2) {
-                        return Err(TypeError::TypeMismatch { expected: *arg_ty, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: *arg_ty,
+                            found: t2,
+                        });
                     }
                     let total_eff = eff1.join(eff2).join(fn_eff);
                     Ok((*ret_ty, total_eff))
@@ -1500,30 +2187,32 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // ════════════════════════════════════════════════════════════════════
         // VERIFIED: Sums (T_Inl, T_Inr, T_Case)
         // ════════════════════════════════════════════════════════════════════
-        Expr::Inl(e, ty) => {
-            match ty {
-                Ty::Sum(t1, t2) => {
-                    let (te, eff) = type_check_full(ctx, e)?;
-                    if te != **t1 {
-                        return Err(TypeError::TypeMismatch { expected: *t1.clone(), found: te });
-                    }
-                    Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
+        Expr::Inl(e, ty) => match ty {
+            Ty::Sum(t1, t2) => {
+                let (te, eff) = type_check_full(ctx, e)?;
+                if te != **t1 {
+                    return Err(TypeError::TypeMismatch {
+                        expected: *t1.clone(),
+                        found: te,
+                    });
                 }
-                _ => Err(TypeError::ExpectedSum(ty.clone())),
+                Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
             }
-        }
-        Expr::Inr(e, ty) => {
-            match ty {
-                Ty::Sum(t1, t2) => {
-                    let (te, eff) = type_check_full(ctx, e)?;
-                    if te != **t2 {
-                        return Err(TypeError::TypeMismatch { expected: *t2.clone(), found: te });
-                    }
-                    Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
+            _ => Err(TypeError::ExpectedSum(ty.clone())),
+        },
+        Expr::Inr(e, ty) => match ty {
+            Ty::Sum(t1, t2) => {
+                let (te, eff) = type_check_full(ctx, e)?;
+                if te != **t2 {
+                    return Err(TypeError::TypeMismatch {
+                        expected: *t2.clone(),
+                        found: te,
+                    });
                 }
-                _ => Err(TypeError::ExpectedSum(ty.clone())),
+                Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
             }
-        }
+            _ => Err(TypeError::ExpectedSum(ty.clone())),
+        },
         Expr::Case(e, x, e1, y, e2) => {
             let (t, eff) = type_check_full(ctx, e)?;
             match t {
@@ -1537,7 +2226,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     let (t2, eff2) = type_check_full(&mut ctx2_mut, e2)?;
 
                     if t1 != t2 {
-                        return Err(TypeError::TypeMismatch { expected: t1, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: t1,
+                            found: t2,
+                        });
                     }
 
                     Ok((t1, eff.join(eff1).join(eff2)))
@@ -1552,14 +2244,20 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::If(cond, e2, e3) => {
             let (t_cond, eff1) = type_check_full(ctx, cond)?;
             if t_cond != Ty::Bool {
-                return Err(TypeError::TypeMismatch { expected: Ty::Bool, found: t_cond });
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Bool,
+                    found: t_cond,
+                });
             }
 
             let (t2, eff2) = type_check_full(ctx, e2)?;
             let (t3, eff3) = type_check_full(ctx, e3)?;
 
             if t2 != t3 {
-                return Err(TypeError::TypeMismatch { expected: t2, found: t3 });
+                return Err(TypeError::TypeMismatch {
+                    expected: t2,
+                    found: t3,
+                });
             }
 
             Ok((t2, eff1.join(eff2).join(eff3)))
@@ -1576,7 +2274,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let mut ctx_rec_mut = ctx_rec.clone();
             let (t1, eff1) = type_check_full(&mut ctx_rec_mut, e1)?;
             if !types_compatible(ty_ann, &t1) {
-                return Err(TypeError::AnnotationMismatch { expected: ty_ann.clone(), found: t1 });
+                return Err(TypeError::AnnotationMismatch {
+                    expected: ty_ann.clone(),
+                    found: t1,
+                });
             }
             let mut ctx_rec_mut2 = ctx_rec;
             let (t2, eff2) = type_check_full(&mut ctx_rec_mut2, e2)?;
@@ -1649,7 +2350,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         });
                     }
                     if *inner != t2 {
-                        return Err(TypeError::TypeMismatch { expected: *inner, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: *inner,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Unit, eff1.join(eff2).join(Effect::Write)))
                 }
@@ -1734,7 +2438,11 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // ════════════════════════════════════════════════════════════════════
         // FFI and Binary Operations
         // ════════════════════════════════════════════════════════════════════
-        Expr::FFICall { name: _, args, ret_ty } => {
+        Expr::FFICall {
+            name: _,
+            args,
+            ret_ty,
+        } => {
             let mut eff = Effect::System;
             for arg in args {
                 let (_t, e) = type_check_full(ctx, arg)?;
@@ -1754,42 +2462,69 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     } else if t1 == Ty::Int && t2 == Ty::Int {
                         Ok((Ty::Int, eff))
                     } else {
-                        Err(TypeError::TypeMismatch { expected: t1, found: t2 })
+                        Err(TypeError::TypeMismatch {
+                            expected: t1,
+                            found: t2,
+                        })
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
                     if t1 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t1,
+                        });
                     }
                     if t2 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Int, eff))
                 }
                 BinOp::Eq | BinOp::Ne => {
                     if t1 != t2 {
-                        return Err(TypeError::TypeMismatch { expected: t1, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: t1,
+                            found: t2,
+                        });
                     }
                     if t1 != Ty::Int && t1 != Ty::Bool && t1 != Ty::String {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t1,
+                        });
                     }
                     Ok((Ty::Bool, eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
                     if t1 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t1,
+                        });
                     }
                     if t2 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Bool, eff))
                 }
                 BinOp::And | BinOp::Or => {
                     if t1 != Ty::Bool {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Bool, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Bool,
+                            found: t1,
+                        });
                     }
                     if t2 != Ty::Bool {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Bool, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Bool,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Bool, eff))
                 }
@@ -1812,78 +2547,89 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
         Expr::String(_) => Ok((Ty::String, Effect::Pure)),
         Expr::Var(x) => {
-            let ty = ctx.lookup(x).cloned().ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
+            let ty = ctx
+                .lookup(x)
+                .cloned()
+                .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
             Ok((ty, Effect::Pure))
-        },
+        }
 
         // VERIFIED: Functions
         Expr::Lam(x, t1, body) => {
             let new_ctx = ctx.extend(x.clone(), t1.clone());
             let (t2, eff) = type_check(&new_ctx, body)?;
-            Ok((Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff), Effect::Pure))
-        },
+            Ok((
+                Ty::Fn(Box::new(t1.clone()), Box::new(t2), eff),
+                Effect::Pure,
+            ))
+        }
         Expr::App(e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let (t2, eff2) = type_check(ctx, e2)?;
-            
+
             match t1 {
                 Ty::Fn(arg_ty, ret_ty, fn_eff) => {
                     if !types_compatible(&arg_ty, &t2) {
-                        return Err(TypeError::TypeMismatch { expected: *arg_ty, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: *arg_ty,
+                            found: t2,
+                        });
                     }
                     // Effect accumulation: eff1 + eff2 + fn_eff
                     let total_eff = eff1.join(eff2).join(fn_eff);
                     Ok((*ret_ty, total_eff))
-                },
+                }
                 _ => Err(TypeError::ExpectedFunction(t1)),
             }
-        },
+        }
 
         // VERIFIED: Products
         Expr::Pair(e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let (t2, eff2) = type_check(ctx, e2)?;
             Ok((Ty::Prod(Box::new(t1), Box::new(t2)), eff1.join(eff2)))
-        },
+        }
         Expr::Fst(e) => {
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Prod(t1, _) => Ok((*t1, eff)),
                 _ => Err(TypeError::ExpectedProduct(t)),
             }
-        },
+        }
         Expr::Snd(e) => {
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Prod(_, t2) => Ok((*t2, eff)),
                 _ => Err(TypeError::ExpectedProduct(t)),
             }
-        },
+        }
 
         // VERIFIED: Sums
-        Expr::Inl(e, ty) => {
-            match ty {
-                Ty::Sum(t1, t2) => {
-                     let (te, eff) = type_check(ctx, e)?;
-                     if te != **t1 {
-                         return Err(TypeError::TypeMismatch { expected: *t1.clone(), found: te });
-                     }
-                     Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
-                },
-                _ => Err(TypeError::ExpectedSum(ty.clone())),
+        Expr::Inl(e, ty) => match ty {
+            Ty::Sum(t1, t2) => {
+                let (te, eff) = type_check(ctx, e)?;
+                if te != **t1 {
+                    return Err(TypeError::TypeMismatch {
+                        expected: *t1.clone(),
+                        found: te,
+                    });
+                }
+                Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
             }
+            _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
-        Expr::Inr(e, ty) => {
-             match ty {
-                Ty::Sum(t1, t2) => {
-                     let (te, eff) = type_check(ctx, e)?;
-                     if te != **t2 {
-                         return Err(TypeError::TypeMismatch { expected: *t2.clone(), found: te });
-                     }
-                     Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
-                },
-                _ => Err(TypeError::ExpectedSum(ty.clone())),
+        Expr::Inr(e, ty) => match ty {
+            Ty::Sum(t1, t2) => {
+                let (te, eff) = type_check(ctx, e)?;
+                if te != **t2 {
+                    return Err(TypeError::TypeMismatch {
+                        expected: *t2.clone(),
+                        found: te,
+                    });
+                }
+                Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
             }
+            _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
         Expr::Case(e, x, e1, y, e2) => {
             let (t, eff) = type_check(ctx, e)?;
@@ -1891,53 +2637,65 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 Ty::Sum(t_left, t_right) => {
                     let ctx1 = ctx.extend(x.clone(), *t_left);
                     let (t1, eff1) = type_check(&ctx1, e1)?;
-                    
+
                     let ctx2 = ctx.extend(y.clone(), *t_right);
                     let (t2, eff2) = type_check(&ctx2, e2)?;
-                    
+
                     if t1 != t2 {
-                        return Err(TypeError::TypeMismatch { expected: t1, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: t1,
+                            found: t2,
+                        });
                     }
-                    
+
                     Ok((t1, eff.join(eff1).join(eff2)))
-                },
+                }
                 _ => Err(TypeError::ExpectedSum(t)),
             }
-        },
+        }
 
         // VERIFIED: Control
         Expr::If(cond, e2, e3) => {
             let (t_cond, eff1) = type_check(ctx, cond)?;
             if t_cond != Ty::Bool {
-                return Err(TypeError::TypeMismatch { expected: Ty::Bool, found: t_cond });
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Bool,
+                    found: t_cond,
+                });
             }
-            
+
             let (t2, eff2) = type_check(ctx, e2)?;
             let (t3, eff3) = type_check(ctx, e3)?;
-            
+
             if t2 != t3 {
-                 return Err(TypeError::TypeMismatch { expected: t2, found: t3 });
+                return Err(TypeError::TypeMismatch {
+                    expected: t2,
+                    found: t3,
+                });
             }
-            
+
             Ok((t2, eff1.join(eff2).join(eff3)))
-        },
+        }
         Expr::Let(x, e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let ctx_new = ctx.extend(x.clone(), t1);
             let (t2, eff2) = type_check(&ctx_new, e2)?;
             Ok((t2, eff1.join(eff2)))
-        },
+        }
         Expr::LetRec(x, ty_ann, e1, e2) => {
             // Typecheck binding with name already in scope (for recursion)
             let ctx_rec = ctx.extend(x.clone(), ty_ann.clone());
             let (t1, eff1) = type_check(&ctx_rec, e1)?;
             // Check that binding type is compatible with annotation
             if !types_compatible(ty_ann, &t1) {
-                return Err(TypeError::AnnotationMismatch { expected: ty_ann.clone(), found: t1 });
+                return Err(TypeError::AnnotationMismatch {
+                    expected: ty_ann.clone(),
+                    found: t1,
+                });
             }
             let (t2, eff2) = type_check(&ctx_rec, e2)?;
             Ok((t2, eff1.join(eff2)))
-        },
+        }
 
         // UNVERIFIED: Effects (Pending formalization in Typing.v)
         Expr::Perform(eff, e) => {
@@ -1945,91 +2703,101 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             // TODO: Validate payload type matches effect definition?
             // For now, assume payload is generic or valid.
             // In a real system, 'eff' would have a signature.
-            Ok((te, eff_e.join(*eff))) 
-        },
+            Ok((te, eff_e.join(*eff)))
+        }
         Expr::Handle(e, _x, h) => {
-             let (_t_e, _eff_e) = type_check(ctx, e)?;
-             // Handle conceptually catches effects.
-             // In full calculus, we need effect signatures.
-             // Here we approximate: handler 'h' handles 'e'.
-             // 'h' typically takes the effect payload or resumption.
-             // This is a placeholder for the algebraic effect logic.
-             let (t_h, eff_h) = type_check(ctx, h)?;
-             // Result type usually matches e if handled fully.
-             Ok((t_h, eff_h))
-        },
+            let (_t_e, _eff_e) = type_check(ctx, e)?;
+            // Handle conceptually catches effects.
+            // In full calculus, we need effect signatures.
+            // Here we approximate: handler 'h' handles 'e'.
+            // 'h' typically takes the effect payload or resumption.
+            // This is a placeholder for the algebraic effect logic.
+            let (t_h, eff_h) = type_check(ctx, h)?;
+            // Result type usually matches e if handled fully.
+            Ok((t_h, eff_h))
+        }
 
         // UNVERIFIED: References (Pending formalization in Typing.v)
         Expr::Ref(e, l) => {
-             let (t, eff) = type_check(ctx, e)?;
-             Ok((Ty::Ref(Box::new(t), *l), eff.join(Effect::Write))) // Allocation is a write-like effect?
-        },
+            let (t, eff) = type_check(ctx, e)?;
+            Ok((Ty::Ref(Box::new(t), *l), eff.join(Effect::Write))) // Allocation is a write-like effect?
+        }
         Expr::Deref(e) => {
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Ref(inner, _l) => Ok((*inner, eff.join(Effect::Read))),
                 _ => Err(TypeError::ExpectedRef(t)),
             }
-        },
+        }
         Expr::Assign(e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let (t2, eff2) = type_check(ctx, e2)?;
             match t1 {
                 Ty::Ref(inner, _l) => {
                     if *inner != t2 {
-                         return Err(TypeError::TypeMismatch { expected: *inner, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: *inner,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Unit, eff1.join(eff2).join(Effect::Write)))
-                },
+                }
                 _ => Err(TypeError::ExpectedRef(t1)),
             }
-        },
+        }
 
         // UNVERIFIED: Security (Pending formalization in Typing.v)
         Expr::Classify(e) => {
-             let (t, eff) = type_check(ctx, e)?;
-             Ok((Ty::Secret(Box::new(t)), eff))
-        },
+            let (t, eff) = type_check(ctx, e)?;
+            Ok((Ty::Secret(Box::new(t)), eff))
+        }
         Expr::Declassify(e, _proof) => {
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Secret(inner) => Ok((*inner, eff)),
                 // Assuming we can define what a "proof" is later.
-                 _ => Ok((t, eff)) // Declassifying non-secret is identity?
+                _ => Ok((t, eff)), // Declassifying non-secret is identity?
             }
-        },
+        }
         Expr::Prove(e) => {
-             let (t, eff) = type_check(ctx, e)?;
-             Ok((Ty::Proof(Box::new(t)), eff))
-        },
-        
+            let (t, eff) = type_check(ctx, e)?;
+            Ok((Ty::Proof(Box::new(t)), eff))
+        }
+
         // UNVERIFIED: Capabilities
         Expr::Require(eff, e) => {
-             let (t, e_eff) = type_check(ctx, e)?;
-             Ok((t, e_eff.join(*eff)))
-        },
+            let (t, e_eff) = type_check(ctx, e)?;
+            Ok((t, e_eff.join(*eff)))
+        }
         Expr::Grant(_eff, e) => {
-             // Grant satisfies a requirement?
-             let (t, e_eff) = type_check(ctx, e)?;
-             Ok((t, e_eff)) // Does it remove the effect from the context?
-        },
+            // Grant satisfies a requirement?
+            let (t, e_eff) = type_check(ctx, e)?;
+            Ok((t, e_eff)) // Does it remove the effect from the context?
+        }
 
         // Locations (runtime-only — corresponds to Coq ELoc)
         Expr::Loc(_) => {
             // Store locations are runtime values; typing requires store typing context.
             // Without store context, we return Ref(Unit, Public) as a conservative type.
-            Ok((Ty::Ref(Box::new(Ty::Unit), SecurityLevel::Public), Effect::Pure))
-        },
+            Ok((
+                Ty::Ref(Box::new(Ty::Unit), SecurityLevel::Public),
+                Effect::Pure,
+            ))
+        }
 
         // FFI call
-        Expr::FFICall { name: _, args, ret_ty } => {
+        Expr::FFICall {
+            name: _,
+            args,
+            ret_ty,
+        } => {
             let mut eff = Effect::System; // FFI is always effectful
             for arg in args {
                 let (_t, e) = type_check(ctx, arg)?;
                 eff = eff.join(e);
             }
             Ok((ret_ty.clone(), eff))
-        },
+        }
 
         // Binary operations
         Expr::BinOp(op, e1, e2) => {
@@ -2043,43 +2811,70 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     } else if t1 == Ty::Int && t2 == Ty::Int {
                         Ok((Ty::Int, eff))
                     } else {
-                        Err(TypeError::TypeMismatch { expected: t1, found: t2 })
+                        Err(TypeError::TypeMismatch {
+                            expected: t1,
+                            found: t2,
+                        })
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
                     if t1 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t1,
+                        });
                     }
                     if t2 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Int, eff))
                 }
                 BinOp::Eq | BinOp::Ne => {
                     // Eq/Ne work on Int, Bool, and String
                     if t1 != t2 {
-                        return Err(TypeError::TypeMismatch { expected: t1, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: t1,
+                            found: t2,
+                        });
                     }
                     if t1 != Ty::Int && t1 != Ty::Bool && t1 != Ty::String {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t1,
+                        });
                     }
                     Ok((Ty::Bool, eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
                     if t1 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t1,
+                        });
                     }
                     if t2 != Ty::Int {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Int, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Int,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Bool, eff))
                 }
                 BinOp::And | BinOp::Or => {
                     if t1 != Ty::Bool {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Bool, found: t1 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Bool,
+                            found: t1,
+                        });
                     }
                     if t2 != Ty::Bool {
-                        return Err(TypeError::TypeMismatch { expected: Ty::Bool, found: t2 });
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Bool,
+                            found: t2,
+                        });
                     }
                     Ok((Ty::Bool, eff))
                 }

@@ -3,7 +3,7 @@
 //! Analysis: parse + typecheck, collect diagnostics.
 
 use riina_parser::Parser;
-use riina_typechecker::{type_check, Context};
+use riina_typechecker::check_program;
 
 /// A diagnostic message with position.
 #[derive(Debug, Clone)]
@@ -44,9 +44,7 @@ pub fn analyze(source: &str) -> Vec<Diagnostic> {
         }
     };
 
-    let expr = program.desugar();
-    let ctx = riina_typechecker::register_builtin_types(&Context::new());
-    if let Err(e) = type_check(&ctx, &expr) {
+    if let Err(e) = check_program(&program) {
         diagnostics.push(Diagnostic {
             message: format!("Type error: {e}"),
             start_line: 0,
@@ -91,6 +89,15 @@ mod tests {
     fn test_analyze_parse_error() {
         let diags = analyze("biar = ;");
         assert!(!diags.is_empty());
+    }
+
+    #[test]
+    fn test_analyze_capability_violation() {
+        let diags = analyze(
+            "fungsi perlu_rangkaian() -> Nombor kesan Rangkaian { require Rangkaian 1 }\nperlu_rangkaian()",
+        );
+        assert_eq!(diags.len(), 1);
+        assert!(diags[0].message.contains("Capability violation"));
     }
 
     #[test]

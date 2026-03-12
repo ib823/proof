@@ -2,23 +2,35 @@
 
 #[cfg(test)]
 mod tests {
-    use crate::{Context, type_check, TypeError};
-    use riina_types::{BinOp, Expr, Ty, Effect, SecurityLevel};
+    use crate::{type_check, Context, TypeError};
+    use riina_types::{BinOp, Effect, Expr, SecurityLevel, Ty};
 
     // ── Literals ──
 
     #[test]
     fn test_literals() {
         let ctx = Context::new();
-        assert_eq!(type_check(&ctx, &Expr::Int(42)).unwrap(), (Ty::Int, Effect::Pure));
-        assert_eq!(type_check(&ctx, &Expr::Bool(true)).unwrap(), (Ty::Bool, Effect::Pure));
-        assert_eq!(type_check(&ctx, &Expr::Unit).unwrap(), (Ty::Unit, Effect::Pure));
+        assert_eq!(
+            type_check(&ctx, &Expr::Int(42)).unwrap(),
+            (Ty::Int, Effect::Pure)
+        );
+        assert_eq!(
+            type_check(&ctx, &Expr::Bool(true)).unwrap(),
+            (Ty::Bool, Effect::Pure)
+        );
+        assert_eq!(
+            type_check(&ctx, &Expr::Unit).unwrap(),
+            (Ty::Unit, Effect::Pure)
+        );
     }
 
     #[test]
     fn test_string_literal() {
         let ctx = Context::new();
-        assert_eq!(type_check(&ctx, &Expr::String("hello".into())).unwrap(), (Ty::String, Effect::Pure));
+        assert_eq!(
+            type_check(&ctx, &Expr::String("hello".into())).unwrap(),
+            (Ty::String, Effect::Pure)
+        );
     }
 
     // ── Variables ──
@@ -26,7 +38,10 @@ mod tests {
     #[test]
     fn test_var_found() {
         let ctx = Context::new().extend("x".into(), Ty::Int);
-        assert_eq!(type_check(&ctx, &Expr::Var("x".into())).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(
+            type_check(&ctx, &Expr::Var("x".into())).unwrap(),
+            (Ty::Int, Effect::Pure)
+        );
     }
 
     #[test]
@@ -44,7 +59,11 @@ mod tests {
     fn test_lam_app() {
         let ctx = Context::new();
         // fn(x: Int) x
-        let id_int = Expr::Lam("x".to_string(), Ty::Int, Box::new(Expr::Var("x".to_string())));
+        let id_int = Expr::Lam(
+            "x".to_string(),
+            Ty::Int,
+            Box::new(Expr::Var("x".to_string())),
+        );
 
         let (ty, _eff) = type_check(&ctx, &id_int).unwrap();
         match ty {
@@ -52,7 +71,7 @@ mod tests {
                 assert_eq!(*arg, Ty::Int);
                 assert_eq!(*ret, Ty::Int);
                 assert_eq!(fn_eff, Effect::Pure);
-            },
+            }
             _ => panic!("Expected Fn type"),
         }
 
@@ -67,7 +86,10 @@ mod tests {
         let f = Expr::Lam("x".into(), Ty::Int, Box::new(Expr::Var("x".into())));
         let app = Expr::App(Box::new(f), Box::new(Expr::Bool(true)));
         match type_check(&ctx, &app) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::Bool }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -77,7 +99,7 @@ mod tests {
         let ctx = Context::new();
         let app = Expr::App(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
         match type_check(&ctx, &app) {
-            Err(TypeError::ExpectedFunction(Ty::Int)) => {},
+            Err(TypeError::ExpectedFunction(Ty::Int)) => {}
             other => panic!("Expected ExpectedFunction, got {:?}", other),
         }
     }
@@ -114,7 +136,7 @@ mod tests {
         let ctx = Context::new();
         let fst = Expr::Fst(Box::new(Expr::Int(1)));
         match type_check(&ctx, &fst) {
-            Err(TypeError::ExpectedProduct(Ty::Int)) => {},
+            Err(TypeError::ExpectedProduct(Ty::Int)) => {}
             other => panic!("Expected ExpectedProduct, got {:?}", other),
         }
     }
@@ -124,7 +146,7 @@ mod tests {
         let ctx = Context::new();
         let snd = Expr::Snd(Box::new(Expr::Bool(false)));
         match type_check(&ctx, &snd) {
-            Err(TypeError::ExpectedProduct(Ty::Bool)) => {},
+            Err(TypeError::ExpectedProduct(Ty::Bool)) => {}
             other => panic!("Expected ExpectedProduct, got {:?}", other),
         }
     }
@@ -158,7 +180,10 @@ mod tests {
         // Inject Bool into left (expects Int)
         let inl = Expr::Inl(Box::new(Expr::Bool(true)), sum_ty);
         match type_check(&ctx, &inl) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::Bool }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -170,7 +195,10 @@ mod tests {
         // Inject Int into right (expects Bool)
         let inr = Expr::Inr(Box::new(Expr::Int(1)), sum_ty);
         match type_check(&ctx, &inr) {
-            Err(TypeError::TypeMismatch { expected: Ty::Bool, found: Ty::Int }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Bool,
+                found: Ty::Int,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -180,7 +208,7 @@ mod tests {
         let ctx = Context::new();
         let inl = Expr::Inl(Box::new(Expr::Int(1)), Ty::Int);
         match type_check(&ctx, &inl) {
-            Err(TypeError::ExpectedSum(Ty::Int)) => {},
+            Err(TypeError::ExpectedSum(Ty::Int)) => {}
             other => panic!("Expected ExpectedSum, got {:?}", other),
         }
     }
@@ -193,8 +221,10 @@ mod tests {
         // case scrutinee of inl x => x | inr y => 0
         let case_expr = Expr::Case(
             Box::new(scrutinee),
-            "x".into(), Box::new(Expr::Var("x".into())),
-            "y".into(), Box::new(Expr::Int(0)),
+            "x".into(),
+            Box::new(Expr::Var("x".into())),
+            "y".into(),
+            Box::new(Expr::Int(0)),
         );
         let (ty, eff) = type_check(&ctx, &case_expr).unwrap();
         assert_eq!(ty, Ty::Int);
@@ -209,11 +239,16 @@ mod tests {
         // Branches return different types
         let case_expr = Expr::Case(
             Box::new(scrutinee),
-            "x".into(), Box::new(Expr::Var("x".into())),  // Int
-            "y".into(), Box::new(Expr::Var("y".into())),  // Bool
+            "x".into(),
+            Box::new(Expr::Var("x".into())), // Int
+            "y".into(),
+            Box::new(Expr::Var("y".into())), // Bool
         );
         match type_check(&ctx, &case_expr) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::Bool }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -223,11 +258,13 @@ mod tests {
         let ctx = Context::new();
         let case_expr = Expr::Case(
             Box::new(Expr::Int(1)),
-            "x".into(), Box::new(Expr::Unit),
-            "y".into(), Box::new(Expr::Unit),
+            "x".into(),
+            Box::new(Expr::Unit),
+            "y".into(),
+            Box::new(Expr::Unit),
         );
         match type_check(&ctx, &case_expr) {
-            Err(TypeError::ExpectedSum(Ty::Int)) => {},
+            Err(TypeError::ExpectedSum(Ty::Int)) => {}
             other => panic!("Expected ExpectedSum, got {:?}", other),
         }
     }
@@ -254,7 +291,10 @@ mod tests {
             Box::new(Expr::Int(3)),
         );
         match type_check(&ctx, &if_expr) {
-            Err(TypeError::TypeMismatch { expected: Ty::Bool, found: Ty::Int }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Bool,
+                found: Ty::Int,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -266,13 +306,13 @@ mod tests {
         let if_err = Expr::If(
             Box::new(Expr::Bool(true)),
             Box::new(Expr::Int(1)),
-            Box::new(Expr::String("no".to_string()))
+            Box::new(Expr::String("no".to_string())),
         );
         match type_check(&ctx, &if_err) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::Int);
                 assert_eq!(found, Ty::String);
-            },
+            }
             _ => panic!("Expected TypeMismatch"),
         }
     }
@@ -288,7 +328,10 @@ mod tests {
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".into())),
         );
-        assert_eq!(type_check(&ctx, &let_expr).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(
+            type_check(&ctx, &let_expr).unwrap(),
+            (Ty::Int, Effect::Pure)
+        );
     }
 
     // ── LetRec ──
@@ -301,7 +344,11 @@ mod tests {
         let letrec = Expr::LetRec(
             "f".into(),
             fn_ty.clone(),
-            Box::new(Expr::Lam("x".into(), Ty::Int, Box::new(Expr::Var("x".into())))),
+            Box::new(Expr::Lam(
+                "x".into(),
+                Ty::Int,
+                Box::new(Expr::Var("x".into())),
+            )),
             Box::new(Expr::Var("f".into())),
         );
         let (ty, eff) = type_check(&ctx, &letrec).unwrap();
@@ -316,11 +363,15 @@ mod tests {
         let letrec = Expr::LetRec(
             "f".into(),
             Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Pure),
-            Box::new(Expr::Lam("x".into(), Ty::Int, Box::new(Expr::Var("x".into())))),
+            Box::new(Expr::Lam(
+                "x".into(),
+                Ty::Int,
+                Box::new(Expr::Var("x".into())),
+            )),
             Box::new(Expr::Unit),
         );
         match type_check(&ctx, &letrec) {
-            Err(TypeError::AnnotationMismatch { .. }) => {},
+            Err(TypeError::AnnotationMismatch { .. }) => {}
             other => panic!("Expected AnnotationMismatch, got {:?}", other),
         }
     }
@@ -354,7 +405,7 @@ mod tests {
         let ctx = Context::new();
         let deref = Expr::Deref(Box::new(Expr::Int(1)));
         match type_check(&ctx, &deref) {
-            Err(TypeError::ExpectedRef(Ty::Int)) => {},
+            Err(TypeError::ExpectedRef(Ty::Int)) => {}
             other => panic!("Expected ExpectedRef, got {:?}", other),
         }
     }
@@ -375,7 +426,10 @@ mod tests {
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Public);
         let assign = Expr::Assign(Box::new(r), Box::new(Expr::Bool(true)));
         match type_check(&ctx, &assign) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::Bool }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -385,7 +439,7 @@ mod tests {
         let ctx = Context::new();
         let assign = Expr::Assign(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
         match type_check(&ctx, &assign) {
-            Err(TypeError::ExpectedRef(Ty::Int)) => {},
+            Err(TypeError::ExpectedRef(Ty::Int)) => {}
             other => panic!("Expected ExpectedRef, got {:?}", other),
         }
     }
@@ -505,14 +559,22 @@ mod tests {
     #[test]
     fn test_binop_add_string() {
         let ctx = Context::new();
-        let add = Expr::BinOp(BinOp::Add, Box::new(Expr::String("a".into())), Box::new(Expr::String("b".into())));
+        let add = Expr::BinOp(
+            BinOp::Add,
+            Box::new(Expr::String("a".into())),
+            Box::new(Expr::String("b".into())),
+        );
         assert_eq!(type_check(&ctx, &add).unwrap(), (Ty::String, Effect::Pure));
     }
 
     #[test]
     fn test_binop_add_mismatch() {
         let ctx = Context::new();
-        let add = Expr::BinOp(BinOp::Add, Box::new(Expr::Int(1)), Box::new(Expr::Bool(true)));
+        let add = Expr::BinOp(
+            BinOp::Add,
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Bool(true)),
+        );
         assert!(type_check(&ctx, &add).is_err());
     }
 
@@ -547,9 +609,16 @@ mod tests {
     #[test]
     fn test_binop_arith_non_int_lhs() {
         let ctx = Context::new();
-        let sub = Expr::BinOp(BinOp::Sub, Box::new(Expr::Bool(true)), Box::new(Expr::Int(1)));
+        let sub = Expr::BinOp(
+            BinOp::Sub,
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Int(1)),
+        );
         match type_check(&ctx, &sub) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::Bool }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -557,9 +626,16 @@ mod tests {
     #[test]
     fn test_binop_arith_non_int_rhs() {
         let ctx = Context::new();
-        let mul = Expr::BinOp(BinOp::Mul, Box::new(Expr::Int(1)), Box::new(Expr::String("x".into())));
+        let mul = Expr::BinOp(
+            BinOp::Mul,
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::String("x".into())),
+        );
         match type_check(&ctx, &mul) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::String }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::String,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -574,21 +650,33 @@ mod tests {
     #[test]
     fn test_binop_ne_bool() {
         let ctx = Context::new();
-        let ne = Expr::BinOp(BinOp::Ne, Box::new(Expr::Bool(true)), Box::new(Expr::Bool(false)));
+        let ne = Expr::BinOp(
+            BinOp::Ne,
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Bool(false)),
+        );
         assert_eq!(type_check(&ctx, &ne).unwrap(), (Ty::Bool, Effect::Pure));
     }
 
     #[test]
     fn test_binop_eq_string() {
         let ctx = Context::new();
-        let eq = Expr::BinOp(BinOp::Eq, Box::new(Expr::String("a".into())), Box::new(Expr::String("b".into())));
+        let eq = Expr::BinOp(
+            BinOp::Eq,
+            Box::new(Expr::String("a".into())),
+            Box::new(Expr::String("b".into())),
+        );
         assert_eq!(type_check(&ctx, &eq).unwrap(), (Ty::Bool, Effect::Pure));
     }
 
     #[test]
     fn test_binop_eq_type_mismatch() {
         let ctx = Context::new();
-        let eq = Expr::BinOp(BinOp::Eq, Box::new(Expr::Int(1)), Box::new(Expr::Bool(true)));
+        let eq = Expr::BinOp(
+            BinOp::Eq,
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Bool(true)),
+        );
         assert!(type_check(&ctx, &eq).is_err());
     }
 
@@ -623,9 +711,16 @@ mod tests {
     #[test]
     fn test_binop_comparison_non_int() {
         let ctx = Context::new();
-        let lt = Expr::BinOp(BinOp::Lt, Box::new(Expr::Bool(true)), Box::new(Expr::Int(1)));
+        let lt = Expr::BinOp(
+            BinOp::Lt,
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Int(1)),
+        );
         match type_check(&ctx, &lt) {
-            Err(TypeError::TypeMismatch { expected: Ty::Int, found: Ty::Bool }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -633,23 +728,38 @@ mod tests {
     #[test]
     fn test_binop_and() {
         let ctx = Context::new();
-        let and = Expr::BinOp(BinOp::And, Box::new(Expr::Bool(true)), Box::new(Expr::Bool(false)));
+        let and = Expr::BinOp(
+            BinOp::And,
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Bool(false)),
+        );
         assert_eq!(type_check(&ctx, &and).unwrap(), (Ty::Bool, Effect::Pure));
     }
 
     #[test]
     fn test_binop_or() {
         let ctx = Context::new();
-        let or = Expr::BinOp(BinOp::Or, Box::new(Expr::Bool(false)), Box::new(Expr::Bool(true)));
+        let or = Expr::BinOp(
+            BinOp::Or,
+            Box::new(Expr::Bool(false)),
+            Box::new(Expr::Bool(true)),
+        );
         assert_eq!(type_check(&ctx, &or).unwrap(), (Ty::Bool, Effect::Pure));
     }
 
     #[test]
     fn test_binop_and_non_bool() {
         let ctx = Context::new();
-        let and = Expr::BinOp(BinOp::And, Box::new(Expr::Int(1)), Box::new(Expr::Bool(true)));
+        let and = Expr::BinOp(
+            BinOp::And,
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Bool(true)),
+        );
         match type_check(&ctx, &and) {
-            Err(TypeError::TypeMismatch { expected: Ty::Bool, found: Ty::Int }) => {},
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Bool,
+                found: Ty::Int,
+            }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
         }
     }
@@ -709,9 +819,14 @@ mod tests {
     fn test_effect_accumulation_in_app() {
         let ctx = Context::new();
         // fn with System effect applied to a Read-effectful arg
-        let f = Expr::Lam("x".into(), Ty::Int, Box::new(
-            Expr::Perform(Effect::System, Box::new(Expr::Var("x".into())))
-        ));
+        let f = Expr::Lam(
+            "x".into(),
+            Ty::Int,
+            Box::new(Expr::Perform(
+                Effect::System,
+                Box::new(Expr::Var("x".into())),
+            )),
+        );
         let arg = Expr::Perform(Effect::Read, Box::new(Expr::Int(1)));
         let app = Expr::App(Box::new(f), Box::new(arg));
         let (_ty, eff) = type_check(&ctx, &app).unwrap();
@@ -753,24 +868,39 @@ mod tests {
 
 #[cfg(test)]
 mod formalized_tests {
-    use crate::{TypingContext, type_check_full, TypeError, Context, type_check, register_builtin_types, types_compatible};
-    use riina_types::{Expr, Ty, Effect, SecurityLevel, StoreTy, Location};
+    use crate::{
+        register_builtin_types, type_check, type_check_full, types_compatible, Context, TypeError,
+        TypingContext,
+    };
+    use riina_types::{Effect, Expr, Location, SecurityLevel, StoreTy, Ty};
 
     // ── Basic value typing with new context ──
 
     #[test]
     fn test_full_literals() {
         let mut ctx = TypingContext::new();
-        assert_eq!(type_check_full(&mut ctx, &Expr::Int(42)).unwrap(), (Ty::Int, Effect::Pure));
-        assert_eq!(type_check_full(&mut ctx, &Expr::Bool(true)).unwrap(), (Ty::Bool, Effect::Pure));
-        assert_eq!(type_check_full(&mut ctx, &Expr::Unit).unwrap(), (Ty::Unit, Effect::Pure));
+        assert_eq!(
+            type_check_full(&mut ctx, &Expr::Int(42)).unwrap(),
+            (Ty::Int, Effect::Pure)
+        );
+        assert_eq!(
+            type_check_full(&mut ctx, &Expr::Bool(true)).unwrap(),
+            (Ty::Bool, Effect::Pure)
+        );
+        assert_eq!(
+            type_check_full(&mut ctx, &Expr::Unit).unwrap(),
+            (Ty::Unit, Effect::Pure)
+        );
     }
 
     #[test]
     fn test_full_var() {
         let mut ctx = TypingContext::new();
         ctx = ctx.extend_gamma("x".into(), Ty::Int);
-        assert_eq!(type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap(), (Ty::Int, Effect::Pure));
+        assert_eq!(
+            type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap(),
+            (Ty::Int, Effect::Pure)
+        );
     }
 
     // ── Store Typing (Σ) tests ──
@@ -831,7 +961,11 @@ mod formalized_tests {
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Secret);
         let deref = Expr::Deref(Box::new(r));
         match type_check_full(&mut ctx, &deref) {
-            Err(TypeError::SecurityViolation { found, expected, context }) => {
+            Err(TypeError::SecurityViolation {
+                found,
+                expected,
+                context,
+            }) => {
                 assert_eq!(found, SecurityLevel::Secret);
                 assert_eq!(expected, SecurityLevel::Public);
                 assert_eq!(context, "dereference");
@@ -846,7 +980,11 @@ mod formalized_tests {
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Secret);
         let assign = Expr::Assign(Box::new(r), Box::new(Expr::Int(2)));
         match type_check_full(&mut ctx, &assign) {
-            Err(TypeError::SecurityViolation { found, expected, context }) => {
+            Err(TypeError::SecurityViolation {
+                found,
+                expected,
+                context,
+            }) => {
                 assert_eq!(found, SecurityLevel::Secret);
                 assert_eq!(expected, SecurityLevel::Public);
                 assert_eq!(context, "assignment");
@@ -935,7 +1073,10 @@ mod formalized_tests {
         match type_check_full(&mut ctx, &declassify) {
             Err(TypeError::InvalidDeclassification { .. }) => {}
             Err(TypeError::TypeMismatch { .. }) => {} // Type mismatch is also acceptable
-            other => panic!("Expected InvalidDeclassification or TypeMismatch, got {:?}", other),
+            other => panic!(
+                "Expected InvalidDeclassification or TypeMismatch, got {:?}",
+                other
+            ),
         }
     }
 
@@ -982,7 +1123,11 @@ mod formalized_tests {
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::System);
         let deref = Expr::Deref(Box::new(r));
         match type_check_full(&mut ctx, &deref) {
-            Err(TypeError::SecurityViolation { found, expected, context }) => {
+            Err(TypeError::SecurityViolation {
+                found,
+                expected,
+                context,
+            }) => {
                 assert_eq!(found, SecurityLevel::System);
                 assert_eq!(expected, SecurityLevel::Internal);
                 assert_eq!(context, "dereference");
@@ -1043,7 +1188,7 @@ mod formalized_tests {
         // read_line() : () -> Tainted<String, UserInput>
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let (read_ty, _) = type_check(&ctx, &read_call).unwrap();
@@ -1055,7 +1200,7 @@ mod formalized_tests {
         // sql_execute(read_line()) should FAIL — tainted input to sensitive sink
         let unsafe_sql = Expr::App(
             Box::new(Expr::Var("sql_execute".to_string())),
-            Box::new(read_call.clone())
+            Box::new(read_call.clone()),
         );
 
         // This should fail type-check because:
@@ -1090,13 +1235,13 @@ mod formalized_tests {
         // read_line()
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // sanitize_sql(read_line())
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_sql".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let (san_ty, _) = type_check(&ctx, &sanitized).unwrap();
@@ -1108,7 +1253,7 @@ mod formalized_tests {
         // sql_execute(sanitize_sql(read_line())) — should succeed
         let safe_sql = Expr::App(
             Box::new(Expr::Var("sql_execute".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_sql) {
@@ -1129,13 +1274,13 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // html_render(read_line()) — should FAIL
         let unsafe_html = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(read_call.clone())
+            Box::new(read_call.clone()),
         );
 
         match type_check(&ctx, &unsafe_html) {
@@ -1155,12 +1300,12 @@ mod formalized_tests {
         // sanitize_html(read_line()); html_render(...) — should succeed
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let safe_html = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_html) {
@@ -1177,13 +1322,13 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // shell_exec(read_line()) — should FAIL
         let unsafe_shell = Expr::App(
             Box::new(Expr::Var("shell_exec".to_string())),
-            Box::new(read_call.clone())
+            Box::new(read_call.clone()),
         );
 
         match type_check(&ctx, &unsafe_shell) {
@@ -1197,22 +1342,25 @@ mod formalized_tests {
                     Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
                 );
             }
-            other => panic!("Expected TypeMismatch for command injection, got {:?}", other),
+            other => panic!(
+                "Expected TypeMismatch for command injection, got {:?}",
+                other
+            ),
         }
 
         // sanitize_command(read_line()); shell_exec(...) — should succeed
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_command".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let safe_shell = Expr::App(
             Box::new(Expr::Var("shell_exec".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_shell) {
-            Ok((ty, _)) => assert_eq!(ty, Ty::Int),  // Exit code
+            Ok((ty, _)) => assert_eq!(ty, Ty::Int), // Exit code
             Err(e) => panic!("Expected safe shell to type-check, got error: {:?}", e),
         }
     }
@@ -1228,19 +1376,19 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // sanitize_html(read_line())
         let html_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         // sql_execute(sanitize_html(...)) — wrong sanitizer!
         let wrong_sanitizer = Expr::App(
             Box::new(Expr::Var("sql_execute".to_string())),
-            Box::new(html_sanitized)
+            Box::new(html_sanitized),
         );
 
         match type_check(&ctx, &wrong_sanitizer) {
@@ -1269,13 +1417,13 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // sanitize_url(read_line())
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_url".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let (san_ty, _) = type_check(&ctx, &sanitized).unwrap();
@@ -1292,13 +1440,13 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // sanitize_css(read_line())
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_css".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let (san_ty, _) = type_check(&ctx, &sanitized).unwrap();
@@ -1315,16 +1463,16 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // dom_set_html(element, read_line()) — should FAIL
         let unsafe_dom = Expr::App(
             Box::new(Expr::Var("dom_set_html".to_string())),
             Box::new(Expr::Pair(
-                Box::new(Expr::Unit),  // Mock DOM element
-                Box::new(read_call.clone())
-            ))
+                Box::new(Expr::Unit), // Mock DOM element
+                Box::new(read_call.clone()),
+            )),
         );
 
         match type_check(&ctx, &unsafe_dom) {
@@ -1347,15 +1495,12 @@ mod formalized_tests {
         // dom_set_html(element, sanitize_html(read_line())) — should succeed
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let safe_dom = Expr::App(
             Box::new(Expr::Var("dom_set_html".to_string())),
-            Box::new(Expr::Pair(
-                Box::new(Expr::Unit),
-                Box::new(sanitized)
-            ))
+            Box::new(Expr::Pair(Box::new(Expr::Unit), Box::new(sanitized))),
         );
 
         match type_check(&ctx, &safe_dom) {
@@ -1371,25 +1516,25 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // Safe: sanitize_html then set attribute
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         // dom_set_attr(element, ("title", sanitized))
         let safe_attr = Expr::App(
             Box::new(Expr::Var("dom_set_attr".to_string())),
             Box::new(Expr::Pair(
-                Box::new(Expr::Unit),  // Mock DOM element
+                Box::new(Expr::Unit), // Mock DOM element
                 Box::new(Expr::Pair(
                     Box::new(Expr::String("title".to_string())),
-                    Box::new(sanitized)
-                ))
-            ))
+                    Box::new(sanitized),
+                )),
+            )),
         );
 
         match type_check(&ctx, &safe_attr) {
@@ -1405,19 +1550,19 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // sanitize_url(read_line()) → Sanitized<String, UrlEncode>
         let url_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_url".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         // html_render(url_sanitized) — wrong sanitizer!
         let wrong_context = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(url_sanitized)
+            Box::new(url_sanitized),
         );
 
         match type_check(&ctx, &wrong_context) {
@@ -1442,19 +1587,19 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // sanitize_css(read_line()) → Sanitized<String, CssEscape>
         let css_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_css".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         // js_eval(css_sanitized) — wrong sanitizer!
         let wrong_context = Expr::App(
             Box::new(Expr::Var("js_eval".to_string())),
-            Box::new(css_sanitized)
+            Box::new(css_sanitized),
         );
 
         match type_check(&ctx, &wrong_context) {
@@ -1479,22 +1624,22 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // validate_length(read_line(), 100)
         let validated = Expr::App(
             Box::new(Expr::Var("validate_length".to_string())),
-            Box::new(Expr::Pair(
-                Box::new(read_call),
-                Box::new(Expr::Int(100))
-            ))
+            Box::new(Expr::Pair(Box::new(read_call), Box::new(Expr::Int(100)))),
         );
 
         let (val_ty, _) = type_check(&ctx, &validated).unwrap();
         assert_eq!(
             val_ty,
-            Ty::Option(Box::new(Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)))
+            Ty::Option(Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::UserInput
+            )))
         );
     }
 
@@ -1505,13 +1650,13 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // normalize_unicode(read_line())
         let normalized = Expr::App(
             Box::new(Expr::Var("normalize_unicode".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let (norm_ty, _) = type_check(&ctx, &normalized).unwrap();
@@ -1523,14 +1668,17 @@ mod formalized_tests {
         // Normalized data still requires sanitization before HTML render
         let unsafe_html = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(normalized)
+            Box::new(normalized),
         );
 
         match type_check(&ctx, &unsafe_html) {
             Err(TypeError::TypeMismatch { .. }) => {
                 // Good! Still tainted, still rejected
             }
-            other => panic!("Expected TypeMismatch for normalized but unsanitized data, got {:?}", other),
+            other => panic!(
+                "Expected TypeMismatch for normalized but unsanitized data, got {:?}",
+                other
+            ),
         }
     }
 
@@ -1541,13 +1689,13 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // strip_nulls(read_line())
         let stripped = Expr::App(
             Box::new(Expr::Var("strip_nulls".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let (strip_ty, _) = type_check(&ctx, &stripped).unwrap();
@@ -1559,17 +1707,20 @@ mod formalized_tests {
         // Stripped data still requires sanitization
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(stripped)
+            Box::new(stripped),
         );
 
         let safe_html = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_html) {
             Ok((ty, _)) => assert_eq!(ty, Ty::String),
-            Err(e) => panic!("Expected safe HTML after strip+sanitize, got error: {:?}", e),
+            Err(e) => panic!(
+                "Expected safe HTML after strip+sanitize, got error: {:?}",
+                e
+            ),
         }
     }
 
@@ -1582,13 +1733,13 @@ mod formalized_tests {
         // Simulated: http_param returns tainted data
         let http_input = Expr::App(
             Box::new(Expr::Var("http_body".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // html_render(http_input) — REJECTED (reflected XSS)
         let reflected_xss = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(http_input.clone())
+            Box::new(http_input.clone()),
         );
 
         match type_check(&ctx, &reflected_xss) {
@@ -1599,7 +1750,10 @@ mod formalized_tests {
                 );
                 assert_eq!(
                     found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::NetworkExternal)
+                    Ty::Tainted(
+                        Box::new(Ty::String),
+                        riina_types::TaintSource::NetworkExternal
+                    )
                 );
             }
             other => panic!("Expected TypeMismatch for reflected XSS, got {:?}", other),
@@ -1608,16 +1762,16 @@ mod formalized_tests {
         // Safe: sanitize before rendering
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(http_input)
+            Box::new(http_input),
         );
 
         let safe_render = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_render) {
-            Ok(_) => {}, // Safe!
+            Ok(_) => {} // Safe!
             Err(e) => panic!("Expected safe reflected XSS prevention, got error: {:?}", e),
         }
     }
@@ -1631,14 +1785,14 @@ mod formalized_tests {
         // Assume: data from database is tainted
         // (In real implementation, DB reads would return Tainted types)
         let db_data = Expr::App(
-            Box::new(Expr::Var("read_line".to_string())),  // Simulated DB read
-            Box::new(Expr::Unit)
+            Box::new(Expr::Var("read_line".to_string())), // Simulated DB read
+            Box::new(Expr::Unit),
         );
 
         // html_render(db_data) — REJECTED (stored XSS)
         let stored_xss = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(db_data.clone())
+            Box::new(db_data.clone()),
         );
 
         match type_check(&ctx, &stored_xss) {
@@ -1651,16 +1805,16 @@ mod formalized_tests {
         // Safe: sanitize data from DB before rendering
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(db_data)
+            Box::new(db_data),
         );
 
         let safe_render = Expr::App(
             Box::new(Expr::Var("html_render".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_render) {
-            Ok(_) => {}, // Safe!
+            Ok(_) => {} // Safe!
             Err(e) => panic!("Expected safe stored XSS prevention, got error: {:?}", e),
         }
     }
@@ -1672,7 +1826,7 @@ mod formalized_tests {
 
         let read_call = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // dom_set_html(element, read_line()) — REJECTED
@@ -1680,8 +1834,8 @@ mod formalized_tests {
             Box::new(Expr::Var("dom_set_html".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::Unit),
-                Box::new(read_call.clone())
-            ))
+                Box::new(read_call.clone()),
+            )),
         );
 
         match type_check(&ctx, &dom_xss) {
@@ -1694,19 +1848,16 @@ mod formalized_tests {
         // Safe: sanitize before DOM manipulation
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(read_call)
+            Box::new(read_call),
         );
 
         let safe_dom = Expr::App(
             Box::new(Expr::Var("dom_set_html".to_string())),
-            Box::new(Expr::Pair(
-                Box::new(Expr::Unit),
-                Box::new(sanitized)
-            ))
+            Box::new(Expr::Pair(Box::new(Expr::Unit), Box::new(sanitized))),
         );
 
         match type_check(&ctx, &safe_dom) {
-            Ok(_) => {}, // Safe!
+            Ok(_) => {} // Safe!
             Err(e) => panic!("Expected safe DOM-based XSS prevention, got error: {:?}", e),
         }
     }
@@ -1722,12 +1873,12 @@ mod formalized_tests {
 
         let gen_token = Expr::App(
             Box::new(Expr::Var("csrf_generate".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let (token_ty, eff) = type_check(&ctx, &gen_token).unwrap();
         assert_eq!(token_ty, Ty::String);
-        assert_eq!(eff, Effect::Random);  // Cryptographic randomness
+        assert_eq!(eff, Effect::Random); // Cryptographic randomness
     }
 
     #[test]
@@ -1738,7 +1889,7 @@ mod formalized_tests {
         // http_get("https://example.com")
         let get_request = Expr::App(
             Box::new(Expr::Var("http_get".to_string())),
-            Box::new(Expr::String("https://example.com".to_string()))
+            Box::new(Expr::String("https://example.com".to_string())),
         );
 
         match type_check(&ctx, &get_request) {
@@ -1758,7 +1909,7 @@ mod formalized_tests {
         // Generate token
         let token = Expr::App(
             Box::new(Expr::Var("csrf_generate".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // http_post("url", (data, token))
@@ -1767,10 +1918,10 @@ mod formalized_tests {
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com".to_string())),
                 Box::new(Expr::Pair(
-                    Box::new(Expr::Unit),  // Request body
-                    Box::new(token)
-                ))
-            ))
+                    Box::new(Expr::Unit), // Request body
+                    Box::new(token),
+                )),
+            )),
         );
 
         match type_check(&ctx, &post_with_token) {
@@ -1794,8 +1945,8 @@ mod formalized_tests {
             Box::new(Expr::Var("http_post".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com".to_string())),
-                Box::new(Expr::Unit)  // Missing nested (body, token) pair
-            ))
+                Box::new(Expr::Unit), // Missing nested (body, token) pair
+            )),
         );
 
         match type_check(&ctx, &post_without_token) {
@@ -1815,7 +1966,10 @@ mod formalized_tests {
                     _ => panic!("Expected product type for POST"),
                 }
             }
-            other => panic!("Expected TypeMismatch for POST without token, got {:?}", other),
+            other => panic!(
+                "Expected TypeMismatch for POST without token, got {:?}",
+                other
+            ),
         }
     }
 
@@ -1826,7 +1980,7 @@ mod formalized_tests {
 
         let token = Expr::App(
             Box::new(Expr::Var("csrf_generate".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let put_with_token = Expr::App(
@@ -1834,10 +1988,10 @@ mod formalized_tests {
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com/resource".to_string())),
                 Box::new(Expr::Pair(
-                    Box::new(Expr::Unit),  // Request body
-                    Box::new(token)
-                ))
-            ))
+                    Box::new(Expr::Unit), // Request body
+                    Box::new(token),
+                )),
+            )),
         );
 
         match type_check(&ctx, &put_with_token) {
@@ -1853,7 +2007,7 @@ mod formalized_tests {
 
         let token = Expr::App(
             Box::new(Expr::Var("csrf_generate".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // http_delete expects (String, String) = (URL, token)
@@ -1861,8 +2015,8 @@ mod formalized_tests {
             Box::new(Expr::Var("http_delete".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com/resource".to_string())),
-                Box::new(token)
-            ))
+                Box::new(token),
+            )),
         );
 
         match type_check(&ctx, &delete_with_token) {
@@ -1881,8 +2035,8 @@ mod formalized_tests {
             Box::new(Expr::Var("csrf_check_origin".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com".to_string())),
-                Box::new(Expr::String("https://example.com".to_string()))
-            ))
+                Box::new(Expr::String("https://example.com".to_string())),
+            )),
         );
 
         let (check_ty, _) = type_check(&ctx, &origin_check).unwrap();
@@ -1898,8 +2052,8 @@ mod formalized_tests {
             Box::new(Expr::Var("csrf_check_referer".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com/page".to_string())),
-                Box::new(Expr::String("https://example.com".to_string()))
-            ))
+                Box::new(Expr::String("https://example.com".to_string())),
+            )),
         );
 
         let (check_ty, _) = type_check(&ctx, &referer_check).unwrap();
@@ -1914,7 +2068,7 @@ mod formalized_tests {
         // Generate session token
         let session_token = Expr::App(
             Box::new(Expr::Var("csrf_generate".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // Simulate request token (in real app, extracted from request)
@@ -1923,10 +2077,7 @@ mod formalized_tests {
         // csrf_validate(request_token, session_token)
         let validate = Expr::App(
             Box::new(Expr::Var("csrf_validate".to_string())),
-            Box::new(Expr::Pair(
-                Box::new(request_token),
-                Box::new(session_token)
-            ))
+            Box::new(Expr::Pair(Box::new(request_token), Box::new(session_token))),
         );
 
         let (valid_ty, _) = type_check(&ctx, &validate).unwrap();
@@ -1945,7 +2096,7 @@ mod formalized_tests {
         // 1. Generate CSRF token
         let token = Expr::App(
             Box::new(Expr::Var("csrf_generate".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         // 2. Check origin (returns Bool)
@@ -1953,8 +2104,8 @@ mod formalized_tests {
             Box::new(Expr::Var("csrf_check_origin".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://example.com".to_string())),
-                Box::new(Expr::String("https://example.com".to_string()))
-            ))
+                Box::new(Expr::String("https://example.com".to_string())),
+            )),
         );
 
         // Origin check should return Bool
@@ -1968,14 +2119,17 @@ mod formalized_tests {
                 Box::new(Expr::String("https://example.com/api".to_string())),
                 Box::new(Expr::Pair(
                     Box::new(Expr::String("data".to_string())),
-                    Box::new(token)
-                ))
-            ))
+                    Box::new(token),
+                )),
+            )),
         );
 
         match type_check(&ctx, &post_request) {
             Ok((ty, _)) => assert_eq!(ty, Ty::Any),
-            Err(e) => panic!("Expected full CSRF protection flow to succeed, got error: {:?}", e),
+            Err(e) => panic!(
+                "Expected full CSRF protection flow to succeed, got error: {:?}",
+                e
+            ),
         }
     }
 
@@ -1989,8 +2143,8 @@ mod formalized_tests {
             Box::new(Expr::Var("http_post".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("https://victim.com/transfer".to_string())),
-                Box::new(Expr::String("amount=1000".to_string()))  // Wrong type: should be (Any, String)
-            ))
+                Box::new(Expr::String("amount=1000".to_string())), // Wrong type: should be (Any, String)
+            )),
         );
 
         match type_check(&ctx, &malicious_post) {
@@ -2016,12 +2170,12 @@ mod formalized_tests {
 
         let user_path = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let unsafe_read = Expr::App(
             Box::new(Expr::Var("file_read_safe".to_string())),
-            Box::new(user_path)
+            Box::new(user_path),
         );
 
         match type_check(&ctx, &unsafe_read) {
@@ -2046,17 +2200,17 @@ mod formalized_tests {
 
         let user_path = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_path".to_string())),
-            Box::new(user_path)
+            Box::new(user_path),
         );
 
         let safe_read = Expr::App(
             Box::new(Expr::Var("file_read_safe".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_read) {
@@ -2072,17 +2226,17 @@ mod formalized_tests {
 
         let user_path = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let sql_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_sql".to_string())),
-            Box::new(user_path)
+            Box::new(user_path),
         );
 
         let wrong_sink = Expr::App(
             Box::new(Expr::Var("file_read_safe".to_string())),
-            Box::new(sql_sanitized)
+            Box::new(sql_sanitized),
         );
 
         match type_check(&ctx, &wrong_sink) {
@@ -2096,7 +2250,10 @@ mod formalized_tests {
                     Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
                 );
             }
-            other => panic!("Expected sanitizer mismatch for path traversal, got {:?}", other),
+            other => panic!(
+                "Expected sanitizer mismatch for path traversal, got {:?}",
+                other
+            ),
         }
     }
 
@@ -2107,20 +2264,20 @@ mod formalized_tests {
 
         let user_path = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_path".to_string())),
-            Box::new(user_path)
+            Box::new(user_path),
         );
 
         let safe_write = Expr::App(
             Box::new(Expr::Var("file_write_safe".to_string())),
             Box::new(Expr::Pair(
                 Box::new(sanitized),
-                Box::new(Expr::String("data".to_string()))
-            ))
+                Box::new(Expr::String("data".to_string())),
+            )),
         );
 
         match type_check(&ctx, &safe_write) {
@@ -2138,12 +2295,12 @@ mod formalized_tests {
 
         let user_xml = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let unsafe_parse = Expr::App(
             Box::new(Expr::Var("xml_parse_safe".to_string())),
-            Box::new(user_xml)
+            Box::new(user_xml),
         );
 
         match type_check(&ctx, &unsafe_parse) {
@@ -2168,17 +2325,17 @@ mod formalized_tests {
 
         let user_xml = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_xml".to_string())),
-            Box::new(user_xml)
+            Box::new(user_xml),
         );
 
         let safe_parse = Expr::App(
             Box::new(Expr::Var("xml_parse_safe".to_string())),
-            Box::new(sanitized)
+            Box::new(sanitized),
         );
 
         match type_check(&ctx, &safe_parse) {
@@ -2194,17 +2351,17 @@ mod formalized_tests {
 
         let user_xml = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let html_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_html".to_string())),
-            Box::new(user_xml)
+            Box::new(user_xml),
         );
 
         let wrong_sink = Expr::App(
             Box::new(Expr::Var("xml_parse_safe".to_string())),
-            Box::new(html_sanitized)
+            Box::new(html_sanitized),
         );
 
         match type_check(&ctx, &wrong_sink) {
@@ -2231,12 +2388,12 @@ mod formalized_tests {
 
         let user_url = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let unsafe_fetch = Expr::App(
             Box::new(Expr::Var("http_fetch_safe".to_string())),
-            Box::new(user_url)
+            Box::new(user_url),
         );
 
         match type_check(&ctx, &unsafe_fetch) {
@@ -2261,17 +2418,17 @@ mod formalized_tests {
 
         let user_url = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let validated = Expr::App(
             Box::new(Expr::Var("validate_url".to_string())),
-            Box::new(user_url)
+            Box::new(user_url),
         );
 
         let safe_fetch = Expr::App(
             Box::new(Expr::Var("http_fetch_safe".to_string())),
-            Box::new(validated)
+            Box::new(validated),
         );
 
         match type_check(&ctx, &safe_fetch) {
@@ -2287,17 +2444,17 @@ mod formalized_tests {
 
         let user_url = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let path_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_path".to_string())),
-            Box::new(user_url)
+            Box::new(user_url),
         );
 
         let wrong_sink = Expr::App(
             Box::new(Expr::Var("http_fetch_safe".to_string())),
-            Box::new(path_sanitized)
+            Box::new(path_sanitized),
         );
 
         match type_check(&ctx, &wrong_sink) {
@@ -2322,12 +2479,12 @@ mod formalized_tests {
 
         let user_url = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let unsafe_redirect = Expr::App(
             Box::new(Expr::Var("http_redirect_safe".to_string())),
-            Box::new(user_url)
+            Box::new(user_url),
         );
 
         match type_check(&ctx, &unsafe_redirect) {
@@ -2354,22 +2511,25 @@ mod formalized_tests {
 
         let user_email = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let unsafe_send = Expr::App(
             Box::new(Expr::Var("email_send".to_string())),
             Box::new(Expr::Pair(
                 Box::new(user_email),
-                Box::new(Expr::String("Hello".to_string()))
-            ))
+                Box::new(Expr::String("Hello".to_string())),
+            )),
         );
 
         match type_check(&ctx, &unsafe_send) {
             Err(TypeError::TypeMismatch { .. }) => {
                 // Good! Email header injection prevented
             }
-            other => panic!("Expected email header injection to be prevented, got {:?}", other),
+            other => panic!(
+                "Expected email header injection to be prevented, got {:?}",
+                other
+            ),
         }
     }
 
@@ -2380,20 +2540,20 @@ mod formalized_tests {
 
         let user_email = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_email".to_string())),
-            Box::new(user_email)
+            Box::new(user_email),
         );
 
         let safe_send = Expr::App(
             Box::new(Expr::Var("email_send".to_string())),
             Box::new(Expr::Pair(
                 Box::new(sanitized),
-                Box::new(Expr::String("Hello".to_string()))
-            ))
+                Box::new(Expr::String("Hello".to_string())),
+            )),
         );
 
         match type_check(&ctx, &safe_send) {
@@ -2409,20 +2569,20 @@ mod formalized_tests {
 
         let user_email = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let json_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_json".to_string())),
-            Box::new(user_email)
+            Box::new(user_email),
         );
 
         let wrong_sink = Expr::App(
             Box::new(Expr::Var("email_set_header".to_string())),
             Box::new(Expr::Pair(
                 Box::new(Expr::String("To".to_string())),
-                Box::new(json_sanitized)
-            ))
+                Box::new(json_sanitized),
+            )),
         );
 
         match type_check(&ctx, &wrong_sink) {
@@ -2442,12 +2602,12 @@ mod formalized_tests {
 
         let user_json = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let unsafe_parse = Expr::App(
             Box::new(Expr::Var("json_parse_safe".to_string())),
-            Box::new(user_json)
+            Box::new(user_json),
         );
 
         match type_check(&ctx, &unsafe_parse) {
@@ -2461,7 +2621,10 @@ mod formalized_tests {
                     Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
                 );
             }
-            other => panic!("Expected unsafe deserialization to be prevented, got {:?}", other),
+            other => panic!(
+                "Expected unsafe deserialization to be prevented, got {:?}",
+                other
+            ),
         }
     }
 
@@ -2472,22 +2635,25 @@ mod formalized_tests {
 
         let user_json = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let validated = Expr::App(
             Box::new(Expr::Var("sanitize_json".to_string())),
-            Box::new(user_json)
+            Box::new(user_json),
         );
 
         let safe_deser = Expr::App(
             Box::new(Expr::Var("deserialize_safe".to_string())),
-            Box::new(validated)
+            Box::new(validated),
         );
 
         match type_check(&ctx, &safe_deser) {
             Ok((ty, _)) => assert_eq!(ty, Ty::Any),
-            Err(e) => panic!("Expected safe deserialization to succeed, got error: {:?}", e),
+            Err(e) => panic!(
+                "Expected safe deserialization to succeed, got error: {:?}",
+                e
+            ),
         }
     }
 
@@ -2498,17 +2664,17 @@ mod formalized_tests {
 
         let user_json = Expr::App(
             Box::new(Expr::Var("read_line".to_string())),
-            Box::new(Expr::Unit)
+            Box::new(Expr::Unit),
         );
 
         let xml_sanitized = Expr::App(
             Box::new(Expr::Var("sanitize_xml".to_string())),
-            Box::new(user_json)
+            Box::new(user_json),
         );
 
         let wrong_sink = Expr::App(
             Box::new(Expr::Var("deserialize_safe".to_string())),
-            Box::new(xml_sanitized)
+            Box::new(xml_sanitized),
         );
 
         match type_check(&ctx, &wrong_sink) {
@@ -2522,7 +2688,10 @@ mod formalized_tests {
                     Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
                 );
             }
-            other => panic!("Expected sanitizer mismatch for deserialization, got {:?}", other),
+            other => panic!(
+                "Expected sanitizer mismatch for deserialization, got {:?}",
+                other
+            ),
         }
     }
 }

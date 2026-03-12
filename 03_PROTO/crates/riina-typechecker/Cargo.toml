@@ -8,3 +8,6 @@ description = "RIINA type checker"
 
 [dependencies]
 riina-types.workspace = true
+
+[dev-dependencies]
+riina-parser.workspace = true

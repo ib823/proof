@@ -79,6 +79,7 @@ version = "0.2.0"
 name = "riina-typechecker"
 version = "0.2.0"
 dependencies = [
+ "riina-parser",
  "riina-types",
 ]
 
