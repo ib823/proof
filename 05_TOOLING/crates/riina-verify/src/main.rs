@@ -239,6 +239,10 @@ impl VerifyContext {
         });
     }
 
+    fn record_pending(&mut self, tool: &str, duration: Duration, message: &str) {
+        self.record(tool, false, duration, message);
+    }
+
     fn all_passed(&self) -> bool {
         self.results.iter().all(|r| r.passed)
     }
@@ -463,7 +467,16 @@ fn verify_level_3(ctx: &mut VerifyContext) -> Result<(), VerifyError> {
     // Property tests
     let start = Instant::now();
     let passed = run_cargo(ctx, &["test", "--all-features", "--", "proptest"])?;
-    ctx.record("proptest", true, start.elapsed(), "Property tests run");
+    ctx.record(
+        "proptest",
+        passed,
+        start.elapsed(),
+        if passed {
+            "Property tests passed"
+        } else {
+            "Property tests failed"
+        },
+    );
 
     // Kani
     if check_tool("kani") {
@@ -540,7 +553,11 @@ fn verify_level_5(ctx: &mut VerifyContext) -> Result<(), VerifyError> {
     if check_tool("verus") {
         ctx.log("Running Verus verification...");
         let start = Instant::now();
-        ctx.record("verus", true, start.elapsed(), "Verus harnesses pending");
+        ctx.record_pending(
+            "verus",
+            start.elapsed(),
+            "Verus harness integration pending",
+        );
     } else {
         ctx.log("⚠ Verus not available, skipping");
     }
@@ -549,11 +566,10 @@ fn verify_level_5(ctx: &mut VerifyContext) -> Result<(), VerifyError> {
     if check_tool("creusot") {
         ctx.log("Running Creusot verification...");
         let start = Instant::now();
-        ctx.record(
+        ctx.record_pending(
             "creusot",
-            true,
             start.elapsed(),
-            "Creusot harnesses pending",
+            "Creusot harness integration pending",
         );
     } else {
         ctx.log("⚠ Creusot not available, skipping");
@@ -563,7 +579,11 @@ fn verify_level_5(ctx: &mut VerifyContext) -> Result<(), VerifyError> {
     if check_tool("prusti-rustc") {
         ctx.log("Running Prusti verification...");
         let start = Instant::now();
-        ctx.record("prusti", true, start.elapsed(), "Prusti harnesses pending");
+        ctx.record_pending(
+            "prusti",
+            start.elapsed(),
+            "Prusti harness integration pending",
+        );
     } else {
         ctx.log("⚠ Prusti not available, skipping");
     }
@@ -580,14 +600,17 @@ fn verify_level_6(ctx: &mut VerifyContext) -> Result<(), VerifyError> {
     let start = Instant::now();
 
     // Build twice, compare
-    let _ = run_cargo(ctx, &["build", "--release"]);
+    let build_passed = run_cargo(ctx, &["build", "--release"])?;
     // TODO: Actually compare builds
 
-    ctx.record(
+    ctx.record_pending(
         "reproducibility",
-        true,
         start.elapsed(),
-        "Reproducibility pending",
+        if build_passed {
+            "Reproducibility comparison pending"
+        } else {
+            "Release build failed before reproducibility comparison"
+        },
     );
 
     // Mutation testing
@@ -684,6 +707,7 @@ fn verify_rust_tool(
             }
             _ => {
                 ctx.log(&format!("⚠ {} not yet integrated", t.name()));
+                ctx.record_pending(t.name(), start.elapsed(), "Rust tool integration pending");
                 continue;
             }
         };
@@ -887,14 +911,26 @@ fn main() -> ExitCode {
         Commands::Rust { tool, package } => verify_rust_tool(&mut ctx, *tool, package.as_deref()),
         Commands::Ada { level, package } => {
             ctx.log(&format!("Ada/SPARK verification at level {level}"));
+            if let Some(pkg) = package {
+                ctx.log(&format!("Requested Ada package: {pkg}"));
+            }
             // TODO: Integrate GNATprove
+            ctx.record_pending("gnatprove", Duration::ZERO, "Ada/SPARK integration pending");
             Ok(())
         }
         Commands::Coverage { minimum, html } => verify_coverage(&mut ctx, *minimum, *html),
         Commands::Fuzz { target, duration } => run_fuzzing(&mut ctx, target.as_deref(), *duration),
         Commands::Mutate { package, timeout } => {
-            ctx.log("Mutation testing...");
+            ctx.log(&format!("Mutation testing requested (timeout: {timeout}s)"));
+            if let Some(pkg) = package {
+                ctx.log(&format!("Requested mutation package: {pkg}"));
+            }
             // TODO: Implement mutation testing
+            ctx.record_pending(
+                "mutation",
+                Duration::ZERO,
+                "Mutation command not implemented",
+            );
             Ok(())
         }
         Commands::Audit => run_audit(&mut ctx),
