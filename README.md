@@ -2,9 +2,9 @@
 
 **Formally verified programming language.**
 
-***If it compiles, it's secure.***
+***Formal claims, verification status, and gaps published openly.***
 
-Security properties are not tested, not assumed — they are *mathematically proven* at compile time.
+Security properties in RIINA are tracked as a mix of machine-checked proofs, compiler checks, and explicitly documented gaps. The current verified state lives in `RIINA_MASTER_PLAN.md` Part 2.
 
 **[Try the Playground](https://ib823.github.io/riina/#playground)** | **[RIINA vs Rust](07_EXAMPLES/showcase/riina_vs_rust/)** | **[Website](https://ib823.github.io/riina/)**
 
@@ -27,7 +27,7 @@ Security properties are not tested, not assumed — they are *mathematically pro
 
 ## AI-Native Language
 
-RIINA is the world's first programming language that is both **formally verified** and **AI-native**. Every security guarantee has a machine-checked mathematical proof, and the language is designed from the ground up for AI agents to read, write, and reason about.
+RIINA is a programming language that combines formal verification work with **AI-native** tooling. The repository contains machine-checked proofs, active compiler checks, and explicitly documented verification gaps, and it is designed from the ground up for AI agents to read, write, and reason about.
 
 **AI-Writability Score: 9.7/10** -- Consistent Bahasa Melayu keywords, minimal syntax, strong types, and deterministic compilation make RIINA one of the most AI-friendly languages ever designed.
 
@@ -46,20 +46,19 @@ RIINA provides first-class support for AI-assisted development:
 
 ## What is RIINA?
 
-RIINA is a programming language where **every security guarantee has a machine-checked mathematical proof**. If your program compiles, it is secure — not by convention, not by best practice, but by proof.
+RIINA is a programming language with a large machine-checked proof corpus and a security-oriented compiler. The repository currently ships audited Coq proofs, a compiling Lean lane, and an Isabelle smoke session. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
 
 Most languages ask you to *trust* that your code is secure. RIINA asks you to *verify* it.
 
-| What RIINA proves at compile time | How |
+| What RIINA has today | Current status |
 |---|---|
-| No information leaks between security levels | Non-interference theorem (Coq) |
-| No unauthorized effect execution | Effect gate algebra (Coq) |
-| Type safety (no runtime type errors) | Progress + Preservation theorems (Coq) |
-| No secret data in public outputs | Declassification policy proofs (Coq) |
-| Termination of all pure computations | Strong normalization proofs (Coq) |
-| Memory safety without garbage collection | Separation logic proofs (Coq) |
+| Type safety theorems | Machine-checked in Coq; Rust checker active |
+| Effect algebra and gate model | Machine-checked in Coq; compiler tracks effects |
+| Information-flow / non-interference development | Machine-checked in Coq; compiler enforcement partial |
+| Declassification model | Machine-checked in Coq; shipped compiler/runtime alignment still in progress |
+| Termination and memory models | Formalized in the Coq corpus |
 
-These are not aspirational goals — they are proven theorems that compile today.
+These are real formal artifacts that compile today, but not every theorem is wired end-to-end into the shipped compiler yet.
 
 ---
 
@@ -67,10 +66,10 @@ These are not aspirational goals — they are proven theorems that compile today
 
 **If you write software where security matters, RIINA is for you.**
 
-- Building a payments system? RIINA *proves* cardholder data never leaks.
-- Building healthcare software? RIINA *proves* patient records stay confidential.
-- Building infrastructure? RIINA *proves* no unauthorized side effects execute.
-- Building anything? RIINA gives you **zero-trust guarantees from the compiler itself**.
+- Building a payments system? RIINA gives you explicit secrets, effects, and auditable formal models.
+- Building healthcare software? RIINA gives you language support for confidentiality-focused design and verification.
+- Building infrastructure? RIINA gives you explicit effects, proof artifacts, and a narrow trusted surface.
+- Building anything? RIINA is aimed at zero-trust software, but current compiler-enforced coverage is narrower than the full proof corpus.
 
 RIINA doesn't care what industry you're in. If you care about getting security right — provably, permanently, without hoping your tests caught everything — RIINA is the tool.
 
@@ -78,13 +77,13 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 
 | Feature | RIINA | Rust | Haskell | Ada/SPARK |
 |---------|-------|------|---------|-----------|
-| Memory safety | Proven (separation logic) | Borrow checker (no proof) | GC | Proven (SPARK subset) |
-| Information flow control | Proven (non-interference) | None | None | None |
-| Effect tracking | Proven (effect algebra) | None | Monads (no proof) | None |
-| Type safety | Proven (Progress + Preservation) | Tested | Tested | Proven (SPARK subset) |
+| Memory safety | Formal model; compiler/runtime alignment in progress | Borrow checker (no proof) | GC | Proven (SPARK subset) |
+| Information flow control | Formal model; compiler enforcement partial | None | None | None |
+| Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
+| Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proofs ship with compiler | Yes (9,172 Coq + 4026 Lean + 5 Isabelle) | No | No | Partial |
-| Triple-prover verification | Yes (Coq + Lean 4 + Isabelle/HOL) | No | No | No |
+| Formal proof corpus in repo | Yes (9,172 Coq + 4,026 Lean declarations + Isabelle smoke lane) | No | No | Partial |
+| Multi-prover work | Yes (Coq primary, Lean active, Isabelle smoke session) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
 ---
@@ -146,7 +145,7 @@ riinac build hello.rii    # Compile to native binary via C
 // RIINA prevents information leaks at compile time
 
 fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Crypto {
-    // 'kad' is Secret — the compiler PROVES it never reaches public output
+    // 'kad' is Secret in the language model; compiler/runtime alignment is ongoing
 
     biar hash = sha256(kad);           // OK: crypto on secret data
     biar resit = "Jumlah: " + ke_teks(jumlah);  // OK: amount is public
@@ -158,12 +157,12 @@ fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Crypto
 }
 ```
 
-This is not a runtime check. This is not a linter warning. The **compiler proves** at the type level that secret data cannot flow to public outputs. If it compiles, the guarantee holds.
+This is the intended security model. Current compiler enforcement is narrower than the full proof corpus; see `RIINA_MASTER_PLAN.md` Part 2 for the verified state and current gaps.
 
 ### Effect System
 
 ```riina
-// Every side effect is tracked and proven safe
+// Effects are explicit in the language and formal model
 
 fungsi baca_config(laluan: Teks) -> Teks kesan IO {
     biar kandungan = fail_baca(laluan);
@@ -171,8 +170,8 @@ fungsi baca_config(laluan: Teks) -> Teks kesan IO {
 }
 
 fungsi kira_cukai(pendapatan: Nombor) -> Nombor kesan Bersih {
-    // This function is PROVEN pure — no IO, no network, no side effects
-    // The compiler enforces this, not the programmer
+    // This function is intended to remain pure
+    // The effect annotation documents that contract
     pulang pendapatan * 0.06;
 }
 
@@ -211,26 +210,18 @@ You don't need to speak Malay to use RIINA. The keywords are consistent, short, 
 
 This is not a whitepaper. This is working software.
 
-### Formal Proofs — Triple-Prover Verification
+### Formal Proofs — Current Verified State
 
-| Prover | Proofs | Files | Sorry/Admitted | Axioms | Foundation |
-|--------|--------|-------|----------------|--------|-----------|
-| **Coq 8.20.1** (Primary) | 9,172 Qed | 299 .v (259 active) | 0 | 0 | CIC |
-| **Lean 4** (Secondary) | 8,923 theorems | 272 .lean | 22 | 57 | DTT |
-| **Isabelle/HOL** (Tertiary) | 9,165 lemmas | 275 .thy | 0 | 0 | HOL |
-| **Total** | **27,260** | **846** | **22** | **57** | **3 independent** |
+| Prover | Verified state | Notes |
+|--------|----------------|-------|
+| **Coq 8.20.1** (Primary) | 9,172 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
+| **Lean 4** (Secondary) | 4,026 theorem/lemma declarations repo-wide | 136 active files compile; 3,879 compiled active-lane theorems; 0 sorry |
+| **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
 
-**What's proven:**
-- Type safety (Progress + Preservation)
-- Non-interference (information flow security)
-- Effect system soundness
-- Declassification policy correctness
-- Termination guarantees (strong normalization)
-- Memory safety (separation logic)
-- Translation validation (certified compilation)
-- Hardware contract verification
-- Concurrency safety (session types, data-race freedom)
-- 15 industry compliance properties (HIPAA, PCI-DSS, GDPR, PDPA MY/SG, SOX, DO-178C, ISO 26262, CC EAL7, NIST 800-53, CCPA, FERPA, BNM RMiT, MAS TRM, ISO 27001)
+**Honest scope:**
+- Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
+- Many domain files are formal models or specifications, not compiler-enforced guarantees.
+- Extended provers beyond Coq/Lean/Isabelle remain generated stubs and are not counted as verified proofs.
 
 ### Compiler & Toolchain (Rust)
 
@@ -314,16 +305,16 @@ riina/
 │   ├── effects/            Effect algebra and gate proofs
 │   ├── domains/            183 domain-specific proofs (R-Z, Σ, compliance)
 │   ├── termination/        Strong normalization, sized types
-│   ├── compliance/         DO-178C, ISO-26262, Common Criteria
-│   └── Industries/         15 regulatory compliance proofs
+│   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
+│   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 proofs (8,923 theorems, 272 files)
+├── 02_FORMAL/lean/          Lean 4 active lane (136 files, 4,026 declarations repo-wide)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
 │
-├── 02_FORMAL/isabelle/      Isabelle/HOL proofs (9,165 lemmas, 275 files)
-│   └── RIINA/               Same 10 theory files as Lean
+├── 02_FORMAL/isabelle/      Isabelle/HOL smoke lane (1 compiled theory, 275 .thy total)
+│   └── RIINA/               `RIINA_CORE` currently compiles `Syntax.thy`
 │
 ├── 03_PROTO/               Rust compiler (15 crates, 904 tests, 0 deps)
 │   └── crates/
@@ -389,36 +380,33 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 
 ## Current Status
 
-**Build: Passing. Grade: A.**
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 independent provers | 904 Rust tests
+**Build:** Passing.
+**Verification:** Coq active build passes | Lean active lane passes | Rust proto has 904 passing tests | Isabelle requires the pinned local toolchain for live smoke verification
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1. Compiler | Lexer, parser, typechecker, codegen, REPL, diagnostics | Done |
-| 2. Standard Library | 88 builtins across 9 modules | Done |
-| 3. Formal Verification | 9,172 Coq Qed + 4026 Lean + 5 Isabelle = 13,203 total (10 provers), 0 admits/sorry, 0 active axioms | Stable |
-| 4. Developer Experience | Formatter, LSP, doc generator, VS Code extension, 130 examples | Done |
-| 5. Ecosystem | CI/CD, package manager, Docker, Nix flake, release system, installer | Done |
-| 6. Adoption | C FFI, 8 demos, community, enterprise, public branch, 15-page website (Why Proof, 15 industries, Releases) | Done |
-| 7. Platform Universality | Multi-backend (WASM, Android, iOS), platform-conditional stdlib, WASM playground, backend verification | Done |
-| 8. Long-term | Self-hosting compiler, hardware verification, verified OS | Planned |
+| Area | Status |
+|------|--------|
+| Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
+| Standard library and tools | Implemented and test-covered |
+| Formal verification | Coq primary lane healthy; Lean active lane healthy; Isabelle smoke lane only |
+| WASM/mobile backends | Present as scaffolding, not full production backends |
+| Extended provers | Generated stubs, not counted as verified proofs |
 
 ### What's next
 
-- **Triple-prover verification:** Complete — 86 theorems proved in Coq + Lean 4 + Isabelle/HOL. 0 sorry across all provers.
+- **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
 - **Axiom status:** Active build is axiom-free (`Axioms=0`, `Admitted=0`, explicit assumptions `=0`).
-- **Phase 8 (Long-term):** Self-hosting compiler, hardware verification, verified OS
-- **Compliance system:** `--compliance` flag with 15 industry profiles, audit report generation (text + JSON), certification pipeline — see [Compliance Guide](docs/enterprise/COMPLIANCE_GUIDE.md)
+- **Phase 2 active work:** First non-stub F* / TLA+ / Alloy artifacts remain open in the master plan.
+- **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 
 ---
 
 ## Security & Verification
 
-RIINA uses **compiler-integrated verification** — no external CI/CD. Verification lives inside the compiler.
+RIINA uses compiler-integrated fast checks plus repository-level proof and audit flows. Not every formal verification lane runs inside `riinac` itself.
 
 ```bash
 riinac verify --fast    # Tests + clippy (runs on every commit via pre-commit hook)
-riinac verify --full    # + Coq admits/axioms scan (runs on every push via pre-push hook)
+riinac verify --full    # + proof/tooling scans used by the repo hooks
 ```
 
 **Git hooks** enforce verification automatically:
@@ -471,13 +459,13 @@ Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for detailed development instructions 
 ## FAQ
 
 **Is RIINA production-ready?**
-The compiler, proofs, and toolchain are functional. Phases 1-6 (compiler, stdlib, proofs, developer tools, ecosystem, adoption) are complete. Phase 7 (Platform Universality — WASM, mobile backends) is in progress. Phase 8 (self-hosting, hardware verification) is the long-term vision. You can write, compile, and run RIINA programs today — via source build, Docker, or Nix.
+The compiler, proofs, and toolchain are functional, but the project is not finished. The repository is currently in Phase 2 of the master plan. You can write, compile, and run RIINA programs today, but end-to-end alignment between the shipped compiler and the full proof corpus is still in progress.
 
 **Do I need to know Bahasa Melayu?**
 No. The keywords are short and consistent — `fungsi` (function), `biar` (let), `kalau` (if), `pulang` (return). You'll learn them in minutes. A [cheatsheet](07_EXAMPLES/06_ai_context/RIINA_CHEATSHEET.md) is included.
 
 **Do I need to understand Coq or formal verification?**
-No. The proofs run at compile time automatically. You write normal code; the compiler does the proving. The Coq proofs are there for auditability — you benefit from them without reading them.
+No. You can use the language without reading the proofs. Some guarantees are enforced directly by the compiler today, while the broader proof corpus is there for auditability and future compiler alignment.
 
 **Why zero external dependencies?**
 Trust. Every line of RIINA — compiler, crypto, standard library — is auditable from source. No supply chain attacks. No dependency confusion. No left-pad incidents.
@@ -486,7 +474,7 @@ Trust. Every line of RIINA — compiler, crypto, standard library — is auditab
 RIINA developed by Malaysians for the world. Programming languages have been English-only for 70 years. RIINA proves that formal verification and native-language syntax are not mutually exclusive. If a language can be proven correct, it can be proven correct in any language.
 
 **How does RIINA compare to SPARK/Ada?**
-SPARK proves absence of runtime errors (overflow, division by zero) for a subset of Ada. RIINA proves information flow security (non-interference), effect safety, declassification correctness, and more — for the entire language. Both are formally verified; RIINA's scope is broader.
+SPARK ships mature compile-time proof integration for a well-defined Ada subset. RIINA's research scope includes information flow, effects, and declassification, but the shipped compiler is not yet aligned with the full proof corpus. Today the comparison is strongest at the level of formal ambition and proof inventory, not end-to-end enforcement maturity.
 
 ---
 

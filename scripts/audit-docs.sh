@@ -215,6 +215,13 @@ warn_check() {
     fi
 }
 
+extract_first_number_from_line() {
+    local line="$1"
+    local value
+    value=$(printf '%s\n' "$line" | grep -oP '\d+,?\d*' | head -1 | tr -d ',' || true)
+    echo "${value:-0}"
+}
+
 # ── Gather actual metrics ─────────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
@@ -335,12 +342,31 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     check_no_stale "$REPO_ROOT/README.md" "6,193|6193" "Stale Qed count (6,193)" || true
     check_no_stale "$REPO_ROOT/README.md" "4,044|4044" "Stale Qed count (4,044)" || true
     check_no_stale "$REPO_ROOT/README.md" "4,885|4885" "Stale Qed count (4,885)" || true
+    check_no_stale "$REPO_ROOT/README.md" "8,923|8923" "Stale Lean theorem count (8,923)" || true
+    check_no_stale "$REPO_ROOT/README.md" "27,260|27260" "Stale triple-prover total (27,260)" || true
     check_no_stale "$REPO_ROOT/README.md" "policy axiom|1 \\(policy\\)|1 axiom" "Stale active-axiom claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "If it compiles, it'?s secure|If your program compiles, it is secure" "Unsupported blanket compiler-security claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "15 industry compliance properties" "Unsupported blanket compliance claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "0 sorry across all provers" "Unsupported all-prover cleanliness claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "10 independent provers" "Misleading active verification breadth claim" || true
 
-    # Dynamically check that README Lean/Isabelle/Qed match actual counts
-    README_QED=$(grep -oP '[0-9,]+ Coq Qed' "$REPO_ROOT/README.md" | head -1 | grep -oP '^[0-9,]+' | tr -d ',' || echo "0")
-    if [ "$README_QED" != "0" ] && [ "$README_QED" != "$ACTUAL_QED" ]; then
+    # Dynamically check that README prover rows match the current verified state.
+    README_COQ_LINE=$(grep -m1 '^\| \*\*Coq 8\.20\.1\*\*' "$REPO_ROOT/README.md" || true)
+    README_LEAN_LINE=$(grep -m1 '^\| \*\*Lean 4\*\*' "$REPO_ROOT/README.md" || true)
+    README_ISABELLE_LINE=$(grep -m1 '^\| \*\*Isabelle/HOL\*\*' "$REPO_ROOT/README.md" || true)
+
+    README_QED=$(extract_first_number_from_line "$README_COQ_LINE")
+    README_LEAN=$(extract_first_number_from_line "$README_LEAN_LINE")
+    README_ISABELLE=$(extract_first_number_from_line "$README_ISABELLE_LINE")
+
+    if [ "$README_QED" != "0" ]; then
         check_value "Qed in README.md" "$ACTUAL_QED" "$README_QED" "README.md" || true
+    fi
+    if [ "$README_LEAN" != "0" ]; then
+        check_value "Lean declarations in README.md" "$ACTUAL_LEAN" "$README_LEAN" "README.md" || true
+    fi
+    if [ "$README_ISABELLE" != "0" ]; then
+        check_value "Compiled Isabelle lemmas in README.md" "$ACTUAL_ISABELLE_SMOKE" "$README_ISABELLE" "README.md" || true
     fi
 else
     warn_check "README.md not found" "missing"
