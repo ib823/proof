@@ -26,7 +26,7 @@
       "full_build_ok": true,
       "files": 136,
       "sorry": 0,
-      "axioms": 48,
+      "axioms": 8,
       "mechanized_ready": false,
       "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
     },

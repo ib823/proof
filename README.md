@@ -221,7 +221,7 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Coq 8.20.1** (Primary) | 9,172 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 3,879 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry` and 48 axioms remain, all in the algebraic-effects encoding, so Lean is compiled but not mechanized |
+| **Lean 4** (Secondary) | 3,889 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry` and 8 axioms remain (typing relations blocked by strict positivity), so Lean is compiled but not mechanized |
 | **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
 | **F\*** (Seed lane) | 3 compiled lemmas in `CryptographicSecurityActive` | 1 smoke-built active module; remaining `.fst` files are quarantined generated/transpiled stubs |
 | **TLA+** (Protocol seed lane) | 5 `THEOREM` declarations in `TelusProcurementProtocol` | 1 TLC-checked procurement spec; remaining `.tla` files are quarantined generated stubs |
