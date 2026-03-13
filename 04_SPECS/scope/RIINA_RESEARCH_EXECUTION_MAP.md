@@ -1,6 +1,6 @@
 # RIINA RESEARCH-EXECUTION MAP
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
 
 ## Version 1.0.0 — Complete Mapping of 218 Research Tracks to Language Features
 
@@ -422,6 +422,11 @@ Use these for live execution decisions:
 | F-01 (ML-KEM) | riina-crypto | Implemented | Verify |
 | F-17 (CT) | ConstantTime<T> | Partial | Complete |
 | J-08 (PCC) | Proof bundles | Spec only | Implement |
+| AP-01 (Quantum) | Quantum effect, linear qubits | Research complete | Formalize (Phase 6+) |
+| AQ-01 (Concurrent) | Concurrent effects, CRDTs | Research complete | Formalize (Phase 6+) |
+| AR-01 (HW-SW) | CompCert path, CHERI mapping | Research complete | Formalize (Phase 7+) |
+| AS-01 (PQC) | HACL* stdlib, CT via IFC | Research complete | Integrate (Phase 6) |
+| AT-01 (ML Safety) | Inference effect, model caps | Research complete | Formalize (Phase 6+) |
 
 ## 7.3 Timeline Estimate
 

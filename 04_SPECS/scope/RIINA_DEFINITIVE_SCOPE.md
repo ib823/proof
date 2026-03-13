@@ -1,6 +1,6 @@
 # RIINA DEFINITIVE SCOPE DOCUMENT
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
 
 ## Version 1.0.0 — The Single Source of Truth
 
@@ -361,12 +361,14 @@ riina/
 | R-Z (Zero-Trust) | 9 | Supply chain, hardware, termination |
 | Greek (Σ, Π, Δ, etc.) | 14 | Storage, performance, distribution |
 | AA-AJ | 10 | Extended security |
+| AK-AO | 5 | Procurement, layout, AI-first, Syariah finance, blockchain |
+| AP-AT | 5 | Quantum computing, distributed verification, hw-sw co-verification, post-quantum crypto, AI/ML safety |
 | GA-HV (Networking) | 28 | Protocol security |
 | HA-LJ (UI/UX) | 50 | Interface security |
 | MA-MJ (Post-Axiom) | 10 | Advanced concerns |
 | Extended (ΣA-FJ) | 85 | Domain extensions |
 
-**Additional: 206 sessions → Total: 218 tracks**
+**Additional: 216 sessions → Total: 223 tracks**
 
 ---
 
@@ -436,8 +438,12 @@ riina/
 | Constant-time | F-17, G-01 | ✅ ConstantTime<T> designed |
 | Effect Gate | D-01 to D-15 | 🟡 Specification in progress |
 | BTP policy | H-01 to H-10 | 🟡 Specification in progress |
-| PQC crypto | F-01 to F-06 | ✅ riina-crypto implemented |
+| PQC crypto | F-01 to F-06, AS-01 | ✅ riina-crypto implemented |
 | Verified compiler | J-01 to J-15 | 🟡 Prototype implemented |
+| Quantum integration | AP-01 | 🔵 Research complete, Phase 6+ |
+| Concurrent/distributed | AQ-01 | 🔵 Research complete, Phase 6+ |
+| HW-SW co-verification | AR-01 | 🔵 Research complete, Phase 7+ |
+| AI/ML safety | AT-01 | 🔵 Research complete, Phase 6+ |
 
 ---
 

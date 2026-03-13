@@ -1,6 +1,6 @@
 # Research Track → Coq Proof Coverage Matrix
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
 
 > Auto-generated: 2026-02-02
 > Method: `grep -c "^Qed\."` on each .v file; `find -name "*.md"` on each research dir
@@ -16,7 +16,8 @@
 | **Toolchain (J-Q)** | 8 | 8 | 175 | HIGH |
 | **Zero-Trust (R-Z)** | 9 | 9 | 304 | HIGH |
 | **Greek (Sigma-Upsilon)** | 13 | 19 | 504 | HIGH |
-| **Extended (AA-AM)** | 13 | 10 | 258 | MED |
+| **Extended (AA-AO)** | 18 | 10 | 258 | MED |
+| **Frontier (AP-AT)** | 5 | 0 | 0 | RESEARCH |
 | **Product Domains** | 8 | 13 | 319 | HIGH |
 | **Mobile OS** | 5 | 27 | 154 | HIGH |
 | **Security Foundation** | — | 11 | 62 | N/A |
@@ -25,7 +26,7 @@
 | **Singapore Compliance** | — | 6 | 60 | N/A |
 | **Industries** | — | 15 | 32 | N/A |
 | **Compliance (standalone)** | — | 4 | 108 | N/A |
-| **TOTALS** | **174+** | **197+** | **~3,088** | — |
+| **TOTALS** | **179+** | **197+** | **~3,088** | — |
 
 > Note: Total active Qed across ALL .v files (including those not mapped to research domains) is ~4,044. The ~1,797 gap comes from properties/, foundations/, type_system/, effects/ files that serve multiple domains, plus domain files with additional cross-cutting proofs.
 
@@ -286,6 +287,21 @@
 | MobileBridgeVerification.v | 1 | Compat stub | `admit. Admitted.` — Rocq 9.1 compatibility |
 | ValRelStepLimit_PROOF.v | 1 | Core property | Step-limit proof incomplete |
 | **TOTAL** | **7** | **5 files** | |
+
+---
+
+## Frontier Domains (AP-AT) — Research Complete, No Coq Proofs
+
+| Domain | Research File | Lines | Coq Files | RIINA Feature Target | Phase |
+|--------|-------------|-------|-----------|---------------------|-------|
+| **AP: Quantum Computing** | `RESEARCH_AP01_QUANTUM_COMPUTING_INTEGRATION.md` | 283 | 0 | Quantum effect type, linear qubit handles | Phase 6+ |
+| **AQ: Concurrent/Distributed** | `RESEARCH_AQ01_CONCURRENT_DISTRIBUTED_VERIFICATION.md` | 296 | 0 | Concurrent effects, Iris-style reasoning, CRDT types | Phase 6+ |
+| **AR: HW-SW Co-Verification** | `RESEARCH_AR01_HARDWARE_SOFTWARE_COVERIFICATION.md` | 263 | 0 | CompCert integration, CHERI capability mapping | Phase 7+ |
+| **AS: Post-Quantum Crypto** | `RESEARCH_AS01_POST_QUANTUM_CRYPTOGRAPHY.md` | 312 | 0 | Verified crypto stdlib (HACL*), constant-time via IFC | Phase 6 |
+| **AT: AI/ML Safety** | `RESEARCH_AT01_AI_ML_SAFETY_VERIFICATION.md` | 305 | 0 | ML inference effect, model capabilities, input domain proofs | Phase 6+ |
+
+> These domains were identified as coverage gaps (2026-03-13 audit) and research documents created in the same session.
+> All five integrate with RIINA's existing effect system + IFC + capabilities — no new architectural primitives required.
 
 ---
 
