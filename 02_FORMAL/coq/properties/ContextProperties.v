@@ -317,44 +317,10 @@ Qed.
 (** ** Section 6: Security Context Irrelevance *)
 (* ================================================================= *)
 
-(** The security context Δ does not affect typing derivations.
-    This is because no typing rule discriminates on the value of Δ;
-    it is threaded uniformly through all rules. *)
-
-Lemma typing_delta_irrelevance : forall Γ Σ Δ1 Δ2 e T ε,
-  has_type Γ Σ Δ1 e T ε ->
-  has_type Γ Σ Δ2 e T ε.
-Proof.
-  intros Γ Σ Δ1 Δ2 e T ε Hty.
-  induction Hty.
-  - (* T_Unit *) constructor.
-  - (* T_Bool *) constructor.
-  - (* T_Int *) constructor.
-  - (* T_String *) constructor.
-  - (* T_Loc *) econstructor. eassumption.
-  - (* T_Var *) constructor. assumption.
-  - (* T_Lam *) constructor. apply IHHty.
-  - (* T_App *) eapply T_App; eauto.
-  - (* T_Pair *) eapply T_Pair; eauto.
-  - (* T_Fst *) eapply T_Fst; eauto.
-  - (* T_Snd *) eapply T_Snd; eauto.
-  - (* T_Inl *) eapply T_Inl; eauto.
-  - (* T_Inr *) eapply T_Inr; eauto.
-  - (* T_Case *) eapply T_Case; eauto.
-  - (* T_If *) eapply T_If; eauto.
-  - (* T_Let *) eapply T_Let; eauto.
-  - (* T_Perform *) eapply T_Perform; eauto.
-  - (* T_Handle *) eapply T_Handle; eauto.
-  - (* T_Ref *) eapply T_Ref; eauto.
-  - (* T_Deref *) eapply T_Deref; eauto.
-  - (* T_Assign *) eapply T_Assign; eauto.
-  - (* T_Classify *) eapply T_Classify; eauto.
-  - (* T_Declassify *)
-    eapply T_Declassify; eauto.
-  - (* T_Prove *) eapply T_Prove; eauto.
-  - (* T_Require *) eapply T_Require; eauto.
-  - (* T_Grant *) eapply T_Grant; eauto.
-Qed.
+(** NOTE: typing_delta_irrelevance was removed because the security
+    context Δ now affects typing: T_Deref requires sec_leq_dec l Δ = true
+    (no-read-up) and T_Assign requires sec_leq_dec Δ l = true
+    (no-write-down), implementing Bell-LaPadula IFC. *)
 
 (* ================================================================= *)
 (** ** Section 7: Shadow Elimination *)
@@ -468,15 +434,14 @@ Qed.
 (** ** Section 11: Combined Structural Lemmas *)
 (* ================================================================= *)
 
-(** Weaken both context and security level simultaneously. *)
+(** Weaken context by adding a fresh binding. *)
 
-Lemma typing_weaken_head_delta : forall Γ Σ Δ1 Δ2 e T ε y U,
-  has_type Γ Σ Δ1 e T ε ->
+Lemma typing_weaken_head_delta : forall Γ Σ Δ e T ε y U,
+  has_type Γ Σ Δ e T ε ->
   ~ free_in y e ->
-  has_type ((y, U) :: Γ) Σ Δ2 e T ε.
+  has_type ((y, U) :: Γ) Σ Δ e T ε.
 Proof.
   intros.
-  apply typing_delta_irrelevance with (Δ1 := Δ1).
   apply typing_weaken_head; assumption.
 Qed.
 
@@ -674,13 +639,12 @@ Proof.
   inversion Hty; subst. assumption.
 Qed.
 
-(** Closed terms are invariant under any context and security level change. *)
-Lemma closed_typing_any_ctx : forall Γ Σ Δ1 Δ2 e T ε,
-  has_type nil Σ Δ1 e T ε ->
-  has_type Γ Σ Δ2 e T ε.
+(** Closed terms are invariant under any context change. *)
+Lemma closed_typing_any_ctx : forall Γ Σ Δ e T ε,
+  has_type nil Σ Δ e T ε ->
+  has_type Γ Σ Δ e T ε.
 Proof.
   intros.
-  apply typing_delta_irrelevance with (Δ1 := Δ1).
   apply typing_weaken_closed. assumption.
 Qed.
 

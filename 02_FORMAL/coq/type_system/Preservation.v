@@ -460,11 +460,13 @@ Proof.
     apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
   - (* T_Deref *)
     eapply T_Deref.
-    apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
+    + apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
+    + assumption.
   - (* T_Assign *)
     eapply T_Assign.
     + apply IHHty1. intros y Hy. apply Hctx. simpl. left. assumption.
     + apply IHHty2. intros y Hy. apply Hctx. simpl. right. assumption.
+    + assumption.
   - (* T_Classify *)
     apply T_Classify.
     apply IHHty. intros y Hy. apply Hctx. simpl. assumption.
@@ -703,7 +705,9 @@ Proof.
     eapply T_Ref. eapply IHe. eassumption.
   (* EDeref *)
   - inversion Hty; subst.
-    eapply T_Deref. eapply IHe. eassumption.
+    eapply T_Deref.
+    + eapply IHe. eassumption.
+    + assumption.
   (* EAssign *)
   - inversion Hty; subst.
     eapply T_Assign; eauto.
@@ -1055,7 +1059,9 @@ Proof.
     + exact Hext.
     + split.
       * exact Hwf'.
-      * eapply T_Deref. exact Hty'.
+      * eapply T_Deref.
+        -- exact Hty'.
+        -- assumption.
   (* ST_DerefLoc *)
   - inversion Hty; subst.
     destruct Hwf as [HΣtoSt HSttoΣ].
@@ -1065,7 +1071,10 @@ Proof.
     + apply store_ty_extends_refl.
     + split.
       * exact (conj HΣtoSt HSttoΣ).
-      * inversion H4; subst.
+      * match goal with
+        | Hsub : has_type _ _ _ _ (TRef _ _) _ |- _ =>
+            inversion Hsub; subst
+        end.
         match goal with
         | Hloc : store_ty_lookup l Σ = Some (T0, ?sl0) |- _ =>
             rewrite Hloc in Hlookup; inversion Hlookup; subst; exact Htyv
@@ -1081,6 +1090,7 @@ Proof.
       * eapply T_Assign.
         -- exact Hty'.
         -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
+        -- assumption.
   (* ST_Assign2 *)
   - inversion Hty; subst.
     edestruct IHHstep as [Σ' [ε' [Hext [Hwf' Hty2']]]]; try reflexivity; eauto.
@@ -1092,6 +1102,7 @@ Proof.
       * eapply T_Assign.
         -- apply store_ty_extends_preserves_typing with (Σ := Σ); [exact Hext | eassumption].
         -- exact Hty2'.
+        -- assumption.
   (* ST_AssignLoc *)
   - inversion Hty; subst.
     match goal with
